@@ -2011,16 +2011,19 @@ letters.
 @table @code
 @findex CONST_OK_FOR_LETTER_P
 @item CONST_OK_FOR_LETTER_P (@var{value}, @var{c})
-A C expression that defines the machine-dependent operand constraint letters
-that specify particular ranges of integer values.  If @var{c} is one
-of those letters, the expression should check that @var{value}, an integer,
-is in the appropriate range and return 1 if so, 0 otherwise.  If @var{c} is
-not one of those letters, the value should be 0 regardless of @var{value}.
+A C expression that defines the machine-dependent operand constraint
+letters (@samp{I}, @samp{J}, @samp{K}, @dots{} @samp{P}) that specify
+particular ranges of integer values.  If @var{c} is one of those
+letters, the expression should check that @var{value}, an integer, is in
+the appropriate range and return 1 if so, 0 otherwise.  If @var{c} is
+not one of those letters, the value should be 0 regardless of
+@var{value}.
 
 @findex CONST_DOUBLE_OK_FOR_LETTER_P
 @item CONST_DOUBLE_OK_FOR_LETTER_P (@var{value}, @var{c})
 A C expression that defines the machine-dependent operand constraint
-letters that specify particular ranges of @code{const_double} values.
+letters that specify particular ranges of @code{const_double} values
+(@samp{G} or @samp{H}).
 
 If @var{c} is one of those letters, the expression should check that
 @var{value}, an RTX of code @code{const_double}, is in the appropriate
@@ -2035,13 +2038,13 @@ between these kinds.
 @findex EXTRA_CONSTRAINT
 @item EXTRA_CONSTRAINT (@var{value}, @var{c})
 A C expression that defines the optional machine-dependent constraint
-letters that can be used to segregate specific types of operands,
-usually memory references, for the target machine.  Normally this macro
-will not be defined.  If it is required for a particular target machine,
-it should return 1 if @var{value} corresponds to the operand type
-represented by the constraint letter @var{c}.  If @var{c} is not defined
-as an extra constraint, the value returned should be 0 regardless of
-@var{value}.
+letters (@item @samp{Q}, @samp{R}, @samp{S}, @samp{T}, @samp{U}) that can
+be used to segregate specific types of operands, usually memory
+references, for the target machine.  Normally this macro will not be
+defined.  If it is required for a particular target machine, it should
+return 1 if @var{value} corresponds to the operand type represented by
+the constraint letter @var{c}.  If @var{c} is not defined as an extra
+constraint, the value returned should be 0 regardless of @var{value}.
 
 For example, on the ROMP, load instructions cannot have their output in r0 if
 the memory reference contains a symbolic address.  Constraint letter
@@ -6833,6 +6836,11 @@ greater than or equal to @code{BITS_PER_WORD}, so you may return any
 value in this case.  Do not define this macro if it would always return
 @code{NIL}.  On machines where this macro is defined, you will normally
 define it as the constant @code{SIGN_EXTEND} or @code{ZERO_EXTEND}.
+
+@findex SHORT_IMMEDIATES_SIGN_EXTEND
+@item SHORT_IMMEDIATES_SIGN_EXTEND
+Define this macro if loading short immediate values into registers sign
+extends.
 
 @findex IMPLICIT_FIX_EXPR
 @item IMPLICIT_FIX_EXPR
