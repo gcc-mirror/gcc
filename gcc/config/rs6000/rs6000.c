@@ -5993,11 +5993,19 @@ rs6000_encode_section_info (decl)
 
       if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)
 	{
-	  const char *prefix = (DEFAULT_ABI == ABI_AIX) ? "." : "..";
-	  char *str = permalloc (strlen (prefix) + 1
-				 + strlen (XSTR (sym_ref, 0)));
-	  strcpy (str, prefix);
-	  strcat (str, XSTR (sym_ref, 0));
+	  size_t len1 = (DEFAULT_ABI == ABI_AIX) ? 1 : 2;
+	  size_t len2 = strlen (XSTR (sym_ref, 0));
+	  char *str;
+
+	  if (ggc_p)
+	    str = ggc_alloc_string (NULL, len1 + len2);
+	  else
+	    str = permalloc (len1 + len2 + 1);
+
+	  str[0] = '.';
+	  str[1] = '.';
+	  memcpy (str + len1, XSTR (sym_ref, 0), len2 + 1);
+
 	  XSTR (sym_ref, 0) = str;
 	}
     }
@@ -6037,9 +6045,16 @@ rs6000_encode_section_info (decl)
 		      && strcmp (name, ".PPC.EMB.sbss0") == 0))))
 	{
 	  rtx sym_ref = XEXP (DECL_RTL (decl), 0);
-	  char *str = permalloc (2 + strlen (XSTR (sym_ref, 0)));
-	  strcpy (str, "@");
-	  strcat (str, XSTR (sym_ref, 0));
+	  size_t len = strlen (XSTR (sym_ref, 0));
+	  char *str;
+
+	  if (ggc_p)
+	    str = ggc_alloc_string (NULL, len + 1);
+	  else
+	    str = permalloc (len + 2);
+	  str[0] = '@';
+	  memcpy (str + 1, XSTR (sym_ref, 0), len + 1);
+
 	  XSTR (sym_ref, 0) = str;
 	}
     }

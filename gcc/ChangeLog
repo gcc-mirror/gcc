@@ -1,3 +1,8 @@
+Wed Sep 29 16:05:18 1999  Richard Henderson  <rth@cygnus.com>
+
+	* rs6000.c (rs6000_encode_section_info): If ggc_p, use
+	ggc_alloc_string.
+
 Tue Sep 28 16:45:40 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* xcoffout.c (xcoffout_declare_function): Add documentation.
