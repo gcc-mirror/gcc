@@ -2966,6 +2966,7 @@ extern struct rtx_def *mips_va_arg ();
 	      && (!TARGET_EMBEDDED_PIC					\
 		  || code1 != CONST					\
 		  || GET_CODE (XEXP (xplus1, 0)) != MINUS)		\
+	      && ! (code1 == CONST_INT && ! SMALL_INT (xplus1))         \
 	      && !TARGET_MIPS16)					\
 	    goto ADDR;							\
 	}								\
@@ -3125,8 +3126,7 @@ extern struct rtx_def *mips_va_arg ();
 				  ptr_reg,				\
 				  gen_rtx_PLUS (Pmode, xplus0, int_reg))); \
 									\
-	  X = gen_rtx_PLUS (Pmode, ptr_reg,				\
-			    GEN_INT (INTVAL (xplus1) & 0x7fff));	\
+	  X = plus_constant (ptr_reg, INTVAL (xplus1) & 0x7fff);	\
 	  goto WIN;							\
 	}								\
     }									\
