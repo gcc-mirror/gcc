@@ -35,6 +35,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef PCC_STATIC_STRUCT_RETURN
 
+/* There's a bug in the setjmp implementation that strikes
+   if the caller of setjmp doesn't have a frame pointer.  */
+#undef FRAME_POINTER_REQUIRED
+#define FRAME_POINTER_REQUIRED current_function_calls_setjmp
+
 /* 32-bit alignment for efficiency */
 #undef POINTER_BOUNDARY
 #define POINTER_BOUNDARY 32
