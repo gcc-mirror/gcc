@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "integrate.h"
 #include "target.h"
 #include "target-def.h"
+#include "real.h"
 
 /* First some local helper definitions.  */
 #define MMIX_FIRST_GLOBAL_REGNUM 32
@@ -1458,9 +1459,6 @@ mmix_constant_address_p (x)
   int addend = 0;
   /* When using "base addresses", anything constant goes.  */
   int constant_ok = TARGET_BASE_ADDRESSES != 0;
-
-  if (code == LABEL_REF || code == SYMBOL_REF)
-    return 1;
 
   if (code == CONSTANT_P_RTX || code == HIGH)
     /* FIXME: Don't know how to dissect these.  Avoid them for now.  */

@@ -1,3 +1,8 @@
+2002-05-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c: Include real.h.
+	(mmix_constant_address_p): Remove redundant test before switch.
+
 2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/mips/mips.h (READONLY_DATA_SECTION_ASM_OP): Define
