@@ -4473,6 +4473,9 @@ x86_64_sign_extended_value (rtx value)
 	 library.  Don't count TLS SYMBOL_REFs here, since they should fit
 	 only if inside of UNSPEC handled below.  */
       case SYMBOL_REF:
+	/* TLS symbols are not constant.  */
+	if (tls_symbolic_operand (value, Pmode))
+	  return false;
 	return (ix86_cmodel == CM_SMALL || ix86_cmodel == CM_KERNEL);
 
       /* For certain code models, the code is near as well.  */
@@ -4578,6 +4581,9 @@ x86_64_zero_extended_value (rtx value)
 
       /* For certain code models, the symbolic references are known to fit.  */
       case SYMBOL_REF:
+	/* TLS symbols are not constant.  */
+	if (tls_symbolic_operand (value, Pmode))
+	  return false;
 	return ix86_cmodel == CM_SMALL;
 
       /* For certain code models, the code is near as well.  */
