@@ -62,7 +62,7 @@ Boston, MA 02111-1307, USA. */
 # include <string.h>
 #else
 # ifdef HAVE_STRINGS_H
-#  inclued <strings.h>
+#  include <strings.h>
 #endif
 #endif
 
