@@ -1,8 +1,7 @@
 /* real.c - implementation of REAL_ARITHMETIC, REAL_VALUE_ATOF,
    and support for XFmode IEEE extended real floating point arithmetic.
-   Contributed by Stephen L. Moshier (moshier@world.std.com).
-
    Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Contributed by Stephen L. Moshier (moshier@world.std.com).
 
 This file is part of GNU CC.
 
@@ -3822,16 +3821,13 @@ ultoe (lp, y)
 }
 
 
-/*
-;	Find signed HOST_WIDE_INT integer and floating point fractional parts
+/* Find signed HOST_WIDE_INT integer and floating point fractional
+   parts of e-type (packed internal format) floating point input X.
+   The integer output I has the sign of the input, except that
+   positive overflow is permitted if FIXUNS_TRUNC_LIKE_FIX_TRUNC.
+   The output e-type fraction FRAC is the positive fractional
+   part of abs (X).  */
 
-;	HOST_WIDE_INT i;
-;	unsigned EMUSHORT x[NE], frac[NE];
-;	xifrac (x, &i, frac);
-
-  The integer output has the sign of the input.  The fraction is
-the positive fractional part of abs (x).
-*/
 void 
 eifrac (x, i, frac)
      unsigned EMUSHORT *x;
@@ -3858,7 +3854,17 @@ eifrac (x, i, frac)
       if (xi[0])
 	*i = ((unsigned HOST_WIDE_INT) 1) << (HOST_BITS_PER_WIDE_INT - 1);
       else
-	*i = (((unsigned HOST_WIDE_INT) 1) << (HOST_BITS_PER_WIDE_INT - 1)) - 1;
+	{
+#ifdef FIXUNS_TRUNC_LIKE_FIX_TRUNC
+	  /* In this case, let it overflow and convert as if unsigned.  */
+	  euifrac (x, &ll, frac);
+	  *i = (HOST_WIDE_INT) ll;
+	  return;
+#else
+	  /* In other cases, return the largest positive integer.  */
+	  *i = (((unsigned HOST_WIDE_INT) 1) << (HOST_BITS_PER_WIDE_INT - 1)) - 1;
+#endif
+	}
       eshift (xi, k);
       if (extra_warnings)
 	warning ("overflow on truncation to integer");
