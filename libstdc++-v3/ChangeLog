@@ -1,3 +1,17 @@
+2004-06-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_istream.h (ignore(streamsize __n = 1,
+	int_type __delim = traits_type::eof())): Split into...
+	(ignore(), ignore(streamsize __n), ignore(streamsize __n,
+	int_type __delim)): The first two can be much more simpler
+	and efficient than the fully general case; also, the last
+	two can take advantage of the same mechanism already used
+	for getline.
+	* include/bits/istream.tcc (ignore(streamsize __n = 1,
+	int_type __delim = traits_type::eof()): Remove.
+	(ignore(), ignore(streamsize __n), ignore(streamsize __n,
+	int_type __delim)): New.
+
 2004-06-21  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config/linker-map.gnu: Use wildcards for
