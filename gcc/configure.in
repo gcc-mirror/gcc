@@ -925,6 +925,11 @@ for machine in $build $host $target; do
 		tm_file=i386/go32-rtems.h
 		tmake_file="i386/t-go32 t-rtems"
 		;;
+	i[[34567]]86-*-rtemself*)
+		cpu_type=i386
+		tm_file=i386/rtemself.h
+		tmake_file="i386/t-i386bare t-rtems"
+		;;
 	i[[34567]]86-*-rtems*)
 		cpu_type=i386
 		tm_file=i386/rtems.h
