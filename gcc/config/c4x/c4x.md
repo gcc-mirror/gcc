@@ -1127,6 +1127,20 @@
    (set (match_dup 0) (lo_sum:QI (match_dup 0) (match_dup 1)))]
   "")
 
+(define_split
+  [(set (match_operand:QI 0 "std_reg_operand" "")
+	(match_operand:QI 1 "const_int_operand" ""))]
+  "! TARGET_C3X
+   && (INTVAL (operands[1]) & ~0xffff) != 0
+   && (INTVAL (operands[1]) & 0xffff) != 0"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 0) (ior:QI (match_dup 0) (match_dup 3)))]
+  "
+{
+   operands[2] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & ~0xffff);
+   operands[3] = gen_rtx (CONST_INT, VOIDmode, INTVAL (operands[1]) & 0xffff);
+}")
+
 ; This pattern is required to handle the case where a register that clobbers
 ; CC has been selected to load a symbolic address.  We force the address
 ; into memory and then generate LDP and LDIU insns.
