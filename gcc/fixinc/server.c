@@ -84,6 +84,7 @@
 #endif
 
 STATIC volatile t_bool read_pipe_timeout;
+STATIC pid_t server_master_pid = NOPROCESS;
 
 static t_pchar def_args[] =
 { (char *) NULL, (char *) NULL };
@@ -183,10 +184,12 @@ load_data (fp)
 void
 close_server ()
 {
-  if (server_id != NULLPROCESS)
+  if (  (server_id != NULLPROCESS)
+     && (server_master_pid == getpid ()))
     {
       kill ((pid_t) server_id, SIGKILL);
       server_id = NULLPROCESS;
+      server_master_pid = NOPROCESS;
       fclose (server_pair.pf_read);
       fclose (server_pair.pf_write);
       server_pair.pf_read = server_pair.pf_write = (FILE *) NULL;
@@ -209,8 +212,6 @@ sig_handler (signo)
           "fixincl ERROR:  sig_handler: killed pid %ld due to %s\n",
           (long) server_id, signo == SIGPIPE ? "SIGPIPE" : "SIGALRM");
 #endif
-  if (signo == SIGPIPE)
-    return;
   close_server ();
   read_pipe_timeout = BOOL_TRUE;
 }
@@ -230,6 +231,8 @@ server_setup ()
     atexit (close_server);
   else
     fputs ("NOTE: server restarted\n", stderr);
+
+  server_master_pid = getpid ();
 
   signal (SIGPIPE, sig_handler);
   signal (SIGALRM, sig_handler);
