@@ -857,8 +857,7 @@ ffelex_file_pop_ (const char *input_filename)
       input_file_stack = p->next;
       free (p);
       input_file_stack_tick++;
-      if (write_symbols == DWARF_DEBUG)
-	(*debug_hooks->end_source_file) (input_file_stack->line);
+      (*debug_hooks->end_source_file) (input_file_stack->line);
     }
   else
     error ("#-lines for entering and leaving files don't match");
@@ -883,8 +882,7 @@ ffelex_file_push_ (int old_lineno, const char *input_filename)
   input_file_stack = p;
   input_file_stack_tick++;
 
-  if (write_symbols == DWARF_DEBUG)
-    (*debug_hooks->start_source_file) (0, input_filename);
+  (*debug_hooks->start_source_file) (0, input_filename);
 
   /* Now that we've pushed or popped the input stack,
      update the name in the top element.  */
@@ -1165,8 +1163,7 @@ ffelex_hash_ (FILE *finput)
 
 	      c = ffelex_get_directive_line_ (&text, finput);
 
-	      if ((debug_info_level == DINFO_LEVEL_VERBOSE)
-		  && (write_symbols == DWARF_DEBUG))
+	      if (debug_info_level == DINFO_LEVEL_VERBOSE)
 		(*debug_hooks->define) (lineno, text);
 
 	      goto skipline;
@@ -1185,8 +1182,7 @@ ffelex_hash_ (FILE *finput)
 
 	      c = ffelex_get_directive_line_ (&text, finput);
 
-	      if ((debug_info_level == DINFO_LEVEL_VERBOSE)
-		  && (write_symbols == DWARF_DEBUG))
+	      if (debug_info_level == DINFO_LEVEL_VERBOSE)
 		(*debug_hooks->undef) (lineno, text);
 
 	      goto skipline;

@@ -27,7 +27,9 @@ struct gcc_debug_hooks do_nothing_debug_hooks =
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
-  debug_nothing_int
+  debug_nothing_int,
+  debug_nothing_file_int_int,
+  debug_nothing_file_int_int
 };
 
 /* This file contains implementations of each debug hook that do
@@ -50,5 +52,13 @@ debug_nothing_int_charstar (line, text)
 void
 debug_nothing_int (line)
      unsigned int line ATTRIBUTE_UNUSED;
+{
+}
+
+void
+debug_nothing_file_int_int (file, line, n)
+     FILE *file ATTRIBUTE_UNUSED;
+     unsigned int line ATTRIBUTE_UNUSED;
+     unsigned int n ATTRIBUTE_UNUSED;
 {
 }

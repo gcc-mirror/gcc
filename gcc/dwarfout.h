@@ -24,7 +24,5 @@ extern void dwarfout_begin_function	PARAMS ((void));
 extern void dwarfout_end_function	PARAMS ((void));
 extern void dwarfout_begin_epilogue	PARAMS ((void));
 extern void dwarfout_end_epilogue	PARAMS ((void));
-extern void dwarfout_begin_block	PARAMS ((unsigned));
-extern void dwarfout_end_block		PARAMS ((unsigned));
 
 extern void dwarfout_line		PARAMS ((const char *, unsigned));

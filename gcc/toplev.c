@@ -2289,9 +2289,13 @@ compile_file (name)
   /* Set up the debug hooks based on write_symbols.  Default to doing
      nothing.  */
   debug_hooks = &do_nothing_debug_hooks;  
-#if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
-  if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
+#if defined(DBX_DEBUGGING_INFO)
+  if (write_symbols == DBX_DEBUG)
     debug_hooks = &dbx_debug_hooks;
+#endif
+#if defined(XCOFF_DEBUGGING_INFO)
+  if (write_symbols == XCOFF_DEBUG)
+    debug_hooks = &xcoff_debug_hooks;
 #endif
 #ifdef SDB_DEBUGGING_INFO
   if (write_symbols == SDB_DEBUG)

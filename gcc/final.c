@@ -66,6 +66,7 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "basic-block.h"
 #include "target.h"
+#include "debug.h"
 
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -2138,27 +2139,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      ++block_depth;
 	      high_block_linenum = last_linenum;
 
-	    /* Output debugging info about the symbol-block beginning.  */
-#ifdef SDB_DEBUGGING_INFO
-	      if (write_symbols == SDB_DEBUG)
-		sdbout_begin_block (file, last_linenum, n);
-#endif
-#ifdef XCOFF_DEBUGGING_INFO
-	      if (write_symbols == XCOFF_DEBUG)
-		xcoffout_begin_block (file, last_linenum, n);
-#endif
-#ifdef DBX_DEBUGGING_INFO
-	      if (write_symbols == DBX_DEBUG)
-		ASM_OUTPUT_INTERNAL_LABEL (file, "LBB", n);
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-	      if (write_symbols == DWARF_DEBUG)
-		dwarfout_begin_block (n);
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-	      if (write_symbols == DWARF2_DEBUG)
-		dwarf2out_begin_block (n);
-#endif
+	      /* Output debugging info about the symbol-block beginning.  */
+	      (*debug_hooks->begin_block) (file, last_linenum, n);
 
 	      /* Mark this block as output.  */
 	      TREE_ASM_WRITTEN (NOTE_BLOCK (insn)) = 1;
@@ -2180,26 +2162,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      if (block_depth < 0)
 		abort ();
 
-#ifdef XCOFF_DEBUGGING_INFO
-	      if (write_symbols == XCOFF_DEBUG)
-		xcoffout_end_block (file, high_block_linenum, n);
-#endif
-#ifdef DBX_DEBUGGING_INFO
-	      if (write_symbols == DBX_DEBUG)
-		ASM_OUTPUT_INTERNAL_LABEL (file, "LBE", n);
-#endif
-#ifdef SDB_DEBUGGING_INFO
-	      if (write_symbols == SDB_DEBUG)
-		sdbout_end_block (file, high_block_linenum, n);
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-	      if (write_symbols == DWARF_DEBUG)
-		dwarfout_end_block (n);
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-	      if (write_symbols == DWARF2_DEBUG)
-		dwarf2out_end_block (n);
-#endif
+	      (*debug_hooks->end_block) (file, high_block_linenum, n);
 	    }
 	  break;
 

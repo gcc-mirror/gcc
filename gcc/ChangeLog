@@ -1,3 +1,32 @@
+2001-07-12  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (final.o): Depend on debug.h.
+	* dbxout.c (dbxout_begin_block, dbxout_end_block): New.
+	(dbx_debug_hooks): Add new hooks.
+	(xcoff_debug_hooks): New.
+	* debug.c (debug_nothing_file_int_int): New.
+	(do_nothing_debug_hooks): Update.
+	* debug.h (gcc_debug_hooks): New hooks begin_block and end_block.
+	(debug_nothing_file_int_int): New.
+	* dwarf2out.c (dwarf2out_begin_block, dwarf2out_end_block): Make
+	static, update prototype.
+	(dwarf2_debug_hooks): Update.
+	* dwarf2out.h (dwarf2out_begin_block, dwarf2out_end_block): Remove.
+	* dwarfout.c (dwarfout_begin_block, dwarfout_end_block): Make
+	static, update prototype.
+	(dwarf_debug_hooks): Update.
+	* dwarfout.h (dwarfout_begin_block, dwarfout_end_block): Remove.
+	* final.c: Include debug.h.
+	(final_scan_insn): Use debug hooks when beginning and ending blocks.
+	* sdbout.c (sdbout_begin_block, sdbout_end_block): Make
+	static, update prototype.
+	(sdb_debug_hooks): Update.
+	* sdbout.h (sdbout_begin_block, sdbout_end_block): Remove.
+	* toplev.c: Distinguish between xcoff and dbx.
+
+	* f/lex.c (ffelex_file_pop_, ffelex_file_push_, ffelex_hash_):
+	Call all debug hooks, not just dwarf ones.
+
 2001-07-11  Timothy Wall  <twall@redhat.com>
 
         * config.gcc: Add configuration for AIX5/IA64.
