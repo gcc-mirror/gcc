@@ -97,11 +97,8 @@ extern jlong _Jv_platform_gettimeofday ();
 extern int _Jv_select (int n, fd_set *, fd_set *, fd_set *, struct timeval *);
 extern int _Jv_pipe (int filedes[2]);
 
-inline void
-_Jv_platform_close_on_exec (jint)
-{
-  // Ignore.
-}
+extern void
+_Jv_platform_close_on_exec (HANDLE h);
 
 #ifdef JV_HASH_SYNCHRONIZATION
 /* Suspends the execution of the current thread for the specified

@@ -45,18 +45,21 @@ union SockAddr
 void
 gnu::java::net::PlainSocketImpl::create (jboolean stream)
 {
-  int sock = ::socket (AF_INET, stream ? SOCK_STREAM : SOCK_DGRAM, 0);
+  SOCKET sock = ::socket (AF_INET, stream ? SOCK_STREAM : SOCK_DGRAM, 0);
 
-  if (sock == int(INVALID_SOCKET))
+  if (sock == INVALID_SOCKET)
     {
       _Jv_ThrowIOException ();
     }
 
-  _Jv_platform_close_on_exec (sock);
+  // Cast this to a HANDLE so we can make
+  // it non-inheritable via _Jv_platform_close_on_exec.
+  HANDLE hSocket = (HANDLE) sock;
+  _Jv_platform_close_on_exec (hSocket);
 
   // We use native_fd in place of fd here.  From leaving fd null we avoid
   // the double close problem in FileDescriptor.finalize.
-  native_fd = sock;
+  native_fd = (jint) hSocket;
 }
 
 void
@@ -230,7 +233,8 @@ gnu::java::net::PlainSocketImpl::accept (gnu::java::net::PlainSocketImpl *s)
 {
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
-  int new_socket = 0;
+  HANDLE hSocket = 0;
+  SOCKET new_socket = 0;
 
   if (timeout > 0)
     {
@@ -245,7 +249,7 @@ gnu::java::net::PlainSocketImpl::accept (gnu::java::net::PlainSocketImpl *s)
       {
         new_socket = ::accept (native_fd, (sockaddr*) &u, &addrlen);
 
-        if (new_socket != int(INVALID_SOCKET))
+        if (new_socket != INVALID_SOCKET)
         {
           // This new child socket is nonblocking because the parent
           // socket became nonblocking via the WSAEventSelect() call,
@@ -284,10 +288,13 @@ gnu::java::net::PlainSocketImpl::accept (gnu::java::net::PlainSocketImpl *s)
       new_socket = ::accept (native_fd, (sockaddr*) &u, &addrlen);
     }
 
-  if (new_socket == int(INVALID_SOCKET))
+  if (new_socket == INVALID_SOCKET)
     goto error;
 
-  _Jv_platform_close_on_exec (new_socket);
+  // Cast this to a HANDLE so we can make
+  // it non-inheritable via _Jv_platform_close_on_exec.
+  hSocket = (HANDLE) new_socket;
+  _Jv_platform_close_on_exec (hSocket);
 
   jbyteArray raddr;
   jint rport;
@@ -308,7 +315,7 @@ gnu::java::net::PlainSocketImpl::accept (gnu::java::net::PlainSocketImpl *s)
   else
     throw new ::java::net::SocketException (JvNewStringUTF ("invalid family"));
 
-  s->native_fd = new_socket;
+  s->native_fd = (jint) hSocket;
   s->localport = localport;
   s->address = new ::java::net::InetAddress (raddr, NULL);
   s->port = rport;

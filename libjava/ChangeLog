@@ -1,3 +1,18 @@
+2003-11-06  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* include/win32.h (_Jv_platform_close_on_exec): Changed
+	signature and declared extern.
+	* win32.cc (_Jv_platform_close_on_exec): Implemented.
+	* gnu/java/net/natPlainDatagramSocketImplWin32.cc
+	(create): Use new signature of _Jv_platform_close_on_exec.
+	* gnu/java/net/natPlainSocketImplWin32.cc 
+	(create): Eliminated a few typecasts
+	Use new signature of _Jv_platform_close_on_exec.
+	(accept): Eliminated a few typecasts
+	Use new signature of _Jv_platform_close_on_exec.
+	* java/io/natFileDescriptorWin32.cc (open): Use
+	_Jv_platform_close_on_exec.
+
 2003-11-04  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* java/lang/natClass.cc (newInstance): Throw InstantiationException
