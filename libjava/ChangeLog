@@ -1,3 +1,8 @@
+2004-11-28  Mark Wielaard  <mark@klomp.org>
+
+	* mauve-libgcj: Disable SpinnerListModel, SwingUtilities and
+	XMLDecoder tests which currently don't compile.
+
 2004-11-27  Andrew Haley  <aph@redhat.com>
 
 	* link.cc (ensure_class_linked): Conditionally compile
