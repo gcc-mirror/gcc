@@ -1220,8 +1220,12 @@ common_handle_option (size_t scode, const char *arg,
       flag_rerun_loop_opt = value;
       break;
 
+    case OPT_frounding_math:
+      flag_rounding_math = value;
+      break;
+
     case OPT_fsched_interblock:
-      flag_schedule_interblock= value;
+      flag_schedule_interblock = value;
       break;
 
     case OPT_fsched_spec:
@@ -1547,7 +1551,10 @@ set_fast_math_flags (int set)
   flag_finite_math_only = set;
   flag_errno_math = !set;
   if (set)
-    flag_signaling_nans = 0;
+    {
+      flag_signaling_nans = 0;
+      flag_rounding_math = 0;
+    }
 }
 
 /* Return true iff flags are set as if -ffast-math.  */

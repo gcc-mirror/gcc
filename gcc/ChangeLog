@@ -1,3 +1,15 @@
+2003-09-03  Roger Sayle  <roger@eyesopen.com>
+
+	* toplev.c (flag_rounding_math): New global variable.
+	(f_options): Add to the list of language independent options.
+	* flags.h (flag_rounding_math): Prototype here.
+	(HONOR_SIGN_DEPENDENT_ROUNDING): Use flag_rounding_math instead.
+	* common.opt (frounding-math): New common command line option.
+	* opts.c (common_handle_option): Handle OPT_frounding_math.
+	(set_fast_math_flags): -ffast-math clears flag_rounding_math.
+
+	* doc/invoke.texi: Document this new command line option.
+
 2003-09-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/sol2.h (NO_IMPLICIT_EXTERN_C): Update comment.
