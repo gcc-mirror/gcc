@@ -1639,8 +1639,6 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
    This is added to the cfun structure.  */
 typedef struct machine_function GTY(())
 {
-  /* Whether a System V.4 varargs area was created.  */
-  int sysv_varargs_p;
   /* Flags if __builtin_return_address (n) with n >= 1 was used.  */
   int ra_needs_full_frame;
   /* Some local-dynamic symbol.  */

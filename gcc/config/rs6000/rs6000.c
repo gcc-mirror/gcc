@@ -5304,8 +5304,6 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   if (DEFAULT_ABI == ABI_V4)
     {
-      /* Indicate to allocate space on the stack for varargs save area.  */
-      cfun->machine->sysv_varargs_p = 1;
       if (! no_rtl)
 	save_area = plus_constant (virtual_stack_vars_rtx,
 				   - RS6000_VARARGS_SIZE);
@@ -5316,7 +5314,6 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     {
       first_reg_offset = next_cum.words;
       save_area = virtual_incoming_args_rtx;
-      cfun->machine->sysv_varargs_p = 0;
 
       if (targetm.calls.must_pass_in_stack (mode, type))
 	first_reg_offset += rs6000_arg_size (TYPE_MODE (type), type);
