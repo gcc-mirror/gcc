@@ -955,6 +955,9 @@ case $os in
 	-opened*)
 		os=-openedition
 		;;
+	-wince*)
+		os=-wince
+		;;
 	-osfrose*)
 		os=-osfrose
 		;;
