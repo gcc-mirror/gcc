@@ -1,3 +1,8 @@
+2000-05-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tinfo.cc: Revert my 2000-05-08 and 2000-05-07 changes.
+	* vec.cc: Revert my 2000-05-07 change.
+
 2000-05-11  Jason Merrill  <jason@casey.cygnus.com>
 
 	* class.c (check_field_decls): Complain about non-static data
