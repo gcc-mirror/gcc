@@ -6589,6 +6589,22 @@ usual manner as a label (by means of @code{ASM_OUTPUT_LABEL}).
 You may wish to use @code{ASM_OUTPUT_TYPE_DIRECTIVE} and/or
 @code{ASM_OUTPUT_SIZE_DIRECTIVE} in the definition of this macro.
 
+@findex ASM_DECLARE_CONSTANT_NAME
+@item ASM_DECLARE_CONSTANT_NAME (@var{stream}, @var{name}, @var{exp}, @var{size})
+A C statement (sans semicolon) to output to the stdio stream
+@var{stream} any text necessary for declaring the name @var{name} of a
+constant which is being defined.  This macro is responsible for
+outputting the label definition (perhaps using
+@code{ASM_OUTPUT_LABEL}).  The argument @var{exp} is the
+value of the constant, and @var{size} is the size of the constant
+in bytes.  @var{name} will be an internal label.
+
+If this macro is not defined, then the @var{name} is defined in the
+usual manner as a label (by means of @code{ASM_OUTPUT_LABEL}).
+
+You may wish to use @code{ASM_OUTPUT_TYPE_DIRECTIVE} in the definition
+of this macro.
+
 @findex ASM_DECLARE_REGISTER_GLOBAL
 @item ASM_DECLARE_REGISTER_GLOBAL (@var{stream}, @var{decl}, @var{regno}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream

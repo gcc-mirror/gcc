@@ -380,6 +380,10 @@ do { text_section ();							\
         || DECL_INITIAL (DECL))                                         \
       (* targetm.encode_section_info) (DECL, false);			\
     ASM_OUTPUT_LABEL (FILE, xname);                                     \
+    /* Darwin doesn't support zero-size objects, so give them a 	\
+       byte.  */							\
+    if (tree_low_cst (DECL_SIZE_UNIT (DECL), 1) == 0)			\
+      assemble_zeros (1);						\
   } while (0)
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)                     \
@@ -399,6 +403,15 @@ do { text_section ();							\
     /* Avoid generating stubs for functions we've just defined by	\
        outputting any required stub name label now.  */			\
     machopic_output_possible_stub_label (FILE, xname);			\
+  } while (0)
+
+#define ASM_DECLARE_CONSTANT_NAME(FILE, NAME, EXP, SIZE)	\
+  do {								\
+    ASM_OUTPUT_LABEL (FILE, NAME);				\
+    /* Darwin doesn't support zero-size objects, so give them a	\
+       byte.  */						\
+    if ((SIZE) == 0)						\
+      assemble_zeros (1);					\
   } while (0)
 
 /* Wrap new method names in quotes so the assembler doesn't gag.

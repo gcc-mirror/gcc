@@ -2661,6 +2661,8 @@ output_constant_def (exp, defer)
   int after_function = 0;
   int labelno = -1;
   rtx rtl;
+  HOST_WIDE_INT size;
+
 
   /* We can't just use the saved RTL if this is a deferred string constant
      and we are not to defer anymore.  */
@@ -2825,6 +2827,7 @@ output_constant_def_contents (exp, reloc, labelno)
      int labelno;
 {
   int align;
+  HOST_WIDE_INT size;
 
   /* Align the location counter as required by EXP's data type.  */
   align = TYPE_ALIGN (TREE_TYPE (exp));
@@ -2842,17 +2845,24 @@ output_constant_def_contents (exp, reloc, labelno)
       ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
     }
 
-  /* Output the label itself.  */
+  size = int_size_in_bytes (TREE_TYPE (exp));
+  if (TREE_CODE (exp) == STRING_CST)
+    size = MAX (TREE_STRING_LENGTH (exp), size);
+
+  /* Do any machine/system dependent processing of the constant.  */
+#ifdef ASM_DECLARE_CONSTANT_NAME
+  {
+    char label[256];
+    ASM_GENERATE_INTERNAL_LABEL (label, "LC", labelno);
+    ASM_DECLARE_CONSTANT_NAME (asm_out_file, label, exp, size);
+  }
+#else
+  /* Standard thing is just output label for the constant.  */
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LC", labelno);
+#endif /* ASM_DECLARE_CONSTANT_NAME */
 
   /* Output the value of EXP.  */
-  output_constant (exp,
-		   (TREE_CODE (exp) == STRING_CST
-		    ? MAX (TREE_STRING_LENGTH (exp),
-			   int_size_in_bytes (TREE_TYPE (exp)))
-		    : int_size_in_bytes (TREE_TYPE (exp))),
-		   align);
-
+  output_constant (exp, size, align);
 }
 
 /* Used in the hash tables to avoid outputting the same constant
