@@ -411,11 +411,11 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
      can not use secondary reloads, you must work around the problem some
      other way.
 
-     Allow this when MODE is not reload_mode and assume that the generated
-     code handles this case (it does on the Alpha, which is the only place
-     this currently happens).  */
+     Allow this when a reload_in/out pattern is being used.  I.e. assume
+     that the generated code handles this case.  */
 
-  if (in_p && class == reload_class && mode == reload_mode)
+  if (in_p && class == reload_class && icode == CODE_FOR_nothing
+      && t_icode == CODE_FOR_nothing)
     abort ();
 
   /* If we need a tertiary reload, see if we have one we can reuse or else
