@@ -24,8 +24,9 @@ proc prune_gcc_output { text } {
     regsub -all "(^|\n)collect2: ld returned \[^\n\]*" $text "" text
     regsub -all "(^|\n)Please submit.*instructions\[^\n\]*" $text "" text
 
-    # Ignore harmless -fpic warnings on cygwin.
+    # Ignore harmless -fpic warnings.
     regsub -all "(^|\n)\[^\n\]*: warning: -f(pic|PIC) ignored for target\[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*: warning: -f(pic|PIC)( and -fpic are| is)? not supported\[^\n\]*" $text "" text
 
     # It would be nice to avoid passing anything to gcc that would cause it to
     # issue these messages (since ignoring them seems like a hack on our part),
