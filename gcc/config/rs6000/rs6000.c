@@ -73,6 +73,10 @@ int rs6000_pic_labelno;
 
 /* Whether a System V.4 varargs area was created.  */
 int rs6000_sysv_varargs_p;
+
+/* Temporary memory used to convert integer -> float */
+struct rtx_def *float_conv_temp;
+
 
 /* Print the options used in the assembly file.  */
 
@@ -481,22 +485,22 @@ easy_fp_constant (op, mode)
   return (mode == SFmode
 	  || (low != 0 && input_operand (low, word_mode)));
 }
-      
-/* Return 1 if the operand is a constant whose low-order 32 bits are
-   zero.  */
+
+/* Return 1 if the operand is an offsettable memory operand.  */
 
 int
-low_32_bit_operand (op, mode)
+offsettable_mem_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  rtx low;
-
-  if (GET_CODE (op) != CONST_DOUBLE && GET_CODE (op) != CONST_INT)
+  if (GET_CODE (op) != MEM)
     return 0;
 
-  low = operand_subword (op, 1, 0, mode);
-  return low != 0 && GET_CODE (low) == CONST_INT && INTVAL (low) == 0;
+  if (mode != GET_MODE (op))
+    return 0;
+
+  return offsettable_address_p (reload_completed | reload_in_progress,
+				mode, XEXP (op, 0));
 }
 
 /* Return 1 if the operand is either a floating-point register, a pseudo
@@ -2749,6 +2753,9 @@ output_epilog (file, size)
   rs6000_stack_t *info = rs6000_stack_info ();
   char *load_reg = (TARGET_64BIT) ? "\tld %s,%d(%s)" : "\t{l|lwz} %s,%d(%s)\n";
   rtx insn = get_last_insn ();
+
+  /* Forget about the float conversion temporary used.  */
+  float_conv_temp = NULL_RTX;
 
   /* If the last insn was a BARRIER, we don't have to write anything except
      the trace table.  */
