@@ -135,19 +135,9 @@ options</a></h1>
      </p>
 
  <dt><code>--enable-threads=LIB  </code>
- <dd><p>Select a threading library.  As of libstdc++-v3 snapshot 2.91,
-        the choices are:
-        'yes' for some kind of default (hmmmmm);
-        'decosf1', 'irix', 'mach', 'os2', 'posix'/'pthreads'
-        (same thing),
-        'solaris', 'win32', 'dce', or 'vxworks' to select the
-        corresponding interface;
-        and 'single', 'no', or 'none' for the null-case,
-        single-threaded library.
-     </p>
-     <p>All of this is currently undergoing a lot of changes.  As of
-        2.91, 'single' and 'posix' are the only implemented
-        models.  Default is single.
+ <dd><p>Select a threading library.  A full description is given in the
+        general <a href="http://gcc.gnu.org/install/configure.html">compiler
+        configuration instructions</a>.
      </p>
 
  <dt><code>--enable-version-specific-runtime-libs  </code>
@@ -203,6 +193,14 @@ options</a></h1>
         Disabling wide character specializations is useful for initial
         porting steps, but builds only a subset of what is required by
         ISO.  By default, this option is on.
+     </p>
+
+ <dt><code>--enable-concept-checks  </code>
+ <dd><p>This turns on additional compile-time checks for instantiated
+        library templates, in the form of specialized templates,
+        <a href="19_diagnostics/howto.html#3">described here</a>.  They
+        can help users discover when they break the rules of the STL, before
+        their programs run.
      </p>
 </dl>
 </p>
