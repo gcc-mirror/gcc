@@ -1,3 +1,9 @@
+2001-08-22  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.c-torture/compile/961203-1.x: Mark unsupported by stormy16.
+	* gcc.c-torture/compile/980506-1.x: Mark unsupported by stormy16.
+	* gcc.c-torture/compile/990617-1.x: Mark unsupported by stormy16.
+
 2001-08-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/compare5.c: New testcase.
