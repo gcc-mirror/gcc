@@ -76,8 +76,7 @@ lang_specific_driver (fn, in_argc, in_argv)
   args = (int *) xmalloc (argc * sizeof (int));
   bzero ((char *) args, argc * sizeof (int));
 
-  /* NOTE: We start at 0 now, not 1.  */
-  for (i = 0; i < argc; i++)
+  for (i = 1; i < argc; i++)
     {
       /* If the previous option took an argument, we swallow it here.  */
       if (quote)
@@ -93,13 +92,13 @@ lang_specific_driver (fn, in_argc, in_argv)
 
       if (argv[i][0] == '-')
 	{
-	  if (library != 0 && (strcmp (argv[i], "nostdlib") == 0
-			       || strcmp (argv[i], "nodefaultlibs") == 0))
+	  if (library != 0 && (strcmp (argv[i], "-nostdlib") == 0
+			       || strcmp (argv[i], "-nodefaultlibs") == 0))
 	    {
 	      library = 0;
 	    }
-	  else if (strcmp (argv[i], "lm") == 0
-		   || strcmp (argv[i], "lmath") == 0
+	  else if (strcmp (argv[i], "-lm") == 0
+		   || strcmp (argv[i], "-lmath") == 0
 #ifdef ALT_LIBM
 		   || strcmp (argv[i], ALT_LIBM) == 0
 #endif
@@ -108,29 +107,27 @@ lang_specific_driver (fn, in_argc, in_argv)
 	      args[i] |= MATHLIB;
 	      need_math = 0;
 	    }
-	  else if (strcmp (argv[i], "lc") == 0)
+	  else if (strcmp (argv[i], "-lc") == 0)
 	    args[i] |= WITHLIBC;
-	  else if (strcmp (argv[i], "v") == 0)
+	  else if (strcmp (argv[i], "-v") == 0)
 	    {
 	      saw_verbose_flag = 1;
-	      /* We now see if this is 1, since we are doing the switches
-		 differently.  */
-	      if (argc == 1)
+	      if (argc == 2)
 		{
 		  /* If they only gave us `-v', don't try to link
 		     in libg++.  */ 
 		  library = 0;
 		}
 	    }
-	  else if (strncmp (argv[i], "x", 2) == 0)
+	  else if (strncmp (argv[i], "-x", 2) == 0)
 	    saw_speclang = 1;
 	  else if (((argv[i][2] == '\0'
 		     && (char *)strchr ("bBVDUoeTuIYmLiA", argv[i][1]) != NULL)
-		    || strcmp (argv[i], "Tdata") == 0))
+		    || strcmp (argv[i], "-Tdata") == 0))
 	    quote = argv[i];
 	  else if (library != 0 && ((argv[i][2] == '\0'
 		     && (char *) strchr ("cSEM", argv[i][1]) != NULL)
-		    || strcmp (argv[i], "MM") == 0))
+		    || strcmp (argv[i], "-MM") == 0))
 	    {
 	      /* Don't specify libraries if we won't link, since that would
 		 cause a warning.  */

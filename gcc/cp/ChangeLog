@@ -1,3 +1,9 @@
+Fri Dec 20 12:17:12 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* g++spec.c (lang_specific_driver): Put missing hyphen in front of
+	arguments we compare against.  Start the count of I at 1, not 0,
+	since argv[0] is still the command.
+
 Mon Dec 16 22:43:31 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* cp-tree.h (ptr_reasonably_similar): Add decl.
