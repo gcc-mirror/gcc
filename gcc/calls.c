@@ -2405,16 +2405,17 @@ expand_call (tree exp, rtx target, int ignore)
 
   /* Compute number of named args.
      Normally, don't include the last named arg if anonymous args follow.
-     We do include the last named arg if STRICT_ARGUMENT_NAMING is nonzero.
+     We do include the last named arg if
+     targetm.calls.strict_argument_naming() returns nonzero.
      (If no anonymous args follow, the result of list_length is actually
      one too large.  This is harmless.)
 
      If targetm.calls.pretend_outgoing_varargs_named() returns
-     nonzero, and STRICT_ARGUMENT_NAMING is zero, this machine will be
-     able to place unnamed args that were passed in registers into the
-     stack.  So treat all args as named.  This allows the insns
-     emitting for a specific argument list to be independent of the
-     function declaration.
+     nonzero, and targetm.calls.strict_argument_naming() returns zero,
+     this machine will be able to place unnamed args that were passed
+     in registers into the stack.  So treat all args as named.  This
+     allows the insns emitting for a specific argument list to be
+     independent of the function declaration.
 
      If targetm.calls.pretend_outgoing_varargs_named() returns zero,
      we do not have any reliable way to pass unnamed args in

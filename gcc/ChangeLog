@@ -1,3 +1,9 @@
+2004-01-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* calls.c: Replace STRICT_ARGUMENT_NAMING in comments with
+	targetm.calls.strict_argument_naming().
+	* target.h: Likewise.
+
 2004-01-14  Richard Henderson  <rth@redhat.com>
 
 	PR debug/13231
