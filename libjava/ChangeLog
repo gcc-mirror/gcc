@@ -1,3 +1,19 @@
+2004-04-20  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/text/DecimalFormat.java (scanFix): Removed suffix check
+	for percent and permill check.
+
+2004-04-20  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/text/FieldPosition.java
+	(FieldPosition) Constructor now behaves as it should according
+	to the java documentation.
+
+2004-04-20  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/Properties.java: Use the word umlaut, not &auml; in api
+	documentation.
+
 2004-04-20  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/Buffer.java,

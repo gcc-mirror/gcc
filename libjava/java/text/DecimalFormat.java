@@ -90,7 +90,7 @@ public class DecimalFormat extends NumberFormat
 	    else
 	      buf.append(syms.getCurrencySymbol());
 	  }
-	else if (is_suffix && c == syms.getPercent())
+	else if (c == syms.getPercent())
 	  {
 	    if (multiplierSet)
 	      throw new IllegalArgumentException ("multiplier already set " +
@@ -99,7 +99,7 @@ public class DecimalFormat extends NumberFormat
 	    multiplier = 100;
 	    buf.append(c);
 	  }
-	else if (is_suffix && c == syms.getPerMill())
+	else if (c == syms.getPerMill())
 	  {
 	    if (multiplierSet)
 	      throw new IllegalArgumentException ("multiplier already set " +
