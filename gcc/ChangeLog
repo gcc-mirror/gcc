@@ -1,3 +1,7 @@
+2000-11-07  Neil Booth  <neilb@earthling.net>
+
+       * cp/lang-specs.h: Fix -save-temps specs under USE_CPPLIB.
+
 2000-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (combine_strings): Only warn about long strings for C.
