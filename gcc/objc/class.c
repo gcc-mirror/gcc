@@ -132,6 +132,12 @@ objc_get_class (const char *name)
   abort();
 }
 
+MetaClass*
+objc_get_meta_class(const char *name)
+{
+  return objc_get_class(name)->class_pointer;
+}
+
 /* This function provides a way to enumerate all the classes in the
    executable.  Pass *ENUM_STATE == NULL to start the enumeration.  The
    function will return 0 when there are no more classes.  
