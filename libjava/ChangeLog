@@ -1,3 +1,9 @@
+2004-11-18  Mattias Rehnberg  <Mattias.Rehnberg@home.se>
+
+	* java/net/Inet6Address.java (getHostAddress): Fix textual
+	representation of IPv6 address with embedded zeroes
+	to conform to RFC 2373.
+
 2004-11-18  Jeroen Frijters  <address@bogus.example.com>
 
 	* java/lang/StackTraceElement.java: Made final.

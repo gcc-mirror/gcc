@@ -207,18 +207,11 @@ public final class Inet6Address extends InetAddress
     for (int i = 0; i < 16; i += 2)
       {
 	int x = ((ipaddress[i] & 0xFF) << 8) | (ipaddress[i + 1] & 0xFF);
-	boolean empty = sbuf.length() == 0;
 
-	if (empty)
-	  {
-	    if (i > 0)
-	      sbuf.append("::");
-	  }
-	else
+	if (i > 0)
 	  sbuf.append(':');
 
-	if (x != 0 || i >= 14)
-	  sbuf.append(Integer.toHexString(x));
+	sbuf.append(Integer.toHexString(x));
       }
 
     return sbuf.toString();
