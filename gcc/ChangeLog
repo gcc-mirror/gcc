@@ -1,3 +1,7 @@
+Tue Nov 25 10:00:42 1997  Richard Henderson  (rth@cygnus.com)
+
+	* alpha.h (CONST_OK_FOR_LETTER): Fix 'L' handling.
+
 Tue Nov 25 10:00:42 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* crtstuff.c (do_global_dtors_aux): Handle multiple calls better.
