@@ -1,3 +1,8 @@
+1997-12-11  Paul Eggert  <eggert@twinsun.com>
+
+	* collect2.c (write_c_file_glob): Allocate initial frame object
+	in static storage and pass its address.
+
 Thu Dec 11 23:33:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (call_get_eh_context): Don't take a parm.
