@@ -164,6 +164,8 @@ enum optab_index
   OTI_exp10,
   /* Base-2 Exponential */
   OTI_exp2,
+  /* Exponential - 1*/
+  OTI_expm1,
   /* Radix-independent exponent */
   OTI_logb,
   OTI_ilogb,
@@ -281,6 +283,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define exp_optab (optab_table[OTI_exp])
 #define exp10_optab (optab_table[OTI_exp10])
 #define exp2_optab (optab_table[OTI_exp2])
+#define expm1_optab (optab_table[OTI_expm1])
 #define logb_optab (optab_table[OTI_logb])
 #define ilogb_optab (optab_table[OTI_ilogb])
 #define log_optab (optab_table[OTI_log])
