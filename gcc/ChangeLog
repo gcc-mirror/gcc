@@ -1,5 +1,18 @@
 2000-05-14  Geoffrey Keating  <geoffk@cygnus.com>
 
+	* config/rs6000/rs6000.c (logical_operand): Rewrite to take MODE 
+	into account.
+	(logical_u_operand): Delete.
+	(non_logical_cint_operand): Rewrite to take MODE into account.
+	(non_logical_u_cint_operand): Delete.
+	(boolean_operator): New function.
+	(print_operand): Add new %q operand.
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Add boolean_operator,
+	remove logical_u_operand and non_logical_u_cint_operand,
+	update logical_operand and non_logical_cint_operand.
+	* config/rs6000/rs6000.md: Rewrite the patterns for performing
+	logical operations to use %q.
+
 	* config/rs6000/rs6000.md (movsi): Don't modify RTL in-place.
 	(movdi): Make similar to movsi.
 	* config/rs6000/rs6000.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): There
