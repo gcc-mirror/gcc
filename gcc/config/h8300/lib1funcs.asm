@@ -589,7 +589,6 @@ setone:
 #else /* __H8300H__ */
 
 divmodsi4:
-	sub.l	S0P,S0P		; zero play area
 	mov.w	A1E,A1E		; denominator top word 0?
 	bne	DenHighNonZero
 
@@ -605,6 +604,7 @@ divmodsi4:
 	rts
 
 DenHighNonZero:
+	sub.l	S0P,S0P		; zero play area
 	mov.w	A0E,A2
 	mov.b	A2H,S0L
 	mov.b	A2L,A2H
