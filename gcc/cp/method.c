@@ -554,25 +554,31 @@ do_build_copy_constructor (fndecl)
       int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
 
-      /* Initialize all the base-classes with the parameter converted to
-         their type so that we get their copy constructor and not another
-         constructor that takes current_class_type.  */
+      /* Initialize all the base-classes with the parameter converted
+	 to their type so that we get their copy constructor and not
+	 another constructor that takes current_class_type.  We must
+	 deal with the binfo's directly as a direct base might be
+	 inaccessible due to ambiguity.  */
       for (t = CLASSTYPE_VBASECLASSES (current_class_type); t;
 	   t = TREE_CHAIN (t))
 	{
-	  tree type = BINFO_TYPE (TREE_VALUE (t));
-	  base_init_list = tree_cons (type, convert_lvalue (type, parm),
+	  tree binfo = TREE_VALUE (t);
+	  
+	  base_init_list = tree_cons (binfo,
+				      build_base_path (PLUS_EXPR, parm,
+						       binfo, 1),
 				      base_init_list);
 	}
 
       for (i = 0; i < n_bases; ++i)
 	{
-	  t = TREE_VEC_ELT (binfos, i);
-	  if (TREE_VIA_VIRTUAL (t))
+	  tree binfo = TREE_VEC_ELT (binfos, i);
+	  if (TREE_VIA_VIRTUAL (binfo))
 	    continue; 
 
-	  t = BINFO_TYPE (t);
-	  base_init_list = tree_cons (t, convert_lvalue (t, parm),
+	  base_init_list = tree_cons (binfo,
+				      build_base_path (PLUS_EXPR, parm,
+						       binfo, 1),
 				      base_init_list);
 	}
 
@@ -645,11 +651,18 @@ do_build_assign_ref (fndecl)
 
       for (i = 0; i < n_bases; ++i)
 	{
-	  tree basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, i));
-	  tree p = convert_lvalue (basetype, parm);
-	  p = build_member_call (basetype, ansi_assopname (NOP_EXPR),
-				 build_tree_list (NULL_TREE, p));
-	  finish_expr_stmt (p);
+	  /* We must deal with the binfo's directly as a direct base
+	     might be inaccessible due to ambiguity.  */
+	  tree binfo = TREE_VEC_ELT (binfos, i);
+	  tree src = build_base_path (PLUS_EXPR, parm, binfo, 1);
+	  tree dst = build_base_path (PLUS_EXPR, current_class_ref, binfo, 1);
+
+	  tree expr = build_method_call (dst,
+					 ansi_assopname (NOP_EXPR),
+					 build_tree_list (NULL_TREE, src),
+					 NULL,
+					 LOOKUP_NORMAL | LOOKUP_NONVIRTUAL);
+	  finish_expr_stmt (expr);
 	}
       for (; fields; fields = TREE_CHAIN (fields))
 	{

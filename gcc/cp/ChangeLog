@@ -1,3 +1,11 @@
+2001-12-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR g++/164
+	* init.c (sort_base_init): Allow binfos to be directly specified.
+	* method.c (do_build_copy_constructor): Explicitly convert to the
+	base instance.
+	(do_build_assign_ref): Likewise.
+
 2001-12-03  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* decl.c (xref_basetypes): Don't use C99 construct in tag_code
