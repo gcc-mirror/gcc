@@ -5719,10 +5719,20 @@ cse_insn (rtx insn, rtx libcall_insn)
 	     and hope for the best.  */
 	  if (n_sets == 1)
 	    {
-	      rtx new = emit_jump_insn_after (gen_jump (XEXP (src, 0)), insn);
+	      rtx new, note;
 
+	      new = emit_jump_insn_after (gen_jump (XEXP (src, 0)), insn);
 	      JUMP_LABEL (new) = XEXP (src, 0);
 	      LABEL_NUSES (XEXP (src, 0))++;
+
+	      /* Make sure to copy over REG_NON_LOCAL_GOTO.  */
+	      note = find_reg_note (insn, REG_NON_LOCAL_GOTO, 0);
+	      if (note)
+		{
+		  XEXP (note, 1) = NULL_RTX;
+		  REG_NOTES (new) = note;
+		}
+
 	      delete_insn (insn);
 	      insn = new;
 
