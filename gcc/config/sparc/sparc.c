@@ -127,7 +127,6 @@ char sparc_leaf_regs[] =
 static const char *frame_base_name;
 static int frame_base_offset;
 
-static rtx pic_setup_code	PARAMS ((void));
 static void sparc_init_modes	PARAMS ((void));
 static int save_regs		PARAMS ((FILE *, int, int, const char *,
 				       int, int, int));
@@ -2830,33 +2829,14 @@ legitimize_pic_address (orig, mode, reg)
   return orig;
 }
 
-/* Return the RTX for insns to set the PIC register.  */
-
-static rtx
-pic_setup_code ()
-{
-  rtx seq;
-
-  start_sequence ();
-  emit_insn (gen_get_pc (pic_offset_table_rtx, global_offset_table,
-			 get_pc_symbol));
-  seq = gen_sequence ();
-  end_sequence ();
-
-  return seq;
-}
-
-/* Emit special PIC prologues and epilogues.  */
+/* Emit special PIC prologues.  */
 
 void
-finalize_pic ()
+load_pic_register ()
 {
   /* Labels to get the PC in the prologue of this function.  */
   int orig_flag_pic = flag_pic;
   rtx insn;
-
-  if (current_function_uses_pic_offset_table == 0)
-    return;
 
   if (! flag_pic)
     abort ();
@@ -2882,16 +2862,8 @@ finalize_pic ()
   get_pc_symbol = gen_rtx_SYMBOL_REF (Pmode, get_pc_symbol_name);
   flag_pic = 0;
 
-  emit_insn_after (pic_setup_code (), get_insns ());
-
-  /* Insert the code in each nonlocal goto receiver.
-     If you make changes here or to the nonlocal_goto_receiver
-     pattern, make sure the unspec_volatile numbers still
-     match.  */
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
-	&& XINT (PATTERN (insn), 1) == 5)
-      emit_insn_after (pic_setup_code (), insn);
+  emit_insn (gen_get_pc (pic_offset_table_rtx, global_offset_table,
+			 get_pc_symbol));
 
   flag_pic = orig_flag_pic;
 

@@ -51,7 +51,7 @@ extern enum direction function_arg_padding PARAMS ((enum machine_mode, tree));
 #endif /* TREE_CODE */
 
 extern void ultrasparc_sched_init PARAMS ((FILE *, int));
-extern void finalize_pic PARAMS ((void));
+extern void load_pic_register PARAMS ((void));
 extern void order_regs_for_local_alloc PARAMS ((void));
 extern void output_function_epilogue PARAMS ((FILE *, int, int));
 extern void output_function_prologue PARAMS ((FILE *, int, int));

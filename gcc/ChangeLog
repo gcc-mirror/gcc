@@ -1,3 +1,17 @@
+2000-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (nonlocal_goto_receiver): Remove.
+	(prologue, exception_receiver, builtin_setjmp_receiver): New
+	patterns.
+	* config/sparc/sparc.h (FINALIZE_PIC): Remove.
+	* config/sparc/sparc-protos.h (finalize_pic): Remove.
+	(load_pic_register): New prototype.
+	* config/sparc/sparc.c (pic_setup_code): Remove.
+	(finalize_pic): Rename to...
+	(load_pic_register): ...this function.
+	Don't look for nonlocal_goto_receivers and emit pic setup code
+	directly.  Don't check current_function_uses_pic_offset_table.
+
 2000-10-13  Richard Earnshaw <rearnsha@arm.com>
 
 	* tree.h (struct obstack): Declare.
