@@ -1,3 +1,9 @@
+2005-03-14  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/20467
+	* symbol.c (check_conflict): A dummy argument can't be a statement
+	function.
+
 2005-03-13  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/16907
