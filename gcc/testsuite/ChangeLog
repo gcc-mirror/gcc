@@ -1,3 +1,7 @@
+2003-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/ia64-sync-3.c: New test.
+
 2003-03-26  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.dg/loop-2.c: Replace "inline" with "__inline__".
