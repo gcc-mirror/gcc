@@ -382,6 +382,14 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 	set message [concat $message $tmp]
     }
 
+    set expect_crash \
+      [process-option $prog "crash test - " "a crash" CRASH $text]
+    if {$expect_crash == "XCRASH"} then {
+       set expect_crash 0
+    } else {
+       set expect_crash 1
+    }
+
 #
 #  run the compiler and analyze the results
 #
@@ -395,9 +403,12 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
     set comp_output [prune_warnings $comp_output]
 
     if [string match "*Internal compiler error*" $comp_output] then {
+        if $expect_crash then {
+	    setup_xfail "*-*-*"
+	}
         fail "$name caused compiler crash"
-	remote_file build delete $output
-	return 1
+        remote_file build delete $output
+        return 1
     }
 
     #send_user "\nold_dejagnu.exp: comp_output1 = :$comp_output:\n\n"
