@@ -802,7 +802,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 	 memory location into scratch_reg.  */
       xoperands[0] = scratch_reg;
       xoperands[1] = XEXP (force_const_mem (mode, operand1), 0);
-      emit_move_sequence (xoperands, mode, 0);
+      emit_move_sequence (xoperands, Pmode, 0);
 
       /* Now load the destination register.  */
       emit_insn (gen_rtx (SET, mode, operand0,
