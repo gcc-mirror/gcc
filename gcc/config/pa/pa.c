@@ -403,7 +403,7 @@ int
 zdepi_cint_p (x)
      unsigned HOST_WIDE_INT x;
 {
-  unsigned lsb_mask, t;
+  unsigned HOST_WIDE_INT lsb_mask, t;
 
   /* This might not be obvious, but it's at least fast.
      This function is critcal; we don't have the time loops would take.  */
@@ -471,7 +471,7 @@ lhs_lshift_cint_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  unsigned x;
+  unsigned HOST_WIDE_INT x;
   if (GET_CODE (op) != CONST_INT)
     return 0;
   x = INTVAL (op) >> 4;
@@ -1037,63 +1037,38 @@ char *
 singlemove_string (operands)
      rtx *operands;
 {
+  HOST_WIDE_INT intval;
+
   if (GET_CODE (operands[0]) == MEM)
     return "stw %r1,%0";
-  else if (GET_CODE (operands[1]) == MEM)
+  if (GET_CODE (operands[1]) == MEM)
     return "ldw %1,%0";
-  else if (GET_CODE (operands[1]) == CONST_DOUBLE
-	   && GET_MODE (operands[1]) == SFmode)
+  if (GET_CODE (operands[1]) == CONST_DOUBLE)
     {
-      abort ();
-#if 0
-      /* Switched off since it is wrong, and should never really be used
-	 anyway.  If we want to switch this on again, we have to make it use
-	 the REAL_ARITHMETIC stuff.  */
-      int i;
-      union real_extract u;
-      union float_extract { float f; int i; } v;
+      long i;
+      REAL_VALUE_TYPE d;
 
-      bcopy (&CONST_DOUBLE_LOW (operands[1]), &u, sizeof u);
-      v.f = REAL_VALUE_TRUNCATE (SFmode, u.d);
-      i = v.i;
+      if (GET_MODE (operands[1]) != SFmode)
+	abort ();
+
+      /* Translate the CONST_DOUBLE to a CONST_INT with the same target
+	 bit pattern.  */
+      REAL_VALUE_FROM_CONST_DOUBLE (d, operands[1]);
+      REAL_VALUE_TO_TARGET_SINGLE (d, i);
 
       operands[1] = GEN_INT (i);
-
-      /* See if we can handle this constant in a single instruction.  */
-      if (cint_ok_for_move (INTVAL (operands[1])))
-	{
-	   HOST_WIDE_INT intval = INTVAL (operands[1]);
-
-	   if (intval == 0)
-	     return "copy 0,%0";
-	   else if (VAL_14_BITS_P (intval))
-	     return "ldi %1,%0";
-	   else if ((intval & 0x7ff) == 0)
-	     return "ldil L'%1,%0";
-	   else if (zdepi_cint_p (intval))
-	     return "zdepi %Z1,%0";
-	}
-      else
-	return "ldil L'%1,%0\n\tldo R'%1(%0),%0";
-#endif
+      /* Fall through to CONST_INT case.  */
     }
-
-  else if (GET_CODE (operands[1]) == CONST_INT)
+  if (GET_CODE (operands[1]) == CONST_INT)
     {
-      /* See if we can handle this in a single instruction.  */
-      if (cint_ok_for_move (INTVAL (operands[1])))
-	{
-	   int intval = INTVAL (operands[1]);
+      intval = INTVAL (operands[1]);
 
-	   if (intval == 0)
-	     return "copy 0,%0";
-	   else if (VAL_14_BITS_P (intval))
-	     return "ldi %1,%0";
-	   else if ((intval & 0x7ff) == 0)
-	     return "ldil L'%1,%0";
-	   else if (zdepi_cint_p (intval))
-	     return "zdepi %Z1,%0";
-	}
+      if (VAL_14_BITS_P (intval))
+	return "ldi %1,%0";
+      else if ((intval & 0x7ff) == 0)
+	return "ldil L'%1,%0";
+      else if (zdepi_cint_p (intval))
+	return "zdepi %Z1,%0";
       else
 	return "ldil L'%1,%0\n\tldo R'%1(%0),%0";
     }
@@ -1731,7 +1706,7 @@ output_and (operands)
 {
   if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) != 0)
     {
-      unsigned mask = INTVAL (operands[2]);
+      unsigned HOST_WIDE_INT mask = INTVAL (operands[2]);
       int ls0, ls1, ms0, p, len;
 
       for (ls0 = 0; ls0 < 32; ls0++)
@@ -1780,7 +1755,7 @@ char *
 output_ior (operands)
      rtx *operands;
 {
-  unsigned mask = INTVAL (operands[2]);
+  unsigned HOST_WIDE_INT mask = INTVAL (operands[2]);
   int bs0, bs1, p, len;
 
   if (INTVAL (operands[2]) == 0)
@@ -1794,7 +1769,7 @@ output_ior (operands)
     if ((mask & (1 << bs1)) == 0)
       break;
 
-  if (bs1 != 32 && ((unsigned) 1 << bs1) <= mask)
+  if (bs1 != 32 && ((unsigned HOST_WIDE_INT) 1 << bs1) <= mask)
     abort();
 
   p = 31 - bs0;
