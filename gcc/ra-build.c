@@ -101,7 +101,9 @@ static unsigned int parts_to_webs_1 PARAMS ((struct df *, struct web_link **,
 					     struct df_link *));
 static void parts_to_webs PARAMS ((struct df *));
 static void reset_conflicts PARAMS ((void));
+#if 0
 static void check_conflict_numbers PARAMS ((void));
+#endif
 static void conflicts_between_webs PARAMS ((struct df *));
 static void remember_web_was_spilled PARAMS ((struct web *));
 static void detect_spill_temps PARAMS ((void));
@@ -1069,8 +1071,10 @@ livethrough_conflicts_bb (bb)
     {
       if (INSN_P (insn))
 	{
-	  struct ra_insn_info info = insn_df[INSN_UID (insn)];
 	  unsigned int n;
+	  struct ra_insn_info info;
+
+	  info = insn_df[INSN_UID (insn)];
 	  for (n = 0; n < info.num_defs; n++)
 	    bitmap_set_bit (all_defs, DF_REF_ID (info.defs[n]));
 	  if (TEST_BIT (insns_with_deaths, INSN_UID (insn)))
@@ -1826,7 +1830,7 @@ parts_to_webs_1 (df, copy_webs, all_refs)
       if (! wp->uplink)
 	{
 	  /* If we have a web part root, create a new web.  */
-	  unsigned int newid = ~0U;
+	  unsigned int newid = ~(unsigned)0;
 	  unsigned int old_web = 0;
 
 	  /* In the first pass, there are no old webs, so unconditionally
@@ -1871,7 +1875,7 @@ parts_to_webs_1 (df, copy_webs, all_refs)
 		    }
 		}
 	      /* The id is zeroed in init_one_web().  */
-	      if (newid == ~0U)
+	      if (newid == ~(unsigned)0)
 		newid = web->id;
 	      if (old_web)
 		reinit_one_web (web, GET_CODE (reg) == SUBREG
@@ -2188,6 +2192,7 @@ reset_conflicts ()
 /* For each web check it's num_conflicts member against that
    number, as calculated from scratch from all neighbors.  */
 
+#if 0
 static void
 check_conflict_numbers ()
 {
@@ -2204,6 +2209,7 @@ check_conflict_numbers ()
 	abort ();
     }
 }
+#endif
 
 /* Convert the conflicts between web parts to conflicts between full webs.
 
@@ -2223,7 +2229,9 @@ conflicts_between_webs (df)
      struct df *df;
 {
   unsigned int i;
+#ifdef STACK_REGS
   struct dlist *d;
+#endif
   bitmap ignore_defs = BITMAP_XMALLOC ();
   unsigned int have_ignored;
   unsigned int *pass_cache = (unsigned int *) xcalloc (num_webs, sizeof (int));
