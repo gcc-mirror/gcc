@@ -1322,7 +1322,6 @@ decide_block_copy (struct sra_elt *elt)
       else if (host_integerp (size_tree, 1))
 	{
 	  unsigned HOST_WIDE_INT full_size, inst_size = 0;
-	  unsigned int inst_count;
 	  unsigned int max_size;
 
 	  /* If the sra-max-structure-size parameter is 0, then the
@@ -1346,7 +1345,7 @@ decide_block_copy (struct sra_elt *elt)
 	    use_block_copy = false;
 	  else
 	    {
-	      inst_count = sum_instantiated_sizes (elt, &inst_size);
+	      sum_instantiated_sizes (elt, &inst_size);
 
 	      if (inst_size * 100 >= full_size * SRA_FIELD_STRUCTURE_RATIO)
 		use_block_copy = false;
