@@ -1968,6 +1968,7 @@ integrate_decl_tree (let, level, map)
   for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
     {
       tree d;
+      tree newd;
 
       push_obstacks_nochange ();
       saveable_allocation ();
@@ -1986,13 +1987,19 @@ integrate_decl_tree (let, level, map)
 	}
       /* These args would always appear unused, if not for this.  */
       TREE_USED (d) = 1;
-      /* Prevent warning for shadowing with these.  */
-      DECL_ABSTRACT_ORIGIN (d) = t;
 
       if (DECL_LANG_SPECIFIC (d))
 	copy_lang_decl (d);
 
-      pushdecl (d);
+      newd = pushdecl (d);
+
+      /* If the decl we get back is the copy of 't' that we started with,
+	 then set the DECL_ABSTRACT_ORIGIN.  Otherwise, we must have a
+	 duplicate decl, and we got the older one back.  In that case, setting
+	 DECL_ABSTRACT_ORIGIN is not appropriate.  */
+      if (newd == d)
+	/* Prevent warning for shadowing with these.  */
+	DECL_ABSTRACT_ORIGIN (d) = t;
     }
 
   for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
