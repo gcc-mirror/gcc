@@ -1,3 +1,10 @@
+2000-07-19  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* gcse.c (INSN_CUID): If ENABLE_CHECKING, abort if the uid is
+	larger than the array of cuids.
+	(alloc_gcse_mem): Use uid_cuid rather than INSN_CUID when computing
+	cuids.
+
 2000-07-19  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixincl.c:  Convert to using a table of environment variables
