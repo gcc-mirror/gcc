@@ -1370,8 +1370,17 @@ dumpvers: dumpvers.c
 
 version.o: version.c
 obstack.o: obstack.c $(CONFIG_H)
-choose-temp.o: choose-temp.c $(CONFIG_H) gansidecl.h system.h
-mkstemp.o: mkstemp.c $(CONFIG_H) gansidecl.h system.h
+choose-temp.o: $(srcdir)/../libiberty/choose-temp.c $(CONFIG_H) gansidecl.h \
+	system.h
+	rm -f choose-temp.c
+	$(LN_S) $(srcdir)/../libiberty/choose-temp.c choose-temp.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) choose-temp.c
+
+mkstemp.o: $(srcdir)/../libiberty/mkstemp.c $(CONFIG_H) gansidecl.h system.h
+	rm -f mkstemp.c
+	$(LN_S) $(srcdir)/../libiberty/mkstemp.c mkstemp.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) mkstemp.c
+
 prefix.o: prefix.c $(CONFIG_H) system.h gansidecl.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	-DPREFIX=\"$(prefix)\" \

@@ -1,8 +1,9 @@
 Sat Sep  5 03:23:05 1998  Jeffrey A Law  (law@cygnus.com)
 
         * Makefile.in (pexecute.o): Use pexecute.c from libiberty.  Provide
-	explicit rules for building.  Similarly for alloca and vfprintf.
-        * pexecute.c, alloca.c, vfprintf.c: Delete.
+	explicit rules for building.  Similarly for alloca, vfprintf,
+	choose-temp and mkstemp.
+        * pexecute.c, alloca.c, vfprintf.c, choose-temp.c, mkstemp.c: Delete.
 
 Fri Sep  4 11:57:50 1998  Tom Tromey  <tromey@cygnus.com>
 
