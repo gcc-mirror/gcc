@@ -287,7 +287,7 @@ static void commit_one_edge_insertion	PROTO((edge));
 static void delete_unreachable_blocks	PROTO((void));
 static void delete_eh_regions		PROTO((void));
 static int can_delete_note_p		PROTO((rtx));
-static void delete_insn_chain		PROTO((rtx, rtx));
+static void flow_delete_insn_chain	PROTO((rtx, rtx));
 static int delete_block			PROTO((basic_block));
 static void expunge_block		PROTO((basic_block));
 static rtx flow_delete_insn		PROTO((rtx));
@@ -1641,7 +1641,7 @@ can_delete_note_p (note)
    that must be paired.  */
 
 static void
-delete_insn_chain (start, finish)
+flow_delete_insn_chain (start, finish)
      rtx start, finish;
 {
   /* Unchain the insns one by one.  It would be quicker to delete all
@@ -1733,7 +1733,7 @@ delete_block (b)
   end = next_nonnote_insn (b->end);
   if (!end || GET_CODE (end) != BARRIER)
     end = b->end;
-  delete_insn_chain (insn, end);
+  flow_delete_insn_chain (insn, end);
 
 no_delete_insns:
 
@@ -2022,7 +2022,7 @@ tidy_fallthru_edge (e, b, c)
 
   /* Selectively unlink the sequence.  */
   if (q != PREV_INSN (c->head))
-    delete_insn_chain (NEXT_INSN (q), PREV_INSN (c->head));
+    flow_delete_insn_chain (NEXT_INSN (q), PREV_INSN (c->head));
 
   e->flags |= EDGE_FALLTHRU;
 }
@@ -5774,14 +5774,13 @@ update_life_info (notes, first, last, orig_first_insn, orig_last_insn)
 	      }
 	    else
 	      {
-		note_dest = find_insn_with_note (note, first, last);
+		note_dest = find_insn_with_note (note, orig_first_insn,
+						 orig_last_insn);
 		if (note_dest != NULL_RTX)
 		  {
-		    note_dest = single_set (orig_dest);
+		    note_dest = single_set (note_dest);
 		    if (note_dest != NULL_RTX)
-		      {
-			note_dest = SET_DEST (orig_dest);
-		      }
+		      note_dest = SET_DEST (note_dest);
 		  }
 	      }
 	      /* This note applies to the dest of the original insn.  Find the
@@ -5789,7 +5788,7 @@ update_life_info (notes, first, last, orig_first_insn, orig_last_insn)
 		 there.  */
 
 	    if (! note_dest)
-	      abort ();
+	      break;
 
 	    for (insn = first; ; insn = NEXT_INSN (insn))
 	      {
@@ -5812,10 +5811,9 @@ update_life_info (notes, first, last, orig_first_insn, orig_last_insn)
 		    && HARD_REGNO_NREGS (REGNO (note_dest),
 					 GET_MODE (note_dest)) > 1)
 		  break;
-		/* It must be set somewhere; fail if we couldn't find
+
+		/* It must be set somewhere; bail if we couldn't find
 		   where it was set.  */
-		if (insn == last)
-		  abort ();
 	      }
 	  }
 	  break;
@@ -5828,6 +5826,7 @@ update_life_info (notes, first, last, orig_first_insn, orig_last_insn)
 	    break;
 
 	case REG_NO_CONFLICT:
+	case REG_NOALIAS:
 	  /* These notes apply to the dest of the original insn.  Find the last
 	     new insn that now has the same dest, and move the note there.  
 
@@ -6091,29 +6090,19 @@ replace_insns (first, last, first_new, notes)
   if (notes == NULL_RTX)
     {
       for (curr = first; curr != stop; curr = NEXT_INSN (curr))
-	{
+	if (GET_RTX_CLASS (GET_CODE (curr)) == 'i')
 	  notes = prepend_reg_notes (notes, REG_NOTES (curr));
-	}
     }
-  for (curr = first; curr; curr = next)
-    {
-      next = NEXT_INSN (curr);
-      delete_insn (curr);
-      if (curr == last)
-	break;
-    }
+
   last_new = emit_insn_after (first_new, prev);
   first_new = NEXT_INSN (prev);
+
   for (i = 0; i < n_basic_blocks; i++)
     {
       if (BLOCK_HEAD (i) == first)
-	{
-	  BLOCK_HEAD (i) = first_new;
-	}
+	BLOCK_HEAD (i) = first_new;
       if (BLOCK_END (i) == last)
-	{
-	  BLOCK_END (i) = last_new;
-	}
+	BLOCK_END (i) = last_new;
     }
   /* This is probably bogus. */
   if (first_new == last_new)
@@ -6125,6 +6114,7 @@ replace_insns (first, last, first_new, notes)
 	}
     }
   update_life_info (notes, first_new, last_new, first, last);
+  flow_delete_insn_chain (first, last);
 }
 
 /* Verify the CFG consistency.  This function check some CFG invariants and
