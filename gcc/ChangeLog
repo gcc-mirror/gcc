@@ -1,3 +1,11 @@
+2001-10-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* pe.c (arm_pe_unique_section): Const-ify.
+	* pe.h (TARGET_ASM_NAMED_SECTION): Undef before defining.
+	(switch_to_section): Add static prototype.
+
+	* output.h (drectve_section): Prototype.
+
 2001-10-19  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config.gcc (i[34567]86-*-gnu*, arc-*-elf*, d30v-*,

@@ -123,6 +123,7 @@ Boston, MA 02111-1307, USA.  */
 #define SUPPORTS_ONE_ONLY 1
 
 /* Switch into a generic section.  */
+#undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  default_pe_asm_named_section
 
 /* This outputs a lot of .req's to define alias for various registers.
@@ -234,7 +235,8 @@ drectve_section ()							\
    ASM_DECLARE_OBJECT_NAME and then switch back to the original section
    afterwards.  */
 #define SWITCH_TO_SECTION_FUNCTION				\
-void								\
+static void switch_to_section PARAMS ((enum in_section, tree)); \
+static void							\
 switch_to_section (section, decl)				\
      enum in_section section;					\
      tree decl;							\

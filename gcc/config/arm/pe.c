@@ -257,7 +257,7 @@ arm_pe_unique_section (decl, reloc)
   int len;
   const char * name;
   char * string;
-  char * prefix;
+  const char * prefix;
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   /* Strip off any encoding in fnname.  */
