@@ -2804,14 +2804,8 @@ assign_parms (fndecl, second_time)
 	    }
 	  DECL_RTL (parm) = stack_parm;
 	}
-      else if (! (
-#if 0 /* This change was turned off because it makes compilation bigger.  */
-		  !optimize
-#else /* It's not clear why the following was replaced.  */
-		  /* Obsoleted by preceding line. */
-		  (obey_regdecls && ! DECL_REGISTER (parm)
+      else if (! ((obey_regdecls && ! DECL_REGISTER (parm)
 		   && ! DECL_INLINE (fndecl))
-#endif
 		  /* layout_decl may set this.  */
 		  || TREE_ADDRESSABLE (parm)
 		  || TREE_SIDE_EFFECTS (parm)
@@ -2857,6 +2851,24 @@ assign_parms (fndecl, second_time)
 	    }
 	  else
 	    emit_move_insn (parmreg, validize_mem (entry_parm));
+
+	  /* If we were passed a pointer but the actual value
+	     can safely live in a register, put it in one.  */
+	  if (passed_pointer && nominal_mode != BLKmode
+	      && ! ((obey_regdecls && ! DECL_REGISTER (parm)
+		     && ! DECL_INLINE (fndecl))
+		    /* layout_decl may set this.  */
+		    || TREE_ADDRESSABLE (parm)
+		    || TREE_SIDE_EFFECTS (parm)
+		    /* If -ffloat-store specified, don't put explicit
+		       float variables into registers.  */
+		    || (flag_float_store
+			&& TREE_CODE (TREE_TYPE (parm)) == REAL_TYPE)))
+	    {
+	      parmreg = gen_reg_rtx (nominal_mode);
+	      emit_move_insn (parmreg, DECL_RTL (parm));
+	      DECL_RTL (parm) = parmreg;
+	    }
 
 	  /* In any case, record the parm's desired stack location
 	     in case we later discover it must live in the stack.  */
