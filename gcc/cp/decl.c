@@ -8771,7 +8771,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
        tentative.  error_mark_node is replaced later with the BLOCK.  */
     DECL_INITIAL (decl) = error_mark_node;
 
-  if (nothrow_libfn_p (decl))
+  if (TYPE_NOTHROW_P (type) || nothrow_libfn_p (decl))
     TREE_NOTHROW (decl) = 1;
 
   /* Caller will do the rest of this.  */

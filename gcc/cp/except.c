@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "eh-common.h"
 
-static void push_eh_cleanup PARAMS ((void));
+static void push_eh_cleanup PARAMS ((tree));
 static tree build_eh_type_type PARAMS ((tree));
 static tree call_eh_info PARAMS ((void));
 static void push_eh_info PARAMS ((void));
@@ -48,7 +48,8 @@ static tree get_eh_type PARAMS ((void));
 static tree get_eh_caught PARAMS ((void));
 static tree get_eh_handlers PARAMS ((void));
 #endif
-static tree do_pop_exception PARAMS ((void));
+static int dtor_nothrow PARAMS ((tree));
+static tree do_pop_exception PARAMS ((tree));
 static tree build_eh_type_type_ref PARAMS ((tree));
 static tree build_terminate_handler PARAMS ((void));
 static tree alloc_eh_object PARAMS ((tree));
@@ -356,8 +357,8 @@ build_eh_type_type_ref (type)
 {
   tree exp;
 
-  if (type == error_mark_node)
-    return error_mark_node;
+  if (type == NULL_TREE || type == error_mark_node)
+    return type;
 
   /* peel back references, so they match.  */
   if (TREE_CODE (type) == REFERENCE_TYPE)
@@ -376,6 +377,7 @@ build_eh_type_type_ref (type)
 /* This routine is called to mark all the symbols representing runtime
    type functions in the exception table as having been referenced.
    This will make sure code is emitted for them. Called from finish_file. */
+
 void 
 mark_all_runtime_matches () 
 {
@@ -401,13 +403,32 @@ mark_all_runtime_matches ()
   free (ptr);
 }
 
+/* Returns nonzero if cleaning up an exception of type TYPE (which can be
+   NULL_TREE for a ... handler) will not throw an exception.  */
+
+static int
+dtor_nothrow (type)
+     tree type;
+{
+  tree fn;
+
+  if (type == NULL_TREE)
+    return 0;
+
+  if (! TYPE_HAS_DESTRUCTOR (type))
+    return 1;
+
+  fn = lookup_member (type, dtor_identifier, 0, 0);
+  fn = TREE_VALUE (fn);
+  return TREE_NOTHROW (fn);
+}
+
 /* Build up a call to __cp_pop_exception, to destroy the exception object
-   for the current catch block.  HANDLER is either true or false, telling
-   the library whether or not it is being called from an exception handler;
-   if it is, it avoids destroying the object on rethrow.  */
+   for the current catch block if no others are currently using it.  */
 
 static tree
-do_pop_exception ()
+do_pop_exception (type)
+     tree type;
 {
   tree fn, cleanup;
   fn = get_identifier ("__cp_pop_exception");
@@ -427,15 +448,17 @@ do_pop_exception ()
   cleanup = lookup_name (get_identifier ("__exception_info"), 0);
   cleanup = build_function_call (fn, tree_cons
 				 (NULL_TREE, cleanup, NULL_TREE));
+  TREE_NOTHROW (cleanup) = dtor_nothrow (type);
   return cleanup;
 }
 
 /* This routine creates the cleanup for the current exception.  */
 
 static void
-push_eh_cleanup ()
+push_eh_cleanup (type)
+     tree type;
 {
-  finish_decl_cleanup (NULL_TREE, do_pop_exception ());
+  finish_decl_cleanup (NULL_TREE, do_pop_exception (type));
 }
 
 /* Build up a call to terminate on the function obstack, for use as an
@@ -587,7 +610,6 @@ expand_start_catch_block (decl)
 {
   tree compound_stmt_1;
   tree compound_stmt_2;
-  tree type;
 
   if (! doing_eh (1))
     return NULL_TREE;
@@ -603,15 +625,16 @@ expand_start_catch_block (decl)
   if (! decl || ! decl_is_java_type (TREE_TYPE (decl), 1))
     {
       /* The ordinary C++ case.  */
+      tree type;
 
       if (decl)
-	type = build_eh_type_type_ref (TREE_TYPE (decl));
+	type = TREE_TYPE (decl);
       else
 	type = NULL_TREE;
-      begin_catch_block (type);
+      begin_catch_block (build_eh_type_type_ref (type));
 
       push_eh_info ();
-      push_eh_cleanup ();
+      push_eh_cleanup (type);
     }
   else
     {

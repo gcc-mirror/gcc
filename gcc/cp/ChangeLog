@@ -1,3 +1,13 @@
+2000-03-13  Jason Merrill  <jason@casey.cygnus.com>
+
+	* decl.c (grokfndecl): Set TREE_NOTHROW if TYPE_NOTHROW_P.
+
+	* except.c (dtor_nothrow): New fn.
+	(do_pop_exception): Use it.  Take type parm.
+	(push_eh_cleanup): Take type parm.
+	(expand_start_catch_block): Pass it.
+	(build_eh_type_type_ref): Accept null type.
+
 2000-03-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (revert_static_member_fn): Change prototype.
