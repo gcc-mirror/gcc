@@ -1,3 +1,11 @@
+2002-03-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+            Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/22_locale/codecvt_members_unicode_wchar_t.cc
+	(test01): Protect the test with _GLIBCPP_USE_WCHAR_T;
+	fix i_lit_base e_lit_base arrays, making them independent
+	from the endianness of the platform; tweak UCS4 to UCS-4BE.
+
 2002-03-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/ostream.tcc (ostream::operator<<(_CharT)): Always
