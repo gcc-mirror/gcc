@@ -135,6 +135,3 @@ Boston, MA 02111-1307, USA.  */
    sparc_override_options will disable V8+ if not generating V9 code.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_V8PLUS + MASK_FPU + MASK_LONG_DOUBLE_128)
-
-/* The system headers under Solaris (at least 2.5.1 and up) are C++-aware.  */
-#define NO_IMPLICIT_EXTERN_C

@@ -1,3 +1,8 @@
+2003-09-02  Jason Merrill  <jason@redhat.com>
+
+	* config/sol2.h (NO_IMPLICIT_EXTERN_C): Define here.
+	* config/sparc/sol2.h: Not here.
+
 2003-09-02  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c (expand_expr): The code following both_summands performs
