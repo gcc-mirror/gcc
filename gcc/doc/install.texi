@@ -290,12 +290,11 @@ systems' @command{tar} programs will also work, only try GNU
 @item autoconf versions 2.13 and 2.59
 @itemx GNU m4 version 1.4 (or later)
 
-Necessary when modifying @file{configure.in}, @file{aclocal.m4}, etc.@:
+Necessary when modifying @file{configure.ac}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.  Most
-directories require autoconf 2.13 (exactly), but @file{libiberty},
-@file{fastjar}, @file{libstdc++-v3}, @file{libjava/libltdl}, @file{boehm-gc},
-@file{intl}, @file{libada}, @file{libffi} and @file{gcc} require autoconf
-2.59 (exactly).
+directories require autoconf 2.59 (exactly), but the toplevel, @file{libf2c},
+@file{libobjc}, @file{zlib}, and @file{libjava} (except for 
+@file{libjava/libltdl}) still require autoconf 2.13 (exactly).
 
 @item automake versions 1.4-gcj and 1.7.9
 

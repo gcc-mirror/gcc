@@ -1,3 +1,7 @@
+2004-03-14  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* doc/install.texi: Make autoconf 2.13 the exception, not the rule.
+
 2004-03-14  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* doc/install.texi: Reflect autoconf and automake version for
