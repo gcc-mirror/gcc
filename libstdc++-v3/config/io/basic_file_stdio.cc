@@ -111,16 +111,22 @@ namespace __gnu_internal
   xwrite(int __fd, const char* __s, std::streamsize __n)
   {
     std::streamsize __nleft = __n;
-    while (__nleft > 0)
+
+    for (;;)
       {
 	const std::streamsize __ret = write(__fd, __s, __nleft);
 	if (__ret == -1L && errno == EINTR)
 	  continue;
-	else if (__ret == -1L)
+	if (__ret == -1L)
 	  break;
+
 	__nleft -= __ret;
+	if (__nleft == 0)
+	  break;
+
 	__s += __ret;
       }
+
     return __n - __nleft;
   }
 
@@ -130,33 +136,40 @@ namespace __gnu_internal
   xwritev(int __fd, const char* __s1, std::streamsize __n1,
 	  const char* __s2, std::streamsize __n2)
   {
-    std::streamsize __ret;
+    std::streamsize __nleft = __n1 + __n2;
+    std::streamsize __n1_left = __n1;
 
     struct iovec __iov[2];
-    __iov[0].iov_base = const_cast<char*>(__s1);
-    __iov[0].iov_len = __n1;
     __iov[1].iov_base = const_cast<char*>(__s2);
     __iov[1].iov_len = __n2;
 
-    do
-      __ret = writev(__fd, __iov, 2);
-    while (__ret == -1L && errno == EINTR);
-
-    if (__ret == -1L)
-      __ret = 0;
-    else if (__ret < __n1 + __n2)
+    for (;;)
       {
-	if (__ret >= __n1)
+	__iov[0].iov_base = const_cast<char*>(__s1);
+	__iov[0].iov_len = __n1_left;
+
+	const std::streamsize __ret = writev(__fd, __iov, 2);
+	if (__ret == -1L && errno == EINTR)
+	  continue;
+	if (__ret == -1L)
+	  break;
+
+	__nleft -= __ret;
+	if (__nleft == 0)
+	  break;
+
+	const std::streamsize __off = __ret - __n1_left;
+	if (__off >= 0)
 	  {
-	    const std::streamsize __off = __ret - __n1;
-	    __ret += xwrite(__fd, __s2 + __off, __n2 - __off);
+	    __nleft -= xwrite(__fd, __s2 + __off, __n2 - __off);
+	    break;
 	  }
-	else
-	  __ret += xwritev(__fd, __s1 + __ret, __n1 - __ret,
-			   __s2, __n2);
+	
+	__s1 += __ret;
+	__n1_left -= __ret;
       }
 
-    return __ret;
+    return __n1 + __n2 - __nleft;
   }
 #endif
 } // namespace __gnu_internal
