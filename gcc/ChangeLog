@@ -1,3 +1,8 @@
+2001-10-02  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c (main): Set this_file_error if the appropriate
+	compiler for a language has not been installed.
+
 2001-09-17  Philip Blundell  <philb@gnu.org>
 
 	* cccp.c (print_help): Fix typos.
