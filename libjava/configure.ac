@@ -1014,6 +1014,11 @@ else
       PKG_CHECK_MODULES(LIBART, libart-2.0 >= 2.1)
       AC_SUBST(LIBART_CFLAGS)
       AC_SUBST(LIBART_LIBS)
+
+      # We require the XTest Extension to support java.awt.Robot.
+      AC_CHECK_LIB([Xtst], [XTestQueryExtension], [true],
+		   [AC_MSG_ERROR([libXtst not found, required by java.awt.Robot])],
+		   [${X_LIBS}])
    fi
 
    # On Solaris, and maybe other architectures, the Boehm collector

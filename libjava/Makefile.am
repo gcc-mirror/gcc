@@ -456,13 +456,13 @@ jni/classpath/primlib.h
 lib_gnu_java_awt_peer_gtk_la_CFLAGS = \
 	-Ijniinclude -I$(srcdir)/jni/classpath \
 	-I$(srcdir)/jni/gtk-peer $(PEDANTIC_CFLAGS) $(GTK_CFLAGS) $(LIBART_CFLAGS) \
-	$(CAIRO_CFLAGS) $(PANGOFT2_CFLAGS)
+	$(X_CFLAGS) $(CAIRO_CFLAGS) $(PANGOFT2_CFLAGS)
 lib_gnu_java_awt_peer_gtk_la_GCJFLAGS = $(AM_GCJFLAGS) -fjni
 lib_gnu_java_awt_peer_gtk_la_LIBADD = $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(CAIRO_LIBS) $(PANGOFT2_LIBS)
 lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = $(gtk_jni_headers) libgcj-@gcc_version@.jar libgcj.la libgcj.spec
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
-        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC) $(X_LIBS) -lXtst
 lib_gnu_java_awt_peer_gtk_la_LINK = $(LIBLINK)
 
 libjawt_la_SOURCES = jawt.c
