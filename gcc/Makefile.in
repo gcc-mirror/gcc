@@ -1398,7 +1398,7 @@ dbxout.o : dbxout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h regs.h \
    toplev.h
 sdbout.o : sdbout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h except.h \
    function.h expr.h output.h hard-reg-set.h regs.h defaults.h real.h \
-   insn-config.h obstack.h xcoffout.h c-pragma.h sdbout.h
+   insn-config.h obstack.h xcoffout.h c-pragma.h sdbout.h insn-codes.h
 dwarfout.o : dwarfout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf.h \
    flags.h insn-config.h reload.h output.h defaults.h toplev.h dwarfout.h
 dwarf2out.o : dwarf2out.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) dwarf2.h \
