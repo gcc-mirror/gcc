@@ -55,24 +55,37 @@ do {							\
 #undef ENDFILE_SPEC
 
 #undef STARTFILE_SPEC
-#ifdef CROSS_COMPILE
-#define STARTFILE_SPEC "%{!shared:crt0%O%s}"
-#else
-#define STARTFILE_SPEC "/usr/ccs/lib/hpux64/crt0%O"
+#define STARTFILE_SPEC "%{!shared:%{static:crt0%O%s}}"
+
+#ifndef CROSS_COMPILE
+#define STARTFILE_PREFIX_SPEC \
+  "%{mlp64: /usr/ccs/lib/hpux64/} \
+   %{!mlp64: /usr/ccs/lib/hpux32/}"
 #endif
 
 #undef LINK_SPEC
-#define LINK_SPEC "\
-  +Accept TypeMismatch \
-  %{shared:-b} \
-  %{!shared: \
-    -u main \
-    %{!static: \
-      %{rdynamic:-export-dynamic}} \
-      %{static:-static}}"
+#define LINK_SPEC \
+  "+Accept TypeMismatch \
+   %{shared:-b} \
+   %{!shared: \
+     -u main \
+     %{static:-noshared}}"
 
 #undef  LIB_SPEC
-#define LIB_SPEC "%{!shared:%{!symbolic:-lc}}"
+#define LIB_SPEC \
+  "%{!shared: \
+     %{p:%{!mlp64:-L/usr/lib/hpux32/libp} \
+	 %{mlp64:-L/usr/lib/hpux64/libp} -lprof} \
+     %{pg:%{!mlp64:-L/usr/lib/hpux32/libp} \
+	  %{mlp64:-L/usr/lib/hpux64/libp} -lgprof} \
+     %{!symbolic:-lc}}"
+
+#ifndef CROSS_COMPILE
+#undef LIBGCC_SPEC
+#define LIBGCC_SPEC \
+  "%{shared-libgcc:%{!mlp64:-lgcc_s_hpux32}%{mlp64:-lgcc_s_hpux64} -lgcc} \
+   %{!shared-libgcc:-lgcc}"
+#endif
 
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \

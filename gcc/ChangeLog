@@ -1,3 +1,11 @@
+2002-09-20  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/hpux.h (STARTFILE_SPEC): Modify.
+	(STARTFILE_PREFIX_SPEC): New.
+	(LINK_SPEC): Modify.
+	(LIB_SPEC): Modify.
+	(LIBGCC_SPEC): New.
+
 2002-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (legitimate_pic_address_disp_p): Allow
