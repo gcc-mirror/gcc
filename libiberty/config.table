@@ -3,7 +3,7 @@ case "${host}" in
                         frag=mh-aix ;;
   *-*-cxux7*)		frag=mh-cxux7 ;;
   *-*-freebsd2.1.*)	frag=mh-fbsd21 ;;
-  *-*-freebsd2.2.*)	frag=mh-fbsd21 ;;
+  *-*-freebsd2.2.[012])	frag=mh-fbsd21 ;;
   i[345]86-*-windows*)	frag=mh-windows ;;
 esac
 

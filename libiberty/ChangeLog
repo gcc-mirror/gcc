@@ -1,3 +1,7 @@
+Thu Oct  8 23:42:08 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Merge egcs & devo libiberty.
+
 1998-09-08  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* cplus-dem.c (demangle_arm_pt): Demangle anonymous namespaces.
@@ -20,6 +24,12 @@ Sat Sep  5 03:24:49 1998  Jeffrey A Law  (law@cygnus.com)
 	* getopt1.c, obstack.c: Similarly.
 	* Makefile.in: Build mkstemp.o
 
+Tue Sep  1 23:12:47 1998  Christopher Faylor <cgf@cygnus.com>
+
+	* configure.in: Include asprintf in list of functions known not
+	to be in newlib.
+	* configure: Rebuild.
+
 Wed Aug 19 14:05:01 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* cplus-dem.c (work_stuff): Add dllimported.
@@ -35,6 +45,35 @@ Mon Aug 17 10:40:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cplus-dem.c: Include config.h if it exists.  Also, only
 	prototype malloc/realloc if we can't get stdlib.h.
+
+Sat Aug 15 16:15:01 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* configure.in: Switch back to checking --with-target-subdir when
+	deciding whether to check for newlib, undoing part of July 15
+	change.
+	* configure: Rebuild.
+
+Thu Aug 13 16:47:38 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* cplus-dem.c (type_kind_t): New type.
+	(demangle_template_value_parm): Add type_kind_t parameter.  Rely
+	on this paramter, rather than demangling the type again.
+	(demangle_integral_value): Pass tk_integral.
+	(demangle_template_: Pass the value returned from do_type.
+	(do_type): Return a type_kind_t.  Pass tk_integral to
+	demangle_template_value_parm for array bounds.
+	(demangle_fund_type): Likewise.
+
+	Also incorporate from GCC version:
+
+	Tue Jul 21 13:28:19 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cplus-dem.c (do_type): Use demangle_template_value_parm for arrays.
+
+Thu Aug 13 16:47:38 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cplus-dem.c (demangle_nested_args): Make function definition
+	static to match the prototype.
 
 Tue Jul 28 11:33:09 1998  Mark Mitchell  <mark@markmitchell.com>
 
@@ -53,16 +92,32 @@ Tue Jul 28 11:33:09 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* cplus-dem.c (do_type): Use demangle_template_value_parm for arrays.
 
+Mon Jul 27 12:16:08 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* Makefile.in (ALLOCA): New variable.
+	($(TARGETLIB)): Add $(ALLOCA) to library.
+	(needed-list): Add $(ALLOCA).
+	($(ALLOCA)): Depend upon stamp-picdir.
+
 Sun Jul 19 08:23:17 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cplus-dem.c (demangle_nested_args): Make function definition
 	static to match the prototype.
 
-1998-07-13  Mark Mitchell  <mark@markmitchell.com>
+Wed Jul 15 00:12:58 1998  Ian Lance Taylor  <ian@cygnus.com>
 
-	* cplus-dem.c: Incorporate changes from GCC version not present in
-	the libiberty version:
-	(string): Move definition before work_stuff.
+	* configure.in: Check --with-cross-host rather than
+	--with-target-subdir when deciding whether build uses a cross
+	compiler, and when deciding where to install the library.
+	* configure: Rebuild.
+
+Sun Jul 12 01:27:05 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cplus-dem.c (demangle_nested_args): Return a value.
+
+Sat Jul 11 16:19:48 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* cplus-dem.c (string): Move definition before work_stuff.
 	(work_stuff): Add volatile_type, forgetting_types,
 	previous_argument, and nrepeats fields.
 	(SCOPE_STRING): New macro.
@@ -91,23 +146,46 @@ Sun Jul 19 08:23:17 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	(do_arg): Improve commment.  Handle 'n' repeat code.
 	(remember_type): Check forgetting_types.
 	(demangle_args): Deal with 'n' repeat codes.  Tidy.
+	
+Thu Jul  2 16:26:24 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* config.table: Only use mh-fbsd21 on *-*-freebsd2.2.[012], not on
+	*-*-freebsd2.2.*.  From Dmitrij Tejblum <tejblum@arc.hq.cti.ru>.
+
+Mon Jun 15 16:29:01 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* configure.in (setobjs): Correct quoting error in cygwin32 case.
+	From Chris Faylor <cgf@cygnus.com>.
+
+Mon Jun  1 13:47:55 1998  Jason Molenda  (crash@bugshack.cygnus.com)
+
+	* obstack.c: Update to latest FSF version.
+
+Mon Jun  1 14:17:36 1998  Mike Stump  <mrs@wrs.com>
+
+	* Makefile.in: Add a dependency on stamp-picdir for the
+	objects, so that we can do a parallel build.
 
 Sat May 30 22:17:13 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* configure.in (checkfuncs): Add missing "'".
 
-Fri May 22 11:06:41 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+Fri May 29 12:40:41 1998  Jason Molenda  (crash@bugshack.cygnus.com)
 
-	* Makefile.in (distclean): Don't remove alloca-conf.h
+	* obstack.c (_obstack_memory_used):  Elide this function if we're
+	on a system with GNU libc.
+
+Tue May 26 18:28:43 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* Makefile.in (distclean): Remove config.log.
+
+Tue May 26 15:01:52 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* Makefile.in (distclean): Don't remove alloca-conf.h.
 
 Fri May 22 01:38:07 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* cplus-dem.c (MBUF_SIZE): Bumped from 512 to 32767.
-
-Fri May 22 01:19:28 1998  Mike Stump  <mrs@wrs.com>
-
-	* Makefile.in: Add a dependency on stamp-picdir for the
-	objects, so that we can do a parallel build.
 
 1998-05-21  Mark Mitchell  <mmitchell@usa.net>
 

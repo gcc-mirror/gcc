@@ -64,6 +64,7 @@ MAKEOVERRIDES =
 TARGETLIB = libiberty.a
 
 LIBOBJS = @LIBOBJS@
+ALLOCA = @ALLOCA@
 
 # A configuration can specify extra .o files that should be included,
 # even if they are in libc. (Perhaps the libc version is buggy.)
@@ -127,10 +128,10 @@ REQUIRED_OFILES = argv.o choose-temp.o concat.o cplus-dem.o \
   floatformat.o mkstemp.o objalloc.o obstack.o pexecute.o spaces.o strerror.o \
   strsignal.o xatexit.o xexit.o xmalloc.o xstrdup.o xstrerror.o
 
-$(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
+$(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA)
 	rm -f $(TARGETLIB)
 	$(AR) $(AR_FLAGS) $(TARGETLIB) \
-	  $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
+	  $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA)
 	$(RANLIB) $(TARGETLIB)
 
 INSTALL_DEST = @INSTALL_DEST@
@@ -150,7 +151,7 @@ install_to_tooldir: all
 
 # needed-list is used by libstdc++.
 needed-list: Makefile
-	f="$(LIBOBJS) $(EXTRA_OFILES)"; \
+	f="$(LIBOBJS) $(ALLOCA) $(EXTRA_OFILES)"; \
 	case $$f in \
 	  *alloca.o*) f="$$f xmalloc.o xexit.o" ;; \
 	esac; \
@@ -196,6 +197,7 @@ clean: mostlyclean
 distclean: clean
 	@$(MULTICLEAN) multi-clean DO=distclean
 	rm -f *~ Makefile config.status xhost-mkfrag TAGS multilib.out
+	rm -f config.log
 maintainer-clean realclean: distclean
 
 force:
@@ -210,7 +212,7 @@ stamp-h: config.in config.status
 config.status: $(srcdir)/configure $(srcdir)/config.table
 	$(SHELL) ./config.status --recheck
 
-$(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS): stamp-picdir
+$(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA): stamp-picdir
 
 alloca.o: config.h
 atexit.o: config.h
