@@ -1,3 +1,7 @@
+2002-02-19  Graham Stott  <grahams@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_builtin): Fix typo.
+
 2002-02-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/linux64.h (LINK_OS_LINUX_SPEC): Look in /lib64.
