@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  AT&T we32000 version.
-   Copyright (C) 1991, 92, 93, 94, 95, 96, 98, 99, 2000
+   Copyright (C) 1991, 1992, 1993, 1994, 1995, 1996, 1998, 1999, 2000
    Free Software Foundation, Inc.
    Contributed by John Wehle (john@feith1.uucp)
 

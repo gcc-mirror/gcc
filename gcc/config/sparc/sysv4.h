@@ -1,5 +1,6 @@
 /* Target definitions for GNU compiler for Sparc running System V.4
-   Copyright (C) 1991, 92, 95, 96, 97, 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1995, 1996, 1997, 1998, 2000
+   Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.

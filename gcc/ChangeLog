@@ -1,3 +1,25 @@
+2000-12-06  Rodney Brown  <RodneyBrown@mynd.com>
+
+	* config/alpha/osf.h: Standarize copyright statement.
+	* config/arc/arc.h: Likewise.
+	* config/arm/elf.h config/arm/coff.h config/arm/aout.h: Likewise.
+	* config/arm/arm.c config/arm/arm.h: Likewise.
+	* config/elxsi/elxsi.h: Likewise.
+	* config/i386/sco.h: Likewise.
+	* config/m68k/crds.h config/m68k/hp320.h config/m68k/lynx.h: Likewise.
+	* config/m68k/m68kv4.h config/m68k/next21.h: Likewise.
+	* config/m68k/sun3.h: Likewise.
+	* config/m88k/dgux.h config/m88k/dguxbcs.h: Likewise.
+	* config/pdp11/2bsd.h config/pdp11/pdp11.h: Likewise.
+	* config/romp/romp.h: Likewise.
+	* config/rs6000/aix41.h: Likewise.
+	* config/sparc/sysv4.h: Likewise.
+	* config/we32k/we32k.c config/we32k/we32k.h: Likewise.
+	* fixinc/gnu-regex.c fixinc/gnu-regex.h: Likewise.
+	* cpplib.h cppexp.c cselib.h profile.c: Likewise.
+	* longlong.h: Likewise.
+	* libgcc2.c: Likewise.
+
 2000-12-06 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* machmode.def: Use correct definition for BITSIZE on targets where

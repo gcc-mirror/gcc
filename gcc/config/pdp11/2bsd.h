@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for a PDP with 2BSD
-   Copyright (C) 1995, 96, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.

@@ -1,5 +1,6 @@
 /* Target definitions for GNU compiler for mc680x0 running NeXTSTEP 2.1
-   Copyright (C) 1989, 90, 91, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

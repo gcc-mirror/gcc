@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler;
    Charles River Data Systems UNiverse/32.
-   Copyright (C) 1987, 93, 94, 96, 97, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by Gary E. Miller (Gary_Edmunds_Miller@cup.portal.com)
 
 This file is part of GNU CC.

@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Elxsi version.
-   Copyright (C) 1987, 88, 92, 95, 96, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1995, 1996, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com> in 1988.  This is the first
    64 bit port of GNU CC.
    Based upon the VAX port.

@@ -1,6 +1,7 @@
 /* Definitions for data structures and routines for the regular
    expression library, version 0.12.
-   Copyright (C) 1985,89,90,91,92,93,95,96,97,98 Free Software Foundation, Inc.
+   Copyright (C) 1985, 1989, 1990, 1991, 1992, 1993, 1995, 1996, 1997, 1998
+   Free Software Foundation, Inc.
 
    NOTE: The canonical source of this file is maintained with the 
    GNU C Library.  Bugs can be reported to bug-glibc@prep.ai.mit.edu.

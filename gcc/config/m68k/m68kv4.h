@@ -1,5 +1,6 @@
 /* Target definitions for GNU compiler for mc680x0 running System V.4
-   Copyright (C) 1991, 93, 94, 95, 96, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com) and
    Fred Fish (fnf@cygnus.com).
 
