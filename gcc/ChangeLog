@@ -1,3 +1,7 @@
+2000-12-19  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* config/d30v/d30v.h (EXIT_BODY): Update comment.
+
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* config.gcc (*-*-linux*): Don't define HAVE_ATEXIT or BSTRING.

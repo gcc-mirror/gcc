@@ -6043,8 +6043,8 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 
 /* Define this if your `exit' function needs to do something besides calling an
    external function `_cleanup' before terminating with `_exit'.  The
-   `EXIT_BODY' macro is only needed if netiher `HAVE_ATEXIT' nor
-   `INIT_SECTION_ASM_OP' are defined.  */
+   `EXIT_BODY' macro is only needed if `NEED_ATEXIT' is defined and
+   `ON_EXIT' is not defined.  */
 /* #define EXIT_BODY */
 
 /* Define this macro as a C expression that is nonzero if it is safe for the
