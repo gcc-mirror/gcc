@@ -21,10 +21,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.h,v 0.6 1991/11/24 01:20:02 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.h,v 0.7 1991/12/03 02:01:23 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/24 01:20:02 $
+  $Date: 1991/12/03 02:01:23 $
   $Log: hash.h,v $
+ * Revision 0.7  1991/12/03  02:01:23  dennisg
+ * fixed assert macro.
+ * added memory allocation adjustment macro for hash size allocation.
+ *
  * Revision 0.6  1991/11/24  01:20:02  dennisg
  * changed shorts back to ints.
  * the efficiency gained didn't out weight the grossness of the code.
@@ -98,18 +102,18 @@ typedef struct cache {
    */
   CacheNode_t  (* theNodeTable)[];                /* Pointer to an array of
                                                     hash nodes. */
-	/*
-	 * Variables used to track the size of the hash
-	 *	table so to determine when to resize it.
-	 */
+  /*
+   * Variables used to track the size of the hash
+   *  table so to determine when to resize it.
+   */
   u_int       sizeOfHash,                        /* Number of buckets 
                                                     allocated for the hash
                                                     table  (number of array
                                                     entries allocated for
                                                     "theNodeTable").  Must be
-																										a power of two. */
-							entriesInHash;											/* Current number of entries
-																										in ther hash table. */
+                                                    a power of two. */
+              entriesInHash;                      /* Current number of entries
+                                                    in ther hash table. */
   /*
    * Variables used to implement indexing
    *  through the hash table.
@@ -132,12 +136,12 @@ Cache_t hash_new (u_int sizeOfHash);
 void hash_delete (Cache_t theCache);
                                                 /* Add the key/value pair
                                                   to the hash table.  If the
-																									hash table reaches a 
-																									level of fullnes then
-																									it will be resized. 
-																									 
-																									assert() if the key is 
-																									already in the hash. */
+                                                  hash table reaches a 
+                                                  level of fullnes then
+                                                  it will be resized. 
+                                                   
+                                                  assert() if the key is 
+                                                  already in the hash. */
 void hash_add (Cache_t* theCache, void* aKey, void* aValue);
                                                 /* Remove the key/value pair
                                                   from the hash table.  

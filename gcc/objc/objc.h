@@ -19,10 +19,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.7 1991/11/29 22:00:10 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/include/RCS/ObjC.h,v 0.8 1991/12/01 01:29:29 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/29 22:00:10 $
+  $Date: 1991/12/01 01:29:29 $
   $Log: ObjC.h,v $
+ * Revision 0.8  1991/12/01  01:29:29  dennisg
+ * modified to remove changes previously made to
+ * implement posing.  posing just got easy.
+ *
  * Revision 0.7  1991/11/29  22:00:10  dennisg
  * modified to implement set functions.
  *
@@ -63,7 +67,7 @@ extern "C" {
 
 #include  <sys/types.h>
 #include  <hash.h>
-#include	<stdarg.h>
+#include  <stdarg.h>
 
 
 #define nil ( id )0                             /* id of Nil instance */
@@ -187,12 +191,12 @@ typedef struct objc_symtab {
  *  module structure of the executable. 
  */
 typedef struct objc_module {
-  u_long    	version;                        	/* Compiler revision. */
-  u_long    	size;                            	/* sizeof(Module). */
-  const char*	name;                           	/* Name of the file where the 
+  u_long      version;                          /* Compiler revision. */
+  u_long      size;                             /* sizeof(Module). */
+  const char* name;                             /* Name of the file where the 
                                                   module was generated.   The 
                                                   name includes the path. */
-  Symtab_t  	symtab;                          	/* Pointer to the Symtab of
+  Symtab_t    symtab;                           /* Pointer to the Symtab of
                                                   the module.  The Symtab
                                                   holds an array of pointers to 
                                                   the classes and categories 
@@ -213,13 +217,13 @@ typedef struct objc_ivar_list {
                                                   variable defined in the
                                                   class. */
   struct objc_ivar {
-    const char* ivar_name;                     	/* Name of the instance
+    const char* ivar_name;                      /* Name of the instance
                                                   variable as entered in the
                                                   class definition. */
-    const char* ivar_type;                     	/* Description of the Ivar's
+    const char* ivar_type;                      /* Description of the Ivar's
                                                   type.  Useful for 
                                                   debuggers. */
-    int   			ivar_offset;                  	/* Byte offset from the base 
+    int         ivar_offset;                    /* Byte offset from the base 
                                                   address of the instance 
                                                   structure to the variable. */
 
@@ -245,16 +249,16 @@ typedef struct objc_method_list {
   int             method_count;               /* Number of methods defined in 
                                                 this structure. */
   struct objc_method {
-    SEL   			method_name;                	/* This variable is the method's 
+    SEL         method_name;                  /* This variable is the method's 
                                                 name.  It is a char*. 
                                                   The unique integer passed to 
                                                 objc_msgSend() is a char* too.  
                                                 It is compared against 
                                                 method_name using strcmp(). */
-    const char*	method_types;                 /* Description of the method's
+    const char* method_types;                 /* Description of the method's
                                                 parameter list.  Useful for
                                                 debuggers. */
-    IMP   			method_imp;                   /* Address of the method in the 
+    IMP         method_imp;                   /* Address of the method in the 
                                                 executable. */
   } method_list[1];                           /* Variable length 
                                                 structure. */
@@ -275,25 +279,25 @@ typedef struct objc_method_list {
  *  messaging operations.  Therefore some members 
  *  change type.
  * The compiler generates "char* const" and places a string
- *	in the following member variables:  isa and super_class.
+ *  in the following member variables:  isa and super_class.
  */
 typedef struct objc_metaClass {     
-  struct objc_metaClass*	isa;                /* Pointer to Object meta
-																								class. */
-  struct objc_metaClass*	super_class;        /* Pointer to meta class's
-																								super class. NULL for 
-																								Object. */
-  const char*         		name;               /* Name of the meta class. */
-  long         					 	version;            /* Unknown. */
-  long          					info;               /* Bit mask.  See class masks 
+  struct objc_metaClass*  isa;                /* Pointer to Object meta
+                                                class. */
+  struct objc_metaClass*  super_class;        /* Pointer to meta class's
+                                                super class. NULL for 
+                                                Object. */
+  const char*             name;               /* Name of the meta class. */
+  long                    version;            /* Unknown. */
+  long                    info;               /* Bit mask.  See class masks 
                                                 defined above. */
-  long          					instance_size;      /* Always 0 except for Object.
+  long                    instance_size;      /* Always 0 except for Object.
                                                 Should be ignored. */
-  IvarList_t    					ivars;              /* Always NULL except for 
+  IvarList_t              ivars;              /* Always NULL except for 
                                                 Object.  Should be ignored. */
-  MethodList_t 					 	methods;            /* Linked List of factory methods 
+  MethodList_t            methods;            /* Linked List of factory methods 
                                                 for the class. */
-  Cache_t       					cache;              /* Used to cache factory methods
+  Cache_t                 cache;              /* Used to cache factory methods
                                                 defined for the class and its 
                                                 super classes.  Entries are
                                                 made to the cache as the
@@ -312,33 +316,33 @@ typedef struct objc_metaClass {
  *  messaging operations.  Therefore some members 
  *  change type.
  * The compiler generates "char* const" and places a string
- *	in the following member variables:  super_class.
+ *  in the following member variables:  super_class.
  */
 typedef struct objc_class {     
-  MetaClass_t   			isa;                    /* Pointer to the class's
+  MetaClass_t         isa;                    /* Pointer to the class's
                                                 meta class. */
-  struct objc_class*	super_class;            /* Pointer to the super 
-																								class. NULL for class 
-																								Object. */
+  struct objc_class*  super_class;            /* Pointer to the super 
+                                                class. NULL for class 
+                                                Object. */
   const char*         name;                   /* Name of the class. */
-  long          			version;                /* Unknown. */
-  long          			info;                   /* Bit mask.  See class masks 
+  long                version;                /* Unknown. */
+  long                info;                   /* Bit mask.  See class masks 
                                                 defined above. */
-  long          			instance_size;          /* Size in bytes of the class.  
+  long                instance_size;          /* Size in bytes of the class.  
                                                 The sum of the class definition 
                                                 and all super class 
                                                 definitions. */
-  IvarList_t    			ivars;                  /* Pointer to a structure that
+  IvarList_t          ivars;                  /* Pointer to a structure that
                                                 describes the instance 
                                                 variables in the class
                                                 definition.  NULL indicates
                                                 no instance variables.  Does
                                                 not include super class
                                                 variables. */
-  MethodList_t  			methods;                /* Linked list of instance
+  MethodList_t        methods;                /* Linked list of instance
                                                 methods defined for the 
                                                 class. */
-  Cache_t      				cache;                  /* Used to cache instance methods
+  Cache_t             cache;                  /* Used to cache instance methods
                                                 defined for the class and its 
                                                 super classes.  Entries are
                                                 made to the cache as the
@@ -375,39 +379,39 @@ typedef struct objc_category {
  *  structures and passes it to objc_msgSuper(). 
  */
 typedef struct objc_super {
-  id    	receiver;                           /* Id of the object sending
+  id      receiver;                           /* Id of the object sending
                                                 the message. */
   Class_t class;                              /* Object's super class. */
 } Super, *Super_t;
 
 /*
  * _alloc points to the function, called through 
- *	class_createInstance(), used to allocate memory for 
- *	new instances.
+ *  class_createInstance(), used to allocate memory for 
+ *  new instances.
  */
 extern id (*_alloc)(Class_t aClass, u_int indexedIvarBytes);
 /*
  * _dealloc points to the function, called 
- *	through object_dispose(), used to free instances.
+ *  through object_dispose(), used to free instances.
  */
 extern id (*_dealloc)(id aObject);
 /*
  * _realloc points to the function, called through 
- *	object_realloc(), used to reallocate memory for an object
+ *  object_realloc(), used to reallocate memory for an object
  */
 extern id (*_realloc)(id aObject, u_int numBytes);
 
 /*
  * _copy points to the function, called through 
- *	object_copy(), used to create an exact copy of an object.
+ *  object_copy(), used to create an exact copy of an object.
  */
-extern	id (*_copy)(id aObject, u_int indexedIvarBytes);
+extern  id (*_copy)(id aObject, u_int indexedIvarBytes);
 
 /*
  * _error points to the function that the run-time 
- *	system calls in response to an error.  By default, 
- *	it prints formatted error messages to the standard 
- *	error stream and calls abort() to produce a core file.
+ *  system calls in response to an error.  By default, 
+ *  it prints formatted error messages to the standard 
+ *  error stream and calls abort() to produce a core file.
  */
 extern void (*_error)(id aObject, const char* fmt, va_list ap);
 
