@@ -12860,8 +12860,8 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 
   if (! processing_template_decl)
     {
-      /* In a fcn definition, arg types must be complete.  */
-      require_complete_types_for_parms (DECL_ARGUMENTS (decl1));
+      /* In a function definition, arg types must be complete.  */
+      require_complete_types_for_parms (current_function_parms);
 
       if (TYPE_SIZE (complete_type (TREE_TYPE (fntype))) == NULL_TREE)
 	{
