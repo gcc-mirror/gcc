@@ -1540,7 +1540,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
         {
             _CharT* __buf = _Data_allocate(_S_rounded_up_size(1));
 
-            construct(__buf, __c);
+            _Construct(__buf, __c);
             __STL_TRY {
                 _M_tree_ptr = _S_new_RopeLeaf(__buf, 1, __a);
             }
@@ -1642,7 +1642,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
         }
 
         void copy(_CharT* __buffer) const {
-            destroy(__buffer, __buffer + size());
+            _Destroy(__buffer, __buffer + size());
             _S_flatten(_M_tree_ptr, __buffer);
         }
 
@@ -1656,7 +1656,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
             size_t __size = size();
             size_t __len = (__pos + __n > __size? __size - __pos : __n);
 
-            destroy(__buffer, __buffer + __len);
+            _Destroy(__buffer, __buffer + __len);
             _S_flatten(_M_tree_ptr, __pos, __len, __buffer);
             return __len;
         }

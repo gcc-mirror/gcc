@@ -317,7 +317,7 @@ inline void _Rope_RopeRep<_CharT,_Alloc>::_M_free_c_string()
     _CharT* __cstr = _M_c_string;
     if (0 != __cstr) {
 	size_t __size = _M_size + 1;
-	destroy(__cstr, __cstr + __size);
+	_Destroy(__cstr, __cstr + __size);
 	_Data_deallocate(__cstr, __size);
     }
 }
@@ -329,7 +329,7 @@ template <class _CharT, class _Alloc>
 						           allocator_type __a)
 {
     if (!_S_is_basic_char_type((_CharT*)0)) {
-	destroy(__s, __s + __n);
+	_Destroy(__s, __s + __n);
     }
 //  This has to be a static member, so this gets a bit messy
         __a.deallocate(
@@ -1453,7 +1453,7 @@ const _CharT* rope<_CharT,_Alloc>::c_str() const {
 	// It must have been added in the interim.  Hence it had to have been
 	// separately allocated.  Deallocate the old copy, since we just
 	// replaced it.
-	destroy(__old_c_string, __old_c_string + __s + 1);
+	_Destroy(__old_c_string, __old_c_string + __s + 1);
 	_Data_deallocate(__old_c_string, __s + 1);
       }
 #   endif
