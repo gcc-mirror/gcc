@@ -2406,9 +2406,8 @@ static void
 print_instantiation_full_context (diagnostic_context *context)
 {
   tree p = current_instantiation ();
-  int line = input_line;
-  const char *file = input_filename;
-
+  location_t location = input_location;
+  
   if (p)
     {
       if (current_function_decl != TINST_DECL (p)
@@ -2423,17 +2422,18 @@ print_instantiation_full_context (diagnostic_context *context)
 	    /* Avoid redundancy with the the "In function" line.  */;
 	  else
 	    output_verbatim (&context->buffer,
-                             "%s: In instantiation of `%s':\n", file,
+                             "%s: In instantiation of `%s':\n", location.file,
                              decl_as_string (TINST_DECL (p),
                                              TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
 
-	  line = TINST_LINE (p);
-	  file = TINST_FILE (p);
+	  location.line = TINST_LINE (p);
+	  location.file = TINST_FILE (p);
 	  p = TREE_CHAIN (p);
 	}
     }
 
-  print_instantiation_partial_context (context, p, file, line);
+  print_instantiation_partial_context (context, p,
+				       location.file, location.line);
 }
 
 /* Same as above but less verbose.  */

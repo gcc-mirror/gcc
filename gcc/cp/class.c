@@ -5251,8 +5251,7 @@ unreverse_member_declarations (tree t)
 tree
 finish_struct (tree t, tree attributes)
 {
-  const char *saved_filename = input_filename;
-  int saved_lineno = input_line;
+  location_t saved_loc = input_location;
 
   /* Now that we've got all the field declarations, reverse everything
      as necessary.  */
@@ -5262,8 +5261,7 @@ finish_struct (tree t, tree attributes)
 
   /* Nadger the current location so that diagnostics point to the start of
      the struct, not the end.  */
-  input_filename = DECL_SOURCE_FILE (TYPE_NAME (t));
-  input_line = DECL_SOURCE_LINE (TYPE_NAME (t));
+  input_location = DECL_SOURCE_LOCATION (TYPE_NAME (t));
 
   if (processing_template_decl)
     {
@@ -5273,8 +5271,7 @@ finish_struct (tree t, tree attributes)
   else
     finish_struct_1 (t);
 
-  input_filename = saved_filename;
-  input_line = saved_lineno;
+  input_location = saved_loc;
 
   TYPE_BEING_DEFINED (t) = 0;
 

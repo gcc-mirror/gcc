@@ -4598,8 +4598,7 @@ make_label_decl (tree id, int local_p)
 
   /* Say where one reference is to the label, for the sake of the
      error if it is not defined.  */
-  DECL_SOURCE_LINE (decl) = input_line;
-  DECL_SOURCE_FILE (decl) = input_filename;
+  DECL_SOURCE_LOCATION (decl) = input_location;
 
   /* Record the fact that this identifier is bound to this label.  */
   SET_IDENTIFIER_LABEL_VALUE (id, decl);
@@ -4625,8 +4624,7 @@ use_label (tree decl)
       new_ent->label_decl = decl;
       new_ent->names_in_scope = current_binding_level->names;
       new_ent->binding_level = current_binding_level;
-      new_ent->o_goto_locus.line = input_line;
-      new_ent->o_goto_locus.file = input_filename;
+      new_ent->o_goto_locus = input_location;
       new_ent->next = named_label_uses;
       named_label_uses = new_ent;
     }

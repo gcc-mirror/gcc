@@ -754,8 +754,7 @@ synthesize_method (tree fndecl)
      where the attempt to generate the function occurs, giving the
      user a hint as to why we are attempting to generate the
      function.  */
-  DECL_SOURCE_LINE (fndecl) = input_line;
-  DECL_SOURCE_FILE (fndecl) = input_filename;
+  DECL_SOURCE_LOCATION (fndecl) = input_location;
 
   interface_unknown = 1;
   start_function (NULL_TREE, fndecl, NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);

@@ -1804,8 +1804,7 @@ begin_class_definition (t)
     }
 
   /* Update the location of the decl.  */
-  DECL_SOURCE_FILE (TYPE_NAME (t)) = input_filename;
-  DECL_SOURCE_LINE (TYPE_NAME (t)) = input_line;
+  DECL_SOURCE_LOCATION (TYPE_NAME (t)) = input_location;
   
   if (TYPE_BEING_DEFINED (t))
     {
@@ -2303,8 +2302,7 @@ void
 expand_body (fn)
      tree fn;
 {
-  int saved_lineno;
-  const char *saved_input_filename;
+  location_t saved_loc;
   tree saved_function;
 
   /* When the parser calls us after finishing the body of a template
@@ -2384,13 +2382,11 @@ expand_body (fn)
     return;
 
   /* Save the current file name and line number.  When we expand the
-     body of the function, we'll set LINENO and INPUT_FILENAME so that
+     body of the function, we'll set INPUT_LOCATION so that
      error-mesages come out in the right places.  */
-  saved_lineno = input_line;
-  saved_input_filename = input_filename;
+  saved_loc = input_location;
   saved_function = current_function_decl;
-  input_line = DECL_SOURCE_LINE (fn);
-  input_filename = DECL_SOURCE_FILE (fn);
+  input_location = DECL_SOURCE_LOCATION (fn);
   current_function_decl = fn;
 
   timevar_push (TV_INTEGRATION);
@@ -2433,8 +2429,7 @@ expand_body (fn)
 
   /* And restore the current source position.  */
   current_function_decl = saved_function;
-  input_line = saved_lineno;
-  input_filename = saved_input_filename;
+  input_location = saved_loc;
   extract_interface_info ();
 
   timevar_pop (TV_EXPAND);
