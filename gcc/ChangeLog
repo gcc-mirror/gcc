@@ -1,3 +1,8 @@
+2001-08-13  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcse.c (hash_scan_set): Expressions that are set as part of
+	jump instructions are not available.
+
 2001-08-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (print_operand, s390_function_prologue,

@@ -2191,8 +2191,11 @@ hash_scan_set (pat, insn, set_p)
 	     this insn.  */
 	  int antic_p = oprs_anticipatable_p (src, insn) && single_set (insn);
 	  /* An expression is not available if its operands are
-	     subsequently modified, including this insn.  */
-	  int avail_p = oprs_available_p (src, insn);
+	     subsequently modified, including this insn.  It's also not
+	     available if this is a branch, because we can't insert
+	     a set after the branch.  */
+	  int avail_p = (oprs_available_p (src, insn)
+			 && ! JUMP_P (insn));
 
 	  insert_expr_in_table (src, GET_MODE (dest), insn, antic_p, avail_p);
 	}
