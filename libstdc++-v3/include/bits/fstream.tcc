@@ -86,7 +86,7 @@ namespace std
     basic_filebuf() 
     : __streambuf_type(), _M_file(NULL), _M_state_cur(__state_type()), 
     _M_state_beg(__state_type()), _M_last_overflowed(false)
-    { _M_fcvt = &use_facet<__codecvt_type>(this->getloc()); }
+    { }
 
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
@@ -94,7 +94,6 @@ namespace std
     : __streambuf_type(),  _M_file(NULL), _M_state_cur(__state_type()), 
     _M_state_beg(__state_type()), _M_last_overflowed(false)
     {
-      _M_fcvt = &use_facet<__codecvt_type>(this->getloc());
       _M_filebuf_init();
       _M_file->sys_open(__fd, __mode);
       if (this->is_open())
@@ -486,7 +485,9 @@ namespace std
       bool __testopen = this->is_open();
       bool __testin = __mode & ios_base::in && _M_mode & ios_base::in;
       bool __testout = __mode & ios_base::out && _M_mode & ios_base::out;
-      int __width = _M_fcvt->encoding();
+
+      // Should probably do has_facet checks here.
+      int __width = use_facet<__codecvt_type>(_M_buf_locale).encoding();
       if (__width < 0)
 	__width = 0;
       bool __testfail = __off != 0  && __width <= 0;
@@ -557,17 +558,13 @@ namespace std
     imbue(const locale& __loc)
     {
       bool __testbeg = gptr() == eback() && pptr() == pbase();
-      bool __teststate = _M_fcvt->encoding() == -1;
-      
-      _M_buf_locale_init = true;
-      if (__testbeg && !__teststate && _M_buf_locale != __loc)
+
+      if (__testbeg && _M_buf_locale != __loc)
 	{
-	  // XXX Will need to save these older values.
 	  _M_buf_locale = __loc;
-	  _M_fcvt = &use_facet<__codecvt_type>(_M_buf_locale);
-	  // XXX Necessary?
-	  _M_buf_fctype = &use_facet<__ctype_type>(_M_buf_locale); 
+	  _M_buf_locale_init = true;
 	}
+
       // NB this may require the reconversion of previously
       // converted chars. This in turn may cause the reconstruction
       // of the original file. YIKES!!

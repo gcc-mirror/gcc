@@ -116,9 +116,6 @@ namespace std
       // True iff locale is initialized.
       bool 			_M_buf_locale_init;
 
-      // Cached use_facet<ctype>, which is based on the current locale info.
-      const __ctype_type*	_M_buf_fctype;      
-
       // Necessary bits for putback buffer management. Only used in
       // the basic_filebuf class, as necessary for the standard
       // requirements. The only basic_streambuf member function that
@@ -276,7 +273,6 @@ namespace std
 	_M_buf_size = 0;
 	_M_buf_size_opt = 0;
 	_M_mode = ios_base::openmode(0);
-	_M_buf_fctype = NULL;
 	_M_buf_locale_init = false;
 
       }
@@ -387,7 +383,7 @@ namespace std
       _M_out_end(0), _M_mode(ios_base::openmode(0)), _M_buf_locale(locale()), 
       _M_buf_locale_init(false), _M_pback_size(1), _M_pback(NULL), 
       _M_pback_cur_save(NULL), _M_pback_end_save(NULL), _M_pback_init(false)
-      { _M_buf_fctype = &use_facet<__ctype_type>(this->getloc()); }
+      { }
 
       // Get area:
       char_type* 
@@ -441,10 +437,7 @@ namespace std
       { 
 	_M_buf_locale_init = true;
 	if (_M_buf_locale != __loc)
-	 {
-	   _M_buf_locale = __loc;
-	   _M_buf_fctype = &use_facet<__ctype_type>(_M_buf_locale); 
-	 }	
+	  _M_buf_locale = __loc;
       }
 
       // Buffer management and positioning:

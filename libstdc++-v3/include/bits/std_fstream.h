@@ -75,9 +75,6 @@ namespace std {
       __state_type		_M_state_cur;
       __state_type 		_M_state_beg; 	
 
-      // Cached value from use_facet.
-      const __codecvt_type*	_M_fcvt;       
-      
       // MT lock inherited from libio or other low-level io library.
       __c_lock          	_M_lock;
 
@@ -95,7 +92,6 @@ namespace std {
       ~basic_filebuf() 
       { 
 	this->close();
-	_M_fcvt = NULL;
 	_M_last_overflowed = false;
       }
 

@@ -52,35 +52,6 @@ namespace std
 # define  _GLIBCPP_NUM_FACETS 13
 #endif
 
-  // _Count_ones: compile-time computation of number of 1-bits in a value N
-  // This takes only 5 (or 6) instantiations, doing recursive descent
-  // in parallel -- ncm
-  template<unsigned int _Num, int _Shift = (sizeof(unsigned) * CHAR_BIT)/2,
-           unsigned int _Mask = (~0u >> _Shift) >
-    struct _Count_ones;
-
-  // It is preferable to use enumerators instead of integral static data
-  // members to avoid emission of superflous variables -- gdr.
-  template<unsigned int _Num, unsigned int _Mask>
-    struct _Count_ones<_Num, 0, _Mask> 
-    {
-      enum
-      {
-        _M_count = _Num
-      };
-    };
-
-  template<unsigned int _Num, int _Shift, unsigned int _Mask>
-    struct _Count_ones 
-    {
-      enum
-      {
-        _M_halfcount = _Count_ones<_Num, _Shift/2,
-                                   (_Mask^((~_Mask)>>(_Shift/2))) >::_M_count,
-        _M_count = (_M_halfcount&_Mask) + ((_M_halfcount>>_Shift)&_Mask)
-      };
-    };
-
   // 22.1.1 Locale
   template<typename _Tp, typename _Alloc> 
     class vector;
@@ -297,7 +268,7 @@ namespace std
     // Current global reference locale
     static _Impl* 	_S_global;  
 
-    static const size_t	_S_num_categories = _Count_ones<all>::_M_count;
+    static const size_t	_S_num_categories = 6;
     static const size_t _S_num_facets = _GLIBCPP_NUM_FACETS;
 
     explicit 

@@ -1,3 +1,23 @@
+2001-03-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/2020
+	* include/bits/std_streambuf.h: Remove cached locale facets.
+	(basic_streambuf::_M_buf_fctype): Remove.
+	(basic_streambuf::~basic_streambuf): Remove here.
+	(basic_streambuf::basic_streambuf): Same.
+	(basic_streambuf::imbue): Same.
+	* include/bits/fstream.tcc (filebuf::imbue): Remove _M_buf_fctype.
+	* include/bits/std_fstream.h (basic_filebuf::_M_fcvt): Remove.
+	(basic_filebuf::~basic_filebuf()): Remove here.
+	* include/bits/fstream.tcc (basic_filebuf::basic_filebuf): Same.
+	(basic_filebuf::imbue): Same.
+	* include/bits/localefwd.h (_Count_ones): Remove.
+	(locale::_S_num_categories): Just use 6, since this doesn't
+	actually change, ever.
+	* include/bits/locale_facets.tcc (has_facet): Simplify.
+	(use_facet): Same.
+	* testsuite/27_io/filebuf.cc (test06): Add tests.
+	
 2001-03-13  Steve Ellcey  <sje@cup.hp.com>
 
 	* libstdc++-v3/config/os/hpux/bits/ctype_base.h: Make ctype masks
