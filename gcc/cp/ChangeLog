@@ -1,3 +1,18 @@
+2003-08-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp/Make-lang.in (cp/call.o): Add dependency for target.h.
+
+	* cp/call.c (standard_conversion): Support opaque types.
+	Include target.h.
+	(strip_top_quals): Use cp_build_qualified_type instead of
+	TYPE_MAIN_VARIANT.
+
+	* cp/typeck.c (convert_for_assignment): Support opaque types.
+
+	* testsuite/g++.dg/other/opaque-1.C: New.
+
+	* testsuite/g++.dg/other/opaque-2.C: New.
+
 2003-08-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* decl.c (grokparms): Use cp_build_qualified_type instead
