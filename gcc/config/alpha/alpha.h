@@ -1285,6 +1285,10 @@ extern char *current_function_name;
    few bits. */
 #define SHIFT_COUNT_TRUNCATED 1
 
+/* Use atexit for static constructors/destructors, instead of defining
+   our own exit function.  */
+#define HAVE_ATEXIT
+
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion
    of a switch statement.  If the code is computed here,
