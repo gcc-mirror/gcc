@@ -1173,7 +1173,11 @@ package body Sem_Res is
                          or else Scope (Opnd_Type) /= System_Aux_Id
                          or else Pack /= Scope (System_Aux_Id))
             then
-               Error := True;
+               if not Is_Overloaded (Right_Opnd (Op_Node)) then
+                  Error := True;
+               else
+                  Error := not Operand_Type_In_Scope (Pack);
+               end if;
 
             elsif Pack = Standard_Standard
               and then not Operand_Type_In_Scope (Standard_Standard)

@@ -186,7 +186,23 @@ package body Rtsfind is
    procedure Entity_Not_Defined (Id : RE_Id) is
    begin
       if No_Run_Time_Mode then
-         RTE_Error_Msg ("|construct not allowed in no run time mode");
+
+         --  If the error occurs when compiling the body of a predefined
+         --  unit for inlining purposes, the body must be illegal in this
+         --  mode, and there is no point in continuing.
+
+         if Is_Predefined_File_Name
+           (Unit_File_Name (Get_Source_Unit (Sloc (Current_Error_Node))))
+         then
+            Error_Msg_N
+              ("construct not allowed in no run time mode!",
+                 Current_Error_Node);
+            raise Unrecoverable_Error;
+
+         else
+            RTE_Error_Msg ("|construct not allowed in no run time mode");
+         end if;
+
       elsif Configurable_Run_Time_Mode then
          RTE_Error_Msg ("|construct not allowed in this configuration>");
       else

@@ -6288,30 +6288,60 @@ package body Sem_Ch3 is
       C      : Node_Id;
       Id     : Node_Id;
 
+      procedure Set_Discriminant_Name (Id : Node_Id);
+      --  If the derived type has discriminants, they may rename discriminants
+      --  of the parent. When building the full view of the parent, we need to
+      --  recover the names of the original discriminants if the constraint is
+      --  given by named associations.
+
+      ---------------------------
+      -- Set_Discriminant_Name --
+      ---------------------------
+
+      procedure Set_Discriminant_Name (Id : Node_Id) is
+         Disc : Entity_Id;
+
+      begin
+         Set_Original_Discriminant (Id, Empty);
+
+         if Has_Discriminants (Typ) then
+            Disc := First_Discriminant (Typ);
+
+            while Present (Disc) loop
+               if Chars (Disc) = Chars (Id)
+                 and then Present (Corresponding_Discriminant (Disc))
+               then
+                  Set_Chars (Id, Chars (Corresponding_Discriminant (Disc)));
+               end if;
+               Next_Discriminant (Disc);
+            end loop;
+         end if;
+      end Set_Discriminant_Name;
+
+   --  Start of processing for Build_Underlying_Full_View
+
    begin
       if Nkind (N) = N_Full_Type_Declaration then
          Constr := Constraint (Subtype_Indication (Type_Definition (N)));
 
-      --  ??? ??? is this assert right, I assume so otherwise Constr
-      --  would not be defined below (this used to be an elsif)
-
-      else pragma Assert (Nkind (N) = N_Subtype_Declaration);
+      elsif Nkind (N) = N_Subtype_Declaration then
          Constr := New_Copy_Tree (Constraint (Subtype_Indication (N)));
+
+      elsif Nkind (N) = N_Component_Declaration then
+         Constr :=
+           New_Copy_Tree
+             (Constraint (Subtype_Indication (Component_Definition (N))));
+
+      else
+         raise Program_Error;
       end if;
 
-      --  If the constraint has discriminant associations, the discriminant
-      --  entity is already set, but it denotes a discriminant of the new
-      --  type, not the original parent, so it must be found anew.
-
       C := First (Constraints (Constr));
-
       while Present (C) loop
-
          if Nkind (C) = N_Discriminant_Association then
             Id := First (Selector_Names (C));
-
             while Present (Id) loop
-               Set_Original_Discriminant (Id, Empty);
+               Set_Discriminant_Name (Id);
                Next (Id);
             end loop;
          end if;
@@ -6319,19 +6349,22 @@ package body Sem_Ch3 is
          Next (C);
       end loop;
 
-      Indic := Make_Subtype_Declaration (Loc,
-         Defining_Identifier => Subt,
-         Subtype_Indication  =>
-           Make_Subtype_Indication (Loc,
-             Subtype_Mark => New_Reference_To (Par, Loc),
-             Constraint   => New_Copy_Tree (Constr)));
+      Indic :=
+        Make_Subtype_Declaration (Loc,
+          Defining_Identifier => Subt,
+          Subtype_Indication  =>
+            Make_Subtype_Indication (Loc,
+              Subtype_Mark => New_Reference_To (Par, Loc),
+              Constraint   => New_Copy_Tree (Constr)));
 
       --  If this is a component subtype for an outer itype, it is not
       --  a list member, so simply set the parent link for analysis: if
       --  the enclosing type does not need to be in a declarative list,
       --  neither do the components.
 
-      if Is_List_Member (N) then
+      if Is_List_Member (N)
+        and then Nkind (N) /= N_Component_Declaration
+      then
          Insert_Before (N, Indic);
       else
          Set_Parent (Indic, Parent (N));
@@ -6972,19 +7005,26 @@ package body Sem_Ch3 is
            (Full, Related_Nod, Full_Base, Discriminant_Constraint (Priv));
 
       --  If the full base is itself derived from private, build a congruent
-      --  subtype of its underlying type, for use by the back end. Do not
-      --  do this for a constrained record component, where the back-end has
-      --  the proper information and there is no place for the declaration.
+      --  subtype of its underlying type, for use by the back end. For a
+      --  constrained record component, the declaration cannot be placed on
+      --  the component list, but it must neverthess be built an analyzed, to
+      --  supply enough information for gigi to compute the size of component.
 
       elsif Ekind (Full_Base) in Private_Kind
         and then Is_Derived_Type (Full_Base)
         and then Has_Discriminants (Full_Base)
-        and then Nkind (Related_Nod) /= N_Component_Declaration
         and then (Ekind (Current_Scope) /= E_Record_Subtype)
-        and then
-          Nkind (Subtype_Indication (Parent (Priv))) = N_Subtype_Indication
       then
-         Build_Underlying_Full_View (Parent (Priv), Full, Etype (Full_Base));
+         if not Is_Itype (Priv)
+           and then
+             Nkind (Subtype_Indication (Parent (Priv))) = N_Subtype_Indication
+         then
+            Build_Underlying_Full_View
+              (Parent (Priv), Full, Etype (Full_Base));
+
+         elsif Nkind (Related_Nod) = N_Component_Declaration then
+            Build_Underlying_Full_View (Related_Nod, Full, Etype (Full_Base));
+         end if;
 
       elsif Is_Record_Type (Full_Base) then
 

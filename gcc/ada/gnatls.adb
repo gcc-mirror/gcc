@@ -513,9 +513,11 @@ procedure Gnatls is
 
          else
             Write_Str ("Unit => ");
-            Write_Eol; Write_Str ("     Name   => ");
+            Write_Eol;
+            Write_Str ("     Name   => ");
             Write_Str (Name_Buffer (1 .. Name_Len));
-            Write_Eol; Write_Str ("     Kind   => ");
+            Write_Eol;
+            Write_Str ("     Kind   => ");
 
             if Units.Table (U_Id).Unit_Kind = 'p' then
                Write_Str ("package ");
@@ -547,7 +549,8 @@ procedure Gnatls is
                U.Body_Needed_For_SAL or
                U.Elaborate_Body
             then
-               Write_Eol; Write_Str ("     Flags  =>");
+               Write_Eol;
+               Write_Str ("     Flags  =>");
 
                if U.Preelab then
                   Write_Str (" Preelaborable");
@@ -631,7 +634,8 @@ procedure Gnatls is
                --  Display these restrictions.
 
                if Restrictions.Set /= (All_Restrictions => False) then
-                  Write_Eol; Write_Str ("     Restrictions  =>");
+                  Write_Eol;
+                  Write_Str ("     pragma Restrictions  =>");
 
                   --  For boolean restrictions, just display the name of the
                   --  restriction; for valued restrictions, also display the
@@ -650,12 +654,45 @@ procedure Gnatls is
                      end if;
                   end loop;
                end if;
+
+               --  If the unit violates some Restrictions, display the list of
+               --  these restrictions.
+
+               if Restrictions.Violated /= (All_Restrictions => False) then
+                  Write_Eol;
+                  Write_Str ("     Restrictions violated =>");
+
+                  --  For boolean restrictions, just display the name of the
+                  --  restriction; for valued restrictions, also display the
+                  --  restriction value.
+
+                  for Restriction in All_Restrictions loop
+                     if Restrictions.Violated (Restriction) then
+                        Write_Eol;
+                        Write_Str ("       ");
+                        Write_Str (Image (Restriction));
+
+                        if Restriction in All_Parameter_Restrictions then
+                           if Restrictions.Count (Restriction) > 0 then
+                              Write_Str (" =>");
+
+                              if Restrictions.Unknown (Restriction) then
+                                 Write_Str (" at least");
+                              end if;
+
+                              Write_Str (Restrictions.Count (Restriction)'Img);
+                           end if;
+                        end if;
+                     end if;
+                  end loop;
+               end if;
             end;
          end if;
 
          if Print_Source then
             if Too_Long then
-               Write_Eol; Write_Str ("   ");
+               Write_Eol;
+               Write_Str ("   ");
             else
                Write_Str (Spaces (Unit_Start + Name_Len + 1 .. Unit_End));
             end if;
