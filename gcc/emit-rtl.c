@@ -2888,15 +2888,9 @@ get_last_insn_anywhere ()
 rtx
 get_first_nonnote_insn ()
 {
-  rtx insn = first_insn;
+  rtx insn;
 
-  while (insn)
-    {
-      insn = next_insn (insn);
-      if (insn == 0 || GET_CODE (insn) != NOTE)
-	break;
-    }
-
+  for (insn = first_insn; insn && NOTE_P (insn); insn = next_insn (insn));
   return insn;
 }
 
@@ -2906,15 +2900,9 @@ get_first_nonnote_insn ()
 rtx
 get_last_nonnote_insn ()
 {
-  rtx insn = last_insn;
+  rtx insn;
 
-  while (insn)
-    {
-      insn = previous_insn (insn);
-      if (insn == 0 || GET_CODE (insn) != NOTE)
-	break;
-    }
-
+  for (insn = last_insn; insn && NOTE_P (insn); insn = previous_insn (insn));
   return insn;
 }
 

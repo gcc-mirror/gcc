@@ -1,3 +1,10 @@
+2004-11-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR rtl-optimization/14838
+	* emit-rtl.c (get_first_nonnote_insn): Don't assume first insn is a
+	note.
+	(get_last_nonnote_insn): Don't assume last insn is a note.
+
 2004-10-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/install.texi (*-*-solaris2*): Update with info about kernel
