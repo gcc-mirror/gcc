@@ -1,3 +1,334 @@
+Sun Aug  2 01:10:15 1998  Paul Eggert  <eggert@twinsun.com>
+
+	Add Native Language Support.
+
+	* intl/, ABOUT-NLS, mkinstalldirs, po/Makefile.in.in: New
+	subdirectory and files.  They should be kept identical to the
+	corresponding items from the GNU gettext distribution.
+
+	* ABOUT-GCC-NLS, exgettext, intl.c, intl.h, po/POTFILES.in,
+	po/en_UK.po: New files.
+
+	* Makefile.in (AWK, datadir, localedir, top_builddir, USE_NLS,
+	INTLLIBS, POSUB, INTL_SUBDIRS, HOST_INTLLIBS,
+	PREPEND_DOTDOT_TO_RELATIVE_PATHS, SUBDIR_FLAGS_TO_PASS, GCC_OBJS,
+	COLLECT2_OBJS, CCCP_OBJS, CPPMAIN_OBJS, PROTO_OBJS, GCOV_OBJS,
+	INTL_DISTCLEAN, GEN_PROTOS_OBJS): New vars.
+	(LIBDEPS, LIBS): Add $(INTLLIBS).
+	(HOST_LIBDEPS, HOST_LIBS): Add $(HOST_INTLLIBS).
+	(LIBS): Add @LIBS@.
+	(ORDINARY_FLAGS_TO_PASS): New var, containing all the old values
+	from FLAGS_TO_PASS, except for CC.
+	(FLAGS_TO_PASS): Pass datadir, distdir, localedir.
+	(OBJS): Add intl.o.
+	(GEN): Add gencheck.
+	(STAGESTUFF): Add tree-check.h, gencheck$(exeext).
+	(native): Depend on intl.all.
+	(xgcc, collect2, cccp, cppmain, protoize, unprotoize, gcov): Link
+	intl.o.
+	(c-typeck.o, c-lex.o, collect2.o, gcc.o, toplev.o, integrate.o,
+	final.o, cccp.o, cppmain.o, cpplib.o, cpperror.o, s-proto,
+	gcov.o): Depend on intl.h.
+	(gencheck): Depend on $(HOST_LIBDEPS) instead of tree.h and
+	tree.def.
+	(gencheck.o, intl.o, $(top_builddir)/intl/libintl.a,
+	$(srcdir)/cp/parse.c, intl.all, intl.install, intl.uninstall,
+	intl.distdir, intl.mostlyclean, intl.clean, intl.distclean,
+	intl.maintainer-clean, intl.distdir-fixup, distdir-check): New
+	rules.
+	(gen-protos): Link cpperror.o, cppexp.o, cpphash.o, cpplib.o,
+	prefix.o, version.o; needed for `cpp_notice'.
+	(mostlyclean): Depend on intl.mostlyclean.
+	(clean): Depend on intl.clean.
+	(distclean): Depend on intl.disclean, unless the invoker defines
+	INTL_DISTCLEAN to be empty.  Remove intl/libintl.h and libintl.h
+	(created by configure).
+	(maintainer-clean): Make intl.maintainer-clean, but define
+	INTL_DISTCLEAN to be empty.
+	(install-normal): Depend on intl.install.
+	(uninstall): Depend on intl.uninstall.
+	(distdir-start): Make sure invoker configured with --enable-nls.
+	Use $(AWK), not awk.  Make tmp/intl and tmp/po directories.
+	(distdir-finish): Make distdir-check at the end.
+	(distdir): Depend on intl.distdir, intl.distdir-fixup.
+	(compare, compare3, gnucompare, gnucompare3, stage1-start,
+	stage2-start, stage3-start, stage4-start): Handle intl
+	subdirectory.
+
+	* acconfig.h (ENABLE_NLS, HAVE_CATGETS, HAVE_GETTEXT,
+	HAVE_LC_MESSAGES, HAVE_STPCPY, PACKAGE, VERSION): New macros.
+
+	* aclocal.m4 (AC_ISC_POSIX, AM_WITH_NLS, AM_GNU_GETTEXT,
+	AM_LC_MESSAGES, AM_PATH_PROG_WITH_TEST): New functions; taken from
+	gettext distribution.
+
+	* bi-arity.c, bi-opcode.c, bi-opname.c: Include config file first.
+
+	* c-common.c: Don't include <ctype.h>.
+	(tfaff): Now a function, not a string.  All users changed.
+	(check_format_info): Use is_C_digit, not isdigit.
+	Reword messages to ease localization.
+
+	* c-decl.c (redeclaration_error_message): Now returns int, not
+	message.
+	(poplevel, duplicate_decls, pushdecl): Revamp to pass explicit
+	strings to diagnostic generators.
+	(duplicate_decls, parmlist_tags_warning, finish_struct): Reword
+	messages to ease localization.
+
+	* c-iterate.c (prdecl): Reword messages so that they do not require
+	localization.
+
+	* c-lex.c: Include limits.h if available.
+	Include intl.h.
+	Include ctype.h only if MAP_CHARACTER is defined.
+	(UCHAR_MAX): Define if limits.h doesn't.
+	(C_alnum_array): New var.
+	(init_lex): Initialize it.
+	(yyerror): Localize msgid arg.
+	(yylex): Use is_C_alnum and is_C_digit, not isalnum and isdigit.
+
+	* c-lex.h (C_alnum_array): New decl.
+	(is_C_alnum, is_C_digit): New macros.
+
+	* c-typeck.c: Include intl.h.
+	(warning_init): Now takes just one arg.
+	(incomplete_type_error, build_unary_op, lvalue_or_else,
+	readonly_warning, build_modify_expr): Reword messages to ease
+	localization.
+	(build_unary_op, readonly_warning): Revamp to pass explicit
+	strings to diagnostic generators.
+	(build_modify_expr, warn_for_assignment, c_expand_return):
+	Translate strings passed to functions expecting translated
+	strings.
+	(get_spelling): Remove; it was a no-op.  All callers changed.
+	(error_init, pedwarn_init): Now takes just one arg.  All callers
+	and decls changed.  This makes it easier to localize.
+
+	* cccp.c: Include intl.h.
+	(char_name): Remove.
+	(check_macro_name): Now takes int 2nd arg, not char *.  All
+	callers changed.
+	(macarg): Now returns int, not char *.  All callers changed.
+	(notice, vnotice, pedwarn_strange_white_space): New functions.
+	(verror): Now extern; used by cexp.y.
+	(main): Set message locale, and defer memory allocation until
+	after.
+	(main, do_include, print_containing_files): Invoke `notice' to
+	localize notices.
+	(handle_directive): Invoke pedwarn_strange_white_space instead of
+	using char_name.
+	(do_include, check_macro_name): Reword messages to ease
+	localization.
+	(my_strerror): Reword message so that it does not require
+	localization.
+	(verror, vwarning, verror_with_line, vwarning_with_line,
+	pedwarn_with_file_and_line, fatal): Invoke vnotice to localize
+	msgid.
+	(initialize_char_syntax): No need to initialize char_name.
+
+	* cexp.y (yyerror): Now takes msgid format and args, not just string.
+	(verror): New decl.
+	(parse_number, yylex): Reword messages to ease
+	localization.
+	(verror): New test function.
+	(pedwarn, warning): Translate msgid arg.
+
+	* collect2.c: Include intl.h.
+	(my_strerror, main, collect_execute, scan_prog_file,
+	scan_libraries, read_file, end_file): Reword messages so that they
+	do not require localization.
+	(notice): Nwe function.
+	(fatal, error, main, collect_execute, maybe_unlink,
+	write_c_file_stat, locatelib, scan_libraries, scan_prog_file,
+	add_func_table): Use it to translate msgid strings.
+	(main): Set message locale, and defer memory allocation until
+	after.
+	(collect_wait): Reword messages to ease localization.
+	(bad_header): Revamp to pass explicit strings to diagnostic
+	generators.
+
+	* combine.c (dump_combine_stats, dump_combine_total_stats):
+	Use fnotice to translate diagnostic messages.
+
+	* config/1750a/1750a.c (memop_valid): Don't use `valid' as an
+	identifier; it runs afoul of SunOS 4.1.4 <locale.h>.
+
+	* config/arc/initfini.c (__do_global_dtors): Put backslash before
+	newline in strings, to pacify xgettext.
+
+	* config/dsp16xx/dsp16xx.c, config/dsp16xx/dsp16xx.h
+	(dsp16xx_invalid_register_for_compare): New function.
+	* config/dsp16xx/dsp16xx.md: Use it to report invalid registers.
+
+	* config/i370/i370.h: Include <ctype.h>.
+
+	* config/i386/i386.c: Include config.h first.
+
+	* config/m32r/initfini.c  (__do_global_dtors): Put backslash before
+	newline in strings, to pacify xgettext.
+	* config/m88k/dguxbcs.h (CPP_SPEC): Likewise.
+
+	* config/rs6000/rs6000.c: Include config.h first.
+	* config/rs6000/rs6000.c, config/rs6000/rs6000.h
+	(rs6000_fatal_bad_address): New function.
+	* config/rs6000/rs6000.md: Use it to report bad addresses.
+
+	* config/v850/v850.c: Include config.h first.
+
+	* configure.in: When generating config.h and mentioning a file
+	taken from the config directory, surround it with #ifdef IN_GCC,
+	so that programs compiled without IN_GCC -- notably in the intl
+	subdirectory -- don't need to be compiled with -Iconfig.
+	(PACKAGE, VERSION, ALL_LINGUAS): New vars.
+	(AC_ARG_ENABLE): Add --enable-nls.
+	(AM_GNU_GETTEXT): Add.  Override XGETTEXT so that we use exgettext
+	instead of xgettext to extract strings.
+	(all_outputs): Add intl/Makefile, po/Makefile.in.
+	Do not use the shell variable 'l'; it runs afoul of gettext's
+	aclocal mechanism!
+	If libintl.h is created, echo '#include "intl/libintl.h"'
+	>libintl.h so that we don't have to futz with our include paths.
+
+	* cp/Make-lang.in (g++.o): Depend on gansidecl.h, intl.h, Makefile;
+	do not depend on config.status.
+	(GXX_OBJS): New var.
+	(g++$(exeext)): Link intl.o.
+
+	* cp/Makefile.in (top_builddir, INTLLIBS): New vars.
+	(LIBS): Add $(INTLLIBS).
+
+	* cppalloc.c (memory_full): Use `cpp_notice' to print diagnostic.
+
+	* cpperror.c: Include intl.h.
+	(cpp_print_containing_files): Use cpp_notice to translate messages.
+	(cpp_message): is_error is -1 for notices.  Translate "warning:".
+	(cpp_fatal): Translate msgid arg.
+
+	* cppexp.c (cpp_lex): Revamp to pass explicit strings to
+	diagnostic generators.
+	(cpp_parse_expr): Use cpp_error, not fprintf, to report
+	unimplemented operators.
+
+	* cpplib.c: Include intl.h.
+	(check_macro_name): Now takes int 2nd arg, not char *.  All
+	callers changed.
+	(check_macro_name, do_define): Reword messages to ease
+	localization.
+	(do_define): Revamp to pass explicit strings to diagnostic
+	generators.
+	(do_define, cpp_start_read, cpp_handle_options): Use cpp_notice to
+	translate messages.
+	(cpp_error, cpp_warning, cpp_warning_with_line,
+	cpp_pedwarn_with_file_and_line): Translate msgid arg.
+	(cpp_notice): New function.
+	(my_strerror): Reword message so that it does not require
+	localization.
+
+	* cpplib.h (cpp_notice): New decl.
+
+	* cppmain.c: Include intl.h.
+	(main): Set message locale.
+
+	* cse.c (cse_main): Use fnotice to print diagnostic.
+
+	* final.c: Include intl.h; do not include ctype.h.
+	(output_operand_lossage): Translate msgid arg.
+
+	* fold-const.c (optimize_bit_field_compare, fold_truthop): Reword
+	messages to ease localization.
+
+	* gcc.c: Include intl.h.
+	(my_strerror, snapshot_warning): Reword messages so that they do
+	not require localization.
+	(init_spec, set_spec, read_specs, execute, do_spec_1, main,
+	snapshot_warning): Invoke `notice' to localize notices.
+	(struct switchstr): Don't use `valid' as an identifier; it runs
+	afoul of SunOS 4.1.4 <locale.h>.  All uses changed.
+	(do_spec_1): Treat %e string as msgid format, which needs
+	translation.
+	(main): Set message locale.
+	(pfatal_with_name): Invoke perror_with_name, not fatal, so that we
+	don't have to translate "%s: %s".
+	(perror_with_name): Invoke printf, not error, so that we don't
+	have to translate "%s: %s".
+	(pfatal_pexecute): Invoke pfatal_with_name, not fatal, so that we
+	don't have to translate "%s: %s".
+	(fatal, error): Translate msgid arg.
+	(notice): New function.
+
+	* gcov.c: Include intl.h; include stdarg.h if __STDC__ is defined.
+	(main): Set message locale.
+	(fnotice): New function.
+	(xmalloc, fancy_abort, print_usage, open_files, read_files,
+	function_summary, output_data): Use it to to print diagnostics.
+
+	* install.texi: Explain new configure options --enable-nls,
+	--with-included-gettext, --with-catgets.
+
+	* integrate.c: Include intl.h.
+	(function_cannot_inline_p): Mark msgids with N_.
+
+	* invoke.texi: Describe environment variables affecting locale.
+
+	* pexecute.c: Include libintl.h if ENABLE_NLS, otherwise define
+	gettext to be a noop.
+	(_, N_): New macros.
+	(install_error_msg): Wrap inside N_.
+	(pexecute): Translate diagnostics.
+
+	* protoize.c: Include intl.h.
+	(__attribute__): New macro.
+	(notice): New function.
+	(my_strerror): Reword message so that it does not require
+	localization.
+	(xmalloc, xrealloc, fancy_abort, safe_write, usage,
+	file_normally_convertible, abspath, find_file, aux_info_corrupted,
+	save_def_or_dec, gen_aux_info_file, process_aux_info_file,
+	rename_c_file, find_extern_def, find_static_definition,
+	declare_source_confusing, edit_fn_declaration, edit_formals_lists,
+	add_local_decl, add_global_decls, edit_fn_definition,
+	scan_for_missed_items, edit_file, main): Use `notice' to print
+	diagnostic.
+	(main): Set message locale.
+
+	* real.c (NMSGS, ermsg): Remove.
+	(mtherr): Revamp to pass explicit strings to diagnostic
+	generators.  Abort on invalid operations.
+
+	* regclass.c (fix_register): Reword messages to ease localization.
+
+	* toplev.c: Include intl.h; do not include ctype.h.
+	(v_really_sorry, really_sorry): Remove unused functions.
+	(count_error, fatal_io_error): Translate strings.
+	(default_print_error_function, report_error_function, main,
+	print_version): Reword messages to ease localization.  Use
+	`notice' to translate diagnostics.
+	(vnotice, notice, fnotice): New functions.
+	(vmessage): Remove.
+	(v_message_with_file_and_line, vsorry): Translate msgid with
+	vnotice.
+	(v_message_with_file_and_line, v_message_with_decl): Use
+	report_file_and_line.  Now takes int warning flag, not prefix;
+	this is easier to localize.  All callers changed.
+	(v_message_with_decl): Abort if first format spec is neither %%
+	nor %s.  Translate "((anonymous))".
+	(main): Set message locale.
+	(set_target_switch): Don't use `valid' as an identifier; it runs
+	afoul of SunOS 4.1.4 <locale.h>.
+	(__VERSION__): Reword message so that it does not require
+	localization.
+	(print_switch_values): Translate "options passed" and "options
+	enabled".
+
+	* tree.c (valid_machine_attribute): Don't use `valid' as an
+	identifier; it runs afoul of SunOS 4.1.4 <locale.h>.
+
+	* xcoffout.c (xcoff_output_standard_types): Use `error' to
+	output diagnostic, so that it gets translated.
+
+	* patch-apollo-includes: Remove; this is part of README.APOLLO.
+
 Mon Jul 27 18:28:58 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload.c (find_reloads): If no_input_reloads, abort if 
