@@ -1,5 +1,8 @@
 2003-06-20  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10888
+	* g++.dg/warn/Winline-2.C: New test. 
+
 	PR c++/10845
 	* g++.dg/template/member3.C: New test.
 
