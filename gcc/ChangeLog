@@ -1,3 +1,8 @@
+2003-03-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/passes.texi (Passes): Properly document that we do not
+	perform jump2 any longer; remove command-line option -dJ.
+
 2003-03-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/8746
