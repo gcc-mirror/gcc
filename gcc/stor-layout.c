@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "tree.h"
 #include "flags.h"
+#include "except.h"
 #include "function.h"
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))

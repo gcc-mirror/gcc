@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "objc-act.h"
 #include "input.h"
+#include "except.h"
 #include "function.h"
 
 
