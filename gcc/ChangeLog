@@ -1,3 +1,8 @@
+2003-03-22  Richard Henderson <rth@redhat.com>
+
+	* cfgcleanup.c (insns_match_p): Do not do EQUIV substitution
+	after reload.
+
 2003-03-22  DJ Delorie  <dj at redhat dot com>,
 	Bruce Korb  <bkorb at gnu dot org>
 
