@@ -3665,8 +3665,16 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 			     && ! insn_sets_resource_p (new_thread, &needed, 1)
 			     && ! insn_references_resource_p (new_thread,
 							      &set, 1)
-			     && redundant_insn (new_thread, insn, delay_list))
-			new_thread = next_active_insn (new_thread);
+			     && (prior_insn
+				 = redundant_insn (new_thread, insn,
+						   delay_list)))
+			{
+			  /* We know we do not own the thread, so no need
+			     to call update_block and delete_insn.  */
+			  fix_reg_dead_note (prior_insn, insn);
+			  update_reg_unused_notes (prior_insn, new_thread);
+			  new_thread = next_active_insn (new_thread);
+			}
 		      break;
 		    }
 

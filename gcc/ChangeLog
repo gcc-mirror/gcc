@@ -1,3 +1,9 @@
+Tue May  5 01:15:06 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reorg.c (fill_slots_from_thread): Update REG_DEAD/REG_UNUSED notes
+	for any insns skipped at the start of a block because they were
+	redundant.
+
 Mon May  4 20:23:51 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* alpha.h (DBX_CONTIN_LENGTH): Decrease to 3000.
