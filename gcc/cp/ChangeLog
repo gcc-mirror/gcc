@@ -1,3 +1,8 @@
+Tue Mar  3 01:38:17 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c, class.c, pt.c, cp-tree.h: Remove nsubsts parm from
+	*type_unification* and unify.
+
 Mon Mar  2 12:11:06 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* parse.y (explicit_template_type): Remove TEMPLATE keyword.
