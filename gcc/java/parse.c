@@ -2388,7 +2388,9 @@ int yydebug;			/*  nonzero means print parse trace	*/
 
 /* Prevent warning if -Wstrict-prototypes.  */
 #ifdef __GNUC__
+#ifndef YYPARSE_PARAM
 int yyparse (void);
+#endif
 #endif
 
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
@@ -10184,7 +10186,8 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
   tree list = NULL_TREE, all_list = NULL_TREE;
 
   /* Search interfaces */
-  if (CLASS_INTERFACE (TYPE_NAME (class)))
+  if (CLASS_INTERFACE (TYPE_NAME (class)) 
+      || CLASS_ABSTRACT (TYPE_NAME (class)))
     {
       static tree searched_interfaces = NULL_TREE;
       static int search_not_done = 0;
