@@ -94,18 +94,14 @@ struct lang_type GTY(())
 /* For a FUNCTION_DECL, nonzero if it was an implicit declaration.  */
 #define C_DECL_IMPLICIT(EXP) DECL_LANG_FLAG_2 (EXP)
 
-/* For any decl, nonzero if it is bound in the externals scope and
-   pop_scope mustn't chain it into any higher block.  */
-#define C_DECL_IN_EXTERNAL_SCOPE(EXP) DECL_LANG_FLAG_3 (EXP)
-
 /* For FUNCTION_DECLs, evaluates true if the decl is built-in but has
    been declared.  */
-#define C_DECL_DECLARED_BUILTIN(EXP) DECL_LANG_FLAG_4 (EXP)
+#define C_DECL_DECLARED_BUILTIN(EXP) DECL_LANG_FLAG_3 (EXP)
 
 /* Record whether a decl was declared register.  This is strictly a
    front-end flag, whereas DECL_REGISTER is used for code generation;
    they may differ for structures with volatile fields.  */
-#define C_DECL_REGISTER(EXP) DECL_LANG_FLAG_5 (EXP)
+#define C_DECL_REGISTER(EXP) DECL_LANG_FLAG_4 (EXP)
 
 /* Nonzero for a decl which either doesn't exist or isn't a prototype.
    N.B. Could be simplified if all built-in decls had complete prototypes
