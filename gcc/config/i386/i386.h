@@ -1581,7 +1581,9 @@ enum reg_class
    || ((CLASS) == BREG)							\
    || ((CLASS) == AD_REGS)						\
    || ((CLASS) == SIREG)						\
-   || ((CLASS) == DIREG))
+   || ((CLASS) == DIREG)						\
+   || ((CLASS) == FP_TOP_REG)						\
+   || ((CLASS) == FP_SECOND_REG))
 
 /* Return a class of registers that cannot change FROM mode to TO mode.
   
