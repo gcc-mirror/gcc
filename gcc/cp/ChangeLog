@@ -1,3 +1,11 @@
+2002-08-15  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (finish_then_clause): Remove redundant assignment.
+	(finish_if_stmt, begin_switch_stmt, finish_switch_stmt): Move the
+	extra binding level outside the if/switch statement.
+	(finish_while_cond, finish_for_cond): Rewrite complex condition
+	into the loop body.
+
 2002-08-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* parse.y (sizeof, alignof, typeof): New non-terminals to
