@@ -1,3 +1,7 @@
+2002-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/wchar_t-1.c: New test.
+
 2002-03-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/20020103-1.c: Add rs6000 target and macro.
