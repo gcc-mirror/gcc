@@ -1,3 +1,8 @@
+2004-09-25  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/ObjectStreamField.java:
+	Removed unused import statement.
+
 2004-09-24  Tom Tromey  <tromey@redhat.com>
 
 	PR java/15656:
