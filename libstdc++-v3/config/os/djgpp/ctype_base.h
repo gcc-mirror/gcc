@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,8 +49,8 @@
     static const mask digit = __dj_ISDIGIT;	// Numeric
     static const mask punct = __dj_ISPUNCT;     // Punctuation
     static const mask xdigit = __dj_ISXDIGIT;   // Hexadecimal numeric
-    static const mask alnum = __dj_ISALPHA;     // Alphanumeric
-    static const mask graph = __dj_ISGRAPH;	// Graphical
+    static const mask alnum = __dj_ISALPHA | __dj_ISDIGIT;  // Alphanumeric
+    static const mask graph = __dj_ISALPHA | __dj_ISDIGIT | __dj_ISPUNCT;  // Graphical
   };
 
 

@@ -1,3 +1,23 @@
+2003-10-09  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/11844
+	* config/os/aix/ctype_base.h: Fix 'alnum' and 'graph'
+	to conform to the requirements of 22.2.1.
+	* config/os/bsd/freebsd/ctype_base.h: Likewise.
+	* config/os/djgpp/ctype_base.h: Likewise.
+	* config/os/generic/ctype_base.h: Likewise.
+	* config/os/gnu-linux/ctype_base.h: Likewise.
+	* config/os/hpux/ctype_base.h: Likewise.
+	* config/os/irix/irix6.5/ctype_base.h: Likewise.
+	* config/os/solaris/solaris2.6/ctype_base.h: Likewise.
+	* config/os/solaris/solaris2.7/ctype_base.h: Likewise.
+	* testsuite/22_locale/ctype/11844.cc: New.
+
+	* config/locale/generic/ctype_members.cc (do_is):
+	Generically, use a bitmasksize of 15 (instead of 10), since
+	we don't know the numerical encoding of the various categories
+	in the underlying /usr/include/ctype.h.
+
 2003-10-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/string-inst.cc: Prune.
