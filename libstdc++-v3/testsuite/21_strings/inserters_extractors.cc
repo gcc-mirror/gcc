@@ -1,6 +1,6 @@
 // 1999-07-01 bkoz
 
-// Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,16 +53,20 @@ bool test01(void)
   std::istringstream istrs01(str01);
   istrs01 >> str10;
   VERIFY( str10 == str02 );
-  try {
-    std::istringstream::int_type i01 = istrs01.peek(); //a-boo
-    VERIFY( std::istringstream::traits_type::to_char_type(i01) == ' ' );
-  }
-  catch(std::exception& fail) {
-    VERIFY( false ); // shouldn't throw
-  }
+  try 
+    {
+      std::istringstream::int_type i01 = istrs01.peek(); //a-boo
+      VERIFY( std::istringstream::traits_type::to_char_type(i01) == ' ' );
+    }
+  catch(std::exception& fail) 
+    {
+      VERIFY( false ); // shouldn't throw
+    }
 
+  istrs01.clear();
   istrs01 >> str10; 
   VERIFY( str10 == str03 ); 
+  istrs01.clear();
   istrs01 >> str10; 
   VERIFY( str10 == str04 ); // sentry picks out the white spaces. . 
 
@@ -72,73 +76,86 @@ bool test01(void)
  
   // istream& getline(istream&, string&, char)
   // istream& getline(istream&, string&)
-  try {
-    getline(istrs01, str10);
-    VERIFY( !istrs01.fail() );
-    VERIFY( !istrs01.eof() );
-    VERIFY( istrs01.good() );
-    VERIFY( str10 == " bay" );
-  }
-  catch(std::exception& fail) {
-    VERIFY( false ); // shouldn't throw
-  }
+  try 
+    {
+      istrs01.clear();
+      getline(istrs01, str10);
+      VERIFY( !istrs01.fail() );
+      VERIFY( !istrs01.eof() );
+      VERIFY( istrs01.good() );
+      VERIFY( str10 == " bay" );
+    }
+  catch(std::exception& fail) 
+    {
+      VERIFY( false ); // shouldn't throw
+    }
 
-  try {
-    istrs01.clear();
-    getline(istrs01, str10,'\t');
-    VERIFY( !istrs01.fail() );
-    VERIFY( !istrs01.eof() );
-    VERIFY( istrs01.good() );
-    VERIFY( str10 == str05 );
-  }
-  catch(std::exception& fail) {
-    VERIFY( false ); // shouldn't throw
-  }
+  try 
+    {
+      istrs01.clear();
+      getline(istrs01, str10,'\t');
+      VERIFY( !istrs01.fail() );
+      VERIFY( !istrs01.eof() );
+      VERIFY( istrs01.good() );
+      VERIFY( str10 == str05 );
+    }
+  catch(std::exception& fail) 
+    {
+      VERIFY( false ); // shouldn't throw
+    }
+  
+  try 
+    {
+      istrs01.clear();
+      getline(istrs01, str10,'\t');
+      VERIFY( !istrs01.fail() );
+      VERIFY( !istrs01.eof() );
+      VERIFY( istrs01.good() );
+      VERIFY( str10 == str05 );
+    }
+  catch(std::exception& fail) 
+    {
+      VERIFY( false ); // shouldn't throw
+    }
+  
+  try 
+    {
+      istrs01.clear();
+      getline(istrs01, str10, '.');
+      VERIFY( !istrs01.fail() );
+      VERIFY( istrs01.eof() );
+      VERIFY( !istrs01.good() );
+      VERIFY( str10 == "\t    from Elk Rapids to the point reminds me of miles" );
+    }
+  catch(std::exception& fail) 
+    {
+      VERIFY( false ); // shouldn't throw
+    }
 
-  try {
-    istrs01.clear();
-    getline(istrs01, str10,'\t');
-    VERIFY( !istrs01.fail() );
-    VERIFY( !istrs01.eof() );
-    VERIFY( istrs01.good() );
-    VERIFY( str10 == str05 );
-  }
-  catch(std::exception& fail) {
-    VERIFY( false ); // shouldn't throw
-  }
-
-  try {
-    istrs01.clear();
-    getline(istrs01, str10, '.');
-    VERIFY( !istrs01.fail() );
-    VERIFY( istrs01.eof() );
-    VERIFY( !istrs01.good() );
-    VERIFY( str10 == "\t    from Elk Rapids to the point reminds me of miles" );
-  }
-  catch(std::exception& fail) {
-    VERIFY( false ); // shouldn't throw
-  }
-
-  try {
-    getline(istrs02, str10);
-    VERIFY( istrs02.fail() );
-    VERIFY( istrs02.eof() );
-    VERIFY( str10 =="\t    from Elk Rapids to the point reminds me of miles" );
-  }
-  catch(std::exception& fail) {
-    VERIFY( false ); // shouldn't throw
-  }
-
+  try 
+    {
+      getline(istrs02, str10);
+      VERIFY( istrs02.fail() );
+      VERIFY( istrs02.eof() );
+      VERIFY( str10 =="\t    from Elk Rapids to the point reminds me of miles" );
+    }
+  catch(std::exception& fail) 
+    {
+      VERIFY( false ); // shouldn't throw
+    }
+  
   // ostream& operator<<(ostream&, const basic_string&)
   std::ostringstream ostrs01;
-  try {
-    ostrs01 << str01;
-    VERIFY( ostrs01.str() == str01 );
-  }
-  catch(std::exception& fail) {
-    VERIFY( false );
-  }
-
+  try 
+    {
+      ostrs01 << str01;
+      VERIFY( ostrs01.str() == str01 );
+    }
+  catch(std::exception& fail) 
+    {
+      VERIFY( false );
+    }
+  
   std::string hello_world;
   std::cout << hello_world;
   
