@@ -28,7 +28,8 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "toplev.h"
 #include "ggc.h"
-#include "splay-tree.h"
+#include "insn-config.h"
+#include "integrate.h"
 
 static tree bot_manip PROTO((tree *, int *, void *));
 static tree bot_replace PROTO((tree *, int *, void *));
@@ -42,7 +43,10 @@ static cp_lvalue_kind lvalue_p_1 PROTO((tree, int));
 static tree no_linkage_helper PROTO((tree *, int *, void *));
 static tree build_srcloc PROTO((char *, int));
 static void mark_list_hash PROTO ((void *));
-static tree copy_tree_r PROTO ((tree *, int *, void *));
+static int statement_code_p PROTO((enum tree_code));
+static tree mark_local_for_remap_r PROTO((tree *, int *, void *));
+static tree cp_unsave_r PROTO ((tree *, int *, void *));
+static void cp_unsave PROTO((tree *));
 static tree build_target_expr PROTO((tree, tree));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
@@ -259,6 +263,7 @@ build_cplus_new (type, init)
 
   slot = build (VAR_DECL, type);
   DECL_ARTIFICIAL (slot) = 1;
+  DECL_CONTEXT (slot) = current_function_decl;
   layout_decl (slot, 0);
 
   /* We split the CALL_EXPR into its function and its arguments here.
@@ -1456,6 +1461,45 @@ is_aggr_type_2 (t1, t2)
     return 0;
   return IS_AGGR_TYPE (t1) && IS_AGGR_TYPE (t2);
 }
+
+/* Returns non-zero if CODE is the code for a statement.  */
+
+static int
+statement_code_p (code)
+     enum tree_code code;
+{
+  switch (code)
+    {
+    case EXPR_STMT:
+    case COMPOUND_STMT:
+    case DECL_STMT:
+    case IF_STMT:
+    case FOR_STMT:
+    case WHILE_STMT:
+    case DO_STMT:
+    case RETURN_STMT:
+    case BREAK_STMT:
+    case CONTINUE_STMT:
+    case SWITCH_STMT:
+    case GOTO_STMT:
+    case LABEL_STMT:
+    case ASM_STMT:
+    case SUBOBJECT:
+    case CLEANUP_STMT:
+    case START_CATCH_STMT:
+    case CTOR_STMT:
+    case SCOPE_STMT:
+    case CTOR_INITIALIZER:
+    case CASE_LABEL:
+    case RETURN_INIT:
+    case TRY_BLOCK:
+    case HANDLER:
+      return 1;
+
+    default:
+      return 0;
+    }
+}
 
 #define PRINT_RING_SIZE 4
 
@@ -1594,13 +1638,19 @@ walk_tree (tp, func, data)
 
   /* Handle commmon cases up front.  */
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
-      || TREE_CODE_CLASS (code) == 'r')
+      || TREE_CODE_CLASS (code) == 'r'
+      || TREE_CODE_CLASS (code) == 's')
     {
       int i;
 
       /* Walk over all the sub-trees of this operand.  */
       for (i = first_rtl_op (code) - 1; i >= 0; --i)
 	WALK_SUBTREE (TREE_OPERAND (*tp, i));
+
+      /* For statements, we also walk the chain so that we cover the
+	 entire statement tree.  */
+      if (statement_code_p (code))
+	WALK_SUBTREE (TREE_CHAIN (*tp));
 
       /* We didn't find what we were looking for.  */
       return NULL_TREE;
@@ -1706,7 +1756,7 @@ walk_tree (tp, func, data)
       if (TYPE_PTRMEMFUNC_P (*tp))
 	WALK_SUBTREE (TYPE_PTRMEMFUNC_FN_TYPE (*tp));
       break;
-      
+
     default:
       my_friendly_abort (19990803);
     }
@@ -1755,10 +1805,10 @@ no_linkage_check (t)
 
 /* Passed to walk_tree.  Copies the node pointed to, if appropriate.  */
 
-static tree
+tree
 copy_tree_r (tp, walk_subtrees, data)
      tree *tp;
-     int *walk_subtrees ATTRIBUTE_UNUSED;
+     int *walk_subtrees;
      void *data ATTRIBUTE_UNUSED;
 {
   enum tree_code code = TREE_CODE (*tp);
@@ -1767,6 +1817,7 @@ copy_tree_r (tp, walk_subtrees, data)
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
       || TREE_CODE_CLASS (code) == 'r'
       || TREE_CODE_CLASS (code) == 'c'
+      || TREE_CODE_CLASS (code) == 's'
       || code == PARM_DECL
       || code == TREE_LIST
       || code == TREE_VEC
@@ -1781,12 +1832,21 @@ copy_tree_r (tp, walk_subtrees, data)
 
       /* Now, restore the chain, if appropriate.  That will cause
 	 walk_tree to walk into the chain as well.  */
-      if (code == PARM_DECL || code == TREE_LIST || code == OVERLOAD)
+      if (code == PARM_DECL || code == TREE_LIST || code == OVERLOAD
+	  || statement_code_p (code))
 	TREE_CHAIN (*tp) = chain;
+
+      /* For now, we don't update BLOCKs when we make copies.  So, we
+	 have to nullify all scope-statements.  */
+      if (TREE_CODE (*tp) == SCOPE_STMT)
+	SCOPE_NULLIFIED_P (*tp) = 1;
     }
   else if (code == TEMPLATE_TEMPLATE_PARM)
     /* These must be copied specially.  */
     *tp = copy_template_template_parm (*tp);
+  else if (TREE_CODE_CLASS (code) == 't')
+    /* There's no need to copy types, or anything beneath them.  */
+    *walk_subtrees = 0;
 
   return NULL_TREE;
 }
@@ -2605,41 +2665,143 @@ void
 init_tree ()
 {
   make_lang_type_fn = cp_make_lang_type;
-  lang_unsave_expr_now = cplus_unsave_expr_now;
+  lang_unsave = cp_unsave;
   ggc_add_root (list_hash_table, 
 		sizeof (list_hash_table) / sizeof (struct list_hash *),
 		sizeof (struct list_hash *),
 		mark_list_hash);
 }
 
-/* The C++ version of unsave_expr_now.
-   See gcc/tree.c:unsave_expr_now for comments. */
+/* The SAVE_EXPR pointed to by TP is being copied.  If ST contains
+   information indicating to what new SAVE_EXPR this one should be
+   mapped, use that one.  Otherwise, create a new node and enter it in
+   ST.  FN is the function into which the copy will be placed.  */
 
 void
-cplus_unsave_expr_now (expr)
-     tree expr;
+remap_save_expr (tp, st, fn)
+     tree *tp;
+     splay_tree st;
+     tree fn;
 {
-  if (expr == NULL)
-    return;
+  splay_tree_node n;
 
-  else if (TREE_CODE (expr) == AGGR_INIT_EXPR)
+  /* See if we already encountered this SAVE_EXPR.  */
+  n = splay_tree_lookup (st, (splay_tree_key) *tp);
+      
+  /* If we didn't already remap this SAVE_EXPR, do so now.  */
+  if (!n)
     {
-      unsave_expr_now (TREE_OPERAND (expr,0));
-      if (TREE_OPERAND (expr, 1)
-	  && TREE_CODE (TREE_OPERAND (expr, 1)) == TREE_LIST)
-	{
-	  tree exp = TREE_OPERAND (expr, 1);
-	  while (exp)
-	    {
-	      unsave_expr_now (TREE_VALUE (exp));
-	      exp = TREE_CHAIN (exp);
-	    }
-	}
-      unsave_expr_now (TREE_OPERAND (expr,2));
-      return;
+      tree t = copy_node (*tp);
+
+      /* The SAVE_EXPR is now part of the function into which we
+	 are inlining this body.  */
+      SAVE_EXPR_CONTEXT (t) = fn;
+      /* And we haven't evaluated it yet.  */
+      SAVE_EXPR_RTL (t) = NULL_RTX;
+      /* Remember this SAVE_EXPR.  */
+      n = splay_tree_insert (st,
+			     (splay_tree_key) *tp,
+			     (splay_tree_value) t);
     }
 
-  else
-    return;
+  /* Replace this SAVE_EXPR with the copy.  */
+  *tp = (tree) n->value;
 }
 
+/* Called via walk_tree.  If *TP points to a DECL_STMT for a local
+   declaration, copies the declaration and enters it in the splay_tree
+   pointed to by DATA (which is really a `splay_tree *').  */
+
+static tree
+mark_local_for_remap_r (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data;
+{
+  tree t = *tp;
+  splay_tree st = (splay_tree) data;
+
+  if ((TREE_CODE (t) == DECL_STMT
+       && nonstatic_local_decl_p (DECL_STMT_DECL (t)))
+      || TREE_CODE (t) == LABEL_STMT)
+    {
+      tree decl;
+      tree copy;
+
+      /* Figure out what's being declared.  */
+      decl = (TREE_CODE (t) == DECL_STMT
+	      ? DECL_STMT_DECL (t) : LABEL_STMT_LABEL (t));
+      
+      /* Make a copy.  */
+      copy = copy_decl_for_inlining (decl, 
+				     DECL_CONTEXT (decl), 
+				     DECL_CONTEXT (decl));
+
+      /* Remember the copy.  */
+      splay_tree_insert (st,
+			 (splay_tree_key) decl, 
+			 (splay_tree_value) copy);
+    }
+
+  return NULL_TREE;
+}
+
+/* Called via walk_tree when an expression is unsaved.  Using the
+   splay_tree pointed to by ST (which is really a `splay_tree *'),
+   remaps all local declarations to appropriate replacements.  */
+
+static tree
+cp_unsave_r (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees;
+     void *data;
+{
+  splay_tree st = (splay_tree) data;
+  splay_tree_node n;
+
+  /* Only a local declaration (variable or label).  */
+  if (nonstatic_local_decl_p (*tp))
+    {
+      /* Lookup the declaration.  */
+      n = splay_tree_lookup (st, (splay_tree_key) *tp);
+      
+      /* If it's there, remap it.  */
+      if (n)
+	*tp = (tree) n->value;
+    }
+  else if (TREE_CODE (*tp) == SAVE_EXPR)
+    remap_save_expr (tp, st, current_function_decl);
+  else
+    {
+      copy_tree_r (tp, walk_subtrees, NULL);
+
+      /* Do whatever unsaving is required.  */
+      unsave_expr_1 (*tp);
+    }
+
+  /* Keep iterating.  */
+  return NULL_TREE;
+}
+
+/* Called by unsave_expr_now whenever an expression (*TP) needs to be
+   unsaved.  */
+
+static void
+cp_unsave (tp)
+     tree *tp;
+{
+  splay_tree st;
+
+  /* Create a splay-tree to map old local variable declarations to new
+     ones.  */
+  st = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
+
+  /* Walk the tree once figuring out what needs to be remapped.  */
+  walk_tree (tp, mark_local_for_remap_r, st);
+
+  /* Walk the tree again, copying, remapping, and unsaving.  */
+  walk_tree (tp, cp_unsave_r, st);
+
+  /* Clean up.  */
+  splay_tree_delete (st);
+}

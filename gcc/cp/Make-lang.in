@@ -118,7 +118,7 @@ CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
  $(srcdir)/cp/error.c $(srcdir)/cp/friend.c $(srcdir)/cp/init.c \
  $(srcdir)/cp/parse.y $(srcdir)/cp/typeck2.c \
  $(srcdir)/cp/repo.c $(srcdir)/cp/semantics.c \
- $(srcdir)/cp/dump.c
+ $(srcdir)/cp/dump.c $(srcdir)/cp/optimize.c
 
 cc1plus$(exeext): $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o \
         c-pragma.o $(srcdir)/cp/cp-tree.h $(srcdir)/cp/cp-tree.def \

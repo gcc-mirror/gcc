@@ -2470,7 +2470,7 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
   /* The below is short by BI_header_size */
   virtual_size = fold (size_binop (MULT_EXPR, size_exp, maxindex));
 
-  tbase = build_decl (VAR_DECL, NULL_TREE, ptype);
+  tbase = create_temporary_var (ptype);
   tbase_init = build_modify_expr (tbase, NOP_EXPR,
 				  fold (build (PLUS_EXPR, ptype,
 					       base,

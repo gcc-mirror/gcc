@@ -658,7 +658,16 @@ finish_goto_stmt (destination)
     TREE_USED (destination) = 1;
     
   if (building_stmt_tree ())
-    add_tree (build_min_nt (GOTO_STMT, destination));
+    {
+      if (TREE_CODE (destination) != LABEL_DECL)
+	/* We don't inline calls to functions with computed gotos.
+	   Those functions are typically up to some funny business,
+	   and may be depending on the labels being at particular
+	   addresses, or some such.  */
+	DECL_UNINLINABLE (current_function_decl) = 1;
+
+      add_tree (build_min_nt (GOTO_STMT, destination));
+    }
   else
     {
       emit_line_note (input_filename, lineno);
@@ -1183,7 +1192,17 @@ setup_vtbl_ptr ()
 		  (CTOR_INITIALIZER,
 		   current_member_init_list, current_base_init_list));
       else
-	finish_expr_stmt (emit_base_init (current_class_type));
+	{
+	  tree ctor_stmt;
+
+	  /* Mark the beginning of the constructor.  */
+	  ctor_stmt = build_min_nt (CTOR_STMT);
+	  CTOR_BEGIN_P (ctor_stmt) = 1;
+	  add_tree (ctor_stmt);
+	  
+	  /* And actually initialize the base-classes and members.  */
+	  finish_expr_stmt (emit_base_init (current_class_type));
+	}
     }
   else if (DECL_DESTRUCTOR_P (current_function_decl)
 	   && !processing_template_decl)
@@ -1592,6 +1611,9 @@ finish_label_address_expr (label)
       TREE_USED (label) = 1;
       result = build1 (ADDR_EXPR, ptr_type_node, label);
       TREE_CONSTANT (result) = 1;
+      /* This function cannot be inlined.  All jumps to the addressed
+	 label should wind up at the same point.  */
+      DECL_UNINLINABLE (current_function_decl) = 1;
     }
 
   return result;
@@ -2268,11 +2290,6 @@ expand_stmt (t)
 	  finish_expr_stmt (EXPR_STMT_EXPR (t));
 	  break;
 
-	case CTOR_COMPLETE:
-	  /* All subobjects have been fully constructed at this point.  */
-	  end_protect_partials ();
-	  break;
-
 	case DECL_STMT:
 	  {
 	    tree decl;
@@ -2307,6 +2324,16 @@ expand_stmt (t)
 
 	case START_CATCH_STMT:
 	  begin_catch_block (TREE_TYPE (t));
+	  break;
+
+	case CTOR_STMT:
+	  if (CTOR_BEGIN_P (t))
+	    begin_protect_partials ();
+	  else
+	    /* After this point, any exceptions will cause the
+	       destructor to be executed, so we no longer need to worry
+	       about destroying the various subobjects ourselves.  */
+	    end_protect_partials ();
 	  break;
 
 	case FOR_STMT:
@@ -2508,6 +2535,9 @@ expand_body (fn)
   if (flag_syntax_only)
     return;
 
+  /* Optimize the body of the function before expanding it.  */
+  optimize_function (fn);
+
   /* Save the current file name and line number.  When we expand the
      body of the function, we'll set LINENO and INPUT_FILENAME so that
      error-mesages come out in the right places.  */
@@ -2538,9 +2568,17 @@ expand_body (fn)
   /* Generate code for the function.  */
   finish_function (lineno, 0);
 
-  /* We don't need the body any more.  Allow it to be garbage
-     collected.  We can't do this if we're going to dump everything.  */
-  if (!flag_dump_translation_unit)
+  /* If possible, obliterate the body of the function so that it can
+     be garbage collected.  */
+  if (flag_dump_translation_unit)
+    /* Keep the body; we're going to dump it.  */
+    ;
+  else if (DECL_INLINE (fn) && flag_inline_trees)
+    /* We might need the body of this function so that we can expand
+       it inline somewhere else.  */
+    ;
+  else
+    /* We don't need the body; blow it away.  */
     DECL_SAVED_TREE (fn) = NULL_TREE;
 
   /* And restore the current source position.  */
