@@ -1,3 +1,8 @@
+1999-01-07  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* test_summary (version): remove carriage return that gawk inserts
+	in the version string for some reason
+
 1998-11-30  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* egcs_update: Only touch files that already exist.
