@@ -1,3 +1,8 @@
+2003-04-09  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/sourcebuild.texi (Test Suites): Document support for testing
+	binary compatibility (moved from testsuite/README.compat).
+
 2003-04-17  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_in_small_data_p): Disallow strings.

@@ -24,7 +24,19 @@ sets of compiler options.
   with the compiler under test using the first of each pair of compiler
   options from COMPAT_OPTIONS.  When ALT_CXX_UNDER_TEST is "same", each
   test is built using the compiler under test but with combinations of
-  the options from COMPAT_OPTIONS.
+  the options from COMPAT_OPTIONS.  If the alternate compiler needs a
+  different setting for LD_LIBRARY_PATH, specify it in the environment
+  varible ALT_LD_LIBRARY_PATH.  If it needs different options to build
+  a shared object, define those in ALT_SHOBJ_OPTIONS.
+
+To run only the C++ compatibility tests, optionally specifying an
+alternate compiler and/or sets of options, do from $objdir/gcc:
+
+  rm site.exp
+  make -k ALT_CXX_UNDER_TEST=<prefix>/bin/g++ \
+    ALT_LD_LIBRARY_PATH=<prefix>/lib \
+    COMPAT_OPTIONS="list as shown above" check-c++ \
+    RUNTESTFLAGS="compat.exp"
 
 A test that fails when the pieces are compiled with different compilers
 but passes when the pieces are compiled with the same compiler
@@ -52,10 +64,6 @@ There's a lot more that can be done with these tests.
    -  link using the alternate compiler; this requires support for
       LD_LIBRARY_PATH for the alternate compiler in the support for each
       language
-
-   -  build pieces of the test into shared libraries; this requires
-      support for LD_LIBRARY_PATH for the alternate compiler, and
-      knowledge about how to build a shared library for each target
 
    -  build pieces of the test into static libraries; this requires
       knowledge about how to build a static library for each target
