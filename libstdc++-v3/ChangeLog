@@ -1,3 +1,9 @@
+2001-07-19  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+	    Bert De Knuydt <Bert.Deknuydt@esat.kuleuven.ac.be>
+
+	* src/gen-num-limits.cc (set_signals_handler): New function.
+	Factor out signals setting.  Set signal handler for SIGILL.
+
 2001-07-18  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/html/27_io/howto.html:  Fix typo.
