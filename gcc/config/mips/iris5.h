@@ -50,6 +50,10 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE_SIZE	LONG_TYPE_SIZE
 #define MAX_WCHAR_TYPE_SIZE	MAX_LONG_TYPE_SIZE
 
+#define WORD_SWITCH_TAKES_ARG(STR)			\
+ (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)			\
+  || !strcmp (STR, "rpath"))
+
 /* ??? _MIPS_SIM and _MIPS_SZPTR should eventually depend on options when
    options for them exist.  */
 
@@ -90,6 +94,7 @@ Boston, MA 02111-1307, USA.  */
 %{bestGnum} %{shared} %{non_shared} \
 %{call_shared} %{no_archive} %{exact_version} \
 %{!shared:%{!non_shared:%{!call_shared: -call_shared -no_unresolved}}} \
+%{rpath} \
 -_SYSTYPE_SVR4"
 
 /* We now support shared libraries.  */
