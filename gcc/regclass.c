@@ -183,6 +183,14 @@ static char *in_inc_dec;
 
 #endif /* FORBIDDEN_INC_DEC_CLASSES */
 
+#ifdef HAVE_SECONDARY_RELOADS
+
+/* Sample MEM values for use by memory_move_secondary_cost.  */
+
+static rtx top_of_stack[MAX_MACHINE_MODE];
+
+#endif /* HAVE_SECONDARY_RELOADS */
+
 /* Function called only once to initialize the above data on reg usage.
    Once this is done, various switches may override.  */
 
@@ -422,11 +430,23 @@ init_regs ()
   init_reg_sets_1 ();
 
   init_reg_modes ();
+
+#ifdef HAVE_SECONDARY_RELOADS
+  {
+    /* Make some fake stack-frame MEM references for use in
+       memory_move_secondary_cost.  */
+    int i;
+    for (i = 0; i < MAX_MACHINE_MODE; i++)
+      top_of_stack[i] = gen_rtx (MEM, i, stack_pointer_rtx);
+  }
+#endif
 }
 
 #ifdef HAVE_SECONDARY_RELOADS
+
 /* Compute extra cost of moving registers to/from memory due to reloads.
    Only needed if secondary reloads are required for memory moves.  */
+
 int
 memory_move_secondary_cost (mode, class, in)
      enum machine_mode mode;
@@ -435,23 +455,26 @@ memory_move_secondary_cost (mode, class, in)
 {
   enum reg_class altclass;
   int partial_cost = 0;
-  rtx mem;
-
   /* We need a memory reference to feed to SECONDARY... macros.  */
-  mem = gen_rtx (MEM, mode, stack_pointer_rtx);
+  rtx mem = top_of_stack[(int) mode];
 
   if (in)
+    {
 #ifdef SECONDARY_INPUT_RELOAD_CLASS
-    altclass = SECONDARY_INPUT_RELOAD_CLASS (class, mode, mem);
+      altclass = SECONDARY_INPUT_RELOAD_CLASS (class, mode, mem);
 #else
-    altclass = NO_REGS;
+      altclass = NO_REGS;
 #endif
+    }
   else
+    {
 #ifdef SECONDARY_OUTPUT_RELOAD_CLASS
-    altclass = SECONDARY_OUTPUT_RELOAD_CLASS (class, mode, mem);
+      altclass = SECONDARY_OUTPUT_RELOAD_CLASS (class, mode, mem);
 #else
-    altclass = NO_REGS;
+      altclass = NO_REGS;
 #endif
+    }
+
   if (altclass == NO_REGS)
     return 0;
 
