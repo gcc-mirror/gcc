@@ -666,36 +666,34 @@ for ml in $MULTILIBS; do
     # simultaneous goal targets, so that rules which cannot execute
     # simultaneously are properly serialized.
     
-    # We don't need to build the default ones since they have been
-    # built before we get here.
-    if [ $dir != "." ]; then
-      extra=
-      t=$dir/
-      echo
-      for f in $EXTRA_MULTILIB_PARTS; do
-	out=$dir/$f
-	case $out in
-	# Prevent `make' from interpreting $out as a macro assignment
-	*'$(EQ)'*) targ="T_TARGET=$out T_TARGET" ;;
-	*) targ=$out ;;
-	esac
-	extra="$extra $targ"
-      done
+    extra=
+    echo
+    for f in $EXTRA_MULTILIB_PARTS; do
+      case $dir in
+      .) out=$f ; t= ;;
+      *) out=$dir/$f ; t=$dir/ ;;
+      esac
+      case $out in
+      # Prevent `make' from interpreting $out as a macro assignment
+      *'$(EQ)'*) targ="T_TARGET=$out T_TARGET" ;;
+      *) targ=$out ;;
+      esac
+      extra="$extra $targ"
+    done
 
-      echo extra$suffix: stmp-dirs
-      echo "	$make_compile" \\
-      echo '	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)' $flags '" ' \\
-      echo '	  MULTILIB_CFLAGS="'$flags'"' T=$t $extra
-      echo "all: extra$suffix"
+    echo extra$suffix: stmp-dirs
+    echo "	$make_compile" \\
+    echo '	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)' $flags '" ' \\
+    echo '	  MULTILIB_CFLAGS="'$flags'"' T=$t $extra
+    echo "all: extra$suffix"
 
-      # Make libunwind.so and libgcc_s.so depend on these, since they
-      # are likely to be implicitly used by the link process.
-      if [ "$libgcc_s_so" ]; then
-	echo "$libgcc_s_so: extra$suffix"
-	fi
-      if [ "$libunwind_so" ]; then
-	echo "$libunwind_so: extra$suffix"
-      fi
+    # Make libunwind.so and libgcc_s.so depend on these, since they
+    # are likely to be implicitly used by the link process.
+    if [ "$libgcc_s_so" ]; then
+      echo "$libgcc_s_so: extra$suffix"
+    fi
+    if [ "$libunwind_so" ]; then
+      echo "$libunwind_so: extra$suffix"
     fi
   fi
 
