@@ -2584,6 +2584,90 @@
 
 ;; Peepholes go at the end.
 
+;; Optimize consecutive loads or stores into ldd and std when possible.
+;; The conditions in which we do this are very restricted and are 
+;; explained in the code for {registers,memory}_ok_for_ldd functions.
+
+(define_peephole
+  [(set (match_operand:SI 0 "register_operand" "r")
+        (match_operand:SI 1 "memory_operand" ""))
+   (set (match_operand:SI 2 "register_operand" "r")
+        (match_operand:SI 3 "memory_operand" ""))]
+  "registers_ok_for_ldd (operands[0], operands[2]) 
+   && ! MEM_VOLATILE_P (operands[1]) && ! MEM_VOLATILE_P (operands[3])
+   && memory_ok_for_ldd (XEXP (operands[1], 0), XEXP (operands[3], 0))" 
+  "ldd %1,%0")
+
+(define_peephole
+  [(set (match_operand:SI 0 "memory_operand" "")
+        (match_operand:SI 1 "register_operand" "r"))
+   (set (match_operand:SI 2 "memory_operand" "")
+        (match_operand:SI 3 "register_operand" "r"))]
+  "registers_ok_for_ldd (operands[1], operands[3]) 
+   && ! MEM_VOLATILE_P (operands[0]) && ! MEM_VOLATILE_P (operands[2])
+   && memory_ok_for_ldd (XEXP (operands[0], 0), XEXP (operands[2], 0))"
+  "std %1,%0")
+ 
+(define_peephole
+  [(set (match_operand:SF 0 "register_operand" "fr")
+        (match_operand:SF 1 "memory_operand" ""))
+   (set (match_operand:SF 2 "register_operand" "fr")
+        (match_operand:SF 3 "memory_operand" ""))]
+  "registers_ok_for_ldd (operands[0], operands[2]) 
+   && ! MEM_VOLATILE_P (operands[1]) && ! MEM_VOLATILE_P (operands[3])
+   && memory_ok_for_ldd (XEXP (operands[1], 0), XEXP (operands[3], 0))"
+  "ldd %1,%0")
+
+(define_peephole
+  [(set (match_operand:SF 0 "memory_operand" "")
+        (match_operand:SF 1 "register_operand" "fr"))
+   (set (match_operand:SF 2 "memory_operand" "")
+        (match_operand:SF 3 "register_operand" "fr"))]
+  "registers_ok_for_ldd (operands[1], operands[3]) 
+   && ! MEM_VOLATILE_P (operands[0]) && ! MEM_VOLATILE_P (operands[2])
+   && memory_ok_for_ldd (XEXP (operands[0], 0), XEXP (operands[2], 0))"
+  "std %1,%0")
+
+(define_peephole
+  [(set (match_operand:SI 0 "register_operand" "r")
+        (match_operand:SI 1 "memory_operand" ""))
+   (set (match_operand:SI 2 "register_operand" "r")
+        (match_operand:SI 3 "memory_operand" ""))]
+  "registers_ok_for_ldd (operands[2], operands[0]) 
+   && ! MEM_VOLATILE_P (operands[3]) && ! MEM_VOLATILE_P (operands[1])
+   && memory_ok_for_ldd (XEXP (operands[3], 0), XEXP (operands[1], 0))"
+  "ldd %3,%2")
+
+(define_peephole
+  [(set (match_operand:SI 0 "memory_operand" "")
+        (match_operand:SI 1 "register_operand" "r"))
+   (set (match_operand:SI 2 "memory_operand" "")
+        (match_operand:SI 3 "register_operand" "r"))]
+  "registers_ok_for_ldd (operands[3], operands[1]) 
+   && ! MEM_VOLATILE_P (operands[2]) && ! MEM_VOLATILE_P (operands[0])
+   && memory_ok_for_ldd (XEXP (operands[2], 0), XEXP (operands[0], 0))" 
+  "std %3,%2")
+ 
+(define_peephole
+  [(set (match_operand:SF 0 "register_operand" "fr")
+        (match_operand:SF 1 "memory_operand" ""))
+   (set (match_operand:SF 2 "register_operand" "fr")
+        (match_operand:SF 3 "memory_operand" ""))]
+  "registers_ok_for_ldd (operands[2], operands[0]) 
+   && ! MEM_VOLATILE_P (operands[3]) && ! MEM_VOLATILE_P (operands[1])
+   && memory_ok_for_ldd (XEXP (operands[3], 0), XEXP (operands[1], 0))"
+  "ldd %3,%2")
+
+(define_peephole
+  [(set (match_operand:SF 0 "memory_operand" "")
+        (match_operand:SF 1 "register_operand" "fr"))
+   (set (match_operand:SF 2 "memory_operand" "")
+        (match_operand:SF 3 "register_operand" "fr"))]
+  "registers_ok_for_ldd (operands[3], operands[1]) 
+   && ! MEM_VOLATILE_P (operands[2]) && ! MEM_VOLATILE_P (operands[0])
+   && memory_ok_for_ldd (XEXP (operands[2], 0), XEXP (operands[0], 0))"
+  "std %3,%2")
+ 
 ;; Optimize the case of following a reg-reg move with a test
 ;; of reg just moved.
 

@@ -2250,6 +2250,107 @@ output_arc_profiler (arcno, insert_after)
   emit_insn_after (gen_rtx (SET, VOIDmode, mem_ref, profiler_reg),
 		   insert_after);
 }
+
+/* Return 1 if REGNO (reg1) is even and REGNO (reg1) == REGNO (reg2) - 1.
+   This makes them candidates for using ldd and std insns. 
+
+   Note reg1 and reg2 *must* be hard registers.  To be sure we will
+   abort if we are passed pseudo registers.  */
+
+int
+registers_ok_for_ldd (reg1, reg2)
+     rtx reg1, reg2;
+{
+
+  /* We might have been passed a SUBREG.  */
+  if (GET_CODE (reg1) != REG || GET_CODE (reg2) != REG) 
+    return 0;
+
+  /* Should never happen.  */
+  if (REGNO (reg1) > FIRST_PSEUDO_REGISTER 
+      || REGNO (reg2) > FIRST_PSEUDO_REGISTER)
+    abort ();
+
+  if (REGNO (reg1) % 2 != 0)
+    return 0;
+
+  return (REGNO (reg1) == REGNO (reg2) - 1);
+  
+}
+
+/* Return 1 if addr1 and addr2 are suitable for use in an ldd or 
+   std insn.
+
+   This can only happen when addr1 and addr2 are consecutive memory
+   locations (addr1 + 4 == addr2).  addr1 must also be aligned on a 
+   64 bit boundary (addr1 % 8 == 0).  
+
+   We know %sp and %fp are kept aligned on a 64 bit boundary.  Other
+   registers are assumed to *never* be properly aligned and are 
+   rejected.
+
+   Knowing %sp and %fp are kept aligned on a 64 bit boundary, we 
+   need only check that the offset for addr1 % 8 == 0.  */
+
+int
+memory_ok_for_ldd (addr1, addr2)
+      rtx addr1, addr2;
+{
+  int reg1, offset1;
+
+  /* Extract a register number and offset (if used) from the first addr.  */
+  if (GET_CODE (addr1) == PLUS)
+    {
+      /* If not a REG, return zero.  */
+      if (GET_CODE (XEXP (addr1, 0)) != REG)
+	return 0;
+      else
+	{
+          reg1 = REGNO (XEXP (addr1, 0));
+	  /* The offset must be constant!  */
+	  if (GET_CODE (XEXP (addr1, 1)) != CONST_INT)
+            return 0;
+          offset1 = INTVAL (XEXP (addr1, 1));
+	}
+    }
+  else if (GET_CODE (addr1) != REG)
+    return 0;
+  else
+    {
+      reg1 = REGNO (addr1);
+      /* This was a simple (mem (reg)) expression.  Offset is 0.  */
+      offset1 = 0;
+    }
+
+  /* Make sure the second address is a (mem (plus (reg) (const_int).  */
+  if (GET_CODE (addr2) != PLUS)
+    return 0;
+
+  if (GET_CODE (XEXP (addr2, 0)) != REG
+      || GET_CODE (XEXP (addr2, 1)) != CONST_INT)
+    return 0;
+
+  /* Only %fp and %sp are allowed.  Additionally both addresses must
+     use the same register.  */
+  if (reg1 != FRAME_POINTER_REGNUM && reg1 != STACK_POINTER_REGNUM)
+    return 0;
+
+  if (reg1 != REGNO (XEXP (addr2, 0)))
+    return 0;
+
+  /* The first offset must be evenly divisable by 8 to ensure the 
+     address is 64 bit aligned.  */
+  if (offset1 % 8 != 0)
+    return 0;
+
+  /* The offset for the second addr must be 4 more than the first addr.  */
+  if (INTVAL (XEXP (addr2, 1)) != offset1 + 4)
+    return 0;
+
+  /* All the tests passed.  addr1 and addr2 are valid for ldd and std
+     instructions.  */
+  return 1;
+}
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
