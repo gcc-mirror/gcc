@@ -1,3 +1,8 @@
+2004-03-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/altivec-6.c: Use vector_size attribute, not mode.
+	* gcc.dg/ppc64-abi-3.c: Likewise.
+
 2004-03-19  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14545
