@@ -30,7 +30,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Macros to be automatically defined.  */
 #undef	CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dm88000 -Dm88k -DsysV88 -D__CLASSIFY_TYPE__=2"
+#define CPP_PREDEFINES "-Dm88000 -Dm88k -Dunix -DsysV88 -D__CLASSIFY_TYPE__=2"
 
 /* Override svr3.h to link with ?crt0.o instead of ?crt1.o and ?crtn.o.
    From arul@sdsu.edu.  */
