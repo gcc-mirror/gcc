@@ -1,3 +1,9 @@
+2003-05-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (movsi_internal2): Use compare for self
+	move record condition.
+	(movdi_internal2): Same.
+
 2003-05-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov-io.h (gcov_write_bytes, gcov_read_bytes): Remove here.
