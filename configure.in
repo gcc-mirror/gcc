@@ -61,7 +61,7 @@ target_libs="target-libiberty \
 		target-newlib \
 		target-libio \
 		target-librx \
-		target-libstdc \++
+		target-libstdc++ \
 		target-libg++ \
 		target-libf2c \
 		target-libchill \

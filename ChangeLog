@@ -6,6 +6,8 @@ Tue Oct 13 15:45:36 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 Tue Oct 13 09:17:06 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* configure.in: Fix merge typo.
+
 	* config.sub: Bring back lost sparcv9.
 
 	* Makefile.in (all-snvavigator): Remove all-flexlm dependency.
