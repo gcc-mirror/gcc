@@ -290,8 +290,12 @@ java::lang::Class::getSignature (JArray<jclass> *param_types,
   java::lang::StringBuffer *buf = new java::lang::StringBuffer ();
   buf->append((jchar) '(');
   jclass *v = elements (param_types);
-  for (int i = 0; i < param_types->length; ++i)
-    v[i]->getSignature(buf);
+  // A NULL param_types means "no parameters".
+  if (param_types != NULL)
+    {
+      for (int i = 0; i < param_types->length; ++i)
+	v[i]->getSignature(buf);
+    }
   buf->append((jchar) ')');
   if (is_constructor)
     buf->append((jchar) 'V');

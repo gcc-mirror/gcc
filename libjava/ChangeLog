@@ -1,3 +1,95 @@
+2001-02-16  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/TreeSet.java (clone): Made subclass safe, use 
+	super.clone(), not new.
+	* java/util/TreeMap.java (clone): Likewise.
+	
+	* java/util/TreeMap.java (nil): Made non-final.
+	(clone): Create new nil node for copy.
+	
+	* java/util/HashSet.java (clone): Made subclass safe, use 
+	super.clone(), not new.
+
+2001-02-15  Anthony Green  <green@redhat.com>
+
+	* defineclass.cc: Don't include alloca.h.
+	(prepare_pool_entry): Convert alloca to __builtin_alloca.
+	* interpret.cc (run_normal): Ditto.
+	(continue1): Ditto.
+	* java/lang/natDouble.cc (parseDouble): Ditto.
+
+2001-02-15  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/TreeSet.java (clone): Call TreeMap.clone(), not 
+	Object.clone().
+	* java/util/Collections.java (ReverseComparator): New static class.
+	(reverseOrder): Return static instance of ReverseComparator.
+	
+	* java/util/HashSet.java (clone): Remove try/catch.
+	
+	* java/util/AbstractSequentialList.java: Synchronize with Classpath.
+	* java/util/Collection.java: Likewise.
+	* java/util/Comparator.java: Likewise.
+	* java/util/Dictionary.java: Likewise.
+	* java/util/Iterator.java: Likewise.
+	* java/util/ListIterator.java: Likewise.
+	* java/util/Map.java: Likewise.
+	* java/util/Set.java: Likewise.
+
+2001-02-14  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/TreeMap.java: New file.
+	* java/util/TreeSet.java: New file.
+	* Makefile.am: Add TreeMap and TreeSet. Enable WeakHashMap.
+	* Makefile.in: Rebuilt.
+	* java/util/HashSet.java (clone): Use constructor instead of calling
+	clone on itself.
+	* java/util/SortedSet.java: Sync with classpath.
+	* java/util/HashMap.java (hash): Use if statement instead of ternary,
+	for clarity.
+	
+	* java/lang/natClass.cc (getSignature): Don't try to dereference 
+	param_types if it is null. Instead, take this to mean "no parameters".
+	* java/lang/TreeMap.java (TreeIterator.next): Throw 
+	NoSuchElementException in preference to ConcurrentModificationException.
+	(TreeIterator.remove): Throw IllegalStateException in preference to 
+	ConcurrentModificationException.
+	(SubMap.firstKey): Do a better check for empty SubMap, and if it is,
+	throw a NoSuchElementException.
+	(SubMap.lastKey): Likewise.
+
+2001-02-13  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/PipedReader.java (ready): Throw IOException if pipe
+	closed.
+	* java/io/FilterReader.java (close): Don't clear `in'.
+	* java/io/CharArrayReader.java (mark): Throw IOException if stream
+	closed.
+	(read, ready, reset, skip): Added exception message.
+	* java/io/BufferedReader.java (mark, reset, ready, read, skip):
+	Perform checkStatus check inside synchronized block.
+
+2001-02-13  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/1351:
+	* posix.cc (_Jv_select): Throw InterruptedIOException if thread is
+	interrupted.
+	Include Thread.h and InterruptedIOException.h.
+
+2001-02-13  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/io/BlockDataException.java: Removed.
+	* java/io/ObjectInputStream.java (readObject): Throw 
+	StreamCorruptedException, not BlockDataException.
+	* Makefile.am: Remove BlockDataException.
+	* Makefile.in: Rebuild.
+
+2001-02-12  Jeff Sturm  <jeff.sturm@commerceone.com>
+            Tom Tromey  <tromey@redhat.com>
+
+	* interpret.cc (continue1): [insn_invokevirtual] Do an explicit
+	null pointer check.
+
 2001-02-15  Zack Weinberg  <zackw@stanford.edu>
 
 	* include/i386-signal.h: Adjust comment to match previous change.

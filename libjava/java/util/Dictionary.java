@@ -1,34 +1,85 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Dictionary.java -- an abstract (and essentially worthless) 
+   class which is Hashtable's superclass
+   Copyright (C) 1998 Free Software Foundation, Inc.
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 
 package java.util;
- 
+
 /**
- * @author Warren Levy <warrenl@cygnus.com>
- * @date August 31, 1998.
+ * A Dictionary maps keys to values; <i>how</i> it does that is
+ * implementation-specific.
+ * 
+ * This is an abstract class which has really gone by the wayside.
+ * People at Javasoft are probably embarrassed by it.  At this point,
+ * it might as well be an interface rather than a class, but it remains
+ * this poor, laugable skeleton for the sake of backwards compatibility.
+ * At any rate, this was what came before the <pre>Map</pre> interface 
+ * in the Collections framework.
+ *
+ * @author      Jon Zeppieri
+ * @version     $Revision: 1.4 $
+ * @modified    $Id: Dictionary.java,v 1.4 2001/02/15 06:43:00 bryce Exp $
  */
-/* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
- * "The Java Language Specification", ISBN 0-201-63451-1
- * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct
- */
- 
-/* The JDK 1.2 beta doc indicates that Dictionary is obsolete and that the
- * new java.util.Map interface should be used instead.
- */
-public abstract class Dictionary
+public abstract class Dictionary extends Object
 {
+  /** returns an Enumeration of the values in this Dictionary */
   public abstract Enumeration elements();
-  public abstract Object get(Object key) throws NullPointerException;
+
+  /** 
+   * returns the value associated with the supplied key, or null
+   * if no such value exists
+   *
+   * @param    key      the key to use to fetch the value
+   */
+  public abstract Object get(Object key);
+
+  /** returns true IFF there are no elements in this Dictionary (size() == 0) */
   public abstract boolean isEmpty();
+
+  /** returns an Enumeration of the keys in this Dictionary */
   public abstract Enumeration keys();
-  public abstract Object put(Object key, Object elem)
-			   throws NullPointerException;
-  public abstract Object remove(Object key) throws NullPointerException;
+
+  /**
+   * inserts a new value into this Dictionary, located by the
+   * supllied key; note: Dictionary's subclasses (all 1 of them)
+   * do not support null keys or values (I can only assume this
+   * would have been more general) 
+   *
+   * @param      key      the key which locates the value
+   * @param      value    the value to put into the Dictionary
+   */
+  public abstract Object put(Object key, Object value);
+
+  /**
+   * removes fro the Dictionary the value located by the given key
+   *
+   * @param       key      the key used to locate the value to be removed
+   */
+  public abstract Object remove(Object key);
+
+  /** returns the number of values currently in this Dictionary */
   public abstract int size();
 }

@@ -56,7 +56,7 @@ import java.io.IOException;
  *
  * @author           Jon Zeppieri
  * @author	     Bryce McKinlay
- * @modified         $Id: TreeMap.java,v 1.3 2001/02/16 01:49:40 bryce Exp $
+ * @modified         $Id: TreeMap.java,v 1.4 2001/02/16 02:25:24 bryce Exp $
  */
 public class TreeMap extends AbstractMap
   implements SortedMap, Cloneable, Serializable

@@ -44,8 +44,8 @@ import java.io.ObjectOutputStream;
  * TreeSet is a part of the JDK1.2 Collections API.
  *
  * @author      Jon Zeppieri
- * @version     $Revision: 1.2 $
- * @modified    $Id: TreeSet.java,v 1.2 2001/02/15 03:59:57 bryce Exp $
+ * @version     $Revision: 1.3 $
+ * @modified    $Id: TreeSet.java,v 1.3 2001/02/16 01:49:40 bryce Exp $
  */
 
 public class TreeSet extends AbstractSet
