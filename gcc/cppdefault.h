@@ -49,6 +49,4 @@ extern const struct default_include cpp_include_defaults[];
 extern const char cpp_GCC_INCLUDE_DIR[];
 extern const size_t cpp_GCC_INCLUDE_DIR_len;
 
-extern const char *cpp_SYSROOT;
-
 #endif /* ! GCC_CPPDEFAULT_H */

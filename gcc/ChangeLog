@@ -1,3 +1,8 @@
+2004-11-02  Ben Elliston  <bje@au.ibm.com>
+
+	* cppdefault.h (cpp_SYSROOT): Remove.
+	* cppdefault.c (cpp_SYSROOT): Likewise.
+
 2004-11-01  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/16447
