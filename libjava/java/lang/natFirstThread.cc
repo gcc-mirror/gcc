@@ -27,19 +27,10 @@ details.  */
 typedef void main_func (jobject);
 
 void
-java::lang::FirstThread::run0 (void)
+java::lang::FirstThread::run (void)
 {
   Utf8Const* main_signature = _Jv_makeUtf8Const ("([Ljava.lang.String;)V", 22);
   Utf8Const* main_name = _Jv_makeUtf8Const ("main", 4);
-
-#if 0
-  // Note: this turns out to be more painful than useful.  Apparently
-  // many people rely on being able to have main in a non-public
-  // class.
-  // This is based on my reading of 12.3.3.
-  if (! java::lang::reflect::Modifier::isPublic(klass->getModifiers()))
-    DIE ("class must be public");
-#endif
 
   if (klass == NULL)
     {

@@ -19,16 +19,7 @@ package java.lang;
 
 final class FirstThread extends Thread
 {
-  public native void run0 ();
-  public void run () 
-  {
-    try {
-      run0 ();
-    } catch (Throwable ex) {
-      System.err.println ("uncaught exception at top level");
-      ex.printStackTrace ();
-    }
-  }
+  public native void run ();
 
   public FirstThread (ThreadGroup g, Class k, Object o)
   {
