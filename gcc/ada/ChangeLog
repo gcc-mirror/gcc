@@ -1,3 +1,8 @@
+2003-11-12  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* 5gsystem.ads (Functions_Return_By_DSP): Set to False.
+	Works around PR middle-end/6552.
+
 2003-11-10  Ed Falis  <falis@gnat.com>
 
 	* 5ytiitho.adb: (procStartHookAdd): Definition and call deleted
