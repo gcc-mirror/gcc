@@ -6458,7 +6458,7 @@ emit_reload_insns (insn)
 					 reloadreg, REG_NOTES (p));
 
 #ifdef SECONDARY_OUTPUT_RELOAD_CLASS
-	  if (! special
+	  if (! special && second_reloadreg
 	      && PRESERVE_DEATH_INFO_REGNO_P (REGNO (second_reloadreg)))
 	    for (p = get_last_insn (); p; p = PREV_INSN (p))
 	      if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
