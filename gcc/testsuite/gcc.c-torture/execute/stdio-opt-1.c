@@ -46,6 +46,10 @@ int main()
      to ensure that it works and that the prototype is correct.  */
   s_ptr = s_array;
   __builtin_fputs ("", *s_ptr);
+  /* These builtin stubs are called by __builtin_fputs, ensure their
+     prototypes are set correctly too.  */
+  __builtin_fputc ('\n', *s_ptr);
+  __builtin_fwrite ("hello\n", 1, 6, *s_ptr);
 
   return 0;
 }
