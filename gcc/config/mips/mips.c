@@ -3813,7 +3813,7 @@ compute_frame_size (size)
      function, so allocate some stack space to make it happy.  */
 
   if (args_size == 0 && current_function_calls_alloca)
-	args_size = 4*UNITS_PER_WORD;
+    args_size = 4*UNITS_PER_WORD;
 
   total_size = var_size + args_size + extra_size;
 
@@ -3873,12 +3873,23 @@ compute_frame_size (size)
       current_frame_info.gp_sp_offset = offset;
       current_frame_info.gp_save_offset = offset - total_size;
     }
+  else
+    {
+      current_frame_info.gp_sp_offset = 0;
+      current_frame_info.gp_save_offset = 0;
+    }
+
 
   if (fmask)
     {
       unsigned long offset = args_size + var_size + gp_reg_rounded + fp_reg_size - 2*UNITS_PER_WORD;
       current_frame_info.fp_sp_offset = offset;
       current_frame_info.fp_save_offset = offset - total_size + UNITS_PER_WORD;
+    }
+  else
+    {
+      current_frame_info.fp_sp_offset = 0;
+      current_frame_info.fp_save_offset = 0;
     }
 
   /* Ok, we're done.  */
