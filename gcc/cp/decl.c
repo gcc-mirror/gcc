@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "../hash.h"
 #include "defaults.h"
+#include "ggc.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -198,6 +199,8 @@ static void check_initializer PROTO((tree, tree *));
 static void make_rtl_for_nonlocal_decl PROTO((tree, tree, const char *));
 static void push_cp_function_context PROTO((struct function *));
 static void pop_cp_function_context PROTO((struct function *));
+static void mark_binding_level PROTO((void *));
+static void mark_cp_function_context PROTO((struct function *));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -302,21 +305,21 @@ static int only_namespace_names;
 /* In a destructor, the last insn emitted after the start of the
    function and the parms.  */
 
-#define last_dtor_insn cp_function_chain->last_dtor_insn
+#define last_dtor_insn cp_function_chain->x_last_dtor_insn
 
 /* In a constructor, the last insn emitted after the start of the
    function and the parms, the exception specification and any
    function-try-block.  The constructor initializers are emitted after
    this insn.  */
 
-#define last_parm_cleanup_insn cp_function_chain->last_parm_cleanup_insn
+#define last_parm_cleanup_insn cp_function_chain->x_last_parm_cleanup_insn
 
 /* If original DECL_RESULT of current function was a register,
    but due to being an addressable named return value, would up
    on the stack, this variable holds the named return value's
    original location.  */
 
-#define original_result_rtx cp_function_chain->result_rtx
+#define original_result_rtx cp_function_chain->x_result_rtx
 
 /* C++: Keep these around to reduce calls to `get_identifier'.
    Identifiers for `this' in member functions and the auto-delete
@@ -415,7 +418,7 @@ static tree current_function_parm_tags;
    at the end of the function.  The TREE_VALUE is a LABEL_DECL; the
    TREE_PURPOSE is the previous binding of the label.  */
 
-#define named_labels cp_function_chain->named_labels
+#define named_labels cp_function_chain->x_named_labels
 
 /* The FUNCTION_DECL for the function currently being compiled,
    or 0 if between functions.  */
@@ -1998,6 +2001,30 @@ wrapup_globals_for_namespace (namespace, data)
   return result;
 }
 
+
+static void
+mark_binding_level (arg)
+     void *arg;
+{
+  struct binding_level *lvl = *(struct binding_level **)arg;
+
+  while (lvl)
+    {
+      ggc_mark_tree (lvl->names);
+      ggc_mark_tree (lvl->tags);
+      ggc_mark_tree (lvl->usings);
+      ggc_mark_tree (lvl->using_directives);
+      ggc_mark_tree (lvl->class_shadowed);
+      ggc_mark_tree (lvl->type_shadowed);
+      ggc_mark_tree (lvl->shadowed_labels);
+      ggc_mark_tree (lvl->blocks);
+      ggc_mark_tree (lvl->this_block);
+      ggc_mark_tree (lvl->incomplete);
+      ggc_mark_tree (lvl->dead_vars_from_for);
+
+      lvl = lvl->level_chain;
+    }
+}
 
 /* For debugging.  */
 static int no_print_functions = 0;
@@ -14537,8 +14564,117 @@ pop_cp_function_context (f)
   f->language = 0;
 }
 
+void
+mark_cp_function_context (f)
+     struct function *f;
+{
+  struct language_function *p = f->language;
+
+  ggc_mark_tree (p->x_named_labels);
+  ggc_mark_tree (p->x_ctor_label);
+  ggc_mark_tree (p->x_dtor_label);
+  ggc_mark_tree (p->x_base_init_list);
+  ggc_mark_tree (p->x_member_init_list);
+  ggc_mark_tree (p->x_base_init_expr);
+  ggc_mark_tree (p->x_current_class_ptr);
+  ggc_mark_tree (p->x_current_class_ref);
+  ggc_mark_tree (p->x_last_tree);
+  ggc_mark_tree (p->x_last_expr_type);
+
+  ggc_mark_rtx (p->x_last_dtor_insn);
+  ggc_mark_rtx (p->x_last_parm_cleanup_insn);
+  ggc_mark_rtx (p->x_result_rtx);
+
+  mark_binding_level (&p->binding_level);
+}
+
+
 int
 in_function_p ()
 {
   return function_depth != 0;
+}
+
+
+void
+lang_mark_false_label_stack (arg)
+     void *arg;
+{
+  /* C++ doesn't use false_label_stack.  It better be NULL.  */
+  if (*(void **)arg != NULL)
+    abort();
+}
+
+void
+lang_mark_tree (t)
+     tree t;
+{
+  enum tree_code code = TREE_CODE (t);
+  if (code == IDENTIFIER_NODE)
+    {
+      struct lang_identifier *li = (struct lang_identifier *) t;
+      struct lang_id2 *li2 = li->x;
+      ggc_mark_tree (li->namespace_bindings);
+      ggc_mark_tree (li->class_value);
+      ggc_mark_tree (li->class_template_info);
+
+      if (li2)
+	{
+	  ggc_mark_tree (li2->label_value);
+	  ggc_mark_tree (li2->implicit_decl);
+	  ggc_mark_tree (li2->error_locus);
+	}
+    }
+  else if (TREE_CODE_CLASS (code) == 'd')
+    {
+      struct lang_decl *ld = DECL_LANG_SPECIFIC (t);
+
+      if (ld)
+	{
+	  ggc_mark_tree (ld->decl_flags.access);
+	  ggc_mark_tree (ld->decl_flags.context);
+	  if (TREE_CODE (t) != NAMESPACE_DECL)
+	    ggc_mark_tree (ld->decl_flags.u.template_info);
+	  if (CAN_HAVE_FULL_LANG_DECL_P (t))
+	    {
+	      ggc_mark_tree (ld->main_decl_variant);
+	      ggc_mark_tree (ld->befriending_classes);
+	      ggc_mark_tree (ld->saved_tree);
+	      if (TREE_CODE (t) == TYPE_DECL)
+		ggc_mark_tree (ld->u.sorted_fields);
+	    }
+	}
+    }
+  else if (TREE_CODE_CLASS (code) == 't')
+    {
+      struct lang_type *lt = TYPE_LANG_SPECIFIC (t);
+
+      if (lt)
+	{
+	  ggc_mark_tree (lt->vfields);
+	  ggc_mark_tree (lt->vbases);
+	  ggc_mark_tree (lt->tags);
+	  ggc_mark_tree (lt->search_slot);
+	  ggc_mark_tree (lt->size);
+	  ggc_mark_tree (lt->abstract_virtuals);
+	  ggc_mark_tree (lt->friend_classes);
+	  ggc_mark_tree (lt->rtti);
+	  ggc_mark_tree (lt->methods);
+	  ggc_mark_tree (lt->template_info);
+	}
+    }
+}
+
+void
+lang_cleanup_tree (t)
+     tree t;
+{
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't'
+      && TYPE_LANG_SPECIFIC (t) != NULL)
+    {
+#if 0
+      /* This is currently allocated with an obstack.  This will change.  */
+      free (TYPE_LANG_SPECIFIC (t));
+#endif
+    }
 }

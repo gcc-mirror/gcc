@@ -437,20 +437,20 @@ extern tree cp_global_trees[CPTI_MAX];
 
 struct language_function
 {
-  tree named_labels;
-  tree ctor_label;
-  tree dtor_label;
-  tree base_init_list;
-  tree member_init_list;
-  tree base_init_expr;
-  tree current_class_ptr;
-  tree current_class_ref;
-  tree last_tree;
-  tree last_expr_type;
+  tree x_named_labels;
+  tree x_ctor_label;
+  tree x_dtor_label;
+  tree x_base_init_list;
+  tree x_member_init_list;
+  tree x_base_init_expr;
+  tree x_current_class_ptr;
+  tree x_current_class_ref;
+  tree x_last_tree;
+  tree x_last_expr_type;
 
-  struct rtx_def *last_dtor_insn;
-  struct rtx_def *last_parm_cleanup_insn;
-  struct rtx_def *result_rtx;
+  struct rtx_def *x_last_dtor_insn;
+  struct rtx_def *x_last_parm_cleanup_insn;
+  struct rtx_def *x_result_rtx;
 
   int returns_value;
   int returns_null;
@@ -474,12 +474,12 @@ struct language_function
 /* In a destructor, the point at which all derived class destroying
    has been done, just before any base class destroying will be done.  */
 
-#define dtor_label cp_function_chain->dtor_label
+#define dtor_label cp_function_chain->x_dtor_label
 
 /* In a constructor, the point at which we are ready to return
    the pointer to the initialized object.  */
 
-#define ctor_label cp_function_chain->ctor_label
+#define ctor_label cp_function_chain->x_ctor_label
 
 /* In C++, structures with well-defined constructors are initialized by
    those constructors, unasked.  CURRENT_BASE_INIT_LIST
@@ -491,30 +491,30 @@ struct language_function
    where each successive term can be handed down the constructor
    line.  Perhaps this was not intended.  */
 
-#define current_base_init_list cp_function_chain->base_init_list
-#define current_member_init_list cp_function_chain->member_init_list
+#define current_base_init_list cp_function_chain->x_base_init_list
+#define current_member_init_list cp_function_chain->x_member_init_list
 
 /* Sequence of insns which represents base initialization.  */
 
-#define base_init_expr cp_function_chain->base_init_expr
+#define base_init_expr cp_function_chain->x_base_init_expr
 
 /* When we're processing a member function, current_class_ptr is the
    PARM_DECL for the `this' pointer.  The current_class_ref is an
    expression for `*this'.  */
 
-#define current_class_ptr cp_function_chain->current_class_ptr
-#define current_class_ref cp_function_chain->current_class_ref
+#define current_class_ptr cp_function_chain->x_current_class_ptr
+#define current_class_ref cp_function_chain->x_current_class_ref
 
 /* When building a statement-tree, this is the last node added to the
    tree.  */
 
-#define last_tree cp_function_chain->last_tree
+#define last_tree cp_function_chain->x_last_tree
 
 /* The type of the last expression-statement we have seen.  This is
    required because the type of a statement-expression is the type of
    the last expression statement.  */
 
-#define last_expr_type cp_function_chain->last_expr_type
+#define last_expr_type cp_function_chain->x_last_expr_type
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
