@@ -1,4 +1,11 @@
-2002-10-02  Matt Austern  <austern@apple.com
+2002-10-02  Richard Henderson  <rth@redhat.com>
+
+	PR opt/7124
+	* config/i386/i386.c (ix86_register_move_cost): Increase cost
+	for secondary_memory_needed pairs.
+
+2002-10-02  Matt Austern  <austern@apple.com>
+
 	* class.c (check_field_decls): Changed warning about const member
 	variables so that it doesn't get issued for a class aggregate.
 	
