@@ -108,9 +108,7 @@ public class File implements Serializable
   public String getName ()
   {
     int last = path.lastIndexOf(separatorChar);
-    if (last == -1)
-      last = 0;
-    return path.substring(last);
+    return path.substring(last + 1);
   }
 
   public String getParent ()

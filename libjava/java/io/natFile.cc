@@ -105,7 +105,7 @@ java::io::File::attr (jstring canon, jint query)
   JvAssert (query == MODIFIED || query == LENGTH);
   // FIXME: time computation is very POSIX-specific -- POSIX and Java
   // have the same Epoch.
-  return query == MODIFIED ? sb.st_mtime * 1000 : sb.st_size;
+  return query == MODIFIED ? (jlong)sb.st_mtime * 1000 : sb.st_size;
 #else
   // There's no good choice here.
   return 23;

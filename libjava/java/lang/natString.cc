@@ -687,6 +687,8 @@ java::lang::String::substring (jint beginIndex, jint endIndex)
 {
   if (beginIndex < 0 || endIndex > count || beginIndex > endIndex)
     JvThrow (new StringIndexOutOfBoundsException());
+  if (beginIndex == 0 && endIndex == count)
+    return this;
   jint newCount = endIndex - beginIndex;
   if (newCount <= 8)  // Optimization, mainly for GC.
     return JvNewString(JvGetStringChars(this) + beginIndex, newCount);

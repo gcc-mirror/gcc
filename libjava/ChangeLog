@@ -1,3 +1,10 @@
+1999-07-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/natString.cc (substring): optimize where substring is
+	entire String.
+	* java/io/File.java (getName): don't return separator with file name.
+	* java/io/natFile.cc (attr): fix overflow.
+
 Sun Jul 25 01:43:34 1999  Anthony Green  <green@cygnus.com>
 
 	* mauve-libgcj: Disable Object Serialization tests.
