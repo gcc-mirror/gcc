@@ -1,3 +1,8 @@
+Sun Aug  6 22:51:16 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* thr-posix.c: Integrated Chris Ball's <cball@fmco.com> changes to
+	improve the Posix thread support for Objective-C.
+
 2000-08-04  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* aclocal.m4: Replace copy of ../libtool.m4 with
