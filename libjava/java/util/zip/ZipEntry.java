@@ -19,7 +19,7 @@ package java.util.zip;
  * Status:  Believed complete and correct.
  */
 
-public class ZipEntry implements ZipConstants
+public class ZipEntry implements ZipConstants, Cloneable
 {
   // These values were determined using a simple test program.
   public static final int STORED = 0;
@@ -51,9 +51,19 @@ public class ZipEntry implements ZipConstants
     crc = ent.crc;
     extra = ent.extra;
     method = ent.method;
+    name = ent.name;
     size = ent.size;
     time = ent.time;
     relativeOffset = ent.relativeOffset;
+  }
+  
+  public Object clone ()
+  {
+    // JCL defines this as being the same as the copy constructor above,
+    // except that value of the "extra" field is also copied.
+    ZipEntry clone = new ZipEntry (this);
+    clone.extra = (byte[]) extra.clone ();
+    return clone;
   }
 
   public String getComment () { return comment; }
@@ -88,6 +98,13 @@ public class ZipEntry implements ZipConstants
     if (comment != null && comment.length() > 65535)
       throw new IllegalArgumentException ();
     this.comment = comment;
+  }
+  
+  public void setCompressedSize (long compressedSize)
+  {
+    if (size < 0 || size > 0xffffffffL)
+      throw new IllegalArgumentException ();
+    this.compressedSize = compressedSize;
   }
 
   public void setCrc (long crc) 
@@ -155,4 +172,6 @@ public class ZipEntry implements ZipConstants
   }
 
   public String toString () { return name; }
+  
+  public int hashCode () { return name.hashCode (); }
 }

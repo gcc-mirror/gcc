@@ -1,3 +1,11 @@
+2000-05-20  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/zip/ZipEntry.java: Implement Cloneable, per JDK1.2 docs.
+	(ZipEntry): Copy the `name' field.
+	(clone): Implement JDK1.2 method.
+	(setCompressedSize): ditto.
+	(hashCode): ditto.
+
 2000-05-19  Tom Tromey  <tromey@cygnus.com>
 
 	* java/io/BufferedWriter.java: Merged with Classpath.
