@@ -1,3 +1,7 @@
+2004-03-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/torture/mips-sdata-1.c: Restrict to mips*-*-elf*.
+
 2004-03-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/20040306-1.c: New test.

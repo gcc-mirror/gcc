@@ -7303,6 +7303,11 @@ mips_in_small_data_p (tree decl)
   if (TREE_CODE (decl) == STRING_CST || TREE_CODE (decl) == FUNCTION_DECL)
     return false;
 
+  /* We don't yet generate small-data references for -mabicalls.  See related
+     -G handling in override_options.  */
+  if (TARGET_ABICALLS)
+    return false;
+
   if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl) != 0)
     {
       const char *name;
