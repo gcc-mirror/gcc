@@ -1,3 +1,8 @@
+2004-03-04  Jan Hubicka  <jh@suse.cz>
+
+	* cselib.c (cselib_finish): Fix miss-application of my previous
+	patch.
+
 2004-03-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* hooks.c (hook_tree_tree_identity): New.

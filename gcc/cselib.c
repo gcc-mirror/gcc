@@ -1444,12 +1444,11 @@ cselib_finish (void)
   clear_table ();
   htab_delete (hash_table);
   reg_values = 0;
+  free (used_regs);
   used_regs = 0;
   hash_table = 0;
   n_useless_values = 0;
   next_unknown_value = 0;
-  free (used_regs);
-  used_regs = 0;
 }
 
 #include "gt-cselib.h"
