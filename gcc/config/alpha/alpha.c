@@ -1420,43 +1420,28 @@ print_operand (file, x, code)
       fprintf (file, "%ld", (64 - INTVAL (x)) / 8);
       break;
 
-    case 'C':
+    case 'C': case 'D': case 'c': case 'd':
       /* Write out comparison name.  */
-      if (GET_RTX_CLASS (GET_CODE (x)) != '<')
-	output_operand_lossage ("invalid %%C value");
+      {
+	enum rtx_code c = GET_CODE (x);
 
-      if (GET_CODE (x) == LEU)
-	fprintf (file, "ule");
-      else if (GET_CODE (x) == LTU)
-	fprintf (file, "ult");
-      else
-	fprintf (file, "%s", GET_RTX_NAME (GET_CODE (x)));
-      break;
+        if (GET_RTX_CLASS (c) != '<')
+	  output_operand_lossage ("invalid %%C value");
 
-    case 'D':
-      /* Similar, but write reversed code.  We can't get an unsigned code
-	 here.  */
-      if (GET_RTX_CLASS (GET_CODE (x)) != '<')
-	output_operand_lossage ("invalid %%D value");
+	if (code == 'D')
+	  c = reverse_condition (c);
+	else if (code == 'c')
+	  c = swap_condition (c);
+	else if (code == 'd')
+	  c = swap_condition (reverse_condition (c));
 
-      fprintf (file, "%s", GET_RTX_NAME (reverse_condition (GET_CODE (x))));
-      break;
-
-    case 'c':
-      /* Similar to `c', but swap.  We can't get unsigned here either.  */
-      if (GET_RTX_CLASS (GET_CODE (x)) != '<')
-	output_operand_lossage ("invalid %%D value");
-
-      fprintf (file, "%s", GET_RTX_NAME (swap_condition (GET_CODE (x))));
-      break;
-
-    case 'd':
-      /* Similar, but reverse and swap.  We can't get unsigned here either.  */
-      if (GET_RTX_CLASS (GET_CODE (x)) != '<')
-	output_operand_lossage ("invalid %%D value");
-
-      fprintf (file, "%s",
-	       GET_RTX_NAME (swap_condition (reverse_condition ((GET_CODE (x))))));
+        if (c == LEU)
+	  fprintf (file, "ule");
+        else if (c == LTU)
+	  fprintf (file, "ult");
+        else
+	  fprintf (file, "%s", GET_RTX_NAME (c));
+      }
       break;
 
     case 'E':
