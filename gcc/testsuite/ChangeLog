@@ -1,3 +1,7 @@
+2003-02-19  Daniel Jacobowitz  <drow@mvista.com>
+
+	* gcc.c-torture/compile/20030219-1.c: New test.
+
 Tue Feb 18 23:28:53 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/funcorder.c: New test.
