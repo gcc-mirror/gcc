@@ -2956,17 +2956,13 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
   else
     {
       rtx dst_addr, src_addr, count, blocks, temp;
+      rtx loop_end_label = gen_label_rtx ();
       rtx end_label = gen_label_rtx ();
       enum machine_mode mode;
-      tree type;
 
       mode = GET_MODE (len);
       if (mode == VOIDmode)
         mode = Pmode;
-
-      type = lang_hooks.types.type_for_mode (mode, 1);
-      if (!type)
-        abort ();
 
       dst_addr = gen_reg_rtx (Pmode);
       src_addr = gen_reg_rtx (Pmode);
@@ -2990,10 +2986,9 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
+      emit_cmp_and_jump_insns (blocks, const0_rtx,
+			       EQ, NULL_RTX, mode, 1, loop_end_label);
       expand_start_loop (1);
-      expand_exit_loop_top_cond (0, build (NE_EXPR, type,
-					   make_tree (type, blocks),
-					   make_tree (type, const0_rtx)));
 
       emit_insn (gen_movstr_short (dst, src, GEN_INT (255)));
       s390_load_address (dst_addr,
@@ -3005,7 +3000,10 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
+      emit_cmp_and_jump_insns (blocks, const0_rtx,
+			       EQ, NULL_RTX, mode, 1, loop_end_label);
       expand_end_loop ();
+      emit_label (loop_end_label);
 
       emit_insn (gen_movstr_short (dst, src,
 				   convert_to_mode (Pmode, count, 1)));
@@ -3032,17 +3030,13 @@ s390_expand_clrstr (rtx dst, rtx len)
   else
     {
       rtx dst_addr, src_addr, count, blocks, temp;
+      rtx loop_end_label = gen_label_rtx ();
       rtx end_label = gen_label_rtx ();
       enum machine_mode mode;
-      tree type;
 
       mode = GET_MODE (len);
       if (mode == VOIDmode)
         mode = Pmode;
-
-      type = lang_hooks.types.type_for_mode (mode, 1);
-      if (!type)
-        abort ();
 
       dst_addr = gen_reg_rtx (Pmode);
       src_addr = gen_reg_rtx (Pmode);
@@ -3064,10 +3058,9 @@ s390_expand_clrstr (rtx dst, rtx len)
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
+      emit_cmp_and_jump_insns (blocks, const0_rtx,
+			       EQ, NULL_RTX, mode, 1, loop_end_label);
       expand_start_loop (1);
-      expand_exit_loop_top_cond (0, build (NE_EXPR, type,
-					   make_tree (type, blocks),
-					   make_tree (type, const0_rtx)));
 
       emit_insn (gen_clrstr_short (dst, GEN_INT (255)));
       s390_load_address (dst_addr,
@@ -3077,7 +3070,10 @@ s390_expand_clrstr (rtx dst, rtx len)
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
+      emit_cmp_and_jump_insns (blocks, const0_rtx,
+			       EQ, NULL_RTX, mode, 1, loop_end_label);
       expand_end_loop ();
+      emit_label (loop_end_label);
 
       emit_insn (gen_clrstr_short (dst, convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
@@ -3120,17 +3116,13 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
   else
     {
       rtx addr0, addr1, count, blocks, temp;
+      rtx loop_end_label = gen_label_rtx ();
       rtx end_label = gen_label_rtx ();
       enum machine_mode mode;
-      tree type;
 
       mode = GET_MODE (len);
       if (mode == VOIDmode)
         mode = Pmode;
-
-      type = lang_hooks.types.type_for_mode (mode, 1);
-      if (!type)
-        abort ();
 
       addr0 = gen_reg_rtx (Pmode);
       addr1 = gen_reg_rtx (Pmode);
@@ -3154,10 +3146,9 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
+      emit_cmp_and_jump_insns (blocks, const0_rtx,
+			       EQ, NULL_RTX, mode, 1, loop_end_label);
       expand_start_loop (1);
-      expand_exit_loop_top_cond (0, build (NE_EXPR, type,
-					   make_tree (type, blocks),
-					   make_tree (type, const0_rtx)));
 
       emit_insn (gen_cmpmem_short (op0, op1, GEN_INT (255)));
       temp = gen_rtx_NE (VOIDmode, gen_rtx_REG (CCSmode, 33), const0_rtx);
@@ -3175,7 +3166,10 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
+      emit_cmp_and_jump_insns (blocks, const0_rtx,
+			       EQ, NULL_RTX, mode, 1, loop_end_label);
       expand_end_loop ();
+      emit_label (loop_end_label);
 
       emit_insn (gen_cmpmem_short (op0, op1,
 				   convert_to_mode (Pmode, count, 1)));

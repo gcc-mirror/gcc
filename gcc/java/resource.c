@@ -79,6 +79,7 @@ compile_resource_data (const char *name, const char *buffer, int length)
   PUSH_FIELD_VALUE (rinit, "data", data);
   FINISH_RECORD_CONSTRUCTOR (rinit);
   TREE_CONSTANT (rinit) = 1;
+  TREE_INVARIANT (rinit) = 1;
 
   /* Generate a unique-enough identifier.  */
   sprintf (buf, "_Jr%d", ++Jr_count);

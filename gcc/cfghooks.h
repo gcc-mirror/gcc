@@ -37,9 +37,10 @@ struct cfg_hooks
   basic_block (*create_basic_block) (void *head, void *end, basic_block after);
 
   /* Redirect edge E to the given basic block B and update underlying program
-     representation.  Returns false when edge is not easily redirectable for
-     whatever reason.  */
-  bool (*redirect_edge_and_branch) (edge e, basic_block b);
+     representation.  Returns edge representing redirected branch (that may not
+     be equivalent to E in the case of duplicate edges being removed) or NULL
+     if edge is not easily redirectable for whatever reason.  */
+  edge (*redirect_edge_and_branch) (edge e, basic_block b);
 
   /* Same as the above but allows redirecting of fallthru edges.  In that case
      newly created forwarder basic block is returned.  It aborts when called
@@ -62,6 +63,19 @@ struct cfg_hooks
   /* Merge blocks A and B.  */
   void (*merge_blocks) (basic_block a, basic_block b);
 
+  /* Predict edge E using PREDICTOR to given PROBABILITY.  */
+  void (*predict_edge) (edge e, enum br_predictor predictor, int probability);
+
+  /* Return true if the one of outgoing edges is already predicted by
+     PREDICTOR.  */
+  bool (*predicted_by_p) (basic_block bb, enum br_predictor predictor);
+
+  /* Return true when block A can be duplicated.  */
+  bool (*can_duplicate_block_p) (basic_block a);
+
+  /* Duplicate block A.  */
+  basic_block (*duplicate_block) (basic_block a);
+
   /* Higher level functions representable by primitive operations above if
      we didn't have some oddities in RTL and Tree representations.  */
   basic_block (*split_edge) (edge);
@@ -69,11 +83,28 @@ struct cfg_hooks
 
   /* Tries to make the edge fallthru.  */
   void (*tidy_fallthru_edge) (edge);
+
+  /* Say whether a block ends with a call, possibly followed by some
+     other code that must stay with the call.  */
+  bool (*block_ends_with_call_p) (basic_block);
+
+  /* Say whether a block ends with a conditional branch.  Switches
+     and unconditional branches do not qualify.  */
+  bool (*block_ends_with_condjump_p) (basic_block);
+
+  /* Add fake edges to the function exit for any non constant and non noreturn
+     calls, volatile inline assembly in the bitmap of blocks specified by
+     BLOCKS or to the whole CFG if BLOCKS is zero.  Return the number of blocks
+     that were split.
+
+     The goal is to expose cases in which entering a basic block does not imply
+     that all subsequent instructions must be executed.  */
+  int (*flow_call_edges_add) (sbitmap);
 };
 
 extern void verify_flow_info (void);
 extern void dump_bb (basic_block, FILE *, int);
-extern bool redirect_edge_and_branch (edge, basic_block);
+extern edge redirect_edge_and_branch (edge, basic_block);
 extern basic_block redirect_edge_and_branch_force (edge, basic_block);
 extern edge split_block (basic_block, void *);
 extern edge split_block_after_labels (basic_block);
@@ -88,13 +119,23 @@ extern edge make_forwarder_block (basic_block, bool (*)(edge),
 				  void (*) (basic_block));
 extern void tidy_fallthru_edge (edge);
 extern void tidy_fallthru_edges (void);
+extern void predict_edge (edge e, enum br_predictor predictor, int probability);
+extern bool predicted_by_p (basic_block bb, enum br_predictor predictor);
+extern bool can_duplicate_block_p (basic_block);
+extern basic_block duplicate_block (basic_block, edge);
+extern bool block_ends_with_call_p (basic_block bb);
+extern bool block_ends_with_condjump_p (basic_block bb);
+extern int flow_call_edges_add (sbitmap);
 
 /* Hooks containers.  */
+extern struct cfg_hooks tree_cfg_hooks;
 extern struct cfg_hooks rtl_cfg_hooks;
 extern struct cfg_hooks cfg_layout_rtl_cfg_hooks;
 
 /* Declarations.  */
+extern int ir_type (void);
 extern void rtl_register_cfg_hooks (void);
 extern void cfg_layout_rtl_register_cfg_hooks (void);
+extern void tree_register_cfg_hooks (void);
 
 #endif  /* GCC_CFGHOOKS_H */

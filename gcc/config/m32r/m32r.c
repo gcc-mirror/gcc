@@ -771,8 +771,6 @@ move_src_operand (rtx op, enum machine_mode mode)
 	}
       else
 	return 1;
-    case CONSTANT_P_RTX:
-	return 1;
     case CONST_DOUBLE :
       if (mode == SFmode)
 	return 1;

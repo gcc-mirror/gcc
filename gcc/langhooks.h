@@ -76,19 +76,9 @@ struct lang_hooks_for_functions
 
   /* Called when leaving a nested function.  */
   void (*leave_nested) (struct function *);
-};
 
-/* Lang hooks for rtl code generation.  */
-struct lang_hooks_for_rtl_expansion
-{
-  /* Called after expand_function_start, but before expanding the body.  */
-  void (*start) (void);
-
-  /* Called to expand each statement.  */
-  void (*stmt) (tree);
-
-  /* Called after expanding the body but before expand_function_end.  */
-  void (*end) (void);
+  /* Determines if it's ok for a function to have no noreturn attribute.  */
+  bool (*missing_noreturn_ok_p) (tree);
 };
 
 /* The following hooks are used by tree-dump.c.  */
@@ -287,6 +277,10 @@ struct lang_hooks
      Fourth argument is actually an enum expand_modifier.  */
   rtx (*expand_expr) (tree, rtx, enum machine_mode, int, rtx *);
 
+  /* Called by expand_expr to generate the definition of a decl.  Returns
+     1 if handled, 0 otherwise.  */
+  int (*expand_decl) (tree);
+
   /* Prepare expr to be an argument of a TRUTH_NOT_EXPR or other logical
      operation.
 
@@ -380,6 +374,11 @@ struct lang_hooks
      types in C++.  */
   const char *(*decl_printable_name) (tree decl, int verbosity);
 
+  /* This compares two types for equivalence ("compatible" in C-based languages).
+     This routine should only return 1 if it is sure.  It should not be used
+     in contexts where erroneously returning 0 causes problems.  */
+  int (*types_compatible_p) (tree x, tree y);
+
   /* Given a CALL_EXPR, return a function decl that is its target.  */
   tree (*lang_get_callee_fndecl) (tree);
 
@@ -391,10 +390,6 @@ struct lang_hooks
      in bytes.  A frontend can call lhd_expr_size to get the default
      semantics in cases that it doesn't want to handle specially.  */
   tree (*expr_size) (tree);
-
-  /* Called from uninitialized_vars_warning to find out if a variable is
-     uninitialized based on DECL_INITIAL.  */
-  bool (*decl_uninit) (tree);
 
   /* Update lang specific fields after duplicating function body.  */
   void (*update_decl_after_saving) (tree, void *);
@@ -421,7 +416,13 @@ struct lang_hooks
 
   struct lang_hooks_for_types types;
 
-  struct lang_hooks_for_rtl_expansion rtl_expand;
+  /* Perform language-specific gimplification on the argument.  Returns an
+     enum gimplify_status, though we can't see that type here.  */
+  int (*gimplify_expr) (tree *, tree *, tree *);
+
+  /* True if the front end has gimplified the function before running the
+     inliner, false if the front end generates GENERIC directly.  */
+  bool gimple_before_inlining;
 
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */

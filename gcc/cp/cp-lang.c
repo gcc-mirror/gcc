@@ -35,11 +35,12 @@ Boston, MA 02111-1307, USA.  */
 enum c_language_kind c_language = clk_cxx;
 
 static HOST_WIDE_INT cxx_get_alias_set (tree);
-static bool ok_to_generate_alias_set_for_type (tree);
 static bool cxx_warn_unused_global_decl (tree);
 static tree cp_expr_size (tree);
 static size_t cp_tree_size (enum tree_code);
 static bool cp_var_mod_type_p (tree);
+static int cxx_types_compatible_p (tree, tree);
+static int cp_expand_decl (tree);
 static void cxx_initialize_diagnostics (diagnostic_context *);
 
 #undef LANG_HOOKS_NAME
@@ -70,14 +71,14 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_EXPAND_CONSTANT cplus_expand_constant
 #undef LANG_HOOKS_EXPAND_EXPR
 #define LANG_HOOKS_EXPAND_EXPR cxx_expand_expr
+#undef LANG_HOOKS_EXPAND_DECL
+#define LANG_HOOKS_EXPAND_DECL cp_expand_decl
 #undef LANG_HOOKS_SAFE_FROM_P
 #define LANG_HOOKS_SAFE_FROM_P c_safe_from_p
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE c_common_parse_file
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL cxx_dup_lang_specific_decl
-#undef LANG_HOOKS_UNSAVE_EXPR_NOW
-#define LANG_HOOKS_UNSAVE_EXPR_NOW cxx_unsave_expr_now
 #undef LANG_HOOKS_MAYBE_BUILD_CLEANUP
 #define LANG_HOOKS_MAYBE_BUILD_CLEANUP cxx_maybe_build_cleanup
 #undef LANG_HOOKS_TRUTHVALUE_CONVERSION
@@ -110,8 +111,6 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL cxx_warn_unused_global_decl
 #undef LANG_HOOKS_WRITE_GLOBALS
 #define LANG_HOOKS_WRITE_GLOBALS lhd_do_nothing
-#undef LANG_HOOKS_DECL_UNINIT
-#define LANG_HOOKS_DECL_UNINIT c_decl_uninit
 #undef LANG_HOOKS_UPDATE_DECL_AFTER_SAVING
 #define LANG_HOOKS_UPDATE_DECL_AFTER_SAVING cp_update_decl_after_saving
 
@@ -120,11 +119,8 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_FUNCTION_INIT cxx_push_function_context
 #undef LANG_HOOKS_FUNCTION_FINAL
 #define LANG_HOOKS_FUNCTION_FINAL cxx_pop_function_context
-
-#undef LANG_HOOKS_RTL_EXPAND_START
-#define LANG_HOOKS_RTL_EXPAND_START cxx_expand_function_start
-#undef LANG_HOOKS_RTL_EXPAND_STMT
-#define LANG_HOOKS_RTL_EXPAND_STMT expand_stmt
+#undef LANG_HOOKS_FUNCTION_MISSING_NORETURN_OK_P
+#define LANG_HOOKS_FUNCTION_MISSING_NORETURN_OK_P cp_missing_noreturn_ok_p
 
 /* Attribute hooks.  */
 #undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
@@ -145,7 +141,7 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
   cp_add_pending_fn_decls
 #undef LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P
 #define LANG_HOOKS_TREE_INLINING_TREE_CHAIN_MATTERS_P \
-  cp_is_overload_p
+  cp_tree_chain_matters_p
 #undef LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P
 #define LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P \
   cp_auto_var_in_fn_p
@@ -156,8 +152,6 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P anon_aggr_type_p
 #undef LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P
 #define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P cp_var_mod_type_p
-#undef LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS
-#define LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS c_estimate_num_insns
 #undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN cp_dump_tree
 #undef LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN
@@ -186,8 +180,12 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR cxx_incomplete_type_error
 #undef LANG_HOOKS_TYPE_PROMOTES_TO
 #define LANG_HOOKS_TYPE_PROMOTES_TO cxx_type_promotes_to
+#undef LANG_HOOKS_TYPES_COMPATIBLE_P
+#define LANG_HOOKS_TYPES_COMPATIBLE_P cxx_types_compatible_p
 #undef LANG_HOOKS_REGISTER_BUILTIN_TYPE
 #define LANG_HOOKS_REGISTER_BUILTIN_TYPE c_register_builtin_type
+#undef LANG_HOOKS_GIMPLIFY_EXPR
+#define LANG_HOOKS_GIMPLIFY_EXPR cp_gimplify_expr
 
 /* Each front end provides its own hooks, for toplev.c.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -233,60 +231,6 @@ const char *const tree_code_name[] = {
 };
 #undef DEFTREECODE
 
-/* Check if a C++ type is safe for aliasing.
-   Return TRUE if T safe for aliasing FALSE otherwise.  */
-
-static bool
-ok_to_generate_alias_set_for_type (tree t)
-{
-  if (TYPE_PTRMEMFUNC_P (t))
-    return true;
-  if (AGGREGATE_TYPE_P (t))
-    {
-      if ((TREE_CODE (t) == RECORD_TYPE) || (TREE_CODE (t) == UNION_TYPE))
-	{
-	  tree fields;
-	  /* Backend-created structs are safe.  */
-	  if (! CLASS_TYPE_P (t))
-	    return true;
-	  /* PODs are safe.  */
-	  if (! CLASSTYPE_NON_POD_P(t))
-	    return true;
-	  /* Classes with virtual baseclasses are not.  */
-	  if (TYPE_USES_VIRTUAL_BASECLASSES (t))
-	    return false;
-	  /* Recursively check the base classes.  */
-	  if (TYPE_BINFO (t) != NULL && TYPE_BINFO_BASETYPES (t) != NULL)
-	    {
-	      int i;
-	      for (i = 0; i < TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (t)); i++)
-		{
-		  tree binfo = TREE_VEC_ELT (TYPE_BINFO_BASETYPES (t), i);
-		  if (!ok_to_generate_alias_set_for_type (BINFO_TYPE (binfo)))
-		    return false;
-		}
-	    }
-	  /* Check all the fields.  */
-	  for (fields = TYPE_FIELDS (t); fields; fields = TREE_CHAIN (fields))
-	    {
-	      if (TREE_CODE (fields) != FIELD_DECL)
-		continue;
-	      if (! ok_to_generate_alias_set_for_type (TREE_TYPE (fields)))
-		return false;
-	    }
-	  return true;
-	}
-      else if (TREE_CODE (t) == ARRAY_TYPE)
-	return ok_to_generate_alias_set_for_type (TREE_TYPE (t));
-      else
-	/* This should never happen, we dealt with all the aggregate
-	   types that can appear in C++ above.  */
-	abort ();
-    }
-  else
-    return true;
-}
-
 /* Special routine to get the alias set for C++.  */
 
 static HOST_WIDE_INT
@@ -297,13 +241,8 @@ cxx_get_alias_set (tree t)
        complete type.  */
     return get_alias_set (TYPE_CONTEXT (t));
   
-  if (/* It's not yet safe to use alias sets for some classes in C++.  */
-      !ok_to_generate_alias_set_for_type (t)
-      /* Nor is it safe to use alias sets for pointers-to-member
-	 functions, due to the fact that there may be more than one
-	 RECORD_TYPE type corresponding to the same pointer-to-member
-	 type.  */
-      || TYPE_PTRMEMFUNC_P (t))
+  /* Punt on PMFs until we canonicalize functions properly.  */
+  if (TYPE_PTRMEMFUNC_P (t))
     return 0;
 
   return c_common_get_alias_set (t);
@@ -354,6 +293,35 @@ cp_expr_size (tree exp)
     return lhd_expr_size (exp);
 }
 
+/* Expand DECL if it declares an entity not handled by the
+   common code.  */
+
+static int
+cp_expand_decl (tree decl)
+{
+  if (TREE_CODE (decl) == VAR_DECL && !TREE_STATIC (decl))
+    {
+      /* Let the back-end know about this variable.  */
+      if (!anon_aggr_type_p (TREE_TYPE (decl)))
+	emit_local_var (decl);
+      else
+	expand_anon_union_decl (decl, NULL_TREE, 
+				DECL_ANON_UNION_ELEMS (decl));
+    }
+  else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+    make_rtl_for_local_static (decl);
+  else
+    return 0;
+
+  return 1;
+}
+
+int
+cp_tree_chain_matters_p (tree t)
+{
+  return cp_is_overload_p (t) || c_tree_chain_matters_p (t);
+}
+
 /* Langhook for tree_size: determine size of our 'x' and 'c' nodes.  */
 static size_t
 cp_tree_size (enum tree_code code)
@@ -386,6 +354,11 @@ cp_var_mod_type_p (tree type)
 
   /* All other types are not variably modified.  */
   return false;
+}
+
+static int cxx_types_compatible_p (tree x, tree y)
+{
+  return same_type_ignoring_top_level_qualifiers_p (x, y);
 }
 
 /* Construct a C++-aware pretty-printer for CONTEXT.  It is assumed

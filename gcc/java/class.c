@@ -890,6 +890,7 @@ build_utf8_ref (tree name)
   PUSH_FIELD_VALUE (cinit, "data", string);
   FINISH_RECORD_CONSTRUCTOR (cinit);
   TREE_CONSTANT (cinit) = 1;
+  TREE_INVARIANT (cinit) = 1;
 
   /* Generate a unique-enough identifier.  */
   sprintf(buf, "_Utf%d", ++utf8_count);
@@ -940,8 +941,7 @@ build_indirect_class_ref (tree type)
   tree cl;
   index = alloc_class_constant (type);
   cl = build_ref_from_constant_pool (index); 
-  TREE_TYPE (cl) = promote_type (class_ptr_type);
-  return cl;
+  return convert (promote_type (class_ptr_type), cl);
 }
 
 /* Build a reference to the class TYPE.
@@ -1391,6 +1391,7 @@ get_dispatch_table (tree type, tree this_class_addr)
 		tree fdesc = build (FDESC_EXPR, nativecode_ptr_type_node, 
 				    method, build_int_2 (j, 0));
 		TREE_CONSTANT (fdesc) = 1;
+		TREE_INVARIANT (fdesc) = 1;
 	        list = tree_cons (NULL_TREE, fdesc, list);
 	      }
 	  else
@@ -1731,7 +1732,8 @@ make_class_data (tree type)
 			build1 (ADDR_EXPR, symbols_array_ptr_type,
 				TYPE_OTABLE_SYMS_DECL (type)));
       TREE_CONSTANT (TYPE_OTABLE_DECL (type)) = 1;
-    } 
+      TREE_INVARIANT (TYPE_OTABLE_DECL (type)) = 1;
+    }
   if (TYPE_ATABLE_METHODS(type) == NULL_TREE)
     {
       PUSH_FIELD_VALUE (cons, "atable", null_pointer_node);
@@ -1745,6 +1747,7 @@ make_class_data (tree type)
 			build1 (ADDR_EXPR, symbols_array_ptr_type,
 				TYPE_ATABLE_SYMS_DECL (type)));
       TREE_CONSTANT (TYPE_ATABLE_DECL (type)) = 1;
+      TREE_INVARIANT (TYPE_ATABLE_DECL (type)) = 1;
     }
  
   PUSH_FIELD_VALUE (cons, "catch_classes",
@@ -1778,37 +1781,6 @@ make_class_data (tree type)
 void
 finish_class (void)
 {
-  tree method;
-  tree type_methods = TYPE_METHODS (current_class);
-  int saw_native_method = 0;
-
-  /* Find out if we have any native methods.  We use this information
-     later.  */
-  for (method = type_methods;
-       method != NULL_TREE;
-       method = TREE_CHAIN (method))
-    {
-      if (METHOD_NATIVE (method))
-	{
-	  saw_native_method = 1;
-	  break;
-	}
-    }
-
-  /* Emit deferred inline methods. */  
-  for (method = type_methods; method != NULL_TREE; )
-    {
-      if (! TREE_ASM_WRITTEN (method) && DECL_STRUCT_FUNCTION (method) != 0)
-	{
-	  output_inline_function (method);
-	  /* Scan the list again to see if there are any earlier
-	     methods to emit. */
-	  method = type_methods;
-	  continue;
-	}
-      method = TREE_CHAIN (method);
-    }
-
   java_expand_catch_classes (current_class);
 
   current_function_decl = NULL_TREE;
@@ -2376,6 +2348,7 @@ build_symbol_entry (tree decl)
   PUSH_FIELD_VALUE (sym, "signature", signature);
   FINISH_RECORD_CONSTRUCTOR (sym);
   TREE_CONSTANT (sym) = 1;
+  TREE_INVARIANT (sym) = 1;
 
   return sym;
 } 
@@ -2414,6 +2387,7 @@ emit_symbol_table (tree name, tree the_table, tree decl_list, tree the_syms_decl
   PUSH_FIELD_VALUE (null_symbol, "signature", null_pointer_node);
   FINISH_RECORD_CONSTRUCTOR (null_symbol);
   TREE_CONSTANT (null_symbol) = 1;  
+  TREE_INVARIANT (null_symbol) = 1;  
   list = tree_cons (NULL_TREE, null_symbol, list);
 
   /* Put the list in the right order and make it a constructor. */

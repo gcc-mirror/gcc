@@ -91,7 +91,7 @@ pp_clear_state (pretty_printer *pp)
 }
 
 /* Flush the formatted text of PRETTY-PRINTER onto the attached stream.  */
-static inline void
+void
 pp_write_text_to_stream (pretty_printer *pp)
 {
   const char *text = pp_formatted_text (pp);

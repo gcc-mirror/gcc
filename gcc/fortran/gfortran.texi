@@ -1,0 +1,829 @@
+\input texinfo  @c -*-texinfo-*-
+@c %**start of header
+@setfilename gfortran.info
+@set last-update March 10, 2004
+@set copyrights-gfortran 1999-2004
+@set version-gfortran 0.235
+
+@include gcc-common.texi
+
+@c This indicates that this documentation is still under development.
+@c For example, if this option is set, overfull boxes are marked with
+@c an ugly black square.
+set DEVELOPMENT
+
+@settitle The GNU Fortran 95 Compiler
+
+@c Create a separate index for command line options
+@defcodeindex op
+@c Merge the standard indexes into a single one.
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex tp cp
+
+@c %**end of header
+
+@c Use with @@smallbook.
+
+@c %** start of document
+
+@c Cause even numbered pages to be printed on the left hand side of
+@c the page and odd numbered pages to be printed on the right hand
+@c side of the page.  Using this, you can print on both sides of a
+@c sheet of paper and have the text on the same part of the sheet.
+
+@c The text on right hand pages is pushed towards the right hand
+@c margin and the text on left hand pages is pushed toward the left
+@c hand margin.
+@c (To provide the reverse effect, set bindingoffset to -0.75in.)
+
+@c @tex
+@c \global\bindingoffset=0.75in
+@c \global\normaloffset =0.75in
+@c @end tex
+
+@copying
+Copyright @copyright{} @value{copyrights-gfortran} Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License'' and ``Funding
+Free Software'', the Front-Cover
+texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+@end copying
+
+@ifinfo
+@dircategory Programming
+@direntry
+* gfortran: (gfortran).                  The GNU Fortran 95 Compiler.
+@end direntry
+This file documents the use and the internals of
+the GNU Fortran 95 compiler, (@command{gfortran}).
+
+Published by the Free Software Foundation
+59 Temple Place - Suite 330
+Boston, MA 02111-1307 USA
+
+@insertcopying
+@end ifinfo
+
+Contributed by Steven Bosscher (@email{s.bosscher@@gcc.gnu.org}).
+
+@setchapternewpage odd
+@titlepage
+@title Using GNU Fortran 95
+@sp 2
+@center Steven Bosscher
+@sp 3 
+@center Last updated @value{last-update}
+@sp 1
+@center for version @value {version-gfortran}
+@page
+@vskip 0pt plus 1filll
+For the @value{version-gfortran} Version*
+@sp 1
+Published by the Free Software Foundation @*
+59 Temple Place - Suite 330@*
+Boston, MA 02111-1307, USA@*
+@c Last printed ??ber, 19??.@*
+@c Printed copies are available for $? each.@*
+@c ISBN ???
+@sp 1
+@insertcopying
+@end titlepage
+@summarycontents
+@contents
+@page
+
+@node Top, Copying,, (DIR)
+@top Introduction
+@cindex Introduction
+
+This manual documents the use of @command{gfortran}, 
+the GNU Fortran 95 compiler. You can find in this manual how to invoke
+@command{gfortran}, as well as its features and incompatibilities,
+and how to report bugs.
+
+@ifset DEVELOPMENT
+@emph{Warning:} This document, and the compiler it describes, are still
+under development.  While efforts are made too keep it up-to-date it might
+not accurately reflect the status of the most recent @command{gfortran}.
+@end ifset
+
+@menu
+* Copying::         GNU General Public License says
+                    how you can copy and share GNU Fortran.
+* GNU Free Documentation License::
+		    How you can copy and share this manual.
+* Funding::         How to help assure continued work for free software.
+* Getting Started:: What you should know about @command{gfortran}.
+* GFORTRAN and GCC::	    You can compile Fortran, C, or other programs.
+* GFORTRAN and G77::     Why we choose to start from scratch.
+* Invoking GFORTRAN::    Command options supported by @command{gfortran}.
+* Compiling and Testing::
+		    Need-to-knows about compiling and testing.
+* Project Status::  Status of GFORTRAN, Roadmap, proposed extensions.
+* Contributing::    Helping you can help.
+* Standards::	    Standards supported by GFORTRAN.
+* Index::	    Index of this documentation.
+@end menu
+
+
+
+@c ---------------------------------------------------------------------
+@c GNU General Public License
+@c ---------------------------------------------------------------------
+
+@include gpl.texi
+
+
+
+@c ---------------------------------------------------------------------
+@c GNU Free Documentation License
+@c ---------------------------------------------------------------------
+
+@include fdl.texi
+
+
+
+@c ---------------------------------------------------------------------
+@c Funding Free Software
+@c ---------------------------------------------------------------------
+
+@include funding.texi
+
+
+
+@c ---------------------------------------------------------------------
+@c Getting Started
+@c ---------------------------------------------------------------------
+
+@node Getting Started
+@chapter Getting Started
+
+Gfortran is the GNU Fortran 95 compiler front end,
+designed initially as a free replacement for,
+or alternative to, the unix @command{f95} command;
+@command{gfortran} is command you'll use to invoke the compiler.
+
+Gfortran is still in an early state of development.
+@command{gfortran} can generate code for most constructs and expressions,
+but much work remains to be done.
+
+When @command{gfortran} is finished,
+it will do everything you expect from any decent compiler: 
+
+@itemize @bullet
+@item
+Read a user's program,
+stored in a file and containing instructions written
+in Fortran 77, Fortran 90 or Fortran 95.
+This file contains @dfn{source code}.
+
+@item
+Translate the user's program into instructions a computer
+can carry out more quickly than it takes to translate the
+instructions in the first
+place.  The result after compilation of a program is
+@dfn{machine code},
+code designed to be efficiently translated and processed
+by a machine such as your computer.
+Humans usually aren't as good writing machine code
+as they are at writing Fortran (or C++, Ada, or Java),
+because is easy to make tiny mistakes writing machine code.
+
+@item
+Provide the user with information about the reasons why
+the compiler is unable to create a binary from the source code.
+Usually this will be the case if the source code is flawed.
+When writing Fortran, it is easy to make big mistakes.
+The Fortran 90 requires that the compiler can point out
+mistakes to the user.
+An incorrect usage of the language causes an @dfn{error message}.
+
+The compiler will also attempt to diagnose cases where the
+user's program contains a correct usage of the language,
+but instructs the computer to do something questionable.
+This kind of diagnostics message is called a @dfn{warning message}.
+
+@item
+Provide optional information about the translation passes
+from the source code to machine code.
+This can help a user of the compiler to find the cause of
+certain bugs which may not be obvious in the source code,
+but may be more easily found at a lower level compiler output.
+It also helps developers to find bugs in the compiler itself.
+
+@item
+Provide information in the generated machine code that can
+make it easier to find bugs in the program (using a debugging tool,
+called a @dfn{debugger}, such as the GNU Debugger @command{gdb}). 
+
+@item
+Locate and gather machine code already generated to
+perform actions requested by statements in the user's program.
+This machine code is organized into @dfn{modules} and is located
+and @dfn{linked} to the user program. 
+@end itemize
+
+Gfortran consists of several components:
+
+@itemize @bullet
+@item
+A version of the @command{gcc} command
+(which also might be installed as the system's @command{cc} command)
+that also understands and accepts Fortran source code.
+The @command{gcc} command is the @dfn{driver} program for
+all the languages in the GNU Compiler Collection (GCC);
+With @command{gcc},
+you can compiler the source code of any language for
+which a front end is available in GCC.
+
+@item
+The @command{gfortran} command itself,
+which also might be installed as the
+system's @command{f95} command.
+@command{gfortran} is just another driver program,
+but specifically for the Fortran 95 compiler only.
+The difference with @command{gcc} is that @command{gfortran}
+will automatically link the correct libraries to your program.
+
+@item
+A collection of run-time libraries.
+These libraries contains the machine code needed to support
+capabilities of the Fortran language that are not directly
+provided by the machine code generated by the
+@command{gfortran} compilation phase,
+such as intrinsic functions and subroutines,
+and routines for interaction with files and the operating system.
+@c and mechanisms to spawn,
+@c unleash and pause threads in parallelized code.
+
+@item
+The Fortran compiler itself, (@command{f951}).
+This is the gfortran parser and code generator,
+linked to and interfaced with the GCC backend library.
+@command{f951} ``translates'' the source code to
+assembler code.  You would typically not use this
+program directly;
+instead, the @command{gcc} or @command{gfortran} driver
+programs will call it for you.
+@end itemize
+
+
+
+@c ---------------------------------------------------------------------
+@c GFORTRAN and GCC
+@c ---------------------------------------------------------------------
+
+@node GFORTRAN and GCC
+@chapter GFORTRAN and GCC
+@cindex GNU Compiler Collection
+
+GCC used to be the GNU ``C'' Compiler,
+but is now known as the @dfn{GNU Compiler Collection}.
+GCC provides the GNU system with a very versatile
+compiler middle end (shared optimization passes),
+and with back ends (code generators) for many different
+computer architectures and operating systems.
+The code of the middle end and back end are shared by all
+compiler front ends that are in the GNU Compiler Collection.
+
+A GCC front end is essentially a source code parser
+and a pass to generate a representation of the semantics
+of the program in the source code in the GCC language
+independent intermediate language,
+called @dfn{GENERIC}.
+
+The parser takes a source file written in a
+particular computer language, reads and parses it,
+and tries to make sure that the source code conforms to
+the language rules.
+Once the correctness of a program has been established,
+the compiler will build a data structure known as the
+@dfn{Abstract Syntax tree},
+or just @dfn{AST} or ``tree'' for short.
+This data structure represents the whole program
+or a subroutine or a function.
+The ``tree'' is passed to the GCC middle end,
+which will perform optimization passes on it,
+pass the optimized AST and generate assembly
+for the program unit.
+
+Different phases in this translation process can be,
+and in fact @emph{are} merged in many compiler front ends.
+GNU Fortran 95 has a strict separation between the
+parser and code generator.
+
+The goal of the gfortran project is to build a new front end for GCC:
+A Fortran 95 front end.
+In a non-gfortran installation,
+@command{gcc} will not be able to compile Fortran 95 source code
+(only the ``C'' front end has to be compiled if you want to build GCC,
+all other languages are optional).
+If you build GCC with gfortran, @command{gcc} will recognize
+@file{.f/.f90/.f95} source files and accepts Fortran 95 specific
+command line options.
+
+
+
+@c ---------------------------------------------------------------------
+@c GFORTRAN and G77
+@c ---------------------------------------------------------------------
+
+@node GFORTRAN and G77
+@chapter GFORTRAN and G77
+@cindex Fortran 77
+@cindex G77
+
+Why do we write a compiler front end from scratch? 
+There's a fine Fortran 77 compiler in the
+GNU Compiler Collection that accepts some features
+of the Fortran 90 standard as extensions.
+Why not start from there and revamp it?
+
+One of the reasons is that Craig Burley, the author of G77,
+has decided to stop working on the G77 front end.
+On @uref{http://world.std.com/~burley/g77-why.html,
+Craig explains the reasons for his decision to stop working on G77}
+in one of the pages in his homepage.
+Among the reasons is a lack of interest in improvements to
+@command{g77}.
+Users appear to be quite satisfied with @command{g77} as it is.
+While @command{g77} is still being maintained (by Toon Moene),
+it is unlikely that sufficient people will be willing
+to completely rewrite the existing code. 
+
+But there are other reasons to start from scratch.
+Many people, including Craig Burley,
+no longer agreed with certain design decisions in the G77 front end.
+Also, the interface of @command{g77} to the back end is written in
+a style which is confusing and not up to date on recommended practice.
+In fact, a full rewrite had already been planned for GCC 3.0.
+
+When Craig decided to stop,
+it just seemed to be a better idea to start a new project from scratch,
+because it was expected to be easier to maintain code we
+develop ourselves than to do a major overhaul of @command{g77} first,
+and then build a Fortran 95 compiler out of it.
+
+
+@include invoke.texi
+
+@c ---------------------------------------------------------------------
+@c Compiling and Testing
+@c ---------------------------------------------------------------------
+
+@node Compiling and Testing
+@chapter Compiling and Testing
+
+@command{gfortran} is not yet part of an official GCC release, so it is
+unlikley that OS distributor will provide it.
+
+@menu
+* Precompiled Binaries::
+* General notes about compiling GFORTRAN::
+* Compiling GFORTRAN::
+* Testing::
+@end menu
+
+@node Precompiled Binaries
+@section Precompiled Binaries
+
+Precompiled binaries for i686-pc-linux-gnu in rpm format are available from
+@uref{http://people.redhat.com/dnovillo/pub/tree-ssa/snapshot/}
+
+@node General notes about compiling GFORTRAN
+@section General notes about compiling GFORTRAN
+@cindex GMP
+@cindex Multiple Precision Library
+
+Compiling gfortran requires the presence of GMP,
+the GNU Multiple Precision library version 4.0
+or better in order to do its arithmetic.
+Download @code{gmp} from your favorite GNU mirror,
+configure and compile it.  If your OS distributor provides prepackaged
+GMP libraries, you may also need the developent pacakges.
+
+If you do not have GMP installed in a standard system location, you may
+need to configure GCC with @option{--with-gmp} or @option{--with-gmp-dir}.
+
+Note: GMP is only required for the compiler itself.  Compiled fortran programs
+do not depend on the GMP library. 
+
+@node Compiling GFORTRAN
+@section Compiling GFORTRAN
+@cindex Make-lang.in
+
+To build gfortran, you first need to get a copy of the GCC source tree.
+gfortran uses the new @dfn{GENERIC} intermediate representation
+to communicate with the back end.
+This new IR has not been merged yet with the GCC mainline,
+so you'll need to get a snapshot of the
+@emph{tree-ssa-20020619-branch} from the GCC CVS repository.
+This branch also contains the latest version 
+You can check out this branch from the GNU Subversions server:
+
+@example
+$ export CVS_RSH=ssh
+$ cvs -z9 -d :ext:anoncvs@@subversions.gnu.org:/cvsroot/gcc co -r tree-ssa-20020619-branch gcc
+@end example
+
+You can now build GCC following the instructions on the
+@uref{htpp://gcc.gnu.org/,GCC homepage},
+(configure with @option{--enable-languages=f95}).
+
+
+@node Testing
+@section Testing
+@cindex Test suite
+@cindex Testing
+
+The number of possible Fortran 95 programs is unlimited,
+and this means that gfortran has to correctly handle lots of possible inputs.
+Whenever you make any changes to the compiler,
+you should first test your change on a test program,
+then test your change against the gfortran test suite.
+In this way, we can be assured that once your fix has been made,
+the problem isn't re-introduced at some later time.
+
+The gfortran test suite is included in the gcc source distribution.
+
+We also encourage you to test gfortran on your own Fortran codes.
+
+@c ---------------------------------------------------------------------
+@c Project Status
+@c ---------------------------------------------------------------------
+
+@node Project Status
+@chapter Project Status
+
+@quotation
+As soon as gfortran can parse all of the statements correctly,
+it will be in the ``larva'' state.
+When we generate code, the ``puppa'' state.
+When gfortran is done,
+we'll see if it will be a beautiful butterfly,
+or just a big bug....
+
+--Andy Vaught, April 2000
+@end quotation
+
+The start of the GNU Fortran 95 project was announced on
+the GCC homepage in March 18, 2000
+(even though Andy had already been working on it for a while,
+or course).
+
+Gfortran is currently reaching the stage where is is able to compile real
+world programs.  However it is still under development and has many rough
+edges.
+
+@menu
+* Compiler Status::
+* Library Status::
+* Proposed Extensions::
+@end menu
+
+@node Compiler Status
+@section Compiler Status
+
+@itemize @emph
+@item Front end
+This is the part of gfortran which parses a source file, verifies that it
+is valid Fortran 95, performs compile time replacement of constants
+(PARAMETER variables) and reads and generate module files. This is
+almost complete. Every Fortran 95 source should be accepted, and most
+none-Fortran 95 source should be rejected. If you find a source file where
+this is not true, please tell us. You can use the -fsyntax-only switch to
+make gfortran quit after running the front end, effectively reducing it to
+a syntax checker.
+
+@item Middle end interface
+These are the parts of gfortran that take the parse tree generated by the
+front end and translate it to the GENERIC form required by the GCC back
+end. Work is ongoing in these parts of gfortran, but a large part has
+already been completed.
+@end itemize
+
+@node Library Status
+@section Library Status
+
+Some intrinsic functions map directly to library functions, and in most
+cases the name of the library function used depends on the type of the
+arguments.  For some intrinsics we generate inline code, and for others,
+such as sin, cos and sqrt, we rely on the backend to use special
+instructions in the floating point unit of the CPU if available, or to
+fall back to a call to libm if these are not available.
+
+Implementation of some non-elemental intrinsic functions (eg. DOT_PRODUCT,
+AVERAGE) is not yet optimal. This is hard because we have to make decisions
+whether to use inline code (good for small arrays as no function call
+overhead occurs) or generate function calls (good for large arrays as it
+allows use of hand-optimized assembly routines, SIMD instructions, etc.)
+
+The IO library is still under development.  The following features should be
+usable for real programs:
+
+@itemize @minus
+@item List directed
+@item Unformatted sequential
+@end itemize
+
+Usable with bugs:
+
+@itemize @minus
+@item Formatted sequential ('T' edit descriptor, and others)
+@item Namelist (can read a namelist that it writes, but not free-form)
+@end itemize
+
+Not recommended:
+
+@itemize @minus
+@item Unformatted direct access
+@item Formatted direct access
+@end itemize
+
+Many Fortran programs only use a small subset of the available IO
+capabilities, so your milage may vary.
+
+@node Proposed Extensions
+@section Proposed Extensions
+
+Here's a list of proposed extensions for @command{gfortran}, in no particular
+order.  Most of these are necessary to be fully compatible with
+existing Fortran compilers, but they are not part of the official
+J3 Fortran 95 standard.
+
+@subsection Compiler extensions: 
+@itemize @bullet
+@item
+Flag for defining the kind number for default logicals.
+
+@item
+User-specified alignment rules for structures.
+@item
+Flag to generate a @code{Makefile} info.
+
+@item
+Automatically extend single precision constants to double.
+
+@item
+Cray pointers (this was high on the @command{g77} wishlist).
+
+@item
+Compile code that conserves memory by dynamically allocating common and
+module storage either on stack or heap.
+
+@item
+Flag to cause the compiler to distinguish between upper and lower case
+names.  The Fortran 95 standard does not distinguish them.
+
+@item
+Compile switch for changing the interpretation of a backslash from a
+character to ``C''-style escape characters.
+
+@item
+Compile flag to generate code for array conformance checking (suggest -CC).
+
+@item
+User control of symbol names (underscores, etc).
+
+@item
+Compile setting for maximum size of stack frame size before spilling
+parts to static or heap.
+
+@item
+Flag to force local variables into static space.
+
+@item
+Flag to force local variables onto stack.
+
+@item
+Flag to compile lines beginning with ``D''.
+
+@item
+Flag to ignore lines beginning with ``D''.
+
+@item
+Flag for maximum errors before ending compile.
+
+@item
+Generate code to check for null pointer dereferences -- prints locus of
+dereference instead of segfaulting.  There was some discussion about this
+option in the g95 development mailing list.
+
+@item
+Allow setting default unit number.
+
+@item
+Option to initialize of otherwise uninitialized integer and floating
+point variables.
+
+@item
+Support for OpenMP directives.  This also requires support from the runtime
+library and the rest of the compiler.
+
+@item
+Support for Fortran 200x. This includes several new features including
+floating point exceptions, extended use of allocatable arrays, C
+interoperability, Parameterizer data types and function pointers.
+@end itemize
+
+
+@subsection Environment Options
+@itemize @bullet
+@item
+Pluggable library modules for random numbers, linear algebra.
+LA should use BLAS calling conventions.
+
+@item
+Environment variables controlling actions on arithmetic exceptions like
+overflow, underflow, precision loss -- Generate NaN, abort, default.
+action.
+
+@item
+Set precision for fp units that support it (i387).
+
+@item
+Variables for setting fp rounding mode.
+
+@item
+Support old style namelists ending in $end or &end.
+
+@item
+Variable to fill uninitialized variables with a user-defined bit
+pattern.
+
+@item
+Environment variable controlling filename that is opened for that unit
+number.
+
+@item
+Environment variable to clear/trash memory being freed.
+
+@item
+Environment variable to control tracing of allocations and frees.
+
+@item
+Environment variable to display allocated memory at normal program end.
+
+@item
+Environment variable for filename for * IO-unit.
+
+@item
+Environment variable for temporary file directory.
+
+@item
+Environment variable forcing standard output to be line buffered (unix).
+
+@item
+Variable for swapping endianness during unformatted read.
+
+@item
+Variable for swapping Endianness during unformatted write.
+@end itemize
+
+
+
+@c ---------------------------------------------------------------------
+@c Contributing
+@c ---------------------------------------------------------------------
+
+@node Contributing
+@chapter Contributing
+@cindex Contributing
+
+Free software is only possible if people contribute to efforts
+to create it.
+We're always in need of more people helping out with ideas
+and comments, writing documentation and contributing code.
+
+If you want to contribute to GNU Fortran 95,
+have a look at the long lists of projects you can take on.
+Some of these projects are small,
+some of them are large;
+some are completely orthogonal to the rest of what is
+happening on @command{gfortran},
+but others are ``mainstream'' projects in need of enthusiastic hackers.
+All of these projects are important!
+We'll eventually get around to the things here,
+but they are also things doable by someone who is willing and able.
+
+@menu
+* Contributors::
+* Projects::
+@end menu
+
+
+@node Contributors
+@section Contributors to GNU Fortran 95
+@cindex Contributors
+@cindex Credits
+@cindex Authors
+
+Most of the parser was hand-crafted by @emph{Andy Vaught}, who is
+also the initiator of the whole project.  Thanks Andy!
+Most of the interface with GCC was written by @emph{Paul Brook}.
+
+The following individuals have contributed code and/or
+ideas and significant help to the gfortran project
+(in no particular order): 
+
+@itemize @minus
+@item Andy Vaught
+@item Katherine Holcomb
+@item Tobias Schlüter
+@item Steven Bosscher
+@item Toon Moene
+@item Tim Prince
+@item Niels Kristian Bech Jensen
+@item Steven Johnson
+@item Paul Brook
+@item Feng Wang
+@item Bud Davis
+@end itemize
+
+The following people have contributed bug reports,
+smaller or larger patches,
+and much needed feedback and encouragement for the
+@command{gfortran} project: 
+
+@itemize @minus
+@item Erik Schnetter
+@item Bill Clodius
+@item Kate Hedstrom
+@end itemize
+
+Many other individuals have helped debug,
+test and improve @command{gfortran} over the past two years,
+and we welcome you to do the same!
+If you already have done so,
+and you would like to see your name listed in the
+list above, please contact us.
+
+
+@node Projects
+@section Projects
+
+@table @emph
+
+@item Help build the test suite
+Solicit more code for donation to the test suite.
+We can keep code private on request.
+
+@item Bug hunting/squishing
+Find bugs and write more test cases!
+Test cases are especially very welcome,
+because it allows us to concentrate on fixing bugs
+instead of isolating them.
+
+@item Smaller projects (``bug'' fixes):
+  @itemize @minus
+  @item Allow init exprs to be numbers raised to integer powers.
+  @item Implement correct rounding.
+  @item Implement F restrictions on Fortran 95 syntax.
+  @item See about making Emacs-parsable error messages.
+  @end itemize
+@end table
+
+If you wish to work on the runtime libraries,
+please contact a project maintainer.
+@c TODO: email!
+
+
+@c ---------------------------------------------------------------------
+@c Standards
+@c ---------------------------------------------------------------------
+
+@node Standards
+@chapter Standards
+@cindex Standards
+
+The GNU Fortran 95 Compiler aims to be a conforming implementation of
+ISO/IEC 1539:1997 (Fortran 95).
+
+In the future it may also support other variants and extensions to the Fortran
+language.  This includes ANSI Fortran 77, Fortran 90, Fortran 2000 (not yet
+finalized), and OpenMP.
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

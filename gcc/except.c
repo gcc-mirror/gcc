@@ -134,7 +134,7 @@ struct eh_region GTY(())
 
   /* Each region does exactly one thing.  */
   enum eh_region_type
-  {
+  { 
     ERT_UNKNOWN = 0,
     ERT_CLEANUP,
     ERT_TRY,
@@ -195,6 +195,7 @@ struct eh_region GTY(())
 
   /* Entry point for this region's handler before landing pads are built.  */
   rtx label;
+  tree tree_label;
 
   /* Entry point for this region's handler from the runtime eh library.  */
   rtx landing_pad;
@@ -264,9 +265,6 @@ static tree lookup_type_for_runtime (tree);
 
 static struct eh_region *expand_eh_region_end (void);
 
-static rtx get_exception_filter (struct function *);
-
-static void collect_eh_region_array (void);
 static void resolve_fixup_regions (void);
 static void remove_fixup_regions (void);
 static void remove_unreachable_regions (rtx);
@@ -302,8 +300,6 @@ static void remove_exception_handler_label (rtx);
 static void remove_eh_handler (struct eh_region *);
 static int for_each_eh_label_1 (void **, void *);
 
-struct reachable_info;
-
 /* The return value of reachable_next_level.  */
 enum reachable_code
 {
@@ -317,9 +313,7 @@ enum reachable_code
   RNL_BLOCKED
 };
 
-static int check_handled (tree, tree);
-static void add_reachable_handler (struct reachable_info *,
-				   struct eh_region *, struct eh_region *);
+struct reachable_info;
 static enum reachable_code reachable_next_level (struct eh_region *, tree,
 						 struct reachable_info *);
 
@@ -461,6 +455,128 @@ init_eh_for_function (void)
   cfun->eh = ggc_alloc_cleared (sizeof (struct eh_status));
 }
 
+/* Routines to generate the exception tree somewhat directly.  
+   These are used from tree-eh.c when processing exception related
+   nodes during tree optimization.  */
+
+static struct eh_region *
+gen_eh_region (enum eh_region_type type, struct eh_region *outer)
+{
+  struct eh_region *new;
+
+#ifdef ENABLE_CHECKING
+  if (! doing_eh (0))
+    abort ();
+#endif
+
+  /* Insert a new blank region as a leaf in the tree.  */
+  new = ggc_alloc_cleared (sizeof (*new));
+  new->type = type;
+  new->outer = outer;
+  if (outer)
+    {
+      new->next_peer = outer->inner;
+      outer->inner = new;
+    }
+  else
+    {
+      new->next_peer = cfun->eh->region_tree;
+      cfun->eh->region_tree = new;
+    }
+
+  new->region_number = ++cfun->eh->last_region_number;
+
+  return new;
+}
+
+struct eh_region *
+gen_eh_region_cleanup (struct eh_region *outer, struct eh_region *prev_try)
+{
+  struct eh_region *cleanup = gen_eh_region (ERT_CLEANUP, outer);
+  cleanup->u.cleanup.prev_try = prev_try;
+  return cleanup;
+}
+
+struct eh_region *
+gen_eh_region_try (struct eh_region *outer)
+{
+  return gen_eh_region (ERT_TRY, outer);
+}
+
+struct eh_region *
+gen_eh_region_catch (struct eh_region *t, tree type_or_list)
+{
+  struct eh_region *c, *l;
+  tree type_list, type_node;
+
+  /* Ensure to always end up with a type list to normalize further
+     processing, then register each type against the runtime types map.  */
+  type_list = type_or_list;
+  if (type_or_list)
+    {
+      if (TREE_CODE (type_or_list) != TREE_LIST)
+	type_list = tree_cons (NULL_TREE, type_or_list, NULL_TREE);
+
+      type_node = type_list;
+      for (; type_node; type_node = TREE_CHAIN (type_node))
+	add_type_for_runtime (TREE_VALUE (type_node));
+    }
+
+  c = gen_eh_region (ERT_CATCH, t->outer);
+  c->u.catch.type_list = type_list;
+  l = t->u.try.last_catch;
+  c->u.catch.prev_catch = l;
+  if (l)
+    l->u.catch.next_catch = c;
+  else
+    t->u.try.catch = c;
+  t->u.try.last_catch = c;
+
+  return c;
+}
+
+struct eh_region *
+gen_eh_region_allowed (struct eh_region *outer, tree allowed)
+{
+  struct eh_region *region = gen_eh_region (ERT_ALLOWED_EXCEPTIONS, outer);
+  region->u.allowed.type_list = allowed;
+
+  for (; allowed ; allowed = TREE_CHAIN (allowed))
+    add_type_for_runtime (TREE_VALUE (allowed));
+
+  return region;
+}
+
+struct eh_region *
+gen_eh_region_must_not_throw (struct eh_region *outer)
+{
+  return gen_eh_region (ERT_MUST_NOT_THROW, outer);
+}
+
+int
+get_eh_region_number (struct eh_region *region)
+{
+  return region->region_number;
+}
+
+bool
+get_eh_region_may_contain_throw (struct eh_region *region)
+{
+  return region->may_contain_throw;
+}
+
+tree
+get_eh_region_tree_label (struct eh_region *region)
+{
+  return region->tree_label;
+}
+
+void
+set_eh_region_tree_label (struct eh_region *region, tree lab)
+{
+  region->tree_label = lab;
+}
+
 /* Start an exception handling region.  All instructions emitted
    after this point are considered to be part of the region until
    expand_eh_region_end is invoked.  */
@@ -468,33 +584,18 @@ init_eh_for_function (void)
 void
 expand_eh_region_start (void)
 {
-  struct eh_region *new_region;
-  struct eh_region *cur_region;
+  struct eh_region *new;
   rtx note;
 
   if (! doing_eh (0))
     return;
 
-  /* Insert a new blank region as a leaf in the tree.  */
-  new_region = ggc_alloc_cleared (sizeof (*new_region));
-  cur_region = cfun->eh->cur_region;
-  new_region->outer = cur_region;
-  if (cur_region)
-    {
-      new_region->next_peer = cur_region->inner;
-      cur_region->inner = new_region;
-    }
-  else
-    {
-      new_region->next_peer = cfun->eh->region_tree;
-      cfun->eh->region_tree = new_region;
-    }
-  cfun->eh->cur_region = new_region;
+  new = gen_eh_region (ERT_UNKNOWN, cfun->eh->cur_region);
+  cfun->eh->cur_region = new;
 
   /* Create a note marking the start of this region.  */
-  new_region->region_number = ++cfun->eh->last_region_number;
   note = emit_note (NOTE_INSN_EH_REGION_BEG);
-  NOTE_EH_HANDLER (note) = new_region->region_number;
+  NOTE_EH_HANDLER (note) = new->region_number;
 }
 
 /* Common code to end a region.  Returns the region just ended.  */
@@ -513,6 +614,36 @@ expand_eh_region_end (void)
   cfun->eh->cur_region = cur_region->outer;
 
   return cur_region;
+}
+
+/* Expand HANDLER, which is the operand 1 of a TRY_CATCH_EXPR.  Catch
+   blocks and C++ exception-specifications are handled specially.  */
+
+void
+expand_eh_handler (tree handler)
+{
+  tree inner = expr_first (handler);
+
+  switch (TREE_CODE (inner))
+    {
+    case CATCH_EXPR:
+      expand_start_all_catch ();
+      expand_expr (handler, const0_rtx, VOIDmode, 0);
+      expand_end_all_catch ();
+      break;
+
+    case EH_FILTER_EXPR:
+      if (EH_FILTER_MUST_NOT_THROW (handler))
+	expand_eh_region_end_must_not_throw (EH_FILTER_FAILURE (handler));
+      else
+	expand_eh_region_end_allowed (EH_FILTER_TYPES (handler),
+				      EH_FILTER_FAILURE (handler));
+      break;
+
+    default:
+      expand_eh_region_end_cleanup (handler);
+      break;
+    }
 }
 
 /* End an exception handling region for a cleanup.  HANDLER is an
@@ -581,6 +712,16 @@ expand_eh_region_end_cleanup (tree handler)
   emit_label (around_label);
 }
 
+void
+expand_resx_expr (tree exp)
+{
+  int region_nr = TREE_INT_CST_LOW (TREE_OPERAND (exp, 0));
+  struct eh_region *reg = cfun->eh->region_array[region_nr];
+
+  reg->resume = emit_jump_insn (gen_rtx_RESX (VOIDmode, region_nr));
+  emit_barrier ();
+}
+
 /* End an exception handling region for a try block, and prepares
    for subsequent calls to expand_start_catch.  */
 
@@ -612,46 +753,20 @@ expand_start_all_catch (void)
 void
 expand_start_catch (tree type_or_list)
 {
-  struct eh_region *t, *c, *l;
-  tree type_list;
+  struct eh_region *c;
+  rtx note;
 
   if (! doing_eh (0))
     return;
 
-  type_list = type_or_list;
+  c = gen_eh_region_catch (cfun->eh->try_region, type_or_list);
+  cfun->eh->cur_region = c;
 
-  if (type_or_list)
-    {
-      /* Ensure to always end up with a type list to normalize further
-         processing, then register each type against the runtime types
-         map.  */
-      tree type_node;
-
-      if (TREE_CODE (type_or_list) != TREE_LIST)
-	type_list = tree_cons (NULL_TREE, type_or_list, NULL_TREE);
-
-      type_node = type_list;
-      for (; type_node; type_node = TREE_CHAIN (type_node))
-	add_type_for_runtime (TREE_VALUE (type_node));
-    }
-
-  expand_eh_region_start ();
-
-  t = cfun->eh->try_region;
-  c = cfun->eh->cur_region;
-  c->type = ERT_CATCH;
-  c->u.catch.type_list = type_list;
   c->label = gen_label_rtx ();
-
-  l = t->u.try.last_catch;
-  c->u.catch.prev_catch = l;
-  if (l)
-    l->u.catch.next_catch = c;
-  else
-    t->u.try.catch = c;
-  t->u.try.last_catch = c;
-
   emit_label (c->label);
+
+  note = emit_note (NOTE_INSN_EH_REGION_BEG);
+  NOTE_EH_HANDLER (note) = c->region_number;
 }
 
 /* End a catch clause.  Control will resume after the try/catch block.  */
@@ -659,15 +774,11 @@ expand_start_catch (tree type_or_list)
 void
 expand_end_catch (void)
 {
-  struct eh_region *try_region;
-
   if (! doing_eh (0))
     return;
 
   expand_eh_region_end ();
-  try_region = cfun->eh->try_region;
-
-  emit_jump (try_region->u.try.continue_label);
+  emit_jump (cfun->eh->try_region->u.try.continue_label);
 }
 
 /* End a sequence of catch handlers for a try block.  */
@@ -806,17 +917,21 @@ expand_eh_region_end_fixup (tree handler)
    call to a function which itself may contain a throw.  */
 
 void
-note_eh_region_may_contain_throw (void)
+note_eh_region_may_contain_throw (struct eh_region *region)
 {
-  struct eh_region *region;
-
-  region = cfun->eh->cur_region;
   while (region && !region->may_contain_throw)
     {
       region->may_contain_throw = 1;
       region = region->outer;
     }
 }
+
+void
+note_current_region_may_contain_throw (void)
+{
+  note_eh_region_may_contain_throw (cfun->eh->cur_region);
+}
+
 
 /* Return an rtl expression for a pointer to the exception object
    within a handler.  */
@@ -836,7 +951,7 @@ get_exception_pointer (struct function *fun)
 /* Return an rtl expression for the exception dispatch filter
    within a handler.  */
 
-static rtx
+rtx
 get_exception_filter (struct function *fun)
 {
   rtx filter = fun->eh->filter;
@@ -854,7 +969,7 @@ get_exception_filter (struct function *fun)
    collect the regions this way as in expand_eh_region_start, but
    without having to realloc memory.  */
 
-static void
+void
 collect_eh_region_array (void)
 {
   struct eh_region **array, *i;
@@ -1039,12 +1154,6 @@ remove_unreachable_regions (rtx insns)
 	    abort ();
 	  uid_region_num[INSN_UID (r->label)] = i;
 	}
-      if (r->type == ERT_TRY && r->u.try.continue_label)
-	{
-	  if (uid_region_num[INSN_UID (r->u.try.continue_label)])
-	    abort ();
-	  uid_region_num[INSN_UID (r->u.try.continue_label)] = i;
-	}
     }
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
@@ -1066,14 +1175,43 @@ remove_unreachable_regions (rtx insns)
       r = cfun->eh->region_array[i];
       if (r && r->region_number == i && !reachable[i])
 	{
-	  /* Don't remove ERT_THROW regions if their outer region
-	     is reachable.  */
-	  if (r->type == ERT_THROW
-	      && r->outer
-	      && reachable[r->outer->region_number])
-	    continue;
+	  bool kill_it = true;
+	  switch (r->type)
+	    {
+	    case ERT_THROW:
+	      /* Don't remove ERT_THROW regions if their outer region
+		 is reachable.  */
+	      if (r->outer && reachable[r->outer->region_number])
+		kill_it = false;
+	      break;
 
-	  remove_eh_handler (r);
+	    case ERT_MUST_NOT_THROW:
+	      /* MUST_NOT_THROW regions are implementable solely in the
+		 runtime, but their existance continues to affect calls
+		 within that region.  Never delete them here.  */
+	      kill_it = false;
+	      break;
+
+	    case ERT_TRY:
+	      {
+		/* TRY regions are reachable if any of its CATCH regions
+		   are reachable.  */
+		struct eh_region *c;
+		for (c = r->u.try.catch; c ; c = c->u.catch.next_catch)
+		  if (reachable[c->region_number])
+		    {
+		      kill_it = false;
+		      break;
+		    }
+		break;
+	      }
+
+	    default:
+	      break;
+	    }
+	      
+	  if (kill_it)
+	    remove_eh_handler (r);
 	}
     }
 
@@ -1165,21 +1303,45 @@ convert_from_eh_region_ranges_1 (rtx *pinsns, int *orig_sp, int cur)
     abort ();
 }
 
+static void
+collect_rtl_labels_from_trees (void)
+{
+  int i, n = cfun->eh->last_region_number;
+  for (i = 1; i <= n; ++i)
+    {
+      struct eh_region *reg = cfun->eh->region_array[i];
+      if (reg && reg->tree_label)
+	reg->label = DECL_RTL_IF_SET (reg->tree_label);
+    }
+}
+
 void
 convert_from_eh_region_ranges (void)
 {
-  int *stack;
-  rtx insns;
+  rtx insns = get_insns ();
 
-  collect_eh_region_array ();
-  resolve_fixup_regions ();
+  if (cfun->eh->region_array)
+    {
+      /* If the region array already exists, assume we're coming from
+	 optimize_function_tree.  In this case all we need to do is
+	 collect the rtl labels that correspond to the tree labels
+	 that we allocated earlier.  */
+      collect_rtl_labels_from_trees ();
+    }
+  else
+    {
+      int *stack;
 
-  stack = xmalloc (sizeof (int) * (cfun->eh->last_region_number + 1));
-  insns = get_insns ();
-  convert_from_eh_region_ranges_1 (&insns, stack, 0);
-  free (stack);
+      collect_eh_region_array ();
+      resolve_fixup_regions ();
 
-  remove_fixup_regions ();
+      stack = xmalloc (sizeof (int) * (cfun->eh->last_region_number + 1));
+      convert_from_eh_region_ranges_1 (&insns, stack, 0);
+      free (stack);
+
+      remove_fixup_regions ();
+    }
+
   remove_unreachable_regions (insns);
 }
 
@@ -1854,6 +2016,12 @@ connect_post_landing_pads (void)
 	abort ();
       delete_insn (barrier);
       delete_insn (region->resume);
+
+      /* ??? From tree-ssa we can wind up with catch regions whose
+	 label is not instantiated, but whose resx is present.  Now
+	 that we've dealt with the resx, kill the region.  */
+      if (region->label == NULL && region->type == ERT_CLEANUP)
+	remove_eh_handler (region);
     }
 }
 
@@ -1980,7 +2148,7 @@ sjlj_find_directly_reachable_regions (struct sjlj_lp_info *lp_info)
       rc = RNL_NOT_CAUGHT;
       for (; region; region = region->outer)
 	{
-	  rc = reachable_next_level (region, type_thrown, 0);
+	  rc = reachable_next_level (region, type_thrown, NULL);
 	  if (rc != RNL_NOT_CAUGHT)
 	    break;
 	}
@@ -2406,7 +2574,7 @@ finish_eh_generation (void)
 	    }
 	}
       if (eh)
-	make_eh_edge (NULL, bb, BB_END (bb));
+	rtl_make_eh_edge (NULL, bb, BB_END (bb));
     }
   cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
 }
@@ -2602,17 +2770,19 @@ for_each_eh_label_1 (void **pentry, void *data)
 /* This section describes CFG exception edges for flow.  */
 
 /* For communicating between calls to reachable_next_level.  */
-struct reachable_info GTY(())
+struct reachable_info
 {
   tree types_caught;
   tree types_allowed;
-  rtx handlers;
+  void (*callback) (struct eh_region *, void *);
+  void *callback_data;
+  bool saw_any_handlers;
 };
 
 /* A subroutine of reachable_next_level.  Return true if TYPE, or a
    base class of TYPE, is in HANDLED.  */
 
-static int
+int
 check_handled (tree handled, tree type)
 {
   tree t;
@@ -2643,18 +2813,18 @@ check_handled (tree handled, tree type)
    LP_REGION contains the landing pad; REGION is the handler.  */
 
 static void
-add_reachable_handler (struct reachable_info *info, struct eh_region *lp_region, struct eh_region *region)
+add_reachable_handler (struct reachable_info *info,
+		       struct eh_region *lp_region, struct eh_region *region)
 {
   if (! info)
     return;
 
+  info->saw_any_handlers = true;
+
   if (cfun->eh->built_landing_pads)
-    {
-      if (! info->handlers)
-	info->handlers = alloc_INSN_LIST (lp_region->landing_pad, NULL_RTX);
-    }
+    info->callback (lp_region, info->callback_data);
   else
-    info->handlers = alloc_INSN_LIST (region->label, info->handlers);
+    info->callback (region, info->callback_data);
 }
 
 /* Process one level of exception regions for reachability.
@@ -2803,7 +2973,7 @@ reachable_next_level (struct eh_region *region, tree type_thrown,
 	 If we've touched down at some landing pad previous, then the
 	 explicit function call we generated may be used.  Otherwise
 	 the call is made by the runtime.  */
-      if (info && info->handlers)
+      if (info && info->saw_any_handlers)
 	{
 	  add_reachable_handler (info, region, region);
 	  return RNL_CAUGHT;
@@ -2821,40 +2991,30 @@ reachable_next_level (struct eh_region *region, tree type_thrown,
   abort ();
 }
 
-/* Retrieve a list of labels of exception handlers which can be
-   reached by a given insn.  */
+/* Invoke CALLBACK on each region reachable from REGION_NUMBER.  */
 
-rtx
-reachable_handlers (rtx insn)
+void
+foreach_reachable_handler (int region_number, bool is_resx,
+			   void (*callback) (struct eh_region *, void *),
+			   void *callback_data)
 {
   struct reachable_info info;
   struct eh_region *region;
   tree type_thrown;
-  int region_number;
-
-  if (GET_CODE (insn) == JUMP_INSN
-      && GET_CODE (PATTERN (insn)) == RESX)
-    region_number = XINT (PATTERN (insn), 0);
-  else
-    {
-      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-      if (!note || INTVAL (XEXP (note, 0)) <= 0)
-	return NULL;
-      region_number = INTVAL (XEXP (note, 0));
-    }
 
   memset (&info, 0, sizeof (info));
+  info.callback = callback;
+  info.callback_data = callback_data;
 
   region = cfun->eh->region_array[region_number];
 
   type_thrown = NULL_TREE;
-  if (GET_CODE (insn) == JUMP_INSN
-      && GET_CODE (PATTERN (insn)) == RESX)
+  if (is_resx)
     {
       /* A RESX leaves a region instead of entering it.  Thus the
 	 region itself may have been deleted out from under us.  */
       if (region == NULL)
-	return NULL;
+	return;
       region = region->outer;
     }
   else if (region->type == ERT_THROW)
@@ -2876,18 +3036,92 @@ reachable_handlers (rtx insn)
       else
 	region = region->outer;
     }
+}
 
-  return info.handlers;
+/* Retrieve a list of labels of exception handlers which can be
+   reached by a given insn.  */
+
+static void
+arh_to_landing_pad (struct eh_region *region, void *data)
+{
+  rtx *p_handlers = data;
+  if (! *p_handlers)
+    *p_handlers = alloc_INSN_LIST (region->landing_pad, NULL_RTX);
+}
+
+static void
+arh_to_label (struct eh_region *region, void *data)
+{
+  rtx *p_handlers = data;
+  *p_handlers = alloc_INSN_LIST (region->label, *p_handlers);
+}
+
+rtx
+reachable_handlers (rtx insn)
+{
+  bool is_resx = false;
+  rtx handlers = NULL;
+  int region_number;
+
+  if (GET_CODE (insn) == JUMP_INSN
+      && GET_CODE (PATTERN (insn)) == RESX)
+    {
+      region_number = XINT (PATTERN (insn), 0);
+      is_resx = true;
+    }
+  else
+    {
+      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+      if (!note || INTVAL (XEXP (note, 0)) <= 0)
+	return NULL;
+      region_number = INTVAL (XEXP (note, 0));
+    }
+
+  foreach_reachable_handler (region_number, is_resx,
+			     (cfun->eh->built_landing_pads
+			      ? arh_to_landing_pad
+			      : arh_to_label),
+			     &handlers);
+
+  return handlers;
 }
 
 /* Determine if the given INSN can throw an exception that is caught
    within the function.  */
 
 bool
-can_throw_internal (rtx insn)
+can_throw_internal_1 (int region_number)
 {
   struct eh_region *region;
   tree type_thrown;
+
+  region = cfun->eh->region_array[region_number];
+
+  type_thrown = NULL_TREE;
+  if (region->type == ERT_THROW)
+    {
+      type_thrown = region->u.throw.type;
+      region = region->outer;
+    }
+
+  /* If this exception is ignored by each and every containing region,
+     then control passes straight out.  The runtime may handle some
+     regions, which also do not require processing internally.  */
+  for (; region; region = region->outer)
+    {
+      enum reachable_code how = reachable_next_level (region, type_thrown, 0);
+      if (how == RNL_BLOCKED)
+	return false;
+      if (how != RNL_NOT_CAUGHT)
+	return true;
+    }
+
+  return false;
+}
+
+bool
+can_throw_internal (rtx insn)
+{
   rtx note;
 
   if (! INSN_P (insn))
@@ -2916,7 +3150,19 @@ can_throw_internal (rtx insn)
   if (!note || INTVAL (XEXP (note, 0)) <= 0)
     return false;
 
-  region = cfun->eh->region_array[INTVAL (XEXP (note, 0))];
+  return can_throw_internal_1 (INTVAL (XEXP (note, 0)));
+}
+
+/* Determine if the given INSN can throw an exception that is
+   visible outside the function.  */
+
+bool
+can_throw_external_1 (int region_number)
+{
+  struct eh_region *region;
+  tree type_thrown;
+
+  region = cfun->eh->region_array[region_number];
 
   type_thrown = NULL_TREE;
   if (region->type == ERT_THROW)
@@ -2925,29 +3171,18 @@ can_throw_internal (rtx insn)
       region = region->outer;
     }
 
-  /* If this exception is ignored by each and every containing region,
-     then control passes straight out.  The runtime may handle some
-     regions, which also do not require processing internally.  */
-  for (; region; region = region->outer)
-    {
-      enum reachable_code how = reachable_next_level (region, type_thrown, 0);
-      if (how == RNL_BLOCKED)
-	return false;
-      if (how != RNL_NOT_CAUGHT)
-	return true;
-    }
+  /* If the exception is caught or blocked by any containing region,
+     then it is not seen by any calling function.  */
+  for (; region ; region = region->outer)
+    if (reachable_next_level (region, type_thrown, NULL) >= RNL_CAUGHT)
+      return false;
 
-  return false;
+  return true;
 }
-
-/* Determine if the given INSN can throw an exception that is
-   visible outside the function.  */
 
 bool
 can_throw_external (rtx insn)
 {
-  struct eh_region *region;
-  tree type_thrown;
   rtx note;
 
   if (! INSN_P (insn))
@@ -2986,22 +3221,7 @@ can_throw_external (rtx insn)
   if (INTVAL (XEXP (note, 0)) <= 0)
     return false;
 
-  region = cfun->eh->region_array[INTVAL (XEXP (note, 0))];
-
-  type_thrown = NULL_TREE;
-  if (region->type == ERT_THROW)
-    {
-      type_thrown = region->u.throw.type;
-      region = region->outer;
-    }
-
-  /* If the exception is caught or blocked by any containing region,
-     then it is not seen by any calling function.  */
-  for (; region ; region = region->outer)
-    if (reachable_next_level (region, type_thrown, NULL) >= RNL_CAUGHT)
-      return false;
-
-  return true;
+  return can_throw_external_1 (INTVAL (XEXP (note, 0)));
 }
 
 /* Set current_function_nothrow and cfun->all_throwers_are_sibcalls.  */
@@ -3897,6 +4117,7 @@ output_function_exception_table (void)
 	  /* Let cgraph know that the rtti decl is used.  Not all of the
 	     paths below go through assemble_integer, which would take
 	     care of this for us.  */
+	  STRIP_NOPS (type);
 	  if (TREE_CODE (type) == ADDR_EXPR)
 	    {
 	      type = TREE_OPERAND (type, 0);

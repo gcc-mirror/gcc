@@ -1242,3 +1242,99 @@ loop_split_edge_with (edge e, rtx insns)
 
   return new_bb;
 }
+
+/* Uses the natural loop discovery to recreate loop notes.  */
+void
+create_loop_notes (void)
+{
+  rtx insn, head, end;
+  struct loops loops;
+  struct loop *loop;
+  basic_block *first, *last, bb, pbb;
+  struct loop **stack, **top;
+
+#ifdef ENABLE_CHECKING
+  /* Verify that there really are no loop notes.  */
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == NOTE
+	&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+      abort ();
+#endif
+
+  flow_loops_find (&loops, LOOP_TREE);
+  free_dominance_info (CDI_DOMINATORS);
+  if (loops.num > 1)
+    {
+      last = xcalloc (loops.num, sizeof (basic_block));
+
+      FOR_EACH_BB (bb)
+	{
+	  for (loop = bb->loop_father; loop->outer; loop = loop->outer)
+	    last[loop->num] = bb;
+	}
+
+      first = xcalloc (loops.num, sizeof (basic_block));
+      stack = xcalloc (loops.num, sizeof (struct loop *));
+      top = stack;
+
+      FOR_EACH_BB (bb)
+	{
+	  for (loop = bb->loop_father; loop->outer; loop = loop->outer)
+	    {
+	      if (!first[loop->num])
+		{
+		  *top++ = loop;
+		  first[loop->num] = bb;
+		}
+
+	      if (bb == last[loop->num])
+		{
+		  /* Prevent loops from overlapping.  */
+		  while (*--top != loop)
+		    last[(*top)->num] = EXIT_BLOCK_PTR;
+
+		  /* If loop starts with jump into it, place the note in
+		     front of the jump.  */
+		  insn = PREV_INSN (BB_HEAD (first[loop->num]));
+		  if (insn
+		      && GET_CODE (insn) == BARRIER)
+		    insn = PREV_INSN (insn);
+		  
+		  if (insn
+		      && GET_CODE (insn) == JUMP_INSN
+		      && any_uncondjump_p (insn)
+		      && onlyjump_p (insn))
+		    {
+		      pbb = BLOCK_FOR_INSN (insn);
+		      if (!pbb || !pbb->succ || pbb->succ->succ_next)
+			abort ();
+
+		      if (!flow_bb_inside_loop_p (loop, pbb->succ->dest))
+			insn = BB_HEAD (first[loop->num]);
+		    }
+		  else
+		    insn = BB_HEAD (first[loop->num]);
+		    
+		  head = BB_HEAD (first[loop->num]);
+		  emit_note_before (NOTE_INSN_LOOP_BEG, insn);
+		  BB_HEAD (first[loop->num]) = head;
+
+		  /* Position the note correctly wrto barrier.  */
+		  insn = BB_END (last[loop->num]);
+		  if (NEXT_INSN (insn)
+		      && GET_CODE (NEXT_INSN (insn)) == BARRIER)
+		    insn = NEXT_INSN (insn);
+		  
+		  end = BB_END (last[loop->num]);
+		  emit_note_after (NOTE_INSN_LOOP_END, insn);
+		  BB_END (last[loop->num]) = end;
+		}
+	    }
+	}
+
+      free (first);
+      free (last);
+      free (stack);
+    }
+  flow_loops_free (&loops);
+}

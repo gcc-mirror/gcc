@@ -3,7 +3,7 @@
    call optimization.  The return clobber insn was cleaned up and
    the warning was never issued.  */
 /* { dg-do compile } */
-/* { dg-options "-foptimize-sibling-calls -Wreturn-type" } */
+/* { dg-options "-O -foptimize-sibling-calls -Wreturn-type" } */
 
 extern void foo(void);
 

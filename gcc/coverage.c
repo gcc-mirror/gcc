@@ -96,7 +96,11 @@ static char *da_file_name;
 /* Hash table of count data.  */
 static htab_t counts_hash = NULL;
 
-/* The names of the counter tables.  */
+/* Trees representing the counter table arrays.  */
+static GTY(()) tree tree_ctr_tables[GCOV_COUNTERS];
+
+/* The names of the counter tables.  Not used if we're
+   generating counters at tree level.  */
 static GTY(()) rtx ctr_labels[GCOV_COUNTERS];
 
 /* The names of merge functions for counters.  */
@@ -369,14 +373,22 @@ coverage_counter_alloc (unsigned counter, unsigned num)
   if (!num)
     return 1;
 
-  if (!ctr_labels[counter])
+  if (!tree_ctr_tables[counter])
     {
       /* Generate and save a copy of this so it can be shared.  */
+      /* We don't know the size yet; make it big enough that nobody
+	 will make any clever transformation on it.  */
       char buf[20];
-
+      tree domain_tree
+        = build_index_type (build_int_2 (1000, 0)); /* replaced later */
+      tree gcov_type_array_type
+        = build_array_type (GCOV_TYPE_NODE, domain_tree);
+      tree_ctr_tables[counter]
+        = build_decl (VAR_DECL, NULL_TREE, gcov_type_array_type);
+      TREE_STATIC (tree_ctr_tables[counter]) = 1;
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", counter + 1);
-      ctr_labels[counter] = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
-      SYMBOL_REF_FLAGS (ctr_labels[counter]) = SYMBOL_FLAG_LOCAL;
+      DECL_NAME (tree_ctr_tables[counter]) = get_identifier (buf);
+      DECL_ALIGN (tree_ctr_tables[counter]) = TYPE_ALIGN (GCOV_TYPE_NODE);
     }
   fn_b_ctrs[counter] = fn_n_ctrs[counter];
   fn_n_ctrs[counter] += num;
@@ -387,7 +399,7 @@ coverage_counter_alloc (unsigned counter, unsigned num)
 /* Generate a MEM rtl to access COUNTER NO.  */
 
 rtx
-coverage_counter_ref (unsigned counter, unsigned no)
+rtl_coverage_counter_ref (unsigned counter, unsigned no)
 {
   unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
   enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
@@ -396,12 +408,36 @@ coverage_counter_ref (unsigned counter, unsigned no)
   if (no >= fn_n_ctrs[counter] - fn_b_ctrs[counter])
     abort ();
   no += prg_n_ctrs[counter] + fn_b_ctrs[counter];
+  if (!ctr_labels[counter])
+      {
+        ctr_labels[counter] = gen_rtx_SYMBOL_REF (Pmode,
+			       ggc_strdup (IDENTIFIER_POINTER (DECL_NAME
+			       (tree_ctr_tables[counter]))));
+        SYMBOL_REF_FLAGS (ctr_labels[counter]) = SYMBOL_FLAG_LOCAL;
+      }
   ref = plus_constant (ctr_labels[counter], gcov_size / BITS_PER_UNIT * no);
   ref = gen_rtx_MEM (mode, ref);
   set_mem_alias_set (ref, new_alias_set ());
   MEM_NOTRAP_P (ref) = 1;
 
   return ref;
+}
+
+/* Generate a tree to access COUNTER NO.  */
+
+tree
+tree_coverage_counter_ref (unsigned counter, unsigned no)
+{
+  tree t;
+
+  if (no >= fn_n_ctrs[counter] - fn_b_ctrs[counter])
+    abort ();
+  no += prg_n_ctrs[counter] + fn_b_ctrs[counter];
+
+  /* "no" here is an array index, scaled to bytes later.  */
+  t = build (ARRAY_REF, GCOV_TYPE_NODE, tree_ctr_tables[counter],
+	     build_int_2 (no, 0));
+  return t;
 }
 
 /* Generate a checksum for a string.  CHKSUM is the current
@@ -684,19 +720,20 @@ build_ctr_info_value (unsigned int counter, tree type)
 
   if (prg_n_ctrs[counter])
     {
-      tree array_type, array;
+      tree array_type;
 
       array_type = build_index_type (build_int_2 (prg_n_ctrs[counter] - 1, 0));
       array_type = build_array_type (TREE_TYPE (TREE_TYPE (fields)),
 				     array_type);
 
-      array = build_decl (VAR_DECL, NULL_TREE, array_type);
-      TREE_STATIC (array) = 1;
-      DECL_NAME (array) = get_identifier (XSTR (ctr_labels[counter], 0));
-      assemble_variable (array, 0, 0, 0);
+      TREE_TYPE (tree_ctr_tables[counter]) = array_type;
+      DECL_SIZE (tree_ctr_tables[counter]) = TYPE_SIZE (array_type);
+      DECL_SIZE_UNIT (tree_ctr_tables[counter]) = TYPE_SIZE_UNIT (array_type);
+      assemble_variable (tree_ctr_tables[counter], 0, 0, 0);
 
       value = tree_cons (fields,
-			 build1 (ADDR_EXPR, TREE_TYPE (fields), array),
+			 build1 (ADDR_EXPR, TREE_TYPE (fields), 
+					    tree_ctr_tables[counter]),
 			 value);
     }
   else

@@ -4704,7 +4704,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 		  for (i = FIRST_PARM_REG;
 		       i < FIRST_PARM_REG + NPARM_REGS (SImode); i++)
 		    CLEAR_HARD_REG_BIT (temps, i);
-		  if (current_function_needs_context)
+		  if (cfun->static_chain_decl != NULL)
 		    CLEAR_HARD_REG_BIT (temps, STATIC_CHAIN_REGNUM);
 		}
 	      temp = scavenge_reg (&temps);
@@ -5161,7 +5161,7 @@ sh5_schedule_saves (HARD_REG_SET *live_regs_mask, save_schedule *schedule,
       if (call_used_regs[i] && ! fixed_regs[i] && i != PR_MEDIA_REG
 	  && ! FUNCTION_ARG_REGNO_P (i)
 	  && i != FIRST_RET_REG
-	  && ! (current_function_needs_context && i == STATIC_CHAIN_REGNUM)
+	  && ! (cfun->static_chain_decl != NULL && i == STATIC_CHAIN_REGNUM)
 	  && ! (current_function_calls_eh_return
 		&& (i == EH_RETURN_STACKADJ_REGNO
 		    || ((unsigned) i <= EH_RETURN_DATA_REGNO (0)

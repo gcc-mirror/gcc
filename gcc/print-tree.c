@@ -252,6 +252,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
     fputs (" readonly", file);
   if (!TYPE_P (node) && TREE_CONSTANT (node))
     fputs (" constant", file);
+  if (TREE_INVARIANT (node))
+    fputs (" invariant", file);
   if (TREE_ADDRESSABLE (node))
     fputs (" addressable", file);
   if (TREE_THIS_VOLATILE (node))
@@ -272,6 +274,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
     fputs (" static", file);
   if (TREE_DEPRECATED (node))
     fputs (" deprecated", file);
+  if (TREE_VISITED (node))
+    fputs (" visited", file);
   if (TREE_LANG_FLAG_0 (node))
     fputs (" tree_0", file);
   if (TREE_LANG_FLAG_1 (node))
@@ -619,14 +623,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	    }
 	}
 
-      if (TREE_CODE (node) == EXPR_WITH_FILE_LOCATION)
-	{
-	  indent_to (file, indent+4);
-	  fprintf (file, "%s:%d:%d",
-		   (EXPR_WFL_FILENAME_NODE (node ) ?
-		    EXPR_WFL_FILENAME (node) : "(no file info)"),
-		   EXPR_WFL_LINENO (node), EXPR_WFL_COLNO (node));
-	}
       print_node (file, "chain", TREE_CHAIN (node), indent + 4);
       break;
 
@@ -744,6 +740,14 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	}
 
       break;
+    }
+
+  if (EXPR_HAS_LOCATION (node))
+    {
+      indent_to (file, indent+4);
+      fprintf (file, "%s:%d",
+	       EXPR_FILENAME (node),
+	       EXPR_LINENO (node));
     }
 
   fprintf (file, ">");

@@ -19,6 +19,8 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#ifndef GCC_REGS_H
+#define GCC_REGS_H
 
 #include "varray.h"
 #include "hard-reg-set.h"
@@ -227,3 +229,5 @@ extern void allocate_reg_info (size_t, int, int);
 
 /* Specify number of hard registers given machine mode occupy.  */
 extern unsigned char hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
+
+#endif /* GCC_REGS_H */

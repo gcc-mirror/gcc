@@ -29,6 +29,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define C_SIZEOF_STRUCT_LANG_IDENTIFIER \
   (sizeof (struct c_common_identifier) + 3 * sizeof (void *))
 
+/* For gc purposes, return the most likely link for the longest chain.  */
+#define C_LANG_TREE_NODE_CHAIN_NEXT(T)				\
+  ((union lang_tree_node *)					\
+   (TREE_CODE (T) == INTEGER_TYPE ? TYPE_NEXT_VARIANT (T)	\
+    : TREE_CODE (T) == COMPOUND_EXPR ? TREE_OPERAND (T, 1)	\
+    : TREE_CHAIN (T)))
+
 /* Language-specific declaration information.  */
 
 struct lang_decl GTY(())
@@ -58,10 +65,13 @@ struct lang_decl GTY(())
    and C_RID_YYCODE is the token number wanted by Yacc.  */
 #define C_IS_RESERVED_WORD(ID) TREE_LANG_FLAG_0 (ID)
 
-/* In a RECORD_TYPE, a sorted array of the fields of the type.  */
 struct lang_type GTY(())
 {
+  /* In a RECORD_TYPE, a sorted array of the fields of the type.  */
   struct sorted_fields_type * GTY ((reorder ("resort_sorted_fields"))) s;
+  /* In an ENUMERAL_TYPE, the min and max values.  */
+  tree enum_min;
+  tree enum_max;
 };
 
 /* Record whether a type or decl was written with nonconstant size.
@@ -182,7 +192,7 @@ extern tree start_struct (enum tree_code, tree);
 extern void store_parm_decls (void);
 extern tree xref_tag (enum tree_code, tree);
 extern tree c_begin_compound_stmt (void);
-extern void c_expand_decl_stmt (tree);
+extern int c_expand_decl (tree);
 extern void c_static_assembler_name (tree);
 extern tree make_pointer_declarator (tree, tree);
 
@@ -190,8 +200,8 @@ extern tree make_pointer_declarator (tree, tree);
 extern int c_disregard_inline_limits (tree);
 extern int c_cannot_inline_tree_fn (tree *);
 extern bool c_objc_common_init (void);
+extern bool c_missing_noreturn_ok_p (tree);
 extern tree c_objc_common_truthvalue_conversion (tree expr);
-extern int c_missing_noreturn_ok_p (tree);
 extern void c_objc_common_finish_file (void);
 extern int defer_fn (tree);
 extern bool c_warn_unused_global_decl (tree);
@@ -248,6 +258,7 @@ extern void c_finish_case (void);
 extern tree build_asm_expr (tree, tree, tree, tree, bool);
 extern tree build_asm_stmt (tree, tree);
 extern tree c_convert_parm_for_inlining (tree, tree, tree, int);
+extern int c_types_compatible_p (tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

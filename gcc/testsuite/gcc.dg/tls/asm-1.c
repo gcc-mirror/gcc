@@ -3,5 +3,5 @@ __thread int i;
 
 int foo ()
 {
-  asm volatile ("" :: "m" (&i));	/* { dg-error "lvalue" } */
+  asm volatile ("" :: "m" (&i));  /* { dg-error "directly addressable" } */
 }

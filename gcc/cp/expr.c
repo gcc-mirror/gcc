@@ -73,6 +73,9 @@ cplus_expand_constant (tree cst)
 }
 
 /* Hook used by expand_expr to expand language-specific tree codes.  */
+/* ??? The only thing that should be here are things needed to expand
+   constant initializers; everything else should be handled by the
+   gimplification routines.  Are EMPTY_CLASS_EXPR or BASELINK needed?  */
 
 rtx
 cxx_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier,
@@ -81,7 +84,6 @@ cxx_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier,
   tree type = TREE_TYPE (exp);
   enum machine_mode mode = TYPE_MODE (type);
   enum tree_code code = TREE_CODE (exp);
-  rtx ret;
 
   /* No sense saving up arithmetic to be done
      if it's all in the wrong mode to form part of an address.
@@ -99,17 +101,6 @@ cxx_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier,
     case OFFSET_REF:
       /* Offset refs should not make it through to here.  */
       abort ();
-      return const0_rtx;
-      
-    case THROW_EXPR:
-      expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
-      return const0_rtx;
-
-    case MUST_NOT_THROW_EXPR:
-      expand_eh_region_start ();
-      ret = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
-      expand_eh_region_end_must_not_throw (build_call (terminate_node, 0));
-      return ret;
 
     case EMPTY_CLASS_EXPR:
       /* We don't need to generate any code for an empty class.  */
@@ -122,7 +113,4 @@ cxx_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier,
     default:
       return c_expand_expr (exp, target, tmode, modifier, alt_rtl);
     }
-  abort ();
-  /* NOTREACHED */
-  return NULL;
 }

@@ -46,8 +46,10 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "target.h"
 #include "c-common.h"
+#include "tree-mudflap.h"
 #include "cgraph.h"
 #include "tree-inline.h"
+
 extern cpp_reader *parse_in;
 
 /* This structure contains information about the initializations
@@ -2587,7 +2589,7 @@ finish_file (void)
   timevar_push (TV_VARCONST);
 
   emit_support_tinfos ();
-  
+
   do 
     {
       tree t;
@@ -2872,6 +2874,11 @@ finish_file (void)
       cgraph_optimize ();
     }
 
+  /* Emit mudflap static registration function.  This must be done
+     after all the user functions have been expanded.  */
+  if (flag_mudflap)
+    mudflap_finish_file ();
+
   /* Now, issue warnings about static, but not defined, functions,
      etc., and emit debugging information.  */
   walk_namespaces (wrapup_globals_for_namespace, /*data=*/&reconsider);
@@ -2885,12 +2892,12 @@ finish_file (void)
      to a file.  */
   {
     int flags;
-    FILE *stream = dump_begin (TDI_all, &flags);
+    FILE *stream = dump_begin (TDI_tu, &flags);
 
     if (stream)
       {
 	dump_node (global_namespace, flags & ~TDF_SLIM, stream);
-	dump_end (TDI_all, stream);
+	dump_end (TDI_tu, stream);
       }
   }
   
@@ -2932,7 +2939,7 @@ build_offset_ref_call_from_tree (tree fn, tree args)
 			  20030708);
       if (type_dependent_expression_p (fn)
 	  || any_type_dependent_arguments_p (args))
-	return build_min_nt (CALL_EXPR, fn, args);
+	return build_min_nt (CALL_EXPR, fn, args, NULL_TREE);
 
       /* Transform the arguments and add the implicit "this"
 	 parameter.  That must be done before the FN is transformed
@@ -2962,7 +2969,7 @@ build_offset_ref_call_from_tree (tree fn, tree args)
 
   expr = build_function_call (fn, args);
   if (processing_template_decl && expr != error_mark_node)
-    return build_min_non_dep (CALL_EXPR, expr, orig_fn, orig_args);
+    return build_min_non_dep (CALL_EXPR, expr, orig_fn, orig_args, NULL_TREE);
   return expr;
 }
   

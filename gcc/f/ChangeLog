@@ -1,3 +1,9 @@
+2004-05-13  Diego Novillo  <dnovillo@redhat.com>
+
+	Merge from tree-ssa-20020619-branch.
+
+	* config-lang.in (build_by_default): Set to no.
+
 2004-04-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* g77.texi (Floating-point Errors): Avoid referencing 

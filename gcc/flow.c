@@ -192,10 +192,6 @@ regset regs_live_at_setjmp;
    are another pair, etc.  */
 rtx regs_may_share;
 
-/* Callback that determines if it's ok for a function to have no
-   noreturn attribute.  */
-int (*lang_missing_noreturn_ok_p) (tree);
-
 /* Set of registers that may be eliminable.  These are handled specially
    in updating regs_ever_live.  */
 
@@ -333,48 +329,6 @@ static int invalidate_mems_from_autoinc (rtx *, void *);
 static void invalidate_mems_from_set (struct propagate_block_info *, rtx);
 static void clear_log_links (sbitmap);
 static int count_or_remove_death_notes_bb (basic_block, int);
-
-
-void
-check_function_return_warnings (void)
-{
-  if (warn_missing_noreturn
-      && !TREE_THIS_VOLATILE (cfun->decl)
-      && EXIT_BLOCK_PTR->pred == NULL
-      && (lang_missing_noreturn_ok_p
-	  && !lang_missing_noreturn_ok_p (cfun->decl)))
-    warning ("function might be possible candidate for attribute `noreturn'");
-
-  /* If we have a path to EXIT, then we do return.  */
-  if (TREE_THIS_VOLATILE (cfun->decl)
-      && EXIT_BLOCK_PTR->pred != NULL)
-    warning ("`noreturn' function does return");
-
-  /* If the clobber_return_insn appears in some basic block, then we
-     do reach the end without returning a value.  */
-  else if (warn_return_type
-	   && cfun->x_clobber_return_insn != NULL
-	   && EXIT_BLOCK_PTR->pred != NULL)
-    {
-      int max_uid = get_max_uid ();
-
-      /* If clobber_return_insn was excised by jump1, then renumber_insns
-	 can make max_uid smaller than the number still recorded in our rtx.
-	 That's fine, since this is a quick way of verifying that the insn
-	 is no longer in the chain.  */
-      if (INSN_UID (cfun->x_clobber_return_insn) < max_uid)
-	{
-	  rtx insn;
-
-	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	    if (insn == cfun->x_clobber_return_insn)
-	      {
-	        warning ("control reaches end of non-void function");
-		break;
-	      }
-	}
-    }
-}
 
 /* Return the INSN immediately following the NOTE_INSN_BASIC_BLOCK
    note associated with the BLOCK.  */
@@ -683,8 +637,7 @@ update_life_info (sbitmap blocks, enum update_life_extent extent, int prop_flags
 
 	  /* Zap the life information from the last round.  If we don't
 	     do this, we can wind up with registers that no longer appear
-	     in the code being marked live at entry, which twiggs bogus
-	     warnings from regno_uninitialized.  */
+	     in the code being marked live at entry.  */
 	  FOR_EACH_BB (bb)
 	    {
 	      CLEAR_REG_SET (bb->global_live_at_start);
@@ -815,7 +768,7 @@ free_basic_block_vars (void)
   if (basic_block_info)
     {
       clear_edges ();
-      VARRAY_FREE (basic_block_info);
+      basic_block_info = NULL;
     }
   n_basic_blocks = 0;
   last_basic_block = 0;
@@ -2348,24 +2301,6 @@ libcall_dead_p (struct propagate_block_info *pbi, rtx note, rtx insn)
 	}
     }
   return 1;
-}
-
-/* Return 1 if register REGNO was used before it was set, i.e. if it is
-   live at function entry.  Don't count global register variables, variables
-   in registers that can be used for function arg passing, or variables in
-   fixed hard registers.  */
-
-int
-regno_uninitialized (unsigned int regno)
-{
-  if (n_basic_blocks == 0
-      || (regno < FIRST_PSEUDO_REGISTER
-	  && (global_regs[regno]
-	      || fixed_regs[regno]
-	      || FUNCTION_ARG_REGNO_P (regno))))
-    return 0;
-
-  return REGNO_REG_SET_P (ENTRY_BLOCK_PTR->global_live_at_end, regno);
 }
 
 /* 1 if register REGNO was alive at a place where `setjmp' was called
@@ -4285,7 +4220,6 @@ count_or_remove_death_notes (sbitmap blocks, int kill)
   int i;
   basic_block bb;
 
-  
   /* This used to be a loop over all the blocks with a membership test
      inside the loop.  That can be amazingly expensive on a large CFG
      when only a small number of bits are set in BLOCKs (for example,

@@ -1,0 +1,62 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+/* Define if you have the backtrace function.  */
+#undef HAVE_BACKTRACE
+
+/* Define if you have the backtrace_symbols function.  */
+#undef HAVE_BACKTRACE_SYMBOLS
+
+/* Define if you have the dlvsym function.  */
+#undef HAVE_DLVSYM
+
+/* Define if you have the fopen64 function.  */
+#undef HAVE_FOPEN64
+
+/* Define if you have the fseeko64 function.  */
+#undef HAVE_FSEEKO64
+
+/* Define if you have the ftello64 function.  */
+#undef HAVE_FTELLO64
+
+/* Define if you have the gettimeofday function.  */
+#undef HAVE_GETTIMEOFDAY
+
+/* Define if you have the signal function.  */
+#undef HAVE_SIGNAL
+
+/* Define if you have the stat64 function.  */
+#undef HAVE_STAT64
+
+/* Define if you have the <dlfcn.h> header file.  */
+#undef HAVE_DLFCN_H
+
+/* Define if you have the <execinfo.h> header file.  */
+#undef HAVE_EXECINFO_H
+
+/* Define if you have the <signal.h> header file.  */
+#undef HAVE_SIGNAL_H
+
+/* Define if you have the <stdint.h> header file.  */
+#undef HAVE_STDINT_H
+
+/* Define if you have the dl library (-ldl).  */
+#undef HAVE_LIBDL
+
+/* Name of package */
+#undef PACKAGE
+
+/* Version number of package */
+#undef VERSION
+
+/* union semun defined in sys/ipc.h or sys/sem.h */
+#undef HAVE_UNION_SEMUN
+
+/* Define it socklen_t typedef is in sys/socket.h. */
+#undef HAVE_SOCKLEN_T
+
+/* define if you have <pthread.h> */
+#undef HAVE_PTHREAD_H
+
+/* pthread_create symbol version */
+#undef PTHREAD_CREATE_VERSION
+

@@ -118,6 +118,9 @@ static void link_roots (struct dom_info *, TBB, TBB);
 static void calc_idoms (struct dom_info *, enum cdi_direction);
 void debug_dominance_info (enum cdi_direction);
 
+/* Keeps track of the*/
+static unsigned n_bbs_in_dom_tree[2];
+
 /* Helper macro for allocating and initializing an array,
    for aesthetic reasons.  */
 #define init_ar(var, type, num, content)			\
@@ -531,7 +534,7 @@ assign_dfs_numbers (struct et_node *node, int *num)
     {
       assign_dfs_numbers (node->son, num);
       for (son = node->son->right; son != node->son; son = son->right)
-      assign_dfs_numbers (son, num);
+	assign_dfs_numbers (son, num);
     }
 
   node->dfs_num_out = (*num)++;
@@ -555,7 +558,7 @@ compute_dom_fast_query (enum cdi_direction dir)
   FOR_ALL_BB (bb)
     {
       if (!bb->dom[dir]->father)
-      assign_dfs_numbers (bb->dom[dir], &num);
+	assign_dfs_numbers (bb->dom[dir], &num);
     }
 
   dom_computed[dir] = DOM_OK;
@@ -576,12 +579,16 @@ calculate_dominance_info (enum cdi_direction dir)
   if (dom_computed[dir] != DOM_NO_FAST_QUERY)
     {
       if (dom_computed[dir] != DOM_NONE)
-      free_dominance_info (dir);
+	free_dominance_info (dir);
+
+      if (n_bbs_in_dom_tree[dir])
+	abort ();
 
       FOR_ALL_BB (b)
 	{
 	  b->dom[dir] = et_new_tree (b);
 	}
+      n_bbs_in_dom_tree[dir] = n_basic_blocks + 2;
 
       init_dom_info (&di);
       calc_dfs_tree (&di, dir);
@@ -616,6 +623,10 @@ free_dominance_info (enum cdi_direction dir)
       delete_from_dominance_info (dir, bb);
     }
 
+  /* If there are any nodes left, something is wrong.  */
+  if (n_bbs_in_dom_tree[dir])
+    abort ();
+
   dom_computed[dir] = DOM_NONE;
 }
 
@@ -631,7 +642,7 @@ get_immediate_dominator (enum cdi_direction dir, basic_block bb)
   if (!node->father)
     return NULL;
 
-  return node->father->data; 
+  return node->father->data;
 }
 
 /* Set the immediate dominator of the block possibly removing
@@ -648,7 +659,7 @@ set_immediate_dominator (enum cdi_direction dir, basic_block bb,
   if (node->father)
     {
       if (node->father->data == dominated_by)
-      return;
+	return;
       et_split (node);
     }
 
@@ -730,7 +741,7 @@ nearest_common_dominator (enum cdi_direction dir, basic_block bb1, basic_block b
 /* Return TRUE in case BB1 is dominated by BB2.  */
 bool
 dominated_by_p (enum cdi_direction dir, basic_block bb1, basic_block bb2)
-{
+{ 
   struct et_node *n1 = bb1->dom[dir], *n2 = bb2->dom[dir];
 
   if (!dom_computed[dir])
@@ -738,7 +749,7 @@ dominated_by_p (enum cdi_direction dir, basic_block bb1, basic_block bb2)
 
   if (dom_computed[dir] == DOM_OK)
     return (n1->dfs_num_in >= n2->dfs_num_in
-	    && n1->dfs_num_out <= n2->dfs_num_out);
+  	    && n1->dfs_num_out <= n2->dfs_num_out);
 
   return et_below (n1, n2);
 }
@@ -839,6 +850,8 @@ add_to_dominance_info (enum cdi_direction dir, basic_block bb)
   if (bb->dom[dir])
     abort ();
 
+  n_bbs_in_dom_tree[dir]++;
+  
   bb->dom[dir] = et_new_tree (bb);
 
   if (dom_computed[dir] == DOM_OK)
@@ -853,6 +866,7 @@ delete_from_dominance_info (enum cdi_direction dir, basic_block bb)
 
   et_free_tree (bb->dom[dir]);
   bb->dom[dir] = NULL;
+  n_bbs_in_dom_tree[dir]--;
 
   if (dom_computed[dir] == DOM_OK)
     dom_computed[dir] = DOM_NO_FAST_QUERY;

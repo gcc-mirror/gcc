@@ -810,7 +810,7 @@ convert_to_void (tree expr, const char *implicit)
         /* The second part of a compound expr contains the value.  */
         tree op1 = TREE_OPERAND (expr,1);
         tree new_op1 = convert_to_void
-	  (op1, (implicit && !TREE_NO_UNUSED_WARNING (expr)
+	  (op1, (implicit && !TREE_NO_WARNING (expr)
 		 ? "right-hand operand of comma" : NULL));
         
         if (new_op1 != op1)
@@ -887,7 +887,8 @@ convert_to_void (tree expr, const char *implicit)
   
   if (expr != error_mark_node && !VOID_TYPE_P (TREE_TYPE (expr)))
     {
-      if (implicit && !TREE_SIDE_EFFECTS (expr) && warn_unused_value)
+      if (implicit && warn_unused_value
+	  && !TREE_SIDE_EFFECTS (expr) && !TREE_NO_WARNING (expr))
 	warning ("%s has no effect", implicit);
       expr = build1 (CONVERT_EXPR, void_type_node, expr);
     }

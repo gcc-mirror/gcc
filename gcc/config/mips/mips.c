@@ -1277,9 +1277,6 @@ mips_const_insns (rtx x)
 
   switch (GET_CODE (x))
     {
-    case CONSTANT_P_RTX:
-      return 1;
-
     case HIGH:
       if (TARGET_MIPS16
 	  || !mips_symbolic_constant_p (XEXP (x, 0), &symbol_type)

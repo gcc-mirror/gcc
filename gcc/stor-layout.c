@@ -67,8 +67,6 @@ static int excess_unit_span (HOST_WIDE_INT, HOST_WIDE_INT, HOST_WIDE_INT,
 			     HOST_WIDE_INT, tree);
 #endif
 static void force_type_save_exprs_1 (tree);
-static unsigned int update_alignment_for_field (record_layout_info, tree,
-						unsigned int);
 extern void debug_rli (record_layout_info);
 
 /* SAVE_EXPRs for sizes of types and decls, waiting to be expanded.  */
@@ -161,6 +159,11 @@ variable_size (tree size)
   if (TREE_CODE (save) == SAVE_EXPR)
     SAVE_EXPR_PERSISTENT_P (save) = 1;
 
+  if (!immediate_size_expand && cfun && cfun->x_dont_save_pending_sizes_p)
+    /* The front-end doesn't want us to keep a list of the expressions
+       that determine sizes for variable size objects.  Trust it.  */
+    return size;
+
   if (lang_hooks.decls.global_bindings_p ())
     {
       if (TREE_CONSTANT (size))
@@ -173,10 +176,6 @@ variable_size (tree size)
 
   if (immediate_size_expand)
     expand_expr (save, const0_rtx, VOIDmode, 0);
-  else if (cfun != 0 && cfun->x_dont_save_pending_sizes_p)
-    /* The front-end doesn't want us to keep a list of the expressions
-       that determine sizes for variable size objects.  */
-    ;
   else
     put_pending_size (save);
 
@@ -722,7 +721,7 @@ rli_size_so_far (record_layout_info rli)
    variable alignment fields in RLI, and return the alignment to give
    the FIELD.  */
 
-static unsigned int
+unsigned int
 update_alignment_for_field (record_layout_info rli, tree field,
 			    unsigned int known_align)
 {
@@ -1558,6 +1557,9 @@ layout_type (tree type)
 {
   if (type == 0)
     abort ();
+
+  if (type == error_mark_node)
+    return;
 
   /* Do nothing if type has been laid out before.  */
   if (TYPE_SIZE (type))

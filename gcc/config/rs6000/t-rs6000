@@ -18,3 +18,23 @@ rs6000-c.o: $(srcdir)/config/rs6000/rs6000-c.c \
 
 # The rs6000 backend doesn't cause warnings in these files.
 insn-conditions.o-warn =
+# The files below trigger warnings in tree-ssa because of the gimplifier
+# emitting code that confuse the compiler into thinking that some variables
+# are used uninitialized.
+jump.o-warn = -Wno-error
+regmove.o-warn = -Wno-error
+c-typeck.o-warn = -Wno-error
+cfgrtl.o-warn = -Wno-error
+combine.o-warn = -Wno-error
+fold-const.o-warn = -Wno-error
+ifcvt.o-warn = -Wno-error
+reload1.o-warn = -Wno-error
+rtlanal.o-warn = -Wno-error
+cp/decl2.o-warn = -Wno-error
+cp/pt.o-warn = -Wno-error
+f/where.o-warn = -Wno-error
+java/expr.o-warn = -Wno-error
+objc/objc-act.o-warn = -Wno-error
+rs6000.o-warn = -Wno-error
+insn-emit.o-warn = -Wno-error
+simplify-rtx.o-warn = -Wno-error

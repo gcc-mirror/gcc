@@ -2419,10 +2419,6 @@ input_operand (rtx op, enum machine_mode mode)
   if (memory_operand (op, mode))
     return 1;
 
-  /* Only a tiny bit of handling for CONSTANT_P_RTX is necessary.  */
-  if (GET_CODE (op) == CONSTANT_P_RTX)
-    return 1;
-
   /* For floating-point, easy constants are valid.  */
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
       && CONSTANT_P (op)
@@ -3751,10 +3747,6 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
   if (reload_in_progress && mode == Pmode
       && (! general_operand (operands[1], mode)
 	  || ! nonimmediate_operand (operands[0], mode)))
-    goto emit_set;
-
-  /* Handle the case of CONSTANT_P_RTX.  */
-  if (GET_CODE (operands[1]) == CONSTANT_P_RTX)
     goto emit_set;
 
   /* 128-bit constant floating-point values on Darwin should really be
@@ -13125,7 +13117,8 @@ rs6000_output_function_epilogue (FILE *file,
 	 Java is 13.  Objective-C is 14.  */
       if (! strcmp (language_string, "GNU C"))
 	i = 0;
-      else if (! strcmp (language_string, "GNU F77"))
+      else if (! strcmp (language_string, "GNU F77")
+	       || ! strcmp (language_string, "GNU F95"))
 	i = 1;
       else if (! strcmp (language_string, "GNU Pascal"))
 	i = 2;
@@ -14120,7 +14113,7 @@ output_function_profiler (FILE *file, int labelno)
 	  asm_fprintf (file, "\tmflr %s\n", reg_names[0]);
 	  asm_fprintf (file, "\tstd %s,16(%s)\n", reg_names[0], reg_names[1]);
 
-	  if (current_function_needs_context)
+	  if (cfun->static_chain_decl != NULL)
 	    {
 	      asm_fprintf (file, "\tstd %s,24(%s)\n",
 			   reg_names[STATIC_CHAIN_REGNUM], reg_names[1]);

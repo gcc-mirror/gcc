@@ -1,0 +1,110 @@
+2004-05-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* configure.in (GMP checking): s/save_CFLAGS/saved_CFLAGS.
+	* configure: Regenerate.
+
+2004-04-22  Loren J. Rittle <ljrittle@acm.org>
+
+	* configure.in (*-*-freebsd*): Use with_gmp to "Avoid crusty gmp.h."
+	* configure: Rebuilt (with autoconf version 2.13).
+
+2004-04-17  Paul Brook  <paul@codesourcery.com>
+
+	* Makefile.tmp (EXTRA_HOST_FLAGS): Remove GMPLIBS and GMPINC.
+	(configure-gcc): Set GMPLIBS and GMPINC.
+	* Makefile.in: Regenerate.
+
+2004-04-14  Paul Brook  <paul@codesourcery.com>
+
+	* Makefile.tmp (HOST_GMPLIBS, HOST_GMPINC): New variables.
+	(EXTRA_HOST_FLAGS): Pass them.
+	* configure.in: Add check for GMP.  Disable languages if not found.
+	* Makefile.in, configure: Regenrate.
+
+2004-03-29  Diego Novillo  <dnovillo@redhat.com>
+
+	* configure.in: Set with_libbansshee to yes by default.
+	* configure: Regenerate.
+
+2004-03-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* configure.in: Fix handling of --without-libbanshee.
+	* configure: Regenerate.
+
+2004-03-26  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Add support for --without-libbanshee.
+	* configure: Regenerated.
+
+2004-02-17  Brian Booth  <bbooth@redhat.com>
+
+	* MAINTAINERS.tree-ssa: Add self to write after approval.
+
+2004-02-13  Loren J. Rittle <ljrittle@acm.org>
+
+	* configure.in (*-*-freebsd*): Avoid crusty gmp.h.
+	(alpha*-*-*freebsd*, i[[3456789]]86-*-*freebsd*): Merge into above.
+	* configure: Rebuilt (with autoconf version 2.13).
+
+2003-10-22  Frank Ch. Eigler  <fche@redhat.com>
+
+	* configure.in: Add support for "--disable-libmudflap" option.
+	* configure: Regenerated.
+
+2003-09-22  Diego Novillo  <dnovillo@redhat.com>
+
+	* MAINTAINERS.tree-ssa: Add Andrew MacLeod as global maintainer for
+	the branch.
+
+2003-08-23  Paul Brook  <paul@nowt.org>
+
+	* Makefile.in: Regenerate.
+
+2003-07-26  Paul Brook  <paul@nowt.org>
+
+	* Makefile.def: Add libgfortran and GFORTRAN_FOR_TARGET.
+	* Makefile.tmp: Ditto.
+	* configure.in: Ditto.
+	* depcomp: New file.
+	* maintainer-scripts/gcc_release: Add gcc-fortran.
+	* maintainer-scripts/snapshot-README: Ditto.
+	* maintainer-scripts/snapshot-index.html: Ditto.
+	* libgfortran: New target library.
+
+2003-06-05  Frank Ch. Eigler  <fche@redhat.com>
+
+	* Makefile.in: Regenerated to activate libmudflap builds.
+
+2003-04-25  Diego Novillo  <dnovillo@redhat.com>
+
+	* MAINTAINERS.tree-ssa: New file.
+
+2003-01-29  Daniel Berlin  <dberlin@dberlin.org>
+
+	* configure.in: Use ac_configure_args for libbanshee option
+	* configure: regen.
+
+2002-11-27  Diego Novillo  <dnovillo@redhat.com>
+
+	* Makefile.tpl (all-gcc, all-bootstrap): Add dependency on 
+	all-libbanshee.
+	* Makefile.in: Regenerate.
+
+2002-11-25  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* Makefile.def: Diego already did the libmudflap moving in a merge,
+	so remove the extra i added.
+	* Makefile.in: Regenerate.
+
+2002-11-24  Daniel Berlin  <dberlin@dberlin.org>
+
+	* configure.in: Add libbanshee related stuff.
+	* Makefile.in: Regenerate from Makefile.def.
+	* Makefile.def: Move libmudflap stuff to here, where it belongs.
+	Add libbanshee stuff.
+	* Makefile.tpl: Add libbanshee stuff.
+
+2002-08-12  Frank Ch. Eigler  <fche@redhat.com>
+
+	* Makefile.in (target-libmudflap): Add libmudflap-related targets.
+	* configure.in (target_libs): Ditto.

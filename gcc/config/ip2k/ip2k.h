@@ -767,9 +767,6 @@ do {							\
 
 #define FUNCTION_MODE HImode
 
-#define INTEGRATE_THRESHOLD(DECL) \
-  (1 + (3 * list_length (DECL_ARGUMENTS (DECL)) / 2))
-
 #define DOLLARS_IN_IDENTIFIERS 0
 
 extern int ip2k_reorg_in_progress;

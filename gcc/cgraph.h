@@ -30,7 +30,6 @@ struct cgraph_local_info GTY(())
 {
   /* Size of the function before inlining.  */
   int self_insns;
-
   /* Set when function function is visible in current compilation unit only
      and it's address is never taken.  */
   bool local;
@@ -66,9 +65,9 @@ struct cgraph_global_info GTY(())
 
 struct cgraph_rtl_info GTY(())
 {
+   int preferred_incoming_stack_boundary;
    bool const_function;
    bool pure_function;
-   int preferred_incoming_stack_boundary;
 };
 
 

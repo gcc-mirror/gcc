@@ -66,8 +66,6 @@ static bool java_can_use_bit_fields_p (void);
 static bool java_dump_tree (void *, tree);
 static void dump_compound_expr (dump_info_p, tree);
 static bool java_decl_ok_for_sibcall (tree);
-static int java_estimate_num_insns (tree);
-static int java_start_inlining (tree);
 static tree java_get_callee_fndecl (tree);
 
 #ifndef TARGET_OBJECT_SUFFIX
@@ -174,7 +172,8 @@ int flag_force_classes_archive_check;
 
 /* When zero, don't optimize static class initialization. This flag shouldn't
    be tested alone, use STATIC_CLASS_INITIALIZATION_OPTIMIZATION_P instead.  */
-int flag_optimize_sci = 1;
+/* FIXME: Make this work with gimplify.  */
+int flag_optimize_sci = 0;
 
 /* When nonzero, use offset tables for virtual method calls
    in order to improve binary compatibility. */
@@ -249,17 +248,14 @@ struct language_function GTY(())
 #undef LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
 #define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE java_signed_or_unsigned_type
 
-#undef LANG_HOOKS_TREE_INLINING_WALK_SUBTREES
-#define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES java_tree_inlining_walk_subtrees
-
-#undef LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS
-#define LANG_HOOKS_TREE_INLINING_ESTIMATE_NUM_INSNS java_estimate_num_insns
-
-#undef LANG_HOOKS_TREE_INLINING_START_INLINING
-#define LANG_HOOKS_TREE_INLINING_START_INLINING java_start_inlining
-
 #undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN java_dump_tree
+
+#undef LANG_HOOKS_GIMPLIFY_EXPR
+#define LANG_HOOKS_GIMPLIFY_EXPR java_gimplify_expr
+
+#undef LANG_HOOKS_TREE_INLINING_WALK_SUBTREES
+#define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES java_tree_inlining_walk_subtrees
 
 #undef LANG_HOOKS_DECL_OK_FOR_SIBCALL
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL java_decl_ok_for_sibcall
@@ -732,17 +728,13 @@ java_post_options (const char **pfilename)
 {
   const char *filename = *pfilename;
 
- /* Use tree inlining if possible.  Function instrumentation is only
-     done in the RTL level, so we disable tree inlining.  */
-  if (! flag_instrument_function_entry_exit)
+  /* Use tree inlining.  */
+  if (!flag_no_inline)
+    flag_no_inline = 1;
+  if (flag_inline_functions)
     {
-      if (!flag_no_inline)
-	flag_no_inline = 1;
-      if (flag_inline_functions)
-	{
-	  flag_inline_trees = 2;
-	  flag_inline_functions = 0;
-	}
+      flag_inline_trees = 2;
+      flag_inline_functions = 0;
     }
 
   /* Open input file.  */
@@ -1122,122 +1114,6 @@ static bool
 java_decl_ok_for_sibcall (tree decl)
 {
   return decl != NULL && DECL_CONTEXT (decl) == output_class;
-}
-
-/* Used by estimate_num_insns.  Estimate number of instructions seen
-   by given statement.  */
-static tree
-java_estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
-{
-  int *count = data;
-  tree x = *tp;
-
-  if (TYPE_P (x) || DECL_P (x))
-    {
-      *walk_subtrees = 0;
-      return NULL;
-    }
-  /* Assume that constants and references counts nothing.  These should
-     be majorized by amount of operations among them we count later
-     and are common target of CSE and similar optimizations.  */
-  if (TREE_CODE_CLASS (TREE_CODE (x)) == 'c'
-      || TREE_CODE_CLASS (TREE_CODE (x)) == 'r')
-    return NULL;
-  switch (TREE_CODE (x))
-    { 
-    /* Recognize assignments of large structures and constructors of
-       big arrays.  */
-    case MODIFY_EXPR:
-    case CONSTRUCTOR:
-      {
-	HOST_WIDE_INT size;
-
-	size = int_size_in_bytes (TREE_TYPE (x));
-
-	if (size < 0 || size > MOVE_MAX_PIECES * MOVE_RATIO)
-	  *count += 10;
-	else
-	  *count += ((size + MOVE_MAX_PIECES - 1) / MOVE_MAX_PIECES);
-      }
-      break;
-    /* Few special cases of expensive operations.  This is usefull
-       to avoid inlining on functions having too many of these.  */
-    case TRUNC_DIV_EXPR:
-    case CEIL_DIV_EXPR:
-    case FLOOR_DIV_EXPR:
-    case ROUND_DIV_EXPR:
-    case TRUNC_MOD_EXPR:
-    case CEIL_MOD_EXPR:
-    case FLOOR_MOD_EXPR:
-    case ROUND_MOD_EXPR:
-    case RDIV_EXPR:
-    case CALL_EXPR:
-
-    case NEW_ARRAY_EXPR:
-    case NEW_ANONYMOUS_ARRAY_EXPR:
-    case NEW_CLASS_EXPR:
-      *count += 10;
-      break;
-    /* Various containers that will produce no code themselves.  */
-    case INIT_EXPR:
-    case TARGET_EXPR:
-    case BIND_EXPR:
-    case BLOCK:
-    case TREE_LIST:
-    case TREE_VEC:
-    case IDENTIFIER_NODE:
-    case PLACEHOLDER_EXPR:
-    case WITH_CLEANUP_EXPR:
-    case CLEANUP_POINT_EXPR:
-    case NOP_EXPR:
-    case VIEW_CONVERT_EXPR:
-    case SAVE_EXPR:
-    case UNSAVE_EXPR:
-    case COMPLEX_EXPR:
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
-    case TRY_CATCH_EXPR:
-    case TRY_FINALLY_EXPR:
-    case LABEL_EXPR:
-    case EXIT_EXPR:
-    case LABELED_BLOCK_EXPR:
-    case EXIT_BLOCK_EXPR:
-    case EXPR_WITH_FILE_LOCATION:
-    case UNARY_PLUS_EXPR:
-    case THIS_EXPR:
-    case DEFAULT_EXPR:
-    case TRY_EXPR:
-
-      break;
-    case CLASS_LITERAL:
-      *walk_subtrees = 0;
-      break;
-    default:
-      (*count)++;
-    }
-  return NULL;
-}
-
-/*  Estimate number of instructions that will be created by expanding the body.  */
-static int
-java_estimate_num_insns (tree decl)
-{
-  int num = 0;
-  walk_tree_without_duplicates (&DECL_SAVED_TREE (decl),
-				java_estimate_num_insns_1, &num);
-  return num;
-}
-
-/* Start inlining fn.  Called by the tree inliner via
-   lang_hooks.tree_inlining.cannot_inline_tree_fn.  */
-
-static int
-java_start_inlining (tree fn)
-{
-  /* A java function's body doesn't have a BLOCK structure suitable
-     for debug output until it is expanded.  Prevent inlining functions
-     that are not yet expanded.  */
-  return TREE_ASM_WRITTEN (fn) ? 1 : 0;
 }
 
 /* Given a call_expr, try to figure out what its target might be.  In

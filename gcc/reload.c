@@ -2265,9 +2265,8 @@ decompose (rtx x)
   struct decomposition val;
   int all_const = 0;
 
-  val.reg_flag = 0;
-  val.safe = 0;
-  val.base = 0;
+  memset (&val, 0, sizeof (val));
+
   if (GET_CODE (x) == MEM)
     {
       rtx base = NULL_RTX, offset = 0;

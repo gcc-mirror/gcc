@@ -25,7 +25,7 @@ macroexpand (struct cpp_reader *pfile, struct definition *defn)
 
   if (nargs >= 0)
     {
-      enum cpp_token token;  /* { dg-bogus "token" "uninitialized variable warning" { xfail *-*-* } } */
+      enum cpp_token token;  /* { dg-bogus "token" "uninitialized variable warning" } */
       int i, rest_args;
       i = 0;
       rest_args = 0;

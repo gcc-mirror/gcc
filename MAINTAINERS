@@ -170,6 +170,11 @@ gcov			Nathan Sidwell		nathan@codesourcery.com
 option handling		Neil Booth		neil@daikokuya.co.uk
 libffi testsuite	Andreas Tobler		andreast@gcc.gnu.org
 middle-end		Roger Sayle		roger@eyesopen.com
+tree-ssa		Diego Novillo		dnovillo@redhat.com
+tree-ssa		Andrew MacLeod		amacleod@redhat.com
+PRE, points-to		Daniel Berlin		dberlin@dberlin.org
+mudflap			Frank Ch. Eigler	fche@redhat.com
+tree browser/unparser	Sebastian Pop		s.pop@laposte.net
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.

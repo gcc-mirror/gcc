@@ -715,7 +715,6 @@ int
 gr_reg_or_5bit_operand (rtx op, enum machine_mode mode)
 {
   return ((GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) < 32)
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || gr_register_operand (op, mode));
 }
 
@@ -725,7 +724,6 @@ int
 gr_reg_or_6bit_operand (rtx op, enum machine_mode mode)
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_M (INTVAL (op)))
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || gr_register_operand (op, mode));
 }
 
@@ -735,7 +733,6 @@ int
 gr_reg_or_8bit_operand (rtx op, enum machine_mode mode)
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_K (INTVAL (op)))
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || gr_register_operand (op, mode));
 }
 
@@ -745,7 +742,6 @@ int
 grfr_reg_or_8bit_operand (rtx op, enum machine_mode mode)
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_K (INTVAL (op)))
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || grfr_register_operand (op, mode));
 }
 
@@ -756,7 +752,6 @@ int
 gr_reg_or_8bit_adjusted_operand (rtx op, enum machine_mode mode)
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_L (INTVAL (op)))
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || gr_register_operand (op, mode));
 }
 
@@ -770,7 +765,6 @@ gr_reg_or_8bit_and_adjusted_operand (rtx op, enum machine_mode mode)
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_K (INTVAL (op))
 	   && CONST_OK_FOR_L (INTVAL (op)))
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || gr_register_operand (op, mode));
 }
 
@@ -780,7 +774,6 @@ int
 gr_reg_or_14bit_operand (rtx op, enum machine_mode mode)
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_I (INTVAL (op)))
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || gr_register_operand (op, mode));
 }
 
@@ -790,7 +783,6 @@ int
 gr_reg_or_22bit_operand (rtx op, enum machine_mode mode)
 {
   return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_J (INTVAL (op)))
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || gr_register_operand (op, mode));
 }
 
@@ -799,8 +791,7 @@ gr_reg_or_22bit_operand (rtx op, enum machine_mode mode)
 int
 shift_count_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-  return ((GET_CODE (op) == CONST_INT && CONST_OK_FOR_M (INTVAL (op)))
-	  || GET_CODE (op) == CONSTANT_P_RTX);
+  return (GET_CODE (op) == CONST_INT && CONST_OK_FOR_M (INTVAL (op)));
 }
 
 /* Return 1 if OP is a 5 bit immediate operand.  */
@@ -808,9 +799,8 @@ shift_count_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 int
 shift_32bit_count_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-  return ((GET_CODE (op) == CONST_INT
-	   && (INTVAL (op) >= 0 && INTVAL (op) < 32))
-	  || GET_CODE (op) == CONSTANT_P_RTX);
+  return (GET_CODE (op) == CONST_INT
+	   && (INTVAL (op) >= 0 && INTVAL (op) < 32));
 }
 
 /* Return 1 if OP is a 2, 4, 8, or 16 immediate operand.  */

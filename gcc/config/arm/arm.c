@@ -1116,7 +1116,7 @@ arm_compute_func_type (void)
       && TREE_THIS_VOLATILE (current_function_decl))
     type |= ARM_FT_VOLATILE;
   
-  if (current_function_needs_context)
+  if (cfun->static_chain_decl != NULL)
     type |= ARM_FT_NESTED;
 
   attr = DECL_ATTRIBUTES (current_function_decl);
@@ -10227,10 +10227,10 @@ arm_compute_initial_elimination_offset (unsigned int from, unsigned int to)
 	     frame pointer and the arg pointer coincide.  */
 	  if (offsets->frame == offsets->saved_regs)
 	    return 0;
-          /* FIXME:  Not sure about this.  Maybe we should always return 0 ?  */
-          return (frame_pointer_needed
-                  && current_function_needs_context
-                  && ! cfun->machine->uses_anonymous_args) ? 4 : 0;
+	  /* FIXME:  Not sure about this.  Maybe we should always return 0 ?  */
+	  return (frame_pointer_needed
+		  && cfun->static_chain_decl != NULL
+		  && ! cfun->machine->uses_anonymous_args) ? 4 : 0;
 
 	case STACK_POINTER_REGNUM:
 	  /* If nothing has been pushed on the stack at all

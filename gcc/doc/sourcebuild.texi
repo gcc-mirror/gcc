@@ -54,6 +54,9 @@ Headers for the @code{libiberty} library.
 The Ada runtime library.
 
 @item libf2c
+The Fortran 77 runtime library.
+
+@item libgfortran
 The Fortran runtime library.
 
 @item libffi
@@ -700,6 +703,10 @@ If defined, a space-separated list of files that should be scanned by
 gengtype.c to generate the garbage collection tables and routines for
 this language.  This excludes the files that are common to all front
 ends. @xref{Type Information}.
+@item need_gmp
+If defined  to @samp{yes}, this frontend requires the GMP library.
+Enables configure tests for GMP, which set @code{GMPLIBS} and
+@code{GMPINC} appropriately.
 
 @end table
 

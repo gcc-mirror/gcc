@@ -212,11 +212,16 @@ struct_fields: { $$ = NULL; }
 		    p->line = lexer_line;
 		    $$ = p;
 		  }
+	       | type ':' bitfieldlen ';' struct_fields
+		  { $$ = $5; }
 	       ;
 
 bitfieldopt: /* empty */
-	     | ':' NUM
-	     | ':' ID
+	     | ':' bitfieldlen
+	     ;
+
+bitfieldlen: NUM | ID
+		{ }
 	     ;
 
 type: SCALAR

@@ -743,6 +743,11 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define CASE_VECTOR_PC_RELATIVE 0
 #endif
 
+/* Assume that trampolines need function alignment.  */
+#ifndef TRAMPOLINE_ALIGNMENT
+#define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
+#endif
+
 /* Register mappings for target machines without register windows.  */
 #ifndef INCOMING_REGNO
 #define INCOMING_REGNO(N) (N)

@@ -375,7 +375,9 @@ push_inline_template_parms_recursive (tree parmlist, int levels)
 	    tree decl = build_decl (CONST_DECL, DECL_NAME (parm),
 				    TREE_TYPE (parm));
 	    DECL_ARTIFICIAL (decl) = 1;
-	    TREE_CONSTANT (decl) = TREE_READONLY (decl) = 1;
+	    TREE_CONSTANT (decl) = 1;
+	    TREE_INVARIANT (decl) = 1;
+	    TREE_READONLY (decl) = 1;
 	    DECL_INITIAL (decl) = DECL_INITIAL (parm);
 	    SET_DECL_TEMPLATE_PARM_P (decl);
 	    pushdecl (decl);
@@ -2115,6 +2117,7 @@ build_template_parm_index (int index,
   TEMPLATE_PARM_DECL (t) = decl;
   TREE_TYPE (t) = type;
   TREE_CONSTANT (t) = TREE_CONSTANT (decl);
+  TREE_INVARIANT (t) = TREE_INVARIANT (decl);
   TREE_READONLY (t) = TREE_READONLY (decl);
 
   return t;
@@ -2137,6 +2140,7 @@ reduce_template_parm_level (tree index, tree type, int levels)
       
       decl = build_decl (TREE_CODE (orig_decl), DECL_NAME (orig_decl), type);
       TREE_CONSTANT (decl) = TREE_CONSTANT (orig_decl);
+      TREE_INVARIANT (decl) = TREE_INVARIANT (orig_decl);
       TREE_READONLY (decl) = TREE_READONLY (orig_decl);
       DECL_ARTIFICIAL (decl) = 1;
       SET_DECL_TEMPLATE_PARM_P (decl);
@@ -2200,11 +2204,15 @@ process_template_parm (tree list, tree next)
       TREE_TYPE (parm) = TYPE_MAIN_VARIANT (TREE_TYPE (parm));
 
       /* A template parameter is not modifiable.  */
-      TREE_READONLY (parm) = TREE_CONSTANT (parm) = 1;
+      TREE_CONSTANT (parm) = 1;
+      TREE_INVARIANT (parm) = 1;
+      TREE_READONLY (parm) = 1;
       if (invalid_nontype_parm_type_p (TREE_TYPE (parm), 1))
         TREE_TYPE (parm) = void_type_node;
       decl = build_decl (CONST_DECL, DECL_NAME (parm), TREE_TYPE (parm));
-      TREE_CONSTANT (decl) = TREE_READONLY (decl) = 1;
+      TREE_CONSTANT (decl) = 1;
+      TREE_INVARIANT (decl) = 1;
+      TREE_READONLY (decl) = 1;
       DECL_INITIAL (parm) = DECL_INITIAL (decl) 
 	= build_template_parm_index (idx, processing_template_decl,
 				     processing_template_decl,
@@ -4865,7 +4873,9 @@ push_tinst_level (tree d)
       return 0;
     }
 
-  new = build_expr_wfl (d, input_filename, input_line, 0);
+  new = make_node (TINST_LEVEL);
+  annotate_with_locus (new, input_location);
+  TINST_DECL (new) = d;
   TREE_CHAIN (new) = current_tinst_level;
   current_tinst_level = new;
 
@@ -4889,8 +4899,7 @@ pop_tinst_level (void)
 
   /* Restore the filename and line number stashed away when we started
      this instantiation.  */
-  input_line = TINST_LINE (old);
-  input_filename = TINST_FILE (old);
+  input_location = *EXPR_LOCUS (old);
   extract_interface_info ();
   
   current_tinst_level = TREE_CHAIN (old);
@@ -5648,7 +5657,7 @@ instantiate_class_template (tree type)
      that would be used for non-template classes.  */
   typedecl = TYPE_MAIN_DECL (type);
   input_location = DECL_SOURCE_LOCATION (typedecl);
-  
+
   unreverse_member_declarations (type);
   finish_struct_1 (type);
 
@@ -7971,13 +7980,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       break;
 
     case LABEL_STMT:
-      input_line = STMT_LINENO (t);
+      prep_stmt (t);
       finish_label_stmt (DECL_NAME (LABEL_STMT_LABEL (t)));
-      break;
-
-    case FILE_STMT:
-      input_filename = FILE_STMT_FILENAME (t);
-      add_stmt (build_nt (FILE_STMT, FILE_STMT_FILENAME_NODE (t)));
       break;
 
     case GOTO_STMT:
@@ -7996,7 +8000,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case ASM_STMT:
       prep_stmt (t);
       tmp = finish_asm_stmt
-	(ASM_CV_QUAL (t),
+	(ASM_VOLATILE_P (t),
 	 tsubst_expr (ASM_STRING (t), args, complain, in_decl),
 	 tsubst_expr (ASM_OUTPUTS (t), args, complain, in_decl),
 	 tsubst_expr (ASM_INPUTS (t), args, complain, in_decl), 
@@ -11151,7 +11155,7 @@ instantiate_decl (tree d, int defer_ok)
       goto out;
     }
 
-  need_push = !global_bindings_p ();
+  need_push = !cfun || !global_bindings_p ();
   if (need_push)
     push_to_top_level ();
 
@@ -11164,8 +11168,7 @@ instantiate_decl (tree d, int defer_ok)
   regenerate_decl_from_template (d, td);
   
   /* We already set the file and line above.  Reset them now in case
-     they changed as a result of calling
-     regenerate_decl_from_template.  */
+     they changed as a result of calling regenerate_decl_from_template.  */
   input_location = DECL_SOURCE_LOCATION (d);
 
   if (TREE_CODE (d) == VAR_DECL)

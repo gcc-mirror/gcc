@@ -257,6 +257,15 @@ DEFTREECODE (MUST_NOT_THROW_EXPR, "must_not_throw_expr", 'e', 1)
 
 DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
 
+/* Template instantiation level node.
+
+   Operand 1 contains the original DECL node and can be accessed via TINST_DECL.
+
+   A stack of template instantiation nodes is kept through the TREE_CHAIN
+   fields of these nodes.  */
+
+DEFTREECODE (TINST_LEVEL, "TINST_LEVEL", 'e', 1)
+
 /*
 Local variables:
 mode:c

@@ -12,8 +12,8 @@ void test(void)
   __asm__ ("" : : "m"(r));	/* { dg-warning "address of register" } */
   __asm__ ("" : : "m"(i));
   __asm__ ("" : : "m"(m));
-  __asm__ ("" : : "m"(0));	/* { dg-warning "input without lvalue" } */
-  __asm__ ("" : : "m"(i+1));	/* { dg-warning "input without lvalue" } */
+  __asm__ ("" : : "m"(0));	/* { dg-error "" } */
+  __asm__ ("" : : "m"(i+1));	/* { dg-error "" } */
   __asm__ ("" : : "m"(*p++));
 
   __asm__ ("" : : "g"(r));

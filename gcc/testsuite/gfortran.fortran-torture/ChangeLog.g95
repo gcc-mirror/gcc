@@ -1,0 +1,99 @@
+2003-07-24  Lifang Zeng  <zlf605@hotmail.com>
+
+	* execute/where_3.f90: Modified.
+	* execute/where_6.f90: New testcase.
+
+2003-07-09  Chun HUang  <compiler@sohu.com>
+
+	* execute/intrinsic_scan.f90: Test the SCAN intrinsic.
+	* execute/intrinsic_verify.f90: Test the VERIFY intrinsic.
+
+2003-07-02  Paul Brook  <paul@nowt.org>
+
+	* execite/initializer.f90: Test arrays with scalar initializer.
+
+2003-06-02  Kejia Zhao  <kejia_zh@yahoo.com.cn>
+
+	* execute/intrinsic_associated.f90: New testcase.
+	* execute/intrinsic_associated_2.f90: New testcase.
+
+2003-06-01  Paul Brook  <paul@nowt.org>
+
+	* execute/power.f90: Check complex ** real.
+
+2003-05-20  Paul Brook  <paul@nowt.org>
+
+	* execute/forall_1.f90: Avoid many to one assignment.
+
+2003-05-20  Canqun Yang  <canqun@yahoo.com.cn>
+
+	* execute/forall_1.f90: Replace logical operator 'and' with 'or'.
+
+2003-05-19  Lifang Zeng  <zlf605@hotmail.com>
+
+	* execute/forall_1.f90: FORALL with negative stride, FORALL has
+	arbitrary number of indexes, and actual variables used as FORALL
+	indexes.
+
+2003-05-07  Kejia Zhao  <kejia_zh@yahoo.com.cn>
+
+	* execute/der_point.f90: DERIVED type with components point to the
+	DERIVED type itself, and two DERIVED type with components point to
+	each other.
+
+2003-03-16  Paul Brook  <paul@nowt.org>
+
+	* execute/arrayarg.f90: Assumed shape dummy arrays aren't legal when
+	using an implicit interface.
+	* execute/arraysave.f90: Ditto.
+	* execute/bounds.f90: Ditto.
+	* lib/f95-torture.exp (TORTURE_OPTIONS): Check f77 arrays.
+
+2003-03-15  Paul Brook  <paul@nowt.org>
+
+	* execute/elemental.f90: Test expressions inside elemental functions.
+
+2003-03-14  Paul Brook  <paul@nowt.org>
+
+	* lib/f95-torture.exp (TORTURE_OPTIONS): Check different array
+	repacking strategies.
+
+2003-02-15  Paul Brook  <paul@nowt.org>
+
+	* execute/der_init.f90: Add tests for non-constant constructors.
+
+2003-02-08  Paul Brook  <paul@nowt.org>
+
+	* execute/constructor.f90: Additional tests for non-constant
+	constructors with unexpanded implicit do loops.
+
+2003-02-06  Paul Brook  <paul@nowt.org>
+
+	* execute/der_type.f90: Add extra tests for initializers and passing
+	components as arguments.
+
+2003-02-01  Paul Brook  <paul@nowr.org>
+
+	* execute/elemental.f90: Test intrinsic elemental conversion
+	routines.
+
+2003-01-28  Paul Brook  <paul@nowt.org>
+
+	* compile/mystery_proc.f90: New testcase.
+
+2003-01-27  Paul Brook  <paul@nowt.org>
+
+	* execute/intrinsic_minmax.f90: Add a couple more variations.
+
+2003-01-26  Paul Brook  <paul@nowt.org>
+
+	* execute/contained.f90: New testcase.
+	* execute/intrinsic_present.f90: New testcase.
+
+2003-01-22  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	* compile/bergervoet2.f90, compile/ambig.f90,
+	compile/actual.f90, execute/integer_select.f90: 
+	New testcases.
+	* execute/function_module_1.f90: Fix syntax error.
+	* execute/retarray.f90: Fix another syntax error.

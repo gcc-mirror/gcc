@@ -44,6 +44,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-except.h"
 #include "ggc.h"
 #include "timevar.h"
+#include "cgraph.h"
 #include "tree-inline.h"
 #include "target.h"
 
@@ -91,42 +92,58 @@ int current_pc;
 void
 indent (void)
 {
-  unsigned i;
+  int i;
 
   for (i = 0; i < binding_depth*2; i++)
     putc (' ', stderr);
 }
 #endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
 
+/* Copy the value in decl into every alias in the same local variable
+   slot.  */
+void 
+update_aliases (tree decl, int index)
+{
+  tree tmp = TREE_VEC_ELT (decl_map, index);
+  tree type = TREE_TYPE (decl);
+  while (tmp != NULL_TREE)
+    {
+      if (tmp != decl
+	  && ! LOCAL_VAR_OUT_OF_SCOPE_P (tmp)
+	  && TYPE_MODE (type) == TYPE_MODE (TREE_TYPE (tmp)))
+	{
+	  tree src = build1 (NOP_EXPR, TREE_TYPE (tmp), decl);
+	  java_add_stmt 
+	    (build (MODIFY_EXPR, TREE_TYPE (tmp), tmp, src));
+	}
+      tmp = DECL_LOCAL_SLOT_CHAIN (tmp);      
+    }
+}
+
 static tree
 push_jvm_slot (int index, tree decl)
 {
-  struct rtx_def *rtl = NULL;
   tree type = TREE_TYPE (decl);
   tree tmp;
 
   DECL_CONTEXT (decl) = current_function_decl;
   layout_decl (decl, 0);
 
-  /* See if we have an appropriate rtl (i.e. same mode) at this index.
-     If so, we must use it. */ 
+  /* Look for another variable of the same mode in this slot.  */ 
   tmp = TREE_VEC_ELT (decl_map, index);
   while (tmp != NULL_TREE)
     {
-      if (TYPE_MODE (type) == TYPE_MODE (TREE_TYPE (tmp))
-	  && ! LOCAL_VAR_OUT_OF_SCOPE_P (tmp))
-	rtl = DECL_RTL_IF_SET (tmp);
-      if (rtl != NULL)
-	break;
-     tmp = DECL_LOCAL_SLOT_CHAIN (tmp);
-    }
-  if (rtl != NULL)
-    SET_DECL_RTL (decl, rtl);
-  else
-    {
-      if (index >= DECL_MAX_LOCALS (current_function_decl))
-	DECL_REGISTER (decl) = 1;
-      expand_decl (decl);
+      if (! LOCAL_VAR_OUT_OF_SCOPE_P (tmp)
+	  && TYPE_MODE (type) == TYPE_MODE (TREE_TYPE (tmp)))
+	{
+	  /* At the point of its creation this decl inherits whatever
+	     is in the slot.  */
+	  tree src = build1 (NOP_EXPR, TREE_TYPE (decl), tmp);
+	  java_add_stmt 
+	    (build (MODIFY_EXPR, TREE_TYPE (decl), decl, src));	
+	  break;
+	}
+      tmp = DECL_LOCAL_SLOT_CHAIN (tmp);
     }
 
   /* Now link the decl into the decl_map. */
@@ -139,6 +156,9 @@ push_jvm_slot (int index, tree decl)
     }
   DECL_LOCAL_SLOT_CHAIN (decl) = TREE_VEC_ELT (decl_map, index);
   TREE_VEC_ELT (decl_map, index) = decl;
+
+  if (TREE_CODE (decl) != PARM_DECL)
+    pushdecl (decl);
   return decl;
 }
 
@@ -201,11 +221,16 @@ find_local_variable (int index, tree type, int pc)
   /* Scan through every declaration that has been created in this slot. */
   while (decl != NULL_TREE)
     {
+      bool has_name = false;
+      tree name = DECL_NAME (decl);
+      if (name && IDENTIFIER_POINTER (name))
+	has_name = IDENTIFIER_POINTER (name)[0] != '#';
+      
        /* Variables created in give_name_to_locals() have a name and have
  	 a specified scope, so we can handle them specifically.  We want
  	 to use the specific decls created for those so they are assigned
  	 the right variables in the debugging information. */
-      if (DECL_NAME (decl) != NULL_TREE)
+      if (has_name)
 	{
 	  /* This is a variable we have a name for, so it has a scope
 	     supplied in the class file.  But it only matters when we
@@ -230,8 +255,20 @@ find_local_variable (int index, tree type, int pc)
   if (best != NULL_TREE)
     return best;
 
-  /* If we don't find a match, create one with the type passed in. */
-  return push_jvm_slot (index, build_decl (VAR_DECL, NULL_TREE, type));
+  /* If we don't find a match, create one with the type passed in.
+     Ths name of the variable is #n#m, which n is the variable index
+     in the local variable area and m is a dummy identifier for
+     uniqueness -- multiple variables may share the same local
+     variable index.  */
+  {
+    char buf[64];
+    tree name;
+    static int uniq;
+    sprintf (buf, "#%d#%d", index, uniq++);
+    name = get_identifier (buf);
+
+    return push_jvm_slot (index, build_decl (VAR_DECL, name, type));
+  }
 }
 
 
@@ -274,6 +311,9 @@ struct binding_level
     /* The bytecode PC that marks the start of this level. */
     int start_pc;
 
+    /* The statements in this binding level.  */
+    tree stmts;
+
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
     /* Binding depth at which this level began.  */
     unsigned binding_depth;
@@ -304,7 +344,11 @@ static struct binding_level *global_binding_level;
 
 static const struct binding_level clear_binding_level
   = {NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
-       NULL_BINDING_LEVEL, LARGEST_PC, 0};
+     NULL_BINDING_LEVEL, LARGEST_PC, 0, NULL,
+#if defined(DEBUG_JAVA_BINDING_LEVELS)
+     0,
+#endif /* defined(DEBUG_JAVA_BINDING_LEVELS) */
+};
 
 #if 0
 /* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
@@ -439,7 +483,10 @@ java_init_decl_processing (void)
   pushdecl (build_decl (TYPE_DECL, get_identifier ("unsigned long"),
 			unsigned_long_type_node));
 
-  set_sizetype (make_unsigned_type (POINTER_SIZE));
+  /* This is not a java type, however tree-dfa requires a definition for
+     size_type_node.  */
+  size_type_node = make_unsigned_type (POINTER_SIZE);
+  set_sizetype (size_type_node);
 
   /* Define these next since types below may used them.  */
   integer_type_node = java_type_for_size (INT_TYPE_SIZE, 0);
@@ -482,10 +529,6 @@ java_init_decl_processing (void)
 
   null_pointer_node = build_int_2 (0, 0);
   TREE_TYPE (null_pointer_node) = ptr_type_node;
-
-  /* Used by the parser to represent empty statements and blocks. */
-  empty_stmt_node = build1 (NOP_EXPR, void_type_node, size_zero_node);
-  CAN_COMPLETE_NORMALLY (empty_stmt_node) = 1;
 
 #if 0
   /* Make a type to be the domain of a few array types
@@ -1194,7 +1237,7 @@ pushlevel (int unused ATTRIBUTE_UNUSED)
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
   newlevel->binding_depth = binding_depth;
   indent ();
-  fprintf (stderr, "push %s level 0x%08x pc %d\n",
+  fprintf (stderr, "push %s level %p pc %d\n",
 	   (is_class_level) ? "class" : "block", newlevel, current_pc);
   is_class_level = 0;
   binding_depth++;
@@ -1226,18 +1269,18 @@ poplevel (int keep, int reverse, int functionbody)
   tree subblocks = current_binding_level->blocks;
   tree block = 0;
   tree decl;
+  tree bind = 0;
   int block_previously_created;
-    {
 
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
   binding_depth--;
   indent ();
   if (current_binding_level->end_pc != LARGEST_PC)
-    fprintf (stderr, "pop  %s level 0x%08x pc %d (end pc %d)\n",
+    fprintf (stderr, "pop  %s level %p pc %d (end pc %d)\n",
 	     (is_class_level) ? "class" : "block", current_binding_level, current_pc,
 	     current_binding_level->end_pc);
   else
-    fprintf (stderr, "pop  %s level 0x%08x pc %d\n",
+    fprintf (stderr, "pop  %s level %p pc %d\n",
 	     (is_class_level) ? "class" : "block", current_binding_level, current_pc);
 #if 0
   if (is_class_level != (current_binding_level == class_binding_level))
@@ -1259,37 +1302,11 @@ poplevel (int keep, int reverse, int functionbody)
   else
     decls = current_binding_level->names;
 
-  /* Output any nested inline functions within this block
-     if they weren't already output.  */
-
   for (decl = decls; decl; decl = TREE_CHAIN (decl))
-    if (TREE_CODE (decl) == FUNCTION_DECL
-	&& ! TREE_ASM_WRITTEN (decl)
-	&& DECL_INITIAL (decl) != 0
-	&& TREE_ADDRESSABLE (decl))
-      {
-	  /* If this decl was copied from a file-scope decl on account
-	     of a block-scope extern decl, propagate TREE_ADDRESSABLE
-	     to the file-scope decl.
-	     
-	     DECL_ABSTRACT_ORIGIN can be set to itself if
-	     warn_return_type is true, since then the decl goes
-	     through save_for_inline_copying.  */
-	if (DECL_ABSTRACT_ORIGIN (decl) != 0
-	    && DECL_ABSTRACT_ORIGIN (decl) != decl)
-	  TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (decl)) = 1;
-	else
-	  {
-	    push_function_context ();
-	    output_inline_function (decl);
-	    pop_function_context ();
-	  }
-      }
-      else if (TREE_CODE (decl) == VAR_DECL
-	       && DECL_LANG_SPECIFIC (decl) != NULL
-	       && DECL_LOCAL_SLOT_NUMBER (decl))
-	LOCAL_VAR_OUT_OF_SCOPE_P (decl) = 1;
-    }
+    if (TREE_CODE (decl) == VAR_DECL
+	&& DECL_LANG_SPECIFIC (decl) != NULL
+	&& DECL_LOCAL_SLOT_NUMBER (decl))
+      LOCAL_VAR_OUT_OF_SCOPE_P (decl) = 1;
 
   /* If there were any declarations in that level,
      or if this level is a function body,
@@ -1300,12 +1317,55 @@ poplevel (int keep, int reverse, int functionbody)
   if (block_previously_created)
     block = current_binding_level->this_block;
   else if (keep || functionbody)
-    block = make_node (BLOCK);
+    {
+      block = make_node (BLOCK);
+      TREE_TYPE (block) = void_type_node;
+    }
+
   if (block != 0)
     {
-      BLOCK_VARS (block) = decls;
+      /* If any statements have been generated at this level, create a
+	 BIND_EXPR to hold them and copy the variables to it.  This
+	 only applies to the bytecode compiler.  */
+      if (current_binding_level->stmts)
+	{
+	  tree decl = decls;
+	  tree *var = &BLOCK_VARS (block);
+
+	  /* Copy decls from names list, ignoring labels.  */
+	  while (decl)
+	    {
+	      tree next = TREE_CHAIN (decl);
+	      if (TREE_CODE (decl) != LABEL_DECL)
+		{
+		  *var = decl;
+		  var = &TREE_CHAIN (decl);
+		}
+	      decl = next;
+	    }
+	  *var = NULL;
+	    
+	  bind =  build (BIND_EXPR, TREE_TYPE (block), BLOCK_VARS (block), 
+			 BLOCK_EXPR_BODY (block), block);
+
+	  BIND_EXPR_BODY (bind) = current_binding_level->stmts;
+	  
+	  if (BIND_EXPR_BODY (bind)
+	      && TREE_SIDE_EFFECTS (BIND_EXPR_BODY (bind)))
+	    TREE_SIDE_EFFECTS (bind) = 1;
+	  
+	  /* FIXME: gimplifier brain damage.  */
+	  if (BIND_EXPR_BODY (bind) == NULL)
+	    BIND_EXPR_BODY (bind) = build_java_empty_stmt ();
+
+	  current_binding_level->stmts = NULL;
+	}
+      else
+	{
+	  BLOCK_VARS (block) = decls;
+	}
       BLOCK_SUBBLOCKS (block) = subblocks;
-    }
+    }	
 
   /* In each subblock, record that this is its superior.  */
 
@@ -1390,7 +1450,10 @@ poplevel (int keep, int reverse, int functionbody)
 
   /* Dispose of the block that we just made inside some higher level.  */
   if (functionbody)
-    DECL_INITIAL (current_function_decl) = block;
+    {
+      DECL_INITIAL (current_function_decl) = block;
+      DECL_SAVED_TREE (current_function_decl) = bind;
+    }
   else if (block)
     {
       if (!block_previously_created)
@@ -1406,21 +1469,9 @@ poplevel (int keep, int reverse, int functionbody)
     current_binding_level->blocks
       = chainon (current_binding_level->blocks, subblocks);
 
-  /* Set the TYPE_CONTEXTs for all of the tagged types belonging to this
-     binding contour so that they point to the appropriate construct, i.e.
-     either to the current FUNCTION_DECL node, or else to the BLOCK node
-     we just constructed.
-
-     Note that for tagged types whose scope is just the formal parameter
-     list for some function type specification, we can't properly set
-     their TYPE_CONTEXTs here, because we don't have a pointer to the
-     appropriate FUNCTION_TYPE node readily available to us.  For those
-     cases, the TYPE_CONTEXTs of the relevant tagged type nodes get set
-     in `grokdeclarator' as soon as we have created the FUNCTION_TYPE
-     node which will represent the "scope" for these "parameter list local"
-     tagged types.
-  */
-
+  if (bind)
+    java_add_stmt (bind);
+  
   if (block)
     TREE_USED (block) = 1;
   return block;
@@ -1437,7 +1488,7 @@ maybe_pushlevels (int pc)
 	 DECL_LOCAL_START_PC (pending_local_decls) <= pc)
     {
       tree *ptr = &pending_local_decls;
-      tree decl = *ptr;
+      tree decl = *ptr, next;
       int end_pc = DECL_LOCAL_END_PC (decl);
 
       while (*ptr != NULL_TREE
@@ -1454,13 +1505,13 @@ maybe_pushlevels (int pc)
       maybe_start_try (pc, end_pc);
       
       pushlevel (1);
-      expand_start_bindings (0);
 
       current_binding_level->end_pc = end_pc;
       current_binding_level->start_pc = pc;      
-      current_binding_level->names = decl;
-      for ( ; decl != NULL_TREE;  decl = TREE_CHAIN (decl))
+      current_binding_level->names = NULL;
+      for ( ; decl != NULL_TREE; decl = next)
 	{
+	  next = TREE_CHAIN (decl);
 	  push_jvm_slot (DECL_LOCAL_SLOT_NUMBER (decl), decl);
 	}
     }      
@@ -1477,7 +1528,6 @@ maybe_poplevels (int pc)
 
   while (current_binding_level->end_pc <= pc)
     {
-      expand_end_bindings (getdecls (), 1, 0);
       maybe_end_try (current_binding_level->start_pc, pc);
       poplevel (1, 0, 0);
     }
@@ -1583,7 +1633,7 @@ give_name_to_locals (JCF *jcf)
 	  if (end_pc > DECL_CODE_LENGTH (current_function_decl))
 	    {
 	      warning ("%Jbad PC range for debug info for local '%D'",
-		       decl, decl);
+                       decl, decl);
 	      end_pc = DECL_CODE_LENGTH (current_function_decl);
 	    }
 
@@ -1662,78 +1712,6 @@ build_result_decl (tree fndecl)
 }
 
 void
-complete_start_java_method (tree fndecl)
-{
-  if (! flag_emit_class_files)
-    {
-      /* Initialize the RTL code for the function.  */
-      init_function_start (fndecl);
-
-      /* Set up parameters and prepare for return, for the function.  */
-      expand_function_start (fndecl, 0);
-    }
-
-#if 0
-      /* If this fcn was already referenced via a block-scope `extern' decl (or
-         an implicit decl), propagate certain information about the usage. */
-      if (TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (current_function_decl)))
-        TREE_ADDRESSABLE (current_function_decl) = 1;
-
-#endif
-
-  if (METHOD_STATIC (fndecl) && ! METHOD_PRIVATE (fndecl)
-      && ! flag_emit_class_files
-      && ! DECL_CLINIT_P (fndecl)
-      && ! CLASS_INTERFACE (TYPE_NAME (current_class)))
-    {
-      tree clas = DECL_CONTEXT (fndecl);
-      tree init = build (CALL_EXPR, void_type_node,
-			 build_address_of (soft_initclass_node),
-			 build_tree_list (NULL_TREE, build_class_ref (clas)),
-			 NULL_TREE);
-      TREE_SIDE_EFFECTS (init) = 1;
-      expand_expr_stmt (init);
-    }
-
-  /* Push local variables. Function compiled from source code are
-     using a different local variables management, and for them,
-     pushlevel shouldn't be called from here.  */
-  if (!CLASS_FROM_SOURCE_P (DECL_CONTEXT (fndecl)))
-    {
-      pushlevel (2);
-      if (! flag_emit_class_files)
-	expand_start_bindings (1);
-    }
-
-  if (METHOD_SYNCHRONIZED (fndecl) && ! flag_emit_class_files)
-    {
-      /* Wrap function body with a monitorenter plus monitorexit cleanup. */
-      tree enter, exit, lock;
-      if (METHOD_STATIC (fndecl))
-	lock = build_class_ref (DECL_CONTEXT (fndecl));
-      else
-	lock = DECL_ARGUMENTS (fndecl);
-      BUILD_MONITOR_ENTER (enter, lock);
-      BUILD_MONITOR_EXIT (exit, lock);
-      if (!CLASS_FROM_SOURCE_P (DECL_CONTEXT (fndecl)))
-	{
-	  expand_expr_stmt (enter);
-	  expand_decl_cleanup (NULL_TREE, exit);
-	}
-      else
-	{
-	  tree function_body = DECL_FUNCTION_BODY (fndecl);
-	  tree body = BLOCK_EXPR_BODY (function_body);
-	  lock = build (COMPOUND_EXPR, void_type_node,
-			enter,
-			build (TRY_FINALLY_EXPR, void_type_node, body, exit));
-	  TREE_SIDE_EFFECTS (lock) = 1;
-	  BLOCK_EXPR_BODY (function_body) = lock;
-	}
-    }
-}
-
-void
 start_java_method (tree fndecl)
 {
   tree tem, *ptr;
@@ -1789,7 +1767,9 @@ start_java_method (tree fndecl)
     type_map[i++] = NULL_TREE;
 
   build_result_decl (fndecl);
-  complete_start_java_method (fndecl);
+
+  /* Push local variables.  */
+  pushlevel (2);
 }
 
 void
@@ -1797,7 +1777,6 @@ end_java_method (void)
 {
   tree fndecl = current_function_decl;
 
-  expand_end_bindings (getdecls (), 1, 0);
   /* pop out of function */
   poplevel (1, 1, 0);
 
@@ -1806,64 +1785,71 @@ end_java_method (void)
 
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
-  /* Generate rtl for function exit.  */
-  expand_function_end ();
-
-  /* Run the optimizers and output assembler code for this function. */
-  rest_of_compilation (fndecl);
+  flag_unit_at_a_time = 0;
+  finish_method (fndecl);
 
   current_function_decl = NULL_TREE;
 }
 
-/* Expand a function's body.  */
+/* Prepare a method for expansion.  */
+
+void
+finish_method (tree fndecl)
+{
+  tree *tp = &DECL_SAVED_TREE (fndecl);
+
+  /* Wrap body of synchronized methods in a monitorenter,
+     plus monitorexit cleanup.  */
+  if (METHOD_SYNCHRONIZED (fndecl))
+    {
+      tree enter, exit, lock;
+      if (METHOD_STATIC (fndecl))
+	lock = build_class_ref (DECL_CONTEXT (fndecl));
+      else
+	lock = DECL_ARGUMENTS (fndecl);
+      BUILD_MONITOR_ENTER (enter, lock);
+      BUILD_MONITOR_EXIT (exit, lock);
+      *tp = build (COMPOUND_EXPR, void_type_node,
+		   enter,
+		   build (TRY_FINALLY_EXPR, void_type_node, *tp, exit));
+    }
+
+  /* Prepend class initialization for static methods reachable from
+     other classes.  */
+  if (METHOD_STATIC (fndecl) && ! METHOD_PRIVATE (fndecl)
+      && ! DECL_CLINIT_P (fndecl)
+      && ! CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (fndecl))))
+    {
+      tree clas = DECL_CONTEXT (fndecl);
+      tree init = build (CALL_EXPR, void_type_node,
+			 build_address_of (soft_initclass_node),
+			 build_tree_list (NULL_TREE, build_class_ref (clas)),
+			 NULL_TREE);
+      *tp = build (COMPOUND_EXPR, TREE_TYPE (*tp), init, *tp);
+    }
+
+  /* Convert function tree to GENERIC prior to inlining.  */
+  java_genericize (fndecl);
+
+  /* Store the end of the function, so that we get good line number
+     info for the epilogue.  */
+  if (DECL_STRUCT_FUNCTION (fndecl))
+    cfun = DECL_STRUCT_FUNCTION (fndecl);
+  else
+    allocate_struct_function (fndecl);
+  cfun->function_end_locus.file = DECL_SOURCE_FILE (fndecl);
+  cfun->function_end_locus.line = DECL_FUNCTION_LAST_LINE (fndecl);
+
+  /* Defer inlining and expansion to the cgraph optimizers.  */
+  cgraph_finalize_function (fndecl, false);
+}
+
+/* Optimize and expand a function's entire body.  */
 
 void
 java_expand_body (tree fndecl)
 {
-  location_t saved_location = input_location;
-
-  current_function_decl = fndecl;
-  input_location = DECL_SOURCE_LOCATION (fndecl);
-  output_class = current_class = DECL_CONTEXT (fndecl);
-
-  timevar_push (TV_EXPAND);
-
-  /* Prepare the function for tree completion.  */
-  start_complete_expand_method (fndecl);
-
-  if (! flag_emit_class_files && ! flag_emit_xref)
-    {
-      /* Initialize the RTL code for the function.  */
-      init_function_start (fndecl);
-
-      /* Set up parameters and prepare for return, for the function.  */
-      expand_function_start (fndecl, 0);
-
-      /* Generate the RTL for this function.  */
-      expand_expr_stmt_value (DECL_SAVED_TREE (fndecl), 0, 1);
-    }
-
-  /* Pop out of its parameters.  */
-  pushdecl_force_head (DECL_ARGUMENTS (fndecl));
-  poplevel (1, 0, 1);
-  BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
-
-  if (! flag_emit_class_files && ! flag_emit_xref)
-    {
-      /* Generate RTL for function exit.  */
-      input_line = DECL_FUNCTION_LAST_LINE (fndecl);
-      expand_function_end ();
-
-      /* Run the optimizers and output the assembler code
-	 for this function.  */
-      rest_of_compilation (fndecl);
-    }
-
-  timevar_pop (TV_EXPAND);
-
-  input_location = saved_location;
-
-  current_function_decl = NULL_TREE;
+  tree_rest_of_compilation (fndecl, 0);
 }
 
 /* We pessimistically marked all methods and fields external until we
@@ -1894,5 +1880,63 @@ java_mark_class_local (tree class)
     if (!METHOD_ABSTRACT (t) && (!METHOD_NATIVE (t) || flag_jni))
       java_mark_decl_local (t);
 }
+
+/* Add a statement to a compound_expr.  */
+
+tree
+add_stmt_to_compound (existing, type, stmt)
+     tree existing, type, stmt;
+{
+  if (!stmt)
+    return existing;
+  else if (existing)
+    {
+      tree expr = build (COMPOUND_EXPR, type, existing, stmt);
+      TREE_SIDE_EFFECTS (expr)
+	= TREE_SIDE_EFFECTS (existing) | TREE_SIDE_EFFECTS (stmt);
+      return expr;
+    }
+  else
+    return stmt;
+}
+
+/* Add a statement to the compound_expr currently being
+   constructed.  */
+
+tree
+java_add_stmt (stmt)
+     tree stmt;
+{
+  if (input_filename)
+    annotate_with_locus (stmt, input_location);
+  
+  return current_binding_level->stmts 
+    = add_stmt_to_compound (current_binding_level->stmts, 
+			    TREE_TYPE (stmt), stmt);
+}
+
+/* Add a variable to the current scope.  */
+
+tree
+java_add_local_var (tree decl)
+{
+  tree *vars = &current_binding_level->names;
+  tree next = *vars;
+  TREE_CHAIN (decl) = next;
+  *vars = decl;
+  DECL_CONTEXT (decl) = current_function_decl;
+  MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
+  return decl;
+}
+
+/* Return a pointer to the compound_expr currently being
+   constructed.  */
+
+tree *
+get_stmts (void)
+{
+  return &current_binding_level->stmts;
+}
+
 
 #include "gt-java-decl.h"

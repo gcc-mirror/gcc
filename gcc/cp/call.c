@@ -346,7 +346,7 @@ build_call (tree function, tree parms)
 				    TREE_VALUE (tmp), t);
 	}
 
-  function = build (CALL_EXPR, result_type, function, parms);
+  function = build (CALL_EXPR, result_type, function, parms, NULL_TREE);
   TREE_HAS_CONSTRUCTOR (function) = is_constructor;
   TREE_NOTHROW (function) = nothrow;
   
@@ -4331,7 +4331,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 static tree
 call_builtin_trap (tree type)
 {
-  tree fn = IDENTIFIER_GLOBAL_VALUE (get_identifier ("__builtin_trap"));
+  tree fn = implicit_built_in_decls[BUILT_IN_TRAP];
 
   my_friendly_assert (fn != NULL, 20030927);
   fn = build_call (fn, NULL_TREE);
@@ -4560,7 +4560,7 @@ build_over_call (struct z_candidate *cand, int flags)
       tree expr;
       tree return_type;
       return_type = TREE_TYPE (TREE_TYPE (fn));
-      expr = build (CALL_EXPR, return_type, fn, args);
+      expr = build (CALL_EXPR, return_type, fn, args, NULL_TREE);
       if (!VOID_TYPE_P (return_type))
 	require_complete_type (return_type);
       return convert_from_reference (expr);
@@ -4768,16 +4768,11 @@ build_over_call (struct z_candidate *cand, int flags)
       else if (TREE_CODE (arg) == TARGET_EXPR
 	       || TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
 	{
-	  tree address;
 	  tree to = stabilize_reference
 	    (build_indirect_ref (TREE_VALUE (args), 0));
 
 	  val = build (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
-	  address = build_unary_op (ADDR_EXPR, val, 0);
-	  /* Avoid a warning about this expression, if the address is
-	     never used.  */
-	  TREE_USED (address) = 1;
-	  return address;
+	  return val;
 	}
     }
   else if (DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR
@@ -4813,7 +4808,7 @@ build_over_call (struct z_candidate *cand, int flags)
 	  val = build (MODIFY_EXPR, as_base, to_as_base, arg_as_base);
 	  val = convert_to_void (val, NULL);
 	  val = build (COMPOUND_EXPR, type, val, save_to);
-	  TREE_NO_UNUSED_WARNING (val) = 1;
+	  TREE_NO_WARNING (val) = 1;
 	}
       
       return val;
@@ -4936,7 +4931,8 @@ build_java_interface_fn_ref (tree fn, tree instance)
 		iface);
       return error_mark_node;
     }
-  iface_ref = build1 (ADDR_EXPR, build_pointer_type (iface), iface_ref);
+  iface_ref = build_address (iface_ref);
+  iface_ref = convert (build_pointer_type (iface), iface_ref);
   
   /* Determine the itable index of FN.  */
   i = 1;
@@ -5360,7 +5356,7 @@ build_new_method_call (tree instance, tree fns, tree args,
     call = (build_min_non_dep
 	    (CALL_EXPR, call,
 	     build_min_nt (COMPONENT_REF, orig_instance, orig_fns),
-	     orig_args));
+	     orig_args, NULL_TREE));
 
  /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);

@@ -349,7 +349,6 @@ enum java_tree_index
   JTI_DOUBLE_ZERO_NODE,
   JTI_INTEGER_TWO_NODE,
   JTI_INTEGER_FOUR_NODE,
-  JTI_EMPTY_STMT_NODE,
 
   JTI_METHODTABLE_TYPE,
   JTI_METHODTABLE_PTR_TYPE,
@@ -562,8 +561,6 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_INTEGER_TWO_NODE]
 #define integer_four_node \
   java_global_trees[JTI_INTEGER_FOUR_NODE]
-#define empty_stmt_node \
-  java_global_trees[JTI_EMPTY_STMT_NODE]
 
 /* The type for struct methodtable. */
 #define methodtable_type \
@@ -1178,6 +1175,7 @@ extern void set_java_signature (tree, tree);
 extern tree build_static_field_ref (tree);
 extern tree build_address_of (tree);
 extern tree find_local_variable (int index, tree type, int pc);
+extern void update_aliases (tree decl, int index);
 extern tree find_stack_slot (int index, tree type);
 extern tree build_prim_array_type (tree, HOST_WIDE_INT);
 extern tree build_java_array_type (tree, HOST_WIDE_INT);
@@ -1235,7 +1233,6 @@ extern int interface_of_p (tree, tree);
 extern int inherits_from_p (tree, tree);
 extern int common_enclosing_context_p (tree, tree);
 extern int enclosing_context_p (tree, tree);
-extern void complete_start_java_method (tree);
 extern tree build_result_decl (tree);
 extern void emit_handlers (void);
 extern void set_method_index (tree decl, tree method_index);
@@ -1341,8 +1338,13 @@ extern void compile_resource_data (const char *name, const char *buffer, int);
 extern void compile_resource_file (const char *, const char *);
 extern void write_resource_constructor (void);
 extern void init_resource_processing (void);
+extern tree build_java_empty_stmt (void);
+extern tree add_stmt_to_compound (tree, tree, tree);
+extern tree java_add_stmt (tree);
+extern tree java_add_local_var (tree decl);
+extern tree *get_stmts (void);
 
-extern void start_complete_expand_method (tree);
+extern void finish_method (tree);
 extern void java_expand_body (tree);
 
 extern int get_symbol_table_index (tree, tree *);
@@ -1819,4 +1821,28 @@ enum
 };
 
 #undef DEBUG_JAVA_BINDING_LEVELS
+
+/* In an EXPR_WITH_FILE_LOCATION node.  */
+#define EXPR_WFL_EMIT_LINE_NOTE(NODE) \
+  (EXPR_WITH_FILE_LOCATION_CHECK (NODE)->common.public_flag)
+#undef EXPR_WFL_NODE
+#define EXPR_WFL_NODE(NODE) \
+  TREE_OPERAND (EXPR_WITH_FILE_LOCATION_CHECK (NODE), 0)
+#undef EXPR_WFL_FILENAME_NODE
+#define EXPR_WFL_FILENAME_NODE(NODE) \
+  TREE_OPERAND (EXPR_WITH_FILE_LOCATION_CHECK (NODE), 1)
+#define EXPR_WFL_FILENAME(NODE) \
+  IDENTIFIER_POINTER (EXPR_WFL_FILENAME_NODE (NODE))
+/* ??? Java uses this in all expressions.  */
+#define EXPR_WFL_LINECOL(NODE) (EXPR_CHECK (NODE)->exp.complexity)
+#define EXPR_WFL_LINENO(NODE) (EXPR_WFL_LINECOL (NODE) >> 12)
+#define EXPR_WFL_COLNO(NODE) (EXPR_WFL_LINECOL (NODE) & 0xfff)
+#define EXPR_WFL_SET_LINECOL(NODE, LINE, COL) \
+  (EXPR_WFL_LINECOL(NODE) = ((LINE) << 12) | ((COL) & 0xfff))
+
+extern tree build_expr_wfl              PARAMS ((tree, const char *, int, int));
+
+extern void java_genericize		PARAMS ((tree));
+extern int java_gimplify_expr		PARAMS ((tree *, tree *, tree *));
+
 #endif /* ! GCC_JAVA_TREE_H */

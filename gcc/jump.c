@@ -63,10 +63,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    or even change what is live at any point.
    So perhaps let combiner do it.  */
 
-static rtx next_nonnote_insn_in_loop (rtx);
 static void init_label_info (rtx);
 static void mark_all_labels (rtx);
-static int duplicate_loop_exit_test (rtx);
 static void delete_computation (rtx);
 static void redirect_exp_1 (rtx *, rtx, rtx, rtx);
 static int redirect_exp (rtx, rtx, rtx);
@@ -119,55 +117,6 @@ cleanup_barriers (void)
 	    delete_barrier (insn);
 	  else if (prev != PREV_INSN (insn))
 	    reorder_insns (insn, insn, prev);
-	}
-    }
-}
-
-/* Return the next insn after INSN that is not a NOTE and is in the loop,
-   i.e. when there is no such INSN before NOTE_INSN_LOOP_END return NULL_RTX.
-   This routine does not look inside SEQUENCEs.  */
-
-static rtx
-next_nonnote_insn_in_loop (rtx insn)
-{
-  while (insn)
-    {
-      insn = NEXT_INSN (insn);
-      if (insn == 0 || GET_CODE (insn) != NOTE)
-	break;
-      if (GET_CODE (insn) == NOTE
-	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	return NULL_RTX;
-    }
-
-  return insn;
-}
-
-void
-copy_loop_headers (rtx f)
-{
-  rtx insn, next;
-  /* Now iterate optimizing jumps until nothing changes over one pass.  */
-  for (insn = f; insn; insn = next)
-    {
-      rtx temp, temp1;
-
-      next = NEXT_INSN (insn);
-
-      /* See if this is a NOTE_INSN_LOOP_BEG followed by an unconditional
-	 jump.  Try to optimize by duplicating the loop exit test if so.
-	 This is only safe immediately after regscan, because it uses
-	 the values of regno_first_uid and regno_last_uid.  */
-      if (GET_CODE (insn) == NOTE
-	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
-	  && (temp1 = next_nonnote_insn_in_loop (insn)) != 0
-	  && any_uncondjump_p (temp1) && onlyjump_p (temp1))
-	{
-	  temp = PREV_INSN (insn);
-	  if (duplicate_loop_exit_test (insn))
-	    {
-	      next = NEXT_INSN (temp);
-	    }
 	}
     }
 }
@@ -286,245 +235,6 @@ mark_all_labels (rtx f)
 	      }
 	  }
       }
-}
-
-/* LOOP_START is a NOTE_INSN_LOOP_BEG note that is followed by an unconditional
-   jump.  Assume that this unconditional jump is to the exit test code.  If
-   the code is sufficiently simple, make a copy of it before INSN,
-   followed by a jump to the exit of the loop.  Then delete the unconditional
-   jump after INSN.
-
-   Return 1 if we made the change, else 0.
-
-   This is only safe immediately after a regscan pass because it uses the
-   values of regno_first_uid and regno_last_uid.  */
-
-static int
-duplicate_loop_exit_test (rtx loop_start)
-{
-  rtx insn, set, reg, p, link;
-  rtx copy = 0, first_copy = 0;
-  int num_insns = 0;
-  rtx exitcode
-    = NEXT_INSN (JUMP_LABEL (next_nonnote_insn_in_loop (loop_start)));
-  rtx lastexit;
-  int max_reg = max_reg_num ();
-  rtx *reg_map = 0;
-  rtx loop_pre_header_label;
-
-  /* Scan the exit code.  We do not perform this optimization if any insn:
-
-         is a CALL_INSN
-	 is a CODE_LABEL
-	 has a REG_RETVAL or REG_LIBCALL note (hard to adjust)
-	 is a NOTE_INSN_LOOP_BEG because this means we have a nested loop
-
-     We also do not do this if we find an insn with ASM_OPERANDS.  While
-     this restriction should not be necessary, copying an insn with
-     ASM_OPERANDS can confuse asm_noperands in some cases.
-
-     Also, don't do this if the exit code is more than 20 insns.  */
-
-  for (insn = exitcode;
-       insn
-       && ! (GET_CODE (insn) == NOTE
-	     && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END);
-       insn = NEXT_INSN (insn))
-    {
-      switch (GET_CODE (insn))
-	{
-	case CODE_LABEL:
-	case CALL_INSN:
-	  return 0;
-	case NOTE:
-
-	  if (optimize < 2
-	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
-		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
-	    /* If we were to duplicate this code, we would not move
-	       the BLOCK notes, and so debugging the moved code would
-	       be difficult.  Thus, we only move the code with -O2 or
-	       higher.  */
-	    return 0;
-
-	  break;
-	case JUMP_INSN:
-	case INSN:
-	  if (++num_insns > 20
-	      || find_reg_note (insn, REG_RETVAL, NULL_RTX)
-	      || find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	    return 0;
-	  break;
-	default:
-	  break;
-	}
-    }
-
-  /* Unless INSN is zero, we can do the optimization.  */
-  if (insn == 0)
-    return 0;
-
-  lastexit = insn;
-
-  /* See if any insn sets a register only used in the loop exit code and
-     not a user variable.  If so, replace it with a new register.  */
-  for (insn = exitcode; insn != lastexit; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == INSN
-	&& (set = single_set (insn)) != 0
-	&& ((reg = SET_DEST (set), GET_CODE (reg) == REG)
-	    || (GET_CODE (reg) == SUBREG
-		&& (reg = SUBREG_REG (reg), GET_CODE (reg) == REG)))
-	&& REGNO (reg) >= FIRST_PSEUDO_REGISTER
-	&& REGNO_FIRST_UID (REGNO (reg)) == INSN_UID (insn))
-      {
-	for (p = NEXT_INSN (insn); p != lastexit; p = NEXT_INSN (p))
-	  if (REGNO_LAST_UID (REGNO (reg)) == INSN_UID (p))
-	    break;
-
-	if (p != lastexit)
-	  {
-	    /* We can do the replacement.  Allocate reg_map if this is the
-	       first replacement we found.  */
-	    if (reg_map == 0)
-	      reg_map = xcalloc (max_reg, sizeof (rtx));
-
-	    REG_LOOP_TEST_P (reg) = 1;
-
-	    reg_map[REGNO (reg)] = gen_reg_rtx (GET_MODE (reg));
-	  }
-      }
-  loop_pre_header_label = gen_label_rtx ();
-
-  /* Now copy each insn.  */
-  for (insn = exitcode; insn != lastexit; insn = NEXT_INSN (insn))
-    {
-      switch (GET_CODE (insn))
-	{
-	case BARRIER:
-	  copy = emit_barrier_before (loop_start);
-	  break;
-	case NOTE:
-	  /* Only copy line-number notes.  */
-	  if (NOTE_LINE_NUMBER (insn) >= 0)
-	    {
-	      copy = emit_note_before (NOTE_LINE_NUMBER (insn), loop_start);
-	      NOTE_SOURCE_FILE (copy) = NOTE_SOURCE_FILE (insn);
-	    }
-	  break;
-
-	case INSN:
-	  copy = emit_insn_before (copy_insn (PATTERN (insn)), loop_start);
-	  if (reg_map)
-	    replace_regs (PATTERN (copy), reg_map, max_reg, 1);
-
-	  mark_jump_label (PATTERN (copy), copy, 0);
-	  INSN_LOCATOR (copy) = INSN_LOCATOR (insn);
-
-	  /* Copy all REG_NOTES except REG_LABEL since mark_jump_label will
-	     make them.  */
-	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-	    if (REG_NOTE_KIND (link) != REG_LABEL)
-	      {
-		if (GET_CODE (link) == EXPR_LIST)
-		  REG_NOTES (copy)
-		    = copy_insn_1 (gen_rtx_EXPR_LIST (REG_NOTE_KIND (link),
-						      XEXP (link, 0),
-						      REG_NOTES (copy)));
-		else
-		  REG_NOTES (copy)
-		    = copy_insn_1 (gen_rtx_INSN_LIST (REG_NOTE_KIND (link),
-						      XEXP (link, 0),
-						      REG_NOTES (copy)));
-	      }
-
-	  if (reg_map && REG_NOTES (copy))
-	    replace_regs (REG_NOTES (copy), reg_map, max_reg, 1);
-	  break;
-
-	case JUMP_INSN:
-	  copy = emit_jump_insn_before (copy_insn (PATTERN (insn)),
-					loop_start);
-	  INSN_LOCATOR (copy) = INSN_LOCATOR (insn);
-	  if (reg_map)
-	    replace_regs (PATTERN (copy), reg_map, max_reg, 1);
-	  mark_jump_label (PATTERN (copy), copy, 0);
-	  if (REG_NOTES (insn))
-	    {
-	      REG_NOTES (copy) = copy_insn_1 (REG_NOTES (insn));
-	      if (reg_map)
-		replace_regs (REG_NOTES (copy), reg_map, max_reg, 1);
-	    }
-
-	  /* Predict conditional jump that do make loop looping as taken.
-	     Other jumps are probably exit conditions, so predict
-	     them as untaken.  */
-	  if (any_condjump_p (copy))
-	    {
-	      rtx label = JUMP_LABEL (copy);
-	      if (label)
-		{
-		  /* The jump_insn after loop_start should be followed
-		     by barrier and loopback label.  */
-		  if (prev_nonnote_insn (label)
-		      && (prev_nonnote_insn (prev_nonnote_insn (label))
-			  == next_nonnote_insn (loop_start)))
-		    {
-		      predict_insn_def (copy, PRED_LOOP_HEADER, TAKEN);
-		      /* To keep pre-header, we need to redirect all loop
-		         entrances before the LOOP_BEG note.  */
-		      redirect_jump (copy, loop_pre_header_label, 0);
-		    }
-		  else
-		    predict_insn_def (copy, PRED_LOOP_HEADER, NOT_TAKEN);
-		}
-	    }
-	  break;
-
-	default:
-	  abort ();
-	}
-
-      /* Record the first insn we copied.  We need it so that we can
-	 scan the copied insns for new pseudo registers.  */
-      if (! first_copy)
-	first_copy = copy;
-    }
-
-  /* Now clean up by emitting a jump to the end label and deleting the jump
-     at the start of the loop.  */
-  if (! copy || GET_CODE (copy) != BARRIER)
-    {
-      copy = emit_jump_insn_before (gen_jump (get_label_after (insn)),
-				    loop_start);
-
-      /* Record the first insn we copied.  We need it so that we can
-	 scan the copied insns for new pseudo registers.   This may not
-	 be strictly necessary since we should have copied at least one
-	 insn above.  But I am going to be safe.  */
-      if (! first_copy)
-	first_copy = copy;
-
-      mark_jump_label (PATTERN (copy), copy, 0);
-      emit_barrier_before (loop_start);
-    }
-
-  emit_label_before (loop_pre_header_label, loop_start);
-
-  /* Now scan from the first insn we copied to the last insn we copied
-     (copy) for new pseudo registers.  Do this after the code to jump to
-     the end label since that might create a new pseudo too.  */
-  reg_scan_update (first_copy, copy, max_reg);
-
-  /* Mark the exit code as the virtual top of the converted loop.  */
-  emit_note_before (NOTE_INSN_LOOP_VTOP, exitcode);
-
-  delete_related_insns (next_nonnote_insn (loop_start));
-
-  /* Clean up.  */
-  if (reg_map)
-    free (reg_map);
-
-  return 1;
 }
 
 /* Move all block-beg, block-end, loop-beg, loop-cont, loop-vtop, loop-end,
@@ -1142,6 +852,8 @@ any_uncondjump_p (rtx insn)
   if (!x)
     return 0;
   if (GET_CODE (SET_SRC (x)) != LABEL_REF)
+    return 0;
+  if (find_reg_note (insn, REG_NON_LOCAL_GOTO, NULL_RTX))
     return 0;
   return 1;
 }
@@ -1825,75 +1537,6 @@ delete_for_peephole (rtx from, rtx to)
      we *do not* delete the BARRIER that follows,
      since the peephole that replaces this sequence
      is also an unconditional jump in that case.  */
-}
-
-/* We have determined that AVOIDED_INSN is never reached, and are
-   about to delete it.  If the insn chain between AVOIDED_INSN and
-   FINISH contains more than one line from the current function, and
-   contains at least one operation, print a warning if the user asked
-   for it.  If FINISH is NULL, look between AVOIDED_INSN and a LABEL.
-
-   CSE and inlining can duplicate insns, so it's possible to get
-   spurious warnings from this.  */
-
-void
-never_reached_warning (rtx avoided_insn, rtx finish)
-{
-  rtx insn;
-  rtx a_line_note = NULL;
-  int two_avoided_lines = 0, contains_insn = 0, reached_end = 0;
-
-  if (!warn_notreached)
-    return;
-
-  /* Back up to the first of any NOTEs preceding avoided_insn; flow passes
-     us the head of a block, a NOTE_INSN_BASIC_BLOCK, which often follows
-     the line note.  */
-  insn = avoided_insn;
-  while (1)
-    {
-      rtx prev = PREV_INSN (insn);
-      if (prev == NULL_RTX
-	  || GET_CODE (prev) != NOTE)
-	break;
-      insn = prev;
-    }
-
-  /* Scan forwards, looking at LINE_NUMBER notes, until we hit a LABEL
-     in case FINISH is NULL, otherwise until we run out of insns.  */
-
-  for (; insn != NULL; insn = NEXT_INSN (insn))
-    {
-      if ((finish == NULL && GET_CODE (insn) == CODE_LABEL)
-	  || GET_CODE (insn) == BARRIER)
-	break;
-
-      if (GET_CODE (insn) == NOTE		/* A line number note?  */
-	  && NOTE_LINE_NUMBER (insn) >= 0)
-	{
-	  if (a_line_note == NULL)
-	    a_line_note = insn;
-	  else
-	    two_avoided_lines |= (NOTE_LINE_NUMBER (a_line_note)
-				  != NOTE_LINE_NUMBER (insn));
-	}
-      else if (INSN_P (insn))
-	{
-	  if (reached_end)
-	    break;
-	  contains_insn = 1;
-	}
-
-      if (insn == finish)
-	reached_end = 1;
-    }
-  if (two_avoided_lines && contains_insn)
-    {
-      location_t locus;
-      locus.file = NOTE_SOURCE_FILE (a_line_note);
-      locus.line = NOTE_LINE_NUMBER (a_line_note);
-      warning ("%Hwill never be executed", &locus);
-    }
 }
 
 /* Throughout LOC, redirect OLABEL to NLABEL.  Treat null OLABEL or

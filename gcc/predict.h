@@ -18,6 +18,9 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#ifndef GCC_PREDICT_H
+#define GCC_PREDICT_H
+
 #define DEF_PREDICTOR(ENUM, NAME, HITRATE, FLAGS) ENUM,
 enum br_predictor
 {
@@ -39,8 +42,4 @@ enum prediction
 extern void predict_insn_def (rtx, enum br_predictor, enum prediction);
 extern void predict_insn (rtx, enum br_predictor, int);
 
-/* Avoid unneeded dependency on basic_block.h.  */
-#ifdef BASIC_BLOCK
-extern void predict_edge (edge, enum br_predictor, int);
-extern void predict_edge_def (edge, enum br_predictor, enum prediction);
-#endif
+#endif  /* GCC_PREDICT_H */

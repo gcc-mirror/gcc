@@ -7,11 +7,11 @@ int
 foo (int i, int j, enum e ei, enum e ej, enum e ek, enum e el,
      enum e em, enum e en, enum e eo, enum e ep)
 {
-  switch (i)
+  switch (i) /* { dg-warning "switch missing default case" } */
     {
     case 1: return 1;
     case 2: return 2;
-    } /* { dg-warning "switch missing default case" } */
+    }
   switch (j)
     {
     case 3: return 4;
@@ -25,32 +25,32 @@ foo (int i, int j, enum e ei, enum e ej, enum e ek, enum e el,
     {
     default: break;
     }
-  switch (ek)
+  switch (ek) /* { dg-warning "switch missing default case" } */
     {
     case e1: return 1;
-    } /* { dg-warning "switch missing default case" } */
+    }
   switch (el)
     {
     case e1: return 1;
     default: break;
     }
-  switch (em)
+  switch (em) /* { dg-warning "switch missing default case" } */
     {
     case e1: return 1;
     case e2: return 2;
-    } /* { dg-warning "switch missing default case" } */
+    }
   switch (en)
     {
     case e1: return 1;
     case e2: return 2;
     default: break;
     }
-  switch (eo)
+  switch (eo) /* { dg-warning "switch missing default case" } */
     {
     case e1: return 1;
     case e2: return 2;
     case 3: return 3;
-    } /* { dg-warning "switch missing default case" } */
+    }
   switch (ep)
     {
     case e1: return 1;

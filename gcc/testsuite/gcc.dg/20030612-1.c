@@ -1,20 +1,22 @@
-/* Derived from PR middle-end/168.  */
+/* { dg-do run } */
+/* { dg-options "-O2" } */
 
-/* { dg-do compile } */
-/* { dg-options "-W" } */
+int A, B;
 
-extern void foo ();
-
-unsigned char uc;
-unsigned short int usi;
-unsigned int ui;
-
-
-void bar()
+void foo()
 {
-  if (uc + usi >= ui)  /* { dg-bogus "between signed and unsigned" } */
-    foo ();
-  if (uc * usi >= ui)  /* { dg-bogus "between signed and unsigned" } */
-    foo ();
+  long x = 3;
+  (void)({
+    A = B + x + ((1) - 1);
+    return;	/* { dg-warning "statement-expressions should end with a non-void expression" } */
+  });
 }
 
+main()
+{
+  B = 5;
+  foo();
+  if (A != 8)
+    abort ();
+  return 0;
+}

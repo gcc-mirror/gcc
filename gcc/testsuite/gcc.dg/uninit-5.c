@@ -1,5 +1,4 @@
-/* Spurious uninitialized-variable warnings.
-   These cases are documented as not working in the gcc manual. */
+/* Spurious uninitialized-variable warnings.  */
 
 /* { dg-do compile } */
 /* { dg-options "-O -Wuninitialized" } */
@@ -10,7 +9,7 @@ extern void foo(void);
 void
 func1(int cond)
 {
-    int x;  /* { dg-bogus "x" "uninitialized variable warning" { xfail *-*-* } } */
+    int x;  /* { dg-bogus "x" "uninitialized variable warning" } */
 
     if(cond)
 	x = 1;
@@ -24,7 +23,7 @@ func1(int cond)
 void
 func2 (int cond)
 {
-    int x;  /* { dg-bogus "x" "uninitialized variable warning" { xfail *-*-* } } */
+    int x;  /* { dg-bogus "x" "uninitialized variable warning" } */
     int flag = 0;
 
     if(cond)

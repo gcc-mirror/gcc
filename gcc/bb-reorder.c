@@ -749,7 +749,7 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
 {
   basic_block new_bb;
 
-  new_bb = cfg_layout_duplicate_bb (old_bb, e);
+  new_bb = duplicate_block (old_bb, e);
   if (e->dest != new_bb)
     abort ();
   if (e->dest->rbi->visited)
@@ -1177,7 +1177,7 @@ copy_bb_p (basic_block bb, int code_may_grow)
     return false;
   if (!bb->pred || !bb->pred->pred_next)
     return false;
-  if (!cfg_layout_can_duplicate_bb_p (bb))
+  if (!can_duplicate_block_p (bb))
     return false;
 
   /* Avoid duplicating blocks which have many successors (PR/13430).  */

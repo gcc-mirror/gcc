@@ -414,7 +414,9 @@ bitmap_first_set_bit (bitmap a)
 #else
   for (word_num = 0; word_num < BITMAP_ELEMENT_WORDS; ++word_num)
     if ((word = ptr->bits[word_num]) != 0)
-      break;
+      goto word_found;
+  abort ();
+ word_found:
 #endif
 
   /* Binary search for the first set bit.  */
@@ -469,7 +471,9 @@ bitmap_last_set_bit (bitmap a)
 #else
   for (word_num = BITMAP_ELEMENT_WORDS; word_num-- > 0; )
     if ((word = ptr->bits[word_num]) != 0)
-      break;
+      goto word_found;
+  abort ();
+ word_found:
 #endif
 
   /* Binary search for the last set bit.  */

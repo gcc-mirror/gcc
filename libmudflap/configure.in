@@ -1,0 +1,137 @@
+# Process this file with autoconf to produce a configure script, like so:
+# aclocal && autoconf && autoheader && automake
+
+AC_PREREQ(2.13)
+AC_INIT(mf-runtime.c)
+AC_CANONICAL_SYSTEM
+AM_INIT_AUTOMAKE(libmudflap, 1.0)
+
+AC_SUBST(PACKAGE)
+# For libtool versioning info, format is CURRENT:REVISION:AGE
+libtool_VERSION=1:0:0
+AC_SUBST(libtool_VERSION)
+
+dnl AM_ENABLE_MULTILIB
+AM_MAINTAINER_MODE
+AC_EXEEXT
+
+target_alias=${target_alias-$target}
+AC_SUBST(target_alias)
+
+AM_CONFIG_HEADER(config.h)
+
+AC_LANG_C
+AC_PROG_CC
+if test "x$GCC" != "xyes"; then
+  AC_MSG_ERROR([libmudflap must be built with GCC])
+fi
+AC_PROG_CPP
+
+# Some hosts don't have dlsym(RTLD_NEXT, "symbol") for use in
+# symbol interposition.  We disable shared libraries for these.
+AC_MSG_CHECKING([whether dlsym(RTLD_NEXT,...) is available])
+AC_TRY_COMPILE([
+#define _GNU_SOURCE
+#include <dlfcn.h>
+],
+[void *foo = dlsym (RTLD_NEXT, "exit");],
+[AC_MSG_RESULT(yes)],
+[AC_MSG_RESULT(no)
+enable_shared=no])
+
+AC_CHECK_HEADERS(stdint.h execinfo.h signal.h dlfcn.h)
+AC_CHECK_FUNCS(backtrace backtrace_symbols gettimeofday signal)
+
+dnl Check for 64-bit stdio calls related to Large File Support
+AC_CHECK_FUNCS(fopen64 fseeko64 ftello64 stat64)
+
+AC_TRY_COMPILE([#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>],[union semun foo;], [mf_have_semun=1], [mf_have_semun=0])
+if test $mf_have_semun = 1
+then
+  AC_DEFINE(HAVE_UNION_SEMUN, 1, [union semun defined in sys/ipc.h or sys/sem.h])
+fi
+
+
+AC_MSG_CHECKING([for socklen_t in sys/socket.h])
+AC_TRY_COMPILE([#define _POSIX_PII_SOCKET
+#include <sys/types.h> 
+#include <sys/socket.h>], [socklen_t x = 5;],
+  [AC_DEFINE(HAVE_SOCKLEN_T, 1, [Define it socklen_t typedef is in sys/socket.h.])
+   AC_MSG_RESULT(yes)],
+  [AC_MSG_RESULT(no)])
+
+AC_LIBTOOL_DLOPEN
+AM_PROG_LIBTOOL
+AC_SUBST(enable_shared)
+AC_SUBST(enable_static)
+
+AC_CHECK_HEADER(stdint.h, [MF_HAVE_STDINT_H=1], [MF_HAVE_STDINT_H=0])
+AC_SUBST(MF_HAVE_STDINT_H)
+if test $MF_HAVE_STDINT_H = 1
+then
+   MF_HAVE_UINTPTR_T=1
+else
+   AC_TRY_COMPILE([#include <sys/types.h>], [uintptr_t k = 0;],
+   	[MF_HAVE_UINTPTR_T=1], [MF_HAVE_UINTPTR_T=0])
+fi
+AC_SUBST(MF_HAVE_UINTPTR_T)
+
+if test ! -d pth
+then
+  # libmudflapth objects are built in this subdirectory
+  mkdir pth
+fi
+
+pthread_create_version='""'
+AC_CHECK_HEADER(pthread.h,[
+AC_DEFINE_UNQUOTED(HAVE_PTHREAD_H, 1, [define if you have <pthread.h>])
+ac_have_pthread_h=yes
+],[
+ac_have_pthread_h=
+])
+AM_CONDITIONAL(LIBMUDFLAPTH, [test "x$ac_have_pthread_h" != ""])
+
+AC_CHECK_LIB(dl, dlsym)
+
+if test "x$enable_shared" = "xyes" && test "x$ac_have_pthread_h" != ""; then
+  # NB: don't check for -lpthread here, because then it would be
+  # added to LIBS.  For the thread-unaware libmudflap.la, we don't
+  # want it there.
+
+  # glibc-related hacks.  dlsym() may pick the wrong version of
+  # interposed functions like pthread_create on modern glibc.
+  # We need to find the proper symbol version string, and use
+  # the nonstandard dlvsym().
+  AC_CHECK_FUNCS(dlvsym)
+  AC_CHECK_TOOL(NM, nm)
+  if test "x$ac_cv_have_dlvsym" != ""; then
+    # Try compiling a simple pthreads program.  Find the shared libraries it
+    # ends up with.  Then use "nm" on those libraries to extract the
+    # default symbol versioning suffix ("@@"), if any.  But that's tricky.
+    # Rather, run nm on the resulting executable.  Unfortunately, autoconf
+    # doesn't appear to have a macro that builds a test executable for
+    # subsequent analysis ... so we do it by hand here. 
+    cat >> conftest.c << EOF
+#include <pthread.h>
+int main () { void *p = (void *) & pthread_create; return (int) p; }
+EOF
+    oldLIBS="$LIBS"
+    LIBS="$LIBS -lpthread"
+    pthread_create_version="\"\""
+    AC_MSG_CHECKING(pthread_create symbol version)
+    if eval $ac_link 2>&5 && test -s conftest${ac_exeext}; then
+      version=`$NM conftest${ac_exeect} | grep 'pthread_create@@' | sed -e 's/^.*@@//'`
+      if test "x$version" != "x"; then
+        pthread_create_version="\"$version\""
+      fi
+    fi
+    AC_MSG_RESULT($pthread_create_version)
+    LIBS="$oldLIBS"
+  fi
+fi
+AC_DEFINE_UNQUOTED(PTHREAD_CREATE_VERSION, $pthread_create_version, [pthread_create symbol version])   
+
+
+AC_OUTPUT([Makefile testsuite/Makefile mf-runtime.h])

@@ -34,6 +34,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "optabs.h"
 #include "regs.h"
 
+static struct value_prof_hooks *value_prof_hooks;
+
 /* In this file value profile based optimizations will be placed (none are
    here just now, but they are hopefully coming soon).
 
@@ -174,11 +176,13 @@ insn_values_to_profile (rtx insn,
 }
 
 /* Find list of values for that we want to measure histograms.  */
-void
-find_values_to_profile (unsigned *n_values, struct histogram_value **values)
+static void
+rtl_find_values_to_profile (unsigned *n_values, struct histogram_value **values)
 {
   rtx insn;
   unsigned i;
+
+  life_analysis (get_insns (), NULL, PROP_DEATH_NOTES);
 
   *n_values = 0;
   *values = NULL;
@@ -193,7 +197,7 @@ find_values_to_profile (unsigned *n_values, struct histogram_value **values)
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Interval counter for insn %d, range %d -- %d.\n",
-		     INSN_UID ((*values)[i].insn),
+		     INSN_UID ((rtx)(*values)[i].insn),
 		     (*values)[i].hdata.intvl.int_start,
 		     ((*values)[i].hdata.intvl.int_start
 		      + (*values)[i].hdata.intvl.steps - 1));
@@ -206,16 +210,17 @@ find_values_to_profile (unsigned *n_values, struct histogram_value **values)
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Pow2 counter for insn %d.\n",
-		     INSN_UID ((*values)[i].insn));
-	  (*values)[i].n_counters = GET_MODE_BITSIZE ((*values)[i].mode) +
-		  ((*values)[i].hdata.pow2.may_be_other ? 1 : 0);
+		     INSN_UID ((rtx)(*values)[i].insn));
+	  (*values)[i].n_counters 
+		= GET_MODE_BITSIZE ((*values)[i].mode)
+		  +  ((*values)[i].hdata.pow2.may_be_other ? 1 : 0);
 	  break;
 
 	case HIST_TYPE_SINGLE_VALUE:
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Single value counter for insn %d.\n",
-		     INSN_UID ((*values)[i].insn));
+		     INSN_UID ((rtx)(*values)[i].insn));
 	  (*values)[i].n_counters = 3;
 	  break;
 
@@ -223,7 +228,7 @@ find_values_to_profile (unsigned *n_values, struct histogram_value **values)
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Constant delta counter for insn %d.\n",
-		     INSN_UID ((*values)[i].insn));
+		     INSN_UID ((rtx)(*values)[i].insn));
 	  (*values)[i].n_counters = 4;
 	  break;
 
@@ -231,6 +236,7 @@ find_values_to_profile (unsigned *n_values, struct histogram_value **values)
 	  abort ();
 	}
     }
+  allocate_reg_info (max_reg_num (), FALSE, FALSE);
 }
 
 /* Main entry point.  Finds REG_VALUE_PROFILE notes from profiler and uses
@@ -313,8 +319,8 @@ find_values_to_profile (unsigned *n_values, struct histogram_value **values)
    making unroller happy.  Since this may grow the code significantly,
    we would have to be very careful here.  */
 
-bool
-value_profile_transformations (void)
+static bool
+rtl_value_profile_transformations (void)
 {
   rtx insn, next;
   int changed = false;
@@ -706,3 +712,71 @@ mod_subtract_transform (rtx insn)
 
   return true;
 }
+
+/* Connection to the outside world.  */
+/* Struct for IR-dependent hooks.  */
+struct value_prof_hooks {
+  /* Find list of values for which we want to measure histograms.  */
+  void (*find_values_to_profile) (unsigned *, struct histogram_value **);
+
+  /* Identify and exploit properties of values that are hard to analyze
+     statically.  See value-prof.c for more detail.  */
+  bool (*value_profile_transformations) (void);  
+};
+
+/* Hooks for RTL-based versions (the only ones that currently work).  */
+static struct value_prof_hooks rtl_value_prof_hooks =
+{
+  rtl_find_values_to_profile,
+  rtl_value_profile_transformations
+};
+
+void 
+rtl_register_value_prof_hooks (void)
+{
+  value_prof_hooks = &rtl_value_prof_hooks;
+  if (ir_type ())
+    abort ();
+}
+
+/* Tree-based versions are stubs for now.  */
+static void
+tree_find_values_to_profile (unsigned *n_values, struct histogram_value **values)
+{
+  (void)n_values;
+  (void)values;
+  abort ();
+}
+
+static bool
+tree_value_profile_transformations (void)
+{
+  abort ();
+}
+
+static struct value_prof_hooks tree_value_prof_hooks = {
+  tree_find_values_to_profile,
+  tree_value_profile_transformations
+};
+
+void
+tree_register_value_prof_hooks (void)
+{
+  value_prof_hooks = &tree_value_prof_hooks;
+  if (!ir_type ())
+    abort ();
+}
+
+/* IR-independent entry points.  */
+void
+find_values_to_profile (unsigned *n_values, struct histogram_value **values)
+{
+  (value_prof_hooks->find_values_to_profile) (n_values, values);
+}
+
+bool
+value_profile_transformations (void)
+{
+  return (value_prof_hooks->value_profile_transformations) ();
+}
+

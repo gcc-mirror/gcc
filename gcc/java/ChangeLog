@@ -1,3 +1,14 @@
+2004-05-13  Diego Novillo  <dnovillo@redhat.com>
+
+	Merge from tree-ssa-20020619-branch.  See
+	ChangeLog.tree-ssa for details.
+
+	* Make-lang.in, builtins.c, check-init.c, class.c,
+	constants.c, decl.c, except.c, expr.c, java-except.h,
+	java-tree.def, java-tree.h, jcf-parse.c, jcf-write.c,
+	lang.c, lang.opt, parse.y, resource.c: Merged.
+	* java-gimplify.c: New file.
+
 2004-05-10  Andrew Haley  <aph@redhat.com>
 
 	* parse.y (create_class): Set TYPE_VFIELD.

@@ -22,6 +22,7 @@ rtti	 Tests for run-time type identification (typeid, dynamic_cast, etc.)
 template Tests for templates.
 tc1	 Tests for Technical Corrigendum 1 conformance.
 tls	 Tests for support of thread-local data.
+tree-ssa Tests for Tree SSA optimizations.
 warn	 Tests for compiler warnings.
 
 other	 Tests that don't fit into one of the other categories.

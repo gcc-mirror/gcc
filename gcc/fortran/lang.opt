@@ -1,0 +1,152 @@
+; Options for the Fortran 95 front end.
+; Copyright (C) 2003 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 2, or (at your option) any later
+; version.
+; 
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+; 
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING.  If not, write to the Free
+; Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+; 02111-1307, USA.
+
+; See c.opt for a description of this file's format.
+
+; Please try to keep this file in ASCII collating order.
+
+Language
+F95
+
+I
+F95 Joined
+-I<directory>	Add a directory for INCLUDE and MODULE searching
+
+J
+F95 Joined
+-J<directory>	Put MODULE files in 'directory'
+
+Wall
+F95 RejectNegative
+; Documented in C
+
+Waliasing
+F95
+Warn about possible aliasing of dummy arguments
+
+Wconversion
+F95
+Warn about implicit conversion
+
+Wimplicit-interface
+F95
+Warn about calls with implicit interface
+
+Wline-truncation
+F95
+Warn about truncated source lines
+
+Wsurprising
+F95
+Warn about \"suspicious\" constructs
+
+Wunused-labels
+F95
+Warn when a label is unused
+
+d8
+F95 RejectNegative
+Set the default real and integer kinds to double precision
+
+fdollar-ok
+F95
+Allow dollar signs in entity names
+
+fdump-parse-tree
+F95
+Display the code tree after parsing.
+
+ffixed-form
+F95
+Assume that the source file is fixed form
+
+ffree-form
+F95
+Assume that the source file is free form
+
+funderscoring
+F95
+Append underscores to externally visible names
+
+fsecond-underscore
+F95
+Append a second underscore if the name already contains an underscore
+
+fimplicit-none
+F95
+Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements
+
+ffixed-line-length-80
+F95 RejectNegative
+Use 80 character line width in fixed mode
+
+ffixed-line-length-132
+F95 RejectNegative
+Use 132 character line width in fixed mode
+
+fmax-identifier-length=
+F95 RejectNegative Joined UInteger
+-fmax-identifier-length=<n>	Maximum identifier length.
+
+fmax-stack-var-size=
+F95 RejectNegative Joined UInteger
+-fmax-stack-var-size=<n>	Size in bytes of the largest array that will be put on the stack
+
+fmodule-private
+F95
+Set default accessibility of module entities to PRIVATE
+
+fno-backend
+F95 RejectNegative
+Don't generate code, just do syntax and semantics checking
+
+fpack-derived
+F95
+Try to layout derived types as compact as possible
+
+frepack-arrays
+F95
+Copy array sections into a contiguous block on procedure entry
+
+i8
+F95
+Set the default integer kind to double precision
+
+qkind=
+F95 RejectNegative Joined UInteger
+-qkind=<n>	Set the kind for a real with the 'q' exponent to 'n'
+
+r8
+F95
+Set the default real kind to double precision
+
+std=f95
+F95
+Conform to the ISO Fortran 95 standard.
+
+std=f2003
+F95
+Conform to the ISO Fortran 2003 standard.
+
+std=gnu
+F95
+Conform nothing in particular.
+
+; This comment is to ensure we retain the blank line above.

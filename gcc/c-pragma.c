@@ -352,7 +352,6 @@ maybe_apply_pragma_weak (tree decl ATTRIBUTE_UNUSED)
 
 static GTY(()) tree pending_redefine_extname;
 
-#ifdef HANDLE_PRAGMA_REDEFINE_EXTNAME
 static void handle_pragma_redefine_extname (cpp_reader *);
 
 /* #pragma redefined_extname oldname newname */
@@ -388,7 +387,6 @@ handle_pragma_redefine_extname (cpp_reader *dummy ATTRIBUTE_UNUSED)
   else
     add_to_renaming_pragma_list(oldname, newname);
 }
-#endif
 
 void
 add_to_renaming_pragma_list (tree oldname, tree newname)
@@ -502,6 +500,9 @@ init_pragma (void)
 #endif
 #ifdef HANDLE_PRAGMA_REDEFINE_EXTNAME
   c_register_pragma (0, "redefine_extname", handle_pragma_redefine_extname);
+#else
+  if (flag_mudflap)
+    c_register_pragma (0, "redefine_extname", handle_pragma_redefine_extname);
 #endif
 #ifdef HANDLE_PRAGMA_EXTERN_PREFIX
   c_register_pragma (0, "extern_prefix", handle_pragma_extern_prefix);

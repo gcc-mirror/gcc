@@ -2560,8 +2560,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
        then it means the object is variable-sized and address through
        that register or stack slot.  DBX has no way to represent this
        so all we can do is output the variable as a pointer.
-       If it's not a parameter, ignore it.
-       (VAR_DECLs like this can be made by integrate.c.)  */
+       If it's not a parameter, ignore it.  */
     {
       if (GET_CODE (XEXP (home, 0)) == REG)
 	{

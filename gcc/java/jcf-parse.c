@@ -738,7 +738,7 @@ parse_class_file (void)
 	  DECL_MAX_LOCALS (method) = decl_max_locals;
 	  start_java_method (method);
 	  give_name_to_locals (jcf);
-	  expand_expr_stmt (build_jni_stub (method));
+	  *get_stmts () = build_jni_stub (method);
 	  end_java_method ();
 	  continue;
 	}
@@ -762,7 +762,7 @@ parse_class_file (void)
 	  for (ptr += 2; --i >= 0; ptr += 4)
 	    {
 	      int line = GET_u2 (ptr);
-	      /* Set initial lineno lineno to smallest linenumber.
+	      /* Set initial input_line to smallest linenumber.
 	       * Needs to be set before init_function_start. */
 	      if (input_line == 0 || line < input_line)
 		input_line = line;
@@ -780,7 +780,7 @@ parse_class_file (void)
 
       give_name_to_locals (jcf);
 
-      /* Actually generate code. */
+      /* Convert bytecode to trees.  */
       expand_byte_code (jcf, method);
 
       end_java_method ();
@@ -1111,13 +1111,16 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
   java_expand_classes ();
   if (!java_report_errors () && !flag_syntax_only)
     {
-      /* Optimize and expand all classes compiled from source.  */
-      cgraph_finalize_compilation_unit ();
-      cgraph_optimize ();
+      /* Expand all classes compiled from source.  */
       java_finish_classes ();
 
       /* Emit the .jcf section.  */
       emit_register_classes ();
+
+      /* Only finalize the compilation unit after we've told cgraph which
+	 functions have their addresses stored.  */
+      cgraph_finalize_compilation_unit ();
+      cgraph_optimize ();
     }
 
   write_resource_constructor ();

@@ -206,9 +206,13 @@ et_check_tree_sanity (struct et_occ *occ)
 
 /* For recording the paths.  */
 
+/* An ad-hoc constant; if the function has more blocks, this won't work,
+   but since it is used for debugging only, it does not matter.  */
+#define MAX_NODES 100000
+
 static int len;
-static void *datas[100000];
-static int depths[100000];
+static void *datas[MAX_NODES];
+static int depths[MAX_NODES];
 
 /* Records the path represented by OCC, with depth incremented by DEPTH.  */
 
@@ -228,6 +232,10 @@ record_path_before_1 (struct et_occ *occ, int depth)
     }
 
   fprintf (stderr, "%d (%d); ", ((basic_block) occ->of->data)->index, depth);
+
+  if (len >= MAX_NODES)
+    abort ();
+
   depths[len] = depth;
   datas[len] = occ->of;
   len++;

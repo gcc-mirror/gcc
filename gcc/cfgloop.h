@@ -237,6 +237,7 @@ extern void flow_loop_dump (const struct loop *, FILE *,
 extern int flow_loop_scan (struct loop *, int);
 extern void flow_loop_free (struct loop *);
 void mark_irreducible_loops (struct loops *);
+extern void create_loop_notes (void);
 
 /* Loop data structure manipulation/querying.  */
 extern void flow_loop_tree_node_add (struct loop *, struct loop *);

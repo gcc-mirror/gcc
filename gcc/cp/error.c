@@ -47,7 +47,7 @@ static cxx_pretty_printer scratch_pretty_printer;
 # define NEXT_CODE(T) (TREE_CODE (TREE_TYPE (T)))
 
 #define reinit_global_formatting_buffer() \
-   output_clear_message_text (scratch_buffer)
+   pp_clear_output_area (scratch_buffer)
 
 static const char *args_to_string (tree, int);
 static const char *assop_to_string (enum tree_code);
@@ -1604,10 +1604,6 @@ dump_expr (tree t, int flags)
 	break;
       }
       
-    case EXPR_WITH_FILE_LOCATION:
-      dump_expr (EXPR_WFL_NODE (t), flags);
-      break;
-
     case CONSTRUCTOR:
       if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
 	{
@@ -2191,8 +2187,7 @@ print_instantiation_full_context (diagnostic_context *context)
                          decl_as_string (TINST_DECL (p),
                                          TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
 
-	  location.line = TINST_LINE (p);
-	  location.file = TINST_FILE (p);
+	  location = *EXPR_LOCUS (p);
 	  p = TREE_CHAIN (p);
 	}
     }
@@ -2211,8 +2206,7 @@ print_instantiation_partial_context (diagnostic_context *context,
                    loc.file, loc.line,
                    decl_as_string (TINST_DECL (t),
                                    TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
-      loc.line = TINST_LINE (t);
-      loc.file = TINST_FILE (t);
+      loc = *EXPR_LOCUS (t);
     }
   pp_verbatim (context->printer, "%s:%d:   instantiated from here\n",
                loc.file, loc.line);

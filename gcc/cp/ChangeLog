@@ -1,3 +1,16 @@
+2004-05-13  Diego Novillo  <dnovillo@redhat.com>
+
+	Merge from tree-ssa-20020619-branch.  See
+	ChangeLog.tree-ssa for details.
+
+	* Make-lang.in, call.c, class.c, cp-lang.c, cp-tree.def,
+	cp-tree.h, cvt.c, decl.c, decl2.c, error.c, except.c,
+	expr.c, init.c, name-lookup.h, optimize.c, parser.c,
+	pt.c, rtti.c, semantics.c, tree.c, typeck.c, typeck2.c:
+	Merged.
+	* cp-mudflap.c: New file.
+	* cp-simplify.c:: New file.
+
 2004-05-03  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14389

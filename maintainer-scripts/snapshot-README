@@ -20,6 +20,8 @@ You'll find:
 
   gcc-g77-@RELEASE@.tar.bz2          The F77 front end and runtime.
 
+  gcc-fortran-@RELEASE@.tar.gz       The Fortran front end and runtime.
+
   gcc-objc-@RELEASE@.tar.bz2         The Objective-C front end and runtime.
 
   gcc-java-@RELEASE@.tar.bz2         The Java front end and runtime.

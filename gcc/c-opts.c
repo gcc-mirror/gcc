@@ -733,11 +733,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       cpp_opts->dollars_in_ident = value;
       break;
 
-    case OPT_fdump_:
-      if (!dump_switch_p (arg))
-	result = 0;
-      break;
-
     case OPT_ffreestanding:
       value = !value;
       /* Fall through....  */
@@ -1100,17 +1095,13 @@ c_common_post_options (const char **pfilename)
 
   flag_inline_trees = 1;
 
-  /* Use tree inlining if possible.  Function instrumentation is only
-     done in the RTL level, so we disable tree inlining.  */
-  if (! flag_instrument_function_entry_exit)
+  /* Use tree inlining.  */
+  if (!flag_no_inline)
+    flag_no_inline = 1;
+  if (flag_inline_functions)
     {
-      if (!flag_no_inline)
-	flag_no_inline = 1;
-      if (flag_inline_functions)
-	{
-	  flag_inline_trees = 2;
-	  flag_inline_functions = 0;
-	}
+      flag_inline_trees = 2;
+      flag_inline_functions = 0;
     }
 
   /* -Wextra implies -Wsign-compare, but not if explicitly

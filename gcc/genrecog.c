@@ -513,8 +513,7 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 			&& c != CONST_INT
 			&& c != CONST_DOUBLE
 			&& c != CONST
-			&& c != HIGH
-			&& c != CONSTANT_P_RTX)
+			&& c != HIGH)
 		      allows_non_const = 1;
 
 		    if (c != REG

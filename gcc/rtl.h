@@ -240,12 +240,9 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
      1 in a SYMBOL_REF, means that emit_library_call
      has used it as the function.  */
   unsigned int used : 1;
-  /* Nonzero if this rtx came from procedure integration.
-     1 in a REG or PARALLEL means this rtx refers to the return value
-     of the current function.
-     1 in a SYMBOL_REF if the symbol is weak.
-     1 in a MEM if the MEM refers to a scalar, rather than a member of
-     an aggregate.  */
+  /* FIXME.  This should be unused now that we do inlinining on trees,
+     but it is now being used for MEM_SCALAR_P.  It should be renamed,
+     or some other field should be overloaded.  */
   unsigned integrated : 1;
   /* 1 in an INSN or a SET if this rtx is related to the call frame,
      either changing how we compute the frame address or saving and
@@ -254,6 +251,9 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
      1 in a SYMBOL_REF if it addresses something in the per-function
      constant string pool.  */
   unsigned frame_related : 1;
+  /* 1 in a REG or PARALLEL that is the current function's return value.
+     1 in a SYMBOL_REF for a weak symbol.  */
+  unsigned return_val : 1;
 
   /* The first element of the operands of this rtx.
      The number of operands and their types are controlled
@@ -387,8 +387,7 @@ struct rtvec_def GTY(()) {
 
 #define CONSTANT_P(X)   \
   (GET_RTX_CLASS (GET_CODE (X)) == RTX_CONST_OBJ			\
-   || GET_CODE (X) == CONST_VECTOR	                                \
-   || GET_CODE (X) == CONSTANT_P_RTX)
+   || GET_CODE (X) == CONST_VECTOR)
 
 /* 1 if X can be used to represent an object.  */
 #define OBJECT_P(X)							\
@@ -593,11 +592,11 @@ do {				\
   _rtx->call = 0;		\
   _rtx->frame_related = 0;	\
   _rtx->in_struct = 0;		\
-  _rtx->integrated = 0;		\
   _rtx->jump = 0;		\
   _rtx->unchanging = 0;		\
   _rtx->used = 0;		\
   _rtx->volatil = 0;		\
+  _rtx->unused_flag = 0;	\
 } while (0)
 
 #define XINT(RTX, N)	(RTL_CHECK2 (RTX, N, 'i', 'n').rtint)
@@ -676,10 +675,6 @@ do {				\
    They are always in the same basic block as this insn.  */
 #define LOG_LINKS(INSN)	XEXP(INSN, 7)
 
-#define RTX_INTEGRATED_P(RTX)						\
-  (RTL_FLAG_CHECK8("RTX_INTEGRATED_P", (RTX), INSN, CALL_INSN,		\
-		   JUMP_INSN, INSN_LIST, BARRIER, CODE_LABEL, CONST,	\
-		   NOTE)->integrated)
 #define RTX_UNCHANGING_P(RTX)						\
   (RTL_FLAG_CHECK3("RTX_UNCHANGING_P", (RTX), REG, MEM, CONCAT)->unchanging)
 #define RTX_FRAME_RELATED_P(RTX)					\
@@ -1135,7 +1130,7 @@ enum label_kind
 /* 1 if RTX is a reg or parallel that is the current function's return
    value.  */
 #define REG_FUNCTION_VALUE_P(RTX)					\
-  (RTL_FLAG_CHECK2("REG_FUNCTION_VALUE_P", (RTX), REG, PARALLEL)->integrated)
+  (RTL_FLAG_CHECK2("REG_FUNCTION_VALUE_P", (RTX), REG, PARALLEL)->return_val)
 
 /* 1 if RTX is a reg that corresponds to a variable declared by the user.  */
 #define REG_USERVAR_P(RTX)						\
@@ -1408,7 +1403,7 @@ do {						\
 
 /* 1 if RTX is a symbol_ref for a weak symbol.  */
 #define SYMBOL_REF_WEAK(RTX)						\
-  (RTL_FLAG_CHECK1("SYMBOL_REF_WEAK", (RTX), SYMBOL_REF)->integrated)
+  (RTL_FLAG_CHECK1("SYMBOL_REF_WEAK", (RTX), SYMBOL_REF)->return_val)
 
 /* The tree (decl or constant) associated with the symbol, or null.  */
 #define SYMBOL_REF_DECL(RTX)	X0TREE ((RTX), 2)
@@ -1542,7 +1537,8 @@ do {						\
 /* Nonzero if we need to distinguish between the return value of this function
    and the return value of a function called by this function.  This helps
    integrate.c.
-   This is 1 until after the rtl generation pass.  */
+   This is 1 until after the rtl generation pass.
+   ??? It appears that this is 1 only when expanding trees to RTL.  */
 extern int rtx_equal_function_value_matters;
 
 /* Nonzero when we are generating CONCATs.  */
@@ -2080,9 +2076,6 @@ extern rtx gen_rtx_MEM (enum machine_mode, rtx);
 extern rtx output_constant_def (tree, int);
 extern rtx lookup_constant_def (tree);
 
-/* Called from integrate.c when a deferred constant is inlined.  */
-extern void notice_rtl_inlining_of_deferred_constant (void);
-
 /* Nonzero after the second flow pass has completed.
    Set to 1 or 0 by toplev.c  */
 extern int flow2_completed;
@@ -2151,14 +2144,13 @@ extern enum rtx_code reversed_comparison_code_parts (enum rtx_code,
 						     rtx, rtx, rtx);
 extern void delete_for_peephole (rtx, rtx);
 extern int condjump_in_parallel_p (rtx);
-extern void never_reached_warning (rtx, rtx);
 extern void purge_line_number_notes (rtx);
-extern void copy_loop_headers (rtx);
 
 /* In emit-rtl.c.  */
 extern int max_reg_num (void);
 extern int max_label_num (void);
 extern int get_first_label_num (void);
+extern void maybe_set_first_label_num (rtx);
 extern void delete_insns_since (rtx);
 extern void mark_reg_pointer (rtx, int);
 extern void mark_user_reg (rtx);
@@ -2346,11 +2338,6 @@ extern void dbr_schedule (rtx, FILE *);
 extern void dump_local_alloc (FILE *);
 #endif
 extern int local_alloc (void);
-
-/* In profile.c */
-extern void init_branch_prob (void);
-extern void branch_prob (void);
-extern void end_branch_prob (void);
 
 /* In reg-stack.c */
 #ifdef BUFSIZ

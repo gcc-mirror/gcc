@@ -1,0 +1,46 @@
+2004-03-25  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc_update (files_and_dependencies): Add libbanshee and
+	libmudflap dependencies.
+
+2003-11-27  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa.doxy (FILE_PATTERNS): Update.
+
+2003-11-21  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa.doxy: Do not generate latex output.
+
+2003-07-21  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa.doxy: Include tree* files
+
+2003-07-15  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa.doxy: Add tree-must-alias.c.
+
+2003-01-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* filter_params.pl: Surround comments in @verbatim/@endverbatim.
+
+2003-01-19  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa.doxy (OUTPUT_DIRECTORY, INPUT_FILTER): Replace
+	hardwired values for with replaceable strings.
+
+2003-01-18  Diego Novillo  <dnovillo@redhat.com>
+
+	* filter_params.pl: Change most comments to start with /**.
+
+2002-12-23  Steven Bosscher <Steven.Bosscher@usafa.af.mil>
+
+	* filter_params.pl: Filter ATTRIBUTE_UNUSED.
+
+2002-12-12  Daniel Berlin  <dberlin@dberlin.org>
+	    Steven Bosscher <Steven.Bosscher@usafa.af.mil>
+	    Diego Novillo <dnovillo@redhat.com>
+
+	* filter_gcc_for_doxygen: New file.
+	* filter_knr2ansi.pl: New file.
+	* filter_params.pl: New file.
+	* tree-ssa.doxy: New file.

@@ -540,6 +540,24 @@ decode_options (unsigned int argc, const char **argv)
       flag_loop_optimize = 1;
       flag_if_conversion = 1;
       flag_if_conversion2 = 1;
+      flag_tree_ccp = 1;
+      flag_tree_dce = 1;
+      flag_tree_dom = 1;
+      flag_tree_dse = 1;
+      flag_tree_pre = 1;
+      flag_tree_ter = 1;
+      flag_tree_live_range_split = 1;
+      flag_tree_sra = 1;
+      flag_tree_copyrename = 1;
+
+      if (!optimize_size)
+	{
+	  /* Loop header copying usually increases size of the code.  This used
+	     not to be true, since quite often it is possible to verify that
+	     the condition is satisfied in the first iteration and therefore
+	     to eliminate it.  Jump threading handles these cases now.  */
+	  flag_tree_ch = 1;
+	}
     }
 
   if (optimize >= 2)
@@ -995,6 +1013,11 @@ common_handle_option (size_t scode, const char *arg,
 	return 0;
       break;
 
+    case OPT_fdump_:
+      if (!dump_switch_p (arg))
+	return 0;
+      break;
+
     case OPT_fdump_unnumbered:
       flag_dump_unnumbered = value;
       break;
@@ -1148,6 +1171,19 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_fmove_all_movables:
       flag_move_all_movables = value;
+      break;
+
+    case OPT_fmudflap:
+      flag_mudflap = value;
+      break;
+
+    case OPT_fmudflapth:
+      flag_mudflap = value;
+      flag_mudflap_threads = value;
+      break;
+
+    case OPT_fmudflapir:
+      flag_mudflap_ignore_reads = value;
       break;
 
     case OPT_fnew_ra:
@@ -1448,6 +1484,70 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_ftrapv:
       flag_trapv = value;
+      break;
+
+    case OPT_ftree_based_profiling:
+      flag_tree_based_profiling = value;
+      break;
+
+    case OPT_ftree_ccp:
+      flag_tree_ccp = value;
+      break;
+
+    case OPT_ftree_dce:
+      flag_tree_dce = value;
+      break;
+
+    case OPT_ftree_combine_temps:
+      flag_tree_combine_temps = value;
+      break;
+
+    case OPT_ftree_ter:
+      flag_tree_ter = value;
+      break;
+
+    case OPT_ftree_lrs:
+      flag_tree_live_range_split = value;
+      break;
+
+    case OPT_ftree_dominator_opts:
+      flag_tree_dom = value;
+      break;
+
+    case OPT_ftree_copyrename:
+      flag_tree_copyrename = value;
+      break;
+
+    case OPT_ftree_ch:
+      flag_tree_ch = value;
+      break;
+
+    case OPT_ftree_dse:
+      flag_tree_dse = value;
+      break;
+
+    case OPT_ftree_sra:
+      flag_tree_sra = value;
+      break;
+
+    case OPT_ftree_points_to_:
+      if (!strcmp (arg, "andersen"))
+#ifdef HAVE_BANSHEE
+        flag_tree_points_to = PTA_ANDERSEN;
+#else
+        warning ("Andersen's PTA not available - libbanshee not compiled.");
+#endif
+      else if (!strcmp (arg, "none"))
+	flag_tree_points_to = PTA_NONE;
+      else
+	{
+	  warning ("`%s`: unknown points-to analysis algorithm", arg);
+	  return 0;
+	}
+      break;
+
+    case OPT_ftree_pre:
+      flag_tree_pre = value;
       break;
 
     case OPT_funit_at_a_time:

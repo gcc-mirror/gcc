@@ -687,7 +687,9 @@ tagged_types_tu_compatible_p (tree t1, tree t2, int flags)
   /* We have to verify that the tags of the types are the same.  This
      is harder than it looks because this may be a typedef, so we have
      to go look at the original type.  It may even be a typedef of a
-     typedef...  */
+     typedef...
+     In the case of compiler-created builtin structs the TYPE_DECL
+     may be a dummy, with no DECL_ORIGINAL_TYPE.  Don't fault.  */
   while (TYPE_NAME (t1)
 	 && TREE_CODE (TYPE_NAME (t1)) == TYPE_DECL
 	 && DECL_ORIGINAL_TYPE (TYPE_NAME (t1)))
@@ -1143,7 +1145,6 @@ default_function_array_conversion (tree exp)
 	  adr = build1 (ADDR_EXPR, ptrtype, exp);
 	  if (!c_mark_addressable (exp))
 	    return error_mark_node;
-	  TREE_CONSTANT (adr) = staticp (exp);
 	  TREE_SIDE_EFFECTS (adr) = 0;   /* Default would be, same as EXP.  */
 	  return adr;
 	}
@@ -1489,8 +1490,7 @@ build_array_ref (tree array, tree index)
       || TREE_TYPE (index) == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE
-      && TREE_CODE (array) != INDIRECT_REF)
+  if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {
       tree rval, type;
 
@@ -1660,6 +1660,7 @@ build_external_ref (tree id, int fun)
     {
       ref = DECL_INITIAL (ref);
       TREE_CONSTANT (ref) = 1;
+      TREE_INVARIANT (ref) = 1;
     }
   else if (current_function_decl != 0
 	   && !DECL_FILE_SCOPE_P (current_function_decl)
@@ -2088,14 +2089,12 @@ parser_build_binary_op (enum tree_code code, tree arg1, tree arg2)
     C_SET_EXP_ORIGINAL_CODE (result, code);
   else
     {
-      int flag = TREE_CONSTANT (result);
       /* We used to use NOP_EXPR rather than NON_LVALUE_EXPR
 	 so that convert_for_assignment wouldn't strip it.
 	 That way, we got warnings for things like p = (1 - 1).
 	 But it turns out we should not get those warnings.  */
       result = build1 (NON_LVALUE_EXPR, TREE_TYPE (result), result);
       C_SET_EXP_ORIGINAL_CODE (result, code);
-      TREE_CONSTANT (result) = flag;
     }
 
   return result;
@@ -2127,7 +2126,6 @@ c_tree_expr_nonnegative_p (tree t)
 static tree
 pointer_diff (tree op0, tree op1)
 {
-  tree result, folded;
   tree restype = ptrdiff_type_node;
 
   tree target_type = TREE_TYPE (TREE_TYPE (op0));
@@ -2191,13 +2189,7 @@ pointer_diff (tree op0, tree op1)
   op1 = c_size_in_bytes (target_type);
 
   /* Divide by the size, in easiest possible way.  */
-
-  result = build (EXACT_DIV_EXPR, restype, op0, convert (restype, op1));
-
-  folded = fold (result);
-  if (folded == result)
-    TREE_CONSTANT (folded) = TREE_CONSTANT (op0) & TREE_CONSTANT (op1);
-  return folded;
+  return fold (build (EXACT_DIV_EXPR, restype, op0, convert (restype, op1)));
 }
 
 /* Construct and perhaps optimize a tree representation
@@ -2420,7 +2412,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	TREE_SIDE_EFFECTS (val) = 1;
 	val = convert (result_type, val);
 	if (TREE_CODE (val) != code)
-	  TREE_NO_UNUSED_WARNING (val) = 1;
+	  TREE_NO_WARNING (val) = 1;
 	return val;
       }
 
@@ -2492,12 +2484,6 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	else
 	  addr = build1 (code, argtype, arg);
 
-	/* Address of a static or external variable or
-	   file-scope function counts as a constant.  */
-	if (staticp (arg)
-	    && ! (TREE_CODE (arg) == FUNCTION_DECL
-		  && !DECL_FILE_SCOPE_P (arg)))
-	  TREE_CONSTANT (addr) = 1;
 	return addr;
       }
 
@@ -2933,6 +2919,7 @@ build_c_cast (tree type, tree expr)
 					      build_tree_list (field, value)),
 			   0);
 	  TREE_CONSTANT (t) = TREE_CONSTANT (value);
+	  TREE_INVARIANT (t) = TREE_INVARIANT (value);
 	  return t;
 	}
       error ("cast to union type from type not present in union");
@@ -4758,7 +4745,7 @@ pop_init_level (int implicit)
 	  constructor = build_constructor (constructor_type,
 					   nreverse (constructor_elements));
 	  if (constructor_constant)
-	    TREE_CONSTANT (constructor) = 1;
+	    TREE_CONSTANT (constructor) = TREE_INVARIANT (constructor) = 1;
 	  if (constructor_constant && constructor_simple)
 	    TREE_STATIC (constructor) = 1;
 	}
@@ -6052,8 +6039,8 @@ process_init_element (tree value)
 tree
 build_asm_stmt (tree cv_qualifier, tree args)
 {
-  if (!TREE_OPERAND (args, 0))
-    TREE_OPERAND (args, 0) = cv_qualifier;
+  if (!ASM_VOLATILE_P (args) && cv_qualifier)
+    ASM_VOLATILE_P (args) = 1;
   return add_stmt (args);
 }
 
@@ -6068,36 +6055,42 @@ build_asm_expr (tree string, tree outputs, tree inputs, tree clobbers,
 {
   tree tail;
   tree args;
+  int i;
+  const char *constraint;
+  bool allows_mem, allows_reg, is_inout;
+  int ninputs;
+  int noutputs;
 
-  /* We can remove output conversions that change the type,
-     but not the mode.  */
-  for (tail = outputs; tail; tail = TREE_CHAIN (tail))
-    {
-      tree output = TREE_VALUE (tail);
-
-      STRIP_NOPS (output);
-      TREE_VALUE (tail) = output;
-
-      /* Allow conversions as LHS here.  build_modify_expr as called below
-	 will do the right thing with them.  */
-      while (TREE_CODE (output) == NOP_EXPR
-	     || TREE_CODE (output) == CONVERT_EXPR
-	     || TREE_CODE (output) == FLOAT_EXPR
-	     || TREE_CODE (output) == FIX_TRUNC_EXPR
-	     || TREE_CODE (output) == FIX_FLOOR_EXPR
-	     || TREE_CODE (output) == FIX_ROUND_EXPR
-	     || TREE_CODE (output) == FIX_CEIL_EXPR)
-	output = TREE_OPERAND (output, 0);
-
-      lvalue_or_else (TREE_VALUE (tail), "invalid lvalue in asm statement");
-    }
+  ninputs = list_length (inputs);
+  noutputs = list_length (outputs);
 
   /* Remove output conversions that change the type but not the mode.  */
-  for (tail = outputs; tail; tail = TREE_CHAIN (tail))
+  for (i = 0, tail = outputs; tail; ++i, tail = TREE_CHAIN (tail))
     {
       tree output = TREE_VALUE (tail);
       STRIP_NOPS (output);
       TREE_VALUE (tail) = output;
+      lvalue_or_else (output, "invalid lvalue in asm statement");
+
+      constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (tail)));
+
+      if (!parse_output_constraint (&constraint, i, ninputs, noutputs,
+                                    &allows_mem, &allows_reg, &is_inout))
+        {
+          /* By marking this operand as erroneous, we will not try
+          to process this operand again in expand_asm_operands.  */
+          TREE_VALUE (tail) = error_mark_node;
+          continue;
+        }
+
+      /* If the operand is a DECL that is going to end up in
+        memory, assume it is addressable.  This is a bit more
+        conservative than it would ideally be; the exact test is
+        buried deep in expand_asm_operands and depends on the
+        DECL_RTL for the OPERAND -- which we don't have at this
+        point.  */
+      if (!allows_reg && DECL_P (output))
+        c_mark_addressable (output);
     }
 
   /* Perform default conversions on array and function inputs.
@@ -6106,12 +6099,12 @@ build_asm_expr (tree string, tree outputs, tree inputs, tree clobbers,
   for (tail = inputs; tail; tail = TREE_CHAIN (tail))
     TREE_VALUE (tail) = default_function_array_conversion (TREE_VALUE (tail));
 
-  args = build_stmt (ASM_STMT, 0, string, outputs, inputs, clobbers);
+  args = build_stmt (ASM_STMT, string, outputs, inputs, clobbers);
 
   /* Simple asm statements are treated as volatile.  */
   if (simple)
     {
-      TREE_OPERAND (args, 0) = ridpointers[RID_VOLATILE];
+      ASM_VOLATILE_P (args) = 1;
       ASM_INPUT_P (args) = 1;
     }
   return args;
@@ -6374,6 +6367,9 @@ void
 c_finish_case (void)
 {
   struct c_switch *cs = switch_stack;
+
+  /* Emit warnings as needed.  */
+  c_do_switch_warnings (cs->cases, cs->switch_stmt);
 
   /* Rechain the next statements to the SWITCH_STMT.  */
   last_tree = cs->switch_stmt;
@@ -7103,16 +7099,14 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
   {
     tree result = build (resultcode, build_type, op0, op1);
-    tree folded;
 
     /* Treat expressions in initializers specially as they can't trap.  */
-    folded = initializer_stack ? fold_initializer (result)
+    result = initializer_stack ? fold_initializer (result)
 			       : fold (result);
-    if (folded == result)
-      TREE_CONSTANT (folded) = TREE_CONSTANT (op0) & TREE_CONSTANT (op1);
+
     if (final_type != 0)
-      return convert (final_type, folded);
-    return folded;
+      result = convert (final_type, result);
+    return result;
   }
 }
 

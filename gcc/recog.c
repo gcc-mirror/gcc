@@ -1114,12 +1114,6 @@ immediate_operand (rtx op, enum machine_mode mode)
       && trunc_int_for_mode (INTVAL (op), mode) != INTVAL (op))
     return 0;
 
-  /* Accept CONSTANT_P_RTX, since it will be gone by CSE1 and
-     result in 0/1.  It seems a safe assumption that this is
-     in range for everyone.  */
-  if (GET_CODE (op) == CONSTANT_P_RTX)
-    return 1;
-
   return (CONSTANT_P (op)
 	  && (GET_MODE (op) == mode || mode == VOIDmode
 	      || GET_MODE (op) == VOIDmode)

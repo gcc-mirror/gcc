@@ -950,9 +950,6 @@ priority (rtx insn)
 	      rtx next;
 	      int next_priority;
 
-	      if (RTX_INTEGRATED_P (link))
-		continue;
-
 	      next = XEXP (link, 0);
 
 	      /* Critical path is meaningful in block boundaries only.  */
@@ -1581,7 +1578,6 @@ restore_line_notes (rtx head, rtx tail)
 	    added_notes++;
 	    new = emit_note_after (NOTE_LINE_NUMBER (note), prev);
 	    NOTE_SOURCE_FILE (new) = NOTE_SOURCE_FILE (note);
-	    RTX_INTEGRATED_P (new) = RTX_INTEGRATED_P (note);
 	  }
       }
   if (sched_verbose && added_notes)

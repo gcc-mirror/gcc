@@ -1,0 +1,14 @@
+2003-07-01  Daniel Berlin  <dberlin@dberlin.org>
+
+	* bool.h: Can't include gcc's system.h and bool.h at the same time.
+
+2003-06-25  Daniel Berlin  <dberlin@dberlin.org>
+
+	* compiler.h: Fix the grouping of the #if
+
+2003-02-02  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* compiler.h: Only define HAVE_VARIADIC_MACROS if IN_GCC is not
+	defined.
+	* util.h: Add prototypes for min and max.
+

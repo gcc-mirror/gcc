@@ -1,5 +1,5 @@
 // { dg-do run  }
-// { dg-options "" }
+// { dg-options "-w -fpermissive" }
 // Test for g++ array init extension 
 
 class A {

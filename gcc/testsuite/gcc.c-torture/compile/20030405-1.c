@@ -1,58 +1,30 @@
-/* PR optimization/10024 */
-extern int *allegro_errno;
-typedef long fixed;
-extern inline int
-fixfloor (fixed x)
-{
-  if (x >= 0)
-    return (x >> 16);
-  else
-    return ~((~x) >> 16);
-}
-extern inline int
-fixtoi (fixed x)
-{
-  return fixfloor (x) + ((x & 0x8000) >> 15);
-}
-extern inline fixed
-ftofix (double x)
-{
-  if (x > 32767.0)
-    {
-      *allegro_errno = 34;
-      return 0x7FFFFFFF;
-    }
-  if (x < -32767.0)
-    {
-      *allegro_errno = 34;
-      return -0x7FFFFFFF;
-    }
-  return (long) (x * 65536.0 + (x < 0 ? -0.5 : 0.5));
-}
-extern inline double
-fixtof (fixed x)
-{
-  return (double) x / 65536.0;
-}
-extern inline fixed
-fixdiv (fixed x, fixed y)
-{
-  if (y == 0)
-    {
-      *allegro_errno = 34;
-      return (x < 0) ? -0x7FFFFFFF : 0x7FFFFFFF;
-    }
-  else
-    return ftofix (fixtof (x) / fixtof (y));
-}
-extern inline fixed
-itofix (int x)
-{
-  return x << 16;
-}
+/* When compiled with -pedantic, this program will cause an ICE when the
+   constant propagator tries to set the value of *str to UNDEFINED.
+   
+   This happens because *str is erroneously considered as a store alias.
+   The aliasing code is then making *str an alias leader for its alias set
+   and when the PHI node at the end of the while() is visited the first
+   time, CCP will try to assign it a value of UNDEFINED, but the default
+   value for *str is a constant.  */
+typedef	unsigned int size_t;
+size_t strlength (const char * const);
+char foo();
 
-int
-foo (int n)
+static const char * const str = "mingo";
+
+bar()
 {
-  return fixtoi (fixdiv (itofix (512), itofix (n)));
+  size_t c;
+  char *x;
+
+  c = strlength (str);
+  while (c < 10)
+    {
+      if (c > 5)
+	*x = foo ();
+      if (*x < 'a')
+	break;
+    }
+
+  return *x == '3';
 }

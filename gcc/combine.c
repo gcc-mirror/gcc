@@ -6661,17 +6661,15 @@ get_pos_from_mask (unsigned HOST_WIDE_INT m, unsigned HOST_WIDE_INT *plen)
 {
   /* Get the bit number of the first 1 bit from the right, -1 if none.  */
   int pos = exact_log2 (m & -m);
-  int len;
+  int len = 0;
 
-  if (pos < 0)
-    return -1;
-
-  /* Now shift off the low-order zero bits and see if we have a power of
-     two minus 1.  */
-  len = exact_log2 ((m >> pos) + 1);
+  if (pos >= 0)
+    /* Now shift off the low-order zero bits and see if we have a
+       power of two minus 1.  */
+    len = exact_log2 ((m >> pos) + 1);
 
   if (len <= 0)
-    return -1;
+    pos = -1;
 
   *plen = len;
   return pos;

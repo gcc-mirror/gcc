@@ -3842,7 +3842,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 			|| any_type_dependent_arguments_p (args)))
 		  {
 		    postfix_expression
-		      = build_min_nt (CALL_EXPR, postfix_expression, args);
+		      = build_min_nt (CALL_EXPR, postfix_expression,
+				      args, NULL_TREE);
 		    break;
 		  }
 
@@ -5473,14 +5474,14 @@ cp_parser_statement (cp_parser* parser, bool in_statement_expr_p)
 {
   tree statement;
   cp_token *token;
-  int statement_line_number;
+  location_t statement_locus;
 
   /* There is no statement yet.  */
   statement = NULL_TREE;
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
-  /* Remember the line number of the first token in the statement.  */
-  statement_line_number = token->location.line;
+  /* Remember the location of the first token in the statement.  */
+  statement_locus = token->location;
   /* If this is a keyword, then that will often determine what kind of
      statement we have.  */
   if (token->type == CPP_KEYWORD)
@@ -5556,7 +5557,10 @@ cp_parser_statement (cp_parser* parser, bool in_statement_expr_p)
 
   /* Set the line number for the statement.  */
   if (statement && STATEMENT_CODE_P (TREE_CODE (statement)))
-    STMT_LINENO (statement) = statement_line_number;
+    {
+      SET_EXPR_LOCUS (statement, NULL);
+      annotate_with_locus (statement, statement_locus);
+    }
 }
 
 /* Parse a labeled-statement.
@@ -9867,10 +9871,8 @@ cp_parser_asm_definition (cp_parser* parser)
   /* Create the ASM_STMT.  */
   if (at_function_scope_p ())
     {
-      asm_stmt =
-	finish_asm_stmt (volatile_p
-			 ? ridpointers[(int) RID_VOLATILE] : NULL_TREE,
-			 string, outputs, inputs, clobbers);
+      asm_stmt = finish_asm_stmt (volatile_p, string, outputs,
+				  inputs, clobbers);
       /* If the extended syntax was not used, mark the ASM_STMT.  */
       if (!extended_p)
 	ASM_INPUT_P (asm_stmt) = 1;
@@ -11787,7 +11789,7 @@ cp_parser_class_specifier (cp_parser* parser)
 {
   cp_token *token;
   tree type;
-  tree attributes;
+  tree attributes = NULL_TREE;
   int has_trailing_semicolon;
   bool nested_name_specifier_p;
   unsigned saved_num_template_parameter_lists;

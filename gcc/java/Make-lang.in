@@ -105,7 +105,7 @@ JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \
   java/zextract.o java/jcf-io.o java/win32-host.o java/jcf-parse.o java/mangle.o \
   java/mangle_name.o java/builtins.o java/resource.o \
   java/jcf-write.o java/buffer.o java/check-init.o java/jcf-depend.o \
-  java/jcf-path.o java/xref.o java/boehm.o java/java-tree-inline.o mkdeps.o
+  java/jcf-path.o java/xref.o java/boehm.o java/java-gimplify.o mkdeps.o
 
 GCJH_OBJS = java/gjavah.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
   java/win32-host.o java/zextract.o version.o mkdeps.o errors.o ggc-none.o \
@@ -333,6 +333,9 @@ java/xref.o: java/xref.c java/xref.h $(CONFIG_H) $(JAVA_TREE_H) toplev.h \
   $(SYSTEM_H) coretypes.h $(TM_H)
 java/zextract.o: java/zextract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   java/zipfile.h
+java/java-gimplify.o: java/java-gimplify.c $(CONFIG_H) $(SYSTEM_H) \
+  coretypes.h $(TM_H) $(JAVA_TREE_H) tree-simple.h toplev.h
+
 java/parse-scan.o: java/parse-scan.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(JAVA_LEX_C) java/parse.h java/lex.h input.h
 java/parse.o: java/parse.c java/jcf-reader.c $(CONFIG_H) $(SYSTEM_H) \

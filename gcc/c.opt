@@ -469,10 +469,6 @@ fdollars-in-identifiers
 C ObjC C++ ObjC++
 Permit '$' as an identifier character
 
-fdump-
-C ObjC C++ ObjC++ Joined RejectNegative
--fdump-<type>	Dump various compiler internals to a file
-
 felide-constructors
 C++ ObjC++
 

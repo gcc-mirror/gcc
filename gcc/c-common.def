@@ -79,7 +79,7 @@ DEFTREECODE (GOTO_STMT, "goto_stmt", 'e', 1)
 DEFTREECODE (LABEL_STMT, "label_stmt", 'e', 1)
 
 /* Used to represent an inline assembly statement.  */
-DEFTREECODE (ASM_STMT, "asm_stmt", 'e', 5)
+DEFTREECODE (ASM_STMT, "asm_stmt", 'e', 4)
 
 /* A SCOPE_STMT marks the beginning or end of a scope.  If
    SCOPE_BEGIN_P holds, then this is the start of a scope.  If
@@ -88,10 +88,6 @@ DEFTREECODE (ASM_STMT, "asm_stmt", 'e', 5)
    this scope.  The SCOPE_STMT_BLOCK is the BLOCK containing the
    variables declared in this scope.  */
 DEFTREECODE (SCOPE_STMT, "scope_stmt", 'e', 1)
-
-/* A FILE_STMT marks the spot where a function changes files.  It has no
-   other semantics.  FILE_STMT_FILENAME gives the name.  */
-DEFTREECODE (FILE_STMT, "file_stmt", 'e', 1)
 
 /* Used to represent a CASE_LABEL. The operands are CASE_LOW and
    CASE_HIGH, respectively. If CASE_LOW is NULL_TREE, the label is a

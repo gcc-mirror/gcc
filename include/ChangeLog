@@ -8,9 +8,9 @@
 	* hashtab.h (struct htab): Add size_prime_index.
 
 2004-04-13  Jeff Law  <law@redhat.com>
-
-        * hashtab.h (htab_remove_elt_with_hash): Prototype new function.
-
+ 
+	* hashtab.h (htab_remove_elt_with_hash): Prototype new function.
+ 
 2004-03-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* hashtab.h, splay-tree.h: Use new shorter form of GTY markers.

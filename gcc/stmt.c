@@ -385,15 +385,13 @@ struct stmt_status GTY(())
 #define goto_fixup_chain (cfun->stmt->x_goto_fixup_chain)
 
 /* Nonzero if we are using EH to handle cleanups.  */
-static int using_eh_for_cleanups_p = 0;
+int using_eh_for_cleanups_p = 0;
 
 static int n_occurrences (int, const char *);
 static bool decl_conflicts_with_clobbers_p (tree, const HARD_REG_SET);
 static void expand_goto_internal (tree, rtx, rtx);
 static int expand_fixup (tree, rtx, rtx);
-static rtx expand_nl_handler_label (rtx, rtx);
 static void expand_nl_goto_receiver (void);
-static void expand_nl_goto_receivers (struct nesting *);
 static void fixup_gotos (struct nesting *, rtx, tree, rtx, int);
 static bool check_operand_nalternatives (tree, tree);
 static bool check_unique_operand_names (tree, tree);
@@ -470,7 +468,12 @@ label_rtx (tree label)
     abort ();
 
   if (!DECL_RTL_SET_P (label))
-    SET_DECL_RTL (label, gen_label_rtx ());
+    {
+      rtx r = gen_label_rtx ();
+      SET_DECL_RTL (label, r);
+      if (FORCED_LABEL (label) || DECL_NONLOCAL (label))
+	LABEL_PRESERVE_P (r) = 1;
+    }
 
   return DECL_RTL (label);
 }
@@ -487,8 +490,7 @@ force_label_rtx (tree label)
   if (!function)
     abort ();
 
-  if (function != current_function_decl
-      && function != inline_function_decl)
+  if (function != current_function_decl)
     p = find_function_data (function);
   else
     p = cfun;
@@ -555,11 +557,26 @@ void
 expand_label (tree label)
 {
   struct label_chain *p;
+  rtx label_r = label_rtx (label);
 
   do_pending_stack_adjust ();
-  emit_label (label_rtx (label));
+  emit_label (label_r);
   if (DECL_NAME (label))
     LABEL_NAME (DECL_RTL (label)) = IDENTIFIER_POINTER (DECL_NAME (label));
+
+  if (DECL_NONLOCAL (label))
+    {
+      expand_nl_goto_receiver ();
+      nonlocal_goto_handler_labels
+	= gen_rtx_EXPR_LIST (VOIDmode, label_r,
+			     nonlocal_goto_handler_labels);
+    }
+
+  if (FORCED_LABEL (label))
+    forced_labels = gen_rtx_EXPR_LIST (VOIDmode, label_r, forced_labels);
+      
+  if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
+    maybe_set_first_label_num (label_r);
 
   if (stack_block_stack != 0)
     {
@@ -570,26 +587,6 @@ expand_label (tree label)
     }
 }
 
-/* Declare that LABEL (a LABEL_DECL) may be used for nonlocal gotos
-   from nested functions.  */
-
-void
-declare_nonlocal_label (tree label)
-{
-  rtx slot = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
-
-  nonlocal_labels = tree_cons (NULL_TREE, label, nonlocal_labels);
-  LABEL_PRESERVE_P (label_rtx (label)) = 1;
-  if (nonlocal_goto_handler_slots == 0)
-    {
-      emit_stack_save (SAVE_NONLOCAL,
-		       &nonlocal_goto_stack_level,
-		       PREV_INSN (tail_recursion_reentry));
-    }
-  nonlocal_goto_handler_slots
-    = gen_rtx_EXPR_LIST (VOIDmode, slot, nonlocal_goto_handler_slots);
-}
-
 /* Generate RTL code for a `goto' statement with target label LABEL.
    LABEL should be a LABEL_DECL tree node that was or will later be
    defined with `expand_label'.  */
@@ -597,91 +594,15 @@ declare_nonlocal_label (tree label)
 void
 expand_goto (tree label)
 {
-  tree context;
-
-  /* Check for a nonlocal goto to a containing function.  */
-  context = decl_function_context (label);
+#ifdef ENABLE_CHECKING
+  /* Check for a nonlocal goto to a containing function.  Should have
+     gotten translated to __builtin_nonlocal_goto.  */
+  tree context = decl_function_context (label);
   if (context != 0 && context != current_function_decl)
-    {
-      struct function *p = find_function_data (context);
-      rtx label_ref = gen_rtx_LABEL_REF (Pmode, label_rtx (label));
-      rtx handler_slot, static_chain, save_area, insn;
-      tree link;
-
-      /* Find the corresponding handler slot for this label.  */
-      handler_slot = p->x_nonlocal_goto_handler_slots;
-      for (link = p->x_nonlocal_labels; TREE_VALUE (link) != label;
-	   link = TREE_CHAIN (link))
-	handler_slot = XEXP (handler_slot, 1);
-      handler_slot = XEXP (handler_slot, 0);
-
-      p->has_nonlocal_label = 1;
-      current_function_has_nonlocal_goto = 1;
-      LABEL_REF_NONLOCAL_P (label_ref) = 1;
-
-      /* Copy the rtl for the slots so that they won't be shared in
-	 case the virtual stack vars register gets instantiated differently
-	 in the parent than in the child.  */
-
-      static_chain = copy_to_reg (lookup_static_chain (label));
-
-      /* Get addr of containing function's current nonlocal goto handler,
-	 which will do any cleanups and then jump to the label.  */
-      handler_slot = copy_to_reg (replace_rtx (copy_rtx (handler_slot),
-					       virtual_stack_vars_rtx,
-					       static_chain));
-
-      /* Get addr of containing function's nonlocal save area.  */
-      save_area = p->x_nonlocal_goto_stack_level;
-      if (save_area)
-	save_area = replace_rtx (copy_rtx (save_area),
-				 virtual_stack_vars_rtx, static_chain);
-
-#if HAVE_nonlocal_goto
-      if (HAVE_nonlocal_goto)
-	emit_insn (gen_nonlocal_goto (static_chain, handler_slot,
-				      save_area, label_ref));
-      else
+    abort ();
 #endif
-	{
-	  emit_insn (gen_rtx_CLOBBER (VOIDmode,
-				      gen_rtx_MEM (BLKmode,
-						   gen_rtx_SCRATCH (VOIDmode))));
-	  emit_insn (gen_rtx_CLOBBER (VOIDmode,
-				      gen_rtx_MEM (BLKmode,
-						   hard_frame_pointer_rtx)));
 
-	  /* Restore frame pointer for containing function.
-	     This sets the actual hard register used for the frame pointer
-	     to the location of the function's incoming static chain info.
-	     The non-local goto handler will then adjust it to contain the
-	     proper value and reload the argument pointer, if needed.  */
-	  emit_move_insn (hard_frame_pointer_rtx, static_chain);
-	  emit_stack_restore (SAVE_NONLOCAL, save_area, NULL_RTX);
-
-	  /* USE of hard_frame_pointer_rtx added for consistency;
-	     not clear if really needed.  */
-	  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
-	  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
-	  emit_indirect_jump (handler_slot);
-	}
-
-      /* Search backwards to the jump insn and mark it as a
-	 non-local goto.  */
-      for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
-	{
-	  if (GET_CODE (insn) == JUMP_INSN)
-	    {
-	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO,
-						  const0_rtx, REG_NOTES (insn));
-	      break;
-	    }
-	  else if (GET_CODE (insn) == CALL_INSN)
-	      break;
-	}
-    }
-  else
-    expand_goto_internal (label, label_rtx (label), NULL_RTX);
+  expand_goto_internal (label, label_rtx (label), NULL_RTX);
 }
 
 /* Generate RTL code for a `goto' statement with target label BODY.
@@ -1251,9 +1172,6 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	break;
       }
 
-  if (*is_inout && !*allows_reg)
-    warning ("read-write constraint does not allow a register");
-
   return true;
 }
 
@@ -1391,6 +1309,33 @@ parse_input_constraint (const char **constraint_p, int input_num,
     warning ("matching constraint does not allow a register");
 
   return true;
+}
+
+/* INPUT is one of the input operands from EXPR, an ASM_EXPR.  Returns true
+   if it is an operand which must be passed in memory (i.e. an "m"
+   constraint), false otherwise.  */
+
+bool
+asm_op_is_mem_input (tree input, tree expr)
+{
+  const char *constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (input)));
+  tree outputs = ASM_OUTPUTS (expr);
+  int noutputs = list_length (outputs);
+  const char **constraints
+    = (const char **) alloca ((noutputs) * sizeof (const char *));
+  int i = 0;
+  bool allows_mem, allows_reg;
+  tree t;
+
+  /* Collect output constraints.  */
+  for (t = outputs; t ; t = TREE_CHAIN (t), i++)
+    constraints[i] = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
+
+  /* We pass 0 for input_num, ninputs and ninout; they are only used for
+     error checking which will be done at expand time.  */
+  parse_input_constraint (&constraint, 0, 0, noutputs, 0, constraints,
+			  &allows_mem, &allows_reg);
+  return (!allows_reg && allows_mem);
 }
 
 /* Check for overlap between registers marked in CLOBBERED_REGS and
@@ -1889,6 +1834,52 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   free_temp_slots ();
 }
 
+void
+expand_asm_expr (tree exp)
+{
+  int noutputs, i;
+  tree outputs, tail;
+  tree *o;
+
+  if (ASM_INPUT_P (exp))
+    {
+      expand_asm (ASM_STRING (exp), ASM_VOLATILE_P (exp));
+      return;
+    }
+
+  outputs = ASM_OUTPUTS (exp);
+  noutputs = list_length (outputs);
+  /* o[I] is the place that output number I should be written.  */
+  o = (tree *) alloca (noutputs * sizeof (tree));
+
+  /* Record the contents of OUTPUTS before it is modified.  */
+  for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
+    o[i] = TREE_VALUE (tail);
+
+  /* Generate the ASM_OPERANDS insn; store into the TREE_VALUEs of
+     OUTPUTS some trees for where the values were actually stored.  */
+  expand_asm_operands (ASM_STRING (exp), outputs, ASM_INPUTS (exp),
+		       ASM_CLOBBERS (exp), ASM_VOLATILE_P (exp),
+		       input_location);
+
+  /* Copy all the intermediate outputs into the specified outputs.  */
+  for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
+    {
+      if (o[i] != TREE_VALUE (tail))
+	{
+	  expand_assignment (o[i], TREE_VALUE (tail), 0);
+	  free_temp_slots ();
+
+	  /* Restore the original value so that it's correct the next
+	     time we expand this function.  */
+	  TREE_VALUE (tail) = o[i];
+	}
+    }
+
+  /* Those MODIFY_EXPRs could do autoincrements.  */
+  emit_queue ();
+}
+
 /* A subroutine of expand_asm_operands.  Check that all operands have
    the same number of alternatives.  Return true if so.  */
 
@@ -2150,7 +2141,7 @@ expand_expr_stmt_value (tree exp, int want_value, int maybe_last)
     {
       if (TREE_SIDE_EFFECTS (exp))
 	warn_if_unused_value (exp);
-      else if (!VOID_TYPE_P (TREE_TYPE (exp)))
+      else if (!VOID_TYPE_P (TREE_TYPE (exp)) && !TREE_NO_WARNING (exp))
 	warning ("%Hstatement with no effect", &emit_locus);
     }
 
@@ -2242,7 +2233,7 @@ warn_if_unused_value (tree exp)
       return warn_if_unused_value (TREE_OPERAND (exp, 1));
 
     case SAVE_EXPR:
-      return warn_if_unused_value (TREE_OPERAND (exp, 1));
+      return warn_if_unused_value (TREE_OPERAND (exp, 0));
 
     case TRUTH_ORIF_EXPR:
     case TRUTH_ANDIF_EXPR:
@@ -2250,7 +2241,7 @@ warn_if_unused_value (tree exp)
       return warn_if_unused_value (TREE_OPERAND (exp, 1));
 
     case COMPOUND_EXPR:
-      if (TREE_NO_UNUSED_WARNING (exp))
+      if (TREE_NO_WARNING (exp))
 	return 0;
       if (warn_if_unused_value (TREE_OPERAND (exp, 0)))
 	return 1;
@@ -2263,7 +2254,7 @@ warn_if_unused_value (tree exp)
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       /* Don't warn about conversions not explicit in the user's program.  */
-      if (TREE_NO_UNUSED_WARNING (exp))
+      if (TREE_NO_WARNING (exp))
 	return 0;
       /* Assignment to a cast usually results in a cast of a modify.
 	 Don't complain about that.  There can be an arbitrary number of
@@ -2508,7 +2499,6 @@ expand_start_loop (int exit_flag)
 
   do_pending_stack_adjust ();
   emit_queue ();
-  emit_note (NOTE_INSN_LOOP_BEG);
   emit_label (thisloop->data.loop.start_label);
 
   return thisloop;
@@ -2558,7 +2548,6 @@ void
 expand_loop_continue_here (void)
 {
   do_pending_stack_adjust ();
-  emit_note (NOTE_INSN_LOOP_CONT);
   emit_label (loop_stack->data.loop.continue_label);
 }
 
@@ -2573,10 +2562,6 @@ expand_end_loop (void)
   int eh_regions, debug_blocks;
   bool empty_test;
 
-  /* Mark the continue-point at the top of the loop if none elsewhere.  */
-  if (start_label == loop_stack->data.loop.continue_label)
-    emit_note_before (NOTE_INSN_LOOP_CONT, start_label);
-
   do_pending_stack_adjust ();
 
   /* If the loop starts with a loop exit, roll that to the end where
@@ -2584,7 +2569,6 @@ expand_end_loop (void)
 
      If the loop presently looks like this (in pseudo-C):
 
-	LOOP_BEG
 	start_label:
 	  if (test) goto end_label;
 	LOOP_END_TOP_COND
@@ -2594,7 +2578,6 @@ expand_end_loop (void)
 
      transform it to look like:
 
-	LOOP_BEG
 	  goto start_label;
 	top_label:
 	  body;
@@ -2623,16 +2606,12 @@ expand_end_loop (void)
 	if (NOTE_LINE_NUMBER (etc_note) == NOTE_INSN_LOOP_END_TOP_COND)
 	  break;
 
-	/* We must not walk into a nested loop.  */
-	else if (NOTE_LINE_NUMBER (etc_note) == NOTE_INSN_LOOP_BEG)
-	  {
-	    etc_note = NULL_RTX;
-	    break;
-	  }
+	if (NOTE_LINE_NUMBER (etc_note) == NOTE_INSN_LOOP_BEG)
+	  abort ();
 
 	/* At the same time, scan for EH region notes, as we don't want
 	   to scrog region nesting.  This shouldn't happen, but...  */
-	else if (NOTE_LINE_NUMBER (etc_note) == NOTE_INSN_EH_REGION_BEG)
+	if (NOTE_LINE_NUMBER (etc_note) == NOTE_INSN_EH_REGION_BEG)
 	  eh_regions++;
 	else if (NOTE_LINE_NUMBER (etc_note) == NOTE_INSN_EH_REGION_END)
 	  {
@@ -2672,12 +2651,6 @@ expand_end_loop (void)
       rtx top_label = gen_label_rtx ();
       rtx start_move = start_label;
 
-      /* If the start label is preceded by a NOTE_INSN_LOOP_CONT note,
-	 then we want to move this note also.  */
-      if (GET_CODE (PREV_INSN (start_move)) == NOTE
-	  && NOTE_LINE_NUMBER (PREV_INSN (start_move)) == NOTE_INSN_LOOP_CONT)
-	start_move = PREV_INSN (start_move);
-
       emit_label_before (top_label, start_move);
 
       /* Actually move the insns.  If the debug scopes are nested, we
@@ -2709,8 +2682,10 @@ expand_end_loop (void)
       start_label = top_label;
     }
 
+  if (etc_note)
+    delete_insn (etc_note);
+
   emit_jump (start_label);
-  emit_note (NOTE_INSN_LOOP_END);
   emit_label (loop_stack->data.loop.end_label);
 
   POPSTACK (loop_stack);
@@ -3077,11 +3052,8 @@ expand_return (tree retval)
   else if ((TREE_CODE (retval) == MODIFY_EXPR || TREE_CODE (retval) == INIT_EXPR)
 	   && TREE_CODE (TREE_OPERAND (retval, 0)) == RESULT_DECL)
     retval_rhs = TREE_OPERAND (retval, 1);
-  else if (VOID_TYPE_P (TREE_TYPE (retval)))
-    /* Recognize tail-recursive call to void function.  */
-    retval_rhs = retval;
   else
-    retval_rhs = NULL_TREE;
+    retval_rhs = retval;
 
   last_insn = get_last_insn ();
 
@@ -3316,8 +3288,8 @@ tail_recursion_args (tree actuals, tree formals)
 
   for (a = actuals, f = formals, i = 0; a && f; a = TREE_CHAIN (a), f = TREE_CHAIN (f), i++)
     {
-      if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (a)))
-	  != TYPE_MAIN_VARIANT (TREE_TYPE (f)))
+      if (!lang_hooks.types_compatible_p (TREE_TYPE (TREE_VALUE (a)), 
+	      TREE_TYPE (f)))
 	return 0;
       if (GET_CODE (DECL_RTL (f)) != REG || DECL_MODE (f) == BLKmode)
 	return 0;
@@ -3409,7 +3381,7 @@ expand_start_bindings_and_block (int flags, tree block)
     abort ();
 
   /* Create a note to mark the beginning of the block.  */
-  if (block_flag)
+  if (block_flag && !cfun->dont_emit_block_notes)
     {
       note = emit_note (NOTE_INSN_BLOCK_BEG);
       NOTE_BLOCK (note) = block;
@@ -3539,35 +3511,12 @@ current_nesting_level (void)
   return cfun ? block_stack : 0;
 }
 
-/* Emit a handler label for a nonlocal goto handler.
-   Also emit code to store the handler label in SLOT before BEFORE_INSN.  */
-
-static rtx
-expand_nl_handler_label (rtx slot, rtx before_insn)
-{
-  rtx insns;
-  rtx handler_label = gen_label_rtx ();
-
-  /* Don't let cleanup_cfg delete the handler.  */
-  LABEL_PRESERVE_P (handler_label) = 1;
-
-  start_sequence ();
-  emit_move_insn (slot, gen_rtx_LABEL_REF (Pmode, handler_label));
-  insns = get_insns ();
-  end_sequence ();
-  emit_insn_before (insns, before_insn);
-
-  emit_label (handler_label);
-
-  return handler_label;
-}
-
 /* Emit code to restore vital registers at the beginning of a nonlocal goto
    handler.  */
 static void
 expand_nl_goto_receiver (void)
 {
-    /* Clobber the FP when we get here, so we have to make sure it's
+  /* Clobber the FP when we get here, so we have to make sure it's
      marked as used by this function.  */
   emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
 
@@ -3632,82 +3581,6 @@ expand_nl_goto_receiver (void)
   emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
 }
 
-/* Make handlers for nonlocal gotos taking place in the function calls in
-   block THISBLOCK.  */
-
-static void
-expand_nl_goto_receivers (struct nesting *thisblock)
-{
-  tree link;
-  rtx afterward = gen_label_rtx ();
-  rtx insns, slot;
-  rtx label_list;
-  int any_invalid;
-
-  /* Record the handler address in the stack slot for that purpose,
-     during this block, saving and restoring the outer value.  */
-  if (thisblock->next != 0)
-    for (slot = nonlocal_goto_handler_slots; slot; slot = XEXP (slot, 1))
-      {
-	rtx save_receiver = gen_reg_rtx (Pmode);
-	emit_move_insn (XEXP (slot, 0), save_receiver);
-
-	start_sequence ();
-	emit_move_insn (save_receiver, XEXP (slot, 0));
-	insns = get_insns ();
-	end_sequence ();
-	emit_insn_before (insns, thisblock->data.block.first_insn);
-      }
-
-  /* Jump around the handlers; they run only when specially invoked.  */
-  emit_jump (afterward);
-
-  /* Make a separate handler for each label.  */
-  link = nonlocal_labels;
-  slot = nonlocal_goto_handler_slots;
-  label_list = NULL_RTX;
-  for (; link; link = TREE_CHAIN (link), slot = XEXP (slot, 1))
-    /* Skip any labels we shouldn't be able to jump to from here,
-       we generate one special handler for all of them below which just calls
-       abort.  */
-    if (! DECL_TOO_LATE (TREE_VALUE (link)))
-      {
-	rtx lab;
-	lab = expand_nl_handler_label (XEXP (slot, 0),
-				       thisblock->data.block.first_insn);
-	label_list = gen_rtx_EXPR_LIST (VOIDmode, lab, label_list);
-
-	expand_nl_goto_receiver ();
-
-	/* Jump to the "real" nonlocal label.  */
-	expand_goto (TREE_VALUE (link));
-      }
-
-  /* A second pass over all nonlocal labels; this time we handle those
-     we should not be able to jump to at this point.  */
-  link = nonlocal_labels;
-  slot = nonlocal_goto_handler_slots;
-  any_invalid = 0;
-  for (; link; link = TREE_CHAIN (link), slot = XEXP (slot, 1))
-    if (DECL_TOO_LATE (TREE_VALUE (link)))
-      {
-	rtx lab;
-	lab = expand_nl_handler_label (XEXP (slot, 0),
-				       thisblock->data.block.first_insn);
-	label_list = gen_rtx_EXPR_LIST (VOIDmode, lab, label_list);
-	any_invalid = 1;
-      }
-
-  if (any_invalid)
-    {
-      expand_nl_goto_receiver ();
-      expand_builtin_trap ();
-    }
-
-  nonlocal_goto_handler_labels = label_list;
-  emit_label (afterward);
-}
-
 /* Warn about any unused VARS (which may contain nodes other than
    VAR_DECLs, but such nodes are ignored).  The nodes are connected
    via the TREE_CHAIN field.  */
@@ -3754,18 +3627,6 @@ expand_end_bindings (tree vars, int mark_ends, int dont_jump_in)
       do_pending_stack_adjust ();
       emit_label (thisblock->exit_label);
     }
-
-  /* If necessary, make handlers for nonlocal gotos taking
-     place in the function calls in this block.  */
-  if (function_call_count != 0 && nonlocal_labels
-      /* Make handler for outermost block
-	 if there were any nonlocal gotos to this function.  */
-      && (thisblock->next == 0 ? current_function_has_nonlocal_label
-	  /* Make handler for inner block if it has something
-	     special to do when you jump out of it.  */
-	  : (thisblock->data.block.cleanups != 0
-	     || thisblock->data.block.stack_level != 0)))
-    expand_nl_goto_receivers (thisblock);
 
   /* Don't allow jumping into a block that has a stack level.
      Cleanups are allowed, though.  */
@@ -3827,9 +3688,8 @@ expand_end_bindings (tree vars, int mark_ends, int dont_jump_in)
 	{
 	  emit_stack_restore (thisblock->next ? SAVE_BLOCK : SAVE_FUNCTION,
 			      thisblock->data.block.stack_level, NULL_RTX);
-	  if (nonlocal_goto_handler_slots != 0)
-	    emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level,
-			     NULL_RTX);
+	  if (cfun->nonlocal_goto_save_area)
+	    update_nonlocal_goto_save_area ();
 	}
 
       /* Any gotos out of this block must also do these things.
@@ -3846,7 +3706,7 @@ expand_end_bindings (tree vars, int mark_ends, int dont_jump_in)
      We do this now, after running cleanups on the variables
      just going out of scope, so they are in scope for their cleanups.  */
 
-  if (mark_ends)
+  if (mark_ends && !cfun->dont_emit_block_notes)
     {
       rtx note = emit_note (NOTE_INSN_BLOCK_END);
       NOTE_BLOCK (note) = NOTE_BLOCK (thisblock->data.block.first_insn);
@@ -4039,6 +3899,66 @@ expand_decl (tree decl)
 #endif
       DECL_USER_ALIGN (decl) = 0;
     }
+}
+
+/* Emit code to allocate T_SIZE bytes of dynamic stack space for ALLOC.  */
+void
+expand_stack_alloc (tree alloc, tree t_size)
+{
+  rtx address, dest, size;
+  tree var, type;
+
+  if (TREE_CODE (alloc) != ADDR_EXPR)
+    abort ();
+  var = TREE_OPERAND (alloc, 0);
+  if (TREE_CODE (var) != VAR_DECL)
+    abort ();
+
+  type = TREE_TYPE (var);
+
+  /* In function-at-a-time mode, variable_size doesn't expand this,
+     so do it now.  */
+  if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
+    expand_expr (TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
+		 const0_rtx, VOIDmode, 0);
+
+  /* Compute the variable's size, in bytes.  */
+  size = expand_expr (t_size, NULL_RTX, VOIDmode, 0);
+  free_temp_slots ();
+
+  /* Allocate space on the stack for the variable.  */
+  address = XEXP (DECL_RTL (var), 0);
+  dest = allocate_dynamic_stack_space (size, address, TYPE_ALIGN (type));
+  if (dest != address)
+    emit_move_insn (address, dest);
+
+  /* Indicate the alignment we actually gave this variable.  */
+#ifdef STACK_BOUNDARY
+  DECL_ALIGN (var) = STACK_BOUNDARY;
+#else
+  DECL_ALIGN (var) = BIGGEST_ALIGNMENT;
+#endif
+  DECL_USER_ALIGN (var) = 0;
+}
+
+/* Emit code to save the current value of stack.  */
+rtx
+expand_stack_save (void)
+{
+  rtx ret = NULL_RTX;
+
+  do_pending_stack_adjust ();
+  emit_stack_save (SAVE_BLOCK, &ret, NULL_RTX);
+  return ret;
+}
+
+/* Emit code to restore the current value of stack.  */
+void
+expand_stack_restore (tree var)
+{
+  rtx sa = DECL_RTL (var);
+
+  emit_stack_restore (SAVE_BLOCK, sa, NULL_RTX);
 }
 
 /* Emit code to perform the initialization of a declaration DECL.  */
@@ -4364,6 +4284,23 @@ last_cleanup_this_contour (void)
   return block_stack->data.block.cleanups;
 }
 
+
+/* Return nonzero if any containing block has a stack level or
+   cleanups.  */
+
+int
+containing_blocks_have_cleanups_or_stack_level (void)
+{
+  struct nesting *block;
+
+  for (block = block_stack; block; block = block->next)
+    if (block->data.block.stack_level != 0
+        || block->data.block.cleanups != 0)
+      return 1;
+
+  return 0;
+}
+
 /* Return 1 if there are any pending cleanups at this point.
    Check the current contour as well as contours that enclose
    the current contour.  */
@@ -4526,7 +4463,7 @@ pushcase (tree value, tree (*converter) (tree, tree), tree label,
 	  || ! int_fits_type_p (value, index_type)))
     return 3;
 
-  return add_case_node (value, value, label, duplicate);
+  return add_case_node (value, value, label, duplicate, false);
 }
 
 /* Like pushcase but this case applies to all values between VALUE1 and
@@ -4592,7 +4529,7 @@ pushcase_range (tree value1, tree value2, tree (*converter) (tree, tree),
       || ! int_fits_type_p (value2, index_type))
     return 3;
 
-  return add_case_node (value1, value2, label, duplicate);
+  return add_case_node (value1, value2, label, duplicate, false);
 }
 
 /* Do the actual insertion of a case label for pushcase and pushcase_range
@@ -4600,7 +4537,8 @@ pushcase_range (tree value1, tree value2, tree (*converter) (tree, tree),
    slowdown for large switch statements.  */
 
 int
-add_case_node (tree low, tree high, tree label, tree *duplicate)
+add_case_node (tree low, tree high, tree label, tree *duplicate,
+	       bool dont_expand_label)
 {
   struct case_node *p, **q, *r;
 
@@ -4619,7 +4557,8 @@ add_case_node (tree low, tree high, tree label, tree *duplicate)
 	  return 2;
 	}
       case_stack->data.case_stmt.default_label = label;
-      expand_label (label);
+      if (!dont_expand_label)
+        expand_label (label);
       return 0;
     }
 
@@ -4658,7 +4597,8 @@ add_case_node (tree low, tree high, tree label, tree *duplicate)
     r->high = high;
 
   r->code_label = label;
-  expand_label (label);
+  if (!dont_expand_label)
+    expand_label (label);
 
   *q = r;
   r->parent = p;
@@ -4834,326 +4774,6 @@ add_case_node (tree low, tree high, tree label, tree *duplicate)
 
   return 0;
 }
-
-/* Returns the number of possible values of TYPE.
-   Returns -1 if the number is unknown, variable, or if the number does not
-   fit in a HOST_WIDE_INT.
-   Sets *SPARSENESS to 2 if TYPE is an ENUMERAL_TYPE whose values
-   do not increase monotonically (there may be duplicates);
-   to 1 if the values increase monotonically, but not always by 1;
-   otherwise sets it to 0.  */
-
-HOST_WIDE_INT
-all_cases_count (tree type, int *sparseness)
-{
-  tree t;
-  HOST_WIDE_INT count, minval, lastval;
-
-  *sparseness = 0;
-
-  switch (TREE_CODE (type))
-    {
-    case BOOLEAN_TYPE:
-      count = 2;
-      break;
-
-    case CHAR_TYPE:
-      count = 1 << BITS_PER_UNIT;
-      break;
-
-    default:
-    case INTEGER_TYPE:
-      if (TYPE_MAX_VALUE (type) != 0
-	  && 0 != (t = fold (build (MINUS_EXPR, type, TYPE_MAX_VALUE (type),
-				    TYPE_MIN_VALUE (type))))
-	  && 0 != (t = fold (build (PLUS_EXPR, type, t,
-				    convert (type, integer_zero_node))))
-	  && host_integerp (t, 1))
-	count = tree_low_cst (t, 1);
-      else
-	return -1;
-      break;
-
-    case ENUMERAL_TYPE:
-      /* Don't waste time with enumeral types with huge values.  */
-      if (! host_integerp (TYPE_MIN_VALUE (type), 0)
-	  || TYPE_MAX_VALUE (type) == 0
-	  || ! host_integerp (TYPE_MAX_VALUE (type), 0))
-	return -1;
-
-      lastval = minval = tree_low_cst (TYPE_MIN_VALUE (type), 0);
-      count = 0;
-
-      for (t = TYPE_VALUES (type); t != NULL_TREE; t = TREE_CHAIN (t))
-	{
-	  HOST_WIDE_INT thisval = tree_low_cst (TREE_VALUE (t), 0);
-
-	  if (*sparseness == 2 || thisval <= lastval)
-	    *sparseness = 2;
-	  else if (thisval != minval + count)
-	    *sparseness = 1;
-
-	  lastval = thisval;
-	  count++;
-	}
-    }
-
-  return count;
-}
-
-#define BITARRAY_TEST(ARRAY, INDEX) \
-  ((ARRAY)[(unsigned) (INDEX) / HOST_BITS_PER_CHAR]\
-			  & (1 << ((unsigned) (INDEX) % HOST_BITS_PER_CHAR)))
-#define BITARRAY_SET(ARRAY, INDEX) \
-  ((ARRAY)[(unsigned) (INDEX) / HOST_BITS_PER_CHAR]\
-			  |= 1 << ((unsigned) (INDEX) % HOST_BITS_PER_CHAR))
-
-/* Set the elements of the bitstring CASES_SEEN (which has length COUNT),
-   with the case values we have seen, assuming the case expression
-   has the given TYPE.
-   SPARSENESS is as determined by all_cases_count.
-
-   The time needed is proportional to COUNT, unless
-   SPARSENESS is 2, in which case quadratic time is needed.  */
-
-void
-mark_seen_cases (tree type, unsigned char *cases_seen, HOST_WIDE_INT count,
-		 int sparseness)
-{
-  tree next_node_to_try = NULL_TREE;
-  HOST_WIDE_INT next_node_offset = 0;
-
-  struct case_node *n, *root = case_stack->data.case_stmt.case_list;
-  tree val = make_node (INTEGER_CST);
-
-  TREE_TYPE (val) = type;
-  if (! root)
-    /* Do nothing.  */
-    ;
-  else if (sparseness == 2)
-    {
-      tree t;
-      unsigned HOST_WIDE_INT xlo;
-
-      /* This less efficient loop is only needed to handle
-	 duplicate case values (multiple enum constants
-	 with the same value).  */
-      TREE_TYPE (val) = TREE_TYPE (root->low);
-      for (t = TYPE_VALUES (type), xlo = 0; t != NULL_TREE;
-	   t = TREE_CHAIN (t), xlo++)
-	{
-	  TREE_INT_CST_LOW (val) = TREE_INT_CST_LOW (TREE_VALUE (t));
-	  TREE_INT_CST_HIGH (val) = TREE_INT_CST_HIGH (TREE_VALUE (t));
-	  n = root;
-	  do
-	    {
-	      /* Keep going past elements distinctly greater than VAL.  */
-	      if (tree_int_cst_lt (val, n->low))
-		n = n->left;
-
-	      /* or distinctly less than VAL.  */
-	      else if (tree_int_cst_lt (n->high, val))
-		n = n->right;
-
-	      else
-		{
-		  /* We have found a matching range.  */
-		  BITARRAY_SET (cases_seen, xlo);
-		  break;
-		}
-	    }
-	  while (n);
-	}
-    }
-  else
-    {
-      if (root->left)
-	case_stack->data.case_stmt.case_list = root = case_tree2list (root, 0);
-
-      for (n = root; n; n = n->right)
-	{
-	  TREE_INT_CST_LOW (val) = TREE_INT_CST_LOW (n->low);
-	  TREE_INT_CST_HIGH (val) = TREE_INT_CST_HIGH (n->low);
-	  while (! tree_int_cst_lt (n->high, val))
-	    {
-	      /* Calculate (into xlo) the "offset" of the integer (val).
-		 The element with lowest value has offset 0, the next smallest
-		 element has offset 1, etc.  */
-
-	      unsigned HOST_WIDE_INT xlo;
-	      HOST_WIDE_INT xhi;
-	      tree t;
-
-	      if (sparseness && TYPE_VALUES (type) != NULL_TREE)
-		{
-		  /* The TYPE_VALUES will be in increasing order, so
-		     starting searching where we last ended.  */
-		  t = next_node_to_try;
-		  xlo = next_node_offset;
-		  xhi = 0;
-		  for (;;)
-		    {
-		      if (t == NULL_TREE)
-			{
-			  t = TYPE_VALUES (type);
-			  xlo = 0;
-			}
-		      if (tree_int_cst_equal (val, TREE_VALUE (t)))
-			{
-			  next_node_to_try = TREE_CHAIN (t);
-			  next_node_offset = xlo + 1;
-			  break;
-			}
-		      xlo++;
-		      t = TREE_CHAIN (t);
-		      if (t == next_node_to_try)
-			{
-			  xlo = -1;
-			  break;
-			}
-		    }
-		}
-	      else
-		{
-		  t = TYPE_MIN_VALUE (type);
-		  if (t)
-		    neg_double (TREE_INT_CST_LOW (t), TREE_INT_CST_HIGH (t),
-				&xlo, &xhi);
-		  else
-		    xlo = xhi = 0;
-		  add_double (xlo, xhi,
-			      TREE_INT_CST_LOW (val), TREE_INT_CST_HIGH (val),
-			      &xlo, &xhi);
-		}
-
-	      if (xhi == 0 && xlo < (unsigned HOST_WIDE_INT) count)
-		BITARRAY_SET (cases_seen, xlo);
-
-	      add_double (TREE_INT_CST_LOW (val), TREE_INT_CST_HIGH (val),
-			  1, 0,
-			  &TREE_INT_CST_LOW (val), &TREE_INT_CST_HIGH (val));
-	    }
-	}
-    }
-}
-
-/* Given a switch statement with an expression that is an enumeration
-   type, warn if any of the enumeration type's literals are not
-   covered by the case expressions of the switch.  Also, warn if there
-   are any extra switch cases that are *not* elements of the
-   enumerated type.
-
-   Historical note:
-
-   At one stage this function would: ``If all enumeration literals
-   were covered by the case expressions, turn one of the expressions
-   into the default expression since it should not be possible to fall
-   through such a switch.''
-
-   That code has since been removed as: ``This optimization is
-   disabled because it causes valid programs to fail.  ANSI C does not
-   guarantee that an expression with enum type will have a value that
-   is the same as one of the enumeration literals.''  */
-
-void
-check_for_full_enumeration_handling (tree type)
-{
-  struct case_node *n;
-  tree chain;
-
-  /* True iff the selector type is a numbered set mode.  */
-  int sparseness = 0;
-
-  /* The number of possible selector values.  */
-  HOST_WIDE_INT size;
-
-  /* For each possible selector value. a one iff it has been matched
-     by a case value alternative.  */
-  unsigned char *cases_seen;
-
-  /* The allocated size of cases_seen, in chars.  */
-  HOST_WIDE_INT bytes_needed;
-
-  size = all_cases_count (type, &sparseness);
-  bytes_needed = (size + HOST_BITS_PER_CHAR) / HOST_BITS_PER_CHAR;
-
-  if (size > 0 && size < 600000
-      /* We deliberately use calloc here, not cmalloc, so that we can suppress
-	 this optimization if we don't have enough memory rather than
-	 aborting, as xmalloc would do.  */
-      && (cases_seen = really_call_calloc (bytes_needed, 1)) != NULL)
-    {
-      HOST_WIDE_INT i;
-      tree v = TYPE_VALUES (type);
-
-      /* The time complexity of this code is normally O(N), where
-	 N being the number of members in the enumerated type.
-	 However, if type is an ENUMERAL_TYPE whose values do not
-	 increase monotonically, O(N*log(N)) time may be needed.  */
-
-      mark_seen_cases (type, cases_seen, size, sparseness);
-
-      for (i = 0; v != NULL_TREE && i < size; i++, v = TREE_CHAIN (v))
-	if (BITARRAY_TEST (cases_seen, i) == 0)
-	  warning ("enumeration value `%s' not handled in switch",
-		   IDENTIFIER_POINTER (TREE_PURPOSE (v)));
-
-      free (cases_seen);
-    }
-
-  /* Now we go the other way around; we warn if there are case
-     expressions that don't correspond to enumerators.  This can
-     occur since C and C++ don't enforce type-checking of
-     assignments to enumeration variables.  */
-
-  if (case_stack->data.case_stmt.case_list
-      && case_stack->data.case_stmt.case_list->left)
-    case_stack->data.case_stmt.case_list
-      = case_tree2list (case_stack->data.case_stmt.case_list, 0);
-  for (n = case_stack->data.case_stmt.case_list; n; n = n->right)
-    {
-      for (chain = TYPE_VALUES (type);
-	   chain && !tree_int_cst_equal (n->low, TREE_VALUE (chain));
-	   chain = TREE_CHAIN (chain))
-	;
-
-      if (!chain)
-	{
-	  if (TYPE_NAME (type) == 0)
-	    warning ("case value `%ld' not in enumerated type",
-		     (long) TREE_INT_CST_LOW (n->low));
-	  else
-	    warning ("case value `%ld' not in enumerated type `%s'",
-		     (long) TREE_INT_CST_LOW (n->low),
-		     IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
-					  == IDENTIFIER_NODE)
-					 ? TYPE_NAME (type)
-					 : DECL_NAME (TYPE_NAME (type))));
-	}
-      if (!tree_int_cst_equal (n->low, n->high))
-	{
-	  for (chain = TYPE_VALUES (type);
-	       chain && !tree_int_cst_equal (n->high, TREE_VALUE (chain));
-	       chain = TREE_CHAIN (chain))
-	    ;
-
-	  if (!chain)
-	    {
-	      if (TYPE_NAME (type) == 0)
-		warning ("case value `%ld' not in enumerated type",
-			 (long) TREE_INT_CST_LOW (n->high));
-	      else
-		warning ("case value `%ld' not in enumerated type `%s'",
-			 (long) TREE_INT_CST_LOW (n->high),
-			 IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
-					      == IDENTIFIER_NODE)
-					     ? TYPE_NAME (type)
-					     : DECL_NAME (TYPE_NAME (type))));
-	    }
-	}
-    }
-}
-
 
 /* Maximum number of case bit tests.  */
 #define MAX_CASE_BIT_TESTS  3
@@ -5357,19 +4977,6 @@ expand_end_case_type (tree orig_index, tree orig_type)
   /* An ERROR_MARK occurs for various reasons including invalid data type.  */
   if (index_type != error_mark_node)
     {
-      /* If the switch expression was an enumerated type, check that
-	 exactly all enumeration literals are covered by the cases.
-	 The check is made when -Wswitch was specified and there is no
-	 default case, or when -Wswitch-enum was specified.  */
-      if (((warn_switch && !thiscase->data.case_stmt.default_label)
-	   || warn_switch_enum)
-	  && TREE_CODE (orig_type) == ENUMERAL_TYPE
-	  && TREE_CODE (index_expr) != INTEGER_CST)
-	check_for_full_enumeration_handling (orig_type);
-
-      if (warn_switch_default && !thiscase->data.case_stmt.default_label)
-	warning ("switch missing default case");
-
       /* If we don't have a default-label, create one here,
 	 after the body of the switch.  */
       if (thiscase->data.case_stmt.default_label == 0)
@@ -5796,6 +5403,7 @@ estimate_case_costs (case_node_ptr node)
 static bool
 same_case_target_p (rtx l1, rtx l2)
 {
+#if 0
   rtx i1, i2;
 
   if (l1 == l2)
@@ -5815,6 +5423,11 @@ same_case_target_p (rtx l1, rtx l2)
     {
       l2 = XEXP (SET_SRC (PATTERN (i2)), 0);
     }
+#endif
+  /* When coming from gimple, we usually won't have emitted either
+     the labels or the body of the switch statement.  The job being
+     done here should be done via jump threading at the tree level.
+     Cases that go the same place should have the same label.  */
   return l1 == l2;
 }
 
@@ -5848,8 +5461,10 @@ group_case_nodes (case_node_ptr head)
 
   while (node)
     {
-      rtx lab = label_rtx (node->code_label);
+      rtx lab;
       case_node_ptr np = node;
+
+      lab = label_rtx (node->code_label);
 
       /* Try to group the successors of NODE with NODE.  */
       while (((np = np->right) != 0)

@@ -34,12 +34,12 @@ struct tree *
 make_something(int a, int b, int c)
 {
     struct tree *rv;
-    struct tree *field;  /* { dg-bogus "field" "uninitialized variable warning" { xfail *-*-* } } */
+    struct tree *field;
 
     rv = malloc (sizeof (struct tree));
     rv->car = 0;
 
-    APPEND(rv, field, INTEGER_T, a);
+    APPEND(rv, field, INTEGER_T, a);  /* { dg-bogus "field" "uninitialized variable warning" { xfail *-*-* } } */
     APPEND(rv, field, PTR_T, b);
     APPEND(rv, field, INTEGER_T, c);
 

@@ -90,14 +90,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       independent of the insn code.
    `in_struct' (ATTR_CURR_SIMPLIFIED_P): This rtx is fully simplified
       for the insn code currently being processed (see optimize_attrs).
-   `integrated' (ATTR_PERMANENT_P): This rtx is permanent and unique
+   `return_val' (ATTR_PERMANENT_P): This rtx is permanent and unique
       (see attr_rtx).
    `volatil' (ATTR_EQ_ATTR_P): During simplify_by_exploding the value of an
       EQ_ATTR rtx is true if !volatil and false if volatil.  */
 
 #define ATTR_IND_SIMPLIFIED_P(RTX) (RTX_FLAG((RTX), unchanging))
 #define ATTR_CURR_SIMPLIFIED_P(RTX) (RTX_FLAG((RTX), in_struct))
-#define ATTR_PERMANENT_P(RTX) (RTX_FLAG((RTX), integrated))
+#define ATTR_PERMANENT_P(RTX) (RTX_FLAG((RTX), return_val))
 #define ATTR_EQ_ATTR_P(RTX) (RTX_FLAG((RTX), volatil))
 
 #if 0

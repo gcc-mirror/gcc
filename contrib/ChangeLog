@@ -1,3 +1,14 @@
+2004-05-13  Diego Novillo  <dnovillo@redhat.com>
+
+	Merge from tree-ssa-20020619-branch.
+
+	* filter_gcc_for_doxygen: New file.
+	* filter_knr2ansi.pl: New file.
+	* filter_params.pl: New file.
+	* tree-ssa.doxy: New file.
+	* contrib/gcc_update (files_and_dependencies): Handle
+	libbanshee and libmudflap.
+
 2004-04-12  Kelley Cook  <kcook@gcc.gnu.org>
             Andreas Jaeger  <aj@suse.de>
 

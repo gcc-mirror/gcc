@@ -1933,9 +1933,6 @@ tree
 make_ptrmem_cst (tree type, tree member)
 {
   tree ptrmem_cst = make_node (PTRMEM_CST);
-  /* If would seem a great convenience if make_node would set
-     TREE_CONSTANT for things of class `c', but it does not.  */
-  TREE_CONSTANT (ptrmem_cst) = 1;
   TREE_TYPE (ptrmem_cst) = type;
   PTRMEM_CST_MEMBER (ptrmem_cst) = member;
   return ptrmem_cst;
@@ -1969,19 +1966,26 @@ cp_walk_subtrees (tree* tp,
                   void* htab)
 {
   enum tree_code code = TREE_CODE (*tp);
+  location_t save_locus;
   tree result;
   
 #define WALK_SUBTREE(NODE)				\
   do							\
     {							\
       result = walk_tree (&(NODE), func, data, htab);	\
-      if (result)					\
-	return result;					\
+      if (result) goto out;				\
     }							\
   while (0)
 
+  /* Set input_location here so we get the right instantiation context
+     if we call instantiate_decl from inlinable_function_p.  */
+  save_locus = input_location;
+  if (EXPR_LOCUS (*tp))
+    input_location = *EXPR_LOCUS (*tp);
+
   /* Not one of the easy cases.  We must explicitly go through the
      children.  */
+  result = NULL_TREE;
   switch (code)
     {
     case DEFAULT_ARG:
@@ -2019,11 +2023,14 @@ cp_walk_subtrees (tree* tp,
       break;
 
     default:
-      break;
+      input_location = save_locus;
+      return c_walk_subtrees (tp, walk_subtrees_p, func, data, htab);
     }
 
   /* We didn't find what we were looking for.  */
-  return NULL_TREE;
+ out:
+  input_location = save_locus;
+  return result;
 
 #undef WALK_SUBTREE
 }
@@ -2132,11 +2139,10 @@ tree
 cp_copy_res_decl_for_inlining (tree result, 
                                tree fn, 
                                tree caller, 
-                               void* decl_map_,
+                               void* decl_map_ ATTRIBUTE_UNUSED,
                                int* need_decl, 
                                tree return_slot_addr)
 {
-  splay_tree decl_map = (splay_tree)decl_map_;
   tree var;
 
   /* If FN returns an aggregate then the caller will always pass the
@@ -2147,7 +2153,7 @@ cp_copy_res_decl_for_inlining (tree result,
      references to the RESULT into references to the target.  */
 
   /* We should have an explicit return slot iff the return type is
-     TREE_ADDRESSABLE.  See simplify_aggr_init_expr.  */
+     TREE_ADDRESSABLE.  See gimplify_aggr_init_expr.  */
   if (TREE_ADDRESSABLE (TREE_TYPE (result))
       != (return_slot_addr != NULL_TREE))
     abort ();
@@ -2163,34 +2169,6 @@ cp_copy_res_decl_for_inlining (tree result,
   /* Otherwise, make an appropriate copy.  */
   else
     var = copy_decl_for_inlining (result, fn, caller);
-
-  if (DECL_SAVED_FUNCTION_DATA (fn))
-    {
-      tree nrv = DECL_SAVED_FUNCTION_DATA (fn)->x_return_value;
-      if (nrv)
-	{
-	  /* We have a named return value; copy the name and source
-	     position so we can get reasonable debugging information, and
-	     register the return variable as its equivalent.  */
-	  if (TREE_CODE (var) == VAR_DECL
-	      /* But not if we're initializing a variable from the
-		 enclosing function which already has its own name.  */
-	      && DECL_NAME (var) == NULL_TREE)
-	    {
-	      DECL_NAME (var) = DECL_NAME (nrv);
-	      DECL_SOURCE_LOCATION (var) = DECL_SOURCE_LOCATION (nrv);
-	      DECL_ABSTRACT_ORIGIN (var) = DECL_ORIGIN (nrv);
-	      /* Don't lose initialization info.  */
-	      DECL_INITIAL (var) = DECL_INITIAL (nrv);
-	      /* Don't forget that it needs to go in the stack.  */
-	      TREE_ADDRESSABLE (var) = TREE_ADDRESSABLE (nrv);
-	    }
-
-	  splay_tree_insert (decl_map,
-			     (splay_tree_key) nrv,
-			     (splay_tree_value) var);
-	}
-    }
 
   return var;
 }
@@ -2214,6 +2192,7 @@ cp_update_decl_after_saving (tree fn,
 void
 init_tree (void)
 {
+  lang_gimplify_stmt = cp_gimplify_stmt;
   list_hash_table = htab_create_ggc (31, list_hash, list_hash_eq, NULL);
 }
 
@@ -2431,7 +2410,7 @@ stabilize_expr (tree exp, tree* initp)
 
   if (!TREE_SIDE_EFFECTS (exp))
     {
-      init_expr = void_zero_node;
+      init_expr = NULL_TREE;
     }
   else if (!real_lvalue_p (exp)
 	   || !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (exp)))
@@ -2450,6 +2429,80 @@ stabilize_expr (tree exp, tree* initp)
   *initp = init_expr;
   return exp;
 }
+
+/* Like stabilize_expr, but for a call whose args we want to
+   pre-evaluate.  */
+
+void
+stabilize_call (tree call, tree *initp)
+{
+  tree inits = NULL_TREE;
+  tree t;
+
+  if (call == error_mark_node)
+    return;
+
+  if (TREE_CODE (call) != CALL_EXPR
+      && TREE_CODE (call) != AGGR_INIT_EXPR)
+    abort ();
+
+  for (t = TREE_OPERAND (call, 1); t; t = TREE_CHAIN (t))
+    if (TREE_SIDE_EFFECTS (TREE_VALUE (t)))
+      {
+	tree init;
+	TREE_VALUE (t) = stabilize_expr (TREE_VALUE (t), &init);
+	if (!init)
+	  /* Nothing.  */;
+	else if (inits)
+	  inits = build (COMPOUND_EXPR, void_type_node, inits, init);
+	else
+	  inits = init;
+      }
+
+  *initp = inits;
+}
+
+/* Like stabilize_expr, but for an initialization.  If we are initializing
+   an object of class type, we don't want to introduce an extra temporary,
+   so we look past the TARGET_EXPR and stabilize the arguments of the call
+   instead.  */
+
+bool
+stabilize_init (tree init, tree *initp)
+{
+  tree t = init;
+
+  if (t == error_mark_node)
+    return true;
+
+  if (TREE_CODE (t) == INIT_EXPR
+      && TREE_CODE (TREE_OPERAND (t, 1)) != TARGET_EXPR)
+    TREE_OPERAND (t, 1) = stabilize_expr (TREE_OPERAND (t, 1), initp);
+  else
+    {
+      if (TREE_CODE (t) == INIT_EXPR)
+	t = TREE_OPERAND (t, 1);
+      if (TREE_CODE (t) == TARGET_EXPR)
+	t = TARGET_EXPR_INITIAL (t);
+      if (TREE_CODE (t) == CONSTRUCTOR
+	  && CONSTRUCTOR_ELTS (t) == NULL_TREE)
+	{
+	  /* Default-initialization.  */
+	  *initp = NULL_TREE;
+	  return true;
+	}
+
+      /* If the initializer is a COND_EXPR, we can't preevaluate
+	 anything.  */
+      if (TREE_CODE (t) == COND_EXPR)
+	return false;
+
+      stabilize_call (t, initp);
+    }
+
+  return true;
+}
+
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 /* Complain that some language-specific thing hanging off a tree

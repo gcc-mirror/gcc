@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "rtl.h"
 #include "basic-block.h"
+#include "tree-flow.h"
 #include "timevar.h"
 #include "toplev.h"
 
@@ -44,6 +45,22 @@ void
 cfg_layout_rtl_register_cfg_hooks (void)
 {
   cfg_hooks = &cfg_layout_rtl_cfg_hooks;
+}
+
+/* Initialization of functions specific to the tree IR.  */
+
+void
+tree_register_cfg_hooks (void)
+{
+  cfg_hooks = &tree_cfg_hooks;
+}
+
+/* Returns current ir type (rtl = 0, trees = 1).  */
+
+int
+ir_type (void)
+{
+  return cfg_hooks == &tree_cfg_hooks ? 1 : 0;
 }
 
 /* Verify the CFG consistency.
@@ -246,10 +263,10 @@ dump_bb (basic_block bb, FILE *outf, int indent)
    be equivalent to E in the case of duplicate edges being removed) or NULL
    if edge is not easily redirectable for whatever reason.  */
 
-bool
+edge
 redirect_edge_and_branch (edge e, basic_block dest)
 {
-  bool ret;
+  edge ret;
 
   if (!cfg_hooks->redirect_edge_and_branch)
     internal_error ("%s does not support redirect_edge_and_branch.",
@@ -286,7 +303,6 @@ edge
 split_block (basic_block bb, void *i)
 {
   basic_block new_bb;
-  edge e;
 
   if (!cfg_hooks->split_block)
     internal_error ("%s does not support split_block.", cfg_hooks->name);
@@ -305,11 +321,7 @@ split_block (basic_block bb, void *i)
       set_immediate_dominator (CDI_DOMINATORS, new_bb, bb);
     }
 
-  e = make_edge (bb, new_bb, EDGE_FALLTHRU);
-  e->probability = REG_BR_PROB_BASE;
-  e->count = bb->count;
-
-  return e;
+  return make_edge (bb, new_bb, EDGE_FALLTHRU);
 }
 
 /* Splits block BB just after labels.  The newly created edge is returned.  */
@@ -464,6 +476,24 @@ can_merge_blocks_p (basic_block bb1, basic_block bb2)
   return ret;
 }
 
+void
+predict_edge (edge e, enum br_predictor predictor, int probability)
+{
+  if (!cfg_hooks->predict_edge)
+    internal_error ("%s does not support predict_edge.", cfg_hooks->name);
+
+  cfg_hooks->predict_edge (e, predictor, probability);
+}
+
+bool
+predicted_by_p (basic_block bb, enum br_predictor predictor)
+{
+  if (!cfg_hooks->predict_edge)
+    internal_error ("%s does not support predicted_by_p.", cfg_hooks->name);
+
+  return cfg_hooks->predicted_by_p (bb, predictor);
+}
+
 /* Merges basic block B into basic block A.  */
 
 void
@@ -604,4 +634,141 @@ tidy_fallthru_edges (void)
 	  && !find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX))
 	tidy_fallthru_edge (s);
     }
+}
+
+/* Returns true if we can duplicate basic block BB.  */
+
+bool
+can_duplicate_block_p (basic_block bb)
+{
+  edge e;
+
+  if (!cfg_hooks->can_duplicate_block_p)
+    internal_error ("%s does not support can_duplicate_block_p.",
+		    cfg_hooks->name);
+
+  if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR)
+    return false;
+
+  /* Duplicating fallthru block to exit would require adding a jump
+     and splitting the real last BB.  */
+  for (e = bb->succ; e; e = e->succ_next)
+    if (e->dest == EXIT_BLOCK_PTR && e->flags & EDGE_FALLTHRU)
+       return false;
+
+  return cfg_hooks->can_duplicate_block_p (bb);
+}
+
+/* Duplicates basic block BB and redirects edge E to it.  Returns the
+   new basic block.  */
+
+basic_block
+duplicate_block (basic_block bb, edge e)
+{
+  edge s, n;
+  basic_block new_bb;
+  gcov_type new_count = e ? e->count : 0;
+
+  if (!cfg_hooks->duplicate_block)
+    internal_error ("%s does not support duplicate_block.",
+		    cfg_hooks->name);
+
+  if (bb->count < new_count)
+    new_count = bb->count;
+  if (!bb->pred)
+    abort ();
+#ifdef ENABLE_CHECKING
+  if (!can_duplicate_block_p (bb))
+    abort ();
+#endif
+
+  new_bb = cfg_hooks->duplicate_block (bb);
+
+  new_bb->loop_depth = bb->loop_depth;
+  new_bb->flags = bb->flags;
+  for (s = bb->succ; s; s = s->succ_next)
+    {
+      /* Since we are creating edges from a new block to successors
+	 of another block (which therefore are known to be disjoint), there
+	 is no need to actually check for duplicated edges.  */
+      n = unchecked_make_edge (new_bb, s->dest, s->flags);
+      n->probability = s->probability;
+      if (e && bb->count)
+	{
+	  /* Take care for overflows!  */
+	  n->count = s->count * (new_count * 10000 / bb->count) / 10000;
+	  s->count -= n->count;
+	}
+      else
+	n->count = s->count;
+      n->aux = s->aux;
+    }
+
+  if (e)
+    {
+      new_bb->count = new_count;
+      bb->count -= new_count;
+
+      new_bb->frequency = EDGE_FREQUENCY (e);
+      bb->frequency -= EDGE_FREQUENCY (e);
+
+      redirect_edge_and_branch_force (e, new_bb);
+
+      if (bb->count < 0)
+	bb->count = 0;
+      if (bb->frequency < 0)
+	bb->frequency = 0;
+    }
+  else
+    {
+      new_bb->count = bb->count;
+      new_bb->frequency = bb->frequency;
+    }
+
+  new_bb->rbi->original = bb;
+  bb->rbi->copy = new_bb;
+
+  return new_bb;
+}
+
+/* Return 1 if BB ends with a call, possibly followed by some
+   instructions that must stay with the call, 0 otherwise.  */
+
+bool 
+block_ends_with_call_p (basic_block bb)
+{
+  if (!cfg_hooks->block_ends_with_call_p)
+    internal_error ("%s does not support block_ends_with_call_p", cfg_hooks->name);
+
+  return (cfg_hooks->block_ends_with_call_p) (bb);
+}
+
+/* Return 1 if BB ends with a conditional branch, 0 otherwise.  */
+
+bool 
+block_ends_with_condjump_p (basic_block bb)
+{
+  if (!cfg_hooks->block_ends_with_condjump_p)
+    internal_error ("%s does not support block_ends_with_condjump_p",
+		    cfg_hooks->name);
+
+  return (cfg_hooks->block_ends_with_condjump_p) (bb);
+}
+
+/* Add fake edges to the function exit for any non constant and non noreturn
+   calls, volatile inline assembly in the bitmap of blocks specified by
+   BLOCKS or to the whole CFG if BLOCKS is zero.  Return the number of blocks
+   that were split.
+
+   The goal is to expose cases in which entering a basic block does not imply
+   that all subsequent instructions must be executed.  */
+
+int
+flow_call_edges_add (sbitmap blocks)
+{
+  if (!cfg_hooks->flow_call_edges_add)
+    internal_error ("%s does not support flow_call_edges_add", 
+		    cfg_hooks->name);
+
+  return (cfg_hooks->flow_call_edges_add) (blocks);
 }

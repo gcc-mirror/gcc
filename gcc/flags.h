@@ -720,6 +720,53 @@ extern int flag_detailed_statistics;
 /* Nonzero means enable synchronous exceptions for non-call instructions.  */
 extern int flag_non_call_exceptions;
 
+/* Nonzero means enable mudflap bounds-checking transforms;
+   >1 means also to include multithreading locks.  */
+extern int flag_mudflap;
+extern int flag_mudflap_threads;
+extern int flag_mudflap_ignore_reads;
+
+/* Enable SSA-PRE on trees.  */
+extern int flag_tree_pre;
+
+/* Enable SSA-CCP on trees.  */
+extern int flag_tree_ccp;
+
+/* Enable SSA-DCE on trees.  */
+extern int flag_tree_dce;
+
+/* Enable SSA->normal pass memory location coalescing.  */
+extern int flag_tree_combine_temps;
+
+/* Enable SSA->normal pass expression replacement.  */
+extern int flag_tree_ter;
+
+/* Enable SSA_>normal live range splitting.  */
+extern int flag_tree_live_range_split;
+
+/* Enable dominator optimizations.  */
+extern int flag_tree_dom;
+
+/* Enable loop header copying on tree-ssa.  */
+extern int flag_tree_ch;
+
+/* Enable dead store and redundant load elimination */
+extern int flag_tree_dse;
+
+/* Enable scalar replacement of aggregates.  */
+extern int flag_tree_sra;
+
+/* Enable copy rename optimization.  */
+extern int flag_tree_copyrename;
+
+/* Enable points-to analysis on trees.  */
+enum pta_type
+  {
+    PTA_NONE,
+    PTA_ANDERSEN
+  };
+extern enum pta_type flag_tree_points_to;
+
 /* Nonzero means put zero initialized data in the bss section.  */
 extern int flag_zero_initialized_in_bss;
 

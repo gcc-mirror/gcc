@@ -407,16 +407,6 @@ cgraph_mark_reachable_node (struct cgraph_node *node)
 
       node->next_needed = cgraph_nodes_queue;
       cgraph_nodes_queue = node;
-
-      /* At the moment frontend automatically emits all nested functions.  */
-      if (node->nested)
-	{
-	  struct cgraph_node *node2;
-
-	  for (node2 = node->nested; node2; node2 = node2->next_nested)
-	    if (!node2->reachable)
-	      cgraph_mark_reachable_node (node2);
-	}
     }
 }
 

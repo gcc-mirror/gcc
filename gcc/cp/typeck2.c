@@ -997,8 +997,13 @@ process_init_constructor (tree type, tree init, tree* elts)
     complete_array_type (type, result, /*do_default=*/0);
   if (init)
     TREE_HAS_CONSTRUCTOR (result) = TREE_HAS_CONSTRUCTOR (init);
-  if (allconstant) TREE_CONSTANT (result) = 1;
-  if (allconstant && allsimple) TREE_STATIC (result) = 1;
+  if (allconstant)
+    {
+      TREE_CONSTANT (result) = 1;
+      TREE_INVARIANT (result) = 1;
+      if (allsimple)
+	TREE_STATIC (result) = 1;
+    }
   return result;
 }
 

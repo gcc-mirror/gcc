@@ -722,7 +722,6 @@ computation performed by this instruction, i.e., one that
 This flag is required for exception handling support on targets with RTL
 prologues.
 
-@findex RTX_INTEGRATED_P
 @cindex @code{insn} and @samp{/i}
 @cindex @code{call_insn} and @samp{/i}
 @cindex @code{jump_insn} and @samp{/i}
@@ -732,8 +731,6 @@ prologues.
 @cindex @code{const} and @samp{/i}
 @cindex @code{note} and @samp{/i}
 @cindex @code{integrated}, in @code{insn}, @code{call_insn}, @code{jump_insn}, @code{barrier}, @code{code_label}, @code{insn_list}, @code{const}, and @code{note}
-@item RTX_INTEGRATED_P (@var{x})
-Nonzero in an @code{insn}, @code{call_insn}, @code{jump_insn}, @code{barrier},
 @code{code_label}, @code{insn_list}, @code{const}, or @code{note} if it
 resulted from an in-line function call.
 Stored in the @code{integrated} field and printed as @samp{/i}.

@@ -37,10 +37,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       STMT_EXPR_NO_SCOPE (in STMT_EXPR)
    1: C_DECLARED_LABEL_FLAG (in LABEL_DECL)
       STMT_IS_FULL_EXPR_P (in _STMT)
-   2: STMT_LINENO_FOR_FN_P (in _STMT)
+   2: unused
    3: SCOPE_NO_CLEANUPS_P (in SCOPE_STMT)
       COMPOUND_STMT_BODY_BLOCK (in COMPOUND_STMT)
-      STMT_EXPR_WARN_UNUSED_RESULT (in STMT_EXPR)
    4: SCOPE_PARTIAL_P (in SCOPE_STMT)
 */
 
@@ -321,8 +320,7 @@ struct c_language_function GTY(()) {
 
 /* Language-specific hooks.  */
 
-extern void (*lang_expand_stmt) (tree);
-extern void (*lang_expand_decl_stmt) (tree);
+extern int (*lang_gimplify_stmt) (tree *, tree *);
 extern void (*lang_expand_function_end) (void);
 
 /* Callback that determines if it's ok for a function to have no
@@ -342,7 +340,6 @@ extern void finish_stmt_tree (tree *);
 
 extern tree walk_stmt_tree (tree *, walk_tree_fn, void *);
 extern void prep_stmt (tree);
-extern void expand_stmt (tree);
 extern tree c_begin_if_stmt (void);
 extern tree c_begin_while_stmt (void);
 extern void c_finish_while_stmt_cond (tree, tree);
@@ -999,22 +996,9 @@ extern void finish_file	(void);
 #define FOR_EXPR(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 2)
 #define FOR_BODY(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 3)
 
-/* SWITCH_STMT accessors. These give access to the condition, body and
-   original condition type (before any compiler conversions)
-   of the switch statement, respectively.  */
-#define SWITCH_COND(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
-#define SWITCH_BODY(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 1)
 #define SWITCH_TYPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 2)
-
-/* CASE_LABEL accessors. These give access to the high and low values
-   of a case label, respectively.  */
-#define CASE_LOW(NODE)          TREE_OPERAND (CASE_LABEL_CHECK (NODE), 0)
-#define CASE_HIGH(NODE)         TREE_OPERAND (CASE_LABEL_CHECK (NODE), 1)
 #define CASE_LABEL_DECL(NODE)   TREE_OPERAND (CASE_LABEL_CHECK (NODE), 2)
 
-/* GOTO_STMT accessor. This gives access to the label associated with
-   a goto statement.  */
-#define GOTO_DESTINATION(NODE)  TREE_OPERAND (GOTO_STMT_CHECK (NODE), 0)
 /* True for goto created artificially by the compiler.  */
 #define GOTO_FAKE_P(NODE)	(TREE_LANG_FLAG_0 (GOTO_STMT_CHECK (NODE)))
 
@@ -1023,16 +1007,6 @@ extern void finish_file	(void);
    first statement in the list. Succeeding nodes can be accessed by
    calling TREE_CHAIN on a node in the list.  */
 #define COMPOUND_BODY(NODE)     TREE_OPERAND (COMPOUND_STMT_CHECK (NODE), 0)
-
-/* ASM_STMT accessors. ASM_STRING returns a STRING_CST for the
-   instruction (e.g., "mov x, y"). ASM_OUTPUTS, ASM_INPUTS, and
-   ASM_CLOBBERS represent the outputs, inputs, and clobbers for the
-   statement.  */
-#define ASM_CV_QUAL(NODE)       TREE_OPERAND (ASM_STMT_CHECK (NODE), 0)
-#define ASM_STRING(NODE)        TREE_OPERAND (ASM_STMT_CHECK (NODE), 1)
-#define ASM_OUTPUTS(NODE)       TREE_OPERAND (ASM_STMT_CHECK (NODE), 2)
-#define ASM_INPUTS(NODE)        TREE_OPERAND (ASM_STMT_CHECK (NODE), 3)
-#define ASM_CLOBBERS(NODE)      TREE_OPERAND (ASM_STMT_CHECK (NODE), 4)
 
 /* DECL_STMT accessor. This gives access to the DECL associated with
    the given declaration statement.  */
@@ -1044,11 +1018,6 @@ extern void finish_file	(void);
 /* Nonzero if this statement-expression does not have an associated scope.  */
 #define STMT_EXPR_NO_SCOPE(NODE) \
    TREE_LANG_FLAG_0 (STMT_EXPR_CHECK (NODE))
-
-/* Nonzero if this statement-expression should cause warning if its result
-   is not used.  */
-#define STMT_EXPR_WARN_UNUSED_RESULT(NODE) \
-   TREE_LANG_FLAG_3 (STMT_EXPR_CHECK (NODE))
 
 /* LABEL_STMT accessor. This gives access to the label associated with
    the given label statement.  */
@@ -1097,10 +1066,6 @@ extern void finish_file	(void);
 #define SCOPE_PARTIAL_P(NODE) \
   (TREE_LANG_FLAG_4 (SCOPE_STMT_CHECK (NODE)))
 
-/* Nonzero for an ASM_STMT if the assembly statement is volatile.  */
-#define ASM_VOLATILE_P(NODE)			\
-  (ASM_CV_QUAL (ASM_STMT_CHECK (NODE)) != NULL_TREE)
-
 /* The VAR_DECL to clean up in a CLEANUP_STMT.  */
 #define CLEANUP_DECL(NODE) \
   TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 0)
@@ -1108,30 +1073,9 @@ extern void finish_file	(void);
 #define CLEANUP_EXPR(NODE) \
   TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 1)
 
-/* The filename we are changing to as of this FILE_STMT.  */
-#define FILE_STMT_FILENAME_NODE(NODE) \
-  (TREE_OPERAND (FILE_STMT_CHECK (NODE), 0))
-#define FILE_STMT_FILENAME(NODE) \
-  (IDENTIFIER_POINTER (FILE_STMT_FILENAME_NODE (NODE)))
-
-/* The line-number at which a statement began.  But if
-   STMT_LINENO_FOR_FN_P does holds, then this macro gives the
-   line number for the end of the current function instead.  */
-#define STMT_LINENO(NODE)			\
-  (TREE_COMPLEXITY ((NODE)))
-
-/* If nonzero, the STMT_LINENO for NODE is the line at which the
-   function ended.  */
-#define STMT_LINENO_FOR_FN_P(NODE)		\
-  (TREE_LANG_FLAG_2 ((NODE)))
-
 /* Nonzero if we want the new ISO rules for pushing a new scope for `for'
    initialization variables.  */
 #define NEW_FOR_SCOPE_P(NODE) (TREE_LANG_FLAG_0 (NODE))
-
-/* Nonzero if we want to create an ASM_INPUT instead of an
-   ASM_OPERAND with no operands.  */
-#define ASM_INPUT_P(NODE) (TREE_LANG_FLAG_0 (NODE))
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 
@@ -1149,7 +1093,7 @@ enum c_tree_code {
    WHILE_STMT,		DO_STMT,	RETURN_STMT,	\
    BREAK_STMT,		CONTINUE_STMT,	SCOPE_STMT,	\
    SWITCH_STMT,		GOTO_STMT,	LABEL_STMT,	\
-   ASM_STMT,		FILE_STMT,	CASE_LABEL
+   ASM_STMT,		CASE_LABEL
 
 /* TRUE if a code represents a statement.  The front end init
    langhook should take care of initialization of this array.  */
@@ -1165,24 +1109,6 @@ extern bool statement_code_p[MAX_TREE_CODES];
       statement_code_p[STMT_CODES[i]] = true;			\
   } while (0)
 
-extern void genrtl_do_pushlevel (void);
-extern void genrtl_goto_stmt (tree);
-extern void genrtl_expr_stmt (tree);
-extern void genrtl_expr_stmt_value (tree, int, int);
-extern void genrtl_decl_stmt (tree);
-extern void genrtl_if_stmt (tree);
-extern void genrtl_while_stmt (tree);
-extern void genrtl_do_stmt (tree);
-extern void genrtl_return_stmt (tree);
-extern void genrtl_for_stmt (tree);
-extern void genrtl_break_stmt (void);
-extern void genrtl_continue_stmt (void);
-extern void genrtl_scope_stmt (tree);
-extern void genrtl_switch_stmt (tree);
-extern void genrtl_case_label (tree);
-extern void genrtl_compound_stmt (tree);
-extern void genrtl_asm_stmt (tree, tree, tree, tree, tree, int);
-extern void genrtl_cleanup_stmt (tree);
 extern int stmts_are_full_exprs_p (void);
 extern int anon_aggr_type_p (tree);
 
@@ -1198,13 +1124,8 @@ extern int anon_aggr_type_p (tree);
 #define CLEAR_DECL_C_BIT_FIELD(NODE) \
   (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) = 0)
 
-/* In a VAR_DECL, nonzero if the decl is a register variable with
-   an explicit asm specification.  */
-#define DECL_C_HARD_REGISTER(DECL)  DECL_LANG_FLAG_4 (VAR_DECL_CHECK (DECL))
-
 extern void emit_local_var (tree);
 extern void make_rtl_for_local_static (tree);
-extern tree expand_cond (tree);
 extern tree c_expand_return (tree);
 extern tree do_case (tree, tree);
 extern tree build_stmt (enum tree_code, ...);
@@ -1249,6 +1170,8 @@ extern int case_compare (splay_tree_key, splay_tree_key);
 
 extern tree c_add_case_label (splay_tree, tree, tree, tree);
 
+extern void c_do_switch_warnings (splay_tree, tree);
+
 extern tree build_function_call (tree, tree);
 
 extern tree finish_label_address_expr (tree);
@@ -1289,6 +1212,17 @@ extern void dump_time_statistics (void);
 
 extern bool c_dump_tree (void *, tree);
 
+extern int c_gimplify_expr (tree *, tree *, tree *);
+extern tree c_walk_subtrees (tree*, int*, walk_tree_fn, void*, void*);
+extern int c_tree_chain_matters_p (tree);
+
+extern void c_warn_unused_result (tree *);
+
+/* In c-simplify.c  */
+extern void c_genericize (tree);
+extern int c_gimplify_stmt (tree *);
+extern tree stmt_expr_last_stmt (tree);
+
 extern void pch_init (void);
 extern int c_common_valid_pch (cpp_reader *pfile, const char *name, int fd);
 extern void c_common_read_pch (cpp_reader *pfile, const char *name, int fd,
@@ -1299,7 +1233,6 @@ extern void builtin_define_with_value (const char *, const char *, int);
 extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const struct line_map *);
 extern int c_estimate_num_insns (tree decl);
-extern bool c_decl_uninit (tree t);
 extern void c_parse_error (const char *, enum cpp_ttype, tree);
 
 /* The following have been moved here from c-tree.h, since they're needed

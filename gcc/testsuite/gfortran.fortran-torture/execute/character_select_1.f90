@@ -1,0 +1,12 @@
+CHARACTER(LEN=6) :: C = "STEVEN"
+
+SELECT CASE (C)
+   CASE ("AAA":"EEE")
+      CALL abort
+   CASE ("R":"T")
+      CONTINUE
+   CASE DEFAULT
+      CALL abort
+END SELECT
+END
+
