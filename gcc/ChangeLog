@@ -1,5 +1,8 @@
 Mon Apr 24 17:34:18 2000  Mumit Khan  <khan@xraylith.wisc.edu>
 
+	* gcc.c (load_specs): New static function.
+	(read_specs): Use it.
+
 	* gcc.c (lookup_compiler): Make multiple passes for case
 	insensitive filesystems.
 

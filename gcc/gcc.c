@@ -1451,27 +1451,21 @@ store_arg (arg, delete_always, delete_failure)
     record_temp_file (arg, delete_always, delete_failure);
 }
 
-/* Read compilation specs from a file named FILENAME,
-   replacing the default ones.
+/* Load specs from a file name named FILENAME, replacing occurances of
+   various different types of line-endings, \r\n, \n\r and just \r, with 
+   a single \n.  */
 
-   A suffix which starts with `*' is a definition for
-   one of the machine-specific sub-specs.  The "suffix" should be
-   *asm, *cc1, *cpp, *link, *startfile, *signed_char, etc.
-   The corresponding spec is stored in asm_spec, etc.,
-   rather than in the `compilers' vector.
-
-   Anything invalid in the file is a fatal error.  */
-
-static void
-read_specs (filename, main_p)
+static char*
+load_specs (filename)
      const char *filename;
-     int main_p;
 {
   int desc;
   int readlen;
   struct stat statbuf;
   char *buffer;
-  register char *p;
+  char *buffer_p;
+  char *specs;
+  char *specs_p;
 
   if (verbose_flag)
     notice ("Reading specs from %s\n", filename);
@@ -1490,6 +1484,51 @@ read_specs (filename, main_p)
     pfatal_with_name (filename);
   buffer[readlen] = 0;
   close (desc);
+
+  specs = xmalloc (readlen + 1);
+  specs_p = specs;
+  for (buffer_p = buffer; buffer_p && *buffer_p; buffer_p++)
+    {
+      int skip = 0;
+      char c = *buffer_p;
+      if (c == '\r')
+        {
+	  if (buffer_p > buffer && *(buffer_p-1) == '\n')	/* \n\r */
+	    skip = 1;
+	  else if (*(buffer_p+1) == '\n')			/* \r\n */
+	    skip = 1;
+	  else							/* \r */
+	    c = '\n';
+	}
+      if (! skip)
+	*specs_p++ = c;
+    }
+  *specs_p = '\0';
+
+  free (buffer);
+  return (specs);
+}
+
+/* Read compilation specs from a file named FILENAME,
+   replacing the default ones.
+
+   A suffix which starts with `*' is a definition for
+   one of the machine-specific sub-specs.  The "suffix" should be
+   *asm, *cc1, *cpp, *link, *startfile, *signed_char, etc.
+   The corresponding spec is stored in asm_spec, etc.,
+   rather than in the `compilers' vector.
+
+   Anything invalid in the file is a fatal error.  */
+
+static void
+read_specs (filename, main_p)
+     const char *filename;
+     int main_p;
+{
+  char *buffer;
+  register char *p;
+
+  buffer = load_specs (filename);
 
   /* Scan BUFFER for specs, putting them in the vector.  */
   p = buffer;
