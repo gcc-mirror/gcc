@@ -1,5 +1,5 @@
 /* Attributes.java -- Represents attribute name/value pairs from a Manifest
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -285,6 +285,7 @@ public class Attributes implements Cloneable, Map
       // all other characters must be alphanums, '-' or '_'
       for (int i = 1; i < chars.length; i++)
 	{
+	  c = chars[i];
 	  if (!((c >= 'a' && c <= 'z') ||
 		(c >= 'A' && c <= 'Z') ||
 		(c >= '0' && c <= '9') || (c == '-') || (c == '_')))
