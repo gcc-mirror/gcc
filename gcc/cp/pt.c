@@ -8417,16 +8417,18 @@ unify (tparms, targs, parm, arg, strict)
 
       if (TREE_CODE (parm) == BOUND_TEMPLATE_TEMPLATE_PARM)
 	{
-	  /* ARG must be constructed from a template class.  */
-	  if (TREE_CODE (arg) != RECORD_TYPE || !CLASSTYPE_TEMPLATE_INFO (arg))
+	  /* ARG must be constructed from a template class or a template
+	     template parameter.  */
+	  if (TREE_CODE (arg) != BOUND_TEMPLATE_TEMPLATE_PARM
+	      && (TREE_CODE (arg) != RECORD_TYPE || !CLASSTYPE_TEMPLATE_INFO (arg)))
 	    return 1;
 
 	  {
 	    tree parmtmpl = TYPE_TI_TEMPLATE (parm);
 	    tree parmvec = TYPE_TI_ARGS (parm);
-	    tree argvec = CLASSTYPE_TI_ARGS (arg);
+	    tree argvec = TYPE_TI_ARGS (arg);
 	    tree argtmplvec
-	      = DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (arg));
+	      = DECL_INNERMOST_TEMPLATE_PARMS (TYPE_TI_TEMPLATE (arg));
 	    int i;
 
 	    /* The parameter and argument roles have to be switched here 
@@ -8455,7 +8457,7 @@ unify (tparms, targs, parm, arg, strict)
 		  return 1;
 	      }
 	  }
-	  arg = CLASSTYPE_TI_TEMPLATE (arg);
+	  arg = TYPE_TI_TEMPLATE (arg);
 
 	  /* Fall through to deduce template name.  */
 	}
