@@ -1,3 +1,8 @@
+Mon Oct  4 16:22:20 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* stmt.c (expand_anon_union_decl): When any of the elements of the
+	union is addressable, so is the entire union.
+
 Mon Oct  4 11:38:33 1999  Richard Henderson  <rth@cygnus.com>
 
 	* sbitmap.c (sbitmap_ones): Don't set too many bits.
