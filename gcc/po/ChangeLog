@@ -1,3 +1,7 @@
+Tue Jun 19 08:03:43 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* POTFILES.in: Replace dce.c with ssa-dce.c.
+
 2001-06-15  Dennis Bjorklund  <db@zigo.dhs.org>
 
 	* sv.po: Updated.  Approximately 1100 of 3600 strings translated.
