@@ -694,6 +694,7 @@ place_union_field (rli, field)
 #endif
       rli->record_align = MAX (rli->record_align, type_align);
       rli->unpadded_align = MAX (rli->unpadded_align, type_align);
+      TYPE_USER_ALIGN (rli->t) |= TYPE_USER_ALIGN (TREE_TYPE (field));
     }
 #endif
 
@@ -849,6 +850,7 @@ place_field (rli, field)
 	  rli->unpadded_align = MAX (rli->unpadded_align, DECL_ALIGN (field));
 	  if (warn_packed)
 	    rli->unpacked_align = MAX (rli->unpacked_align, TYPE_ALIGN (type));
+	  user_align |= TYPE_USER_ALIGN (type);
 	}
     }
   else
@@ -941,6 +943,8 @@ place_field (rli, field)
 	   - (offset * BITS_PER_UNIT + bit_offset) / type_align)
 	  > tree_low_cst (TYPE_SIZE (type), 1) / type_align)
 	rli->bitpos = round_up (rli->bitpos, type_align);
+
+      user_align |= TYPE_USER_ALIGN (type);
     }
 #endif
 
@@ -982,6 +986,8 @@ place_field (rli, field)
 	  != ((offset * BITS_PER_UNIT + bit_offset + field_size - 1)
 	      / type_align))
 	rli->bitpos = round_up (rli->bitpos, type_align);
+
+      user_align |= TYPE_USER_ALIGN (type);
     }
 #endif
 
