@@ -1,5 +1,11 @@
 2000-04-06  Richard Henderson  <rth@cygnus.com>
 
+	* genrecog.c (*): Rename _last_insn to last_insn.
+	(make_insn_sequence): Set the position of the peephole2 C test
+	to be at the last insn.
+
+2000-04-06  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (compute_flow_dominators): Free worklist.
 
 2000-04-06  Michael Matz  <matzmich@cs.tu-berlin.de>
@@ -181,11 +187,11 @@ Thu Apr  6 19:11:47 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 2000-04-05   Benjamin Kosnik  <bkoz@cygnus.com>
 
-        * configure.in: And here.
-        * configure: Regenerate.
-        * acconfig.h: Add ENABLE_STD_NAMESPACE to set flag_honor_std if
-        --enable-libstdcxx-v3 is passed at configure time.
-        * config.h.in: Regenerate.
+	* configure.in: And here.
+	* configure: Regenerate.
+	* acconfig.h: Add ENABLE_STD_NAMESPACE to set flag_honor_std if
+	--enable-libstdcxx-v3 is passed at configure time.
+	* config.h.in: Regenerate.
 
 2000-04-05  Mark Mitchell  <mark@codesourcery.com>
 
@@ -231,7 +237,7 @@ Wed Apr  5 12:35:18 2000  Hans-Peter Nilsson  <hp@axis.com>
 	all (op (minus A B) 0) with (op A B).
 
 Wed Apr  5 18:03:31 2000  Toshiyasu Morita  (toshi.morita@sega.com)
-                          J"orn Rennecke <amylaar@cygnus.co.uk>
+	                  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (block_lump_real_i4): Add missing clobber of T_REG
 	(block_lump_real): Likewise.
