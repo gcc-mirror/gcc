@@ -111,7 +111,7 @@ empty_parms ()
 %token SELFNAME
 
 /* A template function.  */
-%token <ttype> PFUNCNAME
+%token PFUNCNAME
 
 /* Reserved words that specify storage class.
    yylval contains an IDENTIFIER_NODE which indicates which one.  */
