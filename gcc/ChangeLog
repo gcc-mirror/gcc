@@ -1,3 +1,10 @@
+Fri Oct 23 22:41:40 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.md (movsf): Disable explicit secondary-reload-like
+	functionality if TARGET_POWERPC64.
+	(movdf): Remove TARGET_POWERPC64 explicit secondary-reload-like
+	functionality.
+
 Fri Oct 23 22:38:57 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* m68k.md (5200 movqi): Do not allow byte sized memory references
