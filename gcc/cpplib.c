@@ -528,8 +528,12 @@ handle_directive (pfile)
   c = PEEKC ();
   if (c >= '0' && c <= '9')
     {
-      /* Handle # followed by a line number.  */
-      if (CPP_PEDANTIC (pfile))
+      /* Handle # followed by a line number.  Complain about using that
+         form if we're being pedantic, but not if this is regurgitated
+         input (preprocessed or fed back in by the C++ frontend).  */
+      if (CPP_PEDANTIC (pfile)
+	  && ! CPP_PREPROCESSED (pfile)
+	  && ! CPP_BUFFER (pfile)->manual_pop)
 	cpp_pedwarn (pfile, "`#' followed by integer");
       do_line (pfile, NULL);
       return 1;

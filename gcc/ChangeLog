@@ -1,3 +1,8 @@
+Wed Sep 22 12:04:58 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cpplib.c (handle_directive): Don't complain about `# NUMBER' if
+	we're seeing this input for a second time.
+
 Thu Sep 23 12:59:14 1999  Alex Samuel  <samuel@codesourcery.com>
 			  Richard Henderson  <rth@cygnus.com>
 
