@@ -1555,26 +1555,9 @@ typedef struct rs6000_stack {
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.
+   otherwise, FUNC is 0.  */
 
-   On the SPE, both FPs and vectors are returned in r3.
-
-   On RS/6000 an integer value is in r3 and a floating-point value is in
-   fp1, unless -msoft-float.  */
-
-#define FUNCTION_VALUE(VALTYPE, FUNC)				\
-  gen_rtx_REG ((INTEGRAL_TYPE_P (VALTYPE)			\
-		&& TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
-	       || POINTER_TYPE_P (VALTYPE)			\
-	       ? word_mode : TYPE_MODE (VALTYPE),		\
-	       TREE_CODE (VALTYPE) == VECTOR_TYPE		\
-	       && TARGET_ALTIVEC ? ALTIVEC_ARG_RETURN		\
-	       : TREE_CODE (VALTYPE) == REAL_TYPE		\
-	         && TARGET_SPE_ABI && !TARGET_FPRS		\
-	       ? GP_ARG_RETURN					\
-	       : TREE_CODE (VALTYPE) == REAL_TYPE		\
-		 && TARGET_HARD_FLOAT && TARGET_FPRS	        \
-               ? FP_ARG_RETURN : GP_ARG_RETURN)
+#define FUNCTION_VALUE(VALTYPE, FUNC) rs6000_function_value ((VALTYPE), (FUNC))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
