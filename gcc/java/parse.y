@@ -15183,8 +15183,8 @@ patch_switch_statement (node)
 		= EXPR_WFL_LINECOL (TREE_PURPOSE (iter));
 	      /* The case_label_list is in reverse order, so print the
 		 outer label first.  */
-	      parse_error_context (wfl_operator, "duplicate case label: `%d'",
-				   subval);
+	      parse_error_context (wfl_operator, "duplicate case label: `"
+				   HOST_WIDE_INT_PRINT_DEC "'", subval);
 	      EXPR_WFL_LINECOL (wfl_operator)
 		= EXPR_WFL_LINECOL (TREE_PURPOSE (subiter));
 	      parse_error_context (wfl_operator, "original label is here");
