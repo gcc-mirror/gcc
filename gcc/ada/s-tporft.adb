@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 2002-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,6 +82,9 @@ begin
 
    Self_Id.Common.State := Runnable;
    Self_Id.Awake_Count := 1;
+
+   Self_Id.Common.Task_Image (1 .. 14) := "foreign thread";
+   Self_Id.Common.Task_Image_Len := 14;
 
    --  Since this is not an ordinary Ada task, we will start out undeferred
 
