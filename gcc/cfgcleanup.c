@@ -67,6 +67,8 @@ enum bb_flags
 
 #define FORWARDER_BLOCK_P(BB) (BB_FLAGS (BB) & BB_FORWARDER_BLOCK)
 
+/* Set to true when we are running first pass of try_optimize_cfg loop.  */
+static bool first_pass;
 static bool try_crossjump_to_edge (int, edge, edge);
 static bool try_crossjump_bb (int, basic_block);
 static bool outgoing_edges_match (int, basic_block, basic_block);
@@ -429,6 +431,7 @@ try_forward_edges (int mode, basic_block b)
       int counter;
       bool threaded = false;
       int nthreaded_edges = 0;
+      bool may_thread = first_pass | (b->flags & BB_DIRTY);
 
       next = e->succ_next;
 
@@ -447,6 +450,7 @@ try_forward_edges (int mode, basic_block b)
 	{
 	  basic_block new_target = NULL;
 	  bool new_target_threaded = false;
+	  may_thread |= target->flags & BB_DIRTY;
 
 	  if (FORWARDER_BLOCK_P (target)
 	      && target->succ->dest != EXIT_BLOCK_PTR)
@@ -459,7 +463,7 @@ try_forward_edges (int mode, basic_block b)
 
 	  /* Allow to thread only over one edge at time to simplify updating
 	     of probabilities.  */
-	  else if (mode & CLEANUP_THREADING)
+	  else if ((mode & CLEANUP_THREADING) && may_thread)
 	    {
 	      edge t = thread_jump (mode, e, target);
 	      if (t)
@@ -1573,6 +1577,12 @@ try_crossjump_bb (int mode, basic_block bb)
 	     If there is a match, we'll do it the other way around.  */
 	  if (e == fallthru)
 	    continue;
+	  /* If nothing changed since the last attempt, there is nothing
+	     we can do.  */
+	  if (!first_pass
+	      && (!(e->src->flags & BB_DIRTY)
+		  && !(fallthru->src->flags & BB_DIRTY)))
+	    continue;
 
 	  if (try_crossjump_to_edge (mode, e, fallthru))
 	    {
@@ -1615,6 +1625,13 @@ try_crossjump_bb (int mode, basic_block bb)
 	  if (e->src->index > e2->src->index)
 	    continue;
 
+	  /* If nothing changed since the last attempt, there is nothing
+	     we can do.  */
+	  if (!first_pass
+	      && (!(e->src->flags & BB_DIRTY)
+		  && !(e2->src->flags & BB_DIRTY)))
+	    continue;
+
 	  if (try_crossjump_to_edge (mode, e, e2))
 	    {
 	      changed = true;
@@ -1644,11 +1661,12 @@ try_optimize_cfg (int mode)
   FOR_EACH_BB (bb)
     update_forwarder_flag (bb);
 
-  if (mode & CLEANUP_UPDATE_LIFE)
+  if (mode & (CLEANUP_UPDATE_LIFE | CLEANUP_CROSSJUMP | CLEANUP_THREADING))
     clear_bb_flags ();
 
   if (! (* targetm.cannot_modify_jumps_p) ())
     {
+      first_pass = true;
       /* Attempt to merge blocks as made possible by edge removal.  If
 	 a block has only one successor, and the successor has only
 	 one predecessor, they may be combined.  */
@@ -1824,6 +1842,7 @@ try_optimize_cfg (int mode)
 #endif
 
 	  changed_overall |= changed;
+	  first_pass = false;
 	}
       while (changed);
     }
