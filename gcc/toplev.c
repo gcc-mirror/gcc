@@ -63,6 +63,7 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic.h"
 #include "ssa.h"
 #include "params.h"
+#include "dwarf2asm.h"
 
 #ifndef ACCUMULATE_OUTGOING_ARGS
 #define ACCUMULATE_OUTGOING_ARGS 0
@@ -2752,7 +2753,7 @@ rest_of_compilation (decl)
 	  }
 
       /* If requested, consider whether to make this function inline.  */
-      if ((DECL_INLINE (decl) && !flag_no_inline) 
+      if ((DECL_INLINE (decl) && !flag_no_inline)
 	  || flag_inline_functions)
 	{
 	  timevar_push (TV_INTEGRATION);

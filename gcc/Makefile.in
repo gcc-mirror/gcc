@@ -141,9 +141,9 @@ MAKEOVERRIDES =
 # In stage2 and beyond, we force this to "-o $@" since we know we're using gcc.
 OUTPUT_OPTION = @OUTPUT_OPTION@
 
-# Some versions of `touch' (such as the version on Solaris 2.8) 
+# Some versions of `touch' (such as the version on Solaris 2.8)
 # do not correctly set the timestamp due to buggy versions of `utime'
-# in the kernel.  So, we use `echo' instead. 
+# in the kernel.  So, we use `echo' instead.
 STAMP = echo timestamp >
 
 # This is where we get zlib from.  zlibdir is -L../zlib and zlibinc is
@@ -227,7 +227,7 @@ AR_FOR_TARGET = ` \
        t='$(program_transform_cross_name)'; echo ar | sed -e $$t ; \
     fi; \
   fi`
-AR_FLAGS_FOR_TARGET = 
+AR_FLAGS_FOR_TARGET =
 AR_CREATE_FOR_TARGET = $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) rc
 AR_EXTRACT_FOR_TARGET = $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) x
 RANLIB_FOR_TARGET = ` \
@@ -939,10 +939,10 @@ $(srcdir)/configure: $(srcdir)/configure.in
 	(cd $(srcdir) && autoconf)
 
 gccbug:	$(srcdir)/gccbug.in
-	CONFIG_FILES=gccbug CONFIG_HEADERS= ./config.status 
+	CONFIG_FILES=gccbug CONFIG_HEADERS= ./config.status
 
 mklibgcc: $(srcdir)/mklibgcc.in
-	CONFIG_FILES=mklibgcc CONFIG_HEADERS= ./config.status 
+	CONFIG_FILES=mklibgcc CONFIG_HEADERS= ./config.status
 
 # cstamp-h.in controls rebuilding of config.in.
 # It is named cstamp-h.in and not stamp-h.in so the mostlyclean rule doesn't
@@ -1351,7 +1351,7 @@ gencheck$(build_exeext) : gencheck.o $(HOST_LIBDEPS)
 	 gencheck.o $(HOST_LIBS)
 
 gencheck.o : gencheck.c gencheck.h tree.def $(HCONFIG_H) hconfig.h system.h \
-             $(lang_tree_files) 
+             $(lang_tree_files)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/gencheck.c
 
@@ -1396,13 +1396,13 @@ fold-const.o : fold-const.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h \
    $(EXPR_H) $(RTL_H) $(GGC_H) $(TM_P_H)
 diagnostic.o : diagnostic.c diagnostic.h \
    $(CONFIG_H) system.h $(TREE_H) $(RTL_H) $(TM_P_H) flags.h \
-   $(GGC_H) input.h $(INSN_ATTR_H) insn-config.h toplev.h intl.h 
+   $(GGC_H) input.h $(INSN_ATTR_H) insn-config.h toplev.h intl.h
 toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
    flags.h input.h $(INSN_ATTR_H) xcoffout.h output.h diagnostic.h \
    insn-config.h intl.h $(RECOG_H) Makefile toplev.h dwarfout.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
    graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) $(lang_options_files) \
-   ssa.h params.h $(TM_P_H)
+   ssa.h params.h $(TM_P_H) dwarf2asm.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c $(srcdir)/toplev.c
@@ -1830,7 +1830,7 @@ genrecog$(build_exeext) : genrecog.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(
 
 genrecog.o : genrecog.c $(RTL_H) $(HCONFIG_H) \
   system.h errors.h gensupport.h
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genrecog.c 
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genrecog.c
 
 genextract$(build_exeext) : genextract.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
