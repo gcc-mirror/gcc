@@ -318,7 +318,6 @@ make_class (void)
 {
   tree type;
   type = make_node (RECORD_TYPE);
-  TYPE_BINFO (type) = make_tree_binfo (0);
   MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC (type);
 
   return type;
@@ -473,9 +472,11 @@ set_super_info (int access_flags, tree this_class,
 {
   int total_supers = interfaces_count;
   tree class_decl = TYPE_NAME (this_class);
+  
   if (super_class)
     total_supers++;
 
+  TYPE_BINFO (this_class) = make_tree_binfo (0);
   TYPE_VFIELD (this_class) = TYPE_VFIELD (object_type_node);
   BINFO_BASE_BINFOS (TYPE_BINFO (this_class)) = make_tree_vec (total_supers);
   if (super_class)
@@ -485,7 +486,7 @@ set_super_info (int access_flags, tree this_class,
       BINFO_OFFSET (super_binfo) = integer_zero_node;
       TREE_VEC_ELT (BINFO_BASE_BINFOS (TYPE_BINFO (this_class)), 0)
 	= super_binfo;
-      CLASS_HAS_SUPER (this_class) = 1;
+      CLASS_HAS_SUPER_FLAG (TYPE_BINFO (this_class)) = 1;
     }
 
   set_class_decl_access_flags (access_flags, class_decl);

@@ -1,3 +1,9 @@
+2004-07-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (make_class): Do not create binfo here.
+	(set_super_info): Create it here.
+	* java-tree.h (CLASS_HAS_SUPER): Cope with lack of a binfo.
+
 2004-07-08  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (case_identity, get_primitive_array_vtable,
@@ -8207,7 +8213,7 @@
 	properly initialize `finished_label'. Don't emit gotos for empty
 	try statements.
 
-2000-03-19  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+2000-03-19  Martin v. LÃ¶wis  <loewis@informatik.hu-berlin.de>
 
 	* except.c (emit_handlers): Clear catch_clauses_last.
 
