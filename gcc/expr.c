@@ -4588,7 +4588,7 @@ expand_expr (exp, target, tmode, modifier)
 	   through a pointer to const does not mean that the value there can
 	   never change.  Languages where it can never change should
 	   also set TREE_STATIC.  */
-	RTX_UNCHANGING_P (temp) = TREE_READONLY (exp) | TREE_STATIC (exp);
+	RTX_UNCHANGING_P (temp) = TREE_READONLY (exp) & TREE_STATIC (exp);
 	return temp;
       }
 
