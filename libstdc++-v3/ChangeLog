@@ -1,3 +1,9 @@
+2001-07-02  Loren J. Rittle  <ljrittle@acm.org>
+
+	libstdc++/2211
+	* src/ios.cc (ios_base::Init::_S_ios_create): Rename __bufsize to
+	__out_bufsize.  Add __in_bufsize, document it and use it.  
+
 2001-07-01  Stephen M. Webb <stephen@bregmasoft.com>
 
 	* include/bits/stl_construct.h (construct): Remove.
