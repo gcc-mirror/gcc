@@ -455,6 +455,7 @@ from the machine description file `md'.  */\n\n");
   printf ("  register rtx *ro = recog_operand;\n");
   printf ("  register rtx **ro_loc = recog_operand_loc;\n");
   printf ("  rtx pat = PATTERN (insn);\n");
+  printf ("  int i;\n\n");
   printf ("  switch (INSN_CODE (insn))\n");
   printf ("    {\n");
   printf ("    case -1:\n");
@@ -502,11 +503,8 @@ from the machine description file `md'.  */\n\n");
       /* The vector in the insn says how many operands it has.
 	 And all it contains are operands.  In fact, the vector was
 	 created just for the sake of this function.  */
-      printf ("#if __GNUC__ > 1 && !defined (bcopy)\n");
-      printf ("#define bcopy(FROM,TO,COUNT) __builtin_memcpy(TO,FROM,COUNT)\n");
-      printf ("#endif\n");
-      printf ("      bcopy (&XVECEXP (pat, 0, 0), ro,\n");
-      printf ("             sizeof (rtx) * XVECLEN (pat, 0));\n");
+      printf ("      for (i = XVECLEN (pat, 0); i >= 0; i--)\n");
+      printf ("          ro[i] = XVECEXP (pat, 0, i);\n");
       printf ("      break;\n\n");
     }
 
