@@ -3540,6 +3540,14 @@ expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
     arg1_rtx = get_memory_rtx (arg1);
     arg2_rtx = get_memory_rtx (arg2);
     arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+
+    /* Set MEM_SIZE as appropriate.  */
+    if (GET_CODE (arg3_rtx) == CONST_INT)
+      {
+	set_mem_size (arg1_rtx, arg3_rtx);
+	set_mem_size (arg2_rtx, arg3_rtx);
+      }
+
 #ifdef HAVE_cmpmemsi
     if (HAVE_cmpmemsi)
       insn = gen_cmpmemsi (result, arg1_rtx, arg2_rtx, arg3_rtx,

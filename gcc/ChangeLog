@@ -1,5 +1,10 @@
 2004-09-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* builtins.c (expand_builtin_memcmp): Adjust MEM_SIZE to
+	reflect size of memory regions being compared.
+
+2004-09-26  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* builtins.c (get_memory_rtx): Set mem attributes for non-ADDR_EXPR
 	expressions.  Always clear MEM_SIZE and alias set.
 
