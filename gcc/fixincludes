@@ -2862,7 +2862,7 @@ done
 
 # AIX headers define NULL to be cast to a void pointer, which is illegal
 # in ANSI C++.
-for file in curses.h dbm.h locale.h stdio.h stdlib.h string.h time.h unistd.h ; do
+for file in curses.h dbm.h locale.h stdio.h stdlib.h string.h time.h unistd.h sys/dir.h sys/param.h sys/types.h ; do
   if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
     cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
     chmod +w ${LIB}/$file 2>/dev/null
