@@ -5,14 +5,15 @@
 
 CCLIBFLAGS=
 
-# NCR3000 ships with a MetaWare compiler installed as CC, which chokes and
-# dies all over the place on GCC source.  However, the AT&T compiler,
-# crusty as it is, can be used to bootstrap GCC.  It can be found in
-# /usr/ccs/ATT/cc.  It is also used to compile the things that should
-# not be compiled with GCC.
-
-CC = /usr/ccs/ATT/cc
-OLDCC = /usr/ccs/ATT/cc
+## Supposedly not needed now that xm-sysv4.h includes alloc.h for Metaware.
+### NCR3000 ships with a MetaWare compiler installed as CC, which chokes and
+### dies all over the place on GCC source.  However, the AT&T compiler,
+### crusty as it is, can be used to bootstrap GCC.  It can be found in
+### /usr/ccs/ATT/cc.  It is also used to compile the things that should
+### not be compiled with GCC.
+##
+##CC = /usr/ccs/ATT/cc
+##OLDCC = /usr/ccs/ATT/cc
 
 # The rest is just x-i386v4.
 
