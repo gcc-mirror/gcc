@@ -1,3 +1,37 @@
+2004-10-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* parser.c (cp_token_position): New typedef. Define VEC thereof.
+	(struct cp_lexer): Allow buffer and buffer_end to be NULL. Make
+	next_token and last_token cp_token_position. Make saved_tokens a
+	VEC(cp_token_position).
+	(eof_token): New static variable.
+	(CP_SAVED_TOKENS_SIZE): Rename to ...
+	(CP_SAVED_TOKEN_STACK): ... here.
+	(cp_lexer_new_main): Adjust main lexer creation and buffer
+	filling.
+	(cp_lexer_new_from_tokens): Do not copy the tokens, merely point
+	to the parent buffer.  Do not append eof token.
+	(cp_lexer_destroy): Only free buffer if non-NULL. Free token
+	stack.
+	(cp_lexer_next_token, cp_lexer_prev_token): Remove.
+	(cp_lexer_token_position, cp_lexer_token_at): New.
+	(cp_lexer_saving_tokens): Adjust. Make inline.
+	(cp_lexer_advance_token, cp_lexer_token_difference): Remove.
+	(cp_lexer_peek_token_emit_debug_info): Fold into ...
+	(cp_lexer_peek_token): ... here.
+	(cp_lexer_peek_nth_token): Don't peek past EOF.
+	(cp_lexer_consume_token): Set next_token to eof_token, if reaching
+	EOF.
+	(cp_lexer_purge_token): Adjust eof setting.
+	(cp_lexer_purge_tokens_after): Likewise.
+	(cp_lexer_save_tokens): Push next_token directly.
+	(cp_lexer_commit_tokens): Adjust.
+	(cp_lexer_rollback_tokens): Pop next_token directly.
+	(cp_parser_check_for_invalid_template_id): Adjust token purging.
+	(cp_parser_translation_unit): Do not consume the EOF.
+	(cp_parser_nested_name_specifier_opt): Adjust token purging.
+	(cp_parser_template_id, cp_parser_template_name): Likewise.
+
 2004-10-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14035
