@@ -10024,7 +10024,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    break;
 	    
 	  default:
-	    internal_error ("`%D' as declarator", decl);
+	    my_friendly_assert (0, 20020917);
 	  }
       }
   }
@@ -10903,21 +10903,15 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
 	    {
-	      error ("cannot declare %s to references",
-		     TREE_CODE (declarator) == ADDR_EXPR
-		     ? "references" : "pointers");
-	      declarator = TREE_OPERAND (declarator, 0);
-	      continue;
-	    }
-
-	  if (ctype
-	      && (TREE_CODE (type) == VOID_TYPE
-		  || TREE_CODE (type) == REFERENCE_TYPE))
-	    {
-	      error ("cannot declare pointer to `%#T' member",
-			TREE_TYPE (type));
+	      error (TREE_CODE (declarator) == ADDR_EXPR
+		     ? "cannot declare reference to `%#T'"
+		     : "cannot declare pointer to `%#T'", type);
 	      type = TREE_TYPE (type);
 	    }
+	  else if (VOID_TYPE_P (type)
+		   && (ctype || TREE_CODE (declarator) == ADDR_EXPR))
+	    error (ctype ? "cannot declare pointer to `%#T' member"
+		     : "cannot declare reference to `%#T'", type);
 
 	  /* Merge any constancy or volatility into the target type
 	     for the pointer.  */
@@ -10928,9 +10922,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	  if (TREE_CODE (declarator) == ADDR_EXPR)
 	    {
-	      if (TREE_CODE (type) == VOID_TYPE)
-		error ("invalid type: `void &'");
-	      else
+	      if (!VOID_TYPE_P (type))
 		type = build_reference_type (type);
 	    }
 	  else if (TREE_CODE (type) == METHOD_TYPE)

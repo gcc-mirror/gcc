@@ -1,3 +1,8 @@
+2002-09-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (grokdeclarator): Use assert, not internal_error. Don't
+	ICE with invalid pointers & references.
+
 2002-09-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* Make-lang.in: Remove all references to the demangler.

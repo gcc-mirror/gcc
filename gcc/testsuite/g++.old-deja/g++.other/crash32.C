@@ -26,7 +26,7 @@ namespace N
   typedef baz<bar> c;
 }
 
-struct z
+struct z // crash test - XFAIL *-*-*
 {
   int a;
 };
