@@ -640,19 +640,19 @@ ggc_rlimit_bound (limit)
   struct rlimit rlim;
 # ifdef RLIMIT_RSS
   if (getrlimit (RLIMIT_RSS, &rlim) == 0
-      && rlim.rlim_cur != RLIM_INFINITY
+      && rlim.rlim_cur != (rlim_t) RLIM_INFINITY
       && rlim.rlim_cur < limit)
     limit = rlim.rlim_cur;
 # endif
 # ifdef RLIMIT_DATA
   if (getrlimit (RLIMIT_DATA, &rlim) == 0
-      && rlim.rlim_cur != RLIM_INFINITY
+      && rlim.rlim_cur != (rlim_t) RLIM_INFINITY
       && rlim.rlim_cur < limit)
     limit = rlim.rlim_cur;
 # endif
 # ifdef RLIMIT_AS
   if (getrlimit (RLIMIT_AS, &rlim) == 0
-      && rlim.rlim_cur != RLIM_INFINITY
+      && rlim.rlim_cur != (rlim_t) RLIM_INFINITY
       && rlim.rlim_cur < limit)
     limit = rlim.rlim_cur;
 # endif
