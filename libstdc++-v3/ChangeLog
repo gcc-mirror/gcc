@@ -1,3 +1,13 @@
+2002-04-01  Paolo Carlini  <pcarlini@unitus.it>
+
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h
+	(codecvt::do_out, codecvt::do_unshift, codecvt::do_in):
+	By definition, sizeof(char) == 1.
+	* include/bits/locale_facets.tcc (money_get::do_get,
+	money_put::do_put): Ditto.
+	* testsuite/21_strings/inserters_extractors.cc
+	(test04): Ditto.
+
 2002-03-30  Richard Henderson  <rth@redhat.com>
 
 	PR c++/3719
