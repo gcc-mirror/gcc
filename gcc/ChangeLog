@@ -1,3 +1,11 @@
+2005-04-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* c.opt (-F): Remove trailing whitespace from help string.
+	(-finput-charset): Use a tab to separate the switch name and help
+	string.
+	* common.opt (-fsched-stalled-insns, -fsched-stalled-insns-dep)
+	(-ftree-vectorizer-verbose): Likewise.
+
 2005-04-06  Dale Johannesen  <dalej@apple.com>
 
 	* doc/invoke.texi (Optimization Options):  Remove

@@ -714,7 +714,7 @@ Allow premature scheduling of queued insns
 
 fsched-stalled-insns=
 Common RejectNegative Joined UInteger 
--fsched-stalled-insns=<number>       Set number of queued insns that can be prematurely scheduled
+-fsched-stalled-insns=<number>	Set number of queued insns that can be prematurely scheduled
 
 ; sched_stalled_insns_dep controls how many recently scheduled cycles will
 ; be examined for a dependency on a stalled insn that is candidate for
@@ -726,7 +726,7 @@ Set dependence distance checking in premature scheduling of queued insns
 
 fsched-stalled-insns-dep=
 Common RejectNegative Joined UInteger
--fsched-stalled-insns-dep=<number>   Set dependence distance checking in premature scheduling of queued insns
+-fsched-stalled-insns-dep=<number>	Set dependence distance checking in premature scheduling of queued insns
 
 fshared-data
 Common Report Var(flag_shared_data)
@@ -922,7 +922,7 @@ Enable loop vectorization on trees
 
 ftree-vectorizer-verbose=
 Common RejectNegative Joined
--ftree-vectorizer-verbose=<number>   Set the verbosity level of the vectorizer
+-ftree-vectorizer-verbose=<number>	Set the verbosity level of the vectorizer
 
 ; -fverbose-asm causes extra commentary information to be produced in
 ; the generated assembly code (to make it more readable).  This option
