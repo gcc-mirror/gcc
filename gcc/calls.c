@@ -526,7 +526,7 @@ expand_call (exp, target, ignore)
 
 		 Use abstraction instead of setting TREE_ADDRESSABLE
 		 directly.  */
-	      if (TREE_INLINE (fndecl) && extra_warnings && !flag_no_inline)
+	      if (DECL_INLINE (fndecl) && extra_warnings && !flag_no_inline)
 		warning_with_decl (fndecl, "can't inline call to `%s' which was declared inline");
 	      mark_addressable (fndecl);
 	    }

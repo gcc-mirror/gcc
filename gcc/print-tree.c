@@ -317,13 +317,13 @@ print_node (file, prefix, node, indent)
     case 'd':
       mode = DECL_MODE (node);
 
-      if (TREE_EXTERNAL (node))
+      if (DECL_EXTERNAL (node))
 	fputs (" external", file);
-      if (TREE_NONLOCAL (node))
+      if (DECL_NONLOCAL (node))
 	fputs (" nonlocal", file);
-      if (TREE_REGDECL (node))
+      if (DECL_REGISTER (node))
 	fputs (" regdecl", file);
-      if (TREE_INLINE (node))
+      if (DECL_INLINE (node))
 	fputs (" inline", file);
       if (DECL_BIT_FIELD (node))
 	fputs (" bit-field", file);
@@ -359,7 +359,7 @@ print_node (file, prefix, node, indent)
       indent_to (file, indent + 3);
       if (TREE_CODE (node) != FUNCTION_DECL)
 	fprintf (file, " align %d", DECL_ALIGN (node));
-      else if (TREE_INLINE (node))
+      else if (DECL_INLINE (node))
 	fprintf (file, " frame_size %d", DECL_FRAME_SIZE (node));
       else if (DECL_BUILT_IN (node))
 	fprintf (file, " built-in code %d", DECL_FUNCTION_CODE (node));

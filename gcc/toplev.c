@@ -1703,7 +1703,7 @@ compile_file (name)
 	    && DECL_INITIAL (decl) != 0
 	    && (TREE_ADDRESSABLE (decl)
 		|| TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (decl)))
-	    && ! TREE_EXTERNAL (decl))
+	    && ! DECL_EXTERNAL (decl))
 	  output_inline_function (decl);
 
 	/* Warn about any function
@@ -1716,7 +1716,7 @@ compile_file (name)
 	     || (DECL_NAME (decl) && TREE_USED (DECL_NAME (decl))))
 	    && TREE_CODE (decl) == FUNCTION_DECL
 	    && DECL_INITIAL (decl) == 0
-	    && TREE_EXTERNAL (decl)
+	    && DECL_EXTERNAL (decl)
 	    && ! TREE_PUBLIC (decl))
 	  warning_with_decl (decl, "`%s' declared `static' but never defined");
 	/* Warn about static fns or vars defined but not used,
@@ -1726,10 +1726,10 @@ compile_file (name)
 	    && (TREE_CODE (decl) == FUNCTION_DECL
 		|| TREE_CODE (decl) == VAR_DECL)
 	    && ! DECL_IN_SYSTEM_HEADER (decl)
-	    && ! TREE_EXTERNAL (decl)
+	    && ! DECL_EXTERNAL (decl)
 	    && ! TREE_PUBLIC (decl)
 	    && ! TREE_USED (decl)
-	    && ! TREE_INLINE (decl)
+	    && ! DECL_INLINE (decl)
 	    /* The TREE_USED bit for file-scope decls
 	       is kept in the identifier, to handle multiple
 	       external decls in different scopes.  */
@@ -1912,7 +1912,7 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 
   /* Forward declarations for nested functions are not "external",
      but we need to treat them as if they were.  */
-  if (TREE_STATIC (decl) || TREE_EXTERNAL (decl)
+  if (TREE_STATIC (decl) || DECL_EXTERNAL (decl)
       || TREE_CODE (decl) == FUNCTION_DECL)
     TIMEVAR (varconst_time,
 	     {
@@ -1931,7 +1931,7 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 			    || DECL_IGNORED_P (decl))))
 		   assemble_variable (decl, top_level, at_end);
 	     });
-  else if (TREE_REGDECL (decl) && asmspec != 0)
+  else if (DECL_REGISTER (decl) && asmspec != 0)
     {
       if (decode_reg_name (asmspec) >= 0)
 	{
@@ -1996,7 +1996,7 @@ rest_of_compilation (decl)
 
   if (DECL_SAVED_INSNS (decl) == 0)
     {
-      int specd = TREE_INLINE (decl);
+      int specd = DECL_INLINE (decl);
       char *lose;
 
       /* If requested, consider whether to make this function inline.  */
@@ -2008,10 +2008,10 @@ rest_of_compilation (decl)
 		     {
 		       if (warn_inline && specd)
 			 warning_with_decl (decl, lose);
-		       TREE_INLINE (decl) = 0;
+		       DECL_INLINE (decl) = 0;
 		     }
 		   else
-		     TREE_INLINE (decl) = 1;
+		     DECL_INLINE (decl) = 1;
 		 });
 
       insns = get_insns ();
@@ -2034,10 +2034,10 @@ rest_of_compilation (decl)
 	 finish_compilation will call rest_of_compilation again
 	 for those functions that need to be output.  */
 
-      if (TREE_INLINE (decl)
+      if (DECL_INLINE (decl)
 	  && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
 	       && ! flag_keep_inline_functions)
-	      || TREE_EXTERNAL (decl)))
+	      || DECL_EXTERNAL (decl)))
 	{
 	  TIMEVAR (integration_time, save_for_inline_nocopy (decl));
 	  goto exit_rest_of_compilation;
@@ -2045,7 +2045,7 @@ rest_of_compilation (decl)
 
       /* If we have to compile the function now, save its rtl and subdecls
 	 so that its compilation will not affect what others get.  */
-      if (TREE_INLINE (decl))
+      if (DECL_INLINE (decl))
 	{
 	  saved_block_tree = DECL_INITIAL (decl);
 	  saved_arguments = DECL_ARGUMENTS (decl);
