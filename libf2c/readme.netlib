@@ -613,6 +613,12 @@ identify the I/O unit involved.
   libf2c.zip: above, plus tweaks to PC makefiles: for some purposes,
 it's still best to compile with -DMSDOS (even for use with NT).
 
+Thu Jun 18 01:22:52 EDT 1998
+  libi77: lread.c: modified so floating-point numbers (containing
+either a decimal point or an exponent field) are treated as errors
+when they appear as list input for integer data.  Compile lread.c with
+-DALLOW_FLOAT_IN_INTEGER_LIST_INPUT to restore the old behavior.
+
 Current timestamps of files in "all from f2c/src", sorted by time,
 appear below (mm/dd/year hh:mm:ss).  To bring your source up to date,
 obtain source files with a timestamp later than the time shown in your
