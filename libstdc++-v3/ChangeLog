@@ -1,5 +1,25 @@
 2004-08-02  Mark Mitchell  <mark@codesourcery.com>
 
+	* libsupc++/cxxabi.h: Make all declarations have default
+	visibility.
+	* libsupc++/exception: Likewise.
+	* libsupc++/new: Likewise.
+	* libsupc++/typeinfo: Likewise.
+	* libsupc++/unwind-cxx.h: Likewise.
+	* libsupc++/eh_alloc.cc (__cxa_allocate_exception): Put it into
+	the __cxxabiv1 namespace.
+	(__cxa_free_exception): Likewise.
+	* libsupc++/eh_aux_runtime.cc (__cxa_bad_cast): Likewise.
+	(__cxa_bad_typeid): Likewise.
+	* libsupc++/eh_catch.cc (__cxa_begin_catch): Likewise.
+	(__cxa_end_catch): Likewise.
+	* libsupc++/eh_globals.cc (__cxa_get_globals_fast): Likewise.
+	(__cxa_get_globals): Likewise.
+	* libsupc++/eh_throw.cc (__cxa_throw): Likewise.
+	(__cxa_rethrow): Likewise.
+	* libsupc++/pure.cc (__cxa_pure_virtual): Likewise.
+	* libsupc++/eh_type.cc: Include <cxxabi.h>.
+
 	* Makefile.am (hosted_source): Add libmath and testsuite.
 	(SUBDIRS): Remove them.
 	* acinclude.m4: (GLIBCXX_ENABLED_HOSTED): Default to freestanding

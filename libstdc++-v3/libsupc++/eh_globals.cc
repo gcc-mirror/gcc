@@ -69,7 +69,7 @@ get_globals_init_once ()
 #endif
 
 extern "C" __cxa_eh_globals *
-__cxa_get_globals_fast () throw()
+__cxxabiv1::__cxa_get_globals_fast () throw()
 {
 #if __GTHREADS
   if (use_thread_key)
@@ -82,7 +82,7 @@ __cxa_get_globals_fast () throw()
 }
 
 extern "C" __cxa_eh_globals *
-__cxa_get_globals () throw()
+__cxxabiv1::__cxa_get_globals () throw()
 {
 #if __GTHREADS
   __cxa_eh_globals *g;

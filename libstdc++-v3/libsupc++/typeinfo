@@ -37,6 +37,8 @@
 
 #include <exception>
 
+#pragma GCC visibility push(default)
+
 extern "C++" {
 
 namespace __cxxabiv1
@@ -151,6 +153,8 @@ namespace std
     virtual ~bad_typeid() throw();
   };
 } // namespace std
+
+#pragma GCC visibility pop
 
 } // extern "C++"
 #endif

@@ -42,6 +42,8 @@
 #ifndef _CXXABI_H
 #define _CXXABI_H 1
 
+#pragma GCC visibility push(default)
+
 #include <stddef.h>
 #include <bits/cxxabi_tweaks.h>
  
@@ -522,5 +524,7 @@ namespace __cxxabiv1
 namespace abi = __cxxabiv1;
 
 #endif // __cplusplus
+
+#pragma GCC visibility pop
 
 #endif // __CXXABI_H 

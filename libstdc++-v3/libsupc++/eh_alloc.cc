@@ -107,7 +107,7 @@ emergency_mutex_init ()
 
 
 extern "C" void *
-__cxa_allocate_exception(std::size_t thrown_size) throw()
+__cxxabiv1::__cxa_allocate_exception(std::size_t thrown_size) throw()
 {
   void *ret;
 
@@ -154,7 +154,7 @@ __cxa_allocate_exception(std::size_t thrown_size) throw()
 
 
 extern "C" void
-__cxa_free_exception(void *vptr) throw()
+__cxxabiv1::__cxa_free_exception(void *vptr) throw()
 {
   char *ptr = (char *) vptr;
   if (ptr >= &emergency_buffer[0][0]
