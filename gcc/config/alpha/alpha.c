@@ -3697,10 +3697,15 @@ function_arg(cum, mode, type, named)
 {
   int basereg;
 
-  if (cum >= 6 || MUST_PASS_IN_STACK (mode, type))
+  if (cum >= 6)
     return NULL_RTX;
 
-  if (FUNCTION_ARG_PASS_BY_REFERENCE (cum, mode, type, named))
+  /* VOID is passed as a special flag for "last argument".  */
+  if (type == void_type_node)
+    basereg = 16;
+  else if (MUST_PASS_IN_STACK (mode, type))
+    return NULL_RTX;
+  else if (FUNCTION_ARG_PASS_BY_REFERENCE (cum, mode, type, named))
     basereg = 16;
   else if (TARGET_FPREGS
 	   && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT

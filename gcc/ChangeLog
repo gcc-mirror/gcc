@@ -1,3 +1,8 @@
+2000-03-21  Richard Henderson  <rth@cygnus.com>
+
+	* config/alpha/alpha.c (function_arg): Check for void_type_node
+	before using MUST_PASS_IN_STACK.
+
 2000-03-21  Stephane Carrez  <stcarrez@worldnet.fr>
 
 	* regmove.c (combine_stack_adjustments_for_block): Check that
