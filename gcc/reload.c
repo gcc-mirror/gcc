@@ -6188,7 +6188,7 @@ refers_to_regno_for_reload_p (unsigned int regno, unsigned int endregno,
 	{
 	  unsigned int inner_regno = subreg_regno (x);
 	  unsigned int inner_endregno
-	    = inner_regno + (inner_regno < FIRST_PSEUDO_REGISTER
+	    = inner_regno + (regno < FIRST_PSEUDO_REGISTER
 			     ? hard_regno_nregs[regno][GET_MODE (x)] : 1);
 
 	  return endregno > inner_regno && regno < inner_endregno;
