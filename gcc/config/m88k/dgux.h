@@ -1,9 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running DG/UX.
-   Copyright (C) 1988, 1989, 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
-   Enhanced by Michael Meissner (meissner@osf.org)
-   Version 2 port by Tom Wood (twood@pets.sps.mot.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
 
 This file is part of GNU CC.
@@ -31,7 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.15 $"
+#define VERSION_INFO2   "$Revision: 1.16 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
@@ -114,8 +112,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    and last objects are crtbegin.o (or bcscrtbegin.o) and crtend.o.
    When the -G link option is used (-shared and -symbolic) a final
    link is not being done.  */
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC "crtend.o%s"
 #undef	LIB_SPEC
-#define LIB_SPEC "%{!msvr3:%{!shared:-lstaticdgc}} %{!shared:%{!symbolic:-lc}} crtend.o%s"
+#define LIB_SPEC "%{!msvr3:%{!shared:-lstaticdgc}} %{!shared:%{!symbolic:-lc}}"
 #undef	LINK_SPEC
 #define LINK_SPEC "%{z*} %{h*} %{V} %{v:%{!V:-V}} \
 		   %{static:-dn -Bstatic} \
@@ -176,30 +176,39 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Override svr4.h and m88k.h except when compiling crtstuff.c.  These must
    be constant strings when compiling crtstuff.c.  Otherwise, respect the
    -mversion-STRING option used.  */
+#undef INIT_SECTION_PREAMBLE
 #undef INIT_SECTION_ASM_OP
 #undef FINI_SECTION_ASM_OP
 #undef CTORS_SECTION_ASM_OP
 #undef DTORS_SECTION_ASM_OP
 
-#if !defined (CRT_BEGIN) && !defined (CRT_END)
+#if defined (CRT_BEGIN) || defined (CRT_END) || defined (L__main)
+/* routines to invoke global constructors and destructors are always COFF 
+   to enable linking mixed COFF and ELF objects */
+#define FINI_SECTION_ASM_OP ("section  .fini,\"x\"")
+#ifndef BCS
+#define INIT_SECTION_PREAMBLE asm ("\taddu\tr31,r31,0x20")
+#endif
 #undef	INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP (TARGET_SVR4			\
-			     ? "section\t .init,\"xa\""		\
-			     : "section\t .init,\"x\"")
+#define INIT_SECTION_ASM_OP ("section\t .init,\"x\"")
 #undef	CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP (TARGET_SVR4			\
-			      ? "section\t .ctors,\"aw\""	\
-			      : "section\t .ctors,\"d\"")
+#define CTORS_SECTION_ASM_OP ("section\t .ctors,\"d\"")
 #undef	DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP (TARGET_SVR4			\
-			      ? "section\t .dtors,\"aw\""	\
-			      : "section\t .dtors,\"d\"")
+#define DTORS_SECTION_ASM_OP ("section\t .dtors,\"d\"")
+#undef OBJECT_FORMAT_ELF
 #else
-/* These must be constant strings for crtstuff.c.  */
-#define INIT_SECTION_ASM_OP	"section\t .init,\"x\""
-#define FINI_SECTION_ASM_OP	"section\t .fini,\"x\""
-#define CTORS_SECTION_ASM_OP	"section\t .ctors,\"d\""
-#define DTORS_SECTION_ASM_OP	"section\t .dtors,\"d\""
+#undef        INIT_SECTION_ASM_OP
+#define INIT_SECTION_ASM_OP (TARGET_SVR4                      \
+                           ? "section\t .init,\"xa\""         \
+                           : "section\t .init,\"x\"")
+#undef        CTORS_SECTION_ASM_OP
+#define CTORS_SECTION_ASM_OP (TARGET_SVR4                     \
+                            ? "section\t .ctors,\"aw\""       \
+                            : "section\t .ctors,\"d\"")
+#undef        DTORS_SECTION_ASM_OP
+#define DTORS_SECTION_ASM_OP (TARGET_SVR4                     \
+                            ? "section\t .dtors,\"aw\""       \
+                            : "section\t .dtors,\"d\"")
 #endif /* crtstuff.c */
 
 /* The lists of global object constructors and global destructors are always
@@ -211,9 +220,18 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    entries.  */
 
 /* Mark the end of the .ctors/.dtors sections with a -1.  */
+
+#define CTOR_LIST_BEGIN			\
+asm (CTORS_SECTION_ASM_OP);		\
+func_ptr __CTOR_LIST__[1] = { (func_ptr) (-1) }
+
 #define CTOR_LIST_END			\
 asm (CTORS_SECTION_ASM_OP);		\
 func_ptr __CTOR_END__[1] = { (func_ptr) (-1) }
+
+#define DTOR_LIST_BEGIN			\
+asm (DTORS_SECTION_ASM_OP);		\
+func_ptr __DTOR_LIST__[1] = { (func_ptr) (-1) }
 
 #define DTOR_LIST_END			\
 asm (DTORS_SECTION_ASM_OP);		\
@@ -238,3 +256,18 @@ func_ptr __DTOR_END__[1] = { (func_ptr) (-1) }
       if (((int *)__DTOR_LIST__)[i] != 0)		\
 	__DTOR_LIST__[i] ();				\
   } while (0)					
+
+/* The maximum alignment which the object file format can support.
+   page alignment would seem to be enough */
+#undef MAX_OFILE_ALIGNMENT
+#define MAX_OFILE_ALIGNMENT 0x1000
+
+/* Must use data section for relocatable constants when pic.  */
+#undef SELECT_RTX_SECTION
+#define SELECT_RTX_SECTION(MODE,RTX)            \
+{                                               \
+  if (flag_pic && symbolic_operand (RTX))       \
+    data_section ();                            \
+  else                                          \
+    const_section ();                           \
+}
