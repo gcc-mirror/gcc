@@ -1,7 +1,14 @@
 #ifndef _STDDEF_H
 #ifndef _STDDEF_H_
+
+/* Any one of these symbols __need_* means that GNU libc
+   wants us just to define one data type.  So don't define
+   the symbols that indicate this file's entire job has been done.  */
+#if (!defined(__need_wchar_t) && !defined(__need_size_t)	\
+     && !defined(__need_ptrdiff_t) && !defined(__need_NULL))
 #define _STDDEF_H
 #define _STDDEF_H_
+#endif
 
 #ifndef __sys_stdtypes_h
 /* This avoids lossage on Sunos but only if stdtypes.h comes first.
@@ -32,7 +39,11 @@
 #ifndef __PTRDIFF_TYPE__
 #define __PTRDIFF_TYPE__ long int
 #endif
+/* Define this type if we are doing the whole job,
+   or if we want this type in particular.  */
+#if defined (_STDDEF_H) || defined (__need_ptrdiff_t)
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
+#endif /* <stddef.h> or __need_ptrdiff_t.  */
 #endif /* _GCC_PTRDIFF_T */
 #endif /* ___int_ptrdiff_t_h */
 #endif /* _PTRDIFF_T_ */
@@ -40,6 +51,9 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #endif /* _T_PTRDIFF */
 #endif /* _T_PTRDIFF_ */
 #endif /* _PTRDIFF_T */
+
+/* If this symbol has done its job, get rid of it.  */
+#undef	__need_ptrdiff_t
 
 /* Unsigned type of `sizeof' something.  */
 
@@ -62,7 +76,11 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #ifndef __SIZE_TYPE__
 #define __SIZE_TYPE__ long unsigned int
 #endif
+/* Define this type if we are doing the whole job,
+   or if we want this type in particular.  */
+#if defined (_STDDEF_H) || defined (__need_size_t)
 typedef __SIZE_TYPE__ size_t;
+#endif /* <stddef.h> or __need_size_t.  */
 #endif /* _SIZET_ */
 #endif /* _GCC_SIZE_T */
 #endif /* ___int_size_t_h */
@@ -71,8 +89,13 @@ typedef __SIZE_TYPE__ size_t;
 #endif /* _T_SIZE */
 #endif /* _T_SIZE_ */
 #endif /* _SIZE_T */
+#undef	__need_size_t
 
-/* Data type for wide chars.  */
+
+/* Wide character type.
+   Locale-writers should change this as necessary to
+   be big enough to hold unique values not between 0 and 127,
+   and not (wchar_t) -1, for each defined multibyte character.  */
 
 #ifndef _WCHAR_T
 #ifndef _T_WCHAR_
@@ -91,7 +114,11 @@ typedef __SIZE_TYPE__ size_t;
 #ifndef __WCHAR_TYPE__
 #define __WCHAR_TYPE__ int
 #endif
+/* Define this type if we are doing the whole job,
+   or if we want this type in particular.  */
+#if defined (_STDDEF_H) || defined (__need_wchar_t)
 typedef __WCHAR_TYPE__ wchar_t;
+#endif /* <stddef.h> or __need_wchar_t.  */
 #endif
 #endif
 #endif
@@ -99,17 +126,24 @@ typedef __WCHAR_TYPE__ wchar_t;
 #endif
 #endif
 #endif
+#undef	__need_wchat_t
 
 #endif /* __sys_stdtypes_h */
 
 /* A null pointer constant.  */
 
+#if defined (_STDDEF_H) || defined (__need_NULL)
 #undef NULL		/* in case <stdio.h> has defined it. */
 #define NULL ((void *)0)
+#endif	/* NULL not defined and <stddef.h> or need NULL.  */
+#undef	__need_NULL
+
+#ifdef _STDDEF_H
 
 /* Offset of member MEMBER in a struct of type TYPE.  */
 
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 
-#endif /* _STDDEF_H_ */
-#endif /* _STDDEF_H */
+#endif /* _STDDEF_H was defined this time */
+#endif /* _STDDEF_H_ was not defined before */
+#endif /* _STDDEF_H was not defined before */
