@@ -37,9 +37,10 @@ exception statement from your version. */
 
 package java.security;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.net.URL;
 import java.security.Provider;
 import java.util.Vector;
 import java.util.Enumeration;
@@ -59,9 +60,9 @@ public final class Security extends Object
 
   static
   {
-    loadProviders(System.getProperty("java.home"),
-		  System.getProperty("java.vm.name"));
-    loadProviders(System.getProperty("gnu.classpath.home"), "classpath");
+    String base = System.getProperty("gnu.classpath.home.url");
+    loadProviders(base, System.getProperty("gnu.classpath.vm.shortname"));
+    loadProviders(base, "classpath");
   }
 
   // This class can't be instantiated.
@@ -69,20 +70,16 @@ public final class Security extends Object
   {
   }
 
-  private static void loadProviders(String dir, String vendor)
+  private static void loadProviders(String baseUrl, String vendor)
   {
-    if (dir == null || vendor == null)
+    if (baseUrl == null || vendor == null)
       return;
 
-    String separator = System.getProperty("file.separator");
-    String secfilestr = (dir +
-			 separator + "lib" +
-			 separator + "security" +
-			 separator + vendor + ".security");
+    String secfilestr = baseUrl + "/security/" + vendor + ".security";
 
     try
       {
-	FileInputStream fin = new FileInputStream(secfilestr);
+	InputStream fin = new URL(secfilestr).openStream();
 	secprops = new Properties();
 	secprops.load(fin);
 
