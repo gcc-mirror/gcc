@@ -1252,9 +1252,6 @@ do {							\
 /* There is no point aligning anything to a rounder boundary than this.  */
 #define BIGGEST_ALIGNMENT 64
 
-/* Biggest alignment any structure field can require in bits.  */
-#define BIGGEST_FIELD_ALIGNMENT 64
-
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
