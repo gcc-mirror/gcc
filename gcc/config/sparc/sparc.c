@@ -3231,7 +3231,8 @@ output_function_prologue (file, size, leaf_function)
       int offset, real_offset, n_regs;
       char *base;
 
-      real_offset = offset = -apparent_fsize + frame_base_offset;
+      real_offset = -apparent_fsize;
+      offset = -apparent_fsize + frame_base_offset;
       if (offset < -4096 || offset + num_gfregs * 4 > 4096)
 	{
 	  /* ??? This might be optimized a little as %g1 might already have a
@@ -4898,7 +4899,7 @@ sparc_flat_output_function_prologue (file, size)
 	  sparc_flat_save_restore (file, sp_str, reg_offset,
 				   gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
 				   current_frame_info.fmask,
-				   "st", "std", 0);
+				   "st", "std", -size);
 	}
       else
 	{
@@ -4960,7 +4961,7 @@ sparc_flat_output_function_prologue (file, size)
 	  sparc_flat_save_restore (file, sp_str, offset,
 				   gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
 				   current_frame_info.fmask,
-				   "st", "std", size - size1);
+				   "st", "std", -size1);
 	  fprintf (file, "\tset %d,%s\n\tsub %s,%s,%s\n",
 		   size - size1, t1_str, sp_str, t1_str, sp_str);
 #ifdef DWARF2_DEBUGGING_INFO
