@@ -1,3 +1,7 @@
+2004-06-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* pt.c (mark_decl_instantiated): Don't call defer_fn.
+
 2004-06-16  Richard Henderson  <rth@redhat.com>
 
 	* parser.c (cp_parser_labeled_statement): Update commentary.

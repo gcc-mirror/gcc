@@ -10157,11 +10157,6 @@ mark_decl_instantiated (tree result, int extern_p)
       else if (TREE_PUBLIC (result))
 	maybe_make_one_only (result);
     }
-
-  if (TREE_CODE (result) == FUNCTION_DECL 
-      && (DECL_ARTIFICIAL (result) 
-	  || (DECL_DECLARED_INLINE_P (result) && TREE_USED (result))))
-    defer_fn (result);
 }
 
 /* Given two function templates PAT1 and PAT2, return:
