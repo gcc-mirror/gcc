@@ -28,7 +28,7 @@
 
 2005-01-03  Uros Bizjak <uros@kss-loka.si>
 
-	PR target/19235
+	PR target/19236
 	* gcc.dg/pr19236-1.c: New test case.
 
 2005-01-03  Hans-Peter Nilsson  <hp@bitrange.com>
