@@ -460,6 +460,13 @@ extern rtxfun bcc_gen_fctn[NUM_RTX_CODE];
 
 extern enum insn_code setcc_gen_code[NUM_RTX_CODE];
 
+#ifdef HAVE_conditional_move
+/* Indexed by the the machine mode, gives the insn code to make a conditional
+   move insn.  */
+
+extern enum insn_code movcc_gen_code[NUM_MACHINE_MODES];
+#endif
+
 /* This array records the insn_code of insns to perform block moves.  */
 extern enum insn_code movstr_optab[NUM_MACHINE_MODES];
 
@@ -516,6 +523,16 @@ extern void emit_float_lib_cmp PROTO((rtx, rtx, enum rtx_code));
 
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
 extern void emit_indirect_jump PROTO((rtx));
+
+#ifdef HAVE_conditional_move
+/* Emit a conditional move operation.  */
+rtx emit_conditional_move PROTO((rtx, enum rtx_code, rtx, rtx,
+				 enum machine_mode, rtx, rtx,
+				 enum machine_mode, int));
+
+/* Return non-zero if the conditional move is supported.  */
+int can_conditionally_move_p PROTO((enum machine_mode mode));
+#endif
 
 /* Create but don't emit one rtl instruction to add one rtx into another.
    Modes must match; operands must meet the operation's predicates.
