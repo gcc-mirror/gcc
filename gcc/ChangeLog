@@ -1,3 +1,12 @@
+2004-02-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.md: Add fixuns_truncsfsi2 and
+	fix_truncsfsi2.
+
+	* config/rs6000/spe.md: Delete spe_efsctuiz.
+	Add spe_fixuns_truncsfsi2.
+	Add spe_fix_truncsfsi2.
+ 
 2004-02-26  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (TARGET_CPU_CPP_BUILTINS): Define __xtensa__.
