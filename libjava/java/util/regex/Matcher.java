@@ -35,17 +35,188 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-// Stub class until java.util.regex is implemented.
+
 package java.util.regex;
 
+/**
+ * @author Michael Koch
+ * @since 1.4
+ */
 public class Matcher
 {
-  public String replaceFirst(String replacement)
+  private Pattern pattern;
+  
+  /**
+   * @param sb The target string buffer
+   * @param replacement The replacement string
+   *
+   * @exception IllegalStateException If no match has yet been attempted,
+   * or if the previous match operation failed
+   * @exception IndexOutOfBoundsException If the replacement string refers
+   * to a capturing group that does not exist in the pattern
+   */
+  public Matcher appendReplacement (StringBuffer sb, String replacement)
+    throws IllegalStateException
   {
-    throw new InternalError("Not implemented yet");
+    throw new Error("Not implemented");
   }
-  public String replaceAll(String replacement)
+
+  /**
+   * @param sb The target string buffer
+   */
+  public StringBuffer appendTail (StringBuffer sb)
   {
-    throw new InternalError("Not implemented yet");
+    throw new Error("Not implemented");
+  }
+ 
+  /**
+   * @exception IllegalStateException If no match has yet been attempted,
+   * or if the previous match operation failed
+   */
+  public int end ()
+    throws IllegalStateException
+  {
+    throw new Error ("Not implemented");
+  }
+  
+  /**
+   * @param group The index of a capturing group in this matcher's pattern
+   *
+   * @exception IllegalStateException If no match has yet been attempted,
+   * or if the previous match operation failed
+   * @exception IndexOutOfBoundsException If the replacement string refers
+   * to a capturing group that does not exist in the pattern
+   */
+  public int end (int group)
+    throws IllegalStateException
+  {
+    throw new Error ("Not implemented");
+  }
+ 
+  public boolean find ()
+  {
+    throw new Error ("Not implemented");
+  }
+  
+  /**
+   * @param start The index to start the new pattern matching
+   *
+   * @exception IndexOutOfBoundsException If the replacement string refers
+   * to a capturing group that does not exist in the pattern
+   */
+  public boolean find (int start)
+  {
+    throw new Error ("Not implemented");
+  }
+ 
+  /**
+   * @exception IllegalStateException If no match has yet been attempted,
+   * or if the previous match operation failed
+   */
+  public String group ()
+  {
+    throw new Error ("Not implemented");
+  }
+  
+  /**
+   * @param group The index of a capturing group in this matcher's pattern
+   *
+   * @exception IllegalStateException If no match has yet been attempted,
+   * or if the previous match operation failed
+   * @exception IndexOutOfBoundsException If the replacement string refers
+   * to a capturing group that does not exist in the pattern
+   */
+  public String group (int group)
+    throws IllegalStateException
+  {
+    throw new Error ("Not implemented");
+  }
+
+  /**
+   * @param replacement The replacement string
+   */
+  public String replaceFirst (String replacement)
+  {
+    throw new Error ("Not implemented");
+  }
+
+  /**
+   * @param replacement The replacement string
+   */
+  public String replaceAll (String replacement)
+  {
+    throw new Error ("Not implemented");
+  }
+  
+  public int groupCount ()
+  {
+    throw new Error("Not implemented");
+  }
+ 
+  public boolean lookingAt ()
+  {
+    throw new Error("Not implemented");
+  }
+  
+  /**
+   * Attempts to match the entire input sequence against the pattern. 
+   *
+   * If the match succeeds then more information can be obtained via the
+   * start, end, and group methods.
+   *
+   * @see #start
+   * @see #end
+   * @see #group
+   */
+  public boolean matches ()
+  {
+    throw new Error("Not implemented");
+  }
+  
+  /**
+   * Returns the Pattern that is interpreted by this Matcher
+   */
+  public Pattern pattern ()
+  {
+    return pattern;
+  }
+  
+  public Matcher reset ()
+  {
+    throw new Error ("Not implemented");
+  }
+  
+  /**
+   * @param input The new input character sequence
+   */
+  public Matcher reset (CharSequence input)
+  {
+    throw new Error ("Not implemented");
+  }
+  
+  /**
+   * @param group The index of a capturing group in this matcher's pattern
+   *
+   * @exception IllegalStateException If no match has yet been attempted,
+   * or if the previous match operation failed
+   */
+  public int start ()
+    throws IllegalStateException
+  {
+    throw new Error("Not implemented");
+  }
+
+  /**
+   * @param group The index of a capturing group in this matcher's pattern
+   *
+   * @exception IllegalStateException If no match has yet been attempted,
+   * or if the previous match operation failed
+   * @exception IndexOutOfBoundsException If the replacement string refers
+   * to a capturing group that does not exist in the pattern
+   */
+  public int start (int group)
+    throws IllegalStateException
+  {
+    throw new Error("Not implemented");
   }
 }

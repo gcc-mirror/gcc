@@ -1,5 +1,40 @@
 2003-04-30  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/regex/Matcher.java
+	(pattern): New member variable.
+	(appendReplacement): New method.
+	(appendTail): New method.
+	(end): New method.
+	(find): New method.
+	(group): New method.
+	(replaceFirst): Added documentation.
+	(replaceAll): Added documentation.
+	(groupCount): New method.
+	(lookingAt): New method.
+	(matches): New method.
+	(reset): New method.
+	(start): New method.
+	* java/util/regex/Pattern.java
+	(serialVersionUID): New constant.
+	(CANON_EQ): New constant.
+	(CASE_INSENSITIVE): New constant.
+	(COMMENTS): New constant.
+	(DOTALL): New constant.
+	(MULTILINE): New constant.
+	(UNICODE_CASE): New constant.
+	(UNIX_LINES): New constant.
+	(regex): New member variable.
+	(flags): New member variable.
+	(Pattern): New method.
+	(compile): Documentation added.
+	(flags): New method.
+	(matches): Documentation added.
+	(matcher): Documentation added.
+	(split): Documentation added.
+	(pattern): New method.
+
+2003-04-30  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/security/Engine.java,
 	gnu/java/security/OID.java,
 	gnu/java/security/der/BitString.java,
