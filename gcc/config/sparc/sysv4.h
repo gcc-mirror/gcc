@@ -46,7 +46,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef STRING_ASM_OP
 #undef COMMON_ASM_OP
 #undef SKIP_ASM_OP
-#undef DEF_ASM_OP	/* Has no equivalent.  See ASM_OUTPUT_DEF below.  */
 
 /* Provide a set of pre-definitions and pre-assertions appropriate for
    the Sparc running svr4.  __svr4__ is our extension.  */
