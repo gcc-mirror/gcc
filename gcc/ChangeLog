@@ -1,3 +1,8 @@
+2004-10-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gthr-posix.h (__gthread_recursive_mutex_init_function): Guard
+	with #ifdef PTHREAD_MUTEX_RECURSIVE/#endif pairs.
+
 2004-10-28  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-into-ssa.c (rewrite_virtual_phi_arguments): New function.
