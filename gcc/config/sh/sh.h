@@ -1692,7 +1692,7 @@ extern struct rtx_def *sh_builtin_saveregs ();
    it uses this information.  Hence, the general register <-> floating point
    register information here is not used for SFmode.  */
 #define REGISTER_MOVE_COST(SRCCLASS, DSTCLASS) \
-  ((((DSTCLASS) == T_REGS) || ((DSTCLASS) == PR_REG)) ? 10		\
+  ((((DSTCLASS) == T_REGS) || ((DSTCLASS) == PR_REGS)) ? 10		\
    : ((((DSTCLASS) == FP0_REGS || (DSTCLASS) == FP_REGS || (DSTCLASS) == DF_REGS) \
        && ((SRCCLASS) == GENERAL_REGS || (SRCCLASS) == R0_REGS))	\
       || (((DSTCLASS) == GENERAL_REGS || (DSTCLASS) == R0_REGS)		\
