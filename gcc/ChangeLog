@@ -1,3 +1,7 @@
+2003-03-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	* fix-header.c (read_scan_file): Read main file before handling -D.
+
 2003-03-15  Roger Sayle  <roger@eyesopen.com>
 
 	* c-cppbuiltin.c (builtin_define_with_value_n): Fix whitespace.
