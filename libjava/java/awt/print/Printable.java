@@ -58,13 +58,13 @@ public interface Printable
   * This value is returned by the <code>print()</code> method to indicate
   * that the requested page number does not exist.
   */
-public static final int NO_SUCH_PAGE = 0;
+int NO_SUCH_PAGE = 0;
 
 /**
   * This value is returned by the <code>print()</code> method to indicate
   * that the requested page exists and has been printed.
   */
-public static final int PAGE_EXISTS = 1;
+int PAGE_EXISTS = 1;
 
 /*************************************************************************/
 
@@ -82,7 +82,7 @@ public static final int PAGE_EXISTS = 1;
   *
   * @exception PrinterException If an error occurs during printing.
   */
-public abstract int
+int
 print(Graphics graphics, PageFormat format, int page_number) 
       throws PrinterException;
 

@@ -1,5 +1,12 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/print/Pageable.java,
+	* java/awt/print/Printable.java,
+	java/awt/print/PrinterGraphics.java:
+	Removed redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/peer/ButtonPeer.java,
 	java/awt/peer/CheckboxMenuItemPeer.java,
 	java/awt/peer/CheckboxPeer.java,

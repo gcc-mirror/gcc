@@ -54,7 +54,7 @@ public interface Pageable
   * This constant is returned when <code>getNumberOfPages()</code>
   * cannot determine the number of pages available for printing.
   */
-public static final int UNKNOWN_NUMBER_OF_PAGES = -1;
+int UNKNOWN_NUMBER_OF_PAGES = -1;
 
 /*************************************************************************/
 
@@ -70,7 +70,7 @@ public static final int UNKNOWN_NUMBER_OF_PAGES = -1;
   * @return The number of pages to be printed, or 
   * <code>UNKNOWN_NUMBER_OF_PAGES</code> if this is unknown.
   */
-public abstract int
+int
 getNumberOfPages();
 
 /*************************************************************************/
@@ -88,7 +88,7 @@ getNumberOfPages();
   * @exception IndexOutOfBoundsException If the requested page number does
   * not exist.
   */
-public abstract PageFormat
+PageFormat
 getPageFormat(int pageIndex) throws IndexOutOfBoundsException;
 
 /*************************************************************************/
@@ -106,7 +106,7 @@ getPageFormat(int pageIndex) throws IndexOutOfBoundsException;
   * @exception IndexOutOfBoundsException If the requested page number does
   * not exist.
   */
-public abstract Printable
+Printable
 getPrintable(int pageIndex) throws IndexOutOfBoundsException;
 
 } // interface Pageable
