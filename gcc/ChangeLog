@@ -1,5 +1,19 @@
 2004-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.md ("tstqi_z_used"): Use define_insn_and_split.
+	("cmphi_z_used", "cmpqi_z_used"): Likewise.
+	("movstrictsi", "movstricthi", "movstrictqi"): Likewise.
+	("anddi3", "andsi3", "iordi3", "iorsi3"): Likewise.
+	("xordi3", "xorsi3", "*logicalsi3_zexthi"): Likewise.
+	("*logicalsi3_zextqi", "*logicalhi3_zexthi_ashift8"): Likewise.
+	("logicalhi3_zexthi", "*logicalsi3_silshr16"): Likewise.
+	("*logicalsi3_silshl16", "*logicalsi3_silshl16_zext"): Likewise.
+	("*ashldi3_const32", "*ashldi3_const1", "addsi_silshr16"): Likewise.
+	("addsi_andshr16", "*ashlsi3_const16_zexthi"): Likewise.
+	("*lshrdi3_const32", "*lshrdi_const1"): Likewise.
+
+2004-03-02  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.md (SOFT_TMP_REGNUM): Define.
 	(SOFT_XY_REGNUM): Define.
 	(cmp split): Use the above instead of hard coded numbers.
