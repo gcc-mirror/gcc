@@ -1,3 +1,7 @@
+2000-04-07  Jason Merrill  <jason@casey.cygnus.com>
+
+	* calls.c (expand_call): emit_queue if we're trying a sibcall.
+
 2000-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/t-linux64 (tcrtbeginS.o, tcrtendS.o): Remove.
