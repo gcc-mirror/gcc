@@ -1,3 +1,9 @@
+2004-03-11  Andreas Schwab  <schwab@suse.de>
+
+	* src/ia64/ffi.c (ffi_prep_incoming_args_UNIX): Get floating point
+	arguments from fp registers only for the first 8 parameter slots.
+	Don't convert a float parameter when passed in memory.
+
 2004-03-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure: Regenerate for config/accross.m4 correction.
