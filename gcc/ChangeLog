@@ -1,3 +1,8 @@
+2004-12-20  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/emmintrin.h: Use __vector_size__ instead of vector_size.
+	* config/i386/mmintrin.h, config/i386/xmmintrin.h: Likewise.
+
 2004-12-20  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/md.texi (Expander Definitions): Use @emph instead of @strong

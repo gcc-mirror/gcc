@@ -41,10 +41,10 @@
 #include <mm_malloc.h>
 
 /* The data type intended for user use.  */
-typedef float __m128 __attribute__ ((vector_size (16)));
+typedef float __m128 __attribute__ ((__vector_size__ (16)));
 
 /* Internal data types for implementing the intrinsics.  */
-typedef float __v4sf __attribute__ ((vector_size (16)));
+typedef float __v4sf __attribute__ ((__vector_size__ (16)));
 
 /* Create a selector for use with the SHUFPS instruction.  */
 #define _MM_SHUFFLE(fp3,fp2,fp1,fp0) \
