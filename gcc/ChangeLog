@@ -32,7 +32,7 @@ Tue Mar 16 10:22:22 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 	(Pmode): Make Pmode the smaller of longs or gp registers.
 	* invoke.texi: Note the new size for pointers.
 
-Mon Mar 15 22:45:25 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+Mon Mar 15 22:45:25 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.h (ASM_OUTPUT_{DOUBLE,FLOAT}): Always generate IEEE 754
 	bit-pattern directly.
@@ -168,7 +168,7 @@ Sat Mar 13 11:36:16 1999  Richard Earnshaw (rearnsha@arm.com)
 	(arm_reorg): Set it.
 	(output_func_epilogue): Clear it.
 
-Fri Mar 12 20:26:32 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+Fri Mar 12 20:26:32 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.in ({rs6000,powerpc}-ibm-aix*): Set float_format to none.
 	* configure: Rebuilt.
@@ -552,7 +552,7 @@ Sat Mar  6 07:49:23 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tree.h (function_cannot_inline_p, expand_start_case): Likewise.
 	
-Fri Mar  5 23:16:42 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+Fri Mar  5 23:16:42 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.h (ASM_OUTPUT_REG_{PUSH,POP}): Add 64-bit support and do
 	not overwrite AIX link register save area.
@@ -769,7 +769,7 @@ Sun Feb 28 14:47:53 1999  Arturo Montes  <mitosys@colomsat.com.co>
 
         * config/i386/t-sco5gas (crti.o): New target.
 
-Sun Feb 28 15:10:17 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+Sun Feb 28 15:10:17 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (elf_high, movsi_got, *movsi_got_internal,
 	*movsi_got_internal_mem, GOT splitter, movdf_hardfloat32,
@@ -1404,7 +1404,7 @@ Fri Feb 19 22:47:01 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	Use loop_insn_first_p.
 
 Fri Feb 19 15:49:26 1999  Michael Meissner  <meissner@cygnus.com>
-			  David Edelsohn  <edelsohn@mhpcc.edu>
+			  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (scc plus eq): Fix output template.
 	(scc plus ltu): Fix output template and collapse variants
@@ -1469,7 +1469,7 @@ Thu Feb 18 23:28:35 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	 
         * tree.h (lvalue_or_else, print_node, print_node_brief): Likewise.
 
-Thu Feb 18 20:44:21 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+Thu Feb 18 20:44:21 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* regclass.c (record_reg_classes): Correctly handle 'p' constraint.
 
@@ -2367,7 +2367,7 @@ Fri Jan 29 21:00:56 1999  Bob Manson  <manson@charmed.cygnus.com>
 
 	* recog.c (split_block_insns): New function.
 
-Tue Feb  2 22:03:26 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+Tue Feb  2 22:03:26 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000/linux.h (LINK_START_DEFAULT_SPEC): Delete, unused.
 	(LINK_OS_DEFAULT_SPEC): Delete, unused.
@@ -2724,7 +2724,7 @@ Tue Jan 26 13:31:38 1999  Jim Wilson  <wilson@cygnus.com>
 	* function.c (expand_function_end): Pass arg_pointer_save_area to
 	validize_mem before using it.  Emit code into a sequence.
 
-Tue Jan 26 13:41:38 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+Tue Jan 26 13:41:38 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (doz + set cr and or + set cr patterns): Add missing
 	'#' to split patterns.  Correct indentation of some new patterns.
@@ -2783,7 +2783,7 @@ Tue Jan 26 23:21:49 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	Move `string' label just after case '"' so that wide strings
 	don't crash the preprocessor.
 
-Sun Jan 24 20:13:45 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+Sun Jan 24 20:13:45 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (left shift + set cr patterns): Add missing '#' to
 	split patterns.
@@ -3136,7 +3136,7 @@ Tue Jan 19 11:54:04 1999  Jason Merrill  <jason@yorick.cygnus.com>
 	* calls.c (expand_call): Strip a TARGET_EXPR if we're passing by
 	invisible reference.
 
-Tue Jan 19 14:51:36 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+Tue Jan 19 14:51:36 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (offsettable_addr_operand): Delete.
 	(offsettable_mem_operand): New function.
@@ -3470,7 +3470,7 @@ Fri Jan 15 23:44:37 1999  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.c (sparc_issue): Add hypersparc/sparclite86x entries.
 
-Fri Jan 15 22:30:04 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+Fri Jan 15 22:30:04 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.h (CONST_OK_FOR_LETTER_P): Do not assume 32-bit CONST_INT.
 	* rs6000.c (u_short_cint_operand, add_operand, logical_operand,
@@ -3606,7 +3606,7 @@ Wed Jan 13 00:59:04 1999  Jeffrey A Law  (law@cygnus.com)
 	* mips.h (LOAD_EXTEND_OP): Correct for SImode and CCmode moves when
 	generating code for TARGET_64BIT.
 
-Tue Jan 12 14:05:37 1999   David Edelsohn  <edelsohn@mhpcc.edu>
+Tue Jan 12 14:05:37 1999   David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (print_operand, cases 'm' and 'M'): Do not depend on
 	HOST_WIDE_INT word-size.
@@ -4081,7 +4081,7 @@ Sun Jan  3 20:40:34 1999  Jeffrey A Law  (law@cygnus.com)
 	source operand.
 	* pa.c (output_cbranch): Likewise.
 
-Sun Jan  3 03:20:38 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+Sun Jan  3 03:20:38 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (rs6000_stack_info): Undo spurious part of last
 	change.
@@ -6181,7 +6181,7 @@ Tue Nov 17 17:13:53 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* flow.c (insn_dead_p): New argument NOTES.  Changed all callers.
 
-Mon Nov 16 17:56:07 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Mon Nov 16 17:56:07 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (output_mi_thunk): Improve test for local branch.
 
@@ -6226,7 +6226,7 @@ Fri Nov 13 22:19:23 1998  Richard Henderson  <rth@cygnus.com>
 	* alpha.md (s48addq, s48subq patterns): Use it as the predicate
 	for the multiplicand.
 
-Fri Nov 13 22:50:37 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Fri Nov 13 22:50:37 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (movsf): Remove explicit secondary-reload-like
 	functionality.  Only truncate SFmode store if in FPR.
@@ -6297,7 +6297,7 @@ Wed Nov 11 13:46:13 1998  Jim Wilson  <wilson@cygnus.com>
 	* except.c (expand_eh_return): Readd force_operand call lost in
 	Sept 15 change.
 
-Tue Nov 10 17:04:11 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Tue Nov 10 17:04:11 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.h (LEGITIMIZE_ADDRESS): Add missing goto on last case.
 
@@ -6468,7 +6468,7 @@ Sat Nov  7 23:34:01 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (libcpp.a): Check RANLIB_TEST before runing RANLIB.
 
-Sat Nov  7 22:26:19 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Sat Nov  7 22:26:19 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* collect2.c (main, case 'b'): Use else if.
 
@@ -6557,7 +6557,7 @@ Fri Nov  6 20:15:19 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 	that if the source of the previous insn is a reload register, its
 	spill_reg_store and spill_reg_stored_to values are cleared.
 
-Fri Nov  6 16:35:10 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Fri Nov  6 16:35:10 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (floatunssidf2_internal splitter): Use base register
 	operand, not hard-coded SP.
@@ -7246,7 +7246,7 @@ Tue Oct 27 13:15:02 1998  Nick Clifton  <nickc@cygnus.com>
 	* config/arm/lib1funcs.asm: Updated with changes in devo sources.
 	* config/arm/lib1thumb.asm: Add ELF support.
 
-Tue Oct 27 16:11:43 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Tue Oct 27 16:11:43 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* collect2.c (aix64_flag): New variable.
 	(main, case 'b'): Parse it.
@@ -7378,7 +7378,7 @@ Sun Oct 25 12:07:00 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 	* i386/crtdll.h (CPP_PREDEFINES): Fix typo.
 	* i386/mingw32.h (CPP_PREDEFINES): Likewise.
 
-Fri Oct 23 23:42:03 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Fri Oct 23 23:42:03 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* loop.c (loop_has_tablejump): New variable.
 	(prescan_loop): Scan for it.
@@ -7979,7 +7979,7 @@ Thu Oct 15 23:53:29 1998 Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 	* config/m32r/m32r.h (PRESERVE_DEATH_INFO_REGNO_P): Delete definition.
 	* config/sh/sh.h: Likewise.
 
-Thu Oct 15 19:48:41 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Thu Oct 15 19:48:41 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* loop.c (strength_reduce): Restore marking bct_p as
 	ATTRIBUTE_UNUSED.
@@ -7993,7 +7993,7 @@ Thu Oct 15 11:45:51 1998  Robert Lipe  <robertl@dgii.com>
 	* config/i386/sco5.h (MAX_OFILE_ALIGNMENT):  Define.
 	(SELECT_SECTION): Resync with svr4.h.
 
-Thu Oct 15 12:42:13 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Thu Oct 15 12:42:13 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* loop.c (strength_reduce): Undo Oct 14 change marking bct_p
 	ATTRIBUTE_UNUSED.
@@ -8732,7 +8732,7 @@ Fri Oct  9 14:26:44 1998  Jeffrey A Law  (law@cygnus.com)
 	* global.c (build_insn_chain): Verify no real insns exist past the
 	end of the last basic block, then exit the loop.
 
-Fri Oct  9 11:44:47 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Fri Oct  9 11:44:47 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* loop.c (insert_bct): Ensure loop_iteration_var non-zero before use.
 
@@ -8740,7 +8740,7 @@ Thu Oct  8 21:59:47 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* emit-rtl.c (init_emit_once): Call INIT_EXPANDERS.
 
-Thu Oct  8 22:03:45 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Thu Oct  8 22:03:45 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.h (RTX_COSTS): Add PROCESSOR_PPC604e cases.
 
@@ -9015,7 +9015,7 @@ Mon Oct  5 22:34:30 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* expr.c (expand_expr): Expand GOTO_EXPR into a goto or a computed
  	goto.
 
-Mon Oct  5 22:43:36 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Mon Oct  5 22:43:36 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* unroll.c (loop_iteration_var, loop_initial_value, loop_increment
 	loop_final_value, loop_comparison_code): No longer static.
@@ -9462,7 +9462,7 @@ Mon Sep 28 04:11:35 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* cpp.texi: Update for Fortran usage from Craig.
 
-Fri Sep 25 22:09:47 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Fri Sep 25 22:09:47 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (function_arg_boundary): Revert accidental change on
 	September 18.
@@ -9849,7 +9849,7 @@ Fri Sep 18 22:52:05 1998  Jeffrey A Law  (law@cygnus.com)
 	(MEM (reg_equiv_addr)) in the initializing insn for the
 	pseudo.
 
-Fri Sep 18 23:50:56 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Fri Sep 18 23:50:56 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* toplev.c (rest_of_compilation): Set bct_p on second call to
 	loop_optimize.
@@ -10588,7 +10588,7 @@ Thu Sep  3 18:16:16 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.c (rs6000_override_options): Add -mcpu={401,e603e}.
 
-Thu Sep  3 18:05:16 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Thu Sep  3 18:05:16 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (movsf): Disable explicit secondary-reload-like
 	functionality if TARGET_POWERPC64.
@@ -11139,7 +11139,7 @@ Tue Aug 25 01:15:27 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* reload1.c (reload_cse_regs_1): When deleting a no-op move that
 	loads the function result, substitute with a USE.
 
-Mon Aug 24 15:20:19 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Mon Aug 24 15:20:19 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.h (GO_IF_LEGITIMATE_ADDRESS): Use TARGET_POWERPC64
 	when testing LEGITIMATE_INDEXED_ADDRESS_P DFmode and DImode.
@@ -11260,7 +11260,7 @@ Thu Aug 20 13:56:53 1998  Michael Meissner  <meissner@cygnus.com>
 	sys/param.h pulled in before rtl.h in case the system defines MIN
 	and MAX.
 
-Thu Aug 20 13:44:20 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Thu Aug 20 13:44:20 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (movqi, movhi): Add CONSTANT_P_RTX.
 
@@ -11270,7 +11270,7 @@ Thu Aug 20 13:15:11 1998  Dave Brolley  <brolley@cygnus.com>
 	arrays of bits.
 	* cpplib.c (cpp_define): Handle macros with parameters.
 
-Wed Aug 19 21:33:19 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Wed Aug 19 21:33:19 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (rs6000_output_load_toc_table): Use ld for 64-bit.
 	(output_toc): Use single TOC slot or llong minimal-toc for DFmode
@@ -11531,7 +11531,7 @@ Sun Aug 16 17:37:06 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 	(sidi zero/sign extension insns on arch64): Set type to shift.
 	(sign_extendhidi2_insn): Set type to sload.
 
-Sun Aug 16 13:52:00 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Sun Aug 16 13:52:00 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (rs6000_stack_info): Use if == 0 for sizes.
 	(output_epilog): Use if != 0 for offset.
@@ -12173,7 +12173,7 @@ Thu Jul 30 19:15:53 1998  Richard Henderson  <rth@cygnus.com>
 	* alpha.md (fp cmp): Replicate patterns for ALPHA_TP_INSN.
 	(fcmov): Remove ALPHA_TP_INSN patterns -- fcmov doesn't trap.
 
-Thu Jul 30 19:50:15 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Thu Jul 30 19:50:15 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000/x-aix43 (AR_FOR_TARGET_FLAGS): Delete.
 	(AR_FOR_TARGET): Define.
@@ -12243,7 +12243,7 @@ Wed Jul 29 22:39:21 1998  Jeffrey A Law  (law@cygnus.com)
 	or UNROLL_COMPLETELY loop that starts with a jump to its
 	exit code.
 
-Wed Jul 29 22:18:14 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Wed Jul 29 22:18:14 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000/rs6000.md (absdi2 define_split): Swap operands of MINUS.
 	* rs6000/rs6000.c (mask64_operand): Use HOST_BITS_PER_WIDE_INT.
@@ -12443,7 +12443,7 @@ Sun Jul 12 01:27:05 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	constants here.
 	(fold, case COMPOUND_EXPR): Wrap a constant 0 in a NOP_EXPR.
 
-Tue Jul 21 15:49:31 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+Tue Jul 21 15:49:31 1998  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.h (PREDICATE_CODES): Add CONSTANT_P_RTX.
 	* rs6000.md (movsi, movdi): Add CONSTANT_P_RTX.
