@@ -1149,21 +1149,21 @@ optimize_mode_switching (file)
 		/* If the block already has MODE, pretend it
 		   has none (because we don't need to set it),
 		   but retain whatever mode it computes.  */
-		if (info[bb].seginfo->mode == mode)
-		  info[bb].seginfo->mode = no_mode;
+		if (info[bb->index].seginfo->mode == mode)
+		  info[bb->index].seginfo->mode = no_mode;
 
 		/* Insert a fake computing definition of MODE into entry
 		   blocks which compute no mode. This represents the mode on
 		   entry.  */
-		else if (info[bb].computing == no_mode)
+		else if (info[bb->index].computing == no_mode)
 		  {
-		    info[bb].computing = mode;
-		    info[bb].seginfo->mode = no_mode;
+		    info[bb->index].computing = mode;
+		    info[bb->index].seginfo->mode = no_mode;
 		  }
 	      }
 
 	    bb = EXIT_BLOCK_PTR;
-	    info[bb].seginfo->mode = mode;
+	    info[bb->index].seginfo->mode = mode;
 	  }
       }
 #endif /* NORMAL_MODE */

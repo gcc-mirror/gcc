@@ -1,3 +1,8 @@
+2002-05-24  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
+
+	* lcm.c (optimize_mode_switching): Change bb used as indices
+	to bb->index.
+
 2002-05-24  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_reorg): Use update_life_info instead
