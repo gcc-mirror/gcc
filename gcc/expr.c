@@ -3082,8 +3082,9 @@ store_constructor (exp, target)
 
 	  if (TREE_READONLY (field))
 	    {
-	      to_rtx = change_address (to_rtx, GET_MODE (to_rtx),
-				       XEXP (to_rtx, 0));
+	      if (GET_CODE (to_rtx) == MEM)
+		to_rtx = change_address (to_rtx, GET_MODE (to_rtx),
+					 XEXP (to_rtx, 0));
 	      RTX_UNCHANGING_P (to_rtx) = 1;
 	    }
 
@@ -4553,8 +4554,9 @@ expand_expr (exp, target, tmode, modifier)
 
 	  if (TREE_READONLY (exp))
 	    {
-	      target = change_address (target, GET_MODE (target),
-				       XEXP (target, 0));
+	      if (GET_CODE (target) == MEM)
+		target = change_address (target, GET_MODE (target),
+					 XEXP (target, 0));
 	      RTX_UNCHANGING_P (target) = 1;
 	    }
 
