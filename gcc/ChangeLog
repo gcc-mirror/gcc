@@ -1,3 +1,8 @@
+Tue Jul 14 02:20:38 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump to avoid problems with old spec files during
+	bootstrap.
+
 Mon Jul 13 23:11:44 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (output_scc_insn): Enclose || conditions in
