@@ -1379,10 +1379,6 @@ extern long mcore_current_compilation_timestamp;
 /* This is to handle loads from the constant pool.  */
 #define MACHINE_DEPENDENT_REORG(X) mcore_dependent_reorg (X)
 
-/* This handles MCore dependent rtl simplifications.  */
-#define MACHINE_DEPENDENT_SIMPLIFY(X,M,L,I,S) \
-  mcore_dependent_simplify_rtx (X, M, L, I, S)
-     
 #define PREDICATE_CODES							\
   { "mcore_arith_reg_operand",		{ REG, SUBREG }},		\
   { "mcore_general_movsrc_operand",	{ MEM, CONST_INT, REG, SUBREG }},\

@@ -63,7 +63,6 @@ extern int          mcore_is_dead                	PARAMS ((rtx, rtx));
 extern int          mcore_expand_insv            	PARAMS ((rtx *));
 extern int          mcore_modify_comparison      	PARAMS ((RTX_CODE));
 extern void         mcore_expand_block_move      	PARAMS ((rtx, rtx, rtx *));
-extern rtx          mcore_dependent_simplify_rtx	PARAMS ((rtx, int, int, int, int *));
 extern void         mcore_dependent_reorg        	PARAMS ((rtx));
 extern int          mcore_const_costs            	PARAMS ((rtx, RTX_CODE));
 extern int          mcore_and_cost               	PARAMS ((rtx));

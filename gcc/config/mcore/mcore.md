@@ -1179,9 +1179,9 @@
     int low, high;
 
     if (TARGET_LITTLE_END)
-      low = 0, high = 1;
+      low = 0, high = 4;
     else
-      low = 1, high = 0;
+      low = 4, high = 0;
     
     emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_SUBREG (SImode, operands[0], low),
 	      operands[1]));
