@@ -4741,10 +4741,10 @@ output_deferred_plabels (file)
 /* HP's millicode routines mean something special to the assembler.
    Keep track of which ones we have used.  */
 
-enum millicodes { remI, remU, divI, divU, mulI, mulU, end1000 };
+enum millicodes { remI, remU, divI, divU, mulI, end1000 };
 static void import_milli			PARAMS ((enum millicodes));
 static char imported[(int) end1000];
-static const char * const milli_names[] = {"remI", "remU", "divI", "divU", "mulI", "mulU"};
+static const char * const milli_names[] = {"remI", "remU", "divI", "divU", "mulI"};
 static const char import_string[] = ".IMPORT $$....,MILLICODE";
 #define MILLI_START 10
 
