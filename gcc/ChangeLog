@@ -1,5 +1,17 @@
 2001-04-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (toplev.o, jump.o, regmove.o): Depend on reload.h
+
+	* jump.c, regmove.c, toplev.c: Include reload.h.
+
+	* reload.h (reload_cse_regs): Declare.
+
+	* rtl.h (find_equiv_reg, operands_match_p, safe_from_earlyclobber,
+	reload_cse_regs, init_reload, mark_home_live, reload,
+	init_caller_save): Delete redundant prototypes.
+
+2001-04-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* Makefile.in (ssa.o, regclass.o): Depend on $(EXPR_H).
 
 	* regclass.c, ssa.c: Include expr.h.

@@ -66,6 +66,7 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "except.h"
 #include "toplev.h"
+#include "reload.h"
 
 /* ??? Eventually must record somehow the labels used by jumps
    from nested functions.  */

@@ -1274,9 +1274,6 @@ extern enum rtx_code unsigned_condition	PARAMS ((enum rtx_code));
 extern enum rtx_code signed_condition	PARAMS ((enum rtx_code));
 extern void mark_jump_label		PARAMS ((rtx, rtx, int, int));
 
-/* In reload.c */
-extern rtx find_equiv_reg		PARAMS ((rtx, rtx, enum reg_class, int, short *, int, enum machine_mode));
-
 /* In jump.c */
 extern rtx squeeze_notes		PARAMS ((rtx, rtx));
 extern rtx delete_insn			PARAMS ((rtx));
@@ -1803,10 +1800,6 @@ extern void update_temp_slot_address			PARAMS ((rtx, rtx));
 extern void purge_addressof				PARAMS ((rtx));
 extern void purge_hard_subreg_sets			PARAMS ((rtx));
 
-/* In reload.c */
-extern int operands_match_p		PARAMS ((rtx, rtx));
-extern int safe_from_earlyclobber	PARAMS ((rtx, rtx));
-
 /* In stmt.c */
 extern void set_file_and_line_for_stmt	PARAMS ((const char *, int));
 extern void expand_null_return		PARAMS ((void));
@@ -1881,15 +1874,6 @@ extern void dump_local_alloc		PARAMS ((FILE *));
 #endif
 extern int local_alloc			PARAMS ((void));
 extern int function_invariant_p		PARAMS ((rtx));
-
-/* In reload1.c */
-extern void reload_cse_regs		PARAMS ((rtx));
-extern void init_reload			PARAMS ((void));
-extern void mark_home_live		PARAMS ((int));
-extern int reload			PARAMS ((rtx, int));
-
-/* In caller-save.c */
-extern void init_caller_save		PARAMS ((void));
 
 /* In profile.c */
 extern void init_branch_prob		PARAMS ((const char *));
