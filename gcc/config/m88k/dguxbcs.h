@@ -36,7 +36,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Assembler support (-V, silicon filter, legends for mxdb).  */
 #undef	ASM_SPEC
-#define ASM_SPEC "%(asm_cpu) %{msvr4:%{!m88110:-KV3 }%{m88110:-KV04.00 }}}"
+#define ASM_SPEC "%{pipe:%{!.s: - }\
+		   %{msvr4:%{!m88110:-KV3 }%{m88110:-KV04.00 }}}\
+		  %(asm_cpu)"
 
 /* If -m88100 is in effect, add -Dm88100; similarly for -m88110.
    Here, the CPU_DEFAULT is assumed to be -m88000.  If not -ansi,

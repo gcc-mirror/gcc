@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.20 $"
+#define VERSION_INFO2   "$Revision: 1.21 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
@@ -88,7 +88,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Assembler support (-V, silicon filter, legends for mxdb).  */
 #undef	ASM_SPEC
-#define ASM_SPEC "%(asm_cpu) %{!msvr3:%{!m88110:-KV3 }%{m88110:-KV04.00 }}}"
+#define ASM_SPEC "%{pipe:%{!.s: - }\
+		   %{!msvr3:%{!m88110:-KV3 }%{m88110:-KV04.00 }}}\
+		  %(asm_cpu)"
 
 /* Override svr4.h.  */
 #undef	ASM_FINAL_SPEC
@@ -134,7 +136,7 @@ Boston, MA 02111-1307, USA.  */
   { "startfile_crtbegin", STARTFILE_CRTBEGIN_SPEC }
    
 #define ASM_CPU_SPEC "\
-		  %{V} %{v:%{!V:-V}}
+		  %{V} %{v:%{!V:-V}}\
 		  %{g:\
 		  %{mno-legend:-Wc,off}\
 		  %{!mno-legend:-Wc,-fix-bb,-s\"%i\"\
@@ -152,7 +154,7 @@ Boston, MA 02111-1307, USA.  */
 #define STARTFILE_DEFAULT_SPEC "\
                         %{!shared:%{!symbolic:%{pg:gcrt0.o%s} \
 			 %{!pg:%{p:/lib/mcrt0.o}%{!p:/lib/crt0.o}} \
-			 %(startfile_crtbegin)
+			  %(startfile_crtbegin) \
 			 %{svr4:%{ansi:/lib/values-Xc.o} \
 			  %{!ansi:%{traditional:/lib/values-Xt.o} \
 			   %{!traditional:/usr/lib/values-Xa.o}}}}}"
