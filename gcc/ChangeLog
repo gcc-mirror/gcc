@@ -1,3 +1,8 @@
+2003-06-30  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.h (BIGGEST_FIELD_ALIGNMENT): Make defintion
+	constant.
+
 Mon Jun 30 15:36:29 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	(fyl2x_sfxf3, fyl2x_dfxf3, fscale_sfxf3, fscale_dfxf3): Fix condition.
