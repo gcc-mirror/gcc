@@ -775,6 +775,7 @@ do_line (pfile)
 		{
 		  cpp_pop_buffer (pfile);
 		  buffer = pfile->buffer;
+#ifdef ENABLE_CHECKING
 		  if (strcmp (buffer->nominal_fname, fname))
 		    cpp_warning (pfile, "expected to return to file \"%s\"",
 				 buffer->nominal_fname);
@@ -784,6 +785,7 @@ do_line (pfile)
 		  if (buffer->sysp != sysp)
 		    cpp_warning (pfile, "header flags for \"%s\" have changed",
 				 buffer->nominal_fname);
+#endif
 		}
 	    }
 	  buffer->sysp = sysp;

@@ -1,3 +1,7 @@
+2001-04-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplib.c (do_line): Sanity check iff enable checking.
+
 2001-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (gcse.o): Depend on params.h.
