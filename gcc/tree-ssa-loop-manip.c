@@ -667,14 +667,12 @@ lv_adjust_loop_header_phi (basic_block first, basic_block second,
        phi2 && phi1; 
        phi2 = PHI_CHAIN (phi2),  phi1 = PHI_CHAIN (phi1))
     {
-      int i;
-      for (i = 0; i < PHI_NUM_ARGS (phi2); i++)
+      edge e2 = find_edge (new_head, second);
+
+      if (e2)
 	{
-	  if (PHI_ARG_EDGE (phi2, i)->src == new_head)
-	    {
-	      tree def = PHI_ARG_DEF (phi2, i);
-	      add_phi_arg (&phi1, def, e);
-	    }
+	  tree def = PHI_ARG_DEF (phi2, e2->dest_idx);
+	  add_phi_arg (&phi1, def, e);
 	}
     }
 }
