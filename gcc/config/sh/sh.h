@@ -1866,7 +1866,7 @@ while (0)
 #define ASM_APP_ON  		""
 #define ASM_APP_OFF  		""
 #define FILE_ASM_OP 		"\t.file\n"
-#define IDENT_ASM_OP 		"\t.ident\n"
+#define IDENT_ASM_OP 		"\t.ident\t"
 #define SET_ASM_OP		"\t.set\t"
 
 /* How to change between sections.  */
