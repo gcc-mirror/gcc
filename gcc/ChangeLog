@@ -34,6 +34,13 @@
 
 	* tree-ssa-loop-im.c (lhs): Remove.
 
+	* cfgbuild.c (state, STATE, SET_STATE,
+	BLOCK_USED_BY_TABLEJUMP, FULL_STATE): Move just before
+	make_edges.
+	(make_edges): Speed up by skipping blocks with BLOCK_ORIGINAL.
+	(find_basic_blocks): Set the state of each basic block to
+	BLOCK_NEW.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed

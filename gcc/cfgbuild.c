@@ -211,6 +211,16 @@ rtl_make_eh_edge (sbitmap *edge_cache, basic_block src, rtx insn)
   free_INSN_LIST_list (&handlers);
 }
 
+/* State of basic block as seen by find_many_sub_basic_blocks.  */
+enum state {BLOCK_NEW = 0, BLOCK_ORIGINAL, BLOCK_TO_SPLIT};
+
+#define STATE(BB) (enum state) ((size_t) (BB)->aux)
+#define SET_STATE(BB, STATE) ((BB)->aux = (void *) (size_t) (STATE))
+
+/* Used internally by purge_dead_tablejump_edges, ORed into state.  */
+#define BLOCK_USED_BY_TABLEJUMP		32
+#define FULL_STATE(BB) ((size_t) (BB)->aux)
+
 /* Identify the edges between basic blocks MIN to MAX.
 
    NONLOCAL_LABEL_LIST is a list of non-local labels in the function.  Blocks
@@ -234,15 +244,18 @@ make_edges (basic_block min, basic_block max, int update_p)
       sbitmap_vector_zero (edge_cache, last_basic_block);
 
       if (update_p)
-        FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)
-	  {
-	    edge e;
-	    edge_iterator ei;
-
-	    FOR_EACH_EDGE (e, ei, bb->succs)
-	      if (e->dest != EXIT_BLOCK_PTR)
-		SET_BIT (edge_cache[bb->index], e->dest->index);
-	  }
+	{
+	  FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)
+	    if (STATE (bb) != BLOCK_ORIGINAL)
+	      {
+		edge e;
+		edge_iterator ei;
+		
+		FOR_EACH_EDGE (e, ei, bb->succs)
+		  if (e->dest != EXIT_BLOCK_PTR)
+		    SET_BIT (edge_cache[bb->index], e->dest->index);
+	      }
+	}
     }
 
   /* By nature of the way these get numbered, ENTRY_BLOCK_PTR->next_bb block
@@ -256,6 +269,9 @@ make_edges (basic_block min, basic_block max, int update_p)
       rtx insn, x;
       enum rtx_code code;
       edge e;
+
+      if (STATE (bb) == BLOCK_ORIGINAL)
+	continue;
 
       if (LABEL_P (BB_HEAD (bb))
 	  && LABEL_ALT_ENTRY_P (BB_HEAD (bb)))
@@ -522,6 +538,9 @@ find_basic_blocks (rtx f)
 
   profile_status = PROFILE_ABSENT;
 
+  FOR_EACH_BB (bb)
+    SET_STATE (bb, BLOCK_NEW);
+
   /* Discover the edges of our cfg.  */
   make_edges (ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR->prev_bb, 0);
 
@@ -535,16 +554,6 @@ find_basic_blocks (rtx f)
   timevar_pop (TV_CFG);
 }
 
-/* State of basic block as seen by find_many_sub_basic_blocks.  */
-enum state {BLOCK_NEW = 0, BLOCK_ORIGINAL, BLOCK_TO_SPLIT};
-
-#define STATE(BB) (enum state) ((size_t) (BB)->aux)
-#define SET_STATE(BB, STATE) ((BB)->aux = (void *) (size_t) (STATE))
-
-/* Used internally by purge_dead_tablejump_edges, ORed into state.  */
-#define BLOCK_USED_BY_TABLEJUMP		32
-#define FULL_STATE(BB) ((size_t) (BB)->aux)
-
 static void
 mark_tablejump_edge (rtx label)
 {
