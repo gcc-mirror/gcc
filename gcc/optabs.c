@@ -504,11 +504,17 @@ expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
 
   imag1 = force_reg (submode, imag1);
 
-  temp1 = expand_unop (submode, abs_optab, real1, NULL_RTX,
-		       unsignedp);
-
-  temp2 = expand_unop (submode, abs_optab, imag1, NULL_RTX,
-		       unsignedp);
+  /* XXX What's an "unsigned" complex number?  */
+  if (unsignedp)
+    {
+      temp1 = real1;
+      temp2 = imag1;
+    }
+  else
+    {
+      temp1 = expand_abs (submode, real1, NULL_RTX, 1);
+      temp2 = expand_abs (submode, imag1, NULL_RTX, 1);
+    }
 
   if (temp1 == 0 || temp2 == 0)
     return 0;
