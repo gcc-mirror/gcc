@@ -2412,6 +2412,7 @@ compile_file (name)
 
   /* Do dbx symbols.  */
   timevar_push (TV_SYMOUT);
+
 #ifdef DWARF2_UNWIND_INFO
   if (dwarf2out_do_frame ())
     dwarf2out_frame_finish ();
@@ -5193,96 +5194,6 @@ print_switch_values (file, pos, max, indent, sep, term)
 #endif
 
   fprintf (file, "%s", term);
-}
-
-/* Record the beginning of a new source file, named FILENAME.  */
-
-void
-debug_start_source_file (lineno, filename)
-     register unsigned int lineno ATTRIBUTE_UNUSED;
-     register const char *filename ATTRIBUTE_UNUSED;
-{
-#ifdef DBX_DEBUGGING_INFO
-  if (write_symbols == DBX_DEBUG)
-    dbxout_start_new_source_file (filename);
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-  if (debug_info_level == DINFO_LEVEL_VERBOSE
-      && write_symbols == DWARF_DEBUG)
-    dwarfout_start_new_source_file (filename);
-#endif /* DWARF_DEBUGGING_INFO  */
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG)
-    dwarf2out_start_source_file (lineno, filename);
-#endif /* DWARF2_DEBUGGING_INFO  */
-#ifdef SDB_DEBUGGING_INFO
-  if (write_symbols == SDB_DEBUG)
-    sdbout_start_new_source_file (filename);
-#endif
-}
-
-/* Record the resumption of a source file.  LINENO is the line number in
-   the source file we are returning to.  */
-
-void
-debug_end_source_file (lineno)
-     register unsigned lineno ATTRIBUTE_UNUSED;
-{
-#ifdef DBX_DEBUGGING_INFO
-  if (write_symbols == DBX_DEBUG)
-    dbxout_resume_previous_source_file ();
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-  if (debug_info_level == DINFO_LEVEL_VERBOSE
-      && write_symbols == DWARF_DEBUG)
-    dwarfout_resume_previous_source_file (lineno);
-#endif /* DWARF_DEBUGGING_INFO  */
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG)
-    dwarf2out_end_source_file ();
-#endif /* DWARF2_DEBUGGING_INFO  */
-#ifdef SDB_DEBUGGING_INFO
-  if (write_symbols == SDB_DEBUG)
-    sdbout_resume_previous_source_file ();
-#endif
-}
-
-/* Called from cb_define in c-lex.c.  The `buffer' parameter contains
-   the tail part of the directive line, i.e. the part which is past the
-   initial whitespace, #, whitespace, directive-name, whitespace part.  */
-
-void
-debug_define (lineno, buffer)
-     register unsigned lineno ATTRIBUTE_UNUSED;
-     register const char *buffer ATTRIBUTE_UNUSED;
-{
-#ifdef DWARF_DEBUGGING_INFO
-  if (write_symbols == DWARF_DEBUG)
-    dwarfout_define (lineno, buffer);
-#endif /* DWARF_DEBUGGING_INFO  */
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG)
-    dwarf2out_define (lineno, buffer);
-#endif /* DWARF2_DEBUGGING_INFO  */
-}
-
-/* Called from cb_undef in c-lex.c.  The `buffer' parameter contains
-   the tail part of the directive line, i.e. the part which is past the
-   initial whitespace, #, whitespace, directive-name, whitespace part.  */
-
-void
-debug_undef (lineno, buffer)
-     register unsigned lineno ATTRIBUTE_UNUSED;
-     register const char *buffer ATTRIBUTE_UNUSED;
-{
-#ifdef DWARF_DEBUGGING_INFO
-  if (write_symbols == DWARF_DEBUG)
-    dwarfout_undef (lineno, buffer);
-#endif /* DWARF_DEBUGGING_INFO  */
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG)
-    dwarf2out_undef (lineno, buffer);
-#endif /* DWARF2_DEBUGGING_INFO  */
 }
 
 /* Returns nonzero if it is appropriate not to emit any debugging

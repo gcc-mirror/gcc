@@ -232,8 +232,6 @@ static unsigned current_funcdef_fde;
 
 /* Forward declarations for functions defined in this file.  */
 
-static void dwarf2out_init 		PARAMS ((FILE *, const char *));
-static void dwarf2out_finish		PARAMS ((FILE *, const char *));
 static char *stripattributes		PARAMS ((const char *));
 static const char *dwarf_cfi_name	PARAMS ((unsigned));
 static dw_cfi_ref new_cfi		PARAMS ((void));
@@ -363,12 +361,6 @@ expand_builtin_dwarf_fp_regnum ()
 #ifndef INCOMING_FRAME_SP_OFFSET
 #define INCOMING_FRAME_SP_OFFSET 0
 #endif
-
-/* The target debug structure.  */
-
-struct gcc_debug_hooks dwarf2_debug_hooks
-  = {dwarf2out_init, dwarf2out_finish
-};
 
 /* Return a pointer to a copy of the section string name S with all
    attributes stripped off, and an asterisk prepended (for assemble_name).  */
@@ -3009,6 +3001,25 @@ get_cfa_from_loc_descr (cfa, loc)
 /* And now, the support for symbolic debugging information.  */
 #ifdef DWARF2_DEBUGGING_INFO
 
+static void dwarf2out_init 		PARAMS ((FILE *, const char *));
+static void dwarf2out_finish		PARAMS ((FILE *, const char *));
+static void dwarf2out_define	        PARAMS ((unsigned int, const char *));
+static void dwarf2out_undef	        PARAMS ((unsigned int, const char *));
+static void dwarf2out_start_source_file	PARAMS ((unsigned, const char *));
+static void dwarf2out_end_source_file	PARAMS ((unsigned));
+
+/* The debug hooks structure.  */
+
+struct gcc_debug_hooks dwarf2_debug_hooks =
+{
+  dwarf2out_init,
+  dwarf2out_finish,
+  dwarf2out_define,
+  dwarf2out_undef,
+  dwarf2out_start_source_file,
+  dwarf2out_end_source_file
+};
+
 /* NOTE: In the comments in this file, many references are made to
    "Debugging Information Entries".  This term is abbreviated as `DIE'
    throughout the remainder of this file.  */
@@ -11283,10 +11294,10 @@ dwarf2out_line (filename, line)
 
 /* Record the beginning of a new source file. */
 
-void
+static void
 dwarf2out_start_source_file (lineno, filename)
-     register unsigned int lineno ATTRIBUTE_UNUSED;
-     register const char *filename ATTRIBUTE_UNUSED;
+     register unsigned int lineno;
+     register const char *filename;
 {
   if (flag_eliminate_dwarf2_dups)
     {
@@ -11305,8 +11316,9 @@ dwarf2out_start_source_file (lineno, filename)
 
 /* Record the end of a source file.  */
 
-void
-dwarf2out_end_source_file ()
+static void
+dwarf2out_end_source_file (lineno)
+     unsigned int lineno ATTRIBUTE_UNUSED;
 {
   if (flag_eliminate_dwarf2_dups)
     {
@@ -11324,7 +11336,7 @@ dwarf2out_end_source_file ()
    the tail part of the directive line, i.e. the part which is past the
    initial whitespace, #, whitespace, directive-name, whitespace part.  */
 
-void
+static void
 dwarf2out_define (lineno, buffer)
      register unsigned lineno ATTRIBUTE_UNUSED;
      register const char *buffer ATTRIBUTE_UNUSED;
@@ -11348,7 +11360,7 @@ dwarf2out_define (lineno, buffer)
    the tail part of the directive line, i.e. the part which is past the
    initial whitespace, #, whitespace, directive-name, whitespace part.  */
 
-void
+static void
 dwarf2out_undef (lineno, buffer)
      register unsigned lineno ATTRIBUTE_UNUSED;
      register const char *buffer ATTRIBUTE_UNUSED;
@@ -11587,22 +11599,4 @@ dwarf2out_finish (asm_out_file, input_filename)
     }
   
 }
-#else /* DWARF2_DEBUGGING_INFO
-
-/* Use dummy versions of init and finish routines.  */
-
-static void
-dwarf2out_init (asm_out_file, main_input_filename)
-     register FILE *asm_out_file ATTRIBUTE_UNUSED;
-     register const char *main_input_filename ATTRIBUTE_UNUSED;
-{
-}
-
-static void
-dwarf2out_finish (asm_out_file, input_filename)
-     register FILE *asm_out_file ATTRIBUTE_UNUSED;
-     register const char *input_filename ATTRIBUTE_UNUSED;
-{
-}
-
 #endif /* DWARF2_DEBUGGING_INFO */

@@ -789,6 +789,12 @@ static int in_class;
 
 static void dwarfout_init 		PARAMS ((FILE *, const char *));
 static void dwarfout_finish		PARAMS ((FILE *, const char *));
+static void dwarfout_define	        PARAMS ((unsigned int, const char *));
+static void dwarfout_undef	        PARAMS ((unsigned int, const char *));
+static void dwarfout_start_source_file	PARAMS ((unsigned, const char *));
+static void dwarfout_start_source_file_check PARAMS ((unsigned, const char *));
+static void dwarfout_end_source_file	PARAMS ((unsigned));
+static void dwarfout_end_source_file_check PARAMS ((unsigned));
 static const char *dwarf_tag_name	PARAMS ((unsigned));
 static const char *dwarf_attr_name	PARAMS ((unsigned));
 static const char *dwarf_stack_op_name	PARAMS ((unsigned));
@@ -1361,11 +1367,15 @@ static void retry_incomplete_types	PARAMS ((void));
 #endif
 
 
-/* The target debug structure.  */
+/* The debug hooks structure.  */
 struct gcc_debug_hooks dwarf_debug_hooks =
 {
   dwarfout_init,
-  dwarfout_finish
+  dwarfout_finish,
+  dwarfout_define,
+  dwarfout_undef,
+  dwarfout_start_source_file_check,
+  dwarfout_end_source_file_check
 };
 
 /************************ general utility functions **************************/
@@ -6107,8 +6117,19 @@ generate_macinfo_entry (type_and_offset, string)
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 }
 
-void
-dwarfout_start_new_source_file (filename)
+/* Wrapper for toplev.c callback to check debug info level.  */
+static void
+dwarfout_start_source_file_check (line, filename)
+     unsigned int line;
+     register const char *filename;
+{
+  if (debug_info_level == DINFO_LEVEL_VERBOSE)
+    dwarfout_start_source_file (line, filename);
+}
+
+static void
+dwarfout_start_source_file (line, filename)
+     unsigned int line ATTRIBUTE_UNUSED;
      register const char *filename;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -6123,8 +6144,17 @@ dwarfout_start_new_source_file (filename)
   generate_macinfo_entry (type_and_offset, "");
 }
 
-void
-dwarfout_resume_previous_source_file (lineno)
+/* Wrapper for toplev.c callback to check debug info level.  */
+static void
+dwarfout_end_source_file_check (lineno)
+     register unsigned lineno;
+{
+  if (debug_info_level == DINFO_LEVEL_VERBOSE)
+    dwarfout_end_source_file (lineno);
+}
+
+static void
+dwarfout_end_source_file (lineno)
      register unsigned lineno;
 {
   char type_and_offset[MAX_ARTIFICIAL_LABEL_BYTES*2];
@@ -6139,7 +6169,7 @@ dwarfout_resume_previous_source_file (lineno)
    is past the initial whitespace, #, whitespace, directive-name,
    whitespace part.  */
 
-void
+static void
 dwarfout_define (lineno, buffer)
      register unsigned lineno;
      register const char *buffer;
@@ -6149,7 +6179,7 @@ dwarfout_define (lineno, buffer)
 
   if (!initialized)
     {
-      dwarfout_start_new_source_file (primary_filename);
+      dwarfout_start_source_file (0, primary_filename);
       initialized = 1;
     }
   sprintf (type_and_offset, "0x%08x+%u",
@@ -6162,7 +6192,7 @@ dwarfout_define (lineno, buffer)
    is past the initial whitespace, #, whitespace, directive-name,
    whitespace part.  */
 
-void
+static void
 dwarfout_undef (lineno, buffer)
      register unsigned lineno;
      register const char *buffer;
@@ -6487,7 +6517,7 @@ dwarfout_finish (asm_out_file, main_input_filename)
 	{
 	  /* Output terminating entries for the .debug_macinfo section.  */
 	
-	  dwarfout_resume_previous_source_file (0);
+	  dwarfout_end_source_file (0);
 
 	  fputc ('\n', asm_out_file);
 	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);

@@ -26,16 +26,13 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "lex.h"
 #include "malloc.h"
 #include "src.h"
+#include "debug.h"
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 #include "flags.h"
 #include "input.h"
 #include "toplev.h"
 #include "output.h"
 #include "ggc.h"
-#endif
-
-#ifdef DWARF_DEBUGGING_INFO
-#include "dwarfout.h"
 #endif
 
 static void ffelex_append_to_token_ (char c);
@@ -860,11 +857,8 @@ ffelex_file_pop_ (const char *input_filename)
       input_file_stack = p->next;
       free (p);
       input_file_stack_tick++;
-#ifdef DWARF_DEBUGGING_INFO
-      if (debug_info_level == DINFO_LEVEL_VERBOSE
-	  && write_symbols == DWARF_DEBUG)
-	dwarfout_resume_previous_source_file (input_file_stack->line);
-#endif /* DWARF_DEBUGGING_INFO */
+      if (write_symbols == DWARF_DEBUG)
+	(*debug_hooks->end_source_file) (input_file_stack->line);
     }
   else
     error ("#-lines for entering and leaving files don't match");
@@ -888,11 +882,9 @@ ffelex_file_push_ (int old_lineno, const char *input_filename)
   p->name = input_filename;
   input_file_stack = p;
   input_file_stack_tick++;
-#ifdef DWARF_DEBUGGING_INFO
-  if (debug_info_level == DINFO_LEVEL_VERBOSE
-      && write_symbols == DWARF_DEBUG)
-    dwarfout_start_new_source_file (input_filename);
-#endif /* DWARF_DEBUGGING_INFO */
+
+  if (write_symbols == DWARF_DEBUG)
+    (*debug_hooks->start_source_file) (0, input_filename);
 
   /* Now that we've pushed or popped the input stack,
      update the name in the top element.  */
@@ -1173,11 +1165,9 @@ ffelex_hash_ (FILE *finput)
 
 	      c = ffelex_get_directive_line_ (&text, finput);
 
-#ifdef DWARF_DEBUGGING_INFO
 	      if ((debug_info_level == DINFO_LEVEL_VERBOSE)
 		  && (write_symbols == DWARF_DEBUG))
-		dwarfout_define (lineno, text);
-#endif /* DWARF_DEBUGGING_INFO */
+		(*debug_hooks->define) (lineno, text);
 
 	      goto skipline;
 	    }
@@ -1195,11 +1185,9 @@ ffelex_hash_ (FILE *finput)
 
 	      c = ffelex_get_directive_line_ (&text, finput);
 
-#ifdef DWARF_DEBUGGING_INFO
 	      if ((debug_info_level == DINFO_LEVEL_VERBOSE)
 		  && (write_symbols == DWARF_DEBUG))
-		dwarfout_undef (lineno, text);
-#endif /* DWARF_DEBUGGING_INFO */
+		(*debug_hooks->undef) (lineno, text);
 
 	      goto skipline;
 	    }

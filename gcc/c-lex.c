@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "tm_p.h"
 #include "splay-tree.h"
+#include "debug.h"
 
 /* MULTIBYTE_CHARS support only works for native compilers.
    ??? Ideally what we want is to model widechar support after
@@ -249,7 +250,7 @@ cb_file_change (pfile, fc)
 	  lineno = fc->from.lineno;
 	  push_srcloc (fc->to.filename, 1);
 	  input_file_stack->indent_level = indent_level;
-	  debug_start_source_file (fc->from.lineno, fc->to.filename);
+	  (*debug_hooks->start_source_file) (fc->from.lineno, fc->to.filename);
 #ifndef NO_IMPLICIT_EXTERN_C
 	  if (c_header_level)
 	    ++c_header_level;
@@ -287,7 +288,7 @@ cb_file_change (pfile, fc)
 	    }
 #endif
 	  pop_srcloc ();
-	  debug_end_source_file (input_file_stack->line);
+	  (*debug_hooks->end_source_file) (input_file_stack->line);
 	}
       else
 	error ("leaving more files than we entered");
@@ -334,16 +335,18 @@ cb_define (pfile, node)
      cpp_reader *pfile;
      cpp_hashnode *node;
 {
-  debug_define (cpp_get_line (parse_in)->line,  (const char *) cpp_macro_definition (pfile, node));
+  (*debug_hooks->define) (cpp_get_line (pfile)->line,
+			  (const char *) cpp_macro_definition (pfile, node));
 }
 
 /* #undef callback for DWARF and DWARF2 debug info.  */
 static void
 cb_undef (pfile, node)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     cpp_reader *pfile;
      cpp_hashnode *node;
 {
-  debug_undef (cpp_get_line (parse_in)->line, (const char *) NODE_NAME (node));
+  (*debug_hooks->undef) (cpp_get_line (pfile)->line,
+			 (const char *) NODE_NAME (node));
 }
 
 #if 0 /* not yet */

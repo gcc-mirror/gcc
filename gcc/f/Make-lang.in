@@ -467,7 +467,7 @@ f/lex.o: f/lex.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/top.h f/malloc.h f/where.h \
  f/bld-op.def f/bit.h f/info.h f/info-b.def f/info-k.def f/info-w.def \
  f/target.h f/lex.h f/type.h f/intrin.h f/intrin.def f/lab.h f/symbol.h \
  f/symbol.def f/equiv.h f/storag.h f/global.h f/name.h f/src.h flags.h \
- input.h toplev.h output.h $(GGC_H)
+ debug.h input.h toplev.h output.h $(GGC_H)
 f/malloc.o: f/malloc.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/malloc.h
 f/name.o: f/name.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/bad.h f/bad.def f/where.h \
  glimits.h f/top.h f/malloc.h f/name.h f/global.h f/info.h f/info-b.def \
