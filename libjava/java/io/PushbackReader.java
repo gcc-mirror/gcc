@@ -1,5 +1,5 @@
 /* PushbackReader.java -- An character stream that can unread chars
-   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -391,7 +391,7 @@ unread(char[] buf) throws IOException
 
 /**
   * This method pushed back chars from the passed in array into the pushback
-  * buffer.  The chars from <code>buf[offset]</code> to <cdoe>buf[offset + len]</code>
+  * buffer.  The chars from <code>buf[offset]</code> to <code>buf[offset + len]</code>
   * are pushed in reverse order so that the next char read from the stream
   * after this operation will be <code>buf[offset]</code> followed by
   * <code>buf[offset + 1]</code>, etc.

@@ -1,5 +1,5 @@
 /* DatabaseMetaData.java -- Information about the database itself.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -2109,7 +2109,7 @@ getTablePrivileges(String catalog, String schema, String table)
   * <ol>
   * <li>SCOPE - The scope of the results returned.  This is one of the 
   * constants defined in this class (<code>bestRowTemporary</code>,
-  * <code>bestRowTransaction</code>, or <code>bestRowSession</code).
+  * <code>bestRowTransaction</code>, or <code>bestRowSession</code>).
   * <li>COLUMN_NAME - The name of the column.
   * <li>DATA_TYPE - The SQL type of the column. This is one of the constants
   * defined in <code>Types</code>.
@@ -2193,6 +2193,7 @@ getVersionColumns(String catalog, String schema, String table)
   * <li>COLUMN_NAME - The name of the column.
   * <li>KEY_SEQ - The sequence number of the column within the primary key.
   * <li>PK_NAME - The name of the primary key, which may be <code>null</code>.
+  * </ol>
   *
   * @param catalog The catalog to retrieve information from, or the empty string
   * to return entities not associated with a catalog, or <code>null</code>
@@ -2241,6 +2242,7 @@ getPrimaryKeys(String catalog, String schema, String table)
   * constants defined in this table (<code>importedKeyInitiallyDeferred</code>,
   * <code>importedKeyInitiallyImmediate</code>, or
   * <code>importedKeyNotDeferrable</code>).
+  * </ol>
   *
   * @param catalog The catalog to retrieve information from, or the empty string
   * to return entities not associated with a catalog, or <code>null</code>
@@ -2289,6 +2291,7 @@ getImportedKeys(String catalog, String schema, String table)
   * constants defined in this table (<code>importedKeyInitiallyDeferred</code>,
   * <code>importedKeyInitiallyImmediate</code>, or
   * <code>importedKeyNotDeferrable</code>).
+  * </ol>
   *
   * @param catalog The catalog to retrieve information from, or the empty string
   * to return entities not associated with a catalog, or <code>null</code>
@@ -2337,6 +2340,7 @@ getExportedKeys(String catalog, String schema, String table)
   * constants defined in this table (<code>importedKeyInitiallyDeferred</code>,
   * <code>importedKeyInitiallyImmediate</code>, or
   * <code>importedKeyNotDeferrable</code>).
+  * </ol>
   *
   * @param primCatalog The catalog to retrieve information from, or the empty string
   * to return entities not associated with a catalog, or <code>null</code>
@@ -2436,6 +2440,7 @@ getTypeInfo() throws SQLException;
   * in the table if the index type is <code>tableIndexStatistic</code>.
   * <li>FILTER_CONDITION - The filter condition for this index, which may be
   * <code>null</code>.
+  * </ol>
   *
   * @param catalog The catalog to retrieve information from, or the empty string
   * to return entities not associated with a catalog, or <code>null</code>

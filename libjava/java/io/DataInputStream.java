@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -534,7 +534,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * significant byte first (i.e., "big endian") regardless of the native
    * host byte ordering. 
    * <p>
-   * As an example, if <code>byte1</code> and code{byte2</code>
+   * As an example, if <code>byte1</code> and <code>byte2</code>
    * represent the first and second byte read from the stream
    * respectively, they will be transformed to an <code>int</code> in
    * the following manner:
