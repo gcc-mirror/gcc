@@ -1,3 +1,9 @@
+2005-04-01  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/PipedInputStream.java
+	(read): Make sure a positive byte value is returned. Revised javadoc.
+	Thanks to Olafur Bragason for reporting these bugs.
+
 2005-04-01  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natVMClassLoader.cc (getSystemClassLoaderInternal):
