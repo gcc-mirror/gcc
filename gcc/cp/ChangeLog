@@ -1,3 +1,7 @@
+2003-06-04  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* decl.c (grokdeclarator): Error_mark_node in, error_mark_node out.
+
 2003-06-04  Andreas Jaeger  <aj@suse.de>
 
 	* g++spec.c (lang_specific_driver): Remove ALT_LIBM usage.
