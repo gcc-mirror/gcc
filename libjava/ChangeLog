@@ -1,3 +1,11 @@
+2004-05-15  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/regexp/CharIndexedReader.java: Removed.
+	* gnu/regexp/REFilterReader.java: Likewise.
+	* gnu/regexp/RETokenLookAhead.java: Likewise.
+	* Makefile.am (ordinary_java_source_files): Remove above classes.
+	* Makefile.in: Regenerated.
+
 2004-05-14  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/awt/xlib/XGraphics.java (drawImage): Use `XOffScreenImage',

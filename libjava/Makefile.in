@@ -2093,13 +2093,11 @@ gnu/java/nio/charset/UTF_8.java \
 gnu/regexp/CharIndexed.java \
 gnu/regexp/CharIndexedCharArray.java \
 gnu/regexp/CharIndexedInputStream.java \
-gnu/regexp/CharIndexedReader.java \
 gnu/regexp/CharIndexedString.java \
 gnu/regexp/CharIndexedStringBuffer.java \
 gnu/regexp/RE.java \
 gnu/regexp/REException.java \
 gnu/regexp/REFilterInputStream.java \
-gnu/regexp/REFilterReader.java \
 gnu/regexp/REMatch.java \
 gnu/regexp/REMatchEnumeration.java \
 gnu/regexp/RESyntax.java \
@@ -2109,7 +2107,6 @@ gnu/regexp/RETokenBackRef.java \
 gnu/regexp/RETokenChar.java \
 gnu/regexp/RETokenEnd.java \
 gnu/regexp/RETokenEndSub.java \
-gnu/regexp/RETokenLookAhead.java \
 gnu/regexp/RETokenOneOf.java \
 gnu/regexp/RETokenPOSIX.java \
 gnu/regexp/RETokenRange.java \
@@ -3018,7 +3015,7 @@ libgcj-test.spec.in libgcj.pc.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -3444,16 +3441,14 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/javax/rmi/PortableServer.P .deps/gnu/regexp/CharIndexed.P \
 .deps/gnu/regexp/CharIndexedCharArray.P \
 .deps/gnu/regexp/CharIndexedInputStream.P \
-.deps/gnu/regexp/CharIndexedReader.P \
 .deps/gnu/regexp/CharIndexedString.P \
 .deps/gnu/regexp/CharIndexedStringBuffer.P .deps/gnu/regexp/RE.P \
 .deps/gnu/regexp/REException.P .deps/gnu/regexp/REFilterInputStream.P \
-.deps/gnu/regexp/REFilterReader.P .deps/gnu/regexp/REMatch.P \
-.deps/gnu/regexp/REMatchEnumeration.P .deps/gnu/regexp/RESyntax.P \
-.deps/gnu/regexp/REToken.P .deps/gnu/regexp/RETokenAny.P \
-.deps/gnu/regexp/RETokenBackRef.P .deps/gnu/regexp/RETokenChar.P \
-.deps/gnu/regexp/RETokenEnd.P .deps/gnu/regexp/RETokenEndSub.P \
-.deps/gnu/regexp/RETokenLookAhead.P .deps/gnu/regexp/RETokenOneOf.P \
+.deps/gnu/regexp/REMatch.P .deps/gnu/regexp/REMatchEnumeration.P \
+.deps/gnu/regexp/RESyntax.P .deps/gnu/regexp/REToken.P \
+.deps/gnu/regexp/RETokenAny.P .deps/gnu/regexp/RETokenBackRef.P \
+.deps/gnu/regexp/RETokenChar.P .deps/gnu/regexp/RETokenEnd.P \
+.deps/gnu/regexp/RETokenEndSub.P .deps/gnu/regexp/RETokenOneOf.P \
 .deps/gnu/regexp/RETokenPOSIX.P .deps/gnu/regexp/RETokenRange.P \
 .deps/gnu/regexp/RETokenRepeated.P .deps/gnu/regexp/RETokenStart.P \
 .deps/gnu/regexp/RETokenWordBoundary.P .deps/gnu/regexp/UncheckedRE.P \
