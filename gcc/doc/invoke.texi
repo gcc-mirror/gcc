@@ -1784,7 +1784,7 @@ file named @file{@var{sourcename}.decl}.
 @opindex Wno-protocol
 If a class is declared to implement a protocol, a warning is issued for
 every method in the protocol that is not implemented by the class.  The
-default behaviour is to issue a warning for every method not explicitly
+default behavior is to issue a warning for every method not explicitly
 implemented in the class, even if a method implementation is inherited
 from the superclass.  If you use the @code{-Wno-protocol} option, then
 methods inherited from the superclass are considered to be implemented,

@@ -19186,13 +19186,13 @@ Sun Jul  1 11:53:52 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-parse.in (OBJC_STRING): Kill.
 	(objc_string): Decompose to [objc_string] '@' STRING.
-	(reswords): Take the leading '@' off all the Objective C keywords.
+	(reswords): Take the leading '@' off all the Objective-C keywords.
 	(objc_rid_sans_at): Kill.
 	(init_reswords): Don't initialize it.
 	(yylexname): Use OBJC_IS_AT_KEYWORD and OBJC_IS_PQ_KEYWORD.
 	(_yylex): Kill reconsider label.  Look ahead one token after
 	an '@'; if we get an identifier, check whether it's an
-	Objective C @-keyword.  If so, return the keyword.  Otherwise,
+	Objective-C @-keyword.  If so, return the keyword.  Otherwise,
 	put back the token and return the '@' as a terminal.
 
 	* cpplib.c (lex_macro_node): Remove unnecessary check for

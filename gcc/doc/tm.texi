@@ -1429,7 +1429,7 @@ alignment of the underlying types of itself and of the previous
 bit-field; (ii) a zero-sized bit-field will affect the alignment of
 the whole enclosing structure, even if it is unnamed; except that
 (iii) a zero-sized bit-field will be disregarded unless it follows
-another bit-field of non-zero size.  If this hook returns @code{true},
+another bit-field of nonzero size.  If this hook returns @code{true},
 other macros that control bit-field layout are ignored.
 
 When a bit-field is inserted into a packed record, the whole size
