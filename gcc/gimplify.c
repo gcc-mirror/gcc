@@ -453,10 +453,10 @@ internal_get_tmp_var (tree val, tree *pre_p, tree *post_p, bool is_formal)
   mod = build (MODIFY_EXPR, TREE_TYPE (t), t, val);
 
   class = TREE_CODE_CLASS (TREE_CODE (val));
-  if (EXPR_LOCUS (val))
+  if (EXPR_HAS_LOCATION (val))
     SET_EXPR_LOCUS (mod, EXPR_LOCUS (val));
   else
-    annotate_with_locus (mod, input_location);
+    SET_EXPR_LOCATION (mod, input_location);
 
   /* gimplify_modify_expr might want to reduce this further.  */
   gimplify_and_add (mod, pre_p);
@@ -559,7 +559,7 @@ annotate_one_with_locus (tree t, location_t locus)
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (t)))
       && ! EXPR_HAS_LOCATION (t)
       && should_carry_locus_p (t))
-    annotate_with_locus (t, locus);
+    SET_EXPR_LOCATION (t, locus);
 }
 
 void
@@ -1832,8 +1832,8 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool (*gimple_test_f) (tree))
 
   /* For reliable diagnostics during inlining, it is necessary that 
      every call_expr be annotated with file and line.  */
-  if (!EXPR_LOCUS (*expr_p))
-    annotate_with_locus (*expr_p, input_location);
+  if (! EXPR_HAS_LOCATION (*expr_p))
+    SET_EXPR_LOCATION (*expr_p, input_location);
 
   /* This may be a call to a builtin function.
 
@@ -3435,7 +3435,6 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
   tree internal_post = NULL_TREE;
   tree save_expr;
   int is_statement = (pre_p == NULL);
-  location_t *locus;
   location_t saved_location;
   enum gimplify_status ret;
 
@@ -3455,12 +3454,9 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
     post_p = &internal_post;
 
   saved_location = input_location;
-  if (save_expr == error_mark_node)
-    locus = NULL;
-  else
-    locus = EXPR_LOCUS (save_expr);
-  if (locus)
-    input_location = *locus;
+  if (save_expr != error_mark_node
+      && EXPR_HAS_LOCATION (*expr_p))
+    input_location = EXPR_LOCATION (*expr_p);
 
   /* Loop over the specific gimplifiers until the toplevel node
      remains the same.  */

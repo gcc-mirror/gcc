@@ -132,8 +132,8 @@ add_stmt (tree t)
 
   if ((EXPR_P (t) || STATEMENT_CODE_P (code)) && code != LABEL_EXPR)
     {
-      if (!EXPR_LOCUS (t))
-	annotate_with_locus (t, input_location);
+      if (!EXPR_HAS_LOCATION (t))
+	SET_EXPR_LOCATION (t, input_location);
 
       /* When we expand a statement-tree, we must know whether or not the
 	 statements are full-expressions.  We record that fact here.  */
@@ -149,7 +149,7 @@ add_stmt (tree t)
 
 /* Build a generic statement based on the given type of node and
    arguments. Similar to `build_nt', except that we set
-   EXPR_LOCUS to be the current source location.  */
+   EXPR_LOCATION to be the current source location.  */
 /* ??? This should be obsolete with the lineno_stmt productions
    in the grammar.  */
 
@@ -166,7 +166,7 @@ build_stmt (enum tree_code code, ...)
   ret = make_node (code);
   TREE_TYPE (ret) = void_type_node;
   length = TREE_CODE_LENGTH (code);
-  annotate_with_locus (ret, input_location);
+  SET_EXPR_LOCATION (ret, input_location);
 
   /* Most statements have implicit side effects all on their own, 
      such as control transfer.  For those that do, we'll compute

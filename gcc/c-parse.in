@@ -2092,19 +2092,19 @@ lineno_stmt:
 		     because (recursively) all of the component statments
 		     should already have line numbers assigned.  */
 		  if ($2 && EXPR_P ($2))
-		    annotate_with_locus ($2, $1);
+		    SET_EXPR_LOCATION ($2, $1);
 		}
 	;
 
 lineno_label:
 	  save_location label
-		{ if ($2) annotate_with_locus ($2, $1); }
+		{ if ($2) SET_EXPR_LOCATION ($2, $1); }
 	;
 
 condition: save_location expr
 		{ $$ = lang_hooks.truthvalue_conversion ($2);
 		  if (EXPR_P ($$))
-		    annotate_with_locus ($$, $1); }
+		    SET_EXPR_LOCATION ($$, $1); }
 	;
 
 /* Implement -Wparenthesis by special casing IF statement directly nested
@@ -2191,7 +2191,7 @@ for_cond_expr: save_location xexpr
 		    {
 		      $$ = lang_hooks.truthvalue_conversion ($2);
 		      if (EXPR_P ($$))
-			annotate_with_locus ($$, $1);
+			SET_EXPR_LOCATION ($$, $1);
 		    }
 		  else
 		    $$ = NULL;

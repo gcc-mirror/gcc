@@ -6540,7 +6540,7 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
     }
 
   stmt = build3 (COND_EXPR, NULL_TREE, cond, then_block, else_block);
-  annotate_with_locus (stmt, if_locus);
+  SET_EXPR_LOCATION (stmt, if_locus);
   add_stmt (stmt);
 }
 
@@ -6584,7 +6584,7 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
                 }
               else
                 t = build1 (GOTO_EXPR, void_type_node, clab);
-	      annotate_with_locus (t, start_locus);
+	      SET_EXPR_LOCATION (t, start_locus);
               add_stmt (t);
             }
  
@@ -6592,9 +6592,9 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
           exit = build (COND_EXPR, void_type_node, cond, exit, t);
           exit = fold (exit);
 	  if (cond_is_first)
-            annotate_with_locus (exit, start_locus);
+            SET_EXPR_LOCATION (exit, start_locus);
 	  else
-            annotate_with_locus (exit, input_location);
+            SET_EXPR_LOCATION (exit, input_location);
         }
  
       add_stmt (top);
@@ -6687,7 +6687,7 @@ c_process_expr_stmt (tree expr)
     expr = build1 (NOP_EXPR, TREE_TYPE (expr), expr);
 
   if (EXPR_P (expr))
-    annotate_with_locus (expr, input_location);
+    SET_EXPR_LOCATION (expr, input_location);
 
   return expr;
 }

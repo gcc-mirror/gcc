@@ -50,7 +50,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Helpers.  */
 static tree mf_build_string (const char *string);
 static tree mf_varname_tree (tree);
-static tree mf_file_function_line_tree (location_t *);
+static tree mf_file_function_line_tree (location_t);
 
 /* Initialization of all the mf-runtime.h extern decls.  */
 static void mf_init_extern_trees (void);
@@ -117,10 +117,11 @@ mf_varname_tree (tree decl)
 
   /* Add FILENAME[:LINENUMBER].  */
   {
+    expanded_location xloc = expand_location (DECL_SOURCE_LOCATION (decl));
     const char *sourcefile;
-    unsigned sourceline;
+    unsigned sourceline = xloc.line;
 
-    sourcefile = DECL_SOURCE_FILE (decl);
+    sourcefile = xloc.file;
     if (sourcefile == NULL && current_function_decl != NULL_TREE)
       sourcefile = DECL_SOURCE_FILE (current_function_decl);
     if (sourcefile == NULL)
@@ -128,7 +129,6 @@ mf_varname_tree (tree decl)
 
     pp_string (buf, sourcefile);
 
-    sourceline = DECL_SOURCE_LINE (decl);
     if (sourceline != 0)
       {
         pp_string (buf, ":");
@@ -188,25 +188,23 @@ mf_varname_tree (tree decl)
 /* And another friend, for producing a simpler message.  */
 
 static tree
-mf_file_function_line_tree (location_t *locus)
+mf_file_function_line_tree (location_t location)
 {
+  expanded_location xloc = expand_location (location);
   const char *file = NULL, *colon, *line, *op, *name, *cp;
   char linebuf[18];
   char *string;
   tree result;
 
-  /* Add FILENAME.  */
-  if (locus != NULL)
-    file = locus->file;
-  if (file == NULL && current_function_decl != NULL_TREE)
-    file = DECL_SOURCE_FILE (current_function_decl);
-  if (file == NULL)
-    file = "<unknown file>";
+  /* Add FILENAME[:LINENUMBER]. */
+  if (xloc.file == NULL && current_function_decl != NULL_TREE)
+    xloc.file = DECL_SOURCE_FILE (current_function_decl);
+  if (xloc.file == NULL)
+    xloc.file = "<unknown file>";
 
-  /* Add :LINENUMBER.  */
-  if (locus != NULL && locus->line > 0)
+  if (xloc.line > 0)
     {
-      sprintf (linebuf, "%d", locus->line);
+      sprintf (linebuf, "%d", xloc.line);
       colon = ":";
       line = linebuf;
     }
@@ -348,13 +346,13 @@ mf_decl_cache_locals (void)
      globals into the cache variables.  */
   t = build (MODIFY_EXPR, TREE_TYPE (mf_cache_shift_decl_l),
              mf_cache_shift_decl_l, mf_cache_shift_decl);
-  annotate_with_locus (t, DECL_SOURCE_LOCATION (current_function_decl));
+  SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (current_function_decl));
   gimplify_to_stmt_list (&t);
   shift_init_stmts = t;
 
   t = build (MODIFY_EXPR, TREE_TYPE (mf_cache_mask_decl_l),
              mf_cache_mask_decl_l, mf_cache_mask_decl);
-  annotate_with_locus (t, DECL_SOURCE_LOCATION (current_function_decl));
+  SET_EXPR_LOCATION (t, DECL_SOURCE_LOCATION (current_function_decl));
   gimplify_to_stmt_list (&t);
   mask_init_stmts = t;
 
@@ -548,7 +546,10 @@ mf_build_check_statement_for (tree addr, tree size,
 
      This is the body of the conditional.  */
   
-  u = tree_cons (NULL_TREE, mf_file_function_line_tree (locus), NULL_TREE);
+  u = tree_cons (NULL_TREE,
+		 mf_file_function_line_tree (locus == NULL ? UNKNOWN_LOCATION
+					     : *locus),
+		 NULL_TREE);
   u = tree_cons (NULL_TREE, dirflag, u);
   u = tree_cons (NULL_TREE, size, u);
   u = tree_cons (NULL_TREE, mf_value, u);
@@ -920,7 +921,7 @@ mx_register_decls (tree decl, tree *stmt_list)
                                                       register_fncall_params);
 
           /* Accumulate the two calls.  */
-          /* ??? Set EXPR_LOCUS.  */
+          /* ??? Set EXPR_LOCATION.  */
           gimplify_stmt (&register_fncall);
           gimplify_stmt (&unregister_fncall);
 
