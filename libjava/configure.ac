@@ -213,6 +213,13 @@ AC_ARG_ENABLE(libgcj-multifile,
 esac],[enable_libgcj_multifile=no])
 AM_CONDITIONAL(ONESTEP, test "$enable_libgcj_multifile" = yes)
 
+AC_ARG_WITH(java-home,
+  AS_HELP_STRING([--with-java-home=DIRECTORY],
+                 [value of java.home system property]),
+		 [JAVA_HOME="${withval}"], [JAVA_HOME=""])
+AM_CONDITIONAL(JAVA_HOME_SET, test ! -z "$JAVA_HOME")
+AC_SUBST(JAVA_HOME)
+
 # What is the native OS API for MinGW?
 AC_ARG_WITH(win32-nlsapi,
   AS_HELP_STRING([--with-win32-nlsapi=ansi or unicows or unicode],

@@ -1,3 +1,7 @@
+2005-04-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* doc/install.texi (Configuration): Document --with-java-home.
+
 2005-04-05  Richard Henderson  <rth@redhat.com>
 
 	PR target/20342

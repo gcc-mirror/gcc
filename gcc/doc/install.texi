@@ -1035,6 +1035,13 @@ particularly useful if you intend to use several versions of GCC in
 parallel.  This is currently supported by @samp{libgfortran},
 @samp{libjava}, @samp{libmudflap}, @samp{libstdc++}, and @samp{libobjc}.
 
+@item --with-java-home=@var{dirname}
+This @samp{libjava} option overrides the default value of the
+@samp{java.home} system property.  It is also used to set
+@samp{sun.boot.class.path} to @file{@var{dirname}/lib/rt.jar}.  By
+default @samp{java.home} is set to @file{@var{prefix}} and
+@samp{sun.boot.class.path} to
+@file{@var{datadir}/java/libgcj-@var{version}.jar}.
 
 @item --enable-languages=@var{lang1},@var{lang2},@dots{}
 Specify that only a particular subset of compilers and
