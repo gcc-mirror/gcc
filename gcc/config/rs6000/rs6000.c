@@ -10062,7 +10062,7 @@ print_operand (FILE *file, rtx x, int code)
       /* Write second word of DImode or DFmode reference.  Works on register
 	 or non-indexed memory only.  */
       if (GET_CODE (x) == REG)
-	fprintf (file, "%s", reg_names[REGNO (x) + 1]);
+	fputs (reg_names[REGNO (x) + 1], file);
       else if (GET_CODE (x) == MEM)
 	{
 	  /* Handle possible auto-increment.  Since it is pre-increment and
@@ -10133,7 +10133,7 @@ print_operand (FILE *file, rtx x, int code)
 	  || REGNO (XEXP (x, 0)) >= 32)
 	output_operand_lossage ("invalid %%P value");
       else
-	fprintf (file, "%s", reg_names[REGNO (XEXP (x, 0))]);
+	fputs (reg_names[REGNO (XEXP (x, 0))], file);
       return;
 
     case 'q':
@@ -10368,7 +10368,7 @@ print_operand (FILE *file, rtx x, int code)
     case 'Y':
       /* Like 'L', for third word of TImode  */
       if (GET_CODE (x) == REG)
-	fprintf (file, "%s", reg_names[REGNO (x) + 2]);
+	fputs (reg_names[REGNO (x) + 2], file);
       else if (GET_CODE (x) == MEM)
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
@@ -10415,7 +10415,7 @@ print_operand (FILE *file, rtx x, int code)
     case 'Z':
       /* Like 'L', for last word of TImode.  */
       if (GET_CODE (x) == REG)
-	fprintf (file, "%s", reg_names[REGNO (x) + 3]);
+	fputs (reg_names[REGNO (x) + 3], file);
       else if (GET_CODE (x) == MEM)
 	{
 	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
