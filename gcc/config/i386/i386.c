@@ -2536,6 +2536,34 @@ function_arg_advance (CUMULATIVE_ARGS *cum,	/* current arg information */
   return;
 }
 
+/* A subroutine of function_arg.  We want to pass a parameter whose nominal
+   type is MODE in REGNO.  We try to minimize ABI variation, so MODE may not
+   actually be valid for REGNO with the current ISA.  In this case, ALT_MODE
+   is used instead.  It must be the same size as MODE, and must be known to
+   be valid for REGNO.  Finally, ORIG_MODE is the original mode of the 
+   parameter, as seen by the type system.  This may be different from MODE
+   when we're mucking with things minimizing ABI variations.
+
+   Returns a REG or a PARALLEL as appropriate.  */
+
+static rtx
+gen_reg_or_parallel (enum machine_mode mode, enum machine_mode alt_mode,
+		     enum machine_mode orig_mode, unsigned int regno)
+{
+  rtx tmp;
+
+  if (HARD_REGNO_MODE_OK (regno, mode))
+    tmp = gen_rtx_REG (mode, regno);
+  else
+    {
+      tmp = gen_rtx_REG (alt_mode, regno);
+      tmp = gen_rtx_EXPR_LIST (VOIDmode, tmp, const0_rtx);
+      tmp = gen_rtx_PARALLEL (orig_mode, gen_rtvec (1, tmp));
+    }
+
+  return tmp;
+}
+
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
@@ -2550,12 +2578,11 @@ function_arg_advance (CUMULATIVE_ARGS *cum,	/* current arg information */
     (otherwise it is an extra parameter matching an ellipsis).  */
 
 rtx
-function_arg (CUMULATIVE_ARGS *cum,	/* current arg information */
-	      enum machine_mode mode,	/* current arg mode */
-	      tree type,	/* type of the argument or 0 if lib support */
-	      int named)	/* != 0 for normal args, == 0 for ...  args */
+function_arg (CUMULATIVE_ARGS *cum, enum machine_mode orig_mode,
+	      tree type, int named)
 {
-  rtx ret   = NULL_RTX;
+  enum machine_mode mode = orig_mode;
+  rtx ret = NULL_RTX;
   int bytes =
     (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
@@ -2628,7 +2655,8 @@ function_arg (CUMULATIVE_ARGS *cum,	/* current arg information */
 			 "changes the ABI");
 	      }
 	    if (cum->sse_nregs)
-	      ret = gen_rtx_REG (mode, cum->sse_regno + FIRST_SSE_REG);
+	      ret = gen_reg_or_parallel (mode, TImode, orig_mode,
+					 cum->sse_regno + FIRST_SSE_REG);
 	  }
 	break;
       case V8QImode:
@@ -2644,7 +2672,8 @@ function_arg (CUMULATIVE_ARGS *cum,	/* current arg information */
 			 "changes the ABI");
 	      }
 	    if (cum->mmx_nregs)
-	      ret = gen_rtx_REG (mode, cum->mmx_regno + FIRST_MMX_REG);
+	      ret = gen_reg_or_parallel (mode, DImode, orig_mode,
+					 cum->mmx_regno + FIRST_MMX_REG);
 	  }
 	break;
       }
@@ -14897,10 +14926,20 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
   if (FP_REGNO_P (regno))
     return VALID_FP_MODE_P (mode);
   if (SSE_REGNO_P (regno))
-    return (TARGET_SSE ? VALID_SSE_REG_MODE (mode) : 0);
+    {
+      if (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
+	return 1;
+      if (TARGET_SSE && VALID_SSE_REG_MODE (mode))
+	return 1;
+      return 0;
+    }
   if (MMX_REGNO_P (regno))
-    return (TARGET_MMX
-	    ? VALID_MMX_REG_MODE (mode) || VALID_MMX_REG_MODE_3DNOW (mode) : 0);
+    {
+      if (TARGET_3DNOW && VALID_MMX_REG_MODE_3DNOW (mode))
+	return 1;
+      if (TARGET_MMX && VALID_MMX_REG_MODE (mode))
+	return 1;
+    }
   /* We handle both integer and floats in the general purpose registers.
      In future we should be able to handle vector modes as well.  */
   if (!VALID_INT_MODE_P (mode) && !VALID_FP_MODE_P (mode))
@@ -15236,7 +15275,9 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
       return false;
 
     case FLOAT_EXTEND:
-      if (!TARGET_SSE_MATH || !VALID_SSE_REG_MODE (mode))
+      if (!TARGET_SSE_MATH
+	  || mode == XFmode
+	  || (mode == DFmode && !TARGET_SSE2))
 	*total = 0;
       return false;
 

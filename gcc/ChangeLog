@@ -1,3 +1,19 @@
+2004-12-15  Richard Henderson  <rth@redhat.com>
+
+        PR target/19010
+        * config/i386/i386.c (gen_reg_or_parallel): New.
+        (function_arg): Use it.
+        (ix86_hard_regno_mode_ok): Test SSE1 and SSE2 separately,
+        MMX and 3DNOW separately.
+        (ix86_rtx_costs): Simplify FLOAT_EXTEND case.
+        * config/i386/i386.h (VALID_SSE2_REG_MODE): Move SSE2 cases from ...
+        (VALID_SSE_REG_MODE): ... here.
+	* config/i386/i386.md (movv4sf_internal): Validate one MEM.
+	(movv4si_internal): Likewise.
+	(movv2di_internal): Likewise.  Enable for SSE2 only.
+	(movv2di): Enable for SSE2 only.
+	(pushv4si): Enable for SSE1.
+
 2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c++/17972
