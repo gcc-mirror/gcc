@@ -866,7 +866,8 @@ struct directive {
   enum node_type type;		/* Code which describes which directive.  */
 };
 
-#define IS_INCLUDE_DIRECTIVE_TYPE(t) (T_INCLUDE <= (t) && (t) <= T_IMPORT)
+#define IS_INCLUDE_DIRECTIVE_TYPE(t) \
+((int) T_INCLUDE <= (int) (t) && (int) (t) <= (int) T_IMPORT)
 
 /* These functions are declared to return int instead of void since they
    are going to be placed in the table and some old compilers have trouble with
@@ -3923,7 +3924,7 @@ handle_directive (ip, op)
 	 directives through.  */
 
       if (!no_output && already_output == 0
-	  && (kt->type == T_DEFINE ? dump_names <= dump_macros
+	  && (kt->type == T_DEFINE ? (int) dump_names <= (int) dump_macros
 	      : IS_INCLUDE_DIRECTIVE_TYPE (kt->type) ? dump_includes
 	      : kt->type == T_PRAGMA)) {
         int len;
