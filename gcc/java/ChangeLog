@@ -1,3 +1,8 @@
+1999-01-07  Andrew Haley  <aph@viagra.cygnus.co.uk>
+
+	* jcf-parse.c (yyparse): variable len changed from a char to an
+	int to prevent overflow.
+
 Wed Jan  6 17:19:46 1999  Per Bothner  <bothner@cygnus.com>
 
 	* java-tree.h:  Declare read_class.
