@@ -63,16 +63,16 @@ cpp_print_containing_files (pfile)
 	  if (first)
 	    {
 	      first = 0;
-	      cpp_notice ("In file included from ");
+	      cpp_notice ("In file included from %s:%ld",
+			  ip->nominal_fname, line);
 	    }
 	  else
-	    cpp_notice (",\n                 from ");
+	    cpp_message (pfile, -1, ",\n                 from %s:%ld",
+			 ip->nominal_fname, line);
 	}
-
-      fprintf (stderr, " from %s:%ld", ip->nominal_fname, line);
     }
   if (! first)
-    fprintf (stderr, ":\n");
+    fputs (":\n", stderr);
 
   /* Record we have printed the status as of this time.  */
   pfile->input_stack_listing_current = 1;
