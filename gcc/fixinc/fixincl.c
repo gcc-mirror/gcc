@@ -3,7 +3,7 @@
    files which are fixed to work correctly with ANSI C and placed in a
    directory that GNU C will search.
 
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -533,8 +533,6 @@ load_file ( fname )
 void
 run_compiles ()
 {
-  tSCC z_bad_comp[] = "fixincl ERROR:  cannot compile %s regex for %s\n\
-\texpr = `%s'\n\terror %s\n";
   tFixDesc *p_fixd = fixDescList;
   int fix_ct = FIX_COUNT;
   tTestDesc *p_test;
@@ -550,26 +548,13 @@ run_compiles ()
       exit (EXIT_FAILURE);
     }
 
-  /*  Make sure re_compile_pattern does not stumble across invalid
-      data */
+  /*  Make sure compile_re does not stumble across invalid data */
 
   memset ( (void*)p_re, '\0', REGEX_COUNT * sizeof (regex_t) );
   memset ( (void*)&incl_quote_re, '\0', sizeof (regex_t) );
 
-  /*  The patterns we search for are all egrep patterns.
-      In the shell version of this program, we invoke egrep
-      with the supplied pattern.  Here, we will run
-      re_compile_pattern, but it must be using the same rules.  */
-
-  re_set_syntax (RE_SYNTAX_EGREP);
-  pz_err = re_compile_pattern (incl_quote_pat, sizeof (incl_quote_pat)-1,
-                              &incl_quote_re);
-  if (pz_err != (char *) NULL)
-    {
-      fprintf (stderr, z_bad_comp, "quoted include", "run_compiles",
-               incl_quote_pat, pz_err);
-      exit (EXIT_FAILURE);
-    }
+  compile_re (incl_quote_pat, &incl_quote_re, 1,
+	      "quoted include", "run_compiles");
 
   /* FOR every fixup, ...  */
   do
@@ -669,16 +654,9 @@ run_compiles ()
                 }
 
               p_test->p_test_regex = p_re++;
-              pz_err = re_compile_pattern (p_test->pz_test_text,
-                                          strlen (p_test->pz_test_text),
-                                          p_test->p_test_regex);
-              if (pz_err != (char *) NULL)
-                {
-                  fprintf (stderr, z_bad_comp, "select test", p_fixd->fix_name,
-                           p_test->pz_test_text, pz_err);
-                  exit (EXIT_FAILURE);
-                }
-            }
+	      compile_re (p_test->pz_test_text, p_test->p_test_regex, 0,
+			  "select test", p_fixd->fix_name);
+	    }
           p_test++;
         }
     }
@@ -815,14 +793,12 @@ egrep_test (pz_data, p_test)
      char *pz_data;
      tTestDesc *p_test;
 {
-  regmatch_t match;
-
 #ifdef DEBUG
   if (p_test->p_test_regex == 0)
     fprintf (stderr, "fixincl ERROR RE not compiled:  `%s'\n",
              p_test->pz_test_text);
 #endif
-  if (regexec (p_test->p_test_regex, pz_data, 1, &match, 0) == 0)
+  if (regexec (p_test->p_test_regex, pz_data, 0, 0, 0) == 0)
     return APPLY_FIX;
   return SKIP_FIX;
 }

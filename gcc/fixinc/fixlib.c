@@ -1,4 +1,27 @@
 
+/* Install modified versions of certain ANSI-incompatible system header
+   files which are fixed to work correctly with ANSI C and placed in a
+   directory that GNU C will search.
+
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
+
 #include "fixlib.h"
 
 /* * * * * * * * * * * * *
@@ -127,4 +150,40 @@ is_cxx_header (fname, text)
     } text_done:;
 
   return BOOL_FALSE;
+}
+
+/* * * * * * * * * * * * *
+ 
+   Compile one regular expression pattern for later use.  PAT contains
+   the pattern, RE points to a regex_t structure (which should have
+   been bzeroed).  MATCH is 1 if we need to know where the regex
+   matched, 0 if not. If regcomp fails, prints an error message and
+   aborts; E1 and E2 are strings to shove into the error message.
+
+   The patterns we search for are all egrep patterns.
+   REG_EXTENDED|REG_NEWLINE produces identical regex syntax/semantics
+   to egrep (verified from 4.4BSD Programmer's Reference Manual).  */
+void
+compile_re( pat, re, match, e1, e2 )
+     tCC *pat;
+     regex_t *re;
+     int match;
+     tCC *e1;
+     tCC *e2;
+{
+  tSCC z_bad_comp[] = "fixincl ERROR:  cannot compile %s regex for %s\n\
+\texpr = `%s'\n\terror %s\n";
+  int flags, err;
+
+  flags = (match ? REG_EXTENDED|REG_NEWLINE
+	   : REG_EXTENDED|REG_NEWLINE|REG_NOSUB);
+  err = regcomp (re, pat, flags);
+
+  if (err)
+    {
+      char rerrbuf[1024];
+      regerror (err, re, rerrbuf, 1024);
+      fprintf (stderr, z_bad_comp, e1, e2, pat, rerrbuf);
+      exit (EXIT_FAILURE);
+    }
 }

@@ -3,7 +3,7 @@
 
    Test to see if a particular fix should be applied to a header file.
 
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 
 = = = = = = = = = = = = = = = = = = = = = = = = =
 
@@ -191,9 +191,8 @@ FIX_PROC_HEAD( else_endif_label_fix )
   char* pz_next = (char*)NULL;
   regmatch_t match[2];
 
-  re_set_syntax (RE_SYNTAX_EGREP);
-  (void)re_compile_pattern (label_pat, sizeof (label_pat)-1,
-                            &label_re);
+  compile_re (label_pat, &label_re, 1,
+	      "label pattern", "else_endif_label_fix");
 
   for (;;) /* entire file */
     {
