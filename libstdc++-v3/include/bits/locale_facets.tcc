@@ -655,9 +655,7 @@ namespace std
       // Prepare for hex formatted input.
       typedef ios_base::fmtflags        fmtflags;
       const fmtflags __fmt = __io.flags();
-      const fmtflags __fmtmask = ~(ios_base::showpos | ios_base::basefield
-				   | ios_base::uppercase | ios_base::internal);
-      __io.flags(__fmt & __fmtmask | (ios_base::hex | ios_base::showbase));
+      __io.flags(__fmt & ~ios_base::basefield | ios_base::hex);
 
       unsigned long __ul;
       __beg = _M_extract_int(__beg, __end, __io, __err, __ul);
