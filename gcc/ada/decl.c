@@ -2,7 +2,7 @@
  *                                                                          *
  *                         GNAT COMPILER COMPONENTS                         *
  *                                                                          *
- *                                 D E C L                                   *
+ *                                 D E C L                                  *
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
@@ -719,7 +719,6 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 				     concat_id_with_name (gnu_entity_id,
 							  "UNC"));
 	}
-
 
 	/* Convert the expression to the type of the object except in the
 	   case where the object's type is unconstrained or the object's type
@@ -1524,7 +1523,6 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 					size_binop (MINUS_EXPR, gnu_base_max,
 						    gnu_base_min)));
 
-
 	    TYPE_NAME (gnu_index_types[index])
 	      = create_concat_name (gnat_entity, field_name);
 	  }
@@ -1635,7 +1633,6 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 			  tem, 0, ! Comes_From_Source (gnat_entity),
 			  debug_info_p);
 	rest_of_type_compilation (gnu_fat_type, global_bindings_p ());
-
 
 	/* Create a record type for the object and its template and
 	   set the template at a negative offset.  */
@@ -4288,7 +4285,6 @@ elaborate_expression_1 (gnat_expr, gnat_entity, gnu_expr, gnu_name, definition,
     gnu_expr = build (COMPONENT_REF, TREE_TYPE (gnu_expr),
 		      build (PLACEHOLDER_EXPR, DECL_CONTEXT (gnu_expr)),
 		      gnu_expr);
-
 
   /* If GNU_EXPR is neither a placeholder nor a constant, nor a variable
      that is a constant, make a variable that is initialized to contain the

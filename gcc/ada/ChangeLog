@@ -1,3 +1,7 @@
+2001-10-30  Geert Bosch <bosch@gnat.com>
+
+	* decl.c: Minor whitespace fixes.
+
 2001-10-30  Richard Kenner <kenner@gnat.com>
 
 	* utils2.c (build_allocator): Test for SIZE overflow in array case too
