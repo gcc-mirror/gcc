@@ -1,5 +1,10 @@
 2002-03-08  Aldy Hernandez  <aldyh@redhat.com>
 
+        * config/rs6000/rs6000.c (rs6000_va_arg): Fix alignment for
+        vectors.
+
+2002-03-08  Aldy Hernandez  <aldyh@redhat.com>
+
         * config/rs6000/sysv4.h (BIGGEST_ALIGNMENT): Change for altivec.
 
 Fri Mar  8 21:27:49 CET 2002  Jan Hubicka  <jh@suse.cz>
