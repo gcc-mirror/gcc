@@ -4182,11 +4182,11 @@ strength_reduce (loop, insn_count, flags)
 	     the alignment.  */
 	  if (GET_CODE (v->new_reg) == REG
 	      && v->giv_type == DEST_REG
-	      && REGNO_POINTER_FLAG (REGNO (v->dest_reg)))
+	      && REG_POINTER (v->dest_reg))
 	    mark_reg_pointer (v->new_reg,
 			      REGNO_POINTER_ALIGN (REGNO (v->dest_reg)));
 	  else if (GET_CODE (v->new_reg) == REG
-		   && REGNO_POINTER_FLAG (REGNO (v->src_reg)))
+		   && REG_POINTER (v->src_reg))
 	    {
 	      unsigned int align = REGNO_POINTER_ALIGN (REGNO (v->src_reg));
 
@@ -4199,7 +4199,7 @@ strength_reduce (loop, insn_count, flags)
 	    }
 	  else if (GET_CODE (v->new_reg) == REG
 		   && GET_CODE (v->add_val) == REG
-		   && REGNO_POINTER_FLAG (REGNO (v->add_val)))
+		   && REG_POINTER (v->add_val))
 	    {
 	      unsigned int align = REGNO_POINTER_ALIGN (REGNO (v->add_val));
 
@@ -7884,7 +7884,7 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 		    || GET_CODE (v->add_val) == LABEL_REF
 		    || GET_CODE (v->add_val) == CONST
 		    || (GET_CODE (v->add_val) == REG
-			&& REGNO_POINTER_FLAG (REGNO (v->add_val)))))
+			&& REG_POINTER (v->add_val))))
 	      {
 		if (! biv_elimination_giv_has_0_offset (bl->biv, v, insn))
 		  continue;
@@ -7948,7 +7948,7 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 		    || GET_CODE (v->add_val) == LABEL_REF
 		    || GET_CODE (v->add_val) == CONST
 		    || (GET_CODE (v->add_val) == REG
-			&& REGNO_POINTER_FLAG (REGNO (v->add_val))))
+			&& REG_POINTER (v->add_val)))
 		&& ! v->ignore && ! v->maybe_dead && v->always_computable
 		&& v->mode == mode)
 	      {

@@ -549,18 +549,14 @@ gen_reg_rtx (mode)
       return gen_rtx_CONCAT (mode, realpart, imagpart);
     }
 
-  /* Make sure regno_pointer_flag and regno_reg_rtx are large
-     enough to have an element for this pseudo reg number.  */
+  /* Make sure regno_pointer_align and regno_reg_rtx are large enough
+     to have an element for this pseudo reg number.  */
 
-  if (reg_rtx_no == f->emit->regno_pointer_flag_length)
+  if (reg_rtx_no == f->emit->regno_pointer_align_length)
     {
-      int old_size = f->emit->regno_pointer_flag_length;
+      int old_size = f->emit->regno_pointer_align_length;
       rtx *new1;
       char *new;
-      new = xrealloc (f->emit->regno_pointer_flag, old_size * 2);
-      memset (new + old_size, 0, old_size);
-      f->emit->regno_pointer_flag = new;
-
       new = xrealloc (f->emit->regno_pointer_align, old_size * 2);
       memset (new + old_size, 0, old_size);
       f->emit->regno_pointer_align = (unsigned char *) new;
@@ -570,7 +566,7 @@ gen_reg_rtx (mode)
       memset (new1 + old_size, 0, old_size * sizeof (rtx));
       regno_reg_rtx = new1;
 
-      f->emit->regno_pointer_flag_length = old_size * 2;
+      f->emit->regno_pointer_align_length = old_size * 2;
     }
 
   val = gen_rtx_raw_REG (mode, reg_rtx_no);
@@ -603,9 +599,9 @@ mark_reg_pointer (reg, align)
      rtx reg;
      int align;
 {
-  if (! REGNO_POINTER_FLAG (REGNO (reg)))
+  if (! REG_POINTER (reg))
     {
-      REGNO_POINTER_FLAG (REGNO (reg)) = 1;
+      REG_POINTER (reg) = 1;
 
       if (align)
 	REGNO_POINTER_ALIGN (REGNO (reg)) = align;
@@ -1713,7 +1709,6 @@ free_emit_status (f)
      struct function *f;
 {
   free (f->emit->x_regno_reg_rtx);
-  free (f->emit->regno_pointer_flag);
   free (f->emit->regno_pointer_align);
   free (f->emit);
   f->emit = NULL;
@@ -3926,17 +3921,14 @@ init_emit ()
 
   /* Init the tables that describe all the pseudo regs.  */
 
-  f->emit->regno_pointer_flag_length = LAST_VIRTUAL_REGISTER + 101;
-
-  f->emit->regno_pointer_flag 
-    = (char *) xcalloc (f->emit->regno_pointer_flag_length, sizeof (char));
+  f->emit->regno_pointer_align_length = LAST_VIRTUAL_REGISTER + 101;
 
   f->emit->regno_pointer_align
-    = (unsigned char *) xcalloc (f->emit->regno_pointer_flag_length,
+    = (unsigned char *) xcalloc (f->emit->regno_pointer_align_length,
 				 sizeof (unsigned char));
 
   regno_reg_rtx 
-    = (rtx *) xcalloc (f->emit->regno_pointer_flag_length * sizeof (rtx),
+    = (rtx *) xcalloc (f->emit->regno_pointer_align_length * sizeof (rtx),
 		       sizeof (rtx));
 
   /* Put copies of all the virtual register rtx into regno_reg_rtx.  */
@@ -3944,16 +3936,16 @@ init_emit ()
 
   /* Indicate that the virtual registers and stack locations are
      all pointers.  */
-  REGNO_POINTER_FLAG (STACK_POINTER_REGNUM) = 1;
-  REGNO_POINTER_FLAG (FRAME_POINTER_REGNUM) = 1;
-  REGNO_POINTER_FLAG (HARD_FRAME_POINTER_REGNUM) = 1;
-  REGNO_POINTER_FLAG (ARG_POINTER_REGNUM) = 1;
+  REG_POINTER (stack_pointer_rtx) = 1;
+  REG_POINTER (frame_pointer_rtx) = 1;
+  REG_POINTER (hard_frame_pointer_rtx) = 1;
+  REG_POINTER (arg_pointer_rtx) = 1;
 
-  REGNO_POINTER_FLAG (VIRTUAL_INCOMING_ARGS_REGNUM) = 1;
-  REGNO_POINTER_FLAG (VIRTUAL_STACK_VARS_REGNUM) = 1;
-  REGNO_POINTER_FLAG (VIRTUAL_STACK_DYNAMIC_REGNUM) = 1;
-  REGNO_POINTER_FLAG (VIRTUAL_OUTGOING_ARGS_REGNUM) = 1;
-  REGNO_POINTER_FLAG (VIRTUAL_CFA_REGNUM) = 1;
+  REG_POINTER (virtual_incoming_args_rtx) = 1;
+  REG_POINTER (virtual_stack_vars_rtx) = 1;
+  REG_POINTER (virtual_stack_dynamic_rtx) = 1;
+  REG_POINTER (virtual_outgoing_args_rtx) = 1;
+  REG_POINTER (virtual_cfa_rtx) = 1;
 
 #ifdef STACK_BOUNDARY
   REGNO_POINTER_ALIGN (STACK_POINTER_REGNUM) = STACK_BOUNDARY;
@@ -3999,7 +3991,7 @@ mark_emit_status (es)
   if (es == 0)
     return;
 
-  for (i = es->regno_pointer_flag_length, r = es->x_regno_reg_rtx;
+  for (i = es->regno_pointer_align_length, r = es->x_regno_reg_rtx;
        i > 0; --i, ++r)
     ggc_mark_rtx (*r);
 

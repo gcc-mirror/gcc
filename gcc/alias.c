@@ -671,9 +671,9 @@ find_base_value (src)
 	/* This might not be necessary anymore:
 	   If either operand is a REG that is a known pointer, then it
 	   is the base.  */
-	else if (GET_CODE (src_0) == REG && REGNO_POINTER_FLAG (REGNO (src_0)))
+	else if (GET_CODE (src_0) == REG && REG_POINTER (src_0))
 	  return find_base_value (src_0);
-	else if (GET_CODE (src_1) == REG && REGNO_POINTER_FLAG (REGNO (src_1)))
+	else if (GET_CODE (src_1) == REG && REG_POINTER (src_1))
 	  return find_base_value (src_1);
 
 	return 0;
@@ -1082,10 +1082,10 @@ find_base_term (x)
 
 	/* If either operand is known to be a pointer, then use it
 	   to determine the base term.  */
-	if (REG_P (tmp1) && REGNO_POINTER_FLAG (REGNO (tmp1)))
+	if (REG_P (tmp1) && REG_POINTER (tmp1))
 	  return find_base_term (tmp1);
 
-	if (REG_P (tmp2) && REGNO_POINTER_FLAG (REGNO (tmp2)))
+	if (REG_P (tmp2) && REG_POINTER (tmp2))
 	  return find_base_term (tmp2);
 
 	/* Neither operand was known to be a pointer.  Go ahead and find the

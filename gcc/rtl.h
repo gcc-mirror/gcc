@@ -169,6 +169,7 @@ typedef struct rtx_def
      restoring registers in the prologue and epilogue.
      1 in a MEM if the MEM refers to a scalar, rather than a member of
      an aggregate.
+     1 in a REG if the register is a pointer.
      1 in a SYMBOL_REF if it addresses something in the per-function
      constant string pool.  */
   unsigned frame_related : 1;
@@ -748,6 +749,9 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 
 /* 1 in a REG rtx if it corresponds to a variable declared by the user.  */
 #define REG_USERVAR_P(RTX) ((RTX)->volatil)
+
+/* 1 in a REG rtx if the register is a pointer.  */
+#define REG_POINTER(RTX) ((RTX)->frame_related)
 
 /* 1 if the given register REG corresponds to a hard register.  */
 #define HARD_REGISTER_P(REG) (HARD_REGISTER_NUM_P (REGNO (REG)))

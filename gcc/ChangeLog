@@ -1,5 +1,37 @@
 2000-11-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* function.h (emit_status): Delete member regno_pointer_flag and
+	rename regno_pointer_flag_length to regno_pointer_align_length.
+	Delete define for REGNO_POINTER_FLAG.
+	* integrate.h (inline_remap): Delete member regno_pointer_flag.
+	Add member x_regno_reg_rtx.
+	* rtl.h (rtx_def): Use frame_related bit to indicate register is
+	a pointer in REG expressions.  Define REG_POINTER macro.
+	* alias.c (find_base_value, find_base_term): Use REG_POINTER
+	instead of REGNO_POINTER_FLAG.
+	* combine.c (nonzero_bits, num_sign_bit_copies): Likewise.
+	* emit-rtl.c (gen_reg_rtx): Use regno_pointer_align_length instead
+	of regno_pointer_flag_length.  Remove code which refers to
+	regno_pointer_flag.
+	(mark_reg_pointer): Use REG_POINTER.
+	(free_emit_status): Remove code which refers to regno_pointer_flag.
+	(init_emit, mark_emit_status): Likewise.
+	* flow.c (dump_flow_info): Likewise.
+	* function.c (preserve_temp_slots): Likewise.
+	* integrate.c (expand_inline_function, copy_rtx_and_substitute):
+	Use x_regno_reg_rtx instead of regno_pointer_flag for function
+	pointer determination in map.
+	* loop.c (strength_reduce, maybe_eliminate_biv_1): Use REG_POINTER.
+	* predict.c (estimate_probability): Likewise.
+	* regclass.c (record_address_regs, reg_scan_mark_refs): Likewise.
+	* unroll.c (unroll_loop): Use x_regno_reg_rtx instead of
+	regno_pointer_flag for function pointer determination in map.
+	* convex.h (RTX_COSTS): Don't test regno_pointer_flag and use
+	REG_POINTER.
+	* pa.c (hppa_legitimize_address, emit_move_sequence, basereg_operand):
+	Use REG_POINTER.
+	(restore_unscaled_index_insn_codes): Revise comment.
+
 	* expr.c (do_compare_and_jump): Add missing TYPE_MODE in statement.
 
 2000-11-30  Joseph S. Myers  <jsm28@cam.ac.uk>

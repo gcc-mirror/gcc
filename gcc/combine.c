@@ -8033,7 +8033,7 @@ nonzero_bits (x, mode)
       /* If pointers extend unsigned and this is a pointer in Pmode, say that
 	 all the bits above ptr_mode are known to be zero.  */
       if (POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode
-	  && REGNO_POINTER_FLAG (REGNO (x)))
+	  && REG_POINTER (x))
 	nonzero &= GET_MODE_MASK (ptr_mode);
 #endif
 
@@ -8471,7 +8471,7 @@ num_sign_bit_copies (x, mode)
       /* If pointers extend signed and this is a pointer in Pmode, say that
 	 all the bits above ptr_mode are known to be sign bit copies.  */
       if (! POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode && mode == Pmode
-	  && REGNO_POINTER_FLAG (REGNO (x)))
+	  && REG_POINTER (x))
 	return GET_MODE_BITSIZE (Pmode) - GET_MODE_BITSIZE (ptr_mode) + 1;
 #endif
 

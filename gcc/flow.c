@@ -6078,7 +6078,7 @@ dump_flow_info (file)
 		       reg_class_names[(int) class],
 		       reg_class_names[(int) altclass]);
 	  }
-	if (REGNO_POINTER_FLAG (i))
+	if (REG_POINTER (regno_reg_rtx[i]))
 	  fprintf (file, "; pointer");
 	fprintf (file, ".\n");
       }

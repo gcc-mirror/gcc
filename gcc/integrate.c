@@ -822,8 +822,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   if (map->insns_at_start == 0)
     map->insns_at_start = emit_note (NULL_PTR, NOTE_INSN_DELETED);
 
-  map->regno_pointer_flag = inl_f->emit->regno_pointer_flag;
   map->regno_pointer_align = inl_f->emit->regno_pointer_align;
+  map->x_regno_reg_rtx = inl_f->emit->x_regno_reg_rtx;
 
   /* Update the outgoing argument size to allow for those in the inlined
      function.  */
@@ -1878,7 +1878,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	  RTX_UNCHANGING_P (map->reg_map[regno]) = RTX_UNCHANGING_P (orig);
 	  /* A reg with REG_FUNCTION_VALUE_P true will never reach here.  */
 
-	  if (map->regno_pointer_flag[regno])
+	  if (REG_POINTER (map->x_regno_reg_rtx[regno]))
 	    mark_reg_pointer (map->reg_map[regno],
 			      map->regno_pointer_align[regno]);
 	}
@@ -1923,7 +1923,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	  RTX_UNCHANGING_P (map->reg_map[regno]) = RTX_UNCHANGING_P (temp);
 	  /* A reg with REG_FUNCTION_VALUE_P true will never reach here.  */
 
-	  if (map->regno_pointer_flag[regno])
+	  if (REG_POINTER (map->x_regno_reg_rtx[regno]))
 	    mark_reg_pointer (map->reg_map[regno],
 			      map->regno_pointer_align[regno]);
 	  regno = REGNO (map->reg_map[regno]);
