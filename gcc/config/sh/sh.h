@@ -1239,6 +1239,7 @@ extern struct rtx_def *sh_builtin_saveregs ();
 #define ASM_APP_OFF  		""
 #define FILE_ASM_OP 		"\t.file\n"
 #define IDENT_ASM_OP 		"\t.ident\n"
+#define SET_ASM_OP		".set"
 
 /* How to change between sections.  */
 
