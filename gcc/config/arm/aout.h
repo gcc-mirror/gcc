@@ -181,8 +181,16 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)  \
   asm_fprintf (STREAM, "\t.word\t%LL%d\n", VALUE)
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)  \
-  asm_fprintf (STREAM, "\tb\t%LL%d\n", VALUE)
+#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)		\
+  do									\
+    {									\
+      if (TARGET_ARM)							\
+	asm_fprintf (STREAM, "\tb\t%LL%d\n", VALUE);			\
+      else								\
+	asm_fprintf (STREAM, "\t.word\t%LL%d-%LL%d\n", VALUE, REL);	\
+    }									\
+  while (0)
+
 
 #undef  ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(STREAM, PTR, LEN)  \

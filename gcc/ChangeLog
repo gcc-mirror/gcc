@@ -1,3 +1,17 @@
+2002-03-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (tablejump): Make this a define_expand.  For PIC add the
+	offset to the base of the table.
+	(thumb_tablejump): Matcher for Thumb tablejump insn.
+	* config/arm/aout.h (ASM_OUTPUT_ADDR_DIFF_ELT): Output thumb entries
+	as the difference of two labels.
+	* config/arm/aof.h (ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+	* config/arm/elf.h (JUMP_TABLES_IN_TEXT_SECTION): Only put ARM jump
+	tables in the code.
+	* config/arm/coff.h (JUMP_TABLES_IN_TEXT_SECTION): Likewise.
+	* arm.c (get_jump_table_size): If the table is not in the text
+	section, return zero.
+	
 2002-03-18  Bernd Schmidt  <bernds@redhat.com>
 
 	* config/arm/arm.c (arm_gen_movstrqi): Use gen_lowpart instead

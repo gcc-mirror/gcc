@@ -72,7 +72,9 @@ Boston, MA 02111-1307, USA.  */
 /* Define this macro if jump tables (for `tablejump' insns) should be
    output in the text section, along with the assembler instructions.
    Otherwise, the readonly data section is used.  */
-#define JUMP_TABLES_IN_TEXT_SECTION 1
+/* We put ARM jump tables in the text section, because it makes the code
+   more efficient, but for Thumb it's better to put them out of band.  */
+#define JUMP_TABLES_IN_TEXT_SECTION (TARGET_ARM)
 
 #undef  READONLY_DATA_SECTION
 #define READONLY_DATA_SECTION	rdata_section
