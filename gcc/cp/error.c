@@ -382,7 +382,14 @@ dump_type (t, flags)
 
     case VECTOR_TYPE:
       output_add_string (scratch_buffer, "vector ");
-      dump_type (TREE_TYPE (t), flags);
+      {
+	/* The subtype of a VECTOR_TYPE is something like intQI_type_node,
+	   which has no name and is not very useful for diagnostics.  So
+	   look up the equivalent C type and print its name.  */
+	tree elt = TREE_TYPE (t);
+	elt = type_for_mode (TYPE_MODE (elt), TREE_UNSIGNED (elt));
+	dump_type (elt, flags);
+      }
       break;
 
     case INTEGER_TYPE:
