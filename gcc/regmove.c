@@ -60,10 +60,10 @@ enum operand_use {READ, WRITE, READWRITE};
 
 struct match
 {
-  char with[MAX_RECOG_OPERANDS];
+  int with[MAX_RECOG_OPERANDS];
   enum operand_use use[MAX_RECOG_OPERANDS];
-  char commutative[MAX_RECOG_OPERANDS];
-  char early_clobber[MAX_RECOG_OPERANDS];
+  int commutative[MAX_RECOG_OPERANDS];
+  int early_clobber[MAX_RECOG_OPERANDS];
 };
 
 static rtx next_insn_for_regmove	PROTO((rtx));
