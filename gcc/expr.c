@@ -10582,6 +10582,32 @@ compare (exp, signed_code, unsigned_code)
   int unsignedp = TREE_UNSIGNED (type);
   enum rtx_code code = unsignedp ? unsigned_code : signed_code;
 
+#ifdef HAVE_canonicalize_funcptr_for_compare
+  /* If function pointers need to be "canonicalized" before they can
+     be reliably compared, then canonicalize them.  */
+  if (HAVE_canonicalize_funcptr_for_compare
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
+      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	  == FUNCTION_TYPE))
+    {
+      rtx new_op0 = gen_reg_rtx (mode);
+
+      emit_insn (gen_canonicalize_funcptr_for_compare (new_op0, op0));
+      op0 = new_op0;
+    }
+
+  if (HAVE_canonicalize_funcptr_for_compare
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 1))) == POINTER_TYPE
+      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 1))))
+	  == FUNCTION_TYPE))
+    {
+      rtx new_op1 = gen_reg_rtx (mode);
+
+      emit_insn (gen_canonicalize_funcptr_for_compare (new_op1, op1));
+      op1 = new_op1;
+    }
+#endif
+
   return compare_from_rtx (op0, op1, code, unsignedp, mode,
 			   ((mode == BLKmode)
 			    ? expr_size (TREE_OPERAND (exp, 0)) : NULL_RTX),
@@ -10715,6 +10741,19 @@ do_store_flag (exp, target, mode, only_cheap)
      passing a lot of information to emit_store_flag.  */
   if (operand_mode == BLKmode)
     return 0;
+
+  /* We won't bother with store-flag operations involving function pointers
+     when function pointers must be canonicalized before comparisons.  */
+#ifdef HAVE_canonicalize_funcptr_for_compare
+  if (HAVE_canonicalize_funcptr_for_compare
+      && ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
+	   && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	       == FUNCTION_TYPE))
+	  || (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 1))) == POINTER_TYPE
+	      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 1))))
+		  == FUNCTION_TYPE))))
+    return 0;
+#endif
 
   STRIP_NOPS (arg0);
   STRIP_NOPS (arg1);
