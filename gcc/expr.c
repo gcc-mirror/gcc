@@ -7754,7 +7754,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  emit_block_move (dest_mem, src_mem,
 			   expand_expr (len, NULL_RTX, VOIDmode, 0),
 			   MIN (src_align, dest_align));
-	  return dest_rtx;
+	  return force_operand (dest_rtx, NULL_RTX);
 	}
 
 /* These comparison functions need an instruction that returns an actual
