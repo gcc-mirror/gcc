@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Elxsi version.
-   Copyright (C) 1987, 88, 92, 95, 96, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 95, 96, 98, 99, 2000 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com> in 1988.  This is the first
    64 bit port of GNU CC.
    Based upon the VAX port.
@@ -234,7 +234,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {0, 0x07fff, 0xffff}
+#define REG_CLASS_CONTENTS {{0}, {0x07fff}, {0xffff}}
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -714,7 +714,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
   } while (0)
 
 /* Output at beginning of assembler file.  */
-#define ASM_FILE_START(FILE) fprintf (FILE, "");
+#define ASM_FILE_START(FILE) fputs ("", (FILE));
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
@@ -882,7 +882,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
    to a multiple of 2**LOG bytes.  */
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)  \
-  if (LOG!=0) fprintf (FILE, "\t.align\t%d\n", (LOG)); else 0
+  do { if (LOG!=0) fprintf (FILE, "\t.align\t%d\n", (LOG)); } while (0)
 
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */
@@ -953,11 +953,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)  \
  print_operand_address (FILE, ADDR)
-
-/* Functions used in the md file. */
-
-extern char *cmp_set();
-extern char *cmp_jmp();
 
 /* These are stubs, and have yet to bee written. */
 

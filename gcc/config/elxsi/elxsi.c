@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for GNU compiler.  Elxsi version.
-   Copyright (C) 1987, 1992, 1998, 1999 Free Software Foundation, Inc
+   Copyright (C) 1987, 1992, 1998, 1999, 2000 Free Software Foundation, Inc
    Contributrd by Mike Stump <mrs@cygnus.com> in 1988 and is the first
    64 bit port of GNU CC.
    Based upon the VAX port.
@@ -25,22 +25,29 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "function.h"
+#include "output.h"
+#include "tm_p.h"
 
 extern const char *reg_names[];
 rtx cmp_op0=0, cmp_op1=0;
 
 /* table of relations for compares and branches */
-char *cmp_tab[] = {
+static const char *const cmp_tab[] = {
     "gt", "gt", "eq", "eq", "ge", "ge", "lt", "lt", "ne", "ne",
     "le", "le" };
 
 /* type is the index into the above table */
 /* s is "" for signed, or "u" for unsigned */
-char *cmp_jmp(s, type, where) char *s; rtx where; {
+const char *
+cmp_jmp (s, type, where)
+     const char *s;
+     int type;
+     rtx where;
+{
     rtx br_ops[3];
     char template[50];
-    char *f = "";
-    char *bits = "64";
+    const char *f = "";
+    const char *bits = "64";
     if (GET_MODE (cmp_op0) == SFmode) f = "f", bits = "32";
     if (GET_MODE (cmp_op0) == DFmode) f = "f";
     br_ops[0] = where;
@@ -53,18 +60,22 @@ char *cmp_jmp(s, type, where) char *s; rtx where; {
 	sprintf(template, "fcmp.br.%s\t%%1,=0:j%s\t%%l0",
 		bits, cmp_tab[type]);
     else if (*s) /* can turn the below in to a jmp ... */
-	sprintf(template, "cmpu.br.64\t%%1,=0:j%s\t%%l0", s, cmp_tab[type]);
+	sprintf(template, "cmpu.br.64\t%%1,=0:j%s\t%%l0", s);
     else
 	sprintf(template, "jmp.%s\t%%1,%%l0", cmp_tab[type+1]);
     output_asm_insn(template, br_ops);
     return "";
 }
 
-char *cmp_set(s, type, reg) char *s, *type; rtx reg; {
+const char *
+cmp_set (s, type, reg)
+     const char *s, *type;
+     rtx reg;
+{
     rtx br_ops[3];
     char template[50];
-    char *f = "";
-    char *bits = "64";
+    const char *f = "";
+    const char *bits = "64";
     if (GET_MODE (cmp_op0) == SFmode) f = "f", bits = "32";
     else if (GET_MODE (cmp_op0) == DFmode) f = "f";
     else if (GET_MODE (cmp_op0) == SImode) bits = "32";
@@ -83,6 +94,7 @@ char *cmp_set(s, type, reg) char *s, *type; rtx reg; {
     return "";
 }
 
+void
 print_operand_address (file, addr)
      FILE *file;
      register rtx addr;
@@ -90,7 +102,6 @@ print_operand_address (file, addr)
   register rtx reg1, reg2, breg, ireg;
   rtx offset;
 
- retry:
   switch (GET_CODE (addr))
     {
 

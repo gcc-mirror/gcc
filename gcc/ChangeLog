@@ -1,3 +1,15 @@
+2000-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* elxsi-protos.h: New file.
+
+	* elxsi.c: Include tm_p.h.  Add static prototypes.  Fix compile
+	time warnings.
+	
+	* elxsi.h: Move prototypes to elxsi-protos.h.  Fix compile time
+	warnings.
+	
+	* elxsi.md: Likewise.
+
 2000-01-14  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* config/mips/mips.h (REGISTER_MOVE_COST): Remove redundant
