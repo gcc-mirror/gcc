@@ -1,3 +1,18 @@
+2002-09-09  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*tmdi_reg", "*tmsi_reg"): Do not mark as
+	commutative.  Use "nonimmediate_operand" instead of "register_operand"
+	as predicate for operand 0.  Move to after the "*tmXX_mem" insns.
+
+	("*tmdi_mem", "*tmsi_mem", "*tmhi_mem", "*tmqi_mem"): Do not mark
+	as commutative.
+
+	("*anddi3_ni", "*andsi3_ni", "*iordi3_ni", "*iorsi3_ni"): Do not
+	mark as commutative.  Use "nonimmediate_operand" instead of
+	"register_operand" as predicate for operand 1.
+
+	("movstrictsi"): Fix typo in insn name.
+
 2002-09-09  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (index_register_operand): New.
