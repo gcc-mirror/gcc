@@ -1,3 +1,17 @@
+Sat Feb 28 07:54:03 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genattr.c: Wrap prototype of `free' in NEED_DECLARATION_FREE.
+	* genattrtab.c: Likewise.
+	* genconfig.c: Likewise.
+	* genemit.c: Likewise.
+	* genextract.c: Likewise.
+	* genflags.c: Likewise.
+	* genopinit.c: Likewise.
+	* genoutput.c: Likewise.
+	* genpeep.c: Likewise.
+	* genrecog.c: Likewise.
+	* tlink.c: Likewise.  Also wrap `getenv' in NEED_DECLARATION_GETENV.
+
 Fri Feb 27 11:02:47 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* invoke.texi: Use @itemx for a secondary item in a @table.
