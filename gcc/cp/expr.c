@@ -105,9 +105,10 @@ cplus_expand_expr (exp, target, tmode, modifier)
 			  target, tmode, modifier);
 
     case OFFSET_REF:
-      return expand_expr (default_conversion (resolve_offset_ref (exp)),
-			  target, tmode, EXPAND_NORMAL);
-
+      /* Offset refs should not make it through to here. */
+      my_friendly_abort (20010724);
+      return const0_rtx;
+      
     case THROW_EXPR:
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
       return NULL;
