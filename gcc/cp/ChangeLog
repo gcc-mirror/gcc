@@ -1,3 +1,11 @@
+2003-08-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.def (NON_DEPENDENT_EXPR): Add operand.
+	* decl2.c (build_offset_ref_call_from_tree): Use
+	build_non_dependent_expr.
+	* error.c (dump_expr) <NON_DEPENDENT_EXPR case>: Dump the operand.
+	* pt.c (build_non_dependent_expr): Set operand.
+	
 2003-08-14  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (mark_member_pointers): Rename to...
@@ -5,9 +13,9 @@
 	(lower_function): Update call.
 	* except.c (eh_type_info): Break out from ...
 	(build_eh_type): ... here; tinfo is already used.
-        (finish_eh_spec_block): Mark tinfos as used.
-        * semantics.c (finish_handler_params): Mark tinfo as used.
-	* cp-tree.h(eh_type_info): Declare.
+	(finish_eh_spec_block): Mark tinfos as used.
+	* semantics.c (finish_handler_params): Mark tinfo as used.
+	* cp-tree.h (eh_type_info): Declare.
 
 2003-08-15  Nathan Sidwell  <nathan@codesourcery.com>
 
