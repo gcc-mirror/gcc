@@ -75,6 +75,7 @@ fix = {
  */
 fix = {
     hackname = arm_norcroft_hint;
+    select   = "___type p_type";
     files    = "X11/Intrinsic.h";
     sed      = "s/___type p_type/p_type/";
 };
@@ -338,9 +339,10 @@ fix = {
      *  Also, only accept double slashes that are not part of URL's
      *  and are not the end of a quoted string.
      */
-    test   = '-z `echo ${file} | egrep \'(cxx|\+\+)/\' `';
+    test   = '-z `echo ${file} | egrep \'(CC|cxx|\+\+)/\' `';
     select = '(^|[^:])//[^"*]';
-    sed    = '/\(^|[^:]\)\/\/[^"*]/' "s|//.*$||g";
+    sed    = 's,^//.*$,,';
+    sed    = 's,[^:]//[^"].*$,,';
 };
 
 
@@ -832,8 +834,8 @@ fix = {
 
 /*
  *  Fix non-ansi machine name defines
- *  This is split into two parts:  the shell version as a single
- *  patch, and the program version with each patch separate.
+ *  File selection is split into two parts:  the shell version as
+ *  a single patch, and the program version with each patch separate.
  *  Each is substantially faster for the particular environment.
  *  You have a dual maintenance problem here.
  */
@@ -950,6 +952,56 @@ fix = {
                "#ifdef __cplusplus\\\n"
                "#undef exception\\\n"
                "#endif\n";
+
+#ifdef MATH_EXCEPTION_FIXED
+
+I think this patch needs some more thinking.
+This is from SVR4.2 (With '#' replaced with '@').
+Perhaps we could do without the "/matherr/a" entries?
+Can we bypass the entire fix if someone was astute
+enough to have '#ifdef __cplusplus' anywhere in the file?
+
+
+*** /usr/include/math.h Fri Apr  3 18:54:59 1998
+--- math.h      Sun May  9 07:28:58 1999
+***************
+*** 25,31 ****
+--- 25,37 ----
+  
+  @ifndef __cplusplus
+  
++ @ifdef __cplusplus
++ @define exception __math_exception
++ @endif
+  struct exception
++ @ifdef __cplusplus
++ @undef exception
++ @endif
+  {
+        int     type;
+        char    *name;
+***************
+*** 34,40 ****
+--- 40,58 ----
+        double  retval;
+  };
+  
++ @ifdef __cplusplus
++ @define exception __math_exception
++ @endif
++ @ifdef __cplusplus
++ @define exception __math_exception
++ @endif
+  extern int    matherr(struct exception *);
++ @ifdef __cplusplus
++ @undef exception
++ @endif
++ @ifdef __cplusplus
++ @undef exception
++ @endif
+  
+  @endif /*__cplusplus*/
+#endif
 };
 
 
