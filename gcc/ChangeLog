@@ -1,5 +1,9 @@
 Wed May 13 12:54:19 1998  Michael Meissner  <meissner@cygnus.com>
 
+	* toplev.c (rest_of_compilation): "Charge" final for any time
+	doing various cleanup operations after finishing compilation
+	of a function.
+
 	* flow.c (dump_flow_info): Also print number of sets and 
 	whether or not the pseudo is a user variable.
 

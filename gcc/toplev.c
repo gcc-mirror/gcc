@@ -3645,21 +3645,22 @@ rest_of_compilation (decl)
 
   reload_completed = 0;
 
-  /* Clear out the insn_length contents now that they are no longer valid.  */
-  init_insn_lengths ();
+  TIMEVAR (final_time,
+	   {
+	      /* Clear out the insn_length contents now that they are no
+		 longer valid.  */
+	      init_insn_lengths ();
 
-  /* Clear out the real_constant_chain before some of the rtx's
-     it runs through become garbage.  */
+	      /* Clear out the real_constant_chain before some of the rtx's
+		 it runs through become garbage.  */
+	      clear_const_double_mem ();
 
-  clear_const_double_mem ();
+	      /* Cancel the effect of rtl_in_current_obstack.  */
+	      resume_temporary_allocation ();
 
-  /* Cancel the effect of rtl_in_current_obstack.  */
-
-  resume_temporary_allocation ();
-
-  /* Show no temporary slots allocated.  */
-
-  init_temp_slots ();
+	      /* Show no temporary slots allocated.  */
+	      init_temp_slots ();
+	   });
 
   /* Make sure volatile mem refs aren't considered valid operands for
      arithmetic insns.  We must call this here if this is a nested inline
