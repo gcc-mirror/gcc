@@ -1,3 +1,10 @@
+2004-09-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/arm/bpabi.h (TARGET_BPABI_CPP_BUILTINS): Define.
+	(TARGET_OS_CPP_BUILTINS): Likewise.
+	* config/arm/symbian.h (TARGET_OS_CPP_BUILTINS): Include
+	TARGET_BPABI_CPP_BUILTINS.
+
 2004-09-02  Roman Zippel  <zippel@linux-m68k.org>
  
 	* combine.c (distribute_notes): Don't add REG_LABEL to jump insn.

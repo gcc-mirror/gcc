@@ -84,3 +84,19 @@
 #define DECLARE_LIBRARY_RENAMES RENAME_LIBRARY (floatdisf, l2f)
 #endif
 
+/* The BPABI requires that we always use an out-of-line implementation
+   of RTTI comparison, even if the target supports weak symbols,
+   because the same object file might be used on a target that does
+   not support merging symbols across DLL boundaries.  This macro is
+   broken out separately so that it can be used within
+   TARGET_OS_CPP_BUILTINS in configuration files for systems based on
+   the BPABI.  */
+#define TARGET_BPABI_CPP_BUILTINS()			\
+  do							\
+    {							\
+      builtin_define ("__GXX_MERGED_TYPEINFO_NAMES=0");	\
+    }							\
+  while (false)
+
+#define TARGET_OS_CPP_BUILTINS() \
+  TARGET_BPABI_CPP_BUILTINS()
