@@ -118,7 +118,7 @@ execute_cleanup_cfg_post_optimizing (void)
 
 static struct tree_opt_pass pass_cleanup_cfg_post_optimizing =
 {
-  NULL,					/* name */
+  "final_cleanup",			/* name */
   NULL,					/* gate */
   execute_cleanup_cfg_post_optimizing,	/* execute */
   NULL,					/* sub */
@@ -129,7 +129,7 @@ static struct tree_opt_pass pass_cleanup_cfg_post_optimizing =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,					/* todo_flags_finish */
+  TODO_dump_func,					/* todo_flags_finish */
   0					/* letter */
 };
 
