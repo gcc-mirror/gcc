@@ -2316,9 +2316,11 @@ during virtual register instantiation.
 
 The default value for this macro is @code{FIRST_PARM_OFFSET (fundecl)},
 which is correct for most machines; in general, the arguments are found
-immediately before the stack frame.  See @file{function.c} for details.
+immediately before the stack frame.  Note that this is not the case on
+some targets that save registers into the caller's frame, such as SPARC
+and rs6000, and so such targets need to define this macro.
 
-You only need to define this macro if this default is incorrect, and you
+You only need to define this macro if the default is incorrect, and you
 want to support call frame debugging information like that provided by
 DWARF 2.
 
