@@ -7305,10 +7305,9 @@ expand_expr (exp, target, tmode, modifier)
 
 	  op0 = protect_from_queue (op0, 0);
 
-	  /* We would like the object in memory.  If it is a constant,
-	     we can have it be statically allocated into memory.  For
-	     a non-constant (REG, SUBREG or CONCAT), we need to allocate some
-	     memory and store the value into it.  */
+	  /* We would like the object in memory.  If it is a constant, we can
+	     have it be statically allocated into memory.  For a non-constant,
+	     we need to allocate some memory and store the value into it.  */
 
 	  if (CONSTANT_P (op0))
 	    op0 = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))),
@@ -7320,7 +7319,7 @@ expand_expr (exp, target, tmode, modifier)
 	    }
 
 	  else if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
-		   || GET_CODE (op0) == CONCAT)
+		   || GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF)
 	    {
 	      /* If this object is in a register, it must be not
 		 be BLKmode.  */
