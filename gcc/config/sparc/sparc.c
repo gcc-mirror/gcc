@@ -4827,7 +4827,7 @@ init_cumulative_args (struct sparc_args *cum, tree fntype,
    Sub-fields are not taken into account for the PACKED_P predicate.  */
 
 static void
-scan_record_type(tree type, int *intregs_p, int *fpregs_p, int *packed_p)
+scan_record_type (tree type, int *intregs_p, int *fpregs_p, int *packed_p)
 {
   tree field;
 
@@ -5002,6 +5002,7 @@ static void function_arg_record_value_2
 static void function_arg_record_value_1
  (tree, HOST_WIDE_INT, struct function_arg_record_value_parms *, bool);
 static rtx function_arg_record_value (tree, enum machine_mode, int, int, int);
+static rtx function_arg_union_value (int, int);
 
 /* A subroutine of function_arg_record_value.  Traverse the structure
    recursively and determine how many registers will be required.  */
@@ -5335,6 +5336,34 @@ function_arg_record_value (tree type, enum machine_mode mode,
   return parms.ret;
 }
 
+/* Used by function_arg and function_value to implement the conventions
+   of the 64-bit ABI for passing and returning unions.
+   Return an expression valid as a return value for the two macros
+   FUNCTION_ARG and FUNCTION_VALUE.
+
+   SIZE is the size in bytes of the union.
+   REGNO is the hard register the union will be passed in.  */
+
+static rtx
+function_arg_union_value (int size, int regno)
+{
+  enum machine_mode mode;
+  rtx reg;
+
+  if (size <= UNITS_PER_WORD)
+    mode = word_mode;
+  else
+    mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+
+  reg = gen_rtx_REG (mode, regno);
+
+  /* Unions are passed left-justified.  */
+  return gen_rtx_PARALLEL (mode,
+			   gen_rtvec (1, gen_rtx_EXPR_LIST (VOIDmode,
+							    reg,
+							    const0_rtx)));
+}
+
 /* Handle the FUNCTION_ARG macro.
    Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
@@ -5384,14 +5413,12 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
     }
   else if (type && TREE_CODE (type) == UNION_TYPE)
     {
-      enum machine_mode mode;
-      int bytes = int_size_in_bytes (type);
+      HOST_WIDE_INT size = int_size_in_bytes (type);
 
-      if (bytes > 16)
-	abort ();
+      if (size > 16)
+	abort (); /* shouldn't get here */
 
-      mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 0);
-      reg = gen_rtx_REG (mode, regno);
+      return function_arg_union_value (size, regno);
     }
   /* v9 fp args in reg slots beyond the int reg slots get passed in regs
      but also have the slot allocated for them.
@@ -5646,12 +5673,13 @@ rtx
 function_value (tree type, enum machine_mode mode, int incoming_p)
 {
   int regno;
-  int regbase = (incoming_p
-		 ? SPARC_OUTGOING_INT_ARG_FIRST
-		 : SPARC_INCOMING_INT_ARG_FIRST);
 
   if (TARGET_ARCH64 && type)
     {
+      int regbase = (incoming_p
+		     ? SPARC_OUTGOING_INT_ARG_FIRST
+		     : SPARC_INCOMING_INT_ARG_FIRST);
+
       if (TREE_CODE (type) == RECORD_TYPE)
 	{
 	  /* Structures up to 32 bytes in size are passed in registers,
@@ -5661,6 +5689,15 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
 	    abort (); /* shouldn't get here */
 
 	  return function_arg_record_value (type, mode, 0, 1, regbase);
+	}
+      else if (TREE_CODE (type) == UNION_TYPE)
+	{
+	  HOST_WIDE_INT size = int_size_in_bytes (type);
+
+	  if (size > 32)
+	    abort (); /* shouldn't get here */
+
+	  return function_arg_union_value (size, regbase);
 	}
       else if (AGGREGATE_TYPE_P (type))
 	{
@@ -5673,13 +5710,10 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
 
 	  mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 0);
 	}
+      else if (GET_MODE_CLASS (mode) == MODE_INT
+	       && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+	mode = word_mode;
     }
-    
-  if (TARGET_ARCH64
-      && GET_MODE_CLASS (mode) == MODE_INT 
-      && GET_MODE_SIZE (mode) < UNITS_PER_WORD
-      && type && ! AGGREGATE_TYPE_P (type))
-    mode = DImode;
 
   if (incoming_p)
     regno = BASE_RETURN_VALUE_REG (mode);
