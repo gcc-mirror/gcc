@@ -3041,14 +3041,14 @@ Add code so that program flow @dfn{arcs} are instrumented.  During
 execution the program records how many times each branch and call is
 executed and how many times it is taken or returns.  When the compiled
 program exits it saves this data to a file called
-@file{@var{auxname}.da} for each source file. The data may be used for
+@file{@var{auxname}.gcda} for each source file. The data may be used for
 profile-directed optimizations (@option{-fbranch-probabilities}), or for
 test coverage analysis (@option{-ftest-coverage}). Each object file's
 @var{auxname} is generated from the name of the output file, if
 explicitly specified and it is not the final executable, otherwise it is
 the basename of the source file. In both cases any suffix is removed
-(e.g.  @file{foo.da} for input file @file{dir/foo.c}, or
-@file{dir/foo.da} for output file specified as @option{-o dir/foo.o}).
+(e.g.  @file{foo.gcda} for input file @file{dir/foo.c}, or
+@file{dir/foo.gcda} for output file specified as @option{-o dir/foo.o}).
 
 @itemize
 
@@ -3078,7 +3078,7 @@ Control Optimization}).
 
 @item
 For test coverage analysis, use @command{gcov} to produce human readable
-information from the @file{.bbg} and @file{.da} files. Refer to the
+information from the @file{.gcno} and @file{.gcda} files. Refer to the
 @command{gcov} documentation for further information.
 
 @end itemize
@@ -3094,10 +3094,10 @@ block must be created to hold the instrumentation code.
 @need 2000
 @item -ftest-coverage
 @opindex ftest-coverage
-Produce a graph file that the @command{gcov} code-coverage utility
+Produce a notes file that the @command{gcov} code-coverage utility
 (@pxref{Gcov,, @command{gcov}---a Test Coverage Program}) can use to
-show program coverage. Each source file's data file is called
-@file{@var{auxname}.bbg}. Refer to the @option{-fprofile-arcs} option
+show program coverage. Each source file's note file is called
+@file{@var{auxname}.gcno}. Refer to the @option{-fprofile-arcs} option
 above for a description of @var{auxname} and instructions on how to
 generate test coverage data. Coverage data will match the source files
 more closely, if you do not optimize.
@@ -4341,7 +4341,7 @@ After running a program compiled with @option{-fprofile-arcs}
 @option{-fbranch-probabilities}, to improve optimizations based on
 the number of times each branch was taken.  When the program
 compiled with @option{-fprofile-arcs} exits it saves arc execution
-counts to a file called @file{@var{sourcename}.da} for each source
+counts to a file called @file{@var{sourcename}.gcda} for each source
 file  The information in this data file is very dependent on the
 structure of the generated code, so you must use the same source code
 and the same optimization options for both compilations.

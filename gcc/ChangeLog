@@ -1,3 +1,8 @@
+2003-07-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/invoke.texi (-fprofile-arcs, -ftest-coverage): Update
+	documentation missed from my 2003-07-09 patch.
+
 2003-07-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* aclocal.m4 (_gcc_COMPUTE_GAS_VERSION): Set patch level to 0 if
