@@ -99,6 +99,22 @@ extern int traditional;
 #define WCHAR_TYPE_SIZE INT_TYPE_SIZE
 #endif
 
+#ifndef MAX_CHAR_TYPE_SIZE
+#define MAX_CHAR_TYPE_SIZE CHAR_TYPE_SIZE
+#endif
+
+#ifndef MAX_INT_TYPE_SIZE
+#define MAX_INT_TYPE_SIZE INT_TYPE_SIZE
+#endif
+
+#ifndef MAX_LONG_TYPE_SIZE
+#define MAX_LONG_TYPE_SIZE LONG_TYPE_SIZE
+#endif
+
+#ifndef MAX_WCHAR_TYPE_SIZE
+#define MAX_WCHAR_TYPE_SIZE WCHAR_TYPE_SIZE
+#endif
+
 /* Yield nonzero if adding two numbers with A's and B's signs can yield a
    number with SUM's sign, where A, B, and SUM are all C integers.  */
 #define possible_sum_sign(a, b, sum) ((((a) ^ (b)) | ~ ((a) ^ (sum))) < 0)
@@ -533,13 +549,13 @@ yylex ()
     {
       register int result = 0;
       register num_chars = 0;
-      unsigned width = CHAR_TYPE_SIZE;
+      unsigned width = MAX_CHAR_TYPE_SIZE;
       int max_chars;
       char *token_buffer;
 
       if (wide_flag)
 	{
-	  width = WCHAR_TYPE_SIZE;
+	  width = MAX_WCHAR_TYPE_SIZE;
 #ifdef MULTIBYTE_CHARS
 	  max_chars = MB_CUR_MAX;
 #else
@@ -547,7 +563,7 @@ yylex ()
 #endif
 	}
       else
-	max_chars = LONG_TYPE_SIZE / width;
+	max_chars = MAX_LONG_TYPE_SIZE / width;
 
       token_buffer = (char *) alloca (max_chars + 1);
 
@@ -790,9 +806,9 @@ parse_escape (string_ptr)
 		break;
 	      }
 	  }
-	if ((i & ~((1 << CHAR_TYPE_SIZE) - 1)) != 0)
+	if ((i & ~((1 << MAX_CHAR_TYPE_SIZE) - 1)) != 0)
 	  {
-	    i &= (1 << CHAR_TYPE_SIZE) - 1;
+	    i &= (1 << MAX_CHAR_TYPE_SIZE) - 1;
 	    warning ("octal character constant does not fit in a byte");
 	  }
 	return i;
