@@ -9,6 +9,7 @@
 	* fixinc/fixincl.tpl: rewritten as an AutoGen version 5 template
 	* fixinc/genfixes: emit a warning if AutoGen is out of date
 	* fixinc/fixincl.x: regen
+	* fixinc/Makefile.in: open stdin for those building with a closed one.
 
 2001-05-19  Mark Mitchell  <mark@codesourcery.com>
 

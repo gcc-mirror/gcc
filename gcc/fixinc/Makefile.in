@@ -122,7 +122,7 @@ maintainer-clean : clean
 #  We still copy the script because we still have alternative scripts.
 #
 install-bin : $(TARGETS)
-	./fixincl -v
+	./fixincl -v < /dev/null
 	@if [ -f ../fixinc.sh ] ; then rm -f ../fixinc.sh || \
 	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; else : ; fi
 	@cp $(srcdir)/fixincl.sh ../fixinc.sh
