@@ -1,3 +1,11 @@
+2002-01-31  Anthony Green  <green@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in: Replace CHECK_SIZEOF and endian tests with
+	cross-compiler friendly macros.
+	* aclocal.m4 (AC_COMPILE_CHECK_SIZEOF, AC_C_BIGENDIAN_CROSS): New
+	macros.
+
 2002-01-18  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/powerpc/darwin.S (_ffi_call_AIX): New.
