@@ -194,7 +194,7 @@ get_regs (struct _Unwind_Context *context)
 }
 #endif
 
-/* Find an entry in the process auxilliary vector.  The canonical way to
+/* Find an entry in the process auxiliary vector.  The canonical way to
    test for VMX is to look at AT_HWCAP.  */
 
 static long
