@@ -3824,12 +3824,10 @@ subst (x, from, to, in_dest, unique_copy)
 
       if (GET_CODE (XEXP (x, 0)) == NE && XEXP (XEXP (x, 0), 1) == const0_rtx
 	  && XEXP (x, 2) == const0_rtx && GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && ((1 == nonzero_bits (XEXP (XEXP (x, 0), 0),
-				  GET_MODE (XEXP (XEXP (x, 0), 0)))
+	  && ((1 == nonzero_bits (XEXP (XEXP (x, 0), 0), mode)
 	       && (i = exact_log2 (INTVAL (XEXP (x, 1)))) >= 0)
-	      || ((num_sign_bit_copies (XEXP (XEXP (x, 0), 0),
-					GET_MODE (XEXP (XEXP (x, 0), 0)))
-		   == GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (x, 0), 0))))
+	      || ((num_sign_bit_copies (XEXP (XEXP (x, 0), 0), mode)
+		   == GET_MODE_BITSIZE (mode))
 		  && (i = exact_log2 (- INTVAL (XEXP (x, 1)))) >= 0)))
 	return
 	  simplify_shift_const (NULL_RTX, ASHIFT, mode,
