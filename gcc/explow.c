@@ -1558,12 +1558,20 @@ probe_stack_range (first, size)
   /* First see if the front end has set up a function for us to call to
      check the stack.  */
   if (stack_check_libfunc != 0)
-    emit_library_call (stack_check_libfunc, 0, VOIDmode, 1,
-		       memory_address (QImode,
-				       gen_rtx (STACK_GROW_OP, Pmode,
-						stack_pointer_rtx,
-						plus_constant (size, first))),
-		       ptr_mode);
+    {
+      rtx addr = memory_address (QImode,
+				 gen_rtx (STACK_GROW_OP, Pmode,
+					  stack_pointer_rtx,
+					  plus_constant (size, first)));
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+      if (GET_MODE (addr) != ptr_mode)
+	addr = convert_memory_address (ptr_mode, addr);
+#endif
+
+      emit_library_call (stack_check_libfunc, 0, VOIDmode, 1, addr,
+			 ptr_mode);
+    }
 
   /* Next see if we have an insn to check the stack.  Use it if so.  */
 #ifdef HAVE_check_stack
