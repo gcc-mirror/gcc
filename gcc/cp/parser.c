@@ -2558,43 +2558,52 @@ cp_parser_primary_expression (cp_parser *parser,
 		  }
 	      }
 
-	    if (!parser->scope 
-		&& decl == error_mark_node
-		&& processing_template_decl)
+	    if (decl == error_mark_node)
 	      {
-		/* Unqualified name lookup failed while processing a
-		   template.  */
-		*idk = CP_PARSER_ID_KIND_UNQUALIFIED;
-		/* If the next token is a parenthesis, assume that
-		   Koenig lookup will succeed when instantiating the
-		   template.  */
-		if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
-		  return build_min_nt (LOOKUP_EXPR, id_expression);
-		/* If we're not doing Koenig lookup, issue an error.  */
-		error ("`%D' has not been declared", id_expression);
-		return error_mark_node;
-	      }
-	    else if (decl == error_mark_node
-		     && !processing_template_decl)
-	      {
-		if (!parser->scope)
+		/* Name lookup failed.  */
+		if (!parser->scope 
+		    && processing_template_decl)
+		  {
+		    /* Unqualified name lookup failed while processing a
+		       template.  */
+		    *idk = CP_PARSER_ID_KIND_UNQUALIFIED;
+		    /* If the next token is a parenthesis, assume that
+		       Koenig lookup will succeed when instantiating the
+		       template.  */
+		    if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+		      return build_min_nt (LOOKUP_EXPR, id_expression);
+		    /* If we're not doing Koenig lookup, issue an error.  */
+		    error ("`%D' has not been declared", id_expression);
+		    return error_mark_node;
+		  }
+		else if (parser->scope
+			 && (!TYPE_P (parser->scope)
+			     || !dependent_type_p (parser->scope)))
+		  {
+		    /* Qualified name lookup failed, and the
+		       qualifying name was not a dependent type.  That
+		       is always an error.  */
+		    if (TYPE_P (parser->scope)
+			&& !COMPLETE_TYPE_P (parser->scope))
+		      error ("incomplete type `%T' used in nested name "
+			     "specifier",
+			     parser->scope);
+		    else if (parser->scope != global_namespace)
+		      error ("`%D' is not a member of `%D'",
+			     id_expression, parser->scope);
+		    else
+		      error ("`::%D' has not been declared", id_expression);
+		    return error_mark_node;
+		  }
+		else if (!parser->scope && !processing_template_decl)
 		  {
 		    /* It may be resolvable as a koenig lookup function
 		       call.  */
 		    *idk = CP_PARSER_ID_KIND_UNQUALIFIED;
 		    return id_expression;
 		  }
-		else if (TYPE_P (parser->scope)
-			 && !COMPLETE_TYPE_P (parser->scope))
-		  error ("incomplete type `%T' used in nested name specifier",
-			 parser->scope);
-		else if (parser->scope != global_namespace)
-		  error ("`%D' is not a member of `%D'",
-			 id_expression, parser->scope);
-		else
-		  error ("`::%D' has not been declared", id_expression);
 	      }
-	    /* If DECL is a variable would be out of scope under
+	    /* If DECL is a variable that would be out of scope under
 	       ANSI/ISO rules, but in scope in the ARM, name lookup
 	       will succeed.  Issue a diagnostic here.  */
 	    else

@@ -19,7 +19,7 @@
 proc prune_gcc_output { text } {
     #send_user "Before:$text\n"
 
-    regsub -all "(^|\n)\[^\n\]*: In (function|member|method|(copy )?constructor|instantiation|program|subroutine|block-data) \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*: In ((static member )?function|member|method|(copy )?constructor|instantiation|program|subroutine|block-data) \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*: At (top level|global scope):\[^\n\]*" $text "" text
     regsub -all "(^|\n)collect2: ld returned \[^\n\]*" $text "" text
     regsub -all "(^|\n)Please submit.*instructions\[^\n\]*" $text "" text
