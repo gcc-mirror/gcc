@@ -59,7 +59,7 @@ generate_keyword_options='
     name = substr($0, 1, paren_index - 1)
     sub(/[^0-9A-Z_a-z]*$/, "", name)
     sub(/[	 ]+PARAMS/, "", name)
-    sub(/[	 ]+VPROTO/, "", name)
+    sub(/[	 ]+VPARAMS/, "", name)
     sub(/.*[^0-9A-Z_a-z]/, "", name)
 
     args = substr($0, paren_index)

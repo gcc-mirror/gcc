@@ -1,3 +1,9 @@
+2000-02-05  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* POTFILES.in: Remove stupid.c.
+	* exgettext: s/VPROTO/VPARAMS/ now that we are no longer using
+	VPROTO.
+
 1999-12-31  Manfred Hollstein  <mhollstein@cygnus.com>
 
 	* POTFILES.in: Remove config/xm-siglist.h.

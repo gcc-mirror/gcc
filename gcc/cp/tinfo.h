@@ -32,8 +32,8 @@ struct __user_type_info : public std::type_info {
   // BOFF == -2, SUBTYPE is not a public base.
   // BOFF == -3, SUBTYPE occurs as multiple public non-virtual bases.
   //    Lazily search the non-virtual bases of TARGET.
-  // For backwards compatibility set BOFF to -1, that is the safe `don't know'
-  // value. We don't care about SUBTYPES as private bases of TARGET, as they
+  // For backwards compatibility set BOFF to -1, that is the safe "unknown"
+  // value. We do not care about SUBTYPES as private bases of TARGET, as they
   // can never succeed as downcasts, only as crosscasts -- and then only if
   // they are virtual. This is more complicated that it might seem.
   void *dyncast (int boff,

@@ -749,7 +749,6 @@ simplify-rtx.c
 stack.h
 stmt.c
 stor-layout.c
-stupid.c
 sys-protos.h
 sys-types.h
 system.h

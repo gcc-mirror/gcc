@@ -1,3 +1,8 @@
+2000-02-05  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* tinfo.h: Remove apostrophes from C++ comment (xgettext
+	thinks this file is plain C).
+
 2000-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (call.o): Depend on $(EXPR_H).
