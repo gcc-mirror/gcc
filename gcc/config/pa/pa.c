@@ -3799,9 +3799,9 @@ output_bb (operands, nullify, length, negated, insn, which)
 	    else
 	      strcat (buf, ">=");
 	    if (negated)
-	      strcat (buf, " %0,%1,.+12\n\tbl %3,0");
+	      strcat (buf, ",n %0,%1,.+12\n\tbl %3,0");
 	    else
-	      strcat (buf, " %0,%1,.+12\n\tbl %2,0");
+	      strcat (buf, ",n %0,%1,.+12\n\tbl %2,0");
 	  }
 	/* Handle short backwards branch with an unfilled delay slot.
 	   Using a bb;nop rather than extrs;bl saves 1 cycle for both
