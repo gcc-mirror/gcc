@@ -1041,8 +1041,7 @@ stamp-crt:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 	mv crtstuff$(objext) crtbegin$(objext)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
 	  -DCRT_END -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/crtstuff.c
-	mv crtstuff$(objext) crtend$(objext)
+	  -g0 -c $(srcdir)/crtstuff.c -o crtend$(objext)
 	touch stamp-crt
 
 # On some systems we also want to install versions of these files
@@ -1056,8 +1055,7 @@ stamp-crtS:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 	mv crtstuff$(objext) crtbeginS$(objext)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS_S) \
 	  -DCRT_END -finhibit-size-directive -fno-inline-functions \
-	  -g0 -c $(srcdir)/crtstuff.c
-	mv crtstuff$(objext) crtendS$(objext)
+	  -g0 -c $(srcdir)/crtstuff.c -o crtendS$(objext)
 	touch stamp-crtS
 
 # Compile the start modules crt0.o and mcrt0.o that are linked with every program
