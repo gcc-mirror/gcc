@@ -28,6 +28,8 @@ executable file might be covered by the GNU General Public License. */
 package java.util;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import gnu.classpath.Configuration;
 
 /**
@@ -74,14 +76,6 @@ import gnu.classpath.Configuration;
  * @author Jochen Hoenicke */
 public abstract class ResourceBundle
 {
-  static 
-  {
-    if (Configuration.INIT_LOAD_LIBRARY)
-      {
-	System.loadLibrary ("javautil");
-      }
-  }
-
   /**
    * The parent bundle.  This is consulted when you call getObject
    * and there is no such resource in the current bundle.  This
@@ -95,6 +89,36 @@ public abstract class ResourceBundle
    * <code>getBundle</code>.  
    */
   private Locale locale;
+
+  /**
+   * We override SecurityManager in order to access getClassContext(). 
+   */
+  class Security extends SecurityManager
+  {
+    /** Return the ClassLoader of the class which called into this
+        ResourceBundle, or null if it cannot be determined. */
+    ClassLoader getCallingClassLoader()
+    {
+      Class[] stack = super.getClassContext();
+      for (int i = 0; i < stack.length; i++)
+        if (stack[i] != Security.class && stack[i] != ResourceBundle.class)
+	  return stack[i].getClassLoader();
+      return null;
+    }
+  }
+  
+  // This will always work since java.util classes have (all) system
+  // permissions.
+  static Security security = (Security) AccessController.doPrivileged
+    (
+      new PrivilegedAction()
+      {
+        public Object run()
+        {
+          return new Security();
+        }
+      }
+    );
 
   /**
    * The constructor.  It does nothing special.
@@ -157,32 +181,19 @@ public abstract class ResourceBundle
   }
 
   /**
-   * This method returns an array with the classes of the calling
-   * methods.  The zeroth entry is the class that called this method
-   * (should always be ResourceBundle), the first contains the class
-   * that called the caller (i.e. the class that called getBundle).
-   *
-   * Implementation note: This depends on the fact, that getBundle
-   * doesn't get inlined, but since it calls a private method, it
-   * isn't inlineable.
-   *
-   * @return an array containing the classes for the callers.  
-   */
-  private static native Class[] getClassContext();
-
-  /**
    * Get the appropriate ResourceBundle for the default locale.  
    * @param baseName the name of the ResourceBundle.  This should be
    * a name of a Class or a properties-File.  See the class
    * description for details.  
    * @return the desired resource bundle
    * @exception MissingResourceException 
-   *    if the resource bundle couldn't be found.  */
+   *    if the resource bundle couldn't be found.  
+   */
   public static final ResourceBundle getBundle(String baseName)
     throws MissingResourceException
   {
     return getBundle(baseName, Locale.getDefault(),
-		     getClassContext()[1].getClassLoader());
+		     security.getCallingClassLoader());
   }
 
   /**
@@ -199,7 +210,7 @@ public abstract class ResourceBundle
 					       Locale locale)
     throws MissingResourceException
   {
-    return getBundle(baseName, locale, getClassContext()[1].getClassLoader());
+    return getBundle(baseName, locale, security.getCallingClassLoader());
   }
 
   /**

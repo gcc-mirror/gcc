@@ -1,3 +1,11 @@
+2001-11-04  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/util/ResourceBundle.java (getClassContext): Removed.
+	(Security): New class, extends SecurityManger.
+	(getBundle): Use Security.getCallingClassLoader instead of
+	getClassContext.
+	* java/util/natResourceBundle.cc: Removed.
+
 2001-11-03  Tom Tromey  <tromey@redhat.com>
 
 	* defineclass.cc (handleClassBegin): Use Object::class$, not
