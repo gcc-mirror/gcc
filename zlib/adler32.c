@@ -1,9 +1,9 @@
 /* adler32.c -- compute the Adler-32 checksum of a data stream
- * Copyright (C) 1995-1998 Mark Adler
+ * Copyright (C) 1995-2002 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
-/* @(#) $Id: adler32.c,v 1.1 1999/05/04 19:30:26 tromey Exp $ */
+/* @(#) $Id: adler32.c,v 1.1.1.2 2002/03/11 21:53:23 tromey Exp $ */
 
 #include "zlib.h"
 
