@@ -3132,7 +3132,14 @@ finish_struct_anon (t)
 	  tree elt = TYPE_FIELDS (TREE_TYPE (field));
 	  for (; elt; elt = TREE_CHAIN (elt))
 	    {
-	      if (DECL_ARTIFICIAL (elt))
+	      /* We're generally only interested in entities the user
+		 declared, but we also find nested classes by noticing
+		 the TYPE_DECL that we create implicitly.  You're
+		 allowed to put one anonymous union inside another,
+		 though, so we explicitly tolerate that.  */
+	      if (DECL_ARTIFICIAL (elt) 
+		  && (!DECL_IMPLICIT_TYPEDEF_P (elt)
+		      || ANON_AGGR_TYPE_P (TREE_TYPE (elt))))
 		continue;
 
 	      if (DECL_NAME (elt) == constructor_name (t))

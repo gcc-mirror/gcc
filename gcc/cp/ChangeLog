@@ -1,3 +1,7 @@
+2001-07-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (finish_struct_anon): Forbid nested classes.
+
 2001-07-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* decl2.c: Don't include dwarfout.h and dwarf2out.h.

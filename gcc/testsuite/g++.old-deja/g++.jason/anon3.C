@@ -8,7 +8,7 @@ public:
 private:
   union {
     float vf;
-    struct ff {
+    struct ff { // ERROR - nested class in anonymous union
       void *ptr;
       char *name;
       int sz;
