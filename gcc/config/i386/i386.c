@@ -1420,17 +1420,7 @@ incdec_operand (op, mode)
      registers, since carry flag is not set.  */
   if (TARGET_PENTIUM4 && !optimize_size)
     return 0;
-  if (op == const1_rtx || op == constm1_rtx)
-    return 1;
-  if (GET_CODE (op) != CONST_INT)
-    return 0;
-  if (mode == SImode && INTVAL (op) == (HOST_WIDE_INT) 0xffffffff)
-    return 1;
-  if (mode == HImode && INTVAL (op) == (HOST_WIDE_INT) 0xffff)
-    return 1;
-  if (mode == QImode && INTVAL (op) == (HOST_WIDE_INT) 0xff)
-    return 1;
-  return 0;
+  return op == const1_rtx || op == constm1_rtx;
 }
 
 /* Return nonzero if OP is acceptable as operand of DImode shift
