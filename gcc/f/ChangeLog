@@ -1,3 +1,8 @@
+Sun Nov 19 17:29:22 2000  Matthias Klose  <doko@marvin.itso-berlin.de>
+
+        * g77.texi (Floating-point precision): Adjust example
+        to work with glibc (>= 2.1).
+
 Sat Nov 18 13:54:49 2000  Matthias Klose  <doko@cs.tu-berlin.de> 
  
 	* g77.texi (Floating-point Exception Handling): Adjust
