@@ -231,9 +231,10 @@ tree error_mark_list;
 	tree vtbl_type_node;
 	tree vtbl_ptr_type_node;
 
-   Nnamespace std
+   Namespaces,
 
 	tree std_node;
+	tree abi_node;
 
    A FUNCTION_DECL which can call `abort'.  Not necessarily the
    one that the user will declare, but sufficient to be called
@@ -6385,6 +6386,13 @@ init_decl_processing ()
 			 get_identifier (flag_honor_std ? "fake std":"std"),
 			 void_type_node);
   pushdecl (std_node);
+  
+  if (flag_new_abi)
+    {
+      push_namespace (get_identifier ("__cxxabiv1"));
+      abi_node = current_namespace;
+      pop_namespace ();
+    }
 
   global_type_node = make_node (LANG_TYPE);
   record_unknown_type (global_type_node, "global type");

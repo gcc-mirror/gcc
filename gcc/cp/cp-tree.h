@@ -537,6 +537,7 @@ enum cp_tree_index
     CPTI_VTBL_TYPE,
     CPTI_VTBL_PTR_TYPE,
     CPTI_STD,
+    CPTI_ABI,
     CPTI_TYPE_INFO_TYPE,
     CPTI_TINFO_DECL_ID,
     CPTI_TINFO_DECL_TYPE,
@@ -622,6 +623,7 @@ extern tree cp_global_trees[CPTI_MAX];
 #define vtbl_type_node			cp_global_trees[CPTI_VTBL_TYPE]
 #define vtbl_ptr_type_node		cp_global_trees[CPTI_VTBL_PTR_TYPE]
 #define std_node			cp_global_trees[CPTI_STD]
+#define abi_node                        cp_global_trees[CPTI_ABI]
 #define type_info_type_node		cp_global_trees[CPTI_TYPE_INFO_TYPE]
 #define tinfo_decl_id			cp_global_trees[CPTI_TINFO_DECL_ID]
 #define tinfo_decl_type			cp_global_trees[CPTI_TINFO_DECL_TYPE]

@@ -769,10 +769,10 @@ build_dynamic_cast_1 (type, expr)
 	    {
 	      tree tmp;
 	      tree tinfo_ptr;
-	      tree ns = global_namespace;
+	      tree ns = new_abi_rtti_p () ? abi_node : global_namespace;
 	      const char *name;
 	      
-              push_nested_namespace (ns);
+	      push_nested_namespace (ns);
 	      if (!new_abi_rtti_p ())
 	        {
     	          tinfo_ptr = build_pointer_type (tinfo_decl_type);
@@ -787,11 +787,6 @@ build_dynamic_cast_1 (type, expr)
 	        }
 	      else
 	        {
-	          if (flag_honor_std)
-	            {
-                      push_namespace (get_identifier ("std"));
-                      ns = current_namespace;
-	            }
                   tinfo_ptr = xref_tag (class_type_node,
                                         get_identifier ("__class_type_info"),
                                         1);
@@ -1675,8 +1670,7 @@ get_vmi_pseudo_type_info (num_bases)
   array_domain = build_index_type (build_int_2 (num_bases, 0));
   base_array = build_array_type (base_desc_type_node, array_domain);
 
-  if (flag_honor_std)
-    push_namespace (get_identifier ("std"));
+  push_nested_namespace (abi_node);
 
   desc = create_pseudo_type_info
             ("__vmi_class_type_info", num_bases,
@@ -1685,8 +1679,7 @@ get_vmi_pseudo_type_info (num_bases)
              build_lang_decl (FIELD_DECL, NULL_TREE, base_array),
              NULL);
 
-  if (flag_honor_std)
-    pop_namespace ();
+  pop_nested_namespace (abi_node);
 
   TREE_VEC_ELT (vmi_class_desc_type_node, num_bases) = desc;
   return desc;
@@ -1702,8 +1695,7 @@ create_tinfo_types ()
   
   if (bltn_desc_type_node)
     return;
-  if (flag_honor_std)
-    push_namespace (get_identifier ("std"));
+  push_nested_namespace (abi_node);
 
   ptr_type_info = build_pointer_type
                     (build_qualified_type
@@ -1785,8 +1777,7 @@ create_tinfo_types ()
         build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
         NULL);
 
-  if (flag_honor_std)
-    pop_namespace ();
+  pop_nested_namespace (abi_node);
 }
 
 /* Emit the type_info descriptors which are guaranteed to be in the runtime
@@ -1825,12 +1816,10 @@ emit_support_tinfos ()
   int ix;
   tree bltn_type, dtor;
   
-  if (flag_honor_std)
-    push_namespace (get_identifier ("std"));
+  push_nested_namespace (abi_node);
   bltn_type = xref_tag (class_type_node,
                         get_identifier ("__fundamental_type_info"), 1);
-  if (flag_honor_std)
-    pop_namespace ();
+  pop_nested_namespace (abi_node);
   if (!TYPE_SIZE (bltn_type))
     return;
   dtor = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (bltn_type), 1);

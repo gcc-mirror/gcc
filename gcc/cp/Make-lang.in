@@ -58,7 +58,7 @@ DEMANGLER_PROG = c++filt$(exeext)
 
 # Extra headers to install.
 CXX_EXTRA_HEADERS = $(srcdir)/cp/inc/typeinfo $(srcdir)/cp/inc/exception \
-	$(srcdir)/cp/inc/new $(srcdir)/cp/inc/new.h
+	$(srcdir)/cp/inc/new $(srcdir)/cp/inc/new.h $(srcdir)/cp/inc/cxxabi.h
 
 # Extra code to include in libgcc2.
 CXX_LIB2FUNCS = tinfo.o tinfo2.o new.o opnew.o opnewnt.o opvnew.o opvnewnt.o \

@@ -91,111 +91,13 @@ struct __array_type_info : public type_info {
 
 #else
 
-namespace std {
-  
-// type information for int, float etc
-class __fundamental_type_info : public type_info {
-public:
-  virtual ~__fundamental_type_info ();
-public:
-  explicit __fundamental_type_info (const char *n)
-    : type_info (n)
-    { }
-};
-
-// type information for pointer to data or function, but not pointer to member
-class __pointer_type_info : public type_info {
-public:
-  virtual ~__pointer_type_info ();
-// external parts
-  int quals;                // qualification of the target object
-  const type_info *target;  // type of object being pointed to
-
-// internal parts
-  enum quals_masks {
-    const_mask = 0x1,
-    volatile_mask = 0x2
-  };
-  
-public:
-  explicit __pointer_type_info (const char *n,
-                                int quals_,
-                                const type_info *target_)
-    : type_info (n), quals (quals_), target (target_)
-    { }
-
-protected:
-  virtual bool is_pointer_p () const;
-  virtual bool do_catch (const type_info *thr_type, void **thr_obj,
-                         unsigned outer) const;
-};
-
-// type information for array objects
-class __array_type_info : public type_info {
-public:
-  virtual ~__array_type_info ();
-public:
-  explicit __array_type_info (const char *n)
-    : type_info (n)
-    { }
-};
-
-// type information for functions (both member and non-member)
-class __function_type_info : public type_info {
-public:
-  virtual ~__function_type_info ();
-public:
-  explicit __function_type_info (const char *n)
-    : type_info (n)
-    { }
-protected:
-  virtual bool is_function_p () const;
-};
-
-// type information for enumerations
-class __enum_type_info : public type_info {
-public:
-  virtual ~__enum_type_info ();
-public:
-  explicit __enum_type_info (const char *n)
-    : type_info (n)
-    { }
-};
-
-// type information for a pointer to member variable (not function)
-class __pointer_to_member_type_info : public type_info {
-public:
-  virtual ~__pointer_to_member_type_info ();
-// external parts
-  const __class_type_info *klass;   // class of the member
-  const type_info *type;            // type of the member
-  int quals;                        // qualifications of the pointed to type
-
-// internal parts
-  enum quals_masks {
-    const_mask = 0x1,
-    volatile_mask = 0x2
-  };
-
-public:
-  explicit __pointer_to_member_type_info (const char *n,
-                                          const __class_type_info *klass_,
-                                          const type_info *type_,
-                                          int quals_)
-    : type_info (n), klass (klass_), type (type_), quals (quals_)
-    { }
-
-protected:
-  virtual bool do_catch (const type_info *thr_type, void **thr_obj,
-                         unsigned outer) const;
-};
-
-}; // namespace std
-
+#include <cxxabi.h>
 #endif
 
 #if defined(__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
-namespace std {
+namespace __cxxabiv1 {
+
+using namespace std;
 
 // This has special meaning to the compiler, and will cause it
 // to emit the type_info structures for the fundamental types which are
@@ -262,13 +164,13 @@ do_catch (const type_info *thr_type,
   if (!(quals & const_mask))
     outer &= ~1;
   
-  if (outer < 2 && *target == typeid (void))
+  if (outer < 2 && *type == typeid (void))
     {
       // conversion to void
       return !thrown_type->is_function_p ();
     }
   
-  return target->do_catch (thrown_type->target, thr_obj, outer + 2);
+  return type->do_catch (thrown_type->type, thr_obj, outer + 2);
 }
 
 bool __pointer_to_member_type_info::
