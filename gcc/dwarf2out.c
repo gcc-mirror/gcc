@@ -10462,9 +10462,17 @@ add_abstract_origin_attribute (dw_die_ref die, tree origin)
   else if (TYPE_P (origin))
     origin_die = lookup_type_die (origin);
 
-  gcc_assert (origin_die);
+  /* XXX: Functions that are never lowered don't always have correct block
+     trees (in the case of java, they simply have no block tree, in some other
+     languages).  For these functions, there is nothing we can really do to
+     output correct debug info for inlined functions in all cases.  Rather
+     than abort, we'll just produce deficient debug info now, in that we will
+     have variables without a proper abstract origin.  In the future, when all
+     functions are lowered, we should re-add a gcc_assert (origin_die)
+     here.  */
 
-  add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
+  if (origin_die)
+      add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
 }
 
 /* We do not currently support the pure_virtual attribute.  */
@@ -11199,12 +11207,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	     It seems reasonable to use AT_specification in this case.  */
 	  && !get_AT (old_die, DW_AT_inline))
 	{
-	  /* ??? This can happen if there is a bug in the program, for
-	     instance, if it has duplicate function definitions.  Ideally,
-	     we should detect this case and ignore it.  For now, if we have
-	     already reported an error, any error at all, then assume that
-	     we got here because of an input error, not a dwarf2 bug.  */
-	  gcc_assert (errorcount);
+	  /* Detect and ignore this case, where we are trying to output
+	     something we have already output.  */
 	  return;
 	}
 
@@ -12234,9 +12238,8 @@ gen_block_die (tree stmt, dw_die_ref context_die, int depth)
   tree decl;
   enum tree_code origin_code;
 
-  /* Ignore blocks never really used to make RTL.  */
-  if (stmt == NULL_TREE || !TREE_USED (stmt)
-      || (!TREE_ASM_WRITTEN (stmt) && !BLOCK_ABSTRACT (stmt)))
+  /* Ignore blocks that are NULL.  */
+  if (stmt == NULL_TREE)
     return;
 
   /* If the block is one fragment of a non-contiguous block, do not
@@ -12282,7 +12285,10 @@ gen_block_die (tree stmt, dw_die_ref context_die, int depth)
 	  if (debug_info_level > DINFO_LEVEL_TERSE)
 	    /* We are not in terse mode so *any* local declaration counts
 	       as being a "significant" one.  */
-	    must_output_die = (BLOCK_VARS (stmt) != NULL);
+	    must_output_die = (BLOCK_VARS (stmt) != NULL 
+			       && (TREE_USED (stmt) 
+				   || TREE_ASM_WRITTEN (stmt)
+				   || BLOCK_ABSTRACT (stmt)));
 	  else
 	    /* We are in terse mode, so only local (nested) function
 	       definitions count as "significant" local declarations.  */
@@ -12324,29 +12330,32 @@ decls_for_scope (tree stmt, dw_die_ref context_die, int depth)
   tree decl;
   tree subblocks;
 
-  /* Ignore blocks never really used to make RTL.  */
-  if (stmt == NULL_TREE || ! TREE_USED (stmt))
+  /* Ignore NULL blocks.  */
+  if (stmt == NULL_TREE)
     return;
 
-  /* Output the DIEs to represent all of the data objects and typedefs
-     declared directly within this block but not within any nested
-     sub-blocks.  Also, nested function and tag DIEs have been
-     generated with a parent of NULL; fix that up now.  */
-  for (decl = BLOCK_VARS (stmt); decl != NULL; decl = TREE_CHAIN (decl))
+  if (TREE_USED (stmt))
     {
-      dw_die_ref die;
-
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	die = lookup_decl_die (decl);
-      else if (TREE_CODE (decl) == TYPE_DECL && TYPE_DECL_IS_STUB (decl))
-	die = lookup_type_die (TREE_TYPE (decl));
-      else
-	die = NULL;
-
-      if (die != NULL && die->die_parent == NULL)
-	add_child_die (context_die, die);
-      else
-	gen_decl_die (decl, context_die);
+      /* Output the DIEs to represent all of the data objects and typedefs
+	 declared directly within this block but not within any nested
+	 sub-blocks.  Also, nested function and tag DIEs have been
+	 generated with a parent of NULL; fix that up now.  */
+      for (decl = BLOCK_VARS (stmt); decl != NULL; decl = TREE_CHAIN (decl))
+	{
+	  dw_die_ref die;
+	  
+	  if (TREE_CODE (decl) == FUNCTION_DECL)
+	    die = lookup_decl_die (decl);
+	  else if (TREE_CODE (decl) == TYPE_DECL && TYPE_DECL_IS_STUB (decl))
+	    die = lookup_type_die (TREE_TYPE (decl));
+	  else
+	    die = NULL;
+	  
+	  if (die != NULL && die->die_parent == NULL)
+	    add_child_die (context_die, die);
+	  else
+	    gen_decl_die (decl, context_die);
+	}
     }
 
   /* If we're at -g1, we're not interested in subblocks.  */

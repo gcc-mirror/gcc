@@ -1,3 +1,16 @@
+2005-01-05  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR middle-end/19286
+	Fix PR debug/19267
+	* dwarf2out.c (gen_subprogram_die): If we've already tried to
+	output this subprogram, simply ignore this attempt to do it again.
+	(add_abstract_origin_attribute): Don't abort trying to add the abstract
+	origin attribute if it's not possible.
+	(gen_block_die): Don't ignore subblocks of "unused" blocks.
+	(decls_for_scope): Ditto.
+	* gimple-low.c (mark_blocks_with_used_subblocks): Remove.
+	(mark_used_blocks): Don't call mark_blocks_with_used_subblocks.
+	
 2005-01-05  Richard Henderson  <rth@redhat.com>
 
 	PR target/11327
