@@ -584,8 +584,8 @@ find_basic_blocks_1 (f)
 	      {
 		if (bb_note == NULL_RTX)
 		  bb_note = insn;
-
-		next = flow_delete_insn (insn);
+		else
+		  next = flow_delete_insn (insn);
 	      }
 	    break;
 	  }
@@ -780,13 +780,18 @@ create_basic_block (index, head, end, bb_note)
     {
       /* If we found an existing note, thread it back onto the chain.  */
 
+      rtx after;
+
       if (GET_CODE (head) == CODE_LABEL)
-	add_insn_after (bb_note, head);
+	after = head;
       else
 	{
-	  add_insn_before (bb_note, head);
+	  after = PREV_INSN (head);
 	  head = bb_note;
 	}
+
+      if (after != bb_note && NEXT_INSN (after) != bb_note)
+	reorder_insns (bb_note, bb_note, after);
     }
   else
     {
