@@ -3756,7 +3756,7 @@ type_hash_canon (hashcode, type)
     }
 
   /* If this is a permanent type, record it for later reuse.  */
-  if (TREE_PERMANENT (type))
+  if (ggc_p || TREE_PERMANENT (type))
     type_hash_add (hashcode, type);
 
   return type;
