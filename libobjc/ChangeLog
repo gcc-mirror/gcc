@@ -1,3 +1,10 @@
+Thu Sep 12 12:44:37 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* sendmsg.c (nil_method): Declare not to take a variable number of
+	args.
+	(objc_msg_lookup): Cast nil_method to IMP before returning it.
+	(objc_msg_lookup_super): The same.
+
 2002-09-10  Jan Hubicka  <jh@suse.cz>
 
 	* nil_method.c (nil_method): No longer defined with variable
