@@ -2301,14 +2301,6 @@ botch (s)
   abort ();
 }
 
-#ifdef __GNUC__
-void
-(abort) ()
-{
-  raise (6);
-}
-#endif
-
 /* Same as `malloc' but report error if no memory available.  */
 
 PTR
