@@ -30,7 +30,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 static int comp_def_part	 PARAMS ((int, U_CHAR *, int, U_CHAR *,
 					  int, int));
-static int change_newlines	 PARAMS ((U_CHAR *, int));
 static void push_macro_expansion PARAMS ((cpp_reader *,
 					  U_CHAR *, int, HASHNODE *));
 static int unsafe_chars		 PARAMS ((int, int));
@@ -74,10 +73,7 @@ static DEFINITION *collect_expansion PARAMS ((cpp_reader *, U_CHAR *, U_CHAR *,
    `expanded' points to the argument's macro-expansion
    (its length is `expand_length').
    `stringified_length' is the length the argument would have
-   if stringified.
-   `use_count' is the number of times this macro arg is substituted
-   into the macro.  If the actual use count exceeds 10, 
-   the value stored is 10.  */
+   if stringified.  */
 
 /* raw and expanded are relative to ARG_BASE */
 #define ARG_BASE ((pfile)->token_buffer)
@@ -88,8 +84,6 @@ struct argdata
   long raw, expanded, stringified;
   int raw_length, expand_length;
   int stringified_length;
-  char newlines;
-  char use_count;
 };
 
 
@@ -313,7 +307,7 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
      Leading and trailing whitespace chars need 2 bytes each.
      Each other input char may or may not need 1 byte,
      so this is an upper bound.  The extra 5 are for invented
-     leading and trailing newline-marker and final null.  */
+     leading and trailing escape-marker and final null.  */
   maxsize = (sizeof (DEFINITION)
 	     + (limit - p) + 5);
   defn = (DEFINITION *) xcalloc (1, maxsize);
@@ -833,52 +827,6 @@ done:
   return token;
 }
 
-/* Turn newlines to spaces in the string of length LENGTH at START,
-   except inside of string constants.
-   The string is copied into itself with its beginning staying fixed.  */
-
-static int
-change_newlines (start, length)
-     U_CHAR *start;
-     int length;
-{
-  register U_CHAR *ibp;
-  register U_CHAR *obp;
-  register U_CHAR *limit;
-  register int c;
-
-  ibp = start;
-  limit = start + length;
-  obp = start;
-
-  while (ibp < limit)
-    {
-      *obp++ = c = *ibp++;
-      switch (c)
-	{
-
-	case '\'':
-	case '\"':
-	  /* Notice and skip strings, so that we don't
-	     delete newlines in them.  */
-	  {
-	    int quotec = c;
-	    while (ibp < limit)
-	      {
-		*obp++ = c = *ibp++;
-		if (c == quotec)
-		  break;
-		if (c == '\n' && quotec == '\'')
-		  break;
-	      }
-	  }
-	  break;
-	}
-    }
-
-  return obp - start;
-}
-
 
 static struct tm *
 timestamp (pfile)
@@ -1096,7 +1044,6 @@ macroexpand (pfile, hp)
 	  args[i].raw = args[i].expanded = 0;
 	  args[i].raw_length = 0;
 	  args[i].expand_length = args[i].stringified_length = -1;
-	  args[i].use_count = 0;
 	}
 
       /* Parse all the macro args that are supplied.  I counts them.
@@ -1119,7 +1066,6 @@ macroexpand (pfile, hp)
 	      args[i].raw = CPP_WRITTEN (pfile);
 	      token = macarg (pfile, rest_args);
 	      args[i].raw_length = CPP_WRITTEN (pfile) - args[i].raw;
-	      args[i].newlines = 0;	/* FIXME */
 	    }
 	  else
 	    token = macarg (pfile, 0);
@@ -1281,7 +1227,7 @@ macroexpand (pfile, hp)
 	      xbuf_len += args[ap->argno].stringified_length;
 	    }
 	  else if (ap->raw_before || ap->raw_after || CPP_TRADITIONAL (pfile))
-	    /* Add 4 for two newline-space markers to prevent
+	    /* Add 4 for two \r-space markers to prevent
 	       token concatenation.  */
 	    xbuf_len += args[ap->argno].raw_length + 4;
 	  else
@@ -1299,12 +1245,10 @@ macroexpand (pfile, hp)
 		    = CPP_WRITTEN (pfile) - args[ap->argno].expanded;
 		}
 
-	      /* Add 4 for two newline-space markers to prevent
+	      /* Add 4 for two \r-space markers to prevent
 	         token concatenation.  */
 	      xbuf_len += args[ap->argno].expand_length + 4;
 	    }
-	  if (args[ap->argno].use_count < 10)
-	    args[ap->argno].use_count++;
 	}
 
       xbuf = (U_CHAR *) xmalloc (xbuf_len + 1);
@@ -1415,19 +1359,6 @@ macroexpand (pfile, hp)
 		{
 		  xbuf[totlen++] = '\r';
 		  xbuf[totlen++] = ' ';
-		}
-
-	      /* If a macro argument with newlines is used multiple times,
-	         then only expand the newlines once.  This avoids creating
-	         output lines which don't correspond to any input line,
-	         which confuses gdb and gcov.  */
-	      if (arg->use_count > 1 && arg->newlines > 0)
-		{
-		  /* Don't bother doing change_newlines for subsequent
-		     uses of arg.  */
-		  arg->use_count = 1;
-		  arg->expand_length
-		    = change_newlines (expanded, arg->expand_length);
 		}
 	    }
 
