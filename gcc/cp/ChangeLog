@@ -1,3 +1,26 @@
+1998-06-01  Per Bothner  <bothner@cygnus.com>
+
+	* cp-tree.h (TYPE_FOR_JAVA):  New macro.
+	* decl.c, cp-tree.h (java_byte_type_node, java_short_type_node,
+	java_int_type_node, java_long_type_node, java_float_type_node,
+	java_double_type_node, java_char_type_node, java_boolean_type_node):
+	New "primitive" types, with predefined names __java_byte etc.
+	(record_builtin_java_type):  New function.
+	(init_decl_processing):  Make Java types with record_builtin_java_type.
+	(pushtag, grokdeclarator):  Set TYPE_FOR_JAVA if in extern "JAVA".
+	(xref_baseypes):  If base class was TYPE_FOR_JAVA, so is this class.
+	(grokfndecl):  Call check_java_method for Java classes.
+	* method.c (is_java_type):  Removed.  Replaced with TYPE_FOR_JAVA.
+	(process_overload_item):  Match types against specific
+	java_XX_type_node types, rather than using is_java_type.
+	* class.c (finish_struct_1):  Don't add default copy constructor
+	or operator= if TYPE_FOR_JAVA.
+	(pop_lang_conext):  Restore strict_prototyp proper if Java.
+	* decl2.c (acceptable_java_type, check_java_method):  New functions.
+	* pt.c (instantiate_class_template):  Copy TYPE_FOR_JAVA from pattern.
+	(tsubst):  Move common statement after if statement.
+	* typeck.c (comptypes):  If strict, TYPE_FOR_JAVA must match.
+
 1998-06-01  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (for_each_template_parm): Use first_rtl_op.
