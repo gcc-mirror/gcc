@@ -1,3 +1,10 @@
+2001-10-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* decl.c (duplicate_decls): Propagate DECL_UNINLINABLE.
+	Warn when merging inline with attribute noinline.
+	(start_decl, start_function): Warn if inline and attribute
+	noinline appear in the same declaration.
+
 2001-10-16  H.J. Lu <hjl@gnu.org>
 
 	* cp-tree.h (BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK): Defined
