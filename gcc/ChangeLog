@@ -1,3 +1,8 @@
+2001-06-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (DECL_SOURCE_FILE): Improve documentation.
+	(DECL_SOURCE_LINE): Likewise.
+
 2001-06-07  Phil Edwards  <pme@sources.redhat.com>
 
 	* linux.h (CPLUSPLUS_CPP_SPEC):  Move -D_GNU_SOURCE to here.
