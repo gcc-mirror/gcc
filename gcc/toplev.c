@@ -3313,28 +3313,17 @@ rest_of_compilation (decl)
     {
       TIMEVAR (loop_time,
 	       {
-		 int save_flag_unroll_loops;
-		 int save_flag_unroll_all_loops;
-
 		 if (flag_rerun_loop_opt)
 		   {
 		      /* We only want to perform unrolling once.  */
-		      save_flag_unroll_loops = flag_unroll_loops;
-		      save_flag_unroll_all_loops = flag_unroll_all_loops;
-		      flag_unroll_loops = 0;
-		      flag_unroll_all_loops = 0;
 
-		      loop_optimize (insns, loop_dump_file);
+		      loop_optimize (insns, loop_dump_file, 0);
 
 		      /* The regscan pass may not be necessary, but let's
 			 be safe until we can prove otherwise.  */
 		      reg_scan (insns, max_reg_num (), 1);
-
-		      /* Restore loop unrolling flags.  */
-		      flag_unroll_loops = save_flag_unroll_loops;
-		      flag_unroll_all_loops = save_flag_unroll_all_loops;
 		   }
-		 loop_optimize (insns, loop_dump_file);
+		 loop_optimize (insns, loop_dump_file, flag_unroll_loops);
 	       });
     }
 
