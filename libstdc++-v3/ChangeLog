@@ -1,3 +1,11 @@
+2002-06-06  Loren J. Rittle <ljrittle@acm.org>
+
+	* src/Makefile.am (AUTOMAKE_OPTIONS): Use cygnus-style generation.
+	* include/Makefile.am (AUTOMAKE_OPTIONS): Likewise.
+	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Likewise.
+	* src/Makefile.in: Regenerate (explicitly with --cygnus option).
+	* testsuite/Makefile.in: Likewise.
+
 2002-06-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/os/aix/bits/ctype_noninline.h (do_toupper,do_tolower):
