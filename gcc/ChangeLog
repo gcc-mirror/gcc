@@ -1,3 +1,8 @@
+Thu Sep 20 12:49:34 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* sh.c (shiftcosts): Don't use shiftcosts array for modes wider
+	than SImode.
+
 Thu Sep 20 12:18:41 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* sh.c (initial_elimination_offset): When seeing
