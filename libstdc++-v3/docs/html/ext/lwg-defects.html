@@ -5,11 +5,11 @@
 <table>
 <tr>
 <td align="left">Doc. no.</td>
-<td align="left">N1636=04-0076</td>
+<td align="left">N1658=04-0098</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">12 Apr 2004</td>
+<td align="left">16 Jul 2004</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -20,7 +20,7 @@
 <td align="left">Matt Austern &lt;austern@apple.com&gt;</td>
 </tr>
 </table>
-<h1>C++ Standard Library Defect Report List (Revision 30)</h1>
+<h1>C++ Standard Library Defect Report List (Revision 31)</h1>
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
     <ul>
@@ -42,6 +42,11 @@
   document.</p>
 <h2>Revision History</h2>
 <ul>
+<li>R31: 
+2004-07 mid-term mailing: reflects new proposed resolutions and
+new issues received after the post-Sydney mailing.  Added
+new issues <a href="lwg-active.html#463">463</a>-<a href="lwg-active.html#478">478</a>.
+</li>
 <li>R30: 
 Post-Sydney mailing: reflects decisions made at the Sydney meeting.
 Voted all "Ready" issues from R29 into the working paper.
@@ -2845,6 +2850,11 @@ for <tt>*r++</tt> from <tt>T</tt> to "convertible to T".
   constructor is invoked is a real issue.  This can vary in any case,
   because of language rules on copy constructor elision.  That's too
   much to read into these semantics clauses.</p>
+
+<p>Additionally, as Dave Abrahams pointed out (c++std-lib-13703): since 
+   we're told (24.1/3) that forward iterators satisfy all the requirements
+   of input iterators, we can't impose any requirements in the Input
+   Iterator requirements table that forward iterators don't satisfy.</p>
 <hr>
 <a name="103"><h3>103.&nbsp;set::iterator is required to be modifiable, but this allows modification of keys</h3></a><p><b>Section:</b>&nbsp;23.1.2 <a href="lib-containers.html#lib.associative.reqmts"> [lib.associative.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
 <p>Set::iterator is described as implementation-defined with a
