@@ -1,3 +1,12 @@
+2003-03-21  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* libffi/include/ffi.h.in: Define X86 instead of X86_64 in 32
+	bit mode.
+	* libffi/src/x86/ffi.c (ffi_closure_SYSV, ffi_closure_raw_SYSV):
+	Receive closure pointer through parameter, read args using
+	__builtin_dwarf_cfa.
+	(FFI_INIT_TRAMPOLINE): Send closure reference through eax.
+
 2003-03-03  Andreas Tobler <a.tobler@schweiz.ch>
 
         * src/powerpc/darwin_closure.S: Recode to fit dynamic libraries.
