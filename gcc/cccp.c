@@ -4087,6 +4087,7 @@ finclude (f, fname, op, system_header_p, dirptr)
 
     st_size = 0;
     basep = (U_CHAR *) xmalloc (bsize + 2);
+    fp->buf = basep; /* So it will get freed, on error.  */
     bufp = basep;
 
     for (;;) {
@@ -4100,10 +4101,10 @@ finclude (f, fname, op, system_header_p, dirptr)
       if (bsize == st_size) {	/* Buffer is full! */
 	  bsize *= 2;
 	  basep = (U_CHAR *) xrealloc (basep, bsize + 2);
+	  fp->buf = basep;
 	  bufp = basep + st_size;	/* May have moved */
 	}
     }
-    fp->buf = basep;
     fp->bufp = fp->buf;
     fp->length = st_size;
   }
