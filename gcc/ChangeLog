@@ -1,3 +1,8 @@
+2002-02-20  Diego Novillo  <dnovillo@redhat.com>
+
+	* expmed.c (store_bit_field): Do not store bit fields using SUBREG
+	operations if the field does not start at a mode boundary.
+
 2001-02-20	Joel Sherrill <joel@OARcorp.com>
 
 	* config/a29k/rtems.h, config/arm/rtems-elf.h, config/h8300/rtems.h,
