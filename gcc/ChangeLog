@@ -1,3 +1,13 @@
+Mon Feb 22 19:36:33 1999  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* config/mips/mips.c (mips_debugger_offset): When TARGET_MIPS16 &&
+ 	frame_pointer_needed adjust frame size.
+	(function_prologue): Don't MIPS16 .mask GPOFFSET. Already adjusted
+ 	in .frame pseudo-op.
+	Frm Jim Wilson  <wilson@cygnus.com>:
+	* mips.c (function_prologue): Adjust frame size in .frame pseudo-op
+	when TARGET_MIPS16 && frame_pointer_needed.
+
 1999-02-22  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.h: Add TARGET_CPU_strongarm1100.

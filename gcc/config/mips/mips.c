@@ -4545,6 +4545,10 @@ mips_debugger_offset (addr, offset)
 				  ? compute_frame_size (get_frame_size ())
 				  : current_frame_info.total_size;
 
+      /* MIPS16 frame is smaller */
+      if (frame_pointer_needed && TARGET_MIPS16)
+	frame_size -= current_function_outgoing_args_size;
+
       offset = offset - frame_size;
     }
 
@@ -6115,25 +6119,31 @@ function_prologue (file, size)
 
   if (!flag_inhibit_size_directive)
     {
+      /* .frame FRAMEREG, FRAMESIZE, RETREG */
       fprintf (file,
 	       "\t.frame\t%s,%ld,%s\t\t# vars= %ld, regs= %d/%d, args= %d, extra= %ld\n",
 	       (reg_names[(frame_pointer_needed)
 			  ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM]),
-	       tsize, reg_names[31 + GP_REG_FIRST],
+	       ((frame_pointer_needed && TARGET_MIPS16)
+		? (tsize - current_function_outgoing_args_size)
+		: tsize),
+	       reg_names[31 + GP_REG_FIRST],
 	       current_frame_info.var_size,
 	       current_frame_info.num_gp,
 	       current_frame_info.num_fp,
 	       current_function_outgoing_args_size,
 	       current_frame_info.extra_size);
 
+      /* .mask MASK, GPOFFSET; .fmask FPOFFSET */
       fprintf (file, "\t.mask\t0x%08lx,%ld\n\t.fmask\t0x%08lx,%ld\n",
 	       current_frame_info.mask,
-	       ((frame_pointer_needed && TARGET_MIPS16)
-		? (current_frame_info.gp_save_offset
-		   - current_function_outgoing_args_size)
-		: current_frame_info.gp_save_offset),
+	       current_frame_info.gp_save_offset,
 	       current_frame_info.fmask,
 	       current_frame_info.fp_save_offset);
+
+      /* Require:
+	 OLD_SP == *FRAMEREG + FRAMESIZE => can find old_sp from nominated FP reg.
+	 HIGHEST_GP_SAVED == *FRAMEREG + FRAMESIZE + GPOFFSET => can find saved regs. */
     }
 
   if (mips_entry && ! mips_can_use_return_insn ())
