@@ -1,3 +1,9 @@
+2002-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in (HAVE_AS_OFFSETABLE_LO10): Use -xarch=v9
+	unconditionally when gcc_cv_as_flags64 checks are gone.
+	* configure: Rebuilt.
+
 2002-09-04  Eric Botcazou  <ebotcazou@multimania.com>
 
 	PR c/7102

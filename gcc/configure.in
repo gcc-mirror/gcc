@@ -1846,33 +1846,31 @@ EOF
 		[Define if your assembler and linker support unaligned PC relative relocs against hidden symbols.])
     fi
 
-    if test "x$gcc_cv_as_flags64" != xno; then
-	AC_CACHE_CHECK([for assembler offsetable %lo() support],
-	    gcc_cv_as_offsetable_lo10, [
-	    gcc_cv_as_offsetable_lo10=unknown
-	    if test "x$gcc_cv_as" != x; then
-		# Check if assembler has offsetable %lo()
-		echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
-		echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
-		if $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s \
-			> /dev/null 2>&1 &&
-		   $gcc_cv_as $gcc_cv_as_flags64 -o conftest1.o conftest1.s \
-			> /dev/null 2>&1; then
-		    if cmp conftest.o conftest1.o > /dev/null 2>&1; then
-			gcc_cv_as_offsetable_lo10=no
-		    else
-			gcc_cv_as_offsetable_lo10=yes
-		    fi
-		else
+    AC_CACHE_CHECK([for assembler offsetable %lo() support],
+	gcc_cv_as_offsetable_lo10, [
+	gcc_cv_as_offsetable_lo10=unknown
+	if test "x$gcc_cv_as" != x; then
+	    # Check if assembler has offsetable %lo()
+	    echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
+	    echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
+	    if $gcc_cv_as -xarch=v9 -o conftest.o conftest.s \
+		    > /dev/null 2>&1 &&
+	       $gcc_cv_as -xarch=v9 -o conftest1.o conftest1.s \
+		    > /dev/null 2>&1; then
+		if cmp conftest.o conftest1.o > /dev/null 2>&1; then
 		    gcc_cv_as_offsetable_lo10=no
+		else
+		    gcc_cv_as_offsetable_lo10=yes
 		fi
-		rm -f conftest.s conftest.o conftest1.s conftest1.o
+	    else
+		gcc_cv_as_offsetable_lo10=no
 	    fi
-	])
-	if test "x$gcc_cv_as_offsetable_lo10" = xyes; then
-	    AC_DEFINE(HAVE_AS_OFFSETABLE_LO10, 1,
-		[Define if your assembler supports offsetable %lo().])
+	    rm -f conftest.s conftest.o conftest1.s conftest1.o
 	fi
+    ])
+    if test "x$gcc_cv_as_offsetable_lo10" = xyes; then
+	AC_DEFINE(HAVE_AS_OFFSETABLE_LO10, 1,
+	    [Define if your assembler supports offsetable %lo().])
     fi
 
     ;;

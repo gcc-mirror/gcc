@@ -7578,42 +7578,40 @@ EOF
 
     fi
 
-    if test "x$gcc_cv_as_flags64" != xno; then
-	echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
+    echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
 echo "configure:7584: checking for assembler offsetable %lo() support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   
-	    gcc_cv_as_offsetable_lo10=unknown
-	    if test "x$gcc_cv_as" != x; then
-		# Check if assembler has offsetable %lo()
-		echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
-		echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
-		if $gcc_cv_as $gcc_cv_as_flags64 -o conftest.o conftest.s \
-			> /dev/null 2>&1 &&
-		   $gcc_cv_as $gcc_cv_as_flags64 -o conftest1.o conftest1.s \
-			> /dev/null 2>&1; then
-		    if cmp conftest.o conftest1.o > /dev/null 2>&1; then
-			gcc_cv_as_offsetable_lo10=no
-		    else
-			gcc_cv_as_offsetable_lo10=yes
-		    fi
-		else
+	gcc_cv_as_offsetable_lo10=unknown
+	if test "x$gcc_cv_as" != x; then
+	    # Check if assembler has offsetable %lo()
+	    echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
+	    echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
+	    if $gcc_cv_as -xarch=v9 -o conftest.o conftest.s \
+		    > /dev/null 2>&1 &&
+	       $gcc_cv_as -xarch=v9 -o conftest1.o conftest1.s \
+		    > /dev/null 2>&1; then
+		if cmp conftest.o conftest1.o > /dev/null 2>&1; then
 		    gcc_cv_as_offsetable_lo10=no
+		else
+		    gcc_cv_as_offsetable_lo10=yes
 		fi
-		rm -f conftest.s conftest.o conftest1.s conftest1.o
+	    else
+		gcc_cv_as_offsetable_lo10=no
 	    fi
-	
+	    rm -f conftest.s conftest.o conftest1.s conftest1.o
+	fi
+    
 fi
 
 echo "$ac_t""$gcc_cv_as_offsetable_lo10" 1>&6
-	if test "x$gcc_cv_as_offsetable_lo10" = xyes; then
-	    cat >> confdefs.h <<\EOF
+    if test "x$gcc_cv_as_offsetable_lo10" = xyes; then
+	cat >> confdefs.h <<\EOF
 #define HAVE_AS_OFFSETABLE_LO10 1
 EOF
 
-	fi
     fi
 
     ;;
