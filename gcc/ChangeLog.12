@@ -3956,7 +3956,7 @@
 	(TARGET_INIT_BUILTINS): Define to sparc_init_builtins.
 	(TARGET_EXPAND_BUILTIN): Define to sparc_expand_builtin.
 	(def_builtin): New macro for creating builtin functions.
-	(P): New mode macro for pointer types.
+	* config/sparc/sparc.md (P): New mode macro for pointer types.
 	(UNSPEC_FPACK16, UNSPEC_FPACK32, UNSPEC_FPACKFIX, UNSPEC_FEXPAND,
 	UNSPEC_FPMERGE, UNSPEC_MUL16AL, UNSPEC_MUL8UL, UNSPEC_MULDUL,
 	UNSPEC_ALIGNDATA, UNSPEC_ALIGNADDR, UNSPEC_PDIST): New constants.
