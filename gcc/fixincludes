@@ -1754,10 +1754,10 @@ fi
 # exist in the fixed directory.  This comes last since otherwise
 # we might end up deleting some of these files "because they don't
 # need any change."
-while [ -n "$required" ]; do
+set x $required
+shift
+while [ $# != 0 ]; do
   newreq=
-  set x $required
-  shift
   while [ $# != 0 ]; do
     # $1 is the directory to copy from, $2 is the unfixed file,
     # $3 is the fixed file name.
@@ -1776,7 +1776,8 @@ while [ -n "$required" ]; do
     fi
     shift; shift; shift
   done
-  required=$newreq
+  set x $newreq
+  shift
 done
 
 echo 'Cleaning up DONE files.'
