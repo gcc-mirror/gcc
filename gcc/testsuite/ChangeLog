@@ -1,3 +1,7 @@
+2004-12-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/opt/temp1.C: Make memcpy actually copy bytes.
+
 2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/empty2.c: Add missing dg-warning.

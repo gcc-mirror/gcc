@@ -15,6 +15,10 @@ int i;
 extern "C"
 void *memcpy (void *dest, const void *src, __SIZE_TYPE__ n)
 {
+  char *d = (char *) dest;
+  const char *s = (const char *) src;
+  while (n--)
+    d[n] = s[n];
   ++i;
 }
  

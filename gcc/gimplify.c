@@ -2817,8 +2817,9 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	  pointer = TREE_OPERAND (*from_p, 0);
 	  STRIP_NOPS (pointer);
 	  if (TREE_CODE (pointer) == ADDR_EXPR
-	      && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (pointer, 0)))
-		  == TYPE_MAIN_VARIANT (TREE_TYPE (*from_p))))
+	      && (lang_hooks.types_compatible_p 
+		  (TREE_TYPE (TREE_OPERAND (pointer, 0)),
+		   TREE_TYPE (*from_p))))
 	    {
 	      *from_p = TREE_OPERAND (pointer, 0); 
 	      ret = GS_OK;
