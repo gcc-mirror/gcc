@@ -6622,7 +6622,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
   else if (TREE_READONLY_DECL_P (rhs))
     rhs = decl_constant_value (rhs);
 
-  if (type == rhstype)
+  if (comptypes (type, rhstype, 1))
     {
       overflow_warning (rhs);
       return rhs;

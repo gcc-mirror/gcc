@@ -1,3 +1,7 @@
+1998-07-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (convert_for_assignment): Use comptypes.
+
 1998-07-16  Mark Mitchell  <mark@markmitchell.com>
 
 	* semantics.c (finish_object_call_expr): Move test for the
