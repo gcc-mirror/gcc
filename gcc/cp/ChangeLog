@@ -1,3 +1,7 @@
+2001-02-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* typeck2.c (build_m_component_ref): Robustify.
+
 2001-02-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* friend.c (do_friend): Don't take the nested [template] class
