@@ -1,3 +1,8 @@
+Thu Oct 28 06:47:32 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (check_format_info): Avoid non-literal format string
+	warnings when `first_arg_num' is zero.
+
 Thu Oct 28 12:28:48 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* rtl.texi: Delete explicit Prev, Up and Next entries in "@node"s.

@@ -1491,7 +1491,11 @@ check_format_info (info, params)
     {
       /* The user may get multiple warnings if the supplied argument
 	 isn't even a string pointer.  */
-      warning ("format not a string literal, argument types not checked");
+      /* Functions taking a va_list normally pass a non-literal format
+	 string.  These functions typically are declared with
+	 first_arg_num == 0, so avoid warning in those cases.  */
+      if (info->first_arg_num != 0)
+	warning ("format not a string literal, argument types not checked");
       return;
     }
   format_tree = TREE_OPERAND (format_tree, 0);
@@ -1499,7 +1503,11 @@ check_format_info (info, params)
     {
       /* The user may get multiple warnings if the supplied argument
 	 isn't even a string pointer.  */
-      warning ("format not a string literal, argument types not checked");
+      /* Functions taking a va_list normally pass a non-literal format
+	 string.  These functions typically are declared with
+	 first_arg_num == 0, so avoid warning in those cases.  */
+      if (info->first_arg_num != 0)
+	warning ("format not a string literal, argument types not checked");
       return;
     }
   format_chars = TREE_STRING_POINTER (format_tree);
