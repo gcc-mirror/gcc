@@ -1,6 +1,6 @@
 #!/bin/sh
 # Construct makefile for libgcc.
-#   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+#   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 
@@ -295,9 +295,7 @@ for ml in $MULTILIBS; do
   echo "${dir}/libgcc.a: $libgcc_a_objs"
   echo "	-rm -rf ${dir}/libgcc.a"
   echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcc.a $libgcc_a_objs
-  echo '	if $(RANLIB_TEST_FOR_TARGET) ; then' \\
-  echo '	  $(RANLIB_FOR_TARGET)' ${dir}/libgcc.a ';' \\
-  echo '	else true; fi;'
+  echo '	$(RANLIB_FOR_TARGET)' ${dir}/libgcc.a
 
   if [ "$SHLIB_LINK" ]; then
 
@@ -305,9 +303,7 @@ for ml in $MULTILIBS; do
     echo "${dir}/libgcc_eh.a: $libgcc_eh_objs"
     echo "	-rm -rf ${dir}/libgcc_eh.a"
     echo '	$(AR_CREATE_FOR_TARGET)' ${dir}/libgcc_eh.a $libgcc_eh_objs
-    echo '	if $(RANLIB_TEST_FOR_TARGET) ; then' \\
-    echo '	  $(RANLIB_FOR_TARGET)' ${dir}/libgcc_eh.a ';' \\
-    echo '	else true; fi;'
+    echo '	$(RANLIB_FOR_TARGET)' ${dir}/libgcc_eh.a
 
     if [ -z "$SHLIB_MULTILIB" ]; then
       if [ "$dir" = . ]; then
