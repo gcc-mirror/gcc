@@ -1,5 +1,5 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-96, 1998 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -20,25 +20,14 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#include "system.h"
 #include <stdio.h>
 #include "obstack.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "flags.h"
 #include "rtl.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef NEED_DECLARATION_FREE
-extern void free	PROTO((void *));
-#endif
 
 extern void compiler_error ();
 
@@ -1773,7 +1762,7 @@ break_out_target_exprs (t)
 tree
 build_min_nt VPROTO((enum tree_code code, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum tree_code code;
 #endif
   register struct obstack *ambient_obstack = expression_obstack;
@@ -1784,7 +1773,7 @@ build_min_nt VPROTO((enum tree_code code, ...))
 
   VA_START (p, code);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum tree_code);
 #endif
 
@@ -1811,7 +1800,7 @@ build_min_nt VPROTO((enum tree_code code, ...))
 tree
 build_min VPROTO((enum tree_code code, tree tt, ...))
 {
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   enum tree_code code;
   tree tt;
 #endif
@@ -1823,7 +1812,7 @@ build_min VPROTO((enum tree_code code, tree tt, ...))
 
   VA_START (p, tt);
 
-#ifndef __STDC__
+#ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum tree_code);
   tt = va_arg (p, tree);
 #endif
