@@ -1,3 +1,8 @@
+1999-03-10  Mark Mitchell  <mark@markmitchell.com>
+
+	* sig.c (build_signature_table_constructor): Use accessible_p
+	instead of compute_access.
+
 1999-03-09  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (add_builtin_candidates): Handle overloaded conversion ops.
