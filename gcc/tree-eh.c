@@ -1688,9 +1688,11 @@ tree_could_trap_p (tree expr)
     case IMAGPART_EXPR:
     case BIT_FIELD_REF:
       t = get_base_address (expr);
-      return !t || TREE_CODE (t) == INDIRECT_REF;
+      return !t || tree_could_trap_p (t);
 
     case INDIRECT_REF:
+      return (TREE_THIS_NOTRAP (expr) == false);
+
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case FLOOR_DIV_EXPR:
