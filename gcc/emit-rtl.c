@@ -746,13 +746,96 @@ gen_reg_rtx (enum machine_mode mode)
   return val;
 }
 
-/* Generate a register with same attributes as REG,
-   but offsetted by OFFSET.  */
+/* Generate a register with same attributes as REG, but offsetted by OFFSET.
+   Do the big endian correction if needed.  */
 
 rtx
 gen_rtx_REG_offset (rtx reg, enum machine_mode mode, unsigned int regno, int offset)
 {
   rtx new = gen_rtx_REG (mode, regno);
+  tree decl;
+  HOST_WIDE_INT var_size;
+
+  /* PR middle-end/14084
+     The problem appears when a variable is stored in a larger register
+     and later it is used in the original mode or some mode in between
+     or some part of variable is accessed.
+
+     On little endian machines there is no problem because
+     the REG_OFFSET of the start of the variable is the same when
+     accessed in any mode (it is 0).
+
+     However, this is not true on big endian machines.
+     The offset of the start of the variable is different when accessed
+     in different modes.
+     When we are taking a part of the REG we have to change the OFFSET
+     from offset WRT size of mode of REG to offset WRT size of variable.
+
+     If we would not do the big endian correction the resulting REG_OFFSET
+     would be larger than the size of the DECL.
+
+     Examples of correction, for BYTES_BIG_ENDIAN WORDS_BIG_ENDIAN machine:
+
+     REG.mode  MODE  DECL size  old offset  new offset  description
+     DI        SI    4          4           0           int32 in SImode
+     DI        SI    1          4           0           char in SImode
+     DI        QI    1          7           0           char in QImode
+     DI        QI    4          5           1           1st element in QImode
+                                                        of char[4]
+     DI        HI    4          6           2           1st element in HImode
+                                                        of int16[2]
+
+     If the size of DECL is equal or greater than the size of REG
+     we can't do this correction because the register holds the
+     whole variable or a part of the variable and thus the REG_OFFSET
+     is already correct.  */
+
+  decl = REG_EXPR (reg);
+  if ((BYTES_BIG_ENDIAN || WORDS_BIG_ENDIAN)
+      && decl != NULL
+      && offset > 0
+      && GET_MODE_SIZE (GET_MODE (reg)) > GET_MODE_SIZE (mode)
+      && ((var_size = int_size_in_bytes (TREE_TYPE (decl))) > 0
+	  && var_size < GET_MODE_SIZE (GET_MODE (reg))))
+    {
+      int offset_le;
+
+      /* Convert machine endian to little endian WRT size of mode of REG.  */
+      if (WORDS_BIG_ENDIAN)
+	offset_le = ((GET_MODE_SIZE (GET_MODE (reg)) - 1 - offset)
+		     / UNITS_PER_WORD) * UNITS_PER_WORD;
+      else
+	offset_le = (offset / UNITS_PER_WORD) * UNITS_PER_WORD;
+
+      if (BYTES_BIG_ENDIAN)
+	offset_le += ((GET_MODE_SIZE (GET_MODE (reg)) - 1 - offset)
+		      % UNITS_PER_WORD);
+      else
+	offset_le += offset % UNITS_PER_WORD;
+
+      if (offset_le >= var_size)
+	{
+	  /* MODE is wider than the variable so the new reg will cover
+	     the whole variable so the resulting OFFSET should be 0.  */
+	  offset = 0;
+	}
+      else
+	{
+	  /* Convert little endian to machine endian WRT size of variable.  */
+	  if (WORDS_BIG_ENDIAN)
+	    offset = ((var_size - 1 - offset_le)
+		      / UNITS_PER_WORD) * UNITS_PER_WORD;
+	  else
+	    offset = (offset_le / UNITS_PER_WORD) * UNITS_PER_WORD;
+
+	  if (BYTES_BIG_ENDIAN)
+	    offset += ((var_size - 1 - offset_le)
+		       % UNITS_PER_WORD);
+	  else
+	    offset += offset_le % UNITS_PER_WORD;
+	}
+    }
+
   REG_ATTRS (new) = get_reg_attrs (REG_EXPR (reg),
 				   REG_OFFSET (reg) + offset);
   return new;
