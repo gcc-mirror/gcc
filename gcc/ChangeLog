@@ -1,3 +1,8 @@
+2001-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.h (CC1_CPU_SPEC): Fix deprecation warnings for
+	-m386 and -m486.
+
 2001-04-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (configargs.h): Define thread_model.
