@@ -51,7 +51,6 @@
   [(UNSPECV_BLOCKAGE		0)
    (UNSPECV_FLUSHW		1)
    (UNSPECV_GOTO		2)
-   (UNSPECV_GOTO_V9		3)
    (UNSPECV_FLUSH		4)
    (UNSPECV_SETJMP		5)
    (UNSPECV_SAVEW		6)
@@ -88,14 +87,7 @@
 	 (symbol_ref "TARGET_SPARCLET") (const_string "sparclet")]
 	(const_string "v7"))))
 
-;; Architecture size.
-(define_attr "arch" "arch32bit,arch64bit"
- (const
-  (cond [(symbol_ref "TARGET_ARCH64") (const_string "arch64bit")]
-	(const_string "arch32bit"))))
-
 ;; Insn type.
-
 (define_attr "type"
   "ialu,compare,shift,
    load,sload,store,
@@ -113,27 +105,42 @@
    multi,savew,flushw,iflush,trap"
   (const_string "ialu"))
 
-;; true if branch/call has empty delay slot and will emit a nop in it
+;; True if branch/call has empty delay slot and will emit a nop in it
 (define_attr "empty_delay_slot" "false,true"
   (symbol_ref "empty_delay_slot (insn)"))
 
-(define_attr "branch_type" "none,icc,fcc,reg" (const_string "none"))
+(define_attr "branch_type" "none,icc,fcc,reg"
+  (const_string "none"))
 
 (define_attr "pic" "false,true"
   (symbol_ref "flag_pic != 0"))
 
-(define_attr "current_function_calls_alloca" "false,true"
+(define_attr "calls_alloca" "false,true"
   (symbol_ref "current_function_calls_alloca != 0"))
+
+(define_attr "calls_eh_return" "false,true"
+   (symbol_ref "current_function_calls_eh_return !=0 "))
+   
+(define_attr "leaf_function" "false,true"
+  (symbol_ref "current_function_uses_only_leaf_regs != 0"))
 
 (define_attr "delayed_branch" "false,true"
   (symbol_ref "flag_delayed_branch != 0"))
 
 ;; Length (in # of insns).
 (define_attr "length" ""
-  (cond [(eq_attr "type" "uncond_branch,call,sibcall")
+  (cond [(eq_attr "type" "uncond_branch,call")
 	   (if_then_else (eq_attr "empty_delay_slot" "true")
 	     (const_int 2)
 	     (const_int 1))
+	 (eq_attr "type" "sibcall")
+	   (if_then_else (eq_attr "leaf_function" "true")
+	     (if_then_else (eq_attr "empty_delay_slot" "true")
+	       (const_int 3)
+	       (const_int 2))
+	     (if_then_else (eq_attr "empty_delay_slot" "true")
+	       (const_int 2)
+	       (const_int 1)))
 	 (eq_attr "branch_type" "icc")
 	   (if_then_else (match_operand 0 "noov_compare64_op" "")
 	     (if_then_else (lt (pc) (match_dup 1))
@@ -197,17 +204,18 @@
 	 ] (const_int 1)))
 
 ;; FP precision.
-(define_attr "fptype" "single,double" (const_string "single"))
+(define_attr "fptype" "single,double"
+  (const_string "single"))
 
 ;; UltraSPARC-III integer load type.
-(define_attr "us3load_type" "2cycle,3cycle" (const_string "2cycle"))
+(define_attr "us3load_type" "2cycle,3cycle"
+  (const_string "2cycle"))
 
 (define_asm_attributes
   [(set_attr "length" "2")
    (set_attr "type" "multi")])
 
 ;; Attributes for instruction and branch scheduling
-
 (define_attr "tls_call_delay" "false,true"
   (symbol_ref "tls_call_delay (insn)"))
 
@@ -7699,7 +7707,24 @@
   ""
   "* return output_return (insn);"
   [(set_attr "type" "return")
-   (set_attr "length" "2")])
+   (set (attr "length")
+	(if_then_else (eq_attr "leaf_function" "true")
+		      (if_then_else (eq_attr "empty_delay_slot" "true")
+				    (const_int 2)
+				    (const_int 1))
+		      (if_then_else (eq_attr "calls_eh_return" "true")
+				    (if_then_else (eq_attr "delayed_branch" "true")
+						  (if_then_else (eq_attr "isa" "v9")
+								(const_int 2)
+								(const_int 3))
+						  (if_then_else (eq_attr "isa" "v9")
+								(const_int 3)
+								(const_int 4)))
+				    (if_then_else (eq_attr "empty_delay_slot" "true")
+						  (if_then_else (eq_attr "delayed_branch" "true")
+								(const_int 2)
+								(const_int 3))
+						  (const_int 1)))))])
 
 ;; UNSPEC_VOLATILE is considered to use and clobber all hard registers and
 ;; all of memory.  This blocks insns from being moved across this point.
@@ -7889,7 +7914,7 @@
 }
   [(set_attr "type" "multi")
    (set (attr "length")
-        (cond [(eq_attr "current_function_calls_alloca" "false")
+        (cond [(eq_attr "calls_alloca" "false")
                  (const_int 0)
                (eq_attr "isa" "!v9")
                  (const_int 1)

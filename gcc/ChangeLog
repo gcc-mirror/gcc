@@ -1,3 +1,14 @@
+2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.md (UNSPECV_GOTO_V9): Delete.
+	(arch attribute): Delete.
+	(current_function_calls_alloca attribute): Rename into calls_alloca.
+	(calls_eh_return): New attribute.
+	(leaf_function): Likewise.
+	(length attribute): Fix formula for sibcalls.
+	(return insn): Correctly compute the 'length' attribute.
+	(do_builtin_setjmp_setup): Adjust use of current_function_calls_alloca.
+
 2004-07-08  Richard Henderson  <rth@redhat.com>
 
 	* tree-cfg.c (make_exit_edges): Use get_call_expr_in.
