@@ -30,8 +30,23 @@ const char *progname;
 cpp_reader parse_in;
 cpp_printer parse_out;
 
-
-extern int main				PARAMS ((int, char **));
+int main		PARAMS ((int, char **));
+
+/* Callback routines for the parser.   Most of these are active only
+   in specific modes.  */
+static void cb_define	PARAMS ((cpp_reader *, cpp_hashnode *));
+static void cb_undef	PARAMS ((cpp_reader *, cpp_hashnode *));
+static void cb_include	PARAMS ((cpp_reader *, const unsigned char *,
+				 const unsigned char *, unsigned int, int));
+
+static void cb_ident	  PARAMS ((cpp_reader *, const cpp_token *));
+static void cb_enter_file PARAMS ((cpp_reader *));
+static void cb_leave_file PARAMS ((cpp_reader *));
+static void cb_def_pragma PARAMS ((cpp_reader *));
+
+static void do_pragma_implementation PARAMS ((cpp_reader *));
+static int dump_macros_helper PARAMS ((cpp_reader *, cpp_hashnode *));
+
 int
 main (argc, argv)
      int argc;
@@ -68,8 +83,30 @@ main (argc, argv)
   print = cpp_printer_init (pfile, &parse_out);
   if (! print)
     return (FATAL_EXIT_CODE);
-  if (! CPP_OPTION (pfile, no_output))
-    pfile->printer = print;
+
+  /* Set callbacks.  */
+  if (! CPP_OPTION (pfile, no_line_commands)
+      && ! CPP_OPTION (pfile, no_output))
+    {
+      pfile->cb.enter_file = cb_enter_file;
+      pfile->cb.leave_file = cb_leave_file;
+    }
+  if (CPP_OPTION (pfile, dump_includes))
+    pfile->cb.include  = cb_include;
+  if (CPP_OPTION (pfile, debug_output)
+      || CPP_OPTION (pfile, dump_macros) == dump_names
+      || CPP_OPTION (pfile, dump_macros) == dump_definitions)
+    {
+      pfile->cb.define = cb_define;
+      pfile->cb.undef  = cb_undef;
+      pfile->cb.poison = cb_def_pragma;
+    }
+  pfile->cb.ident      = cb_ident;
+  pfile->cb.def_pragma = cb_def_pragma;
+
+  /* Register one #pragma which needs special handling.  */
+  cpp_register_pragma(pfile, 0, "implementation", do_pragma_implementation);
+  cpp_register_pragma(pfile, "GCC", "implementation", do_pragma_implementation);
 
   if (! cpp_start_read (pfile, print, CPP_OPTION (pfile, in_fname)))
     return (FATAL_EXIT_CODE);
@@ -81,6 +118,9 @@ main (argc, argv)
     while (CPP_BUFFER (pfile) != NULL)
       cpp_scan_buffer (pfile, print);
 
+  if (CPP_OPTION (pfile, dump_macros) == dump_only)
+    cpp_forall_identifiers (pfile, dump_macros_helper);
+  
   cpp_finish (pfile, print);
   cpp_cleanup (pfile);
 
@@ -88,3 +128,137 @@ main (argc, argv)
     return (FATAL_EXIT_CODE);
   return (SUCCESS_EXIT_CODE);
 }
+
+/* Callbacks */
+
+static void
+cb_ident (pfile, token)
+     cpp_reader *pfile;
+     const cpp_token *token;
+{
+  cpp_printf (pfile, &parse_out, "#ident \"%.*s\"\n",
+	      (int) token->val.str.len, token->val.str.text);
+}
+
+static void
+cb_define (pfile, hash)
+     cpp_reader *pfile;
+     cpp_hashnode *hash;
+{
+  cpp_printf (pfile, &parse_out, "#define %s", hash->name);
+  if (CPP_OPTION (pfile, debug_output)
+      || CPP_OPTION (pfile, dump_macros) == dump_definitions)
+    cpp_dump_definition (pfile, parse_out.outf, hash);
+  putc ('\n', parse_out.outf);
+}
+
+static void
+cb_undef (pfile, hash)
+     cpp_reader *pfile;
+     cpp_hashnode *hash;
+{
+  cpp_printf (pfile, &parse_out, "#undef %s\n", hash->name);
+}
+
+static void
+cb_include (pfile, dir, str, len, ab)
+     cpp_reader *pfile;
+     const unsigned char *dir;
+     const unsigned char *str;
+     unsigned int len;
+     int ab;
+{
+  int l, r;
+  if (ab)
+    l = '<', r = '>';
+  else
+    l = '"', r = '"';
+
+  cpp_printf (pfile, &parse_out, "#%s %c%.*s%c\n", dir, l, (int) len, str, r);
+}
+
+static void
+cb_enter_file (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *ip = CPP_BUFFER (pfile);
+
+  cpp_printf (pfile, &parse_out, "# 1 \"%s\"%s%s\n", ip->nominal_fname,
+	      pfile->done_initializing ? " 1" : "",
+	      cpp_syshdr_flags (pfile, ip));
+
+  parse_out.lineno = 1;
+  parse_out.last_fname = ip->nominal_fname;
+}
+
+static void
+cb_leave_file (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *ip = CPP_BUFFER (pfile);
+
+  cpp_printf (pfile, &parse_out, "# %u \"%s\" 2%s\n", ip->lineno,
+	      ip->nominal_fname, cpp_syshdr_flags (pfile, ip));
+
+  parse_out.lineno = ip->lineno;
+  parse_out.last_fname = ip->nominal_fname;
+}
+
+static void
+cb_def_pragma (pfile)
+     cpp_reader *pfile;
+{
+  cpp_printf (pfile, &parse_out, "#pragma ");
+  cpp_output_list (pfile, parse_out.outf, &pfile->token_list,
+		   pfile->first_directive_token);
+  putc ('\n', parse_out.outf);
+}
+
+static void
+do_pragma_implementation (pfile)
+     cpp_reader *pfile;
+{
+  /* Be quiet about `#pragma implementation' for a file only if it hasn't
+     been included yet.  */
+  const cpp_token *tok = cpp_get_token (pfile);
+  char *copy;
+
+  if (tok->type != CPP_EOF)
+    {
+      if (tok->type != CPP_STRING || cpp_get_token (pfile)->type != CPP_EOF)
+	{
+	  cpp_error (pfile, "malformed #pragma implementation");
+	  return;
+	}
+
+      /* Make a NUL-terminated copy of the string.  */
+      copy = alloca (tok->val.str.len + 1);
+      memcpy (copy, tok->val.str.text, tok->val.str.len);
+      copy[tok->val.str.len] = '\0';
+  
+      if (cpp_included (pfile, copy))
+	cpp_warning (pfile,
+		"#pragma implementation for %s appears after file is included",
+		     copy);
+    }
+
+  /* forward to default-pragma handler.  */
+  cb_def_pragma (pfile);
+}
+
+/* Dump out the hash table.  */
+static int
+dump_macros_helper (pfile, hp)
+     cpp_reader *pfile;
+     cpp_hashnode *hp;
+{
+  if (hp->type == T_MACRO)
+    {
+      cpp_printf (pfile, &parse_out, "#define %s", hp->name);
+      cpp_dump_definition (pfile, parse_out.outf, hp);
+      putc ('\n', parse_out.outf);
+    }
+
+  return 1;
+}
+

@@ -210,10 +210,15 @@ extern unsigned char _cpp_IStable[256];
 #define DUMMY_TOKEN     0
 #define NO_DUMMY_TOKEN	1
 
+/* In cpperror.c  */
+enum error_type { WARNING = 0, PEDWARN, ERROR, FATAL, ICE };
+extern int _cpp_begin_message PARAMS ((cpp_reader *, enum error_type,
+				       const char *, unsigned int,
+				       unsigned int));
+
 /* In cppmacro.c */
 extern void _cpp_free_definition	PARAMS ((cpp_hashnode *));
 extern int _cpp_create_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
-extern void _cpp_dump_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
 
 /* In cpphash.c */
 extern void _cpp_init_macros		PARAMS ((cpp_reader *));
@@ -253,9 +258,6 @@ extern int _cpp_equiv_toklists		PARAMS ((const cpp_toklist *,
 extern void _cpp_expand_token_space	PARAMS ((cpp_toklist *, unsigned int));
 extern void _cpp_reserve_name_space	PARAMS ((cpp_toklist *, unsigned int));
 extern void _cpp_expand_name_space	PARAMS ((cpp_toklist *, unsigned int));
-extern void _cpp_dump_list		PARAMS ((cpp_reader *,
-						 const cpp_toklist *,
-						 const cpp_token *, int));
 extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
 						 const cpp_token *));
 extern void _cpp_run_directive		PARAMS ((cpp_reader *,
@@ -279,6 +281,7 @@ extern struct answer **_cpp_find_answer	PARAMS ((cpp_hashnode *,
 						 const cpp_toklist *));
 extern void _cpp_init_stacks	PARAMS ((cpp_reader *));
 extern void _cpp_cleanup_stacks	PARAMS ((cpp_reader *));
+extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));
 
 /* Utility routines and macros.  */
 #define xnew(T)		(T *) xmalloc (sizeof(T))
@@ -295,6 +298,7 @@ static inline int ustrncmp	PARAMS ((const U_CHAR *, const U_CHAR *,
 static inline size_t ustrlen	PARAMS ((const U_CHAR *));
 static inline U_CHAR *uxstrdup	PARAMS ((const U_CHAR *));
 static inline U_CHAR *ustrchr	PARAMS ((const U_CHAR *, int));
+static inline int ufputs	PARAMS ((const U_CHAR *, FILE *));
 
 static inline int
 ustrcmp (s1, s2)
@@ -331,6 +335,14 @@ ustrchr (s1, c)
      int c;
 {
   return (U_CHAR *) strchr ((const char *)s1, c);
+}
+
+static inline int
+ufputs (s, f)
+     const U_CHAR *s;
+     FILE *f;
+{
+  return fputs ((const char *)s, f);
 }
 
 #endif

@@ -370,6 +370,20 @@ cpp_make_system_header (pfile, pbuf, flag)
     pbuf->inc->sysp = flag;
 }
 
+const char *
+cpp_syshdr_flags (pfile, pbuf)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     cpp_buffer *pbuf;
+{
+#ifndef NO_IMPLICIT_EXTERN_C
+  if (CPP_OPTION (pfile, cplusplus) && pbuf->inc->sysp == 2)
+    return " 3 4";
+#endif
+  if (pbuf->inc->sysp)
+    return " 3";
+  return "";
+}
+
 /* Report on all files that might benefit from a multiple include guard.
    Triggered by -H.  */
 void
@@ -594,11 +608,6 @@ read_include_file (pfile, inc)
   cpp_buffer *fp;
   int fd = inc->fd;
 
-  /* Ensures we dump our current line before entering an include file.  */
-  if (CPP_BUFFER (pfile) && pfile->printer)
-    cpp_output_tokens (pfile, pfile->printer,
-		       CPP_BUF_LINE (CPP_BUFFER (pfile)));
-
   fp = cpp_push_buffer (pfile, NULL, 0);
 
   if (fp == 0)
@@ -683,6 +692,8 @@ read_include_file (pfile, inc)
     fp->actual_dir = actual_directory (pfile, inc->name);
 
   pfile->input_stack_listing_current = 0;
+  if (pfile->cb.enter_file)
+    (*pfile->cb.enter_file) (pfile);
   return 1;
 
  perror_fail:

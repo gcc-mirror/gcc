@@ -40,7 +40,7 @@ struct macro_info
   unsigned char flags;
 };
 
-static void dump_funlike_macro	PARAMS ((cpp_reader *, cpp_hashnode *));
+static void dump_macro_args PARAMS ((FILE *, const cpp_toklist *));
 static void count_params PARAMS ((cpp_reader *, struct macro_info *));
 static int is__va_args__ PARAMS ((cpp_reader *, const cpp_token *));
 
@@ -554,66 +554,53 @@ _cpp_create_definition (pfile, hp)
   return 1;
 }
 
-/* Dump the definition of macro MACRO on stdout.  The format is suitable
-   to be read back in again. */
+/* Dump the definition of macro MACRO on FP.  The format is suitable
+   to be read back in again.  Caller is expected to generate the
+   "#define NAME" bit.  */
 
 void
-_cpp_dump_definition (pfile, hp)
+cpp_dump_definition (pfile, fp, hp)
      cpp_reader *pfile;
-     cpp_hashnode *hp;
+     FILE *fp;
+     const cpp_hashnode *hp;
 {
-  CPP_RESERVE (pfile, hp->length + sizeof "#define ");
-  CPP_PUTS_Q (pfile, "#define ", sizeof "#define " - 1);
-  CPP_PUTS_Q (pfile, hp->name, hp->length);
+  const cpp_toklist *list = hp->value.expansion;
 
-  if (hp->type == T_MACRO)
+  if (hp->type != T_MACRO)
     {
-      if (hp->value.expansion->paramc >= 0)
-	dump_funlike_macro (pfile, hp);
-      else
-	{
-	  const cpp_toklist *list = hp->value.expansion;
-	  list->tokens[0].flags &= ~BOL;
-	  list->tokens[0].flags |= PREV_WHITE;
-	  _cpp_dump_list (pfile, list, list->tokens, 1);
-	}
+      cpp_ice (pfile, "invalid hash type %d in dump_definition", hp->type);
+      return;
     }
-  else
-    cpp_ice (pfile, "invalid hash type %d in dump_definition", hp->type);
 
-  if (CPP_BUFFER (pfile) == 0 || ! pfile->done_initializing)
-    CPP_PUTC (pfile, '\n');
+  if (list->paramc >= 0)
+    dump_macro_args (fp, list);
+
+  putc (' ', fp);
+  cpp_output_list (pfile, fp, list, list->tokens);
 }
 
 static void
-dump_funlike_macro (pfile, node)
-     cpp_reader *pfile;
-     cpp_hashnode *node;
+dump_macro_args (fp, list)
+     FILE *fp;
+     const cpp_toklist *list;
 {
-  int i = 0;
-  const cpp_toklist * list = node->value.expansion;
-  const U_CHAR *param;
+  int i;
+  const U_CHAR *param = list->namebuf;
 
-  param = list->namebuf;
-  CPP_PUTC_Q (pfile, '(');
+  putc ('(', fp);
   for (i = 0; i++ < list->paramc;)
     {
       unsigned int len;
 
       len = ustrlen (param);
-      CPP_PUTS (pfile, param, len);
+      if (!list->flags & VAR_ARGS || ustrcmp (param, U"__VA_ARGS__"))
+	ufputs (param, fp);
       if (i < list->paramc)
-	CPP_PUTS(pfile, ", ", 2);
+	fputs (", ", fp);
       else if (list->flags & VAR_ARGS)
-	{
-	  if (!ustrcmp (param, U"__VA_ARGS__"))
-	    pfile->limit -= sizeof (U"__VA_ARGS__") - 1;
-	  CPP_PUTS_Q (pfile, "...", 3);
-	}
+	fputs ("...", fp);
+
       param += len + 1;
     }
-  CPP_PUTC (pfile, ')');
-  list->tokens[0].flags &= ~BOL;
-  list->tokens[0].flags |= PREV_WHITE;
-  _cpp_dump_list (pfile, list, list->tokens, 1);
+  putc (')', fp);
 }
