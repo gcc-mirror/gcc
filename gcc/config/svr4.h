@@ -440,7 +440,7 @@ do {									\
 
 #define USE_CONST_SECTION	1
 
-#define CONST_SECTION_ASM_OP	".section\t.rodata"
+#define CONST_SECTION_ASM_OP	"\t.section\t.rodata"
 
 /* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
 
