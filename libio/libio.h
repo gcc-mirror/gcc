@@ -226,7 +226,9 @@ struct _IO_FILE {
 
   /*  char* _save_gptr;  char* _save_egptr; */
 
+#ifdef _IO_LOCK_T
   _IO_LOCK_T _lock;
+#endif
 };
 
 #ifndef __cplusplus
