@@ -1,3 +1,9 @@
+2004-05-30  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/14067
+	* trans-const.c (gfc_conv_string_init): Allow variable string
+	length lower than initialization string length.
+
 2004-05-30  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/15620
