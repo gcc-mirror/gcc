@@ -91,7 +91,7 @@ translations approved by the Free Software Foundation instead of in the
 original English.
 @end ifinfo
 
-Contributed by James Craig Burley (@email{burley@@gnu.ai.mit.edu}).
+Contributed by James Craig Burley (@email{burley@@gnu.org}).
 Inspired by a first pass at translating @file{g77-0.5.16/f/DOC} that
 was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 
@@ -762,7 +762,7 @@ without royalty; alteration is not permitted.
 @cindex improvements, funding
 
 Work on GNU Fortran is still being done mostly by its author,
-James Craig Burley (@email{burley@@gnu.ai.mit.edu}), who is a volunteer
+James Craig Burley (@email{burley@@gnu.org}), who is a volunteer
 for, not an employee of, the Free Software Foundation (FSF).
 As with other GNU software, funding is important because it can pay for
 needed equipment, personnel, and so on.
@@ -772,7 +772,7 @@ needed equipment, personnel, and so on.
 The FSF provides information on the best way to fund ongoing
 development of GNU software (such as GNU Fortran) in documents
 such as the ``GNUS Bulletin''.
-Email @email{gnu@@prep.ai.mit.edu} for information on funding the FSF.
+Email @email{gnu@@gnu.org} for information on funding the FSF.
 
 To fund specific GNU Fortran work in particular, the FSF might
 provide a means for that, but the FSF does not provide direct funding
@@ -801,7 +801,7 @@ would be able to plan on not doing contract work for many months and
 could thus devote that time to work on projects (such as the planned
 changes for 0.6) that require longer timeframes to complete.
 For the latest information on the status of the author, do
-@kbd{finger -l burley@@gate.gnu.ai.mit.edu} on a UNIX system
+@kbd{finger -l burley@@gnu.org} on a UNIX system
 (or any system with a command like UNIX @code{finger}).
 
 Another important way to support work on GNU Fortran is to volunteer
@@ -810,7 +810,7 @@ Work is needed on documentation, testing, porting
 to various machines, and in some cases, coding (although major
 changes planned for version 0.6 make it difficult to add manpower to this
 area).
-Email @email{fortran@@gnu.ai.mit.edu} to volunteer for this work.
+Email @email{egcs@@cygnus.com} to volunteer for this work.
 
 @xref{Funding,,Funding Free Software}, for more information.
 
@@ -3251,9 +3251,9 @@ users use @code{g77}.
 such changes to @code{g77}.
 
 To find out about existing bugs and ongoing plans for GNU
-Fortran, retrieve @code{ftp://alpha.gnu.ai.mit.edu/g77.plan}
+Fortran, retrieve @code{ftp://alpha.gnu.org/g77.plan}
 or, if you cannot do that, email
-@email{fortran@@gnu.ai.mit.edu} asking for a recent copy of the
+@email{fortran@@gnu.org} asking for a recent copy of the
 GNU Fortran @file{.plan} file.
 
 @heading In 0.5.21:
@@ -10164,7 +10164,7 @@ or installing @code{g77} is not provided here.
 
 To find out about major bugs discovered in the current release and
 possible workarounds for them, retrieve
-@code{ftp://alpha.gnu.ai.mit.edu/g77.plan}.
+@code{ftp://alpha.gnu.org/g77.plan}.
 
 (Note that some of this portion of the manual is lifted
 directly from the @code{gcc} manual, with minor modifications
@@ -12290,8 +12290,8 @@ exposes it more readily than other compilers.
 @node Bug Lists
 @section Where to Report Bugs
 @cindex bug report mailing lists
-@kindex fortran@@gnu.ai.mit.edu
-Send bug reports for GNU Fortran to @email{fortran@@gnu.ai.mit.edu}.
+@kindex egcs-bugs@@cygnus.com
+Send bug reports for GNU Fortran to @email{egcs-bugs@@cygnus.com}.
 
 Often people think of posting bug reports to a newsgroup instead of
 mailing them.
@@ -12627,7 +12627,7 @@ we should be able to reproduce the crash ourselves.
 If you would like to write bug fixes or improvements for the GNU Fortran
 compiler, that is very helpful.
 Send suggested fixes to the bug report
-mailing list, @email{fortran@@gnu.ai.mit.edu}.
+mailing list, @email{egcs-bugs@@cygnus.com}.
 
 Please follow these guidelines so we can study your patches efficiently.
 If you don't follow these guidelines, your information might still be
@@ -12752,7 +12752,7 @@ The service directory is found in the file named @file{SERVICE} in the
 GNU CC distribution.
 
 @item
-Send a message to @email{fortran@@gnu.ai.mit.edu}.
+Send a message to @email{egcs@@cygnus.com}.
 @end itemize
 
 @end ifset

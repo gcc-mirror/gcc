@@ -1,3 +1,8 @@
+Tue Dec  2 20:24:40 1997  Bruno Haible  <haible@ilog.fr>
+
+	* makeinfo/makeinfo.c (find_and_load, convert_from_stream):
+	Zero-terminate the file contents.
+
 Fri Oct 31 09:39:31 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (install targets): Add a dummy target for sunos make.

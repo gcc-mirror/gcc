@@ -20,10 +20,10 @@
 .if n .sp
 .if t .sp 0.4
 ..
-.Id $Id: gcc.1,v 1.4 1993/10/13 23:19:12 pesch Exp $
+.Id $Id: gcc.1,v 1.1.1.2 1997/11/02 08:40:04 law Exp $
 .TH GCC 1 "\*(Dt" "GNU Tools" "GNU Tools"
 .SH NAME
-gcc, g++ \- GNU project C and C++ Compiler (v2.7)
+gcc, g++ \- GNU project C and C++ Compiler (egcs-1.0)
 .SH SYNOPSIS
 .B gcc
 .RI "[ " option " | " filename " ].\|.\|."
@@ -190,6 +190,8 @@ in the following sections.
 \-Wformat
 .RI \-Wid\-clash\- len
 \-Wimplicit
+\-Wimplicit\-int
+\-Wimplicit\-function\-declaration
 \-Winline
 \-Wmain
 \-Wmissing\-prototypes
@@ -1717,8 +1719,14 @@ An unsigned value is compared against zero with `\|\c
 \&\|'.
 .PP
 .TP
+.B \-Wimplicit-int
+Warn whenever a declaration does not specify a type.
+.TP
+.B \-Wimplicit-function-declaration
+Warn whenever a function is used before being declared.
+.TP
 .B \-Wimplicit
-Warn whenever a function or parameter is implicitly declared.
+Same as -Wimplicit-int and -Wimplicit-function-declaration.
 .TP
 .B \-Wmain
 Warn if the

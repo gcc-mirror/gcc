@@ -14,6 +14,10 @@ which is the top-level directory containing the gcc back end, the
 gcc C front end, and other non-Fortran files, and gcc/f/, which
 contains all of the Fortran files.
 
+* Note, if this is an egcs release, all the installation information
+  which follows is not needed.  It is provided for historical reference
+  only.
+
 * To build GNU Fortran, you must have a source distribution of gcc
   version 2.7.2.2.  Do not attempt to use any other version
   of gcc, because this version of g77 is designed to work only with
@@ -163,4 +167,4 @@ the compiler is in the second pass, otherwise it is in the first.
 (This information might help you reduce a test case and/or work around
 a bug in g77 until a fix is available.)
 
-Any questions or comments on these topics, email fortran@gnu.ai.mit.edu.
+Any questions or comments on these topics, email egcs@cygnus.com

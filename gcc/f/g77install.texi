@@ -7,6 +7,9 @@
 
 @c 1997-09-09
 
+Note most of this information is out of date and superceded by the EGCS
+install procedures.  It is provided for historical reference only.
+
 @ifclear INSTALLONLY
 @node Installation
 @chapter Installing GNU Fortran
@@ -2106,7 +2109,7 @@ until you're sure your distribution is widely used and has been
 well tested.
 This especially goes for those of you making any
 changes to the @code{g77} sources to port @code{g77}, e.g. to OS/2.
-@email{fortran@@gnu.ai.mit.edu} has received a fair number of bug
+@email{fortran@@gnu.org} has received a fair number of bug
 reports that turned out to be problems with other peoples' ports
 and distributions, about which nothing could be done for the
 user.

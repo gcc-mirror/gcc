@@ -1,4 +1,4 @@
-Noteworthy changes in GCC version 2.8.0:
+Noteworthy changes in GCC for EGCS.
 
 The -specs=file switch allows you to override default specs used in invoking
 programs like cc1, as, etc.
@@ -14,6 +14,8 @@ The following new targets are supported:
     Solaris 2.51 running on PowerPC's.
     Linux running on PowerPC's.
     Embedded target m32r-elf.
+    Embedded target arc-elf.
+    IRIX 6.2 running on MIPS.
 
 New features for the Hitachi H8/300(H).
 
@@ -26,6 +28,9 @@ New features for SPARC-based systems:
 
     -mcpu=xxx
     -mtune=xxx
+    -malign-loops=xxx
+    -malign-jumps=xxx
+    -malign-functions=xxx
     -mimpure-text and -mno-impure-text
 
 New features for all rs6000 and PowerPC systems:
@@ -56,6 +61,8 @@ or embedded systems:
     -memb
     -msim
     -mmvme
+    -myellowknife
+    -mads
     wchar_t is now of type long, not unsigned short as per ABI.
     -p/-pg support
     -mcpu=403 now implies -mstrict-align.
@@ -81,6 +88,9 @@ schedule for but does not select the architecture level.
 Directory names used for storing the multilib libraries on System V and
 embedded PowerPC systems have been shortened to work with commands like tar
 that have fixed limits on pathname size.
+
+The DWARF 2 debugging information format is supported on ELF systems, and
+is the default for -ggdb where available.
 
 Noteworthy changes in GCC version 2.7.2:
 

@@ -1,3 +1,7 @@
+Wed Dec  3 07:55:59 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* configure (gxx_include_dir): Fix thinko.
+
 Tue Dec  2 10:55:34 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (INSTALL_TARGET_CROSS): Define.

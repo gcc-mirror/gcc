@@ -1,3 +1,9 @@
+*** Major changes in libio for egcs:
+
+* Better support for Linux.
+
+* Dejagnu testsuite.
+
 *** Major changes in libio version 2.7.0:
 
 * The data representations of _IO_FILE and streambufs have been modified.

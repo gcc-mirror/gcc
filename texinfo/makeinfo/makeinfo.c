@@ -1,5 +1,5 @@
 /* Makeinfo -- convert texinfo format files into info files.
-   $Id: makeinfo.c,v 1.2 1997/09/03 04:25:24 law Exp $
+   $Id: makeinfo.c,v 1.5 1998/03/03 09:03:45 law Exp $
 
    Copyright (C) 1987, 92, 93, 94, 95, 96 Free Software Foundation, Inc.
 
@@ -1167,7 +1167,7 @@ find_and_load (filename)
     goto error_exit;
 
   /* Load the file. */
-  result = (char *)xmalloc (1 + file_size);
+  result = (char *)xmalloc (file_size + 2);
 
   /* VMS stat lies about the st_size value.  The actual number of
      readable bytes is always less than this value.  The arcane
@@ -1207,6 +1207,8 @@ find_and_load (filename)
      extra unnecessary work each time it is called (that is a lot of times).
      The SIZE_OF_INPUT_TEXT is one past the actual end of the text. */
   input_text[size_of_input_text] = '\n';
+  /* Necessary, because later on we call strlen(input_text+limit). */
+  input_text[size_of_input_text+1] = '\0';
   return (result);
 }
 
@@ -1947,21 +1949,22 @@ convert_from_stream (stream, name)
      FILE *stream;
      char *name;
 {
-  char *buffer = (char *)NULL;
-  int buffer_offset = 0, buffer_size = 0;
+  int buffer_size = READ_BUFFER_GROWTH;
+  char *buffer = (char *) xmalloc (buffer_size + 2);
+  int buffer_offset = 0;
 
   initialize_conversion ();
 
   /* Read until the end of the stream.  This isn't strictly correct, since
      the texinfo input may end before the stream ends, but it is a quick
-     working hueristic. */
+     working heuristic. */
   while (!feof (stream))
     {
       int count;
 
-      if (buffer_offset + (READ_BUFFER_GROWTH + 1) >= buffer_size)
+      if (buffer_offset + READ_BUFFER_GROWTH > buffer_size)
 	buffer = (char *)
-	  xrealloc (buffer, (buffer_size += READ_BUFFER_GROWTH));
+	  xrealloc (buffer, (buffer_size += READ_BUFFER_GROWTH) + 2);
 
       count = fread (buffer + buffer_offset, 1, READ_BUFFER_GROWTH, stream);
 
@@ -1988,6 +1991,8 @@ convert_from_stream (stream, name)
      extra unnecessary work each time it is called (that is a lot of times).
      The SIZE_OF_INPUT_TEXT is one past the actual end of the text. */
   input_text[size_of_input_text] = '\n';
+  /* Necessary, because later on we call strlen(input_text+limit). */
+  input_text[size_of_input_text+1] = '\0';
 
   convert_from_loaded_file (name);
 }
