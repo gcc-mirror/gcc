@@ -1,3 +1,8 @@
+2000-07-26  Nick Clifton  <nickc@cygnus.com>
+
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Accept SEQUENCE as
+	well as PARALLEL blocks in FRAME_RELATED_EXPR notes.
+
 2000-07-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-decl.c (finish_enum): Convert enumerations that fit in an

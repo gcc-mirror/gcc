@@ -1228,7 +1228,8 @@ dwarf2out_frame_debug_expr (expr, label)
      are processed only if they are SETs and the RTX_FRAME_RELATED_P 
      flag is set in them. */
 
-  if (GET_CODE (expr) == PARALLEL)
+  if (GET_CODE (expr) == PARALLEL
+      || GET_CODE (expr) == SEQUENCE)
     { 
       int par_index;
       int limit = XVECLEN (expr, 0);
