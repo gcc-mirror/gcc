@@ -2715,9 +2715,6 @@ fix = {
     files    = wchar.h;
     files    = curses_colr/curses.h;
     bypass   = '__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list|_G_va_list';
-    /* Don't fix, if we use va_list from stdarg.h, or if the use is
-       otherwise protected.  */
-    bypass   = 'include <stdarg\.h>|#ifdef va_start';
 
     /*
      * Use __gnuc_va_list in arg types in place of va_list.

@@ -1,11 +1,5 @@
 2004-10-28  Mike Stump  <mrs@apple.com>
 
-	* inclhack.def (stdio_va_list): Don't fix if stdarg.h is
-        included or ifdef va_start.
-	* fixincl.x: Regenerate.
-	
-2004-10-28  Mike Stump  <mrs@apple.com>
-
 	* inclhack.def (void_null): Avoid changing NULL on C++ friendly
 	systems.
 	* fixincl.x: Regenerate.
