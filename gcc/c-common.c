@@ -2845,7 +2845,7 @@ lang_get_alias_set (t)
 
             int *ip;
             int **ipp = &ip;
-            const int* const* cipp = &ip;
+            const int* const* cipp = &ipp;
 
          And, it doesn't make sense for that to be legal unless you
 	 can dereference IPP and CIPP.  So, we ignore cv-qualifiers on
