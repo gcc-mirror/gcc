@@ -1,3 +1,12 @@
+2004-03-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport:
+	2004-02-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9941
+	* rtti.c (tinfo_base_init): Use import_export_tinfo to decide the
+	linkage for the typeinfo name string.
+
 2004-02-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/13944
