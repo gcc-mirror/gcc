@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #define CPP_PREDEFINES "\
--Dunix -D__osf__ -D_LONGLONG -DSYSTYPE_BSD \
+-Dunix -D__osf__ -D__digital__ -D__arch64__ -D_LONGLONG -DSYSTYPE_BSD \
 -D_SYSTYPE_BSD -Asystem=unix -Asystem=xpg4"
 
 /* Tru64 UNIX V5 requires additional definitions for 16 byte long double
