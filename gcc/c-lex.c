@@ -31,16 +31,12 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "intl.h"
 
-/* MULTIBYTE_CHARS support only works for native compilers.
-   ??? Ideally what we want is to model widechar support after
-   the current floating point support.  */
-#ifdef CROSS_COMPILE
-#undef MULTIBYTE_CHARS
-#endif
-
 #ifdef MULTIBYTE_CHARS
-#include <stdlib.h>
+#include "mbchar.h"
 #include <locale.h>
+#ifndef GET_ENVIRONMENT
+#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ((ENV_VALUE) = getenv (ENV_NAME))
+#endif
 #endif
 
 #if USE_CPPLIB
@@ -227,6 +223,7 @@ init_lex ()
 #ifdef MULTIBYTE_CHARS
   /* Change to the native locale for multibyte conversions.  */
   setlocale (LC_CTYPE, "");
+  GET_ENVIRONMENT (literal_codeset, "LANG");
 #endif
 
   maxtoken = 40;
@@ -1845,30 +1842,27 @@ yylex ()
       {
 	register int result = 0;
 	register int num_chars = 0;
+	int chars_seen = 0;
 	unsigned width = TYPE_PRECISION (char_type_node);
 	int max_chars;
-
-	if (wide_flag)
-	  {
-	    width = WCHAR_TYPE_SIZE;
 #ifdef MULTIBYTE_CHARS
-	    max_chars = MB_CUR_MAX;
-#else
-	    max_chars = 1;
+	int longest_char = local_mb_cur_max ();
+	(void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
 #endif
-	  }
-	else
-	  max_chars = TYPE_PRECISION (integer_type_node) / width;
+
+	max_chars = TYPE_PRECISION (integer_type_node) / width;
+	if (wide_flag)
+	  width = WCHAR_TYPE_SIZE;
 
 	while (1)
 	  {
 	  tryagain:
-
 	    c = GETC();
 
 	    if (c == '\'' || c == EOF)
 	      break;
 
+	    ++chars_seen;
 	    if (c == '\\')
 	      {
 		int ignore = 0;
@@ -1889,18 +1883,76 @@ yylex ()
 		  pedwarn ("ANSI C forbids newline in character constant");
 		lineno++;
 	      }
-#ifdef MAP_CHARACTER
 	    else
-	      c = MAP_CHARACTER (c);
+	      {
+#ifdef MULTIBYTE_CHARS
+		wchar_t wc;
+		int i;
+		int char_len = -1;
+		for (i = 1; i <= longest_char; ++i)
+		  {
+		    if (i > maxtoken - 4)
+		      extend_token_buffer (token_buffer);
+
+		    token_buffer[i] = c;
+		    char_len = local_mbtowc (& wc,
+					     token_buffer + 1,
+					     i);
+		    if (char_len != -1)
+		      break;
+		    c = GETC ();
+		  }
+		if (char_len > 1)
+		  {
+		    /* mbtowc sometimes needs an extra char before accepting */
+		    if (char_len < i)
+		      UNGETC (c);
+		    if (! wide_flag)
+		      {
+			/* Merge character into result; ignore excess chars.  */
+			for (i = 1; i <= char_len; ++i)
+			  {
+			    if (i > max_chars)
+			      break;
+			    if (width < HOST_BITS_PER_INT)
+			      result = (result << width)
+				| (token_buffer[i]
+				   & ((1 << width) - 1));
+			    else
+			      result = token_buffer[i];
+			  }
+			num_chars += char_len;
+			goto tryagain;
+		      }
+		    c = wc;
+		  }
+		else
+		  {
+		    if (char_len == -1)
+		      warning ("Ignoring invalid multibyte character");
+		    if (wide_flag)
+		      c = wc;
+#ifdef MAP_CHARACTER
+		    else
+		      c = MAP_CHARACTER (c);
 #endif
+		  }
+#else /* ! MULTIBYTE_CHARS */
+#ifdef MAP_CHARACTER
+		c = MAP_CHARACTER (c);
+#endif
+#endif /* ! MULTIBYTE_CHARS */
+	      }
 
-	    num_chars++;
-	    if (num_chars > maxtoken - 4)
-	      extend_token_buffer (token_buffer);
-
-	    token_buffer[num_chars] = c;
+	    if (wide_flag)
+	      {
+		if (chars_seen == 1) /* only keep the first one */
+		  result = c;
+		goto tryagain;
+	      }
 
 	    /* Merge character into result; ignore excess chars.  */
+	    num_chars += (width / TYPE_PRECISION (char_type_node));
 	    if (num_chars < max_chars + 1)
 	      {
 		if (width < HOST_BITS_PER_INT)
@@ -1910,19 +1962,16 @@ yylex ()
 	      }
 	  }
 
-	token_buffer[num_chars + 1] = '\'';
-	token_buffer[num_chars + 2] = 0;
-
 	if (c != '\'')
-	  error ("malformatted character constant");
-	else if (num_chars == 0)
+	  error ("malformed character constant");
+	else if (chars_seen == 0)
 	  error ("empty character constant");
 	else if (num_chars > max_chars)
 	  {
 	    num_chars = max_chars;
 	    error ("character constant too long");
 	  }
-	else if (num_chars != 1 && ! flag_traditional)
+	else if (chars_seen != 1 && ! flag_traditional)
 	  warning ("multi-character character constant");
 
 	/* If char type is signed, sign-extend the constant.  */
@@ -1947,22 +1996,6 @@ yylex ()
 	  }
 	else
 	  {
-#ifdef MULTIBYTE_CHARS
-	    /* Set the initial shift state and convert the next sequence.  */
-	    result = 0;
-	    /* In all locales L'\0' is zero and mbtowc will return zero,
-	       so don't use it.  */
-	    if (num_chars > 1
-		|| (num_chars == 1 && token_buffer[1] != '\0'))
-	      {
-		wchar_t wc;
-		(void) mbtowc (NULL_PTR, NULL_PTR, 0);
-		if (mbtowc (& wc, token_buffer + 1, num_chars) == num_chars)
-		  result = wc;
-		else
-		  warning ("Ignoring invalid multibyte character");
-	      }
-#endif
 	    yylval.ttype = build_int_2 (result, 0);
 	    TREE_TYPE (yylval.ttype) = wchar_type_node;
 	  }
@@ -1974,7 +2007,13 @@ yylex ()
     case '"':
     string_constant:
       {
-	c = GETC();
+	unsigned width = wide_flag ? WCHAR_TYPE_SIZE
+	                           : TYPE_PRECISION (char_type_node);
+#ifdef MULTIBYTE_CHARS
+	int longest_char = local_mb_cur_max ();
+	(void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
+#endif
+	c = GETC ();
 	p = token_buffer + 1;
 
 	while (c != '"' && c >= 0)
@@ -1985,9 +2024,8 @@ yylex ()
 		c = readescape (&ignore);
 		if (ignore)
 		  goto skipnewline;
-		if (!wide_flag
-		    && TYPE_PRECISION (char_type_node) < HOST_BITS_PER_INT
-		    && c >= (1 << TYPE_PRECISION (char_type_node)))
+		if (width < HOST_BITS_PER_INT
+		    && (unsigned) c >= (1 << width))
 		  pedwarn ("escape sequence out of range for character");
 	      }
 	    else if (c == '\n')
@@ -1996,15 +2034,94 @@ yylex ()
 		  pedwarn ("ANSI C forbids newline in string constant");
 		lineno++;
 	      }
+	    else
+	      {
+#ifdef MULTIBYTE_CHARS
+		wchar_t wc;
+		int i;
+		int char_len = -1;
+		for (i = 0; i < longest_char; ++i)
+		  {
+		    if (p + i == token_buffer + maxtoken)
+		      p = extend_token_buffer (p);
+		    p[i] = c;
 
-	    if (p == token_buffer + maxtoken)
-	      p = extend_token_buffer (p);
-	    *p++ = c;
+		    char_len = local_mbtowc (& wc, p, i + 1);
+		    if (char_len != -1)
+		      break;
+		    c = GETC ();
+		  }
+		if (char_len == -1)
+		  warning ("Ignoring invalid multibyte character");
+		else
+		  {
+		    /* mbtowc sometimes needs an extra char before accepting */
+		    if (char_len <= i)
+		      UNGETC (c);
+		    if (wide_flag)
+		      {
+			*(wchar_t *)p = wc;
+			p += sizeof (wc);
+		      }
+		    else
+		      p += (i + 1);
+		    c = GETC ();
+		    continue;
+		  }
+#endif /* MULTIBYTE_CHARS */
+	      }
+
+	    /* Add this single character into the buffer either as a wchar_t
+	       or as a single byte.  */
+	    if (wide_flag)
+	      {
+		unsigned width = TYPE_PRECISION (char_type_node);
+		unsigned bytemask = (1 << width) - 1;
+		int byte;
+
+		if (p + WCHAR_BYTES >= token_buffer + maxtoken)
+		  p = extend_token_buffer (p);
+
+		for (byte = 0; byte < WCHAR_BYTES; ++byte)
+		  {
+		    int value;
+		    if (byte >= sizeof (c))
+		      value = 0;
+		    else
+		      value = (c >> (byte * width)) & bytemask;
+		    if (BYTES_BIG_ENDIAN)
+		      p[WCHAR_BYTES - byte - 1] = value;
+		    else
+		      p[byte] = value;
+		  }
+		p += WCHAR_BYTES;
+	      }
+	    else
+	      {
+		if (p == token_buffer + maxtoken)
+		  p = extend_token_buffer (p);
+		*p++ = c;
+	      }
 
 	  skipnewline:
-	    c = GETC();
+	    c = GETC ();
 	  }
-	*p = 0;
+
+	/* Terminate the string value, either with a single byte zero
+	   or with a wide zero.  */
+	if (wide_flag)
+	  {
+	    if (p + WCHAR_BYTES >= token_buffer + maxtoken)
+	      p = extend_token_buffer (p);
+	    bzero (p, WCHAR_BYTES);
+	    p += WCHAR_BYTES;
+	  }
+	else
+	  {
+	    if (p == token_buffer + maxtoken)
+	      p = extend_token_buffer (p);
+	    *p++ = 0;
+	  }
 
 	if (c < 0)
 	  error ("Unterminated string constant");
@@ -2014,31 +2131,8 @@ yylex ()
 
 	if (wide_flag)
 	  {
-	    /* If this is a L"..." wide-string, convert the multibyte string
-	       to a wide character string.  */
-	    char *widep = (char *) alloca ((p - token_buffer) * WCHAR_BYTES);
-	    int len;
-
-#ifdef MULTIBYTE_CHARS
-	    len = mbstowcs ((wchar_t *) widep, token_buffer + 1, p - token_buffer);
-	    if (len < 0 || len >= (p - token_buffer))
-	      {
-		warning ("Ignoring invalid multibyte string");
-		len = 0;
-	      }
-	    bzero (widep + (len * WCHAR_BYTES), WCHAR_BYTES);
-#else
-	    {
-	      char *wp, *cp;
-
-	      wp = widep + (BYTES_BIG_ENDIAN ? WCHAR_BYTES - 1 : 0);
-	      bzero (widep, (p - token_buffer) * WCHAR_BYTES);
-	      for (cp = token_buffer + 1; cp < p; cp++)
-		*wp = *cp, wp += WCHAR_BYTES;
-	      len = p - token_buffer - 1;
-	    }
-#endif
-	    yylval.ttype = build_string ((len + 1) * WCHAR_BYTES, widep);
+	    yylval.ttype = build_string (p - (token_buffer + 1),
+					 token_buffer + 1);
 	    TREE_TYPE (yylval.ttype) = wchar_array_type_node;
 	    value = STRING;
 	  }
@@ -2046,14 +2140,15 @@ yylex ()
 	  {
 	    extern tree build_objc_string();
 	    /* Return an Objective-C @"..." constant string object.  */
-	    yylval.ttype = build_objc_string (p - token_buffer,
+	    yylval.ttype = build_objc_string (p - (token_buffer + 1),
 					      token_buffer + 1);
 	    TREE_TYPE (yylval.ttype) = char_array_type_node;
 	    value = OBJC_STRING;
 	  }
 	else
 	  {
-	    yylval.ttype = build_string (p - token_buffer, token_buffer + 1);
+	    yylval.ttype = build_string (p - (token_buffer + 1),
+					 token_buffer + 1);
 	    TREE_TYPE (yylval.ttype) = char_array_type_node;
 	    value = STRING;
 	  }
