@@ -2705,15 +2705,24 @@ sh_expand_epilogue ()
 
   if (frame_pointer_needed)
     {
-      /* We deliberately make the add dependent on the frame_pointer,
-	 to ensure that instruction scheduling won't move the stack pointer
-	 adjust before instructions reading from the frame.  This can fail
-	 if there is an interrupt which then writes to the stack.  */
       output_stack_adjust (get_frame_size (), frame_pointer_rtx, 7);
+
+      /* We must avoid moving the stack pointer adjustment past code
+	 which reads from the local frame, else an interrupt could
+	 occur after the SP adjustment and clobber data in the local
+	 frame.  */
+      emit_insn (gen_blockage ());
       emit_insn (gen_movsi (stack_pointer_rtx, frame_pointer_rtx));
     }
-  else
-    output_stack_adjust (get_frame_size (), stack_pointer_rtx, 7);
+  else if (get_frame_size ())
+    {
+      /* We must avoid moving the stack pointer adjustment past code
+	 which reads from the local frame, else an interrupt could
+	 occur after the SP adjustment and clobber data in the local
+	 frame.  */
+      emit_insn (gen_blockage ());
+      output_stack_adjust (get_frame_size (), stack_pointer_rtx, 7);
+    }
 
   /* Pop all the registers.  */
 
