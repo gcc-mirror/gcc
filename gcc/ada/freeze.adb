@@ -78,7 +78,7 @@ package body Freeze is
      (Decl  : Node_Id;
       New_S : Entity_Id;
       After : in out Node_Id);
-   --  Build body for a renaming declaration, insert in tree and analyze.
+   --  Build body for a renaming declaration, insert in tree and analyze
 
    procedure Check_Address_Clause (E : Entity_Id);
    --  Apply legality checks to address clauses for object declarations,
@@ -393,7 +393,7 @@ package body Freeze is
              Parameter_Associations => Actuals);
       end if;
 
-      --  Create entities for subprogram body and formals.
+      --  Create entities for subprogram body and formals
 
       Set_Defining_Unit_Name (Spec,
         Make_Defining_Identifier (Loc, Chars => Chars (New_S)));
@@ -1422,7 +1422,7 @@ package body Freeze is
       procedure Check_Current_Instance (Comp_Decl : Node_Id) is
 
          function Process (N : Node_Id) return Traverse_Result;
-         --  Process routine to apply check to given node.
+         --  Process routine to apply check to given node
 
          -------------
          -- Process --
@@ -1530,29 +1530,35 @@ package body Freeze is
             then
                Set_First_Entity (Rec, First_Entity (Base_Type (Rec)));
 
-            --  If this is an internal type without a declaration, as for a
+            --  If this is an internal type without a declaration, as for
             --  record component, the base type may not yet be frozen, and its
             --  controller has not been created. Add an explicit freeze node
-            --  for the itype, so it will be frozen after the base type.
+            --  for the itype, so it will be frozen after the base type. This
+            --  freeze node is used to communicate with the expander, in order
+            --  to create the controller for the enclosing record, and it is
+            --  deleted afterwards (see exp_ch3). It must not be created when
+            --  expansion is off, because it might appear in the wrong context
+            --  for the back end.
 
             elsif Is_Itype (Rec)
               and then Has_Delayed_Freeze (Base_Type (Rec))
               and then
                 Nkind (Associated_Node_For_Itype (Rec)) =
-                  N_Component_Declaration
+                                                     N_Component_Declaration
+              and then Expander_Active
             then
                Ensure_Freeze_Node (Rec);
             end if;
          end if;
 
-         --  Freeze components and embedded subtypes.
+         --  Freeze components and embedded subtypes
 
          Comp := First_Entity (Rec);
          Prev := Empty;
 
          while Present (Comp) loop
 
-            --  First handle the (real) component case.
+            --  First handle the (real) component case
 
             if Ekind (Comp) = E_Component
               or else Ekind (Comp) = E_Discriminant
@@ -3388,7 +3394,7 @@ package body Freeze is
          Nam := Empty;
       end if;
 
-      --  For an allocator freeze designated type if not frozen already.
+      --  For an allocator freeze designated type if not frozen already
 
       --  For an aggregate whose component type is an access type, freeze
       --  the designated type now, so that its freeze  does not appear within
@@ -4834,7 +4840,7 @@ package body Freeze is
       Nam  : Entity_Id)
    is
       Ent : constant Entity_Id := Entity (Nam);
-      --  The object to which the address clause applies.
+      --  The object to which the address clause applies
 
       Init : Node_Id;
       Old  : Entity_Id := Empty;
