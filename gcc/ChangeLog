@@ -1,3 +1,8 @@
+2000-05-23  Kazu Hirata  <kazu@hxi.com>
+
+	* invoke.texi (Options for Debugging Your Program or GCC): Update
+	the names of dump files.
+
 Tue May 23 13:58:52 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* configure.in (NO_MINUS_C_MINUS_O): Fix thinko in previous fix.
