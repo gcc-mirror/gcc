@@ -1,3 +1,7 @@
+Sat Aug 29 14:32:55 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+        * configure.in: Use mh-aix43.
+
 1998-07-29  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure: Fix --without/--disable cases for gxx-include-dir.
