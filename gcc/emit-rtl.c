@@ -1273,24 +1273,35 @@ operand_subword (op, i, validate_address, mode)
 
       /* We handle 32-bit and >= 64-bit words here.  Note that the order in
 	 which the words are written depends on the word endianness.
-
 	 ??? This is a potential portability problem and should
-	 be fixed at some point.  */
+	 be fixed at some point.
+
+	 We must excercise caution with the sign bit.  By definition there
+	 are 32 significant bits in K; there may be more in a HOST_WIDE_INT.
+	 Consider a host with a 32-bit long and a 64-bit HOST_WIDE_INT.
+	 So we explicitly mask and sign-extend as necessary.  */
       if (BITS_PER_WORD == 32)
-	return GEN_INT ((HOST_WIDE_INT) k[i]);
-#if HOST_BITS_PER_WIDE_INT > 32
+	{
+	  val = k[i];
+	  val = ((val & 0xffffffff) ^ 0x80000000) - 0x80000000;
+	  return GEN_INT (val);
+	}
+#if HOST_BITS_PER_WIDE_INT >= 64
       else if (BITS_PER_WORD >= 64 && i == 0)
-	return GEN_INT ((((HOST_WIDE_INT) k[! WORDS_BIG_ENDIAN]) << 32)
-			| (HOST_WIDE_INT) k[WORDS_BIG_ENDIAN]);
+	{
+	  val = k[! WORDS_BIG_ENDIAN];
+	  val = (((val & 0xffffffff) ^ 0x80000000) - 0x80000000) << 32;
+	  val |= (HOST_WIDE_INT) k[WORDS_BIG_ENDIAN] & 0xffffffff;
+	  return GEN_INT (val);
+	}
 #endif
       else if (BITS_PER_WORD == 16)
 	{
-	  long value;
-	  value = k[i >> 1];
-	  if ((i & 0x1) == !WORDS_BIG_ENDIAN)
-	    value >>= 16;
-	  value &= 0xffff;
-	  return GEN_INT ((HOST_WIDE_INT) value);
+	  val = k[i >> 1];
+	  if ((i & 1) == !WORDS_BIG_ENDIAN)
+	    val >>= 16;
+	  val &= 0xffff;
+	  return GEN_INT (val);
 	}
       else
 	abort ();
@@ -1307,7 +1318,13 @@ operand_subword (op, i, validate_address, mode)
     REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, k);
 
     if (BITS_PER_WORD == 32)
-      return GEN_INT ((HOST_WIDE_INT) k[i]);
+      {
+	val = k[i];
+	val = ((val & 0xffffffff) ^ 0x80000000) - 0x80000000;
+	return GEN_INT (val);
+      }
+    else
+      abort ();
   }
 #else /* no REAL_ARITHMETIC */
   if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
@@ -1345,25 +1362,18 @@ operand_subword (op, i, validate_address, mode)
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_SINGLE (rv, l);
 
-      /* If 32 bits is an entire word for the target, but not for the host,
-	 then sign-extend on the host so that the number will look the same
-	 way on the host that it would on the target.  See for instance
-	 simplify_unary_operation.  The #if is needed to avoid compiler
-	 warnings.  */
-
-#if HOST_BITS_PER_LONG > 32
-      if (BITS_PER_WORD < HOST_BITS_PER_LONG && BITS_PER_WORD == 32
-	  && (l & ((long) 1 << 31)))
-	l |= ((long) (-1) << 32);
-#endif
+      /* Sign extend from known 32-bit value to HOST_WIDE_INT.  */
+      val = l;
+      val = ((val & 0xffffffff) ^ 0x80000000) - 0x80000000;
 
       if (BITS_PER_WORD == 16)
 	{
-	  if ((i & 0x1) == !WORDS_BIG_ENDIAN)
-	    l >>= 16;
-	  l &= 0xffff;
+	  if ((i & 1) == !WORDS_BIG_ENDIAN)
+	    val >>= 16;
+	  val &= 0xffff;
 	}
-      return GEN_INT ((HOST_WIDE_INT) l);
+
+      return GEN_INT (val);
     }
 #else
   if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
