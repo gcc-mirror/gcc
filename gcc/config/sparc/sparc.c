@@ -217,7 +217,7 @@ reg_or_0_operand (op, mode)
 {
   if (op == const0_rtx || register_operand (op, mode))
     return 1;
-  if (GET_MODE (op) == DImode && GET_CODE (op) == CONST_DOUBLE
+  if (GET_MODE (op) == VOIDmode && GET_CODE (op) == CONST_DOUBLE
       && CONST_DOUBLE_HIGH (op) == 0
       && CONST_DOUBLE_LOW (op) == 0)
     return 1;
