@@ -1,3 +1,7 @@
+Mon Jun 21 14:11:29 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (movdf_hardfloat32): Fix typo in case 2.
+
 Mon Jun 21 12:27:17 1999  Vladimir Makarov  <vmakarov@tofu.to.cygnus.com>
 
 	* config/mips/elf.h (BSS_SECTION_ASM_OP, ASM_OUTPUT_ALIGNED_BSS):
