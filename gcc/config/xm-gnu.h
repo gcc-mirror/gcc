@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for hosts running GNU.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,9 +21,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    running GNU.  This file should not be specified as $xm_file itself;
    instead $xm_file should be CPU/xm-gnu.h, which should include both
    CPU/xm-CPU.h and this file xm-gnu.h.  */
-   
-/* GNU has strerror.  */
-#define HAVE_STRERROR
+
+#define HAVE_STRERROR		/* GNU has strerror.  */
+#define POSIX			/* GNU complies to POSIX.1.  */
 
 /* Get a definition of O_RDONLY; some of the GCC files don't include this
    properly and will define it themselves to be zero. */
