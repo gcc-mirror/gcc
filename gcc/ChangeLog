@@ -1,3 +1,13 @@
+2002-01-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md (movstrdix_64, movstrsix_31, movstrdi_64,
+	movstrsi_31, clrstrsi_64, clrstrsi_31): Improve RTL templates.
+	(clrstrdi, clrstrsi): Adapt callers.
+
+	(extendsidi2, zero_extendsidi2): Remove no-conflict blocks.
+
+	(movti splitter): Never use register 0 as base register.	
+
 2002-01-14  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* combine.c (simplify_shift_const): Always generate new rtx 
