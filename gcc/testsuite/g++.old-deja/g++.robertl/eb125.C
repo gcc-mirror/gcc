@@ -17,6 +17,6 @@ class test_square
 template <class BOX> void test(BOX *the_box)  // { dg-error "" } semicolon missing
     {x
     the_box->print();
-    }; // { dg-error "" }
+    };
 
 template void test<> (test_box *); // { dg-error "" }
