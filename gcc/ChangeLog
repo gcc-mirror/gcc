@@ -1,3 +1,8 @@
+Thu Jan  7 19:52:53 1999  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* system.h (abort): Supply more detailed information on how to
+ 	report an Internal Compiler Error.
+
 Fri Jan  8 10:51:13 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* config/m68k/m68k.h: Declare output_function_epilogue.

@@ -1,6 +1,6 @@
 /* system.h - Get common system includes and various definitions and
    declarations based on autoconf macros.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -364,7 +364,9 @@ extern void abort ();
 #else
 #define abort()								\
 (fprintf (stderr,							\
-	  "%s:%d: Internal compiler error in function %s\n",		\
+	  "%s:%d: Internal compiler error in function %s\n"             \
+	  "Please submit a full bug report to `egcs-bugs@cygnus.com'.\n"  \
+	  "See <URL:http://egcs.cygnus.com/faq.html#bugreport> for details.\n", \
 	  __FILE__, __LINE__, __PRETTY_FUNCTION__),			\
  exit (FATAL_EXIT_CODE))
 
