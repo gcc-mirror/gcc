@@ -30,13 +30,13 @@ _Jv_platform_gettimeofday ()
 #if defined (HAVE_GETTIMEOFDAY)
   timeval tv;
   gettimeofday (&tv, NULL);
-  return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+  return (tv.tv_sec * 1000LL) + (tv.tv_usec / 1000LL);
 #elif defined (HAVE_TIME)
-  return time (NULL) * 1000;
+  return time (NULL) * 1000LL;
 #elif defined (HAVE_FTIME)
   struct timeb t;
   ftime (&t);
-  return t.time * 1000 + t.millitm;
+  return (t.time * 1000LL) + t.millitm;
 #elif defined (ECOS)
   // FIXME.
   return _clock();
