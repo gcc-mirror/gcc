@@ -41,8 +41,9 @@
  *
  */
 
-/* NOTE: This is an internal header file, included by other STL headers.
- *   You should not attempt to use it directly.
+/** @file slist
+ *  This header file is an extension to the Standard C++ Library.  You should
+ *  use the "ext/" path prefix in your @c #include statements.
  */
 
 #ifndef __SGI_STL_INTERNAL_SLIST_H

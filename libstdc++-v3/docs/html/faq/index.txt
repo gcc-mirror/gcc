@@ -643,9 +643,10 @@ a
 
    All library objects are safe to use in a multithreaded program as long
    as each thread carefully locks out access by any other thread while it
-   uses any object visible to another thread. This requirement includes
-   both read and write access to objects; do not assume that two threads
-   may read a shared standard container at the same time.
+   uses any object visible to another thread. In general, this
+   requirement includes both read and write access to objects; unless
+   otherwise documented as safe, do not assume that two threads may
+   access a shared standard library object at the same time.
 
    See chapters [84]17 (library introduction), [85]23 (containers), and
    [86]27 (I/O) for more information.

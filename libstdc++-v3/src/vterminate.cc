@@ -36,7 +36,8 @@
 using namespace std;
 using namespace abi;
 
-namespace __gnu_cxx {
+namespace __gnu_cxx
+{
 
 /** This is a replacement for the standard terminate_handler which prints
     more information about the terminating exception (if any) on stderr.  */

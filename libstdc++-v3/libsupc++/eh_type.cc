@@ -31,7 +31,8 @@
 #include <typeinfo>
 #include "unwind-cxx.h"
 
-namespace __cxxabiv1 {
+namespace __cxxabiv1
+{
 
 // Returns the type_info for the currently handled exception [15.3/8], or
 // null if there is none.
