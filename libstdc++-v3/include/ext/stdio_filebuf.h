@@ -124,17 +124,12 @@ namespace __gnu_cxx
       if (this->is_open())
 	{
 	  this->_M_mode = __mode;
+	  this->_M_buf_size = __size;
 	  if (__size > 0 && __size < 4)
-	    {
-	      // Specify not to use an allocated buffer.
-	      this->_M_buf = _M_unbuf;
-	      this->_M_buf_size = __size;
-	    }
+	    // Specify not to use an allocated buffer.
+	    this->_M_buf = _M_unbuf;
 	  else
-	    {
-	      this->_M_buf_size = __size;
-	      _M_allocate_internal_buffer();
-	    }
+	    _M_allocate_internal_buffer();
 	  _M_set_indeterminate();
 	}
     }
@@ -148,17 +143,12 @@ namespace __gnu_cxx
       if (this->is_open())
 	{
 	  this->_M_mode = __mode;
+	  this->_M_buf_size = __size;
 	  if (__size > 0 && __size < 4)
-	    {
-	      // Specify not to use an allocated buffer.
-	      this->_M_buf = _M_unbuf;
-	      this->_M_buf_size = __size;
-	    }
+	    // Specify not to use an allocated buffer.
+	    this->_M_buf = _M_unbuf;
 	  else
-	    {
-	      this->_M_buf_size = __size;
-	      _M_allocate_internal_buffer();
-	    }
+	    _M_allocate_internal_buffer();
 	  _M_set_indeterminate();
 	}
     }
