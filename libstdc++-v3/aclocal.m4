@@ -1064,12 +1064,38 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   if test x$enable_clocale_flag = xno; then
     case x${target_os} in
       xlinux* | xgnu*)
-	AC_EGREP_CPP([ok], [
+	AC_EGREP_CPP([_GLIBCPP_ok], [
         #include <features.h>
         #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2) 
-          ok
+          _GLIBCPP_ok
         #endif
         ], enable_clocale_flag=gnu, enable_clocale_flag=generic)
+
+	# Test for bugs early in glibc-2.2.x series
+  	if test x$enable_clocale_flag = xgnu; then
+    	  AC_TRY_RUN([
+	  #define _GNU_SOURCE 1
+	  #include <locale.h>
+	  int main()
+	  {
+  	    const char __one[] = "Äuglein Augmen";
+  	    const char __two[] = "Äuglein";
+  	    int i;
+  	    int j;
+  	    __locale_t	loc;
+   	    __locale_t	loc_dup;
+  	    loc = __newlocale(1 << LC_ALL, "de_DE", 0);
+  	    loc_dup = __duplocale(loc);
+  	    i = __strcoll_l(__one, __two, loc);
+  	    j = __strcoll_l(__one, __two, loc_dup);
+  	    return 0;
+	  }
+	  ], 
+	  [enable_clocale_flag=gnu],[enable_clocale_flag=generic],
+	  [enable_clocale_flag=generic])
+  	fi
+
+	# ... at some point put __strxfrm_l tests in as well.
         ;;
       *)
 	enable_clocale_flag=generic
