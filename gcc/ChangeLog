@@ -1,3 +1,9 @@
+Sun Jun  7 18:00:28 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* fold-const.c (fold, case EQ_EXPR): When folding VAR++ == CONST
+	or VAR-- == CONST construct a proper mask if VAR is a bitfield.
+	Cope with CONST being out of range for the bitfield.
+
 Sun Jun  7 17:19:35 1998  Tom Quiggle  <quiggle@sgi.com>
 
 	* mips/iris6.h (DWARF2_FRAME_INFO): Define.
