@@ -174,7 +174,7 @@ bin_SCRIPTS = addr2name.awk
 @CANADIAN_TRUE@GCJH = @CANADIAN_TRUE@gcjh
 @CANADIAN_FALSE@GCJH = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh
 
-GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8
+GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
 
 GCJCOMPILE = $(LIBTOOL) --tag=GCJ --mode=compile $(GCJ_WITH_FLAGS) -fclasspath= -fbootclasspath=$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
 GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
@@ -197,7 +197,7 @@ AM_CXXFLAGS = -fno-rtti -fnon-call-exceptions \
 @USING_GCC_FALSE@AM_CFLAGS = @USING_GCC_FALSE@@LIBGCJ_CFLAGS@
 
 JCFLAGS = -g
-JC1FLAGS = @LIBGCJ_JAVAFLAGS@ -Wno-deprecated $(GCJFLAGS)
+JC1FLAGS = @LIBGCJ_JAVAFLAGS@ $(GCJFLAGS)
 
 LIBFFIINCS = @LIBFFIINCS@
 
@@ -761,6 +761,7 @@ java/awt/peer/MenuItemPeer.java \
 java/awt/peer/MenuPeer.java \
 java/awt/peer/PanelPeer.java \
 java/awt/peer/PopupMenuPeer.java \
+java/awt/peer/RobotPeer.java \
 java/awt/peer/ScrollPanePeer.java \
 java/awt/peer/ScrollbarPeer.java \
 java/awt/peer/TextAreaPeer.java \
@@ -3185,7 +3186,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/peer/MenuComponentPeer.P \
 .deps/java/awt/peer/MenuItemPeer.P .deps/java/awt/peer/MenuPeer.P \
 .deps/java/awt/peer/PanelPeer.P .deps/java/awt/peer/PopupMenuPeer.P \
-.deps/java/awt/peer/ScrollPanePeer.P \
+.deps/java/awt/peer/RobotPeer.P .deps/java/awt/peer/ScrollPanePeer.P \
 .deps/java/awt/peer/ScrollbarPeer.P .deps/java/awt/peer/TextAreaPeer.P \
 .deps/java/awt/peer/TextComponentPeer.P \
 .deps/java/awt/peer/TextFieldPeer.P .deps/java/awt/peer/WindowPeer.P \
