@@ -1,3 +1,7 @@
+2005-01-23  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* configure: Regenerate.
+
 2005-01-11  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* include/cpplib.h (c_lang): Fix comment to say cpp_create_reader.

@@ -1,3 +1,9 @@
+2005-01-23  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/18058
+	* recog.c (recog_memoized): Don't define if GENERATOR_FILE.
+	* ggc-none.c (ggc_free): Define.
+
 2005-01-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c (max_reg, max_insn_uid): Remove.

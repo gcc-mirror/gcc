@@ -1,6 +1,6 @@
 # Autoconf include file defining macros related to compile-time warnings.
 
-# Copyright 2004 Free Software Foundation, Inc.
+# Copyright 2004, 2005 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -43,14 +43,15 @@ CFLAGS="$save_CFLAGS"
 ])# ACX_PROG_CC_WARNING_OPTS
 
 # ACX_PROG_CC_WARNING_ALMOST_PEDANTIC([-Wno-long-long ...])
-#   Sets WARN_PEDANTIC to "-pedantic" + the argument, if the compiler
-#   accepts all of those options simultaneously, otherwise to nothing.
+#   Sets WARN_PEDANTIC to "-pedantic" + the argument, if the compiler is GCC
+#   and accepts all of those options simultaneously, otherwise to nothing.
 AC_DEFUN([ACX_PROG_CC_WARNING_ALMOST_PEDANTIC],
 [AC_REQUIRE([AC_PROG_CC])dnl
 AC_SUBST([WARN_PEDANTIC])dnl
 AS_VAR_PUSHDEF([acx_Pedantic], [acx_cv_prog_cc_pedantic_$1])dnl
 WARN_PEDANTIC=
-AC_CACHE_CHECK([whether $CC supports -pedantic $1], acx_Pedantic,
+AS_IF([test $GCC = yes],
+[AC_CACHE_CHECK([whether $CC supports -pedantic $1], acx_Pedantic,
 [save_CFLAGS="$CFLAGS"
 CFLAGS="-pedantic $1"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
@@ -59,6 +60,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
 CFLAGS="$save_CFLAGS"])
 AS_IF([test AS_VAR_GET(acx_Pedantic) = yes],
       [WARN_PEDANTIC="-pedantic $1"])
+])
 AS_VAR_POPDEF([acx_Pedantic])dnl
 ])# ACX_PROG_CC_WARNING_ALMOST_PEDANTIC
 

@@ -1,5 +1,5 @@
 /* Null garbage collection for the GNU compiler.
-   Copyright (C) 1998, 1999, 2000, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -66,4 +66,10 @@ void *
 ggc_realloc_stat (void *x, size_t size MEM_STAT_DECL)
 {
   return xrealloc (x, size);
+}
+
+void
+ggc_free (void *p)
+{
+  free (p);
 }
