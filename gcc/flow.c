@@ -2201,6 +2201,8 @@ merge_blocks_nomove (a, b)
 
       a_end = prev;
     }
+  else if (GET_CODE (NEXT_INSN (a_end)) == BARRIER)
+    del_first = NEXT_INSN (a_end);
 
   /* Delete everything marked above as well as crap that might be
      hanging out between the two blocks.  */

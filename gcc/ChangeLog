@@ -1,5 +1,10 @@
 2000-05-31  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (merge_blocks_nomove): Remove a barrier not following
+	a jump as well.
+
+2000-05-31  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (propagate_block): Move initialization of mem_set_list ...
 	(init_propagate_block_info): ... here.  Also track blocks with 
 	no successors; don't scan insns if ! PROP_SCAN_DEAD_CODE.
