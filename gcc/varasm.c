@@ -60,6 +60,18 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_STABS_OP ".stabs"
 #endif
 
+/* Define the prefix to use when check_memory_usage_flag is enable.  */
+#ifdef NO_DOLLAR_IN_LABEL
+#ifdef NO_DOT_IN_LABEL
+#define CHKR_PREFIX "chkr_prefix_"
+#else /* !NO_DOT_IN_LABEL */
+#define CHKR_PREFIX "chkr."
+#endif 
+#else /* !NO_DOLLAR_IN_LABLE */
+#define CHKR_PREFIX "chkr$"
+#endif
+#define CHKR_PREFIX_SIZE (sizeof (CHKR_PREFIX) - 1)
+
 /* This macro gets just the user-specified name
    out of the string in a SYMBOL_REF.  On most machines,
    we discard the * if any and that's all.  */
@@ -472,6 +484,7 @@ make_function_rtl (decl)
      tree decl;
 {
   char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  char *new_name = name;
 
   if (output_bytecode)
     {
@@ -494,6 +507,20 @@ make_function_rtl (decl)
       ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
       name = obstack_copy0 (saveable_obstack, label, strlen (label));
       var_labelno++;
+    }
+  else
+    {
+      /* When -fprefix-function-name is used, every function name is
+         prefixed.  Even static functions are prefixed because they
+         could be declared latter.  Note that a nested function name
+         is not prefixed.  */
+      if (flag_prefix_function_name)
+        {
+          new_name = (char *) alloca (strlen (name) + CHKR_PREFIX_SIZE + 1);
+          strcpy (new_name, CHKR_PREFIX);
+          strcpy (new_name + CHKR_PREFIX_SIZE, name);
+          name = obstack_copy0 (saveable_obstack, new_name, strlen (new_name));
+        }
     }
 
   if (DECL_RTL (decl) == 0)
@@ -759,6 +786,20 @@ make_decl_rtl (decl, asmspec, top_level)
 
 	  if (name == 0)
 	    abort ();
+
+	  /* When -fprefix-function-name is used, the functions
+	     names are prefixed.  Only nested function names are not
+	     prefixed.  */
+	  if (flag_prefix_function_name && TREE_CODE (decl) == FUNCTION_DECL)
+	    {
+	      char *new_name;
+	      new_name = (char *) alloca (strlen (name) + CHKR_PREFIX_SIZE 
+	      				  + 1);
+	      strcpy (new_name, CHKR_PREFIX);
+	      strcpy (new_name + CHKR_PREFIX_SIZE, name);
+	      name = obstack_copy0 (saveable_obstack,
+	      			   new_name, strlen (new_name));
+	    }
 
 	  DECL_RTL (decl) = gen_rtx (MEM, DECL_MODE (decl),
 				     gen_rtx (SYMBOL_REF, Pmode, name));
@@ -1759,6 +1800,9 @@ assemble_name (file, name)
   tree id;
 
   STRIP_NAME_ENCODING (real_name, name);
+  if (flag_prefix_function_name 
+      && ! bcmp (real_name, CHKR_PREFIX, CHKR_PREFIX_SIZE))
+    real_name = real_name + CHKR_PREFIX_SIZE;
 
   id = maybe_get_identifier (real_name);
   if (id)
