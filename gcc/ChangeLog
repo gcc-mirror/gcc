@@ -1,3 +1,10 @@
+2002-07-17  Bo Thorsen  <bo@suse.de>
+
+	* config/i386/linux64.h (LINK_SPEC): Remove bogus -Y option.
+	(STARTFILE_PREFIX_SPEC): Define for NATIVE_CROSS compilations.
+	(STARTFILE_SPEC): Remove hardcoded library paths.
+	(ENDFILE_SPEC): Likewise.
+
 Thu Jul 18 09:38:59 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (hoist_expr_reaches_here_p):  Stop once expr_bb is reached.
