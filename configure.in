@@ -73,7 +73,6 @@ target_libs="target-libiberty \
 		target-librx \
 		${libstdcxx_version} \
 		target-libf2c \
-		target-libchill \
 		${libgcj}
 		target-libobjc"
 
@@ -1526,20 +1525,6 @@ case $CC_FOR_TARGET in
 *) CC_FOR_TARGET=$CC_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
 esac
 
-if test "x${CHILL_FOR_TARGET+set}" = xset; then
-  :
-elif test -d ${topsrcdir}/gcc; then
-  CHILL_FOR_TARGET='$$r/gcc/xgcc -B$$r/gcc/ -L$$r/gcc/ch/runtime/'
-elif test "$host" = "$target"; then
-  CHILL_FOR_TARGET='$(CC)'
-else
-  CHILL_FOR_TARGET=`echo gcc | sed -e 's/x/x/' ${program_transform_name}`
-fi
-case $CHILL_FOR_TARGET in
-*' $(FLAGS_FOR_TARGET)') ;;
-*) CHILL_FOR_TARGET=$CHILL_FOR_TARGET' $(FLAGS_FOR_TARGET)' ;;
-esac
-
 if test "x${GCJ_FOR_TARGET+set}" = xset; then
   :
 elif test -d ${topsrcdir}/gcc; then
@@ -1586,7 +1571,6 @@ s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:
 s%^TARGET_CONFIGARGS[ 	]*=.*$%TARGET_CONFIGARGS = ${targargs}%
 s%^FLAGS_FOR_TARGET[ 	]*=.*$%FLAGS_FOR_TARGET = ${FLAGS_FOR_TARGET}%
 s%^CC_FOR_TARGET[ 	]*=.*$%CC_FOR_TARGET = ${CC_FOR_TARGET}%
-s%^CHILL_FOR_TARGET[ 	]*=.*$%CHILL_FOR_TARGET = ${CHILL_FOR_TARGET}%
 s%^GCJ_FOR_TARGET[      ]*=.*$%GCJ_FOR_TARGET = ${GCJ_FOR_TARGET}%
 s%^CXX_FOR_TARGET[ 	]*=.*$%CXX_FOR_TARGET = ${qCXX_FOR_TARGET}%
 s%^CXX_FOR_TARGET_FOR_RECURSIVE_MAKE[ 	]*=.*$%CXX_FOR_TARGET_FOR_RECURSIVE_MAKE = ${qqCXX_FOR_TARGET}%

@@ -1,3 +1,7 @@
+Mon Apr 15 10:59:14 2002  Mark Mitchell  <mark@codesourcery.com>
+
+	* g77.texi: Remove Chill reference.
+
 2002-04-13  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* news.texi: Deprecate frontend version number;
