@@ -966,6 +966,9 @@ case "${target}" in
     esac
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
+  sh64-*-*)
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
+    ;;
   sparc-*-elf*)
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
