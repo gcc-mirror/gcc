@@ -3777,7 +3777,6 @@ extern int check_dtor_name			PARAMS ((tree, tree));
 extern int get_arglist_len_in_bytes		PARAMS ((tree));
 
 extern tree build_vfield_ref			PARAMS ((tree, tree));
-extern tree resolve_scope_to_name		PARAMS ((tree, tree));
 extern tree build_scoped_method_call		PARAMS ((tree, tree, tree, tree));
 extern tree build_addr_func			PARAMS ((tree));
 extern tree build_call				PARAMS ((tree, tree));
@@ -4313,7 +4312,6 @@ extern tree lookup_field			PARAMS ((tree, tree, int, int));
 extern int lookup_fnfields_1                    PARAMS ((tree, tree));
 extern tree lookup_fnfields			PARAMS ((tree, tree, int));
 extern tree lookup_member			PARAMS ((tree, tree, int, int));
-extern tree lookup_nested_tag			PARAMS ((tree, tree));
 extern tree get_matching_virtual		PARAMS ((tree, tree, int));
 extern void get_pure_virtuals		        PARAMS ((tree));
 extern tree init_vbase_pointers			PARAMS ((tree, tree));
