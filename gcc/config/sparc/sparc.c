@@ -4445,7 +4445,7 @@ sparc_flat_output_function_prologue (file, size)
   fprintf (file, "\t!# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
 	   current_frame_info.var_size,
 	   current_frame_info.gp_reg_size / 4,
-	   current_frame_info.fp_reg_size / 8,
+	   current_frame_info.fp_reg_size / 4,
 	   current_function_outgoing_args_size,
 	   current_frame_info.extra_size);
 
