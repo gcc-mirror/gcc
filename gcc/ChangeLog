@@ -1,3 +1,10 @@
+Mon 25-Sep-2000 23:38:27 BST  Neil Booth  <neilb@earthling.net>
+
+	* cpplex.c (save_comment): Only store the initial '/'
+	now.
+	(lex_token): Combine handling of the two comment types.
+	Pass everything but the initial '/' to save_comment.	
+
 Mon 25-Sep-2000 23:31:45 BST  Neil Booth  <neilb@earthling.net>
 
 	* cpphash.h (_cpp_digraph_spellings, _cpp_process_directive,
