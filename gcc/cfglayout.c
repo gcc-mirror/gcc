@@ -465,11 +465,43 @@ fixup_reorder_chain ()
 		      && e_fall->dest == EXIT_BLOCK_PTR))
 		continue;
 
+	      /* The degenerated case of conditional jump jumping to the next
+		 instruction can happen on target having jumps with side
+		 effects.  
+
+		 Create temporarily the duplicated edge representing branch.
+		 It will get unidentified by force_nonfallthru_and_redirect
+		 that would otherwise get confused by fallthru edge not pointing
+		 to the next basic block.  */
+	      if (!e_taken)
+		{
+		  rtx note;
+		  edge e_fake;
+
+		  e_fake = unchecked_make_edge (bb, e_fall->dest, 0);
+
+		  if (!redirect_jump (bb->end, block_label (bb), 0))
+		    abort ();
+		  note = find_reg_note (bb->end, REG_BR_PROB, NULL_RTX);
+		  if (note)
+		    {
+		      int prob = INTVAL (XEXP (note, 0));
+
+		      e_fake->probability = prob;
+		      e_fake->count = e_fall->count * prob / REG_BR_PROB_BASE;
+		      e_fall->probability -= e_fall->probability;
+		      e_fall->count -= e_fake->count;
+		      if (e_fall->probability < 0)
+			e_fall->probability = 0;
+		      if (e_fall->count < 0)
+			e_fall->count = 0;
+		    }
+		}
 	      /* There is one special case: if *neither* block is next,
 		 such as happens at the very end of a function, then we'll
 		 need to add a new unconditional jump.  Choose the taken
 		 edge based on known or assumed probability.  */
-	      if (RBI (bb)->next != e_taken->dest)
+	      else if (RBI (bb)->next != e_taken->dest)
 		{
 		  rtx note = find_reg_note (bb_end_insn, REG_BR_PROB, 0);
 
