@@ -1,3 +1,10 @@
+2002-05-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.in (AC_CHECK_FUNCS): Add checks for scandir and
+	alphasort.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+
 2002-05-19  Richard Henderson  <rth@redhat.com>
 
 	* target-def.h (TARGET_BINDS_LOCAL_P): New.

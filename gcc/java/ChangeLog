@@ -1,3 +1,23 @@
+2002-05-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* gjavah.c (throwable_p): Do not free the name of the class after
+	passing it to find_class.
+	* java-tree.h (CLASS_BEING_LAIDOUT): Remove duplicate definition.
+	* jcf-io.c (dirent.h): Include it.
+	(fnmatch.h): Likewise.
+	(compare_path): New function.
+	(java_or_class_file): Likewise.
+	(memoized_dirlist_entry): New type.
+	(memoized_dirlist_lookup_eq): New function.
+	(memoized_dirlists): New variable.
+	(caching_stat): New function.
+	(memoized_class_lookup_eq): New function.
+	(memoized_class_lookups): Likewise.
+	(find_class): Use memoized_class_lookups and caching_stat.
+	* jcf.h (JCF_USE_SCANDIR): Define.
+	* parse.y (java_expand_classes): Write the class files in reverse
+	order.
+	
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Make-lang.in: Allow for PWDCMD to override hardcoded pwd.

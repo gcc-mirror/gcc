@@ -93,6 +93,9 @@
 /* Define if you have the __argz_stringify function.  */
 #undef HAVE___ARGZ_STRINGIFY
 
+/* Define if you have the alphasort function.  */
+#undef HAVE_ALPHASORT
+
 /* Define if you have the atoll function.  */
 #undef HAVE_ATOLL
 
@@ -170,6 +173,9 @@
 
 /* Define if you have the putenv function.  */
 #undef HAVE_PUTENV
+
+/* Define if you have the scandir function.  */
+#undef HAVE_SCANDIR
 
 /* Define if you have the setenv function.  */
 #undef HAVE_SETENV
@@ -289,7 +295,7 @@
 
 /* Define if you want RTL flag accesses to be checked against the RTL
    codes that are supported for each access macro.  This is relatively
-   cheap.  */
+   cheap. */
 #undef ENABLE_RTL_FLAG_CHECKING
 
 /* Define if you want the garbage collector to do object poisoning and

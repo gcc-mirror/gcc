@@ -9048,10 +9048,30 @@ java_expand_classes ()
   for (cur_ctxp = ctxp_for_generation; cur_ctxp; cur_ctxp = cur_ctxp->next)
     {
       tree current;
+      tree reversed_class_list = NULL;
+
       ctxp = cur_ctxp;
-      for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
+
+      /* We write out the classes in reverse order.  This ensures that
+	 inner classes are written before their containing classes,
+	 which is important for parallel builds.  Otherwise, the
+	 class file for the outer class may be found, but the class
+	 file for the inner class may not be present.  In that
+	 situation, the compiler cannot fall back to the original
+	 source, having already read the outer class, so we must
+	 prevent that situation.  */
+      for (current = ctxp->class_list; 
+	   current; 
+	   current = TREE_CHAIN (current))
+	reversed_class_list
+	  = tree_cons (NULL_TREE, current, reversed_class_list);
+      ggc_add_tree_root (&reversed_class_list, 1);
+
+      for (current = reversed_class_list; 
+	   current; 
+	   current = TREE_CHAIN (current))
 	{
-	  current_class = TREE_TYPE (current);
+	  current_class = TREE_TYPE (TREE_VALUE (current));
 	  outgoing_cpool = TYPE_CPOOL (current_class);
 	  if (flag_emit_class_files)
 	    write_classfile (current_class);
@@ -9063,6 +9083,8 @@ java_expand_classes ()
 	      finish_class ();
 	    }
 	}
+
+      ggc_del_root (&reversed_class_list);
     }
 }
 
