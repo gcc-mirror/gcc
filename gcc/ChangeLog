@@ -1,3 +1,7 @@
+2002-02-27  Graham Stott  <grahams@redhat.com>
+
+	* df.c (df_insn_refs_record): Use XEXP (x, 0) for USE.
+
 Wed Feb 27 10:45:19 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* linux64.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Remove.
