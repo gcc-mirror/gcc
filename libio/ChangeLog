@@ -1,3 +1,8 @@
+2000-11-28  Geoffrey Keating  <geoffk@redhat.com>
+	    Felix Lee  <flee@redhat.com>
+
+	* gen-params: Put in cases for O_EXCL, O_APPEND not being defined.
+
 2000-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* iostream.cc (ends): Release the acquired lock.
