@@ -1,3 +1,14 @@
+2001-07-09  Andreas Jaeger  <aj@suse.de>
+
+	* output.h: Add declaration of final_forward_branch_p.
+
+	* config/i386/i386.c (output_fix_trunc): Remove unused variable.
+
+	* varray.c: Include errors.h for internal_error and trim_filename
+	declarations.
+
+	* Makefile.in (varray.o): Add errors.h.
+
 2001-07-09  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* expr.h: Adjust prototypes for have_add2_insn, have_sub2_insn.
@@ -5,7 +16,6 @@
 	really accepts the operands.  (have_sub2_insn): Ditto for sub insn.
 	* reload1.c (reload_cse_move2add): Adjust calls of have_add2_insn.
 
-*************** extern rtx gen_add2_insn PARAMS ((rtx, r
 Mon Jul  9 13:26:40 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (OBJS): Add ssa-ccp.o
