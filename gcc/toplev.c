@@ -1699,22 +1699,6 @@ output_quoted_string (FILE *asm_file, const char *string)
 #endif
 }
 
-/* Output NAME into FILE after having turned it into something
-   usable as an identifier in a target's assembly file.  */
-void
-output_clean_symbol_name (FILE *file, const char *name)
-{
-  /* Make a copy of NAME.  */
-  char *id = xstrdup (name);
-
-  /* Make it look like a valid identifier for an assembler.  */
-  clean_symbol_name (id);
-
-  fputs (id, file);
-  free (id);
-}
-
-
 /* Output a file name in the form wanted by System V.  */
 
 void

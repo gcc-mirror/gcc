@@ -1,3 +1,10 @@
+2003-07-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* toplev.c (output_clean_symbol_name): Remove.
+	* toplev.h (output_clean_symbol_name): Remove.
+	* config/alpha/alpha.c (unicosmk_output_module_name): Use
+	lbasename & clean_symbol_name.
+
 2003-07-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ggc.h: Follow spelling conventions.

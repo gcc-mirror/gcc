@@ -9278,22 +9278,19 @@ unicosmk_initial_elimination_offset (int from, int to)
 static void
 unicosmk_output_module_name (FILE *file)
 {
-  const char *name;
-
-  /* Strip directories.  */
-
-  name = strrchr (main_input_filename, '/');
-  if (name)
-    ++name;
-  else
-    name = main_input_filename;
-
+  const char *name = lbasename (main_input_filename);
+  unsigned len = strlen (name);
+  char *clean_name = alloca (len + 2);
+  char *ptr = clean_name;
+  
   /* CAM only accepts module names that start with a letter or '$'. We
      prefix the module name with a '$' if necessary.  */
 
   if (!ISALPHA (*name))
-    putc ('$', file);
-  output_clean_symbol_name (file, name);
+    *ptr++ = '$';
+  memcpy (ptr, name, len + 1);
+  clean_symbol_name (clean_name);
+  fputs (clean_name, file);
 }
 
 /* Output the definition of a common variable.  */
