@@ -135,11 +135,6 @@ extern int compiling_from_source;
 #define all_class_list \
   java_global_trees[JTI_ALL_CLASS_LIST]
 
-/* Nonzero if we should make is_compiled_class always return 1 for
-   appropriate classes that we're referencing.  */
-
-extern int flag_assume_compiled;
-
 extern int flag_emit_class_files;
 
 extern int flag_filelist_file;

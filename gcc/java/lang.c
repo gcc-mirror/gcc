@@ -99,11 +99,6 @@ int compiling_from_source;
 
 const char * const language_string = "GNU Java";
 
-/* Nonzero if we should make is_compiled_class always return 1 for
-   appropriate classes that we're referencing.  */
-
-int flag_assume_compiled = 1;
-
 int flag_emit_class_files = 0;
 
 /* Nonzero if input file is a file with a list of filenames to compile. */

@@ -1,5 +1,5 @@
 /* Switch definitions for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -30,18 +30,6 @@ DEFINE_LANG_NAME ("Java")
   { "-fbounds-check", "" },
   { "-fno-bounds-check",
     N_("Disable automatic array bounds checking") },
-  { "-fassume-compiled",
-    N_("Make is_compiled_class return 1") },
-  { "-fno-assume-compiled", "" },
-  { "-femit-class-file", "" },
-  { "-femit-class-files",
-    N_("Dump class files to <name>.class") },
-  { "-ffilelist-file",
-    N_("input file is list of file names to compile") },
-  { "-fuse-boehm-gc",
-    N_("Generate code for Boehm GC") },
-  { "-fhash-synchronization",
-    N_("Don't put synchronization structure in each object") },
   { "-fjni",
     N_("Assume native functions are implemented using JNI") },
   { "--classpath",
@@ -51,16 +39,11 @@ DEFINE_LANG_NAME ("Java")
   { "--main",
     N_("Choose class whose main method should be used") },
   { "--encoding",
-    N_("Choose input encoding (default is UTF-8)") },
+    N_("Choose input encoding (default comes from locale)") },
   { "-I",
     N_("Add directory to class path") },
-  { "-foutput-class-dir",
+  { "-d",
     N_("Directory where class files should be written") },
-  { "-fuse-divide-subroutine", "" },
-  { "-fno-use-divide-subroutine",
-    N_("Use built-in instructions for division") },
-  { "-fcheck-references",
-    N_("Generate null pointer checks inline") },
   { "-Wredundant-modifiers", 
     N_("Warn if modifiers are specified when not necessary") },
   { "-Wextraneous-semicolon",
