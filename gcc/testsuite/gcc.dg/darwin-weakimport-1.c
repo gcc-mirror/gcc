@@ -12,5 +12,3 @@ void b(void)
 {
   a();
 }
-
-extern int c __attribute__((weak_import)); /* { dg-warning "ignored" } */
