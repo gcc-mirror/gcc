@@ -1,3 +1,8 @@
+1999-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.h (TARGET_ARCH32): Exchange ifdefs so that if
+	compiling libgcc2 the macro depends always on arch cpp defines.
+
 Fri Dec 17 10:34:16 1999  Richard Earnshaw <rearnsha@arm.com>
 
 	* loop.c (insert_loop_mem): Don't record MEMs from inside 
