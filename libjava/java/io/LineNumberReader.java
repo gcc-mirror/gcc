@@ -227,7 +227,7 @@ public class LineNumberReader extends BufferedReader
 	  {
 	    if (markPos >= 0 && limit == buffer.length)
 	      markPos = -1;
-	    if (markPos <= 0)
+	    if (markPos < 0)
 	      pos = limit = 0;
 	    int count = in.read(buffer, limit, buffer.length - limit);
 	    if (count <= 0)
