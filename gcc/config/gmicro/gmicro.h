@@ -460,10 +460,10 @@ extern enum reg_class regno_reg_class[];
    for the Gmicro. The option name may be changed in the future. */
 
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
-  ((TARGET_RTD && TREE_CODE (FUNTYPE) != IDENTIFIER_NODE	\
+  ((TARGET_RTD && TREE_CODE (FUNDECL) != IDENTIFIER_NODE	\
     && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
 	|| (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\
-	    = void_type_node)))					\
+	    == void_type_node)))					\
    ? (SIZE) : 0)
 
 /* Define how to find the value returned by a function.
