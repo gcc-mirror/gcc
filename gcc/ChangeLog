@@ -1,3 +1,13 @@
+2002-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config.gcc (*-*-linux*): Default to --enable-threads=posix if no
+	--{enable,disable}-threads is given to configure.
+	(alpha*-*-linux*, hppa*-*-linux*, i[34567]86-*-linux*,
+	x86_64-*-linux*, ia64*-*-linux*, m68k-*-linux*, mips*-*-linux*,
+	powerpc-*-linux-gnualtivec*, powerpc-*-linux*, s390-*-linux*,
+	s390x-*-linux*, sh-*-linux*, sparc-*-linux*, sparc64-*-linux*):
+	Remove thread_file setting here.
+
 2002-08-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/install.texi (Installing GCC): Refer to buildstat.html,
