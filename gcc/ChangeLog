@@ -1,3 +1,7 @@
+2003-03-27  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (adddi_er_high_l): Valid only after reload.
+
 2003-03-27  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_inf_compare):  New function to simplify FP
