@@ -323,7 +323,7 @@ extern int avr_enhanced_p;
    If you don't define this macro, the default is `"long unsigned
    int"'.  */
 
-#define PTRDIFF_TYPE (INT_TYPE_SIZE == 8 ? "long unsigned int" :"unsigned int")
+#define PTRDIFF_TYPE (INT_TYPE_SIZE == 8 ? "long int" :"int")
 /* A C expression for a string describing the name of the data type
    to use for the result of subtracting two pointers.  The typedef
    name `ptrdiff_t' is defined using the contents of the string.  See

@@ -1,3 +1,44 @@
+2000-09-02  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr-protos.h, config/avr/avr.c (unique_section,
+	gas_output_limited_string, gas_output_ascii, output_movqi,
+	output_movhi, out_movqi_r_mr, out_movqi_mr_r, out_movhi_r_mr,
+	out_movhi_mr_r, out_movsi_r_mr, out_movsi_mr_r, output_movsisf,
+	out_tstsi, out_tsthi, ret_cond_branch, ashlqi3_out, ashlhi3_out,
+	ashlsi3_out, ashrqi3_out, ashrhi3_out, ashrsi3_out, lshrqi3_out,
+	lshrhi3_out, lshrsi3_out, output_reload_inhi, output_reload_insisf,
+	out_shift_with_cnt, ptrreg_to_str, cond_string, encode_section_info):
+	Add "const" as needed to remove warnings.
+
+	* config/avr/avr.c (avr_override_options, avr_init_once,
+	function_prologue, function_epilogue, frame_pointer_required_p,
+	class_likely_spilled_p, order_regs_for_local_alloc,
+	avr_address_cost, avr_ret_register): Use K&R style arguments.
+	(initial_elimination_offset, gas_output_limited_string):
+	Remove ATTRIBUTE_UNUSED from the used arguments.
+	(output_mov*, out_mov*_r_mr, out_mov*_mr_r, output_reload_insisf):
+	Use local variables src, dest, base to access operands[].
+	Rename reg_dest to reg_src if that's what it is.
+	(output_movhi, output_movsisf): Optimize loading 8-bit immediate
+	constants to LD_REGS if reg_was_0.
+	(output_reload_insisf): Change arg 3 to insn length and set it.
+	(out_movhi_r_mr, out_movhi_mr_r): Use in/out for more efficient
+	access to 16-bit I/O register pairs.
+	(avr_address_cost): Lower cost for the above case.
+	(out_tsthi): Use "or" (faster) instead of "sbiw" if the operand
+	may be clobbered, also for LD_REGS.
+	(adjust_insn_length): Correct insn length for iorhi3 and iorsi3
+	with a CONST_INT.
+
+	* config/avr/avr.h (PTRDIFF_TYPE): Make signed.
+
+	* config/avr/avr.md: Change all uses of the TEST_HARD_REG_CLASS
+	macro to test_hard_reg_class function.
+	(*movsi, *movsf): Change "cc" attribute from "clobber" to "none"
+	for loading immediate constants to LD_REGS.
+	(andsi3, cmphi, cmpsi): Add return statements to avoid warnings.
+
+
 Sat Sep  2 13:58:23 2000  Marek Michalkiewicz <marekm@linux.org.pl>
 
 	* config/avr/avr.md ("*negsi2"): substitute %@ to __zero_reg__

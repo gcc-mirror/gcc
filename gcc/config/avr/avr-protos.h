@@ -27,7 +27,7 @@ extern void   asm_file_end                      PARAMS ((FILE *file));
 extern void   avr_init_once                     PARAMS ((void));
 extern void   avr_override_options              PARAMS ((void));
 extern char * avr_change_section                PARAMS ((char *sect_name));
-extern int    avr_ret_register                  PARAMS((void));
+extern int    avr_ret_register                  PARAMS ((void));
 extern enum reg_class class_likely_spilled_p    PARAMS ((int c));
 extern enum reg_class avr_regno_reg_class       PARAMS ((int r));
 extern enum reg_class avr_reg_class_from_letter PARAMS ((int c));
@@ -39,8 +39,8 @@ extern void   function_prologue           PARAMS ((FILE *file, int size));
 extern void   function_epilogue           PARAMS ((FILE *file, int size));
 extern void   progmem_section             PARAMS ((void));
 extern int    mask_one_bit_p              PARAMS ((HOST_WIDE_INT mask));
-extern void   gas_output_limited_string   PARAMS ((FILE *file, char *str));
-extern void   gas_output_ascii            PARAMS ((FILE *file, char * str,
+extern void   gas_output_limited_string PARAMS ((FILE *file, const char *str));
+extern void   gas_output_ascii          PARAMS ((FILE *file, const char *str,
 							 size_t length));
 
 
@@ -86,30 +86,30 @@ extern int    legitimate_address_p    PARAMS ((enum machine_mode mode, rtx x,
 					int strict));
 extern void   machine_dependent_reorg PARAMS ((rtx first_insn));
 extern int    compare_diff_p  PARAMS ((rtx insn));
-extern char * output_movqi    PARAMS ((rtx insn, rtx operands[], int *l));
-extern char * output_movhi    PARAMS ((rtx insn, rtx operands[], int *l));
-extern char * out_movqi_r_mr  PARAMS ((rtx insn, rtx op[], int *l));
-extern char * out_movqi_mr_r  PARAMS ((rtx insn, rtx op[], int *l));
-extern char * out_movhi_r_mr  PARAMS ((rtx insn, rtx op[], int *l));
-extern char * out_movhi_mr_r  PARAMS ((rtx insn, rtx op[], int *l));
-extern char * out_movsi_r_mr  PARAMS ((rtx insn, rtx op[], int *l));
-extern char * out_movsi_mr_r  PARAMS ((rtx insn, rtx op[], int *l));
-extern char * output_movsisf  PARAMS ((rtx insn, rtx operands[], int *l));
-extern char * out_tstsi       PARAMS ((rtx insn, int *l));
-extern char * out_tsthi       PARAMS ((rtx insn, int *l));
-extern char * ret_cond_branch PARAMS ((RTX_CODE cond, int len));
+extern const char * output_movqi    PARAMS ((rtx insn, rtx operands[], int *l));
+extern const char * output_movhi    PARAMS ((rtx insn, rtx operands[], int *l));
+extern const char * out_movqi_r_mr  PARAMS ((rtx insn, rtx op[], int *l));
+extern const char * out_movqi_mr_r  PARAMS ((rtx insn, rtx op[], int *l));
+extern const char * out_movhi_r_mr  PARAMS ((rtx insn, rtx op[], int *l));
+extern const char * out_movhi_mr_r  PARAMS ((rtx insn, rtx op[], int *l));
+extern const char * out_movsi_r_mr  PARAMS ((rtx insn, rtx op[], int *l));
+extern const char * out_movsi_mr_r  PARAMS ((rtx insn, rtx op[], int *l));
+extern const char * output_movsisf  PARAMS ((rtx insn, rtx operands[], int *l));
+extern const char * out_tstsi       PARAMS ((rtx insn, int *l));
+extern const char * out_tsthi       PARAMS ((rtx insn, int *l));
+extern const char * ret_cond_branch PARAMS ((RTX_CODE cond, int len));
 
-extern char * ashlqi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
-extern char * ashlhi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
-extern char * ashlsi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
+extern const char * ashlqi3_out PARAMS ((rtx insn, rtx operands[], int *len));
+extern const char * ashlhi3_out PARAMS ((rtx insn, rtx operands[], int *len));
+extern const char * ashlsi3_out PARAMS ((rtx insn, rtx operands[], int *len));
 
-extern char * ashrqi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
-extern char * ashrhi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
-extern char * ashrsi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
+extern const char * ashrqi3_out PARAMS ((rtx insn, rtx operands[], int *len));
+extern const char * ashrhi3_out PARAMS ((rtx insn, rtx operands[], int *len));
+extern const char * ashrsi3_out PARAMS ((rtx insn, rtx operands[], int *len));
 
-extern char * lshrqi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
-extern char * lshrhi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
-extern char * lshrsi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
+extern const char * lshrqi3_out PARAMS ((rtx insn, rtx operands[], int *len));
+extern const char * lshrhi3_out PARAMS ((rtx insn, rtx operands[], int *len));
+extern const char * lshrsi3_out PARAMS ((rtx insn, rtx operands[], int *len));
 
 extern enum reg_class preferred_reload_class PARAMS ((rtx x,
 						     enum reg_class class));
@@ -119,10 +119,10 @@ extern rtx    legitimize_address     PARAMS ((rtx x, rtx oldx,
 					     enum machine_mode mode));
 extern int    adjust_insn_length     PARAMS ((rtx insn, int len));
 extern rtx    avr_libcall_value      PARAMS ((enum machine_mode mode));
-extern char * output_reload_inhi     PARAMS ((rtx insn, rtx *operands,
-					     int *len));
-extern char * output_reload_insisf   PARAMS ((rtx insn, rtx *operands,
-					     int which_alternative));
+extern const char * output_reload_inhi PARAMS ((rtx insn, rtx *operands,
+						int *len));
+extern const char * output_reload_insisf PARAMS ((rtx insn, rtx *operands,
+						int *len));
 extern int    default_rtx_costs      PARAMS ((rtx X, RTX_CODE code,
 					     RTX_CODE outer_code));
 extern void   asm_output_char        PARAMS ((FILE *file, rtx value));
@@ -151,7 +151,7 @@ extern int    avr_simplify_comparision_p PARAMS ((enum machine_mode mode,
 					      RTX_CODE operator, rtx x));
 extern RTX_CODE avr_normalize_condition  PARAMS ((RTX_CODE condition));
 extern int    compare_eq_p           PARAMS ((rtx insn));
-extern void   out_shift_with_cnt     PARAMS ((char * template, rtx insn,
+extern void   out_shift_with_cnt     PARAMS ((const char *template, rtx insn,
 					      rtx operands[], int *len));
 extern int    const_int_pow2_p       PARAMS ((rtx x));
 #endif /* RTX_CODE */
