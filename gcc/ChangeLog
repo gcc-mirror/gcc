@@ -1,3 +1,10 @@
+Mon Jan 19 11:15:38 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* genattrtab.c (find_and_mark_used_attributes): Handle CONST_INT.
+	(add_values_to_cover): Revert last change (which had no ChangeLog
+	entry).
+	(simplify_with_current_value_aux): Handle CONST_INT.
+
 Mon Jan 19 10:14:55 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* unprotoize.c: Define UNPROTOIZE first, to actually take effect.
