@@ -1,3 +1,8 @@
+2003-06-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/m68hc11/m68hc11.c (m68hc11_rtx_costs): Remove
+	unreachable code.
+
 2003-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-attrs.def, builtin-attrs.def, builtins.c, cpplex.c,

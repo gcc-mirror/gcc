@@ -5631,9 +5631,6 @@ m68hc11_rtx_costs (x, code, outer_code, total)
 	*total = 0;
       return true;
     
-       if (outer_code == SET)
-	 *total = 1 - reload_completed;
-
     case ROTATE:
     case ROTATERT:
     case ASHIFT:
