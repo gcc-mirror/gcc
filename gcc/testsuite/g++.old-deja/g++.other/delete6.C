@@ -1,12 +1,14 @@
 // Origin: Alexander Schiemann (aschiem@count.math.uni-sb.de)
 
+typedef __SIZE_TYPE__ size_t;
+
 int i;
 
 struct B{};
 
 struct A{
 
-  static void* operator new(unsigned int)
+  static void* operator new(size_t)
   {return &i;}
 
   inline static void operator delete(void*p); 
@@ -23,5 +25,3 @@ inline void A::operator delete(void*p)
 int main()
 {A *ap=new A;
 delete ap;}
-
-
