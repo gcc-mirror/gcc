@@ -45,7 +45,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "c-tree.h"
 #include "c-lex.h"
 #include "flags.h"
-#include "objc-actions.h"
+#include "objc-act.h"
 #include "input.h"
 
 /* The GNU run time requires the selectors in a vector
