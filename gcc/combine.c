@@ -6532,7 +6532,7 @@ num_sign_bit_copies (x, mode)
 	 be 0 or 1, we know the result is either -1 or 0.  */
 
       if (code == PLUS && XEXP (x, 1) == constm1_rtx
-	  && bitwidth <= HOST_BITS_PER_INT)
+	  && bitwidth <= HOST_BITS_PER_WIDE_INT)
 	{
 	  nonzero = nonzero_bits (XEXP (x, 0), mode);
 	  if ((((HOST_WIDE_INT) 1 << (bitwidth - 1)) & nonzero) == 0)
@@ -6555,7 +6555,7 @@ num_sign_bit_copies (x, mode)
 
       result = bitwidth - (bitwidth - num0) - (bitwidth - num1);
       if (result > 0
-	  && bitwidth <= HOST_BITS_PER_INT
+	  && bitwidth <= HOST_BITS_PER_WIDE_INT
 	  && ((nonzero_bits (XEXP (x, 0), mode)
 	       & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
 	  && (nonzero_bits (XEXP (x, 1), mode)
