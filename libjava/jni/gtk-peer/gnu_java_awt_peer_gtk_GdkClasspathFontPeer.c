@@ -120,6 +120,13 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeer_setFont
   pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, self);
   g_assert (pfont != NULL);
 
+  if (pfont->ctx != NULL)
+    g_object_unref (pfont->ctx);
+  if (pfont->font != NULL)
+    g_object_unref (pfont->font);
+  if (pfont->desc != NULL)
+    pango_font_description_free (pfont->desc);
+
   pfont->desc = pango_font_description_new ();
   g_assert (pfont->desc != NULL);
 
@@ -153,7 +160,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkClasspathFontPeer_setFont
 
   pfont->font = pango_font_map_load_font (map, pfont->ctx, pfont->desc);
   g_assert (pfont->font != NULL);
-  
+
   gdk_threads_leave ();
 }
 

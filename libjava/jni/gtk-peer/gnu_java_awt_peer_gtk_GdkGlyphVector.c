@@ -40,6 +40,16 @@
 
 struct state_table *native_glyphvector_state_table;
 
+typedef struct { 
+  double x;
+  double y;
+  double width;
+  double height;
+} rect_t;
+
+#define DOUBLE_TO_26_6(d) ((FT_F26Dot6)((d) * 63.0))
+#define DOUBLE_FROM_26_6(t) (((double)((t) >> 6)) \
+			     + ((double)((t) & 0x3F) / 63.0))
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_initStaticState 
   (JNIEnv *env, jclass clazz)
@@ -64,8 +74,11 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_initState
   vec = (struct glyphvec *) g_malloc0 (sizeof (struct glyphvec));
   g_assert (vec != NULL);
 
-  vec->desc = pango_font_description_copy (pfont->desc);
+  vec->desc = pango_font_describe (pfont->font); 
   g_assert (vec->desc != NULL);
+
+  vec->font = pfont->font;
+  g_object_ref (vec->font);
     
   vec->ctx = pfont->ctx;
   g_object_ref (vec->ctx);
@@ -150,10 +163,10 @@ static void seek_glyph_idx (GList *list, int idx,
   *g = gs->glyphs + nidx;
 }
 
-static void union_rects (PangoRectangle *r1, 
-			 const PangoRectangle *r2)
+static void union_rects (rect_t *r1, 
+			 const rect_t *r2)
 {
-  PangoRectangle r;
+  rect_t r;
 
   g_assert (r1 != NULL);
   g_assert (r2 != NULL);
@@ -184,7 +197,7 @@ static void union_rects (PangoRectangle *r1,
   *r1 = r;  
 }
 
-static jdoubleArray rect_to_array (JNIEnv *env, const PangoRectangle *r)
+static jdoubleArray rect_to_array (JNIEnv *env, const rect_t *r)
 {
   /* We often return rectangles as arrays : { x, y, w, h } */
   jdoubleArray ret;
@@ -193,11 +206,11 @@ static jdoubleArray rect_to_array (JNIEnv *env, const PangoRectangle *r)
   ret = (*env)->NewDoubleArray (env, 4);
   rp = (*env)->GetDoubleArrayElements (env, ret, NULL);
   g_assert (rp != NULL);
-  rp[0] = r->x / (double)PANGO_SCALE;
+  rp[0] = r->x;
   /* freetype and pango's view of space is upside down from java2d's */
-  rp[1] = (r->y / (double)PANGO_SCALE) * -1;
-  rp[2] = r->width / (double)PANGO_SCALE;
-  rp[3] = r->height / (double)PANGO_SCALE;
+  rp[1] = r->y * -1;
+  rp[2] = r->width;
+  rp[3] = r->height;
   (*env)->ReleaseDoubleArrayElements (env, ret, rp, 0);
   return ret;
 }
@@ -251,18 +264,14 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_setChars
   str = (gchar *)(*env)->GetStringUTFChars (env, chars, NULL);
   g_assert (str != NULL);
 
-  /* step 1: mark the text as having our FontFescription as an 
-     attribute, then "itemize" the text */
+  /* step 1: set our FontFescription in the context, then "itemize" the
+     text */
 
   attrs = pango_attr_list_new ();
   g_assert (attrs != NULL);
   
-  PangoAttribute *da = pango_attr_font_desc_new(vec->desc);
-  g_assert (da != NULL);
-  da->start_index = 0;
-  da->end_index = len;
-  
-  pango_attr_list_insert (attrs, da);
+  pango_context_set_font_description (vec->ctx, vec->desc);
+
   items = pango_itemize (vec->ctx, str, 0, len, attrs, NULL);
   g_assert (items != NULL);
   
@@ -393,50 +402,19 @@ JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_glyphCharIndex
 }
 
 
-JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_allLogicalExtents 
-  (JNIEnv *env, jobject self)
-{
-  struct glyphvec *vec = NULL;
-  GList *i;
-  PangoGlyphItem *gi = NULL;
-  PangoRectangle rect = {0,0,0,0};
-  PangoRectangle tmp, dummy;  
-  jdoubleArray ret;
-
-  gdk_threads_enter ();
-  g_assert (self != NULL);
-  vec = (struct glyphvec *)NSA_GET_GV_PTR (env, self);
-  g_assert (vec != NULL);
-  g_assert (vec->glyphitems != NULL);
-
-  for (i = g_list_first (vec->glyphitems); i != NULL; i = g_list_next (i))
-    {
-      g_assert (i->data != NULL);
-      gi = (PangoGlyphItem *)i->data;
-      g_assert (gi->glyphs != NULL);
-      
-      pango_glyph_string_extents (gi->glyphs,
-				  gi->item->analysis.font,
-				  &dummy,
-				  &tmp);
-      union_rects (&rect, &tmp);
-    }      
-
-  ret = rect_to_array (env, &rect);
-  gdk_threads_leave ();
-  return ret;
-}
-
-
 JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_allInkExtents 
   (JNIEnv *env, jobject self)
 {
   struct glyphvec *vec = NULL;
+  int j;
   GList *i;
   PangoGlyphItem *gi = NULL;
-  PangoRectangle rect = {0,0,0,0};
-  PangoRectangle tmp, dummy;  
+  rect_t rect = {0,0,0,0};
+  rect_t tmp;  
   jdoubleArray ret;
+  double x = 0, y = 0;
+  double pointsize;
+  FT_Face face;
 
   gdk_threads_enter ();
   g_assert (self != NULL);
@@ -444,45 +422,141 @@ JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_allInkE
   g_assert (vec != NULL);
   g_assert (vec->glyphitems != NULL);
 
+  pointsize = pango_font_description_get_size (vec->desc);
+  pointsize /= (double) PANGO_SCALE;
+
   for (i = g_list_first (vec->glyphitems); i != NULL; i = g_list_next (i))
     {
       g_assert (i->data != NULL);
       gi = (PangoGlyphItem *)i->data;
       g_assert (gi->glyphs != NULL);
+
+      face = pango_ft2_font_get_face (gi->item->analysis.font);
+      FT_Set_Char_Size( face, 
+			DOUBLE_TO_26_6 (pointsize),
+			DOUBLE_TO_26_6 (pointsize),
+			0, 0);
       
-      pango_glyph_string_extents (gi->glyphs,
-				  gi->item->analysis.font,
-				  &tmp,
-				  &dummy);
-      union_rects (&rect, &tmp);
+      for (j = 0; j < gi->glyphs->num_glyphs; ++j)
+	{
+	  FT_Load_Glyph (face, gi->glyphs->glyphs[j].glyph, FT_LOAD_DEFAULT);
+	  /* FIXME: this needs to change for vertical layouts */
+	  tmp.x = x + DOUBLE_FROM_26_6 (face->glyph->metrics.horiBearingX);
+	  tmp.y = y + DOUBLE_FROM_26_6 (face->glyph->metrics.horiBearingY);
+	  tmp.width = DOUBLE_FROM_26_6 (face->glyph->metrics.width);
+	  tmp.height = DOUBLE_FROM_26_6 (face->glyph->metrics.height);
+	  union_rects (&rect, &tmp);
+	  x += DOUBLE_FROM_26_6 (face->glyph->advance.x);
+	  y += DOUBLE_FROM_26_6 (face->glyph->advance.y);
+	}
     }      
 
   ret = rect_to_array (env, &rect);
   gdk_threads_leave ();
   return ret;
 }
+
+
+JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_allLogicalExtents 
+  (JNIEnv *env, jobject self)
+{
+  struct glyphvec *vec = NULL;
+  int j;
+  GList *i;
+  PangoGlyphItem *gi = NULL;
+  rect_t rect = {0,0,0,0};
+  rect_t tmp;  
+  jdoubleArray ret;
+  double x = 0, y = 0;
+  double pointsize;
+  FT_Face face;
+
+  gdk_threads_enter ();
+  g_assert (self != NULL);
+  vec = (struct glyphvec *)NSA_GET_GV_PTR (env, self);
+  g_assert (vec != NULL);
+  g_assert (vec->glyphitems != NULL);
+
+  pointsize = pango_font_description_get_size (vec->desc);
+  pointsize /= (double) PANGO_SCALE;
+
+  for (i = g_list_first (vec->glyphitems); i != NULL; i = g_list_next (i))
+    {
+      g_assert (i->data != NULL);
+      gi = (PangoGlyphItem *)i->data;
+      g_assert (gi->glyphs != NULL);
+
+      face = pango_ft2_font_get_face (gi->item->analysis.font);
+      FT_Set_Char_Size( face, 
+			DOUBLE_TO_26_6 (pointsize),
+			DOUBLE_TO_26_6 (pointsize),
+			0, 0);
+      
+      for (j = 0; j < gi->glyphs->num_glyphs; ++j)
+	{
+	  FT_Load_Glyph (face, gi->glyphs->glyphs[j].glyph, FT_LOAD_DEFAULT);
+
+	  /* FIXME: also, this is probably not the correct set of metrics;
+	     the "logical bounds" are some fancy combination of hori
+	     advance and height such that it's good for inverting as a
+	     highlight. revisit. */
+
+	  tmp.x = x;
+	  tmp.y = y;
+	  tmp.width = DOUBLE_FROM_26_6 (face->glyph->advance.x);
+	  tmp.height = DOUBLE_FROM_26_6 (face->glyph->advance.y);
+	  union_rects (&rect, &tmp);
+	  x += DOUBLE_FROM_26_6 (face->glyph->advance.x);
+	  y += DOUBLE_FROM_26_6 (face->glyph->advance.y);
+	}
+    }      
+
+  ret = rect_to_array (env, &rect);
+  gdk_threads_leave ();
+  return ret;
+}
+
 
 JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_glyphLogicalExtents 
   (JNIEnv *env, jobject self, jint idx)
 {
   struct glyphvec *vec = NULL;
-  PangoRectangle rect = {0,0,0,0};
-  PangoRectangle dummy;  
+  rect_t rect = {0,0,0,0};
   PangoGlyphInfo *gi = NULL;
   PangoFont *font = NULL;
   jdoubleArray ret;
+  double pointsize;
+  FT_Face face;
 
   gdk_threads_enter ();
   g_assert (self != NULL);
   vec = (struct glyphvec *)NSA_GET_GV_PTR (env, self);
   g_assert (vec != NULL);
   g_assert (vec->glyphitems != NULL);
-
+ 
   seek_glyph_idx (vec->glyphitems, idx, &gi, &font);
   g_assert (gi != NULL);
   g_assert (font != NULL);
 
-  pango_font_get_glyph_extents (font, gi->glyph, &dummy, &rect);
+  pointsize = pango_font_description_get_size (vec->desc);
+  pointsize /= (double) PANGO_SCALE;
+  face = pango_ft2_font_get_face (font);
+  FT_Set_Char_Size( face, 
+		    DOUBLE_TO_26_6 (pointsize),
+		    DOUBLE_TO_26_6 (pointsize),
+		    0, 0);
+  
+  FT_Load_Glyph (face, gi->glyph, FT_LOAD_DEFAULT);
+
+  /* FIXME: this is probably not the correct set of metrics;
+     the "logical bounds" are some fancy combination of hori
+     advance and height such that it's good for inverting as a
+     highlight. revisit. */
+  
+  rect.x = 0; 
+  rect.y = 0; 
+  rect.width = DOUBLE_FROM_26_6 (face->glyph->advance.x);
+  rect.height = DOUBLE_FROM_26_6 (face->glyph->advance.y);
 
   ret = rect_to_array (env, &rect);
   gdk_threads_leave ();
@@ -494,28 +568,43 @@ JNIEXPORT jdoubleArray JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_glyphIn
   (JNIEnv *env, jobject self, jint idx)
 {
   struct glyphvec *vec = NULL;
-  PangoRectangle rect = {0,0,0,0};
-  PangoRectangle dummy;  
+  rect_t rect = {0,0,0,0};
   PangoGlyphInfo *gi = NULL;
   PangoFont *font = NULL;
   jdoubleArray ret;
-
+  double pointsize;
+  FT_Face face;
+  
   gdk_threads_enter ();
   g_assert (self != NULL);
   vec = (struct glyphvec *)NSA_GET_GV_PTR (env, self);
   g_assert (vec != NULL);
   g_assert (vec->glyphitems != NULL);
-
+ 
   seek_glyph_idx (vec->glyphitems, idx, &gi, &font);
   g_assert (gi != NULL);
   g_assert (font != NULL);
 
-  pango_font_get_glyph_extents (font, gi->glyph, &rect, &dummy);
+  pointsize = pango_font_description_get_size (vec->desc);
+  pointsize /= (double) PANGO_SCALE;
+  face = pango_ft2_font_get_face (font);
+  FT_Set_Char_Size( face, 
+		    DOUBLE_TO_26_6 (pointsize),
+		    DOUBLE_TO_26_6 (pointsize),
+		    0, 0);
+  
+  FT_Load_Glyph (face, gi->glyph, FT_LOAD_DEFAULT);
+  /* FIXME: this needs to change for vertical layouts */
+  rect.x = DOUBLE_FROM_26_6 (face->glyph->metrics.horiBearingX);
+  rect.y = DOUBLE_FROM_26_6 (face->glyph->metrics.horiBearingY);
+  rect.width = DOUBLE_FROM_26_6 (face->glyph->metrics.width);
+  rect.height = DOUBLE_FROM_26_6 (face->glyph->metrics.height);
 
   ret = rect_to_array (env, &rect);
   gdk_threads_leave ();
   return ret;
 }
+
 
 JNIEXPORT jboolean JNICALL Java_gnu_java_awt_peer_gtk_GdkGlyphVector_glyphIsHorizontal 
   (JNIEnv *env, jobject self, jint idx)
