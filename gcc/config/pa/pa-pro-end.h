@@ -37,6 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #define NO_IMPLICIT_EXTERN_C
 
 /* We don't want a crt0.o to get linked in automatically, we want the
-   linker script to pull it in.
- */
+   linker script to pull it in.  */
+#undef STARTFILE_SPEC
 #define STARTFILE_SPEC ""
