@@ -1,3 +1,8 @@
+2004-09-03  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (ASM_OUTPUT_CASE_END): Use prev_nonnote_insn
+	to get the tablejump-insn before the jump-table label.
+
 2004-09-03  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-common.h (objc_is_id, objc_declare_alias, objc_declare_class,
