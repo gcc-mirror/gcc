@@ -23,6 +23,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "bsd386.h"
 
+/* By default, don't use IEEE compatible arithmetic
+   because the assembler can't handle that.
+   Return float values in the 387.
+   (TARGET_80387 | TARGET_FLOAT_RETURNS_IN_80387) */
+
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT 0201
+
 /* Specify predefined symbols in preprocessor.  */
 
 #define CPP_PREDEFINES "-Dunix -Di386 -Dsequent"
