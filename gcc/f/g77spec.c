@@ -279,3 +279,12 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   *in_argv = arglist;
   *in_added_libraries = added_libraries;
 }
+
+/* Called before linking.  Returns 0 on success and -1 on failure. */
+int lang_specific_pre_link ()  /* Not used for F77. */
+{
+  return 0;
+}
+
+/* Number of extra output files that lang_specific_pre_link may generate. */
+int lang_specific_extra_ofiles = 0;  /* Not used for F77. */
