@@ -2717,7 +2717,7 @@ letters, amongst those accepted by @code{EXTRA_CONSTRAINT} /
 be treated like address constraints by the reload pass.
 
 It should return 1 if the operand type represented by the constraint 
-at the startr of @{str}, which starts with the letter @var{c}, comprises
+at the start of @var{str}, which starts with the letter @var{c}, comprises
 a subset of all memory addresses including
 all those that consist of just a base register.  This allows the reload 
 pass to reload an operand, if it does not directly correspond to the operand 
