@@ -2006,6 +2006,7 @@ merge_blocks_move_predecessor_nojumps (a, b)
      basic_block a, b;
 {
   rtx start, end, insertpoint, barrier;
+  int index;
 
   start = a->head;
   end = a->end;
@@ -2037,14 +2038,23 @@ merge_blocks_move_predecessor_nojumps (a, b)
   /* Scramble the insn chain.  */
   reorder_insns (start, end, insertpoint);
 
-  /* Now blocks A and B are contiguous.  Merge them.  */
-  merge_blocks_nomove (a, b);
-
   if (rtl_dump_file)
     {
       fprintf (rtl_dump_file, "Moved block %d before %d and merged.\n",
 	       a->index, b->index);
     }
+
+  /* Swap the records for the two blocks around.  Although we are deleting B,
+     A is now where B was and we want to compact the BB array from where
+     A used to be.  */
+  BASIC_BLOCK(a->index) = b;
+  BASIC_BLOCK(b->index) = a;
+  index = a->index;
+  a->index = b->index;
+  b->index = index;
+  
+  /* Now blocks A and B are contiguous.  Merge them.  */
+  merge_blocks_nomove (a, b);
 
   return 1;
 }
