@@ -7735,7 +7735,7 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 	rtx fn_reg = gen_reg_rtx (pmode);
 	rtx toc_reg = gen_reg_rtx (pmode);
 	emit_move_insn (fn_reg, MEM_DEREF (fnaddr));
-	emit_move_insn (toc_reg, MEM_PLUS (fnaddr, 4));
+	emit_move_insn (toc_reg, MEM_PLUS (fnaddr, regsize));
 	emit_move_insn (MEM_DEREF (addr), fn_reg);
 	emit_move_insn (MEM_PLUS (addr, regsize), toc_reg);
 	emit_move_insn (MEM_PLUS (addr, 2*regsize), ctx_reg);

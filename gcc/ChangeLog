@@ -1,3 +1,8 @@
+2001-08-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_initialize_trampoline): Function
+	descriptor members are pointer size, not constant 4.
+
 2001-08-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppmacro.c (enter_macro_context): Push macro expansions even
