@@ -2880,6 +2880,12 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      if (GET_CODE (SUBREG_REG (operand)) == REG
 		  && REGNO (SUBREG_REG (operand)) < FIRST_PSEUDO_REGISTER)
 		{
+		  if (!subreg_offset_representable_p
+			(REGNO (SUBREG_REG (operand)),
+			 GET_MODE (SUBREG_REG (operand)),
+			 SUBREG_BYTE (operand),
+			 GET_MODE (operand)))
+		     force_reload = 1;
 		  offset += subreg_regno_offset (REGNO (SUBREG_REG (operand)),
 						 GET_MODE (SUBREG_REG (operand)),
 						 SUBREG_BYTE (operand),
@@ -2935,26 +2941,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			  )
 #endif
 		      )
-		  /* This following hunk of code should no longer be
-		     needed at all with SUBREG_BYTE.  If you need this
-		     code back, please explain to me why so I can
-		     fix the real problem.  -DaveM */
-#if 0
-		  /* Subreg of a hard reg which can't handle the subreg's mode
-		     or which would handle that mode in the wrong number of
-		     registers for subregging to work.  */
-		  || (GET_CODE (operand) == REG
-		      && REGNO (operand) < FIRST_PSEUDO_REGISTER
-		      && ((GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
-			   && (GET_MODE_SIZE (GET_MODE (operand))
-			       > UNITS_PER_WORD)
-			   && ((GET_MODE_SIZE (GET_MODE (operand))
-				/ UNITS_PER_WORD)
-			       != HARD_REGNO_NREGS (REGNO (operand),
-						    GET_MODE (operand))))
-			  || ! HARD_REGNO_MODE_OK (REGNO (operand) + offset,
-						   operand_mode[i])))
-#endif
 		  )
 		force_reload = 1;
 	    }
@@ -5271,6 +5257,19 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 						       GET_MODE (SUBREG_REG (orig_op1)),
 						       SUBREG_BYTE (orig_op1),
 						       GET_MODE (orig_op1))));
+	  }
+	/* Plus in the index register may be created only as a result of
+	   register remateralization for expresion like &localvar*4.  Reload it.
+	   It may be possible to combine the displacement on the outer level,
+	   but it is probably not worthwhile to do so.  */
+	if (context)
+	  {
+	    find_reloads_address (GET_MODE (x), loc, XEXP (x, 0), &XEXP (x, 0),
+				  opnum, ADDR_TYPE (type), ind_levels, insn);
+	    push_reload (*loc, NULL_RTX, loc, (rtx*) 0,
+			 (context ? INDEX_REG_CLASS : MODE_BASE_REG_CLASS (mode)),
+			 GET_MODE (x), VOIDmode, 0, 0, opnum, type);
+	    return 1;
 	  }
 
 	if (code0 == MULT || code0 == SIGN_EXTEND || code0 == TRUNCATE

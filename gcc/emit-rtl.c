@@ -1081,7 +1081,11 @@ subreg_hard_regno (x, check_mode)
     abort ();
   if (check_mode && ! HARD_REGNO_MODE_OK (base_regno, GET_MODE (reg)))
     abort ();
-
+#ifdef ENABLE_CHECKING
+  if (!subreg_offset_representable_p (REGNO (reg), GET_MODE (reg),
+			  	      SUBREG_BYTE (x), mode))
+    abort ();
+#endif
   /* Catch non-congruent offsets too.  */
   byte_offset = SUBREG_BYTE (x);
   if ((byte_offset % GET_MODE_SIZE (mode)) != 0)
