@@ -691,11 +691,14 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
 5.4 Extensions and Backward Compatibility
 
-   Although you can specify -I options to make the preprocessor search
-   the g++-v3/ext and /backward directories, it is better to refer to
-   files there by their path, as in:
-       #include <ext/hash_map>
+   Headers in the ext and backward subdirectories should be referred to
+   by their relative paths:
+      #include <ext/hash_map>
 
+   rather than using -I or other options. This is more portable and
+   forward-compatible. (The situation is the same as that of other
+   headers whose directories are not searched directly, e.g.,
+   <sys/stat.h>, <X11/Xlib.h>.
 
    Extensions to the library have [92]their own page.
      _________________________________________________________________
