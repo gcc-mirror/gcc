@@ -1,5 +1,9 @@
-1998-10-22  Martin v. Löwis <loewis@informatik.hu-berlin.de>
+1998-10-22  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
+	* parse.y (named_class_head): Push into class while parsing the
+	base class list.
+	* decl2.c (push_scope, pop_scope): New functions.
+	* cp-tree.h: Declare them.
         * init.c (build_new_1): Delay cleanup until end of full expression.
 
 1998-10-21  Jason Merrill  <jason@yorick.cygnus.com>

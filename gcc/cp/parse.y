@@ -2235,14 +2235,19 @@ named_class_head:
 		{ $$ = xref_tag (current_aggr, $1, 1); }
 	| named_class_head_sans_basetype_defn 
                 { $<ttype>$ = xref_tag (current_aggr, $1, 0); }
+          /* Class name is unqualified, so we look for base classes
+             in the current scope.  */
           maybe_base_class_list  %prec EMPTY
 		{ 
 		  $$ = $<ttype>2;
 		  if ($3)
                     xref_basetypes (current_aggr, $1, $<ttype>2, $3); 
 		}
-	| named_complex_class_head_sans_basetype maybe_base_class_list
+	| named_complex_class_head_sans_basetype 
+                { push_scope (CP_DECL_CONTEXT ($1)); }
+	  maybe_base_class_list
 		{ 
+                  pop_scope (CP_DECL_CONTEXT ($1));
 		  $$ = TREE_TYPE ($1);
 		  if (TREE_INT_CST_LOW (current_aggr) == union_type 
 		      && TREE_CODE ($$) != UNION_TYPE)
@@ -2250,10 +2255,10 @@ named_class_head:
 		  else if (TREE_CODE ($$) == UNION_TYPE
 			   && TREE_INT_CST_LOW (current_aggr) != union_type)
 		    cp_pedwarn ("non-`union' tag used in declaring `%#T'", $$);
-		  if ($2)
+		  if ($3)
 		    {
 		      maybe_process_partial_specialization ($$);
-		      xref_basetypes (current_aggr, $1, $$, $2); 
+		      xref_basetypes (current_aggr, $1, $$, $3); 
 		    }
 		}
 	;

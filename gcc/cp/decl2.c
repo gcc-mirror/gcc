@@ -4332,6 +4332,30 @@ check_decl_namespace ()
   my_friendly_assert (decl_namespace_list == NULL_TREE, 980711);
 }
 
+/* Enter a class or namespace scope. */
+
+void
+push_scope (t)
+     tree t;
+{
+  if (TREE_CODE (t) == NAMESPACE_DECL)
+    push_decl_namespace (t);
+  else
+    pushclass (t, 2);
+}
+
+/* Leave scope pushed by push_scope. */
+
+void
+pop_scope (t)
+     tree t;
+{
+  if (TREE_CODE (t) == NAMESPACE_DECL)
+    pop_decl_namespace ();
+  else
+    popclass (1);
+}
+
 /* [basic.lookup.koenig] */
 /* A non-zero return value in the functions below indicates an error.
    All nodes allocated in the procedure are on the scratch obstack. */
