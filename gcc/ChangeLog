@@ -1,3 +1,13 @@
+2004-07-09  Jan Beulich  <jbeulich@novell.com>
+
+	* config/i386/i386.c (init_cumulative_args): Set mmx/sse registers
+	available for use only when TARGET_MMX/_SSE is set, and check for
+	variable argument function if any register count is non-zero.
+	(function_arg): Correctly suppress repeated warnings for passing SSE
+	vectors are arguments without SSE enabled.
+	(ix86_function_arg_boundary): Without SSE enabled, the use of what
+	would be SSE register modes does no longer influence the alignment.
+
 2004-07-09  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (std_gimplify_va_arg_expr): Deny ARGS_GROW_DOWNWARD.
