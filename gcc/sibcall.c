@@ -543,6 +543,12 @@ optimize_sibling_and_tail_recursive_calls ()
 	  if (frame_offset)
 	    goto failure;
 
+	  /* Any function that calls setjmp might have longjmp called from
+	     any called function.  ??? We really should represent this
+	     properly in the CFG so that this needn't be special cased.  */
+	  if (current_function_calls_setjmp)
+	    goto failure;
+
 	  /* Taking the address of a local variable is fatal to tail
 	     recursion if the address is used by the recursive call.  */
 	  if (current_function_uses_addressof)
