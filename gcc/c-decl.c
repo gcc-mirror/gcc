@@ -164,6 +164,16 @@ bool c_override_global_bindings_to_false;
    suppress further errors about that identifier in the current
    function.
 
+   The ->type field stores the type of the declaration in this scope;
+   if NULL, the type is the type of the ->decl field.  This is only of
+   relevance for objects with external or internal linkage which may
+   be redeclared in inner scopes, forming composite types that only
+   persist for the duration of those scopes.  In the external scope,
+   this stores the composite of all the types declared for this
+   object, visible or not.  The ->inner_comp field (used only at file
+   scope) stores whether an incomplete array type at file scope was
+   completed at an inner scope to an array size other than 1.
+
    The depth field is copied from the scope structure that holds this
    decl.  It is used to preserve the proper ordering of the ->shadowed
    field (see bind()) and also for a handful of special-case checks.
@@ -176,13 +186,15 @@ bool c_override_global_bindings_to_false;
 struct c_binding GTY((chain_next ("%h.prev")))
 {
   tree decl;			/* the decl bound */
+  tree type;			/* the type in this scope */
   tree id;			/* the identifier it's bound to */
   struct c_binding *prev;	/* the previous decl in this scope */
   struct c_binding *shadowed;	/* the innermost decl shadowed by this one */
   unsigned int depth : 28;      /* depth of this scope */
   BOOL_BITFIELD invisible : 1;  /* normal lookup should ignore this binding */
   BOOL_BITFIELD nested : 1;     /* do not set DECL_CONTEXT when popping */
-  /* two free bits */
+  BOOL_BITFIELD inner_comp : 1; /* incomplete array completed in inner scope */
+  /* one free bit */
 };
 #define B_IN_SCOPE(b1, b2) ((b1)->depth == (b2)->depth)
 #define B_IN_CURRENT_SCOPE(b) ((b)->depth == current_scope->depth)
@@ -436,6 +448,9 @@ bind (tree name, tree decl, struct c_scope *scope, bool invisible, bool nested)
   b->depth = scope->depth;
   b->invisible = invisible;
   b->nested = nested;
+  b->inner_comp = 0;
+
+  b->type = 0;
 
   b->prev = scope->bindings;
   scope->bindings = b;
@@ -758,6 +773,12 @@ pop_scope (void)
 	      && scope != external_scope)
 	    warning ("%Junused variable `%D'", p, p);
 
+	  if (b->inner_comp)
+	    {
+	      error ("%Jtype of array %qD completed incompatibly with"
+		     " implicit initialization", p, p);
+	    }
+
 	  /* Fall through.  */
 	case TYPE_DECL:
 	case CONST_DECL:
@@ -797,6 +818,8 @@ pop_scope (void)
 	      if (I_SYMBOL_BINDING (b->id) != b) abort ();
 #endif
 	      I_SYMBOL_BINDING (b->id) = b->shadowed;
+	      if (b->shadowed && b->shadowed->type)
+		TREE_TYPE (b->shadowed->decl) = b->shadowed->type;
 	    }
 	  break;
 
@@ -1357,15 +1380,23 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
       else if (!DECL_FILE_SCOPE_P (newdecl))
 	{
 	  if (DECL_EXTERNAL (newdecl))
-	    abort ();
+	    {
+	      /* Extern with initializer at block scope, which will
+		 already have received an error.  */
+	    }
 	  else if (DECL_EXTERNAL (olddecl))
-	    error ("%Jdeclaration of '%D' with no linkage follows "
-		   "extern declaration", newdecl, newdecl);
+	    {
+	      error ("%Jdeclaration of '%D' with no linkage follows "
+		     "extern declaration", newdecl, newdecl);
+	      locate_old_decl (olddecl, error);
+	    }
 	  else
-	    error ("%Jredeclaration of '%D' with no linkage",
-		   newdecl, newdecl);
+	    {
+	      error ("%Jredeclaration of '%D' with no linkage",
+		     newdecl, newdecl);
+	      locate_old_decl (olddecl, error);
+	    }
 
-	  locate_old_decl (olddecl, error);
 	  return false;
 	}
     }
@@ -1895,6 +1926,9 @@ pushdecl (tree x)
   b = I_SYMBOL_BINDING (name);
   if (b && B_IN_SCOPE (b, scope))
     {
+      if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
+	  && COMPLETE_TYPE_P (TREE_TYPE (x)))
+	b->inner_comp = false;
       if (duplicate_decls (x, b->decl))
 	return b->decl;
       else
@@ -1915,13 +1949,63 @@ pushdecl (tree x)
      have compatible type; otherwise, the behavior is undefined.)  */
   if (DECL_EXTERNAL (x) || scope == file_scope)
     {
+      tree type = TREE_TYPE (x);
+      tree vistype = 0;
+      tree visdecl = 0;
+      bool type_saved = false;
+      if (b && !B_IN_EXTERNAL_SCOPE (b)
+	  && (TREE_CODE (b->decl) == FUNCTION_DECL
+	      || TREE_CODE (b->decl) == VAR_DECL)
+	  && DECL_FILE_SCOPE_P (b->decl))
+	{
+	  visdecl = b->decl;
+	  vistype = TREE_TYPE (visdecl);
+	}
       if (warn_nested_externs
 	  && scope != file_scope
 	  && !DECL_IN_SYSTEM_HEADER (x))
 	warning ("nested extern declaration of '%D'", x);
 
       while (b && !B_IN_EXTERNAL_SCOPE (b))
-	b = b->shadowed;
+	{
+	  /* If this decl might be modified, save its type.  This is
+	     done here rather than when the decl is first bound
+	     because the type may change after first binding, through
+	     being completed or through attributes being added.  If we
+	     encounter multiple such decls, only the first should have
+	     its type saved; the others will already have had their
+	     proper types saved and the types will not have changed as
+	     their scopes will not have been re-entered.  */
+	  if (DECL_FILE_SCOPE_P (b->decl) && !type_saved)
+	    {
+	      b->type = TREE_TYPE (b->decl);
+	      type_saved = true;
+	    }
+	  if (B_IN_FILE_SCOPE (b)
+	      && TREE_CODE (b->decl) == VAR_DECL
+	      && TREE_STATIC (b->decl)
+	      && TREE_CODE (TREE_TYPE (b->decl)) == ARRAY_TYPE
+	      && !TYPE_DOMAIN (TREE_TYPE (b->decl))
+	      && TREE_CODE (type) == ARRAY_TYPE
+	      && TYPE_DOMAIN (type)
+	      && TYPE_MAX_VALUE (TYPE_DOMAIN (type))
+	      && !integer_zerop (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+	    {
+	      /* Array type completed in inner scope, which should be
+		 diagnosed if the completion does not have size 1 and
+		 it does not get completed in the file scope.  */
+	      b->inner_comp = true;
+	    }
+	  b = b->shadowed;
+	}
+
+      /* If a matching external declaration has been found, set its
+	 type to the composite of all the types of that declaration.
+	 After the consistency checks, it will be reset to the
+	 composite of the visible types only.  */
+      if (b && (TREE_PUBLIC (x) || same_translation_unit_p (x, b->decl))
+	  && b->type)
+	TREE_TYPE (b->decl) = b->type;
 
       /* The point of the same_translation_unit_p check here is,
 	 we want to detect a duplicate decl for a construct like
@@ -1932,13 +2016,34 @@ pushdecl (tree x)
 	  && (TREE_PUBLIC (x) || same_translation_unit_p (x, b->decl))
 	  && duplicate_decls (x, b->decl))
 	{
+	  tree thistype;
+	  thistype = (vistype ? composite_type (vistype, type) : type);
+	  b->type = TREE_TYPE (b->decl);
+	  if (TREE_CODE (b->decl) == FUNCTION_DECL && DECL_BUILT_IN (b->decl))
+	    thistype
+	      = build_type_attribute_variant (thistype,
+					      TYPE_ATTRIBUTES (b->type));
+	  TREE_TYPE (b->decl) = thistype;
 	  bind (name, b->decl, scope, /*invisible=*/false, /*nested=*/true);
 	  return b->decl;
 	}
       else if (TREE_PUBLIC (x))
 	{
-	  bind (name, x, external_scope, /*invisible=*/true, /*nested=*/false);
-	  nested = true;
+	  if (visdecl && !b && duplicate_decls (x, visdecl))
+	    {
+	      /* An external declaration at block scope referring to a
+		 visible entity with internal linkage.  The composite
+		 type will already be correct for this scope, so we
+		 just need to fall through to make the declaration in
+		 this scope.  */
+	      nested = true;
+	    }
+	  else
+	    {
+	      bind (name, x, external_scope, /*invisible=*/true,
+		    /*nested=*/false);
+	      nested = true;
+	    }
 	}
     }
   /* Similarly, a declaration of a function with static linkage at
@@ -2056,7 +2161,16 @@ implicit_decl_warning (tree id, tree olddecl)
 tree
 implicitly_declare (tree functionid)
 {
-  tree decl = lookup_name_in_scope (functionid, external_scope);
+  struct c_binding *b;
+  tree decl = 0;
+  for (b = I_SYMBOL_BINDING (functionid); b; b = b->shadowed)
+    {
+      if (B_IN_SCOPE (b, external_scope))
+	{
+	  decl = b->decl;
+	  break;
+	}
+    }
 
   if (decl)
     {
@@ -2073,10 +2187,13 @@ implicitly_declare (tree functionid)
 	}
       else
 	{
+	  tree newtype = default_function_type;
+	  if (b->type)
+	    TREE_TYPE (decl) = b->type;
 	  /* Implicit declaration of a function already declared
 	     (somehow) in a different scope, or as a built-in.
 	     If this is the first time this has happened, warn;
-	     then recycle the old declaration.  */
+	     then recycle the old declaration but with the new type.  */
 	  if (!C_DECL_IMPLICIT (decl))
 	    {
 	      implicit_decl_warning (functionid, decl);
@@ -2084,21 +2201,27 @@ implicitly_declare (tree functionid)
 	    }
 	  if (DECL_BUILT_IN (decl))
 	    {
-	      if (!comptypes (default_function_type, TREE_TYPE (decl)))
+	      newtype = build_type_attribute_variant (newtype,
+						      TYPE_ATTRIBUTES
+						      (TREE_TYPE (decl)));
+	      if (!comptypes (newtype, TREE_TYPE (decl)))
 		{
 		  warning ("incompatible implicit declaration of built-in"
 			   " function %qD", decl);
+		  newtype = TREE_TYPE (decl);
 		}
 	    }
 	  else
 	    {
-	      if (!comptypes (default_function_type, TREE_TYPE (decl)))
+	      if (!comptypes (newtype, TREE_TYPE (decl)))
 		{
 		  error ("incompatible implicit declaration of function %qD",
 			 decl);
 		  locate_old_decl (decl, error);
 		}
 	    }
+	  b->type = TREE_TYPE (decl);
+	  TREE_TYPE (decl) = newtype;
 	  bind (functionid, decl, current_scope,
 		/*invisible=*/false, /*nested=*/true);
 	  return decl;

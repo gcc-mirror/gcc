@@ -1,3 +1,22 @@
+2004-08-26  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/13801
+	* c-decl.c (struct c_binding): Add type and inner_comp fields.
+	(bind): Set type and inner_comp fields.
+	(pop_scope): Restore type of decl to the correct type from an
+	outer scope.  Give error when popping file scope for incomplete
+	arrays completed incompatibly with default initialization in an
+	inner scope.
+	(diagnose_mismatched_decls): Handle externs with initializers at
+	block scope.
+	(pushdecl): Set type of external declaration at block scope based
+	only on the visible declarations.  Save type when changing the
+	type of a declaration.  Merge an external declaration at block
+	scope with a visible static declaration at file scope.
+	(implicitly_declare): Give recycled old declaration the new type
+	except for incompatible declarations of built-in functions, saving
+	the old type.
+
 2004-08-26  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-parse.in (OBJC_TYPE_QUAL): New %token for ObjC use.

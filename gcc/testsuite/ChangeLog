@@ -1,3 +1,12 @@
+2004-08-26  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/13801
+	* gcc.dg/redecl-3.c, gcc.dg/redecl-4.c, gcc.dg/redecl-6.c,
+	gcc.dg/redecl-7.c, gcc.dg/redecl-8.c, gcc.dg/redecl-9.c,
+	gcc.dg/redecl-10.c, gcc.dg/debug/redecl-1.c,
+	gcc.dg/debug/redecl-2.c, gcc.dg/debug/redecl-3.c,
+	gcc.dg/debug/redecl-4.c, gcc.dg/debug/redecl-5.c: New tests.
+
 2004-08-26  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.c-torture/compile/pr17119.c: New test.
