@@ -2252,13 +2252,13 @@ static const enum shift_alg shift_alg_si[3][3][32] = {
     /* 16   17   18   19   20   21   22   23  */
     /* 24   25   26   27   28   29   30   31  */
     { INL, INL, INL, INL, INL, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
       SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, ROT, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+      SPC, LOP, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_ASHIFT   */
     { INL, INL, INL, INL, INL, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
+      SPC, LOP, LOP, LOP, LOP, LOP, LOP, SPC,
       SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
-      SPC, LOP, LOP, LOP, ROT, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+      SPC, LOP, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_LSHIFTRT */
     { INL, INL, INL, INL, INL, LOP, LOP, LOP,
       SPC, LOP, LOP, LOP, LOP, LOP, LOP, LOP,
       SPC, SPC, SPC, SPC, LOP, LOP, LOP, LOP,
@@ -2271,13 +2271,13 @@ static const enum shift_alg shift_alg_si[3][3][32] = {
     /* 16   17   18   19   20   21   22   23  */
     /* 24   25   26   27   28   29   30   31  */
     { INL, INL, INL, INL, INL, INL, INL, INL,
-      INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
+      INL, INL, INL, LOP, LOP, LOP, LOP, SPC,
       SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
-      SPC, LOP, LOP, LOP, ROT, ROT, ROT, ROT }, /* SHIFT_ASHIFT   */
+      SPC, LOP, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_ASHIFT   */
     { INL, INL, INL, INL, INL, INL, INL, INL,
-      INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
+      INL, INL, INL, LOP, LOP, LOP, LOP, SPC,
       SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
-      SPC, LOP, LOP, LOP, ROT, ROT, ROT, ROT }, /* SHIFT_LSHIFTRT */
+      SPC, LOP, LOP, LOP, ROT, ROT, ROT, SPC }, /* SHIFT_LSHIFTRT */
     { INL, INL, INL, INL, INL, INL, INL, INL,
       INL, INL, INL, LOP, LOP, LOP, LOP, LOP,
       SPC, SPC, SPC, SPC, SPC, SPC, LOP, LOP,
@@ -2514,6 +2514,18 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      goto end;
 	    }
 	}
+      else if (count == 15 && !TARGET_H8300)
+	{
+	  switch (shift_type)
+	    {
+	    case SHIFT_ASHIFT:
+	      info->special = "shlr.w\t%e0\n\tmov.w\t%f0,%e0\n\txor.w\t%f0,%f0\n\trotxr.l\t%S0";
+	      goto end;
+	    case SHIFT_LSHIFTRT:
+	      info->special = "shll.w\t%e0\n\tmov.w\t%e0,%f0\n\txor.w\t%e0,%e0\n\trotxl.l\t%S0";
+	      goto end;
+	    }
+	}
       else if ((TARGET_H8300 && count == 16)
 	       || (TARGET_H8300H && 16 <= count && count <= 19)
 	       || (TARGET_H8300S && 16 <= count && count <= 21))
@@ -2559,22 +2571,33 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	}
       else if (count == 31)
 	{
-	  if (shift_type == SHIFT_ASHIFTRT)
+	  if (TARGET_H8300)
 	    {
-	      if (TARGET_H8300)
-		info->special = "shll\t%z0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
-	      else
-		info->special = "shll\t%e0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
-	      goto end;
+	      switch (shift_type)
+		{
+		case SHIFT_ASHIFT:
+		  info->special = "sub.w\t%e0,%e0\n\tshlr\t%w0\n\tmov.w\t%e0,%f0\n\trotxr\t%z0";
+		  goto end;
+		case SHIFT_LSHIFTRT:
+		  info->special = "sub.w\t%f0,%f0\n\tshll\t%z0\n\tmov.w\t%f0,%e0\n\trotxl\t%w0";
+		  goto end;
+		case SHIFT_ASHIFTRT:
+		  info->special = "shll\t%z0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
+		  goto end;
+		}
 	    }
 	  else
 	    {
-	      if (TARGET_H8300)
+	      switch (shift_type)
 		{
-		  if (shift_type == SHIFT_ASHIFT)
-		    info->special = "sub.w\t%e0,%e0\n\tshlr\t%w0\n\tmov.w\t%e0,%f0\n\trotxr\t%z0";
-		  else
-		    info->special = "sub.w\t%f0,%f0\n\tshll\t%z0\n\tmov.w\t%f0,%e0\n\trotxl\t%w0";
+		case SHIFT_ASHIFT:
+		  info->special = "shlr.l\t%S0\n\txor.l\t%S0,%S0\n\trotxr.l\t%S0";
+		  goto end;
+		case SHIFT_LSHIFTRT:
+		  info->special = "shll.l\t%S0\n\txor.l\t%S0,%S0\n\trotxl.l\t%S0";
+		  goto end;
+		case SHIFT_ASHIFTRT:
+		  info->special = "shll\t%e0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
 		  goto end;
 		}
 	    }
