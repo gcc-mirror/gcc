@@ -113,6 +113,8 @@ static tree fold_inf_compare (enum tree_code, tree, tree, tree);
 static bool reorder_operands_p (tree, tree);
 static bool tree_swap_operands_p (tree, tree, bool);
 
+static tree fold_negate_const (tree, tree);
+
 /* The following constants represent a bit based encoding of GCC's
    comparison operators.  This encoding simplifies transformations
    on relational comparison operators, such as AND and OR.  */
@@ -956,20 +958,7 @@ negate_expr (tree t)
   switch (TREE_CODE (t))
     {
     case INTEGER_CST:
-      {
-	unsigned HOST_WIDE_INT low;
-	HOST_WIDE_INT high;
-	int overflow = neg_double (TREE_INT_CST_LOW (t),
-				   TREE_INT_CST_HIGH (t),
-				   &low, &high);
-	tem = build_int_2 (low, high);
-	TREE_TYPE (tem) = type;
-	TREE_OVERFLOW (tem)
-	  = (TREE_OVERFLOW (t)
-	     | force_fit_type (tem, overflow && !TREE_UNSIGNED (type)));
-	TREE_CONSTANT_OVERFLOW (tem)
-	  = TREE_OVERFLOW (tem) | TREE_CONSTANT_OVERFLOW (t);
-      }
+      tem = fold_negate_const (t, type);
       if (! TREE_OVERFLOW (tem)
 	  || TREE_UNSIGNED (type)
 	  || ! flag_trapv)
@@ -977,7 +966,7 @@ negate_expr (tree t)
       break;
 
     case REAL_CST:
-      tem = build_real (type, REAL_VALUE_NEGATE (TREE_REAL_CST (t)));
+      tem = fold_negate_const (t, type);
       /* Two's complement FP formats, such as c4x, may overflow.  */
       if (! TREE_OVERFLOW (tem) || ! flag_trapping_math)
 	return fold_convert (type, tem);
@@ -9047,6 +9036,41 @@ rtl_expr_nonnegative_p (rtx r)
     default:
       return 0;
     }
+}
+
+/* Return the tree for neg (ARG0) when ARG0 is known to be either
+   an integer constant or real constant.
+
+   TYPE is the type of the result.  */
+
+static tree
+fold_negate_const (tree arg0, tree type)
+{
+  tree t = NULL_TREE;
+
+  if (TREE_CODE (arg0) == INTEGER_CST)
+    {
+      unsigned HOST_WIDE_INT low;
+      HOST_WIDE_INT high;
+      int overflow = neg_double (TREE_INT_CST_LOW (arg0),
+				 TREE_INT_CST_HIGH (arg0),
+				 &low, &high);
+      t = build_int_2 (low, high);
+      TREE_TYPE (t) = type;
+      TREE_OVERFLOW (t)
+	= (TREE_OVERFLOW (arg0)
+	   | force_fit_type (t, overflow && !TREE_UNSIGNED (type)));
+      TREE_CONSTANT_OVERFLOW (t)
+	= TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg0);
+    }
+  else if (TREE_CODE (arg0) == REAL_CST)
+    t = build_real (type, REAL_VALUE_NEGATE (TREE_REAL_CST (arg0)));
+#ifdef ENABLE_CHECKING
+  else
+    abort ();
+#endif
+    
+  return t;
 }
 
 #include "gt-fold-const.h"

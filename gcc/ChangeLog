@@ -1,3 +1,9 @@
+2004-03-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* fold-const.c (negate_expr): Move the handling of constants
+	...
+	(fold_negate_const): ... here.
+
 2004-03-19  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* langhooks-def.h (LANG_HOOKS_HASH_TYPES): New macro and hook.
