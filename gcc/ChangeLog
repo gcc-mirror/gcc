@@ -1,3 +1,7 @@
+2004-12-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/sysv4.h: Define RELOCATABLE_NEEDS_FIXUP to 1.
+
 2004-12-06  Zdenek Dvorak  <dvorakz@suse.cz>
 	    Kazu Hirata  <kazu@cs.umass.edu>
 
