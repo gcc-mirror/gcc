@@ -13838,10 +13838,11 @@ start_function (declspecs, declarator, attrs, flags)
     cplus_decl_attributes (decl1, NULL_TREE, attrs);
 
   if (!building_stmt_tree ())
-    {
-      GNU_xref_function (decl1, current_function_parms);
-      make_function_rtl (decl1);
-    }
+    GNU_xref_function (decl1, current_function_parms);
+
+  /* We need to do this even if we aren't expanding yet so that
+     assemble_external works.  */
+  make_function_rtl (decl1);
 
   /* Promote the value to int before returning it.  */
   if (C_PROMOTING_INTEGER_TYPE_P (restype))
