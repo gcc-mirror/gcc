@@ -1,3 +1,12 @@
+2005-02-03  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/17401
+	* parser.c (cp_parser_pure_specifier): Emit a specific error
+	message with an invalid pure specifier.
+	* decl2.c (grok_function_init): Remove.
+	(grokfield): An initializer for a method is a always a pure
+	specifier.
+
 2005-02-02  Matt Austern  <austern@apple.com>
 
 	PR c++/19628

@@ -1,3 +1,8 @@
+2005-02-03  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/17401
+	* g++.dg/parse/error25.C: New test.
+
 2005-02-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/execute/20050203-1.c: New.
