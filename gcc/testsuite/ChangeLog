@@ -1,3 +1,7 @@
+2003-06-25  Josef Zlomek  <zlomekj@suse.cz>
+
+	* gcc.dg/20030625-1.c: New test.
+
 2003-06-24  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/compile/20030624-1.c: New test case.
