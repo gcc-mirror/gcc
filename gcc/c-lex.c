@@ -1271,7 +1271,7 @@ yylex ()
 
 	if (floatflag != NOT_FLOAT)
 	  {
-	    tree type = long_double_type_node;
+	    tree type = double_type_node;
 	    int garbage_chars = 0, exceeds_double = 0;
 	    int imag = 0;
 	    REAL_VALUE_TYPE value;
