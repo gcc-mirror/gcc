@@ -147,7 +147,7 @@ extern const enum tree_code_class tree_code_type[];
    expression.  */
 
 #define IS_EXPR_CODE_CLASS(CLASS)\
-	(IN_RANGE (CLASS, tcc_reference, tcc_expression))
+	(((CLASS) - tcc_reference) <= (tcc_expression - tcc_reference))
 
 /* Returns nonzero iff NODE is an expression of some kind.  */
 
