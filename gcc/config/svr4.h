@@ -132,7 +132,7 @@ Boston, MA 02111-1307, USA.
    which is either `gcrtn.o' or `crtn.o'.  */
 
 #undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend.o%s %{pg:gcrtn.o}%{!pg:crtn.o%s}"
+#define ENDFILE_SPEC "crtend.o%s %{pg:gcrtn.o%s}%{!pg:crtn.o%s}"
 
 /* Provide a LINK_SPEC appropriate for svr4.  Here we provide support
    for the special GCC options -static, -shared, and -symbolic which
