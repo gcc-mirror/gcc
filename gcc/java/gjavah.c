@@ -1137,11 +1137,11 @@ throwable_p (signature)
 				    (htab_del) free);
 
       /* Make sure the root classes show up in the tables.  */
-      str = strdup ("java.lang.Throwable");
+      str = xstrdup ("java.lang.Throwable");
       slot = htab_find_slot (throw_hash, str, INSERT);
       *slot = (PTR) str;
 
-      str = strdup ("java.lang.Object");
+      str = xstrdup ("java.lang.Object");
       slot = htab_find_slot (non_throw_hash, str, INSERT);
       *slot = (PTR) str;
 
