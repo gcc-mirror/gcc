@@ -1917,7 +1917,7 @@ redirect_edge_and_branch_force (e, target)
   new_edge->probability = e->probability;
   new_edge->count = e->count;
 
-  if (e->dest->global_live_at_start)
+  if (target->global_live_at_start)
     {
       new_bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
       new_bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
