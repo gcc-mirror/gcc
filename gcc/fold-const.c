@@ -2088,6 +2088,10 @@ invert_truthvalue (arg)
 
     case SAVE_EXPR:
       return build1 (TRUTH_NOT_EXPR, type, arg);
+
+    case CLEANUP_POINT_EXPR:
+      return build1 (CLEANUP_POINT_EXPR, type,
+		     invert_truthvalue (TREE_OPERAND (arg, 0)));
     }
   if (TREE_CODE (TREE_TYPE (arg)) != BOOLEAN_TYPE)
     abort ();
