@@ -47,9 +47,17 @@ libgcc1-elf.a: stamp-crtS libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	-if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc1-elf.a; else true; fi
 	mv tmplibgcc1-elf.a libgcc1-elf.a
 
-libgcc2-elf.a: stamp-crtS libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
-   machmode.h longlong.h gbl-ctors.h config.status
+libgcc2-elf.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
+   $(LANG_LIB2FUNCS) machmode.h longlong.h gbl-ctors.h config.status
+# Actually build it in tmplibgcc2.a, then rename at end,
+# so that libgcc2.a itself remains nonexistent if compilation is aborted.
 	-rm -f tmplibgcc2-elf.a
+# -e causes any failing command to make this rule fail.
+# -e doesn't work in certain shells, so we test $$? as well.
+# lynx has a broken ar, it always complains when the initial library is
+# empty, thus this command works only if we don't do -e
+# There is a trailing backslash (\) deleted from the following line.
+#	set -e;
 	for name in $(LIB2FUNCS); \
 	do \
 	  echo $${name}; \
@@ -59,23 +67,47 @@ libgcc2-elf.a: stamp-crtS libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA)
 	  $(AR) $(AR_FLAGS) tmplibgcc2-elf.a $${name}$(objext); \
 	  rm -f $${name}$(objext); \
 	done
-	for file in .. $(LIB2FUNCS_EXTRA); \
+# Some shells crash when a loop has no items.
+# So make sure there is always at least one--`..'.
+# Then ignore it.
+# We don't use -e here because there are if statements
+# that should not make the command give up when the if condition is false.
+# Instead, we test for failure after each command where it matters.
+	for file in .. $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS); \
 	do \
 	  if [ x$${file} != x.. ]; then \
-	    name=`echo $${file} | sed -e 's/[.][cS]$$//' -e 's/[.]asm$$//'`; \
+	    name=`echo $${file} | sed -e 's/[.][cSo]$$//' -e 's/[.]asm$$//' -e 's/[.]txt$$//'`; \
 	    oname=` echo $${name} | sed -e 's,.*/,,'`; \
-	    echo $${name}; \
-	    if [ $${name}.asm = $${file} ]; then \
-	      cp $${file} $${name}.s || exit 1; file=$${name}.s; \
-	    else true; fi; \
-	    $(GCC_FOR_TARGET) -melf $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
-	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR) $(AR_FLAGS) tmplibgcc2-elf.a $${oname}$(objext); \
-	    rm -f $${name}.s $${oname}$(objext); \
+	    if [ $${name}.txt = $${file} ]; then \
+	      for f in .. `cat $${file}`; do if [ x$${f} != x.. ]; then \
+		$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	  	  AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" \
+		  CFLAGS="$(CFLAGS) " HOST_PREFIX="$(HOST_PREFIX)" \
+		  HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+		  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) -melf" $${f}; \
+	        if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	        $(AR) $(AR_FLAGS) tmplibgcc2-elf.a $${f}; \
+	        rm -f $${f}; \
+	      fi; done; \
+	    else \
+	      echo $${name}; \
+	      if [ $${name}.asm = $${file} ]; then \
+		cp $${file} $${name}.s || exit 1; file=$${name}.s; \
+	      else true; fi; \
+	      $(GCC_FOR_TARGET) -melf $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
+	      if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	      $(AR) $(AR_FLAGS) tmplibgcc2-elf.a $${oname}$(objext); \
+	      rm -f $${name}.s $${oname}$(objext); \
+	    fi; \
 	  else true; \
 	  fi; \
 	done
 	mv tmplibgcc2-elf.a libgcc2-elf.a
+# These lines were deleted from above the mv command
+# because ranlibing libgcc.a itself should suffice.
+#	-if [ x${HPUX_GAS} = x ] ; then \
+#	  if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc2.a; else true; fi; \
+#	else true; fi
 
 # Combine the various libraries into a single library, libgcc.a.
 libgcc-elf.a: libgcc1-elf.a libgcc2-elf.a
