@@ -1629,7 +1629,7 @@ comdat_linkage (decl)
 	  DECL_COMMON (decl) = 1;
 	  DECL_INITIAL (decl) = error_mark_node;
 	}
-      else
+      else if (!DECL_EXPLICIT_INSTANTIATION (decl))
 	{
 	  /* We can't do anything useful; leave vars for explicit
 	     instantiation.  */
