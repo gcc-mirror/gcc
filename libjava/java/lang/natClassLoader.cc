@@ -165,9 +165,7 @@ java::lang::ClassLoader::linkClass0 (java::lang::Class *klass)
 
 #ifdef INTERPRETER
   if (_Jv_IsInterpretedClass (klass))
-    {
-      _Jv_PrepareClass (klass);
-    }
+    _Jv_PrepareClass (klass);
 #endif
 
   _Jv_PrepareCompiledClass (klass);
@@ -230,7 +228,7 @@ java::lang::ClassLoader::findLoadedClass (jstring name)
     lives in resolve.cc which is entirely conditionally compiled.
  */
 void
-_Jv_PrepareCompiledClass(jclass klass)
+_Jv_PrepareCompiledClass (jclass klass)
 {
   if (klass->state >= JV_STATE_LINKED)
     return;
@@ -270,23 +268,33 @@ _Jv_PrepareCompiledClass(jclass klass)
 	}
     }
 
-  jfieldID f = JvGetFirstStaticField (klass);
-  for (int n = JvNumStaticFields (klass); n > 0; --n)
+#ifdef INTERPRETER
+  // FIXME: although the comment up top says that this function is
+  // only called for compiled classes, it is actually called for every
+  // class.
+  if (! _Jv_IsInterpretedClass (klass))
     {
-      int mod = f->getModifiers ();
-      // Maybe the compiler should mark these with
-      // _Jv_FIELD_CONSTANT_VALUE?  For now we just know that this
-      // only happens for constant strings.
-      if (f->getClass () == &StringClass
-	  && java::lang::reflect::Modifier::isStatic (mod)
-	  && java::lang::reflect::Modifier::isFinal (mod))
+#endif /* INTERPRETER */
+      jfieldID f = JvGetFirstStaticField (klass);
+      for (int n = JvNumStaticFields (klass); n > 0; --n)
 	{
-	  jstring *strp = (jstring *) f->u.addr;
-	  if (*strp)
-	    *strp = _Jv_NewStringUtf8Const ((_Jv_Utf8Const *) *strp);
+	  int mod = f->getModifiers ();
+	  // Maybe the compiler should mark these with
+	  // _Jv_FIELD_CONSTANT_VALUE?  For now we just know that this
+	  // only happens for constant strings.
+	  if (f->getClass () == &StringClass
+	      && java::lang::reflect::Modifier::isStatic (mod)
+	      && java::lang::reflect::Modifier::isFinal (mod))
+	    {
+	      jstring *strp = (jstring *) f->u.addr;
+	      if (*strp)
+		*strp = _Jv_NewStringUtf8Const ((_Jv_Utf8Const *) *strp);
+	    }
+	  f = f->getNextField ();
 	}
-      f = f->getNextField ();
+#ifdef INTERPRETER
     }
+#endif /* INTERPRETER */
 
   klass->notifyAll ();
 }
