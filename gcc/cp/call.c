@@ -657,7 +657,7 @@ standard_conversion (to, from, expr)
   if ((TYPE_PTRFN_P (to) || TYPE_PTRMEMFUNC_P (to))
       && expr && type_unknown_p (expr))
     {
-      expr = instantiate_type (to, expr, 0);
+      expr = instantiate_type (to, expr, itf_none);
       if (expr == error_mark_node)
 	return NULL_TREE;
       from = TREE_TYPE (expr);
@@ -1043,7 +1043,7 @@ reference_binding (rto, rfrom, expr, flags)
 
   if (TREE_CODE (to) == FUNCTION_TYPE && expr && type_unknown_p (expr))
     {
-      expr = instantiate_type (to, expr, 0);
+      expr = instantiate_type (to, expr, itf_none);
       if (expr == error_mark_node)
 	return NULL_TREE;
       from = TREE_TYPE (expr);
@@ -3555,7 +3555,7 @@ build_op_delete_call (code, addr, size, flags, placement)
   if (type != TYPE_MAIN_VARIANT (type))
     addr = cp_convert (build_pointer_type (TYPE_MAIN_VARIANT (type)), addr);
 
-  fn = instantiate_type (fntype, fns, 2);
+  fn = instantiate_type (fntype, fns, itf_no_attributes);
 
   if (fn != error_mark_node)
     {
@@ -3575,7 +3575,7 @@ build_op_delete_call (code, addr, size, flags, placement)
 			tree_cons (NULL_TREE, sizetype, void_list_node));
   fntype = build_function_type (void_type_node, argtypes);
 
-  fn = instantiate_type (fntype, fns, 2);
+  fn = instantiate_type (fntype, fns, itf_no_attributes);
 
   if (fn != error_mark_node)
     {
@@ -3694,7 +3694,7 @@ convert_like_real (convs, expr, fn, argnum, inner)
       }
     case IDENTITY_CONV:
       if (type_unknown_p (expr))
-	expr = instantiate_type (TREE_TYPE (convs), expr, 1);
+	expr = instantiate_type (TREE_TYPE (convs), expr, itf_complain);
       return expr;
     case AMBIG_CONV:
       /* Call build_user_type_conversion again for the error.  */

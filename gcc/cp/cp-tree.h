@@ -3204,6 +3204,13 @@ typedef enum special_function_kind {
   sfk_conversion           /* A conversion operator.  */
 } special_function_kind;
 
+/* Bitmask flags to pass to instantiate_type.  */
+typedef enum instantiate_type_flags {
+  itf_none = 0,               /* nothing special */
+  itf_complain = 1 << 0,      /* complain about errors */
+  itf_no_attributes = 1 << 1  /* ignore attributes on comparisons */
+} instantiate_type_flags;
+
 /* Non-zero means that if a label exists, and no other identifier
    applies, use the value of the label.  */
 extern int flag_labels_ok;
@@ -3822,7 +3829,7 @@ extern void push_nested_class			PARAMS ((tree, int));
 extern void pop_nested_class			PARAMS ((void));
 extern void push_lang_context			PARAMS ((tree));
 extern void pop_lang_context			PARAMS ((void));
-extern tree instantiate_type			PARAMS ((tree, tree, int));
+extern tree instantiate_type			PARAMS ((tree, tree, enum instantiate_type_flags));
 extern void print_class_statistics		PARAMS ((void));
 extern int first_vfun_index                     PARAMS ((tree));
 extern void build_self_reference		PARAMS ((void));

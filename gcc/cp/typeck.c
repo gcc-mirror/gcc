@@ -3344,7 +3344,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
   /* DTRT if one side is an overloaded function, but complain about it.  */
   if (type_unknown_p (op0))
     {
-      tree t = instantiate_type (TREE_TYPE (op1), op0, 0);
+      tree t = instantiate_type (TREE_TYPE (op1), op0, itf_none);
       if (t != error_mark_node)
 	{
 	  cp_pedwarn ("assuming cast to type `%T' from overloaded function",
@@ -3354,7 +3354,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     }
   if (type_unknown_p (op1))
     {
-      tree t = instantiate_type (TREE_TYPE (op0), op1, 0);
+      tree t = instantiate_type (TREE_TYPE (op0), op1, itf_none);
       if (t != error_mark_node)
 	{
 	  cp_pedwarn ("assuming cast to type `%T' from overloaded function",
@@ -6199,7 +6199,7 @@ build_ptrmemfunc (type, pfn, force)
     }
 
   if (type_unknown_p (pfn))
-    return instantiate_type (type, pfn, 1);
+    return instantiate_type (type, pfn, itf_complain);
 
   fn = TREE_OPERAND (pfn, 0);
   my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 0);
@@ -6464,7 +6464,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	     overloaded function.  Call instantiate_type to get error
 	     messages.  */
 	  if (rhstype == unknown_type_node)
-	    instantiate_type (type, rhs, 1);
+	    instantiate_type (type, rhs, itf_complain);
 	  else if (fndecl)
 	    cp_error ("cannot convert `%T' to `%T' for argument `%P' to `%D'",
 		      rhstype, type, parmnum, fndecl);
