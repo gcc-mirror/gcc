@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM RS/6000.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 
-   2000, 2001, 2002 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -3289,7 +3289,10 @@ function_arg_partial_nregs (cum, mode, type, named)
    the argument itself.  The pointer is passed in whatever way is
    appropriate for passing a pointer to that type.
 
-   Under V.4, structures and unions are passed by reference.  */
+   Under V.4, structures and unions are passed by reference.
+
+   As an extension to all ABIs, variable sized types are passed by
+   reference.  */
 
 int
 function_arg_pass_by_reference (cum, mode, type, named)
@@ -3307,8 +3310,7 @@ function_arg_pass_by_reference (cum, mode, type, named)
 
       return 1;
     }
-
-  return 0;
+  return type && int_size_in_bytes (type) <= 0;
 }
 
 /* Perform any needed actions needed for a function that is receiving a
@@ -3547,7 +3549,28 @@ rs6000_va_arg (valist, type)
   rtx lab_false, lab_over, addr_rtx, r;
 
   if (DEFAULT_ABI != ABI_V4)
-    return std_expand_builtin_va_arg (valist, type);
+    {
+      /* Variable sized types are passed by reference.  */
+      if (int_size_in_bytes (type) <= 0)
+	{
+	  u = build_pointer_type (type);
+
+	  /* Args grow upward.  */
+	  t = build (POSTINCREMENT_EXPR, TREE_TYPE (valist), valist,
+		     build_int_2 (POINTER_SIZE / BITS_PER_UNIT, 0));
+	  TREE_SIDE_EFFECTS (t) = 1;
+
+	  t = build1 (NOP_EXPR, build_pointer_type (u), t);
+	  TREE_SIDE_EFFECTS (t) = 1;
+
+	  t = build1 (INDIRECT_REF, u, t);
+	  TREE_SIDE_EFFECTS (t) = 1;
+
+	  return expand_expr (t, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+	}
+      else
+	return std_expand_builtin_va_arg (valist, type);
+    }
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
   f_fpr = TREE_CHAIN (f_gpr);
