@@ -1089,6 +1089,9 @@ case $basic_machine in
 	*-be)
 		os=-beos
 		;;
+	i370-*)
+		os=-openedition
+		;;
 	*-ibm)
 		os=-aix
 		;;
