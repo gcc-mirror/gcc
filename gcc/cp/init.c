@@ -1090,6 +1090,8 @@ build_aggr_init (tree exp, tree init, int flags)
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
+      tree itype;
+
       /* An array may not be initialized use the parenthesized
 	 initialization form -- unless the initializer is "()".  */
       if (init && TREE_CODE (init) == TREE_LIST)
@@ -1099,7 +1101,7 @@ build_aggr_init (tree exp, tree init, int flags)
 	}
       /* Must arrange to initialize each element of EXP
 	 from elements of INIT.  */
-      tree itype = init ? TREE_TYPE (init) : NULL_TREE;
+      itype = init ? TREE_TYPE (init) : NULL_TREE;
       if (cp_type_quals (type) != TYPE_UNQUALIFIED)
 	TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
       if (itype && cp_type_quals (itype) != TYPE_UNQUALIFIED)
