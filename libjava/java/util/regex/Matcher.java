@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package java.util.regex;
 
-import gnu.regexp.RE;
 import gnu.regexp.REMatch;
 
 /**

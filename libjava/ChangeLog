@@ -1,3 +1,17 @@
+2004-04-22  Dalibor Topic  <robilad@kaffe.org>
+
+	* java/util/prefs/Preferences.java,
+	java/util/prefs/InvalidPreferencesFormatException.java,
+	java/util/prefs/BackingStoreException.java,
+	java/util/prefs/AbstractPreferences.java:
+	Cleaned up imports.
+
+2004-04-22  Dalibor Topic  <robilad@kaffe.org>
+
+	* java/util/regex/Matcher.java,
+	java/util/regex/Pattern.java:
+	Cleaned up imports.
+
 2004-04-22  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/charset/IllegalCharsetNameException.java

@@ -38,9 +38,9 @@ exception statement from your version. */
 
 package java.util.prefs;
 
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
 import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 /**
  * Indicates reading prefs from stream failed. Thrown by the
