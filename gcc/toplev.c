@@ -853,13 +853,16 @@ report_error_function (file)
 }
 
 /* Report an error at the current line number.
-   S and V are a string and an arg for `printf'.  */
+   S is a string and V and V2 are args for `printf'.  We use HOST_WIDE_INT
+   as the type for these args assuming it is wide enough to hold a
+   pointer.  This isn't terribly portable, but is the best we can do
+   without vprintf universally available.  */
 
 void
 error (s, v, v2)
      char *s;
-     int v;			/* @@also used as pointer */
-     int v2;			/* @@also used as pointer */
+     HOST_WIDE_INT v;		/* Also used as pointer */
+     HOST_WIDE_INT v2;		/* Also used as pointer */
 {
   error_with_file_and_line (input_filename, lineno, s, v, v2);
 }
@@ -872,8 +875,8 @@ error_with_file_and_line (file, line, s, v, v2)
      char *file;
      int line;
      char *s;
-     int v;
-     int v2;
+     HOST_WIDE_INT v;
+     HOST_WIDE_INT v2;
 {
   count_error (0);
 
@@ -888,13 +891,14 @@ error_with_file_and_line (file, line, s, v, v2)
 }
 
 /* Report an error at the declaration DECL.
-   S and V are a string and an arg which uses %s to substitute the declaration name.  */
+   S and V are a string and an arg which uses %s to substitute
+   the declaration name.  */
 
 void
 error_with_decl (decl, s, v)
      tree decl;
      char *s;
-     int v;
+     HOST_WIDE_INT v;
 {
   char *junk;
   count_error (0);
@@ -920,8 +924,8 @@ void
 error_for_asm (insn, s, v, v2)
      rtx insn;
      char *s;
-     int v;			/* @@also used as pointer */
-     int v2;			/* @@also used as pointer */
+     HOST_WIDE_INT v;		/* Also used as pointer */
+     HOST_WIDE_INT v2;		/* Also used as pointer */
 {
   char *filename;
   int line;
@@ -954,9 +958,7 @@ warning_with_file_and_line (file, line, s, v, v2, v3)
      char *file;
      int line;
      char *s;
-     int v;
-     int v2;
-     int v3;
+     HOST_WIDE_INT v, v2, v3;
 {
   if (count_error (1) == 0)
     return;
@@ -979,9 +981,7 @@ warning_with_file_and_line (file, line, s, v, v2, v3)
 void
 warning (s, v, v2, v3)
      char *s;
-     int v;			/* @@also used as pointer */
-     int v2;
-     int v3;
+     HOST_WIDE_INT v, v2, v3;	/* Also used as pointer */
 {
   warning_with_file_and_line (input_filename, lineno, s, v, v2, v3);
 }
@@ -994,7 +994,7 @@ void
 warning_with_decl (decl, s, v)
      tree decl;
      char *s;
-     int v;
+     HOST_WIDE_INT v;
 {
   char *junk;
 
@@ -1023,8 +1023,8 @@ void
 warning_for_asm (insn, s, v, v2)
      rtx insn;
      char *s;
-     int v;			/* @@also used as pointer */
-     int v2;			/* @@also used as pointer */
+     HOST_WIDE_INT v;		/* Also used as pointer */
+     HOST_WIDE_INT v2;		/* Also used as pointer */
 {
   char *filename;
   int line;
@@ -1055,8 +1055,8 @@ warning_for_asm (insn, s, v, v2)
 void
 pedwarn (s, v, v2)
      char *s;
-     int v;			/* @@also used as pointer */
-     int v2;
+     HOST_WIDE_INT v;		/* Also used as pointer */
+     HOST_WIDE_INT v2;
 {
   if (flag_pedantic_errors)
     error (s, v, v2);
@@ -1068,7 +1068,7 @@ void
 pedwarn_with_decl (decl, s, v)
      tree decl;
      char *s;
-     int v;
+     HOST_WIDE_INT v;
 {
   if (flag_pedantic_errors)
     error_with_decl (decl, s, v);
@@ -1081,8 +1081,8 @@ pedwarn_with_file_and_line (file, line, s, v, v2)
      char *file;
      int line;
      char *s;
-     int v;
-     int v2;
+     HOST_WIDE_INT v;
+     HOST_WIDE_INT v2;
 {
   if (flag_pedantic_errors)
     error_with_file_and_line (file, line, s, v, v2);
@@ -1096,7 +1096,7 @@ pedwarn_with_file_and_line (file, line, s, v, v2)
 void
 sorry (s, v, v2)
      char *s;
-     int v, v2;
+     HOST_WIDE_INT v, v2;
 {
   sorrycount++;
   if (input_filename)
@@ -1115,7 +1115,7 @@ sorry (s, v, v2)
 void
 really_sorry (s, v, v2)
      char *s;
-     int v, v2;
+     HOST_WIDE_INT v, v2;
 {
   if (input_filename)
     fprintf (stderr, "%s:%d: ", input_filename, lineno);
@@ -1185,11 +1185,13 @@ xrealloc (ptr, size)
 }
 
 /* Return the logarithm of X, base 2, considering X unsigned,
-   if X is a power of 2.  Otherwise, returns -1.  */
+   if X is a power of 2.  Otherwise, returns -1.
+
+   This should be used via the `exact_log2' macro.  */
 
 int
-exact_log2 (x)
-     register unsigned int x;
+exact_log2_wide (x)
+     register unsigned HOST_WIDE_INT x;
 {
   register int log = 0;
   /* Test for 0 or a power of 2.  */
@@ -1201,11 +1203,13 @@ exact_log2 (x)
 }
 
 /* Given X, an unsigned number, return the largest int Y such that 2**Y <= X.
-   If X is 0, return -1.  */
+   If X is 0, return -1.
+
+   This should be used via the floor_log2 macro.  */
 
 int
-floor_log2 (x)
-     register unsigned int x;
+floor_log2_wide (x)
+     register unsigned HOST_WIDE_INT x;
 {
   register int log = -1;
   while (x != 0)
@@ -1686,7 +1690,7 @@ compile_file (name)
 		|| TREE_USED (decl)
 		|| TREE_ADDRESSABLE (decl)
 		|| TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (decl)))
-	      rest_of_decl_compilation (decl, 0, 1, 1);
+	      rest_of_decl_compilation (decl, NULL_PTR, 1, 1);
 	    else
 	      /* Cancel the RTL for this decl so that, if debugging info
 		 output for global variables is still to come,
@@ -2171,7 +2175,7 @@ rest_of_compilation (decl)
     {
       TIMEVAR (loop_time,
 	       {
-		 loop_optimize (insns, loop_dump ? loop_dump_file : 0);
+		 loop_optimize (insns, loop_dump_file);
 	       });
     }
 
@@ -2349,10 +2353,9 @@ rest_of_compilation (decl)
   TIMEVAR (global_alloc_time,
 	   {
 	     if (!obey_regdecls)
-	       failure = global_alloc (global_reg_dump ? global_reg_dump_file : 0);
+	       failure = global_alloc (global_reg_dump_file);
 	     else
-	       failure = reload (insns, 0,
-				 global_reg_dump ? global_reg_dump_file : 0);
+	       failure = reload (insns, 0, global_reg_dump_file);
 	   });
 
   if (global_reg_dump)
@@ -2521,7 +2524,7 @@ rest_of_compilation (decl)
      queued up for sdb output.  */
 #ifdef SDB_DEBUGGING_INFO
   if (write_symbols == SDB_DEBUG)
-    sdbout_types (0);
+    sdbout_types (NULL_TREE);
 #endif
 
   /* Put back the tree of subblocks from before we copied it.

@@ -537,7 +537,7 @@ obfree (ptr)
 
 char *
 permalloc (size)
-     long size;
+     int size;
 {
   return (char *) obstack_alloc (&permanent_obstack, size);
 }
@@ -1055,11 +1055,13 @@ set_identifier_size (size)
 
 /* Return a newly constructed INTEGER_CST node whose constant value
    is specified by the two ints LOW and HI.
-   The TREE_TYPE is set to `int'.  */
+   The TREE_TYPE is set to `int'. 
+
+   This function should be used via the `build_int_2' macro.  */
 
 tree
-build_int_2 (low, hi)
-     int low, hi;
+build_int_2_wide (low, hi)
+     HOST_WIDE_INT low, hi;
 {
   register tree t = make_node (INTEGER_CST);
   TREE_INT_CST_LOW (t) = low;
@@ -1105,17 +1107,17 @@ real_value_from_int_cst (i)
   if (TREE_INT_CST_HIGH (i) < 0)
     {
       d = (double) (~ TREE_INT_CST_HIGH (i));
-      d *= ((double) (1 << (HOST_BITS_PER_INT / 2))
-	    * (double) (1 << (HOST_BITS_PER_INT / 2)));
-      d += (double) (unsigned) (~ TREE_INT_CST_LOW (i));
+      d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
+	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
+      d += (double) (unsigned HOST_WIDE_INT) (~ TREE_INT_CST_LOW (i));
       d = (- d - 1.0);
     }
   else
     {
       d = (double) TREE_INT_CST_HIGH (i);
-      d *= ((double) (1 << (HOST_BITS_PER_INT / 2))
-	    * (double) (1 << (HOST_BITS_PER_INT / 2)));
-      d += (double) (unsigned) TREE_INT_CST_LOW (i);
+      d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
+	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
+      d += (double) (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (i);
     }
 #endif /* not REAL_ARITHMETIC */
   return d;
@@ -1258,27 +1260,27 @@ integer_all_onesp (expr)
     return TREE_INT_CST_LOW (expr) == -1 && TREE_INT_CST_HIGH (expr) == -1;
 
   prec = TYPE_PRECISION (TREE_TYPE (expr));
-  if (prec >= HOST_BITS_PER_INT)
+  if (prec >= HOST_BITS_PER_WIDE_INT)
     {
       int high_value, shift_amount;
 
-      shift_amount = prec - HOST_BITS_PER_INT;
+      shift_amount = prec - HOST_BITS_PER_WIDE_INT;
 
-      if (shift_amount > HOST_BITS_PER_INT)
+      if (shift_amount > HOST_BITS_PER_WIDE_INT)
 	/* Can not handle precisions greater than twice the host int size.  */
 	abort ();
-      else if (shift_amount == HOST_BITS_PER_INT)
+      else if (shift_amount == HOST_BITS_PER_WIDE_INT)
 	/* Shifting by the host word size is undefined according to the ANSI
 	   standard, so we must handle this as a special case.  */
 	high_value = -1;
       else
-	high_value = (1 << shift_amount) - 1;
+	high_value = ((HOST_WIDE_INT) 1 << shift_amount) - 1;
 
       return TREE_INT_CST_LOW (expr) == -1
 	&& TREE_INT_CST_HIGH (expr) == high_value;
     }
   else
-    return TREE_INT_CST_LOW (expr) == (1 << prec) - 1;
+    return TREE_INT_CST_LOW (expr) == ((HOST_WIDE_INT) 1 << prec) - 1;
 }
 
 /* Return 1 if EXPR is an integer constant that is a power of 2 (i.e., has only
@@ -1288,7 +1290,7 @@ int
 integer_pow2p (expr)
      tree expr;
 {
-  int high, low;
+  HOST_WIDE_INT high, low;
 
   while (TREE_CODE (expr) == NON_LVALUE_EXPR)
     expr = TREE_OPERAND (expr, 0);
@@ -1646,7 +1648,7 @@ size_in_bytes (type)
   type = TYPE_MAIN_VARIANT (type);
   if (TYPE_SIZE (type) == 0)
     {
-      incomplete_type_error (0, type);
+      incomplete_type_error (NULL_TREE, type);
       return integer_zero_node;
     }
   return size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type),
@@ -1747,7 +1749,7 @@ save_expr (expr)
       || TREE_CODE (t) == SAVE_EXPR)
     return t;
 
-  t = build (SAVE_EXPR, TREE_TYPE (expr), t, current_function_decl, NULL);
+  t = build (SAVE_EXPR, TREE_TYPE (expr), t, current_function_decl, NULL_TREE);
 
   /* This expression might be placed ahead of a jump to ensure that the
      value was computed on both sides of the jump.  So make sure it isn't
@@ -2628,7 +2630,7 @@ build_index_type (maxval)
   TYPE_ALIGN (itype) = TYPE_ALIGN (sizetype);
   if (TREE_CODE (maxval) == INTEGER_CST)
     {
-      int maxint = TREE_INT_CST_LOW (maxval);
+      HOST_WIDE_INT maxint = TREE_INT_CST_LOW (maxval);
       return type_hash_canon (maxint > 0 ? maxint : - maxint, itype);
     }
   else
@@ -2652,9 +2654,9 @@ build_index_2_type (lowval,highval)
   if ((TREE_CODE (lowval) == INTEGER_CST)
       && (TREE_CODE (highval) == INTEGER_CST))
     {
-      int highint = TREE_INT_CST_LOW (highval);
-      int lowint = TREE_INT_CST_LOW (lowval);
-      int maxint = highint - lowint;
+      HOST_WIDE_INT highint = TREE_INT_CST_LOW (highval);
+      HOST_WIDE_INT lowint = TREE_INT_CST_LOW (lowval);
+      HOST_WIDE_INT maxint = highint - lowint;
       return type_hash_canon (maxint > 0 ? maxint : - maxint, itype);
     }
   else
@@ -2818,7 +2820,8 @@ build_method_type (basetype, type)
      which is "this".  Put it into the list of argument types.  */
 
   TYPE_ARG_TYPES (t)
-    = tree_cons (NULL, build_pointer_type (basetype), TYPE_ARG_TYPES (type));
+    = tree_cons (NULL_TREE,
+		 build_pointer_type (basetype), TYPE_ARG_TYPES (type));
 
   /* If we already have such a type, use the old one and free this one.  */
   hashcode = TYPE_HASH (basetype) + TYPE_HASH (type);

@@ -536,7 +536,7 @@ regclass (f, nregs)
 	      if (GET_CODE (insn) == INSN
 		  && (noperands = asm_noperands (PATTERN (insn))) >= 0)
 		{
-		  decode_asm_operands (PATTERN (insn), recog_operand, 0,
+		  decode_asm_operands (PATTERN (insn), recog_operand, NULL_PTR,
 				       constraints, modes);
 		  nalternatives = n_occurrences (',', constraints[0]) + 1;
 		}
@@ -557,7 +557,8 @@ regclass (f, nregs)
 
 		  if (set != 0 && GET_CODE (SET_DEST (set)) == REG
 		      && GET_CODE (SET_SRC (set)) == MEM
-		      && (note = find_reg_note (insn, REG_EQUIV, 0)) != 0
+		      && (note = find_reg_note (insn, REG_EQUIV,
+						NULL_RTX)) != 0
 		      && GET_CODE (XEXP (note, 0)) == MEM)
 		    {
 		      costs[REGNO (SET_DEST (set))].mem_cost
@@ -984,7 +985,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		/* Match any floating double constant, but only if
 		   we can examine the bits of it reliably.  */
 		if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-		     || HOST_BITS_PER_INT != BITS_PER_WORD)
+		     || HOST_BITS_PER_WIDE_INT != BITS_PER_WORD)
 		    && GET_MODE (op) != VOIDmode && ! flag_pretend_float)
 		  break;
 		if (GET_CODE (op) == CONST_DOUBLE)
