@@ -11912,6 +11912,17 @@ any_dependent_template_arguments_p (tree args)
 bool
 dependent_template_p (tree tmpl)
 {
+  if (TREE_CODE (tmpl) == OVERLOAD)
+    {
+      while (tmpl)
+	{
+	  if (dependent_template_p (OVL_FUNCTION (tmpl)))
+	    return true;
+	  tmpl = OVL_CHAIN (tmpl);
+	}
+      return false;
+    }
+
   /* Template template parameters are dependent.  */
   if (DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)
       || TREE_CODE (tmpl) == TEMPLATE_TEMPLATE_PARM)

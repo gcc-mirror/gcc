@@ -1,5 +1,10 @@
 2003-12-15  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13310
+	* pt.c (dependent_template_p): Handle OVERLOADs.
+
+2003-12-15  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/13243
 	PR c++/12573
 	* parser.c (cp_parser_postfix_expression): Tighten handling of
