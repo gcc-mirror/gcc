@@ -1,3 +1,8 @@
+Wed Mar 11 07:25:20 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* parse.y (new_initializer): Make sure all initializers are
+	lists.
+
 Tue Mar 10 07:32:36 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* decl2.c (import_export_decl): Mark tinfo functions for
