@@ -1886,6 +1886,7 @@ begin_class_definition (t)
 	  TYPE_FIELDS (t) = NULL_TREE;
 	  TYPE_METHODS (t) = NULL_TREE;
 	  CLASSTYPE_TAGS (t) = NULL_TREE;
+	  CLASSTYPE_VBASECLASSES (t) = NULL_TREE;
 	  TYPE_SIZE (t) = NULL_TREE;
 	}
 
