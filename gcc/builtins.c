@@ -1628,15 +1628,15 @@ expand_builtin_memcmp (exp, arglist, target)
       || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
       || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))))) != INTEGER_TYPE)
     return 0;
-  else if (!HAVE_cmpstrsi)
-    return 0;
 
   {
     enum machine_mode mode;
     tree arg1 = TREE_VALUE (arglist);
     tree arg2 = TREE_VALUE (TREE_CHAIN (arglist));
     tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+    rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result;
+    rtx insn;
 
     int arg1_align
       = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
@@ -1656,10 +1656,25 @@ expand_builtin_memcmp (exp, arglist, target)
 	   && REGNO (result) >= FIRST_PSEUDO_REGISTER))
       result = gen_reg_rtx (insn_mode);
 
-    emit_insn (gen_cmpstrsi (result, get_memory_rtx (arg1),
-			     get_memory_rtx (arg2),
-			     expand_expr (len, NULL_RTX, VOIDmode, 0),
-			     GEN_INT (MIN (arg1_align, arg2_align))));
+    arg1_rtx = get_memory_rtx (arg1);
+    arg2_rtx = get_memory_rtx (arg2);
+    arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+    if (!HAVE_cmpstrsi)
+      insn = NULL_RTX;
+    else
+      insn = gen_cmpstrsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
+			   GEN_INT (MIN (arg1_align, arg2_align)));
+
+    if (insn)
+      emit_insn (insn);
+    else
+      emit_library_call_value (memcmp_libfunc, result, 2,
+			       TYPE_MODE (integer_type_node), 3,
+			       XEXP (arg1_rtx, 0), Pmode,
+			       XEXP (arg2_rtx, 0), Pmode,
+			       convert_to_mode (TYPE_MODE (sizetype), arg3_rtx,
+						TREE_UNSIGNED (sizetype)),
+			       TYPE_MODE (sizetype));
 
     /* Return the value in the proper mode for this function.  */
     mode = TYPE_MODE (TREE_TYPE (exp));
