@@ -1,3 +1,13 @@
+2000-06-27  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes): Use
+	DWARF_FRAME_REGNUM.
+
+2000-06-27  Andrew Macleod <amacleod@cygnus.com>
+
+	* dwarf2out.c (ASM_OUTPUT_DWARF_DATA2): Provide default when no 
+	unsigned macros available.
+
 2000-06-27  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.c (emit_insn_group_barriers): Special case
