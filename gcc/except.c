@@ -97,8 +97,15 @@ int (*lang_eh_type_covers) PARAMS ((tree a, tree b));
 /* Map a type to a runtime object to match type.  */
 tree (*lang_eh_runtime_type) PARAMS ((tree));
 
-/* A list of labels used for exception handlers.  */
-rtx exception_handler_labels;
+/* A hash table of label to region number.  */
+
+struct ehl_map_entry
+{
+  rtx label;
+  struct eh_region *region;
+};
+
+static htab_t exception_handler_label_map;
 
 static int call_site_base;
 static unsigned int sjlj_funcdef_number;
@@ -124,6 +131,10 @@ struct eh_region
 
   /* An identifier for this region.  */
   int region_number;
+
+  /* When a region is deleted, its parents inherit the REG_EH_REGION
+     numbers already assigned.  */
+  bitmap aka;
 
   /* Each region does exactly one thing.  */
   enum eh_region_type
@@ -247,6 +258,10 @@ struct eh_status
 
 
 static void mark_eh_region			PARAMS ((struct eh_region *));
+static int mark_ehl_map_entry			PARAMS ((PTR *, PTR));
+static void mark_ehl_map			PARAMS ((void *));
+
+static void free_region				PARAMS ((struct eh_region *));
 
 static int t2r_eq				PARAMS ((const PTR,
 							 const PTR));
@@ -297,8 +312,15 @@ static void sjlj_emit_dispatch_table
      PARAMS ((rtx, struct sjlj_lp_info *));
 static void sjlj_build_landing_pads		PARAMS ((void));
 
+static hashval_t ehl_hash			PARAMS ((const PTR));
+static int ehl_eq				PARAMS ((const PTR,
+							 const PTR));
+static void ehl_free				PARAMS ((PTR));
+static void add_ehl_entry			PARAMS ((rtx,
+							 struct eh_region *));
 static void remove_exception_handler_label	PARAMS ((rtx));
 static void remove_eh_handler			PARAMS ((struct eh_region *));
+static int for_each_eh_label_1			PARAMS ((PTR *, PTR));
 
 struct reachable_info;
 
@@ -369,7 +391,7 @@ doing_eh (do_warn)
 void
 init_eh ()
 {
-  ggc_add_rtx_root (&exception_handler_labels, 1);
+  ggc_add_root (&exception_handler_label_map, 1, 1, mark_ehl_map);
 
   if (! flag_exceptions)
     return;
@@ -515,6 +537,25 @@ mark_eh_region (region)
   ggc_mark_rtx (region->post_landing_pad);
 }
 
+static int
+mark_ehl_map_entry (pentry, data)
+     PTR *pentry;
+     PTR data ATTRIBUTE_UNUSED;
+{
+  struct ehl_map_entry *entry = *(struct ehl_map_entry **) pentry;
+  ggc_mark_rtx (entry->label);
+  return 1;
+}
+
+static void
+mark_ehl_map (pp)
+    void *pp;
+{
+  htab_t map = *(htab_t *) pp;
+  if (map)
+    htab_traverse (map, mark_ehl_map_entry, NULL);
+}
+
 void
 mark_eh_status (eh)
      struct eh_status *eh;
@@ -577,6 +618,16 @@ mark_eh_status (eh)
   ggc_mark_rtx (eh->sjlj_exit_after);
 }
 
+static inline void
+free_region (r)
+     struct eh_region *r;
+{
+  /* Note that the aka bitmap is freed by regset_release_memory.  But if
+     we ever replace with a non-obstack implementation, this would be
+     the place to do it.  */
+  free (r);
+}
+
 void
 free_eh_status (f)
      struct function *f;
@@ -591,7 +642,7 @@ free_eh_status (f)
 	  struct eh_region *r = eh->region_array[i];
 	  /* Mind we don't free a region struct more than once.  */
 	  if (r && r->region_number == i)
-	    free (r);
+	    free_region (r);
 	}
       free (eh->region_array);
     }
@@ -605,20 +656,20 @@ free_eh_status (f)
 	  else if (r->next_peer)
 	    {
 	      next = r->next_peer;
-	      free (r);
+	      free_region (r);
 	      r = next;
 	    }
 	  else
 	    {
 	      do {
 	        next = r->outer;
-	        free (r);
+	        free_region (r);
 	        r = next;
 		if (r == NULL)
 		  goto tree_done;
 	      } while (r->next_peer == NULL);
 	      next = r->next_peer;
-	      free (r);
+	      free_region (r);
 	      r = next;
 	    }
 	}
@@ -633,7 +684,12 @@ free_eh_status (f)
 
   free (eh);
   f->eh = NULL;
-  exception_handler_labels = NULL;
+
+  if (exception_handler_label_map)
+    {
+      htab_delete (exception_handler_label_map);
+      exception_handler_label_map = NULL;
+    }
 }
 
 
@@ -1366,13 +1422,50 @@ convert_from_eh_region_ranges ()
   remove_unreachable_regions (insns);
 }
 
+static void
+add_ehl_entry (label, region)
+     rtx label;
+     struct eh_region *region;
+{
+  struct ehl_map_entry **slot, *entry;
+
+  LABEL_PRESERVE_P (label) = 1;
+
+  entry = (struct ehl_map_entry *) xmalloc (sizeof (*entry));
+  entry->label = label;
+  entry->region = region;
+
+  slot = (struct ehl_map_entry **)
+    htab_find_slot (exception_handler_label_map, entry, INSERT);
+  if (*slot)
+    abort ();
+  *slot = entry;
+}
+
+static void
+ehl_free (pentry)
+     PTR pentry;
+{
+  struct ehl_map_entry *entry = (struct ehl_map_entry *)pentry;
+  LABEL_PRESERVE_P (entry->label) = 0;
+  free (entry);
+}
+
 void
 find_exception_handler_labels ()
 {
-  rtx list = NULL_RTX;
   int i;
 
-  free_EXPR_LIST_list (&exception_handler_labels);
+  if (exception_handler_label_map)
+    htab_empty (exception_handler_label_map);
+  else
+    {
+      /* ??? The expansion factor here (3/2) must be greater than the htab
+	 occupancy factor (4/3) to avoid unnecessary resizing.  */
+      exception_handler_label_map
+        = htab_create (cfun->eh->last_region_number * 3 / 2,
+		       ehl_hash, ehl_eq, ehl_free);
+    }
 
   if (cfun->eh->region_tree == NULL)
     return;
@@ -1390,15 +1483,13 @@ find_exception_handler_labels ()
 	lab = region->label;
 
       if (lab)
-	list = alloc_EXPR_LIST (0, lab, list);
+	add_ehl_entry (lab, region);
     }
 
   /* For sjlj exceptions, need the return label to remain live until
      after landing pad generation.  */
   if (USING_SJLJ_EXCEPTIONS && ! cfun->eh->built_landing_pads)
-    list = alloc_EXPR_LIST (0, return_label, list);
-
-  exception_handler_labels = list;
+    add_ehl_entry (return_label, NULL);
 }
 
 bool
@@ -2484,28 +2575,50 @@ finish_eh_generation ()
   cleanup_cfg (CLEANUP_PRE_LOOP);
 }
 
+static hashval_t
+ehl_hash (pentry)
+     const PTR pentry;
+{
+  struct ehl_map_entry *entry = (struct ehl_map_entry *) pentry;
+
+  /* 2^32 * ((sqrt(5) - 1) / 2) */
+  const hashval_t scaled_golden_ratio = 0x9e3779b9;
+  return CODE_LABEL_NUMBER (entry->label) * scaled_golden_ratio;
+}
+
+static int
+ehl_eq (pentry, pdata)
+     const PTR pentry;
+     const PTR pdata;
+{
+  struct ehl_map_entry *entry = (struct ehl_map_entry *) pentry;
+  struct ehl_map_entry *data = (struct ehl_map_entry *) pdata;
+
+  return entry->label == data->label;
+}
+
 /* This section handles removing dead code for flow.  */
 
-/* Remove LABEL from the exception_handler_labels list.  */
+/* Remove LABEL from exception_handler_label_map.  */
 
 static void
 remove_exception_handler_label (label)
      rtx label;
 {
-  rtx *pl, l;
+  struct ehl_map_entry **slot, tmp;
 
-  /* If exception_handler_labels was not built yet,
+  /* If exception_handler_label_map was not built yet,
      there is nothing to do.  */
-  if (exception_handler_labels == NULL)
+  if (exception_handler_label_map == NULL)
     return;
 
-  for (pl = &exception_handler_labels, l = *pl;
-       XEXP (l, 0) != label;
-       pl = &XEXP (l, 1), l = *pl)
-    continue;
+  tmp.label = label;
+  slot = (struct ehl_map_entry **)
+    htab_find_slot (exception_handler_label_map, &tmp, NO_INSERT);
+  if (! slot)
+    abort ();
 
-  *pl = XEXP (l, 1);
-  free_EXPR_LIST_node (l);
+  htab_clear_slot (exception_handler_label_map, (void **) slot);
 }
 
 /* Splice REGION from the region tree etc.  */
@@ -2516,16 +2629,29 @@ remove_eh_handler (region)
 {
   struct eh_region **pp, *p;
   rtx lab;
-  int i;
 
   /* For the benefit of efficiently handling REG_EH_REGION notes,
      replace this region in the region array with its containing
      region.  Note that previous region deletions may result in
-     multiple copies of this region in the array, so we have to
-     search the whole thing.  */
-  for (i = cfun->eh->last_region_number; i > 0; --i)
-    if (cfun->eh->region_array[i] == region)
-      cfun->eh->region_array[i] = region->outer;
+     multiple copies of this region in the array, so we have a
+     list of alternate numbers by which we are known.  */
+
+  cfun->eh->region_array[region->region_number] = region->outer;
+  if (region->aka)
+    {
+      int i;
+      EXECUTE_IF_SET_IN_BITMAP (region->aka, 0, i,
+	{ cfun->eh->region_array[i] = region->outer; });
+    }
+
+  if (region->outer)
+    {
+      if (!region->outer->aka)
+        region->outer->aka = BITMAP_XMALLOC ();
+      if (region->aka)
+	bitmap_a_or_b (region->outer->aka, region->outer->aka, region->aka);
+      bitmap_set_bit (region->outer->aka, region->region_number);
+    }
 
   if (cfun->eh->built_landing_pads)
     lab = region->landing_pad;
@@ -2580,7 +2706,7 @@ remove_eh_handler (region)
 	}
     }
 
-  free (region);
+  free_region (region);
 }
 
 /* LABEL heads a basic block that is about to be deleted.  If this
@@ -2591,7 +2717,8 @@ void
 maybe_remove_eh_handler (label)
      rtx label;
 {
-  int i;
+  struct ehl_map_entry **slot, tmp;
+  struct eh_region *region;
 
   /* ??? After generating landing pads, it's not so simple to determine
      if the region data is completely unused.  One must examine the
@@ -2600,27 +2727,50 @@ maybe_remove_eh_handler (label)
   if (cfun->eh->built_landing_pads)
     return;
 
-  for (i = cfun->eh->last_region_number; i > 0; --i)
+  tmp.label = label;
+  slot = (struct ehl_map_entry **)
+    htab_find_slot (exception_handler_label_map, &tmp, NO_INSERT);
+  if (! slot)
+    return;
+  region = (*slot)->region;
+  if (! region)
+    return;
+
+  /* Flow will want to remove MUST_NOT_THROW regions as unreachable
+     because there is no path to the fallback call to terminate.
+     But the region continues to affect call-site data until there
+     are no more contained calls, which we don't see here.  */
+  if (region->type == ERT_MUST_NOT_THROW)
     {
-      struct eh_region *region = cfun->eh->region_array[i];
-      if (region && region->label == label)
-	{
-	  /* Flow will want to remove MUST_NOT_THROW regions as unreachable
-	     because there is no path to the fallback call to terminate.
-	     But the region continues to affect call-site data until there
-	     are no more contained calls, which we don't see here.  */
-	  if (region->type == ERT_MUST_NOT_THROW)
-	    {
-	      remove_exception_handler_label (region->label);
-	      region->label = NULL_RTX;
-	    }
-	  else
-	    remove_eh_handler (region);
-	  break;
-	}
+      htab_clear_slot (exception_handler_label_map, (void **) slot);
+      region->label = NULL_RTX;
     }
+  else
+    remove_eh_handler (region);
 }
 
+/* Invokes CALLBACK for every exception handler label.  Only used by old
+   loop hackery; should not be used by new code.  */
+
+void
+for_each_eh_label (callback)
+     void (*callback) PARAMS ((rtx));
+{
+  htab_traverse (exception_handler_label_map, for_each_eh_label_1,
+		 (void *)callback);
+}
+
+static int
+for_each_eh_label_1 (pentry, data)
+     PTR *pentry;
+     PTR data;
+{
+  struct ehl_map_entry *entry = *(struct ehl_map_entry **)pentry;
+  void (*callback) PARAMS ((rtx)) = (void (*) PARAMS ((rtx))) data;
+
+  (*callback) (entry->label);
+  return 1;
+}
 
 /* This section describes CFG exception edges for flow.  */
 

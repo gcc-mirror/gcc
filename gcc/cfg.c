@@ -1,6 +1,6 @@
 /* Control flow graph manipulation code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -222,10 +222,22 @@ alloc_block ()
 /* Remove block B from the basic block array and compact behind it.  */
 
 void
+expunge_block_nocompact (b)
+     basic_block b;
+{
+  /* Invalidate data to make bughunting easier.  */
+  memset (b, 0, sizeof *b);
+  b->index = -3;
+  basic_block_info->num_elements--;
+  b->succ = (edge) first_deleted_block;
+  first_deleted_block = (basic_block) b;
+}
+
+void
 expunge_block (b)
      basic_block b;
 {
-  int i, n = n_basic_blocks;
+  int i, n = n_basic_blocks--;
 
   for (i = b->index; i + 1 < n; ++i)
     {
@@ -234,13 +246,7 @@ expunge_block (b)
       x->index = i;
     }
 
-  /* Invalidate data to make bughunting easier.  */
-  memset (b, 0, sizeof *b);
-  b->index = -3;
-  basic_block_info->num_elements--;
-  n_basic_blocks--;
-  b->succ = (edge) first_deleted_block;
-  first_deleted_block = (basic_block) b;
+  expunge_block_nocompact (b);
 }
 
 /* Create an edge connecting SRC and DST with FLAGS optionally using

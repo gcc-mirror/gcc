@@ -1,5 +1,36 @@
 2002-04-08  Richard Henderson  <rth@redhat.com>
 
+	* basic-block.h (flow_delete_block_noexpunge): Declare.
+	(expunge_block_nocompact): Declare.
+	* cfg.c (expunge_block_nocompact): Split out from ...
+	(expunge_block): ... here.
+	* cfgrtl.c (can_delete_label_p): Don't use exception_handler_labels.
+	(flow_delete_block_noexpunge): Split out from ...
+	(flow_delete_block): ... here.
+	* cfgcleanup.c (delete_unreachable_blocks): Compact while
+	removing dead blocks.
+	* except.c (exception_handler_labels): Remove.
+	(exception_handler_label_map): New.
+	(struct eh_region): Add aka member.
+	(mark_ehl_map_entry, mark_ehl_map, free_region): New.
+	(ehl_hash, ehl_eq, ehl_free, add_ehl_entry): New.
+	(for_each_eh_label, for_each_eh_label_1): New.
+	(init_eh): Register exception_handler_label_map.
+	(free_eh_status): Use free_region.
+	(find_exception_handler_labels): Use the map, not the list.
+	(remove_exception_handler_label): Likewise.
+	(maybe_remove_eh_handler): Likewise.
+	(remove_eh_handler): Use the region aka bitmap.
+	* except.h (exception_handler_labels): Remove.
+	(for_each_eh_label): Declare.
+	* jump.c (rebuild_jump_labels): Don't check exception_handler_labels.
+	* loop.c (invalidate_loops_containing_label): New.
+	(find_and_verify_loops): Use it.  Use for_each_eh_label.
+	* sched-rgn.c (is_cfg_nonregular): Use
+	current_function_has_exception_handlers.
+
+2002-04-08  Richard Henderson  <rth@redhat.com>
+
 	* reorg.c (get_branch_condition): Use reversed_comparison_code.
 
 2002-04-08  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
