@@ -2176,7 +2176,7 @@ check_earlyclobber (rtx insn)
     }
 }
 
-/* The function returns true if register classes C1 and C2 inetrsect.  */
+/* The function returns true if register classes C1 and C2 intersect.  */
 
 static bool
 regclass_intersect (enum reg_class c1, enum reg_class c2)

@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.  */
    get_stmt_operands() in the primary entry point. 
 
    The operand tree is the parsed by the various get_* routines which look 
-   through the stmt tree for the occurence of operands which may be of 
+   through the stmt tree for the occurrence of operands which may be of 
    interest, and calls are made to the append_* routines whenever one is 
    found.  There are 5 of these routines, each representing one of the 
    5 types of operands. Defs, Uses, Virtual Uses, Virtual May Defs, and 
@@ -1686,9 +1686,9 @@ copy_virtual_operands (tree dst, tree src)
 
 
 /* Specifically for use in DOM's expression analysis.  Given a store, we
-   create an artifical stmt which looks like a load from the store, this can
+   create an artificial stmt which looks like a load from the store, this can
    be used to eliminate redundant loads.  OLD_OPS are the operands from the 
-   store stmt, and NEW_STMT is the new load which reperesent a load of the
+   store stmt, and NEW_STMT is the new load which represents a load of the
    values stored.  */
 
 void

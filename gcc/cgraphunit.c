@@ -1261,7 +1261,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node)
       max_depth = PARAM_VALUE (PARAM_MAX_INLINE_RECURSIVE_DEPTH);
     }
 
-  /* Make sure that function is small enought to be considered for inlining.  */
+  /* Make sure that function is small enough to be considered for inlining.  */
   if (!max_depth
       || cgraph_estimate_size_after_inlining (1, node, node)  >= limit)
     return;

@@ -1008,7 +1008,7 @@ gimplify_decl_expr (tree *stmt_p)
 	  gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
 	  gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
 
-	  /* All occurences of this decl in final gimplified code will be
+	  /* All occurrences of this decl in final gimplified code will be
 	     replaced by indirection.  Setting DECL_VALUE_EXPR does two
 	     things: First, it lets the rest of the gimplifier know what
 	     replacement to use.  Second, it lets the debug info know 
@@ -3677,7 +3677,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 
 	case CONST_DECL:
 	  /* If we require an lvalue, such as for ADDR_EXPR, retain the
-	     CONST_DECL node.  Otherwise the decl is replacable by its
+	     CONST_DECL node.  Otherwise the decl is replaceable by its
 	     value.  */
 	  /* ??? Should be == fb_lvalue, but ADDR_EXPR passes fb_either.  */
 	  if (fallback & fb_lvalue)

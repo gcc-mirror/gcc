@@ -398,7 +398,7 @@ sra_elt_hash (const void *x)
 
   /* Take into account everything back up the chain.  Given that chain
      lengths are rarely very long, this should be acceptable.  If we
-     truely identify this as a performance problem, it should work to
+     truly identify this as a performance problem, it should work to
      hash the pointer value "e->parent".  */
   for (p = e->parent; p ; p = p->parent)
     h = (h * 65521) ^ sra_hash_tree (p->element);

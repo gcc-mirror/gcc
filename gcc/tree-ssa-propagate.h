@@ -40,7 +40,7 @@ enum ssa_prop_result {
        returned by SSA_PROP_VISIT_STMT should be added to
        INTERESTING_SSA_EDGES.  If the statement being visited is a
        conditional jump, SSA_PROP_VISIT_STMT should indicate which edge
-       out of the basic block should be marked exectuable.  */
+       out of the basic block should be marked executable.  */
     SSA_PROP_INTERESTING,
 
     /* The statement produces a varying (i.e., useless) value and

@@ -45,7 +45,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    weak.  If the multi-threaded application includes iostream.h,
    gthr-posix.h is included and pthread_create will be defined weak.
    If pthead_create is weak its defining module in libc is not
-   necessarly included in the link and the symbol is resolved to zero.
+   necessarily included in the link and the symbol is resolved to zero.
    Therefore the first call to it will crash.
 
    Since -mthreads is a multilib switch on LynxOS we know that at this

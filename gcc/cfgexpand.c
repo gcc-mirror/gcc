@@ -606,7 +606,7 @@ defer_stack_allocation (tree var, bool toplevel)
 }
 
 /* A subroutine of expand_used_vars.  Expand one variable according to
-   its flavour.  Variables to be placed on the stack are not actually
+   its flavor.  Variables to be placed on the stack are not actually
    expanded yet, merely recorded.  */
 
 static void

@@ -949,7 +949,7 @@ ifc_temp_var (tree type, tree exp)
   var = create_tmp_var (type, name);
   add_referenced_tmp_var (var);
 
-  /* Build new statement to assigne EXP to new variable.  */
+  /* Build new statement to assign EXP to new variable.  */
   stmt = build (MODIFY_EXPR, type, var, exp);
 
   /* Get SSA name for the new variable and set make new statement

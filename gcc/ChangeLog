@@ -1,3 +1,15 @@
+2004-09-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.c, cfgexpand.c, cgraphunit.c, defaults.h,
+	et-forest.c, expr.c, gimplify.c, global.c, gthr-lynx.h,
+	hard-reg-set.h, modulo-sched.c, optabs.c, postreload-gcse.c,
+	tree-data-ref.c, tree-flow.h, tree-if-conv.c, tree-inline.c,
+	tree-sra.c, tree-ssa-loop-im.c, tree-ssa-loop-ivopts.c,
+	tree-ssa-loop-niter.c, tree-ssa-operands.c,
+	tree-ssa-operands.h, tree-ssa-propagate.c,
+	tree-ssa-propagate.h, tree-ssa-threadupdate.c, value-prof.c,
+	vec.c, vec.h: Fix comment typos.  Follow spelling conventions.
+
 2004-09-05  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-if-conv.c (gate_tree_if_conversion): Enable only if the

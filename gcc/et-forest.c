@@ -137,7 +137,7 @@ et_recomp_min (struct et_occ *occ)
 }
 
 #ifdef DEBUG_ET
-/* Checks whether neighbourhood of OCC seems sane.  */
+/* Checks whether neighborhood of OCC seems sane.  */
 
 static void
 et_check_occ_sanity (struct et_occ *occ)

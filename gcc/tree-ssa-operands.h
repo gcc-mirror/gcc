@@ -188,7 +188,7 @@ extern void create_ssa_artficial_load_stmt (stmt_operands_p, tree);
 
 
 /* This structure is used in the operand iterator loops.  It contains the 
-   items required to determine which operand is retreived next.  During
+   items required to determine which operand is retrieved next.  During
    optimization, this structure is scalarized, and any unused fields are 
    optimized away, resulting in little overhead.  */
 
@@ -217,7 +217,7 @@ typedef struct ssa_operand_iterator_d
 #define SSA_OP_VUSE		0x04	/* VUSE operands.  */
 #define SSA_OP_VMAYUSE		0x08	/* USE portion of V_MAY_DEFS.  */
 #define SSA_OP_VMAYDEF		0x10	/* DEF portion of V_MAY_DEFS.  */
-#define SSA_OP_VMUSTDEF		0x20	/* V_MUST_DEF defintions.  */
+#define SSA_OP_VMUSTDEF		0x20	/* V_MUST_DEF definitions.  */
 
 /* These are commonly grouped operand flags.  */
 #define SSA_OP_VIRTUAL_USES	(SSA_OP_VUSE | SSA_OP_VMAYUSE)

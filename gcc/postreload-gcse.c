@@ -86,7 +86,7 @@ static struct
 
 /* We need to keep a hash table of expressions.  The table entries are of
    type 'struct expr', and for each expression there is a single linked
-   list of occurences.  */
+   list of occurrences.  */
 
 /* The table itself.  */
 static htab_t expr_table;
@@ -107,7 +107,7 @@ struct expr
 static struct obstack expr_obstack;
 
 /* Occurrence of an expression.
-   There is at most one occurence per basic block.  If a pattern appears
+   There is at most one occurrence per basic block.  If a pattern appears
    more than once, the last appearance is used.  */
 
 struct occr
@@ -422,7 +422,7 @@ lookup_expr_in_table (rtx pat)
 }
 
 
-/* Dump all expressions and occurences that are currently in the
+/* Dump all expressions and occurrences that are currently in the
    expression hash table to FILE.  */
 
 /* This helper is called via htab_traverse.  */

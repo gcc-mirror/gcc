@@ -68,7 +68,7 @@
 
 	SSA_PROP_INTERESTING: S produces a value that can be computed
 	    at compile time.  Its result can be propagated into the
-	    statements that feed from S.  Furhtermore, if S is a
+	    statements that feed from S.  Furthermore, if S is a
 	    conditional jump, only the edge known to be taken is added
 	    to the work list.  Edges that are known not to execute are
 	    never simulated.

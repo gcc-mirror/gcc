@@ -49,7 +49,7 @@ vec_p_reserve (void *vec, int reserve MEM_STAT_DECL)
 /* Ensure there are at least RESERVE free slots in VEC, if RESERVE >=
    0.  If RESERVE < 0, increase the current allocation exponentially.
    VEC can be NULL, in which case a new vector is created.  The
-   vector's trailing array is at VEC_OFFSET offset and consistes of
+   vector's trailing array is at VEC_OFFSET offset and consists of
    ELT_SIZE sized elements.  */
 
 void *
