@@ -1,3 +1,7 @@
+Wed Apr 14 09:39:20 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386.md (neghi): Use the whole register when widening the op.
+
 1999-04-14 12:37 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cpperror.c, cppexp.c, cpplib.c: Never call abort.
