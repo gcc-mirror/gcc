@@ -1,3 +1,9 @@
+2003-01-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/45, c++/3784
+	* tree.c (cp_tree_equal, TEMPLATE_PARM_INDEX): The types must be
+	the same too.
+
 2002-12-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9054

@@ -1737,8 +1737,10 @@ cp_tree_equal (t1, t2)
       return 0;
 
     case TEMPLATE_PARM_INDEX:
-      return TEMPLATE_PARM_IDX (t1) == TEMPLATE_PARM_IDX (t2)
-	&& TEMPLATE_PARM_LEVEL (t1) == TEMPLATE_PARM_LEVEL (t2);
+      return (TEMPLATE_PARM_IDX (t1) == TEMPLATE_PARM_IDX (t2)
+	      && TEMPLATE_PARM_LEVEL (t1) == TEMPLATE_PARM_LEVEL (t2)
+	      && same_type_p (TREE_TYPE (TEMPLATE_PARM_DECL (t1)),
+			      TREE_TYPE (TEMPLATE_PARM_DECL (t2))));
 
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
