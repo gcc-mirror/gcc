@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing performance utilities for the C++ library testsuite.
 //
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,7 +56,7 @@ extern "C"
     return m;
   }
 }
-#else
+#elif !defined (__hpux__)
 extern "C"
 {
   struct mallinfo
