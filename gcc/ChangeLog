@@ -1,3 +1,7 @@
+2001-06-11  Aldy Hernandez  <aldyh@redhat.com>
+
+        * loop.c (scan_loop): Do not combine asm statements.
+
 2001-06-11  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* simplify-rtx.c (simplify_subreg): Fix offset calculation

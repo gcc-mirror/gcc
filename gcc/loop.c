@@ -772,6 +772,7 @@ scan_loop (loop, flags)
 		  && (REGNO_LAST_UID (regno)
 		      == INSN_UID (regs->array[regno].single_usage))
 		  && regs->array[regno].set_in_loop == 1
+		  && GET_CODE (SET_SRC (set)) != ASM_OPERANDS
 		  && ! side_effects_p (SET_SRC (set))
 		  && ! find_reg_note (p, REG_RETVAL, NULL_RTX)
 		  && (! SMALL_REGISTER_CLASSES
