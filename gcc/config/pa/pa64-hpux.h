@@ -46,11 +46,9 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC \
   "%{!shared:\
      %{!p:\
-       %{!pg:\
-         %{!threads:-lc}\
-         %{threads:-lcma -lc_r}}\
-       %{p: -L/lib/libp/ -lc}\
-       %{pg: -L/lib/libp/ -lc}}} /usr/lib/pa20_64/milli.a"
+       %{!pg: %{!threads:-lc} %{threads:-lcma -lc_r}}\
+       %{pg: -L/usr/lib/pa20_64/libp/ -lgprof -lc}}\
+     %{p: -L/usr/lib/pa20_64/libp/ -lprof -lc}} /usr/lib/pa20_64/milli.a"
 
 /* Under hpux11, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
@@ -136,9 +134,7 @@ do {  \
 #define ENDFILE_SPEC ""
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared: \
-			 %{!symbolic: \
-			  %{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}}"
+#define STARTFILE_SPEC "%{!shared: %{!symbolic: crt0.o%s}}"
 #endif
 
 /* Switch into a generic section.  */

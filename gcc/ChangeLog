@@ -1,3 +1,8 @@
+2002-11-05  John David Anglin  <dave2hiauly1.hia.nrc.ca>
+
+	* pa64-hpux.h (LIB_SPEC): Fix p and pg options.
+	(STARTFILE_SPEC): Remove p and pg options.
+
 2002-11-05  Andrew Haley  <aph@redhat.com>
 
 	* fold-const.c (fold): Don't transform (a0 op compound(a1,a2))
