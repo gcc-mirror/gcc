@@ -1,3 +1,7 @@
+2003-11-14  Nick Clifton  <nickc@redhat.com>
+
+	* config/fr30/fr30.c: Include toplev.h
+
 2003-11-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* except.c (sjlj_emit_function_enter): Mark internal label as LOCAL.
