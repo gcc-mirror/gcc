@@ -1321,10 +1321,10 @@ instantiate_class_template (type)
 
       type = finish_struct_1 (type, 0);
       CLASSTYPE_GOT_SEMICOLON (type) = 1;
-      if (at_eof && TYPE_BINFO_VTABLE (type) != NULL_TREE)
-	finish_prevtable_vardecl (NULL, TYPE_BINFO_VTABLE (type));
 
       repo_template_used (type);
+      if (at_eof && TYPE_BINFO_VTABLE (type) != NULL_TREE)
+	finish_prevtable_vardecl (NULL, TYPE_BINFO_VTABLE (type));
     }
   else
     {
