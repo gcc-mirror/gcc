@@ -2537,20 +2537,24 @@ find_expr_with_wfl (node)
       switch (TREE_CODE (node))
 	{
 	case BLOCK:
-	  return find_expr_with_wfl (BLOCK_EXPR_BODY (node));
+	  node = BLOCK_EXPR_BODY (node);
+	  continue;
 
 	case COMPOUND_EXPR:
 	  to_return = find_expr_with_wfl (TREE_OPERAND (node, 0));
 	  if (to_return)
 	    return to_return;
-	  to_return = find_expr_with_wfl (TREE_OPERAND (node, 1));
-	  return to_return;
+	  node = TREE_OPERAND (node, 1);
+	  continue;
 
 	case LOOP_EXPR:
-	  return find_expr_with_wfl (TREE_OPERAND (node, 0));
+	  node = TREE_OPERAND (node, 0);
+	  continue;
 	  
 	case LABELED_BLOCK_EXPR:
-	  return find_expr_with_wfl (TREE_OPERAND (node, 1));
+	  node = TREE_OPERAND (node, 1);
+	  continue;
+
 	default:
 	  code = TREE_CODE_CLASS (TREE_CODE (node));
 	  if (((code == '1') || (code == '2') || (code == 'e'))
@@ -2684,7 +2688,7 @@ build_array_from_name (type, type_wfl, name, ret_name)
   /* If we have, then craft a new type for this variable */
   if (more_dims)
     {
-      name = get_identifier (&more_dims [string]);
+      name = get_identifier (&string [more_dims]);
 
       /* If we have a pointer, use its type */
       if (TREE_CODE (type) == POINTER_TYPE)
@@ -3160,11 +3164,6 @@ register_fields (flags, type, variable_list)
       if (must_chain)
 	register_incomplete_type (JDEP_FIELD, wfl, field_decl, type);
 	  
-      /* Default value of a static field is 0 and it is considered
-	 initialized. */
-      if (flags & ACC_STATIC)
-	INITIALIZED_P (field_decl) = 1;
-      
       /* If we have an initialization value tied to the field */
       if (init)
 	{
@@ -3191,7 +3190,6 @@ register_fields (flags, type, variable_list)
 	      TREE_CHAIN (init) = ctxp->non_static_initialized;
 	      ctxp->non_static_initialized = init;
 	    }
-	  INITIALIZED_P (field_decl) = 1;
 	  MODIFY_EXPR_FROM_INITIALIZATION_P (init) = 1;
 	}
     }
@@ -3333,7 +3331,7 @@ method_header (flags, type, mdecl, throws)
 
   /* Method declared within the scope of an interface are implicitly
      abstract and public. Conflicts with other erroneously provided
-     modifiers are check right after. */
+     modifiers are checked right after. */
 
   if (CLASS_INTERFACE (TYPE_NAME (this_class)))
     {
@@ -5457,7 +5455,6 @@ expand_start_java_method (fndecl)
       DECL_ARG_TYPE (tem) = type;
       layout_decl (tem, 0);
       pushdecl (tem);
-      INITIALIZED_P (tem) = 1;	/* Parms are initialized */
       *ptr = tem;
       ptr = &TREE_CHAIN (tem);
       tem = next;
@@ -7551,7 +7548,6 @@ java_complete_lhs (node)
 	{
 	  DECL_CONTEXT (cn) = current_function_decl;
 	  IDENTIFIER_LOCAL_VALUE (DECL_NAME (cn)) = cn;
-	  INITIALIZED_P (cn) = 0;
 	}
       if (BLOCK_EXPR_BODY (node) == NULL_TREE)
 	  CAN_COMPLETE_NORMALLY (node) = 1;
@@ -7935,25 +7931,8 @@ java_complete_lhs (node)
       else
 	nn = java_complete_tree (TREE_OPERAND (node, 1));
 
-      /* There are cases where the type of RHS is fixed. In those
-	 cases, if the evaluation of the RHS fails, we further the
-	 evaluation of the assignment to detect more errors. */
       if (nn == error_mark_node)
-	{
-	  /* It's hopeless, but we can further things on to discover
-	     an error during the assignment. In any cases, the
-	     assignment operation fails. */
-	  if (TREE_CODE (TREE_OPERAND (node, 1)) != EXPR_WITH_FILE_LOCATION
-	      && TREE_CODE (TREE_OPERAND (node, 1)) != NEW_ARRAY_INIT
-	      && TREE_TYPE (TREE_OPERAND (node, 1)) != error_mark_node)
-	    patch_assignment (node, wfl_op1, wfl_op2);
-
-	  /* Now, we still mark the lhs as initialized */
-	  if (JDECL_P (TREE_OPERAND (node, 0)))
-	    INITIALIZED_P (TREE_OPERAND (node, 0)) = 1;
-
-	  return error_mark_node;
-	}
+	return error_mark_node;
       TREE_OPERAND (node, 1) = nn;
 
       /* In case we're handling = with a String as a RHS, we need to
@@ -8448,7 +8427,6 @@ patch_assignment (node, wfl_op1, wfl_op2)
   /* Lhs can be a named variable */
   if (JDECL_P (lvalue))
     {
-      INITIALIZED_P (lvalue) = 1;
       lhs_type = TREE_TYPE (lvalue);
     }
   /* Or Lhs can be a array acccess. Should that be lvalue ? FIXME +
@@ -9386,13 +9364,13 @@ build_string_concatenation (op1, op2)
   if ((result = string_constant_concatenation (op1, op2)))
     return result;
 
-  /* Discard null constants on either sides of the expression */
-  if (TREE_CODE (op1) == STRING_CST && !TREE_STRING_LENGTH (op1))
+  /* Discard empty strings on either side of the expression */
+  if (TREE_CODE (op1) == STRING_CST && TREE_STRING_LENGTH (op1) == 0)
     {
       op1 = op2;
       op2 = NULL_TREE;
     }
-  else if (TREE_CODE (op2) == STRING_CST && !TREE_STRING_LENGTH (op2))
+  else if (TREE_CODE (op2) == STRING_CST && TREE_STRING_LENGTH (op2) == 0)
     op2 = NULL_TREE;
 
   /* If operands are string constant, turn then into object references */
