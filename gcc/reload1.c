@@ -774,12 +774,6 @@ reload (rtx first, int global)
 			    = force_const_mem (GET_MODE (SET_DEST (set)), x);
 			  if (!reg_equiv_memory_loc[i])
 			    continue;
-			  /* As above. Later passes of reload assume that
-			     all addresses found in the reg_equiv_* arrays
-			     were originally legitimate.  */
-			  if (!memory_operand (reg_equiv_memory_loc[i], VOIDmode))
-			    reg_equiv_memory_loc[i] = NULL_RTX;
-
 			}
 		    }
 		  else
@@ -916,18 +910,24 @@ reload (rtx first, int global)
 	if (reg_renumber[i] < 0 && reg_equiv_memory_loc[i])
 	  {
 	    rtx x = eliminate_regs (reg_equiv_memory_loc[i], 0, NULL_RTX);
+	    enum reg_class class = MODE_BASE_REG_CLASS (GET_MODE (x));
 
 	    if (strict_memory_address_p (GET_MODE (regno_reg_rtx[i]),
 					 XEXP (x, 0)))
 	      reg_equiv_mem[i] = x, reg_equiv_address[i] = 0;
-	    else if (CONSTANT_P (XEXP (x, 0))
+	    else if ((CONSTANT_P (x)
+		      && LEGITIMATE_CONSTANT_P (x)
+		      && PREFERRED_RELOAD_CLASS (x, class) != NO_REGS)
 		     || (GET_CODE (XEXP (x, 0)) == REG
 			 && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER)
 		     || (GET_CODE (XEXP (x, 0)) == PLUS
 			 && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
 			 && (REGNO (XEXP (XEXP (x, 0), 0))
 			     < FIRST_PSEUDO_REGISTER)
-			 && CONSTANT_P (XEXP (XEXP (x, 0), 1))))
+			 && (CONSTANT_P (XEXP (XEXP (x, 0), 1))
+			     && LEGITIMATE_CONSTANT_P (XEXP (XEXP (x, 0), 1))
+			     && PREFERRED_RELOAD_CLASS (XEXP (XEXP (x, 0), 1), class)
+			                                    != NO_REGS)))
 	      reg_equiv_address[i] = XEXP (x, 0), reg_equiv_mem[i] = 0;
 	    else
 	      {
