@@ -24,9 +24,6 @@
    other reasons why the executable file might be covered by the GNU
    General Public License.  */
 
-#ifndef _POSIX_SOURCE
-# define _POSIX_SOURCE
-#endif
 #include "libioP.h"
 #if _IO_HAVE_SYS_WAIT
 #include <signal.h>

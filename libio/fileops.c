@@ -25,9 +25,6 @@
    General Public License.  */
 
 
-#ifndef _POSIX_SOURCE
-# define _POSIX_SOURCE
-#endif
 #include "libioP.h"
 #include <fcntl.h>
 #include <sys/types.h>

@@ -1,3 +1,12 @@
+Mon Apr 12 19:22:44 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* filedoalloc.c (_POSIX_SOURCE): Remove definition.
+	* fileops.c (_POSIX_SOURCE): Likewise.
+	* iopopen.c (_POSIX_SOURCE): Likewise.
+	* procbuf.cc (_POSIX_SOURCE): Likewise.
+	* libioP.h (_POSIX_SOURCE): And define it here.
+	* stdiostream.cc: Include libioP.h before others.
+
 Fri Apr  2 15:11:58 1999  H.J. Lu  (hjl@gnu.org)
 
 	* libio/configure.in (gxx_include_dir): Handle it.

@@ -28,7 +28,6 @@ the executable file might be covered by the GNU General Public License. */
 #pragma implementation
 #endif
 
-#define _POSIX_SOURCE
 #include "libioP.h"
 #include "procbuf.h"
 
