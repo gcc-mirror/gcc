@@ -57,20 +57,14 @@ static void push (int);
 static void pop (int);
 static const char *cond_string (enum rtx_code);
 static unsigned int h8300_asm_insn_count (const char *);
-const struct attribute_spec h8300_attribute_table[];
 static tree h8300_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree h8300_handle_eightbit_data_attribute (tree *, tree, tree, int, bool *);
 static tree h8300_handle_tiny_data_attribute (tree *, tree, tree, int, bool *);
-static void h8300_output_function_epilogue (FILE *, HOST_WIDE_INT);
-static void h8300_insert_attributes (tree, tree *);
-static void h8300_file_end (void);
 #ifndef OBJECT_FORMAT_ELF
 static void h8300_asm_named_section (const char *, unsigned int);
 #endif
-static void h8300_encode_section_info (tree, rtx, int);
 static int h8300_and_costs (rtx);
 static int h8300_shift_costs (rtx);
-static bool h8300_rtx_costs (rtx, int, int, int *);
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -102,30 +96,6 @@ const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 #define SYMBOL_FLAG_FUNCVEC_FUNCTION	(SYMBOL_FLAG_MACH_DEP << 0)
 #define SYMBOL_FLAG_EIGHTBIT_DATA	(SYMBOL_FLAG_MACH_DEP << 1)
 #define SYMBOL_FLAG_TINY_DATA		(SYMBOL_FLAG_MACH_DEP << 2)
-
-/* Initialize the GCC target structure.  */
-#undef TARGET_ATTRIBUTE_TABLE
-#define TARGET_ATTRIBUTE_TABLE h8300_attribute_table
-
-#undef TARGET_ASM_ALIGNED_HI_OP
-#define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
-
-#undef TARGET_ASM_FUNCTION_EPILOGUE
-#define TARGET_ASM_FUNCTION_EPILOGUE h8300_output_function_epilogue
-
-#undef TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END h8300_file_end
-
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO h8300_encode_section_info
-
-#undef TARGET_INSERT_ATTRIBUTES
-#define TARGET_INSERT_ATTRIBUTES h8300_insert_attributes
-
-#undef TARGET_RTX_COSTS
-#define TARGET_RTX_COSTS h8300_rtx_costs
-
-struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* See below where shifts are handled for explanation of this enum.  */
 
@@ -4379,3 +4349,27 @@ byte_accesses_mergeable_p (rtx addr1, rtx addr2)
 
   return 0;
 }
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE h8300_attribute_table
+
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
+
+#undef TARGET_ASM_FUNCTION_EPILOGUE
+#define TARGET_ASM_FUNCTION_EPILOGUE h8300_output_function_epilogue
+
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END h8300_file_end
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO h8300_encode_section_info
+
+#undef TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES h8300_insert_attributes
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS h8300_rtx_costs
+
+struct gcc_target targetm = TARGET_INITIALIZER;
