@@ -218,9 +218,15 @@ typedef struct basic_block_def {
 
   /* Expected frequency.  Normalized to be in range 0 to BB_FREQ_MAX.  */
   int frequency;
+
+  /* Various flags.  See BB_* below.  */
+  int flags;
 } *basic_block;
 
 #define BB_FREQ_MAX 10000
+
+/* Masks for basic_block.flags.  */
+#define BB_REACHABLE		1
 
 /* Number of basic blocks in the current function.  */
 
@@ -609,6 +615,7 @@ extern void debug_regset		PARAMS ((regset));
 extern void allocate_reg_life_data      PARAMS ((void));
 extern void allocate_bb_life_data	PARAMS ((void));
 extern void find_unreachable_blocks	PARAMS ((void));
+extern void expunge_block		PARAMS ((basic_block));
 extern void delete_noop_moves		PARAMS ((rtx));
 extern rtx last_loop_beg_note		PARAMS ((rtx));
 extern basic_block redirect_edge_and_branch_force PARAMS ((edge, basic_block));
