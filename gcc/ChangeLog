@@ -1,3 +1,10 @@
+2005-03-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cfglayout.c, loop-doloop.c, profile.c, target-def.h,
+	target.h, targhooks.c, tracer.c, tree-ssa-loop-ch.c,
+	tree-ssa-loop-unswitch.c, tree-ssa-loop.c, vec.c, vmsdbgout.c,
+	config/m32r/m32r.md, config/xtensa/xtensa.h: Update copyright.
+
 2005-03-11  David Edelsohn  <edelsohn@gnu.org>
 
 	PR rtl-optimization/20306
