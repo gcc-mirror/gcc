@@ -1,3 +1,10 @@
+2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/19296
+	* combine.c (simplify_comparison): Rewrite the condition under
+	which a non-paradoxical SUBREG of a PLUS can be lifted when
+	compared against a constant.
+
 2005-01-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* varasm.c (process_pending_assemble_output_defs): Fix previous change.

@@ -1,3 +1,8 @@
+2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/short-compare-1.c: New test.
+	* gcc.dg/short-compare-2.c: Likewise.
+
 2005-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19263
