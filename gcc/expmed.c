@@ -3124,7 +3124,7 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
      can avoid an explicit compare operation in the following comparison
      against zero.  */
 
-  mask = (HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1)
+  mask = (HOST_WIDE_INT) -1 << (GET_MODE_BITSIZE (mode) - 1)
 	 | (((HOST_WIDE_INT) 1 << logd) - 1);
 
   temp = expand_binop (mode, and_optab, op0, GEN_INT (mask), result,
