@@ -1720,6 +1720,7 @@ generate_bytecode_insns (exp, target, state)
 	    else
 	      {
 		push_int_const (sw_state.cases->offset, state);
+		NOTE_PUSH (1);
 		emit_if (sw_state.cases->label,
 			 OPCODE_if_icmpeq, OPCODE_if_icmpne, state);
 	      }

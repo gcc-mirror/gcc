@@ -1,3 +1,8 @@
+2001-09-16  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-write.c (generate_bytecode_insns) [SWITCH_EXPR]: Call
+	NOTE_PUSH for single-case push.  Fixes PR java/4189.
+
 2001-09-13  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* java-tree.h (TYPE_IMPORT_LIST): New macro.
