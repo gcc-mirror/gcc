@@ -20,7 +20,7 @@ bad_cast(const void *bar)
 void
 good_assign(const void *bar)
 {
-  char *const *foo = bar;
+  char *const *foo = bar; /* { dg-bogus "initialization discards" "discarding `const' warning" } */
 }
 
 void
