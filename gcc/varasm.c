@@ -4549,7 +4549,7 @@ output_constructor (exp, size)
 
       if (index && TREE_CODE (index) == RANGE_EXPR)
 	{
-	  register int fieldsize
+	  unsigned HOST_WIDE_INT fieldsize
 	    = int_size_in_bytes (TREE_TYPE (type));
 	  HOST_WIDE_INT lo_index = tree_low_cst (TREE_OPERAND (index, 0), 0);
 	  HOST_WIDE_INT hi_index = tree_low_cst (TREE_OPERAND (index, 1), 0);
@@ -4571,7 +4571,7 @@ output_constructor (exp, size)
 	{
 	  /* An element that is not a bit-field.  */
 
-	  register int fieldsize;
+	  unsigned HOST_WIDE_INT fieldsize;
 	  /* Since this structure is static,
 	     we know the positions are constant.  */
 	  HOST_WIDE_INT pos = field ? int_byte_position (field) : 0;
@@ -4607,17 +4607,16 @@ output_constructor (exp, size)
 	  /* Determine size this element should occupy.  */
 	  if (field)
 	    {
-	      if (DECL_SIZE_UNIT (field)
-		  && ! integer_zerop (DECL_SIZE_UNIT (field)))
-		fieldsize = tree_low_cst (DECL_SIZE_UNIT (field), 1);
-	      else if (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE)
-		{
-		  /* If DECL_SIZE is not set or is zero, then this must be
-		     an array of unspecified length.  The initialized value
-		     must be a CONSTRUCTOR, and we take the length from the
-		     last initialized element.  */
+	      /* If the last field is an array with an unspecified upper
+		 bound, the initializer determines the size.  */
+	      if (TREE_CHAIN (field) == 0
+		  && TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
+		  && TYPE_DOMAIN (TREE_TYPE (field)) != 0
+		  && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (field))) == 0)
 		  fieldsize = array_size_for_constructor (val);
-		}
+	      else if (DECL_SIZE_UNIT (field)
+		  && host_integerp (DECL_SIZE_UNIT (field), 1))
+		fieldsize = tree_low_cst (DECL_SIZE_UNIT (field), 1);
 	      else
 		fieldsize = 0;
 	    }
