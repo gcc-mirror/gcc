@@ -358,6 +358,8 @@ if test -z "${setobjs}"; then
      || test $ac_cv_func_vfprintf != yes \
      || test $ac_cv_func_vsprintf != yes; then
     AC_REPLACE_FUNCS(_doprnt)
+  else
+    AC_CHECK_FUNCS(_doprnt)
   fi
 
   for v in $vars; do

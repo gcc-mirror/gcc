@@ -1,4 +1,4 @@
-/* Copyright (C) 1992, 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1992, 1995, 1996, 1997, 2002 Free Software Foundation, Inc.
    This file based on setenv.c in the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -36,6 +36,9 @@ environment.  This implementation is not safe for multithreaded code.
 # include <config.h>
 #endif
 
+#define setenv libiberty_setenv
+#define unsetenv libiberty_unsetenv
+
 #include "ansidecl.h"
 #include <sys/types.h> /* For `size_t' */
 #include <stdio.h>     /* For `NULL' */
@@ -60,6 +63,9 @@ extern int errno;
 #ifndef HAVE_ENVIRON_DECL
 extern char **environ;
 #endif
+
+#undef setenv
+#undef unsetenv
 
 /* LOCK and UNLOCK are defined as no-ops.  This makes the libiberty
  * implementation MT-Unsafe. */
