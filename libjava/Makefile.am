@@ -2183,6 +2183,7 @@ gnu/java/math/MPN.java \
 gnu/java/net/PlainDatagramSocketImpl.java \
 gnu/java/net/PlainSocketImpl.java \
 gnu/java/nio/DatagramChannelImpl.java \
+gnu/java/nio/DatagramChannelSelectionKey.java \
 gnu/java/nio/FileLockImpl.java \
 gnu/java/nio/NIOConstants.java \
 gnu/java/nio/NIODatagramSocket.java \
@@ -2193,6 +2194,7 @@ gnu/java/nio/SelectorImpl.java \
 gnu/java/nio/SelectorProviderImpl.java \
 gnu/java/nio/ServerSocketChannelImpl.java \
 gnu/java/nio/SocketChannelImpl.java \
+gnu/java/nio/SocketChannelSelectionKey.java \
 gnu/java/nio/charset/ISO_8859_1.java \
 gnu/java/nio/charset/Provider.java \
 gnu/java/nio/charset/US_ASCII.java \

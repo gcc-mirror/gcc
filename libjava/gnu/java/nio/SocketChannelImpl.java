@@ -98,6 +98,11 @@ public final class SocketChannelImpl extends SocketChannel
       }
   }
 
+  int getNativeFD()
+  {
+    return socket.getImpl().getNativeFD();
+  }
+
   protected void implCloseSelectableChannel () throws IOException
   {
     connected = false;

@@ -1,5 +1,24 @@
 2003-09-25  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/DatagramChannelImpl.java
+	(getNativeFD): New method.
+	* gnu/java/nio/SelectionKeyImpl.java
+	(SelectionKeyImpl): Class made abstract.
+	(fd): Removed.
+	(SelectionKeyImpl): Remove fd argument.
+	(getNativeFD): New method.
+	* gnu/java/nio/SocketChannelImpl.java
+	(getNativeFD): New method.
+	gnu/java/nio/DatagramChannelSelectionKey.java,
+	* gnu/java/nio/SocketChannelSelectionKey.java:
+	New files.
+	* Makefile.am (ordinary_java_source_files):
+	Added new files gnu/java/nio/DatagramChannelSelectionKey.java and
+	gnu/java/nio/SocketChannelSelectionKey.java.
+	* Makefile.in: Regenerated.
+
+2003-09-25  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/reflect/Proxy.java
 	(getProxyClass): Remove workaround for gcj 3.0.x.
 
