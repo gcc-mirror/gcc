@@ -1,5 +1,10 @@
 2004-11-23  Ralf Corsepius <ralf.corsepius@rtems.org>
 
+	* config/arm/t-rtems: New.
+	* config.gcc: Reflect having added arm/t-rtems.
+
+2004-11-23  Ralf Corsepius <ralf.corsepius@rtems.org>
+
 	* config.gcc: Add avr-*-rtems*.
 	* config/avr/t-rtems: New.
 	* config/avr/rtems.h: New.
