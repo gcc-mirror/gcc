@@ -10090,6 +10090,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    if (type == error_mark_node)
 	      continue;
 
+	    /* VC++ spells a zero-sized array with [].  */
+	    if (size == NULL_TREE && decl_context == FIELD && ! staticp)
+	      size = integer_zero_node;
+
 	    if (size)
 	      {
 		/* Must suspend_momentary here because the index
@@ -12354,9 +12358,17 @@ xref_tag (code_type_node, name, globalize)
 	{
 	  if (t)
 	    {
-	      if (t != TYPE_MAIN_VARIANT (t))
+	      /* [dcl.type.elab] If the identifier resolves to a
+		 typedef-name or a template type-parameter, the
+		 elaborated-type-specifier is ill-formed.  */
+	      if (t != TYPE_MAIN_VARIANT (t)
+		  || (CLASS_TYPE_P (t) && TYPE_WAS_ANONYMOUS (t)))
 		cp_pedwarn ("using typedef-name `%D' after `%s'",
 			    TYPE_NAME (t), tag_name (tag_code));
+	      else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
+		cp_error ("using template type parameter `%T' after `%s'",
+			  t, tag_name (tag_code));
+
 	      ref = t;
 	    }
 	  else
@@ -12480,19 +12492,6 @@ xref_tag (code_type_node, name, globalize)
   pop_obstacks ();
 
   TREE_TYPE (ref) = attributes;
-
-  if (ref && TYPE_P (ref))
-    {
-      /* [dcl.type.elab]
-	     
-	 If the identifier resolves to a typedef-name or a template
-	 type-parameter, the elaborated-type-specifier is
-	 ill-formed.  */
-      if (TYPE_LANG_SPECIFIC (ref) && TYPE_WAS_ANONYMOUS (ref))
-	cp_error ("`%T' is a typedef name", ref);
-      else if (TREE_CODE (ref) == TEMPLATE_TYPE_PARM)
-	cp_error ("`%T' is a template type paramter", ref);
-    }
 
   return ref;
 }
