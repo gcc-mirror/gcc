@@ -1943,11 +1943,11 @@ i960_function_arg_advance (cum, mode, type, named)
   i960_arg_size_and_align (mode, type, &size, &align);
 
   if (named == 0 || size > 4 || cum->ca_nstackparms != 0
-      || (size + ROUND (cum->ca_nregparms, align)) > NPARM_REGS
+      || (size + ROUND_PARM (cum->ca_nregparms, align)) > NPARM_REGS
       || MUST_PASS_IN_STACK (mode, type))
-    cum->ca_nstackparms = ROUND (cum->ca_nstackparms, align) + size;
+    cum->ca_nstackparms = ROUND_PARM (cum->ca_nstackparms, align) + size;
   else
-    cum->ca_nregparms = ROUND (cum->ca_nregparms, align) + size;
+    cum->ca_nregparms = ROUND_PARM (cum->ca_nregparms, align) + size;
 }
 
 /* Return the register that the argument described by MODE and TYPE is
@@ -1966,15 +1966,15 @@ i960_function_arg (cum, mode, type, named)
   i960_arg_size_and_align (mode, type, &size, &align);
 
   if (named == 0 || size > 4 || cum->ca_nstackparms != 0
-      || (size + ROUND (cum->ca_nregparms, align)) > NPARM_REGS
+      || (size + ROUND_PARM (cum->ca_nregparms, align)) > NPARM_REGS
       || MUST_PASS_IN_STACK (mode, type))
     {
-      cum->ca_nstackparms = ROUND (cum->ca_nstackparms, align);
+      cum->ca_nstackparms = ROUND_PARM (cum->ca_nstackparms, align);
       ret = 0;
     }
   else
     {
-      cum->ca_nregparms = ROUND (cum->ca_nregparms, align);
+      cum->ca_nregparms = ROUND_PARM (cum->ca_nregparms, align);
       ret = gen_rtx (REG, mode, cum->ca_nregparms);
     }
 
