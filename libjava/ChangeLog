@@ -1,3 +1,19 @@
+2003-10-21  Sascha Brawer  <brawer@dandelis.ch>
+
+	Fix for Classpath bug #6076.
+	* java/awt/geom/GeneralPath.java (append): Re-written.
+
+2003-10-21  Sascha Brawer  <brawer@dandelis.ch>
+
+	Fix for Classpath bug #6089.
+	* java/awt/geom/GeneralPath.java (curveTo): Set correct segment type.
+	(getPathIterator, GeneralPathIterator): Re-written from scratch.
+
+2003-10-21  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/geom/GeneralPath.java (getCurrentPoint): Return last
+	point, not start of subpath.  Fixes Classpath bug #6075.
+
 2003-10-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/ByteOrder.java,
