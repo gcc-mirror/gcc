@@ -59,51 +59,53 @@
 
 namespace std
 {
-  void 
-  _Rb_tree_base_iterator::_M_increment()
+  _Rb_tree_node_base*
+  _Rb_tree_increment(_Rb_tree_node_base* __x)
   {
-    if (_M_node->_M_right != 0) 
+    if (__x->_M_right != 0) 
       {
-        _M_node = _M_node->_M_right;
-        while (_M_node->_M_left != 0)
-          _M_node = _M_node->_M_left;
+        __x = __x->_M_right;
+        while (__x->_M_left != 0)
+          __x = __x->_M_left;
       }
     else 
       {
-        _Base_ptr __y = _M_node->_M_parent;
-        while (_M_node == __y->_M_right) 
+        _Rb_tree_node_base* __y = __x->_M_parent;
+        while (__x == __y->_M_right) 
           {
-            _M_node = __y;
+            __x = __y;
             __y = __y->_M_parent;
           }
-        if (_M_node->_M_right != __y)
-          _M_node = __y;
+        if (__x->_M_right != __y)
+          __x = __y;
       }
+    return __x;
   }
 
-  void 
-  _Rb_tree_base_iterator::_M_decrement()
+  _Rb_tree_node_base*
+  _Rb_tree_decrement(_Rb_tree_node_base* __x)
   {
-    if (_M_node->_M_color == _S_red 
-        && _M_node->_M_parent->_M_parent == _M_node)
-      _M_node = _M_node->_M_right;
-    else if (_M_node->_M_left != 0) 
+    if (__x->_M_color == _S_red 
+        && __x->_M_parent->_M_parent == __x)
+      __x = __x->_M_right;
+    else if (__x->_M_left != 0) 
       {
-        _Base_ptr __y = _M_node->_M_left;
+        _Rb_tree_node_base* __y = __x->_M_left;
         while (__y->_M_right != 0)
           __y = __y->_M_right;
-        _M_node = __y;
+        __x = __y;
       }
     else 
       {
-        _Base_ptr __y = _M_node->_M_parent;
-        while (_M_node == __y->_M_left) 
+        _Rb_tree_node_base* __y = __x->_M_parent;
+        while (__x == __y->_M_left) 
           {
-            _M_node = __y;
+            __x = __y;
             __y = __y->_M_parent;
           }
-        _M_node = __y;
+        __x = __y;
       }
+    return __x;
   }
 
   void 
@@ -361,5 +363,24 @@ namespace std
 	if (__x) __x->_M_color = _S_black;
       }
     return __y;
+  }
+
+  unsigned int
+  _Rb_tree_black_count(const _Rb_tree_node_base* __node,
+                       const _Rb_tree_node_base* __root)
+  {
+    if (__node == 0)
+      return 0;
+    unsigned int __sum = 0;
+    do 
+      {
+	if (__node->_M_color == _S_black) 
+	  ++__sum;
+	if (__node == __root) 
+	  break;
+	__node = __node->_M_parent;
+      } 
+    while (1);
+    return __sum;
   }
 } // namespace std 
