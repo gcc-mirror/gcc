@@ -987,14 +987,13 @@ split_tree (in, code, varp, conp, varsignp)
     in = TREE_OPERAND (in, 0);
 
   if (TREE_CODE (in) == code
-      || (TREE_CODE (TREE_TYPE (in)) != REAL_TYPE
+      || (! FLOAT_TYPE_P (TREE_TYPE (in))
 	  /* We can associate addition and subtraction together
 	     (even though the C standard doesn't say so)
 	     for integers because the value is not affected.
 	     For reals, the value might be affected, so we can't.  */
-	  &&
-	  ((code == PLUS_EXPR && TREE_CODE (in) == MINUS_EXPR)
-	   || (code == MINUS_EXPR && TREE_CODE (in) == PLUS_EXPR))))
+	  && ((code == PLUS_EXPR && TREE_CODE (in) == MINUS_EXPR)
+	      || (code == MINUS_EXPR && TREE_CODE (in) == PLUS_EXPR))))
     {
       enum tree_code code = TREE_CODE (TREE_OPERAND (in, 0));
       if (code == INTEGER_CST)
@@ -1503,9 +1502,7 @@ fold_convert (t, arg1)
 {
   register tree type = TREE_TYPE (t);
 
-  if (TREE_CODE (type) == POINTER_TYPE
-      || TREE_CODE (type) == INTEGER_TYPE
-      || TREE_CODE (type) == ENUMERAL_TYPE)
+  if (TREE_CODE (type) == POINTER_TYPE || INTEGRAL_TYPE_P (type))
     {
       if (TREE_CODE (arg1) == INTEGER_CST)
 	{
@@ -1820,7 +1817,7 @@ operand_equal_for_comparison_p (arg0, arg1, other)
   if (operand_equal_p (arg0, arg1, 0))
     return 1;
 
-  if (TREE_CODE (TREE_TYPE (arg0)) != INTEGER_TYPE)
+  if (! INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
     return 0;
 
   /* Duplicate what shorten_compare does to ARG1 and see if that gives the
@@ -2052,7 +2049,7 @@ invert_truthvalue (arg)
 
   if (TREE_CODE_CLASS (code) == '<')
     {
-      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 0))) == REAL_TYPE
+      if (FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (arg, 0)))
 	  && code != NE_EXPR && code != EQ_EXPR)
 	return build1 (TRUTH_NOT_EXPR, type, arg);
       else
@@ -2614,8 +2611,7 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
 
   /* Fail if VAR isn't an integer.  */
   utype = TREE_TYPE (var);
-  if (TREE_CODE (utype) != INTEGER_TYPE
-      && TREE_CODE (utype) != ENUMERAL_TYPE)
+  if (! INTEGRAL_TYPE_P (utype))
     return 0;
 
   /* The range test is invalid if subtracting the two constants results
@@ -2754,7 +2750,7 @@ fold_truthop (code, truth_type, lhs, rhs)
      are with zero (tmw).  */
 
   if (BRANCH_COST >= 2
-      && TREE_CODE (TREE_TYPE (rhs)) == INTEGER_TYPE
+      && INTEGRAL_TYPE_P (TREE_TYPE (rhs))
       && simple_operand_p (rl_arg)
       && simple_operand_p (rr_arg))
     return build (code, truth_type, lhs, rhs);
@@ -3329,7 +3325,7 @@ fold (expr)
 	return TREE_OPERAND (arg0, 0);
 
       /* Convert - (a - b) to (b - a) for non-floating-point.  */
-      else if (TREE_CODE (arg0) == MINUS_EXPR && TREE_CODE (type) != REAL_TYPE)
+      else if (TREE_CODE (arg0) == MINUS_EXPR && ! FLOAT_TYPE_P (type))
 	return build (MINUS_EXPR, type, TREE_OPERAND (arg0, 1),
 		      TREE_OPERAND (arg0, 0));
 
@@ -3384,7 +3380,7 @@ fold (expr)
       /* A + (-B) -> A - B */
       if (TREE_CODE (arg1) == NEGATE_EXPR)
 	return fold (build (MINUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0)));
-      else if (TREE_CODE (type) != REAL_TYPE)
+      else if (! FLOAT_TYPE_P (type))
 	{
 	  if (integer_zerop (arg1))
 	    return non_lvalue (convert (type, arg0));
@@ -3413,7 +3409,7 @@ fold (expr)
       /* In most languages, can't associate operations on floats
 	 through parentheses.  Rather than remember where the parentheses
 	 were, we don't associate floats at all.  It shouldn't matter much.  */
-      if (TREE_CODE (type) == REAL_TYPE)
+      if (FLOAT_TYPE_P (type))
 	goto binary;
       /* The varsign == -1 cases happen only for addition and subtraction.
 	 It says that the arg that was split was really CON minus VAR.
@@ -3524,7 +3520,7 @@ fold (expr)
       return t;
 
     case MINUS_EXPR:
-      if (TREE_CODE (type) != REAL_TYPE)
+      if (! FLOAT_TYPE_P (type))
 	{
 	  if (! wins && integer_zerop (arg0))
 	    return build1 (NEGATE_EXPR, type, arg1);
@@ -3549,14 +3545,13 @@ fold (expr)
 	     Also note that operand_equal_p is always false if an operand
 	     is volatile.  */
 
-	  if (operand_equal_p (arg0, arg1,
-			       TREE_CODE (type) == REAL_TYPE))
+	  if (operand_equal_p (arg0, arg1, FLOAT_TYPE_P (type)))
 	    return convert (type, integer_zero_node);
 	}
       goto associate;
 
     case MULT_EXPR:
-      if (TREE_CODE (type) != REAL_TYPE)
+      if (! FLOAT_TYPE_P (type))
 	{
 	  if (integer_zerop (arg1))
 	    return omit_one_operand (type, arg1, arg0);
@@ -3764,7 +3759,7 @@ fold (expr)
     case MIN_EXPR:
       if (operand_equal_p (arg0, arg1, 0))
 	return arg0;
-      if (TREE_CODE (type) == INTEGER_TYPE
+      if (INTEGRAL_TYPE_P (type)
 	  && operand_equal_p (arg1, TYPE_MIN_VALUE (type), 1))
 	return omit_one_operand (type, arg1, arg0);
       goto associate;
@@ -3772,7 +3767,7 @@ fold (expr)
     case MAX_EXPR:
       if (operand_equal_p (arg0, arg1, 0))
 	return arg0;
-      if (TREE_CODE (type) == INTEGER_TYPE
+      if (INTEGRAL_TYPE_P (type)
 	  && operand_equal_p (arg1, TYPE_MAX_VALUE (type), 1))
 	return omit_one_operand (type, arg1, arg0);
       goto associate;
@@ -3891,7 +3886,7 @@ fold (expr)
 	       This optimization is invalid for floating point due to rounding.
 	       For pointer types we assume overflow doesn't happen.  */
 	    if (TREE_CODE (TREE_TYPE (varop)) == POINTER_TYPE
-		|| (TREE_CODE (TREE_TYPE (varop)) != REAL_TYPE
+		|| (! FLOAT_TYPE_P (TREE_TYPE (varop))
 		    && (code == EQ_EXPR || code == NE_EXPR)))
 	      {
 		tree newconst
@@ -3905,7 +3900,7 @@ fold (expr)
 	else if (constop && TREE_CODE (varop) == POSTDECREMENT_EXPR)
 	  {
 	    if (TREE_CODE (TREE_TYPE (varop)) == POINTER_TYPE
-		|| (TREE_CODE (TREE_TYPE (varop)) != REAL_TYPE
+		|| (! FLOAT_TYPE_P (TREE_TYPE (varop))
 		    && (code == EQ_EXPR || code == NE_EXPR)))
 	      {
 		tree newconst
@@ -3999,7 +3994,7 @@ fold (expr)
 	    case EQ_EXPR:
 	    case GE_EXPR:
 	    case LE_EXPR:
-	      if (TREE_CODE (TREE_TYPE (arg0)) == INTEGER_TYPE)
+	      if (INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
 		{
 		  t = build_int_2 (1, 0);
 		  TREE_TYPE (t) = type;
@@ -4011,7 +4006,7 @@ fold (expr)
 
 	    case NE_EXPR:
 	      /* For NE, we can only do this simplification if integer.  */
-	      if (TREE_CODE (TREE_TYPE (arg0)) != INTEGER_TYPE)
+	      if (! INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
 		break;
 	      /* ... fall through ... */
 	    case GT_EXPR:
@@ -4024,7 +4019,7 @@ fold (expr)
 
       /* An unsigned comparison against 0 can be simplified.  */
       if (integer_zerop (arg1)
-	  && (TREE_CODE (TREE_TYPE (arg1)) == INTEGER_TYPE
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (arg1))
 	      || TREE_CODE (TREE_TYPE (arg1)) == POINTER_TYPE)
 	  && TREE_UNSIGNED (TREE_TYPE (arg1)))
 	{
@@ -4070,7 +4065,7 @@ fold (expr)
 	      && cval1 != 0 && cval2 != 0
 	      && ! (TREE_CONSTANT (cval1) && TREE_CONSTANT (cval2))
 	      && TREE_TYPE (cval1) == TREE_TYPE (cval2)
-	      && TREE_CODE (TREE_TYPE (cval1)) == INTEGER_TYPE
+	      && INTEGRAL_TYPE_P (TREE_TYPE (cval1))
 	      && ! operand_equal_p (TYPE_MIN_VALUE (TREE_TYPE (cval1)),
 				    TYPE_MAX_VALUE (TREE_TYPE (cval2)), 0))
 	    {
@@ -4279,7 +4274,7 @@ fold (expr)
 
       if (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
 	  && (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	      || TREE_CODE (TREE_TYPE (TREE_OPERAND (arg0, 0))) != REAL_TYPE)
+	      || ! FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (arg0, 0))))
 	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0),
 					     arg1, TREE_OPERAND (arg0, 1)))
 	{
@@ -4340,9 +4335,9 @@ fold (expr)
 	     we might still be able to simplify this.  For example,
 	     if C1 is one less or one more than C2, this might have started
 	     out as a MIN or MAX and been transformed by this function.
-	     Only good for INTEGER_TYPE, because we need TYPE_MAX_VALUE.  */
+	     Only good for INTEGER_TYPEs, because we need TYPE_MAX_VALUE.  */
 
-	  if (TREE_CODE (type) == INTEGER_TYPE
+	  if (INTEGRAL_TYPE_P (type)
 	      && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	      && TREE_CODE (arg2) == INTEGER_CST)
 	    switch (comp_code)
