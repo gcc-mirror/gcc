@@ -355,7 +355,7 @@ struct temp_slot
      slot above.  May be an EXPR_LIST if multiple addresses exist.  */
   rtx address;
   /* The size, in units, of the slot.  */
-  int size;
+  HOST_WIDE_INT size;
   /* The value of `sequence_rtl_expr' when this temporary is allocated.  */
   tree rtl_expr;
   /* Non-zero if this temporary is currently in use.  */
@@ -368,10 +368,10 @@ struct temp_slot
   int keep;
   /* The offset of the slot from the frame_pointer, including extra space
      for alignment.  This info is for combine_temp_slots.  */
-  int base_offset;
+  HOST_WIDE_INT base_offset;
   /* The size of the slot, including extra space for alignment.  This
      info is for combine_temp_slots.  */
-  int full_size;
+  HOST_WIDE_INT full_size;
 };
 
 /* List of all temporaries allocated, both available and in use.  */
@@ -464,9 +464,11 @@ find_function_data (decl)
      tree decl;
 {
   struct function *p;
+
   for (p = outer_function_chain; p; p = p->next)
     if (p->decl == decl)
       return p;
+
   abort ();
 }
 
@@ -672,7 +674,7 @@ get_frame_size ()
 rtx
 assign_stack_local (mode, size, align)
      enum machine_mode mode;
-     int size;
+     HOST_WIDE_INT size;
      int align;
 {
   register rtx x, addr;
@@ -741,7 +743,7 @@ assign_stack_local (mode, size, align)
 rtx
 assign_outer_stack_local (mode, size, align, function)
      enum machine_mode mode;
-     int size;
+     HOST_WIDE_INT size;
      int align;
      struct function *function;
 {
@@ -815,7 +817,7 @@ assign_outer_stack_local (mode, size, align, function)
 rtx
 assign_stack_temp (mode, size, keep)
      enum machine_mode mode;
-     int size;
+     HOST_WIDE_INT size;
      int keep;
 {
   struct temp_slot *p, *best_p = 0;
@@ -848,7 +850,7 @@ assign_stack_temp (mode, size, keep)
       if (GET_MODE (best_p->slot) == BLKmode)
 	{
 	  int alignment = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
-	  int rounded_size = CEIL_ROUND (size, alignment);
+	  HOST_WIDE_INT rounded_size = CEIL_ROUND (size, alignment);
 
 	  if (best_p->size - rounded_size >= alignment)
 	    {
@@ -879,11 +881,14 @@ assign_stack_temp (mode, size, keep)
   /* If we still didn't find one, make a new temporary.  */
   if (p == 0)
     {
-      int frame_offset_old = frame_offset;
+      HOST_WIDE_INT frame_offset_old = frame_offset;
+
       p = (struct temp_slot *) oballoc (sizeof (struct temp_slot));
+
       /* If the temp slot mode doesn't indicate the alignment,
 	 use the largest possible, so no one will be disappointed.  */
       p->slot = assign_stack_local (mode, size, mode == BLKmode ? -1 : 0);
+
       /* The following slot size computation is necessary because we don't
 	 know the actual size of the temporary slot until assign_stack_local
 	 has performed all the frame alignment and size rounding for the
@@ -896,6 +901,7 @@ assign_stack_temp (mode, size, keep)
 #else
       p->size = size;
 #endif
+
       /* Now define the fields used by combine_temp_slots.  */
 #ifdef FRAME_GROWS_DOWNWARD
       p->base_offset = frame_offset;
@@ -950,7 +956,7 @@ assign_temp (type, keep, memory_required, dont_promote)
 
   if (mode == BLKmode || memory_required)
     {
-      int size = int_size_in_bytes (type);
+      HOST_WIDE_INT size = int_size_in_bytes (type);
       rtx tmp;
 
       /* Unfortunately, we don't yet know how to allocate variable-sized
@@ -1068,7 +1074,7 @@ find_temp_slot_from_address (x)
 }
       
 /* Indicate that NEW is an alternate way of referring to the temp slot
-   that previous was known by OLD.  */
+   that previously was known by OLD.  */
 
 void
 update_temp_slot_address (old, new)
@@ -1879,8 +1885,8 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    {
 	      enum machine_mode wanted_mode = VOIDmode;
 	      enum machine_mode is_mode = GET_MODE (tem);
-	      int width = INTVAL (XEXP (x, 1));
-	      int pos = INTVAL (XEXP (x, 2));
+	      HOST_WIDE_INT width = INTVAL (XEXP (x, 1));
+	      HOST_WIDE_INT pos = INTVAL (XEXP (x, 2));
 
 #ifdef HAVE_extzv
 	      if (GET_CODE (x) == ZERO_EXTRACT)
@@ -1894,7 +1900,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	      if (wanted_mode != VOIDmode
 		  && GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
 		{
-		  int offset = pos / BITS_PER_UNIT;
+		  HOST_WIDE_INT offset = pos / BITS_PER_UNIT;
 		  rtx old_pos = XEXP (x, 2);
 		  rtx newmem;
 
@@ -2078,13 +2084,13 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		enum machine_mode wanted_mode
 		  = insn_operand_mode[(int) CODE_FOR_insv][0];
 		enum machine_mode is_mode = GET_MODE (tem);
-		int width = INTVAL (XEXP (outerdest, 1));
-		int pos = INTVAL (XEXP (outerdest, 2));
+		HOST_WIDE_INT width = INTVAL (XEXP (outerdest, 1));
+		HOST_WIDE_INT pos = INTVAL (XEXP (outerdest, 2));
 
 		/* If we have a narrower mode, we can do something.  */
 		if (GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
 		  {
-		    int offset = pos / BITS_PER_UNIT;
+		    HOST_WIDE_INT offset = pos / BITS_PER_UNIT;
 		    rtx old_pos = XEXP (outerdest, 2);
 		    rtx newmem;
 
@@ -2489,7 +2495,7 @@ optimize_bit_field (body, insn, equiv_mem)
 	     that we are now getting rid of,
 	     and then for which byte of the word is wanted.  */
 
-	  register int offset = INTVAL (XEXP (bitfield, 2));
+	  HOST_WIDE_INT offset = INTVAL (XEXP (bitfield, 2));
 	  rtx insns;
 
 	  /* Adjust OFFSET to count bits from low-address byte.  */
@@ -2865,7 +2871,8 @@ instantiate_decls (fndecl, valid_only)
   /* Process all parameters of the function.  */
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
     {
-      int size = int_size_in_bytes (TREE_TYPE (decl));
+      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
+
       instantiate_decl (DECL_RTL (decl), size, valid_only);	
 
       /* If the parameter was promoted, then the incoming RTL mode may be
@@ -2995,7 +3002,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
   rtx x;
   RTX_CODE code;
   rtx new = 0;
-  int offset;
+  HOST_WIDE_INT offset;
   rtx temp;
   rtx seq;
   int i, j;
@@ -4826,7 +4833,7 @@ fix_lexical_addr (addr, var)
      tree var;
 {
   rtx basereg;
-  int displacement;
+  HOST_WIDE_INT displacement;
   tree context = decl_function_context (var);
   struct function *fp;
   rtx base = 0;
