@@ -3554,8 +3554,7 @@ pushdecl (x)
   /* Type are looked up using the DECL_NAME, as that is what the rest of the
      compiler wants to use.  */
   if (TREE_CODE (x) == TYPE_DECL || TREE_CODE (x) == VAR_DECL
-      || TREE_CODE (x) == NAMESPACE_DECL || TREE_CODE (x) == TEMPLATE_TYPE_PARM
-      || TREE_CODE (x) == TEMPLATE_TEMPLATE_PARM)
+      || TREE_CODE (x) == NAMESPACE_DECL)
     name = DECL_NAME (x);
 
   if (name)

@@ -2963,7 +2963,7 @@ finish_objects (method_type, initp)
 {
   char *fnname;
 
-  if (! initp)
+  if (initp == DEFAULT_INIT_PRIORITY)
     {
       tree list = (method_type == 'I' ? static_ctors : static_dtors);
 
