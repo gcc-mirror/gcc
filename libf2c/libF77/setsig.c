@@ -9,31 +9,28 @@
 #endif
 #endif
 
-#undef VOID
 #include <stdlib.h>
 
-#ifndef VOID
-#define VOID void
-#endif
-
 extern void sig_die(char*, int);
-#define Int int
 
-static VOID sigfdie(Sigarg)
+static void
+sigfdie(Sigarg)
 {
 Use_Sigarg;
 sig_die("Floating Exception", 1);
 }
 
 
-static VOID sigidie(Sigarg)
+static void
+sigidie(Sigarg)
 {
 Use_Sigarg;
 sig_die("IOT Trap", 1);
 }
 
 #ifdef SIGQUIT
-static VOID sigqdie(Sigarg)
+static void
+sigqdie(Sigarg)
 {
 Use_Sigarg;
 sig_die("Quit signal", 1);
@@ -41,20 +38,23 @@ sig_die("Quit signal", 1);
 #endif
 
 
-static VOID sigindie(Sigarg)
+static void
+sigindie(Sigarg)
 {
 Use_Sigarg;
 sig_die("Interrupt", 0);
 }
 
-static VOID sigtdie(Sigarg)
+static void
+sigtdie(Sigarg)
 {
 Use_Sigarg;
 sig_die("Killed", 0);
 }
 
 #ifdef SIGTRAP
-static VOID sigtrdie(Sigarg)
+static void
+sigtrdie(Sigarg)
 {
 Use_Sigarg;
 sig_die("Trace trap", 1);

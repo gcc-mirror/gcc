@@ -63,7 +63,7 @@ un_getc(int x, FILE *f__cf)
 extern int ungetc(int, FILE*);	/* for systems with a buggy stdio.h */
 #endif
 
-t_getc(Void)
+t_getc(void)
 {	int ch;
 	if(f__curunit->uend) return(EOF);
 	if((ch=getc(f__cf))!=EOF) return(ch);
@@ -71,7 +71,7 @@ t_getc(Void)
 		f__curunit->uend = l_eof = 1;
 	return(EOF);
 }
-integer e_rsle(Void)
+integer e_rsle(void)
 {
 	int ch;
 	f__init = 1;
@@ -253,7 +253,7 @@ rd_count(register int ch)
 	}
 
  static int
-l_C(Void)
+l_C(void)
 {	int ch, nml_save;
 	double lz;
 	if(f__lcount>0) return(0);
@@ -317,11 +317,11 @@ l_C(Void)
 }
 
  static char nmLbuf[256], *nmL_next;
- static int (*nmL_getc_save)(Void);
+ static int (*nmL_getc_save)(void);
  static int (*nmL_ungetc_save)(int, FILE*);
 
  static int
-nmL_getc(Void)
+nmL_getc(void)
 {
 	int rv;
 	if (rv = *nmL_next++)
@@ -386,7 +386,7 @@ Lfinish(int ch, int dot, int *rvp)
 	}
 
  static int
-l_L(Void)
+l_L(void)
 {
 	int ch, rv, sawdot;
 	if(f__lcount>0)
@@ -444,7 +444,7 @@ l_L(Void)
 #define BUFSIZE	128
 
  static int
-l_CHAR(Void)
+l_CHAR(void)
 {	int ch,size,i;
 	static char rafail[] = "realloc failure";
 	char quote,*p;

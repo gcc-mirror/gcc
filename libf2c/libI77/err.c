@@ -162,8 +162,8 @@ f__fatal(int n, char *s)
 	sig_die(" IO", 1);
 }
 /*initialization routine*/
- VOID
-f_init(Void)
+void
+f_init(void)
 {	unit *p;
 
 	if (f__init & 2)

@@ -43,7 +43,7 @@ integer s_wdue(cilist *a)
 		err(a->cierr,errno,"write start");
 	return(0);
 }
-integer e_rdue(Void)
+integer e_rdue(void)
 {
 	f__init = 1;
 	if(f__curunit->url==1 || f__recpos==f__curunit->url)
@@ -53,7 +53,7 @@ integer e_rdue(Void)
 		err(f__elist->cierr,200,"syserr");
 	return(0);
 }
-integer e_wdue(Void)
+integer e_wdue(void)
 {
 	f__init = 1;
 #ifdef ALWAYS_FLUSH

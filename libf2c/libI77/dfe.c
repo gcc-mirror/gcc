@@ -3,7 +3,7 @@
 #include "fio.h"
 #include "fmt.h"
 
-y_rsk(Void)
+y_rsk(void)
 {
 	if(f__curunit->uend || f__curunit->url <= f__recpos
 		|| f__curunit->url == 1) return 0;
@@ -12,7 +12,7 @@ y_rsk(Void)
 	} while(++f__recpos < f__curunit->url);
 	return 0;
 }
-y_getc(Void)
+y_getc(void)
 {
 	int ch;
 	if(f__curunit->uend) return(-1);
@@ -34,7 +34,7 @@ y_getc(Void)
 }
 
  static int
-y_rev(Void)
+y_rev(void)
 {
 	if (f__recpos < f__hiwater)
 		f__recpos = f__hiwater;
@@ -48,13 +48,13 @@ y_rev(Void)
 }
 
  static int
-y_err(Void)
+y_err(void)
 {
 	err(f__elist->cierr, 110, "dfe");
 }
 
  static int
-y_newrec(Void)
+y_newrec(void)
 {
 	y_rev();
 	f__hiwater = f__cursor = 0;
@@ -121,14 +121,14 @@ integer s_wdfe(cilist *a)
 	fmt_bg();
 	return(0);
 }
-integer e_rdfe(Void)
+integer e_rdfe(void)
 {
 	f__init = 1;
 	en_fio();
 	return(0);
 }
 
-integer e_wdfe(Void)
+integer e_wdfe(void)
 {
 	f__init = 1;
 	return en_fio();

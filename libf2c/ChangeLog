@@ -1,3 +1,14 @@
+Fri May 31 21:56:30 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g2c.hin, libF77/d_cnjg.c, libF77/main.c, libF77/r_cnjg.c,
+	libF77/s_cat.c, libF77/s_paus.c, libF77/s_rnge.c, libF77/setarg.c,
+	libF77/setsig.c, libF77/signal1.h0, libI77/dfe.c, libI77/due.c,
+	libI77/err.c, libI77/fio.h, libI77/fmt.c, libI77/iio.c,
+	libI77/ilnw.c, libI77/lread.c, libI77/lwrite.c, libI77/rsfe.c,
+	libI77/rsli.c, libI77/rsne.c, libI77/sfe.c, libI77/sue.c,
+	libI77/util.c, libI77/wrtfmt.c, libI77/wsfe.c, libI77/wsle.c,
+	libI77/xwsne.c, libU77/date_.c: Kill VOID, Void and Int.
+
 Fri May 31 21:54:37 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libF77/F77_aloc.c, libF77/exit_.c, libF77/main.c,

@@ -14,7 +14,7 @@
 #include <string.h>
 #endif /* NO_OVERWRITE */
 
- VOID
+void
 s_cat(char *lp, char *rpp[], ftnint rnp[], ftnint *np, ftnlen ll)
 {
 	ftnlen i, nc;

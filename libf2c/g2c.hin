@@ -132,8 +132,6 @@ typedef struct
 	ftnlen	inblanklen;
 } inlist;
 
-#define VOID void
-
 union Multitype {	/* for multiple entry points */
 	integer1 g;
 	shortint h;
@@ -183,11 +181,11 @@ typedef shortint (*J_fp)(...);
 typedef integer (*I_fp)(...);
 typedef real (*R_fp)(...);
 typedef doublereal (*D_fp)(...), (*E_fp)(...);
-typedef /* Complex */ VOID (*C_fp)(...);
-typedef /* Double Complex */ VOID (*Z_fp)(...);
+typedef /* Complex */ void (*C_fp)(...);
+typedef /* Double Complex */ void (*Z_fp)(...);
 typedef logical (*L_fp)(...);
 typedef shortlogical (*K_fp)(...);
-typedef /* Character */ VOID (*H_fp)(...);
+typedef /* Character */ void (*H_fp)(...);
 typedef /* Subroutine */ int (*S_fp)(...);
 #else
 typedef int /* Unknown procedure type */ (*U_fp)();
@@ -195,17 +193,17 @@ typedef shortint (*J_fp)();
 typedef integer (*I_fp)();
 typedef real (*R_fp)();
 typedef doublereal (*D_fp)(), (*E_fp)();
-typedef /* Complex */ VOID (*C_fp)();
-typedef /* Double Complex */ VOID (*Z_fp)();
+typedef /* Complex */ void (*C_fp)();
+typedef /* Double Complex */ void (*Z_fp)();
 typedef logical (*L_fp)();
 typedef shortlogical (*K_fp)();
-typedef /* Character */ VOID (*H_fp)();
+typedef /* Character */ void (*H_fp)();
 typedef /* Subroutine */ int (*S_fp)();
 #endif
 /* E_fp is for real functions when -R is not specified */
-typedef VOID C_f;	/* complex function */
-typedef VOID H_f;	/* character function */
-typedef VOID Z_f;	/* double complex function */
+typedef void C_f;	/* complex function */
+typedef void H_f;	/* character function */
+typedef void Z_f;	/* double complex function */
 typedef doublereal E_f;	/* real function with -R not specified */
 
 /* undef any lower-case symbols that your C compiler predefines, e.g.: */

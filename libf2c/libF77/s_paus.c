@@ -3,23 +3,21 @@
 #define PAUSESIG 15
 
 #include "signal1.h"
-#define Void void
-#define Int int
 #undef abs
 #undef min
 #undef max
 #include <stdlib.h>
 extern int getpid(void), isatty(int), pause(void);
 
-extern VOID f_exit(Void);
+extern void f_exit(void);
 
- static VOID
+static void
 waitpause(Sigarg)
 {	Use_Sigarg;
 	return;
 	}
 
- static VOID
+static void
 s_1paus(FILE *fin)
 {
 	fprintf(stderr,

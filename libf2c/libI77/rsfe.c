@@ -4,7 +4,7 @@
 #include "fio.h"
 #include "fmt.h"
 
-xrd_SL(Void)
+xrd_SL(void)
 {	int ch;
 	if(!f__curunit->uend)
 		while((ch=getc(f__cf))!='\n')
@@ -15,7 +15,7 @@ xrd_SL(Void)
 	f__cursor=f__recpos=0;
 	return(1);
 }
-x_getc(Void)
+x_getc(void)
 {	int ch;
 	if(f__curunit->uend) return(EOF);
 	ch = getc(f__cf);
@@ -34,12 +34,12 @@ x_getc(Void)
 	}
 	return(-1);
 }
-x_endp(Void)
+x_endp(void)
 {
 	xrd_SL();
 	return f__curunit->uend == 1 ? EOF : 0;
 }
-x_rev(Void)
+x_rev(void)
 {
 	(void) xrd_SL();
 	return(0);
