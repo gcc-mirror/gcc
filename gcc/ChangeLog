@@ -1,3 +1,12 @@
+2004-09-30  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-alias.c (collect_points_to_info_r): Move analysis of
+	expressions...
+	(add_pointed_to_expr): ... here.
+	Call add_pointed_to_expr for variables with DECL_INITIAL set.
+	* tree-dfa.c (add_referenced_var): Scan DECL_INITIAL of any
+	pointer variable, if set.
+
 2004-09-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/sh/sh.c: Follow spelling conventions.

@@ -147,7 +147,6 @@ static void setup_pointers_and_addressables (struct alias_info *);
 static bool collect_points_to_info_r (tree, tree, void *);
 static bool is_escape_site (tree, size_t *);
 static void add_pointed_to_var (struct alias_info *, tree, tree);
-static void add_pointed_to_expr (tree, tree);
 static void create_global_var (void);
 static void collect_points_to_info_for (struct alias_info *, tree);
 static bool ptr_is_dereferenced_by (tree, tree, bool *);
@@ -1753,41 +1752,78 @@ merge_pointed_to_info (struct alias_info *ai, tree dest, tree orig)
 }
 
 
-/* Add VALUE to the list of expressions pointed-to by PTR.  */
+/* Add EXPR to the list of expressions pointed-to by PTR.  */
 
 static void
-add_pointed_to_expr (tree ptr, tree value)
+add_pointed_to_expr (struct alias_info *ai, tree ptr, tree expr)
 {
-  if (TREE_CODE (value) == WITH_SIZE_EXPR)
-    value = TREE_OPERAND (value, 0);
-
-  /* Pointer variables should have been handled by merge_pointed_to_info.  */
-  gcc_assert (TREE_CODE (value) != SSA_NAME
-	      || !POINTER_TYPE_P (TREE_TYPE (value)));
+  if (TREE_CODE (expr) == WITH_SIZE_EXPR)
+    expr = TREE_OPERAND (expr, 0);
 
   get_ptr_info (ptr);
 
-  /* If VALUE is the result of a malloc-like call, then the area pointed to
-     PTR is guaranteed to not alias with anything else.  */
-  if (TREE_CODE (value) == CALL_EXPR
-      && (call_expr_flags (value) & (ECF_MALLOC | ECF_MAY_BE_ALLOCA)))
-    set_pt_malloc (ptr);
-  else
-    set_pt_anything (ptr);
-
-  if (dump_file)
+  if (TREE_CODE (expr) == CALL_EXPR
+      && (call_expr_flags (expr) & (ECF_MALLOC | ECF_MAY_BE_ALLOCA)))
     {
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+      /* If EXPR is a malloc-like call, then the area pointed to PTR
+	 is guaranteed to not alias with anything else.  */
+      set_pt_malloc (ptr);
+    }
+  else if (TREE_CODE (expr) == ADDR_EXPR)
+    {
+      /* Found P_i = ADDR_EXPR  */
+      add_pointed_to_var (ai, ptr, expr);
+    }
+  else if (TREE_CODE (expr) == SSA_NAME && POINTER_TYPE_P (TREE_TYPE (expr)))
+    {
+      /* Found P_i = Q_j.  */
+      merge_pointed_to_info (ai, ptr, expr);
+    }
+  else if (TREE_CODE (expr) == PLUS_EXPR || TREE_CODE (expr) == MINUS_EXPR)
+    {
+      /* Found P_i = PLUS_EXPR or P_i = MINUS_EXPR  */
+      tree op0 = TREE_OPERAND (expr, 0);
+      tree op1 = TREE_OPERAND (expr, 1);
 
-      fprintf (dump_file, "Pointer ");
-      print_generic_expr (dump_file, ptr, dump_flags);
-      fprintf (dump_file, " points to ");
-      if (pi->pt_malloc)
-	fprintf (dump_file, "malloc space: ");
-      else
-	fprintf (dump_file, "an arbitrary address: ");
-      print_generic_expr (dump_file, value, dump_flags);
-      fprintf (dump_file, "\n");
+      /* Both operands may be of pointer type.  FIXME: Shouldn't
+	 we just expect PTR + OFFSET always?  */
+      if (POINTER_TYPE_P (TREE_TYPE (op0))
+	  && TREE_CODE (op0) != INTEGER_CST)
+	{
+	  if (TREE_CODE (op0) == SSA_NAME)
+	    merge_pointed_to_info (ai, ptr, op0);
+	  else if (TREE_CODE (op0) == ADDR_EXPR)
+	    add_pointed_to_var (ai, ptr, op0);
+	  else
+	    set_pt_anything (ptr);
+	}
+
+      if (POINTER_TYPE_P (TREE_TYPE (op1))
+	  && TREE_CODE (op1) != INTEGER_CST)
+	{
+	  if (TREE_CODE (op1) == SSA_NAME)
+	    merge_pointed_to_info (ai, ptr, op1);
+	  else if (TREE_CODE (op1) == ADDR_EXPR)
+	    add_pointed_to_var (ai, ptr, op1);
+	  else
+	    set_pt_anything (ptr);
+	}
+
+      /* Neither operand is a pointer?  VAR can be pointing anywhere.
+	 FIXME: Shouldn't we abort here?  If we get here, we found
+	 PTR = INT_CST + INT_CST, which should not be a valid pointer
+	 expression.  */
+      if (!(POINTER_TYPE_P (TREE_TYPE (op0))
+	    && TREE_CODE (op0) != INTEGER_CST)
+	  && !(POINTER_TYPE_P (TREE_TYPE (op1))
+	       && TREE_CODE (op1) != INTEGER_CST))
+	set_pt_anything (ptr);
+    }
+  else
+    {
+      /* If we can't recognize the expression, assume that PTR may
+	 point anywhere.  */
+      set_pt_anything (ptr);
     }
 }
 
@@ -1860,62 +1896,10 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
       {
 	tree rhs = TREE_OPERAND (stmt, 1);
 	STRIP_NOPS (rhs);
-
-	/* Found P_i = ADDR_EXPR  */
-	if (TREE_CODE (rhs) == ADDR_EXPR)
-	  add_pointed_to_var (ai, var, rhs);
-
-	/* Found P_i = Q_j.  */
-	else if (TREE_CODE (rhs) == SSA_NAME
-		 && POINTER_TYPE_P (TREE_TYPE (rhs)))
-	  merge_pointed_to_info (ai, var, rhs);
-
-	/* Found P_i = PLUS_EXPR or P_i = MINUS_EXPR  */
-	else if (TREE_CODE (rhs) == PLUS_EXPR
-		 || TREE_CODE (rhs) == MINUS_EXPR)
-	  {
-	    tree op0 = TREE_OPERAND (rhs, 0);
-	    tree op1 = TREE_OPERAND (rhs, 1);
-	    
-	    /* Both operands may be of pointer type.  FIXME: Shouldn't
-	       we just expect PTR + OFFSET always?  */
-	    if (POINTER_TYPE_P (TREE_TYPE (op0))
-		&& TREE_CODE (op0) != INTEGER_CST)
-	      {
-		if (TREE_CODE (op0) == SSA_NAME)
-		  merge_pointed_to_info (ai, var, op0);
-		else if (TREE_CODE (op0) == ADDR_EXPR)
-		  add_pointed_to_var (ai, var, op0);
-		else
-		  add_pointed_to_expr (var, op0);
-	      }
-
-	    if (POINTER_TYPE_P (TREE_TYPE (op1))
-		&& TREE_CODE (op1) != INTEGER_CST)
-	      {
-		if (TREE_CODE (op1) == SSA_NAME)
-		  merge_pointed_to_info (ai, var, op1);
-		else if (TREE_CODE (op1) == ADDR_EXPR)
-		  add_pointed_to_var (ai, var, op1);
-		else
-		  add_pointed_to_expr (var, op1);
-	      }
-
-	    /* Neither operand is a pointer?  VAR can be pointing
-	       anywhere.  FIXME: Is this right?  If we get here, we
-	       found PTR = INT_CST + INT_CST.  */
-	    if (!(POINTER_TYPE_P (TREE_TYPE (op0))
-		  && TREE_CODE (op0) != INTEGER_CST)
-		&& !(POINTER_TYPE_P (TREE_TYPE (op1))
-		     && TREE_CODE (op1) != INTEGER_CST))
-	      add_pointed_to_expr (var, rhs);
-	  }
-
-	/* Something else.  */
-	else
-	  add_pointed_to_expr (var, rhs);
+	add_pointed_to_expr (ai, var, rhs);
 	break;
       }
+
     case ASM_EXPR:
       /* Pointers defined by __asm__ statements can point anywhere.  */
       set_pt_anything (var);
@@ -1927,13 +1911,14 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
 	  tree decl = SSA_NAME_VAR (var);
 	  
 	  if (TREE_CODE (decl) == PARM_DECL)
-	    add_pointed_to_expr (var, decl);
+	    add_pointed_to_expr (ai, var, decl);
 	  else if (DECL_INITIAL (decl))
-	    add_pointed_to_var (ai, var, DECL_INITIAL (decl));
+	    add_pointed_to_expr (ai, var, DECL_INITIAL (decl));
 	  else
-	    add_pointed_to_expr (var, decl);
+	    add_pointed_to_expr (ai, var, decl);
 	}
       break;
+
     case PHI_NODE:
       {
         /* It STMT is a PHI node, then VAR is one of its arguments.  The
@@ -1952,11 +1937,12 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
 	    
 	  default:
 	    gcc_assert (is_gimple_min_invariant (var));
-	    add_pointed_to_expr (lhs, var);
+	    add_pointed_to_expr (ai, lhs, var);
 	    break;
 	  }
 	break;
       }
+
     default:
       gcc_unreachable ();
     }
