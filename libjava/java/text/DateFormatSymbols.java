@@ -65,6 +65,8 @@ public class DateFormatSymbols extends Object
   };
 
   private static String[][] zoneStringsDefault = {
+    { "GMT", "Greenwich Mean Time", "GMT",
+      /**/   "Greenwich Mean Time", "GMT", "GMT" },
     { "PST", "Pacific Standard Time", "PST",
       /**/   "Pacific Daylight Time", "PDT", "San Francisco" },
     { "MST", "Mountain Standard Time", "MST",
@@ -82,7 +84,21 @@ public class DateFormatSymbols extends Object
     { "HST", "Hawaii Standard Time", "HST",
       /**/   "Hawaii Daylight Time", "HDT", "Honolulu" },
     { "AST", "Alaska Standard Time", "AST",
-      /**/   "Alaska Daylight Time", "ADT", "Anchorage" }
+      /**/   "Alaska Daylight Time", "ADT", "Anchorage" },
+    { "PST8PDT", "Pacific Standard Time", "PST",
+      /******/   "Pacific Daylight Time", "PDT", "San Francisco" },
+    { "MST7MDT", "Mountain Standard Time", "MST",
+      /******/   "Mountain Daylight Time", "MDT", "Denver" },
+    { "CST6CDT", "Central Standard Time", "CST",
+      /******/   "Central Daylight Time", "CDT", "Chicago" },
+    { "EST5EDT", "Eastern Standard Time", "EST",
+      /******/   "Eastern Daylight Time", "EDT", "Boston" },
+    { "AST4ADT", "Atlantic Standard Time", "AST",
+      /******/   "Atlantic Daylight Time", "ADT", "Halifax" },
+    { "HST10HDT", "Hawaii Standard Time", "HST",
+      /*******/   "Hawaii Daylight Time", "HDT", "Honolulu" },
+    { "AST9ADT", "Alaska Standard Time", "AKST",
+      /******/   "Alaska Daylight Time", "AKDT", "Anchorage" }
   };
 
   // These are each arrays with a value for SHORT, MEDIUM, LONG, FULL,
