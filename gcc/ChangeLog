@@ -1,3 +1,20 @@
+2003-10-10  Roger Sayle  <roger@eyesopen.com>
+
+	* cse.c (constant_pool_entries_regcost): New global variable to
+	hold the register cost component of constant_pool_entries_cost.
+	(fold_rtx): Calculate constant_pool_entries_regcost at the same
+	time as constant_pool_entries_cost.
+	(cse_insn): Set both src_folded_cost and src_folded_regcost from
+	constant_pool_entries_cost and constant_pool_entries_regcost.
+	(cse_main): Initialize constant_pool_entries_regcost to zero.
+
+	* optabs.c (expand_unop): Attach a REG_EQUAL note describing
+	the semantics of the sequence of bit operations used to negate
+	a floating-point value.
+	(expand_abs_nojump): Likewise attach a REG_EQUAL note describing
+	the semantics of the bit operations used to abs a floating point
+	value.
+
 2003-10-11  Bernardo Innocenti  <bernie@develer.com>
 	    Paul Dale  <pauli@snapgear.com>
 

@@ -2615,7 +2615,16 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 			       immed_double_const (lo, hi, imode),
 			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
 	  if (temp != 0)
-	    return gen_lowpart (mode, temp);
+	    {
+	      rtx insn;
+	      if (target == 0)
+		target = gen_reg_rtx (mode);
+	      insn = emit_move_insn (target, gen_lowpart (mode, temp));
+	      set_unique_reg_note (insn, REG_EQUAL,
+				   gen_rtx_fmt_e (NEG, mode,
+						  copy_rtx (op0)));
+	      return target;
+	    }
 	  delete_insns_since (last);
         }
     }
@@ -2790,7 +2799,16 @@ expand_abs_nojump (enum machine_mode mode, rtx op0, rtx target,
 			       immed_double_const (~lo, ~hi, imode),
 			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
 	  if (temp != 0)
-	    return gen_lowpart (mode, temp);
+	    {
+	      rtx insn;
+	      if (target == 0)
+		target = gen_reg_rtx (mode);
+	      insn = emit_move_insn (target, gen_lowpart (mode, temp));
+	      set_unique_reg_note (insn, REG_EQUAL,
+				   gen_rtx_fmt_e (ABS, mode,
+						  copy_rtx (op0)));
+	      return target;
+	    }
 	  delete_insns_since (last);
 	}
     }

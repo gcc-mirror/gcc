@@ -569,6 +569,7 @@ static struct table_elt *last_jump_equiv_class;
    the insn.  */
 
 static int constant_pool_entries_cost;
+static int constant_pool_entries_regcost;
 
 /* This data describes a block that will be processed by cse_basic_block.  */
 
@@ -3529,7 +3530,10 @@ fold_rtx (rtx x, rtx insn)
 	    rtx new;
 
 	    if (CONSTANT_P (constant) && GET_CODE (constant) != CONST_INT)
-	      constant_pool_entries_cost = COST (constant);
+	      {
+		constant_pool_entries_cost = COST (constant);
+		constant_pool_entries_regcost = approx_reg_cost (constant);
+	      }
 
 	    /* If we are loading the full constant, we have an equivalence.  */
 	    if (offset == 0 && mode == const_mode)
@@ -5507,6 +5511,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 	      src_folded_force_flag = 1;
 	      src_folded = trial;
 	      src_folded_cost = constant_pool_entries_cost;
+	      src_folded_regcost = constant_pool_entries_regcost;
 	    }
 	}
 
@@ -6939,6 +6944,7 @@ cse_main (rtx f, int nregs, int after_loop, FILE *file)
   cse_jumps_altered = 0;
   recorded_label_ref = 0;
   constant_pool_entries_cost = 0;
+  constant_pool_entries_regcost = 0;
   val.path_size = 0;
 
   init_recog ();
