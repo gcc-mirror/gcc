@@ -2477,6 +2477,10 @@ struct lang_decl GTY(())
   (TREE_CODE (TYPE) == BOOLEAN_TYPE		\
    || TREE_CODE (TYPE) == INTEGER_TYPE)
 
+/* Returns true if TYPE is an integral or enumeration name.  */
+#define INTEGRAL_OR_ENUMERATION_TYPE_P(TYPE) \
+  (CP_INTEGRAL_TYPE_P (TYPE) || TREE_CODE (TYPE) == ENUMERAL_TYPE)
+
 /* [basic.fundamental]
 
    Integral and floating types are collectively called arithmetic
@@ -3642,9 +3646,9 @@ extern void finish_struct_1			(tree);
 extern int resolves_to_fixed_type_p		(tree, int *);
 extern void init_class_processing		(void);
 extern int is_empty_class			(tree);
-extern void pushclass				(tree, int);
+extern void pushclass				(tree, bool);
 extern void popclass				(void);
-extern void push_nested_class			(tree, int);
+extern void push_nested_class			(tree);
 extern void pop_nested_class			(void);
 extern int current_lang_depth			(void);
 extern void push_lang_context			(tree);
@@ -3854,7 +3858,6 @@ extern void check_member_template (tree);
 extern tree grokfield (tree, tree, tree, tree, tree);
 extern tree grokbitfield (tree, tree, tree);
 extern tree groktypefield			(tree, tree);
-extern tree grokoptypename (tree, tree, tree);
 extern void cplus_decl_attributes (tree *, tree, int);
 extern tree constructor_name_full		(tree);
 extern tree constructor_name (tree);
@@ -4009,7 +4012,6 @@ extern void cxx_init_options (void);
 /* in method.c */
 extern void init_method	(void);
 extern void set_mangled_name_for_decl (tree);
-extern tree build_opfncall (enum tree_code, int, tree, tree, tree);
 extern tree hack_identifier (tree, tree);
 extern tree make_thunk (tree, bool, tree, tree);
 extern void finish_thunk (tree);
@@ -4026,10 +4028,6 @@ extern bool maybe_clone_body (tree);
 /* in pt.c */
 extern void check_template_shadow		(tree);
 extern tree get_innermost_template_args         (tree, int);
-extern tree tsubst				(tree, tree, tsubst_flags_t, tree);
-extern tree tsubst_expr				(tree, tree, tsubst_flags_t, tree);
-extern tree tsubst_copy				(tree, tree, tsubst_flags_t, tree);
-extern tree tsubst_copy_and_build		(tree, tree, tsubst_flags_t, tree);
 extern void maybe_begin_member_template_processing (tree);
 extern void maybe_end_member_template_processing (void);
 extern tree finish_member_template_decl         (tree);
@@ -4086,6 +4084,9 @@ extern bool dependent_type_p                    (tree);
 extern bool dependent_template_arg_p            (tree);
 extern bool dependent_template_p                (tree);
 extern bool type_dependent_expression_p         (tree);
+extern bool value_dependent_expression_p        (tree);
+extern tree resolve_typename_type               (tree, bool);
+extern tree resolve_typename_type_in_current_instantiation (tree);
 
 /* in repo.c */
 extern void repo_template_used (tree);
@@ -4226,7 +4227,6 @@ extern tree finish_unary_op_expr                (enum tree_code, tree);
 extern tree finish_compound_literal             (tree, tree);
 extern tree finish_fname                        (tree);
 extern int begin_function_definition            (tree, tree, tree);
-extern tree begin_constructor_declarator        (tree, tree);
 extern tree finish_declarator                   (tree, tree, tree, tree, int);
 extern void finish_translation_unit             (void);
 extern tree finish_template_type_parm           (tree, tree);
@@ -4238,7 +4238,6 @@ extern void finish_default_args                 (void);
 extern tree finish_member_class_template        (tree);
 extern void finish_template_decl                (tree);
 extern tree finish_template_type                (tree, tree, int);
-extern void enter_scope_of                      (tree);
 extern tree finish_base_specifier               (tree, tree);
 extern void finish_member_declaration           (tree);
 extern void check_multiple_declarators          (void);

@@ -454,6 +454,7 @@ dump_type (t, flags)
       break;
     }
     case TYPENAME_TYPE:
+      dump_qualifiers (t, after);
       output_add_string (scratch_buffer, "typename ");
       dump_typename (t, flags);
       break;

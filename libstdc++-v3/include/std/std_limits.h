@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- numeric_limits classes.
 
-// Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -893,10 +893,8 @@ namespace std
       static const int max_exponent = __FLT_MAX_EXP__;
       static const int max_exponent10 = __FLT_MAX_10_EXP__;
 
-      static const bool has_infinity
-	= __builtin_huge_valf () / 2 == __builtin_huge_valf ();
-      static const bool has_quiet_NaN
-	= __builtin_nanf ("") != __builtin_nanf ("");
+      static const bool has_infinity = __FLT_HAS_INFINITY__;
+      static const bool has_quiet_NaN = __FLT_HAS_QUIET_NAN__;
       static const bool has_signaling_NaN = has_quiet_NaN;
       static const float_denorm_style has_denorm
 	= __FLT_DENORM_MIN__ ? denorm_present : denorm_absent;
@@ -951,10 +949,8 @@ namespace std
       static const int max_exponent = __DBL_MAX_EXP__;
       static const int max_exponent10 = __DBL_MAX_10_EXP__;
 
-      static const bool has_infinity
-	= __builtin_huge_val () / 2 == __builtin_huge_val ();
-      static const bool has_quiet_NaN
-	= __builtin_nan ("") != __builtin_nan ("");
+      static const bool has_infinity = __DBL_HAS_INFINITY__;
+      static const bool has_quiet_NaN = __DBL_HAS_QUIET_NAN__;
       static const bool has_signaling_NaN = has_quiet_NaN;
       static const float_denorm_style has_denorm
 	= __DBL_DENORM_MIN__ ? denorm_present : denorm_absent;
@@ -1009,10 +1005,8 @@ namespace std
       static const int max_exponent = __LDBL_MAX_EXP__;
       static const int max_exponent10 = __LDBL_MAX_10_EXP__;
 
-      static const bool has_infinity
-	= __builtin_huge_vall () / 2 == __builtin_huge_vall ();
-      static const bool has_quiet_NaN
-	= __builtin_nanl ("") != __builtin_nanl ("");
+      static const bool has_infinity = __LDBL_HAS_INFINITY__;
+      static const bool has_quiet_NaN = __LDBL_HAS_QUIET_NAN__;
       static const bool has_signaling_NaN = has_quiet_NaN;
       static const float_denorm_style has_denorm
 	= __LDBL_DENORM_MIN__ ? denorm_present : denorm_absent;

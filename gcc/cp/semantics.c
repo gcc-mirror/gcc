@@ -1434,7 +1434,7 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual)
       /* If the "function" is really an object of class type, it might
 	 have an overloaded `operator ()'.  */
       tree result;
-      result = build_opfncall (CALL_EXPR, LOOKUP_NORMAL, fn, args, NULL_TREE);
+      result = build_new_op (CALL_EXPR, LOOKUP_NORMAL, fn, args, NULL_TREE);
       if (result)
 	return result;
     }
@@ -1665,19 +1665,6 @@ begin_function_definition (decl_specs, attributes, declarator)
   return 1;
 }
 
-/* Begin a constructor declarator of the form `SCOPE::NAME'.  Returns
-   a SCOPE_REF.  */
-
-tree 
-begin_constructor_declarator (scope, name)
-     tree scope;
-     tree name;
-{
-  tree result = build_nt (SCOPE_REF, scope, name);
-  enter_scope_of (result);
-  return result;
-}
-
 /* Finish an init-declarator.  Returns a DECL.  */
 
 tree
@@ -1831,7 +1818,7 @@ begin_class_definition (t)
       pushtag (TYPE_IDENTIFIER (t), t, 0);
     }
   maybe_process_partial_specialization (t);
-  pushclass (t, 1);
+  pushclass (t, true);
   TYPE_BEING_DEFINED (t) = 1;
   TYPE_PACKED (t) = flag_pack_struct;
   /* Reset the interface data, at the earliest possible
@@ -2042,34 +2029,6 @@ finish_template_type (name, args, entering_scope)
     decl = TYPE_STUB_DECL (decl);
 
   return decl;
-}
-
-/* SR is a SCOPE_REF node.  Enter the scope of SR, whether it is a
-   namespace scope or a class scope.  */
-
-void
-enter_scope_of (sr)
-     tree sr;
-{
-  tree scope = TREE_OPERAND (sr, 0);
-
-  if (TREE_CODE (scope) == NAMESPACE_DECL)
-    {
-      push_decl_namespace (scope);
-      TREE_COMPLEXITY (sr) = -1;
-    }
-  else if (scope != current_class_type)
-    {
-      if (TREE_CODE (scope) == TYPENAME_TYPE)
-	{
-	  /* In a declarator for a template class member, the scope will
-	     get here as an implicit typename, a TYPENAME_TYPE with a type.  */
-	  scope = TREE_TYPE (scope);
-	  TREE_OPERAND (sr, 0) = scope;
-	}
-      push_nested_class (scope, 3);
-      TREE_COMPLEXITY (sr) = current_class_depth;
-    }
 }
 
 /* Finish processing a BASE_CLASS with the indicated ACCESS_SPECIFIER.

@@ -1,3 +1,15 @@
+2003-01-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* include/std/std_limits.h (numeric_limits<float>::has_infinity):
+	Use __FLT_HAS_INIFINITY__ to initialize.
+	(numeric_limits<float>::has_quiet_NaN): Likewise.
+	(numeric_limits<double>::has_infinity): Use __DBL_HAS_INIFINITY__
+	to initialize.
+	(numeric_limits<double>::has_quiet_NaN): Likewise.
+	(numeric_limits<long double>::has_infinity): Use
+	__LDBL_HAS_INIFINITY__ to initialize.
+	(numeric_limits<long_double>::has_quiet_NaN): Likewise.
+
 2003-01-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9433

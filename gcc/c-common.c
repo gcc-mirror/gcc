@@ -4896,6 +4896,18 @@ builtin_define_float_constants (name_prefix, fp_suffix, type)
       sprintf (buf, "0.0%s", fp_suffix);
       builtin_define_with_value (name, buf, 0);
     }
+
+  /* For C++ std::numeric_limits<T>::has_infinity.  */
+  sprintf (name, "__%s_HAS_INFINITY__", name_prefix);
+  builtin_define_with_int_value (name, 
+				 MODE_HAS_INFINITIES (TYPE_MODE (type)));
+  /* For C++ std::numeric_limits<T>::has_quiet_NaN.  We do not have a
+     predicate to distinguish a target that has both quiet and
+     signalling NaNs from a target that has only quiet NaNs or only
+     signalling NaNs, so we assume that a target that has any kind of
+     NaN has quiet NaNs.  */
+  sprintf (name, "__%s_HAS_QUIET_NAN__", name_prefix);
+  builtin_define_with_int_value (name, MODE_HAS_NANS (TYPE_MODE (type)));
 }
 
 /* Hook that registers front end and target-specific built-ins.  */

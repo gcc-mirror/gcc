@@ -85,36 +85,6 @@ set_mangled_name_for_decl (tree decl)
 }
 
 
-/* Given a tree_code CODE, and some arguments (at least one),
-   attempt to use an overloaded operator on the arguments.
-
-   For unary operators, only the first argument need be checked.
-   For binary operators, both arguments may need to be checked.
-
-   Member functions can convert class references to class pointers,
-   for one-level deep indirection.  More than that is not supported.
-   Operators [](), ()(), and ->() must be member functions.
-
-   We call function call building calls with LOOKUP_COMPLAIN if they
-   are our only hope.  This is true when we see a vanilla operator
-   applied to something of aggregate type.  If this fails, we are free
-   to return `error_mark_node', because we will have reported the
-   error.
-
-   Operators NEW and DELETE overload in funny ways: operator new takes
-   a single `size' parameter, and operator delete takes a pointer to the
-   storage being deleted.  When overloading these operators, success is
-   assumed.  If there is a failure, report an error message and return
-   `error_mark_node'.  */
-
-/* NOSTRICT */
-tree
-build_opfncall (enum tree_code code, int flags,
-                tree xarg1, tree xarg2, tree arg3)
-{
-  return build_new_op (code, flags, xarg1, xarg2, arg3);
-}
-
 /* This function takes an identifier, ID, and attempts to figure out what
    it means. There are a number of possible scenarios, presented in increasing
    order of hair:

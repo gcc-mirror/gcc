@@ -1,3 +1,8 @@
+2003-01-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.c (builtin_define_float_constants): Define
+	__<TYPE>_HAS_INFINITY__ and __<TYPE>_HAS_QUIET_NAN__.
+
 2003-01-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/sh/lib1funcs.asm: Fix comment typos.
