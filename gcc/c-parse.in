@@ -1154,6 +1154,9 @@ ifc
 	| '[' expr_no_commas ']' '='
 		{ set_init_index ($2, NULL_TREE); }
 	  initelt
+	| '[' expr_no_commas ']'
+		{ set_init_index ($2, NULL_TREE); }
+	  initelt
 end ifc
 	| identifier ':'
 		{ set_init_label ($1); }
