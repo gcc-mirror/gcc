@@ -1862,7 +1862,7 @@ cp_parser_check_type_definition (cp_parser* parser)
 }
 
 /* This function is called when the DECLARATOR is processed.  The TYPE
-   was a type definied in the decl-specifiers.  If it is invalid to
+   was a type defined in the decl-specifiers.  If it is invalid to
    define a type in the decl-specifiers for DECLARATOR, an error is
    issued.  */
 
@@ -14067,7 +14067,7 @@ cp_parser_label_declaration (cp_parser* parser)
    If there was no entity with the indicated NAME, the ERROR_MARK_NODE
    is returned.
 
-   If TAG_TYPE is not NONE_TYPE, it inidcates an explicit type keyword
+   If TAG_TYPE is not NONE_TYPE, it indicates an explicit type keyword
    (e.g., "struct") that was used.  In that case bindings that do not
    refer to types are ignored.
 
