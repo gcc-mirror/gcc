@@ -1,3 +1,8 @@
+1999-09-14  Andrew Haley  <aph@cygnus.com>
+
+	* config/mips/mips.md (movsi_usw): if operand 1 is const_int 0,
+	use $0 instead of 0.
+
 Thu Sep 16 10:53:36 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* reload1.c (order_regs_for_reload): Move hard_reg_n_uses
