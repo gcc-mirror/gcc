@@ -31,13 +31,10 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
-// Note: This is not a conforming implementation.
-
 #ifndef _CPP_CFLOAT
 #define _CPP_CFLOAT 1
 
 #pragma GCC system_header
-#include <float.h>
+#include_next <float.h>
 
 #endif
-

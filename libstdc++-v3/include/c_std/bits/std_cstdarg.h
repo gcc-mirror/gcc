@@ -31,13 +31,11 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
-// Note: This is not a conforming implementation.
-
 #ifndef _CPP_CSTDARG
 #define _CPP_CSTDARG 1
 
 #pragma GCC system_header
-#include <stdarg.h>
+#include_next <stdarg.h>
 
 // Adhere to section 17.4.1.2 clause 5 of ISO 14882:1998
 #ifndef va_end

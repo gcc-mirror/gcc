@@ -31,15 +31,13 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
-// Note: This is not a conforming implementation.
-
 #ifndef _CPP_CLOCALE
 #define _CPP_CLOCALE 1
 
 #include <bits/c++config.h>
 
 #pragma GCC system_header
-#include <locale.h>
+#include_next <locale.h>
 
 // Get rid of those macros defined in <locale.h> in lieu of real functions.
 #undef setlocale
@@ -48,11 +46,8 @@
 namespace std
 {
   using ::lconv;
-  extern "C" char* setlocale(int, const char*); 
-  extern "C" struct lconv* localeconv(void);
+  using ::setlocale;
+  using ::localeconv;
 }
 
 #endif
-
-
-
