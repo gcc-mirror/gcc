@@ -500,7 +500,7 @@ tree
 begin_switch_stmt ()
 {
   tree r;
-  r = build_stmt (SWITCH_STMT, NULL_TREE, NULL_TREE);
+  r = build_stmt (SWITCH_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
   add_stmt (r);
   do_pushlevel ();
   return r;
@@ -513,6 +513,7 @@ finish_switch_cond (cond, switch_stmt)
      tree cond;
      tree switch_stmt;
 {
+  tree orig_type = NULL;
   if (!processing_template_decl)
     {
       tree type;
@@ -525,6 +526,7 @@ finish_switch_cond (cond, switch_stmt)
 	  error ("switch quantity not an integer");
 	  cond = error_mark_node;
 	}
+      orig_type = TREE_TYPE (cond);
       if (cond != error_mark_node)
 	{
 	  cond = default_conversion (cond);
@@ -542,6 +544,7 @@ finish_switch_cond (cond, switch_stmt)
 	cond = index;
     }
   FINISH_COND (cond, switch_stmt, SWITCH_COND (switch_stmt));
+  SWITCH_TYPE (switch_stmt) = orig_type;
   push_switch (switch_stmt);
 }
 

@@ -644,7 +644,7 @@ genrtl_switch_stmt (t)
   emit_line_note (input_filename, lineno);
   expand_start_case (1, cond, TREE_TYPE (cond), "switch statement");
   expand_stmt (SWITCH_BODY (t));
-  expand_end_case (cond);
+  expand_end_case_type (cond, SWITCH_TYPE (t));
 }
 
 /* Create a CASE_LABEL tree node and return it.  */

@@ -2772,7 +2772,8 @@ extern struct nesting * current_nesting_level	PARAMS ((void));
 extern tree last_cleanup_this_contour		PARAMS ((void));
 extern void expand_start_case			PARAMS ((int, tree, tree,
 						       const char *));
-extern void expand_end_case			PARAMS ((tree));
+extern void expand_end_case_type		PARAMS ((tree, tree));
+#define expand_end_case(cond) expand_end_case_type (cond, NULL)
 extern int add_case_node                        PARAMS ((tree, tree,
 							 tree, tree *));
 extern int pushcase				PARAMS ((tree,
