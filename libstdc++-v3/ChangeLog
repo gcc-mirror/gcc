@@ -1,3 +1,14 @@
+2003-10-01  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/12439
+	* include/bits/locale_facets.tcc (time_put::put): Deal
+	with the three issues pointed out by the PR.
+	* testsuite/22_locale/time_put/put/char/12439_1.cc: New.
+	* testsuite/22_locale/time_put/put/char/12439_3.cc: New.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_1.cc: New.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_2.cc: New.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_3.cc: New.
+
 2003-09-30  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/stl_algo.h: Minor cosmetic reformattings.
