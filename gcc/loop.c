@@ -262,6 +262,8 @@ struct movable
 				   invariant.  */
   unsigned int move_insn : 1;	/* 1 means that we call emit_move_insn to
 				   load SRC, rather than copying INSN.  */
+  unsigned int move_insn_first:1;/* Same as above, if this is necessary for the
+				    first insn of a consecutive sets group.  */
   unsigned int is_equiv : 1;	/* 1 means a REG_EQUIV is present on INSN.  */
   enum machine_mode savemode;   /* Nonzero means it is a mode for a low part
 				   that we should avoid changing when clearing
@@ -861,6 +863,7 @@ scan_loop (loop_start, end, nregs, unroll_p)
 	      m->forces = 0;
 	      m->partial = 0;
 	      m->move_insn = move_insn;
+	      m->move_insn_first = 0;
 	      m->is_equiv = (find_reg_note (p, REG_EQUIV, NULL_RTX) != 0);
 	      m->savemode = VOIDmode;
 	      m->regno = regno;
@@ -885,6 +888,12 @@ scan_loop (loop_start, end, nregs, unroll_p)
 
 	      if (m->consec > 0)
 		{
+		  /* It is possible for the first instruction to have a
+		     REG_EQUAL note but a non-invariant SET_SRC, so we must
+		     remember the status of the first instruction in case
+		     the last instruction doesn't have a REG_EQUAL note.  */
+		  m->move_insn_first = m->move_insn;
+
 		  /* Skip this insn, not checking REG_LIBCALL notes.  */
 		  p = next_nonnote_insn (p);
 		  /* Skip the consecutive insns, if there are any.  */
@@ -1943,20 +1952,41 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 			    CALL_INSN_FUNCTION_USAGE (i1)
 			      = copy_rtx (CALL_INSN_FUNCTION_USAGE (p));
 			}
+		      else if (count == m->consec && m->move_insn_first)
+			{
+			  /* The SET_SRC might not be invariant, so we must
+			     use the REG_EQUAL note.  */
+			  start_sequence ();
+			  emit_move_insn (m->set_dest, m->set_src);
+			  temp = get_insns ();
+			  end_sequence ();
+
+			  add_label_notes (m->set_src, temp);
+
+			  i1 = emit_insns_before (temp, loop_start);
+			  if (! find_reg_note (i1, REG_EQUAL, NULL_RTX))
+			    REG_NOTES (i1)
+			      = gen_rtx_EXPR_LIST ((m->is_equiv ? REG_EQUIV
+						    : REG_EQUAL),
+						   m->set_src, REG_NOTES (i1));
+			}
 		      else
 			i1 = emit_insn_before (PATTERN (p), loop_start);
 
-		      REG_NOTES (i1) = REG_NOTES (p);
+		      if (REG_NOTES (i1) == 0)
+			{
+			  REG_NOTES (i1) = REG_NOTES (p);
 
-		      /* If there is a REG_EQUAL note present whose value is
-			 not loop invariant, then delete it, since it may
-			 cause problems with later optimization passes.
-			 It is possible for cse to create such notes
-			 like this as a result of record_jump_cond.  */
+			  /* If there is a REG_EQUAL note present whose value
+			     is not loop invariant, then delete it, since it
+			     may cause problems with later optimization passes.
+			     It is possible for cse to create such notes
+			     like this as a result of record_jump_cond.  */
 		      
-		      if ((temp = find_reg_note (i1, REG_EQUAL, NULL_RTX))
-			  && ! invariant_p (XEXP (temp, 0)))
-			remove_note (i1, temp);
+			  if ((temp = find_reg_note (i1, REG_EQUAL, NULL_RTX))
+			      && ! invariant_p (XEXP (temp, 0)))
+			    remove_note (i1, temp);
+			}
 
 		      if (new_start == 0)
 			new_start = i1;
@@ -1964,20 +1994,6 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		      if (loop_dump_stream)
 			fprintf (loop_dump_stream, " moved to %d",
 				 INSN_UID (i1));
-
-#if 0
-		      /* This isn't needed because REG_NOTES is copied
-			 below and is wrong since P might be a PARALLEL.  */
-		      if (REG_NOTES (i1) == 0
-			  && ! m->partial /* But not if it's a zero-extend clr.  */
-			  && ! m->global /* and not if used outside the loop
-					    (since it might get set outside).  */
-			  && CONSTANT_P (SET_SRC (PATTERN (p))))
-			REG_NOTES (i1)
-			  = gen_rtx_EXPR_LIST (REG_EQUAL,
-					       SET_SRC (PATTERN (p)),
-					       REG_NOTES (i1));
-#endif
 
 		      /* If library call, now fix the REG_NOTES that contain
 			 insn pointers, namely REG_LIBCALL on FIRST
