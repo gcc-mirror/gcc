@@ -1,3 +1,16 @@
+Tue Jun 25 20:59:56 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config/sh/lib1funcs.asm (udivdi3): Make first divide step 
+	produce a 32 bit result before normalization, then normalize with a
+	left shift.  Compute approximative error of 2nd reciprocal
+	approximation in 2's complement.  Fix mask generation from upper
+	longword of second divide stage result.
+	For large divisor, fix shift count used to truncate first stage
+	divide result; make decision if to adjust upwards based on comparison
+	of higher parts of normalized values.
+	(udivdi): Likewise.  Undo normalization of result for large divisor
+	case.
+
 2002-06-25  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.md: Change \\{t,n} to \{t,n}.
