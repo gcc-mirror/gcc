@@ -19,11 +19,12 @@ entity to the generated TODO page.
 -----------------------------------------------------------
 
 c17             FINISHED (Nothing in Clause 17 "exists" in terms of code.)
-c18             <limits>, Note A
+c18             FINISHED, Note A
 c19             Note A
 c20             Note A
-c21             Untouched, Note B
-c22             Untouched
+c21             Untouched (top-level class note for basic_string done),
+                Note B
+c22             Untouched; see docs/html/22_locale/*
 c23             See doxygroups.cc and Note B.  Notes on what invalidates
                 iterators need to be added.  std::list-specific memfns need
                 to be filled out.

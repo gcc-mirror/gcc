@@ -16,13 +16,15 @@
 
 <h1 class="centered"><a name="top">libstdc++-v3 INSTALL</a></h1>
 
-<p>The latest version of this document is always available at
+<p class="fineprint"><em>
+   The latest version of this document is always available at
    <a href="http://gcc.gnu.org/onlinedocs/libstdc++/install.html">
    http://gcc.gnu.org/onlinedocs/libstdc++/install.html</a>.
-</p>
+</em></p>
 
-<p>To the <a href="http://gcc.gnu.org/libstdc++/">libstdc++-v3 homepage</a>.
-</p>
+<p><em>
+   To the <a href="http://gcc.gnu.org/libstdc++/">libstdc++-v3 homepage</a>.
+</em></p>
 
 
 <!-- ####################################################### -->
@@ -99,7 +101,8 @@
 
       <dd>If gcc 3.1.0 or later on is being used on linux, an attempt
       will be made to use "C" library functionality necessary for C++
-      named locale support. 
+      named locale support.  For gcc 3.2.1 and later, this means that
+      glibc 2.2.5 or later is required.
 
       <p>
       The configure option --enable-clocale can be used force a
@@ -108,9 +111,27 @@
 
       <p>
       If the 'gnu' locale model is being used, the following locales
-      are used and tested in the libstdc++ testsuites: en_HK, en_US,
-      fr_FR, fr_FR@euro, de_DE, de_DE@euro, ja_JP.eucjp, es_MX, en_PH,
-      and it_IT. Failure to have the underlying "C" library locale
+      are used and tested in the libstdc++ testsuites.  The first column
+      is the name of the locale, the second is the character set it is
+      expected to use.
+      </p>
+<pre>
+de_DE               ISO-8859-1
+de_DE@euro          ISO-8859-15
+en_HK               ISO-8859-1
+en_PH               ISO-8859-1
+en_US               ISO-8859-1
+en_US.ISO-8859-1    ISO-8859-1
+en_US.ISO-8859-15   ISO-8859-15
+en_US.UTF-8         UTF-8
+es_MX               ISO-8859-1
+fr_FR               ISO-8859-1
+fr_FR@euro          ISO-8859-15
+it_IT               ISO-8859-1
+ja_JP.eucjp         EUC-JP
+se_NO.UTF-8         UTF-8
+</pre>
+      <p>Failure to have the underlying "C" library locale
       information installed will mean that C++ named locales for the
       above regions will not work: because of this, the libstdc++
       testsuite will not pass the named locale tests. If this isn't an
@@ -120,17 +141,34 @@
       necessary.
       </p>
 
-      <p> To install
-      support for locales, do only one of the following: </p>
+      <p>To install support for locales, do only one of the following:
+      </p>
+
       <ul>
         <li> install all locales
+          <ul>
+            <li>with RedHat Linux:
         <p> <code> export LC_ALL=C </code> </p>
         <p> <code> rpm -e glibc-common --nodeps </code> </p>
         <p> <code> rpm -i --define "_install_langs all"
                    glibc-common-2.2.5-34.i386.rpm </code> </p>
+             </li>
+             <li> (instructions for other operating systems solicited) </li>
+          </ul>
         </li>
         <li> install just the necessary locales
+          <ul>
+            <li>with Debian Linux:
+        <p> Add the above list, as shown, to the file
+            <code>/etc/locale.gen</code> </p>
+        <p> run <code>/usr/sbin/locale-gen</code> </p>
+            </li>
+            <li> on most Unix-like operating systems:
         <p> <code> localedef -i de_DE -f ISO-8859-1 de_DE </code> </p>
+        <p> (repeat for each entry in the above list) </p>
+            </li>
+            <li> (instructions for other operating systems solicited) </li>
+          </ul>
         </li>
       </ul>
       </dd>
