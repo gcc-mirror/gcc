@@ -1,3 +1,8 @@
+2001-07-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (build_vbase_offset_vbtl_entries): Look for
+	non-primary base of which we are a sub vtable.
+
 2001-07-20  Daniel Berlin  <dan@cgsoftware.com>
 
 	* Make-lang.in (cp/optimize.o): Depend on $(PARAMS_H), not

@@ -1,3 +1,7 @@
+2001-07-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.abi/vbase8-5.C: New test.
+
 2001-07-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* g++.old-deja/g++.pt/static3.C: Removed alpha*-*-osf* XFAIL.

@@ -7932,6 +7932,7 @@ build_vbase_offset_vtbl_entries (binfo, vid)
 {
   tree vbase;
   tree t;
+  tree non_primary_binfo;
 
   /* Under the old ABI, pointers to virtual bases are stored in each
      object.  */
@@ -7944,6 +7945,30 @@ build_vbase_offset_vtbl_entries (binfo, vid)
     return;
 
   t = vid->derived;
+  
+  /* We might be a primary base class.  Go up the inheritance hierarchy
+     until we find the most derived class of which we are a primary base:
+     it is the offset of that which we need to use.  */
+  non_primary_binfo = binfo;
+  while (BINFO_INHERITANCE_CHAIN (non_primary_binfo))
+    {
+      tree b;
+
+      /* If we have reached a virtual base, then it must be a primary
+	 base (possibly multi-level) of vid->binfo, or we wouldn't
+	 have called build_vcall_and_vbase_vtbl_entries for it.  But it
+	 might be a lost primary, so just skip down to vid->binfo.  */
+      if (TREE_VIA_VIRTUAL (non_primary_binfo))
+	{
+	  non_primary_binfo = vid->binfo;
+	  break;
+	}
+
+      b = BINFO_INHERITANCE_CHAIN (non_primary_binfo);
+      if (get_primary_binfo (b) != non_primary_binfo)
+	break;
+      non_primary_binfo = b;
+    }
 
   /* Go through the virtual bases, adding the offsets.  */
   for (vbase = TYPE_BINFO (BINFO_TYPE (binfo));
@@ -7995,7 +8020,8 @@ build_vbase_offset_vtbl_entries (binfo, vid)
 	 The vbase offsets go in reverse inheritance-graph order, and
 	 we are walking in inheritance graph order so these end up in
 	 the right order.  */
-      delta = size_diffop (BINFO_OFFSET (b), BINFO_OFFSET (binfo));
+      delta = size_diffop (BINFO_OFFSET (b), BINFO_OFFSET (non_primary_binfo));
+      
       *vid->last_init 
 	= build_tree_list (NULL_TREE,
 			   fold (build1 (NOP_EXPR, 
