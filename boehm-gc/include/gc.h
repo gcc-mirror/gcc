@@ -849,9 +849,19 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
 
 #endif /* THREADS && !SRC_M3 */
 
-#if defined(GC_WIN32_THREADS) && defined(_WIN32_WCE)
+#if defined(GC_WIN32_THREADS)
 # include <windows.h>
 
+  /*
+   * All threads must be created using GC_CreateThread, so that they will be
+   * recorded in the thread table.
+   */
+  HANDLE WINAPI GC_CreateThread(
+      LPSECURITY_ATTRIBUTES lpThreadAttributes,
+      DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress,
+      LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId );
+
+# if defined(_WIN32_WCE)
   /*
    * win32_threads.c implements the real WinMain, which will start a new thread
    * to call GC_WinMain after initializing the garbage collector.
@@ -862,21 +872,13 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
       LPWSTR lpCmdLine,
       int nCmdShow );
 
-  /*
-   * All threads must be created using GC_CreateThread, so that they will be
-   * recorded in the thread table.
-   */
-  HANDLE WINAPI GC_CreateThread(
-      LPSECURITY_ATTRIBUTES lpThreadAttributes, 
-      DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, 
-      LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId );
+#  ifndef GC_BUILD
+#    define WinMain GC_WinMain
+#    define CreateThread GC_CreateThread
+#  endif
+# endif /* defined(_WIN32_WCE) */
 
-# ifndef GC_BUILD
-#   define WinMain GC_WinMain
-#   define CreateThread GC_CreateThread
-# endif
-
-#endif
+#endif /* defined(GC_WIN32_THREADS) */
 
 /*
  * If you are planning on putting

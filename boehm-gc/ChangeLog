@@ -1,3 +1,13 @@
+2002-02-06  Adam Megacz <adam@xwt.org>
+
+        * boehm-gc/include/gc.h: (GC_CreateThread) This function is
+        now exposed on all Win32 platforms.
+        * boehm-gc/win32_threads.c: (GC_CreateThread) This now
+        compiles on Win32; it invokes CreateThread() if GC is built
+        as a DLL; otherwise it registers the thread.
+        * boehm-gc/misc.c (GC_init): Initialize GC_allocate_ml in case
+        libgcjgc was not built as a DLL.
+
 2002-02-01  Adam Megacz <adam@xwt.org>
 
 	* boehm-gc on win32 now automatically detects if it is being built
