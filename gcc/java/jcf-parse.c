@@ -79,12 +79,13 @@ static tree current_method = NULL_TREE;
 
 /* Declarations of some functions used here.  */
 static tree give_name_to_class PROTO ((JCF *jcf, int index));
-void parse_zip_file_entries PROTO (());
-void process_zip_dir PROTO (());
+static void parse_zip_file_entries PROTO ((void));
+static void process_zip_dir PROTO ((void));
 static void parse_source_file PROTO ((tree));
 static void jcf_parse_source PROTO ((void));
 static int jcf_figure_file_type PROTO ((JCF *));
 static int find_in_current_zip PROTO ((char *, struct JCF **));
+static void parse_class_file PROTO ((void));
 
 /* Handle "SourceFile" attribute. */
 
@@ -662,7 +663,7 @@ init_outgoing_cpool ()
     }
 }
 
-void
+static void
 parse_class_file ()
 {
   tree method;
@@ -854,7 +855,7 @@ yyparse ()
 static struct ZipFileCache *localToFile;
 
 /* Process all class entries found in the zip file.  */
-void
+static void
 parse_zip_file_entries (void)
 {
   struct ZipDirectory *zdir;
@@ -895,7 +896,7 @@ parse_zip_file_entries (void)
 /* Read all the entries of the zip file, creates a class and a JCF. Sets the
    jcf up for further processing and link it to the created class.  */
 
-void process_zip_dir()
+static void process_zip_dir()
 {
   int i;
   ZipDirectory *zdir;
@@ -955,7 +956,7 @@ void process_zip_dir()
 
 /* Lookup class NAME and figure whether is a class already found in the current
    zip file.  */
-int
+static int
 DEFUN(find_in_current_zip, (name, length, jcf),
       char *name AND JCF **jcf)
 {

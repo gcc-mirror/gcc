@@ -110,7 +110,8 @@ extern int flag_exceptions;
     if `-fSTRING' is seen as an option.
    (If `-fno-STRING' is seen as an option, the opposite value is stored.)  */
 
-static struct { char *string; int *variable; int on_value;} lang_f_options[] =
+static struct { const char *string; int *variable; int on_value;}
+lang_f_options[] =
 {
   {"bounds-check", &flag_bounds_check, 1},
   {"assume-compiled", &flag_assume_compiled, 1},

@@ -33,6 +33,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-except.h"
 #include "toplev.h"
 
+static void push_pending_label PROTO ((tree));
+static tree merge_types PROTO ((tree, tree));
+
 extern int stack_pointer;
 
 /* During verification, start of the current subroutine (jsr target). */
@@ -45,7 +48,7 @@ tree pending_blocks;
 
 /* Append TARGET_LABEL to the pending_block stack unless already in it. */
 
-void
+static void
 push_pending_label (target_label) 
      tree target_label;
 {
@@ -102,7 +105,7 @@ check_pending_block (target_label)
    For reference types, return the common super-class.
    Return TYPE_UNKNOWN if the types cannot be merged. */   
 
-tree
+static tree
 merge_types (type1, type2)
      tree type1, type2;
 {

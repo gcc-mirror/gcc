@@ -57,5 +57,9 @@ extern struct ZipFileCache *SeenZipFiles;
    ((ZipDirectory*)((char*)(ZIPD)+(ZIPD)->direntry_size))
 #define ZIPMAGIC 0x504b0304	
 
-extern ZipFile * opendir_in_zip ();
+extern ZipFile * opendir_in_zip PROTO ((const char *, int));
 extern int read_zip_archive PROTO ((ZipFile *));
+#ifdef JCF_ZIP
+extern int open_in_zip PROTO ((struct JCF *, const char *,
+			       const char *, int));
+#endif

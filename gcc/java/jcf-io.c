@@ -26,6 +26,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 
 #include "jcf.h"
+#include "tree.h"
+#include "java-tree.h"
 
 /* DOS brain-damage */
 #ifndef O_BINARY
@@ -182,7 +184,7 @@ DEFUN(open_in_zip, (jcf, zipfile, zipmember, is_system),
 #if JCF_USE_STDIO
 char*
 DEFUN(open_class, (filename, jcf, stream, dep_name),
-      char *filename AND JCF *jcf AND FILE* stream AND char *dep_name)
+      char *filename AND JCF *jcf AND FILE* stream AND const char *dep_name)
 {
   if (jcf)
     {
@@ -203,7 +205,7 @@ DEFUN(open_class, (filename, jcf, stream, dep_name),
 #else
 char*
 DEFUN(open_class, (filename, jcf, fd, dep_name),
-      char *filename AND JCF *jcf AND int fd AND char *dep_name)
+      char *filename AND JCF *jcf AND int fd AND const char *dep_name)
 {
   if (jcf)
     {
@@ -240,7 +242,7 @@ DEFUN(open_class, (filename, jcf, fd, dep_name),
 
 char *
 DEFUN(find_classfile, (filename, jcf, dep_name),
-      char *filename AND JCF *jcf AND char *dep_name)
+      char *filename AND JCF *jcf AND const char *dep_name)
 {
 #if JCF_USE_STDIO
   FILE *stream = fopen (filename, "rb");
@@ -458,9 +460,9 @@ DEFUN(jcf_print_char, (stream, ch),
 
 void
 DEFUN(jcf_print_utf8, (stream, str, length),
-      FILE *stream AND register unsigned char *str AND int length)
+      FILE *stream AND register const unsigned char *str AND int length)
 {
-  unsigned char* limit = str + length;
+  const unsigned char * limit = str + length;
   while (str < limit)
     {
       int ch = UTF8_GET (str, limit);
@@ -477,7 +479,7 @@ DEFUN(jcf_print_utf8, (stream, str, length),
 
 void
 DEFUN(jcf_print_utf8_replace, (stream, str, length, in_char, out_char),
-      FILE *stream AND unsigned char *str AND int length
+      FILE *stream AND const unsigned char *str AND int length
       AND int in_char AND int out_char)
 {
 

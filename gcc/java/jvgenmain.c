@@ -28,6 +28,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 #include "obstack.h"
 #include "gansidecl.h"
+#include "jcf.h"
+#include "tree.h"
+#include "java-tree.h"
 
 const char main_method_prefix[] = "main__";
 const char main_method_suffix[] = "Pt6JArray1ZPQ34java4lang6String";
@@ -35,11 +38,25 @@ const char class_mangling_prefix[] = "_CL_";
 
 struct obstack name_obstack;
 
+extern void error			PVPROTO ((const char *, ...))
+  ATTRIBUTE_PRINTF_1;
+
 void
-error (const char *str)
+error VPROTO((const char *msgid, ...))
 {
-  fprintf (stderr, "%s\n", str);
-  exit (-1);
+#ifndef ANSI_PROTOTYPES
+  const char *msgid;
+#endif
+  va_list ap;
+ 
+  VA_START (ap, msgid);
+ 
+#ifndef ANSI_PROTOTYPES
+  msgid = va_arg (ap, const char *);
+#endif
+ 
+  vfprintf (stderr, msgid, ap);
+  va_end (ap);
 }
 
 void
