@@ -3698,7 +3698,7 @@ match_case_to_enum (splay_tree_node node, void *data)
 /* Handle -Wswitch*.  Called from the front end after parsing the switch
    construct.  */
 /* ??? Should probably be somewhere generic, since other languages besides
-   C and C++ would want this.  We'd want to agree on the datastructure,
+   C and C++ would want this.  We'd want to agree on the data structure,
    however, which is a problem.  Alternately, we operate on gimplified
    switch_exprs, which I don't especially like.  At the moment, however,
    C/C++ are the only tree-ssa languages that support enumerations at all,
