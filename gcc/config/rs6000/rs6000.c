@@ -709,15 +709,98 @@ print_operand (file, x, code)
 
   switch (code)
     {
-    case 'k':
-      /* X must be a constant.  Write the 1's complement of the
-	 constant.  */
-      if (! INT_P (x))
-	output_operand_lossage ("invalid %%k value");
-
-      fprintf (file, "%d", ~ INT_LOWPART (x));
+    case 'A':
+      /* If X is a constant integer whose low-order 5 bits are zero,
+	 write 'l'.  Otherwise, write 'r'.  This is a kludge to fix a bug
+	 in the RS/6000 assembler where "sri" with a zero shift count
+	 write a trash instruction.  */
+      if (GET_CODE (x) == CONST_INT && (INTVAL (x) & 31) == 0)
+	fprintf (file, "l");
+      else
+	fprintf (file, "r");
       return;
 
+    case 'b':
+      /* Low-order 16 bits of constant, unsigned.  */
+      if (! INT_P (x))
+	output_operand_lossage ("invalid %%b value");
+
+      fprintf (file, "%d", INT_LOWPART (x) & 0xffff);
+      return;
+
+    case 'C':
+      /* This is an optional cror needed for LE or GE floating-point
+	 comparisons.  Otherwise write nothing.  */
+      if ((GET_CODE (x) == LE || GET_CODE (x) == GE)
+	  && GET_MODE (XEXP (x, 0)) == CCFPmode)
+	{
+	  int base_bit = 4 * (REGNO (XEXP (x, 0)) - 68);
+
+	  fprintf (file, "cror %d,%d,%d\n\t", base_bit + 3,
+		   base_bit + 2, base_bit + (GET_CODE (x) == GE));
+	}
+      return;
+
+    case 'D':
+      /* Similar, except that this is for an scc, so we must be able to
+	 encode the test in a single bit that is one.  We do the above
+	 for any LE, GE, GEU, or LEU and invert the bit for NE.  */
+      if (GET_CODE (x) == LE || GET_CODE (x) == GE
+	  || GET_CODE (x) == LEU || GET_CODE (x) == GEU)
+	{
+	  int base_bit = 4 * (REGNO (XEXP (x, 0)) - 68);
+
+	  fprintf (file, "cror %d,%d,%d\n\t", base_bit + 3,
+		   base_bit + 2,
+		   base_bit + (GET_CODE (x) == GE || GET_CODE (x) == GEU));
+	}
+
+      else if (GET_CODE (x) == NE)
+	{
+	  int base_bit = 4 * (REGNO (XEXP (x, 0)) - 68);
+
+	  fprintf (file, "crnor %d,%d,%d\n\t", base_bit + 3,
+		   base_bit + 2, base_bit + 2);
+	}
+      return;
+
+    case 'E':
+      /* X is a CR register.  Print the number of the third bit of the CR */
+      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+	output_operand_lossage ("invalid %%E value");
+
+      fprintf(file, "%d", 4 * (REGNO (x) - 68) + 3);
+      break;
+
+    case 'f':
+      /* X is a CR register.  Print the shift count needed to move it
+	 to the high-order four bits.  */
+      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+	output_operand_lossage ("invalid %%f value");
+      else
+	fprintf (file, "%d", 4 * (REGNO (x) - 68));
+      return;
+
+    case 'F':
+      /* Similar, but print the count for the rotate in the opposite
+	 direction.  */
+      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+	output_operand_lossage ("invalid %%F value");
+      else
+	fprintf (file, "%d", 32 - 4 * (REGNO (x) - 68));
+      return;
+
+    case 'G':
+      /* X is a constant integer.  If it is negative, print "m",
+	 otherwise print "z".  This is to make a aze or ame insn.  */
+      if (GET_CODE (x) != CONST_INT)
+	output_operand_lossage ("invalid %%G value");
+      else if (INTVAL (x) >= 0)
+	fprintf (file, "z");
+      else
+	fprintf (file, "m");
+      return;
+	
     case 'h':
       /* If constant, output low-order five bits.  Otherwise,
 	 write normally. */
@@ -735,66 +818,57 @@ print_operand (file, x, code)
       fprintf (file, "%d", (INT_LOWPART (x) + 24) & 31);
       return;
 
-    case 'b':
-      /* Low-order 16 bits of constant, unsigned.  */
-      if (! INT_P (x))
-	output_operand_lossage ("invalid %%b value");
-
-      fprintf (file, "%d", INT_LOWPART (x) & 0xffff);
-      return;
-
-    case 'w':
-      /* If constant, low-order 16 bits of constant, signed.  Otherwise, write
-	 normally.  */
+    case 'I':
+      /* Print `i' if this is a constant, else nothing.  */
       if (INT_P (x))
-	fprintf (file, "%d",
-		 (INT_LOWPART (x) & 0xffff) - 2 * (INT_LOWPART (x) & 0x8000));
+	fprintf (file, "i");
+      return;
+
+    case 'j':
+      /* Write the bit number in CCR for jump.  */
+      i = ccr_bit (x, 0);
+      if (i == -1)
+	output_operand_lossage ("invalid %%j code");
       else
-	print_operand (file, x, 0);
+	fprintf (file, "%d", i);
       return;
 
-    case 'W':
-      /* If constant, low-order 16 bits of constant, unsigned.
-	 Otherwise, write normally.  */
-      if (INT_P (x))
-	fprintf (file, "%d", INT_LOWPART (x) & 0xffff);
+    case 'J':
+      /* Similar, but add one for shift count in rlinm for scc and pass
+	 scc flag to `ccr_bit'.  */
+      i = ccr_bit (x, 1);
+      if (i == -1)
+	output_operand_lossage ("invalid %%J code");
       else
-	print_operand (file, x, 0);
+	fprintf (file, "%d", i + 1);
       return;
 
-    case 'u':
-      /* High-order 16 bits of constant.  */
+    case 'k':
+      /* X must be a constant.  Write the 1's complement of the
+	 constant.  */
       if (! INT_P (x))
-	output_operand_lossage ("invalid %%u value");
+	output_operand_lossage ("invalid %%k value");
 
-      fprintf (file, "%d", (INT_LOWPART (x) >> 16) & 0xffff);
+      fprintf (file, "%d", ~ INT_LOWPART (x));
       return;
 
-    case 's':
-      /* Low 5 bits of 32 - value */
-      if (! INT_P (x))
-	output_operand_lossage ("invalid %%s value");
-
-      fprintf (file, "%d", (32 - INT_LOWPART (x)) & 31);
+    case 'L':
+      /* Write second word of DImode or DFmode reference.  Works on register
+	 or non-indexed memory only.  */
+      if (GET_CODE (x) == REG)
+	fprintf (file, "%d", REGNO (x) + 1);
+      else if (GET_CODE (x) == MEM)
+	{
+	  /* Handle possible auto-increment.  Since it is pre-increment and
+	     we have already done it, we can just use an offset of four.  */
+	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
+	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
+	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 4));
+	  else
+	    output_address (plus_constant (XEXP (x, 0), 4));
+	}
       return;
-
-    case 'S':
-      /* Low 5 bits of 31 - value */
-      if (! INT_P (x))
-	output_operand_lossage ("invalid %%S value");
-
-      fprintf (file, "%d", (31 - INT_LOWPART (x)) & 31);
-      return;
-
-    case 'p':
-      /* X is a CONST_INT that is a power of two.  Output the logarithm.  */
-      if (! INT_P (x)
-	  || (i = exact_log2 (INT_LOWPART (x))) < 0)
-	output_operand_lossage ("invalid %%p value");
-
-      fprintf (file, "%d", i);
-      return;
-
+			    
     case 'm':
       /* MB value for a mask operand.  */
       if (! mask_operand (x, VOIDmode))
@@ -866,60 +940,6 @@ print_operand (file, x, code)
       fprintf (file, "%d", i);
       return;
 
-    case 'f':
-      /* X is a CR register.  Print the shift count needed to move it
-	 to the high-order four bits.  */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
-	output_operand_lossage ("invalid %%f value");
-      else
-	fprintf (file, "%d", 4 * (REGNO (x) - 68));
-      return;
-
-    case 'F':
-      /* Similar, but print the count for the rotate in the opposite
-	 direction.  */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
-	output_operand_lossage ("invalid %%F value");
-      else
-	fprintf (file, "%d", 32 - 4 * (REGNO (x) - 68));
-      return;
-
-    case 'E':
-      /* X is a CR register.  Print the number of the third bit of the CR */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
-	output_operand_lossage ("invalid %%E value");
-
-      fprintf(file, "%d", 4 * (REGNO (x) - 68) + 3);
-      break;
-
-    case 'R':
-      /* X is a CR register.  Print the mask for `mtcrf'.  */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
-	output_operand_lossage ("invalid %%R value");
-      else
-	fprintf (file, "%d", 128 >> (REGNO (x) - 68));
-      return;
-
-    case 'X':
-      if (GET_CODE (x) == MEM
-	  && LEGITIMATE_INDEXED_ADDRESS_P (XEXP (x, 0)))
-	fprintf (file, "x");
-      return;
-
-    case 'U':
-      /* Print `u' if this has an auto-increment or auto-decrement.  */
-      if (GET_CODE (x) == MEM
-	  && (GET_CODE (XEXP (x, 0)) == PRE_INC
-	      || GET_CODE (XEXP (x, 0)) == PRE_DEC))
-	fprintf (file, "u");
-      return;
-
-    case 'I':
-      /* Print `i' if this is a constant, else nothing.  */
-      if (INT_P (x))
-	fprintf (file, "i");
-      return;
-
     case 'N':
       /* Write the number of elements in the vector times 4.  */
       if (GET_CODE (x) != PARALLEL)
@@ -936,6 +956,15 @@ print_operand (file, x, code)
       fprintf (file, "%d", (XVECLEN (x, 0) - 1) * 4);
       return;
 
+    case 'p':
+      /* X is a CONST_INT that is a power of two.  Output the logarithm.  */
+      if (! INT_P (x)
+	  || (i = exact_log2 (INT_LOWPART (x))) < 0)
+	output_operand_lossage ("invalid %%p value");
+
+      fprintf (file, "%d", i);
+      return;
+
     case 'P':
       /* The operand must be an indirect memory reference.  The result
 	 is the register number. */
@@ -946,51 +975,30 @@ print_operand (file, x, code)
       fprintf (file, "%d", REGNO (XEXP (x, 0)));
       return;
 
-    case 'L':
-      /* Write second word of DImode or DFmode reference.  Works on register
-	 or non-indexed memory only.  */
-      if (GET_CODE (x) == REG)
-	fprintf (file, "%d", REGNO (x) + 1);
-      else if (GET_CODE (x) == MEM)
-	{
-	  /* Handle possible auto-increment.  Since it is pre-increment and
-	     we have already done it, we can just use an offset of four.  */
-	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
-	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 4));
-	  else
-	    output_address (plus_constant (XEXP (x, 0), 4));
-	}
+    case 'R':
+      /* X is a CR register.  Print the mask for `mtcrf'.  */
+      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
+	output_operand_lossage ("invalid %%R value");
+      else
+	fprintf (file, "%d", 128 >> (REGNO (x) - 68));
       return;
-			    
-    case 'Y':
-      /* Similar, for third word of TImode  */
-      if (GET_CODE (x) == REG)
-	fprintf (file, "%d", REGNO (x) + 2);
-      else if (GET_CODE (x) == MEM)
-	{
-	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
-	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 8));
-	  else
-	    output_address (plus_constant (XEXP (x, 0), 8));
-	}
+
+    case 's':
+      /* Low 5 bits of 32 - value */
+      if (! INT_P (x))
+	output_operand_lossage ("invalid %%s value");
+
+      fprintf (file, "%d", (32 - INT_LOWPART (x)) & 31);
       return;
-			    
-    case 'Z':
-      /* Similar, for last word of TImode.  */
-      if (GET_CODE (x) == REG)
-	fprintf (file, "%d", REGNO (x) + 3);
-      else if (GET_CODE (x) == MEM)
-	{
-	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
-	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
-	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 12));
-	  else
-	    output_address (plus_constant (XEXP (x, 0), 12));
-	}
+
+    case 'S':
+      /* Low 5 bits of 31 - value */
+      if (! INT_P (x))
+	output_operand_lossage ("invalid %%S value");
+
+      fprintf (file, "%d", (31 - INT_LOWPART (x)) & 31);
       return;
-			    
+
     case 't':
       /* Write 12 if this jump operation will branch if true, 4 otherwise. 
 	 All floating-point operations except NE branch true and integer
@@ -1024,61 +1032,61 @@ print_operand (file, x, code)
 	fprintf (file, "12");
       return;
       
-    case 'j':
-      /* Write the bit number in CCR for jump.  */
-      i = ccr_bit (x, 0);
-      if (i == -1)
-	output_operand_lossage ("invalid %%j code");
+    case 'u':
+      /* High-order 16 bits of constant.  */
+      if (! INT_P (x))
+	output_operand_lossage ("invalid %%u value");
+
+      fprintf (file, "%d", (INT_LOWPART (x) >> 16) & 0xffff);
+      return;
+
+    case 'U':
+      /* Print `u' if this has an auto-increment or auto-decrement.  */
+      if (GET_CODE (x) == MEM
+	  && (GET_CODE (XEXP (x, 0)) == PRE_INC
+	      || GET_CODE (XEXP (x, 0)) == PRE_DEC))
+	fprintf (file, "u");
+      return;
+
+    case 'w':
+      /* If constant, low-order 16 bits of constant, signed.  Otherwise, write
+	 normally.  */
+      if (INT_P (x))
+	fprintf (file, "%d",
+		 (INT_LOWPART (x) & 0xffff) - 2 * (INT_LOWPART (x) & 0x8000));
       else
-	fprintf (file, "%d", i);
+	print_operand (file, x, 0);
       return;
 
-    case 'J':
-      /* Similar, but add one for shift count in rlinm for scc and pass
-	 scc flag to `ccr_bit'.  */
-      i = ccr_bit (x, 1);
-      if (i == -1)
-	output_operand_lossage ("invalid %%J code");
+    case 'W':
+      /* If constant, low-order 16 bits of constant, unsigned.
+	 Otherwise, write normally.  */
+      if (INT_P (x))
+	fprintf (file, "%d", INT_LOWPART (x) & 0xffff);
       else
-	fprintf (file, "%d", i + 1);
+	print_operand (file, x, 0);
       return;
 
-    case 'C':
-      /* This is an optional cror needed for LE or GE floating-point
-	 comparisons.  Otherwise write nothing.  */
-      if ((GET_CODE (x) == LE || GET_CODE (x) == GE)
-	  && GET_MODE (XEXP (x, 0)) == CCFPmode)
-	{
-	  int base_bit = 4 * (REGNO (XEXP (x, 0)) - 68);
-
-	  fprintf (file, "cror %d,%d,%d\n\t", base_bit + 3,
-		   base_bit + 2, base_bit + (GET_CODE (x) == GE));
-	}
+    case 'X':
+      if (GET_CODE (x) == MEM
+	  && LEGITIMATE_INDEXED_ADDRESS_P (XEXP (x, 0)))
+	fprintf (file, "x");
       return;
 
-    case 'D':
-      /* Similar, except that this is for an scc, so we must be able to
-	 encode the test in a single bit that is one.  We do the above
-	 for any LE, GE, GEU, or LEU and invert the bit for NE.  */
-      if (GET_CODE (x) == LE || GET_CODE (x) == GE
-	  || GET_CODE (x) == LEU || GET_CODE (x) == GEU)
+    case 'Y':
+      /* Like 'L', for third word of TImode  */
+      if (GET_CODE (x) == REG)
+	fprintf (file, "%d", REGNO (x) + 2);
+      else if (GET_CODE (x) == MEM)
 	{
-	  int base_bit = 4 * (REGNO (XEXP (x, 0)) - 68);
-
-	  fprintf (file, "cror %d,%d,%d\n\t", base_bit + 3,
-		   base_bit + 2,
-		   base_bit + (GET_CODE (x) == GE || GET_CODE (x) == GEU));
-	}
-
-      else if (GET_CODE (x) == NE)
-	{
-	  int base_bit = 4 * (REGNO (XEXP (x, 0)) - 68);
-
-	  fprintf (file, "crnor %d,%d,%d\n\t", base_bit + 3,
-		   base_bit + 2, base_bit + 2);
+	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
+	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
+	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 8));
+	  else
+	    output_address (plus_constant (XEXP (x, 0), 8));
 	}
       return;
-
+			    
     case 'z':
       /* X is a SYMBOL_REF.  Write out the name preceded by a
 	 period and without any trailing data in brackets.  Used for function
@@ -1090,17 +1098,20 @@ print_operand (file, x, code)
       RS6000_OUTPUT_BASENAME (file, XSTR (x, 0));
       return;
 
-    case 'A':
-      /* If X is a constant integer whose low-order 5 bits are zero,
-	 write 'l'.  Otherwise, write 'r'.  This is a kludge to fix a bug
-	 in the RS/6000 assembler where "sri" with a zero shift count
-	 write a trash instruction.  */
-      if (GET_CODE (x) == CONST_INT && (INTVAL (x) & 31) == 0)
-	fprintf (file, "l");
-      else
-	fprintf (file, "r");
+    case 'Z':
+      /* Like 'L', for last word of TImode.  */
+      if (GET_CODE (x) == REG)
+	fprintf (file, "%d", REGNO (x) + 3);
+      else if (GET_CODE (x) == MEM)
+	{
+	  if (GET_CODE (XEXP (x, 0)) == PRE_INC
+	      || GET_CODE (XEXP (x, 0)) == PRE_DEC)
+	    output_address (plus_constant (XEXP (XEXP (x, 0), 0), 12));
+	  else
+	    output_address (plus_constant (XEXP (x, 0), 12));
+	}
       return;
-
+			    
     case 0:
       if (GET_CODE (x) == REG)
 	fprintf (file, "%s", reg_names[REGNO (x)]);
@@ -1441,9 +1452,9 @@ output_epilog (file, size)
 
     /* Language type.  Unfortunately, there doesn't seem to be any official way
        to get this info, so we use language_string.  C is 0.  C++ is 9.
-       No number defined for Obj-C, but it doesn't have its own
-       language_string, so we can't detect it anyways.  */
-    if (! strcmp (language_string, "GNU C"))
+       No number defined for Obj-C, so use the value for C for now.  */
+    if (! strcmp (language_string, "GNU C")
+	|| ! strcmp (language_string, "GNU Obj-C"))
       i = 0;
     else if (! strcmp (language_string, "GNU F77"))
       i = 1;
