@@ -1,3 +1,8 @@
+Fri Feb 13 01:23:46 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+ 
+	* system.h: New file to get common systems includes and various
+	definitions and declarations based on autoconf macros.
+
 Fri Feb 13 00:46:19 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* cccp.c (new_include_prefix): Correctly handle -I./.
