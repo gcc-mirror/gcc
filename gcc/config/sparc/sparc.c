@@ -8650,7 +8650,6 @@ set_extends (insn)
 	  return INTVAL (op1) >= 0;
 	return (GET_CODE (op1) == REG && sparc_check_64 (op1, insn) == 1);
       }
-    case ASHIFT:
     case LSHIFTRT:
       return GET_MODE (SET_SRC (pat)) == SImode;
       /* Positive integers leave the high bits zero.  */

@@ -1,3 +1,9 @@
+2002-09-25  David S. Miller  <davem@redhat.com>
+
+	PR target/7842
+	* config/sparc/sparc.c (set_extends): SImode ASHIFT does not
+	extend.
+
 2002-09-20  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
 
 	* config/arm/arm.md (sign_extract_onebit, not_signextract_onebit):
