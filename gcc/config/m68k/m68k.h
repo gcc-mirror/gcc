@@ -1463,9 +1463,11 @@ __transfer_from_trampoline ()					\
 	  && (TARGET_68020 || (unsigned) INTVAL (XEXP (X, 0)) + 0x80 < 0x100))		\
 	{ rtx go_temp = XEXP (X, 1); GO_IF_INDEXING (go_temp, ADDR); } } }
 
+/* coldfire/5200 does not allow HImode index registers.  */
 #define LEGITIMATE_INDEX_REG_P(X)   \
   ((GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X))	\
-   || (GET_CODE (X) == SIGN_EXTEND			\
+   || (! TARGET_5200					\
+       && GET_CODE (X) == SIGN_EXTEND			\
        && GET_CODE (XEXP (X, 0)) == REG			\
        && GET_MODE (XEXP (X, 0)) == HImode		\
        && REG_OK_FOR_INDEX_P (XEXP (X, 0)))		\
