@@ -8048,10 +8048,10 @@ tsubst_copy_and_build (tree t,
 	  op1 = RECUR (op1);
 	  --skip_evaluation;
 	}
-      if (TREE_CODE (t) == SIZEOF_EXPR)
-	return finish_sizeof (op1);
+      if (TYPE_P (op1))
+	return cxx_sizeof_or_alignof_type (op1, TREE_CODE (t), true);
       else
-	return finish_alignof (op1);
+	return cxx_sizeof_or_alignof_expr (op1, TREE_CODE (t));
 
     case MODOP_EXPR:
       return build_x_modify_expr

@@ -4137,8 +4137,6 @@ extern tree finish_id_expression                (tree, tree, tree,
 						 bool, bool, bool *, 
 						 const char **);
 extern tree finish_typeof			(tree);
-extern tree finish_sizeof			(tree);
-extern tree finish_alignof			(tree);
 extern void finish_decl_cleanup                 (tree, tree);
 extern void finish_eh_cleanup                   (tree);
 extern void expand_body                         (tree);
@@ -4248,8 +4246,8 @@ extern bool comptypes				(tree, tree, int);
 extern bool compparms				(tree, tree);
 extern int comp_cv_qualification                (tree, tree);
 extern int comp_cv_qual_signature               (tree, tree);
-extern tree expr_sizeof				(tree);
-extern tree cxx_sizeof_or_alignof_type    (tree, enum tree_code, int);
+extern tree cxx_sizeof_or_alignof_expr    (tree, enum tree_code);
+extern tree cxx_sizeof_or_alignof_type    (tree, enum tree_code, bool);
 #define cxx_sizeof_nowarn(T) cxx_sizeof_or_alignof_type (T, SIZEOF_EXPR, false)
 extern tree inline_conversion			(tree);
 extern tree decay_conversion			(tree);
