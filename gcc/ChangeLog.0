@@ -5188,7 +5188,7 @@ Wed Apr 15 01:21:21 1998  Jeffrey A Law  (law@cygnus.com)
 
 Tue Apr 14 23:39:13 1998  Richard Henderson  <rth@cygnus.com>
 
-	* alpha.md: Revert Oct 27 change, as it is superceded by Kenner's
+	* alpha.md: Revert Oct 27 change, as it is superseded by Kenner's
 	Nov 8 find_replacement change.  Move decls of get_unaligned_address
 	* alpha.h: ... here.
 
@@ -5370,7 +5370,7 @@ Wed Apr  8 12:51:19 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* invoke.texi: Add ARC options.
 
-	* gcc.c (proces_command): Improve error message for -o with
+	* gcc.c (process_command): Improve error message for -o with
 	either -c or -S.
 
 	* i386/x-cygwin32 (CLIB): Link in advapi32.

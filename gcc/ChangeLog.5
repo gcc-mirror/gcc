@@ -1054,7 +1054,7 @@ Mon Jun 18 17:27:24 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(unroll_loop): Drop prediction notes on preconditioning.
 	* predict.def (PRED_LOOP_PRECONDITIONG, PRED_LOOP_CONDITION):
 	New; add comments on the others.
-	* Makefile.in: (unroll.o): Add dependancy on predict.h.
+	* Makefile.in: (unroll.o): Add dependency on predict.h.
 	* loop.c (strength_reduce): Fix branch prediction.
 
 Mon Jun 18 17:26:56 CEST 2001  Jan Hubicka  <jh@suse.cz>
@@ -1363,7 +1363,7 @@ Tue Jun 12 12:20:12 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(strength_reduce): Drop branch prediction note in case
 	number of iterations is known.
 	* predict.def (PRED_LOOP_ITERATIONS): new.
-	* Makefile.in (loop.o): Add dependancy on predict.h
+	* Makefile.in (loop.o): Add dependency on predict.h
 
 2001-06-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -1684,7 +1684,7 @@ Sun Jun 10 00:35:37 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* jump.c: Include predict.h
 	(duplicate_loop_exit_test): Drop branch prediction notes.
 	(invert_jump): Use invert_br_probabilities.
-	* Makefile.in: Add dependancy on predict.h for jump and predict pass.
+	* Makefile.in: Add dependency on predict.h for jump and predict pass.
 	* ifcvt.c (dead_or_predicable): Use invert_br_probabilities.
 	* combine.c (distribute_notes): Handle BR_PRED.
 
@@ -14214,7 +14214,7 @@ Wed Jan  3 08:53:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* c-common.h (ASM_INPUT_P): New.
 	* c-parse.in (asm): Set it when needed.
 	* c-semantics.c (genrtl_asm_stmt): Test it instead of the
-	existance of an operand.
+	existence of an operand.
 
 Tue Jan  2 20:27:07 MET 2001  Jan Hubicka  <jh@suse.cz>
 

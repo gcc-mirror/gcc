@@ -2626,7 +2626,7 @@ convert_regs_1 (file, block)
 
   /* Find the edge we will copy stack from.  It should be the most frequent
      one as it will get cheapest after compensation code is generated,
-     if multiple such exists, take one with largest count, preffer critical
+     if multiple such exists, take one with largest count, prefer critical
      one (as splitting critical edges is more expensive), or one with lowest
      index, to avoid random changes with different orders of the edges.  */
   for (e = block->pred; e ; e = e->pred_next)

@@ -7482,7 +7482,7 @@ epilogue_done:
       rtx insn, next;
 
       /* Similarly, move any line notes that appear after the epilogue.
-         There is no need, however, to be quite so anal about the existance
+         There is no need, however, to be quite so anal about the existence
 	 of such a note.  */
       for (insn = epilogue_end; insn; insn = next)
 	{

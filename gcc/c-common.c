@@ -396,7 +396,7 @@ finish_fname_decls ()
   
   if (body)
     {
-      /* They were called into existance, so add to statement tree.  */
+      /* They were called into existence, so add to statement tree.  */
       body = chainon (body,
 		      TREE_CHAIN (DECL_SAVED_TREE (current_function_decl)));
       body = build_stmt (COMPOUND_STMT, body);

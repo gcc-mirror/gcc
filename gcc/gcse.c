@@ -4741,14 +4741,14 @@ pre_edge_insert (edge_list, index_map)
 		struct expr *expr = index_map[j];
 		struct occr *occr;
 
-		/* Now look at each deleted occurence of this expression.  */
+		/* Now look at each deleted occurrence of this expression.  */
 		for (occr = expr->antic_occr; occr != NULL; occr = occr->next)
 		  {
 		    if (! occr->deleted_p)
 		      continue;
 
 		    /* Insert this expression on this edge if if it would
-		       reach the deleted occurence in BB.  */
+		       reach the deleted occurrence in BB.  */
 		    if (!TEST_BIT (inserted[e], j))
 		      {
 			rtx insn;
@@ -5693,7 +5693,7 @@ hoist_code ()
 		    hoistable++;
 		}
 
-	      /* If we found more than one hoistable occurence of this
+	      /* If we found more than one hoistable occurrence of this
 		 expression, then note it in the bitmap of expressions to
 		 hoist.  It makes no sense to hoist things which are computed
 		 in only one BB, and doing so tends to pessimize register
@@ -5744,7 +5744,7 @@ hoist_code ()
 		  /* The expression is computed in the dominated block and
 		     it would be safe to compute it at the start of the
 		     dominated block.  Now we have to determine if the
-		     expresion would reach the dominated block if it was
+		     expression would reach the dominated block if it was
 		     placed at the end of BB.  */
 		  if (hoist_expr_reaches_here_p (BASIC_BLOCK (bb), i, 
 						 BASIC_BLOCK (dominated), NULL))
@@ -5754,7 +5754,7 @@ hoist_code ()
 		      rtx insn;
 		      rtx set;
 
-		      /* Find the right occurence of this expression.  */
+		      /* Find the right occurrence of this expression.  */
 		      while (BLOCK_NUM (occr->insn) != dominated && occr)
 			occr = occr->next;
 
@@ -5856,7 +5856,7 @@ one_code_hoisting_pass ()
     load towards the exit, and we end up with no loads or stores of 'i'
     in the loop.  */
 
-/* This will search the ldst list for a matching expresion. If it
+/* This will search the ldst list for a matching expression. If it
    doesn't find one, we create one and initialize it.  */
 
 static struct ls_expr *
@@ -6767,7 +6767,7 @@ insert_store (expr, e)
   
   /* If we are inserting this expression on ALL predecessor edges of a BB,
      insert it at the start of the BB, and reset the insert bits on the other
-     edges so we don;t try to insert it on the other edges.  */
+     edges so we don't try to insert it on the other edges.  */
   bb = e->dest;
   for (tmp = e->dest->pred; tmp ; tmp = tmp->pred_next)
     {

@@ -834,7 +834,7 @@ expand_end_all_catch ()
 
 /* End an exception region for an exception type filter.  ALLOWED is a
    TREE_LIST of types to be matched by the runtime.  FAILURE is an
-   expression to invoke if a mismatch ocurrs.
+   expression to invoke if a mismatch occurs.
 
    ??? We could use these semantics for calls to rethrow, too; if we can
    see the surrounding catch clause, we know that the exception we're

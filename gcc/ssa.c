@@ -1231,7 +1231,7 @@ ephi_add_node (reg, nodes, n_nodes)
 /* Part one of the topological sort.  This is a forward (downward) search
    through the graph collecting a stack of nodes to process.  Assuming no
    cycles, the nodes at top of the stack when we are finished will have
-   no other dependancies.  */
+   no other dependencies.  */
 
 static int *
 ephi_forward (t, visited, succ, tstack)

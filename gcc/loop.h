@@ -136,7 +136,7 @@ struct induction
 				   derives another.  This occurs when the
 				   giv spans a biv update by incrementation.  */
   rtx ext_dependant;		/* If nonzero, is a sign or zero extension
-				   if a biv on which this giv is dependant.  */
+				   if a biv on which this giv is dependent.  */
   struct induction *next_iv;	/* For givs, links together all givs that are
 				   based on the same biv.  For bivs, links
 				   together all biv entries that refer to the

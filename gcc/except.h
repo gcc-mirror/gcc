@@ -72,7 +72,7 @@ extern void expand_end_all_catch		PARAMS ((void));
 
 /* End an exception region for an exception type filter.  ALLOWED is a
    TREE_LIST of TREE_VALUE objects to be matched by the runtime.
-   FAILURE is a function to invoke if a mismatch ocurrs.  */
+   FAILURE is a function to invoke if a mismatch occurs.  */
 extern void expand_eh_region_end_allowed	PARAMS ((tree, tree));
 
 /* End an exception region for a must-not-throw filter.  FAILURE is a

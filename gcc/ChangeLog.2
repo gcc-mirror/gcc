@@ -2889,7 +2889,7 @@ Tue Nov  9 14:55:44 1999  Nick Clifton  <nickc@cygnus.com>
 	(reg_or_cmp_int16_operand): New predicate function.
 	(extend_operand): New predicate function.
 	(m32r_adjust_code): New scheduling function.
-	(m32r_adjust_priorty): New scheduling function.
+	(m32r_adjust_priority): New scheduling function.
 	(m32r_sched_init): New scheduling function.
 	(m32r_sched_reorder): New scheduling function.
 	(m32r_sched_variable_issue): New scheduling function.
@@ -4248,7 +4248,7 @@ Tue Oct 26 18:23:38 1999  Jan Hubicka  <hubicka@freesoft.cz>
 	(record_reg_life_pat, record_reg_life, find_blocks): Remove.
 	(nan): New.
 	(goto_block_pat, print_blocks, dump_stack_info): Remove.
-	(reg_to_stack): Simplified test for existance of fp code.  Use
+	(reg_to_stack): Simplified test for existence of fp code.  Use
 	flow.c code.  Call shorten_branches after cross-jump opt.
 	(check_asm_stack_operands): Renamed from record_asm_reg_life.
 	Return false if the asm doesn't use stack regs.  Don't do life
@@ -10124,7 +10124,7 @@ Wed Aug 25 13:41:47 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 	prototypes.
 	* toplev.c (rest_of_compilation): Initialize node cache.
 	* Makefile.in (OBJS): Add lists.o to list of object files.
-	(lists.o): Add dependancies.
+	(lists.o): Add dependencies.
 
 Wed Aug 25 17:31:56 1999  Nick Clifton  <nickc@cygnus.com>
 
@@ -13070,7 +13070,7 @@ Thu Jul  8 12:55:12 1999  Jeffrey A Law  (law@cygnus.com)
 
 Thu Jul  8 18:03:19 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
-	* reload1.c (choose_reload_regs): Never call remove_adress_replacements
+	* reload1.c (choose_reload_regs): Never call remove_address_replacements
 	when reload_out equals reload_in.
 
 Thu Jul  8 16:50:14 1999  Nick Clifton  <nickc@cygnus.com>

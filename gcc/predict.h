@@ -38,7 +38,7 @@ extern void predict_insn_def	PARAMS ((rtx, enum br_predictor,
 					 enum prediction));
 extern void predict_insn	PARAMS ((rtx, enum br_predictor, int));
 
-/* Avoid unneeded dependancy on basic_block.h  */
+/* Avoid unneeded dependency on basic_block.h  */
 #ifdef BASIC_BLOCK
 extern void predict_edge	PARAMS ((edge, enum br_predictor, int));
 extern void predict_edge_def	PARAMS ((edge, enum br_predictor,

@@ -262,7 +262,7 @@ cached_make_edge (edge_cache, src, dst, flags)
   switch (use_edge_cache)
     {
     default:
-      /* Quick test for non-existance of the edge.  */
+      /* Quick test for non-existence of the edge.  */
       if (! TEST_BIT (edge_cache[src->index], dst->index))
 	break;
 
@@ -569,7 +569,7 @@ dump_edge_info (file, e, do_succ)
     }
 }
 
-/* Simple routies to easily allocate AUX fields of basic blocks.  */
+/* Simple routines to easily allocate AUX fields of basic blocks.  */
 static struct obstack block_aux_obstack;
 static void *first_block_aux_obj = 0;
 static struct obstack edge_aux_obstack;

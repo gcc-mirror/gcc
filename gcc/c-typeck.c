@@ -5451,7 +5451,7 @@ pop_init_level (implicit)
 	  else if (pedantic)
 	    pedwarn_init ("initialization of a flexible array member");
 
-	  /* We have already issued an error message for the existance
+	  /* We have already issued an error message for the existence
 	     of a flexible array member not at the end of the structure.
 	     Discard the initializer so that we do not abort later.  */
 	  if (TREE_CHAIN (constructor_fields) != NULL_TREE)

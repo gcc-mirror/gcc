@@ -1,5 +1,14 @@
 2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* ChangeLog.0, ChangeLog.1, ChangeLog.2, ChangeLog.3, ChangeLog.4,
+	ChangeLog.5, ChangeLog, FSFChangeLog.10, FSFChangeLog.11,
+	c-common.c, c-common.h, c-parse.in, c-typeck.c, cfg.c, config.gcc,
+	configure, configure.in, except.c, except.h, flow.c, function.c,
+	gcc.c, gcse.c, genrecog.c, libgcc2.c, loop.c, loop.h, params.def,
+	predict.def, predict.h, reg-stack.c, regmove.c, sched-deps.c,
+	sched-int.h, sibcall.c, ssa.c, stringpool.c, toplev.c, tree.c,
+	unroll.c: Fix spelling errors.
+
 	* doc/extend.texi, doc/invoke.texi: Fix spelling.
 
 	* doc/gcc.texi: Document use of "dependent" and American spelling.
@@ -717,7 +726,7 @@ Sat Oct 20 12:01:07 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(c_expand_body): Measure time.
 	* toplev.c (rest_of_compilation): Measure time of mode switching
 	separately.
-	* Makefile.in (c-decl.o, cfgcleanup.o): Add dependancy.
+	* Makefile.in (c-decl.o, cfgcleanup.o): Add dependency.
 
 	* toplev.c (flag_asynchronous_unwind_tables): New global variable.
 	(lang_independent_options): Add asynchronous-unwind-tables
@@ -1131,7 +1140,7 @@ Wed Oct 17 00:01:02 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	64bit operations require split on 64bit machine.
 	(CONST_COST): Make large 64bit constants expensive on 64bit compilation.
 
-	* i386.c (ix86_setup_incomming_varargs): Fix mode of PLUS.
+	* i386.c (ix86_setup_incoming_varargs): Fix mode of PLUS.
 	(ix86_expand_move): Avoid pushes of memory if size does not match;
 	move long constants to register.
 	(x86_initialize_trampoline): Fix mode.
@@ -4916,7 +4925,7 @@ Sun Sep  2 18:37:54 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-08-31  Richard Henderson  <rth@redhat.com>
 
-	* sched-deps.c (add_dependence): Don't elide dependancy if the
+	* sched-deps.c (add_dependence): Don't elide dependency if the
 	conditional used by insn is modified in elem.
 
 2001-08-31  Nick Clifton  <nickc@cambridge.redhat.com>
@@ -8922,7 +8931,7 @@ Thu Jul 26 14:04:03 EDT 2001  John Wehle  (john@feith.com)
 2001-07-26  Andrew MacLeod  <amacleod@redhat.com>
 
 	* params.def (PARAM_MAX_PENDING_LIST_LENGTH): Add parameter to
-	limit length of dependancy flush list.
+	limit length of dependency flush list.
 	* params.h (MAX_PENDING_LIST_LENGTH): Define.
 	* sched-int.h  (struct deps): Add pending_flush_length field.
 	* sched-deps.c (flush_pending_lists): Last_pending_memory_flush now

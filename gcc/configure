@@ -7911,7 +7911,7 @@ else
 #  -e 's|^\$(prefix)||'   matches and eliminates 'prefix' from 'exec_prefix'
 #  -e 's|/$||'            match a trailing forward slash and eliminates it
 #  -e 's|^[^/]|/|'        forces the string to start with a forward slash (*)
-#  -e 's|/[^/]*|../|g'    replaces each occurance of /<directory> with ../
+#  -e 's|/[^/]*|../|g'    replaces each occurrence of /<directory> with ../
 #
 # (*) Note this pattern overwrites the first character of the string
 # with a forward slash if one is not already present.  This is not a

@@ -429,7 +429,7 @@ uses_addressof (x)
 }
 
 /* Scan the sequence of insns in SEQ to see if any have an ADDRESSOF
-   rtl expression or current_function_internal_arg_pointer occurences
+   rtl expression or current_function_internal_arg_pointer occurrences
    not enclosed within a MEM.  If an ADDRESSOF expression or
    current_function_internal_arg_pointer is found, return nonzero, otherwise
    return zero.

@@ -459,7 +459,7 @@ or with constant text in a single argument.
 	specified to CC.  Note that the tail part of the -S option
 	(i.e. the part matched by the `*') will be substituted for each
 	occurrence of %* within X.
- %{<S}  remove all occurences of -S from the command line.
+ %{<S}  remove all occurrences of -S from the command line.
         Note - this option is position dependent.  % commands in the
         spec string before this option will see -S, % commands in the
         spec string after this option will not.
@@ -1458,7 +1458,7 @@ init_spec ()
 
 	(3) For each ET_DYN we're linking against (either through -lfoo
 	    or /some/path/foo.so), check to see whether it or one of
-	    its dependancies depends on a shared libgcc.
+	    its dependencies depends on a shared libgcc.
 
 	(4) If "-shared"
 
@@ -1666,7 +1666,7 @@ store_arg (arg, delete_always, delete_failure)
     record_temp_file (arg, delete_always, delete_failure);
 }
 
-/* Load specs from a file name named FILENAME, replacing occurances of
+/* Load specs from a file name named FILENAME, replacing occurrences of
    various different types of line-endings, \r\n, \n\r and just \r, with
    a single \n.  */
 
@@ -5559,7 +5559,7 @@ main (argc, argv)
   xmalloc_set_program_name (programname);
 
 #ifdef GCC_DRIVER_HOST_INITIALIZATION
-  /* Perform host dependant initialization when needed.  */
+  /* Perform host dependent initialization when needed.  */
   GCC_DRIVER_HOST_INITIALIZATION;
 #endif
 

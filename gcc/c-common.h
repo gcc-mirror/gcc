@@ -555,14 +555,14 @@ extern tree strip_array_types                   PARAMS ((tree));
    will always be false, since there are no destructors.)  */
 #define STMT_IS_FULL_EXPR_P(NODE) TREE_LANG_FLAG_1 ((NODE))
 
-/* IF_STMT accessors. These give access to the condtion of the if
+/* IF_STMT accessors. These give access to the condition of the if
    statement, the then block of the if statement, and the else block
    of the if stsatement if it exists.  */
 #define IF_COND(NODE)           TREE_OPERAND (IF_STMT_CHECK (NODE), 0)
 #define THEN_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 1)
 #define ELSE_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 2)
 
-/* WHILE_STMT accessors. These give access to the condtion of the
+/* WHILE_STMT accessors. These give access to the condition of the
    while statement and the body of the while statement, respectively.  */
 #define WHILE_COND(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 0)
 #define WHILE_BODY(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 1)
@@ -648,7 +648,7 @@ extern tree strip_array_types                   PARAMS ((tree));
   (SCOPE_STMT_BLOCK ((NODE)) == NULL_TREE)
 
 /* Nonzero for a SCOPE_STMT which represents a lexical scope, but
-   which should be treated as non-existant from the point of view of
+   which should be treated as non-existent from the point of view of
    running cleanup actions.  */
 #define SCOPE_NO_CLEANUPS_P(NODE) \
   (TREE_LANG_FLAG_3 (SCOPE_STMT_CHECK (NODE)))
