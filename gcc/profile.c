@@ -274,7 +274,7 @@ static void
 read_counts_file (const char *name)
 {
   char *function_name_buffer = NULL;
-  unsigned version, ix, checksum;
+  unsigned version, ix, checksum = -1;
   counts_entry_t *summaried = NULL;
   unsigned seen_summary = 0;
   
