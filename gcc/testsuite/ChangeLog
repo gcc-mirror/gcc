@@ -1,3 +1,7 @@
+2002-06-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.dg/template/ttp4.C: New test.
+
 2002-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/opt/vt1.C: Fix regexp.

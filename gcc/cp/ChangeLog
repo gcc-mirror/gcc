@@ -1,3 +1,10 @@
+2002-06-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/6723
+	* pt.c (lookup_template_class): Don't build complete argument of
+	BOUND_TEMPLATE_TEMPLATE_PARM if appeared as a default template
+	argument.
+
 2002-06-19  Akim Demaille  <akim@epita.fr>
 
 	* parse.y (TYPENAME): Rename as tTYPENAME to avoid the clash with
