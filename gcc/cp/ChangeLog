@@ -1,5 +1,8 @@
 2000-03-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (layout_virtual_bases): Adjust names in conditionally
+	compiled code.
+	
 	* class.c (record_base_offsets): New function.
 	(layout_conflict_p): Likewise.
 	(layout_nonempty_base_or_field): Use it.
