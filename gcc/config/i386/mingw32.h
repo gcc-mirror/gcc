@@ -32,13 +32,35 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 
-/* Please keep changes to CPP_PREDEFINES in sync with i386/crtdll. The
-   only difference between the two should be __MSVCRT__ needed to 
-   distinguish MSVC from CRTDLL runtime in mingw headers.  */
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D_WIN32 -D__WIN32 -D__WIN32__ -DWIN32 \
-  -D__MINGW32__ -D__MSVCRT__ -DWINNT -D_X86_=1 \
-  -Asystem=winnt"
+/* See i386/crtdll.h for an altervative definition.  */
+#define EXTRA_OS_CPP_BUILTINS()					\
+  do								\
+    {								\
+      builtin_define ("__MSVCRT__");				\
+      builtin_define ("__MINGW32__");			   	\
+    }								\
+  while (0)
+
+#undef TARGET_OS_CPP_BUILTINS	/* From cygwin.h.  */
+#define TARGET_OS_CPP_BUILTINS()					\
+  do									\
+    {									\
+	builtin_define ("_WIN32");					\
+	builtin_define_std ("WIN32");					\
+	builtin_define_std ("WINNT");					\
+	builtin_define ("_X86_=1");					\
+	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
+	builtin_define ("__cdecl=__attribute__((__cdecl__))");		\
+	builtin_define ("__declspec(x)=__attribute__((x))");		\
+	if (!flag_iso)							\
+	  {								\
+	    builtin_define ("_stdcall=__attribute__((__stdcall__))");	\
+	    builtin_define ("_cdecl=__attribute__((__cdecl__))");	\
+	  }								\
+	EXTRA_OS_CPP_BUILTINS ();					\
+	builtin_assert ("system=winnt");				\
+    }									\
+  while (0)
 
 /* Specific a different directory for the standard include files.  */
 #undef STANDARD_INCLUDE_DIR
@@ -47,14 +69,7 @@ Boston, MA 02111-1307, USA.  */
 #define STANDARD_INCLUDE_COMPONENT "MINGW"
 
 #undef CPP_SPEC
-#define CPP_SPEC \
-  "%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT} \
-  -D__stdcall=__attribute__((__stdcall__)) \
-  -D__cdecl=__attribute__((__cdecl__)) \
-  %{!ansi:-D_stdcall=__attribute__((__stdcall__)) \
-    -D_cdecl=__attribute__((__cdecl__))} \
-  -D__declspec(x)=__attribute__((x))"
-
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT}"
 
 /* For Windows applications, include more libraries, but always include
    kernel32.  */

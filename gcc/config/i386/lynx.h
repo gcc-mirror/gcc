@@ -20,8 +20,16 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_VERSION fprintf (stderr, " (80386, LYNX BSD syntax)"); 
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-DI386 -DLynx -DIBITS32 -Asystem=unix -Asystem=lynx"
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define_std ("I386");		\
+	builtin_define_std ("Lynx");		\
+	builtin_define_std ("IBITS32");		\
+	builtin_assert ("system=unix");		\
+	builtin_assert ("system=lynx");		\
+    }						\
+  while (0)
 
 /* The prefix to add to user-visible assembler symbols.  */
 

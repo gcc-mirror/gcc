@@ -1,3 +1,15 @@
+2002-06-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* config/i386/crtdll.h: Define EXTRA_OS_CPP_BUILTINS.
+	Don't use CPP_PREDEFINES.
+	* config/i386/cygwin.h (EXTRA_OS_CPP_BUILTINS): New.
+	Used TARGET_OS_CPP_BUILTINS in preference to CPP_PREDEFINES.
+	* config/i386/djgpp.h, config/i386/i386-coff.h,
+	config/i386/i386-interix.h, config/i386/i386-interix3.h,
+	config/i386/lynx-ng.h, config/i386/lynx.h, config/i386/mingw32.h,
+	config/i386/openbsd.h, config/i386/ptx4-i.h, config/i386/sysv3.h,
+	config/i386/uwin.h: Similarly.
+
 2002-06-29  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
         * c4x.h: (TARGET_CPU_CPP_BUILTINS): Check flag_inline_functions and

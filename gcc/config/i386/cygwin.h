@@ -54,8 +54,23 @@ Boston, MA 02111-1307, USA.  */
 { "no-nop-fun-dllimport", -MASK_NOP_FUN_DLLIMPORT, "" },	\
 { "threads",		  0, N_("Use Mingw-specific thread support") },
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D_X86_=1 -Asystem=winnt"
+#define MAYBE_UWIN_CPP_BUILTINS() /* Nothing.  */
+#define TARGET_OS_CPP_BUILTINS()					\
+  do									\
+    {									\
+	builtin_define ("_X86_=1");					\
+	builtin_assert ("system=winnt");				\
+	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
+	builtin_define ("__cdecl=__attribute__((__cdecl__))");		\
+	builtin_define ("__declspec(x)=__attribute__((x))");		\
+	if (!flag_iso)							\
+	  {								\
+	    builtin_define ("_stdcall=__attribute__((__stdcall__))");	\
+	    builtin_define ("_cdecl=__attribute__((__cdecl__))");	\
+	  }								\
+	MAYBE_UWIN_CPP_BUILTINS ();					\
+    }									\
+  while (0)
 
 #ifdef CROSS_COMPILE
 #define CYGWIN_INCLUDES "%{!nostdinc:-idirafter " CYGWIN_CROSS_DIR "/include}"
@@ -97,12 +112,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} \
-  -D__stdcall=__attribute__((__stdcall__)) \
-  -D__cdecl=__attribute__((__cdecl__)) \
-  %{!ansi:-D_stdcall=__attribute__((__stdcall__)) \
-    -D_cdecl=__attribute__((__cdecl__))} \
-  -D__declspec(x)=__attribute__((x)) \
-  -D__i386__ -D__i386 \
   %{mno-win32:%{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
   %{mno-cygwin:-D__MSVCRT__ -D__MINGW32__ %{mthreads:-D_MT} "\
     MINGW_INCLUDES "} \
