@@ -4082,7 +4082,8 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
     }
 
   /* Conversions among pointers */
-  else if (codel == POINTER_TYPE && coder == POINTER_TYPE)
+  else if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
+	   && (coder == POINTER_TYPE || coder == REFERENCE_TYPE))
     {
       register tree ttl = TREE_TYPE (type);
       register tree ttr = TREE_TYPE (rhstype);

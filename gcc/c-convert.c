@@ -88,7 +88,7 @@ convert (type, expr)
 #endif
   if (code == INTEGER_TYPE || code == ENUMERAL_TYPE)
     return fold (convert_to_integer (type, e));
-  if (code == POINTER_TYPE)
+  if (code == POINTER_TYPE || code == REFERENCE_TYPE)
     return fold (convert_to_pointer (type, e));
   if (code == REAL_TYPE)
     return fold (convert_to_real (type, e));

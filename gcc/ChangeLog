@@ -1,5 +1,8 @@
 Mon Apr 10 07:21:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* c-convert.c (convert): Handle REFERENCE_TYPE like POINTER_TYPE.
+	* c-typeck.c (convert_for_assignment): Likewise.
+
 	* expmed.c (init_expmed): Don't free objects we make.
 	* emit-rtl.c (gen_rtx_CONST_INT, init_emit_once): Minor cleanups.
 
