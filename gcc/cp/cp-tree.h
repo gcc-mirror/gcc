@@ -2498,6 +2498,13 @@ extern int flag_new_for_scope;
 #define DECL_UNINLINABLE(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.uninlinable)
 
+/* Returns non-zero if DECL has external linkage, as specified by the
+   language standard.  (This predicate may hold even when the
+   corresponding entity is not actually given external linkage in the
+   object file; see decl_linkage for details.)  */
+#define DECL_EXTERNAL_LINKAGE_P(DECL) \
+  (decl_linkage (DECL) == lk_external)
+
 #define INTEGRAL_CODE_P(CODE) \
   (CODE == INTEGER_TYPE || CODE == ENUMERAL_TYPE || CODE == BOOLEAN_TYPE)
 
@@ -3144,6 +3151,29 @@ typedef enum special_function_kind {
 			      destroyed.  */
   sfk_conversion           /* A conversion operator.  */
 } special_function_kind;
+
+/* The various kinds of linkage.  From [basic.link], 
+   
+      A name is said to have linkage when it might denote the same
+      object, reference, function, type, template, namespace or value
+      as a name introduced in another scope:
+
+      -- When a name has external linkage, the entity it denotes can
+         be referred to from scopes of other translation units or from
+	 other scopes of the same translation unit.
+
+      -- When a name has internal linkage, the entity it denotes can
+         be referred to by names from other scopes in the same
+	 translation unit.
+
+      -- When a name has no linkage, the entity it denotes cannot be
+         referred to by names from other scopes.  */
+
+typedef enum linkage_kind {
+  lk_none,                 /* No linkage.  */
+  lk_internal,             /* Internal linkage.  */
+  lk_external              /* External linkage.  */
+} linkage_kind;
 
 /* Bitmask flags to pass to instantiate_type.  */
 typedef enum instantiate_type_flags {
@@ -4443,6 +4473,7 @@ extern int count_trees                          PARAMS ((tree));
 extern int char_type_p                          PARAMS ((tree));
 extern void verify_stmt_tree                    PARAMS ((tree));
 extern tree find_tree                           PARAMS ((tree, tree));
+extern linkage_kind decl_linkage                PARAMS ((tree));
 
 /* in typeck.c */
 extern int string_conv_p			PARAMS ((tree, tree, int));

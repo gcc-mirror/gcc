@@ -2427,8 +2427,13 @@ comdat_linkage (decl)
   if (flag_weak)
     make_decl_one_only (decl);
   else if (TREE_CODE (decl) == FUNCTION_DECL || DECL_VIRTUAL_P (decl))
-    /* We can just emit functions and vtables statically; it doesn't really
-       matter if we have multiple copies.  */
+    /* We can just emit functions and vtables statically; having
+       multiple copies is (for the most part) only a waste of space.
+       There is at least one correctness issue, however: the address
+       of a template instantiation with external linkage should be the
+       same, independent of what translation unit asks for the
+       address, and this will not hold when we emit multiple copies of
+       the function.  However, there's little else we can do.  */
     TREE_PUBLIC (decl) = 0;
   else
     {

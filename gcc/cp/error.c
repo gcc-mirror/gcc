@@ -1284,27 +1284,28 @@ dump_function_decl (t, flags)
 
   dump_function_name (t, flags);
 
-  if (!(flags & TS_DECL_TYPE))
-    return;
-  if (TREE_CODE (fntype) == METHOD_TYPE && parmtypes)
-    /* Skip "this" parameter.  */
-    parmtypes = TREE_CHAIN (parmtypes);
+  if (flags & TS_DECL_TYPE) 
+    {
+      if (TREE_CODE (fntype) == METHOD_TYPE && parmtypes)
+	/* Skip "this" parameter.  */
+	parmtypes = TREE_CHAIN (parmtypes);
 
-  /* Skip past the "in_charge" parameter.  */
-  if (DECL_HAS_IN_CHARGE_PARM_P (t))
-    parmtypes = TREE_CHAIN (parmtypes);
+      /* Skip past the "in_charge" parameter.  */
+      if (DECL_HAS_IN_CHARGE_PARM_P (t))
+	parmtypes = TREE_CHAIN (parmtypes);
 
-  dump_parameters (parmtypes, flags);
+      dump_parameters (parmtypes, flags);
 
-  if (show_return)
-    dump_type_suffix (TREE_TYPE (fntype), flags);
+      if (show_return)
+	dump_type_suffix (TREE_TYPE (fntype), flags);
 
-  if (TREE_CODE (fntype) == METHOD_TYPE)
-    dump_qualifiers (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fntype))),
-		     before);
+      if (TREE_CODE (fntype) == METHOD_TYPE)
+	dump_qualifiers (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fntype))),
+			 before);
 
-  if (flags & TS_FUNC_THROW)
-    dump_exception_spec (TYPE_RAISES_EXCEPTIONS (fntype), flags);
+      if (flags & TS_FUNC_THROW)
+	dump_exception_spec (TYPE_RAISES_EXCEPTIONS (fntype), flags);
+    }
 
   /* If T is a template instantiation, dump the parameter binding.  */
   if (template_parms != NULL_TREE && template_args != NULL_TREE)

@@ -2597,3 +2597,46 @@ char_type_p (type)
 	  || same_type_p (type, signed_char_type_node)
 	  || same_type_p (type, wchar_type_node));
 }
+
+/* Returns the kind of linkage associated with the indicated DECL.  Th
+   value returned is as specified by the language standard; it is
+   independent of implementation details regarding template
+   instantiation, etc.  For example, it is possible that a declaration
+   to which this function assigns external linkage would not show up
+   as a global symbol when you run `nm' on the resulting object file.  */
+
+linkage_kind
+decl_linkage (decl)
+     tree decl;
+{
+  /* This function doesn't attempt to calculate the linkage from first
+     principles as given in [basic.link].  Instead, it makes use of
+     the fact that we have already set TREE_PUBLIC appropriately, and
+     then handles a few special cases.  Ideally, we would calculate
+     linkage first, and then transform that into a concrete
+     implementation.  */
+
+  /* Things that don't have names have no linkage.  */
+  if (!DECL_NAME (decl))
+    return lk_none;
+
+  /* Things that are TREE_PUBLIC have external linkage.  */
+  if (TREE_PUBLIC (decl))
+    return lk_external;
+
+  /* Some things that are not TREE_PUBLIC have external linkage, too.
+     For example, on targets that don't have weak symbols, we make all
+     template instantiations have internal linkage (in the object
+     file), but the symbols should still be treated as having external
+     linkage from the point of view of the language.  */
+  if (DECL_LANG_SPECIFIC (decl) && DECL_COMDAT (decl))
+    return lk_external;
+
+  /* Things in local scope do not have linkage, if they don't have
+     TREE_PUBLIC set.  */
+  if (decl_function_context (decl))
+    return lk_none;
+
+  /* Everything else has internal linkage.  */
+  return lk_internal;
+}
