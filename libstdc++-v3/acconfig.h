@@ -18,6 +18,21 @@
 // Define if lldiv_t exists in stdlib.h.
 #undef HAVE_LLDIV_T
 
+/* Define if you have the atan2f function.  */
+#define _GLIBCPP_HAVE_ATAN2F 1
+
+/* Define if you have the atan2l function.  */
+#define _GLIBCPP_HAVE_ATAN2L 1
+
+/* Define if you have the copysignf function.  */
+#define _GLIBCPP_HAVE_COPYSIGNF 1
+
+/* Define if you have the modff function.  */
+#undef HAVE_MODFF
+
+/* Define if you have the modfl function.  */
+#undef HAVE_MODFL
+
 // Define if the compiler/host combination has __builtin_abs
 #undef HAVE___BUILTIN_ABS
 

@@ -1,3 +1,20 @@
+2000-12-12  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_CTYPE_SUPPORT): Don't link ctype
+	files here...
+	* configure.in: Rather, do it once for all targets here. Clean up
+	canadian cross and cross compile targets for linux-targeted
+	crosses.
+	* configure: Regenerate.
+	* aclocal.m4: Regnerate.
+	* acconfig.h: Add more defines.
+	* config.h.in: Regenerate.
+	
+2000-12-12  Angela Marie Thomas <angela@cygnus.com>
+
+	* configure.in: Fix case for host-x-linux
+	* configure: Regenerate.
+
 2000-12-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* src/Makefile.am (libstdc++.INC:): 2000-12-05 reverted to include

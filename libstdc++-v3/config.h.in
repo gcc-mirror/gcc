@@ -18,6 +18,12 @@
 // Define if lldiv_t exists in stdlib.h.
 #undef HAVE_LLDIV_T
 
+/* Define if you have the modff function.  */
+#undef HAVE_MODFF
+
+/* Define if you have the modfl function.  */
+#undef HAVE_MODFL
+
 // Define if the compiler/host combination has __builtin_abs
 #undef HAVE___BUILTIN_ABS
 
@@ -69,12 +75,6 @@
 // Define if LC_MESSAGES is available in <locale.h>.
 #undef HAVE_LC_MESSAGES
 
-// Define if <float.h> exists.
-#undef HAVE_FLOAT_H
-
-// Define if modf is present in <math.h>
-#undef HAVE_MODF
-
 /* Define if you have the _acosf function.  */
 #undef HAVE__ACOSF
 
@@ -107,6 +107,9 @@
 
 /* Define if you have the _copysign function.  */
 #undef HAVE__COPYSIGN
+
+/* Define if you have the _copysignf function.  */
+#undef HAVE__COPYSIGNF
 
 /* Define if you have the _copysignl function.  */
 #undef HAVE__COPYSIGNL
