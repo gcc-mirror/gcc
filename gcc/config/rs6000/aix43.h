@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX version 4.3.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
 This file is part of GNU CC.
@@ -20,9 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-#include "rs6000/rs6000.h"
-#include "rs6000/aix.h"
 
 /* AIX 4.3 and above support 64-bit executables.  */
 #undef  SUBSUBTARGET_SWITCHES
