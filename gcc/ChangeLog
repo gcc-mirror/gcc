@@ -10,6 +10,9 @@
 	* expr.c (optimize_bitfield_assignment_op): Add a special case
 	to handle BIT_IOR_EXPR and BIT_XOR_EXPR.
 
+	* fold-const.c (fold_unary): New.
+	(fold): Call fold_unary on unary expressions.
+
 2005-03-02  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* cgraph.h (struct cgraph_edge): Add prev_caller and
