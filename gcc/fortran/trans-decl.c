@@ -1050,7 +1050,7 @@ build_function_decl (gfc_symbol * sym)
   DECL_CONTEXT (fndecl) = current_function_decl;
   DECL_EXTERNAL (fndecl) = 0;
 
-  /* This specifies if a function is globaly visible, i.e. it is
+  /* This specifies if a function is globally visible, i.e. it is
      the opposite of declaring static in C.  */
   if (DECL_CONTEXT (fndecl) == NULL_TREE
       && !sym->attr.entry_master)
@@ -1335,11 +1335,6 @@ build_entry_thunks (gfc_namespace * ns)
   /* This should always be a toplevel function.  */
   assert (current_function_decl == NULL_TREE);
 
-  /* Remember the master function argument decls.  */
-  for (formal = ns->proc_name->formal; formal; formal = formal->next)
-    {
-    }
-  
   for (el = ns->entries; el; el = el->next)
     {
       thunk_sym = el->sym;
@@ -1660,7 +1655,6 @@ gfc_build_intrinsic_function_decls (void)
                                      gfc_int4_type_node,
                                      2, pvoid_type_node,
                                      pvoid_type_node);
-
 
   /* Power functions.  */
   {
