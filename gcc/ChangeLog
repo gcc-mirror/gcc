@@ -1,3 +1,51 @@
+2004-06-24  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (c_in_iteration_stmt, c_in_case_stmt): Remove.
+	(c_break_label, c_cont_label): New.
+	(start_function): Update initializations.
+	(c_push_function_context): Update saves.
+	(c_pop_function_context): Update restores.
+	* c-parse.in: Update expected conflicts.
+	(stmt_count, compstmt_count): Remove.  Remove all updates.
+	(if_prefix, simple_if, do_stmt_start): Remove.
+	(lineno_labeled_stmt): Remove.
+	(lineno_labels): New.
+	(c99_block_lineno_labeled_stmt): Use it.
+	(lineno_stmt, lineno_label): Don't clear EXPR_LOCUS before calling
+	annotate_with_locus.
+	(select_or_iter_stmt): Replace by ...
+	(condition, if_statement_1, if_statement_2, if_statement,
+	start_break, start_continue, while_statement, do_statement,
+	for_cond_expr, for_incr_expr, for_statement, switch_statement): New.
+	(stmt): Split out ...
+	(stmt_nocomp): ... this.  Use c_finish_bc_stmt, c_finish_goto_label,
+	c_finish_goto_ptr.
+	* c-semantics.c (add_stmt): Don't add line numbers to labels.
+	* c-tree.h: Update prototypes.
+	(struct language_function): Remove x_in_iteration_stmt, x_in_case_stmt;
+	add x_break_label, x_cont_label, x_switch_stack.
+	(c_switch_stack): Declare.
+	* c-typeck.c (c_finish_goto_label, c_finish_goto_ptr): New.
+	(c_finish_return): Return the statement.
+	(c_switch_stack): Rename from switch_stack; export.
+	(if_elt, if_stack, if_stack_space, if_stack_pointer): Remove.
+	(c_begin_if_stmt, c_finish_if_cond, c_finish_then, c_begin_else,
+	c_finish_else): Remove.
+	(c_finish_if_stmt): Rewrite to perform the entire operation.
+	(c_begin_while_stmt, c_finish_while_stmt_cond, c_finish_while_stmt,
+	c_begin_for_stmt, c_finish_for_stmt_init, c_finish_for_stmt_cond,
+	c_finish_for_stmt_incr, c_finish_for_stmt): Remove.
+	(c_finish_loop): New.
+	(c_finish_bc_stmt): New.
+	(c_finish_expr_stmt): Return the statement.  Split out...
+	(c_process_expr_stmt): ... this.  Don't add locus to error marks.
+	* gimplify.c (gimplify_cond_expr): Accept NULL type statements.
+	* tree-gimple.c (is_gimple_stmt): Likewise.
+	* tree-pretty-print.c (dump_generic_node <COND_EXPR>): Likewise.
+	(print_struct_decl): Delete empty compound statement.
+	* objc/objc-act.c (objc_build_throw_stmt): Return the statement.
+	* objc/objc-act.h: Update decl.
+
 2004-06-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-pretty-print.c (dump_generic_node, case TYPE_DECL):

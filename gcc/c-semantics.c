@@ -128,7 +128,9 @@ pop_stmt_list (tree t)
 tree
 add_stmt (tree t)
 {
-  if (EXPR_P (t) || STATEMENT_CODE_P (TREE_CODE (t)))
+  enum tree_code code = TREE_CODE (t);
+
+  if ((EXPR_P (t) || STATEMENT_CODE_P (code)) && code != LABEL_EXPR)
     {
       if (!EXPR_LOCUS (t))
 	annotate_with_locus (t, input_location);

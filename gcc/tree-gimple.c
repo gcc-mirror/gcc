@@ -348,7 +348,7 @@ is_gimple_stmt (tree t)
     case BIND_EXPR:
     case COND_EXPR:
       /* These are only valid if they're void.  */
-      return VOID_TYPE_P (TREE_TYPE (t));
+      return TREE_TYPE (t) == NULL || VOID_TYPE_P (TREE_TYPE (t));
 
     case SWITCH_EXPR:
     case GOTO_EXPR:

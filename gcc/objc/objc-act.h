@@ -39,7 +39,7 @@ void finish_method_def (void);
 tree start_protocol (enum tree_code, tree, tree);
 void finish_protocol (tree);
 
-void objc_build_throw_stmt (tree);
+tree objc_build_throw_stmt (tree);
 void objc_begin_try_stmt (location_t, tree);
 void objc_begin_catch_clause (tree);
 void objc_finish_catch_clause (void);

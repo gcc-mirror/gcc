@@ -3188,10 +3188,12 @@ objc_finish_try_stmt (void)
   free (c);
 }
 
-void
+tree
 objc_build_throw_stmt (tree throw_expr)
 {
-  tree func_params;
+  tree args;
+
+  objc_init_exceptions ();
 
   if (throw_expr == NULL)
     {
@@ -3201,7 +3203,7 @@ objc_build_throw_stmt (tree throw_expr)
           || cur_try_context->current_catch == NULL)
 	{
 	  error ("%<@throw%> (rethrow) used outside of a @catch block");
-	  return;
+	  return NULL_TREE;
 	}
 
       /* Otherwise the object is still sitting in the EXC_PTR_EXPR
@@ -3211,10 +3213,8 @@ objc_build_throw_stmt (tree throw_expr)
 
   /* A throw is just a call to the runtime throw function with the
      object as a parameter.  */
-  func_params = tree_cons (NULL, throw_expr, NULL);
-  add_stmt (build_function_call (objc_exception_throw_decl, func_params));
-
-  objc_init_exceptions ();
+  args = tree_cons (NULL, throw_expr, NULL);
+  return add_stmt (build_function_call (objc_exception_throw_decl, args));
 }
 
 void

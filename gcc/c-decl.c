@@ -109,8 +109,8 @@ static location_t current_function_prototype_locus;
 static GTY(()) struct stmt_tree_s c_stmt_tree;
 
 /* State saving variables.  */
-int c_in_iteration_stmt;
-int c_in_case_stmt;
+tree c_break_label;
+tree c_cont_label;
 
 /* Linked list of TRANSLATION_UNIT_DECLS for the translation units
    included in this invocation.  Note that the current translation
@@ -5592,8 +5592,12 @@ start_function (tree declspecs, tree declarator, tree attributes)
   current_function_returns_abnormally = 0;
   warn_about_return_type = 0;
   current_extern_inline = 0;
-  c_in_iteration_stmt = 0;
-  c_in_case_stmt = 0;
+  c_switch_stack = NULL;
+
+  /* Indicate no valid break/continue context by setting these variables
+     to some non-null, non-label value.  We'll notice and emit the proper
+     error message in c_finish_bc_stmt.  */
+  c_break_label = c_cont_label = size_zero_node;
 
   /* Don't expand any sizes in the return type of the function.  */
   immediate_size_expand = 0;
@@ -6410,8 +6414,9 @@ c_push_function_context (struct function *f)
   f->language = p;
 
   p->base.x_stmt_tree = c_stmt_tree;
-  p->x_in_iteration_stmt = c_in_iteration_stmt;
-  p->x_in_case_stmt = c_in_case_stmt;
+  p->x_break_label = c_break_label;
+  p->x_cont_label = c_cont_label;
+  p->x_switch_stack = c_switch_stack;
   p->returns_value = current_function_returns_value;
   p->returns_null = current_function_returns_null;
   p->returns_abnormally = current_function_returns_abnormally;
@@ -6437,8 +6442,9 @@ c_pop_function_context (struct function *f)
     }
 
   c_stmt_tree = p->base.x_stmt_tree;
-  c_in_iteration_stmt = p->x_in_iteration_stmt;
-  c_in_case_stmt = p->x_in_case_stmt;
+  c_break_label = p->x_break_label;
+  c_cont_label = p->x_cont_label;
+  c_switch_stack = p->x_switch_stack;
   current_function_returns_value = p->returns_value;
   current_function_returns_null = p->returns_null;
   current_function_returns_abnormally = p->returns_abnormally;

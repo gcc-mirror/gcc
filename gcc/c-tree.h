@@ -126,13 +126,14 @@ struct lang_type GTY(())
 struct language_function GTY(())
 {
   struct c_language_function base;
+  tree x_break_label;
+  tree x_cont_label;
+  struct c_switch * GTY((skip)) x_switch_stack;
   int returns_value;
   int returns_null;
   int returns_abnormally;
   int warn_about_return_type;
   int extern_inline;
-  int x_in_iteration_stmt;
-  int x_in_case_stmt;
 };
 
 
@@ -143,8 +144,8 @@ extern void c_parse_init (void);
 extern void gen_aux_info_record (tree, int, int, int);
 
 /* in c-decl.c */
-extern int c_in_iteration_stmt;
-extern int c_in_case_stmt;
+extern tree c_break_label;
+extern tree c_cont_label;
 
 extern int global_bindings_p (void);
 extern void push_scope (void);
@@ -212,6 +213,7 @@ extern bool c_warn_unused_global_decl (tree);
 #define c_sizeof_nowarn(T)  c_sizeof_or_alignof_type (T, SIZEOF_EXPR, 0)
 
 /* in c-typeck.c */
+extern struct c_switch *c_switch_stack;
 
 extern tree require_complete_type (tree);
 extern int same_translation_unit_p (tree, tree);
@@ -254,24 +256,16 @@ extern tree c_convert_parm_for_inlining (tree, tree, tree, int);
 extern int c_types_compatible_p (tree, tree);
 extern tree c_begin_compound_stmt (bool);
 extern tree c_end_compound_stmt (tree, bool);
-extern void c_begin_if_stmt (void);
-extern void c_finish_if_cond (tree, int, int);
-extern void c_finish_then (tree);
-extern void c_begin_else (int);
-extern void c_finish_else (tree);
-extern void c_finish_if_stmt (int);
-extern tree c_begin_while_stmt (void);
-extern void c_finish_while_stmt_cond (tree, tree);
-extern void c_finish_while_stmt (tree, tree);
-extern tree c_begin_for_stmt (void);
-extern void c_finish_for_stmt_init (tree);
-extern void c_finish_for_stmt_cond (tree, tree);
-extern void c_finish_for_stmt_incr (tree, tree);
-extern void c_finish_for_stmt (tree, tree);
+extern void c_finish_if_stmt (location_t, tree, tree, tree, bool);
+extern void c_finish_loop (location_t, tree, tree, tree, tree, tree, bool);
 extern tree c_begin_stmt_expr (void);
 extern tree c_finish_stmt_expr (tree);
-extern void c_finish_expr_stmt (tree);
-extern void c_finish_return (tree);
+extern tree c_process_expr_stmt (tree);
+extern tree c_finish_expr_stmt (tree);
+extern tree c_finish_return (tree);
+extern tree c_finish_bc_stmt (tree *, bool);
+extern tree c_finish_goto_label (tree);
+extern tree c_finish_goto_ptr (tree);
 extern tree build_offsetof (tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
