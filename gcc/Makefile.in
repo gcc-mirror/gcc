@@ -953,7 +953,7 @@ libgcc2.ready: $(GCC_PASSES) stmp-int-hdrs $(STMP_FIXPROTO)
 
 LIB2ADD = $(srcdir)/frame.c $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
 
-libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD)
+libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 	objext='$(objext)' \
 	OLDCC='$(OLDCC)' \
 	LIBGCC1='$(LIBGCC1)' \
