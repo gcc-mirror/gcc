@@ -523,7 +523,7 @@ dynamic_cast_base_recurse (subtype, binfo, via_virtual, offset_ptr)
 
 /* The dynamic cast runtime needs a hint about how the static SUBTYPE type
    started from is related to the required TARGET type, in order to optimize
-   the inheritance graph search. This information is independant of the
+   the inheritance graph search. This information is independent of the
    current context, and ignores private paths, hence get_base_distance is
    inappropriate. Return a TREE specifying the base offset, BOFF.
    BOFF >= 0, there is only one public non-virtual SUBTYPE base at offset BOFF,

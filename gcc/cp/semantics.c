@@ -2048,7 +2048,7 @@ finish_member_class_template (types)
   return NULL_TREE;
 }
 
-/* Finish processsing a complete template declaration.  The PARMS are
+/* Finish processing a complete template declaration.  The PARMS are
    the template parameters.  */
 
 void
