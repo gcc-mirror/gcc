@@ -1,3 +1,10 @@
+2001-12-05  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch12.adb:
+	Document use of Associated_Node on Selected_Components.
+	(Save_Global_Operand_Descendants): Change to Save_Entity_Descendants,
+	to clarify use of untyped descendant fields.
+
 2001-12-05  Robert Dewar <dewar@gnat.com>
 
 	* prj-dect.ads: Add ??? comment

@@ -532,7 +532,7 @@ package body Sem_Ch12 is
    --  information from the associated node is placed on the new copy, so
    --  that name resolution is not repeated.
 
-   --  Three kinds of nodes have associated nodes:
+   --  Three kinds of source nodes have associated nodes:
 
    --    a) those that contain entities, that is to say identifiers,
    --       expanded_names, and operators (N_Has_Entity)
@@ -553,9 +553,12 @@ package body Sem_Ch12 is
    --  some of the ancestor types, if their view is private at the point of
    --  instantiation.
 
-   --  Query??? why selected components. What about N_Freeze_Nodes, I assume
-   --  that the answer is no, which means that the comment above for a) is
-   --  confusing ???
+   --  Nodes that are selected components in the parse tree may be rewritten
+   --  as expanded names after resolution, and must be treated as potential
+   --  entity holders. which is why they also have an Associated_Node.
+
+   --  Nodes that do not come from source, such as freeze nodes, do not appear
+   --  in the generic tree, and need not have an associated node.
 
    --  The associated node is stored in the Associated_Node field. Note that
    --  this field overlaps Entity, which is fine, because the whole point is
@@ -8187,6 +8190,11 @@ package body Sem_Ch12 is
       --  Save semantic information on global entity, so that it is not
       --  resolved again at instantiation time.
 
+      procedure Save_Entity_Descendants (N : Node_Id);
+      --  Apply Save_Global_References to the two syntactic descendants of
+      --  nodes that carry entities, i.e. identifiers, character literals,
+      --  expanded names, and operators.
+
       procedure Save_Global_Defaults (N1, N2 : Node_Id);
       --  Default actuals in nested instances must be handled specially
       --  because there is no link to them from the original tree. When an
@@ -8198,12 +8206,6 @@ package body Sem_Ch12 is
       --  Similarly, if a child unit is instantiated within a sibling, in the
       --  context of the parent, we must preserve the identifier of the parent
       --  so that it can be properly resolved in a subsequent instantiation.
-
-      procedure Save_Global_Operand_Descendants (N : Node_Id);
-      --  Apply Save_Global_Descendant to the possible operand fields
-      --  of the node N (Field2 = Left_Opnd, Field3 = Right_Opnd).
-      --
-      --  It is uncomfortable for Sem_Ch12 to have this knowledge ???
 
       procedure Save_Global_Descendant (D : Union_Id);
       --  Apply Save_Global_References recursively to the descendents of
@@ -8365,7 +8367,7 @@ package body Sem_Ch12 is
                Change_Selected_Component_To_Expanded_Name (Parent (N));
                Set_Associated_Node (Parent (N), Parent (N2));
                Set_Global_Type (Parent (N), Parent (N2));
-               Save_Global_Operand_Descendants (N);
+               Save_Entity_Descendants (N);
 
                --  If this is a reference to the current generic entity,
                --  replace it with a simple name. This is to avoid anomalies
@@ -8416,7 +8418,7 @@ package body Sem_Ch12 is
             Change_Selected_Component_To_Expanded_Name (Parent (N));
             Set_Associated_Node (Parent (N), Name (Parent (N2)));
             Set_Global_Type (Parent (N), Name (Parent (N2)));
-            Save_Global_Operand_Descendants (N);
+            Save_Entity_Descendants (N);
 
          else
             --  Entity is local. Reset in generic unit, so that node
@@ -8426,6 +8428,21 @@ package body Sem_Ch12 is
             Set_Etype (N, Empty);
          end if;
       end Reset_Entity;
+
+      -----------------------------
+      -- Save_Entity_Descendants --
+      -----------------------------
+
+      procedure Save_Entity_Descendants (N : Node_Id) is
+
+         use Atree.Unchecked_Access;
+         --  This code section is part of the implementation of an untyped
+         --  tree traversal, so it needs direct access to node fields.
+
+      begin
+         Save_Global_Descendant (Field2 (N));
+         Save_Global_Descendant (Field3 (N));
+      end Save_Entity_Descendants;
 
       --------------------------
       -- Save_Global_Defaults --
@@ -8595,21 +8612,6 @@ package body Sem_Ch12 is
          end if;
       end Save_Global_Descendant;
 
-      -------------------------------------
-      -- Save_Global_Operand_Descendants --
-      -------------------------------------
-
-      procedure Save_Global_Operand_Descendants (N : Node_Id) is
-
-         use Atree.Unchecked_Access;
-         --  This code section is part of the implementation of an untyped
-         --  tree traversal, so it needs direct access to node fields.
-
-      begin
-         Save_Global_Descendant (Field2 (N));
-         Save_Global_Descendant (Field3 (N));
-      end Save_Global_Operand_Descendants;
-
       ---------------------
       -- Save_References --
       ---------------------
@@ -8700,7 +8702,7 @@ package body Sem_Ch12 is
 
             --  Complete the check on operands
 
-            Save_Global_Operand_Descendants (N);
+            Save_Entity_Descendants (N);
 
          elsif Nkind (N) = N_Identifier then
             if Nkind (N) = Nkind (Get_Associated_Node (N)) then
