@@ -1,3 +1,9 @@
+2002-11-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (for_each_template_parm): Free allocated memory.
+	* search.c (is_subobject_of_p_1): New function.
+	(is_subobject_of_p): Avoid walking virtual bases multiple times.
+
 2002-11-19  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* g++spec.c (lang_specific_spec_functions): New.
