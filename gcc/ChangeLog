@@ -1,5 +1,9 @@
 2001-11-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-lex.c (init_c_lex): Canonicalize "-" filename to "".
+
+2001-11-29  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc.c (ASM_DEBUG_SPEC): Only check HAVE_AS_G*_DEBUG_FLAG
 	macros for the supported debugging types.
 
