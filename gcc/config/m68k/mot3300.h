@@ -641,6 +641,9 @@ do { union { float f; long l;} tem;			\
   switch_table_difference_label_flag = 0; }
 #endif
 
+/* We have to define this to avoid errors.  */
+int switch_table_difference_label_flag;
+
 /* Translate some opcodes to fit the sysV68 assembler syntax.  */
 /* The opcodes fdmov and fsmov are guesses.  */
 
