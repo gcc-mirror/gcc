@@ -1,3 +1,8 @@
+2004-09-18  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/17424
+	* c-typeck.c (c_expr_sizeof_expr): Check for error_mark_node.
+
 2004-09-18  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-alias.c (setup_pointers_and_addressables): Don't
