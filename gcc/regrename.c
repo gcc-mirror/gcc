@@ -325,7 +325,12 @@ regrename_optimize ()
 	      /* See whether it accepts all modes that occur in
 		 definition and uses.  */
 	      for (tmp = this; tmp; tmp = tmp->next_use)
-		if (! HARD_REGNO_MODE_OK (new_reg, GET_MODE (*tmp->loc)))
+		if (! HARD_REGNO_MODE_OK (new_reg, GET_MODE (*tmp->loc))
+		    || (tmp->need_caller_save_reg
+			&& ! (HARD_REGNO_CALL_PART_CLOBBERED
+			      (reg, GET_MODE (*tmp->loc)))
+			&& (HARD_REGNO_CALL_PART_CLOBBERED
+			    (new_reg, GET_MODE (*tmp->loc)))))
 		  break;
 	      if (! tmp)
 		{
