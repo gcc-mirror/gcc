@@ -1,3 +1,7 @@
+2001-01-29  Phil Edwards  <pme@sources.redhat.com>
+
+	* COPYING.LIB:  Update to LGPL 2.1 from the FSF.
+
 2001-01-27  Richard Henderson  <rth@redhat.com>
 
 	* configure.in (target_makefile_frag) [alpha*-*]: Use mt-alphaieee.

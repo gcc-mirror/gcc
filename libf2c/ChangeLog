@@ -1,3 +1,7 @@
+2001-01-29  Phil Edwards  <pme@sources.redhat.com>
+
+	* libU77/COPYING.LIB:  Update to LGPL 2.1 from the FSF.
+
 2001-01-24  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* libU77/alarm_.c: Separate the #ifdef KR_headers logic from the

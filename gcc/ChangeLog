@@ -1,3 +1,7 @@
+2001-01-29  Phil Edwards  <pme@sources.redhat.com>
+
+	* COPYING.LIB:  Update to LGPL 2.1 from the FSF.
+
 2001-01-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* stmt.c (estimate_case_costs): Use integer_minus_one_node.

@@ -1,3 +1,7 @@
+2001-01-29  Phil Edwards  <pme@sources.redhat.com>
+
+	* COPYING.LIB:  Update to LGPL 2.1 from the FSF.
+
 2000-12-29  DJ Delorie  <dj@redhat.com>
 
 	* fnmatch.c: Make the note about the origins of this file more
