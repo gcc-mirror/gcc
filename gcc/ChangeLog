@@ -1,3 +1,8 @@
+2002-06-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (emit_prologue): gen_store_multiple
+	returns an insn now, not a pattern.
+
 2002-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in (gccinstall.dvi): Pass absolute pathnames to
