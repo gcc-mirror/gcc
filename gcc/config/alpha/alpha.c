@@ -1816,6 +1816,10 @@ alpha_emit_setcc (code)
       break;
 
     case GE:  case GT: case GEU:  case GTU:
+      /* These are normally need swapping, but for integer zero we have
+	 special patterns that recognize swapped operands.  */
+      if (!fp_p && op1 == const0_rtx)
+	break;
       code = swap_condition (code);
       if (fp_p)
 	cmp_code = code, code = NE;
@@ -1828,7 +1832,7 @@ alpha_emit_setcc (code)
 
   if (!fp_p)
     {
-      if (!reg_or_0_operand (op0, DImode))
+      if (!register_operand (op0, DImode))
 	op0 = force_reg (DImode, op0);
       if (!reg_or_8bit_operand (op1, DImode))
 	op1 = force_reg (DImode, op1);
