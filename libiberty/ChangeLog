@@ -1,3 +1,9 @@
+2003-02-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in: Propagate ORIGINAL_LD_FOR_MULTILIBS to
+	config.status.
+	* configure: Rebuilt.
+
 2003-02-13  Daniel Jacobowitz  <drow@mvista.com>
 
 	Fix PR c++/7612.

@@ -2325,6 +2325,19 @@ case $host in
   # Find out which ABI we are using.
   echo '#line 2327 "configure"' > conftest.$ac_ext
   if { (eval echo configure:2328: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+   if test "$lt_cv_prog_gnu_ld" = yes; then
+    case `/usr/bin/file conftest.$ac_objext` in
+    *32-bit*)
+      LD="${LD-ld} -melf32bsmip"
+      ;;
+    *N32*)
+      LD="${LD-ld} -melf32bmipn32"
+      ;;
+    *64-bit*)
+      LD="${LD-ld} -melf64bmip"
+      ;;
+    esac
+   else
     case `/usr/bin/file conftest.$ac_objext` in
     *32-bit*)
       LD="${LD-ld} -32"
@@ -2336,6 +2349,7 @@ case $host in
       LD="${LD-ld} -64"
       ;;
     esac
+   fi
   fi
   rm -rf conftest*
   ;;
@@ -2343,7 +2357,7 @@ case $host in
 ia64-*-hpux*)
   # Find out which ABI we are using.
   echo 'int i;' > conftest.$ac_ext
-  if { (eval echo configure:2347: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  if { (eval echo configure:2361: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
     case "`/usr/bin/file conftest.o`" in
     *ELF-32*)
       HPUX_IA64_MODE="32"
@@ -2359,7 +2373,7 @@ ia64-*-hpux*)
 x86_64-*linux*|ppc*-*linux*|powerpc*-*linux*|s390*-*linux*|sparc*-*linux*)
   # Find out which ABI we are using.
   echo 'int i;' > conftest.$ac_ext
-  if { (eval echo configure:2363: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  if { (eval echo configure:2377: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
     case "`/usr/bin/file conftest.o`" in
     *32-bit*)
       case $host in
@@ -2403,7 +2417,7 @@ x86_64-*linux*|ppc*-*linux*|powerpc*-*linux*|s390*-*linux*|sparc*-*linux*)
   SAVE_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -belf"
   echo $ac_n "checking whether the C compiler needs -belf""... $ac_c" 1>&6
-echo "configure:2407: checking whether the C compiler needs -belf" >&5
+echo "configure:2421: checking whether the C compiler needs -belf" >&5
 if eval "test \"`echo '$''{'lt_cv_cc_needs_belf'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2416,14 +2430,14 @@ ac_link='${CC-cc} -o conftest${ac_exeext} $CFLAGS $CPPFLAGS $LDFLAGS conftest.$a
 cross_compiling=$ac_cv_prog_cc_cross
 
      cat > conftest.$ac_ext <<EOF
-#line 2420 "configure"
+#line 2434 "configure"
 #include "confdefs.h"
 
 int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:2427: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2441: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   lt_cv_cc_needs_belf=yes
 else
@@ -2453,7 +2467,7 @@ echo "$ac_t""$lt_cv_cc_needs_belf" 1>&6
 esac
 
 echo $ac_n "checking how to run the C++ preprocessor""... $ac_c" 1>&6
-echo "configure:2457: checking how to run the C++ preprocessor" >&5
+echo "configure:2471: checking how to run the C++ preprocessor" >&5
 if test -z "$CXXCPP"; then
 if eval "test \"`echo '$''{'ac_cv_prog_CXXCPP'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2466,12 +2480,12 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
   CXXCPP="${CXX-g++} -E"
   cat > conftest.$ac_ext <<EOF
-#line 2470 "configure"
+#line 2484 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2475: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:2489: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -2618,7 +2632,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:2622: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:2636: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
@@ -2651,7 +2665,7 @@ if false; then
   
 
 echo $ac_n "checking for executable suffix""... $ac_c" 1>&6
-echo "configure:2655: checking for executable suffix" >&5
+echo "configure:2669: checking for executable suffix" >&5
 if eval "test \"`echo '$''{'ac_cv_exeext'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2661,7 +2675,7 @@ else
   rm -f conftest*
   echo 'int main () { return 0; }' > conftest.$ac_ext
   ac_cv_exeext=
-  if { (eval echo configure:2665: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
+  if { (eval echo configure:2679: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; }; then
     for file in conftest.*; do
       case $file in
       *.c | *.o | *.obj) ;;
@@ -2684,7 +2698,7 @@ ac_exeext=$EXEEXT
 fi
 
 echo $ac_n "checking for thread model used by GCC""... $ac_c" 1>&6
-echo "configure:2688: checking for thread model used by GCC" >&5
+echo "configure:2702: checking for thread model used by GCC" >&5
 THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
 if test -z "$THREADS"; then
    THREADS=no
@@ -2815,7 +2829,7 @@ esac
 
 
 echo $ac_n "checking for dlopen in -ldl""... $ac_c" 1>&6
-echo "configure:2819: checking for dlopen in -ldl" >&5
+echo "configure:2833: checking for dlopen in -ldl" >&5
 ac_lib_var=`echo dl'_'dlopen | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -2823,7 +2837,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-ldl  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 2827 "configure"
+#line 2841 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -2834,7 +2848,7 @@ int main() {
 dlopen()
 ; return 0; }
 EOF
-if { (eval echo configure:2838: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2852: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -3413,6 +3427,7 @@ ac_configure_args="${multilib_arg} ${ac_configure_args}"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 gc_basedir=${gc_basedir}
 CC="${CC}"
+ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
 DEFS="$DEFS"
 
 EOF
