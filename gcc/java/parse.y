@@ -113,7 +113,6 @@ static int check_pkg_class_access PARAMS ((tree, tree));
 static void register_package PARAMS ((tree));
 static tree resolve_package PARAMS ((tree, tree *));
 static tree lookup_package_type PARAMS ((const char *, int));
-static tree lookup_package_type_and_set_next PARAMS ((const char *, int, tree *));
 static tree resolve_class PARAMS ((tree, tree, tree, tree));
 static void declare_local_variables PARAMS ((int, tree, tree));
 static void source_start_java_method PARAMS ((tree));
@@ -6822,35 +6821,6 @@ resolve_package (pkg, next)
 
   *next = EXPR_WFL_QUALIFICATION (pkg);
 
-  /* Try the current package. */
-  if (ctxp->package && !strncmp (name, IDENTIFIER_POINTER (ctxp->package),  
-				 IDENTIFIER_LENGTH (ctxp->package)))
-    {
-      type_name = 
-	lookup_package_type_and_set_next (name, 
-					  IDENTIFIER_LENGTH (ctxp->package), 
-					  next );
-      if (type_name)
-	return type_name;
-    }
-
-  /* Search in imported package */
-  for (current = ctxp->import_list; current; current = TREE_CHAIN (current))
-    {
-      tree current_pkg_name = EXPR_WFL_NODE (TREE_PURPOSE (current));
-      int len = IDENTIFIER_LENGTH (current_pkg_name);
-      if (!strncmp (name, IDENTIFIER_POINTER (current_pkg_name), len))
-	{
-	  tree left, dummy;
-	  
-	  breakdown_qualified (&left, &dummy, current_pkg_name);
-	  len = IDENTIFIER_LENGTH (left);
-	  type_name = lookup_package_type_and_set_next (name, len, next);
-	  if (type_name)
-	    break;
-	}
-    }
-
   /* Try to progressively construct a type name */
   if (TREE_CODE (pkg) == EXPR_WITH_FILE_LOCATION)
     for (acc = NULL_TREE, current = EXPR_WFL_QUALIFICATION (pkg); 
@@ -6867,27 +6837,6 @@ resolve_package (pkg, next)
 	    break;
 	  }
       }
-  return type_name;
-}
-
-static tree
-lookup_package_type_and_set_next (name, len, next)
-     const char *name;
-     int len;
-     tree *next;
-{
-  const char *ptr;
-  tree type_name = lookup_package_type (name, len);
-
-  if (!type_name)
-    return NULL;
-  
-  ptr = IDENTIFIER_POINTER (type_name);
-  while (ptr && (ptr = strchr (ptr, '.'))) 
-    {
-      *next = TREE_CHAIN (*next);
-      ptr++;
-    }
   return type_name;
 }
 
@@ -10558,6 +10507,16 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
       int seen_inner_class = 0;
       search_applicable_methods_list (lc, TYPE_METHODS (class), 
 				      name, arglist, &list, &all_list);
+
+      /* When looking finit$, we turn LC to 1 so that we only search
+	 in class. Note that we should have found something at
+	 this point. */
+      if (ID_FINIT_P (name))
+	{
+	  lc = 1;
+	  if (!list)
+	    fatal ("finit$ not found in class -- find_applicable_accessible_methods_list");
+	}
 
       /* We must search all interfaces of this class */
       if (!lc)

@@ -2024,6 +2024,7 @@ build_jni_stub (method)
   TREE_STATIC (meth_var) = 1;
   TREE_PUBLIC (meth_var) = 0;
   DECL_EXTERNAL (meth_var) = 0;
+  DECL_CONTEXT (meth_var) = method;
   make_decl_rtl (meth_var, NULL);
   meth_var = pushdecl_top_level (meth_var);
 
