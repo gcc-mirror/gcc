@@ -52,6 +52,21 @@ Boston, MA 02111-1307, USA.  */
    do not apply.  */
 
 #include "tm.h"
+
+/* We disable this when inhibit_libc, so that gcc can still be built without
+   needing header files first.  */
+/* ??? This is not a good solution, since prototypes may be required in
+   some cases for correct code.  See also libgcc2.c/frame.c.  */
+#ifndef inhibit_libc
+/* fixproto guarantees these system headers exist. */
+#include <stdlib.h>
+#include <unistd.h>
+#else
+# ifndef atexit
+extern int atexit(void (*)(void));
+# endif
+#endif
+
 #include "defaults.h"
 #include <stddef.h>
 #include "frame.h"
@@ -403,7 +418,7 @@ init_dummy (void)
     extern char **__environ;
 
     ___brk_addr = __environ;
-    atexit ();
+    atexit (0);
   }
 #endif
 }
