@@ -1,5 +1,5 @@
 // Methods for type_info for -*- C++ -*- Run Time Type Identification.
-// Copyright (C) 1994, 1996, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1994, 1996, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation
 //
 // This file is part of GNU CC.
@@ -465,8 +465,9 @@ __do_dyncast (ptrdiff_t src2dst,
           result.whole2dst =
               __sub_kind (result.whole2dst | result2.whole2dst);
         }
-      else if ((result.dst_ptr != 0 | result_ambig)
-               && (result2.dst_ptr != 0 | result2_ambig))
+      else if ((result.dst_ptr != 0 & result2.dst_ptr != 0)
+	       || (result.dst_ptr != 0 & result2_ambig)
+	       || (result2.dst_ptr != 0 & result_ambig))
         {
           // Found two different DST_TYPE bases, or a valid one and a set of
           // ambiguous ones, must disambiguate. See whether SRC_PTR is

@@ -1,3 +1,8 @@
+2003-01-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9433
+	* g++.dg/abi/dcast1.C: New test.
+
 2003-01-27  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	PR c++/47
