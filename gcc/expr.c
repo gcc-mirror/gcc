@@ -8069,6 +8069,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	temp = 0;
 
+	gcc_assert (ignore);
+
 	/* Check for |= or &= of a bitfield of size one into another bitfield
 	   of size 1.  In this case, (unless we need the result of the
 	   assignment) we can do this more efficiently with a
@@ -8077,8 +8079,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	   ??? At this point, we can't get a BIT_FIELD_REF here.  But if
 	   things change so we do, this code should be enhanced to
 	   support it.  */
-	if (ignore
-	    && TREE_CODE (lhs) == COMPONENT_REF
+	if (TREE_CODE (lhs) == COMPONENT_REF
 	    && (TREE_CODE (rhs) == BIT_IOR_EXPR
 		|| TREE_CODE (rhs) == BIT_AND_EXPR)
 	    && TREE_OPERAND (rhs, 0) == lhs
@@ -8101,7 +8102,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    return const0_rtx;
 	  }
 
-	temp = expand_assignment (lhs, rhs, ! ignore);
+	temp = expand_assignment (lhs, rhs, 0);
 
 	return temp;
       }
