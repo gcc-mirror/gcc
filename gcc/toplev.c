@@ -2468,7 +2468,6 @@ rest_of_compilation (decl)
 
       if (inlinable
 	  || (DECL_INLINE (decl)
-	      && flag_inline_functions
 	      && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
 		   && ! TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 		   && ! flag_keep_inline_functions)
