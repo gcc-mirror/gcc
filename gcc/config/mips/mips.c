@@ -194,7 +194,7 @@ int mips_isa;
 
 /* Strings to hold which cpu and instruction set architecture to use.  */
 char *mips_cpu_string;		/* for -mcpu=<xxx> */
-char *mips_isa_string;		/* for -mips{1,2,3} */
+char *mips_isa_string;		/* for -mips{1,2,3,4} */
 
 /* Generating calls to position independent functions?  */
 enum mips_abicalls_type mips_abicalls;
@@ -409,7 +409,7 @@ small_int (op, mode)
   return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
 }
 
-/* Return truth value of whether OP is an integer which is too big to
+/* Return truth value of whether OP is a 32 bit integer which is too big to
    be loaded with one instruction.  */
 
 int
@@ -429,9 +429,7 @@ large_int (op, mode)
   if (((unsigned long)(value + 32768)) <= 32767)	/* subu reg,$r0,value */
     return FALSE;
 
-  if ((value & 0x0000ffff) == 0				/* lui reg,value>>16 */
-      && ((value & ~2147483647) == 0			/* signed value */
-	  || (value & ~2147483647) == ~2147483647))
+  if ((value & 0x0000ffff) == 0)			/* lui reg,value>>16 */
     return FALSE;
 
   return TRUE;
@@ -486,6 +484,10 @@ mips_const_double_ok (op, mode)
 
   if (op == CONST0_RTX (mode))
     return TRUE;
+
+  /* ??? li.s does not work right with SGI's Irix 6 assembler.  */
+  if (ABI_64BIT)
+    return FALSE;
 
   REAL_VALUE_FROM_CONST_DOUBLE (d, op);
 
@@ -1349,8 +1351,8 @@ mips_move_2words (operands, insn)
 		    ret = "li.d\t%0,%1";
 		}
 
-	      else if (TARGET_FLOAT64)
-		ret = "li\t%0,%1";
+	      else if (TARGET_64BIT)
+		ret = "dli\t%0,%1";
 
 	      else
 		{
@@ -1401,7 +1403,17 @@ mips_move_2words (operands, insn)
       else if (code1 == CONST_INT && GET_MODE (op0) == DImode && GP_REG_P (regno0))
 	{
 	  if (TARGET_64BIT)
-	    ret = "li\t%0,%1";
+	    {
+	      if (HOST_BITS_PER_WIDE_INT < 64)
+		/* We can't use 'X' for negative numbers, because then we won't
+		   get the right value for the upper 32 bits.  */
+		ret = ((INTVAL (op1) < 0) ? "dli\t%0,%1\t\t\t# %X1"
+		       : "dli\t%0,%X1\t\t# %1");
+	      else
+		/* We must use 'X', because otherwise LONG_MIN will print as
+		   a number that the assembler won't accept.  */
+		ret = "dli\t%0,%X1\t\t# %1";
+	    }
 	  else
 	    {
 	      operands[2] = GEN_INT (INTVAL (operands[1]) >= 0 ? 0 : -1);
@@ -1458,9 +1470,10 @@ mips_move_2words (operands, insn)
 	       || code1 == SYMBOL_REF
 	       || code1 == CONST)
 	{
-	  if (! TARGET_64BIT)
-	    abort ();
-	  return mips_move_1word (operands, insn, 0);
+	  if (TARGET_STATS)
+	    mips_count_memory_refs (op1, 2);
+
+	  ret = "dla\t%0,%a1";
 	}
     }
 
@@ -2445,7 +2458,10 @@ output_block_move (insn, operands, num_regs, move_type)
 	    {
 	      xoperands[1] = operands[1];
 	      xoperands[0] = src_reg;
-	      output_asm_insn ("la\t%0,%1", xoperands);
+	      if (Pmode == DImode)
+		output_asm_insn ("dla\t%0,%1", xoperands);
+	      else
+		output_asm_insn ("la\t%0,%1", xoperands);
 	    }
 	}
 
@@ -2459,7 +2475,10 @@ output_block_move (insn, operands, num_regs, move_type)
 	    {
 	      xoperands[1] = operands[0];
 	      xoperands[0] = dest_reg;
-	      output_asm_insn ("la\t%0,%1", xoperands);
+	      if (Pmode == DImode)
+		output_asm_insn ("dla\t%0,%1", xoperands);
+	      else
+		output_asm_insn ("la\t%0,%1", xoperands);
 	    }
 	}
     }
@@ -2802,28 +2821,36 @@ function_arg (cum, mode, type, named)
   switch (mode)
     {
     case SFmode:
-      if (cum->gp_reg_found || cum->arg_number >= 2 || TARGET_SOFT_FLOAT)
-	regbase = GP_ARG_FIRST;
-      else
+      if (! ABI_64BIT || mips_isa < 3)
 	{
-	  regbase = FP_ARG_FIRST;
-	  /* If the first arg was a float in a floating point register,
-	     then set bias to align this float arg properly.  */
-	  if (cum->arg_words == 1)
-	    bias = 1;
+	  if (cum->gp_reg_found || cum->arg_number >= 2 || TARGET_SOFT_FLOAT)
+	    regbase = GP_ARG_FIRST;
+	  else
+	    {
+	      regbase = FP_ARG_FIRST;
+	      /* If the first arg was a float in a floating point register,
+		 then set bias to align this float arg properly.  */
+	      if (cum->arg_words == 1)
+		bias = 1;
+	    }
 	}
-
+      else
+	regbase = (TARGET_SOFT_FLOAT || ! named ? GP_ARG_FIRST : FP_ARG_FIRST);
       break;
 
     case DFmode:
       if (! TARGET_64BIT)
 	cum->arg_words += (cum->arg_words & 1);
-      regbase = ((cum->gp_reg_found
-		  || TARGET_SOFT_FLOAT
-		  || TARGET_SINGLE_FLOAT
-		  || cum->arg_number >= 2)
-		 ? GP_ARG_FIRST
-		 : FP_ARG_FIRST);
+      if (! ABI_64BIT || mips_isa < 3)
+	regbase = ((cum->gp_reg_found
+		    || TARGET_SOFT_FLOAT
+		    || TARGET_SINGLE_FLOAT
+		    || cum->arg_number >= 2)
+		   ? GP_ARG_FIRST
+		   : FP_ARG_FIRST);
+      else
+	regbase = (TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT || ! named
+		   ? GP_ARG_FIRST : FP_ARG_FIRST);
       break;
 
     default:
@@ -3094,7 +3121,7 @@ override_options ()
   else if (isdigit (*mips_isa_string))
     {
       mips_isa = atoi (mips_isa_string);
-      if (mips_isa < 1 || mips_isa > 3)
+      if (mips_isa < 1 || mips_isa > 4)
 	{
 	  error ("-mips%d not supported", mips_isa);
 	  mips_isa = 1;
@@ -3125,6 +3152,10 @@ override_options ()
 	case 3:
 	  mips_cpu_string = "4000";
 	  mips_cpu = PROCESSOR_R4000;
+	  break;
+	case 4:
+	  mips_cpu_string = "8000";
+	  mips_cpu = PROCESSOR_R8000;
 	  break;
 	}
 
@@ -3180,6 +3211,11 @@ override_options ()
 	    mips_cpu = PROCESSOR_R6000;
 	  break;
 
+	case '8':
+	  if (!strcmp (p, "8000"))
+	    mips_cpu = PROCESSOR_R8000;
+	  break;
+
 	case 'o':
 	  if (!strcmp (p, "orion"))
 	    mips_cpu = PROCESSOR_R4600;
@@ -3194,24 +3230,29 @@ override_options ()
     }
 
   if ((mips_cpu == PROCESSOR_R3000 && mips_isa > 1)
-      || (mips_cpu == PROCESSOR_R6000 && mips_isa > 2))
+      || (mips_cpu == PROCESSOR_R6000 && mips_isa > 2)
+      || ((mips_cpu == PROCESSOR_R4000 || mips_cpu == PROCESSOR_R4600)
+	  && mips_isa > 3))
     error ("-mcpu=%s does not support -mips%d", mips_cpu_string, mips_isa);
 
   /* make sure sizes of ints/longs/etc. are ok */
   if (mips_isa < 3)
     {
       if (TARGET_INT64)
-	fatal ("Only MIPS-III CPUs can support 64 bit ints");
+	fatal ("Only MIPS-III or MIPS-IV CPUs can support 64 bit ints");
 
       else if (TARGET_LONG64)
-	fatal ("Only MIPS-III CPUs can support 64 bit longs");
+	fatal ("Only MIPS-III or MIPS-IV CPUs can support 64 bit longs");
 
       else if (TARGET_FLOAT64)
-	fatal ("Only MIPS-III CPUs can support 64 bit fp registers");
+	fatal ("Only MIPS-III or MIPS-IV CPUs can support 64 bit fp registers");
 
       else if (TARGET_64BIT)
-	fatal ("Only MIPS-III CPUs can support 64 bit gp registers");
+	fatal ("Only MIPS-III or MIPS-IV CPUs can support 64 bit gp registers");
     }
+
+  if (ABI_64BIT && mips_isa >= 3)
+    flag_pcc_struct_return = 0;
 
   /* Tell halfpic.c that we have half-pic code if we do.  */
   if (TARGET_HALF_PIC)
@@ -3445,6 +3486,10 @@ mips_debugger_offset (addr, offset)
    'C'  print part of opcode for a branch condition.
    'N'  print part of opcode for a branch condition, inverted.
    'S'  X is CODE_LABEL, print with prefix of "LS" (for embedded switch).
+   'B'  print 'z' for EQ, 'n' for NE
+   'b'  print 'n' for EQ, 'z' for NE
+   'T'  print 'f' for EQ, 't' for NE
+   't'  print 't' for EQ, 'f' for NE
    '('	Turn on .set noreorder
    ')'	Turn on .set reorder
    '['	Turn on .set noat
@@ -3664,8 +3709,13 @@ print_operand (file, op, letter)
   else if ((letter == 'x') && (GET_CODE(op) == CONST_INT))
     fprintf (file, "0x%04x", 0xffff & (INTVAL(op)));
 
-  else if ((letter == 'X') && (GET_CODE(op) == CONST_INT))
+  else if ((letter == 'X') && (GET_CODE(op) == CONST_INT)
+	   && HOST_BITS_PER_WIDE_INT == 32)
     fprintf (file, "0x%08x", INTVAL(op));
+
+  else if ((letter == 'X') && (GET_CODE(op) == CONST_INT)
+	   && HOST_BITS_PER_WIDE_INT == 64)
+    fprintf (file, "0x%016lx", INTVAL(op));
 
   else if ((letter == 'd') && (GET_CODE(op) == CONST_INT))
     fprintf (file, "%d", (INTVAL(op)));
@@ -3677,6 +3727,15 @@ print_operand (file, op, letter)
 
   else if (letter == 'd' || letter == 'x' || letter == 'X')
     fatal ("PRINT_OPERAND: letter %c was found & insn was not CONST_INT", letter);
+
+  else if (letter == 'B')
+    fputs (code == EQ ? "z" : "n", file);
+  else if (letter == 'b')
+    fputs (code == EQ ? "n" : "z", file);
+  else if (letter == 'T')
+    fputs (code == EQ ? "f" : "t", file);
+  else if (letter == 't')
+    fputs (code == EQ ? "t" : "f", file);
 
   else
     output_addr_const (file, op);
@@ -3902,9 +3961,7 @@ mips_output_filename (stream, name)
       first_time = FALSE;
       SET_FILE_NUMBER ();
       current_function_file = name;
-      fprintf (stream, "\t.file\t%d ", num_source_filenames);
-      output_quoted_string (stream, name);
-      fprintf (stream, "\n");
+      ASM_OUTPUT_FILENAME (stream, num_source_filenames, name);
       /* This tells mips-tfile that stabs will follow.  */
       if (!TARGET_GAS && write_symbols == DBX_DEBUG)
 	fprintf (stream, "\t#@stabs\n");
@@ -3929,18 +3986,13 @@ mips_output_filename (stream, name)
 	      ignore_line_number = TRUE;
 	      warning ("MIPS ECOFF format does not allow changing filenames within functions with #line");
 	    }
-
-	  fprintf (stream, "\t#.file\t%d ", num_source_filenames);
 	}
-
       else
 	{
 	  SET_FILE_NUMBER ();
 	  current_function_file = name;
-	  fprintf (stream, "\t.file\t%d ", num_source_filenames);
+	  ASM_OUTPUT_FILENAME (stream, num_source_filenames, name);
 	}
-      output_quoted_string (stream, name);
-      fprintf (stream, "\n");
     }
 }
 
@@ -4060,6 +4112,11 @@ mips_asm_file_start (stream)
   if (TARGET_ABICALLS)
     /* ??? but do not want this (or want pic0) if -non-shared? */
     fprintf (stream, "\t%s\n", ABICALLS_ASM_OP);
+
+  /* Start a section, so that the first .popsection directive is guaranteed
+     to have a previously defined section to pop back to.  */
+  if (ABI_64BIT && mips_isa >= 3)
+    fprintf (stream, "\t.section\t.text\n");
 
   /* This code exists so that we can put all externs before all symbol
      references.  This is necessary for the assembler's global pointer
@@ -4426,7 +4483,11 @@ compute_frame_size (size)
   gp_reg_rounded = MIPS_STACK_ALIGN (gp_reg_size);
   total_size += gp_reg_rounded + MIPS_STACK_ALIGN (fp_reg_size);
 
-  if (total_size == extra_size)
+  /* The gp reg is caller saved in the 32 bit ABI, so there is no need
+     for leaf routines (total_size == extra_size) to save the gp reg.
+     The gp reg is callee saved in the 64 bit ABI, so all routines must
+     save the gp reg.  */
+  if (total_size == extra_size && ! (ABI_64BIT && mips_isa >= 3))
     total_size = extra_size = 0;
   else if (TARGET_ABICALLS)
     {
@@ -4437,6 +4498,11 @@ compute_frame_size (size)
       gp_reg_rounded = MIPS_STACK_ALIGN (gp_reg_size);
       total_size += gp_reg_rounded;
     }
+
+  /* Add in space reserved on the stack by the callee for storing arguments
+     passed in registers.  */
+  if (ABI_64BIT && mips_isa >= 3)
+    total_size += MIPS_STACK_ALIGN (current_function_pretend_args_size);
 
   /* Save other computed information.  */
   current_frame_info.total_size  = total_size;
@@ -4453,8 +4519,8 @@ compute_frame_size (size)
 
   if (mask)
     {
-      unsigned long offset = args_size + extra_size + var_size
-			     + gp_reg_size - UNITS_PER_WORD;
+      unsigned long offset = (args_size + extra_size + var_size
+			      + gp_reg_size - UNITS_PER_WORD);
       current_frame_info.gp_sp_offset = offset;
       current_frame_info.gp_save_offset = offset - total_size;
     }
@@ -4598,13 +4664,13 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
 		  if (store_p)
 		    emit_move_insn (mem_rtx, reg_rtx);
-		  else if (!TARGET_ABICALLS
+		  else if (!TARGET_ABICALLS || (ABI_64BIT && mips_isa >= 3)
 			   || regno != (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
 		    emit_move_insn (reg_rtx, mem_rtx);
 		}
 	      else
 		{
-		  if (store_p || !TARGET_ABICALLS
+		  if (store_p || !TARGET_ABICALLS || (ABI_64BIT && mips_isa >= 3)
 		      || regno != (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
 		    fprintf (file, "\t%s\t%s,%ld(%s)\n",
 			     (TARGET_64BIT
@@ -4769,7 +4835,7 @@ function_prologue (file, size)
 	   current_frame_info.fmask,
 	   current_frame_info.fp_save_offset);
 
-  if (TARGET_ABICALLS)
+  if (TARGET_ABICALLS && ! (ABI_64BIT && mips_isa >= 3))
     {
       char *sp_str = reg_names[STACK_POINTER_REGNUM];
 
@@ -4896,17 +4962,18 @@ mips_expand_prologue ()
 
   /* If this function is a varargs function, store any registers that
      would normally hold arguments ($4 - $7) on the stack.  */
-  if ((TYPE_ARG_TYPES (fntype) != 0
-       && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype))) != void_type_node))
-      || (arg_name != (char *)0
-	  && ((arg_name[0] == '_' && strcmp (arg_name, "__builtin_va_alist") == 0)
-	      || (arg_name[0] == 'v' && strcmp (arg_name, "va_alist") == 0))))
+  if ((! ABI_64BIT || mips_isa < 3)
+      && ((TYPE_ARG_TYPES (fntype) != 0
+	   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype))) != void_type_node))
+	  || (arg_name != (char *)0
+	      && ((arg_name[0] == '_' && strcmp (arg_name, "__builtin_va_alist") == 0)
+		  || (arg_name[0] == 'v' && strcmp (arg_name, "va_alist") == 0)))))
     {
       int offset = (regno - GP_ARG_FIRST) * UNITS_PER_WORD;
       rtx ptr = stack_pointer_rtx;
 
       /* If we are doing svr4-abi, sp has already been decremented by tsize. */
-      if (TARGET_ABICALLS)
+      if (TARGET_ABICALLS && ! (ABI_64BIT && mips_isa >= 3))
 	offset += tsize;
 
       for (; regno <= GP_ARG_LAST; regno++)
@@ -4924,7 +4991,7 @@ mips_expand_prologue ()
       rtx tsize_rtx = GEN_INT (tsize);
 
       /* If we are doing svr4-abi, sp move is done by function_prologue.  */
-      if (!TARGET_ABICALLS)
+      if (!TARGET_ABICALLS || (ABI_64BIT && mips_isa >= 3))
 	{
 	  if (tsize > 32767)
 	    {
@@ -4950,6 +5017,9 @@ mips_expand_prologue ()
 	  else
 	    emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
 	}
+
+      if (TARGET_ABICALLS && (ABI_64BIT && mips_isa >= 3))
+	emit_insn (gen_loadgp (XEXP (DECL_RTL (current_function_decl), 0)));
     }
 
   /* If we are profiling, make sure no instructions are scheduled before
@@ -5070,7 +5140,8 @@ function_epilogue (file, size)
       save_restore_insns (FALSE, tmp_rtx, tsize, file);
 
       load_only_r31 = (((current_frame_info.mask
-			 & ~ (TARGET_ABICALLS ? PIC_OFFSET_TABLE_MASK : 0))
+			 & ~ (TARGET_ABICALLS && ! (ABI_64BIT && mips_isa >= 3)
+			      ? PIC_OFFSET_TABLE_MASK : 0))
 			== RA_MASK)
 		       && current_frame_info.fmask == 0);
 
@@ -5382,6 +5453,83 @@ mips_select_section (decl, reloc)
 	data_section ();
     }
 }
+
+#if ABI_64BIT
+/* Support functions for the 64 bit ABI.  */
+
+/* Return the register to be used for word INDEX of a variable with type TYPE
+   being passed starting at general purpose reg REGNO.
+
+   If the word being passed is a single field of a structure which has type
+   double, then pass it in a floating point reg instead of a general purpose
+   reg.  Otherwise, we return the default value REGNO + INDEX.  */
+
+rtx
+type_dependent_reg (regno, index, type)
+     int regno;
+     int index;
+     tree type;
+{
+  tree field;
+  tree offset;
+
+  /* If type isn't a structure type, return the default value now.  */
+  if (! type || TREE_CODE (type) != RECORD_TYPE || mips_isa < 3)
+    return gen_rtx (REG, word_mode, regno + index);
+
+  /* Iterate through the structure fields to find which one corresponds to
+     this index.  */
+  offset = size_int (index * BITS_PER_WORD);
+  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+    {
+      if (! tree_int_cst_lt (DECL_FIELD_BITPOS (field), offset))
+	break;
+    }
+
+  if (field && tree_int_cst_equal (DECL_FIELD_BITPOS (field), offset)
+      && TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+      && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
+    return gen_rtx (REG, DFmode,
+		    regno + index + FP_ARG_FIRST - GP_ARG_FIRST);
+  else
+    return gen_rtx (REG, word_mode, regno + index);
+}
+
+/* Return register to use for a function return value with VALTYPE for function
+   FUNC.  */
+
+rtx
+mips_function_value (valtype, func)
+     tree valtype;
+     tree func;
+{
+  int reg = GP_RETURN;
+  enum machine_mode mode = TYPE_MODE (valtype);
+  enum mode_class mclass = GET_MODE_CLASS (mode);
+
+  if (mclass == MODE_FLOAT || mclass == MODE_COMPLEX_FLOAT)
+    reg = FP_RETURN;
+  else if (TREE_CODE (valtype) == RECORD_TYPE && mips_isa >= 3)
+    {
+      /* A struct with only one or two floating point fields is returned in
+	 the floating point registers.  */
+      tree field;
+      int i;
+
+      for (i = 0, field = TYPE_FIELDS (valtype); field;
+	   field = TREE_CHAIN (field), i++)
+	{
+	  if (TREE_CODE (TREE_TYPE (field)) != REAL_TYPE || i >= 2)
+	    break;
+	}
+	  
+      if (! field)
+	reg = FP_RETURN;
+    }
+
+  return gen_rtx (REG, mode, reg);
+}
+#endif
 
 /* Moving the HI or LO register somewhere requires a general register.  */
 
