@@ -1528,7 +1528,7 @@ enum sh_arg_class { SH_ARG_INT = 0, SH_ARG_FLOAT = 1 };
 struct sh_args {
     int arg_count[2];
     int force_mem;
-  /* Non-zero if a prototype is available for the function.  */
+  /* Nonzero if a prototype is available for the function.  */
     int prototype_p;
   /* The number of an odd floating-point register, that should be used
      for the next argument of type float.  */

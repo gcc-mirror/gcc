@@ -254,7 +254,7 @@ xstormy16_split_cbranch (mode, label, comparison, dest, carry)
 
    OP is the conditional expression, or NULL for branch-always.
 
-   REVERSED is non-zero if we should reverse the sense of the comparison.
+   REVERSED is nonzero if we should reverse the sense of the comparison.
 
    INSN is the insn.  */
 
@@ -331,7 +331,7 @@ xstormy16_output_cbranch_hi (op, label, reversed, insn)
 
    OP is the conditional expression (OP is never NULL_RTX).
 
-   REVERSED is non-zero if we should reverse the sense of the comparison.
+   REVERSED is nonzero if we should reverse the sense of the comparison.
 
    INSN is the insn.  */
 
@@ -1170,7 +1170,7 @@ xstormy16_build_va_list ()
   return record;
 }
 
-/* Implement the stdarg/varargs va_start macro.  STDARG_P is non-zero if this
+/* Implement the stdarg/varargs va_start macro.  STDARG_P is nonzero if this
    is stdarg.h instead of varargs.h.  VALIST is the tree of the va_list
    variable to initialize.  NEXTARG is the machine independent notion of the
    'next' argument after the variable arguments.  */

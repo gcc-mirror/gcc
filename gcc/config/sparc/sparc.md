@@ -3462,7 +3462,7 @@
 ;; SPARC V9 conditional move instructions.
 
 ;; We can handle larger constants here for some flavors, but for now we keep
-;; it simple and only allow those constants supported by all flavours.
+;; it simple and only allow those constants supported by all flavors.
 ;; Note that emit_conditional_move canonicalizes operands 2,3 so that operand
 ;; 3 contains the constant if one is present, but we handle either for
 ;; generality (sparc.c puts a constant in operand 2).

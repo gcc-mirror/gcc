@@ -1607,10 +1607,10 @@ LOCAL(no_lo_adj):
    would require a lot of instructions to do the shifts just right.  Using
    the full 64 bit shift result to multiply with the divisor would require
    four extra instructions for the upper 32 bits (shift / mulu / shift / sub).
-   Fortunately, if the upper 32 bits of the shift result are non-zero, we
+   Fortunately, if the upper 32 bits of the shift result are nonzero, we
    know that the rest after taking this partial result into account will
    fit into 32 bits.  So we just clear the upper 32 bits of the rest if the
-   upper 32 bits of the partial result are non-zero.  */
+   upper 32 bits of the partial result are nonzero.  */
 #endif /* __SHMEDIA__ */
 #endif /* L_udivdi3 */
 
@@ -1755,10 +1755,10 @@ LOCAL(no_lo_adj):
    would require a lot of instructions to do the shifts just right.  Using
    the full 64 bit shift result to multiply with the divisor would require
    four extra instructions for the upper 32 bits (shift / mulu / shift / sub).
-   Fortunately, if the upper 32 bits of the shift result are non-zero, we
+   Fortunately, if the upper 32 bits of the shift result are nonzero, we
    know that the rest after taking this partial result into account will
    fit into 32 bits.  So we just clear the upper 32 bits of the rest if the
-   upper 32 bits of the partial result are non-zero.  */
+   upper 32 bits of the partial result are nonzero.  */
 #endif /* __SHMEDIA__ */
 #endif /* L_umoddi3 */
 

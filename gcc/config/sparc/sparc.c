@@ -455,7 +455,7 @@ v9_regcmp_p (code)
 
 /* Operand constraints.  */
 
-/* Return non-zero only if OP is a register of mode MODE,
+/* Return nonzero only if OP is a register of mode MODE,
    or const0_rtx.  */
 
 int
@@ -476,7 +476,7 @@ reg_or_0_operand (op, mode)
   return 0;
 }
 
-/* Return non-zero only if OP is const1_rtx.  */
+/* Return nonzero only if OP is const1_rtx.  */
 
 int
 const1_operand (op, mode)
@@ -3074,7 +3074,7 @@ short_branch (uid1, uid2)
   return 0;
 }
 
-/* Return non-zero if REG is not used after INSN.
+/* Return nonzero if REG is not used after INSN.
    We assume REG is a reload reg, and therefore does
    not live past labels or calls or jumps.  */
 int
@@ -5370,11 +5370,11 @@ sparc_va_arg (valist, type)
    XEXP (OP, 0) is assumed to be a condition code register (integer or
    floating point) and its mode specifies what kind of comparison we made.
 
-   REVERSED is non-zero if we should reverse the sense of the comparison.
+   REVERSED is nonzero if we should reverse the sense of the comparison.
 
-   ANNUL is non-zero if we should generate an annulling branch.
+   ANNUL is nonzero if we should generate an annulling branch.
 
-   NOOP is non-zero if we have to follow this branch by a noop.
+   NOOP is nonzero if we have to follow this branch by a noop.
 
    INSN, if set, is the insn.  */
 
@@ -5803,11 +5803,11 @@ sparc_emit_floatunsdi (operands)
    operand number of the reg.  OP is the conditional expression.  The mode
    of REG says what kind of comparison we made.
 
-   REVERSED is non-zero if we should reverse the sense of the comparison.
+   REVERSED is nonzero if we should reverse the sense of the comparison.
 
-   ANNUL is non-zero if we should generate an annulling branch.
+   ANNUL is nonzero if we should generate an annulling branch.
 
-   NOOP is non-zero if we have to follow this branch by a noop.  */
+   NOOP is nonzero if we have to follow this branch by a noop.  */
 
 char *
 output_v9branch (op, dest, reg, label, reversed, annul, noop, insn)

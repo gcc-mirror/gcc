@@ -1,3 +1,19 @@
+2002-09-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/s390/s390.c: Follow spelling convention.
+	* config/sh/lib1funcs.asm: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/sparc/sparc.md: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+	* config/v850/v850.c: Likewise.
+	* config/v850/v850.h: Likewise.
+	* config/vax/vax.c: Likewise.
+	* config/vax/vax.h: Likewise.
+
 2002-09-18  Nick Clifton  <nickc@redhat.com>
 
 	* config/rs60000/rs6000.c (rs6000_emit_move): Handle V1DImode moves.
