@@ -399,9 +399,12 @@ static void reload_cse_invalidate_mem	PROTO((rtx));
 static void reload_cse_invalidate_rtx	PROTO((rtx, rtx));
 static int reload_cse_regno_equal_p	PROTO((int, rtx, enum machine_mode));
 static int reload_cse_noop_set_p	PROTO((rtx, rtx));
-static void reload_cse_simplify_set	PROTO((rtx, rtx));
+static int reload_cse_simplify_set	PROTO((rtx, rtx));
+static int reload_cse_simplify_operands	PROTO((rtx));
 static void reload_cse_check_clobber	PROTO((rtx, rtx));
 static void reload_cse_record_set	PROTO((rtx, rtx));
+static void reload_cse_delete_death_notes	PROTO((rtx));
+static void reload_cse_no_longer_dead	PROTO((int, enum machine_mode));
 
 /* Initialize the reload pass once per compilation.  */
 
@@ -7613,6 +7616,13 @@ static rtx *reg_values;
 
 static rtx invalidate_regno_rtx;
 
+/* This is a set of registers for which we must remove REG_DEAD notes in
+   previous insns, because our modifications made them invalid.  That can
+   happen if we introduced the register into the current insn, or we deleted
+   the current insn which used to set the register.  */
+
+static HARD_REG_SET no_longer_dead_regs;
+
 /* Invalidate any entries in reg_values which depend on REGNO,
    including those for REGNO itself.  This is called if REGNO is
    changing.  If CLOBBER is true, then always forget anything we
@@ -7812,6 +7822,52 @@ reload_cse_invalidate_rtx (dest, ignore)
     reload_cse_invalidate_mem (dest);
 }
 
+/* Possibly delete death notes on the insns before INSN if modifying INSN
+   extended the lifespan of the registers.  */
+
+static void
+reload_cse_delete_death_notes (insn)
+     rtx insn;
+{
+  int dreg;
+
+  for (dreg = 0; dreg < FIRST_PSEUDO_REGISTER; dreg++)
+    {
+      rtx trial;
+
+      if (! TEST_HARD_REG_BIT (no_longer_dead_regs, dreg))
+	continue;
+
+      for (trial = prev_nonnote_insn (insn);
+	   (trial
+	    && GET_CODE (trial) != CODE_LABEL
+	    && GET_CODE (trial) != BARRIER);
+	   trial = prev_nonnote_insn (trial))
+	{
+	  if (find_regno_note (trial, REG_DEAD, dreg))
+	    {
+	      remove_death (dreg, trial);
+	      break;
+	    }
+	}
+    }
+}
+
+/* Record that the current insn uses hard reg REGNO in mode MODE.  This
+   will be used in reload_cse_delete_death_notes to delete prior REG_DEAD
+   notes for this register.  */
+
+static void
+reload_cse_no_longer_dead (regno, mode)
+     int regno;
+     enum machine_mode mode;
+{
+  int nregs = HARD_REGNO_NREGS (regno, mode);
+  while (nregs-- > 0)
+    SET_HARD_REG_BIT (no_longer_dead_regs, regno++);
+}
+
+
 /* Do a very simple CSE pass over the hard registers.
 
    This function detects no-op moves where we happened to assign two
@@ -7822,7 +7878,12 @@ reload_cse_invalidate_rtx (dest, ignore)
    This function also detects cases where we load a value from memory
    into two different registers, and (if memory is more expensive than
    registers) changes it to simply copy the first register into the
-   second register.  */
+   second register.  
+
+   Another optimization is performed that scans the operands of each
+   instruction to see whether the value is already available in a
+   hard register.  It then replaces the operand with the hard register
+   if possible, much like an optional reload would.  */
 
 void
 reload_cse_regs (first)
@@ -7880,6 +7941,8 @@ reload_cse_regs (first)
       if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
 	continue;
 
+      CLEAR_HARD_REG_SET (no_longer_dead_regs);
+
       /* If this is a call instruction, forget anything stored in a
 	 call clobbered register, or, if this is not a const call, in
 	 memory.  */
@@ -7896,22 +7959,32 @@ reload_cse_regs (first)
       body = PATTERN (insn);
       if (GET_CODE (body) == SET)
 	{
+	  int count = 0;
 	  if (reload_cse_noop_set_p (body, insn))
 	    {
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
+	      reload_cse_delete_death_notes (insn);
 
 	      /* We're done with this insn.  */
 	      continue;
 	    }
 
-	  reload_cse_simplify_set (body, insn);
+	  /* It's not a no-op, but we can try to simplify it.  */
+	  CLEAR_HARD_REG_SET (no_longer_dead_regs);
+	  count += reload_cse_simplify_set (body, insn);
+
+	  if (count > 0 && apply_change_group ())
+	    reload_cse_delete_death_notes (insn);
+	  else if (reload_cse_simplify_operands (insn))
+	    reload_cse_delete_death_notes (insn);
+	    
 	  reload_cse_record_set (body, body);
 	}
       else if (GET_CODE (body) == PARALLEL)
 	{
-	  int delete;
+	  int count = 0;
 
 	  /* If every action in a PARALLEL is a noop, we can delete
              the entire PARALLEL.  */
@@ -7925,10 +7998,22 @@ reload_cse_regs (first)
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
+	      reload_cse_delete_death_notes (insn);
 
 	      /* We're done with this insn.  */
 	      continue;
 	    }
+	  
+	  /* It's not a no-op, but we can try to simplify it.  */
+	  CLEAR_HARD_REG_SET (no_longer_dead_regs);
+	  for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
+	    if (GET_CODE (XVECEXP (body, 0, i)) == SET)
+	      count += reload_cse_simplify_set (XVECEXP (body, 0, i), insn);
+
+	  if (count > 0 && apply_change_group ())
+	    reload_cse_delete_death_notes (insn);
+	  else if (reload_cse_simplify_operands (insn))
+	    reload_cse_delete_death_notes (insn);
 
 	  /* Look through the PARALLEL and record the values being
              set, if possible.  Also handle any CLOBBERs.  */
@@ -8094,34 +8179,22 @@ reload_cse_noop_set_p (set, insn)
 
   /* If we can delete this SET, then we need to look for an earlier
      REG_DEAD note on DREG, and remove it if it exists.  */
-  if (ret)
+  if (ret && dreg >= 0)
     {
       if (! find_regno_note (insn, REG_UNUSED, dreg))
-	{
-	  rtx trial;
-
-	  for (trial = prev_nonnote_insn (insn);
-	       (trial
-		&& GET_CODE (trial) != CODE_LABEL
-		&& GET_CODE (trial) != BARRIER);
-	       trial = prev_nonnote_insn (trial))
-	    {
-	      if (find_regno_note (trial, REG_DEAD, dreg))
-		{
-		  remove_death (dreg, trial);
-		  break;
-		}
-	    }
-	}
+	reload_cse_no_longer_dead (dreg, dest_mode);
     }
 
   return ret;
 }
 
 /* Try to simplify a single SET instruction.  SET is the set pattern.
-   INSN is the instruction it came from. */
+   INSN is the instruction it came from.
+   This function only handles one case: if we set a register to a value
+   which is not a register, we try to find that value in some other register
+   and change the set into a register copy.  */
 
-static void
+static int
 reload_cse_simplify_set (set, insn)
      rtx set;
      rtx insn;
@@ -8131,10 +8204,6 @@ reload_cse_simplify_set (set, insn)
   enum machine_mode dest_mode;
   enum reg_class dclass;
   register int i;
-
-  /* We only handle one case: if we set a register to a value which is
-     not a register, we try to find that value in some other register
-     and change the set into a register copy.  */
 
   dreg = true_regnum (SET_DEST (set));
   if (dreg < 0)
@@ -8163,38 +8232,252 @@ reload_cse_simplify_set (set, insn)
 	  pop_obstacks ();
 
 	  validated = validate_change (insn, &SET_SRC (set),
-				       gen_rtx (REG, dest_mode, i), 0);
+				       gen_rtx (REG, dest_mode, i), 1);
 
 	  /* Go back to the obstack we are using for temporary
              storage.  */
 	  push_obstacks (&reload_obstack, &reload_obstack);
 
-	  if (validated)
+	  if (validated && ! find_regno_note (insn, REG_UNUSED, i))
 	    {
-	      /* We need to look for an earlier REG_DEAD note on I,
-		 and remove it if it exists.  */
-	      if (! find_regno_note (insn, REG_UNUSED, i))
-		{
-		  rtx trial;
-
-		  for (trial = prev_nonnote_insn (insn);
-		       (trial
-			&& GET_CODE (trial) != CODE_LABEL
-			&& GET_CODE (trial) != BARRIER);
-		       trial = prev_nonnote_insn (trial))
-		    {
-		      if (find_regno_note (trial, REG_DEAD, i))
-			{
-			  remove_death (i, trial);
-			  break;
-			}
-		    }
-		}
-
-	      return;
+	      reload_cse_no_longer_dead (i, dest_mode);
+	      return 1;
 	    }
 	}
     }
+  return 0;
+}
+
+/* Try to replace operands in INSN with equivalent values that are already
+   in registers.  This can be viewed as optional reloading.  
+ 
+   For each non-register operand in the insn, see if any hard regs are
+   known to be equivalent to that operand.  Record the alternatives which
+   can accept these hard registers.  Among all alternatives, select the
+   ones which are better or equal to the one currently matching, where
+   "better" is in terms of '?' and '!' constraints.  Among the remaining
+   alternatives, select the one which replaces most operands with
+   hard registers.  */
+
+static int
+reload_cse_simplify_operands (insn)
+     rtx insn;
+{
+#ifdef REGISTER_CONSTRAINTS
+  int insn_code_number, n_operands, n_alternatives;
+  int i,j;
+
+  char *constraints[MAX_RECOG_OPERANDS];
+  
+  /* Vector recording how bad an alternative is.  */
+  int *alternative_reject;
+  /* Vector recording how many registers can be introduced by choosing
+     this alternative.  */
+  int *alternative_nregs;
+  /* Array of vectors recording, for each operand and each alternative,
+     which hard register to substitute, or -1 if the operand should be
+     left as it is.  */
+  int *op_alt_regno[MAX_RECOG_OPERANDS];
+  /* Array of alternatives, sorted in order of decreasing desirability.  */
+  int *alternative_order;
+  
+  /* Find out some information about this insn.  */
+  insn_code_number = recog_memoized (insn);
+  /* We don't modify asm instructions.  */
+  if (insn_code_number < 0)
+    return 0;
+
+  n_operands = insn_n_operands[insn_code_number];
+  n_alternatives = insn_n_alternatives[insn_code_number];
+  
+  if (n_alternatives == 0 || n_operands == 0)
+    return;
+  insn_extract (insn);
+
+  /* Figure out which alternative currently matches.  */
+  if (! constrain_operands (insn_code_number, 1))
+    abort ();
+
+  alternative_reject = (int *) alloca (n_alternatives * sizeof (int));
+  alternative_nregs = (int *) alloca (n_alternatives * sizeof (int));
+  alternative_order = (int *) alloca (n_alternatives * sizeof (int));
+  bzero ((char *)alternative_reject, n_alternatives * sizeof (int));
+  bzero ((char *)alternative_nregs, n_alternatives * sizeof (int));
+
+  for (i = 0; i < n_operands; i++)
+    {
+      enum machine_mode mode;
+      int regno;
+      char *p;
+
+      op_alt_regno[i] = (int *) alloca (n_alternatives * sizeof (int));
+      for (j = 0; j < n_alternatives; j++)
+	op_alt_regno[i][j] = -1;
+
+      p = constraints[i] = insn_operand_constraint[insn_code_number][i];
+      mode = insn_operand_mode[insn_code_number][i];
+
+      /* Add the reject values for each alternative given by the constraints
+	 for this operand.  */
+      j = 0;
+      while (*p != '\0')
+	{
+	  char c = *p++;
+	  if (c == ',')
+	    j++;
+	  else if (c == '?')
+	    alternative_reject[j] += 3;
+	  else if (c == '!')
+	    alternative_reject[j] += 300;
+	}
+
+      /* We won't change operands which are already registers.  We
+	 also don't want to modify output operands.  */
+      regno = true_regnum (recog_operand[i]);
+      if (regno >= 0
+	  || constraints[i][0] == '='
+	  || constraints[i][0] == '+')
+	continue;
+
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	{
+	  int class = (int) NO_REGS;
+
+	  if (! reload_cse_regno_equal_p (regno, recog_operand[i], mode))
+	    continue;
+
+	  /* We found a register equal to this operand.  Now look for all
+	     alternatives that can accept this register and have not been
+	     assigned a register they can use yet.  */
+	  j = 0;
+	  p = constraints[i];
+	  for (;;)
+	    {
+	      char c = *p++;
+	      
+	      switch (c)
+		{
+		case '=':  case '+':  case '?':
+		case '#':  case '&':  case '!':
+		case '*':  case '%':  
+		case '0':  case '1':  case '2':  case '3':  case '4':
+		case 'm':  case '<':  case '>':  case 'V':  case 'o':
+		case 'E':  case 'F':  case 'G':  case 'H':
+		case 's':  case 'i':  case 'n':
+		case 'I':  case 'J':  case 'K':  case 'L':
+		case 'M':  case 'N':  case 'O':  case 'P':
+#ifdef EXTRA_CONSTRAINT
+		case 'Q':  case 'R':  case 'S':  case 'T':  case 'U':
+#endif
+		case 'p': case 'X':
+		  /* These don't say anything we care about.  */
+		  break;
+
+		case 'g': case 'r':
+		  class = reg_class_subunion[(int) class][(int) GENERAL_REGS];
+		  break;
+
+		default:
+		  class
+		    = reg_class_subunion[(int) class][(int) REG_CLASS_FROM_LETTER (c)];
+		  break;
+
+		case ',': case '\0':
+		  /* See if REGNO fits this alternative, and set it up as the
+		     replacement register if we don't have one for this
+		     alternative yet.  */
+		  if (op_alt_regno[i][j] == -1
+		      && reg_fits_class_p (gen_rtx (REG, mode, regno), class,
+					   0, mode))
+		    {
+		      alternative_nregs[j]++;
+		      op_alt_regno[i][j] = regno;
+		    }
+		  j++;
+		  break;
+		}
+
+	      if (c == '\0')
+		break;
+	    }
+	}
+    }
+
+  /* Record all alternatives which are better or equal to the currently
+     matching one in the alternative_order array.  */
+  for (i = j = 0; i < n_alternatives; i++)
+    if (alternative_reject[i] <= alternative_reject[which_alternative])
+      alternative_order[j++] = i;
+  n_alternatives = j;
+
+  /* Sort it.  Given a small number of alternatives, a dumb algorithm
+     won't hurt too much.  */
+  for (i = 0; i < n_alternatives - 1; i++)
+    {
+      int best = i;
+      int best_reject = alternative_reject[alternative_order[i]];
+      int best_nregs = alternative_nregs[alternative_order[i]];
+      int tmp;
+
+      for (j = i + 1; j < n_alternatives; j++)
+	{
+	  int this_reject = alternative_reject[alternative_order[j]];
+	  int this_nregs = alternative_nregs[alternative_order[j]];
+
+	  if (this_reject < best_reject
+	      || (this_reject == best_reject && this_nregs < best_nregs))
+	    {
+	      best = j;
+	      best_reject = this_reject;
+	      best_nregs = this_nregs;
+	    }
+	}
+      
+      tmp = alternative_order[best];
+      alternative_order[best] = alternative_order[i];
+      alternative_order[i] = tmp;
+    }
+  
+  /* Substitute the operands as determined by op_alt_regno for the best
+     alternative.  */
+  j = alternative_order[0];
+  CLEAR_HARD_REG_SET (no_longer_dead_regs);
+
+  /* Pop back to the real obstacks while changing the insn.  */
+  pop_obstacks ();
+
+  for (i = 0; i < n_operands; i++)
+    {
+      enum machine_mode mode = insn_operand_mode[insn_code_number][i];
+      if (op_alt_regno[i][j] == -1)
+	continue;
+
+      reload_cse_no_longer_dead (op_alt_regno[i][j], mode);
+      validate_change (insn, recog_operand_loc[i],
+		       gen_rtx (REG, mode, op_alt_regno[i][j]), 1);
+    }
+
+  for (i = insn_n_dups[insn_code_number] - 1; i >= 0; i--)
+    {
+      int op = recog_dup_num[i];
+      enum machine_mode mode = insn_operand_mode[insn_code_number][op];
+
+      if (op_alt_regno[op][j] == -1)
+	continue;
+
+      reload_cse_no_longer_dead (op_alt_regno[op][j], mode);
+      validate_change (insn, recog_operand_loc[op],
+		       gen_rtx (REG, mode, op_alt_regno[op][j]), 1);
+    }
+
+  /* Go back to the obstack we are using for temporary
+     storage.  */
+  push_obstacks (&reload_obstack, &reload_obstack);
+
+  return apply_change_group ();
+#else
+  return 0;
+#endif
 }
 
 /* These two variables are used to pass information from
