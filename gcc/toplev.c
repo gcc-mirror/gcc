@@ -2877,6 +2877,7 @@ rest_of_compilation (decl)
     {
       timevar_push (TV_LOOP);
       delete_dead_jumptables ();
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       open_dump_file (DFI_loop, decl);
       /* CFG is no longer maintained up-to-date.  */
       free_bb_for_insn ();
