@@ -1749,7 +1749,10 @@ make_thunk (function, delta)
   if (TREE_CODE (func_decl) != FUNCTION_DECL)
     abort ();
   func_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (func_decl));
-  sprintf (buffer, "__thunk_%d_%s", -delta, func_name);
+  if (delta<=0)
+    sprintf (buffer, "__thunk_%d_%s", -delta, func_name);
+  else
+    sprintf (buffer, "__thunk_n%d_%s", delta, func_name);
   thunk_id = get_identifier (buffer);
   thunk = IDENTIFIER_GLOBAL_VALUE (thunk_id);
   if (thunk && TREE_CODE (thunk) != THUNK_DECL)
