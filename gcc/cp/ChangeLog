@@ -1,5 +1,12 @@
 2004-12-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/18318
+	* parser.c (cp_parser_new_type_id): Move array size expression
+	checks from here ...
+	* init.c (build_new): ... to here.
+
+2004-12-02  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/18758
 	* parser.c (cp_parser_class_head): Return NULL_TREE when
 	push_template_decl fails.  Update comment.
@@ -18,7 +25,8 @@
 
 2004-12-01  Matt Austern  <austern@apple.com>
 
-	* name-lookup.c (namespace_binding): Omit alias check for global namespace.
+	* name-lookup.c (namespace_binding): Omit alias check for global
+	namespace.
 
 2004-12-01  Nathan Sidwell  <nathan@codesourcery.com>
 

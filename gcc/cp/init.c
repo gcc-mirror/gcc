@@ -1633,6 +1633,15 @@ build_new (tree placement, tree type, tree nelts, tree init,
       return rval;
     }
 
+  if (nelts)
+    {
+      if (!build_expr_type_conversion (WANT_INT | WANT_ENUM, nelts, false))
+	pedwarn ("size in array new must have integral type");
+      nelts = save_expr (cp_convert (sizetype, nelts));
+      if (nelts == integer_zero_node)
+	warning ("zero size array reserves no space");
+    }
+
   /* ``A reference cannot be created by the new operator.  A reference
      is not an object (8.2.2, 8.4.3), so a pointer to it could not be
      returned by new.'' ARM 5.3.3 */
