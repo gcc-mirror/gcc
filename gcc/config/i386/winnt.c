@@ -523,10 +523,9 @@ i386_pe_section_type_flags (decl, name, reloc)
 }
 
 void
-i386_pe_asm_named_section (name, flags, align)
+i386_pe_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
-     unsigned int align ATTRIBUTE_UNUSED;
 {
   char flagchars[8], *f = flagchars;
 

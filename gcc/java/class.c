@@ -1889,8 +1889,8 @@ emit_register_classes ()
     {
 #ifdef JCR_SECTION_NAME
       tree t;
-      named_section_flags (JCR_SECTION_NAME, SECTION_WRITE,
-			   POINTER_SIZE / BITS_PER_UNIT);
+      named_section_flags (JCR_SECTION_NAME, SECTION_WRITE);
+      assemble_align (POINTER_SIZE);
       for (t = registered_class; t; t = TREE_CHAIN (t))
 	assemble_integer (XEXP (DECL_RTL (t), 0),
 			  POINTER_SIZE / BITS_PER_UNIT, 1);

@@ -139,8 +139,7 @@ static void rs6000_elf_asm_out_constructor PARAMS ((rtx, int));
 static void rs6000_elf_asm_out_destructor PARAMS ((rtx, int));
 #endif
 #ifdef OBJECT_FORMAT_COFF
-static void xcoff_asm_named_section PARAMS ((const char *, unsigned int,
-					     unsigned int));
+static void xcoff_asm_named_section PARAMS ((const char *, unsigned int));
 #endif
 
 /* Default register names.  */
@@ -8736,7 +8735,8 @@ rs6000_elf_asm_out_constructor (symbol, priority)
       section = buf;
     }
 
-  named_section_flags (section, SECTION_WRITE, POINTER_SIZE / BITS_PER_UNIT);
+  named_section_flags (section, SECTION_WRITE);
+  assemble_align (POINTER_SIZE);
 
   if (TARGET_RELOCATABLE)
     {
@@ -8766,7 +8766,8 @@ rs6000_elf_asm_out_destructor (symbol, priority)
       section = buf;
     }
 
-  named_section_flags (section, SECTION_WRITE, POINTER_SIZE / BITS_PER_UNIT);
+  named_section_flags (section, SECTION_WRITE);
+  assemble_align (POINTER_SIZE);
 
   if (TARGET_RELOCATABLE)
     {
@@ -8781,10 +8782,9 @@ rs6000_elf_asm_out_destructor (symbol, priority)
 
 #ifdef OBJECT_FORMAT_COFF
 static void
-xcoff_asm_named_section (name, flags, align)
+xcoff_asm_named_section (name, flags)
      const char *name;
      unsigned int flags ATTRIBUTE_UNUSED;
-     unsigned int align ATTRIBUTE_UNUSED;
 {
   fprintf (asm_out_file, "\t.csect %s\n", name);
 }

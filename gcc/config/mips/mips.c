@@ -116,7 +116,6 @@ static void mips_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void mips_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static enum processor_type mips_parse_cpu       PARAMS ((const char *));
 static void iris6_asm_named_section		PARAMS ((const char *,
-							 unsigned int,
 							 unsigned int));
 /* Global variables for machine-dependent things.  */
 
@@ -9754,10 +9753,9 @@ mips_parse_cpu (cpu_string)
 /* Output assembly to switch to section NAME with attribute FLAGS.  */
 
 static void
-iris6_asm_named_section (name, flags, align)
+iris6_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
-     unsigned int align;
 {
   unsigned int sh_type, sh_flags, sh_entsize;
 
@@ -9785,16 +9783,8 @@ iris6_asm_named_section (name, flags, align)
   else
     sh_entsize = 0;
 
-  if (align == 0)
-    {
-      if (flags & SECTION_CODE)
-	align = 4;
-      else
-	align = 8;
-    }
-
   fprintf (asm_out_file, "\t.section %s,%u,%u,%u,%u\n",
-	   name, sh_type, sh_flags, sh_entsize, align);
+	   name, sh_type, sh_flags, sh_entsize, 0);
 }
 
 /* Cover function for UNIQUE_SECTION.  */

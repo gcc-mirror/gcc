@@ -133,7 +133,6 @@ static int        mcore_dllimport_p            PARAMS ((tree));
 static int        mcore_valid_decl_attribute   PARAMS ((tree, tree,
 							tree, tree));
 static void	  mcore_asm_named_section      PARAMS ((const char *,
-							unsigned int,
 							unsigned int));
 
 /* Initialize the GCC target structure.  */
@@ -3599,10 +3598,9 @@ mcore_naked_function_p ()
 }
 
 static void
-mcore_asm_named_section (name, flags, align)
+mcore_asm_named_section (name, flags)
      const char *name;
      unsigned int flags ATTRIBUTE_UNUSED;
-     unsigned int align ATTRIBUTE_UNUSED;
 {
   fprintf (asm_out_file, "\t.section %s\n", name);
 }

@@ -151,8 +151,7 @@ static void alpha_output_function_end_prologue
 #if TARGET_ABI_OPEN_VMS
 static int vms_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
 static unsigned int vms_section_type_flags PARAMS ((tree, const char *, int));
-static void vms_asm_named_section PARAMS ((const char *, unsigned int,
-					   unsigned int));
+static void vms_asm_named_section PARAMS ((const char *, unsigned int));
 static void vms_asm_out_constructor PARAMS ((rtx, int));
 static void vms_asm_out_destructor PARAMS ((rtx, int));
 # undef TARGET_VALID_DECL_ATTRIBUTE
@@ -6568,10 +6567,9 @@ vms_section_type_flags (decl, name, reloc)
    the section; 0 if the default should be used.  */
 
 static void
-vms_asm_named_section (name, flags, align)
+vms_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
-     unsigned int align;
 {
   const char *flag_str = "";
 
@@ -6581,11 +6579,6 @@ vms_asm_named_section (name, flags, align)
     flag_str = ",NOWRT";
 
   fprintf (asm_out_file, ".section\t%s%s\n", name, flag_str);
-
-  /* ??? An indicated alignment of 1 byte is only used by dwarf,
-     and for that we turn off auto-alignment.  */
-  if (align == 1)
-    ASM_OUTPUT_ALIGN (asm_out_file, 0);
 }
 
 /* Record an element in the table of global constructors.  SYMBOL is

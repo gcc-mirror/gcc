@@ -1738,8 +1738,7 @@ output_call_frame_info (for_eh)
   if (for_eh)
     {
 #ifdef EH_FRAME_SECTION_NAME
-      named_section_flags (EH_FRAME_SECTION_NAME, SECTION_WRITE,
-			   DWARF_OFFSET_SIZE);
+      named_section_flags (EH_FRAME_SECTION_NAME, SECTION_WRITE);
 #else
       tree label = get_file_function_name ('F');
 
@@ -1751,7 +1750,7 @@ output_call_frame_info (for_eh)
       assemble_label ("__FRAME_BEGIN__");
     }
   else
-    named_section_flags (DEBUG_FRAME_SECTION, SECTION_DEBUG, 1);
+    named_section_flags (DEBUG_FRAME_SECTION, SECTION_DEBUG);
 
   /* Output the CIE.  */
   ASM_GENERATE_INTERNAL_LABEL (l1, CIE_AFTER_SIZE_LABEL, for_eh);
@@ -6322,7 +6321,7 @@ output_comp_unit (die)
     secname = (const char *) DEBUG_INFO_SECTION;
 
   /* Output debugging information.  */
-  named_section_flags (secname, SECTION_DEBUG, 1);
+  named_section_flags (secname, SECTION_DEBUG);
   output_compilation_unit_header ();
   output_die (die);
 
@@ -11560,7 +11559,7 @@ dwarf2out_start_source_file (lineno, filename)
     }
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
+      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
       dw2_asm_output_data (1, DW_MACINFO_start_file, "Start new file");
       dw2_asm_output_data_uleb128 (lineno, "Included from line number %d",
 				   lineno);
@@ -11582,7 +11581,7 @@ dwarf2out_end_source_file (lineno)
     }
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
+      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
       dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
     }
 }
@@ -11604,7 +11603,7 @@ dwarf2out_define (lineno, buffer)
     }
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
+      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
       dw2_asm_output_data (1, DW_MACINFO_define, "Define macro");
       dw2_asm_output_data_uleb128 (lineno, "At line number %d", lineno);
       dw2_asm_output_nstring (buffer, -1, "The macro");
@@ -11622,7 +11621,7 @@ dwarf2out_undef (lineno, buffer)
 {
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
+      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
       dw2_asm_output_data (1, DW_MACINFO_undef, "Undefine macro");
       dw2_asm_output_data_uleb128 (lineno, "At line number %d", lineno);
       dw2_asm_output_nstring (buffer, -1, "The macro");
@@ -11695,17 +11694,17 @@ dwarf2out_init (main_input_filename)
   ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
 			       DEBUG_LINE_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (loc_section_label, DEBUG_LOC_SECTION_LABEL, 0);
-  named_section_flags (DEBUG_LOC_SECTION, SECTION_DEBUG, 1);
+  named_section_flags (DEBUG_LOC_SECTION, SECTION_DEBUG);
   ASM_OUTPUT_LABEL (asm_out_file, loc_section_label);
-  named_section_flags (DEBUG_ABBREV_SECTION, SECTION_DEBUG, 1);
+  named_section_flags (DEBUG_ABBREV_SECTION, SECTION_DEBUG);
   ASM_OUTPUT_LABEL (asm_out_file, abbrev_section_label);
-  named_section_flags (DEBUG_INFO_SECTION, SECTION_DEBUG, 1);
+  named_section_flags (DEBUG_INFO_SECTION, SECTION_DEBUG);
   ASM_OUTPUT_LABEL (asm_out_file, debug_info_section_label);
-  named_section_flags (DEBUG_LINE_SECTION, SECTION_DEBUG, 1);
+  named_section_flags (DEBUG_LINE_SECTION, SECTION_DEBUG);
   ASM_OUTPUT_LABEL (asm_out_file, debug_line_section_label);
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
-      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
+      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
       ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
 				   DEBUG_MACINFO_SECTION_LABEL, 0);
       ASM_OUTPUT_LABEL (asm_out_file, macinfo_section_label);
@@ -11782,7 +11781,7 @@ dwarf2out_finish (input_filename)
      examining the file.  */
   if (! DWARF2_ASM_LINE_DEBUG_INFO)
     {
-      named_section_flags (DEBUG_LINE_SECTION, SECTION_DEBUG, 1);
+      named_section_flags (DEBUG_LINE_SECTION, SECTION_DEBUG);
       output_line_info ();
     }
 
@@ -11813,13 +11812,13 @@ dwarf2out_finish (input_filename)
   output_comp_unit (comp_unit_die);
 
   /* Output the abbreviation table.  */
-  named_section_flags (DEBUG_ABBREV_SECTION, SECTION_DEBUG, 1);
+  named_section_flags (DEBUG_ABBREV_SECTION, SECTION_DEBUG);
   output_abbrev_section ();
 
   if (pubname_table_in_use)
     {
       /* Output public names table.  */
-      named_section_flags (DEBUG_PUBNAMES_SECTION, SECTION_DEBUG, 1);
+      named_section_flags (DEBUG_PUBNAMES_SECTION, SECTION_DEBUG);
       output_pubnames ();
     }
 
@@ -11828,7 +11827,7 @@ dwarf2out_finish (input_filename)
   if (fde_table_in_use)
     {
       /* Output the address range information.  */
-      named_section_flags (DEBUG_ARANGES_SECTION, SECTION_DEBUG, 1);
+      named_section_flags (DEBUG_ARANGES_SECTION, SECTION_DEBUG);
       output_aranges ();
     }
 
@@ -11836,7 +11835,7 @@ dwarf2out_finish (input_filename)
   if (have_location_lists)
     {
       /* Output the location lists info.  */
-      named_section_flags (DEBUG_LOC_SECTION, SECTION_DEBUG, 1);
+      named_section_flags (DEBUG_LOC_SECTION, SECTION_DEBUG);
       output_location_lists (die);
       have_location_lists = 0;
     }
@@ -11844,14 +11843,14 @@ dwarf2out_finish (input_filename)
   /* Output ranges section if necessary.  */
   if (ranges_table_in_use)
     {
-      named_section_flags (DEBUG_RANGES_SECTION, SECTION_DEBUG, 1);
+      named_section_flags (DEBUG_RANGES_SECTION, SECTION_DEBUG);
       output_ranges ();
     }
 
   /* Have to end the primary source file.  */
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     { 
-      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
+      named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
       dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
     }
 }

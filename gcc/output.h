@@ -454,21 +454,19 @@ extern void no_asm_to_stream PARAMS ((FILE *));
 #define SECTION_FORGET	   64	/* forget that we've entered the section */
 #define SECTION_MACH_DEP  128	/* subsequent bits reserved for target */
 
-extern void named_section_flags		PARAMS ((const char *, unsigned int,
-						 unsigned int));
+extern unsigned int get_named_section_flags PARAMS ((const char *));
+extern bool set_named_section_flags	PARAMS ((const char *, unsigned int));
+extern void named_section_flags		PARAMS ((const char *, unsigned int));
 
 union tree_node;
 extern unsigned int default_section_type_flags PARAMS ((union tree_node *,
 							const char *, int));
 
-extern void default_no_named_section PARAMS ((const char *, unsigned int,
-					      unsigned int));
-extern void default_elf_asm_named_section PARAMS ((const char *, unsigned int,
-					      unsigned int));
-extern void default_coff_asm_named_section PARAMS ((const char *, unsigned int,
-					      unsigned int));
-extern void default_pe_asm_named_section PARAMS ((const char *, unsigned int,
-					      unsigned int));
+extern void default_no_named_section PARAMS ((const char *, unsigned int));
+extern void default_elf_asm_named_section PARAMS ((const char *, unsigned int));
+extern void default_coff_asm_named_section PARAMS ((const char *,
+						    unsigned int));
+extern void default_pe_asm_named_section PARAMS ((const char *, unsigned int));
 
 extern void default_stabs_asm_out_destructor PARAMS ((struct rtx_def *, int));
 extern void default_named_section_asm_out_destructor PARAMS ((struct rtx_def *,

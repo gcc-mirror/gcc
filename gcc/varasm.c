@@ -165,6 +165,8 @@ static void output_constructor		PARAMS ((tree, int));
 #ifdef ASM_WEAKEN_LABEL
 static void remove_from_pending_weak_list	PARAMS ((const char *));
 #endif
+static int in_named_entry_eq		PARAMS ((const PTR, const PTR));
+static hashval_t in_named_entry_hash	PARAMS ((const PTR));
 #ifdef ASM_OUTPUT_BSS
 static void asm_output_bss		PARAMS ((FILE *, tree, const char *, int, int));
 #endif
@@ -208,6 +210,16 @@ static enum in_section { no_section, in_text, in_data, in_named
      
 /* Text of section name when in_section == in_named.  */
 static const char *in_named_name;
+
+/* Hash table of flags that have been used for a particular named section.  */
+
+struct in_named_entry
+{
+  const char *name;
+  unsigned int flags;
+};
+
+static htab_t in_named_htab;
 
 /* Define functions like text_section for any extra sections.  */
 #ifdef EXTRA_SECTION_FUNCTIONS
@@ -286,17 +298,86 @@ in_data_section ()
   return in_section == in_data;
 }
 
+/* Helper routines for maintaining in_named_htab.  */
+
+static int
+in_named_entry_eq (p1, p2)
+     const PTR p1;
+     const PTR p2;
+{
+  const struct in_named_entry *old = p1;
+  const char *new = p2;
+
+  return strcmp (old->name, new) == 0;
+}
+
+static hashval_t
+in_named_entry_hash (p)
+     const PTR p;
+{
+  const struct in_named_entry *old = p;
+  return htab_hash_string (old->name);
+}
+
+/* If SECTION has been seen before as a named section, return the flags
+   that were used.  Otherwise, return 0.  Note, that 0 is a perfectly valid
+   set of flags for a section to have, so 0 does not mean that the section
+   has not been seen.  */
+
+unsigned int
+get_named_section_flags (section)
+     const char *section;
+{
+  struct in_named_entry **slot;
+
+  slot = (struct in_named_entry**)
+    htab_find_slot_with_hash (in_named_htab, section,
+			      htab_hash_string (section), NO_INSERT);
+
+  return slot ? (*slot)->flags : 0;
+}
+
+/* Record FLAGS for SECTION.  If SECTION was previously recorded with a
+   different set of flags, return false.  */
+
+bool
+set_named_section_flags (section, flags)
+     const char *section;
+     unsigned int flags;
+{
+  struct in_named_entry **slot, *entry;
+
+  slot = (struct in_named_entry**)
+    htab_find_slot_with_hash (in_named_htab, section,
+			      htab_hash_string (section), INSERT);
+  entry = *slot;
+
+  if (!entry)
+    {
+      entry = (struct in_named_entry *) xmalloc (sizeof (*entry));
+      *slot = entry;
+      entry->name = ggc_strdup (section);
+      entry->flags = flags;
+    }
+  else if (entry->flags != flags)
+    return false;
+
+  return true;
+}
+
 /* Tell assembler to change to section NAME with attributes FLAGS.  */
 
 void
-named_section_flags (name, flags, align)
+named_section_flags (name, flags)
      const char *name;
      unsigned int flags;
-     unsigned int align;
 {
-  if (in_section != in_named || strcmp (name, in_named_name))
+  if (in_section != in_named || strcmp (name, in_named_name) != 0)
     {
-      (* targetm.asm_out.named_section) (name, flags, align);
+      if (! set_named_section_flags (name, flags))
+	abort ();
+
+      (* targetm.asm_out.named_section) (name, flags);
 
       if (flags & SECTION_FORGET)
 	in_section = no_section;
@@ -327,7 +408,16 @@ named_section (decl, name, reloc)
     name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
 
   flags = (* targetm.section_type_flags) (decl, name, reloc);
-  named_section_flags (name, flags, 0);
+
+  /* Sanity check user variables for flag changes.  Non-user
+     section flag changes will abort in named_section_flags.  */
+  if (decl && ! set_named_section_flags (name, flags))
+    {
+      error_with_decl (decl, "%s causes a section type conflict");
+      flags = get_named_section_flags (name);
+    }
+
+  named_section_flags (name, flags);
 }
 
 /* If required, set DECL_SECTION_NAME to a unique name.  */
@@ -335,7 +425,7 @@ named_section (decl, name, reloc)
 static void
 resolve_unique_section (decl, reloc)
      tree decl;
-     int reloc;
+     int reloc ATTRIBUTE_UNUSED;
 {
   if (DECL_SECTION_NAME (decl) == NULL_TREE
       && (flag_function_sections
@@ -855,7 +945,8 @@ default_named_section_asm_out_destructor (symbol, priority)
       section = buf;
     }
 
-  named_section_flags (section, SECTION_WRITE, POINTER_SIZE / BITS_PER_UNIT);
+  named_section_flags (section, SECTION_WRITE);
+  assemble_align (POINTER_SIZE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
 }
 
@@ -915,7 +1006,7 @@ default_named_section_asm_out_constructor (symbol, priority)
       section = buf;
     }
 
-  named_section_flags (section, SECTION_WRITE, POINTER_SIZE / BITS_PER_UNIT);
+  named_section_flags (section, SECTION_WRITE);
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
 }
 
@@ -4820,6 +4911,9 @@ init_varasm_once ()
 {
   const_str_htab = htab_create (128, const_str_htab_hash, const_str_htab_eq,
   				const_str_htab_del);
+  in_named_htab = htab_create (31, in_named_entry_hash,
+			       in_named_entry_eq, NULL);
+
   ggc_add_root (const_hash_table, MAX_HASH_TABLE, sizeof const_hash_table[0],
 		mark_const_hash_entry);
   ggc_add_root (&const_str_htab, 1, sizeof const_str_htab,
@@ -4831,12 +4925,7 @@ init_varasm_once ()
    might contain runtime relocations.
 
    We make the section read-only and executable for a function decl,
-   read-only for a const data decl, and writable for a non-const data decl.
-
-   If the section has already been defined, to not allow it to have
-   different attributes, as (1) this is ambiguous since we're not seeing
-   all the declarations up front and (2) some assemblers (e.g. SVR4)
-   do not recoginize section redefinitions.  */
+   read-only for a const data decl, and writable for a non-const data decl.  */
 
 unsigned int
 default_section_type_flags (decl, name, reloc)
@@ -4844,15 +4933,7 @@ default_section_type_flags (decl, name, reloc)
      const char *name;
      int reloc;
 {
-  static htab_t htab;
   unsigned int flags;
-  unsigned int **slot;
-
-  /* The names we put in the hashtable will always be the unique
-     versions gived to us by the stringtable, so we can just use
-     their addresses as the keys.  */
-  if (!htab)
-    htab = htab_create (31, htab_hash_pointer, htab_eq_pointer, NULL);
 
   if (decl && TREE_CODE (decl) == FUNCTION_DECL)
     flags = SECTION_CODE;
@@ -4872,19 +4953,6 @@ default_section_type_flags (decl, name, reloc)
       || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
     flags |= SECTION_BSS;
 
-  /* See if we already have an entry for this section.  */
-  slot = (unsigned int **) htab_find_slot (htab, name, INSERT);
-  if (!*slot)
-    {
-      *slot = (unsigned int *) xmalloc (sizeof (unsigned int));
-      **slot = flags;
-    }
-  else
-    {
-      if (decl && **slot != flags)
-	error_with_decl (decl, "%s causes a section type conflict");
-    }
-
   return flags;
 }
 
@@ -4892,10 +4960,9 @@ default_section_type_flags (decl, name, reloc)
    Four variants for common object file formats.  */
 
 void
-default_no_named_section (name, flags, align)
+default_no_named_section (name, flags)
      const char *name ATTRIBUTE_UNUSED;
      unsigned int flags ATTRIBUTE_UNUSED;
-     unsigned int align ATTRIBUTE_UNUSED;
 {
   /* Some object formats don't support named sections at all.  The
      front-end should already have flagged this as an error.  */
@@ -4903,10 +4970,9 @@ default_no_named_section (name, flags, align)
 }
 
 void
-default_elf_asm_named_section (name, flags, align)
+default_elf_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
-     unsigned int align ATTRIBUTE_UNUSED;
 {
   char flagchars[8], *f = flagchars;
   const char *type;
@@ -4931,10 +4997,9 @@ default_elf_asm_named_section (name, flags, align)
 }
 
 void
-default_coff_asm_named_section (name, flags, align)
+default_coff_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
-     unsigned int align ATTRIBUTE_UNUSED;
 {
   char flagchars[8], *f = flagchars;
 
@@ -4948,12 +5013,11 @@ default_coff_asm_named_section (name, flags, align)
 }
 
 void
-default_pe_asm_named_section (name, flags, align)
+default_pe_asm_named_section (name, flags)
      const char *name;
      unsigned int flags;
-     unsigned int align ATTRIBUTE_UNUSED;
 {
-  default_coff_asm_named_section (name, flags, align);
+  default_coff_asm_named_section (name, flags);
 
   if (flags & SECTION_LINKONCE)
     {

@@ -67,11 +67,9 @@ struct gcc_target
     /* Output the assembler code for function exit.  */
     void (* function_epilogue) PARAMS ((FILE *, HOST_WIDE_INT));
 
-    /* Switch to an arbitrary section NAME with attributes as specified
-       by FLAGS.  ALIGN specifies any known alignment requirements for
-       the section; 0 if the default should be used.  */
-    void (* named_section) PARAMS ((const char *, unsigned int,
-				    unsigned int));
+    /* Switch to an arbitrary section NAME with attributes as
+       specified by FLAGS.  */
+    void (* named_section) PARAMS ((const char *, unsigned int));
 
     /* Output a constructor for a symbol with a given priority.  */
     void (* constructor) PARAMS ((struct rtx_def *, int));
