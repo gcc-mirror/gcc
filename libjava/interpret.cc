@@ -21,6 +21,7 @@ details.  */
 #include <java/lang/System.h>
 #include <java/lang/String.h>
 #include <java/lang/Integer.h>
+#include <java/lang/Long.h>
 #include <java/lang/StringBuffer.h>
 #include <java/lang/Class.h>
 #include <java/lang/reflect/Modifier.h>
@@ -67,6 +68,22 @@ static inline void dupx (_Jv_word *sp, int n, int x)
   
 };
 
+// Used to convert from floating types to integral types.
+template<typename TO, typename FROM>
+static inline TO
+convert (FROM val, TO min, TO max)
+{
+  TO ret;
+  if (val >= (FROM) max)
+    ret = max;
+  else if (val <= (FROM) min)
+    ret = min;
+  else if (val != val)
+    ret = 0;
+  else
+    ret = (TO) val;
+  return ret;
+}
 
 #define PUSHA(V)  (sp++)->o = (V)
 #define PUSHI(V)  (sp++)->i = (V)
@@ -1534,11 +1551,19 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       NEXT_INSN;
 
      insn_f2i:
-      { jint value = (jint)POPF (); PUSHI(value); }
+      {
+	using namespace java::lang;
+	jint value = convert (POPF (), Integer::MIN_VALUE, Integer::MAX_VALUE);
+	PUSHI(value);
+      }
       NEXT_INSN;
 
      insn_f2l:
-      { jlong value = (jlong)POPF (); PUSHL(value); }
+      {
+	using namespace java::lang;
+	jlong value = convert (POPF (), Long::MIN_VALUE, Long::MAX_VALUE);
+	PUSHI(value);
+      }
       NEXT_INSN;
 
      insn_f2d:
@@ -1546,11 +1571,19 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       NEXT_INSN;
 
      insn_d2i:
-      { jint value = (jint)POPD (); PUSHI(value); }
+      {
+	using namespace java::lang;
+	jint value = convert (POPD (), Integer::MIN_VALUE, Integer::MAX_VALUE);
+	PUSHI(value);
+      }
       NEXT_INSN;
 
      insn_d2l:
-      { jlong value = (jlong)POPD (); PUSHL(value); }
+      {
+	using namespace java::lang;
+	jlong value = convert (POPD (), Long::MIN_VALUE, Long::MAX_VALUE);
+	PUSHL(value);
+      }
       NEXT_INSN;
 
      insn_d2f:
