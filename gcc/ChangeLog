@@ -1,3 +1,32 @@
+2002-01-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* testuite/gcc.dg/altivec-4.c: Add test for mtvscr, dssall,
+	mfvscr, dss, lvsl, lvsr, dstt, dstst, dststt, dst.
+
+	* config/rs6000/rs6000.c (altivec_expand_builtin): Add support for
+	mtvscr, dssall, mfvscr, dss, lvsl, lvsr, dstt, dst, dstst, dststt.
+	(altivec_init_builtins): Same.
+	(altivec_expand_unop_builtin): Return NULL_RTX on error.
+	(altivec_expand_binop_builtin): Same.
+	(altivec_expand_ternop_builtin): Same.
+	(bdesc_dst): New.
+
+	* config/rs6000/rs6000.md ("altivec_mtvscr"): New.
+	("altivec_vctuxs"): Fix typo.
+	("altivec_vnmsubfp"): Same.
+	("altivec_dssall"): New.
+	("altivec_mfvscr"): New.
+	("altivec_dss"): New.
+	("altivec_lvsl"): New.
+	("altivec_lvsr"): New.
+	("altivec_dstt"): New.
+	("altivec_dstst"): New.
+	("altivec_dststt"): New.
+	("altivec_dst"): New.
+
+	* config/rs6000/rs6000.h (rs6000_builtins): Add mtvscr, dssall,
+	mfvscr, dss, lvsl, lvsr, dstt, dstst, dststt, dst.
+
 2002-01-09  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (prologue_mcount): Remove lituse_jsr reloc.
