@@ -1,3 +1,13 @@
+2002-10-18  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (movdf_hardfloat32): Order alternatives consistently.
+	Use length of 4 not *.
+	(movdf_hardfloat64): Same.  Support DFmode moves to/from CTR/LR.
+	(movdf_softfloat64): Likewise.
+	(movdi_internal32): Use length of 4 not *.
+	(movti_power): Same.
+	(ctrsi, ctrdi): Same.
+
 2002-10-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (start_decl): Point users of the old initialized-
