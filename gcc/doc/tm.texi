@@ -5382,12 +5382,6 @@ If the value of this macro is always zero, it need not be defined.  If
 this macro is defined, it should produce a nonzero value when
 @code{STRICT_ALIGNMENT} is nonzero.
 
-@findex DONT_REDUCE_ADDR
-@item DONT_REDUCE_ADDR
-Define this macro to inhibit strength reduction of memory addresses.
-(On some machines, such strength reduction seems to do harm rather
-than good.)
-
 @findex MOVE_RATIO
 @item MOVE_RATIO
 The threshold of number of scalar memory-to-memory move insns, @emph{below}
