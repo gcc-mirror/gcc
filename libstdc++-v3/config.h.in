@@ -123,9 +123,6 @@
 // Define if <float.h> exists.
 #undef HAVE_FLOAT_H
 
-// Define if modf is present in <math.h>
-#undef HAVE_MODF
-
 
 /* Define to 1 if you have the `acosf' function. */
 #undef HAVE_ACOSF
@@ -336,6 +333,9 @@
 
 /* Define to 1 if you have a working `mmap' system call. */
 #undef HAVE_MMAP
+
+/* Define to 1 if you have the `modf' function. */
+#undef HAVE_MODF
 
 /* Define to 1 if you have the `modff' function. */
 #undef HAVE_MODFF
@@ -612,6 +612,9 @@
 
 /* Define to 1 if you have the `_logl' function. */
 #undef HAVE__LOGL
+
+/* Define to 1 if you have the `_modf' function. */
+#undef HAVE__MODF
 
 /* Define to 1 if you have the `_modff' function. */
 #undef HAVE__MODFF
