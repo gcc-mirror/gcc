@@ -1,5 +1,5 @@
 /* ConnectionEvent.java 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,8 +46,11 @@ import java.util.EventObject;
  */
 public class ConnectionEvent extends EventObject 
 {
-  private SQLException sqlException;
-  
+  private static final long serialVersionUID = -4843217645290030002L;
+
+  // Note that the name is chosen for serialization.
+  private SQLException ex;
+
   /**
    * @since 1.4
    */
@@ -62,7 +65,7 @@ public class ConnectionEvent extends EventObject
   public ConnectionEvent(PooledConnection con, SQLException ex)
   {
     super(con);
-    this.sqlException = ex;
+    this.ex = ex;
   }
 
   /**
@@ -70,6 +73,6 @@ public class ConnectionEvent extends EventObject
    */
   public SQLException getSQLException()
   {
-    return sqlException;
+    return ex;
   }
 }
