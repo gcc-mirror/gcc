@@ -1,3 +1,7 @@
+2002-05-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* lang-specs.h: Remove redundant -lang-c++.
+
 2002-05-13  Jason Merrill  <jason@redhat.com>
 
 	* class.c (build_vtbl_ref_1): Use fixed_type_or_null.

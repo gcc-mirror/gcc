@@ -641,6 +641,10 @@ main (argc, argv)
 	  flag_signed_char = 0;
 	break;
 
+	/* Ignore target-specific flags.  */
+      case 'm':
+	break;
+
       case 'M':
 	{
 	  char *p = NULL;

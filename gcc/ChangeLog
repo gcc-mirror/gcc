@@ -1,3 +1,12 @@
+2002-05-14  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.c (cpp_options): Must pass -m* and -f* options
+	to the front end even when only preprocessing.
+	(cc1_options): Remove redundant -lang-c.
+	* tradcpp.c (main): Ignore -m options.
+objc:
+	* lang-specs.h: Similarly.
+
 2002-05-14  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c (transform_3): Add code for transformation
