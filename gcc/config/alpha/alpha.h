@@ -69,11 +69,6 @@ Boston, MA 02111-1307, USA.  */
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION
 
-/* Default this to not be compiling for Windows/NT.  */
-#ifndef WINDOWS_NT
-#define WINDOWS_NT 0
-#endif
-
 /* Define the location for the startup file on OSF/1 for Alpha.  */
 
 #define MD_STARTFILE_PREFIX "/usr/lib/cmplrs/cc/"
@@ -141,6 +136,10 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 
 #define MASK_IEEE_WITH_INEXACT 32
 #define TARGET_IEEE_WITH_INEXACT (target_flags & MASK_IEEE_WITH_INEXACT)
+
+/* This means we are compiling for Windows NT.  */
+#define MASK_WINDOWS_NT	64
+#define TARGET_WINDOWS_NT (target_flags & MASK_WINDOWS_NT)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -1850,13 +1849,9 @@ literal_section ()						\
 
 /* This is how to output an element of a case-vector that is relative.  */
 
-#if WINDOWS_NT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
-  fprintf (FILE, "\t.long $%d\n", (VALUE) + 32)
-#else
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
-  fprintf (FILE, "\t.gprel32 $%d\n", (VALUE) + 32)
-#endif
+  fprintf (FILE, "\t.%s $%d\n", TARGET_WINDOWS_NT ? "long" : "gprel32", \
+	   (VALUE) + 32)
 
 /* This is how to output an assembler line
    that says to advance the location counter
