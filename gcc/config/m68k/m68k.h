@@ -29,7 +29,8 @@ Boston, MA 02111-1307, USA.  */
   do						\
     {						\
 	builtin_define ("__mc68000__");		\
-	builtin_define ("__mc68020__");		\
+	if (TARGET_68020)			\
+	  builtin_define ("__mc68020__");	\
 	builtin_define ("__m68k__");		\
 	builtin_assert ("cpu=m68k");		\
 	builtin_assert ("machine=m68k");	\
