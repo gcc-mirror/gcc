@@ -652,7 +652,7 @@ read_scan_file (in_fname, argc, argv)
 
       /* Scan the macro expansion of "getchar();".  */
       cpp_push_buffer (scan_in, getchar_call, sizeof(getchar_call) - 1,
-		       BUF_FILE, in_fname);
+		       BUF_BUILTIN, in_fname);
       for (;;)
 	{
 	  cpp_token t;
