@@ -1,3 +1,12 @@
+2004-08-21  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-decl.c (build_array_declarator, set_array_declarator_type,
+	start_decl, grokdeclarator, grokparms): Change boolean parameters
+	to type bool.
+	* c-tree.h (build_array_declarator, set_array_declarator_type,
+	start_decl): Update prototypes.
+	* c-decl.c, c-parse.in: All callers changed.
+
 2004-08-21  Mike Stump  <mrs@apple.com>
 
 	* config/rs6000/darwin.h (SUBTARGET_OPTIONS): Move from here, to...
