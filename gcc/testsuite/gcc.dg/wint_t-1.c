@@ -5,7 +5,7 @@
    match.  */
 
 #define _STDDEF_H
-#include <wchar.h> /* { dg-excess-errors "" { xfail *-*-darwin* } } */
+#include <wchar.h>
 
 __WINT_TYPE__ __wi_t__;
 wint_t *wi_t_p;
