@@ -37,11 +37,12 @@
 
 namespace __gnu_cxx
 {
-  template<typename V, typename I>
+  template<typename V, typename I, typename S = mbstate_t>
     struct character
     {
       typedef V 	value_type;
       typedef I 	int_type;
+      typedef S 	state_type;
       value_type 	value;
     };
   
@@ -59,19 +60,18 @@ namespace __gnu_cxx
 namespace std
 {
   // Provide std::char_traits specialization.
-  template<typename V, typename I>
-    struct char_traits<__gnu_cxx::character<V, I> >
+  template<typename V, typename I, typename S>
+    struct char_traits<__gnu_cxx::character<V, I, S> >
     {
-      typedef __gnu_cxx::character<V, I> 	char_type;
+      typedef __gnu_cxx::character<V, I, S> 	char_type;
 
       // NB: This type should be bigger than char_type, so as to
       // properly hold EOF values in addition to the full range of
       // char_type values.
       typedef typename char_type::int_type	int_type;
-
+      typedef typename char_type::state_type	state_type;
       typedef streampos 			pos_type;
       typedef streamoff 			off_type;
-      typedef mbstate_t 			state_type;
       
       static void 
       assign(char_type& __c1, const char_type& __c2)
