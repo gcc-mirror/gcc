@@ -718,6 +718,27 @@ gfc_traverse_user_op (gfc_namespace * ns, void (*func) (gfc_user_op *))
 }
 
 
+/* Function to display a common block.  */
+
+static void
+show_common (gfc_symtree * st)
+{
+  gfc_symbol *s;
+
+  show_indent ();
+  gfc_status ("common: /%s/ ", st->name);
+
+  s = st->n.common->head;
+  while (s)
+    {
+      gfc_status ("%s", s->name);
+      s = s->common_next;
+      if (s)
+	gfc_status (", ");
+    }
+  gfc_status_char ('\n');
+}    
+
 /* Worker function to display the symbol tree.  */
 
 static void
@@ -1432,6 +1453,8 @@ gfc_show_namespace (gfc_namespace * ns)
 	}
 
       gfc_current_ns = ns;
+      gfc_traverse_symtree (ns->common_root, show_common);
+
       gfc_traverse_symtree (ns->sym_root, show_symtree);
 
       for (op = GFC_INTRINSIC_BEGIN; op != GFC_INTRINSIC_END; op++)

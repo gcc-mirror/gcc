@@ -1,4 +1,9 @@
 2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* dump-parse-tree.c (show_common): New function.
+	(gfc_show_namespace): Show commons.
+
+2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	Andrew Vaught  <andyv@firstinter.net>
 
 	PR fortran/13249

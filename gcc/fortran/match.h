@@ -75,8 +75,6 @@ match gfc_match_deallocate (void);
 match gfc_match_return (void);
 match gfc_match_call (void);
 match gfc_match_common (void);
-match gfc_match_implicit_none (void);
-match gfc_match_implicit (void);
 match gfc_match_block_data (void);
 match gfc_match_namelist (void);
 match gfc_match_module (void);
@@ -98,7 +96,6 @@ gfc_common_head *gfc_get_common (char *);
 match gfc_match_null (gfc_expr **);
 match gfc_match_kind_spec (gfc_typespec *);
 match gfc_match_old_kind_spec (gfc_typespec *);
-match gfc_match_type_spec (gfc_typespec *, int);
 
 match gfc_match_end (gfc_statement *);
 match gfc_match_data_decl (void);
@@ -107,6 +104,9 @@ match gfc_match_function_decl (void);
 match gfc_match_entry (void);
 match gfc_match_subroutine (void);
 match gfc_match_derived_decl (void);
+
+match gfc_match_implicit_none (void);
+match gfc_match_implicit (void);
 
 /* Matchers for attribute declarations */
 match gfc_match_allocatable (void);
