@@ -743,7 +743,8 @@ scan_loop (loop_start, end, nregs)
 		     a call-clobbered register and the life of REGNO
 		     might span a call.  */
 		  && ! modified_between_p (SET_SRC (set), p,
-					  reg_single_usage[regno])
+					   reg_single_usage[regno])
+		  && no_labels_between_p (p, reg_single_usage[regno])
 		  && validate_replace_rtx (SET_DEST (set), SET_SRC (set),
 					   reg_single_usage[regno]))
 		{
