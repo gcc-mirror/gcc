@@ -143,7 +143,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
      int noop_moves;
      int after_regscan;
 {
-  register rtx insn, next;
+  register rtx insn, next, note;
   int changed;
   int first = 1;
   int max_uid = 0;
@@ -151,7 +151,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
   cross_jump_death_matters = (cross_jump == 2);
 
-  /* Initialize LABEL_NUSES and JUMP_LABEL fields.  */
+  /* Initialize LABEL_NUSES and JUMP_LABEL fields.  Delete any REG_LABEL
+     notes whose labels don't occur in the insn any more.  */
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
     {
@@ -159,6 +160,15 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	LABEL_NUSES (insn) = (LABEL_PRESERVE_P (insn) != 0);
       else if (GET_CODE (insn) == JUMP_INSN)
 	JUMP_LABEL (insn) = 0;
+      else if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
+	for (note = REG_NOTES (insn); note; note = next)
+	  {
+	    next = XEXP (note, 1);
+	    if (REG_NOTE_KIND (note) == REG_LABEL
+		&& ! reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
+	      remove_note (insn, note);
+	  }
+
       if (INSN_UID (insn) > max_uid)
 	max_uid = INSN_UID (insn);
     }
