@@ -47,7 +47,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.2.13.5 10/19/92 15:27:15";
+static char out_sccs_id[] = "@(#)m88k.c	2.2.13.6 10/21/92 12:41:48";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -1678,6 +1678,7 @@ static int  frame_laid_out;
 static int  frame_size;
 static int  variable_args_p;
 static int  epilogue_marked;
+static int  prologue_marked;
 
 extern char call_used_regs[];
 extern int  current_function_pretend_args_size;
@@ -1854,7 +1855,6 @@ m88k_begin_prologue (stream, size)
      FILE *stream;
      int size;
 {
-  epilogue_marked = 0;
   m88k_prologue_done = 1;	/* it's ok now to put out ln directives */
 }
 
@@ -1862,11 +1862,23 @@ void
 m88k_end_prologue (stream)
      FILE *stream;
 {
-  if (TARGET_OCS_DEBUG_INFO)
-    PUT_OCS_FUNCTION_START (stream);
-  if (epilogue_marked)
-    abort ();
-  frame_laid_out = 0;
+  if (TARGET_OCS_DEBUG_INFO && !prologue_marked)
+    {
+      PUT_OCS_FUNCTION_START (stream);
+      prologue_marked = 1;
+
+      /* If we've already passed the start of the epilogue, say that
+	 it starts here.  This marks the function as having a null body,
+	 but at a point where the return address is in a known location.
+
+	 Originally, I thought this couldn't happen, but the pic prologue
+	 for leaf functions ends with the instruction that restores the
+	 return address from the temporary register.  If the temporary
+	 register is never used, that instruction can float all the way
+	 to the end of the function.  */
+      if (epilogue_marked)
+	PUT_OCS_FUNCTION_END (stream);
+    }
 }
 
 void
@@ -1927,8 +1939,10 @@ void
 m88k_begin_epilogue (stream)
      FILE *stream;
 {
-  if (TARGET_OCS_DEBUG_INFO)
-    PUT_OCS_FUNCTION_END (stream);
+  if (TARGET_OCS_DEBUG_INFO && !epilogue_marked && prologue_marked)
+    {
+      PUT_OCS_FUNCTION_END (stream);
+    }
   epilogue_marked = 1;
 }
 
@@ -1959,6 +1973,9 @@ m88k_end_epilogue (stream, size)
   m88k_function_number++;
   m88k_prologue_done	= 0;		/* don't put out ln directives */
   variable_args_p	= 0;		/* has variable args */
+  frame_laid_out	= 0;
+  epilogue_marked	= 0;
+  prologue_marked	= 0;
 }
 
 void
