@@ -1,3 +1,8 @@
+2003-04-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/fp-bit.c (unpack_d): Handle pair of doubles with
+	different signs correctly.
+
 2003-04-08  Richard Henderson  <rth@redhat.com>
 
 	PR target/9886
