@@ -1,3 +1,10 @@
+2003-03-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8805
+	* except.c (eh_region_u_cleanup): Add prev_try.
+	(expand_eh_region_end_cleanup): Set it.
+	(reachable_handlers): Use it to skip over cleanup blocks.
+
 2003-03-16  Richard Henderson  <rth@redhat.com>
 
 	PR opt/6798
