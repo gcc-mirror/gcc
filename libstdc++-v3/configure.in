@@ -28,8 +28,6 @@ AM_CONFIG_HEADER(config.h)
 
 # Check for c++ or library specific bits that don't require linking.
 GLIBCPP_CHECK_COMPILER_VERSION
-GLIBCPP_CHECK_CPU
-GLIBCPP_CHECK_OS
 
 # Enable all the crazy c++ stuff.  C_MBCHAR must come early.
 GLIBCPP_ENABLE_DEBUG($USE_MAINTAINER_MODE)

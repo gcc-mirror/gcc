@@ -168,6 +168,10 @@ LIB_AC_PROG_CXX
     *) glibcpp_flagbasedir='[$](top_builddir)/'[$]{glibcpp_basedir} ;;
   esac
 
+  # This does for the target what configure.host does for the host.  In
+  # addition to modifying the same flags, it also sets up symlinks.
+  GLIBCPP_CHECK_TARGET
+
   GLIBCPP_CFLAGS="[$]{glibcpp_cflags}"
   GLIBCPP_CXXFLAGS="[$]{glibcpp_cxxflags}"
   AC_SUBST(GLIBCPP_CFLAGS)
@@ -766,93 +770,15 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
 ])
 
 
-dnl Check to see what architecture we are compiling for. Also, if 
-dnl architecture-specific flags are required for compilation, add them here.
+dnl Check to see what architecture and operating system we are compiling
+dnl for.  Also, if architecture- or OS-specific flags are required for
+dnl compilation, pick them up here.
 dnl 
-dnl GLIBCPP_CHECK_CPU
-AC_DEFUN(GLIBCPP_CHECK_CPU, [
-    AC_MSG_CHECKING([for cpu config directory])
-# Currently unused, but could be useful.
-#    CPU_FLAGS=                        
-    case "${target_cpu}" in
-      alpha*)
-        cpu_include_dir="config/cpu/alpha"
-        ;;
-      arm*)
-        cpu_include_dir="config/cpu/arm"
-        ;;
-      ia64)
-        cpu_include_dir="config/cpu/ia64"
-        ;;
-      i386)
-        cpu_include_dir="config/cpu/i386"
-        ;;
-      i486 | i586 | i686 | i786)
-        cpu_include_dir="config/cpu/i486"
-        ;;
-      powerpc | rs6000)
-        cpu_include_dir="config/cpu/powerpc"
-        ;;
-      sparc64 | ultrasparc)
-        cpu_include_dir="config/cpu/sparc/sparc64"
-        ;;
-      sparc*)
-        cpu_include_dir="config/cpu/sparc/sparc32"
-        ;;
-      *)
-        cpu_include_dir="config/cpu/generic"
-        ;;
-    esac
-    AC_MSG_RESULT($cpu_include_dir)
-])
-
- 
-dnl Check to see what OS we are compiling for. Also, if os-specific flags 
-dnl are required for compilation, add them here.
-dnl 
-dnl GLIBCPP_CHECK_OS
-AC_DEFUN(GLIBCPP_CHECK_OS, [
-    AC_MSG_CHECKING([for OS config directory])
-# Currently unused, but could be useful.
-#    OS_FLAGS=
-    case "${target_os}" in
-      aix4.[[3456789]]* | aix[[56789]]*)
-        os_include_dir="config/os/aix"
-        case "$CXX" in
-          *pthread*)
-            enable_threads='posix'
-            ;;
-          *)
-            enable_threads='no'
-            ;;
-        esac
-        ;;
-      aix*)
-        os_include_dir="config/os/aix"
-        ;;
-      bsd* | freebsd*)
-        os_include_dir="config/os/bsd"
-        ;;
-      linux*)
-        os_include_dir="config/os/gnu-linux"
-        ;;
-      irix*)
-        os_include_dir="config/os/irix"
-        ;;
-      solaris2.5*)
-        os_include_dir="config/os/solaris/solaris2.5"
-        ;;
-      solaris2.6*)
-        os_include_dir="config/os/solaris/solaris2.6"
-        ;;
-      solaris2.7* | solaris2.8*)
-        os_include_dir="config/os/solaris/solaris2.7"
-        ;;
-      *)
-        os_include_dir="config/os/generic"
-        ;;
-    esac
-    AC_MSG_RESULT($os_include_dir)
+dnl GLIBCPP_CHECK_TARGET
+AC_DEFUN(GLIBCPP_CHECK_TARGET, [
+    . [$]{glibcpp_basedir}/configure.target
+    AC_MSG_RESULT(CPU config directory is $cpu_include_dir)
+    AC_MSG_RESULT(OS config directory is $os_include_dir)
     AC_LINK_FILES($os_include_dir/bits/os_defines.h, include/bits/os_defines.h)
 ])
 
@@ -1434,7 +1360,7 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
                 ;;
         xyes)
                 # default
-                target_thread_file=''
+                target_thread_file='posix'
                 ;;
         xdecosf1 | xirix | xmach | xos2 | xposix | xpthreads | xsingle | \
         xsolaris | xwin32 | xdce | xvxworks)
@@ -1459,7 +1385,7 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
       AC_MSG_ERROR(thread package $THREADS not yet supported)
       ;;
     *)
-      AC_MSG_ERROR($THREADS is an unknown thread package)
+      AC_MSG_ERROR($THREADS is an unsupported/unknown thread package)
       ;;
   esac
   AC_MSG_RESULT($THREADH)
