@@ -1,3 +1,11 @@
+2002-01-15  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.misc-tests/i386-prefetch.exp: New.
+	* gcc.misc-tests/i386-pf-3dnow-1.c: New test.
+	* gcc.misc-tests/i386-pf-athlon-1.c: New test.
+	* gcc.misc-tests/i386-pf-none-1.c: New test.
+	* gcc.misc-tests/i386-pf-sse-1.c: New test.
+
 2002-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gnu89-init-1.c: Add new tests.
