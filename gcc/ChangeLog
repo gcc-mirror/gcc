@@ -1,3 +1,8 @@
+Wed Jan 14 01:26:05 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (check_dbra_loop): Make sure initial value is a 
+	CONST_INT before trying to normalize it.
+
 Tue Jan 13 23:27:54 1998  Robert Lipe   (robertl@dgii.com)
 
 	* sco5.h (ASM_OUTPUT_SECTION_NAME): Refresh from ../svr4.h.
