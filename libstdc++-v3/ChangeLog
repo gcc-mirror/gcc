@@ -1,3 +1,14 @@
+2004-06-09  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/15775
+	* include/bits/stl_deque.h: Consistently with stl_set.h, define
+	pointer as allocator's pointer, likewise for reference,
+	const_pointer, and const_reference.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+
 2004-06-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* crossconfig.m4: Remove signbit, signbitf, signbitl.	
