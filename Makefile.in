@@ -1536,6 +1536,9 @@ install-dosrel: installdirs info
 
 install-dosrel-fake:
 
+ALL_GCC = all-gcc
+ALL_GCC_C = $(ALL_GCC) all-target-newlib all-target-libgloss
+ALL_GCC_CXX = $(ALL_GCC_C) all-target-libstdc++-v3
 
 # This is a list of inter-dependencies among modules.
 all-apache:
@@ -1572,9 +1575,6 @@ all-flex: all-libiberty all-bison all-byacc
 all-gas: all-libiberty all-opcodes all-bfd all-intl
 all-gash: all-tcl
 all-gawk:
-ALL_GCC = all-gcc
-ALL_GCC_C = $(ALL_GCC) all-target-newlib all-target-libgloss
-ALL_GCC_CXX = $(ALL_GCC_C) all-target-libstdc++-v3
 all-gcc: all-bison all-byacc all-binutils all-gas all-ld all-zlib
 all-bootstrap: all-libiberty all-texinfo all-bison all-byacc all-binutils all-gas all-ld all-zlib
 GDB_TK = all-tk all-tcl all-itcl all-tix all-libgui
