@@ -1,3 +1,8 @@
+2000-01-03  Ulrich Drepper  <drepper@cygnus.com>
+
+	* decl.c (flag_isoc9x): New variable to be able to use code in
+	c-common.c.  For now always zero.
+
 2000-01-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CLASSTYPE_VBASECLASSES): Improve documentation.
