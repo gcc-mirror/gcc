@@ -1,4 +1,13 @@
-2003-01-28  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+2003-01-28  Christian Cornelssen <ccorn@cs.tu-berlin.de>
+
+	* Make-lang.in (ada.install-common): Let $(DESTDIR)$(bindir)
+	be created if necessary.  Remove erroneous and redundant
+	gnatchop installation commands.  Test for gnatdll before
+	attempting to install it.  Use initial tab instead of spaces
+	in continuation lines.
+	(ada.uninstall): Uninstall gnat instead of gnatcmd.
+	Also uninstall gnatfind, gnatxref, gnatlbr, and gnatdll
+	from all plausible locations.
 
 	* Make-lang.in (ada.install-common, ada.uninstall):
 	Prepend $(DESTDIR) to the destination directory in all
