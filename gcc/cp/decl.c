@@ -7430,8 +7430,19 @@ grokdeclarator (const cp_declarator *declarator,
 	  else if (TREE_CODE (type) == METHOD_TYPE)
 	    type = build_ptrmemfunc_type (build_pointer_type (type));
 	  else if (declarator->kind == cdk_ptrmem)
-	    type = build_ptrmem_type (declarator->u.pointer.class_type,
-				      type);
+	    {
+	      /* We might have parsed a namespace as the class type.  */
+	      if (TREE_CODE (declarator->u.pointer.class_type)
+		  == NAMESPACE_DECL)
+		{
+		  error ("%qD is a namespace",
+			 declarator->u.pointer.class_type);
+		  type = build_pointer_type (type);
+		}
+	      else
+		type = build_ptrmem_type (declarator->u.pointer.class_type,
+					  type);
+	    }
 	  else
 	    type = build_pointer_type (type);
 
