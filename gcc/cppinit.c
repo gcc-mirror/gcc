@@ -40,11 +40,13 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    Cygwin's emulation can generate non-unique inodes, so don't use it.
    VMS has non-numeric inodes. */
 #ifdef VMS
-#define INO_T_EQ(a, b) (!memcmp (&(a), &(b), sizeof (a)))
-#elif (defined _WIN32 && ! defined (_UWIN)) || defined __MSDOS__
-#define INO_T_EQ(a, b) 0
+# define INO_T_EQ(a, b) (!memcmp (&(a), &(b), sizeof (a)))
 #else
-#define INO_T_EQ(a, b) ((a) == (b))
+# if (defined _WIN32 && ! defined (_UWIN)) || defined __MSDOS__
+#  define INO_T_EQ(a, b) 0
+# else
+#  define INO_T_EQ(a, b) ((a) == (b))
+# endif
 #endif
 
 /* Internal structures and prototypes.  */

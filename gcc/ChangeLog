@@ -1,5 +1,9 @@
 2001-01-20  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
+	* cppinit.c (INO_T_EQ): Don't use #elif, fix formatting.
+
+2001-01-20  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
 	* aclocal.m4 (gcc_AC_FUNC_STRSTR): New macro.
 	* configure.in (gcc_AC_FUNC_STRSTR): Add invokation.
 	* configure, config.in: Regenerate.
