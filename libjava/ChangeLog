@@ -1,5 +1,9 @@
 2004-07-20  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* java/net/Socket.java (getImpl): Now private. Remove comment.
+
+2004-07-20  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* java/io/BufferedWriter.java (BufferedWriter): Use existing lock
 	of chained Writer when calling super-constructor.
 	* java/io/FilterWriter.java (FilterWriter): Likewise.
