@@ -29,7 +29,7 @@ public final class URL implements Serializable
 {
   private String protocol;
   private String host;
-  private int port;
+  private int port = -1;	// Initialize for constructor using context.
   private String file;
   private String ref;
   private URLStreamHandler handler;
@@ -117,14 +117,22 @@ public final class URL implements Serializable
      * to the context's file.  The optional anchor is not inherited. 
      */
 
+    // If this is an absolute URL, then ignore context completely.
+    // An absolute URL must have chars prior to "://" but cannot have a colon
+    // right after the "://".  The second colon is for an optional port value
+    // and implies that the host from the context is used if available.
     int colon;
+    if ((colon = spec.indexOf("://", 1)) > 0 &&
+	! spec.regionMatches(colon, "://:", 0, 4))
+      context = null;
+
     int slash;
     if ((colon = spec.indexOf(':')) > 0 &&
 	(colon < (slash = spec.indexOf('/')) || slash < 0))
       {
 	// Protocol specified in spec string.
 	protocol = spec.substring(0, colon);
-	if (context != null && context.protocol == protocol)
+	if (context != null && context.protocol.equals(protocol))
 	  {
 	    // The 1.2 doc specifically says these are copied to the new URL.
 	    host = context.host;
@@ -222,8 +230,20 @@ public final class URL implements Serializable
   {
     // JCL book says this is computed using (only) the hashcodes of the 
     // protocol, host and file fields.  Empirical evidence indicates this
-    // is probably XOR.
-    return (protocol.hashCode() ^ host.hashCode() ^ file.hashCode());
+    // is probably XOR in JDK 1.1.  In JDK 1.2 it seems to be a sum including
+    // the port.
+    //
+    // JDK 1.2 online doc infers that host could be null because it
+    // explicitly states that file cannot be null but is silent on host.
+    // A simple example with protocol "http" (hashcode 3213448), host null,
+    // file "/" (hashcode 47) produced a hashcode (3213494) which appeared
+    // to be the sum of the two hashcodes plus the port.  Another example
+    // using "/index.html" for file bore this out; as well as "#" for file
+    // (which was reduced to "" with a hashcode of zero).  A "" host also
+    // causes the port number and the two hashcodes to be summed.
+
+    return (protocol.hashCode() + ((host == null) ? 0 : host.hashCode()) +
+	port + file.hashCode());
   }
 
   public URLConnection openConnection() throws IOException
