@@ -2,6 +2,8 @@
 
 	* gcc.c-torture/execute/20011019-1.c: New test.
 
+	* gcc.dg/20011018-1.c: New test.
+
 2001-10-19  NIIBE Yutaka  <gniibe@m17n.org>
 
 	* gcc.c-torture/execute/ieee/ieee.exp: Change sh-*-* to sh*-*-*.

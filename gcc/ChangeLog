@@ -3,6 +3,8 @@
 	* simplify-rtx.c (simplify_plus_minus): Negate constant iff its neg
 	field is different to previous argument's neg field.
 
+	* config/alpha/alpha.c (summarize_insn): Don't abort on ASM_INPUT.
+
 Fri Oct 19 15:24:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* final.c (get_decl_from_op): New function.
