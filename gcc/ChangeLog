@@ -1,3 +1,8 @@
+2000-05-29  Richard Earnshaw (rearnsha@arm.com)
+
+	* flow.c (mark_used_reg): If a register is unconditionally live, 
+	remove any conditional death information.
+
 2000-05-29  Richard Henderson  <rth@cygnus.com>
 
 	* final.c (current_output_insn): New.
