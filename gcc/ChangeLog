@@ -1,3 +1,8 @@
+2000-08-03  Richard Henderson  <rth@cygnus.com>
+
+        * config/i386/i386.md (return_indirect_internal): New.
+        * config/i386/i386.c (ix86_expand_epilogue): Use it.
+
 2000-08-03  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplex.c (parse_name): Might have to glue a CPP_OTHER token
