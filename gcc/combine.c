@@ -2150,12 +2150,15 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	  /* If the split with the mode-changed register didn't work, try
 	     the original register.  */
 	  if (! m_split && ni2dest != i2dest)
-	    m_split = split_insns (gen_rtx_PARALLEL
-				   (VOIDmode,
-				    gen_rtvec (2, newpat,
-					       gen_rtx_CLOBBER (VOIDmode,
-								i2dest))),
-				    i3);
+	    {
+	      ni2dest = i2dest;
+	      m_split = split_insns (gen_rtx_PARALLEL
+				     (VOIDmode,
+				      gen_rtvec (2, newpat,
+						 gen_rtx_CLOBBER (VOIDmode,
+								  i2dest))),
+				     i3);
+	    }
 	}
 
       if (m_split && GET_CODE (m_split) != SEQUENCE)
@@ -9921,22 +9924,6 @@ gen_rtx_combine VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
     }
 
   va_end (p);
-
-  /* See if this is in undobuf.  Be sure we don't use objects that came
-     from another insn; this could produce circular rtl structures.  */
-
-  for (undo = undobuf.undos; undo != undobuf.previous_undos; undo = undo->next)
-    if (!undo->is_int
-	&& GET_CODE (undo->old_contents.r) == code
-	&& GET_MODE (undo->old_contents.r) == mode)
-      {
-	for (j = 0; j < n_args; j++)
-	  if (XEXP (undo->old_contents.r, j) != args[j])
-	    break;
-
-	if (j == n_args)
-	  return undo->old_contents.r;
-      }
 
   /* Otherwise make a new rtx.  We know we have 1, 2, or 3 args.
      Use rtx_alloc instead of gen_rtx because it's faster on RISC.  */
