@@ -3609,7 +3609,7 @@ STAGEPROFILE_FLAGS_TO_PASS = \
 # Files never linked into the final executable produces warnings about missing
 # profile.
 STAGEFEEDBACK_FLAGS_TO_PASS = \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use -freorder-blocks-and-partition"
+	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"
 
 # Only build the C compiler for stage1, because that is the only one that
 # we can guarantee will build with the native compiler, and also it is the

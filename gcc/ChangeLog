@@ -1,3 +1,8 @@
+2004-08-24  James E Wilson  <wilson@specifixinc.com>
+
+	* Makefile.in (STAGEFEEDBACK_FLAGS_TO_PASS): Remove
+	-freorder-blocks-and-partition.
+
 2004-08-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/17044
