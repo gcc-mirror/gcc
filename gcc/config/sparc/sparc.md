@@ -2039,8 +2039,8 @@
 ;; We always work with constants here.
 (define_insn "*movhi_lo_sum"
   [(set (match_operand:HI 0 "register_operand" "=r")
-	(ior:HI (match_operand:HI 1 "register_operand" "r")
-                (match_operand:HI 2 "immediate_operand" "in")))]
+	(ior:HI (match_operand:HI 1 "arith_operand" "%r")
+                (match_operand:HI 2 "arith_operand" "I")))]
   ""
   "or\\t%1, %2, %0"
   [(set_attr "type" "ialu")
@@ -3033,8 +3033,8 @@
 ;; We have available v9 double floats but not 64-bit
 ;; integer registers.
 (define_insn "*movdf_insn_v9only"
-  [(set (match_operand:DF 0 "general_operand" "=e,e,m,r,U,T,r,o")
-        (match_operand:DF 1 "input_operand"    "e,m,e,r,T,U,o,r"))]
+  [(set (match_operand:DF 0 "general_operand" "=e,e,m,U,T,r,r,o")
+        (match_operand:DF 1 "input_operand"    "e,m,e,T,U,r,o,r"))]
   "TARGET_FPU
    && TARGET_V9
    && ! TARGET_ARCH64
