@@ -1,5 +1,11 @@
 2005-03-21  Bob Wilson  <bob.wilson@acm.org>
 
+	* config/xtensa/lib1funcs.asm (__mulsi3): Use symbolic name for ACCLO.
+	* config/xtensa/xtensa.md (movsi_internal, movhi_internal,
+	movqi_internal): Likewise.
+
+2005-03-21  Bob Wilson  <bob.wilson@acm.org>
+
 	* config/xtensa/xtensa-protos.h: (xtensa_simm7, xtensa_uimm8,
 	xtensa_uimm8x2, xtensa_uimm8x4, xtensa_ai4const, xtensa_lsi4x4,
 	xtensa_b4const): Delete prototypes.
