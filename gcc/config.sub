@@ -501,7 +501,8 @@ case $os in
 	# First accept the basic system types.
 	# The portable systems comes first.
 	# Each alternative must end in a *, to match a version number.
-	-bsd* | -sysv* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
+	# -sysv* is not here because it comes later, after sysvr4.
+	-bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
 	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[34]* | -hpux* \
 	      | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
@@ -542,11 +543,14 @@ case $os in
 	-svr4)
 		os=-sysv4
 		;;
+	-svr3)
+		os=-sysv3
+		;;
 	-sysvr4)
 		os=-sysv4
 		;;
-	-svr3)
-		os=-sysv3
+	# This must come after -sysvr4.
+	-sysv*)
 		;;
 	-xenix)
 		os=-xenix
