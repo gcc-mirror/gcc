@@ -187,6 +187,11 @@ static int subst_low_cuid;
    structures.  */
 
 static int previous_num_undos;
+
+/* This is non-zero if there exists at least one nonlocal_label in the
+   current function.  This affects how basic block structure is determined.  */
+
+static rtx nonlocal_label_list;
 
 /* The next group of arrays allows the recording of the last value assigned
    to (hard or pseudo) register n.  We use this information to see if a
@@ -526,6 +531,8 @@ combine_instructions (f, nregs)
   bzero (reg_last_set_invalid, nregs * sizeof (char));
 
   setup_incoming_promotions ();
+
+  nonlocal_label_list = nonlocal_label_rtx_list ();
 
   for (insn = f; insn; insn = next ? next : NEXT_INSN (insn))
     {
@@ -1875,6 +1882,8 @@ try_combine (i3, i2, i1)
 
 	  for (insn = NEXT_INSN (i3);
 	       insn && GET_CODE (insn) != CODE_LABEL
+	       && (GET_CODE (PREV_INSN (insn)) != CALL_INSN
+		   || nonlocal_label_list == 0)
 	       && GET_CODE (PREV_INSN (insn)) != JUMP_INSN;
 	       insn = NEXT_INSN (insn))
 	    {
@@ -2047,7 +2056,9 @@ try_combine (i3, i2, i1)
 		      XEXP (link, 0) = i3;
 
 		if (GET_CODE (insn) == CODE_LABEL
-		    || GET_CODE (insn) == JUMP_INSN)
+		    || GET_CODE (insn) == JUMP_INSN
+		    || (GET_CODE (PREV_INSN (insn)) == CALL_INSN
+			&& nonlocal_label_list != 0))
 		  break;
 	      }
 	  }
@@ -10037,6 +10048,8 @@ distribute_links (links)
 
       for (insn = NEXT_INSN (XEXP (link, 0));
 	   (insn && GET_CODE (insn) != CODE_LABEL
+	    && (GET_CODE (PREV_INSN (insn)) != CALL_INSN
+		|| nonlocal_label_list == 0)
 	    && GET_CODE (PREV_INSN (insn)) != JUMP_INSN);
 	   insn = NEXT_INSN (insn))
 	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
