@@ -12005,9 +12005,11 @@ fi
 # UNSORTED
 # --------
 
+use_cxa_atexit=no
 if test x$enable___cxa_atexit = xyes || \
    test x$enable___cxa_atexit = x -a x$default_use_cxa_atexit = xyes; then
-   echo "$as_me:$LINENO: checking for __cxa_atexit" >&5
+  if test x$host = x$target; then
+    echo "$as_me:$LINENO: checking for __cxa_atexit" >&5
 echo $ECHO_N "checking for __cxa_atexit... $ECHO_C" >&6
 if test "${ac_cv_func___cxa_atexit+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -12098,15 +12100,23 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_func___cxa_atexit" >&5
 echo "${ECHO_T}$ac_cv_func___cxa_atexit" >&6
 if test $ac_cv_func___cxa_atexit = yes; then
+  use_cxa_atexit=yes
+else
+  echo "__cxa_atexit can't be enabled on this target"
+fi
+
+  else
+    # We can't check for __cxa_atexit when building a cross, so assume
+    # it is available
+    use_cxa_atexit=yes
+  fi
+  if test x$use_cxa_atexit = xyes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define DEFAULT_USE_CXA_ATEXIT 1
 _ACEOF
 
-else
-  echo "__cxa_atexit can't be enabled on this target"
-fi
-
+  fi
 fi
 
 # Look for a file containing extra machine modes.
