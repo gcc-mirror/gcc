@@ -1,1 +1,1 @@
-                                                                                        char *version_string = "2.95.4 20020914 (prerelease)";
+                                                                                        char *version_string = "2.95.4 20020915 (prerelease)";
