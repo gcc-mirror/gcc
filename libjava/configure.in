@@ -497,6 +497,38 @@ AC_TRY_COMPILE([#include <time.h>], [struct tm tim; tim.tm_gmtoff = 0;],
 
 AC_FUNC_ALLOCA
 
+dnl On Solaris/x86, gcc 2.95 ICEs on this testcase
+AC_CACHE_CHECK([for g++ -g jboolean bug], [libjava_cv_gxx_debug_jboolean_bug],
+[ AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  AC_TRY_COMPILE([typedef __java_boolean jboolean;], [],
+    [libjava_cv_gxx_debug_jboolean_bug=no],
+    [libjava_cv_gxx_debug_jboolean_bug=yes])
+  AC_LANG_RESTORE
+])
+if test "x$libjava_cv_gxx_debug_jboolean_bug" = xyes; then
+  JCFLAGS="$JCFLAGS -g0"
+  dnl Top-leve Makefile overrides CXXFLAGS, and AM_CXXFLAGS is before it,
+  dnl so we have to use this dirty hack
+  dnl Note that, even though this code is within an if statement, it is
+  dnl unconditionally added to config.status, so we have to test again.
+  AC_OUTPUT_COMMANDS([case " $CONFIG_FILES " in " Makefile ")
+     if test "x$libjava_cv_gxx_debug_jboolean_bug" = xyes; then
+      rm -f Makefile.new
+      sed < Makefile > Makefile.new \
+	-e '/^CXXCOMPILE = / s/$/ -g0/' \
+	-e '/^LTCXXCOMPILE = / s/$/ -g0/'
+      mv Makefile.new Makefile ||
+      { rm -f Makefile && mv Makefile.new Makefile; }
+    fi
+  ;;
+  esac],
+  [libjava_cv_gxx_debug_jboolean_bug=$libjava_cv_gxx_debug_jboolean_bug])
+else
+  JCFLAGS="$JCFLAGS -g"
+fi
+AC_SUBST(JCFLAGS)
+
 AC_CHECK_PROGS(PERL, perl, false)
 
 case "${host}" in

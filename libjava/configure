@@ -4826,12 +4826,62 @@ EOF
 fi
 
 
+echo $ac_n "checking for g++ -g jboolean bug""... $ac_c" 1>&6
+echo "configure:4831: checking for g++ -g jboolean bug" >&5
+if eval "test \"`echo '$''{'libjava_cv_gxx_debug_jboolean_bug'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+   
+  ac_ext=C
+# CXXFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='${CXX-g++} -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext 1>&5'
+ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&5'
+cross_compiling=$ac_cv_prog_cxx_cross
+
+  cat > conftest.$ac_ext <<EOF
+#line 4844 "configure"
+#include "confdefs.h"
+typedef __java_boolean jboolean;
+int main() {
+
+; return 0; }
+EOF
+if { (eval echo configure:4851: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  libjava_cv_gxx_debug_jboolean_bug=no
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  libjava_cv_gxx_debug_jboolean_bug=yes
+fi
+rm -f conftest*
+  ac_ext=c
+# CFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='${CC-cc} -c $CFLAGS $CPPFLAGS conftest.$ac_ext 1>&5'
+ac_link='${CC-cc} -o conftest${ac_exeext} $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS 1>&5'
+cross_compiling=$ac_cv_prog_cc_cross
+
+
+fi
+
+echo "$ac_t""$libjava_cv_gxx_debug_jboolean_bug" 1>&6
+if test "x$libjava_cv_gxx_debug_jboolean_bug" = xyes; then
+  JCFLAGS="$JCFLAGS -g0"
+          
+else
+  JCFLAGS="$JCFLAGS -g"
+fi
+
+
 for ac_prog in perl
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:4835: checking for $ac_word" >&5
+echo "configure:4885: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_PERL'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -5095,6 +5145,7 @@ s%@USE_LIBDIR_FALSE@%$USE_LIBDIR_FALSE%g
 s%@EH_COMMON_INCLUDE@%$EH_COMMON_INCLUDE%g
 s%@AM_RUNTESTFLAGS@%$AM_RUNTESTFLAGS%g
 s%@ALLOCA@%$ALLOCA%g
+s%@JCFLAGS@%$JCFLAGS%g
 s%@PERL@%$PERL%g
 s%@here@%$here%g
 
@@ -5352,6 +5403,7 @@ done
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
+libjava_cv_gxx_debug_jboolean_bug=$libjava_cv_gxx_debug_jboolean_bug
 srcdir=${srcdir}
 host=${host}
 target=${target}
@@ -5365,6 +5417,17 @@ CXX="${CXX}"
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 test -z "$CONFIG_HEADERS" || echo timestamp > include/stamp-h
+case " $CONFIG_FILES " in " Makefile ")
+     if test "x$libjava_cv_gxx_debug_jboolean_bug" = xyes; then
+      rm -f Makefile.new
+      sed < Makefile > Makefile.new \
+	-e '/^CXXCOMPILE = / s/$/ -g0/' \
+	-e '/^LTCXXCOMPILE = / s/$/ -g0/'
+      mv Makefile.new Makefile ||
+      { rm -f Makefile && mv Makefile.new Makefile; }
+    fi
+  ;;
+  esac
 if test -n "$CONFIG_FILES"; then
   ac_file=Makefile . ${libgcj_basedir}/../config-ml.in
 fi

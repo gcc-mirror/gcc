@@ -1,5 +1,14 @@
 1999-07-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* configure.in: Check for gcc 2.95 -g jboolean bug, that affects
+	Solaris/x86, adding -g0 to JCFLAGS and CXXFLAGS if needed.
+	AC_SUBST JCFLAGS.
+	* Makefile.am (JCFLAGS): Removed; automake will take care of it.
+	(JC1FLAGS): Replace -g with @JCFLAGS@.
+	* Makefile.in: Rebuilt.
+
+1999-07-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
 	* java/lang/natSystem.cc (arraycopy): Use bcopy if memmove is not
 	available.  Don't cast memmove args to (void*).
 	* configure.in: Do not abort if memmove is not available.
