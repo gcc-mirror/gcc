@@ -1,3 +1,39 @@
+/*
+ * special support for eabi
+ *
+ *   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+ *   Written By Michael Meissner
+ * 
+ * This file is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2, or (at your option) any
+ * later version.
+ * 
+ * In addition to the permissions in the GNU General Public License, the
+ * Free Software Foundation gives you unlimited permission to link the
+ * compiled version of this file with other programs, and to distribute
+ * those programs without any restriction coming from the use of this
+ * file.  (The General Public License restrictions do apply in other
+ * respects; for example, they cover modification of the file, and
+ * distribution when not linked into another program.)
+ * 
+ * This file is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ * 
+ *    As a special exception, if you link this library with files
+ *    compiled with GCC to produce an executable, this does not cause
+ *    the resulting executable to be covered by the GNU General Public License.
+ *    This exception does not however invalidate any other reasons why
+ *    the executable file might be covered by the GNU General Public License.
+ */ 
+
 /* Do any initializations needed for the eabi environment */
 
 	.file	"eabi.asm"
@@ -15,22 +51,34 @@
 	.long	_GLOBAL_OFFSET_TABLE_		/* normal GOT address */
 
 .Lgots = .-.LCTOC1
-	.long	_GOT_START_			/* start of .got section */
+	.long	__GOT_START__			/* start of .got section */
 
 .Lgote = .-.LCTOC1
-	.long	_GOT_END_			/* end of .got section */
+	.long	__GOT_END__			/* end of .got section */
 
 .Lgot2s = .-.LCTOC1
-	.long	_GOT2_START_			/* -mrelocatable GOT pointers start */
+	.long	__GOT2_START__			/* -mrelocatable GOT pointers start */
 
 .Lgot2e = .-.LCTOC1
-	.long	_GOT2_END_			/* -mrelocatable GOT pointers end */
+	.long	__GOT2_END__			/* -mrelocatable GOT pointers end */
 
 .Lfixups = .-.LCTOC1
-	.long	_FIXUP_START_			/* start of .fixup section */
+	.long	__FIXUP_START__			/* start of .fixup section */
 
 .Lfixupe = .-.LCTOC1
-	.long	_FIXUP_END_			/* end of .fixup section */
+	.long	__FIXUP_END__			/* end of .fixup section */
+
+.Lctors = .-.LCTOC1
+	.long	__CTOR_LIST__			/* start of .ctor section */
+
+.Lctore = .-.LCTOC1
+	.long	__CTOR_END__			/* end of .ctor section */
+
+.Ldtors = .-.LCTOC1
+	.long	__DTOR_LIST__			/* start of .dtor section */
+
+.Ldtore = .-.LCTOC1
+	.long	__DTOR_END__			/* end of .dtor section */
 
 	.text
 .Lptr:
@@ -70,7 +118,7 @@ FUNC_START(__eabi)
 	add	4,12,4
 
 	cmpw	1,3,4				/* any pointers to adjust */
-	bc	12,6,.Lfix
+	bc	12,6,.Lctor
 
 .Lloop:
 	lwz	5,0(3)				/* next pointer */
@@ -80,9 +128,42 @@ FUNC_START(__eabi)
 	cmpw	1,3,4				/* more pointers to adjust? */
 	bc	4,6,.Lloop
 
+/* Fixup the .ctor section for static constructors */
+
+.Lctor:
+	lwz	3,.Lctors(11)			/* constructors pointers start */
+	lwz	4,.Lctore(11)			/* constructors pointers end */
+
+	cmpw	1,3,4				/* any pointers to adjust */
+	bc	12,6,.Ldtor
+
+.Lcloop:
+	lwz	5,0(3)				/* next pointer */
+	add	5,5,12				/* adjust */
+	stw	5,0(3)
+	addi	3,3,4				/* bump to next word */
+	cmpw	1,3,4				/* more pointers to adjust? */
+	bc	4,6,.Lcloop
+
+/* Fixup the .dtor section for static destructors */
+
+.Ldtor:
+	lwz	3,.Ldtors(11)			/* destructors pointers start */
+	lwz	4,.Ldtore(11)			/* destructors pointers end */
+
+	cmpw	1,3,4				/* any pointers to adjust */
+	bc	12,6,.Lfix
+
+.Ldloop:
+	lwz	5,0(3)				/* next pointer */
+	add	5,5,12				/* adjust */
+	stw	5,0(3)
+	addi	3,3,4				/* bump to next word */
+	cmpw	1,3,4				/* more pointers to adjust? */
+	bc	4,6,.Ldloop
+
 /* Fixup any user initialized pointers now (the compiler drops pointers to */
-/* each of the relocs that it does in the .fixup section).  Note, the pointers */
-/* themselves have already been fixed up by the previous loop. */
+/* each of the relocs that it does in the .fixup section).  */
 
 .Lfix:
 	lwz	3,.Lfixups(11)			/* fixup pointers start */
@@ -93,7 +174,9 @@ FUNC_START(__eabi)
 
 .Lfloop:
 	lwz	5,0(3)				/* next pointer */
+	add	5,5,12				/* adjust pointer */
 	lwz	6,0(5)				/* get the pointer it points to */
+	stw	5,0(3)				/* store adjusted pointer */
 	add	6,6,12				/* adjust */
 	stw	6,0(5)
 	addi	3,3,4				/* bump to next word */
