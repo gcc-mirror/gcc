@@ -1,3 +1,7 @@
+2002-02-02  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/natFile.cc: Removed old "FIXME" comments.
+
 2002-02-01  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natPosixProcess.cc (myclose): New function.

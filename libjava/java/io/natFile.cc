@@ -1,6 +1,6 @@
 // natFile.cc - Native part of File class for POSIX.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -41,7 +41,6 @@ java::io::File::_access (jint query)
 {
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  // FIXME?
   buf[total] = '\0';
   JvAssert (query == READ || query == WRITE || query == EXISTS);
 #ifdef HAVE_ACCESS
@@ -63,7 +62,6 @@ java::io::File::_stat (jint query)
 {
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  // FIXME?
   buf[total] = '\0';
 
   if (query == ISHIDDEN)
@@ -87,7 +85,6 @@ java::io::File::attr (jint query)
 {
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  // FIXME?
   buf[total] = '\0';
 
 #ifdef HAVE_STAT
@@ -109,7 +106,6 @@ java::io::File::getCanonicalPath (void)
 {
   char buf[MAXPATHLEN], buf2[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  // FIXME?
   buf[total] = '\0';
 
 #ifdef HAVE_REALPATH
@@ -138,7 +134,6 @@ java::io::File::performList (java::io::FilenameFilter *filter,
 #ifdef HAVE_DIRENT_H
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  // FIXME?
   buf[total] = '\0';
 
   DIR *dir = opendir (buf);
@@ -193,7 +188,6 @@ java::io::File::performMkdir (void)
 {
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  // FIXME?
   buf[total] = '\0';
 
 #ifdef HAVE_MKDIR
@@ -208,7 +202,6 @@ java::io::File::performSetReadOnly (void)
 {
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  // FIXME?
   buf[total] = '\0';
 
 #if defined (HAVE_STAT) && defined (HAVE_CHMOD)
@@ -244,11 +237,9 @@ java::io::File::performRenameTo (File *dest)
 {
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  // FIXME?
   buf[total] = '\0';
   char buf2[MAXPATHLEN];
   total = JvGetStringUTFRegion (dest->path, 0, dest->path->length(), buf2);
-  // FIXME?
   buf2[total] = '\0';
 
 #ifdef HAVE_RENAME
@@ -266,7 +257,6 @@ java::io::File::performSetLastModified (jlong time)
 
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  // FIXME?
   buf[total] = '\0';
   
   tb.actime = time / 1000;
@@ -282,7 +272,6 @@ java::io::File::performCreate (void)
 {
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  // FIXME?
   buf[total] = '\0';
 
   int fd = ::open (buf, O_CREAT | O_EXCL, 0644);
@@ -305,7 +294,6 @@ java::io::File::performDelete (void)
 {
   char buf[MAXPATHLEN];
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  // FIXME?
   buf[total] = '\0';
 
 #ifdef HAVE_UNLINK
