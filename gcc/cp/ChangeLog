@@ -1,3 +1,9 @@
+2003-06-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10635
+	* typeck.c (build_c_cast): Check that the destination type is
+	complete.
+
 2003-06-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10432

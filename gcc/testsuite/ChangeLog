@@ -1,3 +1,8 @@
+2003-06-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10635
+	* g++.dg/expr/cast1.C: New test.
+
 2003-06-12  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-21.c: New test case.
