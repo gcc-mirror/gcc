@@ -164,7 +164,7 @@ package body Sem_Ch6 is
    --  visible entity with that name.
 
    procedure Install_Entity (E : Entity_Id);
-   --  Make single entity visible. Used for generic formals as well.
+   --  Make single entity visible. Used for generic formals as well
 
    procedure Install_Formals (Id : Entity_Id);
    --  On entry to a subprogram body, make the formals visible. Note
@@ -356,7 +356,7 @@ package body Sem_Ch6 is
             end loop;
          end if;
 
-         --  Visible generic entity is callable within its own body.
+         --  Visible generic entity is callable within its own body
 
          Set_Ekind (Gen_Id, Ekind (Body_Id));
          Set_Ekind (Body_Id, E_Subprogram_Body);
@@ -366,7 +366,7 @@ package body Sem_Ch6 is
 
          if Nkind (N) = N_Subprogram_Body_Stub then
 
-            --  No body to analyze, so restore state of generic unit.
+            --  No body to analyze, so restore state of generic unit
 
             Set_Ekind (Gen_Id, Kind);
             Set_Ekind (Body_Id, Kind);
@@ -408,7 +408,7 @@ package body Sem_Ch6 is
       End_Scope;
       Check_Subprogram_Order (N);
 
-      --  Outside of its body, unit is generic again.
+      --  Outside of its body, unit is generic again
 
       Set_Ekind (Gen_Id, Kind);
       Generate_Reference (Gen_Id, Body_Id, 'b', Set_Ref => False);
@@ -661,7 +661,7 @@ package body Sem_Ch6 is
          Analyze (P);
          Analyze_Call_And_Resolve;
 
-      --  Anything else is an error.
+      --  Anything else is an error
 
       else
          Error_Msg_N ("Invalid procedure or entry call", N);
@@ -1136,6 +1136,8 @@ package body Sem_Ch6 is
       if Nkind (Parent (N)) = N_Subunit
         and then Comes_From_Source (N)
         and then not Error_Posted (Body_Id)
+        and then Nkind (Corresponding_Stub (Parent (N))) =
+                                                N_Subprogram_Body_Stub
       then
          declare
             Old_Id : constant Entity_Id :=
@@ -1438,7 +1440,7 @@ package body Sem_Ch6 is
       then
          Set_Categorization_From_Scope (Designator, Scop);
       else
-         --  For a compilation unit, check for library-unit pragmas.
+         --  For a compilation unit, check for library-unit pragmas
 
          New_Scope (Designator);
          Set_Categorization_From_Pragmas (N);
@@ -1544,7 +1546,7 @@ package body Sem_Ch6 is
       Stat_Count      : Integer := 0;
 
       function Has_Excluded_Declaration (Decls : List_Id) return Boolean;
-      --  Check for declarations that make inlining not worthwhile.
+      --  Check for declarations that make inlining not worthwhile
 
       function Has_Excluded_Statement   (Stats : List_Id) return Boolean;
       --  Check for statements that make inlining not worthwhile: any
@@ -1563,6 +1565,11 @@ package body Sem_Ch6 is
       --  meaning when the body is inlined and the formals are rewritten.
       --  Remove it from body to inline. The analysis of the non-inlined
       --  body will handle the pragma properly.
+
+      function Uses_Secondary_Stack (Bod : Node_Id) return Boolean;
+      --  If the body of the subprogram includes a call that returns an
+      --  unconstrained type, the secondary stack is involved, and it
+      --  is not worth inlining.
 
       ------------------------------
       -- Has_Excluded_Declaration --
@@ -1765,6 +1772,40 @@ package body Sem_Ch6 is
          end loop;
       end Remove_Pragmas;
 
+      --------------------------
+      -- Uses_Secondary_Stack --
+      --------------------------
+
+      function Uses_Secondary_Stack (Bod : Node_Id) return Boolean is
+         function Check_Call (N : Node_Id) return Traverse_Result;
+         --  Look for function calls that return an unconstrained type
+
+         ----------------
+         -- Check_Call --
+         ----------------
+
+         function Check_Call (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) = N_Function_Call
+              and then Is_Entity_Name (Name (N))
+              and then Is_Composite_Type (Etype (Entity (Name (N))))
+              and then not Is_Constrained (Etype (Entity (Name (N))))
+            then
+               Cannot_Inline
+                 ("cannot inline & (call returns unconstrained type)?",
+                    N, Subp);
+               return Abandon;
+            else
+               return OK;
+            end if;
+         end Check_Call;
+
+         function Check_Calls is new Traverse_Func (Check_Call);
+
+      begin
+         return Check_Calls (Bod) = Abandon;
+      end Uses_Secondary_Stack;
+
    --  Start of processing for Build_Body_To_Inline
 
    begin
@@ -1884,13 +1925,21 @@ package body Sem_Ch6 is
       Remove (Body_To_Analyze);
 
       Expander_Mode_Restore;
-      Set_Body_To_Inline (Decl, Original_Body);
-      Set_Ekind (Defining_Entity (Original_Body), Ekind (Subp));
-      Set_Is_Inlined (Subp);
 
       if In_Instance then
          Restore_Env;
       end if;
+
+      --  If secondary stk used there is no point in inlining. We have
+      --  already issued the warning in this case, so nothing to do.
+
+      if Uses_Secondary_Stack (Body_To_Analyze) then
+         return;
+      end if;
+
+      Set_Body_To_Inline (Decl, Original_Body);
+      Set_Ekind (Defining_Entity (Original_Body), Ekind (Subp));
+      Set_Is_Inlined (Subp);
    end Build_Body_To_Inline;
 
    -------------------
@@ -1910,6 +1959,10 @@ package body Sem_Ch6 is
          null;
 
       elsif Is_Always_Inlined (Subp) then
+
+         --  Remove last character (question mark) to make this into an error,
+         --  because the Inline_Always pragma cannot be obeyed.
+
          Error_Msg_NE (Msg (1 .. Msg'Length - 1), N, Subp);
 
       elsif Ineffective_Inline_Warnings then
@@ -3572,7 +3625,7 @@ package body Sem_Ch6 is
       --  match explicit actuals with the same value.
 
       function FCO (Op_Node, Call_Node : Node_Id) return Boolean;
-      --  Compare an operator node with a function call.
+      --  Compare an operator node with a function call
 
       ---------
       -- FCL --
@@ -3938,7 +3991,7 @@ package body Sem_Ch6 is
       --  body is replaced with the discriminal of the enclosing type.
 
       function Conforming_Ranges (R1, R2 : Node_Id) return Boolean;
-      --  Check both bounds.
+      --  Check both bounds
 
       function Conforming_Bounds (B1, B2 : Node_Id) return Boolean is
       begin
@@ -4243,7 +4296,7 @@ package body Sem_Ch6 is
       B : Entity_Id;
 
    begin
-      --  Check that equality was properly defined.
+      --  Check that equality was properly defined
 
       if  No (Next_Formal (First_Formal (S))) then
          return;
@@ -4773,8 +4826,8 @@ package body Sem_Ch6 is
                            if not Is_Dispatching_Operation (E) then
                               Set_Is_Immediately_Visible (E, False);
                            else
-
-                              --  work done in Override_Dispatching_Operation.
+                              --  Work done in Override_Dispatching_Operation,
+                              --  so nothing else need to be done here.
 
                               null;
                            end if;
@@ -5201,7 +5254,7 @@ package body Sem_Ch6 is
       while Present (Formal) loop
          T := Etype (Formal);
 
-         --  We never need an actual subtype for a constrained formal.
+         --  We never need an actual subtype for a constrained formal
 
          if Is_Constrained (T) then
             AS_Needed := False;
