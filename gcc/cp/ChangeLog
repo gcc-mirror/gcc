@@ -1,5 +1,10 @@
 2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* semantics.c (begin_class_definition): Check we're not inside a
+	template parm list.
+
+2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* tree.c (walk_tree, TREE_LIST): Don't walk the TREE_PURPOSE of
 	BASELINK_P.
 

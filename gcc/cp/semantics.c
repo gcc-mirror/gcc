@@ -1720,6 +1720,11 @@ tree
 begin_class_definition (t)
      tree t;
 {
+  if (processing_template_parmlist)
+    {
+      cp_error ("definition of `%#T' inside template parameter list", t);
+      return error_mark_node;
+    }
   if (t == error_mark_node
       || ! IS_AGGR_TYPE (t))
     {
