@@ -186,7 +186,7 @@ var_element (gfc_data_variable * new)
       return MATCH_ERROR;
     }
 
-#if 0 // TODO: Find out where to move this message
+#if 0 /* TODO: Find out where to move this message */
   if (sym->attr.in_common)
     /* See if sym is in the blank common block.  */
     for (t = &sym->ns->blank_common; t; t = t->common_next)
