@@ -57,11 +57,6 @@ static int i960_last_maxbitalignment;
 
 enum insn_types i960_last_insn_type;
 
-/* Where to save/restore register 14 to/from before/after a procedure call
-   when it holds an argument block pointer.  */
-
-static rtx g14_save_reg;
-
 /* The leaf-procedure return register.  Set only if this is a leaf routine.  */
 
 static int i960_leaf_ret_reg;
@@ -1190,14 +1185,24 @@ i960_function_epilogue (file, size)
 /* Output code for a call insn.  */
 
 char *
-i960_output_call_insn (target, argsize_rtx, insn)
-     register rtx target, argsize_rtx, insn;
+i960_output_call_insn (target, argsize_rtx, arg_pointer, scratch_reg, insn)
+     register rtx target, argsize_rtx, arg_pointer, scratch_reg, insn;
 {
   int argsize = INTVAL (argsize_rtx);
   rtx nexti = next_real_insn (insn);
-  rtx operands[1];
+  rtx operands[3];
 
   operands[0] = target;
+  operands[1] = arg_pointer;
+  operands[2] = scratch_reg;
+
+  if (current_function_args_size != 0)
+    output_asm_insn ("mov	g14,%2", operands);
+
+  if (argsize > 48)
+    output_asm_insn ("lda	%a1,g14", operands);
+  else if (current_function_args_size != 0)
+    output_asm_insn ("mov	0,g14", operands);
 
   /* The code used to assume that calls to SYMBOL_REFs could not be more
      than 24 bits away (b vs bx, callj vs callx).  This is not true.  This
@@ -1216,6 +1221,10 @@ i960_output_call_insn (target, argsize_rtx, insn)
     }
 
   output_asm_insn ("callx	%0", operands);
+
+  if (current_function_args_size != 0)
+    output_asm_insn ("mov	%2,g14", operands);
+
   return "";
 }
 
@@ -2187,80 +2196,6 @@ secondary_reload_class (class, mode, in)
     return NO_REGS;
 
   return LOCAL_OR_GLOBAL_REGS;
-}
-
-/* Emit the code necessary for a procedure call.  Return value is needed
-   after the call if target is non-zero.  */
-
-void
-i960_expand_call (first_operand, second_operand, target)
-     rtx first_operand, second_operand, target;
-{
-  /* Used to ensure that g14_save_reg is initialized once and only once
-     for each function if it is needed.  */
-  static char *this_function_name = 0;
-  int frob_g14 = 0;
-
-  if (this_function_name != current_function_name)
-    {
-      rtx seq, first;
-      struct sequence_stack *seq_stack;
-
-      this_function_name = current_function_name;
-
-      /* If the current function has an argument block, then save g14 into
-	 a pseudo at the top of the function and restore it after this
-	 function call.  If the current function has no argument block,
-	 then g14 is zero before and after the call.  */
-
-      if (current_function_args_size != 0)
-	{
-	  start_sequence ();
-	  seq_stack = sequence_stack;
-	  while (seq_stack->next)
-	    seq_stack = seq_stack->next;
-	  first = seq_stack->first;
-	  g14_save_reg = copy_to_reg (arg_pointer_rtx);
-	  seq = gen_sequence ();
-	  end_sequence ();
-	  emit_insn_after (seq, first);
-	}
-    }
-
-  if (current_function_args_size != 0)
-    frob_g14 = 1;
-
-  if (GET_CODE (second_operand) != CONST_INT || INTVAL (second_operand) > 48)
-    {
-      /* Calling a function needing an argument block.  */
-      emit_insn (gen_rtx (SET, VOIDmode, arg_pointer_rtx,
-			  virtual_outgoing_args_rtx));
-    }
-  else
-    {
-      /* Calling a normal function -- only set to zero if we know our g14
-	 is nonzero.  */
-      if (frob_g14)
-	emit_insn (gen_rtx (SET, VOIDmode, arg_pointer_rtx, const0_rtx));
-    }
-
-  if (target)
-    emit_call_insn (gen_rtx (SET, VOIDmode, target,
-			     gen_rtx (CALL, VOIDmode, first_operand,
-				      second_operand)));
-  else
-    emit_call_insn (gen_rtx (CALL, VOIDmode, first_operand, second_operand));
-
-  if (frob_g14)
-    emit_insn (gen_rtx (SET, VOIDmode, arg_pointer_rtx, g14_save_reg));
-  else if (GET_CODE (second_operand) != CONST_INT
-	   || INTVAL (second_operand) > 48)
-    {
-      /* Calling a function needing an argument block.  It will have set
-	 reg14 back to zero before returning, so we must emit a clobber here
-	 to tell cse that g14 has changed.  */
-      emit_insn (gen_rtx (CLOBBER, VOIDmode, arg_pointer_rtx));
-    }
 }
 
 /* Look at the opcode P, and set i96_last_insn_type to indicate which
