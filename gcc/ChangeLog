@@ -1,3 +1,9 @@
+2004-06-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* toplev.c (check_global_declarations): Don't ask for
+	DECL_ASSEMBLER_NAME unless the function really is declared
+	static and not defined.
+
 2004-06-03  Matt Austern  <austern@apple.com>
 
 	PR c++/15428
