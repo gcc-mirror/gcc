@@ -448,6 +448,7 @@ static void gen_delay		PROTO((rtx));
 static void gen_unit		PROTO((rtx));
 static void write_test_expr	PROTO((rtx, int));
 static int max_attr_value	PROTO((rtx));
+static int or_attr_value	PROTO((rtx));
 static void walk_attr_value	PROTO((rtx));
 static void write_attr_get	PROTO((struct attr_desc *));
 static rtx eliminate_known_true PROTO((rtx, rtx, int, int));
@@ -2499,6 +2500,26 @@ max_fn (exp)
      rtx exp;
 {
   return make_numeric_value (max_attr_value (exp));
+}
+
+static void
+write_length_unit_log ()
+{
+  struct attr_desc *length_attr = find_attr ("length", 0);
+  struct attr_value *av;
+  struct insn_ent *ie;
+  unsigned int length_unit_log, length_or;
+
+  if (length_attr == 0)
+    return;
+  length_or = or_attr_value (length_attr->default_val->value);
+    for (av = length_attr->first_value; av; av = av->next)
+      for (ie = av->first_insn; ie; ie = ie->next)
+	length_or |= or_attr_value (av->value);
+  length_or = ~length_or;
+  for (length_unit_log = 0; length_or & 1; length_or >>= 1)
+    length_unit_log++;
+  printf ("int length_unit_log = %u;\n", length_unit_log);
 }
 
 /* Take a COND expression and see if any of the conditions in it can be
@@ -4639,12 +4660,13 @@ write_test_expr (exp, flags)
 	      XINT (exp, 0), XINT (exp, 0), XINT (exp, 0));
       break;
 
-    /* The address of the current insn.  It would be more consistent with
-       other usage to make this the address of the NEXT insn, but this gets
-       too confusing because of the ambiguity regarding the length of the
-       current insn.  */
     case PC:
-      printf ("insn_current_address");
+      /* The address of the current insn.  We implement this actually as the
+	 address of the current insn for backward branches, but the last
+	 address of the next insn for forward branches, and both with
+	 adjustments that account for the worst-case possible stretching of
+	 intervening alignments between this insn and its destination.  */
+      printf("insn_current_reference_address (insn)");
       break;
 
     case CONST_STRING:
@@ -4707,6 +4729,42 @@ max_attr_value (exp)
     abort ();
 
   return current_max;
+}
+
+/* Given an attribute value, return the result of ORing together all
+   CONST_STRING arguments encountered.  It is assumed that they are
+   all numeric.  */
+
+static int
+or_attr_value (exp)
+     rtx exp;
+{
+  int current_or = 0;
+  int i;
+
+  if (GET_CODE (exp) == CONST_STRING)
+    return atoi (XSTR (exp, 0));
+
+  else if (GET_CODE (exp) == COND)
+    {
+      for (i = 0; i < XVECLEN (exp, 0); i += 2)
+	{
+	  current_or |= or_attr_value (XVECEXP (exp, 0, i + 1));
+	}
+
+      current_or |= or_attr_value (XEXP (exp, 1));
+    }
+
+  else if (GET_CODE (exp) == IF_THEN_ELSE)
+    {
+      current_or = or_attr_value (XEXP (exp, 1));
+      current_or |= or_attr_value (XEXP (exp, 2));
+    }
+
+  else
+    abort ();
+
+  return current_or;
 }
 
 /* Scan an attribute value, possibly a conditional, and record what actions
@@ -5795,7 +5853,7 @@ write_const_num_delay_slots ()
 
       printf ("    default:\n");
       printf ("      return 1;\n");
-      printf ("    }\n}\n");
+      printf ("    }\n}\n\n");
     }
 }
 
@@ -5981,6 +6039,8 @@ from the machine description file `md'.  */\n\n");
 
   /* Write out constant delay slot info */
   write_const_num_delay_slots ();
+
+  write_length_unit_log ();
 
   fflush (stdout);
   exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);

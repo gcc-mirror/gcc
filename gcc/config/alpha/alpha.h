@@ -387,9 +387,8 @@ extern void override_options ();
 /* Aligning past 2**3 wastes insn cache lines, and doesn't buy much 
    issue-wise on average anyway.  */
 
-#define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-  if (optimize > 0 && write_symbols != SDB_DEBUG)  \
-    ASM_OUTPUT_ALIGN (FILE, 3)
+#define LOOP_ALIGN(LABEL) \
+  (optimize > 0 && write_symbols != SDB_DEBUG ? 3 : 0)
 
 /* This is how to align an instruction for optimal branching.
    On Alpha we'll get better performance by aligning on a quadword
@@ -397,9 +396,8 @@ extern void override_options ();
 /* Aligning past 2**3 wastes insn cache lines, and doesn't buy much 
    issue-wise on average anyway.  */
 
-#define ASM_OUTPUT_ALIGN_CODE(FILE)	\
-  if (optimize > 0 && write_symbols != SDB_DEBUG) \
-    ASM_OUTPUT_ALIGN ((FILE), 3)
+#define ALIGN_LABEL_AFTER_BARRIER(FILE)	\
+  (optimize > 0 && write_symbols != SDB_DEBUG ? 3 : 0)
 
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64

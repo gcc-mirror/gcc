@@ -153,6 +153,8 @@ static int count_basic_blocks;
 /* Number of instrumented arcs when profile_arc_flag is set.  */
 extern int count_instrumented_arcs;
 
+extern int length_unit_log; /* This is defined in insn-attrtab.c.  */
+
 /* Nonzero while outputting an `asm' with operands.
    This means that inconsistencies are the user's fault, so don't abort.
    The precise value is the insn being output, to pass to error_for_asm.  */
@@ -628,6 +630,12 @@ int *insn_addresses;
 /* Address of insn being processed.  Used by `insn_current_length'.  */
 int insn_current_address;
 
+/* Address of insn being processed in previous iteration.  */
+int insn_last_address;
+
+/* konwn invariant alignment of insn being processed.  */
+int insn_current_align;
+
 /* Indicate that branch shortening hasn't yet been done.  */
 
 void
@@ -666,16 +674,8 @@ get_attr_length (insn)
 	body = PATTERN (insn);
         if (GET_CODE (body) == ADDR_VEC || GET_CODE (body) == ADDR_DIFF_VEC)
 	  {
-	    /* This only takes room if jump tables go into the text section.  */
-#if !defined(READONLY_DATA_SECTION) || defined(JUMP_TABLES_IN_TEXT_SECTION)
-	    length = (XVECLEN (body, GET_CODE (body) == ADDR_DIFF_VEC)
-		      * GET_MODE_SIZE (GET_MODE (body)));
-
-	    /* Be pessimistic and assume worst-case alignment.  */
-	    length += (GET_MODE_SIZE (GET_MODE (body)) - 1);
-#else
-	    return 0;
-#endif
+	    /* Alignment is machine-dependent and should be handled by
+	       ADDR_VEC_ALIGN.  */
 	  }
 	else
 	  length = insn_default_length (insn);
@@ -708,6 +708,205 @@ get_attr_length (insn)
 #endif /* not HAVE_ATTR_length */
 }
 
+/* Code to handle alignment inside shorten_branches.  */
+
+/* Here is an explanation how the algorithm in align_fuzz can give
+   proper results:
+
+   Call a sequence of instructions beginning with alignment point X
+   and continuing until the next alignment point `block X'.  When `X'
+   is used in an expression, it means the alignment value of the 
+   alignment point.
+   
+   Call the distance between the start of the first insn of block X, and
+   the end of the last insn of block X `IX', for the `inner size of X'.
+   This is clearly the sum of the instruction lengths.
+   
+   Likewise with the next alignment-delimited block following X, which we
+   shall call block Y.
+   
+   Call the distance between the start of the first insn of block X, and
+   the start of the first insn of block Y `OX', for the `outer size of X'.
+   
+   The estimated padding is then OX - IX.
+   
+   OX can be safely estimated as
+   
+           if (X >= Y)
+                   OX = round_up(IX, Y)
+           else
+                   OX = round_up(IX, X) + Y - X
+   
+   Clearly est(IX) >= real(IX), because that only depends on the
+   instruction lengths, and those being overestimated is a given.
+   
+   Clearly round_up(foo, Z) >= round_up(bar, Z) if foo >= bar, so
+   we needn't worry about that when thinking about OX.
+   
+   When X >= Y, the alignment provided by Y adds no uncertainty factor
+   for branch ranges starting before X, so we can just round what we have.
+   But when X < Y, we don't know anything about the, so to speak,
+   `middle bits', so we have to assume the worst when aligning up from an
+   address mod X to one mod Y, which is Y - X.  */
+
+#ifndef LABEL_ALIGN
+#define LABEL_ALIGN(LABEL) 0
+#endif
+
+#ifndef LOOP_ALIGN
+#define LOOP_ALIGN(LABEL) 0
+#endif
+
+#ifndef LABEL_ALIGN_AFTER_BARRIER
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL) 0
+#endif
+
+#ifndef ADDR_VEC_ALIGN
+int
+final_addr_vec_align (addr_vec)
+     rtx addr_vec;
+{
+  int align = exact_log2 (GET_MODE_SIZE (GET_MODE (PATTERN (addr_vec))));
+
+  if (align > BIGGEST_ALIGNMENT / BITS_PER_UNIT)
+    align = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
+  return align;
+
+}
+#define ADDR_VEC_ALIGN(ADDR_VEC) final_addr_vec_align (ADDR_VEC)
+#endif
+
+#ifndef INSN_LENGTH_ALIGNMENT
+#define INSN_LENGTH_ALIGNMENT(INSN) length_unit_log
+#endif
+
+/* For any insn, uid_align[INSN_UID (insn)] gives the next following
+   alignment insn that increases the known alignment, or NULL_RTX if
+   there is no such insn.
+   For any alignment obtained this way, we can again index uid_align with
+   its uid to obtain the next following align that in turn increases the
+   alignment, till we reach NULL_RTX; the sequence obtained this way
+   for each insn we'll call the alignment chain of this insn in the following
+   comments.  */
+
+rtx *uid_align;
+int *uid_shuid;
+short *label_align; /* sh.c needs this to calculate constant tables.  */
+
+#define INSN_SHUID(INSN) (uid_shuid[INSN_UID (INSN)])
+
+static int min_labelno;
+
+#define LABEL_TO_ALIGNMENT(LABEL) \
+  (label_align[CODE_LABEL_NUMBER (LABEL) - min_labelno])
+
+/* For the benefit of port specific code do this also as a function.  */
+int
+label_to_alignment (label)
+     rtx label;
+{
+  return LABEL_TO_ALIGNMENT (label);
+}
+
+#ifdef HAVE_ATTR_length
+/* The differences in addresses
+   between a branch and its target might grow or shrink depending on
+   the alignment the start insn of the range (the branch for a forward
+   branch or the label for a backward branch) starts out on; if these
+   differences are used naively, they can even oscillate infinitely.
+   We therefore want to compute a 'worst case' address difference that
+   is independent of the alignment the start insn of the range end
+   up on, and that is at least as large as the actual difference.
+   The function align_fuzz calculates the amount we have to add to the
+   naively computed difference, by traversing the part of the alignment
+   chain of the start insn of the range that is in front of the end insn
+   of the range, and considering for each alignment the maximum amount
+   that it might contribute to a size increase.
+
+   For casesi tables, we also want to know worst case minimum amounts of
+   address difference, in case a machine description wants to introduce
+   some common offset that is added to all offsets in a table.
+   For this purpose, align_fuzz with a growth argument of 0 comuptes the
+   appropriate adjustment.  */
+
+
+/* Compute the maximum delta by which the difference of the addresses of
+   START and END might grow / shrink due to a different address for start
+   which changes the size of alignment insns between START and END.
+   KNOWN_ALIGN_LOG is the alignment known for START.
+   GROWTH should be ~0 if the objective is to compute potential code size
+   increase, and 0 if the objective is to compute potential shrink.
+   The return value is undefined for any other value of GROWTH.  */
+int align_fuzz (start, end, known_align_log, growth)
+     rtx start, end;
+     int known_align_log;
+     unsigned growth;
+{
+  int uid = INSN_UID (start);
+  rtx align_label;
+  int known_align = 1 << known_align_log;
+  int end_shuid = INSN_SHUID (end);
+  int fuzz = 0;
+
+  for (align_label = uid_align[uid]; align_label; align_label = uid_align[uid])
+    {
+      int align_addr, new_align;
+
+      uid = INSN_UID (align_label);
+      align_addr = insn_addresses[uid] - insn_lengths[uid];
+      if (uid_shuid[uid] > end_shuid)
+	break;
+      known_align_log = LABEL_TO_ALIGNMENT (align_label);
+      new_align = 1 << known_align_log;
+      if (new_align < known_align)
+	continue;
+      fuzz += (-align_addr ^ growth) & (new_align - known_align);
+      known_align = new_align;
+    }
+  return fuzz;
+}
+
+/* Compute a worst-case reference address of a branch so that it
+   can be safely used in the presence of aligned labels.  Since the
+   size of the branch itself is unknown, the size of the branch is
+   not included in the range.  I.e. for a forward branch, the reference
+   address is the end address of the branch as known from the previous
+   branch shortening pass, minus a value to account for possible size
+   increase due to alignment.  For a backward branch, it is the start
+   address of the branch as known from the current pass, plus a value
+   to account for possible size increase due to alignment.
+   NB.: Therefore, the maximum offset allowed for backward branches needs
+   to exclude the branch size.  */
+int
+insn_current_reference_address (branch)
+     rtx branch;
+{
+  rtx dest;
+  rtx seq = NEXT_INSN (PREV_INSN (branch));
+  int seq_uid = INSN_UID (seq);
+  if (GET_CODE (branch) != JUMP_INSN)
+    /* This can happen for example on the PA; the objective is to know the
+       offset to address something in front of the start of the function.
+       Thus, we can treat it like a backward branch.
+       We assume here that FUNCTION_BOUNDARY / BITS_PER_UNIT is larger than
+       any alignment we'd encounter, so we skip the call to align_fuzz.  */
+    return insn_current_address;
+  dest = JUMP_LABEL (branch);
+  if (INSN_SHUID (branch) < INSN_SHUID (dest))
+    {
+      /* Forward branch. */
+      return (insn_last_address + insn_lengths[seq_uid]
+	      - align_fuzz (branch, dest, length_unit_log, ~0));
+    }
+  else
+    {
+      /* Backward branch. */
+      return (insn_current_address
+	      + align_fuzz (dest, branch, length_unit_log, ~0));
+    }
+}
+#endif /* HAVE_ATTR_length */
+
 /* Make a pass over all insns and compute their actual lengths by shortening
    any branches of variable length if possible.  */
 
@@ -717,34 +916,188 @@ get_attr_length (insn)
 #define FIRST_INSN_ADDRESS 0
 #endif
 
+/* shorten_branches might be called multiple times:  for example, the SH
+   port splits out-of-range conditional branches in MACHINE_DEPENDENT_REORG.
+   In order to do this, it needs proper length information, which it obtains
+   by calling shorten_branches.  This cannot be collapsed with
+   shorten_branches itself into a single pass unless we also want to intergate
+   reorg.c, since the branch splitting exposes new instructions with delay
+   slots.  */
+
 void
 shorten_branches (first)
      rtx first;
 {
-#ifdef HAVE_ATTR_length
   rtx insn;
+  int max_uid;
+  int i;
+  int max_labelno;
+  int max_log;
+#ifdef HAVE_ATTR_length
+#define MAX_CODE_ALIGN 16
+  rtx seq;
   int something_changed = 1;
-  int max_uid = 0;
   char *varying_length;
   rtx body;
   int uid;
+  rtx align_tab[MAX_CODE_ALIGN];
 
   /* In order to make sure that all instructions have valid length info,
      we must split them before we compute the address/length info.  */
 
   for (insn = NEXT_INSN (first); insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-      insn = try_split (PATTERN (insn), insn, 1);
+      {
+	rtx old = insn;
+	insn = try_split (PATTERN (old), old, 1);
+	/* When not optimizing, the old insn will be still left around
+	   with only the 'deleted' bit set.  Transform it into a note
+	   to avoid confusion of subsequent processing.  */
+	if (INSN_DELETED_P (old))
+          {
+            PUT_CODE (old , NOTE);
+            NOTE_LINE_NUMBER (old) = NOTE_INSN_DELETED;
+            NOTE_SOURCE_FILE (old) = 0;
+          }
+      }
+#endif
 
-  /* Compute maximum UID and allocate arrays.  */
-  for (insn = first; insn; insn = NEXT_INSN (insn))
-    if (INSN_UID (insn) > max_uid)
-      max_uid = INSN_UID (insn);
+  /* We must do some computations even when not actually shortening, in
+     order to get the alignment information for the labels.  */
 
-  max_uid++;
-  insn_lengths = (short *) oballoc (max_uid * sizeof (short));
-  insn_addresses = (int *) oballoc (max_uid * sizeof (int));
-  varying_length = (char *) oballoc (max_uid * sizeof (char));
+  /* Compute maximum UID and allocate label_align / uid_shuid.  */
+  max_uid = get_max_uid ();
+
+  max_labelno = max_label_num ();
+  min_labelno = get_first_label_num ();
+  if (label_align)
+    free (label_align);
+  label_align
+    = (short*) xmalloc ((max_labelno - min_labelno + 1) * sizeof (short));
+  bzero (label_align, (max_labelno - min_labelno + 1) * sizeof (short));
+
+  if (uid_shuid)
+    free (uid_shuid);
+  uid_shuid = (int *) xmalloc (max_uid * sizeof *uid_shuid);
+
+  /* Initialize label_align and set up uid_shuid to be strictly
+     monotonically rising with insn order.  */
+  for (max_log = 0, insn = get_insns (), i = 1; insn; insn = NEXT_INSN (insn))
+    {
+      int log;
+
+      INSN_SHUID (insn) = i++;
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	max_log = 0;
+      else if (GET_CODE (insn) == CODE_LABEL)
+	{
+	  rtx next;
+
+	  log = LABEL_ALIGN (insn);
+	  if (max_log < log)
+	    max_log = log;
+	  next = NEXT_INSN (insn);
+/* ADDR_VECs only take room if read-only data goes into the text section.  */
+#if !defined(READONLY_DATA_SECTION) || defined(JUMP_TABLES_IN_TEXT_SECTION)
+	  if (next && GET_CODE (next) == JUMP_INSN)
+	    {
+	      rtx nextbody = PATTERN (next);
+	      if (GET_CODE (nextbody) == ADDR_VEC
+		  || GET_CODE (nextbody) == ADDR_DIFF_VEC)
+		{
+		  log = ADDR_VEC_ALIGN (next);
+		  if (max_log < log)
+		    max_log = log;
+		}
+	    }
+#endif
+	  LABEL_TO_ALIGNMENT (insn) = max_log;
+	  max_log = 0;
+	}
+      else if (GET_CODE (insn) == BARRIER)
+	{
+	  rtx label;
+
+	  for (label = insn; label && GET_RTX_CLASS (GET_CODE (label)) != 'i';
+	       label = NEXT_INSN (label))
+	    if (GET_CODE (label) == CODE_LABEL)
+	      {
+		log = LABEL_ALIGN_AFTER_BARRIER (insn);
+		if (max_log < log)
+		  max_log = log;
+		break;
+	      }
+	}
+      else if (GET_CODE (insn) == NOTE
+	       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	{
+	  rtx label;
+
+	  for (label = insn; label && GET_RTX_CLASS (GET_CODE (label)) != 'i';
+	       label = NEXT_INSN (label))
+	    if (GET_CODE (label) == CODE_LABEL)
+	      {
+		log = LOOP_ALIGN (insn);
+		if (max_log < log)
+		  max_log = log;
+		break;
+	      }
+	}
+      else
+	continue;
+    }
+#ifdef HAVE_ATTR_length
+
+  /* Allocate the rest of the arrays.  */
+  if (insn_lengths)
+    free (insn_lengths);
+  insn_lengths = (short *) xmalloc (max_uid * sizeof (short));
+  if (insn_addresses)
+    free (insn_addresses);
+  insn_addresses = (int *) xmalloc (max_uid * sizeof (int));
+  if (uid_align)
+    free (uid_align);
+  uid_align = (rtx *) xmalloc (max_uid * sizeof *uid_align);
+
+  varying_length = (char *) xmalloc (max_uid * sizeof (char));
+
+  bzero (varying_length, max_uid);
+
+  /* Initialize uid_align.  We scan instructions
+     from end to start, and keep in align_tab[n] the last seen insn
+     that does an alignment of at least n+1, i.e. the successor
+     in the alignment chain for an insn that does / has a known
+     alignment of n.  */
+
+  bzero ((char *) uid_align, max_uid * sizeof *uid_align);
+
+  for (i = MAX_CODE_ALIGN; --i >= 0; )
+    align_tab[i] = NULL_RTX;
+  seq = get_last_insn ();
+  for (insn_current_address = 0; seq; seq = PREV_INSN (seq))
+    {
+      int uid = INSN_UID (seq);
+      int log;
+      int length_align;
+      log = (GET_CODE (seq) == CODE_LABEL ? LABEL_TO_ALIGNMENT (seq) : 0);
+      uid_align[uid] = align_tab[0];
+      insn_addresses[uid] = --insn_current_address;
+      if (log)
+	{
+	  /* Found an alignment label.  */
+	  uid_align[uid] = align_tab[log];
+	  for (i = log - 1; i >= 0; i--)
+	    align_tab[i] = seq;
+	}
+      if (GET_CODE (seq) != INSN || GET_CODE (PATTERN (seq)) != SEQUENCE)
+	insn = seq;
+      else
+	{
+	  insn = XVECEXP (PATTERN (seq), 0, 0);
+	  uid = INSN_UID (insn);
+	}
+    }
+
 
   /* Compute initial lengths, addresses, and varying flags for each insn.  */
   for (insn_current_address = FIRST_INSN_ADDRESS, insn = first;
@@ -752,9 +1105,22 @@ shorten_branches (first)
        insn_current_address += insn_lengths[uid], insn = NEXT_INSN (insn))
     {
       uid = INSN_UID (insn);
-      insn_addresses[uid] = insn_current_address;
+
       insn_lengths[uid] = 0;
-      varying_length[uid] = 0;
+
+      if (GET_CODE (insn) == CODE_LABEL)
+	{
+	  int log = LABEL_TO_ALIGNMENT (insn);
+	  if (log)
+	    {
+	      int align = 1 << log;
+	      int new_address = insn_current_address + align - 1 & -align;
+	      insn_lengths[uid] = new_address - insn_current_address;
+	      insn_current_address = new_address;
+	    }
+	}
+
+      insn_addresses[uid] = insn_current_address;
       
       if (GET_CODE (insn) == NOTE || GET_CODE (insn) == BARRIER
 	  || GET_CODE (insn) == CODE_LABEL)
@@ -764,25 +1130,7 @@ shorten_branches (first)
 
       body = PATTERN (insn);
       if (GET_CODE (body) == ADDR_VEC || GET_CODE (body) == ADDR_DIFF_VEC)
-	{
-	  /* This only takes room if read-only data goes into the text
-	     section.  */
-#if !defined(READONLY_DATA_SECTION) || defined(JUMP_TABLES_IN_TEXT_SECTION)
-	  int unitsize = GET_MODE_SIZE (GET_MODE (body));
-
-	  insn_lengths[uid] = (XVECLEN (body, GET_CODE (body) == ADDR_DIFF_VEC)
-			       * GET_MODE_SIZE (GET_MODE (body)));
-
-	  /* We don't know what address the ADDR_VEC/ADDR_DIFF_VEC will end
-	     up at after branch shortening.  As a result, it is impossible
-	     to determine how much padding we need at this point.  Therefore,
-	     assume worst possible alignment.  */
-	  insn_lengths[uid] += unitsize - 1;
-
-#else
-	  ;
-#endif
-	}
+	; /* This should be handled by LABEL_ALIGN.  */
       else if (asm_noperands (body) >= 0)
 	insn_lengths[uid] = asm_insn_count (body) * insn_default_length (insn);
       else if (GET_CODE (body) == SEQUENCE)
@@ -842,6 +1190,7 @@ shorten_branches (first)
   while (something_changed)
     {
       something_changed = 0;
+      insn_current_align = MAX_CODE_ALIGN - 1;
       for (insn_current_address = FIRST_INSN_ADDRESS, insn = first;
 	   insn != 0;
 	   insn = NEXT_INSN (insn))
@@ -852,9 +1201,34 @@ shorten_branches (first)
 	  int tmp_length;
 #endif
 #endif
+	  int length_align;
 
 	  uid = INSN_UID (insn);
+
+	  if (GET_CODE (insn) == CODE_LABEL)
+	    {
+	      int log = LABEL_TO_ALIGNMENT (insn);
+	      if (log > insn_current_align)
+		{
+		  int align = 1 << log;
+		  int new_address= insn_current_address + align - 1 & -align;
+		  insn_lengths[uid] = new_address - insn_current_address;
+		  insn_current_align = log;
+		  insn_current_address = new_address;
+		}
+	      else
+		insn_lengths[uid] = 0;
+	      insn_addresses[uid] = insn_current_address;
+	      continue;
+	    }
+
+	  length_align = INSN_LENGTH_ALIGNMENT (insn);
+	  if (length_align < insn_current_align)
+	    insn_current_align = length_align;
+
+	  insn_last_address = insn_addresses[uid];
 	  insn_addresses[uid] = insn_current_address;
+
 	  if (! varying_length[uid])
 	    {
 	      insn_current_address += insn_lengths[uid];
@@ -915,6 +1289,9 @@ shorten_branches (first)
       if (!optimize)
 	break;
     }
+
+  free (varying_length);
+
 #endif /* HAVE_ATTR_length */
 }
 
@@ -1413,17 +1790,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       /* Align the beginning of a loop, for higher speed
 	 on certain machines.  */
 
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG && optimize > 0)
-	{
-#ifdef ASM_OUTPUT_LOOP_ALIGN
-	  rtx next = next_nonnote_insn (insn);
-	  if (next && GET_CODE (next) == CODE_LABEL)
-	    {
-	      ASM_OUTPUT_LOOP_ALIGN (asm_out_file);
-	    }
-#endif
-	  break;
-	}
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	break; /* This used to depend on optimize, but that was bogus.  */
       if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
 	break;
 
@@ -1633,13 +2001,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       break;
 
     case BARRIER:
-#ifdef ASM_OUTPUT_ALIGN_CODE
-      /* Don't litter the assembler output with needless alignments.  A
-	 BARRIER will be placed at the end of every function if HAVE_epilogue
-	 is true.  */	 
-      if (NEXT_INSN (insn))
-	ASM_OUTPUT_ALIGN_CODE (file);
-#endif
 #if defined (DWARF2_UNWIND_INFO) && !defined (ACCUMULATE_OUTGOING_ARGS)
 	/* If we push arguments, we need to check all insns for stack
 	   adjustments.  */
@@ -1649,6 +2010,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       break;
 
     case CODE_LABEL:
+      {
+	int align = LABEL_TO_ALIGNMENT (insn);
+
+	if (align && NEXT_INSN (insn))
+	  ASM_OUTPUT_ALIGN (file, align);
+      }
       CC_STATUS_INIT;
       if (prescan > 0)
 	break;

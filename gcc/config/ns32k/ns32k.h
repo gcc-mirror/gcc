@@ -1383,11 +1383,9 @@ do {									\
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%d", PREFIX, NUM)
 
-/* This is how to align the code that follows an unconditional branch.
-   Note that 0xa2 is a no-op.  */
+/* This is how to align the code that follows an unconditional branch.  */
 
-#define ASM_OUTPUT_ALIGN_CODE(FILE)	\
-  fprintf (FILE, "\t.align 2,0xa2\n")
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL) (2)
 
 /* This is how to output an element of a case-vector that is absolute.
    (The ns32k does not use such vectors,

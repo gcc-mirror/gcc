@@ -1504,12 +1504,11 @@ do {							\
   fprintf (FILE, ")\n");				\
 } while (0)
 
-/* A C expression to output text to align the location counter in the way
-   that is desirable at the beginning of a loop.  */
+/* The desired alignment for the location counter at the beginning
+   of a loop.  */
 /* On the ARC, align loops to 32 byte boundaries (cache line size)
    if -malign-loops.  */
-#define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-do { if (TARGET_ALIGN_LOOPS) ASM_OUTPUT_SKIP (FILE, 5); } while (0)
+#define LOOP_ALIGN(LABEL) (TARGET_ALIGN_LOOPS ? 5 : 0)
 
 /* This is how to output an assembler line
    that says to advance the location counter

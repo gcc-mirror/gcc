@@ -6154,24 +6154,29 @@ instead of inline unwinders and __unwind_function in the non-setjmp case.
 This describes commands for alignment.
 
 @table @code
-@findex ASM_OUTPUT_ALIGN_CODE
-@item ASM_OUTPUT_ALIGN_CODE (@var{file})
-A C expression to output text to align the location counter in the way
-that is desirable at a point in the code that is reached only by
-jumping.
+@findex LABEL_ALIGN_AFTER_BARRIER
+@item LABEL_ALIGN_AFTER_BARRIER (@var{label})
+The alignment (log base 2) to put in front of @var{label}, which follows
+a BARRIER.
 
 This macro need not be defined if you don't want any special alignment
 to be done at such a time.  Most machine descriptions do not currently
 define the macro.
 
-@findex ASM_OUTPUT_LOOP_ALIGN
-@item ASM_OUTPUT_LOOP_ALIGN (@var{file})
-A C expression to output text to align the location counter in the way
-that is desirable at the beginning of a loop.
+@findex LOOP_ALIGN
+@item LOOP_ALIGN (@var{label})
+The alignment (log base 2) to put in front of @var{label}, which follows
+a NOTE_INSN_LOOP_BEG note.
 
 This macro need not be defined if you don't want any special alignment
 to be done at such a time.  Most machine descriptions do not currently
 define the macro.
+
+@findex LABEL_ALIGN
+@item LABEL_ALIGN (@var{label})
+The alignment (log base 2) to put in front of @var{label}.
+If LABEL_ALIGN_AFTER_BARRIER / LOOP_ALIGN specify a different alignment,
+the maximum of the specified values is used.
 
 @findex ASM_OUTPUT_SKIP
 @item ASM_OUTPUT_SKIP (@var{stream}, @var{nbytes})

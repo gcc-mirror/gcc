@@ -1407,8 +1407,7 @@ extern struct rtx_def *gen_compare_reg ();
 
 /* Align code to 8 byte boundary if TARGET_CODE_ALIGN is true.  */
 
-#define	ASM_OUTPUT_ALIGN_CODE(FILE)		\
-{ if (TARGET_CODE_ALIGN) fputs("\t.align 3\n",FILE); }
+#define	LABEL_ALIGN_AFTER_BARRIER(LABEL) (TARGET_CODE_ALIGN ? 3 : 0)
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
