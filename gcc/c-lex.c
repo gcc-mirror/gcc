@@ -942,7 +942,10 @@ readescape (ignore_ptr)
 	  nonnull = 1;
 	}
       if (! nonnull)
-	error ("\\x used with no following hex digits");
+	{
+	  warning ("\\x used with no following hex digits");
+	  return 'x';
+	}
       else if (count == 0)
 	/* Digits are all 0's.  Ok.  */
 	;
