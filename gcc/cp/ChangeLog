@@ -1,3 +1,9 @@
+Fri Nov 21 12:22:07 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (expand_start_catch_block): We only need the rethrow
+ 	region for non-sjlj exceptions.
+	(expand_end_catch_block): Likewise.  Use outer_context_label_stack.
+
 Thu Nov 20 14:40:17 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Make-lang.in (CXX_LIB2FUNCS): Add new op new and op delete objs.
