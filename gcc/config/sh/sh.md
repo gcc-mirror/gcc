@@ -321,13 +321,33 @@
   "clrt\;subc	%R2,%R0\;subc	%S2,%S0"
   [(set_attr "length" "6")])
 
-(define_insn "subsi3"
+(define_insn "*subsi3_internal"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(minus:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		  (match_operand:SI 2 "arith_reg_operand" "r")))]
   ""
   "sub	%2,%0"
   [(set_attr "type" "arith")])
+
+;; Convert `constant - reg' to `neg rX; add rX, #const' since this
+;; will sometimes save one instruction.  Otherwise we might get
+;; `mov #const, rY; sub rY,rX; mov rX, rY' if the source and dest regs
+;; are the same.
+
+(define_expand "subsi3"
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(minus:SI (match_operand:SI 1 "arith_operand" "")
+		  (match_operand:SI 2 "arith_reg_operand" "")))]
+  ""
+  "
+{
+  if (GET_CODE (operands[1]) == CONST_INT)
+    {
+      emit_insn (gen_negsi2 (operands[0], operands[2]));
+      emit_insn (gen_addsi3 (operands[0], operands[0], operands[1]));
+      DONE;
+    }
+}")
 
 ;; -------------------------------------------------------------------------
 ;; Division instructions
