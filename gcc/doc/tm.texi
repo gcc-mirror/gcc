@@ -619,7 +619,7 @@ Here are run-time target specifications.
 This function-like macro expands to a block of code that defines
 built-in preprocessor macros and assertions for the target cpu, using
 the functions @code{builtin_define}, @code{builtin_define_std} and
-@code{builtin_assert} defined in @file{c-common.c}.  When the front end
+@code{builtin_assert}.  When the front end
 calls this macro it provides a trailing semicolon, and since it has
 finished command line option processing your code can use those
 results freely.

@@ -1292,6 +1292,9 @@ extern void c_common_read_pch			PARAMS ((cpp_reader *pfile,
 							 int fd,
 							 const char *orig));
 extern void c_common_write_pch			PARAMS ((void));
+extern void builtin_define_with_value		PARAMS ((const char *,
+							 const char *, int));
+extern void c_stddef_cpp_builtins		PARAMS ((void));
 
 /* In c-ppoutput.c  */
 extern void init_pp_output			PARAMS ((FILE *));

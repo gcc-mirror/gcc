@@ -466,12 +466,6 @@ or with constant text in a single argument.
  %X	Output the accumulated linker options specified by compilations.
  %Y	Output the accumulated assembler options specified by compilations.
  %Z	Output the accumulated preprocessor options specified by compilations.
- %v1	Substitute the major version number of GCC.
-	(For version 2.5.3, this is 2.)
- %v2	Substitute the minor version number of GCC.
-	(For version 2.5.3, this is 5.)
- %v3	Substitute the patch level number of GCC.
-	(For version 2.5.3, this is 3.)
  %a     process ASM_SPEC as a spec.
         This allows config.h to specify part of the spec for running as.
  %A	process ASM_FINAL_SPEC as a spec.  A capital A is actually
@@ -740,14 +734,12 @@ static const char *trad_capable_cpp =
    therefore no dependency entry, confuses make into thinking a .o
    file that happens to exist is up-to-date.  */
 static const char *cpp_unique_options =
-"%{C:%{!E:%eGNU C does not support -C without using -E}}\
- %{CC:%{!E:%eGNU C does not support -CC without using -E}}\
+"%{C|CC:%{!E:%eGCC does not support -C or -CC without -E}}\
  %{!Q:-quiet} %{nostdinc*} %{C} %{CC} %{v} %{I*} %{P} %I\
  %{MD:-MD %{!o:%b.d}%{o*:%.d%*}}\
  %{MMD:-MMD %{!o:%b.d}%{o*:%.d%*}}\
  %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
  %{!E:%{!M:%{!MM:%{MD|MMD:%{o*:-MQ %*}}}}}\
- %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
  %{remap} %{g3:-dD} %{H} %C %{D*&U*&A*} %{i*} %Z %i\
  %{E|M|MM:%W{o*}}";
@@ -5302,63 +5294,6 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      /* Discard the closing paren or bracket.  */
 	      if (*p)
 		p++;
-	    }
-	    break;
-
-	  case 'v':
-	    {
-	      int c1 = *p++;  /* Select first or second version number.  */
-	      const char *v = compiler_version;
-	      const char *q;
-	      static const char zeroc = '0';
-
-	      /* The format of the version string is
-		 ([^0-9]*-)?[0-9]+[.][0-9]+([.][0-9]+)?([- ].*)?  */
-
-	      /* Ignore leading non-digits.  i.e. "foo-" in "foo-2.7.2".  */
-	      while (! ISDIGIT (*v))
-		v++;
-	      if (v > compiler_version && v[-1] != '-')
-		abort ();
-
-	      /* If desired, advance to second version number.  */
-	      if (c1 >= '2')
-		{
-		  /* Set V after the first period.  */
-		  while (ISDIGIT (*v))
-		    v++;
-		  if (*v != '.')
-		    abort ();
-		  v++;
-		}
-
-	      /* If desired, advance to third version number.
-                 But don't complain if it's not present */
-	      if (c1 == '3')
-		{
-		  /* Set V after the second period.  */
-		  while (ISDIGIT (*v))
-		    v++;
-		  if ((*v != 0) && (*v != ' ') && (*v != '.') && (*v != '-'))
-		    abort ();
-		  if (*v != 0)
-		    v++;
-		}
-
-	      /* Set Q at the next period or at the end.  */
-	      q = v;
-	      while (ISDIGIT (*q))
-		q++;
-	      if (*q != 0 && q > v && *q != ' ' && *q != '.' && *q != '-')
-		abort ();
-
-	      if (q > v)
-		/* Put that part into the command.  */
-		obstack_grow (&obstack, v, q - v);
-	      else
-		/* Default to "0" */
-		obstack_grow (&obstack, &zeroc, 1);
-	      arg_going = 1;
 	    }
 	    break;
 
