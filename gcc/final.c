@@ -2524,6 +2524,13 @@ split_double (value, first, second)
     }
   else
     {
+#ifdef REAL_ARITHMETIC
+      REAL_VALUE_TYPE r; HOST_WIDE_INT l[2];
+      REAL_VALUE_FROM_CONST_DOUBLE (r, value);
+      REAL_VALUE_TO_TARGET_DOUBLE (r, l);
+      *first = GEN_INT (l[0]);
+      *second = GEN_INT (l[1]);
+#else
       if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
 	   || HOST_BITS_PER_WIDE_INT != BITS_PER_WORD)
 	  && ! flag_pretend_float)
@@ -2537,6 +2544,7 @@ split_double (value, first, second)
       *second = GEN_INT (CONST_DOUBLE_LOW (value));
       *first = GEN_INT (CONST_DOUBLE_HIGH (value));
 #endif
+#endif /* no REAL_ARITHMETIC */
     }
 }
 
