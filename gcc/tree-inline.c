@@ -1086,6 +1086,15 @@ walk_tree (tp, func, data, htab_)
     }							\
   while (0)
 
+#define WALK_SUBTREE_TAIL(NODE)				\
+  do							\
+    {							\
+       tp = & (NODE);					\
+       goto tail_recurse;				\
+    }							\
+  while (0)
+
+ tail_recurse:
   /* Skip empty subtrees.  */
   if (!*tp)
     return NULL_TREE;
@@ -1120,7 +1129,7 @@ walk_tree (tp, func, data, htab_)
       if (statement_code_p (code) || code == TREE_LIST
 	  || (*lang_hooks.tree_inlining.tree_chain_matters_p) (*tp))
 	/* But we still need to check our siblings.  */
-	return walk_tree (&TREE_CHAIN (*tp), func, data, htab);
+	WALK_SUBTREE_TAIL (TREE_CHAIN (*tp));
       else
 	return NULL_TREE;
     }
@@ -1168,7 +1177,7 @@ walk_tree (tp, func, data, htab_)
 	    }
 
 	  /* This can be tail-recursion optimized if we write it this way.  */
-	  return walk_tree (&TREE_CHAIN (*tp), func, data, htab);
+	  WALK_SUBTREE_TAIL (TREE_CHAIN (*tp));
 	}
 
       /* We didn't find what we were looking for.  */
@@ -1176,10 +1185,7 @@ walk_tree (tp, func, data, htab_)
     }
   else if (TREE_CODE_CLASS (code) == 'd')
     {
-      WALK_SUBTREE (TREE_TYPE (*tp));
-
-      /* We didn't find what we were looking for.  */
-      return NULL_TREE;
+      WALK_SUBTREE_TAIL (TREE_TYPE (*tp));
     }
 
   result = (*lang_hooks.tree_inlining.walk_subtrees) (tp, &walk_subtrees, func,
@@ -1211,30 +1217,35 @@ walk_tree (tp, func, data, htab_)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      WALK_SUBTREE (TREE_TYPE (*tp));
+      WALK_SUBTREE_TAIL (TREE_TYPE (*tp));
       break;
 
     case TREE_LIST:
       WALK_SUBTREE (TREE_VALUE (*tp));
-      WALK_SUBTREE (TREE_CHAIN (*tp));
+      WALK_SUBTREE_TAIL (TREE_CHAIN (*tp));
       break;
 
     case TREE_VEC:
       {
 	int len = TREE_VEC_LENGTH (*tp);
-	while (len--)
+
+	if (len == 0)
+	  break;
+
+	/* Walk all elements but the first.  */
+	while (--len)
 	  WALK_SUBTREE (TREE_VEC_ELT (*tp, len));
+
+	/* Now walk the first one as a tail call.  */
+	WALK_SUBTREE_TAIL (TREE_VEC_ELT (*tp, 0));
       }
-      break;
 
     case COMPLEX_CST:
       WALK_SUBTREE (TREE_REALPART (*tp));
-      WALK_SUBTREE (TREE_IMAGPART (*tp));
-      break;
+      WALK_SUBTREE_TAIL (TREE_IMAGPART (*tp));
 
     case CONSTRUCTOR:
-      WALK_SUBTREE (CONSTRUCTOR_ELTS (*tp));
-      break;
+      WALK_SUBTREE_TAIL (CONSTRUCTOR_ELTS (*tp));
 
     case METHOD_TYPE:
       WALK_SUBTREE (TYPE_METHOD_BASETYPE (*tp));
@@ -1253,18 +1264,15 @@ walk_tree (tp, func, data, htab_)
 
     case ARRAY_TYPE:
       WALK_SUBTREE (TREE_TYPE (*tp));
-      WALK_SUBTREE (TYPE_DOMAIN (*tp));
-      break;
+      WALK_SUBTREE_TAIL (TYPE_DOMAIN (*tp));
 
     case INTEGER_TYPE:
       WALK_SUBTREE (TYPE_MIN_VALUE (*tp));
-      WALK_SUBTREE (TYPE_MAX_VALUE (*tp));
-      break;
+      WALK_SUBTREE_TAIL (TYPE_MAX_VALUE (*tp));
 
     case OFFSET_TYPE:
       WALK_SUBTREE (TREE_TYPE (*tp));
-      WALK_SUBTREE (TYPE_OFFSET_BASETYPE (*tp));
-      break;
+      WALK_SUBTREE_TAIL (TYPE_OFFSET_BASETYPE (*tp));
 
     default:
       abort ();
