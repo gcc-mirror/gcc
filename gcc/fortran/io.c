@@ -981,6 +981,14 @@ resolve_tag (const io_tag * tag, gfc_expr * e)
 		     &e->where);
 	  return FAILURE;
 	}
+      /* Check assigned label.  */
+      if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_INTEGER
+		&& e->symtree->n.sym->attr.assign != 1)
+	{
+	  gfc_error ("Variable '%s' has not been assigned a format label at %L",
+			e->symtree->n.sym->name, &e->where);
+	  return FAILURE;
+	}
     }
   else
     {
@@ -1526,9 +1534,6 @@ match_dt_format (gfc_dt * dt)
 	  gfc_free_expr (e);
 	  goto conflict;
 	}
-      if (e->ts.type == BT_INTEGER && e->rank == 0)
-        e->symtree->n.sym->attr.assign = 1;
-
       dt->format_expr = e;
       return MATCH_YES;
     }
