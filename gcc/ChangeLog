@@ -1,5 +1,10 @@
+2004-13-12  Steven Bosscher  <stevenb@suse.de>
+
+	* basic-block.h (PROP_POSTRELOAD): Do not include PROP_AUTOINC, we
+	can never create autoinc insns after reload.
+
 2004-12-13  Jeff Law  <law@redhat.com>
-            Kazu Hirata  <kazu@cs.umass.edu>
+	    Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-dom.c (thread_across_edge): Do not thread jumps if a
 	PHI argument is set from a PHI_RESULT in the same block and the
