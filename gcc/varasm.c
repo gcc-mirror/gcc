@@ -3039,20 +3039,6 @@ get_pool_mode (rtx addr)
   return find_pool_constant (cfun->varasm->pool, addr)->mode;
 }
 
-enum machine_mode
-get_pool_mode_for_function (struct function *f, rtx addr)
-{
-  return find_pool_constant (f->varasm->pool, addr)->mode;
-}
-
-/* Similar, return the offset in the constant pool.  */
-
-int
-get_pool_offset (rtx addr)
-{
-  return find_pool_constant (cfun->varasm->pool, addr)->offset;
-}
-
 /* Return the size of the constant pool.  */
 
 int
