@@ -869,6 +869,7 @@ Optional Features:
                  allow compilation of several files at once
 
   --enable-libgcj-debug   enable runtime debugging code
+  --enable-gc-debug	include full support for pointer backtracing etc.
   --enable-interpreter    enable interpreter
   --enable-sjlj-exceptions
                           force use of builtin_setjmp for exceptions
@@ -4735,7 +4736,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4738 "configure"' > conftest.$ac_ext
+  echo '#line 4739 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5716,6 +5717,18 @@ _ACEOF
   fi
 fi;
 
+# Check for gc debugging.  This option is handled both here and in the GC.
+# Check whether --enable-gc-debug or --disable-gc-debug was given.
+if test "${enable_gc_debug+set}" = set; then
+  enableval="$enable_gc_debug"
+   if test "$enable_gc_debug" = "yes"; then
+    cat >>confdefs.h <<\_ACEOF
+#define LIBGCJ_GC_DEBUG 1
+_ACEOF
+
+  fi
+fi;
+
 # See if the user has the interpreter included.
 # Check whether --enable-interpreter or --disable-interpreter was given.
 if test "${enable_interpreter+set}" = set; then
@@ -5752,7 +5765,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 5755 "configure"
+#line 5768 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
