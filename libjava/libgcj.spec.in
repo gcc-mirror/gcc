@@ -6,4 +6,5 @@
 %rename lib liborig
 *lib: -lgcj -lm @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(liborig)
 
-*jc1:  @DIVIDESPEC@
+*jc1:  @DIVIDESPEC@ @EXCEPTIONSPEC@
+

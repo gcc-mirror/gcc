@@ -89,7 +89,7 @@ main (int argc, const char **argv)
 	{
 	  if (i >= argc - 1)
 	    {
-	    no_argument:
+	    no_arg:
 	      fprintf (stderr, "gij: option requires an argument -- `%s'\n",
 		       argv[i]);
 	      fprintf (stderr, "Try `gij --help' for more information.\n");
@@ -102,7 +102,7 @@ main (int argc, const char **argv)
       else if (! strcmp (arg, "-mx"))
 	{
 	  if (i >= argc - 1)
-	    goto no_argument;
+	    goto no_arg;
 	  _Jv_SetMaximumHeapSize (argv[++i]);
 	}
       else

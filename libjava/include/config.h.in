@@ -132,6 +132,9 @@
    getenv("GCJ_PROPERTIES").  */
 #undef DISABLE_GETENV_PROPERTIES
 
+/* Define if using setjmp/longjmp exceptions.  */
+#undef SJLJ_EXCEPTIONS
+
 /* Define if you have the access function.  */
 #undef HAVE_ACCESS
 

@@ -57,12 +57,26 @@ AC_ARG_ENABLE(libgcj-debug,
      AC_DEFINE(DEBUG)
   fi)
 
-dnl See if the user has the enterpreter included.
+dnl See if the user has the interpreter included.
 AC_ARG_ENABLE(interpreter,
 [  --enable-interpreter    enable interpreter],
   if test "$enable_interpreter" = yes; then
      AC_DEFINE(INTERPRETER)
   fi)
+
+EXCEPTIONSPEC=
+dnl See if we should use setjmp/longjmp exceptions
+AC_ARG_ENABLE(sjlj-exceptions,
+[  --enable-sjlj-exceptions    use setjmp/longjmp exceptions],
+  if test "$enable_sjlj_exceptions" = yes; then
+     # This can be set in configure.host.
+     libgcj_sjlj=yes
+  fi)
+
+if test "$libgcj_sjlj" = yes; then
+   EXCEPTIONSPEC="-fsjlj-exceptions"
+   AC_DEFINE(SJLJ_EXCEPTIONS)
+fi
 
 dnl See if the user wants to disable java.net.  This is the mildly
 dnl ugly way that we admit that target-side configuration sucks.
@@ -520,6 +534,7 @@ AC_SUBST(ZLIBS)
 AC_SUBST(ZDEPS)
 AC_SUBST(ZINCS)
 AC_SUBST(DIVIDESPEC)
+AC_SUBST(EXCEPTIONSPEC)
 
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
 AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
@@ -621,17 +636,21 @@ AC_FUNC_ALLOCA
 
 AC_CHECK_PROGS(PERL, perl, false)
 
-case "${host}" in
-  i?86-*-linux*)
-    SIGNAL_HANDLER=include/i386-signal.h
-	;;
-  sparc-sun-solaris*)
-    SIGNAL_HANDLER=include/sparc-signal.h
-	;;
-  *)
-    SIGNAL_HANDLER=include/default-signal.h
-	;;
-esac
+if test "$enable_sjlj_exceptions" = yes; then
+   SIGNAL_HANDLER=include/default-signal.h
+else
+   case "${host}" in
+    i?86-*-linux*)
+       SIGNAL_HANDLER=include/i386-signal.h
+       ;;
+    sparc-sun-solaris*)
+       SIGNAL_HANDLER=include/sparc-signal.h
+       ;;
+    *)
+       SIGNAL_HANDLER=include/default-signal.h
+       ;;
+   esac
+fi
 
 AC_LINK_FILES($SIGNAL_HANDLER, include/java-signal.h)
 
