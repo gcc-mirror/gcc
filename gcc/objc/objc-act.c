@@ -812,8 +812,7 @@ init_module_descriptor ()
 
   /* size = { ..., sizeof (struct objc_module), ... } */
 
-  expr = build_int_2 (TREE_INT_CST_LOW (TYPE_SIZE (objc_module_template)) /
-		      BITS_PER_UNIT, 0);
+  expr = size_in_bytes (objc_module_template);
   initlist = tree_cons (NULLT, expr, initlist);
 
   /* name = { ..., "foo.m", ... } */
