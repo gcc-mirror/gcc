@@ -1,5 +1,9 @@
 Tue Jan 19 21:20:52 1999  Richard Henderson  <rth@cygnus.com>
 
+	* recog.c (pop_operand): New function.
+	* recog.h (pop_operand): Declare it.
+	* genrecog.c (preds): Define it.
+
 	* expr.c (do_jump_for_compare): Handle conditional branch expanders
 	emitting multiple jump instructions.
 	* jump.c (condjump_label): New function.

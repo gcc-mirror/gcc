@@ -41,6 +41,14 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
+#ifndef STACK_POP_CODE
+#ifdef STACK_GROWS_DOWNWARD
+#define STACK_POP_CODE POST_INC
+#else
+#define STACK_POP_CODE POST_DEC
+#endif
+#endif
+
 static void validate_replace_rtx_1	PROTO((rtx *, rtx, rtx, rtx));
 static rtx *find_single_use_1		PROTO((rtx, rtx *));
 static rtx *find_constant_term_loc	PROTO((rtx *));
@@ -1195,6 +1203,31 @@ push_operand (op, mode)
   op = XEXP (op, 0);
 
   if (GET_CODE (op) != STACK_PUSH_CODE)
+    return 0;
+
+  return XEXP (op, 0) == stack_pointer_rtx;
+}
+
+/* Return 1 if OP is a valid operand that stands for popping a
+   value of mode MODE off the stack.
+
+   The main use of this function is as a predicate in match_operand
+   expressions in the machine description.  */
+
+int
+pop_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) != MEM)
+    return 0;
+
+  if (GET_MODE (op) != mode)
+    return 0;
+
+  op = XEXP (op, 0);
+
+  if (GET_CODE (op) != STACK_POP_CODE)
     return 0;
 
   return XEXP (op, 0) == stack_pointer_rtx;
