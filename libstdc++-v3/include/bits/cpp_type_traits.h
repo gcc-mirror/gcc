@@ -77,10 +77,10 @@ namespace __gnu_internal
   typedef char __one;
   typedef char __two[2];
 
-  template <typename _Tp>
-  __one __test_type (int _Tp::*);
-  template <typename _Tp>
-  __two& __test_type (...);
+  template<typename _Tp>
+  __one __test_type(int _Tp::*);
+  template<typename _Tp>
+  __two& __test_type(...);
 } // namespace __gnu_internal
 
 // Forward declaration hack, should really include this from somewhere.
@@ -106,27 +106,23 @@ namespace std
   template<class _Sp, class _Tp>
     struct __traitor
     {
-      enum { _M_type = _Sp::_M_type || _Tp::_M_type };
-      typedef typename __truth_type<_M_type>::__type __type;
+      enum { __value = _Sp::__value || _Tp::__value };
+      typedef typename __truth_type<__value>::__type __type;
     };
 
   // Compare for equality of types.
   template<typename, typename>
     struct __are_same
     {
-      enum
-	{
-	  _M_type = 0
-	};
+      enum { __value = 0 };
+      typedef __false_type __type;
     };
 
   template<typename _Tp>
     struct __are_same<_Tp, _Tp>
     {
-      enum
-	{
-	  _M_type = 1
-	};
+      enum { __value = 1 };
+      typedef __true_type __type;
     };
 
   // Define a nested type if some predicate holds.
@@ -138,21 +134,21 @@ namespace std
   template<typename _Tp>
     struct __enable_if<_Tp, true>
     {
-      typedef _Tp _M_type;
+      typedef _Tp __type;
     };
 
   // Holds if the template-argument is a void type.
   template<typename _Tp>
     struct __is_void
     {
-      enum { _M_type = 0 };
+      enum { __value = 0 };
       typedef __false_type __type;
     };
 
   template<>
     struct __is_void<void>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
@@ -162,7 +158,7 @@ namespace std
   template<typename _Tp>
     struct __is_integer
     {
-      enum { _M_type = 0 };
+      enum { __value = 0 };
       typedef __false_type __type;
     };
 
@@ -172,28 +168,28 @@ namespace std
   template<>
     struct __is_integer<bool>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
   template<>
     struct __is_integer<char>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
   template<>
     struct __is_integer<signed char>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
   template<>
     struct __is_integer<unsigned char>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
@@ -201,7 +197,7 @@ namespace std
   template<>
     struct __is_integer<wchar_t>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 # endif
@@ -209,56 +205,56 @@ namespace std
   template<>
     struct __is_integer<short>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
   template<>
     struct __is_integer<unsigned short>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
   template<>
     struct __is_integer<int>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
   template<>
     struct __is_integer<unsigned int>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
   template<>
     struct __is_integer<long>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
   template<>
     struct __is_integer<unsigned long>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
   template<>
     struct __is_integer<long long>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
   template<>
     struct __is_integer<unsigned long long>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
@@ -268,7 +264,7 @@ namespace std
   template<typename _Tp>
     struct __is_floating
     {
-      enum { _M_type = 0 };
+      enum { __value = 0 };
       typedef __false_type __type;
     };
 
@@ -276,21 +272,21 @@ namespace std
   template<>
     struct __is_floating<float>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
   template<>
     struct __is_floating<double>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
   template<>
     struct __is_floating<long double>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
@@ -300,14 +296,14 @@ namespace std
   template<typename _Tp>
     struct __is_pointer
     {
-      enum { _M_type = 0 };
+      enum { __value = 0 };
       typedef __false_type __type;
     };
 
   template<typename _Tp>
     struct __is_pointer<_Tp*>
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
@@ -317,7 +313,7 @@ namespace std
   template<typename _Tp>
     struct __is_normal_iterator
     {
-      enum { _M_type = 0 };
+      enum { __value = 0 };
       typedef __false_type __type;
     };
 
@@ -325,7 +321,7 @@ namespace std
     struct __is_normal_iterator< __gnu_cxx::__normal_iterator<_Iterator,
 							      _Container> >
     {
-      enum { _M_type = 1 };
+      enum { __value = 1 };
       typedef __true_type __type;
     };
 
@@ -361,7 +357,7 @@ namespace std
     {
       enum
 	{
-	  _M_type = (sizeof(__gnu_internal::__test_type<_Tp>(0))
+	  __value = (sizeof(__gnu_internal::__test_type<_Tp>(0))
 		     != sizeof(__gnu_internal::__one))
 	};
     };
