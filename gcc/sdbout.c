@@ -950,7 +950,7 @@ sdbout_one_type (type)
       TREE_ASM_WRITTEN (type) = 1;
 #if 1
       /* This is reputed to cause trouble with the following case,
-	 but perhaps checking TYPE_SIZE above will fix it.
+	 but perhaps checking TYPE_SIZE above will fix it.  */
 
       /* Here is a test case:
 
