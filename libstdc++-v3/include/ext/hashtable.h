@@ -55,8 +55,7 @@
 
 /** @file ext/hashtable.h
  *  This file is a GNU extension to the Standard C++ Library (possibly
- *  containing extensions from the HP/SGI STL subset).  You should only
- *  include this header if you are using GCC 3 or later.
+ *  containing extensions from the HP/SGI STL subset).
  */
 
 #ifndef _HASHTABLE_H

@@ -1,6 +1,6 @@
 // POD character, std::char_traits specialization -*- C++ -*-
 
-// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,6 +27,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file ext/pod_char_traits.h
+ *  This file is a GNU extension to the Standard C++ Library.
+ */
+
 // Gabriel Dos Reis <gdr@integrable-solutions.net>
 // Benjamin Kosnik <bkoz@redhat.com>
 
@@ -37,6 +41,7 @@
 
 namespace __gnu_cxx
 {
+  /// @brief A POD class that serves as a character abstraction class.
   template<typename V, typename I, typename S = mbstate_t>
     struct character
     {
@@ -59,7 +64,7 @@ namespace __gnu_cxx
 
 namespace std
 {
-  // Provide std::char_traits specialization.
+  /// char_traits<__gnu_cxx::character> specialization.
   template<typename V, typename I, typename S>
     struct char_traits<__gnu_cxx::character<V, I, S> >
     {

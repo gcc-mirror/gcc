@@ -42,8 +42,8 @@
 
 /** @file ext/pool_allocator.h
  *  This file is a GNU extension to the Standard C++ Library.
- *  You should only include this header if you are using GCC 3 or later.
  */
+
 #ifndef _POOL_ALLOCATOR_H
 #define _POOL_ALLOCATOR_H 1
 
@@ -117,7 +117,7 @@ namespace __gnu_cxx
     };
 
 
-  /// @brief  Class __pool_alloc.
+  /// @brief  class __pool_alloc.
   template<typename _Tp>
     class __pool_alloc : private __pool_alloc_base
     {

@@ -27,6 +27,11 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file atomicity.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
+ */
+
 #ifndef _GLIBCXX_ATOMICITY_H
 #define _GLIBCXX_ATOMICITY_H	1
 

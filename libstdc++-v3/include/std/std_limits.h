@@ -27,6 +27,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file limits
+ *  This is a Standard C++ Library header.
+ */
+
 // Note: this is not a conforming implementation.
 // Written by Gabriel Dos Reis <gdr@codesourcery.com>
 
@@ -34,11 +38,6 @@
 // ISO 14882:1998
 // 18.2.1
 //
-
-/** @file limits
- *  This is a Standard C++ Library header.  You should @c #include this header
- *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
- */
 
 #ifndef _GLIBCXX_NUMERIC_LIMITS
 #define _GLIBCXX_NUMERIC_LIMITS 1
@@ -310,6 +309,8 @@ namespace std
 
   // Now there follow 15 explicit specializations.  Yes, 15.  Make sure
   // you get the count right.
+
+  /// numeric_limits<bool> specialization.
   template<>
     struct numeric_limits<bool>
     {
@@ -363,6 +364,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<char> specialization.
   template<>
     struct numeric_limits<char>
     {
@@ -413,6 +415,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<signed char> specialization.
   template<>
     struct numeric_limits<signed char>
     {
@@ -463,6 +466,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<unsigned char> specialization.
   template<>
     struct numeric_limits<unsigned char>
     {
@@ -513,6 +517,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<wchar_t> specialization.
   template<>
     struct numeric_limits<wchar_t>
     {
@@ -563,6 +568,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<short> specialization.
   template<>
     struct numeric_limits<short>
     {
@@ -613,6 +619,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<unsigned short> specialization.
   template<>
     struct numeric_limits<unsigned short>
     {
@@ -663,6 +670,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<int> specialization.
   template<>
     struct numeric_limits<int>
     {
@@ -713,6 +721,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<unsigned int> specialization.
   template<>
     struct numeric_limits<unsigned int>
     {
@@ -763,6 +772,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<long> specialization.
   template<>
     struct numeric_limits<long>
     {
@@ -813,6 +823,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<unsigned long> specialization.
   template<>
     struct numeric_limits<unsigned long>
     {
@@ -863,6 +874,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<long long> specialization.
   template<>
     struct numeric_limits<long long>
     {
@@ -913,6 +925,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<unsigned long long> specialization.
   template<>
     struct numeric_limits<unsigned long long>
     {
@@ -963,6 +976,7 @@ namespace std
       static const float_round_style round_style = round_toward_zero;
     };
 
+  /// numeric_limits<float> specialization.
   template<>
     struct numeric_limits<float>
     {
@@ -1019,6 +1033,7 @@ namespace std
 #undef __glibcxx_float_traps
 #undef __glibcxx_float_tinyness_before
 
+  /// numeric_limits<double> specialization.
   template<>
     struct numeric_limits<double>
     {
@@ -1075,6 +1090,7 @@ namespace std
 #undef __glibcxx_double_traps
 #undef __glibcxx_double_tinyness_before
 
+  /// numeric_limits<long double> specialization.
   template<>
     struct numeric_limits<long double>
     {

@@ -76,6 +76,7 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          @srcdir@/libsupc++/exception \
                          @srcdir@/libsupc++/new \
                          @srcdir@/libsupc++/typeinfo \
+                         @srcdir@/libsupc++/cxxabi.h \
                          include/algorithm \
                          include/bitset \
                          include/deque \
@@ -148,7 +149,8 @@ ALPHABETICAL_INDEX     = YES
 COLS_IN_ALPHA_INDEX    = 2
 IGNORE_PREFIX          = std \
                          __gnu_cxx \
-                         __gnu_debug
+                         __gnu_debug \
+	          	 std::tr1
 #---------------------------------------------------------------------------
 # configuration options related to the HTML output
 #---------------------------------------------------------------------------

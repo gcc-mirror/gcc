@@ -27,6 +27,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file functexcept.h
+ *  This header provides support for -fno-exceptions.
+ */
+
 //
 // ISO C++ 14882: 19.1  Exception classes
 //

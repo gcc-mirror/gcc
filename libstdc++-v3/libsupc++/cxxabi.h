@@ -39,6 +39,10 @@
    is includable from both C and C++. Though the C++ specific parts are not
    available in C, naturally enough.  */
 
+/** @file cxxabi.h
+ *  The header provides an interface to the C++ ABI.
+ */
+
 #ifndef _CXXABI_H
 #define _CXXABI_H 1
 
