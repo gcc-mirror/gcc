@@ -47,6 +47,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "target.h"
 #include "target-def.h"
+#include "langhooks.h"
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
@@ -2303,9 +2304,10 @@ xtensa_function_epilogue (file, size)
 tree
 xtensa_build_va_list (void)
 {
-  tree f_stk, f_reg, f_ndx, record;
+  tree f_stk, f_reg, f_ndx, record, type_decl;
 
-  record = make_node (RECORD_TYPE);
+  record = (*lang_hooks.types.make_type) (RECORD_TYPE);
+  type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
 
   f_stk = build_decl (FIELD_DECL, get_identifier ("__va_stk"),
 		      ptr_type_node);
@@ -2318,6 +2320,8 @@ xtensa_build_va_list (void)
   DECL_FIELD_CONTEXT (f_reg) = record;
   DECL_FIELD_CONTEXT (f_ndx) = record;
 
+  TREE_CHAIN (record) = type_decl;
+  TYPE_NAME (record) = type_decl;
   TYPE_FIELDS (record) = f_stk;
   TREE_CHAIN (f_stk) = f_reg;
   TREE_CHAIN (f_reg) = f_ndx;
@@ -2344,9 +2348,7 @@ xtensa_builtin_saveregs ()
   /* allocate the general-purpose register space */
   gp_regs = assign_stack_local
     (BLKmode, MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD, -1);
-  MEM_IN_STRUCT_P (gp_regs) = 1;
-  RTX_UNCHANGING_P (gp_regs) = 1;
-  RTX_UNCHANGING_P (XEXP (gp_regs, 0)) = 1;
+  set_mem_alias_set (gp_regs, get_varargs_alias_set ());
 
   /* Now store the incoming registers.  */
   dest = change_address (gp_regs, SImode,
