@@ -140,8 +140,8 @@ namespace std
 	    // _M_string, and may not be the correct size of the
 	    // current stringbuf internal buffer.
 	    __size_type __len = _M_string.size();
-	    if (this->_M_out_end > this->_M_out_beg)
-	      __len = std::max(__size_type(this->_M_out_end 
+	    if (this->_M_out_lim > this->_M_out_beg)
+	      __len = std::max(__size_type(this->_M_out_lim 
 					   - this->_M_out_beg), __len);
 	    return __string_type(this->_M_out_beg, this->_M_out_beg + __len);
 	  }
@@ -174,13 +174,6 @@ namespace std
       void
       _M_stringbuf_init(ios_base::openmode __mode)
       {
-	// _M_buf_size is a convenient alias for "what the streambuf
-	// thinks the allocated size of the string really is." This is
-	// necessary as ostringstreams are implemented with the
-	// streambufs having control of the allocation and
-	// re-allocation of the internal string object, _M_string.
-	this->_M_buf_size = _M_string.size();
-
 	// NB: Start ostringstream buffers at 512 bytes. This is an
 	// experimental value (pronounced "arbitrary" in some of the
 	// hipper english-speaking countries), and can be changed to
@@ -188,7 +181,7 @@ namespace std
 	this->_M_buf_size_opt = 512;
 	this->_M_mode = __mode;
 	if (this->_M_mode & (ios_base::ate | ios_base::app))
-	  _M_really_sync(0, this->_M_buf_size);
+	  _M_really_sync(0, _M_string.size());
 	else
 	  _M_really_sync(0, 0);
       }
@@ -268,7 +261,9 @@ namespace std
 	    this->setg(__base, __base + __i, __base + __len);
 	if (__testout)
 	  {
-	    this->setp(__base, __base + __len);
+	    this->setp(__base, __base + _M_string.capacity());
+	    // _M_out_lim points to the string end.
+	    this->_M_out_lim = __base + __len;
 	    this->_M_out_cur += __o;
 	  }
 	return 0;

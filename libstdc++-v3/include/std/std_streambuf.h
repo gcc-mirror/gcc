@@ -172,7 +172,8 @@ namespace std
 
       /**
        *  @if maint
-       *  Actual size of allocated internal buffer, in bytes.
+       *  Actual size of allocated internal buffer, in bytes. Unused
+       *  for sstreams, which have readily available _M_string.capacity().
        *  @endif
       */
       size_t			_M_buf_size;
@@ -202,12 +203,15 @@ namespace std
        *  -  put == output == write
        *  @endif
       */
-      char_type* 		_M_in_beg;  	// Start of get area. 
-      char_type* 		_M_in_cur;	// Current read area. 
-      char_type* 		_M_in_end;	// End of get area. 
-      char_type* 		_M_out_beg; 	// Start of put area. 
-      char_type* 		_M_out_cur;  	// Current put area. 
-      char_type* 		_M_out_end;  	// End of put area. 
+      char_type* 		_M_in_beg;     // Start of get area. 
+      char_type* 		_M_in_cur;     // Current read area. 
+      char_type* 		_M_in_end;     // End of get area. 
+      char_type* 		_M_out_beg;    // Start of put area. 
+      char_type* 		_M_out_cur;    // Current put area. 
+      char_type* 		_M_out_end;    // End of put area.
+
+      char_type*                _M_out_lim;    // Right limit of used put area.
+
       //@}
 
       /**
@@ -305,13 +309,13 @@ namespace std
       }
 
       // Correctly sets the _M_out_cur pointer, and bumps the
-      // appropriate _M_*_end pointers as well. Necessary for the
-      // un-tied stringbufs, in in|out mode.
+      // appropriate _M_out_lim and _M_in_end pointers as well. Necessary
+      // for the un-tied stringbufs, in in|out mode.
       // Invariant:
-      // __n + _M_out_[cur, end] <= _M_buf + _M_buf_size
-      // Assuming all _M_*_[beg, cur, end] pointers are operating on
+      // __n + _M_out_[cur, lim] <= _M_out_end
+      // Assuming all _M_out_[beg, cur, lim] pointers are operating on
       // the same range:
-      // _M_buf <= _M_*_ <= _M_buf + _M_buf_size
+      // _M_buf <= _M_*_ <= _M_out_end
       void 
       _M_out_cur_move(off_type __n) // argument needs to be +-
       {
@@ -320,32 +324,23 @@ namespace std
 	_M_out_cur += __n;
 	if (__testin && _M_buf_unified)
 	  _M_in_cur += __n;
-	if (_M_out_cur > _M_out_end)
+	if (_M_out_cur > _M_out_lim)
 	  {
-	    _M_out_end = _M_out_cur;
+	    _M_out_lim = _M_out_cur;
 	    // NB: in | out buffers drag the _M_in_end pointer along...
 	    if (__testin)
 	      _M_in_end += __n;
 	  }
       }
 
-      // Return the size of the output buffer.  This depends on the
-      // buffer in use: allocated buffers have a stored size in
-      // _M_buf_size and setbuf() buffers don't.
+      // Returns zero if the output buffer is full (-> overflow).
       off_type
       _M_out_buf_size()
       {
-	off_type __ret = 0;
 	if (_M_out_cur)
-	  {
-	    // Using allocated buffer.
-	    if (_M_out_beg == _M_buf)
-	      __ret = _M_out_beg + _M_buf_size - _M_out_cur;
-	    // Using non-allocated buffer.
-	    else
-	      __ret = _M_out_end - _M_out_cur;
-	  }
-	return __ret;
+	  return _M_out_end - _M_out_cur;
+	else
+	  return off_type(0);
       }
 
   public:
@@ -568,8 +563,8 @@ namespace std
       */
       basic_streambuf()
       : _M_buf(NULL), _M_buf_size(0), _M_buf_size_opt(BUFSIZ), 
-      _M_buf_unified(false), _M_in_beg(0), _M_in_cur(0), _M_in_end(0), 
-      _M_out_beg(0), _M_out_cur(0), _M_out_end(0), 
+      _M_buf_unified(false), _M_in_beg(0), _M_in_cur(0), _M_in_end(0),
+      _M_out_beg(0), _M_out_cur(0), _M_out_end(0), _M_out_lim(0),
       _M_mode(ios_base::openmode(0)), _M_buf_locale(locale()), 
       _M_pback_cur_save(0), _M_pback_end_save(0), 
       _M_pback_init(false)
@@ -666,7 +661,7 @@ namespace std
       setp(char_type* __pbeg, char_type* __pend)
       { 
 	_M_out_beg = _M_out_cur = __pbeg; 
-	_M_out_end = __pend; 
+	_M_out_end = __pend;
 	if (!(_M_mode & ios_base::out) && __pbeg && __pend)
 	  _M_mode = _M_mode | ios_base::out;
       }

@@ -48,8 +48,10 @@ namespace std
 	{
 	  this->_M_buf_size = this->_M_buf_size_opt;
 
-	  // Allocate internal buffer.
-	  this->_M_buf = new char_type[this->_M_buf_size]; 
+	  // Allocate internal buffer...
+	  this->_M_buf = new char_type[this->_M_buf_size];
+	  // ... and consistently set the end of buffer pointer.
+	  this->_M_out_end = this->_M_buf + this->_M_buf_size;
 	  _M_buf_allocated = true;
 	}
     }
@@ -125,7 +127,7 @@ namespace std
 	{
 	  const int_type __eof = traits_type::eof();
 	  bool __testput = this->_M_out_cur
-	    && this->_M_out_beg < this->_M_out_end;
+	    && this->_M_out_beg < this->_M_out_lim;
 	  if (__testput 
 	      && traits_type::eq_int_type(_M_really_overflow(__eof), __eof))
 	    return __ret;
@@ -245,8 +247,7 @@ namespace std
     overflow(int_type __c)
     {
       int_type __ret = traits_type::eof();
-      bool __testput = this->_M_out_cur
-	&& this->_M_out_cur < this->_M_buf + this->_M_buf_size;
+      bool __testput = _M_out_buf_size();
       bool __testout = this->_M_mode & ios_base::out;
       
       if (__testout)
@@ -314,7 +315,7 @@ namespace std
 	  if (__r == codecvt_base::partial)
 	    {
 	      const char_type* __iresume = __iend;
-	      streamsize __rlen = this->_M_out_end - __iend;
+	      streamsize __rlen = this->_M_out_lim - __iend;
 	      __r = __cvt.out(_M_state_cur, __iresume, __iresume + __rlen, 
 			      __iend, __buf, __buf + __blen, __bend);
 	      if (__r != codecvt_base::error)
@@ -336,7 +337,7 @@ namespace std
     _M_really_overflow(int_type __c)
     {
       int_type __ret = traits_type::eof();
-      bool __testput = this->_M_out_cur && this->_M_out_beg < this->_M_out_end;
+      bool __testput = this->_M_out_cur && this->_M_out_beg < this->_M_out_lim;
       bool __testunbuffered = _M_file.is_open() && !this->_M_buf_size_opt;
 
       if (__testput || __testunbuffered)
@@ -358,7 +359,7 @@ namespace std
 	  // NB: In the unbuffered case, no internal buffer exists. 
 	  if (!__testunbuffered)
 	    _M_convert_to_external(this->_M_out_beg,
-				   this->_M_out_end - this->_M_out_beg, 
+				   this->_M_out_lim - this->_M_out_beg, 
 				   __elen, __plen);
 
 	  // Convert pending sequence to external representation, output.
@@ -398,12 +399,15 @@ namespace std
 	  // that an external char_type array of length (__s + __n)
 	  // exists and has been pre-allocated. If this is not the
 	  // case, things will quickly blow up.
+
 	  // Step 1: Destroy the current internal array.
 	  _M_destroy_internal_buffer();
 	  
 	  // Step 2: Use the external array.
 	  this->_M_buf = __s;
 	  this->_M_buf_size_opt = this->_M_buf_size = __n;
+	  // Consistently set the end of buffer pointer.
+	  this->_M_out_end = this->_M_buf + this->_M_buf_size;
 	  _M_set_indeterminate();
 	}
       _M_last_overflowed = false;	
@@ -437,7 +441,7 @@ namespace std
 	      bool __testget = this->_M_in_cur
 		&& this->_M_in_beg < this->_M_in_end;
 	      bool __testput = this->_M_out_cur
-		&& this->_M_out_beg < this->_M_out_end;
+		&& this->_M_out_beg < this->_M_out_lim;
 	      // Sync the internal and external streams.
 	      // out
 	      if (__testput || _M_last_overflowed)

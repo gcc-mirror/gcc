@@ -93,11 +93,6 @@ namespace std
       return __ret;
     }
 
-  // Don't test against _M_buf + _M_buf_size, because _M_buf reflects
-  // allocated space, and on certain (rare but entirely legal)
-  // situations, there will be no allocated space yet the internal
-  // buffers will still be valid. (This happens if setp is used to set
-  // the internal buffer to say some externally-allocated sequence.)
   template<typename _CharT, typename _Traits>
     typename basic_streambuf<_CharT, _Traits>::int_type
     basic_streambuf<_CharT, _Traits>::
@@ -149,11 +144,6 @@ namespace std
       return __ret;
     }
 
-  // Don't test against _M_buf + _M_buf_size, because _M_buf reflects
-  // allocated space, and on certain (rare but entirely legal)
-  // situations, there will be no allocated space yet the internal
-  // buffers will still be valid. (This happens if setp is used to set
-  // the internal buffer to say some externally-allocated sequence.)
   template<typename _CharT, typename _Traits>
     streamsize
     basic_streambuf<_CharT, _Traits>::

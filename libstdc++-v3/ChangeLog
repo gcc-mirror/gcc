@@ -1,3 +1,46 @@
+2003-02-24  Paolo Carlini <pcarlini@unitus.it>
+	    Nathan Myers <ncm@cantrip.org>
+
+	PR libstdc++/9404, PR libstdc++/9701 (partial)
+	(aka pptr == epptr implies overflow)
+	* include/bits/fstream.tcc (_M_allocate_internal_buffer):
+	Consistently, _M_out_end points to the end of the buffer just
+	created.
+	(overflow): Tweak to use _M_out_buf_size().
+	(_M_convert_to_external): The role of the old _M_out_end is
+	now played by _M_out_lim.
+	(_M_really_overflow): Likewise.
+	(seekoff): Likewise.
+	(setbuf): _M_out_end points to the end of the external buffer.
+	* include/bits/sstream.tcc (overflow): Rewrote, taking into
+	account the resolution of DR 169 (TC).
+	(seekoff): Use _M_string.capacity(); ios_base::end is now _M_out_lim.
+	(seekpos): Use _M_string.capacity(); tweak.
+	* include/bits/streambuf.tcc (sputc, xsputn): Remove comments.
+	* include/std/std_fstream.h (sync): The role of the old
+	_M_out_end is now played by _M_out_lim.
+	(_M_set_indeterminate): Use _M_set_determinate.
+	(_M_set_determinate): _M_out_end is now _M_out_lim.
+	(_M_is_indeterminate): Likewise.
+	* include/std/std_sstream.h (str()): _M_out_end is now _M_out_lim.
+	(_M_stringbuf_init): Don't set _M_buf_size, unused for sstreams,
+	which have the information readily available as _M_string.capacity();
+	for ate and app modes, pass the string size to _M_really_sync.
+	(_M_really_sync): Consistently set _M_out_end and _M_out_lim, to
+	point to the end of the buffer (i.e., epptr) and to the string end,
+	respectively.
+	* include/std/std_streambuf.h: tweak comments, add _M_out_lim,
+	which points to the right limit of the used put area.
+	(_M_out_cur_move): The role of the old _M_out_end is now played
+	by _M_out_lim.
+	(_M_out_buf_size): Simplify: now (when _M_out_cur) return simply
+	_M_out_end  - _M_out_cur (i.e., pptr), _very_ close to the letter
+	of the standard.
+	(basic_streambuf()): Initialize _M_out_lim too.
+	* testsuite/27_io/filebuf_virtuals.cc (test10): Trivial tweak.
+	* testsuite/27_io/filebuf_virtuals.cc (test11): Add.
+ 	* testsuite/27_io/stringbuf_virtuals.cc (test09): Add.
+
 2003-02-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/27_io/ios_base_storage.cc (main): Call

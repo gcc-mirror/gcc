@@ -312,14 +312,14 @@ namespace std
       sync()
       {
 	bool __testput = this->_M_out_cur
-	  && this->_M_out_beg < this->_M_out_end;
+	  && this->_M_out_beg < this->_M_out_lim;
 
 	// Make sure that the internal buffer resyncs its idea of
 	// the file position with the external file.
 	if (__testput)
 	  {
 	    // Need to restore current position after the write.
-	    off_type __off = this->_M_out_cur - this->_M_out_end;
+	    off_type __off = this->_M_out_cur - this->_M_out_lim;
 	    _M_really_overflow(); // _M_file.sync() will be called within
 	    if (__off)
 	      _M_file.seekoff(__off, ios_base::cur);
@@ -387,11 +387,7 @@ namespace std
       void
       _M_set_indeterminate(void)
       {
-	if (this->_M_mode & ios_base::in)
-	  this->setg(this->_M_buf, this->_M_buf, this->_M_buf);
-	if (this->_M_mode & ios_base::out)
-	  this->setp(this->_M_buf, this->_M_buf);
-	_M_filepos = this->_M_buf;
+	_M_set_determinate(off_type(0));
       }
 
       /**
@@ -405,9 +401,15 @@ namespace std
 	bool __testin = this->_M_mode & ios_base::in;
 	bool __testout = this->_M_mode & ios_base::out;
 	if (__testin)
-	  this->setg(this->_M_buf, this->_M_buf, this->_M_buf + __off);
+	  {
+	    this->_M_in_beg = this->_M_in_cur = this->_M_buf;
+	    this->_M_in_end = this->_M_buf + __off;
+	  }
 	if (__testout)
-	  this->setp(this->_M_buf, this->_M_buf + __off);
+	  {
+	    this->_M_out_beg = this->_M_out_cur = this->_M_buf;
+	    this->_M_out_lim = this->_M_buf + __off;
+	  }
 	_M_filepos = this->_M_buf + __off;
       }
 
@@ -419,16 +421,18 @@ namespace std
       bool
       _M_is_indeterminate(void)
       { 
+	bool __testin = this->_M_mode & ios_base::in;
+	bool __testout = this->_M_mode & ios_base::out;
 	bool __ret = false;
 	// Don't return true if unbuffered.
 	if (this->_M_buf)
 	  {
-	    if (this->_M_mode & ios_base::in)
+	    if (__testin)
 	      __ret = this->_M_in_beg == this->_M_in_cur
 		&& this->_M_in_cur == this->_M_in_end;
-	    if (this->_M_mode & ios_base::out)
+	    if (__testout)
 	      __ret = this->_M_out_beg == this->_M_out_cur
-		&& this->_M_out_cur == this->_M_out_end;
+		&& this->_M_out_cur == this->_M_out_lim;
 	  }
 	return __ret;
       }

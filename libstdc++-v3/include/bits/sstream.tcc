@@ -80,38 +80,35 @@ namespace std
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     overflow(int_type __c)
     {
-      int_type __ret = traits_type::eof();
-      bool __testeof = traits_type::eq_int_type(__c, __ret);
-      bool __testwrite = this->_M_out_cur < this->_M_buf + this->_M_buf_size;
       bool __testout = this->_M_mode & ios_base::out;
+      if (__builtin_expect(!__testout, false))
+	return traits_type::eof();
+      bool __testeof = traits_type::eq_int_type(__c, traits_type::eof());
+      if (__builtin_expect(__testeof, false))
+	return traits_type::not_eof(__c);
+
+      // In virtue of DR 169 (TC) we are allowed to grow more than
+      // one char the first time and also...
+      __size_type __len =
+	std::max(_M_string.capacity() + 1, this->_M_buf_size_opt);
+
+      bool __testwrite = _M_out_buf_size();
+      if (__builtin_expect(!__testwrite && __len > _M_string.max_size(), false))
+	return traits_type::eof();
 
       // Try to append __c into output sequence in one of two ways.
       // Order these tests done in is unspecified by the standard.
-      if (__testout)
+      if (!__testwrite)
 	{
-	  if (!__testeof)
-	    {
-	      __size_type __len = std::max(this->_M_buf_size, 
-					   this->_M_buf_size_opt);
-	      __len *= 2;
-
-	      if (__testwrite)
-		__ret = this->sputc(traits_type::to_char_type(__c));
-	      else if (__len <= _M_string.max_size())
-		{
-		  // Force-allocate, re-sync.
-		  _M_string = this->str();
-		  _M_string.reserve(__len);
-		  this->_M_buf_size = __len;
-		  _M_really_sync(this->_M_in_cur - this->_M_in_beg, 
-				 this->_M_out_cur - this->_M_out_beg);
-		  __ret = this->sputc(traits_type::to_char_type(__c));
-		}
-	    }
-	  else
-	    __ret = traits_type::not_eof(__c);
+	  // Force-allocate, re-sync.
+	  _M_string = this->str();
+	  // ... the next times. That's easy to implement thanks to the
+	  // exponential growth policy builtin into basic_string.
+	  _M_string.reserve(__len);
+	  _M_really_sync(this->_M_in_cur - this->_M_in_beg, 
+			 this->_M_out_cur - this->_M_out_beg);
 	}
-      return __ret;
+      return this->sputc(traits_type::to_char_type(__c));
     }
 
   template <class _CharT, class _Traits, class _Alloc>
@@ -126,7 +123,7 @@ namespace std
       __testin &= !(__mode & ios_base::out);
       __testout &= !(__mode & ios_base::in);
 
-      if (this->_M_buf_size && (__testin || __testout || __testboth))
+      if (_M_string.capacity() && (__testin || __testout || __testboth))
 	{
 	  char_type* __beg = this->_M_buf;
 	  char_type* __curi = NULL;
@@ -142,7 +139,9 @@ namespace std
 	  if (__testout || __testboth)
 	    {
 	      __curo = this->pptr();
-	      __endo = this->epptr();
+	      // Due to the resolution of DR169, ios_base::end
+	      // is this->_M_out_lim, not epptr().
+	      __endo = this->_M_out_lim;
 	    }
 
 	  off_type __newoffi = 0;
@@ -181,7 +180,7 @@ namespace std
     {
       pos_type __ret =  pos_type(off_type(-1)); 
       
-      if (this->_M_buf_size)
+      if (_M_string.capacity())
 	{
 	  off_type __pos = __sp; // Use streamoff operator to do conversion.
 	  char_type* __beg = NULL;
@@ -205,7 +204,7 @@ namespace std
 	  if (__testout || __testboth)
 	    {
 	      __beg = this->pbase();
-	      __end = this->_M_buf + this->_M_buf_size;
+	      __end = this->epptr();
 	      if (0 <= __pos && __pos <= __end - __beg)
 		__testposo = true;
 	    }
