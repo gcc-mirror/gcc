@@ -20,9 +20,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef TARGET_VERSION
 #if TARGET_ENDIAN_DEFAULT == 0
-#define TARGET_VERSION fprintf (stderr, " (MIPSel GNU/ELF)");
+#define TARGET_VERSION fprintf (stderr, " (MIPSel GNU/Linux with ELF)");
 #else
-#define TARGET_VERSION fprintf (stderr, " (MIPS GNU/ELF)");
+#define TARGET_VERSION fprintf (stderr, " (MIPS GNU/Linux with ELF)");
 #endif
 
 #undef MD_EXEC_PREFIX
@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* Required to keep collect2.c happy */
-#undef OBJECT_FORMAT_COFF 
+#undef OBJECT_FORMAT_COFF
 
 /* If we don't set MASK_ABICALLS, we can't default to PIC. */
 #undef TARGET_DEFAULT
@@ -95,7 +95,7 @@ Boston, MA 02111-1307, USA.  */
 %{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
 %{mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
 %{mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS4} \
-%{!mips*: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
+%{!mips*: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
 %{mabi=32: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
 %{mabi=n32: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
 %{mabi=64: -D_ABI64=3 -D_MIPS_SIM=_ABI64} \
@@ -168,4 +168,3 @@ Boston, MA 02111-1307, USA.  */
 %{mabi=64: -64} \
 %{!fno-PIC:%{!fno-pic:-KPIC}} \
 %{fno-PIC:-non_shared} %{fno-pic:-non_shared}"
-
