@@ -1,3 +1,11 @@
+2003-05-30  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/doxygen/filter:  New file.
+	* docs/doxygen/filter.sed:  New file.
+	* docs/doxygen/run_doxygen:  Add g flag to sed substitutions.  Duh.
+	* docs/doxygen/user.cfg.in (INPUT_FILTER):  Point to new filter.
+	* docs/html/documentation.html:  Fix links to doxygen pages.
+
 2003-05-30  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/fstream.tcc (_M_convert_to_external): Don't
