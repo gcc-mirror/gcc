@@ -1,5 +1,8 @@
 Thu Apr  1 03:48:34 1999  H.J. Lu  (hjl@gnu.org)
 
+	* i386.c (output_fp_conditional_move): Abort for LT, LE, GE, and GT
+	signed integer comparisons.
+
 	* i386.c (output_int_conditional_move): Use "enum rtx_code" for code
 	type.
 
