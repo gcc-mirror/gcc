@@ -702,6 +702,27 @@ DEFTREECODE (POSTINCREMENT_EXPR, "postincrement_expr", 'e', 2)
    evaluated unless an exception is throw.  */
 DEFTREECODE (TRY_CATCH_EXPR, "try_catch_expr", 'e', 2)
 
+/* Evaluate the first operand.
+   The second operand is a a cleanup expression which is evaluated
+   before an exit (normal, exception, or jump out) from this expression.
+
+   Like a CLEANUP_POINT_EXPR/WITH_CLEANUP_EXPR combination, but those
+   always copy the cleanup expression where needed.  In contrast,
+   TRY_FINALLY_EXPR generates a jump to a cleanup subroutine.
+   (At least conceptually; the optimizer could inline the cleanup
+   subroutine in the same way it could inline normal subroutines.)
+   TRY_FINALLY_EXPR should be used when the cleanup is actual statements
+   in the source of the current function (which people might want to
+   set breakpoints in).  */
+DEFTREECODE (TRY_FINALLY_EXPR, "try_finally", 'e', 2)
+
+/* Used internally for cleanups in the implementation of TRY_FINALLY_EXPR.
+   (Specifically, it is created by expand_expr, not front-ends.)
+   Operand 0 is the rtx for the start of the subroutine we need to call.
+   Operand 1 is the rtx for a variable in which to store the address
+   of where the subroutine should return to.  */
+DEFTREECODE (GOTO_SUBROUTINE_EXPR, "goto_subroutine", 'e', 2)
+
 /* Pop the top element off the dynamic handler chain.  Used in
    conjunction with setjmp/longjmp based exception handling, see
    except.c for more details.  This is meant to be used only by the
