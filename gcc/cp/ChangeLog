@@ -1,5 +1,7 @@
 1998-08-17  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (grokparms): No, here.
+
 	* decl.c (grokdeclarator): Catch parm with pointer to array of
 	unknown bound here...
 	* method.c (process_overload_item): ...not here.
