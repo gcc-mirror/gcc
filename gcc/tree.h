@@ -1165,6 +1165,7 @@ struct tree_type
    initializatons. */
 #define DEFAULT_INIT_PRIORITY 65535
 #define MAX_INIT_PRIORITY 65535
+#define MAX_RESERVED_INIT_PRIORITY 100
 
 /* In a TYPE_DECL
    nonzero means the detail info about this type is not dumped into stabs.
