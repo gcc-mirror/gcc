@@ -272,6 +272,8 @@ static rtx walk_alter_subreg	PROTO((rtx));
 static int alter_cond		PROTO((rtx));
 static void output_operand	PROTO((rtx, int));
 static void leaf_renumber_regs	PROTO((rtx));
+
+extern char *getpwd ();
 
 /* Initialize data in final at the beginning of a compilation.  */
 
