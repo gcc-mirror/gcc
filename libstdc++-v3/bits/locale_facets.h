@@ -390,15 +390,7 @@ namespace std
      // Types:
       typedef wchar_t 					char_type;
       typedef ctype::mask 				mask;
-      typedef size_t					__table_type;
-
-    private:
-      __to_type const& 		_M_toupper;
-      __to_type const& 		_M_tolower;
-      const mask* const& 	_M_ctable;
-      static const __table_type	_S_table_size = ctype<char>::table_size;
       
-    public:
       static locale::id id;
 
       explicit 
