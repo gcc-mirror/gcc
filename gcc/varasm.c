@@ -5559,7 +5559,7 @@ default_binds_local_p (exp)
   if (!DECL_P (exp))
     local_p = true;
   /* A variable is considered "local" if it is defined by this module.  */
-  if (MODULE_LOCAL_P (exp))
+  else if (MODULE_LOCAL_P (exp))
     local_p = true;
   /* Otherwise, variables defined outside this object may not be local.  */
   else if (DECL_EXTERNAL (exp))
