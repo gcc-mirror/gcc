@@ -266,6 +266,17 @@ cp_compiler_error VPROTO((const char *format, ...))
 }
 
 void
+cp_deprecated (msg)
+  const char *msg;
+{
+  extern int warn_deprecated;
+  if (!warn_deprecated)
+    return;
+  cp_warning ("%s is deprecated.", msg);
+  cp_warning ("Please see the documentation for details.");
+}
+
+void
 cp_sprintf VPROTO((const char *format, ...))
 {
 #ifndef ANSI_PROTOTYPES

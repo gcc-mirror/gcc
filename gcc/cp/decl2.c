@@ -315,6 +315,10 @@ int warn_multichar = 1;
 
 int warn_nontemplate_friend = 1;
 
+/* Nonzero means complain about deprecated features.  */
+
+int warn_deprecated = 1;
+
 /* Nonzero means `$' can be in an identifier.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
@@ -566,6 +570,7 @@ lang_decode_option (argc, argv)
 	  flag_external_templates = 1;
 	  flag_alt_external_templates = 1;
 	  found = 1;
+          cp_deprecated ("-falt-external-templates");
 	}
       else if (! strcmp (p, "no-alt-external-templates"))
 	{
@@ -589,6 +594,18 @@ lang_decode_option (argc, argv)
 	  flag_guiding_decls = 0;
 	  found = 1;
 	}
+      else if (!strcmp (p, "this-is-variable"))
+        {
+          flag_this_is_variable = 1;
+          found = 1;
+          cp_deprecated ("-fthis-is-variable");
+        }
+      else if (!strcmp (p, "external-templates"))
+        {
+          flag_external_templates = 1;
+          found = 1;
+          cp_deprecated ("-fexternal-templates");
+        }
       else if (!strcmp (p, "new-abi"))
 	{
 	  flag_new_abi = 1;
@@ -698,6 +715,8 @@ lang_decode_option (argc, argv)
 	warn_unknown_pragmas = setting * 2;
       else if (!strcmp (p, "non-template-friend"))
 	warn_nontemplate_friend = setting;
+      else if (!strcmp (p, "deprecated"))
+        warn_deprecated = setting;
       else if (!strcmp (p, "comment"))
 	;			/* cpp handles this one.  */
       else if (!strcmp (p, "comments"))

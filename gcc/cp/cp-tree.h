@@ -2959,6 +2959,7 @@ extern void cp_pedwarn				PVPROTO((const char *, ...));
 extern void cp_pedwarn_at			PVPROTO((const char *, ...));
 extern void cp_compiler_error			PVPROTO((const char *, ...));
 extern void cp_sprintf				PVPROTO((const char *, ...));
+extern void cp_deprecated                       PROTO((const char*));
 
 /* in error.c */
 extern void init_error				PROTO((void));

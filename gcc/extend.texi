@@ -65,6 +65,7 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 			 function.
 * Return Address::      Getting the return or frame address of a function.
 * Other Builtins::      Other built-in functions.
+* Deprecated Features:: Things might disappear from g++.
 @end menu
 @end ifset
 @ifclear INTERNALS
@@ -112,6 +113,7 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 * Function Names::	Printable strings which are the name of the current
 			 function.
 * Return Address::      Getting the return or frame address of a function.
+* Deprecated Features:: Things might disappear from g++.
 @end menu
 @end ifclear
 
@@ -3089,6 +3091,36 @@ never return 1 when you call the inline function with a string constant
 or constructor expression (@pxref{Constructors}) and will not return 1
 when you pass a constant numeric value to the inline function unless you
 specify the @samp{-O} option.
+
+@node Deprecated Features
+@section Deprecated Features
+
+In the past, the GNU C++ compiler was extended to experiment with new
+features, at a time when the C++ language was still evolving. Now that
+the C++ standard is complete, some of those features are superceded by
+superior alternatives. Using the old features might cause a warning in
+some cases that the feature will be dropped in the future. In other
+cases, the feature might be gone already.
+
+While the list below is not exhaustive, it documents some of the options
+that are now deprecated:
+
+@table @code
+@item -fthis-is-variable
+In early versions of C++, assignment to this could be used to implement
+application-defined memory allocation. Now, allocation functions
+(@samp{operator new}) are the standard-conforming way to achieve the
+same effect.
+
+@item -fexternal-templates
+@itemx -falt-external-templates
+These are two of the many ways for g++ to implement template
+instantiation. @xref{Template Instantiation}. The C++ standard clearly
+defines how template definitions have to be organized across
+implementation units. g++ has an implicit instantiation mechanism that
+should work just fine for standard-conforming code.
+
+@end table
 
 @node C++ Extensions
 @chapter Extensions to the C++ Language
