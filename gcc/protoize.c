@@ -148,8 +148,6 @@ extern int printf (const char *, ...);
 extern int open (const char *, int, ...);
 #endif /* 0 */
 extern void exit ();
-extern pointer_type malloc ();
-extern pointer_type realloc ();
 extern void free ();
 extern int read ();
 extern int write ();
