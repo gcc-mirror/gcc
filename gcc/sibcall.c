@@ -53,10 +53,12 @@ identify_call_return_value (cp, p_hard_return, p_soft_return)
 {
   rtx insn, set, hard, soft;
 
-  /* Search forward through the "normal" call sequence to the CALL insn.  */
   insn = XEXP (cp, 0);
-  while (GET_CODE (insn) != CALL_INSN)
+  /* Search backward through the "normal" call sequence to the CALL insn.  */
+  while (NEXT_INSN (insn))
     insn = NEXT_INSN (insn);
+  while (GET_CODE (insn) != CALL_INSN)
+    insn = PREV_INSN (insn);
 
   /* Assume the pattern is (set (dest) (call ...)), or that the first
      member of a parallel is.  This is the hard return register used
@@ -75,6 +77,11 @@ identify_call_return_value (cp, p_hard_return, p_soft_return)
   if (GET_CODE (hard) != REG)
     return 0;
     
+  /* Stack adjustment done after call may appear here.  */
+  insn = skip_stack_adjustment (insn);
+  if (! insn)
+    return 0;
+
   /* If there's nothing after, there's no soft return value.  */
   insn = NEXT_INSN (insn);
   if (! insn)
