@@ -1,3 +1,7 @@
+2001-10-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc/sol2.h: Include <sys/mman.h> when L_trampoline is defined.
+
 Mon Oct 29 19:22:07 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload1.c (eliminate_regs): Test for reg_renumber being allocated

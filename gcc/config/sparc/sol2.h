@@ -259,6 +259,12 @@ Boston, MA 02111-1307, USA.  */
  *
  */
 
+/* This declares mprotect (used in TRANSFER_FROM_TRAMPOLINE) for
+   libgcc2.c.  */
+#ifdef L_trampoline
+#include <sys/mman.h>
+#endif
+
 #define TRANSFER_FROM_TRAMPOLINE					\
 static int need_enable_exec_stack;					\
 									\
