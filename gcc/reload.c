@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2518,6 +2518,20 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  find_reloads_address (VOIDmode, NULL_PTR,
 				recog_operand[i], recog_operand_loc[i],
 				i, operand_type[i], ind_levels);
+
+	  /* If we now have a simple operand where we used to have a 
+	     PLUS or MULT, re-recognize and try again.  */
+	  if ((GET_RTX_CLASS (GET_CODE (*recog_operand_loc[i])) == 'o'
+	       || GET_CODE (*recog_operand_loc[i]) == SUBREG)
+	      && (GET_CODE (recog_operand[i]) == MULT
+		  || GET_CODE (recog_operand[i]) == PLUS))
+	    {
+	      INSN_CODE (insn) = -1;
+	      find_reloads (insn, replace, ind_levels, live_known,
+			    reload_reg_p);
+	      return;
+	    }
+
 	  substed_operand[i] = recog_operand[i] = *recog_operand_loc[i];
 	}
       else if (code == MEM)
