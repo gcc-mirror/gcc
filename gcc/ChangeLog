@@ -1,3 +1,10 @@
+Mon Sep 20 12:59:16 1999  Richard Henderson  <rth@cygnus.com>
+
+	* basic-block.h (compute_bb_for_insn): Declare.
+	* flow.c (compute_bb_for_insn): Export.  Don't accept the varray
+	to use; set size of basic_block_for_insn directly.
+	(find_basic_blocks): Update.
+
 Mon Sep 20 15:11:54 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* flow.c (verify_flow_info): Fix typo, "abort;" -> "abort ();".
