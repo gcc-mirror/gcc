@@ -1066,11 +1066,6 @@ final_end_function (first, file, optimize)
     dwarfout_end_function ();
 #endif
 
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG)
-    dwarf2out_end_function ();
-#endif
-
 #ifdef XCOFF_DEBUGGING_INFO
   if (write_symbols == XCOFF_DEBUG)
     xcoffout_end_function (file, high_function_linenum);

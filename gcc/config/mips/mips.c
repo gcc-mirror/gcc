@@ -4940,7 +4940,7 @@ compute_frame_size (size)
 			      + gp_reg_rounded + fp_reg_size
 			      - fp_inc * UNITS_PER_FPREG);
       current_frame_info.fp_sp_offset = offset;
-      current_frame_info.fp_save_offset = offset - total_size + UNITS_PER_WORD;
+      current_frame_info.fp_save_offset = offset - total_size;
     }
   else
     {
@@ -5066,7 +5066,25 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 						  GEN_INT (gp_offset - base_offset)));
 
 		  if (store_p)
-		    emit_move_insn (mem_rtx, reg_rtx);
+		    {
+		      rtx insn = emit_move_insn (mem_rtx, reg_rtx);
+
+		      if (write_symbols == DWARF2_DEBUG)
+			{
+			  int offset = (gp_offset
+					- current_frame_info.total_size);
+			  if (regno == GP_REG_FIRST + 31)
+			    REG_NOTES (insn)
+			      = gen_rtx (EXPR_LIST, REG_RETURN_SAVE,
+					 GEN_INT (offset), REG_NOTES (insn));
+			  else
+			    REG_NOTES (insn)
+			      = gen_rtx (EXPR_LIST, REG_SAVE,
+					 gen_rtx (EXPR_LIST, VOIDmode, reg_rtx,
+						  GEN_INT (offset)),
+					 REG_NOTES (insn));
+			}
+		    }
 		  else if (!TARGET_ABICALLS || mips_abi != ABI_32
 			   || regno != (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
 		    emit_move_insn (reg_rtx, mem_rtx);
@@ -5179,7 +5197,20 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 						  GEN_INT (fp_offset - base_offset)));
 
 		  if (store_p)
-		    emit_move_insn (mem_rtx, reg_rtx);
+		    {
+		      rtx insn = emit_move_insn (mem_rtx, reg_rtx);
+
+		      if (write_symbols == DWARF2_DEBUG)
+			{
+			  int offset = (gp_offset
+					- current_frame_info.total_size);
+			  REG_NOTES (insn)
+			    = gen_rtx (EXPR_LIST, REG_SAVE,
+				       gen_rtx (EXPR_LIST, VOIDmode, reg_rtx,
+						GEN_INT (offset)),
+				       REG_NOTES (insn));
+			}
+		    }
 		  else
 		    emit_move_insn (reg_rtx, mem_rtx);
 		}
@@ -5405,6 +5436,8 @@ mips_expand_prologue ()
       /* If we are doing svr4-abi, sp move is done by function_prologue.  */
       if (!TARGET_ABICALLS || mips_abi != ABI_32)
 	{
+	  rtx insn;
+
 	  if (tsize > 32767)
 	    {
 	      tmp_rtx = gen_rtx (REG, Pmode, MIPS_TEMP1_REGNUM);
@@ -5413,21 +5446,37 @@ mips_expand_prologue ()
 	    }
 
 	  if (TARGET_LONG64)
-	    emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx,
-				   tsize_rtx));
+	    insn = emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx,
+					  tsize_rtx));
 	  else
-	    emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx,
-				   tsize_rtx));
+	    insn = emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx,
+					  tsize_rtx));
+
+	  if (write_symbols == DWARF2_DEBUG)
+	    REG_NOTES (insn)
+	      = gen_rtx (EXPR_LIST, REG_FRAME,
+			 gen_rtx (PLUS, VOIDmode, stack_pointer_rtx,
+				  GEN_INT (tsize)),
+			 REG_NOTES (insn));
 	}
 
       save_restore_insns (TRUE, tmp_rtx, tsize, (FILE *)0);
 
       if (frame_pointer_needed)
 	{
+	  rtx insn;
+
 	  if (TARGET_64BIT)
-	    emit_insn (gen_movdi (frame_pointer_rtx, stack_pointer_rtx));
+	    insn= emit_insn (gen_movdi (frame_pointer_rtx, stack_pointer_rtx));
 	  else
-	    emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
+	    insn= emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
+
+	  if (write_symbols == DWARF2_DEBUG)
+	    REG_NOTES (insn)
+	      = gen_rtx (EXPR_LIST, REG_FRAME,
+			 gen_rtx (PLUS, VOIDmode, frame_pointer_rtx,
+				  GEN_INT (tsize)),
+			 REG_NOTES (insn));
 	}
 
       if (TARGET_ABICALLS && mips_abi != ABI_32)
