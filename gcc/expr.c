@@ -6528,7 +6528,9 @@ expand_expr (exp, target, tmode, modifier)
 	if (EXPR_WFL_EMIT_LINE_NOTE (exp))
 	  emit_line_note (input_filename, lineno);
 	/* Possibly avoid switching back and forth here.  */
-	to_return = expand_expr (EXPR_WFL_NODE (exp), target, tmode, modifier);
+	to_return = expand_expr (EXPR_WFL_NODE (exp),
+				 target || ! ignore ? target : const0_rtx,
+				 tmode, modifier);
 	input_filename = saved_input_filename;
 	lineno = saved_lineno;
 	return to_return;

@@ -1,3 +1,15 @@
+2001-12-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* stmt.c (expand_expr_stmt): Keep last_expr_value non-NULL iff
+	we're interested in the result.  Use it to tell whether to
+	ignore results of enclosed expressions.
+	(expand_start_stmt_expr): Added new argument, and initialize
+	last_expr_value accordingly.
+	* tree.h (expand_start_stmt_expr): Adjusted declaration.
+	* c-common.c (c_expand_expr): Adjust call.
+	* expr.c (expand_expr) [EXPR_WFL]: Pass const0_rtx down if
+	ignoring the result.
+
 2001-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* flow.c (ior_reg_cond): Return NULL if ! add and rtx wasn't optimized.
