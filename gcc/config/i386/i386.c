@@ -1639,39 +1639,25 @@ output_fix_trunc (insn, operands)
      rtx *operands;
 {
   int stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != 0;
-  rtx xops[6];
+  rtx xops[2];
 
   if (! STACK_TOP_P (operands[1]) ||
       (GET_MODE (operands[0]) == DImode && ! stack_top_dies))
     abort ();
 
-  xops[0] = stack_pointer_rtx;
-  xops[1] = AT_SP (SImode);
-  xops[2] = adj_offsettable_operand (xops[1], 2);
-  xops[3] = GEN_INT (4);
-  xops[4] = GEN_INT (0xc00);
-  xops[5] = operands[2];
+  xops[0] = GEN_INT (12);
+  xops[1] = operands[4];
 
-  output_asm_insn (AS2 (sub%L0,%3,%0), xops);
-  output_asm_insn (AS1 (fnstc%W5,%1), xops);
-  output_asm_insn (AS2 (mov%W5,%1,%5), xops);
-  output_asm_insn (AS2 (or%W5,%4,%5), xops);
-  output_asm_insn (AS2 (mov%W5,%5,%2), xops);
-  output_asm_insn (AS1 (fldc%W5,%2), xops);
+  output_asm_insn (AS1 (fnstc%W2,%2), operands);
+  output_asm_insn (AS2 (mov%L2,%2,%4), operands);
+  output_asm_insn (AS2 (mov%B1,%0,%h1), xops);
+  output_asm_insn (AS2 (mov%L4,%4,%3), operands);
+  output_asm_insn (AS1 (fldc%W3,%3), operands);
 
   if (NON_STACK_REG_P (operands[0]))
     output_to_reg (operands[0], stack_top_dies);
   else if (GET_CODE (operands[0]) == MEM)
     {
-      /* If frame pointer elimination is being done, the MEM reference
-	 might be an index off of the stack pointer.  In that case,
-	 since we have already adjusted %esp above, adjust the operand
-	 address so it points where it should. */
-
-      if (! frame_pointer_needed
-	  && reg_mentioned_p (stack_pointer_rtx, operands[0]))
-	operands[0] = adj_offsettable_operand (operands[0], 4);
-
       if (stack_top_dies)
 	output_asm_insn (AS1 (fistp%z0,%0), operands);
       else
@@ -1680,10 +1666,7 @@ output_fix_trunc (insn, operands)
   else
     abort ();
 
-  output_asm_insn (AS1 (fldc%W5,%1), xops);
-  output_asm_insn (AS2 (add%L0,%3,%0), xops);
-
-  RET;
+  return AS1 (fldc%W2,%2);
 }
 
 /* Output code for INSN to compare OPERANDS.  The two operands might
@@ -1844,4 +1827,45 @@ output_fp_cc0_set (insn)
       abort ();
     }
   RET;
+}
+
+#define MAX_386_STACK_LOCALS 2
+
+static rtx i386_stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
+
+/* Clear stack slot assignments remembered from previous functions.
+   This is called from INIT_EXPANDERS once before RTL is emitted for each
+   function. */
+
+void
+clear_386_stack_locals ()
+{
+  enum machine_mode mode;
+  int n;
+
+  for (mode = VOIDmode; (int) mode < (int) MAX_MACHINE_MODE;
+       mode = (enum machine_mode) ((int) mode + 1))
+    for (n = 0; n < MAX_386_STACK_LOCALS; n++)
+      i386_stack_locals[(int) mode][n] = NULL_RTX;
+}
+
+/* Return a MEM corresponding to a stack slot with mode MODE.
+   Allocate a new slot if necessary.
+
+   The RTL for a function can have several slots available: N is
+   which slot to use.  */
+
+rtx
+assign_386_stack_local (mode, n)
+     enum machine_mode mode;
+     int n;
+{
+  if (n < 0 || n >= MAX_386_STACK_LOCALS)
+    abort ();
+
+  if (i386_stack_locals[(int) mode][n] == NULL_RTX)
+    i386_stack_locals[(int) mode][n]
+      = assign_stack_local (mode, GET_MODE_SIZE (mode), 0);
+
+  return i386_stack_locals[(int) mode][n];
 }
