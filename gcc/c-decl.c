@@ -4991,6 +4991,7 @@ grokfield (filename, line, declarator, declspecs, width)
   finish_decl (value, NULL_TREE, NULL_TREE);
   DECL_INITIAL (value) = width;
 
+  maybe_objc_check_decl (value);
   return value;
 }
 
