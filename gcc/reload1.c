@@ -494,7 +494,6 @@ reload (first, global, dumpfile)
   int something_needs_elimination;
   int new_basic_block_needs;
   int caller_save_needs_spill;
-  int old_caller_save_needed = caller_save_needed;
 
   /* The basic block number currently being processed for INSN.  */
   int this_block;
@@ -517,9 +516,9 @@ reload (first, global, dumpfile)
   bzero (spill_stack_slot, sizeof spill_stack_slot);
   bzero (spill_stack_slot_width, sizeof spill_stack_slot_width);
 
-  /* If caller-saves are needed, allocate the required save areas.  */
-  if (caller_save_needed)
-    allocate_save_areas ();
+  /* If caller-saves are requested, initialize the required save areas.  */
+  if (flag_caller_saves)
+    init_save_areas ();
     
   /* Compute which hard registers are now in use
      as homes for pseudo registers.
@@ -581,7 +580,7 @@ reload (first, global, dumpfile)
 			reg_equiv_constant[i] = x;
 		      else
 			reg_equiv_memory_loc[i]
-			  = force_const_mem (GET_MODE (x), x);
+			  = force_const_mem (GET_MODE (SET_DEST (set)), x);
 		    }
 		  else
 		    continue;
@@ -1205,33 +1204,21 @@ reload (first, global, dumpfile)
 	  /* Note that there is a continue statement above.  */
 	}
 
-      /* If we have caller-saves, perform register elimination in the
-	 save area addresses and see if caller-save will need a spill register.
-	 If it will and we don't already have a need of class BASE_REG_CLASS,
-	 create such a need.  If we didn't need caller-saves before this
-	 pass, allocate the save area and show something changed.  */
+      /* If we have caller-saves, set up the save areas and see if caller-save
+	 will need a spill register.  If it will and we don't already have a
+	 need of class BASE_REG_CLASS, create such a need.  */
 
-      if (caller_save_needed)
+      if (caller_save_needed
+	  && 0 != (caller_save_needs_spill
+		   = ! setup_save_areas (&something_changed))
+	  && max_needs[(int) BASE_REG_CLASS] == 0)
 	{
-	  if (! old_caller_save_needed)
-	    {
-	      allocate_save_areas ();
-	      something_changed = 1;
-	    }
+	  register enum reg_class *p
+	    = reg_class_superclasses[(int) BASE_REG_CLASS];
 
-	  old_caller_save_needed = 1;
-
-	  caller_save_needs_spill = ! elim_save_addrs ();
-	  if (caller_save_needs_spill
-	      && max_needs[(int) BASE_REG_CLASS] == 0)
-	    {
-	      register enum reg_class *p
-		= reg_class_superclasses[(int) BASE_REG_CLASS];
-
-	      max_needs[(int) BASE_REG_CLASS] = 1;
-	      while (*p != LIM_REG_CLASSES)
-		max_needs[(int) *p++] += 1;
-	    }
+	  max_needs[(int) BASE_REG_CLASS] = 1;
+	  while (*p != LIM_REG_CLASSES)
+	    max_needs[(int) *p++] += 1;
 	}
 
       /* Now deduct from the needs for the registers already
@@ -1243,7 +1230,7 @@ reload (first, global, dumpfile)
       /* First find all regs alone in their class
 	 and count them (if desired) for non-groups.
 	 We would be screwed if a group took the only reg in a class
-	 for which a non-group reload ius needed.
+	 for which a non-group reload is needed.
 	 (Note there is still a bug; if a class has 2 regs,
 	 both could be stolen by groups and we would lose the same way.
 	 With luck, no machine will need a nongroup in a 2-reg class.)  */
@@ -4403,6 +4390,7 @@ emit_reload_insns (insn)
 	  rtx oldequiv = 0;
 	  enum machine_mode mode;
 	  rtx where;
+	  rtx reload_insn;
 
 	  /* Determine the mode to reload in.
 	     This is very tricky because we have three to choose from.
@@ -4615,12 +4603,15 @@ emit_reload_insns (insn)
 	      enum insn_code icode;
 
 	      /* If we have a secondary reload, pick up the secondary register
-		 and icode, if any.  If OLDEQUIV and OLD are different,
-		 recompute whether or not we still need a secondary register
-		 and what the icode should be.  If we still need a secondary
-		 register and the class or icode is different, go back to
-		 reloading from OLD if using OLDEQUIV means that we got the
-		 wrong type of register.  */
+		 and icode, if any.  If OLDEQUIV and OLD are different or
+		 if this is an in-out reload, recompute whether or not we
+		 still need a secondary register and what the icode should
+		 be.  If we still need a secondary register and the class or
+		 icode is different, go back to reloading from OLD if using
+		 OLDEQUIV means that we got the wrong type of register.  We
+		 cannot have different class or icode due to an in-out reload
+		 because we don't make such reloads when both the input and
+		 output need secondary reload registers.  */
 
 	      if (reload_secondary_reload[j] >= 0)
 		{
@@ -4628,7 +4619,8 @@ emit_reload_insns (insn)
 		  second_reload_reg = reload_reg_rtx[secondary_reload];
 		  icode = reload_secondary_icode[j];
 
-		  if (old != oldequiv && ! rtx_equal_p (old, oldequiv))
+		  if ((old != oldequiv && ! rtx_equal_p (old, oldequiv))
+		      || (reload_in[j] != 0 && reload_out[j] != 0))
 		    {
 		      enum reg_class new_class
 			= SECONDARY_INPUT_RELOAD_CLASS (reload_reg_class[j],
@@ -4683,10 +4675,12 @@ emit_reload_insns (insn)
 		    {
 		      if (icode != CODE_FOR_nothing)
 			{
-			  emit_insn_before (GEN_FCN (icode)
-					    (reloadreg, oldequiv,
-					     second_reload_reg),
-					    where);
+			  reload_insn = emit_insn_before (GEN_FCN (icode)
+							  (reloadreg, oldequiv,
+							   second_reload_reg),
+							  where);
+			  if (this_reload_insn == 0)
+			    this_reload_insn = reload_insn;
 			  special = 1;
 			}
 		      else
@@ -4701,15 +4695,22 @@ emit_reload_insns (insn)
 			      rtx third_reload_reg
 			        = reload_reg_rtx[reload_secondary_reload[secondary_reload]];
 
-			      emit_insn_before ((GEN_FCN (tertiary_icode)
-						 (second_reload_reg, oldequiv,
-						  third_reload_reg)),
-						where);
+			      reload_insn
+				= emit_insn_before ((GEN_FCN (tertiary_icode)
+						     (second_reload_reg,
+						      oldequiv,
+						      third_reload_reg)),
+						    where);
+			      if (this_reload_insn == 0)
+				this_reload_insn = reload_insn;
 			    }
 			  else
 			    {
-			      gen_input_reload (second_reload_reg,
-						oldequiv, where);
+			      reload_insn
+				= gen_input_reload (second_reload_reg,
+						    oldequiv, where);
+			      if (this_reload_insn == 0)
+				this_reload_insn = reload_insn;
 			      oldequiv = second_reload_reg;
 			    }
 			}
@@ -4718,8 +4719,12 @@ emit_reload_insns (insn)
 #endif
 
 	      if (! special)
-		this_reload_insn = gen_input_reload (reloadreg,
-						     oldequiv, where);
+		{
+		  reload_insn = gen_input_reload (reloadreg,
+						  oldequiv, where);
+		  if (this_reload_insn == 0)
+		    this_reload_insn = reload_insn;
+		}
 
 #if defined(SECONDARY_INPUT_RELOAD_CLASS) && defined(PRESERVE_DEATH_INFO_REGNO_P)
 	      /* We may have to make a REG_DEAD note for the secondary reload
@@ -5073,15 +5078,6 @@ emit_reload_insns (insn)
 	new_spill_reg_store[reload_spill_index[j]] = store_insn;
     }
 
-  /* Now update spill_reg_store for the reloads of this insn.  */
-  /* Copy the elements that were updated in the loop above.  */
-  for (j = 0; j < n_reloads; j++)
-    {
-      int regno = reload_spill_index[j];
-      if (regno >= 0)
-	spill_reg_store[regno] = new_spill_reg_store[regno];
-    }
-
   /* Move death notes from INSN
      to output-operand-address and output reload insns.  */
 #ifdef PRESERVE_DEATH_INFO_REGNO_P
@@ -5126,7 +5122,10 @@ emit_reload_insns (insn)
 
   /* For all the spill regs newly reloaded in this instruction,
      record what they were reloaded from, so subsequent instructions
-     can inherit the reloads.  */
+     can inherit the reloads.
+
+     Update spill_reg_store for the reloads of this insn.
+     Copy the elements that were updated in the loop above.   */
 
   for (j = 0; j < n_reloads; j++)
     {
@@ -5136,6 +5135,7 @@ emit_reload_insns (insn)
       /* I is nonneg if this reload used one of the spill regs.
 	 If reload_reg_rtx[r] is 0, this is an optional reload
 	 that we opted to ignore.  */
+
       if (i >= 0 && reload_reg_rtx[r] != 0)
 	{
 	  /* First, clear out memory of what used to be in this spill reg.
@@ -5154,7 +5154,10 @@ emit_reload_insns (insn)
 	  if (reload_out[r] != 0 && GET_CODE (reload_out[r]) == REG)
 	    {
 	      register int nregno = REGNO (reload_out[r]);
+
+	      spill_reg_store[i] = new_spill_reg_store[i];
 	      reg_last_reload_reg[nregno] = reload_reg_rtx[r];
+
 	      for (k = 0; k < nr; k++)
 		{
 		  reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]]
@@ -5162,6 +5165,7 @@ emit_reload_insns (insn)
 		  reg_reloaded_insn[spill_reg_order[spill_regs[i] + k]] = insn;
 		}
 	    }
+
 	  /* Maybe the spill reg contains a copy of reload_in.  */
 	  else if (reload_out[r] == 0
 		   && reload_in[r] != 0
@@ -5186,6 +5190,12 @@ emit_reload_insns (insn)
 					       reload_when_needed[r]))
 		{
 		  reg_last_reload_reg[nregno] = reload_reg_rtx[r];
+
+		  /* Unless we inherited this reload, show we haven't
+		     recently done a store.  */
+		  if (! reload_inherited[r])
+		    spill_reg_store[i] = 0;
+
 		  for (k = 0; k < nr; k++)
 		    {
 		      reg_reloaded_contents[spill_reg_order[spill_regs[i] + k]]
@@ -5214,7 +5224,7 @@ emit_reload_insns (insn)
 }
 
 /* Emit code before BEFORE_INSN to perform an input reload of IN to RELOADREG.
-   Returns last insn emitted.  */
+   Returns first insn emitted.  */
 
 rtx
 gen_input_reload (reloadreg, in, before_insn)
@@ -5402,11 +5412,11 @@ delete_output_reload (insn, j, output_reload_insn)
 	 Search that range; see if any ref remains.  */
       for (i2 = PREV_INSN (insn); i2; i2 = PREV_INSN (i2))
 	{
+	  rtx set = single_set (i2);
+
 	  /* Uses which just store in the pseudo don't count,
 	     since if they are the only uses, they are dead.  */
-	  if (GET_CODE (i2) == INSN
-	      && GET_CODE (PATTERN (i2)) == SET
-	      && SET_DEST (PATTERN (i2)) == reg)
+	  if (set != 0 && SET_DEST (set) == reg)
 	    continue;
 	  if (GET_CODE (i2) == CODE_LABEL
 	      || GET_CODE (i2) == JUMP_INSN)
@@ -5421,11 +5431,9 @@ delete_output_reload (insn, j, output_reload_insn)
       /* Delete the now-dead stores into this pseudo.  */
       for (i2 = PREV_INSN (insn); i2; i2 = PREV_INSN (i2))
 	{
-	  /* Uses which just store in the pseudo don't count,
-	     since if they are the only uses, they are dead.  */
-	  if (GET_CODE (i2) == INSN
-	      && GET_CODE (PATTERN (i2)) == SET
-	      && SET_DEST (PATTERN (i2)) == reg)
+	  rtx set = single_set (i2);
+
+	  if (set != 0 && SET_DEST (set) == reg)
 	    delete_insn (i2);
 	  if (GET_CODE (i2) == CODE_LABEL
 	      || GET_CODE (i2) == JUMP_INSN)
@@ -5593,7 +5601,8 @@ constraint_accepts_reg_p (string, reg)
       }
 }
 
-/* Return the number of places FIND appears within X.  */
+/* Return the number of places FIND appears within X, but don't count
+   an occurrence if some SET_DEST is FIND.  */
 
 static int
 count_occurrences (x, find)
@@ -5622,6 +5631,11 @@ count_occurrences (x, find)
     case PC:
     case CC0:
       return 0;
+
+    case SET:
+      if (SET_DEST (x) == find)
+	return count_occurrences (SET_SRC (x), find);
+      break;
     }
 
   format_ptr = GET_RTX_FORMAT (code);
