@@ -499,6 +499,20 @@ test08()
   VERIFY( c == 'i' );
 }
     
+// Theodore Papadopoulo 
+void 
+test09()
+{
+  using namespace std;
+  bool test = true;
+
+  istringstream iss("Juana Briones");
+  char tab[13];
+  iss.read(tab, 13);
+  if (!iss)
+    test = false;
+  VERIFY( test );
+}
 
 int 
 main()
@@ -511,6 +525,7 @@ main()
   test06();
   test07();
   test08();
+  test09();
 
   return 0;
 }

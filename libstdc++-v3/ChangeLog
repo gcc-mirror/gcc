@@ -1,3 +1,8 @@
+2002-04-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/istream.tcc (istream::read): Fix.
+	* testsuite/27_io/istream_unformatted.cc (main): Add.
+
 2002-04-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/6360

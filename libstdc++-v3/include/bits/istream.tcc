@@ -777,17 +777,8 @@ namespace std
 	{
 	  try 
 	    {
-	      const int_type __eof = traits_type::eof();
-	      __streambuf_type* __sb = this->rdbuf();
-	      int_type __c = __sb->sgetc();	
-	      
-	      while (_M_gcount < __n && __c != __eof)
-		{
-		  *__s++ = traits_type::to_char_type(__c);
-		  ++_M_gcount;
-		  __c = __sb->snextc();
-		}
-	      if (__c == __eof)
+	      _M_gcount = this->rdbuf()->sgetn(__s, __n);
+	      if (_M_gcount != __n)
 		this->setstate(ios_base::eofbit | ios_base::failbit);
 	    }	    
 	  catch(exception& __fail)
