@@ -1,3 +1,8 @@
+2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (varasm.o): Don't set -Wno-error.
+	* rs6000/t-rs6000 (varasm.o, out_object_file): Don't clear.
+
 2003-06-04  Zack Weinberg  <zack@codesourcery.com>
 
 	PR bootstrap/3163
