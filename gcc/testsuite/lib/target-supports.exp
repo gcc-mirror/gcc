@@ -104,16 +104,19 @@ proc check_alias_available { } {
     if [info exists alias_available_saved] {
         verbose "check_alias_available  returning saved $alias_available_saved" 2
     } else {
-        verbose "check_alias_available  compiling testfile" 2
-	set f [open "tmp.c" "w"]
+	set src alias[pid].c
+	set obj alias[pid].o
+        verbose "check_alias_available  compiling testfile $src" 2
+	set f [open $src "w"]
 	# Compile a small test program.  The definition of "g" is
 	# necessary to keep the Solaris assembler from complaining
 	# about the program.
 	puts $f "#ifdef __cplusplus\nextern \"C\"\n#endif\n"
 	puts $f "void g() {} void f() __attribute__((alias(\"g\")));"
 	close $f
-	set lines [${tool}_target_compile "tmp.c" "tmp.o" object ""]
-	file delete "tmp.c"
+	set lines [${tool}_target_compile $src $obj object ""]
+	file delete $src
+	remote_file build delete $obj
 
 	if [string match "" $lines] then {
 	    # No error messages, everything is OK.
@@ -222,8 +225,10 @@ proc check_iconv_available { test_what } {
 
     set result ""
 
-    verbose "check_iconv_available compiling testfile" 1
-    set f [open "tmp.c" "w"]
+    set src iconv[pid].c
+    set exe iconv[pid].x
+    verbose "check_iconv_available compiling testfile $src" 2
+    set f [open $src "w"]
     # Compile a small test program.
     puts $f "#include <iconv.h>\n"
     puts $f "int main (void)\n {\n iconv_t cd; \n"
@@ -232,7 +237,9 @@ proc check_iconv_available { test_what } {
     puts $f "return 0;\n}"
     close $f
 
-    set lines [${tool}_target_compile "tmp.c" "tmp.x" executable "libs=$libiconv" ]
+    set lines [${tool}_target_compile $src $exe executable "libs=$libiconv" ]
+    file delete $src
+    remote_file build delete $exe
 
     if [string match "" $lines] then {
 	# No error messages, everything is OK.
@@ -240,7 +247,7 @@ proc check_iconv_available { test_what } {
 	set result [${tool}_load "./tmp.x" "" ""]
 	set status [lindex $result 0];
 
-	verbose "status is <$status>"
+	verbose "check_iconv_available status is <$status>" 2
 
 	if { $status == "pass" } then {
 	    return 1
@@ -257,12 +264,16 @@ proc check_iconv_available { test_what } {
 proc check_named_sections_available { } {
     global tool
 
-    set f [open "tmp.c" "w"]
+    set src named[pid].c
+    set obj named[pid].o
+    verbose "check_named_sections_available compiling testfile $src" 2
+    set f [open $src "w"]
     # Compile a small test program.
     puts $f "int __attribute__ ((section(\"whatever\"))) foo;"
     close $f
-    set lines [${tool}_target_compile "tmp.c" "tmp.o" object ""]
-    file delete "tmp.c"
+    set lines [${tool}_target_compile $src $obj object ""]
+    file delete $src
+    remote_file build delete $obj
 
     # If we got no error messages, everything is OK.
     set answer [string match "" $lines]
