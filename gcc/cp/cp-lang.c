@@ -122,14 +122,8 @@ cp_expr_size (exp)
 {
   if (CLASS_TYPE_P (TREE_TYPE (exp)))
     {
-      /* The backend should not be interested in the size of an expression
-	 of a type with both of these set; all copies of such types must go
-	 through a constructor or assignment op.  */
-      if (TYPE_HAS_COMPLEX_INIT_REF (TREE_TYPE (exp))
-	  && TYPE_HAS_COMPLEX_ASSIGN_REF (TREE_TYPE (exp)))
-	abort ();
-      /* This would be wrong for a type with virtual bases, but they are
-	 caught by the abort above.  */
+      /* This would be wrong for a type with virtual bases, but they should
+	 not get here.  */
       return CLASSTYPE_SIZE_UNIT (TREE_TYPE (exp));
     }
   else
