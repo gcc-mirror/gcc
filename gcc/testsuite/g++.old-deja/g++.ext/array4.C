@@ -9,8 +9,7 @@
 // [nathan] We have a zero sized array extension, and (unfortunately) allow it
 // to be the sole member of a struct (rather than the trailing member of a
 // non-empty struct as C99 is/will allow). Such a type will have a size of
-// zero. Internally, we also use a TYPE_SIZE of zero to indicate an
-// incompletable type. We must keep the two zeroes distinct -- arrgh!
+// zero, but is not incomplete.
 
 struct A
 {
