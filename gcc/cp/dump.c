@@ -828,6 +828,20 @@ dequeue_and_dump (di)
 	dump_child ("stmt", STMT_EXPR_STMT (t));
       break;
 
+    case TARGET_EXPR:
+      if (dump_children_p)
+	{
+	  dump_child ("decl", TREE_OPERAND (t, 0));
+	  dump_child ("init", TREE_OPERAND (t, 1));
+	  dump_child ("clnp", TREE_OPERAND (t, 2));
+	  /* There really are two possible places the initializer can
+	     be.  After RTL expansion, the second operand is moved to
+	     the position of the fourth operand, and the second
+	     operand becomes NULL.  */
+	  dump_child ("init", TREE_OPERAND (t, 3));
+	}
+      break;
+      
     default:
       /* There are no additional fields to print.  */
       break;
