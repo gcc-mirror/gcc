@@ -76,6 +76,19 @@ removed.
 * Covariant returns are implemented for all but varadic functions that
   require an adjustment.
 
+* Inside the scope of a template class, the name of the class itself
+  is no longer a valid template template argument.  Instead, you now have
+  to qualify the name by its scope.  For example:
+
+    template <template <class> class TT> class X {};
+    template <class T> class Y {
+      X<Y> x; // Invalid.
+    };
+
+  The valid code for the above example is:
+
+      X< ::Y> x; // Valid.  Note that `<:' is a digraph and means `['.
+
 *** Changes in GCC 3.3:
 
 * The "new X = 3" extension has been removed; you must now use "new X(3)".

@@ -1,7 +1,7 @@
-// { dg-do assemble }
+// { dg-do compile }
 // GROUPS niklas pt friend
 template <class T> class C1
-{ // { dg-error "" }
+{
 public:
 	void diddle_C2 ();
 };

@@ -8553,7 +8553,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 			   (is_friend 
 			    || !is_declaration
 			    || cp_lexer_next_token_is_not (parser->lexer, 
-							   CPP_SEMICOLON)));
+							   CPP_SEMICOLON)),
+			   parser->num_template_parameter_lists);
 	}
     }
   if (tag_type != enum_type)
@@ -11380,7 +11381,8 @@ cp_parser_class_head (cp_parser* parser,
       /* If the class was unnamed, create a dummy name.  */
       if (!id)
 	id = make_anon_name ();
-      type = xref_tag (class_key, id, attributes, /*globalize=*/0);
+      type = xref_tag (class_key, id, attributes, /*globalize=*/false,
+		       parser->num_template_parameter_lists);
     }
   else
     {

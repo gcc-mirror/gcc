@@ -1,3 +1,16 @@
+2003-08-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/8442, c++/8806
+	* g++.dg/template/elab1.C: New test.
+	* g++.dg/template/type2.C: Likewise.
+	* g++.dg/template/ttp3.C: Adjust expected error message.
+	* g++.old-deja/g++.law/visibility13.C: Likewise.
+	* g++.old-deja/g++.niklas/t135.C: Likewise.
+	* g++.old-deja/g++.pt/ttp41.C: Likewise.
+	* g++.old-deja/g++.pt/ttp43.C: Use qualified name for template
+	template argument.
+	* g++.old-deja/g++.pt/ttp44.C: Likewise.
+
 2003-08-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11295

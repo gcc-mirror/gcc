@@ -20,11 +20,11 @@ struct Lit {
 
 template < class T >
 struct Id {
-  Add < T, Id, Lit > operator+(const T& t) const {
-    return Add < T, Id, Lit >(*this, Lit<T>(t));
+  Add < T, ::Id, Lit > operator+(const T& t) const {
+    return Add < T, ::Id, Lit >(*this, Lit<T>(t));
   }
 
-  Mul < T, Id, Lit > operator*(const T& t) const {
-    return Mul < T, Id, Lit >(*this, Lit<T>(t));
+  Mul < T, ::Id, Lit > operator*(const T& t) const {
+    return Mul < T, ::Id, Lit >(*this, Lit<T>(t));
   }
 };

@@ -4278,7 +4278,7 @@ handle_class_head (enum tag_types tag_kind, tree scope, tree id,
   
   if (!decl)
     {
-      decl = xref_tag (tag_kind, id, attributes, false);
+      decl = xref_tag (tag_kind, id, attributes, false, false);
       if (decl == error_mark_node)
 	return error_mark_node;
       decl = TYPE_MAIN_DECL (decl);

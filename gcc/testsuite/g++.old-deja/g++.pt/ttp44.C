@@ -9,8 +9,8 @@ public:
 template < class T >
 struct Id {
   template < template < class > class E >
-  Add < T, Id, E > operator+(const E<T>& e) const {
-    return Add < T, Id, E >(*this, e);
+  Add < T, ::Id, E > operator+(const E<T>& e) const {
+    return Add < T, ::Id, E >(*this, e);
   }
 };
 
