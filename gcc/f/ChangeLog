@@ -49,6 +49,11 @@ Sat Apr 18 05:03:21 1998  Craig Burley  <burley@gnu.org>
 	* com.c (ffecom_check_size_overflow_): Ignore overflow
 	as well if dummy argument.
 
+Fri Apr 17 17:18:04 1998  Craig Burley  <burley@gnu.org>
+
+	* version.h: Get rid of the overly large headers
+	here too, as done in version.c.
+
 Tue Apr 14 14:40:40 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_start_progunit_): Mark function decl
