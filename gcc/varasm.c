@@ -1889,11 +1889,24 @@ mark_decl_referenced (tree decl)
      which do not need to be marked.  */
 }
 
-/* Output to FILE a reference to the assembler name of a C-level name NAME.
-   If NAME starts with a *, the rest of NAME is output verbatim.
-   Otherwise NAME is transformed in an implementation-defined way
-   (usually by the addition of an underscore).
-   Many macros in the tm file are defined to call this function.  */
+/* Output to FILE (an assembly file) a reference to NAME.  If NAME
+   starts with a *, the rest of NAME is output verbatim.  Otherwise
+   NAME is transformed in a target-specific way (usually by the
+   addition of an underscore).  */
+
+void
+assemble_name_raw (FILE *file, const char *name)
+{
+  if (name[0] == '*')
+    fputs (&name[1], file);
+  else
+    ASM_OUTPUT_LABELREF (file, name);
+}
+
+/* Like assemble_name_raw, but should be used when NAME might refer to
+   an entity that is also represented as a tree (like a function or
+   variable).  If NAME does refer to such an entity, that entity will
+   be marked as referenced.  */
 
 void
 assemble_name (FILE *file, const char *name)
@@ -1907,10 +1920,7 @@ assemble_name (FILE *file, const char *name)
   if (id)
     mark_referenced (id);
 
-  if (name[0] == '*')
-    fputs (&name[1], file);
-  else
-    ASM_OUTPUT_LABELREF (file, name);
+  assemble_name_raw (file, name);
 }
 
 /* Allocate SIZE bytes writable static space with a gensym name
@@ -5204,7 +5214,7 @@ default_internal_label (FILE *stream, const char *prefix,
 {
   char *const buf = alloca (40 + strlen (prefix));
   ASM_GENERATE_INTERNAL_LABEL (buf, prefix, labelno);
-  ASM_OUTPUT_LABEL (stream, buf);
+  ASM_OUTPUT_INTERNAL_LABEL (stream, buf);
 }
 
 /* This is the default behavior at the beginning of a file.  It's

@@ -1367,9 +1367,9 @@ darwin_asm_output_dwarf_delta (FILE *file, int size ATTRIBUTE_UNUSED,
     fprintf (file, "\t.set L$set$%d,", darwin_dwarf_label_counter);
   else
     fprintf (file, "\t%s\t", ".long");
-  assemble_name (file, lab1);
+  assemble_name_raw (file, lab1);
   fprintf (file, "-");
-  assemble_name (file, lab2);
+  assemble_name_raw (file, lab2);
   if (islocaldiff)
     fprintf (file, "\n\t.long L$set$%d", darwin_dwarf_label_counter++);
 }
