@@ -2057,7 +2057,7 @@
 			       (match_dup 1)))]
   "
 {
-  unsigned HOST_WIDE_INT intval = INTVAL (operands[2]);
+  HOST_WIDE_INT intval = INTVAL (operands[2]);
 
   /* Try dividing the constant by 2, then 4, and finally 8 to see
      if we can get a constant which can be loaded into a register
