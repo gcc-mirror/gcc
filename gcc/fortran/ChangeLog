@@ -1,3 +1,10 @@
+2004-08-01  Roger Sayle  <roger@eyesopen.com>
+
+	* options.c (gfc_init_options): Don't warn about the use GNU
+	extensions by default.
+	(gfc_post_options): Warn about GNU extensions with -pedantic.
+	(gfc_handle_option): Don't warn about GNU extensions with -std=gnu.
+
 2004-07-30  Richard Henderson  <rth@redhat.com>
 
 	* trans-expr.c (gfc_conv_expr_reference): Create a CONST_DECL

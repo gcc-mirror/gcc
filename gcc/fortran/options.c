@@ -80,7 +80,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
     | GFC_STD_F2003_OBS | GFC_STD_F2003_DEL | GFC_STD_F2003 | GFC_STD_GNU;
   gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
-    | GFC_STD_F2003 | GFC_STD_GNU;
+    | GFC_STD_F2003;
 
   return CL_F95;
 }
@@ -111,7 +111,11 @@ gfc_post_options (const char **pfilename)
       flag_inline_trees = 2;
       flag_inline_functions = 0;
     }
-  
+
+  /* If -pedantic, warn about the use of GNU extensions.  */
+  if (pedantic && (gfc_option.allow_std & GFC_STD_GNU) != 0)
+    gfc_option.warn_std |= GFC_STD_GNU;
+
   return false;
 }
 
@@ -321,7 +325,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
 	| GFC_STD_F2003_OBS | GFC_STD_F2003_DEL | GFC_STD_F2003 | GFC_STD_GNU;
       gfc_option.warn_std = GFC_STD_F95_OBS | GFC_STD_F95_DEL
-	| GFC_STD_F2003_OBS | GFC_STD_F2003_DEL | GFC_STD_GNU;
+	| GFC_STD_F2003_OBS | GFC_STD_F2003_DEL;
       break;
     }
 
