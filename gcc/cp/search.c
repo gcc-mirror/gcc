@@ -78,6 +78,7 @@ struct vbase_info
   tree inits;
 };
 
+static int is_subobject_of_p (tree, tree);
 static tree dfs_check_overlap (tree, void *);
 static tree dfs_no_overlap_yet (tree, int, void *);
 static base_kind lookup_base_r (tree, tree, base_access, bool, tree *);
@@ -1074,7 +1075,6 @@ template_self_reference_p (tree type, tree decl)
 	   && DECL_NAME (decl) == constructor_name (type));
 }
 
-
 /* Nonzero for a class member means that it is shared between all objects
    of that class.
 
@@ -1100,6 +1100,27 @@ shared_member_p (tree t)
 	    return 0;
 	}
       return 1;
+    }
+  return 0;
+}
+
+/* Routine to see if the sub-object denoted by the binfo PARENT can be
+   found as a base class and sub-object of the object denoted by
+   BINFO.  */
+
+static int
+is_subobject_of_p (tree parent, tree binfo)
+{
+  tree probe;
+  
+  for (probe = parent; probe; probe = BINFO_INHERITANCE_CHAIN (probe))
+    {
+      if (probe == binfo)
+	return 1;
+      if (TREE_VIA_VIRTUAL (probe))
+	return (purpose_member (BINFO_TYPE (probe),
+				CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo)))
+		!= NULL_TREE);
     }
   return 0;
 }
@@ -1171,12 +1192,14 @@ lookup_field_r (tree binfo, void *data)
 
   /* If the lookup already found a match, and the new value doesn't
      hide the old one, we might have an ambiguity.  */
-  if (lfi->rval_binfo && !original_binfo (lfi->rval_binfo, binfo))
+  if (lfi->rval_binfo
+      && !is_subobject_of_p (lfi->rval_binfo, binfo))
+    
     {
       if (nval == lfi->rval && shared_member_p (nval))
 	/* The two things are really the same.  */
 	;
-      else if (original_binfo (binfo, lfi->rval_binfo))
+      else if (is_subobject_of_p (binfo, lfi->rval_binfo))
 	/* The previous value hides the new one.  */
 	;
       else

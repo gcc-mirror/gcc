@@ -1,3 +1,9 @@
+2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/16889
+	* (is_subobject_of_p): Resurrect & optimize.
+	(lookup_field_r): Use it.
+
 2004-08-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/16706
