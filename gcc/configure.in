@@ -814,6 +814,15 @@ gcc_AC_CHECK_DECLS(getrlimit setrlimit getrusage, , ,[
 #endif
 ])
 
+AC_TRY_COMPILE([
+#include "ansidecl.h"
+#include "system.h"
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
+],[rlim_t l = 0;],,[AC_DEFINE([rlim_t],[long],
+[Define to \`long' if <sys/resource.h> doesn't define.])])
+
 gcc_AC_CHECK_DECLS(ldgetname, , ,[
 #include "ansidecl.h"
 #include "system.h"
