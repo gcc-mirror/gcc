@@ -1,3 +1,7 @@
+Thu Aug 28 09:45:23 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (null_ptr_cst_p): Remove support for (void*)0.
+
 Wed Aug 27 02:03:34 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* typeck.c (expand_target_expr): Make definition match declaration.
