@@ -1,5 +1,10 @@
 2001-08-30  Per Bothner  <per@bothner.com>
 
+	* jcf-write.c (generate_classfile):  Check that field is primitive
+	or string before emitting ConstantValue attribute.
+	
+2001-08-30  Per Bothner  <per@bothner.com>
+
 	* parse.y (resolve_qualified_expression_name):  If creating a
 	COMPOUND_EXPR, set it's type correctly.
 

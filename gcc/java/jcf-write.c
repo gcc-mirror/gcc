@@ -2885,7 +2885,9 @@ generate_classfile (clas, state)
       PUT2(i);
       have_value = DECL_INITIAL (part) != NULL_TREE 
 	&& FIELD_STATIC (part) && CONSTANT_VALUE_P (DECL_INITIAL (part))
-	&& FIELD_FINAL (part);
+	&& FIELD_FINAL (part)
+	&& (JPRIMITIVE_TYPE_P (TREE_TYPE (part))
+	    || TREE_TYPE (part) == string_ptr_type_node);
       if (have_value)
 	attr_count++;
 
