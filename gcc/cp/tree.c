@@ -1112,47 +1112,33 @@ build_exception_variant (type, raises)
   return v;
 }
 
-/* Given a TEMPLATE_TEMPLATE_PARM or BOUND_TEMPLATE_TEMPLATE_PARM
-   node T, create a new one together with its 
-   lang_specific field and its corresponding *_DECL node.
-   If NEWARGS is not NULL_TREE, this parameter is bound with new set of
+/* Given a TEMPLATE_TEMPLATE_PARM node T, create a new
+   BOUND_TEMPLATE_TEMPLATE_PARM bound with NEWARGS as its template
    arguments.  */
 
 tree
-copy_template_template_parm (t, newargs)
+bind_template_template_parm (t, newargs)
      tree t;
      tree newargs;
 {
   tree decl = TYPE_NAME (t);
   tree t2;
 
-  if (newargs == NULL_TREE)
-    {
-      t2 = make_aggr_type (TREE_CODE (t));
-      decl = copy_decl (decl);
+  t2 = make_aggr_type (BOUND_TEMPLATE_TEMPLATE_PARM);
+  decl = build_decl (TYPE_DECL, DECL_NAME (decl), NULL_TREE);
 
-      /* No need to copy these.  */
-      TEMPLATE_TYPE_PARM_INDEX (t2) = TEMPLATE_TYPE_PARM_INDEX (t);
-      TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t2) 
-	= TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t);
-    }
-  else
-    {
-      t2 = make_aggr_type (BOUND_TEMPLATE_TEMPLATE_PARM);
-      decl = build_decl (TYPE_DECL, DECL_NAME (decl), NULL_TREE);
-
-      /* These nodes have to be created to reflect new TYPE_DECL and template
-         arguments.  */
-      TEMPLATE_TYPE_PARM_INDEX (t2) = copy_node (TEMPLATE_TYPE_PARM_INDEX (t));
-      TEMPLATE_PARM_DECL (TEMPLATE_TYPE_PARM_INDEX (t2)) = decl;
-      TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t2)
-	= tree_cons (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (t), 
-			  newargs, NULL_TREE);
-    }
+  /* These nodes have to be created to reflect new TYPE_DECL and template
+     arguments.  */
+  TEMPLATE_TYPE_PARM_INDEX (t2) = copy_node (TEMPLATE_TYPE_PARM_INDEX (t));
+  TEMPLATE_PARM_DECL (TEMPLATE_TYPE_PARM_INDEX (t2)) = decl;
+  TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t2)
+    = tree_cons (TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL (t), 
+		 newargs, NULL_TREE);
 
   TREE_TYPE (decl) = t2;
   TYPE_NAME (t2) = decl;
   TYPE_STUB_DECL (t2) = decl;
+  TYPE_SIZE (t2) = 0;
 
   return t2;
 }
@@ -1564,10 +1550,6 @@ copy_tree_r (tp, walk_subtrees, data)
       if (TREE_CODE (*tp) == SCOPE_STMT)
 	SCOPE_STMT_BLOCK (*tp) = NULL_TREE;
     }
-  else if (code == TEMPLATE_TEMPLATE_PARM
-	   || code == BOUND_TEMPLATE_TEMPLATE_PARM)
-    /* These must be copied specially.  */
-    *tp = copy_template_template_parm (*tp, NULL_TREE);
   else if (TREE_CODE_CLASS (code) == 't')
     /* There's no need to copy types, or anything beneath them.  */
     *walk_subtrees = 0;
