@@ -1086,12 +1086,6 @@ convert_move (to, from, unsignedp)
       if ((code = can_extend_p (to_mode, from_mode, unsignedp))
 	  != CODE_FOR_nothing)
 	{
-	  /* If FROM is a SUBREG, put it into a register.  Do this
-	     so that we always generate the same set of insns for
-	     better cse'ing; if an intermediate assignment occurred,
-	     we won't be doing the operation directly on the SUBREG.  */
-	  if (optimize > 0 && GET_CODE (from) == SUBREG)
-	    from = force_reg (from_mode, from);
 	  emit_unop_insn (code, to, from, equiv_code);
 	  return;
 	}
@@ -2721,11 +2715,18 @@ store_expr (exp, target, want_value)
        and then convert to the wider mode.  Our value is the computed
        expression.  */
     {
+      /* If we don't want a value, we can do the conversion inside EXP,
+	 which will often result in some optimizations.  */
+      if (! want_value)
+	exp = convert (type_for_mode (GET_MODE (SUBREG_REG (target)),
+				      SUBREG_PROMOTED_UNSIGNED_P (target)),
+		       exp);
+	 
       temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
 
       /* If TEMP is a volatile MEM and we want a result value, make
 	 the access now so it gets done only once.  */
-      if (GET_CODE (temp) == MEM && MEM_VOLATILE_P (temp))
+      if (GET_CODE (temp) == MEM && MEM_VOLATILE_P (temp) && want_value)
 	temp = copy_to_reg (temp);
 
       /* If TEMP is a VOIDmode constant, use convert_modes to make
