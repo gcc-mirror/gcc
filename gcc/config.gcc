@@ -506,8 +506,6 @@ case $machine in
 	c_target_objs="darwin-c.o"
 	cxx_target_objs="darwin-c.o"
 	extra_parts="crt2.o"
-	# Darwin linker does collect2 functionality
-	use_collect2=no
 	extra_objs="darwin.o"
 	;;	
 *-*-vxworks*)
