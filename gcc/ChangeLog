@@ -1,3 +1,10 @@
+2001-02-20  Aldy Hernandez  <aldyh@redhat.com>
+
+        * tm.texi (REVERSE_CONDEXEC_PREDICATES_P): New macro documentation.
+
+        * flow.c (ior_reg_cond): Use REVERSE_CONDEXEC_PREDICATES_P macro.
+        (REVERSE_CONDEXEC_PREDICATES_P): Define macro.
+
 2001-02-21  Jason Merrill  <jason@redhat.com>
 
 	* tree.h (DECL_UNINLINABLE): Move from C++ frontend.
