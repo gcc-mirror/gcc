@@ -1100,7 +1100,7 @@ push_binding (id, decl, level)
   INHERITED_VALUE_BINDING_P (binding) = 0;
   LOCAL_BINDING_P (binding) = (level != class_binding_level);
 
-  /* And put it on the front of the ilst of bindings for ID.  */
+  /* And put it on the front of the list of bindings for ID.  */
   TREE_CHAIN (binding) = IDENTIFIER_BINDING (id);
   IDENTIFIER_BINDING (id) = binding;
 }
