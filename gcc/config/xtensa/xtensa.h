@@ -719,12 +719,8 @@ extern enum reg_class xtensa_char_to_class[256];
    : ((CODE) == 'U') ? !constantpool_mem_p (OP)				\
    : FALSE)
 
-/* Given an rtx X being reloaded into a reg required to be
-   in class CLASS, return the class of reg to actually use.  */
 #define PREFERRED_RELOAD_CLASS(X, CLASS)				\
-  (CONSTANT_P (X)							\
-   ? (GET_CODE (X) == CONST_DOUBLE) ? NO_REGS : (CLASS)			\
-   : (CLASS))
+  xtensa_preferred_reload_class (X, CLASS)
 
 #define PREFERRED_OUTPUT_RELOAD_CLASS(X, CLASS)				\
   (CLASS)
@@ -1522,7 +1518,6 @@ typedef struct xtensa_args {
   {"add_operand",		{ REG, CONST_INT, SUBREG }},		\
   {"arith_operand",		{ REG, CONST_INT, SUBREG }},		\
   {"nonimmed_operand",		{ REG, SUBREG, MEM }},			\
-  {"non_acc_reg_operand",	{ REG, SUBREG }},			\
   {"mem_operand",		{ MEM }},				\
   {"mask_operand",		{ REG, CONST_INT, SUBREG }},		\
   {"extui_fldsz_operand",	{ CONST_INT }},				\
