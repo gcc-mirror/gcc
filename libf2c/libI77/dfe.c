@@ -66,6 +66,8 @@ c_dfe(a) cilist *a;
 c_dfe(cilist *a)
 #endif
 {
+	if(f__init != 1) f_init();
+	f__init = 3;
 	f__sequential=0;
 	f__formatted=f__external=1;
 	f__elist=a;
@@ -92,8 +94,6 @@ integer s_rdfe(cilist *a)
 #endif
 {
 	int n;
-	if(f__init != 1) f_init();
-	f__init = 3;
 	f__reading=1;
 	if(n=c_dfe(a))return(n);
 	if(f__curunit->uwrt && f__nowreading(f__curunit))
@@ -115,8 +115,6 @@ integer s_wdfe(cilist *a)
 #endif
 {
 	int n;
-	if(f__init != 1) f_init();
-	f__init = 3;
 	f__reading=0;
 	if(n=c_dfe(a)) return(n);
 	if(f__curunit->uwrt != 1 && f__nowwriting(f__curunit))
