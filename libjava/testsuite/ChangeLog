@@ -1,3 +1,27 @@
+2000-12-15  Tom Tromey  <tromey@redhat.com>
+
+	* lib/libjava.exp (libjava_tcompile): New proc.
+	(test_libjava_from_source): Use it.
+	(test_libjava_from_javac): Likewise.
+	(find_javac): New proc.
+	(bytecompile_file): Use it.
+	(test_libjava_from_javac): Handle `xfail-gcjC' tag.  If no-exec
+	set, then don't link even if program has a `main'.
+
+	* libjava.compile/static_3.xfail: New file.
+	* libjava.compile/weirddecl.xfail: New file.
+	* libjava.compile/static_2.xfail: New file.
+	* libjava.compile/not_a_redef.xfail: New file.
+	* libjava.compile/inner_1.xfail: New file.
+	* libjava.compile/assignment_2.xfail: New file.
+	* libjava.compile/assignment.xfail: New file.
+	* libjava.compile/abstr.xfail: New file.
+	* libjava.compile/PR375.xfail: New file.
+	* libjava.compile/PR374.java: New file.
+	* libjava.compile/PR238.xfail: New file.
+	* libjava.compile/PR208.xfail: New file.
+	* libjava.compile/PR207.xfail: New file.
+
 2000-11-30  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.lang/instinit.java: Don't extend `foo'.
