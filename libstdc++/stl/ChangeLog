@@ -1,3 +1,8 @@
+Fri Jul 10 15:20:09 1998  Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>
+
+	* stl_tempbuf.h (temporary_buffer): Add missing typename.
+	* type_traits.h: update comments.
+
 Sun Jun 28 00:49:42 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* stl_config.h (__STL_PTHREADS): Don't define for glibc 2 if

@@ -46,7 +46,7 @@ template <class T> void copy(T* source,T* destination,int n,__true_type);
 
 //Copy an array of any type by using the most efficient copy mechanism
 template <class T> inline void copy(T* source,T* destination,int n) {
-   copy(source,destination,n,__type_traits<T>::has_trivial_copy_constructor());
+   copy(source,destination,n,typename __type_traits<T>::has_trivial_copy_constructor());
 }
 */
 
