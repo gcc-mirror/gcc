@@ -40,9 +40,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CC1_SPEC
 #define CC1_SPEC "%{!static:-fPIC}\
-  %{gused: -g -feliminate-unused-debug-symbols %<gused }\
-  %{gfull: -g -fno-eliminate-unused-debug-symbols %<gfull }\
-  %{g: %{!gfull: -feliminate-unused-debug-symbols %<gfull }}"
+  %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }}"
 
 #undef ASM_SPEC
 #define ASM_SPEC "-arch i686 -force_cpusubtype_ALL"
