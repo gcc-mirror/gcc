@@ -269,8 +269,11 @@ stupid_life_analysis (f, nregs, file)
       register int r = reg_order[i];
 
       /* Some regnos disappear from the rtl.  Ignore them to avoid crash. 
-	 Also don't allocate registers that cross a setjmp.  */
-      if (regno_reg_rtx[r] == 0 || regs_crosses_setjmp[r])
+	 Also don't allocate registers that cross a setjmp, or live across
+	 a call if this function receives a nonlocal goto.  */
+      if (regno_reg_rtx[r] == 0 || regs_crosses_setjmp[r]
+	  || (REG_N_CALLS_CROSSED (r) > 0 
+	      && current_function_has_nonlocal_label))
 	continue;
 
       /* Now find the best hard-register class for this pseudo register */
