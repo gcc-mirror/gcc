@@ -144,7 +144,7 @@ options</a></h1>
      </p>
  </dd>
 
- <dt><code>--enable-debug  </code></dt>
+ <dt><code>--enable-libstdcxx-debug  </code></dt>
  <dd><p>Build separate debug libraries in addition to what is normally built.
  	By default, the debug libraries are compiled with 
         <code> CXXFLAGS='-g3 -O0'</code>
@@ -159,7 +159,7 @@ options</a></h1>
      </p>
  </dd>
 
- <dt><code>--enable-debug-flags=FLAGS</code></dt>
+ <dt><code>--enable-libstdcxx-debug-flags=FLAGS</code></dt>
 
  <dd><p>This option is only valid when <code> --enable-debug </code>
         is also specified, and applies to the debug builds only. With
@@ -168,7 +168,7 @@ options</a></h1>
         FLAGS is a quoted string of options, like
      </p>
         <pre>
-  --enable-debug-flags='-g3 -O1 -gdwarf-2'</pre>
+  --enable-libstdcxx-debug-flags='-g3 -O1 -gdwarf-2'</pre>
  </dd>
 
  <dt><code>--enable-cxx-flags=FLAGS</code></dt>
@@ -262,7 +262,7 @@ options</a></h1>
      </p>
  </dd>
 
- <dt><code>--enable-pch  </code></dt>
+ <dt><code>--enable-libstdcxx-pch  </code></dt>
  <dd><p>In 3.4 and later, tries to turn on the generation of
         stdc++.h.gch, a pre-compiled file including all the standard
         C++ includes. If enabled (as by default), and the compiler
