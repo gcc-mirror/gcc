@@ -1,3 +1,8 @@
+2004-12-07  Ziemowit Laski  <zlaski@apple.com>
+
+	* cp-tree.h (struct lang_type_class): Rename 'objc_protocols'
+	field to 'objc_info'.
+
 2004-12-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* pt.c: Replace a use of first_rtl_op with TREE_CODE_LENGTH.
