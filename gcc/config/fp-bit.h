@@ -384,6 +384,10 @@ extern USItype float_to_usi (FLO_type);
 #endif
 #endif
 
+#if defined(L_usi_to_sf) || defined(L_usi_to_df)
+extern FLO_type usi_to_float (USItype);
+#endif
+
 #if defined(L_negate_sf) || defined(L_negate_df)
 extern FLO_type negate (FLO_type);
 #endif

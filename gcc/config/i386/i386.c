@@ -8295,7 +8295,6 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
     if (d->code == fcode)
       return ix86_expand_sse_comi (d, arglist, target);
 
- fail:
   /* @@@ Should really do something sensible here.  */
   return 0;
 }

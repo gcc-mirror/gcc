@@ -276,8 +276,6 @@ static void dump_interface			PARAMS ((FILE *, tree));
 
 /* Everything else.  */
 
-static void objc_fatal				PARAMS ((void))
-  ATTRIBUTE_NORETURN;
 static tree define_decl				PARAMS ((tree, tree));
 static tree lookup_method_in_protocol_list	PARAMS ((tree, tree, int));
 static tree lookup_protocol_in_reflist		PARAMS ((tree, tree));
@@ -743,12 +741,6 @@ lang_init ()
 
   objc_act_parse_init ();
   c_parse_init ();
-}
-
-static void
-objc_fatal ()
-{
-  fatal ("Objective-C text in C source file");
 }
 
 void

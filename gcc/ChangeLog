@@ -1,3 +1,20 @@
+2000-12-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (sched-deps.o, sched-rgn.o): Fix dependency typo.
+
+	* fp-bit.h (usi_to_float): Add prototype.
+
+	* i386.c (file_info_cmp): Likewise.
+	(dwarf2out_line): Hide variable `old_in_use'.
+	
+	* objc-act.c (objc_fatal): Delete.
+
+	* sched-vis.c (visualize_stall_cycles): Remove unused variable.
+
+	* system.h (getopt): Fix error in last change.
+
+	* varasm.c (assemble_trampoline_template): Constify.
+
 2000-12-22  Jason Merrill  <jason@redhat.com>
 
 	* collect2.c (main): Use auto_demangling.

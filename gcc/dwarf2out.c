@@ -3533,6 +3533,7 @@ static void gen_type_die_for_member	PARAMS ((tree, tree, dw_die_ref));
 static void gen_abstract_function	PARAMS ((tree));
 static rtx save_rtx			PARAMS ((rtx));
 static void splice_child_die		PARAMS ((dw_die_ref, dw_die_ref));
+static int file_info_cmp		PARAMS ((const void *, const void *));
 
 /* Section names used to hold DWARF debugging information.  */
 #ifndef DEBUG_INFO_SECTION
@@ -11338,7 +11339,9 @@ dwarf2out_line (filename, line)
 
       if (DWARF2_ASM_LINE_DEBUG_INFO)
 	{
+#if 0
 	  unsigned old_in_use = line_file_table.in_use;
+#endif
 	  unsigned file_num = lookup_filename (&line_file_table, filename);
 
 	  /* Emit the .file and .loc directives understood by GNU as.  */

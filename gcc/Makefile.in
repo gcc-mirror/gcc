@@ -1458,10 +1458,10 @@ regmove.o : regmove.c $(CONFIG_H) system.h $(RTL_H) insn-config.h \
 haifa-sched.o : haifa-sched.c $(CONFIG_H) system.h $(RTL_H) sched-int.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h function.h \
    $(INSN_ATTR_H) insn-flags.h toplev.h $(RECOG_H) except.h
-sched-deps.o : haifa-sched.c $(CONFIG_H) system.h $(RTL_H) sched-int.h \
+sched-deps.o : sched-deps.c $(CONFIG_H) system.h $(RTL_H) sched-int.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h function.h \
    $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h
-sched-rgn.o : haifa-sched.c $(CONFIG_H) system.h $(RTL_H) sched-int.h \
+sched-rgn.o : sched-rgn.c $(CONFIG_H) system.h $(RTL_H) sched-int.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h function.h \
    $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h
 sched-ebb.o : sched-ebb.c $(CONFIG_H) system.h $(RTL_H) sched-int.h \
