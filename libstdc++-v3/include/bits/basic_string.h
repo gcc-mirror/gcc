@@ -1212,11 +1212,7 @@ namespace std
       */
       basic_string&
       replace(iterator __i1, iterator __i2, const basic_string& __str)
-      { 
-	_GLIBCXX_DEBUG_PEDASSERT(_M_ibegin() <= __i1 && __i1 <= __i2
-				 && __i2 <= _M_iend());
-	return this->replace(__i1, __i2, __str._M_data(), __str.size()); 
-      }
+      { return this->replace(__i1, __i2, __str._M_data(), __str.size()); }
 
       /**
        *  @brief  Replace range of characters with C substring.
@@ -1233,9 +1229,12 @@ namespace std
        *  change if an error is thrown.
       */
       basic_string&
-      replace(iterator __i1, iterator __i2,
-	      const _CharT* __s, size_type __n)
-      { return this->replace(__i1 - _M_ibegin(), __i2 - __i1, __s, __n); }
+      replace(iterator __i1, iterator __i2, const _CharT* __s, size_type __n)
+      {
+	_GLIBCXX_DEBUG_PEDASSERT(_M_ibegin() <= __i1 && __i1 <= __i2
+				 && __i2 <= _M_iend());	
+	return this->replace(__i1 - _M_ibegin(), __i2 - __i1, __s, __n);
+      }
 
       /**
        *  @brief  Replace range of characters with C string.
@@ -1253,8 +1252,6 @@ namespace std
       basic_string&
       replace(iterator __i1, iterator __i2, const _CharT* __s)
       { 
-	_GLIBCXX_DEBUG_PEDASSERT(_M_ibegin() <= __i1 && __i1 <= __i2
-				 && __i2 <= _M_iend());
 	__glibcxx_requires_string(__s);
 	return this->replace(__i1, __i2, __s, traits_type::length(__s)); 
       }

@@ -1,3 +1,11 @@
+2004-01-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.h (replace(iterator, iterator,
+	const basic_string&)): Remove _GLIBCXX_DEBUG_PEDASSERT.
+	(replace(iterator, iterator, const _CharT*)): Ditto.
+	(replace(iterator, iterator, const _CharT*, size_type)):
+	Add missing _GLIBCXX_DEBUG_PEDASSERT.
+
 2004-01-26  Andreas Schwab  <schwab@suse.de>
 
 	* config/locale/gnu/monetary_members.cc: Restore locale before
