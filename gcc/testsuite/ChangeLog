@@ -1,3 +1,8 @@
+2001-02-26  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* g++.old-deja/g++.pt/overload15.C: New test to stress overloaded
+	templatized constructors.
+
 2001-02-24  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/20010224-1.c: New test.
