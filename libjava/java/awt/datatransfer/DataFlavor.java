@@ -49,6 +49,7 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 
 /**
  * This class represents a particular data format used for transferring
@@ -335,9 +336,8 @@ getRepresentationClassFromMime(String mimeString, ClassLoader classLoader)
  */
 public
 DataFlavor(String mimeType, String humanPresentableName)
-           throws ClassNotFoundException
 {
-  this(mimeType, humanPresentableName, null);
+  this (getRepresentationClassFromMime (mimeType, null), humanPresentableName);
 }
 
 /*************************************************************************/

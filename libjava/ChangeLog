@@ -1,3 +1,51 @@
+2003-03-17  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Dialog.java
+	(Dialog): New constructor, changed implementations, added
+	documentation.
+	* java/awt/ScrollPaneAdjustable.java
+	(ScrollPaneAdjustable): Extends Object, implements Adjustable and
+	Serializable.
+	(serialVersionUID): New member variable.
+	(sp): New member variable.
+	(orientation): New member variable.
+	(value): New member variable.
+	(minimum): New member variable.
+	(maximum): New member variable.
+	(visibleAmount): New member variable.
+	(unitIncrement): New member variable.
+	(blockIncrement): New member variable.
+	(AdjustmentListener): New member variable.
+	(ScrollPaneAdjustable): New implementation.
+	(addAdjustmentListener): New method.
+	(removeAdjustmentListener): New method.
+	(getAdjustmentListeners): New method.
+	(getBlockIncrement): New method.
+	(getMaximum): New method.
+	(getMinimum): New method.
+	(getOrientation): New method.
+	(getUnitIncrement): New method.
+	(getValue): New method.
+	(getVisibleAmount): New method.
+	(setBlockIncrement): New method.
+	(setMaximum): Implemented.
+	(setMinimum): Implemented.
+	(setUnitIncrement): New method.
+	(setValue): New method.
+	(setVisibleAmount): Implemented. 
+	(paramString): New stubbed method.
+	* java/awt/Window.java
+	(show): Call setVisible().
+	(hide): Call setVisible().
+	(processEvent): Add cases for WINDOW_GAINED_FOCUS, WINDOW_LOST_FOCUS
+	and WINDOW_STATE_CHANGED.
+	(processWindowFocusEvent): New method.
+	(processWindowStateEvent): New method.
+	(postEvent): Deprecated.
+	(applyResourceBundle): Deprecated.
+	* java/awt/datatransfer/DataFlavor.java
+	(DataFlavor): Doesn't thow ClassNotFoundException.
+
 2003-03-17  Michael Koch
 
 	* javax/print/attribute/Attribute.java,

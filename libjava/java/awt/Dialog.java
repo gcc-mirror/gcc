@@ -153,11 +153,37 @@ Dialog(Frame parent, String title)
   * @param title The title string for this dialog box.
   * @param modal <true> if this dialog box is modal, <code>false</code>
   * otherwise.
+  *
+  * @exception IllegalArgumentException If owner is null or
+  * GraphicsEnvironment.isHeadless() returns true.
   */
 public
 Dialog(Frame parent, String title, boolean modal)
 {
-  super(parent);
+  this (parent, title, modal, parent.getGraphicsConfiguration ());
+}
+
+/**
+ * Initializes a new instance of <code>Dialog</code> with the specified,
+ * parent, title, modality and <code>GraphicsConfiguration</code>,
+ * that is not resizable.
+ *
+ * @param parent The parent frame of this dialog box.
+ * @param title The title string for this dialog box.
+ * @param modal <true> if this dialog box is modal, <code>false</code>
+ * otherwise.
+ * @param gc The <code>GraphicsConfiguration</code> object to use.
+ *
+ * @exception IllegalArgumentException If owner is null, the
+ * GraphicsConfiguration is not a screen device or
+ * GraphicsEnvironment.isHeadless() returns true.
+ *
+ * @since 1.4
+ */
+public
+Dialog (Frame parent, String title, boolean modal, GraphicsConfiguration gc)
+{
+  super (parent, gc);
 
   this.title = title;
   this.modal = modal;
@@ -166,10 +192,19 @@ Dialog(Frame parent, String title, boolean modal)
   setLayout(new BorderLayout());
 }
 
+/**
+ * Initializes a new instance of <code>Dialog</code> with the specified,
+ * parent, that is not resizable.
+ *
+ * @exception IllegalArgumentException If parent is null. This exception is
+ * always thrown when GraphicsEnvironment.isHeadless() returns true.
+ *
+ * @since 1.2
+ */
 public
 Dialog (Dialog owner)
 {
-  this (owner, "", false);
+  this (owner, "", false, owner.getGraphicsConfiguration ());
 }
 
 /**
@@ -184,7 +219,7 @@ Dialog (Dialog owner)
 public
 Dialog (Dialog owner, String title)
 {
-  this (owner, title, false);
+  this (owner, title, false, owner.getGraphicsConfiguration ());
 }
 
 /**
@@ -199,9 +234,29 @@ Dialog (Dialog owner, String title)
 public
 Dialog (Dialog owner, String title, boolean modal)
 {
-  super (owner);
+  this (owner, title, modal, owner.getGraphicsConfiguration ());
+}
+
+/**
+ * Initializes a new instance of <code>Dialog</code> with the specified,
+ * parent, title, modality and <code>GraphicsConfiguration</code>,
+ * that is not resizable.
+ *
+ * @exception IllegalArgumentException If parent is null, the
+ * GraphicsConfiguration is not a screen device or
+ * GraphicsEnvironment.isHeadless() returns true.
+ *
+ * @since 1.4
+ */
+public
+Dialog (Dialog parent, String title, boolean modal, GraphicsConfiguration gc)
+{
+  super (parent, parent.getGraphicsConfiguration ());
+  
   this.modal = modal;
   this.title = title;
+  resizable = false;
+  
   setLayout (new BorderLayout ());
 }
 

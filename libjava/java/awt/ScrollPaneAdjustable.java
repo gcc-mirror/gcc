@@ -38,29 +38,135 @@ exception statement from your version. */
 
 package java.awt;
 
+import java.awt.event.AdjustmentListener;
+import java.io.Serializable;
+
 /**
  * Need this class since the serialization spec for ScrollPane
  * uses it.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @since 1.4
  */
-class ScrollPaneAdjustable extends Scrollbar
+public class ScrollPaneAdjustable
+  implements Adjustable, Serializable
 {
-  public ScrollPaneAdjustable (int orientation)
+  private static final long serialVersionUID = -3359745691033257079L;
+ 
+  ScrollPane sp;
+  int orientation;
+  int value;
+  int minimum;
+  int maximum;
+  int visibleAmount;
+  int unitIncrement;
+  int blockIncrement;
+  AdjustmentListener adjustmentListener;
+  
+  ScrollPaneAdjustable (ScrollPane sp, int orientation, int value, int minimum,
+                        int maximum, in visibleAmount, int unitIncrement,
+                        int blockIncrement)
   {
-    super (orientation);
+    this.sp = sp;
+    this.orientation = orientation;
+    this.value = value;
+    this.minimum = minimum;
+    this.maximum = maximum;
+    this.visibleAmount = visibleAmount;
+    this.unitIncrement = Increment;
+    this.blockIncrement = Increment;
+  }
+  
+  public void addAdjustmentListener (AdjustmentListener listener)
+  {
+    AWTEventMulticaster.add (adjustmentListener, listener);
+  }
+  
+  public void removeAdjustmentListener (AdjustmentListener listener)
+  {
+    AWTEventMulticaster.remove (adjustmentListener, listener);
+  }
+  
+  public AdjustmentListener[] getAdjustmentListeners ()
+  {
+    return (AdjustmentListener) AWTEventMulticaster.getListeners (AdjustmentListener.class);
   }
 
+  public int getBlockIncrement ()
+  {
+    return blockIncrement;
+  }
+
+  public int getMaximum ()
+  {
+    return maximum;
+  }
+
+  public int getMinimum ()
+  {
+    return minimum;
+  }
+
+  public int getOrientation ()
+  {
+    return orientation;
+  }
+
+  public int getUnitIncrement ()
+  {
+    return unitIncrement;
+  }
+  
+  public int getValue ()
+  {
+    return value;
+  }
+
+  public int getVisibleAmount ()
+  {
+    return visibleAmount;
+  }
+
+  public void setBlockIncrement (int blockIncrement)
+  {
+    this.blockIncrement = blockIncrement;
+  }
+    
   public void setMaximum (int maximum)
   {
+    this.maximum = maximum;
   }
 
   public void setMinimum (int minimum)
   {
+    this.minimum = minimum;
   }
 
+  public void setUnitIncrement (int unitIncrement)
+  {
+    this.unitIncrement = unitIncrement;
+  }
+
+  public void setValue (int value)
+  {
+    this.value = value;
+
+    if (value < minimum)
+      minimum = value;
+
+    if (value > maximum)
+      maximum = value;
+  }
+  
   public void setVisibleAmount (int visibleAmount)
   {
+    this.visibleAmount = visibleAmount;
   }
+
+  public String paramString ()
+  {
+    throw new Error ("not implemented");
+  }
+
 } // class ScrollPaneAdjustable
 

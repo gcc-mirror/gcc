@@ -213,14 +213,14 @@ public class Window extends Container
       addNotify();
 
     validate();
-    super.show();
+    setVisible (true);
     toFront();
   }
 
   public void hide()
   {
     // FIXME: call hide() on any "owned" children here.
-    super.hide();
+    setVisible (false);
   }
 
   public boolean isDisplayable()
@@ -526,6 +526,13 @@ public class Window extends Container
           case WindowEvent.WINDOW_OPENED:
             windowListener.windowOpened(evt);
             break;
+          case WindowEvent.WINDOW_GAINED_FOCUS:
+          case WindowEvent.WINDOW_LOST_FOCUS:
+            processWindowFocusEvent (evt);
+            break;
+          case WindowEvent.WINDOW_STATE_CHANGED:
+            processWindowStateEvent (evt);
+            break;
           }
       }
   }
@@ -548,6 +555,8 @@ public class Window extends Container
    * Post a Java 1.0 event to the event queue.
    *
    * @param event The event to post.
+   *
+   * @deprecated
    */
   public boolean postEvent(Event e)
   {
@@ -566,13 +575,21 @@ public class Window extends Container
     return super.isShowing();
   }
 
-  /** @since 1.2 */
+  /**
+   * @since 1.2
+   *
+   * @deprecated
+   */
   public void applyResourceBundle(ResourceBundle rb)
   {
     // FIXME
   }
 
-  /** @since 1.2 */
+  /**
+   * @since 1.2
+   *
+   * @deprecated
+   */
   public void applyResourceBundle(String rbName)
   {
     ResourceBundle rb = ResourceBundle.getBundle(rbName);
@@ -597,5 +614,35 @@ public class Window extends Container
     if (graphicsConfiguration != null) return graphicsConfiguration;
     if (peer != null) return peer.getGraphicsConfiguration();
     return null;
+  }
+
+  protected void processWindowFocusEvent(WindowEvent event)
+  {
+    if (windowFocusListener != null)
+      {
+        switch (event.getID ())
+          {
+          case WindowEvent.WINDOW_GAINED_FOCUS:
+            windowFocusListener.windowGainedFocus (event);
+            break;
+            
+          case WindowEvent.WINDOW_LOST_FOCUS:
+            windowFocusListener.windowLostFocus (event);
+            break;
+            
+          default:
+            break;
+          }
+      }
+  }
+  
+  /**
+   * @since 1.4
+   */
+  protected void processWindowStateEvent(WindowEvent event)
+  {
+    if (windowStateListener != null
+        && event.getID () == WindowEvent.WINDOW_STATE_CHANGED)
+      windowStateListener.windowStateChanged (event);
   }
 }
