@@ -284,10 +284,12 @@ static void add_bb		PROTO((FILE *));
 static int add_bb_string	PROTO((char *, int));
 static void output_source_line	PROTO((FILE *, rtx));
 static rtx walk_alter_subreg	PROTO((rtx));
-static int alter_cond		PROTO((rtx));
 static void output_asm_name	PROTO((void));
 static void output_operand	PROTO((rtx, int));
+#ifdef LEAF_REGISTERS
 static void leaf_renumber_regs	PROTO((rtx));
+static int alter_cond		PROTO((rtx));
+#endif
 
 extern char *getpwd ();
 
