@@ -1,3 +1,8 @@
+2002-10-06  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/Thread.java (setDaemon): Check startable_flag,
+	not isAlive().
+
 2002-10-07  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/Buffer.java: New stub file.

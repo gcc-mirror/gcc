@@ -137,7 +137,7 @@ public class Thread implements Runnable
   public final void setDaemon (boolean status)
   {
     checkAccess ();
-    if (isAlive ())
+    if (!startable_flag)
       throw new IllegalThreadStateException ();
     daemon_flag = status;
   }
