@@ -2367,15 +2367,6 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* config/h8300/h8300.c (h8300_init_once): Fix formatting.
 
-2002-09-13  Matt Austern  <austern@apple.com>
-
-	* cp/cp-tree.h, cp/tree.c: New function non_cast_lvalue_p.
-	* cp/call.c: Change call-by-const-reference mechanism to use
-	non_cast_lvalue_p when deciding whether the create a temporary.
-	We need a temporary when passing, e.g. (long) x by const ref.
-	* testsuite/g++.dg/other/constref[12].C: New, regression tests for
-	passing a cast expression to a function by const reference.
-
 2002-09-13  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (attr type): Add callpal.
