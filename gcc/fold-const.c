@@ -5576,7 +5576,7 @@ fold (expr)
       if (! FLOAT_TYPE_P (type))
 	{
 	  if (! wins && integer_zerop (arg0))
-	    return convert (type, negate_expr (arg1));
+	    return negate_expr (convert (type, arg1));
 	  if (integer_zerop (arg1))
 	    return non_lvalue (convert (type, arg0));
 
@@ -5599,7 +5599,7 @@ fold (expr)
 	{
 	  /* Except with IEEE floating point, 0-x equals -x.  */
 	  if (! wins && real_zerop (arg0))
-	    return convert (type, negate_expr (arg1));
+	    return negate_expr (convert (type, arg1));
 	  /* Except with IEEE floating point, x-0 equals x.  */
 	  if (real_zerop (arg1))
 	    return non_lvalue (convert (type, arg0));
@@ -6888,7 +6888,12 @@ fold (expr)
 	      {
 	      case EQ_EXPR:
 		return
-		  pedantic_non_lvalue (convert (type, negate_expr (arg1)));
+		  pedantic_non_lvalue
+		    (convert (type,
+			      negate_expr
+			      (convert (TREE_TYPE (TREE_OPERAND (t, 1)),
+					arg1))));
+
 	      case NE_EXPR:
 		return pedantic_non_lvalue (convert (type, arg1));
 	      case GE_EXPR:

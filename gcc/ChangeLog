@@ -1,3 +1,8 @@
+Thu Oct  5 09:31:31 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (fold, case MINUS_EXPR, case EQ_EXPR): Perform
+	negation in proper type.a
+
 2000-10-04  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in (enable-shared): New.
