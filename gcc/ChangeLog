@@ -1,3 +1,9 @@
+Tue Jul 29 19:24:49 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR C++/11131
+	* tree-inline.c (expand_call_inline): Always call inlinable_function_p
+	in !unit-at-a-time mode.
+
 2003-07-28  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-decl.c (c_expand_body_1): Use C_DECL_FILE_SCOPE to detect
