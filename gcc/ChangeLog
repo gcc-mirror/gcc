@@ -1,3 +1,8 @@
+2001-12-14  Zack Weinberg  <zack@codesourcery.com>
+
+	* combine.c (record_dead_and_set_regs): Use
+	regs_invalidated_by_call.  Don't note stores for CALL_INSNs.
+
 2001-12-14  Roger Sayle <roger@eyesopen.com>
 
 	* builtins.def: Rename BUILT_IN_FSQRT to BUILT_IN_SQRT and

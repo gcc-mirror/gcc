@@ -11202,7 +11202,7 @@ record_dead_and_set_regs (insn)
   if (GET_CODE (insn) == CALL_INSN)
     {
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (call_used_regs[i])
+	if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
 	  {
 	    reg_last_set_value[i] = 0;
 	    reg_last_set_mode[i] = 0;
@@ -11212,6 +11212,13 @@ record_dead_and_set_regs (insn)
 	  }
 
       last_call_cuid = mem_last_set = INSN_CUID (insn);
+
+      /* Don't bother recording what this insn does.  It might set the
+	 return value register, but we can't combine into a call
+	 pattern anyway, so there's no point trying (and it may cause
+	 a crash, if e.g. we wind up asking for last_set_value of a
+	 SUBREG of the return value register).  */
+      return;
     }
 
   note_stores (PATTERN (insn), record_dead_and_set_regs_1, insn);
