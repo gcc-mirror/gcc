@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -18,27 +18,20 @@ public abstract class BytesToUnicode extends IOConverter
   /** End of valid bytes in buffer. */
   public int inlength;
 
-  static Class defaultDecodingClass;
+  // The name of the default encoding.
+  static String defaultEncoding;
 
-  static synchronized void getDefaultDecodingClass()
-  {
-    // Test (defaultDecodingClass == null) again in case of race condition.
-    if (defaultDecodingClass == null)
-      {
-	String encoding = canonicalize (System.getProperty("file.encoding"));
-	String className = "gnu.gcj.convert.Input_"+encoding;
-	try
-	  {
-	    defaultDecodingClass = Class.forName(className);
-	  }
-	catch (ClassNotFoundException ex)
-	  {
-	    throw new NoClassDefFoundError("missing default encoding "
-					   + encoding + " (class "
-					   + className + " not found)");
-	  }
-      }
-  }
+  /* These keep a small cache of decoders for reuse.  The array holds
+     the actual decoders.  The currCachePos is the next value we are
+     going to replace in the cache.  We don't just throw the data away
+     if the cache is full, because if the cache filled up with stuff
+     we don't need then the cache would be worthless.  We instead
+     circulate through the cache the implement kind of an LRU
+     algorithm. */
+  private static final int CACHE_SIZE = 4;  // A power of 2 for speed
+  private static BytesToUnicode[] decoderCache
+    = new BytesToUnicode[CACHE_SIZE];
+  private static int currCachePos = 0;
 
   public abstract String getName();
 
@@ -46,20 +39,33 @@ public abstract class BytesToUnicode extends IOConverter
   {
     try
       {
-	if (defaultDecodingClass == null)
-	  getDefaultDecodingClass();
-	return (BytesToUnicode) defaultDecodingClass.newInstance();
+	synchronized (BytesToUnicode.class)
+	  {
+	    if (defaultEncoding == null)
+	      {
+		String encoding
+		  = canonicalize (System.getProperty("file.encoding",
+						     "8859_1"));
+		String className = "gnu.gcj.convert.Input_" + encoding;
+		try
+		  {
+		    Class defaultDecodingClass = Class.forName(className);
+		    defaultEncoding = encoding;
+		  }
+		catch (ClassNotFoundException ex)
+		  {
+		    throw new NoClassDefFoundError("missing default encoding "
+						   + encoding + " (class "
+						   + className
+						   + " not found)");
+		  }
+	      }
+	  }
+	return getDecoder (defaultEncoding);
       }
     catch (Throwable ex)
       {
-	try
-	  {
-	    return new Input_iconv (System.getProperty ("file.encoding"));
-	  }
-	catch (Throwable ex2)
-	  {
-	    return new Input_8859_1();
-	  }
+	return new Input_8859_1();
       }
   }
 
@@ -67,6 +73,24 @@ public abstract class BytesToUnicode extends IOConverter
   public static BytesToUnicode getDecoder (String encoding)
     throws java.io.UnsupportedEncodingException
   {
+    /* First hunt in our cache to see if we have a decoder that is
+       already allocated. */
+    synchronized (BytesToUnicode.class)
+      {
+	int i;
+	for (i = 0; i < decoderCache.length; ++i)
+	  {
+	    if (decoderCache[i] != null
+		&& encoding.equals(decoderCache[i].getName ()))
+	      {
+		BytesToUnicode rv = decoderCache[i];
+		decoderCache[i] = null;
+		return rv;
+	    }
+	  }
+      }
+
+    // It's not in the cache, so now we have to do real work.
     String className = "gnu.gcj.convert.Input_" + canonicalize (encoding);
     Class decodingClass;
     try 
@@ -120,4 +144,22 @@ public abstract class BytesToUnicode extends IOConverter
    * of the length parameter for a read request).
    */
   public abstract int read (char[] outbuffer, int outpos, int count);
+
+  /** Indicate that the converter is resuable.
+   * This class keeps track of converters on a per-encoding basis.
+   * When done with an encoder you may call this method to indicate
+   * that it can be reused later.
+   */
+  public void done ()
+  {
+    synchronized (BytesToUnicode.class)
+      {
+	this.inbuffer = null;
+	this.inpos = 0;
+	this.inlength = 0;
+
+	decoderCache[currCachePos] = this;
+	currCachePos = (currCachePos + 1) % CACHE_SIZE;
+      }
+  }
 }
