@@ -3361,15 +3361,8 @@ override_options ()
 		    && (! TARGET_SINGLE_FLOAT || size <= 4));
 
 	  else if (MD_REG_P (regno))
-	    {
-	      if (TARGET_64BIT)
-		temp = (mode == DImode
-			|| mode == SImode
-			|| (regno == MD_REG_FIRST && mode == TImode));
-	      else
-		temp = (mode == SImode
-			|| (regno == MD_REG_FIRST && mode == DImode));
-	    }
+	    temp = (size <= UNITS_PER_WORD
+		    || (regno == MD_REG_FIRST && size == 2 * UNITS_PER_WORD));
 
 	  else
 	    temp = FALSE;
