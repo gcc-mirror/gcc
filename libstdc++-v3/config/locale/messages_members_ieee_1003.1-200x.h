@@ -35,7 +35,7 @@
 
   // Non-virtual member functions.
   template<typename _CharT>
-    messages<_CharT>::catalog 
+    typename messages<_CharT>::catalog 
     messages<_CharT>::open(const basic_string<char>& __s, const locale& __loc, 
 			   const char*) const
     { return this->do_open(__s, __loc); }
@@ -46,13 +46,13 @@
     { }
 
   template<typename _CharT>
-    messages<_CharT>::catalog 
+    typename messages<_CharT>::catalog 
     messages<_CharT>::do_open(const basic_string<char>& __s, 
 			      const locale&) const
     { return reinterpret_cast<catalog>(catopen(__s.c_str(), NL_CAT_LOCALE)); }
 
   template<typename _CharT>
-    messages<_CharT>::string_type  
+    typename messages<_CharT>::string_type  
     messages<_CharT>::do_get(catalog __c, int __setid, int __msgid, 
 			     const string_type& __dfault) const
     {
