@@ -1,3 +1,7 @@
+2003-01-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*twoshifts_l16_r1): New.
+
 2003-01-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (leadi): Use dla rather than la.
