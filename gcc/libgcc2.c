@@ -2965,7 +2965,7 @@ int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
 
 #ifdef L_eh
 
-#include "libgcc-thr.h"
+#include "gthr.h"
 
 /* Shared exception handling support routines.  */
 
@@ -3038,6 +3038,7 @@ static __gthread_key_t eh_context_key;
 static void
 eh_context_free (void *ptr)
 {
+  __gthread_key_dtor (eh_context_key, ptr);
   if (ptr)
     free (ptr);
 }
@@ -3094,7 +3095,11 @@ eh_context_initialize ()
 #if __GTHREADS
 
   static __gthread_once_t once = __GTHREAD_ONCE_INIT;
-  __gthread_once (&once, eh_threads_initialize);
+  if (__gthread_once (&once, eh_threads_initialize) == -1)
+    {
+      /* Use static version of EH context. */
+      get_eh_context = &eh_context_static;
+    }
 
 #else /* no __GTHREADS */
 
