@@ -1,3 +1,8 @@
+1999-07-15  Mark Mitchell  <mark@codesourcery.com>
+
+        * pt.c (check_default_tmpl_args): Handle friends defined in the
+        class just like member functions defined in the class.
+
 Thu Jul 15 01:26:49 1999  H.J. Lu  <hjl@gnu.org>
 
 	* decl.c (duplicate_decls): Relax restriction for exception

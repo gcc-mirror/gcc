@@ -2210,12 +2210,17 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
 
   if (current_class_type
       && !TYPE_BEING_DEFINED (current_class_type)
-      && DECL_REAL_CONTEXT (decl) == current_class_type
       && DECL_LANG_SPECIFIC (decl)
-      && DECL_DEFINED_IN_CLASS_P (decl)) 
+      /* If this is either a friend defined in the scope of the class
+	 or a member function.  */
+      && DECL_CLASS_CONTEXT (decl) == current_class_type
+      /* And, if it was a member function, it really was defined in
+	 the scope of the class.  */
+      && (!DECL_FUNCTION_MEMBER_P (decl) || DECL_DEFINED_IN_CLASS_P (decl)))
     /* We already checked these parameters when the template was
-       declared, so there's no need to do it again now.  This is an
-       inline member function definition.  */
+       declared, so there's no need to do it again now.  This function
+       was defined in class scope, but we're processing it's body now
+       that the class is complete.  */
     return;
 
   if (TREE_CODE (decl) != TYPE_DECL || is_partial || !is_primary)
