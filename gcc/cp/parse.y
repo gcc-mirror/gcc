@@ -2150,7 +2150,8 @@ structsp:
 		    yychar = YYLEX;
 		  semi = yychar == ';';
 
-		  $<ttype>$ = finish_class_definition ($1.t, $6, semi); 
+		  $<ttype>$ = finish_class_definition ($1.t, $6, semi,
+						       $1.new_type_flag); 
 		}
 	  pending_defargs
                 {
@@ -2159,8 +2160,6 @@ structsp:
 	  pending_inlines
                 {
 		  finish_inline_definitions ();
-		  if ($1.new_type_flag)
-		    pop_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL ($<ttype>7)));
 		  $$.t = $<ttype>7;
 		  $$.new_type_flag = 1; 
 		}

@@ -3272,7 +3272,7 @@ extern tree finish_template_type_parm           PROTO((tree, tree));
 extern tree finish_template_template_parm       PROTO((tree, tree));
 extern tree finish_parmlist                     PROTO((tree, int));
 extern tree begin_class_definition              PROTO((tree));
-extern tree finish_class_definition             PROTO((tree, tree, int));
+extern tree finish_class_definition             PROTO((tree, tree, int, int));
 extern void finish_default_args                 PROTO((void));
 extern void begin_inline_definitions            PROTO((void));
 extern void finish_inline_definitions           PROTO((void));
