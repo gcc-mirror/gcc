@@ -1,3 +1,8 @@
+2002-04-13  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/asm-6.c,
+	* g++.dg/ext/asm1.C: New tests.
+
 2002-04-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++ 5373.
