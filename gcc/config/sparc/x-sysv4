@@ -1,2 +1,2 @@
-X_CFLAGS=-DSVR4
+X_CFLAGS=-DSVR4 -static
 ALLOCA=alloca.o
