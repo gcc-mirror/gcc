@@ -157,7 +157,6 @@ Boston, MA 02111-1307, USA.  */
     fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
     putc ('\n', FILE);							\
     ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
-    ASM_OUTPUT_LABEL(FILE, NAME);					\
   } while (0)
 
 /* Write the extra assembler code needed to declare an object properly.  */
