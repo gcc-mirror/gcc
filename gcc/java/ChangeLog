@@ -34,6 +34,11 @@
         * lex.c (java_new_lexer): Call iconv_close on temp handle used to
 	check for byte swap.
 
+2000-05-02  Jeff Sturm  <jsturm@one-point.com>
+
+	* expr.c (build_class_init): Move MODIFY_EXPR
+	outside of COND_EXPR.  Remove variable `call'.
+
 2001-05-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c: NULL_PTR -> NULL.

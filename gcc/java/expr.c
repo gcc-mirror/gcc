@@ -1662,7 +1662,7 @@ tree
 build_class_init (clas, expr)
      tree clas, expr;
 {
-  tree init, call;
+  tree init;
   struct init_test_hash_entry *ite;
   if (inherits_from_p (current_class, clas))
     return expr;
@@ -1693,14 +1693,14 @@ build_class_init (clas, expr)
 		    build_tree_list (NULL_TREE, build_class_ref (clas)),
 		    NULL_TREE);
       TREE_SIDE_EFFECTS (init) = 1;
-      call = build (COMPOUND_EXPR, TREE_TYPE (expr), init, 
-		    build (MODIFY_EXPR, boolean_type_node,
-			   ite->init_test_decl, boolean_true_node));
-      TREE_SIDE_EFFECTS (call) = 1;
       init = build (COND_EXPR, void_type_node,
 		    build (EQ_EXPR, boolean_type_node, 
 			   ite->init_test_decl, boolean_false_node),
-		    call, integer_zero_node);
+		    init, integer_zero_node);
+      TREE_SIDE_EFFECTS (init) = 1;
+      init = build (COMPOUND_EXPR, TREE_TYPE (expr), init, 
+		    build (MODIFY_EXPR, boolean_type_node,
+			   ite->init_test_decl, boolean_true_node));
       TREE_SIDE_EFFECTS (init) = 1;
     }
 
