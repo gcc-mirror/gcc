@@ -18,6 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
+#include <stdio.h>
 #include "bi-defs.h"
 
 int
@@ -53,4 +54,21 @@ main ()
 	printf ("}},\n");
       }
   return 0;
+}
+
+/* Safely allocate NBYTES bytes of memory. Returns pointer to block of
+   memory. */
+char *
+xmalloc (nbytes)
+     int nbytes;
+{
+  char *tmp = (char *) malloc (nbytes);
+  
+  if (!tmp)
+    {
+      fprintf (stderr, "can't allocate %d bytes (out of virtual memory)\n", nbytes);
+      exit (1);
+    }
+
+  return tmp;
 }
