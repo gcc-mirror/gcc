@@ -1,5 +1,14 @@
 2005-01-15  Marc Espie  <espie@openbsd.org>
 
+	* config.gcc (*-*-openbsd*): Set HAS_LIBC_R for OpenBSD <= 3.2.
+	(i[34567]86-*-openbsd*): Switch to ELF for OpenBSD >= 3.4.
+	* config/openbsd.h:  Fix C++ includes for native configurations.
+	Add proper OS_CPP_BUILTINS.  Fix libspec for recent OpenBSD.
+	Add trampoline support.
+	* config/i386/openbsdelf.h: New.
+
+2005-01-15  Marc Espie  <espie@openbsd.org>
+
 	* collect2.c (main): Explicitly parse -dynamic-linker option.
 
 2005-01-15  Jakub Jelinek  <jakub@redhat.com>

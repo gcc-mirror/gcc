@@ -1,5 +1,5 @@
 /* Base configuration file for all OpenBSD targets.
-   Copyright (C) 1999, 2000, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,29 +52,41 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef OPENBSD_NATIVE
 
-#undef GCC_INCLUDE_DIR
-#define GCC_INCLUDE_DIR "/usr/include"
-
 /* The compiler is configured with ONLY the gcc/g++ standard headers.  */
 #undef INCLUDE_DEFAULTS
 #define INCLUDE_DEFAULTS			\
   {						\
     { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },	\
-    { GCC_INCLUDE_DIR, "GCC", 0, 0 },		\
+    { GPLUSPLUS_TOOL_INCLUDE_DIR, "G++", 1, 1 }, \
+    { GPLUSPLUS_BACKWARD_INCLUDE_DIR, "G++", 1, 1 }, \
+    { STANDARD_INCLUDE_DIR, STANDARD_INCLUDE_COMPONENT, 0, 0 }, \
     { 0, 0, 0, 0 }				\
   }
 
 /* Under OpenBSD, the normal location of the various *crt*.o files is the
    /usr/lib directory.  */
-#define STANDARD_STARTFILE_PREFIX	"/usr/lib/"
+#undef STANDARD_STARTFILE_PREFIX
+#define STANDARD_STARTFILE_PREFIX	"/usr/local/lib/"
 
 #endif
 
 
 /* Controlling the compilation driver.  */
+/* TARGET_OS_CPP_BUILTINS() common to all OpenBSD targets.  */
+#define OPENBSD_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__OpenBSD__");		\
+      builtin_define ("__unix__");		\
+      builtin_define ("__ANSI_COMPAT");		\
+      builtin_assert ("system=unix");		\
+      builtin_assert ("system=bsd");		\
+      builtin_assert ("system=OpenBSD");	\
+    }						\
+  while (0)
 
 /* CPP_SPEC appropriate for OpenBSD. We deal with -posix and -pthread.
-   XXX the way threads are handling currently is not very satisfying,
+   XXX the way threads are handled currently is not very satisfying,
    since all code must be compiled with -pthread to work. 
    This two-stage defines makes it easy to pick that for targets that
    have subspecs.  */
@@ -84,10 +96,15 @@ Boston, MA 02111-1307, USA.  */
 #define OBSD_CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_POSIX_THREADS}"
 #endif
 
-/* LIB_SPEC appropriate for OpenBSD.  Select the appropriate libc, 
-   depending on profiling and threads.  Basically, 
-   -lc(_r)?(_p)?, select _r for threads, and _p for p or pg.  */
-#define OBSD_LIB_SPEC "%{!shared:-lc%{pthread:_r}%{p:_p}%{!p:%{pg:_p}}}"
+/* LIB_SPEC appropriate for OpenBSD.  */
+#ifdef HAS_LIBC_R
+/*   -lc(_r)?(_p)?, select _r for threads, and _p for p or pg.  */
+# define OBSD_LIB_SPEC "%{!shared:-lc%{pthread:_r}%{p:_p}%{!p:%{pg:_p}}}"
+#else
+/* Include -lpthread if -pthread is specified on the command line. */
+# define OBSD_LIB_SPEC "%{!shared:%{pthread:-lpthread%{p:_p}%{!p:%{pg:_p}}}} %{!shared:-lc%{p:_p}%{!p:%{pg:_p}}}"
+#endif
+
 
 #ifndef OBSD_HAS_CORRECT_SPECS
 
@@ -275,3 +292,20 @@ do {									 \
    as this depends on a few other details as well...  */
 #define HANDLE_SYSV_PRAGMA 1
 
+/* Stack is explicitly denied execution rights on OpenBSD platforms.  */
+#define ENABLE_EXECUTE_STACK						\
+extern void __enable_execute_stack (void *);				\
+void									\
+__enable_execute_stack (void *addr)					\
+{									\
+  long size = getpagesize ();						\
+  long mask = ~(size-1);						\
+  char *page = (char *) (((long) addr) & mask); 			\
+  char *end  = (char *) ((((long) (addr + TRAMPOLINE_SIZE)) & mask) + size); \
+								      \
+  if (mprotect (page, end - page, PROT_READ | PROT_WRITE | PROT_EXEC) < 0) \
+    perror ("mprotect of trampoline code");				\
+}
+
+#include <sys/types.h>
+#include <sys/mman.h>
