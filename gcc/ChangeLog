@@ -1,3 +1,8 @@
+Thu Mar  2 12:48:45 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (expand_call)  Do not attempt to combine stack adjustments
+	with inhibit_defer_pop set.
+
 2000-03-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* stor-layout.c (layout_decl): Allow front-ends to explicitly set
