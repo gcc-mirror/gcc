@@ -79,6 +79,13 @@ Boston, MA 02111-1307, USA.  */
   { 0, 0, 0 }								\
 }
 
+/* Used by the preprocessor to limit size of disk I/O chunks.
+   64K - 1 is the maximum supported by VAXCRTL.  Amounts in excess
+   of 35 blocks will bypass the VMS V6.x VIOC [Virtual I/O Cache],
+   so we'll pick a limit of 16K (32 blocks).  */
+#define MAX_READ_LEN	(32 * 512)
+#define MAX_WRITE_LEN	(32 * 512)
+
 /* Under VMS a directory specification can be enclosed either in square
    brackets or in angle brackets.  Thus we need to check both.  This
    macro is used to help compare filenames in cp-lex.c.
@@ -160,9 +167,11 @@ Boston, MA 02111-1307, USA.  */
 #define dbxout_resume_previous_source_file	dbxout_resume_previous_src_file
 #define expand_start_loop_continue_elsewhere	expnd_start_loop_cont_elsewhere
 #define flag_schedule_insns_after_reload	flag_sched_insns_after_reload
+#define get_dynamic_handler_chain_libfunc	get_dynamic_hndlr_chain_libfunc
 #define lookup_name_current_level_global	lookup_name_current_level_gbl
 #define maybe_building_objc_message_expr	maybe_building_objc_msg_expr
 #define output_deferred_addressed_constants	output_deferred_addr_constants
+#define protect_cleanup_actions_with_terminate  protect_cleanup_act_w_terminate
 #define reg_overlap_mentioned_for_reload_p	reg_overlap_mtnd_for_reload_p
 #define reposition_prologue_and_epilogue_notes	repos_prolog_and_epilog_notes
 #define rtx_equal_function_value_matters	rtx_equal_func_value_matters
