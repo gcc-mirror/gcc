@@ -1,5 +1,12 @@
 2000-12-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	Tests by Zack Weinberg <zackw@stanford.edu>.
+
+	* gcc.dg/cpp/defined.c: Update.
+	* gcc.dg/cpp/defined_trad.c: New tests.
+
+2000-12-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* gcc.dg/cpp/trad-direct.c: Update.
 
 2000-12-11  Neil Booth  <neilb@earthling.net>
