@@ -1,3 +1,8 @@
+2004-01-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/11397
+	* varasm.c (assemble_alias): Remove weak aliases from weak_decls.
+
 2004-01-12  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/12826
