@@ -751,9 +751,11 @@ suites.  Currently only the C language test suites are documented
 here; FIXME: document the others.
 
 @menu
-* Test Idioms::  Idioms used in test suite code.
-* C Tests::      The C language test suites.
-* libgcj Tests:: The Java library test suites.
+* Test Idioms::     Idioms used in test suite code.
+* C Tests::         The C language test suites.
+* libgcj Tests::    The Java library test suites.
+* gcov Testing::    Support for testing gcov.
+* profopt Testing:: Support for testing profile-directed optimizations.
 @end menu
 
 @node Test Idioms
@@ -898,8 +900,28 @@ FIXME: describe this.
 
 This directory should probably not be used for new tests.
 @item gcc.c-torture/misc-tests
-FIXME: describe this, when it should be used for new tests and when it
-shouldn't.
+This directory contains C tests that require special handling.  Some
+of these tests have individual expect files, and others share
+special-purpose expect files:
+
+@table @file
+@item @code{bprob*.c}
+Test @option{-fbranch-probabilities} using @file{bprob.exp}, which
+in turn uses the generic, language-independent framework
+(@pxref{profopt Testing, , Support for testing profile-directed
+optimizations}).
+
+@item @code{dg-*.c}
+Test the testsuite itself using @file{dg-test.exp}.
+
+@item @code{gcov*.c}
+Test @command{gcov} output using @file{gcov.exp}, which in turn uses the
+language-independent support (@pxref{gcov Testing, , Support for testing gcov}).
+
+@item @code{i386-pf-*.c}
+Test i386-specific support for data prefetch using @file{i386-prefetch.exp}.
+@end table
+
 @end table
 
 FIXME: merge in @file{testsuite/README.gcc} and discuss the format of
@@ -933,3 +955,105 @@ part of Java testing by placing the Jacks tree within the the libjava
 testsuite sources at @file{libjava/testsuite/libjava.jacks/jacks}.
 
 We encourage developers to contribute test cases to Mauve and Jacks.
+
+@node gcov Testing
+@subsection Support for testing @command{gcov}
+
+Language-independent support for testing @command{gcov}, and for checking
+that branch profiling produces expected values, is provided by the
+expect file @file{gcov.exp}.  @command{gcov} tests also rely on procedures
+in @file{gcc.dg.exp} to compile and run the test program.  A typical
+@command{gcov} test contains the following DejaGNU commands within comments:
+
+@smallexample
+@{ dg-options "-fprofile-arcs -ftest-coverage" @}
+@{ dg-do run @{ target native @} @}
+@{ dg-final @{ run-gcov sourcefile @} @}
+@end smallexample
+
+Checks of @command{gcov} output can include line counts, branch percentages,
+and call return percentages.  All of these checks are requested via
+commands that appear in comments in the test's source file.
+Commands to check line counts are processed by default.
+Commands to check branch percentages and call return percentages are
+processed if there is a file with the same basename as the source
+file and a suffix @file{.x} that contains a line
+@code{set gcov_verify_branches 1} or @code{set gcov_verify_calls 1},
+respectively.
+
+A line count command appears within a comment on the source line
+that is expected to get the specified count and has the form
+@code{count(@var{cnt})}.  A test should only check line counts for
+lines that will get the same count for any architecture.
+
+Commands to check branch percentages (@code{branch}) and call
+return percentages (@code{returns}) are very similar to each other.
+A beginning command appears on or before the first of a range of
+lines that will report the percentage, and the ending command
+follows that range of lines.  The beginning command can include a
+list of percentages, all of which are expected to be found within
+the range.  A range is terminated by the next command of the same
+kind.  A command @code{branch(end)} or @code{returns(end)} marks
+the end of a range without starting a new one.  For example:
+
+@smallexample
+if (i > 10 && j > i && j < 20)  /* branch(27 50 75) */
+                                /* branch(end) */
+  foo (i, j);
+@end smallexample
+
+For a call return percentage, the value specified is the
+percentage of calls reported to return.  For a branch percentage,
+the value is either the expected percentage or 100 minus that
+value, since the direction of a branch can differ depending on the
+target or the optimization level.
+
+Not all branches and calls need to be checked.  A test should not
+check for branches that might be optimized away or replaced with
+predicated instructions.  Don't check for calls inserted by the
+compiler or ones that might be inlined or optimized away.
+
+A single test can check for combinations of line counts, branch
+percentages, and call return percentages.  The command to check a
+line count must appear on the line that will report that count, but
+commands to check branch percentages and call return percentages can
+bracket the lines that report them.
+
+@node profopt Testing
+@subsection Support for testing profile-directed optimizations
+
+The file @file{profopt.exp} provides language-independent support for
+checking correct execution of a test built with profile-directed
+optimization.  This testing requires that a test program be built and
+executed twice.  The first time it is compiled to generate profile
+data, and the second time it is compiled to use the data that was
+generated during the first execution.  The second execution is to
+verify that the test produces the expected results.
+
+To check that the optimization actually generated better code, a
+test can be built and run a third time with normal optimizations to
+verify that the performance is better with the profile-directed
+optimizations.  @file{profopt.exp} has the beginnings of this kind
+of support.
+
+@file{profopt.exp} provides generic support for profile-directed
+optimizations.  Each set of tests that uses it provides information
+about a specific optimization:
+
+@table @code
+@item tool
+tool being tested, e.g., gcc
+
+@item profile_option
+options used to generate profile data
+
+@item feedback_option
+options used to optimize using that profile data
+
+@item prof_ext
+suffix of profile data files
+
+@item PROFOPT_OPTIONS
+list of options with which to run each test, similar to the lists for
+torture tests
+@end table
