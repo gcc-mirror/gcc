@@ -239,7 +239,7 @@ namespace std
       // Correctly sets the _M_in_cur pointer, and bumps the
       // _M_out_cur pointer as well if necessary.
       void 
-      _M_in_cur_move(off_type __n) // argument needs to be +-
+      _M_move_in_cur(off_type __n) // argument needs to be +-
       {
 	const bool __testout = _M_out_cur;
 	_M_in_cur += __n;
@@ -256,7 +256,7 @@ namespace std
       // the same range:
       // _M_buf <= _M_*_ <= _M_out_end
       void 
-      _M_out_cur_move(off_type __n) // argument needs to be +-
+      _M_move_out_cur(off_type __n) // argument needs to be +-
       {
 	const bool __testin = _M_in_cur;
 

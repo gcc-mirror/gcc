@@ -152,7 +152,7 @@ namespace std
       // Assumptions:
       // _M_in_cur has already been moved back
       void
-      _M_pback_create()
+      _M_create_pback()
       {
 	if (!_M_pback_init)
 	  {
@@ -170,7 +170,7 @@ namespace std
       // Assumptions:
       // The pback buffer has only moved forward.
       void
-      _M_pback_destroy() throw()
+      _M_destroy_pback() throw()
       {
 	if (_M_pback_init)
 	  {
@@ -288,7 +288,7 @@ namespace std
        *  @endif
       */
       int_type
-      _M_underflow_common(bool __bump);
+      _M_underflow(bool __bump);
 
       // [documentation is inherited]
       virtual int_type
@@ -303,7 +303,7 @@ namespace std
       pbackfail(int_type __c = _Traits::eof());
 
       // NB: For what the standard expects of the overflow function,
-      // see _M_really_overflow(), below. Because basic_streambuf's
+      // see _M_overflow(), below. Because basic_streambuf's
       // sputc/sputn call overflow directly, and the complications of
       // this implementation's setting of the initial pointers all
       // equal to _M_buf when initializing, it seems essential to have
@@ -328,7 +328,7 @@ namespace std
        *  @endif
       */
       int_type
-      _M_really_overflow(int_type __c = _Traits::eof());
+      _M_overflow(int_type __c = _Traits::eof());
 
       // Convert internal byte sequence to external, char-based
       // sequence via codecvt.
@@ -382,8 +382,7 @@ namespace std
 	    off_type __off = this->_M_out_cur - this->_M_out_lim;
 
 	    // _M_file.sync() will be called within
-	    if (traits_type::eq_int_type(_M_really_overflow(),
-					 traits_type::eof()))
+	    if (traits_type::eq_int_type(_M_overflow(), traits_type::eof()))
 	      __ret = -1;
 	    else if (__off)
 	      _M_file.seekoff(__off, ios_base::cur, __sync);
@@ -414,7 +413,7 @@ namespace std
 		++__s;
 		++this->_M_in_cur;
 	      }
-	    _M_pback_destroy();
+	    _M_destroy_pback();
 	  }
 	if (__ret < __n)
 	  __ret += __streambuf_type::xsgetn(__s, __n - __ret);
@@ -425,7 +424,7 @@ namespace std
       virtual streamsize
       xsputn(const char_type* __s, streamsize __n)
       {
-	_M_pback_destroy();
+	_M_destroy_pback();
 	return __streambuf_type::xsputn(__s, __n);
       }
 
@@ -501,7 +500,7 @@ namespace std
   // Explicit specialization declarations, defined in src/fstream.cc.
   template<> 
     basic_filebuf<char>::int_type 
-    basic_filebuf<char>::_M_underflow_common(bool __bump);
+    basic_filebuf<char>::_M_underflow(bool __bump);
 
   template<>
     basic_filebuf<char>::int_type
@@ -514,7 +513,7 @@ namespace std
  #ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
     basic_filebuf<wchar_t>::int_type 
-    basic_filebuf<wchar_t>::_M_underflow_common(bool __bump);
+    basic_filebuf<wchar_t>::_M_underflow(bool __bump);
 
   template<>
     basic_filebuf<wchar_t>::int_type

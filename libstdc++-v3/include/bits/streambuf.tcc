@@ -48,7 +48,7 @@ namespace std
       if (_M_in_cur < _M_in_end)
 	{
 	  char_type __c = *this->_M_in_cur;
-	  _M_in_cur_move(1);
+	  _M_move_in_cur(1);
 	  __ret = traits_type::to_int_type(__c);
 	}
       else 
@@ -67,7 +67,7 @@ namespace std
 	__ret = this->pbackfail(traits_type::to_int_type(__c));
       else 
 	{
-	  _M_in_cur_move(-1);
+	  _M_move_in_cur(-1);
 	  __ret = traits_type::to_int_type(*this->_M_in_cur);
 	}
       return __ret;
@@ -81,7 +81,7 @@ namespace std
       int_type __ret;
       if (_M_in_beg < _M_in_cur)
 	{
-	  _M_in_cur_move(-1);
+	  _M_move_in_cur(-1);
 	  __ret = traits_type::to_int_type(*_M_in_cur);
 	}
       else 
@@ -98,7 +98,7 @@ namespace std
       if (_M_out_cur < _M_out_end)
 	{
 	  *_M_out_cur = __c;
-	  _M_out_cur_move(1);
+	  _M_move_out_cur(1);
 	  __ret = traits_type::to_int_type(__c);
 	}
       else
@@ -122,7 +122,7 @@ namespace std
 	      traits_type::copy(__s, _M_in_cur, __len);
 	      __ret += __len;
 	      __s += __len;
-	      _M_in_cur_move(__len);
+	      _M_move_in_cur(__len);
 	    }
 	  
 	  if (__ret < __n)
@@ -156,7 +156,7 @@ namespace std
 	      traits_type::copy(_M_out_cur, __s, __len);
 	      __ret += __len;
 	      __s += __len;
-	      _M_out_cur_move(__len);
+	      _M_move_out_cur(__len);
 	    }
 
 	  if (__ret < __n)
@@ -201,7 +201,7 @@ namespace std
 		{
 		  __xtrct = __sbout->sputn(__sbin->_M_in_cur, __avail);
 		  __ret += __xtrct;
-		  __sbin->_M_in_cur_move(__xtrct);
+		  __sbin->_M_move_in_cur(__xtrct);
 		  if (__xtrct != __avail)
 		    break;
 		}

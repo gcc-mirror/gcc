@@ -126,8 +126,7 @@ namespace std
 	      const bool __testput = this->_M_out_beg < this->_M_out_lim;
 
 	      if (__testput 
-		  && traits_type::eq_int_type(_M_really_overflow(__eof), 
-					      __eof))
+		  && traits_type::eq_int_type(_M_overflow(__eof), __eof))
 		__testfail = true;
 
 #if 0
@@ -135,7 +134,7 @@ namespace std
 	      if (_M_last_overflowed)
 		{
 		  _M_output_unshift();
-		  _M_really_overflow(__eof);
+		  _M_overflow(__eof);
 		}
 #endif
 	    }
@@ -147,7 +146,7 @@ namespace std
 	  // NB: Do this here so that re-opened filebufs will be cool...
 	  this->_M_mode = ios_base::openmode(0);
 	  _M_destroy_internal_buffer();
-	  _M_pback_destroy();
+	  _M_destroy_pback();
 	  
 	  if (!_M_file.close())
 	    __testfail = true;
@@ -214,7 +213,7 @@ namespace std
 		__ret = traits_type::not_eof(__i);
 	      else
 		{
-		  _M_pback_create();
+		  _M_create_pback();
 		  *this->_M_in_cur = __c; 
 		  __ret = __i;
 		}
@@ -233,7 +232,7 @@ namespace std
 		    {
 		      if (!traits_type::eq(__c, *this->_M_in_cur))
 			{
-			  _M_pback_create();
+			  _M_create_pback();
 			  *this->_M_in_cur = __c;
 			}
 		      __ret = __i;
@@ -263,14 +262,14 @@ namespace std
 	  else if (__testput)
 	    {
 	      *this->_M_out_cur = traits_type::to_char_type(__c);
-	      _M_out_cur_move(1);
+	      _M_move_out_cur(1);
 	      __ret = traits_type::not_eof(__c);
 	    }
 	  else 
-	    __ret = this->_M_really_overflow(__c);
+	    __ret = this->_M_overflow(__c);
 	}
 
-      _M_last_overflowed = false;    // Set in _M_really_overflow, below.
+      _M_last_overflowed = false;    // Set in _M_overflow, below.
       return __ret;
     }
   
@@ -344,7 +343,7 @@ namespace std
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::int_type 
     basic_filebuf<_CharT, _Traits>::
-    _M_really_overflow(int_type __c)
+    _M_overflow(int_type __c)
     {
       int_type __ret = traits_type::eof();
       const bool __testput = this->_M_out_beg < this->_M_out_lim;
@@ -449,7 +448,7 @@ namespace std
       if (this->is_open() && !__testfail && (__testin || __testout)) 
 	{
 	  // Ditch any pback buffers to avoid confusion.
-	  _M_pback_destroy();
+	  _M_destroy_pback();
 
 	  if (__way != ios_base::cur || __off != 0)
 	    { 
