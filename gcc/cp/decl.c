@@ -11427,7 +11427,7 @@ start_enum (name)
   register tree enumtype = NULL_TREE;
   struct binding_level *b = inner_binding_level;
 
-  /* We are wasting space here and putting these on the permanant_obstack so
+  /* We are wasting space here and putting these on the permanent_obstack so
      that typeid(local enum) will work correctly. */
 #if 0
   if (processing_template_decl && current_function_decl)
