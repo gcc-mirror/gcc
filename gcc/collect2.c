@@ -2993,14 +2993,14 @@ resolve_lib_name (name)
       struct prefix_list *list = libpaths[i]->plist;
       for (; list; list = list->next)
 	{
+	  /* The following lines are needed because path_prefix list
+	     may contain directories both with trailing '/' and
+	     without it.  */
+	  const char *p = "";
+	  if (list->prefix[strlen(list->prefix)-1] != '/')
+	    p = "/";
 	  for (j = 0; libexts[j]; j++)
 	    {
-              /* The following lines are needed because path_prefix list
-                 may contain directories both with trailing '/' and
-                 without it.  */
-              const char *p = "";
-              if (list->prefix[strlen(list->prefix)-1] != '/')
-                p = "/";
        	      sprintf (lib_buf, "%s%slib%s.%s",
 		       list->prefix, p, name, libexts[j]);
 if (debug) fprintf (stderr, "searching for: %s\n", lib_buf);

@@ -1,4 +1,4 @@
-/* Copyright (C) 1989, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -356,7 +356,11 @@ typedef __WINT_TYPE__ wint_t;
 #ifdef __GNUG__
 #define NULL __null
 #else   /* G++ */
+#ifndef __cplusplus
 #define NULL ((void *)0)
+#else   /* C++ */
+#define NULL 0
+#endif  /* C++ */
 #endif  /* G++ */
 #endif	/* NULL not defined and <stddef.h> or need NULL.  */
 #undef	__need_NULL
