@@ -30,6 +30,7 @@
 // 27.4.2.1.6 class ios_base::init
 
 #include <sstream>
+#include <typeinfo>
 #include <testsuite_hooks.h>
 
 // char_traits specialization

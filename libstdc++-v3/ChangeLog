@@ -1,3 +1,13 @@
+2003-07-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* scripts/testsuite_flags.in (--build-includes): Remove extraneous
+	paths for libio.
+	* testsuite/27_io/basic_istream/sentry/char/3983-fstream.cc
+	(test03): Include typeinfo for bad_cast.
+	* testsuite/27_io/basic_ostream/sentry/char/3983-sstream.cc: Same.
+	* testsuite/27_io/basic_ostream/sentry/char/3983-fstream.cc: Same.
+	* testsuite/27_io/basic_istream/sentry/char/3983-sstream.cc: Same.
+
 2003-07-21  Doug Gregor  <dgregor@apple.com.>
 
 	* include/bits/boost_concept_check.h:
