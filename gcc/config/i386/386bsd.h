@@ -37,12 +37,12 @@
     {									\
       fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%eax\n",		\
 	       LPREFIX, (LABELNO));					\
-      fprintf (FILE, "\tcall *_mcount@GOT(%%ebx)\n");			\
+      fprintf (FILE, "\tcall *mcount@GOT(%%ebx)\n");			\
     }									\
   else									\
     {									\
       fprintf (FILE, "\tmovl $%sP%d,%%eax\n", LPREFIX, (LABELNO));	\
-      fprintf (FILE, "\tcall _mcount\n");				\
+      fprintf (FILE, "\tcall mcount\n");				\
     }									\
 }
 
