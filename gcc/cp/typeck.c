@@ -7170,7 +7170,8 @@ casts_away_constness (t1, t2)
 
 /* Returns TYPE with its cv qualifiers removed
    TYPE is T cv* .. *cv where T is not a pointer type,
-   returns T * .. *  */
+   returns T * .. *. (If T is an array type, then the cv qualifiers
+   above are those of the array members.)  */
 
 static tree
 strip_all_pointer_quals (type)
@@ -7179,5 +7180,5 @@ strip_all_pointer_quals (type)
   if (TREE_CODE (type) == POINTER_TYPE)
     return build_pointer_type (strip_all_pointer_quals (TREE_TYPE (type)));
   else
-    return strip_top_quals (type);
+    return TYPE_MAIN_VARIANT (type);
 }
