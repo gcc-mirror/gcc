@@ -1,5 +1,12 @@
 2001-09-14  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* config/locale/moneypunct_members_gnu.cc: Fix initialization of
+	wchar_t members.
+	* testsuite/22_locale/money_get_members_wchar_t.cc (test02): New file.
+	* testsuite/22_locale/money_put_members_wchar_t.cc (test02): Fix.
+
+2001-09-14  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/bits/locale_facets.tcc: Conditionalize use of strtold.
 
 2001-09-13  Alexandre Petit-Bianco  <apbianco@redhat.com>
