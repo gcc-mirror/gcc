@@ -1,3 +1,7 @@
+Mon Oct  6 14:16:46 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (distclean): Do a better job at cleaning up.
+
 Wed Oct  1 01:46:16 1997  Philippe De Muyter  <phdm@info.ucl.ac.be>
 
 	* libU77/sys_clock_.c: File renamed from system_clock_.c.
