@@ -215,14 +215,6 @@ java/lang/FirstThread.h: java/lang/FirstThread.class libgcj.zip
 		-friend 'void _Jv_RunMain (const char*, int, const char **);' \
 		$(basename $<)
 
-## ThreadGroup has a special constructor that is used when creating
-## the first ThreadGroup.  We need to expose this to the main program.
-java/lang/ThreadGroup.h: java/lang/ThreadGroup.class libgcj.zip
-	$(GCJH) -classpath $(top_builddir) \
-		-friend 'void JvRunMain (jclass, int, const char **);' \
-		-friend 'void _Jv_RunMain (const char*, int, const char **);' \
-		$(basename $<)
-
 java/lang/String.h: java/lang/String.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jchar* _Jv_GetStringChars (jstring str);' \

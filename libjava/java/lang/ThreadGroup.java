@@ -362,7 +362,7 @@ public class ThreadGroup
   // This is the constructor that is used when creating the very first
   // ThreadGroup.  We have an arbitrary argument here just to
   // differentiate this constructor from the others.
-  private ThreadGroup (int dummy)
+  ThreadGroup (int dummy)
   {
     parent = null;
     name = "main";
