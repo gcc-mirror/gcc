@@ -1555,15 +1555,29 @@ symbolic_reference_mentioned_p (op)
 int
 ix86_can_use_return_insn_p ()
 {
+  HOST_WIDE_INT tsize;
+  int nregs;
+
 #ifdef NON_SAVING_SETJMP
   if (NON_SAVING_SETJMP && current_function_calls_setjmp)
     return 0;
 #endif
+#ifdef FUNCTION_BLOCK_PROFILER_EXIT
+  if (profile_block_flag == 2)
+    return 0;
+#endif
 
-  if (! reload_completed)
+  if (! reload_completed || frame_pointer_needed)
     return 0;
 
-  return ix86_nsaved_regs () == 0 || ! frame_pointer_needed;
+  /* Don't allow more than 32 pop, since that's all we can do
+     with one instruction.  */
+  if (current_function_pops_args
+      && current_function_args_size >= 32768)
+    return 0;
+
+  tsize = ix86_compute_frame_size (get_frame_size (), &nregs, NULL, NULL);
+  return tsize == 0 && nregs == 0;
 }
 
 static char *pic_label_name;
