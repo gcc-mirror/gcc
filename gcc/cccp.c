@@ -4009,7 +4009,7 @@ finclude (f, fname, op, system_header_p, dirptr)
   fp->dir = dirptr;
 
   if (S_ISREG (st_mode)) {
-    fp->buf = (U_CHAR *) alloca (st_size + 2);
+    fp->buf = (U_CHAR *) xmalloc (st_size + 2);
     fp->bufp = fp->buf;
 
     /* Read the file contents, knowing that st_size is an upper bound
@@ -4084,12 +4084,14 @@ finclude (f, fname, op, system_header_p, dirptr)
   indepth--;
   input_file_stack_tick++;
   output_line_command (&instack[indepth], op, 0, leave_file);
+  free (fp->buf);
   return;
 
  nope:
 
   perror_with_name (fname);
   close (f);
+  free (fp->buf);
 }
 
 /* Record that inclusion of the file named FILE
