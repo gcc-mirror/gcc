@@ -473,8 +473,18 @@ dwarf_cfi_name (cfi_opc)
       return "DW_CFA_def_cfa_register";
     case DW_CFA_def_cfa_offset:
       return "DW_CFA_def_cfa_offset";
+
+    /* DWARF 3 */
     case DW_CFA_def_cfa_expression:
       return "DW_CFA_def_cfa_expression";
+    case DW_CFA_expression:
+      return "DW_CFA_expression";
+    case DW_CFA_offset_extended_sf:
+      return "DW_CFA_offset_extended_sf";
+    case DW_CFA_def_cfa_sf:
+      return "DW_CFA_def_cfa_sf";
+    case DW_CFA_def_cfa_offset_sf:
+      return "DW_CFA_def_cfa_offset_sf";
 
     /* SGI/MIPS specific */
     case DW_CFA_MIPS_advance_loc8:
@@ -768,10 +778,7 @@ reg_save (label, reg, sreg, offset)
 #endif
       offset /= DWARF_CIE_DATA_ALIGNMENT;
       if (offset < 0)
-	{
-	  cfi->dw_cfi_opc = DW_CFA_GNU_negative_offset_extended;
-	  offset = -offset;
-	}
+	cfi->dw_cfi_opc = DW_CFA_offset_extended_sf;
 
       cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
     }
@@ -1714,11 +1721,17 @@ output_cfi (cfi, fde, for_eh)
 	  break;
 
 	case DW_CFA_offset_extended:
-	case DW_CFA_GNU_negative_offset_extended:
 	case DW_CFA_def_cfa:
 	  dw2_asm_output_data_uleb128 (cfi->dw_cfi_oprnd1.dw_cfi_reg_num,
 				       NULL);
 	  dw2_asm_output_data_uleb128 (cfi->dw_cfi_oprnd2.dw_cfi_offset, NULL);
+	  break;
+
+	case DW_CFA_offset_extended_sf:
+	case DW_CFA_def_cfa_sf:
+	  dw2_asm_output_data_uleb128 (cfi->dw_cfi_oprnd1.dw_cfi_reg_num,
+				       NULL);
+	  dw2_asm_output_data_sleb128 (cfi->dw_cfi_oprnd2.dw_cfi_offset, NULL);
 	  break;
 
 	case DW_CFA_restore_extended:
@@ -1741,12 +1754,21 @@ output_cfi (cfi, fde, for_eh)
 	  dw2_asm_output_data_uleb128 (cfi->dw_cfi_oprnd1.dw_cfi_offset, NULL);
 	  break;
 
+	case DW_CFA_def_cfa_offset_sf:
+	  dw2_asm_output_data_sleb128 (cfi->dw_cfi_oprnd1.dw_cfi_offset, NULL);
+	  break;
+
 	case DW_CFA_GNU_window_save:
 	  break;
 
 	case DW_CFA_def_cfa_expression:
+	case DW_CFA_expression:
 	  output_cfa_loc (cfi);
 	  break;
+
+	case DW_CFA_GNU_negative_offset_extended:
+	  /* Obsoleted by DW_CFA_offset_extended_sf.  */
+	  abort ();
 
 	default:
 	  break;
@@ -12049,6 +12071,9 @@ dwarf2out_finish (input_filename)
 				      (SAVE_EXPR_CONTEXT
 				       (node->created_for)))))
 	    add_child_die (origin, die);
+	  else if (errorcount > 0 || sorrycount > 0)
+	    /* It's OK to be confused by errors in the input.  */
+	    add_child_die (comp_unit_die, die);
 	  else if (node->created_for
 		   && ((DECL_P (node->created_for)
 		        && (context = DECL_CONTEXT (node->created_for)))
@@ -12066,9 +12091,6 @@ dwarf2out_finish (input_filename)
 		abort ();
 	      add_child_die (origin, die);
 	    }
-	  else if (errorcount > 0 || sorrycount > 0)
-	    /* It's OK to be confused by errors in the input.  */
-	    add_child_die (comp_unit_die, die);
 	  else
 	    abort ();
 	}
