@@ -286,6 +286,7 @@ edge
 split_block (basic_block bb, void *i)
 {
   basic_block new_bb;
+  edge e;
 
   if (!cfg_hooks->split_block)
     internal_error ("%s does not support split_block.", cfg_hooks->name);
@@ -304,7 +305,11 @@ split_block (basic_block bb, void *i)
       set_immediate_dominator (CDI_DOMINATORS, new_bb, bb);
     }
 
-  return make_edge (bb, new_bb, EDGE_FALLTHRU);
+  e = make_edge (bb, new_bb, EDGE_FALLTHRU);
+  e->probability = REG_BR_PROB_BASE;
+  e->count = bb->count;
+
+  return e;
 }
 
 /* Splits block BB just after labels.  The newly created edge is returned.  */
