@@ -1,5 +1,5 @@
 /* ServerSocket.java -- Class for implementing server side sockets
-   Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,8 +35,10 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.net;
 
+import gnu.java.net.PlainSocketImpl;
 import java.io.IOException;
 import java.nio.channels.IllegalBlockingModeException;
 import java.nio.channels.ServerSocketChannel;
