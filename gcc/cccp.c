@@ -4734,7 +4734,7 @@ is_system_include (filename)
   for (searchptr = first_system_include; searchptr;
        searchptr = searchptr->next)
     if (searchptr->fname) {
-      register char *sys_dir = searchptr->fname;
+      register char *sys_dir = skip_redundant_dir_prefix (searchptr->fname);
       register unsigned length = strlen (sys_dir);
 
       if (! strncmp (sys_dir, filename, length)
