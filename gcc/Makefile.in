@@ -1217,7 +1217,7 @@ $(srcdir)/gcc.info: gcc.texi extend.texi install.texi invoke.texi \
 	makeinfo `echo $(srcdir)/gcc.texi | sed 's,^\./,,'`
 
 $(srcdir)/INSTALL: install1.texi install.texi
-	makeinfo --no-header `echo $(srcdir)/install1.texi | sed 's,^\./,,'`
+	makeinfo -D INSTALLONLY --no-header `echo $(srcdir)/install1.texi | sed 's,^\./,,'`
 
 # Deletion of files made during compilation.
 # There are four levels of this:
