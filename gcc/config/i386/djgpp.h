@@ -63,6 +63,10 @@ Boston, MA 02111-1307, USA.  */
 #undef IDENT_ASM_OP
 #define IDENT_ASM_OP "\t.ident"
 
+/* Define the name of the .int op.  */
+#undef INT_ASM_OP
+#define INT_ASM_OP "\t.long"
+
 /* Enable alias attribute support.  */
 #ifndef SET_ASM_OP
 #define SET_ASM_OP "\t.set"
@@ -81,7 +85,7 @@ Boston, MA 02111-1307, USA.  */
         (((NAME)[0] >= 'A') && ((NAME)[0] <= 'z') && ((NAME)[1] == ':')))
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-DGO32 -DDJGPP=2 -DMSDOS -Asystem(msdos)"
+#define CPP_PREDEFINES "-DGO32 -DDJGPP=2 -D__MSDOS__ -Asystem(msdos)"
 
 /* Include <sys/version.h> so __DJGPP__ and __DJGPP_MINOR__ are defined.  */
 #undef CPP_SPEC
@@ -193,6 +197,12 @@ dtor_section ()							\
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
+/* This is how to tell assembler that a symbol is weak  */ 
+#undef ASM_WEAKEN_LABEL
+#define ASM_WEAKEN_LABEL(FILE,NAME) \
+  do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
+       fputc ('\n', FILE); } while (0)
+
 /* djgpp automatically calls its own version of __main, so don't define one
    in libgcc, nor call one in main().  */
 #define HAS_INIT_SECTION
@@ -205,3 +215,60 @@ dtor_section ()							\
 
 /* Used to be defined in xm-djgpp.h, but moved here for cross-compilers.  */
 #define LIBSTDCXX "-lstdcxx"
+
+/* Add command line option -mbnu210 to indicate we can use binutil 2.10's features.  */
+#undef MASK_BNU210
+#define MASK_BNU210 (0x40000000)
+
+#undef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES 		\
+  { "bnu210", MASK_BNU210, "Enable weak symbol and enhanced C++ template support. Binutils 2.9.5.1 or higher required." }, \
+  { "no-bnu210", -MASK_BNU210, "Disable weak symbol and enhanced C++ template support." },
+
+/* Weak symbols and .gnu.linkonce are only in the binutils snapshots
+   and binutils-2.10.  So do it only when -mbnu210 is specified.  */
+#undef SUPPORTS_WEAK
+#define SUPPORTS_WEAK (target_flags & MASK_BNU210)
+
+#undef SUPPORTS_ONE_ONLY
+#define SUPPORTS_ONE_ONLY (target_flags & MASK_BNU210)
+
+/* Support for C++ templates.  */
+#undef MAKE_DECL_ONE_ONLY
+#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
+
+/* Additional support for C++ templates and support for
+   garbage collection.  */
+#undef UNIQUE_SECTION_P
+#define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL))
+
+#undef UNIQUE_SECTION
+#define UNIQUE_SECTION(DECL,RELOC)				\
+do {								\
+  int len;							\
+  char *name, *string, *prefix;					\
+								\
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
+								\
+  if (! DECL_ONE_ONLY (DECL))					\
+    {								\
+      if (TREE_CODE (DECL) == FUNCTION_DECL)			\
+	prefix = ".text.";					\
+      else if (DECL_READONLY_SECTION (DECL, RELOC))		\
+	prefix = ".rodata.";					\
+      else							\
+	prefix = ".data.";					\
+    }								\
+  else if (TREE_CODE (DECL) == FUNCTION_DECL)			\
+    prefix = ".gnu.linkonce.t.";				\
+  else if (DECL_READONLY_SECTION (DECL, RELOC))			\
+    prefix = ".gnu.linkonce.r.";				\
+  else								\
+    prefix = ".gnu.linkonce.d.";				\
+								\
+  len = strlen (name) + strlen (prefix);			\
+  string = alloca (len + 1);					\
+  sprintf (string, "%s%s", prefix, name);			\
+								\
+  DECL_SECTION_NAME (DECL) = build_string (len, string);	\
+} while (0)
