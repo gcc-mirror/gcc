@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -347,6 +347,11 @@ static rtx true_rtx, false_rtx;
 /* Used to reduce calls to `strcmp' */
 
 static char *alternative_name;
+
+/* Indicate that REG_DEAD notes are valid if dead_or_set_p is ever
+   called.  */
+
+int reload_completed = 0;
 
 /* Simplify an expression.  Only call the routine if there is something to
    simplify.  */
