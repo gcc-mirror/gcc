@@ -94,7 +94,11 @@ convex_output_function_prologue (file, size)
 {
   size = ((size) + 7) & -8;
   if (size)
-    fprintf (file, "\tsub.w #%d,sp\n", size);
+    {
+      fprintf (file, "\tsub.w #");
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, size);
+      fprintf (file, ",sp\n");
+    }
 }
 
 /* This function generates the assembly code for function exit.
@@ -568,7 +572,7 @@ asm_declare_function_name (file, name, decl)
   p = version_string;
   for (i = 0; i < 3; ) {
     c = *p;
-    if (c - '0' < (unsigned) 10)
+    if (ISDIGIT (c))
       vers[i++] = c;
     if (c == 0 || c == ' ')
       vers[i++] = '0';
@@ -639,9 +643,15 @@ print_operand (file, x, code)
 	break;
       default:
 	if (code == 'u')
-	  fprintf (file, "#%d", CONST_DOUBLE_HIGH (x));
+	  {
+	    fprintf (file, "#");
+	    fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_HIGH (x));
+	  }
 	else
-	  fprintf (file, "#%d", CONST_DOUBLE_LOW (x));
+	  {
+	    fprintf (file, "#");
+	    fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_LOW (x));
+	  }
       }
       break;
 

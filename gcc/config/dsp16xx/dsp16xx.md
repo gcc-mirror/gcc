@@ -146,6 +146,8 @@
 	   case 0:
 	   case 1:
    	      return \"%0&%1\";
+           default:
+             abort();
          }
 }"
   [(set_attr "type" "f3_alu,f3_alu")])
@@ -551,6 +553,8 @@
 
 	case 2:
 	  return \"*%0++\;*%0++\";
+        default:
+          abort();
 	}
 
     case 2:
@@ -571,6 +575,8 @@
     case 10:
     case 11:
       return \"%0=%b1+%H2\";
+    default:
+      abort();
     }
 }"
 [(set_attr "type" "data_move_memory,data_move_multiple,f3_alu_i,f3_alu_i,f3_alu,f3_alu,f3_alu,f3_alu,f3_alu_i,f3_alu_i,f3_alu_i,f3_alu_i")])
@@ -684,6 +690,8 @@
     case 7: case 8:
     case 9: case 10:
       return \"%0=%b1-%H2\";
+    default:
+      abort();
     }
 }"
 [(set_attr "type" "data_move_multiple,f3_alu_i,f3_alu_i,f3_alu,f3_alu,f3_alu,f3_alu,f3_alu_i,f3_alu_i,f3_alu_i,f3_alu_i")])
@@ -1408,6 +1416,8 @@
 		case 8:
 		case 9:
 		   return \"\";
+                default:
+                  abort();
         }
 }"
 [(set_attr "type" "special,data_move_multiple,f3_alu,data_move_multiple,data_move_multiple,data_move_multiple,data_move_multiple,data_move_multiple,nothing,nothing")])
@@ -1473,6 +1483,8 @@
 
                 case 9: case 10:
 		   return \"%0=%1\";
+                default:
+                  abort();
 	}
 }"
 [(set_attr "type" "data_move,data_move,data_move_short_i,data_move_i,data_move_memory,data_move_memory,data_move_memory,data_move_memory,nothing,malu,malu")])
@@ -1520,6 +1532,8 @@
 
                 case 9: case 10:
 		   return \"%0=%1\";
+                default:
+                  abort();
 	}
 }"
 [(set_attr "type" "data_move,data_move,data_move_short_i,data_move_i,data_move_memory,data_move_memory,data_move_memory,data_move_memory,nothing,malu,malu")])
@@ -1676,6 +1690,8 @@
 		case 5:
 		case 6:
 		   return \"%u0=%u1\;%w0=%w1\";
+                default:
+                  abort();
         }
 }"
 [(set_attr "type" "move,move,load_i,load,store,load,store")])
@@ -1784,6 +1800,8 @@
 ;;	return \"move %w0=%1\;%0=0\";
 ;;      else
 ;;	return \"%w0=%1\;%0=0\";
+;;    default:
+;;      abort();
 ;;    }
 ;; }")
 
@@ -1836,6 +1854,8 @@
 
 	case 3:
 	  return \"%0 = extractz(%m1, 0x1000)\";
+        default:
+          abort();
       }
   }"
   [(set_attr "type" "data_move_2,data_move_2,data_move_2,shift_i")])
@@ -1864,6 +1884,8 @@
           }
           else
             return \"%w0=%1\;%0=0\";
+          default:
+            abort();
       }
   }"
   [(set_attr "type" "data_move_2,data_move_2,data_move_2")])

@@ -280,7 +280,7 @@ enum reg_class {
    || (reg_renumber[regno] > 3 && reg_renumber[regno] < FIRST_PSEUDO_REGISTER))
 
 #define REGNO_OK_FOR_INDEX_P(regno) \
-  (((regno) >= 0 && regno < 4)	\
+  (IN_RANGE ((regno), 0, 3) \
    || (reg_renumber[regno] >= 0 && reg_renumber[regno] < 4))
 
 
@@ -639,7 +639,7 @@ struct cum_arg { int nbytes; };
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X)  \
-  (((REGNO (X) >= 0 && REGNO(X) <= 3) || REGNO (X) >= FIRST_PSEUDO_REGISTER))
+  (IN_RANGE (REGNO (X), 0, 3) || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \

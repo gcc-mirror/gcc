@@ -1,5 +1,35 @@
 2001-11-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* convex.c (convex_output_function_prologue): Fix format specifier
+	warning.
+	(asm_declare_function_name): Fix signed/unsigned warning.
+	(print_operand): Fix format specifier warning.
+	* convex.h (S_REGNO_P, A_REGNO_P): Fix signed/unsigned warning.
+	* dsp16xx-protos.h (uns_comparison_operator,
+	num_1600_core_shifts): Prototype.
+	* dsp16xx.c: Include tm_p.h, not dsp16xx-protos.h.
+	(frame_size, frame_pointer_offset): Delete.
+	(dsp16xx_output_function_prologue, dsp16xx_output_function_epilogue):
+	Make static.  Fix format specifier warnings.
+	* dsp16xx.h (IS_ACCUM_REG): Fix unsigned>=0 warning.
+	(EXTRA_SECTION_FUNCTIONS): Prototype const_section.
+	* dsp16xx.md: Add default case in switches.
+	* fr30.h (IN_RANGE): Delete.
+	* ia64.h (ASM_OUTPUT_MI_THUNK): Fix format specifier warnings.
+	* mcore-protos.h (mcore_output_cmov): Const-ify.
+	* mcore.c (mcore_output_cmov): Likewise.
+	* mcore.h (switch_to_section): Make static and prototype.
+	* mn10200.h (REGNO_OK_FOR_INDEX_P, REG_OK_FOR_INDEX_P): Fix
+	unsigned>=0 warnings.
+	* mn10300.h (REGNO_IN_RANGE_P): Likewise.
+	* rs6000-protos.h (read_only_data_section,
+	read_only_private_data_section): Prototype.
+	* rs6000.h (ASM_OUTPUT_BYTE): Fix format specifier warning.
+	* sh.c (sh_adjust_cost): Mark parameter with ATTRIBUTE_UNUSED.
+	* sh.h (GENERAL_REGISTER_P): Fix unsigned>=0 warning.
+
+2001-11-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* dwarf2asm.c (dw2_asm_output_pcrel): Mark parameters with
 	ATTRIBUTE_UNUSED.
 	* final.c (final_scan_insn): Add brackets around body of if-stmt.

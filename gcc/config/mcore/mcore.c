@@ -971,7 +971,7 @@ const char *
 mcore_output_cmov (operands, cmp_t, test)
      rtx operands[];
      int cmp_t;
-     char * test;
+     const char * test;
 {
   int load_value;
   int adjust_value;

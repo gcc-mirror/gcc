@@ -5648,7 +5648,7 @@ sh_asm_named_section (name, flags)
 static int
 sh_adjust_cost (insn, link, dep_insn, cost)
      rtx insn;
-     rtx link;
+     rtx link ATTRIBUTE_UNUSED;
      rtx dep_insn;
      int cost;
 {

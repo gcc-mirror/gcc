@@ -502,7 +502,7 @@ extern int target_flags;
 #define REG_YBASE31 57
 
 /* Do we have a accumulator register? */
-#define IS_ACCUM_REG(REGNO) ((REGNO) >= REG_A0 && (REGNO) <= REG_A1L)
+#define IS_ACCUM_REG(REGNO) IN_RANGE ((REGNO), REG_A0, REG_A1L)
 #define IS_ACCUM_LOW_REG(REGNO) ((REGNO) == REG_A0L || (REGNO) == REG_A1L)
 
 /* Do we have a virtual ybase register */
@@ -1604,6 +1604,7 @@ extern struct dsp16xx_frame_info current_frame_info;
 #define EXTRA_SECTIONS in_const
 
 #define EXTRA_SECTION_FUNCTIONS  \
+extern void const_section PARAMS ((void));                         \
 void                                                               \
 const_section ()                                                   \
 {                                                                  \

@@ -342,7 +342,7 @@ enum reg_class {
   (((regno) >= (min) && (regno) <= (max)) || (regno) >= FIRST_PSEUDO_REGISTER)
 #else
 # define REGNO_IN_RANGE_P(regno,min,max) \
-  (((regno) >= (min) && (regno) <= (max)) \
+  (IN_RANGE ((regno), (min), (max)) \
    || (reg_renumber \
        && reg_renumber[(regno)] >= (min) && reg_renumber[(regno)] <= (max)))
 #endif

@@ -642,8 +642,8 @@ enum reg_class {
 
 #define REGNO_REG_CLASS(REGNO) (regno_reg_class[REGNO])
 
-#define S_REGNO_P(REGNO) (((REGNO) - S0_REGNUM) < (unsigned) 8)
-#define A_REGNO_P(REGNO) (((REGNO) - A0_REGNUM) < (unsigned) 8)
+#define S_REGNO_P(REGNO) ((unsigned)((REGNO) - S0_REGNUM) < 8)
+#define A_REGNO_P(REGNO) ((unsigned)((REGNO) - A0_REGNUM) < 8)
 
 #define S_REG_P(X) (REG_P (X) && S_REGNO_P (REGNO (X)))
 #define A_REG_P(X) (REG_P (X) && A_REGNO_P (REGNO (X)))
