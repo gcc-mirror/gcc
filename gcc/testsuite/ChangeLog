@@ -1,3 +1,7 @@
+2003-03-16  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+
+	* gcc.c-torture/execute/20030316-1.c: New test case.
+
 2003-03-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9629
