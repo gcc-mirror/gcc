@@ -1,5 +1,5 @@
 /* Generate code from to output assembler insns as recognized from rtl.
-   Copyright (C) 1987, 88, 92, 94, 95, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 94-95, 97-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -111,8 +111,6 @@ static void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 static void error PVPROTO ((const char *, ...)) ATTRIBUTE_PRINTF_1;
-static void mybcopy ();
-static void mybzero ();
 static int n_occurrences PROTO((int, char *));
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
@@ -684,13 +682,13 @@ gen_insn (insn)
   max_opno = -1;
   num_dups = 0;
 
-  mybzero (constraints, sizeof constraints);
-  mybzero (op_n_alternatives, sizeof op_n_alternatives);
-  mybzero (predicates, sizeof predicates);
-  mybzero (address_p, sizeof address_p);
-  mybzero (modes, sizeof modes);
-  mybzero (strict_low, sizeof strict_low);
-  mybzero (seen, sizeof seen);
+  memset (constraints, 0, sizeof constraints);
+  memset (op_n_alternatives, 0, sizeof op_n_alternatives);
+  memset (predicates, 0, sizeof predicates);
+  memset (address_p, 0, sizeof address_p);
+  memset (modes, 0, sizeof modes);
+  memset (strict_low, 0, sizeof strict_low);
+  memset (seen, 0, sizeof seen);
 
   for (i = 0; i < XVECLEN (insn, 1); i++)
     scan_operands (XVECEXP (insn, 1, i), 0, 0);
@@ -698,12 +696,12 @@ gen_insn (insn)
   d->n_operands = max_opno + 1;
   d->n_dups = num_dups;
 
-  mybcopy (constraints, d->constraints, sizeof constraints);
-  mybcopy (op_n_alternatives, d->op_n_alternatives, sizeof op_n_alternatives);
-  mybcopy (predicates, d->predicates, sizeof predicates);
-  mybcopy (address_p, d->address_p, sizeof address_p);
-  mybcopy (modes, d->modes, sizeof modes);
-  mybcopy (strict_low, d->strict_low, sizeof strict_low);
+  memcpy (d->constraints, constraints, sizeof constraints);
+  memcpy (d->op_n_alternatives, op_n_alternatives, sizeof op_n_alternatives);
+  memcpy (d->predicates, predicates, sizeof predicates);
+  memcpy (d->address_p, address_p, sizeof address_p);
+  memcpy (d->modes, modes, sizeof modes);
+  memcpy (d->strict_low, strict_low, sizeof strict_low);
 
   validate_insn_alternatives (d);
   process_template (d, XSTR (insn, 3));
@@ -735,13 +733,13 @@ gen_peephole (peep)
   end_of_insn_data = d;
 
   max_opno = -1;
-  mybzero (constraints, sizeof constraints);
-  mybzero (op_n_alternatives, sizeof op_n_alternatives);
-  mybzero (predicates, sizeof predicates);
-  mybzero (address_p, sizeof address_p);
-  mybzero (modes, sizeof modes);
-  mybzero (strict_low, sizeof strict_low);
-  mybzero (seen, sizeof seen);
+  memset (constraints, 0, sizeof constraints);
+  memset (op_n_alternatives, 0, sizeof op_n_alternatives);
+  memset (predicates, 0, sizeof predicates);
+  memset (address_p, 0, sizeof address_p);
+  memset (modes, 0, sizeof modes);
+  memset (strict_low, 0, sizeof strict_low);
+  memset (seen, 0, sizeof seen);
 
   /* Get the number of operands by scanning all the
      patterns of the peephole optimizer.
@@ -752,12 +750,12 @@ gen_peephole (peep)
   d->n_operands = max_opno + 1;
   d->n_dups = 0;
 
-  mybcopy (constraints, d->constraints, sizeof constraints);
-  mybcopy (op_n_alternatives, d->op_n_alternatives, sizeof op_n_alternatives);
-  mybzero (d->predicates, sizeof predicates);
-  mybzero (d->address_p, sizeof address_p);
-  mybzero (d->modes, sizeof modes);
-  mybzero (d->strict_low, sizeof strict_low);
+  memcpy (d->constraints, constraints, sizeof constraints);
+  memcpy (d->op_n_alternatives, op_n_alternatives, sizeof op_n_alternatives);
+  memset (d->predicates, 0, sizeof predicates);
+  memset (d->address_p, 0, sizeof address_p);
+  memset (d->modes, 0, sizeof modes);
+  memset (d->strict_low, 0, sizeof strict_low);
 
   validate_insn_alternatives (d);
   process_template (d, XSTR (peep, 2));
@@ -796,13 +794,13 @@ gen_expand (insn)
   /* Scan the operands to get the specified predicates and modes,
      since expand_binop needs to know them.  */
 
-  mybzero (constraints, sizeof constraints);
-  mybzero (op_n_alternatives, sizeof op_n_alternatives);
-  mybzero (predicates, sizeof predicates);
-  mybzero (address_p, sizeof address_p);
-  mybzero (modes, sizeof modes);
-  mybzero (strict_low, sizeof strict_low);
-  mybzero (seen, sizeof seen);
+  memset (constraints, 0, sizeof constraints);
+  memset (op_n_alternatives, 0, sizeof op_n_alternatives);
+  memset (predicates, 0, sizeof predicates);
+  memset (address_p, 0, sizeof address_p);
+  memset (modes, 0, sizeof modes);
+  memset (strict_low, 0, sizeof strict_low);
+  memset (seen, 0, sizeof seen);
 
   if (XVEC (insn, 1))
     for (i = 0; i < XVECLEN (insn, 1); i++)
@@ -811,12 +809,12 @@ gen_expand (insn)
   d->n_operands = max_opno + 1;
   d->n_dups = num_dups;
 
-  mybcopy (constraints, d->constraints, sizeof constraints);
-  mybcopy (op_n_alternatives, d->op_n_alternatives, sizeof op_n_alternatives);
-  mybcopy (predicates, d->predicates, sizeof predicates);
-  mybcopy (address_p, d->address_p, sizeof address_p);
-  mybcopy (modes, d->modes, sizeof modes);
-  mybcopy (strict_low, d->strict_low, sizeof strict_low);
+  memcpy (d->constraints, constraints, sizeof constraints);
+  memcpy (d->op_n_alternatives, op_n_alternatives, sizeof op_n_alternatives);
+  memcpy (d->predicates, predicates, sizeof predicates);
+  memcpy (d->address_p, address_p, sizeof address_p);
+  memcpy (d->modes, modes, sizeof modes);
+  memcpy (d->strict_low, strict_low, sizeof strict_low);
 
   d->template = 0;
   d->outfun = 0;
@@ -851,13 +849,13 @@ gen_split (split)
   max_opno = -1;
   num_dups = 0;
 
-  mybzero (constraints, sizeof constraints);
-  mybzero (op_n_alternatives, sizeof op_n_alternatives);
-  mybzero (predicates, sizeof predicates);
-  mybzero (address_p, sizeof address_p);
-  mybzero (modes, sizeof modes);
-  mybzero (strict_low, sizeof strict_low);
-  mybzero (seen, sizeof seen);
+  memset (constraints, 0, sizeof constraints);
+  memset (op_n_alternatives, 0, sizeof op_n_alternatives);
+  memset (predicates, 0, sizeof predicates);
+  memset (address_p, 0, sizeof address_p);
+  memset (modes, 0, sizeof modes);
+  memset (strict_low, 0, sizeof strict_low);
+  memset (seen, 0, sizeof seen);
 
   /* Get the number of operands by scanning all the
      patterns of the split patterns.
@@ -867,12 +865,12 @@ gen_split (split)
 
   d->n_operands = max_opno + 1;
 
-  mybzero (d->constraints, sizeof constraints);
-  mybzero (d->op_n_alternatives, sizeof op_n_alternatives);
-  mybzero (d->predicates, sizeof predicates);
-  mybzero (d->address_p, sizeof address_p);
-  mybzero (d->modes, sizeof modes);
-  mybzero (d->strict_low, sizeof strict_low);
+  memset (d->constraints, 0, sizeof constraints);
+  memset (d->op_n_alternatives, 0, sizeof op_n_alternatives);
+  memset (d->predicates, 0, sizeof predicates);
+  memset (d->address_p, 0, sizeof address_p);
+  memset (d->modes, 0, sizeof modes);
+  memset (d->strict_low, 0, sizeof strict_low);
 
   d->n_dups = 0;
   d->n_alternatives = 0;
@@ -900,25 +898,6 @@ xrealloc (ptr, size)
   if (!result)
     fatal ("virtual memory exhausted");
   return result;
-}
-
-static void
-mybzero (b, length)
-     register char *b;
-     register unsigned length;
-{
-  while (length-- > 0)
-    *b++ = 0;
-}
-
-static void
-mybcopy (b1, b2, length)
-     register char *b1;
-     register char *b2;
-     register unsigned length;
-{
-  while (length-- > 0)
-    *b2++ = *b1++;
 }
 
 static void

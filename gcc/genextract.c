@@ -1,5 +1,5 @@
 /* Generate code from machine description to extract operands from insn as rtl.
-   Copyright (C) 1987, 91, 92, 93, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91-93, 97-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -100,8 +100,6 @@ static void walk_rtx PROTO ((rtx, const char *));
 static void print_path PROTO ((char *));
 static void fatal PVPROTO ((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-static char *copystr PROTO ((const char *));
-static void mybzero ();
 void fancy_abort PROTO ((void)) ATTRIBUTE_NORETURN;
 
 static void
@@ -116,7 +114,7 @@ gen_insn (insn)
   dup_count = 0;
 
   /* No operands seen so far in this pattern.  */
-  mybzero (oplocs, sizeof oplocs);
+  memset (oplocs, 0, sizeof oplocs);
 
   /* Walk the insn's pattern, remembering at all times the path
      down to the walking point.  */
@@ -211,19 +209,19 @@ walk_rtx (x, path)
 
     case MATCH_OPERAND:
     case MATCH_SCRATCH:
-      oplocs[XINT (x, 0)] = copystr (path);
+      oplocs[XINT (x, 0)] = xstrdup (path);
       op_count = MAX (op_count, XINT (x, 0) + 1);
       break;
 
     case MATCH_DUP:
     case MATCH_PAR_DUP:
-      duplocs[dup_count] = copystr (path);
+      duplocs[dup_count] = xstrdup (path);
       dupnums[dup_count] = XINT (x, 0);
       dup_count++;
       break;
 
     case MATCH_OP_DUP:
-      duplocs[dup_count] = copystr (path);
+      duplocs[dup_count] = xstrdup (path);
       dupnums[dup_count] = XINT (x, 0);
       dup_count++;
       
@@ -239,7 +237,7 @@ walk_rtx (x, path)
       return;
       
     case MATCH_OPERATOR:
-      oplocs[XINT (x, 0)] = copystr (path);
+      oplocs[XINT (x, 0)] = xstrdup (path);
       op_count = MAX (op_count, XINT (x, 0) + 1);
 
       newpath = (char *) alloca (depth + 2);
@@ -254,7 +252,7 @@ walk_rtx (x, path)
       return;
 
     case MATCH_PARALLEL:
-      oplocs[XINT (x, 0)] = copystr (path);
+      oplocs[XINT (x, 0)] = xstrdup (path);
       op_count = MAX (op_count, XINT (x, 0) + 1);
 
       newpath = (char *) alloca (depth + 2);
@@ -398,28 +396,14 @@ fancy_abort ()
   fatal ("Internal gcc abort.");
 }
 
-static char *
-copystr (s1)
-  const char *s1;
+char *
+xstrdup (s1)
+  const char *input;
 {
-  register char *tem;
-
-  if (s1 == 0)
-    return 0;
-
-  tem = (char *) xmalloc (strlen (s1) + 1);
-  strcpy (tem, s1);
-
-  return tem;
-}
-
-static void
-mybzero (b, length)
-     register char *b;
-     register unsigned length;
-{
-  while (length-- > 0)
-    *b++ = 0;
+  register size_t len = strlen (input) + 1;
+  register char *output = xmalloc (len);
+  memcpy (output, input, len);
+  return output;
 }
 
 int

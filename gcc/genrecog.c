@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-95, 97-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -191,9 +191,6 @@ static void write_tree		PROTO((struct decision *, const char *,
 				       struct decision *, int,
 				       enum routine_type));
 static void change_state	PROTO((const char *, const char *, int));
-static char *copystr		PROTO((const char *));
-static void mybzero		PROTO((char *, unsigned));
-static void mybcopy		PROTO((char *, char *, unsigned));
 static void fatal		PVPROTO((const char *, ...))
   ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 void fancy_abort		PROTO((void)) ATTRIBUTE_NORETURN;
@@ -310,7 +307,7 @@ add_to_sequence (pattern, last, position)
     max_depth = depth;
 
   new->number = next_number++;
-  new->position = copystr (position);
+  new->position = xstrdup (position);
   new->ignore_code = 0;
   new->ignore_mode = 0;
   new->enforce_mode = 1;
@@ -833,8 +830,7 @@ merge_trees (oldh, addh)
 		      struct decision *split
 			= (struct decision *) xmalloc (sizeof (struct decision));
 
-		      mybcopy ((char *) old, (char *) split,
-			       sizeof (struct decision));
+		      memcpy (split, old, sizeof (struct decision));
 
 		      old->success.first = old->success.last = split;
 		      old->c_test = 0;
@@ -860,8 +856,7 @@ merge_trees (oldh, addh)
 		      struct decision *split
 			= (struct decision *) xmalloc (sizeof (struct decision));
 
-		      mybcopy ((char *) add, (char *) split,
-			       sizeof (struct decision));
+		      memcpy (split, add, sizeof (struct decision));
 
 		      add->success.first = add->success.last = split;
 		      add->c_test = 0;
@@ -1300,7 +1295,7 @@ write_tree_1 (tree, prevpos, afterward, type)
       if (switch_mode == VOIDmode && mode != VOIDmode && p->next != 0
 	  && p->next->enforce_mode && p->next->mode != VOIDmode)
 	{
-	  mybzero (modemap, sizeof modemap);
+	  memset (modemap, 0, sizeof modemap);
 	  printf ("%sswitch (GET_MODE (x%d))\n", indents[indent], depth);
 	  printf ("%s{\n", indents[indent + 2]);
 	  indent += 4;
@@ -1317,7 +1312,7 @@ write_tree_1 (tree, prevpos, afterward, type)
       if (switch_code == UNKNOWN && p->code != UNKNOWN && ! p->ignore_code
 	  && p->next != 0 && p->next->code != UNKNOWN)
 	{
-	  mybzero (codemap, sizeof codemap);
+	  memset (codemap, 0, sizeof codemap);
 	  printf ("%sswitch (GET_CODE (x%d))\n", indents[indent], depth);
 	  printf ("%s{\n", indents[indent + 2]);
 	  indent += 4;
@@ -1628,37 +1623,14 @@ change_state (oldpos, newpos, indent)
     }
 }
 
-static char *
-copystr (s1)
-  const char *s1;
+char *
+xstrdup (s1)
+  const char *input;
 {
-  register char *tem;
-
-  if (s1 == 0)
-    return 0;
-
-  tem = (char *) xmalloc (strlen (s1) + 1);
-  strcpy (tem, s1);
-
-  return tem;
-}
-
-static void
-mybzero (b, length)
-     register char *b;
-     register unsigned length;
-{
-  while (length-- > 0)
-    *b++ = 0;
-}
-
-static void
-mybcopy (in, out, length)
-     register char *in, *out;
-     register unsigned length;
-{
-  while (length-- > 0)
-    *out++ = *in++;
+  register size_t len = strlen (input) + 1;
+  register char *output = xmalloc (len);
+  memcpy (output, input, len);
+  return output;
 }
 
 PTR
