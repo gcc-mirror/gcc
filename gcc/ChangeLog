@@ -1,3 +1,9 @@
+2000-02-22  Andrew Haley  <aph@cygnus.com>
+
+	* config/mips/mips.h (GAS_ASM_SPEC): Pass -mgp32/-mgp64 to gas.
+	(SIZE_TYPE): Is 32 bits when using -mgp32.
+	(PTRDIFF_TYPE): Ditto.
+
 Wed Feb 23 07:26:27 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* diagnostic.c (init_output_buffer): Handle case of null PREFIX.
