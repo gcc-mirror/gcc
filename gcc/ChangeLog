@@ -1,3 +1,19 @@
+2003-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/ia64/linux.h (IA64_GATE_AREA_END): Increase by 64K.
+	(MD_FALLBACK_FRAME_STATE_FOR): Set fpsr_loc, br_loc[6] and
+	br_loc[7].  Update comment.
+	(MD_HANDLE_UNWABI): Define.
+	* config/ia64/unwind-ia64.c (struct unw_state_record): Add
+	unwabi field.
+	(struct _Unwind_Context): Increase br_loc array size to 8 entries.
+	(desc_abi): Set unwabi.
+	(uw_update_reg_address): Allow br up to 7.
+	(uw_update_context): Invoke MD_HANDLE_UNWABI if defined.
+	(uw_install_context): Load b1..b5 from correct locations.
+	Fix insn loading ar.fpsr.
+	* doc/tm.texi: Document MD_HANDLE_UNWABI.
+
 2003-12-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/13037
