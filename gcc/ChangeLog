@@ -1,3 +1,7 @@
+2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/predicates.md (small_data_pattern): Match prefetches.
+
 2004-08-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR tree-optimization/17016

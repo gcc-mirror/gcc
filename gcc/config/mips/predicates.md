@@ -198,5 +198,5 @@
 
 
 (define_predicate "small_data_pattern"
-  (and (match_code "set,parallel,unspec,unspec_volatile")
+  (and (match_code "set,parallel,unspec,unspec_volatile,prefetch")
        (match_test "mips_small_data_pattern_p (op)")))
