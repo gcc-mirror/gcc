@@ -24,6 +24,8 @@
 AUTOMAKE_OPTIONS = 1.3 cygnus
 MAINT_CHARSET = latin1
 
+mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
+
 # Cross compiler and multilib support.
 # Install a library built with a cross compiler in tooldir, not libdir.
 if USE_LIBDIR

@@ -23,6 +23,8 @@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
 
+mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
+
 noinst_LTLIBRARIES = libmath.la
 
 EXTRA_LONG_DOUBLE_yes = \

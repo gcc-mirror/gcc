@@ -1,6 +1,6 @@
 ## Makefile for the libio subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+## Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -22,6 +22,8 @@
 ## USA.
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
+
+mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 if GLIBCPP_BUILD_LIBIO
 noinst_LTLIBRARIES = libio.la
