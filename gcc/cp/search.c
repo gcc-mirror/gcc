@@ -151,6 +151,7 @@ static int template_self_reference_p PROTO ((tree, tree));
 static void fixup_all_virtual_upcast_offsets PROTO ((tree, tree));
 static tree dfs_mark_primary_bases PROTO((tree, void *));
 static tree get_shared_vbase_if_not_primary PROTO((tree, tree));
+static tree dfs_find_vbase_instance PROTO((tree, void *));
 
 /* Allocate a level of searching.  */
 
@@ -2189,9 +2190,14 @@ mark_primary_bases (type)
 {
   tree vbase;
 
-  /* Mark the TYPE_BINFO hierarchy.  */
-  dfs_walk (TYPE_BINFO (type), dfs_mark_primary_bases, 
-	    dfs_skip_nonprimary_vbases_unmarkedp, type);
+  /* Mark the TYPE_BINFO hierarchy.  We need to mark primary bases in
+     pre-order to deal with primary virtual bases.  (The virtual base
+     would be skipped if it were not marked as primary, and that
+     requires getting to dfs_mark_primary_bases before
+     dfs_skip_nonprimary_vbases_unmarkedp has a chance to skip the
+     virtual base.)  */
+  dfs_walk_real (TYPE_BINFO (type), dfs_mark_primary_bases, NULL,
+		 dfs_skip_nonprimary_vbases_unmarkedp, type);
 
   /* Now go through the virtual base classes.  Any that are not
      already primary will need to be allocated in TYPE, and so we need
@@ -2287,6 +2293,20 @@ dfs_marked_real_bases_queue_p (binfo, data)
     type = TREE_PURPOSE (type);
   binfo = get_shared_vbase_if_not_primary (binfo, type);
   return binfo ? markedp (binfo, NULL) : NULL_TREE;
+}
+
+/* A queue function that skips all virtual bases (and their 
+   bases).  */
+
+tree
+dfs_skip_vbases (binfo, data)
+     tree binfo;
+     void *data ATTRIBUTE_UNUSED;
+{
+  if (TREE_VIA_VIRTUAL (binfo))
+    return NULL_TREE;
+
+  return binfo;
 }
 
 /* Called via dfs_walk from dfs_get_pure_virtuals.  */
@@ -2798,7 +2818,14 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
   tree vc;
   tree delta;
   unsigned HOST_WIDE_INT n;
-  
+
+  while (BINFO_PRIMARY_MARKED_P (binfo))
+    {
+      binfo = BINFO_INHERITANCE_CHAIN (binfo);
+      if (TREE_VIA_VIRTUAL (binfo))
+	return;
+    }
+
   delta = purpose_member (vbase, *vbase_offsets);
   if (! delta)
     {
@@ -2925,7 +2952,7 @@ fixup_virtual_upcast_offsets (real_binfo, binfo, init_self, can_elide, addr, ori
       tree real_base_binfo = TREE_VEC_ELT (real_binfos, i);
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       int is_not_base_vtable
-	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (real_binfo));
+	= !BINFO_PRIMARY_MARKED_P (real_base_binfo);
       if (! TREE_VIA_VIRTUAL (real_base_binfo))
 	fixup_virtual_upcast_offsets (real_base_binfo, base_binfo,
 				      is_not_base_vtable, can_elide, addr,
@@ -2979,15 +3006,17 @@ fixup_all_virtual_upcast_offsets (type, decl_ptr)
 	;
       else
 	{
+	  tree vbase;
 	  tree vbase_offsets;
 	  tree addr;
 
+	  vbase = find_vbase_instance (BINFO_TYPE (vbases), type);
 	  vbase_offsets = NULL_TREE;
-	  addr = convert_pointer_to_vbase (TREE_TYPE (vbases), decl_ptr);
-	  fixup_virtual_upcast_offsets (vbases,
+	  addr = convert_pointer_to_vbase (BINFO_TYPE (vbases), decl_ptr);
+	  fixup_virtual_upcast_offsets (vbase,
 					TYPE_BINFO (BINFO_TYPE (vbases)),
 					1, 0, addr, decl_ptr,
-					type, vbases, &vbase_offsets);
+					type, vbase, &vbase_offsets);
 	}
     }
 
@@ -3074,6 +3103,43 @@ get_vbase_types (type)
   CLASSTYPE_VBASECLASSES (type) = nreverse (CLASSTYPE_VBASECLASSES (type));
   dfs_walk (TYPE_BINFO (type), dfs_vbase_unmark, markedp, 0);
 }
+
+/* Called from find_vbase_instance via dfs_walk.  */
+
+static tree
+dfs_find_vbase_instance (binfo, data)
+     tree binfo;
+     void *data;
+{
+  tree base = TREE_VALUE ((tree) data);
+
+  if (BINFO_PRIMARY_MARKED_P (binfo)
+      && same_type_p (BINFO_TYPE (binfo), base))
+    return binfo;
+
+  return NULL_TREE;
+}
+
+/* Find the real occurrence of the virtual BASE (a class type) in the
+   hierarchy dominated by TYPE.  */
+
+tree
+find_vbase_instance (base, type)
+     tree base;
+     tree type;
+{
+  tree instance;
+
+  instance = BINFO_FOR_VBASE (base, type);
+  if (!BINFO_VBASE_PRIMARY_P (instance))
+    return instance;
+
+  return dfs_walk (TYPE_BINFO (type), 
+		   dfs_find_vbase_instance, 
+		   NULL,
+		   build_tree_list (type, base));
+}
+
 
 /* Debug info for C++ classes can get very large; try to avoid
    emitting it everywhere.

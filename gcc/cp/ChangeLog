@@ -1,3 +1,32 @@
+2000-01-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (dfs_skip_vbases): New function.
+	(find_vbase_instance): Likewise.
+	* class.c (determine_primary_base): Allow a nearly empty base to
+	serve as a primary base class under the new ABI.
+	(get_class_offset_1): Rename to ...
+	(dfs_get_class_offset): ... this.  Simplify.  Don't issue error
+	messages here.
+	(get_class_offset): Use it.  Issue error messages here.
+	(dfs_modify_vtables): Rely on dfs_unmarked_real_bases_queue_p to
+	find the right copies of virtual bases.
+	(fixup_vtable_deltas1): Rename to ...
+	(dfs_fixup_vtable_deltas): ... this.  Adjust to handle virtual
+	bases as primary bases.
+	(fixup_vtable_deltas): Remove.
+	(override_one_vtable): Handle virtual bases as primary bases.
+	(merge_overrides): Likewise.
+	(finish_struct_1): Likewise.
+	(dump_class_hierarchy): Dump primary-ness of bases as well.
+	* search.c (mark_primary_bases): Use a pre-order traversal to
+	handle primary virtual bases.
+	(dfs_skip_vbases): New fiunction.
+	(expand_upcast_fixups): Adjust to handle primary virtual bases.
+	(fixup_virtual_upcast_offsets): Likewise.
+	(fixup_all_virtual_upcast_offsets): Likewise.
+	(dfs_find_vbase_instances): New function.
+	(find_vbase_instance): Likewise.
+	
 2000-01-11  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* lex.c (DIR_SEPARATOR): Delete macro.

@@ -82,8 +82,7 @@ static tree get_basefndecls PROTO((tree, tree));
 static void set_rtti_entry PROTO((tree, tree, tree));
 static void build_vtable PROTO((tree, tree));
 static void prepare_fresh_vtable PROTO((tree, tree));
-static void fixup_vtable_deltas1 PROTO((tree, tree));
-static void fixup_vtable_deltas PROTO((tree, int, tree));
+static tree dfs_fixup_vtable_deltas PROTO((tree, void *));
 static tree dfs_finish_vtbls PROTO((tree, void *));
 static void finish_vtbls PROTO((tree));
 static void modify_vtable_entry PROTO((tree, tree, tree));
@@ -100,7 +99,7 @@ static void merge_overrides PROTO((tree, tree, int, tree));
 static void override_one_vtable PROTO((tree, tree, tree));
 static void mark_overriders PROTO((tree, tree));
 static void check_for_override PROTO((tree, tree));
-static tree get_class_offset_1 PROTO((tree, tree, tree, tree, tree));
+static tree dfs_get_class_offset PROTO((tree, void *));
 static tree get_class_offset PROTO((tree, tree, tree, tree));
 static void modify_one_vtable PROTO((tree, tree, tree));
 static tree dfs_modify_vtables PROTO((tree, void *));
@@ -1672,9 +1671,25 @@ determine_primary_base (t, has_virtual_p)
   if (!TYPE_VFIELD (t))
     CLASSTYPE_VFIELD_PARENT (t) = -1;
 
-  /* Now that we know what the primary base class is, we can run
-     through the entire hierarchy marking the primary bases for future
-     reference.  */
+  /* The new ABI allows for the use of a "nearly-empty" virtual base
+     class as the primary base class if no non-virtual polymorphic
+     base can be found.  */
+  if (flag_new_abi && !CLASSTYPE_HAS_PRIMARY_BASE_P (t))
+    for (i = 0; i < n_baseclasses; ++i)
+      {
+	tree base_binfo = TREE_VEC_ELT (TYPE_BINFO_BASETYPES (t), i);
+	tree basetype = BINFO_TYPE (base_binfo);
+
+	if (TREE_VIA_VIRTUAL (base_binfo) 
+	    && CLASSTYPE_NEARLY_EMPTY_P (basetype))
+	  {
+	    set_primary_base (t, i, has_virtual_p);
+	    CLASSTYPE_VFIELDS (t) = copy_list (CLASSTYPE_VFIELDS (basetype));
+	    break;
+	  }
+      }
+
+  /* Mark the primary base classes at this point.  */
   mark_primary_bases (t);
 }
 
@@ -2266,6 +2281,9 @@ overrides (fndecl, base_fndecl)
   return 0;
 }
 
+/* Returns the BINFO_OFFSET for the base of BINFO that has the same
+   type as CONTEXT.  */
+
 static tree
 get_class_offset_1 (parent, binfo, context, t, fndecl)
      tree parent, binfo, context, t, fndecl;
@@ -2311,14 +2329,37 @@ get_class_offset_1 (parent, binfo, context, t, fndecl)
   return rval;
 }
 
-/* Get the offset to the CONTEXT subobject that is related to the
-   given BINFO.  */
+/* Called from get_class_offset via dfs_walk.  */
+
+static tree
+dfs_get_class_offset (binfo, data)
+     tree binfo;
+     void *data;
+{
+  tree list = (tree) data;
+  tree context = TREE_TYPE (list);
+
+  if (same_type_p (BINFO_TYPE (binfo), context))
+    {
+      if (TREE_VALUE (list))
+	return error_mark_node;
+      else
+	TREE_VALUE (list) = BINFO_OFFSET (binfo);
+    }
+  
+  SET_BINFO_MARKED (binfo);
+
+  return NULL_TREE;
+}
+
+/* Returns the BINFO_OFFSET for the subobject of BINFO that has the
+   type given by CONTEXT.  */
 
 static tree
 get_class_offset (context, t, binfo, fndecl)
      tree context, t, binfo, fndecl;
 {
-  tree first_binfo = binfo;
+  tree list;
   tree offset;
   int i;
 
@@ -2338,11 +2379,28 @@ get_class_offset (context, t, binfo, fndecl)
 	return BINFO_OFFSET (binfo);
     }
 
-  /* Ok, not found in the less derived binfos, now check the more
-     derived binfos.  */
-  offset = get_class_offset_1 (first_binfo, TYPE_BINFO (t), context, t, fndecl);
-  if (offset==0 || TREE_CODE (offset) != INTEGER_CST)
-    my_friendly_abort (999);	/* we have to find it.  */
+  list = build_tree_list (t, NULL_TREE);
+  TREE_TYPE (list) = context;
+  offset = dfs_walk (TYPE_BINFO (t),
+		     dfs_get_class_offset,
+		     dfs_unmarked_real_bases_queue_p,
+		     list);
+  dfs_walk (TYPE_BINFO (t), dfs_unmark, dfs_marked_real_bases_queue_p, t);
+
+  if (offset == error_mark_node)
+    {
+      error ("every virtual function must have a unique final overrider");
+      cp_error ("  found two (or more) `%T' class subobjects in `%T'", 
+		context, t);
+      cp_error ("  with virtual `%D' from virtual base class", fndecl);
+      offset = integer_zero_node;
+    }
+  else
+    offset = TREE_VALUE (list);
+
+  my_friendly_assert (offset != NULL_TREE, 999);
+  my_friendly_assert (TREE_CODE (offset) == INTEGER_CST, 999);
+
   return offset;
 }
 
@@ -2473,9 +2531,6 @@ dfs_modify_vtables (binfo, data)
       && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
     {
       tree list = (tree) data;
-
-      if (TREE_VIA_VIRTUAL (binfo))
-	binfo = BINFO_FOR_VBASE (BINFO_TYPE (binfo), TREE_PURPOSE (list));
       modify_one_vtable (binfo, TREE_PURPOSE (list), TREE_VALUE (list)); 
     }
 
@@ -2499,13 +2554,23 @@ modify_all_vtables (t, fndecl)
 
 /* Fixup all the delta entries in this one vtable that need updating.  */
 
-static void
-fixup_vtable_deltas1 (binfo, t)
-     tree binfo, t;
+static tree
+dfs_fixup_vtable_deltas (binfo, data)
+     tree binfo;
+     void *data;
 {
   tree virtuals;
   unsigned HOST_WIDE_INT n;
-  
+  tree t = (tree) data;
+
+  while (BINFO_PRIMARY_MARKED_P (binfo))
+    {
+      binfo = BINFO_INHERITANCE_CHAIN (binfo);
+      /* If BINFO is virtual then we'll handle this base later.  */
+      if (TREE_VIA_VIRTUAL (binfo))
+	return NULL_TREE;
+    }
+
   virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), &n);
 
   while (virtuals)
@@ -2559,33 +2624,8 @@ fixup_vtable_deltas1 (binfo, t)
       ++n;
       virtuals = TREE_CHAIN (virtuals);
     }
-}
 
-/* Fixup all the delta entries in all the direct vtables that need updating.
-   This happens when we have non-overridden virtual functions from a
-   virtual base class, that are at a different offset, in the new
-   hierarchy, because the layout of the virtual bases has changed.  */
-
-static void
-fixup_vtable_deltas (binfo, init_self, t)
-     tree binfo;
-     int init_self;
-     tree t;
-{
-  tree binfos = BINFO_BASETYPES (binfo);
-  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-  for (i = 0; i < n_baselinks; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      int is_not_base_vtable
-	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
-      if (! TREE_VIA_VIRTUAL (base_binfo))
-	fixup_vtable_deltas (base_binfo, is_not_base_vtable, t);
-    }
-  /* Should we use something besides CLASSTYPE_VFIELDS? */
-  if (init_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
-    fixup_vtable_deltas1 (binfo, t);
+  return NULL_TREE;
 }
 
 /* Here, we already know that they match in every respect.
@@ -2622,7 +2662,25 @@ override_one_vtable (binfo, old, t)
 {
   tree virtuals;
   tree old_virtuals;
+  tree orig_binfo;
+  tree orig_virtuals;
   enum { REUSE_NEW, REUSE_OLD, UNDECIDED, NEITHER } choose = UNDECIDED;
+
+  /* Either or both of BINFO or OLD might be primary base classes
+     because merge_overrides is called with a vbase from the class we
+     are definining and the corresponding vbase from one of its direct
+     bases.  */
+  orig_binfo = binfo;
+  while (BINFO_PRIMARY_MARKED_P (binfo))
+    {
+      binfo = BINFO_INHERITANCE_CHAIN (binfo);
+      /* If BINFO is virtual, then we'll handle this virtual base when
+	 later.  */
+      if (TREE_VIA_VIRTUAL (binfo))
+	return;
+    }
+  while (BINFO_PRIMARY_MARKED_P (old))
+    old = BINFO_INHERITANCE_CHAIN (old);
 
   /* If we have already committed to modifying it, then don't try and
      reuse another vtable.  */
@@ -2631,8 +2689,9 @@ override_one_vtable (binfo, old, t)
 
   virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), NULL);
   old_virtuals = skip_rtti_stuff (old, BINFO_TYPE (binfo), NULL);
+  orig_virtuals = skip_rtti_stuff (orig_binfo, BINFO_TYPE (binfo), NULL);
 
-  while (virtuals)
+  while (orig_virtuals)
     {
       tree fndecl = TREE_VALUE (virtuals);
       tree old_fndecl = TREE_VALUE (old_virtuals);
@@ -2705,6 +2764,7 @@ override_one_vtable (binfo, old, t)
 	}
       virtuals = TREE_CHAIN (virtuals);
       old_virtuals = TREE_CHAIN (old_virtuals);
+      orig_virtuals = TREE_CHAIN (orig_virtuals);
     }
 
   /* Let's reuse the old vtable.  */
@@ -2739,8 +2799,8 @@ merge_overrides (binfo, old, do_self, t)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       tree old_base_binfo = TREE_VEC_ELT (old_binfos, i);
-      int is_not_base_vtable
-	= i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
+      int is_not_base_vtable 
+	= !BINFO_PRIMARY_MARKED_P (base_binfo);
       if (! TREE_VIA_VIRTUAL (base_binfo))
 	merge_overrides (base_binfo, old_base_binfo, is_not_base_vtable, t);
     }
@@ -4563,9 +4623,15 @@ finish_struct_1 (t)
 	    vbases = CLASSTYPE_VBASECLASSES (basetype);
 	    while (vbases)
 	      {
-		merge_overrides (binfo_member (BINFO_TYPE (vbases),
-					       CLASSTYPE_VBASECLASSES (t)),
-				 vbases, 1, t);
+		tree vbase;
+		tree basetype_vbase;
+
+		vbase 
+		  = find_vbase_instance (BINFO_TYPE (vbases), t);
+		basetype_vbase 
+		  = find_vbase_instance (BINFO_TYPE (vbases), basetype);
+
+		merge_overrides (vbase, basetype_vbase, 1, t);
 		vbases = TREE_CHAIN (vbases);
 	      }
 	  }
@@ -4613,11 +4679,14 @@ finish_struct_1 (t)
       vbases = CLASSTYPE_VBASECLASSES (t);
       while (vbases)
 	{
+	  tree vbase;
+
 	  /* We might be able to shorten the amount of work we do by
 	     only doing this for vtables that come from virtual bases
 	     that have differing offsets, but don't want to miss any
 	     entries.  */
-	  fixup_vtable_deltas (vbases, 1, t);
+	  vbase = find_vbase_instance (BINFO_TYPE (vbases), t);
+	  dfs_walk (vbase, dfs_fixup_vtable_deltas, dfs_skip_vbases, t);
 	  vbases = TREE_CHAIN (vbases);
 	}
     }
@@ -6015,10 +6084,11 @@ dump_class_hierarchy (binfo, indent)
 {
   int i;
 
-  fprintf (stderr, "%*s0x%x (%s) %d\n", indent, "",
+  fprintf (stderr, "%*s0x%x (%s) %d %s\n", indent, "",
 	   (unsigned int) binfo,
 	   type_as_string (binfo, TS_PLAIN),
-	   TREE_INT_CST_LOW (BINFO_OFFSET (binfo)));
+	   TREE_INT_CST_LOW (BINFO_OFFSET (binfo)),
+	   BINFO_PRIMARY_MARKED_P (binfo) ? "primary" : "");
 
   for (i = 0; i < BINFO_N_BASETYPES (binfo); ++i)
     dump_class_hierarchy (BINFO_BASETYPE (binfo, i), indent + 2);
