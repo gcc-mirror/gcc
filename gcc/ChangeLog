@@ -1,3 +1,11 @@
+2004-03-23  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (tree_expr_nonnegative_p): A&B is nonnegative when
+	A is nonnegative or B is nonnegative.  Similarly A|B is nonnegative
+	when both A and B are nonnegative.
+	(tree_expr_nonzero_p): A|B is nonzero when A is nonzero or B is
+	nonzero.
+
 2004-03-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c (fold): Remove cases for INTEGER_CST, REAL_CST,
