@@ -4340,13 +4340,16 @@ expand_expr (exp, target, tmode, modifier)
 	  }
 
 	/* Fold an expression like: "foo"[2].
-	   This is not done in fold so it won't happen inside &.  */
+	   This is not done in fold so it won't happen inside &.
+	   Don't fold if this is for wide characters since it's too
+	   difficult to do correctly and this is a very rare case.  */
 
 	if (TREE_CODE (array) == STRING_CST
 	    && TREE_CODE (index) == INTEGER_CST
 	    && !TREE_INT_CST_HIGH (index)
 	    && (i = TREE_INT_CST_LOW (index)) < TREE_STRING_LENGTH (array)
-	    && GET_MODE_CLASS (mode) == MODE_INT)
+	    && GET_MODE_CLASS (mode) == MODE_INT
+	    && GET_MODE_SIZE (mode) == 1)
 	  return GEN_INT (TREE_STRING_POINTER (array)[i]);
 
 	/* If this is a constant index into a constant array,
