@@ -256,16 +256,16 @@ extern UWtype __udiv_w_sdiv (UWtype *, UWtype, UWtype, UWtype);
 extern word_type __cmpdi2 (DWtype, DWtype);
 extern word_type __ucmpdi2 (DWtype, DWtype);
 
-extern SItype __absvsi2 (SItype);
-extern DItype __absvdi2 (DItype);
-extern SItype __addvsi3 (SItype, SItype);
-extern DItype __addvdi3 (DItype, DItype);
-extern SItype __subvsi3 (SItype, SItype);
-extern DItype __subvdi3 (DItype, DItype);
-extern SItype __mulvsi3 (SItype, SItype);
-extern DItype __mulvdi3 (DItype, DItype);
-extern SItype __negvsi2 (SItype);
-extern DItype __negvdi2 (DItype);
+extern Wtype __absvsi2 (Wtype);
+extern DWtype __absvdi2 (DWtype);
+extern Wtype __addvsi3 (Wtype, Wtype);
+extern DWtype __addvdi3 (DWtype, DWtype);
+extern Wtype __subvsi3 (Wtype, Wtype);
+extern DWtype __subvdi3 (DWtype, DWtype);
+extern Wtype __mulvsi3 (Wtype, Wtype);
+extern DWtype __mulvdi3 (DWtype, DWtype);
+extern Wtype __negvsi2 (Wtype);
+extern DWtype __negvdi2 (DWtype);
 
 #if BITS_PER_UNIT == 8
 extern DWtype __fixdfdi (DFtype);

@@ -1,3 +1,10 @@
+2000-12-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* libgcc2.h: Use Wtype for SItype and DWtype for DItype in prototypes.
+	* libgcc2.c (__absvsi2): Use Wtype and DWtype.
+	(__absvdi2, __addvsi3, __addvdi3, __subvsi3): Likewise.
+	(__subvdi3, __mulvsi3, __mulvdi3, __negvsi2, __negvdi2): Likewise.
+
 2000-12-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.h (INITIALIZE_TRAMPOLINE): Enclose the block

@@ -66,10 +66,10 @@ __negdi2 (DWtype u)
 #endif
 
 #ifdef L_addvsi3
-SItype
-__addvsi3 (SItype a, SItype b)
+Wtype
+__addvsi3 (Wtype a, Wtype b)
 {
-  SItype w;
+  Wtype w;
 
   w = a + b;
 
@@ -81,10 +81,10 @@ __addvsi3 (SItype a, SItype b)
 #endif
 
 #ifdef L_addvdi3
-DItype
-__addvdi3 (DItype a, DItype b)
+DWtype
+__addvdi3 (DWtype a, DWtype b)
 {
-  DItype w;
+  DWtype w;
 
   w = a + b;
 
@@ -96,13 +96,13 @@ __addvdi3 (DItype a, DItype b)
 #endif
 
 #ifdef L_subvsi3
-SItype
-__subvsi3 (SItype a, SItype b)
+Wtype
+__subvsi3 (Wtype a, Wtype b)
 {
 #ifdef L_addvsi3
   return __addvsi3 (a, (-b));
 #else
-  DItype w;
+  DWtype w;
 
   w = a - b;
 
@@ -115,13 +115,13 @@ __subvsi3 (SItype a, SItype b)
 #endif
 
 #ifdef L_subvdi3
-DItype
-__subvdi3 (DItype a, DItype b)
+DWtype
+__subvdi3 (DWtype a, DWtype b)
 {
 #ifdef L_addvdi3
   return (a, (-b));
 #else
-  DItype w;
+  DWtype w;
 
   w = a - b;
 
@@ -134,10 +134,10 @@ __subvdi3 (DItype a, DItype b)
 #endif
 
 #ifdef L_mulvsi3
-SItype
-__mulvsi3 (SItype a, SItype b)
+Wtype
+__mulvsi3 (Wtype a, Wtype b)
 {
-  DItype w;
+  DWtype w;
 
   w = a * b;
 
@@ -149,10 +149,10 @@ __mulvsi3 (SItype a, SItype b)
 #endif
 
 #ifdef L_negvsi2
-SItype
-__negvsi2 (SItype a)
+Wtype
+__negvsi2 (Wtype a)
 {
-   SItype w;
+   Wtype w;
 
    w  = -a;
 
@@ -164,10 +164,10 @@ __negvsi2 (SItype a)
 #endif
 
 #ifdef L_negvdi2
-DItype
-__negvdi2 (DItype a)
+DWtype
+__negvdi2 (DWtype a)
 {
-   DItype w;
+   DWtype w;
 
    w  = -a;
 
@@ -179,10 +179,10 @@ __negvdi2 (DItype a)
 #endif
 
 #ifdef L_absvsi2
-SItype
-__absvsi2 (SItype a)
+Wtype
+__absvsi2 (Wtype a)
 {
-   SItype w = a;
+   Wtype w = a;
 
    if (a < 0)
 #ifdef L_negvsi2
@@ -199,10 +199,10 @@ __absvsi2 (SItype a)
 #endif
 
 #ifdef L_absvdi2
-DItype
-__absvdi2 (DItype a)
+DWtype
+__absvdi2 (DWtype a)
 {
-   DItype w = a;
+   DWtype w = a;
 
    if (a < 0)
 #ifdef L_negvsi2
@@ -219,10 +219,10 @@ __absvdi2 (DItype a)
 #endif
 
 #ifdef L_mulvdi3
-DItype
-__mulvdi3 (DItype u, DItype v)
+DWtype
+__mulvdi3 (DWtype u, DWtype v)
 {
-   DItype w;
+   DWtype w;
 
   w = u * v;
 
