@@ -2236,12 +2236,7 @@ cp_valid_lang_attribute (attr_name, attr_args, decl, type)
     }
   if (is_attribute_p ("com_interface", attr_name))
     {
-      if (! flag_vtable_thunks)
-	{
-	  error ("`com_interface' only supported with -fvtable-thunks");
-	  return 0;
-	}
-
+      static int warned;
       if (attr_args != NULL_TREE
 	  || decl != NULL_TREE
 	  || ! CLASS_TYPE_P (type)
@@ -2251,6 +2246,9 @@ cp_valid_lang_attribute (attr_name, attr_args, decl, type)
 	  return 0;
 	}
 
+      if (! warned++)
+	warning ("\
+`com_interface' is obsolete; g++ vtables are now COM-compatible by default");
       return 1;
     }
   else if (is_attribute_p ("init_priority", attr_name))

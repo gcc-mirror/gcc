@@ -1690,18 +1690,6 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
       TYPE_OVERLOADS_ARRAY_REF (t) |= TYPE_OVERLOADS_ARRAY_REF (basetype);
       TYPE_OVERLOADS_ARROW (t) |= TYPE_OVERLOADS_ARROW (basetype);
       TYPE_POLYMORPHIC_P (t) |= TYPE_POLYMORPHIC_P (basetype);
-
-      /* Derived classes can implicitly become COMified if their bases
-	 are COM.  */
-      if (CLASSTYPE_COM_INTERFACE (basetype))
-	CLASSTYPE_COM_INTERFACE (t) = 1;
-      else if (i == 0 && CLASSTYPE_COM_INTERFACE (t))
-	{
-	  cp_error 
-	    ("COM interface type `%T' with non-COM leftmost base class `%T'",
-	     t, basetype);
-	  CLASSTYPE_COM_INTERFACE (t) = 0;
-	}
     }
 }
 
@@ -7992,10 +7980,6 @@ build_rtti_vtbl_entries (binfo, vid)
 
   basetype = BINFO_TYPE (binfo);
   t = BINFO_TYPE (vid->rtti_binfo);
-
-  /* For a COM object there is no RTTI entry.  */
-  if (CLASSTYPE_COM_INTERFACE (basetype))
-    return;
 
   /* To find the complete object, we will first convert to our most
      primary base, and then add the offset in the vtbl to that value.  */

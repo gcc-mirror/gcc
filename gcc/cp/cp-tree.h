@@ -132,8 +132,6 @@ Boston, MA 02111-1307, USA.  */
      use a virtual thunk, as opposed to an ordinary thunk.
 
      The BV_FN is the declaration for the virtual function itself.
-     When CLASSTYPE_COM_INTERFACE_P does not hold, the first entry
-     does not have a BV_FN; it is just an offset.
 
      The BV_OVERRIDING_BASE is the binfo for the final overrider for
      this function.  (That binfo's BINFO_TYPE will always be the same
@@ -1577,10 +1575,6 @@ struct lang_type
    virtual function table pointer.  */
 #define CLASSTYPE_NEARLY_EMPTY_P(NODE) \
   (TYPE_LANG_SPECIFIC (NODE)->nearly_empty_p)
-
-/* Nonzero means that this type is meant for communication via COM.  */
-#define CLASSTYPE_COM_INTERFACE(NODE) \
-  (TYPE_LANG_SPECIFIC(NODE)->com_interface)
 
 /* A list of class types of which this type is a friend.  The
    TREE_VALUE is normally a TYPE, but will be a TEMPLATE_DECL in the
