@@ -39,12 +39,11 @@ typedef struct
    (AP).__va_num = __builtin_args_info (0))
 #endif /* _STDARG_H */
 
-#define __va_rounded_size(TYPE)  \
-  (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
-
+/* round to alignment of `type' but keep a least integer alignment */
 #define __va_round(AP,TYPE)					\
   ((AP).__va_ap = ((AP).__va_ap + __alignof__ (TYPE) - 1 ) &	\
-   ~(__alignof__ (TYPE) - 1))
+   ~(__alignof__ (TYPE) - 1),					\
+  ((AP).__va_ap = ((AP).__va_ap + sizeof (int) - 1) & ~(sizeof (int) - 1)))
 
 #define va_arg(AP, TYPE) \
   ((AP).__va_num < 2 && __builtin_classify_type (* (TYPE *)0) < 12	\
