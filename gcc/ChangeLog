@@ -1,4 +1,9 @@
+Fri Oct 16 11:49:01 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rtl.h (sets_cc0_p): Revert Oct 14 ATTRIBUTE_NORETURN change.
+
 Fri Oct 16 07:08:46 1998  Bruce Korb <korb@datadesign.com>
+	
 	* fixinc/* Moved in from ../contrib directory in preparation
 	for integrating it into the normal build process.  In particular,
 	fixinc/Makefile.in must be config-ed into the build directory
