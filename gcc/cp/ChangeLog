@@ -1,5 +1,20 @@
 2004-05-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/15044
+	* parser.c (cp_parser_class_head): Robustify.
+
+	PR c++/15317
+	* parser.c (cp_parser_decl_specifier_seq): Correct error in
+	comment.
+	(cp_parser_constructor_declarator_p): Treat attributes
+	as decl-specifiers.
+
+	PR c++/15329
+	* typeck.c (build_unary_op): Do not attempt to resolve casts to
+	base classes in templates.
+
+2004-05-23  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/15165
 	* pt.c (instantiate_template): Robustify.
 
