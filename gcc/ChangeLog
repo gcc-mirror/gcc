@@ -1,3 +1,16 @@
+Mon Dec 17 17:57:05 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (cfgcleanup.o): Add cselib.h dependancy.
+	* basic-block.h (CLEANUP_THREADING): New constant.
+	* cfgcleanup.c: Include cselib.h
+	(thread_jump, mark_effect): New functions.
+	(try_forward_edges): Do jump threading when asked for.
+	* jump.c (mark_modified_reg, save_regs, num_same_regs, modified_regs,
+	modified_mem, thread_jumps, rtx_equal_for-thread_p): Kill.
+	* rtl.h (thread_jumps, rtx_equal_for_thread_p): Kill.
+	* toplev.c (rest_of_compilation): Do now call thread_jumps; use
+	CLEANUP_THREAD instead.
+
 2001-12-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sparc/linux.h (STARTFILE_SPEC): Fix typo in last change.
