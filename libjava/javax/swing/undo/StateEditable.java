@@ -1,4 +1,4 @@
-/* StateEditable.java --
+/* StateEditable.java -- Interface for collaborating with StateEdit.
    Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,29 +37,76 @@ exception statement from your version. */
 
 package javax.swing.undo;
 
-// Imports
 import java.util.Hashtable;
 
+
 /**
- * StateEditable public interface
- * @author Andrew Selkirk
+ * The interface for objects whose state can be undone or redone by a
+ * {@link StateEdit} action.
+ *
+ * <p>The following example shows how to write a class that implements
+ * this interface.
+ *
+ * <pre> class Foo
+ *   implements StateEditable
+ * {
+ *   private String name;
+ *
+ *   public void setName(String n) { name = n; }
+ *
+ *   public void restoreState(Hashtable h)
+ *   {
+ *     if (h.containsKey("name"))
+ *       setName((String) h.get("name"));
+ *   }
+ *
+ *   public void storeState(Hashtable s)
+ *   {
+ *     s.put("name", name);
+ *   }
+ * }</pre>
+ *
+ * @see StateEdit
+ *
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
 public interface StateEditable
 {
   /**
-   * Restore State
-   * @param state State
+   * The ID of the Java source file in Sun&#x2019;s Revision Control
+   * System (RCS).  This certainly should not be part of the API
+   * specification. But in order to be API-compatible with
+   * Sun&#x2019;s reference implementation, GNU Classpath also has to
+   * provide this field. However, we do not try to match its value.
+   */
+  static final String RCSID = "";
+
+
+  /**
+   * Performs an edit action, taking any editable state information
+   * from the specified hash table.
+   *
+   * <p><b>Note to implementors of this interface:</b> To increase
+   * efficiency, the <code>StateEdit</code> class {@linkplan
+   * StateEdit#removeRedundantState() removes redundant state
+   * information}. Therefore, implementations of this interface must be
+   * prepared for the case where certain keys were stored into the
+   * table by {@link #storeState}, but are not present anymore
+   * when the <code>restoreState</code> method gets called.
+   *
+   * @param state a hash table containing the relevant state
+   * information.
    */
   void restoreState(Hashtable state);
 
-  /**
-   * Store State
-   * @param state State
-   */
-  void storeState(Hashtable state);
 
   /**
-   * For some reason, Sun made the RCS IDs visible.
+   * Stores any editable state information into the specified hash
+   * table.
+   *
+   * @param state a hash table for storing relevant state
+   * information.
    */
-  String RCSID = "We aren't compatible";
-} // StateEditable
+  void storeState(Hashtable state);
+}
