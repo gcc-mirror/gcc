@@ -122,6 +122,9 @@
 // Define if S_IFREG is available in <sys/stat.h>.
 #undef HAVE_S_IFREG
 
+// Define if writev is available in <sys/uio.h>.
+#undef HAVE_WRITEV
+
 // Define if LC_MESSAGES is available in <locale.h>.
 #undef HAVE_LC_MESSAGES
 
@@ -749,9 +752,6 @@
 /* Define if you have the <nan.h> header file.  */
 #undef HAVE_NAN_H
 
-/* Define if you have the <stdlib.h> header file.  */
-#undef HAVE_STDLIB_H
-
 /* Define if you have the <sys/filio.h> header file.  */
 #undef HAVE_SYS_FILIO_H
 
@@ -775,6 +775,9 @@
 
 /* Define if you have the <sys/types.h> header file.  */
 #undef HAVE_SYS_TYPES_H
+
+/* Define if you have the <sys/uio.h> header file.  */
+#undef HAVE_SYS_UIO_H
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H

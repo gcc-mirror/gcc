@@ -1,3 +1,27 @@
+2003-07-14  Paolo Carlini  <pcarlini@unitus.it>
+	    Nathan C. Myers  <ncm-nospam@cantrip.org>
+
+	PR libstdc++/11378
+	* include/std/std_fstream.h (xsputn): Declare only.
+	* include/bits/fstream.tcc (xsputn): Define, optimize for the
+	always_noconv() case: when __n is sufficiently large flush 
+	the buffer and issue a direct write, if possible combining the
+	two with writev in __basic_file<>::xsputn_2.
+	* config/io/basic_file_stdio.h (__basic_file<>::xsputn_2):
+	New, declare.
+	* config/io/basic_file_stdio.cc (__basic_file<>::xsputn_2):
+	Define.
+	* acinclude.m4 (GLIBCXX_CHECK_WRITE): New macro, checking for
+	the availability of writev in <sys/uio.h>.
+	* configure.in: Call here.
+	* acconfig.h: Add undef for the corresponding symbol.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* testsuite/27_io/basic_filebuf/setbuf/char/3.cc: Tweak.
+
+	* include/std/std_fstream.h (sync): Constify a variable.
+
 2003-07-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/27_io/ios_base/cons/assign_neg.cc: Fix line numbers.

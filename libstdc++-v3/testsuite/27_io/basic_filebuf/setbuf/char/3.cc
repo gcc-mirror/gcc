@@ -34,7 +34,9 @@ void test02()
   filebuf fbuf01;
   fbuf01.open("tmp", ios_base::out);
 
-  fbuf01.pubsetbuf(buf, strlitsize);
+  // NB: +2 otherwise sputn is optimized to a direct write,
+  // bypassing the buffer.
+  fbuf01.pubsetbuf(buf, strlitsize + 2);
   fbuf01.sputn(strlit, strlitsize);
   VERIFY( std::strncmp(strlit, buf, strlitsize) == 0 );
 }

@@ -438,6 +438,54 @@ namespace std
       return __elen && __elen == __plen;
     }
 
+   template<typename _CharT, typename _Traits>
+     streamsize
+     basic_filebuf<_CharT, _Traits>::
+     xsputn(const _CharT* __s, streamsize __n)
+     { 
+       streamsize __ret = 0;
+      
+       // Optimization in the always_noconv() case, to be generalized in the
+       // future: when __n is sufficiently large we write directly instead of
+       // using the buffer.
+       const bool __testout = this->_M_mode & ios_base::out;
+       if (__testout && !_M_reading
+	   && __check_facet(_M_codecvt).always_noconv())
+	{
+	  // Measurement would reveal the best choice.
+	  const streamsize __chunk = 1ul << 10;
+	  streamsize __bufavail = this->epptr() - this->pptr();
+
+	  // Don't mistake 'uncommitted' mode buffered with unbuffered.
+	  if (!_M_writing && this->_M_buf_size > 1)
+	    __bufavail = this->_M_buf_size - 1;
+
+	  const streamsize __limit = std::min(__chunk, __bufavail);
+	  if (__n >= __limit)
+	    {
+	      const streamsize __buffill = this->pptr() - this->pbase();
+	      const char* __buf = reinterpret_cast<const char*>(this->pbase());
+	      __ret = _M_file.xsputn_2(__buf, __buffill,
+				       reinterpret_cast<const char*>(__s), __n);
+	      if (__ret == __buffill + __n)
+		{
+		  _M_set_buffer(0);
+		  _M_writing = true;
+		}
+	      if (__ret > __buffill)
+		__ret -= __buffill;
+	      else
+		__ret = 0;
+	    }
+	  else
+	    __ret = __streambuf_type::xsputn(__s, __n);
+	}
+       else
+	 __ret = __streambuf_type::xsputn(__s, __n);
+      
+       return __ret;
+    }
+
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::__streambuf_type* 
     basic_filebuf<_CharT, _Traits>::
