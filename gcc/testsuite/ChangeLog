@@ -6,8 +6,8 @@
 	with the Foundation framework.
 	* objc/execute/next_mapping.h: Provide a local NSConstantString
 	@interface and @implementation.
-	(objc_string_init): A constructor function, used to initialize
-	the NSConstantString meta-class object.
+	(objc_constant_string_init): A constructor function, used to
+	initialize the NSConstantString meta-class object.
 	* objc/execute/string1.m: Include "next_mapping.h" instead of
 	<Foundation/NSString.h>.
 	* objc/execute/string2.m: Likewise.
