@@ -1003,7 +1003,14 @@ _Jv_JNIMethod::ncode ()
   memcpy (&jni_arg_types[offset], &closure->arg_types[0],
 	  arg_count * sizeof (ffi_type *));
 
-  if (ffi_prep_cif (&jni_cif, FFI_DEFAULT_ABI,
+  // NOTE: This must agree with the JNICALL definition in jni.h
+#ifdef WIN32
+#define FFI_JNI_ABI FFI_STDCALL
+#else
+#define FFI_JNI_ABI FFI_DEFAULT_ABI
+#endif
+
+  if (ffi_prep_cif (&jni_cif, FFI_JNI_ABI,
 		    extra_args + arg_count, rtype,
 		    jni_arg_types) != FFI_OK)
     throw_internal_error ("ffi_prep_cif failed for JNI function");
