@@ -136,6 +136,7 @@ extern int    avr_jump_mode          PARAMS ((rtx x, rtx insn));
 extern int    byte_immediate_operand PARAMS ((register rtx op,
 					     enum machine_mode mode));
 extern int    test_hard_reg_class    PARAMS ((enum reg_class class, rtx x));
+extern int    jump_over_one_insn_p   PARAMS ((rtx insn, rtx dest));
 
 #endif /* RTX_CODE */
 
