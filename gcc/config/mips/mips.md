@@ -2765,11 +2765,17 @@ move\\t%0,%z4\\n\\
 ;; operand zero, because then the address in the move instruction will be
 ;; clobbered.  We mark the scratch register as early clobbered to prevent this.
 
+;; We need the ?X in alternative 1 so that it will be choosen only if the
+;; destination is a floating point register.  Otherwise, alternative 1 can
+;; have lower cost than alternative 0 (because there is one less loser), and
+;; can be choosen when it won't work (because integral reloads into FP
+;; registers are not supported).
+
 (define_insn "fix_truncdfsi2"
   [(set (match_operand:SI 0 "general_operand" "=d,*f,R,o")
 	(fix:SI (match_operand:DF 1 "register_operand" "f,*f,f,f")))
    (clobber (match_scratch:SI 2 "=d,*d,&d,&d"))
-   (clobber (match_scratch:DF 3 "=f,*X,f,f"))]
+   (clobber (match_scratch:DF 3 "=f,?*X,f,f"))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "*
 {
@@ -2794,7 +2800,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "general_operand" "=d,*f,R,o")
 	(fix:SI (match_operand:SF 1 "register_operand" "f,*f,f,f")))
    (clobber (match_scratch:SI 2 "=d,*d,&d,&d"))
-   (clobber (match_scratch:SF 3 "=f,*X,f,f"))]
+   (clobber (match_scratch:SF 3 "=f,?*X,f,f"))]
   "TARGET_HARD_FLOAT"
   "*
 {
@@ -2827,7 +2833,7 @@ move\\t%0,%z4\\n\\
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "general_operand" "=d,*f,R,o")
 	(fix:DI (match_operand:DF 1 "register_operand" "f,*f,f,f")))
-   (clobber (match_scratch:DF 2 "=f,*X,f,f"))]
+   (clobber (match_scratch:DF 2 "=f,?*X,f,f"))]
   "TARGET_HARD_FLOAT && TARGET_64BIT && TARGET_DOUBLE_FLOAT"
   "*
 {
@@ -2854,7 +2860,7 @@ move\\t%0,%z4\\n\\
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "general_operand" "=d,*f,R,o")
 	(fix:DI (match_operand:SF 1 "register_operand" "f,*f,f,f")))
-   (clobber (match_scratch:DF 2 "=f,*X,f,f"))]
+   (clobber (match_scratch:DF 2 "=f,?*X,f,f"))]
   "TARGET_HARD_FLOAT && TARGET_64BIT && TARGET_DOUBLE_FLOAT"
   "*
 {
