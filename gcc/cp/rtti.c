@@ -72,8 +72,9 @@ void
 init_rtti_processing ()
 {
   push_namespace (std_identifier);
-  type_info_type_node = xref_tag
-    (class_type_node, get_identifier ("type_info"), 1);
+  type_info_type_node 
+    = xref_tag (class_type, get_identifier ("type_info"),
+		/*attributes=*/NULL_TREE, 1);
   pop_namespace ();
   tinfo_decl_type = 
     build_qualified_type (type_info_type_node, TYPE_QUAL_CONST);
@@ -573,8 +574,9 @@ build_dynamic_cast_1 (type, expr)
 	      const char *name;
 	      
 	      push_nested_namespace (ns);
-	      tinfo_ptr = xref_tag (class_type_node,
+	      tinfo_ptr = xref_tag (class_type,
 				    get_identifier ("__class_type_info"),
+				    /*attributes=*/NULL_TREE,
 				    1);
 	      
 	      tinfo_ptr = build_pointer_type
@@ -1166,7 +1168,8 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
     sprintf (pseudo_name + strlen (pseudo_name), "%d", ident);
   
   /* Get the vtable decl. */
-  real_type = xref_tag (class_type_node, get_identifier (real_name), 1);
+  real_type = xref_tag (class_type, get_identifier (real_name), 
+			/*attributes=*/NULL_TREE, 1);
   if (! TYPE_SIZE (real_type))
     {
       /* We never saw a definition of this type, so we need to tell the
@@ -1370,8 +1373,10 @@ emit_support_tinfos ()
   tree bltn_type, dtor;
   
   push_nested_namespace (abi_node);
-  bltn_type = xref_tag (class_type_node,
-                        get_identifier ("__fundamental_type_info"), 1);
+  bltn_type = xref_tag (class_type,
+			get_identifier ("__fundamental_type_info"), 
+			/*attributes=*/NULL_TREE,
+			1);
   pop_nested_namespace (abi_node);
   if (!COMPLETE_TYPE_P (bltn_type))
     return;
