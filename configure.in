@@ -1298,8 +1298,8 @@ esac
 if test "x${CHILL_FOR_TARGET+set}" = xset; then
   :
 elif test -d ${topsrcdir}/gcc &&
-   echo ",${enable_languages-${LANGUAGES-CHILL}}," |
-   grep ,CHILL, > /dev/null ; then
+   echo ",${enable_languages-`echo ${LANGUAGES-CHILL} | tr ' ' ','`}," |
+   grep ',CHILL,' > /dev/null ; then
   CHILL_FOR_TARGET='$$r/gcc/xgcc -L$$r/gcc/ch/runtime/'
 elif test "$host" = "$target"; then
   CHILL_FOR_TARGET='$(CC)'
@@ -1314,7 +1314,7 @@ esac
 if test "x${CXX_FOR_TARGET+set}" = xset; then
   :
 elif test -d ${topsrcdir}/gcc &&
-   echo ",${enable_languages-${LANGUAGES-c++}}," |
+   echo ",${enable_languages-`echo ${LANGUAGES-c++} | tr ' ' ','`}," |
    grep ',c[+][+],' > /dev/null ; then
   CXX_FOR_TARGET='$$r/gcc/g++ -nostdinc++ '$libstdcxx_flags
 elif test "$host" = "$target"; then
