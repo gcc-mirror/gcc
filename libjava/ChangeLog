@@ -1,5 +1,12 @@
 2004-05-30  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/beans/BeanInfoEmbryo.java,
+	java/awt/im/InputContext.java,
+	javax/swing/tree/DefaultMutableTreeNode.java:
+	Rename enum to e because enum is a keyword in Java 1.5.
+
+2004-05-30  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/math/MPN.java,
 	java/awt/geom/Arc2D.java:
 	Fixed javadocs all over.
