@@ -10,6 +10,7 @@ struct X
 };
 
 typedef X* pX;
+typedef __SIZE_TYPE__ size_t;
 
-int yoff = int(&(pX(0)->y)); /* { dg-warning "invalid access" "" } */
+size_t yoff = size_t(&(pX(0)->y)); /* { dg-warning "invalid access" "" } */
 /* { dg-warning "macro was used incorrectly" "" { target *-*-* } 14 } */

@@ -11,5 +11,6 @@ struct X
 };
 
 typedef X* pX;
+typedef __SIZE_TYPE__ size_t;
 
-int yoff = int(&(pX(0)->y));
+size_t yoff = size_t(&(pX(0)->y));
