@@ -319,19 +319,11 @@ case $machine in
 		tmake_file="${tmake_file} t-openbsd-thread"
 	fi
 	;;
-*-*-netbsdelf*)
-	tmake_file="t-libc-ok t-netbsd"
-	xm_defines=POSIX
-	gas=yes
-	gnu_ld=yes
-	;;
 *-*-netbsd*)
-	# Traditional a.out systems need to use collect2
 	tmake_file="t-libc-ok t-netbsd"
 	xm_defines=POSIX
 	gas=yes
 	gnu_ld=yes
-	use_collect2=yes
 	;;
 *-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
 	# This is the place-holder for the generic a.out configuration
@@ -640,6 +632,7 @@ arm*-*-freebsd*|strongarm*-*-freebsd*)
 arm*-*-netbsd*)
 	tm_file="arm/aout.h arm/arm.h netbsd.h netbsd-aout.h arm/netbsd.h"
 	tmake_file="t-netbsd arm/t-netbsd"
+	use_collect2=yes
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/linux-gas.h arm/linux-elf.h"
@@ -1157,6 +1150,7 @@ i[34567]86-*-netbsdelf*)
 i[34567]86-*-netbsd*)
 	tm_file=i386/netbsd.h
 	tmake_file=t-netbsd
+	use_collect2=yes
 	;;
 x86_64-*-netbsd*)
 	tm_file="${tm_file} i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
@@ -1942,6 +1936,7 @@ m68k*-*-netbsd*)
 	tm_file=m68k/netbsd.h
 	tmake_file=t-netbsd
 	float_format=m68k
+	use_collect2=yes
 	;;
 m68k*-*-openbsd*)
 	# needed to unconfuse gdb
@@ -2611,6 +2606,7 @@ ns32k-*-netbsd*)
 	tm_file=ns32k/netbsd.h
 	# On NetBSD, the headers are already okay, except for math.h.
 	tmake_file=t-netbsd
+	use_collect2=yes
 	;;
 pdp11-*-bsd)
 	tm_file="${tm_file} pdp11/2bsd.h"
@@ -2921,6 +2917,7 @@ sparc-*-aout*)
 sparc-*-netbsd*)
 	tm_file="${tm_file} sparc/aout.h netbsd.h netbsd-aout.h sparc/netbsd.h"
 	tmake_file=t-netbsd
+	use_collect2=yes
 	;;
 sparc-*-openbsd*)
 	tm_file="sparc/sparc.h ${tm_file}"
@@ -3235,6 +3232,7 @@ vax-*-netbsd*)
 	tm_file="${tm_file} netbsd.h netbsd-aout.h vax/netbsd.h"
 	tmake_file=t-netbsd
 	float_format=vax
+	use_collect2=yes
 	;;
 vax-*-openbsd*)
 	tm_file="vax/vax.h vax/openbsd1.h openbsd.h ${tm_file}"
