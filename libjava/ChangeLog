@@ -1,3 +1,9 @@
+2003-02-18  Raif S. Naffah <raif@fl.net.au>
+
+	* java/math/BigInteger.java (euclidInv): Take result array as an
+	argument.  Updated all callers.
+	(modInverse): Removed unused variables.
+
 2003-02-17  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramSocket.java
