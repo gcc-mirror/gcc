@@ -1,3 +1,10 @@
+2004-04-29  Ben Elliston  <bje@au.ibm.com>
+
+	* configure.ac (--with-as): Abort if user-supplied assembler
+	cannot be executed.
+	(--with-ld): Likewise for the linker.
+	* configure: Regenerate.
+
 2004-04-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* convert.c (convert_to_integer): Ensure `long_integer_type_node'
