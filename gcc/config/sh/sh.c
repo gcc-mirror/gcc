@@ -2106,7 +2106,7 @@ void
 sh_expand_prologue ()
 {
   int live_regs_mask;
-  int d;
+  int d, i;
   extern tree current_function_decl;
   live_regs_mask = calc_live_regs (&d);
 
@@ -2114,10 +2114,15 @@ sh_expand_prologue ()
      and partially on the stack - eg a large structure */
   output_stack_adjust (-current_function_pretend_args_size);
 
+  extra_push = 0;
+
+  /* This is set by SETUP_VARARGS to indicate that this is a varargs
+     routine.  Clear it here so that the next function isn't affected.  */
   if (current_function_anonymous_args)
     {
+      current_function_anonymous_args = 0;
+
       /* Push arg regs as if they'd been provided by caller in stack */
-      int i;
       for (i = 0; i < NPARM_REGS; i++)
 	{
 	  int rn = NPARM_REGS + FIRST_PARM_REG - i - 1;
@@ -2139,18 +2144,19 @@ sh_expand_prologue ()
       add_function (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
     }
 
-
+  /* ??? Hack.  Clear out the table set up by gen_shifty_op since this
+     info does not apply to the next function.  */
+  for (i = 0; i < 32; i++)
+    shiftsyms[i] = 0;
 }
 
 void
 sh_expand_epilogue ()
 {
   int live_regs_mask;
-  int d;
-  int i;
+  int d, i;
 
   live_regs_mask = calc_live_regs (&d);
-
   
   if (frame_pointer_needed)
     {
@@ -2170,13 +2176,6 @@ sh_expand_epilogue ()
     }
 
   output_stack_adjust (extra_push + current_function_pretend_args_size);
-
-  extra_push = 0;
-  current_function_pretend_args_size = 0;
-  current_function_anonymous_args = 0;
-  for (i = 0; i < 32; i++)
-    shiftsyms[i] = 0;
-
 }
 
 /* Define the offset between two registers, one to be eliminated, and
