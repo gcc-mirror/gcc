@@ -5298,8 +5298,8 @@ build_protocol_reference (p)
 						      objc_protocol_template),
 				     NULL_TREE));
 
-  if (IDENTIFIER_GLOBAL_VALUE (ident))
-    decl = IDENTIFIER_GLOBAL_VALUE (ident); /* Set by pushdecl.  */
+  if (identifier_global_value (ident))
+    decl = identifier_global_value (ident); /* Set by pushdecl.  */
   else
     {
       decl = build_decl (VAR_DECL, ident, ptype);

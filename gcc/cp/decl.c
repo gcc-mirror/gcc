@@ -4001,7 +4001,7 @@ pushdecl (tree x)
 		}
 
 	      if (warn_shadow && !err)
-		shadow_warning (SW_PARAM, false,
+		shadow_warning (SW_PARAM,
 				IDENTIFIER_POINTER (name), oldlocal);
 	    }
 
@@ -4019,12 +4019,12 @@ pushdecl (tree x)
 			    IDENTIFIER_POINTER (name));
 	      else if (oldlocal != NULL_TREE
 		       && TREE_CODE (oldlocal) == VAR_DECL)
-		shadow_warning (SW_LOCAL, false,
+		shadow_warning (SW_LOCAL,
 				IDENTIFIER_POINTER (name), oldlocal);
 	      else if (oldglobal != NULL_TREE
 		       && TREE_CODE (oldglobal) == VAR_DECL)
 		/* XXX shadow warnings in outer-more namespaces */
-		shadow_warning (SW_GLOBAL, false,
+		shadow_warning (SW_GLOBAL,
 				IDENTIFIER_POINTER (name), oldglobal);
 	    }
 	}

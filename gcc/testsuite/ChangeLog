@@ -1,3 +1,11 @@
+2003-04-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c-torture/execute/builtin-noret-2.c: New.
+	* gcc.c-torture/execute/builtin-noret-2.x: New.
+	XFAIL builtin-noret-2.c at -O1 and above.
+	* gcc.dg/redecl.c: New.
+	* gcc.dg/Wshadow-1.c: Update error regexps.
+
 2003-04-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/bitfield10.C: New test.

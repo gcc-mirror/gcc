@@ -6000,10 +6000,16 @@ reorder_blocks_1 (insns, current_block, p_block_stack)
 
 	      BLOCK_SUBBLOCKS (block) = 0;
 	      TREE_ASM_WRITTEN (block) = 1;
-	      BLOCK_SUPERCONTEXT (block) = current_block;
-	      BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (current_block);
-	      BLOCK_SUBBLOCKS (current_block) = block;
-	      current_block = block;
+	      /* When there's only one block for the entire function,
+		 current_block == block and we mustn't do this, it
+		 will cause infinite recursion.  */
+	      if (block != current_block)
+		{
+		  BLOCK_SUPERCONTEXT (block) = current_block;
+		  BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (current_block);
+		  BLOCK_SUBBLOCKS (current_block) = block;
+		  current_block = block;
+		}
 	      VARRAY_PUSH_TREE (*p_block_stack, block);
 	    }
 	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)

@@ -1,6 +1,6 @@
 /* Build expressions with type checking for C compiler.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -59,6 +59,7 @@ static int type_lists_compatible_p	PARAMS ((tree, tree));
 static tree decl_constant_value_for_broken_optimization PARAMS ((tree));
 static tree default_function_array_conversion	PARAMS ((tree));
 static tree lookup_field		PARAMS ((tree, tree));
+static void undeclared_variable		PARAMS ((tree));
 static tree convert_arguments		PARAMS ((tree, tree, tree, tree));
 static tree pointer_diff		PARAMS ((tree, tree));
 static tree unary_complex_lvalue	PARAMS ((enum tree_code, tree, int));
@@ -1375,6 +1376,38 @@ build_array_ref (array, index)
   }
 }
 
+/* Issue an error message for a reference to an undeclared variable ID,
+   including a reference to a builtin outside of function-call context.
+   Arrange to suppress further errors for the same identifier.  */
+static void
+undeclared_variable (id)
+     tree id;
+{
+  if (current_function_decl == 0)
+    {
+      error ("`%s' undeclared here (not in a function)",
+	     IDENTIFIER_POINTER (id));
+      IDENTIFIER_SYMBOL_VALUE (id) = error_mark_node;
+    }
+  else
+    {
+      error ("`%s' undeclared (first use in this function)",
+	     IDENTIFIER_POINTER (id));
+
+      if (! undeclared_variable_notice)
+	{
+	  error ("(Each undeclared identifier is reported only once");
+	  error ("for each function it appears in.)");
+	  undeclared_variable_notice = 1;
+	}
+
+      /* Set IDENTIFIER_SYMBOL_VALUE (id) to error_mark_node
+	 at function scope.  This suppresses further warnings
+	 about this undeclared identifier in this function.  */
+      pushdecl_function_level (error_mark_node, id);
+    }
+}
+
 /* Build an external reference to identifier ID.  FUN indicates
    whether this will be used for a function call.  */
 tree
@@ -1386,70 +1419,12 @@ build_external_ref (id, fun)
   tree decl = lookup_name (id);
   tree objc_ivar = lookup_objc_ivar (id);
 
-  if (decl && TREE_DEPRECATED (decl))
-    warn_deprecated_use (decl);
-
-  if (!decl || decl == error_mark_node || C_DECL_ANTICIPATED (decl))
-    {
-      if (objc_ivar)
-	ref = objc_ivar;
-      else if (fun)
-	{
-	  if (!decl || decl == error_mark_node)
-	    /* Ordinary implicit function declaration.  */
-	    ref = implicitly_declare (id);
-	  else
-	    {
-	      /* Implicit declaration of built-in function.  Don't
-		 change the built-in declaration, but don't let this
-		 go by silently, either.  */
-	      implicit_decl_warning (id);
-
-	      /* only issue this warning once */
-	      C_DECL_ANTICIPATED (decl) = 0;
-	      ref = decl;
-	    }
-	}
-      else
-	{
-	  /* Don't complain about something that's already been
-	     complained about.  */
-	  if (decl == error_mark_node)
-	    return error_mark_node;
-
-	  /* Reference to undeclared variable, including reference to
-	     builtin outside of function-call context.  */
-	  if (current_function_decl == 0)
-	    error ("`%s' undeclared here (not in a function)",
-		   IDENTIFIER_POINTER (id));
-	  else
-	    {
-	      error ("`%s' undeclared (first use in this function)",
-		     IDENTIFIER_POINTER (id));
-
-	      if (! undeclared_variable_notice)
-		{
-		  error ("(Each undeclared identifier is reported only once");
-		  error ("for each function it appears in.)");
-		  undeclared_variable_notice = 1;
-		}
-
-	      /* Set IDENTIFIER_LOCAL_VALUE (id) to error_mark_node and
-		 add a function-scope shadow entry which will undo that.
-		 This suppresses further warnings about this undeclared
-		 identifier in this function.  */
-	      record_function_scope_shadow (id);
-	      IDENTIFIER_LOCAL_VALUE (id) = error_mark_node;
-	    }
-	  return error_mark_node;
-	}
-    }
-  else
+  if (decl && decl != error_mark_node)
     {
       /* Properly declared variable or function reference.  */
       if (!objc_ivar)
 	ref = decl;
-      else if (decl != objc_ivar && IDENTIFIER_LOCAL_VALUE (id))
+      else if (decl != objc_ivar && DECL_CONTEXT (decl) != 0)
 	{
 	  warning ("local declaration of `%s' hides instance variable",
 		   IDENTIFIER_POINTER (id));
@@ -1458,9 +1433,26 @@ build_external_ref (id, fun)
       else
 	ref = objc_ivar;
     }
+  else if (objc_ivar)
+    ref = objc_ivar;
+  else if (fun)
+    /* Implicit function declaration.  */
+    ref = implicitly_declare (id);
+  else if (decl == error_mark_node)
+    /* Don't complain about something that's already been
+       complained about.  */
+    return error_mark_node;
+  else
+    {
+      undeclared_variable (id);
+      return error_mark_node;
+    }
 
   if (TREE_TYPE (ref) == error_mark_node)
     return error_mark_node;
+
+  if (TREE_DEPRECATED (ref))
+    warn_deprecated_use (ref);
 
   if (!skip_evaluation)
     assemble_external (ref);
