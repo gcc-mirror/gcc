@@ -4643,12 +4643,12 @@ rs6000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 
   /* Return synthetic vectors in memory.  */
   if (TREE_CODE (type) == VECTOR_TYPE
-      && int_size_in_bytes (type) > (TARGET_ALTIVEC ? 16 : 8))
+      && int_size_in_bytes (type) > (TARGET_ALTIVEC_ABI ? 16 : 8))
     {
       static bool warned_for_return_big_vectors = false;
       if (!warned_for_return_big_vectors)
 	{
-	  warning ("synthetic vectors returned by reference: "
+	  warning ("synthetic vector returned by reference: "
 		   "non-standard ABI extension with no compatibility guarantee");
 	  warned_for_return_big_vectors = true;
 	}
@@ -4657,6 +4657,7 @@ rs6000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 
   if (DEFAULT_ABI == ABI_V4 && TYPE_MODE (type) == TFmode)
     return true;
+
   return false;
 }
 
@@ -4808,9 +4809,14 @@ function_arg_boundary (enum machine_mode mode, tree type)
 {
   if (DEFAULT_ABI == ABI_V4 && GET_MODE_SIZE (mode) == 8)
     return 64;
-  else if (SPE_VECTOR_MODE (mode))
+  else if (SPE_VECTOR_MODE (mode)
+	   || (type && TREE_CODE (type) == VECTOR_TYPE
+	       && int_size_in_bytes (type) >= 8
+	       && int_size_in_bytes (type) < 16))
     return 64;
-  else if (ALTIVEC_VECTOR_MODE (mode))
+  else if (ALTIVEC_VECTOR_MODE (mode)
+	   || (type && TREE_CODE (type) == VECTOR_TYPE
+	       && int_size_in_bytes (type) >= 16))
     return 128;
   else if (type && TREE_CODE (type) == VECTOR_TYPE
 	   && int_size_in_bytes (type) > 16)
@@ -4895,7 +4901,10 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (depth == 0)
     cum->nargs_prototype--;
 
-  if (TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
+  if (TARGET_ALTIVEC_ABI
+      && (ALTIVEC_VECTOR_MODE (mode)
+	  || (type && TREE_CODE (type) == VECTOR_TYPE
+	      && int_size_in_bytes (type) == 16)))
     {
       bool stack = false;
 
@@ -5396,7 +5405,10 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       }
     else
       return gen_rtx_REG (mode, cum->vregno);
-  else if (TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
+  else if (TARGET_ALTIVEC_ABI
+	   && (ALTIVEC_VECTOR_MODE (mode)
+	       || (type && TREE_CODE (type) == VECTOR_TYPE
+		   && int_size_in_bytes (type) == 16)))
     {
       if (named || abi == ABI_V4)
 	return NULL_RTX;
@@ -5664,7 +5676,7 @@ rs6000_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 
   /* Pass synthetic vectors in memory.  */
   if (type && TREE_CODE (type) == VECTOR_TYPE
-      && int_size_in_bytes (type) > (TARGET_ALTIVEC ? 16 : 8))
+      && int_size_in_bytes (type) > (TARGET_ALTIVEC_ABI ? 16 : 8))
     {
       static bool warned_for_pass_big_vectors = false;
       if (TARGET_DEBUG_ARG)
