@@ -1,3 +1,16 @@
+2004-11-16  Devang Patel  <dpatel@apple.com>
+
+	* tree-if-conv.c (if_convertable_phi_p): Rename to ...
+	(if_convertible_phi_p): ... new name.
+	(if_convertable_modify_expr_p): Rename to ...
+	(if_convertible_modify_expr_p): ... new name.
+	(if_convertable_stmt_p): Rename to ...
+	(if_convertible_stmt_p): ... new name.
+	(if_convertable_bb_p): Rename to ...
+	(if_convertible_bb_p): ... new name.
+	(if_convertable_loop_p): Rename to ...
+	(if_convertible_loop_p): ... new name.
+	
 2004-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/18444

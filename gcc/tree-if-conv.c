@@ -24,7 +24,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    A short description of if-conversion:
 
-     o Decide if a loop is if-convertable or not.
+     o Decide if a loop is if-convertible or not.
      o Walk all loop basic blocks in breadth first order (BFS order).
        o Remove conditional statements (at the end of basic block)
          and propagate condition into destination basic blocks'
@@ -108,11 +108,11 @@ static tree tree_if_convert_stmt (struct loop *loop, tree, tree,
 				  block_stmt_iterator *);
 static void tree_if_convert_cond_expr (struct loop *, tree, tree,
 				       block_stmt_iterator *);
-static bool if_convertable_phi_p (struct loop *, basic_block, tree);
-static bool if_convertable_modify_expr_p (struct loop *, basic_block, tree);
-static bool if_convertable_stmt_p (struct loop *, basic_block, tree);
-static bool if_convertable_bb_p (struct loop *, basic_block, bool);
-static bool if_convertable_loop_p (struct loop *, bool);
+static bool if_convertible_phi_p (struct loop *, basic_block, tree);
+static bool if_convertible_modify_expr_p (struct loop *, basic_block, tree);
+static bool if_convertible_stmt_p (struct loop *, basic_block, tree);
+static bool if_convertible_bb_p (struct loop *, basic_block, bool);
+static bool if_convertible_loop_p (struct loop *, bool);
 static void add_to_predicate_list (basic_block, tree);
 static tree add_to_dst_predicate_list (struct loop * loop, basic_block, tree, tree,
 				       block_stmt_iterator *);
@@ -149,8 +149,8 @@ tree_if_conversion (struct loop *loop, bool for_vectorizer)
   ifc_bbs = NULL;
 
   /* if-conversion is not appropriate for all loops. First, check if loop  is
-     if-convertable or not.  */
-  if (!if_convertable_loop_p (loop, for_vectorizer))
+     if-convertible or not.  */
+  if (!if_convertible_loop_p (loop, for_vectorizer))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,"-------------------------\n");
@@ -320,14 +320,14 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
   return;
 }
 
-/* Return true, iff PHI is if-convertable. PHI is part of loop LOOP
+/* Return true, iff PHI is if-convertible. PHI is part of loop LOOP
    and it belongs to basic block BB.
-   PHI is not if-convertable
+   PHI is not if-convertible
    - if it has more than 2 arguments.
    - Virtual PHI is immediately used in another PHI node.  */
 
 static bool
-if_convertable_phi_p (struct loop *loop, basic_block bb, tree phi)
+if_convertible_phi_p (struct loop *loop, basic_block bb, tree phi)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -362,8 +362,8 @@ if_convertable_phi_p (struct loop *loop, basic_block bb, tree phi)
   return true;
 }
 
-/* Return true, if M_EXPR is if-convertable.
-   MODIFY_EXPR is not if-convertable if,
+/* Return true, if M_EXPR is if-convertible.
+   MODIFY_EXPR is not if-convertible if,
    - It is not movable.
    - It could trap.
    - LHS is not var decl.
@@ -371,7 +371,7 @@ if_convertable_phi_p (struct loop *loop, basic_block bb, tree phi)
 */
 
 static bool
-if_convertable_modify_expr_p (struct loop *loop, basic_block bb, tree m_expr)
+if_convertible_modify_expr_p (struct loop *loop, basic_block bb, tree m_expr)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -419,14 +419,14 @@ if_convertable_modify_expr_p (struct loop *loop, basic_block bb, tree m_expr)
   return true;
 }
 
-/* Return true, iff STMT is if-convertable.
-   Statement is if-convertable if,
-   - It is if-convertable MODIFY_EXPR
+/* Return true, iff STMT is if-convertible.
+   Statement is if-convertible if,
+   - It is if-convertible MODIFY_EXPR
    - IT is LABEL_EXPR, GOTO_EXPR or COND_EXPR.
    STMT is inside block BB, which is inside loop LOOP.  */
 
 static bool
-if_convertable_stmt_p (struct loop *loop, basic_block bb, tree stmt)
+if_convertible_stmt_p (struct loop *loop, basic_block bb, tree stmt)
 {
   switch (TREE_CODE (stmt))
     {
@@ -435,7 +435,7 @@ if_convertable_stmt_p (struct loop *loop, basic_block bb, tree stmt)
 
     case MODIFY_EXPR:
 
-      if (!if_convertable_modify_expr_p (loop, bb, stmt))
+      if (!if_convertible_modify_expr_p (loop, bb, stmt))
 	return false;
       break;
 
@@ -457,9 +457,9 @@ if_convertable_stmt_p (struct loop *loop, basic_block bb, tree stmt)
   return true;
 }
 
-/* Return true, iff BB is if-convertable.
+/* Return true, iff BB is if-convertible.
    Note: This routine does _not_ check basic block statements and phis.
-   Basic block is not if-convertable if,
+   Basic block is not if-convertible if,
    - Basic block is non-empty and it is after exit block (in BFS order).
    - Basic block is after exit block but before latch.
    - Basic block edge(s) is not normal.
@@ -467,7 +467,7 @@ if_convertable_stmt_p (struct loop *loop, basic_block bb, tree stmt)
    BB is inside loop LOOP.  */
 
 static bool
-if_convertable_bb_p (struct loop *loop, basic_block bb, bool exit_bb_seen)
+if_convertible_bb_p (struct loop *loop, basic_block bb, bool exit_bb_seen)
 {
   edge e;
   edge_iterator ei;
@@ -504,19 +504,19 @@ if_convertable_bb_p (struct loop *loop, basic_block bb, bool exit_bb_seen)
   return true;
 }
 
-/* Return true, iff LOOP is if-convertable.
-   LOOP is if-convertable if,
+/* Return true, iff LOOP is if-convertible.
+   LOOP is if-convertible if,
    - It is innermost.
    - It has two or more basic blocks.
    - It has only one exit.
    - Loop header is not the exit edge.
-   - If its basic blocks and phi nodes are if convertable. See above for
+   - If its basic blocks and phi nodes are if convertible. See above for
      more info.
    FOR_VECTORIZER enables vectorizer specific checks. For example, support
    for vector conditions, data dependency checks etc.. (Not implemented yet).  */
 
 static bool
-if_convertable_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
+if_convertible_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
 {
   tree phi;
   basic_block bb;
@@ -579,18 +579,18 @@ if_convertable_loop_p (struct loop *loop, bool for_vectorizer ATTRIBUTE_UNUSED)
     {
       bb = ifc_bbs[i];
 
-      if (!if_convertable_bb_p (loop, bb, exit_bb_seen))
+      if (!if_convertible_bb_p (loop, bb, exit_bb_seen))
 	return false;
 
       /* Check statements.  */
       for (itr = bsi_start (bb); !bsi_end_p (itr); bsi_next (&itr))
-	if (!if_convertable_stmt_p (loop, bb, bsi_stmt (itr)))
+	if (!if_convertible_stmt_p (loop, bb, bsi_stmt (itr)))
 	  return false;
       /* ??? Check data dependency for vectorizer.  */
 
       /* What about phi nodes ? */
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	if (!if_convertable_phi_p (loop, bb, phi))
+	if (!if_convertible_phi_p (loop, bb, phi))
 	  return false;
 
       if (bb_with_exit_edge_p (bb))
