@@ -684,6 +684,53 @@ compute_value_histograms (histogram_values values)
       free (histogram_counts[t]);
 }
 
+#define BB_TO_GCOV_INDEX(bb)  ((bb)->index + 1)
+/* When passed NULL as file_name, initialize.
+   When passed something else, output the neccesary commands to change
+   line to LINE and offset to FILE_NAME.  */
+static void
+output_location (char const *file_name, int line,
+		 gcov_position_t *offset, basic_block bb)
+{
+  static char const *prev_file_name;
+  static int prev_line;
+  bool name_differs, line_differs;
+
+  if (!file_name)
+    {
+      prev_file_name = NULL;
+      prev_line = -1;
+      return;
+    }
+
+  name_differs = !prev_file_name || strcmp (file_name, prev_file_name);
+  line_differs = prev_line != line;
+
+  if (name_differs || line_differs)
+    {
+      if (!*offset)
+	{
+	  *offset = gcov_write_tag (GCOV_TAG_LINES);
+	  gcov_write_unsigned (BB_TO_GCOV_INDEX (bb));
+	  name_differs = line_differs=true;
+	}
+
+      /* If this is a new source file, then output the
+	 file's name to the .bb file.  */
+      if (name_differs)
+	{
+	  prev_file_name = file_name;
+	  gcov_write_unsigned (0);
+	  gcov_write_string (prev_file_name);
+	}
+      if (line_differs)
+	{
+	  gcov_write_unsigned (line);
+	  prev_line = line;
+	}
+     }
+}
+
 /* Instrument and/or analyze program behavior based on program flow graph.
    In either case, this function builds a flow graph for the function being
    compiled.  The flow graph is stored in BB_GRAPH.
@@ -850,7 +897,6 @@ branch_prob (void)
       */
   ENTRY_BLOCK_PTR->index = -1;
   EXIT_BLOCK_PTR->index = last_basic_block;
-#define BB_TO_GCOV_INDEX(bb)  ((bb)->index + 1)
 
   /* Arcs */
   if (coverage_begin_output ())
@@ -877,6 +923,12 @@ branch_prob (void)
 		    flag_bits |= GCOV_ARC_FAKE;
 		  if (e->flags & EDGE_FALLTHRU)
 		    flag_bits |= GCOV_ARC_FALLTHROUGH;
+		  /* On trees we don't have fallthru flags, but we can
+		     recompute them from CFG shape.  */
+		  if (ir_type ()
+		      && e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)
+		      && e->src->next_bb == e->dest)
+		    flag_bits |= GCOV_ARC_FALLTHROUGH;
 
 		  gcov_write_unsigned (BB_TO_GCOV_INDEX (e->dest));
 		  gcov_write_unsigned (flag_bits);
@@ -888,78 +940,112 @@ branch_prob (void)
     }
 
   /* Line numbers.  */
-  /* FIXME:  make this work for trees.  (Line numbers are in location_t
-     objects, but aren't always attached to the obvious tree...) */
-  if (coverage_begin_output () && !ir_type ())
+  if (coverage_begin_output ())
     {
-      char const *prev_file_name = NULL;
-      gcov_position_t offset;
+      /* Initialize the output.  */
+      output_location (NULL, 0, NULL, NULL);
 
-      FOR_EACH_BB (bb)
+      if (!ir_type ())
 	{
-	  rtx insn = BB_HEAD (bb);
-	  int ignore_next_note = 0;
+	  gcov_position_t offset;
 
-	  offset = 0;
-
-	  /* We are looking for line number notes.  Search backward
-	     before basic block to find correct ones.  */
-	  insn = prev_nonnote_insn (insn);
-	  if (!insn)
-	    insn = get_insns ();
-	  else
-	    insn = NEXT_INSN (insn);
-
-	  while (insn != BB_END (bb))
+	  FOR_EACH_BB (bb)
 	    {
-	      if (NOTE_P (insn))
+	      rtx insn = BB_HEAD (bb);
+	      int ignore_next_note = 0;
+
+	      offset = 0;
+
+	      /* We are looking for line number notes.  Search backward
+		 before basic block to find correct ones.  */
+	      insn = prev_nonnote_insn (insn);
+	      if (!insn)
+		insn = get_insns ();
+	      else
+		insn = NEXT_INSN (insn);
+
+	      while (insn != BB_END (bb))
 		{
-		  /* Must ignore the line number notes that
-		     immediately follow the end of an inline function
-		     to avoid counting it twice.  There is a note
-		     before the call, and one after the call.  */
-		  if (NOTE_LINE_NUMBER (insn)
-		      == NOTE_INSN_REPEATED_LINE_NUMBER)
-		    ignore_next_note = 1;
-		  else if (NOTE_LINE_NUMBER (insn) <= 0)
-		    /*NOP*/;
-		  else if (ignore_next_note)
-		    ignore_next_note = 0;
-		  else
+		  if (NOTE_P (insn))
 		    {
-		      expanded_location s;
-
-		      if (!offset)
+		      /* Must ignore the line number notes that
+			 immediately follow the end of an inline function
+			 to avoid counting it twice.  There is a note
+			 before the call, and one after the call.  */
+		      if (NOTE_LINE_NUMBER (insn)
+			  == NOTE_INSN_REPEATED_LINE_NUMBER)
+			ignore_next_note = 1;
+		      else if (NOTE_LINE_NUMBER (insn) <= 0)
+			/*NOP*/;
+		      else if (ignore_next_note)
+			ignore_next_note = 0;
+		      else
 			{
-			  offset = gcov_write_tag (GCOV_TAG_LINES);
-			  gcov_write_unsigned (BB_TO_GCOV_INDEX (bb));
+		          expanded_location s;
+		          NOTE_EXPANDED_LOCATION (s, insn);
+			  output_location (s.file, NOTE_LINE_NUMBER (insn), &offset, bb);
 			}
-
-		      NOTE_EXPANDED_LOCATION (s, insn);
-
-		      /* If this is a new source file, then output the
-			 file's name to the .bb file.  */
-		      if (!prev_file_name
-			  || strcmp (s.file, prev_file_name))
-			{
-			  prev_file_name = s.file;
-			  gcov_write_unsigned (0);
-			  gcov_write_string (prev_file_name);
-			}
-		      gcov_write_unsigned (s.line);
 		    }
+		  insn = NEXT_INSN (insn);
 		}
-	      insn = NEXT_INSN (insn);
-	    }
 
-	  if (offset)
-	    {
-	      /* A file of NULL indicates the end of run.  */
-	      gcov_write_unsigned (0);
-	      gcov_write_string (NULL);
-	      gcov_write_length (offset);
+	      if (offset)
+		{
+		  /* A file of NULL indicates the end of run.  */
+		  gcov_write_unsigned (0);
+		  gcov_write_string (NULL);
+		  gcov_write_length (offset);
+		}
 	    }
 	}
+      else
+	{
+	  gcov_position_t offset;
+	  location_t *curr_location = NULL;
+
+	  FOR_EACH_BB (bb)
+	    {
+	      block_stmt_iterator bsi;
+
+	      offset = 0;
+
+	      if (bb == ENTRY_BLOCK_PTR->next_bb)
+		{
+		  curr_location = &DECL_SOURCE_LOCATION (current_function_decl);
+		  output_location (curr_location->file, curr_location->line,
+				   &offset, bb);
+		}
+
+	      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+		{
+		  tree stmt = bsi_stmt (bsi);
+#ifdef USE_MAPPED_LOCATION
+		  curr_location = EXPR_LOCATION (stmt);
+#else
+		  curr_location = EXPR_LOCUS (stmt);
+#endif
+		  if (curr_location)
+		    output_location (curr_location->file, curr_location->line,
+				     &offset, bb);
+		}
+
+	      /* Notice GOTO expressions we elliminated while constructing the
+	         CFG.  */
+	      if (bb->succ && !bb->succ->succ_next && bb->succ->goto_locus)
+	        {
+		  curr_location = bb->succ->goto_locus;
+	          output_location (curr_location->file, curr_location->line, &offset, bb);
+	        }
+
+	      if (offset)
+		{
+		  /* A file of NULL indicates the end of run.  */
+		  gcov_write_unsigned (0);
+		  gcov_write_string (NULL);
+		  gcov_write_length (offset);
+		}
+	    }
+	 }
     }
 
   ENTRY_BLOCK_PTR->index = ENTRY_BLOCK;
