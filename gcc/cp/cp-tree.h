@@ -134,6 +134,17 @@ Boston, MA 02111-1307, USA.  */
 			 __LINE__, __PRETTY_FUNCTION__);	\
     __t; })
 
+#define VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK(NODE)		\
+({  const tree __t = NODE;					\
+    enum tree_code __c = TREE_CODE(__t);			\
+    if (__c != VAR_DECL 					\
+	&& __c != FUNCTION_DECL					\
+	&& __c != TYPE_DECL					\
+	&& __c != TEMPLATE_DECL)				\
+      tree_check_failed (__t, VAR_DECL, __FILE__,		\
+			 __LINE__, __PRETTY_FUNCTION__);	\
+    __t; })
+
 #define RECORD_OR_UNION_TYPE_CHECK(NODE)			\
 ({  const tree __t = NODE;					\
     enum tree_code __c = TREE_CODE(__t);			\
@@ -145,6 +156,7 @@ Boston, MA 02111-1307, USA.  */
 #else /* not ENABLE_CHECKING, or not gcc */
 
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE)	NODE
+#define VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK(NODE)	NODE
 #define RECORD_OR_UNION_TYPE_CHECK(NODE)	NODE
 
 #endif
@@ -1601,7 +1613,8 @@ struct lang_decl_flags
   tree context;
 
   union {
-    /* In a FUNCTION_DECL or a VAR_DECL, this is DECL_TEMPLATE_INFO.  */
+    /* In a FUNCTION_DECL, VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this
+       is DECL_TEMPLATE_INFO.  */
     tree template_info;
 
     /* In a NAMESPACE_DECL, this is NAMESPACE_LEVEL.  */
@@ -1838,9 +1851,10 @@ struct lang_decl
 #define DECL_SAVED_INLINE(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->decl_flags.saved_inline)
 
-/* For a VAR_DECL or FUNCTION_DECL: template-specific information.  */
+/* For a VAR_DECL, FUNCTION_DECL, TYPE_DECL or TEMPLATE_DECL:
+   template-specific information.  */
 #define DECL_TEMPLATE_INFO(NODE) \
-  (DECL_LANG_SPECIFIC(VAR_OR_FUNCTION_DECL_CHECK (NODE))->decl_flags.u.template_info)
+  (DECL_LANG_SPECIFIC(VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK (NODE))->decl_flags.u.template_info)
 
 /* Template information for a RECORD_TYPE or UNION_TYPE.  */
 #define CLASSTYPE_TEMPLATE_INFO(NODE) \

@@ -5152,11 +5152,9 @@ mark_used (decl)
 
   /* If this is a function or variable that is an instance of some
      template, we now know that we will need to actually do the
-     instantiation.  A TEMPLATE_DECL may also have DECL_TEMPLATE_INFO,
-     if it's a partial instantiation, but there's no need to
-     instantiate such a thing.  We check that DECL is not an explicit
+     instantiation. We check that DECL is not an explicit
      instantiation because that is not checked in instantiate_decl.  */
-  if (TREE_CODE (decl) != TEMPLATE_DECL
+  if ((TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
       && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
       && !DECL_EXPLICIT_INSTANTIATION (decl))
     instantiate_decl (decl);
