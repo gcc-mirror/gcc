@@ -1,3 +1,8 @@
+2003-01-15  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.md ("return"): Use emit_jump_insn to emit
+	the return code.
+
 2003-01-15  Josef Zlomek  <zlomekj@suse.cz>
 
 	* cfganal.c (set_edge_can_fallthru_flag): Clear the EDGE_CAN_FALLTHRU
