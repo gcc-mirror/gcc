@@ -355,6 +355,13 @@ case "${target}" in
   *-*-freebsd[[12]] | *-*-freebsd[[12]].* | *-*-freebsd*aout*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
+  *-*-kaos*)
+    # Remove unsupported stuff on all kaOS configurations.
+    skipdirs="target-libiberty ${libgcj} ${libstdcxx_version} target-libf2c target-librx"
+    skipdirs="$skipdirs target-libobjc target-examples target-groff target-gperf"
+    skipdirs="$skipdirs zlib fastjar target-libjava target-boehm-gc target-zlib"
+    noconfigdirs="$noconfigdirs target-libgloss"
+    ;;
   *-*-netbsd*)
     # Skip some stuff on all NetBSD configurations.
     noconfigdirs="$noconfigdirs target-newlib target-libiberty target-libgloss"
