@@ -81,14 +81,6 @@ Boston, MA 02111-1307, USA.  */
    specification.  The SGI/MIPS ABI defines it to be the same as PTR_SIZE.  */
 #define DWARF_OFFSET_SIZE PTR_SIZE
 
-#undef ASM_PREFERRED_EH_DATA_FORMAT
-#if 0  /* We can't use relative addressing modes on NEWABI :-(  */
-#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)       		\
-   (flag_pic								\
-    ? ((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_sdata4		\
-    : DW_EH_PE_absptr)
-#endif
-
 /* GNU/Linux doesn't use the same floating-point format that IRIX uses
    for long double.  There's no need to override this here, since
    ieee_quad_format is the default, but let's put this here to make

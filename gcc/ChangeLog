@@ -1,3 +1,10 @@
+2004-06-15  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/linux.h (ASM_PREFERRED_EH_DATA_FORMAT): Remove
+	definition.
+	* config/mips/linux64.h (ASM_PREFERRED_EH_DATA_FORMAT): Remove
+	#undef and #if 0'd definition.
+
 2004-06-15  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* combine.c (distribute_notes): Comment typo fix.
