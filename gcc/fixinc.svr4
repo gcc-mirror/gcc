@@ -911,7 +911,10 @@ else
 fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
-  sed -e 's/extern struct \(stdata\|strevent\);/struct \1;/' $file_to_fix > /tmp/$base 
+  sed -e '
+    s/extern struct stdata;/struct stdata;/g
+    s/extern struct strevent;/struct strevent;/g
+  ' $file_to_fix > /tmp/$base 
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
     echo No change needed in $file_to_fix
   else
@@ -935,7 +938,12 @@ else
 fi
 if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
-  sed -e 's/extern struct \(strbuf\|uio\|thread\|proc\);/struct \1;/' $file_to_fix > /tmp/$base 
+  sed -e '
+    s/extern struct strbuf;/struct strbuf;/g
+    s/extern struct uio;/struct uio;/g
+    s/extern struct thread;/struct thread;/g
+    s/extern struct proc;/struct proc;/g
+  ' $file_to_fix > /tmp/$base 
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
     echo No change needed in $file_to_fix
   else
