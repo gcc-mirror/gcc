@@ -1,2 +1,3 @@
-int f (register struct S {volatile int field;} arg);
-int g (register struct S { int volatile member; });
+struct S { volatile int field; };
+int f (register struct S arg);
+int g (register struct S);
