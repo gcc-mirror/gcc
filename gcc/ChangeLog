@@ -1,3 +1,9 @@
+2004-11-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/16808
+	* tree-ssa.c (replace_immediate_uses): If we call fold_stmt, make sure
+	that the vops get marked for renaming.
+
 2004-11-02  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("movcc"): Set type attribute.

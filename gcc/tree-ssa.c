@@ -1124,6 +1124,7 @@ replace_immediate_uses (tree var, tree repl)
 	{
 	  tree tmp = stmt;
 	  fold_stmt (&tmp);
+          mark_new_vars = true;
 	  if (tmp != stmt)
 	    {
 	      block_stmt_iterator si = bsi_for_stmt (stmt);

@@ -1,3 +1,8 @@
+2004-11-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/16808
+	* gcc.c-torture/compile/pr16808.c: New test.
+
 2004-11-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR rtl-optimization/17104
