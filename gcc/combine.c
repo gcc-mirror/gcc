@@ -8925,6 +8925,7 @@ record_value_for_reg (reg, insn, value)
 
   if (value)
     {
+      subst_low_cuid = INSN_CUID (insn);
       reg_last_set_mode[regno] = GET_MODE (reg);
       reg_last_set_nonzero_bits[regno] = nonzero_bits (value, GET_MODE (reg));
       reg_last_set_sign_bit_copies[regno]
