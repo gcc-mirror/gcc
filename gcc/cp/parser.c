@@ -11109,11 +11109,16 @@ cp_parser_direct_declarator (cp_parser* parser,
 		    declarator->u.id.sfk = sfk_destructor;
 		  else if (IDENTIFIER_TYPENAME_P (unqualified_name))
 		    declarator->u.id.sfk = sfk_conversion;
-		  else if (constructor_name_p (unqualified_name,
-					       class_type)
-			   || (TREE_CODE (unqualified_name) == TYPE_DECL
-			       && same_type_p (TREE_TYPE (unqualified_name),
-					       class_type)))
+		  else if (/* There's no way to declare a constructor
+			      for an anonymous type, even if the type
+			      got a name for linkage purposes.  */
+			   !TYPE_WAS_ANONYMOUS (class_type)
+			   && (constructor_name_p (unqualified_name,
+						   class_type)
+			       || (TREE_CODE (unqualified_name) == TYPE_DECL
+				   && (same_type_p 
+				       (TREE_TYPE (unqualified_name),
+					class_type)))))
 		    declarator->u.id.sfk = sfk_constructor;
 
 		  if (ctor_dtor_or_conv_p && declarator->u.id.sfk != sfk_none)

@@ -1,3 +1,15 @@
+2005-01-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19244
+	* class.c (add_implicitly_declared_members): Remove dead code.
+	* decl.c (grokfndecl): Add sfk parameter.  Use it do set
+	DECL_CONSTRUCTOR_P.
+	(grokdeclarator): Adjust calls to grokfndecl.
+	* method.c (implicitly_declare_fn): Improve documentation.
+	* parser.c (cp_parser_direct_declarator): Do not consider a
+	function to be a constructor if the containing class was
+	originally anonymous.
+
 2005-01-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/17154
