@@ -1,5 +1,11 @@
 2000-03-26  Tom Tromey  <tromey@cygnus.com>
 
+	* jni.cc (_Jv_JNI_PopSystemFrame): If environment has exception
+	set, throw it.
+	(call): Don't throw exception here.
+
+2000-03-26  Tom Tromey  <tromey@cygnus.com>
+
 	* java/lang/mprec.h: Use SIZEOF_VOID_P.
 	* interpret.cc: Use SIZEOF_VOID_P.
 	* include/java-cpool.h (_Jv_storeLong): Use SIZEOF_VOID_P.
