@@ -2208,8 +2208,8 @@ xstormy16_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST xstormy16_address_cost
 
-#undef TARGET_BUILD_BUILTIN_VA_LIST_TYPE
-#define TARGET_BUILD_BUILTIN_VA_LIST_TYPE xstormy16_build_builtin_va_list
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST xstormy16_build_builtin_va_list
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true

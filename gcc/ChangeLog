@@ -1,5 +1,11 @@
 2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/stormy16/stormy16.c
+	(TARGET_BUILD_BUILTIN_VA_LIST_TYPE): Rename to
+	TARGET_BUILD_BUILTIN_VA_LIST.
+
+2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/v850/v850.c (TARGET_PROMOTE_PROTOTYPES): New.
 	(TARGET_STRUCT_VALUE_RTX): Likewise.
 	(TARGET_RETURN_IN_MEMORY): Likewise.
