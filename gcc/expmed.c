@@ -2560,8 +2560,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   int op1_is_constant, op1_is_pow2;
 
   op1_is_constant = GET_CODE (op1) == CONST_INT;
-  op1_is_pow2 = (EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1))
-		 || EXACT_POWER_OF_2_OR_ZERO_P (-INTVAL (op1)));
+  op1_is_pow2 = (op1_is_constant
+		 && ((EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1))
+		      || EXACT_POWER_OF_2_OR_ZERO_P (-INTVAL (op1)))));
 
   /*
      This is the structure of expand_divmod:
@@ -3112,6 +3113,24 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
       case CEIL_MOD_EXPR:
 	if (unsignedp)
 	  {
+	    if (op1_is_constant && EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1)))
+	      {
+		rtx t1, t2, t3;
+		unsigned HOST_WIDE_INT d = INTVAL (op1);
+		t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+				   build_int_2 (floor_log2 (d), 0),
+				   NULL_RTX, 1);
+		t2 = expand_binop (compute_mode, and_optab, op0,
+				   GEN_INT (d - 1),
+				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+		t3 = gen_reg_rtx (compute_mode);
+		t3 = emit_store_flag (t3, NE, t2, const0_rtx,
+				      compute_mode, 1, 1);
+		quotient = force_operand (gen_rtx (PLUS, compute_mode,
+						   t1, t3),
+					  tquotient);
+		break;
+	      }
 
 	    /* Try using an instruction that produces both the quotient and
 	       remainder, using truncation.  We can easily compensate the
