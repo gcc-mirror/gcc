@@ -22,7 +22,7 @@
 // 23.2.4.2 vector capacity
 
 #include <vector>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 template<typename T>
   struct A { };

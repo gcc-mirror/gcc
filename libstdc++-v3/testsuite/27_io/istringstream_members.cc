@@ -21,7 +21,7 @@
 // 27.7.2.2 member functions (istringstream_members)
 
 #include <sstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 void test01()
 {

@@ -22,7 +22,7 @@
 
 #include <locale>
 #include <string>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // creating unnamed locales 1 using new + combine
 void

@@ -25,7 +25,7 @@
 #include <stdexcept>
 #include <string>
 #include <iterator>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // 1 a class if a facet if it is publicly derived from another facet
 typedef std::istreambuf_iterator<char>		input_iterator;

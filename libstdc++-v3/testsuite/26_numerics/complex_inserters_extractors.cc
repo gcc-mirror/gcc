@@ -24,7 +24,7 @@
 #include <string>
 #include <sstream>
 #include <complex>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 #include <cmath>
 
 template<typename R>

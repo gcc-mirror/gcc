@@ -21,7 +21,7 @@
 // 27.8.1.4 Overridden virtual functions
 
 #include <fstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 void test01()
 {

@@ -21,7 +21,7 @@
 // 27.8.1.13 member functions (fstream_members)
 
 #include <fstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 void 
 redirect_buffer(std::ios& stream, std::streambuf* new_buf) 

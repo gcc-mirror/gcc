@@ -22,7 +22,7 @@
 
 #include <string>
 #include <cstdio>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 int test01(void)
 {

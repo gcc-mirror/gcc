@@ -31,7 +31,7 @@
 #include <sstream>
 #include <locale>
 #include <iomanip>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 struct MyNP : std::numpunct<char>
 {

@@ -26,7 +26,7 @@
 // @diff@ %-*.tst %*.txt
 
 #include <fstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 const char carray_01[] = "santa cruz or sandiego?";
 const char carray_02[] = "memphis, new orleans, and savanah";

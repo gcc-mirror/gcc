@@ -21,7 +21,7 @@
 // 18.2.1.1 template class numeric_limits
 
 #include <limits>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 
 template<typename T>

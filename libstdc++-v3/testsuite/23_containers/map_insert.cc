@@ -21,7 +21,7 @@
 // 23.3.1.2, table 69 -- map::insert(p,t)
 
 #include <map>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // { dg-do run }
 

@@ -21,7 +21,7 @@
 
 #include <string>
 #include <vector>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 int 
 string_stuff()

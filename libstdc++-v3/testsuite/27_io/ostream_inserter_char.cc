@@ -24,7 +24,7 @@
 #include <ostream>
 #include <sstream>
 #include <fstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // ofstream
 bool test01()

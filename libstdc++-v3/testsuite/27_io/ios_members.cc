@@ -31,7 +31,7 @@
 
 #include <ios>
 // NB: Don't include any other headers in this file.
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 void test01()
 {

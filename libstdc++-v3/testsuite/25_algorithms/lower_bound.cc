@@ -17,7 +17,7 @@
 // USA.
 
 #include <algorithm>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // http://gcc.gnu.org/ml/libstdc++/2000-06/msg00316.html
 struct foo { };

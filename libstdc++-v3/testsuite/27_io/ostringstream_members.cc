@@ -21,7 +21,7 @@
 // 27.7.3.2 member functions (ostringstream_members)
 
 #include <sstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 void test01()
 {

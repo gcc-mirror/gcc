@@ -19,7 +19,7 @@
 // USA.
 
 #include <algorithm>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 void test01()
 {

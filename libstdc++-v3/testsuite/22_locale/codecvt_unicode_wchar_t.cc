@@ -21,7 +21,7 @@
 // 22.2.1.5 - Template class codecvt [lib.locale.codecvt]
 
 #include <locale>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 using namespace std;
 

@@ -23,7 +23,7 @@
 #include <cwchar> // for mbstate_t
 #include <locale>
 #include <stdexcept>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 #if _GLIBCPP_USE_WCHAR_T
 typedef std::codecvt<char, char, std::mbstate_t> 	      c_codecvt;

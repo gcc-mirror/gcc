@@ -21,7 +21,7 @@
 // 22.2.3.1.1 nunpunct members
 
 #include <locale>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 void test01()
 {

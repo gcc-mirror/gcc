@@ -1774,6 +1774,62 @@ dnl string, '#' otherwise
   AC_SUBST(ifGNUmake)
 ])
 
+
+dnl Check for headers for, and arguments to, the setrlimit() function.
+dnl Used only in testsuite_hooks.h.
+AC_DEFUN(GLIBCPP_CHECK_SETRLIMIT_ancilliary, [
+  AC_TRY_COMPILE([#include <sys/resource.h>
+                  #include <unistd.h>
+                 ], [ int f = RLIMIT_$1 ; ],
+                 [glibcpp_mresult=1], [glibcpp_mresult=0])
+  AC_DEFINE_UNQUOTED(HAVE_MEMLIMIT_$1, $glibcpp_mresult,
+                     [Only used in build directory testsuite_hooks.h.])
+])
+AC_DEFUN(GLIBCPP_CHECK_SETRLIMIT, [
+  setrlimit_have_headers=yes
+  AC_CHECK_HEADERS(sys/resource.h unistd.h,
+                   [],
+                   setrlimit_have_headers=no)
+  # If don't have the headers, then we can't run the tests now, and we
+  # won't be seeing any of these during testsuite compilation.
+  if test $setrlimit_have_headers = yes; then
+    # Can't do these in a loop, else the resulting syntax is wrong.
+    GLIBCPP_CHECK_SETRLIMIT_ancilliary(DATA)
+    GLIBCPP_CHECK_SETRLIMIT_ancilliary(RSS)
+    GLIBCPP_CHECK_SETRLIMIT_ancilliary(VMEM)
+    GLIBCPP_CHECK_SETRLIMIT_ancilliary(AS)
+
+    # Check for rlimit, setrlimit.
+    AC_CACHE_VAL(ac_setrlimit, [
+      AC_TRY_COMPILE([#include <sys/resource.h>
+                      #include <unistd.h>
+                     ],
+                     [ struct rlimit r; setrlimit(0, &r);],
+                     [ac_setrlimit=yes], [ac_setrlimit=no])
+    ])
+  fi
+
+  AC_MSG_CHECKING([for testsuite memory limit support])
+  if test $setrlimit_have_headers = yes && test $ac_setrlimit = yes; then
+    ac_mem_limits=yes
+    AC_DEFINE(_GLIBCPP_MEM_LIMITS)
+  else
+    ac_mem_limits=no
+  fi
+  AC_MSG_RESULT($ac_mem_limits)
+])
+
+
+dnl
+dnl Does any necessary configuration of the testsuite directory.  Generates
+dnl the testsuite_hooks.h header.
+dnl
+dnl GLIBCPP_CONFIGURE_TESTSUITE  [no args]
+AC_DEFUN(GLIBCPP_CONFIGURE_TESTSUITE, [
+  GLIBCPP_CHECK_SETRLIMIT
+])
+
+
 sinclude(../libtool.m4)
 dnl The lines below arrange for aclocal not to bring an installed
 dnl libtool.m4 into aclocal.m4, while still arranging for automake to

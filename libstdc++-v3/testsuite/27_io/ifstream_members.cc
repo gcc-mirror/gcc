@@ -22,7 +22,7 @@
 
 #include <istream>
 #include <fstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 const char name_01[] = "ifstream_members-1.tst";
 const char name_02[] = "ifstream_members-1.txt";

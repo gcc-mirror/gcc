@@ -53,9 +53,9 @@ proc libstdc++-v3-init { args } {
     # Do a bunch of handstands and backflips for cross compiling and
     # finding simulators...
     if [is_remote host] {
-        set header [remote_download host ${srcdir}/debug_assert.h]
+        set header [remote_download host ${blddir}/testsuite/testsuite_hooks.h]
         if { $header == "" } {
-            verbose -log "Unable to download ${srcdir}/debug_assert.h to host."
+            verbose -log "Unable to download ${blddir}/testsuite/testsuite_hooks.h to host."
             return "untested"
         }
       set cxx [transform "g++"]

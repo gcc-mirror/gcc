@@ -33,7 +33,7 @@
 #include <streambuf>
 #include <string>
 #include <ostream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 class testbuf : public std::streambuf
 {

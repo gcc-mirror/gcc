@@ -25,7 +25,7 @@
 #include <locale>
 #include <sstream>
 #include <limits>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 using namespace std;
 

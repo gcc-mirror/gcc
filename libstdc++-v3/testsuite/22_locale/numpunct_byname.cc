@@ -21,7 +21,7 @@
 // 22.2.3.2 Template class numpunct_byname
 
 #include <locale>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 void test01()
 {

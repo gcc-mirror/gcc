@@ -23,7 +23,7 @@
 #include <sstream>
 #include <iostream>
 
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // http://gcc.gnu.org/ml/gcc-bugs/2000-12/msg00413.html
 void test01() 

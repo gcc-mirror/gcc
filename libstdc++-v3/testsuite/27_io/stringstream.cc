@@ -31,7 +31,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <debug_assert.h>
+#include <testsuite_hooks.h>
 
 // 01: sanity checks for strings, stringbufs
 std::string 
