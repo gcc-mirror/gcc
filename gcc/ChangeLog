@@ -1,3 +1,12 @@
+2004-07-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (fix_range): New function to mark a range(s) of registers as
+	fixed registers.
+	(override_options): Call fix_range if the -mfixed-range option string
+	is not empty.
+	* pa.h (TARGET_OPTIONS): Add -mfixed-range option.
+	* doc/invoke.texi (-mfixed-range): Document new option.
+
 2004-07-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (function_arg_padding): Do not pad SFmode

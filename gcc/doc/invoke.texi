@@ -461,6 +461,7 @@ in the following sections.
 @gccoptlist{-march=@var{architecture-type} @gol
 -mbig-switch  -mdisable-fpregs  -mdisable-indexing @gol
 -mfast-indirect-calls  -mgas  -mgnu-ld   -mhp-ld @gol
+-mfixed-range=@var{register-range} @gol
 -mjump-in-delay -mlinker-opt -mlong-calls @gol
 -mlong-load-store  -mno-big-switch  -mno-disable-fpregs @gol
 -mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas @gol
@@ -7719,6 +7720,14 @@ allows GCC to emit code which performs faster indirect calls.
 
 This option will not work in the presence of shared libraries or nested
 functions.
+
+@item -mfixed-range=@var{register-range}
+@opindex mfixed-range
+Generate code treating the given register range as fixed registers.
+A fixed register is one that the register allocator can not use.  This is
+useful when compiling kernel code.  A register range is specified as
+two registers separated by a dash.  Multiple register ranges can be
+specified separated by a comma.
 
 @item -mlong-load-store
 @opindex mlong-load-store

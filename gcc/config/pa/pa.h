@@ -45,12 +45,6 @@ enum processor_type
   PROCESSOR_8000
 };
 
-/* For -mschedule= option.  */
-extern const char *pa_cpu_string;
-extern enum processor_type pa_cpu;
-
-#define pa_cpu_attr ((enum attr_cpu)pa_cpu)
-
 /* Which architecture to generate code for.  */
 
 enum architecture_type
@@ -65,6 +59,15 @@ struct rtx_def;
 /* For -march= option.  */
 extern const char *pa_arch_string;
 extern enum architecture_type pa_arch;
+
+/* For -mfixed-range= option.  */
+extern const char *pa_fixed_range_string;
+
+/* For -mschedule= option.  */
+extern const char *pa_cpu_string;
+extern enum processor_type pa_cpu;
+
+#define pa_cpu_attr ((enum attr_cpu)pa_cpu)
 
 /* Print subsidiary information on the compiler version in use.  */
 
@@ -306,10 +309,13 @@ extern int target_flags;
 
 #define TARGET_OPTIONS							\
 {									\
-  { "schedule=",		&pa_cpu_string,				\
-    N_("Specify CPU for scheduling purposes"), 0},			\
   { "arch=",			&pa_arch_string,			\
-    N_("Specify architecture for code generation.  Values are 1.0, 1.1, and 2.0.  2.0 requires gas snapshot 19990413 or later."), 0}\
+    N_("Specify PA-RISC architecture for code generation.  "		\
+       "Values are 1.0, 1.1 and 2.0."), 0},				\
+  { "fixed-range=",		&pa_fixed_range_string,			\
+    N_("Specify range of registers to make fixed"), 0},			\
+  { "schedule=",		&pa_cpu_string,				\
+    N_("Specify CPU for scheduling purposes"), 0}			\
 }
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:

@@ -86,6 +86,7 @@ hppa_fpstore_bypass_p (rtx out_insn, rtx in_insn)
 #endif
 
 static void copy_reg_pointer (rtx, rtx);
+static void fix_range (const char *);
 static int hppa_address_cost (rtx);
 static bool hppa_rtx_costs (rtx, int, int, int *);
 static inline rtx force_mode (enum machine_mode, rtx);
@@ -152,17 +153,20 @@ static bool pa_pass_by_reference (CUMULATIVE_ARGS *ca, enum machine_mode,
 rtx hppa_compare_op0, hppa_compare_op1;
 enum cmp_type hppa_branch_type;
 
-/* Which cpu we are scheduling for.  */
-enum processor_type pa_cpu;
-
-/* String to hold which cpu we are scheduling for.  */
-const char *pa_cpu_string;
-
 /* Which architecture we are generating code for.  */
 enum architecture_type pa_arch;
 
 /* String to hold which architecture we are generating code for.  */
 const char *pa_arch_string;
+
+/* String used with the -mfixed-range= option.  */
+const char *pa_fixed_range_string;
+
+/* Which cpu we are scheduling for.  */
+enum processor_type pa_cpu;
+
+/* String to hold which cpu we are scheduling for.  */
+const char *pa_cpu_string;
 
 /* Counts for the number of callee-saved general and floating point
    registers which were saved by the current function's prologue.  */
@@ -280,6 +284,79 @@ static size_t n_deferred_plabels = 0;
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Parse the -mfixed-range= option string.  */
+
+static void
+fix_range (const char *const_str)
+{
+  int i, first, last;
+  char *str, *dash, *comma;
+
+  /* str must be of the form REG1'-'REG2{,REG1'-'REG} where REG1 and
+     REG2 are either register names or register numbers.  The effect
+     of this option is to mark the registers in the range from REG1 to
+     REG2 as ``fixed'' so they won't be used by the compiler.  This is
+     used, e.g., to ensure that kernel mode code doesn't use f32-f127.  */
+
+  i = strlen (const_str);
+  str = (char *) alloca (i + 1);
+  memcpy (str, const_str, i + 1);
+
+  while (1)
+    {
+      dash = strchr (str, '-');
+      if (!dash)
+	{
+	  warning ("value of -mfixed-range must have form REG1-REG2");
+	  return;
+	}
+      *dash = '\0';
+
+      comma = strchr (dash + 1, ',');
+      if (comma)
+	*comma = '\0';
+
+      first = decode_reg_name (str);
+      if (first < 0)
+	{
+	  warning ("unknown register name: %s", str);
+	  return;
+	}
+
+      last = decode_reg_name (dash + 1);
+      if (last < 0)
+	{
+	  warning ("unknown register name: %s", dash + 1);
+	  return;
+	}
+
+      *dash = '-';
+
+      if (first > last)
+	{
+	  warning ("%s-%s is an empty range", str, dash + 1);
+	  return;
+	}
+
+      for (i = first; i <= last; ++i)
+	fixed_regs[i] = call_used_regs[i] = 1;
+
+      if (!comma)
+	break;
+
+      *comma = ',';
+      str = comma + 1;
+    }
+
+  /* Check if all floating point registers have been fixed.  */
+  for (i = FP_REG_FIRST; i <= FP_REG_LAST; i++)
+    if (!fixed_regs[i])
+      break;
+
+  if (i > FP_REG_LAST)
+    target_flags |= MASK_DISABLE_FPREGS;
+}
+
 void
 override_options (void)
 {
@@ -321,7 +398,7 @@ override_options (void)
       warning ("unknown -mschedule= option (%s).\nValid options are 700, 7100, 7100LC, 7200, 7300, and 8000\n", pa_cpu_string);
     }
 
-  /* Set the instruction set architecture.  */
+  /* Set the instruction architecture.  */
   if (pa_arch_string && ! strcmp (pa_arch_string, "1.0"))
     {
       pa_arch_string = "1.0";
@@ -345,6 +422,9 @@ override_options (void)
     {
       warning ("unknown -march= option (%s).\nValid options are 1.0, 1.1, and 2.0\n", pa_arch_string);
     }
+
+  if (pa_fixed_range_string)
+    fix_range (pa_fixed_range_string);
 
   /* Unconditional branches in the delay slot are not compatible with dwarf2
      call frame information.  There is no benefit in using this optimization
