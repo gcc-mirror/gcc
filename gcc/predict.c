@@ -874,8 +874,6 @@ estimate_bb_frequencies (loops)
   for (i = 0; i < n_basic_blocks; i++)
     {
       rtx last_insn = BLOCK_END (i);
-      int probability;
-      edge fallthru, branch;
 
       if (GET_CODE (last_insn) != JUMP_INSN || !any_condjump_p (last_insn)
 	  /* Avoid handling of conditional jumps jumping to fallthru edge.  */
