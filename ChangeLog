@@ -1,3 +1,15 @@
+Mon Oct 12 12:09:44 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (CHILL_FOR_TARGET): Mirror recent changes to
+	CC_FOR_TARGET and friends.
+
+Mon Oct 12 12:09:30 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
+	
+	* Makefile.in (build_tooldir): new variable, same as tooldir
+	(CC_FOR_TARGET, GCC_FOR_TARGET, CXX_FOR_TARGET): add
+	-B$(build_tooldir)/bin/
+	(BASE_FLAGS_TO_PASS): pass build_tooldir down
+
 Tue Sep  1 16:23:11 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* README: Remove installation instructions and refer to the
