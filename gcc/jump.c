@@ -4257,7 +4257,8 @@ delete_insn (insn)
 
   /* Don't delete user-declared labels.  Convert them to special NOTEs
      instead.  */
-  if (was_code_label && LABEL_NAME (insn) != 0 && ! dont_really_delete)
+  if (was_code_label && LABEL_NAME (insn) != 0
+      && optimize && ! dont_really_delete)
     {
       PUT_CODE (insn, NOTE);
       NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED_LABEL;
