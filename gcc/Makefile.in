@@ -1472,14 +1472,19 @@ distclean: clean
 	-rm -f tm.h aux-output.c config.h md config.status tconfig.h hconfig.h
 	-rm -f Makefile *.oaux
 	-rm -fr stage1 stage2 stage3 stage4
+	-rm -f cp-parse.output
+	-rm -f objc-parse.output
+	-rm -f c-parse.output
 
 # Delete anything likely to be found in the source directory
 # that shouldn't be in the distribution.
 extraclean: distclean
 	-rm -rf =* ./"#"* *~* config/=* config/"#"* config/*~*
 	-rm -f patch* *.orig *.rej config/patch* config/*.orig config/*.rej
+	-rm -f config/*/=* config/*/"#"* config/*/*~*
+	-rm -f config/*/*.orig config/*/*.rej
 	-rm -f *.dvi *.oaux *.d *.[zZ] *.tar *.xtar *diff
-	-rm -f *lose config/*lose
+	-rm -f *lose config/*lose config/*/*lose
 	-rm -f *.s *.s[0-9] *.i install1.texi config/ChangeLog
 
 # Get rid of every file that's generated from some other file.
