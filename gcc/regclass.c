@@ -587,7 +587,9 @@ static void record_reg_classes	PROTO((int, int, rtx *, enum machine_mode *,
 static int copy_cost		PROTO((rtx, enum machine_mode, 
 				       enum reg_class, int));
 static void record_address_regs	PROTO((rtx, enum reg_class, int));
-static auto_inc_dec_reg_p	PROTO((rtx, enum machine_mode));
+#ifdef FORBIDDEN_INC_DEC_CLASSES
+static int auto_inc_dec_reg_p	PROTO((rtx, enum machine_mode));
+#endif
 static void reg_scan_mark_refs	PROTO((rtx, rtx, int));
 
 /* Return the reg_class in which pseudo reg number REGNO is best allocated.
@@ -1635,7 +1637,7 @@ record_address_regs (x, class, scale)
 /* Return 1 if REG is valid as an auto-increment memory reference
    to an object of MODE.  */
 
-static 
+static int
 auto_inc_dec_reg_p (reg, mode)
      rtx reg;
      enum machine_mode mode;

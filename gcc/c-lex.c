@@ -135,7 +135,7 @@ static int end_of_file;
 static int nextchar = -1;
 #endif
 
-static int skip_which_space		PROTO((int));
+static int skip_white_space		PROTO((int));
 static char *extend_token_buffer	PROTO((char *));
 static int readescape			PROTO((int *));
 int check_newline ();

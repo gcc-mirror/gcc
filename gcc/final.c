@@ -277,7 +277,9 @@ static struct bb_str *sbb_head	= 0;		/* Head of string list.  */
 static struct bb_str **sbb_tail	= &sbb_head;	/* Ptr to store next bb str */
 static int sbb_label_num	= 0;		/* Last label used */
 
+#ifdef HAVE_ATTR_length
 static int asm_insn_count	PROTO((rtx));
+#endif
 static void profile_function	PROTO((FILE *));
 static void profile_after_prologue PROTO((FILE *));
 static void add_bb		PROTO((FILE *));

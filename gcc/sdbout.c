@@ -114,7 +114,7 @@ static void sdbout_syms			PROTO((tree));
 static void sdbout_queue_anonymous_type	PROTO((tree));
 static void sdbout_dequeue_anonymous_types PROTO((void));
 static void sdbout_type			PROTO((tree));
-static void sbdout_field_types		PROTO((tree));
+static void sdbout_field_types		PROTO((tree));
 static void sdbout_one_type		PROTO((tree));
 static void sdbout_parms		PROTO((tree));
 static void sdbout_reg_parms		PROTO((tree));
@@ -951,6 +951,9 @@ sdbout_symbol (decl, local)
 	  return;
 	}
       break;
+
+    default:
+      break;
     }
   PUT_SDB_TYPE (plain_type (type));
   PUT_SDB_ENDEF;
@@ -1166,6 +1169,9 @@ sdbout_one_type (type)
 	    PUT_SDB_TYPE (T_ENUM);
 	    member_scl = C_MOE;
 	    break;
+
+	  default:
+	    break;
 	  }
 
 	PUT_SDB_SIZE (size);
@@ -1257,6 +1263,9 @@ sdbout_one_type (type)
 	PUT_SDB_TAG (KNOWN_TYPE_TAG (type));
 	PUT_SDB_SIZE (size);
 	PUT_SDB_ENDEF;
+	break;
+
+      default:
 	break;
       }
     }

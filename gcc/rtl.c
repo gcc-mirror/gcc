@@ -22,6 +22,9 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include <ctype.h>
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include "rtl.h"
 #include "real.h"
 
@@ -491,7 +494,7 @@ read_skip_spaces (infile)
      FILE *infile;
 {
   register int c;
-  while (c = getc (infile))
+  while ((c = getc (infile)))
     {
       if (c == ' ' || c == '\n' || c == '\t' || c == '\f')
 	;
@@ -507,7 +510,7 @@ read_skip_spaces (infile)
 	    dump_and_abort ('*', c, infile);
 	  
 	  prevc = 0;
-	  while (c = getc (infile))
+	  while ((c = getc (infile)))
 	    {
 	      if (prevc == '*' && c == '/')
 		break;
@@ -662,7 +665,7 @@ read_rtx (infile)
       case 'E':
 	{
 	  register struct rtx_list *next_rtx, *rtx_list_link;
-	  struct rtx_list *list_rtx;
+	  struct rtx_list *list_rtx = NULL_RTX;
 
 	  c = read_skip_spaces (infile);
 	  if (c != '[')

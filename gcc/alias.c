@@ -202,6 +202,9 @@ find_base_value (src)
 
     case HIGH:
       return find_base_value (XEXP (src, 0));
+
+    default:
+      break;
     }
 
   return 0;
@@ -759,6 +762,9 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 	  c /= INTVAL (x1);
 	  return memrefs_conflict_p (xsize, x0, ysize, y0, c);
 	}
+
+      default:
+	break;
       }
 
   /* Treat an access through an AND (e.g. a subword access on an Alpha)

@@ -33,10 +33,10 @@ static int
 __store_long (value, dest, bytes)
      long value;
      char *dest;
-     int bytes;
+     size_t bytes;
 {
   int upper_bit = (value < 0 ? 128 : 0);
-  int i;
+  size_t i;
 
   if (value < 0)
     {
@@ -100,7 +100,7 @@ static int
 __write_long (value, file, bytes)
      long value;
      FILE *file;
-     int bytes;
+     size_t bytes;
 {
   char c[10];
 
@@ -123,7 +123,7 @@ static int
 __read_long (dest, file, bytes)
      long *dest;
      FILE *file;
-     int bytes;
+     size_t bytes;
 {
   char c[10];
 

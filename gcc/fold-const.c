@@ -1519,7 +1519,7 @@ fold_convert (t, arg1)
 	    = (TREE_OVERFLOW (arg1)
 	       || (force_fit_type (t,
 				  (TREE_INT_CST_HIGH (arg1) < 0
-				   & (TREE_UNSIGNED (type)
+				   && (TREE_UNSIGNED (type)
 				     < TREE_UNSIGNED (TREE_TYPE (arg1)))))
 		   && TREE_CODE (TREE_TYPE (arg1)) != POINTER_TYPE));
 	  TREE_CONSTANT_OVERFLOW (t)
@@ -5391,6 +5391,8 @@ fold (expr)
 					     arg0),
 				    convert (signed_type (TREE_TYPE (arg1)),
 					     integer_zero_node)));
+	      default:
+		break;
 	      }
 	  }
       }

@@ -299,7 +299,9 @@ static void write_list_with_asm PROTO((FILE *, char *, struct id *));
 static void write_c_file	PROTO((FILE *, char *));
 static void write_export_file	PROTO((FILE *));
 static void scan_prog_file	PROTO((char *, enum pass));
+#ifdef SCAN_LIBRARIES
 static void scan_libraries	PROTO((char *));
+#endif
 
 char *xcalloc ();
 char *xmalloc ();

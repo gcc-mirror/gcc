@@ -2,7 +2,7 @@
    source file.
    Copyright (C) 1990, 91, 92, 93, 94, 96, 1997 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
-   Mongled by Bob Manson of Cygnus Support.
+   Mangled by Bob Manson of Cygnus Support.
 
 Gcov is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -41,17 +41,29 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    is no way to get the total execution counts for the included file, can
    only get execution counts for one or the other of the including files.  */
 
+#include "config.h"
 #include <stdio.h>
+#include "gansidecl.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 
-/* The only need for this is so that we get macro definitions for rindex
-   if necessary.  */
-#include "config.h"
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
 
 #include "gcov-io.h"
 
-extern char * rindex ();
+#ifdef NEED_DECLARATION_RINDEX
+extern char *rindex ();
+#endif
 
 /* The .bb file format consists of several lists of 4-byte integers
    which are the line numbers of each basic block in the file.  Each
@@ -686,7 +698,7 @@ read_files ()
   struct stat buf;
   struct bb_info_list *list_end = 0;
   struct bb_info_list *b_ptr;
-  long total, first_time;
+  long total;
 
   /* Read and ignore the first word of the .da file, which is the count of
      how many numbers follow.  */
@@ -706,7 +718,7 @@ read_files ()
 
       /* Read in the data in the .bbg file and reconstruct the program flow
 	 graph for one function.  */
-      create_program_flow_graph (b_ptr, first_time);
+      create_program_flow_graph (b_ptr);
 
       /* Set the EOF condition if at the end of file.  */
       ungetc (getc (bbg_file), bbg_file);
@@ -734,7 +746,7 @@ read_files ()
   stat (bb_file_name, &buf);
   bb_data_size = buf.st_size / 4;
 
-  bb_data = (char *) xmalloc (buf.st_size);
+  bb_data = (char *) xmalloc ((unsigned) buf.st_size);
   fread (bb_data, sizeof (char), buf.st_size, bb_file);
   
   fclose (bb_file);
@@ -750,7 +762,7 @@ read_files ()
 static void
 scan_for_source_files ()
 {
-  struct sourcefile *s_ptr;
+  struct sourcefile *s_ptr = NULL;
   char *ptr;
   int count;
   long line_num;
@@ -901,7 +913,7 @@ static void
 function_summary ()
 {
   if (function_source_lines)
-    fprintf (stdout, "%6.2lf%% of %d source lines executed in function %s\n",
+    fprintf (stdout, "%6.2f%% of %d source lines executed in function %s\n",
 	     (((double) function_source_lines_executed / function_source_lines)
 	      * 100), function_source_lines, function_name);
   else
@@ -912,18 +924,18 @@ function_summary ()
     {
       if (function_branches)
 	{
-	  fprintf (stdout, "%6.2lf%% of %d branches executed in funcion %s\n",
+	  fprintf (stdout, "%6.2f%% of %d branches executed in function %s\n",
 		   (((double) function_branches_executed / function_branches)
 		    * 100), function_branches, function_name);
 	  fprintf (stdout,
-		"%6.2lf%% of %d branches taken at least once in function %s\n",
+		"%6.2f%% of %d branches taken at least once in function %s\n",
 		   (((double) function_branches_taken / function_branches)
 		    * 100), function_branches, function_name);
 	}
       else
 	fprintf (stdout, "No branches in function %s\n", function_name);
       if (function_calls)
-	fprintf (stdout, "%6.2lf%% of %d calls executed in function %s\n",
+	fprintf (stdout, "%6.2f%% of %d calls executed in function %s\n",
 		 (((double) function_calls_executed / function_calls)
 		  * 100), function_calls, function_name);
       else
@@ -949,7 +961,7 @@ output_data ()
   char *line_exists;
   /* An array indexed by line number, which contains a list of branch
      probabilities, one for each branch on that line.  */
-  struct arcdata **branch_probs;
+  struct arcdata **branch_probs = NULL;
   struct sourcefile *s_ptr;
   char *source_file_name;
   FILE *source_file;
@@ -958,7 +970,7 @@ output_data ()
   char *cptr;
   long block_num;
   long line_num;
-  long last_line_num;
+  long last_line_num = 0;
   int i;
   struct arcdata *a_ptr;
   /* Buffer used for reading in lines from the source file.  */
@@ -1061,7 +1073,7 @@ output_data ()
 			fprintf (stderr,
 				 "didn't use all bb entries of graph, function %s\n",
 				 function_name);
-			fprintf (stderr, "block_num = %d, num_blocks = %d\n",
+			fprintf (stderr, "block_num = %ld, num_blocks = %d\n",
 				 block_num, current_graph->num_blocks);
 		      }
 
@@ -1176,7 +1188,7 @@ output_data ()
 
       if (total_source_lines)
 	fprintf (stdout,
-		 "%6.2lf%% of %d source lines executed in file %s\n",
+		 "%6.2f%% of %d source lines executed in file %s\n",
 		 (((double) total_source_lines_executed / total_source_lines)
 		  * 100), total_source_lines, source_file_name);
       else
@@ -1187,18 +1199,18 @@ output_data ()
 	{
 	  if (total_branches)
 	    {
-	      fprintf (stdout, "%6.2lf%% of %d branches executed in file %s\n",
+	      fprintf (stdout, "%6.2f%% of %d branches executed in file %s\n",
 		       (((double) total_branches_executed / total_branches)
 			* 100), total_branches, source_file_name);
 	      fprintf (stdout,
-		    "%6.2lf%% of %d branches taken at least once in file %s\n",
+		    "%6.2f%% of %d branches taken at least once in file %s\n",
 		       (((double) total_branches_taken / total_branches)
 			* 100), total_branches, source_file_name);
 	    }
 	  else
 	    fprintf (stdout, "No branches in file %s\n", source_file_name);
 	  if (total_calls)
-	    fprintf (stdout, "%6.2lf%% of %d calls executed in file %s\n",
+	    fprintf (stdout, "%6.2f%% of %d calls executed in file %s\n",
 		     (((double) total_calls_executed / total_calls)
 		      * 100), total_calls, source_file_name);
 	  else
@@ -1208,7 +1220,7 @@ output_data ()
       if (output_gcov_file)
 	{
 	  /* Now the statistics are ready.  Read in the source file one line
-	     at a time, and output that line to the gcov file preceeded by
+	     at a time, and output that line to the gcov file preceded by
 	     its execution count if non zero.  */
       
 	  source_file = fopen (source_file_name, "r");
@@ -1285,12 +1297,12 @@ output_data ()
 		 before the source line.  For lines which exist but were never
 		 executed, print ###### before the source line.  Otherwise,
 		 print the execution count before the source line.  */
-	      /* There are 16 spaces of identation added before the source line
-		 so that tabs won't be messed up.  */
+	      /* There are 16 spaces of indentation added before the source
+		 line so that tabs won't be messed up.  */
 	      if (line_exists[count])
 		{
 		  if (line_counts[count])
-		    fprintf (gcov_file, "%12d    %s", line_counts[count],
+		    fprintf (gcov_file, "%12ld    %s", line_counts[count],
 			     string);
 		  else
 		    fprintf (gcov_file, "      ######    %s", string);
@@ -1299,7 +1311,7 @@ output_data ()
 		fprintf (gcov_file, "\t\t%s", string);
 
 	      /* In case the source file line is larger than our buffer, keep
-		 reading and outputing lines until we get a newline.  */
+		 reading and outputting lines until we get a newline.  */
 	      len = strlen (string);
 	      while ((len == 0 || string[strlen (string) - 1] != '\n')
 		     && retval != NULL)
@@ -1356,7 +1368,7 @@ output_data ()
 		fprintf (gcov_file, "\t\t%s", string);
 
 		/* In case the source file line is larger than our buffer, keep
-		   reading and outputing lines until we get a newline.  */
+		   reading and outputting lines until we get a newline.  */
 		len = strlen (string);
 		while ((len == 0 || string[strlen (string) - 1] != '\n')
 		       && retval != NULL)

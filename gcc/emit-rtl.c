@@ -257,7 +257,7 @@ extern int emit_lineno;
 
 static rtx make_jump_insn_raw		PROTO((rtx));
 static rtx make_call_insn_raw		PROTO((rtx));
-static rtx find_line_node		PROTO((rtx));
+static rtx find_line_note		PROTO((rtx));
 
 /* rtx gen_rtx (code, mode, [element1, ..., elementn])
 **
