@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations
    based on target macros.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,6 +21,17 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef __GCC_TSYSTEM_H__
 #define __GCC_TSYSTEM_H__
+
+/* System headers (e.g. stdio.h, stdlib.h, unistd.h) sometimes
+   indirectly include getopt.h.  Our -I flags will cause gcc's gnu
+   getopt.h to be included, not the platform's copy.  In the default
+   case, gnu getopt.h will provide us with a no-argument prototype
+   which will generate -Wstrict-prototypes warnings.  None of the
+   target files actually use getopt, so it is safe to tell gnu
+   getopt.h we never need this prototype.  */
+#ifndef HAVE_DECL_GETOPT
+#define HAVE_DECL_GETOPT 1
+#endif
 
 /* GCC supplies this header. */
 #include <stddef.h>
