@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_SWITCHES						\
      { "half-pic",		 MASK_HALF_PIC,				\
        N_("Emit half-PIC code") },					\
-     { "no-half-pic",		-MASK_HALF_PIC, "" }			\
+     { "no-half-pic",		-MASK_HALF_PIC, "" },			\
      { "debug-half-pic",	 MASK_HALF_PIC_DEBUG,			\
        0 /* intentionally undoc */ },					\
      { "debugb",		 MASK_HALF_PIC_DEBUG,			\
@@ -209,8 +209,8 @@ do									\
   {									\
     if (!OSF_PROFILE_BEFORE_PROLOGUE)					\
       {									\
-	char *prefix = (TARGET_UNDERSCORES) ? "_" : "";			\
-	char *lprefix = LPREFIX;					\
+	const char *const prefix = (TARGET_UNDERSCORES) ? "_" : "";	\
+	const char *const lprefix = LPREFIX;				\
 	int labelno = LABELNO;						\
 									\
 	/* Note that OSF/rose blew it in terms of calling mcount,	\

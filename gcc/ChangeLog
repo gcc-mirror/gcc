@@ -1,3 +1,18 @@
+2001-10-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (toplev.o, halfpic.o): Depend on halfpic.h
+	* i386/osfrose.h (SUBTARGET_SWITCHES): Add missing comma.
+	(FUNCTION_PROFILER): Const-ify.
+	* halfpic.c: Include "expr.h", "output.h" and "halfpic.h".
+	(eliminate_constant_term, assemble_name, output_addr_const):
+	Remove declarations.
+	(ptr_half_pic_address_p, half_pic_hash): Prototype.
+	(all_refs, half_pic_prefix, half_pic_hash, half_pic_declare,
+	half_pic_external, half_pic_address_p, half_pic_ptr): Const-ify.
+	* halfpic.h (ptr_half_pic_address_p, half_pic_finish): Prototype.
+	(half_pic_declare, half_pic_external): Const-ify.
+	* toplev.c: Include "halfpic.h".
+
 2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* config/alpha/alpha.md, config/arm/arm.c, config/arm/arm.h,

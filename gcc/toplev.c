@@ -85,6 +85,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "xcoffout.h"		/* Needed for external data
 				   declarations for e.g. AIX 4.x.  */
 #endif
+
+#ifdef HALF_PIC_DEBUG
+#include "halfpic.h"
+#endif
 
 #ifdef VMS
 /* The extra parameters substantially improve the I/O performance.  */
