@@ -2282,7 +2282,9 @@ mark_used_regs (needed, live, x, final, insn)
       if (GET_CODE (SUBREG_REG (x)) == REG
 	  && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER
 	  && (GET_MODE_SIZE (GET_MODE (x))
-	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+	  && (INTEGRAL_MODE_P (GET_MODE (x))
+	      || INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (x)))))
 	reg_changes_size[REGNO (SUBREG_REG (x))] = 1;
 
       /* While we're here, optimize this case.  */
