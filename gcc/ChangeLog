@@ -1,3 +1,10 @@
+2005-03-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/20940
+	
+	* tree-ssa-pre.c (create_expression_by_pieces): Use
+	force_gimple_operand on result of fold.
+
 2005-03-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/i386/emmintrin.h (_mm_extract_epi16): Correct the number
