@@ -159,9 +159,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Definitions for types and sizes. Wide characters are 16-bits long so
    Win32 compiler add-ons will be wide character compatible.  */
-#undef WCHAR_UNSIGNED
-#define WCHAR_UNSIGNED 1
-
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 16
 

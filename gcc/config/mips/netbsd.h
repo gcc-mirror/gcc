@@ -185,9 +185,6 @@ Boston, MA 02111-1307, USA.  */
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 
-#undef WCHAR_UNSIGNED
-#define WCHAR_UNSIGNED 0
-
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 

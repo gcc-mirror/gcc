@@ -1516,14 +1516,6 @@ A C expression for the size in bits of the type @code{char} on the
 target machine.  If you don't define this, the default is
 @code{BITS_PER_UNIT}.
 
-@findex MAX_CHAR_TYPE_SIZE
-@item MAX_CHAR_TYPE_SIZE
-Maximum number for the size in bits of the type @code{char} on the
-target machine.  If this is undefined, the default is
-@code{CHAR_TYPE_SIZE}.  Otherwise, it is the constant value that is the
-largest value that @code{CHAR_TYPE_SIZE} can have at run-time.  This is
-used in @code{cpp}.
-
 @findex BOOL_TYPE_SIZE
 @item BOOL_TYPE_SIZE
 A C expression for the size in bits of the C++ type @code{bool} and

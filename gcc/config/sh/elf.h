@@ -30,9 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #undef SIZE_TYPE
 #undef PTRDIFF_TYPE
 
-/* And one that is defined in sh.h and should be undefined in svr4.h...  */
-#undef WCHAR_UNSIGNED
-
 /* Be ELF-like.  */
 /* TODO: convert includes to ${tm_file} list in config.gcc.  */
 #include "dbxelf.h"

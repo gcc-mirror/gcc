@@ -318,10 +318,6 @@ do {								\
 #define WCHAR_TYPE_SIZE INT_TYPE_SIZE
 #endif
 
-#ifndef WCHAR_UNSIGNED
-#define WCHAR_UNSIGNED 0
-#endif
-
 #ifndef FLOAT_TYPE_SIZE
 #define FLOAT_TYPE_SIZE BITS_PER_WORD
 #endif

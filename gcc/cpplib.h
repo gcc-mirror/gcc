@@ -251,18 +251,11 @@ struct cpp_options
   /* -fleading_underscore sets this to "_".  */
   const char *user_label_prefix;
 
-  /* Precision for target CPP arithmetic, target characters, target
-     ints and target wide characters, respectively.  */
-  size_t precision, char_precision, int_precision, wchar_precision;
-
   /* The language we're preprocessing.  */
   enum c_lang lang;
 
   /* Non-0 means -v, so print the full set of include dirs.  */
   unsigned char verbose;
-
-  /* Nonzero means chars are signed.  */
-  unsigned char signed_char;
 
   /* Nonzero means use extra default include directories for C++.  */
   unsigned char cplusplus;
@@ -395,6 +388,15 @@ struct cpp_options
      options.  Stand-alone CPP should then bail out after option
      parsing; drivers might want to continue printing help.  */
   unsigned char help_only;
+
+  /* Target-specific features set by the front end or client.  */
+
+  /* Precision for target CPP arithmetic, target characters, target
+     ints and target wide characters, respectively.  */
+  size_t precision, char_precision, int_precision, wchar_precision;
+
+  /* Nonzero means chars (wide chars) are unsigned.  */
+  unsigned char unsigned_char, unsigned_wchar;
 };
 
 /* Call backs.  */

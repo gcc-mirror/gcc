@@ -1883,13 +1883,13 @@ cpp_interpret_charconst (pfile, token, pchars_seen, unsignedp)
     {
       width = CPP_OPTION (pfile, char_precision);
       max_chars = CPP_OPTION (pfile, int_precision) / width;
-      unsigned_p = CPP_OPTION (pfile, signed_char) == 0;
+      unsigned_p = CPP_OPTION (pfile, unsigned_char);
     }
   else
     {
       width = CPP_OPTION (pfile, wchar_precision);
       max_chars = 1;
-      unsigned_p = WCHAR_UNSIGNED;
+      unsigned_p = CPP_OPTION (pfile, unsigned_wchar);
     }
 
   if (width < BITS_PER_CPPCHAR_T)

@@ -2522,7 +2522,6 @@ while (0)
 
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
-#define WCHAR_UNSIGNED 1
 
 #define SH_ELF_WCHAR_TYPE "long int"
 
