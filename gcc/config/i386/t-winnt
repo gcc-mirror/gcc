@@ -1,6 +1,0 @@
-winnt.o: $(srcdir)/config/i386/winnt.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/i386/winnt.c
-oldnames.o: $(srcdir)/config/winnt/oldnames.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/winnt/oldnames.c
-spawnv.o: $(srcdir)/config/winnt/spawnv.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/winnt/spawnv.c

@@ -1,8 +1,0 @@
-// Main header for -*- C++ -*- valarray classes.
-
-#ifndef __VALARRAY__
-#define __VALARRAY__
-
-#include <std/std_valarray.h>
-
-#endif

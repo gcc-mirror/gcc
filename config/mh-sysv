@@ -1,3 +1,0 @@
-# Define SYSV as -DSYSV if you are using a System V operating system.
-SYSV = -DSYSV
-RANLIB = true

@@ -1,7 +1,0 @@
-2 -> 20
-4 -> 40
-my_map[2] = 20
-my_map[4] = 40
-phones[dick] = 5678
-phones[harry] = 7654
-phones[tom] = 2345

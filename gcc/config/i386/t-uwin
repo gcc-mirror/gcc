@@ -1,5 +1,0 @@
-#
-# This is included *after* t-cygwin to override LIB1ASMSRC.
-#
-LIB1ASMSRC = i386/uwin.asm
-

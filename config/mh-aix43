@@ -1,4 +1,0 @@
-# AIX 4.3 and above requires -X32_64 flag to all ar and nm commands
-# to handle both 32-bit and 64-bit objects.
-AR_FOR_TARGET=ar -X32_64
-NM_FOR_TARGET=nm -X32_64

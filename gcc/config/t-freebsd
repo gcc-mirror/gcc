@@ -1,4 +1,0 @@
-# Don't run fixproto
-STMP_FIXPROTO =
-# Use only native include files
-USER_H = $(EXTRA_HEADERS) $(LANG_EXTRA_HEADERS)

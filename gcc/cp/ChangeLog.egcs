@@ -1,4 +1,0 @@
-Wed Sep 10 16:39:26 1997  Jim Wilson  <wilson@cygnus.com>
-
-	* Make-lang.in (LN, LN_S): New macros, use where appropriate.
-

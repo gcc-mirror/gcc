@@ -1,7 +1,0 @@
-CC = cc -Wx,-X23
-
-# The following line might be necessary as well or instead of the above.
-# If you find out that it is necessary,
-# or if you find out that it is not necessary,
-# please inform bug-gcc@prep.ai.mit.edu.
-# ALLOCA = alloca.o

@@ -1,9 +1,0 @@
-This directory has been obsoleted for egcs snapshots and CVS access.
-
-Instead check out the toplevel "wwwdocs" as a sibling of your egcs
-tree or read these files via the egcs web site
-http://egcs.cygnus.com
-
-
-Copies of the relevant files will be copied into this directory for
-releases.
