@@ -1,3 +1,9 @@
+Fri Nov  9 11:27:42 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.md (mulsi3): Remove PA64 hack to work around SUBREG issues.
+	(muldi3): Update due to SUBREG_BYTE changes.
+	(casesi): Similarly.
+
 2001-11-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* doc/invoke.texi: Remove comment referring to -xf77-version.

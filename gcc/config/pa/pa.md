@@ -3881,16 +3881,6 @@
       operands[1] = force_reg (SImode, operands[1]);
       operands[2] = force_reg (SImode, operands[2]);
       emit_insn (gen_umulsidi3 (scratch, operands[1], operands[2]));
-      /* We do not want (subreg:SI (XX:DI) 1)) for TARGET_64BIT since
-	 that has no real meaning.  */
-      if (TARGET_64BIT)
-	{
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operands[0],
-				  gen_rtx_SUBREG (SImode, scratch, 0)));
-	  DONE;
-	  
-	}
       emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 			      gen_rtx_SUBREG (SImode, scratch, GET_MODE_SIZE (SImode))));
       DONE;
@@ -3993,10 +3983,10 @@
 						GEN_INT (32)));
   emit_move_insn (op2shifted, gen_rtx_LSHIFTRT (DImode, operands[2],
 						GEN_INT (32)));
-  op1r = gen_rtx_SUBREG (SImode, operands[1], 0);
-  op2r = gen_rtx_SUBREG (SImode, operands[2], 0);
-  op1l = gen_rtx_SUBREG (SImode, op1shifted, 0);
-  op2l = gen_rtx_SUBREG (SImode, op2shifted, 0);
+  op1r = gen_rtx_SUBREG (SImode, operands[1], 4);
+  op2r = gen_rtx_SUBREG (SImode, operands[2], 4);
+  op1l = gen_rtx_SUBREG (SImode, op1shifted, 4);
+  op2l = gen_rtx_SUBREG (SImode, op2shifted, 4);
 
   /* Emit multiplies for the cross products.  */
   emit_insn (gen_umulsidi3 (cross_product1, op2r, op1l));
@@ -5774,7 +5764,7 @@
     {
       rtx reg = gen_reg_rtx (DImode);
       emit_insn (gen_extendsidi2 (reg, operands[0]));
-      operands[0] = gen_rtx_SUBREG (SImode, reg, 0);
+      operands[0] = gen_rtx_SUBREG (SImode, reg, 4);
     }
 
   if (!INT_5_BITS (operands[2]))
