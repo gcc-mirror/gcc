@@ -3410,7 +3410,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		 "Biv %d initialized at insn %d: initial value ",
 		 bl->regno, INSN_UID (bl->init_insn));
 
-      if (valid_initial_value_p (src, bl->init_insn, call_seen, loop_start))
+      if (GET_MODE (src) == GET_MODE (regno_reg_rtx[bl->regno])
+	  && valid_initial_value_p (src, bl->init_insn, call_seen, loop_start))
 	{
 	  bl->initial_value = src;
 
@@ -6239,9 +6240,7 @@ record_initial (dest, set)
 
   if (GET_CODE (dest) != REG
       || REGNO (dest) >= max_reg_before_loop
-      || reg_iv_type[REGNO (dest)] != BASIC_INDUCT
-      /* Reject this insn if the source isn't valid for the mode of DEST.  */
-      || GET_MODE (dest) != GET_MODE (SET_DEST (set)))
+      || reg_iv_type[REGNO (dest)] != BASIC_INDUCT)
     return;
 
   bl = reg_biv_class[REGNO (dest)];
