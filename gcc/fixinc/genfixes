@@ -1,20 +1,5 @@
 #! /bin/sh
 
-SHELL=/bin/sh
-export SHELL
-
-if [ $# -eq 0 ] ; then
-  echo AutoGen-ing inclhack.sh
-  autogen inclhack.def
-
-  echo AutoGen-ing fixincl.x
-  autogen -T fixincl.tpl -b fixincl inclhack.def
-
-  echo AutoGen-ing fixincl.sh
-  autogen -DPROGRAM=1 -b fixincl inclhack.def
-  exit 0
-fi
-
 if (autogen --help > /dev/null 2>&1) ; then : ; else
   echo "AutoGen does not appear to be correctly installed."
   echo "Please download and install:"
@@ -22,22 +7,75 @@ if (autogen --help > /dev/null 2>&1) ; then : ; else
   exit 1
 fi
 
+SHELL=/bin/sh
+export SHELL
+AG=""
+if [ $# -eq 0 ] ; then
+  not_done=false
+else
+  not_done=true
+fi
+
+while $not_done
+do
+  case "$1" in
+  -D )
+    shift
+    if [ $# -eq 0 ] ; then
+      not_done=false
+    else
+      AG="$AG -D$1"
+      shift
+    fi
+    ;;
+
+  -D* )
+    AG="$AG $1"
+    shift
+    ;;
+
+  '-?' )
+    echo "USAGE: gendefs [ -D<def-name> ... ] [ <output-name> ]"
+    echo "WHERE: '<def-name>' specifies a #define test name from inclhack.def"
+    echo "  and  '<output-name>' is one of:  inclhack.sh fixincl.x fixincl.sh"
+    echo "The default is to produce all three outputs."
+    exit 0
+    ;;
+
+  * )
+    not_done=false
+    ;;
+  esac
+done
+
+if [ $# -eq 0 ] ; then
+  echo AutoGen-ing inclhack.sh
+  $AG inclhack.def
+
+  echo AutoGen-ing fixincl.x
+  $AG -T fixincl.tpl -b fixincl inclhack.def
+
+  echo AutoGen-ing fixincl.sh
+  $AG -DPROGRAM=1 -b fixincl inclhack.def
+  exit 0
+fi
+
 set -e
 
 case "$1" in
 inclhack.def )
   echo AutoGen-ing inclhack.sh
-  autogen inclhack.sh
+  $AG inclhack.sh
   ;;
 
 fixincl.x )
   echo AutoGen-ing fixincl.x
-  autogen -T fixincl.tpl -b fixincl inclhack.def
+  $AG -T fixincl.tpl -b fixincl inclhack.def
   ;;
 
 fixincl.sh )
   echo AutoGen-ing fixincl.sh
-  autogen -DPROGRAM=1 -b fixincl inclhack.def
+  $AG -DPROGRAM=1 -b fixincl inclhack.def
   ;;
 
 * )
