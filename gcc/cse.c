@@ -1287,6 +1287,14 @@ insert (x, classp, hash, mode)
 	    SET_HARD_REG_BIT (hard_regs_in_table, i);
     }
 
+  /* If X is a label, show we are altering jumps.  We don't KNOW
+     we are, but we might be putting it into a insn which would
+     then need a new REG_LABEL note.  Be conservative and say
+     we alter jumps here; we usually will in this case anyway.  */
+  if (GET_CODE (x) == LABEL_REF
+      || (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF))
+    cse_jumps_altered = 1;
 
   /* Put an element for X into the right hash bucket.  */
 
