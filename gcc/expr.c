@@ -1402,26 +1402,6 @@ convert_modes (mode, oldmode, x, unsignedp)
 #define MOVE_MAX_PIECES   MOVE_MAX
 #endif
 
-/* Some architectures do not have complete pre/post increment/decrement
-   instruction sets, or only move some modes efficiently. these macros
-   allow us to fine tune move_by_pieces for these targets. */
-
-#ifndef USE_LOAD_POST_INCREMENT
-#define USE_LOAD_POST_INCREMENT(MODE)   HAVE_POST_INCREMENT
-#endif
-
-#ifndef USE_LOAD_PRE_DECREMENT
-#define USE_LOAD_PRE_DECREMENT(MODE)    HAVE_PRE_DECREMENT
-#endif
-
-#ifndef USE_STORE_POST_INCREMENT
-#define USE_STORE_POST_INCREMENT(MODE)  HAVE_POST_INCREMENT
-#endif
-
-#ifndef USE_STORE_PRE_DECREMENT
-#define USE_STORE_PRE_DECREMENT(MODE)   HAVE_PRE_DECREMENT
-#endif
-
 /* Generate several move instructions to copy LEN bytes
    from block FROM to block TO.  (These are MEM rtx's with BLKmode).
    The caller must pass FROM and TO

@@ -755,6 +755,44 @@ extern char *note_insn_name[];
 #define HAVE_POST_DECREMENT 0
 #endif
 
+
+/* Some architectures do not have complete pre/post increment/decrement
+   instruction sets, or only move some modes efficiently.  These macros
+   allow us to tune autoincrement generation.  */
+
+#ifndef USE_LOAD_POST_INCREMENT
+#define USE_LOAD_POST_INCREMENT(MODE)   HAVE_POST_INCREMENT
+#endif
+
+#ifndef USE_LOAD_POST_DECREMENT
+#define USE_LOAD_POST_DECREMENT(MODE)   HAVE_POST_DECREMENT
+#endif
+
+#ifndef USE_LOAD_PRE_INCREMENT
+#define USE_LOAD_PRE_INCREMENT(MODE)    HAVE_PRE_INCREMENT
+#endif
+
+#ifndef USE_LOAD_PRE_DECREMENT
+#define USE_LOAD_PRE_DECREMENT(MODE)    HAVE_PRE_DECREMENT
+#endif
+
+#ifndef USE_STORE_POST_INCREMENT
+#define USE_STORE_POST_INCREMENT(MODE)  HAVE_POST_INCREMENT
+#endif
+
+#ifndef USE_STORE_POST_DECREMENT
+#define USE_STORE_POST_DECREMENT(MODE)  HAVE_POST_DECREMENT
+#endif
+
+#ifndef USE_STORE_PRE_INCREMENT
+#define USE_STORE_PRE_INCREMENT(MODE)   HAVE_PRE_INCREMENT
+#endif
+
+#ifndef USE_STORE_PRE_DECREMENT
+#define USE_STORE_PRE_DECREMENT(MODE)   HAVE_PRE_DECREMENT
+#endif
+
+
 /* Accessors for RANGE_INFO.  */
 /* For RANGE_{START,END} notes return the RANGE_START note.  */
 #define RANGE_INFO_NOTE_START(INSN) (XEXP (INSN, 0))
