@@ -1,3 +1,7 @@
+2001-04-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g++.old-deja/g++.other/crash14.C: Remove -fnew-abi.
+
 2001-04-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.eh/crash6.C: New test.

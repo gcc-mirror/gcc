@@ -1,5 +1,4 @@
 // Build don't link:
-// Special g++ Options: -fnew-abi
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 struct S 

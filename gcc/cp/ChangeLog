@@ -1,3 +1,8 @@
+2001-04-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* decl2.c (unsupported_options): Add new-abi.
+	* lang-options.h: Remove no longer supported options.
+
 2001-04-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* except.c (can_convert_eh): Don't check template parms,
