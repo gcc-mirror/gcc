@@ -116,12 +116,41 @@
    (set_attr "neg_pool_range" "*,*,4084,     *,*,*,   *,  1012,*")
    ;; Note - the "predicable" attribute is not allowed to have alternatives.
    ;; Since the wSTRw wCx instruction is not predicable, we cannot support
-   ;; predicating any of the alternatives in this template.  This sucks.
+   ;; predicating any of the alternatives in this template.  Instead,
+   ;; we do the predication ourselves, in cond_iwmmxt_movsi_insn.
    (set_attr "predicable"     "no")
    ;; Also - we have to pretend that these insns clobber the condition code
    ;; bits as otherwise arm_final_prescan_insn() will try to conditionalize
    ;; them.
    (set_attr "conds" "clob")]
+)
+
+;; Because iwmmxt_movsi_insn is not predicable, we provide the
+;; cond_exec version explicitly, with appropriate constraints.
+
+(define_insn "*cond_iwmmxt_movsi_insn"
+  [(cond_exec
+     (match_operator 2 "arm_comparison_operator"
+      [(match_operand 3 "cc_register" "")
+      (const_int 0)])
+     (set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m,z,r")
+	  (match_operand:SI 1 "general_operand"      "rI,K,mi,r,r,z")))]
+  "TARGET_REALLY_IWMMXT
+   && (   register_operand (operands[0], SImode)
+       || register_operand (operands[1], SImode))"
+  "*
+   switch (which_alternative)
+   {
+   case 0: return \"mov%?\\t%0, %1\";
+   case 1: return \"mvn%?\\t%0, #%B1\";
+   case 2: return \"ldr%?\\t%0, %1\";
+   case 3: return \"str%?\\t%1, %0\";
+   case 4: return \"tmcr%?\\t%0, %1\";
+   default: return \"tmrc%?\\t%0, %1\";
+  }"
+  [(set_attr "type"           "*,*,load,store1,*,*")
+   (set_attr "pool_range"     "*,*,4096,     *,*,*")
+   (set_attr "neg_pool_range" "*,*,4084,     *,*,*")]
 )
 
 (define_insn "movv8qi_internal"
