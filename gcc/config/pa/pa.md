@@ -4965,6 +4965,144 @@
 	  (const_int 8)
 	  (const_int 12)))))])
 
+;; The next several patterns (parallel_addb, parallel_movb, fmpyadd and
+;; fmpysub aren't currently used by the FSF sources, but will be soon.
+;;
+;; They're in the FSF tree for documentation and to make Cygnus<->FSF
+;; merging easier.
+(define_insn ""
+  [(set (pc) (label_ref (match_operand 3 "" "" )))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(plus:SI (match_operand:SI 1 "register_operand" "r")
+		 (match_operand:SI 2 "ireg_or_int5_operand" "rL")))]
+  "reload_completed && operands[0] == operands[1] || operands[0] == operands[2]"
+  "*
+{
+  return output_parallel_addb (operands, get_attr_length (insn));
+}"
+  [(set_attr "type" "parallel_branch")
+   (set (attr "length")
+    (if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
+		      (const_int 8184))
+           (const_int 4)
+	   (const_int 8)))])
+
+(define_insn ""
+  [(set (pc) (label_ref (match_operand 2 "" "" )))
+   (set (match_operand:SF 0 "register_operand" "=r")
+	(match_operand:SF 1 "ireg_or_int5_operand" "rL"))]
+  "reload_completed"
+  "*
+{
+  return output_parallel_movb (operands, get_attr_length (insn));
+}"
+  [(set_attr "type" "parallel_branch")
+   (set (attr "length")
+    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+		      (const_int 8184))
+           (const_int 4)
+	   (const_int 8)))])
+
+(define_insn ""
+  [(set (pc) (label_ref (match_operand 2 "" "" )))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(match_operand:SI 1 "ireg_or_int5_operand" "rL"))]
+  "reload_completed"
+  "*
+{
+  return output_parallel_movb (operands, get_attr_length (insn));
+}"
+  [(set_attr "type" "parallel_branch")
+   (set (attr "length")
+    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+		      (const_int 8184))
+           (const_int 4)
+	   (const_int 8)))])
+
+(define_insn ""
+  [(set (pc) (label_ref (match_operand 2 "" "" )))
+   (set (match_operand:HI 0 "register_operand" "=r")
+	(match_operand:HI 1 "ireg_or_int5_operand" "rL"))]
+  "reload_completed"
+  "*
+{
+  return output_parallel_movb (operands, get_attr_length (insn));
+}"
+  [(set_attr "type" "parallel_branch")
+   (set (attr "length")
+    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+		      (const_int 8184))
+           (const_int 4)
+	   (const_int 8)))])
+
+(define_insn ""
+  [(set (pc) (label_ref (match_operand 2 "" "" )))
+   (set (match_operand:QI 0 "register_operand" "=r")
+	(match_operand:QI 1 "ireg_or_int5_operand" "rL"))]
+  "reload_completed"
+  "*
+{
+  return output_parallel_movb (operands, get_attr_length (insn));
+}"
+  [(set_attr "type" "parallel_branch")
+   (set (attr "length")
+    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+		      (const_int 8184))
+           (const_int 4)
+	   (const_int 8)))])
+
+;; These insns will replace fmpyadd and fmpysub peepholes when the
+;; independent insn combination code is installed at the FSF.  Until
+;; then these patterns aren't used by the FSF compiler and are only
+;; here for documentation purposes.
+(define_insn ""
+  [(set (match_operand 0 "register_operand" "=f")
+	(mult (match_operand 1 "register_operand" "f")
+	      (match_operand 2 "register_operand" "f")))
+   (set (match_operand 3 "register_operand" "+f")
+	(plus (match_operand 4 "register_operand" "f")
+	      (match_operand 5 "register_operand" "f")))]
+  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT
+   && reload_completed && fmpyaddoperands (operands)"
+  "*
+{
+  if (GET_MODE (operands[0]) == DFmode)
+    {
+      if (rtx_equal_p (operands[3], operands[5]))
+	return \"fmpyadd,dbl %1,%2,%0,%4,%3\";
+      else
+	return \"fmpyadd,dbl %1,%2,%0,%5,%3\";
+    }
+  else
+    {
+      if (rtx_equal_p (operands[3], operands[5]))
+	return \"fmpyadd,sgl %1,%2,%0,%4,%3\";
+      else
+	return \"fmpyadd,sgl %1,%2,%0,%5,%3\";
+    }
+}"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand 0 "register_operand" "=f")
+	(mult (match_operand 1 "register_operand" "f")
+	      (match_operand 2 "register_operand" "f")))
+   (set (match_operand 3 "register_operand" "+f")
+	(minus (match_operand 4 "register_operand" "f")
+	       (match_operand 5 "register_operand" "f")))]
+  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT
+   && reload_completed && fmpysuboperands (operands)"
+  "*
+{
+  if (GET_MODE (operands[0]) == DFmode)
+    return \"fmpysub,dbl %1,%2,%0,%5,%3\";
+  else
+    return \"fmpysub,sgl %1,%2,%0,%5,%3\";
+}"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
+
 ;; The next four peepholes take advantage of the new 5 operand
 ;; fmpy{add,sub} instructions available on 1.1 CPUS.  Basically
 ;; fmpyadd performs a multiply and add/sub of independent operands
