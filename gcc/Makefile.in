@@ -1035,14 +1035,18 @@ libgcc.a: $(LIBGCC_DEPS)
 # switches.
 multilib.h: s-mlib; @true
 s-mlib: $(srcdir)/genmultilib Makefile
-	$(SHELL) $(srcdir)/genmultilib \
-	  "`test @enable_multilib@ != yes || echo $(MULTILIB_OPTIONS)`" \
-	  "`test @enable_multilib@ != yes || echo $(MULTILIB_DIRNAMES)`" \
-	  "`test @enable_multilib@ != yes || echo $(MULTILIB_MATCHES)`" \
-	  "`test @enable_multilib@ != yes || echo $(MULTILIB_EXCEPTIONS)`" \
-	  "`test @enable_multilib@ != yes || echo $(MULTILIB_EXTRA_OPTS)`" \
-	  "`test @enable_multilib@ != yes || echo $(MULTILIB_EXCLUSIONS)`" \
-		> tmp-mlib.h
+	if test @enable_multilib@ = yes; then \
+	  $(SHELL) $(srcdir)/genmultilib \
+	    "$(MULTILIB_OPTIONS)" \
+	    "$(MULTILIB_DIRNAMES)" \
+	    "$(MULTILIB_MATCHES)" \
+	    "$(MULTILIB_EXCEPTIONS)" \
+	    "$(MULTILIB_EXTRA_OPTS)" \
+	    "$(MULTILIB_EXCLUSIONS)" \
+	    > tmp-mlib.h; \
+	else \
+	  $(SHELL) $(srcdir)/genmultilib '' '' '' '' '' '' > tmp-mlib.h; \
+	fi
 	$(SHELL) $(srcdir)/move-if-change tmp-mlib.h multilib.h
 	$(STAMP) s-mlib
 

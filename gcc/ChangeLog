@@ -1,3 +1,8 @@
+2002-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (s-mlib): Handle --disable-multilib by separate
+	genmultilib invocation.
+
 2002-04-04  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/crtfastmath.c: New file.
