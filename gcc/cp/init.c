@@ -655,6 +655,11 @@ sort_mem_initializers (tree t, tree mem_inits)
 void
 emit_mem_initializers (tree mem_inits)
 {
+  /* We will already have issued an error message about the fact that
+     the type is incomplete.  */
+  if (!COMPLETE_TYPE_P (current_class_type))
+    return;
+  
   /* Sort the mem-initializers into the order in which the
      initializations should be performed.  */
   mem_inits = sort_mem_initializers (current_class_type, mem_inits);
