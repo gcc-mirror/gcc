@@ -93,6 +93,13 @@ static struct globals
   /* An array of the current substitution candidates, in the order
      we've seen them.  */
   varray_type substitutions;
+
+  /* The entity that is being mangled.  */
+  tree entity;
+
+  /* True if the mangling will be different in a future version of the
+     ABI.  */
+  bool need_abi_warning;
 } G;
 
 /* Indices into subst_identifiers.  These are identifiers used in
@@ -186,8 +193,8 @@ static const char *mangle_decl_string PARAMS ((tree));
 
 /* Control functions.  */
 
-static inline void start_mangling PARAMS ((void));
-static inline const char *finish_mangling PARAMS ((void));
+static inline void start_mangling PARAMS ((tree));
+static inline const char *finish_mangling PARAMS ((bool));
 static tree mangle_special_for_type PARAMS ((tree, const char *));
 
 /* Foreign language functions. */
@@ -884,6 +891,10 @@ write_prefix (node)
 	template_info = CLASSTYPE_TEMPLATE_INFO (node);
     }
 
+  /* In G++ 3.2, the name of the template parameter was used.  */
+  if (TREE_CODE (node) == TEMPLATE_TYPE_PARM)
+    G.need_abi_warning = true;
+
   if (template_info != NULL)
     /* Templated.  */
     {
@@ -954,6 +965,10 @@ write_template_prefix (node)
 
   if (find_substitution (substitution))
     return;
+
+  /* In G++ 3.2, the name of the template template parameter was used.  */
+  if (TREE_CODE (TREE_TYPE (template)) == TEMPLATE_TEMPLATE_PARM)
+    G.need_abi_warning = true;
 
   write_prefix (context);
   write_unqualified_name (decl);
@@ -1823,6 +1838,10 @@ write_expression (expr)
     write_template_arg_literal (expr);
   else if (DECL_P (expr))
     {
+      /* G++ 3.2 incorrectly mangled non-type template arguments of
+	 enumeration type using their names.  */
+      if (code == CONST_DECL)
+	G.need_abi_warning = 1;
       write_char ('L');
       write_mangled_name (expr);
       write_char ('E');
@@ -1878,7 +1897,12 @@ write_expression (expr)
 	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == IDENTIFIER_NODE)
 	    write_source_name (TREE_OPERAND (expr, 1));
 	  else
-	    write_encoding (TREE_OPERAND (expr, 1));
+	    {
+	      /* G++ 3.2 incorrectly put out both the "sr" code and
+		 the nested name of the qualified name.  */
+	      G.need_abi_warning = 1;
+	      write_encoding (TREE_OPERAND (expr, 1));
+	    }
 	  break;
 
 	default:
@@ -1983,6 +2007,10 @@ write_template_arg (node)
     write_template_template_arg (node);
   else if (DECL_P (node))
     {
+      /* G++ 3.2 incorrectly mangled non-type template arguments of
+	 enumeration type using their names.  */
+      if (code == CONST_DECL)
+	G.need_abi_warning = 1;
       write_char ('L');
       write_char ('Z');
       write_encoding (node);
@@ -2152,16 +2180,23 @@ write_substitution (seq_id)
 /* Start mangling a new name or type.  */
 
 static inline void
-start_mangling ()
+start_mangling (tree entity)
 {
+  G.entity = entity;
+  G.need_abi_warning = false;
   obstack_free (&G.name_obstack, obstack_base (&G.name_obstack));
 }
 
 /* Done with mangling.  Return the generated mangled name.  */
 
 static inline const char *
-finish_mangling ()
+finish_mangling (bool warn)
 {
+  if (warn_abi && warn && G.need_abi_warning)
+    warning ("the mangled name of `%D' will change in a future "
+	     "version of GCC",
+	     G.entity);
+
   /* Clear all the substitutions.  */
   VARRAY_POP_ALL (G.substitutions);
 
@@ -2197,7 +2232,7 @@ mangle_decl_string (decl)
 {
   const char *result;
 
-  start_mangling ();
+  start_mangling (decl);
 
   if (TREE_CODE (decl) == TYPE_DECL)
     write_type (TREE_TYPE (decl));
@@ -2224,7 +2259,7 @@ mangle_decl_string (decl)
 	write_string (" *INTERNAL* ");
     }
 
-  result = finish_mangling ();
+  result = finish_mangling (/*warn=*/true);
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_decl_string = '%s'\n\n", result);
   return result;
@@ -2249,9 +2284,9 @@ mangle_type_string (type)
 {
   const char *result;
 
-  start_mangling ();
+  start_mangling (type);
   write_type (type);
-  result = finish_mangling ();
+  result = finish_mangling (/*warn=*/false);
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_type_string = '%s'\n\n", result);
   return result;
@@ -2279,7 +2314,7 @@ mangle_special_for_type (type, code)
 
   /* We don't have an actual decl here for the special component, so
      we can't just process the <encoded-name>.  Instead, fake it.  */
-  start_mangling ();
+  start_mangling (type);
 
   /* Start the mangling.  */
   write_string ("_Z");
@@ -2287,7 +2322,7 @@ mangle_special_for_type (type, code)
 
   /* Add the type.  */
   write_type (type);
-  result = finish_mangling ();
+  result = finish_mangling (/*warn=*/false);
 
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_special_for_type = %s\n\n", result);
@@ -2354,7 +2389,7 @@ mangle_ctor_vtbl_for_type (type, binfo)
 {
   const char *result;
 
-  start_mangling ();
+  start_mangling (type);
 
   write_string ("_Z");
   write_string ("TC");
@@ -2363,7 +2398,7 @@ mangle_ctor_vtbl_for_type (type, binfo)
   write_char ('_');
   write_type (BINFO_TYPE (binfo));
 
-  result = finish_mangling ();
+  result = finish_mangling (/*warn=*/false);
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_ctor_vtbl_for_type = %s\n\n", result);
   return get_identifier (result);
@@ -2387,7 +2422,7 @@ mangle_thunk (fn_decl, offset, vcall_offset)
 {
   const char *result;
   
-  start_mangling ();
+  start_mangling (fn_decl);
 
   write_string ("_Z");
   /* The <special-name> for virtual thunks is Tv, for non-virtual
@@ -2413,7 +2448,7 @@ mangle_thunk (fn_decl, offset, vcall_offset)
   /* Scoped name.  */
   write_encoding (fn_decl);
 
-  result = finish_mangling ();
+  result = finish_mangling (/*warn=*/false);
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_thunk = %s\n\n", result);
   return get_identifier (result);
@@ -2454,7 +2489,7 @@ tree
 mangle_guard_variable (variable)
      tree variable;
 {
-  start_mangling ();
+  start_mangling (variable);
   write_string ("_ZGV");
   if (strncmp (IDENTIFIER_POINTER (DECL_NAME (variable)), "_ZGR", 4) == 0)
     /* The name of a guard variable for a reference temporary should refer
@@ -2462,7 +2497,7 @@ mangle_guard_variable (variable)
     write_string (IDENTIFIER_POINTER (DECL_NAME (variable)) + 4);
   else
     write_name (variable, /*ignore_local_scope=*/0);
-  return get_identifier (finish_mangling ());
+  return get_identifier (finish_mangling (/*warn=*/false));
 }
 
 /* Return an identifier for the name of a temporary variable used to
@@ -2473,10 +2508,10 @@ tree
 mangle_ref_init_variable (variable)
      tree variable;
 {
-  start_mangling ();
+  start_mangling (variable);
   write_string ("_ZGR");
   write_name (variable, /*ignore_local_scope=*/0);
-  return get_identifier (finish_mangling ());
+  return get_identifier (finish_mangling (/*warn=*/false));
 }
 
 
