@@ -233,6 +233,11 @@ typedef enum ffi_abi {
   FFI_DEFAULT_ABI = FFI_GCC_SYSV,
 #endif
 
+#ifdef POWERPC_DARWIN
+  FFI_DARWIN,
+  FFI_DEFAULT_ABI = FFI_DARWIN,
+#endif
+
   /* ---- ARM  --------------------- */
 #ifdef ARM
   FFI_SYSV,

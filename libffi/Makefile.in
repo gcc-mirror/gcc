@@ -168,6 +168,7 @@ TARGET_SRC_ALPHA = src/alpha/ffi.c src/alpha/osf.S
 TARGET_SRC_IA64 = src/ia64/ffi.c src/ia64/unix.S
 TARGET_SRC_M68K = src/m68k/ffi.c src/m68k/sysv.S
 TARGET_SRC_POWERPC = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
+TARGET_SRC_POWERPC_DARWIN = src/powerpc/ffi_darwin.c src/powerpc/darwin.S
 TARGET_SRC_ARM = src/arm/sysv.S src/arm/ffi.c
 
 libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
@@ -182,6 +183,7 @@ libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 @IA64_TRUE@libffi_la_SOURCES = @IA64_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_IA64)
 @M68K_TRUE@libffi_la_SOURCES = @M68K_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_M68K)
 @POWERPC_TRUE@libffi_la_SOURCES = @POWERPC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC)
+@POWERPC_DARWIN_TRUE@libffi_la_SOURCES = @POWERPC_DARWIN_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC_DARWIN)
 @ARM_TRUE@libffi_la_SOURCES = @ARM_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
 @MIPS_GCC_TRUE@libfficonvenience_la_SOURCES = @MIPS_GCC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_GCC)
 @MIPS_SGI_TRUE@libfficonvenience_la_SOURCES = @MIPS_SGI_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_SGI)
@@ -192,6 +194,7 @@ libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 @IA64_TRUE@libfficonvenience_la_SOURCES = @IA64_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_IA64)
 @M68K_TRUE@libfficonvenience_la_SOURCES = @M68K_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_M68K)
 @POWERPC_TRUE@libfficonvenience_la_SOURCES = @POWERPC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC)
+@POWERPC_DARWIN_TRUE@libfficonvenience_la_SOURCES = @POWERPC_DARWIN_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC_DARWIN)
 @ARM_TRUE@libfficonvenience_la_SOURCES = @ARM_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
 
 AM_CFLAGS = -fexceptions
@@ -212,29 +215,16 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libfficonvenience_la_LDFLAGS = 
 libfficonvenience_la_LIBADD = 
-@SPARC_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
-@SPARC_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
-@SPARC_TRUE@src/sparc/ffi.lo src/sparc/v8.lo src/sparc/v9.lo
-@MIPS_SGI_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo \
-@MIPS_SGI_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
-@MIPS_SGI_TRUE@src/java_raw_api.lo src/mips/ffi.lo src/mips/o32.lo \
-@MIPS_SGI_TRUE@src/mips/n32.lo
-@IA64_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
-@IA64_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
-@IA64_TRUE@src/ia64/ffi.lo src/ia64/unix.lo
+@X86_WIN32_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo \
+@X86_WIN32_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
+@X86_WIN32_TRUE@src/java_raw_api.lo src/x86/ffi.lo src/x86/win32.lo
+@X86_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@X86_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@X86_TRUE@src/x86/ffi.lo src/x86/sysv.lo
 @MIPS_GCC_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo \
 @MIPS_GCC_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
 @MIPS_GCC_TRUE@src/java_raw_api.lo src/mips/ffi.lo src/mips/o32.lo \
 @MIPS_GCC_TRUE@src/mips/n32.lo
-@M68K_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
-@M68K_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
-@M68K_TRUE@src/m68k/ffi.lo src/m68k/sysv.lo
-@ALPHA_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
-@ALPHA_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
-@ALPHA_TRUE@src/alpha/ffi.lo src/alpha/osf.lo
-@X86_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
-@X86_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
-@X86_TRUE@src/x86/ffi.lo src/x86/sysv.lo
 @ARM_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @ARM_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @ARM_TRUE@src/arm/sysv.lo src/arm/ffi.lo
@@ -242,31 +232,36 @@ libfficonvenience_la_LIBADD =
 @POWERPC_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
 @POWERPC_TRUE@src/java_raw_api.lo src/powerpc/ffi.lo \
 @POWERPC_TRUE@src/powerpc/sysv.lo src/powerpc/ppc_closure.lo
-@X86_WIN32_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo \
-@X86_WIN32_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
-@X86_WIN32_TRUE@src/java_raw_api.lo src/x86/ffi.lo src/x86/win32.lo
-libffi_la_LIBADD = 
-@SPARC_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@SPARC_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @SPARC_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @SPARC_TRUE@src/sparc/ffi.lo src/sparc/v8.lo src/sparc/v9.lo
-@MIPS_SGI_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
-@MIPS_SGI_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
-@MIPS_SGI_TRUE@src/mips/ffi.lo src/mips/o32.lo src/mips/n32.lo
-@IA64_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
-@IA64_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
-@IA64_TRUE@src/ia64/ffi.lo src/ia64/unix.lo
-@MIPS_GCC_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
-@MIPS_GCC_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
-@MIPS_GCC_TRUE@src/mips/ffi.lo src/mips/o32.lo src/mips/n32.lo
-@M68K_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@M68K_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @M68K_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @M68K_TRUE@src/m68k/ffi.lo src/m68k/sysv.lo
-@ALPHA_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@ALPHA_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @ALPHA_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @ALPHA_TRUE@src/alpha/ffi.lo src/alpha/osf.lo
+@IA64_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@IA64_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@IA64_TRUE@src/ia64/ffi.lo src/ia64/unix.lo
+@POWERPC_DARWIN_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo \
+@POWERPC_DARWIN_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
+@POWERPC_DARWIN_TRUE@src/java_raw_api.lo src/powerpc/ffi_darwin.lo \
+@POWERPC_DARWIN_TRUE@src/powerpc/darwin.lo
+@MIPS_SGI_TRUE@libfficonvenience_la_OBJECTS =  src/debug.lo \
+@MIPS_SGI_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
+@MIPS_SGI_TRUE@src/java_raw_api.lo src/mips/ffi.lo src/mips/o32.lo \
+@MIPS_SGI_TRUE@src/mips/n32.lo
+libffi_la_LIBADD = 
+@X86_WIN32_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@X86_WIN32_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@X86_WIN32_TRUE@src/x86/ffi.lo src/x86/win32.lo
 @X86_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo src/types.lo \
 @X86_TRUE@src/raw_api.lo src/java_raw_api.lo src/x86/ffi.lo \
 @X86_TRUE@src/x86/sysv.lo
+@MIPS_GCC_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@MIPS_GCC_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@MIPS_GCC_TRUE@src/mips/ffi.lo src/mips/o32.lo src/mips/n32.lo
 @ARM_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo src/types.lo \
 @ARM_TRUE@src/raw_api.lo src/java_raw_api.lo src/arm/sysv.lo \
 @ARM_TRUE@src/arm/ffi.lo
@@ -274,9 +269,24 @@ libffi_la_LIBADD =
 @POWERPC_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @POWERPC_TRUE@src/powerpc/ffi.lo src/powerpc/sysv.lo \
 @POWERPC_TRUE@src/powerpc/ppc_closure.lo
-@X86_WIN32_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
-@X86_WIN32_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
-@X86_WIN32_TRUE@src/x86/ffi.lo src/x86/win32.lo
+@SPARC_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@SPARC_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@SPARC_TRUE@src/sparc/ffi.lo src/sparc/v8.lo src/sparc/v9.lo
+@M68K_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@M68K_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@M68K_TRUE@src/m68k/ffi.lo src/m68k/sysv.lo
+@ALPHA_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@ALPHA_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@ALPHA_TRUE@src/alpha/ffi.lo src/alpha/osf.lo
+@IA64_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@IA64_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@IA64_TRUE@src/ia64/ffi.lo src/ia64/unix.lo
+@POWERPC_DARWIN_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@POWERPC_DARWIN_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@POWERPC_DARWIN_TRUE@src/powerpc/ffi_darwin.lo src/powerpc/darwin.lo
+@MIPS_SGI_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@MIPS_SGI_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@MIPS_SGI_TRUE@src/mips/ffi.lo src/mips/o32.lo src/mips/n32.lo
 noinst_PROGRAMS =  ffitest$(EXEEXT)
 PROGRAMS =  $(noinst_PROGRAMS)
 
@@ -294,7 +304,7 @@ fficonfig.h.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = gnutar
 GZIP_ENV = --best
 SOURCES = $(libfficonvenience_la_SOURCES) $(libffi_la_SOURCES) $(ffitest_SOURCES)
 OBJECTS = $(libfficonvenience_la_OBJECTS) $(libffi_la_OBJECTS) $(ffitest_OBJECTS)
