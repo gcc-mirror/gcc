@@ -1,3 +1,15 @@
+2004-11-22  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/18529
+	* fold-const.c (fold_to_nonsharp_ineq_using_bound): New function.
+	(simple_operand_p): Use STRIP_NOPS.  Consider SSA names simple.
+	(fold): Call fold_to_nonsharp_ineq_using_bound.
+	* tree-ssa-loop-niter.c (simplify_replace_tree): New function.
+	(number_of_iterations_cond): Fold the expressions before futher
+	processing.
+	(tree_simplify_using_condition): Handle case when cond or expr is
+	an EQ_EXPR specially.
+
 2004-11-22 Daniel Berlin  <dberlin@dberlin.org>
 
         * tree-ssa.c (verify_ssa): SSA_OP_ALL_USES should be
