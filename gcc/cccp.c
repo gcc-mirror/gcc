@@ -3843,7 +3843,7 @@ timestamp ()
 {
   static struct tm *timebuf;
   if (!timebuf) {
-    time_t t = time (0);
+    time_t t = time ((time_t *)0);
     timebuf = localtime (&t);
   }
   return timebuf;
@@ -6794,7 +6794,7 @@ eval_if_expression (buf, length)
   HASHNODE *save_defined;
   int value;
 
-  save_defined = install ("defined", -1, T_SPEC_DEFINED, 0, 0, -1);
+  save_defined = install ("defined", -1, T_SPEC_DEFINED, 0, NULL_PTR, -1);
   pcp_inside_if = 1;
   temp_obuf = expand_to_temp_buffer (buf, buf + length, 0, 1);
   pcp_inside_if = 0;
@@ -9171,29 +9171,29 @@ initialize_builtins (inp, outp)
      FILE_BUF *inp;
      FILE_BUF *outp;
 {
-  install ("__LINE__", -1, T_SPECLINE, 0, 0, -1);
-  install ("__DATE__", -1, T_DATE, 0, 0, -1);
-  install ("__FILE__", -1, T_FILE, 0, 0, -1);
-  install ("__BASE_FILE__", -1, T_BASE_FILE, 0, 0, -1);
-  install ("__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, 0, 0, -1);
-  install ("__VERSION__", -1, T_VERSION, 0, 0, -1);
+  install ("__LINE__", -1, T_SPECLINE, 0, NULL_PTR, -1);
+  install ("__DATE__", -1, T_DATE, 0, NULL_PTR, -1);
+  install ("__FILE__", -1, T_FILE, 0, NULL_PTR, -1);
+  install ("__BASE_FILE__", -1, T_BASE_FILE, 0, NULL_PTR, -1);
+  install ("__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, 0, NULL_PTR, -1);
+  install ("__VERSION__", -1, T_VERSION, 0, NULL_PTR, -1);
 #ifndef NO_BUILTIN_SIZE_TYPE
-  install ("__SIZE_TYPE__", -1, T_SIZE_TYPE, 0, 0, -1);
+  install ("__SIZE_TYPE__", -1, T_SIZE_TYPE, 0, NULL_PTR, -1);
 #endif
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
-  install ("__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, 0, 0, -1);
+  install ("__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, 0, NULL_PTR, -1);
 #endif
-  install ("__WCHAR_TYPE__", -1, T_WCHAR_TYPE, 0, 0, -1);
-  install ("__USER_LABEL_PREFIX__", -1, T_USER_LABEL_PREFIX_TYPE, 0, 0, -1);
-  install ("__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE, 0, 0, -1);
-  install ("__TIME__", -1, T_TIME, 0, 0, -1);
+  install ("__WCHAR_TYPE__", -1, T_WCHAR_TYPE, 0, NULL_PTR, -1);
+  install ("__USER_LABEL_PREFIX__",-1,T_USER_LABEL_PREFIX_TYPE,0,NULL_PTR, -1);
+  install ("__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE, 0, NULL_PTR, -1);
+  install ("__TIME__", -1, T_TIME, 0, NULL_PTR, -1);
   if (!traditional)
-    install ("__STDC__", -1, T_CONST, STDC_VALUE, 0, -1);
+    install ("__STDC__", -1, T_CONST, STDC_VALUE, NULL_PTR, -1);
   if (objc)
-    install ("__OBJC__", -1, T_CONST, 1, 0, -1);
+    install ("__OBJC__", -1, T_CONST, 1, NULL_PTR, -1);
 /*  This is supplied using a -D by the compiler driver
     so that it is present only when truly compiling with GNU C.  */
-/*  install ("__GNUC__", -1, T_CONST, 2, 0, -1);  */
+/*  install ("__GNUC__", -1, T_CONST, 2, NULL_PTR, -1);  */
 
   if (debug_output)
     {
@@ -9337,7 +9337,7 @@ make_definition (str, op)
     ;
 
   /* Pass NULL instead of OP, since this is a "predefined" macro.  */
-  do_define (buf, buf + strlen (buf), NULL, kt);
+  do_define (buf, buf + strlen (buf), NULL_PTR, kt);
   --indepth;
 }
 
