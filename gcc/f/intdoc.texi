@@ -868,11 +868,11 @@ If @var{A} is type @code{COMPLEX}, the absolute
 value is computed as:
 
 @example
-SQRT(REALPART(@var{A})**2, IMAGPART(@var{A})**2)
+SQRT(REALPART(@var{A})**2+IMAGPART(@var{A})**2)
 @end example
 
 @noindent
-Otherwise, it is computed by negating the @var{A} if
+Otherwise, it is computed by negating @var{A} if
 it is negative, or returning @var{A}.
 
 @xref{Sign Intrinsic}, for how to explicitly
