@@ -87,11 +87,12 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
  do { if ((LOG) != 0)			\
-      if (in_text_section ()		\
-          ) \
-	fprintf (FILE, "\t%s %d,0x90\n", ALIGN_ASM_OP, (LOG)); \
-      else \
-	fprintf (FILE, "\t%s %d\n", ALIGN_ASM_OP, (LOG)); \
+        {				\
+          if (in_text_section ())	\
+            fprintf (FILE, "\t%s %d,0x90\n", ALIGN_ASM_OP, (LOG)); \
+          else				\
+            fprintf (FILE, "\t%s %d\n", ALIGN_ASM_OP, (LOG)); \
+        }				\
     } while (0)
 
 /* This says how to output an assembler line
