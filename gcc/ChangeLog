@@ -1,3 +1,9 @@
+2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/install-old.texi: Remove documentation of some configuration
+	options.
+	* doc/install.texi: Add relevant parts of this documentation here.
+
 2001-06-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* contrib.texi: Updated entries for Mark Mitchell, Joseph S. Myers,
