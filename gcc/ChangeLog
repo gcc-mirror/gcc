@@ -1,3 +1,7 @@
+2000-11-29  Laurynas Biveinis  <lauras@softhome.net>
+
+	* configure.in: recognize DOS-style absolute paths.
+
 2000-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.h (store_by_pieces): Add prototype.
