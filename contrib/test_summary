@@ -116,6 +116,7 @@ $2 == "version" { save = $0; $1 = ""; $2 = ""; version = $0; gsub(/^ */, "", ver
 /\===.*Summary/ { print ""; print; blanks=1; }
 /tests ===/ || /^(Target|Host|Native)/ || $2 == "version" { print; blanks=1; }
 /^(XPASS|FAIL|UNRESOLVED|WARNING|ERROR|# of )/ { print; }
+/^using:/ { print ""; print; print ""; }
 # dumpall != 0 && /^X?(PASS|FAIL|UNTESTED)|^testcase/ { dumpall=0; }
 # dumpall != 0 { print; }
 # /^FAIL/ { dumpall=1; }

@@ -1,3 +1,8 @@
+2003-08-26  Matthias Klose  <doko@debian.org>
+
+	* test_summary: Include baseline used for libstdc++-v3
+	abi check in test summary.
+
 2004-05-31  Release Manager
 
 	* GCC 3.3.4 Released.
