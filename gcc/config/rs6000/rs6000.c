@@ -157,6 +157,34 @@ rs6000_override_options ()
     }
 }
 
+/* Look for an PRE_INC address in X that are marked as dying in INSN.
+   Convert the addresses to a PLUS form if one is found.  */
+
+void
+rs6000_convert_preincs (x, insn)
+     rtx x;
+     rtx insn;
+{
+  enum rtx_code code = GET_CODE (x);
+  char *fmt;
+  int i, j;
+
+  if (code == MEM && GET_CODE (XEXP (x, 0)) == PRE_INC
+      && find_reg_note (insn, REG_DEAD, XEXP (XEXP (x, 0), 0)))
+    XEXP (x, 0) = plus_constant (XEXP (XEXP (x, 0), 0),
+				 GET_MODE_SIZE (GET_MODE (x)));
+  else
+    for (i = GET_RTX_LENGTH (code) - 1, fmt = GET_RTX_FORMAT (code);
+	 i >= 0; i--)
+      {
+	if (fmt[i] == 'e')
+	  rs6000_convert_preincs (XEXP (x, i), insn);
+	else if (fmt[i] == 'E')
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    rs6000_convert_preincs (XVECEXP (x, i, j), insn);
+      }
+}
+
 /* Return non-zero if this function is known to have a null epilogue.  */
 
 int
