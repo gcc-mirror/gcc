@@ -115,12 +115,12 @@ static inline void elim_graph_add_edge (elim_graph, int, int);
 static inline int elim_graph_remove_succ_edge (elim_graph, int);
 
 static inline void eliminate_name (elim_graph, tree);
-static void eliminate_build (elim_graph, basic_block, int);
+static void eliminate_build (elim_graph, basic_block);
 static void elim_forward (elim_graph, int);
 static int elim_unvisited_predecessor (elim_graph, int);
 static void elim_backward (elim_graph, int);
 static void elim_create (elim_graph, int);
-static void eliminate_phi (edge, int, elim_graph);
+static void eliminate_phi (edge, elim_graph);
 static tree_live_info_p coalesce_ssa_name (var_map, int);
 static void assign_vars (var_map);
 static bool replace_use_variable (var_map, use_operand_p, tree *);
@@ -338,10 +338,11 @@ eliminate_name (elim_graph g, tree T)
 }
 
 
-/* Build elimination graph G for basic block BB on incoming PHI edge I.  */
+/* Build elimination graph G for basic block BB on incoming PHI edge
+   G->e.  */
 
 static void
-eliminate_build (elim_graph g, basic_block B, int i)
+eliminate_build (elim_graph g, basic_block B)
 {
   tree phi;
   tree T0, Ti;
@@ -357,17 +358,7 @@ eliminate_build (elim_graph g, basic_block B, int i)
       if (T0 == NULL_TREE)
 	continue;
 
-      if (PHI_ARG_EDGE (phi, i) == g->e)
-	Ti = PHI_ARG_DEF (phi, i);
-      else
-        {
-	  /* On rare occasions, a PHI node may not have the arguments
-	     in the same order as all of the other PHI nodes. If they don't 
-	     match, find the appropriate index here.  */
-	  pi = phi_arg_from_edge (phi, g->e);
-	  gcc_assert (pi != -1);
-	  Ti = PHI_ARG_DEF (phi, pi);
-	}
+      Ti = PHI_ARG_DEF (phi, g->e->dest_idx);
 
       /* If this argument is a constant, or a SSA_NAME which is being
 	 left in SSA form, just queue a copy to be emitted on this
@@ -482,17 +473,15 @@ elim_create (elim_graph g, int T)
   
 }
 
-/* Eliminate all the phi nodes on edge E in graph G. I is the usual PHI
-   index that edge E's values are found on.  */
+/* Eliminate all the phi nodes on edge E in graph G.  */
 
 static void
-eliminate_phi (edge e, int i, elim_graph g)
+eliminate_phi (edge e, elim_graph g)
 {
   int num_nodes = 0;
   int x;
   basic_block B = e->dest;
 
-  gcc_assert (i != -1);
   gcc_assert (VARRAY_ACTIVE_SIZE (g->const_copies) == 0);
 
   /* Abnormal edges already have everything coalesced, or the coalescer
@@ -503,7 +492,7 @@ eliminate_phi (edge e, int i, elim_graph g)
   num_nodes = num_var_partitions (g->map);
   g->e = e;
 
-  eliminate_build (g, B, i);
+  eliminate_build (g, B);
 
   if (elim_graph_size (g) != 0)
     {
@@ -1929,7 +1918,7 @@ rewrite_trees (var_map map, tree *values)
         {
 	  edge_iterator ei;
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    eliminate_phi (e, phi_arg_from_edge (phi, e), g);
+	    eliminate_phi (e, g);
 	}
     }
 
