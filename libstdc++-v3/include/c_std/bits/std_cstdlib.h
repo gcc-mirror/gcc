@@ -126,7 +126,7 @@ namespace std
 } // namespace std
 
 #if _GLIBCPP_USE_C99
-namespace c99
+namespace __gnu_cxx
 {
   using ::lldiv_t;
 
@@ -151,20 +151,20 @@ namespace c99
 #ifdef _GLIBCPP_HAVE_STRTOLD
   extern "C" long double strtold(const char*, char**); 
 #endif
-} // namespace c99
+} // namespace __gnu_cxx
 
 namespace std
 {
-  using c99::lldiv_t;
-  using c99::abs;
-  //using c99::llabs; // XXX ???
-  using c99::div;
-  using c99::lldiv;
-  using c99::atoll;
-  using c99::strtoll;
-  using c99::strtoull;
+  using __gnu_cxx::lldiv_t;
+  using __gnu_cxx::abs;
+  //using __gnu_cxx::llabs; // XXX ???
+  using __gnu_cxx::div;
+  using __gnu_cxx::lldiv;
+  using __gnu_cxx::atoll;
+  using __gnu_cxx::strtoll;
+  using __gnu_cxx::strtoull;
 #ifdef _GLIBCPP_HAVE_STRTOLD
-  using c99::strtold;
+  using __gnu_cxx::strtold;
 #endif
 }
 #endif
