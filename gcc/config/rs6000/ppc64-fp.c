@@ -33,15 +33,26 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #if defined(__powerpc64__)
 #include "config/fp-bit.h"
 
+extern DItype __fixtfdi (TFtype);
 extern DItype __fixdfdi (DFtype);
 extern DItype __fixsfdi (SFtype);
 extern USItype __fixunsdfsi (DFtype);
 extern USItype __fixunssfsi (SFtype);
+extern TFtype __floatditf (DItype);
 extern DFtype __floatdidf (DItype);
 extern SFtype __floatdisf (DItype);
+extern DItype __fixunstfdi (TFtype);
 
 static DItype local_fixunssfdi (SFtype);
 static DItype local_fixunsdfdi (DFtype);
+
+DItype
+__fixtfdi (TFtype a)
+{
+  if (a < 0)
+    return - __fixunstfdi (-a);
+  return __fixunstfdi (a);
+}
 
 DItype
 __fixdfdi (DFtype a)
@@ -77,14 +88,25 @@ __fixunssfsi (SFtype a)
   return (SItype) a;
 }
 
+TFtype
+__floatditf (DItype u)
+{
+  DFtype dh, dl;
+
+  dh = (SItype) (u >> (sizeof (SItype) * 8));
+  dh *= 2.0 * (((UDItype) 1) << ((sizeof (SItype) * 8) - 1));
+  dl = (USItype) (u & ((((UDItype) 1) << (sizeof (SItype) * 8)) - 1));
+
+  return (TFtype) dh + (TFtype) dl;
+}
+
 DFtype
 __floatdidf (DItype u)
 {
   DFtype d;
 
   d = (SItype) (u >> (sizeof (SItype) * 8));
-  d *= (((UDItype) 1) << ((sizeof (SItype) * 8) / 2));
-  d *= (((UDItype) 1) << ((sizeof (SItype) * 8) / 2));
+  d *= 2.0 * (((UDItype) 1) << ((sizeof (SItype) * 8) - 1));
   d += (USItype) (u & ((((UDItype) 1) << (sizeof (SItype) * 8)) - 1));
 
   return d;
@@ -109,11 +131,34 @@ __floatdisf (DItype u)
         }
     }
   f = (SItype) (u >> (sizeof (SItype) * 8));
-  f *= (((UDItype) 1) << ((sizeof (SItype) * 8) / 2));
-  f *= (((UDItype) 1) << ((sizeof (SItype) * 8) / 2));
+  f *= 2.0 * (((UDItype) 1) << ((sizeof (SItype) * 8) - 1));
   f += (USItype) (u & ((((UDItype) 1) << (sizeof (SItype) * 8)) - 1));
 
   return (SFtype) f;
+}
+
+DItype
+__fixunstfdi (TFtype a)
+{
+  if (a < 0)
+    return 0;
+
+  /* Compute high word of result, as a flonum.  */
+  const TFtype b = (a / (((UDItype) 1) << (sizeof (SItype) * 8)));
+  /* Convert that to fixed (but not to DItype!),
+     and shift it into the high word.  */
+  UDItype v = (USItype) b;
+  v <<= (sizeof (SItype) * 8);
+  /* Remove high part from the TFtype, leaving the low part as flonum.  */
+  a -= (TFtype) v;
+  /* Convert that to fixed (but not to DItype!) and add it in.
+     Sometimes A comes out negative.  This is significant, since
+     A has more bits than a long int does.  */
+  if (a < 0)
+    v -= (USItype) (-a);
+  else
+    v += (USItype) a;
+  return v;
 }
 
 /* This version is needed to prevent recursion; fixunsdfdi in libgcc
