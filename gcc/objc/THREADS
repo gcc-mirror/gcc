@@ -4,7 +4,7 @@ Objective-C runtime needed to make it thread safe.
 First off, kudos to Galen Hunt who is the author of this great work.
 
 If you have an comments or just want to know where to
-send me money to express your undying graditude for threading the
+send me money to express your undying gratitude for threading the
 Objective-C runtime you can reach Galen at:
 
 	gchunt@cs.rochester.edu
@@ -242,9 +242,9 @@ __objc_thread_get_data(void), void *
 
 
 ******************************************************************************
-* Mutexs:
+* Mutexes:
 
-Mutexs can be locked recursively.  Each locked mutex remembers
+Mutexes can be locked recursively.  Each locked mutex remembers
 its owner (by thread id) and how many times it has been locked.  The
 last unlock on a mutex removes the system lock and allows other
 threads to access the mutex.
@@ -302,9 +302,9 @@ __objc_mutex_unlock(objc_mutex_t mutex), int
 	Return -1 if error otherwise return 0.
 
 ******************************************************************************
-* Condition Mutexs:
+* Condition Mutexes:
 
-Mutexs can be locked recursively.  Each locked mutex remembers
+Mutexes can be locked recursively.  Each locked mutex remembers
 its owner (by thread id) and how many times it has been locked.  The
 last unlock on a mutex removes the system lock and allows other
 threads to access the mutex.
