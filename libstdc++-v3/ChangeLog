@@ -1,5 +1,15 @@
 2005-01-28  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1/type_traits: Implement is_empty.
+	* testsuite/tr1/4_metaprogramming/type_properties/is_empty/
+	is_empty.cc: New.
+	* testsuite/tr1/4_metaprogramming/type_properties/is_empty/
+	typedefs.cc: Likewise.
+
+	* include/tr1/type_traits (__is_abstract_helper): Simplify a bit.
+
+2005-01-28  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1/type_traits: Implement is_abstract, by exploiting the
 	resolution of DR core/337.
 	* testsuite/testsuite_tr1.h: Add AbstractClass.
