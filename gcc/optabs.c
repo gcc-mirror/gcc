@@ -4349,10 +4349,10 @@ expand_fix (to, from, unsignedp)
      this conversion.  If the integer mode is wider than the mode of TO,
      we can do the conversion either signed or unsigned.  */
 
-  for (imode = GET_MODE (to); imode != VOIDmode;
-       imode = GET_MODE_WIDER_MODE (imode))
-    for (fmode = GET_MODE (from); fmode != VOIDmode;
-	 fmode = GET_MODE_WIDER_MODE (fmode))
+  for (fmode = GET_MODE (from); fmode != VOIDmode;
+       fmode = GET_MODE_WIDER_MODE (fmode))
+    for (imode = GET_MODE (to); imode != VOIDmode;
+	 imode = GET_MODE_WIDER_MODE (imode))
       {
 	int doing_unsigned = unsignedp;
 
