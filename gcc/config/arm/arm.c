@@ -2192,7 +2192,7 @@ power_of_two_operand (op, mode)
 }
 
 /* Return TRUE for a valid operand of a DImode operation.
-   Either: REG, CONST_DOUBLE or MEM(DImode_address).
+   Either: REG, SUBREG, CONST_DOUBLE or MEM(DImode_address).
    Note that this disallows MEM(REG+REG), but allows
    MEM(PRE/POST_INC/DEC(REG)).  */
 
@@ -2203,6 +2203,9 @@ di_operand (op, mode)
 {
   if (s_register_operand (op, mode))
     return TRUE;
+
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
 
   switch (GET_CODE (op))
     {
@@ -2219,7 +2222,7 @@ di_operand (op, mode)
 }
 
 /* Return TRUE for a valid operand of a DFmode operation when -msoft-float.
-   Either: REG, CONST_DOUBLE or MEM(DImode_address).
+   Either: REG, SUBREG, CONST_DOUBLE or MEM(DImode_address).
    Note that this disallows MEM(REG+REG), but allows
    MEM(PRE/POST_INC/DEC(REG)).  */
 
@@ -2230,6 +2233,9 @@ soft_df_operand (op, mode)
 {
   if (s_register_operand (op, mode))
     return TRUE;
+
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
 
   switch (GET_CODE (op))
     {
