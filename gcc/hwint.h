@@ -64,12 +64,8 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 /* Various printf format strings for HOST_WIDE_INT.  */
 
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-# define HOST_WIDE_INT_PRINT_DEC "%ld"
-# define HOST_WIDE_INT_PRINT_DEC_C "%ldL"
-# define HOST_WIDE_INT_PRINT_DEC_SPACE "% *ld"
-# define HOST_WIDE_INT_PRINT_UNSIGNED "%lu"
-# define HOST_WIDE_INT_PRINT_UNSIGNED_SPACE "% *lu"
-# define HOST_WIDE_INT_PRINT_HEX "0x%lx"
+# define HOST_WIDE_INT_PRINT "l"
+# define HOST_WIDE_INT_PRINT_C "L"
   /* 'long' might be 32 or 64 bits, and the number of leading zeroes
      must be tweaked accordingly.  */
 # if HOST_BITS_PER_WIDE_INT == 64
@@ -78,15 +74,16 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 #  define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%lx%08lx"
 # endif
 #else
-# define HOST_WIDE_INT_PRINT_DEC "%lld"
-# define HOST_WIDE_INT_PRINT_DEC_C "%lldLL"
-# define HOST_WIDE_INT_PRINT_DEC_SPACE "% *lld"
-# define HOST_WIDE_INT_PRINT_UNSIGNED "%llu"
-# define HOST_WIDE_INT_PRINT_UNSIGNED_SPACE "% *llu"
-# define HOST_WIDE_INT_PRINT_HEX "0x%llx"
+# define HOST_WIDE_INT_PRINT "ll"
+# define HOST_WIDE_INT_PRINT_C "LL"
   /* We can assume that 'long long' is at least 64 bits.  */
 # define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%llx%016llx"
-#endif
+#endif /* HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG */
+
+#define HOST_WIDE_INT_PRINT_DEC "%" HOST_WIDE_INT_PRINT "d"
+#define HOST_WIDE_INT_PRINT_DEC_C HOST_WIDE_INT_PRINT_DEC HOST_WIDE_INT_PRINT_C
+#define HOST_WIDE_INT_PRINT_UNSIGNED "%" HOST_WIDE_INT_PRINT "u"
+#define HOST_WIDE_INT_PRINT_HEX "0x%" HOST_WIDE_INT_PRINT "x"
 
 /* Set HOST_WIDEST_INT.  This is a 64-bit type unless the compiler
    in use has no 64-bit type at all; in that case it's 32 bits.  */
@@ -97,9 +94,7 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 # define HOST_BITS_PER_WIDEST_INT	      HOST_BITS_PER_WIDE_INT
 # define HOST_WIDEST_INT_PRINT_DEC	      HOST_WIDE_INT_PRINT_DEC
 # define HOST_WIDEST_INT_PRINT_DEC_C	      HOST_WIDE_INT_PRINT_DEC_C
-# define HOST_WIDEST_INT_PRINT_DEC_SPACE      HOST_WIDE_INT_PRINT_DEC_SPACE
 # define HOST_WIDEST_INT_PRINT_UNSIGNED	      HOST_WIDE_INT_PRINT_UNSIGNED
-# define HOST_WIDEST_INT_PRINT_UNSIGNED_SPACE HOST_WIDE_INT_PRINT_UNSIGNED_SPACE
 # define HOST_WIDEST_INT_PRINT_HEX	      HOST_WIDE_INT_PRINT_HEX
 # define HOST_WIDEST_INT_PRINT_DOUBLE_HEX     HOST_WIDE_INT_PRINT_DOUBLE_HEX
 #else
@@ -116,9 +111,7 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 # endif
 # define HOST_WIDEST_INT_PRINT_DEC	      "%lld"
 # define HOST_WIDEST_INT_PRINT_DEC_C	      "%lldLL"
-# define HOST_WIDEST_INT_PRINT_DEC_SPACE      "% *lld"
 # define HOST_WIDEST_INT_PRINT_UNSIGNED	      "%llu"
-# define HOST_WIDEST_INT_PRINT_UNSIGNED_SPACE "% *llu"
 # define HOST_WIDEST_INT_PRINT_HEX	      "0x%llx"
 # define HOST_WIDEST_INT_PRINT_DOUBLE_HEX     "0x%llx%016llx"
 #endif

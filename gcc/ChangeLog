@@ -1,3 +1,17 @@
+2003-06-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* hwint.h (HOST_WIDE_INT_PRINT, HOST_WIDE_INT_PRINT_C): New macros.
+	(HOST_WIDE_INT_PRINT_DEC_SPACE,
+	HOST_WIDE_INT_PRINT_UNSIGNED_SPACE,
+	HOST_WIDEST_INT_PRINT_DEC_SPACE,
+	HOST_WIDEST_INT_PRINT_UNSIGNED_SPACE): Delete.
+	(HOST_WIDE_INT_PRINT_DEC, HOST_WIDE_INT_PRINT_DEC_C,
+	HOST_WIDE_INT_PRINT_UNSIGNED, HOST_WIDE_INT_PRINT_HEX): Define in
+	terms of HOST_WIDE_INT_PRINT and possibly HOST_WIDE_INT_PRINT_C.
+
+	* final.c (asm_fprintf): Use HOST_WIDE_INT_PRINT.
+	* ra-debug.c (dump_static_insn_cost): Likewise.
+
 2003-06-26  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.h (BIGGEST_FIELD_ALIGNMENT): Define instead
