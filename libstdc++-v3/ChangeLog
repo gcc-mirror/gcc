@@ -1,3 +1,9 @@
+2000-11-17  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* include/bits/stl_tree.h: Overload operators == and != to be able
+	to handle the case (const_iterator,iterator) and
+	(iterator,const_iterator), thus fixing libstdc++/737 and the like.
+
 2000-11-17  Loren J. Rittle  <ljrittle@acm.org>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Correct last patch
@@ -52,7 +58,7 @@
 
 	* config/c_io_stdio.h: Include libio.h.
 
-Wed Nov 15 18:39:34 2000  Mark P Mitchell  <mark@codesourcery.com>
+2000-11-15  Mark P Mitchell  <mark@codesourcery.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Substitute libio_la.
 	* src/Makefile.am (libstdc___la_LIBADD): Use it.
