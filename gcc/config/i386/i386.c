@@ -2589,8 +2589,8 @@ legitimize_pic_address (orig, reg)
 	 base address (@GOTOFF).  */
 
       current_function_uses_pic_offset_table = 1;
-      new = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, addr), 7);
-      new = gen_rtx_CONST (VOIDmode, new);
+      new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), 7);
+      new = gen_rtx_CONST (Pmode, new);
       new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
 
       if (reg != 0)
@@ -2605,8 +2605,8 @@ legitimize_pic_address (orig, reg)
 	 Global Offset Table (@GOT). */
 
       current_function_uses_pic_offset_table = 1;
-      new = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, addr), 6);
-      new = gen_rtx_CONST (VOIDmode, new);
+      new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), 6);
+      new = gen_rtx_CONST (Pmode, new);
       new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
       new = gen_rtx_MEM (Pmode, new);
       RTX_UNCHANGING_P (new) = 1;
@@ -2641,9 +2641,9 @@ legitimize_pic_address (orig, reg)
 	      && GET_CODE (op1) == CONST_INT)
 	    {
 	      current_function_uses_pic_offset_table = 1;
-	      new = gen_rtx_UNSPEC (VOIDmode, gen_rtvec (1, op0), 7);
-	      new = gen_rtx_PLUS (VOIDmode, new, op1);
-	      new = gen_rtx_CONST (VOIDmode, new);
+	      new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0), 7);
+	      new = gen_rtx_PLUS (Pmode, new, op1);
+	      new = gen_rtx_CONST (Pmode, new);
 	      new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
 
 	      if (reg != 0)
