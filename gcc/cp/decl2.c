@@ -321,7 +321,9 @@ int flag_memoize_lookups; int flag_save_memoized_contexts;
 
 int write_virtuals;
 
-/* Nonzero means we should attempt to elide constructors when possible.  */
+/* Nonzero means we should attempt to elide constructors when possible.
+   FIXME: This flag is obsolete, and should be torn out along with the
+   old overloading code.  */
 
 int flag_elide_constructors;
 

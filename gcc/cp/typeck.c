@@ -7204,79 +7204,6 @@ c_expand_return (retval)
       expand_return (retval);
       return;
     }
-  /* Add some useful error checking for C++.  */
-  else if (TREE_CODE (valtype) == REFERENCE_TYPE)
-    {
-      tree whats_returned;
-      tree tmp_result = result;
-
-      /* Don't initialize directly into a non-BLKmode retval, since that
-	 could lose when being inlined by another caller.  (GCC can't
-	 read the function return register in an inline function when
-	 the return value is being ignored).  */
-      if (result && TYPE_MODE (TREE_TYPE (tmp_result)) != BLKmode)
-	tmp_result = 0;
-
-      /* convert to reference now, so we can give error if we
-	 return an reference to a non-lvalue.  */
-      retval = convert_for_initialization
-	(tmp_result, valtype, retval, LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
-	 "return", NULL_TREE, 0);
-
-      /* Sort through common things to see what it is
-	 we are returning.  */
-      whats_returned = retval;
-      if (TREE_CODE (whats_returned) == COMPOUND_EXPR)
-	{
-	  whats_returned = TREE_OPERAND (whats_returned, 1);
-	  if (TREE_CODE (whats_returned) == ADDR_EXPR)
-	    whats_returned = TREE_OPERAND (whats_returned, 0);
-	}
-      while (TREE_CODE (whats_returned) == CONVERT_EXPR
-	     || TREE_CODE (whats_returned) == NOP_EXPR)
-	whats_returned = TREE_OPERAND (whats_returned, 0);
-      if (TREE_CODE (whats_returned) == ADDR_EXPR)
-	{
-	  whats_returned = TREE_OPERAND (whats_returned, 0);
-	  while (TREE_CODE (whats_returned) == NEW_EXPR
-		 || TREE_CODE (whats_returned) == TARGET_EXPR)
-	    {
-	      /* Get the target.  */
-	      whats_returned = TREE_OPERAND (whats_returned, 0);
-	      warning ("returning reference to temporary");
-	    }
-	}
-
-      if (TREE_CODE (whats_returned) == VAR_DECL && DECL_NAME (whats_returned))
-	{
-	  if (TEMP_NAME_P (DECL_NAME (whats_returned)))
-	    warning ("reference to non-lvalue returned");
-	  else if (! TREE_STATIC (whats_returned)
-		   && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned))
-		   && !TREE_PUBLIC (whats_returned))
-	    cp_warning_at ("reference to local variable `%D' returned", whats_returned);
-	}
-    }
-  else if (TREE_CODE (retval) == ADDR_EXPR)
-    {
-      tree whats_returned = TREE_OPERAND (retval, 0);
-
-      if (TREE_CODE (whats_returned) == VAR_DECL
-	  && DECL_NAME (whats_returned)
-	  && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned))
-	  && !TREE_STATIC (whats_returned)
-	  && !TREE_PUBLIC (whats_returned))
-	cp_warning_at ("address of local variable `%D' returned", whats_returned);
-    }
-  else if (TREE_CODE (retval) == VAR_DECL)
-    {
-      if (TREE_CODE (TREE_TYPE (retval)) == ARRAY_TYPE
-	  && DECL_NAME (retval)
-	  && IDENTIFIER_LOCAL_VALUE (DECL_NAME (retval))
-	  && !TREE_STATIC (retval)
-	  && !TREE_PUBLIC (retval))
-	cp_warning_at ("address of local array `%D' returned", retval);
-    }
   
   /* Now deal with possible C++ hair:
      (1) Compute the return value.
@@ -7297,24 +7224,73 @@ c_expand_return (retval)
     }
   else
     {
-      /* We already did this above for refs, don't do it again.  */
-      if (TREE_CODE (valtype) != REFERENCE_TYPE)
-	retval = convert_for_initialization
-	  (NULL_TREE, valtype, retval, LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
-	   "return", NULL_TREE, 0);
-
-      /* We can't initialize a register from a NEW_EXPR.  */
-      if (! current_function_returns_struct
-	  && TREE_CODE (retval) == TARGET_EXPR
-	  && TREE_CODE (TREE_OPERAND (retval, 1)) == NEW_EXPR)
-	retval = build (COMPOUND_EXPR, TREE_TYPE (retval), retval,
-			TREE_OPERAND (retval, 0));
+      retval = convert_for_initialization
+	(NULL_TREE, valtype, retval, LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
+	 "return", NULL_TREE, 0);
 
       if (retval == error_mark_node)
 	{
 	  /* Avoid warning about control reaching end of function.  */
 	  expand_null_return ();
 	  return;
+	}
+
+      /* We can't initialize a register from a NEW_EXPR.  */
+      else if (! current_function_returns_struct
+	       && TREE_CODE (retval) == TARGET_EXPR
+	       && TREE_CODE (TREE_OPERAND (retval, 1)) == NEW_EXPR)
+	retval = build (COMPOUND_EXPR, TREE_TYPE (retval), retval,
+			TREE_OPERAND (retval, 0));
+
+      /* Add some useful error checking for C++.  */
+      else if (TREE_CODE (valtype) == REFERENCE_TYPE)
+	{
+	  tree whats_returned;
+
+	  /* Sort through common things to see what it is
+	     we are returning.  */
+	  whats_returned = retval;
+	  if (TREE_CODE (whats_returned) == COMPOUND_EXPR)
+	    {
+	      whats_returned = TREE_OPERAND (whats_returned, 1);
+	      if (TREE_CODE (whats_returned) == ADDR_EXPR)
+		whats_returned = TREE_OPERAND (whats_returned, 0);
+	    }
+	  while (TREE_CODE (whats_returned) == CONVERT_EXPR
+		 || TREE_CODE (whats_returned) == NOP_EXPR)
+	    whats_returned = TREE_OPERAND (whats_returned, 0);
+	  if (TREE_CODE (whats_returned) == ADDR_EXPR)
+	    {
+	      whats_returned = TREE_OPERAND (whats_returned, 0);
+	      while (TREE_CODE (whats_returned) == NEW_EXPR
+		     || TREE_CODE (whats_returned) == TARGET_EXPR)
+		{
+		  /* Get the target.  */
+		  whats_returned = TREE_OPERAND (whats_returned, 0);
+		  warning ("returning reference to temporary");
+		}
+	    }
+
+	  if (TREE_CODE (whats_returned) == VAR_DECL && DECL_NAME (whats_returned))
+	    {
+	      if (TEMP_NAME_P (DECL_NAME (whats_returned)))
+		warning ("reference to non-lvalue returned");
+	      else if (! TREE_STATIC (whats_returned)
+		       && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned))
+		       && !TREE_PUBLIC (whats_returned))
+		cp_warning_at ("reference to local variable `%D' returned", whats_returned);
+	    }
+	}
+      else if (TREE_CODE (retval) == ADDR_EXPR)
+	{
+	  tree whats_returned = TREE_OPERAND (retval, 0);
+
+	  if (TREE_CODE (whats_returned) == VAR_DECL
+	      && DECL_NAME (whats_returned)
+	      && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned))
+	      && !TREE_STATIC (whats_returned)
+	      && !TREE_PUBLIC (whats_returned))
+	    cp_warning_at ("address of local variable `%D' returned", whats_returned);
 	}
     }
 
