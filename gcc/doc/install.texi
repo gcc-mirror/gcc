@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1.2.15 2001/06/03 19:09:00 jsm28 Exp $
+@comment $Id: install.texi,v 1.1.2.16 2001/06/04 22:59:22 ljrittle Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -958,10 +958,7 @@ should look here first if you think your results are unreasonable.
 @end ifnothtml
 
 Now that GCC has been built and tested, you can install it with
-@samp{cd @var{objdir}; make install} for a native compiler or
-@samp{cd @var{objdir}; make install LANGUAGES="c c++"} for 
-a cross compiler (note installing cross compilers will be easier in the 
-next release!).
+@samp{cd @var{objdir}; make install}.
 
 That step completes the installation of GCC; user level binaries can
 be found in @file{@var{prefix}/bin} where @var{prefix} is the value you
@@ -969,14 +966,14 @@ specified with the @option{--prefix} to configure (or @file{/usr/local}
 by default).
 
 If you don't mind, please quickly review the 
-@uref{http://gcc.gnu.org/gcc-2.95/buildstat.html,,build status page}.
+@uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,build status page}.
 If your system is not listed, send a note to
 @uref{mailto:gcc@@gcc.gnu.org,,gcc@@gcc.gnu.org} indicating
 that you successfully built and installed GCC.
 
-Include the output from running @file{@var{srcdir}/config.guess}.  (Do not
-send us the config.guess file itself, just the output from running
-it!)
+Include the output from running @file{@var{srcdir}/config.guess}.  (Do
+not send us the config.guess file itself, just the one-line output from
+running it!)
 
 If you find a bug, please report it following our
 @uref{../bugs.html,,bug reporting guidelines}.
