@@ -1018,6 +1018,7 @@ then
 	cc_set_by_configure="\$(CC)"
 	quoted_cc_set_by_configure="\$(CC)"
 	stage_prefix_set_by_configure="\$(STAGE_PREFIX)"
+	quoted_stage_prefix_set_by_configure="\$(STAGE_PREFIX)"
 else
 	rm -f symtest.tem
 	if cp -p $srcdir/gcc.c symtest.tem 2>/dev/null
@@ -1029,6 +1030,7 @@ else
 	cc_set_by_configure="\`case '\$(CC)' in stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`"
 	quoted_cc_set_by_configure="\\\`case '\\\$(CC)' in stage*) echo '\\\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\\\$(CC)';; esac\\\`"
 	stage_prefix_set_by_configure="\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`"
+	quoted_stage_prefix_set_by_configure="\\\`case '\\\$(STAGE_PREFIX)' in stage*) echo '\\\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\\\$(STAGE_PREFIX)';; esac\\\`"
 fi
 rm -f symtest.tem
 
@@ -2357,6 +2359,7 @@ AC_SUBST(objc_boehm_gc)
 AC_SUBST(out_file)
 AC_SUBST(out_object_file)
 AC_SUBST(stage_prefix_set_by_configure)
+AC_SUBST(quoted_stage_prefix_set_by_configure)
 AC_SUBST(symbolic_link)
 AC_SUBST(thread_file)
 AC_SUBST(tm_file_list)

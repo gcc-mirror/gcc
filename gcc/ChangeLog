@@ -1,3 +1,10 @@
+2001-12-24  Douglas B. Rupp (rupp@gnat.com)
+
+	* configure.in (quoted_stage_prefix_set_by_configure): Generate.
+	* configure: Regenerated.
+	* Makefile.in (SUBDIR_FLAGS_TO_PASS): Use
+	quoted_stage_prefix_set_by_configure.
+
 Mon Dec 24 10:24:59 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rtl.h (in_expr_list_p): New declaration.
