@@ -5,9 +5,6 @@ LIB2FUNCS_EXTRA=quadlib.c
 # We'll need this once .init sections are enabled on PA64.
 #EXTRA_PARTS = crtbegin.o crtend.o
 
-# For the time being, we are using collect.
-#USE_COLLECT2 =
-
 quadlib.c: $(srcdir)/config/pa/quadlib.c
 	rm -f quadlib.c
 	cp $(srcdir)/config/pa/quadlib.c .

@@ -1656,6 +1656,13 @@ for file in ${extra_headers} ; do
   extra_headers_list="${extra_headers_list} \$(srcdir)/config/${cpu_type}/${file}"
 done
 
+# Define collect2 in Makefile.
+case $host_can_use_collect2 in
+  no) collect2= ;;
+  *) collect2='collect2$(exeext)' ;;
+esac
+AC_SUBST([collect2])
+
 # Add a definition of USE_COLLECT2 if system wants one.
 case $use_collect2 in
   no) use_collect2= ;;
@@ -1663,6 +1670,11 @@ case $use_collect2 in
   *) 
     host_xm_defines="${host_xm_defines} USE_COLLECT2"
     xm_defines="${xm_defines} USE_COLLECT2"
+    case $host_can_use_collect2 in
+      no)
+        AC_MSG_ERROR([collect2 is required but cannot be built on this system])
+        ;;
+    esac
     ;;
 esac
 
