@@ -1061,6 +1061,7 @@ output_move_double (operands)
   rtx latehalf[2];
   rtx addreg0 = 0;
   rtx addreg1 = 0;
+  int highest_first = 0;
 
   /* First classify both operands.  */
 
@@ -1166,18 +1167,19 @@ output_move_double (operands)
 	  xops[0] = latehalf[0];
 	  xops[1] = op0;
 	  output_asm_insn ("add %1,%0,%1", xops);
-	  operands[1] = gen_rtx (MEM, DImode, latehalf[0]);
+	  operands[1] = gen_rtx (MEM, DImode, op0);
 	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
+	  addreg1 = 0;
 	}
       /* Do the late half first.  */
-      output_asm_insn (singlemove_string (latehalf), latehalf);
-      /* Then clobber.  */
-      return singlemove_string (operands);
+      highest_first = 1;
     }
 
-  /* Normal case: do the two words, low-numbered first.  */
+  /* Normal case: do the two words, low-numbered first.
+     Overlap case (highest_first set): do high-numbered word first.  */
 
-  output_asm_insn (singlemove_string (operands), operands);
+  if (! highest_first)
+    output_asm_insn (singlemove_string (operands), operands);
 
   /* Make any unoffsettable addresses point at high-numbered word.  */
   if (addreg0)
@@ -1193,6 +1195,9 @@ output_move_double (operands)
     output_asm_insn ("add %0,-0x4,%0", &addreg0);
   if (addreg1)
     output_asm_insn ("add %0,-0x4,%0", &addreg1);
+
+  if (highest_first)
+    output_asm_insn (singlemove_string (operands), operands);
 
   return "";
 }
