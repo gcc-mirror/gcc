@@ -37,9 +37,15 @@ MULTILIB_EXCEPTIONS += *mhard-float/*mthumb*
 
 MULTILIB_REDUNDANT_DIRS = interwork/thumb=thumb
 
-MULTILIB_OPTIONS    += mcpu=iwmmxt
-MULTILIB_DIRNAMES   += iwmmxt
-MULTILIB_REDUNDANT_DIRS += interwork/thumb/iwmmxt=thumb
+# The iWMMXt multilibs are suppressed for now because gcc only
+# supports generating them with the IWMMXT or AAPCS ABIs, neither of
+# which is the default.  Until GCC can generate code for an iWMMXt
+# which will work with the default ABI it is not possible to safely
+# generate these multilibs.
+#
+# MULTILIB_OPTIONS    += mcpu=iwmmxt
+# MULTILIB_DIRNAMES   += iwmmxt
+# MULTILIB_REDUNDANT_DIRS += interwork/thumb/iwmmxt=thumb
 
 EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crti.o crtn.o
 

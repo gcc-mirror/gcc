@@ -1,3 +1,9 @@
+2004-04-16  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (arm_override_options): Revert previous patch.
+	* config/arm/t-xscale-elf: Disable iwmmxt multilibs until they can
+	be safely built.
+
 2004-04-16  Kazuhiro Inaoka <inaoka dot kazuhiro at renesas dot com>
 
 	* config/m32r/m32r.h (BIG_ENDIAN_BIT): Deleted to fix endian
