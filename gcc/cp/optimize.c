@@ -620,10 +620,11 @@ inlinable_function_p (fn, id)
 
       if (inlinable && DECL_LANG_SPECIFIC (fn) && DECL_INLINED_FNS (fn))
 	{
-	  struct lang_decl_inlined_fns *ifn = DECL_INLINED_FNS (fn);
+	  int j;
+	  tree inlined_fns = DECL_INLINED_FNS (fn);
 
-	  for (i = 0; i < ifn->num_fns; ++i)
-	    if (ifn->fns [i] == VARRAY_TREE (id->fns, 0))
+	  for (j = 0; j < TREE_VEC_LENGTH (inlined_fns); ++j)
+	    if (TREE_VEC_ELT (inlined_fns, j) == VARRAY_TREE (id->fns, 0))
 	      return 0;
 	}
     }
@@ -912,14 +913,10 @@ optimize_function (fn)
       VARRAY_FREE (id.target_exprs);
       if (DECL_LANG_SPECIFIC (fn))
 	{
-	  struct lang_decl_inlined_fns *ifn;
+	  tree ifn = make_tree_vec (VARRAY_ACTIVE_SIZE (id.inlined_fns));
 
-	  ifn = ggc_alloc (sizeof (struct lang_decl_inlined_fns)
-			   + (VARRAY_ACTIVE_SIZE (id.inlined_fns) - 1)
-			     * sizeof (tree));
-	  ifn->num_fns = VARRAY_ACTIVE_SIZE (id.inlined_fns);
-	  memcpy (&ifn->fns[0], &VARRAY_TREE (id.inlined_fns, 0),
-		  ifn->num_fns * sizeof (tree));
+	  memcpy (&TREE_VEC_ELT (ifn, 0), &VARRAY_TREE (id.inlined_fns, 0),
+		  VARRAY_ACTIVE_SIZE (id.inlined_fns) * sizeof (tree));
 	  DECL_INLINED_FNS (fn) = ifn;
 	}
       VARRAY_FREE (id.inlined_fns);

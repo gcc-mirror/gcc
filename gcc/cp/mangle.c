@@ -1154,16 +1154,17 @@ discriminator_for_local_entity (entity)
   /* Assume this is the only local entity with this name.  */
   discriminator = 0;
 
-  /* For now, we don't discriminate amongst local variables.  */
-  if (TREE_CODE (entity) != TYPE_DECL)
-    return 0;
-
-  /* Scan the list of local classes.  */
-  entity = TREE_TYPE (entity);
-  for (type = &VARRAY_TREE (local_classes, 0); *type != entity; ++type)
-    if (TYPE_IDENTIFIER (*type) == TYPE_IDENTIFIER (entity)
-	&& TYPE_CONTEXT (*type) == TYPE_CONTEXT (entity))
-      ++discriminator;
+  if (DECL_DISCRIMINATOR_P (entity) && DECL_LANG_SPECIFIC (entity))
+    discriminator = DECL_DISCRIMINATOR (entity);
+  else if (TREE_CODE (entity) == TYPE_DECL)
+    {
+      /* Scan the list of local classes.  */
+      entity = TREE_TYPE (entity);
+      for (type = &VARRAY_TREE (local_classes, 0); *type != entity; ++type)
+        if (TYPE_IDENTIFIER (*type) == TYPE_IDENTIFIER (entity)
+            && TYPE_CONTEXT (*type) == TYPE_CONTEXT (entity))
+	  ++discriminator;
+    }  
 
   return discriminator;
 }

@@ -1,3 +1,7 @@
+2001-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/mangle3.C: New test.
+
 2001-03-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/execute/20010325-1.c: New test.
