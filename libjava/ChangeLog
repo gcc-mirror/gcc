@@ -1,3 +1,8 @@
+2004-11-08  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/GregorianCalendar.java: Removed unused imports.
+	* java/util/Vector.java: Removed unused import.
+
 2004-11-07  Michael Koch  <konqueror@gmx.de>
 
 	* java/lang/Process.java:

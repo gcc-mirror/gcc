@@ -39,9 +39,6 @@ exception statement from your version. */
 
 package java.util;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-
 /**
  * <p>
  * This class represents the Gregorian calendar, that is used in most
