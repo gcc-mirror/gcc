@@ -1,3 +1,8 @@
+2002-01-09  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/20020108-1.c: Rewrite to choose the proper
+	type in which to perform the operation for each size.
+
 Wed Jan  9 16:48:33 2002  Alan Matsuoka  (alanm@redhat.com)
 
 	* gcc.c-torture/compile/20020109-2.c: New test.
