@@ -22,14 +22,13 @@ namespace std
     inline size_t
     __valarray_product(const valarray<size_t>& __a)
     {
+        typedef const size_t* __restrict__ _Tp;
+        const size_t __n = __a.size();
         // XXX: This ugly cast is necessary because
         //      valarray::operator[]() const return a VALUE!
         //      Try to get the committee to correct that gross error.
-        typedef const size_t* __restrict__ _Tp;
-        size_t __n = __a.size() - 1;
         valarray<size_t>& __t = const_cast<valarray<size_t>&>(__a);
-        return __valarray_product(static_cast<_Tp>(&__t[0]),
-                                  static_cast<_Tp>(&__t[__n]));
+        return __valarray_product(&__t[0], &__t[0] + __n);
     }
     
     void __gslice_to_index(size_t __o, const valarray<size_t>& __l,
