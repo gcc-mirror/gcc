@@ -1,5 +1,5 @@
 /* DriverManager.java -- Manage JDBC drivers
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -103,7 +103,10 @@ public class DriverManager
               {
         	Class.forName(driver_classname); // The driver registers itself
               }
-            catch (Exception e) { ; } // Ignore not founds
+            catch (Exception e)
+	      {
+		// Ignore not founds
+	      }
           }
       }
 
@@ -209,9 +212,9 @@ public class DriverManager
    * @param url The JDBC URL string to find a driver for.
    *
    * @return A <code>Driver</code> that can connect to the specified
-   * URL, or <code>null</code> if a suitable driver cannot be found.
+   * URL.
    *
-   * @exception SQLException If an error occurs.
+   * @exception SQLException If an error occurs, or no suitable driver can be found.
    */
   public static Driver getDriver(String url) throws SQLException
   {
@@ -224,7 +227,7 @@ public class DriverManager
           return d;
       }
 
-    return null;
+    throw new SQLException("No driver found for " + url);
   }
 
   /**

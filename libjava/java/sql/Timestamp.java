@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.sql;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 /**
@@ -81,11 +82,15 @@ public class Timestamp extends java.util.Date
     try
       {
 	Date d = (Date) parse_sdf.parseObject(str);
-	return new Timestamp(d.getTime());
+
+	if (d == null)
+	  throw new IllegalArgumentException(str);
+	else
+	  return new Timestamp(d.getTime());
       }
-    catch (Exception e)
+    catch (ParseException e)
       {
-	return null;
+	throw new IllegalArgumentException(str);
       }
   }
 

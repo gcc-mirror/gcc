@@ -1,5 +1,9 @@
 2003-04-19  Tom Tromey  <tromey@redhat.com>
 
+	* java/sql/Date.java, java/sql/DriverManager.java,
+	java/sql/Time.java, java/sql/Timestamp.java: New versions from
+	Classpath.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (ordinary_java_source_files): Added new files.
 	* java/security/AlgorithmParameterGenerator.java,
