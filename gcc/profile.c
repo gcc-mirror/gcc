@@ -759,9 +759,10 @@ branch_prob (f, dump_file)
 	      {
 		rtx label_ref;
 
-		/* Must be an IF_THEN_ELSE branch.  */
+		/* Must be an IF_THEN_ELSE branch.  If it isn't, assume it
+		   is a computed goto, which aren't supported yet.  */
 		if (GET_CODE (tem) != IF_THEN_ELSE)
-		  abort ();
+		  fatal ("-fprofile-arcs does not support computed gotos");
 		if (XEXP (tem, 1) != pc_rtx)
 		  label_ref = XEXP (tem, 1);
 		else
