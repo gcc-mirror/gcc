@@ -3,10 +3,11 @@
 
 /* { dg-do compile } */
 /* { dg-options "" } */
+#include <limits.h>
 
 struct PDATA
 {
-    unsigned int  Dummy:32;
+    unsigned int  Dummy:(sizeof(int)*CHAR_BIT);
     const char*   PName;
 };
 

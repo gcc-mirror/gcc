@@ -1,3 +1,7 @@
+2001-01-10  Alan Lehotsky  <lehotsky@tiac.net>
+
+	* gcc.dg/20000926-1.c: Parameterize for machines with 16-bit ints.
+	
 2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old_deja/g++.pt/error3.C: New test.
