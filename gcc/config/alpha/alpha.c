@@ -1315,9 +1315,9 @@ output_prolog (file, size)
       fprintf (file, "\tsubq $5,1,$5\n");
       fprintf (file, "\tlda $4,-8192($4)\n");
 
-      fprintf (file, "\tbne $5");
+      fprintf (file, "\tbne $5,");
       assemble_name (file, alpha_function_name);
-      fprintf (file, "%s..sc\n");
+      fprintf (file, "..sc\n");
 
       fprintf (file, "\tlda $30,-%d($4)\n", leftover);
 
