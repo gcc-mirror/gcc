@@ -1,3 +1,10 @@
+2000-01-11  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* flow.c (propagate_block): When a prologue/epilogue insn
+        is marked dead, unconditionally clear libcall_is_dead and
+        insn_is_dead, and only dump rtl if warnings aren't being
+        suppressed.
+
 Tue Jan 11 16:26:47 MET 2000  Jan Hubicka <jh@suse.cz>
 
 	* i386.c (ix86_attr_length_default): Handle TYPE_STR and TYPE_CLD.
