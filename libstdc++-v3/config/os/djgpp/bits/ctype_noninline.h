@@ -40,7 +40,7 @@ extern unsigned char __dj_ctype_tolower[];
   
   ctype<char>::ctype(const mask* __table = 0, bool __del = false, 
 	size_t __refs = 0) 
-    : _Ctype_nois<char>(__refs), 
+    : __ctype_abstract_base<char>(__refs), 
       _M_del(__table != 0 && __del), 
       _M_toupper(__dj_ctype_toupper), 
       _M_tolower(__dj_ctype_tolower),
@@ -50,14 +50,14 @@ extern unsigned char __dj_ctype_tolower[];
 
   char
   ctype<char>::do_toupper(char __c) const
-  { return _M_toupper[(int)(__c)+1]) }
+  { return _M_toupper[static_cast<int>(__c)+1]; }
 
   const char*
   ctype<char>::do_toupper(char* __low, const char* __high) const
   {
     while (__low < __high)
       {
-	*__low = ::toupper((int) *__low);
+	*__low = ::toupper(static_cast<int> (*__low));
 	++__low;
       }
     return __high;
@@ -65,14 +65,14 @@ extern unsigned char __dj_ctype_tolower[];
 
   char
   ctype<char>::do_tolower(char __c) const
-  { return _M_tolower[(int)(__c)+1]) }
+  { return _M_tolower[static_cast<int>(__c)+1]; }
 
   const char* 
   ctype<char>::do_tolower(char* __low, const char* __high) const
   {
     while (__low < __high)
       {
-	*__low = ::tolower((int) *__low);
+	*__low = ::tolower(static_cast<int> (*__low));
 	++__low;
       }
     return __high;
