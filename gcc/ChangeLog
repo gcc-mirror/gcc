@@ -1,4 +1,10 @@
 2003-06-16  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.c (expand_expr <PLUS_EXPR>): If operand_equal_p considers
+	both operands of the addition equal, reuse the expanded RTL.
+	(expand_expr <MULT_EXPR>): Likewise for multiplication.
+
+2003-06-16  Roger Sayle  <roger@eyesopen.com>
 	    Jeff Law  <law@redhat.com>
 
 	* fold-const.c (operand_equal_p): Consider two calls to "const"
