@@ -1,5 +1,5 @@
 /* Test warning from conflicting visibility specifications. */
-/* { dg-require-visibility "" } */
+/* { dg-require-visibility "protected" } */
 /* { dg-final { scan-hidden "xyzzy" } } */
 
 extern int 

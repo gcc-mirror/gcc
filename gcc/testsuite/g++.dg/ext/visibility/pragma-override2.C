@@ -1,6 +1,6 @@
 /* Test that #pragma GCC visibility does not override class member specific settings. */
 /* { dg-do compile } */
-/* { dg-require-visibility "" } */
+/* { dg-require-visibility "internal" } */
 /* { dg-final { scan-assembler "\\.internal.*Foo.methodEv" } } */
 
 #pragma GCC visibility push(hidden)
