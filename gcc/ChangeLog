@@ -1,3 +1,11 @@
+2002-11-21  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/arm/elf.h (SUBTARGET_EXTRA_SPECS): Add
+	subtarget_asm_float_spec.
+	(SUBTARGET_ASM_FLOAT_SPEC): Define, moving the
+	defaults from...
+	(ASM_SPEC): ...here.  Use subtarget_asm_float_spec.
+
 2002-11-21  Nick Clifton  <nickc@redhat.com>
 
 	* config/fr30/fr30.md (movsf_constant_store): Move code to

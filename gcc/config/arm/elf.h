@@ -36,11 +36,17 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
-  { "subtarget_extra_asm_spec",	SUBTARGET_EXTRA_ASM_SPEC },
+  { "subtarget_extra_asm_spec",	SUBTARGET_EXTRA_ASM_SPEC }, \
+  { "subtarget_asm_float_spec", SUBTARGET_ASM_FLOAT_SPEC },
 #endif
 
 #ifndef SUBTARGET_EXTRA_ASM_SPEC
 #define SUBTARGET_EXTRA_ASM_SPEC ""
+#endif
+
+#ifndef SUBTARGET_ASM_FLOAT_SPEC
+#define SUBTARGET_ASM_FLOAT_SPEC "\
+%{mapcs-float:-mfloat} %{msoft-float:-mno-fpu}"
 #endif
 
 #ifndef ASM_SPEC
@@ -50,8 +56,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=*:-mcpu=%*} \
 %{march=*:-march=%*} \
 %{mapcs-*:-mapcs-%*} \
-%{mapcs-float:-mfloat} \
-%{msoft-float:-mno-fpu} \
+%(subtarget_asm_float_spec) \
 %{mthumb-interwork:-mthumb-interwork} \
 %(subtarget_extra_asm_spec)"
 #endif
