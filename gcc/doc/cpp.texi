@@ -3044,7 +3044,35 @@ The result should match one of the above two forms.
 @samp{#line} directives alter the results of the @code{__FILE__} and
 @code{__LINE__} predefined macros from that point on.  @xref{Standard
 Predefined Macros}.  They do not have any effect on @samp{#include}'s
-idea of the directory containing the current file.
+idea of the directory containing the current file.  This is a change
+from GCC 2.95.  Previously, a file reading
+
+@smallexample
+#line 1 "../src/gram.y"
+#include "gram.h"
+@end smallexample
+
+would search for @file{gram.h} in @file{../src}, then the @option{-I}
+chain; the directory containing the physical source file would not be
+searched.  In GCC 3.0 and later, the @samp{#include} is not affected by
+the presence of a @samp{#line} referring to a different directory.
+
+We made this change because the old behavior caused problems when
+generated source files were transported between machines.  For instance,
+it is common practice to ship generated parsers with a source release,
+so that people building the distribution do not need to have yacc or
+Bison installed.  These files frequently have @samp{#line} directives
+referring to the directory tree of the system where the distribution was
+created.  If GCC tries to search for headers in those directories, the
+build is likely to fail.
+
+The new behavior can cause failures too, if the generated file is not
+in the same directory as its source and it attempts to include a header
+which would be visible searching from the directory containing the
+source file.  However, this problem is easily solved with an additional
+@option{-I} switch on the command line.  The failures caused by the old
+semantics could sometimes be corrected only by editing the generated
+files, which is difficult and error-prone.
 
 @node Pragmas
 @chapter Pragmas
@@ -3780,6 +3808,14 @@ were still available in traditional mode.  It is now a separate program
 and does not implement any of the GNU extensions, except for a partial
 implementation of assertions.  Even those may be removed in a future
 release.
+
+@item @samp{#line} and @samp{#include}
+
+The @samp{#line} directive used to change GCC's notion of the
+``directory containing the current file,'' used by @samp{#include} with
+a double-quoted header file name.  In 3.0 and later, it does not.
+@xref{Line Control}, for further explanation.
+
 @end itemize
 
 @node Invocation
