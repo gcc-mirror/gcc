@@ -590,7 +590,7 @@
   (r) = __xx.__i.__l; (q) = __xx.__i.__h; })
 #endif /* __ns32000__ */
 
-#if (defined (__powerpc__) || defined (___IBMR2__)) && W_TYPE_SIZE == 32
+#if (defined (_ARCH_PPC) || defined (_IBMR2)) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   do {									\
     if (__builtin_constant_p (bh) && (bh) == 0)				\
@@ -619,14 +619,14 @@
 #define sub_ddmmss(sh, sl, ah, al, bh, bl) \
   do {									\
     if (__builtin_constant_p (ah) && (ah) == 0)				\
-      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{sfze|subfze} %0,%2"		\
+      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{sfze|subfze} %0,%2"	\
 	       : "=r" ((USItype)(sh)),					\
 		 "=&r" ((USItype)(sl))					\
 	       : "r" ((USItype)(bh)),					\
 		 "rI" ((USItype)(al)),					\
 		 "r" ((USItype)(bl)));					\
     else if (__builtin_constant_p (ah) && (ah) ==~(USItype) 0)		\
-      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{sfme|subfme} %0,%2"		\
+      __asm__ ("{sf%I3|subf%I3c} %1,%4,%3\n\t{sfme|subfme} %0,%2"	\
 	       : "=r" ((USItype)(sh)),					\
 		 "=&r" ((USItype)(sl))					\
 	       : "r" ((USItype)(bh)),					\
@@ -659,7 +659,7 @@
   __asm__ ("{cntlz|cntlzw} %0,%1"					\
 	   : "=r" ((USItype)(count))					\
 	   : "r" ((USItype)(x)))
-#if defined (__powerpc__)
+#if defined (_ARCH_PPC)
 #define umul_ppmm(ph, pl, m0, m1) \
   do {									\
     USItype __m0 = (m0), __m1 = (m1);					\
