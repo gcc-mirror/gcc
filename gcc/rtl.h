@@ -644,12 +644,13 @@ extern rtx read_rtx ();
 /* At present, don't prototype xrealloc, since all of the callers don't
    cast their pointers to char *, and all of the xrealloc's don't use
    void * yet.  */
-extern char *xrealloc			PROTO((void *, unsigned));
+extern char *xmalloc			PROTO((size_t));
+extern char *xrealloc			PROTO((void *, size_t));
 #else
+extern char *xmalloc ();
 extern char *xrealloc ();
 #endif
 
-extern char *xmalloc			PROTO((unsigned));
 extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
 extern void free			PROTO((void *));
