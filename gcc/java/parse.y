@@ -8548,7 +8548,7 @@ build_access_to_thisn (from, to, lc)
 {
   tree access = NULL_TREE;
 
-  while (from != to)
+  while (from != to && PURE_INNER_CLASS_TYPE_P (from))
     {
       if (!access)
         {
@@ -8568,8 +8568,8 @@ build_access_to_thisn (from, to, lc)
 	  access = make_qualified_primary (cn, access, lc);
 	}
 
-      /* if FROM isn't an inter class, that's fine, we've done
-         enough. What we're looking for can be accessed from there. */
+      /* If FROM isn't an inner class, that's fine, we've done enough.
+         What we're looking for can be accessed from there.  */
       from = DECL_CONTEXT (TYPE_NAME (from));
       if (!from)
 	break;
