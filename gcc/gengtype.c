@@ -652,7 +652,6 @@ adjust_field_tree_exp (type_p t, options_p opt ATTRIBUTE_UNUSED)
   } data[] = {
     { "SAVE_EXPR", 2, 1 },
     { "GOTO_SUBROUTINE_EXPR", 0, 2 },
-    { "RTL_EXPR", 0, 2 },
     { "WITH_CLEANUP_EXPR", 2, 1 },
   };
 

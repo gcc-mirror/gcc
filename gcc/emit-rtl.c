@@ -4822,13 +4822,12 @@ emit (rtx x)
 /* Space for free sequence stack entries.  */
 static GTY ((deletable)) struct sequence_stack *free_sequence_stack;
 
-/* Begin emitting insns to a sequence which can be packaged in an
-   RTL_EXPR.  If this sequence will contain something that might cause
-   the compiler to pop arguments to function calls (because those
-   pops have previously been deferred; see INHIBIT_DEFER_POP for more
-   details), use do_pending_stack_adjust before calling this function.
-   That will ensure that the deferred pops are not accidentally
-   emitted in the middle of this sequence.  */
+/* Begin emitting insns to a sequence.  If this sequence will contain
+   something that might cause the compiler to pop arguments to function
+   calls (because those pops have previously been deferred; see
+   INHIBIT_DEFER_POP for more details), use do_pending_stack_adjust
+   before calling this function.  That will ensure that the deferred
+   pops are not accidentally emitted in the middle of this sequence.  */
 
 void
 start_sequence (void)
@@ -4846,24 +4845,11 @@ start_sequence (void)
   tem->next = seq_stack;
   tem->first = first_insn;
   tem->last = last_insn;
-  tem->sequence_rtl_expr = seq_rtl_expr;
 
   seq_stack = tem;
 
   first_insn = 0;
   last_insn = 0;
-}
-
-/* Similarly, but indicate that this sequence will be placed in T, an
-   RTL_EXPR.  See the documentation for start_sequence for more
-   information about how to use this function.  */
-
-void
-start_sequence_for_rtl_expr (tree t)
-{
-  start_sequence ();
-
-  seq_rtl_expr = t;
 }
 
 /* Set up the insn chain starting with FIRST as the current sequence,
@@ -4911,7 +4897,6 @@ push_topmost_sequence (void)
 
   first_insn = top->first;
   last_insn = top->last;
-  seq_rtl_expr = top->sequence_rtl_expr;
 }
 
 /* After emitting to the outer-level insn chain, update the outer-level
@@ -4927,7 +4912,6 @@ pop_topmost_sequence (void)
 
   top->first = first_insn;
   top->last = last_insn;
-  /* ??? Why don't we save seq_rtl_expr here?  */
 
   end_sequence ();
 }
@@ -4952,7 +4936,6 @@ end_sequence (void)
 
   first_insn = tem->first;
   last_insn = tem->last;
-  seq_rtl_expr = tem->sequence_rtl_expr;
   seq_stack = tem->next;
 
   memset (tem, 0, sizeof (*tem));
@@ -5168,7 +5151,6 @@ init_emit (void)
   f->emit = ggc_alloc (sizeof (struct emit_status));
   first_insn = NULL;
   last_insn = NULL;
-  seq_rtl_expr = NULL;
   cur_insn_uid = 1;
   reg_rtx_no = LAST_VIRTUAL_REGISTER + 1;
   last_location = UNKNOWN_LOCATION;

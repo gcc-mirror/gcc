@@ -40,7 +40,6 @@ struct sequence_stack GTY(())
   /* First and last insns in the chain of the saved sequence.  */
   rtx first;
   rtx last;
-  tree sequence_rtl_expr;
   struct sequence_stack *next;
 };
 
@@ -66,15 +65,10 @@ struct emit_status GTY(())
   /* The ends of the doubly-linked chain of rtl for the current function.
      Both are reset to null at the start of rtl generation for the function.
 
-     start_sequence saves both of these on `sequence_stack' along with
-     `sequence_rtl_expr' and then starts a new, nested sequence of insns.  */
+     start_sequence saves both of these on `sequence_stack' and then starts
+     a new, nested sequence of insns.  */
   rtx x_first_insn;
   rtx x_last_insn;
-
-  /* RTL_EXPR within which the current sequence will be placed.  Use to
-     prevent reuse of any temporaries within the sequence until after the
-     RTL_EXPR is emitted.  */
-  tree sequence_rtl_expr;
 
   /* Stack of pending (incomplete) sequences saved by `start_sequence'.
      Each element describes one pending sequence.
@@ -112,7 +106,6 @@ struct emit_status GTY(())
 
 /* For backward compatibility... eventually these should all go away.  */
 #define reg_rtx_no (cfun->emit->x_reg_rtx_no)
-#define seq_rtl_expr (cfun->emit->sequence_rtl_expr)
 #define regno_reg_rtx (cfun->emit->x_regno_reg_rtx)
 #define seq_stack (cfun->emit->sequence_stack)
 
@@ -257,9 +250,6 @@ struct function GTY(())
   /* List (chain of EXPR_LISTs) of all stack slots in this function.
      Made for the sake of unshare_all_rtl.  */
   rtx x_stack_slot_list;
-
-  /* Chain of all RTL_EXPRs that have insns in them.  */
-  tree x_rtl_expr_chain;
 
   /* Place after which to insert the tail_recursion_label if we need one.  */
   rtx x_tail_recursion_reentry;
@@ -522,7 +512,6 @@ extern int trampolines_created;
 #define frame_offset (cfun->x_frame_offset)
 #define tail_recursion_reentry (cfun->x_tail_recursion_reentry)
 #define arg_pointer_save_area (cfun->x_arg_pointer_save_area)
-#define rtl_expr_chain (cfun->x_rtl_expr_chain)
 #define used_temp_slots (cfun->x_used_temp_slots)
 #define avail_temp_slots (cfun->x_avail_temp_slots)
 #define temp_slot_level (cfun->x_temp_slot_level)

@@ -335,16 +335,6 @@ struct stmt_status GTY(())
   /* Number of binding contours started so far in this function.  */
   int x_block_start_count;
 
-  /* Each time we expand an expression-statement,
-     record the expr's type and its RTL value here.  */
-  tree x_last_expr_type;
-  rtx x_last_expr_value;
-  rtx x_last_expr_alt_rtl;
-
-  /* Nonzero if within a ({...}) grouping, in which case we must
-     always compute a value for each expr-stmt in case it is the last one.  */
-  int x_expr_stmts_for_value;
-
   /* Location of last line-number note, whether we actually
      emitted it or not.  */
   location_t x_emit_locus;
@@ -359,10 +349,6 @@ struct stmt_status GTY(())
 #define nesting_stack (cfun->stmt->x_nesting_stack)
 #define nesting_depth (cfun->stmt->x_nesting_depth)
 #define current_block_start_count (cfun->stmt->x_block_start_count)
-#define last_expr_type (cfun->stmt->x_last_expr_type)
-#define last_expr_value (cfun->stmt->x_last_expr_value)
-#define last_expr_alt_rtl (cfun->stmt->x_last_expr_alt_rtl)
-#define expr_stmts_for_value (cfun->stmt->x_expr_stmts_for_value)
 #define emit_locus (cfun->stmt->x_emit_locus)
 #define goto_fixup_chain (cfun->stmt->x_goto_fixup_chain)
 
@@ -976,8 +962,6 @@ expand_asm (tree string, int vol)
   MEM_VOLATILE_P (body) = vol;
 
   emit_insn (body);
-
-  clear_last_expr ();
 }
 
 /* Parse the output constraint pointed to by *CONSTRAINT_P.  It is the
@@ -1413,8 +1397,6 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	  SET_HARD_REG_BIT (clobbered_regs, i);
 	}
     }
-
-  clear_last_expr ();
 
   /* First pass over inputs and outputs checks validity and sets
      mark_addressable if needed.  */
@@ -2054,56 +2036,15 @@ resolve_operand_name_1 (char *p, tree outputs, tree inputs)
   return p;
 }
 
-/* Generate RTL to evaluate the expression EXP
-   and remember it in case this is the VALUE in a ({... VALUE; }) constr.
-   Provided just for backward-compatibility.  expand_expr_stmt_value()
-   should be used for new code.  */
+/* Generate RTL to evaluate the expression EXP.  */
 
 void
 expand_expr_stmt (tree exp)
 {
-  expand_expr_stmt_value (exp, -1, 1);
-}
-
-/* Generate RTL to evaluate the expression EXP.  WANT_VALUE tells
-   whether to (1) save the value of the expression, (0) discard it or
-   (-1) use expr_stmts_for_value to tell.  The use of -1 is
-   deprecated, and retained only for backward compatibility.  */
-
-void
-expand_expr_stmt_value (tree exp, int want_value, int maybe_last)
-{
   rtx value;
   tree type;
-  rtx alt_rtl = NULL;
 
-  if (want_value == -1)
-    want_value = expr_stmts_for_value != 0;
-
-  /* If -Wextra, warn about statements with no side effects,
-     except for an explicit cast to void (e.g. for assert()), and
-     except for last statement in ({...}) where they may be useful.  */
-  if (! want_value
-      && (expr_stmts_for_value == 0 || ! maybe_last)
-      && exp != error_mark_node
-      && warn_unused_value)
-    {
-      if (TREE_SIDE_EFFECTS (exp))
-	warn_if_unused_value (exp, emit_locus);
-      else if (!VOID_TYPE_P (TREE_TYPE (exp)) && !TREE_NO_WARNING (exp))
-	warning ("%Hstatement with no effect", &emit_locus);
-    }
-
-  /* If EXP is of function type and we are expanding statements for
-     value, convert it to pointer-to-function.  */
-  if (want_value && TREE_CODE (TREE_TYPE (exp)) == FUNCTION_TYPE)
-    exp = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (exp)), exp);
-
-  /* The call to `expand_expr' could cause last_expr_type and
-     last_expr_value to get reset.  Therefore, we set last_expr_value
-     and last_expr_type *after* calling expand_expr.  */
-  value = expand_expr_real (exp, want_value ? NULL_RTX : const0_rtx,
-			    VOIDmode, 0, &alt_rtl);
+  value = expand_expr (exp, const0_rtx, VOIDmode, 0);
   type = TREE_TYPE (exp);
 
   /* If all we do is reference a volatile value in memory,
@@ -2127,21 +2068,8 @@ expand_expr_stmt_value (tree exp, int want_value, int maybe_last)
 	}
     }
 
-  /* If this expression is part of a ({...}) and is in memory, we may have
-     to preserve temporaries.  */
-  preserve_temp_slots (value);
-
-  /* Free any temporaries used to evaluate this expression.  Any temporary
-     used as a result of this expression will already have been preserved
-     above.  */
+  /* Free any temporaries used to evaluate this expression.  */
   free_temp_slots ();
-
-  if (want_value)
-    {
-      last_expr_value = value;
-      last_expr_alt_rtl = alt_rtl;
-      last_expr_type = type;
-    }
 
   emit_queue ();
 }
@@ -2176,7 +2104,6 @@ warn_if_unused_value (tree exp, location_t locus)
     case INIT_EXPR:
     case TARGET_EXPR:
     case CALL_EXPR:
-    case RTL_EXPR:
     case TRY_CATCH_EXPR:
     case WITH_CLEANUP_EXPR:
     case EXIT_EXPR:
@@ -2263,90 +2190,6 @@ warn_if_unused_value (tree exp, location_t locus)
       return 1;
     }
 }
-
-/* Clear out the memory of the last expression evaluated.  */
-
-void
-clear_last_expr (void)
-{
-  last_expr_type = NULL_TREE;
-  last_expr_value = NULL_RTX;
-  last_expr_alt_rtl = NULL_RTX;
-}
-
-/* Begin a statement-expression, i.e., a series of statements which
-   may return a value.  Return the RTL_EXPR for this statement expr.
-   The caller must save that value and pass it to
-   expand_end_stmt_expr.  If HAS_SCOPE is nonzero, temporaries created
-   in the statement-expression are deallocated at the end of the
-   expression.  */
-
-tree
-expand_start_stmt_expr (int has_scope)
-{
-  tree t;
-
-  /* Make the RTL_EXPR node temporary, not momentary,
-     so that rtl_expr_chain doesn't become garbage.  */
-  t = make_node (RTL_EXPR);
-  do_pending_stack_adjust ();
-  if (has_scope)
-    start_sequence_for_rtl_expr (t);
-  else
-    start_sequence ();
-  NO_DEFER_POP;
-  expr_stmts_for_value++;
-  return t;
-}
-
-/* Restore the previous state at the end of a statement that returns a value.
-   Returns a tree node representing the statement's value and the
-   insns to compute the value.
-
-   The nodes of that expression have been freed by now, so we cannot use them.
-   But we don't want to do that anyway; the expression has already been
-   evaluated and now we just want to use the value.  So generate a RTL_EXPR
-   with the proper type and RTL value.
-
-   If the last substatement was not an expression,
-   return something with type `void'.  */
-
-tree
-expand_end_stmt_expr (tree t)
-{
-  OK_DEFER_POP;
-
-  if (! last_expr_value || ! last_expr_type)
-    {
-      last_expr_value = const0_rtx;
-      last_expr_alt_rtl = NULL_RTX;
-      last_expr_type = void_type_node;
-    }
-  else if (!REG_P (last_expr_value) && ! CONSTANT_P (last_expr_value))
-    /* Remove any possible QUEUED.  */
-    last_expr_value = protect_from_queue (last_expr_value, 0);
-
-  emit_queue ();
-
-  TREE_TYPE (t) = last_expr_type;
-  RTL_EXPR_RTL (t) = last_expr_value;
-  RTL_EXPR_ALT_RTL (t) = last_expr_alt_rtl;
-  RTL_EXPR_SEQUENCE (t) = get_insns ();
-
-  rtl_expr_chain = tree_cons (NULL_TREE, t, rtl_expr_chain);
-
-  end_sequence ();
-
-  /* Don't consider deleting this expr or containing exprs at tree level.  */
-  TREE_SIDE_EFFECTS (t) = 1;
-  /* Propagate volatility of the actual RTL expr.  */
-  TREE_THIS_VOLATILE (t) = volatile_refs_p (last_expr_value);
-
-  clear_last_expr ();
-  expr_stmts_for_value--;
-
-  return t;
-}
 
 /* Generate RTL for the start of an if-then.  COND is the expression
    whose truth should be tested.
@@ -2430,7 +2273,6 @@ expand_end_cond (void)
     emit_label (thiscond->data.cond.endif_label);
 
   POPSTACK (cond_stack);
-  clear_last_expr ();
 }
 
 /* Return nonzero if we should preserve sub-expressions as separate
@@ -2481,7 +2323,6 @@ expand_naked_return (void)
 
   clear_pending_stack_adjust ();
   do_pending_stack_adjust ();
-  clear_last_expr ();
 
   if (end_label == 0)
     end_label = naked_return_label = gen_label_rtx ();
@@ -2604,7 +2445,6 @@ expand_null_return_1 (rtx last_insn)
 
   clear_pending_stack_adjust ();
   do_pending_stack_adjust ();
-  clear_last_expr ();
 
   if (end_label == 0)
      end_label = return_label = gen_label_rtx ();
@@ -3112,13 +2952,6 @@ expand_end_bindings (tree vars, int mark_ends ATTRIBUTE_UNUSED,
       int reachable;
       rtx insn;
 
-      /* Don't let cleanups affect ({...}) constructs.  */
-      int old_expr_stmts_for_value = expr_stmts_for_value;
-      rtx old_last_expr_value = last_expr_value;
-      rtx old_last_expr_alt_rtl = last_expr_alt_rtl;
-      tree old_last_expr_type = last_expr_type;
-      expr_stmts_for_value = 0;
-
       /* Only clean up here if this point can actually be reached.  */
       insn = get_last_insn ();
       if (GET_CODE (insn) == NOTE)
@@ -3129,11 +2962,6 @@ expand_end_bindings (tree vars, int mark_ends ATTRIBUTE_UNUSED,
       expand_cleanups (thisblock->data.block.cleanups, 0, reachable);
       if (reachable)
 	do_pending_stack_adjust ();
-
-      expr_stmts_for_value = old_expr_stmts_for_value;
-      last_expr_value = old_last_expr_value;
-      last_expr_alt_rtl = old_last_expr_alt_rtl;
-      last_expr_type = old_last_expr_type;
 
       /* Restore the stack level.  */
 

@@ -740,7 +740,6 @@ synthesize_method (tree fndecl)
 
   interface_unknown = 1;
   start_preparsed_function (fndecl, NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
-  clear_last_expr ();
   stmt = begin_function_body ();
 
   if (DECL_OVERLOADED_OPERATOR_P (fndecl) == NOP_EXPR)

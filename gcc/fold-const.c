@@ -2041,7 +2041,6 @@ non_lvalue (tree x)
   case BIND_EXPR:
   case MIN_EXPR:
   case MAX_EXPR:
-  case RTL_EXPR:
     break;
 
   default:
@@ -2529,9 +2528,6 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 				      TREE_OPERAND (arg1, 1), flags)
 		     && operand_equal_p (TREE_OPERAND (arg0, 1),
 					 TREE_OPERAND (arg1, 0), flags));
-
-	case RTL_EXPR:
-	  return rtx_equal_p (RTL_EXPR_RTL (arg0), RTL_EXPR_RTL (arg1));
 
 	case CALL_EXPR:
 	  /* If the CALL_EXPRs call different functions, then they
@@ -5975,9 +5971,8 @@ fold (tree expr)
      if all operands are constant.  */
   int wins = 1;
 
-  /* Don't try to process an RTL_EXPR since its operands aren't trees.
-     Likewise for a SAVE_EXPR that's already been evaluated.  */
-  if (code == RTL_EXPR || (code == SAVE_EXPR && SAVE_EXPR_RTL (t) != 0))
+  /* Don't try to process an SAVE_EXPR that's already been evaluated.  */
+  if (code == SAVE_EXPR && SAVE_EXPR_RTL (t) != 0)
     return t;
 
   /* Return right away if a constant.  */
@@ -9058,7 +9053,6 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
 	{
 	case SAVE_EXPR: len = 2; break;
 	case GOTO_SUBROUTINE_EXPR: len = 0; break;
-	case RTL_EXPR: len = 0; break;
 	case WITH_CLEANUP_EXPR: len = 2; break;
 	default: break;
 	}
@@ -9376,8 +9370,6 @@ tree_expr_nonnegative_p (tree t)
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
     case FLOAT_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
-    case RTL_EXPR:
-      return rtl_expr_nonnegative_p (RTL_EXPR_RTL (t));
 
     case TARGET_EXPR:
       {

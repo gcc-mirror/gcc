@@ -495,7 +495,6 @@ recalculate_side_effects (tree t)
 	case INIT_EXPR:
 	case MODIFY_EXPR:
 	case VA_ARG_EXPR:
-	case RTL_EXPR:
 	case PREDECREMENT_EXPR:
 	case PREINCREMENT_EXPR:
 	case POSTDECREMENT_EXPR:

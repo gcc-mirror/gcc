@@ -5309,9 +5309,6 @@ fixed_type_or_null (tree instance, int* nonnull, int* cdtorp)
 	}
       return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
 
-    case RTL_EXPR:
-      return NULL_TREE;
-
     case PLUS_EXPR:
     case MINUS_EXPR:
       if (TREE_CODE (TREE_OPERAND (instance, 0)) == ADDR_EXPR)
