@@ -186,7 +186,6 @@ FLEX = @FLEX@
 FLEXFLAGS =
 AR = ar
 AR_FLAGS = rc
-DLLTOOL = dlltool
 RANLIB = @RANLIB@
 
 # -------------------------------------------
