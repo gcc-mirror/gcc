@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2003, 2004  Free Software Foundation
+/* Copyright (C) 2001, 2003, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -67,13 +67,15 @@ public class SharedLibHelper
   }
 
   public static SharedLibHelper findHelper (ClassLoader loader, String libname,
-					    CodeSource source, boolean tryParents)
+					    CodeSource source,
+					    boolean tryParents)
   {
     return findHelper (loader, libname, source, null, tryParents);
   }
 
   public static SharedLibHelper findHelper (ClassLoader loader, String libname,
-					    CodeSource source, ProtectionDomain domain, 
+					    CodeSource source,
+					    ProtectionDomain domain, 
 					    boolean tryParents)
   {
     synchronized (map)
@@ -118,6 +120,7 @@ public class SharedLibHelper
 					".so", new File ("/tmp"));
 		File src = new File(libname);
 		copyFile (src, copy);
+		copy.deleteOnExit();
 		libname = copy.getPath();
 	      }
 	    catch (IOException e)
