@@ -1,3 +1,10 @@
+2005-02-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR rtl-optimization/20017.
+	* passes.c (rest_of_handle_combine, rest_of_handle_cse,
+	rest_of_handle_cse2, rest_of_handle_gcse): Call
+	delete_dead_jumptables immediately before calling cleanup_cfg.
+
 2005-02-22  Devang Patel  <dpatel@apple.com>
 
 	PR 19952
