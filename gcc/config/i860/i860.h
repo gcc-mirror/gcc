@@ -350,7 +350,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    integer register to an FP register.  If we are trying to put a 
    non-zero floating-point constant into some register, use an integer
    register if the constant is SFmode and GENERAL_REGS is one of our options.
-   Otherwise, put the constant intoo memory.  */
+   Otherwise, put the constant into memory.  */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS)  \
   ((CLASS) == ALL_REGS && GET_CODE (X) == CONST_INT ? GENERAL_REGS	\
