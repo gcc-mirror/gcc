@@ -226,7 +226,7 @@ Loop3:
 	cmp	dividend, #0			@ Early termination?
 	movnes	curbit,   curbit,  lsr #4	@ No, any more bits to do?
 	movne	divisor,  divisor, lsr #4
-	bNE	Loop3
+	bne	Loop3
 
   .if \modulo
 Lfixup_dividend:	
