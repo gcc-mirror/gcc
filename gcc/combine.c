@@ -2299,7 +2299,9 @@ try_combine (i3, i2, i1)
       }
 
     /* If I3DEST was used in I3SRC, it really died in I3.  We may need to
-       put a REG_DEAD note for it somewhere.  Similarly for I2 and I1.
+       put a REG_DEAD note for it somewhere.  If NEWI2PAT exists and sets
+       I3DEST, the death must be somewhere before I2, not I3.  If we passed I3
+       in that case, it might delete I2.  Similarly for I2 and I1.
        Show an additional death due to the REG_DEAD note we make here.  If
        we discard it in distribute_notes, we will decrement it again.  */
 
@@ -2308,15 +2310,16 @@ try_combine (i3, i2, i1)
 	if (GET_CODE (i3dest_killed) == REG)
 	  REG_N_DEATHS (REGNO (i3dest_killed))++;
 
-	distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed,
-				   NULL_RTX),
-			  NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
-			  NULL_RTX, NULL_RTX);
+	if (newi2pat && reg_set_p (i3dest_killed, newi2pat))
+	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed,
+				     NULL_RTX),
+			    NULL_RTX, i2, NULL_RTX, NULL_RTX, NULL_RTX);
+	else
+	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed,
+				     NULL_RTX),
+			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
+			    NULL_RTX, NULL_RTX);
       }
-
-    /* For I2 and I1, we have to be careful.  If NEWI2PAT exists and sets
-       I2DEST or I1DEST, the death must be somewhere before I2, not I3.  If
-       we passed I3 in that case, it might delete I2.  */
 
     if (i2dest_in_i2src)
       {
