@@ -1,4 +1,11 @@
-Tue Sep  8 23:46:04 1998  Hans-Peter Nilsson  <hp@axis.se>
+Wed Nov  4 23:43:08 1998  Graham  <grahams@rcp.co.uk>
+
+        * toplev.c (output_lang_identify): Make definition dependent on
+	ASM_IDENTIFY_LANGUAGE.
+
+        * print-rtl.c (spaces): Make static.
+
+Wed Nov  4 22:16:36 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* extend.texi: Clarify proper uses for register clobbers in asms.
 
