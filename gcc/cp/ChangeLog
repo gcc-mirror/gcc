@@ -1,3 +1,7 @@
+Thu Aug 14 12:19:25 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* method.c (use_thunk): Expand body directly.
+
 2003-08-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11703
