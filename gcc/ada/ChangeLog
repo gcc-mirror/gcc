@@ -1,3 +1,7 @@
+2002-04-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gnat_rm.texi: Use @ifnottex instead of @ifinfo.
+
 2002-04-21  Florian Weimer  <fw@deneb.enyo.de>
 
         * gnat_ug.texi: New file.
