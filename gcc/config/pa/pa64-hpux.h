@@ -57,14 +57,20 @@ Boston, MA 02111-1307, USA.  */
    %{static:-a archive} %{shared:%{mgnu-ld:-shared}%{!mgnu-ld:-b}}"
 #endif
 
-/* Like the default, except no -lg.  */
+/* Profiling support is only provided in libc.a.  However, libprof and
+   libgprof are only available in shared form on HP-UX 11.00.  We use
+   the shared form if we are using the GNU linker or an archive form
+   isn't available.  We also usually need to link with libdld and it's
+   only available in shared form.  */
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{!shared:\
      %{!p:%{!pg: -lc %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
-     %{p:%{!pg:-lprof -lc\
-       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
-     %{pg:-lgprof -lc\
+     %{p:%{!pg:%{static:%{mgnu-ld:-a shared}%{!mgnu-ld:-a archive_shared}}\
+	   -lprof %{static:-a archive} -lc\
+	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+     %{pg:%{static:%{mgnu-ld:-a shared}%{!mgnu-ld:-a archive_shared}}\
+       -lgprof %{static:-a archive} -lc\
        %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
    /usr/lib/pa20_64/milli.a"
 
