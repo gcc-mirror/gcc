@@ -723,10 +723,12 @@ Stored in the @code{integrated} field and printed as @samp{/i}.
 @cindex @code{concat} and @samp{/u}
 @cindex @code{unchanging}, in @code{reg} and @code{mem}
 @item RTX_UNCHANGING_P (@var{x})
-Nonzero in a @code{reg}, @code{mem}, or @code{concat} if the memory
-is set at most once,
-anywhere.  This does not mean that it is function invariant.
-Stored in the @code{unchanging} field and printed as @samp{/u}.
+Nonzero in a @code{reg}, @code{mem}, or @code{concat} if the register or
+memory is set at most once, anywhere.  This does not mean that it is
+function invariant.  This flag is used to determine whether two
+references conflict.  See @code{tree_dependence} in @file{alias.c} for
+more details.  Stored in the @code{unchanging} field and printed as
+@samp{/u}.
 
 @findex SCHED_GROUP_P
 @cindex @code{insn} and @samp{/s}

@@ -69,7 +69,10 @@
 	* cpplib.h (struct cpp_callbacks): Change prototype of include.
 
 2003-04-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
-
+	
+	* doc/rtl.texi (RTX_UNCHANGING_P): Point to true_dependence for
+	details of conflict handling.
+	
 	* fold-const.c (extract_muldiv, case CONVERT_EXPR): Detect case
 	when conversion overflows.
 
