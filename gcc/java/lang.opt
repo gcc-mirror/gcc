@@ -132,6 +132,7 @@ Java Joined RejectNegative
 
 fextdirs=
 Java Joined RejectNegative
+--extdirs=<path>	Set the extension directory path
 
 ffilelist-file
 Java Var(flag_filelist_file)
