@@ -353,7 +353,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
       return;
     }
   else if (loop_info->n_iterations > 0
-      && loop_info->n_iterations * insn_count < MAX_UNROLLED_INSNS)
+	   && loop_info->n_iterations * insn_count < MAX_UNROLLED_INSNS)
     {
       unroll_number = loop_info->n_iterations;
       unroll_type = UNROLL_COMPLETELY;
@@ -783,71 +783,71 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   /* Mark all local registers, i.e. the ones which are referenced only
      inside the loop.  */
   if (INSN_UID (copy_end) < max_uid_for_loop)
-  {
-    int copy_start_luid = INSN_LUID (copy_start);
-    int copy_end_luid = INSN_LUID (copy_end);
+    {
+      int copy_start_luid = INSN_LUID (copy_start);
+      int copy_end_luid = INSN_LUID (copy_end);
 
-    /* If a register is used in the jump insn, we must not duplicate it
-       since it will also be used outside the loop.  */
-    if (GET_CODE (copy_end) == JUMP_INSN)
-      copy_end_luid--;
+      /* If a register is used in the jump insn, we must not duplicate it
+	 since it will also be used outside the loop.  */
+      if (GET_CODE (copy_end) == JUMP_INSN)
+	copy_end_luid--;
 
-    /* If we have a target that uses cc0, then we also must not duplicate
-       the insn that sets cc0 before the jump insn.  */
+      /* If we have a target that uses cc0, then we also must not duplicate
+	 the insn that sets cc0 before the jump insn.  */
 #ifdef HAVE_cc0
-    if (GET_CODE (copy_end) == JUMP_INSN)
-      copy_end_luid--;
+      if (GET_CODE (copy_end) == JUMP_INSN)
+	copy_end_luid--;
 #endif
 
-    /* If copy_start points to the NOTE that starts the loop, then we must
-       use the next luid, because invariant pseudo-regs moved out of the loop
-       have their lifetimes modified to start here, but they are not safe
-       to duplicate.  */
-    if (copy_start == loop_start)
-      copy_start_luid++;
+      /* If copy_start points to the NOTE that starts the loop, then we must
+	 use the next luid, because invariant pseudo-regs moved out of the loop
+	 have their lifetimes modified to start here, but they are not safe
+	 to duplicate.  */
+      if (copy_start == loop_start)
+	copy_start_luid++;
 
-    /* If a pseudo's lifetime is entirely contained within this loop, then we
-       can use a different pseudo in each unrolled copy of the loop.  This
-       results in better code.  */
-    /* We must limit the generic test to max_reg_before_loop, because only
-       these pseudo registers have valid regno_first_uid info.  */
-    for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; ++j)
-      if (REGNO_FIRST_UID (j) > 0 && REGNO_FIRST_UID (j) <= max_uid_for_loop
-	  && uid_luid[REGNO_FIRST_UID (j)] >= copy_start_luid
-	  && REGNO_LAST_UID (j) > 0 && REGNO_LAST_UID (j) <= max_uid_for_loop
-	  && uid_luid[REGNO_LAST_UID (j)] <= copy_end_luid)
+      /* If a pseudo's lifetime is entirely contained within this loop, then we
+	 can use a different pseudo in each unrolled copy of the loop.  This
+	 results in better code.  */
+      /* We must limit the generic test to max_reg_before_loop, because only
+	 these pseudo registers have valid regno_first_uid info.  */
+      for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; ++j)
+	if (REGNO_FIRST_UID (j) > 0 && REGNO_FIRST_UID (j) <= max_uid_for_loop
+	    && uid_luid[REGNO_FIRST_UID (j)] >= copy_start_luid
+	    && REGNO_LAST_UID (j) > 0 && REGNO_LAST_UID (j) <= max_uid_for_loop
+	    && uid_luid[REGNO_LAST_UID (j)] <= copy_end_luid)
+	  {
+	    /* However, we must also check for loop-carried dependencies.
+	       If the value the pseudo has at the end of iteration X is
+	       used by iteration X+1, then we can not use a different pseudo
+	       for each unrolled copy of the loop.  */
+	    /* A pseudo is safe if regno_first_uid is a set, and this
+	       set dominates all instructions from regno_first_uid to
+	       regno_last_uid.  */
+	    /* ??? This check is simplistic.  We would get better code if
+	       this check was more sophisticated.  */
+	    if (set_dominates_use (j, REGNO_FIRST_UID (j), REGNO_LAST_UID (j),
+				   copy_start, copy_end))
+	      local_regno[j] = 1;
+
+	    if (loop_dump_stream)
+	      {
+		if (local_regno[j])
+		  fprintf (loop_dump_stream, "Marked reg %d as local\n", j);
+		else
+		  fprintf (loop_dump_stream, "Did not mark reg %d as local\n",
+			   j);
+	      }
+	  }
+      /* Givs that have been created from multiple biv increments always have
+	 local registers.  */
+      for (j = first_increment_giv; j <= last_increment_giv; j++)
 	{
-	  /* However, we must also check for loop-carried dependencies.
-	     If the value the pseudo has at the end of iteration X is
-	     used by iteration X+1, then we can not use a different pseudo
-	     for each unrolled copy of the loop.  */
-	  /* A pseudo is safe if regno_first_uid is a set, and this
-	     set dominates all instructions from regno_first_uid to
-	     regno_last_uid.  */
-	  /* ??? This check is simplistic.  We would get better code if
-	     this check was more sophisticated.  */
-	  if (set_dominates_use (j, REGNO_FIRST_UID (j), REGNO_LAST_UID (j),
-				 copy_start, copy_end))
-	    local_regno[j] = 1;
-
+	  local_regno[j] = 1;
 	  if (loop_dump_stream)
-	    {
-	      if (local_regno[j])
-		fprintf (loop_dump_stream, "Marked reg %d as local\n", j);
-	      else
-		fprintf (loop_dump_stream, "Did not mark reg %d as local\n",
-			 j);
-	    }
+	    fprintf (loop_dump_stream, "Marked reg %d as local\n", j);
 	}
-    /* Givs that have been created from multiple biv increments always have
-       local registers.  */
-    for (j = first_increment_giv; j <= last_increment_giv; j++)
-      {
-	local_regno[j] = 1;
-	if (loop_dump_stream)
-	  fprintf (loop_dump_stream, "Marked reg %d as local\n", j);
-      }
-  }
+    }
 
   /* If this loop requires exit tests when unrolled, check to see if we
      can precondition the loop so as to make the exit tests unnecessary.
