@@ -147,6 +147,13 @@ EOF
 		echo rs6000-ibm-aix3.2
 	fi
 	exit 0 ;;
+    *:AIX:1:4)
+	if /usr/sbin/lsattr -EHl proc0 | grep POWER >/dev/null 2>&1; then
+		echo rs6000-ibm-aix4.1
+	else
+		echo powerpc-ibm-aix4.1
+	fi
+	exit 0 ;;
     *:AIX:*:*)
 	echo rs6000-ibm-aix
 	exit 0 ;;
