@@ -404,7 +404,7 @@ static rtx * ix86_pent_find_pair PARAMS ((rtx *, rtx *, enum attr_pent_pair,
 					 rtx));
 static void ix86_init_machine_status PARAMS ((struct function *));
 static void ix86_mark_machine_status PARAMS ((struct function *));
-static void ix86_split_to_parts PARAMS ((rtx, rtx *, enum machine_mode));
+static int ix86_split_to_parts PARAMS ((rtx, rtx *, enum machine_mode));
 static int ix86_safe_length_prefix PARAMS ((rtx));
 static HOST_WIDE_INT ix86_compute_frame_size PARAMS((HOST_WIDE_INT,
 						     int *, int *, int *));
@@ -3337,6 +3337,7 @@ print_operand (file, x, code)
 	      return;
 
 	    case 12:
+	    case 16:
 	      putc ('t', file);
 	      return;
 
@@ -3466,7 +3467,8 @@ print_operand (file, x, code)
       fprintf (file, "%s", dstr);
     }
 
-  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == XFmode)
+  else if (GET_CODE (x) == CONST_DOUBLE
+	   && (GET_MODE (x) == XFmode || GET_MODE (x) == TFmode))
     {
       REAL_VALUE_TYPE r;
       char dstr[30];
@@ -4769,6 +4771,7 @@ ix86_prepare_fp_compare_args (code, pop0, pop1)
 
   if (fpcmp_mode == CCFPUmode
       || op_mode == XFmode
+      || op_mode == TFmode
       || ix86_use_fcomi_compare (code))
     {
       op0 = force_reg (op_mode, op0);
@@ -5048,6 +5051,7 @@ ix86_expand_branch (code, label)
     case SFmode:
     case DFmode:
     case XFmode:
+    case TFmode:
       /* Don't expand the comparison early, so that we get better code
 	 when jump or whoever decides to reverse the comparison.  */
       {
@@ -5633,13 +5637,13 @@ ix86_expand_fp_movcc (operands)
    For pushes, it returns just stack offsets; the values will be saved
    in the right order.  Maximally three parts are generated.  */
 
-static void
+static int
 ix86_split_to_parts (operand, parts, mode)
      rtx operand;
      rtx *parts;
      enum machine_mode mode;
 {
-  int size = GET_MODE_SIZE (mode) / 4;
+  int size = mode == TFmode ? 3 : GET_MODE_SIZE (mode) / 4;
 
   if (GET_CODE (operand) == REG && MMX_REGNO_P (REGNO (operand)))
     abort ();
@@ -5689,12 +5693,13 @@ ix86_split_to_parts (operand, parts, mode)
 	  else if (GET_CODE (operand) == CONST_DOUBLE)
 	    {
 	      REAL_VALUE_TYPE r;
-	      long l[3];
+	      long l[4];
 
 	      REAL_VALUE_FROM_CONST_DOUBLE (r, operand);
 	      switch (mode)
 		{
 		case XFmode:
+		case TFmode:
 		  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
 		  parts[2] = GEN_INT (l[2]);
 		  break;
@@ -5712,7 +5717,7 @@ ix86_split_to_parts (operand, parts, mode)
 	}
     }
 
-  return;
+  return size;
 }
 
 /* Emit insns to perform a move or push of DI, DF, and XF values.
@@ -5726,16 +5731,13 @@ ix86_split_long_move (operands1)
 {
   rtx part[2][3];
   rtx operands[2];
-  int size = GET_MODE_SIZE (GET_MODE (operands1[0])) / 4;
+  int size;
   int push = 0;
   int collisions = 0;
 
   /* Make our own copy to avoid clobbering the operands.  */
   operands[0] = copy_rtx (operands1[0]);
   operands[1] = copy_rtx (operands1[1]);
-
-  if (size < 2 || size > 3)
-    abort ();
 
   /* The only non-offsettable memory we handle is push.  */
   if (push_operand (operands[0], VOIDmode))
@@ -5744,7 +5746,7 @@ ix86_split_long_move (operands1)
 	   && ! offsettable_memref_p (operands[0]))
     abort ();
 
-  ix86_split_to_parts (operands[0], part[0], GET_MODE (operands1[0]));
+  size = ix86_split_to_parts (operands[0], part[0], GET_MODE (operands1[0]));
   ix86_split_to_parts (operands[1], part[1], GET_MODE (operands1[0]));
 
   /* When emitting push, take care for source operands on the stack.  */
@@ -5794,7 +5796,15 @@ ix86_split_long_move (operands1)
   if (push)
     {
       if (size == 3)
-	emit_insn (gen_push (part[1][2]));
+	{
+	  /* We use only first 12 bytes of TFmode value, but for pushing we
+	     are required to adjust stack as if we were pushing real 16byte
+	     value.  */
+	  if (GET_MODE (operands1[0]) == TFmode)
+	    emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+				   GEN_INT (-4)));
+	  emit_insn (gen_push (part[1][2]));
+	}
       emit_insn (gen_push (part[1][1]));
       emit_insn (gen_push (part[1][0]));
       return 1;

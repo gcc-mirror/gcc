@@ -446,7 +446,8 @@ in the following sections.
 -malign-jumps=@var{num}  -malign-loops=@var{num}
 -malign-functions=@var{num} -mpreferred-stack-boundary=@var{num}
 -mthreads -mno-align-stringops -minline-all-stringops
--mpush-args -maccumulate-outgoing-args
+-mpush-args -maccumulate-outgoing-args -m128bit-long-double
+-m96bit-long-double
 
 @emph{HPPA Options}
 -march=@var{architecture type}
@@ -6344,9 +6345,22 @@ boundary.  Aligning @code{double} variables on a two word boundary will
 produce code that runs somewhat faster on a @samp{Pentium} at the
 expense of more memory.
 
-@strong{Warning:} if you use the @samp{-malign-double} switch,
-structures containing the above types will be aligned differently than
-the published application binary interface specifications for the 386.
+@item -m128bit-long-double
+@itemx -m128bit-long-double
+Control the size of @code{long double} type. i386 application binary interface
+specify the size to be 12 bytes, while modern architectures (Pentium and newer)
+preffer @code{long double} aligned to 8 or 16 byte boundary.  This is
+impossible to reach with 12 byte long doubles in the array accesses.
+
+@strong{Warning:} if you use the @samp{-m128bit-long-double} switch, the
+structures and arrays containing @code{long double} will change their size as
+well as function calling convention for function taking @code{long double}
+will be modified. 
+
+@item -m96bit-long-double
+@itemx -m96bit-long-double
+Set the size of @code{long double} to 96 bytes as requires by the i386
+application binary interface.  This is the default.
 
 @item -msvr3-shlib
 @itemx -mno-svr3-shlib
