@@ -1,4 +1,10 @@
-2004-09-09  Victor Leikehman  <lei@il.ibm.com>
+2004-08-09  Richard Henderson  <rth@redhat.com>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	* intrinsics/c99_functions.c (nextafterf): New implementation that
+	works correctly with denormalized numbers.
+
+2004-08-09  Victor Leikehman  <lei@il.ibm.com>
 
 	* m4/matmul.m4, m4/matmull.m4, intrinsics/eoshift0.c,
 	intrinsics/eoshift2.c, intrinsics/transpose_generic.c:
