@@ -113,14 +113,18 @@ Boston, MA 02111-1307, USA.
 /* Under svr4, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
 
+#ifndef CROSS_COMPILE
 #undef MD_EXEC_PREFIX
 #define MD_EXEC_PREFIX "/usr/ccs/bin/"
+#endif
 
 /* Under svr4, the normal location of the various *crt*.o files is the
    /usr/ccs/lib directory.  */
 
+#ifndef CROSS_COMPILE
 #undef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
+#endif
 
 /* Provide a LIB_SPEC appropriate for svr4.  Here we tack on the default
    standard C library (unless we are building a shared library).  */
@@ -167,6 +171,16 @@ Boston, MA 02111-1307, USA.
    not being done.  */
 
 #undef	LINK_SPEC
+#ifdef CROSS_COMPILE
+#define LINK_SPEC "%{h*} %{V} %{v:%{!V:-V}} \
+		   %{b} %{Wl,*:%*} \
+		   %{static:-dn -Bstatic} \
+		   %{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
+		   %{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
+		   %{G:-G} \
+		   %{YP,*} \
+		   %{Qy:} %{!Qn:-Qy}"
+#else
 #define LINK_SPEC "%{h*} %{V} %{v:%{!V:-V}} \
 		   %{b} %{Wl,*:%*} \
 		   %{static:-dn -Bstatic} \
@@ -177,6 +191,7 @@ Boston, MA 02111-1307, USA.
 		   %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
 		    %{!p:-Y P,/usr/ccs/lib:/usr/lib}} \
 		   %{Qy:} %{!Qn:-Qy}"
+#endif
 
 /* Gcc automatically adds in one of the files /usr/ccs/lib/values-Xc.o,
    /usr/ccs/lib/values-Xa.o, or /usr/ccs/lib/values-Xt.o for each final
