@@ -1862,7 +1862,9 @@ xrealloc (ptr, size)
      char *ptr;
      int size;
 {
-  char *result = (char *) realloc (ptr, size);
+  char *result = (ptr
+		  ? (char *) realloc (ptr, size)
+		  : (char *) malloc (size));
   if (!result)
     fatal ("virtual memory exhausted");
   return result;
