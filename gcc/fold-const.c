@@ -2181,12 +2181,14 @@ invert_truthvalue (arg)
 		     invert_truthvalue (TREE_OPERAND (arg, 0)));
 
     case BIT_AND_EXPR:
-      if (! integer_onep (TREE_OPERAND (arg, 1)))
-	abort ();
+      if (!integer_onep (TREE_OPERAND (arg, 1)))
+	break;
       return build (EQ_EXPR, type, arg, convert (type, integer_zero_node));
-    }
 
-  abort ();
+    }
+  if (TREE_CODE (TREE_TYPE (arg)) != BOOLEAN_TYPE)
+    abort();
+  return build1 (TRUTH_NOT_EXPR, type, arg);
 }
 
 /* Given a bit-wise operation CODE applied to ARG0 and ARG1, see if both
