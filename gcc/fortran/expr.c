@@ -1167,6 +1167,17 @@ check_intrinsic_op (gfc_expr * e, try (*check_function) (gfc_expr *))
     case INTRINSIC_GE:
     case INTRINSIC_LT:
     case INTRINSIC_LE:
+      if ((*check_function) (e->op2) == FAILURE)
+	return FAILURE;
+      
+      if (!(et0 (e->op1) == BT_CHARACTER && et0 (e->op2) == BT_CHARACTER)
+	  && !(numeric_type (et0 (e->op1)) && numeric_type (et0 (e->op2))))
+	{
+	  gfc_error ("Numeric or CHARACTER operands are required in "
+		     "expression at %L", &e->where);
+         return FAILURE;
+	}
+      break;
 
     case INTRINSIC_PLUS:
     case INTRINSIC_MINUS:
@@ -1179,10 +1190,8 @@ check_intrinsic_op (gfc_expr * e, try (*check_function) (gfc_expr *))
       if (!numeric_type (et0 (e->op1)) || !numeric_type (et0 (e->op2)))
 	goto not_numeric;
 
-      if (e->operator != INTRINSIC_POWER)
-	break;
-
-      if (check_function == check_init_expr && et0 (e->op2) != BT_INTEGER)
+      if (e->operator == INTRINSIC_POWER
+	  && check_function == check_init_expr && et0 (e->op2) != BT_INTEGER)
 	{
 	  gfc_error ("Exponent at %L must be INTEGER for an initialization "
 		     "expression", &e->op2->where);
