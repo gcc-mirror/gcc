@@ -940,14 +940,15 @@ record_asm_reg_life (insn, regstack, operands, constraints,
   bzero ((char *) reg_used_as_output, sizeof (reg_used_as_output));
   for (i = 0; i < n_outputs; i++)
     if (STACK_REG_P (operands[i]))
-      if (reg_class_size[(int) operand_class[i]] != 1)
-	{
-	  error_for_asm
-	    (insn, "Output constraint %d must specify a single register", i);
-	  malformed_asm = 1;
-	}
-      else
-	reg_used_as_output[REGNO (operands[i])] = 1;
+      {
+	if (reg_class_size[(int) operand_class[i]] != 1)
+	  {
+	    error_for_asm (insn, "Output constraint %d must specify a single register", i);
+	    malformed_asm = 1;
+	  }
+        else
+	  reg_used_as_output[REGNO (operands[i])] = 1;
+      }
 
 
   /* Search for first non-popped reg.  */
@@ -1037,10 +1038,12 @@ record_asm_reg_life (insn, regstack, operands, constraints,
       rtx op = operands[i];
 
       if (! STACK_REG_P (op))
-	if (stack_regs_mentioned_p (op))
-	  abort ();
-	else
-	  continue;
+	{
+	  if (stack_regs_mentioned_p (op))
+	    abort ();
+	  else
+	    continue;
+	}
 
       /* Each destination is dead before this insn.  If the
 	 destination is not used after this insn, record this with
@@ -1057,10 +1060,12 @@ record_asm_reg_life (insn, regstack, operands, constraints,
   for (i = first_input; i < first_input + n_inputs; i++)
     {
       if (! STACK_REG_P (operands[i]))
-	if (stack_regs_mentioned_p (operands[i]))
-	  abort ();
-	else
-	  continue;
+	{
+	  if (stack_regs_mentioned_p (operands[i]))
+	    abort ();
+	  else
+	    continue;
+	}
 
       /* If an input is dead after the insn, record a death note.
 	 But don't record a death note if there is already a death note,
@@ -1111,7 +1116,7 @@ record_reg_life_pat (pat, src, dest, douse)
     }
 
   /* We don't need to consider either of these cases.  */
-  if (GET_CODE (pat) == USE && !douse || GET_CODE (pat) == CLOBBER)
+  if ((GET_CODE (pat) == USE && !douse) || GET_CODE (pat) == CLOBBER)
     return;
 
   fmt = GET_RTX_FORMAT (GET_CODE (pat));
@@ -1469,7 +1474,7 @@ stack_reg_life_analysis (first, stackentry)
    {
      rtx retvalue;
 
-     if (retvalue = stack_result (current_function_decl))
+     if ((retvalue = stack_result (current_function_decl)))
       {
         /* Find all RETURN insns and mark them.  */
 
@@ -3129,7 +3134,7 @@ convert_regs ()
      value_reg_low = value_reg_high = -1;
       {
         rtx retvalue;
-        if (retvalue = stack_result (current_function_decl))
+        if ((retvalue = stack_result (current_function_decl)))
 	 {
 	   value_reg_low = REGNO (retvalue);
 	   value_reg_high = value_reg_low +

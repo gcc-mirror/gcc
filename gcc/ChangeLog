@@ -1,3 +1,20 @@
+Thu Mar 12 09:39:40 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* i386.h (RTX_COSTS): Insert braces around nested if.
+	(ADDITIONAL_REGISTER_NAMES): Insert braces around structured
+	elements.
+
+	* gcc.c (default_compilers): Properly put brackets around array elements in
+	initializer.
+
+	* getopt.c (_getopt_internal): Add explicit braces around nested if;
+	reformatted.
+
+	* reg-stack.c (record_asm_reg_life): Add explicit braces around nested if's.
+	(record_reg_life_pat): Add explicit parens around && and || in expression.
+	(stack_reg_life_analysis): Add parens around assignment used as expression.
+	(convert_regs): Likewise.
+
 Thu Mar 12 09:25:29 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* bitmap.c (bitmap_element_allocate): Remove unused parameter;
