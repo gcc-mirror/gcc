@@ -1,3 +1,11 @@
+2003-08-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/reflect/Method.java: Updated status comment.
+	Imported javadoc from Classpath and re-ordered methods.
+	* java/lang/reflect/Constructor.java: Reindented.  Updated
+	status comment.  Imported javadoc from Classpath and re-ordered
+	methods.
+
 2003-08-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (postKeyEvent):
