@@ -2322,8 +2322,8 @@ m32r_expand_block_move (operands)
     {
       rtx label;
       rtx final_src;
-      
-      bytes_rtx = GEN_INT (MAX_MOVE_BYTES);
+      rtx at_a_time = GEN_INT (MAX_MOVE_BYTES);
+      rtx rounded_total = GEN_INT (bytes);
 
       /* If we are going to have to perform this loop more than
 	 once, then generate a label and compute the address the
@@ -2334,10 +2334,10 @@ m32r_expand_block_move (operands)
 	  final_src = gen_reg_rtx (Pmode);
 
 	  if (INT16_P(bytes))
-	    emit_insn (gen_addsi3 (final_src, src_reg, bytes_rtx));
+	    emit_insn (gen_addsi3 (final_src, src_reg, rounded_total));
 	  else
 	    {
-	      emit_insn (gen_movsi (final_src, bytes_rtx));
+	      emit_insn (gen_movsi (final_src, rounded_total));
 	      emit_insn (gen_addsi3 (final_src, final_src, src_reg));
 	    }
 
@@ -2349,7 +2349,7 @@ m32r_expand_block_move (operands)
 	 to the word after the end of the source block, and dst_reg to point
 	 to the last word of the destination block, provided that the block
 	 is MAX_MOVE_BYTES long.  */
-      emit_insn (gen_movstrsi_internal (dst_reg, src_reg, bytes_rtx));
+      emit_insn (gen_movstrsi_internal (dst_reg, src_reg, at_a_time));
       emit_insn (gen_addsi3 (dst_reg, dst_reg, GEN_INT (4)));
       
       if (bytes > MAX_MOVE_BYTES)
@@ -2435,7 +2435,13 @@ m32r_output_block_move (insn, operands)
 	  /* Get the entire next word, even though we do not want all of it.
 	     The saves us from doing several smaller loads, and we assume that
 	     we cannot cause a page fault when at least part of the word is in
-	     valid memory.  If got_extra is true then we have already loaded
+	     valid memory [since we don't get called if things aren't properly
+	     aligned].  */
+	  int dst_offset = first_time ? 0 : 4;
+	  int last_shift;
+	  rtx my_operands[3];
+
+	  /* If got_extra is true then we have already loaded
 	     the next word as part of loading and storing the previous word.  */
 	  if (! got_extra)
 	    output_asm_insn ("ld\t%4, @%1", operands);
@@ -2444,21 +2450,36 @@ m32r_output_block_move (insn, operands)
 	    {
 	      bytes -= 2;
 
-	      output_asm_insn ("sth\t%4, @%0", operands);
+	      output_asm_insn ("sra3\t%3, %4, #16", operands);
+	      my_operands[0] = operands[3];
+	      my_operands[1] = GEN_INT (dst_offset);
+	      my_operands[2] = operands[0];
+	      output_asm_insn ("sth\t%0, @(%1,%2)", my_operands);
 	      
 	      /* If there is a byte left to store then increment the
 		 destination address and shift the contents of the source
-		 register down by 16 bits.  We could not do the address
+		 register down by 8 bits.  We could not do the address
 		 increment in the store half word instruction, because it does
 		 not have an auto increment mode.  */
 	      if (bytes > 0)  /* assert (bytes == 1) */
 		{
-		  output_asm_insn ("srai\t%4, #16", operands);
-		  output_asm_insn ("addi\t%0, #2", operands);
+		  dst_offset += 2;
+		  last_shift = 8;
 		}
 	    }
-	  
-	  output_asm_insn ("stb\t%4, @%0", operands);
+	  else
+	    last_shift = 24;
+
+	  if (bytes > 0)
+	    {
+	      my_operands[0] = operands[4];
+	      my_operands[1] = GEN_INT (last_shift);
+	      output_asm_insn ("srai\t%0, #%1", my_operands);
+	      my_operands[0] = operands[4];
+	      my_operands[1] = GEN_INT (dst_offset);
+	      my_operands[2] = operands[0];
+	      output_asm_insn ("stb\t%0, @(%1,%2)", my_operands);
+	    }
 	  
 	  bytes = 0;
 	}

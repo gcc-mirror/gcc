@@ -1,3 +1,8 @@
+Mon Nov  2 11:46:17 1998  Doug Evans  <devans@canuck.cygnus.com>
+
+	* m32r/m32r.c (m32r_expand_block_move): Fix byte count computations.
+	(m32r_output_block_move): Rewrite bytes < 4 handling.
+
 Mon Nov  2 10:10:35 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Call AC_FUNC_VFORK.
