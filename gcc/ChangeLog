@@ -1,3 +1,9 @@
+2003-07-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* configure.in: Remove wrongly added definition of
+	local_prefix.
+	* configure: Regenerate.
+
 2003-07-11  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* rtl.def (NOTE): Do not use padding.
