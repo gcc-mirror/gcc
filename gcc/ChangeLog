@@ -1,3 +1,8 @@
+2004-10-12  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.md (addsi3_cbranch_scratch): Correct constraints.
+	Handle negative constants.
+
 2004-10-12  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/17301
