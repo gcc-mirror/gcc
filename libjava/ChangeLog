@@ -1,3 +1,19 @@
+2003-12-23  Michael Koch  <konqueror@gmx.de>
+
+	* javax/print/attribute/AttributeSetUtilities.java
+	(verifyCategoryForValue): Renamed from verifyCategoryForAttribute.
+	* javax/print/attribute/HashAttributeSet.java
+	(HashAttributeSet): Call internal add methods, added missing
+	exceptions.
+	(add): Call addInternal, added exceptions to documentation.
+	(addInternal): New method.
+	(addAll): Call addAllInternal, added exception to documentation.
+	(addAllInternal): New method.
+	(clear): Added exception to documentation.
+	(remove): Likewise.
+	* javax/print/attribute/URISyntax.java
+	(serialVersionUID): Fixed value.
+
 2003-12-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c

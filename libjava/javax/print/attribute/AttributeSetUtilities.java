@@ -432,8 +432,8 @@ public final class AttributeSetUtilities
    * @exception IllegalArgumentException if the categories are not equal
    * @exception NullPointerException if category is null
    */
-  public static void verifyCategoryForAttribute(Class category,
-                                                Attribute attribute)
+  public static void verifyCategoryForValue(Class category,
+                                            Attribute attribute)
   {
     if (category == null)
       throw new NullPointerException("object may not be null");

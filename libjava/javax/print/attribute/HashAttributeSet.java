@@ -124,7 +124,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
     if (attribute == null)
       throw new NullPointerException();
     
-    add(attribute);
+    addInternal(attribute, interfaceName);
   }
 
   /**
@@ -142,7 +142,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
       throw new NullPointerException();
     
     for (int index = 0; index < attributes.length; index++)
-      add(attributes[index]);
+      addInternal(attributes[index], interfaceName);
   }
 
   /**
@@ -150,14 +150,13 @@ public class HashAttributeSet implements AttributeSet, Serializable
    *
    * @exception ClassCastException if any element of attributes is not an
    * interface of interfaceName
-   * @exception NullPointerException if attributes or interfaceName is null
    */
   public HashAttributeSet(AttributeSet attributes, Class interfaceName)
   {
     this(interfaceName);
     
     if (attributes != null)
-      addAll(attributes);
+      addAllInternal(attributes, interfaceName);
   }
 
   /**
@@ -166,11 +165,23 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * @param attribute the attribute to add
    *
    * @return true if the attribute set has changed, false otherwise
+   *
+   * @exception NullPointerException if attribute is null
+   * @exception UnmodifiableSetException if this attribute set does not
+   * support this action.
    */
   public boolean add(Attribute attribute)
   {
+    return addInternal(attribute, interfaceName);
+  }
+
+  private boolean addInternal(Attribute attribute, Class interfaceName)
+  {
     if (attribute == null)
       throw new NullPointerException("attribute may not be null");
+
+    AttributeSetUtilities.verifyAttributeCategory(interfaceName,
+						  this.interfaceName);
 
     Object old = attributeMap.put
       (attribute.getCategory(), AttributeSetUtilities.verifyAttributeValue
@@ -184,14 +195,22 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * @param attributes the attributes to add
    *
    * @return true if the attribute set has changed, false otherwise
+   *
+   * @exception UnmodifiableSetException if this attribute set does not
+   * support this action.
    */
   public boolean addAll(AttributeSet attributes)
+  {
+    return addAllInternal(attributes, interfaceName);
+  }
+
+  private boolean addAllInternal(AttributeSet attributes, Class interfaceName)
   {
     boolean modified = false;
     Attribute[] array = attributes.toArray();
 
     for (int index = 0; index < array.length; index++)
-      if (! add(array[index]))
+      if (addInternal(array[index], interfaceName))
         modified = true;
 
     return modified;
@@ -199,6 +218,9 @@ public class HashAttributeSet implements AttributeSet, Serializable
 
   /**
    * Removes all attributes from this attribute set.
+   *
+   * @exception UnmodifiableSetException if this attribute set does not
+   * support this action.
    */
   public void clear()
   {
@@ -285,6 +307,9 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * @param attribute the attribute value of the entry to be removed
    *
    * @return true if the attribute set has changed, false otherwise.
+   *
+   * @exception UnmodifiableSetException if this attribute set does not
+   * support this action.
    */
   public boolean remove(Attribute attribute)
   {
