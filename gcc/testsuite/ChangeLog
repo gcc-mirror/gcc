@@ -1,3 +1,7 @@
+2001-09-18  Richard Sandiford  <rsandifo@redhat.com>
+
+	* g++.dg/eh/registers1.C: New test case.
+
 2001-09-17  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/array-5.c: Fix VLA decomposition test.
