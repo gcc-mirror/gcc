@@ -7348,6 +7348,9 @@ grokdeclarator (const cp_declarator *declarator,
 			 declarator->u.pointer.class_type);
 		  type = build_pointer_type (type);
 		}
+	      else if (declarator->u.pointer.class_type == error_mark_node)
+		/* We will already have complained.  */
+		type = error_mark_node;
 	      else
 		type = build_ptrmem_type (declarator->u.pointer.class_type,
 					  type);
