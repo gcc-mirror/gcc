@@ -1,4 +1,4 @@
-2004-10-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2004-10-07  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	* gcc.c-torture/compile/20041007-1.c: New test.
 
