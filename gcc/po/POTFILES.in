@@ -144,11 +144,6 @@ config/float-sh.h
 config/float-vax.h
 config/fp-bit.c
 config/freebsd.h
-config/fx80/fx80.c
-config/fx80/fx80.h
-config/fx80/xm-fx80.h
-config/gmicro/gmicro.c
-config/gmicro/gmicro.h
 config/gnu.h
 config/gofast.h
 config/h8300/h8300.c
@@ -403,7 +398,6 @@ config/nextstep.c
 config/nextstep.h
 config/nextstep21.h
 config/ns32k/encore.h
-config/ns32k/genix.h
 config/ns32k/merlin.h
 config/ns32k/netbsd.h
 config/ns32k/ns32k.c
@@ -440,9 +434,6 @@ config/pdp11/pdp11.h
 config/pdp11/xm-pdp11.h
 config/psos.h
 config/ptx4.h
-config/pyr/pyr.c
-config/pyr/pyr.h
-config/pyr/xm-pyr.h
 config/romp/romp.c
 config/romp/romp.h
 config/romp/xm-romp.h
@@ -514,15 +505,8 @@ config/sparc/xm-sol2.h
 config/sparc/xm-sp64.h
 config/sparc/xm-sparc.h
 config/sparc/xm-sysv4.h
-config/spur/spur.c
-config/spur/spur.h
-config/spur/xm-spur.h
 config/svr3.h
 config/svr4.h
-config/tahoe/harris.h
-config/tahoe/tahoe.c
-config/tahoe/tahoe.h
-config/tahoe/xm-tahoe.h
 config/v850/v850.c
 config/v850/v850.h
 config/v850/xm-v850.h
