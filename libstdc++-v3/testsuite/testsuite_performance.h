@@ -33,14 +33,21 @@
 
 #include <sys/times.h>
 #include <sys/resource.h>
-#ifdef __FreeBSD__
-#include <stdlib.h>
-#else
-#include <malloc.h>
-#endif
+#include <cstdlib>
 #include <string>
 #include <fstream>
 #include <iomanip>
+
+#ifdef __linux__
+#include <malloc.h>
+#else
+extern "C"
+{
+  struct mallinfo { int uordblks; };
+  struct mallinfo empty = { 0 };
+  struct mallinfo mallinfo(void) { return empty; }
+}
+#endif
 
 namespace __gnu_cxx_test
 {
@@ -85,11 +92,6 @@ namespace __gnu_cxx_test
     { return tms_end.tms_stime - tms_begin.tms_stime; }
   };
 
-#ifdef __FreeBSD__
-  struct mallinfo { int arena; };
-  int mallinfo (void) { return 0; }
-#endif
-
   class resource_counter
   {
     int		who;
@@ -116,7 +118,8 @@ namespace __gnu_cxx_test
     { 
       if (getrusage(who, &rusage_begin) != 0 )
 	memset(&rusage_begin, 0, sizeof(rusage_begin));
-      // allocation_begin = mallinfo();
+      malloc(0); // Needed for some implementations.
+      allocation_begin = mallinfo();
     }
     
     void
@@ -124,12 +127,12 @@ namespace __gnu_cxx_test
     { 
       if (getrusage(who, &rusage_end) != 0 )
 	memset(&rusage_end, 0, sizeof(rusage_end));
-      // allocation_end = mallinfo();
+      allocation_end = mallinfo();
     }
 
     int
     allocated_memory() const
-    { return allocation_end.arena - allocation_begin.arena; }
+    { return allocation_end.uordblks - allocation_begin.uordblks; }
     
     long 
     hard_page_fault() const
@@ -181,7 +184,7 @@ namespace __gnu_cxx_test
     out << std::setw(4) << t.real_time() << "r" << space;
     out << std::setw(4) << t.user_time() << "u" << space;
     out << std::setw(4) << t.system_time() << "s" << space;
-    //    out << std::setw(4) << r.allocated_memory() << "mem" << space;
+    out << std::setw(4) << r.allocated_memory() << "mem" << space;
     out << std::setw(4) << r.hard_page_fault() << "pf" << space;
     
     out << std::endl;
