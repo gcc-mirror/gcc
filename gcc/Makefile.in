@@ -53,12 +53,17 @@ ALLOCA_FINISH = true
 # CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
 # BOOT_CFLAGS is the value of CFLAGS to pass
 # to the stage2 and stage3 compilations
+# WARN_CFLAGS are the warning flags to pass to stage2 and stage3.  It is
+# separate from BOOT_CFLAGS because people tend to override optimization
+# flags and we'd like them to still have warnings turned on.  They are free
+# to explicitly turn warnings off if they wish.
 # XCFLAGS is used for most compilations but not when using the GCC just built.
 # TCFLAGS is used for compilations with the GCC just built.
 XCFLAGS =
 TCFLAGS =
 CFLAGS = -g
 BOOT_CFLAGS = -O2 $(CFLAGS)
+WARN_CFLAGS = -W -Wall
 # These exists to be overridden by the x-* and t-* files, respectively.
 X_CFLAGS =
 T_CFLAGS =
@@ -2597,21 +2602,21 @@ bootstrap bootstrap-lean: force
 # To prevent `make install' from compiling alloca.o and then relinking cc1
 # because alloca.o is newer, we permit these recursive makes to compile
 # alloca.o.  Then cc1 is newer, so it won't have to be relinked.
-	$(MAKE) CC="stage1/xgcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage1/xgcc -Bstage1/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
 	-if test $@ = bootstrap-lean; then rm -rf stage1; else true; fi
-	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
 bootstrap2: force
-	$(MAKE) CC="stage1/xgcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage1/xgcc -Bstage1/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
-	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
 bootstrap3: force
-	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
 bootstrap4: force
-	$(MAKE) CC="stage3/xgcc -Bstage3/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage3/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage3/xgcc -Bstage3/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage3/ LANGUAGES="$(LANGUAGES)"
 
 # Compare the object files in the current directory with those in the
 # stage2 directory.
