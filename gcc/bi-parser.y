@@ -27,8 +27,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 extern char yytext[];
 extern int yyleng;
 
-extern char *malloc ();
-
 
 /* Chain of all defs built by the parser. */
 struct def *defs;
