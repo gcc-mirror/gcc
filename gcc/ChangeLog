@@ -1,3 +1,8 @@
+Mon Aug 30 16:07:49 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (new_insn_dead_notes): Use sets_reg_or_subreg not
+	mark_set_resources.
+
 Mon Aug 30 16:36:33 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* invoke.texi: Fix typo.
