@@ -43,10 +43,10 @@
 
 namespace std
 {
-  typedef ostreambuf_iterator<char, char_traits<char> > obuf_iterator;
-  typedef istreambuf_iterator<char, char_traits<char> > ibuf_iterator;
-  typedef ostreambuf_iterator<wchar_t, char_traits<wchar_t> > wobuf_iterator;
-  typedef istreambuf_iterator<wchar_t, char_traits<wchar_t> > wibuf_iterator;
+  typedef ostreambuf_iterator<char> obuf_iterator;
+  typedef istreambuf_iterator<char> ibuf_iterator;
+  typedef ostreambuf_iterator<wchar_t> wobuf_iterator;
+  typedef istreambuf_iterator<wchar_t> wibuf_iterator;
 
   // moneypunct, money_get, and money_put
   template class moneypunct<char, false>;
@@ -174,16 +174,16 @@ namespace std
 #endif
   
   // ctype
-  template class __ctype_abstract_base<char>;
+  inline template class __ctype_abstract_base<char>;
   template class ctype_byname<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
-  template class __ctype_abstract_base<wchar_t>;
+  inline template class __ctype_abstract_base<wchar_t>;
   template class ctype_byname<wchar_t>;
 #endif
   
   // codecvt
-  template class __codecvt_abstract_base<char, char, mbstate_t>;
-  template class __codecvt_abstract_base<wchar_t, char, mbstate_t>;
+  inline template class __codecvt_abstract_base<char, char, mbstate_t>;
+  inline template class __codecvt_abstract_base<wchar_t, char, mbstate_t>;
   template class codecvt_byname<char, char, mbstate_t>;
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class codecvt_byname<wchar_t, char, mbstate_t>;

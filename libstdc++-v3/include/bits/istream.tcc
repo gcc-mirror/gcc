@@ -1,4 +1,7 @@
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// istream classes -*- C++ -*-
+
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1267,8 +1270,21 @@ namespace std
     getline(basic_istream<_CharT, _Traits>& __in, 
 	    basic_string<_CharT,_Traits,_Alloc>& __str)
     { return getline(__in, __str, __in.widen('\n')); }
-} // namespace std
 
-// Local Variables:
-// mode:C++
-// End:
+  // Inhibit implicit instantiations for required instantiations,
+  // which are defined via explicit instantiations elsewhere.  
+  // NB:  This syntax is a GNU extension.
+  extern template class basic_istream<char>;
+  extern template istream& ws(istream&);
+  extern template istream& operator>>(istream&, char&);
+  extern template istream& operator>>(istream&, char*);
+  extern template istream& operator>>(istream&, unsigned char&);
+  extern template istream& operator>>(istream&, signed char&);
+  extern template istream& operator>>(istream&, unsigned char*);
+  extern template istream& operator>>(istream&, signed char*);
+
+  extern template class basic_istream<wchar_t>;
+  extern template wistream& ws(wistream&);
+  extern template wistream& operator>>(wistream&, wchar_t&);
+  extern template wistream& operator>>(wistream&, wchar_t*);
+} // namespace std

@@ -204,15 +204,6 @@ namespace std
 
       __istream_type& 
       seekg(off_type, ios_base::seekdir);
-
-    private:
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
-      // Not defined.  (Side effect of DR 50.)
-      __istream_type& 
-      operator=(const __istream_type&);
-
-      basic_istream(const __istream_type&);
-#endif
     };
   
   template<typename _CharT, typename _Traits>
@@ -266,7 +257,7 @@ namespace std
   // 27.6.1.5 Template class basic_iostream
   template<typename _CharT, typename _Traits>
     class basic_iostream
-    : public basic_istream<_CharT, _Traits>,
+    : public basic_istream<_CharT, _Traits>, 
       public basic_ostream<_CharT, _Traits>
     {
     public:
@@ -291,9 +282,9 @@ namespace std
 
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
 # define export
+#endif
 #ifdef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
 # include <bits/istream.tcc>
-#endif
 #endif
 
 #endif	/* _CPP_ISTREAM */

@@ -1,3 +1,44 @@
+2002-02-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Tune for size.
+	* src/string-inst.cc (string::_Rep::_S_terminal): Remove redundant
+	explicit instantiation.
+	(string::_Rep::_S_max_size): Same.
+	* include/bits/basic_string.tcc: Add extern explicit
+	instantiations for string, wstring.
+	* include/bits/basic_ios.tcc: Add extern explicit instantiations
+	for ios, wios.
+	* include/bits/streambuf.tcc: Same, for streambuf, wstreambuf.
+	* include/bits/istream.tcc: Same, for istream, wistream.
+	* include/bits/ostream.tcc: Same for ostream, wostream, iostream,
+	wiostream.
+	* include/bits/sstream.tcc: Same, for stringbuf, wstringbuf,
+	istringstream, wistringstream, ostringstream, wostringstream,
+	stringstream, wstringstream.
+	* include/bits/fstream.tcc: Same, for filebuf, wfilebuf, ifstream,
+	wifstream, ofstream, wofstream, fstream, wfstream.
+	* src/misc-inst.cc: Correct comments.
+	Add iomanip instantiations for wide streams.
+	* include/std/std_iomanip.h: Same.
+	* include/bits/locale_facets.tcc: Same.
+	
+	* include/std/std_streambuf.h: Correct
+	_GLIBCPP_FULLY_COMPLIANT_HEADERS guard.
+	* include/std/std_sstream.h: Same.
+	* include/std/std_ostream.h: Same.
+	* include/std/std_istream.h: Same.
+	* include/std/std_fstream.h: Same.
+
+	* include/std/std_streambuf.h: Add definitions for private copy
+	ctor and assignment operator.
+	* include/std/std_istream.h: Remove declared but undefined copy
+	ctor and assignment operator. This is taken care of in ios_base,
+	so adding it in the derived class as well is superfluous.
+	* include/std/std_ostream.h: Same.
+
+	* include/bits/basic_ios.h (basic_ios::clear): Don't inline.
+	* include/bits/basic_ios.tcc (basic_ios::clear): Move definition here.
+	
 2002-02-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu: Change tag from GCC_3.1 to GLIBCPP_3.1.

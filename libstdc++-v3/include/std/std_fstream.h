@@ -505,9 +505,9 @@ namespace std
 
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
 # define export
+#endif
 #ifdef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
 # include <bits/fstream.tcc>
-#endif
 #endif
 
 #endif

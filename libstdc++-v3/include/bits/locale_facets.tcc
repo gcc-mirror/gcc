@@ -2038,6 +2038,59 @@ namespace std
       while (__first != __last);
       return __s;
     }
+
+  // Inhibit implicit instantiations for required instantiations,
+  // which are defined via explicit instantiations elsewhere.  
+  // NB: This syntax is a GNU extension.
+  extern template class moneypunct<char, false>;
+  extern template class moneypunct<char, true>;
+  extern template class moneypunct_byname<char, false>;
+  extern template class moneypunct_byname<char, true>;
+  extern template class money_get<char, istreambuf_iterator<char> >;
+  extern template class money_put<char, ostreambuf_iterator<char> >;
+  extern template class moneypunct<wchar_t, false>;
+  extern template class moneypunct<wchar_t, true>;
+  extern template class moneypunct_byname<wchar_t, false>;
+  extern template class moneypunct_byname<wchar_t, true>;
+  extern template class money_get<wchar_t, istreambuf_iterator<wchar_t> >;
+  extern template class money_put<wchar_t, ostreambuf_iterator<wchar_t> >;
+  extern template class numpunct<char>;
+  extern template class numpunct_byname<char>;
+  extern template class num_get<char, istreambuf_iterator<char> >;
+  extern template class num_put<char, ostreambuf_iterator<char> >; 
+  extern template class numpunct<wchar_t>;
+  extern template class numpunct_byname<wchar_t>;
+  extern template class num_get<wchar_t, istreambuf_iterator<wchar_t> >;
+  extern template class num_put<wchar_t, ostreambuf_iterator<wchar_t> >;
+  extern template class __timepunct<char>;
+  extern template class time_put<char, ostreambuf_iterator<char> >;
+  extern template class time_put_byname<char, ostreambuf_iterator<char> >;
+  extern template class time_get<char, istreambuf_iterator<char> >;
+  extern template class time_get_byname<char, istreambuf_iterator<char> >;
+  extern template class __timepunct<wchar_t>;
+  extern template class time_put<wchar_t, ostreambuf_iterator<wchar_t> >;
+  extern template class time_put_byname<wchar_t, ostreambuf_iterator<wchar_t> >;
+  extern template class time_get<wchar_t, istreambuf_iterator<wchar_t> >;
+  extern template class time_get_byname<wchar_t, istreambuf_iterator<wchar_t> >;
+  extern template class messages<char>;
+  extern template class messages_byname<char>;
+  extern template class messages<wchar_t>;
+  extern template class messages_byname<wchar_t>;
+  extern template class ctype_byname<char>;
+  extern template class ctype_byname<wchar_t>;
+  extern template class codecvt_byname<char, char, mbstate_t>;
+  extern template class codecvt_byname<wchar_t, char, mbstate_t>;
+  extern template class collate<char>;
+  extern template class collate_byname<char>;
+  extern template class collate<wchar_t>;
+  extern template class collate_byname<wchar_t>;
 } // namespace std
 
 #endif
+
+
+
+
+
+
+

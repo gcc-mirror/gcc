@@ -33,6 +33,18 @@
 namespace std
 {
   template<typename _CharT, typename _Traits>
+    void
+    basic_ios<_CharT, _Traits>::clear(iostate __state)
+    { 
+      if (this->rdbuf())
+	_M_streambuf_state = __state;
+      else
+	  _M_streambuf_state = __state | badbit;
+      if ((this->rdstate() & this->exceptions()))
+	__throw_ios_failure("basic_ios::clear(iostate) caused exception");
+    }
+  
+  template<typename _CharT, typename _Traits>
     basic_streambuf<_CharT, _Traits>* 
     basic_ios<_CharT, _Traits>::rdbuf(basic_streambuf<_CharT, _Traits>* __sb)
     {
@@ -165,6 +177,12 @@ namespace std
       else
 	_M_fnumget = 0;
     }
+
+  // Inhibit implicit instantiations for required instantiations,
+  // which are defined via explicit instantiations elsewhere.  
+  // NB:  This syntax is a GNU extension.
+  extern template class basic_ios<char>;
+  extern template class basic_ios<wchar_t>;
 } // namespace std
 
 #endif 

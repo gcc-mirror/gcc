@@ -1,6 +1,7 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,9 +46,6 @@ namespace std
   typedef basic_string<C> S;
 
   template class basic_string<C>;
-  template const C S::_Rep::_S_terminal;
-  template S::size_type S::_Rep::_S_max_size;
-
   template S operator+(const C*, const S&);
   template S operator+(C, const S&);
   template bool operator==(const S::iterator&, const S::iterator&);

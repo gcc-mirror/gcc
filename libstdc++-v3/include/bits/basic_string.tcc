@@ -938,6 +938,37 @@ namespace std
       _Traits::copy(__buf, __str.data(), __bytes);
       __buf[__bytes] = _CharT();
     }
+
+  // Inhibit implicit instantiations for required instantiations,
+  // which are defined via explicit instantiations elsewhere.  
+  // NB: This syntax is a GNU extension.
+  extern template class basic_string<char>;
+   extern template 
+    basic_istream<char>& 
+    operator>>(basic_istream<char>&, string&);
+  extern template 
+    basic_ostream<char>& 
+    operator<<(basic_ostream<char>&, const string&);
+  extern template 
+    basic_istream<char>& 
+    getline(basic_istream<char>&, string&, char);
+  extern template 
+    basic_istream<char>& 
+    getline(basic_istream<char>&, string&);
+
+  extern template class basic_string<wchar_t>;
+  extern template 
+    basic_istream<wchar_t>& 
+    operator>>(basic_istream<wchar_t>&, wstring&);
+  extern template 
+    basic_ostream<wchar_t>& 
+    operator<<(basic_ostream<wchar_t>&, const wstring&);
+  extern template 
+    basic_istream<wchar_t>& 
+    getline(basic_istream<wchar_t>&, wstring&, wchar_t);
+  extern template 
+    basic_istream<wchar_t>& 
+    getline(basic_istream<wchar_t>&, wstring&);
 } // namespace std
 
 #endif
