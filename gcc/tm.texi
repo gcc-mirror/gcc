@@ -4952,7 +4952,7 @@ necessary).
 @item PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
 Define this macro if the register defined by
 @code{PIC_OFFSET_TABLE_REGNUM} is clobbered by calls.  Do not define
-this macro if @code{PPIC_OFFSET_TABLE_REGNUM} is not defined.
+this macro if @code{PIC_OFFSET_TABLE_REGNUM} is not defined.
 
 @findex FINALIZE_PIC
 @item FINALIZE_PIC
