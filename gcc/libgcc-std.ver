@@ -179,6 +179,7 @@ GCC_3.0 {
 %inherit GCC_3.3 GCC_3.0
 GCC_3.3 {
   _Unwind_FindEnclosingFunction
+  _Unwind_GetCFA
 }
 
 %inherit GCC_3.4 GCC_3.3

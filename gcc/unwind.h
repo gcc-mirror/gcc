@@ -138,6 +138,9 @@ extern void _Unwind_SetGR (struct _Unwind_Context *, int, _Unwind_Word);
 extern _Unwind_Ptr _Unwind_GetIP (struct _Unwind_Context *);
 extern void _Unwind_SetIP (struct _Unwind_Context *, _Unwind_Ptr);
 
+/* @@@ Retrieve the CFA of the given context.  */
+extern _Unwind_Word _Unwind_GetCFA (struct _Unwind_Context *);
+
 extern void *_Unwind_GetLanguageSpecificData (struct _Unwind_Context *);
 
 extern _Unwind_Ptr _Unwind_GetRegionStart (struct _Unwind_Context *);
