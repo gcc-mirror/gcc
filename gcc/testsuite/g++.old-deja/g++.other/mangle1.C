@@ -40,3 +40,6 @@ int f__FRC1AiT0N20RiN25 = 0; // ERROR - name clash
 void f(const A2&, int, const A2&, const A2&, const A2&, int, int,
        int) { } // ERROR - name clash
 int f__FRC1AiT0N20iii = 0; // ERROR - name clash
+
+void f(bool, bool) {} // ERROR - name clash
+int f__FbT0 = 0; // ERROR - name clash
