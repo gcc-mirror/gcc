@@ -1151,9 +1151,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("iprefix",                  no_pth, OPT_iprefix)                    \
   DEF_OPT("isystem",                  no_dir, OPT_isystem)                    \
   DEF_OPT("iwithprefix",              no_dir, OPT_iwithprefix)                \
-  DEF_OPT("iwithprefixbefore",        no_dir, OPT_iwithprefixbefore)          \
-  DEF_OPT("o",                        no_fil, OPT_o)                          \
-  DEF_OPT("remap",                    0,      OPT_remap)
+  DEF_OPT("iwithprefixbefore",        no_dir, OPT_iwithprefixbefore)
 
 #define DEF_OPT(text, msg, code) code,
 enum opt_code
@@ -1256,19 +1254,6 @@ cpp_handle_option (pfile, argc, argv)
   int i = 0;
   struct cpp_pending *pend = CPP_OPTION (pfile, pending);
 
-  /* Interpret "-" or a non-option as a file name.  */
-  if (argv[i][0] != '-' || argv[i][1] == '\0')
-    {
-      if (CPP_OPTION (pfile, in_fname) == NULL)
-	CPP_OPTION (pfile, in_fname) = argv[i];
-      else if (CPP_OPTION (pfile, out_fname) == NULL)
-	CPP_OPTION (pfile, out_fname) = argv[i];
-      else
-	cpp_error (pfile, DL_ERROR,
-		   "too many filenames. Type %s --help for usage info",
-		   progname);
-    }
-  else
     {
       enum opt_code opt_code;
       int opt_index;
@@ -1303,21 +1288,9 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_D:
 	  new_pending_directive (pend, arg, cpp_define);
 	  break;
-	case OPT_remap:
-	  CPP_OPTION (pfile, remap) = 1;
-	  break;
 	case OPT_iprefix:
 	  CPP_OPTION (pfile, include_prefix) = arg;
 	  CPP_OPTION (pfile, include_prefix_len) = strlen (arg);
-	  break;
-	case OPT_o:
-	  if (CPP_OPTION (pfile, out_fname) == NULL)
-	    CPP_OPTION (pfile, out_fname) = arg;
-	  else
-	    {
-	      cpp_error (pfile, DL_ERROR, "output filename specified twice");
-	      return argc;
-	    }
 	  break;
 
 	case OPT_MG:

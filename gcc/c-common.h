@@ -238,8 +238,7 @@ extern GTY(()) tree c_global_trees[CTI_MAX];
 
 typedef enum c_language_kind
 {
-  clk_c,           /* A dialect of C: K&R C, ANSI/ISO C89, C2000,
-		       etc.  */
+  clk_c = 0,      /* A dialect of C: K&R C, ANSI/ISO C89, C2000, etc.  */
   clk_cplusplus   /* ANSI/ISO C++ */
 }
 c_language_kind;
