@@ -3315,6 +3315,10 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 {
   enum attr_type attr_type;
 
+  /* Don't adjust costs for a pa8000 chip.  */
+  if (pa_cpu >= PROCESSOR_8000)
+    return cost;
+
   if (! recog_memoized (insn))
     return 0;
 
@@ -6030,7 +6034,9 @@ pa_reorg (insns)
 
   remove_useless_addtr_insns (insns, 1);
 
-  pa_combine_instructions (get_insns ());
+  if (pa_cpu < PROCESSOR_8000)
+    pa_combine_instructions (get_insns ());
+
 
   /* This is fairly cheap, so always run it if optimizing.  */
   if (optimize > 0 && !TARGET_BIG_SWITCH)
