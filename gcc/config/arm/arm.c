@@ -8789,6 +8789,11 @@ arm_debugger_arg_offset (value, addr)
 void
 arm_init_builtins ()
 {
+#if 0
+  /* The following code is NOT incorrect, but it trips a bug in the C++
+     front-end that causes a failure while building libstdc++-v3.  When
+     that bug is fixed, this code can be re-enabled.  */
+
   tree endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
   tree int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
   tree pchar_type_node = build_pointer_type (char_type_node);
@@ -8816,6 +8821,7 @@ arm_init_builtins ()
       def_builtin ("__builtin_prefetch", void_ftype_pchar,
 		   ARM_BUILTIN_PREFETCH);
     }
+#endif
 }
 
 /* Expand an expression EXP that calls a built-in function,
