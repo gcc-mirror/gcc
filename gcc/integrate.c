@@ -1390,11 +1390,16 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	     constant equivalence.
 
 	     If LOC is REG_USERVAR_P, the usual case, COPY must also have
-	     that flag set if it is a register.  */
+	     that flag set if it is a register.
+
+	     Also, don't allow hard registers here; they might not be valid
+	     when substituted into insns. */
 
 	  if ((GET_CODE (copy) != REG && GET_CODE (copy) != SUBREG)
 	      || (GET_CODE (copy) == REG && REG_USERVAR_P (loc)
-		  && ! REG_USERVAR_P (copy)))
+		  && ! REG_USERVAR_P (copy))
+	      || (GET_CODE (copy) == REG
+		  && REGNO (copy) < FIRST_PSEUDO_REGISTER))
 	    {
 	      temp = copy_to_mode_reg (GET_MODE (loc), copy);
 	      REG_USERVAR_P (temp) = REG_USERVAR_P (loc);
