@@ -59,6 +59,7 @@ cpplib/cccp		Per Bothner		per@bothner.com
 cpplib/cccp		Zack Weinberg		zack@wolery.cumb.org
 alias analysis		John Carr		jfc@mit.edu
 loop unrolling		Jim Wilson		wilson@cygnus.com
+loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 scheduler (+ haifa)	Jim Wilson		wilson@cygnus.com
 scheduler (+ haifa)	Michael Meissner	meissner@cygnus.com
 scheduler (+ haifa)	Jeff Law		law@cygnus.com
