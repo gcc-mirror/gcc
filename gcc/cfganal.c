@@ -900,10 +900,45 @@ dfs_enumerate_from (basic_block bb, int reverse,
 {
   basic_block *st, lbb;
   int sp = 0, tv = 0;
+  unsigned size;
+
+  /* A bitmap to keep track of visited blocks.  Allocating it each time
+     this function is called is not possible, since dfs_enumerate_from
+     is often used on small (almost) disjoint parts of cfg (bodies of
+     loops), and allocating a large sbitmap would lead to quadratic
+     behavior.  */
+  static sbitmap visited;
+  static unsigned v_size;
+
+#define MARK_VISITED(BB) (SET_BIT (visited, (BB)->index + 2))
+#define UNMARK_VISITED(BB) (RESET_BIT (visited, (BB)->index + 2))
+#define VISITED_P(BB) (TEST_BIT (visited, (BB)->index + 2))
+
+  /* Resize the VISITED sbitmap if necessary.  */
+  size = last_basic_block + 2;
+  if (size < 10)
+    size = 10;
+
+  if (!visited)
+    {
+
+      visited = sbitmap_alloc (size);
+      sbitmap_zero (visited);
+      v_size = size;
+    }
+  else if (v_size < size)
+    {
+      /* Ensure that we increase the size of the sbitmap exponentially.  */
+      if (2 * v_size > size)
+	size = 2 * v_size;
+
+      visited = sbitmap_resize (visited, size, 0);
+      v_size = size;
+    }
 
   st = xcalloc (rslt_max, sizeof (basic_block));
   rslt[tv++] = st[sp++] = bb;
-  bb->flags |= BB_VISITED;
+  MARK_VISITED (bb);
   while (sp)
     {
       edge e;
@@ -912,28 +947,31 @@ dfs_enumerate_from (basic_block bb, int reverse,
       if (reverse)
         {
 	  FOR_EACH_EDGE (e, ei, lbb->preds)
-	    if (!(e->src->flags & BB_VISITED) && predicate (e->src, data))
+	    if (!VISITED_P (e->src) && predicate (e->src, data))
 	      {
 	        gcc_assert (tv != rslt_max);
 	        rslt[tv++] = st[sp++] = e->src;
-	        e->src->flags |= BB_VISITED;
+	        MARK_VISITED (e->src);
 	      }
         }
       else
         {
 	  FOR_EACH_EDGE (e, ei, lbb->succs)
-	    if (!(e->dest->flags & BB_VISITED) && predicate (e->dest, data))
+	    if (!VISITED_P (e->dest) && predicate (e->dest, data))
 	      {
 	        gcc_assert (tv != rslt_max);
 	        rslt[tv++] = st[sp++] = e->dest;
-	        e->dest->flags |= BB_VISITED;
+	        MARK_VISITED (e->dest);
 	      }
 	}
     }
   free (st);
   for (sp = 0; sp < tv; sp++)
-    rslt[sp]->flags &= ~BB_VISITED;
+    UNMARK_VISITED (rslt[sp]);
   return tv;
+#undef MARK_VISITED
+#undef UNMARK_VISITED
+#undef VISITED_P
 }
 
 
