@@ -612,7 +612,7 @@ proper position among the other output files.  */
 }} %{fmudflap|fmudflapth: --wrap=main}"
 #endif
 #ifndef MFLIB_SPEC
-#define MFLIB_SPEC " %{fmudflap: -export-dynamic -lmudflap %{static:%(link_gcc_c_sequence) -lmudflap}} %{fmudflapth: -export-dynamic -lmudflapth -lpthread %{static:%(link_gcc_c_sequence) -lmudflapth}} "
+#define MFLIB_SPEC "%{fmudflap|fmudflapth: -export-dynamic}" 
 #endif
 
 /* config.h can define LIBGCC_SPEC to override how and when libgcc.a is
