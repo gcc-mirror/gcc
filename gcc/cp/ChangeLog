@@ -1,3 +1,8 @@
+Thu Oct  8 15:58:30 1998  Anthony Green  <green@cygnus.com>
+
+	* semantics.c (finish_asm_stmt): Revert my 1998-09-28
+	change.
+
 Thu Oct  8 06:00:19 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* typeck.c (unsigned_type): Only return TItype nodes when
