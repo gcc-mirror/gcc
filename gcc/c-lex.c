@@ -1475,7 +1475,6 @@ c_lex (value)
     case CPP_HEADER_NAME:
     case CPP_COMMENT:
     case CPP_MACRO_ARG:
-    case CPP_PLACEMARKER:
       abort ();
 
     default: break;

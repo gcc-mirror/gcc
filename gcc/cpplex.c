@@ -846,11 +846,11 @@ _cpp_lex_token (pfile, result)
   cppchar_t c;
   cpp_buffer *buffer;
   const unsigned char *comment_start;
-  unsigned char bol = pfile->state.skip_newlines;
+  unsigned char bol = pfile->state.next_bol;
 
  done_directive:
   buffer = pfile->buffer;
-  pfile->state.skip_newlines = 0;
+  pfile->state.next_bol = 0;
   result->flags = 0;
  next_char:
   pfile->lexer_pos.line = buffer->lineno;
@@ -873,7 +873,7 @@ _cpp_lex_token (pfile, result)
 	 line and _Pragma buffers.  */
       if (pfile->lexer_pos.col != 0 && !buffer->from_stage3)
 	cpp_pedwarn (pfile, "no newline at end of file");
-      pfile->state.skip_newlines = 1;
+      pfile->state.next_bol = 1;
       result->type = CPP_EOF;
       break;
 
@@ -900,7 +900,7 @@ _cpp_lex_token (pfile, result)
 
       /* Don't let directives spill over to the next line.  */
       buffer->read_ahead = c;
-      pfile->state.skip_newlines = 1;
+      pfile->state.next_bol = 1;
       result->type = CPP_EOF;
       break;
 
@@ -1186,7 +1186,7 @@ _cpp_lex_token (pfile, result)
 	      /* Put a '#' in lookahead, return CPP_EOF for parse_arg.  */
 	      buffer->extra_char = buffer->read_ahead;
 	      buffer->read_ahead = '#';
-	      pfile->state.skip_newlines = 1;
+	      pfile->state.next_bol = 1;
 	      result->type = CPP_EOF;
 
 	      /* Get whitespace right - newline_in_args sets it.  */
