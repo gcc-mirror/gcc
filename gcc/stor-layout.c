@@ -410,14 +410,13 @@ layout_record (rec)
 	  && TREE_TYPE (field) != error_mark_node
 	  && DECL_BIT_FIELD_TYPE (field)
 	  && !DECL_PACKED (field)
+	  /* If #pragma pack is in effect, turn off this feature.  */
+	  && maximum_field_alignment == 0
 	  && !integer_zerop (DECL_SIZE (field)))
 	{
 	  int type_align = TYPE_ALIGN (TREE_TYPE (field));
 	  register tree dsize = DECL_SIZE (field);
 	  int field_size = TREE_INT_CST_LOW (dsize);
-
-	  if (maximum_field_alignment != 0)
-	    type_align = MIN (type_align, maximum_field_alignment);
 
 	  /* A bit field may not span the unit of alignment of its type.
 	     Advance to next boundary if necessary.  */
