@@ -1,3 +1,8 @@
+2002-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* objc.dg/const-str-2.m: Update now that we stop after
+	a command line error.
+
 2002-05-22  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/dg.exp: Fix typo in test pruneing.
