@@ -2,7 +2,7 @@
 
    - some macros CODE_FOR_... giving the insn_code_number value
    for each of the defined standard insn names.
-   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -45,9 +45,10 @@ static void
 gen_insn (insn)
      rtx insn;
 {
-  /* Don't mention instructions whose names are the null string.
-     They are in the machine description just to be recognized.  */
-  if (strlen (XSTR (insn, 0)) != 0)
+  /* Don't mention instructions whose names are the null string
+     or begin with '*'.  They are in the machine description just
+     to be recognized.  */
+  if (XSTR (insn, 0)[0] != 0 && XSTR (insn, 0)[0] != '*')
     printf ("  CODE_FOR_%s = %d,\n", XSTR (insn, 0),
 	    insn_code_number);
 }

@@ -1,5 +1,5 @@
 /* Generate code from machine description to emit insns as rtl.
-   Copyright (C) 1987, 1988, 1991, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -335,9 +335,10 @@ gen_insn (insn)
 	}
     }
 
-  /* Don't mention instructions whose names are the null string.
-     They are in the machine description just to be recognized.  */
-  if (strlen (XSTR (insn, 0)) == 0)
+  /* Don't mention instructions whose names are the null string
+     or begin with '*'.  They are in the machine description just
+     to be recognized.  */
+  if (XSTR (insn, 0)[0] == 0 || XSTR (insn, 0)[0] == '*')
     return;
 
   /* Find out how many operands this function has,
