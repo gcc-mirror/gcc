@@ -27,7 +27,7 @@ public class Array_3
 	ok = true;
       }
     if (!ok)
-      throw new RuntimeException("test failed");
+      throw new RuntimeException("test failed:1");
 
     ok = false;
     try
@@ -40,7 +40,7 @@ public class Array_3
 	ok = true;
       }
     if (!ok)
-      throw new RuntimeException("test failed");
+      throw new RuntimeException("test failed:2");
 
     ok = false;
     try
@@ -54,6 +54,19 @@ public class Array_3
       }
 
     if (!ok || nn != 0)
-      throw new RuntimeException("test failed");
+      throw new RuntimeException("test failed:3");
+
+    ok = false;
+    try
+      {
+	int[] x = (int[])null;
+	nn = x.length;
+      }
+    catch (NullPointerException _)
+      {
+	ok = true;
+      }
+    if (!ok)
+      throw new RuntimeException("test failed:4");
   }
 }
