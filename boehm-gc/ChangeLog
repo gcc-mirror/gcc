@@ -1,3 +1,7 @@
+2005-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* .cvsignore: New file.
+
 2004-04-25  Andreas Jaeger  <aj@suse.de>
 
         * mark.c (GC_mark_from): Use pointer as prefetch argument.
