@@ -261,79 +261,14 @@ namespace std
   _Rb_tree_rebalance_for_erase(_Rb_tree_node_base* const __z, 
 			       _Rb_tree_node_base& 	 __header);
 
-  // Base class to encapsulate the differences between old SGI-style
-  // allocators and standard-conforming allocators.  In order to avoid
-  // having an empty base class, we arbitrarily move one of rb_tree's
-  // data members into the base class.
-
-  // _Base for general standard-conforming allocators.
-  template<typename _Tp, typename _Alloc, bool _S_instanceless>
-    class _Rb_tree_alloc_base 
-    {
-    public:
-    typedef typename _Alloc_traits<_Tp, _Alloc>::allocator_type allocator_type;
-
-      allocator_type 
-      get_allocator() const { return _M_node_allocator; }
-
-      _Rb_tree_alloc_base(const allocator_type& __a)
-      : _M_node_allocator(__a) {}
-
-    protected:
-      typename _Alloc_traits<_Rb_tree_node<_Tp>, _Alloc>::allocator_type
-      _M_node_allocator;
-
-      _Rb_tree_node_base _M_header;
-      
-      _Rb_tree_node<_Tp>* 
-      _M_get_node()  { return _M_node_allocator.allocate(1); }
-
-      void 
-      _M_put_node(_Rb_tree_node<_Tp>* __p) 
-      { _M_node_allocator.deallocate(__p, 1); }
-    };
-
-  // Specialization for instanceless allocators.
-  template<typename _Tp, typename _Alloc>
-    class _Rb_tree_alloc_base<_Tp, _Alloc, true> 
-    {
-    public:
-    typedef typename _Alloc_traits<_Tp, _Alloc>::allocator_type allocator_type;
-      allocator_type get_allocator() const { return allocator_type(); }
-
-      _Rb_tree_alloc_base(const allocator_type&) {}
-
-    protected:
-      _Rb_tree_node_base _M_header;
-      
-      typedef typename _Alloc_traits<_Rb_tree_node<_Tp>, _Alloc>::_Alloc_type
-      _Alloc_type;
-      
-      _Rb_tree_node<_Tp>* 
-      _M_get_node() { return _Alloc_type::allocate(1); }
-
-      void 
-      _M_put_node(_Rb_tree_node<_Tp>* __p) { _Alloc_type::deallocate(__p, 1); }
-    };
-  
-  template<typename _Tp, typename _Alloc>
-    struct _Rb_tree_base : public _Rb_tree_alloc_base<_Tp, _Alloc, 
-                                  _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
-    {
-      typedef _Rb_tree_alloc_base<_Tp, 
-	_Alloc, _Alloc_traits<_Tp, _Alloc>::_S_instanceless> _Base;
-      typedef typename _Base::allocator_type allocator_type;
-
-      _Rb_tree_base(const allocator_type& __a) 
-      : _Base(__a) {}
-    };
-
 
   template<typename _Key, typename _Val, typename _KeyOfValue, 
            typename _Compare, typename _Alloc = allocator<_Val> >
-    class _Rb_tree : protected _Rb_tree_base<_Val, _Alloc> 
+    class _Rb_tree
+      : protected _Alloc::template rebind<_Rb_tree_node<_Val> >::other
     {
-      typedef _Rb_tree_base<_Val, _Alloc> _Base;
+      typedef typename _Alloc::template rebind<_Rb_tree_node<_Val> >::other
+              _Node_allocator;
       
     protected:
       typedef _Rb_tree_node_base* _Base_ptr;
@@ -352,18 +287,22 @@ namespace std
       typedef size_t size_type;
       typedef ptrdiff_t difference_type;
       
-      typedef typename _Base::allocator_type allocator_type;
-      allocator_type get_allocator() const { return _Base::get_allocator(); }
+      typedef _Alloc allocator_type;
+      allocator_type get_allocator() const {
+	return *static_cast<const _Node_allocator*>(this);
+      }
       
     protected:
-      using _Base::_M_get_node;
-      using _Base::_M_put_node;
-      using _Base::_M_header;
+      _Rb_tree_node*
+      _M_get_node() { return _Node_allocator::allocate(1); }
+
+      void 
+      _M_put_node(_Rb_tree_node* __p) { _Node_allocator::deallocate(__p, 1); }
       
       _Link_type
       _M_create_node(const value_type& __x)
       {
-	_Link_type __tmp = this->_M_get_node();
+	_Link_type __tmp = _M_get_node();
 	try 
 	  { std::_Construct(&__tmp->_M_value_field, __x); }
 	catch(...)
@@ -391,9 +330,12 @@ namespace std
 	_M_put_node(__p);
       }
 
+    protected:
+      _Rb_tree_node_base _M_header;
       size_type _M_node_count; // keeps track of size of tree
       _Compare _M_key_compare;
-
+      
+    protected:
       _Base_ptr&
       _M_root() { return this->_M_header._M_parent; }
 
@@ -485,20 +427,27 @@ namespace std
     public:
       // allocation/deallocation
       _Rb_tree()
-	: _Base(allocator_type()), _M_node_count(0), _M_key_compare()
+	: _Node_allocator(allocator_type()),
+	  _M_node_count(0),
+	  _M_key_compare()
       { _M_empty_initialize(); }
 
       _Rb_tree(const _Compare& __comp)
-	: _Base(allocator_type()), _M_node_count(0), _M_key_compare(__comp) 
+	: _Node_allocator(allocator_type()),
+	  _M_node_count(0),
+	  _M_key_compare(__comp) 
       { _M_empty_initialize(); }
 
       _Rb_tree(const _Compare& __comp, const allocator_type& __a)
-	: _Base(__a), _M_node_count(0), _M_key_compare(__comp) 
+	: _Node_allocator(__a),
+	  _M_node_count(0),
+	  _M_key_compare(__comp) 
       { _M_empty_initialize(); }
 
       _Rb_tree(const _Rb_tree<_Key,_Val,_KeyOfValue,_Compare,_Alloc>& __x) 
-	: _Base(__x.get_allocator()), _M_node_count(0), 
-		 _M_key_compare(__x._M_key_compare)
+	: _Node_allocator(__x.get_allocator()),
+	  _M_node_count(0), 
+	  _M_key_compare(__x._M_key_compare)
       { 
 	if (__x._M_root() == 0)
 	  _M_empty_initialize();
