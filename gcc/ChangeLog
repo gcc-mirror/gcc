@@ -28,7 +28,7 @@
 
 2000-05-20  Bruce Korb  <bkorb@gnu.org>
 
-	* fixinc/inclhack.def:  more applications of c_fix=format + tests
+	* fixinc/inclhack.def:  many applications of c_fix=format + tests
 	* fixinc/check.diff:  regenerated
 	* fixinc/fixincl.x:  regenerated
 
