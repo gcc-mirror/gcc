@@ -1,5 +1,7 @@
 Fri Dec 17 12:08:11 MET 1999  Jan Hubicka  <hubicka@freesoftr.cz>
 
+	* regclass.c (regclass): Do not use flowgraph when not optimizing.
+
 	* gcse.c (try_replace_reg): Do replacements in REG_EQUAL/REG_EQUIV
 	notes too, create one when replacement failed, attempt to simplify
 	resulting notes.
