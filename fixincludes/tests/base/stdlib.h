@@ -27,10 +27,10 @@ extern void	exit(void*);
 #endif  /* INT_ABORT_FREE_AND_EXIT_CHECK */
 
 
-#if defined( LYNX_MISSING_PUTENV_CHECK )
+#if defined( LYNXOS_MISSING_PUTENV_CHECK )
 extern char *getenv	_AP((const char *));
 extern int putenv				_AP((char *));
-#endif  /* LYNX_MISSING_PUTENV_CHECK */
+#endif  /* LYNXOS_MISSING_PUTENV_CHECK */
 
 
 #if defined( SVR4_GETCWD_CHECK )
