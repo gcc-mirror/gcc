@@ -1,3 +1,9 @@
+2001-05-05  Jakub Jelinek  <jakub@redhat.com
+
+	* gcc.c (cpp_options): Define __NO_INLINE__ unless we are honoring
+	"inline" keyword.
+	* cpp.texi (__NO_INLINE): Document it.
+
 2001-05-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppfiles.c (struct include_file): New member err_no.
