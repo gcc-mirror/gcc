@@ -360,7 +360,8 @@ gencode ()
   puts ("#include \"ggc.h\"\n\n");
   puts ("extern struct obstack *rtl_obstack;\n\n");
   puts ("static rtx obstack_alloc_rtx PARAMS ((int length));\n");
-  puts ("static rtx obstack_alloc_rtx (length)\n");
+  puts ("static rtx\n");
+  puts ("obstack_alloc_rtx (length)\n");
   puts ("     register int length;\n{\n");
   puts ("  rtx rt = (rtx) obstack_alloc (rtl_obstack, length);\n\n");
   puts ("  memset(rt, 0, sizeof(struct rtx_def) - sizeof(rtunion));\n\n");

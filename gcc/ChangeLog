@@ -1,5 +1,8 @@
 Fri Apr 21 13:30:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gengenrtl.c (gencode): Write obstack_alloc_rtx function start
+	in proper format.
+
 	* cse.c (cse_insn): In (set REG0 REG1) case, remove a REG_EQUAL
 	note for REG1.
 
