@@ -3630,8 +3630,8 @@ mangle_class_name_for_template (name, parms, arglist)
     obstack_free (&scratch_obstack, scratch_firstobj);
   scratch_firstobj = obstack_alloc (&scratch_obstack, 1);
 
-#define ccat(c)	obstack_1grow (&scratch_obstack, (c));
-#define cat(s)	obstack_grow (&scratch_obstack, (s), strlen (s))
+#define ccat(C)	obstack_1grow (&scratch_obstack, (C));
+#define cat(S)	obstack_grow (&scratch_obstack, (S), strlen (S))
 
   cat (name);
   ccat ('<');
