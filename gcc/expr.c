@@ -4428,9 +4428,14 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	      && TREE_INT_CST_HIGH (index) == 0)
 	    *pbitpos += TREE_INT_CST_LOW (index);
 	  else
-	    offset = size_binop (PLUS_EXPR, offset,
-				 size_binop (FLOOR_DIV_EXPR, index,
-					     size_int (BITS_PER_UNIT)));
+	    {
+	      offset = size_binop (PLUS_EXPR, offset,
+				   size_binop (FLOOR_DIV_EXPR, index,
+					       size_int (BITS_PER_UNIT)));
+
+	      if (contains_placeholder_p (offset))
+		offset = build (WITH_RECORD_EXPR, sizetype, offset, exp);
+	    }
 	}
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR
 	       && ! ((TREE_CODE (exp) == NOP_EXPR
