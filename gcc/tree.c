@@ -1645,7 +1645,7 @@ really_constant_p (exp)
 }
 
 /* Return first list element whose TREE_VALUE is ELEM.
-   Return 0 if ELEM is not it LIST.  */
+   Return 0 if ELEM is not in LIST.  */
 
 tree
 value_member (elem, list)
@@ -1661,7 +1661,7 @@ value_member (elem, list)
 }
 
 /* Return first list element whose TREE_PURPOSE is ELEM.
-   Return 0 if ELEM is not it LIST.  */
+   Return 0 if ELEM is not in LIST.  */
 
 tree
 purpose_member (elem, list)
@@ -1677,7 +1677,7 @@ purpose_member (elem, list)
 }
 
 /* Return first list element whose BINFO_TYPE is ELEM.
-   Return 0 if ELEM is not it LIST.  */
+   Return 0 if ELEM is not in LIST.  */
 
 tree
 binfo_member (elem, list)
@@ -1710,6 +1710,9 @@ chain_member (elem, chain)
 
 /* Return nonzero if ELEM is equal to TREE_VALUE (CHAIN) for any piece of
    chain CHAIN. */
+/* ??? This function was added for machine specific attributes but is no
+   longer used.  It could be deleted if we could confirm all front ends
+   don't use it.  */
 
 int
 chain_member_value (elem, chain)
@@ -1727,12 +1730,14 @@ chain_member_value (elem, chain)
 
 /* Return nonzero if ELEM is equal to TREE_PURPOSE (CHAIN)
    for any piece of chain CHAIN. */
+/* ??? This function was added for machine specific attributes but is no
+   longer used.  It could be deleted if we could confirm all front ends
+   don't use it.  */
 
 int
 chain_member_purpose (elem, chain)
      tree elem, chain;
 {
-
   while (chain)
     {
       if (elem == TREE_PURPOSE (chain))
@@ -2896,7 +2901,7 @@ build_type_attribute_variant (ttype, attribute)
 
       hashcode = TYPE_HASH (TREE_CODE (ntype))
 		 + TYPE_HASH (TREE_TYPE (ntype))
-		 + type_hash_list (attribute);
+		 + attribute_hash_list (attribute);
 
       switch (TREE_CODE (ntype))
         {
@@ -2936,20 +2941,25 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
   tree decl_attr_list = decl != 0 ? DECL_MACHINE_ATTRIBUTES (decl) : 0;
   tree type_attr_list = TYPE_ATTRIBUTES (type);
 
-  /* For now, we don't support args.  */
-  if (attr_args != 0)
-    return 0;
+  if (TREE_CODE (attr_name) != IDENTIFIER_NODE)
+    abort ();
 
 #ifdef VALID_MACHINE_DECL_ATTRIBUTE
   if (decl != 0
-      && VALID_MACHINE_DECL_ATTRIBUTE (decl, decl_attr_list, attr_name))
+      && VALID_MACHINE_DECL_ATTRIBUTE (decl, decl_attr_list, attr_name, attr_args))
     {
-      if (! attribute_in_list (attr_name, decl_attr_list))
-	{
-	  decl_attr_list = tree_cons (NULL_TREE, attr_name, decl_attr_list);
+      tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
+				    decl_attr_list);
 
-	  /* Declarations are unique, build_decl_attribute_variant modifies
-	     the existing decl in situ.  */
+      if (attr != NULL_TREE)
+	{
+	  /* Override existing arguments.  Declarations are unique so we can
+	     modify this in place.  */
+	  TREE_VALUE (attr) = attr_args;
+	}
+      else
+	{
+	  decl_attr_list = tree_cons (attr_name, attr_args, decl_attr_list);
 	  decl = build_decl_attribute_variant (decl, decl_attr_list);
 	}
 
@@ -2958,11 +2968,22 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 #endif
 
 #ifdef VALID_MACHINE_TYPE_ATTRIBUTE
-  if (VALID_MACHINE_TYPE_ATTRIBUTE (type, type_attr_list, attr_name))
+  if (VALID_MACHINE_TYPE_ATTRIBUTE (type, type_attr_list, attr_name, attr_args))
     {
-      if (! attribute_in_list (attr_name, type_attr_list))
+      tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
+				    type_attr_list);
+
+      if (attr != NULL_TREE)
 	{
-	  type_attr_list = tree_cons (NULL_TREE, attr_name, type_attr_list);
+	  /* Override existing arguments.
+	     ??? This currently works since attribute arguments are not
+	     included in `attribute_hash_list'.  Something more complicated
+	     may be needed in the future.  */
+	  TREE_VALUE (attr) = attr_args;
+	}
+      else
+	{
+	  type_attr_list = tree_cons (attr_name, attr_args, type_attr_list);
 	  type = build_type_attribute_variant (type, type_attr_list);
 	}
       if (decl != 0)
@@ -2972,6 +2993,77 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 #endif
 
   return valid;
+}
+
+/* Return non-zero if IDENT is a valid name for attribute ATTR,
+   or zero if not.
+
+   We try both `text' and `__text__', ATTR may be either one.  */
+/* ??? It might be a reasonable simplification to require ATTR to be only
+   `text'.  One might then also require attribute lists to be stored in
+   their canonicalized form.  */
+
+int
+is_attribute_p (attr, ident)
+     char *attr;
+     tree ident;
+{
+  int ident_len, attr_len;
+  char *p;
+
+  if (TREE_CODE (ident) != IDENTIFIER_NODE)
+    return 0;
+
+  if (strcmp (attr, IDENTIFIER_POINTER (ident)) == 0)
+    return 1;
+
+  p = IDENTIFIER_POINTER (ident);
+  ident_len = strlen (p);
+  attr_len = strlen (attr);
+
+  /* If ATTR is `__text__', IDENT must be `text'; and vice versa.  */
+  if (attr[0] == '_')
+    {
+      if (attr[1] != '_'
+	  || attr[attr_len - 2] != '_'
+	  || attr[attr_len - 1] != '_')
+	abort ();
+      if (ident_len == attr_len - 4
+	  && strncmp (attr + 2, p, attr_len - 4) == 0)
+	return 1;
+    }
+  else
+    {
+      if (ident_len == attr_len + 4
+	  && p[0] == '_' && p[1] == '_'
+	  && p[ident_len - 2] == '_' && p[ident_len - 1] == '_'
+	  && strncmp (attr, p + 2, attr_len) == 0)
+	return 1;
+    }
+
+  return 0;
+}
+
+/* Given an attribute name and a list of attributes, return a pointer to the
+   attribute's list element if the attribute is part of the list, or NULL_TREE
+   if not found.  */
+
+tree
+lookup_attribute (attr_name, list)
+     char *attr_name;
+     tree list;
+{
+  tree l;
+
+  for (l = list; l; l = TREE_CHAIN (l))
+    {
+      if (TREE_CODE (TREE_PURPOSE (l)) != IDENTIFIER_NODE)
+	abort ();
+      if (is_attribute_p (attr_name, TREE_PURPOSE (l)))
+	return l;
+    }
+
+  return NULL_TREE;
 }
 
 /* Return a type like TYPE except that its TYPE_READONLY is CONSTP
@@ -3196,39 +3288,20 @@ type_hash_canon (hashcode, type)
   return type;
 }
 
-/* Given an attribute and a list of attributes, return true if the attribute
-   is part of the list.  */
+/* Compute a hash code for a list of attributes (chain of TREE_LIST nodes
+   with names in the TREE_PURPOSE slots and args in the TREE_VALUE slots),
+   by adding the hash codes of the individual attributes.  */
 
 int
-attribute_in_list (attribute, list)
-     tree attribute, list;
+attribute_hash_list (list)
+     tree list;
 {
-  register tree purpose, chain;
-
-  /* Perform a quick check.  */
-  if (value_member (attribute, list))
-     return 1;
-
-  /* If it's not a TREE_LIST, we should have had a match by now.  */
-  if (TREE_CODE (attribute) != TREE_LIST)
-     return 0;
-
-  purpose = TREE_PURPOSE (attribute);
-  chain = TREE_CHAIN (attribute);
-
-  for (; list; list = TREE_CHAIN (list))
-    {
-      register tree value;
-
-      value = TREE_VALUE (list);
-
-      if (TREE_CODE (value) == TREE_LIST
-          && TREE_PURPOSE (value) == purpose
-          && simple_cst_equal (TREE_CHAIN (value), chain) == 1)
-	 return 1;
-    }
-
-  return 0;
+  register int hashcode;
+  register tree tail;
+  for (hashcode = 0, tail = list; tail; tail = TREE_CHAIN (tail))
+    /* ??? Do we want to add in TREE_VALUE too? */
+    hashcode += TYPE_HASH (TREE_PURPOSE (tail));
+  return hashcode;
 }
 
 /* Given two lists of attributes, return true if list l2 is
@@ -3242,8 +3315,13 @@ attribute_list_equal (l1, l2)
 	  && attribute_list_contained (l2, l1);
 }
 
-/* Given two lists of attributes, return true if list l2 is
-   completely contained within l1.  */
+/* Given two lists of attributes, return true if list L2 is
+   completely contained within L1.  */
+/* ??? This would be faster if attribute names were stored in a canonicalized
+   form.  Otherwise, if L1 uses `foo' and L2 uses `__foo__', the long method
+   must be used to show these elements are equivalent (which they are).  */
+/* ??? It's not clear that attributes with arguments will always be handled
+   correctly.  */
 
 int
 attribute_list_contained (l1, l2)
@@ -3255,9 +3333,10 @@ attribute_list_contained (l1, l2)
   if (l1 == l2)
      return 1;
 
-  /* Then check the obvious, maybe the lists are similar.  */
+  /* Maybe the lists are similar.  */
   for (t1 = l1, t2 = l2;
        t1 && t2
+        && TREE_PURPOSE (t1) == TREE_PURPOSE (t2)
         && TREE_VALUE (t1) == TREE_VALUE (t2);
        t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2));
 
@@ -3266,8 +3345,14 @@ attribute_list_contained (l1, l2)
      return 1;
 
   for (; t2; t2 = TREE_CHAIN (t2))
-     if (! attribute_in_list (TREE_VALUE (t2), l1))
+    {
+      tree attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)), l1);
+
+      if (attr == NULL_TREE)
 	return 0;
+      if (simple_cst_equal (TREE_VALUE (t2), TREE_VALUE (attr)) != 1)
+	return 0;
+    }
 
   return 1;
 }
