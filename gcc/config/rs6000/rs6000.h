@@ -1956,7 +1956,8 @@ toc_section ()						\
 {							\
   if ((TREE_CODE (EXP) == STRING_CST			\
        && !flag_writable_strings)			\
-      || (TREE_READONLY (EXP) && ! TREE_THIS_VOLATILE (EXP) \
+      || (TREE_CODE_CLASS (EXP) == 'd'			\
+	  && TREE_READONLY (EXP) && ! TREE_THIS_VOLATILE (EXP) \
 	  && DECL_INITIAL (EXP)				\
 	  && (DECL_INITIAL (EXP) == error_mark_node	\
 	      || TREE_CONSTANT (DECL_INITIAL (EXP)))	\
