@@ -2829,7 +2829,7 @@ alpha_emit_conditional_branch (code)
 	  break;
 	default:
 	  cmp_code = code;
-  code = GT;
+	  code = GT;
 	  break;
 	}
 
