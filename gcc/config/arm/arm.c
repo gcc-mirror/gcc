@@ -3470,6 +3470,7 @@ add_constant (x, mode, address_only)
   else if (GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P(x))
     {
       *address_only = 1;
+      mode = get_pool_mode (x);
       x = get_pool_constant (x);
     }
 #ifndef AOF_ASSEMBLER

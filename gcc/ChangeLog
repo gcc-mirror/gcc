@@ -1,5 +1,8 @@
 Mon Nov  9 23:05:51 1998  Richard Earnshaw (rearnsha@arm.com)
 
+	* arm.c (add_constant): When taking the address of an item in the
+	pool, get the mode of the item addressed.
+
 	* arm.c (final_prescan_insn, case INSN): If an insn doesn't 
 	contain a SET or a PARALLEL, don't consider it for conditional
 	execution.
