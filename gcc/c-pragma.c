@@ -287,6 +287,10 @@ apply_pragma_weak (decl, value)
     decl_attributes (&decl, build_tree_list (get_identifier ("alias"),
 				             build_tree_list (NULL, value)),
 		     0);
+  if (SUPPORTS_WEAK && DECL_EXTERNAL (decl) && TREE_USED (decl)
+      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+    warning_with_decl (decl, "applying #pragma weak `%s' after first use results in unspecified behavior");
+
   declare_weak (decl);
 }
 
