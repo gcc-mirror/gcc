@@ -539,8 +539,8 @@ make_function_rtl (decl)
   if (DECL_RTL (decl) == 0)
     {
       DECL_RTL (decl)
-	= gen_rtx (MEM, DECL_MODE (decl),
-		   gen_rtx (SYMBOL_REF, Pmode, name));
+	= gen_rtx_MEM (DECL_MODE (decl),
+		       gen_rtx_SYMBOL_REF (Pmode, name));
 
       /* Optionally set flags or add text to the name to record information
 	 such as that it is a function name.  If the name is changed, the macro
@@ -760,7 +760,7 @@ make_decl_rtl (decl, asmspec, top_level)
 	     kludge to avoid setting DECL_RTL to frame_pointer_rtx.  */
 
 	  DECL_RTL (decl)
-	    = gen_rtx (REG, DECL_MODE (decl), FIRST_PSEUDO_REGISTER);
+	    = gen_rtx_REG (DECL_MODE (decl), FIRST_PSEUDO_REGISTER);
 	  REGNO (DECL_RTL (decl)) = reg_number;
 	  REG_USERVAR_P (DECL_RTL (decl)) = 1;
 
@@ -814,8 +814,8 @@ make_decl_rtl (decl, asmspec, top_level)
 	      			   new_name, strlen (new_name));
 	    }
 
-	  DECL_RTL (decl) = gen_rtx (MEM, DECL_MODE (decl),
-				     gen_rtx (SYMBOL_REF, Pmode, name));
+	  DECL_RTL (decl) = gen_rtx_MEM (DECL_MODE (decl),
+					 gen_rtx_SYMBOL_REF (Pmode, name));
 
 	  /* If this variable is to be treated as volatile, show its
 	     tree node has side effects.  If it has side effects, either
@@ -1883,7 +1883,7 @@ assemble_static_space (size)
   if (output_bytecode)
     x = bc_gen_rtx (namestring, 0, (struct bc_label *) 0);
   else
-    x = gen_rtx (SYMBOL_REF, Pmode, namestring);
+    x = gen_rtx_SYMBOL_REF (Pmode, namestring);
 
   if (output_bytecode)
     {
@@ -1941,7 +1941,7 @@ assemble_trampoline_template ()
   ASM_GENERATE_INTERNAL_LABEL (label, "LTRAMP", 0);
   name
     = (char *) obstack_copy0 (&permanent_obstack, label, strlen (label));
-  return gen_rtx (SYMBOL_REF, Pmode, name);
+  return gen_rtx_SYMBOL_REF (Pmode, name);
 }
 #endif
 
@@ -2210,7 +2210,7 @@ immed_double_const (i0, i1, mode)
 
   push_obstacks_nochange ();
   rtl_in_saveable_obstack ();
-  r = gen_rtx (CONST_DOUBLE, mode, NULL_RTX, i0, i1);
+  r = gen_rtx_CONST_DOUBLE (mode, NULL_RTX, i0, i1);
   pop_obstacks ();
 
   /* Don't touch const_double_chain in nested function; see force_const_mem.
@@ -2392,9 +2392,10 @@ decode_addr_const (exp, value)
 	/* FIXME: this may not be correct, check it */
 	x = bc_gen_rtx (TREE_STRING_POINTER (target), 0, (struct bc_label *) 0);
       else
-	x = gen_rtx (MEM, FUNCTION_MODE,
-		     gen_rtx (LABEL_REF, VOIDmode,
-			      label_rtx (TREE_OPERAND (exp, 0))));
+	x = gen_rtx_MEM (FUNCTION_MODE,
+			 gen_rtx_LABEL_REF
+			 (VOIDmode,
+			  label_rtx (TREE_OPERAND (exp, 0))));
       break;
 
     case REAL_CST:
@@ -3151,10 +3152,10 @@ output_constant_def (exp)
   if (TREE_PERMANENT (exp))
     end_temporary_allocation ();
 
-  def = gen_rtx (SYMBOL_REF, Pmode, desc->label);
+  def = gen_rtx_SYMBOL_REF (Pmode, desc->label);
       
   TREE_CST_RTL (exp)
-    = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (exp)), def);
+    = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)), def);
   RTX_UNCHANGING_P (TREE_CST_RTL (exp)) = 1;
   if (AGGREGATE_TYPE_P (TREE_TYPE (exp)))
     MEM_IN_STRUCT_P (TREE_CST_RTL (exp)) = 1;
@@ -3652,10 +3653,10 @@ force_const_mem (mode, x)
 	  rtl_in_saveable_obstack ();
 
 	  if (GET_CODE (x) == CONST)
-	    x = gen_rtx (CONST, GET_MODE (x), 
-			 gen_rtx (PLUS, GET_MODE (x), 
-				  XEXP (XEXP (x, 0), 0),
-				  XEXP (XEXP (x, 0), 1)));
+	    x = gen_rtx_CONST (GET_MODE (x), 
+			       gen_rtx_PLUS (GET_MODE (x), 
+					     XEXP (XEXP (x, 0), 0),
+					     XEXP (XEXP (x, 0), 1)));
 	  else
 	    x = GEN_INT (INTVAL (x));
 
@@ -3701,7 +3702,7 @@ force_const_mem (mode, x)
 
   /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
 
-  def = gen_rtx (MEM, mode, gen_rtx (SYMBOL_REF, Pmode, found));
+  def = gen_rtx_MEM (mode, gen_rtx_SYMBOL_REF (Pmode, found));
 
   RTX_UNCHANGING_P (def) = 1;
   /* Mark the symbol_ref as belonging to this constants pool.  */

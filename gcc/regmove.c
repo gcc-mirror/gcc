@@ -191,7 +191,7 @@ try_auto_increment (insn, inc_insn, inc_set, reg, increment, pre)
       if (! apply_change_group ())
 	return 0;
 
-      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, reg, REG_NOTES (insn));
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, reg, REG_NOTES (insn));
 
       if (inc_set == 0)
 	{
@@ -1411,8 +1411,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		     >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (dst))))
 		{
 		  src_subreg
-		    = gen_rtx (SUBREG, GET_MODE (SUBREG_REG (dst)),
-			       src, SUBREG_WORD (dst));
+		    = gen_rtx_SUBREG (GET_MODE (SUBREG_REG (dst)),
+				      src, SUBREG_WORD (dst));
 		  dst = SUBREG_REG (dst);
 		}
 
@@ -1763,15 +1763,15 @@ regmove_profitable_p ()
 	  if (i + 2 >= FIRST_PSEUDO_REGISTER)
 	    break;
 
-	  reg0 = gen_rtx (REG, insn_operand_mode[icode][0], i);
-	  reg1 = gen_rtx (REG, insn_operand_mode[icode][1], i + 1);
+	  reg0 = gen_rtx_REG (insn_operand_mode[icode][0], i);
+	  reg1 = gen_rtx_REG (insn_operand_mode[icode][1], i + 1);
 
 	  /* Use CONST_INT for a shift since some machines do odd things
 	     in the register case (e.g., PA).  */
 	  if (tstoptab->code == ASHIFT)
 	    reg2 = const1_rtx;
 	  else
-	    reg2 = gen_rtx (REG, insn_operand_mode[icode][2], i + 2);
+	    reg2 = gen_rtx_REG (insn_operand_mode[icode][2], i + 2);
 
 	  if (! (*insn_operand_predicate[icode][0]) (reg0, VOIDmode)
 	      || ! (*insn_operand_predicate[icode][1]) (reg1, VOIDmode)

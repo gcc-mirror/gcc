@@ -144,11 +144,11 @@ init_caller_save ()
   if (i == FIRST_PSEUDO_REGISTER)
     abort ();
 
-  addr_reg = gen_rtx (REG, Pmode, i);
+  addr_reg = gen_rtx_REG (Pmode, i);
 
   for (offset = 1 << (HOST_BITS_PER_INT / 2); offset; offset >>= 1)
     {
-      address = gen_rtx (PLUS, Pmode, addr_reg, GEN_INT (offset));
+      address = gen_rtx_PLUS (Pmode, addr_reg, GEN_INT (offset));
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (regno_save_mode[i][1] != VOIDmode
@@ -172,10 +172,10 @@ init_caller_save ()
     for (j = 1; j <= MOVE_MAX / UNITS_PER_WORD; j++)
       if (regno_save_mode[i][j] != VOIDmode)
         {
-	  rtx mem = gen_rtx (MEM, regno_save_mode[i][j], address);
-	  rtx reg = gen_rtx (REG, regno_save_mode[i][j], i);
-	  rtx savepat = gen_rtx (SET, VOIDmode, mem, reg);
-	  rtx restpat = gen_rtx (SET, VOIDmode, reg, mem);
+	  rtx mem = gen_rtx_MEM (regno_save_mode[i][j], address);
+	  rtx reg = gen_rtx_REG (regno_save_mode[i][j], i);
+	  rtx savepat = gen_rtx_SET (VOIDmode, mem, reg);
+	  rtx restpat = gen_rtx_SET (VOIDmode, reg, mem);
 	  rtx saveinsn = emit_insn (savepat);
 	  rtx restinsn = emit_insn (restpat);
 	  int ok;
@@ -322,8 +322,8 @@ setup_save_areas (pchanged)
 	      {
 		/* This should not depend on WORDS_BIG_ENDIAN.
 		   The order of words in regs is the same as in memory.  */
-		rtx temp = gen_rtx (MEM, regno_save_mode[i+k][1], 
-				    XEXP (regno_save_mem[i][j], 0));
+		rtx temp = gen_rtx_MEM (regno_save_mode[i+k][1], 
+					XEXP (regno_save_mem[i][j], 0));
 
 		regno_save_mem[i+k][1] 
 		  = adj_offsettable_operand (temp, k * UNITS_PER_WORD);
@@ -692,8 +692,9 @@ insert_save_restore (insn, save_p, regno, insn_mode, maxrestore)
 	  if (! ok)
 	    continue;
 
-          pat = gen_rtx (SET, VOIDmode, regno_save_mem[regno][i],
-		     gen_rtx (REG, GET_MODE (regno_save_mem[regno][i]), regno));
+          pat = gen_rtx_SET (VOIDmode, regno_save_mem[regno][i],
+			     gen_rtx_REG (GET_MODE (regno_save_mem[regno][i]),
+					  regno));
           code = reg_save_code[regno][i];
 
 	  /* Set hard_regs_saved for all the registers we saved.  */
@@ -731,10 +732,10 @@ insert_save_restore (insn, save_p, regno, insn_mode, maxrestore)
 	  if (! ok)
 	    continue;
 	    
-          pat = gen_rtx (SET, VOIDmode,
-		         gen_rtx (REG, GET_MODE (regno_save_mem[regno][i]), 
-				  regno), 
-			 regno_save_mem[regno][i]);
+          pat = gen_rtx_SET (VOIDmode,
+			     gen_rtx_REG (GET_MODE (regno_save_mem[regno][i]), 
+					  regno), 
+			     regno_save_mem[regno][i]);
           code = reg_restore_code[regno][i];
 
 

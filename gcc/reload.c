@@ -835,10 +835,10 @@ push_reload (in, out, inloc, outloc, class,
     {
       if (GET_CODE (XEXP (in, 0)) == POST_INC
 	  || GET_CODE (XEXP (in, 0)) == POST_DEC)
-	in = gen_rtx (MEM, GET_MODE (in), XEXP (XEXP (in, 0), 0));
+	in = gen_rtx_MEM (GET_MODE (in), XEXP (XEXP (in, 0), 0));
       if (GET_CODE (XEXP (in, 0)) == PRE_INC
 	  || GET_CODE (XEXP (in, 0)) == PRE_DEC)
-	out = gen_rtx (MEM, GET_MODE (out), XEXP (XEXP (out, 0), 0));
+	out = gen_rtx_MEM (GET_MODE (out), XEXP (XEXP (out, 0), 0));
     }
 
   /* If we are reloading a (SUBREG constant ...), really reload just the
@@ -1080,16 +1080,16 @@ push_reload (in, out, inloc, outloc, class,
   if (in != 0 && GET_CODE (in) == SUBREG && GET_CODE (SUBREG_REG (in)) == REG
       && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
       && ! dont_remove_subreg)
-    in = gen_rtx (REG, GET_MODE (in),
-		  REGNO (SUBREG_REG (in)) + SUBREG_WORD (in));
+    in = gen_rtx_REG (GET_MODE (in),
+		      REGNO (SUBREG_REG (in)) + SUBREG_WORD (in));
 
   /* Similarly for OUT.  */
   if (out != 0 && GET_CODE (out) == SUBREG
       && GET_CODE (SUBREG_REG (out)) == REG
       && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
       && ! dont_remove_subreg)
-    out = gen_rtx (REG, GET_MODE (out),
-		  REGNO (SUBREG_REG (out)) + SUBREG_WORD (out));
+    out = gen_rtx_REG (GET_MODE (out),
+		       REGNO (SUBREG_REG (out)) + SUBREG_WORD (out));
 
   /* Narrow down the class of register wanted if that is
      desirable on this machine for efficiency.  */
@@ -1445,7 +1445,7 @@ push_reload (in, out, inloc, outloc, class,
 	    && TEST_HARD_REG_BIT (reg_class_contents[(int) class], regno)
 	    && !fixed_regs[regno])
 	  {
-	    reload_reg_rtx[i] = gen_rtx (REG, inmode, regno);
+	    reload_reg_rtx[i] = gen_rtx_REG (inmode, regno);
 	    break;
 	  }
     }
@@ -1661,9 +1661,9 @@ combine_reloads ()
 			    REGNO (XEXP (note, 0)))))))
 	&& ! fixed_regs[REGNO (XEXP (note, 0))])
       {
-	reload_reg_rtx[output_reload] = gen_rtx (REG,
-						 reload_outmode[output_reload],
-						 REGNO (XEXP (note, 0)));
+	reload_reg_rtx[output_reload]
+	  = gen_rtx_REG (reload_outmode[output_reload],
+			 REGNO (XEXP (note, 0)));
 	return;
       }
 }
@@ -1767,7 +1767,7 @@ find_dummy_reload (real_in, real_out, inloc, outloc,
 	      if (GET_CODE (real_out) == REG)
 		value = real_out;
 	      else
-		value = gen_rtx (REG, outmode, regno);
+		value = gen_rtx_REG (outmode, regno);
 	    }
 	}
 
@@ -1821,7 +1821,7 @@ find_dummy_reload (real_in, real_out, inloc, outloc,
 	      if (GET_CODE (real_in) == REG)
 		value = real_in;
 	      else
-		value = gen_rtx (REG, inmode, regno);
+		value = gen_rtx_REG (inmode, regno);
 	    }
 	}
     }
@@ -2113,28 +2113,28 @@ decompose (x)
 	{
 	  if (GET_CODE (XEXP (offset, 0)) == CONST_INT)
 	    {
-	      base = gen_rtx (PLUS, GET_MODE (base), base, XEXP (offset, 1));
+	      base = gen_rtx_PLUS (GET_MODE (base), base, XEXP (offset, 1));
 	      offset = XEXP (offset, 0);
 	    }
 	  else if (GET_CODE (XEXP (offset, 1)) == CONST_INT)
 	    {
-	      base = gen_rtx (PLUS, GET_MODE (base), base, XEXP (offset, 0));
+	      base = gen_rtx_PLUS (GET_MODE (base), base, XEXP (offset, 0));
 	      offset = XEXP (offset, 1);
 	    }
 	  else
 	    {
-	      base = gen_rtx (PLUS, GET_MODE (base), base, offset);
+	      base = gen_rtx_PLUS (GET_MODE (base), base, offset);
 	      offset = const0_rtx;
 	    }
 	}
       else if (GET_CODE (offset) != CONST_INT)
 	{
-	  base = gen_rtx (PLUS, GET_MODE (base), base, offset);
+	  base = gen_rtx_PLUS (GET_MODE (base), base, offset);
 	  offset = const0_rtx;
 	}
 
       if (all_const && GET_CODE (base) == PLUS)
-	base = gen_rtx (CONST, GET_MODE (base), base);
+	base = gen_rtx_CONST (GET_MODE (base), base);
 
       if (GET_CODE (offset) != CONST_INT)
 	abort ();
@@ -2405,7 +2405,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  {
 		    error_for_asm (insn, "operand constraints differ in number of alternatives");
 		    /* Avoid further trouble with this insn.  */
-		    PATTERN (insn) = gen_rtx (USE, VOIDmode, const0_rtx);
+		    PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
 		    n_reloads = 0;
 		    return;
 		  }
@@ -2624,13 +2624,13 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		 after it.  */
 
 	      if (modified[i] != RELOAD_READ)
-		PUT_MODE (emit_insn_after (gen_rtx (CLOBBER, VOIDmode,
-						    recog_operand[i]),
+		PUT_MODE (emit_insn_after (gen_rtx_CLOBBER (VOIDmode,
+							    recog_operand[i]),
 					   insn),
 			  DImode);
 
 	      *recog_operand_loc[i] = recog_operand[i]
-		= gen_rtx (MEM, GET_MODE (recog_operand[i]), address);
+		= gen_rtx_MEM (GET_MODE (recog_operand[i]), address);
 	      RTX_UNCHANGING_P (recog_operand[i])
 		= RTX_UNCHANGING_P (regno_reg_rtx[regno]);
 	      find_reloads_address (GET_MODE (recog_operand[i]),
@@ -3435,7 +3435,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	abort ();
       error_for_asm (insn, "inconsistent operand constraints in an `asm'");
       /* Avoid further trouble with this insn.  */
-      PATTERN (insn) = gen_rtx (USE, VOIDmode, const0_rtx);
+      PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
       n_reloads = 0;
       return;
     }
@@ -3651,7 +3651,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  {
 	    error_for_asm (insn, "inconsistent operand constraints in an `asm'");
 	    /* Avoid further trouble with this insn.  */
-	    PATTERN (insn) = gen_rtx (USE, VOIDmode, const0_rtx);
+	    PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
 	    n_reloads = 0;
 	    return;
 	  }
@@ -4187,7 +4187,7 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest)
 	  if (rtx_varies_p (addr))
 	    addr = copy_rtx (addr);
 
-	  x = gen_rtx (MEM, GET_MODE (x), addr);
+	  x = gen_rtx_MEM (GET_MODE (x), addr);
 	  RTX_UNCHANGING_P (x) = RTX_UNCHANGING_P (regno_reg_rtx[regno]);
 	  find_reloads_address (GET_MODE (x), NULL_PTR,
 				XEXP (x, 0),
@@ -4276,7 +4276,7 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest)
 	      offset -= MIN (size, UNITS_PER_WORD);
 	    }
 	  addr = plus_constant (addr, offset);
-	  x = gen_rtx (MEM, GET_MODE (x), addr);
+	  x = gen_rtx_MEM (GET_MODE (x), addr);
 	  RTX_UNCHANGING_P (x) = RTX_UNCHANGING_P (regno_reg_rtx[regno]);
 	  find_reloads_address (GET_MODE (x), NULL_PTR,
 				XEXP (x, 0),
@@ -4323,7 +4323,7 @@ make_memloc (ad, regno)
   if (rtx_varies_p (tem))
     tem = copy_rtx (tem);
 
-  tem = gen_rtx (MEM, GET_MODE (ad), tem);
+  tem = gen_rtx_MEM (GET_MODE (ad), tem);
   RTX_UNCHANGING_P (tem) = RTX_UNCHANGING_P (regno_reg_rtx[regno]);
   memlocs[n_memlocs++] = tem;
   return tem;
@@ -4594,10 +4594,10 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	       || XEXP (XEXP (ad, 0), 0) == stack_pointer_rtx)
 	   && ! memory_address_p (mode, ad))
     {
-      *loc = ad = gen_rtx (PLUS, GET_MODE (ad),
-			   plus_constant (XEXP (XEXP (ad, 0), 0),
-					  INTVAL (XEXP (ad, 1))),
-			   XEXP (XEXP (ad, 0), 1));
+      *loc = ad = gen_rtx_PLUS (GET_MODE (ad),
+				plus_constant (XEXP (XEXP (ad, 0), 0),
+					       INTVAL (XEXP (ad, 1))),
+				XEXP (XEXP (ad, 0), 1));
       find_reloads_address_part (XEXP (ad, 0), &XEXP (ad, 0),
 				 reload_address_base_reg_class,
 				 GET_MODE (ad), opnum, type, ind_levels);
@@ -4619,10 +4619,10 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 	       || XEXP (XEXP (ad, 0), 1) == stack_pointer_rtx)
 	   && ! memory_address_p (mode, ad))
     {
-      *loc = ad = gen_rtx (PLUS, GET_MODE (ad),
-			   XEXP (XEXP (ad, 0), 0),
-			   plus_constant (XEXP (XEXP (ad, 0), 1),
-					  INTVAL (XEXP (ad, 1))));
+      *loc = ad = gen_rtx_PLUS (GET_MODE (ad),
+				XEXP (XEXP (ad, 0), 0),
+				plus_constant (XEXP (XEXP (ad, 0), 1),
+					       INTVAL (XEXP (ad, 1))));
       find_reloads_address_part (XEXP (ad, 1), &XEXP (ad, 1),
 				 reload_address_base_reg_class,
 				 GET_MODE (ad), opnum, type, ind_levels);
@@ -4780,8 +4780,8 @@ form_sum (x, y, diff_p)
       if (GET_CODE (y) == CONST)
 	y = XEXP (y, 0);
 
-      return gen_rtx (CONST, VOIDmode,
-		      gen_rtx (diff_p ? MINUS: PLUS, mode, x, y));
+      return gen_rtx_CONST (VOIDmode,
+			    gen_rtx (diff_p ? MINUS: PLUS, mode, x, y));
     }
 
   return gen_rtx (diff_p ? MINUS: PLUS, mode, x, y);
@@ -4900,8 +4900,8 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	    op0 = SUBREG_REG (op0);
 	    code0 = GET_CODE (op0);
 	    if (code0 == REG && REGNO (op0) < FIRST_PSEUDO_REGISTER)
-	      op0 = gen_rtx (REG, word_mode,
-			     REGNO (op0) + SUBREG_WORD (orig_op0));
+	      op0 = gen_rtx_REG (word_mode,
+				 REGNO (op0) + SUBREG_WORD (orig_op0));
 	  }
 
 	if (GET_CODE (op1) == SUBREG)
@@ -4909,8 +4909,8 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	    op1 = SUBREG_REG (op1);
 	    code1 = GET_CODE (op1);
 	    if (code1 == REG && REGNO (op1) < FIRST_PSEUDO_REGISTER)
-	      op1 = gen_rtx (REG, GET_MODE (op1),
-			     REGNO (op1) + SUBREG_WORD (orig_op1));
+	      op1 = gen_rtx_REG (GET_MODE (op1),
+				 REGNO (op1) + SUBREG_WORD (orig_op1));
 	  }
 
 	if (code0 == MULT || code0 == SIGN_EXTEND || code0 == TRUNCATE 
@@ -5321,7 +5321,7 @@ find_reloads_address_part (x, loc, class, mode, opnum, type, ind_levels)
     {
       rtx tem = force_const_mem (GET_MODE (x), XEXP (x, 1));
 
-      x = gen_rtx (PLUS, GET_MODE (x), XEXP (x, 0), tem);
+      x = gen_rtx_PLUS (GET_MODE (x), XEXP (x, 0), tem);
       find_reloads_address (mode, &tem, XEXP (tem, 0), &XEXP (tem, 0),
 			    opnum, type, ind_levels, 0);
     }
@@ -5353,7 +5353,7 @@ subst_reloads ()
 	     do the wrong thing if RELOADREG is multi-word.  RELOADREG
 	     will always be a REG here.  */
 	  if (GET_MODE (reloadreg) != r->mode && r->mode != VOIDmode)
-	    reloadreg = gen_rtx (REG, r->mode, REGNO (reloadreg));
+	    reloadreg = gen_rtx_REG (r->mode, REGNO (reloadreg));
 
 	  /* If we are putting this into a SUBREG and RELOADREG is a
 	     SUBREG, we would be making nested SUBREGs, so we have to fix
@@ -5437,7 +5437,7 @@ find_replacement (loc)
       if (reloadreg && r->where == loc)
 	{
 	  if (r->mode != VOIDmode && GET_MODE (reloadreg) != r->mode)
-	    reloadreg = gen_rtx (REG, r->mode, REGNO (reloadreg));
+	    reloadreg = gen_rtx_REG (r->mode, REGNO (reloadreg));
 
 	  return reloadreg;
 	}
@@ -5448,13 +5448,14 @@ find_replacement (loc)
 	     ??? Is it actually still ever a SUBREG?  If so, why?  */
 
 	  if (GET_CODE (reloadreg) == REG)
-	    return gen_rtx (REG, GET_MODE (*loc),
-			    REGNO (reloadreg) + SUBREG_WORD (*loc));
+	    return gen_rtx_REG (GET_MODE (*loc),
+				REGNO (reloadreg) + SUBREG_WORD (*loc));
 	  else if (GET_MODE (reloadreg) == GET_MODE (*loc))
 	    return reloadreg;
 	  else
-	    return gen_rtx (SUBREG, GET_MODE (*loc), SUBREG_REG (reloadreg),
-			    SUBREG_WORD (reloadreg) + SUBREG_WORD (*loc));
+	    return
+	      gen_rtx_SUBREG (GET_MODE (*loc), SUBREG_REG (reloadreg),
+			      SUBREG_WORD (reloadreg) + SUBREG_WORD (*loc));
 	}
     }
 

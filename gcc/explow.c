@@ -119,13 +119,11 @@ plus_constant_wide (x, c)
       if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	return plus_constant (XEXP (x, 0), c + INTVAL (XEXP (x, 1)));
       else if (CONSTANT_P (XEXP (x, 0)))
-	return gen_rtx (PLUS, mode,
-			plus_constant (XEXP (x, 0), c),
-			XEXP (x, 1));
+	return gen_rtx_PLUS (mode,
+			     plus_constant (XEXP (x, 0), c), XEXP (x, 1));
       else if (CONSTANT_P (XEXP (x, 1)))
-	return gen_rtx (PLUS, mode,
-			XEXP (x, 0),
-			plus_constant (XEXP (x, 1), c));
+	return gen_rtx_PLUS (mode, XEXP (x, 0),
+			     plus_constant (XEXP (x, 1), c));
       break;
       
     default:
@@ -133,12 +131,12 @@ plus_constant_wide (x, c)
     }
 
   if (c != 0)
-    x = gen_rtx (PLUS, mode, x, GEN_INT (c));
+    x = gen_rtx_PLUS (mode, x, GEN_INT (c));
 
   if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
     return x;
   else if (all_constant)
-    return gen_rtx (CONST, mode, x);
+    return gen_rtx_CONST (mode, x);
   else
     return x;
 }
@@ -157,8 +155,8 @@ plus_constant_for_output_wide (x, c)
   int all_constant = 0;
 
   if (GET_CODE (x) == LO_SUM)
-    return gen_rtx (LO_SUM, mode, XEXP (x, 0),
-		    plus_constant_for_output (XEXP (x, 1), c));
+    return gen_rtx_LO_SUM (mode, XEXP (x, 0),
+			   plus_constant_for_output (XEXP (x, 1), c));
 
   else
     return plus_constant (x, c);
@@ -199,7 +197,7 @@ eliminate_constant_term (x, constptr)
       && GET_CODE (tem) == CONST_INT)
     {
       *constptr = tem;
-      return gen_rtx (PLUS, GET_MODE (x), x0, x1);
+      return gen_rtx_PLUS (GET_MODE (x), x0, x1);
     }
 
   return x;
@@ -328,19 +326,19 @@ convert_memory_address (to_mode, x)
       return x;
 
     case LABEL_REF:
-      temp = gen_rtx (LABEL_REF, to_mode, XEXP (x, 0));
+      temp = gen_rtx_LABEL_REF (to_mode, XEXP (x, 0));
       LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);
       return temp;
 
     case SYMBOL_REF:
-      temp = gen_rtx (SYMBOL_REF, to_mode, XSTR (x, 0));
+      temp = gen_rtx_SYMBOL_REF (to_mode, XSTR (x, 0));
       SYMBOL_REF_FLAG (temp) = SYMBOL_REF_FLAG (x);
       CONSTANT_POOL_ADDRESS_P (temp) = CONSTANT_POOL_ADDRESS_P (x);
       return temp;
 
     case CONST:
-      return gen_rtx (CONST, to_mode, 
-		      convert_memory_address (to_mode, XEXP (x, 0)));
+      return gen_rtx_CONST (to_mode, 
+			    convert_memory_address (to_mode, XEXP (x, 0)));
 
     case PLUS:
     case MULT:
@@ -478,7 +476,7 @@ memory_address (mode, x)
 	    x = force_operand (x, NULL_RTX);
 	  else
 	    {
-	      y = gen_rtx (PLUS, GET_MODE (x), copy_to_reg (y), constant_term);
+	      y = gen_rtx_PLUS (GET_MODE (x), copy_to_reg (y), constant_term);
 	      if (! memory_address_p (mode, y))
 		x = force_operand (x, NULL_RTX);
 	      else
@@ -587,7 +585,7 @@ stabilize (x)
       rtx mem;
       if (GET_CODE (temp) != REG)
 	temp = copy_to_reg (temp);
-      mem = gen_rtx (MEM, GET_MODE (x), temp);
+      mem = gen_rtx_MEM (GET_MODE (x), temp);
 
       /* Mark returned memref with in_struct if it's in an array or
 	 structure.  Copy const and volatile from original memref.  */
@@ -683,7 +681,7 @@ force_reg (mode, x)
       if (note)
 	XEXP (note, 0) = x;
       else
-	REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUAL, x, REG_NOTES (insn));
+	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, x, REG_NOTES (insn));
     }
   return temp;
 }
@@ -1194,7 +1192,7 @@ static void
 emit_stack_probe (address)
      rtx address;
 {
-  rtx memref = gen_rtx (MEM, word_mode, address);
+  rtx memref = gen_rtx_MEM (word_mode, address);
 
   MEM_VOLATILE_P (memref) = 1;
 
@@ -1314,7 +1312,7 @@ probe_stack_range (first, size)
 
       /* If will be doing stupid optimization, show test_addr is still live. */
       if (obey_regdecls)
-	emit_insn (gen_rtx (USE, VOIDmode, test_addr));
+	emit_insn (gen_rtx_USE (VOIDmode, test_addr));
 
       emit_stack_probe (last_addr);
     }

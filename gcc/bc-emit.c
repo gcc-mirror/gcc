@@ -865,7 +865,8 @@ bc_gen_rtx (label, offset, bc_label)
   if (bc_label == 0)
     bc_label = (struct bc_label *) xmalloc (sizeof (struct bc_label));
 
-  r = gen_rtx (CODE_LABEL, VOIDmode, label, bc_label);
+  r = gen_rtx_CODE_LABEL (VOIDmode, 0, 0, 0, (int) (HOST_WIDE_INT) bc_label,
+			  label);
   bc_label->offset = offset;
 
   return r;

@@ -259,8 +259,9 @@ apply_change_group ()
 		 {
 		   int j;
 
-		   newpat = gen_rtx (PARALLEL, VOIDmode, 
-				     gen_rtvec (XVECLEN (pat, 0) - 1));
+		   newpat
+		     = gen_rtx_PARALLEL (VOIDmode, 
+					 gen_rtvec (XVECLEN (pat, 0) - 1));
 		   for (j = 0; j < XVECLEN (newpat, 0); j++)
 		     XVECEXP (newpat, 0, j) = XVECEXP (pat, 0, j);
 		 }
@@ -412,7 +413,7 @@ validate_replace_rtx_1 (loc, from, to, object)
 	  rtx new = simplify_unary_operation (code, GET_MODE (x), to,
 					      GET_MODE (from));
 	  if (new == 0)
-	    new = gen_rtx (CLOBBER, GET_MODE (x), const0_rtx);
+	    new = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
 
 	  validate_change (object, loc, new, 1);
 	  return;
@@ -441,7 +442,7 @@ validate_replace_rtx_1 (loc, from, to, object)
 			    GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
 		       - MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode)));
 
-	  new = gen_rtx (MEM, mode, plus_constant (XEXP (to, 0), offset));
+	  new = gen_rtx_MEM (mode, plus_constant (XEXP (to, 0), offset));
 	  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (to);
 	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (to);
 	  MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (to);
@@ -492,8 +493,8 @@ validate_replace_rtx_1 (loc, from, to, object)
 
 	      pos %= GET_MODE_BITSIZE (wanted_mode);
 
-	      newmem = gen_rtx (MEM, wanted_mode,
-				plus_constant (XEXP (to, 0), offset));
+	      newmem = gen_rtx_MEM (wanted_mode,
+				    plus_constant (XEXP (to, 0), offset));
 	      RTX_UNCHANGING_P (newmem) = RTX_UNCHANGING_P (to);
 	      MEM_VOLATILE_P (newmem) = MEM_VOLATILE_P (to);
 	      MEM_IN_STRUCT_P (newmem) = MEM_IN_STRUCT_P (to);
@@ -1576,7 +1577,8 @@ adj_offsettable_operand (op, offset)
 
       if (CONSTANT_ADDRESS_P (y))
 	{
-	  new = gen_rtx (MEM, GET_MODE (op), plus_constant_for_output (y, offset));
+	  new = gen_rtx_MEM (GET_MODE (op),
+			     plus_constant_for_output (y, offset));
 	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (op);
 	  return new;
 	}
@@ -1596,7 +1598,7 @@ adj_offsettable_operand (op, offset)
 	    }
 	}
 
-      new = gen_rtx (MEM, GET_MODE (op), plus_constant_for_output (y, offset));
+      new = gen_rtx_MEM (GET_MODE (op), plus_constant_for_output (y, offset));
       RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (op);
       return new;
     }

@@ -478,7 +478,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			    /* Change this into a USE so that we won't emit
 			       code for it, but still can keep the note.  */
 			    PATTERN (insn)
-			      = gen_rtx (USE, VOIDmode, XEXP (trial, 0));
+			      = gen_rtx_USE (VOIDmode, XEXP (trial, 0));
 			    INSN_CODE (insn) = -1;
 			    /* Remove all reg notes but the REG_DEAD one.  */
 			    REG_NOTES (insn) = trial;
@@ -2102,7 +2102,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      /* Make the old conditional jump
 			 into an unconditional one.  */
 		      SET_SRC (PATTERN (insn))
-			= gen_rtx (LABEL_REF, VOIDmode, JUMP_LABEL (insn));
+			= gen_rtx_LABEL_REF (VOIDmode, JUMP_LABEL (insn));
 		      INSN_CODE (insn) = -1;
 		      emit_barrier_after (insn);
 		      /* Add to jump_chain unless this is a new label
@@ -2409,8 +2409,10 @@ duplicate_loop_exit_test (loop_start)
 	for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 	  if (REG_NOTE_KIND (link) != REG_LABEL)
 	    REG_NOTES (copy)
-	      = copy_rtx (gen_rtx (EXPR_LIST, REG_NOTE_KIND (link),
-				   XEXP (link, 0), REG_NOTES (copy)));
+	      = copy_rtx (gen_rtx_EXPR_LIST (REG_NOTE_KIND (link),
+					     XEXP (link, 0),
+					     REG_NOTES (copy)));
+
 	if (reg_map && REG_NOTES (copy))
 	  replace_regs (REG_NOTES (copy), reg_map, max_reg, 1);
 	break;
@@ -3398,8 +3400,8 @@ mark_jump_label (x, insn, cross_jump)
 		    || ! (GET_CODE (next) == JUMP_INSN
 			  && (GET_CODE (PATTERN (next)) == ADDR_VEC
 			      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC)))
-		  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL, label,
-					      REG_NOTES (insn));
+		  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, label,
+							REG_NOTES (insn));
 	      }
 	  }
 	return;
@@ -3486,8 +3488,8 @@ delete_computation (insn)
 	    delete_computation (prev);
 	  else
 	    /* Otherwise, show that cc0 won't be used.  */
-	    REG_NOTES (prev) = gen_rtx (EXPR_LIST, REG_UNUSED,
-					cc0_rtx, REG_NOTES (prev));
+	    REG_NOTES (prev) = gen_rtx_EXPR_LIST (REG_UNUSED,
+						  cc0_rtx, REG_NOTES (prev));
 	}
     }
 #endif
@@ -3979,22 +3981,22 @@ redirect_exp (loc, olabel, nlabel, insn)
 	  if (nlabel)
 	    XEXP (x, 0) = nlabel;
 	  else
-	    return validate_change (insn, loc, gen_rtx (RETURN, VOIDmode), 0);
+	    return validate_change (insn, loc, gen_rtx_RETURN (VOIDmode), 0);
 	  return 1;
 	}
     }
   else if (code == RETURN && olabel == 0)
     {
-      x = gen_rtx (LABEL_REF, VOIDmode, nlabel);
+      x = gen_rtx_LABEL_REF (VOIDmode, nlabel);
       if (loc == &PATTERN (insn))
-	x = gen_rtx (SET, VOIDmode, pc_rtx, x);
+	x = gen_rtx_SET (VOIDmode, pc_rtx, x);
       return validate_change (insn, loc, x, 0);
     }
 
   if (code == SET && nlabel == 0 && SET_DEST (x) == pc_rtx
       && GET_CODE (SET_SRC (x)) == LABEL_REF
       && XEXP (SET_SRC (x), 0) == olabel)
-    return validate_change (insn, loc, gen_rtx (RETURN, VOIDmode), 0);
+    return validate_change (insn, loc, gen_rtx_RETURN (VOIDmode), 0);
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)

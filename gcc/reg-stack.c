@@ -383,10 +383,10 @@ reg_to_stack (first, file)
          {
            for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
                mode = GET_MODE_WIDER_MODE (mode))
-              FP_MODE_REG (i, mode) = gen_rtx (REG, mode, i);
+              FP_MODE_REG (i, mode) = gen_rtx_REG (mode, i);
            for (mode = GET_CLASS_NARROWEST_MODE (MODE_COMPLEX_FLOAT); mode != VOIDmode;
                mode = GET_MODE_WIDER_MODE (mode))
-              FP_MODE_REG (i, mode) = gen_rtx (REG, mode, i);
+              FP_MODE_REG (i, mode) = gen_rtx_REG (mode, i);
          }
       }
    }
@@ -1018,7 +1018,7 @@ record_asm_reg_life (insn, regstack, operands, constraints,
   if (malformed_asm)
     {
       /* Avoid further trouble with this insn.  */
-      PATTERN (insn) = gen_rtx (USE, VOIDmode, const0_rtx);
+      PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
       PUT_MODE (insn, VOIDmode);
       return;
     }
@@ -1039,8 +1039,8 @@ record_asm_reg_life (insn, regstack, operands, constraints,
 	 REG_UNUSED.  */
 
       if (! TEST_HARD_REG_BIT (regstack->reg_set, REGNO (op)))
-	REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_UNUSED, op,
-				    REG_NOTES (insn));
+	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_UNUSED, op,
+					      REG_NOTES (insn));
 
       CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (op));
     }
@@ -1061,8 +1061,8 @@ record_asm_reg_life (insn, regstack, operands, constraints,
       if (! TEST_HARD_REG_BIT (regstack->reg_set, REGNO (operands[i]))
 	  && operand_matches[i] == -1
 	  && find_regno_note (insn, REG_DEAD, REGNO (operands[i])) == NULL_RTX)
-	REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD, operands[i],
-				    REG_NOTES (insn));
+	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_DEAD, operands[i],
+					      REG_NOTES (insn));
 
       SET_HARD_REG_BIT (regstack->reg_set, REGNO (operands[i]));
     }
@@ -1227,13 +1227,13 @@ record_reg_life (insn, block, regstack)
 	  {
 	    if (TEST_HARD_REG_BIT (src, regno)
 		&& ! TEST_HARD_REG_BIT (dest, regno))
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
-					  FP_MODE_REG (regno, DFmode),
-					  REG_NOTES (insn));
+	      REG_NOTES (insn)
+		= gen_rtx_EXPR_LIST (REG_DEAD, FP_MODE_REG (regno, DFmode),
+				     REG_NOTES (insn));
 	    else if (TEST_HARD_REG_BIT (dest, regno))
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_UNUSED,
-					  FP_MODE_REG (regno, DFmode),
-					  REG_NOTES (insn));
+	      REG_NOTES (insn)
+		= gen_rtx_EXPR_LIST (REG_UNUSED, FP_MODE_REG (regno, DFmode),
+				     REG_NOTES (insn));
 	  }
 
       if (GET_CODE (insn) == CALL_INSN)
@@ -1255,8 +1255,8 @@ record_reg_life (insn, block, regstack)
 	           cannot be used on these insns, because they do not appear in
 	           block_number[].  */
 
-	        pat = gen_rtx (SET, VOIDmode, FP_MODE_REG (reg, DFmode),
-			       CONST0_RTX (DFmode));
+	        pat = gen_rtx_SET (VOIDmode, FP_MODE_REG (reg, DFmode),
+				   CONST0_RTX (DFmode));
 	        init = emit_insn_after (pat, insn);
 	        PUT_MODE (init, QImode);
 
@@ -1323,8 +1323,8 @@ find_blocks (first)
 	  /* Make a list of all labels referred to other than by jumps.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	    if (REG_NOTE_KIND (note) == REG_LABEL)
-	      label_value_list = gen_rtx (EXPR_LIST, VOIDmode, XEXP (note, 0),
-					  label_value_list);
+	      label_value_list = gen_rtx_EXPR_LIST (VOIDmode, XEXP (note, 0),
+						    label_value_list);
 	}
 
       block_number[INSN_UID (insn)] = block;
@@ -1350,13 +1350,13 @@ find_blocks (first)
 	    {
 	      for (x = label_value_list; x; x = XEXP (x, 1))
 		record_label_references (insn,
-					 gen_rtx (LABEL_REF, VOIDmode,
-						  XEXP (x, 0)));
+					 gen_rtx_LABEL_REF (VOIDmode,
+							    XEXP (x, 0)));
 
 	      for (x = forced_labels; x; x = XEXP (x, 1))
 		record_label_references (insn,
-					 gen_rtx (LABEL_REF, VOIDmode,
-						  XEXP (x, 0)));
+					 gen_rtx_LABEL_REF (VOIDmode,
+							    XEXP (x, 0)));
 	    }
 
 	  record_label_references (insn, pat);
@@ -1582,8 +1582,8 @@ stack_reg_life_analysis (first, stackentry)
       {
 	rtx init_rtx;
 
-	init_rtx = gen_rtx (SET, VOIDmode, FP_MODE_REG(reg, DFmode),
-			    CONST0_RTX (DFmode));
+	init_rtx = gen_rtx_SET (VOIDmode, FP_MODE_REG(reg, DFmode),
+				CONST0_RTX (DFmode));
 	block_begin[0] = emit_insn_after (init_rtx, first);
 	PUT_MODE (block_begin[0], QImode);
 
@@ -1699,16 +1699,16 @@ emit_pop_insn (insn, regstack, reg, when)
   if (hard_regno < FIRST_STACK_REG)
     abort ();
 
-  pop_rtx = gen_rtx (SET, VOIDmode, FP_MODE_REG (hard_regno, DFmode),
-		     FP_MODE_REG (FIRST_STACK_REG, DFmode));
+  pop_rtx = gen_rtx_SET (VOIDmode, FP_MODE_REG (hard_regno, DFmode),
+			 FP_MODE_REG (FIRST_STACK_REG, DFmode));
 
   pop_insn = (*when) (pop_rtx, insn);
   /* ??? This used to be VOIDmode, but that seems wrong.  */
   PUT_MODE (pop_insn, QImode);
 
-  REG_NOTES (pop_insn) = gen_rtx (EXPR_LIST, REG_DEAD,
-				  FP_MODE_REG (FIRST_STACK_REG, DFmode),
-				  REG_NOTES (pop_insn));
+  REG_NOTES (pop_insn)
+    = gen_rtx_EXPR_LIST (REG_DEAD, FP_MODE_REG (FIRST_STACK_REG, DFmode),
+			 REG_NOTES (pop_insn));
 
   regstack->reg[regstack->top - (hard_regno - FIRST_STACK_REG)]
     = regstack->reg[regstack->top];
@@ -1913,8 +1913,8 @@ move_for_stack_reg (insn, regstack, pat)
 	  push_rtx = gen_movxf (top_stack_reg, top_stack_reg);
 	  push_insn = emit_insn_before (push_rtx, insn);
 	  PUT_MODE (push_insn, QImode);
-	  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD, top_stack_reg,
-				      REG_NOTES (insn));
+	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_DEAD, top_stack_reg,
+						REG_NOTES (insn));
 	}
 
       replace_reg (psrc, FIRST_STACK_REG);

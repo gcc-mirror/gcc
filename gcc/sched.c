@@ -321,7 +321,8 @@ static void sched_analyze_2		PROTO((rtx, rtx));
 static void sched_analyze_insn		PROTO((rtx, rtx, rtx));
 static int sched_analyze		PROTO((rtx, rtx));
 static void sched_note_set		PROTO((int, rtx, int));
-static int rank_for_schedule		PROTO((rtx *, rtx *));
+static int rank_for_schedule		PROTO((const GENERIC_PTR,
+					       const GENERIC_PTR));
 static void swap_sort			PROTO((rtx *, int));
 static void queue_insn			PROTO((rtx, int));
 static int birthing_insn_p		PROTO((rtx));
@@ -391,7 +392,7 @@ canon_rtx (x)
 	    return plus_constant_for_output (x1, INTVAL (x0));
 	  else if (GET_CODE (x1) == CONST_INT)
 	    return plus_constant_for_output (x0, INTVAL (x1));
-	  return gen_rtx (PLUS, GET_MODE (x), x0, x1);
+	  return gen_rtx_PLUS (GET_MODE (x), x0, x1);
 	}
     }
   /* This gives us much better alias analysis when called from
@@ -1902,8 +1903,8 @@ sched_analyze_2 (x, insn)
 	    while (--i >= 0)
 	      {
 		reg_last_uses[regno + i]
-		  = gen_rtx (INSN_LIST, VOIDmode,
-			     insn, reg_last_uses[regno + i]);
+		  = gen_rtx_INSN_LIST (VOIDmode,
+				       insn, reg_last_uses[regno + i]);
 		if (reg_last_sets[regno + i])
 		  add_dependence (insn, reg_last_sets[regno + i], 0);
 		if ((call_used_regs[regno + i] || global_regs[regno + i])
@@ -1915,7 +1916,7 @@ sched_analyze_2 (x, insn)
 	else
 	  {
 	    reg_last_uses[regno]
-	      = gen_rtx (INSN_LIST, VOIDmode, insn, reg_last_uses[regno]);
+	      = gen_rtx_INSN_LIST (VOIDmode, insn, reg_last_uses[regno]);
 	    if (reg_last_sets[regno])
 	      add_dependence (insn, reg_last_sets[regno], 0);
 
@@ -2253,12 +2254,12 @@ sched_analyze (head, tail)
 		 convert back into a NOTE_INSN_SETJMP note.  See
 		 reemit_notes for why we use a pair of of NOTEs.  */
 
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
-					  GEN_INT (0),
-					  REG_NOTES (insn));
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
-					  GEN_INT (NOTE_INSN_SETJMP),
-					  REG_NOTES (insn));
+	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_DEAD,
+						    GEN_INT (0),
+						    REG_NOTES (insn));
+	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_DEAD,
+						    GEN_INT (NOTE_INSN_SETJMP),
+						    REG_NOTES (insn));
 	    }
 	  else
 	    {
@@ -2308,10 +2309,12 @@ sched_analyze (head, tail)
 		   || (NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP
 		       && GET_CODE (PREV_INSN (insn)) != CALL_INSN)))
 	{
-	  loop_notes = gen_rtx (EXPR_LIST, REG_DEAD,
-				GEN_INT (NOTE_BLOCK_NUMBER (insn)), loop_notes);
-	  loop_notes = gen_rtx (EXPR_LIST, REG_DEAD,
-				GEN_INT (NOTE_LINE_NUMBER (insn)), loop_notes);
+	  loop_notes = gen_rtx_EXPR_LIST (REG_DEAD,
+					  GEN_INT (NOTE_BLOCK_NUMBER (insn)),
+					  loop_notes);
+	  loop_notes = gen_rtx_EXPR_LIST (REG_DEAD,
+					  GEN_INT (NOTE_LINE_NUMBER (insn)),
+					  loop_notes);
 	  CONST_CALL_P (loop_notes) = CONST_CALL_P (insn);
 	}
 
@@ -2414,7 +2417,8 @@ sched_note_set (b, x, death)
   do { if ((NEW_READY) - (OLD_READY) == 1)				\
 	 swap_sort (READY, NEW_READY);					\
        else if ((NEW_READY) - (OLD_READY) > 1)				\
-	 qsort (READY, NEW_READY, sizeof (rtx), rank_for_schedule); }	\
+	 qsort ((char *) READY, NEW_READY, sizeof (rtx),		\
+		rank_for_schedule); } 					\
   while (0)
 
 /* Returns a positive value if y is preferred; returns a negative value if
@@ -2423,10 +2427,11 @@ sched_note_set (b, x, death)
 
 static int
 rank_for_schedule (x, y)
-     rtx *x, *y;
+     const GENERIC_PTR x;
+     const GENERIC_PTR y;
 {
-  rtx tmp = *y;
-  rtx tmp2 = *x;
+  rtx tmp = *(rtx *) y;
+  rtx tmp2 = *(rtx *) x;
   rtx link;
   int tmp_class, tmp2_class;
   int value;
@@ -2478,7 +2483,8 @@ swap_sort (a, n)
   rtx insn = a[n-1];
   int i = n-2;
 
-  while (i >= 0 && rank_for_schedule (a+i, &insn) >= 0)
+  while (i >= 0 && rank_for_schedule ((const GENERIC_PTR) a + i,
+				      (const GENERIC_PTR) &insn) >= 0)
     {
       a[i+1] = a[i];
       i -= 1;
@@ -2798,7 +2804,7 @@ create_reg_dead_note (reg, insn)
 	{
 	  rtx temp_reg, temp_link;
 
-	  temp_reg = gen_rtx (REG, word_mode, 0);
+	  temp_reg = gen_rtx_REG (word_mode, 0);
 	  temp_link = rtx_alloc (EXPR_LIST);
 	  PUT_REG_NOTE_KIND (temp_link, REG_DEAD);
 	  XEXP (temp_link, 0) = temp_reg;
@@ -2929,9 +2935,9 @@ attach_deaths (x, insn, set_p)
 			     i >= 0; i--)
 			  if (! REGNO_REG_SET_P (old_live_regs, regno + i)
 			      && ! dead_or_set_regno_p (insn, regno + i))
-			    create_reg_dead_note (gen_rtx (REG,
-							   reg_raw_mode[regno + i],
-							   regno + i),
+			    create_reg_dead_note (gen_rtx_REG
+						  (reg_raw_mode[regno + i],
+						   regno + i),
 						  insn);
 		      }
 		  }
@@ -4555,8 +4561,9 @@ update_flow_info (notes, first, last, orig_insn)
 	  for (insn = first; insn != NEXT_INSN (last); insn = NEXT_INSN (insn))
 	    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 		&& reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL,
-					  XEXP (note, 0), REG_NOTES (insn));
+	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL,
+						    XEXP (note, 0),
+						    REG_NOTES (insn));
 	  break;
 
 	case REG_CC_SETTER:
@@ -4806,8 +4813,8 @@ schedule_insns (dump_file)
 
   /* Create an insn here so that we can hang dependencies off of it later.  */
   sched_before_next_call
-    = gen_rtx (INSN, VOIDmode, 0, NULL_RTX, NULL_RTX,
-	       NULL_RTX, 0, NULL_RTX, NULL_RTX);
+    = gen_rtx_INSN (VOIDmode, 0, NULL_RTX, NULL_RTX,
+		    NULL_RTX, 0, NULL_RTX, NULL_RTX);
 
   /* Initialize the unused_*_lists.  We can't use the ones left over from
      the previous function, because gcc has freed that memory.  We can use

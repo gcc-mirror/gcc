@@ -187,7 +187,7 @@ half_pic_finish (stream)
       if (p->pointer_p)
 	{
 	  ASM_OUTPUT_LABEL (stream, p->ref_name);
-	  ASM_OUTPUT_INT (stream, gen_rtx (SYMBOL_REF, Pmode, p->real_name));
+	  ASM_OUTPUT_INT (stream, gen_rtx_SYMBOL_REF (Pmode, p->real_name));
 	}
     }
 }
@@ -393,7 +393,7 @@ half_pic_ptr (operand)
     }
 
   half_pic_number_refs++;
-  return gen_rtx (SYMBOL_REF, Pmode, p->ref_name);
+  return gen_rtx_SYMBOL_REF (Pmode, p->ref_name);
 }
 
 #endif /* HALF_PIC_INIT */

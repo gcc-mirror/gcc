@@ -126,7 +126,7 @@ gen_peephole (peep)
      So use a simple regular form: a PARALLEL containing a vector
      of all the operands.  */
 
-  printf ("  PATTERN (ins1) = gen_rtx (PARALLEL, VOIDmode, gen_rtvec_v (%d, operands));\n", n_operands);
+  printf ("  PATTERN (ins1) = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (%d, operands));\n", n_operands);
 
 #if 0
   printf ("  if (want_jump && GET_CODE (ins1) != JUMP_INSN)\n");

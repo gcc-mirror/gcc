@@ -95,26 +95,28 @@ init_expmed ()
      makes.  */
   free_point = (char *) oballoc (0);
 
-  reg = gen_rtx (REG, word_mode, 10000);
+  reg = gen_rtx_REG (word_mode, 10000);
 
   zero_cost = rtx_cost (const0_rtx, 0);
-  add_cost = rtx_cost (gen_rtx (PLUS, word_mode, reg, reg), SET);
+  add_cost = rtx_cost (gen_rtx_PLUS (word_mode, reg, reg), SET);
 
-  shift_insn = emit_insn (gen_rtx (SET, VOIDmode, reg,
-				   gen_rtx (ASHIFT, word_mode, reg,
-					    const0_rtx)));
+  shift_insn = emit_insn (gen_rtx_SET (VOIDmode, reg,
+				       gen_rtx_ASHIFT (word_mode, reg,
+						       const0_rtx)));
 
-  shiftadd_insn = emit_insn (gen_rtx (SET, VOIDmode, reg,
-				      gen_rtx (PLUS, word_mode,
-					       gen_rtx (MULT, word_mode,
-							reg, const0_rtx),
-					       reg)));
+  shiftadd_insn
+    = emit_insn (gen_rtx_SET (VOIDmode, reg,
+			      gen_rtx_PLUS (word_mode,
+					    gen_rtx_MULT (word_mode,
+							  reg, const0_rtx),
+					    reg)));
 
-  shiftsub_insn = emit_insn (gen_rtx (SET, VOIDmode, reg,
-				      gen_rtx (MINUS, word_mode,
-					       gen_rtx (MULT, word_mode,
-							 reg, const0_rtx),
-						reg)));
+  shiftsub_insn
+    = emit_insn (gen_rtx_SET (VOIDmode, reg,
+			      gen_rtx_MINUS (word_mode,
+					     gen_rtx_MULT (word_mode,
+							   reg, const0_rtx),
+					     reg)));
 
   init_recog ();
 
@@ -140,13 +142,13 @@ init_expmed ()
 	shiftsub_cost[m] = rtx_cost (SET_SRC (PATTERN (shiftsub_insn)), SET);
     }
 
-  negate_cost = rtx_cost (gen_rtx (NEG, word_mode, reg), SET);
+  negate_cost = rtx_cost (gen_rtx_NEG (word_mode, reg), SET);
 
   sdiv_pow2_cheap
-    = (rtx_cost (gen_rtx (DIV, word_mode, reg, GEN_INT (32)), SET)
+    = (rtx_cost (gen_rtx_DIV (word_mode, reg, GEN_INT (32)), SET)
        <= 2 * add_cost);
   smod_pow2_cheap
-    = (rtx_cost (gen_rtx (MOD, word_mode, reg, GEN_INT (32)), SET)
+    = (rtx_cost (gen_rtx_MOD (word_mode, reg, GEN_INT (32)), SET)
        <= 2 * add_cost);
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
@@ -160,19 +162,20 @@ init_expmed ()
       if (wider_mode != VOIDmode)
 	{
 	  mul_widen_cost[(int) wider_mode]
-	    = rtx_cost (gen_rtx (MULT, wider_mode,
-				 gen_rtx (ZERO_EXTEND, wider_mode, reg),
-				 gen_rtx (ZERO_EXTEND, wider_mode, reg)),
+	    = rtx_cost (gen_rtx_MULT (wider_mode,
+				      gen_rtx_ZERO_EXTEND (wider_mode, reg),
+				      gen_rtx_ZERO_EXTEND (wider_mode, reg)),
 			SET);
 	  mul_highpart_cost[(int) mode]
-	    = rtx_cost (gen_rtx (TRUNCATE, mode,
-				 gen_rtx (LSHIFTRT, wider_mode,
-					  gen_rtx (MULT, wider_mode,
-						   gen_rtx (ZERO_EXTEND,
-							    wider_mode, reg),
-						   gen_rtx (ZERO_EXTEND,
-							    wider_mode, reg)),
-					  GEN_INT (GET_MODE_BITSIZE (mode)))),
+	    = rtx_cost (gen_rtx_TRUNCATE
+			(mode,
+			 gen_rtx_LSHIFTRT (wider_mode,
+					   gen_rtx_MULT (wider_mode,
+							 gen_rtx_ZERO_EXTEND
+							 (wider_mode, reg),
+							 gen_rtx_ZERO_EXTEND
+							 (wider_mode, reg)),
+					   GEN_INT (GET_MODE_BITSIZE (mode)))),
 			SET);
 	}
     }
@@ -278,7 +281,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       if (GET_MODE (op0) != fieldmode)
 	{
 	  if (GET_CODE (op0) == REG)
-	    op0 = gen_rtx (SUBREG, fieldmode, op0, offset);
+	    op0 = gen_rtx_SUBREG (fieldmode, op0, offset);
 	  else
 	    op0 = change_address (op0, fieldmode,
 				  plus_constant (XEXP (op0, 0), offset));
@@ -313,7 +316,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	  if(! (*insn_operand_predicate[icode][1]) (value, fieldmode))
 	    value = copy_to_mode_reg (fieldmode, value);
 	  emit_insn (GEN_FCN (icode)
-		   (gen_rtx (SUBREG, fieldmode, op0, offset), value));
+		     (gen_rtx_SUBREG (fieldmode, op0, offset), value));
 	}
       return value;
     }
@@ -370,8 +373,8 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
     {
       if (offset != 0
 	  || GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
-	op0 = gen_rtx (SUBREG, TYPE_MODE (type_for_size (BITS_PER_WORD, 0)),
-		       op0, offset);
+	op0 = gen_rtx_SUBREG (TYPE_MODE (type_for_size (BITS_PER_WORD, 0)),
+			      op0, offset);
       offset = 0;
     }
   else
@@ -387,7 +390,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
     {
       if (GET_CODE (value) != REG)
 	value = copy_to_reg (value);
-      value = gen_rtx (SUBREG, word_mode, value, 0);
+      value = gen_rtx_SUBREG (word_mode, value, 0);
     }
 
   /* Now OFFSET is nonzero only if OP0 is memory
@@ -470,9 +473,9 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       if (GET_CODE (xop0) == SUBREG)
 	/* We can't just change the mode, because this might clobber op0,
 	   and we will need the original value of op0 if insv fails.  */
-	xop0 = gen_rtx (SUBREG, maxmode, SUBREG_REG (xop0), SUBREG_WORD (xop0));
+	xop0 = gen_rtx_SUBREG (maxmode, SUBREG_REG (xop0), SUBREG_WORD (xop0));
       if (GET_CODE (xop0) == REG && GET_MODE (xop0) != maxmode)
-	xop0 = gen_rtx (SUBREG, maxmode, xop0, 0);
+	xop0 = gen_rtx_SUBREG (maxmode, xop0, 0);
 
       /* On big-endian machines, we count bits from the most significant.
 	 If the bit field insn does not, we must invert.  */
@@ -502,7 +505,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 		  /* Avoid making subreg of a subreg, or of a mem.  */
 		  if (GET_CODE (value1) != REG)
 		value1 = copy_to_reg (value1);
-		  value1 = gen_rtx (SUBREG, maxmode, value1, 0);
+		  value1 = gen_rtx_SUBREG (maxmode, value1, 0);
 		}
 	      else
 		value1 = gen_lowpart (maxmode, value1);
@@ -961,7 +964,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
       if (mode1 != GET_MODE (op0))
 	{
 	  if (GET_CODE (op0) == REG)
-	    op0 = gen_rtx (SUBREG, mode1, op0, offset);
+	    op0 = gen_rtx_SUBREG (mode1, op0, offset);
 	  else
 	    op0 = change_address (op0, mode1,
 				  plus_constant (XEXP (op0, 0), offset));
@@ -987,7 +990,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	target = gen_reg_rtx (mode);
 
       /* Indicate for flow that the entire target reg is being set.  */
-      emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
+      emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
 
       for (i = 0; i < nwords; i++)
 	{
@@ -1056,8 +1059,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
     {
       if (offset != 0
 	  || GET_MODE_SIZE (GET_MODE (op0)) > UNITS_PER_WORD)
-	op0 = gen_rtx (SUBREG, TYPE_MODE (type_for_size (BITS_PER_WORD, 0)),
-		       op0, offset);
+	op0 = gen_rtx_SUBREG (TYPE_MODE (type_for_size (BITS_PER_WORD, 0)),
+			      op0, offset);
       offset = 0;
     }
   else
@@ -1145,7 +1148,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  if (GET_CODE (xop0) == SUBREG && GET_MODE (xop0) != maxmode)
 	    goto extzv_loses;
 	  if (GET_CODE (xop0) == REG && GET_MODE (xop0) != maxmode)
-	    xop0 = gen_rtx (SUBREG, maxmode, xop0, 0);
+	    xop0 = gen_rtx_SUBREG (maxmode, xop0, 0);
 
 	  /* On big-endian machines, we count bits from the most significant.
 	     If the bit field insn does not, we must invert.  */
@@ -1279,7 +1282,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  if (GET_CODE (xop0) == SUBREG && GET_MODE (xop0) != maxmode)
 	    goto extv_loses;
 	  if (GET_CODE (xop0) == REG && GET_MODE (xop0) != maxmode)
-	    xop0 = gen_rtx (SUBREG, maxmode, xop0, 0);
+	    xop0 = gen_rtx_SUBREG (maxmode, xop0, 0);
 
 	  /* On big-endian machines, we count bits from the most significant.
 	     If the bit field insn does not, we must invert.  */
@@ -1358,7 +1361,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 				    target, unsignedp);
 	  if (GET_CODE (target) != REG)
 	    target = copy_to_reg (target);
-	  return gen_rtx (SUBREG, tmode, target, 0);
+	  return gen_rtx_SUBREG (tmode, target, 0);
 	}
       else
 	return convert_to_mode (tmode, target, unsignedp);
@@ -2199,7 +2202,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	 and then negate, do the multiplication directly, or do multiplication
 	 by OP1 - 1.  */
 
-      mult_cost = rtx_cost (gen_rtx (MULT, mode, op0, op1), SET);
+      mult_cost = rtx_cost (gen_rtx_MULT (mode, op0, op1), SET);
       mult_cost = MIN (12 * add_cost, mult_cost);
 
       synth_mult (&alg, val, mult_cost);
@@ -2271,16 +2274,18 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		case alg_add_t_m2:
 		  tem = expand_shift (LSHIFT_EXPR, mode, op0,
 				      build_int_2 (log, 0), NULL_RTX, 0);
-		  accum = force_operand (gen_rtx (PLUS, mode, accum, tem),
-					 add_target ? add_target : accum_target);
+		  accum = force_operand (gen_rtx_PLUS (mode, accum, tem),
+					 add_target
+					 ? add_target : accum_target);
 		  val_so_far += (HOST_WIDE_INT) 1 << log;
 		  break;
 
 		case alg_sub_t_m2:
 		  tem = expand_shift (LSHIFT_EXPR, mode, op0,
 				      build_int_2 (log, 0), NULL_RTX, 0);
-		  accum = force_operand (gen_rtx (MINUS, mode, accum, tem),
-					 add_target ? add_target : accum_target);
+		  accum = force_operand (gen_rtx_MINUS (mode, accum, tem),
+					 add_target
+					 ? add_target : accum_target);
 		  val_so_far -= (HOST_WIDE_INT) 1 << log;
 		  break;
 
@@ -2288,8 +2293,9 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		  accum = expand_shift (LSHIFT_EXPR, mode, accum,
 					build_int_2 (log, 0), shift_subtarget,
 					0);
-		  accum = force_operand (gen_rtx (PLUS, mode, accum, op0),
-					 add_target ? add_target : accum_target);
+		  accum = force_operand (gen_rtx_PLUS (mode, accum, op0),
+					 add_target
+					 ? add_target : accum_target);
 		  val_so_far = (val_so_far << log) + 1;
 		  break;
 
@@ -2297,23 +2303,25 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		  accum = expand_shift (LSHIFT_EXPR, mode, accum,
 					build_int_2 (log, 0), shift_subtarget,
 					0);
-		  accum = force_operand (gen_rtx (MINUS, mode, accum, op0),
-					 add_target ? add_target : accum_target);
+		  accum = force_operand (gen_rtx_MINUS (mode, accum, op0),
+					 add_target
+					 ? add_target : accum_target);
 		  val_so_far = (val_so_far << log) - 1;
 		  break;
 
 		case alg_add_factor:
 		  tem = expand_shift (LSHIFT_EXPR, mode, accum,
 				      build_int_2 (log, 0), NULL_RTX, 0);
-		  accum = force_operand (gen_rtx (PLUS, mode, accum, tem),
-					 add_target ? add_target : accum_target);
+		  accum = force_operand (gen_rtx_PLUS (mode, accum, tem),
+					 add_target
+					 ? add_target : accum_target);
 		  val_so_far += val_so_far << log;
 		  break;
 
 		case alg_sub_factor:
 		  tem = expand_shift (LSHIFT_EXPR, mode, accum,
 				      build_int_2 (log, 0), NULL_RTX, 0);
-		  accum = force_operand (gen_rtx (MINUS, mode, tem, accum),
+		  accum = force_operand (gen_rtx_MINUS (mode, tem, accum),
 					 (add_target ? add_target
 					  : preserve ? 0 : tem));
 		  val_so_far = (val_so_far << log) - val_so_far;
@@ -2328,9 +2336,10 @@ expand_mult (mode, op0, op1, target, unsignedp)
 
 	      insn = get_last_insn ();
 	      REG_NOTES (insn)
-		= gen_rtx (EXPR_LIST, REG_EQUAL,
-			   gen_rtx (MULT, mode, op0, GEN_INT (val_so_far)),
-			   REG_NOTES (insn));
+		= gen_rtx_EXPR_LIST (REG_EQUAL,
+				     gen_rtx_MULT (mode, op0,
+						   GEN_INT (val_so_far)),
+				     REG_NOTES (insn));
 	    }
 
 	  if (variant == negate_variant)
@@ -2341,7 +2350,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	  else if (variant == add_variant)
 	    {
 	      val_so_far = val_so_far + 1;
-	      accum = force_operand (gen_rtx (PLUS, mode, accum, op0), target);
+	      accum = force_operand (gen_rtx_PLUS (mode, accum, op0), target);
 	    }
 
 	  if (val != val_so_far)
@@ -2958,13 +2967,13 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 						       max_cost - extra_cost);
 			    if (t1 == 0)
 			      goto fail1;
-			    t2 = force_operand (gen_rtx (MINUS, compute_mode,
-							 op0, t1),
+			    t2 = force_operand (gen_rtx_MINUS (compute_mode,
+							       op0, t1),
 						NULL_RTX);
 			    t3 = expand_shift (RSHIFT_EXPR, compute_mode, t2,
 					       build_int_2 (1, 0), NULL_RTX,1);
-			    t4 = force_operand (gen_rtx (PLUS, compute_mode,
-							 t1, t3),
+			    t4 = force_operand (gen_rtx_PLUS (compute_mode,
+							      t1, t3),
 						NULL_RTX);
 			    quotient
 			      = expand_shift (RSHIFT_EXPR, compute_mode, t4,
@@ -3000,9 +3009,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		    && (set = single_set (insn)) != 0
 		    && SET_DEST (set) == quotient)
 		  REG_NOTES (insn)
-		    = gen_rtx (EXPR_LIST, REG_EQUAL,
-			       gen_rtx (UDIV, compute_mode, op0, op1),
-			       REG_NOTES (insn));
+		    = gen_rtx_EXPR_LIST (REG_EQUAL,
+					 gen_rtx_UDIV (compute_mode, op0, op1),
+					 REG_NOTES (insn));
 	      }
 	    else		/* TRUNC_DIV, signed */
 	      {
@@ -3060,8 +3069,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			t2 = expand_shift (RSHIFT_EXPR, compute_mode, t1,
 					   build_int_2 (size - lgup, 0),
 					   NULL_RTX, 1);
-			t3 = force_operand (gen_rtx (PLUS, compute_mode,
-						     op0, t2),
+			t3 = force_operand (gen_rtx_PLUS (compute_mode,
+							  op0, t2),
 					    NULL_RTX);
 			quotient = expand_shift (RSHIFT_EXPR, compute_mode, t3,
 						 build_int_2 (lgup, 0),
@@ -3077,9 +3086,10 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			    && (set = single_set (insn)) != 0
 			    && SET_DEST (set) == quotient)
 			  REG_NOTES (insn)
-			    = gen_rtx (EXPR_LIST, REG_EQUAL,
-				       gen_rtx (DIV, compute_mode, op0,
-						GEN_INT (abs_d)),
+			    = gen_rtx_EXPR_LIST (REG_EQUAL,
+						 gen_rtx_DIV (compute_mode,
+							      op0,
+							      GEN_INT (abs_d)),
 				       REG_NOTES (insn));
 
 			quotient = expand_unop (compute_mode, neg_optab,
@@ -3106,11 +3116,15 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			t3 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
 					   build_int_2 (size - 1, 0), NULL_RTX, 0);
 			if (d < 0)
-			  quotient = force_operand (gen_rtx (MINUS, compute_mode, t3, t2),
-						    tquotient);
+			  quotient
+			    = force_operand (gen_rtx_MINUS (compute_mode,
+							    t3, t2),
+					     tquotient);
 			else
-			  quotient = force_operand (gen_rtx (MINUS, compute_mode, t2, t3),
-						    tquotient);
+			  quotient
+			    = force_operand (gen_rtx_MINUS (compute_mode,
+							    t2, t3),
+					     tquotient);
 		      }
 		    else
 		      {
@@ -3124,18 +3138,25 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 						   max_cost - extra_cost);
 			if (t1 == 0)
 			  goto fail1;
-			t2 = force_operand (gen_rtx (PLUS, compute_mode, t1, op0),
+			t2 = force_operand (gen_rtx_PLUS (compute_mode,
+							  t1, op0),
 					    NULL_RTX);
 			t3 = expand_shift (RSHIFT_EXPR, compute_mode, t2,
-					   build_int_2 (post_shift, 0), NULL_RTX, 0);
+					   build_int_2 (post_shift, 0),
+					   NULL_RTX, 0);
 			t4 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
-					   build_int_2 (size - 1, 0), NULL_RTX, 0);
+					   build_int_2 (size - 1, 0),
+					   NULL_RTX, 0);
 			if (d < 0)
-			  quotient = force_operand (gen_rtx (MINUS, compute_mode, t4, t3),
-						    tquotient);
+			  quotient
+			    = force_operand (gen_rtx_MINUS (compute_mode,
+							    t4, t3),
+					     tquotient);
 			else
-			  quotient = force_operand (gen_rtx (MINUS, compute_mode, t3, t4),
-						    tquotient);
+			  quotient
+			    = force_operand (gen_rtx_MINUS (compute_mode,
+							    t3, t4),
+					     tquotient);
 		      }
 		  }
 		else		/* Too wide mode to use tricky code */
@@ -3146,9 +3167,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		    && (set = single_set (insn)) != 0
 		    && SET_DEST (set) == quotient)
 		  REG_NOTES (insn)
-		    = gen_rtx (EXPR_LIST, REG_EQUAL,
-			       gen_rtx (DIV, compute_mode, op0, op1),
-			       REG_NOTES (insn));
+		    = gen_rtx_EXPR_LIST (REG_EQUAL,
+					 gen_rtx_DIV (compute_mode, op0, op1),
+					 REG_NOTES (insn));
 	      }
 	    break;
 	  }
@@ -3216,13 +3237,13 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	    else
 	      {
 		rtx nsign, t1, t2, t3, t4;
-		t1 = force_operand (gen_rtx (PLUS, compute_mode,
-					     op0, constm1_rtx), NULL_RTX);
+		t1 = force_operand (gen_rtx_PLUS (compute_mode,
+						  op0, constm1_rtx), NULL_RTX);
 		t2 = expand_binop (compute_mode, ior_optab, op0, t1, NULL_RTX,
 				   0, OPTAB_WIDEN);
 		nsign = expand_shift (RSHIFT_EXPR, compute_mode, t2,
 				      build_int_2 (size - 1, 0), NULL_RTX, 0);
-		t3 = force_operand (gen_rtx (MINUS, compute_mode, t1, nsign),
+		t3 = force_operand (gen_rtx_MINUS (compute_mode, t1, nsign),
 				    NULL_RTX);
 		t4 = expand_divmod (0, TRUNC_DIV_EXPR, compute_mode, t3, op1,
 				    NULL_RTX, 0);
@@ -3231,8 +3252,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		    rtx t5;
 		    t5 = expand_unop (compute_mode, one_cmpl_optab, nsign,
 				      NULL_RTX, 0);
-		    quotient = force_operand (gen_rtx (PLUS, compute_mode,
-						       t4, t5),
+		    quotient = force_operand (gen_rtx_PLUS (compute_mode,
+							    t4, t5),
 					      tquotient);
 		  }
 	      }
@@ -3353,8 +3374,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		    quotient = t1;
 		  }
 		else
-		  quotient = force_operand (gen_rtx (PLUS, compute_mode,
-						     t1, t3),
+		  quotient = force_operand (gen_rtx_PLUS (compute_mode,
+							  t1, t3),
 					    tquotient);
 		break;
 	      }
@@ -3451,8 +3472,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		    quotient = t1;
 		  }
 		else
-		  quotient = force_operand (gen_rtx (PLUS, compute_mode,
-						     t1, t3),
+		  quotient = force_operand (gen_rtx_PLUS (compute_mode,
+							  t1, t3),
 					    tquotient);
 		break;
 	      }
@@ -3562,10 +3583,10 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 
 	    insn = get_last_insn ();
 	    REG_NOTES (insn)
-	      = gen_rtx (EXPR_LIST, REG_EQUAL,
-			 gen_rtx (unsignedp ? UDIV : DIV, compute_mode,
-				  op0, op1),
-			 REG_NOTES (insn));
+	      = gen_rtx_EXPR_LIST (REG_EQUAL,
+				   gen_rtx (unsignedp ? UDIV : DIV,
+					    compute_mode, op0, op1),
+				   REG_NOTES (insn));
 	  }
 	break;
 

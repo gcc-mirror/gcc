@@ -305,9 +305,9 @@ void
 init_loop ()
 {
   char *free_point = (char *) oballoc (1);
-  rtx reg = gen_rtx (REG, word_mode, LAST_VIRTUAL_REGISTER + 1);
+  rtx reg = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
 
-  add_cost = rtx_cost (gen_rtx (PLUS, word_mode, reg, reg), SET);
+  add_cost = rtx_cost (gen_rtx_PLUS (word_mode, reg, reg), SET);
 
   /* We multiply by 2 to reconcile the difference in scale between
      these two ways of computing costs.  Otherwise the cost of a copy
@@ -1008,7 +1008,7 @@ record_excess_regs (in_this, not_in_this, output)
     case REG:
       if (REGNO (in_this) >= FIRST_PSEUDO_REGISTER
 	  && ! reg_mentioned_p (in_this, not_in_this))
-	*output = gen_rtx (EXPR_LIST, VOIDmode, in_this, *output);
+	*output = gen_rtx_EXPR_LIST (VOIDmode, in_this, *output);
       return;
       
     default:
@@ -1515,8 +1515,8 @@ add_label_notes (x, insns)
 	{
 	  for (insn = insns; insn; insn = NEXT_INSN (insn))
 	    if (reg_mentioned_p (XEXP (x, 0), insn))
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL, XEXP (x, 0),
-					  REG_NOTES (insn));
+	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, XEXP (x, 0),
+						    REG_NOTES (insn));
 	}
       return;
     }
@@ -1667,9 +1667,10 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		  REG_NOTES (i1) = REG_NOTES (m->insn);
 		  r1 = SET_DEST (PATTERN (m->insn));
 		  r2 = SET_DEST (PATTERN (m1->insn));
-		  regs_may_share = gen_rtx (EXPR_LIST, VOIDmode, r1,
-					    gen_rtx (EXPR_LIST, VOIDmode, r2,
-						     regs_may_share));
+		  regs_may_share
+		    = gen_rtx_EXPR_LIST (VOIDmode, r1,
+					 gen_rtx_EXPR_LIST (VOIDmode, r2,
+							    regs_may_share));
 		  delete_insn (m->insn);
 
 		  if (new_start == 0)
@@ -1719,9 +1720,8 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		  i1 = emit_insns_before (temp, loop_start);
 		  if (! find_reg_note (i1, REG_EQUAL, NULL_RTX))
 		    REG_NOTES (i1)
-		      = gen_rtx (EXPR_LIST,
-				 m->is_equiv ? REG_EQUIV : REG_EQUAL,
-				 m->set_src, REG_NOTES (i1));
+		      = gen_rtx_EXPR_LIST (m->is_equiv ? REG_EQUIV : REG_EQUAL,
+					   m->set_src, REG_NOTES (i1));
 
 		  if (loop_dump_stream)
 		    fprintf (loop_dump_stream, " moved to %d", INSN_UID (i1));
@@ -1887,13 +1887,16 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		      /* This isn't needed because REG_NOTES is copied
 			 below and is wrong since P might be a PARALLEL.  */
 		      if (REG_NOTES (i1) == 0
-			  && ! m->partial /* But not if it's a zero-extend clr.  */
+			  && ! m->partial /* But not if it's a zero-extend
+					     clear.  */
 			  && ! m->global /* and not if used outside the loop
-					    (since it might get set outside).  */
+					    (since it might get set
+					    outside).  */
 			  && CONSTANT_P (SET_SRC (PATTERN (p))))
 			REG_NOTES (i1)
-			  = gen_rtx (EXPR_LIST, REG_EQUAL,
-				     SET_SRC (PATTERN (p)), REG_NOTES (i1));
+			  = gen_rtx_EXPR_LIST (REG_EQUAL,
+					       SET_SRC (PATTERN (p)),
+					       REG_NOTES (i1));
 #endif
 
 		      /* If library call, now fix the REG_NOTES that contain
@@ -2142,12 +2145,15 @@ constant_high_bytes (p, loop_start)
   /* Try to change (SET (REG ...) (ZERO_EXTEND (..:B ...)))
      to (SET (STRICT_LOW_PART (SUBREG:B (REG...))) ...).  */
 
-  new = gen_rtx (SET, VOIDmode,
-		 gen_rtx (STRICT_LOW_PART, VOIDmode,
-			  gen_rtx (SUBREG, GET_MODE (XEXP (SET_SRC (PATTERN (p)), 0)),
-				   SET_DEST (PATTERN (p)),
-				   0)),
-		 XEXP (SET_SRC (PATTERN (p)), 0));
+  new
+    = gen_rtx_SET
+      (VOIDmode,
+       gen_rtx_STRICT_LOW_PART
+       (VOIDmode,
+	gen_rtx_SUBREG (GET_MODE (XEXP (SET_SRC (PATTERN (p)), 0)),
+			SET_DEST (PATTERN (p)), 0)),
+       XEXP (SET_SRC (PATTERN (p)), 0));
+
   insn_code_number = recog (new, p);
 
   if (insn_code_number)
@@ -2155,9 +2161,8 @@ constant_high_bytes (p, loop_start)
       register int i;
 
       /* Clear destination register before the loop.  */
-      emit_insn_before (gen_rtx (SET, VOIDmode,
-				 SET_DEST (PATTERN (p)),
-				 const0_rtx),
+      emit_insn_before (gen_rtx_SET (VOIDmode,
+				     SET_DEST (PATTERN (p)), const0_rtx),
 			loop_start);
 
       /* Inside the loop, just load the low part.  */
@@ -3535,8 +3540,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	  if (GET_CODE (test) == NE)
 	    {
 	      bl->init_insn = p;
-	      bl->init_set = gen_rtx (SET, VOIDmode,
-				      XEXP (test, 0), XEXP (test, 1));
+	      bl->init_set = gen_rtx_SET (VOIDmode,
+					  XEXP (test, 0), XEXP (test, 1));
 	    }
 	  else
 	    bl->initial_test = test;
@@ -4993,15 +4998,16 @@ update_giv_derive (p)
 		  tem = 0;
 
 		  if (biv->mult_val == const1_rtx)
-		    tem = simplify_giv_expr (gen_rtx (MULT, giv->mode,
-						      biv->add_val,
-						      giv->mult_val),
+		    tem = simplify_giv_expr (gen_rtx_MULT (giv->mode,
+							   biv->add_val,
+							   giv->mult_val),
 					     &dummy);
 
 		  if (tem && giv->derive_adjustment)
-		    tem = simplify_giv_expr (gen_rtx (PLUS, giv->mode, tem,
-						      giv->derive_adjustment),
-					     &dummy);
+		    tem = simplify_giv_expr
+		      (gen_rtx_PLUS (giv->mode, tem, giv->derive_adjustment),
+		       &dummy);
+
 		  if (tem)
 		    giv->derive_adjustment = tem;
 		  else
@@ -5339,7 +5345,7 @@ simplify_giv_expr (x, benefit)
 	      {
 		tem = plus_constant (arg0, INTVAL (arg1));
 		if (GET_CODE (tem) != CONST_INT)
-		  tem = gen_rtx (USE, mode, tem);
+		  tem = gen_rtx_USE (mode, tem);
 	      }
 
 	    return tem;
@@ -5347,15 +5353,17 @@ simplify_giv_expr (x, benefit)
 	  case REG:
 	  case MULT:
 	    /* biv + invar or mult + invar.  Return sum.  */
-	    return gen_rtx (PLUS, mode, arg0, arg1);
+	    return gen_rtx_PLUS (mode, arg0, arg1);
 
 	  case PLUS:
 	    /* (a + invar_1) + invar_2.  Associate.  */
-	    return simplify_giv_expr (gen_rtx (PLUS, mode,
+	    return
+	      simplify_giv_expr (gen_rtx_PLUS (mode,
 					       XEXP (arg0, 0),
-					       gen_rtx (PLUS, mode,
-							XEXP (arg0, 1), arg1)),
-				      benefit);
+					       gen_rtx_PLUS (mode,
+							     XEXP (arg0, 1),
+							     arg1)),
+				 benefit);
 
 	  default:
 	    abort ();
@@ -5364,9 +5372,9 @@ simplify_giv_expr (x, benefit)
       /* Each argument must be either REG, PLUS, or MULT.  Convert REG to
 	 MULT to reduce cases.  */
       if (GET_CODE (arg0) == REG)
-	arg0 = gen_rtx (MULT, mode, arg0, const1_rtx);
+	arg0 = gen_rtx_MULT (mode, arg0, const1_rtx);
       if (GET_CODE (arg1) == REG)
-	arg1 = gen_rtx (MULT, mode, arg1, const1_rtx);
+	arg1 = gen_rtx_MULT (mode, arg1, const1_rtx);
 
       /* Now have PLUS + PLUS, PLUS + MULT, MULT + PLUS, or MULT + MULT.
 	 Put a MULT first, leaving PLUS + PLUS, MULT + PLUS, or MULT + MULT.
@@ -5375,11 +5383,12 @@ simplify_giv_expr (x, benefit)
 	tem = arg0, arg0 = arg1, arg1 = tem;
 
       if (GET_CODE (arg1) == PLUS)
-	  return simplify_giv_expr (gen_rtx (PLUS, mode,
-					     gen_rtx (PLUS, mode,
-						      arg0, XEXP (arg1, 0)),
+	  return
+	    simplify_giv_expr (gen_rtx_PLUS (mode,
+					     gen_rtx_PLUS (mode, arg0,
+							   XEXP (arg1, 0)),
 					     XEXP (arg1, 1)),
-				    benefit);
+			       benefit);
 
       /* Now must have MULT + MULT.  Distribute if same biv, else not giv.  */
       if (GET_CODE (arg0) != MULT || GET_CODE (arg1) != MULT)
@@ -5388,19 +5397,20 @@ simplify_giv_expr (x, benefit)
       if (XEXP (arg0, 0) != XEXP (arg1, 0))
 	return 0;
 
-      return simplify_giv_expr (gen_rtx (MULT, mode,
-					 XEXP (arg0, 0),
-					 gen_rtx (PLUS, mode,
-						  XEXP (arg0, 1),
-						  XEXP (arg1, 1))),
+      return simplify_giv_expr (gen_rtx_MULT (mode,
+					      XEXP (arg0, 0),
+					      gen_rtx_PLUS (mode,
+							    XEXP (arg0, 1),
+							    XEXP (arg1, 1))),
 				benefit);
 
     case MINUS:
       /* Handle "a - b" as "a + b * (-1)".  */
-      return simplify_giv_expr (gen_rtx (PLUS, mode,
-					 XEXP (x, 0),
-					 gen_rtx (MULT, mode,
-						  XEXP (x, 1), constm1_rtx)),
+      return simplify_giv_expr (gen_rtx_PLUS (mode,
+					      XEXP (x, 0),
+					      gen_rtx_MULT (mode,
+							    XEXP (x, 1),
+							    constm1_rtx)),
 				benefit);
 
     case MULT:
@@ -5429,7 +5439,7 @@ simplify_giv_expr (x, benefit)
 	{
 	case REG:
 	  /* biv * invar.  Done.  */
-	  return gen_rtx (MULT, mode, arg0, arg1);
+	  return gen_rtx_MULT (mode, arg0, arg1);
 
 	case CONST_INT:
 	  /* Product of two constants.  */
@@ -5441,19 +5451,22 @@ simplify_giv_expr (x, benefit)
 
 	case MULT:
 	  /* (a * invar_1) * invar_2.  Associate.  */
-	  return simplify_giv_expr (gen_rtx (MULT, mode,
-					     XEXP (arg0, 0),
-					     gen_rtx (MULT, mode,
-						      XEXP (arg0, 1), arg1)),
+	  return simplify_giv_expr (gen_rtx_MULT (mode,
+						  XEXP (arg0, 0),
+						  gen_rtx_MULT (mode,
+								XEXP (arg0, 1),
+								arg1)),
 				    benefit);
 
 	case PLUS:
 	  /* (a + invar_1) * invar_2.  Distribute.  */
-	  return simplify_giv_expr (gen_rtx (PLUS, mode,
-					     gen_rtx (MULT, mode,
-						      XEXP (arg0, 0), arg1),
-					     gen_rtx (MULT, mode,
-						      XEXP (arg0, 1), arg1)),
+	  return simplify_giv_expr (gen_rtx_PLUS (mode,
+						  gen_rtx_MULT (mode,
+								XEXP (arg0, 0),
+								arg1),
+						  gen_rtx_MULT (mode,
+								XEXP (arg0, 1),
+								arg1)),
 				    benefit);
 
 	default:
@@ -5465,22 +5478,23 @@ simplify_giv_expr (x, benefit)
       if (GET_CODE (XEXP (x, 1)) != CONST_INT)
 	return 0;
 
-      return simplify_giv_expr (gen_rtx (MULT, mode,
+      return
+	simplify_giv_expr (gen_rtx_MULT (mode,
 					 XEXP (x, 0),
 					 GEN_INT ((HOST_WIDE_INT) 1
 						  << INTVAL (XEXP (x, 1)))),
-				benefit);
+			   benefit);
 
     case NEG:
       /* "-a" is "a * (-1)" */
-      return simplify_giv_expr (gen_rtx (MULT, mode, XEXP (x, 0), constm1_rtx),
+      return simplify_giv_expr (gen_rtx_MULT (mode, XEXP (x, 0), constm1_rtx),
 				benefit);
 
     case NOT:
       /* "~a" is "-a - 1". Silly, but easy.  */
-      return simplify_giv_expr (gen_rtx (MINUS, mode,
-					 gen_rtx (NEG, mode, XEXP (x, 0)),
-					 const1_rtx),
+      return simplify_giv_expr (gen_rtx_MINUS (mode,
+					       gen_rtx_NEG (mode, XEXP (x, 0)),
+					       const1_rtx),
 				benefit);
 
     case USE:
@@ -5507,11 +5521,12 @@ simplify_giv_expr (x, benefit)
 	    if (v->cant_derive)
 	      return 0;
 
-	    tem = gen_rtx (PLUS, mode, gen_rtx (MULT, mode,
-						v->src_reg, v->mult_val),
-			   v->add_val);
+	    tem = gen_rtx_PLUS (mode, gen_rtx_MULT (mode,
+						    v->src_reg, v->mult_val),
+				v->add_val);
+
 	    if (v->derive_adjustment)
-	      tem = gen_rtx (MINUS, mode, tem, v->derive_adjustment);
+	      tem = gen_rtx_MINUS (mode, tem, v->derive_adjustment);
 	    return simplify_giv_expr (tem, benefit);
 	  }
 
@@ -5531,7 +5546,7 @@ simplify_giv_expr (x, benefit)
 	  if (GET_CODE (x) == CONST_INT)
 	    return x;
 	  else
-	    return gen_rtx (USE, mode, x);
+	    return gen_rtx_USE (mode, x);
 	}
       else
 	return 0;
@@ -5679,12 +5694,12 @@ express_from (g1, g2)
   else if (mult == const1_rtx)
     mult = g1->dest_reg;
   else
-    mult = gen_rtx (MULT, g2->mode, g1->dest_reg, mult);
+    mult = gen_rtx_MULT (g2->mode, g1->dest_reg, mult);
 
   if (add == const0_rtx)
     return mult;
   else
-    return gen_rtx (PLUS, g2->mode, mult, add);
+    return gen_rtx_PLUS (g2->mode, mult, add);
 }
 #endif
 
@@ -6010,8 +6025,8 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	{
 	  /* register always nonnegative, add REG_NOTE to branch */
 	  REG_NOTES (PREV_INSN (loop_end))
-	    = gen_rtx (EXPR_LIST, REG_NONNEG, NULL_RTX,
-		       REG_NOTES (PREV_INSN (loop_end)));
+	    = gen_rtx_EXPR_LIST (REG_NONNEG, NULL_RTX,
+				 REG_NOTES (PREV_INSN (loop_end)));
 	  bl->nonneg = 1;
 
 	  return 1;
@@ -6035,8 +6050,8 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	      && INTVAL (bl->biv->add_val) == -1)
 	    {
 	      REG_NOTES (PREV_INSN (loop_end))
-		= gen_rtx (EXPR_LIST, REG_NONNEG, NULL_RTX,
-			   REG_NOTES (PREV_INSN (loop_end)));
+		= gen_rtx_EXPR_LIST (REG_NONNEG, NULL_RTX,
+				     REG_NOTES (PREV_INSN (loop_end)));
 	      bl->nonneg = 1;
 
 	      return 1;
@@ -6239,8 +6254,8 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 		  /* Increment of LABEL_NUSES done above.  */
 		  /* Register is now always nonnegative,
 		     so add REG_NONNEG note to the branch.  */
-		  REG_NOTES (tem) = gen_rtx (EXPR_LIST, REG_NONNEG, NULL_RTX,
-					     REG_NOTES (tem));
+		  REG_NOTES (tem) = gen_rtx_EXPR_LIST (REG_NONNEG, NULL_RTX,
+						       REG_NOTES (tem));
 		}
 
 	      bl->nonneg = 1;
@@ -6394,8 +6409,8 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		/* If the giv has the opposite direction of change,
 		   then reverse the comparison.  */
 		if (INTVAL (v->mult_val) < 0)
-		  new = gen_rtx (COMPARE, GET_MODE (v->new_reg),
-				 const0_rtx, v->new_reg);
+		  new = gen_rtx_COMPARE (GET_MODE (v->new_reg),
+					 const0_rtx, v->new_reg);
 		else
 		  new = v->new_reg;
 
@@ -6437,11 +6452,11 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 		/* If the giv has the opposite direction of change,
 		   then reverse the comparison.  */
 		if (INTVAL (v->mult_val) < 0)
-		  new = gen_rtx (COMPARE, VOIDmode, copy_rtx (v->add_val),
-				 v->new_reg);
+		  new = gen_rtx_COMPARE (VOIDmode, copy_rtx (v->add_val),
+					 v->new_reg);
 		else
-		  new = gen_rtx (COMPARE, VOIDmode, v->new_reg,
-				 copy_rtx (v->add_val));
+		  new = gen_rtx_COMPARE (VOIDmode, v->new_reg,
+					 copy_rtx (v->add_val));
 
 		/* Replace biv with the giv's reduced register.  */
 		update_reg_last_use (v->add_val, insn);

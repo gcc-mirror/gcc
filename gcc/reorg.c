@@ -875,7 +875,7 @@ emit_delay_sequence (insn, list, length, avail)
 
   /* Allocate the the rtvec to hold the insns and the SEQUENCE.  */
   rtvec seqv = rtvec_alloc (length + 1);
-  rtx seq = gen_rtx (SEQUENCE, VOIDmode, seqv);
+  rtx seq = gen_rtx_SEQUENCE (VOIDmode, seqv);
   rtx seq_insn = make_insn_raw (seq);
   rtx first = get_insns ();
   rtx last = get_last_insn ();
@@ -988,7 +988,7 @@ add_to_delay_list (insn, delay_list)
       if (tinfo)
 	tinfo->block = -1;
 
-      return gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
+      return gen_rtx_INSN_LIST (VOIDmode, insn, NULL_RTX);
     }
 
   /* Otherwise this must be an INSN_LIST.  Add INSN to the end of the
@@ -1926,7 +1926,7 @@ try_merge_delay_insns (insn, thread)
 	      INSN_FROM_TARGET_P (next_to_match) = 0;
 	    }
 	  else
-	    merged_insns = gen_rtx (INSN_LIST, VOIDmode, trial, merged_insns);
+	    merged_insns = gen_rtx_INSN_LIST (VOIDmode, trial, merged_insns);
 
 	  if (++slot_number == num_slots)
 	    break;
@@ -1978,8 +1978,8 @@ try_merge_delay_insns (insn, thread)
 		  INSN_FROM_TARGET_P (next_to_match) = 0;
 		}
 	      else
-		merged_insns = gen_rtx (INSN_LIST, SImode, dtrial,
-					merged_insns);
+		merged_insns = gen_rtx_INSN_LIST (SImode, dtrial,
+						  merged_insns);
 
 	      if (++slot_number == num_slots)
 		break;
@@ -2340,7 +2340,7 @@ update_block (insn, where)
   if (INSN_FROM_TARGET_P (insn))
     return;
 
-  emit_insn_before (gen_rtx (USE, VOIDmode, insn), where);
+  emit_insn_before (gen_rtx_USE (VOIDmode, insn), where);
 
   /* INSN might be making a value live in a block where it didn't use to
      be.  So recompute liveness information for this block.  */
@@ -3172,8 +3172,8 @@ fill_simple_delay_slots (first, non_jumps_p)
 			 tail, of the list.  */
 
 		      update_reg_dead_notes (trial, insn);
-		      delay_list = gen_rtx (INSN_LIST, VOIDmode,
-					    trial, delay_list);
+		      delay_list = gen_rtx_INSN_LIST (VOIDmode,
+						      trial, delay_list);
 		      update_block (trial, trial);
 		      delete_insn (trial);
 		      if (slots_to_fill == ++slots_filled)
@@ -3462,8 +3462,8 @@ fill_simple_delay_slots (first, non_jumps_p)
 		 insns we find on the head of the list.  */
 
 	      current_function_epilogue_delay_list
-		= gen_rtx (INSN_LIST, VOIDmode, trial,
-			   current_function_epilogue_delay_list);
+		= gen_rtx_INSN_LIST (VOIDmode, trial,
+				     current_function_epilogue_delay_list);
 	      mark_referenced_resources (trial, &end_of_function_needs, 1);
 	      update_block (trial, trial);
 	      delete_insn (trial);
@@ -3829,7 +3829,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	    new_arith = gen_rtx (GET_CODE (src) == PLUS ? MINUS : PLUS,
 				 GET_MODE (src), dest, other);
 
-	  ninsn = emit_insn_after (gen_rtx (SET, VOIDmode, dest, new_arith),
+	  ninsn = emit_insn_after (gen_rtx_SET (VOIDmode, dest, new_arith),
 				   insn);
 
 	  if (recog_memoized (ninsn) < 0

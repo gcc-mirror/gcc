@@ -363,11 +363,11 @@ end_final (filename)
 
       /* address of filename */
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 1);
-      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes, 1);
+      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes, 1);
 
       /* address of count table */
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 2);
-      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes, 1);
+      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes, 1);
 
       /* count of the # of basic blocks or # of instrumented arcs */
       if (profile_block_flag)
@@ -383,7 +383,7 @@ end_final (filename)
       if (profile_block_flag)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 3);
-	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes,
+	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes,
 			    1);
 	}
       else
@@ -396,7 +396,7 @@ end_final (filename)
       if (profile_block_flag)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 4);
-	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes,
+	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes,
 			    1);
 	}
       else
@@ -406,9 +406,11 @@ end_final (filename)
       if (write_symbols != NO_DEBUG && profile_block_flag)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 5);
-	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes, 1);
+	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
+			    pointer_bytes, 1);
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 6);
-	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes, 1);
+	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
+			    pointer_bytes, 1);
 	}
       else
 	{
@@ -493,7 +495,7 @@ end_final (filename)
 	  for (i = 0; i < count_basic_blocks; i++)
 	    {
 	      ASM_GENERATE_INTERNAL_LABEL (name, "LPB", i);
-	      assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name),
+	      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
 				pointer_bytes, 1);
 	    }
 	}
@@ -508,7 +510,7 @@ end_final (filename)
 		{
 		  ASM_GENERATE_INTERNAL_LABEL (name, "LPBC",
 					       ptr->func_label_num);
-		  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name),
+		  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
 				    pointer_bytes, 1);
 		}
 	      else
@@ -537,7 +539,7 @@ end_final (filename)
 		{
 		  ASM_GENERATE_INTERNAL_LABEL (name, "LPBC",
 					       ptr->file_label_num);
-		  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name),
+		  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
 				    pointer_bytes, 1);
 		}
 	      else
@@ -553,7 +555,7 @@ end_final (filename)
       if (profile_block_flag)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 3);
-	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), pointer_bytes,
+	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes,
 			    1);
 	}
     }

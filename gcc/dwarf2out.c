@@ -396,27 +396,27 @@ static unsigned reg_number		PROTO((rtx));
    .debug_frame.  */
 
 #define ASM_OUTPUT_DWARF_ADDR(FILE,LABEL) \
-  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, LABEL), PTR_SIZE, 1)
+  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, LABEL), PTR_SIZE, 1)
 
 #define ASM_OUTPUT_DWARF_OFFSET(FILE,LABEL) \
-  assemble_integer (gen_rtx (SYMBOL_REF, SImode, LABEL), 4, 1)
+  assemble_integer (gen_rtx_SYMBOL_REF (SImode, LABEL), 4, 1)
 
 #define ASM_OUTPUT_DWARF_DELTA2(FILE,LABEL1,LABEL2)			\
-  assemble_integer (gen_rtx (MINUS, HImode,			      	\
-			     gen_rtx (SYMBOL_REF, Pmode, LABEL1),   	\
-			     gen_rtx (SYMBOL_REF, Pmode, LABEL2)),	\
+  assemble_integer (gen_rtx_MINUS (HImode,			      	\
+				   gen_rtx_SYMBOL_REF (Pmode, LABEL1),  \
+				   gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
 		    2, 1)
   
 #define ASM_OUTPUT_DWARF_DELTA4(FILE,LABEL1,LABEL2)			\
-  assemble_integer (gen_rtx (MINUS, SImode,			      	\
-			     gen_rtx (SYMBOL_REF, Pmode, LABEL1),   	\
-			     gen_rtx (SYMBOL_REF, Pmode, LABEL2)),	\
+  assemble_integer (gen_rtx_MINUS (SImode,			      	\
+				   gen_rtx_SYMBOL_REF (Pmode, LABEL1),  \
+				   gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
 		    4, 1)
 
 #define ASM_OUTPUT_DWARF_ADDR_DELTA(FILE,LABEL1,LABEL2)			\
-  assemble_integer (gen_rtx (MINUS, Pmode,				\
-			     gen_rtx (SYMBOL_REF, Pmode, LABEL1),	\
-			     gen_rtx (SYMBOL_REF, Pmode, LABEL2)),	\
+  assemble_integer (gen_rtx_MINUS (Pmode,				\
+				   gen_rtx_SYMBOL_REF (Pmode, LABEL1),	\
+				   gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
 		    PTR_SIZE, 1)
 
 #define ASM_OUTPUT_DWARF_DELTA(FILE,LABEL1,LABEL2) \
@@ -426,7 +426,7 @@ static unsigned reg_number		PROTO((rtx));
   assemble_integer (GEN_INT (VALUE), 4, 1)
 
 #define ASM_OUTPUT_DWARF_VALUE4(FILE,LABEL) \
-  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, LABEL), 4, 1)
+  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, LABEL), 4, 1)
 
 #endif /* UNALIGNED_INT_ASM_OP */
 
@@ -7071,7 +7071,7 @@ add_bound_info (subrange_die, bound_attr, bound)
 	      rtx new_addr = fix_lexical_addr (XEXP (loc, 0), bound);
 
 	      if (XEXP (loc, 0) != new_addr)
-		loc = gen_rtx (MEM, GET_MODE (loc), new_addr);
+		loc = gen_rtx_MEM (GET_MODE (loc), new_addr);
 	    }
 
 	  add_AT_flag (decl_die, DW_AT_artificial, 1);

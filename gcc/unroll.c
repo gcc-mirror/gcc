@@ -1207,7 +1207,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  tem = get_label_from_map (map,
 				    CODE_LABEL_NUMBER
 				    (XEXP (SET_SRC (pattern), 0)));
-	  SET_SRC (pattern) = gen_rtx (LABEL_REF, VOIDmode, tem);
+	  SET_SRC (pattern) = gen_rtx_LABEL_REF (VOIDmode, tem);
 
 	  /* Set the jump label so that it can be used by later loop unrolling
 	     passes.  */
@@ -2214,7 +2214,7 @@ fold_rtx_mult_add (mult1, mult2, add1, mode)
 
   mult_res = simplify_binary_operation (MULT, mode, mult1, mult2);
   if (! mult_res)
-    mult_res = gen_rtx (MULT, mode, mult1, mult2);
+    mult_res = gen_rtx_MULT (mode, mult1, mult2);
 
   /* Again, put the constant second.  */
   if (GET_CODE (add1) == CONST_INT)
@@ -2226,7 +2226,7 @@ fold_rtx_mult_add (mult1, mult2, add1, mode)
 
   result = simplify_binary_operation (PLUS, mode, add1, mult_res);
   if (! result)
-    result = gen_rtx (PLUS, mode, add1, mult_res);
+    result = gen_rtx_PLUS (mode, add1, mult_res);
 
   return result;
 }
@@ -2904,8 +2904,8 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		     instruction on machines with complex addressing modes.
 		     If we can't recognize it, then delete it and emit insns
 		     to calculate the value from scratch.  */
-		  emit_insn_before (gen_rtx (SET, VOIDmode, tem,
-					     copy_rtx (v->new_reg)),
+		  emit_insn_before (gen_rtx_SET (VOIDmode, tem,
+						 copy_rtx (v->new_reg)),
 				    loop_start);
 		  if (recog_memoized (PREV_INSN (loop_start)) < 0)
 		    {
@@ -3069,7 +3069,7 @@ reg_dead_after_loop (reg, loop_start, loop_end)
   /* HACK: Must also search the loop fall through exit, create a label_ref
      here which points to the loop_end, and append the loop_number_exit_labels
      list to it.  */
-  label = gen_rtx (LABEL_REF, VOIDmode, loop_end);
+  label = gen_rtx_LABEL_REF (VOIDmode, loop_end);
   LABEL_NEXTREF (label) = loop_number_exit_labels[this_loop_num];
 
   for ( ; label; label = LABEL_NEXTREF (label))

@@ -528,8 +528,9 @@ stupid_mark_refs (x, insn)
 		  && REGNO_LAST_UID (regno) == INSN_UID (insn)
 		  && (code == CLOBBER || ! reg_mentioned_p (SET_DEST (x),
 							    SET_SRC (x))))
-		REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_UNUSED,
-					    SET_DEST (x), REG_NOTES (insn));
+		REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_UNUSED,
+						      SET_DEST (x),
+						      REG_NOTES (insn));
 	    }
 	}
 
