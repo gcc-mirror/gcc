@@ -1,3 +1,8 @@
+2004-01-19  Jeff Law  <law@redhat.com>
+
+	* contrib.texi: Update Paolo Carlini's entry.  New entries for
+	Jerry Quinn and Petur Runolfsson.
+
 2004-01-19  Richard Henderson  <rth@redhat.com>
 
 	* alpha.h (HARD_REGNO_MODE_OK): Disallow SImode in FP regs.
