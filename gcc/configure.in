@@ -2157,6 +2157,24 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in
 		extra_headers=ppc-asm.h
 		;;
+	powerpc-*-linux-gnulibc1)
+		tm_file=rs6000/linux.h
+		xm_file=rs6000/xm-sysv4.h
+		out_file=rs6000/rs6000.c
+		if [[ x$gas = xyes ]]
+		then
+			tmake_file="rs6000/t-ppcos t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
+		else
+			tmake_file="rs6000/t-ppc t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
+		fi
+		xmake_file=x-linux
+		fixincludes=Makefile.in
+		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+		extra_headers=ppc-asm.h
+		if [[ x$enable_threads = xyes ]]; then
+			thread_file='posix'
+		fi
+		;;
 	powerpc-*-linux-gnu*)
 		tm_file=rs6000/linux.h
 		xm_file=rs6000/xm-sysv4.h
