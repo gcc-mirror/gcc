@@ -1,5 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GNU C compiler
-;;   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+;;   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
 ;;   Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
@@ -5467,7 +5467,9 @@
 ;; Unconditional and other jump instructions.
 
 (define_insn "return"
-  [(return)]
+  [(return)
+   (use (reg:SI 2))
+   (const_int 0)]
   "hppa_can_use_return_insn_p ()"
   "*
 {
@@ -5482,7 +5484,8 @@
 ;; epilogues so as not to confuse jump and reorg.
 (define_insn "return_internal"
   [(return)
-   (use (reg:SI 2))]
+   (use (reg:SI 2))
+   (const_int 1)]
   ""
   "*
 {
