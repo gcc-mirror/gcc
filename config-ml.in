@@ -470,6 +470,30 @@ powerpc*-*-* | rs6000*-*-*)
 	  done
 	fi
 	;;
+sparc*-*-*)
+	case " $multidirs " in
+	*" m64 "*)
+	  # We will not be able to create libraries with -m64 if
+	  # we cannot even link a trivial program.  It usually
+	  # indicates the 64bit libraries are missing.
+	  if echo 'main() {}' > conftest.c &&
+	     ${CC-gcc} -m64 conftest.c -o conftest; then
+	    :
+	  else
+	    echo Could not link program with -m64, disabling it.
+	    old_multidirs="${multidirs}"
+	    multidirs=""
+	    for x in ${old_multidirs}; do
+	      case "$x" in
+	      *m64* ) : ;;
+	      *) multidirs="${multidirs} ${x}" ;;
+	      esac
+	    done
+	  fi
+	  rm -f conftest.c conftest
+	  ;;
+	esac
+	;;
 esac
 
 # Remove extraneous blanks from multidirs.
