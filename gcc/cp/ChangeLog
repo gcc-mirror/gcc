@@ -1,3 +1,9 @@
+2005-03-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20186
+	* pt.c (contains_dependent_cast_p): New.
+	(fold_non_dependent_expr): Call it.
+
 2005-03-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20142
