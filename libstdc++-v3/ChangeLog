@@ -1,3 +1,13 @@
+2002-02-06  Loren Rittle <ljrittle@acm.org>
+
+	* acinclude.m4: Add C++ linkage check for strtof.
+	* aclocal.m4: Rebuilt.
+	* config.h.in: Rebuilt.
+	* configure: Rebuilt.
+	* config/locale/c_locale_generic.cc: Conditionally include
+	<ieeefp.h>.  Improve handling and error checking of float
+	and long double input for non-C99 configurations.
+
 2002-02-06  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc (money_get::do_get(string)):
