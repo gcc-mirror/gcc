@@ -1,5 +1,9 @@
 2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
 
+	* cpplex.c (skip_whitespace): Rearrange to avoid stage1 ICE.
+
+2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
+
 	* cppfiles.c (ENABLE_VALGRIND_CHECKING, VALGRIND_DISCARD,
 	MMAP_THRESHOLD, TEST_THRESHOLD, SHOULD_MMAP): Remove.
 	(struct include_file): Remove fefcnt, mapped members.
