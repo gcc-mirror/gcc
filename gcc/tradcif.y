@@ -36,6 +36,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
   static int expression_value;
   static jmp_buf parse_return_error;
+
+  /* During parsing of a C expression, the pointer to the next
+     character is in this variable.  */
+
+  static const char *lexptr;
 %}
 
 %union {
@@ -199,14 +204,11 @@ exp	:	exp '*' exp
 	|	NAME
 			{ $$.value = 0;
 			  $$.unsignedp = 0; }
+	|	'#'	{ $$.value =
+			    test_assertion ((unsigned char **) &lexptr); }
 	;
 %%
 
-/* During parsing of a C expression, the pointer to the next character
-   is in this variable.  */
-
-static const char *lexptr;
-
 /* Take care of parsing a number (anything that starts with a digit).
    Set yylval and return the token type; update lexptr.
    LEN is the number of characters in it.  */
@@ -389,6 +391,7 @@ yylex ()
   case '{':
   case '}':
   case ',':
+  case '#':
     lexptr++;
     return c;
     

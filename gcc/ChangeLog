@@ -1,3 +1,13 @@
+2000-12-04  Neil Booth  <neilb@earthling.net>
+
+        * tradcif.y: Move lexptr to top of file.  Add rule to handle
+        assertions in conditional expressions.
+        * tradcpp.c (parse_answer): Assertions do not need to go to
+        end of line in conditional directives.
+        (parse_assertion): Get first character of identifiers correct.
+        (test_assertion): New function.
+        * tradcpp.h (test_assertion): New prototype.
+
 2000-12-01  Rodney Brown  <RodneyBrown@mynd.com>
 
 	* config.gcc: Fix typo for UnixWare 7.
