@@ -705,6 +705,12 @@ convert_move (to, from, unsignedp)
       if ((code = can_extend_p (to_mode, from_mode, unsignedp))
 	  != CODE_FOR_nothing)
 	{
+	  /* If FROM is a SUBREG, put it into a register.  Do this
+	     so that we always generate the same set of insns for
+	     better cse'ing; if an intermediate assignment occurred,
+	     we won't be doing the operation directly on the SUBREG.  */
+	  if (optimize > 0 && GET_CODE (from) == SUBREG)
+	    from = force_reg (from_mode, from);
 	  emit_unop_insn (code, to, from, equiv_code);
 	  return;
 	}
