@@ -584,7 +584,7 @@ output_format (buffer, text)
             output_add_string (buffer, "file '");
             output_add_string (buffer, locus->file);
             output_add_string (buffer, "', line ");
-            output_decimal (buffer, locus->file);
+            output_decimal (buffer, locus->line);
           }
           break;
 
@@ -892,7 +892,7 @@ diagnostic_count_diagnostic (context, kind)
     default:
       abort();
       break;
-      
+
     case DK_FATAL: case DK_ICE: case DK_SORRY:
     case DK_ANACHRONISM: case DK_NOTE:
       ++diagnostic_kind_count (context, kind);
