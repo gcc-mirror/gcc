@@ -352,23 +352,38 @@ doloop_valid_p (loop, jump_insn)
       && ((loop_info->comparison_code == LEU
 	   && INTVAL (loop_info->increment) > 0)
 	  || (loop_info->comparison_code == GEU
-	      && INTVAL (loop_info->increment) < 0)))
+	      && INTVAL (loop_info->increment) < 0)
+	  || (loop_info->comparison_code == LTU
+	      && INTVAL (loop_info->increment) > 1)
+	  || (loop_info->comparison_code == GTU
+	      && INTVAL (loop_info->increment) < -1)))
     {
       /* If the comparison is LEU and the comparison value is UINT_MAX
 	 then the loop will not terminate.  Similarly, if the
 	 comparison code is GEU and the initial value is 0, the loop
 	 will not terminate.
 
-	 Note that with LE and GE, the loop behaviour can be
-	 implementation dependent if an overflow occurs, say between
-	 INT_MAX and INT_MAX + 1.  We thus don't have to worry about
-	 these two cases.
+	 If the absolute increment is not 1, the loop can be infinite
+	 even with LTU/GTU, e.g. for (i = 3; i > 0; i -= 2)
+
+	 Note that with LE and GE, the loop behaviour is undefined
+	 (C++ standard section 5 clause 5) if an overflow occurs, say
+	 between INT_MAX and INT_MAX + 1.  We thus don't have to worry
+	 about these two cases.
 
 	 ??? We could compute these conditions at run-time and have a
 	 additional jump around the loop to ensure an infinite loop.
 	 However, it is very unlikely that this is the intended
 	 behaviour of the loop and checking for these rare boundary
-	 conditions would pessimize all other code.  */
+	 conditions would pessimize all other code.
+
+	 If the loop is executed only a few times an extra check to
+	 restart the loop could use up most of the benefits of using a
+	 count register loop.  Note however, that normally, this
+	 restart branch would never execute, so it could be predicted
+	 well by the CPU.  We should generate the pessimistic code by
+	 default, and have an option, e.g. -funsafe-loops that would
+	 enable count-register loops in this case.  */
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
 		 "Doloop: Possible infinite iteration case ignored.\n");

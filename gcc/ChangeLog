@@ -1,3 +1,7 @@
+2001-11-29  Zoltan Hidvegi  <hzoli@hzoli.2y.net>
+
+	* doloop.c (doloop_valid_p): Check for LTU and GTU as well.
+
 2001-11-29  Richard Henderson  <rth@redhat.com>
 
 	* ifcvt.c (noce_try_store_flag_constants): Test for overflow
