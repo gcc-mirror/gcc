@@ -99,7 +99,7 @@ static int can_address_p		PARAMS ((tree));
 static rtx find_base_value		PARAMS ((rtx));
 static int mems_in_disjoint_alias_sets_p PARAMS ((rtx, rtx));
 static int insert_subset_children       PARAMS ((splay_tree_node, void*));
-static tree find_base_decl            PARAMS ((tree));
+static tree find_base_decl		PARAMS ((tree));
 static alias_set_entry get_alias_set_entry PARAMS ((HOST_WIDE_INT));
 static rtx fixed_scalar_and_varying_struct_p PARAMS ((rtx, rtx, rtx, rtx,
 						      int (*) (rtx, int)));
@@ -458,7 +458,6 @@ HOST_WIDE_INT
 get_alias_set (t)
      tree t;
 {
-  tree orig_t;
   HOST_WIDE_INT set;
 
   /* If we're not doing any alias analysis, just assume everything
@@ -473,14 +472,76 @@ get_alias_set (t)
      language-specific routine may make mutually-recursive calls to each other
      to figure out what to do.  At each juncture, we see if this is a tree
      that the language may need to handle specially.  First handle things that
-     aren't types and start by removing nops since we care only about the
-     actual object.  Also replace PLACEHOLDER_EXPRs and pick up the outermost
-     object that we could have a pointer to.  */
+     aren't types.  */
   if (! TYPE_P (t))
     {
-      /* Remove any NOPs and see what any PLACEHOLD_EXPRs will expand to.  */
+      tree inner = t;
+      tree placeholder_ptr = 0;
+
+      /* First see if the actual object referenced is an INDIRECT_REF from a
+	 restrict-qualified pointer or a "void *".  Start by removing nops
+	 since we care only about the actual object.  Also replace
+	 PLACEHOLDER_EXPRs.  */
+      while (((TREE_CODE (inner) == NOP_EXPR
+	       || TREE_CODE (inner) == CONVERT_EXPR)
+	      && (TYPE_MODE (TREE_TYPE (inner))
+		  == TYPE_MODE (TREE_TYPE (TREE_OPERAND (inner, 0)))))
+	     || TREE_CODE (inner) == NON_LVALUE_EXPR
+	     || TREE_CODE (inner) == PLACEHOLDER_EXPR
+	     || handled_component_p (inner))
+	{
+	  if (TREE_CODE (inner) == PLACEHOLDER_EXPR)
+	    inner = find_placeholder (inner, &placeholder_ptr);
+	  else
+	    inner = TREE_OPERAND (inner, 0);
+	}
+
+      /* Check for accesses through restrict-qualified pointers.  */
+      if (TREE_CODE (inner) == INDIRECT_REF)
+	{
+	  tree decl = find_base_decl (TREE_OPERAND (inner, 0));
+
+	  if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
+	    {
+	      /* If we haven't computed the actual alias set, do it now. */
+	      if (DECL_POINTER_ALIAS_SET (decl) == -2)
+		{
+		  /* No two restricted pointers can point at the same thing.
+		     However, a restricted pointer can point at the same thing
+		     as an unrestricted pointer, if that unrestricted pointer
+		     is based on the restricted pointer.  So, we make the
+		     alias set for the restricted pointer a subset of the
+		     alias set for the type pointed to by the type of the
+		     decl.  */
+		  HOST_WIDE_INT pointed_to_alias_set
+		    = get_alias_set (TREE_TYPE (TREE_TYPE (decl)));
+
+		  if (pointed_to_alias_set == 0)
+		    /* It's not legal to make a subset of alias set zero.  */
+		    ;
+		  else
+		    {
+		      DECL_POINTER_ALIAS_SET (decl) = new_alias_set ();
+		      record_alias_subset  (pointed_to_alias_set,
+					    DECL_POINTER_ALIAS_SET (decl));
+		    }
+		}
+
+	      /* We use the alias set indicated in the declaration.  */
+	      return DECL_POINTER_ALIAS_SET (decl);
+	    }
+
+	  /* If we have an INDIRECT_REF via a void pointer, we don't
+	     know anything about what that might alias.  */
+	  else if (TREE_CODE (TREE_TYPE (inner)) == VOID_TYPE)
+	    return 0;
+	}
+
+      /* Otherwise, pick up the outermost object that we could have a pointer
+	 to, processing conversion and PLACEHOLDER_EXPR as above.  */
+      placeholder_ptr = 0;
       while (((TREE_CODE (t) == NOP_EXPR || TREE_CODE (t) == CONVERT_EXPR)
-	      && (TYPE_MODE (TREE_TYPE (t))
+ 	      && (TYPE_MODE (TREE_TYPE (t))
 		  == TYPE_MODE (TREE_TYPE (TREE_OPERAND (t, 0)))))
 	     || TREE_CODE (t) == NON_LVALUE_EXPR
 	     || TREE_CODE (t) == PLACEHOLDER_EXPR
@@ -492,43 +553,21 @@ get_alias_set (t)
 	    return set;
 
 	  if (TREE_CODE (t) == PLACEHOLDER_EXPR)
-	    t = find_placeholder (t, 0);
+	    t = find_placeholder (t, &placeholder_ptr);
 	  else
 	    t = TREE_OPERAND (t, 0);
 	}
 
-      /* Now give the language a chance to do something but record what we
-	 gave it this time.  */
-      orig_t = t;
+      /* Give the language another chance to do something.  */
       if ((set = lang_get_alias_set (t)) != -1)
 	return set;
 
-      /* Check for accesses through restrict-qualified pointers.  */
-      if (TREE_CODE (t) == INDIRECT_REF)
-	{
-	  tree decl = find_base_decl (TREE_OPERAND (t, 0));
-
-	  if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
-	    /* We use the alias set indicated in the declaration.  */
-	    return DECL_POINTER_ALIAS_SET (decl);
-
-	  /* If we have an INDIRECT_REF via a void pointer, we don't
-	     know anything about what that might alias.  */
-	  if (TREE_CODE (TREE_TYPE (t)) == VOID_TYPE)
-	    return 0;
-	}
-
-      /* If we've already determined the alias set for this decl, just
-	 return it.  This is necessary for C++ anonymous unions, whose
-	 component variables don't look like union members (boo!).  */
+      /* If we've already determined the alias set for a decl, just return
+	 it.  This is necessary for C++ anonymous unions, whose component
+	 variables don't look like union members (boo!).  */
       if (TREE_CODE (t) == VAR_DECL
 	  && DECL_RTL_SET_P (t) && GET_CODE (DECL_RTL (t)) == MEM)
 	return MEM_ALIAS_SET (DECL_RTL (t));
-
-      /* Give the language another chance to do something special.  */
-      if (orig_t != t
-	  && (set = lang_get_alias_set (t)) != -1)
-	return set;
 
       /* Now all we care about is the type.  */
       t = TREE_TYPE (t);
@@ -537,16 +576,12 @@ get_alias_set (t)
   /* Variant qualifiers don't affect the alias set, so get the main
      variant. If this is a type with a known alias set, return it.  */
   t = TYPE_MAIN_VARIANT (t);
-  if (TYPE_P (t) && TYPE_ALIAS_SET_KNOWN_P (t))
+  if (TYPE_ALIAS_SET_KNOWN_P (t))
     return TYPE_ALIAS_SET (t);
 
   /* See if the language has special handling for this type.  */
   if ((set = lang_get_alias_set (t)) != -1)
-    {
-      /* If the alias set is now known, we are done.  */
-      if (TYPE_ALIAS_SET_KNOWN_P (t))
-	return TYPE_ALIAS_SET (t);
-    }
+    return set;
 
   /* There are no objects of FUNCTION_TYPE, so there's no point in
      using up an alias set for them.  (There are, of course, pointers

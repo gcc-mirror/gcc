@@ -178,6 +178,8 @@ static rtx make_jump_insn_raw		PARAMS ((rtx));
 static rtx make_call_insn_raw		PARAMS ((rtx));
 static rtx find_line_note		PARAMS ((rtx));
 static void mark_sequence_stack         PARAMS ((struct sequence_stack *));
+static rtx change_address_1		PARAMS ((rtx, enum machine_mode, rtx,
+						 int));
 static void unshare_all_rtl_1		PARAMS ((rtx));
 static void unshare_all_decls		PARAMS ((tree));
 static void reset_used_decls		PARAMS ((tree));
@@ -1652,14 +1654,6 @@ set_mem_attributes (ref, t, objectp)
 
   type = TYPE_P (t) ? t : TREE_TYPE (t);
 
-  /* Get the alias set from the expression or type (perhaps using a
-     front-end routine) and then copy bits from the type.  */
-
-  /* It is incorrect to set RTX_UNCHANGING_P from TREE_READONLY (type)
-     here, because, in C and C++, the fact that a location is accessed
-     through a const expression does not mean that the value there can
-     never change.  */
-
   /* If we have already set DECL_RTL = ref, get_alias_set will get the
      wrong answer, as it assumes that DECL_RTL already has the right alias
      info.  Callers should not set DECL_RTL until after the call to
@@ -1667,7 +1661,14 @@ set_mem_attributes (ref, t, objectp)
   if (DECL_P (t) && ref == DECL_RTL_IF_SET (t))
     abort ();
 
+  /* Get the alias set from the expression or type (perhaps using a
+     front-end routine).  */
   set_mem_alias_set (ref, get_alias_set (t));
+
+  /* It is incorrect to set RTX_UNCHANGING_P from TREE_READONLY (type)
+     here, because, in C and C++, the fact that a location is accessed
+     through a const expression does not mean that the value there can
+     never change.  */
 
   MEM_VOLATILE_P (ref) = TYPE_VOLATILE (type);
   MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
@@ -1677,7 +1678,14 @@ set_mem_attributes (ref, t, objectp)
   if (objectp && ! AGGREGATE_TYPE_P (type))
     MEM_SCALAR_P (ref) = 1;
 
-  /* If T is a type, this is all we can do.  Otherwise, we may be able
+  /* If the size is known, we can set that.  */
+  if (TYPE_SIZE_UNIT (type) && host_integerp (TYPE_SIZE_UNIT (type), 1))
+    MEM_ATTRS (ref)
+      = get_mem_attrs (MEM_ALIAS_SET (ref), MEM_DECL (ref), MEM_OFFSET (ref),
+		       GEN_INT (tree_low_cst (TYPE_SIZE_UNIT (type), 1)),
+		       MEM_ALIGN (ref));
+
+  /* If T is a type, there's nothing more we can do.  Otherwise, we may be able
      to deduce some more information about the expression.  */
   if (TYPE_P (t))
     return;
@@ -1686,16 +1694,26 @@ set_mem_attributes (ref, t, objectp)
   if (TREE_THIS_VOLATILE (t))
     MEM_VOLATILE_P (ref) = 1;
 
-  /* Now see if we can say more about whether it's an aggregate or
-     scalar.  If we already know it's an aggregate, don't bother.  */
-  if (MEM_IN_STRUCT_P (ref))
-    return;
-
   /* Now remove any NOPs: they don't change what the underlying object is.
      Likewise for SAVE_EXPR.  */
   while (TREE_CODE (t) == NOP_EXPR || TREE_CODE (t) == CONVERT_EXPR
 	 || TREE_CODE (t) == NON_LVALUE_EXPR || TREE_CODE (t) == SAVE_EXPR)
     t = TREE_OPERAND (t, 0);
+
+  /* If this is a decl, set the attributes of the MEM from it.  */
+  if (DECL_P (t))
+    MEM_ATTRS (ref)
+      = get_mem_attrs
+	(MEM_ALIAS_SET (ref), t, GEN_INT (0),
+	 (TYPE_SIZE_UNIT (TREE_TYPE (t))
+	  && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (t)), 1))
+	 ? GEN_INT (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (t)), 1))
+	 : 0, DECL_ALIGN (t) / BITS_PER_UNIT);
+
+  /* Now see if we can say more about whether it's an aggregate or
+     scalar.  If we already know it's an aggregate, don't bother.  */
+  if (MEM_IN_STRUCT_P (ref))
+    return;
 
   /* Since we already know the type isn't an aggregate, if this is a decl,
      it must be a scalar.  Or if it is a reference into an aggregate,
@@ -1715,7 +1733,6 @@ set_mem_alias_set (mem, set)
      rtx mem;
      HOST_WIDE_INT set;
 {
-  /* It would be nice to enable this check, but we can't quite yet.  */
 #ifdef ENABLE_CHECKING	
   /* If the new and old alias sets don't conflict, something is wrong.  */
   if (!alias_sets_conflict_p (set, MEM_ALIAS_SET (mem)))
@@ -1725,15 +1742,25 @@ set_mem_alias_set (mem, set)
   MEM_ATTRS (mem) = get_mem_attrs (set, MEM_DECL (mem), MEM_OFFSET (mem),
 				   MEM_SIZE (mem), MEM_ALIGN (mem));
 }
-
-/* Return a memory reference like MEMREF, but with its mode changed
-   to MODE and its address changed to ADDR.
-   (VOIDmode means don't change the mode.
-   NULL for ADDR means don't change the address.)
-   VALIDATE is nonzero if the returned memory location is required to be
-   valid.  */
 
-rtx
+/* Set the alignment of MEM to ALIGN.  */
+
+void
+set_mem_align (mem, align)
+     rtx mem;
+     unsigned int align;
+{
+  MEM_ATTRS (mem) = get_mem_attrs (MEM_ALIAS_SET (mem), MEM_DECL (mem),
+				   MEM_OFFSET (mem), MEM_SIZE (mem), align);
+}
+
+/* Return a memory reference like MEMREF, but with its mode changed to MODE
+   and its address changed to ADDR.  (VOIDmode means don't change the mode.
+   NULL for ADDR means don't change the address.)  VALIDATE is nonzero if the
+   returned memory location is required to be valid.  The memory
+   attributes are not changed.  */
+
+static rtx
 change_address_1 (memref, mode, addr, validate)
      rtx memref;
      enum machine_mode mode;
@@ -1768,21 +1795,42 @@ change_address_1 (memref, mode, addr, validate)
   return new;
 }
 
-/* Return a memory reference like MEMREF, but with its mode changed
-   to MODE and its address offset by OFFSET bytes.  */
+/* Like change_address_1 with VALIDATE nonzero, but we are not saying in what
+   way we are changing MEMREF, so we only preserve the alias set.  */
 
 rtx
-adjust_address (memref, mode, offset)
+change_address (memref, mode, addr)
+     rtx memref;
+     enum machine_mode mode;
+     rtx addr;
+{
+  rtx new = change_address_1 (memref, mode, addr, 1);
+  enum machine_mode mmode = GET_MODE (new);
+
+  MEM_ATTRS (new)
+    = get_mem_attrs (MEM_ALIAS_SET (memref), 0, 0,
+		     mmode == BLKmode ? 0 : GEN_INT (GET_MODE_SIZE (mmode)),
+		     (mmode == BLKmode ? 1
+		      : GET_MODE_ALIGNMENT (mmode) / BITS_PER_UNIT));
+
+  return new;
+}
+
+/* Return a memory reference like MEMREF, but with its mode changed
+   to MODE and its address offset by OFFSET bytes.  If VALIDATE is
+   nonzero, the memory address is forced to be valid.  */
+
+rtx
+adjust_address_1 (memref, mode, offset, validate)
      rtx memref;
      enum machine_mode mode;
      HOST_WIDE_INT offset;
+     int validate;
 {
-  /* For now, this is just a wrapper for change_address, but eventually
-     will do memref tracking.  */
   rtx addr = XEXP (memref, 0);
-
-  /* ??? Prefer to create garbage instead of creating shared rtl.  */
-  addr = copy_rtx (addr);
+  rtx new;
+  rtx memoffset = MEM_OFFSET (memref);
+  unsigned int memalign = MEM_ALIGN (memref);
 
   /* If MEMREF is a LO_SUM and the offset is within the alignment of the
      object, we can merge it into the LO_SUM.  */
@@ -1792,36 +1840,36 @@ adjust_address (memref, mode, offset)
          < GET_MODE_ALIGNMENT (GET_MODE (memref)) / BITS_PER_UNIT)
     addr = gen_rtx_LO_SUM (Pmode, XEXP (addr, 0),
 			   plus_constant (XEXP (addr, 1), offset));
+  else if (offset == 0)
+    /* ??? Prefer to create garbage instead of creating shared rtl.  */
+    addr = copy_rtx (addr);
   else
     addr = plus_constant (addr, offset);
 
-  return change_address (memref, mode, addr);
-}
+  new = change_address_1 (memref, mode, addr, validate);
 
-/* Likewise, but the reference is not required to be valid.  */
+  /* Compute the new values of the memory attributes due to this adjustment.
+     We add the offsets and update the alignment.  */
+  if (memoffset)
+    memoffset = GEN_INT (offset + INTVAL (memoffset));
 
-rtx
-adjust_address_nv (memref, mode, offset)
-     rtx memref;
-     enum machine_mode mode;
-     HOST_WIDE_INT offset;
-{
-  /* For now, this is just a wrapper for change_address, but eventually
-     will do memref tracking.  */
-  rtx addr = XEXP (memref, 0);
+  /* If the offset is negative, don't try to update the alignment.  If it's
+     zero, the alignment hasn't changed.  Otherwise, the known alignment may
+     be less strict.  */
+  if (offset < 0)
+    memalign = 1;
 
-  /* If MEMREF is a LO_SUM and the offset is within the size of the
-     object, we can merge it into the LO_SUM.  */
-  if (GET_MODE (memref) != BLKmode && GET_CODE (addr) == LO_SUM
-      && offset >= 0
-      && (unsigned HOST_WIDE_INT) offset
-         < GET_MODE_ALIGNMENT (GET_MODE (memref)) / BITS_PER_UNIT)
-    addr = gen_rtx_LO_SUM (mode, XEXP (addr, 0),
-			   plus_constant (XEXP (addr, 1), offset));
-  else
-    addr = plus_constant (addr, offset);
+  while (offset > 0 && (offset % memalign) != 0)
+    memalign >>= 1;
 
-  return change_address_1 (memref, mode, addr, 0);
+  MEM_ATTRS (new)
+    = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_DECL (memref), memoffset,
+		     mode == BLKmode
+		     ? 0 : GEN_INT (GET_MODE_SIZE (mode)), memalign);
+
+  /* At some point, we should validate that this offset is within the object,
+     if all the appropriate values are known.  */
+  return new;
 }
 
 /* Return a memory reference like MEMREF, but with its address changed to
@@ -1834,10 +1882,11 @@ replace_equiv_address (memref, addr)
      rtx memref;
      rtx addr;
 {
-  /* For now, this is just a wrapper for change_address, but eventually
-     will do memref tracking.  */
-  return change_address (memref, VOIDmode, addr);
+  /* change_address_1 copies the memory attribute structure without change
+     and that's exactly what we want here.  */
+  return change_address_1 (memref, VOIDmode, addr, 1);
 }
+
 /* Likewise, but the reference is not required to be valid.  */
 
 rtx
@@ -1845,8 +1894,6 @@ replace_equiv_address_nv (memref, addr)
      rtx memref;
      rtx addr;
 {
-  /* For now, this is just a wrapper for change_address, but eventually
-     will do memref tracking.  */
   return change_address_1 (memref, VOIDmode, addr, 0);
 }
 

@@ -23,6 +23,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #include "system.h"
 #include "rtl.h"
+
+/* We don't want the tree code checking code for the access to the
+   DECL_NAME to be included in the gen* programs.  */
+#undef ENABLE_TREE_CHECKING
+#include "tree.h"
 #include "real.h"
 #include "flags.h"
 #include "hard-reg-set.h"
@@ -446,8 +451,30 @@ print_rtx (in_rtx)
   switch (GET_CODE (in_rtx))
     {
     case MEM:
-      fputc (' ', outfile);
+      fputs (" [", outfile);
       fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, MEM_ALIAS_SET (in_rtx));
+      if (MEM_DECL (in_rtx) && DECL_NAME (MEM_DECL (in_rtx)))
+	fprintf (outfile, " %s",
+		 IDENTIFIER_POINTER (DECL_NAME (MEM_DECL (in_rtx))));
+
+      if (MEM_OFFSET (in_rtx))
+	{
+	  fputc ('+', outfile);
+	  fprintf (outfile, HOST_WIDE_INT_PRINT_DEC,
+		   INTVAL (MEM_OFFSET (in_rtx)));
+	}
+
+      if (MEM_SIZE (in_rtx))
+	{
+	  fputs (" S", outfile);
+	  fprintf (outfile, HOST_WIDE_INT_PRINT_DEC,
+		   INTVAL (MEM_SIZE (in_rtx)));
+	}
+
+      if (MEM_ALIGN (in_rtx) != 1)
+	fprintf (outfile, " A%u", MEM_ALIGN (in_rtx));
+
+      fputc (']', outfile);
       break;
 
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT && MAX_LONG_DOUBLE_TYPE_SIZE == 64

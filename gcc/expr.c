@@ -5403,6 +5403,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
   tree offset = size_zero_node;
   tree bit_offset = bitsize_zero_node;
   unsigned int alignment = BIGGEST_ALIGNMENT;
+  tree placeholder_ptr = 0;
   tree tem;
 
   /* First get the mode, signedness, and size.  We do this from just the
@@ -5500,6 +5501,11 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 					   unit_size));
 	}
 
+      else if (TREE_CODE (exp) == PLACEHOLDER_EXPR)
+	{
+	  exp = find_placeholder (exp, &placeholder_ptr);
+	  continue;
+	}
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR
 	       && ! ((TREE_CODE (exp) == NOP_EXPR
 		      || TREE_CODE (exp) == CONVERT_EXPR)
@@ -5961,10 +5967,11 @@ check_max_integer_computation_mode (exp)
 
 /* Return an object on the placeholder list that matches EXP, a
    PLACEHOLDER_EXPR.  An object "matches" if it is of the type of the
-   PLACEHOLDER_EXPR or a pointer type to it.  For further information,
-   see tree.def.  If no such object is found, abort.  If PLIST is nonzero,
-   it is a location into which a pointer into the placeholder list at
-   which the object is found is placed.  */
+   PLACEHOLDER_EXPR or a pointer type to it.  For further information, see
+   tree.def.  If no such object is found, abort.  If PLIST is nonzero, it is
+   a location which initially points to a starting location in the
+   placeholder list (zero means start of the list) and where a pointer into
+   the placeholder list at which the object is found is placed.  */
 
 tree
 find_placeholder (exp, plist)
@@ -5974,7 +5981,9 @@ find_placeholder (exp, plist)
   tree type = TREE_TYPE (exp);
   tree placeholder_expr;
 
-  for (placeholder_expr = placeholder_list; placeholder_expr != 0;
+  for (placeholder_expr
+       = plist && *plist ? TREE_CHAIN (*plist) : placeholder_list;
+       placeholder_expr != 0;
        placeholder_expr = TREE_CHAIN (placeholder_expr))
     {
       tree need_type = TYPE_MAIN_VARIANT (type);
@@ -6550,7 +6559,7 @@ expand_expr (exp, target, tmode, modifier)
     case PLACEHOLDER_EXPR:
       {
 	tree old_list = placeholder_list;
-	tree placeholder_expr;
+	tree placeholder_expr = 0;
 
 	exp = find_placeholder (exp, &placeholder_expr);
 	placeholder_list = TREE_CHAIN (placeholder_expr);
