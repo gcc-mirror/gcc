@@ -781,9 +781,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       /* In case the insn wants input operands in modes different from
 	 those of the actual operands, convert the operands.  It would
 	 seem that we don't need to convert CONST_INTs, but we do, so
-	 that they're properly zero-extended or sign-extended for their
-	 modes; shift operations are an exception, because the second
-	 operand need not be extended to the mode of the result.  */
+	 that they're properly zero-extended, sign-extended or truncated
+	 for their mode.  */
 
       if (GET_MODE (op0) != mode0 && mode0 != VOIDmode)
 	xop0 = convert_modes (mode0,
@@ -796,7 +795,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	xop1 = convert_modes (mode1,
 			      GET_MODE (op1) != VOIDmode
 			      ? GET_MODE (op1)
-			      : (shift_op ? mode1 : mode),
+			      : mode,
 			      xop1, unsignedp);
 
       /* Now, if insn's predicates don't allow our operands, put them into
@@ -2234,8 +2233,8 @@ expand_twoval_binop (binoptab, op0, op1, targ0, targ1, unsignedp)
       /* In case the insn wants input operands in modes different from
 	 those of the actual operands, convert the operands.  It would
 	 seem that we don't need to convert CONST_INTs, but we do, so
-	 that they're properly zero-extended or sign-extended for their
-	 modes.  */
+	 that they're properly zero-extended, sign-extended or truncated
+	 for their mode.  */
 
       if (GET_MODE (op0) != mode0 && mode0 != VOIDmode)
 	xop0 = convert_modes (mode0,
