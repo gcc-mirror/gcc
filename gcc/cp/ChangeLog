@@ -1,3 +1,7 @@
+1999-06-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (grokdeclarator): Fix typo in last change.
+
 1999-06-04  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* semantics.c (finish_if_stmt_cond): Copy cond to permanent_obstack.
