@@ -2324,12 +2324,6 @@ do {                                                                    \
 
 #define ASM_APP_OFF ""
 
-/* ??? Try to make the style consistent here (_OP?).  */
-
-#define ASM_FLOAT	".single"
-#define ASM_DOUBLE	".double"
-#define ASM_LONGDOUBLE	".xxx"		/* ??? Not known (or used yet).  */
-
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 

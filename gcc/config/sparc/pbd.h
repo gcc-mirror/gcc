@@ -143,5 +143,3 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_SOURCE_LINE(file, line, counter)	\
   fprintf (file, ".stabn 68,0,%d,.LM%d\n.LM%d:\n",	\
 	   line, counter, counter)
-
-#define ASM_INT_OP "\t.long "

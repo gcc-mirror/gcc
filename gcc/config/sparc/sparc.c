@@ -1001,7 +1001,7 @@ noov_compare64_op (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   if (! TARGET_V9)
     return 0;
 
-  if (!COMPARISON_P (op));
+  if (!COMPARISON_P (op))
     return 0;
 
   code = GET_CODE (op);
