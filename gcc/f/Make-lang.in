@@ -337,7 +337,7 @@ f77.install-info: f77.info
 	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	      $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
 	  done; \
-	  chmod a-x $(infodir)/g77.info* \
+	  chmod a-x $(infodir)/g77.info*; \
 	fi
 
 f77.install-man: $(srcdir)/f/g77.1
