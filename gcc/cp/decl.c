@@ -10647,8 +10647,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    t = ctype;
 	    while (t != NULL_TREE && CLASS_TYPE_P (t))
 	      {
-		if (CLASSTYPE_TEMPLATE_INFO (t) 
-		    && uses_template_parms (CLASSTYPE_TI_ARGS (t)))
+		if (CLASSTYPE_TEMPLATE_INFO (t) &&
+		    !CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
 		  template_count += 1;
 		t = TYPE_MAIN_DECL (t);
 		if (DECL_LANG_SPECIFIC (t))
