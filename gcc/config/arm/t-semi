@@ -13,6 +13,9 @@ CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = arm/lib1funcs.asm
 LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _dvmd_tls
 
+#Don't try to run fixproto
+STMP_FIXPROTO =
+
 # These are really part of libgcc1, but this will cause them to be
 # built correctly, so...
 
