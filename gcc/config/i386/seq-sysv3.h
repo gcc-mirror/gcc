@@ -40,17 +40,3 @@
 /* Assembler pseudo-op for uninitialized shared local variables (.shbss). */
 #undef  SHARED_BSS_SECTION_ASM_OP
 #define SHARED_BSS_SECTION_ASM_OP ".section .shbss, \"bs\""
-#undef  BSS_SECTION_FUNCTION
-#define BSS_SECTION_FUNCTION					\
-void								\
-bss_section ()							\
-{								\
-  if (in_section != in_bss)					\
-    {								\
-      if (flag_shared_data)                                     \
-        fprintf (asm_out_file, "%s\n", SHARED_BSS_SECTION_ASM_OP);	\
-      else							\
-        fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);	\
-      in_section = in_bss;					\
-    }								\
-}
