@@ -101,7 +101,7 @@ public abstract class FileLock
    */
   public final boolean overlaps (long position, long size)
   {
-    if (position > this.position +this.size)
+    if (position > this.position + this.size)
       return false;
 
     if (position + size < this.position)

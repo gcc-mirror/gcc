@@ -1866,6 +1866,7 @@ gnu/java/nio/DirectByteBufferImpl.java \
 gnu/java/nio/DoubleBufferImpl.java \
 gnu/java/nio/DoubleViewBufferImpl.java \
 gnu/java/nio/FileChannelImpl.java \
+gnu/java/nio/FileLockImpl.java \
 gnu/java/nio/FloatBufferImpl.java \
 gnu/java/nio/FloatViewBufferImpl.java \
 gnu/java/nio/IntBufferImpl.java \
@@ -2325,6 +2326,7 @@ gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
 gnu/java/nio/natDirectByteBufferImpl.cc \
 gnu/java/nio/natFileChannelImpl.cc \
+gnu/java/nio/natFileLockImpl.cc \
 gnu/java/nio/natMappedByteFileBuffer.cc \
 gnu/java/nio/natSelectorImpl.cc \
 gnu/java/nio/natSocketChannelImpl.cc \
@@ -2500,7 +2502,7 @@ gnu/gcj/runtime/natNameFinder.lo gnu/gcj/runtime/natSharedLibLoader.lo \
 gnu/gcj/runtime/natStackTrace.lo gnu/gcj/runtime/natStringBuffer.lo \
 gnu/gcj/runtime/natVMClassLoader.lo \
 gnu/java/nio/natDirectByteBufferImpl.lo \
-gnu/java/nio/natFileChannelImpl.lo \
+gnu/java/nio/natFileChannelImpl.lo gnu/java/nio/natFileLockImpl.lo \
 gnu/java/nio/natMappedByteFileBuffer.lo gnu/java/nio/natSelectorImpl.lo \
 gnu/java/nio/natSocketChannelImpl.lo java/io/natFile.lo \
 java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
@@ -2970,7 +2972,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/nio/DirectByteBufferImpl.P \
 .deps/gnu/java/nio/DoubleBufferImpl.P \
 .deps/gnu/java/nio/DoubleViewBufferImpl.P \
-.deps/gnu/java/nio/FileChannelImpl.P \
+.deps/gnu/java/nio/FileChannelImpl.P .deps/gnu/java/nio/FileLockImpl.P \
 .deps/gnu/java/nio/FloatBufferImpl.P \
 .deps/gnu/java/nio/FloatViewBufferImpl.P \
 .deps/gnu/java/nio/IntBufferImpl.P \
@@ -2995,6 +2997,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/nio/charset/UTF_8.P \
 .deps/gnu/java/nio/natDirectByteBufferImpl.P \
 .deps/gnu/java/nio/natFileChannelImpl.P \
+.deps/gnu/java/nio/natFileLockImpl.P \
 .deps/gnu/java/nio/natMappedByteFileBuffer.P \
 .deps/gnu/java/nio/natSelectorImpl.P \
 .deps/gnu/java/nio/natSocketChannelImpl.P \

@@ -50,7 +50,7 @@ public class SelectionKeyImpl extends AbstractSelectionKey
   SelectorImpl impl;
   SelectableChannel ch;
 
-  public SelectionKeyImpl(SelectableChannel ch, SelectorImpl impl, int fd)
+  public SelectionKeyImpl (SelectableChannel ch, SelectorImpl impl, int fd)
   {
     this.ch  = ch;
     this.impl = impl;
