@@ -1,3 +1,8 @@
+Sun Feb  1 13:38:07 1998  H.J. Lu  (hjl@gnu.org)
+
+	* config/linux.mt: Don't define _PTHREADS, but define
+	_IO_MTSAFE_IO.
+
 Mon Feb  9 00:09:16 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in (install): Remove the shared library symlink even if
