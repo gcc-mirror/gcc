@@ -5128,8 +5128,20 @@ main (argc, argv)
 		      if (*p && (*p < '0' || *p > '9'))
 			continue;
 		      
-		      level = read_integral_parameter (p, 0,
-						       max_debug_level + 1);
+		      /* A debug flag without a level defaults to level 2.
+			 Note we do not want to call read_integral_parameter
+			 for that case since it will call atoi which 
+			 will return zero.
+
+			 ??? We may want to generalize the interface to 
+			 read_integral_parameter to better handle this case
+			 if this case shows up often.  */
+		      if (*p)
+			level = read_integral_parameter (p, 0,
+							 max_debug_level + 1);
+		      else
+			level = 2;
+
 		      if (da_len > 1 && !strncmp (str, "gdwarf", da_len))
 			{
 			  error ("use -gdwarf -g%d for DWARF v1, level %d",

@@ -1,3 +1,8 @@
+Sun Mar 21 17:33:48 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* toplev.c (main): A debug option without a level defaults to
+	level 2.
+
 Sun Mar 21 12:13:01 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* flow.c (can_delete_label_p): Do not allow user specified
