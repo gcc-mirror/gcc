@@ -104,10 +104,6 @@ static varray_type deferred_fns;
 #define deferred_fns_used \
   (deferred_fns ? deferred_fns->elements_used : 0)
 
-/* Same, but not reset.  Local temp variables and global temp variables
-   can have the same name.  */
-static int global_temp_name_counter;
-
 /* Flag used when debugging spew.c */
 
 extern int spew_debug;

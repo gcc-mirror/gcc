@@ -788,7 +788,7 @@ scan_for_source_files ()
 {
   struct sourcefile *s_ptr = NULL;
   char *ptr;
-  int count;
+  long count;
   long line_num;
 
   /* Search the bb_data to find:
@@ -878,7 +878,7 @@ calculate_branch_probs (current_graph, block_num, branch_probs, last_line_num)
      struct arcdata **branch_probs;
      int last_line_num;
 {
-  int total;
+  gcov_type total;
   struct adj_list *arcptr;
   struct arcdata *end_ptr, *a_ptr;
 
@@ -990,7 +990,7 @@ output_data ()
   char *source_file_name;
   FILE *source_file;
   struct bb_info_list *current_graph;
-  int count;
+  long count;
   char *cptr;
   long block_num;
   long line_num;
@@ -1360,16 +1360,23 @@ output_data ()
 		            else
 			      {
 				if (output_branch_counts)
-				  fnotice (gcov_file,
-				           "call %d returns = "
-					   HOST_WIDEST_INT_PRINT_DEC "\n",
-				           i, a_ptr->total - a_ptr->hits);
+				  {
+				    char c[20];
+				    sprintf (c, HOST_WIDEST_INT_PRINT_DEC,
+					     a_ptr->total - a_ptr->hits);
+				    fnotice (gcov_file,
+					     "call %d returns = %s\n", i, c);
+				  }
 			        else
-                                  fnotice (gcov_file,
-				           "call %d returns = "
-					   HOST_WIDEST_INT_PRINT_DEC "%%\n",
-				            i, 100 - ((a_ptr->hits * 100) +
-                                           (a_ptr->total >> 1))/a_ptr->total);
+				  {
+				    char c[20];
+				    sprintf (c, HOST_WIDEST_INT_PRINT_DEC,
+					     100 - ((a_ptr->hits * 100)
+						    + (a_ptr->total >> 1))
+					     / a_ptr->total);
+				    fnotice (gcov_file,
+					     "call %d returns = %s%%\n", i, c);
+				  }
 			      }
 			}
 		      else
@@ -1380,18 +1387,23 @@ output_data ()
 			  else
 			    {
 			      if (output_branch_counts)
-			        fnotice (gcov_file,
-				         "branch %d taken = "
-					 HOST_WIDEST_INT_PRINT_DEC "\n",
-                                         i, a_ptr->hits);
+				{
+				  char c[20];
+				  sprintf (c, HOST_WIDEST_INT_PRINT_DEC,
+					   a_ptr->hits);
+				  fnotice (gcov_file,
+					   "branch %d taken = %s\n", i, c);
+				}
 			      else
+				{
+				  char c[20];
+				  sprintf (c, HOST_WIDEST_INT_PRINT_DEC,
+					   ((a_ptr->hits * 100)
+					    + (a_ptr->total >> 1))
+					   / a_ptr->total);
                                 fnotice (gcov_file,
-                                         "branch %d taken = "
-					 HOST_WIDEST_INT_PRINT_DEC "%%\n", i,
-                                         ((a_ptr->hits * 100) +
-                                          (a_ptr->total >> 1))/
-                                          a_ptr->total);
-
+                                         "branch %d taken = %s%%\n", i, c);
+				}
 			    }
 			}
 		   }

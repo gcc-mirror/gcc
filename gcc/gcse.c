@@ -4628,10 +4628,6 @@ insert_insn_end_bb (expr, bb, pre)
      of exception handling.  */
   else if (GET_CODE (insn) == CALL_INSN)
     {
-      HARD_REG_SET parm_regs;
-      int nparm_regs;
-      rtx p;
-
       /* Keeping in mind SMALL_REGISTER_CLASSES and parameters in registers,
 	 we search backward and place the instructions before the first
 	 parameter is loaded.  Do this for everyone for consistency and a
