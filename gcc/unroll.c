@@ -1810,8 +1810,8 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		  /* An unrecognizable jump insn, probably the entry jump
 		     for a switch statement.  This label must have been mapped,
 		     so just use the label_map to get the new jump label.  */
-		  JUMP_LABEL (copy) = map->label_map[CODE_LABEL_NUMBER
-						     (JUMP_LABEL (insn))];
+		  JUMP_LABEL (copy)
+		    = map->label_map[CODE_LABEL_NUMBER (JUMP_LABEL (insn))];
 		}
 	  
 	      /* If this is a non-local jump, then must increase the label
