@@ -1,8 +1,17 @@
+2002-05-07  Tim Josling  <tej@melbpc.org.au>
+
+	* Makefile.in: Fix copyright
+	* a01gcci01.c: Ditto
+	* a01gcci01.tree: Ditto
+	* treetests.exp: Ditto
+
 2002-04-13  Tim Josling  <tej@melbpc.org.au>
-      * treetree.c (tree_code_create_function_initial)
-      Remove duplicate call to layout_decl
+
+	* treetree.c (tree_code_create_function_initial)
+	Remove duplicate call to layout_decl
 
 2001-12-02  Tim Josling  <tej@melbpc.org.au>
+     
       * Make-lang.in
       Ensure directory is built during install (installdirs dependency)
 
