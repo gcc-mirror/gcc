@@ -2654,7 +2654,7 @@ eliminate_regs (x, mem_mode, insn)
 	      {
 		if (! mem_mode
 		    /* Refs inside notes don't count for this purpose.  */
-		    && ! (insn == 0 && (GET_CODE (insn) == EXPR_LIST
+		    && ! (insn != 0 && (GET_CODE (insn) == EXPR_LIST
 					|| GET_CODE (insn) == INSN_LIST)))
 		  ep->ref_outside_mem = 1;
 		return plus_constant (ep->to_rtx, ep->previous_offset);
