@@ -328,6 +328,8 @@ extern tree gettags				PARAMS ((void));
 extern int (*lang_missing_noreturn_ok_p)	PARAMS ((tree));
 
 extern int yyparse				PARAMS ((void));
+extern void free_parser_stacks			PARAMS ((void));
+
 extern stmt_tree current_stmt_tree              PARAMS ((void));
 extern tree *current_scope_stmt_stack           PARAMS ((void));
 extern void begin_stmt_tree                     PARAMS ((tree *));
