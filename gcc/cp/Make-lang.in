@@ -237,7 +237,7 @@ cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) toplev.h langhooks.h $(LANGHOOKS_DEF_H)
 cp/decl.o: cp/decl.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h stack.h \
   output.h $(EXPR_H) except.h toplev.h $(HASHTAB_H) $(GGC_H) $(RTL_H) \
   cp/operators.def $(TM_P_H) tree-inline.h diagnostic.h c-pragma.h \
-  debug.h gt-cp-decl.h gtype-cp.h
+  debug.h gt-cp-decl.h gtype-cp.h timevar.h
 cp/decl2.o: cp/decl2.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h $(EXPR_H) \
   output.h except.h toplev.h $(GGC_H) $(RTL_H) c-common.h gt-cp-decl2.h
 cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) flags.h toplev.h output.h $(TM_P_H) \
