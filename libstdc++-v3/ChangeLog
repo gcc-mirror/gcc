@@ -1,3 +1,13 @@
+2003-09-30  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/12352 (cont)
+	* src/localename.cc (locale::_Impl::_Impl(const char*, size_t)):
+	Don't leak __cloc; don't leak if any of the _M_init_facet(...)
+	calls fail.
+	(locale::_Impl::_Impl(const _Impl&, size_t)): Tweak.
+	(locale::_Impl::~_Impl): Don't do anything if !_M_facets,
+	!_M_caches, !_M_names.
+
 2003-09-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.host: Handle Solaris 2.5 micro releases explicitly.
