@@ -2176,6 +2176,11 @@ struct tree_binfo GTY (())
    not an alias.  */
 #define DECL_IS_MALLOC(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.malloc_flag)
 
+/* Nonzero in a FUNCTION_DECL means this function may return more
+   than once.  */
+#define DECL_IS_RETURNS_TWICE(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->decl.returns_twice_flag)
+
 /* Nonzero in a FUNCTION_DECL means this function should be treated
    as "pure" function (like const function, but may read global memory).  */
 #define DECL_IS_PURE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.pure_flag)
@@ -2377,7 +2382,8 @@ struct tree_decl GTY(())
   unsigned preserve_flag: 1;
   unsigned gimple_formal_temp : 1;
   unsigned debug_expr_is_from : 1;
-  /* 12 unused bits.  */
+  unsigned returns_twice_flag : 1;
+  /* 11 unused bits.  */
 
   union tree_decl_u1 {
     /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
