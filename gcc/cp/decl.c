@@ -8558,7 +8558,7 @@ expand_static_init (decl, init)
 
 /* Make TYPE a complete type based on INITIAL_VALUE.
    Return 0 if successful, 1 if INITIAL_VALUE can't be deciphered,
-   2 if there was no information (in which case assume 1 if DO_DEFAULT).  */
+   2 if there was no information (in which case assume 0 if DO_DEFAULT).  */
 
 int
 complete_array_type (type, initial_value, do_default)
@@ -8567,7 +8567,10 @@ complete_array_type (type, initial_value, do_default)
 {
   register tree maxindex = NULL_TREE;
   int value = 0;
-
+  
+  /* Allocate on the same obstack as TYPE.  */
+  push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
+  
   if (initial_value)
     {
       /* Note MAXINDEX  is really the maximum index,
@@ -8615,23 +8618,28 @@ complete_array_type (type, initial_value, do_default)
   if (maxindex)
     {
       tree itype;
+      tree domain;
 
-      TYPE_DOMAIN (type) = build_index_type (maxindex);
+      domain = build_index_type (maxindex);
+      TYPE_DOMAIN (type) = domain;
+
       if (! TREE_TYPE (maxindex))
-	TREE_TYPE (maxindex) = TYPE_DOMAIN (type);
+	TREE_TYPE (maxindex) = domain;
       if (initial_value)
         itype = TREE_TYPE (initial_value);
       else
 	itype = NULL;
       if (itype && !TYPE_DOMAIN (itype))
-	TYPE_DOMAIN (itype) = TYPE_DOMAIN (type);
+	TYPE_DOMAIN (itype) = domain;
       /* The type of the main variant should never be used for arrays
 	 of different sizes.  It should only ever be completed with the
 	 size of the array.  */
       if (! TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)))
-	TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)) = TYPE_DOMAIN (type);
+	TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)) = domain;
     }
 
+  pop_obstacks();
+  
   /* Lay out the type now that we can get the real answer.  */
 
   layout_type (type);
