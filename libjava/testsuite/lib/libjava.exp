@@ -495,20 +495,27 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 		     [target_compile $srcfile "" none \
 			"compiler=$jvscan additional_flags=--list-class"]]
     verbose "class list is $class_out"
-    # FIXME: As of Wed Feb 24 1999, `jv-scan --list-class' prints
-    # nothing if the file contains an interface and not a class.  I
-    # believe this is a jv-scan bug.
-    if {$class_out == ""} then {
-	set class_files \
-	  [list $objdir/[file rootname [file tail $srcfile]].class]
-    } else {
-	# Turn "a b" into "a.class b.class".
-	# Also, turn "foo.bar" into "foo/bar.class".
-	set class_files {}
-        foreach file [split [string trim $class_out]] {
-	    set file [join [split $file .] /]
-	    lappend class_files $objdir/$file.class
+
+    if {[string match "*parse error*" $main_name]
+	|| [string match "*parse error*" $class_out]} {
+	# Do the remaining fails.
+	setup_xfail "*-*-*"
+	fail "$errname compilation from bytecode"
+	if {! [info exists opts(no-exec)]} {
+	    setup_xfail "*-*-*"
+	    fail "$errname execution from bytecode->native test"
+	    setup_xfail "*-*-*"
+	    fail "$errname output from bytecode->native test"
 	}
+	return
+    }
+
+    # Turn "a b" into "a.class b.class".
+    # Also, turn "foo.bar" into "foo/bar.class".
+    set class_files {}
+    foreach file [split [string trim $class_out]] {
+	set file [join [split $file .] /]
+	lappend class_files $objdir/$file.class
     }
 
     # Usually it is an error for a test program not to have a `main'
