@@ -68,10 +68,10 @@
 typedef struct cp_token GTY (())
 {
   /* The kind of token.  */
-  enum cpp_ttype type : 8;
+  ENUM_BITFIELD (cpp_ttype) type : 8;
   /* If this token is a keyword, this value indicates which keyword.
      Otherwise, this value is RID_MAX.  */
-  enum rid keyword : 8;
+  ENUM_BITFIELD (rid) keyword : 8;
   /* The value associated with this token, if any.  */
   tree value;
   /* The location at which this token was found.  */
@@ -1076,9 +1076,9 @@ typedef enum cp_parser_declarator_kind
 typedef struct cp_parser_token_tree_map_node
 {
   /* The token type.  */
-  enum cpp_ttype token_type : 8;
+  ENUM_BITFIELD (cpp_ttype) token_type : 8;
   /* The corresponding tree code.  */
-  enum tree_code tree_type : 8;
+  ENUM_BITFIELD (tree_code) tree_type : 8;
 } cp_parser_token_tree_map_node;
 
 /* A complete map consists of several ordinary entries, followed by a

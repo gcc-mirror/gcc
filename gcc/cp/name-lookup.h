@@ -211,7 +211,7 @@ struct cp_binding_level GTY(())
     /* The kind of scope that this object represents.  However, a
        SK_TEMPLATE_SPEC scope is represented with KIND set to
        SK_TEMPALTE_PARMS and EXPLICIT_SPEC_P set to true.  */
-    enum scope_kind kind : 4;
+    ENUM_BITFIELD (scope_kind) kind : 4;
 
     /* True if this scope is an SK_TEMPLATE_SPEC scope.  This field is
        only valid if KIND == SK_TEMPLATE_PARMS.  */
