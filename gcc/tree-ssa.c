@@ -463,33 +463,6 @@ verify_flow_sensitive_alias_info (void)
 	  error ("Pointer escapes but its name tag is not call-clobbered.");
 	  goto err;
 	}
-
-      if (pi->name_mem_tag && pi->pt_vars)
-	{
-	  size_t j;
-
-	  for (j = i + 1; j < num_ssa_names; j++)
-	    if (ssa_name (j))
-	      {
-		tree ptr2 = ssa_name (j);
-		struct ptr_info_def *pi2 = SSA_NAME_PTR_INFO (ptr2);
-
-		if (!TREE_VISITED (ptr2) || !POINTER_TYPE_P (TREE_TYPE (ptr2)))
-		  continue;
-
-		if (pi2
-		    && pi2->name_mem_tag
-		    && pi2->pt_vars
-		    && bitmap_first_set_bit (pi2->pt_vars) >= 0
-		    && pi->name_mem_tag != pi2->name_mem_tag
-		    && bitmap_equal_p (pi->pt_vars, pi2->pt_vars))
-		  {
-		    error ("Two pointers with different name tags and identical points-to sets");
-		    debug_variable (ptr2);
-		    goto err;
-		  }
-	      }
-	}
     }
 
   return;
@@ -499,13 +472,90 @@ err:
   internal_error ("verify_flow_sensitive_alias_info failed.");
 }
 
+DEF_VEC_MALLOC_P (bitmap);
 
+/* Verify that all name tags have different points to sets.
+   This algorithm takes advantage of the fact that every variable with the
+   same name tag must have the same points-to set. 
+   So we check a single variable for each name tag, and verify that it's
+   points-to set is different from every other points-to set for other name
+   tags.  */
+
+static void
+verify_name_tags (void)
+{
+  size_t i;  
+  size_t j;
+  bitmap first, second;  
+  VEC (tree) *name_tag_reps = NULL;
+  VEC (bitmap) *pt_vars_for_reps = NULL;
+
+  /* First we compute the name tag representatives and their points-to sets.  */
+  for (i = 0; i < num_ssa_names; i++)
+    {
+      if (ssa_name (i))
+	{
+	  tree ptr = ssa_name (i);
+	  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+	  if (!TREE_VISITED (ptr) 
+	      || !POINTER_TYPE_P (TREE_TYPE (ptr)) 
+	      || !pi
+	      || !pi->name_mem_tag 
+	      || TREE_VISITED (pi->name_mem_tag))
+	    continue;
+	  TREE_VISITED (pi->name_mem_tag) = 1;
+	  if (pi->pt_vars != NULL)
+	    {    
+	      VEC_safe_push (tree, name_tag_reps, ptr);
+	      VEC_safe_push (bitmap, pt_vars_for_reps, pi->pt_vars);
+	    }
+	}
+    }
+  
+  /* Now compare all the representative bitmaps with all other representative
+     bitmaps, to verify that they are all different.  */
+  for (i = 0; VEC_iterate (bitmap, pt_vars_for_reps, i, first); i++)
+    {
+       for (j = i + 1; VEC_iterate (bitmap, pt_vars_for_reps, j, second); j++)
+	 { 
+	   if (bitmap_equal_p (first, second))
+	     {
+	       error ("Two different pointers with identical points-to sets but different name tags");
+	       debug_variable (VEC_index (tree, name_tag_reps, j));
+	       goto err;
+	     }
+	 }
+    }
+
+  /* Lastly, clear out the visited flags.  */
+  for (i = 0; i < num_ssa_names; i++)
+    {
+      if (ssa_name (i))
+	{
+	  tree ptr = ssa_name (i);
+	  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+	  if (!TREE_VISITED (ptr) 
+	      || !POINTER_TYPE_P (TREE_TYPE (ptr)) 
+	      || !pi
+	      || !pi->name_mem_tag)
+	    continue;
+	  TREE_VISITED (pi->name_mem_tag) = 0;
+	}
+    } 
+  VEC_free (bitmap, pt_vars_for_reps);
+  return;
+  
+err:
+  debug_variable (VEC_index (tree, name_tag_reps, i));
+  internal_error ("verify_name_tags failed");
+}
 /* Verify the consistency of aliasing information.  */
 
 static void
 verify_alias_info (void)
 {
   verify_flow_sensitive_alias_info ();
+  verify_name_tags ();
   verify_flow_insensitive_alias_info ();
 }
 

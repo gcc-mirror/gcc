@@ -1,3 +1,9 @@
+2004-10-12  Daniel Berlin <dberlin@dberlin.org>
+
+	* tree-ssa-alias.c (verify_name_tags): New function.
+	(verify_flow_sensitive_alias_info): Remove code that used to check name tags.
+	(verify_alias_info): Call verify_name_tags.
+
 2004-10-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR rtl-optimization/17931
