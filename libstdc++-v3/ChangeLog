@@ -1,3 +1,14 @@
+2002-05-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/6750
+	* include/bits/ostream.tcc (ostream::operator<<(const char*)): Fix
+	for empty string literal.
+	(ostream::operator<<(const _CharT*)): Same.
+	(ostream<char>::operator<<(const char*)): Same.
+	(ostream<char>::operator<<(streambuf*)): Same.
+	* testsuite/27_io/ostream_inserter_char.cc (test08): Add tests.
+	* testsuite/27_io/ostream_inserter_other.cc (test02): Modify.
+	
 2002-05-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in: Update local install.html, configopts.html paths.
