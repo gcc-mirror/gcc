@@ -1,5 +1,13 @@
 2003-10-29  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (time_put::put): Absolutely
+	avoid dereferencing end iterators; clean up.
+
+	* include/bits/locale_facets.tcc (num_get::_M_extract_float,
+	num_get::_M_extract_int): Minor tweak.
+
+2003-10-29  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc: Remove some unnecessary
 	includes.
 	* config/locale/generic/c_locale.cc: Include <cerrno> here.

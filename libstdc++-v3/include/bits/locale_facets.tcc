@@ -219,10 +219,9 @@ namespace std
 	    {
 	      // Scientific notation.
 	      __xtrc += __e ? _S_atoms_in[_S_ie] : _S_atoms_in[_S_iE];
-	      ++__beg;
 	      
 	      // Remove optional plus or minus sign, if they exist.
-	      if (__beg != __end)
+	      if (++__beg != __end)
 		{
 		  const bool __plus = __traits_type::eq(*__beg, __lit[_S_iplus]);
 		  if (__plus || __traits_type::eq(*__beg, __lit[_S_iminus]))
@@ -327,9 +326,8 @@ namespace std
 	  if (__beg != __end && __traits_type::eq(*__beg, __lit[_S_izero]))
 	    {
 	      __xtrc += _S_atoms_in[_S_izero];
-	      ++__beg; 
 	      
-	      if (__beg != __end)
+	      if (++__beg != __end)
 		{
 		  const bool __x = __traits_type::eq(*__beg, __lit[_S_ix]);
 		  if (__x || __traits_type::eq(*__beg, __lit[_S_iX]))
@@ -1995,31 +1993,32 @@ namespace std
     {
       const locale __loc = __io.getloc();
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
-      while (__beg != __end)
+      for (; __beg != __end; ++__beg)
 	{
-	  const _CharT __tmp = *__beg;
-	  ++__beg;
-	  if (__ctype.narrow(__tmp, 0) == '%' && __beg != __end)
+	  if (__ctype.narrow(*__beg, 0) != '%')
+	    {
+	      *__s = *__beg;
+	      ++__s;
+	    }
+	  else if (++__beg != __end)
 	    {
 	      char __format;
 	      char __mod = 0;
 	      const char __c = __ctype.narrow(*__beg, 0);
-	      ++__beg;
-	      if (__c == 'E' || __c == 'O')
+	      if (__c != 'E' && __c != 'O')
+		__format = __c;
+	      else if (++__beg != __end)
 		{
 		  __mod = __c;
 		  __format = __ctype.narrow(*__beg, 0);
-		  ++__beg;
 		}
 	      else
-		__format = __c;
-	      __s = this->do_put(__s, __io, __fill, __tm, __format, __mod);
+		break;
+	      __s = this->do_put(__s, __io, __fill, __tm,
+				 __format, __mod);
 	    }
 	  else
-	    {
-	      *__s = __tmp;
-	      ++__s;
-	    }
+	    break;
 	}
       return __s;
     }
