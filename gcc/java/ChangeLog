@@ -1,3 +1,8 @@
+2003-09-30  Roger Sayle  <roger@eyesopen.com>
+
+	* jcf-write.c (generate_bytecode_insns): Implement evaluate-once
+	semantics for SAVE_EXPR, by caching the result in a temporary.
+
 2003-09-28  Richard Henderson  <rth@redhat.com>
 
 	* check-init.c (check_init): Save and restore input_location
