@@ -484,6 +484,15 @@ typedef struct machine_function GTY(())
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
+
+/* Minimum number of units in a word.  If this is undefined, the default
+   is UNITS_PER_WORD.  Otherwise, it is the constant value that is the
+   smallest value that UNITS_PER_WORD can have at run-time.
+
+   FIXME: This needs to be 4 when TARGET_64BIT is true to suppress the
+   building of various TImode routines in libgcc.  The HP runtime
+   specification doesn't provide the alignment requirements and calling
+   conventions for TImode variables.  */
 #define MIN_UNITS_PER_WORD 4
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */

@@ -1,5 +1,10 @@
 2005-01-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR target/19336
+	* pa.c (pa_scalar_mode_supported_p): New function.
+	(TARGET_SCALAR_MODE_SUPPORTED_P): Define.
+	* pa.h (MIN_UNITS_PER_WORD): Add comment.
+
 	* pa-protos.h (prefetch_operand): Delete.
 	(prefetch_cc_operand, prefetch_nocc_operand): New declations.
 	* pa.c (prefetch_operand): Delete.
