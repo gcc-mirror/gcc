@@ -1,3 +1,8 @@
+2002-05-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa/pa32-regs.h (HARD_REGNO_MODE_OK): Revise sets of general registers
+	used for DImode and TImode.
+
 2002-05-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplex.c (_cpp_lex_direct): When in a directive at EOF
