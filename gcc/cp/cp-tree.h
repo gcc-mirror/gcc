@@ -1682,8 +1682,63 @@ extern int flag_new_for_scope;
 
 /* Nonzero for _TYPE node means that this type is a pointer to member
    function type.  */
-#define TYPE_PTRMEMFUNC_P(NODE) (TREE_CODE(NODE) == RECORD_TYPE && TYPE_LANG_SPECIFIC(NODE)->type_flags.ptrmemfunc_flag)
-#define TYPE_PTRMEMFUNC_FLAG(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.ptrmemfunc_flag)
+#define TYPE_PTRMEMFUNC_P(NODE) \
+  (TREE_CODE(NODE) == RECORD_TYPE && TYPE_PTRMEMFUNC_FLAG (NODE))
+#define TYPE_PTRMEMFUNC_FLAG(NODE) \
+  (TYPE_LANG_SPECIFIC(NODE)->type_flags.ptrmemfunc_flag)
+
+/* A pointer-to-function member type looks like:
+
+   struct {
+     short __delta;
+     short __index;
+     union {
+       P __pfn;
+       short __delta2;
+     } __pfn_or_delta2;
+   };
+
+   where P is a POINTER_TYPE to a METHOD_TYPE appropriate for the
+   pointer to member.  The fields are used as follows:
+
+     If __INDEX is -1, then the function to call is non-virtual, and
+     is located at the address given by __PFN.
+
+     If __INDEX is zero, then this a NULL pointer-to-member.
+
+     Otherwise, the function to call is virtual.  Then, __DELTA2 gives
+     the offset from an instance of the object to the virtual function
+     table, and __INDEX - 1 is the index into the vtable to use to
+     find the function.
+
+     The value to use for the THIS parameter is the address of the
+     object plus __DELTA.
+
+   For example, given:
+
+     struct B1 {
+       int i;
+     };
+
+     struct B2 {
+       double d;
+       void f();
+     };
+
+     struct S : public B1, B2 {};
+
+   the pointer-to-member for `&S::f' looks like:
+
+     { 4, -1, { &f__2B2 } };
+
+   The `4' means that given an `S*' you have to add 4 bytes to get to
+   the address of the `B2*'.  Then, the -1 indicates that this is a
+   non-virtual function.  Of course, `&f__2B2' is the name of that
+   function.
+
+   (Of course, the exactl values may differ depending on the mangling
+   scheme, sizes of types, and such.).  */
+     
 /* Get the POINTER_TYPE to the METHOD_TYPE associated with this
    pointer to member function.  TYPE_PTRMEMFUNC_P _must_ be true,
    before using this macro.  */
@@ -1698,8 +1753,8 @@ extern int flag_new_for_scope;
 #define TYPE_GET_PTRMEMFUNC_TYPE(NODE) ((tree)TYPE_LANG_SPECIFIC(NODE))
 #define TYPE_SET_PTRMEMFUNC_TYPE(NODE, VALUE) (TYPE_LANG_SPECIFIC(NODE) = ((struct lang_type *)(void*)(VALUE)))
 /* These are to get the delta2 and pfn fields from a TYPE_PTRMEMFUNC_P.  */
-#define DELTA2_FROM_PTRMEMFUNC(NODE) (build_component_ref (build_component_ref ((NODE), pfn_or_delta2_identifier, NULL_TREE, 0), delta2_identifier, NULL_TREE, 0))
-#define PFN_FROM_PTRMEMFUNC(NODE) (build_component_ref (build_component_ref ((NODE), pfn_or_delta2_identifier, NULL_TREE, 0), pfn_identifier, NULL_TREE, 0))
+#define DELTA2_FROM_PTRMEMFUNC(NODE) delta2_from_ptrmemfunc ((NODE))
+#define PFN_FROM_PTRMEMFUNC(NODE) pfn_from_ptrmemfunc ((NODE))
 
 /* For a pointer-to-member constant `X::Y' this is the RECORD_TYPE for
    `X'.  */
@@ -2711,7 +2766,7 @@ extern tree ocp_convert				PROTO((tree, tree, int, int));
 extern tree cp_convert				PROTO((tree, tree));
 extern tree convert				PROTO((tree, tree));
 extern tree convert_force			PROTO((tree, tree, int));
-extern tree build_type_conversion		PROTO((enum tree_code, tree, tree, int));
+extern tree build_type_conversion		PROTO((tree, tree, int));
 extern tree build_expr_type_conversion		PROTO((int, tree, int));
 extern tree type_promotes_to			PROTO((tree));
 extern tree perform_qualification_conversions   PROTO((tree, tree));
@@ -3417,6 +3472,10 @@ extern int cp_type_quals                        PROTO((tree));
 extern int cp_has_mutable_p                     PROTO((tree));
 extern int at_least_as_qualified_p              PROTO((tree, tree));
 extern int more_qualified_p                     PROTO((tree, tree));
+extern tree build_ptrmemfunc1                   PROTO((tree, tree, tree, tree, tree));
+extern void expand_ptrmemfunc_cst               PROTO((tree, tree *, tree *, tree *, tree *));
+extern tree delta2_from_ptrmemfunc              PROTO((tree));
+extern tree pfn_from_ptrmemfunc                 PROTO((tree));
 
 /* in typeck2.c */
 extern tree error_not_base_type			PROTO((tree, tree));

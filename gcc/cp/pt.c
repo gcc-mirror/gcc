@@ -2577,7 +2577,14 @@ convert_nontype_argument (type, expr)
        Check this first since if expr_type is the unknown_type_node
        we would otherwise complain below.  */
     ;
+  else if (TYPE_PTRMEM_P (expr_type)
+	   || TYPE_PTRMEMFUNC_P (expr_type))
+    {
+      if (TREE_CODE (expr) != PTRMEM_CST)
+	goto bad_argument;
+    }
   else if (TYPE_PTR_P (expr_type)
+	   || TYPE_PTRMEM_P (expr_type)
 	   || TREE_CODE (expr_type) == ARRAY_TYPE
 	   || TREE_CODE (type) == REFERENCE_TYPE
 	   /* If expr is the address of an overloaded function, we
@@ -2597,11 +2604,17 @@ convert_nontype_argument (type, expr)
 	    {
 	    bad_argument:
 	      cp_error ("`%E' is not a valid template argument", expr);
-	      error ("it must be %s%s with external linkage",
-		     TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE
-		     ? "a pointer to " : "",
-		     TREE_CODE (TREE_TYPE (TREE_TYPE (expr))) == FUNCTION_TYPE
-		     ? "a function" : "an object");
+	      if (TYPE_PTR_P (expr_type))
+		{
+		  if (TREE_CODE (TREE_TYPE (expr_type)) == FUNCTION_TYPE)
+		    cp_error ("it must be the address of a function with external linkage");
+		  else
+		    cp_error ("it must be the address of an object with external linkage");
+		}
+	      else if (TYPE_PTRMEM_P (expr_type)
+		       || TYPE_PTRMEMFUNC_P (expr_type))
+		cp_error ("it must be a pointer-to-member of the form `&X::Y'");
+
 	      return NULL_TREE;
 	    }
 
@@ -2829,7 +2842,7 @@ convert_nontype_argument (type, expr)
 	    expr_type != unknown_type_node)
 	  return error_mark_node;
 
-	if (TREE_CODE (expr) == CONSTRUCTOR)
+	if (TREE_CODE (expr) == PTRMEM_CST)
 	  {
 	    /* A ptr-to-member constant.  */
 	    if (!same_type_p (type, expr_type))

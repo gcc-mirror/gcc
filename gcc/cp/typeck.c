@@ -51,7 +51,6 @@ static int comp_ptr_ttypes_const PROTO((tree, tree));
 static int comp_ptr_ttypes_reinterpret PROTO((tree, tree));
 static int comp_array_types PROTO((int (*) (tree, tree, int), tree,
 				   tree, int));
-static tree build_ptrmemfunc1 PROTO((tree, tree, tree, tree, tree));
 static tree common_base_type PROTO((tree, tree));
 #if 0
 static tree convert_sequence PROTO((tree, tree));
@@ -4705,7 +4704,7 @@ build_unary_op (code, xarg, noconvert)
 	    (arg, argtype,
 	     "attempt to take address of bit-field structure member `%s'");
 	else
-	  addr = build1 (code, argtype, arg);
+	  addr = build1 (ADDR_EXPR, argtype, arg);
 
 	/* Address of a static or external variable or
 	   function counts as a constant */
@@ -5247,7 +5246,7 @@ build_conditional_expr (ifexp, op1, op2)
 					  | TYPE_QUAL_RESTRICT));
 	  else
 	    tmp = type2;
-	  tmp = build_type_conversion (CONVERT_EXPR, tmp, op1, 0);
+	  tmp = build_type_conversion (tmp, op1, 0);
 	  if (tmp == NULL_TREE)
 	    {
 	      cp_error ("incompatible types `%T' and `%T' in `?:'",
@@ -5273,7 +5272,7 @@ build_conditional_expr (ifexp, op1, op2)
 	  else
 	    tmp = type1;
 
-	  tmp = build_type_conversion (CONVERT_EXPR, tmp, op2, 0);
+	  tmp = build_type_conversion (tmp, op2, 0);
 	  if (tmp == NULL_TREE)
 	    {
 	      cp_error ("incompatible types `%T' and `%T' in `?:'",
@@ -6352,7 +6351,7 @@ get_delta_difference (from, to, force)
   return BINFO_OFFSET (binfo);
 }
 
-static tree
+tree
 build_ptrmemfunc1 (type, delta, idx, pfn, delta2)
      tree type, delta, idx, pfn, delta2;
 {
@@ -6444,9 +6443,9 @@ build_ptrmemfunc (type, pfn, force)
   tree idx = integer_zero_node;
   tree delta = integer_zero_node;
   tree delta2 = integer_zero_node;
-  tree vfield_offset;
   tree npfn = NULL_TREE;
-
+  tree fn;
+  
   /* Handle multiple conversions of pointer to member functions.  */
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (pfn)))
     {
@@ -6499,50 +6498,113 @@ build_ptrmemfunc (type, pfn, force)
   if (type_unknown_p (pfn))
     return instantiate_type (type, pfn, 1);
 
-  if (!force 
-      && comp_target_types (type, TREE_TYPE (pfn), 0) != 1)
-    cp_error ("conversion to `%T' from `%T'", type, TREE_TYPE (pfn));
+  fn = TREE_OPERAND (pfn, 0);
+  my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 0);
+  npfn = make_node (PTRMEM_CST);
+  TREE_TYPE (npfn) = build_ptrmemfunc_type (type);
+  PTRMEM_CST_MEMBER (npfn) = fn;
+  return npfn;
+}
 
-  /* Allow pointer to member conversions here.  */
-  delta = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TREE_TYPE (pfn))),
-				TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
-				force);
-  delta2 = build_binary_op (PLUS_EXPR, delta2, delta, 1);
+/* Return the DELTA, IDX, PFN, and DELTA2 values for the PTRMEM_CST
+   given by CST.  */
 
-  if (TREE_CODE (TREE_OPERAND (pfn, 0)) != FUNCTION_DECL)
-    warning ("assuming pointer to member function is non-virtual");
+void
+expand_ptrmemfunc_cst (cst, delta, idx, pfn, delta2)
+     tree cst;
+     tree *delta;
+     tree *idx;
+     tree *pfn;
+     tree *delta2;
+{
+  tree type = TREE_TYPE (cst);
+  tree fn = PTRMEM_CST_MEMBER (cst);
 
-  if (TREE_CODE (TREE_OPERAND (pfn, 0)) == FUNCTION_DECL
-      && DECL_VINDEX (TREE_OPERAND (pfn, 0)))
+  my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 0);
+  
+  *delta 
+    = get_delta_difference (TYPE_METHOD_BASETYPE 
+			    (TREE_TYPE (fn)),
+			    TYPE_PTRMEMFUNC_OBJECT_TYPE (type),
+			    /*force=*/0);
+  if (!DECL_VIRTUAL_P (fn))
     {
-      /* Find the offset to the vfield pointer in the object.  */
-      vfield_offset = get_binfo (DECL_CONTEXT (TREE_OPERAND (pfn, 0)),
-				 DECL_CLASS_CONTEXT (TREE_OPERAND (pfn, 0)),
-				 0);
-      vfield_offset = get_vfield_offset (vfield_offset);
-      delta2 = size_binop (PLUS_EXPR, vfield_offset, delta2);
-
-      /* Map everything down one to make room for the null pointer to member.  */
-      idx = size_binop (PLUS_EXPR,
-			DECL_VINDEX (TREE_OPERAND (pfn, 0)),
-			integer_one_node);
+      *idx = size_binop (MINUS_EXPR, integer_zero_node,
+			 integer_one_node);
+      *pfn = build_addr_func (fn);
+      if (!same_type_p (TYPE_METHOD_BASETYPE (TREE_TYPE (fn)),
+			TYPE_PTRMEMFUNC_OBJECT_TYPE (type)))
+	*pfn = build1 (NOP_EXPR, TYPE_PTRMEMFUNC_FN_TYPE (type), 
+		       *pfn);
+      *delta2 = NULL_TREE;
     }
   else
     {
-      idx = size_binop (MINUS_EXPR, integer_zero_node, integer_one_node);
+      *idx = size_binop (PLUS_EXPR, DECL_VINDEX (fn), 
+			 integer_one_node);
+      *pfn = NULL_TREE;
+      *delta2 = get_binfo (DECL_CONTEXT (fn),
+			  DECL_CLASS_CONTEXT (fn),
+			  0);
+      *delta2 = get_vfield_offset (*delta2);
+      *delta2 = size_binop (PLUS_EXPR, *delta2,
+			   build_binary_op (PLUS_EXPR,
+					    *delta, 
+					    integer_zero_node,
+					    1));
+    }
+}
 
-      if (type == TREE_TYPE (pfn))
-	{
-	  npfn = pfn;
-	}
-      else
-	{
-	  npfn = build1 (NOP_EXPR, type, pfn);
-	  TREE_CONSTANT (npfn) = TREE_CONSTANT (pfn);
-	}
+/* Return an expression for DELTA2 from the pointer-to-member function
+   given by T.  */
+
+tree
+delta2_from_ptrmemfunc (t)
+     tree t;
+{
+  if (TREE_CODE (t) == PTRMEM_CST)
+    {
+      tree delta;
+      tree idx;
+      tree pfn;
+      tree delta2;
+      
+      expand_ptrmemfunc_cst (t, &delta, &idx, &pfn, &delta2);
+      if (delta2)
+	return delta2;
     }
 
-  return build_ptrmemfunc1 (TYPE_GET_PTRMEMFUNC_TYPE (type), delta, idx, npfn, delta2);
+  return (build_component_ref 
+	  (build_component_ref (t,
+				pfn_or_delta2_identifier, NULL_TREE,
+				0), 
+	   delta2_identifier, NULL_TREE, 0)); 
+}
+
+/* Return an expression for PFN from the pointer-to-member function
+   given by T.  */
+
+tree
+pfn_from_ptrmemfunc (t)
+     tree t;
+{
+  if (TREE_CODE (t) == PTRMEM_CST)
+    {
+      tree delta;
+      tree idx;
+      tree pfn;
+      tree delta2;
+      
+      expand_ptrmemfunc_cst (t, &delta, &idx, &pfn, &delta2);
+      if (pfn)
+	return pfn;
+    }
+
+  return (build_component_ref 
+	  (build_component_ref (t,
+				pfn_or_delta2_identifier, NULL_TREE,
+				0), 
+	   pfn_identifier, NULL_TREE, 0)); 
 }
 
 /* Convert value RHS to type TYPE as preparation for an assignment
