@@ -1,6 +1,6 @@
 /* Implement classes and message passing for Objective C.
    Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
-   Author: Steve Naroff.
+   Contributed by Steve Naroff.
 
 This file is part of GNU CC.
 
@@ -124,11 +124,17 @@ static struct obstack util_obstack;
    so we can free the whole contents.  */
 char *util_firstobj;
 
+/* List of classes with list of their static instances.  */
+static tree objc_static_instances;
+
+/* The declaration of the array administrating the static instances.  */
+static tree static_instances_decl;
+
 /* for encode_method_def */
 #include "rtl.h"
 #include "c-parse.h"
 
-#define OBJC_VERSION	(flag_next_runtime ? 5 : 6)
+#define OBJC_VERSION	(flag_next_runtime ? 5 : 7)
 #define PROTOCOL_VERSION 2
 
 #define NULLT	(tree) 0
@@ -154,6 +160,8 @@ static void generate_strings			PROTO((void));
 static tree get_proto_encoding 			PROTO((tree));
 static void build_selector_translation_table	PROTO((void));
 static tree build_ivar_chain			PROTO((tree, int));
+
+static tree objc_add_static_instance		PROTO((tree, tree));
 
 static tree build_ivar_template			PROTO((void));
 static tree build_method_template		PROTO((void));
@@ -321,6 +329,7 @@ static void handle_class_ref			PROTO((tree));
 #define UTAG_METHOD_LIST	"_objc_method_list"
 #define UTAG_CATEGORY		"_objc_category"
 #define UTAG_MODULE		"_objc_module"
+#define UTAG_STATICS		"_objc_statics"
 #define UTAG_SYMTAB		"_objc_symtab"
 #define UTAG_SUPER		"_objc_super"
 #define UTAG_SELECTOR		"_objc_selector"
@@ -1122,8 +1131,10 @@ synth_module_prologue ()
       UOBJC_SELECTOR_TABLE_decl
 	= create_builtin_decl (VAR_DECL, temp_type,
 			       "_OBJC_SELECTOR_TABLE");
-    }
 
+      /* Avoid warning when not sending messages.  */
+      TREE_USED (UOBJC_SELECTOR_TABLE_decl) = 1;
+    }
 
   generate_forward_declaration_to_string_table ();
 
@@ -1204,13 +1215,59 @@ build_objc_string_object (strings)
   /* & ((NXConstantString) {0, string, length})  */
 
   initlist = build_tree_list (NULLT, build_int_2 (0, 0));
-  initlist = tree_cons (NULLT, build_unary_op (ADDR_EXPR, string, 1),
-			initlist);
-  initlist = tree_cons (NULLT, build_int_2 (length, 0), initlist);
+  initlist = perm_tree_cons (NULLT,
+			     copy_node (build_unary_op (ADDR_EXPR, string, 1)),
+			     initlist);
+  initlist = perm_tree_cons (NULLT, build_int_2 (length, 0), initlist);
   constructor = build_constructor (constant_string_type,
 				   nreverse (initlist));
 
-  return build_unary_op (ADDR_EXPR, constructor, 1);
+  if (!flag_next_runtime)
+    constructor = objc_add_static_instance (constructor, constant_string_type);
+  return (build_unary_op (ADDR_EXPR, constructor, 1));
+}
+
+/* Declare a static instance of CLASS_DECL initialized by CONSTRUCTOR.  */
+static tree
+objc_add_static_instance (constructor, class_decl)
+     tree constructor, class_decl;
+{
+  static int num_static_inst;
+  struct obstack *save_current_obstack = current_obstack;
+  struct obstack *save_rtl_obstack = rtl_obstack;
+  tree *chain, decl, decl_spec, decl_expr;
+  char buf[256];
+
+  rtl_obstack = current_obstack = &permanent_obstack;
+
+  /* Find the list of static instances for the CLASS_DECL.  Create one if
+     not found.  */
+  for (chain = &objc_static_instances;
+       *chain && TREE_VALUE (*chain) != class_decl;
+       chain = &TREE_CHAIN (*chain));
+  if (!*chain)
+    {
+      *chain = perm_tree_cons (NULLT, class_decl, NULLT);
+      add_objc_string (TYPE_NAME (class_decl), class_names);
+    }
+
+  sprintf (buf, "_OBJC_INSTANCE_%d", num_static_inst++);
+  decl_expr = get_identifier (buf);
+  decl_spec = tree_cons (NULLT, class_decl,
+			 build_tree_list (NULLT,
+					  ridpointers[(int) RID_STATIC]));
+  decl = start_decl (decl_expr, decl_spec, 1);
+  end_temporary_allocation ();
+
+  /* Barf!  Make sure this decl will end up at the global binding level.  */
+  finish_decl_top_level (decl, constructor, NULLT);
+
+  current_obstack = save_current_obstack;
+  rtl_obstack = save_rtl_obstack;
+
+  /* Add the DECL to the head of this CLASS' list.  */
+  TREE_PURPOSE (*chain) = perm_tree_cons (NULLT, decl, TREE_PURPOSE (*chain));
+  return (decl);
 }
 
 /* Build a static constant CONSTRUCTOR
@@ -1440,6 +1497,18 @@ init_module_descriptor (type)
   expr = add_objc_string (get_identifier (input_filename), class_names);
   initlist = tree_cons (NULLT, expr, initlist);
 
+
+  if (!flag_next_runtime)
+    {
+      /* statics = { ..., _OBJC_STATIC_INSTANCES, ... }  */
+      if (static_instances_decl)
+	expr = build_unary_op (ADDR_EXPR, static_instances_decl, 0);
+      else
+	expr = build_int_2 (0, 0);
+      initlist = tree_cons (NULLT, expr, initlist);
+    }
+
+
   /* symtab = { ..., _OBJC_SYMBOLS, ... } */
 
   if (UOBJC_SYMBOLS_decl)
@@ -1488,6 +1557,20 @@ build_module_descriptor ()
   field_decl = build1 (INDIRECT_REF, NULLT, get_identifier ("name"));
   field_decl = grokfield (input_filename, lineno, field_decl, decl_specs, NULLT);
   chainon (field_decl_chain, field_decl);
+
+
+  if (!flag_next_runtime)
+    {
+      /* void *statics */
+
+      decl_specs = get_identifier (UTAG_STATICS);
+      decl_specs = build_tree_list (NULLT, xref_tag (RECORD_TYPE, decl_specs));
+      field_decl = build1 (INDIRECT_REF, NULLT, get_identifier ("statics"));
+      field_decl = grokfield (input_filename, lineno, field_decl,
+			      decl_specs, NULLT);
+      chainon (field_decl_chain, field_decl);
+    }
+
 
   /* struct objc_symtab *symtab; */
 
@@ -1596,6 +1679,104 @@ generate_forward_declaration_to_string_table ()
   expr_decl = build_nt (ARRAY_REF, get_identifier ("_OBJC_STRINGS"), NULLT);
 
   UOBJC_STRINGS_decl = define_decl (expr_decl, decl_specs);
+}
+
+/* Return the DECL of the string IDENT in the SECTION.  */
+static tree
+get_objc_string_decl (ident, section)
+     tree ident;
+     enum string_section section;
+{
+  tree chain, decl;
+
+  if (section == class_names)
+    chain = class_names_chain;
+  else if (section == meth_var_names)
+    chain = meth_var_names_chain;
+  else if (section == meth_var_types)
+    chain = meth_var_types_chain;
+
+  while (chain)
+    {
+      if (TREE_VALUE (chain) == ident)
+	return (TREE_PURPOSE (chain));
+
+      chain = TREE_CHAIN (chain);
+    }
+
+  abort ();
+  return NULLT;
+}
+
+/* Output references to all statically allocated objects.  Return the DECL
+   for the array built.  */
+static tree
+generate_static_references ()
+{
+  tree decls = NULLT, ident, decl_spec, expr_decl, expr = NULLT;
+  tree class_name, class, decl, instance, idecl, initlist;
+  tree cl_chain, in_chain, type;
+  int num_inst, num_class;
+  char buf[256];
+
+  if (flag_next_runtime)
+    abort ();
+
+
+  for (cl_chain = objc_static_instances, num_class = 0;
+       cl_chain; cl_chain = TREE_CHAIN (cl_chain), num_class++)
+    {
+      for (num_inst = 0, in_chain = TREE_PURPOSE (cl_chain);
+	   in_chain; num_inst++, in_chain = TREE_CHAIN (in_chain));
+
+      sprintf (buf, "_OBJC_STATIC_INSTANCES_%d", num_class);
+      ident = get_identifier (buf);
+
+      expr_decl = build_nt (ARRAY_REF, ident, NULLT);
+      decl_spec = tree_cons (NULLT, build_pointer_type (void_type_node),
+			     build_tree_list (NULLT,
+					      ridpointers[(int) RID_STATIC]));
+      decl = start_decl (expr_decl, decl_spec, 1);
+      end_temporary_allocation ();
+
+      /* Output {class_name, ...}.  */
+      class = TREE_VALUE (cl_chain);
+      class_name = get_objc_string_decl (TYPE_NAME (class), class_names);
+      initlist = build_tree_list (NULLT,
+				  build_unary_op (ADDR_EXPR, class_name, 1));
+
+      /* Output {..., instance, ...}.  */
+      for (in_chain = TREE_PURPOSE (cl_chain);
+	   in_chain; in_chain = TREE_CHAIN (in_chain))
+	{
+	  expr = build_unary_op (ADDR_EXPR, TREE_VALUE (in_chain), 1);
+	  initlist = tree_cons (NULLT, expr, initlist);
+	}
+
+      /* Output {..., NULL}.  */
+      initlist = tree_cons (NULLT, build_int_2 (0, 0), initlist);
+
+      expr = build_constructor (TREE_TYPE (decl), nreverse (initlist));
+      finish_decl (decl, expr, NULLT);
+      TREE_USED (decl) = 1;
+
+      type = build_array_type (build_pointer_type (void_type_node), 0);
+      decl = build_decl (VAR_DECL, ident, type);
+      make_decl_rtl (decl, 0, 1);
+      TREE_USED (decl) = 1;
+      decls = tree_cons (NULLT, build_unary_op (ADDR_EXPR, decl, 1), decls);
+    }
+  decls = tree_cons (NULLT, build_int_2 (0, 0), decls);
+  ident = get_identifier ("_OBJC_STATIC_INSTANCES");
+  expr_decl = build_nt (ARRAY_REF, ident, NULLT);
+  decl_spec = tree_cons (NULLT, build_pointer_type (void_type_node),
+			 build_tree_list (NULLT,
+					  ridpointers[(int) RID_STATIC]));
+  static_instances_decl = start_decl (expr_decl, decl_spec, 1);
+  end_temporary_allocation ();
+  expr = build_constructor (TREE_TYPE (static_instances_decl),
+			    nreverse (decls));
+  finish_decl (static_instances_decl, expr, NULLT);
 }
 
 /* Output all strings. */
@@ -2049,7 +2230,7 @@ build_objc_string_decl (name, section)
   TREE_USED (decl) = 1;
   TREE_READONLY (decl) = 1;
   TREE_CONSTANT (decl) = 1;
-
+ 
   make_decl_rtl (decl, 0, 1); /* usually called from `rest_of_decl_compilation */
   pushdecl_top_level (decl);  /* our `extended/custom' pushdecl in c-decl.c */
 
@@ -7531,7 +7712,10 @@ finish_objc ()
   if (protocol_chain)
     generate_protocols ();
 
-  if (implementation_context || class_names_chain
+  if (objc_static_instances)
+    generate_static_references ();
+
+  if (implementation_context || class_names_chain || objc_static_instances
       || meth_var_names_chain || meth_var_types_chain || sel_ref_chain)
     {
       /* Arrange for Objc data structures to be initialized at run time.  */
