@@ -1,3 +1,18 @@
+2004-09-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* configure.ac: Move AC_PROG_MAKE_SET, AC_PROG_INSTALL to
+	programs cluster. Use ACX_PROG_CC_WARNING_OPTS,
+	ACX_PROG_CC_WARNING_ALMOST_PEDANTIC, ACX_PROG_CC_WARNINGS_ARE_ERRORS.
+	* aclocal.m4, configure: Regenerate.
+	* init.c: Include localedir.h.
+	* Makefile.in (WARN_CFLAGS, ALL_CFLAGS): New variables.
+	(DEFS): Delete.
+	(.c.o): Use $(ALL_CFLAGS).
+	(localedir.h, localedir.hs): New rules.
+	(clean): Use rm -rf to remove directories.
+	(distclean): Also delete localedir.h and localedir.hs.
+	(init.o): Update dependencies.
+
 2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (aclocal.m4): Update dependencies.

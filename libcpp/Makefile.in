@@ -34,6 +34,7 @@ AUTOHEADER = @AUTOHEADER@
 CATALOGS = @CATALOGS@
 CC = @CC@
 CFLAGS = @CFLAGS@
+WARN_CFLAGS = @WARN_CFLAGS@ @WARN_PEDANTIC@ @WERROR@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 EXEEXT = @EXEEXT@
@@ -59,9 +60,10 @@ prefix = @prefix@
 
 MSGMERGE = msgmerge
 mkinstalldirs = $(SHELL) $(srcdir)/../mkinstalldirs
-DEFS = -DLOCALEDIR="\"$(localedir)\""
 INCLUDES = -I$(srcdir) -I. -I$(srcdir)/../include @INCINTL@ \
 	-I$(srcdir)/include
+
+ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(INCLUDES) $(CPPFLAGS)
 
 libcpp_a_OBJS = charset.o directives.o errors.o expr.o files.o \
 	identifiers.o init.o lex.o line-map.o macro.o mkdeps.o \
@@ -116,7 +118,15 @@ stamp-h1: $(srcdir)/config.in config.status
 $(srcdir)/config.in: @MAINT@ $(srcdir)/configure
 	cd $(srcdir) && $(AUTOHEADER)
 	-rm -f stamp-h1
-	
+
+# It is not possible to get LOCALEDIR defined in config.h because
+# the value it needs to be defined to is only determined in the
+# Makefile.  Hence we do this instead.
+localedir.h: localedir.hs; @true
+localedir.hs: Makefile
+	echo "#define LOCALEDIR \"$(localedir)\"" > localedir.new
+	$(srcdir)/../move-if-change localedir.new localedir.h
+	echo timestamp > localedir.hs
 
 # Installation rules and other phony targets
 
@@ -150,11 +160,12 @@ mostlyclean:
 	-rm -f *.o
 
 clean: mostlyclean
-	-rm -f makedepend$(EXEEXT) libcpp.a $(srcdir)/autom4te.cache
+	-rm -rf makedepend$(EXEEXT) libcpp.a $(srcdir)/autom4te.cache
 
 distclean: clean
 	-rm -f config.h stamp-h1 config.status config.cache config.log \
-	  configure.lineno configure.status.lineno Makefile
+	  configure.lineno configure.status.lineno Makefile localedir.h \
+	  localedir.hs
 
 maintainer-clean: distclean
 	@echo "This command is intended for maintainers to use"
@@ -178,7 +189,7 @@ update-po: $(CATALOGS:.gmo=.pox)
 # Implicit rules and I18N
 
 .c.o:
-	$(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) -c $<
+	$(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(ALL_CFLAGS) -c $<
 
 # N.B. We do not attempt to copy these into $(srcdir).
 .po.gmo:
@@ -230,9 +241,8 @@ expr.o: $(srcdir)/expr.c $(COMMON_DEPS)
 
 files.o: $(srcdir)/files.c $(COMMON_DEPS) $(libcpp_incdir)/mkdeps.h \
    $(top_incdir)/hashtab.h $(top_incdir)/md5.h
-  
 identifiers.o: $(srcdir)/identifiers.c $(COMMON_DEPS)
-init.o: $(srcdir)/init.c $(COMMON_DEPS) $(libcpp_incdir)/mkdeps.h
+init.o: $(srcdir)/init.c $(COMMON_DEPS) $(libcpp_incdir)/mkdeps.h localedir.h
 lex.o: $(srcdir)/lex.c $(COMMON_DEPS)
 line-map.o: $(srcdir)/line-map.c $(COMMON_DEPS)
 macro.o: $(srcdir)/macro.c $(COMMON_DEPS)

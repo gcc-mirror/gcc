@@ -6,10 +6,10 @@ AC_INIT(cpplib, [ ], gcc-bugs@gcc.gnu.org, cpplib)
 AC_CONFIG_SRCDIR(ucnid.h)
 AC_CONFIG_MACRO_DIR(../config)
 AC_CANONICAL_SYSTEM
-AC_PROG_MAKE_SET
-AC_PROG_INSTALL
 
 # Checks for programs.
+AC_PROG_MAKE_SET
+AC_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_RANLIB
 
@@ -17,6 +17,17 @@ MISSING=`cd $ac_aux_dir && ${PWDCMD-pwd}`/missing
 AC_CHECK_PROGS([ACLOCAL], [aclocal], [$MISSING aclocal])
 AC_CHECK_PROGS([AUTOCONF], [autoconf], [$MISSING autoconf])
 AC_CHECK_PROGS([AUTOHEADER], [autoheader], [$MISSING autoheader])
+
+# Figure out what compiler warnings we can enable.
+# See config/warnings.m4 for details.
+
+ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wstrict-prototypes \
+			  -Wmissing-prototypes -Wold-style-definition])
+ACX_PROG_CC_WARNING_ALMOST_PEDANTIC([-Wno-long-long])
+
+# Only enable with --enable-werror-always until existing warnings are
+# corrected.
+ACX_PROG_CC_WARNINGS_ARE_ERRORS([manual])
 
 # Checks for header files.
 AC_HEADER_TIME
