@@ -1,3 +1,7 @@
+Thu Dec 17 15:58:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* hwint.h: New file to consolidate HOST_WIDE_INT (etc) macros.
+
 Thu Dec 17 12:31:12 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (INTERNAL_CFLAGS): Add SCHED_CFLAGS.
