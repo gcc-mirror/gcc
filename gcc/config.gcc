@@ -1869,7 +1869,7 @@ sparc64-*-solaris2* | sparcv9-*-solaris2*)
 		tm_file="${tm_file} sparc/sol2-gld.h sparc/sol2-gld-bi.h"
 	fi
 	if test x$gas = xyes; then
-		tm_file="${tm_file} sparc/sol2-gas-bi.h"
+		tm_file="${tm_file} sparc/sol2-gas.h sparc/sol2-gas-bi.h"
 	fi
 	tmake_file="t-sol2 sparc/t-sol2 sparc/t-sol2-64 sparc/t-crtfm"
 	if test x$gnu_ld = xyes; then
@@ -1893,6 +1893,9 @@ sparc-*-solaris2*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h"
 	if test x$gnu_ld = xyes; then
 		tm_file="${tm_file} sparc/sol2-gld.h"
+	fi
+	if test x$gas = xyes; then
+		tm_file="${tm_file} sparc/sol2-gas.h"
 	fi
 	tmake_file="t-sol2 sparc/t-sol2 sparc/t-crtfm"
 	if test x$gnu_ld = xyes; then
