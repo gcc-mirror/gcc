@@ -1828,11 +1828,11 @@ Non-pointer registers (not @samp{SP}, @samp{DP}, @samp{IP})
 Non-SP registers (everything except @samp{SP})
 
 @item R
-Indirect thru @samp{IP} - Avoid this except for @code{QImode}, since we
+Indirect through @samp{IP} - Avoid this except for @code{QImode}, since we
 can't access extra bytes
 
 @item S
-Indirect thru @samp{SP} or @samp{DP} with short displacement (0..127)
+Indirect through @samp{SP} or @samp{DP} with short displacement (0..127)
 
 @item T
 Data-section immediate value
