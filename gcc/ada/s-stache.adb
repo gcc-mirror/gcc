@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1999-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@ with Ada.Exceptions;
 with System.Storage_Elements; use System.Storage_Elements;
 with System.Parameters; use System.Parameters;
 with System.Soft_Links;
+with System.CRTL;
 
 package body System.Stack_Checking is
 
@@ -72,7 +73,6 @@ package body System.Stack_Checking is
 
    procedure Invalidate_Stack_Cache (Any_Stack : Stack_Access) is
       pragma Warnings (Off, Any_Stack);
-
    begin
       Cache := Null_Stack;
    end Invalidate_Stack_Cache;
@@ -82,8 +82,7 @@ package body System.Stack_Checking is
    --------------------
 
    function Set_Stack_Info
-     (Stack : access Stack_Access)
-      return Stack_Access
+     (Stack : access Stack_Access) return Stack_Access
    is
       type Frame_Mark is null record;
       Frame_Location : Frame_Mark;
@@ -92,12 +91,6 @@ package body System.Stack_Checking is
       My_Stack    : Stack_Access;
       Limit_Chars : System.Address;
       Limit       : Integer;
-
-      function getenv (S : String) return System.Address;
-      pragma Import (C, getenv, External_Name => "getenv");
-
-      function atoi (A : System.Address) return Integer;
-      pragma Import (C, atoi);
 
    begin
       --  The order of steps 1 .. 3 is important, see specification.
@@ -113,16 +106,16 @@ package body System.Stack_Checking is
          --  the current frame address.
 
          if My_Stack.Size = 0 then
-
             My_Stack.Size := Storage_Offset (Default_Env_Stack_Size);
 
             --  When the environment variable GNAT_STACK_LIMIT is set,
             --  set Environment_Stack_Size to that number of kB.
 
-            Limit_Chars := getenv ("GNAT_STACK_LIMIT" & ASCII.NUL);
+            Limit_Chars := System.CRTL.getenv ("GNAT_STACK_LIMIT" & ASCII.NUL);
 
             if Limit_Chars /= Null_Address then
-               Limit := atoi (Limit_Chars);
+               Limit := System.CRTL.atoi (Limit_Chars);
+
                if Limit >= 0 then
                   My_Stack.Size := Storage_Offset (Limit) * Kilobyte;
                end if;
@@ -192,8 +185,7 @@ package body System.Stack_Checking is
    -----------------
 
    function Stack_Check
-     (Stack_Address : System.Address)
-      return Stack_Access
+     (Stack_Address : System.Address) return Stack_Access
    is
       type Frame_Marker is null record;
       Marker        : Frame_Marker;
@@ -227,7 +219,6 @@ package body System.Stack_Checking is
          --  it is essential to use our local copy of Stack!
 
       begin
-
          if (Stack_Grows_Down and then
                (not (Frame_Address <= My_Stack.Base)))
            or else

@@ -1123,7 +1123,7 @@ ifeq ($(strip $(filter-out alpha% dec osf%,$(targ))),)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
-ifeq ($(strip $(filter-out alpha% dec vms% openvms% alphavms%,$(host))),)
+ifeq ($(strip $(filter-out alpha% ia64 dec vms% openvms% alphavms%,$(host))),)
 
 soext  = .exe
 
@@ -1134,15 +1134,30 @@ soext  = .exe
 endif
 
 ifeq ($(strip $(filter-out alpha% ia64 dec hp vms% openvms% alphavms%,$(targ))),)
-ifeq ($(strip $(filter-out alpha64% dec vms% openvms% alphavms%,$(targ))),)
-  LIBGNAT_TARGET_PAIRS_AUX =
+
+ifeq ($(strip $(filter-out ia64% hp vms% openvms%,$(targ))),)
+  LIBGNAT_TARGET_PAIRS_AUX = \
+  s-osinte.adb<5xosinte.adb \
+  s-osinte.ads<5xosinte.ads \
+  s-parame.ads<5vparame.ads
+else
+ifeq ($(strip $(filter-out alpha64% dec hp vms% openvms% alphavms%,$(targ))),)
+  LIBGNAT_TARGET_PAIRS_AUX = \
+  s-osinte.adb<5vosinte.adb \
+  s-osinte.ads<5vosinte.ads \
+  s-parame.ads<5vparame.ads
 else
 ifeq ($(strip $(filter-out express EXPRESS,$(THREAD_KIND))),)
   LIBGNAT_TARGET_PAIRS_AUX = \
+  s-osinte.adb<5vosinte.adb \
+  s-osinte.ads<5vosinte.ads \
   s-parame.ads<5xparame.ads
 else
   LIBGNAT_TARGET_PAIRS_AUX = \
+  s-osinte.adb<5vosinte.adb \
+  s-osinte.ads<5vosinte.ads \
   s-parame.ads<5vparame.ads
+endif
 endif
 endif
 
@@ -1152,6 +1167,7 @@ endif
   a-calend.ads<4vcalend.ads \
   a-excpol.adb<4wexcpol.adb \
   a-intnam.ads<4vintnam.ads \
+  a-numaux.ads<4vnumaux.ads \
   g-expect.adb<3vexpect.adb \
   g-soccon.ads<3vsoccon.ads \
   g-socthi.ads<3vsocthi.ads \
@@ -1161,12 +1177,11 @@ endif
   i-cpp.adb<6vcpp.adb \
   interfac.ads<6vinterf.ads \
   s-asthan.adb<5vasthan.adb \
+  s-crtl.ads<5vcrtl.ads \
   s-inmaop.adb<5vinmaop.adb \
   s-interr.adb<5vinterr.adb \
   s-intman.adb<5vintman.adb \
   s-intman.ads<5vintman.ads \
-  s-osinte.adb<5vosinte.adb \
-  s-osinte.ads<5vosinte.ads \
   s-osprim.adb<5vosprim.adb \
   s-osprim.ads<5vosprim.ads \
   s-taprop.adb<5vtaprop.adb \

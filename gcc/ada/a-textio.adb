@@ -35,6 +35,7 @@ with Ada.Streams;          use Ada.Streams;
 with Interfaces.C_Streams; use Interfaces.C_Streams;
 with System;
 with System.File_IO;
+with System.CRTL;
 with Unchecked_Conversion;
 with Unchecked_Deallocation;
 
@@ -50,6 +51,8 @@ package body Ada.Text_IO is
    function To_FCB is new Unchecked_Conversion (File_Mode, FCB.File_Mode);
    function To_TIO is new Unchecked_Conversion (FCB.File_Mode, File_Mode);
    use type FCB.File_Mode;
+
+   use type System.CRTL.size_t;
 
    -------------------
    -- AFCB_Allocate --

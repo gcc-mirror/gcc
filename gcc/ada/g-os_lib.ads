@@ -175,31 +175,27 @@ pragma Elaborate_Body (OS_Lib);
 
    function Open_Read
      (Name  : String;
-      Fmode : Mode)
-      return  File_Descriptor;
+      Fmode : Mode) return File_Descriptor;
    --  Open file Name for reading, returning file descriptor File descriptor
    --  returned is Invalid_FD if file cannot be opened.
 
    function Open_Read_Write
      (Name  : String;
-      Fmode : Mode)
-      return  File_Descriptor;
+      Fmode : Mode) return File_Descriptor;
    --  Open file Name for both reading and writing, returning file
    --  descriptor. File descriptor returned is Invalid_FD if file cannot be
    --  opened.
 
    function Create_File
      (Name  : String;
-      Fmode : Mode)
-      return  File_Descriptor;
+      Fmode : Mode) return File_Descriptor;
    --  Creates new file with given name for writing, returning file descriptor
    --  for subsequent use in Write calls. File descriptor returned is
    --  Invalid_FD if file cannot be successfully created
 
    function Create_New_File
      (Name  : String;
-      Fmode : Mode)
-      return  File_Descriptor;
+      Fmode : Mode) return File_Descriptor;
    --  Create new file with given name for writing, returning file descriptor
    --  for subsequent use in Write calls. This differs from Create_File in
    --  that it fails if the file already exists. File descriptor returned is
@@ -334,18 +330,14 @@ pragma Elaborate_Body (OS_Lib);
    function Read
      (FD   : File_Descriptor;
       A    : System.Address;
-      N    : Integer)
-      return Integer;
-   pragma Import (C, Read, "read");
+      N    : Integer) return Integer;
    --  Read N bytes to address A from file referenced by FD. Returned value
    --  is count of bytes actually read, which can be less than N at EOF.
 
    function Write
      (FD   : File_Descriptor;
       A    : System.Address;
-      N    : Integer)
-      return Integer;
-   pragma Import (C, Write, "write");
+      N    : Integer) return Integer;
    --  Write N bytes from address A to file referenced by FD. The returned
    --  value is the number of bytes written, which can be less than N if
    --  a disk full condition was detected.
@@ -379,8 +371,7 @@ pragma Elaborate_Body (OS_Lib);
      (Name           : String;
       Directory      : String  := "";
       Resolve_Links  : Boolean := True;
-      Case_Sensitive : Boolean := True)
-      return           String;
+      Case_Sensitive : Boolean := True) return String;
    --  Returns a file name as an absolute path name, resolving all relative
    --  directories, and symbolic links. The parameter Directory is a fully
    --  resolved path name for a directory, or the empty string (the default).
@@ -458,8 +449,7 @@ pragma Elaborate_Body (OS_Lib);
    --  span file systems and may refer to directories.
 
    function Locate_Exec_On_Path
-     (Exec_Name : String)
-      return      String_Access;
+     (Exec_Name : String) return String_Access;
    --  Try to locate an executable whose name is given by Exec_Name in the
    --  directories listed in the environment Path. If the Exec_Name doesn't
    --  have the executable suffix, it will be appended before the search.
@@ -470,8 +460,7 @@ pragma Elaborate_Body (OS_Lib);
 
    function Locate_Regular_File
      (File_Name : String;
-      Path      : String)
-      return      String_Access;
+      Path      : String) return String_Access;
    --  Try to locate a regular file whose name is given by File_Name in the
    --  directories listed in  Path. If a file is found, its full pathname is
    --  returned; otherwise, a null pointer is returned. If the File_Name given
@@ -511,25 +500,23 @@ pragma Elaborate_Body (OS_Lib);
    --  This subtype is used to document that a parameter is the address
    --  of a null-terminated string containing the name of a file.
 
+   --  All the following functions need comments ???
+
    function Open_Read
      (Name  : C_File_Name;
-      Fmode : Mode)
-      return  File_Descriptor;
+      Fmode : Mode) return File_Descriptor;
 
    function Open_Read_Write
      (Name  : C_File_Name;
-      Fmode : Mode)
-      return  File_Descriptor;
+      Fmode : Mode) return File_Descriptor;
 
    function Create_File
      (Name  : C_File_Name;
-      Fmode : Mode)
-      return  File_Descriptor;
+      Fmode : Mode) return File_Descriptor;
 
    function Create_New_File
      (Name  : C_File_Name;
-      Fmode : Mode)
-      return  File_Descriptor;
+      Fmode : Mode) return File_Descriptor;
 
    procedure Delete_File (Name : C_File_Name; Success : out Boolean);
 

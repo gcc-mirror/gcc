@@ -153,7 +153,7 @@ GNAT_ADA_OBJS = ada/ada.o ada/a-charac.o ada/a-chlat1.o ada/a-except.o \
  ada/stylesw.o ada/validsw.o ada/system.o ada/table.o ada/targparm.o \
  ada/tbuild.o ada/tree_gen.o ada/tree_io.o ada/treepr.o ada/treeprs.o \
  ada/ttypef.o ada/ttypes.o ada/types.o ada/uintp.o ada/uname.o ada/urealp.o \
- ada/usage.o ada/widechar.o
+ ada/usage.o ada/widechar.o ada/s-crtl.o
 
 # Object files for gnat executables
 GNAT1_ADA_OBJS = $(GNAT_ADA_OBJS) ada/back_end.o ada/gnat1drv.o
@@ -212,6 +212,7 @@ GNATBIND_OBJS = \
  ada/s-carun8.o   \
  ada/s-casuti.o   \
  ada/s-crc32.o    \
+ ada/s-crtl.o     \
  ada/s-except.o   \
  ada/s-exctab.o   \
  ada/s-htable.o   \
@@ -2254,10 +2255,10 @@ ada/g-htable.o : ada/gnat.ads ada/g-htable.ads ada/g-htable.adb \
 
 ada/g-os_lib.o : ada/ada.ads ada/a-except.ads ada/gnat.ads \
    ada/g-os_lib.ads ada/g-os_lib.adb ada/g-string.ads ada/system.ads \
-   ada/s-casuti.ads ada/s-exctab.ads ada/s-exctab.adb ada/s-htable.ads \
-   ada/s-secsta.ads ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads \
-   ada/s-stoele.ads ada/s-stoele.adb ada/s-traent.ads ada/unchconv.ads \
-   ada/unchdeal.ads 
+   ada/s-casuti.ads ada/s-crtl.ads ada/s-exctab.ads ada/s-exctab.adb \
+   ada/s-htable.ads ada/s-parame.ads ada/s-secsta.ads ada/s-soflin.ads \
+   ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb \
+   ada/s-traent.ads ada/unchconv.ads ada/unchdeal.ads 
 
 ada/g-speche.o : ada/gnat.ads ada/g-speche.ads ada/g-speche.adb \
    ada/system.ads 
@@ -2711,6 +2712,8 @@ ada/s-casuti.o : ada/system.ads ada/s-casuti.ads ada/s-casuti.adb
 ada/s-crc32.o : ada/interfac.ads ada/system.ads ada/s-crc32.ads \
    ada/s-crc32.adb 
 
+ada/s-crtl.o : ada/system.ads ada/s-crtl.ads ada/s-parame.ads 
+
 ada/s-except.o : ada/ada.ads ada/a-except.ads ada/system.ads \
    ada/s-except.ads ada/s-stalib.ads ada/s-traent.ads ada/unchconv.ads 
 
@@ -2730,9 +2733,9 @@ ada/s-mastop.o : ada/ada.ads ada/a-except.ads ada/system.ads \
    ada/s-stoele.ads ada/s-stoele.adb ada/s-traent.ads ada/unchconv.ads 
 
 ada/s-memory.o : ada/ada.ads ada/a-except.ads ada/system.ads \
-   ada/s-memory.ads ada/s-memory.adb ada/s-parame.ads ada/s-soflin.ads \
-   ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb \
-   ada/s-traent.ads ada/unchconv.ads 
+   ada/s-crtl.ads ada/s-memory.ads ada/s-memory.adb ada/s-parame.ads \
+   ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads \
+   ada/s-stoele.adb ada/s-traent.ads ada/unchconv.ads 
 
 ada/s-parame.o : ada/system.ads ada/s-parame.ads ada/s-parame.adb 
 
@@ -2761,9 +2764,9 @@ ada/s-sopco5.o : ada/system.ads ada/s-secsta.ads ada/s-stoele.ads \
    ada/s-sopco5.ads ada/s-sopco5.adb ada/unchconv.ads 
 
 ada/s-stache.o : ada/ada.ads ada/a-except.ads ada/system.ads \
-   ada/s-parame.ads ada/s-soflin.ads ada/s-stache.ads ada/s-stache.adb \
-   ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb ada/s-traent.ads \
-   ada/unchconv.ads 
+   ada/s-crtl.ads ada/s-parame.ads ada/s-soflin.ads ada/s-stache.ads \
+   ada/s-stache.adb ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb \
+   ada/s-traent.ads ada/unchconv.ads 
 
 ada/s-stalib.o : ada/ada.ads ada/a-except.ads ada/system.ads \
    ada/s-memory.ads ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads \

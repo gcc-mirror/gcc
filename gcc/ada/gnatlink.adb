@@ -42,6 +42,7 @@ with Types;
 with Ada.Command_Line;     use Ada.Command_Line;
 with GNAT.OS_Lib;          use GNAT.OS_Lib;
 with Interfaces.C_Streams; use Interfaces.C_Streams;
+with System.CRTL;
 
 procedure Gnatlink is
    pragma Ident (Gnatvsn.Gnat_Static_Version_String);
@@ -770,6 +771,7 @@ procedure Gnatlink is
       ------------------------
 
       procedure Store_File_Context is
+         use type System.CRTL.long;
       begin
          RB_Next_Line := Next_Line;
          RB_Nfirst    := Nfirst;

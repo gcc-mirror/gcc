@@ -2992,7 +2992,7 @@ package body Exp_Ch6 is
               Make_Integer_Literal (Loc,
                 Intval =>
                   Expr_Value
-                   (Expression (RTE (RE_Default_Secondary_Stack_Size))));
+                   (Constant_Value (RTE (RE_Default_Secondary_Stack_Size))));
          end if;
 
          Sec_Stack_Len := Convert_To (RTE (RE_Storage_Offset), Sec_Stack_Len);
