@@ -555,6 +555,17 @@ public abstract class Component
    */
   transient BufferStrategy bufferStrategy;
 
+  /**
+   * The system properties that affect image updating.
+   */
+  private static transient boolean incrementalDraw;
+  private static transient Long redrawRate;
+
+  static
+  {
+    incrementalDraw = Boolean.getBoolean ("awt.image.incrementalDraw");
+    redrawRate = Long.getLong ("awt.image.redrawrate");
+  }
 
   // Public and protected API.
 
@@ -1832,7 +1843,9 @@ public abstract class Component
    * @param y the Y coordinate
    * @param w the width
    * @param h the height
-   * @return true if the image has been fully loaded
+   * @return false if the image is completely loaded, loading has been
+   * aborted, or an error has occurred.  true if more updates are
+   * required.
    * @see ImageObserver
    * @see Graphics#drawImage(Image, int, int, Color, ImageObserver)
    * @see Graphics#drawImage(Image, int, int, ImageObserver)
@@ -1842,8 +1855,24 @@ public abstract class Component
    */
   public boolean imageUpdate(Image img, int flags, int x, int y, int w, int h)
   {
-    // XXX Implement.
-    throw new Error("not implemented");
+    if ((flags & (FRAMEBITS | ALLBITS)) != 0)
+      repaint ();
+    else if ((flags & SOMEBITS) != 0)
+      {
+	if (incrementalDraw)
+	  {
+	    if (redrawRate != null)
+	      {
+		long tm = redrawRate.longValue();
+		if (tm < 0)
+		  tm = 0;
+		repaint (tm);
+	      }
+	    else
+	      repaint (100);
+	  }
+      }
+    return (flags & (ALLBITS | ABORT | ERROR)) == 0;
   }
 
   /**
@@ -1854,8 +1883,11 @@ public abstract class Component
    */
   public Image createImage(ImageProducer producer)
   {
-    // XXX What if peer or producer is null?
-    return peer.createImage(producer);
+    // Sun allows producer to be null.
+    if (peer != null)
+      return peer.createImage(producer);
+    else
+      return getToolkit().createImage(producer);
   }
 
   /**
@@ -1930,6 +1962,9 @@ public abstract class Component
    */
   public boolean prepareImage(Image image, ImageObserver observer)
   {
+    if (image == null)
+      throw new NullPointerException ();
+
     return prepareImage(image, image.getWidth(observer),
                         image.getHeight(observer), observer);
   }

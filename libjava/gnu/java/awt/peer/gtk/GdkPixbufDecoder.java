@@ -41,6 +41,7 @@ package gnu.java.awt.peer.gtk;
 import java.awt.image.*;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Vector;
@@ -85,6 +86,12 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
     initState ();
   }
 
+  public GdkPixbufDecoder (byte[] imagedata, int imageoffset, int imagelength)
+  {
+    super (imagedata, imageoffset, imagelength);
+    initState ();
+  }
+
   // called back by native side
   void areaPrepared (int width, int height)
   {
@@ -122,7 +129,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
   // this object, feeding back decoded pixel blocks, which we pass to each
   // of the ImageConsumers in the provided Vector.
 
-  void produce (Vector v, FileInputStream is) throws IOException
+  public void produce (Vector v, InputStream is) throws IOException
   {
     curr = v;
 
@@ -213,5 +220,4 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
     dec.startProduction (bb);
     return bb.getBufferedImage ();
   }
-
 }
