@@ -1,3 +1,24 @@
+2004-06-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_arch4t): New variable.
+	(arm_override_options): Initialize it.  If compiling for armv5 or
+	higher clear TARGET_INTERWORK.
+	(output_call): Abort if called for armv5.  Use BX if it's available.
+	(output_call_mem): Use BLX if available and ensure that all armv5
+	code is interworking safe.
+	(output_return_instruction): Always use BX in preference to MOV if
+	it's available.
+	(arm_output_epilogue): Likewise.
+	(arm_final_prescan_insn): Never conditionally call a subroutine
+	on armv5.
+	* arm.h (arm_arch4t): Declare.
+	* arm.md (call_reg_armv5, call_value_reg_armv5): New.
+	(call_reg_arm, call_value_reg_arm): Renamed from call_reg and 
+	call_value_reg respectively.
+	(call_reg_thumb_v5, call_value_reg_thumb_v5): New.
+	(call_reg_thumb, call_value_reg_thumb): Renamed from call_indirect
+	and call_value_indirect respectively.
+
 2004-06-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (reg_or_const_float_1_operand): Reimplement

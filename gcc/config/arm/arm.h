@@ -490,6 +490,9 @@ extern int arm_arch3m;
 /* Nonzero if this chip supports the ARM Architecture 4 extensions.  */
 extern int arm_arch4;
 
+/* Nonzero if this chip supports the ARM Architecture 4T extensions.  */
+extern int arm_arch4t;
+
 /* Nonzero if this chip supports the ARM Architecture 5 extensions.  */
 extern int arm_arch5;
 
