@@ -277,15 +277,7 @@ extern int target_flags;
    Don't use this macro to turn on various extra optimizations for
    `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
 
-#define OVERRIDE_OPTIONS		\
-{					\
-  override_options();			\
-  if (! TARGET_68020 && flag_pic == 2)	\
-    error("-fPIC is not currently supported on the 68000 or 68010\n");	\
-  if (TARGET_PCREL && flag_pic == 0)	\
-    flag_pic = 1;			\
-  SUBTARGET_OVERRIDE_OPTIONS;		\
-}
+#define OVERRIDE_OPTIONS   override_options()
 
 /* These are meant to be redefined in the host dependent files */
 #define SUBTARGET_SWITCHES

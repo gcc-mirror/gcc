@@ -283,19 +283,6 @@ int switch_table_difference_label_flag;
    || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X))       	\
    || PCREL_GENERAL_OPERAND_OK)
 
-/* Turn off function cse if we are doing PIC. We always want function call
-   to be done as `bsr foo@PLTPC', so it will force the assembler to create 
-   the PLT entry for `foo'. Doing function cse will cause the address of `foo'
-   to be loaded into a register, which is exactly what we want to avoid when
-   we are doing PIC on svr4 m68k.  */
-#undef OVERRIDE_OPTIONS
-#define OVERRIDE_OPTIONS		\
-{					\
-  if (flag_pic) flag_no_function_cse = 1; \
-  if (! TARGET_68020 && flag_pic == 2)	\
-    error("-fPIC is not currently supported on the 68000 or 68010\n");	\
-}
-
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.  */
 

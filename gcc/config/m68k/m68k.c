@@ -175,6 +175,27 @@ override_options ()
 	m68k_align_funcs = i;
     }
 
+  /* -fPIC uses 32-bit pc-relative displacements, which don't exist
+     until the 68020.  */
+  if (! TARGET_68020 && flag_pic == 2)
+    error("-fPIC is not currently supported on the 68000 or 68010\n");
+
+  /* ??? A historic way of turning on pic, or is this intended to
+     be an embedded thing that doesn't have the same name binding
+     significance that it does on hosted ELF systems?  */
+  if (TARGET_PCREL && flag_pic == 0)
+    flag_pic = 1;
+
+  /* Turn off function cse if we are doing PIC.  We always want function call
+     to be done as `bsr foo@PLTPC', so it will force the assembler to create
+     the PLT entry for `foo'. Doing function cse will cause the address of
+     `foo' to be loaded into a register, which is exactly what we want to
+     avoid when we are doing PIC on svr4 m68k.  */
+  if (flag_pic)
+    flag_no_function_cse = 1;
+
+  SUBTARGET_OVERRIDE_OPTIONS;
+
   /* Tell the compiler which flavor of XFmode we're using.  */
   real_format_for_mode[XFmode - QFmode] = &ieee_extended_motorola_format;
 }
