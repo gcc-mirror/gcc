@@ -1,3 +1,8 @@
+2005-02-06  Steven Bosscher  <stevenb@suse.de>
+
+	* df.c (df_insn_refs_record): Use XEXP to get the operand of a USE,
+	not SET_DEST.
+
 2005-02-06  Marcin Dalecki  <martin@dalecki.de>
 
 	* diagnostic.c (default_diagnostic_finalizer): Fix use of attribute.
