@@ -80,6 +80,52 @@ public class GridBagConstraints implements Cloneable, Serializable
   /** Occupy all remaining cells.  */
   public static final int REMAINDER = 0;
 
+  /**
+   * Position to where the first text line would end. Equals to NORTHEAST for
+   * horizontal left-to-right orientations.
+   */
+  public static final int FIRST_LINE_END = 24;
+
+  /**
+   * Position to where the first text line would start. Equals to NORTHWEST for
+   * horizontal left-to-right orientations.
+   */
+  public static final int FIRST_LINE_START = 23;
+
+  /**
+   * Position to where the last text line would end. Equals to SOUTHEAST for
+   * horizontal left-to-right orientations.
+   */
+  public static final int LAST_LINE_END = 26;
+
+  /**
+   * Position to where the last text line would start. Equals to SOUTHWEST for
+   * horizontal left-to-right orientations.
+   */
+  public static final int LAST_LINE_START = 25;
+
+  /**
+   * Position to where a text line would end. Equals to EAST for
+   * left-to-right orientations.
+   */
+  public static final int LINE_END = 22;
+
+  /**
+   * Position to where a text line would start. Equals to WEST for
+   * left-to-right orientations.
+   */
+  public static final int LINE_START = 21;
+
+  /**
+   * Position to where a page ends. Equals SOUTH for horizontal orientations.
+   */
+  public static final int PAGE_END = 20;
+
+  /**
+   * Position to where a page starts. Equals NORTH for horizontal orientations.
+   */
+  public static final int PAGE_START = 19;
+
   public int anchor;
   public int fill;
   public int gridheight;

@@ -386,7 +386,7 @@ public abstract class KeyboardFocusManager
     return focusCycleRoot;
   }
 
-  protected void setGlobalCurrentFocusCycleRoot(Container cycleRoot)
+  public void setGlobalCurrentFocusCycleRoot(Container cycleRoot)
   {
     firePropertyChange("currentFocusCycleRoot", focusCycleRoot, cycleRoot);
     focusCycleRoot = cycleRoot;
