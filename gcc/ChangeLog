@@ -1,3 +1,10 @@
+2004-11-02  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* fold-const.c (fold): Reassociate also (x - mult) + mult and
+	(mult - x) + mult.  Cast operands of expression after applying
+	distributive law to the correct types.  Apply distributive law
+	to a * c - b * c for all non-float types.
+
 2004-11-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* configure.ac: Don't clear STMP_FIXINC or STMP_FIXPROTO just
