@@ -1,5 +1,10 @@
 2003-06-19  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/security/x509/X509Certificate.java
+	(writeReplace): Merged from classpath.
+
+2003-06-19  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/FileChannelImpl.java
 	(map_address): Made public.
 	(FileChannelImpl): Merged with classpath.
