@@ -59,8 +59,8 @@ Boston, MA 02111-1307, USA.  */
 # include <sys/resource.h>
 #endif
 
-#ifdef HAVE_TIMES
-# include <times.h>
+#ifdef HAVE_SYS_TIMES_H
+# include <sys/times.h>
 #endif
 
 #include "input.h"
