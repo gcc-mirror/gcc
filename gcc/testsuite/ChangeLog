@@ -1,3 +1,7 @@
+1998-10-10  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.ns/extern1.C: fix XFAIL mark
+
 Fri Oct  9 19:19:19 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/special/920521-1.c: Fix bogus test.
