@@ -1,3 +1,7 @@
+2004-06-12  Paul Brook  <paul@codesourcery.com>
+
+	* gfortran.fortran-torture/execute/contained_3.f90: New test.
+
 2004-06-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/14923
