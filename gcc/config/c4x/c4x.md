@@ -502,9 +502,8 @@
 ; Just some dummy definitions. The real work is done in c4x_adjust_cost.
 ; These are needed so the min/max READY_DELAY is known.
 
-(define_function_unit "dummy" 1 0 (const_int 0) 1 1)
-(define_function_unit "dummy" 1 0 (const_int 0) 2 1)
-(define_function_unit "dummy" 1 0 (const_int 0) 3 1)
+(define_insn_reservation "any_insn" 1 (const_int 1) "nothing")
+(define_insn_reservation "slowest_insn" 3 (const_int 0) "nothing")
 
 ; The attribute setar0 is set to 1 for insns where ar0 is a dst operand.
 ; Note that the attributes unarycc and binarycc do not apply

@@ -46,6 +46,7 @@ extern int hook_int_tree_tree_1 (tree, tree);
 extern int hook_int_rtx_0 (rtx);
 extern int hook_int_size_t_constcharptr_int_0 (size_t, const char *, int);
 extern int hook_int_void_no_regs (void);
+extern int hook_int_void_1 (void);
 
 extern unsigned hook_uint_uint_constcharptrptr_0 (unsigned, const char **);
 
