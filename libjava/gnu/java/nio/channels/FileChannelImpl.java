@@ -115,11 +115,6 @@ public final class FileChannelImpl extends FileChannel
     this.mode = mode;
   }
 
-  protected void finalize() throws Throwable
-  {
-    close();
-  }
-
   public static FileChannelImpl in;
   public static FileChannelImpl out;
   public static FileChannelImpl err;
@@ -136,6 +131,14 @@ public final class FileChannelImpl extends FileChannel
   public native long size () throws IOException;
     
   protected native void implCloseChannel() throws IOException;
+
+  /**
+   * Makes sure the Channel is properly closed.
+   */
+  protected void finalize() throws IOException
+  {
+    this.close();
+  }
 
   public int read (ByteBuffer dst) throws IOException
   {
