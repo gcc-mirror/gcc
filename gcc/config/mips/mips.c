@@ -569,7 +569,7 @@ char mips_reg_names[][8] =
  "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
  "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
  "hi",   "lo",   "",     "$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
- "$fcc5","$fcc6","$fcc7","", "",     "",     "",     "",
+ "$fcc5","$fcc6","$fcc7","", "",     "",     "",     "$fakec",
  "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",
  "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15",
  "$c0r16","$c0r17","$c0r18","$c0r19","$c0r20","$c0r21","$c0r22","$c0r23",
@@ -598,7 +598,7 @@ char mips_sw_reg_names[][8] =
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
   "hi",   "lo",   "",     "$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",
-  "$fcc5","$fcc6","$fcc7","$rap", "",     "",     "",     "",
+  "$fcc5","$fcc6","$fcc7","$rap", "",     "",     "",     "$fakec",
   "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",
   "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15",
   "$c0r16","$c0r17","$c0r18","$c0r19","$c0r20","$c0r21","$c0r22","$c0r23",
@@ -1658,13 +1658,9 @@ mips_load_got (rtx base, rtx addr, enum mips_symbol_type symbol_type)
   mem = gen_rtx_MEM (ptr_mode, gen_rtx_LO_SUM (Pmode, base, offset));
   set_mem_alias_set (mem, mips_got_alias_set);
 
-  /* GOT references can't trap.  */
+  /* GOT entries are constant and references to them can't trap.  */
+  RTX_UNCHANGING_P (mem) = 1;
   MEM_NOTRAP_P (mem) = 1;
-
-  /* If we allow a function's address to be lazily bound, its entry
-     may change after the first call.  Other entries are constant.  */
-  if (symbol_type != SYMBOL_GOTOFF_CALL)
-    RTX_UNCHANGING_P (mem) = 1;
 
   return mem;
 }
@@ -3193,11 +3189,19 @@ mips_expand_call (rtx result, rtx addr, rtx args_size, rtx aux, int sibcall_p)
     {
       if (TARGET_EXPLICIT_RELOCS && global_got_operand (addr, VOIDmode))
 	{
-	  rtx high = mips_unspec_offset_high (pic_offset_table_rtx,
-					      addr, SYMBOL_GOTOFF_CALL);
-	  addr = mips_load_got (high, addr, SYMBOL_GOTOFF_CALL);
+	  rtx high, lo_sum_symbol;
+
+	  high = mips_unspec_offset_high (pic_offset_table_rtx,
+					  addr, SYMBOL_GOTOFF_CALL);
+	  lo_sum_symbol = mips_unspec_address (addr, SYMBOL_GOTOFF_CALL);
+	  addr = gen_reg_rtx (Pmode);
+	  if (Pmode == SImode)
+	    emit_insn (gen_load_callsi (addr, high, lo_sum_symbol));
+	  else
+	    emit_insn (gen_load_calldi (addr, high, lo_sum_symbol));
 	}
-      addr = force_reg (Pmode, addr);
+      else
+	addr = force_reg (Pmode, addr);
     }
 
   if (TARGET_MIPS16
