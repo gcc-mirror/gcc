@@ -1,3 +1,16 @@
+2003-08-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppfiles.c (ENOTDIR): Remove.
+	(open_file_in_dir): Rename find_file_in_dir.  Handle errors
+	other than ENOENT here.
+	(once_only_file_p): Rename should_stack_file.
+	(find_file, open_file_failed, read_file_guts): Report errors
+	with full path name.
+	(read_file): Move pch handling to should_stack_file.
+	(should_stack_file): Handle PCH and once-only issues, and
+	reading the file.
+	(stack_file): Don't do file reads.
+
 2003-08-02  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* libgcov.c (gcov_exit): Cleanup and fix.

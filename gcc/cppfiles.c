@@ -50,9 +50,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #ifndef O_BINARY
 # define O_BINARY 0
 #endif
-#ifndef ENOTDIR
-# define ENOTDIR 0
-#endif
 
 /* This structure represents a file searched for by CPP, whether it
    exists or not.  An instance may be pointed to by more than one
@@ -162,13 +159,13 @@ struct file_hash_entry
 
 static bool open_file (_cpp_file *file);
 static bool pch_open_file (cpp_reader *pfile, _cpp_file *file);
-static bool open_file_in_dir (cpp_reader *pfile, _cpp_file *file);
+static bool find_file_in_dir (cpp_reader *pfile, _cpp_file *file);
 static _cpp_file *find_file (cpp_reader *, const char *fname,
 			     cpp_dir *start_dir, bool fake);
 static bool read_file_guts (cpp_reader *pfile, _cpp_file *file);
 static bool read_file (cpp_reader *pfile, _cpp_file *file);
 static bool stack_file (cpp_reader *, _cpp_file *file, bool import);
-static bool once_only_file_p (cpp_reader *, _cpp_file *file, bool import);
+static bool should_stack_file (cpp_reader *, _cpp_file *file, bool import);
 static struct cpp_dir *search_path_head (cpp_reader *, const char *fname,
 				 int angle_brackets, enum include_type);
 static const char *dir_name_of_file (_cpp_file *file);
@@ -300,9 +297,10 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file)
 }
 
 /* Try to open the path FILE->name appended to FILE->dir.  This is
-   where remap and PCH intercept the file lookup process.  */
+   where remap and PCH intercept the file lookup process.  Return true
+   if the file was found, whether or not the open was successful.  */
 static bool
-open_file_in_dir (cpp_reader *pfile, _cpp_file *file)
+find_file_in_dir (cpp_reader *pfile, _cpp_file *file)
 {
   char *path;
 
@@ -318,8 +316,14 @@ open_file_in_dir (cpp_reader *pfile, _cpp_file *file)
   if (open_file (file))
     return true;
 
+  if (file->err_no != ENOENT)
+    {
+      open_file_failed (pfile, file);
+      return true;
+    }
+
   free (path);
-  file->path = NULL;
+  file->path = file->name;
   return false;
 }
 
@@ -360,10 +364,11 @@ find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool fake)
   /* Try each path in the include chain.  */
   for (; !fake ;)
     {
-      if (open_file_in_dir (pfile, file))
+      if (find_file_in_dir (pfile, file))
 	break;
 
-      if (file->err_no != ENOENT || (file->dir = file->dir->next) == NULL)
+      file->dir = file->dir->next;
+      if (file->dir == NULL)
 	{
 	  open_file_failed (pfile, file);
 	  break;
@@ -414,7 +419,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
   
   if (S_ISBLK (file->st.st_mode))
     {
-      cpp_error (pfile, DL_ERROR, "%s is a block device", file->name);
+      cpp_error (pfile, DL_ERROR, "%s is a block device", file->path);
       return false;
     }
 
@@ -431,7 +436,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
 	 does not bite us.  */
       if (file->st.st_size > INTTYPE_MAXIMUM (ssize_t))
 	{
-	  cpp_error (pfile, DL_ERROR, "%s is too large", file->name);
+	  cpp_error (pfile, DL_ERROR, "%s is too large", file->path);
 	  return false;
 	}
 
@@ -460,12 +465,12 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
 
   if (count < 0)
     {
-      cpp_errno (pfile, DL_ERROR, file->name);
+      cpp_errno (pfile, DL_ERROR, file->path);
       return false;
     }
 
   if (regular && total != size && STAT_SIZE_RELIABLE (file->st))
-    cpp_error (pfile, DL_WARNING, "%s is shorter than expected", file->name);
+    cpp_error (pfile, DL_WARNING, "%s is shorter than expected", file->path);
 
   /* Shrink buffer if we allocated substantially too much.  */
   if (total + 4096 < size)
@@ -487,19 +492,6 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file)
 static bool
 read_file (cpp_reader *pfile, _cpp_file *file)
 {
-  /* Skip if the file had a header guard and the macro is defined.  */
-  if (file->cmacro && file->cmacro->type == NT_MACRO)
-    return false;
-
-  /* PCH files get dealt with immediately.  */
-  if (include_pch_p (file))
-    {
-      pfile->cb.read_pch (pfile, file->path, file->fd, file->pchname);
-      close (file->fd);
-      file->fd = -1;
-      return false;
-    }
-
   /* If we already have its contents in memory, succeed immediately.  */
   if (file->buffer_valid)
     return true;
@@ -521,6 +513,70 @@ read_file (cpp_reader *pfile, _cpp_file *file)
   return !file->dont_read;
 }
 
+/* Returns TRUE if FILE's contents have been successfully placed in
+   FILE->buffer and the file should be stacked, otherwise false.  */
+static bool
+should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
+{
+  _cpp_file *f;
+
+  /* Skip if the file had a header guard and the macro is defined.
+     PCH relies on this appearing before the PCH handler below.  */
+  if (file->cmacro && file->cmacro->type == NT_MACRO)
+    return false;
+
+  /* Handle PCH files immediately; don't stack them.  */
+  if (include_pch_p (file))
+    {
+      pfile->cb.read_pch (pfile, file->path, file->fd, file->pchname);
+      close (file->fd);
+      file->fd = -1;
+      return false;
+    }
+
+  /* Did this file contain #pragma once?  */
+  if (file->pragma_once)
+    return false;
+
+  /* Are we #import-ing a previously #import-ed file?  */
+  if (import && file->import)
+    return false;
+
+  /* Read the file's contents.  */
+  if (!read_file (pfile, file))
+    return false;
+
+  /* Nothing to check if this isn't #import and there haven't been any
+     #pragma_once directives.  */
+  if (!import && !pfile->saw_pragma_once)
+    return true;
+
+  /* We may have #imported it under a different name, though.  Look
+     for likely candidates and compare file contents to be sure.  */
+  for (f = pfile->once_only_files; f; f = f->once_only_next)
+    {
+      if (f == file)
+	continue;
+
+      if (!f->pragma_once && !(f->import && import))
+	continue;
+
+      if (f->err_no == 0
+	  && f->st.st_mtime == file->st.st_mtime
+	  && f->st.st_size == file->st.st_size
+	  && read_file (pfile, f)
+	  /* Size might have changed in read_file().  */
+	  && f->st.st_size == file->st.st_size
+	  && !memcmp (f->buffer, file->buffer, f->st.st_size))
+	break;
+    }
+
+  if (import || f != NULL)
+    _cpp_mark_file_once_only (pfile, file, import);
+
+  return f == NULL;
+}
+
 /* Place the file referenced by FILE into a new buffer on the buffer
    stack if possible.  IMPORT is true if this stacking attempt is
    because of a #import directive.  Returns true if a buffer is
@@ -530,13 +586,9 @@ stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
 {
   cpp_buffer *buffer;
   int sysp;
-  const char *fname;
 
-  if (once_only_file_p (pfile, file, import))
+  if (!should_stack_file (pfile, file, import))
       return false;
-
-  if (!read_file (pfile, file))
-    return false;
 
   sysp = MAX ((pfile->map ? pfile->map->sysp : 0),
 	      (file->dir ? file->dir->sysp : 0));
@@ -562,62 +614,9 @@ stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
   pfile->mi_cmacro = 0;
 
   /* Generate the call back.  */
-  fname = file->name;
-  _cpp_do_file_change (pfile, LC_ENTER, fname, 1, sysp);
+  _cpp_do_file_change (pfile, LC_ENTER, file->name, 1, sysp);
 
   return true;
-}
-
-/* Returns TRUE if FILE has been previously read and should not be
-   read again.  */
-static bool
-once_only_file_p (cpp_reader *pfile, _cpp_file *file, bool import)
-{
-  _cpp_file *f;
-
-  /* Nothing to check if this isn't #import and there haven't been any
-     #pragma_once directives.  */
-  if (!import && !pfile->saw_pragma_once)
-    return false;
-
-  /* Did this file contain #pragma once?  */
-  if (file->pragma_once)
-    return true;
-
-  /* Are we #import-ing a previously #import-ed file?  */
-  if (import && file->import)
-    return true;
-
-  /* Read the file contents now.  stack_file would do it later, and
-     we're smart enough to not do it twice, so this is no loss.  Note
-     we don't mark the file once-only if we can't read it.  */
-  if (!read_file (pfile, file))
-    return false;
-
-  /* We may have #imported it under a different name, though.  Look
-     for likely candidates and compare file contents to be sure.  */
-  for (f = pfile->once_only_files; f; f = f->once_only_next)
-    {
-      if (f == file)
-	continue;
-
-      if (!f->pragma_once && !(f->import && import))
-	continue;
-
-      if (f->err_no == 0
-	  && f->st.st_mtime == file->st.st_mtime
-	  && f->st.st_size == file->st.st_size
-	  && read_file (pfile, f)
-	  /* Size might have changed in read_file().  */
-	  && f->st.st_size == file->st.st_size
-	  && !memcmp (f->buffer, file->buffer, f->st.st_size))
-	break;
-    }
-
-  if (import || f != NULL)
-    _cpp_mark_file_once_only (pfile, file, import);
-
-  return f != NULL;
 }
 
 /* Mark FILE to be included once only.  IMPORT is true if because of
@@ -742,9 +741,9 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file)
       /* If we are outputting dependencies but not for this file then
 	 don't error because we can still produce correct output.  */
       if (CPP_OPTION (pfile, deps.style) && ! print_dep)
-	cpp_errno (pfile, DL_WARNING, file->name);
+	cpp_errno (pfile, DL_WARNING, file->path);
       else
-	cpp_errno (pfile, DL_ERROR, file->name);
+	cpp_errno (pfile, DL_ERROR, file->path);
     }
 }
 
