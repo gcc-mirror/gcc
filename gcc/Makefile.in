@@ -3020,6 +3020,7 @@ install-libgcc: libgcc.mk libgcc.a libgcov.a installdirs
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
 	  CONFIG_H="$(TCONFIG_H)" \
 	  MAKEOVERRIDES= \
+	  mkinstalldirs='$(mkinstalldirs)' \
 	  -f libgcc.mk install
 
 # Install multiple versions of libgcc.a, libgcov.a.
@@ -3028,6 +3029,7 @@ install-multilib: stmp-multilib installdirs
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
 	  CONFIG_H="$(CONFIG_H)" \
 	  MAKEOVERRIDES= \
+	  mkinstalldirs='$(mkinstalldirs)' \
 	  -f libgcc.mk install
 
 # Install all the header files built in the include subdirectory.
