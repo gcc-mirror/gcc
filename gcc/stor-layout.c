@@ -1,6 +1,6 @@
 /* C-compiler utilities for types and variables storage layout
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1996, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -50,6 +50,11 @@ unsigned int maximum_field_alignment;
    May be overridden by front-ends.  */
 unsigned int set_alignment = 0;
 
+/* Nonzero if all REFERENCE_TYPEs are internal and hence should be
+   allocated in Pmode, not ptr_mode.   Set only by internal_reference_types
+   called only by a front end.  */
+static int reference_types_internal = 0;
+
 static void finalize_record_size	PARAMS ((record_layout_info));
 static void finalize_type_size		PARAMS ((tree));
 static void place_union_field		PARAMS ((record_layout_info, tree));
@@ -63,6 +68,15 @@ static tree pending_sizes;
    so put variable sizes onto `pending_sizes' instead.  */
 
 int immediate_size_expand;
+
+/* Show that REFERENCE_TYPES are internal and should be Pmode.  Called only
+   by front end.  */
+
+void
+internal_reference_types ()
+{
+  reference_types_internal = 1;
+}
 
 /* Get a list of all the objects put on the pending sizes list.  */
 
@@ -1315,11 +1329,17 @@ layout_type (type)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      TYPE_MODE (type) = ptr_mode;
-      TYPE_SIZE (type) = bitsize_int (POINTER_SIZE);
-      TYPE_SIZE_UNIT (type) = size_int (POINTER_SIZE / BITS_PER_UNIT);
-      TREE_UNSIGNED (type) = 1;
-      TYPE_PRECISION (type) = POINTER_SIZE;
+      {
+	int nbits = ((TREE_CODE (type) == REFERENCE_TYPE
+		      && reference_types_internal)
+		     ? GET_MODE_BITSIZE (Pmode) : POINTER_SIZE);
+
+	TYPE_MODE (type) = nbits == POINTER_SIZE ? ptr_mode : Pmode;
+	TYPE_SIZE (type) = bitsize_int (nbits);
+	TYPE_SIZE_UNIT (type) = size_int (nbits / BITS_PER_UNIT);
+	TREE_UNSIGNED (type) = 1;
+	TYPE_PRECISION (type) = nbits;
+      }
       break;
 
     case ARRAY_TYPE:

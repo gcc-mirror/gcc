@@ -1,5 +1,10 @@
 Tue Feb  6 07:54:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stor-layout.c (reference_types_internal): New variable.
+	(internal_reference_types): New function.
+	(layout_type, case REFERENCE_TYPE): Make Pmode if internal.
+	* tree.h (internal_reference_types): New declaration.
+
 	* cse.c (find_best_addr): Fix typo in computing cost.
 
 Mon Feb  5 21:56:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
