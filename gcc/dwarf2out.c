@@ -8527,7 +8527,6 @@ dwarf2out_decl (decl)
 	 this will be fixed up in decls_for_scope.  */
       if (decl_function_context (decl))
 	return;
-/*	context_die = NULL; */
 
       break;
 
