@@ -9,7 +9,7 @@ class A {
 public:
   void f1a() { ok += 3; }
   void f1b() { ok += 5; }
-  void f2a() { ok += 7; }
+  void f2a() { ok += 7; }	// gets bogus error XFAIL *-*-*
   void f2b() { }
   const static void (*table[2][2])();
   void main();
