@@ -2915,7 +2915,7 @@ rest_of_compilation (decl)
 					 0, cse_dump_file));
       TIMEVAR (cse_time, delete_dead_from_cse (insns, max_reg_num ()));
 
-      if (tem)
+      if (tem || optimize > 1)
 	TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 0));
     }
 
