@@ -1,5 +1,5 @@
 /* multi.c -- multitable stuff for makeinfo.
-   $Id: multi.c,v 1.9 1997/07/24 22:01:00 karl Exp $
+   $Id: multi.c,v 1.2 1998/03/24 18:07:57 law Exp $
 
    Copyright (C) 1996, 97 Free Software Foundation, Inc.
 

@@ -1,5 +1,5 @@
 /* m-x.c -- Meta-X minibuffer reader.
-   $Id: m-x.c,v 1.5 1997/07/24 21:28:00 karl Exp $
+   $Id: m-x.c,v 1.1.1.2 1998/03/22 20:42:42 law Exp $
 
    Copyright (C) 1993, 97 Free Software Foundation, Inc.
 

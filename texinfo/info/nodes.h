@@ -1,5 +1,5 @@
 /* nodes.h -- How we represent nodes internally.
-   $Id: nodes.h,v 1.5 1997/07/18 14:33:44 karl Exp $
+   $Id: nodes.h,v 1.1.1.2 1998/03/22 20:42:49 law Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.

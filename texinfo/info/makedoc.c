@@ -1,5 +1,5 @@
 /* makedoc.c -- Make doc.c and funs.h from input files.
-   $Id: makedoc.c,v 1.4 1997/07/15 18:35:59 karl Exp $
+   $Id: makedoc.c,v 1.1.1.2 1998/03/22 20:42:43 law Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.

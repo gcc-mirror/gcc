@@ -1,5 +1,5 @@
 /* tilde.c -- Tilde expansion code (~/foo := $HOME/foo).
-   $Id: tilde.c,v 1.8 1997/07/24 21:49:03 karl Exp $
+   $Id: tilde.c,v 1.2 1998/03/24 18:06:55 law Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
