@@ -1,3 +1,8 @@
+2001-02-23  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+        * mknumeric_limits: Remove special-casing on target.  Use
+        gcc instead of g++ to build gen-num-limits.cc
+	
 2001-02-19  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/basic_file.h: Add #pragma system_header
