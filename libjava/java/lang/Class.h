@@ -286,7 +286,7 @@ private:
   friend jfieldID JvGetFirstStaticField (jclass);
   friend jint JvNumStaticFields (jclass);
 
-  friend jobject _Jv_AllocObject (jclass, jint);
+  friend jobject _Jv_AllocObject (jclass);
   friend void *_Jv_AllocObj (jint, jclass);
   friend void *_Jv_AllocPtrFreeObj (jint, jclass);
   friend void *_Jv_AllocArray (jint, jclass);

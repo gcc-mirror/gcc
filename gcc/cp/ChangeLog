@@ -1,3 +1,8 @@
+2004-04-15  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* init.c (build_new_1): Don't use type size argument for Java
+	_Jv_AllocObject call.
+
 2004-04-09  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* method.c (make_alias_for_thunk): Remove preprocessor guard on

@@ -23,13 +23,13 @@ details.  */
 extern inline jobject
 JvAllocObject (jclass cls)
 {
-  return _Jv_AllocObject (cls, cls->size());
+  return _Jv_AllocObject (cls);
 }
 
 extern inline jobject
 JvAllocObject (jclass cls, jsize sz)
 {
-  return _Jv_AllocObject (cls, sz);
+  return _Jv_AllocObject (cls);
 }
 
 extern "C" jstring _Jv_NewStringUTF (const char *bytes);

@@ -450,17 +450,17 @@ struct _Jv_JNIEnv;
 typedef struct _Jv_Field *jfieldID;
 typedef struct _Jv_Method *jmethodID;
 
-extern "C" jobject _Jv_AllocObject (jclass, jint) __attribute__((__malloc__));
-extern "C" jobject _Jv_AllocObjectNoFinalizer (jclass, jint) __attribute__((__malloc__));
-extern "C" jobject _Jv_AllocObjectNoInitNoFinalizer (jclass, jint) __attribute__((__malloc__));
+extern "C" jobject _Jv_AllocObject (jclass) __attribute__((__malloc__));
+extern "C" jobject _Jv_AllocObjectNoFinalizer (jclass) __attribute__((__malloc__));
+extern "C" jobject _Jv_AllocObjectNoInitNoFinalizer (jclass) __attribute__((__malloc__));
 #ifdef JV_HASH_SYNCHRONIZATION
-  extern "C" jobject _Jv_AllocPtrFreeObject (jclass, jint)
+  extern "C" jobject _Jv_AllocPtrFreeObject (jclass)
   			    __attribute__((__malloc__));
 #else
   // Collector still needs to scan sync_info
-  static inline jobject _Jv_AllocPtrFreeObject (jclass klass, jint sz)
+  static inline jobject _Jv_AllocPtrFreeObject (jclass klass)
   {
-    return _Jv_AllocObject(klass, sz);
+    return _Jv_AllocObject(klass);
   }
 #endif
 extern "C" jboolean _Jv_IsInstanceOf(jobject, jclass);

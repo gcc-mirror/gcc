@@ -2019,7 +2019,6 @@ build_new_1 (tree exp)
     {
       tree class_addr, alloc_decl;
       tree class_decl = build_java_class_ref (true_type);
-      tree class_size = size_in_bytes (true_type);
       static const char alloc_name[] = "_Jv_AllocObject";
       use_java_new = 1;
       if (!get_global_value_if_present (get_identifier (alloc_name), 
@@ -2037,8 +2036,7 @@ build_new_1 (tree exp)
       class_addr = build1 (ADDR_EXPR, jclass_node, class_decl);
       alloc_call = (build_function_call
 		    (alloc_decl,
-		     tree_cons (NULL_TREE, class_addr,
-				build_tree_list (NULL_TREE, class_size))));
+		     build_tree_list (NULL_TREE, class_addr)));
     }
   else
     {

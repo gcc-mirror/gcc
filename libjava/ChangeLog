@@ -1,3 +1,18 @@
+2004-04-15  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* prims.cc (_Jv_AllocObject): Remove `size' argument.
+	(_Jv_AllocObjectNoFinalizer): Likewise.
+	(_Jv_AllocObjectNoInitNoFinalizer): Likewise.
+	(_Jv_AllocPtrFreeObject): Likewise.
+	(_Jv_AllocString): Moved from natString.cc. Call collector interface
+	directly even in the JVMPI case.	
+	* gcj/cni.h (JvAllocObject): Remove `size' argument from 
+	_Jv_AllocObject calls.
+	* gcj/javaprims.h: Update prototypes.
+	* gnu/gcj/natCore.cc (_Jv_create_core): Use `new', not _Jv_AllocObject.
+	* java/lang/Class.h: Update _Jv_AllocObject friend prototype.
+	* java/lang/natString.cc (_Jv_AllocString): Move to prims.cc.
+
 2004-04-14  Andrew Haley  <aph@redhat.com>
             Bryce McKinlay  <mckinlay@redhat.com>
 
