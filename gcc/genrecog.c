@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1362,14 +1362,12 @@ write_tree_1 (tree, prevpos, afterward, type)
 	         must fit in 32 bit, thus it suffices to check only
 	         for 1 << 31 .  */
 	      HOST_WIDE_INT offset = p->elt_zero_wide == -2147483647 - 1;
-	      printf (
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		       "XWINT (x%d, 0) == %d%s && ",
-#else
-		       "XWINT (x%d, 0) == %ld%s && ",
-#endif
-		       depth, p->elt_zero_wide + offset, offset ? "-1" : "");
+
+	      printf ("XWINT (x%d, 0) == ", depth);
+	      printf (HOST_WIDE_INT_PRINT_DEC, p->elt_zero_wide + offset);
+	      printf ("%s && ", offset ? "-1" : "");
 	    }
+
 	  if (p->veclen)
 	    printf ("XVECLEN (x%d, 0) == %d && ", depth, p->veclen);
 	  if (p->dupno >= 0)
