@@ -1,5 +1,28 @@
 2003-10-17  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm-modes.def (CC_Nmode): New condition code mode.
+	* arm.c (thumb_condition_code): Delete.
+	(arm_select_cc_mode): Handle single-bit test for Thumb.
+	(arm_print_operand, cases 'd' and 'D'): Don't special case the 
+	condition code logic for Thumb.
+	(get_arm_condition_code): Handle CC_Nmode.
+	(thumb_cbrch_target_operand): New function.
+	* arm.h (PREDICATE_CODES): Add thumb_cbrch_target_operand.
+	* arm-protos.h (thumb_cbrch_target_operand): Add prototype.
+	* arm.md: Add Thumb split patterns for zero_extract and
+	sign_extract.
+	(tbit_cbranch, andsi3_cbranch_scratch, andsi3_cbranch)
+	(orrsi3_cbranch_scratch, orrsi3_cbranch, xorsi3_cbranch_scratch)
+	(xorsi3_cbranch, addsi3_cbranch, addsi3_cbranch_scratch)
+	(subsi3_cbranch, subsi3_cbranch_scratch): New Thumb patterns.
+	(cbranchne_decr1): Re-work to use CC_Nmode.
+
+	* arm.c (thumb_expand_epilogue): Add clobbers of registers restored 
+	by the return instruction.  Add a use of the link register if it
+	wasn't stored.
+
+2003-10-17  Richard Earnshaw  <rearnsha@arm.com>
+
 	* flow.c (init_propagate_block_info): Don't abort if a conditional
 	jump is not a comparison of a register.  Instead, just don't record
 	conditional life information.
