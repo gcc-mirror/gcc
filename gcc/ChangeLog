@@ -1,3 +1,8 @@
+2002-12-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* bitmap.c (bitmap_ior_and_compl, bitmap_union_of_diff):
+	Initialize tmp.using_obstack to 0.
+
 2002-12-03  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.h (EH_RETURN_DATA_REGNO): Define.
