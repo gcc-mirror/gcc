@@ -1,3 +1,8 @@
+2002-01-08  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_split_conditional_move): Call copy_rtx
+	as needed to avoid shared structure.
+
 2002-01-08  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (get_shift_alg): Fix 15-bit LSHIFTRT on
