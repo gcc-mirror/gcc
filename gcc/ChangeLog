@@ -1,3 +1,7 @@
+2004-02-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/iris5gas.h (PREFERRED_DEBUGGING_TYPE): Define.
+
 2004-02-05  Devang Patel  <dpatel@apple.com>
 
 	* dwarf2out.c (force_type_die): Look up input type itself
