@@ -150,7 +150,7 @@ setDefault(Authenticator def_auth)
   * @param port The port requesting authentication
   * @param protocol The protocol requesting authentication
   * @param prompt The prompt to display to the user when requesting 
-           authentication info
+  *        authentication info
   * @param scheme The authentication scheme in use
   * 
   * @return A <code>PasswordAuthentication</code> object with the user's 
@@ -169,8 +169,33 @@ requestPasswordAuthentication(InetAddress addr, int port, String protocol,
 }
 
 /**
- * @since 1.4
- */
+  * This method is called whenever a username and password for a given
+  * network operation is required.  First, a security check is made to see
+  * if the caller has the "requestPasswordAuthentication"
+  * permission.  If not, the method thows an exception.  If there is no
+  * default <code>Authenticator</code> object, the method then returns
+  * <code>null</code>.  Otherwise, the default authenticators's instance
+  * variables are initialized and it's <code>getPasswordAuthentication</code>
+  * method is called to get the actual authentication information to return.
+  * This method is the preferred one as it can be used with hostname
+  * when addr is unknown.
+  *
+  * @param host The hostname requesting authentication
+  * @param addr The address requesting authentication
+  * @param port The port requesting authentication
+  * @param protocol The protocol requesting authentication
+  * @param prompt The prompt to display to the user when requesting 
+  *        authentication info
+  * @param scheme The authentication scheme in use
+  *
+  * @return A <code>PasswordAuthentication</code> object with the user's 
+  *         authentication info.
+  *
+  * @exception SecurityException If the caller does not have permission to 
+  *         perform this operation
+  *
+  * @since 1.4
+  */
 public static PasswordAuthentication
 requestPasswordAuthentication(String host, InetAddress addr, int port,
 		              String protocol, String prompt, String scheme)
@@ -194,6 +219,9 @@ requestPasswordAuthentication(String host, InetAddress addr, int port,
 }
 
 /**
+ *  Returns the hostname of the host or proxy requesting authorization,
+ *  or null if not available.
+ *
  *  @since 1.4
  */
 protected final String getRequestingHost()
