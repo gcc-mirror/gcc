@@ -799,6 +799,21 @@ changequote([,])dnl
  			thread_file='posix'
  		fi
 		;;
+	alpha*-*-freebsd*)
+		tm_file="${tm_file} freebsd.h alpha/elf.h alpha/freebsd.h"
+		target_cpu_default="MASK_GAS"
+		tmake_file="t-freebsd alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
+		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+		xmake_file=none
+		gas=yes gnu_ld=yes
+		stabs=yes
+		case x${enable_threads} in
+		xyes | xpthreads | xposix)
+			thread_file='posix'
+			tmake_file="${tmake_file} t-freebsd-thread"
+			;;
+		esac
+		;;
 	alpha*-*-netbsd*)
 		tm_file="${tm_file} alpha/elf.h alpha/netbsd.h alpha/netbsd-elf.h"
 		target_cpu_default="MASK_GAS"
