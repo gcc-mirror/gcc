@@ -1,3 +1,7 @@
+Wed Jul 26 19:41:51 2000  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c-tortuer/execute/20000726-1.c: New test.
+
 2000-07-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/execute/enum-2.c: New test.
