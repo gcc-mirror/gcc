@@ -1,3 +1,7 @@
+2001-11-16  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.md: Change all ldvx to lvx.
+
 2001-11-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gensupport.c (process_rtx): Don't assume filename is the first
