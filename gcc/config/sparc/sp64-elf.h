@@ -20,16 +20,10 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* ??? We're taking the scheme of including another file and then overriding
-   the values we don't like a bit too far here.  The alternative is to more or
-   less duplicate all of svr4.h, sparc/sysv4.h, and sparc/sol2.h here
-   (suitably cleaned up).  */
-
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc64-elf)")
 
 /* A 64 bit v9 compiler in a Medium/Anywhere code model environment.  */
-
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
 (MASK_V9 + MASK_PTR64 + MASK_64BIT + MASK_HARD_QUAD \
@@ -37,6 +31,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_EMBMEDANY
+
+/* Don't assume anything about the header files.  */
+#define NO_IMPLICIT_EXTERN_C
 
 /* __svr4__ is used by the C library (FIXME) */
 #undef CPP_SUBTARGET_SPEC
@@ -75,6 +72,15 @@ crtbegin.o%s \
 /* Use the default (for now).  */
 #undef LIB_SPEC
 
+/* This defines which switch letters take arguments.
+   It is as in svr4.h but with -R added.  */
+#undef SWITCH_TAKES_ARG
+#define SWITCH_TAKES_ARG(CHAR) \
+  (DEFAULT_SWITCH_TAKES_ARG(CHAR) \
+   || (CHAR) == 'R' \
+   || (CHAR) == 'h' \
+   || (CHAR) == 'z')
+
 /* V9 chips can handle either endianness.  */
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
@@ -86,7 +92,19 @@ crtbegin.o%s \
 
 #undef WORDS_BIG_ENDIAN
 #define WORDS_BIG_ENDIAN (! TARGET_LITTLE_ENDIAN)
+
+#undef  LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX  "."
 
+/* This is how to store into the string LABEL
+   the symbol_ref name of an internal numbered label where
+   PREFIX is the class of label and NUM is the number within the class.
+   This is suitable for output with `assemble_name'.  */
+
+#undef  ASM_GENERATE_INTERNAL_LABEL
+#define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
+  sprintf ((LABEL), "*.L%s%ld", (PREFIX), (long)(NUM))
+
 /* ??? This should be 32 bits for v9 but what can we do?  */
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "short unsigned int"
@@ -104,17 +122,3 @@ crtbegin.o%s \
    this 0 to not confuse the branch shortening code.  */
 #undef JUMP_TABLES_IN_TEXT_SECTION
 #define JUMP_TABLES_IN_TEXT_SECTION 0
-
-/* Don't include Solaris-specific format checks.  */
-#undef TARGET_N_FORMAT_TYPES
-#undef TARGET_FORMAT_TYPES
-
-/* Don't include Solaris-specific .init / .fini support.  */
-#undef ASM_DECLARE_FUNCTION_SIZE
-#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)		\
-  do								\
-    {								\
-      if (!flag_inhibit_size_directive)				\
-	ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);			\
-    }								\
-  while (0)

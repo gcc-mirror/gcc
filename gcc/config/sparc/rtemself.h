@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a SPARC using ELF.
-   Copyright (C) 1996, 1997, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2000, 2002, 2005 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GCC.
@@ -20,7 +20,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Target OS builtins.  */
-#define TARGET_SUB_OS_CPP_BUILTINS()		\
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
 	builtin_define ("__rtems__");		\

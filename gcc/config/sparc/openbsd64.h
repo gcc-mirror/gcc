@@ -1,5 +1,5 @@
 /* Configuration file for sparc64 OpenBSD target.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -50,6 +50,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
+
+/* Inherited from sp64-elf.  */
+#undef NO_IMPLICIT_EXTERN_C
 
 #undef ASM_SPEC
 #define ASM_SPEC "\
