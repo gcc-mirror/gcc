@@ -1,3 +1,8 @@
+Tue May 23 22:56:56 2000  Jerry Quinn
+
+	* iostream.cc (endl): Verify stream can accept characters
+	before writing its eol.
+
 2000-05-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* config.shared: Change "pic" to depend on $(PICFLAG), not
