@@ -2182,24 +2182,17 @@ generate_bytecode_insns (exp, target, state)
     case TRY_EXPR:
       {
 	tree try_clause = TREE_OPERAND (exp, 0);
-	tree finally = TREE_OPERAND (exp, 2);
 	struct jcf_block *start_label = get_jcf_label_here (state);
 	struct jcf_block *end_label;  /* End of try clause. */
-	struct jcf_block *finally_label;  /* Finally subroutine. */
 	struct jcf_block *finished_label = gen_jcf_label (state);
 	tree clause = TREE_OPERAND (exp, 1);
-	if (finally)
-	  {
-	    finally = FINALLY_EXPR_BLOCK (finally);
-	    finally_label = gen_jcf_label (state);
-	  }
 	if (target != IGNORE_TARGET)
 	  abort ();
 	generate_bytecode_insns (try_clause, IGNORE_TARGET, state);
 	end_label = get_jcf_label_here (state);
 	if (CAN_COMPLETE_NORMALLY (try_clause))
 	  emit_goto (finished_label, state);
-	for ( ; clause != NULL_TREE;  clause = TREE_CHAIN (clause))
+	while (clause != NULL_TREE)
 	  {
 	    tree catch_clause = TREE_OPERAND (clause, 0);
 	    tree exception_decl = BLOCK_EXPR_DECLS (catch_clause);
@@ -2209,43 +2202,63 @@ generate_bytecode_insns (exp, target, state)
 	    else
 	      handler->type = TREE_TYPE (TREE_TYPE (exception_decl));
 	    generate_bytecode_insns (catch_clause, IGNORE_TARGET, state);
-	    if (CAN_COMPLETE_NORMALLY (catch_clause))
+	    clause = TREE_CHAIN (clause);
+	    if (CAN_COMPLETE_NORMALLY (catch_clause) && clause != NULL_TREE)
 	      emit_goto (finished_label, state);
 	  }
-	if (finally)
-	  {
-	    tree return_link;
-	    tree exception_type = build_pointer_type (throwable_type_node);
-	    tree exception_decl = build_decl (VAR_DECL, NULL_TREE,
-					      exception_type);
-	    struct jcf_handler *handler
-	      = alloc_handler (start_label, NULL_TREE, state);
-	    handler->end_label = handler->handler_label;
-	    handler->type = NULL_TREE;
-	    localvar_alloc (exception_decl, state);
-	    NOTE_PUSH (1);
-            emit_store (exception_decl, state);
-	    emit_jsr (finally_label, state);
-	    emit_load (exception_decl, state);
-	    RESERVE (1);
-	    OP1 (OPCODE_athrow);
-	    NOTE_POP (1);
-	    localvar_free (exception_decl, state);
-
-	    /* The finally block. */
-	    return_link = build_decl (VAR_DECL, NULL_TREE,
-				      return_address_type_node);
-	    define_jcf_label (finally_label, state);
-	    NOTE_PUSH (1);
-	    localvar_alloc (return_link, state);
-	    emit_store (return_link, state);
-	    generate_bytecode_insns (finally, IGNORE_TARGET, state);
-	    maybe_wide (OPCODE_ret, DECL_LOCAL_INDEX (return_link), state);
-	    localvar_free (return_link, state);
-	  }
 	define_jcf_label (finished_label, state);
-	if (finally)
-	  emit_jsr (finally_label, state);
+      }
+      break;
+    case TRY_FINALLY_EXPR:
+      {
+	tree try_block = TREE_OPERAND (exp, 0);
+	tree finally = TREE_OPERAND (exp, 1);
+	struct jcf_block *finished_label = gen_jcf_label (state);
+	struct jcf_block *finally_label = gen_jcf_label (state);
+	struct jcf_block *start_label = get_jcf_label_here (state);
+	tree return_link = build_decl (VAR_DECL, NULL_TREE,
+				       return_address_type_node);
+	tree exception_type = build_pointer_type (throwable_type_node);
+	tree exception_decl = build_decl (VAR_DECL, NULL_TREE, exception_type);
+	struct jcf_handler *handler;
+
+	finally_label->pc = PENDING_CLEANUP_PC;
+	finally_label->next = state->labeled_blocks;
+	state->labeled_blocks = finally_label;
+	state->num_finalizers++;
+
+	generate_bytecode_insns (try_block, target, state);
+	if (state->labeled_blocks != finally_label)
+	  abort();
+	state->labeled_blocks = finally_label->next;
+	emit_jsr (finally_label, state);
+	if (CAN_COMPLETE_NORMALLY (try_block))
+	  emit_goto (finished_label, state);
+
+	/* Handle exceptions. */
+	localvar_alloc (return_link, state);
+	handler = alloc_handler (start_label, NULL_TREE, state);
+	handler->end_label = handler->handler_label;
+	handler->type = NULL_TREE;
+	localvar_alloc (exception_decl, state);
+	NOTE_PUSH (1);
+	emit_store (exception_decl, state);
+	emit_jsr (finally_label, state);
+	emit_load (exception_decl, state);
+	RESERVE (1);
+	OP1 (OPCODE_athrow);
+	NOTE_POP (1);
+	localvar_free (exception_decl, state);
+
+	/* The finally block.  First save return PC into return_link. */
+	define_jcf_label (finally_label, state);
+	NOTE_PUSH (1);
+	emit_store (return_link, state);
+
+	generate_bytecode_insns (finally, IGNORE_TARGET, state);
+	maybe_wide (OPCODE_ret, DECL_LOCAL_INDEX (return_link), state);
+	localvar_free (return_link, state);
+	define_jcf_label (finished_label, state);
       }
       break;
     case THROW_EXPR:

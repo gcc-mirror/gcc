@@ -860,9 +860,6 @@ extern tree *type_map;
 #define BLOCK_EXPR_DECLS(NODE)  BLOCK_VARS(NODE)
 #define BLOCK_EXPR_BODY(NODE)   BLOCK_SUBBLOCKS(NODE)
 
-/* Using a CATCH_EXPR node */
-#define CATCH_EXPR_GET_EXPR(NODE, V) (V ? LABELED_BLOCK_BODY (NODE) : (NODE))
-
 /* Non zero if TYPE is an unchecked exception */
 #define IS_UNCHECKED_EXCEPTION_P(TYPE)				\
   (inherits_from_p ((TYPE), runtime_exception_type_node)	\
