@@ -271,8 +271,9 @@ public abstract class SocketImpl implements SocketOptions
    */
   public String toString()
   {
-    return "[addr=" + address.toString() + ",port=" + Integer.toString(port)
-      + ",localport=" + Integer.toString(localport) + "]";
+    return "[addr=" + address
+	    + ",port=" + port
+	    + ",localport=" + localport + "]";
   }
 
   /**
