@@ -1,3 +1,12 @@
+Wed May 17 01:43:58 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* class.c (finish_struct): Don't complain about a class with no
+	user-defined constructors but with a member that has no default
+	constructor, as this is OK for aggregates.
+
+	* expr.c (cplus_expand_expr, NEW_EXPR): If this is an explicit
+	constructor call, mark slot addressable.
+
 Tue May 16 18:37:51 1995  Douglas Rupp  (drupp@cs.washington.edu)
 
 	* g++.c: Changed WINNT to _WIN32.
