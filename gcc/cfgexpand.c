@@ -833,6 +833,23 @@ expand_used_vars (void)
 }
 
 
+/* If we need to produce a detailed dump, print the tree representation
+   for STMT to the dump file.  SINCE is the last RTX after which the RTL
+   generated for STMT should have been appended.  */
+
+static void
+maybe_dump_rtl_for_tree_stmt (tree stmt, rtx since)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "\n;; ");
+      print_generic_expr (dump_file, stmt, TDF_SLIM);
+      fprintf (dump_file, "\n");
+
+      print_rtl (dump_file, since ? NEXT_INSN (since) : since);
+    }
+}
+
 /* A subroutine of expand_gimple_basic_block.  Expand one COND_EXPR.
    Returns a new basic block if we've terminated the current basic
    block and created a new one.  */
@@ -847,7 +864,9 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
   tree pred = COND_EXPR_COND (stmt);
   tree then_exp = COND_EXPR_THEN (stmt);
   tree else_exp = COND_EXPR_ELSE (stmt);
-  rtx last = get_last_insn ();
+  rtx last2, last;
+
+  last2 = last = get_last_insn ();
 
   extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
   if (EXPR_LOCUS (stmt))
@@ -866,12 +885,14 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
     {
       jumpif (pred, label_rtx (GOTO_DESTINATION (then_exp)));
       add_reg_br_prob_note (dump_file, last, true_edge->probability);
+      maybe_dump_rtl_for_tree_stmt (stmt, last);
       return NULL;
     }
   if (TREE_CODE (else_exp) == GOTO_EXPR && IS_EMPTY_STMT (then_exp))
     {
       jumpifnot (pred, label_rtx (GOTO_DESTINATION (else_exp)));
       add_reg_br_prob_note (dump_file, last, false_edge->probability);
+      maybe_dump_rtl_for_tree_stmt (stmt, last);
       return NULL;
     }
   gcc_assert (TREE_CODE (then_exp) == GOTO_EXPR
@@ -900,11 +921,7 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
     BB_END (new_bb) = PREV_INSN (BB_END (new_bb));
   update_bb_for_insn (new_bb);
 
-  if (dump_file)
-    {
-      dump_bb (bb, dump_file, 0);
-      dump_bb (new_bb, dump_file, 0);
-    }
+  maybe_dump_rtl_for_tree_stmt (stmt, last2);
 
   return new_bb;
 }
@@ -922,17 +939,21 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
 static basic_block
 expand_gimple_tailcall (basic_block bb, tree stmt, bool *can_fallthru)
 {
-  rtx last = get_last_insn ();
+  rtx last2, last;
   edge e;
   edge_iterator ei;
   int probability;
   gcov_type count;
+
+  last2 = last = get_last_insn ();
 
   expand_expr_stmt (stmt);
 
   for (last = NEXT_INSN (last); last; last = NEXT_INSN (last))
     if (CALL_P (last) && SIBLING_CALL_P (last))
       goto found;
+
+  maybe_dump_rtl_for_tree_stmt (stmt, last);
 
   *can_fallthru = true;
   return NULL;
@@ -1007,6 +1028,8 @@ expand_gimple_tailcall (basic_block bb, tree stmt, bool *can_fallthru)
 	BB_END (bb) = PREV_INSN (last);
     }
 
+  maybe_dump_rtl_for_tree_stmt (stmt, last2);
+
   return bb;
 }
 
@@ -1023,9 +1046,9 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
 
   if (dump_file)
     {
-      tree_register_cfg_hooks ();
-      dump_bb (bb, dump_file, 0);
-      rtl_register_cfg_hooks ();
+      fprintf (dump_file,
+	       "\n;; Generating RTL for tree basic block %d\n",
+	       bb->index);
     }
 
   if (!bsi_end_p (bsi))
@@ -1044,6 +1067,8 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
 	BB_HEAD (bb) = NEXT_INSN (BB_HEAD (bb));
       bsi_next (&bsi);
       note = emit_note_after (NOTE_INSN_BASIC_BLOCK, BB_HEAD (bb));
+
+      maybe_dump_rtl_for_tree_stmt (stmt, last);
     }
   else
     note = BB_HEAD (bb) = emit_note (NOTE_INSN_BASIC_BLOCK);
@@ -1096,7 +1121,11 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
 		}
 	    }
 	  else
-	    expand_expr_stmt (stmt);
+	    {
+	      last = get_last_insn ();
+	      expand_expr_stmt (stmt);
+	      maybe_dump_rtl_for_tree_stmt (stmt, last);
+	    }
 	}
     }
 
@@ -1111,8 +1140,6 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
     last = PREV_INSN (PREV_INSN (last));
   BB_END (bb) = last;
 
-  if (dump_file)
-    dump_bb (bb, dump_file, 0);
   update_bb_for_insn (bb);
 
   return bb;
@@ -1303,6 +1330,13 @@ tree_expand_cfg (void)
   generating_concat_p = 0;
 
   finalize_block_changes ();
+
+  if (dump_file)
+    {
+      fprintf (dump_file,
+	       "\n\n;;\n;; Full RTL generated for this function:\n;;\n");
+      /* And the pass manager will dump RTL for us.  */
+    }
 }
 
 struct tree_opt_pass pass_expand =
