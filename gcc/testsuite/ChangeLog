@@ -1,3 +1,10 @@
+2001-10-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.misc-tests/msgs.exp: Delete.
+	* gcc.misc-tests/m-un-1.c: Move to gcc.dg.
+	* gcc.misc-tests/m-un-2.c: Move to gcc.dg.  Update expected
+	error set to match recent changes.
+
 2001-10-24  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/20011021-1.c: New test.
