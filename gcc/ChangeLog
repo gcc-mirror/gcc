@@ -1,3 +1,9 @@
+2004-11-23  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/cfg.texi (Maintaining the CFG): Use @ftable instead of
+	@table to list the BSI methods.  Use individual @findex directives
+	instead of one with a comma-separated list of index entries.
+
 2004-11-22  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/18529
