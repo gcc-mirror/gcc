@@ -620,7 +620,7 @@ namespace std
        *  For ease of use, sentries may be converted to booleans.  The
        *  return value is that of the sentry state (true == okay).
       */
-      operator bool() { return _M_ok; }
+      operator bool() const { return _M_ok; }
 
     private:
       bool _M_ok;

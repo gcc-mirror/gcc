@@ -1,5 +1,15 @@
 2003-02-06  Paolo Carlini  <pcarlini@unitus.it>
 
+	PR libstdc++/9562
+	* include/std/std_istream.h
+	(basic_istream::sentry::operator bool()): Make const.
+	* include/std/std_ostream.h
+	(basic_ostream::sentry::operator bool()): Likewise.
+	* testsuite/27_io/istream_sentry.cc (test03): Add.
+	* testsuite/27_io/ostream_sentry.cc: Add.
+
+2003-02-06  Paolo Carlini  <pcarlini@unitus.it>
+
 	PR libstdc++/9548
 	Implement resolution of DR 231 (Ready)
 	* include/bits/locale_facets.h (__num_base::_S_format_float):
