@@ -1,3 +1,8 @@
+2004-09-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17530
+	* g++.dg/template/static7.C: New test.
+
 2004-09-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/17558 

@@ -1,3 +1,9 @@
+2004-09-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17530
+	* pt.c (tsubst): Fix parentheses to accomodate emacs.
+	(tsubst_baselink): If we get a single function, mark it as used.
+
 2004-09-20  Matt Austern <austern@apple.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 
