@@ -1,3 +1,11 @@
+2003-01-30  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config.if: If gcc_version is already set, just use it.  Don't set
+	gcc_version_trigger if it's already set, otherwise set it to
+	gcc/version.c, but only if the file exists.  If it is not set and
+	gcc/version.c does not exist, try to extract the version number from
+	$CC.
+
 2003-01-26  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Makefile.tpl (BASE_FLAGS_TO_PASS): Also pass DESTDIR.
