@@ -33,6 +33,8 @@ class Connection extends URLConnection
   private Vector hdrVec = new Vector();
   private boolean gotHeaders = false;
   private File fileIn;
+  private InputStream inputStream;
+  private OutputStream outputStream;
 
   public Connection(URL url)
   {
@@ -47,34 +49,36 @@ class Connection extends URLConnection
       return;
 
     // If not connected, then file needs to be openned.
-    fileIn = new File(url.getFile());
-    
-    if (fileIn.exists())
-      connected = true;
-    else
-      throw new FileNotFoundException("No such file or directory");
+    String fname = url.getFile();
+    fileIn = new File(fname);
+    if (doInput)
+      inputStream = new BufferedInputStream(new FileInputStream(fileIn));
+    if (doOutput)
+      outputStream = new BufferedOutputStream(new FileOutputStream(fileIn));
+    connected = true;
   }
 
   public InputStream getInputStream() throws IOException
   {
+    if (! doInput)
+      throw new ProtocolException("Can't open InputStream if doInput is false");
     if (!connected)
       connect();
 
-    if (! doInput)
-      throw new ProtocolException("Can't open InputStream if doInput is false");
-    return new BufferedInputStream(new FileInputStream(fileIn));
+    return inputStream;
   }
 
   // Override default method in URLConnection.
   public OutputStream getOutputStream() throws IOException
   {
-    if (!connected)
-      connect();
-
     if (! doOutput)
       throw new
 	ProtocolException("Can't open OutputStream if doOutput is false");
-    return new BufferedOutputStream(new FileOutputStream(fileIn));
+
+    if (!connected)
+      connect();
+
+    return outputStream;
   }
 
   // Override default method in URLConnection.
