@@ -1,3 +1,12 @@
+2004-04-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/19537
+	* Makefile.in (tree-ssa-loop-ivopts.o): Depend on langhooks.h.
+	* tree-ssa-loop-ivopts.c: Include langhooks.h.
+	(add_standard_iv_candidates_for_size): New function, extracting code
+	from add_standard_iv_candidates and parameterizing it by type size.
+	(add_standard_iv_candidates): Use add_standard_iv_candidates_for_size.
+
 2005-04-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/invoke.texi (SPARC options): Document that
