@@ -24,6 +24,11 @@ if :; then :; else
 fi
 
 AC_CANONICAL_SYSTEM
+
+# This works around an automake problem.
+mkinstalldirs="`cd $ac_aux_dir && pwd`/mkinstalldirs"
+AC_SUBST(mkinstalldirs)
+
 AM_INIT_AUTOMAKE(zlib, 1.1.3)
 
 AM_MAINTAINER_MODE
