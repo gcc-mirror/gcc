@@ -1388,18 +1388,27 @@ while (0)
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE. */
 
-#define RTX_COSTS(X,CODE,OUTER_CODE)			\
-  case MULT:						\
-    return COSTS_N_INSNS (10);				\
-  case DIV:						\
-  case UDIV:						\
-  case MOD:						\
-  case UMOD:						\
-    return COSTS_N_INSNS (40);				\
-  case PLUS:						\
-    if (GET_CODE (XEXP (X, 0)) == REG			\
-        && GET_CODE (XEXP (X, 1)) == CONST_INT)		\
-      return 1;						\
+#define RTX_COSTS(X,CODE,OUTER_CODE)				\
+  case MULT:							\
+    return COSTS_N_INSNS (20);					\
+  case DIV:							\
+  case UDIV:							\
+  case MOD:							\
+  case UMOD:							\
+    return COSTS_N_INSNS (20);					\
+  case ASHIFTRT:						\
+  case LSHIFTRT:						\
+  case ASHIFT:							\
+    return (4 + rtx_cost (XEXP (X, 0), OUTER_CODE)		\
+	    + rtx_cost (XEXP (X, 1), OUTER_CODE));		\
+  case PLUS:							\
+    if (GET_CODE (XEXP (X, 0)) == MULT				\
+	&& GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT	\
+	&& (INTVAL (XEXP (XEXP (X, 0), 1)) == 2			\
+	    || INTVAL (XEXP (XEXP (X, 0), 1)) == 4		\
+	    || INTVAL (XEXP (XEXP (X, 0), 1)) == 8))		\
+      return (2 + rtx_cost (XEXP (XEXP (X, 0), 0), OUTER_CODE)	\
+	      + rtx_cost (XEXP (X, 1), OUTER_CODE));		\
     break;
 
 
