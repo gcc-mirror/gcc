@@ -149,20 +149,15 @@ const char *progname;
 int save_argc;
 char **save_argv;
 
-/* Name of current original source file (what was input to cpp).
-   This comes from each #-command in the actual input.  */
-
-const char *input_filename;
-
 /* Name of top-level original source file (what was input to cpp).
    This comes from the #-command at the beginning of the actual input.
    If there isn't any there, then this is the cc1 input file name.  */
 
 const char *main_input_filename;
 
-/* Current line number in real source file.  */
+/* Current position in real source file.  */
 
-int input_line;
+location_t input_location;
 
 /* Nonzero if it is unsafe to create any new pseudo registers.  */
 int no_new_pseudos;
@@ -2147,14 +2142,12 @@ push_srcloc (file, line)
   struct file_stack *fs;
 
   if (input_file_stack)
-    {
-      input_file_stack->name = input_filename;
-      input_file_stack->line = input_line;
-    }
+    input_file_stack->location = input_location;
 
   fs = (struct file_stack *) xmalloc (sizeof (struct file_stack));
-  fs->name = input_filename = file;
-  fs->line = input_line = line;
+  input_filename = file;
+  input_line = line;
+  fs->location = input_location;
   fs->next = input_file_stack;
   input_file_stack = fs;
   input_file_stack_tick++;
@@ -2175,10 +2168,7 @@ pop_srcloc ()
   input_file_stack_tick++;
 
   if (input_file_stack)
-    {
-      input_filename = input_file_stack->name;
-      input_line = input_file_stack->line;
-    }
+    input_location = input_file_stack->location;
   else
     {
       input_filename = NULL;

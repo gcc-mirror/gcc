@@ -1,3 +1,22 @@
+2003-05-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* Makefile.in (TREE_H): Replace location.h with input.h.
+	(GTFILES) Remove location.h
+	(gt-lists.h): Replace gt-location.h with gt-input.h
+	* input.h (input_filename, input_line): Remove variables.
+	(location_s, location_t): Move from location.h.
+	(input_location): New.
+	(input_filename, input_line): New #defines.
+	* location.h: Remove.
+	* tree.h: Replace location.h with input.h.
+	(input_filename, input_line): Remove.
+	* diagnostic.h: Replace location.h with input.h.
+	* gcc.h (input_filename, input_filename_length): Remove declarations.
+	* toplev.c (input_filename, input_line): Remove.
+	(input_location): Define.
+	(push_srcloc, pop_srcloc): Adjust.
+	* diagnostic.c (diagnostic_report_current_module): Adjust.
+
 2003-05-02  Nick Clifton  <nickc@redhat.com>
 
 	* configure.in: Add xstormy16 to list of targets that has a nop

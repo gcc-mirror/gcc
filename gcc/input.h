@@ -19,24 +19,32 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-/* Source file current line is coming from.  */
-extern const char *input_filename;
+#ifndef GCC_INPUT_H
+#define GCC_INPUT_H
+
+/* The data structure used to record a location in a translation unit.  */
+struct location_s GTY (())
+{
+  /* The name of the source file involved.  */     
+  const char *file;
+
+  /* The line-location in the source file.  */
+  int line;
+};
+typedef struct location_s location_t;
+
+struct file_stack
+{
+  struct file_stack *next;
+  location_t location;
+};
 
 /* Top-level source file.  */
 extern const char *main_input_filename;
 
-/* Line number in current source file.  */
-extern int input_line;
-
-/* Stream for reading from input file.  */
-extern FILE *finput;
-
-struct file_stack
-  {
-    const char *name;
-    struct file_stack *next;
-    int line;
-  };
+extern location_t input_location;
+#define input_line (input_location.line)
+#define input_filename (input_location.file)
 
 /* Stack of currently pending input files.
    The line member is not accurate for the innermost file on the stack.  */
@@ -47,3 +55,5 @@ extern int input_file_stack_tick;
 
 extern void push_srcloc PARAMS ((const char *name, int line));
 extern void pop_srcloc PARAMS ((void));
+
+#endif

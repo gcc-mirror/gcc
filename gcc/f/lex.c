@@ -796,7 +796,7 @@ ffelex_file_pop_ (const char *filename)
       input_file_stack = p->next;
       free (p);
       input_file_stack_tick++;
-      (*debug_hooks->end_source_file) (input_file_stack->line);
+      (*debug_hooks->end_source_file) (input_file_stack->location.line);
     }
   else
     error ("#-lines for entering and leaving files don't match");
@@ -804,7 +804,7 @@ ffelex_file_pop_ (const char *filename)
   /* Now that we've pushed or popped the input stack,
      update the name in the top element.  */
   if (input_file_stack)
-    input_file_stack->name = filename;
+    input_file_stack->location.file = filename;
 }
 
 static void
@@ -813,9 +813,9 @@ ffelex_file_push_ (int old_lineno, const char *filename)
   struct file_stack *p
     = (struct file_stack *) xmalloc (sizeof (struct file_stack));
 
-  input_file_stack->line = old_lineno;
+  input_file_stack->location.line = old_lineno;
   p->next = input_file_stack;
-  p->name = filename;
+  p->location.file = filename;
   input_file_stack = p;
   input_file_stack_tick++;
 
@@ -824,7 +824,7 @@ ffelex_file_push_ (int old_lineno, const char *filename)
   /* Now that we've pushed or popped the input stack,
      update the name in the top element.  */
   if (input_file_stack)
-    input_file_stack->name = filename;
+    input_file_stack->location.file = filename;
 }
 
 /* Prepare to finish a statement-in-progress by sending the current
@@ -1260,7 +1260,7 @@ ffelex_hash_ (FILE *finput)
 	    {
 	      /* Update the name in the top element of input_file_stack.  */
 	      if (input_file_stack)
-		input_file_stack->name = input_filename;
+		input_file_stack->location.file = input_filename;
 
 	      if (token != NULL)
 		ffelex_token_kill (token);

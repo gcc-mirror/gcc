@@ -41,12 +41,15 @@ definitions and other extensions.  */
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-
+#include "input.h"
 #include "obstack.h"
 #include "toplev.h"
 
-extern char *input_filename;
 extern FILE *finput, *out;
+ 
+/* Current position in real source file.  */
+
+location_t input_location;
 
 /* Obstack for the lexer.  */
 struct obstack temporary_obstack;
@@ -54,11 +57,9 @@ struct obstack temporary_obstack;
 /* The current parser context.  */
 static struct parser_ctxt *ctxp;
 
-/* Error and warning counts, current line number, because they're used
-   elsewhere  */
+/* Error and warning counts, because they're used elsewhere  */
 int java_error_count;
 int java_warning_count;
-int input_line;
 
 /* Tweak default rules when necessary.  */
 static int absorber;
