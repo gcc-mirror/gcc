@@ -523,6 +523,7 @@ java::lang::String::init (jbyteArray bytes, jint offset, jint count,
 	  avail -= done;
 	}
     }
+  converter->done ();
   this->data = array;
   this->boffset = (char *) elements (array) - (char *) array;
   this->count = outpos;
@@ -604,6 +605,7 @@ java::lang::String::getBytes (jstring enc)
 	  todo -= converted;
 	}
     }
+  converter->done ();
   if (bufpos == buflen)
     return buffer;
   jbyteArray result = JvNewByteArray(bufpos);

@@ -1,4 +1,28 @@
 2001-07-30  Tom Tromey  <tromey@redhat.com>
+	    Corey Minyard  <minyard@acm.org>
+
+	* gnu/gcj/convert/natIconv.cc (done): New methods.
+	* gnu/gcj/convert/Output_iconv.java (done): New method.
+	* gnu/gcj/convert/Input_iconv.java (done): New method.
+	* gnu/gcj/convert/UnicodeToBytes.java (defaultEncodingClass):
+	Removed.
+	(getDefaultEncodingClass): Removed.
+	(getDefaultEncoder): Use getEncoder.
+	(done): New method.
+	(defaultEncoding, CACHE_SIZE, encoderCache, currCachePos): New
+	static fields.
+	* gnu/gcj/convert/BytesToUnicode.java (defaultDecodingClass):
+	Removed.
+	(defaultEncoding, CACHE_SIZE, decoderCache, currCachePos): New
+	static fields.
+	(getDefaultDecodingClass): Removed.
+	(getDefaultDecoder): Use getDecoder.
+	(getDecoder): Look up decoder in cache.
+	(done): New method.
+	* java/lang/natString.cc (init): Call `done' on converter.
+	(getBytes): Likewise.
+
+2001-07-30  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Integer.java: Merged with Classpath.
 

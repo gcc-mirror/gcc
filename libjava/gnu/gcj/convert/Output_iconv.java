@@ -1,6 +1,6 @@
 // Output_iconv.java -- Java side of iconv() writer.
 
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -33,6 +33,7 @@ public class Output_iconv extends UnicodeToBytes
   private native void init (String encoding)
     throws UnsupportedEncodingException;
   public native int write (char[] inbuffer, int inpos, int count);
+  public native void done ();
 
   // The encoding we're using.
   private String encoding;

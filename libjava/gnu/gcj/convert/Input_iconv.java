@@ -1,6 +1,6 @@
 // Input_iconv.java -- Java side of iconv() reader.
 
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -33,6 +33,7 @@ public class Input_iconv extends BytesToUnicode
   private native void init (String encoding)
     throws UnsupportedEncodingException;
   public native int read (char[] outbuffer, int outpos, int count);
+  public native void done ();
 
   // The encoding we're using.
   private String encoding;
