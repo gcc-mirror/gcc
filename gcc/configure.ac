@@ -1206,7 +1206,7 @@ else
 	saved_CFLAGS="${CFLAGS}"
 	CC="${CC_FOR_BUILD}" CFLAGS="${CFLAGS_FOR_BUILD}" \
 	${realsrcdir}/configure \
-		--enable-languages=${enable_languages} \
+		--enable-languages=${enable_languages-all} \
 		--target=$target_alias --host=$build_alias --build=$build_alias
 	CFLAGS="${saved_CFLAGS}"
 

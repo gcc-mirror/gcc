@@ -1,3 +1,10 @@
+2004-03-05  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* configure.ac: When passing --enable-languages to subdir
+	configure when host != build, make sure we don't pass an empty
+	value.
+	* configure: Regenerate.
+
 2004-03-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR 13577
