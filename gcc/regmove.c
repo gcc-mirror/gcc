@@ -617,7 +617,8 @@ copy_src_to_dest (insn, src, dest, loop_depth)
       && GET_CODE (dest) == REG
       && REG_LIVE_LENGTH (REGNO (dest)) > 0
       && (set = single_set (insn)) != NULL_RTX
-      && !reg_mentioned_p (dest, SET_SRC (set)))
+      && !reg_mentioned_p (dest, SET_SRC (set))
+      && GET_MODE (src) == GET_MODE (dest))
     {
       int old_num_regs = reg_rtx_no;
 
