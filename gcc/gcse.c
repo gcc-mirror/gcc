@@ -1394,6 +1394,7 @@ hash_expr_1 (x, mode, do_not_record_p)
 	  return 0;
 	}
       hash += (unsigned) MEM;
+      hash += MEM_ALIAS_SET (x);
       x = XEXP (x, 0);
       goto repeat;
 
@@ -1525,6 +1526,14 @@ expr_equiv_p (x, y)
 
     case REG:
       return REGNO (x) == REGNO (y);
+
+    case MEM:
+      /* Can't merge two expressions in different alias sets, since we can
+	 decide that the expression is transparent in a block when it isn't,
+	 due to it being set with the different alias set.  */
+      if (MEM_ALIAS_SET (x) != MEM_ALIAS_SET (y))
+	return 0;
+      break;
 
     /*  For commutative operations, check both orders.  */
     case PLUS:

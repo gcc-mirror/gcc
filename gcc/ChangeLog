@@ -1,3 +1,9 @@
+Sat Oct 16 15:20:15 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Sat Oct 16 00:07:01 1999  Richard Henderson  <rth@cygnus.com>
+	* gcse.c (hash_expr_1): Add in MEM_ALIAS_SET.
+	(expr_equiv_p): Reject memories with different alias sets.
+
 Wed Oct 13 01:46:14 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Wed Oct 13 01:44:29 1999  Carol LePage  <carolo@hal.com>
