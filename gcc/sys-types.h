@@ -165,7 +165,7 @@ typedef int ushort;
 typedef int ulong;
 typedef int uint;
 
-typedef int va_list;
+typedef int __gnuc_va_list;
 
 typedef int archdr;
 typedef int AUTH;
