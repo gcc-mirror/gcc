@@ -4097,18 +4097,32 @@ digest_init (tree type, tree init, int require_constant)
   /* Build a VECTOR_CST from a *constant* vector constructor.  If the
      vector constructor is not constant (e.g. {1,2,3,foo()}) then punt
      below and handle as a constructor.  */
-    if (code == VECTOR_TYPE
-        && comptypes (TREE_TYPE (inside_init), type, COMPARE_STRICT)
-        && TREE_CONSTANT (inside_init))
-      {
-	if (TREE_CODE (inside_init) == VECTOR_CST
-	    && comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)),
-			  TYPE_MAIN_VARIANT (type),
-			  COMPARE_STRICT))
-	  return inside_init;
-	else
-	  return build_vector (type, CONSTRUCTOR_ELTS (inside_init));
-      }
+  if (code == VECTOR_TYPE
+      && comptypes (TREE_TYPE (inside_init), type, COMPARE_STRICT)
+      && TREE_CONSTANT (inside_init))
+    {
+      if (TREE_CODE (inside_init) == VECTOR_CST
+	  && comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)),
+			TYPE_MAIN_VARIANT (type),
+			COMPARE_STRICT))
+	return inside_init;
+
+      if (TREE_CODE (inside_init) == CONSTRUCTOR)
+	{
+ 	  tree link;
+ 
+ 	  /* Iterate through elements and check if all constructor
+ 	     elements are *_CSTs.  */
+ 	  for (link = CONSTRUCTOR_ELTS (inside_init);
+ 	       link;
+ 	       link = TREE_CHAIN (link))
+ 	    if (TREE_CODE_CLASS (TREE_CODE (TREE_VALUE (link))) != 'c')
+ 	      break;
+ 
+ 	  if (link == NULL)
+ 	    return build_vector (type, CONSTRUCTOR_ELTS (inside_init));
+ 	}
+    }
 
   /* Any type can be initialized
      from an expression of the same type, optionally with braces.  */

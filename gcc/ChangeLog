@@ -1,3 +1,13 @@
+2005-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/17297
+	* c-typeck.c (digest_init): Only call build_vector if all constructor
+	elements are *_CST nodes.
+
+	PR middle-end/19164
+	* c-typeck.c (digest_init): Only call build_vector if inside_init
+	is a CONSTRUCTOR.
+
 2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR debug/16261
