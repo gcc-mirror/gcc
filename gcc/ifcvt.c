@@ -88,7 +88,6 @@ static bool life_data_ok;
 static int count_bb_insns (basic_block);
 static rtx first_active_insn (basic_block);
 static rtx last_active_insn (basic_block, int);
-static int seq_contains_jump (rtx);
 static basic_block block_fallthru (basic_block);
 static int cond_exec_process_insns (ce_if_block_t *, rtx, rtx, rtx, rtx, int);
 static rtx cond_exec_get_condition (rtx);
@@ -213,22 +212,7 @@ last_active_insn (basic_block bb, int skip_use_p)
   return insn;
 }
 
-/* It is possible, especially when having dealt with multi-word
-   arithmetic, for the expanders to have emitted jumps.  Search
-   through the sequence and return TRUE if a jump exists so that
-   we can abort the conversion.  */
-
-static int
-seq_contains_jump (rtx insn)
-{
-  while (insn)
-    {
-      if (GET_CODE (insn) == JUMP_INSN)
-	return 1;
-      insn = NEXT_INSN (insn);
-    }
-  return 0;
-}
+/* Return the basic block reached by falling though the basic block BB.  */
 
 static basic_block
 block_fallthru (basic_block bb)
@@ -707,7 +691,7 @@ noce_emit_move_insn (rtx x, rtx y)
 static rtx
 end_ifcvt_sequence (struct noce_if_info *if_info)
 {
-  rtx y;
+  rtx insn;
   rtx seq = get_insns ();
 
   set_used_flags (if_info->x);
@@ -715,15 +699,15 @@ end_ifcvt_sequence (struct noce_if_info *if_info)
   unshare_all_rtl_in_chain (seq);
   end_sequence ();
 
-  if (seq_contains_jump (seq))
-    return NULL_RTX;
-
-  /* Make sure that all of the instructions emitted are recognizable.
+  /* Make sure that all of the instructions emitted are recognizable,
+     and that we haven't introduced a new jump instruction.
      As an excersise for the reader, build a general mechanism that
      allows proper placement of required clobbers.  */
-  for (y = seq; y ; y = NEXT_INSN (y))
-    if (recog_memoized (y) == -1)
+  for (insn = seq; insn; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == JUMP_INSN
+	|| recog_memoized (insn) == -1)
       return NULL_RTX;
+
   return seq;
 }
 

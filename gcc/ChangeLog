@@ -1,3 +1,10 @@
+2004-06-25  Roger Sayle  <roger@eyesopen.com>
+
+	* ifcvt.c (seq_contains_jump): Delete function.
+	(end_ifcvt_sequence): Replace call to seq_contains_jump with an
+	inline test for a jump instruction in the existing "insn" loop.
+	(block_fallthru): Document function.
+
 2004-06-25  Philip Blundell  <philb@gnu.org>
 
 	PR wrong-code/15089
