@@ -1089,7 +1089,7 @@ case "${which_gcj}" in
       else
          GCJ="${target_noncanonical}-gcj -B`${PWDCMD-pwd}`/"
       fi
-      ZIP=jar
+      ZIP='$(target_noncanonical)-fastjar'
       GCJH='$(target_noncanonical)-gcjh'
    ;;
    path)
