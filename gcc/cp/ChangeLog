@@ -1,3 +1,28 @@
+2000-09-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (CXX_TREE_H): Add dependency on HTAB_H.
+	(pt.o): Remove dependency on HTAB_H.
+	* cp-tree.h: Include hashtab.h.
+	(walk_tree): Change prototype.
+	(walk_tree_without_duplicates): New function.
+	* decl.c (check_default_argument): Use it.
+	* optimize.c (remap_decl): Adjust calls to walk_tree.
+	(copy_body): Likewise.
+	(expand_calls_inline): Likewise.
+	(calls_setjmp_p): Use walk_tree_without_duplicates.
+	* pt.c: Don't include hashtab.h.
+	(for_each_template_parm): Use walk_tree_without_duplicates.
+	* semantics.c (finish-stmt_tree): Likewise.
+	(expand_body): Likewise.
+	* tree.c (walk_tree): Add additional parameter.
+	(walk_tree_without_duplicates): New function.
+	(count_trees): Use it.
+	(verify_stmt_tree): Adjust call to walk_tree.
+	(find_tree): Use walk_tree_without_duplicates.
+	(no_linkage_check): Likewise.
+	(break_out_target_exprs): Adjust call to walk_tree.
+	(cp_unsave): Likewise.
+
 2000-09-04  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* cp-tree.def (BOUND_TEMPLATE_TEMPLATE_PARM): New tree code.

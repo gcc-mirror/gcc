@@ -208,7 +208,7 @@ TREE_H = $(srcdir)/../tree.h $(srcdir)/../real.h $(srcdir)/../tree.def \
 CXX_TREE_H = $(TREE_H) cp-tree.h $(srcdir)/../c-common.h cp-tree.def \
 	$(srcdir)/../c-common.def $(srcdir)/../function.h $(srcdir)/../varray.h \
 	$(srcdir)/../../include/splay-tree.h \
-	$(srcdir)/../system.h $(CONFIG_H)
+	$(srcdir)/../system.h $(CONFIG_H) $(HTAB_H)
 PARSE_H = $(srcdir)/parse.h
 PARSE_C = $(srcdir)/parse.c
 EXPR_H = $(srcdir)/../expr.h ../insn-codes.h
@@ -299,7 +299,7 @@ xref.o : xref.c $(CXX_TREE_H) $(srcdir)/../input.h \
   $(srcdir)/../toplev.h
 pt.o : pt.c $(CXX_TREE_H) decl.h $(PARSE_H) lex.h \
   $(srcdir)/../toplev.h $(GGC_H) $(RTL_H) \
-  $(srcdir)/../except.h $(HTAB_H)
+  $(srcdir)/../except.h
 error.o : error.c $(CXX_TREE_H) \
   $(srcdir)/../toplev.h $(srcdir)/../diagnostic.h
 errfn.o : errfn.c $(CXX_TREE_H) \

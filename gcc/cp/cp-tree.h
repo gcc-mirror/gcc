@@ -21,6 +21,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "function.h"
+#include "hashtab.h"
 #include "splay-tree.h"
 #include "varray.h"
 
@@ -4535,7 +4536,13 @@ extern tree build_dummy_object			PARAMS ((tree));
 extern tree maybe_dummy_object			PARAMS ((tree, tree *));
 extern int is_dummy_object			PARAMS ((tree));
 typedef tree (*walk_tree_fn)                    PARAMS ((tree *, int *, void *));
-extern tree walk_tree                           PARAMS ((tree *, walk_tree_fn, void *));
+extern tree walk_tree                           PARAMS ((tree *,
+							 walk_tree_fn,
+							 void *, 
+							 htab_t));
+extern tree walk_tree_without_duplicates        PARAMS ((tree *,
+							 walk_tree_fn,
+							 void *));
 extern tree copy_tree_r                         PARAMS ((tree *, int *, void *));
 extern int cp_valid_lang_attribute		PARAMS ((tree, tree, tree, tree));
 extern tree make_ptrmem_cst                     PARAMS ((tree, tree));

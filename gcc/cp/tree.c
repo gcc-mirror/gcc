@@ -26,7 +26,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "cp-tree.h"
 #include "flags.h"
-#include "hashtab.h"
 #include "rtl.h"
 #include "toplev.h"
 #include "ggc.h"
@@ -1224,30 +1223,44 @@ copy_template_template_parm (t, newargs)
 /* Apply FUNC to all the sub-trees of TP in a pre-order traversal.
    FUNC is called with the DATA and the address of each sub-tree.  If
    FUNC returns a non-NULL value, the traversal is aborted, and the
-   value returned by FUNC is returned.  */
+   value returned by FUNC is returned.  The FLAGS govern the way in
+   which nodes are walked.  If HTAB is non-NULL it is used to record
+   the nodes visited, and to avoid visiting a node more than once.  */
 
 tree 
-walk_tree (tp, func, data)
+walk_tree (tp, func, data, htab)
      tree *tp;
      walk_tree_fn func;
      void *data;
+     htab_t htab;
 {
   enum tree_code code;
   int walk_subtrees;
   tree result;
   
-#define WALK_SUBTREE(NODE)			\
-  do						\
-    {						\
-      result = walk_tree (&(NODE), func, data);	\
-      if (result)				\
-	return result;				\
-    }						\
+#define WALK_SUBTREE(NODE)				\
+  do							\
+    {							\
+      result = walk_tree (&(NODE), func, data, htab);	\
+      if (result)					\
+	return result;					\
+    }							\
   while (0)
 
   /* Skip empty subtrees.  */
   if (!*tp)
     return NULL_TREE;
+
+  if (htab) {
+    void **slot;
+    /* Don't walk the same tree twice, if the user has requested that we
+       avoid doing so. */
+    if (htab_find (htab, *tp))
+      return NULL_TREE;
+    /* If we haven't already seen this node, add it to the table. */
+    slot = htab_find_slot (htab, *tp, INSERT);
+    *slot = *tp;
+  }
 
   /* Call the function.  */
   walk_subtrees = 1;
@@ -1423,6 +1436,24 @@ walk_tree (tp, func, data)
 #undef WALK_SUBTREE
 }
 
+/* Like walk_tree, but does not walk duplicate nodes more than 
+   once.  */
+
+tree 
+walk_tree_without_duplicates (tp, func, data)
+     tree *tp;
+     walk_tree_fn func;
+     void *data;
+{
+  tree result;
+  htab_t htab;
+
+  htab = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
+  result = walk_tree (tp, func, data, htab);
+  htab_delete (htab);
+  return result;
+}
+
 /* Called from count_trees via walk_tree.  */
 
 static tree
@@ -1443,7 +1474,7 @@ count_trees (t)
      tree t;
 {
   int n_trees = 0;
-  walk_tree (&t, count_trees_r, &n_trees);
+  walk_tree_without_duplicates (&t, count_trees_r, &n_trees);
   return n_trees;
 }  
 
@@ -1483,7 +1514,7 @@ verify_stmt_tree (t)
 {
   htab_t statements;
   statements = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
-  walk_tree (&t, verify_stmt_tree_r, &statements);
+  walk_tree (&t, verify_stmt_tree_r, &statements, NULL);
   htab_delete (statements);
 }
 
@@ -1508,7 +1539,7 @@ find_tree (t, x)
      tree t;
      tree x;
 {
-  return walk_tree (&t, find_tree_r, x);
+  return walk_tree_without_duplicates (&t, find_tree_r, x);
 }
 
 /* Passed to walk_tree.  Checks for the use of types with no linkage.  */
@@ -1541,7 +1572,7 @@ no_linkage_check (t)
   if (processing_template_decl)
     return NULL_TREE;
 
-  t = walk_tree (&t, no_linkage_helper, NULL);
+  t = walk_tree_without_duplicates (&t, no_linkage_helper, NULL);
   if (t != error_mark_node)
     return t;
   return NULL_TREE;
@@ -1736,8 +1767,8 @@ break_out_target_exprs (t)
     target_remap = splay_tree_new (splay_tree_compare_pointers, 
 				   /*splay_tree_delete_key_fn=*/NULL, 
 				   /*splay_tree_delete_value_fn=*/NULL);
-  walk_tree (&t, bot_manip, target_remap);
-  walk_tree (&t, bot_replace, target_remap);
+  walk_tree (&t, bot_manip, target_remap, NULL);
+  walk_tree (&t, bot_replace, target_remap, NULL);
 
   if (!--target_remap_count)
     {
@@ -2520,10 +2551,10 @@ cp_unsave (tp)
   st = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
 
   /* Walk the tree once figuring out what needs to be remapped.  */
-  walk_tree (tp, mark_local_for_remap_r, st);
+  walk_tree (tp, mark_local_for_remap_r, st, NULL);
 
   /* Walk the tree again, copying, remapping, and unsaving.  */
-  walk_tree (tp, cp_unsave_r, st);
+  walk_tree (tp, cp_unsave_r, st, NULL);
 
   /* Clean up.  */
   splay_tree_delete (st);
