@@ -375,6 +375,11 @@ static int no_trigraphs = 0;
 
 static int print_deps = 0;
 
+/* Nonzero if missing .h files in -M output are assumed to be generated
+   files and not errors.  */
+
+static int print_deps_missing_files = 0;
+
 /* Nonzero means print names of header files (-H).  */
 
 static int print_include_names = 0;
@@ -1396,6 +1401,22 @@ main (argc, argv)
 	break;
 
       case 'M':
+	/* ??? The style of the choices here is a bit mixed.
+	   The chosen scheme is a hybrid of keeping all options in one string
+	   and specifying each option in a separate argument:
+	   -M|-MM|-MD file|-MMD file [-MG].  An alternative is:
+	   -M|-MM|-MD file|-MMD file|-MG|-MMG|-MGD file|-MMGD file; or more
+	   concisely: -M[M][G][D file].  This is awkward to handle in specs,
+	   and is not as extensible.  */
+	/* ??? -MG must be specified in addition to one of the other arguments.
+	   This can be relaxed in the future without breaking anything.
+	   The converse isn't true.  */
+
+	if (!strcmp (argv[i], "-MG"))
+	  {
+	    print_deps_missing_files = 1;
+	    break;
+	  }
 	if (!strcmp (argv[i], "-M"))
 	  print_deps = 2;
 	else if (!strcmp (argv[i], "-MM"))
@@ -1872,6 +1893,11 @@ main (argc, argv)
     f = 0;
   } else if ((f = open (in_fname, O_RDONLY, 0666)) < 0)
     goto perror;
+
+  /* -MG doesn't select the form of output and must be specified with
+     one of the other -M options.  */
+  if (print_deps == 0 && print_deps_missing_files)
+    fatal ("-MG must be specified with one of -M, -MM, -MD, -MMD");
 
   /* Either of two environment variables can specify output of deps.
      Its value is either "OUTPUT_FILE" or "OUTPUT_FILE DEPS_TARGET",
@@ -4210,12 +4236,51 @@ get_filename:
 
     strncpy (fname, fbeg, flen);
     fname[flen] = 0;
+    /* If generating dependencies and -MG was specified, we assume missing
+       files are leaf files, living in the same directory as the source file
+       or other similar place; these missing files may be generated from
+       other files and may not exist yet (eg: y.tab.h).  */
+    if (print_deps_missing_files
+	&& print_deps > (angle_brackets || (system_include_depth > 0)))
+      {
+	/* ??? Perhaps this warning shouldn't be printed at all.  */
+	warning ("No include path in which to find %s", fname);
+
+	/* If it was requested as a system header file,
+	   then assume it belongs in the first place to look for such.  */
+	if (angle_brackets)
+	  {
+	    for (searchptr = search_start; searchptr; searchptr = searchptr->next)
+	      {
+		if (searchptr->fname)
+		  {
+		    char *p;
+
+		    if (searchptr->fname[0] == 0)
+		      continue;
+		    p = xmalloc (strlen (searchptr->fname)
+				 + strlen (fname) + 2);
+		    strcpy (p, searchptr->fname);
+		    strcat (p, "/");
+		    strcat (p, fname);
+		    deps_output (p, ' ');
+		    break;
+		  }
+	      }
+	  }
+	else
+	  {
+	    /* Otherwise, omit the directory, as if the file existed
+	       in the directory with the source.  */
+	    deps_output (fname, ' ');
+	  }
+      }
     /* If -M was specified, and this header file won't be added to the
        dependency list, then don't count this as an error, because we can
        still produce correct output.  Otherwise, we can't produce correct
        output, because there may be dependencies we need inside the missing
        file, and we don't know what directory this missing file exists in.  */
-    if (print_deps
+    else if (print_deps
 	&& (print_deps <= (angle_brackets || (system_include_depth > 0))))
       warning ("No include path in which to find %s", fname);
     else if (search_start)
