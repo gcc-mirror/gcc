@@ -841,8 +841,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      emit_insn (gen_rtx (SET, VOIDmode,
 				  temp,
 				  gen_rtx (HIGH, mode, operand1)));
-	      if (TARGET_SHARED_LIBS
-		  && function_label_operand (operand1, mode))
+	      if (function_label_operand (operand1, mode))
 		{
 		  rtx temp = reload_in_progress ? scratch_reg
 		    : gen_reg_rtx (mode);
@@ -3117,7 +3116,7 @@ secondary_reload_class (class, mode, in)
 {
   int regno = true_regnum (in);
 
-  if ((TARGET_SHARED_LIBS && function_label_operand (in, mode))
+  if (function_label_operand (in, mode)
       || ((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
 	  && GET_MODE_CLASS (mode) == MODE_INT
 	  && FP_REG_CLASS_P (class))

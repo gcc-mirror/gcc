@@ -1122,11 +1122,11 @@
   [(set_attr "type" "binary,binary")
    (set_attr "length" "1,2")])
 
-;; For function addresses when TARGET_SHARED_LIBS
+;; For function addresses.
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand:SI 1 "function_label_operand" "")))]
-  "TARGET_SHARED_LIBS"
+  ""
   "ldil LP'%G1,%0"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
@@ -1139,13 +1139,13 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
-;; lo_sum of a function address when TARGET_SHARED_LIBS
+;; lo_sum of a function address.
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:SI 2 "function_label_operand" "")))
    (clobber (match_operand:SI 3 "register_operand" "=r"))]
-  "TARGET_SHARED_LIBS"
+  ""
   "ldo RP'%G2(%1),%0\;extru,= %0,31,1,%3\;ldw -4(0,%%r27),%3\;add %0,%3,%0"
   [(set_attr "type" "multi")
    (set_attr "length" "4")])
