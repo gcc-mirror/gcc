@@ -117,7 +117,7 @@ abstract class DirectByteBufferImpl extends ByteBuffer
   DirectByteBufferImpl(RawData address, int capacity)
   {
     super(capacity, capacity, 0, -1);
-    this.owner = this;
+    this.owner = null;
     this.address = address;
   }
   
