@@ -5,12 +5,15 @@
 void bar ( bool  x ) {};
 void bars ( short  x ) {};
 
+/* 980326 bkoz this is not initialized and so can have indeterminate value. */
+#if 0
 int orb(){
   bool y;
   bar ( y );
   int blob = ( 27 | int (y) );
   return blob; //expect 27 or 0
 }
+#endif
 
 int orbtrue(){
   bool y = true;
@@ -51,8 +54,10 @@ int orus(){
 
 int main() {
   int tmp;
+#if 0
   tmp = orb();
   assert (tmp == 27 || tmp == 0);
+#endif
   tmp = orbtrue();
   assert (tmp ==27);
   tmp = orbfalse();
