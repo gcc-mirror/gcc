@@ -141,6 +141,8 @@ struct opt_stats_d
   long num_re;
 };
 
+static struct opt_stats_d opt_stats;
+
 /* Value range propagation record.  Each time we encounter a conditional
    of the form SSA_NAME COND CONST we create a new vrp_element to record
    how the condition affects the possible values SSA_NAME may have.
@@ -192,11 +194,20 @@ struct vrp_element
   basic_block bb;
 };
 
-static struct opt_stats_d opt_stats;
+/* A hash table holding value range records (VRP_ELEMENTs) for a given
+   SSA_NAME.  We used to use a varray indexed by SSA_NAME_VERSION, but
+   that gets awful wasteful, particularly since the density objects
+   with useful information is very low.  */
+static htab_t vrp_data;
 
-/* A virtual array holding value range records for the variable identified
-   by the index, SSA_VERSION.  */
-static varray_type vrp_data;
+/* An entry in the VRP_DATA hash table.  We record the variable and a
+   varray of VRP_ELEMENT records associated with that variable.   */
+
+struct vrp_hash_elt
+{
+  tree var;
+  varray_type records;
+};
 
 /* Array of variables which have their values constrained by operations
    in this basic block.  We use this during finalization to know
@@ -221,6 +232,8 @@ static void optimize_stmt (struct dom_walk_data *,
 			   block_stmt_iterator);
 static tree lookup_avail_expr (tree, bool);
 static struct eq_expr_value get_eq_expr_value (tree, int, basic_block);
+static hashval_t vrp_hash (const void *);
+static int vrp_eq (const void *, const void *);
 static hashval_t avail_expr_hash (const void *);
 static hashval_t real_avail_expr_hash (const void *);
 static int avail_expr_eq (const void *, const void *);
@@ -291,15 +304,15 @@ tree_ssa_dominator_optimize (void)
 
   /* Create our hash tables.  */
   avail_exprs = htab_create (1024, real_avail_expr_hash, avail_expr_eq, free);
+  vrp_data = htab_create (ceil_log2 (num_ssa_names), vrp_hash, vrp_eq, free);
   VARRAY_TREE_INIT (avail_exprs_stack, 20, "Available expression stack");
   VARRAY_TREE_INIT (block_defs_stack, 20, "Block DEFS stack");
   VARRAY_TREE_INIT (const_and_copies_stack, 20, "Block const_and_copies stack");
   VARRAY_TREE_INIT (nonzero_vars_stack, 20, "Block nonzero_vars stack");
   VARRAY_TREE_INIT (vrp_variables_stack, 20, "Block vrp_variables stack");
-  nonzero_vars = BITMAP_XMALLOC ();
-  VARRAY_GENERIC_PTR_INIT (vrp_data, num_ssa_names, "vrp_data");
-  need_eh_cleanup = BITMAP_XMALLOC ();
   VARRAY_TREE_INIT (stmts_to_rescan, 20, "Statements to rescan");
+  nonzero_vars = BITMAP_XMALLOC ();
+  need_eh_cleanup = BITMAP_XMALLOC ();
 
   /* Setup callbacks for the generic dominator tree walker.  */
   walk_data.walk_stmts_backward = false;
@@ -363,13 +376,10 @@ tree_ssa_dominator_optimize (void)
 
       rewrite_ssa_into_ssa ();
 
-      if (VARRAY_ACTIVE_SIZE (vrp_data) <= num_ssa_names)
-	VARRAY_GROW (vrp_data, num_ssa_names);
-
       /* Reinitialize the various tables.  */
       bitmap_clear (nonzero_vars);
       htab_empty (avail_exprs);
-      VARRAY_CLEAR (vrp_data);
+      htab_empty (vrp_data);
 
       for (i = 0; i < num_referenced_vars; i++)
 	var_ann (referenced_var (i))->current_def = NULL;
@@ -382,6 +392,7 @@ tree_ssa_dominator_optimize (void)
 
   /* We emptied the hash table earlier, now delete it completely.  */
   htab_delete (avail_exprs);
+  htab_delete (vrp_data);
 
   /* It is not necessary to clear CURRDEFS, REDIRECTION_EDGES, VRP_DATA,
      CONST_AND_COPIES, and NONZERO_VARS as they all get cleared at the bottom
@@ -949,6 +960,8 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
   while (VARRAY_ACTIVE_SIZE (vrp_variables_stack) > 0)
     {
       tree var = VARRAY_TOP_TREE (vrp_variables_stack);
+      struct vrp_hash_elt vrp_hash_elt;
+      void **slot;
 
       /* Each variable has a stack of value range records.  We want to
 	 invalidate those associated with our basic block.  So we walk
@@ -962,7 +975,12 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
       if (var == NULL)
 	break;
 
-      var_vrp_records = VARRAY_GENERIC_PTR (vrp_data, SSA_NAME_VERSION (var));
+      vrp_hash_elt.var = var;
+      vrp_hash_elt.records = NULL;
+
+      slot = htab_find_slot (vrp_data, &vrp_hash_elt, NO_INSERT);
+
+      var_vrp_records = (*(struct vrp_hash_elt **)slot)->records;
       while (VARRAY_ACTIVE_SIZE (var_vrp_records) > 0)
 	{
 	  struct vrp_element *element
@@ -973,7 +991,6 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
   
 	  VARRAY_POP (var_vrp_records);
 	}
-
     }
 
   /* If we queued any statements to rescan in this block, then
@@ -1859,6 +1876,8 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 	  int lowequal, highequal, swapped, no_overlap, subset, cond_inverted;
 	  varray_type vrp_records;
 	  struct vrp_element *element;
+	  struct vrp_hash_elt vrp_hash_elt;
+	  void **slot;
 
 	  /* First see if we have test of an SSA_NAME against a constant
 	     where the SSA_NAME is defined by an earlier typecast which
@@ -1901,7 +1920,13 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 	     Also note the vast majority of conditionals are not testing
 	     a variable which has had its range constrained by an earlier
 	     conditional.  So this filter avoids a lot of unnecessary work.  */
-	  vrp_records = VARRAY_GENERIC_PTR (vrp_data, SSA_NAME_VERSION (op0));
+	  vrp_hash_elt.var = op0;
+	  vrp_hash_elt.records = NULL;
+          slot = htab_find_slot (vrp_data, &vrp_hash_elt, NO_INSERT);
+          if (slot == NULL)
+	    return NULL;
+
+	  vrp_records = (*(struct vrp_hash_elt **)slot)->records;
 	  if (vrp_records == NULL)
 	    return NULL;
 
@@ -2947,22 +2972,31 @@ record_range (tree cond, basic_block bb)
       && TREE_CODE (cond) != NE_EXPR
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (cond, 1))) == INTEGER_TYPE)
     {
-      struct vrp_element *element = ggc_alloc (sizeof (struct vrp_element));
-      int ssa_version = SSA_NAME_VERSION (TREE_OPERAND (cond, 0));
+      struct vrp_hash_elt *vrp_hash_elt;
+      struct vrp_element *element;
+      varray_type *vrp_records_p;
+      void **slot;
 
-      varray_type *vrp_records_p
-	= (varray_type *)&VARRAY_GENERIC_PTR (vrp_data, ssa_version);
 
+      vrp_hash_elt = xmalloc (sizeof (struct vrp_hash_elt));
+      vrp_hash_elt->var = TREE_OPERAND (cond, 0);
+      vrp_hash_elt->records = NULL;
+      slot = htab_find_slot (vrp_data, vrp_hash_elt, INSERT);
+
+      if (*slot == NULL)
+	*slot = (void *)vrp_hash_elt;
+
+      vrp_hash_elt = *(struct vrp_hash_elt **)slot;
+      vrp_records_p = &vrp_hash_elt->records;
+
+      element = ggc_alloc (sizeof (struct vrp_element));
       element->low = NULL;
       element->high = NULL;
       element->cond = cond;
       element->bb = bb;
 
       if (*vrp_records_p == NULL)
-	{
-	  VARRAY_GENERIC_PTR_INIT (*vrp_records_p, 2, "vrp records");
-	  VARRAY_GENERIC_PTR (vrp_data, ssa_version) = *vrp_records_p;
-	}
+	VARRAY_GENERIC_PTR_INIT (*vrp_records_p, 2, "vrp records");
       
       VARRAY_PUSH_GENERIC_PTR (*vrp_records_p, element);
       VARRAY_PUSH_TREE (vrp_variables_stack, TREE_OPERAND (cond, 0));
@@ -3091,6 +3125,29 @@ get_eq_expr_value (tree if_stmt,
     }
 
   return retval;
+}
+
+/* Hashing and equality functions for VRP_DATA.
+
+   Since this hash table is addressed by SSA_NAMEs, we can hash on
+   their version number and equality can be determined with a 
+   pointer comparison.  */
+
+static hashval_t
+vrp_hash (const void *p)
+{
+  tree var = ((struct vrp_hash_elt *)p)->var;
+
+  return SSA_NAME_VERSION (var);
+}
+
+static int
+vrp_eq (const void *p1, const void *p2)
+{
+  tree var1 = ((struct vrp_hash_elt *)p1)->var;
+  tree var2 = ((struct vrp_hash_elt *)p2)->var;
+
+  return var1 == var2;
 }
 
 /* Hashing and equality functions for AVAIL_EXPRS.  The table stores
