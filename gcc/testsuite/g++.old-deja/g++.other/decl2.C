@@ -1,8 +1,6 @@
 // Build don't link:
 // Based on a test-case by Maciej Radziejewski <maciejr@iws.uni-stuttgart.de>
 
-// crash test - XFAIL *-*-*
-
 int i(0)(1); // ERROR - multiple initialization
 int j(2) = 3; // ERROR - multiple initialization
 int k(4)(5)(6); // ERROR - multiple initialization

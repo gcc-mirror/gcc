@@ -1,6 +1,5 @@
 // Build don't link: 
 // GROUPS passed friends
-// excess errors test - XFAIL *-*-*
 // friends file
 // From: osinski@cs.nyu.edu (Ed Osinski)
 // Date:     Fri, 05 Jun 92 20:47:37 -0400
