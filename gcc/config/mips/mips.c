@@ -7784,7 +7784,8 @@ function_arg_pass_by_reference (cum, mode, type, named)
         /* Don't pass the actual CUM to FUNCTION_ARG, because we would 
            get double copies of any offsets generated for small structs 
            passed in registers. */
-        CUMULATIVE_ARGS temp = *cum;
+        CUMULATIVE_ARGS temp;
+        temp = *cum;
         if (FUNCTION_ARG (temp, mode, type, named) != 0)
            return 1;
      }
@@ -9097,7 +9098,7 @@ machine_dependent_reorg (first)
 	  && GET_CODE (PATTERN (insn)) == SET)
 	{
 	  rtx val, src;
-	  enum machine_mode mode;
+	  enum machine_mode mode = VOIDmode;
 
 	  val = NULL_RTX;
 	  src = mips_find_symbol (SET_SRC (PATTERN (insn)));

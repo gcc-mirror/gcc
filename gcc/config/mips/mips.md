@@ -2838,7 +2838,7 @@
   "TARGET_64BIT && !TARGET_MIPS16"
   "*
 {
-  int regno1;
+  unsigned int regno1;
   dslots_jump_total++;
   dslots_jump_filled++;
   operands[2] = const0_rtx;
@@ -4988,7 +4988,7 @@ move\\t%0,%z4\\n\\
     {
       if (GET_CODE (operands[1]) == MEM)
 	{
-	  rtx memword, offword, hiword, loword;
+	  rtx memword, offword, hi_word, lo_word;
 	  rtx addr = find_replacement (&XEXP (operands[1], 0));
 	  rtx op1 = change_address (operands[1], VOIDmode, addr);
 
@@ -4998,17 +4998,17 @@ move\\t%0,%z4\\n\\
 				    SImode, NULL_RTX);
 	  if (BYTES_BIG_ENDIAN)
 	    {
-	      hiword = memword;
-	      loword = offword;
+	      hi_word = memword;
+	      lo_word = offword;
 	    }
 	  else
 	    {
-	      hiword = offword;
-	      loword = memword;
+	      hi_word = offword;
+	      lo_word = memword;
 	    }
-	  emit_move_insn (scratch, hiword);
+	  emit_move_insn (scratch, hi_word);
 	  emit_move_insn (gen_rtx_REG (SImode, 64), scratch);
-	  emit_move_insn (scratch, loword);
+	  emit_move_insn (scratch, lo_word);
 	  emit_move_insn (gen_rtx (REG, SImode, 65), scratch);
           emit_insn (gen_rtx_USE (VOIDmode, operands[0]));
 	}
@@ -5068,7 +5068,7 @@ move\\t%0,%z4\\n\\
     {
       if (GET_CODE (operands[0]) == MEM)
 	{
-	  rtx scratch, memword, offword, hiword, loword;
+	  rtx scratch, memword, offword, hi_word, lo_word;
 	  rtx addr = find_replacement (&XEXP (operands[0], 0));
 	  rtx op0 = change_address (operands[0], VOIDmode, addr);
 
@@ -5078,18 +5078,18 @@ move\\t%0,%z4\\n\\
 				    SImode, NULL_RTX);
 	  if (BYTES_BIG_ENDIAN)
 	    {
-	      hiword = memword;
-	      loword = offword;
+	      hi_word = memword;
+	      lo_word = offword;
 	    }
 	  else
 	    {
-	      hiword = offword;
-	      loword = memword;
+	      hi_word = offword;
+	      lo_word = memword;
 	    }
 	  emit_move_insn (scratch, gen_rtx_REG (SImode, 64));
-	  emit_move_insn (hiword, scratch);
+	  emit_move_insn (hi_word, scratch);
 	  emit_move_insn (scratch, gen_rtx_REG (SImode, 65));
-	  emit_move_insn (loword, scratch);
+	  emit_move_insn (lo_word, scratch);
 	  emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
 	}
       else if (TARGET_MIPS16 && ! M16_REG_P (REGNO (operands[0])))
