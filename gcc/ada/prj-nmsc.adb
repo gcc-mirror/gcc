@@ -34,6 +34,7 @@ with Errout;                     use Errout;
 with GNAT.Case_Util;             use GNAT.Case_Util;
 with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
 with GNAT.OS_Lib;                use GNAT.OS_Lib;
+with MLib.Tgt;
 with Namet;                      use Namet;
 with Osint;                      use Osint;
 with Output;                     use Output;
@@ -1948,61 +1949,68 @@ package body Prj.Nmsc is
            Data.Library_Name /= No_Name;
 
          if Data.Library then
-            if Current_Verbosity = High then
-               Write_Line ("This is a library project file");
-            end if;
 
-            pragma Assert (Lib_Version.Kind = Single);
-
-            if Lib_Version.Value = Empty_String then
-               if Current_Verbosity = High then
-                  Write_Line ("No library version specified");
-               end if;
+            if not MLib.Tgt.Libraries_Are_Supported then
+               Error_Msg ("?libraries are not supported on this platform",
+                           Lib_Name.Location);
 
             else
-               Stringt.String_To_Name_Buffer (Lib_Version.Value);
-               Data.Lib_Internal_Name := Name_Find;
-            end if;
-
-            pragma Assert (The_Lib_Kind.Kind = Single);
-
-            if The_Lib_Kind.Value = Empty_String then
                if Current_Verbosity = High then
-                  Write_Line ("No library kind specified");
+                  Write_Line ("This is a library project file");
                end if;
 
-            else
-               Stringt.String_To_Name_Buffer (The_Lib_Kind.Value);
+               pragma Assert (Lib_Version.Kind = Single);
 
-               declare
-                  Kind_Name : constant String :=
-                    To_Lower (Name_Buffer (1 .. Name_Len));
-
-                  OK : Boolean := True;
-
-               begin
-
-                  if Kind_Name = "static" then
-                     Data.Library_Kind := Static;
-
-                  elsif Kind_Name = "dynamic" then
-                     Data.Library_Kind := Dynamic;
-
-                  elsif Kind_Name = "relocatable" then
-                     Data.Library_Kind := Relocatable;
-
-                  else
-                     Error_Msg
-                       ("illegal value for Library_Kind",
-                        The_Lib_Kind.Location);
-                     OK := False;
+               if Lib_Version.Value = Empty_String then
+                  if Current_Verbosity = High then
+                     Write_Line ("No library version specified");
                   end if;
 
-                  if Current_Verbosity = High and then OK then
-                     Write_Str ("Library kind = ");
-                     Write_Line (Kind_Name);
+               else
+                  Stringt.String_To_Name_Buffer (Lib_Version.Value);
+                  Data.Lib_Internal_Name := Name_Find;
+               end if;
+
+               pragma Assert (The_Lib_Kind.Kind = Single);
+
+               if The_Lib_Kind.Value = Empty_String then
+                  if Current_Verbosity = High then
+                     Write_Line ("No library kind specified");
                   end if;
-               end;
+
+               else
+                  Stringt.String_To_Name_Buffer (The_Lib_Kind.Value);
+
+                  declare
+                     Kind_Name : constant String :=
+                       To_Lower (Name_Buffer (1 .. Name_Len));
+
+                     OK : Boolean := True;
+
+                  begin
+
+                     if Kind_Name = "static" then
+                        Data.Library_Kind := Static;
+
+                     elsif Kind_Name = "dynamic" then
+                        Data.Library_Kind := Dynamic;
+
+                     elsif Kind_Name = "relocatable" then
+                        Data.Library_Kind := Relocatable;
+
+                     else
+                        Error_Msg
+                          ("illegal value for Library_Kind",
+                           The_Lib_Kind.Location);
+                        OK := False;
+                     end if;
+
+                     if Current_Verbosity = High and then OK then
+                        Write_Str ("Library kind = ");
+                        Write_Line (Kind_Name);
+                     end if;
+                  end;
+               end if;
             end if;
          end if;
       end;

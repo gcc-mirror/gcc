@@ -489,6 +489,10 @@ GNATLS_OBJS = \
  hostparm.o \
  krunch.o   \
  lib.o      \
+ mlib.o     \
+ mlib-fil.o \
+ mlib-tgt.o \
+ mlib-utl.o \
  namet.o    \
  nlists.o   \
  opt.o      \

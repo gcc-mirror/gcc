@@ -2548,17 +2548,21 @@ package body Sem_Ch12 is
 
          Set_Instance_Spec (N, Act_Decl);
 
-         --  Case of not a compilation unit
+         --  If not a compilation unit, insert the package declaration
+         --  after the instantiation node.
 
          if Nkind (Parent (N)) /= N_Compilation_Unit then
             Mark_Rewrite_Insertion (Act_Decl);
             Insert_Before (N, Act_Decl);
             Analyze (Act_Decl);
 
-         --  Case of compilation unit that is generic instantiation
-
-         --  Place declaration on current node so context is complete
-         --  for analysis (including nested instantiations).
+         --  For an instantiation that is a compilation unit, place
+         --  declaration on current node so context is complete
+         --  for analysis (including nested instantiations). It this
+         --  is the main unit, the declaration eventually replaces the
+         --  instantiation node. If the instance body is later created, it
+         --  replaces the instance node, and the declation is attached to
+         --  it (see Build_Instance_Compilation_Unit_Nodes).
 
          else
             if Cunit_Entity (Current_Sem_Unit) = Defining_Entity (N) then
@@ -2600,7 +2604,7 @@ package body Sem_Ch12 is
            First_Private_Entity (Act_Decl_Id));
 
          if Nkind (Parent (N)) = N_Compilation_Unit
-           and  then not Needs_Body
+           and then not Needs_Body
          then
             Rewrite (N, Act_Decl);
          end if;
@@ -3318,6 +3322,13 @@ package body Sem_Ch12 is
 
       Set_Library_Unit  (Decl_Cunit, Body_Cunit);
       Set_Library_Unit  (Body_Cunit, Decl_Cunit);
+
+      --  If the instance is not the main unit, its context, categorization,
+      --  and elaboration entity are not relevant to the compilation.
+
+      if Parent (N) /= Cunit (Main_Unit) then
+         return;
+      end if;
 
       --  The context clause items on the instantiation, which are now
       --  attached to the body compilation unit (since the body overwrote
@@ -6578,10 +6589,14 @@ package body Sem_Ch12 is
 
          if Nkind (Parent (Inst_Node)) = N_Compilation_Unit then
 
+            --  Replace instance node with body of instance, and create
+            --  new node for corresponding instance declaration.
+
+            Build_Instance_Compilation_Unit_Nodes
+              (Inst_Node, Act_Body, Act_Decl);
+            Analyze (Inst_Node);
+
             if Parent (Inst_Node) = Cunit (Main_Unit) then
-               Build_Instance_Compilation_Unit_Nodes
-                 (Inst_Node, Act_Body, Act_Decl);
-               Analyze (Inst_Node);
 
                --  If the instance is a child unit itself, then set the
                --  scope of the expanded body to be the parent of the
@@ -6594,10 +6609,6 @@ package body Sem_Ch12 is
                   Set_Scope
                     (Defining_Entity (Inst_Node), Scope (Act_Decl_Id));
                end if;
-
-            else
-               Set_Parent (Act_Body, Parent (Inst_Node));
-               Analyze (Act_Body);
             end if;
 
          --  Case where instantiation is not a library unit

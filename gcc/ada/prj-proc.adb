@@ -246,7 +246,7 @@ package body Prj.Proc is
       --  Reference to the last string elements in Result, when Kind is List.
 
    begin
-      Result.Location := Location_Of (From_Project_Node);
+      Result.Location := Location_Of (First_Term);
 
       --  Process each term of the expression, starting with First_Term
 
@@ -639,7 +639,6 @@ package body Prj.Proc is
          end case;
 
          The_Term := Next_Term (The_Term);
-
       end loop;
 
       return Result;
