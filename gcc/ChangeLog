@@ -1,3 +1,10 @@
+2004-06-21  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/16114
+	* cse.c (merge_equiv_classes): Also rehash in response to
+	delete_reg_equiv changes.
+	(rehash_using_reg): Don't exclude REGs from rehashing.
+
 2004-06-21  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR rtl-optimization/15159
