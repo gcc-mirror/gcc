@@ -1838,7 +1838,7 @@ operate_exp (op, left, right)
    The first produces a function `function_units_used' which is given an
    insn and produces an encoding showing which function units are required
    for the execution of that insn.  If the value is non-negative, the insn
-   uses that unit; otherwise, the value is a one's compliment mask of units
+   uses that unit; otherwise, the value is a one's complement mask of units
    used.
 
    The second produces a function `result_ready_cost' which is used to
@@ -2246,7 +2246,7 @@ simplify_knowing (exp, known_true)
 /* Translate the CONST_STRING expressions in X to change the encoding of
    value.  On input, the value is a bitmask with a one bit for each unit
    used; on output, the value is the unit number (zero based) if one
-   and only one unit is used or the one's compliment of the bitmask.  */
+   and only one unit is used or the one's complement of the bitmask.  */
 
 static rtx
 encode_units_mask (x)
@@ -2264,7 +2264,7 @@ encode_units_mask (x)
     case CONST_STRING:
       i = atoi (XSTR (x, 0));
       if (i < 0)
-	/* The sign bit encodes a one's compliment mask.  */
+	/* The sign bit encodes a one's complement mask.  */
 	abort ();
       else if (i != 0 && i == (i & -i))
 	/* Only one bit is set, so yield that unit number.  */

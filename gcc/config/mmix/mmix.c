@@ -693,7 +693,7 @@ mmix_asm_preferred_eh_data_format (code, global)
   return DW_EH_PE_absptr;
 }
 
-/* Make a note that we've seen the beginning of of the prologue.  This
+/* Make a note that we've seen the beginning of the prologue.  This
    matters to whether we'll translate register numbers as calculated by
    mmix_machine_dependent_reorg.  */
 

@@ -1955,7 +1955,7 @@
   "and	%2,%0"
   [(set_attr "type" "arith")])
 
-;; If the constant is 255, then emit a extu.b instruction instead of an
+;; If the constant is 255, then emit an extu.b instruction instead of an
 ;; and, since that will give better code.
 
 (define_expand "andsi3"

@@ -35,7 +35,7 @@
 # .init sections.  Users may put any desired instructions in those
 # sections.
 
-	# Note - this macro is complimented by the FUNC_END macro
+	# Note - this macro is complemented by the FUNC_END macro
 	# in crtn.asm.  If you change this macro you must also change
 	# that macro match.
 .macro FUNC_START

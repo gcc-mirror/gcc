@@ -1,4 +1,4 @@
-/* Definitions for rtems targeting a ix86 using ELF.
+/* Definitions for rtems targeting an ix86 using ELF.
    Copyright (C) 1996, 1997, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
