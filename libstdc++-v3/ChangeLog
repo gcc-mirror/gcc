@@ -1,3 +1,20 @@
+2005-01-17  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/19433
+	* include/bits/stl_tree.h (_Rb_tree<>::insert_unique(iterator,
+	const _Val&), _Rb_tree<>::insert_equal(iterator, const _Val&)):
+	Obtain amortized constant complexity if t is inserted right after
+	p - not before p - as per Table 69.
+	* testsuite/performance/23_containers/set_insert_from_sorted.cc: New.
+	
+	* testsuite/23_containers/multiset/insert/2.cc: New.
+	* testsuite/23_containers/set/insert/1.cc: Likewise.
+	
+	* testsuite/performance/23_containers/set_create_from_sorted.cc:
+	Simplify.
+
+	* include/bits/stl_tree.h: Add a few missing std:: qualifications.
+
 2005-01-16  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/ext/rope: Qualify calls to std::copy() by sequence_buffer.
