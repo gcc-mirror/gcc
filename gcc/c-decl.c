@@ -3588,6 +3588,12 @@ finish_decl (decl, init, asmspec_tree)
 		 output_constant_def to make its rtl on the permanent
 		 obstack.  */
 	      TREE_PERMANENT (DECL_INITIAL (decl)) = 1;
+
+	      /* The initializer and DECL must have the same (or equivalent
+		 types), but if the initializer is a STRING_CST, its type
+		 might not be on the right obstack, so copy the type
+		 of DECL.  */
+	      TREE_TYPE (DECL_INITIAL (decl)) = type;
 	    }
 	  else
 	    DECL_INITIAL (decl) = error_mark_node;
