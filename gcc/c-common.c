@@ -251,12 +251,16 @@ enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 	    A_UNUSED, A_FORMAT, A_FORMAT_ARG, A_WEAK, A_ALIAS, A_MALLOC,
 	    A_NO_LIMIT_STACK, A_PURE};
 
+/* This must be in the same order as format_types, with format_type_error
+   last.  */
 enum format_type { printf_format_type, scanf_format_type,
-		   strftime_format_type, strfmon_format_type };
+		   strftime_format_type, strfmon_format_type,
+		   format_type_error };
 
 static void add_attribute		PARAMS ((enum attrs, const char *,
 						 int, int, int));
 static void init_attributes		PARAMS ((void));
+static enum format_type decode_format_type	PARAMS ((const char *));
 static void record_function_format	PARAMS ((tree, tree, enum format_type,
 						 int, int));
 static void record_international_format	PARAMS ((tree, tree, int));
@@ -970,17 +974,9 @@ decl_attributes (node, attributes, prefix_attributes)
 	      {
 		const char *p = IDENTIFIER_POINTER (format_type_id);
 
-		if (!strcmp (p, "printf") || !strcmp (p, "__printf__"))
-		  format_type = printf_format_type;
-		else if (!strcmp (p, "scanf") || !strcmp (p, "__scanf__"))
-		  format_type = scanf_format_type;
-		else if (!strcmp (p, "strftime")
-			 || !strcmp (p, "__strftime__"))
-		  format_type = strftime_format_type;
-		else if (!strcmp (p, "strfmon")
-			 || !strcmp (p, "__strfmon__"))
-		  format_type = strfmon_format_type;
-		else
+		format_type = decode_format_type (p);
+
+		if (format_type == format_type_error)
 		  {
 		    warning ("`%s' is an unrecognized format function type", p);
 		    continue;
@@ -1512,7 +1508,8 @@ typedef struct
 /* Structure describing a particular kind of format processed by GCC.  */
 typedef struct
 {
-  /* The name of this kind of format, for use in diagnostics.  */
+  /* The name of this kind of format, for use in diagnostics.  Also
+     the name of the attribute (without preceding and following __).  */
   const char *name;
   /* Specifications of the length modifiers accepted; possibly NULL.  */
   const format_length_info *length_char_specs;
@@ -2023,6 +2020,30 @@ init_function_format_info ()
       record_function_format (get_identifier ("strfmon"), NULL_TREE,
 			      strfmon_format_type, 3, 4);
     }
+}
+
+/* Decode a format type from a string, returning the type, or
+   format_type_error if not valid, in which case the caller should print an
+   error message.  */
+static enum format_type
+decode_format_type (s)
+     const char *s;
+{
+  int i;
+  int slen;
+  slen = strlen (s);
+  for (i = 0; i < (int) format_type_error; i++)
+    {
+      int alen;
+      if (!strcmp (s, format_types[i].name))
+	break;
+      alen = strlen (format_types[i].name);
+      if (slen == alen + 4 && s[0] == '_' && s[1] == '_'
+	  && s[slen - 1] == '_' && s[slen - 2] == '_'
+	  && !strncmp (s + 2, format_types[i].name, alen))
+	break;
+    }
+  return ((enum format_type) i);
 }
 
 /* Record information for argument format checking.  FUNCTION_IDENT is

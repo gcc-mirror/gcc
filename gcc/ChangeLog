@@ -1,3 +1,10 @@
+2001-01-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (enum format_type): Add format_type_error.
+	(decode_format_type): New function.
+	(decl_attributes): Use it.
+	(format_kind_info): Adjust comment.
+
 2001-01-09  David O'Brien  <obrien@BSDi.com>
 
 	* config.gcc (*-*-gnu*, i[34567]86-*-elf*, i[34567]86-*-linux*libc1,
