@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -378,6 +378,10 @@ extern void override_options ();
 
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64
+
+/* For atomic access to objects, must have at least 32-bit alignment
+   unless the machine has byte operations.  */
+#define MINIMUM_ATOMIC_ALIGNMENT (TARGET_BYTE_OPS ? 8 : 32)
 
 /* Align all constants and variables to at least a word boundary so
    we can pick up pieces of them faster.  */
