@@ -1,3 +1,8 @@
+2000-01-08  Jim Wilson  <wilson@redhat.com>
+
+	* sched-rgn.c (BITSET_ADD, BITSET_REMOVE, bitset_member): Cast
+	1 to unsigned HOST_WIDE_INT before left shift.
+
 2001-01-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (arm_mark_machine_status): Check to see if
