@@ -255,13 +255,33 @@ _Jv_JNI_PopLocalFrame (JNIEnv *env, jobject result)
       // must not free it.  However, we must be sure to clear all its
       // elements, since we might conceivably reuse it.
       if (n == NULL)
-	memset (&rf->vec[0], 0, rf->size * sizeof (jobject));
-      else
-	_Jv_Free (rf);
+	{
+	  memset (&rf->vec[0], 0, rf->size * sizeof (jobject));
+	  break;
+	}
+
+      _Jv_Free (rf);
       rf = n;
     }
 
   return result == NULL ? NULL : _Jv_JNI_NewLocalRef (env, result);
+}
+
+// This function is used from other template functions.  It wraps the
+// return value appropriately; we specialize it so that object returns
+// are turned into local references.
+template<typename T>
+static T
+wrap_value (JNIEnv *, T value)
+{
+  return value;
+}
+
+template<>
+static jobject
+wrap_value (JNIEnv *env, jobject value)
+{
+  return _Jv_JNI_NewLocalRef (env, value);
 }
 
 
@@ -533,16 +553,8 @@ _Jv_JNI_CallAnyMethodV (JNIEnv *env, jobject obj, jclass klass,
   if (ex != NULL)
     env->ex = ex;
 
-  if (! return_type->isPrimitive ())
-    {
-      // Make sure we create a local reference.  The cast hackery is
-      // to avoid problems for template instantations we know won't be
-      // used.
-      return (T) (long long) _Jv_JNI_NewLocalRef (env, result.l);
-    }
-
   // We cheat a little here.  FIXME.
-  return * (T *) &result;
+  return wrap_value (env, * (T *) &result);
 }
 
 template<typename T, invocation_type style>
@@ -585,16 +597,8 @@ _Jv_JNI_CallAnyMethodA (JNIEnv *env, jobject obj, jclass klass,
   if (ex != NULL)
     env->ex = ex;
 
-  if (! return_type->isPrimitive ())
-    {
-      // Make sure we create a local reference.  The cast hackery is
-      // to avoid problems for template instantations we know won't be
-      // used.
-      return (T) (long long) _Jv_JNI_NewLocalRef (env, result.l);
-    }
-
   // We cheat a little here.  FIXME.
-  return * (T *) &result;
+  return wrap_value (env, * (T *) &result);
 }
 
 template<invocation_type style>
@@ -813,18 +817,10 @@ _Jv_JNI_NewObjectA (JNIEnv *env, jclass klass, jmethodID id,
 
 template<typename T>
 static T
-_Jv_JNI_GetField (JNIEnv *, jobject obj, jfieldID field) 
+_Jv_JNI_GetField (JNIEnv *env, jobject obj, jfieldID field) 
 {
   T *ptr = (T *) ((char *) obj + field->getOffset ());
-  return *ptr;
-}
-
-template<>
-static jobject
-_Jv_JNI_GetField<jobject> (JNIEnv *env, jobject obj, jfieldID field)
-{
-  jobject *ptr = (jobject *) ((char *) obj + field->getOffset ());
-  return _Jv_JNI_NewLocalRef (env, *ptr);
+  return wrap_value (env, *ptr);
 }
 
 template<typename T>
@@ -886,21 +882,12 @@ _Jv_JNI_GetAnyFieldID (JNIEnv *env, jclass clazz,
   return NULL;
 }
 
-// FIXME: local reference
 template<typename T>
 static T
-_Jv_JNI_GetStaticField (JNIEnv *, jclass, jfieldID field)
+_Jv_JNI_GetStaticField (JNIEnv *env, jclass, jfieldID field)
 {
   T *ptr = (T *) field->u.addr;
-  return *ptr;
-}
-
-template<>
-static jobject
-_Jv_JNI_GetStaticField<jobject> (JNIEnv *env, jclass, jfieldID field)
-{
-  jobject *ptr = (jobject *) field->u.addr;
-  return _Jv_JNI_NewLocalRef (env, *ptr);
+  return wrap_value (env, *ptr);
 }
 
 template<typename T>
@@ -1240,8 +1227,11 @@ _Jv_JNI_conversion_call (fixme)
 
   T result = FIXME_ffi_call (args);
 
-  while (env.locals != NULL)
-    _Jv_JNI_PopLocalFrame (&env, result);
+  do
+    {
+      _Jv_JNI_PopLocalFrame (&env, result);
+    }
+  while (env.locals != frame);
 
   if (env.ex)
     JvThrow (env.ex);
