@@ -37,7 +37,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.m:	-D__LANGUAGE_OBJECTIVE_C} \
 %{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
 
-/* Turn on -mpic-extern by default (change to later use -fpic.  */
+/* Turn on -pic-extern by default for OSF/rose, -fpic for ELF.  */
 #undef  CC1_SPEC
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
@@ -45,9 +45,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!mrose: %{!munderscores: %{!mno-underscores: -mno-underscores }} \
 	  %{!mmcount: %{!mno-mcount: %{!mmcount-ptr: -mmcount-ptr }}}} \
 %{mrose: %{!mmcount: %{!mno-mcount: %{!mmcount-ptr: -mmcount }}} \
-	 %{pic-none: -mno-half-pic} \
-	 %{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
-	 %{!pic-none: -mhalf-pic }}"
+	 %{pic-extern: -mhalf-pic } %{pic-lib: -mhalf-pic } \
+	 %{!pic-extern: %{!pic-lib: %{pic-none: -mno-half-pic} %{!pic-none: -mhalf-pic}}} \
+	 %{pic-calls: } %{pic-names*: }}"
 
 #undef	ASM_SPEC
 #define ASM_SPEC       "%{v*: -v}"
