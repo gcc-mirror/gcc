@@ -36,11 +36,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MASK_HALF_PIC     	0x40000000	/* Mask for half-pic code */
 #define MASK_HALF_PIC_DEBUG	0x20000000	/* Debug flag */
 #define MASK_ELF		0x10000000	/* ELF not rose */
+#define MASK_NO_IDENT		0x08000000	/* suppress .ident */
 
 #define TARGET_HALF_PIC	(target_flags & MASK_HALF_PIC)
 #define TARGET_DEBUG	(target_flags & MASK_HALF_PIC_DEBUG)
 #define HALF_PIC_DEBUG	TARGET_DEBUG
 #define TARGET_ELF	(target_flags & MASK_ELF)
+#define TARGET_ROSE	((target_flags & MASK_ELF) == 0)
+#define TARGET_IDENT	((target_flags & MASK_NO_IDENT) == 0)
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
@@ -49,7 +52,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      { "debugb",	 MASK_HALF_PIC_DEBUG},				\
      { "elf",		 MASK_ELF},					\
      { "no-elf",	-MASK_ELF},					\
-     { "rose",		-MASK_ELF},
+     { "rose",		-MASK_ELF},					\
+     { "ident",		-MASK_NO_IDENT},				\
+     { "no-ident",	 MASK_NO_IDENT},
 
 /* OSF/rose uses stabs, not dwarf.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
@@ -92,7 +97,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!pic-*: %{!fpic: %{!fPIC: -mhalf-pic}}}"
 
 #undef	ASM_SPEC
-#define ASM_SPEC       ""
+#define ASM_SPEC       "%{v*: -v}"
 
 #undef  LINK_SPEC
 #define LINK_SPEC      "%{v*: -v}                           \
@@ -233,6 +238,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define OVERRIDE_OPTIONS						\
 {									\
+  /*									\
+  if (TARGET_ELF && TARGET_HALF_PIC)					\
+    {									\
+      target_flags &= ~MASK_HALF_PIC;					\
+      flag_pic = 1;							\
+    }									\
+  */									\
+									\
+  if (TARGET_ROSE && flag_pic)						\
+    {									\
+      target_flags |= MASK_HALF_PIC;					\
+      flag_pic = 0;							\
+    }									\
+									\
   if (TARGET_HALF_PIC)							\
     half_pic_init ();							\
 }
@@ -310,6 +329,24 @@ while (0)
 }
 
 
+/* Define the strings used for the special svr4 .type and .size directives.
+   These strings generally do not vary from one system running svr4 to
+   another, but if a given system (e.g. m88k running svr) needs to use
+   different pseudo-op names for these, they may be overridden in the
+   file which includes this one.  */
+
+#define TYPE_ASM_OP	".type"
+#define SIZE_ASM_OP	".size"
+#define WEAK_ASM_OP	".weak"
+
+/* The following macro defines the format used to output the second
+   operand of the .type assembler directive.  Different svr4 assemblers
+   expect various different forms for this operand.  The one given here
+   is just a default.  You may need to override it in your machine-
+   specific tm.h file (depending upon the particulars of your assembler).  */
+
+#define TYPE_OPERAND_FMT	"@%s"
+
 /* A C statement (sans semicolon) to output to the stdio stream
    STREAM any text necessary for declaring the name NAME of an
    initialized variable which is being defined.  This macro must
@@ -326,18 +363,84 @@ do									\
  {									\
    ASM_OUTPUT_LABEL(STREAM,NAME);                                       \
    HALF_PIC_DECLARE (NAME);						\
+   if (TARGET_ELF)							\
+     {									\
+       fprintf (STREAM, "\t%s\t ", TYPE_ASM_OP);			\
+       assemble_name (STREAM, NAME);					\
+       putc (',', STREAM);						\
+       fprintf (STREAM, TYPE_OPERAND_FMT, "object");			\
+       putc ('\n', STREAM);						\
+       if (!flag_inhibit_size_directive)				\
+	 {								\
+	   fprintf (STREAM, "\t%s\t ", SIZE_ASM_OP);			\
+	   assemble_name (STREAM, NAME);				\
+	   fprintf (STREAM, ",%d\n",  int_size_in_bytes (TREE_TYPE (decl))); \
+	 }								\
+     }									\
  }									\
 while (0)
 
 /* This is how to declare a function name. */
 
+#undef	ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL)			\
 do									\
  {									\
-   ASM_OUTPUT_LABEL(STREAM,NAME);                                       \
+   ASM_OUTPUT_LABEL(STREAM,NAME);					\
    HALF_PIC_DECLARE (NAME);						\
+   if (TARGET_ELF)							\
+     {									\
+       fprintf (STREAM, "\t%s\t ", TYPE_ASM_OP);			\
+       assemble_name (STREAM, NAME);					\
+       putc (',', STREAM);						\
+       fprintf (STREAM, TYPE_OPERAND_FMT, "function");			\
+       putc ('\n', STREAM);						\
+       ASM_DECLARE_RESULT (STREAM, DECL_RESULT (DECL));			\
+     }									\
  }									\
 while (0)
+
+/* Write the extra assembler code needed to declare a function's result.
+   Most svr4 assemblers don't require any special declaration of the
+   result value, but there are exceptions.  */
+
+#ifndef ASM_DECLARE_RESULT
+#define ASM_DECLARE_RESULT(FILE, RESULT)
+#endif
+
+/* This is how to declare the size of a function.  */
+
+#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
+do									\
+  {									\
+    if (TARGET_ELF && !flag_inhibit_size_directive)			\
+      {									\
+        char label[256];						\
+	static int labelno;						\
+	labelno++;							\
+	ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);		\
+	ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);		\
+	fprintf (FILE, "/\t%s\t ", SIZE_ASM_OP);			\
+	assemble_name (FILE, (FNAME));					\
+        fprintf (FILE, ",");						\
+	assemble_name (FILE, label);					\
+        fprintf (FILE, "-");						\
+	assemble_name (FILE, (FNAME));					\
+	putc ('\n', FILE);						\
+      }									\
+  }									\
+while (0)
+
+/* Attach a special .ident directive to the end of the file to identify
+   the version of GCC which compiled this code.  The format of the
+   .ident string is patterned after the ones produced by native svr4
+   C compilers.  */
+
+#define IDENT_ASM_OP ".ident"
+
+/* Allow #sccs in preprocessor.  */
+
+#define SCCS_DIRECTIVE
 
 /* This says what to print at the end of the assembly file */
 #define ASM_FILE_END(STREAM)						\
@@ -345,6 +448,69 @@ do									\
   {									\
     if (HALF_PIC_P ())							\
       HALF_PIC_FINISH (STREAM);						\
+									\
+    if (TARGET_IDENT)							\
+      {									\
+	fprintf ((STREAM), "\t%s\t\"GCC: (GNU) %s -O%d",		\
+		 IDENT_ASM_OP, version_string, optimize);		\
+									\
+	if (write_symbols == PREFERRED_DEBUGGING_TYPE)			\
+	  fprintf ((STREAM), " -g%d", (int)debug_info_level);		\
+									\
+	else if (write_symbols == DBX_DEBUG)				\
+	  fprintf ((STREAM), " -gstabs%d", (int)debug_info_level);	\
+									\
+	else if (write_symbols == DWARF_DEBUG)				\
+	  fprintf ((STREAM), " -gdwarf%d", (int)debug_info_level);	\
+									\
+	else if (write_symbols != NO_DEBUG)				\
+	  fprintf ((STREAM), " -g??%d", (int)debug_info_level);		\
+									\
+	if (flag_omit_frame_pointer)					\
+	  fprintf ((STREAM), " -fomit-frame-pointer");			\
+									\
+	if (flag_strength_reduce)					\
+	  fprintf ((STREAM), " -fstrength-reduce");			\
+									\
+	if (flag_unroll_loops)						\
+	  fprintf ((STREAM), " -funroll-loops");			\
+									\
+	if (flag_force_mem)						\
+	  fprintf ((STREAM), " -fforce-mem");				\
+									\
+	if (flag_force_addr)						\
+	  fprintf ((STREAM), " -fforce-addr");				\
+									\
+	if (flag_inline_functions)					\
+	  fprintf ((STREAM), " -finline-functions");			\
+									\
+	if (flag_caller_saves)						\
+	  fprintf ((STREAM), " -fcaller-saves");			\
+									\
+	if (flag_pic)							\
+	  fprintf ((STREAM), (flag_pic > 1) ? " -fPIC" : " -fpic");	\
+									\
+	if (flag_inhibit_size_directive)				\
+	  fprintf ((STREAM), " -finhibit-size-directive");		\
+									\
+	if (flag_gnu_linker)						\
+	  fprintf ((STREAM), " -fgnu-linker");				\
+									\
+	if (profile_flag)						\
+	  fprintf ((STREAM), " -p");					\
+									\
+	if (profile_block_flag)						\
+	  fprintf ((STREAM), " -a");					\
+									\
+	if (TARGET_IEEE_FP)						\
+	  fprintf ((STREAM), " -mieee-fp");				\
+									\
+	if (TARGET_HALF_PIC)						\
+	  fprintf ((STREAM), " -mhalf-pic");				\
+									\
+	fprintf ((STREAM), (TARGET_486) ? " -m486" : " -m386");		\
+	fprintf ((STREAM), (TARGET_ELF) ? " -melf\"\n" : " -mrose\"\n"); \
+      }									\
   }									\
 while (0)
 

@@ -49,7 +49,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!pic-*: %{!fpic: %{!fPIC: -mhalf-pic}}}"
 
 #undef	ASM_SPEC
-#define ASM_SPEC       ""
+#define ASM_SPEC       "%{v*: -v}"
 
 #undef  LINK_SPEC
 #define LINK_SPEC      "%{noshrlib: } %{glue: }"
@@ -63,3 +63,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_VERSION_INTERNAL(STREAM) fputs (I386_VERSION, STREAM)
 #define TARGET_VERSION TARGET_VERSION_INTERNAL (stderr)
 
+#undef OBJECT_FORMAT_ROSE
