@@ -1,3 +1,8 @@
+2000-10-31  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* gcc.c-torture/compile/920501-7.c: Remove 'CYGNUS LOCAL' markers.
+	* gcc.c-torture/execute/ieee/rbug.c: Remove 'CYGNUS LOCAL' markers.
+
 2000-10-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/va-arg-21.c: New test.
