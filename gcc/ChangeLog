@@ -1,3 +1,8 @@
+2001-08-01  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* params.def (PARAM_MAX_INLINE_INSNS): Change default to 600.
+	Correct comment that had been missed in the previous change.
+
 2001-08-01  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin.c (machopic_stub_name): Try matching by name.
