@@ -77,7 +77,7 @@ $(OBJS) test.o: $(srcdir)/gc_priv.h $(srcdir)/gc_hdrs.h $(srcdir)/gc.h \
 # options such as -DSILENT affects the size of GC_arrays,
 # invalidating all .o files that rely on gc_priv.h
 
-mark.o typd_mlc.o finalize.o: $(srcdir)/gc_mark.h
+mark.o typd_mlc.o finalize.o: $(srcdir)/include/gc_mark.h $(srcdir)/include/private/gc_pmark.h
 
 gc.a: $(OBJS)
 	$(AR) ru gc.a $(OBJS)
@@ -120,13 +120,13 @@ cord/de.exe: $(srcdir)/cord/de.c $(srcdir)/cord/cordbscs.o $(srcdir)/cord/cordxt
 	$(CC) $(CFLAGS) -o cord/de.exe $(srcdir)/cord/de.c $(srcdir)/cord/cordbscs.o $(srcdir)/cord/cordxtra.o gc.a $(CURSES)
 
 clean: 
-	rm -f gc.a test.o gctest.exe output-local output-diff $(OBJS) \
+	rm -f gc.a tests/test.o gctest.exe output-local output-diff $(OBJS) \
 	      setjmp_test  mon.out gmon.out a.out core \
 	      $(CORD_OBJS) cord/cordtest.exe cord/de.exe
 	-rm -f *~
 
-gctest.exe: test.o gc.a
-	$(CC) $(CFLAGS) -o gctest.exe test.o gc.a
+gctest.exe: tests/test.o gc.a
+	$(CC) $(CFLAGS) -o gctest.exe tests/test.o gc.a
 
 # If an optimized setjmp_test generates a segmentation fault,
 # odds are your compiler is broken.  Gctest may still work.

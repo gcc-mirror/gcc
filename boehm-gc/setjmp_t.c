@@ -10,7 +10,6 @@
  * provided the above notices are retained, and a notice that the code was
  * modified is included with the above copyright notice.
  */
-/* Boehm, September 21, 1995 5:39 pm PDT */
  
 /* Check whether setjmp actually saves registers in jmp_buf. */
 /* If it doesn't, the generic mark_regs code won't work.     */
@@ -21,11 +20,11 @@
 /* recommended that this be run optimized.  (If the machine  */
 /* has no callee-save registers, then the generic code is    */
 /* safe, but this will not be noticed by this piece of       */
-/* code.)						     */
+/* code.)  This test appears to be far from perfect.	     */
 #include <stdio.h>
 #include <setjmp.h>
 #include <string.h>
-#include "gcconfig.h"
+#include "private/gcconfig.h"
 
 #ifdef OS2
 /* GETPAGESIZE() is set to getpagesize() by default, but that	*/

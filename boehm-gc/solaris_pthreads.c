@@ -17,8 +17,8 @@
  */
 /* Boehm, September 14, 1994 4:44 pm PDT */
 
-# if defined(_SOLARIS_PTHREADS)
-# include "gc_priv.h"
+# if defined(GC_SOLARIS_PTHREADS) || defined(_SOLARIS_PTHREADS)
+# include "private/gc_priv.h"
 # include <pthread.h>
 # include <thread.h>
 # include <signal.h>
@@ -35,7 +35,7 @@
 # define _CLASSIC_XOPEN_TYPES
 # include <unistd.h>
 # include <errno.h>
-# include "solaris_threads.h"
+# include "private/solaris_threads.h"
 # include <stdio.h>
 
 #undef pthread_join

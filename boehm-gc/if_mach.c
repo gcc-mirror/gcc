@@ -1,7 +1,9 @@
 /* Conditionally execute a command based on machine and OS from gcconfig.h */
 
-# include "gcconfig.h"
+# include "private/gcconfig.h"
 # include <stdio.h>
+# include <string.h>
+# include <unistd.h>
 
 int main(argc, argv, envp)
 int argc;
@@ -13,6 +15,7 @@ char ** envp;
     if (strcmp(OS_TYPE, "") != 0 && strcmp(argv[2], "") != 0
         && strcmp(OS_TYPE, argv[2]) != 0) return(0);
     printf("^^^^Starting command^^^^\n");
+    fflush(stdout);
     execvp(argv[3], argv+3);
     perror("Couldn't execute");
     

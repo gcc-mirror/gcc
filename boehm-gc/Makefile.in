@@ -102,22 +102,17 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
-@USE_LIBDIR_TRUE@toolexeclibdir = \
-@USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = \
-@USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = \
-@USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 toolexeclib_LTLIBRARIES = $(target_all)
 EXTRA_LTLIBRARIES = libgcjgc.la
-libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c	\
-gcconfig.h dbg_mlc.c dyn_load.c finalize.c gc.h gc_alloc.h gc_cpp.h \
-gc_hdrs.h gc_mark.h gc_priv.h gc_private.h gc_typed.h gcj_mlc.c headers.c \
-hpux_irix_threads.c linux_threads.c malloc.c mallocx.c mark.c mark_rts.c \
-misc.c new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c	\
-real_malloc.c reclaim.c solaris_pthreads.c solaris_threads.c \
-solaris_threads.h stubborn.c typd_mlc.c version.h weakpointer.h
+libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
+dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c irix_threads.c \
+linux_threads.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
+solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c`
 
 
 # Include THREADLIBS here to ensure that the correct versions of
@@ -126,9 +121,10 @@ libgcjgc_la_LIBADD = @addobjs@ $(THREADLIBS)
 libgcjgc_la_DEPENDENCIES = @addobjs@
 libgcjgc_la_LDFLAGS = -version-info 1:1:0 -rpath $(toolexeclibdir)
 
-EXTRA_libgcjgc_la_SOURCES = alpha_mach_dep.s mips_sgi_mach_dep.s \
-mips_ultrix_mach_dep.s rs6000_mach_dep.s sparc_mach_dep.s \
-sparc_sunos4_mach_dep.s mach_dep.c ecos.cc
+EXTRA_libgcjgc_la_SOURCES = alpha_mach_dep.s hpux_test_and_clear.s \
+mips_sgi_mach_dep.s mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s \
+rs6000_mach_dep.s sparc_mach_dep.s sparc_netbsd_mach_dep.s \
+sparc_sunos4_mach_dep.s
 
 
 AM_CXXFLAGS = @BOEHM_GC_CFLAGS@
@@ -206,19 +202,14 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libgcjgc_la_OBJECTS =  allchblk.lo alloc.lo blacklst.lo checksums.lo \
-dbg_mlc.lo dyn_load.lo finalize.lo gcj_mlc.lo headers.lo \
-hpux_irix_threads.lo linux_threads.lo malloc.lo mallocx.lo mark.lo \
+dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo headers.lo \
+irix_threads.lo linux_threads.lo malloc.lo mallocx.lo mark.lo \
 mark_rts.lo misc.lo new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo \
 ptr_chck.lo real_malloc.lo reclaim.lo solaris_pthreads.lo \
-solaris_threads.lo stubborn.lo typd_mlc.lo
+solaris_threads.lo specific.lo stubborn.lo
 check_PROGRAMS =  gctest$(EXEEXT)
 gctest_OBJECTS =  test.$(OBJEXT)
 gctest_DEPENDENCIES =  ./libgcjgc.la
-CXXFLAGS = @CXXFLAGS@
-CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-CXXLD = $(CXX)
-CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -228,14 +219,14 @@ aclocal.m4 configure configure.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 SOURCES = $(libgcjgc_la_SOURCES) $(EXTRA_libgcjgc_la_SOURCES) $(gctest_SOURCES)
 OBJECTS = $(libgcjgc_la_OBJECTS) $(gctest_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .cc .lo .o .obj .s
+.SUFFIXES: .S .c .lo .o .obj .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --cygnus Makefile
 
@@ -332,12 +323,6 @@ maintainer-clean-checkPROGRAMS:
 gctest$(EXEEXT): $(gctest_OBJECTS) $(gctest_DEPENDENCIES)
 	@rm -f gctest$(EXEEXT)
 	$(LINK) $(gctest_LDFLAGS) $(gctest_OBJECTS) $(gctest_LDADD) $(LIBS)
-.cc.o:
-	$(CXXCOMPILE) -c $<
-.cc.obj:
-	$(CXXCOMPILE) -c `cygpath -w $<`
-.cc.lo:
-	$(LTCXXCOMPILE) -c $<
 
 tags: TAGS
 
@@ -409,7 +394,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -526,7 +511,8 @@ install-am install uninstall-am uninstall all-redirect all-am all \
 installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
-$(all_objs) : gcconfig.h gc_priv.h gc_hdrs.h gc.h gc_mark.h
+$(all_objs) : include/private/gcconfig.h include/private/gc_priv.h \
+include/private/gc_hdrs.h include/gc.h include/gc_gcj.h include/gc_mark.h
 
 .s.lo:
 	$(LTCOMPILE) -Wp,-P -x assembler-with-cpp -c $<

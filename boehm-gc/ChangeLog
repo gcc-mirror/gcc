@@ -1,3 +1,20 @@
+2001-05-21  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	Imported version version 6.0alpha7.
+
+	* README, README.Mac, README.OS2, README.QUICK, README.alpha,
+	README.amiga, README.debugging, README.dj, README.hp, README.linux,
+	README.rs6000, README.sgi, README.solaris2, README.uts,
+	README.win32, SCoptions.amiga, backptr.h, barrett_diagram,
+	dbg_mlc.h, gc.h, gc.man, gc_alloc.h, gc_cpp.h, gc_hdrs.h, gc_mark.h,
+	gc_priv.h, gc_private.h, gc_typed.h, gcconfig.h,
+	hpux_irix_threads.c, makefile.depend, nursery.c,
+	solaris_threads.h, test.c, test_cpp.cc, weakpointer.h, cord/README,
+	cord/SCOPTIONS.amiga, cord/SMakefile.amiga, cord/cord.h,
+	cord/ec.h, cord/gc.h, cord/private/cord_pos.h, include/backptr.h,
+	include/gc_copy_descr.h, include/gc_nursery.h: Remove obsolete/moved
+	files.
+
 2001-05-19  Hans Boehm  <hans_boehm@hp.com>
 
 	* configure.host: Build with -fexceptions.

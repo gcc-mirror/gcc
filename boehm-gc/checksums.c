@@ -80,7 +80,7 @@ int index;
     if (pe -> block != 0 && pe -> block != h + OFFSET) ABORT("goofed");
     pe -> old_sum = pe -> new_sum;
     pe -> new_sum = GC_checksum(h);
-#   ifndef MSWIN32
+#   if !defined(MSWIN32) && !defined(MSWINCE)
         if (pe -> new_sum != 0 && !GC_page_was_ever_dirty(h)) {
             GC_printf1("GC_page_was_ever_dirty(0x%lx) is wrong\n",
         	       (unsigned long)h);

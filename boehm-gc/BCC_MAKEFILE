@@ -47,9 +47,9 @@ gc.lib: $(OBJS)
         $(XXXOBJS:XXX=+)
 |
 
-gctest.exe: test.obj gc.lib
+gctest.exe: tests\test.obj gc.lib
     $(cc) @&&|
-        $(cflags) -W -e$* test.obj gc.lib
+        $(cflags) -W -e$* tests\test.obj gc.lib
 |
 
 cord\de.obj cord\de_win.obj: cord\cord.h cord\private\cord_pos.h cord\de_win.h \
@@ -68,8 +68,8 @@ gc_cpp.obj: gc_cpp.h gc.h
 gc_cpp.cpp: gc_cpp.cc
 	copy gc_cpp.cc gc_cpp.cpp
 
-test_cpp.cpp: test_cpp.cc
-	copy test_cpp.cc test_cpp.cpp
+test_cpp.cpp: tests\test_cpp.cc
+	copy tests\test_cpp.cc test_cpp.cpp
 
 test_cpp.exe: test_cpp.obj gc_cpp.h gc.h gc.lib
     $(cc) @&&|

@@ -14,7 +14,7 @@
 /* Boehm, July 31, 1995 5:02 pm PDT */
 
 
-#include "gc_priv.h"
+#include "private/gc_priv.h"
 
 # ifdef STUBBORN_ALLOC
 /* Stubborn object (hard to change, nearly immutable) allocation. */
@@ -30,6 +30,12 @@ extern ptr_t GC_clear_stack();	/* in misc.c, behaves like identity */
 /* the lock twice for a typical allocation.		*/
 
 GC_PTR * GC_changing_list_start;
+
+void GC_push_stubborn_structures GC_PROTO((void))
+{
+    GC_push_all((ptr_t)(&GC_changing_list_start),
+		(ptr_t)(&GC_changing_list_start) + sizeof(GC_PTR *));
+}
 
 # ifdef THREADS
   VOLATILE GC_PTR * VOLATILE GC_changing_list_current;
@@ -50,7 +56,7 @@ void GC_stubborn_init()
 #   define INIT_SIZE 10
 
     GC_changing_list_start = (GC_PTR *)
-    			GC_generic_malloc_inner(
+    			GC_INTERNAL_MALLOC(
     				(word)(INIT_SIZE * sizeof(GC_PTR)),
     				PTRFREE);
     BZERO(GC_changing_list_start,
@@ -88,7 +94,7 @@ GC_bool GC_compact_changing_list()
     }
     if (2 * count > old_size) new_size = 2 * count;
     new_list = (GC_PTR *)
-    		GC_generic_malloc_inner(
+    		GC_INTERNAL_MALLOC(
     				new_size * sizeof(GC_PTR), PTRFREE);
     		/* PTRFREE is a lie.  But we don't want the collector to  */
     		/* consider these.  We do want the list itself to be  	  */
@@ -313,5 +319,8 @@ GC_PTR p;
 {
 }
 
+void GC_push_stubborn_structures GC_PROTO((void))
+{
+}
 
 #endif

@@ -22,7 +22,7 @@
  * level tree.
  */
  
-# include "gc_priv.h"
+# include "private/gc_priv.h"
 
 bottom_index * GC_all_bottom_indices = 0;
 				/* Pointer to first (lowest addr) */
@@ -260,7 +260,7 @@ register word sz; /* bytes */
 /* Apply fn to all allocated blocks */
 /*VARARGS1*/
 void GC_apply_to_all_blocks(fn, client_data)
-void (*fn)(/* struct hblk *h, word client_data */);
+void (*fn) GC_PROTO((struct hblk *h, word client_data));
 word client_data;
 {
     register int j;

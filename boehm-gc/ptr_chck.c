@@ -10,10 +10,13 @@
  * provided the above notices are retained, and a notice that the code was
  * modified is included with the above copyright notice.
  */
-/* Boehm, September 19, 1995 1:26 pm PDT */
 
-#include "gc_priv.h"
-#include "gc_mark.h"
+/*
+ * These are checking routines calls to which could be inserted by a
+ * preprocessor to validate C pointer arithmetic.
+ */
+
+#include "private/gc_pmark.h"
 
 #ifdef __STDC__
 void GC_default_same_obj_print_proc(GC_PTR p, GC_PTR q)
@@ -69,7 +72,7 @@ void (*GC_same_obj_print_proc) GC_PROTO((GC_PTR, GC_PTR))
 	   h = FORWARDED_ADDR(h, hhdr);
 	   hhdr = HDR(h);
 	}
-	limit = (ptr_t)((word *)h + HDR_WORDS + hhdr -> hb_sz);
+	limit = (ptr_t)((word *)h + hhdr -> hb_sz);
 	if ((ptr_t)p >= limit || (ptr_t)q >= limit || (ptr_t)q < (ptr_t)h ) {
 	    goto fail;
 	}
@@ -83,28 +86,19 @@ void (*GC_same_obj_print_proc) GC_PROTO((GC_PTR, GC_PTR))
         goto fail;
       }
     } else {
-#     ifdef ALL_INTERIOR_POINTERS
-	register map_entry_type map_entry;
-	register int pdispl;
-	
-	pdispl = HBLKDISPL(p);
-	map_entry = MAP_ENTRY((hhdr -> hb_map), pdispl);
-	if (map_entry == OBJ_INVALID) {
-            goto fail;
-        } else {
-            base = (char *)((word)p & ~(WORDS_TO_BYTES(1) - 1));
-            base -= WORDS_TO_BYTES(map_entry);
-	}
-#     else
-	register int offset = HBLKDISPL(p) - HDR_BYTES;
-	register word correction = offset % sz;
-	
-	if (HBLKPTR(p) != HBLKPTR(q)) {
-	    /* The following computation otherwise fails in this case */
-	    goto fail;
-	}
-	base = (ptr_t)p - correction;
-#     endif
+      register int map_entry;
+      register int pdispl = HBLKDISPL(p);
+      
+      map_entry = MAP_ENTRY((hhdr -> hb_map), pdispl);
+      if (map_entry > CPP_MAX_OFFSET) {
+         map_entry = BYTES_TO_WORDS(pdispl) % BYTES_TO_WORDS(sz);
+	 if (HBLKPTR(p) != HBLKPTR(q)) goto fail;
+	 	/* W/o this check, we might miss an error if 	*/
+	 	/* q points to the first object on a page, and	*/
+	 	/* points just before the page.			*/
+      }
+      base = (char *)((word)p & ~(WORDS_TO_BYTES(1) - 1));
+      base -= WORDS_TO_BYTES(map_entry);
       limit = base + sz;
     }
     /* [base, limit) delimits the object containing p, if any.	*/
@@ -137,7 +131,7 @@ void (*GC_is_valid_displacement_print_proc) GC_PROTO((GC_PTR)) =
 
 /* Check that if p is a pointer to a heap page, then it points to	*/
 /* a valid displacement within a heap object.				*/
-/* Uninteresting with ALL_INTERIOR_POINTERS.				*/
+/* Uninteresting with GC_all_interior_pointers.				*/
 /* Always returns its argument.						*/
 /* Note that we don't lock, since nothing relevant about the header	*/
 /* should change while we have a valid object pointer to the block.	*/
@@ -158,12 +152,12 @@ void (*GC_is_valid_displacement_print_proc) GC_PROTO((GC_PTR)) =
     hhdr = HDR((word)p);
     if (hhdr == 0) return(p);
     h = HBLKPTR(p);
-#   ifdef ALL_INTERIOR_POINTERS
+    if (GC_all_interior_pointers) {
 	while (IS_FORWARDING_ADDR_OR_NIL(hhdr)) {
 	   h = FORWARDED_ADDR(h, hhdr);
 	   hhdr = HDR(h);
 	}
-#   endif
+    }
     if (IS_FORWARDING_ADDR_OR_NIL(hhdr)) {
     	goto fail;
     }
@@ -252,7 +246,8 @@ ptr_t p;
     	    
     	    if (GC_is_static_root(p)) return(p);
     	    /* Else do it again correctly:	*/
-#           if (defined(DYNAMIC_LOADING) || defined(MSWIN32) || defined(PCR)) \
+#           if (defined(DYNAMIC_LOADING) || defined(MSWIN32) || \
+		defined(MSWINCE) || defined(PCR)) \
                 && !defined(SRC_M3)
     	        DISABLE_SIGNALS();
     	        GC_register_dynamic_libraries();
@@ -270,23 +265,30 @@ ptr_t p;
     	    if (HBLKPTR(base) != HBLKPTR(p)) hhdr = HDR((word)p);
     	    descr = hhdr -> hb_descr;
     retry:
-    	    switch(descr & DS_TAGS) {
-    	        case DS_LENGTH:
+    	    switch(descr & GC_DS_TAGS) {
+    	        case GC_DS_LENGTH:
     	            if ((word)((ptr_t)p - (ptr_t)base) > (word)descr) goto fail;
     	            break;
-    	        case DS_BITMAP:
+    	        case GC_DS_BITMAP:
     	            if ((ptr_t)p - (ptr_t)base
     	                 >= WORDS_TO_BYTES(BITMAP_BITS)
     	                 || ((word)p & (sizeof(word) - 1))) goto fail;
     	            if (!((1 << (WORDSZ - ((ptr_t)p - (ptr_t)base) - 1))
     	            	  & descr)) goto fail;
     	            break;
-    	        case DS_PROC:
+    	        case GC_DS_PROC:
     	            /* We could try to decipher this partially. 	*/
     	            /* For now we just punt.				*/
     	            break;
-    	        case DS_PER_OBJECT:
-    	            descr = *(word *)((ptr_t)base + (descr & ~DS_TAGS));
+    	        case GC_DS_PER_OBJECT:
+		    if ((signed_word)descr >= 0) {
+    	              descr = *(word *)((ptr_t)base + (descr & ~GC_DS_TAGS));
+		    } else {
+		      ptr_t type_descr = *(ptr_t *)base;
+		      descr = *(word *)(type_descr
+			      - (descr - (GC_DS_PER_OBJECT
+					  - GC_INDIR_PER_OBJ_BIAS)));
+		    }
     	            goto retry;
     	    }
     	    return(p);
@@ -305,9 +307,9 @@ size_t how_much;
     GC_PTR initial = *p;
     GC_PTR result = GC_same_obj((GC_PTR)((word)initial + how_much), initial);
     
-#   ifndef ALL_INTERIOR_POINTERS
+    if (!GC_all_interior_pointers) {
     	(void) GC_is_valid_displacement(result);
-#   endif
+    }
     return (*p = result);
 }
 
@@ -318,9 +320,9 @@ size_t how_much;
     GC_PTR initial = *p;
     GC_PTR result = GC_same_obj((GC_PTR)((word)initial + how_much), initial);
  
-#   ifndef ALL_INTERIOR_POINTERS
+    if (!GC_all_interior_pointers) {
     	(void) GC_is_valid_displacement(result);
-#   endif   
+    }
     *p = result;
     return(initial);
 }

@@ -26,27 +26,14 @@ Authors: John R. Ellis and Jesse Hull
 
 #include "gc_cpp.h"
 
+#ifndef _MSC_VER
+/* In the Visual C++ case, we moved this into the header. */
 void* operator new( size_t size ) {
     return GC_MALLOC_UNCOLLECTABLE( size );}
   
 void operator delete( void* obj ) {
     GC_FREE( obj );}
   
-#ifdef _MSC_VER
-// This new operator is used by VC++ in case of Debug builds !
-void* operator new( size_t size,
-                    int ,//nBlockUse,
-                    const char * szFileName,
-                    int nLine
-                    ) {
-# ifndef GC_DEBUG
-    return GC_malloc_uncollectable( size );
-# else
-    return GC_debug_malloc_uncollectable(size, szFileName, nLine);
-# endif
-}
-#endif
-
 #ifdef OPERATOR_NEW_ARRAY
 
 void* operator new[]( size_t size ) {
@@ -56,5 +43,7 @@ void operator delete[]( void* obj ) {
     GC_FREE( obj );}
 
 #endif /* OPERATOR_NEW_ARRAY */
+
+#endif /* _MSC_VER */
 
 

@@ -1,6 +1,7 @@
 /* 
  * Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
  * Copyright (c) 1991, 1992 by Xerox Corporation.  All rights reserved.
+ * Copyright (c) 1999-2001 by Hewlett-Packard Company. All rights reserved.
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -11,7 +12,6 @@
  * provided the above notices are retained, and a notice that the code was
  * modified is included with the above copyright notice.
  */
-/* Boehm, October 9, 1995 1:09 pm PDT */
   
 /* Routines for maintaining maps describing heap block
  * layouts for various object sizes.  Allows fast pointer validity checks
@@ -19,9 +19,9 @@
  * with slow division.
  */
  
-# include "gc_priv.h"
+# include "private/gc_priv.h"
 
-char * GC_invalid_map = 0;
+map_entry_type * GC_invalid_map = 0;
 
 /* Invalidate the object map associated with a block.	Free blocks	*/
 /* are identified by invalid maps.					*/
@@ -31,7 +31,7 @@ hdr *hhdr;
     register int displ;
     
     if (GC_invalid_map == 0) {
-        GC_invalid_map = GC_scratch_alloc(MAP_SIZE);
+        GC_invalid_map = (map_entry_type *)GC_scratch_alloc(MAP_SIZE);
         if (GC_invalid_map == 0) {
             GC_err_printf0(
             	"Cant initialize GC_invalid_map: insufficient memory\n");
@@ -54,7 +54,6 @@ hdr *hhdr;
     GC_word offset;
 # endif
 {
-# ifndef ALL_INTERIOR_POINTERS
     DCL_LOCK_STATE;
     
     DISABLE_SIGNALS();
@@ -62,39 +61,40 @@ hdr *hhdr;
     GC_register_displacement_inner(offset);
     UNLOCK();
     ENABLE_SIGNALS();
-# endif
 }
 
 void GC_register_displacement_inner(offset) 
 word offset;
 {
-# ifndef ALL_INTERIOR_POINTERS
     register unsigned i;
+    word map_entry = BYTES_TO_WORDS(offset);
     
-    if (offset > MAX_OFFSET) {
+    if (offset >= VALID_OFFSET_SZ) {
         ABORT("Bad argument to GC_register_displacement");
     }
+    if (map_entry > MAX_OFFSET) map_entry = OFFSET_TOO_BIG;
     if (!GC_valid_offsets[offset]) {
       GC_valid_offsets[offset] = TRUE;
       GC_modws_valid_offsets[offset % sizeof(word)] = TRUE;
-      for (i = 0; i <= MAXOBJSZ; i++) {
+      if (!GC_all_interior_pointers) {
+        for (i = 0; i <= MAXOBJSZ; i++) {
           if (GC_obj_map[i] != 0) {
              if (i == 0) {
-               GC_obj_map[i][offset + HDR_BYTES] = (char)BYTES_TO_WORDS(offset);
+               GC_obj_map[i][offset] = (map_entry_type)map_entry;
              } else {
                register unsigned j;
                register unsigned lb = WORDS_TO_BYTES(i);
                
                if (offset < lb) {
-                 for (j = offset + HDR_BYTES; j < HBLKSIZE; j += lb) {
-                   GC_obj_map[i][j] = (char)BYTES_TO_WORDS(offset);
+                 for (j = offset; j < HBLKSIZE; j += lb) {
+                   GC_obj_map[i][j] = (map_entry_type)map_entry;
                  }
                }
              }
           }
+	}
       }
     }
-# endif
 }
 
 
@@ -105,13 +105,14 @@ word sz;
 {
     register unsigned obj_start;
     register unsigned displ;
-    register char * new_map;
+    register map_entry_type * new_map;
+    word map_entry;
     
     if (sz > MAXOBJSZ) sz = 0;
     if (GC_obj_map[sz] != 0) {
         return(TRUE);
     }
-    new_map = GC_scratch_alloc(MAP_SIZE);
+    new_map = (map_entry_type *)GC_scratch_alloc(MAP_SIZE);
     if (new_map == 0) return(FALSE);
 #   ifdef PRINTSTATS
         GC_printf1("Adding block map for size %lu\n", (unsigned long)sz);
@@ -120,19 +121,23 @@ word sz;
         MAP_ENTRY(new_map,displ) = OBJ_INVALID;
     }
     if (sz == 0) {
-        for(displ = 0; displ <= MAX_OFFSET; displ++) {
+        for(displ = 0; displ <= HBLKSIZE; displ++) {
             if (OFFSET_VALID(displ)) {
-                MAP_ENTRY(new_map,displ+HDR_BYTES) = BYTES_TO_WORDS(displ);
+		map_entry = BYTES_TO_WORDS(displ);
+		if (map_entry > MAX_OFFSET) map_entry = OFFSET_TOO_BIG;
+                MAP_ENTRY(new_map,displ) = (map_entry_type)map_entry;
             }
         }
     } else {
-        for (obj_start = HDR_BYTES;
+        for (obj_start = 0;
              obj_start + WORDS_TO_BYTES(sz) <= HBLKSIZE;
              obj_start += WORDS_TO_BYTES(sz)) {
              for (displ = 0; displ < WORDS_TO_BYTES(sz); displ++) {
                  if (OFFSET_VALID(displ)) {
+		     map_entry = BYTES_TO_WORDS(displ);
+		     if (map_entry > MAX_OFFSET) map_entry = OFFSET_TOO_BIG;
                      MAP_ENTRY(new_map, obj_start + displ) =
-                     				BYTES_TO_WORDS(displ);
+						(map_entry_type)map_entry;
                  }
              }
         }
