@@ -2316,15 +2316,18 @@ unsave_expr_now (expr)
 {
   enum tree_code code;
   register int i;
+  int first_rtl;
 
   if (expr == NULL_TREE)
     return expr;
 
   code = TREE_CODE (expr);
+  first_rtl = tree_code_length [(int) code];
   switch (code)
     {
     case SAVE_EXPR:
       SAVE_EXPR_RTL (expr) = 0;
+      first_rtl = 2;
       break;
 
     case TARGET_EXPR:
@@ -2336,6 +2339,7 @@ unsave_expr_now (expr)
       /* I don't yet know how to emit a sequence multiple times.  */
       if (RTL_EXPR_SEQUENCE (expr) != 0)
 	abort ();
+      first_rtl = 0;
       break;
 
     case CALL_EXPR:
@@ -2350,6 +2354,16 @@ unsave_expr_now (expr)
 	      exp = TREE_CHAIN (exp);
 	    }
 	}
+      first_rtl = 2;
+      break;
+
+    case WITH_CLEANUP_EXPR:
+      /* Should be defined to be 2.  */
+      first_rtl = 1;
+      break;
+
+    case METHOD_CALL_EXPR:
+      first_rtl = 3;
       break;
     }
 
@@ -2368,7 +2382,7 @@ unsave_expr_now (expr)
     case '<':  /* a comparison expression */
     case '2':  /* a binary arithmetic expression */
     case '1':  /* a unary arithmetic expression */
-      for (i = tree_code_length[(int) code] - 1; i >= 0; i--)
+      for (i = first_rtl - 1; i >= 0; i--)
 	unsave_expr_now (TREE_OPERAND (expr, i));
       return expr;
 
