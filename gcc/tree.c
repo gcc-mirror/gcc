@@ -859,7 +859,8 @@ make_node (code)
       break;
 
     case 'd':
-      DECL_ALIGN (t) = 1;
+      if (code != FUNCTION_DECL)
+	DECL_ALIGN (t) = 1;
       DECL_SOURCE_LINE (t) = lineno;
       DECL_SOURCE_FILE (t) = (input_filename) ? input_filename : "<built-in>";
       break;

@@ -343,8 +343,12 @@ print_node (file, prefix, node, indent)
 
       print_node (file, "size", DECL_SIZE (node), indent + 4);
       indent_to (file, indent + 3);
-      fprintf (file, " align %d", DECL_ALIGN (node));
-      fprintf (file, " frame_size %d", DECL_FRAME_SIZE (node));
+      if (TREE_CODE (node) != FUNCTION_DECL)
+	fprintf (file, " align %d", DECL_ALIGN (node));
+      else if (TREE_INLINE (node))
+	fprintf (file, " frame_size %d", DECL_FRAME_SIZE (node));
+      else if (DECL_BUILT_IN (node))
+	fprintf (file, " built-in code %d", DECL_FUNCTION_CODE (node));
       if (TREE_CODE (node) == FIELD_DECL)
 	print_node (file, "bitpos", DECL_FIELD_BITPOS (node), indent + 4);
       print_node_brief (file, "context", DECL_CONTEXT (node), indent + 4);
