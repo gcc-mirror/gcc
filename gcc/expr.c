@@ -5728,7 +5728,7 @@ safe_from_p (x, exp, top_p)
 	 are memory and they conflict.  */
       return ! (rtx_equal_p (x, exp_rtl)
 		|| (GET_CODE (x) == MEM && GET_CODE (exp_rtl) == MEM
-		    && true_dependence (exp_rtl, GET_MODE (x), x,
+		    && true_dependence (exp_rtl, VOIDmode, x,
 					rtx_addr_varies_p)));
     }
 
