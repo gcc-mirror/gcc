@@ -1,3 +1,10 @@
+2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* modulo-sched.c (create_partial_schedule,
+	free_partial_schedule, reset_partial_schedule,
+	ps_add_node_check_conflicts, rotate_partial_schedule): Make
+	them static.
+
 2004-11-08  Richard Henderson  <rth@redhat.com>
 
 	* expmed.c (extract_force_align_mem_bit_field): Correct handling at
