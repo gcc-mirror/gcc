@@ -93,12 +93,11 @@ const char incl_quote_pat[] = "^[ \t]*#[ \t]*include[ \t]*\"[^/]";
 tSCC z_fork_err[] = "Error %d (%s) starting filter process for %s\n";
 regex_t incl_quote_re;
 
-void do_version ();
-char *load_file  _P_((const char *));
-void process  _P_((char *, const char *));
-void run_compiles ();
-void initialize _P_((int argc,char** argv));
-void process ();
+void do_version   PARAMS((void));
+char *load_file   PARAMS((const char *));
+void run_compiles PARAMS((void));
+void initialize   PARAMS((int argc,char** argv));
+void process      PARAMS((void));
 
 /*  External Source Code */
 
@@ -523,6 +522,7 @@ run_compiles ()
               p_test->p_test_regex = p_re++;
               compile_re (p_test->pz_test_text, p_test->p_test_regex, 0,
                           "select test", p_fixd->fix_name);
+            default: break;
             }
           p_test++;
         }

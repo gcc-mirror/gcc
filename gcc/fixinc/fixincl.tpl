@@ -124,7 +124,7 @@ _SETENV re_ct
 	re_ct _env _val
 	select _count +
 	bypass _count + =]
-tTestDesc a[=hackname _cap=]Tests[] = {[=
+static tTestDesc a[=hackname _cap=]Tests[] = {[=
 
     _FOR test =]
   { TT_TEST,     z[=hackname _cap=]Test[=_eval _index=],   0 /* unused */ },[=
@@ -149,7 +149,7 @@ tTestDesc a[=hackname _cap=]Tests[] = {[=
 /*
  *  Fix Command Arguments for [=hackname _cap=]
  */
-const char* apz[=hackname _cap=]Patch[] = {[=
+static const char* apz[=hackname _cap=]Patch[] = {[=
     _IF   sed         _exist =] "sed"[=
       _FOR sed=],
     "-e", [=sed _krstr=][=

@@ -1,3 +1,14 @@
+2000-09-12  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixfixes.c: make a type for the fix procedure & use it,
+	remove obsolete code
+	* fixinc/fixincl.c: Use PARAMS, not _P_.  Add no-op default to switch.
+	* fixinc/fixincl.tpl: make non-exported arrays static scope
+	* fixinc/fixincl.x: regenerate
+	* fixinc/fixlib.h: Use PARAMS, not _P_
+	* fixinc/fixtests.c: make a type for the test proc & use it
+	* fixinc/server.h: Use PARAMS, not _P_
+
 2000-09-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-typeck.c (process_init_element): Avoid union init warnings on
