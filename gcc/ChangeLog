@@ -1,3 +1,8 @@
+Sun Jan 14 00:23:15 2001  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.md ("strlenhi"): Remove clobber of input address.
+	(*strlenhi): Remove clobber (which was buggy) of output address.
+
 2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Makefile.in (generated-manpages): Add gcc.1

@@ -469,8 +469,7 @@
       [(set (match_dup 4)
 	    (unspec:HI [(match_operand:BLK 1 "memory_operand" "")
 			(match_operand:QI 2 "const_int_operand" "")
-			(match_operand:HI 3 "immediate_operand" "")] 0))
-       (clobber (match_dup 6))])
+			(match_operand:HI 3 "immediate_operand" "")] 0))])
      (set (match_dup 4) (plus:HI (match_dup 4)
 				 (const_int -1)))
      (set (match_operand:HI 0 "register_operand" "")
@@ -478,11 +477,12 @@
 		    (match_dup 5)))]
    ""
    "{
+  rtx addr;
   if (! (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) == 0))
     FAIL;
-  operands[6] = copy_to_mode_reg (Pmode, XEXP (operands[1],0));
-  operands[1] = gen_rtx (MEM, BLKmode, operands[6]); 
-  operands[5] = operands[6];
+  addr = copy_to_mode_reg (Pmode, XEXP (operands[1],0));
+  operands[1] = gen_rtx (MEM, BLKmode, addr); 
+  operands[5] = addr;
   operands[4] = gen_reg_rtx (HImode);
 }")
 
@@ -490,8 +490,7 @@
   [(set (match_operand:HI 0 "register_operand" "=e")
 	(unspec:HI [(mem:BLK (match_operand:HI 1 "register_operand" "%0"))
 		    (const_int 0)
-		    (match_operand:HI 2 "immediate_operand" "i")] 0))
-   (clobber (match_dup 1))]
+		    (match_operand:HI 2 "immediate_operand" "i")] 0))]
   ""
   "ld __tmp_reg__,%a0+
 	tst __tmp_reg__
