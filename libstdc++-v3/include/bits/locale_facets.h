@@ -420,7 +420,7 @@ namespace std
   {
   public:
     // String literal of acceptable (narrow) input, for num_get.
-    // "0123456789eEabcdfxABCDFX"
+    // "0123456789eEabcdfABCDF"
     static const char _S_atoms[];
 
     enum 
@@ -428,7 +428,7 @@ namespace std
       _M_zero,
       _M_e = _M_zero + 10,
       _M_E = _M_zero + 11,
-      _M_size = 23 + 1
+      _M_size = 21 + 1
     };
 
     // Construct and return valid scanf format for floating point types.
@@ -634,11 +634,11 @@ namespace std
 
       void 
       _M_extract_float(iter_type, iter_type, ios_base&, ios_base::iostate&, 
-		       char* __xtrc) const;
+		       string& __xtrc) const;
 
       void 
       _M_extract_int(iter_type, iter_type, ios_base&, ios_base::iostate&, 
-		     char* __xtrc, int& __base) const;
+		     char* __xtrc, int __max, int& __base) const;
 
       virtual iter_type 
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const;

@@ -35,6 +35,7 @@
 #include <bits/std_cerrno.h>
 #include <bits/std_clocale.h>   // For localeconv
 #include <bits/std_cstdlib.h>   // For strof, strtold
+#include <bits/std_cmath.h>   // For ceil
 #include <bits/std_limits.h>    // For numeric_limits
 #include <bits/std_memory.h>    // For auto_ptr
 #include <bits/streambuf_iterator.h>     // For streambuf_iterators
@@ -90,20 +91,21 @@ namespace std
     void
     num_get<_CharT, _InIter>::
     _M_extract_float(_InIter __beg, _InIter __end, ios_base& __io,
-		     ios_base::iostate& __err, char* __xtrc) const
+		     ios_base::iostate& __err, string& __xtrc) const
     {
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
       const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
-      int __pos = 0;
-      char_type  __c = *__beg;
 
       // Check first for sign.
       const char_type __plus = __ctype.widen('+');
       const char_type __minus = __ctype.widen('-');
+      int __pos = 0;
+      char_type  __c = *__beg;
       if ((__c == __plus || __c == __minus) && __beg != __end)
 	{
-	  __xtrc[__pos++] = __ctype.narrow(__c, char());
+	  __xtrc += __ctype.narrow(__c, char());
+	  ++__pos;
 	  __c = *(++__beg);
 	}
 
@@ -116,7 +118,10 @@ namespace std
 	  __found_zero = true;
 	}
       if (__found_zero)
-	__xtrc[__pos++] = _S_atoms[_M_zero];
+	{
+	  __xtrc += _S_atoms[_M_zero];
+	  ++__pos;
+	}
 
       // Only need acceptable digits for floating point numbers.
       const size_t __len = _M_E - _M_zero + 1;
@@ -142,7 +147,8 @@ namespace std
           if (__p && __c)
 	    {
 	      // Try first for acceptable digit; record it if found.
-	      __xtrc[__pos++] = _S_atoms[__p - __watoms];
+	      ++__pos;
+	      __xtrc += _S_atoms[__p - __watoms];
 	      ++__sep_pos;
 	      __c = *(++__beg);
 	    }
@@ -165,7 +171,8 @@ namespace std
 	  else if (__c == __dec && !__found_dec)
 	    {
 	      __found_grouping += static_cast<char>(__sep_pos);
-	      __xtrc[__pos++] = '.';
+	      ++__pos;
+	      __xtrc += '.';
 	      __c = *(++__beg);
 	      __found_dec = true;
 	    }
@@ -173,13 +180,15 @@ namespace std
 		   && !__found_sci && __pos)
 	    {
 	      // Scientific notation.
-	      __xtrc[__pos++] = __ctype.narrow(__c, char());
+	      ++__pos;
+	      __xtrc += __ctype.narrow(__c, char());
 	      __c = *(++__beg);
 
 	      // Remove optional plus or minus sign, if they exist.
 	      if (__c == __plus || __c == __minus)
 		{
-		  __xtrc[__pos++] = __ctype.narrow(__c, char());
+		  ++__pos;
+		  __xtrc += __ctype.narrow(__c, char());
 		  __c = *(++__beg);
 		}
 	      __found_sci = true;
@@ -196,19 +205,12 @@ namespace std
           // Add the ending grouping if a decimal wasn't found.
 	  if (!__found_dec)
 	    __found_grouping += static_cast<char>(__sep_pos);
-
           if (!__verify_grouping(__grouping, __found_grouping))
-            {
-              __err |= ios_base::failbit;
-              __xtrc[__pos] = '\0';
-              if (__beg == __end)
-                __err |= ios_base::eofbit;
-              return;
-            }
+	    __err |= ios_base::failbit;
         }
 
       // Finish up
-      __xtrc[__pos] = char_type();
+      __xtrc += char();
       if (__beg == __end)
         __err |= ios_base::eofbit;
     }
@@ -217,9 +219,15 @@ namespace std
     void
     num_get<_CharT, _InIter>::
     _M_extract_int(_InIter __beg, _InIter __end, ios_base& __io,
-		   ios_base::iostate& __err, char* __xtrc, int& __base) const
+		   ios_base::iostate& __err, char* __xtrc, int __max, 
+		   int& __base) const
     {
+      const locale __loc = __io.getloc();
+      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+      const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
+ 
       // Stage 1: determine a conversion specifier.
+      // NB: Iff __basefield == 0, this can change based on contents.
       ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
       if (__basefield == ios_base::oct)
         __base = 8;
@@ -228,13 +236,9 @@ namespace std
       else
 	__base = 10;
 
-      const locale __loc = __io.getloc();
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
-      const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
+     // Check first for sign.
       int __pos = 0;
       char_type  __c = *__beg;
-
-      // Check first for sign.
       if ((__c == __ctype.widen('+') || __c == __ctype.widen('-'))
 	  && __beg != __end)
 	{
@@ -242,24 +246,45 @@ namespace std
 	  __c = *(++__beg);
 	}
 
-      // Next, strip leading zeros
+      // Next, strip leading zeros and check required digits for base formats.
       const char_type __zero = __ctype.widen(_S_atoms[_M_zero]);
-      bool __found_zero = false;
-      while (__base == 10 && __c == __zero && __beg != __end)
+      const char_type __x = __ctype.widen('x');
+      const char_type __X = __ctype.widen('X');
+      if (__base == 10)
 	{
-	  __c = *(++__beg);
-	  __found_zero = true;
-	}
-      if (__found_zero)
-	{
-	  __xtrc[__pos++] = _S_atoms[_M_zero];
-	  if (__basefield == 0)
+	  bool __found_zero = false;
+	  while (__c == __zero && __beg != __end)
 	    {
-	      // Depending on what is discovered, the base may change.
-	      if (__c == __ctype.widen('x') || __c == __ctype.widen('X'))
-		__base = 16;
-	      else
-		__base = 8;
+	      __c = *(++__beg);
+	      __found_zero = true;
+	    }
+	  if (__found_zero)
+	    {
+	      __xtrc[__pos++] = _S_atoms[_M_zero];
+	      if (__basefield == 0)
+		{	      
+		  if ((__c == __x || __c == __X) && __beg != __end)
+		    {
+		      __xtrc[__pos++] = __ctype.narrow(__c, char());
+		      __c = *(++__beg);
+		      __base = 16;
+		    }
+		  else 
+		    __base = 8;
+		}
+	    }
+	}
+      else if (__base == 16)
+	{
+	  if (__c == __zero && __beg != __end)
+	    {
+	      __xtrc[__pos++] = _S_atoms[_M_zero];
+	      __c = *(++__beg); 
+	      if  ((__c == __x || __c == __X) && __beg != __end)
+		{
+		  __xtrc[__pos++] = __ctype.narrow(__c, char());
+		  __c = *(++__beg);
+		}
 	    }
 	}
 
@@ -271,14 +296,26 @@ namespace std
       else
 	__len = __base;
 
-      char_type  __watoms[_M_size];
+      // Figure out the maximum number of digits that can be extracted
+      // for the given type, using the determined base.
+      int __max_digits;
+      if (__base != 10)
+	__max_digits = static_cast<int>(ceil(__max * log(10.0)
+					   /log(static_cast<double>(__base))));
+      else 
+	__max_digits = __max;
+      // Add in what's already been extracted.
+      __max_digits += __pos;
+
+      // Extract.
+      char_type __watoms[_M_size];
       __ctype.widen(_S_atoms, _S_atoms + __len, __watoms);
       string __found_grouping;
       const string __grouping = __np.grouping();
       bool __check_grouping = __grouping.size() && __base == 10;
       int __sep_pos = 0;
       const char_type __sep = __np.thousands_sep();
-      while (__beg != __end)
+      while (__beg != __end && __pos <= __max_digits)
         {
 	  typedef char_traits<_CharT> 	__traits_type;
           const char_type* __p = __traits_type::find(__watoms, __len,  __c);
@@ -312,25 +349,22 @@ namespace std
 	    break;
         }
 
+      // If one more than the maximum number of digits is extracted.
+      if (__pos > __max_digits)
+	__err |= ios_base::failbit;
+
       // Digit grouping is checked. If grouping and found_grouping don't
       // match, then get very very upset, and set failbit.
       if (__check_grouping && __found_grouping.size())
         {
-          // Add the ending grouping
+          // Add the ending grouping.
           __found_grouping += static_cast<char>(__sep_pos);
-
           if (!__verify_grouping(__grouping, __found_grouping))
-            {
-              __err |= ios_base::failbit;
-              __xtrc[__pos] = '\0';
-              if (__beg == __end)
-                __err |= ios_base::eofbit;
-              return;
-            }
+	    __err |= ios_base::failbit;
         }
 
       // Finish up
-      __xtrc[__pos] = char_type();
+      __xtrc[__pos] = char();
       if (__beg == __end)
         __err |= ios_base::eofbit;
     }
@@ -351,10 +385,11 @@ namespace std
 
           // Stage 1: extract and determine the conversion specifier.
           // Assuming leading zeros eliminated, thus the size of 32 for
-          // integral types.
-          char __xtrc[32] = {'\0'};
+          // integral types
+          char __xtrc[32];
           int __base;
-          _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
+          _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+			 numeric_limits<bool>::digits10, __base);
 
           // Stage 2: convert and store results.
           char* __sanity;
@@ -416,9 +451,10 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
+      _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+		     numeric_limits<long>::digits10, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -441,9 +477,10 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
+      _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+		     numeric_limits<unsigned short>::digits10, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -467,9 +504,10 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
+      _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+		     numeric_limits<unsigned int>::digits10, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -493,9 +531,10 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32] = {'\0'};
+      char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
+      _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+		     numeric_limits<unsigned long>::digits10, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -519,9 +558,10 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
+      _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+		     numeric_limits<long long>::digits10, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -544,9 +584,10 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
+      _M_extract_int(__beg, __end, __io, __err, __xtrc,
+		     numeric_limits<unsigned long long>::digits10, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -568,21 +609,20 @@ namespace std
 	   ios_base::iostate& __err, float& __v) const
     {
       // Stage 1: extract and determine the conversion specifier.
-      // Assuming leading zeros eliminated, thus the size of 256 for
-      // floating-point types.
-      char __xtrc[32]= {'\0'};
+      string __xtrc;
+      __xtrc.reserve(32);
       _M_extract_float(__beg, __end, __io, __err, __xtrc);
 
       // Stage 2: convert and store results.
       char* __sanity;
       errno = 0;
 #ifdef _GLIBCPP_USE_C99
-      float __f = strtof(__xtrc, &__sanity);
+      float __f = strtof(__xtrc.c_str(), &__sanity);
 #else
-      float __f = static_cast<float>(strtod(__xtrc, &__sanity));
+      float __f = static_cast<float>(strtod(__xtrc.c_str(), &__sanity));
 #endif
       if (!(__err & ios_base::failbit)
-          && __sanity != __xtrc && *__sanity == '\0' && errno == 0)
+          && __sanity != __xtrc.c_str() && *__sanity == '\0' && errno == 0)
         __v = __f;
       else
         __err |= ios_base::failbit;
@@ -596,17 +636,16 @@ namespace std
            ios_base::iostate& __err, double& __v) const
     {
       // Stage 1: extract and determine the conversion specifier.
-      // Assuming leading zeros eliminated, thus the size of 256 for
-      // floating-point types.
-      char __xtrc[32]= {'\0'};
+      string __xtrc;
+      __xtrc.reserve(32);
       _M_extract_float(__beg, __end, __io, __err, __xtrc);
 
       // Stage 2: convert and store results.
       char* __sanity;
       errno = 0;
-      double __d = strtod(__xtrc, &__sanity);
+      double __d = strtod(__xtrc.c_str(), &__sanity);
       if (!(__err & ios_base::failbit)
-          && __sanity != __xtrc && *__sanity == '\0' && errno == 0)
+          && __sanity != __xtrc.c_str() && *__sanity == '\0' && errno == 0)
         __v = __d;
       else
         __err |= ios_base::failbit;
@@ -620,18 +659,17 @@ namespace std
            ios_base::iostate& __err, long double& __v) const
     {
       // Stage 1: extract and determine the conversion specifier.
-      // Assuming leading zeros eliminated, thus the size of 256 for
-      // floating-point types.
-      char __xtrc[32]= {'\0'};
+      string __xtrc;
+      __xtrc.reserve(32);
       _M_extract_float(__beg, __end, __io, __err, __xtrc);
 
 #if defined(_GLIBCPP_USE_C99) && !defined(__hpux)
       // Stage 2: convert and store results.
       char* __sanity;
       errno = 0;
-      long double __ld = strtold(__xtrc, &__sanity);
+      long double __ld = strtold(__xtrc.c_str(), &__sanity);
       if (!(__err & ios_base::failbit)
-          && __sanity != __xtrc && *__sanity == '\0' && errno == 0)
+          && __sanity != __xtrc.c_str() && *__sanity == '\0' && errno == 0)
         __v = __ld;
 #else
       // Stage 2: determine a conversion specifier.
@@ -649,7 +687,7 @@ namespace std
       // Stage 3: store results.
       typedef typename char_traits<_CharT>::int_type int_type;
       long double __ld;
-      int __p = sscanf(__xtrc, __conv, &__ld);
+      int __p = sscanf(__xtrc.c_str(), __conv, &__ld);
       if (!(__err & ios_base::failbit) && __p 
 	  && static_cast<int_type>(__p) != char_traits<_CharT>::eof())
         __v = __ld;
@@ -675,9 +713,10 @@ namespace std
       // Stage 1: extract and determine the conversion specifier.
       // Assuming leading zeros eliminated, thus the size of 32 for
       // integral types.
-      char __xtrc[32]= {'\0'};
+      char __xtrc[32];
       int __base;
-      _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
+      _M_extract_int(__beg, __end, __io, __err, __xtrc, 
+		     numeric_limits<unsigned long>::digits10, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
