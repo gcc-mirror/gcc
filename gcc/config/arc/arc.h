@@ -493,7 +493,7 @@ extern enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* local to this file */
 #define LARGE_INT(X) \
 ((X) >= (-(HOST_WIDE_INT) 0x7fffffff - 1) \
- && (X) <= (unsigned HOST_WIDE_INT) 0xffffffff)
+ && (unsigned HOST_WIDE_INT)(X) <= (unsigned HOST_WIDE_INT) 0xffffffff)
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C) \
 ((C) == 'I' ? SMALL_INT (VALUE)		\

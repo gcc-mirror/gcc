@@ -1,5 +1,9 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* arc.c (arc_output_function_prologue,
+	arc_output_function_epilogue): Fix format specifier warnings.
+	* arc.h (LARGE_INT): Fix signed/unsigned warnings.	
+
 	* v850.c (print_operand): Fix format specifier warnings.
 
 	* ns32k.c (ADJSP, ns32k_output_function_prologue): Fix format

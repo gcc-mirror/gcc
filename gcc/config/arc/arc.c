@@ -1263,7 +1263,7 @@ arc_output_function_prologue (file, size)
 
   /* Allocate the stack frame.  */
   if (size - current_frame_info.pretend_size > 0)
-    fprintf (file, "\tsub %s,%s,%d\n",
+    fprintf (file, "\tsub %s,%s," HOST_WIDE_INT_PRINT_DEC "\n",
 	     sp_str, sp_str, size - current_frame_info.pretend_size);
 
   /* Save any needed call-saved regs (and call-used if this is an
@@ -1425,7 +1425,7 @@ arc_output_function_epilogue (file, size)
 	{
 	  if (!SMALL_INT (size - restored))
 	    abort ();
-	  fprintf (file, "\tadd %s,%s,%d\n",
+	  fprintf (file, "\tadd %s,%s," HOST_WIDE_INT_PRINT_DEC "\n",
 		   sp_str, sp_str, size - restored);
 	}
       else
