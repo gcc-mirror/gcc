@@ -753,7 +753,7 @@
 
 (define_insn "subdi3"
   [(set (match_operand:DI 0 "int_reg_operand" "=r")
-	(minus:DI (match_operand:DI 1 "int_reg_operand" "%0")
+	(minus:DI (match_operand:DI 1 "int_reg_operand" "0")
 		  (match_operand:DI 2 "int_reg_operand" "r")))]
   ""
   "*
