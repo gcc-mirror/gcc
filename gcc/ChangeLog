@@ -1,5 +1,7 @@
 Thu Feb 15 21:30:26 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* flow.c (tidy_fallthru_edge): Never end block on line number NOTE.
+
 	* function.c (assign_parms): Set RTX_UNCHANGING_P in pseudo when we
 	do in memory.
 
