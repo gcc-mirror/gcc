@@ -330,7 +330,7 @@ int
 is_mask (val)
      unsigned int val;
 {
-  register int start, end, i;
+  register int start, end = 0, i;
 
   start = -1;
   for (i = 0; val != 0; val >>= 1, i++)
@@ -2118,7 +2118,7 @@ legitimize_address (x, oldx, mode)
 	  other = XEXP (x, 1);
 	}
       else
-	constant = 0;
+	constant = 0, other = 0;
 
       if (constant)
 	x = gen_rtx_PLUS (Pmode,

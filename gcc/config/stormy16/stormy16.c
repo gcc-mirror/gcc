@@ -132,7 +132,7 @@ xstormy16_emit_cbranch (code, loc)
     {
       int unsigned_p = (code == GTU || code == LEU);
       int gt_p = (code == GT || code == GTU);
-      rtx lab;
+      rtx lab = NULL_RTX;
       
       if (gt_p)
 	lab = gen_label_rtx ();
@@ -148,7 +148,7 @@ xstormy16_emit_cbranch (code, loc)
 	   && (code == NE || code == EQ)
 	   && op1 != const0_rtx)
     {
-      rtx lab;
+      rtx lab = NULL_RTX;
       int num_words = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
       int i;
       

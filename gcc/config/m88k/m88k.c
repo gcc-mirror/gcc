@@ -2017,7 +2017,7 @@ m88k_expand_prologue ()
     {
       rtx return_reg = gen_rtx_REG (SImode, 1);
       rtx label = gen_label_rtx ();
-      rtx temp_reg;
+      rtx temp_reg = NULL_RTX;
 
       if (! save_regs[1])
 	{
