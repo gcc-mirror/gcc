@@ -51,10 +51,13 @@ char* chill_real_input_filename;
 extern FILE* finput;
 
 extern int maximum_field_alignment;
+
+static int deep_const_expr			PROTO ((tree));
+static void chill_print_error_function		PROTO ((const char *));
 
 /* return 1 if the expression tree given has all
    constant nodes as its leaves; return 0 otherwise. */
-int
+static int
 deep_const_expr (exp)
      tree exp;
 {
@@ -234,7 +237,7 @@ lang_decode_option (argc, argv)
   return 1;
 }
 
-void
+static void
 chill_print_error_function (file)
      const char *file;
 {

@@ -243,6 +243,18 @@ int result_never_set;
 static void pushdecllist                     PROTO((tree, int));
 static int  init_nonvalue_struct             PROTO((tree));
 static int  init_nonvalue_array              PROTO((tree));
+static void set_nesting_level                PROTO((tree, int));
+static tree make_chill_variants              PROTO((tree, tree, tree));
+static tree fix_identifier                   PROTO((tree));
+static void proclaim_decl                    PROTO((tree, int));
+static tree maybe_acons                      PROTO((tree, tree));
+static void push_scope_decls                 PROTO((int));
+static void pop_scope_decls                  PROTO((tree, tree));
+static tree build_implied_names              PROTO((tree));
+static void bind_sub_modules                 PROTO((int));
+static void layout_array_type                PROTO((tree));
+static void do_based_decl                    PROTO((tree, tree, tree));
+static void handle_one_level                 PROTO((tree, tree));
 
 int current_nesting_level = BUILTIN_NESTING_LEVEL;
 int current_module_nesting_level = 0;
@@ -406,7 +418,7 @@ tree string_ftype_ptr_ptr, int_ftype_string_string;
 tree int_ftype_cptr_cptr_sizet;
 #endif
 
-char **boolean_code_name;
+const char **boolean_code_name;
 
 /* Two expressions that are constants with value zero.
    The first is of type `int', the second of type `void *'.  */
@@ -666,7 +678,7 @@ int warn_missing_braces;
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
   
-  char chill_tree_code_type[] = {
+  const char chill_tree_code_type[] = {
     'x',
 #include "ch-tree.def"
   };
@@ -689,7 +701,7 @@ int chill_tree_code_length[] = {
    Used for printing out the tree and error messages.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
   
-char *chill_tree_code_name[] = {
+const char *chill_tree_code_name[] = {
     "@@dummy",
 #include "ch-tree.def"
   };
@@ -1038,7 +1050,7 @@ init_nonvalue_array (expr)
 
 /* This excessive piece of code sets DECL_NESTING_LEVEL (DECL) to LEVEL. */
 
-void
+static void
 set_nesting_level (decl, level)
      tree decl;
      int level;
@@ -1618,6 +1630,8 @@ struct tree_pair
   tree decl;
 };
 
+static int  label_value_cmp                  PROTO((struct tree_pair *,
+						    struct tree_pair *));
 
 /* Function to help qsort sort variant labels by value order.  */
 static int
@@ -1627,7 +1641,7 @@ label_value_cmp (x, y)
   return TREE_INT_CST_LOW (x->value) - TREE_INT_CST_LOW (y->value);
 }
 
-tree
+static tree
 make_chill_variants (tagfields, body, variantelse)
      tree tagfields;
      tree body;
@@ -1809,7 +1823,8 @@ layout_chill_variants (utype)
     {
       int limit;
       qsort (label_value_array,
-	     label_index, sizeof (struct tree_pair), label_value_cmp);
+	     label_index, sizeof (struct tree_pair),
+	     (int (*) PROTO ((const void *, const void *))) label_value_cmp);
       limit = label_index - 1;
       for (label_index = 0; label_index < limit; label_index++)
 	{
@@ -2035,7 +2050,8 @@ start_chill_function (label, rtype, parms, exceptlist, attrs)
     {
       /* We use the same name as the keyword.
 	 This makes it easy to print and change the RESULT from gdb. */
-      char *result_str = (ignore_case || ! special_UC) ? "result" : "RESULT";
+      const char *result_str =
+	(ignore_case || ! special_UC) ? "result" : "RESULT";
       if (pass == 2 && TREE_CODE (result_type) == ERROR_MARK)
 	TREE_TYPE (current_scope->remembered_decls) = result_type;
       chill_result_decl = do_decl (get_identifier (result_str),
@@ -2331,14 +2347,14 @@ push_module (name, is_spec_module)
   return name;   /* may have generated a name */
 }
 /* Make a copy of the identifier NAME, replacing each '!' by '__'. */
-tree
+static tree
 fix_identifier (name)
      tree name;
 {
   char *buf = (char*)alloca (2 * IDENTIFIER_LENGTH (name) + 1);
   int fixed = 0;
   register char *dptr = buf;
-  register char *sptr = IDENTIFIER_POINTER (name);
+  register const char *sptr = IDENTIFIER_POINTER (name);
   for (; *sptr; sptr++)
     {
       if (*sptr == '!')
@@ -2492,7 +2508,7 @@ kept_level_p ()
    Check redefinitions at the same level.
    Suppress error messages if QUIET is true. */
 
-void
+static void
 proclaim_decl (decl, quiet)
      tree decl;
      int quiet;
@@ -2561,12 +2577,14 @@ struct path
   struct path *prev;
   tree node;
 };
+
+static tree find_implied_types            PROTO((tree, struct path *, tree));
 
 /* Look for implied types (enumeral types) implied by TYPE (a decl or type).
    Add these to list.
    Use old_path to guard against cycles. */
 
-tree
+static tree
 find_implied_types (type, old_path, list)
      tree type;
      struct path *old_path;
@@ -3503,7 +3521,7 @@ init_decl_processing ()
     sizetype = long_unsigned_type_node;
 #else
   {
-    char *size_type_c_name = SIZE_TYPE;
+    const char *size_type_c_name = SIZE_TYPE;
     if (strncmp (size_type_c_name, "long long ", 10) == 0)
       sizetype = long_long_unsigned_type_node;
     else if (strncmp (size_type_c_name, "long ", 5) == 0)
@@ -3709,20 +3727,20 @@ init_decl_processing ()
   DECL_SOURCE_LINE (temp) = 0;
   initializer_type = TREE_TYPE (temp);
 
-  bcopy (chill_tree_code_type,
-         tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
-         (((int) LAST_CHILL_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-          * sizeof (char)));
-  bcopy ((char *) chill_tree_code_length,
-         (char *) (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
-         (((int) LAST_CHILL_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-          * sizeof (int)));
-  bcopy ((char *) chill_tree_code_name,
-         (char *) (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE),
-         (((int) LAST_CHILL_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-          * sizeof (char *)));
-  boolean_code_name = (char **) xmalloc (sizeof (char *) * (int) LAST_CHILL_TREE_CODE);
-  bzero ((char *) boolean_code_name, sizeof (char *) * (int) LAST_CHILL_TREE_CODE);
+  memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
+	  chill_tree_code_type,
+	  (((int) LAST_CHILL_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
+	   * sizeof (char)));
+  memcpy (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE,
+	  chill_tree_code_length,
+	  (((int) LAST_CHILL_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
+	   * sizeof (int)));
+  memcpy (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
+	  chill_tree_code_name,
+	  (((int) LAST_CHILL_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
+	   * sizeof (char *)));
+  boolean_code_name = (const char **) xcalloc (sizeof (char *),
+					       (int) LAST_CHILL_TREE_CODE);
 
   boolean_code_name[EQ_EXPR] = "=";
   boolean_code_name[NE_EXPR] = "/=";
@@ -4268,10 +4286,10 @@ init_decl_processing ()
 
 tree
 builtin_function (name, type, function_code, library_name)
-     char *name;
+     const char *name;
      tree type;
      enum built_in_function function_code;
-     char *library_name;
+     const char *library_name;
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;
@@ -4980,7 +4998,7 @@ save_expr_under_name (name, expr)
   pushdecllist (alias, 0);
 }
 
-void
+static void
 do_based_decl (name, mode, base_var)
      tree name, mode, base_var;
 {
@@ -5081,7 +5099,7 @@ static char exception_prefix [] = "__Ex_";
 
 tree
 build_chill_exception_decl (name)
-     char *name;
+     const char *name;
 {
   tree decl, ex_name, ex_init, ex_type;
   int  name_len = strlen (name);
@@ -5142,7 +5160,7 @@ finish_outer_function ()
      and fill in the module's function's address. */
 
   extern tree initializer_type;
-  char *fname_str = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
+  const char *fname_str = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
   char *init_entry_name = (char *)xmalloc ((unsigned)(strlen (fname_str) + 20));
   tree  init_entry_id;
   tree  init_entry_decl;

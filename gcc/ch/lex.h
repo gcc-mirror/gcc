@@ -94,6 +94,4 @@ extern tree current_seize_file;
 extern int chill_at_module_level;
 extern tree chill_initializer_name;
 
-extern void finish_chill_seizes ();
-
 extern void prepare_paren_colon PROTO((void));

@@ -56,8 +56,15 @@ extern tree unsigned_intTI_type_node;
 
 /* forward declarations */
 static int chill_l_equivalent PROTO((tree, tree, struct mode_chain*));
-static tree extract_constant_from_buffer PROTO((tree, unsigned char *, int));
+static tree extract_constant_from_buffer PROTO((tree, const unsigned char *, int));
 static int expand_constant_to_buffer PROTO((tree, unsigned char *, int));
+static tree build_empty_string PROTO((tree));
+static tree make_chill_pointer_type PROTO((tree, enum tree_code));
+static tree make_chill_range_type PROTO((tree, tree, tree));
+static void apply_chill_array_layout PROTO((tree));
+static int field_decl_cmp PROTO((tree *, tree*));
+static tree make_chill_struct_type PROTO((tree));
+static int apply_chill_field_layout PROTO((tree, int *));
 
 /*
  * This function checks an array access.
@@ -72,7 +79,7 @@ static int expand_constant_to_buffer PROTO((tree, unsigned char *, int));
 tree
 valid_array_index_p (array, idx, error_message, is_varying_lhs)
      tree array, idx;
-     char *error_message;
+     const char *error_message;
      int is_varying_lhs;
 {
   tree cond, low_limit, high_cond, atype, domain;
@@ -854,7 +861,7 @@ expand_constant_to_buffer (value, buffer, buf_size)
 static tree
 extract_constant_from_buffer (type, buffer, buf_size)
      tree type;
-     unsigned char *buffer;
+     const unsigned char *buffer;
      int buf_size;
 {
   tree value;
@@ -1287,7 +1294,7 @@ tree
 chill_expand_tuple (type, constructor)
      tree type, constructor;
 {
-  char *name;
+  const char *name;
   tree nonreft = type;
 
   if (TYPE_NAME (type) != NULL_TREE)
@@ -2407,7 +2414,7 @@ build_chill_modify_expr (lhs, rhs)
 /* Construct, lay out and return the type of pointers to TO_TYPE.
    If such a type has already been constructed, reuse it.  */
 
-tree
+static tree
 make_chill_pointer_type (to_type, code)
      tree to_type;
      enum tree_code code;  /* POINTER_TYPE or REFERENCE_TYPE */
@@ -2494,7 +2501,7 @@ build_chill_reference_type (to_type)
   return t;
 }
 
-tree
+static tree
 make_chill_range_type (type, lowval, highval)
      tree type, lowval, highval;
 {
@@ -2994,7 +3001,7 @@ field_decl_cmp (x, y)
   return (long)DECL_NAME (*x) - (long)DECL_NAME (*y);
 }
 
-tree
+static tree
 make_chill_struct_type (fieldlist)
      tree fieldlist;
 {
@@ -3302,7 +3309,8 @@ layout_chill_struct_type (t)
 	for (x = fieldlist; x; x = TREE_CHAIN (x))
 	  field_array[len++] = x;
 
-	qsort (field_array, len, sizeof (tree), field_decl_cmp);
+	qsort (field_array, len, sizeof (tree),
+	       (int (*) PROTO ((const void *, const void *))) field_decl_cmp);
       }
   }
 

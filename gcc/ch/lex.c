@@ -67,11 +67,11 @@ extern struct obstack permanent_obstack;
 extern struct obstack temporary_obstack;
 
 /* forward declarations */
-static void close_input_file         PROTO((char *));
+static void close_input_file         PROTO((const char *));
 static tree convert_bitstring        PROTO((char *));
 static tree convert_integer          PROTO((char *));
 static void maybe_downcase           PROTO((char *));
-static int  maybe_number             PROTO((char *));
+static int  maybe_number             PROTO((const char *));
 static tree equal_number             PROTO((void));
 static void handle_use_seizefile_directive PROTO((int));
 static int  handle_name		     PROTO((tree));
@@ -82,7 +82,11 @@ static tree read_number              PROTO((int));
 static void skip_c_comment           PROTO((void));
 static void skip_line_comment        PROTO((void));
 static int  skip_whitespace          PROTO((void));
-static tree string_or_char           PROTO((int, char *));
+static tree string_or_char           PROTO((int, const char *));
+static void ch_lex_init              PROTO((void));
+static void skip_directive           PROTO((void));
+static int same_file                 PROTO((const char *, const char *));
+static int getlc                     PROTO((FILE *));
 
 /* next variables are public, because ch-actions uses them */
 
@@ -289,7 +293,8 @@ finish_parse ()
     fclose (finput);
 }
 
-static int yywrap ();
+static int yywrap PROTO ((void));
+static int yy_refill PROTO ((void));
 
 #define YY_PUTBACK_SIZE 5
 #define YY_BUF_SIZE 1000
@@ -298,7 +303,8 @@ static char yy_buffer[YY_PUTBACK_SIZE + YY_BUF_SIZE];
 static char *yy_cur = yy_buffer + YY_PUTBACK_SIZE;
 static char *yy_lim = yy_buffer + YY_PUTBACK_SIZE;
 
-int yy_refill ()
+static int
+yy_refill ()
 {
   char *buf = yy_buffer + YY_PUTBACK_SIZE;
   int c, result;
@@ -593,7 +599,7 @@ yylex ()
 
 static void
 close_input_file (fn)
-  char *fn;
+  const char *fn;
 {
   if (finput == NULL)
     abort ();
@@ -838,7 +844,7 @@ read_directive ()
 tree
 build_chill_string (len, str)
     int   len;
-    char  *str;
+    const char  *str;
 {
   tree t;
 
@@ -855,7 +861,7 @@ build_chill_string (len, str)
 static tree
 string_or_char (len, str)
      int   len;
-     char *str;
+     const char *str;
 {
   tree result;
   
@@ -890,7 +896,7 @@ maybe_downcase (str)
 
 static int
 maybe_number (s)
-  char	*s;
+  const char *s;
 {
   char	fc;
   
@@ -1349,11 +1355,11 @@ convert_bitstring (p)
 
 static int
 same_file (filename1, filename2)
-     char *filename1;
-     char *filename2;
+     const char *filename1;
+     const char *filename2;
 {
   struct stat s[2];
-  char        *fn_input[2];
+  const char *fn_input[2];
   int         i, stat_status;
   
   if (grant_only_flag)
@@ -1457,7 +1463,7 @@ handle_use_seizefile_directive (restricted)
 /*
  * get input, convert to lower case for comparison
  */
-int
+static int
 getlc (file)
      FILE *file;
 {
@@ -2104,7 +2110,7 @@ equal_number ()
  */
 void
 register_seize_path (path)
-     char *path;
+     const char *path;
 {
   int          pathlen = strlen (path);
   char        *new_path = (char *)xmalloc (pathlen + 1);

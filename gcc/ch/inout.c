@@ -35,7 +35,26 @@ extern int ignore_case;
 /* set non-zero if special words are to be entered in uppercase */
 extern int special_UC;
 
-static int intsize_of_charsexpr PROTO((tree));
+static int intsize_of_charsexpr		PROTO ((tree));
+static tree add_enum_to_list		PROTO ((tree, tree));
+static void build_chill_io_list_type	PROTO ((void));
+static void build_io_types		PROTO ((void));
+static void declare_predefined_file	PROTO ((const char *, const char *));
+static tree build_access_part	        PROTO ((void));
+static tree textlocation_mode		PROTO ((tree));
+static int check_assoc			PROTO ((tree, int, const char *));
+static tree assoc_call			PROTO ((tree, tree, const char *));
+static int check_transfer		PROTO ((tree, int, const char *));
+static int connect_process_optionals	PROTO ((tree, tree *, tree *, tree));
+static tree connect_text		PROTO ((tree, tree, tree, tree));
+static tree connect_access		PROTO ((tree, tree, tree, tree));
+static int check_access			PROTO ((tree, int, const char *));
+static int check_text			PROTO ((tree, int, const char *));
+static tree get_final_type_and_range	PROTO ((tree, tree *, tree *));
+static void process_io_list		PROTO ((tree, tree *, tree *, rtx *,
+						int, int));
+static void check_format_string		PROTO ((tree, tree, int));
+static int get_max_size			PROTO ((tree));
 
 /* association mode */
 tree association_type_node;
@@ -1047,8 +1066,8 @@ build_io_types ()
 
 static void
 declare_predefined_file (name, assembler_name)
-     char *name;
-     char* assembler_name;
+     const char *name;
+     const char *assembler_name;
 {
   tree decl = build_lang_decl (VAR_DECL, get_identifier (name),
 			       stdio_type_node);
@@ -1727,7 +1746,7 @@ static int
 check_assoc (assoc, argnum, errmsg)
      tree assoc;
      int argnum;
-     char *errmsg;
+     const char *errmsg;
 {
   if (assoc == NULL_TREE || TREE_CODE (assoc) == ERROR_MARK)
     return 0;
@@ -1860,7 +1879,7 @@ static tree
 assoc_call (assoc, func, name)
      tree assoc;
      tree func;
-     char *name;
+     const char *name;
 {
   tree arg1, arg2, arg3;
   tree result;
@@ -2107,7 +2126,7 @@ static int
 check_transfer (transfer, argnum, errmsg)
      tree transfer;
      int argnum;
-     char *errmsg;
+     const char *errmsg;
 {
   int result = 0;
 
@@ -2483,7 +2502,7 @@ static int
 check_access (access, argnum, errmsg)
      tree access;
      int argnum;
-     char *errmsg;
+     const char *errmsg;
 {
   if (access == NULL_TREE || TREE_CODE (access) == ERROR_MARK)
     return 1;
@@ -2719,7 +2738,7 @@ static int
 check_text (text, argnum, errmsg)
      tree text;
      int argnum;
-     char *errmsg;
+     const char *errmsg;
 {
   if (text == NULL_TREE || TREE_CODE (text) == ERROR_MARK)
     return 0;
@@ -3023,8 +3042,8 @@ process_io_list (exprlist, iolist_addr, iolist_length, iolist_rtx, do_read,
     {
       tree item = TREE_VALUE (exprlist);
       tree idx = build_int_2 (idxcnt++, 0);
-      char *fieldname = 0;
-      char *enumname = 0;
+      const char *fieldname = 0;
+      const char *enumname = 0;
       tree array_ref = build_chill_array_ref_1 (iolist, idx);
       tree item_type;
       tree range_low = NULL_TREE, range_high = NULL_TREE;
@@ -3788,6 +3807,9 @@ typedef enum
 } convcode_t;
 static convcode_t     convcode;
 
+static tree check_exprlist		PROTO ((convcode_t, tree, int,
+						unsigned long));
+
 typedef enum
 {
   False, True,
@@ -3821,6 +3843,9 @@ static unsigned long  repetition;
 typedef enum {
   NormalEnd, EndAtParen, TextFailEnd 
 } formatexit_t;
+
+static formatexit_t scanformcont	PROTO ((char *, int, char **, int *,
+						tree, tree *, int, int *));
 
 /* NOTE: varibale have to be set to False before calling check_format_string */
 static Boolean empty_printed;
