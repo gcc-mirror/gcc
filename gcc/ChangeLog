@@ -1,5 +1,9 @@
 2004-04-20  Paul Brook  <paul@codesourcery.com>
 
+	* config/arm/arm.c (arm_legitimate_address_p): Use rtx_equal_p.
+
+2004-04-20  Paul Brook  <paul@codesourcery.com>
+
 	* config/arm/arm.c (arm_expand_prologue): Fix size calculation.
 
 2004-04-20  Paolo Bonzini  <bonzini@gnu.org>
