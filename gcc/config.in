@@ -297,6 +297,9 @@
    skip when using the GAS .p2align command. */
 #undef HAVE_GAS_MAX_SKIP_P2ALIGN
 
+/* Define if your assembler supports .nsubspa comdat option. */
+#undef HAVE_GAS_NSUBSPA_COMDAT
+
 /* Define if your assembler and linker support 32-bit section relative relocs
    via '.secrel32 label'. */
 #undef HAVE_GAS_PE_SECREL32_RELOC
