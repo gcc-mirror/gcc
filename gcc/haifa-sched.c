@@ -521,7 +521,6 @@ static char is_cfg_nonregular PROTO ((void));
 static int uses_reg_or_mem PROTO ((rtx));
 void debug_control_flow PROTO ((void));
 static void build_control_flow PROTO ((void));
-static void build_jmp_edges PROTO ((rtx, int));
 static void new_edge PROTO ((int, int));
 
 
@@ -1310,105 +1309,60 @@ debug_control_flow ()
 }
 
 
-/* build the control flow graph. (also set nr_edges accurately) */
+/* Build the control flow graph and set nr_edges.
+
+   Instead of trying to build a cfg ourselves, we rely on flow to
+   do it for us.  Stamp out useless code (and bug) duplication.  */
 
 static void
 build_control_flow ()
 {
-  int i;
+  int i, j;
+  int_list_ptr *s_preds;
+  int_list_ptr *s_succs;
+  int_list_ptr succ;
+  int *num_preds;
+  int *num_succs;
+
+  /* The scheduler runs after flow; therefore, we can't blindly call
+     back into find_basic_blocks since doing so could invalidate the
+     info in basic_block_live_at_start.
+
+     Consider a block consisting entirely of dead stores; after life
+     analysis it would be a block of NOTE_INSN_DELETED notes.  If
+     we call find_basic_blocks again, then the block would be removed
+     entirely and invalidate our the register live information.
+
+     We could (should?) recompute register live information.  Doing
+     so may even be beneficial.  */
+  s_preds = (int_list_ptr *) alloca (n_basic_blocks * sizeof (int_list_ptr));
+  s_succs = (int_list_ptr *) alloca (n_basic_blocks * sizeof (int_list_ptr));
+  num_preds = (int *) alloca (n_basic_blocks * sizeof (int));
+  num_succs = (int *) alloca (n_basic_blocks * sizeof (int));
+  compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
 
   nr_edges = 0;
   for (i = 0; i < n_basic_blocks; i++)
-    {
-      rtx insn;
-
-      insn = basic_block_end[i];
-      if (GET_CODE (insn) == JUMP_INSN)
-	{
-	  build_jmp_edges (PATTERN (insn), i);
-	}
-
-      for (insn = PREV_INSN (basic_block_head[i]);
-	   insn && GET_CODE (insn) == NOTE; insn = PREV_INSN (insn))
-	;
-
-      /* build fallthrough edges */
-      if (!insn && i != 0)
-	new_edge (i - 1, i);
-      else if (insn && GET_CODE (insn) != BARRIER)
-	new_edge (i - 1, i);
-    }
+    for (succ = s_succs[i]; succ; succ = succ->next)
+      {
+	if (INT_LIST_VAL (succ) != EXIT_BLOCK)
+	  new_edge (i, INT_LIST_VAL (succ));
+      }
 
   /* increment by 1, since edge 0 is unused.  */
   nr_edges++;
 
+  /* For now.  This will move as more and more of haifa is converted
+     to using the cfg code in flow.c  */
+  free_bb_mem ();
 }
 
 
-/* construct edges in the control flow graph, from 'source' block, to
-   blocks refered to by 'pattern'.  */
+/* Record an edge in the control flow graph from SOURCE to TARGET.
 
-static
-void 
-build_jmp_edges (pattern, source)
-     rtx pattern;
-     int source;
-{
-  register RTX_CODE code;
-  register int i;
-  register char *fmt;
-
-  code = GET_CODE (pattern);
-
-  if (code == LABEL_REF)
-    {
-      register rtx label = XEXP (pattern, 0);
-      register int target;
-
-      /* This can happen as a result of a syntax error
-         and a diagnostic has already been printed.  */
-      if (INSN_UID (label) == 0)
-	return;
-
-      target = INSN_BLOCK (label);
-      new_edge (source, target);
-
-      return;
-    }
-
-  /* proper handling of ADDR_DIFF_VEC: do not add a non-existing edge
-     from the block containing the branch-on-table, to itself.  */
-  if (code == ADDR_VEC
-      || code == ADDR_DIFF_VEC)
-    {
-      int diff_vec_p = GET_CODE (pattern) == ADDR_DIFF_VEC;
-      int len = XVECLEN (pattern, diff_vec_p);
-      int k;
-
-      for (k = 0; k < len; k++)
-	{
-	  rtx tem = XVECEXP (pattern, diff_vec_p, k);
-
-	  build_jmp_edges (tem, source);
-	}
-    }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	build_jmp_edges (XEXP (pattern, i), source);
-      if (fmt[i] == 'E')
-	{
-	  register int j;
-	  for (j = 0; j < XVECLEN (pattern, i); j++)
-	    build_jmp_edges (XVECEXP (pattern, i, j), source);
-	}
-    }
-}
-
-
-/* construct an edge in the control flow graph, from 'source' to 'target'.  */
+   In theory, this is redundant with the s_succs computed above, but
+   we have not converted all of haifa to use information from the
+   integer lists.  */
 
 static void
 new_edge (source, target)
@@ -8718,8 +8672,6 @@ schedule_insns (dump_file)
     emit_note_after (NOTE_INSN_DELETED, basic_block_end[n_basic_blocks - 1]);
 
   /* Schedule every region in the subroutine */
-  fprintf(stderr, "HELLO: nr_regions=%d max_reg_num=%d\n",
-        (int)nr_regions, (int)max_reg_num());   
   for (rgn = 0; rgn < nr_regions; rgn++)
     {
       schedule_region (rgn);

@@ -3381,8 +3381,13 @@ rest_of_compilation (decl)
       /* Do control and data flow analysis,
 	 and write some of the results to dump file.  */
 
-      TIMEVAR (flow_time, flow_analysis (insns, max_reg_num (),
-					 rtl_dump_file));
+      TIMEVAR
+	(flow_time,
+	 {
+	   find_basic_blocks (insns, max_reg_num (), rtl_dump_file, 1);
+	   life_analysis (insns, max_reg_num (), rtl_dump_file);
+	 });
+
       if (warn_uninitialized)
 	{
 	  uninitialized_vars_warning (DECL_INITIAL (decl));

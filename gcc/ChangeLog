@@ -1,3 +1,25 @@
+Thu Mar  5 23:24:50 1998  Jeffrey A Law  (law@cygnus.com)
+			  Doug Evans	 (devans@cygnus.com)
+
+	* haifa-sched.c (build_jmp_edges): Delete dead function.
+	(build_control_flow): Use cfg routines from flow.c
+	(schedule_insns): Remove debugging code accidentally checked
+	in earlier today.
+
+        * basic-block.h: Add external integer list structures, typdefs,
+        accessor macros and function declarations.  Simlarly for
+        basic block pred/succ support and simple bitmap stuff.
+        * flow.c: Add functions for integer list, basic block pred/succ
+        support and simple bitmap support.
+        (compute_dominators): New function to compute dominators and
+        post dominators.
+	(find_basic_blocks): Split into two functions.
+	(life_analysis): Likewise.
+	(flow_analysis): Removed.  Now handled by calling find_basic_blocks,
+	the life_analysis from toplev.c
+	* toplev.c (rest_of_compilation): Call find_basic_blocks, then
+	life_analysis instead of flow_analysis.
+
 Thu Mar  5 23:06:26 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* jump.c (jump_optimize): Call mark_jump_label also for deleted
