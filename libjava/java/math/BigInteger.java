@@ -1017,8 +1017,8 @@ public class BigInteger extends Number implements Comparable
     return xy;
   }
 
-  private static final BigInteger[] euclidInv(BigInteger a, BigInteger b,
-					      BigInteger prevDiv)
+  private static final void euclidInv(BigInteger a, BigInteger b,
+                                      BigInteger prevDiv, BigInteger[] xy)
   {
     if (b.isZero())
       throw new ArithmeticException("not invertible");
@@ -1027,20 +1027,19 @@ public class BigInteger extends Number implements Comparable
       {
 	// Success:  values are indeed invertible!
 	// Bottom of the recursion reached; start unwinding.
-	return new BigInteger[] { neg(prevDiv), ONE };
+	xy[0] = neg(prevDiv);
+        xy[1] = ONE;
+	return;
       }
 
-    BigInteger[] result;
     // Recursion happens in the following conditional!
 
     // If a just contains an int, then use integer math for the rest.
     if (a.words == null)
       {
         int[] xyInt = euclidInv(b.ival, a.ival % b.ival, a.ival / b.ival);
-	result = new BigInteger[] { // non-shared BI
-	  new BigInteger(xyInt[0]),
-	  new BigInteger(xyInt[1])
-	};
+	xy[0] = new BigInteger(xyInt[0]);
+        xy[1] = new BigInteger(xyInt[1]);
       }
     else
       {
@@ -1050,13 +1049,12 @@ public class BigInteger extends Number implements Comparable
         // quot and rem may not be in canonical form. ensure
         rem.canonicalize();
         quot.canonicalize();
-	result = euclidInv(b, rem, quot);
+	euclidInv(b, rem, quot, xy);
       }
 
-    BigInteger t = result[0];
-    result[0] = add(result[1], times(t, prevDiv), -1);
-    result[1] = t;
-    return result;
+    BigInteger t = xy[0];
+    xy[0] = add(xy[1], times(t, prevDiv), -1);
+    xy[1] = t;
   }
 
   public BigInteger modInverse(BigInteger y)
@@ -1124,9 +1122,8 @@ public class BigInteger extends Number implements Comparable
         // quot and rem may not be in canonical form. ensure
         rem.canonicalize();
         quot.canonicalize();
-        BigInteger xy0 = new BigInteger();
-        BigInteger xy1 = new BigInteger();
-	BigInteger[] xy = euclidInv(y, rem, quot);
+	BigInteger[] xy = new BigInteger[2];
+	euclidInv(y, rem, quot, xy);
 	result = swapped ? xy[0] : xy[1];
 
 	// Result can't be negative, so make it positive by adding the
