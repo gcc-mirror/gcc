@@ -57,6 +57,7 @@ progname=$0
 progname=`basename $progname`
 original_dir=`pwd`
 CPP=${CPP-./cpp}
+FIX_HEADER=${FIX_HEADER-$original_dir/fix-header}
 DEFINES="-D__STDC__=0 -D__cplusplus ${FIXPROTO_DEFINES}"
 
 if [ `echo $1 | wc -w` = 0 ] ; then
@@ -320,7 +321,7 @@ for code in ALL STD ; do
 	  done
 	  if ${CPP} ${DEFINES} $include_path fixtmp.c >fixtmp.i 2>/dev/null
 	  then
-	   $original_dir/fix-header $rel_source_file $abs_source_file $abs_target_file "$required_list" <fixtmp.i
+	   $FIX_HEADER $rel_source_file $abs_source_file $abs_target_file "$required_list" <fixtmp.i
 	  else
 	    echo "${progname}: cpp could not parse ${abs_source_file} (ignored)"
 	  fi
