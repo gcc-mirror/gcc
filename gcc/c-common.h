@@ -571,6 +571,11 @@ extern int flag_permissive;
 
 extern int flag_enforce_eh_specs;
 
+/* Nonzero (the default) means to generate thread-safe code for
+   initializing local statics.  */
+
+extern int flag_threadsafe_statics;
+
 /* Nonzero means warn about implicit declarations.  */
 
 extern int warn_implicit;

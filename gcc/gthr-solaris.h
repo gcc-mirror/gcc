@@ -44,9 +44,11 @@ typedef struct {
   int once;
 } __gthread_once_t;
 typedef mutex_t __gthread_mutex_t;
+typedef mutex_t __gthread_recursive_mutex_t;
 
 #define __GTHREAD_ONCE_INIT { DEFAULTMUTEX, 0 }
 #define __GTHREAD_MUTEX_INIT DEFAULTMUTEX
+#define __GTHREAD_RECURSIVE_MUTEX_INIT RECURSIVE_ERRORCHECKMUTEX
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
 
@@ -464,6 +466,24 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
     return mutex_unlock (mutex);
   else
     return 0;
+}
+
+static inline int
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+{
+  return __gthread_mutex_lock (mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+{
+  return __gthread_mutex_trylock (mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+{
+  return __gthread_mutex_unlock (mutex);
 }
 
 #endif /* _LIBOBJC */

@@ -46,9 +46,17 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 typedef pthread_key_t __gthread_key_t;
 typedef pthread_once_t __gthread_once_t;
 typedef pthread_mutex_t __gthread_mutex_t;
+typedef pthread_mutex_t __gthread_recursive_mutex_t;
 
 #define __GTHREAD_MUTEX_INIT PTHREAD_MUTEX_INITIALIZER
 #define __GTHREAD_ONCE_INIT PTHREAD_ONCE_INIT
+#if defined(PTHREAD_RECURSIVE_MUTEX_INITIALIZER)
+#define __GTHREAD_RECURSIVE_MUTEX_INIT PTHREAD_RECURSIVE_MUTEX_INITIALIZER
+#elif defined(PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP)
+#define __GTHREAD_RECURSIVE_MUTEX_INIT PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+#else
+#define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init_function
+#endif
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
 
@@ -514,6 +522,45 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
     return pthread_mutex_unlock (mutex);
   else
     return 0;
+}
+
+#ifndef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+static inline int
+__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
+{
+  if (__gthread_active_p ())
+    {
+      pthread_mutexattr_t attr;
+      int r;
+
+      r = pthread_mutexattr_init (&attr);
+      if (!r)
+	r = pthread_mutexattr_settype (&attr, PTHREAD_MUTEX_RECURSIVE);
+      if (!r)
+	r = pthread_mutex_init (mutex, &attr);
+      if (!r)
+	r = pthread_mutexattr_destroy (&attr);
+      return r;
+    }
+}
+#endif
+
+static inline int
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+{
+  return __gthread_mutex_lock (mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+{
+  return __gthread_mutex_trylock (mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+{
+  return __gthread_mutex_unlock (mutex);
 }
 
 #endif /* _LIBOBJC */

@@ -1,3 +1,12 @@
+2004-08-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/13684
+	* libsupc++/guard.cc (static_mutex): Internal class implementing a
+	recursive mutex which controls initialization of local statics.
+	(__gnu_cxx::recursive_init): New exception class.
+	(__cxa_guard_acquire): Deal with locking and recursion detection.
+	(acquire_1, __cxa_guard_abort, __cxa_guard_release): Likewise.
+
 2004-08-27  Matthias Klose  <doko@debian.org>
 
 	* configure.host: For mips*-*-linux* update cpu_include_dir

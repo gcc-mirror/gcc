@@ -1,3 +1,11 @@
+2004-08-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/13684
+	* decl.c (expand_static_init): Use thread-safety API.
+	(register_dtor_fn): Return the call, don't expand it.
+	* tree.c (add_stmt_to_compound): New fn.
+	(stabilize_call): Use it.
+
 2004-08-27  Richard Henderson  <rth@redhat.com>
 
 	* cp-tree.def (OFFSETOF_EXPR): New.

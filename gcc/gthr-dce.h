@@ -1,4 +1,4 @@
-
+/* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
 /* Copyright (C) 1997, 1999, 2000, 2001 Free Software Foundation, Inc.
 
@@ -52,10 +52,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 typedef pthread_key_t __gthread_key_t;
 typedef pthread_once_t __gthread_once_t;
 typedef pthread_mutex_t __gthread_mutex_t;
+typedef pthread_mutex_t __gthread_recursive_mutex_t;
 
 #define __GTHREAD_ONCE_INIT pthread_once_init
 
 #define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
+#define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init_function
 
 #define __GTHREAD_MUTEX_INIT_DEFAULT pthread_once_init
 
@@ -479,6 +481,43 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
     return pthread_mutex_unlock (mutex);
   else
     return 0;
+}
+
+static inline int
+__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
+{
+  if (__gthread_active_p ())
+    {
+      pthread_mutexattr_t attr;
+      int r;
+
+      r = pthread_mutexattr_create (&attr);
+      if (!r)
+	r = pthread_mutexattr_setkind_np (&attr, MUTEX_RECURSIVE_NP);
+      if (!r)
+	r = pthread_mutex_init (mutex, attr);
+      if (!r)
+	r = pthread_mutexattr_delete (&attr);
+      return r;
+    }
+}
+
+static inline int
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+{
+  return __gthread_mutex_lock (mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+{
+  return __gthread_mutex_trylock (mutex);
+}
+
+static inline int
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+{
+  return __gthread_mutex_unlock (mutex);
 }
 
 #endif /* _LIBOBJC */

@@ -3271,9 +3271,15 @@ gimplify_cleanup_point_expr (tree *expr_p, tree *pre_p)
 	  else
 	    {
 	      tree sl, tfe;
+	      enum tree_code code;
+
+	      if (CLEANUP_EH_ONLY (wce))
+		code = TRY_CATCH_EXPR;
+	      else
+		code = TRY_FINALLY_EXPR;
 
 	      sl = tsi_split_statement_list_after (&iter);
-	      tfe = build (TRY_FINALLY_EXPR, void_type_node, sl, NULL_TREE);
+	      tfe = build (code, void_type_node, sl, NULL_TREE);
 	      append_to_statement_list (TREE_OPERAND (wce, 0),
 				        &TREE_OPERAND (tfe, 1));
 	      *wce_p = tfe;
@@ -3301,7 +3307,7 @@ gimplify_cleanup_point_expr (tree *expr_p, tree *pre_p)
    is the cleanup action required.  */
 
 static void
-gimple_push_cleanup (tree var, tree cleanup, tree *pre_p)
+gimple_push_cleanup (tree var, tree cleanup, bool eh_only, tree *pre_p)
 {
   tree wce;
 
@@ -3352,6 +3358,7 @@ gimple_push_cleanup (tree var, tree cleanup, tree *pre_p)
   else
     {
       wce = build (WITH_CLEANUP_EXPR, void_type_node, cleanup);
+      CLEANUP_EH_ONLY (wce) = eh_only;
       append_to_statement_list (wce, pre_p);
     }
 
@@ -3399,7 +3406,8 @@ gimplify_target_expr (tree *expr_p, tree *pre_p, tree *post_p)
       if (TARGET_EXPR_CLEANUP (targ))
 	{
 	  gimplify_stmt (&TARGET_EXPR_CLEANUP (targ));
-	  gimple_push_cleanup (temp, TARGET_EXPR_CLEANUP (targ), pre_p);
+	  gimple_push_cleanup (temp, TARGET_EXPR_CLEANUP (targ),
+			       CLEANUP_EH_ONLY (targ), pre_p);
 	}
 
       /* Only expand this once.  */

@@ -2254,6 +2254,19 @@ stabilize_expr (tree exp, tree* initp)
   return exp;
 }
 
+/* Add NEW, an expression whose value we don't care about, after the
+   similar expression ORIG.  */
+
+tree
+add_stmt_to_compound (tree orig, tree new)
+{
+  if (!new || !TREE_SIDE_EFFECTS (new))
+    return orig;
+  if (!orig || !TREE_SIDE_EFFECTS (orig))
+    return new;
+  return build2 (COMPOUND_EXPR, void_type_node, orig, new);
+}
+
 /* Like stabilize_expr, but for a call whose args we want to
    pre-evaluate.  */
 
@@ -2275,12 +2288,7 @@ stabilize_call (tree call, tree *initp)
       {
 	tree init;
 	TREE_VALUE (t) = stabilize_expr (TREE_VALUE (t), &init);
-	if (!init)
-	  /* Nothing.  */;
-	else if (inits)
-	  inits = build2 (COMPOUND_EXPR, void_type_node, inits, init);
-	else
-	  inits = init;
+	inits = add_stmt_to_compound (inits, init);
       }
 
   *initp = inits;

@@ -2446,7 +2446,7 @@ do_static_initialization (tree decl, tree init)
   /* If we're using __cxa_atexit, register a a function that calls the
      destructor for the object.  */
   if (flag_use_cxa_atexit)
-    register_dtor_fn (decl);
+    finish_expr_stmt (register_dtor_fn (decl));
 
   /* Finish up.  */
   finish_static_initialization_or_destruction (guard_if_stmt);
