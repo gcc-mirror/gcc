@@ -2792,12 +2792,14 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h
 install-gcc-tooldir:
 	$(mkinstalldirs) $(DESTDIR)$(gcc_tooldir)
 
-macro_list : $(GCC_PASSES)
+macro_list: s-macro_list; @true
+s-macro_list : $(GCC_PASSES) 
 	echo | $(GCC_FOR_TARGET) -E -dM - | \
 	  sed -n 's/^#define \([^_][a-zA-Z0-9_]*\).*/\1/p ; \
 		s/^#define \(_[^_A-Z][a-zA-Z0-9_]*\).*/\1/p' | \
-	  sort -u > tmp-$@
-	$(SHELL) $(srcdir)/../move-if-change tmp-$@ $@
+	  sort -u > tmp-macro_list
+	$(SHELL) $(srcdir)/../move-if-change tmp-macro_list macro_list
+	$(STAMP) s-macro_list
 
 # Build fixed copies of system files.
 stmp-fixinc: gsyslimits.h macro_list \
