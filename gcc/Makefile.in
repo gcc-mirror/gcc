@@ -1491,8 +1491,16 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 	done
 # Put assert.h in /usr/local/include, so it won't override GNU libc's assert.h.
 # Don't replace the assert.h already there if it is not from GCC.
-	if [ -f $(assertdir)/assert.h ] && ! grep "__eprintf" $(assertdir)/assert.h; \
-	then true; \
+# This code would be simpler if it tested for -f ... && ! grep ...
+# but supposedly the ! operator is missing in sh on some systems.
+	if [ -f $(assertdir)/assert.h ]; \
+	then \
+	  if grep "__eprintf" $(assertdir)/assert.h; \
+	    rm -f $(assertdir)/assert.h; \
+	    $(INSTALL_DATA) $(srcdir)/assert.h $(assertdir)/assert.h; \
+	    chmod a-x $(assertdir)/include/assert.h; \
+	  else true; \
+	  fi; \
 	else \
 	  rm -f $(assertdir)/assert.h; \
 	  $(INSTALL_DATA) $(srcdir)/assert.h $(assertdir)/assert.h; \
