@@ -1,3 +1,9 @@
+Mon May 10 07:28:10 1999  Bruce Korb <autogen@autogen.freeservers.com>
+
+	* fixinc/inclhack.def(arm_norcroft_hint): check before fixing
+	(no_double_slash): portability
+	(math_exception): added reminder comment
+
 Mon May 10 01:28:10 1999  Craig Burley  <craig@jcb-sc.com>
 
 	From Fri May 7  9:31:41 1999 Donn Terry (donn@interix.com):
