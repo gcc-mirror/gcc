@@ -2218,8 +2218,11 @@ main (argc, argv)
   } else {
     /* Read a file whose size we can determine in advance.
        For the sake of VMS, st.st_size is just an upper bound.  */
-    fp->buf = (U_CHAR *) xmalloc (st.st_size + 2);
-    fp->length = safe_read (f, (char *) fp->buf, st.st_size);
+    size_t s = (size_t) st.st_size;
+    if (s != st.st_size || s + 2 < s)
+      memory_full ();
+    fp->buf = (U_CHAR *) xmalloc (s + 2);
+    fp->length = safe_read (f, (char *) fp->buf, s);
     if (fp->length < 0) goto perror;
   }
   fp->bufp = fp->buf;
@@ -5091,12 +5094,15 @@ finclude (f, inc, op, system_header_p, dirptr)
   fp->dir = dirptr;
 
   if (S_ISREG (inc->st.st_mode)) {
-    fp->buf = (U_CHAR *) xmalloc (inc->st.st_size + 2);
+    size_t s = (size_t) inc->st.st_size;
+    if (s != inc->st.st_size || s + 2 < s)
+      memory_full ();
+    fp->buf = (U_CHAR *) xmalloc (s + 2);
     fp->bufp = fp->buf;
 
-    /* Read the file contents, knowing that inc->st.st_size is an upper bound
+    /* Read the file contents, knowing that s is an upper bound
        on the number of bytes we can read.  */
-    fp->length = safe_read (f, (char *) fp->buf, inc->st.st_size);
+    fp->length = safe_read (f, (char *) fp->buf, s);
     if (fp->length < 0) goto nope;
   }
   else if (S_ISDIR (inc->st.st_mode)) {
@@ -5211,8 +5217,11 @@ check_precompiled (pcf, st, fname, limit)
 
   if (S_ISREG (st->st_mode))
     {
-      buf = xmalloc (st->st_size + 2);
-      length = safe_read (pcf, buf, st->st_size);
+      size_t s = (size_t) st->st_size;
+      if (s != st->st_size || s + 2 < s)
+	memory_full ();
+      buf = xmalloc (s + 2);
+      length = safe_read (pcf, buf, s);
       if (length < 0)
 	goto nope;
     }
