@@ -71,20 +71,20 @@ enum alpha_trap_precision
 {
   ALPHA_TP_PROG,	/* No precision (default).  */
   ALPHA_TP_FUNC,      	/* Trap contained within originating function.  */
-  ALPHA_TP_INSN		/* Instruction accuracy and code is resumption safe. */
+  ALPHA_TP_INSN		/* Instruction accuracy and code is resumption safe.  */
 };
 
 enum alpha_fp_rounding_mode
 {
   ALPHA_FPRM_NORM,	/* Normal rounding mode.  */
   ALPHA_FPRM_MINF,	/* Round towards minus-infinity.  */
-  ALPHA_FPRM_CHOP,	/* Chopped rounding mode (towards 0). */
+  ALPHA_FPRM_CHOP,	/* Chopped rounding mode (towards 0).  */
   ALPHA_FPRM_DYN	/* Dynamic rounding mode.  */
 };
 
 enum alpha_fp_trap_mode
 {
-  ALPHA_FPTM_N,		/* Normal trap mode. */
+  ALPHA_FPTM_N,		/* Normal trap mode.  */
   ALPHA_FPTM_U,		/* Underflow traps enabled.  */
   ALPHA_FPTM_SU,	/* Software completion, w/underflow traps */
   ALPHA_FPTM_SUI	/* Software completion, w/underflow & inexact traps */
@@ -113,7 +113,7 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define MASK_GAS	(1 << 2)
 #define TARGET_GAS	(target_flags & MASK_GAS)
 
-/* This means that we should mark procedures as IEEE conformant. */
+/* This means that we should mark procedures as IEEE conformant.  */
 
 #define MASK_IEEE_CONFORMANT (1 << 3)
 #define TARGET_IEEE_CONFORMANT	(target_flags & MASK_IEEE_CONFORMANT)
@@ -298,13 +298,13 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 
 /* Attempt to describe CPU characteristics to the preprocessor.  */
 
-/* Corresponding to amask... */
+/* Corresponding to amask...  */
 #define CPP_AM_BWX_SPEC	"-D__alpha_bwx__ -Acpu=bwx"
 #define CPP_AM_MAX_SPEC	"-D__alpha_max__ -Acpu=max"
 #define CPP_AM_FIX_SPEC	"-D__alpha_fix__ -Acpu=fix"
 #define CPP_AM_CIX_SPEC	"-D__alpha_cix__ -Acpu=cix"
 
-/* Corresponding to implver... */
+/* Corresponding to implver...  */
 #define CPP_IM_EV4_SPEC	"-D__alpha_ev4__ -Acpu=ev4"
 #define CPP_IM_EV5_SPEC	"-D__alpha_ev5__ -Acpu=ev5"
 #define CPP_IM_EV6_SPEC	"-D__alpha_ev6__ -Acpu=ev6"
@@ -420,7 +420,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 
 /* target machine storage layout */
 
-/* Define to enable software floating point emulation. */
+/* Define to enable software floating point emulation.  */
 #define REAL_ARITHMETIC
 
 /* Define the size of `int'.  The default is the same as the word size.  */
@@ -482,7 +482,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
    numbered.
 
    For Alpha we can decide arbitrarily since there are no machine instructions
-   for them.  Might as well be consistent with bytes. */
+   for them.  Might as well be consistent with bytes.  */
 #define WORDS_BIG_ENDIAN 0
 
 /* number of bits in an addressable storage unit */
@@ -737,7 +737,7 @@ enum reg_class {
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES				\
  {"NO_REGS", "R24_REG", "R25_REG", "R27_REG",	\
@@ -867,7 +867,7 @@ enum reg_class {
    QImode and HImode from an aligned address to a general register
    unless byte instructions are permitted.
    We also cannot load an unaligned address or a paradoxical SUBREG into an
-   FP register.   */
+   FP register.  */
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,IN) \
   secondary_reload_class((CLASS), (MODE), (IN), 1)
@@ -972,7 +972,7 @@ extern int alpha_memory_latency;
    We have two registers that can be eliminated on the Alpha.  First, the
    frame pointer register can often be eliminated in favor of the stack
    pointer register.  Secondly, the argument pointer register can always be
-   eliminated; it is replaced with either the stack or frame pointer. */
+   eliminated; it is replaced with either the stack or frame pointer.  */
 
 /* This is an array of structures.  Each structure initializes one pair
    of eliminable registers.  The "from" register number is given first,
@@ -1136,7 +1136,7 @@ extern int alpha_memory_latency;
    reference.  If nonzero for an argument, a copy of that argument is
    made in memory and a pointer to the argument is passed instead of
    the argument itself.  The pointer is passed in whatever way is
-   appropriate for passing a pointer to that type. */
+   appropriate for passing a pointer to that type.  */
 
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
   ((MODE) == TFmode || (MODE) == TCmode)
@@ -1266,7 +1266,7 @@ extern struct alpha_compare alpha_compare;
 
 /* Output assembler code to FILE to initialize this source file's
    basic block profiling info, if that has not already been done.
-   This assumes that __bb_init_func doesn't garble a1-a5. */
+   This assumes that __bb_init_func doesn't garble a1-a5.  */
 
 #define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)			\
     do {							\
@@ -1352,7 +1352,7 @@ do {						\
 
 #define RETURN_ADDR_RTX  alpha_return_addr
 
-/* Before the prologue, RA lives in $26. */
+/* Before the prologue, RA lives in $26.  */
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, 26)
 #define DWARF_FRAME_RETURN_COLUMN DWARF_FRAME_REGNUM (26)
 
@@ -1428,7 +1428,7 @@ do {						\
    that may eliminate to the frame pointer.  These will be allowed to
    have offsets greater than 32K.  This is done because register
    elimination offsets will change the hi/lo split, and if we split
-   before reload, we will require additional instructions.   */
+   before reload, we will require additional instructions.  */
 #define NONSTRICT_REG_OK_FP_BASE_P(X)		\
   (REGNO (X) == 31 || REGNO (X) == 63		\
    || (REGNO (X) >= FIRST_PSEUDO_REGISTER	\
@@ -1501,7 +1501,7 @@ do {									     \
 
 #define ADDRESS_COST(X)  0
 
-/* Machine-dependent reorg pass.   */
+/* Machine-dependent reorg pass.  */
 #define MACHINE_DEPENDENT_REORG(X)	alpha_reorg(X)
 
 /* Specify the machine mode that this machine uses
@@ -1544,7 +1544,7 @@ do {									     \
    move-instruction pairs, we will do a movstr or libcall instead.
 
    Without byte/word accesses, we want no more than four instructions;
-   with, several single byte accesses are better.   */
+   with, several single byte accesses are better.  */
 
 #define MOVE_RATIO  (TARGET_BWX ? 7 : 2)
 
@@ -1613,7 +1613,7 @@ do {									     \
    between pointers and any other objects of this machine mode.  */
 #define Pmode DImode
 
-/* Mode of a function address in a call instruction (for indexing purposes). */
+/* Mode of a function address in a call instruction (for indexing purposes).  */
 
 #define FUNCTION_MODE Pmode
 
@@ -1630,7 +1630,7 @@ do {									     \
 #define NO_FUNCTION_CSE
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
-   few bits. */
+   few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
 /* Compute the cost of computing a constant rtl expression RTX
@@ -1716,7 +1716,7 @@ do {									     \
     if (GET_CODE (XEXP (X, 1)) == CONST_INT		\
 	&& INTVAL (XEXP (X, 1)) <= 3)			\
       break;						\
-    /* ... fall through ... */				\
+    /* ... fall through ...  */				\
   case ASHIFTRT:  case LSHIFTRT:			\
     switch (alpha_cpu)					\
       {							\
@@ -1776,7 +1776,7 @@ do {									     \
   case NEG:  case ABS:					\
     if (! FLOAT_MODE_P (GET_MODE (X)))			\
       break;						\
-    /* ... fall through ... */				\
+    /* ... fall through ...  */				\
   case FLOAT:  case UNSIGNED_FLOAT:  case FIX:  case UNSIGNED_FIX: \
   case FLOAT_EXTEND:  case FLOAT_TRUNCATE:		\
     switch (alpha_cpu)					\
@@ -1847,7 +1847,7 @@ literal_section ()						\
 
 /* If a variable is weakened, made one only or moved into a different
    section, it may be necessary to redo the section info to move the
-   variable out of sdata. */
+   variable out of sdata.  */
 
 #define REDO_SECTION_INFO_P(DECL)                                       \
    ((TREE_CODE (DECL) == VAR_DECL)                                      \
@@ -1906,7 +1906,7 @@ do {						\
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
   do { fputs ("\t.globl ", FILE); assemble_name (FILE, NAME); fputs ("\n", FILE);} while (0)
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #define USER_LABEL_PREFIX ""
 
@@ -1918,7 +1918,7 @@ do {						\
 
 /* This is how to output a label for a jump table.  Arguments are the same as
    for ASM_OUTPUT_INTERNAL_LABEL, except the insn for the jump table is
-   passed. */
+   passed.  */
 
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLEINSN)	\
 { ASM_OUTPUT_ALIGN (FILE, 2); ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM); }
@@ -2328,7 +2328,7 @@ do {							\
    mips-tdump.c to print them out.
 
    These must match the corresponding definitions in gdb/mipsread.c.
-   Unfortunately, gcc and gdb do not currently share any directories. */
+   Unfortunately, gcc and gdb do not currently share any directories.  */
 
 #define CODE_MASK 0x8F300
 #define MIPS_IS_STAB(sym) (((sym)->index & 0xFFF00) == CODE_MASK)
@@ -2347,5 +2347,5 @@ do {							\
 /* The system headers under Alpha systems are generally C++-aware.  */
 #define NO_IMPLICIT_EXTERN_C
 
-/* Generate calls to memcpy, etc., not bcopy, etc. */
+/* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS 1

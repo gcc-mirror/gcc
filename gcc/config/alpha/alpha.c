@@ -50,7 +50,7 @@ Boston, MA 02111-1307, USA.  */
 /* External data.  */
 extern int rtx_equal_function_value_matters;
 
-/* Specify which cpu to schedule for. */
+/* Specify which cpu to schedule for.  */
 
 enum processor_type alpha_cpu;
 static const char * const alpha_cpu_name[] = 
@@ -217,7 +217,7 @@ static unsigned int unicosmk_section_type_flags PARAMS ((tree, const char *,
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Parse target option strings. */
+/* Parse target option strings.  */
 
 void
 override_options ()
@@ -365,7 +365,7 @@ override_options ()
 	error ("bad value `%s' for -mcpu switch", alpha_tune_string);
     }
 
-  /* Do some sanity checks on the above options. */
+  /* Do some sanity checks on the above options.  */
 
   if (TARGET_ABI_UNICOSMK && alpha_fptm != ALPHA_FPTM_N)
     {
@@ -420,7 +420,7 @@ override_options ()
 	{
 	  { 3, 30, -1 },	/* ev4 -- Bcache is a guess */
 	  { 2, 12, 38 },	/* ev5 -- Bcache from PC164 LMbench numbers */
-	  { 3, 12, 30 },	/* ev6 -- Bcache from DS20 LMbench. */
+	  { 3, 12, 30 },	/* ev6 -- Bcache from DS20 LMbench.  */
 	};
 
 	lat = alpha_mlat_string[1] - '0';
@@ -460,7 +460,7 @@ override_options ()
 
   /* Align labels and loops for optimal branching.  */
   /* ??? Kludge these by not doing anything if we don't optimize and also if
-     we are writing ECOFF symbols to work around a bug in DEC's assembler. */
+     we are writing ECOFF symbols to work around a bug in DEC's assembler.  */
   if (optimize > 0 && write_symbols != SDB_DEBUG)
     {
       if (align_loops <= 0)
@@ -812,7 +812,7 @@ input_operand (op, mode)
     case SUBREG:
       if (register_operand (op, mode))
 	return 1;
-      /* ... fall through ... */
+      /* ... fall through ...  */
     case MEM:
       return ((TARGET_BWX || (mode != HImode && mode != QImode))
 	      && general_operand (op, mode));
@@ -2011,7 +2011,7 @@ alpha_emit_set_const (target, mode, c, n)
   rtx pat;
   int i;
 
-  /* Try 1 insn, then 2, then up to N. */
+  /* Try 1 insn, then 2, then up to N.  */
   for (i = 1; i <= n; i++)
     if ((pat = alpha_emit_set_const_1 (target, mode, c, i)) != 0)
       return pat;
@@ -2047,7 +2047,7 @@ alpha_emit_set_const_1 (target, mode, c, n)
 
   /* If this is a sign-extended 32-bit constant, we can do this in at most
      three insns, so do it if we have enough insns left.  We always have
-     a sign-extended 32-bit constant when compiling on a narrow machine.   */
+     a sign-extended 32-bit constant when compiling on a narrow machine.  */
 
   if (HOST_BITS_PER_WIDE_INT != 64
       || c >> 31 == -1 || c >> 31 == 0)
@@ -2162,7 +2162,7 @@ alpha_emit_set_const_1 (target, mode, c, n)
 
       /* Now try high-order 1 bits.  We get that with a sign-extension.
 	 But one bit isn't enough here.  Be careful to avoid shifting outside
-	 the mode and to avoid shifting outside the host wide int size. */
+	 the mode and to avoid shifting outside the host wide int size.  */
 
       if ((bits = (MIN (HOST_BITS_PER_WIDE_INT, GET_MODE_SIZE (mode) * 8)
 		   - floor_log2 (~ c) - 2)) > 0)
@@ -2607,7 +2607,7 @@ alpha_emit_conditional_branch (code)
 
     case NE:
     case ORDERED:
-      /* These must be reversed. */
+      /* These must be reversed.  */
       cmp_code = reverse_condition (code), branch_code = EQ;
       break;
 
@@ -2819,7 +2819,7 @@ alpha_emit_setcc (code)
    a conditional move (if_then_else CMP ...).
    If both of the operands that set cc0 are non-zero we must emit
    an insn to perform the compare (it can't be done within
-   the conditional move). */
+   the conditional move).  */
 rtx
 alpha_emit_conditional_move (cmp, mode)
      rtx cmp;
@@ -2894,7 +2894,7 @@ alpha_emit_conditional_move (cmp, mode)
     }
 
   /* We may be able to use a conditional move directly.
-     This avoids emitting spurious compares. */
+     This avoids emitting spurious compares.  */
   if (signed_comparison_operator (cmp, VOIDmode)
       && (!fp_p || local_fast_math)
       && (op0 == CONST0_RTX (cmp_mode) || op1 == CONST0_RTX (cmp_mode)))
@@ -2915,7 +2915,7 @@ alpha_emit_conditional_move (cmp, mode)
       break;
 
     case NE:
-      /* This must be reversed. */
+      /* This must be reversed.  */
       code = reverse_condition (code);
       cmov_code = EQ;
       break;
@@ -2992,7 +2992,7 @@ alpha_split_conditional_move (code, dest, cond, t_rtx, f_rtx)
   if (f == 0 && exact_log2 (diff) > 0
       /* On EV6, we've got enough shifters to make non-arithmatic shifts
 	 viable over a longer latency cmove.  On EV5, the E0 slot is a
-	 scarce resource, and on EV4 shift has the same latency as a cmove. */
+	 scarce resource, and on EV4 shift has the same latency as a cmove.  */
       && (diff <= 8 || alpha_cpu == PROCESSOR_EV6))
     {
       tmp = gen_rtx_fmt_ee (code, DImode, cond, const0_rtx);
@@ -4689,7 +4689,7 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
       break;
     }
 
-  /* Otherwise, return the default cost. */
+  /* Otherwise, return the default cost.  */
   return cost;
 }
 
@@ -4798,7 +4798,7 @@ alpha_ra_ever_killed ()
 
 
 /* Return the trap mode suffix applicable to the current
-   instruction, or NULL.   */
+   instruction, or NULL.  */
 
 static const char *
 get_trap_mode_suffix ()
@@ -4865,7 +4865,7 @@ get_trap_mode_suffix ()
 }
 
 /* Return the rounding mode suffix applicable to the current
-   instruction, or NULL.   */
+   instruction, or NULL.  */
 
 static const char *
 get_round_mode_suffix ()
@@ -5282,7 +5282,7 @@ alpha_initialize_trampoline (tramp, fnaddr, cxt, fnofs, cxtofs, jmpofs)
   emit_move_insn (gen_rtx_MEM (mode, addr), cxt);
 
   /* This has been disabled since the hint only has a 32k range, and in
-     no existing OS is the stack within 32k of the text segment. */
+     no existing OS is the stack within 32k of the text segment.  */
   if (0 && jmpofs >= 0)
     {
       /* Compute hint value.  */
@@ -5597,7 +5597,7 @@ alpha_va_arg (valist, type)
 /* These variables are used for communication between the following functions.
    They indicate various things about the current function being compiled
    that are used to tell what kind of prologue, epilogue and procedure
-   descriptior to generate. */
+   descriptior to generate.  */
 
 /* Nonzero if we need a stack procedure.  */
 static int alpha_is_stack_procedure;
@@ -6318,7 +6318,7 @@ alpha_start_function (file, fnname, decl)
     {
       /* Set flags in procedure descriptor to request IEEE-conformant
 	 math-library routines.  The value we set it to is PDSC_EXC_IEEE
-	 (/usr/include/pdsc.h). */
+	 (/usr/include/pdsc.h).  */
       fputs ("\t.eflag 48\n", file);
     }
 
@@ -6514,7 +6514,7 @@ alpha_expand_epilogue ()
 	  FRP (emit_move_insn (sa_reg, sa_reg_exp));
 	}
 	  
-      /* Restore registers in order, excepting a true frame pointer. */
+      /* Restore registers in order, excepting a true frame pointer.  */
 
       mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
       if (! eh_ofs)

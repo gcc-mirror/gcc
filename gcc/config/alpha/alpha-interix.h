@@ -129,7 +129,7 @@ const_section ()							\
 #define INT_ASM_OP		"\t.long\t"
 
 /* The linker will take care of this, and having them causes problems with
-   ld -r (specifically -rU). */
+   ld -r (specifically -rU).  */
 #define CTOR_LISTS_DEFINED_EXTERNALLY 1
 
 #define SET_ASM_OP	"\t.set\t"
@@ -157,11 +157,11 @@ while (0)
 #define PCC_BITFIELD_TYPE_TEST TYPE_NATIVE(rec)
 #define GROUP_BITFIELDS_BY_ALIGN TYPE_NATIVE(rec)
 
-/* DWARF2 Unwinding doesn't work with exception handling yet. */
+/* DWARF2 Unwinding doesn't work with exception handling yet.  */
 #undef DWARF2_UNWIND_INFO
 #define DWARF2_UNWIND_INFO 0
 
-/* Don't assume anything about the header files. */
+/* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
 /* The definition of this macro implies that there are cases where
@@ -169,7 +169,7 @@ while (0)
 
    On NT (according to the spec) anything except strings/array that fits
    in 64 bits is returned in the registers (this appears to differ from
-   the rest of the Alpha family). */
+   the rest of the Alpha family).  */
 
 #undef RETURN_IN_MEMORY
 #define RETURN_IN_MEMORY(TYPE) \
@@ -189,7 +189,7 @@ while (0)
 }
 
 /* The current Interix assembler (consistent with the DEC documentation)
-   uses a=b NOT .set a,b; .set is for assembler options. */
+   uses a=b NOT .set a,b; .set is for assembler options.  */
 #undef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
 #define ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL(FILE, SY, HI, LO)    	\
  do {									\

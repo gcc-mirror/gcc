@@ -1,5 +1,15 @@
 2001-11-12  Kazu Hirata  <kazu@hxi.com>
 
+	* config/alpha/alpha-interix.h: Fix comment formatting.
+	* config/alpha/alpha.c: Likewise.
+	* config/alpha/alpha.h: Likewise.
+	* config/alpha/alpha32.h: Likewise.
+	* config/alpha/freebsd.h: Likewise.
+	* config/alpha/unicosmk.h: Likewise.
+	* config/alpha/vms.h: Likewise.
+
+2001-11-12  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.c (get_shift_alg): Remove redundant code.
 
 2001-11-12  Jakub Jelinek  <jakub@redhat.com>
