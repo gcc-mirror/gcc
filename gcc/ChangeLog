@@ -1,5 +1,9 @@
 2003-06-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/avr/avr.c: Fix a comment typo.
+
+2003-06-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/avr/avr-protos.h: Replace avr_simplify_comparision_p
 	with avr_simplify_comparison_p.
 	* config/avr/avr.c: Likewise.
