@@ -1555,7 +1555,7 @@ if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   fi
 fi
 
-# parameter to atof not const on DECstation Ultrix V4.0.
+# parameter to atof not const on DECstation Ultrix V4.0 and NEWS-OS 4.2R.
 # also get rid of bogus inline definitions in HP-UX 8.0
 file=math.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
@@ -1566,7 +1566,7 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, non-const arg
-  sed -e 's@atof( char \*__nptr );@atof( const char *__nptr );@' \
+  sed -e 's@atof(\([ 	]*char[ 	]*\*[^)]*\))@atof(const \1)@' \
       -e 's@inline int abs(int [a-z][a-z]*) {.*}@@' \
       -e 's@inline double abs(double [a-z][a-z]*) {.*}@@' \
       -e 's@inline int sqr(int [a-z][a-z]*) {.*}@@' \
