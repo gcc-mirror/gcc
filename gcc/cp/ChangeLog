@@ -1,3 +1,26 @@
+2000-06-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (struct language_function): Remove temp_name_counter.
+	(temp_name_counter): Remove.
+	(get_temp_name): Change prototype.
+	(get_guard): New function.
+	(get_guard_cond): Likewise.
+	(set_guard): Likewise.
+	* cvt.c (build_up_reference): Adjust call to get_temp_name.
+	* decl.c (expand_static_init): Use get_guard and friends to
+	implement guard variables.
+	* decl2.c (get_temp_name): Assume that the variables created are
+	always static.
+	(get_sentry): Rename to ...
+	(get_guard): ... this.  Implement new ABI guard	variables.
+	(get_guard_bits): New function.
+	(get_guard_cond): Likewise.
+	(set_guard): Likewise.
+	(start_static_initialization_or_destruction): Use them.
+	(do_static_initialization): Replace sentry with guard throughout.
+	(do_static_destruction): Likewise.
+	* init.c (create_temporary_var): Add comment.
+	
 2000-06-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (flag_const_strings): Remove.

@@ -900,7 +900,6 @@ struct language_function
   int returns_value;
   int returns_null;
   int parms_stored;
-  int temp_name_counter;
   int in_function_try_handler;
   int x_expanding_p;
   int name_declared;
@@ -1003,11 +1002,6 @@ struct language_function
    function tables in this function.  */
 
 #define vtbls_set_up_p cp_function_chain->vtbls_set_up_p
-
-/* Used to help generate temporary names which are unique within
-   a function.  Reset to 0 by start_function.  */
-
-#define temp_name_counter cp_function_chain->temp_name_counter
 
 /* Non-zero if we should generate RTL for functions that we process.
    When this is zero, we just accumulate tree structure, without
@@ -4075,7 +4069,7 @@ extern tree constructor_name_full		PARAMS ((tree));
 extern tree constructor_name			PARAMS ((tree));
 extern void setup_vtbl_ptr			PARAMS ((tree, tree));
 extern void defer_fn             		PARAMS ((tree));
-extern tree get_temp_name			PARAMS ((tree, int));
+extern tree get_temp_name			PARAMS ((tree));
 extern void finish_anon_union			PARAMS ((tree));
 extern tree finish_table			PARAMS ((tree, tree, tree, int));
 extern void finish_builtin_type			PARAMS ((tree, const char *,
@@ -4110,6 +4104,9 @@ extern tree handle_class_head			PARAMS ((tree, tree, tree));
 extern tree lookup_arg_dependent                PARAMS ((tree, tree, tree));
 extern void finish_static_data_member_decl      PARAMS ((tree, tree, tree, int));
 extern tree build_artificial_parm               PARAMS ((tree, tree));
+extern tree get_guard                           PARAMS ((tree));
+extern tree get_guard_cond                      PARAMS ((tree));
+extern tree set_guard                           PARAMS ((tree));
 
 /* in parse.y */
 extern void cp_parse_init			PARAMS ((void));

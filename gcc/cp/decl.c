@@ -8572,19 +8572,19 @@ expand_static_init (decl, init)
   else if (! toplevel_bindings_p ())
     {
       /* Emit code to perform this initialization but once.  */
-      tree temp;
       tree if_stmt;
       tree then_clause;
       tree assignment;
-      tree temp_init;
+      tree guard;
+      tree guard_init;
 
       /* Emit code to perform this initialization but once.  This code
 	 looks like:
 
-           static int temp = 0;
-           if (!temp) {
+           static int guard = 0;
+           if (!guard) {
              // Do initialization.
-	     temp = 1;
+	     guard = 1;
 	     // Register variable for destruction at end of program.
 	   }
 
@@ -8602,14 +8602,13 @@ expand_static_init (decl, init)
          In theory, this process should be thread-safe, too; multiple
 	 threads should not be able to initialize the variable more
 	 than once.  We don't yet attempt to ensure thread-safety.  */
-      temp = get_temp_name (integer_type_node, 1);
-      rest_of_decl_compilation (temp, NULL_PTR, 0, 0);
+
+      /* Create the guard variable.  */
+      guard = get_guard (decl);
 
       /* Begin the conditional initialization.  */
       if_stmt = begin_if_stmt ();
-      finish_if_stmt_cond (cp_build_binary_op (EQ_EXPR, temp,
-					       integer_zero_node),
-			   if_stmt);
+      finish_if_stmt_cond (get_guard_cond (guard), if_stmt);
       then_clause = begin_compound_stmt (/*has_no_scope=*/0);
 
       /* Do the initialization itself.  */
@@ -8631,16 +8630,16 @@ expand_static_init (decl, init)
 	 the assignment to TEMP into a single expression, ensuring
 	 that when we call finish_expr_stmt the cleanups will not be
 	 run until after TEMP is set to 1.  */
-      temp_init = build_modify_expr (temp, NOP_EXPR, integer_one_node);
+      guard_init = set_guard (guard);
       if (assignment)
 	{
 	  assignment = tree_cons (NULL_TREE, assignment,
 				  build_tree_list (NULL_TREE,
-						   temp_init));
+						   guard_init));
 	  assignment = build_compound_expr (assignment);
 	}
       else
-	assignment = temp_init;
+	assignment = guard_init;
       finish_expr_stmt (assignment);
 
       /* Use atexit to register a function for destroying this static

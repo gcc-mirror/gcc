@@ -2729,6 +2729,8 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
     return cp_convert (void_type_node, body);
 }
 
+/* Create an unnamed variable of the indicated TYPE.  */ 
+
 tree
 create_temporary_var (type)
      tree type;
