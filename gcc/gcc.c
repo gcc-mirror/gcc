@@ -4963,7 +4963,7 @@ main (argc, argv)
       if (! verbose_flag)
 	{
 	  printf ("\nFor bug reporting instructions, please see:\n");
-	  printf ("<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>.\n");
+	  printf ("%s.\n", GCCBUGURL);
 	  
 	  exit (0);
 	}
@@ -5156,7 +5156,7 @@ main (argc, argv)
   if (print_help_list)
     {
       printf ("\nFor bug reporting instructions, please see:\n");
-      printf ("<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>\n");
+      printf ("%s\n", GCCBUGURL);
     }
   
   exit (error_count > 0 ? (signal_count ? 2 : 1) : 0);

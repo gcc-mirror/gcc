@@ -22,6 +22,11 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __GCC_SYSTEM_H__
 #define __GCC_SYSTEM_H__
 
+/* This is the location of the online document giving information how
+   to report bugs. If you change this string, also check for strings
+   not under control of the preprocessor.  */
+#define GCCBUGURL "<URL:http://www.gnu.org/software/gcc/bugs.html>"
+
 /* We must include stdarg.h/varargs.h before stdio.h. */
 #ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
@@ -399,8 +404,8 @@ extern void fatal PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORE
 #else
 #define abort() fatal ("Internal compiler error in `%s', at %s:%d\n"	\
   "Please submit a full bug report.\n"	\
-  "See <URL:http://www.gnu.org/software/gcc/faq.html#bugreport> for instructions.", \
-  __PRETTY_FUNCTION__, trim_filename (__FILE__), __LINE__)
+  "See %s for instructions.", \
+  __PRETTY_FUNCTION__, trim_filename (__FILE__), __LINE__, GCCBUGURL)
 #endif /* recent gcc */
 
 /* trim_filename is in toplev.c.  Define a stub macro for files that

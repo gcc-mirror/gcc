@@ -1,3 +1,7 @@
+Fri Feb 18 13:36:50 2000  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* g77spec.c (lang_specific_driver): Use GCCBUGURL.
+
 Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95.2 Released.

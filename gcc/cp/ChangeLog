@@ -1,3 +1,7 @@
+2000-02-18  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* typeck2.c (my_friendly_abort): Use GCCBUGURL.
+
 1999-11-01  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (maybe_make_one_only): Always make things comdat on

@@ -2263,7 +2263,7 @@ convention, in which bug reports for tool ``foo'' are sent
 to @samp{bug-foo@@gnu.org}, the address @samp{bug-gcc@@gnu.org}
 may also be used; it will forward to the address given above.
 
-Please read @samp{<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>} for
+Please read @samp{<URL:http://www.gnu.org/software/gcc/bugs.html>} for
 bug reporting instructions before you post a bug report.
 
 Often people think of posting bug reports to the newsgroup instead of
@@ -2287,7 +2287,7 @@ Boston, MA 02111-1307, USA
 @cindex compiler bugs, reporting
 
 You may find additional and/or more up-to-date instructions at
-@samp{<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>}.
+@samp{<URL:http://www.gnu.org/software/gcc/bugs.html>}.
 
 The fundamental principle of reporting bugs usefully is this:
 @strong{report all the facts}.  If you are not sure whether to state a
