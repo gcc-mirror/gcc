@@ -1341,10 +1341,10 @@ immed_double_const (i0, i1, mode)
      freed memory.  So switch to saveable_obstack for this allocation
      and then switch back if we were in current_obstack.  */
 
-  in_current_obstack = rtl_in_saveable_obstack ();
+  push_obstacks_nochange ();
+  rtl_in_saveable_obstack ();
   r = gen_rtx (CONST_DOUBLE, mode, 0, i0, i1);
-  if (in_current_obstack)
-    rtl_in_current_obstack ();
+  pop_obstacks ();
 
   /* Don't touch const_double_chain in nested function;
      see force_const_mem.  */
@@ -1410,12 +1410,12 @@ immed_real_const_1 (d, mode)
      freed memory.  So switch to saveable_obstack for this allocation
      and then switch back if we were in current_obstack.  */
 
-  in_current_obstack = rtl_in_saveable_obstack ();
+  push_obstacks_nochange ();
+  rtl_in_saveable_obstack ();
   r = rtx_alloc (CONST_DOUBLE);
   PUT_MODE (r, mode);
   bcopy (&u, &CONST_DOUBLE_LOW (r), sizeof u);
-  if (in_current_obstack)
-    rtl_in_current_obstack ();
+  pop_obstacks ();
 
   /* Don't touch const_double_chain in nested function;
      see force_const_mem.  */
