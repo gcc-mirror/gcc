@@ -1,9 +1,8 @@
 2002-04-11  Jakub Jelinek  <jakub@redhat.com>
 
-	PR c/6223
-	* combine.c (if_then_else_cond): Use trunc_int_for_mode on nz.
-
 	* gcc.dg/20020411-1.c: New test.
+
+	* gcc.c-torture/execute/20020411-1.c: New test.
 
 2002-04-10  Janis Johnson  <janis187@us.ibm.com>
 
