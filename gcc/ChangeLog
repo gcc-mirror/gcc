@@ -1,3 +1,7 @@
+2000-10-31  Richard Henderson  <rth@redhat.com>
+
+	* c-semantics.c (genrtl_do_stmt): Special case do/while(0).
+
 2000-10-31  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/unknown-elf.h (UNIQUE_SECTION_P): Do not allow

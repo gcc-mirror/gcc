@@ -480,19 +480,28 @@ void
 genrtl_do_stmt (t)
      tree t;
 {
-  tree cond;
-  emit_nop ();
-  emit_line_note (input_filename, lineno);
-  expand_start_loop_continue_elsewhere (1);
+  tree cond = DO_COND (t);
 
-  expand_stmt (DO_BODY (t));
+  /* Recognize the common special-case of do { ... } while (0) and do
+     not emit the loop widgetry in this case.  In particular this
+     avoids cluttering the rtl with dummy loop notes, which can affect
+     alignment of adjacent labels.  */
+  if (cond == integer_zero_node)
+    expand_stmt (DO_BODY (t));
+  else
+    {
+      emit_nop ();
+      emit_line_note (input_filename, lineno);
+      expand_start_loop_continue_elsewhere (1);
 
-  expand_loop_continue_here ();
+      expand_stmt (DO_BODY (t));
 
-  cond = expand_cond (DO_COND (t));
-  emit_line_note (input_filename, lineno);
-  expand_exit_loop_if_false (0, cond);
-  expand_end_loop ();
+      expand_loop_continue_here ();
+      cond = expand_cond (cond);
+      emit_line_note (input_filename, lineno);
+      expand_exit_loop_if_false (0, cond);
+      expand_end_loop ();
+    }
 }
 
 /* Build the node for a return statement and return it. */
