@@ -907,7 +907,10 @@ allocate_dynamic_stack_space (size, target, known_align)
      momentarily mis-aligning the stack.  */
 
 #ifdef STACK_BOUNDARY
+#ifndef SETJMP_VIA_SAVE_AREA /* If we added a variable amount to SIZE,
+				we can no longer assume it is aligned.  */
   if (known_align % STACK_BOUNDARY != 0)
+#endif
     size = round_push (size);
 #endif
 
