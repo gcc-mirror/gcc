@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* Random number that should be large enough for all purposes.  */
 #define MAX_RECOG_ALTERNATIVES 30
+#define recog_memoized(I) (INSN_CODE (I) >= 0 \
+			   ? INSN_CODE (I) : recog_memoized_1 (I))
 
 /* Types of operands.  */
 enum op_type {
@@ -69,7 +71,7 @@ struct operand_alternative
 
 extern void init_recog			PARAMS ((void));
 extern void init_recog_no_volatile	PARAMS ((void));
-extern int recog_memoized		PARAMS ((rtx));
+extern int recog_memoized_1		PARAMS ((rtx));
 extern int check_asm_operands		PARAMS ((rtx));
 extern int asm_operand_ok		PARAMS ((rtx, const char *));
 extern int validate_change		PARAMS ((rtx, rtx *, rtx, int));
@@ -77,6 +79,7 @@ extern int apply_change_group		PARAMS ((void));
 extern int num_validated_changes	PARAMS ((void));
 extern void cancel_changes		PARAMS ((int));
 extern int constrain_operands		PARAMS ((int));
+extern int constrain_operands_cached	PARAMS ((int));
 extern int memory_address_p		PARAMS ((enum machine_mode, rtx));
 extern int strict_memory_address_p	PARAMS ((enum machine_mode, rtx));
 extern int validate_replace_rtx_subexp	PARAMS ((rtx, rtx, rtx, rtx *));

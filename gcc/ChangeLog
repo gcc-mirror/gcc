@@ -1,3 +1,48 @@
+Fri Sep 29 13:37:59 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* final.c (final_scan_insn): Remove extra extract_insn call;
+	Use caching for constrain_operands.
+	(cleanup_subreg_operands): Use caching for extract_insn.
+	* recog.c (constrain_operands_cached): New.
+	* recog.h (constrain_operands_cached): Declare.
+	* i386.c (ix86_attr_length_immediate_default,
+	ix86_attr_length_address_default, ix86_agi_dependant): Cache
+	extract_insn call.
+
+	* recog.c (asm_noperands): Tweak.
+	(extract_insn): Do not call asm_noperads for non-asm instructions.
+
+Fri Sep 29 13:20:42 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (recog_memoized): Rename to recog_memoized_1.
+	* recog.h (recog_memoized): Rename to recog_memoized_1.
+	(recog_memoized): New macro.
+	* rtl.h (single_set): Rename to single_set_1
+	(single_set): New macro.
+	* rtlanal.c (single_set): Rename to single_set_1;  expect clobbers
+	to be last.
+
+	* i386.md (strmovsi_1, strmovhi_1 strmovqi_1):
+	Do not use match_dup of input operands at outputs.
+	Use register_operand for memory expression.
+	(rep_movsi): Put use last, canonicalize.
+	Use register_operand for memory expression.
+	(rep_movqi): Put use last.
+	Use register_operand for memory expression.
+	(strsetsi_1, strset_hi_1, strsetqi_1): Do not use match_dup
+	of input operands at outputs.  Use register_operand for memory
+	expression.
+	(rep_stossi): Put use last; canonicalize; fix match_dup in
+	the address expression
+	(rep_stosqi): Likewise.
+	(memcmp expander): Update calls.
+	(cmpstrsi_nz_1, cmpstrsi_1, strlensi_1): Avoid match_dups in
+	the clobbers.
+
+	* i386.md (fp_jcc_3, fp_jcc_4, jp_fcc_5): if_then_else operand is
+	VOIDmode.
+	(fp_jcc_4, fp_jcc_3): Refuse unordered comparisons.
+
 2000-09-28  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/i386/freebsd-aout.h: New, FreeBSD a.out config file.
