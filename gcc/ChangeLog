@@ -1,5 +1,7 @@
 2003-03-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* flags.h (flag_leading_underscore): Declare.
+
 	* c-opts.c (c_common_post_options): On fopen failure, return
 	false, not NULL.
 
