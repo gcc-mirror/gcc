@@ -405,6 +405,7 @@ static void mark_used_regs		PARAMS ((struct propagate_block_info *,
 void dump_flow_info			PARAMS ((FILE *));
 void debug_flow_info			PARAMS ((void));
 static void dump_edge_info		PARAMS ((FILE *, edge, int));
+static void print_rtl_and_abort		PARAMS ((void));
 
 static void invalidate_mems_from_autoinc PARAMS ((struct propagate_block_info *,
 						  rtx));
@@ -2863,7 +2864,9 @@ verify_wide_reg (regno, head, end)
     }
 
   /* We didn't find the register at all.  Something's way screwy.  */
-  abort ();
+  if (rtl_dump_file)
+    fprintf (rtl_dump_file, "Aborting in verify_wide_reg; reg %d\n", regno);
+  print_rtl_and_abort ();
 }
 
 /* A subroutine of update_life_info.  Verify that there are no untoward
@@ -2879,7 +2882,17 @@ verify_local_live_at_start (new_live_at_start, bb)
       /* After reload, there are no pseudos, nor subregs of multi-word
 	 registers.  The regsets should exactly match.  */
       if (! REG_SET_EQUAL_P (new_live_at_start, bb->global_live_at_start))
-        abort ();
+	{
+	  if (rtl_dump_file)
+	    {
+	      fprintf (rtl_dump_file,
+		       "live_at_start mismatch in bb %d, aborting\n",
+		       bb->index);
+	      debug_bitmap_file (rtl_dump_file, bb->global_live_at_start);
+	      debug_bitmap_file (rtl_dump_file, new_live_at_start);
+	    }
+	  print_rtl_and_abort ();
+	}
     }
   else
     {
@@ -2892,7 +2905,14 @@ verify_local_live_at_start (new_live_at_start, bb)
 	{
           /* No registers should die.  */
 	  if (REGNO_REG_SET_P (bb->global_live_at_start, i))
-	    abort ();
+	    {
+	      if (rtl_dump_file)
+		fprintf (rtl_dump_file,
+			 "Register %d died unexpectedly in block %d\n", i,
+			 bb->index);
+	      print_rtl_and_abort ();
+	    }
+
           /* Verify that the now-live register is wider than word_mode.  */
 	  verify_wide_reg (i, bb->head, bb->end);
 	});
@@ -6245,6 +6265,18 @@ print_rtl_with_bb (outf, rtx_first)
 	   tmp_rtx = XEXP (tmp_rtx, 1))
 	print_rtl_single (outf, XEXP (tmp_rtx, 0));
     }
+}
+
+/* Dump the rtl into the current debugging dump file, then abort.  */
+static void
+print_rtl_and_abort (void)
+{
+  if (rtl_dump_file)
+    {
+      print_rtl_with_bb (rtl_dump_file, get_insns ());
+      fclose (rtl_dump_file);
+    }
+  abort ();
 }
 
 /* Recompute register set/reference counts immediately prior to register
