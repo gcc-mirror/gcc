@@ -3595,25 +3595,38 @@ tree_verify_flow_info (void)
     {
       bool found_ctrl_stmt = false;
 
+      stmt = NULL_TREE;
+
       /* Skip labels on the start of basic block.  */
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
-	  if (TREE_CODE (bsi_stmt (bsi)) != LABEL_EXPR)
+	  tree prev_stmt = stmt;
+
+	  stmt = bsi_stmt (bsi);
+
+	  if (TREE_CODE (stmt) != LABEL_EXPR)
 	    break;
 
-	  if (label_to_block (LABEL_EXPR_LABEL (bsi_stmt (bsi))) != bb)
+	  if (prev_stmt && DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)))
 	    {
-	      tree stmt = bsi_stmt (bsi);
+	      error ("Nonlocal label %s is not first "
+		     "in a sequence of labels in bb %d"",
+		     IDENTIFIER_POINTER (DECL_NAME (LABEL_EXPR_LABEL (stmt))),
+		     bb->index);
+	      err = 1;
+	    }
+
+	  if (label_to_block (LABEL_EXPR_LABEL (stmt)) != bb)
+	    {
 	      error ("Label %s to block does not match in bb %d\n",
 		     IDENTIFIER_POINTER (DECL_NAME (LABEL_EXPR_LABEL (stmt))),
 		     bb->index);
 	      err = 1;
 	    }
 
-	  if (decl_function_context (LABEL_EXPR_LABEL (bsi_stmt (bsi)))
+	  if (decl_function_context (LABEL_EXPR_LABEL (stmt))
 	      != current_function_decl)
 	    {
-	      tree stmt = bsi_stmt (bsi);
 	      error ("Label %s has incorrect context in bb %d\n",
 		     IDENTIFIER_POINTER (DECL_NAME (LABEL_EXPR_LABEL (stmt))),
 		     bb->index);
