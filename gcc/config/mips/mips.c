@@ -4238,6 +4238,8 @@ mips_va_arg (valist, type)
 	  if (BYTES_BIG_ENDIAN && rsize != size)
 	    addr_rtx = plus_constant (addr_rtx, rsize - size);
 	}
+
+      return addr_rtx;
     }
   else
     {
