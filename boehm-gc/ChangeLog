@@ -1,3 +1,8 @@
+2003-07-30  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* dyn_load.c: Define __private_extern__ to match Apple's system 
+	header.
+ 
 2003-07-28  Loren J. Rittle  <ljrittle@acm.org>
 
 	* os_dep.c: Remove redundancy introduced in last merge.

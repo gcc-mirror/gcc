@@ -980,7 +980,13 @@ void GC_register_dynamic_libraries()
 
 #ifdef DARWIN
 
+#ifndef __private_extern__
+#define __private_extern__ extern
 #include <mach-o/dyld.h>
+#undef __private_extern__
+#else
+#include <mach-o/dyld.h>
+#endif
 #include <mach-o/getsect.h>
 
 /*#define DARWIN_DEBUG*/
