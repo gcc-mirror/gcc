@@ -1,5 +1,11 @@
 2001-09-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* mach_dep.c (GC_push_regs) [I386 && (SVR4 || SCO || SCO_ELF)
+	&& __GNUC__ ]: Call GC_push_one in C to allow for PIC code.
+	Fixes PR bootstrap/4162.
+
+2001-09-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* solaris_threads.c (MAX_ORIG_STACK_SIZE) [I386]: Provide special
 	Solaris 2/Intel definition.
 	(GC_get_orig_stack_size): NL-terminate warning message.

@@ -281,6 +281,18 @@ void GC_push_regs()
 
 #       if defined(I386) && (defined(SVR4) || defined(SCO) || defined(SCO_ELF))
 	/* I386 code, SVR4 variant, generic code does not appear to work */
+#	 ifdef __GNUC__
+	  /* This is necessary to support PIC code.  */
+#	 define call_push(REGNAME) \
+	    { register word reg __asm__( #REGNAME ); GC_push_one (reg); }
+ 
+#	 ifndef PIC
+	  call_push(ebx)
+#	 endif
+	  call_push(ebp)
+	  call_push(esi)
+	  call_push(edi)
+#	 else /* !__GNUC__ */
 	  asm("pushl %eax");  asm("call GC_push_one"); asm("addl $4,%esp");
 	  asm("pushl %ebx");  asm("call GC_push_one"); asm("addl $4,%esp");
 	  asm("pushl %ecx");  asm("call GC_push_one"); asm("addl $4,%esp");
@@ -288,6 +300,7 @@ void GC_push_regs()
 	  asm("pushl %ebp");  asm("call GC_push_one"); asm("addl $4,%esp");
 	  asm("pushl %esi");  asm("call GC_push_one"); asm("addl $4,%esp");
 	  asm("pushl %edi");  asm("call GC_push_one"); asm("addl $4,%esp");
+#	 endif /* !__GNUC__ */
 #       endif
 
 #       ifdef NS32K
