@@ -1,3 +1,7 @@
+2002-03-09  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.c (validate_all_switches): Also handle `%W{...}'.
+
 2002-03-09  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/rs6000/sysv4.h (BIGGEST_ALIGNMENT): Don't define.
