@@ -7747,6 +7747,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   if (t == NULL_TREE || t == error_mark_node)
     return t;
 
+  if (EXPR_LOCUS (t))
+    input_location = *EXPR_LOCUS (t);
+  if (STATEMENT_CODE_P (TREE_CODE (t)))
+    current_stmt_tree ()->stmts_are_full_exprs_p = STMT_IS_FULL_EXPR_P (t);
+
   switch (TREE_CODE (t))
     {
     case STATEMENT_LIST:
@@ -7758,13 +7763,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
 
     case CTOR_INITIALIZER:
-      prep_stmt (t);
       finish_mem_initializers (tsubst_initializer_list 
 			       (TREE_OPERAND (t, 0), args));
       break;
 
     case RETURN_STMT:
-      prep_stmt (t);
       finish_return_stmt (tsubst_expr (RETURN_STMT_EXPR (t),
 				       args, complain, in_decl));
       break;
@@ -7783,21 +7786,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
 
     case EXPR_STMT:
-      {
-	tree r;
-	
-	prep_stmt (t);
-
-	r = tsubst_expr (EXPR_STMT_EXPR (t), args, complain, in_decl);
-	if (EXPR_STMT_STMT_EXPR_RESULT (t))
-	  finish_stmt_expr_expr (r, cur_stmt_expr);
-	else
-	  finish_expr_stmt (r);
-	break;
-      }
+      tmp = tsubst_expr (EXPR_STMT_EXPR (t), args, complain, in_decl);
+      if (EXPR_STMT_STMT_EXPR_RESULT (t))
+	finish_stmt_expr_expr (tmp, cur_stmt_expr);
+      else
+	finish_expr_stmt (tmp);
+      break;
 
     case USING_STMT:
-      prep_stmt (t);
       do_using_directive (tsubst_expr (USING_STMT_NAMESPACE (t),
 				       args, complain, in_decl));
       break;
@@ -7807,7 +7803,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	tree decl;
 	tree init;
 
-	prep_stmt (t);
 	decl = DECL_STMT_DECL (t);
 	if (TREE_CODE (decl) == LABEL_DECL)
 	  finish_label_decl (DECL_NAME (decl));
@@ -7870,122 +7865,92 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       }
 
     case FOR_STMT:
-      {
-	prep_stmt (t);
-
-	stmt = begin_for_stmt ();
-	tsubst_expr (FOR_INIT_STMT (t), args, complain, in_decl);
-	finish_for_init_stmt (stmt);
-	finish_for_cond (tsubst_expr (FOR_COND (t),
-				      args, complain, in_decl),
-			 stmt);
-	tmp = tsubst_expr (FOR_EXPR (t), args, complain, in_decl);
-	finish_for_expr (tmp, stmt);
-	tsubst_expr (FOR_BODY (t), args, complain, in_decl);
-	finish_for_stmt (stmt);
-      }
+      stmt = begin_for_stmt ();
+      tsubst_expr (FOR_INIT_STMT (t), args, complain, in_decl);
+      finish_for_init_stmt (stmt);
+      tmp = tsubst_expr (FOR_COND (t), args, complain, in_decl);
+      finish_for_cond (tmp, stmt);
+      tmp = tsubst_expr (FOR_EXPR (t), args, complain, in_decl);
+      finish_for_expr (tmp, stmt);
+      tsubst_expr (FOR_BODY (t), args, complain, in_decl);
+      finish_for_stmt (stmt);
       break;
 
     case WHILE_STMT:
-      {
-	prep_stmt (t);
-	stmt = begin_while_stmt ();
-	finish_while_stmt_cond (tsubst_expr (WHILE_COND (t),
-					     args, complain, in_decl),
-				stmt);
-	tsubst_expr (WHILE_BODY (t), args, complain, in_decl);
-	finish_while_stmt (stmt);
-      }
+      stmt = begin_while_stmt ();
+      tmp = tsubst_expr (WHILE_COND (t), args, complain, in_decl);
+      finish_while_stmt_cond (tmp, stmt);
+      tsubst_expr (WHILE_BODY (t), args, complain, in_decl);
+      finish_while_stmt (stmt);
       break;
 
     case DO_STMT:
-      {
-	prep_stmt (t);
-	stmt = begin_do_stmt ();
-	tsubst_expr (DO_BODY (t), args, complain, in_decl);
-	finish_do_body (stmt);
-	finish_do_stmt (tsubst_expr (DO_COND (t),
-				     args, complain, in_decl),
-			stmt);
-      }
+      stmt = begin_do_stmt ();
+      tsubst_expr (DO_BODY (t), args, complain, in_decl);
+      finish_do_body (stmt);
+      tmp = tsubst_expr (DO_COND (t), args, complain, in_decl);
+      finish_do_stmt (tmp, stmt);
       break;
 
     case IF_STMT:
-      {
-	prep_stmt (t);
-	stmt = begin_if_stmt ();
-	finish_if_stmt_cond (tsubst_expr (IF_COND (t),
-					  args, complain, in_decl),
-			     stmt);
-	tsubst_expr (THEN_CLAUSE (t), args, complain, in_decl);
-	finish_then_clause (stmt);
+      stmt = begin_if_stmt ();
+      tmp = tsubst_expr (IF_COND (t), args, complain, in_decl);
+      finish_if_stmt_cond (tmp, stmt);
+      tsubst_expr (THEN_CLAUSE (t), args, complain, in_decl);
+      finish_then_clause (stmt);
 
-	if (ELSE_CLAUSE (t))
-	  {
-	    begin_else_clause (stmt);
-	    tsubst_expr (ELSE_CLAUSE (t), args, complain, in_decl);
-	    finish_else_clause (stmt);
-	  }
+      if (ELSE_CLAUSE (t))
+	{
+	  begin_else_clause (stmt);
+	  tsubst_expr (ELSE_CLAUSE (t), args, complain, in_decl);
+	  finish_else_clause (stmt);
+	}
 
-	finish_if_stmt (stmt);
-      }
+      finish_if_stmt (stmt);
       break;
 
     case BIND_EXPR:
-      {
-	prep_stmt (t);
-	if (BIND_EXPR_BODY_BLOCK (t))
-	  stmt = begin_function_body ();
-	else
-	  stmt = begin_compound_stmt (BIND_EXPR_TRY_BLOCK (t)
-				      ? BCS_TRY_BLOCK : 0);
+      if (BIND_EXPR_BODY_BLOCK (t))
+	stmt = begin_function_body ();
+      else
+	stmt = begin_compound_stmt (BIND_EXPR_TRY_BLOCK (t)
+				    ? BCS_TRY_BLOCK : 0);
 
-	tsubst_expr (BIND_EXPR_BODY (t), args, complain, in_decl);
+      tsubst_expr (BIND_EXPR_BODY (t), args, complain, in_decl);
 
-	if (BIND_EXPR_BODY_BLOCK (t))
-	  finish_function_body (stmt);
-	else
-	  finish_compound_stmt (stmt);
-      }
+      if (BIND_EXPR_BODY_BLOCK (t))
+	finish_function_body (stmt);
+      else
+	finish_compound_stmt (stmt);
       break;
 
     case BREAK_STMT:
-      prep_stmt (t);
       finish_break_stmt ();
       break;
 
     case CONTINUE_STMT:
-      prep_stmt (t);
       finish_continue_stmt ();
       break;
 
     case SWITCH_STMT:
-      {
-	tree val;
-
-	prep_stmt (t);
-	stmt = begin_switch_stmt ();
-	val = tsubst_expr (SWITCH_COND (t), args, complain, in_decl);
-	finish_switch_cond (val, stmt);
-	tsubst_expr (SWITCH_BODY (t), args, complain, in_decl);
-	finish_switch_stmt (stmt);
-      }
+      stmt = begin_switch_stmt ();
+      tmp = tsubst_expr (SWITCH_COND (t), args, complain, in_decl);
+      finish_switch_cond (tmp, stmt);
+      tsubst_expr (SWITCH_BODY (t), args, complain, in_decl);
+      finish_switch_stmt (stmt);
       break;
 
     case CASE_LABEL_EXPR:
-      prep_stmt (t);
       finish_case_label (tsubst_expr (CASE_LOW (t), args, complain, in_decl),
 			 tsubst_expr (CASE_HIGH (t), args, complain,
 				      in_decl));
       break;
 
     case LABEL_EXPR:
-      prep_stmt (t);
       finish_label_stmt (DECL_NAME (LABEL_EXPR_LABEL (t)));
       break;
 
     case GOTO_EXPR:
-      prep_stmt (t);
       tmp = GOTO_DESTINATION (t);
       if (TREE_CODE (tmp) != LABEL_DECL)
 	/* Computed goto's must be tsubst'd into.  On the other hand,
@@ -7998,7 +7963,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       break;
 
     case ASM_EXPR:
-      prep_stmt (t);
       tmp = finish_asm_stmt
 	(ASM_VOLATILE_P (t),
 	 tsubst_expr (ASM_STRING (t), args, complain, in_decl),
@@ -8009,7 +7973,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       break;
 
     case TRY_BLOCK:
-      prep_stmt (t);
       if (CLEANUP_P (t))
 	{
 	  stmt = begin_try_block ();
@@ -8045,7 +8008,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       {
 	tree decl;
 
-	prep_stmt (t);
 	stmt = begin_handler ();
 	if (HANDLER_PARMS (t))
 	  {
@@ -8065,7 +8027,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       break;
 
     case TAG_DEFN:
-      prep_stmt (t);
       tsubst (TREE_TYPE (t), args, complain, NULL_TREE);
       break;
 

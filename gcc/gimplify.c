@@ -563,6 +563,15 @@ should_carry_locus_p (tree stmt)
   return true;
 }
 
+static void
+annotate_one_with_locus (tree t, location_t locus)
+{
+  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (t)))
+      && ! EXPR_HAS_LOCATION (t)
+      && should_carry_locus_p (t))
+    annotate_with_locus (t, locus);
+}
+
 void
 annotate_all_with_locus (tree *stmt_p, location_t locus)
 {
@@ -583,10 +592,7 @@ annotate_all_with_locus (tree *stmt_p, location_t locus)
 	    abort ();
 #endif
 
-      if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (t)))
-	  && ! EXPR_HAS_LOCATION (t)
-	  && should_carry_locus_p (t))
-	annotate_with_locus (t, locus);
+      annotate_one_with_locus (t, locus);
     }
 }
 
@@ -3558,6 +3564,10 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  annotate_all_with_locus (&internal_pre, input_location);
 	  *expr_p = internal_pre;
 	}
+      else if (TREE_CODE (*expr_p) == STATEMENT_LIST)
+	annotate_all_with_locus (expr_p, input_location);
+      else
+	annotate_one_with_locus (*expr_p, input_location);
       goto out;
     }
 

@@ -2196,7 +2196,6 @@ cp_update_decl_after_saving (tree fn,
 void
 init_tree (void)
 {
-  lang_gimplify_stmt = cp_gimplify_stmt;
   list_hash_table = htab_create_ggc (31, list_hash, list_hash_eq, NULL);
 }
 

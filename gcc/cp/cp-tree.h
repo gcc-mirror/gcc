@@ -4305,7 +4305,6 @@ extern bool cp_dump_tree                         (void *, tree);
 
 /* in cp-simplify.c */
 extern int cp_gimplify_expr		        (tree *, tree *, tree *);
-extern int cp_gimplify_stmt		        (tree *);
 
 /* -- end of C++ */
 

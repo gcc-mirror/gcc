@@ -72,25 +72,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Local declarations.  */
 
-static enum gimplify_status gimplify_expr_stmt (tree *);
-static enum gimplify_status gimplify_decl_stmt (tree *);
-static enum gimplify_status gimplify_for_stmt (tree *, tree *);
-static enum gimplify_status gimplify_while_stmt (tree *);
-static enum gimplify_status gimplify_do_stmt (tree *);
-static enum gimplify_status gimplify_if_stmt (tree *);
-static enum gimplify_status gimplify_switch_stmt (tree *);
-static enum gimplify_status gimplify_return_stmt (tree *);
-static enum gimplify_status gimplify_compound_literal_expr (tree *);
 static void gimplify_cleanup_stmts (tree);
-static tree gimplify_c_loop (tree, tree, tree, bool);
-static void push_context (void);
-static void pop_context (void);
-static void add_block_to_enclosing (tree);
 
 enum bc_t { bc_break = 0, bc_continue = 1 };
-static tree begin_bc_block (enum bc_t);
-static tree finish_bc_block (tree, tree);
-static tree build_bc_goto (enum bc_t);
 
 static struct c_gimplify_ctx
 {
@@ -190,122 +174,6 @@ static void
 gimplify_cleanup_stmts (tree fndecl)
 {
   walk_tree (&DECL_SAVED_TREE (fndecl), gimplify_cleanup_stmt, NULL, NULL);
-}
-
-/*  Entry point for the tree lowering pass.  Recursively scan
-    *STMT_P and convert it to a GIMPLE tree.  */
-
-int
-c_gimplify_stmt (tree *stmt_p)
-{
-  tree stmt = *stmt_p;
-  tree pre, post;
-  int saved_stmts_are_full_exprs_p;
-  location_t stmt_locus;
-  enum gimplify_status ret;
-
-  /* PRE and POST are tree chains that contain the side-effects of the
-     gimplified tree.  For instance, given the expression tree:
-
-		c = ++a * 3 + b++;
-
-     After gimplification, the tree will be re-written as:
-
-		a = a + 1;
-		t1 = a * 3;	<-- PRE
-		c = t1 + b;
-		b = b + 1;	<-- POST  */
-
-  /* Set up context appropriately for handling this statement.  */
-  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
-  prep_stmt (stmt);
-  stmt_locus = input_location;
-
-  pre = NULL_TREE;
-  post = NULL_TREE;
-
-  switch (TREE_CODE (stmt))
-    {
-    case FOR_STMT:
-      ret = gimplify_for_stmt (&stmt, &pre);
-      break;
-
-    case WHILE_STMT:
-      ret = gimplify_while_stmt (&stmt);
-      break;
-
-    case DO_STMT:
-      ret = gimplify_do_stmt (&stmt);
-      break;
-
-    case IF_STMT:
-      ret = gimplify_if_stmt (&stmt);
-      break;
-
-    case SWITCH_STMT:
-      ret = gimplify_switch_stmt (&stmt);
-      break;
-
-    case EXPR_STMT:
-      ret = gimplify_expr_stmt (&stmt);
-      break;
-
-    case RETURN_STMT:
-      ret = gimplify_return_stmt (&stmt);
-      break;
-
-    case DECL_STMT:
-      ret = gimplify_decl_stmt (&stmt);
-      break;
-
-    case CONTINUE_STMT:
-      stmt = build_bc_goto (bc_continue);
-      ret = GS_OK;
-      break;
-
-    case BREAK_STMT:
-      stmt = build_bc_goto (bc_break);
-      ret = GS_OK;
-      break;
-
-    default:
-      if (lang_gimplify_stmt && (*lang_gimplify_stmt) (&stmt))
-	{
-	  ret = GS_OK;
-	  break;
-	}
-
-      fprintf (stderr, "unhandled statement node in c_gimplify_stmt:\n");
-      debug_tree (stmt);
-      abort ();
-      break;
-    }
-
-  switch (ret)
-    {
-    case GS_ERROR:
-      goto cont;
-    case GS_OK:
-      gimplify_stmt (&stmt);
-      break;
-    case GS_ALL_DONE:
-      break;
-    default:
-      abort ();
-    }
-
-  /* PRE and POST now contain a list of statements for all the
-     side-effects in STMT.  */
-
-  append_to_statement_list (stmt, &pre);
-  append_to_statement_list (post, &pre);
-  annotate_all_with_locus (&pre, stmt_locus);
- cont:
-  /* Restore saved state.  */
-  current_stmt_tree ()->stmts_are_full_exprs_p = saved_stmts_are_full_exprs_p;
-  *stmt_p = pre;
-
-  return GS_ALL_DONE;
 }
 
 static void
@@ -784,18 +652,46 @@ gimplify_compound_literal_expr (tree *expr_p)
 /* Do C-specific gimplification.  Args are as for gimplify_expr.  */
 
 int
-c_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
-		 tree *post_p ATTRIBUTE_UNUSED)
+c_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 {
   enum tree_code code = TREE_CODE (*expr_p);
-
-  if (STATEMENT_CODE_P (code))
-    return c_gimplify_stmt (expr_p);
 
   switch (code)
     {
     case COMPOUND_LITERAL_EXPR:
       return gimplify_compound_literal_expr (expr_p);
+
+    case FOR_STMT:
+      return gimplify_for_stmt (expr_p, pre_p);
+
+    case WHILE_STMT:
+      return gimplify_while_stmt (expr_p);
+
+    case DO_STMT:
+      return gimplify_do_stmt (expr_p);
+
+    case IF_STMT:
+      return gimplify_if_stmt (expr_p);
+
+    case SWITCH_STMT:
+      return gimplify_switch_stmt (expr_p);
+
+    case EXPR_STMT:
+      return gimplify_expr_stmt (expr_p);
+
+    case RETURN_STMT:
+      return gimplify_return_stmt (expr_p);
+
+    case DECL_STMT:
+      return gimplify_decl_stmt (expr_p);
+
+    case CONTINUE_STMT:
+      *expr_p = build_bc_goto (bc_continue);
+      return GS_ALL_DONE;
+
+    case BREAK_STMT:
+      *expr_p = build_bc_goto (bc_break);
+      return GS_ALL_DONE;
 
     default:
       return GS_UNHANDLED;

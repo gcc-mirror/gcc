@@ -280,7 +280,6 @@ struct c_language_function GTY(()) {
 
 /* Language-specific hooks.  */
 
-extern int (*lang_gimplify_stmt) (tree *);
 extern void (*lang_expand_function_end) (void);
 
 /* Callback that determines if it's ok for a function to have no
@@ -299,7 +298,6 @@ extern void add_decl_stmt (tree);
 extern void push_cleanup (tree, tree, bool);
 
 extern tree walk_stmt_tree (tree *, walk_tree_fn, void *);
-extern void prep_stmt (tree);
 extern int c_expand_decl (tree);
 
 extern int field_decl_cmp (const void *, const void *);
@@ -1113,14 +1111,13 @@ extern void dump_time_statistics (void);
 
 extern bool c_dump_tree (void *, tree);
 
-extern int c_gimplify_expr (tree *, tree *, tree *);
 extern tree c_walk_subtrees (tree*, int*, walk_tree_fn, void*, void*);
 
 extern void c_warn_unused_result (tree *);
 
-/* In c-simplify.c  */
+/* In c-gimplify.c  */
 extern void c_genericize (tree);
-extern int c_gimplify_stmt (tree *);
+extern int c_gimplify_expr (tree *, tree *, tree *);
 extern tree c_build_bind_expr (tree, tree);
 
 extern void pch_init (void);
