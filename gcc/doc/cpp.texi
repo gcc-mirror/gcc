@@ -9,7 +9,7 @@
 @macro copyrightnotice
 @c man begin COPYRIGHT
 Copyright @copyright{} 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996,
-1997, 1998, 1999, 2000, 2001
+1997, 1998, 1999, 2000, 2001, 2002
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -48,6 +48,7 @@ This manual contains no Invariant Sections.  The Front-Cover Texts are
 
 @c Create a separate index for command line options.
 @defcodeindex op
+@syncodeindex vr op
 
 @c Used in cppopts.texi and cppenv.texi.
 @set cppmanual
@@ -75,6 +76,7 @@ This manual contains no Invariant Sections.  The Front-Cover Texts are
 @contents
 @page
 
+@ifnottex
 @node Top
 @top
 The C preprocessor implements the macro language used to transform C,
@@ -96,8 +98,8 @@ useful on its own.
 * Invocation::
 * Environment Variables::
 * GNU Free Documentation License::
-* Option Index::
 * Index of Directives::
+* Option Index::
 * Concept Index::
 
 @detailmenu
@@ -179,7 +181,6 @@ Obsolete Features
 @end detailmenu
 @end menu
 
-@ifnottex
 @copyrightnotice{}
 @covertexts{}
 @end ifnottex
@@ -3949,21 +3950,22 @@ configuration of GCC@.
 @include cppenv.texi
 @c man end
 
+@page
 @include fdl.texi
 
 @page
-@node Option Index
-@unnumbered Option Index
-
-CPP's command line options are indexed here without any initial
-@samp{-} or @samp{--}.
-
-@printindex op
-
 @node Index of Directives
 @unnumbered Index of Directives
 @printindex fn
 
+@node Option Index
+@unnumbered Option Index
+@noindent
+CPP's command line options and environment variables are indexed here
+without any initial @samp{-} or @samp{--}.
+@printindex op
+
+@page
 @node Concept Index
 @unnumbered Concept Index
 @printindex cp

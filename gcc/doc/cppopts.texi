@@ -175,7 +175,7 @@ This option does not suppress the preprocessor's debug output, such as
 @option{-dM}.  To avoid mixing such debug output with the dependency
 rules you should explicitly specify the dependency output file with
 @option{-MF}, or use an environment variable like
-@env{DEPENDENCIES_OUTPUT} (@pxref{DEPENDENCIES_OUTPUT}).  Debug output
+@env{DEPENDENCIES_OUTPUT} (@pxref{Environment Variables}).  Debug output
 will still be sent to the regular output stream as normal.
 
 Passing @option{-M} to the driver implies @option{-E}.
