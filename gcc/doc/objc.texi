@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -41,7 +41,7 @@ Suppose for example you have a @code{FileStream} class that declares
 @code{Stdin}, @code{Stdout} and @code{Stderr} as global variables, like
 below:
 
-@example
+@smallexample
 
 FileStream *Stdin = nil;
 FileStream *Stdout = nil;
@@ -59,7 +59,7 @@ FileStream *Stderr = nil;
 /* Other methods here */
 @@end
 
-@end example
+@end smallexample
 
 In this example, the initialization of @code{Stdin}, @code{Stdout} and
 @code{Stderr} in @code{+initialize} occurs too late.  The programmer can
@@ -73,7 +73,7 @@ just before entering @code{main}.
 The correct solution of the above problem is to use the @code{+load}
 method instead of @code{+initialize}:
 
-@example
+@smallexample
 
 @@implementation FileStream
 
@@ -87,7 +87,7 @@ method instead of @code{+initialize}:
 /* Other methods here */
 @@end
 
-@end example
+@end smallexample
 
 The @code{+load} is a method that is not overridden by categories.  If a
 class and a category of it both implement @code{+load}, both methods are
@@ -258,12 +258,12 @@ compiler on an i386 machine:
 @item Objective-C type
 @tab Compiler encoding
 @item
-@example
+@smallexample
 int a[10];
-@end example
+@end smallexample
 @tab @code{[10i]}
 @item
-@example
+@smallexample
 struct @{
   int i;
   float f[3];
@@ -271,7 +271,7 @@ struct @{
   int b:2;
   char c;
 @}
-@end example
+@end smallexample
 @tab @code{@{?=i[3f]b128i3b131i2c@}}
 @end multitable
 
@@ -343,7 +343,7 @@ Here is an example of how to use this feature.  Suppose you want to
 implement a class whose instances hold a weak pointer reference; the
 following class does this:
 
-@example
+@smallexample
 
 @@interface WeakPointer : Object
 @{
@@ -375,7 +375,7 @@ following class does this:
 
 @@end
 
-@end example
+@end smallexample
 
 Weak pointers are supported through a new type character specifier
 represented by the @samp{!} character.  The
@@ -391,9 +391,9 @@ GNU Objective-C provides constant string objects that are generated
 directly by the compiler.  You declare a constant string object by
 prefixing a C constant string with the character @samp{@@}:
 
-@example
+@smallexample
   id myString = @@"this is a constant string object";
-@end example
+@end smallexample
 
 The constant string objects are by default instances of the
 @code{NXConstantString} class which is provided by the GNU Objective-C
@@ -406,7 +406,7 @@ a new command line options @option{-fconstant-string-class=@var{class-name}}.
 The provided class should adhere to a strict structure, the same
 as @code{NXConstantString}'s structure:
 
-@example
+@smallexample
 
 @@interface MyConstantStringClass
 @{
@@ -416,7 +416,7 @@ as @code{NXConstantString}'s structure:
 @}
 @@end
 
-@end example
+@end smallexample
 
 @code{NXConstantString} inherits from @code{Object}; user class
 libraries may choose to inherit the customized constant string class
@@ -455,9 +455,9 @@ forgotten, we are documenting it here.
 The keyword @code{@@compatibility_alias} allows you to define a class name
 as equivalent to another class name.  For example:
 
-@example
+@smallexample
 @@compatibility_alias WOApplication GSWApplication;
-@end example
+@end smallexample
 
 tells the compiler that each time it encounters @code{WOApplication} as
 a class name, it should replace it with @code{GSWApplication} (that is,

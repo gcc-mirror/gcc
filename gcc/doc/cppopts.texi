@@ -1,4 +1,4 @@
-@c Copyright (c) 1999, 2000, 2001, 2002, 2003
+@c Copyright (c) 1999, 2000, 2001, 2002, 2003, 2004
 @c Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
@@ -255,11 +255,11 @@ files without updating the @file{Makefile} to match.
 
 This is typical output:
 
-@example
+@smallexample
 test.o: test.c test.h
 
 test.h:
-@end example
+@end smallexample
 
 @item -MT @var{target}
 @opindex MT
@@ -275,9 +275,9 @@ argument to @option{-MT}, or use multiple @option{-MT} options.
 
 For example, @option{@w{-MT '$(objpfx)foo.o'}} might give
 
-@example
+@smallexample
 $(objpfx)foo.o: foo.c
-@end example
+@end smallexample
 
 @item -MQ @var{target}
 @opindex MQ
@@ -285,9 +285,9 @@ $(objpfx)foo.o: foo.c
 Same as @option{-MT}, but it quotes any characters which are special to
 Make.  @option{@w{-MQ '$(objpfx)foo.o'}} gives
 
-@example
+@smallexample
 $$(objpfx)foo.o: foo.c
-@end example
+@end smallexample
 
 The default target is automatically quoted, as if it were given with
 @option{-MQ}.
@@ -563,9 +563,9 @@ preprocessor, including predefined macros.  This gives you a way of
 finding out what is predefined in your version of the preprocessor.
 Assuming you have no file @file{foo.h}, the command
 
-@example
+@smallexample
 touch foo.h; cpp -dM foo.h
-@end example
+@end smallexample
 
 @noindent
 will show all the predefined macros.

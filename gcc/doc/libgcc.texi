@@ -1,4 +1,4 @@
-@c Copyright (C) 2003 Free Software Foundation, Inc.
+@c Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 @c Contributed by Aldy Hernandez <aldy@quesejoda.com>
@@ -443,7 +443,7 @@ is NaN, and @var{a} is strictly greater than @var{b}.
 
 document me!
 
-@example
+@smallexample
   _Unwind_DeleteException
   _Unwind_Find_FDE
   _Unwind_ForcedUnwind
@@ -472,7 +472,7 @@ document me!
   __register_frame_info_table
   __register_frame_info_table_bases
   __register_frame_table
-@end example
+@end smallexample
 
 @node Miscellaneous routines
 @section Miscellaneous runtime library routines

@@ -1,4 +1,4 @@
-@c Copyright (C) 2002 Free Software Foundation, Inc.
+@c Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -133,9 +133,9 @@ build was configured, but can be seen by using the G++ @option{-v} option.
 With default configuration options for G++ 3.3 the compile line for a
 different C++ compiler needs to include
 
-@example
+@smallexample
     -I@var{gcc_install_directory}/include/c++/3.3
-@end example
+@end smallexample
 
 Similarly, compiling code with G++ that must use a C++ library other
 than the GNU C++ library requires specifying the location of the header
