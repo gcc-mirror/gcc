@@ -1,3 +1,21 @@
+Wed May  6 01:30:24 1998  Jeffrey A Law  (law@cygnus.com)
+			  Richard Henderson (rth@cygnus.com)
+
+	* haifa-sched.c (free_list): Rename from free_pnd_lst.
+	(free_pending_lists): Rename free_pnd_lst uses.
+	(remove_dependence): Place expunged element on unused_insn_list.
+	(alloc_INSN_LIST, alloc_EXPR_LIST): New.  Change all callers of
+	gen_rtx_*_LIST and alloc_rtx to use them.
+	(compute_block_backward_dependences): Free the reg_last_* lists.
+
+	* haifa-sched.c (schedule_insns): Correctly remove inter-block
+	dependencies after reload.
+
+	* haifa-sched.c (remove_dependencies): Set RTX_INTEGRATED_P on
+	dependency we delete.  Properly update prev for multiple consecutive
+	deletions.
+	(priority): Skip deleted dependence.
+
 Thu Apr 30 19:28:16 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* i386.c (output_fix_trunc): Add code to emulate non-popping DImode

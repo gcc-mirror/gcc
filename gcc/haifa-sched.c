@@ -791,6 +791,80 @@ static void split_block_insns PROTO ((int));
 
 /* Helper functions for instruction scheduling.  */
 
+/* An INSN_LIST containing all INSN_LISTs allocated but currently unused.  */
+static rtx unused_insn_list;
+
+/* An EXPR_LIST containing all EXPR_LISTs allocated but currently unused.  */
+static rtx unused_expr_list;
+
+static void free_list PROTO ((rtx *, rtx *));
+static rtx alloc_INSN_LIST PROTO ((rtx, rtx));
+static rtx alloc_EXPR_LIST PROTO ((int, rtx, rtx));
+
+static void
+free_list (listp, unused_listp)
+     rtx *listp, *unused_listp;
+{
+  register rtx link, prev_link;
+
+  if (*listp == 0)
+    return;
+
+  prev_link = *listp;
+  link = XEXP (prev_link, 1);
+
+  while (link)
+    {
+      prev_link = link;
+      link = XEXP (link, 1);
+    }
+
+  XEXP (prev_link, 1) = *unused_listp;
+  *unused_listp = *listp;
+  *listp = 0;
+}
+
+rtx
+alloc_INSN_LIST (val, next)
+     rtx val, next;
+{
+  rtx r;
+
+  if (unused_insn_list)
+    {
+      r = unused_insn_list;
+      unused_insn_list = XEXP (r, 1);
+      XEXP (r, 0) = val;
+      XEXP (r, 1) = next;
+      PUT_REG_NOTE_KIND (r, VOIDmode);
+    }
+  else
+    r = gen_rtx (INSN_LIST, VOIDmode, val, next);
+
+  return r;
+}
+
+rtx
+alloc_EXPR_LIST (kind, val, next)
+     int kind;
+     rtx val, next;
+{
+  rtx r;
+
+  if (unused_insn_list)
+    {
+      r = unused_insn_list;
+      unused_insn_list = XEXP (r, 1);
+      XEXP (r, 0) = val;
+      XEXP (r, 1) = next;
+      PUT_REG_NOTE_KIND (r, kind);
+    }
+  else
+    r = gen_rtx (EXPR_LIST, kind, val, next);
+
+  return r;
+}
+
 /* Add ELEM wrapped in an INSN_LIST with reg note kind DEP_TYPE to the
    LOG_LINKS of INSN, if not already there.  DEP_TYPE indicates the type
    of dependence that this link represents.  */
@@ -865,12 +939,11 @@ add_dependence (insn, elem, dep_type)
       }
   /* Might want to check one level of transitivity to save conses.  */
 
-  link = rtx_alloc (INSN_LIST);
+  link = alloc_INSN_LIST (elem, LOG_LINKS (insn));
+  LOG_LINKS (insn) = link;
+
   /* Insn dependency, not data dependency.  */
   PUT_REG_NOTE_KIND (link, dep_type);
-  XEXP (link, 0) = elem;
-  XEXP (link, 1) = LOG_LINKS (insn);
-  LOG_LINKS (insn) = link;
 }
 
 /* Remove ELEM wrapped in an INSN_LIST from the LOG_LINKS
@@ -881,20 +954,26 @@ remove_dependence (insn, elem)
      rtx insn;
      rtx elem;
 {
-  rtx prev, link;
+  rtx prev, link, next;
   int found = 0;
 
-  for (prev = 0, link = LOG_LINKS (insn); link;
-       prev = link, link = XEXP (link, 1))
+  for (prev = 0, link = LOG_LINKS (insn); link; link = next)
     {
+      next = XEXP (link, 1);
       if (XEXP (link, 0) == elem)
 	{
 	  if (prev)
-	    XEXP (prev, 1) = XEXP (link, 1);
+	    XEXP (prev, 1) = next;
 	  else
-	    LOG_LINKS (insn) = XEXP (link, 1);
+	    LOG_LINKS (insn) = next;
+
+	  XEXP (link, 1) = unused_insn_list;
+	  unused_insn_list = link;
+
 	  found = 1;
 	}
+      else
+	prev = link;
     }
 
   if (!found)
@@ -942,14 +1021,6 @@ static rtx pending_write_mems;
    a function of the length of these pending lists.  */
 
 static int pending_lists_length;
-
-/* An INSN_LIST containing all INSN_LISTs allocated but currently unused.  */
-
-static rtx unused_insn_list;
-
-/* An EXPR_LIST containing all EXPR_LISTs allocated but currently unused.  */
-
-static rtx unused_expr_list;
 
 /* The last insn upon which all memory references must depend.
    This is an insn which flushed the pending lists, creating a dependency
@@ -3210,6 +3281,9 @@ priority (insn)
 	    rtx next;
 	    int next_priority;
 
+	    if (RTX_INTEGRATED_P (link))
+	      continue;
+
 	    next = XEXP (link, 0);
 
 	    /* critical path is meaningful in block boundaries only */
@@ -3229,40 +3303,15 @@ priority (insn)
 /* Remove all INSN_LISTs and EXPR_LISTs from the pending lists and add
    them to the unused_*_list variables, so that they can be reused.  */
 
-__inline static void
-free_pnd_lst (listp, unused_listp)
-     rtx *listp, *unused_listp;
-{
-  register rtx link, prev_link;
-
-  if (*listp == 0)
-    return;
-
-  prev_link = *listp;
-  link = XEXP (prev_link, 1);
-
-  while (link)
-    {
-      prev_link = link;
-      link = XEXP (link, 1);
-    }
-
-  XEXP (prev_link, 1) = *unused_listp;
-  *unused_listp = *listp;
-  *listp = 0;
-}
-
 static void
 free_pending_lists ()
 {
-
-
   if (current_nr_blocks <= 1)
     {
-      free_pnd_lst (&pending_read_insns, &unused_insn_list);
-      free_pnd_lst (&pending_write_insns, &unused_insn_list);
-      free_pnd_lst (&pending_read_mems, &unused_expr_list);
-      free_pnd_lst (&pending_write_mems, &unused_expr_list);
+      free_list (&pending_read_insns, &unused_insn_list);
+      free_list (&pending_write_insns, &unused_insn_list);
+      free_list (&pending_read_mems, &unused_expr_list);
+      free_list (&pending_write_mems, &unused_expr_list);
     }
   else
     {
@@ -3271,10 +3320,10 @@ free_pending_lists ()
 
       for (bb = 0; bb < current_nr_blocks; bb++)
 	{
-	  free_pnd_lst (&bb_pending_read_insns[bb], &unused_insn_list);
-	  free_pnd_lst (&bb_pending_write_insns[bb], &unused_insn_list);
-	  free_pnd_lst (&bb_pending_read_mems[bb], &unused_expr_list);
-	  free_pnd_lst (&bb_pending_write_mems[bb], &unused_expr_list);
+	  free_list (&bb_pending_read_insns[bb], &unused_insn_list);
+	  free_list (&bb_pending_write_insns[bb], &unused_insn_list);
+	  free_list (&bb_pending_read_mems[bb], &unused_expr_list);
+	  free_list (&bb_pending_write_mems[bb], &unused_expr_list);
 	}
     }
 }
@@ -3289,26 +3338,10 @@ add_insn_mem_dependence (insn_list, mem_list, insn, mem)
 {
   register rtx link;
 
-  if (unused_insn_list)
-    {
-      link = unused_insn_list;
-      unused_insn_list = XEXP (link, 1);
-    }
-  else
-    link = rtx_alloc (INSN_LIST);
-  XEXP (link, 0) = insn;
-  XEXP (link, 1) = *insn_list;
+  link = alloc_INSN_LIST (insn, *insn_list);
   *insn_list = link;
 
-  if (unused_expr_list)
-    {
-      link = unused_expr_list;
-      unused_expr_list = XEXP (link, 1);
-    }
-  else
-    link = rtx_alloc (EXPR_LIST);
-  XEXP (link, 0) = mem;
-  XEXP (link, 1) = *mem_list;
+  link = alloc_EXPR_LIST (VOIDmode, mem, *mem_list);
   *mem_list = link;
 
   pending_lists_length++;
@@ -3361,8 +3394,8 @@ flush_pending_lists (insn, only_write)
   for (u = last_pending_memory_flush; u; u = XEXP (u, 1))
     add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
-  last_pending_memory_flush =
-    gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
+  free_list (&last_pending_memory_flush, &unused_insn_list);
+  last_pending_memory_flush = alloc_INSN_LIST (insn, NULL_RTX);
 }
 
 /* Analyze a single SET or CLOBBER rtx, X, creating all dependencies generated
@@ -3578,8 +3611,7 @@ sched_analyze_2 (x, insn)
 	    while (--i >= 0)
 	      {
 		reg_last_uses[regno + i]
-		  = gen_rtx (INSN_LIST, VOIDmode,
-			     insn, reg_last_uses[regno + i]);
+		  = alloc_INSN_LIST (insn, reg_last_uses[regno + i]);
 
 		for (u = reg_last_sets[regno + i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
@@ -3593,7 +3625,7 @@ sched_analyze_2 (x, insn)
 	else
 	  {
 	    reg_last_uses[regno]
-	      = gen_rtx (INSN_LIST, VOIDmode, insn, reg_last_uses[regno]);
+	      = alloc_INSN_LIST (insn, reg_last_uses[regno]);
 
 	    for (u = reg_last_sets[regno]; u; u = XEXP (u, 1))
 	      add_dependence (insn, XEXP (u, 0), 0);
@@ -3829,18 +3861,20 @@ sched_analyze_insn (x, insn, loop_notes)
   EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i,
 			     {
 			       /* reg_last_sets[r] is now a list of insns */
+			       free_list (&reg_last_sets[i], &unused_insn_list);
 			       reg_last_sets[i]
-				 = gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
+				 = alloc_INSN_LIST (insn, NULL_RTX);
 			     });
   CLEAR_REG_SET (reg_pending_sets);
 
   if (reg_pending_sets_all)
     {
       for (i = 0; i < maxreg; i++)
-
-	/* reg_last_sets[r] is now a list of insns */
-	reg_last_sets[i]
-	  = gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
+	{
+	  /* reg_last_sets[r] is now a list of insns */
+	  free_list (&reg_last_sets[i], &unused_insn_list);
+	  reg_last_sets[i] = alloc_INSN_LIST (insn, NULL_RTX);
+	}
 
       reg_pending_sets_all = 0;
     }
@@ -3940,12 +3974,12 @@ sched_analyze (head, tail)
 	      /* Add a pair of fake REG_NOTE which we will later
 		 convert back into a NOTE_INSN_SETJMP note.  See
 		 reemit_notes for why we use a pair of NOTEs.  */
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
-					  GEN_INT (0),
-					  REG_NOTES (insn));
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
-					  GEN_INT (NOTE_INSN_SETJMP),
-					  REG_NOTES (insn));
+	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_DEAD,
+						  GEN_INT (0),
+						  REG_NOTES (insn));
+	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_DEAD,
+						  GEN_INT (NOTE_INSN_SETJMP),
+						  REG_NOTES (insn));
 	    }
 	  else
 	    {
@@ -3987,8 +4021,8 @@ sched_analyze (head, tail)
 	     function call) on all hard register clobberage.  */
 
 	  /* last_function_call is now a list of insns */
-	  last_function_call
-	    = gen_rtx (INSN_LIST, VOIDmode, insn, NULL_RTX);
+	  free_list(&last_function_call, &unused_insn_list);
+	  last_function_call = alloc_INSN_LIST (insn, NULL_RTX);
 	}
 
       /* See comments on reemit_notes as to why we do this.  */
@@ -4000,10 +4034,12 @@ sched_analyze (head, tail)
 		   || (NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP
 		       && GET_CODE (PREV_INSN (insn)) != CALL_INSN)))
 	{
-	  loop_notes = gen_rtx (EXPR_LIST, REG_DEAD,
-				GEN_INT (NOTE_BLOCK_NUMBER (insn)), loop_notes);
-	  loop_notes = gen_rtx (EXPR_LIST, REG_DEAD,
-				GEN_INT (NOTE_LINE_NUMBER (insn)), loop_notes);
+	  loop_notes = alloc_EXPR_LIST (REG_DEAD,
+					GEN_INT (NOTE_BLOCK_NUMBER (insn)),
+					loop_notes);
+	  loop_notes = alloc_EXPR_LIST (REG_DEAD,
+					GEN_INT (NOTE_LINE_NUMBER (insn)),
+					loop_notes);
 	  CONST_CALL_P (loop_notes) = CONST_CALL_P (insn);
 	}
 
@@ -4225,9 +4261,7 @@ queue_insn (insn, n_cycles)
      int n_cycles;
 {
   int next_q = NEXT_Q_AFTER (q_ptr, n_cycles);
-  rtx link = rtx_alloc (INSN_LIST);
-  XEXP (link, 0) = insn;
-  XEXP (link, 1) = insn_queue[next_q];
+  rtx link = alloc_INSN_LIST (insn, insn_queue[next_q]);
   insn_queue[next_q] = link;
   q_size += 1;
 
@@ -4442,10 +4476,7 @@ create_reg_dead_note (reg, insn)
       if (current_nr_blocks <= 1)
 	abort ();
       else
-	{
-	  link = rtx_alloc (EXPR_LIST);
-	  PUT_REG_NOTE_KIND (link, REG_DEAD);
-	}
+	link = alloc_EXPR_LIST (REG_DEAD, NULL_RTX, NULL_RTX);
     }
   else
     {
@@ -4472,13 +4503,9 @@ create_reg_dead_note (reg, insn)
 	  if (link == NULL_RTX && current_nr_blocks <= 1)
 	    abort ();
 	  else if (link == NULL_RTX)
-	    {
-	      link = rtx_alloc (EXPR_LIST);
-	      PUT_REG_NOTE_KIND (link, REG_DEAD);
-	      XEXP (link, 0) = gen_rtx (REG, word_mode, 0);
-	      XEXP (link, 1) = NULL_RTX;
-	    }
-	     
+	    link = alloc_EXPR_LIST (REG_DEAD, gen_rtx (REG, word_mode, 0),
+				    NULL_RTX);
+
 	  reg_note_regs += (REGNO (XEXP (link, 0)) >= FIRST_PSEUDO_REGISTER ? 1
 			    : HARD_REGNO_NREGS (REGNO (XEXP (link, 0)),
 						GET_MODE (XEXP (link, 0))));
@@ -4491,10 +4518,7 @@ create_reg_dead_note (reg, insn)
 	  rtx temp_reg, temp_link;
 
 	  temp_reg = gen_rtx (REG, word_mode, 0);
-	  temp_link = rtx_alloc (EXPR_LIST);
-	  PUT_REG_NOTE_KIND (temp_link, REG_DEAD);
-	  XEXP (temp_link, 0) = temp_reg;
-	  XEXP (temp_link, 1) = dead_notes;
+	  temp_link = alloc_EXPR_LIST (REG_DEAD, temp_reg, dead_notes);
 	  dead_notes = temp_link;
 	  reg_note_regs--;
 	}
@@ -7055,13 +7079,10 @@ compute_block_forward_dependences (bb)
 	  if (find_insn_list (insn, INSN_DEPEND (x)))
 	    continue;
 
-	  new_link = rtx_alloc (INSN_LIST);
+	  new_link = alloc_INSN_LIST (insn, INSN_DEPEND (x));
 
 	  dep_type = REG_NOTE_KIND (link);
 	  PUT_REG_NOTE_KIND (new_link, dep_type);
-
-	  XEXP (new_link, 0) = insn;
-	  XEXP (new_link, 1) = INSN_DEPEND (x);
 
 	  INSN_DEPEND (x) = new_link;
 	  INSN_DEP_COUNT (insn) += 1;
@@ -7288,8 +7309,8 @@ compute_block_backward_dependences (bb)
 		      continue;
 
 		    (bb_reg_last_uses[bb_succ])[reg]
-		      = gen_rtx (INSN_LIST, VOIDmode, XEXP (u, 0),
-				 (bb_reg_last_uses[bb_succ])[reg]);
+		      = alloc_INSN_LIST (XEXP (u, 0),
+			 (bb_reg_last_uses[bb_succ])[reg]);
 		  }
 
 		/* reg-last-defs lists are inherited by bb_succ */
@@ -7299,8 +7320,8 @@ compute_block_backward_dependences (bb)
 		      continue;
 
 		    (bb_reg_last_sets[bb_succ])[reg]
-		      = gen_rtx (INSN_LIST, VOIDmode, XEXP (u, 0),
-				 (bb_reg_last_sets[bb_succ])[reg]);
+		      = alloc_INSN_LIST (XEXP (u, 0),
+			 (bb_reg_last_sets[bb_succ])[reg]);
 		  }
 	      }
 
@@ -7341,8 +7362,8 @@ compute_block_backward_dependences (bb)
 		  continue;
 
 		bb_last_function_call[bb_succ]
-		  = gen_rtx (INSN_LIST, VOIDmode, XEXP (u, 0),
-			     bb_last_function_call[bb_succ]);
+		  = alloc_INSN_LIST (XEXP (u, 0),
+		     		     bb_last_function_call[bb_succ]);
 	      }
 
 	    /* last_pending_memory_flush is inherited by bb_succ */
@@ -7352,8 +7373,9 @@ compute_block_backward_dependences (bb)
 		  continue;
 
 		bb_last_pending_memory_flush[bb_succ]
-		  = gen_rtx (INSN_LIST, VOIDmode, XEXP (u, 0),
-			     bb_last_pending_memory_flush[bb_succ]);
+		  = alloc_INSN_LIST (XEXP (u, 0),
+				     bb_last_pending_memory_flush[bb_succ]);
+
 	      }
 
 	    /* sched_before_next_call is inherited by bb_succ */
@@ -7365,6 +7387,20 @@ compute_block_backward_dependences (bb)
 	    e = NEXT_OUT (e);
 	  }
 	while (e != first_edge);
+    }
+
+  /* Free up the INSN_LISTs */
+  for (b = 0; b < max_reg; ++b)
+    {
+      free_list (&reg_last_sets[b], &unused_insn_list);
+      free_list (&reg_last_uses[b], &unused_insn_list);
+    }
+
+  /* Assert that we won't need bb_reg_last_* for this block anymore.  */
+  if (current_nr_blocks > 1)
+    {
+      bb_reg_last_uses[bb] = (rtx *) NULL_RTX;
+      bb_reg_last_sets[bb] = (rtx *) NULL_RTX;
     }
 }
 
@@ -7730,10 +7766,7 @@ split_hard_reg_notes (note, first, last, orig_insn)
 	      && (temp = regno_use_in (new_reg, PATTERN (insn))))
 	    {
 	      /* Create a new reg dead note ere.  */
-	      link = rtx_alloc (EXPR_LIST);
-	      PUT_REG_NOTE_KIND (link, REG_DEAD);
-	      XEXP (link, 0) = temp;
-	      XEXP (link, 1) = REG_NOTES (insn);
+	      link = alloc_EXPR_LIST (REG_DEAD, temp, REG_NOTES (insn));
 	      REG_NOTES (insn) = link;
 
 	      /* If killed multiple registers here, then add in the excess.  */
@@ -7789,10 +7822,8 @@ new_insn_dead_notes (pat, insn, last, orig_insn)
 		  if (!find_regno_note (tem, REG_UNUSED, REGNO (dest))
 		      && !find_regno_note (tem, REG_DEAD, REGNO (dest)))
 		    {
-		      rtx note = rtx_alloc (EXPR_LIST);
-		      PUT_REG_NOTE_KIND (note, REG_DEAD);
-		      XEXP (note, 0) = dest;
-		      XEXP (note, 1) = REG_NOTES (tem);
+		      rtx note = alloc_EXPR_LIST (REG_DEAD, dest,
+						  REG_NOTES (tem));
 		      REG_NOTES (tem) = note;
 		    }
 		  /* The reg only dies in one insn, the last one that uses
@@ -7818,10 +7849,7 @@ new_insn_dead_notes (pat, insn, last, orig_insn)
 
 	  if (GET_CODE (pat) == CLOBBER)
 	    {
-	      rtx note = rtx_alloc (EXPR_LIST);
-	      PUT_REG_NOTE_KIND (note, REG_UNUSED);
-	      XEXP (note, 0) = dest;
-	      XEXP (note, 1) = REG_NOTES (insn);
+	      rtx note = alloc_EXPR_LIST (REG_UNUSED, dest, REG_NOTES (insn));
 	      REG_NOTES (insn) = note;
 	      return;
 	    }
@@ -8117,8 +8145,11 @@ update_flow_info (notes, first, last, orig_insn)
 	  for (insn = first; insn != NEXT_INSN (last); insn = NEXT_INSN (insn))
 	    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 		&& reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
-	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL,
-					  XEXP (note, 0), REG_NOTES (insn));
+	      {
+		REG_NOTES (insn) = alloc_EXPR_LIST (REG_LABEL,
+						    XEXP (note, 0),
+						    REG_NOTES (insn));
+	      }
 	  break;
 
 	case REG_CC_SETTER:
@@ -8214,10 +8245,7 @@ update_flow_info (notes, first, last, orig_insn)
 
 		  if (insn_dest != dest)
 		    {
-		      note = rtx_alloc (EXPR_LIST);
-		      PUT_REG_NOTE_KIND (note, REG_DEAD);
-		      XEXP (note, 0) = dest;
-		      XEXP (note, 1) = REG_NOTES (insn);
+		      note = alloc_EXPR_LIST (REG_DEAD, dest, REG_NOTES (insn));
 		      REG_NOTES (insn) = note;
 		      /* The reg only dies in one insn, the last one
 			 that uses it.  */
@@ -8528,16 +8556,23 @@ schedule_insns (dump_file)
       for (b = 0; b < n_basic_blocks; b++)
 	for (insn = basic_block_head[b];; insn = NEXT_INSN (insn))
 	  {
-	    rtx link;
+	    rtx link, prev;
 
 	    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	      {
-		for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
+		prev = NULL_RTX;
+		link = LOG_LINKS (insn);
+		while (link)
 		  {
 		    rtx x = XEXP (link, 0);
 
 		    if (INSN_BLOCK (x) != b)
-		      remove_dependence (insn, x);
+		      {
+		        remove_dependence (insn, x);
+			link = prev ? XEXP (prev, 1) : LOG_LINKS (insn);
+		      }
+		    else
+		      prev = link, link = XEXP (prev, 1);
 		  }
 	      }
 
