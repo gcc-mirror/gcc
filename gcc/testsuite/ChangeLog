@@ -1,3 +1,8 @@
+2003-10-30  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* ada/acats/run_all.sh: Do not print PASS messages to stdout, as
+	done by dejagnu.
+
 2003-10-29  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* ada/acats/run_all.sh: Redirect mv output to /dev/null
