@@ -303,7 +303,7 @@ rdata_section ()							\
 {									\
   if (in_section != in_rdata)						\
     {									\
-      if (mips_abi != ABI_32)						\
+      if (mips_abi != ABI_32 && mips_abi != ABI_O64)			\
 	fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP_64);	\
       else								\
 	fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP_32);	\
@@ -394,7 +394,7 @@ while (0)
 #define ASM_OUTPUT_ALIGNED_LOCAL(STREAM, NAME, SIZE, ALIGN)		   \
 do									   \
   {									   \
-    if (mips_abi != ABI_32)						   \
+    if (mips_abi != ABI_32 && mips_abi != ABI_O64)			   \
       {									   \
 	fprintf (STREAM, "%s\n", BSS_SECTION_ASM_OP);			   \
 	mips_declare_object (STREAM, NAME, "", ":\n", 0);		   \
@@ -455,7 +455,8 @@ do {									 \
    } while (0)
 
 #undef LOCAL_LABEL_PREFIX
-#define LOCAL_LABEL_PREFIX (mips_abi == ABI_32 ? "$" : ".")
+#define LOCAL_LABEL_PREFIX ((mips_abi == ABI_32 || mips_abi == ABI_O64) \
+			    ? "$" : ".")
 
 /* Profiling is supported via libprof1.a not -lc_p as in Irix 3.  */
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend

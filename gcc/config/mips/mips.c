@@ -565,7 +565,7 @@ mips_const_double_ok (op, mode)
     return 1;
 
   /* ??? li.s does not work right with SGI's Irix 6 assembler.  */
-  if (mips_abi != ABI_32 && mips_abi != ABI_EABI)
+  if (mips_abi != ABI_32 && mips_abi != ABI_O64 && mips_abi != ABI_EABI)
     return 0;
 
   REAL_VALUE_FROM_CONST_DOUBLE (d, op);
@@ -3690,7 +3690,7 @@ function_arg (cum, mode, type, named)
   switch (mode)
     {
     case SFmode:
-      if (mips_abi == ABI_32)
+      if (mips_abi == ABI_32 || mips_abi == ABI_O64)
 	{
 	  if (cum->gp_reg_found || cum->arg_number >= 2 || TARGET_SOFT_FLOAT)
 	    regbase = GP_ARG_FIRST;
@@ -3726,7 +3726,7 @@ function_arg (cum, mode, type, named)
 	    cum->arg_words += cum->arg_words & 1;
 	}
 
-      if (mips_abi == ABI_32)
+      if (mips_abi == ABI_32 || mips_abi == ABI_O64)
 	regbase = ((cum->gp_reg_found
 		    || TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT
 		    || cum->arg_number >= 2)
@@ -3782,7 +3782,7 @@ function_arg (cum, mode, type, named)
 	abort ();
 
       if (! type || TREE_CODE (type) != RECORD_TYPE || mips_abi == ABI_32
-	  || mips_abi == ABI_EABI || ! named)
+	  || mips_abi == ABI_EABI || mips_abi == ABI_O64 || ! named)
 	ret = gen_rtx (REG, mode, regbase + *arg_words + bias);
       else
 	{
@@ -4042,11 +4042,13 @@ override_options ()
     }
 
 #ifdef MIPS_ABI_DEFAULT
-  /* Get the ABI to use.  Currently this code is only used for Irix 6.  */
+  /* Get the ABI to use. */
   if (mips_abi_string == (char *) 0)
     mips_abi = MIPS_ABI_DEFAULT;
   else if (! strcmp (mips_abi_string, "32"))
     mips_abi = ABI_32;
+  else if (! strcmp (mips_abi_string, "o64"))
+    mips_abi = ABI_O64;
   else if (! strcmp (mips_abi_string, "n32"))
     mips_abi = ABI_N32;
   else if (! strcmp (mips_abi_string, "64"))
@@ -4057,7 +4059,8 @@ override_options ()
     error ("bad value (%s) for -mabi= switch", mips_abi_string);
 
   /* A specified ISA defaults the ABI if it was not specified.  */
-  if (mips_abi_string == 0 && mips_isa_string && mips_abi != ABI_EABI)
+  if (mips_abi_string == 0 && mips_isa_string 
+      && mips_abi != ABI_EABI && mips_abi != ABI_O64)
     {
       if (mips_isa <= 2)
 	mips_abi = ABI_32;
@@ -4066,7 +4069,8 @@ override_options ()
     }
 
   /* A specified ABI defaults the ISA if it was not specified.  */
-  else if (mips_isa_string == 0 && mips_abi_string && mips_abi != ABI_EABI)
+  else if (mips_isa_string == 0 && mips_abi_string 
+	   && mips_abi != ABI_EABI && mips_abi != ABI_O64)
     {
       if (mips_abi == ABI_32)
 	mips_isa = 1;
@@ -4079,7 +4083,8 @@ override_options ()
   /* If both ABI and ISA were specified, check for conflicts.  */
   else if (mips_isa_string && mips_abi_string)
     {
-      if ((mips_isa <= 2 && (mips_abi == ABI_N32 || mips_abi == ABI_64))
+      if ((mips_isa <= 2 && (mips_abi == ABI_N32 || mips_abi == ABI_64
+			     || mips_abi == ABI_O64))
 	  || (mips_isa >= 3 && mips_abi == ABI_32))
 	error ("-mabi=%s does not support -mips%d", mips_abi_string, mips_isa);
     }
@@ -4253,7 +4258,7 @@ override_options ()
 	fatal ("Only MIPS-III or MIPS-IV CPUs can support 64 bit gp registers");
     }
 
-  if (mips_abi != ABI_32)
+  if (mips_abi != ABI_32 && mips_abi != ABI_O64)
     flag_pcc_struct_return = 0;
 
   /* Tell halfpic.c that we have half-pic code if we do.  */
@@ -5247,7 +5252,7 @@ mips_asm_file_start (stream)
 
   /* Start a section, so that the first .popsection directive is guaranteed
      to have a previously defined section to pop back to.  */
-  if (mips_abi != ABI_32 && mips_abi != ABI_EABI)
+  if (mips_abi != ABI_32 && mips_abi != ABI_O64 && mips_abi != ABI_EABI)
     fprintf (stream, "\t.section\t.text\n");
 
   /* This code exists so that we can put all externs before all symbol
@@ -5551,7 +5556,8 @@ compute_frame_size (size)
      The gp reg is callee saved in the 64 bit ABI, so all routines must
      save the gp reg.  This is not a leaf routine if -p, because of the
      call to mcount.  */
-  if (total_size == extra_size && (mips_abi == ABI_32 || mips_abi == ABI_EABI)
+  if (total_size == extra_size 
+      && (mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI)
       && ! profile_flag)
     total_size = extra_size = 0;
   else if (TARGET_ABICALLS)
@@ -5566,7 +5572,7 @@ compute_frame_size (size)
 
   /* Add in space reserved on the stack by the callee for storing arguments
      passed in registers.  */
-  if (mips_abi != ABI_32)
+  if (mips_abi != ABI_32 && mips_abi != ABI_O64)
     total_size += MIPS_STACK_ALIGN (current_function_pretend_args_size);
 
   /* The entry pseudo instruction will allocate 32 bytes on the stack.  */
@@ -5821,7 +5827,8 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		    insn = emit_move_insn (mem_rtx, reg_rtx);
 		    RTX_FRAME_RELATED_P (insn) = 1;
 		  }
-		else if (!TARGET_ABICALLS || mips_abi != ABI_32
+		else if (!TARGET_ABICALLS 
+			 || (mips_abi != ABI_32 && mips_abi != ABI_O64)
 			 || regno != (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
 		  {
 		    emit_move_insn (reg_rtx, mem_rtx);
@@ -5834,7 +5841,8 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	      }
 	    else
 	      {
-		if (store_p || !TARGET_ABICALLS || mips_abi != ABI_32
+		if (store_p || !TARGET_ABICALLS 
+		    || (mips_abi != ABI_32 && mips_abi != ABI_O64)
 		    || regno != (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
 		  {
 		    int r = regno;
@@ -6208,7 +6216,7 @@ function_prologue (file, size)
       fprintf (file, "\n");
     }
 
-  if (TARGET_ABICALLS && mips_abi == ABI_32)
+  if (TARGET_ABICALLS && (mips_abi == ABI_32 || mips_abi == ABI_O64))
     {
       char *sp_str = reg_names[STACK_POINTER_REGNUM];
 
@@ -6336,7 +6344,7 @@ mips_expand_prologue ()
 
   /* If this function is a varargs function, store any registers that
      would normally hold arguments ($4 - $7) on the stack.  */
-  if (mips_abi == ABI_32
+  if ((mips_abi == ABI_32 || mips_abi == ABI_O64)
       && (! mips_entry || mips_can_use_return_insn ())
       && ((TYPE_ARG_TYPES (fntype) != 0
 	   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
@@ -6449,7 +6457,7 @@ mips_expand_prologue ()
       /* If we are doing svr4-abi, sp move is done by
          function_prologue.  In mips16 mode with a large frame, we
          save the registers before adjusting the stack.  */
-      if ((!TARGET_ABICALLS || mips_abi != ABI_32)
+      if ((!TARGET_ABICALLS || (mips_abi != ABI_32 && mips_abi != ABI_O64))
 	  && (!TARGET_MIPS16 || tsize <= 32767))
 	{
 	  rtx insn;
@@ -6496,7 +6504,7 @@ mips_expand_prologue ()
       else if (reg_18_save != NULL_RTX)
 	emit_insn (reg_18_save);
 
-      if ((!TARGET_ABICALLS || mips_abi != ABI_32)
+      if ((!TARGET_ABICALLS || (mips_abi != ABI_32 && mips_abi != ABI_O64))
 	  && TARGET_MIPS16
 	  && tsize > 32767)
 	{
@@ -6527,7 +6535,7 @@ mips_expand_prologue ()
              instructions when using the frame pointer by pointing the
              frame pointer ahead of the argument space allocated on
              the stack.  */
-	  if ((! TARGET_ABICALLS || mips_abi != ABI_32)
+	  if ((! TARGET_ABICALLS || (mips_abi != ABI_32 && mips_abi != ABI_O64))
 	      && TARGET_MIPS16
 	      && tsize > 32767)
 	    {
@@ -6570,7 +6578,7 @@ mips_expand_prologue ()
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
-      if (TARGET_ABICALLS && mips_abi != ABI_32)
+      if (TARGET_ABICALLS && (mips_abi != ABI_32 && mips_abi != ABI_O64))
 	emit_insn (gen_loadgp (XEXP (DECL_RTL (current_function_decl), 0),
 			       gen_rtx (REG, DImode, 25)));
     }
@@ -6754,7 +6762,7 @@ mips_expand_epilogue ()
       /* The GP/PIC register is implicitly used by all SYMBOL_REFs, so if we
 	 are going to restore it, then we must emit a blockage insn to
 	 prevent the scheduler from moving the restore out of the epilogue.  */
-      else if (TARGET_ABICALLS && mips_abi != ABI_32
+      else if (TARGET_ABICALLS && mips_abi != ABI_32 && mips_abi != ABI_O64
 	       && (current_frame_info.mask
 		   & (1L << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))))
 	emit_insn (gen_blockage ());
@@ -6947,7 +6955,9 @@ mips_function_value (valtype, func)
     }
 
   else if (TREE_CODE (valtype) == RECORD_TYPE
-	   && mips_abi != ABI_32 && mips_abi != ABI_EABI)
+	   && mips_abi != ABI_32 
+	   && mips_abi != ABI_O64 
+	   && mips_abi != ABI_EABI)
     {
       /* A struct with only one or two floating point fields is returned in
 	 the floating point registers.  */
@@ -7409,8 +7419,8 @@ mips16_fp_args (file, fp_code, from_fp_p)
   int gparg, fparg;
   unsigned int f;
 
-  /* This code only works for the original 32 bit ABI.  */
-  if (mips_abi != ABI_32)
+  /* This code only works for the original 32 bit ABI and the O64 ABI.  */
+  if (mips_abi != ABI_32 && mips_abi != ABI_O64)
     abort ();
 
   if (from_fp_p)
@@ -7612,9 +7622,9 @@ build_mips16_call_stub (retval, fnmem, arg_size, fp_code)
       && strncmp (XSTR (fn, 0), "__mips16_", 9) == 0)
     return 0;
 
-  /* This code will only work for the standard ABI.  The other ABI's
+  /* This code will only work for o32 and o64 abis.  The other ABI's 
      require more sophisticated support.  */
-  if (mips_abi != ABI_32)
+  if (mips_abi != ABI_32 && mips_abi != ABI_O64)
     abort ();
 
   /* We can only handle SFmode and DFmode floating point return
