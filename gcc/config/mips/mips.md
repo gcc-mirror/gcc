@@ -93,7 +93,7 @@
 ;;          (const_string "default"))))
 
 ;; ??? Fix everything that tests this attribute.
-(define_attr "cpu" "default,r3000,r6000,r4000,r4600,r4650,r8000"
+(define_attr "cpu" "default,r3000,r6000,r4000,r4100,r4300,r4600,r4650,r8000"
   (const (symbol_ref "mips_cpu_attr")))
 
 ;; Attribute defining whether or not we can use the branch-likely instructions
@@ -151,12 +151,16 @@
 ;; Make the default case (PROCESSOR_DEFAULT) handle the worst case
 
 (define_function_unit "memory" 1 0
-  (and (eq_attr "type" "load") (eq_attr "cpu" "!r3000,r4600,r4650"))
+  (and (eq_attr "type" "load") (eq_attr "cpu" "!r3000,r4600,r4650,r4100,r4300"))
   3 0)
 
 (define_function_unit "memory" 1 0
   (and (eq_attr "type" "load") (eq_attr "cpu" "r3000,r4600,r4650"))
   2 0)
+
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "load") (eq_attr "cpu" "r4100,r4300"))
+  1 0)
 
 (define_function_unit "memory"   1 0 (eq_attr "type" "store") 1 0)
 
@@ -167,7 +171,7 @@
   1 3)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul") (eq_attr "cpu" "!r3000,r4000,r4600,r4650"))
+  (and (eq_attr "type" "imul") (eq_attr "cpu" "!r3000,r4000,r4600,r4650,r4100,r4300"))
   17 17)
 
 (define_function_unit "imuldiv"  1 0
@@ -183,7 +187,23 @@
   4 4)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "idiv") (eq_attr "cpu" "!r3000,r4000,r4600,r4650"))
+  (and (eq_attr "type" "imul") (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4100")))
+  1 1)
+
+(define_function_unit "imuldiv"  1 0
+  (and (eq_attr "type" "imul") (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4100")))
+  4 4)
+
+(define_function_unit "imuldiv"  1 0
+  (and (eq_attr "type" "imul") (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300")))
+  5 5)
+
+(define_function_unit "imuldiv"  1 0
+  (and (eq_attr "type" "imul") (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300")))
+  8 8)
+
+(define_function_unit "imuldiv"  1 0
+  (and (eq_attr "type" "idiv") (eq_attr "cpu" "!r3000,r4000,r4600,r4650,r4100,r4300"))
   38 38)
 
 (define_function_unit "imuldiv"  1 0
@@ -202,8 +222,31 @@
   (and (eq_attr "type" "idiv") (eq_attr "cpu" "r4000"))
   69 69)
 
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "idiv") (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4100")))
+  35 35)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "idiv") (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4100")))
+  67 67)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "idiv") (and (eq_attr "mode" "SI") (eq_attr "cpu" "r4300")))
+  37 37)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "idiv") (and (eq_attr "mode" "DI") (eq_attr "cpu" "r4300")))
+  69 69)
+
+;; The R4300 does *NOT* have a seperate Floating Point Unit, instead
+;; the FP hardware is part of the normal ALU circuitry.  This means FP
+;; instructions affect the pipe-line, and no functional unit
+;; parallelism can occur on R4300 processors.  To force GCC into coding
+;; for only a single functional unit, we force the R4300 FP
+;; instructions to be processed in the "imuldiv" unit.
+
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "!r3000,r6000"))
+  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "!r3000,r6000,r4300"))
   3 0)
 
 (define_function_unit "adder" 1 1
@@ -211,7 +254,7 @@
   2 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fadd") (eq_attr "cpu" "!r3000,r6000"))
+  (and (eq_attr "type" "fadd") (eq_attr "cpu" "!r3000,r6000,r4300"))
   4 0)
 
 (define_function_unit "adder" 1 1
@@ -223,7 +266,7 @@
   3 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "!r3000,r4600,r4650"))
+  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "!r3000,r4600,r4650,r4300"))
   2 0)
 
 (define_function_unit "adder" 1 1
@@ -231,7 +274,7 @@
   1 0)
 
 (define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r3000,r6000,r4600,r4650")))
+  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r3000,r6000,r4600,r4650,r4300")))
   7 0)
 
 (define_function_unit "mult" 1 1
@@ -247,7 +290,7 @@
   8 0)
 
 (define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r6000")))
+  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r6000,r4300")))
   8 0)
 
 (define_function_unit "mult" 1 1
@@ -259,7 +302,7 @@
   6 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r3000,r6000,r4600,r4650")))
+  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r3000,r6000,r4600,r4650,r4300")))
   23 0)
 
 (define_function_unit "divide" 1 1
@@ -275,7 +318,7 @@
   32 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r6000,r4600,r4650")))
+  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r6000,r4600,r4650,r4300")))
   36 0)
 
 (define_function_unit "divide" 1 1
@@ -292,7 +335,7 @@
 
 ;;; ??? Is this number right?
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r4600,r4650")))
+  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r4600,r4650,r4300")))
   54 0)
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
@@ -300,12 +343,34 @@
 
 ;;; ??? Is this number right?
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r4600,r4650")))
+  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r4600,r4650,r4300")))
   112 0)
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4600,r4650")))
   60 0)
 
+;; R4300 FP instruction classes treated as part of the "imuldiv"
+;; functional unit:
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "fadd") (eq_attr "cpu" "r4300"))
+  3 3)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4300")))
+  5 5)
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4300")))
+  8 8)
+
+(define_function_unit "imuldiv" 1 0
+  (and (and (eq_attr "type" "fdiv") (eq_attr "type" "fsqrt"))
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4300")))
+  29 29)
+(define_function_unit "imuldiv" 1 0
+  (and (and (eq_attr "type" "fdiv") (eq_attr "type" "fsqrt"))
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4300")))
+  58 58)
 
 ;; The following functional units do not use the cpu type, and use
 ;; much less memory in genattrtab.c.
@@ -803,25 +868,89 @@
 ;;  ....................
 ;;
 
-(define_insn "muldf3"
+;; Vr4300 has a CPU bug where multiplies with certain operands may
+;; corrupt immediately following multiplies. This is a simple fix to
+;; insert NOPs.
+
+(define_expand "muldf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "
+{
+  if (mips_cpu != PROCESSOR_R4300)
+    emit_insn (gen_muldf3_internal (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_muldf3_r4300 (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+(define_insn "muldf3_internal"
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(mult:DF (match_operand:DF 1 "register_operand" "f")
+		 (match_operand:DF 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && mips_cpu != PROCESSOR_R4300"
   "mul.d\\t%0,%1,%2"
   [(set_attr "type"	"fmul")
    (set_attr "mode"	"DF")
    (set_attr "length"	"1")])
 
-(define_insn "mulsf3"
+(define_insn "muldf3_r4300"
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(mult:DF (match_operand:DF 1 "register_operand" "f")
+		 (match_operand:DF 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && mips_cpu == PROCESSOR_R4300"
+  "*
+{
+  output_asm_insn (\"mul.d\\t%0,%1,%2\", operands);
+  if (TARGET_4300_MUL_FIX)
+    output_asm_insn (\"nop\", operands);
+  return \"\";
+}"
+  [(set_attr "type"	"fmul")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"2")])	;; mul.d + nop
+
+(define_expand "mulsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
+  "
+{
+  if (mips_cpu != PROCESSOR_R4300)
+    emit_insn( gen_mulsf3_internal (operands[0], operands[1], operands[2]));
+  else
+    emit_insn( gen_mulsf3_r4300 (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+(define_insn "mulsf3_internal"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(mult:SF (match_operand:SF 1 "register_operand" "f")
+		 (match_operand:SF 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && mips_cpu != PROCESSOR_R4300"
   "mul.s\\t%0,%1,%2"
   [(set_attr "type"	"fmul")
    (set_attr "mode"	"SF")
    (set_attr "length"	"1")])
+
+(define_insn "mulsf3_r4300"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(mult:SF (match_operand:SF 1 "register_operand" "f")
+		 (match_operand:SF 2 "register_operand" "f")))]
+  "TARGET_HARD_FLOAT && mips_cpu == PROCESSOR_R4300"
+  "*
+{
+  output_asm_insn (\"mul.s\\t%0,%1,%2\", operands);
+  if (TARGET_4300_MUL_FIX)
+    output_asm_insn (\"nop\", operands);
+  return \"\";
+}"
+  [(set_attr "type"	"fmul")
+   (set_attr "mode"	"SF")
+   (set_attr "length"	"2")])	;; mul.s + nop
 
 ;; ??? The R4000 (only) has a cpu bug.  If a double-word shift executes while
 ;; a multiply is in progress, it may give an incorrect result.  Avoid
