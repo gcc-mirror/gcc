@@ -1,5 +1,5 @@
 /* Solaris PowerPC startfile.  */
-/* Copyright (C) 1996 Free Software Foundation, Inc.
+/* Copyright (C) 1996, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,6 +32,10 @@ extern char **_environ;
 extern int atexit (void (*__func) (void));
 extern void __init (void) __attribute__ ((__longcall__));
 extern void __fini (void) __attribute__ ((__longcall__));
+extern void _start(int argc, char *argv[], char *envp[], void *auxp, 
+		   void (*termfunc)());
+extern void exit(int);
+extern int main (int argc, char *argv[], char *envp[], void *auxp);
 
 typedef void (*func_ptr) (void);
 int (*__atexit)(func_ptr) = atexit;
@@ -115,10 +119,4 @@ _start(int argc, char *argv[], char *envp[], void *auxp, void (*termfunc)())
 
   /* Return to the os */
   exit (ret);
-}
-
-/* Provide a dummy __eabi in case main got compiled without -mcall-solaris.  */
-void
-__eabi ()
-{
 }

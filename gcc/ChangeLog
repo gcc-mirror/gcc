@@ -1,5 +1,17 @@
 2000-08-13  Geoff Keating  <geoffk@cygnus.com>
 
+	* flow.c (attempt_auto_inc): Remove unused variable `bb'.
+	(attempt_auto_inc): Suppress parentheses warning.
+	* function.c (put_reg_into_stack): Remove unused variable `unsigned_p'.
+	* loop.c (load_mems): Remove `u' suffix in two places.
+	* config/rs6000/rs6000.c: Remove unnecessary `u' suffixes from
+	hex constants.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/rs6000/sol-c0.c: Prototype some functions.  Remove the
+	__eabi dummy routine.
+	* config/rs6000/sysv4.h (ASM_DECLARE_FUNCTION_NAME): Remove unused
+	variable `buf_ptr'.
+
 	* config/rs6000/rs6000.c (rs6000_select_section): Rewrite to
 	not put stuff in .sdata unnecessarily.
 	(rs6000_unique_section): New function.

@@ -9569,7 +9569,7 @@ load_mems (loop)
 		  && GET_CODE (SET_DEST (set)) == REG
 		  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
 		  && REGNO (SET_DEST (set)) < last_max_reg
-		  && VARRAY_INT (n_times_set, REGNO (SET_DEST (set))) == 1U
+		  && VARRAY_INT (n_times_set, REGNO (SET_DEST (set))) == 1
 		  && rtx_equal_p (SET_SRC (set), mem))
 		SET_REGNO_REG_SET (&load_copies, REGNO (SET_DEST (set)));
 
@@ -9583,7 +9583,7 @@ load_mems (loop)
  		  && GET_CODE (SET_SRC (set)) == REG
  		  && REGNO (SET_SRC (set)) >= FIRST_PSEUDO_REGISTER
  		  && REGNO (SET_SRC (set)) < last_max_reg
- 		  && VARRAY_INT (n_times_set, REGNO (SET_SRC (set))) == 1U
+ 		  && VARRAY_INT (n_times_set, REGNO (SET_SRC (set))) == 1
  		  && rtx_equal_p (SET_DEST (set), mem))
  		SET_REGNO_REG_SET (&store_copies, REGNO (SET_SRC (set)));
  	      

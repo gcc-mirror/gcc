@@ -4879,7 +4879,6 @@ attempt_auto_inc (pbi, inc, insn, mem, incr, incr_reg)
 	 Change it to q = p, ...*q..., q = q+size.
 	 Then fall into the usual case.  */
       rtx insns, temp;
-      basic_block bb;
 
       start_sequence ();
       emit_move_insn (q, incr_reg);
@@ -4956,7 +4955,7 @@ attempt_auto_inc (pbi, inc, insn, mem, incr, incr_reg)
       /* If the original source was dead, it's dead now.  */
       rtx note;
 
-      while (note = find_reg_note (incr, REG_DEAD, NULL_RTX))
+      while ((note = find_reg_note (incr, REG_DEAD, NULL_RTX)) != NULL_RTX)
 	{
 	  remove_note (incr, note);
 	  if (XEXP (note, 0) != incr_reg)
