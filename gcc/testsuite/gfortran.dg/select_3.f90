@@ -1,19 +1,18 @@
-! [dg-do run }
-!  Simple test program to see if gfortran eliminates the 'case (3:2)'
-!  statement.  This is an unreachable CASE because the range is empty.
+! { dg-do run }
+!  Short test program with a CASE statement that uses a range.
 !
-program select_3
+program select_4
   integer i
-  do i = 1, 4
+  do i = 1, 34, 4
      select case(i)
-     case (1)
-       if (i /= 1) call abort
-     case (3:2)
-       call abort
-     case (4)
-       if (i /= 4) call abort
+     case (:5)
+       if (i /= 1 .and. i /= 5) call abort
+     case (13:21)
+       if (i /= 13 .and. i /= 17 .and. i /= 21) call abort
+     case (29:)
+       if (i /= 29 .and. i /= 33) call abort
      case default
-       if (i /= 2 .and. i /= 3) call abort
+       if (i /= 9 .and. i /= 25) call abort
      end select
   end do
-end program select_3
+end program select_4

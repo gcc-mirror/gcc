@@ -1,16 +1,18 @@
-! { dg-do run }
-!  Short test program with a CASE statement that uses a range.
+! { dg-do compile }
+! Check for overlapping case range diagnostics.
 !
-program select_4
+program select_5
   integer i
-  do i = 1, 40, 4
-     select case(i)
-     case (:5)
-       if (i /= 1 .and. i /= 5) call abort
-     case (20:30)
-       if (i /= 21 .and. i /= 25 .and. i /= 29) call abort
-     case (34:)
-       if (i /= 37) call abort
-     end select
-  end do
-end program select_4
+  select case(i)
+  case (20:30)
+  case (25:) ! { dg-error "overlaps with CASE" "" }
+  end select
+  select case(i)
+  case (30)
+  case (25:) ! { dg-error "overlaps with CASE" "" }
+  end select
+  select case(i)
+  case (20:30)
+  case (25) ! { dg-error "overlaps with CASE" "" }
+  end select
+end program select_5
