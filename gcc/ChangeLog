@@ -1,5 +1,8 @@
 2002-09-12  Jason Merrill  <jason@redhat.com>
 
+	* diagnostic.c (output_add_identifier): New fn.
+	* diagnostic.h: Declare it.
+
 	* calls.c (store_one_arg): Use size_in_bytes to determine the
 	amount of space to push.
 
