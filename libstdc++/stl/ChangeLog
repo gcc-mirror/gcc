@@ -1,3 +1,8 @@
+2000-11-08  Jan van Male  <jan.vanmale@fenk.wau.nl>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README: Fix typo. Remove incorrect reference to Cygnus.
+
 2000-08-22  Geoff Berry  <geoffb@bops.com>
 
 	* bitset (bitset::_M_is_any): Don't use __BITSET_WORDS macro
