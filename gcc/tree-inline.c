@@ -1475,7 +1475,8 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 	}
       else if (warn_inline && DECL_DECLARED_INLINE_P (fn)
 	       && !DECL_IN_SYSTEM_HEADER (fn)
-	       && strlen (reason))
+	       && strlen (reason)
+	       && !lookup_attribute ("noinline", DECL_ATTRIBUTES (fn)))
 	{
 	  warning ("%Jinlining failed in call to '%F': %s", fn, fn, reason);
 	  warning ("called from here");
