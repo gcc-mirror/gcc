@@ -4902,7 +4902,12 @@ simplify_logical (x, last)
 	  && ! side_effects_p (op1))
 	x = gen_binary (AND, mode, XEXP (XEXP (op0, 0), 0), op1);
 
-      if (GET_CODE (op1) == CONST_INT)
+      /* We can call simplify_and_const_int only if we don't lose
+	 any (sign) bits when converting INTVAL (op1) to
+	 "unsigned HOST_WIDE_INT".  */
+      if (GET_CODE (op1) == CONST_INT
+	  && (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	      || INTVAL (op1) > 0))
 	{
 	  x = simplify_and_const_int (x, mode, op0, INTVAL (op1));
 
