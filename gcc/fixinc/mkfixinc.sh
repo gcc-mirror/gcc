@@ -107,8 +107,8 @@ fi
 
 if test -f "$fixincludes"
 then
-    echo copying $fixincludes to $dest
-    cp $fixincludes $dest
+    echo copying $fixincludes to ../fixinc.sh
+    cp $fixincludes ../fixinc.sh
     exit 0
 fi
 
