@@ -1300,10 +1300,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #endif
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
-#define PARM_BOUNDARY ((mips_abi == ABI_O64 \
-			|| TARGET_NEWABI \
-			|| (mips_abi == ABI_EABI && TARGET_64BIT)) ? 64 : 32)
-
+#define PARM_BOUNDARY BITS_PER_WORD
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
@@ -2145,7 +2142,7 @@ extern enum reg_class mips_char_to_class[256];
    `current_function_outgoing_args_size'.  */
 #define OUTGOING_REG_PARM_STACK_SPACE
 
-#define STACK_BOUNDARY ((TARGET_OLDABI || mips_abi == ABI_EABI) ? 64 : 128)
+#define STACK_BOUNDARY (TARGET_NEWABI ? 128 : 64)
 
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
 
@@ -2285,18 +2282,7 @@ typedef struct mips_args {
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
   function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED)
 
-/* If defined, a C expression that gives the alignment boundary, in
-   bits, of an argument with the specified mode and type.  If it is
-   not defined,  `PARM_BOUNDARY' is used for all arguments.  */
-
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
-  (((TYPE) != 0)							\
-	? ((TYPE_ALIGN(TYPE) <= PARM_BOUNDARY)				\
-		? PARM_BOUNDARY						\
-		: TYPE_ALIGN(TYPE))					\
-	: ((GET_MODE_ALIGNMENT(MODE) <= PARM_BOUNDARY)			\
-		? PARM_BOUNDARY						\
-		: GET_MODE_ALIGNMENT(MODE)))
+#define FUNCTION_ARG_BOUNDARY function_arg_boundary
 
 #define FUNCTION_ARG_PADDING(MODE, TYPE)		\
   (mips_pad_arg_upward (MODE, TYPE) ? upward : downward)
@@ -2318,10 +2304,8 @@ typedef struct mips_args {
 
 /* Treat LOC as a byte offset from the stack pointer and round it up
    to the next fully-aligned offset.  */
-#define MIPS_STACK_ALIGN(LOC)						\
-  ((TARGET_OLDABI || mips_abi == ABI_EABI)				\
-   ? ((LOC) + 7) & ~7							\
-   : ((LOC) + 15) & ~15)
+#define MIPS_STACK_ALIGN(LOC) \
+  (TARGET_NEWABI ? ((LOC) + 15) & -16 : ((LOC) + 7) & -8)
 
 
 /* Implement `va_start' for varargs and stdarg.  */
