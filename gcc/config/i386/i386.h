@@ -410,6 +410,7 @@ enum reg_class
 {
   NO_REGS,
   AREG, DREG, CREG, BREG,
+  AD_REGS,			/* %eax/%edx for DImode */
   Q_REGS,			/* %eax %ebx %ecx %edx */
   SIREG, DIREG,
   INDEX_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp */
@@ -428,6 +429,7 @@ enum reg_class
 #define REG_CLASS_NAMES \
 {  "NO_REGS",				\
    "AREG", "DREG", "CREG", "BREG",	\
+   "AD_REGS",				\
    "Q_REGS",				\
    "SIREG", "DIREG",			\
    "INDEX_REGS",			\
@@ -443,6 +445,7 @@ enum reg_class
 #define REG_CLASS_CONTENTS \
 {      0,							\
      0x1,    0x2,  0x4,	 0x8,	/* AREG, DREG, CREG, BREG */	\
+     0x3,			/* AD_REGS */			\
      0xf,			/* Q_REGS */			\
     0x10,   0x20,		/* SIREG, DIREG */		\
  0x1007f,			/* INDEX_REGS */		\
@@ -514,6 +517,7 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    (C) == 'b' ? BREG :						\
    (C) == 'c' ? CREG :						\
    (C) == 'd' ? DREG :						\
+   (C) == 'A' ? AD_REGS :					\
    (C) == 'D' ? DIREG :						\
    (C) == 'S' ? SIREG : NO_REGS)
 
