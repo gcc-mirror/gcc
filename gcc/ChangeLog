@@ -1,3 +1,8 @@
+2003-12-16  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* altivec.h (vec_cmple, vec_all_numeric): Fix typo.
+	* testsuite/gcc.dg/altivec-10.c: Test for above.
+	
 2003-12-15  David O'Brien  <obrien@FreeBSD.org>
 
 	* Makefile.in (CPPFLAGS): Initialize from configure.
