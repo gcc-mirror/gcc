@@ -1,3 +1,10 @@
+Sun Apr 19 15:41:24 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* fix-header.c (enum special_file): Undefine enumerators if they
+	are already defined by include files.
+	* fixproto (rel_source_file in unistd.h stdlib.h): Prefix file protection
+	macro with '__' to not pollute user namespace.
+
 Sun Apr 19 02:42:06 1998  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (queue_to_ready): Fix typo in prototype.
