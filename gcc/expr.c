@@ -1581,6 +1581,22 @@ emit_move_insn (x, y)
   if (mode == BLKmode)
     abort ();
 
+  return emit_move_insn_1 (x, y);
+}
+
+/* Low level part of emit_move_insn.
+   Called just like emit_move_insn, but assumes X and Y
+   are basically valid.  */
+
+rtx
+emit_move_insn_1 (x, y)
+     rtx x, y;
+{
+  enum machine_mode mode = GET_MODE (x);
+  enum machine_mode submode;
+  enum mode_class class = GET_MODE_CLASS (mode);
+  int i;
+
   if (class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT)
     submode = mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
 			     (class == MODE_COMPLEX_INT
