@@ -1,3 +1,10 @@
+2004-09-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* parser.c (cp_parser_expression_stack): Clarify why it is
+	an array of NUM_PREC_VALUES elements.
+	(cp_parser_binary_expression): Clarify why we do not need to
+	handle stack overflow.
+
 2004-09-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/16889

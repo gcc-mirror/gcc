@@ -1106,6 +1106,9 @@ typedef struct cp_parser_expression_stack_entry
   int prec;
 } cp_parser_expression_stack_entry;
 
+/* The stack for storing partial expressions.  We only need NUM_PREC_VALUES
+   entries because precedence levels on the stack are monotonically
+   increasing.  */
 typedef struct cp_parser_expression_stack_entry
   cp_parser_expression_stack[NUM_PREC_VALUES];
 
@@ -5356,7 +5359,9 @@ cp_parser_binary_expression (cp_parser* parser)
       if (lookahead_prec > new_prec)
         {
           /* ... and prepare to parse the RHS of the new, higher priority
-             expression.  */
+             expression.  Since precedence levels on the stack are
+	     monotonically increasing, we do not have to care about
+	     stack overflows.  */
           sp->prec = prec;
           sp->tree_type = tree_type;
           sp->lhs = lhs;
