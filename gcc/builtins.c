@@ -452,7 +452,7 @@ builtin_save_expr (tree exp)
    times to get the address of either a higher stack frame, or a return
    address located within it (depending on FNDECL_CODE).  */
 
-rtx
+static rtx
 expand_builtin_return_addr (enum built_in_function fndecl_code, int count,
 			    rtx tem)
 {
@@ -688,7 +688,7 @@ expand_builtin_setjmp (tree arglist, rtx target)
    scheme in the compiler and will only work in the method used by
    them.  */
 
-void
+static void
 expand_builtin_longjmp (rtx buf_addr, rtx value)
 {
   rtx fp, lab, stack, insn, last;
@@ -4420,7 +4420,7 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
   return ret;
 }
 
-void
+static void
 expand_builtin_trap (void)
 {
 #ifdef HAVE_trap

@@ -3653,7 +3653,6 @@ extern bool debug_find_tree (tree, tree);
 extern tree unsave_expr_now (tree);
 
 /* In expr.c */
-extern rtx expand_builtin_return_addr (enum built_in_function, int, rtx);
 extern void check_max_integer_computation_mode (tree);
 
 /* In emit-rtl.c */
