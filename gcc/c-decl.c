@@ -4648,10 +4648,14 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       tree parm, type, typelt;
       unsigned int parmno;
 
-      /* If the arg types are incomplete in a declaration, they must
-	 include undefined tags.  These tags can never be defined in
-	 the scope of the declaration, so the types can never be
-	 completed, and no call can be compiled successfully.  */
+      /* If there is a parameter of incomplete type in a definition,
+	 this is an error.  In a declaration this is valid, and a
+	 struct or union type may be completed later, before any calls
+	 or definition of the function.  In the case where the tag was
+	 first declared within the parameter list, a warning has
+	 already been given.  If a parameter has void type, then
+	 however the function cannot be defined or called, so
+	 warn.  */
 
       for (parm = arg_info->parms, typelt = arg_types, parmno = 1;
 	   parm;
@@ -4675,13 +4679,13 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 		  TREE_VALUE (typelt) = error_mark_node;
 		  TREE_TYPE (parm) = error_mark_node;
 		}
-	      else
+	      else if (VOID_TYPE_P (type))
 		{
 		  if (DECL_NAME (parm))
-		    warning ("%Jparameter %u (%qD) has incomplete type",
+		    warning ("%Jparameter %u (%qD) has void type",
 			     parm, parmno, parm);
 		  else
-		    warning ("%Jparameter %u has incomplete type",
+		    warning ("%Jparameter %u has void type",
 			     parm, parmno);
 		}
 	    }

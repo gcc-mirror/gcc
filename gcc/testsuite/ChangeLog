@@ -1,3 +1,8 @@
+2004-10-10  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/17881
+	* parm-incomplete-1.c: New test.
+
 2004-10-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17867
