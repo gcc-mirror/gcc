@@ -1,3 +1,12 @@
+2005-01-04  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.c (vect_analyze_offset_expr): Test for
+	INTEGER_CST instead of TREE_CONSTANT.
+	(vect_gen_niters_for_prolog_loop): Test for INTEGER_CST
+	instead of TREE_CONSTANT.
+	(vect_analyze_pointer_ref_access): Test for INTEGER_CST
+	instead of TREE_CONSTANT.
+
 2005-01-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* tree-eh.c (replace_goto_queue): Return early if the queue is empty.
