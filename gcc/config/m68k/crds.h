@@ -128,11 +128,6 @@ bss_section ()								\
     : GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY)				\
    ? downward : none)
 
-/* Override part of the obstack macros.  */
-
-#define __PTR_TO_INT(P) ((int)(P))
-#define __INT_TO_PTR(P) ((char *)(P))
-
 /* Override parts of m68k.h to fit the CRuDS assembler.  */
 
 #undef TARGET_VERSION 

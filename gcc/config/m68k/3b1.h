@@ -97,11 +97,6 @@ output_file_directive ((FILE), main_input_filename)
     : GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY)				\
    ? downward : none)
 
-/* Override part of the obstack macros.  */
-
-#define __PTR_TO_INT(P) ((int)(P))
-#define __INT_TO_PTR(P) ((char *)(P))
-
 /* The 3b1 does not have `atexit'.  */
 
 #undef HAVE_ATEXIT
