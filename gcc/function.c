@@ -3031,7 +3031,11 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
      area reserved for registers, skip that area.  */
   if (! in_regs)
     {
+#ifdef MAYBE_REG_PARM_STACK_SPACE
+      reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
+#else
       reg_parm_stack_space = REG_PARM_STACK_SPACE (fndecl);
+#endif
       if (reg_parm_stack_space > 0)
 	{
 	  if (initial_offset_ptr->var)
