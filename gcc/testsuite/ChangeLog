@@ -1,3 +1,21 @@
+2002-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20010226-1.c: New test.
+	* gcc.c-torture/compile/20010227-1.c: New test.
+	* gcc.c-torture/compile/20010426-1.c: New test.
+	* gcc.c-torture/compile/20010510-1.c: New test.
+	* gcc.c-torture/compile/20010605-3.c: New test.
+	* gcc.c-torture/compile/20010824-1.c: New test.
+	* gcc.c-torture/execute/20010409-1.c: New test.
+	* gcc.dg/noncompile/20000901-1.c: New test.
+	* gcc.dg/20001023-1.c: New test.
+	* gcc.dg/20001101-1.c: New test.
+	* gcc.dg/20001102-1.c: New test.
+	* gcc.dg/20010207-1.c: New test.
+	* gcc.dg/20010405-1.c: New test.
+	* gcc.dg/20010822-1.c: New test.
+	* gcc.dg/20011107-1.c: New test.
+
 Wed Jan  9 14:03:20 2002  Jeffrey A Law  (law@redhat.com)
 
 	* gcc.c-torture/execute/strct-stdarg-1.x: New file.  Expect
