@@ -1041,6 +1041,10 @@ ia64_expand_load_address (dest, src, scratch)
 	scratch = no_new_pseudos ? temp : gen_reg_rtx (DImode);
 
       insn = emit_insn (gen_load_symptr (temp, src, scratch));
+#ifdef POINTERS_EXTEND_UNSIGNED
+      if (GET_MODE (temp) != GET_MODE (src))
+	src = convert_memory_address (GET_MODE (temp), src);
+#endif
       REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, src, REG_NOTES (insn));
     }
 
