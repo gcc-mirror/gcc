@@ -1,3 +1,7 @@
+Mon Aug 24 16:38:52 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/930326-1.x: Fix typo.
+
 Fri Aug 21 23:59:18 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/unsorted/memtst.c: Reduce size of array when
