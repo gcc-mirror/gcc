@@ -1,5 +1,10 @@
 2001-03-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c (check_field_decls): Pointers to member do not a
+	non-pod struct make, as per DR 148.
+
+2001-03-02  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* call.c (joust): cp_pedwarn when using gnu extension concerning
 	worst conversion sequences.
 
