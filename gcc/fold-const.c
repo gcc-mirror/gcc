@@ -1517,9 +1517,12 @@ const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
 
       /* Don't constant fold this floating point operation if the
 	 result may dependent upon the run-time rounding mode and
-	 flag_rounding_math is set.  */
+	 flag_rounding_math is set, or if GCC's software emulation
+	 is unable to accurately represent the result.  */
       
-      if (flag_rounding_math
+      if ((flag_rounding_math
+	   || (REAL_MODE_FORMAT_COMPOSITE_P (mode)
+	       && !flag_unsafe_math_optimizations))
 	  && (inexact || !real_identical (&result, &value)))
 	return NULL_TREE;
 

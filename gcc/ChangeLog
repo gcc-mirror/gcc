@@ -1,3 +1,11 @@
+2005-02-02  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/19405
+	* real.h (REAL_MODE_FORMAT_COMPOSITE_P): New macro.
+	* fold-const.c (const_binop): Avoid constant folding floating
+	point operations in modes that use composite representations.
+	* simplify-rtx.c (simplify_binary_operation): Likewise.
+
 2005-02-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/altivec.md (altivec_dst): Make the first operand

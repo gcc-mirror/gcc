@@ -157,6 +157,12 @@ extern const struct real_format *
 
 #define REAL_MODE_FORMAT(MODE) (real_format_for_mode[(MODE) - MIN_MODE_FLOAT])
 
+/* The following macro determines whether the floating point format is
+   composite, i.e. may contain non-consecutive mantissa bits, in which
+   case compile-time FP overflow may not model run-time overflow.  */
+#define REAL_MODE_FORMAT_COMPOSITE_P(MODE) \
+	((REAL_MODE_FORMAT(MODE))->pnan < (REAL_MODE_FORMAT (MODE))->p)
+
 /* Declare functions in real.c.  */
 
 /* Binary or unary arithmetic on tree_code.  */
