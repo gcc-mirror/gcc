@@ -5269,7 +5269,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       if (arglist == 0)
 	return const0_rtx;
       else
-	return (TREE_CODE_CLASS (TREE_VALUE (arglist)) == 'c'
+	return (TREE_CODE_CLASS (TREE_CODE (TREE_VALUE (arglist))) == 'c'
 		? const1_rtx : const0_rtx);
 
     case BUILT_IN_FRAME_ADDRESS:
