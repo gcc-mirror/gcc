@@ -1,9 +1,17 @@
 2003-06-27  Michael Koch  <konqueror@gmx.de>
 
-	* java/rmi/server/SkeletonNotFoundException.java
-	(SkeletonNotFoundException): Removed wrong @deprecated tag.
-	* java/rmi/server/UnicastRemoteObject.java
-	(exportObject): Made package-private.
+	* java/security/Certificate.java
+	(getGuarantor): Removed wrong @deprecated tag.
+	(getPrincipal): Likewise.
+	(getPublicKey): Likewise.
+	(encode): Likewise.
+	(decode): Likewise.
+	(getFormat): Likewise.
+	(toString): Likewise.
+	* java/security/cert/PolicyQualifierInfo.java
+	(PolicyQualifierInfo): Made final.
+	* javax/security/auth/x500/X500Principal.java
+	(serialVersionUID): New member variable.
 
 2003-06-27  Michael Koch  <konqueror@gmx.de>
 

@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.security;
 
 import java.io.InputStream;
@@ -62,7 +63,6 @@ public interface Certificate
    * this certificate.
    *
    * @return the <code>Principal</code> guaranteeing the certificate
-   * @deprecated this entire interface is deprecated
    */
   Principal getGuarantor();
 
@@ -71,7 +71,6 @@ public interface Certificate
    * this certificate.
    *
    * @return the <code>Principal</code> guaranteed by this certificate
-   * @deprecated this entire interface is deprecated
    */
   Principal getPrincipal();
 
@@ -80,7 +79,6 @@ public interface Certificate
    * is being guaranteed.
    *
    * @return the <code>PublicKey</code> of the Principal being guaranteed
-   * @deprecated this entire interface is deprecated
    */
   PublicKey getPublicKey();
 
@@ -93,7 +91,6 @@ public interface Certificate
    * @throws IOException if an error occurs writing to the stream
    * @see #decode(InputStream)
    * @see #getFormat()
-   * @deprecated this entire interface is deprecated
    */
   void encode(OutputStream out) throws KeyException, IOException;
 
@@ -105,7 +102,6 @@ public interface Certificate
    * @throws IOException if an error occurs reading from the stream
    * @see #encode(OutputStream)
    * @see #getFormat()
-   * @deprecated this entire interface is deprecated
    */
   void decode(InputStream in) throws KeyException, IOException;
 
@@ -115,7 +111,6 @@ public interface Certificate
    * <code>decode</code> methods.
    *
    * @return the encoding format being used
-   * @deprecated this entire interface is deprecated
    */
   String getFormat();
 
@@ -125,7 +120,6 @@ public interface Certificate
    *
    * @param detail true to provided more detailed information
    * @return the string representation
-   * @deprecated this entire interface is deprecated
    */
   String toString(boolean detail);
 } // interface Certificate
