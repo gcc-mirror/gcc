@@ -1,3 +1,7 @@
+Sun Feb 18 09:30:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* diagnostic.c (_fatal_insn): Decrement errorcount.
+
 2001-02-18  Alan Modra <alan@linuxcare.com.au>
 
 	* pa.c (hppa_expand_prologue): Simplify code storing return
