@@ -2294,7 +2294,8 @@ trouble to describe the values that are stored, but it is essential to
 inform the compiler that the registers will be altered, lest it
 attempt to keep data in them across the string instruction.
 
-If @var{x} is @code{(mem:BLK (const_int 0))}, it means that all memory
+If @var{x} is @code{(mem:BLK (const_int 0))} or 
+@code{(mem:BLK (scratch))}, it means that all memory
 locations must be presumed clobbered.  If @var{x} is a @code{parallel},
 it has the same meaning as a @code{parallel} in a @code{set} expression.
 
