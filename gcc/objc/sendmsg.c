@@ -97,7 +97,8 @@ objc_msg_sendv(id object, SEL op, size_t frame_size, arglist_t arg_frame)
 			 frame_size);
 #else
 #warning performv:: will not work
-  (*_objc_error)(object, "objc_msg_sendv (performv::) not supported\n", 0);
+  va_list nothing;
+  (*_objc_error)(object, "objc_msg_sendv (performv::) not supported\n", nothing);
   return 0;
 #endif
 }
