@@ -1,3 +1,7 @@
+Mon Aug 16 17:04:15 1999  Jorn Rennecke <amylaar@cygnus.co.uk>
+
+	* mips.h (CLASS_CANNOT_CHANGE_SIZE): Define.
+
 Fri Aug 13 15:20:43 1999  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* config/i386/freebsd.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
