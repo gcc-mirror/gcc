@@ -8,7 +8,7 @@
 @c                                                                            o
 @c                              G N A T _ RM                                  o
 @c                                                                            o
-@c                            $Revision: 1.5 $
+@c                            $Revision: 1.6 $
 @c                                                                            o
 @c              Copyright (C) 1995-2002 Free Software Foundation              o
 @c                                                                            o
@@ -55,7 +55,7 @@ Free Documentation License''.
 
 
 @end titlepage
-@ifinfo
+@ifnottex
 @node Top, About This Guide, (dir), (dir)
 @top GNAT Reference Manual
 
@@ -229,7 +229,7 @@ GNAT Implementation of Tasking
 * Ensuring Compliance with the Real-Time Annex::
 @end menu
 
-@end ifinfo
+@end ifnottex
 
 @node About This Guide
 @unnumbered About This Guide
