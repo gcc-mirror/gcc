@@ -1,3 +1,9 @@
+2000-03-07  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Test for PR gcj/163:
+	* libjava.lang/PR163.java: New file.
+	* libjava.lang/PR163.xfail: New file.
+
 2000-03-07  Tom Tromey  <tromey@cygnus.com>
 
 	* lib/libjava.exp (test_libjava_from_javac): Removed hack for
