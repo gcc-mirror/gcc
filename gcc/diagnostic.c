@@ -607,7 +607,9 @@ output_format (buffer, text)
               || !(*buffer->format_decoder) (buffer, text))
 	    {
 	      /* Hmmm.  The front-end failed to install a format translator
-                 but called us with an unrecognized format.  Sorry.  */
+                 but called us with an unrecognized format.  Or, maybe, the
+                 translated string just contains an invalid format, or
+                 has formats in the wrong order.  Sorry.  */
 	      abort ();
 	    }
 	}
