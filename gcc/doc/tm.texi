@@ -8520,20 +8520,31 @@ smaller than a word are always performed on the entire register.
 Most RISC machines have this property and most CISC machines do not.
 @end defmac
 
-@defmac LOAD_EXTEND_OP (@var{mode})
+@defmac LOAD_EXTEND_OP (@var{mem_mode})
 Define this macro to be a C expression indicating when insns that read
-memory in @var{mode}, an integral mode narrower than a word, set the
-bits outside of @var{mode} to be either the sign-extension or the
+memory in @var{mem_mode}, an integral mode narrower than a word, set the
+bits outside of @var{mem_mode} to be either the sign-extension or the
 zero-extension of the data read.  Return @code{SIGN_EXTEND} for values
-of @var{mode} for which the
+of @var{mem_mode} for which the
 insn sign-extends, @code{ZERO_EXTEND} for which it zero-extends, and
 @code{NIL} for other modes.
 
-This macro is not called with @var{mode} non-integral or with a width
+This macro is not called with @var{mem_mode} non-integral or with a width
 greater than or equal to @code{BITS_PER_WORD}, so you may return any
 value in this case.  Do not define this macro if it would always return
 @code{NIL}.  On machines where this macro is defined, you will normally
 define it as the constant @code{SIGN_EXTEND} or @code{ZERO_EXTEND}.
+
+You may return a non-@code{NIL} value even if for some hard registers
+the sign extension is not performed, if for the @code{REGNO_REG_CLASS}
+of these hard registers @code{CANNOT_CHANGE_MODE_CLASS} returns nonzero
+when the @var{from} mode is @var{mem_mode} and the @var{to} mode is any
+integral mode larger than this but not larger than @code{word_mode}.
+
+You must return @code{NIL} if for some hard registers that allow this
+mode, @code{CANNOT_CHANGE_MODE_CLASS} says that they cannot change to
+@code{word_mode}, but that they can change to another integral mode that
+is larger then @var{mem_mode} but still smaller than @code{word_mode}.
 @end defmac
 
 @defmac SHORT_IMMEDIATES_SIGN_EXTEND

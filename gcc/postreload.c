@@ -423,6 +423,15 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 		   || GET_CODE (SET_SRC (set)) == ZERO_EXTEND
 		   || GET_CODE (SET_SRC (set)) == SIGN_EXTEND)
 	    ; /* Continue ordinary processing.  */
+#ifdef CANNOT_CHANGE_MODE_CLASS
+	  /* If the register cannot change mode to word_mode, it follows that
+	     it cannot have been used in word_mode.  */
+	  else if (GET_CODE (SET_DEST (set)) == REG
+		   && CANNOT_CHANGE_MODE_CLASS (GET_MODE (SET_DEST (set)),
+						word_mode,
+						REGNO_REG_CLASS (REGNO (SET_DEST (set)))))
+	    ; /* Continue ordinary processing.  */
+#endif
 	  /* If this is a straight load, make the extension explicit.  */
 	  else if (GET_CODE (SET_DEST (set)) == REG
 		   && recog_data.n_operands == 2
