@@ -1885,7 +1885,7 @@ extract_force_align_mem_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 
   /* At the end, we'll need an additional shift to deal with sign/zero
      extension.  By default this will be a left+right shift of the
-     appropriate size.  But we may be able to elimitate one of them.  */
+     appropriate size.  But we may be able to eliminate one of them.  */
   sign_shift_up = sign_shift_dn = m_bitsize - bitsize;
 
   if (STRICT_ALIGNMENT)
