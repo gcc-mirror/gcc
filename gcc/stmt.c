@@ -3666,9 +3666,7 @@ expand_nl_goto_receivers (thisblock)
   if (any_invalid)
     {
       expand_nl_goto_receiver ();
-      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "abort"), LCT_NORETURN,
-			 VOIDmode, 0);
-      emit_barrier ();
+      expand_builtin_trap ();
     }
 
   nonlocal_goto_handler_labels = label_list;
