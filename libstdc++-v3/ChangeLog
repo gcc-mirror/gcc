@@ -1,3 +1,9 @@
+2005-01-23  Paolo Carlini  <pcarlini@suse.de>
+            Andreas Jaeger  <aj@suse.de>
+
+	PR libstdc++/19343
+	* include/bits/functexcept.h: Mark the helpers as 'noreturn'.
+
 2005-01-21  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/27_io/basic_filebuf/open/char/9507.cc: Allow

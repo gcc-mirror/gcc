@@ -1,6 +1,6 @@
 // Function-Based Exception Support -*- C++ -*-
 
-// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,50 +44,50 @@ namespace std
 {
   // Helper for exception objects in <except>
   void
-  __throw_bad_exception(void);
+  __throw_bad_exception(void) __attribute__((__noreturn__));
 
   // Helper for exception objects in <new>
   void
-  __throw_bad_alloc(void);
+  __throw_bad_alloc(void) __attribute__((__noreturn__));
 
   // Helper for exception objects in <typeinfo>
   void
-  __throw_bad_cast(void);
+  __throw_bad_cast(void) __attribute__((__noreturn__));
 
   void
-  __throw_bad_typeid(void);
+  __throw_bad_typeid(void) __attribute__((__noreturn__));
 
   // Helpers for exception objects in <stdexcept>
   void
-  __throw_logic_error(const char* __s);
+  __throw_logic_error(const char* __s) __attribute__((__noreturn__));
 
   void
-  __throw_domain_error(const char* __s);
+  __throw_domain_error(const char* __s) __attribute__((__noreturn__));
 
   void
-  __throw_invalid_argument(const char* __s);
+  __throw_invalid_argument(const char* __s) __attribute__((__noreturn__));
 
   void
-  __throw_length_error(const char* __s);
+  __throw_length_error(const char* __s) __attribute__((__noreturn__));
 
   void
-  __throw_out_of_range(const char* __s);
+  __throw_out_of_range(const char* __s) __attribute__((__noreturn__));
 
   void
-  __throw_runtime_error(const char* __s);
+  __throw_runtime_error(const char* __s) __attribute__((__noreturn__));
 
   void
-  __throw_range_error(const char* __s);
+  __throw_range_error(const char* __s) __attribute__((__noreturn__));
 
   void
-  __throw_overflow_error(const char* __s);
+  __throw_overflow_error(const char* __s) __attribute__((__noreturn__));
 
   void
-  __throw_underflow_error(const char* __s);
+  __throw_underflow_error(const char* __s) __attribute__((__noreturn__));
 
   // Helpers for exception objects in basic_ios
   void
-  __throw_ios_failure(const char* __s);
+  __throw_ios_failure(const char* __s) __attribute__((__noreturn__));
 } // namespace std
 
 #endif
