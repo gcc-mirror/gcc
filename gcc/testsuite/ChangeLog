@@ -1,3 +1,8 @@
+2004-06-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16193
+	* g++.dg/parse/redef1.C: New test.
+
 2004-06-27  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.c-torture/compile/20021123-1.c: Remove duplicate of

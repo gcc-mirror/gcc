@@ -1,3 +1,9 @@
+2004-06-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16193
+	* parser.c (cp_parser_set_decl_spec_type): Refine test for
+	redefinition of built-in types.
+
 2004-06-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* error.c (pp_template_argument_list_start): Remove.

@@ -15427,13 +15427,21 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
 			      bool user_defined_p)
 {
   decl_specs->any_specifiers_p = true;
-  if (decl_specs->type)
-    {
-      if (decl_specs->specs[(int)ds_typedef] && !user_defined_p)
-	decl_specs->redefined_builtin_type = type_spec;
-      else
-	decl_specs->multiple_types_p = true;
-    }
+ 
+  /* If the user tries to redeclare a built-in type (with, for example,
+     in "typedef int wchar_t;") we remember that this is what
+     happened.  In system headers, we ignore these declarations so
+     that G++ can work with system headers that are not C++-safe.  */
+  if (decl_specs->specs[(int) ds_typedef] 
+      && !user_defined_p
+      && (decl_specs->type
+	  || decl_specs->specs[(int) ds_long]
+	  || decl_specs->specs[(int) ds_short]
+	  || decl_specs->specs[(int) ds_unsigned]
+	  || decl_specs->specs[(int) ds_signed]))
+    decl_specs->redefined_builtin_type = type_spec;
+  else if (decl_specs->type)
+    decl_specs->multiple_types_p = true;
   else
     {
       decl_specs->type = type_spec;
