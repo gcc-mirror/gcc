@@ -335,7 +335,7 @@ static unsigned int cse_reg_info_table_size;
 static unsigned int cse_reg_info_table_first_uninitialized;
 
 /* The timestamp at the beginning of the current run of
-   cse_basic_block.  We increment this variable at at the beginning of
+   cse_basic_block.  We increment this variable at the beginning of
    the current run of cse_basic_block.  The timestamp field of a
    cse_reg_info entry matches the value of this variable if and only
    if the entry has been initialized during the current run of

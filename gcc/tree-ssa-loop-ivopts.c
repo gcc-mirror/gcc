@@ -647,7 +647,7 @@ struct nfe_cache_elt
   /* The edge for that the number of iterations is cached.  */
   edge exit;
 
-  /* True if the # of iterations was succesfully determined.  */
+  /* True if the # of iterations was successfully determined.  */
   bool valid_p;
 
   /* Description of # of iterations.  */
