@@ -37,7 +37,6 @@ Addison Wesley 1996" (http://java.sun.com/docs/books/jls/html/3.doc.html)  */
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
-#include <setjmp.h>
 
 #ifdef JAVA_LEX_DEBUG
 #include <ctype.h>

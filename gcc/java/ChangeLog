@@ -1,3 +1,32 @@
+Fri Oct 16 10:59:01 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* lex.c (setjmp.h): No longer included.
+	* lex.h (setjmp.h): Included.
+	* parse.h (SET_TYPE_FOR_RESOLUTION): New macro.
+	(duplicate_declaration_error_p): Renamed from
+ 	duplicate_declaration_error.
+	(build_array_from_name): New function prototype.
+	* parse.y (setjmp.h): No longer included.
+	(variable_declarator_id): Define action.
+	(build_array_from_name): New function.
+	(duplicate_declaration_error_p): Renamed from
+ 	duplicate_declaration_error.  Fixed leading comment.
+	(register_fields): Main `for' loop reorganized. Uses
+ 	SET_TYPE_FOR_RESOLUTION and build_array_from_name.
+	(method_declarator): Uses SET_TYPE_FOR_RESOLUTION and call
+ 	build_array_from_name.
+	(resolve_class): Set CLASS_LOADED_P on newly build array dimension
+ 	types.
+	(read_import_dir): Don't try to skip `.' and `..'.
+	(declare_local_variables): Uses SET_TYPE_FOR_RESOLUTION and
+ 	build_array_from_name. Main `for' loop reorganized.
+	(resolve_qualified_expression_name): When building access to a
+ 	field, use the type where the field was found, not its own type.
+	(maybe_access_field): Use field DECL_CONTEXT if the type where the
+ 	field was found is null.
+	(qualify_ambiguous_name): Sweep through all successive array
+ 	dimensions.
+	
 Wed Oct 14 18:21:29 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h (pop_labeled_block, lang_printable_name,

@@ -399,6 +399,27 @@ static jdeplist *reverse_jdep_list ();
       }						\
   }
 
+/* if TYPE can't be resolved, obtain something suitable for its
+   resolution (TYPE is saved in SAVE before being changed). and set
+   CHAIN to 1. Otherwise, type is set to something usable. CHAIN is
+   usually used to determine that a new DEP must be installed on TYPE.  */
+#define SET_TYPE_FOR_RESOLUTION(TYPE, SAVE, CHAIN)	\
+  {							\
+    tree returned_type;					\
+    (CHAIN) = 0;					\
+    if (unresolved_type_p (type, &returned_type))	\
+      {							\
+	if (returned_type)				\
+	  (TYPE) = returned_type;			\
+	else						\
+	  {						\
+	    (SAVE) = (TYPE);				\
+	    (TYPE) = obtain_incomplete_type (TYPE);	\
+	    CHAIN = 1;					\
+	  }						\
+      }							\
+  }
+
 /* Insert a DECL in the current block */
 #define BLOCK_CHAIN_DECL(NODE)						    \
   {		 							    \
@@ -560,7 +581,7 @@ static tree  create_class PROTO ((int, tree, tree, tree));
 static tree  create_interface PROTO ((int, tree, tree));
 static tree  find_field PROTO ((tree, tree));
 static tree lookup_field_wrapper PROTO ((tree, tree));
-static int   duplicate_declaration_error PROTO ((tree, tree, tree));
+static int   duplicate_declaration_error_p PROTO ((tree, tree, tree));
 static void  register_fields PROTO ((int, tree, tree));
 static tree parser_qualified_classname PROTO ((tree));
 static int  parser_check_super PROTO ((tree, tree, tree));
@@ -631,6 +652,7 @@ static int valid_method_invocation_conversion_p PROTO ((tree, tree));
 static tree try_builtin_assignconv PROTO ((tree, tree, tree));
 static tree try_reference_assignconv PROTO ((tree, tree));
 static tree build_unresolved_array_type PROTO ((tree));
+static tree build_array_from_name PROTO ((tree, tree, tree, tree *));
 static tree build_array_ref PROTO ((int, tree, tree));
 static tree patch_array_ref PROTO ((tree, tree, tree));
 static tree make_qualified_name PROTO ((tree, tree, int));

@@ -26,6 +26,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #ifndef JV_LEX_H
 #define JV_LEX_H
 
+#include <setjmp.h>		/* set_float_handler argument uses it */
+
 /* Extern global variables declarations  */
 extern FILE *finput;
 extern int   lineno;
