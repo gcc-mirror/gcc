@@ -7764,4 +7764,26 @@ sh_cannot_change_mode_class (from, to)
   return NO_REGS;
 }
 
+
+/* If ADDRESS refers to a CODE_LABEL, add NUSES to the number of times
+   that label is used.  */
+
+void
+sh_mark_label (address, nuses)
+     rtx address;
+     int nuses;
+{
+  if (GOTOFF_P (address))
+    {
+      /* Extract the label or symbol.  */
+      address = XEXP (address, 0);
+      if (GET_CODE (address) == PLUS)
+	address = XEXP (address, 0);
+      address = XVECEXP (address, 0, 0);
+    }
+  if (GET_CODE (address) == LABEL_REF
+      && GET_CODE (XEXP (address, 0)) == CODE_LABEL)
+    LABEL_NUSES (XEXP (address, 0)) += nuses;
+}
+
 #include "gt-sh.h"
