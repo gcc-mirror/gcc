@@ -20,6 +20,7 @@ load_lib target-supports.exp
 load_lib scanasm.exp
 load_lib scantree.exp
 load_lib prune.exp
+load_lib libgloss.exp
 
 if ![info exists TORTURE_OPTIONS] {
     # It is theoretically beneficial to group all of the O2/O3 options together,
@@ -40,6 +41,62 @@ if ![info exists TORTURE_OPTIONS] {
 	{ -Os } ]
 }
 
+global GCC_UNDER_TEST
+if ![info exists GCC_UNDER_TEST] {
+    set GCC_UNDER_TEST "[find_gcc]"
+}
+
+global rootme
+set libgcc_s_path "${rootme}"
+set compiler [lindex $GCC_UNDER_TEST 0]
+if { [is_remote host] == 0 && [which $compiler] != 0 } {
+    foreach i "[exec $compiler --print-multi-lib]" {
+	set mldir ""
+	regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
+	set mldir [string trimright $mldir "\;@"]
+	if { "$mldir" == "." } {
+	    continue
+	}
+	if { [llength [glob -nocomplain ${rootme}/${mldir}/libgcc_s*.so.*]] == 1 } {
+	    append libgcc_s_path ":${rootme}/${mldir}"
+	}
+    }
+}
+
+# On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
+# called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
+# (for the 64-bit ABI).  The right way to do this would be to modify
+# unix.exp -- but that's not an option since it's part of DejaGNU
+# proper, so we do it here.  We really only need to do 
+# this on IRIX, but it shouldn't hurt to do it anywhere else.
+# Doing this does cause trouble when testing cross-compilers.
+if {![is_remote target]} {
+    if [info exists env(LD_LIBRARY_PATH)] {
+	setenv  LD_LIBRARY_PATH    "$libgcc_s_path:$env(LD_LIBRARY_PATH)"
+    } else {
+	setenv  LD_LIBRARY_PATH     $libgcc_s_path
+    }
+    if [info exists env(SHLIB_PATH)] {
+	setenv  SHLIB_PATH          "$libgcc_s_path:$env(SHLIB_PATH)"
+    } else {
+	setenv  SHLIB_PATH          $libgcc_s_path
+    }
+    if [info exists env(LD_LIBRARYN32_PATH)] {
+	setenv  LD_LIBRARYN32_PATH  "$libgcc_s_path:$env(LD_LIBRARYN32_PATH)"
+    } else {
+	setenv  LD_LIBRARYN32_PATH  $libgcc_s_path
+    }
+    if [info exists env(LD_LIBRARY64_PATH)] {
+	setenv  LD_LIBRARY64_PATH  "$libgcc_s_path:$env(LD_LIBRARY64_PATH)"
+    } else {
+	setenv  LD_LIBRARY64_PATH   $libgcc_s_path
+    }
+    if [info exists env(DYLD_LIBRARY_PATH)] {
+	setenv  DYLD_LIBRARY_PATH  "$libgcc_s_path:$env(DYLD_LIBRARY_PATH)"
+    } else {
+	setenv  DYLD_LIBRARY_PATH   $libgcc_s_path
+    }
+}
 
 # Split TORTURE_OPTIONS into two choices: one for testcases with loops and
 # one for testcases without loops.
