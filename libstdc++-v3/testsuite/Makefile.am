@@ -41,7 +41,7 @@ RUNTESTFLAGS =
 CXX_build = @glibcpp_CXX@ 
 CXX=`echo "$(CXX_build)" | sed 's,gcc/xgcc ,gcc/g++ ,'`
 CXXLINK = \
-	LD_RUN_PATH=${LD_RUN_PATH:+$LD_RUN_PATH:}${glibcpp_builddir}/src/.libs\
+	LD_RUN_PATH=$${LD_RUN_PATH:+$LD_RUN_PATH:}${glibcpp_builddir}/src/.libs\
 	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 
