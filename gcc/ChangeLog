@@ -1,3 +1,12 @@
+2003-10-26  Gunther Nikl  <gni@gecko.de>
+
+	* config/m68k/m68k.c (m68k_compute_frame_layout): Swap reg_mask and
+	reg_rev_mask computation.
+	(m68k_output_function_prologue): Fix usage of current_frame (one typo
+	and one missing); use reg_rev_mask not reg_mask.
+	(m68k_output_function_epilogue): Fix usage of current_frame;
+	use fpu_rev_mask not fpu_mask.
+
 2003-10-26  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.c (m68k_output_function_prologue): Eliminate
