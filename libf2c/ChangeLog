@@ -1,3 +1,9 @@
+Sun Apr 26 09:13:41 1998  Craig Burley  <burley@gnu.org>
+
+	* libU77/hostnm_.c (G77_hostnm_0): Fix off-by-one error
+	that was trashing the byte just beyond the CHARACTER*(*)
+	argument.
+
 Wed Mar  4 16:32:46 1998  Craig Burley  <burley@gnu.org>
 
 	* libU77/u77-test.f: Don't bother declaring etime.
