@@ -66,7 +66,7 @@ namespace std
 	{ 
 	  try 
 	    { __pf(*this); }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.2.5.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -88,7 +88,7 @@ namespace std
 	{ 
 	  try 
 	    { __pf(*this); }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.2.5.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -110,7 +110,7 @@ namespace std
 	{ 
 	  try 
 	    { __pf(*this); }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.2.5.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -134,7 +134,7 @@ namespace std
 	      if (!__copy_streambufs(*this, __sbin, this->rdbuf()))
 		this->setstate(ios_base::failbit);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.2.5.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -161,7 +161,7 @@ namespace std
 		if (_M_fnumput->put(*this, *this, this->fill(), __n).failed())
 		  this->setstate(ios_base::badbit);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -198,7 +198,7 @@ namespace std
 		    this->setstate(ios_base::badbit);
 		}
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -223,7 +223,7 @@ namespace std
 		if (_M_fnumput->put(*this, *this, this->fill(), __n).failed())
 		  this->setstate(ios_base::badbit);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -262,7 +262,7 @@ namespace std
 		    this->setstate(ios_base::badbit);
 		}
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -287,7 +287,7 @@ namespace std
 		if (_M_fnumput->put(*this, *this, this->fill(), __n).failed())
 		  this->setstate(ios_base::badbit);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -313,7 +313,7 @@ namespace std
 		if (_M_fnumput->put(*this, *this, this->fill(), __n).failed())
 		  this->setstate(ios_base::badbit);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -338,7 +338,7 @@ namespace std
 		if (_M_fnumput->put(*this, *this, this->fill(), __n).failed())
 		  this->setstate(ios_base::badbit);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -363,7 +363,7 @@ namespace std
 		if (_M_fnumput->put(*this, *this, this->fill(), __n).failed())
 		  this->setstate(ios_base::badbit);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -489,7 +489,7 @@ namespace std
 	      __out.write(__pads, __len);
 	      __out.width(0);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -525,7 +525,7 @@ namespace std
 	      __out.write(__pads, __len);
 	      __out.width(0);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -560,7 +560,7 @@ namespace std
 	      __out.write(__s, __len);
 	      __out.width(0);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -609,7 +609,7 @@ namespace std
 	      __out.write(__str, __len);
 	      __out.width(0);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.
@@ -648,7 +648,7 @@ namespace std
 	      __out.write(__s, __len);
 	      __out.width(0);
 	    }
-	  catch(exception& __fail)
+	  catch(...)
 	    {
 	      // 27.6.1.2.1 Common requirements.
 	      // Turn this on without causing an ios::failure to be thrown.

@@ -1,3 +1,10 @@
+2003-04-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/9555
+	* include/bits/ostream.tcc: Catch all exceptions for formatted
+	output, instead of std::exception and derivatives.
+	* include/bits/istream.tcc: Same.
+
 2003-04-17  Andreas Tobler  <toa@pop.agri.ch>
             Benjamin Kosnik  <bkoz@redhat.com>
  
