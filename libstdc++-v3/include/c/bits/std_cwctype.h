@@ -39,12 +39,7 @@
 #pragma GCC system_header
 #include_next <wctype.h>
 
-namespace std
-{
-  using ::wctype_t;
-  using ::wctrans_t;
-
-  // Get rid of those macros defined in <wctype.h> in lieu of real functions.
+// Get rid of those macros defined in <wctype.h> in lieu of real functions.
 #undef iswalnum
 #undef iswalpha
 #undef iswblank
@@ -59,6 +54,11 @@ namespace std
 #undef iswupper
 #undef iswxdigit
 #undef iswctype  
+
+namespace std
+{
+  using ::wctype_t;
+  using ::wctrans_t;
 
   extern "C" int iswalnum(wint_t); 
   extern "C" int iswalpha(wint_t); 
