@@ -1,3 +1,7 @@
+2002-09-20  Jim Wilson  <wilson@redhat.com>
+
+	* config/v850/v850/lib1funcs.asm (__muldi3): Change r5 to r28.
+
 2002-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (UNSPEC_GOTNTPOFF, UNSPEC_INDNTPOFF): New.

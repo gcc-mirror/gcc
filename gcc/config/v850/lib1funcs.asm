@@ -1765,10 +1765,10 @@ ___muldi3:
 #ifdef __v850__
         jarl  __save_r26_r31, r10
         addi  16,  sp, sp
-        mov   r6,  r5
-        shr   15,  r5
+        mov   r6,  r28
+        shr   15,  r28
         movea lo(32767), r0, r14
-        and   r14, r5
+        and   r14, r28
         mov   r8,  r10
         shr   15,  r10
         and   r14, r10
@@ -1807,16 +1807,16 @@ ___muldi3:
         mov   r6,  r15
         mulh  r31, r15
         mulh  r12, r6
-        mov   r5,  r17
+        mov   r28,  r17
         mulh  r10, r17
         add   -16, sp
-        mov   r5,  r12
+        mov   r28,  r12
         mulh  r8,  r12
         add   r17, r18
-        mov   r5,  r17
+        mov   r28,  r17
         mulh  r31, r17
         add   r12, r16
-        mov   r5,  r12
+        mov   r28,  r12
         mulh  r13, r12
         add   r17, r6
         mov   r19, r17
