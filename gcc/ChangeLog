@@ -1,3 +1,8 @@
+2003-06-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (TARGET_INITIALIZER and friends): Move
+	to the end of the file.  Remove unnecessary prototypes.
+
 2003-06-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	* bt-load.c (migrate_btr_def) [INSN_SCHEDULING]: Conditionalize
