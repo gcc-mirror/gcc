@@ -3738,8 +3738,11 @@ schedule_block (b, file)
       for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
 	if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
 	  line = insn;
-	else if (! (GET_CODE (insn) == NOTE
-		    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
+      /* This used to emit line number notes before every non-deleted note.
+	 However, this confuses a debugger, because line notes not separated
+	 by real instructions all end up at the same address.  I can find no
+	 use for line number notes before other notes, so none are emitted.  */
+	else if (GET_CODE (insn) != NOTE
 		 && (note = LINE_NOTE (insn)) != 0
 		 && note != line
 		 && (line == 0
