@@ -38,15 +38,6 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_WIDE_INT long long
 #define HOST_BITS_PER_WIDE_INT 64
 
-/* Override values in stdlib.h since gcc uses __posix_exit */
-#undef SUCCESS_EXIT_CODE
-#define SUCCESS_EXIT_CODE 0
-#undef FATAL_EXIT_CODE
-#define FATAL_EXIT_CODE 1
-#undef exit
-#define exit __posix_exit
-void __posix_exit (int);
-
 /* A couple of conditionals for execution machine are controlled here.  */
 #ifndef VMS
 #define VMS
@@ -64,6 +55,10 @@ void __posix_exit (int);
 
 /* Define a local equivalent (sort of) for unlink */
 #define unlink remove
+
+/* Causes exit() to be redefined to __posix_exit() and
+   Posix compatible failure and success codes to be used */
+#define _POSIX_EXIT 1
 
 #define STDC_HEADERS 1
 
