@@ -3913,9 +3913,8 @@ output_constant (exp, size, align)
       abort ();
     }
 
-  size -= thissize;
-  if (size > 0)
-    assemble_zeros (size);
+  if (size > thissize)
+    assemble_zeros (size - thissize);
 }
 
 
