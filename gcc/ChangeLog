@@ -1,3 +1,8 @@
+2004-05-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* rs6000.c (print_operand) <case 'z'>: Call
+	mark_decl_referenced before assemble_name.
+
 2004-05-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* cgraph.c (hash_node, eq_node, cgraph_node, cgraph_remove_node)

@@ -9682,6 +9682,10 @@ print_operand (FILE *file, rtx x, int code)
       if (GET_CODE (x) != SYMBOL_REF)
 	abort ();
 
+      /* Mark the decl as referenced so that cgraph will output the function.  */
+      if (SYMBOL_REF_DECL (x))
+        mark_decl_referenced (SYMBOL_REF_DECL (x));
+
       if (XSTR (x, 0)[0] != '.')
 	{
 	  switch (DEFAULT_ABI)
