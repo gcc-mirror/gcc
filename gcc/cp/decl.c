@@ -1897,6 +1897,11 @@ struct saved_scope {
 };
 static struct saved_scope *current_saved_scope;
 
+/* A chain of the binding vecs created by store_bindings.  We create a
+   whole bunch of these during compilation, on permanent_obstack, so we
+   can't just throw them away.  */
+static tree free_binding_vecs;
+
 static tree
 store_bindings (names, old_bindings)
      tree names, old_bindings;
@@ -1919,8 +1924,15 @@ store_bindings (names, old_bindings)
       for (t1 = old_bindings; t1; t1 = TREE_CHAIN (t1))
 	if (TREE_VEC_ELT (t1, 0) == id)
 	  goto skip_it;
-	    
-      binding = make_tree_vec (4);
+
+      if (free_binding_vecs)
+	{
+	  binding = free_binding_vecs;
+	  free_binding_vecs = TREE_CHAIN (free_binding_vecs);
+	}
+      else
+	binding = make_tree_vec (4);
+
       if (id)
 	{
 	  my_friendly_assert (TREE_CODE (id) == IDENTIFIER_NODE, 135);
@@ -2045,8 +2057,9 @@ pop_from_top_level ()
 
   current_binding_level = s->old_binding_level;
   current_saved_scope = s->prev;
-  for (t = s->old_bindings; t; t = TREE_CHAIN (t))
+  for (t = s->old_bindings; t; )
     {
+      tree save = t;
       tree id = TREE_VEC_ELT (t, 0);
       if (id)
 	{
@@ -2054,6 +2067,9 @@ pop_from_top_level ()
 	  IDENTIFIER_LOCAL_VALUE (id) = TREE_VEC_ELT (t, 2);
 	  IDENTIFIER_CLASS_VALUE (id) = TREE_VEC_ELT (t, 3);
 	}
+      t = TREE_CHAIN (t);
+      TREE_CHAIN (save) = free_binding_vecs;
+      free_binding_vecs = save;
     }
   current_class_name = s->class_name;
   current_class_type = s->class_type;
