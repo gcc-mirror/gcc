@@ -82,7 +82,7 @@ Boston, MA 02111-1307, USA.  */
 									\
       ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));	\
       ASM_OUTPUT_LABEL (FILE, NAME);					\
-      fprintf (FILE, "\t.space\t%d\n", SIZE);				\
+      fprintf (FILE, "\t.space\t%d\n", SIZE ? SIZE : 1);		\
     }									\
   while (0)
 
