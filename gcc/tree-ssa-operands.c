@@ -1620,9 +1620,15 @@ add_call_clobber_ops (tree stmt, tree callee)
 		 with a module static or we may not.  So we still must look
 		 anywhere else we can (such as the TREE_READONLY) to get
 		 better info.  */
+
 	      /* If VAR is read-only, don't add a V_MAY_DEF, just a
-		 VUSE operand.  */
-	      else if (TREE_READONLY (var))
+		 VUSE operand.  FIXME, this is quirky.  TREE_READONLY
+		 by itself is not enough here.  We can only decide
+		 that the call will not affect VAR if all these
+		 conditions are met.  One would think that
+		 TREE_READONLY should be sufficient.  */
+	      else if (TREE_READONLY (var)
+		       && (TREE_STATIC (var) || DECL_EXTERNAL (var)))
 		add_stmt_operand (&var, stmt, opf_none);
 	      else
 		add_stmt_operand (&var, stmt, opf_is_def);
