@@ -20,9 +20,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "config.h"
 #ifdef __STDC__
-#include "gstdarg.h"
+#include <stdarg.h>
 #else
-#include "gvarargs.h"
+#include <gvarargs.h>
 #endif
 #include "machmode.h"
 #include "rtl.h"

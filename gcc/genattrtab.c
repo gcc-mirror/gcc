@@ -95,11 +95,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 #include "hconfig.h"
-/* gvarargs must always be included after *config.h.  */
+/* varargs must always be included after *config.h.  */
 #ifdef __STDC__
-#include "gstdarg.h"
+#include <stdarg.h>
 #else
-#include "gvarargs.h"
+#include <varargs.h>
 #endif
 #include "rtl.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */

@@ -56,9 +56,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define _POSIX_SOURCE
 #endif
 
-#include "gvarargs.h"
+#include <varargs.h>
 /* On some systems stdio.h includes stdarg.h;
-   we must bring in gvarargs.h first.  */
+   we must bring in varargs.h first.  */
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
