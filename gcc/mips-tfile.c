@@ -3990,7 +3990,40 @@ update_headers __proto((void))
        file_ptr != (efdr_t *)0;
        file_ptr = file_ptr->next_file)
     {
+      register SYMR *sym_start;
+      register SYMR *sym;
+      register SYMR *sym_end_p1;
+      register FDR *fd_ptr = file_ptr->orig_fdr;
+
       cur_file_ptr = file_ptr;
+
+      /* Copy st_Static symbols from the original local symbol table if
+	 they did not get added to the new local symbol table.
+	 This happens with stabs-in-ecoff or if the source file is
+	 compiled without debugging.  */
+      sym_start = ORIG_LSYMS (fd_ptr->isymBase);
+      sym_end_p1 = sym_start + fd_ptr->csym;
+      for (sym = sym_start; sym < sym_end_p1; sym++)
+	{
+	  if ((st_t)sym->st == st_Static)
+	    {
+	      register char *str = ORIG_LSTRS (fd_ptr->issBase + sym->iss);
+	      register Size_t len = strlen (str);
+	      register shash_t *hash_ptr;
+
+	      hash_ptr = hash_string (str,
+				      (Ptrdiff_t)len,
+				      &file_ptr->shash_head[0],
+			  	      (symint_t *)0);
+	      if (hash_ptr == (shash_t *)0)
+		{
+		  (void) add_local_symbol (str, str + len,
+					   (st_t)sym->st, (sc_t)sym->sc,
+					   (symint_t)sym->value,
+					   (symint_t)indexNil);
+		}
+	    }
+	}
       (void) add_local_symbol ((const char *)0, (const char *)0,
 			       st_End, sc_Text,
 			       (symint_t)0,
