@@ -5,6 +5,10 @@
 	(__clz_tab): Put in its own unit, non-static.
 	* libgcc2.h: Always include longlong.h.
 
+	* longlong.h [alpha] (count_leading_zeros): Use cmpbge with
+	a zero instead of -1.
+	(count_trailing_zeros): Likewise.
+
 2000-10-05  Richard Henderson  <rth@cygnus.com>
 
 	* config/alpha/alpha.c (alpha_emit_setcc): Don't swap GT tests

@@ -180,7 +180,7 @@ extern const UQItype __clz_tab[];
 #define count_leading_zeros(COUNT,X) \
   do {									\
     UDItype __xr = (X), __t, __a;					\
-    __asm__("cmpbge %1,%2,%0" : "=r"(__t) : "r"(~__xr), "r"(-1));	\
+    __asm__("cmpbge $31,%1,%0" : "=r"(__t) : "r"(__xr));		\
     __a = __clz_tab[__t ^ 0xff] - 1;					\
     __asm__("extbl %1,%2,%0" : "=r"(__t) : "r"(__xr), "r"(__a));	\
     (COUNT) = 64 - (__clz_tab[__t] + __a*8);				\
@@ -188,7 +188,7 @@ extern const UQItype __clz_tab[];
 #define count_trailing_zeros(COUNT,X) \
   do {									\
     UDItype __xr = (X), __t, __a;					\
-    __asm__("cmpbge %1,%2,%0" : "=r"(__t) : "r"(~__xr), "r"(-1));	\
+    __asm__("cmpbge $31,%1,%0" : "=r"(__t) : "r"(__xr));		\
     __t = ~__t & -~__t;							\
     __a = ((__t & 0xCC) != 0) * 2;					\
     __a += ((__t & 0xF0) != 0) * 4;					\
