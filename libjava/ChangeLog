@@ -1,3 +1,9 @@
+2005-01-19  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/VMCompiler.java (compileClass): Ignore UnknownError.
+	* gnu/gcj/runtime/natSharedLibLoader.cc (finalize): Only dlclose
+	if 'handler' is valid.
+
 2005-01-17  Tom Tromey  <tromey@redhat.com>
 
 	* java/text/MessageFormat.java (scanString): Changed how quoting

@@ -1,6 +1,6 @@
 // natSharedLibLoader.cc - Implementation of SharedLibHelper native methods.
 
-/* Copyright (C) 2001, 2003, 2004  Free Software Foundation
+/* Copyright (C) 2001, 2003, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -122,7 +122,8 @@ gnu::gcj::runtime::SharedLibHelper::finalize()
 {
   _Jv_FreeCoreChain ((_Jv_core_chain *) core_chain);
 #ifdef HAVE_DLOPEN
-  dlclose (handler);
+  if (handler)
+    dlclose (handler);
 #endif
 }
 
