@@ -6,7 +6,7 @@
 int g95_type_for_mode (enum machine_mode);
 
 int
-g95_type_for_mode (enum machine_mode mode)
-{ /* { dg-error "has incomplete type" } */
+g95_type_for_mode (enum machine_mode mode) /* { dg-error "incomplete type" } */
+{
   return 0;
 }

@@ -1,3 +1,32 @@
+2004-03-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (last_function_parms, last_function_parm_tags)
+	(last_function_parm_others, current_function_parms)
+	(current_function_parm_tags, current_function_parm_others):
+	Delete.
+	(ARG_INFO_PARMS, ARG_INFO_TAGS, ARG_INFO_TYPES, ARG_INFO_OTHERS):
+	New macros.
+	(grokdeclarator): For function definitions, save the arg-info
+	block from the declarator in DECL_ARGUMENTS.
+	(grokparms): Do not write to last_function_parm*.  Use ARG_INFO_*
+	macros to operate on arg-info block.  Can assume ARG_INFO_PARMS
+	contains only PARM_DECLs.  Improve diagnostics.
+	(get_parm_info): Use ARG_INFO_* macros.  Improve comments and
+	diagnostics.  Disable some expensive checks if not ENABLE_CHECKING.
+	(store_parm_decls_newstyle): Take the function to operate on,
+	and an arg-info block, as arguments; don't get anything from
+	current_function_* globals.
+	(store_parm_decls_oldstyle): Likewise.
+	(store_parm_decls): Pass fndecl and its arg-info block down to
+	store_parm_decls_newstyle/oldstyle.  Send functions with empty
+	argument lists through store_parm_decls_newstyle to reduce
+	overhead.
+	(pushdecl): Comment on the problems with the call to copy_node.
+	Clear DECL_ARGUMENTS of the old node after copying it, if it
+	is an arg-info block instead of a chain of decls.
+	(start_function): Do not manipulate current_function_parm* or
+	last_function_parm*.
+
 2004-03-09  Roger Sayle  <roger@eyesopen.com>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -93,9 +122,9 @@
 
 2004-03-07  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md (ashrdi3): Do not call ashrdi3_no_power
-        for little endian.
-        ("ashrdi3_no_power"): Disable for little endian.
+	* config/rs6000/rs6000.md (ashrdi3): Do not call ashrdi3_no_power
+	for little endian.
+	("ashrdi3_no_power"): Disable for little endian.
 	(ashrdi3): Same.
 
 2004-03-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
