@@ -5226,11 +5226,18 @@ xref_tag (code, name)
      already defined for this tag and return it.  */
 
   register tree ref = lookup_tag (code, name, current_binding_level, 0);
-  /* Even if this is the wrong type of tag, return what we found.
-     There will be an error message anyway, from pending_xref_error.
-     If we create an empty xref just for an invalid use of the type,
-     the main result is to create lots of superfluous error messages.  */
-  if (ref)
+  /* If this is the right type of tag, return what we found.
+     (This reference will be shadowed by shadow_tag later if appropriate.)
+     If this is the wrong type of tag, do not return it.  If it was the
+     wrong type in the same binding level, we will have had an error
+     message already; if in a different binding level and declaring
+     a name, pending_xref_error will give an error message; but if in a
+     different binding level and not declaring a name, this tag should
+     shadow the previous declaration of a different type of tag, and
+     this would not work properly if we return the reference found.
+     (For example, with "struct foo" in an outer scope, "union foo;"
+     must shadow that tag with a new one of union type.)  */
+  if (ref && TREE_CODE (ref) == code)
     return ref;
 
   /* If no such tag is yet defined, create a forward-reference node

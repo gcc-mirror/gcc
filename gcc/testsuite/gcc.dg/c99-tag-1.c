@@ -124,13 +124,28 @@ foo (void)
       enum u0 *y0; /* { dg-bogus "warning" "warning in place of error" } */
       /* { dg-error "wrong|forward" "wrong tag type" { target *-*-* } 124 } */
       int y1[sizeof (enum u2 *)]; /* { dg-bogus "warning" "warning in place of error" } */
-      /* { dg-error "wrong" "wrong tag type" { target *-*-* } 126 } */
+      /* { dg-error "wrong|forward" "wrong tag type" { target *-*-* } 126 } */
       struct v;
       struct e0 *z0; /* { dg-bogus "warning" "warning in place of error" } */
       /* { dg-error "wrong" "wrong tag type" { target *-*-* } 129 } */
       int z1[sizeof (struct e1 *)]; /* { dg-bogus "warning" "warning in place of error" } */
       /* { dg-error "wrong" "wrong tag type" { target *-*-* } 131 } */
       struct w;
+    }
+    /* When explicitly shadowed to be a tag of a different type, references
+       to the new type of tag must be accepted and those to the old type
+       rejected.  */
+    {
+      union s0;
+      union s0 *x0;
+      union s1;
+      struct s1 *x1; /* { dg-bogus "warning" "warning in place of error" } */
+      /* { dg-error "wrong" "wrong tag type" { target *-*-* } 142 } */
+      union s2;
+      union s2 *x2;
+      union s3;
+      struct s3 *x3; /* { dg-bogus "warning" "warning in place of error" } */
+      /* { dg-error "wrong" "wrong tag type" { target *-*-* } 147 } */
     }
   }
 }
