@@ -1755,6 +1755,8 @@ notice_update_cc (body, insn)
      rtx body;
      rtx insn;
 {
+  rtx set;
+
   switch (get_attr_cc (insn))
     {
     case CC_NONE:
@@ -1777,7 +1779,10 @@ notice_update_cc (body, insn)
 	 that's ok because alter_cond will change tests to use EQ/NE.  */
       CC_STATUS_INIT;
       cc_status.flags |= CC_OVERFLOW_UNUSABLE | CC_NO_CARRY;
-      cc_status.value1 = recog_data.operand[0];
+      set = single_set (insn);
+      cc_status.value1 = SET_SRC (set);
+      if (SET_DEST (set) != cc0_rtx)
+	cc_status.value2 = SET_DEST (set);
       break;
 
     case CC_SET_ZNV:
@@ -1786,9 +1791,10 @@ notice_update_cc (body, insn)
 	 alter_cond will change tests to use EQ/NE.  */
       CC_STATUS_INIT;
       cc_status.flags |= CC_NO_CARRY;
-      cc_status.value1 = recog_data.operand[0];
-      if (GET_CODE (body) == SET && REG_P (SET_SRC (body)))
-	cc_status.value2 = SET_SRC (body);
+      set = single_set (insn);
+      cc_status.value1 = SET_SRC (set);
+      if (SET_DEST (set) != cc0_rtx)
+	cc_status.value2 = SET_DEST (set);
       break;
 
     case CC_COMPARE:

@@ -1,3 +1,8 @@
+2003-01-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (notice_update_cc): Don't assume that
+	recog_data.operands[0] is always associated with cc0.
+
 2003-01-19  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (stack_push_word, stack_pop_word,
