@@ -47,6 +47,11 @@ Boston, MA 02111-1307, USA.  */
 %{!mcpu*:%(asm_cpu_default)} \
 "
 
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
+  { "startfile_arch",	STARTFILE_ARCH_SPEC },	\
+  { "link_arch",	LINK_ARCH_SPEC }
+
 /* However it appears that Solaris 2.0 uses the same reg numbering as
    the old BSD-style system did.  */
 
