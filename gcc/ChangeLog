@@ -1,3 +1,8 @@
+2003-02-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygwin.h (TARGET_SUBTARGET_DEFAULT): Set
+	MASK_ALIGN_DOUBLE.
+
 2003-02-15  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (x86_ext_80387_constants): Use 80387 insns

@@ -307,11 +307,13 @@ do {							\
 #define CHECK_STACK_LIMIT 4000
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
-   and returns float values in the 387 and needs stack probes */
-#undef TARGET_SUBTARGET_DEFAULT
+   returns float values in the 387 and needs stack probes.
+   We also align doubles to 64-bits for MSVC default compatibility. */
 
+#undef TARGET_SUBTARGET_DEFAULT
 #define TARGET_SUBTARGET_DEFAULT \
-   (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_STACK_PROBE) 
+   (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_STACK_PROBE \
+    | MASK_ALIGN_DOUBLE)
 
 /* This is how to output an assembler line
    that says to advance the location counter
