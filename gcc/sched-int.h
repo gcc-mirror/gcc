@@ -23,6 +23,70 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Forward declaration.  */
 struct ready_list;
 
+/* Describe state of dependencies used during sched_analyze phase.  */
+struct deps
+{
+  /* The *_insns and *_mems are paired lists.  Each pending memory operation
+     will have a pointer to the MEM rtx on one list and a pointer to the
+     containing insn on the other list in the same place in the list.  */
+
+  /* We can't use add_dependence like the old code did, because a single insn
+     may have multiple memory accesses, and hence needs to be on the list
+     once for each memory access.  Add_dependence won't let you add an insn
+     to a list more than once.  */
+
+  /* An INSN_LIST containing all insns with pending read operations.  */
+  rtx pending_read_insns;
+
+  /* An EXPR_LIST containing all MEM rtx's which are pending reads.  */
+  rtx pending_read_mems;
+
+  /* An INSN_LIST containing all insns with pending write operations.  */
+  rtx pending_write_insns;
+
+  /* An EXPR_LIST containing all MEM rtx's which are pending writes.  */
+  rtx pending_write_mems;
+
+  /* Indicates the combined length of the two pending lists.  We must prevent
+     these lists from ever growing too large since the number of dependencies
+     produced is at least O(N*N), and execution time is at least O(4*N*N), as
+     a function of the length of these pending lists.  */
+  int pending_lists_length;
+
+  /* The last insn upon which all memory references must depend.
+     This is an insn which flushed the pending lists, creating a dependency
+     between it and all previously pending memory references.  This creates
+     a barrier (or a checkpoint) which no memory reference is allowed to cross.
+
+     This includes all non constant CALL_INSNs.  When we do interprocedural
+     alias analysis, this restriction can be relaxed.
+     This may also be an INSN that writes memory if the pending lists grow
+     too large.  */
+  rtx last_pending_memory_flush;
+
+  /* The last function call we have seen.  All hard regs, and, of course,
+     the last function call, must depend on this.  */
+  rtx last_function_call;
+
+  /* Used to keep post-call psuedo/hard reg movements together with
+     the call.  */
+  int in_post_call_group_p;
+
+  /* The LOG_LINKS field of this is a list of insns which use a pseudo
+     register that does not already cross a call.  We create
+     dependencies between each of those insn and the next call insn,
+     to ensure that they won't cross a call after scheduling is done.  */
+  rtx sched_before_next_call;
+
+  /* Element N is the next insn that sets (hard or pseudo) register
+     N within the current basic block; or zero, if there is no
+     such insn.  Needed for new registers which may be introduced
+     by splitting insns.  */
+  rtx *reg_last_uses;
+  rtx *reg_last_sets;
+  rtx *reg_last_clobbers;
+};
+
 /* This structure holds some state of the current scheduling pass, and
    contains some function pointers that abstract out some of the non-generic
    functionality from functions such as schedule_block or schedule_insn.
@@ -63,6 +127,71 @@ struct sched_info
   int queue_must_finish_empty;
 };
 
+extern struct sched_info *current_sched_info;
+
+/* Indexed by INSN_UID, the collection of all data associated with
+   a single instruction.  */
+
+struct haifa_insn_data
+{
+  /* A list of insns which depend on the instruction.  Unlike LOG_LINKS,
+     it represents forward dependancies.  */
+  rtx depend;
+
+  /* The line number note in effect for each insn.  For line number
+     notes, this indicates whether the note may be reused.  */
+  rtx line_note;
+
+  /* Logical uid gives the original ordering of the insns.  */
+  int luid;
+
+  /* A priority for each insn.  */
+  int priority;
+
+  /* The number of incoming edges in the forward dependency graph.
+     As scheduling proceds, counts are decreased.  An insn moves to
+     the ready queue when its counter reaches zero.  */
+  int dep_count;
+
+  /* An encoding of the blockage range function.  Both unit and range
+     are coded.  */
+  unsigned int blockage;
+
+  /* Number of instructions referring to this insn.  */
+  int ref_count;
+
+  /* The minimum clock tick at which the insn becomes ready.  This is
+     used to note timing constraints for the insns in the pending list.  */
+  int tick;
+
+  short cost;
+
+  /* An encoding of the function units used.  */
+  short units;
+
+  /* This weight is an estimation of the insn's contribution to
+     register pressure.  */
+  short reg_weight;
+
+  /* Some insns (e.g. call) are not allowed to move across blocks.  */
+  unsigned int cant_move : 1;
+
+  /* Set if there's DEF-USE dependance between some speculatively
+     moved load insn and this one.  */
+  unsigned int fed_by_spec_load : 1;
+  unsigned int is_load_insn : 1;
+};
+
+extern struct haifa_insn_data *h_i_d;
+
+/* Accessor macros for h_i_d.  There are more in haifa-sched.c.  */
+#define INSN_DEPEND(INSN)	(h_i_d[INSN_UID (INSN)].depend)
+#define INSN_LUID(INSN)		(h_i_d[INSN_UID (INSN)].luid)
+#define CANT_MOVE(insn)		(h_i_d[INSN_UID (insn)].cant_move)
+#define INSN_DEP_COUNT(INSN)	(h_i_d[INSN_UID (INSN)].dep_count)
+
+extern FILE *sched_dump;
+
 #ifndef __GNUC__
 #define __inline
 #endif
@@ -70,3 +199,35 @@ struct sched_info
 #ifndef HAIFA_INLINE
 #define HAIFA_INLINE __inline
 #endif
+
+/* Functions in sched-vis.c.  */
+extern void init_target_units PARAMS ((void));
+extern void insn_print_units PARAMS ((rtx));
+extern void init_block_visualization PARAMS ((void));
+extern void print_block_visualization PARAMS ((const char *));
+extern void visualize_scheduled_insns PARAMS ((int));
+extern void visualize_no_unit PARAMS ((rtx));
+extern void visualize_stall_cycles PARAMS ((int));
+extern void visualize_alloc PARAMS ((void));
+extern void visualize_free PARAMS ((void));
+
+/* Functions in sched-deps.c.  */
+extern void add_dependence PARAMS ((rtx, rtx, enum reg_note));
+extern void add_insn_mem_dependence PARAMS ((struct deps *, rtx *, rtx *, rtx,
+					     rtx));
+extern void sched_analyze PARAMS ((struct deps *, rtx, rtx));
+extern void init_deps PARAMS ((struct deps *));
+extern void free_deps PARAMS ((struct deps *));
+extern void init_deps_global PARAMS ((void));
+extern void finish_deps_global PARAMS ((void));
+extern void compute_forward_dependences PARAMS ((rtx, rtx));
+extern int find_insn_mem_list PARAMS ((rtx, rtx, rtx, rtx));
+extern rtx find_insn_list PARAMS ((rtx, rtx));
+extern void init_dependency_caches PARAMS ((int));
+extern void free_dependency_caches PARAMS ((void));
+
+/* Functions in haifa-sched.c.  */
+extern int insn_unit PARAMS ((rtx));
+extern rtx get_unit_last_insn PARAMS ((int));
+extern int actual_hazard_this_instance PARAMS ((int, int, rtx, int, int));
+

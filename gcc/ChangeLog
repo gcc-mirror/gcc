@@ -1,5 +1,32 @@
 2000-12-03  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* Makefile.in (OBJS): Add sched-deps.o.
+	(sched-deps.o): New rule.
+	* haifa-sched.c (struct deps, struct haifa_insn_data): Moved to
+	sched-int.h.
+	(INSN_DEPEND, INSN_LUID, CANT_MOVE, INSN_DEP_COUNT): Macros moved to
+	sched-int.h.
+	(SIZE_FOR_MODE): Delete unused macro.
+	(reg_known_equiv_p, reg_known_value, reg_pending_clobbers,
+	reg_pending_sets, reg_pending_sets_all, true_dependency_cache,
+	anti_dependency_cache, output_dependency_cache,
+	forward_dependency_cache): Variables moved to sched-deps.c.
+	(add_dependence, remove_dependence, find_insn_list,
+	find_insn_mem_list, add_insn_mem_dependence, flush_pending_lists,
+	sched_analyze_insn, sched_analyze_1, sched_analyze_2,
+	sched_analyze, group_leader, compute_forward_dependences,
+	init_deps, free_deps, init_dependency_caches, free_dependency_caches):
+	Functions moved to sched-deps.c.
+	(schedule_region): Call init_deps_global and finish_deps_global
+	instead of directly manipulating dependency data structures.
+	* sched-deps.c: New file.
+	(init_deps_global, finish_deps_global): New functions.
+	* sched-int.h (struct haifa_insn_data, struct deps): Moved here from
+	haifa-sched.c.
+	(h_i_d): Declare.
+	(INSN_DEPEND, INSN_LUID, CANT_MOVE, INSN_DEP_COUNT): Macros moved here
+	from haifa-sched.c.
+
 	* Makefile.in (OBJS): Add sched-vis.o.
 	(sched-vis.o): New rule.
 	* haifa-sched.c (get_unit_last_insn): New function.
@@ -20,6 +47,11 @@
 	print_block_visualization): Lose basic block argument.  All callers
 	changed.
 	(visualize_scheduled_insns): Use new function get_unit_last_insn.
+	* sched-int.h (current_sched_info, sched_dump): Declare.
+	(init_target_units, insn_print_units, init_block_visualization,
+	print_block_visualization, visualize_scheduled_inns,
+	visualize_no_unit, visualize_stall_cycles, visualize_alloc,
+	visualize_free): Declare functions.
 
 	* sched-int.h: New file.
 	* Makefile.in (haifa-sched.o): Depend on it.
