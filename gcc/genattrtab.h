@@ -55,3 +55,4 @@ extern void write_automata (void);
 #define ATTR_UNSIGNED		(1 << 2)
 #define ATTR_FUNC_UNITS		(1 << 3)
 #define ATTR_BLOCKAGE		(1 << 4)
+#define ATTR_STATIC		(1 << 5)
