@@ -236,8 +236,16 @@ int main(int argc, char** argv)
    */
   const char quote = '"';
   const char bslash = '\\';
+
+  // GNU binutils, somewhere after version 2.11.2, requires -W/--wide
+  // to avoid default line truncation.  -W is not supported and
+  // truncation did not occur by default before that point.
+  bool readelf_need_wide =
+    (system("readelf --help | grep -- --wide >/dev/null") == 0);
+
   ostringstream cmd;
-  cmd << "readelf -s -W " << test_lib << " | sed '/" << bslash 
+  cmd << "readelf -s " << (readelf_need_wide ? "-W " : "")
+      << test_lib << " | sed '/" << bslash 
       << ".dynsym/,/^$/p;d' | egrep -v ' (LOCAL|UND) ' | "
       << "awk '{ if ($4 == " << quote << "FUNC" << quote << "|| $4 == " 
       << quote << "NOTYPE" << quote << ") printf " << quote << "%s:%s"
