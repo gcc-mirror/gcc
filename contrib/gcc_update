@@ -29,7 +29,7 @@
 # contrib/gcc_update --list
 #
 #
-# (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation
+# (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation
 # Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
 #
 # This script is Free Software, and it can be copied, distributed and
@@ -71,8 +71,8 @@ intl/plural.c: intl/plural.y
 intl/configure: intl/configure.in intl/aclocal.m4
 intl/config.h.in: intl/configure.in intl/aclocal.m4
 # Now, proceed to gcc automatically generated files
-gcc/configure: gcc/configure.in
-gcc/cstamp-h.in: gcc/configure.in
+gcc/configure: gcc/configure.ac
+gcc/cstamp-h.in: gcc/configure.ac
 gcc/config.in: gcc/cstamp-h.in
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
 # And then, language-specific files
