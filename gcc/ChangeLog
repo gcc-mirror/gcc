@@ -1,3 +1,17 @@
+2004-05-27  Steven Bosscher  <stevenb@suse.de>
+
+	* gimplify.c (compare_case_labels): New function.
+	(gimplify_switch_expr): Sort case labels, and make sure the
+	last label in the label vector is the default case.
+	* tree-cfg.c (group_case_labels): New function.
+	(build_tree_cfg): Cleanup redundant labels and group case labels
+	before creating edges.
+	(cleanup_dead_labels): Handle GOTO_EXPRs.
+	(find_case_label_for_value): Use a binary search to find the
+	case label for the given value.
+	* tree-gimple.c: Mention that labels are sorted, and that the
+	last label must be the default.
+
 2004-05-27  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_optimize_cfg): Do not merge across jumptables.

@@ -981,6 +981,19 @@ gimplify_loop_expr (tree *expr_p, tree *pre_p)
   return GS_ALL_DONE;
 }
 
+/* Compare two case labels.  Because the front end should already have
+   made sure that case ranges do not overlap, it is enough to only compare
+   the CASE_LOW values of each case label.  */
+
+static int
+compare_case_labels (const void *p1, const void *p2)
+{
+  tree case1 = *(tree *)p1;
+  tree case2 = *(tree *)p2;
+
+  return tree_int_cst_compare (CASE_LOW (case1), CASE_LOW (case2));
+}
+
 /* Gimplify a SWITCH_EXPR, and collect a TREE_VEC of the labels it can
    branch to.  */
 
@@ -996,8 +1009,7 @@ gimplify_switch_expr (tree *expr_p, tree *pre_p)
   if (SWITCH_BODY (switch_expr))
     {
       varray_type labels, saved_labels;
-      bool saw_default;
-      tree label_vec, t;
+      tree label_vec, default_case = NULL_TREE;
       size_t i, len;
 
       /* If someone can be bothered to fill in the labels, they can
@@ -1014,38 +1026,42 @@ gimplify_switch_expr (tree *expr_p, tree *pre_p)
       gimplify_ctxp->case_labels = saved_labels;
 
       len = VARRAY_ACTIVE_SIZE (labels);
-      saw_default = false;
 
       for (i = 0; i < len; ++i)
 	{
-	  t = VARRAY_TREE (labels, i);
+	  tree t = VARRAY_TREE (labels, i);
 	  if (!CASE_LOW (t))
 	    {
-	      saw_default = true;
+	      /* The default case must be the last label in the list.  */
+	      default_case = t;
+	      VARRAY_TREE (labels, i) = VARRAY_TREE (labels, len - 1);
+	      len--;
 	      break;
 	    }
 	}
 
-      label_vec = make_tree_vec (len + !saw_default);
+      label_vec = make_tree_vec (len + 1);
       SWITCH_LABELS (*expr_p) = label_vec;
-
-      for (i = 0; i < len; ++i)
-	TREE_VEC_ELT (label_vec, i) = VARRAY_TREE (labels, i);
-
       append_to_statement_list (switch_expr, pre_p);
 
-      /* If the switch has no default label, add one, so that we jump
-	 around the switch body.  */
-      if (!saw_default)
+      if (! default_case)
 	{
-	  t = build (CASE_LABEL_EXPR, void_type_node, NULL_TREE,
-		     NULL_TREE, create_artificial_label ());
-	  TREE_VEC_ELT (label_vec, len) = t;
+	  /* If the switch has no default label, add one, so that we jump
+	     around the switch body.  */
+	  default_case = build (CASE_LABEL_EXPR, void_type_node, NULL_TREE,
+				NULL_TREE, create_artificial_label ());
 	  append_to_statement_list (SWITCH_BODY (switch_expr), pre_p);
-	  *expr_p = build (LABEL_EXPR, void_type_node, CASE_LABEL (t));
+	  *expr_p = build (LABEL_EXPR, void_type_node,
+			   CASE_LABEL (default_case));
 	}
       else
 	*expr_p = SWITCH_BODY (switch_expr);
+
+      qsort (&VARRAY_TREE (labels, 0), len, sizeof (tree),
+	     compare_case_labels);
+      for (i = 0; i < len; ++i)
+	TREE_VEC_ELT (label_vec, i) = VARRAY_TREE (labels, i);
+      TREE_VEC_ELT (label_vec, len) = default_case;
 
       SWITCH_BODY (switch_expr) = NULL;
     }

@@ -100,6 +100,7 @@ static void tree_cfg2vcg (FILE *);
 static void tree_merge_blocks (basic_block, basic_block);
 static bool tree_can_merge_blocks_p (basic_block, basic_block);
 static void remove_bb (basic_block);
+static void group_case_labels (void);
 static void cleanup_dead_labels (void);
 static bool cleanup_control_flow (void);
 static bool cleanup_control_expr_graph (basic_block, block_stmt_iterator);
@@ -159,6 +160,14 @@ build_tree_cfg (tree *tp)
   
   /* Adjust the size of the array.  */
   VARRAY_GROW (basic_block_info, n_basic_blocks);
+
+  /* To speed up statement iterator walks, we first purge dead labels.  */
+  cleanup_dead_labels ();
+
+  /* Group case nodes to reduce the number of edges.
+     We do this after cleaning up dead labels because otherwise we miss
+     a lot of obvious case merging opportunities.  */
+  group_case_labels ();
 
   /* Create the edges of the flowgraph.  */
   make_edges ();
@@ -469,9 +478,6 @@ make_edges (void)
   /* We do not care about fake edges, so remove any that the CFG
      builder inserted for completeness.  */
   remove_fake_edges ();
-
-  /* To speed up statement iterator walks, we first purge dead labels.  */
-  cleanup_dead_labels ();
 
   /* Clean up the graph and warn for unreachable code.  */
   cleanup_tree_cfg ();
@@ -842,6 +848,17 @@ cleanup_dead_labels (void)
 	    break;
 	  }
 
+	/* We have to handle GOTO_EXPRs until they're removed, and we don't
+	   remove them until after we've created the CFG edges.  */
+	case GOTO_EXPR:
+	  {
+	    tree label = GOTO_DESTINATION (stmt);
+	    if (! computed_goto_p (stmt))
+	      GOTO_DESTINATION (stmt) =
+		label_for_bb[label_to_block (label)->index];
+	    break;
+	  }
+
 	default:
 	  break;
       }
@@ -878,6 +895,80 @@ cleanup_dead_labels (void)
   free (label_for_bb);
 }
 
+/* Look for blocks ending in a multiway branch (a SWITCH_EXPR in GIMPLE),
+   and scan the sorted vector of cases.  Combine the ones jumping to the
+   same label.
+   Eg. three separate entries 1: 2: 3: become one entry 1..3:  */
+
+static void
+group_case_labels (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      tree stmt = last_stmt (bb);
+      if (stmt && TREE_CODE (stmt) == SWITCH_EXPR)
+	{
+	  tree labels = SWITCH_LABELS (stmt);
+	  int old_size = TREE_VEC_LENGTH (labels);
+	  int i, j, new_size = old_size;
+
+	  /* Look for possible opportunities to merge cases.
+	     Ignore the last element of the label vector because it
+	     must be the default case.  */
+          i = 0;
+	  while (i < old_size - 2)
+	    {
+	      tree base_case, base_label, base_high, type;
+	      base_case = TREE_VEC_ELT (labels, i);
+
+	      if (! base_case)
+		abort ();
+
+	      type = TREE_TYPE (CASE_LOW (base_case));
+	      base_label = CASE_LABEL (base_case);
+	      base_high = CASE_HIGH (base_case) ?
+		CASE_HIGH (base_case) : CASE_LOW (base_case);
+
+	      /* Try to merge case labels.  Break out when we reach the end
+		 of the label vector or when we cannot merge the next case
+		 label with the current one.  */
+	      while (i < old_size - 2)
+		{
+		  tree merge_case = TREE_VEC_ELT (labels, ++i);
+	          tree merge_label = CASE_LABEL (merge_case);
+		  tree t = int_const_binop (PLUS_EXPR, base_high,
+					    integer_one_node, 1);
+
+		  /* Merge the cases if they jump to the same place,
+		     and their ranges are consecutive.  */
+		  if (merge_label == base_label
+		      && tree_int_cst_equal (CASE_LOW (merge_case), t))
+		    {
+		      base_high = CASE_HIGH (merge_case) ?
+			CASE_HIGH (merge_case) : CASE_LOW (merge_case);
+		      CASE_HIGH (base_case) = base_high;
+		      TREE_VEC_ELT (labels, i) = NULL_TREE;
+		      new_size--;
+		    }
+		  else
+		    break;
+		}
+	    }
+
+	  /* Compress the case labels in the label vector, and adjust the
+	     length of the vector.  */
+	  for (i = 0, j = 0; i < new_size; i++)
+	    {
+	      while (! TREE_VEC_ELT (labels, j))
+		j++;
+	      TREE_VEC_ELT (labels, i) = TREE_VEC_ELT (labels, j++);
+	    }
+	  TREE_VEC_LENGTH (labels) = new_size;
+	}
+    }
+}
 
 /* Checks whether we can merge block B into block A.  */
 
@@ -1940,38 +2031,44 @@ find_taken_edge_switch_expr (basic_block bb, tree val)
 }
 
 
-/* Return the CASE_LABEL_EXPR that SWITCH_EXPR will take for VAL.  */
+/* Return the CASE_LABEL_EXPR that SWITCH_EXPR will take for VAL.
+   We can make optimal use here of the fact that the case labels are
+   sorted: We can do a binary search for a case matching VAL.  */
 
 static tree
 find_case_label_for_value (tree switch_expr, tree val)
 {
   tree vec = SWITCH_LABELS (switch_expr);
-  size_t i, n = TREE_VEC_LENGTH (vec);
-  tree default_case = NULL;
+  size_t low, high, n = TREE_VEC_LENGTH (vec);
+  tree default_case = TREE_VEC_ELT (vec, n - 1);
 
-  for (i = 0; i < n; ++i)
+  for (low = -1, high = n - 1; high - low > 1; )
     {
+      size_t i = (high + low) / 2;
       tree t = TREE_VEC_ELT (vec, i);
+      int cmp;
 
-      if (CASE_LOW (t) == NULL)
-	default_case = t;
-      else if (CASE_HIGH (t) == NULL)
+      /* Cache the result of comparing CASE_LOW and val.  */
+      cmp = tree_int_cst_compare (CASE_LOW (t), val);
+
+      if (cmp > 0)
+	high = i;
+      else
+	low = i;
+
+      if (CASE_HIGH (t) == NULL)
 	{
-	  /* A `normal' case label.  */
-	  if (tree_int_cst_equal (CASE_LOW (t), val))
+	  /* A singe-valued case label.  */
+	  if (cmp == 0)
 	    return t;
 	}
       else
 	{
 	  /* A case range.  We can only handle integer ranges.  */
-	  if (tree_int_cst_compare (CASE_LOW (t), val) <= 0
-	      && tree_int_cst_compare (CASE_HIGH (t), val) >= 0)
+	  if (cmp <= 0 && tree_int_cst_compare (CASE_HIGH (t), val) >= 0)
 	    return t;
 	}
     }
-
-  if (!default_case)
-    abort ();
 
   return default_case;
 }
