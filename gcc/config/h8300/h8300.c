@@ -735,6 +735,10 @@ output_adds_subs (operands)
   if (val == -1)
     return "subs #1,%A0";
 
+  /* If not optimizing, we might be asked to add 0.  */
+  if (val == 0)
+    return "";
+
   /* In theory, this can't happen.  */
   abort ();
 }
