@@ -1415,16 +1415,16 @@ vect_analyze_offset_expr (tree expr,
   tree left_step = size_zero_node;
   tree right_step = size_zero_node;
   enum tree_code code;
-  tree init, evolution, def_stmt;
+  tree init, evolution;
+
+  *step = NULL_TREE;
+  *misalign = NULL_TREE;
+  *initial_offset = NULL_TREE;
 
   /* Strip conversions that don't narrow the mode.  */
   expr = vect_strip_conversion (expr);
   if (!expr)
     return false;
-
-  *step = NULL_TREE;
-  *misalign = NULL_TREE;
-  *initial_offset = NULL_TREE;
 
   /* Stop conditions:
      1. Constant.  */
@@ -1447,18 +1447,12 @@ vect_analyze_offset_expr (tree expr,
 	return false;
 
       init = initial_condition_in_loop_num (access_fn, loop->num);
-      if (init == expr)
-	{
-	  def_stmt = SSA_NAME_DEF_STMT (init);
-	  if (def_stmt 
-	      && !IS_EMPTY_STMT (def_stmt)
-	      && flow_bb_inside_loop_p (loop, bb_for_stmt (def_stmt)))
-	    /* Not enough information: may be not loop invariant.  
-	       E.g., for a[b[i]], we get a[D], where D=b[i]. EXPR is D, its 
-	       initial_condition is D, but it depends on i - loop's induction
-	       variable.  */	  
-	    return false;
-	}
+      if (init == expr && !expr_invariant_in_loop_p (loop, init))
+	/* Not enough information: may be not loop invariant.  
+	   E.g., for a[b[i]], we get a[D], where D=b[i]. EXPR is D, its 
+	   initial_condition is D, but it depends on i - loop's induction
+	   variable.  */	  
+	return false;
 
       evolution = evolution_part_in_loop_num (access_fn, loop->num);
       if (evolution && TREE_CODE (evolution) != INTEGER_CST)
@@ -3174,7 +3168,8 @@ vect_update_ivs_after_vectorizer (struct loop *loop, tree niters, edge update_e)
       gcc_assert (!tree_is_chrec (evolution_part));
 
       step_expr = evolution_part;
-      init_expr = unshare_expr (initial_condition (access_fn));
+      init_expr = unshare_expr (initial_condition_in_loop_num (access_fn, 
+							       loop->num));
 
       ni = build2 (PLUS_EXPR, TREE_TYPE (init_expr),
 		  build2 (MULT_EXPR, TREE_TYPE (niters),
@@ -3890,7 +3885,7 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
     return false;
   
   step_expr = evolution_part;
-  init_expr = unshare_expr (initial_condition (access_fn));
+  init_expr = unshare_expr (initial_condition_in_loop_num (access_fn, loop_nb));
 
   if (vect_debug_details (NULL))
     {
@@ -4617,6 +4612,14 @@ vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read)
     }
 		
   STRIP_NOPS (init);
+
+  if (!expr_invariant_in_loop_p (loop, init))
+    {
+      if (vect_debug_stats (loop) || vect_debug_details (loop)) 
+	fprintf (dump_file, 
+		 "not vectorized: initial condition is not loop invariant.");	
+      return NULL;
+    }
 
   if (TREE_CODE (step) != INTEGER_CST)
     {
