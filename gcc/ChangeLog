@@ -1,3 +1,8 @@
+2000-04-08  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (mark_used_reg): Use reg_set_p to determine if a register
+	was modified in the current insn.
+
 2000-04-08  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm/thumb.md: Delete.

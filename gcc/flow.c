@@ -4520,11 +4520,17 @@ mark_used_reg (pbi, new_live, reg, cond, insn)
 
   /* Record and count the insns in which a reg dies.  If it is used in
      this insn and was dead below the insn then it dies in this insn.
+
      If it was set in this insn, we do not make a REG_DEAD note;
-     likewise if we already made such a note.  */
+     likewise if we already made such a note.  Recall that dead_or_set_p
+     checks for complete overlap, and thus is not suitable for the first
+     case.  But it does handle the existing note case.  Also recall that
+     reg_set_p, when presented with the complete insn, will try to infer
+     things about a call_insn that we do not wish.  */
 
   if ((pbi->flags & PROP_DEATH_NOTES)
       && some_was_dead
+      && ! reg_set_p (reg, PATTERN (insn))
       && ! dead_or_set_p (insn, reg))
     {
       int n;
