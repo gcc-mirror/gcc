@@ -119,7 +119,6 @@ static tree copy_body (inline_data *);
 static tree expand_call_inline (tree *, int *, void *);
 static void expand_calls_inline (tree *, inline_data *);
 static bool inlinable_function_p (tree);
-static int limits_allow_inlining (tree, inline_data *);
 static tree remap_decl (tree, inline_data *);
 static tree remap_type (tree, inline_data *);
 #ifndef INLINER_FOR_JAVA
@@ -1219,97 +1218,6 @@ inlinable_function_p (tree fn)
   return inlinable;
 }
 
-/* We can't inline functions that are too big.  Only allow a single
-   function to be of MAX_INLINE_INSNS_SINGLE size.  Make special
-   allowance for extern inline functions, though.
-
-   Return nonzero if the function FN can be inlined into the inlining
-   context ID.  */
-
-static int
-limits_allow_inlining (tree fn, inline_data *id)
-{
-  int estimated_insns = 0;
-  size_t i;
-
-  /* Don't even bother if the function is not inlinable.  */
-  if (!inlinable_function_p (fn))
-    return 0;
-
-  /* Investigate the size of the function.  Return at once
-     if the function body size is too large.  */
-  if (!(*lang_hooks.tree_inlining.disregard_inline_limits) (fn))
-    {
-      int currfn_max_inline_insns;
-
-      /* If we haven't already done so, get an estimate of the number of
-	 instructions that will be produces when expanding this function.  */
-      if (!DECL_ESTIMATED_INSNS (fn))
-	DECL_ESTIMATED_INSNS (fn)
-	  = (*lang_hooks.tree_inlining.estimate_num_insns) (fn);
-      estimated_insns = DECL_ESTIMATED_INSNS (fn);
-
-      /* We may be here either because fn is declared inline or because
-	 we use -finline-functions.  For the second case, we are more
-	 restrictive.
-
-	 FIXME: -finline-functions should imply -funit-at-a-time, it's
-		about equally expensive but unit-at-a-time produces
-		better code.  */
-      currfn_max_inline_insns = DECL_DECLARED_INLINE_P (fn) ?
-		MAX_INLINE_INSNS_SINGLE : MAX_INLINE_INSNS_AUTO;
-
-      /* If the function is too big to be inlined, adieu.  */
-      if (estimated_insns > currfn_max_inline_insns)
-	return 0;
-
-      /* We now know that we don't disregard the inlining limits and that 
-	 we basically should be able to inline this function.
-	 We always allow inlining functions if we estimate that they are
-	 smaller than MIN_INLINE_INSNS.  Otherwise, investigate further.  */
-      if (estimated_insns > MIN_INLINE_INSNS)
-	{
-	  int sum_insns = (id ? id->inlined_insns : 0) + estimated_insns;
-
-	  /* In the extreme case that we have exceeded the recursive inlining
-	     limit by a huge factor (128), we just say no.
-
-	     FIXME:  Should not happen in real life, but people have reported
-		     that it actually does!?  */
-	  if (sum_insns > MAX_INLINE_INSNS * 128)
-	    return 0;
-
-	  /* If we did not hit the extreme limit, we use a linear function
-	     with slope -1/MAX_INLINE_SLOPE to exceedingly decrease the
-	     allowable size.  */
-	  else if (sum_insns > MAX_INLINE_INSNS)
-	    {
-	      if (estimated_insns > currfn_max_inline_insns
-			- (sum_insns - MAX_INLINE_INSNS) / MAX_INLINE_SLOPE)
-	        return 0;
-	    }
-	}
-    }
-
-  /* Don't allow recursive inlining.  */
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (id->fns); ++i)
-    if (VARRAY_TREE (id->fns, i) == fn)
-      return 0;
-
-  if (DECL_INLINED_FNS (fn))
-    {
-      int j;
-      tree inlined_fns = DECL_INLINED_FNS (fn);
-
-      for (j = 0; j < TREE_VEC_LENGTH (inlined_fns); ++j)
-	if (TREE_VEC_ELT (inlined_fns, j) == VARRAY_TREE (id->fns, 0))
-	  return 0;
-    }
-
-  /* Go ahead, this function can be inlined.  */
-  return 1;
-}
-
 /* If *TP is a CALL_EXPR, replace it with its inline expansion.  */
 
 static tree
@@ -1396,8 +1304,7 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
     return NULL_TREE;
 
   /* Turn forward declarations into real ones.  */
-  if (flag_unit_at_a_time)
-    fn = cgraph_node (fn)->decl;
+  fn = cgraph_node (fn)->decl;
 
   /* If fn is a declaration of a function in a nested scope that was
      globally declared inline, we don't set its DECL_INITIAL.
@@ -1413,9 +1320,7 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 
   /* Don't try to inline functions that are not well-suited to
      inlining.  */
-  if ((flag_unit_at_a_time
-       && (!DECL_SAVED_TREE (fn) || !cgraph_inline_p (id->current_decl, fn)))
-      || (!flag_unit_at_a_time && !limits_allow_inlining (fn, id)))
+  if (!DECL_SAVED_TREE (fn) || !cgraph_inline_p (id->current_decl, fn))
     {
       if (warn_inline && DECL_INLINE (fn) && DECL_DECLARED_INLINE_P (fn)
 	  && !DECL_IN_SYSTEM_HEADER (fn))
@@ -1653,7 +1558,7 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
   id->inlined_insns += DECL_ESTIMATED_INSNS (fn) - 1;
 
   /* Update callgraph if needed.  */
-  if (id->decl && flag_unit_at_a_time)
+  if (id->decl)
     {
       cgraph_remove_call (id->decl, fn);
       cgraph_create_edges (id->decl, *inlined_body);

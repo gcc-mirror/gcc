@@ -1,3 +1,9 @@
+2003-10-20  Jan Hubicka  <jh@suse.cz>
+
+	* testsuite/g++.dg/opt/inline4.C: Do not use min-inline-insns
+	parameter.
+	* testsuite/gcc.dg/inline-2.c: Likewise.
+
 2003-10-20  Phil Edwards  <phil@codesourcery.com>
 
 	* gcc.dg/20021014-1.c:  XFAIL for *-*-windiss targets.

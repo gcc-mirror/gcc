@@ -5073,6 +5073,8 @@ start_cleanup_fn (void)
      it is only called via a function pointer, but we avoid unnecessary
      emissions this way.  */
   DECL_INLINE (fndecl) = 1;
+  DECL_DECLARED_INLINE_P (fndecl) = 1;
+  DECL_INTERFACE_KNOWN (fndecl) = 1;
   /* Build the parameter.  */
   if (flag_use_cxa_atexit)
     {

@@ -4784,22 +4784,6 @@ larger binaries.  Very high values are not advisable, as too large
 binaries may adversely affect runtime performance.
 The default value is 200.
 
-@item max-inline-slope
-After exceeding the maximum number of inlined instructions by repeated
-inlining, a linear function is used to decrease the allowable size
-for single functions.  The slope of that function is the negative
-reciprocal of the number specified here.
-This parameter is ignored when @option{-funit-at-a-time} is used.
-The default value is 32.
-
-@item min-inline-insns
-The repeated inlining is throttled more and more by the linear function
-after exceeding the limit.  To avoid too much throttling, a minimum for
-this function is specified here to allow repeated inlining for very small
-functions even when a lot of repeated inlining already has been done.
-This parameter is ignored when @option{-funit-at-a-time} is used.
-The default value is 10.
-
 @item large-function-insns
 The limit specifying really large functions.  For functions greater than this
 limit inlining is constrained by @option{--param large-function-growth}.

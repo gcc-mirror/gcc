@@ -3364,9 +3364,6 @@ rest_of_compilation (tree decl)
 
   rest_of_handle_cfg (decl, insns);
 
-  if (flag_web)
-    rest_of_handle_web (decl, insns);
-
   if (optimize > 0
       || profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
     {
@@ -3393,6 +3390,9 @@ rest_of_compilation (tree decl)
 	  || flag_peel_loops
 	  || flag_unroll_loops))
     rest_of_handle_loop2 (decl, insns);
+
+  if (flag_web)
+    rest_of_handle_web (decl, insns);
 
   if (flag_rerun_cse_after_loop)
     rest_of_handle_cse2 (decl, insns);
