@@ -280,7 +280,8 @@ struct edge_list * create_edge_list	PROTO ((void));
 void free_edge_list			PROTO ((struct edge_list *));
 void print_edge_list			PROTO ((FILE *, struct edge_list *));
 void verify_edge_list			PROTO ((FILE *, struct edge_list *));
-int find_edge_index			PROTO ((struct edge_list *, int, int));
+int find_edge_index			PROTO ((struct edge_list *, 
+						basic_block, basic_block));
 
 extern void compute_preds_succs		PROTO ((int_list_ptr *, int_list_ptr *,
 						int *, int *));

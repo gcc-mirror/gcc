@@ -6759,7 +6759,7 @@ verify_edge_list (f, elist)
 	{
 	  pred = e->src->index;
 	  succ = e->dest->index;
-	  index = EDGE_INDEX (elist, pred, succ);
+	  index = EDGE_INDEX (elist, e->src, e->dest);
 	  if (index == EDGE_INDEX_NO_EDGE)
 	    {
 	      fprintf (f, "*p* No index for edge from %d to %d\n",pred, succ);
@@ -6777,7 +6777,7 @@ verify_edge_list (f, elist)
     {
       pred = e->src->index;
       succ = e->dest->index;
-      index = EDGE_INDEX (elist, pred, succ);
+      index = EDGE_INDEX (elist, e->src, e->dest);
       if (index == EDGE_INDEX_NO_EDGE)
 	{
 	  fprintf (f, "*p* No index for edge from %d to %d\n",pred, succ);
@@ -6813,14 +6813,15 @@ verify_edge_list (f, elist)
 	      found_edge = 1;
 	      break;
 	    }
-        if (EDGE_INDEX (elist, pred, succ) == EDGE_INDEX_NO_EDGE 
-	    && found_edge != 0)
+        if (EDGE_INDEX (elist, BASIC_BLOCK (pred), BASIC_BLOCK (succ)) 
+	    == EDGE_INDEX_NO_EDGE && found_edge != 0)
 	  fprintf (f, "*** Edge (%d, %d) appears to not have an index\n",
 	  	   pred, succ);
-        if (EDGE_INDEX (elist, pred, succ) != EDGE_INDEX_NO_EDGE
-	    && found_edge == 0)
+        if (EDGE_INDEX (elist, BASIC_BLOCK (pred), BASIC_BLOCK (succ)) 
+	    != EDGE_INDEX_NO_EDGE && found_edge == 0)
 	  fprintf (f, "*** Edge (%d, %d) has index %d, but there is no edge\n",
-	  	   pred, succ, EDGE_INDEX (elist, pred, succ));
+	  	   pred, succ, EDGE_INDEX (elist, BASIC_BLOCK (pred), 
+					   BASIC_BLOCK (succ)));
       }
     for (succ = 0 ; succ < n_basic_blocks; succ++)
       {
@@ -6841,14 +6842,15 @@ verify_edge_list (f, elist)
 	      found_edge = 1;
 	      break;
 	    }
-        if (EDGE_INDEX (elist, ENTRY_BLOCK, succ) == EDGE_INDEX_NO_EDGE 
-	    && found_edge != 0)
+        if (EDGE_INDEX (elist, ENTRY_BLOCK_PTR, BASIC_BLOCK (succ)) 
+	    == EDGE_INDEX_NO_EDGE && found_edge != 0)
 	  fprintf (f, "*** Edge (entry, %d) appears to not have an index\n",
 	  	   succ);
-        if (EDGE_INDEX (elist, ENTRY_BLOCK, succ) != EDGE_INDEX_NO_EDGE
-	    && found_edge == 0)
+        if (EDGE_INDEX (elist, ENTRY_BLOCK_PTR, BASIC_BLOCK (succ)) 
+	    != EDGE_INDEX_NO_EDGE && found_edge == 0)
 	  fprintf (f, "*** Edge (entry, %d) has index %d, but no edge exists\n",
-	  	   succ, EDGE_INDEX (elist, ENTRY_BLOCK, succ));
+	  	   succ, EDGE_INDEX (elist, ENTRY_BLOCK_PTR, 
+				     BASIC_BLOCK (succ)));
       }
     for (pred = 0 ; pred < n_basic_blocks; pred++)
       {
@@ -6869,14 +6871,15 @@ verify_edge_list (f, elist)
 	      found_edge = 1;
 	      break;
 	    }
-        if (EDGE_INDEX (elist, pred, EXIT_BLOCK) == EDGE_INDEX_NO_EDGE
-	    && found_edge != 0)
+        if (EDGE_INDEX (elist, BASIC_BLOCK (pred), EXIT_BLOCK_PTR) 
+	    == EDGE_INDEX_NO_EDGE && found_edge != 0)
 	  fprintf (f, "*** Edge (%d, exit) appears to not have an index\n",
 	  	   pred);
-        if (EDGE_INDEX (elist, pred, EXIT_BLOCK) != EDGE_INDEX_NO_EDGE
-	    && found_edge == 0)
+        if (EDGE_INDEX (elist, BASIC_BLOCK (pred), EXIT_BLOCK_PTR) 
+	    != EDGE_INDEX_NO_EDGE && found_edge == 0)
 	  fprintf (f, "*** Edge (%d, exit) has index %d, but no edge exists\n",
-	  	   pred, EDGE_INDEX (elist, pred, EXIT_BLOCK));
+	  	   pred, EDGE_INDEX (elist, BASIC_BLOCK (pred), 
+				     EXIT_BLOCK_PTR));
       }
 }
 
@@ -6886,13 +6889,13 @@ verify_edge_list (f, elist)
 int
 find_edge_index (edge_list, pred, succ)
      struct edge_list *edge_list;
-     int pred, succ;
+     basic_block pred, succ;
 {
   int x;
   for (x = 0; x < NUM_EDGES (edge_list); x++)
     {
-      if (INDEX_EDGE_PRED_BB (edge_list, x)->index == pred
-	  && INDEX_EDGE_SUCC_BB (edge_list, x)->index == succ)
+      if (INDEX_EDGE_PRED_BB (edge_list, x) == pred
+	  && INDEX_EDGE_SUCC_BB (edge_list, x) == succ)
 	return x;
     }
   return (EDGE_INDEX_NO_EDGE);
