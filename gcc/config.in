@@ -88,6 +88,13 @@
 /* Define if you want expensive run-time checks. */
 #undef ENABLE_CHECKING
 
+/* Define to enable the use of a default assembler. */
+#undef DEFAULT_ASSEMBLER
+
+/* Define to enable the use of a default linker. */
+#undef DEFAULT_LINKER
+
+
 /* Define if you don't have vprintf but do have _doprnt.  */
 #undef HAVE_DOPRNT
 
