@@ -1,3 +1,8 @@
+2004-07-09  Dalibor Topic  <robilad@kaffe.org>
+
+	* java/text/DateFormat.java (parse):
+	Improved javadoc. Improved exception message.
+
 2004-07-09  Mark Wielaard  <mark@klomp.org>
 
 	* gnu/java/nio/SelectorImpl.java (select): Call static Thread
