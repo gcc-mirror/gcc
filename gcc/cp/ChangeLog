@@ -1,3 +1,7 @@
+Tue Jul 14 20:09:22 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* search.c (my_tree_cons): Clean up.
+
 1998-07-14  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (joust): Don't warn about "confusing" conversions to the
