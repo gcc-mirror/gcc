@@ -10003,7 +10003,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  cp_error ("ANSI C++ forbids in-class initialization of non-const static member `%D'",
 			    declarator);
 		
-		if (pedantic && ! INTEGRAL_TYPE_P (type))
+		if (pedantic && ! INTEGRAL_TYPE_P (type) 
+		    && !uses_template_parms (type))
 		  cp_pedwarn ("ANSI C++ forbids initialization of member constant `%D' of non-integral type `%T'", declarator, type);
 	      }
 

@@ -1,3 +1,9 @@
+1998-05-29  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (grokdeclarator): Don't complain about in-class
+	initialization of static consts if we don't really know the type
+	of the variable.
+
 1998-05-29  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (DECL_DESTRUCTOR_P): New macro.
