@@ -1,3 +1,8 @@
+2005-02-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config.gcc (powerpc64-*-linux*): Default to -m64 also for
+	specific 64-bit CPUs.
+
 2005-02-01  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/16201
