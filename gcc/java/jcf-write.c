@@ -2919,6 +2919,12 @@ generate_classfile (tree clas, struct jcf_partial *state)
       tree type = TREE_TYPE (part);
       tree save_function = current_function_decl;
       int synthetic_p = 0;
+
+      /* Invisible Miranda methods shouldn't end up in the .class
+	 file.  */
+      if (METHOD_INVISIBLE (part))
+	continue;
+
       current_function_decl = part;
       ptr = append_chunk (NULL, 8, state);
       i = get_access_flags (part);  PUT2 (i);
