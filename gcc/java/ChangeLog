@@ -1,3 +1,8 @@
+Tue Mar 14 17:15:41 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (register_incomplete_type): Fixed initialization of
+	JDEP_ENCLOSING.
+
 2000-02-14  Andrew Haley  <aph@cygnus.com>
 
         * check-init.c (check_init): Add new cases for unary and binary

@@ -7581,7 +7581,8 @@ register_incomplete_type (kind, wfl, decl, ptr)
   JDEP_WFL (new) = wfl;
   JDEP_CHAIN (new) = NULL;
   JDEP_MISC (new) = NULL_TREE;
-  JDEP_ENCLOSING (new) = GET_CPC ();
+  if(!(JDEP_ENCLOSING (new) = GET_ENCLOSING_CPC_CONTEXT ()))
+    JDEP_ENCLOSING (new) = GET_CPC ();
   JDEP_GET_PATCH (new) = (tree *)NULL;
 
   JDEP_INSERT (ctxp->classd_list, new);
