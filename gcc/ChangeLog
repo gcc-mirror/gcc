@@ -75,7 +75,9 @@
 	(i386_pe_encode_section_info): Warn if the dllimport attribute
 	and symbol prefix have been instantiated and then overridden.
 
-	* doc/extend.texi: Document dllimport and dllexport attributes.2003-07-10  James E Wilson  <wilson@tuliptree.org>
+	* doc/extend.texi: Document dllimport and dllexport attributes.
+
+2003-07-10  James E Wilson  <wilson@tuliptree.org>
 
 	PR optimization/9745
 	* loop.c (loop_iv_add_mult_emit_before): Call loop_regs_update before
