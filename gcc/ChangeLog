@@ -1,3 +1,7 @@
+Sat Sep 29 15:08:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi (Optimize Options): Revert an accidental checkin.
+
 2001-09-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* cse.c (cse_insn) [HAVE_cc0]: Fix typo delete-insn -> delete_insn.
