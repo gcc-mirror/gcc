@@ -1,3 +1,10 @@
+2002-03-21  Eric Botcazou <ebotcazou@multimania.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR c/5354:
+	* c-common.c (c_expand_expr): Preserve result of a statement
+	expression if needed.
+
 2002-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/4195
