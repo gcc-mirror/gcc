@@ -1,3 +1,23 @@
+2000-04-27  Alex Samuel  <samuel@codesourcery.com>
+
+	* Makefile.in (timevar.o): Depend on flags.h.
+	* timevar.c (unused_stack_instances): New variable.
+	(timevar_push): Take a timevar_stack_def from
+	unused_stack_instances if available.
+	(timevar_pop): Push the popped timevar_stack_def onto
+	unused_stack_instances.
+	(TIMEVAR_ENABLE): New macro.
+	(timevar_def): Make standalone a 1-bit field.  Add field used.
+	(get_time): Rename parameter to now.  Return after clearing it if
+	not TIMEVAR_ENABLE.
+	(init_timevar): Do nothing if not TIMEVAR_ENABLE.
+	(timevar_pop): Likewise.
+	(timevar_stop): Likewise.
+	(timevar_push): Likewise.  Mark the timing variable as used.
+	(timevar_start): Likewise.
+	(timevar_print): Do nothing if not TIMEVAR_ENABLE.  Don't print
+	timevars that were never used.
+
 2000-04-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-commom.c (c_apply_type_quals_to_decl): REFERENCE_TYPES are
