@@ -1298,6 +1298,9 @@ dbxout_type (type, full, show_arg_types)
 #ifdef DBX_OUTPUT_ENUM
       DBX_OUTPUT_ENUM (asmfile, type);
 #else
+      if (use_gnu_debug_info_extensions
+	  && TYPE_PRECISION (type) != TYPE_PRECISION (integer_type_node))
+	fprintf (asmfile, "@s%d;", TYPE_PRECISION (type));
       putc ('e', asmfile);
       CHARS (1);
       for (tem = TYPE_VALUES (type); tem; tem = TREE_CHAIN (tem))
