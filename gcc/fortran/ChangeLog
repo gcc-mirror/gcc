@@ -1,3 +1,9 @@
+2004-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* Make-lang.in (F95_ADDITIONAL_OBJS): Kill.
+	(f951): Do not depend on F95_ADDITIONAL_OBJS and don't
+	link it in.
+
 2004-10-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-decl.c (generate_local_decl): Simplify logic, fix comment

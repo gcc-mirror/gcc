@@ -59,8 +59,7 @@ GFORTRAN_CROSS_NAME := $(shell echo gfortran|sed '$(program_transform_cross_name
 
 # These are the groups of object files we have.  The F95_PARSER_OBJS are
 # all the front end files, the F95_OBJS are the files for the translation
-# from the parse tree to GENERIC, and F95_ADDITIONAL_OBJS are the files
-# from the middle end we depend on.
+# from the parse tree to GENERIC
 
 F95_PARSER_OBJS = fortran/arith.o fortran/array.o fortran/bbt.o \
     fortran/check.o fortran/data.o fortran/decl.o fortran/dump-parse-tree.o \
@@ -76,14 +75,6 @@ F95_OBJS = $(F95_PARSER_OBJS) \
     fortran/trans-const.o fortran/trans-decl.o fortran/trans-expr.o \
     fortran/trans-intrinsic.o fortran/trans-io.o fortran/trans-stmt.o \
     fortran/trans-types.o
-
-# FIXME:
-# We rely on c-semantics to expand from GIMPLE to RTL.
-# This should go away once a real GIMPLE expander is available. 
-F95_ADDITIONAL_OBJS = \
-	tree-cfg.o tree-dfa.o tree-optimize.o tree-gimple.o \
-	tree-ssa.o tree-ssa-ccp.o tree-ssa-dce.o \
-	gimplify.o stor-layout.o
 
 # GFORTRAN uses GMP for its internal arithmetics.
 F95_LIBS = $(GMPLIBS) $(LIBS)
@@ -113,10 +104,10 @@ gfortran-cross$(exeext): gfortran$(exeext)
 	cp gfortran$(exeext) gfortran-cross$(exeext)
 
 # The compiler itself is called f951.
-f951$(exeext): $(F95_OBJS) $(F95_ADDITIONAL_OBJS) \
+f951$(exeext): $(F95_OBJS) \
 		$(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
-		$(F95_OBJS) $(F95_ADDITIONAL_OBJS) $(BACKEND) $(F95_LIBS)
+		$(F95_OBJS) $(BACKEND) $(F95_LIBS)
 
 gt-fortran-f95-lang.h gtype-fortran.h	      : s-gtype; @true
 gt-fortran-trans-decl.h gt-fortran-trans.h    : s-gtype; @true
