@@ -1,3 +1,7 @@
+2002-08-06  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/install.texi (Binaries): Update Bull Freeware URL.
+
 2002-08-06  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/gcc.texi (Top): Rename Index to Keyword Index.
