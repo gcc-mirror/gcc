@@ -406,14 +406,12 @@ copy_rtx (orig)
      walks over the RTL.  */
   copy->used = 0;
 
-  /* We do not copy JUMP, CALL, or FRAME_RELATED for INSNs.  */
+  /* We do not copy FRAME_RELATED for INSNs.  */
   if (GET_RTX_CLASS (code) == 'i')
-    {
-      copy->jump = 0;
-      copy->call = 0;
-      copy->frame_related = 0;
-    }
-  
+    copy->frame_related = 0;
+  copy->jump = orig->jump;
+  copy->call = orig->call;
+
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
 
   for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)

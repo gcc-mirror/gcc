@@ -285,6 +285,9 @@ static void mark_type_hash PARAMS ((void *));
 void (*lang_unsave) PARAMS ((tree *));
 void (*lang_unsave_expr_now) PARAMS ((tree));
 
+/* If non-null, a language specific version of safe_for_unsave. */
+int (*lang_safe_for_unsave) PARAMS ((tree));
+
 /* The string used as a placeholder instead of a source file name for
    built-in tree nodes.  The variable, which is dynamically allocated,
    should be used; the macro is only used to initialize it.  */
@@ -2665,6 +2668,82 @@ unsave_expr_now (expr)
     unsave_expr_now_r (expr);
 
   return expr;
+}
+
+/* Return nonzero if it is safe to unsave EXPR, else return zero.
+   It is not safe to unsave EXPR if it contains any embedded RTL_EXPRs.  */
+
+int
+safe_for_unsave (expr)
+     tree expr;
+{
+  enum tree_code code;
+  register int i;
+  int first_rtl;
+
+  if (expr == NULL_TREE)
+    return 1;
+
+  code = TREE_CODE (expr);
+  first_rtl = first_rtl_op (code);
+  switch (code)
+    {
+    case RTL_EXPR:
+      return 0;
+
+    case CALL_EXPR:
+      if (TREE_OPERAND (expr, 1)
+	  && TREE_CODE (TREE_OPERAND (expr, 1)) == TREE_LIST)
+	{
+	  tree exp = TREE_OPERAND (expr, 1);
+	  while (exp)
+	    {
+	      if (! safe_for_unsave (TREE_VALUE (exp)))
+		return 0;
+	      exp = TREE_CHAIN (exp);
+	    }
+	}
+      break;
+
+    default:
+      if (lang_safe_for_unsave)
+	switch ((*lang_safe_for_unsave) (expr))
+	  {
+	  case -1:
+	    break;
+	  case 0:
+	    return 0;
+	  case 1:
+	    return 1;
+	  default:
+	    abort ();
+	  }
+      break;
+    }
+
+  switch (TREE_CODE_CLASS (code))
+    {
+    case 'c':  /* a constant */
+    case 't':  /* a type node */
+    case 'x':  /* something random, like an identifier or an ERROR_MARK.  */
+    case 'd':  /* A decl node */
+    case 'b':  /* A block node */
+      return 1;
+
+    case 'e':  /* an expression */
+    case 'r':  /* a reference */
+    case 's':  /* an expression with side effects */
+    case '<':  /* a comparison expression */
+    case '2':  /* a binary arithmetic expression */
+    case '1':  /* a unary arithmetic expression */
+      for (i = first_rtl - 1; i >= 0; i--)
+	if (! safe_for_unsave (TREE_OPERAND (expr, i)))
+	  return 0;
+      return 1;
+
+    default:
+      return 0;
+    }
 }
 
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size

@@ -1,3 +1,57 @@
+2000-03-17  Jeff Law  <law@cygnus.com>
+	    Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (OBJS): Add sibcall.o.
+	(sibcall.o): New.
+	* sibcall.c: New file.
+	* calls.c (FUNCTION_OK_FOR_SIBCALL): Provide default.
+	(ECF_IS_CONST, ECF_NOTHROW, ECF_SIBCALL): New.
+	(emit_call_1): Replace `is_const' and `nothrow' with `ecf_flags'.
+	Emit sibcall patterns when requested.  Update all callers.
+	(expand_call): Generate CALL_PLACEHOLDER insns when tail call
+	elimination seems feasable.
+	* final.c (leaf_function_p): Sibling calls don't discount being
+	a leaf function.
+	* flow.c (HAVE_sibcall_epilogue): Provide default.
+	(find_basic_blocks_1): Sibling calls don't throw.
+	(make_edges): Make edge from sibling call to EXIT.
+	(propagate_block): Don't remove sibcall_epilogue insns.
+	* function.c (prologue, epilogue): Turn into varrays.  Update all uses.
+	(sibcall_epilogue): New.
+	(fixup_var_refs): Scan CALL_PLACEHOLDER sub-sequences.
+	(identify_blocks_1): Likewise.  Break out from ...
+	(identify_blocks): ... here.
+	(reorder_blocks_1): Scan CALL_PLACEHOLDER.  Break out from ...
+	(reorder_blocks): ... here.
+	(init_function_for_compilation): Zap prologue/epilogue as varrays.
+	(record_insns): Extend a varray instead of mallocing new memory.
+	(contains): Read a varray not array of ints.
+	(sibcall_epilogue_contains): New.
+	(thread_prologue_and_epilogue_insns): Emit and record
+	sibcall_epilogue patterns.
+	(init_function_once): Allocate prologue/epilogue varrays.
+	* genflags.c (gen_insn): Treat sibcall patterns as calls.
+	* integrate.c (save_parm_insns): Recurse on CALL_PLACEHOLDER patterns.
+	Broken out from ...
+	(save_for_inline_nocopy): ... here.
+	(copy_insn_list): Recurse on CALL_PLACEHOLDER patterns. 
+	Broken out from ...
+	(expand_inline_function): ... here.
+	(copy_rtx_and_substitute): Handle NOTE_INSN_DELETED_LABEL.
+	(subst_constants): Handle 'n' formats.
+	* jump.c (jump_optimize_minimal): New.
+	(jump_optimize_1): New arg `minimal'; update callers.  Elide most
+	optimizations if it's set.
+	* rtl.c (copy_rtx): Do copy jump & call for insns.
+	* rtl.h (struct rtx_def): Document use of jump and call for insns.
+	(SIBLING_CALL_P): New.
+	(sibcall_use_t): New.
+	* toplev.c (rest_of_compilation): Do init_EXPR_INSN_LIST_cache earlier.
+	Invoke optimize_sibling_and_tail_recursive_calls.
+	* tree.c (lang_safe_for_unsave): New.
+	(safe_for_unsave): New.
+	* tree.h (lang_safe_for_unsave, safe_for_unsave): Declare.
+
 2000-03-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* objc/objc-act.c (encode_method_prototype): Pass types, not
