@@ -51,8 +51,8 @@ import java.util.Set;
  * items are hints only, they may be ignored by a particular
  * {@link java.awt.Graphics2D} implementation.
  *
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
+ * @author Eric Blake (ebb9@email.byu.edu)
  */
 public class RenderingHints implements Map, Cloneable
 {

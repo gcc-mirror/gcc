@@ -59,7 +59,7 @@ import java.util.ResourceBundle;
  * static factory methods in this class such as 
  * <code>getCurrencyInstance</code>.
  * 
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @date March 4, 1999
  */

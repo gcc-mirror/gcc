@@ -1,5 +1,5 @@
 /* Preferences -- Preference node containing key value entries and subnodes
-   Copyright (C) 2001, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -234,7 +234,7 @@ public abstract class Preferences {
      * The package node name of the object is determined by dropping the
      * class name of the object of the fully quallified class name and
      * replacing all '.' to '/' in the package name. If the class of the
-     * object has no package then the package node name is "<unnamed>".
+     * object has no package then the package node name is "&lt;unnamed&gt;".
      * The returened node is <code>systemRoot().node(packageNodeName)</code>.
      *
      * @param o Object whose default system preference node is requested
@@ -253,7 +253,7 @@ public abstract class Preferences {
      * The package node name of the object is determined by dropping the
      * class name of the object of the fully quallified class name and
      * replacing all '.' to '/' in the package name. If the class of the
-     * object has no package then the package node name is "<unnamed>".
+     * object has no package then the package node name is "&lt;unnamed&gt;".
      * The returened node is <code>userRoot().node(packageNodeName)</code>.
      *
      * @param o Object whose default user preference node is requested

@@ -1,5 +1,5 @@
 /* Collator.java -- Perform locale dependent String comparisons.
-   Copyright (C) 1998, 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -64,7 +64,7 @@ import java.util.ResourceBundle;
  * are described in detail in the documentation for the methods and values
  * that are related to them.
  *
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @date March 18, 1999
  */

@@ -229,7 +229,7 @@ public abstract class Point2D implements Cloneable
   /**
    * This class defines a point in <code>double</code> precision.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.2
    * @status updated to 1.4
    */
@@ -307,7 +307,7 @@ public abstract class Point2D implements Cloneable
   /**
    * This class defines a point in <code>float</code> precision.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.2
    * @status updated to 1.4
    */

@@ -41,7 +41,7 @@ package java.awt.image;
  * multiple pixels in a single unit.  Pixels have 2^n bits and 2^k pixels fit
  * per data element.
  *
- * @author Jerry Quinn <jlquinn@optonline.net>
+ * @author Jerry Quinn (jlquinn@optonline.net)
  */
 public final class BandedSampleModel extends ComponentSampleModel
 {

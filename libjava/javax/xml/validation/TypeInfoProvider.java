@@ -1,5 +1,5 @@
 /* TypeInfoProvider.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ import org.w3c.dom.TypeInfo;
  * Provides access to the PSVI type info supplied by
  * <code>ValidatorHandler</code>.
  *
- * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
+ * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
  * @since 1.3
  */
 public abstract class TypeInfoProvider

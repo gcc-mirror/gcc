@@ -1,5 +1,5 @@
 /* Kernel.java -- Java class for an image processing kernel
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ package java.awt.image;
  * convolution filters among other purposes.  It stores an array of float
  * values representing a 2-dimensional array in row-major order.
  *
- * @author <a href="mailto:jlquinn@optonline.net">Jerry Quinn</a>
+ * @author Jerry Quinn (jlquinn@optonline.net)
  * @version 1.0
  */
 public class Kernel implements Cloneable

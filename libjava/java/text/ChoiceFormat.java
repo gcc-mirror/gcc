@@ -1,5 +1,5 @@
 /* ChoiceFormat.java -- Format over a range of numbers
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -71,7 +71,7 @@ formats = { "file", "files" }</pre>
  * array must be sorted in ascending order and the format string array
  * must be the same length as the terminator array.
  *
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @date March 9, 1999
  */

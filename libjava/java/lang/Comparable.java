@@ -1,5 +1,5 @@
 /* Comparable.java -- Interface for comparaing objects to obtain an ordering
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,7 +57,7 @@ package java.lang;
  * classes.
  *
  * @author Geoff Berry
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @see java.util.Comparator
  * @see java.util.Collections#sort(java.util.List)
  * @see java.util.Arrays#sort(Object[])

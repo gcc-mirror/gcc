@@ -42,7 +42,7 @@ package java.awt.dnd;
  * This class contains various constants used in drag-and-drop operations.
  * Why it is not an interface is beyond me.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
  * @status updated to 1.4
  */

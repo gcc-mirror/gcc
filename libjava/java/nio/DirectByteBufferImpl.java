@@ -56,7 +56,7 @@ abstract class DirectByteBufferImpl extends ByteBuffer
     */
   private final Object owner;
 
-  final static class ReadOnly extends DirectByteBufferImpl
+  static final class ReadOnly extends DirectByteBufferImpl
   {
     ReadOnly(Object owner, RawData address,
 	     int capacity, int limit,
@@ -81,7 +81,7 @@ abstract class DirectByteBufferImpl extends ByteBuffer
     }
   }
 
-  final static class ReadWrite extends DirectByteBufferImpl
+  static final class ReadWrite extends DirectByteBufferImpl
   {
     ReadWrite(int capacity)
     {

@@ -642,11 +642,11 @@ public abstract class CubicCurve2D implements Shape, Cloneable
    * @see #solveCubic(double[], double[])
    * @see QuadCurve2D#solveQuadratic(double[],double[])
    *
-   * @author <a href="mailto:bjg@network-theory.com">Brian Gough</a>
+   * @author Brian Gough (bjg@network-theory.com)
    * (original C implementation in the <a href=
    * "http://www.gnu.org/software/gsl/">GNU Scientific Library</a>)
    *
-   * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
+   * @author Sascha Brawer (brawer@dandelis.ch)
    * (adaptation to Java)
    */
   public static int solveCubic(double[] eqn)
@@ -689,11 +689,11 @@ public abstract class CubicCurve2D implements Shape, Cloneable
    * result of -1 indicates that the equation is constant (i.e.,
    * always or never zero).
    *
-   * @author <a href="mailto:bjg@network-theory.com">Brian Gough</a>
+   * @author Brain Gouph (bjg@network-theory.com)
    * (original C implementation in the <a href=
    * "http://www.gnu.org/software/gsl/">GNU Scientific Library</a>)
    *
-   * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
+   * @author Sascha Brawer (brawer@dandelis.ch)
    * (adaptation to Java)
    */
   public static int solveCubic(double[] eqn, double[] res)

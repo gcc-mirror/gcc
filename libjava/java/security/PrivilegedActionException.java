@@ -1,5 +1,5 @@
 /* PrivilegedActionException.java -- wrap an exception in a privileged action
-   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,8 +43,8 @@ package java.security;
  * <code>AccessController.doPrivileged()</code> method.  It wraps the
  * actual exception thrown in the privileged code.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see PrivilegedExceptionAction
  * @see AccessController#doPrivileged(PrivilegedExceptionAction)
  * @see AccessController#doPrivileged(PrivilegedExceptionAction, AccessControlContext)

@@ -67,7 +67,7 @@ import java.util.ResourceBundle;
  * of isHorizontal() and isLeftToRight() rather than comparing objects with
  * ==, especially since more constants may be added in the future.
  *
- * @author Bryce McKinlay <bryce@albatross.co.nz>
+ * @author Bryce McKinlay (bryce@albatross.co.nz)
  * @since 1.0
  * @status updated to 1.4
  */

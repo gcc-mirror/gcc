@@ -1303,7 +1303,7 @@ public abstract class JComponent extends Container implements Serializable
   }
 
   /**
-   * Return <code>true<code> if you wish this component to manage its own
+   * Return <code>true</code> if you wish this component to manage its own
    * focus. In particular: if you want this component to be sent
    * <code>TAB</code> and <code>SHIFT+TAB</code> key events, and to not
    * have its children considered as focus transfer targets. If

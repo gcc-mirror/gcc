@@ -1,5 +1,5 @@
 /* RandomAccessFile.java -- Class supporting random file I/O
-   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,8 +55,8 @@ import java.nio.channels.FileChannel;
  * <code>DataInput</code> and <code>DataOutput</code> interfaces to allow
  * the reading and writing of Java primitives.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Tom Tromey (tromey@cygnus.com)
  */
 public class RandomAccessFile implements DataOutput, DataInput
 {

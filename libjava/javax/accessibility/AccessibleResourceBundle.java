@@ -1,5 +1,5 @@
 /* AccessibleResourceBundle.java -- deprecated class
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import java.util.ListResourceBundle;
  * This class is deprecated. It once was used for localizing accessibility
  * strings, and was never meant for external use anyway.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see AccessibleBundle.toDisplayString(String, Locale)
  * @since 1.2
  * @deprecated this class is no longer used

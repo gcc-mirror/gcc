@@ -1,5 +1,5 @@
 /* JTree.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -570,7 +570,7 @@ public class JTree extends JComponent
   }
 
   /**
-   * Sets the model to use in <code>JTree</object>.
+   * Sets the model to use in <code>JTree</code>.
    *
    * @param model the <code>TreeModel</code> to use
    */

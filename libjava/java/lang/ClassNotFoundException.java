@@ -1,5 +1,5 @@
 /* ClassNotFoundException.java -- thrown when class definition cannot be found
-   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ package java.lang;
  * cannot be found. This exception is often chained from another Throwable.
  *
  * @author Brian Jones
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Class#forName(String)
  * @see ClassLoader#findSystemClass(String)
  * @see ClassLoader#loadClass(String, boolean)

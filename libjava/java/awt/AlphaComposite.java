@@ -1,5 +1,5 @@
 /* AlphaComposite.java -- provides a context for performing alpha compositing
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import java.util.Map;
 
 /**
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Composite
  * @see CompositeContext
  * @since 1.3

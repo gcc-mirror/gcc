@@ -1,5 +1,5 @@
 /* ImageTranscoderSpi.java -- Factory for image metadata transcoders.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import javax.imageio.ImageTranscoder;
  *
  * @since 1.4
  *
- * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
 public abstract class ImageTranscoderSpi
   extends IIOServiceProvider

@@ -1,5 +1,5 @@
 /* AccessibleHyperlink.java -- aids in accessibly navigating hypertext
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ package javax.accessibility;
 /**
  * This object encapsulates actions associated with navigating hypertext.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Accessible
  * @see AccessibleContext
  * @see AccessibleText

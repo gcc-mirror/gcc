@@ -1,4 +1,5 @@
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003  Free Software Foundation
+/* EventQueue.java --
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2005  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,14 +38,14 @@ exception statement from your version. */
 
 package java.awt;
 
+import gnu.java.awt.ClasspathToolkit;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.InvocationEvent;
 import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EmptyStackException;
-
-import gnu.java.awt.ClasspathToolkit;
 
 /* Written using on-line Java 2 Platform Standard Edition v1.3 API 
  * Specification, as well as "The Java Class Libraries", 2nd edition 

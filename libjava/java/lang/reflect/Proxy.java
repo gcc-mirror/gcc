@@ -1,5 +1,5 @@
 /* Proxy.java -- build a proxy class that implements reflected interfaces
-   Copyright (C) 2001, 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -459,7 +459,7 @@ public class Proxy implements Serializable
    * Helper class for mapping unique ClassLoader and interface combinations
    * to proxy classes.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    */
   private static final class ProxyType
   {
@@ -565,7 +565,7 @@ public class Proxy implements Serializable
    * without worrying about return type, declaring class, or throws clause,
    * and which reduces the maximally common throws clause between two methods
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    */
   private static final class ProxySignature
   {
@@ -718,7 +718,7 @@ public class Proxy implements Serializable
    * A flat representation of all data needed to generate bytecode/instantiate
    * a proxy class.  This is basically a struct.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    */
   private static final class ProxyData
   {
@@ -871,7 +871,7 @@ public class Proxy implements Serializable
    * this code is not loaded in memory if the VM has a native
    * implementation instead.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    */
   private static final class ClassFactory
   {

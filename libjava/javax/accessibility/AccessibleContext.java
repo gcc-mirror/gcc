@@ -55,7 +55,7 @@ import java.util.Locale;
  * <li>{@link AccessibleValue} - the object represents a numerical value</li>
  * </ul>
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
  * @status updated to 1.4
  */

@@ -1,5 +1,5 @@
 /* FilterInputStream.java -- Base class for classes that filter input
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -65,7 +65,7 @@ package java.io;
   * <code>InputStream read(byte[])</code> method.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy <warrenl@cygnus.com>
+  * @author Warren Levy (warrenl@cygnus.com)
   */
 public class FilterInputStream extends InputStream
 {

@@ -1,5 +1,5 @@
 /* GdkGraphics.java
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -108,7 +108,7 @@ public class GdkGraphics extends Graphics
 
   native void connectSignals (GtkComponentPeer component);
 
-  public native void clearRect (int x, int y, int width, int height);
+  public native void clearRect(int x, int y, int width, int height);
 
   public void clipRect (int x, int y, int width, int height)
   {
@@ -119,15 +119,15 @@ public class GdkGraphics extends Graphics
     setClipRectangle (clip.x, clip.y, clip.width, clip.height);
   }
 
-  native public void copyArea (int x, int y, int width, int height, 
-			       int dx, int dy);
+  public native void copyArea(int x, int y, int width, int height, 
+			      int dx, int dy);
 
   public Graphics create ()
   {
     return new GdkGraphics (this);
   }
 
-  native public void dispose ();
+  public native void dispose();
 
   native void copyPixmap (Graphics g, int x, int y, int width, int height);
   native void copyAndScalePixmap (Graphics g, boolean flip_x, boolean flip_y,
@@ -316,22 +316,22 @@ public class GdkGraphics extends Graphics
                         SystemColor.window, observer);
   }
 
-  native public void drawLine (int x1, int y1, int x2, int y2);
+  public native void drawLine(int x1, int y1, int x2, int y2);
 
-  native public void drawArc (int x, int y, int width, int height,
-			      int startAngle, int arcAngle);
-  native public void fillArc (int x, int y, int width, int height, 
-			      int startAngle, int arcAngle);
-  native public void drawOval(int x, int y, int width, int height);
-  native public void fillOval(int x, int y, int width, int height);
+  public native void drawArc(int x, int y, int width, int height,
+			     int startAngle, int arcAngle);
+  public native void fillArc(int x, int y, int width, int height, 
+			     int startAngle, int arcAngle);
+  public native void drawOval(int x, int y, int width, int height);
+  public native void fillOval(int x, int y, int width, int height);
 
-  native public void drawPolygon(int[] xPoints, int[] yPoints, int nPoints);
-  native public void fillPolygon(int[] xPoints, int[] yPoints, int nPoints);
+  public native void drawPolygon(int[] xPoints, int[] yPoints, int nPoints);
+  public native void fillPolygon(int[] xPoints, int[] yPoints, int nPoints);
 
-  native public void drawPolyline(int[] xPoints, int[] yPoints, int nPoints);
+  public native void drawPolyline(int[] xPoints, int[] yPoints, int nPoints);
 
-  native public void drawRect(int x, int y, int width, int height);
-  native public void fillRect (int x, int y, int width, int height);
+  public native void drawRect(int x, int y, int width, int height);
+  public native void fillRect(int x, int y, int width, int height);
 
   GdkFontPeer getFontPeer() 
   {
@@ -448,7 +448,7 @@ public class GdkGraphics extends Graphics
     setClip (clip.getBounds ());
   }
 
-  native private void setFGColor (int red, int green, int blue);
+  private native void setFGColor(int red, int green, int blue);
 
   public void setColor (Color c)
   {
@@ -490,7 +490,7 @@ public class GdkGraphics extends Graphics
 		color.getBlue  () ^ xorColor.getBlue ());
   }
 
-  native public void translateNative (int x, int y);
+  public native void translateNative(int x, int y);
 
   public void translate (int x, int y)
   {

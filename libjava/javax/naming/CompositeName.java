@@ -1,5 +1,5 @@
 /* CompositeName.java --
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import java.util.NoSuchElementException;
 import java.util.Vector;
 
 /**
- * @author Tom Tromey <tromey@redhat.com>
+ * @author Tom Tromey (tromey@redhat.com)
  * @date May 16, 2001
  *
  * FIXME: must write readObject and writeObject to conform to

@@ -1,5 +1,5 @@
 /* GtkWindowPeer.java -- Implements WindowPeer with GTK
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,14 +47,14 @@ import java.awt.peer.WindowPeer;
 public class GtkWindowPeer extends GtkContainerPeer
   implements WindowPeer
 {
-  static protected final int GDK_WINDOW_TYPE_HINT_NORMAL = 0;
-  static protected final int GDK_WINDOW_TYPE_HINT_DIALOG = 1;
-  static protected final int GDK_WINDOW_TYPE_HINT_MENU = 2;
-  static protected final int GDK_WINDOW_TYPE_HINT_TOOLBAR = 3;
-  static protected final int GDK_WINDOW_TYPE_HINT_SPLASHSCREEN = 4;
-  static protected final int GDK_WINDOW_TYPE_HINT_UTILITY = 5;
-  static protected final int GDK_WINDOW_TYPE_HINT_DOCK = 6;
-  static protected final int GDK_WINDOW_TYPE_HINT_DESKTOP = 7;
+  protected static final int GDK_WINDOW_TYPE_HINT_NORMAL = 0;
+  protected static final int GDK_WINDOW_TYPE_HINT_DIALOG = 1;
+  protected static final int GDK_WINDOW_TYPE_HINT_MENU = 2;
+  protected static final int GDK_WINDOW_TYPE_HINT_TOOLBAR = 3;
+  protected static final int GDK_WINDOW_TYPE_HINT_SPLASHSCREEN = 4;
+  protected static final int GDK_WINDOW_TYPE_HINT_UTILITY = 5;
+  protected static final int GDK_WINDOW_TYPE_HINT_DOCK = 6;
+  protected static final int GDK_WINDOW_TYPE_HINT_DESKTOP = 7;
 
   private boolean hasBeenShown = false;
   private int oldState = Frame.NORMAL;
@@ -112,8 +112,8 @@ public class GtkWindowPeer extends GtkContainerPeer
     super (window);
   }
 
-  native public void toBack ();
-  native public void toFront ();
+  public native void toBack();
+  public native void toFront();
 
   native void nativeSetBounds (int x, int y, int width, int height);
 

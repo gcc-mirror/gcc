@@ -1,5 +1,5 @@
 /* RuntimePermission.java -- permission for a secure runtime action
-   Copyright (C) 1998, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -166,7 +166,7 @@ import java.security.BasicPermission;
  * </table>
  *
  * @author Brian Jones
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see BasicPermission
  * @see Permission
  * @see SecurityManager

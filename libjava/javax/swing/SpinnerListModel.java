@@ -1,5 +1,5 @@
 /* SpinnerListModel.java -- A spinner model backed by a list or an array.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,7 +59,7 @@ import java.util.List;
  * is changed via <code>setList()</code> or when the current value is
  * set directly using <code>setValue()</code>.
  *
- * @author Andrew John Hughes <gnu_andrew@member.fsf.org>
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @see SpinnerModel
  * @see AbstractSpinnerModel
  * @see JSpinner

@@ -1,5 +1,5 @@
 /* StreamSource.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import javax.xml.transform.Source;
 /**
  * Specifies a stream from which to read the source XML data.
  *
- * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
+ * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
  */
 public class StreamSource
   implements Source

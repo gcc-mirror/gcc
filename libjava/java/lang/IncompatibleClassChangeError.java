@@ -1,5 +1,5 @@
 /* IncompatibleClassChangeError.java -- thrown for binary incompatible classes
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ package java.lang;
  * incompatible way.
  *
  * @author Brian Jones
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @status updated to 1.4
  */
 public class IncompatibleClassChangeError extends LinkageError

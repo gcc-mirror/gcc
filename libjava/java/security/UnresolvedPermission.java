@@ -1,5 +1,5 @@
 /* UnresolvedPermission.java -- Placeholder for unresolved permissions
-   Copyright (C) 1998, 2001, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -207,7 +207,7 @@ public final class UnresolvedPermission extends Permission
  * Implements the permission collection for unresolved permissions, and
  * obeys serialization of JDK.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  */
 class UnresolvedPermissionCollection extends PermissionCollection
 {

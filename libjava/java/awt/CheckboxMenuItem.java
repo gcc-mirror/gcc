@@ -1,5 +1,5 @@
 /* CheckboxMenuItem.java -- A menu option with a checkbox on it.
-   Copyright (C) 1999, 2000, 2001, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,7 @@ import javax.accessibility.AccessibleValue;
   * the selected state of some option.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey <tromey@redhat.com>
+  * @author Tom Tromey (tromey@redhat.com)
   */
 public class CheckboxMenuItem extends MenuItem
   implements ItemSelectable, Accessible

@@ -1,5 +1,5 @@
 /* InputEvent.java -- common superclass of component input events
-   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ import java.awt.Component;
  * passed to listeners before the component, so that listeners can consume
  * the event before it does its default behavior.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see KeyEvent
  * @see KeyAdapter
  * @see MouseEvent

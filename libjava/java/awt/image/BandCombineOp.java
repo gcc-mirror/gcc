@@ -53,7 +53,7 @@ import java.awt.geom.Rectangle2D;
  * for the destination.  Therefore the destination Raster must contain the
  * same number of bands as the number of rows in the filter matrix.
  * 
- * @author Jerry Quinn <jlquinn@optonline.net>
+ * @author Jerry Quinn (jlquinn@optonline.net)
  */
 public class BandCombineOp implements RasterOp
 {

@@ -1,5 +1,5 @@
 /* DateFormat.java -- Class for formatting/parsing date/times
-   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,7 +48,7 @@ import java.util.ResourceBundle;
 import java.util.TimeZone;
 
 /**
- * @author Per Bothner <bothner@cygnus.com>
+ * @author Per Bothner (bothner@cygnus.com)
  * @date October 25, 1998.
  */
 /* Written using "Java Class Libraries", 2nd edition, plus online

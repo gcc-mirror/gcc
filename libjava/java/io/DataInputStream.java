@@ -50,8 +50,8 @@ package java.io;
  *
  * @see DataInput
  *
- * @author Warren Levy <warrenl@cygnus.com>
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Warren Levy (warrenl@cygnus.com)
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @date October 20, 1998.  
  */
 public class DataInputStream extends FilterInputStream implements DataInput

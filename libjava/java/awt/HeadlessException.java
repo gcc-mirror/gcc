@@ -1,5 +1,5 @@
 /* HeadlessException.java -- operation not possible in headless environment
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,7 @@ package java.awt;
  * This exception is thrown when code dependent on a keyboard, mouse, or
  * display is executed in a headless environment.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.4
  * @status updated to 1.4
  */

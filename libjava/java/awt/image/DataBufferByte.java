@@ -47,7 +47,7 @@ package java.awt.image;
    code is a maintenance nightmare.  */
 
 /**
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public final class DataBufferByte extends DataBuffer
 {

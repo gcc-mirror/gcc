@@ -50,9 +50,9 @@ import java.io.Serializable;
  * manner, it is your own fault when you get invalid results. Also, this
  * class is not threadsafe.
  *
- * @author Per Bothner <bothner@cygnus.com>
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Per Bothner (bothner@cygnus.com)
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.0
  * @status updated to 1.4
  */

@@ -1,5 +1,5 @@
 /* AccessibleBundle.java -- base class for accessibility "enumerations"
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import java.util.Locale;
  * objects are strongly typed; to make up for the lack of true enums in Java.
  * Display should be locale dependent.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see AccessibleRole
  * @see AccessibleState
  * @since 1.2

@@ -1,5 +1,5 @@
 /* EOFException.java -- unexpected end of file exception
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ package java.io;
  * thus throw this exception.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @status updated to 1.4
  */
 public class EOFException extends IOException

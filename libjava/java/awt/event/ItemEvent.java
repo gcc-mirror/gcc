@@ -1,5 +1,5 @@
 /* ItemEvent.java -- event for item state changes
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.awt.ItemSelectable;
  * abstraction that distills a large number of individual mouse or keyboard
  * events into a simpler "item selected" and "item deselected" events.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see ItemSelectable
  * @see ItemListener
  * @since 1.1

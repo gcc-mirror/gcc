@@ -53,7 +53,7 @@ import java.awt.image.VolatileImage;
  * configuration will have a non-zero relative coordinate system in such
  * a case.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Window
  * @see Frame
  * @see GraphicsEnvironment

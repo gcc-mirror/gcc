@@ -1,5 +1,5 @@
 /* ContainerEvent.java -- components added/removed from a container
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.awt.Container;
  * container.  Applications do not ordinarily need to handle these events
  * since the AWT system handles them internally.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see ContainerAdapter
  * @see ContainerListener
  * @since 1.1

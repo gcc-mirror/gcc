@@ -1,5 +1,5 @@
 /* TransactionRolledbackException --
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,7 @@ package javax.transaction;
 import java.rmi.RemoteException;
 
 /**
- * @author Tom Tromey <tromey@redhat.com>
+ * @author Tom Tromey (tromey@redhat.com)
  * @date April 18, 2001
  */
 

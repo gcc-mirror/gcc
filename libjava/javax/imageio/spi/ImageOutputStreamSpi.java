@@ -1,5 +1,5 @@
 /* ImageOutputStreamSpi.java -- Service provider for image output streams.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ import javax.imageio.stream.ImageOutputStream;
  *
  * @since 1.4
  *
- * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
 public abstract class ImageOutputStreamSpi
   extends IIOServiceProvider

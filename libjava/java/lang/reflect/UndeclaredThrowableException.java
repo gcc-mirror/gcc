@@ -1,6 +1,6 @@
 /* UndeclaredThrowableException.java -- wraps an undeclared checked exception
    thrown by a Proxy invocation handler
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ package java.lang.reflect;
  * exception, never {@link Error} or {@link RuntimeException},
  * which are unchecked.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Proxy
  * @see InvocationHandler
  * @since 1.3

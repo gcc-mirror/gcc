@@ -1,5 +1,5 @@
 /* AccessibleIcon.java -- aids in accessibly rendering icons
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ package javax.accessibility;
  * <p>The <code>AccessibleContext.getAccessibleIcon()</code> method should
  * return <code>null</code> if an object does not implement this interface.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Accessible
  * @see AccessibleContext
  * @see AccessibleContext#getAccessibleIcon()

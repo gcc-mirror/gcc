@@ -46,8 +46,8 @@ import java.util.NoSuchElementException;
  * Remember, on-screen graphics have increasing x from left-to-right, and
  * increasing y from top-to-bottom. The storage is left to subclasses.
  *
- * @author Tom Tromey <tromey@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Tom Tromey (tromey@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @author David Gilbert
  * @since 1.2
  * @status updated to 1.4
@@ -867,7 +867,7 @@ public abstract class Line2D implements Shape, Cloneable
   /**
    * This class defines a point in <code>double</code> precision.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.2
    * @status updated to 1.4
    */
@@ -1017,7 +1017,7 @@ public abstract class Line2D implements Shape, Cloneable
   /**
    * This class defines a point in <code>float</code> precision.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.2
    * @status updated to 1.4
    */

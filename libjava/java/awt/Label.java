@@ -1,5 +1,5 @@
 /* Label.java -- Java label widget
-   Copyright (C) 1999, 2000, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,8 +49,8 @@ import javax.accessibility.AccessibleRole;
   * be edited by the user.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey <tromey@cygnus.com>
-  * @author Andrew John Hughes  <gnu_andrew@member.fsf.org>
+  * @author Tom Tromey (tromey@cygnus.com)
+  * @author Andrew John Hughes  (gnu_andrew@member.fsf.org)
   */
 public class Label extends Component implements Accessible
 {

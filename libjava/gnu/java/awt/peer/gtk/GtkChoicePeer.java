@@ -1,5 +1,5 @@
 /* GtkChoicePeer.java -- Implements ChoicePeer with GTK
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -72,7 +72,7 @@ public class GtkChoicePeer extends GtkComponentPeer
   native void nativeRemove (int index);
   native void nativeRemoveAll ();
 
-  native public void select (int position);
+  public native void select (int position);
  
   public void add (String item, int index)
   {

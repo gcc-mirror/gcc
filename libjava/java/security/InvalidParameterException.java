@@ -41,7 +41,7 @@ package java.security;
  * Thrown when an invalid parameter is passed to a method of the JCA/JCE
  * engine classes.
  *
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @status updated to 1.4
  */
 public class InvalidParameterException extends IllegalArgumentException

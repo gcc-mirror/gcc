@@ -1,5 +1,5 @@
 /* EmptyStackException.java -- Attempt to pop from an empty stack
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,8 +47,8 @@ package java.util;
  * This exception is thrown by the Stack class when an attempt is made to pop
  * or otherwise access elements from an empty stack.
  *
- * @author Warren Levy <warrenl@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Warren Levy (warrenl@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Stack
  * @since 1.0
  * @status updated to 1.4

@@ -1,5 +1,5 @@
 /* DigestInputStream.java --- An Input stream tied to a message digest
-   Copyright (C) 1999, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,7 +52,7 @@ import java.io.InputStream;
  * in the message digest.
  *
  * @version 0.0
- * @author Mark Benvenuto <ivymccough@worldnet.att.net>
+ * @author Mark Benvenuto (ivymccough@worldnet.att.net)
  */
 public class DigestInputStream extends FilterInputStream
 {

@@ -1,5 +1,5 @@
 /* HashSet.java -- a class providing a HashMap-backed Set
-   Copyright (C) 1998, 1999, 2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -66,7 +66,7 @@ import java.io.Serializable;
  * non-deterministic behavior.
  *
  * @author Jon Zeppieri
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Collection
  * @see Set
  * @see TreeSet

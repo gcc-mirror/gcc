@@ -76,7 +76,7 @@ import java.io.ObjectInputStream;
  * guaranteed to have transforms from the PCS to device space.
  *
  * @author Sven de Marothy
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  * @since 1.2
  */
 public class ICC_ColorSpace extends ColorSpace

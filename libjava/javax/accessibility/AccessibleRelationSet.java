@@ -43,7 +43,7 @@ import java.util.Vector;
  * Describes all relations of an accessible object. For example, an object
  * by labeled by one object and control another.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see AccessibleRelation
  * @since 1.2
  * @status updated to 1.4

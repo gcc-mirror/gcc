@@ -1,5 +1,5 @@
 /* NoSuchFieldException.java -- thrown when reflecting a non-existant field
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ package java.lang;
  * caused by a variety of reflection methods, when looking up a field by name.
  *
  * @author Brian Jones
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @since 1.1
  * @status updated to 1.4
  */

@@ -1,5 +1,5 @@
 /* DisplayMode.java -- a description of display mode configurations
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ package java.awt;
  * device configuration. They are device dependent, and may not always be
  * available.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see GraphicsDevice
  * @since 1.4
  * @status updated to 1.4

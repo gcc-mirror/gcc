@@ -1,5 +1,5 @@
 /* PrinterIOException.java -- The print job encountered an I/O error
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,8 +44,8 @@ import java.io.IOException;
  * This exception is thrown when the print job encounters an I/O problem
  * of some kind.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @status updated to 1.4
  */
 public class PrinterIOException extends PrinterException

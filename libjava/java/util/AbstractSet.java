@@ -1,5 +1,5 @@
 /* AbstractSet.java -- Abstract implementation of most of Set
-   Copyright (C) 1998, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ package java.util;
  * the requirements placed on them by the Set interface.
  *
  * @author Original author unknown
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Collection
  * @see AbstractCollection
  * @see Set

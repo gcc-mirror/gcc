@@ -1,5 +1,5 @@
 /* SAXResult.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import org.xml.sax.ext.LexicalHandler;
  * Specifies SAX handlers to be used as a result sink during a
  * transformation.
  *
- * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
+ * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
  */
 public class SAXResult implements Result
 {

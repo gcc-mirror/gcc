@@ -1,5 +1,5 @@
 /* DefaultFocusTraversalPolicy.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,7 +55,7 @@ package java.awt;
  * A Component's focusability is independent of the focusability of
  * its peer.
  *
- * @author Thomas Fitzsimmons <fitzsim@redhat.com>
+ * @author Thomas Fitzsimmons (fitzsim@redhat.com)
  * @since 1.4
  */
 public class DefaultFocusTraversalPolicy

@@ -1,5 +1,5 @@
 /* MimeTypeParseException.java -- thrown when MIME string couldn't be parsed
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ package java.awt.datatransfer;
 /**
   * MIME string couldn't be parsed correctly.
   *
-  * @author Mark Wielaard <mark@klomp.org>
+  * @author Mark Wielaard (mark@klomp.org)
   * @status updated to 1.4
   */
 public class MimeTypeParseException extends Exception

@@ -1,5 +1,5 @@
 /* Properties.java -- a set of persistent properties
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -86,7 +86,7 @@ s16=1,3</pre>
  * a single <code>u</code> for any character which cannot be represented.
  *
  * @author Jochen Hoenicke
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see PropertyResourceBundle
  * @status updated to 1.4
  */

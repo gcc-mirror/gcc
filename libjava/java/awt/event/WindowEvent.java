@@ -1,5 +1,5 @@
 /* WindowEvent.java -- window change event
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import java.awt.Window;
  * like maximization, and WindowFocusListeners deal with focus switching to
  * or from a window. 
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see WindowAdapter
  * @see WindowListener
  * @see WindowFocusListener

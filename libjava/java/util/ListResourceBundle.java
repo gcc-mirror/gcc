@@ -1,5 +1,5 @@
 /* ListResourceBundle -- a resource bundle build around a list
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -72,7 +72,7 @@ package java.util;
 }</pre>
  *
  * @author Jochen Hoenicke
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Locale
  * @see PropertyResourceBundle
  * @since 1.1

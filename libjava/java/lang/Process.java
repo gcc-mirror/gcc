@@ -1,5 +1,5 @@
 /* Process.java - Represent spawned system process
-   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -61,7 +61,7 @@ import java.io.OutputStream;
  * owns this object.
  *
  * @author Brian Jones
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @see Runtime#exec(String[], String[], File)
  * @since 1.0
  * @status updated to 1.4

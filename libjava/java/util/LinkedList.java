@@ -1,5 +1,5 @@
 /* LinkedList.java -- Linked list implementation of the List interface
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,7 +63,7 @@ import java.lang.reflect.Array;
  *
  * @author Original author unknown
  * @author Bryce McKinlay
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see List
  * @see ArrayList
  * @see Vector
@@ -750,7 +750,7 @@ public class LinkedList extends AbstractSequentialList
    * position in the list and the two list entries it is between.
    *
    * @author Original author unknown
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    */
   private final class LinkedListItr implements ListIterator
   {

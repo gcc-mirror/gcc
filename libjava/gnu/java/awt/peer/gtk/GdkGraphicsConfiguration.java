@@ -38,9 +38,9 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.BufferCapabilities;
-import java.awt.ImageCapabilities;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
+import java.awt.ImageCapabilities;
 import java.awt.Rectangle;
 
 import java.awt.geom.AffineTransform;

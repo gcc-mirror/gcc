@@ -40,7 +40,7 @@ package java.security;
 /**
  * Thrown for an invalid key.
  *
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @status updated to 1.4
  */
 public class InvalidKeyException extends KeyException

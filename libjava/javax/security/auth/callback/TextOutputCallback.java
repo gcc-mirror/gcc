@@ -47,7 +47,6 @@ import java.io.Serializable;
  * error messages.</p>
  *
  * @see CallbackHandler
- * @version $Revision: 1.2 $
  */
 public class TextOutputCallback implements Callback, Serializable
 {

@@ -79,7 +79,7 @@ import java.util.Hashtable;
  * (available at www.color.org)
  *
  * @author Sven de Marothy
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  * @since 1.2
  */
 public class ICC_Profile implements Serializable

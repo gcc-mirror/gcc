@@ -1,5 +1,5 @@
 /* Insets.java -- information about a container border
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,8 +43,8 @@ import java.io.Serializable;
 /**
  * This class represents the "margin" or space around a container.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @status 
  */
 public class Insets implements Cloneable, Serializable

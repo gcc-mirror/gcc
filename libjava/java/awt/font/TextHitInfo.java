@@ -1,5 +1,5 @@
 /* TextHitInfo.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,7 @@ exception statement from your version. */
 package java.awt.font;
 
 /**
- * @author John Leuner <jewel@debian.org>
+ * @author John Leuner (jewel@debian.org)
  */
 public final class TextHitInfo
 {

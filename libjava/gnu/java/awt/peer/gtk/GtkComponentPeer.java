@@ -1,5 +1,5 @@
 /* GtkComponentPeer.java -- Implements ComponentPeer with GTK
-   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -81,7 +81,7 @@ public class GtkComponentPeer extends GtkGenericPeer
      knows if a parent is disabled.  In that case Component.isEnabled 
      may return true, but our isEnabled will always return false */
   native boolean isEnabled ();
-  native static boolean modalHasGrab ();
+  static native boolean modalHasGrab();
 
   native int[] gtkWidgetGetForeground ();
   native int[] gtkWidgetGetBackground ();

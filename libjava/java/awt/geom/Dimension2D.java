@@ -42,8 +42,8 @@ package java.awt.geom;
  * This stores a dimension in 2-dimensional space - a width (along the x-axis)
  * and height (along the y-axis). The storage is left to subclasses.
  *
- * @author Per Bothner <bothner@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Per Bothner (bothner@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
  * @status updated to 1.4
  */

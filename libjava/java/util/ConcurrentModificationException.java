@@ -1,5 +1,5 @@
 /* ConcurrentModificationException.java -- Data structure concurrently modified
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,8 +52,8 @@ package java.util;
  * this condition is referred to as fail-fast. Notice that this can occur
  * even in single-threaded designs, if you call methods out of order.
  *
- * @author Warren Levy <warrenl@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Warren Levy (warrenl@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Collection
  * @see Iterator
  * @see ListIterator

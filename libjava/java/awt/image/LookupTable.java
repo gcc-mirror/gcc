@@ -1,5 +1,5 @@
 /* LookupTable.java -- Java class for a pixel translation table.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ package java.awt.image;
  * @see ByteLookupTable
  * @see ShortLookupTable
  *
- * @author <a href="mailto:jlquinn@optonline.net">Jerry Quinn</a>
+ * @author Jerry Quinn (jlquinn@optonline.net)
  * @version 1.0
  */
 public abstract class LookupTable

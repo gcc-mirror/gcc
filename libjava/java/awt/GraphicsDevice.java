@@ -1,5 +1,5 @@
 /* GraphicsDevice.java -- information about a graphics device
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ package java.awt;
  * each device. Also, this allows you to create virtual devices which operate
  * over a multi-screen environment.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see GraphicsEnvironment
  * @see GraphicsConfiguration
  * @since 1.3

@@ -1,5 +1,5 @@
 /* JTextArea.java -- 
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -74,8 +74,8 @@ import javax.swing.text.PlainDocument;
  * are used in calculating the preferred size of the scroll pane's
  * view port.
  *
- * @author Michael Koch  <konqueror@gmx.de>
- * @author Andrew John Hughes  <gnu_andrew@member.fsf.org>
+ * @author Michael Koch  (konqueror@gmx.de)
+ * @author Andrew John Hughes  (gnu_andrew@member.fsf.org)
  * @see java.awt.TextArea
  * @see javax.swing.JTextComponent
  * @see javax.swing.JTextField

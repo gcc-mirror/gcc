@@ -1,5 +1,5 @@
 /* SequenceInputStream.java -- Reads multiple input streams in sequence
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -61,7 +61,7 @@ import java.util.Enumeration;
   * to completion, all subordinate streams are closed.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy <warrenl@cygnus.com>
+  * @author Warren Levy (warrenl@cygnus.com)
   */
 public class SequenceInputStream extends InputStream
 {

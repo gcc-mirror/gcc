@@ -1,5 +1,5 @@
 /* KeyManagementException.java -- an exception in key management
-   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ package java.security;
  * This exception is thrown whenever a problem related to the management of
  * security keys is encountered.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see Key
  * @status updated to 1.4
  */

@@ -1,5 +1,5 @@
 /* JRadioButton.java -- 
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -59,9 +59,9 @@ import javax.swing.plaf.ButtonUI;
  * within the same panel, possibly with an appropriate border to denote
  * the connection between the components.
  *
- * @author Michael Koch  <konqueror@gmx.de>
- * @author Graydon Hoare  <graydon@redhat.com>
- * @author Andrew John Hughes  <gnu_andrew@member.fsf.org>
+ * @author Michael Koch  (konqueror@gmx.de)
+ * @author Graydon Hoare  (graydon@redhat.com)
+ * @author Andrew John Hughes  (gnu_andrew@member.fsf.org)
  * @see JToggleButton
  * @see ButtonGroup
  * @since 1.2

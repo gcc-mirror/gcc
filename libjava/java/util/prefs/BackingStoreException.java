@@ -1,6 +1,6 @@
 /* BackingStoreException.java - chained exception thrown when backing store
    fails
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,7 +52,7 @@ import java.io.ObjectOutputStream;
  * <p>Note that although this class inherits the Serializable interface, an
  * attempt to serialize will fail with a <code>NotSerializableException</code>.
  *
- * @author Mark Wielaard <mark@klomp.org>
+ * @author Mark Wielaard (mark@klomp.org)
  * @since 1.4
  * @status updated to 1.4
  */

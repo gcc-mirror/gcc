@@ -1,5 +1,5 @@
 /* java.beans.PropertyDescriptor
-   Copyright (C) 1998, 2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,7 +57,7 @@ import java.lang.reflect.Method;
  ** </OL>
  **
  ** @author John Keiser
- ** @author Robert Schuster <thebohemian@gmx.net>
+ ** @author Robert Schuster (thebohemian@gmx.net)
  ** @since 1.1
  ** @status updated to 1.4
  **/
@@ -448,7 +448,7 @@ public class PropertyDescriptor extends FeatureDescriptor
      * <li>the property type and the read method's return type must be assignable from the
      * write method's argument type</li>
      * <li>the write method may not exist</li>
-     * <ul>
+     * </ul>
      * While checking the methods a common new property type is calculated. If the method
      * succeeds this property type is returned.<br/>
      * <br/>

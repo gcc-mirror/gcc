@@ -1,5 +1,5 @@
 /* PrinterAbortException.java -- Indicates the print job was aborted
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,7 @@ package java.awt.print;
  * This exception is thrown when the print job is aborted, either by the
  * user or by the application.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @status updated to 1.4
  */
 public class PrinterAbortException extends PrinterException

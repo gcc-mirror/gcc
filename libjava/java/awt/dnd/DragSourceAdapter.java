@@ -1,5 +1,5 @@
 /* DragSourceAdapter.java -- drag-and-drop listener adapter
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ package java.awt.dnd;
  * a subset of these interfaces to extend this class and override only the
  * desired methods.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see DragSourceEvent
  * @see DragSourceListener
  * @see DragSourceMotionListener

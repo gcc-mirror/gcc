@@ -1,5 +1,5 @@
 /* DragSourceDragEvent.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,7 +38,7 @@ exception statement from your version. */
 package java.awt.dnd;
 
 /**
- * @author Michael Koch <konqueror@gmx.de>
+ * @author Michael Koch (konqueror@gmx.de)
  * @since 1.2
  *
  * Written using JDK 1.4.1 Online API

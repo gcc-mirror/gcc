@@ -42,7 +42,7 @@ package java.awt.geom;
  * <code>AffineTransform</code>, but the transform is in a non-invertible
  * state.
  *
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @see AffineTransform
  * @status updated to 1.4
  */

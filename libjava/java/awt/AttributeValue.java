@@ -1,5 +1,5 @@
 /* AttributeValue.java -- parent of type-safe enums of attributes
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ package java.awt;
  * <code>equals</code>, <code>toString</code>, and <code>hashCode</code>, so
  * that you don't have to (although hashCode is commonly overridden).
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  */
 class AttributeValue
 {

@@ -1,5 +1,5 @@
 /* ByteLookupTable.java -- Java class for a pixel translation table.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ package java.awt.image;
  * Alpha, R, G, and B.  When doing translation, the offset is subtracted from
  * the pixel values to allow a subset of an array to be used.
  *
- * @author <a href="mailto:jlquinn@optonline.net">Jerry Quinn</a>
+ * @author Jerry Quinn (jlquinn@optonline.net)
  * @version 1.0
  */
 public class ByteLookupTable extends LookupTable

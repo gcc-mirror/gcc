@@ -1,5 +1,5 @@
 /* Applet.java -- Java base applet class
-   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,8 +63,8 @@ import javax.accessibility.AccessibleStateSet;
  * are init, stop, and destroy for control purposes, and getAppletInfo and
  * getParameterInfo for descriptive purposes.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.0
  * @status updated to 1.4
  */
@@ -477,7 +477,7 @@ public class Applet extends Panel
    * This class provides accessibility support for Applets, and is the
    * runtime type returned by {@link #getAccessibleContext()}.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.3
    */
   protected class AccessibleApplet extends AccessibleAWTPanel

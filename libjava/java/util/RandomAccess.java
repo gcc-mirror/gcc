@@ -1,6 +1,6 @@
 /* RandomAccess.java -- A tagging interface that lists can use to tailor
    operations to the correct algorithm
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,7 @@ package java.util;
  * <br>runs faster than this loop:<br>
  * <code>for (Iterator i = list.iterator(); i.hasNext(); ) i.next();</code>
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see List
  * @since 1.4
  * @status updated to 1.4

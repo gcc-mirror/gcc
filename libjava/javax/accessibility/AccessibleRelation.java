@@ -44,7 +44,7 @@ package javax.accessibility;
  * supports localized strings. If the constants of this class are not
  * adequate, new ones may be added in a similar matter.
  * 
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
  * @status updated to 1.4
  */

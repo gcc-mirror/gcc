@@ -1,5 +1,5 @@
 /* MouseEvent.java -- a mouse event
-   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,8 +63,8 @@ import java.io.ObjectInputStream;
  * virtual device, some platforms may clip the path to fit in the bounds of
  * the component.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see MouseAdapter
  * @see MouseListener
  * @see MouseMotionAdapter

@@ -1,5 +1,5 @@
 /* GtkClipboard.java
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,7 +52,7 @@ public class GtkClipboard extends Clipboard
   /* the number of milliseconds that we'll wait around for the
      owner of the GDK_SELECTION_PRIMARY selection to convert 
      the requested data */
-  final static int SELECTION_RECEIVED_TIMEOUT = 5000;
+  static final int SELECTION_RECEIVED_TIMEOUT = 5000;
 
   /* We currently only support transferring of text between applications */
   static String selection;
@@ -165,6 +165,6 @@ public class GtkClipboard extends Clipboard
   }
 
   native void initNativeState();
-  native static void requestStringConversion();
-  native static void selectionGet();
+  static native void requestStringConversion();
+  static native void selectionGet();
 }

@@ -1,5 +1,5 @@
 /* VerifyError.java -- thrown when a class fails verification
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ package java.lang;
  * internal inconsistency in a class file as detected by the "verifier."
  *
  * @author Brian Jones
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @status updated to 1.4
  */
 public class VerifyError extends LinkageError

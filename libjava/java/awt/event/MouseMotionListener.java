@@ -1,5 +1,5 @@
 /* MouseMotionListener.java -- listen to mouse motion events
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.util.EventListener;
  * track other mouse events, use MouseListener or MouseWheelListener. To
  * watch a subset of these events, use a MouseMotionAdapter.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see MouseMotionAdapter
  * @see MouseEvent
  * @since 1.1

@@ -1,5 +1,5 @@
 /* TreeSet.java -- a class providing a TreeMap-backed SortedSet
-   Copyright (C) 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,7 +67,7 @@ import java.io.Serializable;
  *
  * @author Jon Zeppieri
  * @author Bryce McKinlay
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Collection
  * @see Set
  * @see HashSet

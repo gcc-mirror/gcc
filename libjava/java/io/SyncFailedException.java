@@ -1,5 +1,5 @@
 /* SyncFailedException.java -- a file sync failed
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,7 @@ package java.io;
  * Thrown when a file synchronization fails.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @see FileDescriptor#sync()
  * @since 1.1
  * @status updated to 1.4

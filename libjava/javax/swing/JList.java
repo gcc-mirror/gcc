@@ -1297,7 +1297,7 @@ public class JList extends JComponent implements Accessible, Scrollable
    * Returns the layout orientation.
    *
    * @return the orientation, one of <code>JList.VERTICAL</code>,
-   * </code>JList.VERTICAL_WRAP</code> and <code>JList.HORIZONTAL_WRAP</code>
+   * <code>JList.VERTICAL_WRAP</code> and <code>JList.HORIZONTAL_WRAP</code>
    *
    * @since 1.4
    */
@@ -1310,7 +1310,7 @@ public class JList extends JComponent implements Accessible, Scrollable
    * Sets the layout orientation.
    *
    * @param orientation the orientation to set, one of <code>JList.VERTICAL</code>,
-   * </code>JList.VERTICAL_WRAP</code> and <code>JList.HORIZONTAL_WRAP</code>
+   * <code>JList.VERTICAL_WRAP</code> and <code>JList.HORIZONTAL_WRAP</code>
    *
    * @since 1.4
    */

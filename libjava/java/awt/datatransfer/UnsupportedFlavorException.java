@@ -1,5 +1,5 @@
 /* UnsupportedFlavorException.java -- ata flavor is not valid
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ package java.awt.datatransfer;
 /**
  * The data flavor requested is not supported for the transfer data.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see Transferable#getTransferData(DataFlavor)
  * @status updated to 1.4
  */

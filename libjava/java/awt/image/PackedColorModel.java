@@ -43,7 +43,7 @@ import java.awt.Point;
 import java.awt.color.ColorSpace;
 
 /**
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public abstract class PackedColorModel extends ColorModel
 {

@@ -1,5 +1,5 @@
 /* GdkScreenGraphicsDevice.java -- information about a screen device
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.GraphicsDevice;
 import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
 
 public class GdkScreenGraphicsDevice extends GraphicsDevice
 {

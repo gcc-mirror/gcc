@@ -80,7 +80,6 @@ import java.io.IOException;
  * <p>All default handler implementations must provide a public zero-argument
  * constructor.</p>
  *
- * @version $Revision: 1.1 $
  */
 public interface CallbackHandler
 {

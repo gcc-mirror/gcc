@@ -49,7 +49,7 @@ package java.io;
  * methods to read characters from a particular input source such as a file
  * or network connection.
  *
- * @author Per Bothner <bothner@cygnus.com>
+ * @author Per Bothner (bothner@cygnus.com)
  * @date April 21, 1998.  
  * @author Aaron M. Renn (arenn@urbanophile.com) 
  */

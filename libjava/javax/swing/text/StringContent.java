@@ -39,13 +39,13 @@ exception statement from your version. */
 package javax.swing.text;
 
 import java.io.Serializable;
-import java.util.Vector;
 import java.util.Iterator;
+import java.util.Vector;
 
-import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.AbstractUndoableEdit;
-import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 
 /**
  * An implementation of the <code>AbstractDocument.Content</code>

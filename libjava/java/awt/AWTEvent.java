@@ -50,8 +50,8 @@ import java.util.EventObject;
  * listeners. Event masks are appropriately set when registering on
  * components.
  *
- * @author Warren Levy  <warrenl@cygnus.com>
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Warren Levy  (warrenl@cygnus.com)
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @since 1.1
  * @status updated to 1.4
  */

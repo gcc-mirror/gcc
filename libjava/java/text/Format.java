@@ -1,5 +1,5 @@
 /* Format.java -- Abstract superclass for formatting/parsing strings.
-   Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,7 +57,7 @@ import java.io.Serializable;
  * available locales in the current runtime environment.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Per Bothner <bothner@cygnus.com>
+ * @author Per Bothner (bothner@cygnus.com)
  */
 public abstract class Format implements Serializable, Cloneable
 {

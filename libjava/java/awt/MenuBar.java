@@ -1,5 +1,5 @@
 /* MenuBar.java -- An AWT menu bar class
-   Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,8 +53,8 @@ import javax.accessibility.AccessibleRole;
   * This class implements a menu bar in the AWT system.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey <tromey@redhat.com>
-  * @author Andrew John Hughes <gnu_andrew@member.fsf.org>
+  * @author Tom Tromey (tromey@redhat.com)
+  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
   */
 public class MenuBar extends MenuComponent
   implements MenuContainer, Serializable, Accessible
@@ -388,7 +388,7 @@ public AccessibleContext getAccessibleContext()
 /**
  * This class provides accessibility support for AWT menu bars.
  *
- * @author Andrew John Hughes <gnu_andrew@member.fsf.org>
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  */
 protected class AccessibleAWTMenuBar
   extends AccessibleAWTMenuComponent

@@ -48,7 +48,7 @@ import java.awt.image.ColorModel;
  * of the graphics object. Instances must be immutable, because the graphics
  * object does not clone them.
  *
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @see PaintContext
  * @see Color
  * @see GradientPaint

@@ -1,5 +1,5 @@
 /* InputMethodListener.java -- listen for input method events
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import java.util.EventListener;
  * method. For a text component to use input methods, it must also install
  * an InputMethodRequests handler.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see InputMethodEvent
  * @see InputMethodRequests
  * @since 1.2

@@ -1,5 +1,5 @@
 /* Permissions.java -- a collection of permission collections
-   Copyright (C) 1998, 2001, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,8 +53,8 @@ import java.util.NoSuchElementException;
  * collection type which stores its permissions in a hash table will be
  * used.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.1
  */
 public final class Permissions extends PermissionCollection

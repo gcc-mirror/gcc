@@ -1,6 +1,6 @@
 /* IdentityHashMap.java -- a class providing a hashtable data structure,
    mapping Object --> Object, which uses object identity for hashing.
-   Copyright (C) 2001, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -78,8 +78,8 @@ import java.io.Serializable;
  * iterator, and in the case of the entrySet, the Map.Entry, to
  * fail with a {@link ConcurrentModificationException}.
  *
- * @author Tom Tromey <tromey@redhat.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Tom Tromey (tromey@redhat.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see System#identityHashCode(Object)
  * @see Collection
  * @see Map
@@ -676,8 +676,8 @@ public class IdentityHashMap extends AbstractMap
    * creates the appropriate Map.Entry object with the correct fail-fast
    * semantics and identity comparisons.
    *
-   * @author Tom Tromey <tromey@redhat.com>
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Tom Tromey (tromey@redhat.com)
+   * @author Eric Blake (ebb9@email.byu.edu)
    */
   private class IdentityIterator implements Iterator
   {
@@ -769,7 +769,7 @@ public class IdentityHashMap extends AbstractMap
    * the general contract of Map.Entry, and is probably unsuitable for
    * comparison to normal maps; but it works among other IdentityHashMaps.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    */
   private final class IdentityEntry implements Map.Entry
   {

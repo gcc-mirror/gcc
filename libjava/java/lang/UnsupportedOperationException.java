@@ -1,6 +1,6 @@
 /* UnsupportedOperationException.java -- thrown when an operation is not
    supported
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ package java.lang;
  * This exception is thrown by an object when an operation is
  * requested of it that it does not support.
  *
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @since 1.2
  * @status updated to 1.4
  */
