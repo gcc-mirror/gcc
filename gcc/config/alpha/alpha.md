@@ -633,7 +633,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
-  ""
+  "!TARGET_OPEN_VMS"
   "")
 
 (define_expand "udivsi3"
@@ -646,7 +646,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
-  ""
+  "!TARGET_OPEN_VMS"
   "")
 
 (define_expand "modsi3"
@@ -659,7 +659,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
-  ""
+  "!TARGET_OPEN_VMS"
   "")
 
 (define_expand "umodsi3"
@@ -672,7 +672,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:SI 0 "general_operand" "")
 	(reg:SI 27))]
-  ""
+  "!TARGET_OPEN_VMS"
   "")
 
 (define_expand "divdi3"
@@ -685,7 +685,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
-  ""
+  "!TARGET_OPEN_VMS"
   "")
 
 (define_expand "udivdi3"
@@ -698,7 +698,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
-  ""
+  "!TARGET_OPEN_VMS"
   "")
 
 (define_expand "moddi3"
@@ -711,7 +711,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
-  ""
+  "!TARGET_OPEN_VMS"
   "")
 
 (define_expand "umoddi3"
@@ -724,7 +724,7 @@
 	      (clobber (reg:DI 28))])
    (set (match_operand:DI 0 "general_operand" "")
 	(reg:DI 27))]
-  ""
+  "!TARGET_OPEN_VMS"
   "")
 
 (define_insn ""
@@ -733,7 +733,7 @@
 			[(reg:SI 24) (reg:SI 25)]))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  ""
+  "!TARGET_OPEN_VMS"
   "%E1 $24,$25,$27"
   [(set_attr "type" "isubr")])
 
@@ -743,7 +743,7 @@
 			[(reg:DI 24) (reg:DI 25)]))
    (clobber (reg:DI 23))
    (clobber (reg:DI 28))]
-  ""
+  "!TARGET_OPEN_VMS"
   "%E1 $24,$25,$27"
   [(set_attr "type" "isubr")])
 
@@ -1394,7 +1394,7 @@
 	(plus:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "adds%)%& %R1,%R2,%0"
+  "add%,%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1403,7 +1403,7 @@
 	(plus:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "adds%)%& %R1,%R2,%0"
+  "add%,%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1412,7 +1412,7 @@
 	(plus:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "addt%)%& %R1,%R2,%0"
+  "add%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1421,7 +1421,7 @@
 	(plus:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "addt%)%& %R1,%R2,%0"
+  "add%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1431,7 +1431,7 @@
 		  (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "addt%)%& %R1,%R2,%0"
+  "add%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1442,7 +1442,7 @@
 		 (float_extend:DF
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "addt%)%& %R1,%R2,%0"
+  "add%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1450,7 +1450,7 @@
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "cvttqc %R1,%0"
+  "cvt%-qc %R1,%0"
   [(set_attr "type" "fadd")])
 
 (define_insn "fix_truncsfdi2"
@@ -1458,14 +1458,14 @@
 	(fix:DI (float_extend:DF
 		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
-  "cvttqc %R1,%0"
+  "cvt%-qc %R1,%0"
   [(set_attr "type" "fadd")])
 
 (define_insn "floatdisf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_FP"
-  "cvtqs%+%& %1,%0"
+  "cvtq%,%+%& %1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1473,7 +1473,7 @@
   [(set (match_operand:DF 0 "register_operand" "=&f")
 	(float:DF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "cvtqt%+%& %1,%0"
+  "cvtq%-%+%& %1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1481,7 +1481,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(float:DF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_FP"
-  "cvtqt%+%& %1,%0"
+  "cvtq%-%+%& %1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1499,7 +1499,7 @@
 
   DONE;
 }")
-
+;; FIXME
 (define_insn "extendsfdf2_tp"
   [(set (match_operand:DF 0 "register_operand" "=&f")
 	(float_extend:DF (match_operand:SF 1 "register_operand" "f")))]
@@ -1513,8 +1513,8 @@
 	(float_extend:DF (match_operand:SF 1 "nonimmediate_operand" "f,m")))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
   "@
-   addt%)%& $f31,%1,%0
-   lds %0,%1"
+   add%-%)%& $f31,%1,%0
+   ld%, %0,%1"
   [(set_attr "type" "fadd,ld")
    (set_attr "trap" "yes")])
 
@@ -1522,7 +1522,7 @@
   [(set (match_operand:SF 0 "register_operand" "=&f")
 	(float_truncate:SF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "cvtts%)%& %R1,%0"
+  "cvt%-%,%)%& %R1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1530,7 +1530,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float_truncate:SF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "cvtts%)%& %R1,%0"
+  "cvt%-%,%)%& %R1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1539,7 +1539,7 @@
 	(div:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
 		(match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "divs%)%& %R1,%R2,%0"
+  "div%,%)%& %R1,%R2,%0"
   [(set_attr "type" "fdivs")
    (set_attr "trap" "yes")])
 
@@ -1548,7 +1548,7 @@
 	(div:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
 		(match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "divs%)%& %R1,%R2,%0"
+  "div%,%)%& %R1,%R2,%0"
   [(set_attr "type" "fdivs")
    (set_attr "trap" "yes")])
 
@@ -1557,7 +1557,7 @@
 	(div:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
 		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "divt%)%& %R1,%R2,%0"
+  "div%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fdivt")
    (set_attr "trap" "yes")])
 
@@ -1566,7 +1566,7 @@
 	(div:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
 		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "divt%)%& %R1,%R2,%0"
+  "div%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fdivt")
    (set_attr "trap" "yes")])
 
@@ -1575,7 +1575,7 @@
 	(div:DF (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "divt%)%& %R1,%R2,%0"
+  "div%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fdivt")
    (set_attr "trap" "yes")])
 
@@ -1585,7 +1585,7 @@
 		(float_extend:DF
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "divt%)%& %R1,%R2,%0"
+  "div%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fdivt")
    (set_attr "trap" "yes")])
 
@@ -1594,7 +1594,7 @@
 	(div:DF (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		(float_extend:DF (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "divt%)%& %R1,%R2,%0"
+  "div%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fdivt")
    (set_attr "trap" "yes")])
 
@@ -1603,7 +1603,7 @@
 	(mult:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "muls%)%& %R1,%R2,%0"
+  "mul%,%)%& %R1,%R2,%0"
   [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
@@ -1612,7 +1612,7 @@
 	(mult:SF (match_operand:SF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "muls%)%& %R1,%R2,%0"
+  "mul%,%)%& %R1,%R2,%0"
   [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
@@ -1621,7 +1621,7 @@
 	(mult:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "mult%)%& %R1,%R2,%0"
+  "mul%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
@@ -1630,7 +1630,7 @@
 	(mult:DF (match_operand:DF 1 "reg_or_fp0_operand" "%fG")
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "mult%)%& %R1,%R2,%0"
+  "mul%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
@@ -1640,7 +1640,7 @@
 		  (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		 (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "mult%)%& %R1,%R2,%0"
+  "mul%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
@@ -1651,7 +1651,7 @@
 		 (float_extend:DF
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "mult%)%& %R1,%R2,%0"
+  "mul%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fmul")
    (set_attr "trap" "yes")])
 
@@ -1660,7 +1660,7 @@
 	(minus:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "subs%)%& %R1,%R2,%0"
+  "sub%,%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1669,7 +1669,7 @@
 	(minus:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")
 		  (match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "subs%)%& %R1,%R2,%0"
+  "sub%,%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1678,7 +1678,7 @@
 	(minus:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "subt%)%& %R1,%R2,%0"
+  "sub%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1687,7 +1687,7 @@
 	(minus:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "subt%)%& %R1,%R2,%0"
+  "sub%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1697,7 +1697,7 @@
 		   (match_operand:SF 1 "reg_or_fp0_operand" "fG"))
 		  (match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "subt%)%& %R1,%R2,%0"
+  "sub%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1707,7 +1707,7 @@
 		  (float_extend:DF
 		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "subt%)%& %R1,%R2,%0"
+  "sub%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -1718,7 +1718,7 @@
 		  (float_extend:DF
 		   (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "subt%)%& %R1,%R2,%0"
+  "sub%-%)%& %R1,%R2,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -2136,7 +2136,7 @@
 			   [(match_operand:DF 2 "reg_or_fp0_operand" "fG")
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
-  "cmpt%C1%' %R2,%R3,%0"
+  "cmp%-%C1%' %R2,%R3,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -2146,7 +2146,7 @@
 			   [(match_operand:DF 2 "reg_or_fp0_operand" "fG")
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "cmpt%C1%' %R2,%R3,%0"
+  "cmp%-%C1%' %R2,%R3,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -2157,7 +2157,7 @@
 			     (match_operand:SF 2 "reg_or_fp0_operand" "fG"))
 			    (match_operand:DF 3 "reg_or_fp0_operand" "fG")]))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "cmpt%C1%' %R2,%R3,%0"
+  "cmp%-%C1%' %R2,%R3,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -2168,7 +2168,7 @@
 			    (float_extend:DF
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "cmpt%C1%' %R2,%R3,%0"
+  "cmp%-%C1%' %R2,%R3,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -2180,7 +2180,7 @@
 			    (float_extend:DF
 			     (match_operand:SF 3 "reg_or_fp0_operand" "fG"))]))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
-  "cmpt%C1%' %R2,%R3,%0"
+  "cmp%-%C1%' %R2,%R3,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
@@ -2981,11 +2981,15 @@
 
 (define_expand "call"
   [(use (match_operand:DI 0 "" ""))
-   (use (match_operand 1 "" ""))]
+   (use (match_operand 1 "" ""))
+   (use (match_operand 2 "" ""))
+   (use (match_operand 3 "" ""))]
   ""
   "
 { if (TARGET_WINDOWS_NT)
     emit_call_insn (gen_call_nt (operands[0], operands[1]));
+  else if (TARGET_OPEN_VMS)
+    emit_call_insn (gen_call_vms (operands[0], operands[2]));
   else
     emit_call_insn (gen_call_osf (operands[0], operands[1]));
 
@@ -3032,14 +3036,71 @@
     }
 }")
 
+;;
+;; call openvms/alpha
+;; op 0: symbol ref for called function
+;; op 1: next_arg_reg (argument information value for R25)
+;;
+(define_expand "call_vms"
+  [(parallel [(call (mem:DI (match_operand 0 "" ""))
+		    (match_operand 1 "" ""))
+	      (use (match_dup 2))
+	      (use (reg:DI 25))
+	      (use (reg:DI 26))
+	      (clobber (reg:DI 27))])]
+  ""
+  "
+{ if (GET_CODE (operands[0]) != MEM)
+    abort ();
+
+  operands[0] = XEXP (operands[0], 0);
+
+  /* Always load AI with argument information, then handle symbolic and
+     indirect call differently.  Load RA and set operands[2] to PV in
+     both cases.  */
+
+  emit_move_insn (gen_rtx (REG, DImode, 25), operands[1]);
+  if (GET_CODE (operands[0]) == SYMBOL_REF)
+    {
+      extern char *savealloc ();
+      char *symbol = XSTR (operands[0], 0);
+      char *linksym = savealloc (strlen (symbol) + 5);
+      rtx linkage;
+
+      alpha_need_linkage (symbol, 0);
+
+      strcpy (linksym, symbol);
+      strcat (linksym, \"..lk\");
+      linkage = gen_rtx (SYMBOL_REF, Pmode, linksym);
+
+      emit_move_insn (gen_rtx (REG, Pmode, 26), gen_rtx (MEM, Pmode, linkage));
+
+      operands[2]
+	= validize_mem (gen_rtx (MEM, Pmode, plus_constant (linkage, 8)));
+    }
+  else
+    {
+      emit_move_insn (gen_rtx (REG, Pmode, 26),
+		      gen_rtx (MEM, Pmode, plus_constant (operands[0], 8)));
+
+      operands[2] = operands[0];
+    }
+
+}")
+
 (define_expand "call_value"
   [(use (match_operand 0 "" ""))
    (use (match_operand:DI 1 "" ""))
-   (use (match_operand 2 "" ""))]
+   (use (match_operand 2 "" ""))
+   (use (match_operand 3 "" ""))
+   (use (match_operand 4 "" ""))]
   ""
   "
 { if (TARGET_WINDOWS_NT)
     emit_call_insn (gen_call_value_nt (operands[0], operands[1], operands[2]));
+  else if (TARGET_OPEN_VMS)
+    emit_call_insn (gen_call_value_vms (operands[0], operands[1],
+					operands[3]));
   else
     emit_call_insn (gen_call_value_osf (operands[0], operands[1],
 					operands[2]));
@@ -3088,12 +3149,58 @@
     }
 }")
 
+(define_expand "call_value_vms"
+  [(parallel [(set (match_operand 0 "" "")
+		   (call (mem:DI (match_operand:DI 1 "" ""))
+			 (match_operand 2 "" "")))
+	      (use (match_dup 3))
+	      (use (reg:DI 25))
+	      (use (reg:DI 26))
+	      (clobber (reg:DI 27))])]
+  ""
+  "
+{ if (GET_CODE (operands[1]) != MEM)
+    abort ();
+
+  operands[1] = XEXP (operands[1], 0);
+
+  /* Always load AI with argument information, then handle symbolic and
+     indirect call differently.  Load RA and set operands[3] to PV in
+     both cases.  */
+
+  emit_move_insn (gen_rtx (REG, DImode, 25), operands[2]);
+  if (GET_CODE (operands[1]) == SYMBOL_REF)
+    {
+      extern char *savealloc ();
+      char *symbol = XSTR (operands[1], 0);
+      char *linksym = savealloc (strlen (symbol) + 5);
+      rtx linkage;
+
+      alpha_need_linkage (symbol, 0);
+      strcpy (linksym, symbol);
+      strcat (linksym, \"..lk\");
+      linkage = gen_rtx (SYMBOL_REF, Pmode, linksym);
+
+      emit_move_insn (gen_rtx (REG, Pmode, 26), gen_rtx (MEM, Pmode, linkage));
+
+      operands[3]
+	= validize_mem (gen_rtx (MEM, Pmode, plus_constant (linkage, 8)));
+    }
+  else
+    {
+      emit_move_insn (gen_rtx (REG, Pmode, 26),
+		      gen_rtx (MEM, Pmode, plus_constant (operands[1], 8)));
+
+      operands[3] = operands[1];
+    }
+}")
+
 (define_insn ""
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,R,i"))
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
-  "! TARGET_WINDOWS_NT && alpha_tp == ALPHA_TP_INSN"
+  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && alpha_tp == ALPHA_TP_INSN"
   "@
    jsr $26,($27),0\;trapb\;ldgp $29,4($26)
    bsr $26,%0..ng\;trapb
@@ -3105,7 +3212,7 @@
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
-  "! TARGET_WINDOWS_NT"
+  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS"
   "@
    jsr $26,($27),0\;ldgp $29,0($26)
    bsr $26,%0..ng
@@ -3123,12 +3230,25 @@
   [(set_attr "type" "jsr")])
       
 (define_insn ""
+  [(call (mem:DI (match_operand:DI 0 "call_operand" "r,i"))
+	 (match_operand 1 "" ""))
+   (use (match_operand:DI 2 "general_operand" "r,m"))
+   (use (reg:DI 25))
+   (use (reg:DI 26))
+   (clobber (reg:DI 27))]
+  "TARGET_OPEN_VMS"
+  "@
+   bis %2,%2,$27\;jsr $26,0\;ldq $27,0($29)
+   ldq $27,%2\;jsr $26,%0\;ldq $27,0($29)"
+  [(set_attr "type" "jsr")])
+
+(define_insn ""
   [(set (match_operand 0 "register_operand" "=rf,rf,rf")
 	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
-  "! TARGET_WINDOWS_NT && alpha_tp == ALPHA_TP_INSN"
+  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && alpha_tp == ALPHA_TP_INSN"
   "@
    jsr $26,($27),0\;trapb\;ldgp $29,4($26)
    bsr $26,%1..ng\;trapb
@@ -3141,7 +3261,7 @@
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
-  "! TARGET_WINDOWS_NT"
+  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS"
   "@
    jsr $26,($27),0\;ldgp $29,0($26)
    bsr $26,%1..ng
@@ -3157,6 +3277,20 @@
   "@
    jsr $26,(%1)
    bsr $26,%1"
+  [(set_attr "type" "jsr")])
+
+(define_insn ""
+  [(set (match_operand 0 "register_operand" "")
+	(call (mem:DI (match_operand:DI 1 "call_operand" "r,i"))
+	      (match_operand 2 "" "")))
+   (use (match_operand:DI 3 "general_operand" "r,m"))
+   (use (reg:DI 25))
+   (use (reg:DI 26))
+   (clobber (reg:DI 27))]
+  "TARGET_OPEN_VMS"
+  "@
+   bis %3,%3,$27\;jsr $26,0\;ldq $27,0($29)
+   ldq $27,%3\;jsr $26,%1\;ldq $27,0($29)"
   [(set_attr "type" "jsr")])
 
 ;; Call subroutine returning any type.
@@ -3229,6 +3363,8 @@
 {
   if (TARGET_WINDOWS_NT)
     emit_jump_insn (gen_tablejump_nt (operands[0], operands[1]));
+  else if (TARGET_OPEN_VMS)
+    emit_jump_insn (gen_tablejump_vms (operands[0], operands[1]));
   else
     emit_jump_insn (gen_tablejump_osf (operands[0], operands[1]));
 
@@ -3256,12 +3392,27 @@
   "
 { operands[3] = gen_reg_rtx (DImode); }")
 
+;;
+;; tablejump, openVMS way
+;; op 0: offset
+;; op 1: label preceding jump-table
+;;
+(define_expand "tablejump_vms"
+  [(set (match_dup 2)
+      (match_operand:DI 0 "register_operand" ""))
+        (set (pc)
+	(plus:DI (match_dup 2)
+		(label_ref:DI (match_operand 1 "" ""))))]
+  ""
+  "
+{ operands[2] = gen_reg_rtx (DImode); }")
+
 (define_insn ""
   [(set (pc)
 	(plus:DI (match_operand:DI 0 "register_operand" "r")
 		 (label_ref:DI (match_operand 1 "" ""))))
    (clobber (match_scratch:DI 2 "=r"))]
-  "! TARGET_WINDOWS_NT && next_active_insn (insn) != 0
+  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
    && PREV_INSN (next_active_insn (insn)) == operands[1]"
   "*
@@ -3343,6 +3494,19 @@
 }"
   [(set_attr "type" "ibr")])
 
+;;
+;; op 0 is table offset
+;; op 1 is table label
+;;
+
+(define_insn ""
+  [(set (pc)
+	(plus:DI (match_operand 0 "register_operand" "r")
+		(label_ref (match_operand 1 "" ""))))]
+  "TARGET_OPEN_VMS"
+  "jmp $31,(%0),0"
+  [(set_attr "type" "ibr")])
+
 ;; Cache flush.  Used by INITIALIZE_TRAMPOLINE.  0x86 is PAL_imb, but we don't
 ;; want to have to include pal.h in our .s file.
 (define_insn ""
@@ -3366,8 +3530,8 @@
    stl %r1,%0
    cpys %1,%1,%0
    cpys $f31,$f31,%0
-   lds %0,%1
-   sts %R1,%0"
+   ld%, %0,%1
+   st%, %R1,%0"
   [(set_attr "type" "ilog,ld,st,fcpys,fcpys,ld,st")])
 
 (define_insn ""
@@ -3381,8 +3545,8 @@
    stq %r1,%0
    cpys %1,%1,%0
    cpys $f31,$f31,%0
-   ldt %0,%1
-   stt %R1,%0"
+   ld%- %0,%1
+   st%- %R1,%0"
   [(set_attr "type" "ilog,ld,st,fcpys,fcpys,ld,st")])
 
 (define_expand "movsf"
@@ -3410,8 +3574,9 @@
 (define_insn ""
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,f,f,f,m")
 	(match_operand:SI 1 "input_operand" "r,J,I,K,L,m,rJ,f,J,m,fG"))]
-  "! TARGET_WINDOWS_NT && (register_operand (operands[0], SImode)
-			   || reg_or_0_operand (operands[1], SImode))"
+  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS
+   && (register_operand (operands[0], SImode)
+       || reg_or_0_operand (operands[1], SImode))"
   "@
    bis %1,%1,%0
    bis $31,$31,%0
@@ -3429,7 +3594,8 @@
 (define_insn ""
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,r,m,f,f,f,m")
 	(match_operand:SI 1 "input_operand" "r,J,I,K,L,s,m,rJ,f,J,m,fG"))]
-  "TARGET_WINDOWS_NT && (register_operand (operands[0], SImode)
+  "(TARGET_WINDOWS_NT || TARGET_OPEN_VMS)
+	&& (register_operand (operands[0], SImode)
 			 || reg_or_0_operand (operands[1], SImode))"
   "@
    bis %1,%1,%0
@@ -4183,3 +4349,21 @@
       DONE;
     }
 }")
+
+(define_expand "nonlocal_goto_receiver"
+  [(unspec_volatile [(const_int 0)] 1)
+   (set (reg:DI 27) (mem:DI (reg:DI 29)))
+   (unspec_volatile [(const_int 0)] 1)
+   (use (reg:DI 27))]
+  "TARGET_OPEN_VMS"
+  "")
+
+(define_insn "arg_home"
+  [(unspec [(const_int 0)] 0)
+   (use (reg:DI 1))
+   (use (reg:DI 25))
+   (clobber (reg:DI 24))
+   (clobber (reg:DI 25))
+   (clobber (reg:DI 0))]
+  "TARGET_OPEN_VMS"
+  "lda $0,ots$home_args\;ldq $0,8($0)\;jsr $0,ots$home_args")
