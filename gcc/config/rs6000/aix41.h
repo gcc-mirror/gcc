@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_SPEC "-u %(asm_cpu)"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 \
+#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 -D_AIX41 \
 -Asystem(unix) -Asystem(aix)"
 
 #undef CPP_SPEC
