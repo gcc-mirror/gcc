@@ -1,3 +1,7 @@
+2001-04-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.other/warn6.C: New test.
+
 22001-04-11  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
         * g++.old-deja/g++.robertl/eb42.C: Same.
