@@ -1552,20 +1552,28 @@ real_to_decimal (str, r_orig, buf_size, digits, crop_trailing_zeros)
       /* Find power of 10.  Do this by dividing out 10**2**M when
 	 this is larger than the current remainder.  Fill PTEN with 
 	 the power of 10 that we compute.  */
-      m = floor_log2 ((int)(r.exp * M_LOG10_2)) + 1;
-      do
+      if (r.exp > 0)
 	{
-	  const REAL_VALUE_TYPE *ptentwo = ten_to_ptwo (m);
-	  if (do_compare (&u, ptentwo, 0) >= 0)
+	  m = floor_log2 ((int)(r.exp * M_LOG10_2)) + 1;
+	  do
 	    {
-	      do_divide (&u, &u, ptentwo);
-	      do_multiply (&pten, &pten, ptentwo);
-	      dec_exp += 1 << m;
+	      const REAL_VALUE_TYPE *ptentwo = ten_to_ptwo (m);
+	      if (do_compare (&u, ptentwo, 0) >= 0)
+	        {
+	          do_divide (&u, &u, ptentwo);
+	          do_multiply (&pten, &pten, ptentwo);
+	          dec_exp += 1 << m;
+	        }
 	    }
+          while (--m >= 0);
 	}
-      while (--m >= 0);
+      else
+	/* We managed to divide off enough tens in the above reduction
+	   loop that we've now got a negative exponent.  Fall into the
+	   less-than-one code to compute the proper value for PTEN.  */
+	cmp_one = -1;
     }
-  else if (cmp_one < 0)
+  if (cmp_one < 0)
     {
       int m;
 
