@@ -395,7 +395,7 @@ stamp-bits: ${bits_headers}
 	  echo `date` > stamp-bits ;\
 	fi
 
-stamp-c_base: ${c_base_headers} ${c_base_headers_extra} 
+stamp-c_base: stamp-bits ${c_base_headers} ${c_base_headers_extra} 
 	@if [ ! -d "${c_base_builddir}" ]; then \
 	  mkdir -p ${c_base_builddir} ;\
 	fi ;\
