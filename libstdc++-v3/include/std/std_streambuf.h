@@ -71,6 +71,7 @@ namespace std
       // Non-standard Types:
       typedef ctype<char_type>           		__ctype_type;
       typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
+      typedef typename traits_type::state_type 		__state_type;
       
       friend class basic_ios<char_type, traits_type>;
       friend class basic_istream<char_type, traits_type>;
@@ -131,6 +132,9 @@ namespace std
       char_type*		_M_pback_cur_save;
       char_type*		_M_pback_end_save;
       bool			_M_pback_init; 
+
+      // Yet unused.
+      fpos<__state_type>	_M_pos;
 
       // Initializes pback buffers, and moves normal buffers to safety.
       // Assumptions:

@@ -1,3 +1,50 @@
+2002-07-30  Benjamin Kosnik  <bkoz@redhat.com>
+            Gabriel Dos Reis  <gdr@nerim.net>
+
+	* include/bits/char_traits.h: Remove generic definitions.
+	* include/bits/streambuf_iterator.h (istreambuf_iterator): Use
+	eof, not -2.
+	* include/bits/istream.tcc (istream::readsome): Don't check
+	against eof, instead use constants.
+	(istream::sync): Same.
+	(istream::sentry::sentry): Use eq_int_type.
+	(istream::get): Same.
+	* include/bits/ostream.tcc: Change __pad to 
+	__pad<_CharT, _Traits>::_S_pad. 
+	* include/bits/locale_facets.h: Add __pad_traits generic and
+	ostreambuf_iterator specialization.
+	* include/bits/locale_facets.tcc: Change __pad into struct __pad
+	with a _CharT and _Traits template parameter and _S_pad static
+	member function.
+	* src/locale-inst.cc: Update __pad instantiations.
+	
+	* include/std/std_fstream.h: Declare _M_underflow_common
+	specializations.
+	* src/fstream.cc: New. Add _M_underflow_common specializations.
+	* include/bits/fstream.tcc (filebuf::close): Use traits_type.
+	(filebuf::_M_underflow_common(bool)): Remove generic version, as
+	sys_ungetc and custom int_types don't get along.
+	* include/std/std_streambuf.h: Add _M_pos.
+	* src/Makefile.am (sources): Add fstream.cc.
+	* src/Makefile.in: Regenerate.
+
+	* testsuite/21_strings/capacity.cc: Add char_traits specializations.
+	* testsuite/22_locale/codecvt_members_unicode_char.cc: Same.
+	* testsuite/22_locale/codecvt_members_unicode_wchar_t.cc: Same.
+	* testsuite/22_locale/ctor_copy_dtor.cc: Same.
+	* testsuite/27_io/filebuf_virtuals.cc (test07): Move to...
+	* testsuite/27_io/filebuf.cc: ...here.
+	* testsuite/testsuite_hooks.h: Add gnu_char, gnu_int, char_traits
+	specialization for both.
+	* testsuite/27_io/streambuf.cc: Add instantiation test,
+	testsuite_hooks include.
+	* testsuite/27_io/istream.cc: Same.
+	* testsuite/27_io/ostream.cc: Same.	
+	* testsuite/27_io/fstream.cc: Same.
+	* testsuite/27_io/stringstream.cc: Same.
+	* testsuite/27_io/filebuf.cc: Same.
+	* testsuite/27_io/stringbuf.cc: Same.
+	
 2002-07-29  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/cpu/powerpc/cpu_limits.h (__glibcpp_long_bits): Define.

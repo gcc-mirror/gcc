@@ -23,9 +23,70 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-using namespace std;
+
 
 #ifdef _GLIBCPP_USE___ENC_TRAITS
+
+// Need some char_traits specializations for this to work.
+typedef unsigned short			unicode_t;
+
+namespace std
+{
+  template<>
+    struct char_traits<unicode_t>
+    {
+      typedef unicode_t 	char_type;
+      // Unsigned as wint_t is unsigned.
+      typedef unsigned long  	int_type;
+      typedef streampos 	pos_type;
+      typedef streamoff 	off_type;
+      typedef mbstate_t 	state_type;
+      
+      static void 
+      assign(char_type& __c1, const char_type& __c2);
+
+      static bool 
+      eq(const char_type& __c1, const char_type& __c2);
+
+      static bool 
+      lt(const char_type& __c1, const char_type& __c2);
+
+      static int 
+      compare(const char_type* __s1, const char_type* __s2, size_t __n)
+      { return memcmp(__s1, __s2, __n); }
+
+      static size_t
+      length(const char_type* __s);
+
+      static const char_type* 
+      find(const char_type* __s, size_t __n, const char_type& __a);
+
+      static char_type* 
+      move(char_type* __s1, const char_type* __s2, size_t __n);
+
+      static char_type* 
+      copy(char_type* __s1, const char_type* __s2, size_t __n)
+      {  return static_cast<char_type*>(memcpy(__s1, __s2, __n)); }
+
+      static char_type* 
+      assign(char_type* __s, size_t __n, char_type __a);
+
+      static char_type 
+      to_char_type(const int_type& __c);
+
+      static int_type 
+      to_int_type(const char_type& __c);
+
+      static bool 
+      eq_int_type(const int_type& __c1, const int_type& __c2);
+
+      static int_type 
+      eof(); 
+
+      static int_type 
+      not_eof(const int_type& __c);
+    };
+}
 
 /*
 > how do I check that these conversions are correct? 
@@ -51,7 +112,7 @@ it shows that the other byte-order is used (25856 == 0x6500).
 
 
 void
-initialize_state(__enc_traits& state)
+initialize_state(std::__enc_traits& state)
 { state._M_init(); }
 
 // Partial specialization using __enc_traits.
@@ -59,8 +120,8 @@ initialize_state(__enc_traits& state)
 // UNICODE - UCS2 (big endian)
 void test01()
 {
+  using namespace std;
   typedef codecvt_base::result			result;
-  typedef unsigned short			unicode_t;
   typedef unicode_t				int_type;
   typedef char					ext_type;
   typedef __enc_traits				enc_type;
@@ -146,6 +207,7 @@ void test01()
 // UNICODE - UCS2 (little endian)
 void test02()
 {
+  using namespace std;
   typedef codecvt_base::result			result;
   typedef unsigned short			unicode_t;
   typedef unicode_t				int_type;

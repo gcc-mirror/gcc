@@ -184,7 +184,7 @@ namespace std
       
       if (_M_buf_size)
 	{
-	  off_type __pos = __sp._M_position();
+	  off_type __pos = __sp; // Use streamoff operator to do conversion.
 	  char_type* __beg = NULL;
 	  char_type* __end = NULL;
 	  bool __testin = (ios_base::in & _M_mode & __mode) != 0;

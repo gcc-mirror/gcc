@@ -31,6 +31,7 @@
 // NB: This file is for testing basic_stringstream with NO OTHER INCLUDES.
 
 #include <sstream>
+#include <testsuite_hooks.h>
 
 // { dg-do compile }
 
@@ -51,6 +52,7 @@ namespace test
   using namespace std;
   typedef short type_t;
   template class basic_stringstream<type_t, char_traits<type_t> >;
+  template class basic_stringstream<gnu_char, char_traits<gnu_char> >;
 } // test
 
 int main() 

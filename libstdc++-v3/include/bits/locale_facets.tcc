@@ -94,6 +94,7 @@ namespace std
     _M_extract_float(_InIter __beg, _InIter __end, ios_base& __io,
 		     ios_base::iostate& __err, string& __xtrc) const
     {
+      typedef char_traits<_CharT>		__traits_type;
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
       const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
@@ -103,7 +104,8 @@ namespace std
       const char_type __minus = __ctype.widen('-');
       int __pos = 0;
       char_type  __c = *__beg;
-      if ((__c == __plus || __c == __minus) && __beg != __end)
+      if ((__traits_type::eq(__c, __plus) || __traits_type::eq(__c, __minus))
+	  && __beg != __end)
 	{
 	  __xtrc += __ctype.narrow(__c, char());
 	  ++__pos;
@@ -113,7 +115,7 @@ namespace std
       // Next, strip leading zeros.
       const char_type __zero = __ctype.widen(_S_atoms[_M_zero]);
       bool __found_zero = false;
-      while (__c == __zero && __beg != __end)
+      while (__traits_type::eq(__c, __zero) && __beg != __end)
 	{
 	  __c = *(++__beg);
 	  __found_zero = true;
@@ -141,11 +143,10 @@ namespace std
       while (__beg != __end)
         {
 	  // Only look in digits.
-	  typedef char_traits<_CharT> 	__traits_type;
           const char_type* __p = __traits_type::find(__watoms, 10,  __c);
 
           // NB: strchr returns true for __c == 0x0
-          if (__p && __c)
+          if (__p && !__traits_type::eq(__c, char_type()))
 	    {
 	      // Try first for acceptable digit; record it if found.
 	      ++__pos;
@@ -153,7 +154,8 @@ namespace std
 	      ++__sep_pos;
 	      __c = *(++__beg);
 	    }
-          else if (__c == __sep && __check_grouping && !__found_dec)
+          else if (__traits_type::eq(__c, __sep) 
+		   && __check_grouping && !__found_dec)
 	    {
               // NB: Thousands separator at the beginning of a string
               // is a no-no, as is two consecutive thousands separators.
@@ -169,7 +171,7 @@ namespace std
 		  break;
 		}
             }
-	  else if (__c == __dec && !__found_dec)
+	  else if (__traits_type::eq(__c, __dec) && !__found_dec)
 	    {
 	      // According to the standard, if no grouping chars are seen,
 	      // no grouping check is applied. Therefore __found_grouping
@@ -181,7 +183,8 @@ namespace std
 	      __c = *(++__beg);
 	      __found_dec = true;
 	    }
-	  else if ((__c == __watoms[_M_e] || __c == __watoms[_M_E]) 
+	  else if ((__traits_type::eq(__c, __watoms[_M_e]) 
+		    || __traits_type::eq(__c, __watoms[_M_E])) 
 		   && !__found_sci && __pos)
 	    {
 	      // Scientific notation.
@@ -190,7 +193,8 @@ namespace std
 	      __c = *(++__beg);
 
 	      // Remove optional plus or minus sign, if they exist.
-	      if (__c == __plus || __c == __minus)
+	      if (__traits_type::eq(__c, __plus) 
+		  || __traits_type::eq(__c, __minus))
 		{
 		  ++__pos;
 		  __xtrc += __ctype.narrow(__c, char());
@@ -228,6 +232,7 @@ namespace std
     _M_extract_int(_InIter __beg, _InIter __end, ios_base& __io,
 		   ios_base::iostate& __err, string& __xtrc, int& __base) const
     {
+      typedef char_traits<_CharT>		__traits_type;
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
       const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
@@ -241,10 +246,13 @@ namespace std
       else
 	__base = 10;
 
-     // First check for sign.
+      // First check for sign.
       int __pos = 0;
       char_type  __c = *__beg;
-      if ((__c == __ctype.widen('+') || __c == __ctype.widen('-'))
+      const char_type __plus = __ctype.widen('+');
+      const char_type __minus = __ctype.widen('-');
+
+      if ((__traits_type::eq(__c, __plus) || __traits_type::eq(__c, __minus))
 	  && __beg != __end)
 	{
 	  __xtrc += __ctype.narrow(__c, char());
@@ -259,7 +267,7 @@ namespace std
       if (__base == 10)
 	{
 	  bool __found_zero = false;
-	  while (__c == __zero && __beg != __end)
+	  while (__traits_type::eq(__c, __zero) && __beg != __end)
 	    {
 	      __c = *(++__beg);
 	      __found_zero = true;
@@ -270,7 +278,9 @@ namespace std
 	      ++__pos;
 	      if (__basefield == 0)
 		{	      
-		  if ((__c == __x || __c == __X) && __beg != __end)
+		  if ((__traits_type::eq(__c, __x) 
+		       || __traits_type::eq(__c, __X))
+		      && __beg != __end)
 		    {
 		      __xtrc += __ctype.narrow(__c, char());
 		      ++__pos;
@@ -284,12 +294,13 @@ namespace std
 	}
       else if (__base == 16)
 	{
-	  if (__c == __zero && __beg != __end)
+	  if (__traits_type::eq(__c, __zero) && __beg != __end)
 	    {
 	      __xtrc += _S_atoms[_M_zero];
 	      ++__pos;
 	      __c = *(++__beg); 
-	      if  ((__c == __x || __c == __X) && __beg != __end)
+	      if ((__traits_type::eq(__c, __x) || __traits_type::eq(__c, __X))
+		  && __beg != __end)
 		{
 		  __xtrc += __ctype.narrow(__c, char());
 		  ++__pos;
@@ -316,11 +327,10 @@ namespace std
       const char_type __sep = __np.thousands_sep();
       while (__beg != __end)
         {
-	  typedef char_traits<_CharT> 	__traits_type;
           const char_type* __p = __traits_type::find(__watoms, __len,  __c);
 
           // NB: strchr returns true for __c == 0x0
-          if (__p && __c)
+          if (__p && !__traits_type::eq(__c, char_type()))
 	    {
 	      // Try first for acceptable digit; record it if found.
 	      __xtrc += _S_atoms[__p - __watoms];
@@ -328,7 +338,7 @@ namespace std
 	      ++__sep_pos;
 	      __c = *(++__beg);
 	    }
-          else if (__c == __sep && __check_grouping)
+          else if (__traits_type::eq(__c, __sep) && __check_grouping)
 	    {
               // NB: Thousands separator at the beginning of a string
               // is a no-no, as is two consecutive thousands separators.
@@ -394,7 +404,9 @@ namespace std
       // Parse bool values as alphanumeric
       else
         {
-	  typedef basic_string<_CharT> __string_type;
+	  typedef char_traits<_CharT>	      	__traits_type;
+	  typedef basic_string<_CharT>   	__string_type;
+
           locale __loc = __io.getloc();
 	  const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc); 
 	  const __string_type __true = __np.truename();
@@ -407,8 +419,10 @@ namespace std
           for (size_t __n = 0; __beg != __end; ++__n)
             {
               char_type __c = *__beg++;
-              bool __testf = __n <= __falsen ? __c == __falses[__n] : false;
-              bool __testt = __n <= __truen ? __c == __trues[__n] : false;
+              bool __testf = __n <= __falsen 
+		             ? __traits_type::eq(__c, __falses[__n]) : false;
+              bool __testt = __n <= __truen 
+		             ? __traits_type::eq(__c, __trues[__n]) : false;
               if (!(__testf || __testt))
                 {
                   __err |= ios_base::failbit;
@@ -708,6 +722,7 @@ namespace std
     _M_widen_float(_OutIter __s, ios_base& __io, _CharT __fill, char* __cs, 
 		   int __len) const
     {
+      typedef char_traits<_CharT> 		__traits_type;
       // [22.2.2.2.2] Stage 2, convert to char_type, using correct
       // numpunct.decimal_point() values for '.' and adding grouping.
       const locale __loc = __io.getloc();
@@ -723,7 +738,7 @@ namespace std
       // Replace decimal point.
       const _CharT* __p;
       const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
-      if (__p = char_traits<_CharT>::find(__ws, __len, __ctype.widen('.')))
+      if (__p = __traits_type::find(__ws, __len, __ctype.widen('.')))
 	__ws[__p - __ws] = __np.decimal_point();
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
@@ -744,7 +759,7 @@ namespace std
 	  // Tack on decimal part.
 	  if (__p)
 	    {
-	      char_traits<_CharT>::copy(__p2, __p, __len - __declen);
+	      __traits_type::copy(__p2, __p, __len - __declen);
 	      __newlen += __len - __declen;
 	    }    
 
@@ -816,13 +831,15 @@ namespace std
     _M_insert(_OutIter __s, ios_base& __io, _CharT __fill, const _CharT* __ws, 
 	      int __len) const
     {
+      typedef char_traits<_CharT> 		__traits_type;
       // [22.2.2.2.2] Stage 3.
       streamsize __w = __io.width();
       _CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							    * __w));
       if (__w > static_cast<streamsize>(__len))
 	{
-	  __pad(__io, __fill, __ws2, __ws, __w, __len, true);
+	  __pad<_CharT, __traits_type>::_S_pad(__io, __fill, __ws2, __ws, 
+					       __w, __len, true);
 	  __len = static_cast<int>(__w);
 	  // Switch strings.
 	  __ws = __ws2;
@@ -845,7 +862,7 @@ namespace std
       if ((__flags & ios_base::boolalpha) == 0)
         {
           unsigned long __uv = __v;
-          __s = _M_convert_int(__s, __io, __fill, 'u', char_type(), __uv);
+          __s = _M_convert_int(__s, __io, __fill, 'u', char(), __uv);
         }
       else
         {
@@ -866,14 +883,14 @@ namespace std
     _OutIter
     num_put<_CharT, _OutIter>::
     do_put(iter_type __s, ios_base& __io, char_type __fill, long __v) const
-    { return _M_convert_int(__s, __io, __fill, 'd', char_type(), __v); }
+    { return _M_convert_int(__s, __io, __fill, 'd', char(), __v); }
 
   template<typename _CharT, typename _OutIter>
     _OutIter
     num_put<_CharT, _OutIter>::
     do_put(iter_type __s, ios_base& __io, char_type __fill,
            unsigned long __v) const
-    { return _M_convert_int(__s, __io, __fill, 'u', char_type(), __v); }
+    { return _M_convert_int(__s, __io, __fill, 'u', char(), __v); }
 
 #ifdef _GLIBCPP_USE_LONG_LONG
   template<typename _CharT, typename _OutIter>
@@ -894,7 +911,7 @@ namespace std
     _OutIter
     num_put<_CharT, _OutIter>::
     do_put(iter_type __s, ios_base& __io, char_type __fill, double __v) const
-    { return _M_convert_float(__s, __io, __fill, char_type(), __v); }
+    { return _M_convert_float(__s, __io, __fill, char(), __v); }
 
   template<typename _CharT, typename _OutIter>
     _OutIter
@@ -915,7 +932,7 @@ namespace std
       __io.flags(__flags & __fmt | (ios_base::hex | ios_base::showbase));
       try 
 	{
-	  __s = _M_convert_int(__s, __io, __fill, 'u', char_type(),
+	  __s = _M_convert_int(__s, __io, __fill, 'u', char(),
 			       reinterpret_cast<unsigned long>(__v));
 	  __io.flags(__flags);
 	}
@@ -1591,7 +1608,7 @@ namespace std
 		    const _CharT** __names, size_t __indexlen, 
 		    ios_base::iostate& __err) const
     {
-      typedef char_traits<char_type> __traits_type;
+      typedef char_traits<_CharT> 		__traits_type;
       int* __matches = static_cast<int*>(__builtin_alloca(sizeof(int) * __indexlen));
       size_t __nmatches = 0;
       size_t __pos = 0;
@@ -1686,7 +1703,7 @@ namespace std
     do_get_weekday(iter_type __beg, iter_type __end, ios_base& __io, 
 		   ios_base::iostate& __err, tm* __tm) const
     {
-      typedef char_traits<char_type> __traits_type;
+      typedef char_traits<_CharT> 		__traits_type;
       locale __loc = __io.getloc();
       __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const char_type*  __days[7];
@@ -1729,7 +1746,7 @@ namespace std
     do_get_monthname(iter_type __beg, iter_type __end,
                      ios_base& __io, ios_base::iostate& __err, tm* __tm) const
     {
-      typedef char_traits<char_type> __traits_type;
+      typedef char_traits<_CharT> 		__traits_type;
       locale __loc = __io.getloc();
       __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const char_type*  __months[12];
@@ -1996,22 +2013,31 @@ namespace std
   // internal-adjusted objects are padded according to the rules below
   // concerning 0[xX] and +-, otherwise, exactly as right-adjusted
   // ones are.
-  template<typename _CharT, typename _Traits>
-    void
-    __pad(ios_base& __io, _CharT __fill, _CharT* __news, const _CharT* __olds,
-	  const streamsize __newlen, const streamsize __oldlen, 
-	  const bool __num)
-    {
-      typedef _CharT	char_type;
-      typedef _Traits	traits_type;
-      typedef typename traits_type::int_type int_type;
-      
-      int_type __plen = static_cast<size_t>(__newlen - __oldlen); 
-      char_type* __pads = static_cast<char_type*>(__builtin_alloca(sizeof(char_type) * __plen));
-      traits_type::assign(__pads, __plen, __fill); 
 
-      char_type* __beg;
-      char_type* __end;
+  // NB: Of the two parameters, _CharT can be deduced from the
+  // function arguments. The other (_Traits) has to be explicitly specified.
+  template<typename _CharT, typename _Traits>
+    struct __pad
+    {
+      static void
+      _S_pad(ios_base& __io, _CharT __fill, _CharT* __news, 
+	     const _CharT* __olds, const streamsize __newlen, 
+	     const streamsize __oldlen, const bool __num);
+    };
+
+  template<typename _CharT, typename _Traits>
+    void 
+    __pad<_CharT, _Traits>::_S_pad(ios_base& __io, _CharT __fill, 
+				   _CharT* __news, const _CharT* __olds, 
+				   const streamsize __newlen, 
+				   const streamsize __oldlen, const bool __num)
+    {
+      size_t __plen = static_cast<size_t>(__newlen - __oldlen);
+      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __plen));
+      _Traits::assign(__pads, __plen, __fill); 
+
+      _CharT* __beg;
+      _CharT* __end;
       size_t __mod = 0;
       size_t __beglen; //either __plen or __oldlen
       ios_base::fmtflags __adjust = __io.flags() & ios_base::adjustfield;
@@ -2019,7 +2045,7 @@ namespace std
       if (__adjust == ios_base::left)
 	{
 	  // Padding last.
-	  __beg = const_cast<char_type*>(__olds);
+	  __beg = const_cast<_CharT*>(__olds);
 	  __beglen = __oldlen;
 	  __end = __pads;
 	}
@@ -2030,12 +2056,14 @@ namespace std
 	  // Who came up with these rules, anyway? Jeeze.
           locale __loc = __io.getloc();
 	  const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
-	  const char_type __minus = __ctype.widen('-');
-	  const char_type __plus = __ctype.widen('+');
-	  bool __testsign = __olds[0] == __minus || __olds[0] == __plus;
-	  bool __testhex = __ctype.widen('0') == __olds[0] 
-	                   && (__ctype.widen('x') == __olds[1] 
-			       || __ctype.widen('X') == __olds[1]);
+	  const _CharT __minus = __ctype.widen('-');
+	  const _CharT __plus = __ctype.widen('+');
+	  bool __testsign = _Traits::eq(__olds[0], __minus)
+	    		    || _Traits::eq(__olds[0], __plus);
+
+	  bool __testhex = _Traits::eq(__ctype.widen('0'), __olds[0]) 
+	    		   && (_Traits::eq(__ctype.widen('x'), __olds[1]) 
+			       || _Traits::eq(__ctype.widen('X'), __olds[1]));
 	  if (__testhex)
 	    {
 	      __news[0] = __olds[0]; 
@@ -2044,23 +2072,23 @@ namespace std
 	      __news += 2;
 	      __beg = __pads;
 	      __beglen = __plen;
-	      __end = const_cast<char_type*>(__olds + __mod);
+	      __end = const_cast<_CharT*>(__olds + __mod);
 	    }
 	  else if (__testsign)
 	    {
-	      __news[0] = __olds[0] == __plus ? __plus : __minus;
+	      _Traits::eq((__news[0] = __olds[0]), __plus) ? __plus : __minus;
 	      ++__mod;
 	      ++__news;
 	      __beg = __pads;
 	      __beglen = __plen;
-	      __end = const_cast<char_type*>(__olds + __mod);
+	      __end = const_cast<_CharT*>(__olds + __mod);
 	    }
 	  else
 	    {
 	      // Padding first.
 	      __beg = __pads;
 	      __beglen = __plen;
-	      __end = const_cast<char_type*>(__olds);
+	      __end = const_cast<_CharT*>(__olds);
 	    }
 	}
       else
@@ -2068,23 +2096,11 @@ namespace std
 	  // Padding first.
 	  __beg = __pads;
 	  __beglen = __plen;
-	  __end = const_cast<char_type*>(__olds);
+	  __end = const_cast<_CharT*>(__olds);
 	}
-      traits_type::copy(__news, __beg, __beglen);
-      traits_type::copy(__news + __beglen, __end, __newlen - __beglen - __mod);
-    }
-
-  // NB: Can't have default argument on non-member template, and
-  // num_put doesn't have a _Traits template parameter, so this
-  // forwarding template adds in the default template argument.
-  template<typename _CharT>
-    void
-    __pad(ios_base& __io, _CharT __fill, _CharT* __news, const _CharT* __olds,
-	  const streamsize __newlen, const streamsize __oldlen, 
-	  const bool __num)
-    { 
-      return __pad<_CharT, char_traits<_CharT> >(__io, __fill, __news, __olds,
-						 __newlen, __oldlen, __num); 
+      _Traits::copy(__news, __beg, __beglen);
+      _Traits::copy(__news + __beglen, __end, 
+			  __newlen - __beglen - __mod);
     }
 
   // Used by both numeric and monetary facets.
@@ -2401,5 +2417,3 @@ namespace std
 } // namespace std
 
 #endif
-
-

@@ -286,7 +286,16 @@ namespace std
       }
     };
 
+  // Explicit specializations.
+  template<> 
+    basic_filebuf<char>::int_type 
+    basic_filebuf<char>::_M_underflow_common(bool __bump);
 
+ #ifdef _GLIBCPP_USE_WCHAR_T
+  template<> 
+    basic_filebuf<wchar_t>::int_type 
+    basic_filebuf<wchar_t>::_M_underflow_common(bool __bump);
+ #endif
 
   // 27.8.1.5  Template class basic_ifstream
   /**
