@@ -1,3 +1,10 @@
+2004-06-02  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15557
+	* data.c (assign_substring_data_value): New function.
+	(gfc_assign_data_value): Call the new function if we're dealing
+	with a substring LHS.
+
 2004-06-01  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15477

@@ -108,8 +108,87 @@ find_con_by_component (gfc_component *com, gfc_constructor *con)
   return NULL;
 }
 
+/* Assign RVALUE to LVALUE where we assume that LVALUE is a substring
+   reference. We do a little more than that: if LVALUE already has an
+   initialization, we put RVALUE into the existing initialization as
+   per the rules of assignment to a substring. If LVALUE has no
+   initialization yet, we initialize it to all blanks, then filling in
+   the RVALUE.  */
 
-/* Assign the initial value RVALUE to  LVALUE's symbol->value.  */
+static void
+assign_substring_data_value (gfc_expr * lvalue, gfc_expr * rvalue)
+{
+  gfc_symbol *symbol;
+  gfc_expr *expr, *init;
+  gfc_ref *ref;
+  int len, i;
+  int start, end;
+  char *c, *d;
+	    
+  symbol = lvalue->symtree->n.sym;
+  ref = lvalue->ref;
+  init = symbol->value;
+
+  assert (symbol->ts.type == BT_CHARACTER);
+  assert (symbol->ts.cl->length->expr_type == EXPR_CONSTANT);
+  assert (symbol->ts.cl->length->ts.type == BT_INTEGER);
+  assert (symbol->ts.kind == 1);
+
+  gfc_extract_int (symbol->ts.cl->length, &len);
+	    
+  if (init == NULL)
+    {
+      /* Setup the expression to hold the constructor.  */
+      expr = gfc_get_expr ();
+      expr->expr_type = EXPR_CONSTANT;
+      expr->ts.type = BT_CHARACTER;
+      expr->ts.kind = 1;
+	      
+      expr->value.character.length = len;
+      expr->value.character.string = gfc_getmem (len);
+      memset (expr->value.character.string, ' ', len);
+
+      symbol->value = expr;
+    }
+  else
+    expr = init;
+	  
+  /* Now that we have allocated the memory for the string,
+     fill in the initialized places, truncating the
+     intialization string if necessary, i.e.
+     DATA a(1:2) /'123'/
+     doesn't initialize a(3:3).  */
+
+  gfc_extract_int (ref->u.ss.start, &start);
+  gfc_extract_int (ref->u.ss.end, &end);
+	    
+  assert (start >= 1);
+  assert (end <= len);
+
+  len = rvalue->value.character.length;
+  c = rvalue->value.character.string;
+  d = &expr->value.character.string[start - 1];
+
+  for (i = 0; i <= end - start && i < len; i++)
+    d[i] = c[i];
+
+  /* Pad with spaces. I.e. 
+     DATA a(1:2) /'a'/
+     intializes a(1:2) to 'a ' per the rules for assignment.  
+     If init == NULL we don't need to do this, as we have
+     intialized the whole string to blanks above.  */
+
+  if (init != NULL)
+    for (; i <= end - start; i++)
+      d[i] = ' ';
+
+  return;
+}
+
+/* Assign the initial value RVALUE to  LVALUE's symbol->value. If the
+   LVALUE already has an initialization, we extend this, otherwise we
+   create a new one.  */
+
 void
 gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 {
@@ -122,12 +201,22 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
   mpz_t offset;
 
   ref = lvalue->ref;
+  if (ref != NULL && ref->type == REF_SUBSTRING)
+    {
+      /* No need to go through the for (; ref; ref->next) loop, since
+	 a single substring lvalue will only refer to a single
+	 substring, and therefore ref->next == NULL.  */
+      assert (ref->next == NULL);      
+      assign_substring_data_value (lvalue, rvalue);
+      return;
+    }
+
   symbol = lvalue->symtree->n.sym;
   init = symbol->value;
   last_con = NULL;
   mpz_init_set_si (offset, 0);
 
-  for (ref = lvalue->ref; ref; ref = ref->next)
+  for (; ref; ref = ref->next)
     {
       /* Use the existing initializer expression if it exists.  Otherwise
          create a new one.  */
@@ -199,9 +288,8 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 	    }
 	  break;
 
-	case REF_SUBSTRING:
-	  gfc_todo_error ("Substring reference in DATA statement");
-
+       /* case REF_SUBSTRING: dealt with separately above. */
+	
 	default:
 	  abort ();
 	}
