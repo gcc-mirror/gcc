@@ -1,5 +1,19 @@
 2003-04-17  Richard Henderson  <rth@redhat.com>
 
+	* config/sh/sh.c (gen_datalabel_ref): Don't add SH_DATALABEL_ENCODING.
+	(tls_symbolic_operand): Use SYMBOL_REF_TLS_MODEL.
+	(legitimize_pic_address): Use SYMBOL_REF_LOCAL_P.
+	(sh_encode_section_info): Remove.
+	(sh_strip_name_encoding): Remove.
+	* config/sh/sh.h (SH_DATALABEL_ENCODING): Remove.
+	(DATALABEL_SYMNAME_P, STRIP_DATALABEL_ENCODING): Remove.
+	(SH_TLS_ENCODING, TLS_SYMNAME_P, STRIP_TLS_ENCODING): Remove.
+	(ASM_OUTPUT_LABELREF): Remove.
+	(ASM_OUTPUT_SYMBOL_REF): Use SYMBOL_REF_FUNCTION_P.
+	* config/sh/sh.md (*): Use SYMBOL_REF_LOCAL_P.
+
+2003-04-17  Richard Henderson  <rth@redhat.com>
+
 	* config/s390/s390.c (SYMBOL_FLAG_ALIGN1): New.
 	(tls_model_chars): Remove.
 	(larl_operand): Use SYMBOL_REF_FLAGS.

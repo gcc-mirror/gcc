@@ -2761,21 +2761,6 @@ while (0)
 
 /* Position Independent Code.  */
 
-/* The prefix used to mark SYMBOL_REFs that refer to data symbols.  */
-#define SH_DATALABEL_ENCODING "#"
-
-/* Return true if SYM_NAME starts with SH_DATALABEL_ENCODING.  */
-#define DATALABEL_SYMNAME_P(SYM_NAME) \
-  (SH_DATALABEL_ENCODING[1] ? (abort (), 0) : \
-   (SYM_NAME)[0] == SH_DATALABEL_ENCODING[0])
-
-/* Skip an optional SH_DATALABEL_ENCODING in the beginning of
-   SYM_NAME.  Then, remove a leading *, like the default definition in
-   output.h.  */
-#define STRIP_DATALABEL_ENCODING(VAR, SYM_NAME) \
-  (VAR) = (SYM_NAME) + (DATALABEL_SYMNAME_P (SYM_NAME) \
-			? strlen (SH_DATALABEL_ENCODING) : 0)
-
 /* We can't directly access anything that contains a symbol,
    nor can we indirect via the constant pool.  */
 #define LEGITIMATE_PIC_OPERAND_P(X)				\
@@ -2787,20 +2772,6 @@ while (0)
 #define SYMBOLIC_CONST_P(X)	\
 ((GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == LABEL_REF)	\
   && nonpic_symbol_mentioned_p (X))
-
-/* TLS.  */
-
-/* The prefix used to mark SYMBOL_REFs that refer to TLS symbols.  */
-#define SH_TLS_ENCODING "@"
-
-/* Return true if SYM_NAME starts with SH_TLS_ENCODING.  */
-#define TLS_SYMNAME_P(SYM_NAME) \
-  ((SYM_NAME)[0] == SH_TLS_ENCODING[0])
-
-/* Skip an optional SH_TLS_ENCODING in the beginning of SYM_NAME.  */
-#define STRIP_TLS_ENCODING(VAR, SYM_NAME) \
-  (VAR) = (SYM_NAME) + (TLS_SYMNAME_P (SYM_NAME) \
-			? strlen (SH_TLS_ENCODING) + 1 : 0)
 
 /* Compute extra cost of moving data between one register class
    and another.  */
@@ -2958,29 +2929,12 @@ while (0)
    ? (TARGET_SH5 ? 244 : 23) \
    : -1)
 
-/* This is how to output a reference to a user-level label named NAME.  */
-#define ASM_OUTPUT_LABELREF(FILE, NAME)			\
-  do							\
-    {							\
-      const char * lname;				\
-							\
-      STRIP_DATALABEL_ENCODING (lname, (NAME));		\
-      STRIP_TLS_ENCODING (lname, lname);		\
-      if (lname[0] == '*')				\
-	fputs (lname + 1, (FILE));			\
-      else						\
-	asm_fprintf ((FILE), "%U%s", lname);		\
-    }							\
-  while (0)
-
 /* This is how to output a reference to a symbol_ref.  On SH5,
    references to non-code symbols must be preceded by `datalabel'.  */
 #define ASM_OUTPUT_SYMBOL_REF(FILE,SYM)			\
   do 							\
     {							\
-      if (TARGET_SH5					\
-	  && (DATALABEL_SYMNAME_P (XSTR ((SYM), 0))	\
-	      || CONSTANT_POOL_ADDRESS_P (SYM)))	\
+      if (TARGET_SH5 && !SYMBOL_REF_FUNCTION_P (SYM))	\
 	fputs ("datalabel ", (FILE));			\
       assemble_name ((FILE), XSTR ((SYM), 0));		\
     }							\
