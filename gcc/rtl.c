@@ -387,19 +387,12 @@ rtx
 shallow_copy_rtx (orig)
      rtx orig;
 {
-  int i;
   RTX_CODE code = GET_CODE (orig);
-  rtx copy = rtx_alloc (code);
+  size_t n = GET_RTX_LENGTH (code);
+  rtx copy = ggc_alloc_rtx (n);
 
-  PUT_MODE (copy, GET_MODE (orig));
-  RTX_FLAG (copy, in_struct) = RTX_FLAG (orig, in_struct);
-  RTX_FLAG (copy, volatil) = RTX_FLAG (orig, volatil);
-  RTX_FLAG (copy, unchanging) = RTX_FLAG (orig, unchanging);
-  RTX_FLAG (copy, integrated) = RTX_FLAG (orig, integrated);
-  RTX_FLAG (copy, frame_related) = RTX_FLAG (orig, frame_related);
-
-  for (i = 0; i < GET_RTX_LENGTH (code); i++)
-    copy->fld[i] = orig->fld[i];
+  memcpy (copy, orig,
+	  sizeof (struct rtx_def) + sizeof (rtunion) * (n - 1));
 
   return copy;
 }
