@@ -1,5 +1,11 @@
 2000-11-18  Alexandre Oliva  <aoliva@redhat.com>
 
+	* Makefile.in: Merge with src and libgcj.
+	(ALL_GCC_C, ALL_GCC_CXX): New macros.  Use them as dependencies of
+	configure-target-<library> when their configure scripts need the C
+	or C++ library to have already been built to work properly.
+	(do_proto_toplev): Set them to an empty string.
+
 	* Makefile.in (HOST_LIB_PATH, TARGET_LIB_PATH): New macros.
 	(REALLY_SET_LIB_PATH): Use them.
 

@@ -1,7 +1,7 @@
 #
 # Makefile for directory with subdirs to build.
-#   Copyright (C) 1990, 91, 92, 93, 94, 95, 96, 97, 1998
-#   Free Software Foundation
+#   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+#   1999, 2000 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -478,6 +478,7 @@ ALL_MODULES = \
 	all-bison \
 	all-byacc \
 	all-bzip2 \
+	all-cgen \
 	all-cvssrc \
 	all-db \
 	all-dejagnu \
@@ -556,6 +557,7 @@ CROSS_CHECK_MODULES = \
 	check-bfd \
 	check-binutils \
 	check-bzip2 \
+	check-cgen \
 	check-cvssrc \
 	check-db \
 	check-dejagnu \
@@ -627,6 +629,7 @@ INSTALL_MODULES = \
 	install-binutils \
 	install-bison \
 	install-byacc \
+	install-cgen \
 	install-cvssrc \
 	install-db \
 	install-dejagnu \
@@ -828,6 +831,7 @@ CLEAN_MODULES = \
 	clean-bison \
 	clean-byacc \
 	clean-bzip2 \
+	clean-cgen \
 	clean-cvssrc \
 	clean-db \
 	clean-dejagnu \
@@ -1544,22 +1548,23 @@ all-bash:
 all-bfd: all-libiberty all-intl
 all-binutils: all-libiberty all-opcodes all-bfd all-flex all-bison all-byacc all-intl
 all-bison: all-texinfo
-configure-target-boehm-gc: configure-target-newlib configure-target-qthreads
+configure-target-boehm-gc: $(ALL_GCC_CXX) configure-target-qthreads
 all-target-boehm-gc: configure-target-boehm-gc
-configure-target-bsp: $(ALL_GCC)
-all-target-bsp: configure-target-bsp all-gcc all-binutils all-target-newlib
+configure-target-bsp: $(ALL_GCC_C)
+all-target-bsp: configure-target-bsp
 all-byacc:
 all-bzip2:
+all-cgen: all-libiberty
 all-cvssrc:
-configure-target-cygmon: $(ALL_GCC)
-all-target-cygmon: configure-target-cygmon all-gas all-ld all-gcc all-target-libiberty all-target-newlib all-target-libio all-target-libstub all-target-bsp
+configure-target-cygmon: $(ALL_GCC_C)
+all-target-cygmon: configure-target-cygmon all-target-libiberty all-target-libio all-target-libstub all-target-bsp
 all-db:
 all-dejagnu: all-tcl all-expect all-tk
 all-diff: all-libiberty
 all-emacs:
 all-emacs19: all-bison all-byacc
 all-etc:
-configure-target-examples: $(ALL_GCC)
+configure-target-examples: $(ALL_GCC_C)
 all-target-examples: configure-target-examples
 all-expect: all-tcl all-tk
 all-fileutils: all-libiberty
@@ -1570,13 +1575,15 @@ all-gas: all-libiberty all-opcodes all-bfd all-intl
 all-gash: all-tcl
 all-gawk:
 ALL_GCC = all-gcc
+ALL_GCC_C = $(ALL_GCC) all-target-newlib all-target-libgloss
+ALL_GCC_CXX = $(ALL_GCC_C) all-target-libstdc++ all-target-libstdc++-v3
 all-gcc: all-bison all-byacc all-binutils all-gas all-ld all-zlib
 all-bootstrap: all-libiberty all-texinfo all-bison all-byacc all-binutils all-gas all-ld all-zlib
 GDB_TK = all-tk all-tcl all-itcl all-tix all-libgui
 all-gdb: all-libiberty all-opcodes all-bfd all-mmalloc all-readline all-bison all-byacc all-sim $(gdbnlmrequirements) $(GDB_TK)
 all-gettext:
 all-gnuserv:
-configure-target-gperf: $(ALL_GCC)
+configure-target-gperf: $(ALL_GCC_C)
 all-target-gperf: configure-target-gperf all-target-libiberty all-target-libstdc++
 all-gprof: all-libiberty all-bfd all-opcodes all-intl
 all-grep: all-libiberty
@@ -1591,46 +1598,46 @@ all-intl:
 all-ispell: all-emacs19
 all-itcl: all-tcl all-tk all-tcl8.1 all-tk8.1
 all-ld: all-libiberty all-bfd all-opcodes all-bison all-byacc all-flex all-intl
-configure-target-libg++: $(ALL_GCC) configure-target-librx
-all-target-libg++: configure-target-libg++ all-gas all-ld all-gcc all-target-libiberty all-target-newlib all-target-libio all-target-librx all-target-libstdc++
+configure-target-libg++: $(ALL_GCC_CXX) configure-target-librx
+all-target-libg++: configure-target-libg++ all-target-libiberty all-target-librx
 configure-target-libgloss: $(ALL_GCC)
 all-target-libgloss: configure-target-libgloss configure-target-newlib
-configure-target-libio: $(ALL_GCC)
+configure-target-libio: $(ALL_GCC_C)
 all-target-libio: configure-target-libio all-gas all-ld all-gcc all-target-libiberty all-target-newlib
-check-target-libio:
+check-target-libio: all-target-libstdc++
 all-libgui: all-tcl all-tk all-tcl8.1 all-tk8.1 all-itcl
 all-libiberty:
-configure-target-libffi: $(ALL_GCC) 
-configure-target-libjava: $(ALL_GCC) configure-target-zlib configure-target-boehm-gc configure-target-qthreads configure-target-newlib configure-target-libffi
+configure-target-libffi: $(ALL_GCC_C) 
 all-target-libffi: configure-target-libffi
-all-target-libjava: configure-target-libjava all-gcc all-zip all-target-newlib all-target-zlib all-target-boehm-gc all-target-qthreads all-target-libffi
-configure-target-librx: $(ALL_GCC) configure-target-newlib
+configure-target-libjava: $(ALL_GCC_CXX) configure-target-zlib configure-target-boehm-gc configure-target-qthreads configure-target-libffi
+all-target-libjava: configure-target-libjava all-zip all-target-zlib all-target-boehm-gc all-target-qthreads all-target-libffi
+configure-target-librx: $(ALL_GCC_C)
 all-target-librx: configure-target-librx
-configure-target-libstdc++: $(ALL_GCC)
-configure-target-libstdc++-v3: $(ALL_GCC)
-all-target-libstdc++: configure-target-libstdc++ all-gas all-ld all-gcc all-target-libiberty all-target-newlib all-target-libio
-all-target-libstdc++-v3: configure-target-libstdc++-v3 all-gas all-ld all-gcc all-target-libiberty all-target-newlib 
-configure-target-libstub: $(ALL_GCC)
+configure-target-libstdc++: $(ALL_GCC_C)
+all-target-libstdc++: configure-target-libstdc++ all-target-libiberty all-target-libio
+configure-target-libstdc++-v3: $(ALL_GCC_C)
+all-target-libstdc++-v3: configure-target-libstdc++-v3 all-target-libiberty
+configure-target-libstub: $(ALL_GCC_C)
 all-target-libstub: configure-target-libstub
 all-libtool:
-configure-target-libf2c: $(ALL_GCC)
-all-target-libf2c: configure-target-libf2c all-gas all-ld all-gcc all-target-libiberty all-target-newlib
-configure-target-libchill: $(ALL_GCC)
-all-target-libchill: configure-target-libchill all-gas all-ld all-gcc all-target-libiberty all-target-newlib
-configure-target-libobjc: $(ALL_GCC)
-all-target-libobjc: configure-target-libobjc all-gas all-ld all-gcc all-target-libiberty all-target-newlib
+configure-target-libf2c: $(ALL_GCC_C)
+all-target-libf2c: configure-target-libf2c all-target-libiberty
+configure-target-libchill: $(ALL_GCC_C)
+all-target-libchill: configure-target-libchill all-target-libiberty
+configure-target-libobjc: $(ALL_GCC_C)
+all-target-libobjc: configure-target-libobjc all-target-libiberty
 all-m4: all-libiberty
 all-make: all-libiberty
 all-mmalloc:
 configure-target-newlib: $(ALL_GCC)
-configure-target-libtermcap: $(ALL_GCC)
-all-target-newlib: configure-target-newlib all-binutils all-gas all-gcc
-all-target-libtermcap: configure-target-libtermcap all-binutils all-gas all-gcc
-all-opcodes: all-bfd all-libiberty
+all-target-newlib: configure-target-newlib
+configure-target-libtermcap: $(ALL_GCC_C)
+all-target-libtermcap: configure-target-libtermcap
+all-opcodes: all-bfd all-libiberty all-cgen
 all-patch: all-libiberty
 all-perl:
 all-prms: all-libiberty
-configure-target-qthreads: configure-target-newlib
+configure-target-qthreads: $(ALL_GCC_C)
 all-target-qthreads: configure-target-qthreads
 all-rcs:
 all-readline:
@@ -1638,7 +1645,7 @@ all-recode: all-libiberty
 all-sed: all-libiberty
 all-send-pr: all-prms
 all-shellutils:
-all-sim: all-libiberty all-bfd all-opcodes all-readline
+all-sim: all-libiberty all-bfd all-opcodes all-readline all-cgen
 all-snavigator: all-tcl all-tk all-itcl all-db all-grep all-libgui
 all-tar: all-libiberty
 all-tcl:
@@ -1652,15 +1659,15 @@ all-tgas: all-libiberty all-bfd all-opcodes
 all-time:
 all-tix: all-tcl all-tk all-tcl8.1 all-tk8.1
 all-wdiff:
-all-target-winsup: all-target-newlib all-target-libiberty all-target-libtermcap configure-target-winsup
-configure-target-winsup: configure-target-newlib
+configure-target-winsup: $(ALL_GCC_C)
+all-target-winsup: all-target-libiberty all-target-libtermcap configure-target-winsup
 all-uudecode: all-libiberty
 all-zip:
 all-zlib:
-configure-target-zlib: $(ALL_GCC)
+configure-target-zlib: $(ALL_GCC_C)
 all-target-zlib: configure-target-zlib
-configure-target-libiberty: $(ALL_GCC) configure-target-newlib
-all-target-libiberty: configure-target-libiberty all-gcc all-ld all-target-newlib
+configure-target-libiberty: $(ALL_GCC_C)
+all-target-libiberty: configure-target-libiberty
 all-target: $(ALL_TARGET_MODULES)
 install-target: $(INSTALL_TARGET_MODULES)
 install-gdb: install-tcl install-tk install-itcl install-tix install-libgui
@@ -1776,7 +1783,8 @@ do-proto-toplev: $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
 	#
 	./configure sun4
 	[ -z "$(CONFIGURE_TARGET_MODULES)" ] \
-	  || $(MAKE) $(CONFIGURE_TARGET_MODULES) ALL_GCC="" \
+	  || $(MAKE) $(CONFIGURE_TARGET_MODULES) \
+	    ALL_GCC="" ALL_GCC_C="" ALL_GCC_CXX="" \
 	    CC_FOR_TARGET="$(CC)" CXX_FOR_TARGET="$(CXX)"
 	# Make links, and run "make diststuff" or "make info" when needed.
 	rm -rf proto-toplev ; mkdir proto-toplev
