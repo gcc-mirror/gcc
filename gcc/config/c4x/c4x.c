@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the TMS320C[34]x
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003
    Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
@@ -167,39 +167,38 @@ tree interrupt_tree = NULL_TREE;
 tree naked_tree = NULL_TREE;
 
 /* Forward declarations */
-static int c4x_isr_reg_used_p PARAMS ((unsigned int));
-static int c4x_leaf_function_p PARAMS ((void));
-static int c4x_naked_function_p PARAMS ((void));
-static int c4x_immed_float_p PARAMS ((rtx));
-static int c4x_a_register PARAMS ((rtx));
-static int c4x_x_register PARAMS ((rtx));
-static int c4x_immed_int_constant PARAMS ((rtx));
-static int c4x_immed_float_constant PARAMS ((rtx));
-static int c4x_K_constant PARAMS ((rtx));
-static int c4x_N_constant PARAMS ((rtx));
-static int c4x_O_constant PARAMS ((rtx));
-static int c4x_R_indirect PARAMS ((rtx));
-static int c4x_S_indirect PARAMS ((rtx));
-static void c4x_S_address_parse PARAMS ((rtx , int *, int *, int *, int *));
-static int c4x_valid_operands PARAMS ((enum rtx_code, rtx *,
-				       enum machine_mode, int));
-static int c4x_arn_reg_operand PARAMS ((rtx, enum machine_mode, unsigned int));
-static int c4x_arn_mem_operand PARAMS ((rtx, enum machine_mode, unsigned int));
-static void c4x_file_start PARAMS ((void));
-static void c4x_file_end PARAMS ((void));
-static void c4x_check_attribute PARAMS ((const char *, tree, tree, tree *));
-static int c4x_r11_set_p PARAMS ((rtx));
-static int c4x_rptb_valid_p PARAMS ((rtx, rtx));
-static void c4x_reorg PARAMS ((void));
-static int c4x_label_ref_used_p PARAMS ((rtx, rtx));
-static tree c4x_handle_fntype_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static int c4x_isr_reg_used_p (unsigned int);
+static int c4x_leaf_function_p (void);
+static int c4x_naked_function_p (void);
+static int c4x_immed_float_p (rtx);
+static int c4x_a_register (rtx);
+static int c4x_x_register (rtx);
+static int c4x_immed_int_constant (rtx);
+static int c4x_immed_float_constant (rtx);
+static int c4x_K_constant (rtx);
+static int c4x_N_constant (rtx);
+static int c4x_O_constant (rtx);
+static int c4x_R_indirect (rtx);
+static int c4x_S_indirect (rtx);
+static void c4x_S_address_parse (rtx , int *, int *, int *, int *);
+static int c4x_valid_operands (enum rtx_code, rtx *, enum machine_mode, int);
+static int c4x_arn_reg_operand (rtx, enum machine_mode, unsigned int);
+static int c4x_arn_mem_operand (rtx, enum machine_mode, unsigned int);
+static void c4x_file_start (void);
+static void c4x_file_end (void);
+static void c4x_check_attribute (const char *, tree, tree, tree *);
+static int c4x_r11_set_p (rtx);
+static int c4x_rptb_valid_p (rtx, rtx);
+static void c4x_reorg (void);
+static int c4x_label_ref_used_p (rtx, rtx);
+static tree c4x_handle_fntype_attribute (tree *, tree, tree, int, bool *);
 const struct attribute_spec c4x_attribute_table[];
-static void c4x_insert_attributes PARAMS ((tree, tree *));
-static void c4x_asm_named_section PARAMS ((const char *, unsigned int));
-static int c4x_adjust_cost PARAMS ((rtx, rtx, rtx, int));
-static void c4x_globalize_label PARAMS ((FILE *, const char *));
-static bool c4x_rtx_costs PARAMS ((rtx, int, int, int *));
-static int c4x_address_cost PARAMS ((rtx));
+static void c4x_insert_attributes (tree, tree *);
+static void c4x_asm_named_section (const char *, unsigned int);
+static int c4x_adjust_cost (rtx, rtx, rtx, int);
+static void c4x_globalize_label (FILE *, const char *);
+static bool c4x_rtx_costs (rtx, int, int, int *);
+static int c4x_address_cost (rtx);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -249,7 +248,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
    type and sometimes adjust other TARGET_ options.  */
 
 void
-c4x_override_options ()
+c4x_override_options (void)
 {
   if (c4x_rpts_cycles_string)
     c4x_rpts_cycles = atoi (c4x_rpts_cycles_string);
@@ -322,9 +321,8 @@ c4x_override_options ()
 /* This is called before c4x_override_options.  */
 
 void
-c4x_optimization_options (level, size)
-     int level ATTRIBUTE_UNUSED;
-     int size ATTRIBUTE_UNUSED;
+c4x_optimization_options (int level ATTRIBUTE_UNUSED,
+			  int size ATTRIBUTE_UNUSED)
 {
   /* Scheduling before register allocation can screw up global
      register allocation, especially for functions that use MPY||ADD
@@ -339,10 +337,7 @@ c4x_optimization_options (level, size)
 #define C4X_ASCII_LIMIT 40
 
 void
-c4x_output_ascii (stream, ptr, len)
-     FILE *stream;
-     const char *ptr;
-     int len;
+c4x_output_ascii (FILE *stream, const char *ptr, int len)
 {
   char sbuf[C4X_ASCII_LIMIT + 1];
   int s, l, special, first = 1, onlys;
@@ -423,9 +418,7 @@ c4x_output_ascii (stream, ptr, len)
 
 
 int
-c4x_hard_regno_mode_ok (regno, mode)
-     unsigned int regno;
-     enum machine_mode mode;
+c4x_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 {
   switch (mode)
     {
@@ -460,9 +453,7 @@ c4x_hard_regno_mode_ok (regno, mode)
 
 /* Return nonzero if REGNO1 can be renamed to REGNO2.  */
 int
-c4x_hard_regno_rename_ok (regno1, regno2)
-     unsigned int regno1;
-     unsigned int regno2;
+c4x_hard_regno_rename_ok (unsigned int regno1, unsigned int regno2)
 {
   /* We can not copy call saved registers from mode QI into QF or from
      mode QF into QI.  */
@@ -522,10 +513,7 @@ static const int c4x_fp_reglist[2] = {R2_REGNO, R3_REGNO};
    For a library call, FNTYPE is  0.  */
 
 void
-c4x_init_cumulative_args (cum, fntype, libname)
-     CUMULATIVE_ARGS *cum;	/* Argument info to initialize.  */
-     tree fntype;		/* Tree ptr for function decl.  */
-     rtx libname;		/* SYMBOL_REF of library name or 0.  */
+c4x_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx libname)
 {
   tree param, next_param;
 
@@ -601,11 +589,8 @@ c4x_init_cumulative_args (cum, fntype, libname)
    (TYPE is null for libcalls where that information may not be available.)  */
 
 void
-c4x_function_arg_advance (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum;	/* Current arg information.  */
-     enum machine_mode mode;	/* Current arg mode.  */
-     tree type;			/* Type of the arg or 0 if lib support.  */
-     int named;			/* Whether or not the argument was named.  */
+c4x_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			  tree type, int named)
 {
   if (TARGET_DEBUG)
     fprintf (stderr, "c4x_function_adv(mode=%s, named=%d)\n\n",
@@ -648,11 +633,8 @@ c4x_function_arg_advance (cum, mode, type, named)
    (otherwise it is an extra parameter matching an ellipsis).  */
 
 struct rtx_def *
-c4x_function_arg (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum;	/* Current arg information.  */
-     enum machine_mode mode;	/* Current arg mode.  */
-     tree type;			/* Type of the arg or 0 if lib support.  */
-     int named;			/* != 0 for normal args, == 0 for ... args.  */
+c4x_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		  tree type, int named)
 {
   int reg = 0;			/* Default to passing argument on stack.  */
 
@@ -731,8 +713,7 @@ c4x_function_arg (cum, mode, type, named)
 /* C[34]x arguments grow in weird ways (downwards) that the standard
    varargs stuff can't handle..  */
 rtx
-c4x_va_arg (valist, type)
-     tree valist, type;
+c4x_va_arg (tree valist, tree type)
 {
   tree t;
 
@@ -745,8 +726,7 @@ c4x_va_arg (valist, type)
 
 
 static int
-c4x_isr_reg_used_p (regno)
-     unsigned int regno;
+c4x_isr_reg_used_p (unsigned int regno)
 {
   /* Don't save/restore FP or ST, we handle them separately.  */
   if (regno == FRAME_POINTER_REGNUM
@@ -773,7 +753,7 @@ c4x_isr_reg_used_p (regno)
 
 
 static int
-c4x_leaf_function_p ()
+c4x_leaf_function_p (void)
 {
   /* A leaf function makes no calls, so we only need
      to save/restore the registers we actually use.
@@ -800,7 +780,7 @@ c4x_leaf_function_p ()
 
 
 static int
-c4x_naked_function_p ()
+c4x_naked_function_p (void)
 {
   tree type;
 
@@ -810,7 +790,7 @@ c4x_naked_function_p ()
 
 
 int
-c4x_interrupt_function_p ()
+c4x_interrupt_function_p (void)
 {
   if (lookup_attribute ("interrupt",
 			TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
@@ -827,7 +807,7 @@ c4x_interrupt_function_p ()
 }
 
 void
-c4x_expand_prologue ()
+c4x_expand_prologue (void)
 {
   unsigned int regno;
   int size = get_frame_size ();
@@ -1017,7 +997,7 @@ c4x_expand_prologue ()
 
 
 void
-c4x_expand_epilogue()
+c4x_expand_epilogue(void)
 {
   int regno;
   int jump = 0;
@@ -1216,7 +1196,7 @@ c4x_expand_epilogue()
 
 
 int
-c4x_null_epilogue_p ()
+c4x_null_epilogue_p (void)
 {
   int regno;
 
@@ -1239,9 +1219,7 @@ c4x_null_epilogue_p ()
 
 
 int
-c4x_emit_move_sequence (operands, mode)
-     rtx *operands;
-     enum machine_mode mode;     
+c4x_emit_move_sequence (rtx *operands, enum machine_mode mode)
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -1388,13 +1366,9 @@ c4x_emit_move_sequence (operands, mode)
 
 
 void
-c4x_emit_libcall (libcall, code, dmode, smode, noperands, operands)
-     rtx libcall;
-     enum rtx_code code;
-     enum machine_mode dmode;
-     enum machine_mode smode;
-     int noperands;
-     rtx *operands;
+c4x_emit_libcall (rtx libcall, enum rtx_code code,
+		  enum machine_mode dmode, enum machine_mode smode,
+		  int noperands, rtx *operands)
 {
   rtx ret;
   rtx insns;
@@ -1426,22 +1400,16 @@ c4x_emit_libcall (libcall, code, dmode, smode, noperands, operands)
 
 
 void
-c4x_emit_libcall3 (libcall, code, mode, operands)
-     rtx libcall;
-     enum rtx_code code;
-     enum machine_mode mode;
-     rtx *operands;
+c4x_emit_libcall3 (rtx libcall, enum rtx_code code,
+		   enum machine_mode mode, rtx *operands)
 {
   c4x_emit_libcall (libcall, code, mode, mode, 3, operands);
 }
 
 
 void
-c4x_emit_libcall_mulhi (libcall, code, mode, operands)
-     rtx libcall;
-     enum rtx_code code;
-     enum machine_mode mode;
-     rtx *operands;
+c4x_emit_libcall_mulhi (rtx libcall, enum rtx_code code,
+			enum machine_mode mode, rtx *operands)
 {
   rtx ret;
   rtx insns;
@@ -1463,10 +1431,7 @@ c4x_emit_libcall_mulhi (libcall, code, mode, operands)
 
 
 int
-c4x_check_legit_addr (mode, addr, strict)
-     enum machine_mode mode;
-     rtx addr;
-     int strict;
+c4x_check_legit_addr (enum machine_mode mode, rtx addr, int strict)
 {
   rtx base = NULL_RTX;		/* Base register (AR0-AR7).  */
   rtx indx = NULL_RTX;		/* Index register (IR0,IR1).  */
@@ -1660,9 +1625,8 @@ c4x_check_legit_addr (mode, addr, strict)
 
 
 rtx
-c4x_legitimize_address (orig, mode)
-     rtx orig ATTRIBUTE_UNUSED;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+c4x_legitimize_address (rtx orig ATTRIBUTE_UNUSED,
+			enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (orig) == SYMBOL_REF
       || GET_CODE (orig) == LABEL_REF)
@@ -1697,8 +1661,7 @@ c4x_legitimize_address (orig, mode)
    Unfortunately, the C4x address cost depends on other operands.  */
 
 static int 
-c4x_address_cost (addr)
-     rtx addr;
+c4x_address_cost (rtx addr)
 {
   switch (GET_CODE (addr))
     {
@@ -1788,9 +1751,7 @@ c4x_address_cost (addr)
 
 
 rtx
-c4x_gen_compare_reg (code, x, y)
-     enum rtx_code code;
-     rtx x, y;
+c4x_gen_compare_reg (enum rtx_code code, rtx x, rtx y)
 {
   enum machine_mode mode = SELECT_CC_MODE (code, x, y);
   rtx cc_reg;
@@ -1806,9 +1767,7 @@ c4x_gen_compare_reg (code, x, y)
 }
 
 char *
-c4x_output_cbranch (form, seq)
-     const char *form;
-     rtx seq;
+c4x_output_cbranch (const char *form, rtx seq)
 {
   int delayed = 0;
   int annultrue = 0;
@@ -1850,10 +1809,7 @@ c4x_output_cbranch (form, seq)
 }
 
 void
-c4x_print_operand (file, op, letter)
-     FILE *file;		/* File to write to.  */
-     rtx op;			/* Operand to print.  */
-     int letter;		/* %<letter> or 0.  */
+c4x_print_operand (FILE *file, rtx op, int letter)
 {
   rtx op1;
   enum rtx_code code;
@@ -2033,9 +1989,7 @@ c4x_print_operand (file, op, letter)
 
 
 void
-c4x_print_operand_address (file, addr)
-     FILE *file;
-     rtx addr;
+c4x_print_operand_address (FILE *file, rtx addr)
 {
   switch (GET_CODE (addr))
     {
@@ -2176,8 +2130,7 @@ c4x_print_operand_address (file, addr)
    in the immediate field.  */
 
 static int
-c4x_immed_float_p (op)
-     rtx op;
+c4x_immed_float_p (rtx op)
 {
   long convval[2];
   int exponent;
@@ -2223,8 +2176,7 @@ c4x_immed_float_p (op)
    !!! FIXME.  The rptb_top insn may be sucked into a SEQUENCE.  */
 
 int
-c4x_rptb_nop_p (insn)
-     rtx insn;
+c4x_rptb_nop_p (rtx insn)
 {
   rtx start_label;
   int i;
@@ -2282,8 +2234,7 @@ c4x_rptb_nop_p (insn)
   pass. The C4x cpu can not handle this.  */
 
 static int
-c4x_label_ref_used_p (x, code_label)
-     rtx x, code_label;
+c4x_label_ref_used_p (rtx x, rtx code_label)
 {
   enum rtx_code code;
   int i, j;
@@ -2314,8 +2265,7 @@ c4x_label_ref_used_p (x, code_label)
 
 
 static int
-c4x_rptb_valid_p (insn, start_label)
-     rtx insn, start_label;
+c4x_rptb_valid_p (rtx insn, rtx start_label)
 {
   rtx end = insn;
   rtx start;
@@ -2375,8 +2325,7 @@ c4x_rptb_valid_p (insn, start_label)
 
 
 void
-c4x_rptb_insert (insn)
-     rtx insn;
+c4x_rptb_insert (rtx insn)
 {
   rtx end_label;
   rtx start_label;
@@ -2446,7 +2395,7 @@ c4x_rptb_insert (insn)
    allocated as the loop counter.  */
 
 static void
-c4x_reorg ()
+c4x_reorg (void)
 {
   rtx insn;
 
@@ -2491,24 +2440,21 @@ c4x_reorg ()
 
 
 static int
-c4x_a_register (op)
-     rtx op;
+c4x_a_register (rtx op)
 {
   return REG_P (op) && IS_ADDR_OR_PSEUDO_REG (op);
 }
 
 
 static int
-c4x_x_register (op)
-     rtx op;
+c4x_x_register (rtx op)
 {
   return REG_P (op) && IS_INDEX_OR_PSEUDO_REG (op);
 }
 
 
 static int
-c4x_immed_int_constant (op)
-     rtx op;
+c4x_immed_int_constant (rtx op)
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -2520,8 +2466,7 @@ c4x_immed_int_constant (op)
 
 
 static int
-c4x_immed_float_constant (op)
-     rtx op;
+c4x_immed_float_constant (rtx op)
 {
   if (GET_CODE (op) != CONST_DOUBLE)
     return 0;
@@ -2535,8 +2480,7 @@ c4x_immed_float_constant (op)
 
 
 int
-c4x_shiftable_constant (op)
-     rtx op;
+c4x_shiftable_constant (rtx op)
 {
   int i;
   int mask;
@@ -2556,24 +2500,21 @@ c4x_shiftable_constant (op)
 
 
 int
-c4x_H_constant (op)
-     rtx op;
+c4x_H_constant (rtx op)
 {
   return c4x_immed_float_constant (op) && c4x_immed_float_p (op);
 }
 
 
 int
-c4x_I_constant (op)
-     rtx op;
+c4x_I_constant (rtx op)
 {
   return c4x_immed_int_constant (op) && IS_INT16_CONST (INTVAL (op));
 }
 
 
 int
-c4x_J_constant (op)
-     rtx op;
+c4x_J_constant (rtx op)
 {
   if (TARGET_C3X)
     return 0;
@@ -2582,8 +2523,7 @@ c4x_J_constant (op)
 
 
 static int
-c4x_K_constant (op)
-     rtx op;
+c4x_K_constant (rtx op)
 {
   if (TARGET_C3X || ! c4x_immed_int_constant (op))
     return 0;
@@ -2592,24 +2532,21 @@ c4x_K_constant (op)
 
 
 int
-c4x_L_constant (op)
-     rtx op;
+c4x_L_constant (rtx op)
 {
   return c4x_immed_int_constant (op) && IS_UINT16_CONST (INTVAL (op));
 }
 
 
 static int
-c4x_N_constant (op)
-     rtx op;
+c4x_N_constant (rtx op)
 {
   return c4x_immed_int_constant (op) && IS_NOT_UINT16_CONST (INTVAL (op));
 }
 
 
 static int
-c4x_O_constant (op)
-     rtx op;
+c4x_O_constant (rtx op)
 {
   return c4x_immed_int_constant (op) && IS_HIGH_CONST (INTVAL (op));
 }
@@ -2625,8 +2562,7 @@ c4x_O_constant (op)
    they are handled by the <> constraints.  */
 
 int
-c4x_Q_constraint (op)
-     rtx op;
+c4x_Q_constraint (rtx op)
 {
   enum machine_mode mode = GET_MODE (op);
 
@@ -2671,8 +2607,7 @@ c4x_Q_constraint (op)
    *ARx, *+ARx(n) for n < 32.  */
 
 int
-c4x_R_constraint (op)
-     rtx op;
+c4x_R_constraint (rtx op)
 {
   enum machine_mode mode = GET_MODE (op);
 
@@ -2713,8 +2648,7 @@ c4x_R_constraint (op)
 
 
 static int
-c4x_R_indirect (op)
-     rtx op;
+c4x_R_indirect (rtx op)
 {
   enum machine_mode mode = GET_MODE (op);
 
@@ -2758,8 +2692,7 @@ c4x_R_indirect (op)
    they are handled by the <> constraints.  */
 
 int
-c4x_S_constraint (op)
-     rtx op;
+c4x_S_constraint (rtx op)
 {
   enum machine_mode mode = GET_MODE (op);
   if (GET_CODE (op) != MEM)
@@ -2818,8 +2751,7 @@ c4x_S_constraint (op)
 
 
 static int
-c4x_S_indirect (op)
-     rtx op;
+c4x_S_indirect (rtx op)
 {
   enum machine_mode mode = GET_MODE (op);
   if (GET_CODE (op) != MEM)
@@ -2896,8 +2828,7 @@ c4x_S_indirect (op)
 /* Direct memory operand.  */
 
 int
-c4x_T_constraint (op)
-     rtx op;
+c4x_T_constraint (rtx op)
 {
   if (GET_CODE (op) != MEM)
     return 0;
@@ -2926,8 +2857,7 @@ c4x_T_constraint (op)
 /* Symbolic operand.  */
 
 int
-c4x_U_constraint (op)
-     rtx op;
+c4x_U_constraint (rtx op)
 {
   /* Don't allow direct addressing to an arbitrary constant.  */
   return GET_CODE (op) == CONST
@@ -2937,9 +2867,7 @@ c4x_U_constraint (op)
 
 
 int
-c4x_autoinc_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+c4x_autoinc_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (op) == MEM)
     {
@@ -2961,9 +2889,8 @@ c4x_autoinc_operand (op, mode)
 /* Match any operand.  */
 
 int
-any_operand (op, mode)
-     register rtx op ATTRIBUTE_UNUSED;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+any_operand (register rtx op ATTRIBUTE_UNUSED,
+	     enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return 1;
 }
@@ -2972,9 +2899,7 @@ any_operand (op, mode)
 /* Nonzero if OP is a floating point value with value 0.0.  */
 
 int
-fp_zero_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+fp_zero_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   REAL_VALUE_TYPE r;
 
@@ -2986,9 +2911,7 @@ fp_zero_operand (op, mode)
 
 
 int
-const_operand (op, mode)
-     register rtx op;
-     register enum machine_mode mode;
+const_operand (register rtx op, register enum machine_mode mode)
 {
   switch (mode)
     {
@@ -3025,27 +2948,21 @@ const_operand (op, mode)
 
 
 int
-stik_const_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+stik_const_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return c4x_K_constant (op);
 }
 
 
 int
-not_const_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+not_const_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return c4x_N_constant (op);
 }
 
 
 int
-reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+reg_operand (rtx op, enum machine_mode mode)
 {
   if (GET_CODE (op) == SUBREG
       && GET_MODE (op) == QFmode)
@@ -3055,9 +2972,7 @@ reg_operand (op, mode)
 
 
 int
-mixed_subreg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+mixed_subreg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   /* Allow (subreg:HF (reg:HI)) that be generated for a union of an
      int and a long double.  */
@@ -3071,9 +2986,7 @@ mixed_subreg_operand (op, mode)
 
 
 int
-reg_imm_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+reg_imm_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (REG_P (op) || CONSTANT_P (op))
     return 1;
@@ -3082,9 +2995,7 @@ reg_imm_operand (op, mode)
 
 
 int
-not_modify_reg (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+not_modify_reg (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (REG_P (op) || CONSTANT_P (op))
     return 1;
@@ -3130,9 +3041,7 @@ not_modify_reg (op, mode)
 
 
 int
-not_rc_reg (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+not_rc_reg (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (REG_P (op) && REGNO (op) == RC_REGNO)
     return 0;
@@ -3143,9 +3052,7 @@ not_rc_reg (op, mode)
 /* Extended precision register R0-R1.  */
 
 int
-r0r1_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+r0r1_reg_operand (rtx op, enum machine_mode mode)
 {
   if (! reg_operand (op, mode))
     return 0;
@@ -3158,9 +3065,7 @@ r0r1_reg_operand (op, mode)
 /* Extended precision register R2-R3.  */
 
 int
-r2r3_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+r2r3_reg_operand (rtx op, enum machine_mode mode)
 {
   if (! reg_operand (op, mode))
     return 0;
@@ -3173,9 +3078,7 @@ r2r3_reg_operand (op, mode)
 /* Low extended precision register R0-R7.  */
 
 int
-ext_low_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ext_low_reg_operand (rtx op, enum machine_mode mode)
 {
   if (! reg_operand (op, mode))
     return 0;
@@ -3188,9 +3091,7 @@ ext_low_reg_operand (op, mode)
 /* Extended precision register.  */
 
 int
-ext_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ext_reg_operand (rtx op, enum machine_mode mode)
 {
   if (! reg_operand (op, mode))
     return 0;
@@ -3205,9 +3106,7 @@ ext_reg_operand (op, mode)
 /* Standard precision register.  */
 
 int
-std_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+std_reg_operand (rtx op, enum machine_mode mode)
 {
   if (! reg_operand (op, mode))
     return 0;
@@ -3219,9 +3118,7 @@ std_reg_operand (op, mode)
 /* Standard precision or normal register.  */
 
 int
-std_or_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+std_or_reg_operand (rtx op, enum machine_mode mode)
 {
   if (reload_in_progress)
     return std_reg_operand (op, mode);
@@ -3231,9 +3128,7 @@ std_or_reg_operand (op, mode)
 /* Address register.  */
 
 int
-addr_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+addr_reg_operand (rtx op, enum machine_mode mode)
 {
   if (! reg_operand (op, mode))
     return 0;
@@ -3244,9 +3139,7 @@ addr_reg_operand (op, mode)
 /* Index register.  */
 
 int
-index_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+index_reg_operand (rtx op, enum machine_mode mode)
 {
   if (! reg_operand (op, mode))
     return 0;
@@ -3259,9 +3152,7 @@ index_reg_operand (op, mode)
 /* DP register.  */
 
 int
-dp_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+dp_reg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return REG_P (op) && IS_DP_OR_PSEUDO_REG (op);
 }
@@ -3270,9 +3161,7 @@ dp_reg_operand (op, mode)
 /* SP register.  */
 
 int
-sp_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+sp_reg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return REG_P (op) && IS_SP_OR_PSEUDO_REG (op);
 }
@@ -3281,9 +3170,7 @@ sp_reg_operand (op, mode)
 /* ST register.  */
 
 int
-st_reg_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+st_reg_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return REG_P (op) && IS_ST_OR_PSEUDO_REG (op);
 }
@@ -3292,18 +3179,14 @@ st_reg_operand (op, mode)
 /* RC register.  */
 
 int
-rc_reg_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+rc_reg_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return REG_P (op) && IS_RC_OR_PSEUDO_REG (op);
 }
 
 
 int
-call_address_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+call_address_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (REG_P (op) || symbolic_address_operand (op, mode));
 }
@@ -3312,9 +3195,8 @@ call_address_operand (op, mode)
 /* Symbolic address operand.  */
 
 int
-symbolic_address_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+symbolic_address_operand (register rtx op,
+			  enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   switch (GET_CODE (op))
     {
@@ -3331,9 +3213,7 @@ symbolic_address_operand (op, mode)
 /* Check dst operand of a move instruction.  */
 
 int
-dst_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+dst_operand (rtx op, enum machine_mode mode)
 {
   if (GET_CODE (op) == SUBREG
       && mixed_subreg_operand (op, mode))
@@ -3349,9 +3229,7 @@ dst_operand (op, mode)
 /* Check src operand of two operand arithmetic instructions.  */
 
 int
-src_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+src_operand (rtx op, enum machine_mode mode)
 {
   if (GET_CODE (op) == SUBREG
       && mixed_subreg_operand (op, mode))
@@ -3393,9 +3271,7 @@ src_operand (op, mode)
 
 
 int
-src_hi_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+src_hi_operand (rtx op, enum machine_mode mode)
 {
   if (c4x_O_constant (op))
     return 1;
@@ -3406,9 +3282,7 @@ src_hi_operand (op, mode)
 /* Check src operand of two operand logical instructions.  */
 
 int
-lsrc_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+lsrc_operand (rtx op, enum machine_mode mode)
 {
   if (mode == VOIDmode)
     mode = GET_MODE (op);
@@ -3426,9 +3300,7 @@ lsrc_operand (op, mode)
 /* Check src operand of two operand tricky instructions.  */
 
 int
-tsrc_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+tsrc_operand (rtx op, enum machine_mode mode)
 {
   if (mode == VOIDmode)
     mode = GET_MODE (op);
@@ -3446,9 +3318,7 @@ tsrc_operand (op, mode)
 /* Check src operand of two operand non immedidate instructions.  */
 
 int
-nonimmediate_src_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+nonimmediate_src_operand (rtx op, enum machine_mode mode)
 {
   if (GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE)
     return 0;
@@ -3460,9 +3330,7 @@ nonimmediate_src_operand (op, mode)
 /* Check logical src operand of two operand non immedidate instructions.  */
 
 int
-nonimmediate_lsrc_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+nonimmediate_lsrc_operand (rtx op, enum machine_mode mode)
 {
   if (GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE)
     return 0;
@@ -3472,9 +3340,7 @@ nonimmediate_lsrc_operand (op, mode)
 
 
 int
-reg_or_const_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+reg_or_const_operand (rtx op, enum machine_mode mode)
 {
   return reg_operand (op, mode) || const_operand (op, mode);
 }
@@ -3483,9 +3349,7 @@ reg_or_const_operand (op, mode)
 /* Check for indirect operands allowable in parallel instruction.  */
 
 int
-par_ind_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+par_ind_operand (rtx op, enum machine_mode mode)
 {
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
@@ -3497,21 +3361,14 @@ par_ind_operand (op, mode)
 /* Check for operands allowable in parallel instruction.  */
 
 int
-parallel_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+parallel_operand (rtx op, enum machine_mode mode)
 {
   return ext_low_reg_operand (op, mode) || par_ind_operand (op, mode);
 }
 
 
 static void 
-c4x_S_address_parse (op, base, incdec, index, disp)
-     rtx op;
-     int *base;
-     int *incdec;
-     int *index;
-     int *disp;
+c4x_S_address_parse (rtx op, int *base, int *incdec, int *index, int *disp)
 {
   *base = 0;
   *incdec = 0;
@@ -3614,11 +3471,7 @@ c4x_S_address_parse (op, base, incdec, index, disp)
 
 
 int
-c4x_address_conflict (op0, op1, store0, store1)
-     rtx op0;
-     rtx op1;
-     int store0;
-     int store1;
+c4x_address_conflict (rtx op0, rtx op1, int store0, int store1)
 {
   int base0;
   int base1;
@@ -3681,10 +3534,7 @@ c4x_address_conflict (op0, op1, store0, store1)
 /* Check for while loop inside a decrement and branch loop.  */
 
 int
-c4x_label_conflict (insn, jump, db)
-     rtx insn;
-     rtx jump;
-     rtx db;
+c4x_label_conflict (rtx insn, rtx jump, rtx db)
 {
   while (insn)
     {
@@ -3704,9 +3554,8 @@ c4x_label_conflict (insn, jump, db)
 /* Validate combination of operands for parallel load/store instructions.  */
 
 int
-valid_parallel_load_store (operands, mode)
-     rtx *operands;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+valid_parallel_load_store (rtx *operands,
+			   enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -3760,9 +3609,8 @@ valid_parallel_load_store (operands, mode)
 
 
 int
-valid_parallel_operands_4 (operands, mode)
-     rtx *operands;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+valid_parallel_operands_4 (rtx *operands,
+			   enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx op0 = operands[0];
   rtx op2 = operands[2];
@@ -3785,9 +3633,8 @@ valid_parallel_operands_4 (operands, mode)
 
 
 int
-valid_parallel_operands_5 (operands, mode)
-     rtx *operands;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+valid_parallel_operands_5 (rtx *operands,
+			   enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   int regs = 0;
   rtx op0 = operands[0];
@@ -3826,9 +3673,8 @@ valid_parallel_operands_5 (operands, mode)
 
 
 int
-valid_parallel_operands_6 (operands, mode)
-     rtx *operands;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+valid_parallel_operands_6 (rtx *operands,
+			   enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   int regs = 0;
   rtx op0 = operands[0];
@@ -3882,11 +3728,9 @@ valid_parallel_operands_6 (operands, mode)
    that the destination regno is valid if we have a 2 operand insn.  */
 
 static int
-c4x_valid_operands (code, operands, mode, force)
-     enum rtx_code code;
-     rtx *operands;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-     int force;
+c4x_valid_operands (enum rtx_code code, rtx *operands,
+		    enum machine_mode mode ATTRIBUTE_UNUSED,
+		    int force)
 {
   rtx op1;
   rtx op2;
@@ -4004,10 +3848,7 @@ c4x_valid_operands (code, operands, mode, force)
 }
 
 
-int valid_operands (code, operands, mode)
-     enum rtx_code code;
-     rtx *operands;
-     enum machine_mode mode;
+int valid_operands (enum rtx_code code, rtx *operands, enum machine_mode mode)
 {
 
   /* If we are not optimizing then we have to let anything go and let
@@ -4023,10 +3864,7 @@ int valid_operands (code, operands, mode)
 
 
 int
-legitimize_operands (code, operands, mode)
-     enum rtx_code code;
-     rtx *operands;
-     enum machine_mode mode;
+legitimize_operands (enum rtx_code code, rtx *operands, enum machine_mode mode)
 {
   /* Compare only has 2 operands.  */
   if (code == COMPARE)
@@ -4114,9 +3952,7 @@ legitimize_operands (code, operands, mode)
 /* The following predicates are used for instruction scheduling.  */
 
 int
-group1_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+group1_reg_operand (rtx op, enum machine_mode mode)
 {
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
@@ -4127,9 +3963,7 @@ group1_reg_operand (op, mode)
 
 
 int
-group1_mem_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+group1_mem_operand (rtx op, enum machine_mode mode)
 {
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
@@ -4157,9 +3991,7 @@ group1_mem_operand (op, mode)
 /* Return true if any one of the address registers.  */
 
 int
-arx_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+arx_reg_operand (rtx op, enum machine_mode mode)
 {
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
@@ -4170,10 +4002,7 @@ arx_reg_operand (op, mode)
 
 
 static int
-c4x_arn_reg_operand (op, mode, regno)
-     rtx op;
-     enum machine_mode mode;
-     unsigned int regno;
+c4x_arn_reg_operand (rtx op, enum machine_mode mode, unsigned int regno)
 {
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
@@ -4184,10 +4013,7 @@ c4x_arn_reg_operand (op, mode, regno)
 
 
 static int
-c4x_arn_mem_operand (op, mode, regno)
-     rtx op;
-     enum machine_mode mode;
-     unsigned int regno;
+c4x_arn_mem_operand (rtx op, enum machine_mode mode, unsigned int regno)
 {
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
@@ -4239,180 +4065,140 @@ c4x_arn_mem_operand (op, mode, regno)
 
 
 int
-ar0_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar0_reg_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_reg_operand (op, mode, AR0_REGNO);
 }
 
 
 int
-ar0_mem_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar0_mem_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_mem_operand (op, mode, AR0_REGNO);
 }
 
 
 int
-ar1_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar1_reg_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_reg_operand (op, mode, AR1_REGNO);
 }
 
 
 int
-ar1_mem_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar1_mem_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_mem_operand (op, mode, AR1_REGNO);
 }
 
 
 int
-ar2_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar2_reg_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_reg_operand (op, mode, AR2_REGNO);
 }
 
 
 int
-ar2_mem_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar2_mem_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_mem_operand (op, mode, AR2_REGNO);
 }
 
 
 int
-ar3_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar3_reg_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_reg_operand (op, mode, AR3_REGNO);
 }
 
 
 int
-ar3_mem_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar3_mem_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_mem_operand (op, mode, AR3_REGNO);
 }
 
 
 int
-ar4_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar4_reg_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_reg_operand (op, mode, AR4_REGNO);
 }
 
 
 int
-ar4_mem_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar4_mem_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_mem_operand (op, mode, AR4_REGNO);
 }
 
 
 int
-ar5_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar5_reg_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_reg_operand (op, mode, AR5_REGNO);
 }
 
 
 int
-ar5_mem_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar5_mem_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_mem_operand (op, mode, AR5_REGNO);
 }
 
 
 int
-ar6_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar6_reg_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_reg_operand (op, mode, AR6_REGNO);
 }
 
 
 int
-ar6_mem_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar6_mem_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_mem_operand (op, mode, AR6_REGNO);
 }
 
 
 int
-ar7_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar7_reg_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_reg_operand (op, mode, AR7_REGNO);
 }
 
 
 int
-ar7_mem_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ar7_mem_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_mem_operand (op, mode, AR7_REGNO);
 }
 
 
 int
-ir0_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ir0_reg_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_reg_operand (op, mode, IR0_REGNO);
 }
 
 
 int
-ir0_mem_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ir0_mem_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_mem_operand (op, mode, IR0_REGNO);
 }
 
 
 int
-ir1_reg_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ir1_reg_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_reg_operand (op, mode, IR1_REGNO);
 }
 
 
 int
-ir1_mem_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+ir1_mem_operand (rtx op, enum machine_mode mode)
 {
   return c4x_arn_mem_operand (op, mode, IR1_REGNO);
 }
@@ -4422,11 +4208,8 @@ ir1_mem_operand (op, mode)
    addressing.  */
 
 rtx
-c4x_operand_subword (op, i, validate_address, mode)
-     rtx op;
-     int i;
-     int validate_address;
-     enum machine_mode mode;
+c4x_operand_subword (rtx op, int i, int validate_address,
+		     enum machine_mode  mode)
 {
   if (mode != HImode && mode != HFmode)
     fatal_insn ("c4x_operand_subword: invalid mode", op);
@@ -4499,8 +4282,7 @@ static struct name_list *extern_head;
    present on external list.  */
 
 void
-c4x_global_label (name)
-     const char *name;
+c4x_global_label (const char *name)
 {
   struct name_list *p, *last;
 
@@ -4540,8 +4322,7 @@ c4x_global_label (name)
 /* Add NAME to list of external symbols.  */
 
 void
-c4x_external_ref (name)
-     const char *name;
+c4x_external_ref (const char *name)
 {
   struct name_list *p;
 
@@ -4573,7 +4354,7 @@ c4x_external_ref (name)
    This is only required for ISRs if we are paranoid that someone
    may have quietly changed this register on the sly.  */
 static void
-c4x_file_start ()
+c4x_file_start (void)
 {
   int dspversion = 0;
   if (TARGET_C30) dspversion = 30;
@@ -4590,7 +4371,7 @@ c4x_file_start ()
 
 
 static void
-c4x_file_end ()
+c4x_file_end (void)
 {
   struct name_list *p;
   
@@ -4608,9 +4389,7 @@ c4x_file_end ()
 
 
 static void
-c4x_check_attribute (attrib, list, decl, attributes)
-     const char *attrib;
-     tree list, decl, *attributes;
+c4x_check_attribute (const char *attrib, tree list, tree decl, tree *attributes)
 {
   while (list != NULL_TREE
          && IDENTIFIER_POINTER (TREE_PURPOSE (list))
@@ -4623,8 +4402,7 @@ c4x_check_attribute (attrib, list, decl, attributes)
 
 
 static void
-c4x_insert_attributes (decl, attributes)
-     tree decl, *attributes;
+c4x_insert_attributes (tree decl, tree *attributes)
 {
   switch (TREE_CODE (decl))
     {
@@ -4658,12 +4436,10 @@ const struct attribute_spec c4x_attribute_table[] =
 /* Handle an attribute requiring a FUNCTION_TYPE;
    arguments as in struct attribute_spec.handler.  */
 static tree
-c4x_handle_fntype_attribute (node, name, args, flags, no_add_attrs)
-     tree *node;
-     tree name;
-     tree args ATTRIBUTE_UNUSED;
-     int flags ATTRIBUTE_UNUSED;
-     bool *no_add_attrs;
+c4x_handle_fntype_attribute (tree *node, tree name,
+			     tree args ATTRIBUTE_UNUSED,
+			     int flags ATTRIBUTE_UNUSED,
+			     bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_TYPE)
     {
@@ -4679,8 +4455,7 @@ c4x_handle_fntype_attribute (node, name, args, flags, no_add_attrs)
 /* !!! FIXME to emit RPTS correctly.  */
 
 int
-c4x_rptb_rpts_p (insn, op)
-     rtx insn, op;
+c4x_rptb_rpts_p (rtx insn, rtx op)
 {
   /* The next insn should be our label marking where the
      repeat block starts.  */
@@ -4724,8 +4499,7 @@ c4x_rptb_rpts_p (insn, op)
 /* Check if register r11 is used as the destination of an insn.  */
 
 static int
-c4x_r11_set_p(x)
-    rtx x;
+c4x_r11_set_p(rtx x)
 {
   rtx set;
   int i, j;
@@ -4764,8 +4538,7 @@ c4x_r11_set_p(x)
    sets the r11 register.  Check for this situation.  */
 
 int
-c4x_check_laj_p (insn)
-     rtx insn;
+c4x_check_laj_p (rtx insn)
 {
   insn = prev_nonnote_insn (insn);
 
@@ -4799,11 +4572,7 @@ c4x_check_laj_p (insn)
 #define	READ_USE_COST	2
 
 static int
-c4x_adjust_cost (insn, link, dep_insn, cost)
-     rtx insn;
-     rtx link;
-     rtx dep_insn;
-     int cost;
+c4x_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 {
   /* Don't worry about this until we know what registers have been
      assigned.  */
@@ -4936,7 +4705,7 @@ c4x_adjust_cost (insn, link, dep_insn, cost)
 }
 
 void
-c4x_init_builtins ()
+c4x_init_builtins (void)
 {
   tree endlink = void_list_node;
 
@@ -4980,12 +4749,10 @@ c4x_init_builtins ()
 
 
 rtx
-c4x_expand_builtin (exp, target, subtarget, mode, ignore)
-     tree exp;
-     rtx target;
-     rtx subtarget ATTRIBUTE_UNUSED;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-     int ignore ATTRIBUTE_UNUSED;
+c4x_expand_builtin (tree exp, rtx target,
+		    rtx subtarget ATTRIBUTE_UNUSED,
+		    enum machine_mode mode ATTRIBUTE_UNUSED,
+		    int ignore ATTRIBUTE_UNUSED)
 {
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
@@ -5072,17 +4839,13 @@ c4x_expand_builtin (exp, target, subtarget, mode, ignore)
 }
 
 static void
-c4x_asm_named_section (name, flags)
-     const char *name;
-     unsigned int flags ATTRIBUTE_UNUSED;
+c4x_asm_named_section (const char *name, unsigned int flags ATTRIBUTE_UNUSED)
 {
   fprintf (asm_out_file, "\t.sect\t\"%s\"\n", name);
 }
 
 static void
-c4x_globalize_label (stream, name)
-     FILE *stream;
-     const char *name;
+c4x_globalize_label (FILE *stream, const char *name)
 {
   default_globalize_label (stream, name);
   c4x_global_label (name);
@@ -5098,10 +4861,7 @@ c4x_globalize_label (stream, name)
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-c4x_rtx_costs (x, code, outer_code, total)
-     rtx x;
-     int code, outer_code;
-     int *total;
+c4x_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
   HOST_WIDE_INT val;
 

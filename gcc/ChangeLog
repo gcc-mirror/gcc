@@ -1,5 +1,12 @@
 2003-09-28  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* config/pdp11/pdp11-protos.h, config/pdp11/pdp11.c,
+	config/c4x/c4x-c.c, config/c4x/c4x-protos.h, config/c4x/c4x.c,
+	config/c4x/c4x.h:
+	Convert to ISO C90 function declarations and definitions.
+
+2003-09-28  Steven Bosscher  <steven@gcc.gnu.org>
+
 	*  config/stormy16/stormy16.c, config/stormy16/stormy16-protos.h:
 	Convert to ISO C90 function declarations and definitions.
 
