@@ -2517,6 +2517,10 @@ build_new_1 (exp)
      element.  */
   rval = convert (build_pointer_type (type), rval);
 
+  /* A new-expression is never an lvalue.  */
+  if (real_lvalue_p (rval))
+    rval = build1 (NON_LVALUE_EXPR, TREE_TYPE (rval), rval);
+
   return rval;
 }
 

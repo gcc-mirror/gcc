@@ -1,3 +1,11 @@
+2003-10-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12337
+	* g++.dg/init/new9.C: New test.
+	
+	PR c++/12334, c++/12236, c++/8656
+	* g++.dg/ext/attrib8.C: New test.
+
 2003-10-06  Wolfgang Bangerth  <bangerth@ticam.utexas.edu>
 
 	* g++.dg/opt/cfg2.C: New test.

@@ -6106,7 +6106,9 @@ initialize_reference (type, expr, decl, cleanup)
                "type '%T' from a temporary of type '%T'",
                type, TREE_TYPE (expr));
       else
-        error ("could not convert `%E' to `%T'", expr, type);
+        error ("invalid initialization of reference of type "
+	       "'%T' from expression of type '%T'", type, 
+	       TREE_TYPE (expr));
       return error_mark_node;
     }
 
