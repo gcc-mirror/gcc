@@ -2837,10 +2837,12 @@ import_export_decl (decl)
   if (DECL_INTERFACE_KNOWN (decl))
     return;
 
-  if (DECL_TEMPLATE_INSTANTIATION (decl))
+  if (DECL_TEMPLATE_INSTANTIATION (decl)
+      || DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl))
     {
       DECL_NOT_REALLY_EXTERN (decl) = 1;
-      if (DECL_IMPLICIT_INSTANTIATION (decl)
+      if ((DECL_IMPLICIT_INSTANTIATION (decl)
+	   || DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl))
 	  && (flag_implicit_templates || DECL_THIS_INLINE (decl)))
 	{
 	  if (!TREE_PUBLIC (decl))

@@ -1724,6 +1724,16 @@ extern int flag_new_for_scope;
 #define SET_CLASSTYPE_EXPLICIT_INSTANTIATION(NODE) \
   (CLASSTYPE_USE_TEMPLATE(NODE) = 3)
 
+/* Non-zero if DECL is a friend function which is an instantiation
+   from the point of view of the compiler, but not from the point of
+   view of the language.  For example given:
+      template <class T> struct S { friend void f(T) {}; };
+   the declaration of `void f(int)' generated when S<int> is
+   instantiated will not be a DECL_TEMPLATE_INSTANTIATION, but will be
+   a DECL_FRIEND_PSUEDO_TEMPLATE_INSTANTIATION.  */
+#define DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION(DECL) \
+  (DECL_TEMPLATE_INFO (DECL) && !DECL_USE_TEMPLATE (DECL))
+
 /* Non-zero iff we are currently processing a declaration for an
    entity with its own template parameter list, and which is not a
    full specialization.  */
