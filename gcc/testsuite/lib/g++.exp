@@ -63,6 +63,100 @@ proc g++_version { } {
 }
 
 #
+# provide new versions of g++_include_flags and g++_link_flags (both
+# originally from libgloss.exp) which know about the new gcc tree structure
+#
+proc g++_include_flags { args } {
+    global srcdir
+
+    if [is_remote host] {
+      return ""
+    }
+
+    set gccpath [get_multilibs]
+    set libio_dir ""
+    set flags ""
+
+    set dir [lookfor_file ${srcdir} libg++]
+    if { ${dir} != "" } {
+      append flags "-I${dir} -I${dir}/src "
+    }
+    set odir_v2 [lookfor_file ${gccpath} libstdc++]
+    set sdir_v2 [lookfor_file ${srcdir} libstdc++]
+    if { ${odir_v2} != "" } {
+      append flags "-I${sdir_v2} -I${sdir_v2}/stl "
+    }
+    set odir_v3 [lookfor_file ${gccpath} libstdc++-v3]
+    set sdir_v3 [lookfor_file ${srcdir} libstdc++-v3]
+    if { ${odir_v3} != "" } {
+      append flags [exec ${odir_v3}/mkcheck 2 ${odir_v3} ${sdir_v3}]
+    }
+
+    if { ${odir_v2} != "" && ${odir_v3} != ""} {
+      send_error "ERROR: can't handle both libstdc++ and libstdc++-v3 appearing in build tree.\n"
+      exit 1
+    }
+
+    return "$flags"
+}
+
+proc g++_link_flags { args } {
+    global srcdir
+    global ld_library_path
+
+    set gccpath [get_multilibs];
+    set libio_dir ""
+    set flags ""
+    set ld_library_path "."
+
+    if { $gccpath != "" } {
+      if [file exists "${gccpath}/lib/libstdc++.a"] {
+          append ld_library_path ":${gccpath}/lib"
+      }
+      if [file exists "${gccpath}/libg++/libg++.a"] {
+          append flags "-L${gccpath}/libg++ "
+          append ld_library_path ":${gccpath}/libg++"
+      }
+      if [file exists "${gccpath}/libstdc++/libstdc++.a"] {
+          append flags "-L${gccpath}/libstdc++ "
+          append ld_library_path ":${gccpath}/libstdc++"
+      }
+      if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] {
+          append flags " -L${gccpath}/libstdc++-v3/src/.libs "
+          append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
+      }
+      if [file exists "${gccpath}/libiberty/libiberty.a"] {
+          append flags "-L${gccpath}/libiberty "
+      }
+      if [file exists "${gccpath}/librx/librx.a"] {
+          append flags "-L${gccpath}/librx "
+      }
+    } else {
+      global tool_root_dir;
+
+      set libgpp [lookfor_file ${tool_root_dir} libg++];
+      if { $libgpp != "" } {
+          append flags "-L${libgpp} ";
+          append ld_library_path ":${libgpp}"
+      }
+      set libstdcpp [lookfor_file ${tool_root_dir} libstdc++];
+      if { $libstdcpp != "" } {
+          append flags "-L${libstdcpp} ";
+          append ld_library_path ":${libstdcpp}"
+      }
+      set libiberty [lookfor_file ${tool_root_dir} libiberty];
+      if { $libiberty != "" } {
+          append flags "-L${libiberty} ";
+      }
+      set librx [lookfor_file ${tool_root_dir} librx];
+      if { $librx != "" } {
+          append flags "-L${librx} ";
+      }
+    }
+    return "$flags"
+}
+
+#
 # g++_init -- called at the start of each subdir of tests
 #
 
