@@ -1,5 +1,9 @@
 2004-02-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* acinclude.m4: Remove bogus duplicate call to AC_CANONICAL_BUILD.
+	* aclocal.m4: Rebuild.
+	* configure: Regenerate.
+
 	* acinclude.m4: Move certain code to configure.in.
 	* configure.in: Receive code from acinclude.m4.
 	* aclocal.m4: Rebuild.
