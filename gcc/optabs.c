@@ -5019,18 +5019,7 @@ init_integral_libfuncs (optab optable, const char *opname, int suffix)
 static void
 init_floating_libfuncs (optab optable, const char *opname, int suffix)
 {
-  enum machine_mode fmode, dmode, lmode;
-
-  fmode = float_type_node ? TYPE_MODE (float_type_node) : VOIDmode;
-  dmode = double_type_node ? TYPE_MODE (double_type_node) : VOIDmode;
-  lmode = long_double_type_node ? TYPE_MODE (long_double_type_node) : VOIDmode;
-
-  if (fmode != VOIDmode)
-    init_libfuncs (optable, fmode, fmode, opname, suffix);
-  if (dmode != fmode && dmode != VOIDmode)
-    init_libfuncs (optable, dmode, dmode, opname, suffix);
-  if (lmode != dmode && lmode != VOIDmode)
-    init_libfuncs (optable, lmode, lmode, opname, suffix);
+  init_libfuncs (optable, MIN_MODE_FLOAT, MAX_MODE_FLOAT, opname, suffix);
 }
 
 /* Initialize the libfunc fields of an entire group of entries of an

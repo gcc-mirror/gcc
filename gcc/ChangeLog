@@ -1,3 +1,12 @@
+2003-10-20  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-common.c (registered_builtin_types): New static.
+	(c_common_type_for_mode): Consult registered_builtin_types.
+	(c_register_builtin_type): Add type to registered_builtin_types.
+	* optabs.c (init_floating_libfuncs): Initialize libfuncs for
+	all MODE_FLOAT modes, not just the ones corresponding to
+	float_type_node, double_type_node, and long_double_type_node.
+
 2003-10-20  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.h (PREDICATE_CODES): Add normal_memory_operand.
@@ -5,15 +14,15 @@
 
 2003-10-20  Dorit Naishlos  <dorit@il.ibm.com>
 
-	* config/rs6000/rs6000.h: (rs6000_sched_insert_nops): 	
+	* config/rs6000/rs6000.h: (rs6000_sched_insert_nops):
 	support new flag -minsert-sched-nops.
 	(DEFAULT_SCHED_FINISH_NOP_INSERTION_SCHEME): Define.
-	* config/rs6000/rs6000.c: (rs6000_sched_insert_nops): 	
-	support new flag -minsert-sched-nops.	
+	* config/rs6000/rs6000.c: (rs6000_sched_insert_nops):
+	support new flag -minsert-sched-nops.
 	(is_cracked_insn, is_microcoded_insn): New functions.
 	(rs6000_sched_finish): New function.
 	(rs6000_issue_rate): Return 5 for power4.
-	(get_next_active_insn, insn_terminates_group_p): New 	
+	(get_next_active_insn, insn_terminates_group_p): New
 	functions.
 	(is_costly_group, force_new_group): New functions.
 	(redefine_groups, pad_groups): New functions.
@@ -53,7 +62,7 @@
 	(TARGET_CPU_arm1136jf_s): Likewise.
 	* doc/invoke.texi: Document new ARM cores and architecture
 	variants.
-	
+
 2003-10-19  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* Makefile.in (toplev.o): Add value-prof.h dependency.
@@ -97,7 +106,7 @@
 	conventions when profiling.
 
 2003-10-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Richard Henderson  <rth@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
 
 	PR optimization/8178
 	* config/i386/i386.md (*movsi_zero): Delete.
@@ -145,12 +154,12 @@
 	(print_operand): Use it to implement '%Y'.
 	* config/s390/s390.h (EXTRA_ADDRESS_CONSTRAINT): Add 'Y' constraint.
 	(PREDICATE_CODES): Add shift_count_operand.
-	* config/s390/s390.md ("rotldi3"): Merge alternatives, 
+	* config/s390/s390.md ("rotldi3"): Merge alternatives,
 	using "shift_count_operand" predicate and "Y" constraint,
 	and "%Y" to output the combined shift count.
 	("rotlsi3"): Likewise.
 	("ashldi3", "*ashldi3_31", "*ashldi3_64"): Likewise.
-	("ashrdi3", "*ashrdi3_31", "*ashrdi3_64", "*ashrdi3_cc_31", 
+	("ashrdi3", "*ashrdi3_31", "*ashrdi3_64", "*ashrdi3_cc_31",
 	"*ashrdi3_cc_64", "*ashrdi3_cconly_31", "*ashrdi3_cconly_64"): Likewise.
 	("ashlsi3", "ashrsi3", "*ashrsi3_cc", "*ashrsi3_cconly"): Likewise.
 	("lshrdi3", "*lshrdi3_31", "*lshrdi3_64"): Likewise.
@@ -163,9 +172,9 @@
 
 2003-10-18  Fariborz Jahanian  <fjahanian@apple.com>
 
-        * rs6000.md: Separate TARGET_POWERPC64 patterns for TARGET_64BIT or TARGET_32BIT.
-        (ashrdisi3_noppc64) Generate more efficient code for 32-bit right-shift of
-        a "long long" argument.
+	* rs6000.md: Separate TARGET_POWERPC64 patterns for TARGET_64BIT or TARGET_32BIT.
+	(ashrdisi3_noppc64) Generate more efficient code for 32-bit right-shift of
+	a "long long" argument.
 
 2003-10-18  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -262,7 +271,7 @@
 	zsh not working.  Change gcc to GCC.
 
 	PR bootstrap/12546
-	* doc/install.texi: Document that zsh does not work when 
+	* doc/install.texi: Document that zsh does not work when
 	configuring gcc.
 
 2003-10-17  Nathanael Nerode  <neroden@gcc.gnu.org>
@@ -373,7 +382,7 @@
 	Define as 0.
 
 	* config/mips/iris6.h (FUNCTION_NAME_ALREADY_DECLARED): Define
-	depending on mips_abi. 
+	depending on mips_abi.
 	* config/mips/linux.h (FUNCTION_NAME_ALREADY_DECLARED): Define as 1.
 	* config/mips/mips.c (mips_output_function_prologue): Test
 	FUNCTION_NAME_ALREADY_DECLARED at runtime.
@@ -382,7 +391,7 @@
 	(build_mips16_call_stub): Likewise.
 	* config/mips/mips.h (FUNCTION_NAME_ALREADY_DECLARED): Provide
 	default.
-	
+
 	* config/mips/iris6.h (DWARF2_UNWIND_INFO): Don't define for native
 	IRIX 6 O32 assembler.
 	(SUBTARGET_CC1_SPEC): Enforce mips2 ISA with O32 ABI.
@@ -405,7 +414,7 @@
 	(MUST_USE_SJLJ_EXCEPTIONS): Define.
 	[_MIPS_SIM == _ABIO32 && !GAS] (CTORS_SECTION_ASM_OP,
 	DTORS_SECTION_ASM_OP): Dummy definitions.
-	(TARGET_ASM_NAMED_SECTION): Undef statically. 
+	(TARGET_ASM_NAMED_SECTION): Undef statically.
 	(EH_FRAME_SECTION_NAME): Likewise.
 	(ASM_OUTPUT_FILENAME): Integrate mips.h version.
 	(LINK_SPEC): Only use default options -call_shared -no_unresolved
@@ -468,7 +477,7 @@
 	* arm-modes.def (CC_Nmode): New condition code mode.
 	* arm.c (thumb_condition_code): Delete.
 	(arm_select_cc_mode): Handle single-bit test for Thumb.
-	(arm_print_operand, cases 'd' and 'D'): Don't special case the 
+	(arm_print_operand, cases 'd' and 'D'): Don't special case the
 	condition code logic for Thumb.
 	(get_arm_condition_code): Handle CC_Nmode.
 	(thumb_cbrch_target_operand): New function.
@@ -482,7 +491,7 @@
 	(subsi3_cbranch, subsi3_cbranch_scratch): New Thumb patterns.
 	(cbranchne_decr1): Re-work to use CC_Nmode.
 
-	* arm.c (thumb_expand_epilogue): Add clobbers of registers restored 
+	* arm.c (thumb_expand_epilogue): Add clobbers of registers restored
 	by the return instruction.  Add a use of the link register if it
 	wasn't stored.
 
