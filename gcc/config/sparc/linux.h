@@ -70,6 +70,10 @@ Boston, MA 02111-1307, USA.  */
 %{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
 "
 
+/* The GNU C++ standard library requires that these macros be defined.  */
+#undef CPLUSPLUS_CPP_SPEC
+#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
+
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (sparc GNU/Linux with ELF)");
 
