@@ -1,5 +1,10 @@
 2000-04-22  Tom Tromey  <tromey@cygnus.com>
 
+	* boehm.c (mark_reference_fields): Only call byte_position on
+	non-static fields.
+
+2000-04-22  Tom Tromey  <tromey@cygnus.com>
+
 	* boehm.c (mark_reference_fields): Added `last_view_index'
 	argument.  Use DECL_FIELD_OFFSET to determine field's offset.
 
