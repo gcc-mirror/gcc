@@ -354,9 +354,7 @@ while [ $# != 0 ]; do
   for file in $files; do
 
     # Skip unreadable files, symlinks to directories and glibc files
-    if test ! -r "${file}" || test -d "${file}/." \
-       || fgrep 'This file is part of the GNU C Library' "${file}" \
-	    > /dev/null 2>&1; then
+    if test ! -r "${file}" || test -d "${file}/." ; then
       continue
     fi
 
@@ -524,8 +522,7 @@ _EOF_
     # Fix   8:  Aab_Fd_Zero_Glibc_1_0
     #
     case "${file}" in ./asm/posix_types.h )
-    if ( test -n "`egrep 'i[34567]86-*-linux-gnu*' ${file}`"
-       ) > /dev/null 2>&1 ; then
+    case "$target_canonical" in i[34567]86-*-linux-gnu* )
     echo "aab_fd_zero_glibc_1_0 replacing file ${file}" >&2
     cat > ${DESTFILE} << '_EOF_'
 /* This file fixes __FD_ZERO bug for glibc-1.x. */
@@ -544,7 +541,8 @@ _EOF_
 _EOF_
     continue
 
-    fi # end of select 'if'
+    ;; # case end for machine type test
+    esac
     ;; # case end for file name test
     esac
 
@@ -553,8 +551,7 @@ _EOF_
     # Fix   9:  Aab_Fd_Zero_Glibc_1_X
     #
     case "${file}" in ./gnu/types.h )
-    if ( test -n "`egrep 'i[34567]86-*-linux-gnu*' ${file}`"
-       ) > /dev/null 2>&1 ; then
+    case "$target_canonical" in i[34567]86-*-linux-gnu* )
     echo "aab_fd_zero_glibc_1_x replacing file ${file}" >&2
     cat > ${DESTFILE} << '_EOF_'
 /* This file fixes __FD_ZERO bug for glibc-1.x. */
@@ -573,7 +570,8 @@ _EOF_
 _EOF_
     continue
 
-    fi # end of select 'if'
+    ;; # case end for machine type test
+    esac
     ;; # case end for file name test
     esac
 
@@ -582,8 +580,7 @@ _EOF_
     # Fix  10:  Aab_Fd_Zero_Glibc_2_0
     #
     case "${file}" in ./selectbits.h )
-    if ( test -n "`egrep 'i[34567]86-*-linux-gnu*' ${file}`"
-       ) > /dev/null 2>&1 ; then
+    case "$target_canonical" in i[34567]86-*-linux-gnu* )
     echo "aab_fd_zero_glibc_2_0 replacing file ${file}" >&2
     cat > ${DESTFILE} << '_EOF_'
 /* This file fixes __FD_ZERO bug for glibc-2.0.x. */
@@ -602,7 +599,8 @@ _EOF_
 _EOF_
     continue
 
-    fi # end of select 'if'
+    ;; # case end for machine type test
+    esac
     ;; # case end for file name test
     esac
 

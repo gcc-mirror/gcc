@@ -326,18 +326,12 @@ tSCC zAab_Fd_Zero_Glibc_1_0List[] =
 /*
  *  Machine/OS name selection pattern
  */
-#define apzAab_Fd_Zero_Glibc_1_0Machs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAab_Fd_Zero_Glibc_1_0Select0[] =
-       "i[34567]86-*-linux-gnu*";
-
-#define    AAB_FD_ZERO_GLIBC_1_0_TEST_CT  1
-#define    AAB_FD_ZERO_GLIBC_1_0_RE_CT    1
-tTestDesc aAab_Fd_Zero_Glibc_1_0Tests[] = {
-  { TT_EGREP,    zAab_Fd_Zero_Glibc_1_0Select0, (regex_t*)NULL }, };
+tSCC* apzAab_Fd_Zero_Glibc_1_0Machs[] = {
+        "i[34567]86-*-linux-gnu*",
+        (const char*)NULL };
+#define AAB_FD_ZERO_GLIBC_1_0_TEST_CT  0
+#define AAB_FD_ZERO_GLIBC_1_0_RE_CT    0
+#define aAab_Fd_Zero_Glibc_1_0Tests   (tTestDesc*)NULL
 
 /*
  *  Fix Command Arguments for Aab_Fd_Zero_Glibc_1_0
@@ -372,18 +366,12 @@ tSCC zAab_Fd_Zero_Glibc_1_XList[] =
 /*
  *  Machine/OS name selection pattern
  */
-#define apzAab_Fd_Zero_Glibc_1_XMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAab_Fd_Zero_Glibc_1_XSelect0[] =
-       "i[34567]86-*-linux-gnu*";
-
-#define    AAB_FD_ZERO_GLIBC_1_X_TEST_CT  1
-#define    AAB_FD_ZERO_GLIBC_1_X_RE_CT    1
-tTestDesc aAab_Fd_Zero_Glibc_1_XTests[] = {
-  { TT_EGREP,    zAab_Fd_Zero_Glibc_1_XSelect0, (regex_t*)NULL }, };
+tSCC* apzAab_Fd_Zero_Glibc_1_XMachs[] = {
+        "i[34567]86-*-linux-gnu*",
+        (const char*)NULL };
+#define AAB_FD_ZERO_GLIBC_1_X_TEST_CT  0
+#define AAB_FD_ZERO_GLIBC_1_X_RE_CT    0
+#define aAab_Fd_Zero_Glibc_1_XTests   (tTestDesc*)NULL
 
 /*
  *  Fix Command Arguments for Aab_Fd_Zero_Glibc_1_X
@@ -418,18 +406,12 @@ tSCC zAab_Fd_Zero_Glibc_2_0List[] =
 /*
  *  Machine/OS name selection pattern
  */
-#define apzAab_Fd_Zero_Glibc_2_0Machs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zAab_Fd_Zero_Glibc_2_0Select0[] =
-       "i[34567]86-*-linux-gnu*";
-
-#define    AAB_FD_ZERO_GLIBC_2_0_TEST_CT  1
-#define    AAB_FD_ZERO_GLIBC_2_0_RE_CT    1
-tTestDesc aAab_Fd_Zero_Glibc_2_0Tests[] = {
-  { TT_EGREP,    zAab_Fd_Zero_Glibc_2_0Select0, (regex_t*)NULL }, };
+tSCC* apzAab_Fd_Zero_Glibc_2_0Machs[] = {
+        "i[34567]86-*-linux-gnu*",
+        (const char*)NULL };
+#define AAB_FD_ZERO_GLIBC_2_0_TEST_CT  0
+#define AAB_FD_ZERO_GLIBC_2_0_RE_CT    0
+#define aAab_Fd_Zero_Glibc_2_0Tests   (tTestDesc*)NULL
 
 /*
  *  Fix Command Arguments for Aab_Fd_Zero_Glibc_2_0
@@ -4394,7 +4376,7 @@ extern char *\tsprintf();\\\n\
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          79
+#define REGEX_COUNT          76
 #define MACH_LIST_SIZE_LIMIT 279
 #define FIX_COUNT            112
 

@@ -160,7 +160,7 @@ typedef char * va_list;
 fix = {
     hackname = AAB_fd_zero_glibc_1_0;
     files    = asm/posix_types.h;
-    select   = 'i[34567]86-*-linux-gnu*';
+    mach     = 'i[34567]86-*-linux-gnu*';
 
     /*
      * Define _POSIX_TYPES_H_WRAPPER at the end of the wrapper, not
@@ -199,7 +199,7 @@ fix = {
 fix = {
     hackname = AAB_fd_zero_glibc_1_x;
     files    = gnu/types.h;
-    select   = 'i[34567]86-*-linux-gnu*';
+    mach     = 'i[34567]86-*-linux-gnu*';
 
     /*
      * Define _TYPES_H_WRAPPER at the end of the wrapper, not
@@ -238,7 +238,7 @@ fix = {
 fix = {
     hackname = AAB_fd_zero_glibc_2_0;
     files    = selectbits.h;
-    select   = 'i[34567]86-*-linux-gnu*';
+    mach     = 'i[34567]86-*-linux-gnu*';
 
     /*
      * Define _SELECTBITS_H_WRAPPER at the end of the wrapper, not
