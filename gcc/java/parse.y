@@ -2783,8 +2783,8 @@ java_parser_context_resume ()
   ctxp = restored;
 
   /* Re-installed the data for the parsing to carry on */
-  bcopy (&old->marker_begining, &ctxp->marker_begining,
-	 (size_t)(&ctxp->marker_end - &ctxp->marker_begining));
+  memcpy (&ctxp->marker_begining, &old->marker_begining, 
+	  (size_t)(&ctxp->marker_end - &ctxp->marker_begining));
 
   /* Buffer context can now be discarded */
   free (saver);
