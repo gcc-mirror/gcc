@@ -17,8 +17,3 @@ int main(){
   double *pa = a + 1; // gets bogus error - should convert
   return 0; 
 }
-
-
-
-
-
