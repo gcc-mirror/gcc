@@ -1419,10 +1419,13 @@ cpp_handle_deferred_pragma (cpp_reader *pfile, const cpp_string *s)
   cpp_token *saved_cur_token = pfile->cur_token;
   tokenrun *saved_cur_run = pfile->cur_run;
   bool saved_defer_pragmas = CPP_OPTION (pfile, defer_pragmas);
+  void (*saved_line_change) (cpp_reader *, const cpp_token *, int)
+    = pfile->cb.line_change;
 
   pfile->context = XNEW (cpp_context);
   pfile->context->macro = 0;
   pfile->context->prev = 0;
+  pfile->cb.line_change = NULL;
   CPP_OPTION (pfile, defer_pragmas) = false;
 
   run_directive (pfile, T_PRAGMA, s->text, s->len);
@@ -1431,6 +1434,7 @@ cpp_handle_deferred_pragma (cpp_reader *pfile, const cpp_string *s)
   pfile->context = saved_context;
   pfile->cur_token = saved_cur_token;
   pfile->cur_run = saved_cur_run;
+  pfile->cb.line_change = saved_line_change;
   CPP_OPTION (pfile, defer_pragmas) = saved_defer_pragmas;
 }
 
