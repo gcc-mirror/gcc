@@ -1,3 +1,11 @@
+2002-05-27  Roger Sayle  <roger@eyesopen.com>
+
+	* c-common.c: Add support for __attribute__((nothrow)) to specify
+	that a function cannot throw an exception (using TREE_NOTHROW).
+	(handle_nothrow_attribute): New function to process this attribute.
+
+	* doc/extend.texi: Document the new nothrow function attribute.
+
 2002-05-27  H.J. Lu  (hjl@gnu.org)
 
 	* cppexp.c (num_trim): Use 1UL instead of 1 for long int.
