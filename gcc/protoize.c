@@ -478,6 +478,13 @@ static int errors = 0;
 /* ??? These comments should say what the flag mean as well as the options
    that set them.  */
 
+/* allow the user to pass the pathname of the gcc2 compiler as a
+   command line option, instead of relying on the fact that 'gcc' in
+   the path should be gcc2 */
+
+static char *compiler_pathname = "gcc";
+
+
 static int version_flag = 0;		/* Print our version number.  */
 static int quiet_flag = 0;		/* Don't print messages normally.  */
 static int nochange_flag = 0;		/* Don't convert, just say what files
@@ -1894,7 +1901,7 @@ munge_compile_params (params_list)
   int param_count = 0;
   const char *param;
 
-  temp_params[param_count++] = "gcc";
+  temp_params[param_count++] = compiler_pathname;
   for (;;)
     {
       while (isspace (*params_list))
@@ -4327,6 +4334,7 @@ do_processing ()
 static struct option longopts[] =
 {
   {"version", 0, 0, 'V'},
+  {"pathname", 0, 0, 'p'},
   {"quiet", 0, 0, 'q'},
   {"silent", 0, 0, 'q'},
   {"force", 0, 0, 'f'},
@@ -4378,9 +4386,9 @@ main (argc, argv)
 
   while ((c = getopt_long (argc, argv,
 #ifdef UNPROTOIZE
-			   "c:d:i:knNqVx:",
+			   "c:d:i:knNp:qVx:",
 #else
-			   "B:c:Cd:gklnNqVx:",
+			   "B:c:Cd:gklnNp:qVx:",
 #endif
 			   longopts, &longind)) != EOF)
     {
@@ -4388,6 +4396,9 @@ main (argc, argv)
 	c = longopts[longind].val;
       switch (c)
 	{
+	case 'p':
+	  compiler_pathname = optarg;
+	  break;
 	case 'd':
 	  directory_list
 	    = string_list_cons (abspath (NULL, optarg), directory_list);
