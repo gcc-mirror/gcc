@@ -11567,6 +11567,9 @@ type_dependent_expression_p (tree expression)
   if (!processing_template_decl)
     return false;
 
+  if (expression == error_mark_node)
+    return false;
+  
   /* Some expression forms are never type-dependent.  */
   if (TREE_CODE (expression) == PSEUDO_DTOR_EXPR
       || TREE_CODE (expression) == SIZEOF_EXPR
@@ -11675,7 +11678,9 @@ any_type_dependent_arguments_p (tree args)
 {
   while (args)
     {
-      if (type_dependent_expression_p (TREE_VALUE (args)))
+      tree arg = TREE_VALUE (args);
+
+      if (type_dependent_expression_p (arg))
 	return true;
       args = TREE_CHAIN (args);
     }

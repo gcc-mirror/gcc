@@ -1324,8 +1324,8 @@ static tree cp_parser_class_or_namespace_name
   (cp_parser *, bool, bool, bool, bool);
 static tree cp_parser_postfix_expression
   (cp_parser *, bool);
-static tree cp_parser_expression_list
-  (cp_parser *);
+static tree cp_parser_parenthesized_expression_list
+  (cp_parser *, bool);
 static void cp_parser_pseudo_destructor_name
   (cp_parser *, tree *, tree *);
 static tree cp_parser_unary_expression
@@ -1467,9 +1467,9 @@ static void cp_parser_linkage_specification
 static tree cp_parser_init_declarator
   (cp_parser *, tree, tree, bool, bool, bool *);
 static tree cp_parser_declarator
-  (cp_parser *, cp_parser_declarator_kind, bool *);
+  (cp_parser *, cp_parser_declarator_kind, int *);
 static tree cp_parser_direct_declarator
-  (cp_parser *, cp_parser_declarator_kind, bool *);
+  (cp_parser *, cp_parser_declarator_kind, int *);
 static enum tree_code cp_parser_ptr_operator
   (cp_parser *, tree *, tree *);
 static tree cp_parser_cv_qualifier_seq_opt
@@ -1699,10 +1699,8 @@ static tree cp_parser_non_constant_id_expression
   (tree);
 static bool cp_parser_diagnose_invalid_type_name
   (cp_parser *);
-static bool cp_parser_skip_to_closing_parenthesis
-  (cp_parser *);
-static bool cp_parser_skip_to_closing_parenthesis_or_comma
-  (cp_parser *);
+static int cp_parser_skip_to_closing_parenthesis
+  (cp_parser *, bool, bool);
 static void cp_parser_skip_to_end_of_statement
   (cp_parser *);
 static void cp_parser_consume_semicolon_at_end_of_statement
@@ -1880,57 +1878,60 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser)
 }
 
 /* Consume tokens up to, and including, the next non-nested closing `)'. 
-   Returns TRUE iff we found a closing `)'.  */
+   Returns 1 iff we found a closing `)'.  RECOVERING is true, if we
+   are doing error recovery. Returns -1 if OR_COMMA is true and we
+   found an unnested comma.  */
 
-static bool
-cp_parser_skip_to_closing_parenthesis (cp_parser *parser)
+static int
+cp_parser_skip_to_closing_parenthesis (cp_parser *parser,
+				       bool recovering, bool or_comma)
 {
-  unsigned nesting_depth = 0;
+  unsigned paren_depth = 0;
+  unsigned brace_depth = 0;
 
+  if (recovering && !or_comma && cp_parser_parsing_tentatively (parser)
+      && !cp_parser_committed_to_tentative_parse (parser))
+    return 0;
+  
   while (true)
     {
       cp_token *token;
-
+      
       /* If we've run out of tokens, then there is no closing `)'.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
-	return false;
+	return 0;
+
+      if (recovering)
+	{
+	  token = cp_lexer_peek_token (parser->lexer);
+
+	  /* This matches the processing in skip_to_end_of_statement */
+	  if (token->type == CPP_SEMICOLON && !brace_depth)
+	    return 0;
+	  if (token->type == CPP_OPEN_BRACE)
+	    ++brace_depth;
+	  if (token->type == CPP_CLOSE_BRACE)
+	    {
+	      if (!brace_depth--)
+		return 0;
+	    }
+	  if (or_comma && token->type == CPP_COMMA
+	      && !brace_depth && !paren_depth)
+	    return -1;
+	}
+      
       /* Consume the token.  */
       token = cp_lexer_consume_token (parser->lexer);
-      /* If it is an `(', we have entered another level of nesting.  */
-      if (token->type == CPP_OPEN_PAREN)
-	++nesting_depth;
-      /* If it is a `)', then we might be done.  */
-      else if (token->type == CPP_CLOSE_PAREN && nesting_depth-- == 0)
-	return true;
-    }
-}
 
-/* Consume tokens until the next token is a `)', or a `,'.  Returns
-   TRUE if the next token is a `,'.  */
-
-static bool
-cp_parser_skip_to_closing_parenthesis_or_comma (cp_parser *parser)
-{
-  unsigned nesting_depth = 0;
-
-  while (true)
-    {
-      cp_token *token = cp_lexer_peek_token (parser->lexer);
-
-      /* If we've run out of tokens, then there is no closing `)'.  */
-      if (token->type == CPP_EOF)
-	return false;
-      /* If it is a `,' stop.  */
-      else if (token->type == CPP_COMMA && nesting_depth-- == 0)
-	return true;
-      /* If it is a `)', stop.  */
-      else if (token->type == CPP_CLOSE_PAREN && nesting_depth-- == 0)
-	return false;
-      /* If it is an `(', we have entered another level of nesting.  */
-      else if (token->type == CPP_OPEN_PAREN)
-	++nesting_depth;
-      /* Consume the token.  */
-      token = cp_lexer_consume_token (parser->lexer);
+      if (!brace_depth)
+	{
+	  /* If it is an `(', we have entered another level of nesting.  */
+	  if (token->type == CPP_OPEN_PAREN)
+	    ++paren_depth;
+	  /* If it is a `)', then we might be done.  */
+	  else if (token->type == CPP_CLOSE_PAREN && !paren_depth--)
+	    return 1;
+	}
     }
 }
 
@@ -3762,19 +3763,14 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	case CPP_OPEN_PAREN:
 	  /* postfix-expression ( expression-list [opt] ) */
 	  {
-	    tree args;
+	    tree args = cp_parser_parenthesized_expression_list (parser, false);
 
-	    /* Consume the `(' token.  */
-	    cp_lexer_consume_token (parser->lexer);
-	    /* If the next token is not a `)', then there are some
-               arguments.  */
-	    if (cp_lexer_next_token_is_not (parser->lexer, 
-					    CPP_CLOSE_PAREN))
-	      args = cp_parser_expression_list (parser);
-	    else
-	      args = NULL_TREE;
-	    /* Look for the closing `)'.  */
-	    cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
+	    if (args == error_mark_node)
+	      {
+		postfix_expression = error_mark_node;
+		break;
+	      }
+	    
 	    /* Function calls are not permitted in
 	       constant-expressions.  */
 	    if (parser->constant_expression_p)
@@ -4054,51 +4050,100 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
   return error_mark_node;
 }
 
-/* Parse an expression-list.
+/* Parse a parenthesized expression-list.
 
    expression-list:
      assignment-expression
      expression-list, assignment-expression
 
+   attribute-list:
+     expression-list
+     identifier
+     identifier, expression-list
+
    Returns a TREE_LIST.  The TREE_VALUE of each node is a
    representation of an assignment-expression.  Note that a TREE_LIST
-   is returned even if there is only a single expression in the list.  */
+   is returned even if there is only a single expression in the list.
+   error_mark_node is returned if the ( and or ) are
+   missing. NULL_TREE is returned on no expressions. The parentheses
+   are eaten. IS_ATTRIBUTE_LIST is true if this is really an attribute
+   list being parsed. */
 
 static tree
-cp_parser_expression_list (cp_parser* parser)
+cp_parser_parenthesized_expression_list (cp_parser* parser, bool is_attribute_list)
 {
   tree expression_list = NULL_TREE;
-
+  tree identifier = NULL_TREE;
+  
+  if (!cp_parser_require (parser, CPP_OPEN_PAREN, "`('"))
+    return error_mark_node;
+  
   /* Consume expressions until there are no more.  */
-  while (true)
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
+    while (true)
+      {
+	tree expr;
+	
+	/* At the beginning of attribute lists, check to see if the
+	   next token is an identifier.  */
+	if (is_attribute_list
+	    && cp_lexer_peek_token (parser->lexer)->type == CPP_NAME)
+	  {
+	    cp_token *token;
+	    
+	    /* Consume the identifier.  */
+	    token = cp_lexer_consume_token (parser->lexer);
+	    /* Save the identifier.  */
+	    identifier = token->value;
+	  }
+	else
+	  {
+	    /* Parse the next assignment-expression.  */
+	    expr = cp_parser_assignment_expression (parser);
+
+	     /* Add it to the list.  We add error_mark_node
+		expressions to the list, so that we can still tell if
+		the correct form for a parenthesized expression-list
+		is found. That gives better errors.  */
+	    expression_list = tree_cons (NULL_TREE, expr, expression_list);
+
+	    if (expr == error_mark_node)
+	      goto skip_comma;
+	  }
+
+	/* After the first item, attribute lists look the same as
+	   expression lists.  */
+	is_attribute_list = false;
+	
+      get_comma:;
+	/* If the next token isn't a `,', then we are done.  */
+	if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
+	  break;
+
+	/* Otherwise, consume the `,' and keep going.  */
+	cp_lexer_consume_token (parser->lexer);
+      }
+  
+  if (!cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'"))
     {
-      tree expr;
-
-      /* Parse the next assignment-expression.  */
-      expr = cp_parser_assignment_expression (parser);
-      /* Add it to the list.  */
-      expression_list = tree_cons (NULL_TREE, expr, expression_list);
-
-      /* If the next token isn't a `,', then we are done.  */
-      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
-	{
-	  /* All uses of expression-list in the grammar are followed
-	     by a `)'.  Therefore, if the next token is not a `)' an
-	     error will be issued, unless we are parsing tentatively.
-	     Skip ahead to see if there is another `,' before the `)';
-	     if so, we can go there and recover.  */
-	  if (cp_parser_parsing_tentatively (parser)
-	      || cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN)
-	      || !cp_parser_skip_to_closing_parenthesis_or_comma (parser))
-	    break;
-	}
-
-      /* Otherwise, consume the `,' and keep going.  */
-      cp_lexer_consume_token (parser->lexer);
+      int ending;
+      
+    skip_comma:;
+      /* We try and resync to an unnested comma, as that will give the
+	 user better diagnostics.  */
+      ending = cp_parser_skip_to_closing_parenthesis (parser, true, true);
+      if (ending < 0)
+	goto get_comma;
+      if (!ending)
+	return error_mark_node;
     }
 
   /* We built up the list in reverse order so we must reverse it now.  */
-  return nreverse (expression_list);
+  expression_list = nreverse (expression_list);
+  if (identifier)
+    expression_list = tree_cons (NULL_TREE, identifier, expression_list);
+  
+  return expression_list;
 }
 
 /* Parse a pseudo-destructor-name.
@@ -4463,13 +4508,8 @@ cp_parser_new_placement (cp_parser* parser)
 {
   tree expression_list;
 
-  /* Look for the opening `('.  */
-  if (!cp_parser_require (parser, CPP_OPEN_PAREN, "`('"))
-    return error_mark_node;
   /* Parse the expression-list.  */
-  expression_list = cp_parser_expression_list (parser);
-  /* Look for the closing `)'.  */
-  cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
+  expression_list = cp_parser_parenthesized_expression_list (parser, false);
 
   return expression_list;
 }
@@ -4633,16 +4673,9 @@ cp_parser_new_initializer (cp_parser* parser)
 {
   tree expression_list;
 
-  /* Look for the opening parenthesis.  */
-  cp_parser_require (parser, CPP_OPEN_PAREN, "`('");
-  /* If the next token is not a `)', then there is an
-     expression-list.  */
-  if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
-    expression_list = cp_parser_expression_list (parser);
-  else
+  expression_list = cp_parser_parenthesized_expression_list (parser, false);
+  if (!expression_list)
     expression_list = void_zero_node;
-  /* Look for the closing parenthesis.  */
-  cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 
   return expression_list;
 }
@@ -4738,7 +4771,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p)
 	 If we find the closing `)', and the next token is a `{', then
 	 we are looking at a compound-literal.  */
       compound_literal_p 
-	= (cp_parser_skip_to_closing_parenthesis (parser)
+	= (cp_parser_skip_to_closing_parenthesis (parser, false, false)
 	   && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE));
       /* Roll back the tokens we skipped.  */
       cp_lexer_rollback_tokens (parser->lexer);
@@ -5673,7 +5706,7 @@ cp_parser_selection_statement (cp_parser* parser)
 	condition = cp_parser_condition (parser);
 	/* Look for the `)'.  */
 	if (!cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'"))
-	  cp_parser_skip_to_closing_parenthesis (parser);
+	  cp_parser_skip_to_closing_parenthesis (parser, true, false);
 
 	if (keyword == RID_IF)
 	  {
@@ -7072,17 +7105,10 @@ cp_parser_mem_initializer (cp_parser* parser)
   member = expand_member_init (mem_initializer_id);
   if (member && !DECL_P (member))
     in_base_initializer = 1;
-  
-  /* Look for the opening `('.  */
-  cp_parser_require (parser, CPP_OPEN_PAREN, "`('");
-  /* Parse the expression-list.  */
-  if (cp_lexer_next_token_is_not (parser->lexer,
-				  CPP_CLOSE_PAREN))
-    expression_list = cp_parser_expression_list (parser);
-  else
+
+  expression_list = cp_parser_parenthesized_expression_list (parser, false);
+  if (!expression_list)
     expression_list = void_type_node;
-  /* Look for the closing `)'.  */
-  cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 
   in_base_initializer = 0;
   
@@ -9401,7 +9427,7 @@ cp_parser_asm_definition (cp_parser* parser)
     }
   /* Look for the closing `)'.  */
   if (!cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'"))
-    cp_parser_skip_to_closing_parenthesis (parser);
+    cp_parser_skip_to_closing_parenthesis (parser, true, false);
   cp_parser_require (parser, CPP_SEMICOLON, "`;'");
 
   /* Create the ASM_STMT.  */
@@ -9462,7 +9488,7 @@ cp_parser_init_declarator (cp_parser* parser,
   tree scope;
   bool is_initialized;
   bool is_parenthesized_init;
-  bool ctor_dtor_or_conv_p;
+  int ctor_dtor_or_conv_p;
   bool friend_p;
 
   /* Assume that this is not the declarator for a function
@@ -9548,7 +9574,7 @@ cp_parser_init_declarator (cp_parser* parser,
      We explicitly postpone this check past the point where we handle
      function-definitions because we tolerate function-definitions
      that are missing their return types in some modes.  */
-  if (!decl_specifiers && !ctor_dtor_or_conv_p)
+  if (!decl_specifiers && ctor_dtor_or_conv_p <= 0)
     {
       cp_parser_error (parser, 
 		       "expected constructor, destructor, or type conversion");
@@ -9720,10 +9746,12 @@ cp_parser_init_declarator (cp_parser* parser,
    cv-qualifiers will be stored in the TREE_TYPE of the INDIRECT_REF
    node.
 
-   If CTOR_DTOR_OR_CONV_P is not NULL, *CTOR_DTOR_OR_CONV_P is set to
-   true if this declarator represents a constructor, destructor, or
-   type conversion operator.  Otherwise, it is set to false.  
-
+   If CTOR_DTOR_OR_CONV_P is not NULL, *CTOR_DTOR_OR_CONV_P is used to
+   detect constructor, destructor or conversion operators. It is set
+   to -1 if the declarator is a name, and +1 if it is a
+   function. Otherwise it is set to zero. Usually you just want to
+   test for >0, but internally the negative value is used.
+   
    (The reason for CTOR_DTOR_OR_CONV_P is that a declaration must have
    a decl-specifier-seq unless it declares a constructor, destructor,
    or conversion.  It might seem that we could check this condition in
@@ -9735,7 +9763,7 @@ cp_parser_init_declarator (cp_parser* parser,
 static tree
 cp_parser_declarator (cp_parser* parser, 
                       cp_parser_declarator_kind dcl_kind, 
-                      bool* ctor_dtor_or_conv_p)
+                      int* ctor_dtor_or_conv_p)
 {
   cp_token *token;
   tree declarator;
@@ -9747,7 +9775,7 @@ cp_parser_declarator (cp_parser* parser,
   /* Assume this is not a constructor, destructor, or type-conversion
      operator.  */
   if (ctor_dtor_or_conv_p)
-    *ctor_dtor_or_conv_p = false;
+    *ctor_dtor_or_conv_p = 0;
 
   if (cp_parser_allow_gnu_extensions_p (parser))
     attributes = cp_parser_attributes_opt (parser);
@@ -9792,8 +9820,7 @@ cp_parser_declarator (cp_parser* parser,
     }
   /* Everything else is a direct-declarator.  */
   else
-    declarator = cp_parser_direct_declarator (parser, 
-					      dcl_kind,
+    declarator = cp_parser_direct_declarator (parser, dcl_kind,
 					      ctor_dtor_or_conv_p);
 
   if (attributes && declarator != error_mark_node)
@@ -9841,7 +9868,7 @@ cp_parser_declarator (cp_parser* parser,
 static tree
 cp_parser_direct_declarator (cp_parser* parser,
                              cp_parser_declarator_kind dcl_kind,
-                             bool* ctor_dtor_or_conv_p)
+                             int* ctor_dtor_or_conv_p)
 {
   cp_token *token;
   tree declarator = NULL_TREE;
@@ -9919,7 +9946,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 		{
 		  tree cv_qualifiers;
 		  tree exception_specification;
-		  
+
+		  if (ctor_dtor_or_conv_p)
+		    *ctor_dtor_or_conv_p = *ctor_dtor_or_conv_p < 0;
 		  first = false;
 		  /* Consume the `)'.  */
 		  cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
@@ -9976,6 +10005,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 	  /* Parse an array-declarator.  */
 	  tree bounds;
 
+	  if (ctor_dtor_or_conv_p)
+	    *ctor_dtor_or_conv_p = 0;
+	  
 	  first = false;
 	  parser->default_arg_ok_p = false;
 	  parser->in_declarator_p = true;
@@ -10091,7 +10123,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      if (TREE_CODE (unqualified_name) == BIT_NOT_EXPR
 		  || IDENTIFIER_TYPENAME_P (unqualified_name)
 		  || constructor_name_p (unqualified_name, class_type))
-		*ctor_dtor_or_conv_p = true;
+		*ctor_dtor_or_conv_p = -1;
 	    }
 
 	handle_declarator:;
@@ -11052,15 +11084,7 @@ cp_parser_initializer (cp_parser* parser, bool* is_parenthesized_init)
       init = cp_parser_initializer_clause (parser);
     }
   else if (token->type == CPP_OPEN_PAREN)
-    {
-      /* Consume the `('.  */
-      cp_lexer_consume_token (parser->lexer);
-      /* Parse the expression-list.  */
-      init = cp_parser_expression_list (parser);
-      /* Consume the `)' token.  */
-      if (!cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'"))
-	cp_parser_skip_to_closing_parenthesis (parser);
-    }
+    init = cp_parser_parenthesized_expression_list (parser, false);
   else
     {
       /* Anything else is an error.  */
@@ -12057,7 +12081,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	      tree declarator;
 	      tree initializer;
 	      tree asm_specification;
-	      bool ctor_dtor_or_conv_p;
+	      int ctor_dtor_or_conv_p;
 
 	      /* Parse the declarator.  */
 	      declarator 
@@ -12923,47 +12947,11 @@ cp_parser_attribute_list (cp_parser* parser)
       if (token->type == CPP_OPEN_PAREN)
 	{
 	  tree arguments;
-	  int arguments_allowed_p = 1;
 
-	  /* Consume the `('.  */
-	  cp_lexer_consume_token (parser->lexer);
-	  /* Peek at the next token.  */
-	  token = cp_lexer_peek_token (parser->lexer);
-	  /* Check to see if the next token is an identifier.  */
-	  if (token->type == CPP_NAME)
-	    {
-	      /* Save the identifier.  */
-	      identifier = token->value;
-	      /* Consume the identifier.  */
-	      cp_lexer_consume_token (parser->lexer);
-	      /* Peek at the next token.  */
-	      token = cp_lexer_peek_token (parser->lexer);
-	      /* If the next token is a `,', then there are some other
-		 expressions as well.  */
-	      if (token->type == CPP_COMMA)
-		/* Consume the comma.  */
-		cp_lexer_consume_token (parser->lexer);
-	      else
-		arguments_allowed_p = 0;
-	    }
-	  else
-	    identifier = NULL_TREE;
-
-	  /* If there are arguments, parse them too.  */
-	  if (arguments_allowed_p)
-	    arguments = cp_parser_expression_list (parser);
-	  else
-	    arguments = NULL_TREE;
-
-	  /* Combine the identifier and the arguments.  */
-	  if (identifier)
-	    arguments = tree_cons (NULL_TREE, identifier, arguments);
+	  arguments = cp_parser_parenthesized_expression_list (parser, true);
 
 	  /* Save the identifier and arguments away.  */
 	  TREE_VALUE (attribute) = arguments;
-
-	  /* Look for the closing `)'.  */
-	  cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 	}
 
       /* Add this attribute to the list.  */
@@ -13926,17 +13914,7 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 {
   tree expression_list;
 
-  /* Look for the opening `('.  */
-  if (!cp_parser_require (parser, CPP_OPEN_PAREN, "`('"))
-    return error_mark_node;
-  /* If the next token is not an `)', there are arguments to the
-     cast.  */
-  if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
-    expression_list = cp_parser_expression_list (parser);
-  else
-    expression_list = NULL_TREE;
-  /* Look for the closing `)'.  */
-  cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
+  expression_list = cp_parser_parenthesized_expression_list (parser, false);
 
   return build_functional_cast (type, expression_list);
 }
