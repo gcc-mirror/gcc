@@ -145,11 +145,70 @@ a predecessor of B, and B is a successor of A@.  Edges are represented
 in GCC with the @code{edge} data type.  Each @code{edge} acts as a
 link between two basic blocks: the @code{src} member of an edge
 points to the predecessor basic block of the @code{dest} basic block.
-The members @code{pred} and @code{succ} of the @code{basic_block} data
-type point to singly linked lists of edges to the predecessors and
-successors of the block.  The edges are linked via the
-@code{succ_next} and @code{pred_next} members of the @code{edge} data
-type.
+The members @code{preds} and @code{succs} of the @code{basic_block} data
+type point to type-safe vectors of edges to the predecessors and
+successors of the block.
+
+@cindex edge iterators
+When walking the edges in an edge vector, @dfn{edge iterators} should
+be used.  Edge iterators are constructed using the
+@code{edge_iterator} data structure and several methods are available
+to operate on them:
+
+@ftable @code
+@item ei_start
+This function initializes an @code{edge_iterator} that points to the
+first edge in a vector of edges.
+
+@item ei_last
+This function initializes an @code{edge_iterator} that points to the
+last edge in a vector of edges.
+
+@item ei_end_p
+This predicate is @code{true} if an @code{edge_iterator} represents
+the last edge in an edge vector.
+
+@item ei_one_before_end_p
+This predicate is @code{true} if an @code{edge_iterator} represents
+the second last edge in an edge vector.
+
+@item ei_next
+This function takes a pointer to an @code{edge_iterator} and makes it
+point to the next edge in the sequence.
+
+@item ei_prev
+This function takes a pointer to an @code{edge_iterator} and makes it
+point to the previous edge in the sequence.
+
+@item ei_edge
+This function returns the @code{edge} currently pointed to by an
+@code{edge_iterator}.
+
+@item ei_safe_safe
+This function returns the @code{edge} currently pointed to by an
+@code{edge_iterator}, but returns @code{NULL} if the iterator is
+pointing at the end of the sequence.  This function has been provided
+for existing code makes the assumption that a @code{NULL} edge
+indicates the end of the sequence.
+
+@end ftable
+
+The convenience macro @code{FOR_EACH_EDGE} can be used to visit all of
+the edges in a sequence of predecessor or successor edges.  It must
+not be used when an element might be removed during the traversal,
+otherwise elements will be missed.  Here is an example of how to use
+the macro:
+
+@smallexample
+edge e;
+edge_iterator ei;
+
+FOR_EACH_EDGE (e, ei, bb->succs)
+  @{
+     if (e->flags & EDGE_FALLTHRU)
+       break;
+  @}
+@end smallexample
 
 @findex fall-thru
 There are various reasons why control flow may transfer from one block
