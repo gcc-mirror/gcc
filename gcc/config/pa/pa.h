@@ -40,6 +40,13 @@ extern int target_flags;
 
 #define TARGET_SNAKE (target_flags & 1)
 
+/* Disable all FP registers (they all become fixed).  This may be necessary
+   for compiling kernels which perform lazy context switching of FP regs.
+   Note if you use this option and try to perform floating point operations 
+   the compiler will abort!  */
+
+#define TARGET_DISABLE_FPREGS (target_flags & 2)
+
 /* Force gcc to only use instructions which are safe when compiling kernels.
    Specifically, avoid using add instructions with dp (r27) as an argument.
    Use addil instructions instead.  Doing so avoids a nasty bug in the 
@@ -60,6 +67,13 @@ extern int target_flags;
 
 #define TARGET_LONG_CALLS (target_flags & 16)
 
+/* Disable indexed addressing modes.  Necessary under MACH.
+
+   ??? Some problem with a high bit being set in an address having
+   special meaning to the PA MACH ports.  */
+
+#define TARGET_DISABLE_INDEXING (target_flags & 32)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -71,10 +85,12 @@ extern int target_flags;
    {"nosnake", -1},	\
    {"pa-risc-1-0", -1},	\
    {"pa-risc-1-1", 1},	\
+   {"disable-fpregs", 2},\
    {"kernel", 4},	\
    {"shared-libs", 8},	\
    {"no-shared-libs", -8},\
    {"long-calls", 16},	\
+   {"disable-indexing", 32},\
    { "", TARGET_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
@@ -321,6 +337,17 @@ extern int target_flags;
   global_regs[27] = 1;				\
   if (!TARGET_SNAKE)				\
     {						\
+      COPY_HARD_REG_SET (x, reg_class_contents[(int)SNAKE_FP_REGS]);\
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
+       if (TEST_HARD_REG_BIT (x, i)) 		\
+	fixed_regs[i] = call_used_regs[i] = 1; 	\
+    }						\
+  else if (TARGET_DISABLE_FPREGS)		\
+    {						\
+      COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]);\
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
+       if (TEST_HARD_REG_BIT (x, i)) 		\
+	fixed_regs[i] = call_used_regs[i] = 1; 	\
       COPY_HARD_REG_SET (x, reg_class_contents[(int)SNAKE_FP_REGS]);\
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
        if (TEST_HARD_REG_BIT (x, i)) 		\
