@@ -37,14 +37,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "langhooks-def.h"
 
-#define output_formatted_integer(BUFFER, FORMAT, INTEGER)	\
-  do								\
-    {								\
-      sprintf ((BUFFER)->digit_buffer, FORMAT, INTEGER);	\
-      output_add_string (BUFFER, (BUFFER)->digit_buffer);	\
-    }								\
-  while (0)
-
 #define output_text_length(BUFFER) (BUFFER)->line_length
 #define is_starting_newline(BUFFER) (output_text_length (BUFFER) == 0)
 #define line_wrap_cutoff(BUFFER) (BUFFER)->state.maximum_length

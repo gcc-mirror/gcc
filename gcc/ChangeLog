@@ -1,3 +1,9 @@
+2002-07-29  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* pretty-print.h: Define more macros.
+	* diagnostic.h (output_formatted_integer): Moved from...
+	* diagnostic.c: ... here.
+
 2002-07-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* stormy16.h (ASM_OUTPUT_SYMBOL_REF): Use ASM_OUTPUT_LABEL_REF.
