@@ -51,8 +51,6 @@ static void output_buffer_to_stream PARAMS ((output_buffer *));
 static void output_format PARAMS ((output_buffer *, text_info *));
 static void output_indent PARAMS ((output_buffer *));
 
-static char *vbuild_message_string PARAMS ((const char *, va_list))
-     ATTRIBUTE_PRINTF (1, 0);
 static char *build_message_string PARAMS ((const char *, ...))
      ATTRIBUTE_PRINTF_1;
 static void format_with_decl PARAMS ((output_buffer *, text_info *, tree));
@@ -388,6 +386,9 @@ output_append (buffer, start, end)
   output_append_r (buffer, start, end - start);
 }
 
+/* Insert enough spaces into BUFFER to bring the column position to
+   the current indentation level, assuming that a newline has just
+   been written to the buffer.  */
 static void
 output_indent (buffer)
      output_buffer *buffer;
@@ -616,19 +617,8 @@ output_format (buffer, text)
     }
 }
 
-static char *
-vbuild_message_string (msg, ap)
-     const char *msg;
-     va_list ap;
-{
-  char *str;
-
-  vasprintf (&str, msg, ap);
-  return str;
-}
-
-/*  Return a malloc'd string containing MSG formatted a la
-    printf.  The caller is responsible for freeing the memory.  */
+/* Return a malloc'd string containing MSG formatted a la printf.  The
+   caller is responsible for freeing the memory.  */
 static char *
 build_message_string VPARAMS ((const char *msg, ...))
 {
@@ -637,7 +627,7 @@ build_message_string VPARAMS ((const char *msg, ...))
   VA_OPEN (ap, msg);
   VA_FIXEDARG (ap, const char *, msg);
 
-  str = vbuild_message_string (msg, ap);
+  vasprintf (&str, msg, ap);
 
   VA_CLOSE (ap);
 
@@ -851,29 +841,6 @@ diagnostic_build_prefix (diagnostic)
                             _(diagnostic_kind_text[diagnostic->kind]));
 }
 
-/* Report a diagnostic MESSAGE at the declaration DECL.
-   MSG is a format string which uses %s to substitute the declaration
-   name; subsequent substitutions are a la output_format.  */
-static void
-diagnostic_for_decl (diagnostic, decl)
-     diagnostic_info *diagnostic;
-     tree decl;
-{
-  if (global_dc->lock++)
-    error_recursion (global_dc);
-
-  if (diagnostic_count_diagnostic (global_dc, diagnostic->kind))
-    {
-      diagnostic_report_current_function (global_dc);
-      output_set_prefix
-	(&global_dc->buffer, diagnostic_build_prefix (diagnostic));
-      format_with_decl (&global_dc->buffer, &diagnostic->message, decl);
-      output_flush (&global_dc->buffer);
-      output_destroy_prefix (&global_dc->buffer);
-    }
-  global_dc->lock--;
-}
-
 void
 diagnostic_flush_buffer (context)
      diagnostic_context *context;
@@ -921,96 +888,6 @@ diagnostic_count_diagnostic (context, kind)
     }
 
   return true;
-}
-
-/* Print a diagnostic MSGID on FILE.  This is just fprintf, except it
-   runs its second argument through gettext.  */
-void
-fnotice VPARAMS ((FILE *file, const char *msgid, ...))
-{
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, FILE *, file);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  vfprintf (file, _(msgid), ap);
-  VA_CLOSE (ap);
-}
-
-
-/* Print a fatal I/O error message.  Argument are like printf.
-   Also include a system error message based on `errno'.  */
-void
-fatal_io_error VPARAMS ((const char *msgid, ...))
-{
-  text_info text;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  text.format_spec = _(msgid);
-  text.args_ptr = &ap;
-  output_printf (&global_dc->buffer, "%s: %s: ", progname, xstrerror (errno));
-  output_format (&global_dc->buffer, &text);
-  output_flush (&global_dc->buffer);
-  VA_CLOSE (ap);
-  exit (FATAL_EXIT_CODE);
-}
-
-/* Issue a pedantic warning MSGID.  */
-void
-pedwarn VPARAMS ((const char *msgid, ...))
-{
-  diagnostic_info diagnostic;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  diagnostic_set_info (&diagnostic, _(msgid), &ap, input_filename, input_line,
-                       pedantic_error_kind ());
-  report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
-}
-
-/* Issue a pedantic warning about DECL.  */
-void
-pedwarn_with_decl VPARAMS ((tree decl, const char *msgid, ...))
-{
-  diagnostic_info diagnostic;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, tree, decl);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  diagnostic_set_info (&diagnostic, _(msgid), &ap,
-                       DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
-                       pedantic_error_kind ());
-
-  /* We don't want -pedantic-errors to cause the compilation to fail from
-     "errors" in system header files.  Sometimes fixincludes can't fix what's
-     broken (eg: unsigned char bitfields - fixing it may change the alignment
-     which will cause programs to mysteriously fail because the C library
-     or kernel uses the original layout).  There's no point in issuing a
-     warning either, it's just unnecessary noise.  */
-  if (!DECL_IN_SYSTEM_HEADER (decl))
-    diagnostic_for_decl (&diagnostic, decl);
-  VA_CLOSE (ap);
-}
-
-/* Just apologize with MSGID.  */
-void
-sorry VPARAMS ((const char *msgid, ...))
-{
-  diagnostic_info diagnostic;
-
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  ++sorrycount;
-  diagnostic_set_info (&diagnostic, _(msgid), &ap,
-                       input_filename, input_line, DK_SORRY);
-
-  output_set_prefix
-    (&global_dc->buffer, diagnostic_build_prefix (&diagnostic));
-  output_format (&global_dc->buffer, &diagnostic.message);
-  output_flush (&global_dc->buffer);
-  VA_CLOSE (ap);
 }
 
 /* Called when the start of a function definition is parsed,
@@ -1080,136 +957,49 @@ diagnostic_report_current_function (context)
 }
 
 void
-error_with_decl VPARAMS ((tree decl, const char *msgid, ...))
+diagnostic_report_current_module (context)
+     diagnostic_context *context;
 {
-  diagnostic_info diagnostic;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, tree, decl);
-  VA_FIXEDARG (ap, const char *, msgid);
+  struct file_stack *p;
 
-  diagnostic_set_info (&diagnostic, msgid, &ap,
-                       DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
-                       DK_ERROR);
-  diagnostic_for_decl (&diagnostic, decl);
-  VA_CLOSE (ap);
-}
-
-
-/* Report an error message.  The arguments are like that of printf.  */
-
-void
-error VPARAMS ((const char *msgid, ...))
-{
-  diagnostic_info diagnostic;
-
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
-                       DK_ERROR);
-  report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
-}
-
-/* Likewise, except that the compilation is terminated after printing the
-   error message.  */
-
-void
-fatal_error VPARAMS ((const char *msgid, ...))
-{
-  diagnostic_info diagnostic;
-
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
-                       DK_FATAL);
-  report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
-
-  fnotice (stderr, "compilation terminated.\n");
-  exit (FATAL_EXIT_CODE);
-}
-
-void
-internal_error VPARAMS ((const char *msgid, ...))
-{
-  diagnostic_info diagnostic;
-
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  if (global_dc->lock)
-    error_recursion (global_dc);
-
-#ifndef ENABLE_CHECKING
-  if (errorcount > 0 || sorrycount > 0)
+  if (output_needs_newline (&context->buffer))
     {
-      fnotice (stderr, "%s:%d: confused by earlier errors, bailing out\n",
-	       input_filename, input_line);
-      exit (FATAL_EXIT_CODE);
+      output_add_newline (&context->buffer);
+      output_needs_newline (&context->buffer) = false;
     }
-#endif
 
-  if (global_dc->internal_error != 0)
-    (*global_dc->internal_error) (_(msgid), &ap);
-
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
-                       DK_ICE);
-  report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
-
-  fnotice (stderr,
-"Please submit a full bug report,\n\
-with preprocessed source if appropriate.\n\
-See %s for instructions.\n", bug_report_url);
-  exit (FATAL_EXIT_CODE);
+  if (input_file_stack && input_file_stack->next != 0
+      && diagnostic_last_module_changed (context))
+    {
+      for (p = input_file_stack->next; p; p = p->next)
+	if (p == input_file_stack->next)
+	  output_verbatim (&context->buffer,
+                           "In file included from %s:%d",
+			   p->location.file, p->location.line);
+	else
+	  output_verbatim (&context->buffer,
+                           ",\n                 from %s:%d",
+			   p->location.file, p->location.line);
+      output_verbatim (&context->buffer, ":\n");
+      diagnostic_set_last_module (context);
+    }
 }
 
-void
-warning_with_decl VPARAMS ((tree decl, const char *msgid, ...))
+static void
+default_diagnostic_starter (context, diagnostic)
+     diagnostic_context *context;
+     diagnostic_info *diagnostic;
 {
-  diagnostic_info diagnostic;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, tree, decl);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  diagnostic_set_info (&diagnostic, msgid, &ap,
-                       DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
-                       DK_WARNING);
-  diagnostic_for_decl (&diagnostic, decl);
-  VA_CLOSE (ap);
+  diagnostic_report_current_function (context);
+  output_set_prefix (&context->buffer, diagnostic_build_prefix (diagnostic));
 }
 
-void
-warning VPARAMS ((const char *msgid, ...))
+static void
+default_diagnostic_finalizer (context, diagnostic)
+     diagnostic_context *context;
+     diagnostic_info *diagnostic __attribute__((unused));
 {
-  diagnostic_info diagnostic;
-
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
-                       DK_WARNING);
-  report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
-}
-
-
-/* Same as above but use diagnostic_buffer.  */
-
-void
-verbatim VPARAMS ((const char *msgid, ...))
-{
-  text_info text;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  text.format_spec = _(msgid);
-  text.args_ptr = &ap;
-  output_do_verbatim (&global_dc->buffer, &text);
-  output_buffer_to_stream (&global_dc->buffer);
-  VA_CLOSE (ap);
+  output_destroy_prefix (&context->buffer);
 }
 
 /* Report a diagnostic message (an error or a warning) as specified by
@@ -1239,25 +1029,27 @@ diagnostic_report_diagnostic (context, diagnostic)
   --context->lock;
 }
 
-/* Inform the user that an error occurred while trying to report some
-   other error.  This indicates catastrophic internal inconsistencies,
-   so give up now.  But do try to flush out the previous error.
-   This mustn't use internal_error, that will cause infinite recursion.  */
-
+/* Report a diagnostic MESSAGE at the declaration DECL.
+   MSG is a format string which uses %s to substitute the declaration
+   name; subsequent substitutions are a la output_format.  */
 static void
-error_recursion (context)
-     diagnostic_context *context;
+diagnostic_for_decl (diagnostic, decl)
+     diagnostic_info *diagnostic;
+     tree decl;
 {
-  if (context->lock < 3)
-    output_flush (&context->buffer);
+  if (global_dc->lock++)
+    error_recursion (global_dc);
 
-  fnotice (stderr,
-	   "Internal compiler error: Error reporting routines re-entered.\n");
-  fnotice (stderr,
-"Please submit a full bug report,\n\
-with preprocessed source if appropriate.\n\
-See %s for instructions.\n", bug_report_url);
-  exit (FATAL_EXIT_CODE);
+  if (diagnostic_count_diagnostic (global_dc, diagnostic->kind))
+    {
+      diagnostic_report_current_function (global_dc);
+      output_set_prefix
+	(&global_dc->buffer, diagnostic_build_prefix (diagnostic));
+      format_with_decl (&global_dc->buffer, &diagnostic->message, decl);
+      output_flush (&global_dc->buffer);
+      output_destroy_prefix (&global_dc->buffer);
+    }
+  global_dc->lock--;
 }
 
 /* Given a partial pathname as input, return another pathname that
@@ -1304,65 +1096,28 @@ trim_filename (name)
 
   return p;
 }
+
+/* Standard error reporting routines in increasing order of severity.
+   All of these take arguments like printf.  */
 
-/* Report an internal compiler error in a friendly manner and without
-   dumping core.  */
-
+/* Text to be emitted verbatim to the error message stream; this
+   produces no prefix and disables line-wrapping.  Use rarely.  */
 void
-fancy_abort (file, line, function)
-     const char *file;
-     int line;
-     const char *function;
+verbatim VPARAMS ((const char *msgid, ...))
 {
-  internal_error ("in %s, at %s:%d", function, trim_filename (file), line);
+  text_info text;
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  text.format_spec = _(msgid);
+  text.args_ptr = &ap;
+  output_do_verbatim (&global_dc->buffer, &text);
+  output_buffer_to_stream (&global_dc->buffer);
+  VA_CLOSE (ap);
 }
 
-void
-diagnostic_report_current_module (context)
-     diagnostic_context *context;
-{
-  struct file_stack *p;
-
-  if (output_needs_newline (&context->buffer))
-    {
-      output_add_newline (&context->buffer);
-      output_needs_newline (&context->buffer) = false;
-    }
-
-  if (input_file_stack && input_file_stack->next != 0
-      && diagnostic_last_module_changed (context))
-    {
-      for (p = input_file_stack->next; p; p = p->next)
-	if (p == input_file_stack->next)
-	  output_verbatim (&context->buffer,
-                           "In file included from %s:%d",
-			   p->location.file, p->location.line);
-	else
-	  output_verbatim (&context->buffer,
-                           ",\n                 from %s:%d",
-			   p->location.file, p->location.line);
-      output_verbatim (&context->buffer, ":\n");
-      diagnostic_set_last_module (context);
-    }
-}
-
-static void
-default_diagnostic_starter (context, diagnostic)
-     diagnostic_context *context;
-     diagnostic_info *diagnostic;
-{
-  diagnostic_report_current_function (context);
-  output_set_prefix (&context->buffer, diagnostic_build_prefix (diagnostic));
-}
-
-static void
-default_diagnostic_finalizer (context, diagnostic)
-     diagnostic_context *context;
-     diagnostic_info *diagnostic __attribute__((unused));
-{
-  output_destroy_prefix (&context->buffer);
-}
-
+/* An informative note.  Use this for additional details on an error
+   message.  */
 void
 inform VPARAMS ((const char *msgid, ...))
 {
@@ -1377,6 +1132,214 @@ inform VPARAMS ((const char *msgid, ...))
   VA_CLOSE (ap);
 }
 
+/* A warning.  Use this for code which is correct according to the
+   relevant language specification but is likely to be buggy anyway.  */
+void
+warning VPARAMS ((const char *msgid, ...))
+{
+  diagnostic_info diagnostic;
+
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
+                       DK_WARNING);
+  report_diagnostic (&diagnostic);
+  VA_CLOSE (ap);
+}
+
+/* A "pedantic" warning.  Use this for code which triggers a
+   diagnostic which is required by the relevant language
+   specification, but which is considered unhelpful (i.e. there isn't
+   anything *really* wrong with the construct in the language as she
+   is spoke).  It is a normal warning unless -pedantic-errors is
+   applied, which turns it into an error.  Note that pedwarn-s still
+   happen if -pedantic is not given; you must write
+   "if (pedantic) pedwarn (...)" to get a warning enabled only under
+   -pedantic.  All such warnings should, however, use pedwarn.  */
+void
+pedwarn VPARAMS ((const char *msgid, ...))
+{
+  diagnostic_info diagnostic;
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  diagnostic_set_info (&diagnostic, _(msgid), &ap, input_filename, input_line,
+                       pedantic_error_kind ());
+  report_diagnostic (&diagnostic);
+  VA_CLOSE (ap);
+}
+
+/* A hard error: the code is definitely ill-formed, and an object file
+   will not be produced.  */
+void
+error VPARAMS ((const char *msgid, ...))
+{
+  diagnostic_info diagnostic;
+
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
+                       DK_ERROR);
+  report_diagnostic (&diagnostic);
+  VA_CLOSE (ap);
+}
+
+/* "Sorry, not implemented."  Use for a language feature which is
+   required by the relevant specification but not implemented by GCC.
+   An object file will not be produced.  */
+void
+sorry VPARAMS ((const char *msgid, ...))
+{
+  diagnostic_info diagnostic;
+
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  ++sorrycount;
+  diagnostic_set_info (&diagnostic, _(msgid), &ap,
+                       input_filename, input_line, DK_SORRY);
+
+  output_set_prefix
+    (&global_dc->buffer, diagnostic_build_prefix (&diagnostic));
+  output_format (&global_dc->buffer, &diagnostic.message);
+  output_flush (&global_dc->buffer);
+  VA_CLOSE (ap);
+}
+
+/* An error which is severe enough that we make no attempt to
+   continue.  Do not use this for internal consistency checks; that's
+   internal_error.  Use of this function should be rare.  */
+void
+fatal_error VPARAMS ((const char *msgid, ...))
+{
+  diagnostic_info diagnostic;
+
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
+                       DK_FATAL);
+  report_diagnostic (&diagnostic);
+  VA_CLOSE (ap);
+
+  fnotice (stderr, "compilation terminated.\n");
+  exit (FATAL_EXIT_CODE);
+}
+
+/* An internal consistency check has failed.  We make no attempt to
+   continue.  Note that unless there is debugging value to be had from
+   a more specific message, or some other good reason, you should use
+   abort () instead of calling this function directly.  */
+void
+internal_error VPARAMS ((const char *msgid, ...))
+{
+  diagnostic_info diagnostic;
+
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  if (global_dc->lock)
+    error_recursion (global_dc);
+
+#ifndef ENABLE_CHECKING
+  if (errorcount > 0 || sorrycount > 0)
+    {
+      fnotice (stderr, "%s:%d: confused by earlier errors, bailing out\n",
+	       input_filename, input_line);
+      exit (FATAL_EXIT_CODE);
+    }
+#endif
+
+  if (global_dc->internal_error != 0)
+    (*global_dc->internal_error) (_(msgid), &ap);
+
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
+                       DK_ICE);
+  report_diagnostic (&diagnostic);
+  VA_CLOSE (ap);
+
+  fnotice (stderr,
+"Please submit a full bug report,\n\
+with preprocessed source if appropriate.\n\
+See %s for instructions.\n", bug_report_url);
+  exit (FATAL_EXIT_CODE);
+}
+
+/* Variants of some of the above, which make reference to a particular
+   DECL node.  These are deprecated.  */
+
+void
+warning_with_decl VPARAMS ((tree decl, const char *msgid, ...))
+{
+  diagnostic_info diagnostic;
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, tree, decl);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  diagnostic_set_info (&diagnostic, msgid, &ap,
+                       DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
+                       DK_WARNING);
+  diagnostic_for_decl (&diagnostic, decl);
+  VA_CLOSE (ap);
+}
+
+void
+pedwarn_with_decl VPARAMS ((tree decl, const char *msgid, ...))
+{
+  diagnostic_info diagnostic;
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, tree, decl);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  diagnostic_set_info (&diagnostic, _(msgid), &ap,
+                       DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
+                       pedantic_error_kind ());
+
+  /* We don't want -pedantic-errors to cause the compilation to fail from
+     "errors" in system header files.  Sometimes fixincludes can't fix what's
+     broken (eg: unsigned char bitfields - fixing it may change the alignment
+     which will cause programs to mysteriously fail because the C library
+     or kernel uses the original layout).  There's no point in issuing a
+     warning either, it's just unnecessary noise.  */
+  if (!DECL_IN_SYSTEM_HEADER (decl))
+    diagnostic_for_decl (&diagnostic, decl);
+  VA_CLOSE (ap);
+}
+
+void
+error_with_decl VPARAMS ((tree decl, const char *msgid, ...))
+{
+  diagnostic_info diagnostic;
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, tree, decl);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  diagnostic_set_info (&diagnostic, msgid, &ap,
+                       DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
+                       DK_ERROR);
+  diagnostic_for_decl (&diagnostic, decl);
+  VA_CLOSE (ap);
+}
+
+/* Special case error functions.  Most are implemented in terms of the
+   above, or should be.  */
+
+/* Print a diagnostic MSGID on FILE.  This is just fprintf, except it
+   runs its second argument through gettext.  */
+void
+fnotice VPARAMS ((FILE *file, const char *msgid, ...))
+{
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, FILE *, file);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  vfprintf (file, _(msgid), ap);
+  VA_CLOSE (ap);
+}
+
+/* Warn about a use of an identifier which was marked deprecated.  */
 void
 warn_deprecated_use (node)
      tree node;
@@ -1413,6 +1376,58 @@ warn_deprecated_use (node)
       else
 	warning ("type is deprecated");
     }
+}
+
+/* Print a fatal I/O error message.  Argument are like printf.
+   Also include a system error message based on `errno'.  */
+void
+fatal_io_error VPARAMS ((const char *msgid, ...))
+{
+  text_info text;
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
+
+  text.format_spec = _(msgid);
+  text.args_ptr = &ap;
+  output_printf (&global_dc->buffer, "%s: %s: ", progname, xstrerror (errno));
+  output_format (&global_dc->buffer, &text);
+  output_flush (&global_dc->buffer);
+  VA_CLOSE (ap);
+  exit (FATAL_EXIT_CODE);
+}
+
+/* Inform the user that an error occurred while trying to report some
+   other error.  This indicates catastrophic internal inconsistencies,
+   so give up now.  But do try to flush out the previous error.
+   This mustn't use internal_error, that will cause infinite recursion.  */
+
+static void
+error_recursion (context)
+     diagnostic_context *context;
+{
+  if (context->lock < 3)
+    output_flush (&context->buffer);
+
+  fnotice (stderr,
+	   "Internal compiler error: Error reporting routines re-entered.\n");
+  fnotice (stderr,
+"Please submit a full bug report,\n\
+with preprocessed source if appropriate.\n\
+See %s for instructions.\n", bug_report_url);
+  exit (FATAL_EXIT_CODE);
+}
+
+/* Report an internal compiler error in a friendly manner.  This is
+   the function that gets called upon use of abort() in the source
+   code generally, thanks to a special macro.  */
+
+void
+fancy_abort (file, line, function)
+     const char *file;
+     int line;
+     const char *function;
+{
+  internal_error ("in %s, at %s:%d", function, trim_filename (file), line);
 }
 
 /* Really call the system 'abort'.  This has to go right at the end of
