@@ -1691,6 +1691,18 @@
   "jmp	@%0%#"
   [(set_attr "needs_delay_slot" "yes")])
 
+;; This might seem redundant, but it helps us distinguish case table jumps
+;; which can be present in structured code from indirect jumps which can not
+;; be present in structured code.  This allows -fprofile-arcs to work.
+
+(define_insn "*casesi_jump"
+  [(set (pc)
+	(match_operand:SI 0 "arith_reg_operand" "r"))
+   (use (label_ref (match_operand 1 "" "")))]
+  ""
+  "jmp	@%0%#"
+  [(set_attr "needs_delay_slot" "yes")])
+
 ;; Call subroutine returning any type.
 ;; ??? This probably doesn't work.
 
@@ -1783,7 +1795,8 @@
 				       (mem:HI (plus:SI (reg:SI 0)
 							(match_dup 6)))))
 	      (set (match_dup 6) (mem:HI (plus:SI (reg:SI 0) (match_dup 6))))])
-   (set (pc) (reg:SI 0))]
+   (parallel [(set (pc) (reg:SI 0))
+	      (use (label_ref (match_dup 3)))])]
   ""
   "
 {
