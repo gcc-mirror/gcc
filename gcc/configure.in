@@ -1325,12 +1325,23 @@ L1:
 L2:
 EOF
 	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		# GAS versions numbered 2.10.90 do not support uleb128, despite
-		# appearing to.
-		if $gcc_cv_as --version | fgrep 2.10.90 > /dev/null; then
-			:
-		else
-			gcc_cv_as_leb128="yes"
+		gcc_cv_as_leb128="yes"
+
+		# GAS versions before 2.11 do not support uleb128,
+		# despite appearing to.
+		# ??? There exists an elf-specific test that will crash
+		# the assembler.  Perhaps it's better to figure out whether
+		# arbitrary sections are supported and try the test.
+		as_ver=`$gcc_cv_as --version 2>/dev/null | head -1`
+		if echo "$as_ver" | grep GNU > /dev/null; then
+			as_ver=`echo $as_ver | sed -e 's/.* //'`
+			as_major=`echo $as_ver | sed 's/\..*//'`
+changequote(,)dnl
+			as_minor=`echo $as_ver | sed 's/[^.]*.\([^.]*\).*/\1/'`
+changequote([,])dnl
+			if test $as_major -eq 2 -a $as_minor -lt 11; then
+				gcc_cv_as_leb128="no"
+			fi
 		fi
 	fi
 	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
