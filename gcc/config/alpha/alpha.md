@@ -2963,7 +2963,7 @@
    (use (match_operand 1 "" ""))]
   ""
   "
-{ if (WINDOWS_NT)
+{ if (TARGET_WINDOWS_NT)
     emit_call_insn (gen_call_nt (operands[0], operands[1]));
   else
     emit_call_insn (gen_call_osf (operands[0], operands[1]));
@@ -3017,7 +3017,7 @@
    (use (match_operand 2 "" ""))]
   ""
   "
-{ if (WINDOWS_NT)
+{ if (TARGET_WINDOWS_NT)
     emit_call_insn (gen_call_value_nt (operands[0], operands[1], operands[2]));
   else
     emit_call_insn (gen_call_value_osf (operands[0], operands[1],
@@ -3072,7 +3072,7 @@
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
-  "! WINDOWS_NT && alpha_tp == ALPHA_TP_INSN"
+  "! TARGET_WINDOWS_NT && alpha_tp == ALPHA_TP_INSN"
   "@
    jsr $26,($27),0\;trapb\;ldgp $29,4($26)
    bsr $26,%0..ng\;trapb
@@ -3084,7 +3084,7 @@
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
-  "! WINDOWS_NT"
+  "! TARGET_WINDOWS_NT"
   "@
    jsr $26,($27),0\;ldgp $29,0($26)
    bsr $26,%0..ng
@@ -3095,7 +3095,7 @@
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,i"))
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 26))]
-  "WINDOWS_NT"
+  "TARGET_WINDOWS_NT"
   "@
    jsr $26,(%0)
    bsr $26,%0"
@@ -3107,7 +3107,7 @@
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
-  "! WINDOWS_NT && alpha_tp == ALPHA_TP_INSN"
+  "! TARGET_WINDOWS_NT && alpha_tp == ALPHA_TP_INSN"
   "@
    jsr $26,($27),0\;trapb\;ldgp $29,4($26)
    bsr $26,%1..ng\;trapb
@@ -3120,7 +3120,7 @@
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 27))
    (clobber (reg:DI 26))]
-  "! WINDOWS_NT"
+  "! TARGET_WINDOWS_NT"
   "@
    jsr $26,($27),0\;ldgp $29,0($26)
    bsr $26,%1..ng
@@ -3132,7 +3132,7 @@
 	(call (mem:DI (match_operand:DI 1 "call_operand" "r,i"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 26))]
-  "WINDOWS_NT"
+  "TARGET_WINDOWS_NT"
   "@
    jsr $26,(%1)
    bsr $26,%1"
@@ -3206,7 +3206,7 @@
   ""
   "
 {
-  if (WINDOWS_NT)
+  if (TARGET_WINDOWS_NT)
     emit_jump_insn (gen_tablejump_nt (operands[0], operands[1]));
   else
     emit_jump_insn (gen_tablejump_osf (operands[0], operands[1]));
@@ -3240,7 +3240,7 @@
 	(plus:DI (match_operand:DI 0 "register_operand" "r")
 		 (label_ref:DI (match_operand 1 "" ""))))
    (clobber (match_scratch:DI 2 "=r"))]
-  "! WINDOWS_NT && next_active_insn (insn) != 0
+  "! TARGET_WINDOWS_NT && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
    && PREV_INSN (next_active_insn (insn)) == operands[1]"
   "*
@@ -3283,7 +3283,7 @@
   [(set (pc)
 	(match_operand:DI 0 "register_operand" "r"))
    (use (label_ref (match_operand 1 "" "")))]
-  "WINDOWS_NT && next_active_insn (insn) != 0
+  "TARGET_WINDOWS_NT && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
    && PREV_INSN (next_active_insn (insn)) == operands[1]"
   "*
@@ -3388,8 +3388,8 @@
 (define_insn ""
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,f,f,f,m")
 	(match_operand:SI 1 "input_operand" "r,J,I,K,L,m,rJ,f,J,m,fG"))]
-  "! WINDOWS_NT && (register_operand (operands[0], SImode)
-		    || reg_or_0_operand (operands[1], SImode))"
+  "! TARGET_WINDOWS_NT && (register_operand (operands[0], SImode)
+			   || reg_or_0_operand (operands[1], SImode))"
   "@
    bis %1,%1,%0
    bis $31,$31,%0
@@ -3407,8 +3407,8 @@
 (define_insn ""
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,r,m,f,f,f,m")
 	(match_operand:SI 1 "input_operand" "r,J,I,K,L,s,m,rJ,f,J,m,fG"))]
-  "WINDOWS_NT && (register_operand (operands[0], SImode)
-		  || reg_or_0_operand (operands[1], SImode))"
+  "TARGET_WINDOWS_NT && (register_operand (operands[0], SImode)
+			 || reg_or_0_operand (operands[1], SImode))"
   "@
    bis %1,%1,%0
    bis $31,$31,%0
