@@ -1,4 +1,4 @@
-2000-10-20  Alex Samuel  <samuel@codesourcery.com>
+2000-10-22  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (string_list_def): Add caret_position and comments.
 	(result_caret_pos): New macro.
