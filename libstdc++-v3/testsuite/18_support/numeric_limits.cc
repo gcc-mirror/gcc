@@ -289,12 +289,33 @@ bool test03()
   return test;
 }
 
+// libstdc++/8949
+bool test04()
+{
+  bool test = true;
+
+  VERIFY( !std::numeric_limits<short>::is_iec559 );
+  VERIFY( !std::numeric_limits<unsigned short>::is_iec559 );
+  VERIFY( !std::numeric_limits<int>::is_iec559 );
+  VERIFY( !std::numeric_limits<unsigned int>::is_iec559 );
+  VERIFY( !std::numeric_limits<long>::is_iec559 );
+  VERIFY( !std::numeric_limits<unsigned long>::is_iec559 );
+  VERIFY( !std::numeric_limits<long long>::is_iec559 );
+  VERIFY( !std::numeric_limits<unsigned long long>::is_iec559 );
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+
+  return test;
+}
 
 int main()
 {
   test01();
   test02();
   test03();
+  test04();
 
   test_extrema<char>();
   test_extrema<signed char>();

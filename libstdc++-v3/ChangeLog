@@ -1,3 +1,18 @@
+2002-12-16  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/8949
+	* include/std/std_limits.h
+	(struct numeric_limits<short>,
+	struct numeric_limits<unsigned short>,
+	struct numeric_limits<int>,
+	struct numeric_limits<unsigned int>,
+	struct numeric_limits<long>,
+	struct numeric_limits<unsigned long>,
+	struct numeric_limits<long long>,
+	struct numeric_limits<unsigned long long>): According
+	to 18.2.1.2,53 and 18.2.1.5,1 is_iec559 shall be false.
+	* testsuite/18_support/numeric_limits.cc: Add test04.
+
 2002-12-16  Benjamin Kosnik  <bkoz@redhat.com>
 
         * configure.in (GLIBCPP_ENABLE_DEBUG): Default to none.

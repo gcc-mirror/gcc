@@ -508,7 +508,7 @@ namespace std
       static short denorm_min() throw()
       { return short(); }
 
-      static const bool is_iec559 = true;
+      static const bool is_iec559 = false;
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
@@ -558,7 +558,7 @@ namespace std
       static unsigned short denorm_min() throw()
       { return static_cast<unsigned short>(0); }
 
-      static const bool is_iec559 = true;
+      static const bool is_iec559 = false;
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
@@ -608,7 +608,7 @@ namespace std
       static int denorm_min() throw()
       { return static_cast<int>(0); }
 
-      static const bool is_iec559 = true;
+      static const bool is_iec559 = false;
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
@@ -658,7 +658,7 @@ namespace std
       static unsigned int denorm_min() throw()
       { return static_cast<unsigned int>(0); }
 
-      static const bool is_iec559 = true;
+      static const bool is_iec559 = false;
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
@@ -708,7 +708,7 @@ namespace std
       static long denorm_min() throw()
       { return static_cast<long>(0); }
 
-      static const bool is_iec559 = true;
+      static const bool is_iec559 = false;
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
@@ -758,7 +758,7 @@ namespace std
       static unsigned long denorm_min() throw()
       { return static_cast<unsigned long>(0); }
 
-      static const bool is_iec559 = true;
+      static const bool is_iec559 = false;
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
@@ -808,7 +808,7 @@ namespace std
       static long long denorm_min() throw()
       { return static_cast<long long>(0); }
 
-      static const bool is_iec559 = true;
+      static const bool is_iec559 = false;
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
@@ -858,7 +858,7 @@ namespace std
       static unsigned long long denorm_min() throw()
       { return static_cast<unsigned long long>(0); }
 
-      static const bool is_iec559 = true;
+      static const bool is_iec559 = false;
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
