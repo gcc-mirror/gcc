@@ -1,3 +1,14 @@
+2002-10-04  Richard Henderson  <rth@redhat.com>
+
+	* real.h (SIGNIFICAND_BITS): Add one more word.
+	(CONST_DOUBLE_FORMAT): Accomodate 6 words.
+	* real.c (times_pten): New.
+	(real_to_decimal, real_from_string): Use it.
+	(sticky_rshift_significand): Use & to find modulus.
+	(rshift_significand, lshift_significand): Likewise.
+	(do_divide): Apply sticky bit after normalization.
+	(real_to_decimal, real_to_hexadecimal): Fix sign of Inf and NaN.
+
 2002-10-03  Andreas Jaeger  <aj@suse.de>
 
 	* gengtype.c (adjust_field_rtx_def): Cast variables of type size_t
@@ -205,7 +216,7 @@ Wed Oct  2 17:01:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	for TLS debug info to !DECL_EXTERNAL.
 
 2002-10-01  Matt Thomas  <matt@3am-software.com>
-            Jason Thorpe  <thorpej@wasabisystems.com>
+	    Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (vax-*-netbsdelf*): Enable configuration.
 	* config/elfos.h (PCC_BITFIELD_TYPE_MATTERS): Define only
@@ -322,7 +333,7 @@ Wed Oct  2 17:01:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/xtensa/xtensa.h (REG_CLASS_NAMES, REG_CLASS_CONTENTS):
 	Add new RL_REGS register class.
 	(PREFERRED_RELOAD_CLASS, PREFERRED_OUTPUT_RELOAD_CLASS):
-        Call xtensa_preferred_reload_class for both input and output reloads.
+	Call xtensa_preferred_reload_class for both input and output reloads.
 	* config/xtensa/xtensa.c (xtensa_regno_to_class): Use new RL_REGS class.
 	(xtensa_preferred_reload_class): Handle output reloads; use RL_REGS
 	instead of either AR_REGS or GR_REGS classes.
