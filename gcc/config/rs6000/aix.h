@@ -71,7 +71,7 @@ Boston, MA 02111-1307, USA.  */
 /* #define ASM_OUTPUT_DESTRUCTOR(file, name) */
 
 /* The prefix to add to user-visible assembler symbols. */
-#define USER_LABEL_PREFIX "."
+#define USER_LABEL_PREFIX ""
 
 /* Don't turn -B into -L if the argument specifies a relative file name.  */
 #define RELATIVE_PREFIX_NOT_LINKDIR
@@ -486,12 +486,6 @@ toc_section ()						\
 
 #define ASM_OUTPUT_SYMBOL_REF(FILE, SYM) \
   rs6000_output_symbol_ref (FILE, SYM)
-
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
-
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fputs (NAME, FILE)
 
 /* This says how to output an external.  */
 
