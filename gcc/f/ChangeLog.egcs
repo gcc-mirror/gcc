@@ -1,5 +1,8 @@
 Thu Sep 18 17:31:38 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* g77install.texi: Renamed from install.texi
+	* g77.texi: Corresponding changes.
+
 	* fini.c (main): Return type is int.
 
 	* com.c (lang_printable_name): Use verbosity argument.

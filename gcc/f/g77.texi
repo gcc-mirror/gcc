@@ -7973,7 +7973,7 @@ provide a dummy version of this to avoid linkers complaining about
 failure to resolve @code{MAIN__()} if linking against @file{libf2c} and
 not using @code{main()} from it.
 
-@include install.texi
+@include g77install.texi
 
 @node Debugging and Interfacing
 @chapter Debugging and Interfacing
