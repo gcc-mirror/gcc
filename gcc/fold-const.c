@@ -4959,7 +4959,7 @@ fold_binary_op_with_conditional_arg (enum tree_code code, tree type,
      evaluated in one branch, with the other branch using the result
      but missing the evaluation code.  Beware that the save_expr call
      above might not return a SAVE_EXPR, so testing the TREE_CODE
-     of ARG is not enough to decide here.  */
+     of ARG is not enough to decide here.  */
   if (save)
     return build (COMPOUND_EXPR, type,
 		  fold_convert (void_type_node, arg),
