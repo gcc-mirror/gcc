@@ -1,3 +1,8 @@
+2002-10-22  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Add missing
+	case for Darwin.
+
 2002-10-22  Jim Wilson  <wilson@redhat.com>
 
 	* config/i386/i386.md (subdi3_1): Add call to ix86_binary_operator_ok.

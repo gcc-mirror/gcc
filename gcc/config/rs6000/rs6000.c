@@ -11320,6 +11320,7 @@ rs6000_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
 
     case ABI_V4:
     case ABI_AIX_NODESC:
+    case ABI_DARWIN:
       prefix = "";
       break;
     }
