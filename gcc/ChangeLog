@@ -1,8 +1,14 @@
+2002-05-06  Richard Henderson  <rth@redhat.com>
+
+	PR c++/6212
+	* expr.c (highest_pow2_factor_for_type): New.
+	(expand_assignment): Use it.
+
 2002-05-06  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md ("altivec_mtvscr"): Change to
-        unspec_volatile.
-        ("altivec_mfvscr"): Same.
+	* config/rs6000/rs6000.md ("altivec_mtvscr"): Change to
+	unspec_volatile.
+	("altivec_mfvscr"): Same.
 
 2002-05-06  Janis Johnson  <janis187@us.ibm.com>
 
@@ -26,7 +32,7 @@
 	PR opt/3995
 	* fold-const.c (sign_bit_p): New function.
 	(fold) [EQ_EXPR]: Use this to convert (A & C) == 0 into A >= 0 and
-        (A & C) != 0 into A < 0, when constant C is the sign bit of A's type.
+	(A & C) != 0 into A < 0, when constant C is the sign bit of A's type.
 	Reapply fold when converting (A & C) == C into (A & C) != 0.
 	(fold_binary_op_with_conditional_arg): Fix typo in comment.
 
@@ -85,7 +91,7 @@ doc:
 2002-05-06  Catherine Moore  <clm@redhat.com>
 
 	* config/v850/v850.c (compute_register_save_size): Make sure
-        to count all of the registers that will be saved.
+	to count all of the registers that will be saved.
 
 Mon May  6 18:03:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
 

@@ -147,6 +147,7 @@ static rtx store_field		PARAMS ((rtx, HOST_WIDE_INT,
 					 int));
 static rtx var_rtx		PARAMS ((tree));
 static HOST_WIDE_INT highest_pow2_factor PARAMS ((tree));
+static HOST_WIDE_INT highest_pow2_factor_for_type PARAMS ((tree, tree));
 static int is_aligning_offset	PARAMS ((tree, tree));
 static rtx expand_increment	PARAMS ((tree, int, int));
 static void do_jump_by_parts_greater PARAMS ((tree, int, rtx, rtx));
@@ -3707,7 +3708,8 @@ expand_assignment (to, from, want_value, suggest_reg)
 	    }
 
 	  to_rtx = offset_address (to_rtx, offset_rtx,
-				   highest_pow2_factor (offset));
+				   highest_pow2_factor_for_type (TREE_TYPE (to),
+								 offset));
 	}
 
       if (GET_CODE (to_rtx) == MEM)
@@ -5933,6 +5935,21 @@ highest_pow2_factor (exp)
     }
 
   return 1;
+}
+
+/* Similar, except that it is known that the expression must be a multiple
+   of the alignment of TYPE.  */
+
+static HOST_WIDE_INT
+highest_pow2_factor_for_type (type, exp)
+     tree type;
+     tree exp;
+{
+  HOST_WIDE_INT type_align, factor;
+
+  factor = highest_pow2_factor (exp);
+  type_align = TYPE_ALIGN (type) / BITS_PER_UNIT;
+  return MAX (factor, type_align);
 }
 
 /* Return an object on the placeholder list that matches EXP, a
