@@ -1,3 +1,11 @@
+2004-08-19  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (preferred_la_operand_p): Adapt prototype.
+	* config/s390/s390.c (preferred_la_operand_p): Accept two operands
+	instead of one.  Check for strictly legitimate address.
+	* config/s390/s390.md ("*la_31"/"*la_64" peepholes): Adapt call
+	to preferred_la_operand_p, do not call gen_rtx_PLUS in predicate.
+
 2004-08-19  Eric Christopher  <echristo@redhat.com>
 
 	* langhooks-def.h (LANG_HOOKS_UNSAVE_EXPR_NOW): Remove.

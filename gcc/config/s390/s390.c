@@ -2495,14 +2495,22 @@ legitimate_la_operand_p (register rtx op)
   return FALSE;
 }
 
-/* Return 1 if OP is a valid operand for the LA instruction,
-   and we prefer to use LA over addition to compute it.  */
+/* Return 1 if it is valid *and* preferrable to use LA to
+   compute the sum of OP1 and OP2.  */
 
 int
-preferred_la_operand_p (register rtx op)
+preferred_la_operand_p (rtx op1, rtx op2)
 {
   struct s390_address addr;
-  if (!s390_decompose_address (op, &addr))
+
+  if (op2 != const0_rtx)
+    op1 = gen_rtx_PLUS (Pmode, op1, op2);
+
+  if (!s390_decompose_address (op1, &addr))
+    return FALSE;
+  if (addr.base && !REG_OK_FOR_BASE_STRICT_P (addr.base))
+    return FALSE;
+  if (addr.indx && !REG_OK_FOR_INDEX_STRICT_P (addr.indx))
     return FALSE;
 
   if (!TARGET_64BIT && !addr.pointer)
