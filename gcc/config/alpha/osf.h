@@ -118,7 +118,7 @@ Boston, MA 02111-1307, USA.  */
 		%{K: -I %b.o~} \
 		%{!K: %{save-temps: -I %b.o~}} \
 		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
-		%{.s:%i} %{!.s:%g.s}}}"
+		%{.s:%i} %{!.s:%U.s}}}"
 
 #else
 #define ASM_FINAL_SPEC "\
@@ -127,7 +127,7 @@ Boston, MA 02111-1307, USA.  */
 		%{K: -I %b.o~} \
 		%{!K: %{save-temps: -I %b.o~}} \
 		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
-		%{.s:%i} %{!.s:%g.s}}}"
+		%{.s:%i} %{!.s:%U.s}}}"
 
 #endif
 

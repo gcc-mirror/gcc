@@ -1,3 +1,15 @@
+2001-08-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* gcc.c (set_collect_gcc_options): New function, split out from
+	main.
+	Ignore elided switches.
+	(do_spec_1): Invoke before executing command.
+	(set_input): Export.
+	Move declaration ...
+	* gcc.h (set_input): ... here.
+	* config/alpha/osf.h (ASM_FINAL_SPEC): Use %U.s to refer to input
+	file.
+
 2001-08-01  Hartmut Penner  <hpenner@de.ibm.com>
 
         * varasm.c (decode_rtx_const): Allow unspec (symbol_ref) in 
