@@ -62,13 +62,13 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_SPEC
 #define ASM_SPEC "\
-%{V} %{v:%{!V:-V}} -s %{fpic:-K PIC} %{fPIC:-K PIC} \
+%{v:-V} -s %{fpic:-K PIC} %{fPIC:-K PIC} \
 "
 
 /* This is taken from sol2.h.  */
 #undef LINK_SPEC
 #define LINK_SPEC "\
-%{V} %{v:%{!V:-V}} \
+%{v:-V} \
 "
 
 /* We need something a little simpler for the embedded environment.
