@@ -1,3 +1,11 @@
+2004-07-21  Frank Ch. Eigler  <fche@redhat.com>
+
+	* mf-runtime.c (__mfu_check): Remove mistaken mode-nop 
+	handling.
+	(__mfu_usage): Include (C) 2004.
+	* mf-hooks3.c (__mf_find_threadinfo): Don't call tracing functions
+	here.  Include a comment explaining why.
+
 2004-07-20  Frank Ch. Eigler  <fche@redhat.com>
 
 	* mf-impl.h (__mf_options): Add ignore_reads and timestamps fields.

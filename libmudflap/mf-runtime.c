@@ -376,7 +376,7 @@ __mf_usage ()
 
   fprintf (stderr, 
            "This is a %s%sGCC \"mudflap\" memory-checked binary.\n"
-           "Mudflap is Copyright (C) 2002-2003 Free Software Foundation, Inc.\n"
+           "Mudflap is Copyright (C) 2002-2004 Free Software Foundation, Inc.\n"
            "\n"
            "The mudflap code can be controlled by an environment variable:\n"
            "\n"
@@ -759,8 +759,13 @@ void __mfu_check (void *ptr, size_t sz, int type, const char *location)
   switch (__mf_opts.mudflap_mode)
     {
     case mode_nop:
-      entry->low = MINPTR;
-      entry->high = MAXPTR;
+      /* It is tempting to poison the cache here similarly to
+         mode_populate.  However that eliminates a valuable
+         distinction between these two modes.  mode_nop is useful to
+         let a user count & trace every single check / registration
+         call.  mode_populate is useful to let a program run fast
+         while unchecked.
+      */
       judgement = 1;
       break;
 

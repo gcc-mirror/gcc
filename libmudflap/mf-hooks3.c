@@ -172,6 +172,10 @@ __mf_allocate_blank_threadinfo (unsigned* idx)
    making an early call into libmudflap.  In these cases, create a new
    entry.  If not it's not the main thread, put it into reentrant
    initial state.
+
+   NB: VERBOSE_TRACE type functions are not generally safe to call
+   from this context, since a new thread might just be "booting up",
+   making printf unsafe to call.
 */
 static struct pthread_info* 
 __mf_find_threadinfo ()
@@ -225,7 +229,7 @@ __mf_find_threadinfo ()
 	  /* NB: leave stack-related fields unset, to avoid
 	     deallocation.  */
 	  main_thread_seen_p = 1;
-	  VERBOSE_TRACE ("identified self as main thread\n");
+	  /* VERBOSE_TRACE ("identified self as main thread\n"); */
 	}
       else
 	{
@@ -236,15 +240,17 @@ __mf_find_threadinfo ()
 	  /* NB: leave stack-related fields unset, leaving pthread_create
 	     to fill them in for user threads, leaving them empty for
 	     other threads.  */
-	  VERBOSE_TRACE ("identified self as new aux or user thread\n");
+	  /* VERBOSE_TRACE ("identified self as new aux or user thread\n"); */
 	}
     }
 
   if (last != it)
     {
+      /*
       VERBOSE_TRACE ("found threadinfo for %u, slot %u\n", 
 		     (unsigned) it,
 		     (unsigned) *hash);
+      */
       last = it;
     }
 
