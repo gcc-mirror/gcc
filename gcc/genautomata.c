@@ -1,5 +1,5 @@
 /* Pipeline hazard description translator.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 
    Written by Vladimir Makarov <vmakarov@redhat.com>
    
@@ -448,7 +448,7 @@ static void add_vect_el 	         PARAMS ((vla_hwint_t *,
 static void add_states_vect_el           PARAMS ((state_t));
 static void output_trans_table           PARAMS ((automaton_t));
 static void output_state_alts_table      PARAMS ((automaton_t));
-static void min_issue_delay_pass_states  PARAMS ((state_t, ainsn_t));
+static int min_issue_delay_pass_states  PARAMS ((state_t, ainsn_t));
 static int min_issue_delay               PARAMS ((state_t, ainsn_t));
 static void initiate_min_issue_delay_pass_states PARAMS ((void));
 static void output_min_issue_delay_table PARAMS ((automaton_t));
@@ -7114,8 +7114,10 @@ static int curr_state_pass_num;
 
 
 /* This recursive function passes states to find minimal issue delay
-   value for AINSN.  The state being visited is STATE.  */
-static void
+   value for AINSN.  The state being visited is STATE.  The function
+   returns minimal issue delay value for AINSN in STATE or -1 if we
+   enter into a loop.  */
+static int
 min_issue_delay_pass_states (state, ainsn)
      state_t state;
      ainsn_t ainsn;
@@ -7123,10 +7125,13 @@ min_issue_delay_pass_states (state, ainsn)
   arc_t arc;
   int min_insn_issue_delay, insn_issue_delay;
 
-  if (state->state_pass_num == curr_state_pass_num)
-    return;
+  if (state->state_pass_num == curr_state_pass_num
+      || state->min_insn_issue_delay != -1)
+    /* We've entered into a loop or already have the correct value for
+       given state and ainsn. */
+    return state->min_insn_issue_delay;
   state->state_pass_num = curr_state_pass_num;
-  min_insn_issue_delay = state->min_insn_issue_delay = -1;
+  min_insn_issue_delay = -1;
   for (arc = first_out_arc (state); arc != NULL; arc = next_out_arc (arc))
     if (arc->insn == ainsn)
       {
@@ -7135,31 +7140,34 @@ min_issue_delay_pass_states (state, ainsn)
       }
     else
       {
-        min_issue_delay_pass_states (arc->to_state, ainsn);
-	if (arc->to_state->min_insn_issue_delay != -1)
+        insn_issue_delay = min_issue_delay_pass_states (arc->to_state, ainsn);
+	if (insn_issue_delay != -1)
 	  {
-	    insn_issue_delay
-	      = (arc->to_state->min_insn_issue_delay
-		 + (arc->insn->insn_reserv_decl
-		    == &advance_cycle_insn_decl->decl.insn_reserv ? 1 : 0));
+	    if (arc->insn->insn_reserv_decl
+		== &advance_cycle_insn_decl->decl.insn_reserv)
+	      insn_issue_delay++;
 	    if (min_insn_issue_delay == -1
 		|| min_insn_issue_delay > insn_issue_delay)
-	      min_insn_issue_delay = insn_issue_delay;
+	      {
+		min_insn_issue_delay = insn_issue_delay;
+		if (insn_issue_delay == 0)
+		  break;
+	      }
 	  }
       }
-  state->min_insn_issue_delay = min_insn_issue_delay;
+  return min_insn_issue_delay;
 }
 
 /* The function searches minimal issue delay value for AINSN in STATE.
-   The function can return negative can not issue AINSN.  We will
-   report about it later.  */
+   The function can return negative value if we can not issue AINSN.  We
+   will report about it later.  */
 static int
 min_issue_delay (state, ainsn)
      state_t state;
      ainsn_t ainsn;
 {
   curr_state_pass_num++;
-  min_issue_delay_pass_states (state, ainsn);
+  state->min_insn_issue_delay = min_issue_delay_pass_states (state, ainsn);
   return state->min_insn_issue_delay;
 }
 
@@ -7199,15 +7207,17 @@ output_min_issue_delay_table (automaton)
        i++)
     VLA_HWINT (min_issue_delay_vect, i) = 0;
   automaton->max_min_delay = 0;
-  for (state_ptr = VLA_PTR_BEGIN (output_states_vect);
-       state_ptr <= (state_t *) VLA_PTR_LAST (output_states_vect);
-       state_ptr++)
-    {
-      for (ainsn = automaton->ainsn_list;
-	   ainsn != NULL;
-	   ainsn = ainsn->next_ainsn)
-        if (ainsn->first_ainsn_with_given_equialence_num)
-          {
+  for (ainsn = automaton->ainsn_list; ainsn != NULL; ainsn = ainsn->next_ainsn)
+    if (ainsn->first_ainsn_with_given_equialence_num)
+      {
+	for (state_ptr = VLA_PTR_BEGIN (output_states_vect);
+	     state_ptr <= (state_t *) VLA_PTR_LAST (output_states_vect);
+	     state_ptr++)
+	  (*state_ptr)->min_insn_issue_delay = -1;
+	for (state_ptr = VLA_PTR_BEGIN (output_states_vect);
+	     state_ptr <= (state_t *) VLA_PTR_LAST (output_states_vect);
+	     state_ptr++)
+	  {
             min_delay = min_issue_delay (*state_ptr, ainsn);
 	    if (automaton->max_min_delay < min_delay)
 	      automaton->max_min_delay = min_delay;
@@ -7216,7 +7226,7 @@ output_min_issue_delay_table (automaton)
 		       * automaton->insn_equiv_classes_num
 		       + ainsn->insn_equiv_class_num) = min_delay;
 	  }
-    }
+      }
   fprintf (output_file, "/* Vector of min issue delay of insns.*/\n");
   fprintf (output_file, "static const ");
   output_range_type (output_file, 0, automaton->max_min_delay);
