@@ -130,6 +130,10 @@ struct expr_status
      These are the arguments to function calls that have already returned.  */
   int x_pending_stack_adjust;
 
+  /* Number of units that we should eventually pop off the stack.
+     These are the arguments to function calls that have not happened yet.  */
+  int x_arg_space_so_far;
+
   /* Under some ABIs, it is the caller's responsibility to pop arguments
      pushed for function calls.  A naive implementation would simply pop
      the arguments immediately after each call.  However, if several
@@ -163,6 +167,7 @@ struct expr_status
 };
 
 #define pending_stack_adjust (cfun->expr->x_pending_stack_adjust)
+#define arg_space_so_far (cfun->expr->x_arg_space_so_far)
 #define inhibit_defer_pop (cfun->expr->x_inhibit_defer_pop)
 #define saveregs_value (cfun->expr->x_saveregs_value)
 #define apply_args_value (cfun->expr->x_apply_args_value)
