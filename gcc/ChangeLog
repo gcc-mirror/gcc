@@ -1,3 +1,11 @@
+2005-02-01  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/19217
+	* tree-cfg.c (verify_expr): Use the data field to see if TP was
+	seen inside a PHI node.  Do not do the ADDR_EXPR check if it was.
+	(verify_stmts): Pass (void*)1 as data to verify_expr to signal
+	that it is walking a PHI node.
+
 2005-02-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* doc/extend.texi (Nested Functions): Update.
