@@ -9,7 +9,7 @@
 
 struct str { 
   int head; 
-  char data[8];
+  signed char data[8];
 };
 
 int foo(struct str t)
