@@ -3990,6 +3990,8 @@ forget_old_reloads_1 (x, ignored, data)
 /* The following HARD_REG_SETs indicate when each hard register is
    used for a reload of various parts of the current insn.  */
 
+/* If reg is unavailable for all reloads.  */
+static HARD_REG_SET reload_reg_unavailable;
 /* If reg is in use as a reload reg for a RELOAD_OTHER reload.  */
 static HARD_REG_SET reload_reg_used;
 /* If reg is in use for a RELOAD_FOR_INPUT_ADDRESS reload for operand I.  */
@@ -4213,7 +4215,8 @@ reload_reg_free_p (regno, opnum, type)
   int i;
 
   /* In use for a RELOAD_OTHER means it's not available for anything.  */
-  if (TEST_HARD_REG_BIT (reload_reg_used, regno))
+  if (TEST_HARD_REG_BIT (reload_reg_used, regno)
+      || TEST_HARD_REG_BIT (reload_reg_unavailable, regno))
     return 0;
 
   switch (type)
@@ -4617,11 +4620,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
   int i;
   int copy = 0;
 
-  /* ??? reload_reg_used is abused to hold the registers that are not
-     available as spill registers, including hard registers that are
-     earlyclobbered in asms.  As a temporary measure, reject anything
-     in reload_reg_used.  */
-  if (TEST_HARD_REG_BIT (reload_reg_used, regno))
+  if (TEST_HARD_REG_BIT (reload_reg_unavailable, regno))
     return 0;
 
   if (out == const0_rtx)
@@ -5064,7 +5063,7 @@ choose_reload_regs_init (chain, save_reload_reg_rtx)
       CLEAR_HARD_REG_SET (reload_reg_used_in_outaddr_addr[i]);
     }
 
-  IOR_COMPL_HARD_REG_SET (reload_reg_used, chain->used_spill_regs);
+  COMPL_HARD_REG_SET (reload_reg_unavailable, chain->used_spill_regs);
 
   CLEAR_HARD_REG_SET (reload_reg_used_for_inherit);
 

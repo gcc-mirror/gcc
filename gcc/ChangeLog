@@ -1,3 +1,11 @@
+2000-01-12  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* reload1.c (reload_reg_unavailable): New static variable.
+	(reload_reg_free_p): Test it.
+	(reload_reg_free_for_value_p): Test it instead of
+	reload_reg_used.
+	(choose_reload_regs_init): Compute it.
+
 Wed Jan 12 03:24:41 2000  Toshiyasu Morita (toshi.morita@sega.com)
 
 	* reorg.c (fill_slots_from_thread): Check modified_in_p
