@@ -2601,6 +2601,12 @@ do
 	fi
 done
 
+# Get an absolute path to the GCC top-level source directory
+holddir=`pwd`
+cd $srcdir
+topdir=`pwd`
+cd $holddir
+
 # These (without "all_") are set in each config-lang.in.
 # `language' must be a single word so is spelled singularly.
 all_languages=
@@ -2870,7 +2876,7 @@ do
 	if [[ x$host != x$target ]]
 	then
 		cross_defines="CROSS=-DCROSS_COMPILE"
-		cross_overrides="./cross-make"
+		cross_overrides="${topdir}/cross-make"
 	fi
 
 	# When building gcc with a cross-compiler, we need to fix a few things.
@@ -2878,7 +2884,7 @@ do
 	# all.cross.
   	if [[ x$build != x$host ]]
 	then
-		build_overrides="./build-make"
+		build_overrides="${topdir}/build-make"
 	fi
 
 	cd $STARTDIR
