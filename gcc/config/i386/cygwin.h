@@ -81,14 +81,26 @@ Boston, MA 02111-1307, USA. */
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC "%{mno-cygwin: %{mthreads:-lmingwthrd} -lmingw32} -lgcc %{mno-cygwin:-lmoldname -lmsvcrt}"
 
+#ifdef CROSS_COMPILE
+#define CYGWIN_INCLUDES "-idirafter" CYGWIN_CROSS_DIR "/include"
+#define CYGWIN_W32API "-I" CYGWIN_CROSS_DIR "/include/w32api"
+#define CYGWIN_LIB CYGWIN_CROSS_DIR "/lib"
+#define MINGW_LIBS "-L" CYGWIN_CROSS_DIR "/lib/mingw"
+#define MINGW_INCLUDES "-I" CYGWIN_CROSS_DIR "/include/mingw"
+#else
+#define CYGWIN_INCLUDES "-isystem /usr/local/include -idirafter /usr/include"
+#define CYGWIN_W32API "-I/usr/include/w32api"
+#define CYGWIN_LIB "/usr/lib"
+#define MINGW_LIBS "-L/usr/local/lib/mingw -L/usr/lib/mingw"
+#define MINGW_INCLUDES "-isystem /usr/local/include/mingw -idirafter /usr/include/mingw"
+#endif
+
 #undef STARTFILE_SPEC
+#define STARTFILE_SPEC "%{shared|mdll: %{mno-cygwin:dllcrt2%O%s}} \
+  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:" MINGW_LIBS " mingw/crt2%O%s} \
+  %{pg:gcrt0%O%s}}}"
 
 #undef CPP_SPEC
-#ifdef CROSS_COMPILE
-#define STARTFILE_SPEC "%{shared|mdll: %{mno-cygwin:dllcrt2%O%s}} \
-  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} \
-    %{mno-cygwin:-L../../../../i686-pc-cygwin/lib/mingw mingw/crt2%O%s} \
-  %{pg:gcrt0%O%s}}}"
 #define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
@@ -97,47 +109,15 @@ Boston, MA 02111-1307, USA. */
   -D__declspec(x)=__attribute__((x)) \
   -D__i386__ -D__i386 \
   %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__ -Dunix -D__unix__ -D__unix \
-    -isystem /usr/local/native-include \
-    -idirafter /usr/native-include} \
+    " CYGWIN_INCLUDES "} \
   %{mno-win32: %{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
-  %{!mno-win32:-D_WIN32 -DWINNT -isystem /usr/include/w32api} \
-  %{mno-cygwin:-DWIN32 -D__WIN32__ -D__MINGW32__=0.2 \
-    %{mthreads:-D_MT} \
-    -isystem /usr/local/native-include/mingw \
-    -idirafter /usr/native-include/mingw \
+  %{mno-cygwin:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT -D__MSVCRT__ \
+    -D__MINGW32__=0.3 %{mthreads:-D_MT} " MINGW_INCLUDES CYGWIN_W32API "\
     -iwithprefixbefore ../../../../mingw/include/g++-3 \
     -iwithprefixbefore ../../../../mingw/include \
     -iwithprefixbefore ../../../../mingw32/include/g++-3 \
     -iwithprefixbefore ../../../../mingw32/include } \
-   %{!mno-win32:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT \
-     -idirafter /usr/include/w32api}"
-#else
-#define STARTFILE_SPEC "%{shared|mdll: %{mno-cygwin:dllcrt2%O%s}} \
-  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:-L/usr/local/lib/mingw -L/usr/lib/mingw mingw/crt2%O%s} \
-  %{pg:gcrt0%O%s}}}"
-#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
-  -D__stdcall=__attribute__((__stdcall__)) \
-  -D__cdecl=__attribute__((__cdecl__)) \
-  %{!ansi:-D_stdcall=__attribute__((__stdcall__)) \
-    -D_cdecl=__attribute__((__cdecl__))} \
-  -D__declspec(x)=__attribute__((x)) \
-  -D__i386__ -D__i386 \
-  %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__ -Dunix -D__unix__ -D__unix \
-    -isystem /usr/local/include \
-    -idirafter /usr/include} \
-  %{mno-win32: %{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
-  %{mno-cygwin:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT \
-    -D__MINGW32__=0.3 -D__MSVCRT__ \
-    %{mthreads:-D_MT} \
-    -isystem /usr/local/include/mingw \
-    -idirafter /usr/include/mingw \
-    -iwithprefixbefore ../../../../mingw/include/g++-3 \
-    -iwithprefixbefore ../../../../mingw/include \
-    -iwithprefixbefore ../../../../mingw32/include/g++-3 \
-    -iwithprefixbefore ../../../../mingw32/include } \
-   %{!mno-win32:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT \
-     -idirafter /usr/include/w32api}"
-#endif
+   %{!mno-win32:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT " CYGWIN_W32API "}"
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
