@@ -1,5 +1,9 @@
 2000-10-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.dg/format-attr-1.c: New test.
+
+2000-10-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.dg/c90-printf-2.c, gcc.dg/c90-scanf-2.c: Use
 	__LONG_LONG_MAX__ instead of LLONG_MAX.
 
