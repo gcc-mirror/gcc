@@ -37,54 +37,21 @@
 #define _CPP_CWCHAR 1
 
 #include <bits/c++config.h>
-#ifdef _GLIBCPP_USE_WCHAR_T
+
+#if _GLIBCPP_USE_WCHAR_T
  # pragma system_header
  # include_next <wchar.h>
-#endif 
-
-extern "C" {
-
-#ifdef _GLIBCPP_USE_WCHAR_T
-
-#ifndef _GLIBCPP_HAVE_WMEMCMP
-  int wmemcmp(const wchar_t* __s1, const wchar_t* __s2, size_t __n);
-#endif
-
-#ifndef _GLIBCPP_HAVE_WCSLEN
-  size_t wcslen(const wchar_t* __s);
-#endif
-
-#ifndef _GLIBCPP_HAVE_WMEMCHR
-  wchar_t* wmemchr(const wchar_t* __s, wchar_t __c, size_t __n);
-#endif
-
-#ifndef _GLIBCPP_HAVE_WMEMMOVE
-  wchar_t* wmemmove(wchar_t* __s1, const wchar_t* __s2, size_t __n);
-#endif
-
-#ifndef _GLIBCPP_HAVE_WMEMCPY
-  wchar_t* wmemcpy(wchar_t* __s1, const wchar_t* __s2, size_t __n);
-#endif
-
-#ifndef _GLIBCPP_HAVE_WMEMSET
-  wchar_t* wmemset(wchar_t* __s, wchar_t __c, size_t __n);
-#endif
-
-#endif //_GLIBCPP_USE_WCHAR_T
-
-// NB: mbstate_t should be defined in <cwchar>, as per 
-// 21.2 p5
-// If not, autoconf will
-// detect this with some configure time magic and define
-// _GLIBCPP_NEED_MBSTATE_T (see config.h in the build directory.)
-#ifdef _GLIBCPP_NEED_MBSTATE_T
+#else
+# ifdef _GLIBCPP_NEED_MBSTATE_T
+extern "C" 
+{
   typedef struct 
   {
     int __fill[6];
   } mbstate_t;
-#endif
 }
-
+#  endif
+#endif //_GLIBCPP_USE_WCHAR_T
 
 #endif // _CPP_CWCHAR
 

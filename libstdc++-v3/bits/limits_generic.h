@@ -41,7 +41,7 @@
 #include <bits/c++config.h>
 #include <bits/std_cfloat.h>
 #include <bits/std_climits.h>
-#if defined( _GLIBCPP_USE_WCHAR_T) && defined(_GLIBCPP_HAS_WCHAR_MIN_MAX)
+#if defined( _GLIBCPP_USE_WCHAR_T) 
 #include <bits/std_cwchar.h>
 #endif
 
@@ -299,7 +299,7 @@ namespace std {
         static const float_round_style round_style = round_toward_zero;
     };
 
-#if defined( _GLIBCPP_USE_WCHAR_T) && defined(_GLIBCPP_HAS_WCHAR_MIN_MAX)
+#if defined( _GLIBCPP_USE_WCHAR_T) 
     template<> struct numeric_limits<wchar_t> {
         static const bool is_specialized = true;
 

@@ -756,8 +756,7 @@ namespace std {
   codecvt_byname<wchar_t, char, mbstate_t>::
   codecvt_byname(const char* /*__s*/, size_t __refs)
   : codecvt<wchar_t, char, mbstate_t> (__refs)
-  {
-  }
+  { }
   
   codecvt_byname<wchar_t, char, mbstate_t>::~codecvt_byname() {}
 
