@@ -1102,7 +1102,7 @@ check_format_info (info, params)
 	  warning (message);
 	}
       format_char = *format_chars;
-      if (format_char == 0)
+      if (format_char == 0 || format_char == '%')
 	{
 	  warning ("conversion lacks type at end of format");
 	  continue;
