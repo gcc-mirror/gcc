@@ -1276,9 +1276,6 @@ maybe_fix_stack_asms ()
 		case 'F': case 's': case 'i': case 'n': case 'X': case 'I':
 		case 'J': case 'K': case 'L': case 'M': case 'N': case 'O':
 		case 'P':
-#ifdef EXTRA_CONSTRAINT
-		case 'Q': case 'R': case 'S': case 'T': case 'U':
-#endif
 		  break;
 
 		case 'p':
@@ -8189,9 +8186,6 @@ reload_cse_simplify_operands (insn)
 		case 's':  case 'i':  case 'n':
 		case 'I':  case 'J':  case 'K':  case 'L':
 		case 'M':  case 'N':  case 'O':  case 'P':
-#ifdef EXTRA_CONSTRAINT
-		case 'Q':  case 'R':  case 'S':  case 'T':  case 'U':
-#endif
 		case 'p': case 'X':
 		  /* These don't say anything we care about.  */
 		  break;

@@ -1571,7 +1571,8 @@ asm_operand_ok (op, constraint)
 
   while (*constraint)
     {
-      switch (*constraint++)
+      char c = *constraint++;
+      switch (c)
 	{
 	case '=':
 	case '+':
@@ -1731,35 +1732,21 @@ asm_operand_ok (op, constraint)
 	    return 1;
 	  break;
 
-#ifdef EXTRA_CONSTRAINT
-	case 'Q':
-	  if (EXTRA_CONSTRAINT (op, 'Q'))
-	    return 1;
-	  break;
-	case 'R':
-	  if (EXTRA_CONSTRAINT (op, 'R'))
-	    return 1;
-	  break;
-	case 'S':
-	  if (EXTRA_CONSTRAINT (op, 'S'))
-	    return 1;
-	  break;
-	case 'T':
-	  if (EXTRA_CONSTRAINT (op, 'T'))
-	    return 1;
-	  break;
-	case 'U':
-	  if (EXTRA_CONSTRAINT (op, 'U'))
-	    return 1;
-	  break;
-#endif
-
-	case 'r':
 	default:
-	  if (GET_MODE (op) == BLKmode)
-	    break;
-	  if (register_operand (op, VOIDmode))
+	  /* For all other letters, we first check for a register class,
+	     otherwise it is an EXTRA_CONSTRAINT.  */
+	  if (REG_CLASS_FROM_LETTER (c) != NO_REGS)
+	    {
+	    case 'r':
+	      if (GET_MODE (op) == BLKmode)
+		break;
+	      if (register_operand (op, VOIDmode))
+		return 1;
+	    }
+#ifdef EXTRA_CONSTRAINT
+	  if (EXTRA_CONSTRAINT (op, c))
 	    return 1;
+#endif
 	  break;
 	}
     }
@@ -2138,9 +2125,6 @@ preprocess_constraints ()
 		case 's': case 'i': case 'n':
 		case 'I': case 'J': case 'K': case 'L':
 		case 'M': case 'N': case 'O': case 'P':
-#ifdef EXTRA_CONSTRAINT
-		case 'Q': case 'R': case 'S': case 'T': case 'U':
-#endif
 		  /* These don't say anything we care about.  */
 		  break;
 
@@ -2372,20 +2356,6 @@ constrain_operands (strict)
 		  win = 1;
 		break;
 
-	      case 'r':
-		if (strict < 0
-		    || (strict == 0
-			&& GET_CODE (op) == REG
-			&& REGNO (op) >= FIRST_PSEUDO_REGISTER)
-		    || (strict == 0 && GET_CODE (op) == SCRATCH)
-		    || (GET_CODE (op) == REG
-			&& ((GENERAL_REGS == ALL_REGS
-			     && REGNO (op) < FIRST_PSEUDO_REGISTER)
-			    || reg_fits_class_p (op, GENERAL_REGS,
-						 offset, mode))))
-		  win = 1;
-		break;
-
 	      case 'X':
 		/* This is used for a MATCH_SCRATCH in the cases when
 		   we don't actually need anything.  So anything goes
@@ -2472,17 +2442,6 @@ constrain_operands (strict)
 		  win = 1;
 		break;
 
-#ifdef EXTRA_CONSTRAINT
-              case 'Q':
-              case 'R':
-              case 'S':
-              case 'T':
-              case 'U':
-		if (EXTRA_CONSTRAINT (op, c))
-		  win = 1;
-		break;
-#endif
-
 	      case 'V':
 		if (GET_CODE (op) == MEM
 		    && ((strict > 0 && ! offsettable_memref_p (op))
@@ -2507,15 +2466,27 @@ constrain_operands (strict)
 		break;
 
 	      default:
-		if (strict < 0
-		    || (strict == 0
-			&& GET_CODE (op) == REG
-			&& REGNO (op) >= FIRST_PSEUDO_REGISTER)
-		    || (strict == 0 && GET_CODE (op) == SCRATCH)
-		    || (GET_CODE (op) == REG
-			&& reg_fits_class_p (op, REG_CLASS_FROM_LETTER (c),
-					     offset, mode)))
-		  win = 1;
+		{
+		  enum reg_class class;
+
+		  class = (c == 'r' ? GENERAL_REGS : REG_CLASS_FROM_LETTER (c));
+		  if (class != NO_REGS)
+		    {
+		      if (strict < 0
+			  || (strict == 0
+			      && GET_CODE (op) == REG
+			      && REGNO (op) >= FIRST_PSEUDO_REGISTER)
+			  || (strict == 0 && GET_CODE (op) == SCRATCH)
+			  || (GET_CODE (op) == REG
+			      && reg_fits_class_p (op, class, offset, mode)))
+		        win = 1;
+		    }
+#ifdef EXTRA_CONSTRAINT
+		  else if (EXTRA_CONSTRAINT (op, c))
+		    win = 1;
+#endif
+		  break;
+		}
 	      }
 
 	  constraints[opno] = p;

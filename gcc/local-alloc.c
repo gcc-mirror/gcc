@@ -2210,9 +2210,6 @@ requires_inout (p)
       case 's':  case 'i':  case 'n':
       case 'I':  case 'J':  case 'K':  case 'L':
       case 'M':  case 'N':  case 'O':  case 'P':
-#ifdef EXTRA_CONSTRAINT
-      case 'Q':  case 'R':  case 'S':  case 'T':  case 'U':
-#endif
       case 'X':
 	/* These don't say anything we care about.  */
 	break;
@@ -2228,9 +2225,12 @@ requires_inout (p)
 	found_zero = 1;
 	break;
 
+      default:
+	if (REG_CLASS_FROM_LETTER (c) == NO_REGS)
+	  break;
+	/* FALLTHRU */
       case 'p':
       case 'g': case 'r':
-      default:
 	reg_allowed = 1;
 	break;
       }

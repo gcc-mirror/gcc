@@ -3142,21 +3142,18 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  = (int) reg_class_subunion[this_alternative[i]][(int) GENERAL_REGS];
 		goto reg;
 
-#ifdef EXTRA_CONSTRAINT
-	      case 'Q':
-	      case 'R':
-	      case 'S':
-	      case 'T':
-	      case 'U':
-		if (EXTRA_CONSTRAINT (operand, c))
-		  win = 1;
-		break;
-#endif
-
 	      default:
+		if (REG_CLASS_FROM_LETTER (c) == NO_REGS)
+		  {
+#ifdef EXTRA_CONSTRAINT
+		    if (EXTRA_CONSTRAINT (operand, c))
+		      win = 1;
+#endif
+		    break;
+		  }
+
 		this_alternative[i]
 		  = (int) reg_class_subunion[this_alternative[i]][(int) REG_CLASS_FROM_LETTER (c)];
-
 	      reg:
 		if (GET_MODE (operand) == BLKmode)
 		  break;
