@@ -3696,7 +3696,10 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
      depend on the destination register.  If so, try to place the opposite
      arithmetic insn after the jump insn and put the arithmetic insn in the
      delay slot.  If we can't do this, return.  */
-  if (delay_list == 0 && likely && new_thread && GET_CODE (new_thread) == INSN)
+  if (delay_list == 0 && likely && new_thread
+      && GET_CODE (new_thread) == INSN
+      && GET_CODE (PATTERN (new_thread)) != ASM_INPUT
+      && asm_noperands (PATTERN (new_thread)) < 0)
     {
       rtx pat = PATTERN (new_thread);
       rtx dest;
