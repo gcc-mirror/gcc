@@ -73,7 +73,7 @@ gcc/doc/gcov.1: gcc/doc/gcov.texi
 gcc/doc/cpp.1: gcc/doc/cpp.texi
 gcc/doc/gcc.1: gcc/doc/invoke.texi
 # And then, language-specific files
-# (None at present.)
+gcc/f/intdoc.texi: gcc/f/intdoc.in gcc/f/intdoc.c gcc/f/intrin.h gcc/f/intrin.def
 # And libraries, at last
 libchill/configure: libchill/configure.in
 libf2c/configure: libf2c/configure.in
