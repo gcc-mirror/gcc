@@ -9,9 +9,10 @@
 #undef CHAR_BIT
 #define CHAR_BIT 8
 
-/* No multibyte characters supported yet.  */
-#undef MB_LEN_MAX
+/* Maximum length of a multibyte character.  */
+#ifndef MB_LEN_MAX
 #define MB_LEN_MAX 1
+#endif
 
 /* Minimum and maximum values a `signed char' can hold.  */
 #undef SCHAR_MIN
