@@ -1,5 +1,9 @@
 2002-05-21  Vladimir Makarov  <vmakarov@redhat.com>
 
+	* genautomata.c (reserv_sets_hash_value): Fix a typo.
+
+2002-05-21  Vladimir Makarov  <vmakarov@redhat.com>
+
 	* genautomata.c (reserv_sets_hash_value): Define hash_value as
 	set_el_t.  Transform the hash value into unsigned.
 	(output_cycle_reservs): Fix bug with output of repeated `nothing'.

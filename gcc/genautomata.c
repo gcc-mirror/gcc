@@ -3410,7 +3410,7 @@ reserv_sets_hash_value (reservs)
 	i = 0;
       reserv_ptr++;
     }
-  if (sizeof (set_el_t) < sizeof (unsigned))
+  if (sizeof (set_el_t) <= sizeof (unsigned))
     return hash_value;
   result = 0;
   for (i = sizeof (set_el_t); i > 0; i -= sizeof (unsigned))
