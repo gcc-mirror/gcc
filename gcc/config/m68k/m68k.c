@@ -93,7 +93,7 @@ output_function_prologue (stream, size)
 
   if (frame_pointer_needed)
     {
-      if (fsize == 0 && TARGET_68040_ONLY)
+      if (fsize == 0 && TARGET_68040)
 	{
 	/* on the 68040, pea + move is faster than link.w 0 */
 #ifdef MOTOROLA
@@ -101,7 +101,7 @@ output_function_prologue (stream, size)
 	       reg_names[FRAME_POINTER_REGNUM], reg_names[STACK_POINTER_REGNUM],
 	       reg_names[FRAME_POINTER_REGNUM]);
 #else
-	  asm_fprintf (stream, "\tpea %s\@\n\tmovel %s,%s\n",
+	  asm_fprintf (stream, "\tpea %s@\n\tmovel %s,%s\n",
 	       reg_names[FRAME_POINTER_REGNUM], reg_names[STACK_POINTER_REGNUM],
 	       reg_names[FRAME_POINTER_REGNUM]);
 #endif
@@ -143,11 +143,21 @@ output_function_prologue (stream, size)
       /* Adding negative number is faster on the 68040.  */
       if (fsize + 4 < 0x8000)
 	{
-	  asm_fprintf (stream, "\tadd%.w %0I%d,%Rsp\n", - (fsize + 4));
+	/* asm_fprintf() cannot handle %. */
+#ifdef MOTOROLA
+	  asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", - (fsize + 4));
+#else
+	  asm_fprintf (stream, "\taddw %0I%d,%Rsp\n", - (fsize + 4));
+#endif
 	}
       else
 	{
-	  asm_fprintf (stream, "\tadd%.l %0I%d,%Rsp\n", - (fsize + 4));
+	/* asm_fprintf() cannot handle %. */
+#ifdef MOTOROLA
+	  asm_fprintf (stream, "\tadd.l %0I%d,%Rsp\n", - (fsize + 4));
+#else
+	  asm_fprintf (stream, "\taddl %0I%d,%Rsp\n", - (fsize + 4));
+#endif
 	}
     }
 #ifdef SUPPORT_SUN_FPA
@@ -501,11 +511,21 @@ output_function_epilogue (stream, size)
     {
       if (fsize + 4 < 0x8000)
 	{
-	  asm_fprintf (stream, "\tadd%.w %0I%d,%Rsp\n", fsize + 4);
+	/* asm_fprintf() cannot handle %. */
+#ifdef MOTOROLA
+	  asm_fprintf (stream, "\tadd.w %0I%d,%Rsp\n", fsize + 4);
+#else
+	  asm_fprintf (stream, "\taddw %0I%d,%Rsp\n", fsize + 4);
+#endif
 	}
       else
 	{
-	  asm_fprintf (stream, "\tadd%.l %0I%d,%Rsp\n", fsize + 4);
+	/* asm_fprintf() cannot handle %. */
+#ifdef MOTOROLA
+	  asm_fprintf (stream, "\tadd.l %0I%d,%Rsp\n", fsize + 4);
+#else
+	  asm_fprintf (stream, "\taddl %0I%d,%Rsp\n", fsize + 4);
+#endif
 	}
     }
   if (current_function_pops_args)
