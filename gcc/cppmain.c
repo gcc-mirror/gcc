@@ -419,8 +419,7 @@ cb_file_change (pfile, map)
   print.map = map;
 }
 
-/* Copy a #pragma directive to the preprocessed output.  LINE is the
-   line of the current source file, not the logical line.  */
+/* Copy a #pragma directive to the preprocessed output.  */
 static void
 cb_def_pragma (pfile, line)
      cpp_reader *pfile;

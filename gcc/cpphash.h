@@ -176,9 +176,6 @@ struct cpp_buffer
 
   const unsigned char *buf;	 /* entire buffer */
 
-  /* Filename specified with #line command.  */
-  const char *nominal_fname;
-
   /* Pointer into the include table.  Used for include_next and
      to record control macros. */
   struct include_file *inc;
@@ -375,7 +372,7 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 /* In cpperror.c  */
 enum error_type { WARNING = 0, WARNING_SYSHDR, PEDWARN, ERROR, FATAL, ICE };
 extern int _cpp_begin_message PARAMS ((cpp_reader *, enum error_type,
-				       const char *, const cpp_lexer_pos *));
+				       const cpp_lexer_pos *));
 
 /* In cppmacro.c */
 extern void _cpp_free_definition	PARAMS ((cpp_hashnode *));

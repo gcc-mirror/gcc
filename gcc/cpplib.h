@@ -47,7 +47,6 @@ typedef struct cpp_callbacks cpp_callbacks;
 
 struct answer;
 struct file_name_map_list;
-struct ht;
 
 /* The first two groups, apart from '=', can appear in preprocessor
    expressions.  This allows a lookup table to be implemented in
@@ -542,8 +541,7 @@ extern void cpp_unassert PARAMS ((cpp_reader *, const char *));
 
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
 					    const unsigned char *, size_t,
-					    enum cpp_buffer_type,
-					    const char *, int));
+					    enum cpp_buffer_type, int));
 extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
 
 /* N.B. The error-message-printer prototypes have not been nicely
@@ -570,8 +568,6 @@ extern void cpp_warning_with_line PARAMS ((cpp_reader *, int, int, const char *m
   ATTRIBUTE_PRINTF_4;
 extern void cpp_pedwarn_with_line PARAMS ((cpp_reader *, int, int, const char *msgid, ...))
   ATTRIBUTE_PRINTF_4;
-extern void cpp_pedwarn_with_file_and_line PARAMS ((cpp_reader *, const char *, int, int, const char *msgid, ...))
-  ATTRIBUTE_PRINTF_5;
 extern void cpp_error_from_errno PARAMS ((cpp_reader *, const char *));
 extern void cpp_notice_from_errno PARAMS ((cpp_reader *, const char *));
 

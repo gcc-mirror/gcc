@@ -24,7 +24,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "cpplib.h"
 #include "cpphash.h"
-#include "intl.h"
 #include "obstack.h"
 
 /* Chained list of answers to an assertion.  */
@@ -403,7 +402,7 @@ run_directive (pfile, dir_no, type, buf, count)
 {
   cpp_buffer *buffer;
 
-  buffer = cpp_push_buffer (pfile, (const U_CHAR *) buf, count, type, 0, 1);
+  buffer = cpp_push_buffer (pfile, (const U_CHAR *) buf, count, type, 1);
   start_directive (pfile);
   pfile->state.prevent_expansion++;
   pfile->directive = &dtable[dir_no];
@@ -710,11 +709,11 @@ static void
 do_line (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *buffer = pfile->buffer;
-  enum lc_reason reason = LC_RENAME;
-  unsigned long new_lineno;
-  unsigned int cap, sysp = pfile->map->sysp;
   cpp_token token;
+  const char *new_file = pfile->map->to_file;
+  unsigned long new_lineno;
+  unsigned int cap, new_sysp = pfile->map->sysp;
+  enum lc_reason reason = LC_RENAME;
 
   /* C99 raised the minimum limit on #line numbers.  */
   cap = CPP_OPTION (pfile, c99) ? 2147483647 : 32767;
@@ -736,20 +735,20 @@ do_line (pfile)
   cpp_get_token (pfile, &token);
   if (token.type == CPP_STRING)
     {
-      buffer->nominal_fname = (const char *) token.val.str.text;
+      new_file = (const char *) token.val.str.text;
 
       /* Only accept flags for the # 55 form.  */
       if (pfile->state.line_extension)
 	{
 	  int flag;
 
-	  sysp = 0;
+	  new_sysp = 0;
 	  flag = read_flag (pfile, 0);
 	  if (flag == 1)
 	    {
 	      reason = LC_ENTER;
 	      /* Fake an include for cpp_included ().  */
-	      _cpp_fake_include (pfile, buffer->nominal_fname);
+	      _cpp_fake_include (pfile, new_file);
 	      flag = read_flag (pfile, flag);
 	    }
 	  else if (flag == 2)
@@ -759,10 +758,10 @@ do_line (pfile)
 	    }
 	  if (flag == 3)
 	    {
-	      sysp = 1;
+	      new_sysp = 1;
 	      flag = read_flag (pfile, flag);
 	      if (flag == 4)
-		sysp = 2;
+		new_sysp = 2;
 	    }
 	}
       check_eol (pfile);
@@ -775,8 +774,7 @@ do_line (pfile)
     }
 
   end_directive (pfile, 1);
-  _cpp_do_file_change (pfile, reason, (const char *) buffer->nominal_fname,
-		       new_lineno, sysp);
+  _cpp_do_file_change (pfile, reason, new_file, new_lineno, new_sysp);
 }
 
 /* Arrange the file_change callback.  pfile->line has changed to
@@ -809,7 +807,7 @@ do_diagnostic (pfile, code, print_dir)
      enum error_type code;
      int print_dir;
 {
-  if (_cpp_begin_message (pfile, code, NULL, 0))
+  if (_cpp_begin_message (pfile, code, 0))
     {
       if (print_dir)
 	fprintf (stderr, "#%s ", pfile->directive->name);
@@ -1737,22 +1735,14 @@ cpp_set_callbacks (pfile, cb)
    doesn't fail.  It does not generate a file change call back; that
    is the responsibility of the caller.  */
 cpp_buffer *
-cpp_push_buffer (pfile, buffer, len, type, filename, return_at_eof)
+cpp_push_buffer (pfile, buffer, len, type, return_at_eof)
      cpp_reader *pfile;
      const U_CHAR *buffer;
      size_t len;
      enum cpp_buffer_type type;
-     const char *filename;
      int return_at_eof;
 {
   cpp_buffer *new = xobnew (&pfile->buffer_ob, cpp_buffer);
-
-  if (type == BUF_BUILTIN)
-    filename = _("<builtin>");
-  else if (type == BUF_CL_OPTION)
-    filename = _("<command line>");
-  else if (type == BUF_PRAGMA)
-    filename = "<_Pragma>";
 
   /* Clears, amongst other things, if_stack and mi_cmacro.  */
   memset (new, 0, sizeof (cpp_buffer));
@@ -1768,10 +1758,6 @@ cpp_push_buffer (pfile, buffer, len, type, filename, return_at_eof)
      options don't do trigraph and escaped newline processing.  */
   new->from_stage3 = type != BUF_FILE || CPP_OPTION (pfile, preprocessed);
 
-  if (*filename == '\0')
-    new->nominal_fname = _("<stdin>");
-  else
-    new->nominal_fname = filename;
   new->type = type;
   new->prev = pfile->buffer;
   new->pfile = pfile;
