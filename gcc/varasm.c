@@ -69,6 +69,7 @@ char *first_global_object_name;
 
 extern struct obstack *current_obstack;
 extern struct obstack *saveable_obstack;
+extern struct obstack *rtl_obstack;
 extern struct obstack permanent_obstack;
 #define obstack_chunk_alloc xmalloc
 
@@ -2987,13 +2988,16 @@ record_constant_rtx (mode, x)
 
   decode_rtx_const (mode, x, &value);
 
-  obstack_grow (current_obstack, &ptr, sizeof ptr);
-  obstack_grow (current_obstack, &label, sizeof label);
+  /* Put these things in the saveable obstack so we can ensure it won't
+     be freed if we are called from combine or some other phase that discards
+     memory allocated from function_obstack (current_obstack).  */
+  obstack_grow (saveable_obstack, &ptr, sizeof ptr);
+  obstack_grow (saveable_obstack, &label, sizeof label);
 
   /* Record constant contents.  */
-  obstack_grow (current_obstack, &value, sizeof value);
+  obstack_grow (saveable_obstack, &value, sizeof value);
 
-  return (struct constant_descriptor *) obstack_finish (current_obstack);
+  return (struct constant_descriptor *) obstack_finish (saveable_obstack);
 }
 
 /* Given a constant rtx X, make (or find) a memory constant for its value
@@ -3064,9 +3068,26 @@ force_const_mem (mode, x)
       pool_offset += align - 1;
       pool_offset &= ~ (align - 1);
 
+      /* If RTL is not being placed into the saveable obstack, make a
+	 copy of X that is in the saveable obstack in case we are being
+	 called from combine or some other phase that discards memory
+	 it allocates.  We need only do this if it is a CONST, since
+	 no other RTX should be allocated in this situation. */
+      if (rtl_obstack != saveable_obstack
+	  && GET_CODE (x) == CONST)
+	{
+	  push_obstacks_nochange ();
+	  rtl_in_saveable_obstack ();
+
+	  x = gen_rtx (CONST, GET_MODE (x), 
+		       gen_rtx (PLUS, GET_MODE (x), 
+				XEXP (XEXP (x, 0), 0), XEXP (XEXP (x, 0), 1)));
+	  pop_obstacks ();
+	}
+
       /* Allocate a pool constant descriptor, fill it in, and chain it in.  */
 
-      pool = (struct pool_constant *) oballoc (sizeof (struct pool_constant));
+      pool = (struct pool_constant *) savealloc (sizeof (struct pool_constant));
       pool->desc = desc;
       pool->constant = x;
       pool->mode = mode;
@@ -3093,7 +3114,7 @@ force_const_mem (mode, x)
 
       /* Add label to symbol hash table.  */
       hash = SYMHASH (found);
-      sym = (struct pool_sym *) oballoc (sizeof (struct pool_sym));
+      sym = (struct pool_sym *) savealloc (sizeof (struct pool_sym));
       sym->label = found;
       sym->pool = pool;
       sym->next = const_rtx_sym_hash_table[hash];
