@@ -1,3 +1,10 @@
+2004-06-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/16260
+	* parser.c (cp_parser_template_declaration_after_export): Disable
+	access checks here ...
+	(cp_parser_class_specifier): ... not here.
+
 2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (VAR_OR_FUNCTION_DECL_CHECK,
@@ -19,7 +26,7 @@
 
 2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
-	PR C++/16174
+	PR c++/16174
 	* call.c (build_temp): Declare.
 	(check_constructor_callable): New.
 	(reference_binding): Only set CHECK_COPY_CONSTRUCTOR if not for

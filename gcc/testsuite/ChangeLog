@@ -1,3 +1,8 @@
+2004-06-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/16260
+	* g++.dg/parse/crash15.C: New.
+
 2004-06-28  Andrew Pinski  <apinski@apple.com>
 
 	* gcc.dg/pr14963.c: Remove the dg-warning as it is dected
@@ -12,7 +17,7 @@
 
 2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* PR C++/16174
+	* PR c++/16174
 	* g++.dg/template/ctor4.C: New.
 
 2004-06-27  Andrew Pinski  <pinskia@physics.uc.edu>
