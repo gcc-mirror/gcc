@@ -9643,6 +9643,10 @@ insert_loop_mem (mem, data)
     case MEM:
       break;
 
+    case CLOBBER:
+      /* We're not interested in MEMs that are only clobbered.  */
+      return -1;
+
     case CONST_DOUBLE:
       /* We're not interested in the MEM associated with a
 	 CONST_DOUBLE, so there's no need to traverse into this.  */

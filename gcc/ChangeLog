@@ -6,6 +6,8 @@ Thu Dec 16 10:43:35 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 Thu Dec 16 02:41:26 1999  Richard Henderson (rth@cygnus.com)
 
+	* loop.c (insert_loop_mem): Ignore memory clobbers.
+
 	* combine.c (simplify_comparison): Reduce (OP (MINUS A B) 0)
 	to (OP A B).
 
