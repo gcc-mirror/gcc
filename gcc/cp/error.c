@@ -941,24 +941,15 @@ dump_decl (t, flags)
       /* These special cases are duplicated here so that other functions
 	 can feed identifiers to cp_error and get them demangled properly.  */
     case IDENTIFIER_NODE:
-      { tree f;
-	if (DESTRUCTOR_NAME_P (t)
-	    && (f = ident_fndecl (t))
-	    && DECL_LANGUAGE (f) == lang_cplusplus)
-	  {
-	    output_add_character (scratch_buffer, '~');
-	    dump_decl (DECL_NAME (f), flags);
-	  }
-	else if (IDENTIFIER_TYPENAME_P (t))
-	  {
-	    output_add_string (scratch_buffer, "operator ");
-	    /* Not exactly IDENTIFIER_TYPE_VALUE.  */
-	    dump_type (TREE_TYPE (t), flags);
-	    break;
-	  }
-	else
-	  print_tree_identifier (scratch_buffer, t);
-      }
+      if (IDENTIFIER_TYPENAME_P (t))
+	{
+	  output_add_string (scratch_buffer, "operator ");
+	  /* Not exactly IDENTIFIER_TYPE_VALUE.  */
+	  dump_type (TREE_TYPE (t), flags);
+	  break;
+	}
+      else
+	print_tree_identifier (scratch_buffer, t);
       break;
 
     case OVERLOAD:
