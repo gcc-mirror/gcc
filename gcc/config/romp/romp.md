@@ -1,6 +1,6 @@
 ;;- Machine description for ROMP chip for GNU C compiler
-;;   Copyright (C) 1988, 1991, 1993 Free Software Foundation, Inc.
-;;   Contributed by Richard Kenner (kenner@nyu.edu)
+;;   Copyright (C) 1988, 1991, 1993, 1994 Free Software Foundation, Inc.
+;;   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GNU CC.
 
@@ -2544,8 +2544,7 @@
   "GET_MODE (operands[0]) == SFmode || GET_MODE (operands[0]) == DFmode"
   "*
 { return output_fpop (next_insn_tests_no_inequality (insn) ? EQ : GE,
-		      operands[0], immed_real_const_1 (0, 0,
-						       GET_MODE (operands[0])),
+		      operands[0], CONST0_RTX (GET_MODE (operands[0])),
 		      0, insn);
 }"
   [(set_attr "type" "fp")
@@ -2559,8 +2558,7 @@
   ""
   "*
 { return output_fpop (next_insn_tests_no_inequality (insn) ? EQ : GE,
-		      operands[1], immed_real_const_1 (0, 0,
-						       GET_MODE (operands[1])),
+		      operands[1], CONST0_RTX (GET_MODE (operands[1])),
 		      0, insn);
 }"
   [(set_attr "type" "fp")
