@@ -1,3 +1,8 @@
+2004-06-09  Daniel Berlin <dberlin@dberlin.org>
+
+	* tree-ssa.c (verify_ssa): Verify that vdefs/makes_aliased_stores 
+	match.
+
 2004-06-09  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_not_const): New function.

@@ -322,6 +322,9 @@ verify_ssa (void)
 	  get_stmt_operands (stmt);
 
 	  vdefs = VDEF_OPS (ann);
+	  if (ann->makes_aliased_stores && NUM_VDEFS (vdefs) == 0)
+	    error ("Makes aliased stores, but no VDEFS");
+
 	  for (j = 0; j < NUM_VDEFS (vdefs); j++)
 	    {
 	      tree op = VDEF_RESULT (vdefs, j);
@@ -387,7 +390,7 @@ verify_ssa (void)
 	  vdef_optype vdefs;
 	  use_optype uses;
 
-	  vuses = VUSE_OPS (ann);
+	  vuses = VUSE_OPS (ann); 
 	  for (j = 0; j < NUM_VUSES (vuses); j++)
 	    {
 	      tree op = VUSE_OP (vuses, j);
