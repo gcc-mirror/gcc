@@ -1,3 +1,10 @@
+1999-11-24  Jason Merrill  <jason@casey.cygnus.com>
+
+	* search.c (note_debug_info_needed): Do perform this optimization
+	for dwarf2.  
+	(maybe_suppress_debug_info): Likewise.  Start by clearing
+	TYPE_DECL_SUPPRESS_DEBUG.
+
 1999-11-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (tsubst_decl): Copy TREE_ASM_WRITTEN for VAR_DECLs.

@@ -2912,18 +2912,27 @@ get_vbase_types (type)
 /* Debug info for C++ classes can get very large; try to avoid
    emitting it everywhere.
 
-   As it happens, this optimization wins even when the target supports
-   BINCL (though only slightly), so we always do it. */
+   Note that this optimization wins even when the target supports
+   BINCL (if only slightly), and reduces the amount of work for the
+   linker.  */
 
 void
 maybe_suppress_debug_info (t)
      tree t;
 {
-  /* We don't bother with this for dwarf1, which shouldn't be used for C++
-     anyway.  */
-  if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG
-      || write_symbols == NO_DEBUG)
+  /* We can't do the usual TYPE_DECL_SUPPRESS_DEBUG thing with DWARF, which
+     does not support name references between translation units.  It supports
+     symbolic references between translation units, but only within a single
+     executable or shared library.
+
+     For DWARF 2, we handle TYPE_DECL_SUPPRESS_DEBUG by pretending
+     that the type was never defined, so we only get the members we
+     actually define.  */
+  if (write_symbols == DWARF_DEBUG || write_symbols == NO_DEBUG)
     return;
+
+  /* We might have set this earlier in cp_finish_decl.  */
+  TYPE_DECL_SUPPRESS_DEBUG (TYPE_MAIN_DECL (t)) = 0;
 
   /* If we already know how we're handling this class, handle debug info
      the same way.  */
@@ -2962,12 +2971,8 @@ note_debug_info_needed (type)
     /* We can't go looking for the base types and fields just yet.  */
     return;
 
-  /* We can't do the TYPE_DECL_SUPPRESS_DEBUG thing with DWARF, which
-     does not support name references between translation units.  It supports
-     symbolic references between translation units, but only within a single
-     executable or shared library.  */
-  if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG
-      || write_symbols == NO_DEBUG)
+  /* See the comment in maybe_suppress_debug_info.  */
+  if (write_symbols == DWARF_DEBUG || write_symbols == NO_DEBUG)
     return;
 
   dfs_walk (TYPE_BINFO (type), dfs_debug_mark, dfs_debug_unmarkedp, 0);
