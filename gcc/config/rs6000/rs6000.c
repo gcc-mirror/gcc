@@ -3395,7 +3395,14 @@ rs6000_stack_info ()
 
   /* Calculate which registers need to be saved & save area size */
   info_ptr->first_gp_reg_save = first_reg_to_save ();
-  info_ptr->gp_size = reg_size * (32 - info_ptr->first_gp_reg_save);
+  /* Assume that we will have to save PIC_OFFSET_TABLE_REGNUM, 
+     even if it currently looks like we won't.  */
+  if (flag_pic == 1 
+      && (abi == ABI_V4 || abi == ABI_SOLARIS)
+      && info_ptr->first_gp_reg_save > PIC_OFFSET_TABLE_REGNUM)
+    info_ptr->gp_size = reg_size * (32 - PIC_OFFSET_TABLE_REGNUM);
+  else
+    info_ptr->gp_size = reg_size * (32 - info_ptr->first_gp_reg_save);
 
   info_ptr->first_fp_reg_save = first_fp_reg_to_save ();
   info_ptr->fp_size = 8 * (64 - info_ptr->first_fp_reg_save);

@@ -1,3 +1,8 @@
+Thu Aug  5 00:56:30 1999  Geoffrey Keating   <geoffk@cygnus.com>
+
+	* rs6000.c (rs6000_stack_info): For ABI_V4/ABI_SOLARIS -fpic, always
+	allocate space in the stack frame for the PIC register.
+
 Thu Aug  5 00:20:47 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* m68k.md (xordi3, anddi3): These patterns are not available on
