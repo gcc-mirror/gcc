@@ -2559,7 +2559,7 @@ compute_frame_size (size, fregs_live)
   for (i = 18; i >= 3; i--)
     if (regs_ever_live[i])
       {
-	fsize += 4;
+	fsize += UNITS_PER_WORD;
 	break;
       }
 
@@ -2572,7 +2572,7 @@ compute_frame_size (size, fregs_live)
 	if (fregs_live)
 	  *fregs_live = 1;
 
-	fsize += 4;
+	fsize += 8;
 	break;
       }
 
@@ -2807,7 +2807,7 @@ hppa_expand_prologue()
 	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
 	    store_reg (i, offset, FRAME_POINTER_REGNUM);
-	    offset += 4;
+	    offset += UNITS_PER_WORD;
 	    gr_saved++;
 	  }
       /* Account for %r3 which is saved in a special place.  */
@@ -2830,7 +2830,7 @@ hppa_expand_prologue()
 	      }
 	    else
 	      store_reg (i, offset, STACK_POINTER_REGNUM);
-	    offset += 4;
+	    offset += UNITS_PER_WORD;
 	    gr_saved++;
 	  }
 
@@ -2958,7 +2958,7 @@ hppa_expand_epilogue ()
 	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
 	    load_reg (i, offset, FRAME_POINTER_REGNUM);
-	    offset += 4;
+	    offset += UNITS_PER_WORD;
 	  }
     }
   else
@@ -2976,7 +2976,7 @@ hppa_expand_epilogue ()
 	        merge_sp_adjust_with_load = i;
 	      else
 	        load_reg (i, offset, STACK_POINTER_REGNUM);
-	      offset += 4;
+	      offset += UNITS_PER_WORD;
 	    }
 	}
     }

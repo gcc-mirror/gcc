@@ -319,7 +319,7 @@ int lhs_lshift_cint_operand ();
 
 #define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  \
   if (GET_MODE_CLASS (MODE) == MODE_INT	\
-      && GET_MODE_SIZE (MODE) < 4)  	\
+      && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)  	\
     (MODE) = SImode;
 
 /* Define this if most significant bit is lowest numbered
@@ -578,7 +578,7 @@ int lhs_lshift_cint_operand ();
    : !TARGET_PA_11 && FP_REGNO_P (REGNO)				\
      ? GET_MODE_SIZE (MODE) <= 4 || GET_MODE_CLASS (MODE) == MODE_FLOAT	\
    /* Make wide modes be in aligned registers. */			\
-   : GET_MODE_SIZE (MODE) <= 4 || ((REGNO) & 1) == 0)
+   : GET_MODE_SIZE (MODE) <= UNITS_PER_WORD || ((REGNO) & 1) == 0)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -938,7 +938,9 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 /* Figure out the size in words of the function argument. */
 
 #define FUNCTION_ARG_SIZE(MODE, TYPE)	\
-  ((((MODE) != BLKmode ? GET_MODE_SIZE (MODE) : int_size_in_bytes (TYPE))+3)/4)
+  ((((MODE) != BLKmode \
+     ? GET_MODE_SIZE (MODE) \
+     : int_size_in_bytes (TYPE)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
@@ -1057,7 +1059,8 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
   (((TYPE) != 0)							\
-	? (((int_size_in_bytes (TYPE)) + 3) / 4) * BITS_PER_WORD	\
+	? (((int_size_in_bytes (TYPE)) + UNITS_PER_WORD - 1)		\
+	   / UNITS_PER_WORD) * BITS_PER_WORD				\
 	: ((GET_MODE_ALIGNMENT(MODE) <= PARM_BOUNDARY)			\
 		? PARM_BOUNDARY						\
 		: GET_MODE_ALIGNMENT(MODE)))

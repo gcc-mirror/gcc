@@ -1,5 +1,14 @@
 Fri Jul 16 13:48:09 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.c (compute_frame_size): Use UNITS_PER_WORD instead of hardwired
+	value of 4.  Allocate 8 bytes for each FP register save.
+	(hppa_expand_epilogue): Use UNITS_PER_WORD instead of harwarewired
+	value of 4.
+	(hppa_expand_prologue): Likewise.
+	* pa.h (PROMOTE_MODE): Likewise.
+	(HARD_REGNO_MODE_OK, FUNCTION_ARG_SIZE): Likewise.
+	(FUNCTION_ARG_BOUNDARY): Likewise.
+
 	* invoke.texi (HPPA Options): Remove -mspace/-mno-space.
 
 	* pa.c (out_of_line_prologue_epilogue): Delete.
