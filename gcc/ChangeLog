@@ -1,3 +1,10 @@
+2001-03-15  Bruce Korb  <bkorb@gnu.org>
+
+	* gcc.c(main): make more rigorous
+	* collect2.c(main): guard against ignoring SIGCHLD
+	* protoize.c(main): ditto
+	* gcc/fixinc/fixincl.c(initialize): ditto
+
 2001-03-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* sdbout.c (sdbout_symbol): Use DECL_RTL_SET_P, SET_DECL_RTL.

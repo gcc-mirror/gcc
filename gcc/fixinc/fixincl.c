@@ -29,6 +29,9 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include <signal.h>
+#if ! defined( SIGCHLD ) && defined( SIGCLD )
+#  define SIGCHLD SIGCLD
+#endif
 #ifndef SEPARATE_FIX_PROC
 #include "server.h"
 #endif
@@ -248,6 +251,12 @@ ENV_TABLE
       fputs ("fixincl ERROR:  too many command line arguments\n", stderr);
       exit (EXIT_FAILURE);
     }
+
+#ifdef SIGCHLD
+  /* We *MUST* set SIGCHLD to SIG_DFL so that the wait4() call will
+     receive the signal.  A different setting is inheritable */
+  signal (SIGCHLD, SIG_DFL);
+#endif
 
 #define _ENV_(v,m,n,t)   { tSCC var[] = n;  \
   v = getenv (var); if (m && (v == NULL)) { \
