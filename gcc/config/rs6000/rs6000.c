@@ -9774,7 +9774,7 @@ void
 rs6000_emit_load_toc_table (fromprolog)
      int fromprolog;
 {
-  rtx dest;
+  rtx dest, insn;
   dest = gen_rtx_REG (Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
 
   if (TARGET_ELF && DEFAULT_ABI == ABI_V4 && flag_pic == 1)
@@ -9782,8 +9782,12 @@ rs6000_emit_load_toc_table (fromprolog)
       rtx temp = (fromprolog
 		  ? gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
 		  : gen_reg_rtx (Pmode));
-      rs6000_maybe_dead (emit_insn (gen_load_toc_v4_pic_si (temp)));
-      rs6000_maybe_dead (emit_move_insn (dest, temp));
+      insn = emit_insn (gen_load_toc_v4_pic_si (temp));
+      if (fromprolog)
+	rs6000_maybe_dead (insn);
+      insn = emit_move_insn (dest, temp);
+      if (fromprolog)
+	rs6000_maybe_dead (insn);
     }
   else if (TARGET_ELF && DEFAULT_ABI != ABI_AIX && flag_pic == 2)
     {
@@ -9830,14 +9834,13 @@ rs6000_emit_load_toc_table (fromprolog)
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCG", reload_toc_labelno++);
 	  symF = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
 
-	  rs6000_maybe_dead (emit_insn (gen_load_toc_v4_PIC_1b (tempLR,
-								symF,
-								tocsym)));
-	  rs6000_maybe_dead (emit_move_insn (dest, tempLR));
-	  rs6000_maybe_dead (emit_move_insn (temp0,
-					     gen_rtx_MEM (Pmode, dest)));
+	  emit_insn (gen_load_toc_v4_PIC_1b (tempLR, symF, tocsym));
+	  emit_move_insn (dest, tempLR);
+	  emit_move_insn (temp0, gen_rtx_MEM (Pmode, dest));
 	}
-      rs6000_maybe_dead (emit_insn (gen_addsi3 (dest, temp0, dest)));
+      insn = emit_insn (gen_addsi3 (dest, temp0, dest));
+      if (fromprolog)
+	rs6000_maybe_dead (insn);
     }
   else if (TARGET_ELF && !TARGET_AIX && flag_pic == 0 && TARGET_MINIMAL_TOC)
     {
@@ -9847,15 +9850,21 @@ rs6000_emit_load_toc_table (fromprolog)
       ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
       realsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
 
-      rs6000_maybe_dead (emit_insn (gen_elf_high (dest, realsym)));
-      rs6000_maybe_dead (emit_insn (gen_elf_low (dest, dest, realsym)));
+      insn = emit_insn (gen_elf_high (dest, realsym));
+      if (fromprolog)
+	rs6000_maybe_dead (insn);
+      insn = emit_insn (gen_elf_low (dest, dest, realsym));
+      if (fromprolog)
+	rs6000_maybe_dead (insn);
     }
   else if (DEFAULT_ABI == ABI_AIX)
     {
       if (TARGET_32BIT)
-	rs6000_maybe_dead (emit_insn (gen_load_toc_aix_si (dest)));
+	insn = emit_insn (gen_load_toc_aix_si (dest));
       else
-	rs6000_maybe_dead (emit_insn (gen_load_toc_aix_di (dest)));
+	insn = emit_insn (gen_load_toc_aix_di (dest));
+      if (fromprolog)
+	rs6000_maybe_dead (insn);
     }
   else
     abort ();
