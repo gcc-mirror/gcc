@@ -801,7 +801,7 @@ load_line (FILE * input, char **pbuf, char *filename, int linenum)
    the file stack.  */
 
 static gfc_file *
-get_file (char *name, enum lc_reason reason)
+get_file (char *name, enum lc_reason reason ATTRIBUTE_UNUSED)
 {
   gfc_file *f;
 

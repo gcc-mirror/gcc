@@ -1,3 +1,7 @@
+2004-09-09  Paul Brook  <paul@codesourcery.com>
+
+	* scanner.c (get_file): Add ATTRIBUTE_UNUSED.
+
 2004-09-08  Paul Brook  <paul@codesourcery.com>
 
 	* array.c: Don't include assert.h.
