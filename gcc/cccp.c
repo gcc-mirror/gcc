@@ -201,6 +201,7 @@ static void pfatal_with_name ();
 static void perror_with_name ();
 static void print_containing_files ();
 static int lookup_import ();
+static int lookup_include ();
 static int check_preconditions ();
 static void pcfinclude ();
 static void pcstring_used ();
@@ -3730,25 +3731,13 @@ get_filename:
   fname = (char *) xmalloc (max_include_len + flen + 2);
   /* + 2 above for slash and terminating null.  */
 
-  /* See if we already included this file and we can tell in advance
-     (from a #ifndef around its contents last time)
-     that there is no need to include it again.  */
-  {
-    struct file_name_list *l = all_include_files;
-    strncpy (fname, fbeg, flen);
-    fname[flen] = 0;
-    for (; l; l = l->next)
-      if (! strcmp (fname, l->fname)
-	  && l->control_macro
-	  && lookup (l->control_macro, -1, -1))
-	return 0;
-  }
-
   /* If specified file name is absolute, just open it.  */
 
   if (*fbeg == '/') {
     strncpy (fname, fbeg, flen);
     fname[flen] = 0;
+    if (lookup_include (fname))
+      return 0;
     if (importing)
       f = lookup_import (fname);
     else
@@ -3791,6 +3780,10 @@ get_filename:
 	f = open (fname, O_RDONLY, 0666);
       if (f == -2)
 	return 0;			/* Already included this file */
+      if (lookup_include (fname)) {
+	close (f);
+	return 0;
+      }
       if (f >= 0)
 	break;
     }
@@ -3918,6 +3911,23 @@ get_filename:
     if (system_header_p)
       system_include_depth--;
   }
+  return 0;
+}
+
+/* Return nonzero if there is no need to include file NAME
+   because it has already been included and it contains a conditional
+   to make a repeated include do nothing.  */
+
+static int
+lookup_include (name)
+     char *name;
+{
+  struct file_name_list *l = all_include_files;
+  for (; l; l = l->next)
+    if (! strcmp (name, l->fname)
+	&& l->control_macro
+	&& lookup (l->control_macro, -1, -1))
+      return 1;
   return 0;
 }
 
