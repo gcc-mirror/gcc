@@ -3323,9 +3323,8 @@
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
-  rtx ccreg = gen_rtx (REG,
-		       SELECT_CC_MODE (code, arm_compare_op0, arm_compare_op1),
-		       CC_REGNUM);
+  rtx ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1,
+			       arm_compare_fp);
 
   operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
 }")
@@ -3339,9 +3338,8 @@
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
-  rtx ccreg = gen_rtx (REG,
-		       SELECT_CC_MODE (code, arm_compare_op0, arm_compare_op1),
-		       CC_REGNUM);
+  rtx ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1,
+			       arm_compare_fp);
 
   operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
 }")
@@ -3355,9 +3353,8 @@
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
-  rtx ccreg = gen_rtx (REG,
-		       SELECT_CC_MODE (code, arm_compare_op0, arm_compare_op1),
-		       CC_REGNUM);
+  rtx ccreg = gen_compare_reg (code, arm_compare_op0, arm_compare_op1,
+			       arm_compare_fp);
 
   operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
 }")
