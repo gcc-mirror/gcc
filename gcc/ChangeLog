@@ -1,5 +1,8 @@
 Wed Nov 21 16:44:01 2001  Douglas B. Rupp  <rupp@gnat.com>
 
+	* cppfiles.c (STAT_SIZE_TOO_BIG): Define.
+	(read_include_file): Use STAT_SIZE_TOO_BIG.
+
 	* cppinit.c (INO_T_COPY): Define.
 	(INO_T_EQ): Uppercase parameters.
 	(append_include_chain): Use INO_T_COPY.

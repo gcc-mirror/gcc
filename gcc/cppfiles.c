@@ -73,6 +73,15 @@ struct include_file
   unsigned char mapped;		/* file buffer is mmapped */
 };
 
+/* Variable length record files on VMS will have a stat size that includes
+   record control characters that won't be included in the read size. */
+#ifdef VMS
+# define FAB_C_VAR 2 /* variable length records (see Starlet fabdef.h) */
+# define STAT_SIZE_TOO_BIG(ST) ((ST).st_fab_rfm == FAB_C_VAR)
+#else
+# define STAT_SIZE_TOO_BIG(ST) 0
+#endif
+
 /* The cmacro works like this: If it's NULL, the file is to be
    included again.  If it's NEVER_REREAD, the file is never to be
    included again.  Otherwise it is a macro hashnode, and the file is
@@ -392,7 +401,11 @@ read_include_file (pfile, inc)
 		goto perror_fail;
 	      if (count == 0)
 		{
-		  cpp_warning (pfile, "%s is shorter than expected", inc->name);
+		  if (!STAT_SIZE_TOO_BIG (inc->st))
+		    cpp_warning
+		      (pfile, "%s is shorter than expected", inc->name);
+		  buf = xrealloc (buf, offset);
+		  inc->st.st_size = offset;
 		  break;
 		}
 	      offset += count;
