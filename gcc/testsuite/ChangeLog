@@ -1,3 +1,7 @@
+2003-08-18  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* gcc.dg/noncompile/20030818-1.c: New.
+
 2003-08-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/11370
