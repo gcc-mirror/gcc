@@ -963,34 +963,37 @@ static void
 set_rtti_entry (virtuals, offset, type)
      tree virtuals, offset, type;
 {
-  tree fn;
+  tree decl;
 
   if (CLASSTYPE_COM_INTERFACE (type))
     return;
 
   if (flag_rtti)
-    fn = get_tinfo_decl (type);
-  else
+    decl = get_tinfo_decl (type);
+  else if (!new_abi_rtti_p ())
     /* If someone tries to get RTTI information for a type compiled
        without RTTI, they're out of luck.  By calling __pure_virtual
        in this case, we give a small clue as to what went wrong.  We
        could consider having a __no_typeinfo function as well, for a
        more specific hint.  */
-    fn = abort_fndecl;
+    decl = abort_fndecl;
+  else
+    /* For the new-abi, we just point to the type_info object.  */
+    decl = NULL_TREE;
 
   if (flag_vtable_thunks)
     {
       /* The first slot holds the offset.  */
       TREE_PURPOSE (virtuals) = offset;
 
-      /* The next node holds the function.  */
+      /* The next node holds the decl.  */
       virtuals = TREE_CHAIN (virtuals);
       offset = integer_zero_node;
     }
 
-  /* This slot holds the function to call.  */
+  /* This slot holds the decl.  */
   TREE_PURPOSE (virtuals) = offset;
-  TREE_VALUE (virtuals) = fn;
+  TREE_VALUE (virtuals) = decl;
 }
 
 /* Get the VAR_DECL of the vtable for TYPE. TYPE need not be polymorphic,
@@ -2615,9 +2618,26 @@ build_vtbl_initializer (binfo, t)
       init = build_vtable_entry (integer_zero_node, init);
       inits = tree_cons (NULL_TREE, init, inits);
 
-      /* Even in this case, the second entry (the tdesc pointer) is
-	 just an ordinary function.  */
       v = TREE_CHAIN (v);
+      
+      if (new_abi_rtti_p ())
+        {
+          tree decl = TREE_VALUE (v);
+          
+          if (decl)
+            decl = build_unary_op (ADDR_EXPR, decl, 0);
+          else
+            decl = integer_zero_node;
+          decl = build1 (NOP_EXPR, vfunc_ptr_type_node, decl);
+          TREE_CONSTANT (decl) = 1;
+          decl = build_vtable_entry (integer_zero_node, decl);
+          inits = tree_cons (NULL_TREE, decl, inits);
+          
+          v = TREE_CHAIN (v);
+        }
+      /* In the old abi the second entry (the tdesc pointer) is
+	 just an ordinary function, so it can be dealt with like the
+	 virtual functions.  */
     }
 
   /* Go through all the ordinary virtual functions, building up

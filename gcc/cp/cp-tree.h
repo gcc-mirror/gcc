@@ -238,6 +238,11 @@ extern int flag_rtti;
    class).  */
 #define all_overridden_vfuns_in_vtables_p() (flag_new_abi)
 
+/* Nonzero if we use access type_info objects directly, and use the
+   cross-vendor layout for them. Zero if we use an accessor function
+   to get the type_info object address.  */
+#define new_abi_rtti_p() (0)
+
 
 /* Language-dependent contents of an identifier.  */
 
@@ -3988,13 +3993,16 @@ extern void init_repo				PARAMS ((const char *));
 extern void finish_repo				PARAMS ((void));
 
 /* in rtti.c */
-extern void init_rtti_processing		PARAMS ((void));
-extern tree build_typeid			PARAMS ((tree));
-extern tree get_tinfo_decl                      PARAMS ((tree));
-extern tree get_typeid				PARAMS ((tree));
-extern tree get_typeid_1			PARAMS ((tree));
-extern tree build_dynamic_cast			PARAMS ((tree, tree));
-extern void synthesize_tinfo_fn			PARAMS ((tree));
+extern void init_rtti_processing		PARAMS((void));
+extern tree build_typeid			PARAMS((tree));
+extern tree get_tinfo_decl                      PARAMS((tree));
+extern tree get_typeid				PARAMS((tree));
+extern tree get_typeid_1			PARAMS((tree));
+extern tree build_dynamic_cast			PARAMS((tree, tree));
+extern void synthesize_tinfo_fn			PARAMS((tree));
+extern void emit_support_tinfos                 PARAMS((void));
+extern int tinfo_decl_p                         PARAMS((tree, void *));
+extern int emit_tinfo_decl                      PARAMS((tree *, void *));
 
 /* in search.c */
 extern int types_overlap_p			PARAMS ((tree, tree));
