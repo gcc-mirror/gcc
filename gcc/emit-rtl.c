@@ -4057,6 +4057,7 @@ emit_barrier_before (rtx before)
   rtx insn = rtx_alloc (BARRIER);
 
   INSN_UID (insn) = cur_insn_uid++;
+  BLOCK_FOR_INSN (insn) = NULL;
 
   add_insn_before (insn, before);
   return insn;
@@ -4272,6 +4273,7 @@ emit_barrier_after (rtx after)
   rtx insn = rtx_alloc (BARRIER);
 
   INSN_UID (insn) = cur_insn_uid++;
+  BLOCK_FOR_INSN (insn) = NULL;
 
   add_insn_after (insn, after);
   return insn;
@@ -4668,6 +4670,7 @@ emit_barrier (void)
 {
   rtx barrier = rtx_alloc (BARRIER);
   INSN_UID (barrier) = cur_insn_uid++;
+  BLOCK_FOR_INSN (barrier) = NULL;
   add_insn (barrier);
   return barrier;
 }
