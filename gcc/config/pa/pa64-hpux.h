@@ -201,6 +201,8 @@ do {								\
    HP assembler's .IMPORT directive but relates more directly to
    ELF object file types.  */
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)			\
+  pa_hpux_asm_output_external ((FILE), (DECL), (NAME))
+#define ASM_OUTPUT_EXTERNAL_REAL(FILE, DECL, NAME)		\
 do {								\
   if (FUNCTION_NAME_P (NAME))					\
     ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");		\
