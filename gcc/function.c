@@ -275,6 +275,7 @@ static void pad_below		PARAMS ((struct args_size *, enum machine_mode,
 static rtx round_trampoline_addr PARAMS ((rtx));
 static rtx adjust_trampoline_addr PARAMS ((rtx));
 static tree *identify_blocks_1	PARAMS ((rtx, tree *, tree *, tree *));
+static void reorder_blocks_0	PARAMS ((rtx));
 static void reorder_blocks_1	PARAMS ((rtx, tree, varray_type *));
 static tree blocks_nreverse	PARAMS ((tree));
 static int all_blocks		PARAMS ((tree, tree *));
@@ -5789,6 +5790,7 @@ reorder_blocks ()
   BLOCK_SUBBLOCKS (block) = NULL_TREE;
   BLOCK_CHAIN (block) = NULL_TREE;
 
+  reorder_blocks_0 (get_insns ());
   reorder_blocks_1 (get_insns (), block, &block_stack);
 
   BLOCK_SUBBLOCKS (block) = blocks_nreverse (BLOCK_SUBBLOCKS (block));
@@ -5798,6 +5800,35 @@ reorder_blocks ()
 
 /* Helper function for reorder_blocks.  Process the insn chain beginning
    at INSNS.  Recurse for CALL_PLACEHOLDER insns.  */
+
+static void
+reorder_blocks_0 (insns)
+     rtx insns;
+{
+  rtx insn;
+
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == NOTE)
+	{
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
+	    {
+	      tree block = NOTE_BLOCK (insn);
+	      TREE_ASM_WRITTEN (block) = 0;
+	    }
+	}
+      else if (GET_CODE (insn) == CALL_INSN
+	       && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
+	{
+	  rtx cp = PATTERN (insn);
+	  reorder_blocks_0 (XEXP (cp, 0));
+	  if (XEXP (cp, 1))
+	    reorder_blocks_0 (XEXP (cp, 1));
+	  if (XEXP (cp, 2))
+	    reorder_blocks_0 (XEXP (cp, 2));
+	}
+    }
+}
 
 static void
 reorder_blocks_1 (insns, current_block, p_block_stack)
