@@ -1186,13 +1186,8 @@ build_aggr_init (exp, init, flags)
       /* Must arrange to initialize each element of EXP
 	 from elements of INIT.  */
       tree itype = init ? TREE_TYPE (init) : NULL_TREE;
-      if (CP_TYPE_QUALS (type) != TYPE_UNQUALIFIED)
-	{
-	  TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
-	  if (init)
-	    TREE_TYPE (init) = TYPE_MAIN_VARIANT (itype);
-	}
-      if (init && TREE_TYPE (init) == NULL_TREE)
+      
+      if (init && !itype)
 	{
 	  /* Handle bad initializers like:
 	     class COMPLEX {
@@ -1206,8 +1201,14 @@ build_aggr_init (exp, init, flags)
 	       COMPLEX zees(1.0, 0.0)[10];
 	     }
 	  */
-	  error ("bad array initializer");
+	  cp_error ("bad array initializer");
 	  return error_mark_node;
+	}
+      if (CP_TYPE_QUALS (type) != TYPE_UNQUALIFIED)
+	{
+	  TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
+	  if (init)
+	    TREE_TYPE (init) = TYPE_MAIN_VARIANT (itype);
 	}
       stmt_expr = build_vec_init (exp, exp, array_type_nelts (type), init,
 				  init && same_type_p (TREE_TYPE (init),
