@@ -91,7 +91,7 @@ ${srcdir}/stamp-h.in: configure.in
 config.h: stamp-h; @true
 stamp-h: config.h.in config.status
 	CONFIG_FILES= CONFIG_HEADERS=config.h $(SHELL) config.status
-	echo timestamp > ${srcdir}/stamp-h
+	echo timestamp > stamp-h
 
 VersionI.o: Version.c
 	$(CC) -c $(ALL_CFLAGS) -o $@ $(srcdir)/Version.c
