@@ -4669,7 +4669,6 @@ rtx
 sparc_builtin_saveregs (arglist)
      tree arglist;
 {
-  tree fntype = TREE_TYPE (current_function_decl);
   int first_reg = current_function_args_info.words;
   rtx address;
   int regno;

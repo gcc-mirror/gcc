@@ -1,3 +1,31 @@
+Thu Jun 18 09:36:50 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (c-lang.o): Depend on output.h.
+
+	* c-lang.c: Include output.h.
+
+	* sparc.c (sparc_builtin_saveregs): Remove unused variable `fntype'.
+
+	* except.c (expand_builtin_eh_stub): Likewise for variable `jump_to'.
+
+	* genrecog.c (write_subroutine): When writing insn-recog.c, mark
+	variables `insn', `pnum_clobbers', `x[0 .. max_depth]' and `tem'
+	with ATTRIBUTE_UNUSED.
+
+	* regmove.c (copy_src_to_dest): Make function static to match its
+	prototype.
+
+	* reload1.c Include hard-reg-set.h before rtl.h to get macro
+	HARD_CONST.  Include machmode.h before hard-reg-set.h.
+
+	* rtl.h: Prototype `retry_global_alloc' and wrap with macro
+	HARD_CONST to protect usage of typedef HARD_REG_SET.
+
+	* tree.c: Prototype `_obstack_allocated_p'.
+
+	* varasm.c: Wrap prototype of `asm_output_aligned_bss' in macro
+	BSS_SECTION_ASM_OP.
+
 Thu Jun 18 09:20:47 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* pa.c: Include system.h and toplev.h.  Remove redundant code.

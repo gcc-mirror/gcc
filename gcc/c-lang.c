@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-tree.h"
 #include "c-lex.h"
 #include "toplev.h"
+#include "output.h"
 
 /* Each of the functions defined here
    is an alternative to a function in objc-actions.c.  */

@@ -535,7 +535,7 @@ optimize_reg_copy_3 (insn, dest, src)
 /* If we were not able to update the users of src to use dest directly, try
    instead moving the value to dest directly before the operation.  */
 
-void
+static void
 copy_src_to_dest (insn, src, dest, loop_depth)
      rtx insn;
      rtx src;
