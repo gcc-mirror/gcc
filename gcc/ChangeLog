@@ -1,3 +1,8 @@
+2003-01-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*andsi3_lshift_n_sb): New.
+	(*iorsi3_and_lshiftrt_n_sb): Likewise.
+
 2003-01-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9264
