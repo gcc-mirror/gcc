@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 /* This is handled in override_options.  */
 
 #undef SUBTARGET_CC1_SPEC
-#define SUBTARGET_CC1_SPEC "%{static: -mno-abicalls}"
+#define SUBTARGET_CC1_SPEC ""
 
 /* We must pass -D_LONGLONG always, even when -ansi is used, because irix6
    system header files require it.  This is OK, because gcc never warns
@@ -480,7 +480,7 @@ do {									 \
    on the mipsX option.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
-  "%{!static:%{!shared: \
+  "%{!shared: \
      %{mabi=32:%{pg:gcrt1.o%s} \
        %{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}} \
      %{mabi=n32: \
@@ -503,40 +503,7 @@ do {									 \
            %{!p:/usr/lib32/mips4/crt1.o%s}}} \
        %{!mips4:%{pg:/usr/lib32/mips3/gcrt1.o%s} \
          %{!pg:%{p:/usr/lib32/mips3/mcrt1.o%s /usr/lib32/mips3/libprof1.a%s} \
-           %{!p:/usr/lib32/mips3/crt1.o%s}}}}}} \
-   %{static: \
-     %{mabi=32:%{pg:/usr/lib/nonshared/gcrt1.o%s} \
-       %{!pg:%{p:/usr/lib/nonshared/mcrt1.o%s /usr/lib/nonshared/libprof1.a%s} \
-         %{!p:/usr/lib/nonshared/crt1.o%s}}} \
-     %{mabi=n32: \
-       %{mips4:%{pg:/usr/lib32/mips4/nonshared/gcrt1.o%s} \
-         %{!pg:%{p:/usr/lib32/mips4/nonshared/mcrt1.o%s \
-             /usr/lib32/mips4/nonshared/libprof1.a%s} \
-           %{!p:/usr/lib32/mips4/nonshared/crt1.o%s}}} \
-       %{!mips4:%{pg:/usr/lib32/mips3/nonshared/gcrt1.o%s} \
-         %{!pg:%{p:/usr/lib32/mips3/nonshared/mcrt1.o%s \
-             /usr/lib32/mips3/nonshared/libprof1.a%s} \
-           %{!p:/usr/lib32/mips3/nonshared/crt1.o%s}}}} \
-     %{mabi=64: \
-       %{mips4:%{pg:/usr/lib64/mips4/nonshared/gcrt1.o} \
-         %{!pg:%{p:/usr/lib64/mips4/nonshared/mcrt1.o \
-             /usr/lib64/mips4/nonshared/libprof1.a} \
-           %{!p:/usr/lib64/mips4/nonshared/crt1.o}}} \
-       %{!mips4:%{pg:/usr/lib64/mips3/nonshared/gcrt1.o} \
-         %{!pg:%{p:/usr/lib64/mips3/nonshared/mcrt1.o \
-             /usr/lib64/mips3/nonshared/libprof1.a} \
-           %{!p:/usr/lib64/mips3/nonshared/crt1.o}}}} \
-     %{!mabi*: \
-       %{mips4:%{pg:/usr/lib32/mips4/nonshared/gcrt1.o%s} \
-         %{!pg:%{p:/usr/lib32/mips4/nonshared/mcrt1.o%s \
-             /usr/lib32/mips4/nonshared/libprof1.a%s} \
-           %{!p:/usr/lib32/mips4/nonshared/crt1.o%s}}} \
-       %{!mips4:%{pg:/usr/lib32/mips3/nonshared/gcrt1.o%s} \
-         %{!pg:%{p:/usr/lib32/mips3/nonshared/mcrt1.o%s \
-           /usr/lib32/mips3/nonshared/libprof1.a%s} \
-         %{!pg:%{p:/usr/lib32/mips3/nonshared/mcrt1.o%s \
-             /usr/lib32/mips3/nonshared/libprof1.a%s} \
-           %{!p:/usr/lib32/mips3/nonshared/crt1.o%s}}}}}} \
+           %{!p:/usr/lib32/mips3/crt1.o%s}}}}} \
    crtbegin.o%s"
 
 #undef LIB_SPEC
@@ -575,9 +542,7 @@ do {									 \
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
 %{bestGnum} %{shared} %{non_shared} \
 %{call_shared} %{no_archive} %{exact_version} %{w} \
-%{static: -non_shared} \
-%{!static: \
-  %{!shared: %{!non_shared: %{!call_shared: -call_shared -no_unresolved}}}} \
+%{!shared: %{!non_shared: %{!call_shared: -call_shared -no_unresolved}}} \
 %{rpath} -init __do_global_ctors -fini __do_global_dtors \
 %{shared:-hidden_symbol __do_global_ctors,__do_global_dtors,__EH_FRAME_BEGIN__,__frame_dummy} \
 -_SYSTYPE_SVR4 -woff 131 \
