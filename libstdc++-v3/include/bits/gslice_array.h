@@ -34,8 +34,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_GSLICE_ARRAY
-#define _CPP_BITS_GSLICE_ARRAY 1
+#ifndef _GSLICE_ARRAY_H
+#define _GSLICE_ARRAY_H 1
 
 #pragma GCC system_header
 
@@ -171,7 +171,7 @@ _DEFINE_VALARRAY_OPERATOR(>>, __shift_right)
 
 } // std::
 
-#endif /* _CPP_BITS_GSLICE_ARRAY */
+#endif /* _GSLICE_ARRAY_H */
 
 // Local Variables:
 // mode:c++

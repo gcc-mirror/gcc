@@ -4,35 +4,35 @@
 #undef HAVE_MMAP
 
 // Define if GCC supports weak symbols.
-#undef _GLIBCPP_SUPPORTS_WEAK
+#undef _GLIBCXX_SUPPORTS_WEAK
 
 // Include I/O support for 'long long' and 'unsigned long long'.
-#undef _GLIBCPP_USE_LONG_LONG
+#undef _GLIBCXX_USE_LONG_LONG
 
 // Define if C99 features such as lldiv_t, llabs, lldiv should be exposed.
-#undef _GLIBCPP_USE_C99
+#undef _GLIBCXX_USE_C99
 
 // Define if code specialized for wchar_t should be used.
-#undef _GLIBCPP_USE_WCHAR_T
+#undef _GLIBCXX_USE_WCHAR_T
 
 // Define if using setrlimit to limit memory usage during 'make check'.
-#undef _GLIBCPP_MEM_LIMITS
+#undef _GLIBCXX_MEM_LIMITS
 
 // Define to use concept checking code from the boost libraries.
-#undef _GLIBCPP_CONCEPT_CHECKS
+#undef _GLIBCXX_CONCEPT_CHECKS
 
 // Define to use symbol versioning in the shared library.
-#undef _GLIBCPP_SYMVER
+#undef _GLIBCXX_SYMVER
 
 // Define symbol versioning in assember directives. If symbol
 // versioning is beigng used, and the assembler supports this kind of
 // thing, then use it.
-// NB: _GLIBCPP_AT_AT is a hack to work around quoting issues in m4.
-#if _GLIBCPP_SYMVER
-  #define _GLIBCPP_ASM_SYMVER(cur, old, version) \
-   asm (".symver " #cur "," #old _GLIBCPP_AT_AT #version);
+// NB: _GLIBCXX_AT_AT is a hack to work around quoting issues in m4.
+#if _GLIBCXX_SYMVER
+  #define _GLIBCXX_ASM_SYMVER(cur, old, version) \
+   asm (".symver " #cur "," #old _GLIBCXX_AT_AT #version);
 #else
-  #define _GLIBCPP_ASM_SYMVER(cur, old, version)
+  #define _GLIBCXX_ASM_SYMVER(cur, old, version)
 #endif
 
 // Define if gthr-default.h exists (meaning that threading support is enabled).
@@ -126,7 +126,7 @@
 #undef HAVE_LC_MESSAGES
 
 // Define if NLS translations are to be used.
-#undef _GLIBCPP_USE_NLS
+#undef _GLIBCXX_USE_NLS
 
 /* Define if you have the __signbit function.  */
 #undef HAVE___SIGNBIT
@@ -795,7 +795,7 @@
 #undef VERSION
 
 /* Define if the compiler is configured for setjmp/longjmp exceptions. */
-#undef _GLIBCPP_SJLJ_EXCEPTIONS
+#undef _GLIBCXX_SJLJ_EXCEPTIONS
 
 /* Define if sigsetjmp is available.   */
 #undef HAVE_SIGSETJMP

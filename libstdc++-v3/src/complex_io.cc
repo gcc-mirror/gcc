@@ -59,7 +59,7 @@ namespace std
     operator<<(basic_ostream<char, char_traits<char> >&,
                const complex<long double>&);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template
     basic_istream<wchar_t, char_traits<wchar_t> >&
     operator>>(basic_istream<wchar_t, char_traits<wchar_t> >&,
@@ -89,5 +89,5 @@ namespace std
     basic_ostream<wchar_t, char_traits<wchar_t> >&
     operator<<(basic_ostream<wchar_t, char_traits<wchar_t> >&,
                const complex<long double>&);
-#endif //_GLIBCPP_USE_WCHAR_T
+#endif //_GLIBCXX_USE_WCHAR_T
 } // namespace std

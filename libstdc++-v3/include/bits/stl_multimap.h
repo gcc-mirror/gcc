@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_MULTIMAP_H
-#define __GLIBCPP_INTERNAL_MULTIMAP_H
+#ifndef _MULTIMAP_H
+#define _MULTIMAP_H 1
 
 #include <bits/concept_check.h>
 
@@ -105,8 +105,8 @@ namespace std
     class multimap
   {
     // concept requirements
-    __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
-    __glibcpp_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept)
+    __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
+    __glibcxx_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept)
   
   public:
     typedef _Key                                          key_type;
@@ -634,4 +634,4 @@ namespace std
     { __x.swap(__y); }
 } // namespace std
 
-#endif /* __GLIBCPP_INTERNAL_MULTIMAP_H */
+#endif /* _MULTIMAP_H */

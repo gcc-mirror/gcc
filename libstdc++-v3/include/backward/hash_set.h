@@ -53,8 +53,8 @@
  *
  */
 
-#ifndef _CPP_BACKWARD_HASH_SET_H
-#define _CPP_BACKWARD_HASH_SET_H 1
+#ifndef _BACKWARD_HASH_SET_H
+#define _BACKWARD_HASH_SET_H 1
 
 #include "backward_warning.h"
 #include "algobase.h"
@@ -65,5 +65,5 @@ using __gnu_cxx::hashtable;
 using __gnu_cxx::hash_set;
 using __gnu_cxx::hash_multiset;
 
-#endif /* _CPP_BACKWARD_HASH_SET_H */
+#endif /* _BACKWARD_HASH_SET_H */
 

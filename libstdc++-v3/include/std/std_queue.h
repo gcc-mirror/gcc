@@ -58,8 +58,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_QUEUE
-#define _CPP_QUEUE 1
+#ifndef _QUEUE
+#define _QUEUE 1
 
 #pragma GCC system_header
 #include <bits/c++config.h>
@@ -74,9 +74,9 @@
 #include <bits/stl_function.h>
 #include <bits/stl_queue.h>
 
-#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
 #  include <bits/deque.tcc>
 #  include <bits/vector.tcc>
 #endif
 
-#endif /* _CPP_QUEUE */
+#endif /* _QUEUE */

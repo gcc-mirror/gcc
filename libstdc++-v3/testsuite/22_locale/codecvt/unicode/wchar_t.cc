@@ -23,7 +23,7 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-#ifdef _GLIBCPP_USE___ENC_TRAITS
+#ifdef _GLIBCXX_USE___ENC_TRAITS
 
 // Need some char_traits specializations for this to work.
 typedef unsigned short			unicode_t;
@@ -186,11 +186,11 @@ void test01()
   delete [] e_arr;
   delete [] i_arr;
 }
-#endif // _GLIBCPP_USE___ENC_TRAITS
+#endif // _GLIBCXX_USE___ENC_TRAITS
 
 int main ()
 {
-#ifdef _GLIBCPP_USE___ENC_TRAITS
+#ifdef _GLIBCXX_USE___ENC_TRAITS
   test01();
 #endif 
   return 0;

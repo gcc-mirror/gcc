@@ -32,8 +32,8 @@
 // used to verify allocation functionality of standard library
 // containers.  2002.11.25 smw
 
-#ifndef _GLIBCPP_TESTSUITE_ALLOCATOR_H
-#define _GLIBCPP_TESTSUITE_ALLOCATOR_H
+#ifndef _GLIBCXX_TESTSUITE_ALLOCATOR_H
+#define _GLIBCXX_TESTSUITE_ALLOCATOR_H
 
 #include <cstddef>
 #include <limits>
@@ -171,5 +171,5 @@ namespace __gnu_cxx_test
     { return false; }
 }; // namespace __gnu_cxx_test
 
-#endif // _GLIBCPP_TESTSUITE_ALLOCATOR_H
+#endif // _GLIBCXX_TESTSUITE_ALLOCATOR_H
 

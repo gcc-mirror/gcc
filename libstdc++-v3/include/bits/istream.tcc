@@ -32,6 +32,9 @@
 // ISO C++ 14882: 27.6.2  Output streams
 //
 
+#ifndef _ISTREAM_TCC
+#define _ISTREAM_TCC 1
+
 #pragma GCC system_header
 
 #include <locale>
@@ -59,7 +62,7 @@ namespace std
 					  traits_type::to_char_type(__c)))
 		  __c = __sb->snextc();
 
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 //195.  Should basic_istream::sentry's constructor ever set eofbit? 
 	      if (traits_type::eq_int_type(__c, __eof))
 		__in.setstate(ios_base::eofbit);
@@ -142,7 +145,7 @@ namespace std
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	      long __l;
 	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __l);
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 118. basic_istream uses nonexistent num_get member functions.
 	      if (!(__err & ios_base::failbit)
 		  && (numeric_limits<short>::min() <= __l 
@@ -204,7 +207,7 @@ namespace std
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	      long __l;
 	      __check_facet(this->_M_num_get).get(*this, 0, *this, __err, __l);
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 118. basic_istream uses nonexistent num_get member functions.
 	      if (!(__err & ios_base::failbit)
 		  && (numeric_limits<int>::min() <= __l 
@@ -305,7 +308,7 @@ namespace std
       return *this;
     }
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>& 
     basic_istream<_CharT, _Traits>::
@@ -828,7 +831,7 @@ namespace std
     basic_istream<_CharT, _Traits>::
     putback(char_type __c)
     {
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 60. What is a formatted input function?
       _M_gcount = 0;
 #endif
@@ -862,7 +865,7 @@ namespace std
     basic_istream<_CharT, _Traits>::
     unget(void)
     {
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 60. What is a formatted input function?
       _M_gcount = 0;
 #endif
@@ -945,7 +948,7 @@ namespace std
       // DR60.  Do not change _M_gcount.
       if (!this->fail())
 	{
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 136.  seekp, seekg setting wrong streams?
 	  pos_type __err = this->rdbuf()->pubseekpos(__pos, ios_base::in);
 
@@ -965,7 +968,7 @@ namespace std
       // DR60.  Do not change _M_gcount.
       if (!this->fail())
 	{
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 136.  seekp, seekg setting wrong streams?
 	  pos_type __err = this->rdbuf()->pubseekoff(__off, __dir, 
 						     ios_base::in);
@@ -1040,7 +1043,7 @@ namespace std
 	      if (_Traits::eq_int_type(__c, __eof))
 		__in.setstate(ios_base::eofbit);
 
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 //68.  Extractors for char* should store null at end
 	      *__s = char_type();
 #endif
@@ -1124,7 +1127,7 @@ namespace std
 	    __in.setstate(ios_base::eofbit);
 	  __in.width(0);
 	}
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 //211.  operator>>(istream&, string&) doesn't set failbit
       if (!__extracted)
 	__in.setstate (ios_base::failbit);
@@ -1184,7 +1187,7 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB:  This syntax is a GNU extension.
-#if _GLIBCPP_EXTERN_TEMPLATE
+#if _GLIBCXX_EXTERN_TEMPLATE
   extern template class basic_istream<char>;
   extern template istream& ws(istream&);
   extern template istream& operator>>(istream&, char&);
@@ -1194,7 +1197,7 @@ namespace std
   extern template istream& operator>>(istream&, unsigned char*);
   extern template istream& operator>>(istream&, signed char*);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   extern template class basic_istream<wchar_t>;
   extern template wistream& ws(wistream&);
   extern template wistream& operator>>(wistream&, wchar_t&);
@@ -1202,3 +1205,5 @@ namespace std
 #endif
 #endif
 } // namespace std
+
+#endif

@@ -27,12 +27,12 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _BITS_ATOMICITY_H
-#define _BITS_ATOMICITY_H	1
+#ifndef _GLIBCXX_ATOMICITY_H
+#define _GLIBCXX_ATOMICITY_H	1
 
 #include <bits/gthr.h>
 
-#define _GLIBCPP_NEED_GENERIC_MUTEX
+#define _GLIBCXX_NEED_GENERIC_MUTEX
 
 typedef int _Atomic_word;
 

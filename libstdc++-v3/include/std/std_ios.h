@@ -36,8 +36,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_IOS
-#define _CPP_IOS	1
+#ifndef _IOS
+#define _IOS 1
 
 #pragma GCC system_header
 
@@ -50,5 +50,5 @@
 #include <streambuf> 
 #include <bits/basic_ios.h>
 
-#endif	/* _CPP_IOS */
+#endif	/* _IOS */
 

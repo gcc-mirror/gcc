@@ -60,8 +60,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_TREE_H
-#define __GLIBCPP_INTERNAL_TREE_H
+#ifndef _TREE_H
+#define _TREE_H 1
 
 /*
 

@@ -47,7 +47,7 @@ class gnu_ctype: public std::ctype<char_type> { };
   VERIFY(gctype.scan_not((MASK), (STRING), \
 			 (STRING) + traits_type::length(STRING)) == (EXPECTED))
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
 // Sanity check scan_is() and scan_not().
 void test01()
 {
@@ -345,7 +345,7 @@ void test01()
 
 int main() 
 {
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   test01();
 #endif
   return 0;

@@ -22,18 +22,18 @@
 ## USA.
 
 PACKAGE = @PACKAGE@
-glibcpp_srcdir = @glibcpp_srcdir@
+glibcxx_srcdir = @glibcxx_srcdir@
 
 # Location of installation directories.
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 locale_installdir = $(DESTDIR)$(datadir)/locale
-locale_builddir = @glibcpp_localedir@
+locale_builddir = @glibcxx_localedir@
 
 # Tell automake that foo.po makes foo.mo
 SUFFIXES = .po .mo
 
-LOCALE_IN = @glibcpp_POFILES@
-LOCALE_OUT = @glibcpp_MOFILES@
+LOCALE_IN = @glibcxx_POFILES@
+LOCALE_OUT = @glibcxx_MOFILES@
 
 MSGFMT = msgfmt
 
@@ -81,7 +81,7 @@ install-data-local-yes: all-local-yes
 # Maintainence of the .po template file.  This rule is never run automatically,
 # and updates the source directory.
 pot:
-	cd $(glibcpp_srcdir); \
+	cd $(glibcxx_srcdir); \
 	xgettext --default-domain=$(PACKAGE) --add-comments --c++ --debug \
 	  --join-existing -o po/$(PACKAGE).pot --keyword=__N \
 	  `grep -r -l '__N(".*")' .`

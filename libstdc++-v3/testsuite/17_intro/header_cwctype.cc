@@ -20,7 +20,7 @@
 
 // 17.4.1.2 Headers, cwctype
 
-#if _GLIBCPP_USE_WCHAR_T
+#if _GLIBCXX_USE_WCHAR_T
 #include <cwctype>
 // Make sure wint_t is in namespace std
 std::wint_t i = 5;

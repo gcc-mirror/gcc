@@ -90,9 +90,11 @@ DEBUG_FLAGS = @DEBUG_FLAGS@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
+FPOS_H = @FPOS_H@
+FPOS_INC_SRCDIR = @FPOS_INC_SRCDIR@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
-GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
+GLIBCXX_IS_CROSS_COMPILING = @GLIBCXX_IS_CROSS_COMPILING@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
@@ -120,18 +122,18 @@ baseline_dir = @baseline_dir@
 check_msgfmt = @check_msgfmt@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
-glibcpp_CXX = @glibcpp_CXX@
-glibcpp_MOFILES = @glibcpp_MOFILES@
-glibcpp_PCHFLAGS = @glibcpp_PCHFLAGS@
-glibcpp_POFILES = @glibcpp_POFILES@
-glibcpp_basedir = @glibcpp_basedir@
-glibcpp_builddir = @glibcpp_builddir@
-glibcpp_localedir = @glibcpp_localedir@
-glibcpp_prefixdir = @glibcpp_prefixdir@
-glibcpp_srcdir = @glibcpp_srcdir@
-glibcpp_thread_h = @glibcpp_thread_h@
-glibcpp_toolexecdir = @glibcpp_toolexecdir@
-glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
+glibcxx_CXX = @glibcxx_CXX@
+glibcxx_MOFILES = @glibcxx_MOFILES@
+glibcxx_PCHFLAGS = @glibcxx_PCHFLAGS@
+glibcxx_POFILES = @glibcxx_POFILES@
+glibcxx_basedir = @glibcxx_basedir@
+glibcxx_builddir = @glibcxx_builddir@
+glibcxx_localedir = @glibcxx_localedir@
+glibcxx_prefixdir = @glibcxx_prefixdir@
+glibcxx_srcdir = @glibcxx_srcdir@
+glibcxx_thread_h = @glibcxx_thread_h@
+glibcxx_toolexecdir = @glibcxx_toolexecdir@
+glibcxx_toolexeclibdir = @glibcxx_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
 libtool_VERSION = @libtool_VERSION@
@@ -144,9 +146,9 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
 CC = @CC@
-CXX = @glibcpp_CXX@
-toolexecdir = @glibcpp_toolexecdir@
-toolexeclibdir = @glibcpp_toolexeclibdir@
+CXX = @glibcxx_CXX@
+toolexecdir = @glibcxx_toolexecdir@
+toolexeclibdir = @glibcxx_toolexeclibdir@
 
 # Need this library to both be part of libstdc++.a, and installed
 # separately too.
@@ -160,7 +162,7 @@ noinst_LTLIBRARIES = libsupc++convenience.la
 OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 
 # These bits are all figured out from configure. Look in acinclude.m4
-# or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
+# or configure.in to see how they are set. See GLIBCXX_EXPORT_FLAGS
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
 CONFIG_CXXFLAGS = \
 	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@
@@ -173,13 +175,13 @@ WARN_CXXFLAGS = \
 
 LIBSUPCXX_CXXFLAGS = @LIBSUPCXX_PICFLAGS@
 
-# Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
-GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
+# Use common includes from acinclude.m4/GLIBCXX_EXPORT_INCLUDES
+GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 GCC_INCLUDES = -I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include
 
 INCLUDES = \
-	$(GCC_INCLUDES) $(GLIBCPP_INCLUDES) $(LIBSUPCXX_INCLUDES)
+	$(GCC_INCLUDES) $(GLIBCXX_INCLUDES) $(LIBSUPCXX_INCLUDES)
 
 
 headers = \
@@ -218,8 +220,8 @@ sources = \
 libsupc___la_SOURCES = $(sources) 
 libsupc__convenience_la_SOURCES = $(sources) 
 
-glibcppinstalldir = $(gxx_include_dir)
-glibcppinstall_HEADERS = $(headers)
+glibcxxinstalldir = $(gxx_include_dir)
+glibcxxinstall_HEADERS = $(headers)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
@@ -302,7 +304,7 @@ vterminate.lo
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
-HEADERS =  $(glibcppinstall_HEADERS)
+HEADERS =  $(glibcxxinstall_HEADERS)
 
 DIST_COMMON =  Makefile.am Makefile.in
 
@@ -472,14 +474,14 @@ install-info: install-info-am
 install-exec-am: install-toolexeclibLTLIBRARIES
 install-exec: install-exec-am
 
-install-data-am: install-glibcppinstallHEADERS
+install-data-am: install-glibcxxinstallHEADERS
 install-data: install-data-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
 uninstall-am: uninstall-toolexeclibLTLIBRARIES \
-		uninstall-glibcppinstallHEADERS
+		uninstall-glibcxxinstallHEADERS
 uninstall: uninstall-am
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 all-redirect: all-am
@@ -487,7 +489,7 @@ install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
 	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir) \
-		$(DESTDIR)$(glibcppinstalldir)
+		$(DESTDIR)$(glibcxxinstalldir)
 
 
 mostlyclean-generic:
@@ -537,8 +539,8 @@ clean-toolexeclibLTLIBRARIES maintainer-clean-toolexeclibLTLIBRARIES \
 uninstall-toolexeclibLTLIBRARIES install-toolexeclibLTLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
-clean-libtool maintainer-clean-libtool uninstall-glibcppinstallHEADERS \
-install-glibcppinstallHEADERS tags mostlyclean-tags distclean-tags \
+clean-libtool maintainer-clean-libtool uninstall-glibcxxinstallHEADERS \
+install-glibcxxinstallHEADERS tags mostlyclean-tags distclean-tags \
 clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
 check-am installcheck-am installcheck install-info-am install-info \
 install-exec-am install-exec install-data-am install-data install-am \
@@ -548,22 +550,22 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 # We have to have rules modified from the default to counteract SUN make
-# prepending each of $(glibcppinstall_HEADERS) with VPATH below.
-install-glibcppinstallHEADERS: $(glibcppinstall_HEADERS)
+# prepending each of $(glibcxxinstall_HEADERS) with VPATH below.
+install-glibcxxinstallHEADERS: $(glibcxxinstall_HEADERS)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(glibcppinstalldir)
-	@list='$(glibcppinstall_HEADERS)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(glibcxxinstalldir)
+	@list='$(glibcxxinstall_HEADERS)'; for p in $$list; do \
 	  q=`echo $$p | sed -e 's,.*/,,'`; \
 	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcppinstalldir)/$$q"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcppinstalldir)/$$q; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcxxinstalldir)/$$q"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcxxinstalldir)/$$q; \
 	done
 
-uninstall-glibcppinstallHEADERS:
+uninstall-glibcxxinstallHEADERS:
 	@$(NORMAL_UNINSTALL)
-	list='$(glibcppinstall_HEADERS)'; for p in $$list; do \
+	list='$(glibcxxinstall_HEADERS)'; for p in $$list; do \
 	  q=`echo $$p | sed -e 's,.*/,,'`; \
-	  rm -f $(DESTDIR)$(glibcppinstalldir)/$$q; \
+	  rm -f $(DESTDIR)$(glibcxxinstalldir)/$$q; \
 	done
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

@@ -37,8 +37,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_STRING_H
-#define _CPP_BITS_STRING_H        1
+#ifndef _BASIC_STRING_H
+#define _BASIC_STRING_H 1
 
 #pragma GCC system_header
 
@@ -875,7 +875,7 @@ namespace std
       int
       compare(const _CharT* __s) const;
 
-      // _GLIBCPP_RESOLVE_LIB_DEFECTS
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 5 String::compare specification questionable
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s) const;
@@ -1074,4 +1074,4 @@ namespace std
 	    basic_string<_CharT, _Traits, _Alloc>& __str);
 } // namespace std
 
-#endif /* _CPP_BITS_STRING_H */
+#endif /* _BASIC_STRING_H */

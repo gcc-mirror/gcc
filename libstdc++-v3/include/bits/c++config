@@ -28,17 +28,17 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _CPP_CPPCONFIG
-#define _CPP_CPPCONFIG 1
+#ifndef _CXXCONFIG
+#define _CXXCONFIG 1
 
 // Pick up any OS-specific definitions.
 #include <bits/os_defines.h>
 
 // The current version of the C++ library in compressed ISO date format.
-#define __GLIBCPP__ 20030705
+#define __GLIBCXX__ 20030704
 
 // This is necessary until GCC supports separate template compilation.
-#define _GLIBCPP_NO_TEMPLATE_EXPORT 1
+#define _GLIBCXX_NO_TEMPLATE_EXPORT 1
 
 // This is a hack around not having either pre-compiled headers or
 // export compilation. If defined, the io, string, and valarray
@@ -47,7 +47,7 @@
 // types. For the io library, this means that larger, out-of-line
 // member functions are only declared, and definitions are not parsed
 // by the compiler, but instead instantiated into the library binary.
-#define _GLIBCPP_FULLY_COMPLIANT_HEADERS 1
+#define _GLIBCXX_FULLY_COMPLIANT_HEADERS 1
 
 // Allow use of the GNU syntax extension, "extern template." This
 // extension is fully documented in the g++ manual, but in a nutshell,
@@ -55,18 +55,18 @@
 // library to avoid multiple weak definitions for required types that
 // are already explicitly instantiated in the library binary. This
 // substantially reduces the binary size of resulting executables.
-#ifndef _GLIBCPP_EXTERN_TEMPLATE
-# define _GLIBCPP_EXTERN_TEMPLATE 1
+#ifndef _GLIBCXX_EXTERN_TEMPLATE
+# define _GLIBCXX_EXTERN_TEMPLATE 1
 #endif
 
 // To enable older, ARM-style iostreams and other anachronisms use this.
-//#define _GLIBCPP_DEPRECATED 1
+//#define _GLIBCXX_DEPRECATED 1
 
 // Use corrected code from the committee library group's issues list.
-#define _GLIBCPP_RESOLVE_LIB_DEFECTS 1
+#define _GLIBCXX_RESOLVE_LIB_DEFECTS 1
 
 // Hopefully temporary workaround to autoconf/m4 issue with quoting '@'.
-#define _GLIBCPP_AT_AT "@@"
+#define _GLIBCXX_AT_AT "@@"
 
 // In those parts of the standard C++ library that use a mutex instead
 // of a spin-lock, we now unconditionally use GCC's gthr.h mutex
@@ -92,9 +92,9 @@
 
 // Create a boolean flag to be used to determine if --fast-math is set.
 #ifdef __FAST_MATH__
-# define _GLIBCPP_FAST_MATH 1
+# define _GLIBCXX_FAST_MATH 1
 #else
-# define _GLIBCPP_FAST_MATH 0
+# define _GLIBCXX_FAST_MATH 0
 #endif
 
 // This marks string literals in header files to be extracted for eventual

@@ -31,8 +31,8 @@
 // ISO C++ 14882: 26.5  C library
 //
 
-#ifndef _CPP_CMATH
-#define _CPP_CMATH 1
+#ifndef _CMATH
+#define _CMATH 1
  
 #pragma GCC system_header
 
@@ -93,7 +93,7 @@ namespace std
   abs(long double __x)
   { return __builtin_fabsl(__x); }
 
-#if _GLIBCPP_HAVE_MODFF
+#if _GLIBCXX_HAVE_MODFF
   inline float 
   modf(float __x, float* __iptr) { return modff(__x, __iptr); }
 #else
@@ -107,7 +107,7 @@ namespace std
   }
 #endif
 
-#if _GLIBCPP_HAVE_MODFL
+#if _GLIBCXX_HAVE_MODFL
   inline long double 
   modf(long double __x, long double* __iptr) { return modfl(__x, __iptr); }
 #else

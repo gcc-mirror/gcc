@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_ALGOBASE_H
-#define __GLIBCPP_INTERNAL_ALGOBASE_H
+#ifndef _ALGOBASE_H
+#define _ALGOBASE_H 1
 
 #include <bits/c++config.h>
 #include <cstring>
@@ -94,10 +94,10 @@ namespace std
       typedef typename iterator_traits<_ForwardIterator2>::value_type _ValueType2;
 
       // concept requirements
-      __glibcpp_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator1>)
-      __glibcpp_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator2>)
-      __glibcpp_function_requires(_ConvertibleConcept<_ValueType1, _ValueType2>)
-      __glibcpp_function_requires(_ConvertibleConcept<_ValueType2, _ValueType1>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator1>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator2>)
+      __glibcxx_function_requires(_ConvertibleConcept<_ValueType1, _ValueType2>)
+      __glibcxx_function_requires(_ConvertibleConcept<_ValueType2, _ValueType1>)
 
       _ValueType1 __tmp = *__a;
       *__a = *__b;
@@ -118,7 +118,7 @@ namespace std
     swap(_Tp& __a, _Tp& __b)
     {
       // concept requirements
-      __glibcpp_function_requires(_SGIAssignableConcept<_Tp>)
+      __glibcxx_function_requires(_SGIAssignableConcept<_Tp>)
       
       _Tp __tmp = __a;
       __a = __b;
@@ -143,7 +143,7 @@ namespace std
     min(const _Tp& __a, const _Tp& __b)
     {
       // concept requirements
-      __glibcpp_function_requires(_LessThanComparableConcept<_Tp>)
+      __glibcxx_function_requires(_LessThanComparableConcept<_Tp>)
       //return __b < __a ? __b : __a;
       if (__b < __a) return __b; return __a;
     }
@@ -163,7 +163,7 @@ namespace std
     max(const _Tp& __a, const _Tp& __b) 
     {
       // concept requirements
-      __glibcpp_function_requires(_LessThanComparableConcept<_Tp>)
+      __glibcxx_function_requires(_LessThanComparableConcept<_Tp>)
       //return  __a < __b ? __b : __a;
       if (__a < __b) return __b; return __a;
     }
@@ -327,8 +327,8 @@ namespace std
     copy(_InputIterator __first, _InputIterator __last, _OutputIterator __result)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcpp_function_requires(_OutputIteratorConcept<_OutputIterator,
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
 	    typename iterator_traits<_InputIterator>::value_type>)
 
        typedef typename _Is_normal_iterator<_InputIterator>::_Normal __Normal;
@@ -460,9 +460,9 @@ namespace std
     copy_backward(_BI1 __first, _BI1 __last, _BI2 __result)
     {
       // concept requirements
-      __glibcpp_function_requires(_BidirectionalIteratorConcept<_BI1>)
-      __glibcpp_function_requires(_Mutable_BidirectionalIteratorConcept<_BI2>)
-      __glibcpp_function_requires(_ConvertibleConcept<
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<_BI1>)
+      __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<_BI2>)
+      __glibcxx_function_requires(_ConvertibleConcept<
 	    typename iterator_traits<_BI1>::value_type,
 	    typename iterator_traits<_BI2>::value_type>)
 
@@ -488,7 +488,7 @@ namespace std
     fill(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value)
     {
       // concept requirements
-      __glibcpp_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<_ForwardIterator>)
 
       for ( ; __first != __last; ++__first)
 	*__first = __value;
@@ -510,7 +510,7 @@ namespace std
     fill_n(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
       // concept requirements
-      __glibcpp_function_requires(_OutputIteratorConcept<_OutputIterator,_Tp>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,_Tp>)
 
       for ( ; __n > 0; --__n, ++__first)
 	*__first = __value;
@@ -582,11 +582,11 @@ namespace std
 	     _InputIterator2 __first2)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator2>)
-      __glibcpp_function_requires(_EqualityComparableConcept<
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_function_requires(_EqualityComparableConcept<
 	    typename iterator_traits<_InputIterator1>::value_type>)
-      __glibcpp_function_requires(_EqualityComparableConcept<
+      __glibcxx_function_requires(_EqualityComparableConcept<
 	    typename iterator_traits<_InputIterator2>::value_type>)
 
       while (__first1 != __last1 && *__first1 == *__first2)
@@ -617,8 +617,8 @@ namespace std
 	     _InputIterator2 __first2, _BinaryPredicate __binary_pred)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
 
       while (__first1 != __last1 && __binary_pred(*__first1, *__first2))
         {
@@ -644,9 +644,9 @@ namespace std
     equal(_InputIterator1 __first1, _InputIterator1 __last1, _InputIterator2 __first2)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator2>)
-      __glibcpp_function_requires(_EqualOpConcept<
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_function_requires(_EqualOpConcept<
 	    typename iterator_traits<_InputIterator1>::value_type,
 	    typename iterator_traits<_InputIterator2>::value_type>)
 
@@ -676,8 +676,8 @@ namespace std
 	  _BinaryPredicate __binary_pred)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
 
       for ( ; __first1 != __last1; ++__first1, ++__first2)
 	if (!__binary_pred(*__first1, *__first2))
@@ -705,11 +705,11 @@ namespace std
 			    _InputIterator2 __first2, _InputIterator2 __last2)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator2>)
-      __glibcpp_function_requires(_LessThanComparableConcept<
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_InputIterator1>::value_type>)
-      __glibcpp_function_requires(_LessThanComparableConcept<
+      __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_InputIterator2>::value_type>)
 
       for (;__first1 != __last1 && __first2 != __last2; ++__first1, ++__first2) 
@@ -741,8 +741,8 @@ namespace std
 			    _Compare __comp)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
 
       for ( ; __first1 != __last1 && __first2 != __last2
 	    ; ++__first1, ++__first2) 

@@ -135,7 +135,7 @@ namespace std
 
   /// 27.2, paragraph 10 about fpos/char_traits circularity
   typedef fpos<mbstate_t> 		streampos;
-#  ifdef _GLIBCPP_USE_WCHAR_T
+#  ifdef _GLIBCXX_USE_WCHAR_T
   /// 27.2, paragraph 10 about fpos/char_traits circularity
   typedef fpos<mbstate_t> 		wstreampos;
 #  endif

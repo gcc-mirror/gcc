@@ -37,8 +37,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_LOCFACETS_H
-#define _CPP_BITS_LOCFACETS_H	1
+#ifndef _LOCALE_FACETS_H
+#define _LOCALE_FACETS_H 1
 
 #pragma GCC system_header
 
@@ -51,10 +51,10 @@
 namespace std
 {
   // NB: Don't instantiate required wchar_t facets if no wchar_t support.
-#ifdef _GLIBCPP_USE_WCHAR_T
-# define  _GLIBCPP_NUM_FACETS 28
+#ifdef _GLIBCXX_USE_WCHAR_T
+# define  _GLIBCXX_NUM_FACETS 28
 #else
-# define  _GLIBCPP_NUM_FACETS 14
+# define  _GLIBCXX_NUM_FACETS 14
 #endif
 
   // Convert string to numeric value of type _Tv and store results.  
@@ -76,7 +76,7 @@ namespace std
     __convert_to_v(const char*, unsigned long&, ios_base::iostate&, 
 		   const __c_locale&, int);
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   template<>
     void
     __convert_to_v(const char*, long long&, ios_base::iostate&, 
@@ -425,7 +425,7 @@ namespace std
     const ctype<char>&
     use_facet<ctype<char> >(const locale& __loc);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   // 22.2.1.3  ctype<wchar_t> specialization
   template<>
     class ctype<wchar_t> : public __ctype_abstract_base<wchar_t>
@@ -498,7 +498,7 @@ namespace std
   template<>
     const ctype<wchar_t>&
     use_facet<ctype<wchar_t> >(const locale& __loc);
-#endif //_GLIBCPP_USE_WCHAR_T
+#endif //_GLIBCXX_USE_WCHAR_T
 
   // Include host and configuration specific ctype inlines.
   #include <bits/ctype_inline.h>
@@ -753,7 +753,7 @@ namespace std
     void
     numpunct<char>::_M_initialize_numpunct(__c_locale __cloc);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<> 
     numpunct<wchar_t>::~numpunct();
 
@@ -824,7 +824,7 @@ namespace std
 	  ios_base::iostate& __err, unsigned long& __v)  const
       { return this->do_get(__in, __end, __io, __err, __v); }
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
       iter_type 
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, long long& __v) const
@@ -886,7 +886,7 @@ namespace std
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
 	     unsigned long&) const;
 
-#ifdef _GLIBCPP_USE_LONG_LONG 
+#ifdef _GLIBCXX_USE_LONG_LONG 
       virtual iter_type 
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
 	     long long&) const;
@@ -958,7 +958,7 @@ namespace std
 	  unsigned long __v) const
       { return this->do_put(__s, __f, __fill, __v); }
 
-#ifdef _GLIBCPP_USE_LONG_LONG 
+#ifdef _GLIBCXX_USE_LONG_LONG 
       iter_type 
       put(iter_type __s, ios_base& __f, char_type __fill, long long __v) const
       { return this->do_put(__s, __f, __fill, __v); }
@@ -1020,7 +1020,7 @@ namespace std
       virtual iter_type 
       do_put(iter_type, ios_base&, char_type __fill, unsigned long) const;
 
-#ifdef _GLIBCPP_USE_LONG_LONG 
+#ifdef _GLIBCXX_USE_LONG_LONG 
       virtual iter_type 
       do_put(iter_type, ios_base&, char_type __fill, long long __v) const;
 
@@ -1116,7 +1116,7 @@ namespace std
     size_t
     collate<char>::_M_transform(char*, const char*, size_t) const;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     int 
     collate<wchar_t>::_M_compare(const wchar_t*, const wchar_t*) const;
@@ -1350,7 +1350,7 @@ namespace std
     void
     __timepunct<char>::_M_put(char*, size_t, const char*, const tm*) const;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<> 
     const wchar_t*
     __timepunct<wchar_t>::_S_timezones[14];
@@ -1687,7 +1687,7 @@ namespace std
     void
     moneypunct<char, false>::_M_initialize_moneypunct(__c_locale, const char*);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     moneypunct<wchar_t, true>::~moneypunct();
 
@@ -1928,7 +1928,7 @@ namespace std
     string
     messages<char>::do_get(catalog, int, int, const string&) const;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     wstring
     messages<wchar_t>::do_get(catalog, int, int, const wstring&) const;

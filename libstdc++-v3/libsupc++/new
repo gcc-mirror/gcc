@@ -35,8 +35,8 @@
  *  http://gcc.gnu.org/onlinedocs/libstdc++/18_support/howto.html#4 for more.
  */
 
-#ifndef __NEW__
-#define __NEW__
+#ifndef _NEW
+#define _NEW
 
 #include <cstddef>
 #include <exception>

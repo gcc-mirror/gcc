@@ -87,7 +87,7 @@ check_version(const symbol_info& test, bool added = false)
       known_versions.push_back("GLIBCPP_3.2.1");
       known_versions.push_back("GLIBCPP_3.2.2");
       known_versions.push_back("GLIBCPP_3.2.3"); // gcc-3.3.0
-      known_versions.push_back("GLIBCPP_3.4");
+      known_versions.push_back("GLIBCXX_3.4");
       known_versions.push_back("CXXABI_1.2");
       known_versions.push_back("CXXABI_1.2.1");
       known_versions.push_back("CXXABI_1.3");

@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_BVECTOR_H
-#define __GLIBCPP_INTERNAL_BVECTOR_H
+#ifndef _BVECTOR_H
+#define _BVECTOR_H 1
 
 namespace std
 { 
@@ -728,7 +728,7 @@ typedef vector<bool, __alloc> bit_vector;
 
 } // namespace std 
 
-#endif /* __GLIBCPP_INTERNAL_BVECTOR_H */
+#endif /* _BVECTOR_H */
 
 // Local Variables:
 // mode:C++

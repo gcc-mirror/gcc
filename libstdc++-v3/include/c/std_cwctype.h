@@ -31,14 +31,14 @@
 // ISO C++ 14882: <cwctype>
 //
 
-#ifndef _CPP_CWCTYPE
-#define _CPP_CWCTYPE 1
+#ifndef _CWCTYPE
+#define _CWCTYPE 1
 
 #pragma GCC system_header
 
 #include <bits/c++config.h>
 
-#if _GLIBCPP_HAVE_WCTYPE_H
+#if _GLIBCXX_HAVE_WCTYPE_H
 #include_next <wctype.h>
 #endif
 

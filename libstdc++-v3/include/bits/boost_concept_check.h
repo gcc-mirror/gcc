@@ -13,14 +13,14 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _GLIBCPP_BOOST_CONCEPT_CHECK
-#define _GLIBCPP_BOOST_CONCEPT_CHECK 1
+#ifndef _BOOST_CONCEPT_CHECK_H
+#define _BOOST_CONCEPT_CHECK_H 1
 
 #pragma GCC system_header
+
 #include <cstddef>                // for ptrdiff_t, used next
 #include <bits/stl_iterator_base_types.h>    // for traits and tags
 #include <utility>                           // for pair<>
-
 
 namespace __gnu_cxx
 {
@@ -38,7 +38,7 @@ inline void __function_requires()
 
 
 // ??? Should the "concept_checking*" structs begin with more than _ ?
-#define _GLIBCPP_CLASS_REQUIRES(_type_var, _ns, _concept) \
+#define _GLIBCXX_CLASS_REQUIRES(_type_var, _ns, _concept) \
   typedef void (_ns::_concept <_type_var>::* _func##_type_var##_concept)(); \
   template <_func##_type_var##_concept _Tp1> \
   struct _concept_checking##_type_var##_concept { }; \
@@ -46,7 +46,7 @@ inline void __function_requires()
     &_ns::_concept <_type_var>::__constraints> \
     _concept_checking_typedef##_type_var##_concept
 
-#define _GLIBCPP_CLASS_REQUIRES2(_type_var1, _type_var2, _ns, _concept) \
+#define _GLIBCXX_CLASS_REQUIRES2(_type_var1, _type_var2, _ns, _concept) \
   typedef void (_ns::_concept <_type_var1,_type_var2>::* _func##_type_var1##_type_var2##_concept)(); \
   template <_func##_type_var1##_type_var2##_concept _Tp1> \
   struct _concept_checking##_type_var1##_type_var2##_concept { }; \
@@ -54,7 +54,7 @@ inline void __function_requires()
     &_ns::_concept <_type_var1,_type_var2>::__constraints> \
     _concept_checking_typedef##_type_var1##_type_var2##_concept
 
-#define _GLIBCPP_CLASS_REQUIRES3(_type_var1, _type_var2, _type_var3, _ns, _concept) \
+#define _GLIBCXX_CLASS_REQUIRES3(_type_var1, _type_var2, _type_var3, _ns, _concept) \
   typedef void (_ns::_concept <_type_var1,_type_var2,_type_var3>::* _func##_type_var1##_type_var2##_type_var3##_concept)(); \
   template <_func##_type_var1##_type_var2##_type_var3##_concept _Tp1> \
   struct _concept_checking##_type_var1##_type_var2##_type_var3##_concept { }; \
@@ -62,7 +62,7 @@ inline void __function_requires()
     &_ns::_concept <_type_var1,_type_var2,_type_var3>::__constraints>  \
   _concept_checking_typedef##_type_var1##_type_var2##_type_var3##_concept
 
-#define _GLIBCPP_CLASS_REQUIRES4(_type_var1, _type_var2, _type_var3, _type_var4, _ns, _concept) \
+#define _GLIBCXX_CLASS_REQUIRES4(_type_var1, _type_var2, _type_var3, _type_var4, _ns, _concept) \
   typedef void (_ns::_concept <_type_var1,_type_var2,_type_var3,_type_var4>::* _func##_type_var1##_type_var2##_type_var3##_type_var4##_concept)(); \
   template <_func##_type_var1##_type_var2##_type_var3##_type_var4##_concept _Tp1> \
   struct _concept_checking##_type_var1##_type_var2##_type_var3##_type_var4##_concept { }; \
@@ -240,7 +240,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
     _Tp __a, __b;
   };
 
-#define _GLIBCPP_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(_OP,_NAME) \
+#define _GLIBCXX_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(_OP,_NAME) \
   template <class _First, class _Second> \
   struct _NAME { \
     void __constraints() { (void)__constraints_(); } \
@@ -251,7 +251,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
     _Second __b; \
   }
 
-#define _GLIBCPP_DEFINE_BINARY_OPERATOR_CONSTRAINT(_OP,_NAME) \
+#define _GLIBCXX_DEFINE_BINARY_OPERATOR_CONSTRAINT(_OP,_NAME) \
   template <class _Ret, class _First, class _Second> \
   struct _NAME { \
     void __constraints() { (void)__constraints_(); } \
@@ -262,21 +262,21 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
     _Second __b; \
   }
 
-  _GLIBCPP_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(==, _EqualOpConcept);
-  _GLIBCPP_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(!=, _NotEqualOpConcept);
-  _GLIBCPP_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(<, _LessThanOpConcept);
-  _GLIBCPP_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(<=, _LessEqualOpConcept);
-  _GLIBCPP_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(>, _GreaterThanOpConcept);
-  _GLIBCPP_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(>=, _GreaterEqualOpConcept);
+  _GLIBCXX_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(==, _EqualOpConcept);
+  _GLIBCXX_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(!=, _NotEqualOpConcept);
+  _GLIBCXX_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(<, _LessThanOpConcept);
+  _GLIBCXX_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(<=, _LessEqualOpConcept);
+  _GLIBCXX_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(>, _GreaterThanOpConcept);
+  _GLIBCXX_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT(>=, _GreaterEqualOpConcept);
 
-  _GLIBCPP_DEFINE_BINARY_OPERATOR_CONSTRAINT(+, _PlusOpConcept);
-  _GLIBCPP_DEFINE_BINARY_OPERATOR_CONSTRAINT(*, _TimesOpConcept);
-  _GLIBCPP_DEFINE_BINARY_OPERATOR_CONSTRAINT(/, _DivideOpConcept);
-  _GLIBCPP_DEFINE_BINARY_OPERATOR_CONSTRAINT(-, _SubtractOpConcept);
-  _GLIBCPP_DEFINE_BINARY_OPERATOR_CONSTRAINT(%, _ModOpConcept);
+  _GLIBCXX_DEFINE_BINARY_OPERATOR_CONSTRAINT(+, _PlusOpConcept);
+  _GLIBCXX_DEFINE_BINARY_OPERATOR_CONSTRAINT(*, _TimesOpConcept);
+  _GLIBCXX_DEFINE_BINARY_OPERATOR_CONSTRAINT(/, _DivideOpConcept);
+  _GLIBCXX_DEFINE_BINARY_OPERATOR_CONSTRAINT(-, _SubtractOpConcept);
+  _GLIBCXX_DEFINE_BINARY_OPERATOR_CONSTRAINT(%, _ModOpConcept);
 
-#undef _GLIBCPP_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT
-#undef _GLIBCPP_DEFINE_BINARY_OPERATOR_CONSTRAINT
+#undef _GLIBCXX_DEFINE_BINARY_PREDICATE_OP_CONSTRAINT
+#undef _GLIBCXX_DEFINE_BINARY_OPERATOR_CONSTRAINT
 
   //===========================================================================
   // Function Object Concepts
@@ -896,6 +896,6 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
 
 #undef _IsUnused
 
-#endif // _GLIBCPP_BOOST_CONCEPT_CHECK
+#endif // _GLIBCXX_BOOST_CONCEPT_CHECK
 
 

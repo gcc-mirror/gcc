@@ -29,8 +29,8 @@
 
 // This file was written by Gabriel Dos Reis <gdr@codesourcery.com>
 
-#ifndef _CPP_BITS_CMATH_TCC
-#define _CPP_BITS_CMATH_TCC 1
+#ifndef _CMATH_TCC
+#define _CMATH_TCC 1
 
 namespace std 
 {

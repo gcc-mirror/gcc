@@ -36,8 +36,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_LOCALE
-#define _CPP_LOCALE	1
+#ifndef _LOCALE
+#define _LOCALE	1
 
 #pragma GCC system_header
 

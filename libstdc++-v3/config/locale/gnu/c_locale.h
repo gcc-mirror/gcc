@@ -33,8 +33,8 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
-#ifndef _CPP_BITS_C_LOCALE_H
-#define _CPP_BITS_C_LOCALE_H 1
+#ifndef _C_LOCALE_H
+#define _C_LOCALE_H 1
 
 #pragma GCC system_header
 
@@ -43,9 +43,9 @@
 #include <iconv.h>		// For codecvt using iconv, iconv_t
 #include <libintl.h> 		// For messages
 
-#define _GLIBCPP_C_LOCALE_GNU 1
+#define _GLIBCXX_C_LOCALE_GNU 1
 
-#define _GLIBCPP_NUM_CATEGORIES 6
+#define _GLIBCXX_NUM_CATEGORIES 6
 
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
 namespace __gnu_cxx
@@ -80,7 +80,7 @@ namespace std
 #endif
 
       int __ret;
-#ifdef _GLIBCPP_USE_C99
+#ifdef _GLIBCXX_USE_C99
       if (__prec >= 0)
         __ret = snprintf(__out, __size, __fmt, __prec, __v);
       else

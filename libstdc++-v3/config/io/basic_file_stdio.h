@@ -36,8 +36,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BASIC_FILE
-#define _CPP_BASIC_FILE 1
+#ifndef _BASIC_FILE_STDIO_H
+#define _BASIC_FILE_STDIO_H 1
 
 #pragma GCC system_header
 

@@ -32,6 +32,9 @@
 // ISO C++ 14882: 27.6.2  Output streams
 //
 
+#ifndef _OSTREAM_TCC
+#define _OSTREAM_TCC 1
+
 #pragma GCC system_header
 
 #include <locale>
@@ -235,7 +238,7 @@ namespace std
       return *this;
     }
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>& 
     basic_ostream<_CharT, _Traits>::operator<<(long long __n)
@@ -431,7 +434,7 @@ namespace std
     {
       if (!this->fail())
 	{
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 136.  seekp, seekg setting wrong streams?
 	  pos_type __err = this->rdbuf()->pubseekpos(__pos, ios_base::out);
 
@@ -450,7 +453,7 @@ namespace std
     {
       if (!this->fail())
 	{
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 136.  seekp, seekg setting wrong streams?
 	  pos_type __err = this->rdbuf()->pubseekoff(__off, __d, 
 						     ios_base::out);
@@ -577,7 +580,7 @@ namespace std
     operator<<(basic_ostream<_CharT, _Traits>& __out, const char* __s)
     {
       typedef basic_ostream<_CharT, _Traits> __ostream_type;
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 167.  Improper use of traits_type::length()
 // Note that this is only in 'Review' status.
       typedef char_traits<char>		     __traits_type;
@@ -674,7 +677,7 @@ namespace std
 	  const streamsize __w = __out.width() > 0 ? __out.width() : 0;
 	  _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
 	  streamsize __len = static_cast<streamsize>(__str.size());
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 25. String operator<< uses width() value wrong
 #endif
 	  if (__w > __len)
@@ -693,7 +696,7 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB:  This syntax is a GNU extension.
-#if _GLIBCPP_EXTERN_TEMPLATE
+#if _GLIBCXX_EXTERN_TEMPLATE
   extern template class basic_ostream<char>;
   extern template ostream& endl(ostream&);
   extern template ostream& ends(ostream&);
@@ -705,7 +708,7 @@ namespace std
   extern template ostream& operator<<(ostream&, const unsigned char*);
   extern template ostream& operator<<(ostream&, const signed char*);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   extern template class basic_ostream<wchar_t>;
   extern template wostream& endl(wostream&);
   extern template wostream& ends(wostream&);
@@ -717,3 +720,5 @@ namespace std
 #endif
 #endif
 } // namespace std
+
+#endif

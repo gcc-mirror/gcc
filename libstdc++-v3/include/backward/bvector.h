@@ -53,16 +53,15 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef __SGI_STL_BVECTOR_H
-#define __SGI_STL_BVECTOR_H
-
+#ifndef _BACKWARD_BVECTOR_H
+#define _BACKWARD_BVECTOR_H 1
 
 #include "backward_warning.h"
 #include <vector>
 
 using std::bit_vector;
 
-#endif /* __SGI_STL_BVECTOR_H */
+#endif /* _BACKWARD_BVECTOR_H */
 
 // Local Variables:
 // mode:C++

@@ -27,16 +27,16 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
-CXX = @glibcpp_CXX@
-glibcpp_srcdir=@glibcpp_srcdir@
-glibcpp_builddir=@glibcpp_builddir@
+CXX = @glibcxx_CXX@
+glibcxx_srcdir=@glibcxx_srcdir@
+glibcxx_builddir=@glibcxx_builddir@
 
-GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
+GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
-INCLUDES = -nostdinc++ $(GLIBCPP_INCLUDES) $(LIBSUPCXX_INCLUDES)
+INCLUDES = -nostdinc++ $(GLIBCXX_INCLUDES) $(LIBSUPCXX_INCLUDES)
 
 # Standard C++ includes.
-std_srcdir = ${glibcpp_srcdir}/include/std
+std_srcdir = ${glibcxx_srcdir}/include/std
 std_builddir = .
 std_headers = \
 	${std_srcdir}/std_algorithm.h \
@@ -100,7 +100,7 @@ std_headers_rename = \
 	valarray \
 	vector
 
-bits_srcdir = ${glibcpp_srcdir}/include/bits
+bits_srcdir = ${glibcxx_srcdir}/include/bits
 bits_builddir = ./bits
 bits_headers = \
 	${bits_srcdir}/allocator.h \
@@ -169,7 +169,7 @@ bits_headers = \
 	${bits_srcdir}/valarray_after.h \
 	${bits_srcdir}/vector.tcc
 
-backward_srcdir = ${glibcpp_srcdir}/include/backward
+backward_srcdir = ${glibcxx_srcdir}/include/backward
 backward_builddir = ./backward
 backward_headers = \
 	${backward_srcdir}/complex.h \
@@ -209,7 +209,7 @@ backward_headers = \
 	${backward_srcdir}/strstream \
 	${backward_srcdir}/backward_warning.h
 
-ext_srcdir = ${glibcpp_srcdir}/include/ext
+ext_srcdir = ${glibcxx_srcdir}/include/ext
 ext_builddir = ./ext
 ext_headers = \
 	${ext_srcdir}/algorithm \
@@ -278,7 +278,7 @@ c_base_headers_rename = \
 	cwctype 
 
 # "C" compatibility headers.
-c_compatibility_srcdir = ${glibcpp_srcdir}/include/c_compatibility
+c_compatibility_srcdir = ${glibcxx_srcdir}/include/c_compatibility
 c_compatibility_builddir = .
 c_compatibility_headers = \
 	${c_compatibility_srcdir}/assert.h \
@@ -303,31 +303,31 @@ c_compatibility_headers = \
 # Some of the different "C" header models need extra files.
 # Some "C" header schemes require the "C" compatibility headers.
 # For --enable-cheaders=c_std
-if GLIBCPP_C_HEADERS_C_STD
+if GLIBCXX_C_HEADERS_C_STD
 c_base_headers_extra = ${c_base_srcdir}/cmath.tcc 
 else
 c_base_headers_extra = 
 endif
 
-if GLIBCPP_C_HEADERS_COMPATIBILITY
+if GLIBCXX_C_HEADERS_COMPATIBILITY
 c_compatibility_headers_extra = ${c_compatibility_headers}
 else
 c_compatibility_headers_extra = 
 endif
 
-host_srcdir = ${glibcpp_srcdir}/@OS_INC_SRCDIR@
+host_srcdir = ${glibcxx_srcdir}/@OS_INC_SRCDIR@
 host_builddir = ./${host_alias}/bits
 host_headers = \
 	${host_srcdir}/ctype_base.h \
 	${host_srcdir}/ctype_inline.h \
 	${host_srcdir}/ctype_noninline.h \
 	${host_srcdir}/os_defines.h \
-	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h \
-	${glibcpp_srcdir}/@FPOS_INC_SRCDIR@/fpos.h 
+	${glibcxx_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h \
+	${glibcxx_srcdir}/@FPOS_INC_SRCDIR@/fpos.h 
 
 # Non-installed host_header files.
 host_headers_noinst = \
-	${glibcpp_srcdir}/@CLOCALE_INTERNAL_H@
+	${glibcxx_srcdir}/@CLOCALE_INTERNAL_H@
 
 # These host_headers_extra files are all built with ad hoc naming rules.
 host_headers_extra = \
@@ -347,9 +347,9 @@ thread_host_headers = \
 
 pch_input = ${host_builddir}/stdc++.h
 pch_output_builddir = ${host_builddir}/stdc++.h.gch
-pch_source = ${glibcpp_srcdir}/include/stdc++.h
+pch_source = ${glibcxx_srcdir}/include/stdc++.h
 PCHFLAGS=-Winvalid-pch -Wno-deprecated -x c++-header $(CXXFLAGS)
-if GLIBCPP_BUILD_PCH
+if GLIBCXX_BUILD_PCH
 pch_build = ${pch_input}
 pch_install = install-pch
 else
@@ -452,57 +452,57 @@ stamp-host: ${host_headers} ${host_headers_noinst} stamp-${host_alias}
 	@if [ ! -f stamp-host ]; then \
 	  (cd ${host_builddir} ;\
 	  @LN_S@ ${host_headers} . || true ;\
-	  @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file.h || true ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h || true ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h || true ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_INTERNAL_H@ . || true ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h || true ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CTIME_H@ time_members.h || true ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h || true);\
+	  @LN_S@ ${glibcxx_srcdir}/@BASIC_FILE_H@ basic_file.h || true ;\
+	  @LN_S@ ${glibcxx_srcdir}/@CSTDIO_H@ c++io.h || true ;\
+	  @LN_S@ ${glibcxx_srcdir}/@CLOCALE_H@ c++locale.h || true ;\
+	  @LN_S@ ${glibcxx_srcdir}/@CLOCALE_INTERNAL_H@ . || true ;\
+	  @LN_S@ ${glibcxx_srcdir}/@CMESSAGES_H@ messages_members.h || true ;\
+	  @LN_S@ ${glibcxx_srcdir}/@CTIME_H@ time_members.h || true ;\
+	  @LN_S@ ${glibcxx_srcdir}/@CCODECVT_H@ codecvt_specializations.h || true);\
 	  echo `date` > stamp-host ; \
 	fi
 
 # Host includes dynamic.
 ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
-				${glibcpp_srcdir}/include/bits/c++config \
+				${glibcxx_srcdir}/include/bits/c++config \
 				stamp-${host_alias}
-	@cat ${glibcpp_srcdir}/include/bits/c++config > $@ ;\
-	sed -e 's/HAVE_/_GLIBCPP_HAVE_/g' \
-	    -e 's/PACKAGE/_GLIBCPP_PACKAGE/g' \
-	    -e 's/VERSION/_GLIBCPP_VERSION/g' \
-	    -e 's/WORDS_/_GLIBCPP_WORDS_/g' \
+	@cat ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
+	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \
+	    -e 's/PACKAGE/_GLIBCXX_PACKAGE/g' \
+	    -e 's/VERSION/_GLIBCXX_VERSION/g' \
+	    -e 's/WORDS_/_GLIBCXX_WORDS_/g' \
 	    < ${CONFIG_HEADER} >> $@ ;\
-	echo "#endif // _CPP_CPPCONFIG_" >>$@
+	echo "#endif // _CXXCONFIG_" >>$@
 
 # Host includes for threads
-glibcpp_thread_h = @glibcpp_thread_h@
+glibcxx_thread_h = @glibcxx_thread_h@
 uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 
 ${host_builddir}/gthr.h: ${toplevel_srcdir}/gcc/gthr.h stamp-${host_alias}
-	sed -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCPP_\1/g' \
+	sed -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCXX_\1/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
 	    < ${toplevel_srcdir}/gcc/gthr.h > $@
 
 ${host_builddir}/gthr-single.h: ${toplevel_srcdir}/gcc/gthr-single.h \
 				  stamp-${host_alias}
-	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
-	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
+	sed -e 's/\(UNUSED\)/_GLIBCXX_\1/g' \
+	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCXX_\1/g' \
 	    < ${toplevel_srcdir}/gcc/gthr-single.h > $@
 
 ${host_builddir}/gthr-posix.h: ${toplevel_srcdir}/gcc/gthr-posix.h \
 				   stamp-${host_alias}
-	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
-	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
-	    -e 's/\(${uppercase}*WEAK\)/_GLIBCPP_\1/g' \
+	sed -e 's/\(UNUSED\)/_GLIBCXX_\1/g' \
+	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCXX_\1/g' \
+	    -e 's/\(${uppercase}*WEAK\)/_GLIBCXX_\1/g' \
 	    < ${toplevel_srcdir}/gcc/gthr-posix.h > $@
 
-${host_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcpp_thread_h} \
+${host_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcxx_thread_h} \
 				   stamp-${host_alias}
-	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
-	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
-	    -e 's/\(${uppercase}*WEAK\)/_GLIBCPP_\1/g' \
+	sed -e 's/\(UNUSED\)/_GLIBCXX_\1/g' \
+	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCXX_\1/g' \
+	    -e 's/\(${uppercase}*WEAK\)/_GLIBCXX_\1/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
-	    < ${toplevel_srcdir}/gcc/${glibcpp_thread_h} > $@
+	    < ${toplevel_srcdir}/gcc/${glibcxx_thread_h} > $@
 
 # Build a precompiled C++ include, stdc++.h.gch.
 ${pch_input}: ${allstamped} ${host_builddir}/c++config.h ${pch_source}

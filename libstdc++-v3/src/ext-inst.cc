@@ -47,7 +47,7 @@ namespace __gnu_cxx
 
   template class stdio_filebuf<char>;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template
     const unsigned long
     rope<wchar_t, std::allocator<wchar_t> >::_S_min_len;

@@ -62,8 +62,8 @@
  *  supporting functions and overloaded operators.
  */
 
-#ifndef __GLIBCPP_INTERNAL_ITERATOR_H
-#define __GLIBCPP_INTERNAL_ITERATOR_H
+#ifndef _ITERATOR_H
+#define _ITERATOR_H 1
 
 namespace std
 {
@@ -109,7 +109,7 @@ namespace std
        *  The default constructor default-initializes member @p current.
        *  If it is a pointer, that means it is zero-initialized.
       */
-      // _GLIBCPP_RESOLVE_LIB_DEFECTS
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 235 No specification of default ctor for reverse_iterator
       reverse_iterator() : current() { }
 
@@ -722,7 +722,7 @@ namespace __gnu_cxx
 	     const __normal_iterator<_Iterator, _Container>& __rhs)
   { return __lhs.base() >= __rhs.base(); }
 
-  // _GLIBCPP_RESOLVE_LIB_DEFECTS
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // According to the resolution of DR179 not only the various comparison
   // operators but also operator- must accept mixed iterator/const_iterator
   // parameters.

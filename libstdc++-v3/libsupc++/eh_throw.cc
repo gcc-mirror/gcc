@@ -69,7 +69,7 @@ __cxa_throw (void *obj, std::type_info *tinfo, void (*dest) (void *))
   __cxa_eh_globals *globals = __cxa_get_globals ();
   globals->uncaughtExceptions += 1;
 
-#ifdef _GLIBCPP_SJLJ_EXCEPTIONS
+#ifdef _GLIBCXX_SJLJ_EXCEPTIONS
   _Unwind_SjLj_RaiseException (&header->unwindHeader);
 #else
   _Unwind_RaiseException (&header->unwindHeader);
@@ -95,7 +95,7 @@ __cxa_rethrow ()
       else
 	header->handlerCount = -header->handlerCount;
 
-#ifdef _GLIBCPP_SJLJ_EXCEPTIONS
+#ifdef _GLIBCXX_SJLJ_EXCEPTIONS
       _Unwind_SjLj_Resume_or_Rethrow (&header->unwindHeader);
 #else
 #ifdef _LIBUNWIND_STD_ABI

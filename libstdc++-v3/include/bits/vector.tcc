@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_VECTOR_TCC
-#define __GLIBCPP_INTERNAL_VECTOR_TCC
+#ifndef _VECTOR_TCC
+#define _VECTOR_TCC 1
 
 namespace std
 {
@@ -269,7 +269,7 @@ namespace std
       }
     }
   
-  #ifdef _GLIBCPP_DEPRECATED
+  #ifdef _GLIBCXX_DEPRECATED
   template<typename _Tp, typename _Alloc>
     void
     vector<_Tp,_Alloc>::
@@ -454,4 +454,4 @@ namespace std
     }
 } // namespace std
 
-#endif /* __GLIBCPP_INTERNAL_VECTOR_TCC */
+#endif /* _VECTOR_TCC */

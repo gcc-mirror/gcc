@@ -27,8 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _BITS_ATOMICITY_H
-#define _BITS_ATOMICITY_H       1
+#ifndef _GLIBCXX_ATOMICITY_H
+#define _GLIBCXX_ATOMICITY_H       1
 
 #include <ia64intrin.h>
 

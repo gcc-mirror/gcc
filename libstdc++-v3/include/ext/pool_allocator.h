@@ -284,7 +284,7 @@ namespace __gnu_cxx
       // to efficiently support threading found in basic_string.h.
       if (_S_force_new == 0)
 	{
-	  if (getenv("GLIBCPP_FORCE_NEW"))
+	  if (getenv("GLIBCXX_FORCE_NEW"))
 	    __atomic_add(&_S_force_new, 1);
 	  else
 	    __atomic_add(&_S_force_new, -1);
@@ -356,7 +356,7 @@ namespace __gnu_cxx
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
   // NB: This syntax is a GNU extension.
-#if _GLIBCPP_EXTERN_TEMPLATE
+#if _GLIBCXX_EXTERN_TEMPLATE
   extern template class __pool_alloc<true, 0>;
 #endif
 } // namespace __gnu_cxx

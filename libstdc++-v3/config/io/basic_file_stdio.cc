@@ -36,26 +36,26 @@
 #include <unistd.h>
 #include <errno.h>
 
-#ifdef _GLIBCPP_HAVE_SYS_IOCTL_H
+#ifdef _GLIBCXX_HAVE_SYS_IOCTL_H
 #define BSD_COMP /* Get FIONREAD on Solaris2. */
 #include <sys/ioctl.h>
 #endif
 
 // Pick up FIONREAD on Solaris 2.5.
-#ifdef _GLIBCPP_HAVE_SYS_FILIO_H
+#ifdef _GLIBCXX_HAVE_SYS_FILIO_H
 #include <sys/filio.h>
 #endif
 
-#ifdef _GLIBCPP_HAVE_POLL
+#ifdef _GLIBCXX_HAVE_POLL
 #include <poll.h>
 #endif
 
-#if defined(_GLIBCPP_HAVE_S_ISREG) || defined(_GLIBCPP_HAVE_S_IFREG)
+#if defined(_GLIBCXX_HAVE_S_ISREG) || defined(_GLIBCXX_HAVE_S_IFREG)
 # include <sys/stat.h>
-# ifdef _GLIBCPP_HAVE_S_ISREG
-#  define _GLIBCPP_ISREG(x) S_ISREG(x)
+# ifdef _GLIBCXX_HAVE_S_ISREG
+#  define _GLIBCXX_ISREG(x) S_ISREG(x)
 # else
-#  define _GLIBCPP_ISREG(x) (((x) & S_IFMT) == S_IFREG)
+#  define _GLIBCXX_ISREG(x) (((x) & S_IFMT) == S_IFREG)
 # endif
 #endif
 
@@ -249,7 +249,7 @@ namespace std
       return __num; 
 #endif    
 
-#ifdef _GLIBCPP_HAVE_POLL
+#ifdef _GLIBCXX_HAVE_POLL
     // Cheap test.
     struct pollfd __pfd[1];
     __pfd[0].fd = this->fd();
@@ -258,11 +258,11 @@ namespace std
       return 0;
 #endif   
 
-#if defined(_GLIBCPP_HAVE_S_ISREG) || defined(_GLIBCPP_HAVE_S_IFREG)
+#if defined(_GLIBCXX_HAVE_S_ISREG) || defined(_GLIBCXX_HAVE_S_IFREG)
     // Regular files.
     struct stat __buffer;
     int __ret = fstat(this->fd(), &__buffer);
-    if (!__ret && _GLIBCPP_ISREG(__buffer.st_mode))
+    if (!__ret && _GLIBCXX_ISREG(__buffer.st_mode))
 	return __buffer.st_size - lseek(this->fd(), 0, ios_base::cur);
 #endif
     return 0;

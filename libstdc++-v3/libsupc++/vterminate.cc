@@ -33,7 +33,7 @@
 #include <exception_defines.h>
 #include <cxxabi.h>
 
-#ifdef _GLIBCPP_HAVE_UNISTD_H
+#ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
 # define writestr(str)  write(2, str, __builtin_strlen(str))
 #else

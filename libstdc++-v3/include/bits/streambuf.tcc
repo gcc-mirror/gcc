@@ -32,8 +32,8 @@
 // ISO C++ 14882: 27.5  Stream buffers
 //
 
-#ifndef _CPP_BITS_STREAMBUF_TCC
-#define _CPP_BITS_STREAMBUF_TCC 1
+#ifndef _STREAMBUF_TCC
+#define _STREAMBUF_TCC 1
 
 #pragma GCC system_header
 
@@ -156,14 +156,14 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB:  This syntax is a GNU extension.
-#if _GLIBCPP_EXTERN_TEMPLATE
+#if _GLIBCXX_EXTERN_TEMPLATE
   extern template class basic_streambuf<char>;
   extern template
     streamsize
     __copy_streambufs(basic_ios<char>&, basic_streambuf<char>*,
 		      basic_streambuf<char>*); 
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   extern template class basic_streambuf<wchar_t>;
   extern template
     streamsize

@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_DEQUE_H
-#define __GLIBCPP_INTERNAL_DEQUE_H
+#ifndef _DEQUE_H
+#define _DEQUE_H 1
 
 #include <bits/concept_check.h>
 #include <bits/stl_iterator_base_types.h>
@@ -309,7 +309,7 @@ namespace std
     return !(__x < __y);
   }
   
-  // _GLIBCPP_RESOLVE_LIB_DEFECTS
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // According to the resolution of DR179 not only the various comparison
   // operators but also operator- must accept mixed iterator/const_iterator
   // parameters.
@@ -638,7 +638,7 @@ namespace std
     class deque : protected _Deque_base<_Tp, _Alloc>
   {
     // concept requirements
-    __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
+    __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
   
     typedef _Deque_base<_Tp, _Alloc>           _Base;
   
@@ -1527,4 +1527,4 @@ namespace std
   }
 } // namespace std 
   
-#endif /* __GLIBCPP_INTERNAL_DEQUE_H */
+#endif /* _DEQUE_H */

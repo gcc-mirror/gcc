@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_LIST_H
-#define __GLIBCPP_INTERNAL_LIST_H
+#ifndef _LIST_H
+#define _LIST_H 1
 
 #include <bits/concept_check.h>
 
@@ -366,7 +366,7 @@ namespace std
     class list : protected _List_base<_Tp, _Alloc>
   {
     // concept requirements
-    __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
+    __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
   
     typedef _List_base<_Tp, _Alloc>                       _Base;
   
@@ -1108,4 +1108,4 @@ namespace std
     { __x.swap(__y); }
 } // namespace std
 
-#endif /* __GLIBCPP_INTERNAL_LIST_H */
+#endif /* _LIST_H */

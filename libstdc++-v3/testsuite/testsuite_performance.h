@@ -28,8 +28,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _GLIBCPP_PERFORMANCE_H
-#define _GLIBCPP_PERFORMANCE_H
+#ifndef _GLIBCXX_PERFORMANCE_H
+#define _GLIBCXX_PERFORMANCE_H
 
 #include <sys/times.h>
 #include <sys/resource.h>
@@ -192,5 +192,5 @@ namespace __gnu_cxx_test
   }
 }; // namespace __gnu_cxx_test
 
-#endif // _GLIBCPP_PERFORMANCE_H
+#endif // _GLIBCXX_PERFORMANCE_H
 

@@ -30,7 +30,7 @@
 #include <bits/c++config.h>
 #include "unwind-cxx.h"
 
-#ifdef _GLIBCPP_HAVE_UNISTD_H
+#ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
 # define writestr(str)	write(2, str, sizeof(str) - 1)
 # ifdef __GNU_LIBRARY__

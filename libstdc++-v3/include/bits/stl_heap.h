@@ -57,8 +57,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_STL_HEAP_H
-#define _CPP_BITS_STL_HEAP_H 1
+#ifndef _STL_HEAP_H
+#define _STL_HEAP_H 1
 
 namespace std
 {
@@ -89,9 +89,9 @@ namespace std
 	  _DistanceType;
 
       // concept requirements
-      __glibcpp_function_requires(_Mutable_RandomAccessIteratorConcept<
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
-      __glibcpp_function_requires(_LessThanComparableConcept<_ValueType>)
+      __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
 
       std::__push_heap(__first, _DistanceType((__last - __first) - 1), _DistanceType(0), 
 		       _ValueType(*(__last - 1)));
@@ -123,7 +123,7 @@ namespace std
 	  _DistanceType;
 
       // concept requirements
-      __glibcpp_function_requires(_Mutable_RandomAccessIteratorConcept<
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
 
       std::__push_heap(__first, _DistanceType((__last - __first) - 1), _DistanceType(0), 
@@ -168,9 +168,9 @@ namespace std
       typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
 
       // concept requirements
-      __glibcpp_function_requires(_Mutable_RandomAccessIteratorConcept<
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
-      __glibcpp_function_requires(_LessThanComparableConcept<_ValueType>)
+      __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
 
       std::__pop_heap(__first, __last - 1, __last - 1, _ValueType(*(__last - 1)));
     }
@@ -214,7 +214,7 @@ namespace std
 	     _RandomAccessIterator __last, _Compare __comp)
     {
       // concept requirements
-      __glibcpp_function_requires(_Mutable_RandomAccessIteratorConcept<
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
 
       typedef typename iterator_traits<_RandomAccessIterator>::value_type _ValueType;
@@ -231,9 +231,9 @@ namespace std
 	  _DistanceType;
 
       // concept requirements
-      __glibcpp_function_requires(_Mutable_RandomAccessIteratorConcept<
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
-      __glibcpp_function_requires(_LessThanComparableConcept<_ValueType>)
+      __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
 
       if (__last - __first < 2) return;
       _DistanceType __len = __last - __first;
@@ -257,7 +257,7 @@ namespace std
 	  _DistanceType;
 
       // concept requirements
-      __glibcpp_function_requires(_Mutable_RandomAccessIteratorConcept<
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
 
       if (__last - __first < 2) return;
@@ -277,9 +277,9 @@ namespace std
     sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
     {
       // concept requirements
-      __glibcpp_function_requires(_Mutable_RandomAccessIteratorConcept<
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
-      __glibcpp_function_requires(_LessThanComparableConcept<
+      __glibcxx_function_requires(_LessThanComparableConcept<
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
 
       while (__last - __first > 1)
@@ -292,7 +292,7 @@ namespace std
 	      _Compare __comp)
     {
       // concept requirements
-      __glibcpp_function_requires(_Mutable_RandomAccessIteratorConcept<
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
 
       while (__last - __first > 1)
@@ -301,7 +301,7 @@ namespace std
 
 } // namespace std
 
-#endif /* _CPP_BITS_STL_HEAP_H */
+#endif /* _STL_HEAP_H */
 
 // Local Variables:
 // mode:C++

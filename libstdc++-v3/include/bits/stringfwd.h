@@ -36,8 +36,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_STRINGFWD_H
-#define _CPP_BITS_STRINGFWD_H	1
+#ifndef _STRINGFWD_H
+#define _STRINGFWD_H 1
 
 #pragma GCC system_header
 
@@ -59,11 +59,11 @@ namespace std
 
   typedef basic_string<char>    string;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<> struct char_traits<wchar_t>;
 
   typedef basic_string<wchar_t> wstring;
 #endif
 } // namespace std
 
-#endif	// _CPP_BITS_STRINGFWD_H
+#endif	// _STRINGFWD_H

@@ -37,7 +37,7 @@
 
   // XXX
   // Define this here so codecvt.cc can have _S_max_size definition.
-#define _GLIBCPP_USE___ENC_TRAITS 1
+#define _GLIBCXX_USE___ENC_TRAITS 1
 
   // Extension to use icov for dealing with character encodings,
   // including conversions and comparisons between various character
@@ -453,7 +453,7 @@
 	      const extern_type* __end, size_t __max) const
     { return std::min(__max, static_cast<size_t>(__end - __from)); }
 
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 74.  Garbled text for codecvt::do_max_length
   template<typename _InternT, typename _ExternT>
     int 

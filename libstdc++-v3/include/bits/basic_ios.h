@@ -33,8 +33,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_BASICIOS_H
-#define _CPP_BITS_BASICIOS_H 1
+#ifndef _BASIC_IOS_H
+#define _BASIC_IOS_H 1
 
 #pragma GCC system_header
 
@@ -441,9 +441,9 @@ namespace std
     };
 } // namespace std
 
-#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
 # define export
 #include <bits/basic_ios.tcc>
 #endif
 
-#endif /* _CPP_BITS_BASICIOS_H */
+#endif /* _BASIC_IOS_H */

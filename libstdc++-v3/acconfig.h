@@ -11,50 +11,50 @@
 #undef HAVE_STPCPY
 
 // Define if GCC supports weak symbols.
-#undef _GLIBCPP_SUPPORTS_WEAK
+#undef _GLIBCXX_SUPPORTS_WEAK
 
 // Include I/O support for 'long long' and 'unsigned long long'.
-#undef _GLIBCPP_USE_LONG_LONG
+#undef _GLIBCXX_USE_LONG_LONG
 
 // Define if C99 features such as lldiv_t, llabs, lldiv should be exposed.
-#undef _GLIBCPP_USE_C99
+#undef _GLIBCXX_USE_C99
 
 // Include support for 'long double'.
-#undef _GLIBCPP_USE_LONG_DOUBLE
+#undef _GLIBCXX_USE_LONG_DOUBLE
 
 // Include support for shadow headers, ie --enable-cshadow-headers.
-#undef _GLIBCPP_USE_SHADOW_HEADERS
+#undef _GLIBCXX_USE_SHADOW_HEADERS
 
 // Define if code specialized for wchar_t should be used.
-#undef _GLIBCPP_USE_WCHAR_T
+#undef _GLIBCXX_USE_WCHAR_T
 
 // Define if using setrlimit to limit memory usage during 'make check'.
-#undef _GLIBCPP_MEM_LIMITS
+#undef _GLIBCXX_MEM_LIMITS
 
 // Define to use concept checking code from the boost libraries.
-#undef _GLIBCPP_CONCEPT_CHECKS
+#undef _GLIBCXX_CONCEPT_CHECKS
 
 // Define if the atan2f function exists.
-#undef _GLIBCPP_HAVE_ATAN2F 
+#undef _GLIBCXX_HAVE_ATAN2F 
 
 // Define if the atan2l function exists.
-#undef _GLIBCPP_HAVE_ATAN2L
+#undef _GLIBCXX_HAVE_ATAN2L
 
 // Define if the copysignf function exists.
-#undef _GLIBCPP_HAVE_COPYSIGNF
+#undef _GLIBCXX_HAVE_COPYSIGNF
 
 // Define to use symbol versioning in the shared library.
-#undef _GLIBCPP_SYMVER
+#undef _GLIBCXX_SYMVER
 
 // Define symbol versioning in assember directives. If symbol
 // versioning is beigng used, and the assembler supports this kind of
 // thing, then use it.
-// NB: _GLIBCPP_AT_AT is a hack to work around quoting issues in m4.
-#if _GLIBCPP_SYMVER
-  #define _GLIBCPP_ASM_SYMVER(cur, old, version) \
-   asm (".symver " #cur "," #old _GLIBCPP_AT_AT #version);
+// NB: _GLIBCXX_AT_AT is a hack to work around quoting issues in m4.
+#if _GLIBCXX_SYMVER
+  #define _GLIBCXX_ASM_SYMVER(cur, old, version) \
+   asm (".symver " #cur "," #old _GLIBCXX_AT_AT #version);
 #else
-  #define _GLIBCPP_ASM_SYMVER(cur, old, version)
+  #define _GLIBCXX_ASM_SYMVER(cur, old, version)
 #endif
 
 // Define if gthr-default.h exists (meaning that threading support is enabled).
@@ -154,7 +154,7 @@
 #undef HAVE_MODF
 
 // Define if NLS translations are to be used.
-#undef _GLIBCPP_USE_NLS
+#undef _GLIBCXX_USE_NLS
 
 // @BOTTOM@
 //

@@ -40,21 +40,21 @@ namespace std
 {
   // basic_ios
   template class basic_ios<char>;
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class basic_ios<wchar_t>;
 #endif
 
   // iomanip
   template class _Setfill<char>;
   template _Setfill<char> setfill(char);
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class _Setfill<wchar_t>;
   template _Setfill<wchar_t> setfill(wchar_t);
 #endif
 
   // iostream
   template class basic_iostream<char>;
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class basic_iostream<wchar_t>; 
 #endif
 } // namespace std

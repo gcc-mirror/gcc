@@ -68,8 +68,8 @@
  *  @endif
  */
 
-#ifndef _CPP_BITS_STL_RELOPS_H
-#define _CPP_BITS_STL_RELOPS_H 1
+#ifndef _STL_RELOPS_H
+#define _STL_RELOPS_H 1
 
 namespace std
 {
@@ -134,4 +134,4 @@ inline bool operator>=(const _Tp& __x, const _Tp& __y) {
   } // namespace rel_ops
 } // namespace std
 
-#endif /* _CPP_BITS_STL_RELOPS_H */
+#endif /* _STL_RELOPS_H */

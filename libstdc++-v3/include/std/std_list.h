@@ -58,8 +58,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_LIST
-#define _CPP_LIST 1
+#ifndef _LIST
+#define _LIST 1
 
 #pragma GCC system_header
 
@@ -70,9 +70,9 @@
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_list.h>
 
-#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
 #  include <bits/list.tcc>
 #endif
 
-#endif /* _CPP_LIST */
+#endif /* _LIST */
 

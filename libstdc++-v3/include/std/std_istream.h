@@ -37,8 +37,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_ISTREAM
-#define _CPP_ISTREAM	1
+#ifndef _ISTREAM
+#define _ISTREAM 1
 
 #pragma GCC system_header
 
@@ -187,7 +187,7 @@ namespace std
       __istream_type& 
       operator>>(unsigned long& __n);
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
       __istream_type& 
       operator>>(long long& __n);
 
@@ -705,7 +705,7 @@ namespace std
       public basic_ostream<_CharT, _Traits>
     {
     public:
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 271. basic_iostream missing typedefs
       // Types (inherited):
       typedef _CharT                     		char_type;
@@ -768,11 +768,11 @@ namespace std
     ws(basic_istream<_CharT, _Traits>& __is);
 } // namespace std
 
-#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
 # define export
 #endif
-#ifdef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
+#ifdef  _GLIBCXX_FULLY_COMPLIANT_HEADERS
 # include <bits/istream.tcc>
 #endif
 
-#endif	/* _CPP_ISTREAM */
+#endif	/* _ISTREAM */

@@ -37,8 +37,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_STRING
-#define _CPP_STRING	1
+#ifndef _STRING
+#define _STRING	1
 
 #pragma GCC system_header
 
@@ -52,10 +52,10 @@
 #include <bits/stl_function.h>  // For less
 #include <bits/basic_string.h>
 
-#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
 # include <algorithm> // for find_if
 # include <bits/basic_string.tcc> 
 #endif
 
-#endif /* _CPP_STRING */
+#endif /* _STRING */
 

@@ -40,8 +40,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_COMPLEX
-#define _CPP_COMPLEX	1
+#ifndef _COMPLEX
+#define _COMPLEX 1
 
 #pragma GCC system_header
 
@@ -456,7 +456,7 @@ namespace std
     inline _Tp
     norm(const complex<_Tp>& __z)
     {
-      return _Norm_helper<__is_floating<_Tp>::_M_type && !_GLIBCPP_FAST_MATH>::_S_do_it(__z);
+      return _Norm_helper<__is_floating<_Tp>::_M_type && !_GLIBCXX_FAST_MATH>::_S_do_it(__z);
     }
 
   template<typename _Tp>
@@ -599,7 +599,7 @@ namespace std
     typedef float value_type;
     
     complex(float = 0.0f, float = 0.0f);
-#ifdef _GLIBCPP_BUGGY_COMPLEX
+#ifdef _GLIBCXX_BUGGY_COMPLEX
     complex(const complex& __z) : _M_value(__z._M_value) { }
 #endif
     explicit complex(const complex<double>&);
@@ -746,7 +746,7 @@ namespace std
     typedef double value_type;
 
     complex(double  =0.0, double =0.0);
-#ifdef _GLIBCPP_BUGGY_COMPLEX
+#ifdef _GLIBCXX_BUGGY_COMPLEX
     complex(const complex& __z) : _M_value(__z._M_value) { }
 #endif
     complex(const complex<float>&);
@@ -892,7 +892,7 @@ namespace std
     typedef long double value_type;
 
     complex(long double = 0.0L, long double = 0.0L);
-#ifdef _GLIBCPP_BUGGY_COMPLEX
+#ifdef _GLIBCXX_BUGGY_COMPLEX
     complex(const complex& __z) : _M_value(__z._M_value) { }
 #endif
     complex(const complex<float>&);
@@ -1062,4 +1062,4 @@ namespace std
   : _M_value(_ComplexT(__z._M_value)) { }
 } // namespace std
 
-#endif	/* _CPP_COMPLEX */
+#endif	/* _COMPLEX */

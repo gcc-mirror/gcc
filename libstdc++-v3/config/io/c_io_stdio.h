@@ -29,8 +29,8 @@
 
 // c_io_stdio.h - Defines for using "C" stdio.h
 
-#ifndef _CPP_IO_STDIO_H
-#define _CPP_IO_STDIO_H 1
+#ifndef _C_IO_STDIO_H
+#define _C_IO_STDIO_H 1
 
 #include <cstdio>
 #include <cstddef>
@@ -41,7 +41,7 @@ namespace std
   // for fpos.h
   typedef long  	streamoff;
   typedef ptrdiff_t	streamsize; // Signed integral type
-#if _GLIBCPP_USE_WCHAR_T
+#if _GLIBCXX_USE_WCHAR_T
   typedef ptrdiff_t	wstreamsize;
 #endif
 

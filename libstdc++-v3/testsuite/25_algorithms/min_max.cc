@@ -88,7 +88,7 @@ void test02()
   VERIFY( 2ul == std::min(A<unsigned long>::a, 2ul) );
   VERIFY( 3ul == std::min(A<unsigned long>::a, 4ul) );
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   VERIFY( 2ll == std::min(A<long long>::a, 2ll) );
   VERIFY( 3ll == std::min(A<long long>::a, 4ll) );
 
@@ -136,7 +136,7 @@ void test02()
   VERIFY( 3ul == std::max(A<unsigned long>::a, 2ul) );
   VERIFY( 4ul == std::max(A<unsigned long>::a, 4ul) );
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   VERIFY( 3ll == std::max(A<long long>::a, 2ll) );
   VERIFY( 4ll == std::max(A<long long>::a, 4ll) );
 

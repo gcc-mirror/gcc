@@ -34,8 +34,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_GSLICE_H
-#define _CPP_BITS_GSLICE_H 1
+#ifndef _GSLICE_H
+#define _GSLICE_H 1
 
 #pragma GCC system_header
 
@@ -117,7 +117,7 @@ namespace std {
 } // std::
 
 
-#endif /* _CPP_BITS_GSLICE_H */
+#endif /* _GSLICE_H */
 
 // Local Variables:
 // mode:c++

@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_QUEUE_H
-#define __GLIBCPP_INTERNAL_QUEUE_H
+#ifndef _QUEUE_H
+#define _QUEUE_H 1
 
 #include <bits/concept_check.h>
 
@@ -106,10 +106,10 @@ namespace std
   {
     // concept requirements
     typedef typename _Sequence::value_type _Sequence_value_type;
-    __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
-    __glibcpp_class_requires(_Sequence, _FrontInsertionSequenceConcept)
-    __glibcpp_class_requires(_Sequence, _BackInsertionSequenceConcept)
-    __glibcpp_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
+    __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
+    __glibcxx_class_requires(_Sequence, _FrontInsertionSequenceConcept)
+    __glibcxx_class_requires(_Sequence, _BackInsertionSequenceConcept)
+    __glibcxx_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
   
     template <typename _Tp1, typename _Seq1>
     friend bool operator== (const queue<_Tp1, _Seq1>&,
@@ -306,11 +306,11 @@ namespace std
   {
     // concept requirements
     typedef typename _Sequence::value_type _Sequence_value_type;
-    __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
-    __glibcpp_class_requires(_Sequence, _SequenceConcept)
-    __glibcpp_class_requires(_Sequence, _RandomAccessContainerConcept)
-    __glibcpp_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
-    __glibcpp_class_requires4(_Compare, bool, _Tp, _Tp, _BinaryFunctionConcept)
+    __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
+    __glibcxx_class_requires(_Sequence, _SequenceConcept)
+    __glibcxx_class_requires(_Sequence, _RandomAccessContainerConcept)
+    __glibcxx_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
+    __glibcxx_class_requires4(_Compare, bool, _Tp, _Tp, _BinaryFunctionConcept)
   
   public:
     typedef typename _Sequence::value_type                value_type;
@@ -427,4 +427,4 @@ namespace std
   // No equality/comparison operators are provided for priority_queue.
 } // namespace std
 
-#endif /* __GLIBCPP_INTERNAL_QUEUE_H */
+#endif /* _QUEUE_H */

@@ -53,8 +53,8 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_FUNCTION_H
-#define _CPP_BACKWARD_FUNCTION_H 1
+#ifndef _BACKWARD_FUNCTION_H
+#define _BACKWARD_FUNCTION_H 1
 
 #include "backward_warning.h"
 #include <bits/c++config.h>
@@ -123,7 +123,7 @@ using __gnu_cxx::subtractive_rng;
 using __gnu_cxx::mem_fun1; 
 using __gnu_cxx::mem_fun1_ref; 
 
-#endif /* _CPP_BACKWARD_FUNCTION_H */
+#endif /* _BACKWARD_FUNCTION_H */
 
 // Local Variables:
 // mode:C++

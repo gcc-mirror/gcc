@@ -35,7 +35,7 @@
 
 #include <locale>
 
-#ifdef _GLIBCPP_HAVE_IEEEFP_H
+#ifdef _GLIBCXX_HAVE_IEEEFP_H
 #include <ieeefp.h>
 #endif
 
@@ -76,7 +76,7 @@ namespace std
 	}
     }
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   template<>
     void
     __convert_to_v(const char* __s, long long& __v, ios_base::iostate& __err, 
@@ -124,18 +124,18 @@ namespace std
 	  setlocale(LC_ALL, "C");
 	  char* __sanity;
 	  errno = 0;
-#if defined(_GLIBCPP_USE_C99)
+#if defined(_GLIBCXX_USE_C99)
 	  float __f = strtof(__s, &__sanity);
 #else
 	  double __d = strtod(__s, &__sanity);
 	  float __f = static_cast<float>(__d);
-#ifdef _GLIBCPP_HAVE_FINITEF
+#ifdef _GLIBCXX_HAVE_FINITEF
 	  if (!finitef (__f))
 	    errno = ERANGE;
-#elif defined (_GLIBCPP_HAVE_FINITE)
+#elif defined (_GLIBCXX_HAVE_FINITE)
 	  if (!finite (static_cast<double> (__f)))
 	    errno = ERANGE;
-#elif defined (_GLIBCPP_HAVE_ISINF)
+#elif defined (_GLIBCXX_HAVE_ISINF)
 	  if (isinf (static_cast<double> (__f)))
 	    errno = ERANGE;
 #else
@@ -184,7 +184,7 @@ namespace std
 	  // Assumes __s formatted for "C" locale.
 	  char* __old = strdup(setlocale(LC_ALL, NULL));
 	  setlocale(LC_ALL, "C");
-#if defined(_GLIBCPP_USE_C99)
+#if defined(_GLIBCXX_USE_C99)
 	  char* __sanity;
 	  errno = 0;
 	  long double __ld = strtold(__s, &__sanity);
@@ -197,7 +197,7 @@ namespace std
 	  int __p = sscanf(__s, "%Lf", &__ld);
 	  if (errno == ERANGE)
 	    __p = 0;
-#ifdef _GLIBCPP_HAVE_FINITEL
+#ifdef _GLIBCXX_HAVE_FINITEL
 	  if ((__p == 1) && !finitel (__ld))
 	    __p = 0;
 #endif
@@ -234,7 +234,7 @@ namespace std
 
 namespace __gnu_cxx
 {
-  const char* category_names[6 + _GLIBCPP_NUM_CATEGORIES] =
+  const char* category_names[6 + _GLIBCXX_NUM_CATEGORIES] =
     {
       "LC_CTYPE", 
       "LC_NUMERIC",

@@ -33,8 +33,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_STREAMBUF_ITERATOR_H
-#define _CPP_BITS_STREAMBUF_ITERATOR_H 1
+#ifndef _STREAMBUF_ITERATOR_H
+#define _STREAMBUF_ITERATOR_H 1
 
 #pragma GCC system_header
 
@@ -109,7 +109,7 @@ namespace std
 	return __old; 
       }
 
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 110 istreambuf_iterator::equal not const
       // NB: there is also number 111 (NAD, Future) pending on this function.
       bool 

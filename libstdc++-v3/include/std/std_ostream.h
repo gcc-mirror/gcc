@@ -37,8 +37,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_OSTREAM
-#define _CPP_OSTREAM	1
+#ifndef _OSTREAM
+#define _OSTREAM 1
 
 #pragma GCC system_header
 
@@ -203,7 +203,7 @@ namespace std
       operator<<(unsigned int __n)
       { return this->operator<<(static_cast<unsigned long>(__n)); }
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
       __ostream_type& 
       operator<<(long long __n);
 
@@ -541,11 +541,11 @@ namespace std
 
 } // namespace std
 
-#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
 # define export
 #endif
-#ifdef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
+#ifdef  _GLIBCXX_FULLY_COMPLIANT_HEADERS
 # include <bits/ostream.tcc>
 #endif
 
-#endif	/* _CPP_OSTREAM */
+#endif	/* _OSTREAM */

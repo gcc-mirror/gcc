@@ -55,7 +55,7 @@ namespace std
   template 
     basic_istream<char>& 
     getline(basic_istream<char>&, string&);
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template 
     basic_istream<wchar_t>& 
     operator>>(basic_istream<wchar_t>&, wstring&);
@@ -69,7 +69,7 @@ namespace std
     basic_istream<wchar_t>& 
     getline(basic_istream<wchar_t>&, wstring&);
 #endif
-#ifdef _GLIBCPP_INST_ATOMICITY_LOCK
+#ifdef _GLIBCXX_INST_ATOMICITY_LOCK
   template volatile int __Atomicity_lock<0>::_S_atomicity_lock;
 #endif
 } // namespace std
@@ -77,7 +77,7 @@ namespace std
 
 namespace __gnu_cxx
 {
-#ifdef _GLIBCPP_NEED_GENERIC_MUTEX
+#ifdef _GLIBCXX_NEED_GENERIC_MUTEX
 #ifdef __GTHREAD_MUTEX_INIT
   __gthread_mutex_t _Atomic_add_mutex = __GTHREAD_MUTEX_INIT;
 #else
@@ -89,10 +89,10 @@ namespace __gnu_cxx
     __GTHREAD_MUTEX_INIT_FUNCTION (&_Atomic_add_mutex);
   }
 #endif
-#endif // _GLIBCPP_NEED_GLOBAL_MUTEX
+#endif // _GLIBCXX_NEED_GLOBAL_MUTEX
 
   template class stdio_sync_filebuf<char>;
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template class stdio_sync_filebuf<wchar_t>;
 #endif
 } // namespace __gnu_cxx

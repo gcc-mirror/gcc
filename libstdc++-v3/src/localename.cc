@@ -35,9 +35,9 @@ namespace __gnu_cxx
   using namespace std;
 
   // Defined in globals.cc.
-  extern locale::facet* facet_vec[_GLIBCPP_NUM_FACETS];
-  extern char* name_vec[6 + _GLIBCPP_NUM_CATEGORIES];
-  extern char name_c[6 + _GLIBCPP_NUM_CATEGORIES][2];
+  extern locale::facet* facet_vec[_GLIBCXX_NUM_FACETS];
+  extern char* name_vec[6 + _GLIBCXX_NUM_CATEGORIES];
+  extern char name_c[6 + _GLIBCXX_NUM_CATEGORIES][2];
 
   extern std::ctype<char>			ctype_c;
   extern std::collate<char> 			collate_c;
@@ -53,7 +53,7 @@ namespace __gnu_cxx
   extern time_get<char> 			time_get_c;
   extern time_put<char> 			time_put_c;
   extern std::messages<char> 			messages_c;
-#ifdef  _GLIBCPP_USE_WCHAR_T
+#ifdef  _GLIBCXX_USE_WCHAR_T
   extern std::ctype<wchar_t>			ctype_w;
   extern std::collate<wchar_t> 			collate_w;
   extern numpunct<wchar_t> 			numpunct_w;
@@ -70,9 +70,9 @@ namespace __gnu_cxx
   extern std::messages<wchar_t> 		messages_w;
 #endif
 
-  extern locale::facet* cache_vec[_GLIBCPP_NUM_FACETS];
+  extern locale::facet* cache_vec[_GLIBCXX_NUM_FACETS];
   extern std::__numpunct_cache<char>		numpunct_cache_c;
-#ifdef  _GLIBCPP_USE_WCHAR_T
+#ifdef  _GLIBCXX_USE_WCHAR_T
   extern std::__numpunct_cache<wchar_t>		numpunct_cache_w;
 #endif
 } // namespace __gnu_cxx
@@ -158,7 +158,7 @@ namespace std
   // Construct named _Impl.
   locale::_Impl::
   _Impl(const char* __s, size_t __refs) 
-  : _M_references(__refs), _M_facets_size(_GLIBCPP_NUM_FACETS)
+  : _M_references(__refs), _M_facets_size(_GLIBCXX_NUM_FACETS)
   {
     // Initialize the underlying locale model, which also checks to
     // see if the given name is valid.
@@ -240,7 +240,7 @@ namespace std
     _M_init_facet(new time_put<char>);
     _M_init_facet(new std::messages<char>(__cloc, __s));
 	
-#ifdef  _GLIBCPP_USE_WCHAR_T
+#ifdef  _GLIBCXX_USE_WCHAR_T
     _M_init_facet(new std::ctype<wchar_t>(__cloc));
     _M_init_facet(new codecvt<wchar_t, char, mbstate_t>(__cloc));
     _M_init_facet(new numpunct<wchar_t>(__cloc));
@@ -262,7 +262,7 @@ namespace std
   // Construct "C" _Impl.
   locale::_Impl::
   _Impl(facet**, size_t __refs, bool) 
-  : _M_references(__refs), _M_facets_size(_GLIBCPP_NUM_FACETS)
+  : _M_references(__refs), _M_facets_size(_GLIBCXX_NUM_FACETS)
   {
     // Initialize the underlying locale model.
     locale::facet::_S_c_name[0] = 'C';
@@ -313,7 +313,7 @@ namespace std
     _M_init_facet(new (&time_put_c) time_put<char>(1));
     _M_init_facet(new (&messages_c) std::messages<char>(1));	
 
-#ifdef  _GLIBCPP_USE_WCHAR_T
+#ifdef  _GLIBCXX_USE_WCHAR_T
     _M_init_facet(new (&ctype_w) std::ctype<wchar_t>(1));
     _M_init_facet(new (&codecvt_w) codecvt<wchar_t, char, mbstate_t>(1));
 
@@ -337,7 +337,7 @@ namespace std
     // This locale is safe to pre-cache, after all the facets have
     // been installed.
     _M_caches[numpunct<char>::id._M_id()] = __npc;
-#ifdef  _GLIBCPP_USE_WCHAR_T
+#ifdef  _GLIBCXX_USE_WCHAR_T
     _M_caches[numpunct<wchar_t>::id._M_id()] = __npw;
 #endif
   }

@@ -61,7 +61,7 @@ namespace std
       _M_falsename = "false";
     }
       
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<> 
     void
     numpunct<wchar_t>::_M_initialize_numpunct(__c_locale)
@@ -91,7 +91,7 @@ namespace std
       _M_neg_format = money_base::_S_default_pattern;
     }
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<> 
     void
     moneypunct<wchar_t>::_M_initialize_moneypunct(__c_locale)

@@ -46,15 +46,15 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_FUNCTIONAL
-#define _CPP_FUNCTIONAL 1
+#ifndef _FUNCTIONAL
+#define _FUNCTIONAL 1
 
 #pragma GCC system_header
 #include <bits/c++config.h>
 #include <cstddef>
 #include <bits/stl_function.h>
 
-#endif /* _CPP_FUNCTIONAL */
+#endif /* _FUNCTIONAL */
 
 // Local Variables:
 // mode:C++

@@ -53,8 +53,8 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_ALGO_H
-#define _CPP_BACKWARD_ALGO_H 1
+#ifndef _BACKWARD_ALGO_H
+#define _BACKWARD_ALGO_H 1
 
 #include "backward_warning.h"
 #include "algobase.h"
@@ -142,7 +142,7 @@ using __gnu_cxx::count_if;   // Extension returning void
 using __gnu_cxx::power; 
 using __gnu_cxx::iota; 
 
-#endif /* _CPP_BACKWARD_ALGO_H */
+#endif /* _BACKWARD_ALGO_H */
 
 // Local Variables:
 // mode:C++

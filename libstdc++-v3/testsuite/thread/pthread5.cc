@@ -32,7 +32,7 @@
 // configured for the port, then it is picked up free from STL headers.
 
 #if __GTHREADS
-#ifdef _GLIBCPP_HAVE_UNISTD_H
+#ifdef _GLIBCXX_HAVE_UNISTD_H
 #include <unistd.h>	// To test for _POSIX_THREAD_PRIORITY_SCHEDULING
 #endif
 

@@ -24,8 +24,8 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_ITERATOR_H
-#define _CPP_BACKWARD_ITERATOR_H 1
+#ifndef _BACKWARD_ITERATOR_H
+#define _BACKWARD_ITERATOR_H 1
 
 #include "backward_warning.h"
 #include "function.h"
@@ -155,7 +155,7 @@ template <class _ForwardIterator>
 // Names from stl_raw_storage_iter.h
 using std::raw_storage_iterator;
 
-#endif /* _CPP_BACKWARD_ITERATOR_H */
+#endif /* _BACKWARD_ITERATOR_H */
 
 // Local Variables:
 // mode:C++

@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __GLIBCPP_INTERNAL_FUNCTION_H
-#define __GLIBCPP_INTERNAL_FUNCTION_H
+#ifndef _FUNCTION_H
+#define _FUNCTION_H 1
 
 namespace std
 {
@@ -361,7 +361,7 @@ public:
   operator()(const typename _Operation::second_argument_type& __x) const {
     return op(value, __x); 
   }
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
   //109.  Missing binders for non-const sequence elements
   typename _Operation::result_type
   operator()(typename _Operation::second_argument_type& __x) const {
@@ -395,7 +395,7 @@ public:
   operator()(const typename _Operation::first_argument_type& __x) const {
     return op(__x, value); 
   }
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
   //109.  Missing binders for non-const sequence elements
   typename _Operation::result_type
   operator()(typename _Operation::first_argument_type& __x) const {
@@ -729,7 +729,7 @@ mem_fun_ref(_Ret (_Tp::*__f)(_Arg) const)
 
 } // namespace std
 
-#endif /* __GLIBCPP_INTERNAL_FUNCTION_H */
+#endif /* _FUNCTION_H */
 
 // Local Variables:
 // mode:C++

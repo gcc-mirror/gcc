@@ -38,8 +38,8 @@
 // Written by Jason Merrill based upon the specification by Takanori Adachi
 // in ANSI X3J16/94-0013R2.  Rewritten by Nathan Myers to ISO-14882.
 
-#ifndef _CPP_BITS_STRING_TCC
-#define _CPP_BITS_STRING_TCC 1
+#ifndef _BASIC_STRING_TCC
+#define _BASIC_STRING_TCC 1
 
 #pragma GCC system_header
 
@@ -502,7 +502,7 @@ namespace std
     _S_create(size_t __capacity, const _Alloc& __alloc)
     {
       typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 83.  String::npos vs. string::max_size()
       if (__capacity > _S_max_size)
 #else
@@ -1057,7 +1057,7 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB: This syntax is a GNU extension.
-#if _GLIBCPP_EXTERN_TEMPLATE
+#if _GLIBCXX_EXTERN_TEMPLATE
   extern template class basic_string<char>;
   extern template 
     basic_istream<char>& 
@@ -1072,7 +1072,7 @@ namespace std
     basic_istream<char>& 
     getline(basic_istream<char>&, string&);
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   extern template class basic_string<wchar_t>;
   extern template 
     basic_istream<wchar_t>& 

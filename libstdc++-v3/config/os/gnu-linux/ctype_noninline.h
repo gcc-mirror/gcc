@@ -34,7 +34,7 @@
   
 // Information as gleaned from /usr/include/ctype.h
 
-#if _GLIBCPP_C_LOCALE_GNU
+#if _GLIBCXX_C_LOCALE_GNU
   const ctype_base::mask*
   ctype<char>::classic_table() throw()
   {
@@ -59,7 +59,7 @@
   }
 #endif
 
-#if _GLIBCPP_C_LOCALE_GNU
+#if _GLIBCXX_C_LOCALE_GNU
   ctype<char>::ctype(__c_locale __cloc, const mask* __table, bool __del, 
 		     size_t __refs) 
   : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del)
@@ -91,7 +91,7 @@
   }
 #endif
 
-#if _GLIBCPP_C_LOCALE_GNU
+#if _GLIBCXX_C_LOCALE_GNU
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) : 
   __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del)
   {

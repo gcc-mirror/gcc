@@ -53,8 +53,8 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_LIST_H
-#define _CPP_BACKWARD_LIST_H 1
+#ifndef _BACKWARD_LIST_H
+#define _BACKWARD_LIST_H 1
 
 #include "backward_warning.h"
 #include "algobase.h"
@@ -63,7 +63,7 @@
 
 using std::list;
 
-#endif /* _CPP_BACKWARD_LIST_H */
+#endif /* _BACKWARD_LIST_H */
 
 // Local Variables:
 // mode:C++

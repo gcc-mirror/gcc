@@ -23,7 +23,7 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
 // libstdc++/9828
 void test01()
 {
@@ -42,7 +42,7 @@ void test01()
 
 int main()
 {
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   test01();
 #endif
   return 0;

@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_STL_UNINITIALIZED_H
-#define _CPP_BITS_STL_UNINITIALIZED_H 1
+#ifndef _STL_UNINITIALIZED_H
+#define _STL_UNINITIALIZED_H 1
 
 #include <cstring>
 
@@ -283,4 +283,4 @@ namespace std
 
 } // namespace std
 
-#endif /* _CPP_BITS_STL_UNINITIALIZED_H */
+#endif /* _STL_UNINITIALIZED_H */

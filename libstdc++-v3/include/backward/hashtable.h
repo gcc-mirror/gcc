@@ -57,8 +57,8 @@
  *   You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BACKWARD_HASHTABLE_H
-#define _CPP_BACKWARD_HASHTABLE_H 1
+#ifndef _BACKWARD_HASHTABLE_H
+#define _BACKWARD_HASHTABLE_H 1
 
 #include "backward_warning.h"
 #include <ext/hashtable.h>
@@ -69,7 +69,7 @@
 using __gnu_cxx::hash;
 using __gnu_cxx::hashtable;
 
-#endif /* _CPP_BACKWARD_HASHTABLE_H */
+#endif /* _BACKWARD_HASHTABLE_H */
 
 // Local Variables:
 // mode:C++

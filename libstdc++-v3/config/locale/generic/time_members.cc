@@ -113,7 +113,7 @@ namespace std
       _M_month_a12 = "Dec";
     }
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     void
     __timepunct<wchar_t>::

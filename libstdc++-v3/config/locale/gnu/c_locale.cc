@@ -75,7 +75,7 @@ namespace std
 	}
     }
 
-#ifdef _GLIBCPP_USE_LONG_LONG
+#ifdef _GLIBCXX_USE_LONG_LONG
   template<>
     void
     __convert_to_v(const char* __s, long long& __v, ios_base::iostate& __err, 
@@ -191,7 +191,7 @@ namespace std
 
 namespace __gnu_cxx
 {
-  const char* category_names[6 + _GLIBCPP_NUM_CATEGORIES] =
+  const char* category_names[6 + _GLIBCXX_NUM_CATEGORIES] =
     {
       "LC_CTYPE", 
       "LC_NUMERIC",

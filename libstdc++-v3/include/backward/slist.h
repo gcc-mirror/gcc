@@ -41,15 +41,15 @@
  *
  */
 
-#ifndef _CPP_BACKWARD_SLIST_H
-#define _CPP_BACKWARD_SLIST_H 1
+#ifndef _BACKWARD_SLIST_H
+#define _BACKWARD_SLIST_H 1
 
 #include "backward_warning.h"
 #include <ext/slist>
 
 using __gnu_cxx::slist;
 
-#endif /* _CPP_BACKWARD_SLIST_H */
+#endif /* _BACKWARD_SLIST_H */
 
 // Local Variables:
 // mode:C++

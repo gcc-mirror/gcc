@@ -27,12 +27,12 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 DEJATOOL = libstdc++-v3
 
-EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then \
-            echo @glibcpp_builddir@/../../expect/expect ; \
+EXPECT = `if [ -f @glibcxx_builddir@/../../expect/expect ] ; then \
+            echo @glibcxx_builddir@/../../expect/expect ; \
           else echo expect ; fi`
 
-RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
-	       echo @glibcpp_srcdir@/../dejagnu/runtest ; \
+RUNTEST = `if [ -f @glibcxx_srcdir@/../dejagnu/runtest ] ; then \
+	       echo @glibcxx_srcdir@/../dejagnu/runtest ; \
 	    else echo runtest; fi`
 
 AM_MAKEFLAGS = -j1
@@ -40,29 +40,29 @@ AM_RUNTESTFLAGS =
 RUNTESTFLAGS =
 
 ## CXX is actually a "C" compiler. These are real C++ programs.
-glibcpp_srcdir=@glibcpp_srcdir@
-glibcpp_builddir=@glibcpp_builddir@
-testsuite_flags_script=${glibcpp_builddir}/scripts/testsuite_flags
+glibcxx_srcdir=@glibcxx_srcdir@
+glibcxx_builddir=@glibcxx_builddir@
+testsuite_flags_script=${glibcxx_builddir}/scripts/testsuite_flags
 CXX=`${testsuite_flags_script} --build-cxx`
 
 CXXLINK = \
-	LD_RUN_PATH=$${LD_RUN_PATH:+$$LD_RUN_PATH:}${glibcpp_builddir}/src/.libs\
+	LD_RUN_PATH=$${LD_RUN_PATH:+$$LD_RUN_PATH:}${glibcxx_builddir}/src/.libs\
 	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 
-GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
+GLIBCXX_INCLUDES = @GLIBCXX_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 INCLUDES = \
 	-nostdinc++ \
-	@GLIBCPP_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
+	@GLIBCXX_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
 
 ## Build support library.
 noinst_LIBRARIES = libv3test.a
 libv3test_a_SOURCES = testsuite_hooks.cc testsuite_allocator.cc
 
 ## Build support utilities.
-if GLIBCPP_TEST_ABI
+if GLIBCXX_TEST_ABI
 noinst_PROGRAMS = abi_check
 else
 noinst_PROGRAMS = 
@@ -72,7 +72,7 @@ abi_check_SOURCES = abi_check.cc
 all-local: stamp_wchar
 
 # Enable wchar_t tests if capable.
-if GLIBCPP_TEST_WCHAR_T
+if GLIBCXX_TEST_WCHAR_T
 stamp_wchar:
 	touch testsuite_wchar_t
 else
@@ -84,7 +84,7 @@ check-local: check-abi
 
 baseline_dir = @baseline_dir@
 baseline_file = ${baseline_dir}/baseline_symbols.txt
-extract_symvers = @glibcpp_srcdir@/scripts/extract_symvers
+extract_symvers = @glibcxx_srcdir@/scripts/extract_symvers
 
 current_symbols.txt: ${extract_symvers} ../src/.libs/libstdc++.so
 	  -@(${extract_symvers} ../src/.libs/libstdc++.so current_symbols.txt)
@@ -107,7 +107,7 @@ new-abi-baseline:
 	  fi; \
 	  ${extract_symvers} ../src/.libs/libstdc++.so $${output})
 
-if GLIBCPP_TEST_ABI
+if GLIBCXX_TEST_ABI
 # Use 'new-abi-baseline' to create an initial symbol file.  Then run
 # 'check-abi' to test for changes against that file.
 check-abi: abi_check baseline_symbols current_symbols.txt
@@ -129,7 +129,7 @@ endif
 # dejagnu test harness, and is thus off by default. It does produce
 # interesting output however, including various performance analysis
 # items like compile time, execution time, and binary size.
-survey_script = ${glibcpp_builddir}/scripts/check_survey
+survey_script = ${glibcxx_builddir}/scripts/check_survey
 check-script: ${survey_script}
 	-@(chmod + ${survey_script}; \
 	  ${survey_script} 0)
@@ -143,10 +143,10 @@ check-script-install: ${survey_script}
 # Some of these tests create large (~75MB) files, allocate huge
 # ammounts of memory, or otherwise tie up machine resources. Thus,
 # running this is off by default.
-performance_script=${glibcpp_srcdir}/scripts/check_performance
+performance_script=${glibcxx_srcdir}/scripts/check_performance
 check-performance: ${performance_script}
 	-@(chmod + ${performance_script}; \
-	  ${performance_script} ${glibcpp_srcdir} ${glibcpp_builddir})
+	  ${performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
 .PHONY: baseline_symbols new-abi-baseline check-abi check-abi-verbose \
 check-script check-script-install check-performance

@@ -58,8 +58,8 @@
  *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
  */
 
-#ifndef _CPP_VECTOR
-#define _CPP_VECTOR 1
+#ifndef _VECTOR
+#define _VECTOR 1
 
 #pragma GCC system_header
 
@@ -71,9 +71,9 @@
 #include <bits/stl_vector.h>
 #include <bits/stl_bvector.h> 
 
-#ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
+#ifdef _GLIBCXX_NO_TEMPLATE_EXPORT
 #  include <bits/vector.tcc>
 #endif
 
-#endif /* _CPP_VECTOR */
+#endif /* _VECTOR */
 

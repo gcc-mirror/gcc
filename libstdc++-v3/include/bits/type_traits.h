@@ -46,8 +46,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_TYPE_TRAITS_H
-#define _CPP_BITS_TYPE_TRAITS_H 1
+#ifndef _TYPE_TRAITS_H
+#define _TYPE_TRAITS_H 1
 
 #pragma GCC system_header
 
@@ -332,7 +332,7 @@ struct _Is_normal_iterator< __gnu_cxx::__normal_iterator<_Iterator, _Container> 
    typedef __true_type _Normal;
 };
 
-#endif /* _CPP_BITS_TYPE_TRAITS_H */
+#endif /* _TYPE_TRAITS_H */
 
 // Local Variables:
 // mode:C++

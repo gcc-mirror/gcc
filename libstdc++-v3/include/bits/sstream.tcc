@@ -32,8 +32,8 @@
 // ISO C++ 14882: 27.7  String-based streams
 //
 
-#ifndef _CPP_BITS_SSTREAM_TCC
-#define _CPP_BITS_SSTREAM_TCC	1
+#ifndef _SSTREAM_TCC
+#define _SSTREAM_TCC 1
 
 #pragma GCC system_header
 
@@ -214,7 +214,7 @@ namespace std
   extern template class basic_ostringstream<char>;
   extern template class basic_stringstream<char>;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   extern template class basic_stringbuf<wchar_t>;
   extern template class basic_istringstream<wchar_t>;
   extern template class basic_ostringstream<wchar_t>;

@@ -35,8 +35,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_MASK_ARRAY_H
-#define _CPP_BITS_MASK_ARRAY_H 1
+#ifndef _MASK_ARRAY_H
+#define _MASK_ARRAY_H 1
 
 #pragma GCC system_header
 
@@ -160,7 +160,7 @@ _DEFINE_VALARRAY_OPERATOR(>>, __shift_right)
     
 } // std::
 
-#endif /* _CPP_BITS_MASK_ARRAY_H */
+#endif /* _MASK_ARRAY_H */
 
 // Local Variables:
 // mode:c++

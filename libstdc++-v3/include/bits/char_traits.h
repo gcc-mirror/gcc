@@ -37,8 +37,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef _CPP_BITS_CHAR_TRAITS_H
-#define _CPP_BITS_CHAR_TRAITS_H 1
+#ifndef _CHAR_TRAITS_H
+#define _CHAR_TRAITS_H 1
 
 #pragma GCC system_header
 
@@ -181,7 +181,7 @@ namespace std
   };
 
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   /// 21.1.3.2  char_traits specializations
   template<>
     struct char_traits<wchar_t>
@@ -245,7 +245,7 @@ namespace std
       not_eof(const int_type& __c)
       { return eq_int_type(__c, eof()) ? 0 : __c; }
   };
-#endif //_GLIBCPP_USE_WCHAR_T
+#endif //_GLIBCXX_USE_WCHAR_T
 
   template<typename _CharT, typename _Traits>
     struct _Char_traits_match

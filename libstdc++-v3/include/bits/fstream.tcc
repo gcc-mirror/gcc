@@ -32,8 +32,8 @@
 // ISO C++ 14882: 27.8  File-based streams
 //
 
-#ifndef _CPP_BITS_FSTREAM_TCC
-#define _CPP_BITS_FSTREAM_TCC 1
+#ifndef _FSTREAM_TCC
+#define _FSTREAM_TCC 1
 
 #pragma GCC system_header
 
@@ -519,7 +519,7 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     seekpos(pos_type __pos, ios_base::openmode __mode)
     {
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 171. Strange seekpos() semantics due to joint position
       pos_type __ret =  pos_type(off_type(-1)); 
 
@@ -567,13 +567,13 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB:  This syntax is a GNU extension.
-#if _GLIBCPP_EXTERN_TEMPLATE
+#if _GLIBCXX_EXTERN_TEMPLATE
   extern template class basic_filebuf<char>;
   extern template class basic_ifstream<char>;
   extern template class basic_ofstream<char>;
   extern template class basic_fstream<char>;
 
-#ifdef _GLIBCPP_USE_WCHAR_T
+#ifdef _GLIBCXX_USE_WCHAR_T
   extern template class basic_filebuf<wchar_t>;
   extern template class basic_ifstream<wchar_t>;
   extern template class basic_ofstream<wchar_t>;
