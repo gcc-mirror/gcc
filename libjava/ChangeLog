@@ -1,3 +1,17 @@
+2003-12-30  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/protocol/http/Connection.java
+	(outputStream): New field.
+	(bufferedOutputStream): New field.
+	(connect): Initialize outputStream and bufferedOutputStream.
+	(sendRequest): Create PrintWriter object from outputStream,
+	support HTTP 1.1, send missing HTTP headers and buffered output data
+	for POST method.
+	(getOutputStream): Set request method to POST if output stream is
+	used, return bufferedOutputStream.
+	(setRequestMethod): Allow HEAD and POST methods.
+	This fixes libgcj PR/6302 and libgcj PR/7752.
+
 2003-12-30  Guilhem Lavaux <guilhem@kaffe.org>
 
 	* java/io/LineNumberReader.java
