@@ -1,3 +1,9 @@
+2000-09-25  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.c (output_last_position): Define.
+	(set_real_maximum_length): Tweek.
+	* diagnostic.h (output_last_position): Declare.
+
 2000-09-25  Kazu Hirata  <kazu@hxi.com>
 
 	* config/i386/i386.c: Fix formatting.
