@@ -1909,14 +1909,10 @@ build_new (placement, decl, init, use_global_new)
     {
       tree absdcl = TREE_VALUE (decl);
       tree last_absdcl = NULL_TREE;
-      int old_immediate_size_expand = 0;
 
       if (current_function_decl
 	  && DECL_CONSTRUCTOR_P (current_function_decl))
-	{
-	  old_immediate_size_expand = immediate_size_expand;
-	  immediate_size_expand = 0;
-	}
+	my_friendly_assert (immediate_size_expand == 0, 19990926);
 
       nelts = integer_one_node;
 
@@ -1980,17 +1976,7 @@ build_new (placement, decl, init, use_global_new)
 
       type = groktypename (decl);
       if (! type || type == error_mark_node)
-	{
-	  immediate_size_expand = old_immediate_size_expand;
-	  return error_mark_node;
-	}
-
-      if (current_function_decl
-	  && DECL_CONSTRUCTOR_P (current_function_decl))
-	{
-	  pending_sizes = get_pending_sizes ();
-	  immediate_size_expand = old_immediate_size_expand;
-	}
+	return error_mark_node;
     }
   else if (TREE_CODE (decl) == IDENTIFIER_NODE)
     {

@@ -1,3 +1,11 @@
+1999-09-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (start_function): Set x_dont_save_pending_sizes rather
+	than calling get_pending_sizes.
+	* init.c (build_new): Don't save and restore
+	immediate_size_expand; instead, assert that it has the expected
+	value already.
+
 1999-09-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lex.c (compiler_error): Add missing call to va_end().
