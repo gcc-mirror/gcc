@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.189 1996/11/09 23:37:11 karl Exp karl $
+%% $Id: texinfo.tex,v 2.190 1996/11/16 00:19:07 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 1996 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.189 $
+\deftexinfoversion$Revision: 2.190 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -893,7 +893,7 @@ where each line of input produces a line of output.}
 %
 \def\value{\begingroup
   \catcode`\-=12 \catcode`\_=12 % Allow - and _ in VAR.
-  \parsearg\valuexxx}
+  \valuexxx}
 \def\valuexxx#1{%
   \expandafter\ifx\csname SET#1\endcsname\relax
     {\{No value for ``#1''\}}%
