@@ -326,7 +326,7 @@
 
 (define_function_unit "memory" 1 0
   (and (eq_attr "type" "load,fpload,fpidxload")
-       (eq_attr "cpu" "r3900,r4600,r4650,r4100,r4120,r4300,r5000"))
+       (eq_attr "cpu" "!r3900,r4600,r4650,r4100,r4120,r4300,r5000"))
   3 0)
 
 (define_function_unit "memory" 1 0
@@ -346,7 +346,7 @@
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "imul,imadd")
-       (eq_attr "cpu" "r3900,r4000,r4600,r4650,r4100,r4120,r4300,r5000"))
+       (eq_attr "cpu" "!r3900,r4000,r4600,r4650,r4100,r4120,r4300,r5000"))
   17 17)
 
 ;; On them mips16, we want to stronly discourage a mult from appearing
@@ -398,7 +398,7 @@
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "idiv")
-       (eq_attr "cpu" "r3900,r4000,r4600,r4650,r4100,r4120,r4300,r5000"))
+       (eq_attr "cpu" "!r3900,r4000,r4600,r4650,r4100,r4120,r4300,r5000"))
   38 38)
 
 (define_function_unit "imuldiv"  1 0
@@ -455,7 +455,7 @@
 ;; instructions to be processed in the "imuldiv" unit.
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "r3900,r6000,r4300,r5000"))
+  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "!r3900,r6000,r4300,r5000"))
   3 0)
 
 (define_function_unit "adder" 1 1
@@ -467,7 +467,7 @@
   1 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fadd") (eq_attr "cpu" "r3900,r6000,r4300"))
+  (and (eq_attr "type" "fadd") (eq_attr "cpu" "!r3900,r6000,r4300"))
   4 0)
 
 (define_function_unit "adder" 1 1
@@ -480,7 +480,7 @@
 
 (define_function_unit "adder" 1 1
   (and (eq_attr "type" "fabs,fneg,fmove")
-       (eq_attr "cpu" "r3900,r4600,r4650,r4300,r5000"))
+       (eq_attr "cpu" "!r3900,r4600,r4650,r4300,r5000"))
   2 0)
 
 (define_function_unit "adder" 1 1
@@ -490,7 +490,7 @@
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul")
        (and (eq_attr "mode" "SF")
-	    (eq_attr "cpu" "r3900,r6000,r4600,r4650,r4300,r5000")))
+	    (eq_attr "cpu" "!r3900,r6000,r4600,r4650,r4300,r5000")))
   7 0)
 
 (define_function_unit "mult" 1 1
@@ -510,7 +510,7 @@
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "r3900,r6000,r4300,r5000")))
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3900,r6000,r4300,r5000")))
   8 0)
 
 (define_function_unit "mult" 1 1
@@ -526,7 +526,7 @@
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv")
        (and (eq_attr "mode" "SF")
-	    (eq_attr "cpu" "r3900,r6000,r4600,r4650,r4300,r5000")))
+	    (eq_attr "cpu" "!r3900,r6000,r4600,r4650,r4300,r5000")))
   23 0)
 
 (define_function_unit "divide" 1 1
@@ -552,7 +552,7 @@
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv")
        (and (eq_attr "mode" "DF")
-	    (eq_attr "cpu" "r3900,r6000,r4600,r4650,r4300")))
+	    (eq_attr "cpu" "!r3900,r6000,r4600,r4650,r4300")))
   36 0)
 
 (define_function_unit "divide" 1 1
