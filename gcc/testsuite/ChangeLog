@@ -1,3 +1,8 @@
+Sun Jul 26 01:15:56 1998  H.J. Lu  (hjl@gnu.org)
+
+	* gcc.dg/980312-1.c: Do link instead of compile.
+	* gcc.dg/980313-1.c: Likewise.
+
 Sun Jul 26 01:05:02 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/980726-1.c: New test.
