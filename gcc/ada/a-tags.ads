@@ -210,6 +210,10 @@ private
    --  Size of each ancestor tag entry in the TSD
 
    type Address_Array is array (Natural range <>) of System.Address;
+   pragma Suppress (Index_Check, On => Address_Array);
+   --  The reason we suppress index checks is that in the body, objects
+   --  of this type are declared with a dummy size of 1, the actual size
+   --  depending on the number of primitive operations.
 
    type Dispatch_Table;
    type Tag is access all Dispatch_Table;

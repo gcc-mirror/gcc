@@ -1,3 +1,103 @@
+2004-05-03  Olivier Hainque  <hainque@act-europe.fr>
+
+	PR ada/15152
+
+	* exp_ch2.adb (Expand_Current_Value): Leave Machine_Code Asm arguments
+	alone. Replacing object references by literals is inappropriate in a
+	so low level context.
+
+2004-05-03  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* a-exexpr.adb: Add comments
+
+2004-05-03  Joel Brobecker  <brobecker@gnat.com>
+
+	* a-tags.adb (Tag_Table): Add Index_Check pragma Suppress. Allows us to
+	declare the Ancestor_Tags array in Type_Specific_Data with a small size
+	without risking a bounds check error when accessing one of its
+	components.
+	(Type_Specific_Data): Define Ancestor_Tags as a small array.
+	This prevents us from hitting a limitation during the debug info
+	generation when using stabs.
+
+	* a-tags.adb (Dispatch_Table): Define the Prims_Ptr component as a
+	small array.
+	This prevents us from hitting a limitation during the debug info
+	generation when using stabs.
+
+2004-05-03  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	lang-specs.h: Remove -gnatz* from specs.
+
+2004-05-03  Vincent Celier  <celier@gnat.com>
+
+	* gprmake.adb, makegpr.ads, makegpr.adb: New files.
+
+	* Make-lang.in, Makefile.in: Add gprmake
+
+2004-05-03  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_aggr.adb: Fix typo in comment.
+
+2004-05-03  Robert Dewar  <dewar@gnat.com>
+
+	* make.adb: Minor reformatting
+
+	* rtsfind.ads, rtsfind.adb: (RTU_Loaded): New function
+
+	* sem_attr.adb (Eval_Attribute, case Type_Class): Fix check for address
+	so that it works when address is not a private type.
+
+	* sem_ch13.adb (Check_Expr_Constants, case N_Integer_Literal): Deal
+	properly with rewritten unchecked conversions. This prevents
+	order-of-elaboration issues that can otherwise arise.
+	(Minimum_Size): Don't check size of access types under VMS
+
+	* sem_ch4.adb (Remove_Address_Interpretation): New circuit to remove
+	interpretations of integer literals as type System.Address.
+
+	* sem_util.ads, sem_util.adb (Is_Descendent_Of_Address): New function
+	(Is_Descendent_Of): New function
+
+2004-05-03  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* sem_prag.adb: Boolean_Entry_Barriers is a synonym of Simple_Barriers.
+	Max_Entry_Queue_Depth is a synonym of Max_Entry_Queue_Length.
+	No_Dynamic_Interrupts is a synonym of No_Dynamic_Attachment.
+
+	* sem_res.adb: Use the new restriction Max_Entry_Queue_Length instead
+	of the old Max_Entry_Queue_Depth.
+
+	* snames.adb: Boolean_Entry_Barriers is a synonym of Simple_Barriers.
+	Max_Entry_Queue_Depth is a synonym of Max_Entry_Queue_Length
+	No_Dynamic_Interrupts is a synonym of No_Dynamic_Attachment
+
+	* snames.ads: New entry for proper handling of Boolean_Entry_Barriers.
+	New entry for proper handling of Max_Entry_Queue_Depth.
+	New entry for proper handling of No_Dynamic_Interrupts.
+
+	* s-rident.ads: Adding restriction Simple_Barriers (AI-00249) that
+	supersedes the GNAT specific restriction Boolean_Entry_Barriers.
+	Adding restriction Max_Entry_Queue_Length (AI-00249) that supersedes
+	the GNAT specific restriction Max_Entry_Queue_Depth.
+	Adding restriction No_Dynamic_Attachment (AI-00249) that supersedes
+	the GNAT specific restriction No_Dynamic_Interrupts.
+
+	* restrict.ads, restrict.adb: Use the new restriction Simple_Barriers
+	instead of the old Boolean_Entry_Barriers.
+	Use the new restriction No_Dynamic_Attachment instead of the old
+	No_Dynamic_Interrupts.
+
+	* exp_ch9.adb: Check restriction Simple_Barriers (AI-00249) that
+	supersedes the GNAT specific restriction Boolean_Entry_Barriers.
+
+	* gnatbind.adb: Use the new restriction Max_Entry_Queue_Length instead
+	of the old Max_Entry_Queue_Depth.
+
+2004-05-03  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2004-04-29  Ed Schonberg  <schonberg@gnat.com>
 
 	* checks.adb (Enable_Range_Check): If the prefix of an index component

@@ -212,7 +212,7 @@ package body Sem_Aggr is
    --  This procedure performs the semantic checks for an array aggregate.
    --  True is returned if the aggregate resolution succeeds.
    --  The procedure works by recursively checking each nested aggregate.
-   --  Specifically, after checking a sub-aggreate nested at the i-th level
+   --  Specifically, after checking a sub-aggregate nested at the i-th level
    --  we recursively check all the subaggregates at the i+1-st level (if any).
    --  Note that for aggregates analysis and resolution go hand in hand.
    --  Aggregate analysis has been delayed up to here and it is done while

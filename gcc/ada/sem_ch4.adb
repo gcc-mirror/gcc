@@ -4346,9 +4346,9 @@ package body Sem_Ch4 is
    --------------------------------
 
    procedure Remove_Abstract_Operations (N : Node_Id) is
-      I           : Interp_Index;
-      It          : Interp;
-      Abstract_Op : Entity_Id := Empty;
+      I            : Interp_Index;
+      It           : Interp;
+      Abstract_Op  : Entity_Id := Empty;
 
       --  AI-310: If overloaded, remove abstract non-dispatching
       --  operations. We activate this if either extensions are
@@ -4358,6 +4358,42 @@ package body Sem_Ch4 is
       --  particular, if type Address is non-private and abstract
       --  subprograms are used to hide its operators, they will be
       --  truly hidden.
+
+      procedure Remove_Address_Interpretations;
+      --  Ambiguities may arise when the operands are literal and the
+      --  address operations in s-auxdec are visible. In that case, remove
+      --  the interpretation of a literal as Address, to retain the semantics
+      --  of Address as a private type.
+
+      ------------------------------------
+      -- Remove_Address_Intereprtations --
+      ------------------------------------
+
+      procedure Remove_Address_Interpretations is
+         Formal : Entity_Id;
+
+      begin
+         if Is_Overloaded (N) then
+            Get_First_Interp (N, I, It);
+            while Present (It.Nam) loop
+               Formal := First_Entity (It.Nam);
+
+               if Is_Descendent_Of_Address (Etype (Formal))
+                 or else
+                   (Present (Next_Entity (Formal))
+                      and then
+                        Is_Descendent_Of_Address
+                          (Etype (Next_Entity (Formal))))
+               then
+                  Remove_Interp (I);
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+      end Remove_Address_Interpretations;
+
+   --  Start of processing for Remove_Abstract_Operations
 
    begin
       if Is_Overloaded (N) then
@@ -4388,17 +4424,21 @@ package body Sem_Ch4 is
          if No (Abstract_Op) then
             return;
 
+            --  Remove address interpretations if we have a universal
+            --  interpretation. This avoids literals being interpreted
+            --  as type Address, which is never appropriate.
+
          elsif Nkind (N) in N_Op then
             if Nkind (N) in N_Unary_Op
               and then Present (Universal_Interpretation (Right_Opnd (N)))
             then
-               return;
+               Remove_Address_Interpretations;
 
             elsif Nkind (N) in N_Binary_Op
               and then Present (Universal_Interpretation (Right_Opnd (N)))
               and then Present (Universal_Interpretation (Left_Opnd  (N)))
             then
-               return;
+               Remove_Address_Interpretations;
 
             else
                Get_First_Interp (N, I, It);
@@ -4428,12 +4468,14 @@ package body Sem_Ch4 is
                    (No (Next (Arg1))
                      or else Present (Universal_Interpretation (Next (Arg1))))
                then
-                  return;
+                  Remove_Address_Interpretations;
 
                else
                   Get_First_Interp (N, I, It);
                   while Present (It.Nam) loop
-                     if Scope (It.Nam) = Standard_Standard then
+                     if Scope (It.Nam) = Standard_Standard
+                       and then It.Typ = Base_Type (Etype (Abstract_Op))
+                     then
                         Remove_Interp (I);
                      end if;
 

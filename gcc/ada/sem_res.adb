@@ -4487,7 +4487,7 @@ package body Sem_Res is
       --  call at all violates a specified nesting depth of zero.
 
       if Is_Protected_Type (Scope (Nam)) then
-         Check_Restriction (Max_Entry_Queue_Depth, N);
+         Check_Restriction (Max_Entry_Queue_Length, N);
       end if;
 
       --  Use context type to disambiguate a protected function that can be

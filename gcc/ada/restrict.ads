@@ -104,9 +104,9 @@ package Restrict is
    --  (which is why this restriction itself is excluded from the list).
 
    Implementation_Restriction : array (All_Restrictions) of Boolean :=
-     (Boolean_Entry_Barriers             => True,
+     (Simple_Barriers                    => True,
       No_Calendar                        => True,
-      No_Dynamic_Interrupts              => True,
+      No_Dynamic_Attachment              => True,
       No_Enumeration_Maps                => True,
       No_Entry_Calls_In_Elaboration_Code => True,
       No_Entry_Queue                     => True,

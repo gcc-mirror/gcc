@@ -3413,7 +3413,7 @@ package body Exp_Ch9 is
 
       --  It is not a boolean variable or literal, so check the restriction
 
-      Check_Restriction (Boolean_Entry_Barriers, Cond);
+      Check_Restriction (Simple_Barriers, Cond);
    end Expand_Entry_Barrier;
 
    ------------------------------------

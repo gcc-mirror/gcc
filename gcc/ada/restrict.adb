@@ -368,7 +368,7 @@ package body Restrict is
         and then Restrictions.Set (No_Task_Allocators)
         and then Restrictions.Set (No_Dynamic_Priorities)
         and then Restrictions.Set (No_Terminate_Alternatives)
-        and then Restrictions.Set (No_Dynamic_Interrupts)
+        and then Restrictions.Set (No_Dynamic_Attachment)
         and then Restrictions.Set (No_Protected_Type_Allocators)
         and then Restrictions.Set (No_Local_Protected_Objects)
         and then Restrictions.Set (No_Requeue_Statements)
@@ -442,7 +442,7 @@ package body Restrict is
    procedure Set_Ravenscar (N : Node_Id) is
    begin
       Set_Restricted_Profile (N);
-      Set_Restriction (Boolean_Entry_Barriers,       N);
+      Set_Restriction (Simple_Barriers,              N);
       Set_Restriction (No_Select_Statements,         N);
       Set_Restriction (No_Calendar,                  N);
       Set_Restriction (No_Entry_Queue,               N);
@@ -468,7 +468,7 @@ package body Restrict is
       Set_Restriction (No_Task_Allocators,           N);
       Set_Restriction (No_Dynamic_Priorities,        N);
       Set_Restriction (No_Terminate_Alternatives,    N);
-      Set_Restriction (No_Dynamic_Interrupts,        N);
+      Set_Restriction (No_Dynamic_Attachment,        N);
       Set_Restriction (No_Protected_Type_Allocators, N);
       Set_Restriction (No_Local_Protected_Objects,   N);
       Set_Restriction (No_Requeue_Statements,        N);

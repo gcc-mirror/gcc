@@ -42,6 +42,7 @@ with Nmake;    use Nmake;
 with Output;   use Output;
 with Opt;      use Opt;
 with Restrict; use Restrict;
+with Rtsfind; use Rtsfind;
 with Scans;    use Scans;
 with Scn;      use Scn;
 with Sem;      use Sem;
@@ -3379,6 +3380,88 @@ package body Sem_Util is
           Nkind (P) = N_Slice)
         and then Prefix (P) = N;
    end Is_Dereferenced;
+
+   ----------------------
+   -- Is_Descendent_Of --
+   ----------------------
+
+   function Is_Descendent_Of (T1 : Entity_Id; T2 : Entity_Id) return Boolean is
+      T    : Entity_Id;
+      Etyp : Entity_Id;
+
+   begin
+      pragma Assert (Nkind (T1) in N_Entity);
+      pragma Assert (Nkind (T2) in N_Entity);
+
+      T := Base_Type (T1);
+
+      --  Immediate return if the types match
+
+      if T = T2 then
+         return True;
+
+      --  Comment needed here ???
+
+      elsif Ekind (T) = E_Class_Wide_Type then
+         return Etype (T) = T2;
+
+      --  All other cases
+
+      else
+         loop
+            Etyp := Etype (T);
+
+            --  Done if we found the type we are looking for
+
+            if Etyp = T2 then
+               return True;
+
+            --  Done if no more derivations to check
+
+            elsif T = T1 then
+               return False;
+
+            --  Following test catches error cases resulting from prev errors
+
+            elsif No (Etyp) then
+               return False;
+
+            elsif Is_Private_Type (T) and then Etyp = Full_View (T) then
+               return False;
+
+            elsif Is_Private_Type (Etyp) and then Full_View (Etyp) = T then
+               return False;
+            end if;
+
+            --  Return if no further entries to check
+
+            if T = Base_Type (T1) or else T = T1 then
+               return False;
+            end if;
+         end loop;
+      end if;
+
+      raise Program_Error;
+   end Is_Descendent_Of;
+
+   ------------------------------
+   -- Is_Descendent_Of_Address --
+   ------------------------------
+
+   function Is_Descendent_Of_Address (T1 : Entity_Id) return Boolean is
+   begin
+      --  If Address has not been loaded, answer must be False
+
+      if not RTU_Loaded (System) then
+         return False;
+
+      --  Otherwise we can get the entity we are interested in without
+      --  causing an unwanted dependency on System, and do the test.
+
+      else
+         return Is_Descendent_Of (T1, Base_Type (RTE (RE_Address)));
+      end if;
+   end Is_Descendent_Of_Address;
 
    --------------
    -- Is_False --

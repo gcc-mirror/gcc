@@ -888,7 +888,7 @@ package body Sem_Prag is
               ("argument of pragma% must be entity name", Arg1);
 
          elsif Prag_Id = Pragma_Interrupt_Handler then
-            Check_Restriction (No_Dynamic_Interrupts, N);
+            Check_Restriction (No_Dynamic_Attachment, N);
          end if;
 
          declare
@@ -3276,10 +3276,61 @@ package body Sem_Prag is
                   Error_Pragma_Arg
                     ("invalid form for restriction", Arg);
 
+               --  Deal with synonyms. This should be done more cleanly ???
+
                else
+                  --  Boolean_Entry_Barriers is a synonym of Simple_Barriers
+
+                  if Chars (Expr) = Name_Boolean_Entry_Barriers then
+                     Check_Restriction
+                       (No_Implementation_Restrictions, Arg);
+                     Set_Restriction (Simple_Barriers, N);
+                     Set_Warning (Simple_Barriers);
+
+                  --  Max_Entry_Queue_Depth is a synonym of
+                  --  Max_Entry_Queue_Length
+
+                  elsif Chars (Expr) = Name_Max_Entry_Queue_Depth then
+                     Analyze_And_Resolve (Expr, Any_Integer);
+
+                     if not Is_OK_Static_Expression (Expr) then
+                        Flag_Non_Static_Expr
+                          ("value must be static expression!", Expr);
+                        raise Pragma_Exit;
+
+                     elsif not Is_Integer_Type (Etype (Expr))
+                       or else Expr_Value (Expr) < 0
+                     then
+                        Error_Pragma_Arg
+                          ("value must be non-negative integer", Arg);
+
+                     --  Restriction pragma is active
+
+                     else
+                        Val := Expr_Value (Expr);
+
+                        if not UI_Is_In_Int_Range (Val) then
+                           Error_Pragma_Arg
+                             ("pragma ignored, value too large?", Arg);
+                        else
+                           Set_Restriction (Max_Entry_Queue_Length, N,
+                                            Integer (UI_To_Int (Val)));
+                           Set_Warning (Max_Entry_Queue_Length);
+                        end if;
+                     end if;
+
+                  --  No_Dynamic_Interrupts is a synonym for
+                  --  No_Dynamic_Attachment
+
+                  elsif Chars (Expr) = Name_No_Dynamic_Interrupts then
+                     Check_Restriction
+                       (No_Implementation_Restrictions, Arg);
+                     Set_Restriction (No_Dynamic_Attachment, N);
+                     Set_Warning (No_Dynamic_Attachment);
+
                   --  No_Requeue is a synonym for No_Requeue_Statements
 
-                  if Chars (Expr) = Name_No_Requeue then
+                  elsif Chars (Expr) = Name_No_Requeue then
                      Check_Restriction
                        (No_Implementation_Restrictions, Arg);
                      Set_Restriction (No_Requeue_Statements, N);

@@ -259,28 +259,28 @@ package Sem_Util is
       Governed_By   : List_Id;
       Into          : Elist_Id;
       Report_Errors : out Boolean);
-   --  The purpose of this procedure is to gather the valid components
-   --  in a record type according to the values of its discriminants, in order
-   --  to validate the components of a record aggregate.
+   --  The purpose of this procedure is to gather the valid components in a
+   --  record type according to the values of its discriminants, in order to
+   --  validate the components of a record aggregate.
    --
    --    Typ is the type of the aggregate when its constrained discriminants
    --      need to be collected, otherwise it is Empty.
    --
    --    Comp_List is an N_Component_List node.
    --
-   --    Governed_By is a list of N_Component_Association nodes,
-   --     where each choice list contains the name of a discriminant and
-   --     the expression field gives its value. The values of the
-   --     discriminants governing the (possibly nested) variant parts in
-   --     Comp_List are found in this Component_Association List.
+   --    Governed_By is a list of N_Component_Association nodes, where each
+   --     choice list contains the name of a discriminant and the expression
+   --     field gives its value. The values of the discriminants governing
+   --     the (possibly nested) variant parts in Comp_List are found in this
+   --     Component_Association List.
    --
-   --    Into is the list where the valid components are appended.
-   --     Note that Into need not be an Empty list. If it's not, components
-   --     are attached to its tail.
+   --    Into is the list where the valid components are appended. Note that
+   --     Into need not be an Empty list. If it's not, components are attached
+   --     to its tail.
    --
-   --    Report_Errors is set to True if the values of the discriminants
-   --     are non-static.
-
+   --    Report_Errors is set to True if the values of the discriminants are
+   --     non-static.
+   --
    --  This procedure is also used when building a record subtype. If the
    --  discriminant constraint of the subtype is static, the components of the
    --  subtype are only those of the variants selected by the values of the
@@ -441,6 +441,16 @@ package Sem_Util is
    --  true if N appears as the prefix of a node that does a dereference
    --  of the access value (selected/indexed component, explicit dereference
    --  or a slice), and false otherwise.
+
+   function Is_Descendent_Of (T1 : Entity_Id; T2 : Entity_Id) return Boolean;
+   --  Returns True if type T1 is a descendent of type T2, and false otherwise.
+   --  This is the RM definition, a type is a descendent of another type if it
+   --  is the same type or is derived from a descendent of the other type.
+
+   function Is_Descendent_Of_Address (T1 : Entity_Id) return Boolean;
+   --  Returns True if type T1 is a descendent of Address or its base type.
+   --  Similar to calling Is_Descendent_Of with Base_Type (RTE (RE_Address))
+   --  except that it avoids creating an unconditional dependency on System.
 
    function Is_False (U : Uint) return Boolean;
    --  The argument is a Uint value which is the Boolean'Pos value of a

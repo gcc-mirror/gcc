@@ -174,6 +174,23 @@ package body Rtsfind is
    --  used if you are sure that the message comes directly or indirectly from
    --  a call to the RTE function.
 
+   ------------------------
+   -- Entity_Not_Defined --
+   ------------------------
+
+   procedure Entity_Not_Defined (Id : RE_Id) is
+   begin
+      if No_Run_Time_Mode then
+         RTE_Error_Msg ("|construct not allowed in no run time mode");
+      elsif Configurable_Run_Time_Mode then
+         RTE_Error_Msg ("|construct not allowed in this configuration>");
+      else
+         RTE_Error_Msg ("run-time configuration error");
+      end if;
+
+      Output_Entity_Name (Id, "not defined");
+   end Entity_Not_Defined;
+
    -------------------
    -- Get_Unit_Name --
    -------------------
@@ -402,23 +419,6 @@ package body Rtsfind is
           and then
         Chars (Sel) in Text_IO_Package_Name;
    end Is_Text_IO_Kludge_Unit;
-
-   ------------------------
-   -- Entity_Not_Defined --
-   ------------------------
-
-   procedure Entity_Not_Defined (Id : RE_Id) is
-   begin
-      if No_Run_Time_Mode then
-         RTE_Error_Msg ("|construct not allowed in no run time mode");
-      elsif Configurable_Run_Time_Mode then
-         RTE_Error_Msg ("|construct not allowed in this configuration>");
-      else
-         RTE_Error_Msg ("run-time configuration error");
-      end if;
-
-      Output_Entity_Name (Id, "not defined");
-   end Entity_Not_Defined;
 
    ---------------
    -- Load_Fail --
@@ -1045,6 +1045,15 @@ package body Rtsfind is
          end if;
       end if;
    end RTE_Error_Msg;
+
+   ----------------
+   -- RTU_Loaded --
+   ----------------
+
+   function RTU_Loaded (U : RTU_Id) return Boolean is
+   begin
+      return Present (RT_Unit_Table (U).Entity);
+   end RTU_Loaded;
 
    --------------------
    -- Text_IO_Kludge --

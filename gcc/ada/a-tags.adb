@@ -65,8 +65,12 @@ package body Ada.Tags is
 
    subtype Cstring is String (Positive);
    type Cstring_Ptr is access all Cstring;
+
    type Tag_Table is array (Natural range <>) of Tag;
    pragma Suppress_Initialization (Tag_Table);
+   pragma Suppress (Index_Check, On => Tag_Table);
+   --  We suppress index checks because the declared size in the record
+   --  below is a dummy size of one (see below).
 
    type Wide_Boolean is new Boolean;
    --  This name should probably be changed sometime ??? and indeed
@@ -79,13 +83,33 @@ package body Ada.Tags is
       HT_Link            : Tag;
       Remotely_Callable  : Wide_Boolean;
       RC_Offset          : SSE.Storage_Offset;
-      Ancestor_Tags      : Tag_Table (Natural);
+      Ancestor_Tags      : Tag_Table (0 .. 1);
    end record;
+   --  The size of the Ancestor_Tags array actually depends on the tagged
+   --  type to which it applies.  We are using the same mechanism as for
+   --  the Prims_Ptr array in the Dispatch_Table record.  See comments
+   --  below for more details.
 
    type Dispatch_Table is record
       TSD       : Type_Specific_Data_Ptr;
-      Prims_Ptr : Address_Array (Positive);
+      Prims_Ptr : Address_Array (1 .. 1);
    end record;
+   --  The size of the Prims_Ptr array actually depends on the tagged
+   --  type to which it applies. For each tagged type, the expander
+   --  computes the actual array size, and allocates the Dispatch_Table
+   --  record accordingly.
+   --
+   --  To avoid the use of discriminants to define the actual size
+   --  of the dispatch table, we used to declare the tag as a pointer
+   --  to a record that contains an arbitrary array of addresses, using
+   --  Positive as its index. This ensures that there are never range
+   --  checks when accessing the dispatch table, but it prevents GDB
+   --  from displaying tagged types properly. A better approach is
+   --  to declare this record type as holding a small number of addresses,
+   --  and to explicitly suppress checks on it.
+   --
+   --  Note that in both cases, this type is never allocated, and serves
+   --  only to declare the corresponding access type.
 
    ---------------------------------------------
    -- Unchecked Conversions for String Fields --
@@ -182,7 +206,6 @@ package body Ada.Tags is
          function H is new System.HTable.Hash (HTable_Headers);
          Str : constant Cstring_Ptr    := To_Cstring_Ptr (F);
          Res : constant HTable_Headers := H (Str (1 .. Length (Str)));
-
       begin
          return Res;
       end Hash;
@@ -219,7 +242,6 @@ package body Ada.Tags is
 
    function CW_Membership (Obj_Tag : Tag; Typ_Tag : Tag) return Boolean is
       Pos : constant Integer := Obj_Tag.TSD.Idepth - Typ_Tag.TSD.Idepth;
-
    begin
       return Pos >= 0 and then Obj_Tag.TSD.Ancestor_Tags (Pos) = Typ_Tag;
    end CW_Membership;
@@ -230,7 +252,6 @@ package body Ada.Tags is
 
    function Expanded_Name (T : Tag) return String is
       Result : constant Cstring_Ptr := T.TSD.Expanded_Name;
-
    begin
       return Result (1 .. Length (Result));
    end Expanded_Name;
@@ -241,7 +262,6 @@ package body Ada.Tags is
 
    function External_Tag (T : Tag) return String is
       Result : constant Cstring_Ptr := T.TSD.External_Tag;
-
    begin
       return Result (1 .. Length (Result));
    end External_Tag;

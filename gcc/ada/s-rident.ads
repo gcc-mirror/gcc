@@ -57,7 +57,7 @@ package System.Rident is
 
       --  The following cases are checked for consistency in the binder
 
-     (Boolean_Entry_Barriers,                  -- GNAT (Ravenscar)
+     (Simple_Barriers,                         -- GNAT (Ravenscar)
       No_Abort_Statements,                     -- (RM D.7(5), H.4(3))
       No_Access_Subprograms,                   -- (RM H.4(17))
       No_Allocators,                           -- (RM H.4(7))
@@ -66,7 +66,7 @@ package System.Rident is
       No_Delay,                                -- (RM H.4(21))
       No_Direct_Boolean_Operators,             -- GNAT
       No_Dispatch,                             -- (RM H.4(19))
-      No_Dynamic_Interrupts,                   -- GNAT
+      No_Dynamic_Attachment,                   -- GNAT
       No_Dynamic_Priorities,                   -- (RM D.9(9))
       No_Enumeration_Maps,                     -- GNAT
       No_Entry_Calls_In_Elaboration_Code,      -- GNAT
@@ -144,7 +144,7 @@ package System.Rident is
       --  between different non-zero values.
 
       Max_Asynchronous_Select_Nesting,         -- (RM D.7(18), H.4(3))
-      Max_Entry_Queue_Depth,                   -- GNAT
+      Max_Entry_Queue_Length,                  -- GNAT
 
       --  The remaining entries are not checked at compile/bind time
 
@@ -154,19 +154,22 @@ package System.Rident is
 
    --  Synonyms permitted for historical purposes of compatibility
 
-   --   No_Requeue         synonym for No_Requeue_Statements
-   --   No_Task_Attributes synonym for No_Task_Attributes_Package
+   --   Boolean_Entry_Barriers synonym for Simple_Barriers
+   --   Max_Entry_Queue_Depth  synonym for Max_Entry_Queue_Length
+   --   No_Dynamic_Interrupts  synonym for No_Dynamic_Attachment
+   --   No_Requeue             synonym for No_Requeue_Statements
+   --   No_Task_Attributes     synonym for No_Task_Attributes_Package
 
    subtype All_Restrictions is Restriction_Id range
-     Boolean_Entry_Barriers .. Max_Storage_At_Blocking;
+     Simple_Barriers .. Max_Storage_At_Blocking;
    --  All restrictions (excluding only Not_A_Restriction_Id)
 
    subtype All_Boolean_Restrictions is Restriction_Id range
-     Boolean_Entry_Barriers .. No_Elaboration_Code;
+     Simple_Barriers .. No_Elaboration_Code;
    --  All restrictions which do not take a parameter
 
    subtype Partition_Boolean_Restrictions is All_Boolean_Restrictions range
-     Boolean_Entry_Barriers .. Static_Storage_Size;
+     Simple_Barriers .. Static_Storage_Size;
    --  Boolean restrictions that are checked for partition consistency.
    --  Note that all parameter restrictions are checked for partition
    --  consistency by default, so this distinction is only needed in the
@@ -186,7 +189,7 @@ package System.Rident is
 
    subtype Checked_Parameter_Restrictions is
      All_Parameter_Restrictions range
-       Max_Protected_Entries .. Max_Entry_Queue_Depth;
+       Max_Protected_Entries .. Max_Entry_Queue_Length;
    --  These are the parameter restrictions that can be at least partially
    --  checked at compile/binder time. Minimally, the compiler can detect
    --  violations of a restriction pragma with a value of zero reliably.
@@ -213,7 +216,7 @@ package System.Rident is
 
    subtype Checked_Zero_Parameter_Restrictions is
      Checked_Parameter_Restrictions range
-       Max_Asynchronous_Select_Nesting .. Max_Entry_Queue_Depth;
+       Max_Asynchronous_Select_Nesting .. Max_Entry_Queue_Length;
    --  Restrictions with parameters where the compiler can detect the use of
    --  the feature, and hence violations of a restriction specifying a value
    --  of zero, but cannot detect specific values other than zero/nonzero.
