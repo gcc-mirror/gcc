@@ -1806,7 +1806,7 @@ pushdecl (x)
 
 	 We get warnings about inline functions where they are defined.
 	 Avoid duplicate warnings where they are used.  */
-      if (DECL_EXTERNAL (x) && ! DECL_INLINE (x))
+      if ((DECL_EXTERNAL (x) || TREE_PUBLIC (x)) && ! DECL_INLINE (x))
 	{
 	  tree decl;
 
