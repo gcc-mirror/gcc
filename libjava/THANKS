@@ -1,20 +1,54 @@
-libgcj wouldn't be what it is today without the help of these people:
+Many people contribute to the GCJ project, and in many different
+capacities.  Any omissions to this list are accidental.  Feel free to
+contact green@cygnus.com if you have been left out or some of your
+contributions are not listed.  Please keep this list in alphabetical
+order.
 
-Alexandre Oliva		oliva@dcc.unicamp.br
-Alexandre Petit-Bianco	apbianco@cygnus.com
-Andrew Haley		aph@cygnus.com
-Anthony Green		green@cygnus.com
-Bonzo Armstrong 	bonzo@cygnus.com
-Bryce McKinlay		bryce@albatross.co.nz
-Eric Christopher	echristo@cygnus.com
-Franz Sirl		Franz.Sirl-kernel@lauterbach.com
-Geoff Berry		gcb@gnu.org
-Gilles Zunino		Gilles.Zunino@hei.fr
-Kresten Krab Thorup	krab@gnu.org
-Matt Welsh		mdw@cs.berkeley.edu
-Per Bothner		per@bothner.com
-Rainer Orth		ro@TechFak.Uni-Bielefeld.DE
-Stu Grossman		grossman@juniper.net
-Tom Tromey		tromey@cygnus.com
-Urban Widmark		urban@svenskatest.se
-Warren Levy		warrenl@cygnus.com
+Geoff Berry for his object serialization work and various patches.
+Hans-J. Boehm for his garbage collector.
+Per Bothner for dreaming up, designing and implementing much of gcj.
+Steve Chamberlain for config fixes and the picoJava port.
+Jean-Marc Chandonia for various library patches.
+Eric Christopher for his porting help and clean-ups.
+The GCC project contributors for all of their great compiler work.
+Anthony Green for various contributions.
+Stu Grossman for gdb hacking, allowing us to debug our code.
+Andrew Haley for his amazing compiler and library efforts.
+Bryce McKinlay for numerous libgcj fixes and improvements.
+Jason Molenda for maintaining the project infrastructure 
+	on sourceware.cygnus.com.
+Alexandre Oliva for all of this porting and testing efforts.
+Kresten Krab Thorup for his fantastic bytecode interpreter.
+Warren Levy for his tremendous library work.
+All of the Mauve project contributors, for test code.
+Rainer Orth for configuration clean-ups and porting help.
+Alexandre Petit-Bianco for implementing much of the compiler, 
+	and continued maintainership.
+Jeff Sturm for porting help and encouragement.
+Tom Tromey for his many contributions and libgcj maintainership.
+Matt Welsh for help with Linux Threads.
+Urban Widmark for help fixing java.io.
+Gilles Zunino for help porting to Irix.
+
+We'd also like to thank the folks who have contributed time and energy
+in testing GCJ:
+
+Bonzo Armstrong
+Chris Baldwin
+David Billinghurst
+Jim Blandy
+Stephane Bortzmeyer
+Bradford Castalia
+Richard Emberson
+Mark K. Gardner
+Simon Gornall
+Amancio Hasty 
+Joep Jansen
+Anon A. Mous
+Jon Olson
+Paul Reilly
+Tom Reilly
+Marc Schifer
+Franz Sirl
+
+Thank you all!
