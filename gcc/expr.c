@@ -5293,7 +5293,7 @@ expand_expr (exp, target, tmode, modifier)
 	tree placeholder_expr;
 
 	/* If there is an object on the head of the placeholder list,
-	   see if some object in it's references is of type TYPE.  For
+	   see if some object in its references is of type TYPE.  For
 	   further information, see tree.def.  */
 	for (placeholder_expr = placeholder_list;
 	     placeholder_expr != 0;
@@ -5310,9 +5310,9 @@ expand_expr (exp, target, tmode, modifier)
 		 == need_type))
 	      object = TREE_PURPOSE (placeholder_expr);
 
-	    /* Find the innermost reference that is of the type we want.  */
+	    /* Find the outermost reference that is of the type we want.  */
 	    for (elt = TREE_PURPOSE (placeholder_expr);
-		 elt != 0
+		 elt != 0 && object == 0
 		 && (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
 		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
 		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
@@ -5323,10 +5323,7 @@ expand_expr (exp, target, tmode, modifier)
 	      if (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
 		  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (elt, 0)))
 		      == need_type))
-		{
-		  object = TREE_OPERAND (elt, 0);
-		  break;
-		}
+		object = TREE_OPERAND (elt, 0);
 
 	    if (object != 0)
 	      {
