@@ -4955,7 +4955,7 @@ override_options ()
       if (TARGET_FLOAT64)
 	{
 	  error ("-mips%d does not support 64 bit fp registers", mips_isa);
-	  target_flags &= ~ MASK_FLAG64;
+	  target_flags &= ~ MASK_FLOAT64;
 	}
 
       else if (TARGET_64BIT)
