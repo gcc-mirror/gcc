@@ -1,3 +1,7 @@
+2001-04-25  Jason Merrill  <jason_merrill@redhat.com>
+
+	* loop.c (try_swap_copy_prop): Go back to checking insn.
+
 2001-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_int_movcc): If overlap between
