@@ -1,3 +1,10 @@
+2004-09-21  Daniel Berlin <dberlin@dberlin.org>
+	
+	* c-typeck.c (build_function_call): Give name of object
+	we are attempting to call in error message.
+	* c-objc-common.c (c_tree_printer): Call pp_expression,
+	not return false, for 'E' case.
+
 2004-09-21  Steven Bosscher  <stevenb@suse.de>
 
 	PR rtl-optimization/17482

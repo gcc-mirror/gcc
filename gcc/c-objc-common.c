@@ -235,7 +235,7 @@ c_tree_printer (pretty_printer *pp, text_info *text)
       if (TREE_CODE (t) == IDENTIFIER_NODE)
 	n = IDENTIFIER_POINTER (t);
       else
-        return false;
+	pp_expression (cpp, t);
       break;
 
     default:
