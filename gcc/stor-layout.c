@@ -150,7 +150,7 @@ layout_decl (decl, known_align)
 {
   register tree type = TREE_TYPE (decl);
   register enum tree_code code = TREE_CODE (decl);
-  int spec_size = DECL_FRAME_SIZE (decl);
+  int spec_size = DECL_FIELD_SIZE (decl);
 
   if (code == CONST_DECL)
     return;
