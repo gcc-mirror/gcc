@@ -1,3 +1,12 @@
+2002-02-04  Paolo Carlini  <pcarlini@unitus.it>
+
+	libstdc++/5579
+	* include/bits/locale_facets.tcc (money_get::do_get(string)):
+	Deal correctly with !(__io.flags() & ios_base::showbase)
+	for case money_base::symbol.
+	* testsuite/22_locale/money_get_members_char.cc: Add test05.
+	* testsuite/22_locale/money_get_members_wchar_t.cc: Add test05.
+
 2002-02-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/22_locale/operators.cc
