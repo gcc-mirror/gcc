@@ -1,7 +1,7 @@
 // 2001-02-11 gdr
 // Origin: Craig Rodrigues <rodrigc@mediaone.net>
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,13 +19,14 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 21.1.3.1/2: char_traits<char>::int_type == int
+// 21.1.2: char_traits typedefs
 
 #include <string>
 
 int main()
 {
-  // dg-options -ansi -pedantic-errors
+  // 21.1.3: char_traits<char>::int_type == int
+  // dg-options -ansi -pedantic-err
   std::char_traits<char>::int_type* p = 0;
   int* q = p;                   // dg-do compile
 
