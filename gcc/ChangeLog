@@ -1,3 +1,7 @@
+2002-11-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* optabs.c: Fix formatting.
+
 Sat Nov 16 02:06:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* athlon.md, k6.md, pentium.md, ppro.md: Handle shift1, rotate1
