@@ -393,7 +393,7 @@
 				   [(match_operand:SI 4 "register_operand" "r")
 				    (match_operand:SI 5 "arith11_operand" "rI")])))]
   ""
-  "com%I2clr,%S3 %2,%1,0\;com%I2clr,%B6 %5,%4,%0\;ldi 1,%0"
+  "com%I2clr,%S3 %2,%1,0\;com%I5clr,%B6 %5,%4,%0\;ldi 1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
