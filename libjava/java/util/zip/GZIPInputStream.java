@@ -1,5 +1,5 @@
 /* GZIPInputStream.java - Input filter for reading gzip file
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,73 +41,81 @@ import java.io.InputStream;
 import java.io.IOException;
 
 /**
+ * This filter stream is used to decompress a "GZIP" format stream. 
+ * The "GZIP" format is described in RFC 1952.
+ *
+ * @author John Leuner
  * @author Tom Tromey
- * @date May 17, 1999
+ * @since JDK 1.1
  */
-
-/* Written using on-line Java Platform 1.2 API Specification
- * and JCL book.
- * Believed complete and correct.
- */
-
-public class GZIPInputStream extends InflaterInputStream
+public class GZIPInputStream
+  extends InflaterInputStream
 {
+  /**
+   * The magic number found at the start of a GZIP stream.
+   */
   public static final int GZIP_MAGIC = 0x8b1f;
 
-  public void close () throws IOException
-  {
-    // Nothing to do here.
-    super.close();
-  }
-
-  public GZIPInputStream (InputStream istream) throws IOException
-  {
-    this (istream, 512);
-  }
-
-  private final int eof_read () throws IOException
-  {
-    int r = in.read();
-    if (r == -1)
-      throw new ZipException ("gzip header corrupted");
-    return r & 0xff;
-  }
-
-  public GZIPInputStream (InputStream istream, int readsize)
+  /**
+   * Creates a GZIPInputStream with the default buffer size.
+   *
+   * @param in The stream to read compressed data from 
+   *           (in GZIP format).
+   *
+   * @throws IOException if an error occurs during an I/O operation.
+   */
+  public GZIPInputStream(InputStream in)
     throws IOException
   {
-    super (istream, new Inflater (true), readsize);
+    this(in, 512);
+  }
+
+  /**
+   * Creates a GZIPInputStream with the specified buffer size.
+   *
+   * @param in The stream to read compressed data from 
+   *           (in GZIP format).
+   * @param size The size of the buffer to use.
+   *
+   * @throws IOException if an error occurs during an I/O operation.
+   * @throws IllegalArgumentException if <code>size</code>
+   * is less than or equal to 0.
+   */
+  public GZIPInputStream(InputStream in, int size)
+    throws IOException
+  {
+    super(in, new Inflater(true), size);
 
     // NOTE: header reading code taken from zlib's gzio.c.
 
     // Read the magic number.
-    int magic = eof_read () | (eof_read () << 8);
+    int magic = eof_read() | (eof_read() << 8);
     if (magic != GZIP_MAGIC)
-      throw new ZipException ("gzip header corrupted");
+      throw new ZipException("gzip header corrupted");
 
-    int method = eof_read ();
-    int flags = eof_read ();
+    int method = eof_read();
+    int flags = eof_read();
     // Test from zlib.
     if (method != Z_DEFLATED || (flags & RESERVED) != 0)
-      throw new ZipException ("gzip header corrupted");
+      throw new ZipException("gzip header corrupted");
 
     // Discard time, xflags, OS code.
     for (int i = 0; i < 6; ++i)
-      eof_read ();
+      eof_read();
 
     // Skip the extra field.
     if ((flags & EXTRA_FIELD) != 0)
       {
-	int len = eof_read () | (eof_read () << 8);
+	int len = eof_read() | (eof_read() << 8);
 	while (len-- != 0)
-	  eof_read ();
+	  eof_read();
       }
 
     if ((flags & ORIG_NAME) != 0)
       {
 	while (true)
 	  {
-	    int c = eof_read ();
+	    int c = eof_read();
 	    if (c == 0)
 	      break;
 	  }
@@ -117,7 +125,7 @@ public class GZIPInputStream extends InflaterInputStream
       {
 	while (true)
 	  {
-	    int c = eof_read ();
+	    int c = eof_read();
 	    if (c == 0)
 	      break;
 	  }
@@ -126,46 +134,78 @@ public class GZIPInputStream extends InflaterInputStream
     if ((flags & HEAD_CRC) != 0)
       {
 	// FIXME: consider checking CRC of the header.
-	eof_read ();
-	eof_read ();
+	eof_read();
+	eof_read();
       }
 
-    crc = new CRC32 ();
+    crc = new CRC32();
   }
 
-  public int read (byte[] buf, int off, int len) throws IOException
+  /**
+   * Closes the input stream.
+   *
+   * @throws IOException if an error occurs during an I/O operation.
+   */
+  public void close()
+    throws IOException
+  {
+    // Nothing to do here.
+    super.close();
+  }
+
+  private final int eof_read() throws IOException
+  {
+    int r = in.read();
+    if (r == -1)
+      throw new ZipException("gzip header corrupted");
+    return r & 0xff;
+  }
+
+  /**
+   * Reads in GZIP-compressed data and stores it in uncompressed form
+   * into an array of bytes.  The method will block until either
+   * enough input data becomes available or the compressed stream
+   * reaches its end.
+   *
+   * @param buf the buffer into which the uncompressed data will
+   *            be stored.
+   * @param offset the offset indicating where in <code>buf</code>
+   *               the uncompressed data should be placed.
+   * @param len the number of uncompressed bytes to be read.
+   */
+  public int read(byte[] buf, int offset, int len) throws IOException
   {
     if (eos)
       return -1;
-    int r = super.read(buf, off, len);
+    int r = super.read(buf, offset, len);
     if (r == -1)
       {
 	eos = true;
 
 	byte[] tmp = new byte[8];
 	// First copy remaining bytes from inflater input buffer.
-	int avail = inf.getRemaining ();
-	System.arraycopy (this.buf, this.len - avail, tmp, 0, avail);
+	int avail = inf.getRemaining();
+	System.arraycopy(this.buf, this.len - avail, tmp, 0, avail);
 
 	// Now read remaining bytes from wrapped input stream.
 	for (int i = avail; i < 8; ++i)
 	  {
-	    tmp[i] = (byte) eof_read ();
+	    tmp[i] = (byte) eof_read();
 	  }
 
-	int header_crc = read4 (tmp, 0);
+	int header_crc = read4(tmp, 0);
 	if (crc.getValue() != header_crc)
-	  throw new ZipException ("corrupted gzip file - crc mismatch");
-	int isize = read4 (tmp, 4);
+	  throw new ZipException("corrupted gzip file - crc mismatch");
+	int isize = read4(tmp, 4);
 	if (inf.getTotalOut() != isize)
-	  throw new ZipException ("corrupted gzip file - size mismatch");
+	  throw new ZipException("corrupted gzip file - size mismatch");
 	return -1;
       }
-    crc.update(buf, off, r);
+    crc.update(buf, offset, r);
     return r;
   }
 
-  private final int read4 (byte[] buf, int offset) throws IOException
+  private final int read4(byte[] buf, int offset) throws IOException
   {
     return (((buf[offset + 3] & 0xFF) << 24) + ((buf[offset + 2] & 0xFF) << 16)
 	    + ((buf[offset + 1] & 0xFF) << 8) + (buf[offset] & 0xFF));

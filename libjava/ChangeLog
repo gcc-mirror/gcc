@@ -1,5 +1,12 @@
 2004-02-05  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/zip/Deflater.java,
+	java/util/zip/DeflaterOutputStream.java,
+	java/util/zip/GZIPInputStream.java:
+	Reformated and javadoc comments merged from classpath.
+
+2004-02-05  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/NIOServerSocket.java
 	(impl): Unused, removed.
 	* gnu/java/nio/SocketChannelImpl.java
