@@ -1778,11 +1778,11 @@ try_to_integrate (tree fndecl, tree actparms, rtx target, int ignore,
 	      rtx insn = NULL_RTX, seq;
 
 	      /* Look for a call in the inline function code.
-	         If DECL_SAVED_INSNS (fndecl)->outgoing_args_size is
+	         If DECL_STRUCT_FUNCTION (fndecl)->outgoing_args_size is
 	         nonzero then there is a call and it is not necessary
 	         to scan the insns.  */
 
-	      if (DECL_SAVED_INSNS (fndecl)->outgoing_args_size == 0)
+	      if (DECL_STRUCT_FUNCTION (fndecl)->outgoing_args_size == 0)
 		for (insn = first_insn; insn; insn = NEXT_INSN (insn))
 		  if (GET_CODE (insn) == CALL_INSN)
 		    break;
@@ -1806,8 +1806,9 @@ try_to_integrate (tree fndecl, tree actparms, rtx target, int ignore,
 		     value of reg_parm_stack_space is wrong, but gives
 		     correct results on all supported machines.  */
 
-		  int adjust = (DECL_SAVED_INSNS (fndecl)->outgoing_args_size
-				+ reg_parm_stack_space);
+		  int adjust =
+			(DECL_STRUCT_FUNCTION (fndecl)->outgoing_args_size
+			 + reg_parm_stack_space);
 
 		  start_sequence ();
 		  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
@@ -2194,8 +2195,8 @@ expand_call (tree exp, rtx target, int ignore)
       if (!flag_no_inline
 	  && fndecl != current_function_decl
 	  && DECL_INLINE (fndecl)
-	  && DECL_SAVED_INSNS (fndecl)
-	  && DECL_SAVED_INSNS (fndecl)->inlinable)
+	  && DECL_STRUCT_FUNCTION (fndecl)
+	  && DECL_STRUCT_FUNCTION (fndecl)->inlinable)
 	is_integrable = 1;
       else if (! TREE_ADDRESSABLE (fndecl))
 	{

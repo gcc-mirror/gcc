@@ -232,7 +232,7 @@ cgraph_finalize_function (tree decl, bool nested)
   /* We will never really output the function body, clear the SAVED_INSNS array
      early then.  */
   if (DECL_EXTERNAL (decl))
-    DECL_SAVED_INSNS (decl) = NULL;
+    DECL_STRUCT_FUNCTION (decl) = NULL;
 }
 
 /* Walk tree and record all calls.  Called via walk_tree.  */
@@ -481,7 +481,7 @@ cgraph_mark_functions_to_output (void)
 	  && !DECL_EXTERNAL (decl))
 	node->output = 1;
       else
-        DECL_SAVED_INSNS (decl) = NULL;
+        DECL_STRUCT_FUNCTION (decl) = NULL;
     }
 }
 
@@ -861,7 +861,7 @@ cgraph_remove_unreachable_nodes (void)
 	  int local_insns;
 	  tree decl = node->decl;
 
-	  if (DECL_SAVED_INSNS (decl))
+	  if (DECL_STRUCT_FUNCTION (decl))
 	    local_insns = node->local.self_insns;
 	  else
 	    local_insns = 0;

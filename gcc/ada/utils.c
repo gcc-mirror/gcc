@@ -1929,7 +1929,7 @@ end_subprog_body (void)
        cico_list != 0; cico_list = TREE_CHAIN (cico_list))
     TREE_VALUE (cico_list) = 0;
 
-  if (DECL_SAVED_INSNS (current_function_decl) == 0)
+  if (DECL_STRUCT_FUNCTION (current_function_decl) == 0)
     {
       /* Throw away DECL_RTL in any PARM_DECLs unless this function
 	 was saved for inline, in which case the DECL_RTLs are in

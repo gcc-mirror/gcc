@@ -1710,7 +1710,7 @@ finish_class (void)
   /* Emit deferred inline methods. */  
   for (method = type_methods; method != NULL_TREE; )
     {
-      if (! TREE_ASM_WRITTEN (method) && DECL_SAVED_INSNS (method) != 0)
+      if (! TREE_ASM_WRITTEN (method) && DECL_STRUCT_FUNCTION (method) != 0)
 	{
 	  output_inline_function (method);
 	  /* Scan the list again to see if there are any earlier
