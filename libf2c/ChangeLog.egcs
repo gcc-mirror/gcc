@@ -1,3 +1,7 @@
+Sun Feb  8 00:32:17 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in: Add `info install-info clean-info check dvi' targets.
+
 Mon Feb  2 11:08:49 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in: Update F2C_INTEGER and F2C_LONGINT tests
