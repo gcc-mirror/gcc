@@ -691,7 +691,10 @@ sdbout_symbol (decl, local)
       context = decl_function_context (decl);
       if (context == current_function_decl)
 	return;
-      if (DECL_EXTERNAL (decl))
+      /* Check DECL_INITIAL to distinguish declarations from definitions.
+	 Don't output debug info here for declarations; they will have
+	 a DECL_INITIAL value of 0.  */
+      if (! DECL_INITIAL (decl))
 	return;
       if (GET_CODE (DECL_RTL (decl)) != MEM
 	  || GET_CODE (XEXP (DECL_RTL (decl), 0)) != SYMBOL_REF)
