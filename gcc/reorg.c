@@ -2635,13 +2635,16 @@ fill_simple_delay_slots (first, non_jumps_p)
 	 the unconditional jump.  This is done first to avoid having the
 	 delay slot of the call filled in the backward scan.  Also, since
 	 the unconditional jump is likely to also have a delay slot, that
-	 insn must exist when it is subsequently scanned.  */
+	 insn must exist when it is subsequently scanned.
+
+	 This is tried on each insn with delay slots as some machines
+	 have insns which perform calls, but are not represented as 
+	 CALL_INSNs.  */
 
       slots_filled = 0;
       delay_list = 0;
 
-      if (GET_CODE (insn) == CALL_INSN
-	  && (trial = next_active_insn (insn))
+      if ((trial = next_active_insn (insn))
 	  && GET_CODE (trial) == JUMP_INSN
 	  && simplejump_p (trial)
 	  && eligible_for_delay (insn, slots_filled, trial, flags)
