@@ -2866,6 +2866,9 @@ duplicate_decls (newdecl, olddecl)
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
+      if (DECL_TEMPLATE_INSTANTIATION (olddecl) &&
+	  !DECL_TEMPLATE_INSTANTIATION (newdecl)) 
+	DECL_USE_TEMPLATE (olddecl) = DECL_USE_TEMPLATE (newdecl);
       DECL_THIS_INLINE (newdecl) |= DECL_THIS_INLINE (olddecl);
 
       /* If either decl says `inline', this fn is inline, unless its

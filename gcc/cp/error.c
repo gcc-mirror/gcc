@@ -925,7 +925,8 @@ dump_function_name (t)
   else
     dump_decl (name, 0);
 
-  if (DECL_TEMPLATE_SPECIALIZATION (t) || DECL_IMPLICIT_INSTANTIATION (t))
+  if ((DECL_TEMPLATE_SPECIALIZATION (t) || DECL_IMPLICIT_INSTANTIATION (t))
+      && (DECL_CLASS_CONTEXT (t) == NULL_TREE || is_member_template (t)))
     {
       tree args = DECL_TEMPLATE_INFO (t) 
 	? DECL_TI_ARGS (t) : NULL_TREE; 

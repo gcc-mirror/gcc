@@ -1,3 +1,14 @@
+Mon Oct 20 11:44:20 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* decl.c (duplicate_decls): Handle template specializations
+	correctly. 
+	* error.c (dump_function_name): Fix printing of specializations of
+	member functions that are not member templates.
+	* cp-tree.h (processing_specialization): Make global.
+	* pt.c (processing_specialization): Likewise.
+	* lex.c (cons_up_default_function): Save and restore
+	processing_specialization to avoid confusion.
+	
 Mon Oct 20 10:52:22 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (init_decl_processing): Give null_node unknown* type.

@@ -60,7 +60,7 @@ static tree *maybe_template_tail = &maybe_templates;
 
 int minimal_parse_mode;
 
-static int processing_specialization;
+int processing_specialization;
 static int template_header_count;
 
 #define obstack_chunk_alloc xmalloc

@@ -2093,7 +2093,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	    tree f;
 	    tree spec_args;
 
-	    /* If there is a template, and t uses template parms, wer
+	    /* If there is a template, and t uses template parms, we
 	       are dealing with a specialization of a member
 	       template in a template class, and we must grab the
 	       template, rather than the function.  */
