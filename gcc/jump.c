@@ -1258,7 +1258,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		target = expand_binop (GET_MODE (temp2),
 				       (XEXP (SET_SRC (temp1), 1) == const1_rtx
 					? add_optab : sub_optab),
-				       temp2, target, temp2, OPTAB_WIDEN);
+				       temp2, target, temp2, 0, OPTAB_WIDEN);
 
 	      if (target != 0)
 		{
