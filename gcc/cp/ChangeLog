@@ -1,6 +1,14 @@
 2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport:
+	2004-03-09  Mark Mitchell  <mark@codesourcery.com>
+        PR c++/14230
+        * call.c (initialize_reference): Handle initializers that are
+        class-member access expressions applies to rvalues.
+
+2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport:
 	2004-01-12  Richard Henderson  <rth@redhat.com>
 	PR opt/10776
 	* typeck2.c (split_nonconstant_init_1, split_nonconstant_init): New.
