@@ -1,3 +1,10 @@
+2003-07-11  Neil Booth  <neil@daikokuya.co.uk>
+
+	* common.opt: More --help messages.
+	* opts.c (print_help): Use puts().
+	* toplev.c (f_options): Remove help text.
+	(display_help): Don't dump f_options.
+
 2003-07-11  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/mkfixinc.sh: Drop reference to unsupported alpha-*-interix*.

@@ -117,7 +117,7 @@ Warn about all enumerated switches missing a specific case
 
 Wsystem-headers
 Common
-Suppress warnings from system headers
+Do not suppress warnings from system headers
 
 Wuninitialized
 Common
@@ -180,54 +180,67 @@ Common
 
 falign-functions
 Common
+Align the start of functions
 
 falign-functions=
 Common RejectNegative Joined UInteger
 
 falign-jumps
 Common
+Align labels which are only reached by jumping
 
 falign-jumps=
 Common RejectNegative Joined UInteger
 
 falign-labels
 Common
+Align all labels
 
 falign-labels=
 Common RejectNegative Joined UInteger
 
 falign-loops
 Common
+Align the start of loops
 
 falign-loops=
 Common RejectNegative Joined UInteger
 
 fargument-alias
 Common
+Specify that arguments may alias each other and globals
 
 fargument-noalias
 Common
+Assume arguments may alias globals but not each other
 
 fargument-noalias-global
 Common
+Assume arguments alias neither each other nor globals
 
 fasynchronous-unwind-tables
 Common
+Generate unwind tables that are exact at each instruction boundary
 
 fbounds-check
 Common
+Generate code to check bounds before indexing arrays
 
 fbranch-count-reg
 Common
+Replace add, compare, branch with branch on count register
 
 fbranch-probabilities
 Common
+Use profiling information for branch probabilities
 
 fbranch-target-load-optimize
 Common
+Perform branch target load optimization before prologue / epilogue threading
 
 fbranch-target-load-optimize2
 Common
+Perform branch target load optimization after prologue / epilogue threading
 
 fcall-saved-
 Common Joined RejectNegative
@@ -239,33 +252,43 @@ Common Joined RejectNegative
 
 fcaller-saves
 Common
+Save registers around function calls
 
 fcommon
 Common
+Do not put uninitialized globals in the common section
 
 fcprop-registers
 Common
+Perform a register copy-propagation optimization pass
 
 fcrossjumping
 Common
+Perform cross-jumping optimization
 
 fcse-follow-jumps
 Common
+When running CSE, follow jumps to their targets
 
 fcse-skip-blocks
 Common
+When running CSE, follow conditional jumps
 
 fdata-sections
 Common
+Place data items into their own section
 
 fdefer-pop
 Common
+Defer popping functions args from stack until later
 
 fdelayed-branch
 Common
+Attempt to fill delay slots of branch instructions
 
 fdelete-null-pointer-checks
 Common
+Delete useless null pointer checks
 
 fdiagnostics-show-location=
 Common Joined RejectNegative
@@ -273,27 +296,34 @@ Common Joined RejectNegative
 
 fdump-unnumbered
 Common
+Suppress output of instruction numbers and line number notes in debugging dumps
 
 feliminate-dwarf2-dups
 Common
+Perform DWARF2 duplicate elimination
 
 feliminate-unused-debug-symbols
 Common
+Perform unused type elimination in debug info
 
 feliminate-unused-debug-types
 Common
+Perform unused type elimination in debug info
 
 fexceptions
 Common
+Enable exception handling
 
 fexpensive-optimizations
 Common
+Perform a number of minor, expensive optimizations
 
 ffast-math
 Common
 
 ffinite-math-only
 Common
+Assume no NaNs or infinities are generated
 
 ffixed-
 Common Joined RejectNegative
@@ -301,51 +331,67 @@ Common Joined RejectNegative
 
 ffloat-store
 Common
+Do not store floats in registers
 
 fforce-addr
 Common
+Copy memory address constants into registers before use
 
 fforce-mem
 Common
+Copy memory operands into registers before use
 
 ffunction-cse
 Common
+Allow function addresses to be held in registers
 
 ffunction-sections
 Common
+Place each function into its own section
 
 fgcse
 Common
+Perform global common subexpression elimination
 
 fgcse-lm
 Common
+Perform enhanced load motion during global common subexpression elimination
 
 fgcse-sm
 Common
+Perform store motion after global common subexpression elimination
 
 fgnu-linker
 Common
+Output GNU ld formatted global initializers
 
 fguess-branch-probability
 Common
+Enable guessing of branch probabilities
 
 fident
 Common
+Process #ident directives
 
 fif-conversion
 Common
+Perform conversion of conditional jumps to branchless equivalents
 
 fif-conversion2
 Common
+Perform conversion of conditional jumps to conditional execution
 
 finhibit-size-directive
 Common
+Do not generate .size directives
 
 finline
 Common
+Pay attention to the \"inline\" keyword
 
 finline-functions
 Common
+Integrate simple functions into their callers
 
 finline-limit-
 Common RejectNegative Joined UInteger
@@ -356,30 +402,39 @@ Common RejectNegative Joined UInteger
 
 finstrument-functions
 Common
+Instrument function entry and exit with profiling calls
 
 fkeep-inline-functions
 Common
+Generate code for functions even if they are fully inlined
 
 fkeep-static-consts
 Common
+Emit static const variables even if they are not used
 
 fleading-underscore
 Common
+Give external symbols a leading underscore
 
 floop-optimize
 Common
+Perform loop optimizations
 
 fmath-errno
 Common
+Set errno after built-in math functions
 
 fmem-report
 Common
+Report on permanent memory allocation
 
 fmerge-all-constants
 Common
+Attempt to merge identical constants and constant variables
 
 fmerge-constants
 Common
+Attempt to merge identical constants across compilation units
 
 fmessage-length=
 Common RejectNegative Joined UInteger
@@ -387,57 +442,75 @@ Common RejectNegative Joined UInteger
 
 fmove-all-movables
 Common
+Force all loop invariant computations out of loops
 
 fnew-ra
 Common
+Use graph-coloring register allocation
 
 fnon-call-exceptions
 Common
+Support synchronous non-call exceptions
 
 fold-unroll-loops
 Common
+Perform loop unrolling when iteration count is known
 
 fold-unroll-all-loops
 Common
+Perform loop unrolling for all loops
 
 fomit-frame-pointer
 Common
+When possible do not generate stack frames
 
 foptimize-register-move
 Common
+Do the full register move optimization pass
 
 foptimize-sibling-calls
 Common
+Optimize sibling and tail recursive calls
 
 fpack-struct
 Common
+Pack structure members together without holes
 
 fpcc-struct-return
 Common
+Return small aggregates in memory, not registers
 
 fpeel-loops
 Common
+Perform loop peeling
 
 fpeephole
 Common
+Enable machine specific peephole optimizations
 
 fpeephole2
 Common
+Enable an RTL peephole pass before sched2
 
 fpic
 Common
+Generate position-independent code if possible
 
 fpie
 Common
+Generate position-independent code for executables if possible
 
 fprefetch-loop-arrays
 Common
+Generate prefetch instructions, if available, for arrays in loops
 
 fprofile
 Common
+Enable basic program profiling code
 
 fprofile-arcs
 Common
+Insert arc-based program profiling code
 
 frandom-seed
 Common
@@ -448,39 +521,51 @@ Common Joined RejectNegative
 
 freduce-all-givs
 Common
+Strength reduce all loop general induction variables
 
 freg-struct-return
 Common
+Return small aggregates in registers
 
 fregmove
 Common
+Enables a register move optimization
 
 frename-registers
 Common
+Perform a register renaming optimization pass
 
 freorder-blocks
 Common
+Reorder basic blocks to improve code placement
 
 freorder-functions
 Common
+Reorder functions to improve code placement
 
 frerun-cse-after-loop
 Common
+Add a common subexpression elimination pass after loop optimizations
 
 frerun-loop-opt
 Common
+Run the loop optimizer twice
 
 fsched-interblock
 Common
+Enable scheduling across basic blocks
 
 fsched-spec
 Common
+Allow speculative motion of non-loads
 
 fsched-spec-load
 Common
+Allow speculative motion of some loads
 
 fsched-spec-load-dangerous
 Common
+Allow speculative motion of more loads
 
 fsched-verbose=
 Common RejectNegative Joined
@@ -488,36 +573,47 @@ Common RejectNegative Joined
 
 fsched2-use-superblocks
 Common
+If scheduling post reload, do superblock scheduling
 
 fsched2-use-traces
 Common
+If scheduling post reload, do trace scheduling
 
 fschedule-insns
 Common
+Reschedule instructions before register allocation
 
 fschedule-insns2
 Common
+Reschedule instructions after register allocation
 
 fshared-data
 Common
+Mark data as shared rather than private
 
 fsignaling-nans
 Common
+Disable optimizations observable by IEEE signaling NaNs
 
 fsingle-precision-constant
 Common
+Convert floating point constants to single precision constants
 
 fssa
 Common
+Enable static single assignment optimizations
 
 fssa-ccp
 Common
+Enable SSA conditional constant propagation
 
 fssa-dce
 Common
+Enable aggressive SSA dead code elimination
 
 fstack-check
 Common
+Insert stack checking code into the program
 
 fstack-limit
 Common
@@ -532,21 +628,27 @@ Common RejectNegative Joined
 
 fstrength-reduce
 Common
+Perform strength reduction optimizations
 
 fstrict-aliasing
 Common
+Assume strict aliasing rules apply
 
 fsyntax-only
 Common
+Check for syntax errors, then stop
 
 ftest-coverage
 Common
+Create data files needed by \"gcov\"
 
 fthread-jumps
 Common
+Perform jump threading optimizations
 
 ftime-report
 Common
+Report the time taken by each compiler pass
 
 ftls-model=
 Common Joined RejectNegative
@@ -554,42 +656,55 @@ Common Joined RejectNegative
 
 ftracer
 Common
+Perform superblock formation via tail duplication
 
 ftrapping-math
 Common
+Assume floating-point operations can trap
 
 ftrapv
 Common
+Trap for signed overflow in addition, subtraction and multiplication
 
 funit-at-a-time
 Common
+Compile whole compilation unit at a time
 
 funroll-loops
 Common
+Perform loop unrolling when iteration count is known
 
 funroll-all-loops
 Common
+Perform loop unrolling for all loops
 
 funsafe-math-optimizations
 Common
+Allow math optimizations that may violate IEEE or ISO standards
 
 funswitch-loops
 Common
+Perform loop unswitching
 
 funwind-tables
 Common
+Just generate unwind tables for exception handling
 
 fverbose-asm
 Common
+Add extra commentary to assembler output
 
 fwrapv
 Common
+Assume signed arithmetic overflow wraps around
 
 fwritable-strings
 Common
+Store strings in writable data section
 
 fzero-initialized-in-bss
 Common
+Put zero initialized data in the bss section
 
 g
 Common JoinedOrMissing
