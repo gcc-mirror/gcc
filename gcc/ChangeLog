@@ -1,3 +1,10 @@
+2004-12-28  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (vect_mark_relevant) First argument changed from
+	varray_type to varray_type*.
+	(vect_mark_stmts_to_be_vectorized): Pass &worklist instead of worklist
+	when calling vect_mark_relevant.
+
 2004-12-28  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Don't
