@@ -981,6 +981,10 @@ expand_java_pushc (ival, type)
   push_value (value);
 }
 
+#ifndef INT_TYPE_SIZE
+#define INT_TYPE_SIZE BITS_PER_WORD
+#endif
+
 static void
 expand_java_return (type)
      tree type;
@@ -992,6 +996,16 @@ expand_java_return (type)
       tree retval = pop_value (type);
       tree res = DECL_RESULT (current_function_decl);
       retval = build (MODIFY_EXPR, TREE_TYPE (res), res, retval);
+
+      /* Handle the situation where the native integer type is smaller
+	 than the JVM integer. It can happen for many cross compilers.
+	 The whole if expression just goes away if INT_TYPE_SIZE < 32
+	 is false. */
+      if (INT_TYPE_SIZE < 32
+	  && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (res)))
+	      < GET_MODE_SIZE (TYPE_MODE (type))))
+	retval = build1(NOP_EXPR, TREE_TYPE(res), retval);
+      
       TREE_SIDE_EFFECTS (retval) = 1;
       expand_return (retval);
     }
