@@ -2415,6 +2415,7 @@ implicitly_declare (functionid)
 
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
+  DECL_ARTIFICIAL (decl);
 
   /* Record that we have an implicit decl and this is it.  */
   IDENTIFIER_IMPLICIT_DECL (functionid) = decl;
