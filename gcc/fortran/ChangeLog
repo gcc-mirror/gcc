@@ -11,6 +11,11 @@
 
 	* decl.c, resolve.c, trans-array.c, trans.h: Fix comment typo(s).
 
+2005-04-24  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	Unrevert previously reverted patch.  Adding this fix:
+	* module.c (find_true_name): Deal with NULL module.
+
 2005-02-24  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	Revert yesterday's patch:
