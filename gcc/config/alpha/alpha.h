@@ -501,7 +501,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    : (C) == 'L' ? (((VALUE) & 0xffff) == 0			\
 		   && (((VALUE)) >> 31 == -1 || (VALUE) >> 31 == 0) \
 		   && ((HOST_BITS_PER_WIDE_INT == 64		\
-			|| (unsigned) (VALUE) != 0x80000000u)))	\
+			|| (unsigned) (VALUE) != 0x80000000U)))	\
    : (C) == 'M' ? zap_mask (VALUE)				\
    : (C) == 'N' ? (unsigned HOST_WIDE_INT) (~ (VALUE)) < 0x100	\
    : (C) == 'O' ? (unsigned HOST_WIDE_INT) (- (VALUE)) < 0x100	\
