@@ -15347,7 +15347,7 @@ ix86_ms_bitfield_layout_p (record_type)
      tree record_type;
 {
   return (TARGET_USE_MS_BITFIELD_LAYOUT &&
-      !lookup_attribute ("gcc_struct", TYPE_ATTRIBUTES (record_type)))
+	  !lookup_attribute ("gcc_struct", TYPE_ATTRIBUTES (record_type)))
     || lookup_attribute ("ms_struct", TYPE_ATTRIBUTES (record_type));
 }
 
