@@ -437,7 +437,7 @@ For bug reporting instructions, please see:\n\
 #endif
 
 	case OPTION_driver:
-	  fatal ("--driver no longer supported", argv[i]);
+	  fatal ("--driver no longer supported");
 	  break;
 
 	default:

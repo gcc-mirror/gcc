@@ -1,3 +1,8 @@
+Tue Sep 14 12:14:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g77spec.c (lang_specific_driver): Remove unnecessary argument in
+	call to function `fatal'.
+
 Sun Sep 12 23:29:47 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (g77spec.o): Depend on system.h and gcc.h.
