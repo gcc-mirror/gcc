@@ -11,7 +11,8 @@ static int foo(void)
 
 int bar(void)
 {
-  return foo() + 1;
+  /* Call twice to avoid bypassing the limit for functions called once.  */
+  return foo() + foo() + 1;
 }
 
 /* { dg-final { scan-assembler-not "jsr" { target alpha*-*-* } } } */

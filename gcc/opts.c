@@ -1061,13 +1061,6 @@ common_handle_option (size_t scode, const char *arg,
       set_param_value ("max-inline-insns-single", value / 2);
       set_param_value ("max-inline-insns-auto", value / 2);
       set_param_value ("max-inline-insns-rtl", value);
-      if (value / 4 < MIN_INLINE_INSNS)
-	{
-	  if (value / 4 > 10)
-	    set_param_value ("min-inline-insns", value / 4);
-	  else
-	    set_param_value ("min-inline-insns", 10);
-	}
       break;
 
     case OPT_finstrument_functions:

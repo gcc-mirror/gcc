@@ -49,6 +49,7 @@ static void cgraph_mark_local_functions (void);
 static void cgraph_optimize_function (struct cgraph_node *);
 static bool cgraph_default_inline_p (struct cgraph_node *n);
 static void cgraph_analyze_function (struct cgraph_node *node);
+static void cgraph_decide_inlining_incrementally (struct cgraph_node *);
 
 /* Statistics we collect about inlining algorithm.  */
 static int ncalls_inlined;
@@ -114,7 +115,7 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
 	  /* When declared inline, defer even the uninlinable functions.
 	     This allows them to be eliminated when unused.  */
 	  && !DECL_DECLARED_INLINE_P (decl) 
-	  && (node->local.inlinable || !cgraph_default_inline_p (node))))
+	  && (!node->local.inlinable || !cgraph_default_inline_p (node))))
     return true;
 
   return false;
@@ -206,7 +207,10 @@ cgraph_finalize_function (tree decl, bool nested)
   /* If not unit at a time, then we need to create the call graph
      now, so that called functions can be queued and emitted now.  */
   if (!flag_unit_at_a_time)
-    cgraph_analyze_function (node);
+    {
+      cgraph_analyze_function (node);
+      cgraph_decide_inlining_incrementally (node);
+    }
 
   if (decide_is_function_needed (node, decl))
     cgraph_mark_needed_node (node);
@@ -852,6 +856,7 @@ cgraph_mark_inline (struct cgraph_node *to, struct cgraph_node *what,
   to->global.insns = new_insns;
 
   if (!called && !what->needed && !what->origin
+      && flag_unit_at_a_time
       && !DECL_EXTERNAL (what->decl))
     {
       if (!what->global.will_be_output)
@@ -1220,6 +1225,59 @@ cgraph_decide_inlining (void)
   free (inlined);
   free (inlined_callees);
 }
+
+/* Decide on the inlining.  We do so in the topological order to avoid
+   expenses on updating datastructures.  */
+
+static void
+cgraph_decide_inlining_incrementally (struct cgraph_node *node)
+{
+  struct cgraph_edge *e;
+  struct cgraph_node **inlined =
+    xmalloc (sizeof (struct cgraph_node *) * cgraph_n_nodes);
+  struct cgraph_node **inlined_callees =
+    xmalloc (sizeof (struct cgraph_node *) * cgraph_n_nodes);
+  int ninlined;
+  int ninlined_callees;
+  int y;
+
+  ninlined = cgraph_inlined_into (node, inlined);
+
+  /* First of all look for always inline functions.  */
+  for (e = node->callees; e; e = e->next_callee)
+    if (e->callee->local.disregard_inline_limits && !e->callee->output
+	&& e->callee != node && !e->inline_call)
+      {
+	ninlined_callees = cgraph_inlined_callees (e->callee, inlined_callees);
+	cgraph_mark_inline (node, e->callee, inlined, ninlined,
+			    inlined_callees, ninlined_callees);
+	for (y = 0; y < ninlined_callees; y++)
+	  inlined_callees[y]->output = 0, node->aux = 0;
+      }
+
+  /* Now do the automatic inlining.  */
+  for (e = node->callees; e; e = e->next_callee)
+    if (e->callee->local.inlinable && !e->callee->output
+	&& e->callee != node && !e->inline_call
+        && cgraph_default_inline_p (e->callee)
+	&& cgraph_check_inline_limits (node, e->callee, inlined,
+				       ninlined))
+      {
+	ninlined_callees = cgraph_inlined_callees (e->callee, inlined_callees);
+	cgraph_mark_inline (node, e->callee, inlined, ninlined,
+			    inlined_callees, ninlined_callees);
+	for (y = 0; y < ninlined_callees; y++)
+	  inlined_callees[y]->output = 0, node->aux = 0;
+      }
+
+  /* Clear the flags set by cgraph_inlined_into.  */
+  for (y = 0; y < ninlined; y++)
+    inlined[y]->output = 0, node->aux = 0;
+
+  free (inlined);
+  free (inlined_callees);
+}
+
 
 /* Return true when CALLER_DECL should be inlined into CALLEE_DECL.  */
 

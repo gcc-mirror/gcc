@@ -1,3 +1,8 @@
+2003-10-20  Jan Hubicka  <jh@suse.cz>
+
+	* decl.c (start_cleanup_fn):  Set DECL_DECLARED_INLINE_P to deffer
+	the expansion.
+
 2003-10-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (c++.install-info): Remove.

@@ -1,3 +1,18 @@
+2003-10-20  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation): Fix webizer pass ordering.
+
+	* cgraphunit.c (decide_is_function_needed):  Fix test dealing
+	with functions implicitly made inline.
+
+	* cgraphunit.c (cgraph_decide_inlining_incrementally):  New function.
+	(cgraph_finalize_function): Use it.
+	(cgraph_mark_inline): Allow incrmental decisions
+	* invoke.texi (max-inline-slope, min-inline-insns): Kill.
+	* params.def (PARAM_MAX_INLINE_SLOPE, PARAM_MIN_INLINE_INSNS): Kill.
+	* tree-inline.c (limits_allow_inlining): Kill.
+	(expand_call_inline): Always use unit-at-a-time path.
+
 2003-10-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* fixinc/inclhack.def (hpux11_snprintf): New edit.

@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 extern void coverage_init (const char *);
 extern void coverage_finish (void);
+extern void coverage_read_counts_file (void);
 
 /* Complete the coverage information for the current function. Once
    per function.  */

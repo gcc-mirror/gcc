@@ -1,4 +1,4 @@
-// { dg-options "-O2 -ftemplate-depth-20000 --param min-inline-insns=100 --param max-inline-insns=3" }
+// { dg-options "-O2 -ftemplate-depth-20000" }
 
 template <int I>
 inline void g() { g<I-1>(); return; }

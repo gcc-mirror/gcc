@@ -719,6 +719,10 @@ extern int flag_unit_at_a_time;
 
 extern int flag_web;
 
+/* Nonzero means that we defer emitting functions until they are actually
+   used.  */
+extern int flag_remove_unreachable_functions;
+
 /* A string that's used when a random name is required.  NULL means
    to make it really random.  */
 
