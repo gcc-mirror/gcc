@@ -1789,12 +1789,16 @@
     }
   else if (GET_CODE (op2) == CONST_DOUBLE)
     {
-      int sign = CONST_DOUBLE_HIGH (op2);
-      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_LOW (operands[1]));
-      if (sign < 0)
-        return \"addcc %R1,%2,%R0\;addx %1,-1,%0\";
-      return \"addcc %R1,%2,%R0\;addx %1,0,%0\";
+      rtx xoperands[4];
+      xoperands[0] = operands[0];
+      xoperands[1] = operands[1];
+      xoperands[2] = GEN_INT (CONST_DOUBLE_LOW (op2));
+      xoperands[3] = GEN_INT (CONST_DOUBLE_HIGH (op2));
+      if (xoperands[2] == const0_rtx && xoperands[0] == xoperands[1])
+	output_asm_insn (\"add %1,%3,%0\", xoperands);
+      else
+	output_asm_insn (\"addcc %R1,%2,%R0\;addx %1,%3,%0\", xoperands);
+      return \"\";
     }
   return \"addcc %R1,%R2,%R0\;addx %1,%2,%0\";
 }"
@@ -1847,12 +1851,16 @@
     }
   else if (GET_CODE (op2) == CONST_DOUBLE)
     {
-      int sign = CONST_DOUBLE_HIGH (op2);
-      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_LOW (operands[1]));
-      if (sign < 0)
-        return \"subcc %R1,%2,%R0\;subx %1,-1,%0\";
-      return \"subcc %R1,%2,%R0\;subx %1,0,%0\";
+      rtx xoperands[4];
+      xoperands[0] = operands[0];
+      xoperands[1] = operands[1];
+      xoperands[2] = GEN_INT (CONST_DOUBLE_LOW (op2));
+      xoperands[3] = GEN_INT (CONST_DOUBLE_HIGH (op2));
+      if (xoperands[2] == const0_rtx && xoperands[0] == xoperands[1])
+	output_asm_insn (\"sub %1,%3,%0\", xoperands);
+      else
+	output_asm_insn (\"subcc %R1,%2,%R0\;subx %1,%3,%0\", xoperands);
+      return \"\";
     }
   return \"subcc %R1,%R2,%R0\;subx %1,%2,%0\";
 }"
@@ -2117,12 +2125,15 @@
     }
   else if (GET_CODE (op2) == CONST_DOUBLE)
     {
-      int sign = CONST_DOUBLE_HIGH (op2);
-      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_LOW (operands[1]));
-      if (sign < 0)
-	return \"mov %1,%0\;and %R1,%2,%R0\";
-      return \"mov 0,%0\;and %R1,%2,%R0\";
+      rtx xoperands[4];
+      xoperands[0] = operands[0];
+      xoperands[1] = operands[1];
+      xoperands[2] = GEN_INT (CONST_DOUBLE_LOW (op2));
+      xoperands[3] = GEN_INT (CONST_DOUBLE_HIGH (op2));
+      /* We could optimize then operands[1] == operands[0]
+	 and either half of the constant is -1.  */
+      output_asm_insn (\"and %R1,%2,%R0\;and %1,%3,%0\", xoperands);
+      return \"\";
     }
   return \"and %1,%2,%0\;and %R1,%R2,%R0\";
 }"
@@ -2192,12 +2203,15 @@
     }
   else if (GET_CODE (op2) == CONST_DOUBLE)
     {
-      int sign = CONST_DOUBLE_HIGH (op2);
-      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_LOW (operands[1]));
-      if (sign < 0)
-	return \"mov -1,%0\;or %R1,%2,%R0\";
-      return \"mov %1,%0\;or %R1,%2,%R0\";
+      rtx xoperands[4];
+      xoperands[0] = operands[0];
+      xoperands[1] = operands[1];
+      xoperands[2] = GEN_INT (CONST_DOUBLE_LOW (op2));
+      xoperands[3] = GEN_INT (CONST_DOUBLE_HIGH (op2));
+      /* We could optimize then operands[1] == operands[0]
+	 and either half of the constant is 0.  */
+      output_asm_insn (\"or %R1,%2,%R0\;or %1,%3,%0\", xoperands);
+      return \"\";
     }
   return \"or %1,%2,%0\;or %R1,%R2,%R0\";
 }"
@@ -2267,12 +2281,15 @@
     }
   else if (GET_CODE (op2) == CONST_DOUBLE)
     {
-      int sign = CONST_DOUBLE_HIGH (op2);
-      operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_LOW (operands[1]));
-      if (sign < 0)
-	return \"xor %1,-1,%0\;xor %R1,%2,%R0\";
-      return \"mov %1,%0\;xor %R1,%2,%R0\";
+      rtx xoperands[4];
+      xoperands[0] = operands[0];
+      xoperands[1] = operands[1];
+      xoperands[2] = GEN_INT (CONST_DOUBLE_LOW (op2));
+      xoperands[3] = GEN_INT (CONST_DOUBLE_HIGH (op2));
+      /* We could optimize then operands[1] == operands[0]
+	 and either half of the constant is 0.  */
+      output_asm_insn (\"xor %R1,%2,%R0\;xor %1,%3,%0\", xoperands);
+      return \"\";
     }
   return \"xor %1,%2,%0\;xor %R1,%R2,%R0\";
 }"
@@ -2442,37 +2459,16 @@
 ;; We cannot use the "not" pseudo insn because the Sun assembler
 ;; does not know how to make it work for constants.
 (define_expand "one_cmpldi2"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(not:DI (match_operand:DI 1 "arith_double_operand" "rHI")))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(not:DI (match_operand:DI 1 "register_operand" "")))]
   ""
   "")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(not:DI (match_operand:DI 1 "arith_double_operand" "rHI")))]
+	(not:DI (match_operand:DI 1 "register_operand" "r")))]
   ""
-  "*
-{
-  rtx op1 = operands[1];
-
-  if (GET_CODE (op1) == CONST_INT)
-    {
-      int sign = INTVAL (op1);
-      if (sign < 0)
-	return \"xnor %%g0,%1,%R0\;xnor %%g0,-1,%0\";
-      return \"xnor %%g0,%1,%R0\;xnor %%g0,0,%0\";
-    }
-  else if (GET_CODE (op1) == CONST_DOUBLE)
-    {
-      int sign = CONST_DOUBLE_HIGH (op1);
-      operands[1] = gen_rtx (CONST_INT, VOIDmode,
-			     CONST_DOUBLE_LOW (operands[1]));
-      if (sign < 0)
-	return \"xnor %%g0,%1,%R0\;xnor %%g0,-1,%0\";
-      return \"xnor %%g0,%1,%R0\;xnor %%g0,0,%0\";
-    }
-  return \"xnor %%g0,%1,%0\;xnor %%g0,%R1,%R0\";
-}"
+  "xnor %%g0,%1,%0\;xnor %%g0,%R1,%R0"
   [(set_attr "type" "unary")
    (set_attr "length" "2")])
 
