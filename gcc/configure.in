@@ -850,6 +850,7 @@ fi
 cat > configargs.h <<EOF
 /* Generated automatically. */
 static const char configuration_arguments[] = "$gcc_config_arguments";
+static const char thread_model[] = "$thread_file";
 EOF
 changequote([,])dnl
 
