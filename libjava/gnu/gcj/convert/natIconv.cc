@@ -268,6 +268,9 @@ gnu::gcj::convert::IOConverter::iconv_init (void)
       // Conversion must be complete for us to use the result.
       if (r != (size_t) -1 && inc == 0 && outc == 0)
 	result = (c != 0xfeff);
+
+      // Release iconv handle.
+      iconv_close (handle);
     }
 #endif /* HAVE_ICONV */
   return result;
