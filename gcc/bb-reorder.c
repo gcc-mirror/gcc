@@ -777,8 +777,7 @@ get_next_bb_note (x)
 {
   while (x)
     {
-      if (GET_CODE (x) == NOTE
-	  && NOTE_LINE_NUMBER (x) == NOTE_INSN_BASIC_BLOCK)
+      if (NOTE_INSN_BASIC_BLOCK_P (x))
 	return x;
       x = NEXT_INSN (x);
     }
@@ -792,8 +791,7 @@ get_prev_bb_note (x)
 {
   while (x)
     {
-      if (GET_CODE (x) == NOTE
-	  && NOTE_LINE_NUMBER (x) == NOTE_INSN_BASIC_BLOCK)
+      if (NOTE_INSN_BASIC_BLOCK_P (x))
 	return x;
       x = PREV_INSN (x);
     }
@@ -1050,8 +1048,7 @@ remove_scope_notes ()
   for (x = get_insns (); x; x = next)
     {
       next = NEXT_INSN (x);
-      if (GET_CODE (x) == NOTE
-	  && NOTE_LINE_NUMBER (x) == NOTE_INSN_BASIC_BLOCK)
+      if (NOTE_INSN_BASIC_BLOCK_P (x))
 	currbb = NOTE_BASIC_BLOCK (x);
 
       if (GET_CODE (x) == NOTE

@@ -98,6 +98,8 @@ struct rename_context;
 static inline rtx * phi_alternative
   PARAMS ((rtx, int));
 
+static rtx first_insn_after_basic_block_note PARAMS ((basic_block));
+
 static int remove_phi_alternative
   PARAMS ((rtx, int));
 static void simplify_to_immediate_dominators 
@@ -449,6 +451,28 @@ compute_iterated_dominance_frontiers (idfs, frontiers, evals, nregs)
     }
 }
 
+/* Return the INSN immediately following the NOTE_INSN_BASIC_BLOCK
+   note associated with the BLOCK.  */
+
+static rtx
+first_insn_after_basic_block_note (block)
+     basic_block block;
+{
+  rtx insn;
+
+  /* Get the first instruction in the block.  */
+  insn = block->head;
+
+  if (insn == NULL_RTX)
+    return NULL_RTX;
+  if (GET_CODE (insn) == CODE_LABEL)
+    insn = NEXT_INSN (insn);
+  if (!NOTE_INSN_BASIC_BLOCK_P (insn))
+    abort ();
+
+  return NEXT_INSN (insn);
+}
+
 
 /* Insert the phi nodes.  */
 
@@ -461,6 +485,8 @@ insert_phi_node (regno, bb)
   int npred, i;
   rtvec vec;
   rtx phi, reg;
+  rtx insn;
+  int end_p;
 
   /* Find out how many predecessors there are.  */
   for (e = b->pred, npred = 0; e; e = e->pred_next)
@@ -488,10 +514,11 @@ insert_phi_node (regno, bb)
   phi = gen_rtx_PHI (VOIDmode, vec);
   phi = gen_rtx_SET (VOIDmode, reg, phi);
 
-  if (GET_CODE (b->head) == CODE_LABEL)
-    emit_insn_after (phi, b->head);
-  else
-    b->head = emit_insn_before (phi, b->head);
+  insn = first_insn_after_basic_block_note (b);
+  end_p = PREV_INSN (insn) == b->end;
+  emit_insn_before (phi, insn);
+  if (end_p)
+    b->end = PREV_INSN (insn);
 }
 
 
@@ -811,9 +838,7 @@ rename_block (bb, idom)
       if (e->dest == EXIT_BLOCK_PTR)
 	continue;
 
-      insn = e->dest->head;
-      if (GET_CODE (insn) == CODE_LABEL)
-	insn = NEXT_INSN (insn);
+      insn = first_insn_after_basic_block_note (e->dest);
 
       while (PHI_NODE_P (insn))
 	{
@@ -1145,9 +1170,7 @@ eliminate_phi (e, reg_partition)
 
   /* Collect an upper bound on the number of registers needing processing.  */
 
-  insn = e->dest->head;
-  if (GET_CODE (insn) == CODE_LABEL)
-    insn = next_nonnote_insn (insn);
+  insn = first_insn_after_basic_block_note (e->dest);
 
   n_nodes = 0;
   while (PHI_NODE_P (insn))
@@ -1171,9 +1194,7 @@ eliminate_phi (e, reg_partition)
   sbitmap_vector_zero (pred, n_nodes);
   sbitmap_vector_zero (succ, n_nodes);
 
-  insn = e->dest->head;
-  if (GET_CODE (insn) == CODE_LABEL)
-    insn = next_nonnote_insn (insn);
+  insn = first_insn_after_basic_block_note (e->dest);
 
   n_nodes = 0;
   for (; PHI_NODE_P (insn); insn = next_nonnote_insn (insn))
@@ -1271,11 +1292,10 @@ make_regs_equivalent_over_bad_edges (bb, reg_partition)
 {
   int changed = 0;
   basic_block b = BASIC_BLOCK (bb);
-  rtx phi = b->head;
+  rtx phi;
 
   /* Advance to the first phi node.  */
-  if (GET_CODE (phi) == CODE_LABEL)
-    phi = next_nonnote_insn (phi);
+  phi = first_insn_after_basic_block_note (b);
 
   /* Scan all the phi nodes.  */
   for (; 
@@ -1341,12 +1361,11 @@ make_equivalent_phi_alternatives_equivalent (bb, reg_partition)
      partition reg_partition;
 {
   int changed = 0;
-  rtx phi = BLOCK_HEAD (bb);
   basic_block b = BASIC_BLOCK (bb);
+  rtx phi;
 
   /* Advance to the first phi node.  */
-  if (GET_CODE (phi) == CODE_LABEL)
-    phi = next_nonnote_insn (phi);
+  phi = first_insn_after_basic_block_note (b);
 
   /* Scan all the phi nodes.  */
   for (; 
@@ -1889,23 +1908,27 @@ convert_from_ssa()
   for (bb = n_basic_blocks; --bb >= 0; )
     {
       rtx insn = BLOCK_HEAD (bb);
-      int start = (GET_CODE (insn) != CODE_LABEL);
 
-      if (! start)
-	insn = next_nonnote_insn (insn);
-      while (PHI_NODE_P (insn))
+      while (1)
 	{
-	  /* If a phi node is the last insn in the block, there must
-	     have been nothing else.  Set the block end to the block
-	     head.  */
-	  if (insn == BLOCK_END (bb))
-	    BLOCK_END (bb) = BLOCK_HEAD (bb);
-	  insn = delete_insn (insn);
-	  if (GET_CODE (insn) == NOTE)
-	    insn = next_nonnote_insn (insn);
+	  /* If this is a PHI node delete it.  */
+	  if (PHI_NODE_P (insn))
+	    {
+	      if (insn == BLOCK_END (bb))
+		BLOCK_END (bb) = PREV_INSN (insn);
+	      insn = delete_insn (insn);
+	    }
+	  /* Since all the phi nodes come at the beginning of the
+	     block, if we find an ordinary insn, we can stop looking
+	     for more phi nodes.  */
+	  else if (INSN_P (insn))
+	    break;
+	  /* If we've reached the end of the block, stop.  */
+	  else if (insn == BLOCK_END (bb))
+	    break;
+	  else 
+	    insn = NEXT_INSN (insn);
 	}
-      if (start)
-	BLOCK_HEAD (bb) = insn;
     }
 
   /* Commit all the copy nodes needed to convert out of SSA form.  */
@@ -1947,11 +1970,7 @@ for_each_successor_phi (bb, fn, data)
 	continue;
 
       /* Advance to the first non-label insn of the successor block.  */
-      insn = successor->head;
-      while (insn != NULL 
-	     && (GET_CODE (insn) == CODE_LABEL
-		 || GET_CODE (insn) == NOTE))
-	insn = NEXT_INSN (insn);
+      insn = first_insn_after_basic_block_note (successor);
 
       if (insn == NULL)
 	continue;
