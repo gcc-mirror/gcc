@@ -2041,7 +2041,7 @@ static int
 duplicate_loop_exit_test (loop_start)
      rtx loop_start;
 {
-  rtx insn, set, p, link;
+  rtx insn, set, reg, p, link;
   rtx copy = 0;
   int num_insns = 0;
   rtx exitcode = NEXT_INSN (JUMP_LABEL (next_nonnote_insn (loop_start)));
@@ -2098,12 +2098,14 @@ duplicate_loop_exit_test (loop_start)
   for (insn = exitcode; insn != lastexit; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == INSN
 	&& (set = single_set (insn)) != 0
-	&& GET_CODE (SET_DEST (set)) == REG
-	&& REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
-	&& regno_first_uid[REGNO (SET_DEST (set))] == INSN_UID (insn))
+	&& ((reg = SET_DEST (set), GET_CODE (reg) == REG)
+	    || (GET_CODE (reg) == SUBREG
+		&& (reg = SUBREG_REG (reg), GET_CODE (reg) == REG)))
+	&& REGNO (reg) >= FIRST_PSEUDO_REGISTER
+	&& regno_first_uid[REGNO (reg)] == INSN_UID (insn))
       {
 	for (p = NEXT_INSN (insn); p != lastexit; p = NEXT_INSN (p))
-	  if (regno_last_uid[REGNO (SET_DEST (set))] == INSN_UID (p))
+	  if (regno_last_uid[REGNO (reg)] == INSN_UID (p))
 	    break;
 
 	if (p != lastexit)
@@ -2116,10 +2118,9 @@ duplicate_loop_exit_test (loop_start)
 		bzero ((char *) reg_map, max_reg * sizeof (rtx));
 	      }
 
-	    REG_LOOP_TEST_P (SET_DEST (set)) = 1;
+	    REG_LOOP_TEST_P (reg) = 1;
 
-	    reg_map[REGNO (SET_DEST (set))]
-	      = gen_reg_rtx (GET_MODE (SET_DEST (set)));
+	    reg_map[REGNO (reg)] = gen_reg_rtx (GET_MODE (reg));
 	  }
       }
 
