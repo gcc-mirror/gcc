@@ -10063,7 +10063,7 @@ instantiate_decl (d, defer_ok)
 
   code_pattern = DECL_TEMPLATE_RESULT (td);
 
-  /* In the case of a friend temlpate whose definition is provided
+  /* In the case of a friend template whose definition is provided
      outside the class, we may have too many arguments.  Drop the ones
      we don't need.  */
   args = get_innermost_template_args (gen_args,

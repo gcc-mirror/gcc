@@ -1,10 +1,14 @@
 2002-11-30  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8227
+	* decl.c (layout_var_decl): Deal gracefully with erroneous types.
+	(check_initializer): Validate the type of the initialized
+	variable, even if the initializer is absent.
+	* typeck.c (cp_type_quals): Deal gracefully with erroneous types.
+	
 	PR c++/8214
 	* typeck.c (convert_for_assignment): Do not use
 	decl_constant_value on the operand.
-
-2002-11-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8511
 	* pt.c (instantiate_decl): Handle template friends defined outside
