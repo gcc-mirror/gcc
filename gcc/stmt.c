@@ -6200,6 +6200,42 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	      emit_case_nodes (index, node->right, default_label, index_type);
 	    }
 
+	  /* If both children are single-valued cases with no
+	     children, finish up all the work.  This way, we can save
+	     one ordered comparison.  */
+	  else if (tree_int_cst_equal (node->right->low, node->right->high)
+		   && node->right->left == 0
+		   && node->right->right == 0
+		   && tree_int_cst_equal (node->left->low, node->left->high)
+		   && node->left->left == 0
+		   && node->left->right == 0)
+	    {
+	      /* Neither node is bounded.  First distinguish the two sides;
+		 then emit the code for one side at a time.  */
+
+	      /* See if the value matches what the right hand side
+		 wants.  */
+	      do_jump_if_equal (index,
+				convert_modes (mode, imode,
+					       expand_expr (node->right->low,
+							    NULL_RTX,
+							    VOIDmode, 0),
+					       unsignedp),
+				label_rtx (node->right->code_label),
+				unsignedp);
+
+	      /* See if the value matches what the left hand side
+		 wants.  */
+	      do_jump_if_equal (index,
+				convert_modes (mode, imode,
+					       expand_expr (node->left->low,
+							    NULL_RTX,
+							    VOIDmode, 0),
+					       unsignedp),
+				label_rtx (node->left->code_label),
+				unsignedp);
+	    }
+
 	  else
 	    {
 	      /* Neither node is bounded.  First distinguish the two sides;
