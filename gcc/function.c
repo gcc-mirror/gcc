@@ -428,7 +428,7 @@ struct fixup_replacement
 static struct temp_slot *find_temp_slot_from_address  PROTO((rtx));
 static void put_reg_into_stack	PROTO((struct function *, rtx, tree,
 				       enum machine_mode, enum machine_mode,
-				       int, int));
+				       int, int, int));
 static void fixup_var_refs	PROTO((rtx, enum machine_mode, int));
 static struct fixup_replacement
   *find_fixup_replacement	PROTO((struct fixup_replacement **, rtx));
@@ -1408,7 +1408,9 @@ put_var_into_stack (decl)
       else
 	put_reg_into_stack (function, reg, TREE_TYPE (decl),
 			    promoted_mode, decl_mode,
-			    TREE_SIDE_EFFECTS (decl), 0);
+			    TREE_SIDE_EFFECTS (decl), 0,
+			    TREE_USED (decl)
+			    || DECL_INITIAL (decl) != 0);
     }
   else if (GET_CODE (reg) == CONCAT)
     {
@@ -1419,14 +1421,18 @@ put_var_into_stack (decl)
 #ifdef FRAME_GROWS_DOWNWARD
       /* Since part 0 should have a lower address, do it second.  */
       put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl), 0);
+			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
+			  TREE_USED (decl) || DECL_INITIAL (decl) != 0);
       put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl), 0);
+			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
+			  TREE_USED (decl) || DECL_INITIAL (decl) != 0);
 #else
       put_reg_into_stack (function, XEXP (reg, 0), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl), 0);
+			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
+			  TREE_USED (decl) || DECL_INITIAL (decl) != 0);
       put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
-			  part_mode, TREE_SIDE_EFFECTS (decl), 0);
+			  part_mode, TREE_SIDE_EFFECTS (decl), 0,
+			  TREE_USED (decl) || DECL_INITIAL (decl) != 0);
 #endif
 
       /* Change the CONCAT into a combined MEM for both parts.  */
@@ -1456,17 +1462,19 @@ put_var_into_stack (decl)
    into the stack frame of FUNCTION (0 means the current function).
    DECL_MODE is the machine mode of the user-level data type.
    PROMOTED_MODE is the machine mode of the register.
-   VOLATILE_P is nonzero if this is for a "volatile" decl.  */
+   VOLATILE_P is nonzero if this is for a "volatile" decl.
+   USED_P is nonzero if this reg might have already been used in an insn.  */
 
 static void
 put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
-		    original_regno)
+		    original_regno, used_p)
      struct function *function;
      rtx reg;
      tree type;
      enum machine_mode promoted_mode, decl_mode;
      int volatile_p;
      int original_regno;
+     int used_p;
 {
   rtx new = 0;
   int regno = original_regno;
@@ -1502,7 +1510,8 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
 
   /* Now make sure that all refs to the variable, previously made
      when it was a register, are fixed up to be valid again.  */
-  if (function)
+
+  if (used_p && function != 0)
     {
       struct var_refs_queue *temp;
 
@@ -1521,7 +1530,7 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
       function->fixup_var_refs_queue = temp;
       pop_obstacks ();
     }
-  else
+  else if (used_p)
     /* Variable is local; fix it up now.  */
     fixup_var_refs (reg, promoted_mode, TREE_UNSIGNED (type));
 }
@@ -2687,7 +2696,9 @@ gen_mem_addressof (reg, decl)
   MEM_VOLATILE_P (reg) = TREE_SIDE_EFFECTS (decl);
   MEM_IN_STRUCT_P (reg) = AGGREGATE_TYPE_P (type);
 
-  fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type));
+  if (TREE_USED (decl) || DECL_INITIAL (decl) != 0)
+    fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type));
+
   return reg;
 }
 
@@ -2719,7 +2730,8 @@ put_addressof_into_stack (r)
 
   put_reg_into_stack (0, reg, TREE_TYPE (decl), GET_MODE (reg),
 		      DECL_MODE (decl), TREE_SIDE_EFFECTS (decl),
-		      ADDRESSOF_REGNO (r));
+		      ADDRESSOF_REGNO (r),
+		      TREE_USED (decl) || DECL_INITIAL (decl) != 0);
 }
 
 /* Helper function for purge_addressof.  See if the rtx expression at *LOC
