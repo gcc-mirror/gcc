@@ -2419,7 +2419,8 @@ biv_total_increment (bl)
   for (v = bl->biv; v; v = v->next_iv)
     {
       if (v->always_computable && v->mult_val == const1_rtx
-	  && ! v->maybe_multiple)
+	  && ! v->maybe_multiple
+	  && SCALAR_INT_MODE_P (v->mode))
 	result = fold_rtx_mult_add (result, const1_rtx, v->add_val, v->mode);
       else
 	return 0;

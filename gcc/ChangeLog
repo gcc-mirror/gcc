@@ -1,3 +1,8 @@
+2002-08-20  Geoffrey Keating  <geoffk@redhat.com>
+
+	* unroll.c (biv_total_increment): Don't try to compute the total
+	increment for FP BIVs.
+
 2002-08-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alpha.c (TARGET_ASM_GLOBALIZE_LABEL): Define for unicosmk.
