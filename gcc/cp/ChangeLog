@@ -1,3 +1,8 @@
+2003-08-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* decl.c (grokparms): Use cp_build_qualified_type instead
+	TYPE_MAIN_VARIANT.
+
 2003-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cxx-pretty-print.h: New file.
