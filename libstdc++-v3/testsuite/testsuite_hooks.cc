@@ -30,8 +30,9 @@
 #include <testsuite_hooks.h>
 
 #ifdef _GLIBCPP_MEM_LIMITS
-#include <sys/resource.h>
 #include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 void
 __set_testsuite_memlimit(float __size)

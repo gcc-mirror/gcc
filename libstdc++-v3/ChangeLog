@@ -1,3 +1,14 @@
+2002-06-10  Loren J. Rittle <ljrittle@acm.org>
+
+	* acinclude.m4 (GLIBCPP_CHECK_SETRLIMIT_ancilliary): Reorder and
+	include all required headers for test against older POSIX standard.
+	(GLIBCPP_CHECK_SETRLIMIT): Likewise.
+	(ac_setrlimit): Likewise.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/testsuite_hooks.cc: Reorder and include all
+	required headers for use against older POSIX standard.
+
 2002-06-08  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/backwards/strstream_members.cc: New.

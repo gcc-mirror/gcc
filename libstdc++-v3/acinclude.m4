@@ -1971,8 +1971,9 @@ dnl string, '#' otherwise
 dnl Check for headers for, and arguments to, the setrlimit() function.
 dnl Used only in testsuite_hooks.h.
 AC_DEFUN(GLIBCPP_CHECK_SETRLIMIT_ancilliary, [
-  AC_TRY_COMPILE([#include <sys/resource.h>
-                  #include <unistd.h>
+  AC_TRY_COMPILE([#include <unistd.h>
+                  #include <sys/time.h>
+                  #include <sys/resource.h>
                  ], [ int f = RLIMIT_$1 ; ],
                  [glibcpp_mresult=1], [glibcpp_mresult=0])
   AC_DEFINE_UNQUOTED(HAVE_MEMLIMIT_$1, $glibcpp_mresult,
@@ -1980,7 +1981,7 @@ AC_DEFUN(GLIBCPP_CHECK_SETRLIMIT_ancilliary, [
 ])
 AC_DEFUN(GLIBCPP_CHECK_SETRLIMIT, [
   setrlimit_have_headers=yes
-  AC_CHECK_HEADERS(sys/resource.h unistd.h,
+  AC_CHECK_HEADERS(unistd.h sys/time.h sys/resource.h,
                    [],
                    setrlimit_have_headers=no)
   # If don't have the headers, then we can't run the tests now, and we
@@ -1994,8 +1995,9 @@ AC_DEFUN(GLIBCPP_CHECK_SETRLIMIT, [
 
     # Check for rlimit, setrlimit.
     AC_CACHE_VAL(ac_setrlimit, [
-      AC_TRY_COMPILE([#include <sys/resource.h>
-		      #include <unistd.h>
+      AC_TRY_COMPILE([#include <unistd.h>
+                  #include <sys/time.h>
+                  #include <sys/resource.h>
 		     ], 
                      [ struct rlimit r; setrlimit(0, &r);], 
                      [ac_setrlimit=yes], [ac_setrlimit=no])
