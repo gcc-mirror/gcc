@@ -288,7 +288,7 @@ tree_unroll_loops_completely (struct loops *loops)
 
       changed |= canonicalize_loop_induction_variables (loops, loop,
 							false, true,
-							!flag_ivcanon);
+							!flag_tree_loop_ivcanon);
     }
 
 #if 0

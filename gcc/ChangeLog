@@ -1,3 +1,11 @@
+2004-09-02  Daniel Berlin  <dberlin@dberlin.org>
+
+	* gcc/common.opt: Rename ivcanon to tree-loop-ivcanon, tree-lim to
+	tree-loop-im.
+	* gcc/tree-ssa-loop.c: Ditto
+	* gcc/tree-ssa-loop-ivcanon.c: Ditto
+	* gcc/doc/invoke.texi: Ditto.
+
 2004-09-02  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-decl.c (store_parm_decls_newstyle): Make static.

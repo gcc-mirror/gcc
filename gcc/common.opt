@@ -472,10 +472,6 @@ finstrument-functions
 Common Report Var(flag_instrument_function_entry_exit)
 Instrument function entry and exit with profiling calls
 
-fivcanon
-Common Report Var(flag_ivcanon)
-Create canonical induction variables in loops
-
 fkeep-inline-functions
 Common Report Var(flag_keep_inline_functions)
 Generate code for functions even if they are fully inlined
@@ -856,9 +852,13 @@ ftree-fre
 Common Report Var(flag_tree_fre)
 Enable Full Redundancy Elimination (FRE) on trees
 
-ftree-lim
-Common Report Var(flag_tree_lim) Init(1)
+ftree-loop-im
+Common Report Var(flag_tree_loop_im) Init(1)
 Enable loop invariant motion on trees
+
+ftree-loop-ivcanon
+Common Report Var(flag_tree_loop_ivcanon)
+Create canonical induction variables in loops
 
 ftree-loop-optimize
 Common Report Var(flag_tree_loop_optimize) Init(1)
