@@ -30,6 +30,12 @@ int main()
   if (cos (0.0) != 1.0)
     link_error ();
 
+  if (tan (0.0) != 0.0)
+    link_error ();
+
+  if (atan (0.0) != 0.0)
+    link_error ();
+
 
   if (sqrtf (0.0f) != 0.0f)
     link_error ();
@@ -49,6 +55,11 @@ int main()
   if (cosf (0.0f) != 1.0f)
     link_error ();
 
+  if (tanf (0.0f) != 0.0f)
+    link_error ();
+
+  if (atanf (0.0f) != 0.0f)
+    link_error ();
 
   if (sqrtl (0.0l) != 0.0l)
     link_error ();
@@ -66,6 +77,12 @@ int main()
     link_error ();
 
   if (cosl (0.0l) != 1.0l)
+    link_error ();
+
+  if (tanl (0.0l) != 0.0l)
+    link_error ();
+
+  if (atanl (0.0) != 0.0l)
     link_error ();
 
   return 0;

@@ -14,17 +14,23 @@ void test(double x)
 {
   if (pow (x, 1.0) != x)
     link_error ();
+  if (tan (atan (x)) != x)
+    link_error ();
 }
 
 void testf(float x)
 {
   if (powf (x, 1.0f) != x)
     link_error ();
+  if (tanf (atanf (x)) != x)
+    link_error ();
 }
 
 void testl(long double x)
 {
   if (powl (x, 1.0l) != x)
+    link_error ();
+  if (tanl (atanl (x)) != x)
     link_error ();
 }
 

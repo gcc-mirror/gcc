@@ -53,6 +53,11 @@ double test9(double x)
   return fabs(exp(x));
 }
 
+double test10(double x)
+{
+  return tan(atan(x));
+}
+
 float test1f(float x)
 {
   return logf(expf(x));
@@ -96,6 +101,11 @@ float test8f(float x)
 float test9f(float x)
 {
   return fabsf(expf(x));
+}
+
+float test10f(float x)
+{
+  return tanf(atanf(x));
 }
 
 long double test1l(long double x)
@@ -143,4 +153,8 @@ long double test9l(long double x)
   return fabsl(expl(x));
 }
 
+long double test10l(long double x)
+{
+  return tanl(atanl(x));
+}
 

@@ -1,5 +1,15 @@
 2003-06-04  Roger Sayle  <roger@eyesopen.com>
 
+	* builtins.c (dconstpi, dconste): New mathematical constants.
+	(init_builtin_dconsts): New function to initialize dconstpi
+	and dconste.
+	(fold_builtin): Optimize exp(1.0) = e.  Evaluate exp(x) at
+	compile time with -ffast-math when x is an integer constant.
+	Optimize tan(0.0) = 0.0.  Optimize atan(0.0) = 0.0,
+	atan(1.0) = pi/4 and tan(atan(x)) = x with -ffast-math.
+
+2003-06-04  Roger Sayle  <roger@eyesopen.com>
+
 	* calls.c (expand_call): Avoid calling pure or const functions
 	when the result is ignored (or void) and none of the arguments
 	are volatile.  Move warning diagnostic earlier in function.
