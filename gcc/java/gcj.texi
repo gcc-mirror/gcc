@@ -1316,16 +1316,17 @@ programmer's responsibility to make sure classes are initialized.
 However, this is fairly painless because of the conventions assumed by
 the Java system.
 
-First, @code{libgcj} will make sure a class is initialized
-before an instance of that object is created.  This is one
-of the responsibilities of the @code{new} operation.  This is
-taken care of both in Java code, and in C++ code.  (When the G++
-compiler sees a @code{new} of a Java class, it will call
-a routine in @code{libgcj} to allocate the object, and that
-routine will take care of initializing the class.)  It follows that you can
-access an instance field, or call an instance (non-static)
-method and be safe in the knowledge that the class and all
-of its base classes have been initialized.
+First, @code{libgcj} will make sure a class is initialized before an
+instance of that object is created.  This is one of the
+responsibilities of the @code{new} operation.  This is taken care of
+both in Java code, and in C++ code.  When G++ sees a @code{new} of a
+Java class, it will call a routine in @code{libgcj} to allocate the
+object, and that routine will take care of initializing the class.
+Note however that this does not happen for Java arrays; you must
+allocate those using the appropriate CNI function.  It follows that
+you can access an instance field, or call an instance (non-static)
+method and be safe in the knowledge that the class and all of its base
+classes have been initialized.
 
 Invoking a static method is also safe.  This is because the
 Java compiler adds code to the start of a static method to make sure
