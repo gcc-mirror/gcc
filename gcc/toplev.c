@@ -1698,8 +1698,7 @@ crash_signal (signo)
      /* If this is missing, some compilers complain.  */
      int signo;
 {
-  error ("Internal error: %s.", strsignal (signo));
-  finish_abort ();
+  fatal ("Internal error: %s.", strsignal (signo));
 }
 
 /* Strip off a legitimate source ending from the input string NAME of
