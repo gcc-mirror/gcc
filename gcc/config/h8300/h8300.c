@@ -1235,7 +1235,6 @@ h8300_rtx_costs (x, code, outer_code, total)
    'Y' print either l or h depending on whether last 'Z' operand < 8 or >= 8.
        If this operand isn't a register, fall back to 'R' handling.
    'Z' print int & 7.
-   'b' print the bit opcode
    'c' print the opcode corresponding to rtl
    'e' first word of 32 bit value - if reg, then least reg. if mem
        then least. if const then most sig word
@@ -1373,22 +1372,6 @@ print_operand (file, x, code)
       bitint = INTVAL (x);
       fprintf (file, "#%d", bitint & 7);
       break;
-    case 'b':
-      switch (GET_CODE (x))
-	{
-	case IOR:
-	  fprintf (file, "bor");
-	  break;
-	case XOR:
-	  fprintf (file, "bxor");
-	  break;
-	case AND:
-	  fprintf (file, "band");
-	  break;
-	default:
-	  break;
-	}
-      break;
     case 'c':
       switch (GET_CODE (x))
 	{
@@ -1397,6 +1380,9 @@ print_operand (file, x, code)
 	  break;
 	case XOR:
 	  fprintf (file, "xor");
+	  break;
+	case AND:
+	  fprintf (file, "and");
 	  break;
 	default:
 	  break;
