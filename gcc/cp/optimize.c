@@ -343,8 +343,8 @@ copy_body_r (tp, walk_subtrees, data)
 	       && nonstatic_local_decl_p (TREE_OPERAND (*tp, 0))
 	       && DECL_CONTEXT (TREE_OPERAND (*tp, 0)) == fn)
 	{
-	  /* Assignments like a = a; don't generate any rtl code
-	     and don't count as variable modification.  Avoid
+	  /* Some assignments VAR = VAR; don't generate any rtl code
+	     and thus don't count as variable modification.  Avoid
 	     keeping bogosities like 0 = 0.  */
 	  tree decl = TREE_OPERAND (*tp, 0), value;
 	  splay_tree_node n;
