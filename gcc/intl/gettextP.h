@@ -67,7 +67,7 @@
    unsigned int to avoid K&R type promotion errors with 64-bit "int".  */
 static inline nls_uint32 SWAP PARAMS ((unsigned int));
 static inline nls_uint32
-SWAP (i)
+SWAP (ii)
      unsigned int ii;
 {
   nls_uint32 i = ii;
