@@ -1,3 +1,7 @@
+Thu May 20 08:15:00 1999  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* fixinc/fixincl.c(main): we must not ignore SIGCLD now.
+
 Thu May 20 07:06:39 1999  Alexandre Oliva  <aoliva@acm.org>
 
 	* fixinc/Makefile.in(gnu-regex.o): add $(INCLUDES) to compile options
