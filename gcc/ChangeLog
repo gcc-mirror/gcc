@@ -1,4 +1,9 @@
 2003-06-19  Aldy Hernandez  <aldyh@redhat.com>
+ 
+        * expr.c (const_vector_from_tree): Initialize remaining elements
+        to 0.
+
+2003-06-19  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/spe.md ("spe_evfscfsi"): Change operand types.
 	Change "fix" to "float".
