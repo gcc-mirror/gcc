@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler
    for an Intel i386 or later processor running OS/2 2.x.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Samuel Figueroa (figueroa@cs.nyu.edu)
 
 This file is part of GNU CC.
@@ -22,14 +22,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef DEFAULT_TARGET_MACHINE
 #define DEFAULT_TARGET_MACHINE "i386-os2"
 #endif
+#ifndef OBJECT_SUFFIX
+#define OBJECT_SUFFIX "obj"
+#endif
 #ifndef LINK_SPEC
 #define LINK_SPEC "/st:1048576/pm:vio/noi/a:16/e/bas:65536/nol"
 #endif
 #ifndef LIB_SPEC
-#define LIB_SPEC "libc"
+#define LIB_SPEC "libgcc libc"
 #endif
 #ifndef STARTFILE_SPEC
-#define STARTFILE_SPEC ""
+#define STARTFILE_SPEC "libcrt.lib"
 #endif
 #ifndef MD_EXEC_PREFIX
 #define MD_EXEC_PREFIX "\\gcc\\bin\\"
