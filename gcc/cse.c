@@ -1245,7 +1245,7 @@ mention_regs (x)
     {
       if (GET_CODE (XEXP (x, 0)) == REG
 	  && ! REGNO_QTY_VALID_P (REGNO (XEXP (x, 0))))
-	if (insert_regs (XEXP (x, 0), NULL_PTR, 0))
+	if (insert_regs (XEXP (x, 0), NULL, 0))
 	  {
 	    rehash_using_reg (XEXP (x, 0));
 	    changed = 1;
@@ -1253,7 +1253,7 @@ mention_regs (x)
 
       if (GET_CODE (XEXP (x, 1)) == REG
 	  && ! REGNO_QTY_VALID_P (REGNO (XEXP (x, 1))))
-	if (insert_regs (XEXP (x, 1), NULL_PTR, 0))
+	if (insert_regs (XEXP (x, 1), NULL, 0))
 	  {
 	    rehash_using_reg (XEXP (x, 1));
 	    changed = 1;
@@ -1346,7 +1346,7 @@ insert_regs (x, classp, modified)
   else if (GET_CODE (x) == SUBREG && GET_CODE (SUBREG_REG (x)) == REG
 	   && ! REGNO_QTY_VALID_P (REGNO (SUBREG_REG (x))))
     {
-      insert_regs (SUBREG_REG (x), NULL_PTR, 0);
+      insert_regs (SUBREG_REG (x), NULL, 0);
       mention_regs (x);
       return 1;
     }
@@ -1724,7 +1724,7 @@ insert (x, classp, hash, mode)
 	  subhash = safe_hash (subexp, mode) & HASH_MASK;
 	  subelt = lookup (subexp, subhash, mode);
 	  if (subelt == 0)
-	    subelt = insert (subexp, NULL_PTR, subhash, mode);
+	    subelt = insert (subexp, NULL, subhash, mode);
 	  /* Initialize SUBELT's circular chain if it has none.  */
 	  if (subelt->related_value == 0)
 	    subelt->related_value = subelt;
@@ -1999,7 +1999,7 @@ remove_invalid_refs (regno)
       {
 	next = p->next_same_hash;
 	if (GET_CODE (p->exp) != REG
-	    && refers_to_regno_p (regno, regno + 1, p->exp, NULL_PTR))
+	    && refers_to_regno_p (regno, regno + 1, p->exp, (rtx*)0))
 	  remove_from_table (p, i);
       }
 }
@@ -2029,7 +2029,7 @@ remove_invalid_subreg_refs (regno, offset, mode)
 		|| (((SUBREG_BYTE (exp)
 		      + (GET_MODE_SIZE (GET_MODE (exp)) - 1)) >= offset)
 		    && SUBREG_BYTE (exp) <= end))
-	    && refers_to_regno_p (regno, regno + 1, p->exp, NULL_PTR))
+	    && refers_to_regno_p (regno, regno + 1, p->exp, (rtx*)0))
 	  remove_from_table (p, i);
       }
 }
@@ -4603,7 +4603,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 	 new quantity number.  */
       if (op0_elt == 0)
 	{
-	  if (insert_regs (op0, NULL_PTR, 0))
+	  if (insert_regs (op0, NULL, 0))
 	    {
 	      rehash_using_reg (op0);
 	      op0_hash = HASH (op0, mode);
@@ -4615,7 +4615,7 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 		op1_hash = HASH (op1,mode);
 	    }
 
-	  op0_elt = insert (op0, NULL_PTR, op0_hash, mode);
+	  op0_elt = insert (op0, NULL, op0_hash, mode);
 	  op0_elt->in_memory = op0_in_memory;
 	}
 
@@ -4631,13 +4631,13 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 	  /* Put OP1 in the hash table so it gets a new quantity number.  */
 	  if (op1_elt == 0)
 	    {
-	      if (insert_regs (op1, NULL_PTR, 0))
+	      if (insert_regs (op1, NULL, 0))
 		{
 		  rehash_using_reg (op1);
 		  op1_hash = HASH (op1, mode);
 		}
 
-	      op1_elt = insert (op1, NULL_PTR, op1_hash, mode);
+	      op1_elt = insert (op1, NULL, op1_hash, mode);
 	      op1_elt->in_memory = op1_in_memory;
 	    }
 
@@ -4658,25 +4658,25 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 
   if (op0_elt == 0)
     {
-      if (insert_regs (op0, NULL_PTR, 0))
+      if (insert_regs (op0, NULL, 0))
 	{
 	  rehash_using_reg (op0);
 	  op0_hash = HASH (op0, mode);
 	}
 
-      op0_elt = insert (op0, NULL_PTR, op0_hash, mode);
+      op0_elt = insert (op0, NULL, op0_hash, mode);
       op0_elt->in_memory = op0_in_memory;
     }
 
   if (op1_elt == 0)
     {
-      if (insert_regs (op1, NULL_PTR, 0))
+      if (insert_regs (op1, NULL, 0))
 	{
 	  rehash_using_reg (op1);
 	  op1_hash = HASH (op1, mode);
 	}
 
-      op1_elt = insert (op1, NULL_PTR, op1_hash, mode);
+      op1_elt = insert (op1, NULL, op1_hash, mode);
       op1_elt->in_memory = op1_in_memory;
     }
 
@@ -4749,7 +4749,7 @@ cse_insn (insn, libcall_insn)
   int src_eqv_in_memory = 0;
   unsigned src_eqv_hash = 0;
 
-  struct set *sets = (struct set *) NULL_PTR;
+  struct set *sets = (struct set *) 0;
 
   this_insn = insn;
 

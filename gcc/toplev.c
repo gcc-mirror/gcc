@@ -1948,7 +1948,7 @@ wrapup_global_declarations (vec, len)
 		  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
 	    {
 	      reconsider = 1;
-	      rest_of_decl_compilation (decl, NULL_PTR, 1, 1);
+	      rest_of_decl_compilation (decl, NULL, 1, 1);
 	    }
 
 	  if (TREE_CODE (decl) == FUNCTION_DECL
@@ -3374,7 +3374,7 @@ rest_of_compilation (decl)
 #ifdef OPTIMIZE_MODE_SWITCHING
   timevar_push (TV_GCSE);
 
-  if (optimize_mode_switching (NULL_PTR))
+  if (optimize_mode_switching (NULL))
     {
       /* We did work, and so had to regenerate global life information.
 	 Take advantage of this and don't re-recompute register life

@@ -973,7 +973,7 @@ delete_noop_moves (f)
 		{
 		  rtx trial;
 		  rtx tem = find_equiv_reg (NULL_RTX, insn, 0,
-					    sreg, NULL_PTR, dreg,
+					    sreg, NULL, dreg,
 					    GET_MODE (SET_SRC (body)));
 
 		  if (tem != 0
@@ -1011,8 +1011,7 @@ delete_noop_moves (f)
 		}
 	      else if (dreg >= 0 && CONSTANT_P (SET_SRC (body))
 		       && find_equiv_reg (SET_SRC (body), insn, 0, dreg,
-					  NULL_PTR, 0,
-					  GET_MODE (SET_DEST (body))))
+					  NULL, 0, GET_MODE (SET_DEST (body))))
 		{
 		  /* This handles the case where we have two consecutive
 		     assignments of the same constant to pseudos that didn't

@@ -948,7 +948,7 @@ compute_can_copy ()
 #else
 	reg = gen_rtx_REG ((enum machine_mode) i, LAST_VIRTUAL_REGISTER + 1);
 	insn = emit_insn (gen_rtx_SET (VOIDmode, reg, reg));
-	if (recog (PATTERN (insn), insn, NULL_PTR) >= 0)
+	if (recog (PATTERN (insn), insn, NULL) >= 0)
 	  can_copy_p[i] = 1;
 #endif
       }

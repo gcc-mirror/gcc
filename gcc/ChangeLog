@@ -1,3 +1,18 @@
+2001-05-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-lex.c: NULL_PTR -> NULL.
+	* cse.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* gcse.c: Likewise.
+	* genpeep.c: Likewise.
+	* jump.c: Likewise.
+	* mips-tdump.c: Likewise.
+	* reload1.c: Likewise.
+	* rtlanal.c: Likewise.
+	* stmt.c: Likewise.
+	* stor-layout.c: Likewise.
+	* toplev.c: Likewise.
+
 2001-05-01  Per Bothner  <per@bothner.com>
 
 	* expr.c (expand_expr):  When compiling LABELED_BLOCK_EXPR,

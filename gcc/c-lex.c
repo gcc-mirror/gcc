@@ -1524,7 +1524,7 @@ lex_string (str, len, wide)
 
 #ifdef MULTIBYTE_CHARS
   /* Reset multibyte conversion state.  */
-  (void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
+  (void) local_mbtowc (NULL, NULL, 0);
 #endif
 
   while (p < limit)
@@ -1624,7 +1624,7 @@ lex_charconst (str, len, wide)
 
 #ifdef MULTIBYTE_CHARS
   int longest_char = local_mb_cur_max ();
-  (void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
+  (void) local_mbtowc (NULL, NULL, 0);
 #endif
 
   max_chars = TYPE_PRECISION (integer_type_node) / width;

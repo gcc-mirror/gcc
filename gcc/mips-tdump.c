@@ -1358,32 +1358,32 @@ read_tfile ()
 
   print_sym_hdr (&sym_hdr);
 
-  lines = (LINER *) read_seek (NULL_PTR,
+  lines = (LINER *) read_seek (NULL,
 			       sym_hdr.cbLine,
 			       sym_hdr.cbLineOffset,
 			       "Line numbers");
 
-  dense_nums = (DNR *) read_seek (NULL_PTR,
+  dense_nums = (DNR *) read_seek (NULL,
 				  sym_hdr.idnMax * sizeof (DNR),
 				  sym_hdr.cbDnOffset,
 				  "Dense numbers");
 
-  proc_desc = (PDR *) read_seek (NULL_PTR,
+  proc_desc = (PDR *) read_seek (NULL,
 				 sym_hdr.ipdMax * sizeof (PDR),
 				 sym_hdr.cbPdOffset,
 				 "Procedure tables");
 
-  l_symbols = (SYMR *) read_seek (NULL_PTR,
+  l_symbols = (SYMR *) read_seek (NULL,
 				  sym_hdr.isymMax * sizeof (SYMR),
 				  sym_hdr.cbSymOffset,
 				  "Local symbols");
 
-  opt_symbols = (OPTR *) read_seek (NULL_PTR,
+  opt_symbols = (OPTR *) read_seek (NULL,
 				    sym_hdr.ioptMax * sizeof (OPTR),
 				    sym_hdr.cbOptOffset,
 				    "Optimization symbols");
 
-  aux_symbols = (AUXU *) read_seek (NULL_PTR,
+  aux_symbols = (AUXU *) read_seek (NULL,
 				    sym_hdr.iauxMax * sizeof (AUXU),
 				    sym_hdr.cbAuxOffset,
 				    "Auxiliary symbols");
@@ -1391,27 +1391,27 @@ read_tfile ()
   if (sym_hdr.iauxMax > 0)
     aux_used = xcalloc (sym_hdr.iauxMax, 1);
 
-  l_strings = (char *) read_seek (NULL_PTR,
+  l_strings = (char *) read_seek (NULL,
 				  sym_hdr.issMax,
 				  sym_hdr.cbSsOffset,
 				  "Local string table");
 
-  e_strings = (char *) read_seek (NULL_PTR,
+  e_strings = (char *) read_seek (NULL,
 				  sym_hdr.issExtMax,
 				  sym_hdr.cbSsExtOffset,
 				  "External string table");
 
-  file_desc = (FDR *) read_seek (NULL_PTR,
+  file_desc = (FDR *) read_seek (NULL,
 				 sym_hdr.ifdMax * sizeof (FDR),
 				 sym_hdr.cbFdOffset,
 				 "File tables");
 
-  rfile_desc = (ulong *) read_seek (NULL_PTR,
+  rfile_desc = (ulong *) read_seek (NULL,
 				    sym_hdr.crfd * sizeof (ulong),
 				    sym_hdr.cbRfdOffset,
 				    "Relative file tables");
 
-  e_symbols = (EXTR *) read_seek (NULL_PTR,
+  e_symbols = (EXTR *) read_seek (NULL,
 				  sym_hdr.iextMax * sizeof (EXTR),
 				  sym_hdr.cbExtOffset,
 				  "External symbols");
