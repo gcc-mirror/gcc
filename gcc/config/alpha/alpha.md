@@ -1,5 +1,5 @@
 ;;- Machine description for DEC Alpha for GNU C compiler
-;;   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+;;   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
 ;;   Contributed by Richard Kenner (kenner@nyu.edu)
 
 ;; This file is part of GNU CC.
@@ -1675,11 +1675,12 @@
 	(le:DF (match_operand:DF 1 "reg_or_fp0_operand" "")
 	       (match_operand:DF 2 "reg_or_fp0_operand" "")))
    (set (match_operand:DF 0 "register_operand" "")
-	(if_then_else:DF (eq (match_dup 3) (const_int 0))
+	(if_then_else:DF (eq (match_dup 3) (match_dup 4))
 			 (match_dup 1) (match_dup 2)))]
   "TARGET_FP"
   "
 { operands[3] = gen_reg_rtx (DFmode);
+  operands[4] = CONST0_RTX (DFmode);
 }")
 
 (define_expand "mindf3"
@@ -1687,11 +1688,12 @@
 	(lt:DF (match_operand:DF 1 "reg_or_fp0_operand" "")
 	       (match_operand:DF 2 "reg_or_fp0_operand" "")))
    (set (match_operand:DF 0 "register_operand" "")
-	(if_then_else:DF (ne (match_dup 3) (const_int 0))
+	(if_then_else:DF (ne (match_dup 3) (match_dup 4))
 			 (match_dup 1) (match_dup 2)))]
   "TARGET_FP"
   "
 { operands[3] = gen_reg_rtx (DFmode);
+  operands[4] = CONST0_RTX (DFmode);
 }")
 
 (define_expand "maxsf3"
@@ -1712,7 +1714,7 @@
 	(lt:DF (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" ""))
 	       (float_extend:DF (match_operand:SF 2 "reg_or_fp0_operand" ""))))
    (set (match_operand:SF 0 "register_operand" "")
-	(if_then_else:SF (ne (match_dup 3) (const_int 0))
+	(if_then_else:SF (ne (match_dup 3) (match_dup 4))
 		      (match_dup 1) (match_dup 2)))]
   "TARGET_FP"
   "
