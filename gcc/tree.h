@@ -1142,7 +1142,7 @@ struct tree_block GTY(())
    object of the given ARRAY_TYPE.  This allows temporaries to be
    allocated.  */
 #define TYPE_ARRAY_MAX_SIZE(ARRAY_TYPE) \
-  TYPE_MAX_VALUE (ARRAY_TYPE_CHECK (ARRAY_TYPE))
+  (ARRAY_TYPE_CHECK (ARRAY_TYPE)->type.maxval)
 
 /* For a VECTOR_TYPE, this is the number of sub-parts of the vector.  */
 #define TYPE_VECTOR_SUBPARTS(VECTOR_TYPE) \
