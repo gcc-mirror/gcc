@@ -143,7 +143,6 @@ extern "C" {
 #define INIT_SEGV						\
 do								\
   {								\
-    nullp = new java::lang::NullPointerException ();    	\
     struct kernel_sigaction act;				\
     unsigned long stub = ((unsigned long)&__rt_sigreturn_stub); \
     act.k_sa_sigaction = _Jv_catch_segv;      			\
@@ -158,8 +157,6 @@ while (0)
 #define INIT_FPE						\
 do								\
   { 								\
-    arithexception = new java::lang::ArithmeticException 	\
-      (JvNewStringLatin1 ("/ by zero"));			\
     struct kernel_sigaction act;				\
     unsigned long stub = ((unsigned long)&__rt_sigreturn_stub); \
     act.k_sa_sigaction = _Jv_catch_fpe;				\
@@ -185,7 +182,6 @@ extern "C" {
 do								\
   {								\
     struct kernel_sigaction act;				\
-    nullp = new java::lang::NullPointerException ();    	\
     act.k_sa_sigaction = _Jv_catch_segv;      			\
     act.k_sa_mask = 0;						\
     act.k_sa_flags = SA_SIGINFO;	       			\
@@ -197,8 +193,6 @@ while (0)
 #define INIT_FPE						\
 do								\
   { 								\
-    arithexception = new java::lang::ArithmeticException 	\
-      (JvNewStringLatin1 ("/ by zero"));			\
     struct kernel_sigaction act;				\
     act.k_sa_sigaction = _Jv_catch_fpe;				\
     act.k_sa_mask = 0;						\
@@ -212,7 +206,6 @@ while (0)
 #define INIT_SEGV						\
 do								\
   {								\
-    nullp = new java::lang::NullPointerException ();    	\
     struct sigaction act;					\
     act.sa_sigaction = _Jv_catch_segv;      			\
     sigemptyset (&act.sa_mask);					\
@@ -224,8 +217,6 @@ while (0)
 #define INIT_FPE						\
 do								\
   { 								\
-    arithexception = new java::lang::ArithmeticException 	\
-      (JvNewStringLatin1 ("/ by zero"));			\
     struct sigaction act;					\
     act.sa_sigaction = _Jv_catch_fpe;				\
     sigemptyset (&act.sa_mask);					\
@@ -250,7 +241,6 @@ while (0)
 #define INIT_SEGV						\
 do								\
   {								\
-    nullp = new java::lang::NullPointerException ();    	\
     struct sigaction act;					\
     act.sa_sigaction = _Jv_catch_segv;      			\
     sigemptyset (&act.sa_mask);					\
@@ -262,8 +252,6 @@ while (0)
 #define INIT_FPE						\
 do								\
   { 								\
-    arithexception = new java::lang::ArithmeticException 	\
-      (JvNewStringLatin1 ("/ by zero"));			\
     struct sigaction act;					\
     act.sa_sigaction = _Jv_catch_fpe;				\
     sigemptyset (&act.sa_mask);					\

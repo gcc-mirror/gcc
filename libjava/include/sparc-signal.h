@@ -45,7 +45,6 @@ while (0)
 #define INIT_SEGV						\
 do								\
   {								\
-    nullp = new java::lang::NullPointerException ();		\
     struct sigaction act;					\
     act.sa_sigaction = catch_segv;				\
     act.sa_flags = SA_SIGINFO | SA_NODEFER;			\
@@ -57,8 +56,6 @@ while (0)
 #define INIT_FPE						\
 do								\
   {								\
-    arithexception = new java::lang::ArithmeticException 	\
-      (JvNewStringLatin1 ("/ by zero"));			\
     struct sigaction act;					\
     act.sa_flags = SA_SIGINFO | SA_NODEFER;			\
     act.sa_sigaction = catch_fpe;				\

@@ -24,7 +24,6 @@ static void _name (int _dummy)
 #define INIT_SEGV						\
 do								\
   {								\
-    nullp = new java::lang::NullPointerException ();		\
     signal (SIGSEGV, catch_segv);				\
   }								\
 while (0)							
@@ -32,8 +31,6 @@ while (0)
 #define INIT_FPE						\
 do								\
   {								\
-    arithexception = new java::lang::ArithmeticException 	\
-      (JvNewStringLatin1 ("/ by zero"));			\
     signal (SIGFPE, catch_fpe);					\
   }								\
 while (0)

@@ -52,7 +52,6 @@ struct old_s390_kernel_sigaction {
 #define INIT_SEGV					\
 do							\
   {							\
-    nullp = new java::lang::NullPointerException ();	\
     struct old_s390_kernel_sigaction kact;		\
     kact.k_sa_handler = catch_segv;			\
     kact.k_sa_mask = 0;					\
@@ -64,8 +63,6 @@ while (0)
 #define INIT_FPE						\
 do								\
   {								\
-    arithexception = new java::lang::ArithmeticException	\
-      (JvNewStringLatin1 ("/ by zero"));			\
     struct old_s390_kernel_sigaction kact;			\
     kact.k_sa_handler = catch_fpe;				\
     kact.k_sa_mask = 0;						\

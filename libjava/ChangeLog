@@ -1,3 +1,19 @@
+2003-06-12  Andrew Haley  <aph@redhat.com>
+
+	* prims.cc (catch_segv): Create exception in handler.
+	(catch_fpe): Likewise.	
+	(_Jv_divI, _Jv_remI, _Jv_divJ, _Jv_remJ): Likewise.
+	(_Jv_ThrowSignal): Remove.
+
+	* include/x86_64-signal.h (INIT_SEGV): Delete reference to nullp.
+	* include/default-signal.h (INIT_SEGV, INIT_FPE): Delete reference
+	to nullp and arithexception.
+	* include/dwarf2-signal.h (INIT_SEGV, INIT_FPE): Likewise.
+	* include/i386-signal.h (INIT_SEGV, INIT_FPE): Likewise.
+	* include/s390-signal.h (INIT_SEGV, INIT_FPE): Likewise.
+	* include/sparc-signal.h (INIT_SEGV, INIT_FPE): Likewise.
+	* include/win32-signal.h (INIT_SEGV, INIT_FPE): Likewise.
+
 2003-06-11  Andrew Haley  <aph@redhat.com>
 
 	* jni.cc (_Jv_JNI_check_types): New.

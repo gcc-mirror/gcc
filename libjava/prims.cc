@@ -122,39 +122,27 @@ void (*_Jv_JVMPI_Notify_THREAD_END) (JVMPI_Event *event);
 #endif
 
 
-extern "C" void _Jv_ThrowSignal (jthrowable) __attribute ((noreturn));
-
-// Just like _Jv_Throw, but fill in the stack trace first.  Although
-// this is declared extern in order that its name not be mangled, it
-// is not intended to be used outside this file.
-void 
-_Jv_ThrowSignal (jthrowable throwable)
-{
-  throwable->fillInStackTrace ();
-  throw throwable;
-}
- 
 #ifdef HANDLE_SEGV
-static java::lang::NullPointerException *nullp;
-
 SIGNAL_HANDLER (catch_segv)
 {
+  java::lang::NullPointerException *nullp 
+    = new java::lang::NullPointerException;
   MAKE_THROW_FRAME (nullp);
-  _Jv_ThrowSignal (nullp);
+  throw nullp;
 }
 #endif
-
-static java::lang::ArithmeticException *arithexception;
 
 #ifdef HANDLE_FPE
 SIGNAL_HANDLER (catch_fpe)
 {
+  java::lang::ArithmeticException *arithexception 
+    = new java::lang::ArithmeticException (JvNewStringLatin1 ("/ by zero"));
 #ifdef HANDLE_DIVIDE_OVERFLOW
   HANDLE_DIVIDE_OVERFLOW;
 #else
   MAKE_THROW_FRAME (arithexception);
 #endif
-  _Jv_ThrowSignal (arithexception);
+  throw arithexception;
 }
 #endif
 
@@ -921,9 +909,6 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
   INIT_SEGV;
 #ifdef HANDLE_FPE
   INIT_FPE;
-#else
-  arithexception = new java::lang::ArithmeticException
-    (JvNewStringLatin1 ("/ by zero"));
 #endif
   
   no_memory = new java::lang::OutOfMemoryError;
@@ -1093,7 +1078,11 @@ jint
 _Jv_divI (jint dividend, jint divisor)
 {
   if (__builtin_expect (divisor == 0, false))
-    _Jv_ThrowSignal (arithexception);
+    {
+      java::lang::ArithmeticException *arithexception 
+	= new java::lang::ArithmeticException (JvNewStringLatin1 ("/ by zero"));      
+      throw arithexception;
+    }
   
   if (dividend == (jint) 0x80000000L && divisor == -1)
     return dividend;
@@ -1105,11 +1094,15 @@ jint
 _Jv_remI (jint dividend, jint divisor)
 {
   if (__builtin_expect (divisor == 0, false))
-    _Jv_ThrowSignal (arithexception);
+    {
+      java::lang::ArithmeticException *arithexception 
+	= new java::lang::ArithmeticException (JvNewStringLatin1 ("/ by zero"));      
+      throw arithexception;
+    }
   
   if (dividend == (jint) 0x80000000L && divisor == -1)
     return 0;
-
+  
   return dividend % divisor;
 }
 
@@ -1117,8 +1110,12 @@ jlong
 _Jv_divJ (jlong dividend, jlong divisor)
 {
   if (__builtin_expect (divisor == 0, false))
-    _Jv_ThrowSignal (arithexception);
-  
+    {
+      java::lang::ArithmeticException *arithexception 
+	= new java::lang::ArithmeticException (JvNewStringLatin1 ("/ by zero"));      
+      throw arithexception;
+    }
+
   if (dividend == (jlong) 0x8000000000000000LL && divisor == -1)
     return dividend;
 
@@ -1129,8 +1126,12 @@ jlong
 _Jv_remJ (jlong dividend, jlong divisor)
 {
   if (__builtin_expect (divisor == 0, false))
-    _Jv_ThrowSignal (arithexception);
-  
+    {
+      java::lang::ArithmeticException *arithexception 
+	= new java::lang::ArithmeticException (JvNewStringLatin1 ("/ by zero"));      
+      throw arithexception;
+    }
+
   if (dividend == (jlong) 0x8000000000000000LL && divisor == -1)
     return 0;
 
