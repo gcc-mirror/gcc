@@ -2438,7 +2438,11 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
   TREE_SET_CODE (t, code);
 
   TREE_TYPE (t) = type;
+#ifdef USE_MAPPED_LOCATION
+  SET_EXPR_LOCATION (t, UNKNOWN_LOCATION);
+#else
   SET_EXPR_LOCUS (t, NULL);
+#endif
   TREE_COMPLEXITY (t) = 0;
   TREE_OPERAND (t, 0) = node;
   TREE_BLOCK (t) = NULL_TREE;
@@ -2748,7 +2752,28 @@ build_block (tree vars, tree tags ATTRIBUTE_UNUSED, tree subblocks,
   return block;
 }
 
+#if 1 /* ! defined(USE_MAPPED_LOCATION) */
+/* ??? gengtype doesn't handle conditionals */
 static GTY(()) tree last_annotated_node;
+#endif
+
+#ifdef USE_MAPPED_LOCATION
+
+expanded_location
+expand_location (source_location loc)
+{
+  expanded_location xloc;
+  if (loc == 0) { xloc.file = NULL; xloc.line = 0; }
+  else
+    {
+      const struct line_map *map = linemap_lookup (&line_table, loc);
+      xloc.file = map->to_file;
+      xloc.line = SOURCE_LINE (map, loc);
+    };
+  return xloc;
+}
+
+#else
 
 /* Record the exact location where an expression or an identifier were
    encountered.  */
@@ -2792,6 +2817,7 @@ annotate_with_locus (tree node, location_t locus)
 {
   annotate_with_file_line (node, locus.file, locus.line);
 }
+#endif
 
 /* Return a declaration like DDECL except that its DECL_ATTRIBUTES
    is ATTRIBUTE.  */

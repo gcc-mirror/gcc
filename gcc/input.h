@@ -22,19 +22,41 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_INPUT_H
 #define GCC_INPUT_H
 
+#include "line-map.h"
 extern struct line_maps line_table;
 
-/* The data structure used to record a location in a translation unit.  */
-/* Long-term, we want to get rid of this and typedef fileline location_t.  */
-struct location_s GTY (())
+/* The location for declarations in "<built-in>" */
+#define BUILTINS_LOCATION ((source_location) 2)
+
+typedef struct location_s GTY(())
 {
   /* The name of the source file involved.  */
   const char *file;
 
   /* The line-location in the source file.  */
   int line;
-};
+
+  /* FUTURE (but confuses gentype): int column. */
+} expanded_location;
+
+#ifdef USE_MAPPED_LOCATION
+
+extern expanded_location expand_location (source_location);
+
+#define UNKNOWN_LOCATION ((source_location) 0)
+typedef source_location location_t; /* deprecated typedef */
+typedef source_location source_locus; /* to be removed */
+
+#else /* ! USE_MAPPED_LOCATION */
+
 typedef struct location_s location_t;
+typedef location_t *source_locus;
+
+#define expand_location(FILELINE) (FILELINE)
+extern location_t unknown_location;
+#define UNKNOWN_LOCATION unknown_location
+
+#endif /* ! USE_MAPPED_LOCATION */
 
 struct file_stack
 {
@@ -46,8 +68,18 @@ struct file_stack
 extern const char *main_input_filename;
 
 extern location_t input_location;
-#define input_line (input_location.line)
-#define input_filename (input_location.file)
+#ifdef USE_MAPPED_LOCATION
+extern void push_srcloc (location_t);
+#else /* ! USE_MAPPED_LOCATION */
+extern void push_srcloc (const char *name, int line);
+#endif /* ! USE_MAPPED_LOCATION */
+extern void pop_srcloc (void);
+
+#define LOCATION_FILE(LOC) ((expand_location (LOC)).file)
+#define LOCATION_LINE(LOC) ((expand_location (LOC)).line)
+
+#define input_line LOCATION_LINE(input_location)
+#define input_filename LOCATION_FILE(input_location)
 
 /* Stack of currently pending input files.
    The line member is not accurate for the innermost file on the stack.  */
@@ -55,8 +87,5 @@ extern struct file_stack *input_file_stack;
 
 /* Incremented on each change to input_file_stack.  */
 extern int input_file_stack_tick;
-
-extern void push_srcloc (const char *name, int line);
-extern void pop_srcloc (void);
 
 #endif
