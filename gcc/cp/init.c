@@ -3079,6 +3079,10 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       tree parent_auto_delete = auto_delete;
       tree cond;
 
+      /* Set this again before we call anything, as we might get called
+	 recursively.  */
+      TYPE_HAS_DESTRUCTOR (type) = 1;
+
       /* If we have member delete or vbases, we call delete in
 	 finish_function.  */
       if (auto_delete == integer_zero_node)
