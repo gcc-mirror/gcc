@@ -1,5 +1,9 @@
 2001-04-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.old-deja/g++.other/lookup23.C: New test.
+
+2001-04-20  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc.c-torture/execute/20010403-1.c: New test.
 
 2001-04-19  David Billinghurst <David.Billinghurst@riotinto.com>

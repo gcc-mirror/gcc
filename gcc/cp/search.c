@@ -1384,11 +1384,27 @@ lookup_field_r (binfo, data)
      we ignore all non-types we find.  */
   if (lfi->want_type && TREE_CODE (nval) != TYPE_DECL)
     {
-      nval = purpose_member (lfi->name, CLASSTYPE_TAGS (type));
-      if (nval)
-	nval = TYPE_MAIN_DECL (TREE_VALUE (nval));
-      else 
-	return NULL_TREE;
+      if (lfi->name == TYPE_IDENTIFIER (type))
+	{
+	  /* If the aggregate has no user defined constructors, we allow
+	     it to have fields with the same name as the enclosing type.
+	     If we are looking for that name, find the corresponding
+	     TYPE_DECL.  */
+	  for (nval = TREE_CHAIN (nval); nval; nval = TREE_CHAIN (nval))
+	    if (DECL_NAME (nval) == lfi->name
+		&& TREE_CODE (nval) == TYPE_DECL)
+	      break;
+	}
+      else
+	nval = NULL_TREE;
+      if (!nval)
+	{
+	  nval = purpose_member (lfi->name, CLASSTYPE_TAGS (type));
+	  if (nval)
+	    nval = TYPE_MAIN_DECL (TREE_VALUE (nval));
+	  else 
+	    return NULL_TREE;
+	}
     }
 
   /* You must name a template base class with a template-id.  */

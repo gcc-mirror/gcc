@@ -1,3 +1,8 @@
+2001-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* search.c (lookup_field_r): If looking for type and non-TYPE_DECL
+	is found, look first if name does not match the structure name.
+
 2001-04-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_LANGUAGE): Don't assume DECL_LANG_SPECIFIC is
