@@ -256,6 +256,9 @@ do {									\
 #undef CTORS_SECTION_ASM_OP
 #undef DTORS_SECTION_ASM_OP
 
+#define LINK_GCC_C_SEQUENCE_SPEC \
+  "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
+
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
 

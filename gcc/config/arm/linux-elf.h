@@ -123,3 +123,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  CC1_SPEC
 #define CC1_SPEC "%{profile:-p}"
+
+#define LINK_GCC_C_SEQUENCE_SPEC \
+  "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
