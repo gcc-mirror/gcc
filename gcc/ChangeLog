@@ -1,3 +1,8 @@
+2004-11-02  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR debug/18242
+	* toplev.c (debug_type_names): Remove "dwarf-1".
+
 2004-11-02  Ben Elliston  <bje@au.ibm.com>
 
 	* timevar.h (timevar_get): Remove. 
