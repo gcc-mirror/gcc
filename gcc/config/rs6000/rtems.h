@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a PowerPC using elf.
-   Copyright (C) 1996, 1997, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -32,3 +32,6 @@ Boston, MA 02111-1307, USA.  */
       builtin_assert ("machine=powerpc"); \
     }                                     \
   while (0)
+
+#undef CPP_OS_DEFAULT_SPEC
+#define CPP_OS_DEFAULT_SPEC "%(cpp_os_rtems)"
