@@ -870,6 +870,7 @@ lookup_field (xbasetype, name, protect, want_type)
   tree entry, binfo, binfo_h;
   tree own_access = access_default_node;
   int vbase_name_p = VBASE_NAME_P (name);
+  tree ambiguous = NULL_TREE;
 
   /* rval_binfo is the binfo associated with the found member, note,
      this can be set with useful information, even when rval is not
@@ -986,6 +987,7 @@ lookup_field (xbasetype, name, protect, want_type)
       tree binfos = BINFO_BASETYPES (binfo);
       int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
       tree nval;
+      int idx = -1;
 
       /* Process and/or queue base types.  */
       for (i = 0; i < n_baselinks; i++)
@@ -1040,7 +1042,7 @@ lookup_field (xbasetype, name, protect, want_type)
 
       nval = lookup_field_1 (type, name);
 
-      if (nval || lookup_fnfields_here (type, name)>=0)
+      if (nval || (idx = lookup_fnfields_here (type, name)) >= 0)
 	{
 	  if (nval && nval == rval && SHARED_MEMBER_P (nval))
 	    {
@@ -1074,10 +1076,20 @@ lookup_field (xbasetype, name, protect, want_type)
 	    }
 	  else
 	    {
-	      /* This is ambiguous.  */
-	      errstr = "request for member `%D' is ambiguous";
-	      protect += 2;
-	      break;
+	      /* This is ambiguous. Remember it. */
+	      if (! ambiguous)
+	        {
+	          errstr = "request for member `%D' is ambiguous";
+	          protect += 2;
+	          if (rval)
+	            ambiguous = scratch_tree_cons (NULL_TREE, rval, ambiguous);
+	        }
+	      if (! nval)
+	        {
+	          nval = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx);
+	          nval = OVL_CURRENT (nval);
+	        }
+              ambiguous = scratch_tree_cons (NULL_TREE, nval, ambiguous);
 	    }
 	}
     }
@@ -1176,6 +1188,8 @@ lookup_field (xbasetype, name, protect, want_type)
   if (errstr && protect)
     {
       cp_error (errstr, name, type);
+      if (ambiguous)
+        print_candidates (ambiguous);
       rval = error_mark_node;
     }
 

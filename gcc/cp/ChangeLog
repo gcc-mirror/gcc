@@ -1,3 +1,46 @@
+1999-02-26  Nathan Sidwell  <nathan@acm.org>
+
+	* typeck.c (complete_type_or_else): Add VALUE arg, for helpful
+	diagnostics.
+	cp-tree.h (complete_type_or_else): Added VALUE parameter.
+	* init.c (build_new_1): Extra arg to complete_type_or_else.
+	(build_delete): Likewise.
+	* typeck.c (require_complete_type): Likewise.
+	(pointer_int_sum): Likewise.
+	(pointer_diff): Likewise.
+	(build_component_ref): Likewise.
+	
+	* typeck2.c (incomplete_type_error): Always use cp_error.
+	Show declaration of undefined type, if appropriate.
+	Deal with UNKNOWN_TYPE nodes.
+	
+	* typeck.c (require_complete_type): Use TYPE_SIZE as
+	size_zero_node to mean incomplete type.
+	(require_complete_type_in_void): New function.
+	(build_compound_expr): Call complete_type_in_void for LHS.
+	(build_c_cast): Call complete_type_in_void for void cast.
+	* cvt.c (ocp_convert): Call complete_type_in_void for void cast.
+	* decl.c (cplus_expand_expr_stmt): Void expression checks moved to
+	require_complete_type_in_void. Call it.
+	* cp-tree.h (require_complete_type_in_void): Prototype new function.
+
+	* typeck.c (convert_arguments): Use alternative format for function 
+	decls. Don't require_complete_type here. Simplify diagnostic printing.
+	(convert_for_initialization): Don't require_complete_type on RHS yet.
+	* call.c (convert_arg_to_ellipsis): Call require_complete_type.
+	
+	* call.c (build_over_call): Cope with qualified void return type.
+	* semantics.c (finish_call_expr): Likewise
+	* typeck.c (build_function_call_real): Likewise
+	(c_expand_return): Likewise
+	* decl2.c (reparse_absdcl_as_expr): Cope with qualified void type.
+	
+	* call.c (print_z_candidates): Use alternate print format, to be
+	consistant with (pt.c) print_candidates.
+	method.c (hack_identifier): List candidate members.
+	search.c (lookup_field): Build ambiguous list, and show it, if
+	ambiguous.
+
 1999-02-26  Mark Mitchell  <mark@markmitchell.com>
 
 	* typeck.c (decay_conversion): Don't confuse constant array
