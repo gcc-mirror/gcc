@@ -2089,7 +2089,8 @@ Laddsf$2:
 	movew	d3,d2
 	swap	d2
 	subw	#16,d7
-	bra	2b
+	bne	2b		| if still more bits, go back to normal case
+	bra	Laddsf$3
 5:
 	exg	d6,d7		| exchange the exponents
 	subl	d6,d7		| keep the largest exponent
@@ -2112,7 +2113,8 @@ Laddsf$2:
 	movew	d1,d0
 	swap	d0
 	subw	#16,d7
-	bra	6b
+	bne	6b		| if still more bits, go back to normal case
+				| otherwise we fall through
 
 | Now we have a in d0-d1, b in d2-d3, and the largest exponent in d6 (the
 | signs are stored in a0 and a1).
