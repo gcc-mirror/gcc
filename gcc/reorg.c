@@ -2857,12 +2857,24 @@ fill_simple_delay_slots (first, non_jumps_p)
 	  && eligible_for_delay (insn, slots_filled, trial, flags)
 	  && no_labels_between_p (insn, trial))
 	{
+	  rtx *tmp;
 	  slots_filled++;
 	  delay_list = add_to_delay_list (trial, delay_list);
+
+	  /* TRIAL may have had its delay slot filled, then unfilled.  When
+	     the delay slot is unfilled, TRIAL is placed back on the unfilled
+	     slots obstack.  Unfortunately, it is placed on the end of the
+	     obstack, not in its original location.  Therefore, we must search
+	     from entry i + 1 to the end of the unfilled slots obstack to
+	     try and find TRIAL.  */
+	  tmp = &unfilled_slots_base[i + 1];
+	  while (*tmp != trial && tmp != unfilled_slots_next)
+	    tmp++;
+
 	  /* Remove the unconditional jump from consideration for delay slot
-	     filling and unthread it.  */
-	  if (unfilled_slots_base[i + 1] == trial)
-	    unfilled_slots_base[i + 1] = 0;
+	     filling and unthread it.   */
+	  if (*tmp == trial)
+	    *tmp = 0;
 	  {
 	    rtx next = NEXT_INSN (trial);
 	    rtx prev = PREV_INSN (trial);
