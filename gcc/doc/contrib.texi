@@ -690,6 +690,11 @@ Craig Rodrigues for processing tons of bug reports.
 Gavin Romig-Koch for lots of behind the scenes MIPS work.
 
 @item
+David Ronis inspired and encouraged Craig to rewrite the G77
+documentation in texinfo format by contributing a first pass at a
+translation of the old @file{g77-0.5.16/f/DOC} file.
+
+@item
 Ken Rose for fixes to our delay slot filling code.
 
 @item
@@ -772,7 +777,9 @@ Randy Smith finished the Sun FPA support.
 
 @item
 Scott Snyder for queue, iterator, istream, and string fixes and libstdc++
-testsuite entries.
+testsuite entries.  Also for providing the patch to G77 to add
+rudimentary support for @code{INTEGER*1}, @code{INTEGER*2}, and
+@code{LOGICAL*1}.
 
 @item
 Brad Spencer for contributions to the GLIBCPP_FORCE_NEW technique.
@@ -970,6 +977,9 @@ Sidney Cadot
 Bradford Castalia
 
 @item
+Jonathan Corbet
+
+@item
 Ralph Doncaster
 
 @item
@@ -980,6 +990,9 @@ Levente Farkas
 
 @item
 Graham Fawcett
+
+@item
+Mark Fernyhough
 
 @item
 Robert A. French
@@ -1018,6 +1031,9 @@ Phil Hargett
 Amancio Hasty
 
 @item
+Takafumi Hayashi
+
+@item
 Bryan W. Headley
 
 @item
@@ -1030,6 +1046,9 @@ Joep Jansen
 Christian Joensson
 
 @item
+Michel Kern
+
+@item
 David Kidd
 
 @item
@@ -1037,6 +1056,9 @@ Tobias Kuipers
 
 @item
 Anand Krishnaswamy
+
+@item
+A. O. V. Le Blanc
 
 @item
 llewelly
@@ -1054,6 +1076,9 @@ Matthias Klose
 Martin Knoblauch
 
 @item
+Rick Lutowski
+
+@item
 Jesse Macnish
 
 @item
@@ -1069,6 +1094,9 @@ Matthias Mueller
 Pekka Nikander
 
 @item
+Rick Niles
+
+@item
 Jon Olson
 
 @item
@@ -1079,6 +1107,9 @@ Chris Pollard
 
 @item
 Richard Polton
+
+@item
+Derk Reefman
 
 @item
 David Rees
@@ -1099,6 +1130,9 @@ Danny Sadinoff
 Marc Schifer
 
 @item
+Wayne K. Schroll
+
+@item
 David Schuler
 
 @item
@@ -1111,10 +1145,19 @@ Tim Souder
 Adam Sulmicki
 
 @item
+Bill Thorson
+
+@item
 George Talbot
 
 @item
+Pedro A. M. Vazquez
+
+@item
 Gregory Warnes
+
+@item
+Ian Watson
 
 @item
 David E. Young
