@@ -1,6 +1,6 @@
 // natFileDescriptorWin32.cc - Native part of FileDescriptor class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation, Inc.
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation, Inc.
 
    This file is part of libgcj.
 
@@ -184,6 +184,58 @@ java::io::FileDescriptor::close (void)
   fd = (jint)INVALID_HANDLE_VALUE;
   if (! CloseHandle (save))
     throw new IOException (JvNewStringLatin1 (winerr ()));
+}
+
+void
+java::io::FileDescriptor::setLength(jlong pos)
+{
+  LONG liOrigFilePointer;
+  LONG liNewFilePointer;
+  LONG liEndFilePointer;
+
+  // Get the original file pointer.
+  if (SetFilePointer((HANDLE) fd, (LONG) 0, &liOrigFilePointer,
+		     FILE_CURRENT) != (BOOL) 0
+      && (GetLastError() != NO_ERROR))
+    throw new IOException (JvNewStringLatin1 (winerr ()));
+
+  // Get the length of the file.
+  if (SetFilePointer((HANDLE) fd, (LONG) 0, &liEndFilePointer,
+		     FILE_END) != (BOOL) 0
+      && (GetLastError() != NO_ERROR))
+    throw new IOException (JvNewStringLatin1 (winerr ()));
+
+  if ((jlong)liEndFilePointer == pos)
+    {
+      // Restore the file pointer.
+      if (liOrigFilePointer != liEndFilePointer)
+	{
+	  if (SetFilePointer((HANDLE) fd, liOrigFilePointer, &liNewFilePointer,
+			     FILE_BEGIN) != (BOOL) 0
+	      && (GetLastError() != NO_ERROR))
+	    throw new IOException (JvNewStringLatin1 (winerr ()));
+	}
+      return;
+    }
+
+  // Seek to the new end of file.
+  if (SetFilePointer((HANDLE) fd, (LONG) pos, &liNewFilePointer,
+		     FILE_BEGIN) != (BOOL) 0
+      && (GetLastError() != NO_ERROR))
+    throw new IOException (JvNewStringLatin1 (winerr ()));
+
+  // Truncate the file at this point.
+  if (SetEndOfFile((HANDLE) fd) != (BOOL) 0 && (GetLastError() != NO_ERROR))
+    throw new IOException (JvNewStringLatin1 (winerr ()));
+
+  if (liOrigFilePointer < liNewFilePointer)
+    {
+      // Restore the file pointer.
+      if (SetFilePointer((HANDLE) fd, liOrigFilePointer, &liNewFilePointer,
+			 FILE_BEGIN) != (BOOL) 0
+	  && (GetLastError() != NO_ERROR))
+	throw new IOException (JvNewStringLatin1 (winerr ()));
+    }
 }
 
 jint

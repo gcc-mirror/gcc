@@ -1,3 +1,12 @@
+2002-07-24  Tom Tromey  <tromey@redhat.com>
+            Tony Kimball <alk@pobox.com>
+
+	* java/io/natFileDescriptorWin32.cc (setLength): New method.
+	* java/io/natFileDescriptorPosix.cc (setLength): New method.
+	* java/io/RandomAccessFile.java (setLength): New method.
+	* java/io/natFileDescriptorEcos.cc (setLength): New method.
+	* java/io/FileDescriptor.java (setLength): New method.
+
 2002-07-24  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/reflect/natField.cc (setAddr): Check isAccessible().

@@ -95,6 +95,11 @@ java::io::FileDescriptor::close (void)
 {
 }
 
+void
+java::io::FileDescriptor::setLength (long)
+{
+}
+
 jint
 java::io::FileDescriptor::seek (jlong pos, jint whence, jboolean)
 {
