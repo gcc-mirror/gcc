@@ -719,6 +719,8 @@ yylex ()
 {
   int yychr;
   int old_looking_for_typename = 0;
+  int just_saw_new = 0;
+  int just_saw_friend = 0;
 
   timevar_push (TV_LEX);
 
@@ -804,13 +806,13 @@ yylex ()
 	}
       /* do_aggr needs to know if the previous token was `friend'.  */
       else if (nth_token (0)->yylval.ttype == ridpointers[RID_FRIEND])
-	after_friend = 1;
+	just_saw_friend = 1;
 
       break;
 
     case NEW:
       /* do_aggr needs to know if the previous token was `new'.  */
-      after_new = 1;
+      just_saw_new = 1;
       break;
 
     case TYPESPEC:
@@ -824,7 +826,6 @@ yylex ()
 
     case AGGR:
       do_aggr ();
-      after_friend = after_new = 0;
       break;
 
     case ENUM:
@@ -835,6 +836,9 @@ yylex ()
     default:
       break;
     }
+
+  after_friend = just_saw_friend;
+  after_new = just_saw_new;
 
   /* class member lookup only applies to the first token after the object
      expression, except for explicit destructor calls.  */
