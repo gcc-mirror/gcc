@@ -1,3 +1,13 @@
+2002-11-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.h (enum rs6000_builtins): Remove evmwlssf,
+	evmwlsmf, evmwlssfa, evmwlsmfa, evmwlssfaaw, evmwlsmfaaw,
+	evmwlssfanw, evmwlsmfanw.
+
+	* config/rs6000/rs6000.c (bdesc_2arg): Same.
+
+	* config/rs6000/spe.md: Same for patterns.
+
 2002-11-25  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	PR c/8639
