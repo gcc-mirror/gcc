@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1995-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -28,7 +28,7 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- Extensive contributions were provided by Ada Core Technologies Inc.   --
 --                                                                          --
 ------------------------------------------------------------------------------
 

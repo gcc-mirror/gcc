@@ -5,7 +5,7 @@
 --                  S Y S T E M . S C A L A R _ V A L U E S                 --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -28,7 +28,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 

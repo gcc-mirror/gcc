@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision$
+ *                            $Revision: 1.2 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -28,7 +28,7 @@
  * file might be covered by the  GNU Public License.                        *
  *                                                                          *
  * GNAT was originally developed  by the GNAT team at  New York University. *
- * It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). *
+ * Extensive contributions were provided by Ada Core Technologies Inc.      *
  *                                                                          *
  ****************************************************************************/
 

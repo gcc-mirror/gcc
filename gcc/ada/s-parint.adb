@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                   (Dummy body for non-distributed case)                  --
 --                                                                          --
---                             $Revision: 1.21 $
+--                             $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1995-2000 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -30,7 +30,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 

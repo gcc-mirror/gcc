@@ -4,7 +4,7 @@
  *                                                                          *
  *                               A D A I N T                                *
  *                                                                          *
- *                            $Revision: 1.4 $
+ *                            $Revision: 1.5 $
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
@@ -28,7 +28,7 @@
  * file might be covered by the  GNU Public License.                        *
  *                                                                          *
  * GNAT was originally developed  by the GNAT team at  New York University. *
- * It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). *
+ * Extensive contributions were provided by Ada Core Technologies Inc.      *
  *                                                                          *
  ****************************************************************************/
 

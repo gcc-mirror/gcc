@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.55 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -21,7 +21,7 @@
 -- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- Extensive contributions were provided by Ada Core Technologies Inc.   --
 --                                                                          --
 ------------------------------------------------------------------------------
 
