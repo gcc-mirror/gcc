@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "timevar.h"
 #include "cpplib.h"
+#include "target.h"
 extern cpp_reader *parse_in;
 
 /* This structure contains information about the initializations
@@ -2455,13 +2456,15 @@ import_export_class (ctype)
   if (CLASSTYPE_INTERFACE_ONLY (ctype))
     return;
 
-#ifdef VALID_MACHINE_TYPE_ATTRIBUTE
-  /* FIXME this should really use some sort of target-independent macro.  */
-  if (lookup_attribute ("dllimport", TYPE_ATTRIBUTES (ctype)))
-    import_export = -1;
-  else if (lookup_attribute ("dllexport", TYPE_ATTRIBUTES (ctype)))
-    import_export = 1;
-#endif
+  if (target.valid_type_attribute != NULL)
+    {
+      /* FIXME this should really use some sort of target-independent
+         macro.  */
+      if (lookup_attribute ("dllimport", TYPE_ATTRIBUTES (ctype)))
+	import_export = -1;
+      else if (lookup_attribute ("dllexport", TYPE_ATTRIBUTES (ctype)))
+	import_export = 1;
+    }
 
   /* If we got -fno-implicit-templates, we import template classes that
      weren't explicitly instantiated.  */

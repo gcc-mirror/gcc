@@ -39,6 +39,8 @@
 #include "function.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "target.h"
+#include "target-def.h"
 
 static void d30v_print_operand_memory_reference PARAMS ((FILE *, rtx));
 static void d30v_build_long_insn PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
@@ -76,7 +78,10 @@ enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 /* Map class letter into register class */
 enum reg_class reg_class_from_letter[256];
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro

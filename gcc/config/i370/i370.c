@@ -41,6 +41,8 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "c-lex.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 extern FILE *asm_out_file;
 
@@ -283,7 +285,11 @@ static const unsigned char ebcasc[256] =
  /*F8   8     9                                     */
      0x38, 0x39, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF
 };
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Map characters from one character set to another.
    C is the character to be translated.  */
 

@@ -42,6 +42,8 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 /*}}}*/
 /*{{{  Function Prologues & Epilogues */ 
@@ -136,7 +138,11 @@ static struct fr30_frame_info 	zero_frame_info;
 #if UNITS_PER_WORD == 4
 #define WORD_ALIGN(SIZE) (((SIZE) + 3) & ~3)
 #endif
-     
+
+/* Initialize the GCC target structure.  */
+
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Returns the number of bytes offset between FROM_REG and TO_REG
    for the current function.  As a side effect it fills in the 
    current_frame_info structure, if the data is available.  */

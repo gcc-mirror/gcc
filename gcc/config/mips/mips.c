@@ -49,8 +49,9 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "tm_p.h"
 #include "ggc.h"
-
 #include "gstab.h"
+#include "target.h"
+#include "target-def.h"
 
 #ifdef __GNU_STAB__
 #define STAB_CODE_TYPE enum __stab_debug_code
@@ -427,7 +428,10 @@ enum reg_class mips_char_to_class[256] =
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
   NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
 };
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
 
 /* Return truth value of whether OP can be used as an operands
    where a register or 16 bit unsigned integer is needed.  */

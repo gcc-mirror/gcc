@@ -39,6 +39,8 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "toplev.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 extern int flag_traditional;
 extern FILE *asm_out_file;
@@ -60,6 +62,10 @@ rtx m88k_compare_op0;		/* cmpsi operand 0 */
 rtx m88k_compare_op1;		/* cmpsi operand 1 */
 
 enum processor_type m88k_cpu;	/* target cpu */
+
+/* Initialize the GCC target structure.  */
+
+struct gcc_target target = TARGET_INITIALIZER;
 
 /* Determine what instructions are needed to manufacture the integer VALUE
    in the given MODE.  */

@@ -44,6 +44,8 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "c-lex.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -86,7 +88,11 @@ static int ret_label = 0;
 ((TYPE_ARG_TYPES (TREE_TYPE (FNDECL)) != 0						      \
   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (FNDECL)))) != void_type_node))    \
  || current_function_varargs)
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Initialize variables before compiling any files.  */
 
 void

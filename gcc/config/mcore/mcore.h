@@ -35,15 +35,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Run-time Target Specification.  */
 #define TARGET_MCORE
 
-/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
-   is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-#undef  VALID_MACHINE_DECL_ATTRIBUTE
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
-  mcore_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
-
-#define MERGE_MACHINE_DECL_ATTRIBUTES(OLD, NEW) \
-  mcore_merge_machine_decl_attributes (OLD, NEW)
+/* Get tree.c to declare a target-specific specialization of
+   merge_decl_attributes.  */
+#define TARGET_DLLIMPORT_DECL_ATTRIBUTES
 
 /* Support the __declspec keyword by turning them into attributes.
    We currently only support: dllexport and dllimport.

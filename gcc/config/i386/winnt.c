@@ -95,58 +95,6 @@ i386_pe_valid_type_attribute_p (type, attributes, attr, args)
   return ix86_valid_type_attribute_p (type, attributes, attr, args);
 }
 
-/* Merge attributes in decls OLD and NEW.
-
-   This handles the following situation:
-
-   __declspec (dllimport) int foo;
-   int foo;
-
-   The second instance of `foo' nullifies the dllimport.  */
-
-tree
-i386_pe_merge_decl_attributes (old, new)
-     tree old, new;
-{
-  tree a;
-  int delete_dllimport_p;
-
-  old = DECL_MACHINE_ATTRIBUTES (old);
-  new = DECL_MACHINE_ATTRIBUTES (new);
-
-  /* What we need to do here is remove from `old' dllimport if it doesn't
-     appear in `new'.  dllimport behaves like extern: if a declaration is
-     marked dllimport and a definition appears later, then the object
-     is not dllimport'd.  */
-
-  if (lookup_attribute ("dllimport", old) != NULL_TREE
-      && lookup_attribute ("dllimport", new) == NULL_TREE)
-    delete_dllimport_p = 1;
-  else
-    delete_dllimport_p = 0;
-
-  a = merge_attributes (old, new);
-
-  if (delete_dllimport_p)
-    {
-      tree prev,t;
-
-      /* Scan the list for dllimport and delete it.  */
-      for (prev = NULL_TREE, t = a; t; prev = t, t = TREE_CHAIN (t))
-	{
-	  if (is_attribute_p ("dllimport", TREE_PURPOSE (t)))
-	    {
-	      if (prev == NULL_TREE)
-		a = TREE_CHAIN (a);
-	      else
-		TREE_CHAIN (prev) = TREE_CHAIN (t);
-	      break;
-	    }
-	}
-    }
-
-  return a;
-}
 
 /* Return the type that we should use to determine if DECL is
    imported or exported.  */

@@ -998,12 +998,6 @@ struct cum_arg
    so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
 
-/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
-   is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
-h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
-
 #define ADJUST_INSN_LENGTH(INSN, LENGTH) \
   LENGTH += h8300_adjust_insn_length (INSN, LENGTH);
 

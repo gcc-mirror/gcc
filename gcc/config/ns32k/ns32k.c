@@ -35,6 +35,8 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "recog.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 #ifdef OSF_OS
 int ns32k_num_files = 0;
@@ -62,7 +64,14 @@ const char *const ns32k_out_reg_names[] = OUTPUT_REGISTER_NAMES;
 static rtx gen_indexed_expr PARAMS ((rtx, rtx, rtx));
 static const char *singlemove_string PARAMS ((rtx *));
 static void move_tail PARAMS ((rtx[], int, int));
+static int ns32k_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_VALID_TYPE_ATTRIBUTE
+#define TARGET_VALID_TYPE_ATTRIBUTE ns32k_valid_type_attribute_p
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE. */ 
 int
 hard_regno_mode_ok (regno, mode)
@@ -634,24 +643,10 @@ symbolic_reference_mentioned_p (op)
 }
 
 /* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
-   attribute for DECL.  The attributes in ATTRIBUTES have previously been
-   assigned to DECL.  */
-
-int
-ns32k_valid_decl_attribute_p (decl, attributes, identifier, args)
-     tree decl ATTRIBUTE_UNUSED;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier ATTRIBUTE_UNUSED;
-     tree args ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-
-/* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
    attribute for TYPE.  The attributes in ATTRIBUTES have previously been
    assigned to TYPE.  */
 
-int
+static int
 ns32k_valid_type_attribute_p (type, attributes, identifier, args)
      tree type;
      tree attributes ATTRIBUTE_UNUSED;

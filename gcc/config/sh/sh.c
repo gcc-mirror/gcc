@@ -37,6 +37,8 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "c-pragma.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
@@ -151,6 +153,13 @@ static int calc_live_regs PARAMS ((int *, int *));
 static void mark_use PARAMS ((rtx, rtx *));
 static HOST_WIDE_INT rounded_frame_size PARAMS ((int));
 static rtx mark_constant_pool_use PARAMS ((rtx));
+static int sh_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_VALID_DECL_ATTRIBUTE
+#define TARGET_VALID_DECL_ATTRIBUTE sh_valid_decl_attribute
+
+struct gcc_target target = TARGET_INITIALIZER;
 
 /* Print the operand address in x to the stream.  */
 
@@ -4626,8 +4635,8 @@ sh_pragma_insert_attributes (node, attributes, prefix)
    trap_exit -- use a trapa to exit an interrupt function instead of
    an rte instruction.  */
 
-int
-sh_valid_machine_decl_attribute (decl, attributes, attr, args)
+static int
+sh_valid_decl_attribute (decl, attributes, attr, args)
      tree decl;
      tree attributes ATTRIBUTE_UNUSED;
      tree attr;

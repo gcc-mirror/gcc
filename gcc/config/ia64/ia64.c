@@ -42,6 +42,8 @@ Boston, MA 02111-1307, USA.  */
 #include "basic-block.h"
 #include "toplev.h"
 #include "sched-int.h"
+#include "target.h"
+#include "target-def.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -134,6 +136,13 @@ static rtx ia64_expand_compare_and_swap PARAMS ((enum machine_mode, int,
 static rtx ia64_expand_lock_test_and_set PARAMS ((enum machine_mode,
 						  tree, rtx));
 static rtx ia64_expand_lock_release PARAMS ((enum machine_mode, tree, rtx));
+static int ia64_valid_type_attribute PARAMS((tree, tree, tree, tree));
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_VALID_TYPE_ATTRIBUTE
+#define TARGET_VALID_TYPE_ATTRIBUTE ia64_valid_type_attribute
+
+struct gcc_target target = TARGET_INITIALIZER;
 
 /* Return 1 if OP is a valid operand for the MEM of a CALL insn.  */
 
@@ -6524,7 +6533,7 @@ ia64_epilogue_uses (regno)
 
 /* Return true if IDENTIFIER is a valid attribute for TYPE.  */
 
-int
+static int
 ia64_valid_type_attribute (type, attributes, identifier, args)
      tree type;
      tree attributes ATTRIBUTE_UNUSED;

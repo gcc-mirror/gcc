@@ -38,6 +38,8 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "toplev.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 /* Global registers known to hold the value zero.
 
@@ -63,7 +65,11 @@ static void count_tst_insns PARAMS ((int *));
 
 /* Note whether or not we need an out of line epilogue.  */
 static int out_of_line_epilogue;
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Indicate this file was compiled by gcc and what optimization
    level was used.  */
 void

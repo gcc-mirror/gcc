@@ -42,6 +42,8 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 static rtx find_addr_reg PARAMS ((rtx));
 static int reg_clobbered_p PARAMS ((rtx, rtx));
@@ -59,6 +61,10 @@ const char *i860_reg_prefix = I860_REG_PREFIX;
 /* Save information from a "cmpxx" operation until the branch is emitted.  */
 
 rtx i860_compare_op0, i860_compare_op1;
+
+/* Initialize the GCC target structure.  */
+
+struct gcc_target target = TARGET_INITIALIZER;
 
 /* Return non-zero if this pattern, can be evaluated safely, even if it
    was not asked for.  */

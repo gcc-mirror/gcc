@@ -1575,12 +1575,6 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.align %d\n", 1 << (LOG)); } while (0)
 /* A function address in a call instruction.  */
 #define FUNCTION_MODE SImode
 
-/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
-   is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
-arc_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
-
 /* A C expression that returns zero if the attributes on TYPE1 and TYPE2 are
    incompatible, one if they are compatible, and two if they are
    nearly compatible (which causes a warning to be generated).  */

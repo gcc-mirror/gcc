@@ -38,6 +38,8 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "recog.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 const char *text_seg_name;
 const char *rsect_text;
@@ -145,7 +147,11 @@ static const char *const lshift_right_asm_first[] =
 };
 
 static int reg_save_size PARAMS ((void));
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 int 
 hard_regno_mode_ok (regno, mode)
      int regno;

@@ -36,7 +36,6 @@ extern void   m32r_asm_file_start		PARAMS ((FILE *));
 extern void   m32r_sched_init 			PARAMS ((FILE *, int));
 extern int    direct_return 			PARAMS ((void));
 #ifdef TREE_CODE
-extern int    m32r_valid_machine_decl_attribute	PARAMS ((tree, tree, tree, tree));
 extern int    m32r_comp_type_attributes		PARAMS ((tree, tree));
 extern void   m32r_select_section		PARAMS ((tree, int));
 extern void   m32r_encode_section_info		PARAMS ((tree));

@@ -35,6 +35,8 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "tree.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 /*
 #define FPU_REG_P(X)	((X)>=8 && (X)<14)
@@ -50,7 +52,11 @@ int current_first_parm_offset;
 
 static rtx find_addr_reg PARAMS ((rtx)); 
 static const char *singlemove_string PARAMS ((rtx *)); 
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Nonzero if OP is a valid second operand for an arithmetic insn.  */
 
 int

@@ -40,6 +40,8 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 /* 1 if the caller has placed an "unimp" insn immediately after the call.
    This is used in v8 code when calling a function that returns a structure.
@@ -175,7 +177,11 @@ struct sparc_cpu_select sparc_select[] =
 
 /* CPU type.  This is set from TARGET_CPU_DEFAULT and -m{cpu,tune}=xxx.  */
 enum processor_type sparc_cpu;
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Validate and override various options, and do some machine dependent
    initialization.  */
 

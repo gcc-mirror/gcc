@@ -34,7 +34,13 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #endif
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* This is like nonimmediate_operand with a restriction on the type of MEM.  */
 
 void

@@ -38,6 +38,8 @@
 #include "function.h"
 #include "recog.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 /* Maximal allowed offset for an address in the LD command */
 #define MAX_LD_OFFSET(MODE) (64 - (signed)GET_MODE_SIZE (MODE))
@@ -56,6 +58,8 @@ static int    compare_sign_p       PARAMS ((rtx insn));
 static int    reg_was_0            PARAMS ((rtx insn, rtx op));
 static int    io_address_p         PARAMS ((rtx x, int size));
 void          debug_hard_reg_set   PARAMS ((HARD_REG_SET set));
+static int    avr_valid_type_attribute PARAMS ((tree, tree, tree, tree));
+static int    avr_valid_decl_attribute PARAMS ((tree, tree, tree, tree));
 
 /* Allocate registers from r25 to r8 for parameters for function calls */
 #define FIRST_CUM_REG 26
@@ -165,7 +169,16 @@ static const struct mcu_type_s avr_mcu_types[] = {
 };
 
 int avr_case_values_threshold = 30000;
+
+/* Initialize the GCC target structure.  */
+#undef TARGET_VALID_DECL_ATTRIBUTE
+#define TARGET_VALID_DECL_ATTRIBUTE avr_valid_decl_attribute
 
+#undef TARGET_VALID_TYPE_ATTRIBUTE
+#define TARGET_VALID_TYPE_ATTRIBUTE avr_valid_type_attribute
+
+struct gcc_target target = TARGET_INITIALIZER;
+
 void
 avr_override_options ()
 {
@@ -4664,8 +4677,8 @@ class_likely_spilled_p (c)
 
 /* Only `progmem' attribute valid for type.  */
 
-int
-valid_machine_type_attribute(type, attributes, identifier, args)
+static int
+avr_valid_type_attribute (type, attributes, identifier, args)
      tree type ATTRIBUTE_UNUSED;
      tree attributes ATTRIBUTE_UNUSED;
      tree identifier;
@@ -4684,8 +4697,8 @@ valid_machine_type_attribute(type, attributes, identifier, args)
    prologue interrupts are enabled;
    naked     - don't generate function prologue/epilogue and `ret' command.  */
 
-int
-valid_machine_decl_attribute (decl, attributes, attr, args)
+static int
+avr_valid_decl_attribute (decl, attributes, attr, args)
      tree decl;
      tree attributes ATTRIBUTE_UNUSED;
      tree attr;

@@ -61,8 +61,6 @@ extern struct rtx_def *c4x_function_arg PARAMS ((CUMULATIVE_ARGS *,
 
 extern void c4x_encode_section_info PARAMS ((tree));
 
-extern int c4x_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
-
 #endif /* TREE_CODE */
 
 

@@ -1486,12 +1486,6 @@ do { char dstr[30];					\
    so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
 
-/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
-   is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
-  v850_valid_machine_decl_attribute (DECL, IDENTIFIER, ARGS)
-
 /* A C statement that assigns default attributes to a newly created DECL.  */
 #define SET_DEFAULT_DECL_ATTRIBUTES(decl, attr) \
      v850_set_default_decl_attr (decl)

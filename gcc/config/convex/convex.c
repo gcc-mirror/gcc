@@ -33,6 +33,8 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 /* Tables used in convex.h */
 
@@ -62,7 +64,11 @@ static int frame_argblock_size;
 static rtx convert_arg_pushes ();
 #endif
 static void expand_movstr_call PARAMS ((rtx *));
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 /* Here from OVERRIDE_OPTIONS at startup.  Initialize constant tables. */
 
 void

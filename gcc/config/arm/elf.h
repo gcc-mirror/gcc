@@ -190,12 +190,6 @@ Boston, MA 02111-1307, USA.  */
 #define MULTILIB_DEFAULTS \
   { "marm", "mlittle-endian", "msoft-float", "mapcs-32", "mno-thumb-interwork", "fno-leading-underscore" }
 #endif
-
-/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
-   is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
-  arm_valid_machine_decl_attribute (DECL, IDENTIFIER, ARGS)
 
 
 /* This outputs a lot of .req's to define alias for various registers.

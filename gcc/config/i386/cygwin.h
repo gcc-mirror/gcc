@@ -86,6 +86,10 @@ Boston, MA 02111-1307, USA. */
 		       "-idirafter /usr/include/mingw"
 #endif
 
+/* Get tree.c to declare a target-specific specialization of
+   merge_decl_attributes.  */
+#define TARGET_DLLIMPORT_DECL_ATTRIBUTES
+
 /* Support the __declspec keyword by turning them into attributes.
    We currently only support: dllimport and dllexport.
    Note that the current way we do this may result in a collision with
@@ -198,11 +202,6 @@ extern int i386_pe_valid_decl_attribute_p PARAMS ((TREE, TREE, TREE, TREE));
 #define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, IDENTIFIER, ARGS) \
   i386_pe_valid_type_attribute_p (TYPE, ATTRIBUTES, IDENTIFIER, ARGS)
 extern int i386_pe_valid_type_attribute_p PARAMS ((TREE, TREE, TREE, TREE));
-
-extern union tree_node *i386_pe_merge_decl_attributes PARAMS ((TREE, TREE));
-#define MERGE_MACHINE_DECL_ATTRIBUTES(OLD, NEW) \
-  i386_pe_merge_decl_attributes ((OLD), (NEW))
-extern TREE i386_pe_merge_decl_attributes PARAMS ((TREE, TREE));
 
 /* Used to implement dllexport overriding dllimport semantics.  It's also used
    to handle vtables - the first pass won't do anything because

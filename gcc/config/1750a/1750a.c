@@ -33,6 +33,8 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "output.h"
 #include "tm_p.h"
+#include "target.h"
+#include "target-def.h"
 
 struct datalabel_array datalbl[DATALBL_ARRSIZ];
 int datalbl_ndx = -1;
@@ -44,7 +46,11 @@ const char *const sectname[4] =
 {"Init", "Normal", "Konst", "Static"};
 
 static int which_bit PARAMS ((int));
+
+/* Initialize the GCC target structure.  */
 
+struct gcc_target target = TARGET_INITIALIZER;
+
 void
 notice_update_cc (exp)
      rtx exp;

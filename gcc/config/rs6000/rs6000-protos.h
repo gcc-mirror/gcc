@@ -138,8 +138,6 @@ extern void setup_incoming_varargs PARAMS ((CUMULATIVE_ARGS *,
 extern struct rtx_def *rs6000_va_arg PARAMS ((tree, tree));
 extern void output_mi_thunk PARAMS ((FILE *, tree, int, tree));
 extern int rs6000_comp_type_attributes PARAMS ((tree, tree));
-extern int rs6000_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
-extern int rs6000_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 extern void rs6000_set_default_type_attributes PARAMS ((tree));
 extern void rs6000_encode_section_info PARAMS ((tree));
 extern void rs6000_select_section PARAMS ((tree, int));

@@ -40,6 +40,8 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "basic-block.h"
 #include "ggc.h"
+#include "target.h"
+#include "target-def.h"
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT -1
@@ -605,6 +607,18 @@ static int ix86_fp_comparison_sahf_cost PARAMS ((enum rtx_code code));
 static int ix86_fp_comparison_cost PARAMS ((enum rtx_code code));
 static int ix86_save_reg PARAMS ((int, int));
 static void ix86_compute_frame_layout PARAMS ((struct ix86_frame *));
+static int ix86_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
+
+/* Initialize the GCC target structure.  */
+#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#undef TARGET_MERGE_DECL_ATTRIBUTES
+#define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
+#endif
+
+#undef TARGET_VALID_TYPE_ATTRIBUTE
+#define TARGET_VALID_TYPE_ATTRIBUTE ix86_valid_type_attribute_p
+
+struct gcc_target target = TARGET_INITIALIZER;
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
@@ -860,24 +874,10 @@ optimization_options (level, size)
 }
 
 /* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
-   attribute for DECL.  The attributes in ATTRIBUTES have previously been
-   assigned to DECL.  */
-
-int
-ix86_valid_decl_attribute_p (decl, attributes, identifier, args)
-     tree decl ATTRIBUTE_UNUSED;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier ATTRIBUTE_UNUSED;
-     tree args ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-
-/* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
    attribute for TYPE.  The attributes in ATTRIBUTES have previously been
    assigned to TYPE.  */
 
-int
+static int
 ix86_valid_type_attribute_p (type, attributes, identifier, args)
      tree type;
      tree attributes ATTRIBUTE_UNUSED;

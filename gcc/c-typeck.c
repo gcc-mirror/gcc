@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "intl.h"
 #include "ggc.h"
+#include "target.h"
 
 /* Nonzero if we've already printed a "missing braces around initializer"
    message within this initializer.  */
@@ -205,7 +206,7 @@ common_type (t1, t2)
     return t1;
 
   /* Merge the attributes.  */
-  attributes = merge_machine_type_attributes (t1, t2);
+  attributes = (*target.merge_type_attributes) (t1, t2);
 
   /* Treat an enum type as the unsigned integer type of the same width.  */
 

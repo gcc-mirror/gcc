@@ -2298,12 +2298,6 @@ extern int current_function_interrupt;
    for interrupt functions.  */
 extern struct rtx_def *sp_switch;
 
-/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
-   is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
-sh_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
-
 #define PRAGMA_INSERT_ATTRIBUTES(node, pattr, prefix_attr) \
   sh_pragma_insert_attributes (node, pattr, prefix_attr)
 

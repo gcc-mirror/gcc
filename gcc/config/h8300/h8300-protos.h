@@ -61,8 +61,6 @@ extern int nshift_operator PARAMS ((rtx, enum machine_mode));
 #ifdef TREE_CODE
 extern struct rtx_def *function_arg PARAMS ((CUMULATIVE_ARGS *,
 					     enum machine_mode, tree, int));
-extern int h8300_valid_machine_decl_attribute PARAMS ((tree, tree, tree,
-						       tree));
 extern int h8300_funcvec_function_p PARAMS ((tree));
 extern int h8300_eightbit_data_p PARAMS ((tree));
 extern int h8300_tiny_data_p PARAMS ((tree));

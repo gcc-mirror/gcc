@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "toplev.h"
 #include "diagnostic.h"
+#include "target.h"
 
 static tree convert_for_assignment PARAMS ((tree, tree, const char *, tree,
 					  int));
@@ -210,8 +211,8 @@ qualify_type_recursive (t1, t2)
       tree tt2 = TREE_TYPE (t2);
       tree b1;
       int type_quals;
-      tree target;
-      tree attributes = merge_machine_type_attributes (t1, t2);
+      tree tgt;
+      tree attributes = (*target.merge_type_attributes) (t1, t2);
 
       if (TREE_CODE (tt1) == OFFSET_TYPE)
 	{
@@ -223,11 +224,11 @@ qualify_type_recursive (t1, t2)
 	b1 = NULL_TREE;
 
       type_quals = (CP_TYPE_QUALS (tt1) | CP_TYPE_QUALS (tt2));
-      target = qualify_type_recursive (tt1, tt2);
-      target = cp_build_qualified_type (target, type_quals);
+      tgt = qualify_type_recursive (tt1, tt2);
+      tgt = cp_build_qualified_type (tgt, type_quals);
       if (b1)
-	target = build_offset_type (b1, target);
-      t1 = build_pointer_type (target);
+	tgt = build_offset_type (b1, tgt);
+      t1 = build_pointer_type (tgt);
       t1 = build_type_attribute_variant (t1, attributes);
     }
   return t1;
@@ -342,7 +343,7 @@ type_after_usual_arithmetic_conversions (t1, t2)
 
   /* In what follows, we slightly generalize the rules given in [expr]
      so as to deal with `long long'.  First, merge the attributes.  */
-  attributes = merge_machine_type_attributes (t1, t2);
+  attributes = (*target.merge_type_attributes) (t1, t2);
 
   /* If only one is real, use it as the result.  */
   if (code1 == REAL_TYPE && code2 != REAL_TYPE)
@@ -548,7 +549,7 @@ common_type (t1, t2)
     return type_after_usual_arithmetic_conversions (t1, t2);
 
   /* Merge the attributes.  */
-  attributes = merge_machine_type_attributes (t1, t2);
+  attributes = (*target.merge_type_attributes) (t1, t2);
 
   /* Treat an enum type as the unsigned integer type of the same width.  */
 

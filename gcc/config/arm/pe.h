@@ -38,6 +38,10 @@ Boston, MA 02111-1307, USA.  */
 #undef  TARGET_VERSION
 #define TARGET_VERSION fputs (" (ARM/pe)", stderr)
 
+/* Get tree.c to declare a target-specific specialization of
+   merge_decl_attributes.  */
+#define TARGET_DLLIMPORT_DECL_ATTRIBUTES
+
 /* Support the __declspec keyword by turning them into attributes.
    We currently only support: naked, dllimport, and dllexport.
    Note that the current way we do this may result in a collision with
@@ -91,16 +95,6 @@ Boston, MA 02111-1307, USA.  */
   1,1,1			\
 }
 
-/* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
-   is a valid machine specific attribute for DECL.
-   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-#undef  VALID_MACHINE_DECL_ATTRIBUTE
-#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
-  arm_pe_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
-
-#define MERGE_MACHINE_DECL_ATTRIBUTES(OLD, NEW) \
-  arm_pe_merge_machine_decl_attributes ((OLD), (NEW))
-
 /* In addition to the stuff done in arm.h, we must mark dll symbols specially.
    Definitions of dllexport'd objects install some info in the .drectve
    section.  References to dllimport'd objects are fetched indirectly via

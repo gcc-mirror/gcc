@@ -43,10 +43,6 @@ extern void m68hc11_function_arg_advance PARAMS((CUMULATIVE_ARGS*,
                                                  enum machine_mode,
                                                  tree,
                                                  int));
-extern int m68hc11_valid_decl_attribute_p PARAMS((tree, tree,
-					          tree, tree));
-extern int m68hc11_valid_type_attribute_p PARAMS((tree, tree,
-						  tree, tree));
 extern int m68hc11_comp_type_attributes PARAMS((tree, tree));
 extern void m68hc11_set_default_type_attributes PARAMS((tree));
 extern void m68hc11_encode_section_info PARAMS((tree));
