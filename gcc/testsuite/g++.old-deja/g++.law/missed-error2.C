@@ -17,7 +17,9 @@ main() {
    foo(4, -37, 14.39, 14.38);
 }
 
-static void foo(int i, int j, double x, double y) { // ERROR - extern
+// 971006 we no longer give an error for this since we emit a hard error
+// about the declaration above
+static void foo(int i, int j, double x, double y) { 
 
    cout << "Max(int): " << max(i,j) << " Max(double): " <<
 max(x,y) << '\n';
