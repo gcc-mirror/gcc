@@ -8581,7 +8581,12 @@ macroexpand (hp, op)
 	 Also count number of times each arg is used.  */
       xbuf_len = defn->length;
       for (ap = defn->pattern; ap != NULL; ap = ap->next) {
-	if (ap->stringify)
+	if (ap->stringify && args[ap->argno].stringified_length_bound == 0)
+	  /* macarg is not called for omitted arguments, as a result
+	     stringified_length_bound will be zero.  We need to make
+	     enough space for "".  */
+	  xbuf_len += 2;
+	else if (ap->stringify)
 	  xbuf_len += args[ap->argno].stringified_length_bound;
 	else if (ap->raw_before != 0 || ap->raw_after != 0 || traditional)
 	  /* Add 4 for two newline-space markers to prevent

@@ -1,3 +1,8 @@
+Sun Oct 31 01:53:30 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* cccp.c (macroexpand): Avoid out of range accesses for omitted
+	arguments.
+
 Sat Oct 30 22:42:50 1999  Stephen L Moshier <moshier@mediaone.net>
 
 	* c-lex.c (yylex): Accept 'f' in mantissa of hex float constant.
