@@ -9363,7 +9363,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	rtx stack;
 
 #ifdef STACK_SAVEAREA_MODE
-	sa_mode = STACK_SAVEAREA_MODE (sa_mode, STACK_NONLOCAL);
+	sa_mode = STACK_SAVEAREA_MODE (sa_mode, SAVE_NONLOCAL);
 #endif
 
 	stack = gen_rtx (MEM, sa_mode,
