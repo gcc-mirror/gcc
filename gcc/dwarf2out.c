@@ -9471,7 +9471,7 @@ add_data_member_location_attribute (dw_die_ref die, tree decl)
   if (TREE_CODE (decl) == TREE_BINFO)
     {
       /* We're working on the TAG_inheritance for a base class.  */
-      if (TREE_VIA_VIRTUAL (decl) && is_cxx ())
+      if (BINFO_VIRTUAL_P (decl) && is_cxx ())
 	{
 	  /* For C++ virtual bases we can't just use BINFO_OFFSET, as they
 	     aren't at a fixed offset from all (sub)objects of the same
@@ -11860,7 +11860,7 @@ gen_inheritance_die (tree binfo, tree access, dw_die_ref context_die)
   add_type_attribute (die, BINFO_TYPE (binfo), 0, 0, context_die);
   add_data_member_location_attribute (die, binfo);
 
-  if (TREE_VIA_VIRTUAL (binfo))
+  if (BINFO_VIRTUAL_P (binfo))
     add_AT_unsigned (die, DW_AT_virtuality, DW_VIRTUALITY_virtual);
 
   if (access == access_public_node)

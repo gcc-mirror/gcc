@@ -5443,7 +5443,8 @@ instantiate_class_template (tree type)
 	    continue;
 	  
 	  base_list = tree_cons (access, base, base_list);
-	  TREE_VIA_VIRTUAL (base_list) = TREE_VIA_VIRTUAL (pbase);
+	  if (BINFO_VIRTUAL_P (pbase))
+	    TREE_TYPE (base_list) = integer_type_node;
 	}
 
       /* The list is now in reverse order; correct that.  */
@@ -9408,7 +9409,7 @@ get_template_base_recursive (tree tparms,
 	continue;
 
       this_virtual = 
-	(flags & GTB_VIA_VIRTUAL) || TREE_VIA_VIRTUAL (base_binfo);
+	(flags & GTB_VIA_VIRTUAL) || BINFO_VIRTUAL_P (base_binfo);
       
       /* When searching for a non-virtual, we cannot mark virtually
 	 found binfos.  */

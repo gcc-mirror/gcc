@@ -1,3 +1,41 @@
+2004-07-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (BINFO_MARKED): Remove.
+	(BINFO_VTABLE_PATH_MARKED, BINFO_NEW_VTABLE_MARKED,
+	BINFO_DEPENDENT_BASE_P, BINFO_LOST_PRIMARY_P,
+	BINFO_INDIRECT_PRIMARY_P): Use appropriate BINFO_FLAG_n.
+	(SET_BINFO_NEW_VTABLE_MARKED): Use BINFO_VIRTUAL_P.
+	* class.c (build_base_path): Use BINFO_VIRTUAL_P.
+	(mark_primary_bases, determine_primary_base, base_derived_from,
+	dfs_find_final_overrider, dfs_find_final_overrider_q,
+	dfs_find_inal_overrider_post, update_vtable_entry_for_fn,
+	dfs_modify_vtables, walk_subobject_offsets,
+	layout_nonempty_base_or_field, build_base_field,
+	build_base_fields, propagate_binfo_offsets, layout_virtual_bases,
+	end_of_class, get_vfield_name, dump_class_hierarchy, dump_vtable,
+	finish_vtbls, build_vtt_inits, dfs_build_secondary_vptr_vtt_inits,
+	build_ctor_vtbl_group, accumulate_vtble_inits,
+	dfs_accumulate_vtbls_inits, build_vbase_offset_vtbl_entries,
+	build_vcall_offset_vtbl_entries, add_vcall_offset_vtbl_entries_r,
+	add_vcall_offset_vtbl_entries_1): Likewise.
+	* decl.c (xref_basetypes): Incomming virtual base indicated by
+	TREE_TYPE. Adjust.
+	* dump.c (cp_dump_tree): Use BINFO_VIRTUAL_P.
+	* init.c (finish_init_stmts, sort_mem_initializers,
+	emit_mem_initializers, build_vtble_address, expand_member_init,
+	push_base_cleanups): Likewise.
+	* method.c (do_build_copy_constructor): Likewise.
+	* pt.c (instantiate_class_template,
+	get_template_base_recursive): Likewise.
+	* rtti.c (dfs_class_hint_mark, get_pseudo_ti_init,
+	get_pseudo_ti_desc): Likewise.
+	* search.c (lookup_base_r, dynamic_cast_base_recurse,
+	binfo_from_vbase, binfo_via_virtual, copied_binfo,
+	original_binfo): Likewise.
+	* semantics.c (finish_base_specifier): Virtualness is indicated
+	by TREE_TYPE.
+	* tree.c (copy_base_binfos): Use BINFO_VIRTUAL_P.
+
 2004-07-06  Mark Mitchell  <mark@codesourcery.com>
 
 	Revert:

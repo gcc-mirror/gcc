@@ -616,7 +616,7 @@ add_interface_do (tree basetype_vec, tree interface_class, int i)
   BINFO_TYPE (interface_binfo) = interface_class;
   BINFO_OFFSET (interface_binfo) = integer_zero_node;
   BINFO_VPTR_FIELD (interface_binfo) = integer_zero_node;
-  TREE_VIA_VIRTUAL (interface_binfo) = 1;
+  BINFO_VIRTUAL_P (interface_binfo) = 1;
   TREE_VEC_ELT (basetype_vec, i) = interface_binfo;
 }
 

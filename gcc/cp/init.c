@@ -101,7 +101,7 @@ finish_init_stmts (bool is_global, tree stmt_expr, tree compound_stmt)
 static tree
 dfs_initialize_vtbl_ptrs (tree binfo, void *data)
 {
-  if ((!BINFO_PRIMARY_P (binfo) || TREE_VIA_VIRTUAL (binfo))
+  if ((!BINFO_PRIMARY_P (binfo) || BINFO_VIRTUAL_P (binfo))
       && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
     {
       tree base_ptr = TREE_VALUE ((tree) data);
@@ -478,7 +478,7 @@ sort_mem_initializers (tree t, tree mem_inits)
   for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
     {
       base = BINFO_BASETYPE (TYPE_BINFO (t), i);
-      if (!TREE_VIA_VIRTUAL (base))
+      if (!BINFO_VIRTUAL_P (base))
 	sorted_inits = tree_cons (base, NULL_TREE, sorted_inits);
     }
   /* Process the non-static data members.  */
@@ -677,7 +677,7 @@ emit_mem_initializers (tree mem_inits)
 	arguments = NULL_TREE;
 
       /* Initialize the base.  */
-      if (TREE_VIA_VIRTUAL (subobject))
+      if (BINFO_VIRTUAL_P (subobject))
 	construct_virtual_base (subobject, arguments);
       else
 	{
@@ -717,7 +717,7 @@ build_vtbl_address (tree binfo)
   tree binfo_for = binfo;
   tree vtbl;
 
-  if (BINFO_VPTR_INDEX (binfo) && TREE_VIA_VIRTUAL (binfo)
+  if (BINFO_VPTR_INDEX (binfo) && BINFO_VIRTUAL_P (binfo)
       && BINFO_PRIMARY_P (binfo))
     /* If this is a virtual primary base, then the vtable we want to store
        is that for the base this is being used as the primary base of.  We
@@ -990,7 +990,7 @@ expand_member_init (tree name)
 	  }
       /* Look for a virtual base -- unless the direct base is itself
 	 virtual.  */
-      if (!direct_binfo || !TREE_VIA_VIRTUAL (direct_binfo))
+      if (!direct_binfo || !BINFO_VIRTUAL_P (direct_binfo))
 	virtual_binfo = binfo_for_vbase (basetype, current_class_type);
 
       /* [class.base.init]
@@ -2918,7 +2918,7 @@ push_base_cleanups (void)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))
-	  || TREE_VIA_VIRTUAL (base_binfo))
+	  || BINFO_VIRTUAL_P (base_binfo))
 	continue;
 
       expr = build_special_member_call (current_class_ref, 
