@@ -1,3 +1,12 @@
+2004-03-15  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.c (pp_c_semicolon): Fix formatting.
+	(pp_c_cv_qualifier): Document.
+	(pp_c_space_for_pointer_operator): Likewise.
+	(pp_c_integer_constant): Likewise.
+	(pp_c_identifier): Likewise.
+	(pp_c_init_declarator): Don't print function body.
+
 2004-03-14  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/contrib.texi, doc/extend.texi, doc/gcov.texi,
