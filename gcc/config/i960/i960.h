@@ -528,7 +528,7 @@ extern int target_flags;
 	g0..g3 are used for return values,
 	g0..g7 may always be used for parameters,
 	g8..g11 may be used for parameters, but are preserved if they aren't,
-	g12 is always preserved, but otherwise unused,
+	g12 is the static chain if needed, otherwise is preserved
 	g13 is the struct return ptr if used, or temp, but may be trashed,
 	g14 is the leaf return ptr or the arg block ptr otherwise zero,
 		must be reset to zero before returning if it was used,
@@ -606,7 +606,12 @@ extern int hard_regno_mode_ok ();
 /* ??? It isn't clear to me why this is here.  Perhaps because of a bug (since
    fixed) in the definition of INITIAL_FRAME_POINTER_OFFSET which would have
    caused this to fail.  */
-#define FRAME_POINTER_REQUIRED (! leaf_function_p ())
+/* ??? Must check current_function_has_nonlocal_goto, otherwise frame pointer
+   elimination messes up nonlocal goto sequences.  I think this works for other
+   targets because they use indirect jumps for the return which disables fp
+   elimination.  */
+#define FRAME_POINTER_REQUIRED \
+  (! leaf_function_p () || current_function_has_nonlocal_goto)
 
 /* C statement to store the difference between the frame pointer
    and the stack pointer values immediately after the function prologue.
@@ -622,8 +627,9 @@ extern int hard_regno_mode_ok ();
 #define ARG_POINTER_REGNUM 14
 
 /* Register in which static-chain is passed to a function.
-   On i960, we use r3.  */
-#define STATIC_CHAIN_REGNUM 19
+   On i960, we use g12.  We can't use any local register, because we need
+   a register that can be set before a call or before a jump.  */
+#define STATIC_CHAIN_REGNUM 12
  
 /* Functions which return large structures get the address
    to place the wanted value at in g13.  */
@@ -1543,14 +1549,14 @@ extern struct rtx_def *gen_compare_reg ();
 
 /* On the i960, the trampoline contains three instructions:
      ldconst _function, r4
-     ldconst static addr, r3
+     ldconst static addr, g12
      jump (r4)  */
 
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
   ASM_OUTPUT_INT (FILE, GEN_INT (0x8C203000));	\
   ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
-  ASM_OUTPUT_INT (FILE, GEN_INT (0x8C183000));	\
+  ASM_OUTPUT_INT (FILE, GEN_INT (0x8CE03000));	\
   ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
   ASM_OUTPUT_INT (FILE, GEN_INT (0x84212000));	\
 }

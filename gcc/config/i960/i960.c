@@ -1349,7 +1349,9 @@ i960_function_prologue (file, size)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (regs_ever_live[i]
-	&& ((! call_used_regs[i]) || (i > 7 && i < 12)))
+	&& ((! call_used_regs[i]) || (i > 7 && i < 12))
+	/* No need to save the static chain pointer.  */
+	&& ! (i == STATIC_CHAIN_REGNUM && current_function_needs_context))
       {
 	regs[i] = -1;
         /* Count global registers that need saving.  */
