@@ -1,5 +1,27 @@
 2002-07-25  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/7216
+	* include/std/std_istream.h (basic_iostream): Add typedefs for
+	char_type, int_type, pos_type, off_type, and traits_type.
+	* testsuite/27_io/iostream.cc (test01): Add typedef tests.
+	* testsuite/27_io/istream.cc: Same.
+	* testsuite/27_io/ostream.cc: Same.
+	* testsuite/27_io/filebuf.cc: Same.
+	* testsuite/27_io/stringbuf.cc: Replace content, move to...
+	* testsuite/27_io/stringbuf_members.cc: ...here.	
+	* testsuite/27_io/streambuf.cc: Replace content, move to...
+	* testsuite/27_io/streambuf_members.cc: ...here.	
+	* testsuite/27_io/stringstream.cc: Replace content, move to...
+	* testsuite/27_io/stringstream_members.cc: ...here.
+	* testsuite/27_io/ios.cc: New file.
+	* testsuite/27_io/fstream.cc: New file.
+	* testsuite/27_io/ifstream.cc: New file.	
+	* testsuite/27_io/ofstream.cc: New file.		
+	* testsuite/27_io/istringstream.cc: New file.	
+	* testsuite/27_io/ostringstream.cc: New file.	
+	
+2002-07-25  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/7220
 	* include/bits/istream.tcc (istream::ignore): Don't extract on
 	zero.

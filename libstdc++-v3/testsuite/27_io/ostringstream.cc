@@ -27,8 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// 27.7.1 - Template class basic_stringbuf
-// NB: This file is for testing basic_stringbuf with NO OTHER INCLUDES.
+// 27.7.3 - Class basic_ostringstream
+// NB: This file is for testing basic_ostringstream with NO OTHER INCLUDES.
 
 #include <sstream>
 
@@ -38,7 +38,7 @@
 void test01()
 {
   // Check for required typedefs
-  typedef std::stringbuf test_type;
+  typedef std::ostringstream test_type;
   typedef test_type::char_type char_type;
   typedef test_type::traits_type traits_type;
   typedef test_type::int_type int_type;
@@ -50,7 +50,7 @@ namespace test
 {
   using namespace std;
   typedef short type_t;
-  template class basic_stringbuf<type_t, char_traits<type_t> >;
+  template class basic_ostringstream<type_t, char_traits<type_t> >;
 } // test
 
 int main() 

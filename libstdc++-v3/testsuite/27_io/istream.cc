@@ -34,6 +34,18 @@
 
 // { dg-do compile }
 
+// libstdc++/7216
+void test01()
+{
+  // Check for required typedefs
+  typedef std::istream test_type;
+  typedef test_type::char_type char_type;
+  typedef test_type::traits_type traits_type;
+  typedef test_type::int_type int_type;
+  typedef test_type::pos_type pos_type;
+  typedef test_type::off_type off_type;
+}
+
 namespace test 
 {
   using namespace std;
@@ -43,5 +55,6 @@ namespace test
 
 int main() 
 {
+  test01();
   return 0;
 }

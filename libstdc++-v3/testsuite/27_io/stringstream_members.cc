@@ -1,6 +1,6 @@
 // 2001-05-24 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -120,12 +120,67 @@ void test02()
   // These semantics are a joke, a serious defect, and incredibly lame.
 }
 
+void
+test03()
+{
+  bool test = true;
+
+  //
+  // 1: Automatic formatting of a compound string
+  //
+  int i = 1024;
+  int *pi = &i;
+  double d = 3.14159;
+  double *pd = &d;
+  std::string blank;
+  std::ostringstream ostrst01; 
+  std::ostringstream ostrst02(blank); 
+  
+  // No buffer, so should be created.
+  ostrst01 << "i: " << i << " i's address:  " << pi << "\n"
+	     << "d: " << d << " d's address: " << pd << std::endl;
+  // Buffer, so existing buffer should be overwritten.
+  ostrst02 << "i: " << i << " i's address:  " << pi << "\n"
+	     << "d: " << d << " d's address: " << pd << std::endl;
+
+  std::string msg01 = ostrst01.str();
+  std::string msg02 = ostrst02.str();
+  VERIFY( msg01 == msg02 );
+  VERIFY( msg02 != blank );
+
+  //
+  // 2: istringstream
+  //
+  // extracts the stored ascii values, placing them in turn in the four vars
+#if 0
+  int i2 = 0;
+  //int* pi2 = &i2;
+  void* pi2 = &i2;
+  double d2 = 0.0;
+  //  double* pd2 = &d2;
+  void* pd2 = &d2;
+  std::istringstream istrst01(ostrst02.str());
+
+  istrst01 >> i2 >> pi2 >> d2 >> pd2;
+  //istrst01 >> i2;
+  //istrst01 >> pi2;
+  VERIFY( i2 == i );
+  VERIFY( d2 == d );
+  VERIFY( pd2 == pd );
+  VERIFY( pi2 == pi );
+#endif
+
+  // stringstream
+  std::string str1("");
+  std::string str3("this is a somewhat  string");
+  std::stringstream ss1(str1, std::ios_base::in|std::ios_base::out);
+  std::stringstream ss2(str3, std::ios_base::in|std::ios_base::out);
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
   return 0;
 }
-
-
-
