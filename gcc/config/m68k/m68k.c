@@ -45,6 +45,23 @@ Boston, MA 02111-1307, USA.  */
 /* Needed for use_return_insn.  */
 #include "flags.h"
 
+/* Structure describing stack frame layout. */
+struct m68k_frame {
+  HOST_WIDE_INT offset;
+  HOST_WIDE_INT size;
+  /* data and address register */
+  int reg_no;
+  unsigned int reg_mask;
+  unsigned int reg_rev_mask;
+  /* fpu registers */
+  int fpu_no;
+  unsigned int fpu_mask;
+  unsigned int fpu_rev_mask;
+  /* offsets relative to ARG_POINTER.  */
+  HOST_WIDE_INT frame_pointer_offset;
+  HOST_WIDE_INT stack_pointer_offset;
+};
+
 /* This flag is used to communicate between movhi and ASM_OUTPUT_CASE_END,
    if SGS_SWITCH_TABLE.  */
 int switch_table_difference_label_flag;
@@ -62,7 +79,12 @@ static void m68k_hp320_file_start (void);
 #endif
 static void m68k_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree);
-static int m68k_save_reg (unsigned int);
+static bool m68k_interrupt_function_p (tree func);
+static tree m68k_handle_fndecl_attribute (tree *node, tree name,
+					  tree args, int flags,
+					  bool *no_add_attrs);
+static void m68k_compute_frame_layout (struct m68k_frame *frame);
+static bool m68k_save_reg (unsigned int regno, bool interrupt_handler);
 static int const_int_cost (rtx);
 static bool m68k_rtx_costs (rtx, int, int, int *);
 
@@ -138,6 +160,16 @@ int m68k_last_compare_had_fp_operands;
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m68k_rtx_costs
+
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE m68k_attribute_table
+
+static const struct attribute_spec m68k_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "interrupt_handler", 0, 0, true,  false, false, m68k_handle_fndecl_attribute },
+  { NULL,                0, 0, false, false, false, NULL }
+};
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -249,36 +281,50 @@ override_options (void)
   REAL_MODE_FORMAT (XFmode) = &ieee_extended_motorola_format;
 }
 
-/* Structure describing stack frame layout. */
-struct m68k_frame {
-  HOST_WIDE_INT offset;
-  HOST_WIDE_INT size;
-  /* data and address register */
-  int reg_no;
-  unsigned int reg_mask;
-  unsigned int reg_rev_mask;
-  /* fpu registers */
-  int fpu_no;
-  unsigned int fpu_mask;
-  unsigned int fpu_rev_mask;
-  /* fpa registers */
-  int fpa_no;
-  /* offsets relative to ARG_POINTER.  */
-  HOST_WIDE_INT frame_pointer_offset;
-  HOST_WIDE_INT stack_pointer_offset;
-};
+/* Return nonzero if FUNC is an interrupt function as specified by the
+   "interrupt_handler" attribute.  */
+static bool
+m68k_interrupt_function_p(tree func)
+{
+  tree a;
+
+  if (TREE_CODE (func) != FUNCTION_DECL)
+    return false;
+
+  a = lookup_attribute ("interrupt_handler", DECL_ATTRIBUTES (func));
+  return (a != NULL_TREE);
+}
+
+/* Handle an attribute requiring a FUNCTION_DECL; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+m68k_handle_fndecl_attribute (tree *node, tree name,
+			      tree args ATTRIBUTE_UNUSED,
+			      int flags ATTRIBUTE_UNUSED,
+			      bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
 
 static void
 m68k_compute_frame_layout (struct m68k_frame *frame)
 {
   int regno, saved;
   unsigned int mask, rmask;
+  bool interrupt_handler = m68k_interrupt_function_p (current_function_decl);
 
   frame->size = (get_frame_size () + 3) & -4;
 
   mask = rmask = saved = 0;
   for (regno = 0; regno < 16; regno++)
-    if (m68k_save_reg (regno))
+    if (m68k_save_reg (regno, interrupt_handler))
       {
 	mask |= 1 << regno;
 	rmask |= 1 << (15 - regno);
@@ -327,13 +373,13 @@ m68k_initial_elimination_offset (int from, int to)
   abort();
 }
 
-/* Return 1 if we need to save REGNO.  */
-static int
-m68k_save_reg (unsigned int regno)
+/* Return true if we need to save REGNO. */
+static bool
+m68k_save_reg (unsigned int regno, bool interrupt_handler)
 {
   if (flag_pic && current_function_uses_pic_offset_table
       && regno == PIC_OFFSET_TABLE_REGNUM)
-    return 1;
+    return true;
 
   if (current_function_calls_eh_return)
     {
@@ -344,14 +390,35 @@ m68k_save_reg (unsigned int regno)
 	  if (test == INVALID_REGNUM)
 	    break;
 	  if (test == regno)
-	    return 1;
+	    return true;
 	}
     }
 
-  return (regs_ever_live[regno]
-	  && !call_used_regs[regno]
-	  && !fixed_regs[regno]
-	  && !(regno == FRAME_POINTER_REGNUM && frame_pointer_needed));
+  /* Fixed regs we never touch.  */
+  if (fixed_regs[regno])
+    return false;
+
+  /* The frame pointer (if it is such) is handled specially.  */
+  if (regno == FRAME_POINTER_REGNUM && frame_pointer_needed)
+    return false;
+
+  /* Interrupt handlers must also save call_used_regs
+     if they are live or when calling nested functions.  */
+  if (interrupt_handler)
+  {
+     if (regs_ever_live[regno])
+       return true;
+
+     if (!current_function_is_leaf && call_used_regs[regno])
+       return true;
+  }
+
+  /* Never need to save registers that aren't touched.  */
+  if (!regs_ever_live[regno])
+    return false;
+
+  /* Otherwise save everthing that isn't call-clobbered.  */
+  return !call_used_regs[regno];
 }
 
 /* This function generates the assembly code for function entry.
@@ -375,6 +442,7 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
   HOST_WIDE_INT fsize = (size + 3) & -4;
   HOST_WIDE_INT fsize_with_regs;
   HOST_WIDE_INT cfa_offset = INCOMING_FRAME_SP_OFFSET;
+  bool interrupt_handler = m68k_interrupt_function_p (current_function_decl);
   
   /* If the stack limit is a symbol, we can check it here,
      before actually allocating the space.  */
@@ -394,7 +462,7 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
     {
       /* on Coldfire add register save into initial stack frame setup, if possible */
       for (regno = 0; regno < 16; regno++)
-        if (m68k_save_reg (regno))
+        if (m68k_save_reg (regno, interrupt_handler))
           num_saved_regs++;
 
       if (num_saved_regs <= 2)
@@ -541,7 +609,7 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
   if (TARGET_68881)
     {
       for (regno = 16; regno < 24; regno++)
-	if (m68k_save_reg (regno))
+	if (m68k_save_reg (regno, interrupt_handler))
 	  {
 	    mask |= 1 << (regno - 16);
 	    num_saved_regs++;
@@ -571,7 +639,7 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
       num_saved_regs = 0;
     }
   for (regno = 0; regno < 16; regno++)
-    if (m68k_save_reg (regno))
+    if (m68k_save_reg (regno, interrupt_handler))
       {
         mask |= 1 << (15 - regno);
         num_saved_regs++;
@@ -706,12 +774,15 @@ int
 use_return_insn ()
 {
   int regno;
+  bool interrupt_handler;
 
   if (!reload_completed || frame_pointer_needed || get_frame_size () != 0)
     return 0;
   
+  interrupt_handler = m68k_interrupt_function_p (current_function_decl);
+
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (m68k_save_reg (regno))
+    if (m68k_save_reg (regno, interrupt_handler))
       return 0;
 
   return 1;
@@ -737,6 +808,7 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
   int big = 0;
   rtx insn = get_last_insn ();
   int restore_from_sp = 0;
+  bool interrupt_handler = m68k_interrupt_function_p (current_function_decl);
   
   /* If the last insn was a BARRIER, we don't have to write any code.  */
   if (GET_CODE (insn) == NOTE)
@@ -756,7 +828,7 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
   if (TARGET_68881)
     {
       for (regno = 16; regno < 24; regno++)
-	if (m68k_save_reg (regno))
+	if (m68k_save_reg (regno, interrupt_handler))
 	  {
 	    nregs++;
 	    fmask |= 1 << (23 - regno);
@@ -765,7 +837,7 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
   foffset = nregs * 12;
   nregs = 0;  mask = 0;
   for (regno = 0; regno < 16; regno++)
-    if (m68k_save_reg (regno))
+    if (m68k_save_reg (regno, interrupt_handler))
       {
         nregs++;
 	mask |= 1 << regno;
@@ -1053,7 +1125,9 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
       asm_fprintf (stream, "\taddl %Ra0,%Rsp\n");
 #endif
     }
-  if (current_function_pops_args)
+  if (interrupt_handler)
+    fprintf (stream, "\trte\n");
+  else if (current_function_pops_args)
     asm_fprintf (stream, "\trtd %I%d\n", current_function_pops_args);
   else
     fprintf (stream, "\trts\n");
