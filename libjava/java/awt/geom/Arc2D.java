@@ -582,11 +582,11 @@ public abstract class Arc2D extends RectangularShape
         limit = -1;
       else if (e == 0)
         limit = type;
-      else if (e <= 90)
+      else if (e <= Math.PI / 2.0)
         limit = type + 1;
-      else if (e <= 180)
+      else if (e <= Math.PI)
         limit = type + 2;
-      else if (e <= 270)
+      else if (e <= 3.0 * (Math.PI / 2.0))
         limit = type + 3;
       else
         limit = type + 4;
@@ -649,36 +649,11 @@ public abstract class Arc2D extends RectangularShape
      */
     public int currentSegment(float[] coords)
     {
-      if (current > limit)
-        throw new NoSuchElementException("arc iterator out of bounds");
-      if (current == 0)
-        {
-          coords[0] = (float) (Math.cos(start) * w + x) / 2;
-          coords[1] = (float) (Math.sin(start) * h + y) / 2;
-          if (xform != null)
-            xform.transform(coords, 0, coords, 0, 1);
-          return SEG_MOVETO;
-        }
-      if (type != OPEN && current == limit)
-        return SEG_CLOSE;
-      if (type == PIE && current == limit - 1)
-        {
-          coords[0] = (float) (x + w / 2);
-          coords[1] = (float) (y + h / 2);
-          if (xform != null)
-            xform.transform(coords, 0, coords, 0, 1);
-          return SEG_LINETO;
-        }
-      // XXX Fill coords with 2 control points and next quarter point
-      coords[0] = (float) 0;
-      coords[1] = (float) 0;
-      coords[2] = (float) 0;
-      coords[3] = (float) 0;
-      coords[4] = (float) 0;
-      coords[5] = (float) 0;
-      if (xform != null)
-        xform.transform(coords, 0, coords, 0, 3);
-      return SEG_CUBICTO;
+      double[] double_coords = new double[6];
+      int code = currentSegment (double_coords);
+      for (int i = 0; i < 6; ++i)
+        coords[i] = (float) double_coords[i];
+      return code;
     }
 
     /**
@@ -691,35 +666,99 @@ public abstract class Arc2D extends RectangularShape
      */
     public int currentSegment(double[] coords)
     {
+      double rx = w/2;
+      double ry = h/2;
+      double xmid = x + rx;
+      double ymid = y + ry;
+     
       if (current > limit)
         throw new NoSuchElementException("arc iterator out of bounds");
+
       if (current == 0)
         {
-          coords[0] = (Math.cos(start) * w + x) / 2;
-          coords[1] = (Math.sin(start) * h + y) / 2;
+          coords[0] = xmid + rx * Math.cos(start);
+          coords[1] = ymid - ry * Math.sin(start);
           if (xform != null)
             xform.transform(coords, 0, coords, 0, 1);
           return SEG_MOVETO;
         }
+
       if (type != OPEN && current == limit)
         return SEG_CLOSE;
-      if (type == PIE && current == limit - 1)
+
+      if ((current == limit - 1) &&
+          (type == PIE) || (type == CHORD))
         {
-          coords[0] = (float) (x + w / 2);
-          coords[1] = (float) (y + h / 2);
+          if (type == PIE)
+            {
+              coords[0] = xmid;
+              coords[1] = ymid;
+            }
+          else if (type == CHORD)
+            {
+              coords[0] = xmid + rx * Math.cos(start);
+              coords[1] = ymid - ry * Math.sin(start);
+            }
           if (xform != null)
             xform.transform(coords, 0, coords, 0, 1);
           return SEG_LINETO;
         }
-      // XXX Fill coords with 2 control points and next quarter point
-      coords[0] = 0;
-      coords[1] = 0;
-      coords[2] = 0;
-      coords[3] = 0;
-      coords[4] = 0;
-      coords[5] = 0;
+
+      // note that this produces a cubic approximation of the arc segment,
+      // not a true ellipsoid. there's no ellipsoid path segment code,
+      // unfortunately. the cubic approximation looks about right, though.
+
+      double kappa = (Math.sqrt(2.0) - 1.0) * (4.0 / 3.0);
+      double quad = (Math.PI / 2.0);
+
+      double curr_begin = start + (current - 1) * quad;
+      double curr_extent = Math.min((start + extent) - curr_begin, quad);
+      double portion_of_a_quadrant = curr_extent / quad;
+
+      double x0 = xmid + rx * Math.cos(curr_begin);
+      double y0 = ymid - ry * Math.sin(curr_begin);
+      
+      double x1 = xmid + rx * Math.cos(curr_begin + curr_extent);
+      double y1 = ymid - ry * Math.sin(curr_begin + curr_extent);
+
+      AffineTransform trans = new AffineTransform ();
+      double [] cvec = new double[2];
+      double len = kappa * portion_of_a_quadrant; 
+      double angle = curr_begin; 
+
+      // in a hypothetical "first quadrant" setting, our first control
+      // vector would be sticking up, from [1,0] to [1,kappa].
+      //
+      // let us recall however that in java2d, y coords are upside down
+      // from what one would consider "normal" first quadrant rules, so we
+      // will *subtract* the y value of this control vector from our first
+      // point.
+      
+      cvec[0] = 0;
+      cvec[1] = len;
+      trans.scale (rx, ry);
+      trans.rotate (angle);
+      trans.transform(cvec, 0, cvec, 0, 1);
+      coords[0] = x0 + cvec[0];
+      coords[1] = y0 - cvec[1];
+
+      // control vector #2 would, ideally, be sticking out and to the
+      // right, in a first quadrant arc segment. again, subtraction of y.
+
+      cvec[0] = 0;
+      cvec[1] = -len;
+      trans.rotate (curr_extent);
+      trans.transform(cvec, 0, cvec, 0, 1);
+      coords[2] = x1 + cvec[0];
+      coords[3] = y1 - cvec[1];
+      
+      // end point
+      coords[4] = x1;
+      coords[5] = y1;
+
       if (xform != null)
         xform.transform(coords, 0, coords, 0, 3);
+
       return SEG_CUBICTO;
     }
   } // class ArcIterator
