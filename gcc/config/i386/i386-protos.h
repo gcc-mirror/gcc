@@ -56,6 +56,7 @@ extern int general_no_elim_operand PARAMS ((rtx, enum machine_mode));
 extern int nonmemory_no_elim_operand PARAMS ((rtx, enum machine_mode));
 extern int q_regs_operand PARAMS ((rtx, enum machine_mode));
 extern int non_q_regs_operand PARAMS ((rtx, enum machine_mode));
+extern int no_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int sse_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int fcmov_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int cmp_fp_expander_operand PARAMS ((rtx, enum machine_mode));
