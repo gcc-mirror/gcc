@@ -384,3 +384,52 @@ diff -c -r1.1.1.1 -r1.2
   __gnat_install_handler ()
   {
 
+Wed Jun 24 15:06:09 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* a-misc.c (lang_decode_option): New interface.
+	* a-misc.h (lang_decode_option): New interface.
+
+*** /home/brolley/tmp/a-misc.c	Wed Jun 24 15:01:22 1998
+--- ada/a-misc.c	Wed Jun 24 15:02:42 1998
+*************** init_gnat_args ()
+*** 162,170 ****
+     it returns 0. */
+  
+  int
+! lang_decode_option (p)
+!      char *p;
+  {
+    extern int  save_argc;
+    extern char **save_argv;
+  
+--- 162,172 ----
+     it returns 0. */
+  
+  int
+! lang_decode_option (argc, argv)
+!      int argc;
+!      char **argv;
+  {
++   char *p = argv[0];
+    extern int  save_argc;
+    extern char **save_argv;
+  
+*** /home/brolley/tmp/a-misc.h	Wed Jun 24 15:01:22 1998
+--- ada/a-misc.h	Wed Jun 24 15:03:20 1998
+*************** enum gnat_tree_code {
+*** 63,69 ****
+     option decoding phase of GCC calls this routine on the flags that it cannot
+     decode. This routine returns 1 if it is successful, otherwise it
+     returns 0. */
+! extern int lang_decode_option	PROTO((char *));
+  
+  /* Perform all the initialization steps that are language-specific.  */
+  extern void lang_init		PROTO((void));
+--- 63,69 ----
+     option decoding phase of GCC calls this routine on the flags that it cannot
+     decode. This routine returns 1 if it is successful, otherwise it
+     returns 0. */
+! extern int lang_decode_option	PROTO((int, char **));
+  
+  /* Perform all the initialization steps that are language-specific.  */
+  extern void lang_init		PROTO((void));
