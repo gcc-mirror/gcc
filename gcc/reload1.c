@@ -2043,8 +2043,17 @@ alter_reg (i, from_reg)
 
       /* If we have any adjustment to make, or if the stack slot is the
 	 wrong mode, make a new stack slot.  */
-      if (adjust != 0 || GET_MODE (x) != GET_MODE (regno_reg_rtx[i]))
-	x = adjust_address_nv (x, GET_MODE (regno_reg_rtx[i]), adjust);
+      x = adjust_address_nv (x, GET_MODE (regno_reg_rtx[i]), adjust);
+
+      /* If we have a decl for the original register, set it for the
+	 memory.  If this is a shared MEM, make a copy.  */
+      if (REGNO_DECL (i))
+	{
+	  if (from_reg != -1 && spill_stack_slot[from_reg] == x)
+	    x = copy_rtx (x);
+
+	  set_mem_decl (x, REGNO_DECL (i));
+	}
 
       /* Save the stack slot for later.  */
       reg_equiv_memory_loc[i] = x;

@@ -1691,8 +1691,9 @@ set_mem_attributes (ref, t, objectp)
   MEM_VOLATILE_P (ref) = TYPE_VOLATILE (type);
   MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
   RTX_UNCHANGING_P (ref)
-    |= (lang_hooks.honor_readonly
-	&& (TYPE_READONLY (type) || TREE_READONLY (t)));
+    |= ((lang_hooks.honor_readonly
+	 && (TYPE_READONLY (type) || TREE_READONLY (t)))
+	|| (! TYPE_P (t) && TREE_CONSTANT (t)));
 
   /* If we are making an object of this type, or if this is a DECL, we know
      that it is a scalar if the type is not an aggregate.  */
@@ -1782,6 +1783,18 @@ set_mem_align (mem, align)
   MEM_ATTRS (mem) = get_mem_attrs (MEM_ALIAS_SET (mem), MEM_DECL (mem),
 				   MEM_OFFSET (mem), MEM_SIZE (mem), align,
 				   GET_MODE (mem));
+}
+
+/* Set the decl for MEM to DECL.  */
+
+void
+set_mem_decl (mem, decl)
+     rtx mem;
+     tree decl;
+{
+  MEM_ATTRS (mem)
+    = get_mem_attrs (MEM_ALIAS_SET (mem), decl, MEM_OFFSET (mem),
+		     MEM_SIZE (mem), MEM_ALIGN (mem), GET_MODE (mem));
 }
 
 /* Return a memory reference like MEMREF, but with its mode changed to MODE

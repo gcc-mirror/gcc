@@ -3304,7 +3304,7 @@ get_decl_from_op (op, paddressp)
 
   *paddressp = 0;
 
-  if (GET_CODE (op) == REG)
+  if (GET_CODE (op) == REG && ORIGINAL_REGNO (op) >= FIRST_PSEUDO_REGISTER)
     return REGNO_DECL (ORIGINAL_REGNO (op));
   else if (GET_CODE (op) != MEM)
     return 0;
@@ -3353,9 +3353,9 @@ output_asm_operand_names (operands, oporder, nops)
 
       if (decl && DECL_NAME (decl))
 	{
-	  fprintf (asm_out_file, "%s %s%s",
-		   wrote ? "," : ASM_COMMENT_START, addressp ? "*" : "",
-		   IDENTIFIER_POINTER (DECL_NAME (decl)));
+	  fprintf (asm_out_file, "%c%s %s%s",
+		   wrote ? ',' : '\t', wrote ? "" : ASM_COMMENT_START,
+		   addressp ? "*" : "", IDENTIFIER_POINTER (DECL_NAME (decl)));
 	  wrote = 1;
 	}
     }
