@@ -1,5 +1,12 @@
 2004-11-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR target/18580
+	* gcc.dg/vect/vect-13.c, vect-27.c, vect-27a.c, vect-29.c,
+	vect-29a.c, vect-48a.c, vect-56a.c, vect-72.c, vect-72a.c,
+	vect-77.c, vect-77a.c: XFAIL on the SPARC.
+
+2004-11-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/vect/vect.exp (sparc*-*-*): Fix a couple of nits.
 
 2004-11-19  Mark Mitchell  <mark@codesourcery.com>
