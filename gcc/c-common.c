@@ -1644,7 +1644,7 @@ check_format_info (info, params)
 	continue;
       integral_format = (format_char == 'd' || format_char == 'i'
 			 || format_char == 'o' || format_char == 'u'
-			 || format_char == 'x' || format_char == 'x');
+			 || format_char == 'x' || format_char == 'X');
       if (precise && index (flag_chars, '0') != 0 && integral_format)
 	warning ("`0' flag ignored with precision specifier and `%c' format",
 		 format_char);
