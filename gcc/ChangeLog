@@ -1,5 +1,16 @@
 2004-01-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* config/sparc/sparc.c (function_arg_pass_by_reference): Return 1
+	for SCmode and DCmode if ARCH32.
+	(sparc_va_arg): Handle SCmode and DCmode by reference if ARCH32.
+	* config/sparc/sparc.h (RETURN_IN_MEMORY): Return 0 for TCmode
+	if ARCH32.
+	(BASE_RETURN_VALUE_REG): Return 32 for all FP modes except TFmode
+	if ARCH32.
+	(BASE_OUTGOING_VALUE_REG): Likewise.
+
+2004-01-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR target/10904
 	PR target/13058
 	* config/sparc/sparc.h (CANNOT_CHANGE_MODE_CLASS): New.
