@@ -1,3 +1,8 @@
+Mon Jun 24 18:53:56 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (FUNCTION_ARG_ADVANCE): Take SHCOMPACT_FORCE_ON_STACK
+	arguments into account for stack_regs.
+
 2002-06-24  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* doc/extend.texi: Change `@dots{}' to `/* @r{@dots{}} */'
