@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.205 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -842,13 +842,17 @@ package body Atree is
       Dummy : Node_Id;
 
    begin
-      --  Allocate Empty and Error nodes
+      --  Allocate Empty node
 
       Dummy := New_Node (N_Empty, No_Location);
       Set_Name1 (Empty, No_Name);
+
+      --  Allocate Error node, and set Error_Posted, since we certainly
+      --  only generate an Error node if we do post some kind of error!
+
       Dummy := New_Node (N_Error, No_Location);
       Set_Name1 (Error, Error_Name);
-
+      Set_Error_Posted (Error, True);
    end Initialize;
 
    --------------------------

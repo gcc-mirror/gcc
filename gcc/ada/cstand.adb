@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.213 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -1216,6 +1216,9 @@ package body CStand is
       Last_Standard_Node_Id := Last_Node_Id;
       Last_Standard_List_Id := Last_List_Id;
 
+      --  The Error node has an Etype of Any_Type to help error recovery
+
+      Set_Etype (Error, Any_Type);
    end Create_Standard;
 
    ------------------------------------
