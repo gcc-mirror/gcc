@@ -106,3 +106,9 @@
 
 /* Define if you want a bytecode interpreter.  */
 #undef INTERPRETER
+
+/* Define if pthread_mutex_t has m_count member.  */
+#undef PTHREAD_MUTEX_HAVE_M_COUNT
+
+/* Define if pthread_mutex_t has __m_count member.  */
+#undef PTHREAD_MUTEX_HAVE___M_COUNT

@@ -31,15 +31,15 @@ details.  */
 
 typedef pthread_cond_t _Jv_ConditionVariable_t;
 
-// FIXME: it is ugly to use LINUX_THREADS as the define.  Instead
-// think of a better scheme.
-#ifdef LINUX_THREADS
+#if defined (PTHREAD_MUTEX_HAVE_M_COUNT) || defined (PTHREAD_MUTEX_HAVE___M_COUNT)
 
 // On Linux we use implementation details of mutexes in order to get
 // faster results.
 typedef pthread_mutex_t _Jv_Mutex_t;
 
 #else /* LINUX_THREADS */
+
+#define PTHREAD_MUTEX_IS_STRUCT
 
 typedef struct
 {
@@ -67,7 +67,7 @@ typedef struct
   int count;
 } _Jv_Mutex_t;
 
-#endif /* LINUX_THREADS */
+#endif
 
 typedef struct
 {
@@ -88,7 +88,7 @@ typedef void _Jv_ThreadStartFunc (java::lang::Thread *);
 inline pthread_mutex_t *
 _Jv_PthreadGetMutex (_Jv_Mutex_t *mu)
 {
-#if defined (LINUX_THREADS)
+#if ! defined (PTHREAD_MUTEX_IS_STRUCT)
   return mu;
 #elif defined (HAVE_RECURSIVE_MUTEX)
   return &mu->mutex;
@@ -110,9 +110,11 @@ _Jv_PthreadCheckMonitor (_Jv_Mutex_t *mu)
   // See if the mutex is locked by this thread.
   if (pthread_mutex_trylock (pmu))
     return 1;
-#ifdef LINUX_THREADS
+#if defined (PTHREAD_MUTEX_HAVE_M_COUNT)
   // On Linux we exploit knowledge of the implementation.
   int r = pmu->m_count == 1;
+#elif defined (PTHREAD_MUTEX_HAVE___M_COUNT)
+  int r = pmu->__m_count == 1;
 #else
   int r = mu->count == 0;
 #endif
@@ -170,7 +172,7 @@ inline void
 _Jv_MutexInit (_Jv_Mutex_t *mu)
 {
   pthread_mutex_init (_Jv_PthreadGetMutex (mu), NULL);
-#ifndef LINUX_THREADS
+#ifdef PTHREAD_MUTEX_IS_STRUCT
   mu->count = 0;
 #endif
 }
@@ -206,7 +208,7 @@ inline int
 _Jv_MutexLock (_Jv_Mutex_t *mu)
 {
   int r = pthread_mutex_lock (mu);
-#ifndef LINUX_THREADS
+#ifdef PTHREAD_MUTEX_IS_STRUCT
   if (! r)
     ++mu->count;
 #endif
@@ -217,7 +219,7 @@ inline int
 _Jv_MutexUnlock (_Jv_Mutex_t *mu)
 {
   int r = pthread_mutex_unlock (mu);
-#ifndef LINUX_THREADS
+#ifdef PTHREAD_MUTEX_IS_STRUCT
   if (! r)
     --mu->count;
 #endif

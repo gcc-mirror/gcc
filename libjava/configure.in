@@ -50,10 +50,6 @@ AC_ARG_ENABLE(interpreter,
      AC_DEFINE(INTERPRETER)
   fi)
 
-dnl This becomes -lffi if the interpreter is enabled.
-INTERPSPEC=
-AC_SUBST(INTERPSPEC)
-
 dnl If the target is an eCos system, use the appropriate eCos
 dnl I/O routines.
 dnl FIXME: this should not be a local option but a global target
@@ -306,8 +302,6 @@ if test -n "${with_cross_host}"; then
       GCJ=
    fi
 else
-   # Some POSIX thread systems don't have pthread_mutexattr_settype.
-   # E.g., Solaris.
    AC_CHECK_FUNCS(strerror ioctl select open fsync sleep)
    AC_CHECK_FUNCS(ctime_r ctime, break)
    AC_CHECK_FUNCS(gmtime_r localtime_r readdir_r getpwuid_r)
@@ -377,23 +371,37 @@ else
      AC_EGREP_HEADER(gethostname, unistd.h, [
        AC_DEFINE(HAVE_GETHOSTNAME_DECL)])])
 
-   # Look for these functions in the thread library.
-   save_LIBS="$LIBS"
-   LIBS="$LIBS $THREADLIBS"
-   AC_CHECK_FUNCS(pthread_mutexattr_settype pthread_mutexattr_setkind_np)
+   # Look for these functions in the thread library, but only bother
+   # if using POSIX threads.
+   if test "$THREADS" = posix; then
+      save_LIBS="$LIBS"
+      LIBS="$LIBS $THREADLIBS"
+      # Some POSIX thread systems don't have pthread_mutexattr_settype.
+      # E.g., Solaris.
+      AC_CHECK_FUNCS(pthread_mutexattr_settype pthread_mutexattr_setkind_np)
 
-   # Look for sched_yield.  Up to Solaris 2.6, it is in libposix4, since
-   # Solaris 7 the name librt is preferred.
-   AC_CHECK_FUNCS(sched_yield, , [
-     AC_CHECK_LIB(rt, sched_yield, [
-       AC_DEFINE(HAVE_SCHED_YIELD)
-       THREADLIBS="$THREADLIBS -lrt"
-       THREADSPECS="$THREADSPECS -lrt"], [
-       AC_CHECK_LIB(posix4, sched_yield, [
-         AC_DEFINE(HAVE_SCHED_YIELD)
-	 THREADLIBS="$THREADLIBS -lposix4"
-         THREADSPECS="$THREADSPECS -lposix4"])])])
-   LIBS="$save_LIBS"
+      # Look for sched_yield.  Up to Solaris 2.6, it is in libposix4, since
+      # Solaris 7 the name librt is preferred.
+      AC_CHECK_FUNCS(sched_yield, , [
+	AC_CHECK_LIB(rt, sched_yield, [
+	  AC_DEFINE(HAVE_SCHED_YIELD)
+	  THREADLIBS="$THREADLIBS -lrt"
+	  THREADSPECS="$THREADSPECS -lrt"], [
+	  AC_CHECK_LIB(posix4, sched_yield, [
+	    AC_DEFINE(HAVE_SCHED_YIELD)
+	    THREADLIBS="$THREADLIBS -lposix4"
+	    THREADSPECS="$THREADSPECS -lposix4"])])])
+      LIBS="$save_LIBS"
+
+      # We can save a little space at runtime if the mutex has m_count
+      # or __m_count.  This is a nice hack for Linux.
+      AC_TRY_COMPILE([#include <pthread.h>], [
+          extern pthread_mutex_t *mutex; int q = mutex->m_count;
+        ], AC_DEFINE(PTHREAD_MUTEX_HAVE_M_COUNT), [
+	AC_TRY_COMPILE([#include <pthread.h>], [
+	    extern pthread_mutex_t *mutex; int q = mutex->__m_count;
+	  ], AC_DEFINE(PTHREAD_MUTEX_HAVE___M_COUNT))])
+   fi
 
    # We require a way to get the time.
    time_found=no
@@ -460,10 +468,6 @@ else
      LIBS=$gcj_oldLIBS
    ])
    SYSTEMSPEC="$SYSTEMSPEC $gcj_cv_lib_sockets"
-
-   if test "$enable_interpreter" = yes; then
-      INTERPSPEC=
-   fi
 
    if test "$with_system_zlib" = yes; then
       AC_CHECK_LIB(z, deflate, ZLIBSPEC=-lz, ZLIBSPEC=-lzgcj)
