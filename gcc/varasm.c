@@ -32,6 +32,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
+#include "function.h"
 #include "expr.h"
 #include "hard-reg-set.h"
 #include "regs.h"
@@ -1228,7 +1229,10 @@ assemble_real (d, mode)
    They are chained through the CONST_DOUBLE_CHAIN.
    A CONST_DOUBLE rtx has CONST_DOUBLE_MEM != cc0_rtx iff it is on this chain.
    In that case, CONST_DOUBLE_MEM is either a MEM,
-   or const0_rtx if no MEM has been made for this CONST_DOUBLE yet.  */
+   or const0_rtx if no MEM has been made for this CONST_DOUBLE yet.
+
+   (CONST_DOUBLE_MEM is used only for top-level functions.
+   See force_const_mem for explanation.)  */
 
 static rtx const_double_chain;
 
@@ -1408,6 +1412,11 @@ void
 clear_const_double_mem ()
 {
   register rtx r, next;
+
+  /* Don't touch CONST_DOUBLE_MEM for nested functions.
+     See force_const_mem for explanation.  */
+  if (outer_function_chain != 0)
+    return;
 
   for (r = const_double_chain; r; r = next)
     {
@@ -2007,7 +2016,7 @@ output_constant_def (exp)
    inlining, so they do not need to be allocated permanently.  */
 
 #define MAX_RTX_HASH_TABLE 61
-static struct constant_descriptor *const_rtx_hash_table[MAX_RTX_HASH_TABLE];
+static struct constant_descriptor **const_rtx_hash_table;
 
 /* Structure to represent sufficient information about a constant so that
    it can be output when the constant pool is output, so that function
@@ -2044,7 +2053,7 @@ struct pool_sym
   struct pool_sym *next;
 };
 
-static struct pool_sym *const_rtx_sym_hash_table[MAX_RTX_HASH_TABLE];
+static struct pool_sym **const_rtx_sym_hash_table;
 
 /* Hash code for a SYMBOL_REF with CONSTANT_POOL_ADDRESS_P true.
    The argument is XSTR (... , 0)  */
@@ -2057,13 +2066,45 @@ static struct pool_sym *const_rtx_sym_hash_table[MAX_RTX_HASH_TABLE];
 void
 init_const_rtx_hash_table ()
 {
-  bzero (const_rtx_hash_table, sizeof const_rtx_hash_table);
-  bzero (const_rtx_sym_hash_table, sizeof const_rtx_sym_hash_table);
+  const_rtx_hash_table
+    = ((struct constant_descriptor **)
+       oballoc (MAX_RTX_HASH_TABLE * sizeof (struct constant_descriptor *)));
+  const_rtx_sym_hash_table
+    = ((struct pool_sym **)
+       oballoc (MAX_RTX_HASH_TABLE * sizeof (struct pool_sym *)));
+  bzero (const_rtx_hash_table,
+	 MAX_RTX_HASH_TABLE * sizeof (struct constant_descriptor *));
+  bzero (const_rtx_sym_hash_table,
+	 MAX_RTX_HASH_TABLE * sizeof (struct pool_sym *));
 
   first_pool = last_pool = 0;
   pool_offset = 0;
 }
 
+/* Save and restore it for a nested function.  */
+
+void
+save_varasm_status (p)
+     struct function *p;
+{
+  p->const_rtx_hash_table = const_rtx_hash_table;
+  p->const_rtx_sym_hash_table = const_rtx_sym_hash_table;
+  p->first_pool = first_pool;
+  p->last_pool = last_pool;
+  p->pool_offset = pool_offset;
+}
+
+void
+restore_varasm_status (p)
+     struct function *p;
+{
+  const_rtx_hash_table = p->const_rtx_hash_table;
+  const_rtx_sym_hash_table = p->const_rtx_sym_hash_table;
+  first_pool = p->first_pool;
+  last_pool = p->last_pool;
+  pool_offset = p->pool_offset;
+}
+
 enum kind { RTX_DOUBLE, RTX_INT };
 
 struct rtx_const
@@ -2154,6 +2195,23 @@ decode_rtx_const (mode, x, value)
 	   For a LABEL_REF, compare labels.  */
 	value->un.addr.base = XEXP (value->un.addr.base, 0);
       }
+}
+
+/* Given a MINUS expression, simplify it if both sides
+   include the same symbol.  */
+
+rtx
+simplify_subtraction (x)
+     rtx x;
+{
+  struct rtx_const val0, val1;
+
+  decode_rtx_const (GET_MODE (x), XEXP (x, 0), &val0);
+  decode_rtx_const (GET_MODE (x), XEXP (x, 1), &val1);
+
+  if (val0.un.addr.base == val1.un.addr.base)
+    return GEN_INT (val0.un.addr.offset - val1.un.addr.offset);
+  return x;
 }
 
 /* Compute a hash code for a constant RTL expression.  */
@@ -2249,10 +2307,15 @@ force_const_mem (mode, x)
      modes in an alternating fashion, we will allocate a lot of different
      memory locations, but this should be extremely rare.  */
 
-  if (GET_CODE (x) == CONST_DOUBLE
-      && GET_CODE (CONST_DOUBLE_MEM (x)) == MEM
-      && GET_MODE (CONST_DOUBLE_MEM (x)) == mode)
-    return CONST_DOUBLE_MEM (x);
+  /* Don't use CONST_DOUBLE_MEM in a nested function.
+     Nested functions have their own constant pools,
+     so they can't share the same values in CONST_DOUBLE_MEM
+     with the containing function.  */
+  if (outer_function_chain == 0)
+    if (GET_CODE (x) == CONST_DOUBLE
+	&& GET_CODE (CONST_DOUBLE_MEM (x)) == MEM
+	&& GET_MODE (CONST_DOUBLE_MEM (x)) == mode)
+      return CONST_DOUBLE_MEM (x);
 
   /* Compute hash code of X.  Search the descriptors for that hash code
      to see if any of them describes X.  If yes, the descriptor records
@@ -2335,15 +2398,16 @@ force_const_mem (mode, x)
   CONSTANT_POOL_ADDRESS_P (XEXP (def, 0)) = 1;
   current_function_uses_const_pool = 1;
 
-  if (GET_CODE (x) == CONST_DOUBLE)
-    {
-      if (CONST_DOUBLE_MEM (x) == cc0_rtx)
-	{
-	  CONST_DOUBLE_CHAIN (x) = const_double_chain;
-	  const_double_chain = x;
-	}
-      CONST_DOUBLE_MEM (x) = def;
-    }
+  if (outer_function_chain == 0)
+    if (GET_CODE (x) == CONST_DOUBLE)
+      {
+	if (CONST_DOUBLE_MEM (x) == cc0_rtx)
+	  {
+	    CONST_DOUBLE_CHAIN (x) = const_double_chain;
+	    const_double_chain = x;
+	  }
+	CONST_DOUBLE_MEM (x) = def;
+      }
 
   return def;
 }
