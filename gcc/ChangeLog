@@ -1,3 +1,14 @@
+2004-08-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* tree-ssa-loop-manip.c: New file.
+	* Makefile.in (tree-ssa-loop-manip.o): Add.
+	* tree-flow.h (rewrite_into_loop_closed_ssa, verify_loop_closed_ssa):
+	Declare.
+	* tree-ssa-loop.c (tree_loop_optimizer_init): Create loop closed ssa
+	form.
+	(tree_ssa_loop_done): Verify loop closed ssa form.
+	* tree-ssa-loop-im.c (move_computations): Update loop closed ssa form.
+
 2004-08-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_asm_output_aligned_bss, pa_asm_output_aligned_common,

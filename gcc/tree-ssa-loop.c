@@ -60,6 +60,11 @@ tree_loop_optimizer_init (FILE *dump)
   rewrite_into_ssa (false);
   bitmap_clear (vars_to_rename);
 
+  rewrite_into_loop_closed_ssa ();
+#ifdef ENABLE_CHECKING
+  verify_loop_closed_ssa ();
+#endif
+
   return loops;
 }
 
@@ -151,6 +156,10 @@ tree_ssa_loop_done (void)
 {
   if (!current_loops)
     return;
+
+#ifdef ENABLE_CHECKING
+  verify_loop_closed_ssa ();
+#endif
 
   loop_optimizer_finalize (current_loops,
 			   (dump_flags & TDF_DETAILS ? dump_file : NULL));
