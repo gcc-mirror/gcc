@@ -976,7 +976,7 @@ build_expr_type_conversion (desires, expr, complain)
       && !(desires & WANT_NULL))
     cp_warning ("converting NULL to non-pointer type");
     
-  if (TREE_CODE (basetype) == OFFSET_TYPE)
+  if (TREE_CODE (expr) == OFFSET_REF || BASELINK_P (expr))
     expr = resolve_offset_ref (expr);
   expr = convert_from_reference (expr);
   basetype = TREE_TYPE (expr);

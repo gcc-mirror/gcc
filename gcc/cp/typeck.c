@@ -1714,23 +1714,14 @@ tree
 decay_conversion (exp)
      tree exp;
 {
-  register tree type = TREE_TYPE (exp);
-  register enum tree_code code = TREE_CODE (type);
+  register tree type;
+  register enum tree_code code;
 
-  if (code == OFFSET_TYPE)
-    {
-      if (TREE_CODE (exp) == OFFSET_REF)
-	return decay_conversion (resolve_offset_ref (exp));
+  if (TREE_CODE (exp) == OFFSET_REF || BASELINK_P (exp))
+    exp = resolve_offset_ref (exp);
 
-      type = TREE_TYPE (type);
-      code = TREE_CODE (type);
-
-      if (type == unknown_type_node)
-	{
-	  cp_pedwarn ("assuming & on overloaded member function");
-	  return build_unary_op (ADDR_EXPR, exp, 0);
-	}
-    }
+  type = TREE_TYPE (exp);
+  code = TREE_CODE (type);
 
   if (code == REFERENCE_TYPE)
     {
@@ -1765,10 +1756,7 @@ decay_conversion (exp)
       return error_mark_node;
     }
   if (code == METHOD_TYPE)
-    {
-      cp_pedwarn ("assuming & on `%E'", exp);
-      return build_unary_op (ADDR_EXPR, exp, 0);
-    }
+    my_friendly_abort (990506);
   if (code == FUNCTION_TYPE || is_overloaded_fn (exp))
     return build_unary_op (ADDR_EXPR, exp, 0);
   if (code == ARRAY_TYPE)
@@ -2871,7 +2859,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 			   (build_component_ref (function,
 						 index_identifier,
 						 NULL_TREE, 0)));
-	  e1 = build_binary_op (GT_EXPR, idx, integer_zero_node);
+	  e1 = build_binary_op (GE_EXPR, idx, integer_zero_node);
 
 	  /* Convert down to the right base, before using the instance.  */
 	  instance = convert_pointer_to_real (basetype, instance_ptr);
@@ -3356,6 +3344,32 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
       op1 = default_conversion (orig_op1);
     }
 
+  /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
+  STRIP_TYPE_NOPS (op0);
+  STRIP_TYPE_NOPS (op1);
+
+  /* DTRT if one side is an overloaded function, but complain about it.  */
+  if (type_unknown_p (op0))
+    {
+      tree t = instantiate_type (TREE_TYPE (op1), op0, 0);
+      if (t != error_mark_node)
+	{
+	  cp_pedwarn ("assuming cast to `%T' from overloaded function",
+		      TREE_TYPE (t));
+	  op0 = t;
+	}
+    }
+  if (type_unknown_p (op1))
+    {
+      tree t = instantiate_type (TREE_TYPE (op0), op1, 0);
+      if (t != error_mark_node)
+	{
+	  cp_pedwarn ("assuming cast to `%T' from overloaded function",
+		      TREE_TYPE (t));
+	  op1 = t;
+	}
+    }
+
   type0 = TREE_TYPE (op0);
   type1 = TREE_TYPE (op1);
 
@@ -3363,10 +3377,6 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
      whether the arguments are integers, floating, pointers, etc.  */
   code0 = TREE_CODE (type0);
   code1 = TREE_CODE (type1);
-
-  /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
-  STRIP_TYPE_NOPS (op0);
-  STRIP_TYPE_NOPS (op1);
 
   /* If an error was already reported for one of the arguments,
      avoid reporting another error.  */
@@ -3640,8 +3650,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  result_type = TREE_TYPE (op0);
 	}
       else if (TYPE_PTRMEMFUNC_P (type0) && TYPE_PTRMEMFUNC_P (type1)
-	       && (TYPE_PTRMEMFUNC_FN_TYPE (type0)
-		   == TYPE_PTRMEMFUNC_FN_TYPE (type1)))
+	       && same_type_p (type0, type1))
 	{
 	  /* The code we generate for the test is:
 
@@ -3665,7 +3674,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  e2 = build_binary_op (NE_EXPR, index1, integer_neg_one_node);
 	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e2,
 				build_binary_op (EQ_EXPR, delta20, delta21));
-	  e3 = build_binary_op (EQ_EXPR, pfn0, pfn1);
+	  /* We can't use build_binary_op for this cmp because it would get
+	     confused by the ptr to method types and think we want pmfs.  */
+	  e3 = build (EQ_EXPR, boolean_type_node, pfn0, pfn1);
 	  e2 = build_binary_op (TRUTH_ORIF_EXPR, e2, e3);
 	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e1, e2);
 	  if (code == EQ_EXPR)
@@ -3673,7 +3684,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  return build_binary_op (EQ_EXPR, e2, integer_zero_node);
 	}
       else if (TYPE_PTRMEMFUNC_P (type0)
-	       && TYPE_PTRMEMFUNC_FN_TYPE (type0) == type1)
+	       && same_type_p (TYPE_PTRMEMFUNC_FN_TYPE (type0), type1))
 	{
 	  tree index0 = build_component_ref (op0, index_identifier,
 					     NULL_TREE, 0);
@@ -3712,7 +3723,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  e2 = build_binary_op (NE_EXPR, index1, integer_neg_one_node);
 	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e2,
 				build_binary_op (EQ_EXPR, delta20, delta21));
-	  e3 = build_binary_op (EQ_EXPR, pfn0, op1);
+	  /* We can't use build_binary_op for this cmp because it would get
+	     confused by the ptr to method types and think we want pmfs.  */
+	  e3 = build (EQ_EXPR, boolean_type_node, pfn0, op1);
 	  e2 = build_binary_op (TRUTH_ORIF_EXPR, e2, e3);
 	  e2 = build_binary_op (TRUTH_ANDIF_EXPR, e1, e2);
 	  if (code == EQ_EXPR)
@@ -3720,7 +3733,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  return build_binary_op (EQ_EXPR, e2, integer_zero_node);
 	}
       else if (TYPE_PTRMEMFUNC_P (type1)
-	       && TYPE_PTRMEMFUNC_FN_TYPE (type1) == type0)
+	       && same_type_p (TYPE_PTRMEMFUNC_FN_TYPE (type1), type0))
 	return build_binary_op (code, op1, op0);
       break;
 
@@ -5718,9 +5731,7 @@ build_c_cast (type, expr)
       && TREE_TYPE (value) == TREE_TYPE (TREE_OPERAND (value, 0)))
     value = TREE_OPERAND (value, 0);
 
-  if (TREE_TYPE (expr)
-      && TREE_CODE (TREE_TYPE (expr)) == OFFSET_TYPE
-      && TREE_CODE (type) != OFFSET_TYPE)
+  if (TREE_CODE (value) == OFFSET_REF || BASELINK_P (value))
     value = resolve_offset_ref (value);
 
   if (TREE_CODE (type) == ARRAY_TYPE)
@@ -6687,39 +6698,22 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 {
   register enum tree_code codel = TREE_CODE (type);
   register tree rhstype;
-  register enum tree_code coder = TREE_CODE (TREE_TYPE (rhs));
-
-  /* Issue warnings about peculiar, but legal, uses of NULL.  */
-  if (ARITHMETIC_TYPE_P (type) && rhs == null_node)
-    cp_warning ("converting NULL to non-pointer type");
-
-  if (coder == ERROR_MARK)
-    return error_mark_node;
+  register enum tree_code coder;
 
   if (codel == OFFSET_TYPE)
-    {
-      type = TREE_TYPE (type);
-      codel = TREE_CODE (type);
-    }
+    my_friendly_abort (990505);
+
+  if (TREE_CODE (rhs) == OFFSET_REF || BASELINK_P (rhs))
+    rhs = resolve_offset_ref (rhs);
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
     rhs = TREE_OPERAND (rhs, 0);
 
-  if (rhs == error_mark_node)
+  if (rhs == error_mark_node || TREE_TYPE (rhs) == error_mark_node)
     return error_mark_node;
-
   if (TREE_CODE (rhs) == TREE_LIST && TREE_VALUE (rhs) == error_mark_node)
     return error_mark_node;
-
-  if (TREE_CODE (TREE_TYPE (rhs)) == OFFSET_TYPE)
-    {
-      rhs = resolve_offset_ref (rhs);
-      if (rhs == error_mark_node)
-	return error_mark_node;
-      rhstype = TREE_TYPE (rhs);
-      coder = TREE_CODE (rhstype);
-    }
 
   if (TREE_CODE (TREE_TYPE (rhs)) == ARRAY_TYPE
       || is_overloaded_fn (rhs))
@@ -6735,6 +6729,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 
   rhstype = TREE_TYPE (rhs);
   coder = TREE_CODE (rhstype);
+
+  /* Issue warnings about peculiar, but legal, uses of NULL.  */
+  if (ARITHMETIC_TYPE_P (type) && rhs == null_node)
+    cp_warning ("converting NULL to non-pointer type");
 
   /* This should no longer change types on us.  */
   if (TREE_CODE (rhs) == CONST_DECL)
@@ -7135,7 +7133,7 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
       || (TREE_CODE (rhs) == TREE_LIST && TREE_VALUE (rhs) == error_mark_node))
     return error_mark_node;
 
-  if (TREE_CODE (TREE_TYPE (rhs)) == OFFSET_TYPE)
+  if (TREE_CODE (rhs) == OFFSET_REF || BASELINK_P (rhs))
     {
       rhs = resolve_offset_ref (rhs);
       if (rhs == error_mark_node)

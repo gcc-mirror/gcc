@@ -1692,7 +1692,7 @@ resolve_offset_ref (exp)
   tree member;
   tree basetype, addr;
 
-  if (TREE_CODE (exp) == TREE_LIST)
+  if (BASELINK_P (exp))
     {
       cp_pedwarn ("assuming & on overloaded member function");
       return build_unary_op (ADDR_EXPR, exp, 0);
@@ -1719,13 +1719,18 @@ resolve_offset_ref (exp)
   if ((TREE_CODE (member) == VAR_DECL
        && ! TYPE_PTRMEMFUNC_P (TREE_TYPE (member))
        && ! TYPE_PTRMEM_P (TREE_TYPE (member)))
-      || TREE_CODE (TREE_TYPE (member)) == FUNCTION_TYPE
-      || TREE_CODE (TREE_TYPE (member)) == METHOD_TYPE)
+      || TREE_CODE (TREE_TYPE (member)) == FUNCTION_TYPE)
     {
       /* These were static members.  */
       if (mark_addressable (member) == 0)
 	return error_mark_node;
       return member;
+    }
+
+  if (TREE_CODE (TREE_TYPE (member)) == METHOD_TYPE)
+    {
+      cp_pedwarn ("assuming & on `%E'", member);
+      return build_unary_op (ADDR_EXPR, exp, 0);
     }
 
   if (TREE_CODE (TREE_TYPE (member)) == POINTER_TYPE

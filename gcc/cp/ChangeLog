@@ -1,3 +1,18 @@
+1999-05-07  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (resolve_offset_ref): Don't return a raw method.
+	Use BASELINK_P.
+	* typeck.c (decay_conversion): Don't handle a raw method.
+	Resolve all OFFSET_REFs.
+	(get_member_function_from_ptrfunc): 0 is a valid vtable index.
+	(build_binary_op_nodefault): Handle resolving overloaded fns.  Use
+	same_type_p for pmf bits.  Don't use build_binary_op to compare
+	raw pointers to methods.
+	(convert_for_assignment): Check for OFFSET_REF, not OFFSET_TYPE,
+	to decide when to call resolve_offset_ref.
+	(build_c_cast, convert_for_initialization): Likewise.
+	* cvt.c (build_expr_type_conversion): Likewise.
+
 1999-05-06  Nathan Sidwell  <nathan@acm.org>
 
 	* call.c (build_new_method_call): Use TYPE_MAIN_VARIANT of class.
