@@ -2084,23 +2084,25 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 			NEXT_INSN (range1end) = range2after;
 			PREV_INSN (range2after) = range1end;
 
-			/* Check for a loop end note between the end of
+			/* Check for loop notes between the end of
 			   range2, and the next code label.  If there is one,
 			   then what we have really seen is
 			   if (foo) break; end_of_loop;
 			   and moved the break sequence outside the loop.
-			   We must move the LOOP_END note to where the
-			   loop really ends now, or we will confuse loop
-			   optimization.  Stop if we find a LOOP_BEG note
-			   first, since we don't want to move the LOOP_END
-			   note in that case.  */
+			   We must move LOOP_END, LOOP_VTOP and LOOP_CONT
+			   notes (in order) to where the loop really ends now,
+			   or we will confuse loop optimization.  Stop if we
+			   find a LOOP_BEG note first, since we don't want to
+			   move the notes in that case.  */
 			for (;range2after != label2; range2after = rangenext)
 			  {
 			    rangenext = NEXT_INSN (range2after);
 			    if (GET_CODE (range2after) == NOTE)
 			      {
-				if (NOTE_LINE_NUMBER (range2after)
-				    == NOTE_INSN_LOOP_END)
+				int kind = NOTE_LINE_NUMBER (range2after);
+				if (kind == NOTE_INSN_LOOP_END
+				    || kind == NOTE_INSN_LOOP_VTOP
+				    || kind == NOTE_INSN_LOOP_CONT)
 				  {
 				    NEXT_INSN (PREV_INSN (range2after))
 				      = rangenext;
