@@ -1,5 +1,6 @@
 /* Prototypes for exported functions defined in m68hc11.c
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GCC.
@@ -41,6 +42,8 @@ extern void m68hc11_function_arg_advance (CUMULATIVE_ARGS*,
 #endif
 
 #ifdef RTX_CODE
+extern int m68hc11_auto_inc_p (rtx);
+
 extern void m68hc11_initialize_trampoline (rtx, rtx, rtx);
 
 extern rtx m68hc11_expand_compare_and_branch (enum rtx_code, rtx, rtx, rtx);
@@ -90,8 +93,6 @@ extern int m68hc11_indirect_p (rtx, enum machine_mode);
 extern int go_if_legitimate_address2 (rtx, enum machine_mode, int);
 
 extern int reg_or_indexed_operand (rtx,enum machine_mode);
-extern int tst_operand (rtx,enum machine_mode);
-extern int cmp_operand (rtx,enum machine_mode);
 extern int memory_indexed_operand (rtx, enum machine_mode);
 
 extern void m68hc11_split_logical (enum machine_mode, int, rtx*);
@@ -101,21 +102,8 @@ extern int m68hc11_register_indirect_p (rtx, enum machine_mode);
 extern int symbolic_memory_operand (rtx, enum machine_mode);
 
 extern int memory_reload_operand (rtx, enum machine_mode);
-extern int stack_register_operand (rtx, enum machine_mode);
-extern int d_register_operand (rtx, enum machine_mode);
-extern int hard_addr_reg_operand (rtx, enum machine_mode);
-extern int splitable_operand (rtx, enum machine_mode);
 extern int arith_src_operand (rtx, enum machine_mode);
-extern int m68hc11_logical_operator (rtx, enum machine_mode);
-extern int m68hc11_arith_operator (rtx, enum machine_mode);
-extern int m68hc11_non_shift_operator (rtx, enum machine_mode);
-extern int m68hc11_shift_operator (rtx, enum machine_mode);
-extern int m68hc11_unary_operator (rtx, enum machine_mode);
-extern int m68hc11_eq_compare_operator (rtx, enum machine_mode);
-extern int non_push_operand (rtx, enum machine_mode);
-extern int hard_reg_operand (rtx, enum machine_mode);
 extern int soft_reg_operand (rtx, enum machine_mode);
-extern int reg_or_some_mem_operand (rtx, enum machine_mode);
 
 #if defined TREE_CODE
 extern void m68hc11_init_cumulative_args (CUMULATIVE_ARGS*, tree, rtx);

@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GCC.
@@ -1588,27 +1589,6 @@ do {                                                                    \
 
 
 /* Miscellaneous Parameters.  */
-
-/* Define the codes that are matched by predicates in m68hc11.c.  */
-#define PREDICATE_CODES \
-{"stack_register_operand",   {SUBREG, REG}},				\
-{"d_register_operand",       {SUBREG, REG}},				\
-{"hard_addr_reg_operand",    {SUBREG, REG}},				\
-{"hard_reg_operand",         {SUBREG, REG}},				\
-{"m68hc11_logical_operator", {AND, IOR, XOR}},				\
-{"m68hc11_arith_operator",   {AND, IOR, XOR, PLUS, MINUS,		\
-			      ASHIFT, ASHIFTRT, LSHIFTRT,		\
-			      ROTATE, ROTATERT }},			\
-{"m68hc11_non_shift_operator", {AND, IOR, XOR, PLUS, MINUS}},		\
-{"m68hc11_unary_operator",   {NEG, NOT, SIGN_EXTEND, ZERO_EXTEND}},	\
-{"m68hc11_shift_operator",   {ASHIFT, ASHIFTRT, LSHIFTRT, ROTATE, ROTATERT}},\
-{"m68hc11_eq_compare_operator", {EQ, NE}},                              \
-{"non_push_operand",         {SUBREG, REG, MEM}},			\
-{"splitable_operand",        {SUBREG, REG, MEM}},			\
-{"reg_or_some_mem_operand",  {SUBREG, REG, MEM}},			\
-{"tst_operand",              {SUBREG, REG, MEM}},			\
-{"cmp_operand",              {SUBREG, REG, MEM, SYMBOL_REF, LABEL_REF,	\
-			     CONST_INT, CONST_DOUBLE}},
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
