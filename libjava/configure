@@ -2036,7 +2036,7 @@ LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 # clobbered by the next message.
 exec 5>>./config.log
 
-subdirs="$DIRLDL"
+subdirs="$DIRLTDL"
 
 
 if test -z "$with_target_subdir" || test "$with_target_subdir" = "."; then
@@ -5485,7 +5485,7 @@ if test "$no_recursion" != yes; then
     esac
   done
 
-  for ac_config_dir in $DIRLDL; do
+  for ac_config_dir in $DIRLTDL; do
 
     # Do not complain, so a configure script can configure whichever
     # parts of a large source tree are present.
