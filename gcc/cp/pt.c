@@ -4497,7 +4497,6 @@ instantiate_decl (d)
       popclass (1);
     }
 
-  /* import_export_decl has to happen after DECL_INITIAL is set up.  */
   if (pattern_defined)
     {
       repo_template_used (d);

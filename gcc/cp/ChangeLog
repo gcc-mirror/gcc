@@ -1,5 +1,11 @@
 Thu Nov 27 00:59:46 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* cp-tree.h (struct lang_decl_flags): Add comdat.
+	(DECL_COMDAT): New macro.
+	* decl.c (duplicate_decls): Propagate it.
+	(cp_finish_decl): Handle it.
+	* decl2.c (import_export_decl): Just set DECL_COMDAT on VAR_DECLs.
+
 	* class.c: Remove static pending_hard_virtuals.
  	(add_virtual_function): Take pointers to pending_virtuals
 	and pending_hard_virtuals.

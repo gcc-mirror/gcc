@@ -943,7 +943,8 @@ struct lang_decl_flags
   unsigned nonconverting : 1;
   unsigned declared_inline : 1;
   unsigned not_really_extern : 1;
-  unsigned dummy : 5;
+  unsigned comdat : 1;
+  unsigned dummy : 4;
 
   tree access;
   tree context;
@@ -1147,16 +1148,6 @@ struct lang_decl
    For a _TYPE if it uses virtual functions (or is derived from
    one that does).  */
 #define TYPE_VIRTUAL_P(NODE) (TREE_LANG_FLAG_2 (NODE))
-
-#if 0
-/* Same, but tells if this field is private in current context.  */
-#define DECL_PRIVATE(NODE) (FOO)
-
-/* Same, but tells if this field is private in current context.  */
-#define DECL_PROTECTED(NODE) (DECL_LANG_FLAG_6 (NODE))
-
-#define DECL_PUBLIC(NODE) (DECL_LANG_FLAG_7 (NODE))
-#endif
 
 extern int flag_new_for_scope;
 
@@ -1419,6 +1410,10 @@ extern int flag_new_for_scope;
 
 #define DECL_REALLY_EXTERN(NODE) \
   (DECL_EXTERNAL (NODE) && ! DECL_NOT_REALLY_EXTERN (NODE))
+
+/* Used to tell cp_finish_decl that it should approximate comdat linkage
+   as best it can for this decl.  */
+#define DECL_COMDAT(NODE) (DECL_LANG_SPECIFIC (NODE)->decl_flags.comdat)
 
 #define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.i)
 
