@@ -212,6 +212,7 @@ public:
   /**
    *  @brief Subscript ( [] ) access to map data.
    *  @param  k  The key for which data should be retrieved.
+   * 
    *  Allows for easy lookup with the subscript ( [] ) operator.  Returns the
    *  data associated with the key specified in subscript.  If the key does
    *  not exist a pair with that key is created with a default value, which
@@ -278,19 +279,20 @@ public:
    *  This function erases an element, pointed to by the given iterator, from
    *  a map.  Note that this function only erases the element, and that if
    *  the element is itself a pointer, the pointed-to memory is not touched
-   *  in any way.  That is the user's responsibilty.
+   *  in any way.  Managing the pointer is the user's responsibilty.
   */
   void erase(iterator __position) { _M_t.erase(__position); }
 
   /**
    *  @brief Erases an element according to the provided key.
    *  @param  x  Key of element to be erased.
-   *  @return  Doc me!
+   *  @return  Doc me! (Number of elements that match key? Only makes sense
+   *           with multimap)
    *
    *  This function erases an element, located by the given key, from a map.
    *  Note that this function only erases the element, and that if
    *  the element is itself a pointer, the pointed-to memory is not touched
-   *  in any way.  That is the user's responsibilty.
+   *  in any way.  Managing the pointer is the user's responsibilty.
   */
   size_type erase(const key_type& __x) { return _M_t.erase(__x); }
 
@@ -302,12 +304,16 @@ public:
    *  This function erases a sequence of elements from a map.
    *  Note that this function only erases the element, and that if
    *  the element is itself a pointer, the pointed-to memory is not touched
-   *  in any way.  That is the user's responsibilty.
+   *  in any way.  Managing the pointer is the user's responsibilty.
   */
   void erase(iterator __first, iterator __last)
     { _M_t.erase(__first, __last); }
 
-  /** Erases all elements in a map.  */
+  /** Erases all elements in a map.  Note that this function only erases
+   *  the elements, and that if the elements themselves are pointers, the
+   *  pointed-to memory is not touched in any way.  Managing the pointer is
+   *  the user's responsibilty.
+  */
   void clear() { _M_t.clear(); }
 
   // map operations:
