@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.31 2000/10/04 05:06:32 bkoz Exp $
+## $Id: Makefile.am,v 1.32 2000/10/04 06:44:25 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -59,8 +59,13 @@ AM_CXXFLAGS = \
 	$(AC_CXXFLAGS) 
 
 
+# Root level of the include sources.
+glibcpp_includedir = $(top_srcdir)/include
+
 # Passed down for cross compilers, canadian crosses.
 TOPLEVEL_INCLUDES = -I$(includedir)
+
+LIBMATH_INCLUDES = -I$(top_srcdir)/math
 
 if GLIBCPP_NEED_LIBIO
 LIBIO_INCLUDES = \
@@ -71,9 +76,9 @@ endif
 
 if GLIBCPP_USE_CSHADOW
 #CSHADOW_INCLUDES = \
-#	-I$(top_srcdir)/std -I$(top_srcdir)/shadow -I$(top_builddir)/cshadow
+#	-I$(glibcpp_includedir)/std -I$(top_srcdir)/shadow -I$(top_builddir)/cshadow
 CSHADOW_INCLUDES = \
-	-I$(top_srcdir)/std -I$(top_srcdir)/shadow 
+	-I$(glibcpp_includedir)/std -I$(top_srcdir)/shadow 
 else
 CSHADOW_INCLUDES =
 endif
@@ -84,8 +89,9 @@ CONFIG_INCLUDES = \
 
 INCLUDES = \
 	-D_GNU_SOURCE -D_ISOC99_SOURCE -nostdinc++ $(CSHADOW_INCLUDES) \
-	-I$(top_builddir) -I$(top_srcdir) \
-	 $(CONFIG_INCLUDES) $(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
+	-I$(top_builddir) -I$(glibcpp_includedir) \
+	 $(CONFIG_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
+	 $(TOPLEVEL_INCLUDES)	
 
 
 # Need to explicitly set this so that AM_CXXFLAGS is last. In
@@ -219,7 +225,8 @@ sources = \
 wstring_sources = \
 	wstring-inst.cc
 
-VPATH += $(top_srcdir) $(top_srcdir)/std $(top_srcdir)/src
+VPATH += $(top_srcdir) $(top_srcdir)/src
+VPATH += $(glibcpp_includedir) $(top_srcdir)/std
 VPATH += $(top_srcdir)/@ctype_include_dir@
 
 
@@ -269,8 +276,8 @@ install: myinstallheaders
 myinstallheaders: $(headers:%=$(myincludep)%)
 	if test -z "$(MULTISUBDIR)"; then \
 	for i in $(std_headers); do \
-	  echo "$(INSTALL_DATA) $(top_srcdir)/std/$$i $(myincludep)"; \
-	        $(INSTALL_DATA) $(top_srcdir)/std/$$i $(myincludep); \
+	  echo "$(INSTALL_DATA) $(glibcpp_includedir)/std/$$i $(myincludep)"; \
+	        $(INSTALL_DATA) $(glibcpp_includedir)/std/$$i $(myincludep); \
 	done; \
 	for i in $(generated_headers); do \
 	  echo "$(INSTALL_DATA) $$i $(myincludep)bits/"; \
@@ -292,7 +299,7 @@ $(headers:%=$(myincludep)%): $(myincludep)%: %
 	$(INSTALL_DATA) $^ $@; \
 	fi;
 
-# All the machinations with string instantiations messes up the
+# All the (now removed) machinations with string instantiations messes up the
 # automake-generated TAGS rule. Make a simple one here.
 TAGS: $(generated_headers) $(cpu_headers) 
 	etags -C $(top_srcdir)/bits/*.h $(top_srcdir)/bits/*.tcc \
@@ -331,3 +338,6 @@ libstdc++.INC: Makefile
 
 tmp-libstdc++.INC: Makefile
 	echo -I$(top_builddir) $(INCLUDES) > $@
+
+
+
