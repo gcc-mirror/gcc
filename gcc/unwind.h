@@ -1,5 +1,5 @@
 /* Exception handling and frame unwind runtime interface routines.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -182,7 +182,7 @@ _Unwind_GetDataRelBase (struct _Unwind_Context *_C)
 }
 
 static inline _Unwind_Ptr
-_Unwind_GetTextRelBase (struct _Unwind_Context *_C)
+_Unwind_GetTextRelBase (struct _Unwind_Context *_C __attribute__ ((__unused__)))
 {
   abort ();
   return 0;
