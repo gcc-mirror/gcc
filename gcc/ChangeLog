@@ -1,3 +1,7 @@
+2003-03-27  Janis Johnson  <janis187@us.ibm.com>
+
+	* libgcov.c: Provide only dummy functions if libc is not available.
+
 2003-03-27  Richard Henderson  <rth@redhat.com>
 
 	* real.h (struct real_value): Add signalling.

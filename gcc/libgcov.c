@@ -29,6 +29,17 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#if defined(inhibit_libc)
+/* If libc and its header files are not available, provide dummy functions.  */
+
+void __gcov_init (void *p);
+void __gcov_flush (void);
+
+void __gcov_init (void *p) { }
+void __gcov_flush (void) { }
+
+#else
+
 /* It is incorrect to include config.h here, because this file is being
    compiled for the target, and hence definitions concerning only the host
    do not apply.  */
@@ -507,3 +518,5 @@ __gcov_flush (void)
 	  ptr->counter_sections[j].counters[i] = 0;
     }
 }
+
+#endif /* inhibit_libc */
