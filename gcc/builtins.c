@@ -8020,7 +8020,7 @@ simplify_builtin (tree exp, int ignore)
     }
 
   if (val)
-    val = convert (TREE_TYPE (exp), val);
+    val = fold_convert (TREE_TYPE (exp), val);
   return val;
 }
 
@@ -8061,13 +8061,13 @@ simplify_builtin_strstr (tree arglist)
 	{
 	  const char *r = strstr (p1, p2);
 
-	  /* Return an offset into the constant string argument.  */
 	  if (r == NULL)
-	    return integer_zero_node;
-	  else
-	    return fold (build (PLUS_EXPR, TREE_TYPE (s1),
-				s1, convert (TREE_TYPE (s1),
-					     ssize_int (r - p1))));
+	    return fold_convert (TREE_TYPE (s1), integer_zero_node);
+
+	  /* Return an offset into the constant string argument.  */
+	  return fold (build2 (PLUS_EXPR, TREE_TYPE (s1),
+			       s1, fold_convert (TREE_TYPE (s1),
+						 ssize_int (r - p1))));
 	}
 
       if (p2[0] == '\0')
@@ -8130,12 +8130,12 @@ simplify_builtin_strchr (tree arglist)
 	  r = strchr (p1, c);
 
 	  if (r == NULL)
-	    return integer_zero_node;
+	    return fold_convert (TREE_TYPE (s1), integer_zero_node);
 
 	  /* Return an offset into the constant string argument.  */
 	  return fold (build (PLUS_EXPR, TREE_TYPE (s1),
-			      s1, convert (TREE_TYPE (s1),
-					   ssize_int (r - p1))));
+			      s1, fold_convert (TREE_TYPE (s1),
+						ssize_int (r - p1))));
 	}
 
       /* FIXME: Should use here strchrM optab so that ports can optimize
@@ -8187,12 +8187,12 @@ simplify_builtin_strrchr (tree arglist)
 	  r = strrchr (p1, c);
 
 	  if (r == NULL)
-	    return integer_zero_node;
+	    return fold_convert (TREE_TYPE (s1), integer_zero_node);
 
 	  /* Return an offset into the constant string argument.  */
 	  return fold (build (PLUS_EXPR, TREE_TYPE (s1),
-			      s1, convert (TREE_TYPE (s1),
-					   ssize_int (r - p1))));
+			      s1, fold_convert (TREE_TYPE (s1),
+						ssize_int (r - p1))));
 	}
 
       if (! integer_zerop (s2))
@@ -8245,12 +8245,12 @@ simplify_builtin_strpbrk (tree arglist)
 	  const char *r = strpbrk (p1, p2);
 
 	  if (r == NULL)
-	    return integer_zero_node;
+	    return fold_convert (TREE_TYPE (s1), integer_zero_node);
 
 	  /* Return an offset into the constant string argument.  */
 	  return fold (build (PLUS_EXPR, TREE_TYPE (s1),
-			      s1, convert (TREE_TYPE (s1),
-					   ssize_int (r - p1))));
+			      s1, fold_convert (TREE_TYPE (s1),
+						ssize_int (r - p1))));
 	}
 
       if (p2[0] == '\0')

@@ -1,3 +1,12 @@
+2004-05-21  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold, fold_relational_hi_lo,
+	nondestructive_fold_binary_to_constant,
+	fold_read_from_constant_string): Use fold_convert instead of convert.
+	* builtins.c (simplify_builtin, simplify_builtin_strstr,
+	simplify_builtin_strchr, simplify_builtin_strrchr,
+	simplify_builtin_strpbrk): Use fold_convert instead of convert.
+
 2004-05-21  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-flow-inline.h (num_immediate_uses): Don't abort if DF

@@ -5831,7 +5831,7 @@ fold (tree expr)
 	  tree s1 = TYPE_SIZE (tt1);
 
 	  if (s0 && s1 && operand_equal_p (s0, s1, OEP_ONLY_CONST))
-	    return build2 (TREE_CODE (arg0), t0, convert (t0, arg00),
+	    return build2 (TREE_CODE (arg0), t0, fold_convert (t0, arg00),
 			   TREE_OPERAND (arg0, 1));
 	}
 
@@ -9147,14 +9147,14 @@ fold_relational_hi_lo (enum tree_code *code_p, const tree type, tree *op0_p,
 	  {
 	  case GT_EXPR:
 	    return omit_one_operand (type,
-				     convert (type, integer_zero_node),
+				     fold_convert (type, integer_zero_node),
 				     op0);
 	  case GE_EXPR:
 	    *code_p = EQ_EXPR;
 	    break;
 	  case LE_EXPR:
 	    return omit_one_operand (type,
-				     convert (type, integer_one_node),
+				     fold_convert (type, integer_one_node),
 				     op0);
 	  case LT_EXPR:
 	    *code_p = NE_EXPR;
@@ -9187,7 +9187,7 @@ fold_relational_hi_lo (enum tree_code *code_p, const tree type, tree *op0_p,
 	  {
 	  case LT_EXPR:
 	    return omit_one_operand (type,
-				     convert (type, integer_zero_node),
+				     fold_convert (type, integer_zero_node),
 				     op0);
 	  case LE_EXPR:
 	    *code_p = EQ_EXPR;
@@ -9195,7 +9195,7 @@ fold_relational_hi_lo (enum tree_code *code_p, const tree type, tree *op0_p,
 
 	  case GE_EXPR:
 	    return omit_one_operand (type,
-				     convert (type, integer_one_node),
+				     fold_convert (type, integer_one_node),
 				     op0);
 	  case GT_EXPR:
 	    *code_p = NE_EXPR;
@@ -9236,8 +9236,8 @@ fold_relational_hi_lo (enum tree_code *code_p, const tree type, tree *op0_p,
 
 	      exp = build2 (code == LE_EXPR ? GE_EXPR: LT_EXPR,
 			    type,
-			    convert (st0, op0),
-			    convert (st1, integer_zero_node));
+			    fold_convert (st0, op0),
+			    fold_convert (st1, integer_zero_node));
 
 	      retval
 		= nondestructive_fold_binary_to_constant (TREE_CODE (exp),
@@ -9341,7 +9341,7 @@ nondestructive_fold_binary_to_constant (enum tree_code code, tree type,
 	  /* The return value should always have the same type as
 	     the original expression.  */
 	  if (TREE_TYPE (tem) != type)
-	    tem = convert (type, tem);
+	    tem = fold_convert (type, tem);
 
 	  return tem;
 	}
@@ -9354,7 +9354,7 @@ nondestructive_fold_binary_to_constant (enum tree_code code, tree type,
          Also note that operand_equal_p is always false if an
          operand is volatile.  */
       if (! FLOAT_TYPE_P (type) && operand_equal_p (op0, op1, 0))
-	return convert (type, integer_zero_node);
+	return fold_convert (type, integer_zero_node);
 
       goto binary;
 
@@ -9670,7 +9670,7 @@ fold_read_from_constant_string (tree exp)
 	{
 	  tree domain = TYPE_DOMAIN (TREE_TYPE (exp1));
 	  tree low_bound = domain ? TYPE_MIN_VALUE (domain) : integer_zero_node;
-	  index = convert (sizetype, TREE_OPERAND (exp, 1));
+	  index = fold_convert (sizetype, TREE_OPERAND (exp, 1));
 	  
 	  /* Optimize the special-case of a zero lower bound.
 
@@ -9680,7 +9680,7 @@ fold_read_from_constant_string (tree exp)
 	     +(INDEX-(unsigned char)1)) becomes ((ARRAY+(-(unsigned char)1))
 	     +INDEX), which becomes (ARRAY+255+INDEX).  Opps!)  */
 	  if (! integer_zerop (low_bound))
-	    index = size_diffop (index, convert (sizetype, low_bound));
+	    index = size_diffop (index, fold_convert (sizetype, low_bound));
 
 	  string = exp1;
 	}
