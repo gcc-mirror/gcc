@@ -1,8 +1,5 @@
-This file needs a little updating, but is pretty close.  Here are some
-random last minute notes:
-
-make check and make check-g++ aren't in FSF's gcc yet, I am planning
-on getting this work into the tree some time...
+Here are some random last minute notes by this file's original maintainer,
+Mike Stump <mrs@cygnus.com>:
 
 > and the command
 
@@ -15,29 +12,6 @@ on getting this work into the tree some time...
 
 site.exp updated to have right CXXFLAGS and CXX, but not at the FSF yet.
 
-
-  This is a collection of tests for g++, the FSF's C++ compiler. The
-driver that runs the testsuite is called DejaGnu.  If you do not have
-DejaGnu yet, you will need to get it (ftp://ftp.cygnus.com/pub/dejagnu).
-You will need a snapshot of DejaGnu of 02/21/97 or later.  The tests
-were developed and/or collected by Cygnus Support. These tests are
-included "as is". If any of the tests fail, don't report a bug.  Bug
-reports for DejaGnu can go to bug-dejagnu@prep.ai.mit.edu.  Discussion
-and comments about this testsuite can be sent to me, at the address
-below.
-
-  Since these are part of the development source tree at Cygnus, this
-tar file is supposed to be untarred so that the testsuite directory is
-in the gcc source tree. Most of the time DejaGnu is run by hand using
-"runtest", but as we believe in solid testing, we've integrated it
-into the Makefile as a target. We normally use the testsuite by doing
-a "make all; make check-g++" at the top level and building and testing
-our whole tree.  If you have both the gcc testsuite and the g++
-testsuite, you can check both with the "make check" command.
-
-  DejaGnu can be run either installed, or uninstalled. Usually it gets
-installed so that anyone can just run the tests without having to
-configure or build DejaGnu.
 
   To run the tests, first change to the gcc-2.7.1 directory, then type:
 
@@ -57,8 +31,3 @@ runtest         - Is the name used to invoke DejaGnu.   If DejaGnu is not
                   containing the sources of the testsuite. This is
                   ./testsuite if you are in the directory that has the
                   testsuite directory.
-
-
-					Mike Stump
-					mrs@cygnus.com
-					FSF C++ developer
