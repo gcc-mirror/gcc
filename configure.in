@@ -66,7 +66,6 @@ libgcj="target-libffi \
 target_libs="target-libiberty \
 		target-libgloss \
 		target-newlib \
-		target-librx \
 		${libstdcxx_version} \
 		target-libf2c \
 		${libgcj}
@@ -638,7 +637,7 @@ case "${target}" in
     esac
     ;;
   *-*-netware)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-newlib target-libiberty target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-newlib target-libiberty target-libgloss ${libgcj}"
     ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
@@ -664,8 +663,6 @@ case "${target}" in
   alpha*-*-linux*)
     # newlib is not 64 bit ready
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
-    # linux has rx in libc
-    skipdirs="$skipdirs target-librx"
     ;;
   alpha*-*-freebsd*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
@@ -676,8 +673,6 @@ case "${target}" in
     ;;
   sh-*-linux*)
     noconfigdirs="$noconfigdirs ${libgcj} target-newlib target-libgloss"
-    # linux has rx in libc
-    skipdirs="$skipdirs target-librx"
     ;;    
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -734,7 +729,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libiberty ${libstdcxx_version} ${libgcj}"
     ;;
   c4x-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj}"
     ;;
   c54x*-*-* | tic54x-*-*)
     noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj} gcc gdb newlib"
@@ -743,7 +738,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   d10v-*-*)
-    noconfigdirs="$noconfigdirs target-librx ${libstdcxx_version} target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj}"
     ;;
   d30v-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -764,7 +759,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   h8500-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-libgloss ${libgcj} target-libf2c"
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj} target-libf2c"
     ;;
   hppa*64*-*-linux* | parisc*64*-*-linux*)
     # In this case, it's because the hppa64-linux target is for
@@ -804,8 +799,6 @@ case "${target}" in
   s390*-*-linux*)
     # The libffi port is not yet in the GCC tree
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
-    # linux has rx in libc
-    skipdirs="$skipdirs target-librx"
     ;;
   i[3456]86-*-linux*)
     # This section makes it possible to build newlib natively on linux.
@@ -818,13 +811,9 @@ case "${target}" in
     # Note however, that newlib will only be configured in this situation
     # if the --with-newlib option has been given, because otherwise
     # 'target-newlib' will appear in skipdirs.
-    # linux has rx in libc
-    skipdirs="$skipdirs target-librx"
     ;;
   *-*-linux*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
-    # linux has rx in libc
-    skipdirs="$skipdirs target-librx"
     ;;
   i[3456]86-*-mingw32*)
     target_configdirs="$target_configdirs target-mingw"
@@ -851,7 +840,7 @@ case "${target}" in
     esac
     ;;    
   i[3456]86-*-pe)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj}"
     ;;
   i[3456]86-*-sco3.2v5*)
     # The linker does not yet know about weak symbols in COFF,

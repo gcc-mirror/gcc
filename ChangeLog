@@ -1,3 +1,8 @@
+2002-06-19  Nathanael Nerode  <neroden@twcny.rr.com>
+
+	* configure.in: Remove references to librx.
+	* Makefile.in: Remove references to librx.
+
 Tue Jun 18 22:37:35 2002  Denis Chertykov  <denisc@overta.ru>
 
 	* config.sub: Add support for avr target.

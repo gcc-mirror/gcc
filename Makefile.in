@@ -186,7 +186,7 @@ OTHERS =
 
 # This is set by the configure script to the list of directories which
 # should be built using the target tools.
-TARGET_CONFIGDIRS = libiberty libgloss $(SPECIAL_LIBS) newlib librx winsup opcodes bsp libstub cygmon libf2c libobjc
+TARGET_CONFIGDIRS = libiberty libgloss $(SPECIAL_LIBS) newlib winsup opcodes bsp libstub cygmon libf2c libobjc
 
 # Target libraries are put under this directory:
 # Changed by configure to $(target_alias) if cross.
@@ -783,7 +783,6 @@ INSTALL_X11_MODULES = \
 # using $(TARGET_FLAGS_TO_PASS).
 ALL_TARGET_MODULES = \
 	all-target-libstdc++-v3 \
-	all-target-librx \
 	all-target-newlib \
 	all-target-libf2c \
 	all-target-libobjc \
@@ -806,7 +805,6 @@ ALL_TARGET_MODULES = \
 # are compiled using the target tools.
 CONFIGURE_TARGET_MODULES = \
 	configure-target-libstdc++-v3 \
-	configure-target-librx \
 	configure-target-newlib \
 	configure-target-libf2c \
 	configure-target-libobjc \
@@ -932,7 +930,6 @@ CLEAN_MODULES = \
 # All of the target modules that can be cleaned
 CLEAN_TARGET_MODULES = \
 	clean-target-libstdc++-v3 \
-	clean-target-librx \
 	clean-target-newlib \
 	clean-target-libf2c \
 	clean-target-libobjc \
@@ -1747,7 +1744,7 @@ all-target-gperf: configure-target-gperf all-target-libiberty all-target-libstdc
 all-gprof: all-libiberty all-bfd all-opcodes all-intl
 all-grep: all-libiberty
 all-grez: all-libiberty all-bfd all-opcodes
-all-gui: all-gdb all-libproc all-target-librx
+all-gui: all-gdb all-libproc
 all-guile:
 all-gzip: all-libiberty
 all-hello: all-libiberty
@@ -1768,8 +1765,6 @@ configure-target-libffi: $(ALL_GCC_C)
 all-target-libffi: configure-target-libffi
 configure-target-libjava: $(ALL_GCC_C) configure-target-zlib configure-target-boehm-gc configure-target-qthreads configure-target-libffi
 all-target-libjava: configure-target-libjava all-fastjar all-target-zlib all-target-boehm-gc all-target-qthreads all-target-libffi
-configure-target-librx: $(ALL_GCC_C)
-all-target-librx: configure-target-librx
 configure-target-libstdc++-v3: $(ALL_GCC_C)
 all-target-libstdc++-v3: configure-target-libstdc++-v3 all-target-libiberty
 configure-target-libstub: $(ALL_GCC_C)
