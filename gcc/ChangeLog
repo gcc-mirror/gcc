@@ -1,5 +1,12 @@
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (P): New mode macro.
+	(*xgot_hi[sd]i, *xgot_lo[sd]i, *got_disp[sd]i, *got_page[sd]i)
+	(*load_got[sd]i, *low[sd]i, *low[sd]i_mips16): Redefine using :P.
+	Add mode attributes.
+
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (UNSPEC_[LS][WD][LR]): Delete in favor of...
 	(UNSPEC_{LOAD,STORE}_{LEFT,RIGHT}): ...these new constants.  Shuffle
 	later constants to cover the gap.
