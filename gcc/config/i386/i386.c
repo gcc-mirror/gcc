@@ -406,8 +406,6 @@ const int x86_arch_always_fancy_math_387 = m_PENT | m_PPRO | m_ATHLON | m_PENT4;
    the style used.  */
 static int use_fast_prologue_epilogue;
 
-#define AT_BP(MODE) (gen_rtx_MEM ((MODE), hard_frame_pointer_rtx))
-
 /* Names for 8 (low), 8 (high), and 16-bit registers, respectively.  */
 static const char *const qi_reg_name[] = QI_REGISTER_NAMES;
 static const char *const qi_high_reg_name[] = QI_HIGH_REGISTER_NAMES;

@@ -1,5 +1,9 @@
 2002-07-23  Neil Booth  <neil@daikokuya.co.uk>
 
+	* config/i386/i386.c (AT_BP): Remove.
+
+2002-07-23  Neil Booth  <neil@daikokuya.co.uk>
+
 	* defaults.h (obstack_chunk_alloc, obstack_chunk_free):
 	Default definition.
 	* gcse.c: Don't define obstack_chunk_free.
