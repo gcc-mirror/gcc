@@ -1,3 +1,14 @@
+2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/9888
+	* config/i386/i386.md (movsi_1): Remove special alternatives
+	for %eax register.
+	(movsi_1_nointernunit): Likewise.
+	(movhi_1): Likewise.
+	* config/i386/i386.c (memory_address_length): Do not use
+	short displacement when there is no base.
+	(ix86_attr_length_address_default): Handle LEA instructions.
+
 2003-03-12  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-cppbuiltin.c (builtin_define_std): Make non-static.
