@@ -105,7 +105,8 @@ do {							\
 #define JMP_BUF_SIZE  (8 * 76)
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_BIG_ENDIAN | MASK_ILP32)
+#define TARGET_DEFAULT \
+  (MASK_DWARF2_ASM | MASK_BIG_ENDIAN | MASK_ILP32 | MASK_INLINE_FLOAT_DIV_THR)
 
 /* This needs to be set to force structure arguments with a single
    field to be treated as structures and not as the type of their
