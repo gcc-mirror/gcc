@@ -2234,7 +2234,7 @@ legitimize_pic_address (orig, mode, reg)
 
 	win:
 	  if (GET_CODE (offset) == CONST_INT)
-	    return plus_constant_for_output (base, INTVAL (offset));
+	    return plus_constant (base, INTVAL (offset));
 	}
 
       if (GET_MODE_SIZE (mode) > 4

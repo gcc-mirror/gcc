@@ -174,6 +174,11 @@ plus_constant_wide (x, c)
 	  c = 0;
 	}
       break;
+
+    case LO_SUM:
+      return gen_rtx_LO_SUM (mode, XEXP (x, 0),
+			     plus_constant (XEXP (x, 1), c));
+
       
     default:
       break;
@@ -188,25 +193,6 @@ plus_constant_wide (x, c)
     return gen_rtx_CONST (mode, x);
   else
     return x;
-}
-
-/* This is the same as `plus_constant', except that it handles LO_SUM.
-
-   This function should be used via the `plus_constant_for_output' macro.  */
-
-rtx
-plus_constant_for_output_wide (x, c)
-     register rtx x;
-     register HOST_WIDE_INT c;
-{
-  register enum machine_mode mode = GET_MODE (x);
-
-  if (GET_CODE (x) == LO_SUM)
-    return gen_rtx_LO_SUM (mode, XEXP (x, 0),
-			   plus_constant_for_output (XEXP (x, 1), c));
-
-  else
-    return plus_constant (x, c);
 }
 
 /* If X is a sum, return a new sum like X but lacking any constant terms.

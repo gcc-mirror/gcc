@@ -1402,7 +1402,7 @@ legitimize_pic_address (orig, mode, reg)
       else abort ();
 
       if (GET_CODE (orig) == CONST_INT)
-	return plus_constant_for_output (base, INTVAL (orig));
+	return plus_constant (base, INTVAL (orig));
       pic_ref = gen_rtx_PLUS (Pmode, base, orig);
       /* Likewise, should we set special REG_NOTEs here?  */
     }

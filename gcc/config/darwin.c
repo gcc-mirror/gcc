@@ -474,13 +474,9 @@ machopic_indirect_data_reference (orig, reg)
 	return orig;
 
       if (MACHOPIC_PURE && GET_CODE (orig) == CONST_INT)
-        {
-	  result = plus_constant_for_output (base, INTVAL (orig));
-        }
+	result = plus_constant (base, INTVAL (orig));
       else
-        {
-           result = gen_rtx (PLUS, Pmode, base, orig);
-        }
+	result = gen_rtx (PLUS, Pmode, base, orig);
 
       if (RTX_UNCHANGING_P (base) && RTX_UNCHANGING_P (orig))
 	RTX_UNCHANGING_P (result) = 1;
@@ -835,13 +831,11 @@ machopic_legitimize_pic_address (orig, mode, reg)
 					      Pmode, (base == reg ? 0 : reg));
       if (GET_CODE (orig) == CONST_INT)
 	{
-	  pic_ref = plus_constant_for_output (base, INTVAL (orig));
+	  pic_ref = plus_constant (base, INTVAL (orig));
 	  is_complex = 1;
 	}
       else
-	{
-	  pic_ref = gen_rtx (PLUS, Pmode, base, orig);
-	}
+	pic_ref = gen_rtx (PLUS, Pmode, base, orig);
 
       if (RTX_UNCHANGING_P (base) && RTX_UNCHANGING_P (orig))
 	RTX_UNCHANGING_P (pic_ref) = 1;

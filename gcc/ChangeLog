@@ -1,3 +1,17 @@
+Mon Jul  2 21:52:19 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* explow.c (plus_constant_wide, case LO_SUM): New case.
+	(plus_constant_for_output_wide): Delete.
+	* rtl.h (plus_constant_for_output): Delete.
+	* alias.c (canon_rtx, init_alias_analysis): Call plus_constant
+	instead of plus_constant_for_output.
+	* recog.c (offsettable_address_p, adj_offsettable_operand): Likewise.
+	* config/darwin.c, config/arm/arm.c, config/m68k/m68k.c: Likewise.
+	* config/m88k/m88k.c, config/mips/mips.c, config/pa/pa.c: Likewise.
+	* config/rs6000/rs6000.c, config/sparc/sparc.c: Likewise.
+	* config/sparc/sparc.md: Likewise.
+	Convert some change_address calls to adjust_address.
+
 2001-07-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/extend.texi, doc/gcc.texi, doc/invoke.texi, doc/md.texi,

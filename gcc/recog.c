@@ -1968,7 +1968,7 @@ offsettable_address_p (strictp, mode, y)
      of the specified mode.  We assume that if Y and Y+c are
      valid addresses then so is Y+d for all 0<d<c.  */
 
-  z = plus_constant_for_output (y, mode_sz - 1);
+  z = plus_constant (y, mode_sz - 1);
 
   /* Use QImode because an odd displacement may be automatically invalid
      for any wider mode.  But it should be valid for a single byte.  */
@@ -2035,8 +2035,7 @@ adj_offsettable_operand (op, offset)
 
       if (CONSTANT_ADDRESS_P (y))
 	{
-	  new = gen_rtx_MEM (GET_MODE (op),
-			     plus_constant_for_output (y, offset));
+	  new = gen_rtx_MEM (GET_MODE (op), plus_constant (y, offset));
 	  MEM_COPY_ATTRIBUTES (new, op);
 	  return new;
 	}
@@ -2051,12 +2050,12 @@ adj_offsettable_operand (op, offset)
 	  const_loc = find_constant_term_loc (&z);
 	  if (const_loc)
 	    {
-	      *const_loc = plus_constant_for_output (*const_loc, offset);
+	      *const_loc = plus_constant (*const_loc, offset);
 	      return op;
 	    }
 	}
 
-      new = gen_rtx_MEM (GET_MODE (op), plus_constant_for_output (y, offset));
+      new = gen_rtx_MEM (GET_MODE (op), plus_constant (y, offset));
       MEM_COPY_ATTRIBUTES (new, op);
       return new;
     }

@@ -368,7 +368,7 @@ legitimize_address (pic, orig, reg, scratch)
 	  if (GET_CODE (addr) == CONST_INT)
 	    {
 	      if (ADD_INT (addr))
-		return plus_constant_for_output (base, INTVAL (addr));
+		return plus_constant (base, INTVAL (addr));
 	      else if (! reload_in_progress && ! reload_completed)
 		addr = force_reg (Pmode, addr);
 	      /* We can't create any new registers during reload, so use the

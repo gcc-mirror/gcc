@@ -758,7 +758,7 @@ legitimize_pic_address (orig, mode, reg)
       if (GET_CODE (orig) == CONST_INT)
 	{
 	  if (INT_14_BITS (orig))
-	    return plus_constant_for_output (base, INTVAL (orig));
+	    return plus_constant (base, INTVAL (orig));
 	  orig = force_reg (Pmode, orig);
 	}
       pic_ref = gen_rtx_PLUS (Pmode, base, orig);
