@@ -1,3 +1,16 @@
+2003-01-14  Denis Chertykov  <denisc@overta.ru>
+
+	* config/ip2k/ip2k.h (VALID_MACHINE_DECL_ATTRIBUTE): Remove.
+	(VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
+
+	* config/ip2k/ip2k.c (ip2k_attribute_table): New table of
+        attributes.
+	(TARGET_ATTRIBUTE_TABLE): New macro.
+	(valid_machine_type_attribute): Remove.
+	(valid_machine_decl_attribute): Remove.
+	(ip2k_handle_progmem_attribute): New function.
+	(ip2k_handle_fndecl_attribute): New function.
+
 2003-01-10  Andrew Haley  <aph@redhat.com>
 
 	* config/i386/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Rename
