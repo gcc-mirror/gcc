@@ -5715,6 +5715,12 @@ fold_rtx (x, insn)
 					const_arg1 ? const_arg1 : folded_arg1,
 					const_arg2 ? const_arg2 : XEXP (x, 2));
       break;
+
+    case 'x':
+      /* Always eliminate CONSTANT_P_RTX at this stage. */
+      if (code == CONSTANT_P_RTX)
+	return (const_arg0 ? const1_rtx : const0_rtx);
+      break;
     }
 
   return new ? new : x;

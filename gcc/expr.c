@@ -104,6 +104,11 @@ static rtx saveregs_value;
 /* Similarly for __builtin_apply_args.  */
 static rtx apply_args_value;
 
+/* Nonzero if the machine description has been fixed to accept
+   CONSTANT_P_RTX patterns.  We will emit a warning and continue
+   if we find we must actually use such a beast.  */
+static int can_handle_constant_p;
+
 /* Don't check memory usage, since code is being emitted to check a memory
    usage.  Used when flag_check_memory_usage is true, to avoid infinite
    recursion.  */
@@ -239,6 +244,7 @@ init_expr_once ()
 {
   rtx insn, pat;
   enum machine_mode mode;
+  int num_clobbers;
   rtx mem, mem1;
   char *free_point;
 
@@ -263,7 +269,6 @@ init_expr_once ()
     {
       int regno;
       rtx reg;
-      int num_clobbers;
 
       direct_load[(int) mode] = direct_store[(int) mode] = 0;
       PUT_MODE (mem, mode);
@@ -304,10 +309,18 @@ init_expr_once ()
 	  }
     }
 
+  /* Find out if CONSTANT_P_RTX is accepted.  */
+  SET_DEST (pat) = gen_rtx_REG (TYPE_MODE (integer_type_node),
+			        FIRST_PSEUDO_REGISTER);
+  SET_SRC (pat) = gen_rtx_CONSTANT_P_RTX (TYPE_MODE (integer_type_node),
+					  SET_DEST (pat));
+  if (recog (pat, insn, &num_clobbers) >= 0)
+    can_handle_constant_p = 1;
+
   end_sequence ();
   obfree (free_point);
 }
-      
+
 /* This is run at the start of compiling a function.  */
 
 void
@@ -8566,10 +8579,34 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  tree arg = TREE_VALUE (arglist);
 
 	  STRIP_NOPS (arg);
-	  return (TREE_CODE_CLASS (TREE_CODE (arg)) == 'c'
-		  || (TREE_CODE (arg) == ADDR_EXPR
-		      && TREE_CODE (TREE_OPERAND (arg, 0)) == STRING_CST)
-		  ? const1_rtx : const0_rtx);
+	  if (really_constant_p (arg)
+	      || (TREE_CODE (arg) == ADDR_EXPR
+		  && TREE_CODE (TREE_OPERAND (arg, 0)) == STRING_CST))
+	    return const1_rtx;
+
+	  /* Only emit CONSTANT_P_RTX if CSE will be run. 
+	     Moreover, we don't want to expand trees that have side effects,
+	     as the original __builtin_constant_p did not evaluate its      
+	     argument at all, and we would break existing usage by changing 
+	     this.  This quirk was generally useful, eliminating a bit of hair
+	     in the writing of the macros that use this function.  Now the    
+	     same thing can be better accomplished in an inline function.  */
+
+	  if (! cse_not_expected && ! TREE_SIDE_EFFECTS (arg))
+	    {
+	      /* Lazy fixup of old code: issue a warning and fail the test.  */
+	      if (! can_handle_constant_p)
+		{
+		  warning ("Delayed evaluation of __builtin_constant_p not supported on this target.");
+		  warning ("Please report this as a bug to egcs-bugs@cygnus.com.");
+		  return const0_rtx;
+		}
+	      return gen_rtx_CONSTANT_P_RTX (TYPE_MODE (integer_type_node),
+				             expand_expr (arg, NULL_RTX,
+							  VOIDmode, 0));
+	    }
+
+	  return const0_rtx;
 	}
 
     case BUILT_IN_FRAME_ADDRESS:
