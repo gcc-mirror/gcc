@@ -38,9 +38,6 @@ Boston, MA 02111-1307, USA.  */
     Any file that contains this string is presumed to have
     been carefully constructed and will not be fixed  */
 
-static const char gnu_lib_mark[] =
-    "This file is part of the GNU C Library";
-
 /*  The contents of this string are not very important.  It is mostly
     just used as part of the "I am alive and working" test.  */
 
@@ -1341,11 +1338,6 @@ process ()
 #endif
   if (VLEVEL( VERB_PROGRESS ))
     fprintf (stderr, "%6d %-50s   \r", data_map_size, pz_curr_file );
-  if (strstr (pz_curr_data, gnu_lib_mark) != (char *) NULL)
-    {
-      UNLOAD_DATA();
-      return;
-    }
 
   process_chain_head = NOPROCESS;
 

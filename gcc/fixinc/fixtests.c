@@ -114,7 +114,9 @@ TEST_FOR_FIX_PROC_HEAD( double_slash_test )
     return SKIP_FIX;
   if (strstr( fname, "xx/" ) != NULL)
     return SKIP_FIX;
-  if (strstr( fname, "++/" ) != NULL)
+  if (strstr( fname, "++" ) != NULL)
+    return SKIP_FIX;
+  if (strstr( text, "extern \"C++\"" ) != NULL)
     return SKIP_FIX;
 
   /*  Now look for the comment markers in the text */

@@ -9,9 +9,7 @@
   for file in $files; do
 
     # Skip unreadable files, symlinks to directories and glibc files
-    if test ! -r "${file}" || test -d "${file}/." \
-       || fgrep 'This file is part of the GNU C Library' "${file}" \
-	    > /dev/null 2>&1; then
+    if test ! -r "${file}" || test -d "${file}/." ; then
       continue
     fi
 

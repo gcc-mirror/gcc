@@ -1,3 +1,10 @@
+1999-11-29  Bruce Korb  <autogen@linuxbox.com>
+
+	* fixinc/fixincl.c(process): don't skip GLIBC files any more.
+	* fixinc/hackshell.tpl: ditto
+	* fixinc/fixtests.c(double_slash_test): more C++ header testing
+	* fixinc/inclhack.def(AAB_fd_zero_glibc*): corrected spelling of mach
+
 1999-11-29  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* reload.c (push_reload): When looking for a register to put into
