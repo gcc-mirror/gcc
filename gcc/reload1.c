@@ -8044,7 +8044,8 @@ reload_cse_simplify (insn, testreg)
 	    {
 	      if (! reload_cse_noop_set_p (part))
 		break;
-	      if (REG_FUNCTION_VALUE_P (SET_DEST (part)))
+	      if (REG_P (SET_DEST (part))
+		  && REG_FUNCTION_VALUE_P (SET_DEST (part)))
 		{
 		  if (value)
 		    break;
