@@ -1,3 +1,7 @@
+2004-04-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa64-hpux.h (LIB_SPEC): Fix library specification used with GNU ld.
+
 2004-04-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, mips-sgi-irix5): Fix IRIX 5.3 IDO
