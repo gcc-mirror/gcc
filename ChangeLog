@@ -1,3 +1,10 @@
+Thu Mar 18 00:17:50 1999  Mark Elbrecht <snowball3@usa.net>
+
+	* config/mh-go32: Delete.
+	* config/mh-djgpp: New. Renamed from mh-go32.
+	* configure.in (pc-msdosdjgpp): Set host_makefile_frag to
+	config/mh-djgpp.
+
 Thu Mar 11 01:19:31 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* config.sub: Add i386-uwin support.
