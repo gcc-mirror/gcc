@@ -1,3 +1,13 @@
+Mon Jun  7 20:34:20 1999  Robert Lipe <robertlipe@usa.net>
+			  Jeffrey A Law  (law@cygnus.com)
+
+	* varasm.c (assemble_start_function): Remove the function
+	from the pending weak decls list when we define a function.
+	(assemble_variable): Similarly for variables.
+	(weak_finish): Ignore items on the list with a NULL name.
+	(remove_from_ending_weak_list); New function to "remove" an item
+	from the pending weak declarations list.
+
 Mon Jun  7 19:27:07 1999  Jerry Quinn <jquinn@nortelnetworks.com>
 
 	* pa.md (fmpyfadd, fmpynfadd, fnegabs): New patterns.
