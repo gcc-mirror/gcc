@@ -110,13 +110,11 @@ begin
    Write_Str ("mation");
    Write_Eol;
 
-   --  Line for -I switch
+   --  Lines for -I switch
 
    Write_Switch_Char;
    Write_Str ("Idir     Specify library and source files search path");
    Write_Eol;
-
-   --  Line for -I- switch
 
    Write_Switch_Char;
    Write_Str ("I-       Don't look for sources & library files");

@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision: 1.14 $
+ *                             $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -696,12 +696,13 @@ gnat_expand_constant (exp)
      tree exp;
 {
   /* If this is an unchecked conversion that does not change the size of the
-     object, return the operand since the underlying constant is still
-     the same.  Otherwise, return our operand.  */
+     object and the object is not a CONSTRUCTOR return the operand since the
+     underlying constant is still the same.  Otherwise, return our operand.  */
   if (TREE_CODE (exp) == UNCHECKED_CONVERT_EXPR
       && operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (exp)),
 			  TYPE_SIZE_UNIT (TREE_TYPE (TREE_OPERAND (exp, 0))),
-			  1))
+			  1)
+      && TREE_CODE (TREE_OPERAND (exp, 0)) != CONSTRUCTOR)
     return TREE_OPERAND (exp, 0);
 
   return exp;

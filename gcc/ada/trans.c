@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.6 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -2051,11 +2051,11 @@ tree_transform (gnat_node)
       gnu_rhs
 	= maybe_unconstrained_array (gnat_to_gnu (Expression (gnat_node)));
 
+      set_lineno (gnat_node, 1);
+
       /* If range check is needed, emit code to generate it */
       if (Do_Range_Check (Expression (gnat_node)))
 	gnu_rhs = emit_range_check (gnu_rhs, Etype (Name (gnat_node)));
-
-      set_lineno (gnat_node, 1);
 
       /* If either side's type has a size that overflows, convert this
 	 into raise of Storage_Error: execution shouldn't have gotten

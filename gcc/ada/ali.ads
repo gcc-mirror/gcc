@@ -687,8 +687,11 @@ package ALI is
       --    i = implicit reference
       --  See description in lib-xref.ads for further details
 
-      Col : Pos;
+      Col : Nat;
       --  Column number for the reference
+
+      --  Note: for instantiation references, Rtype is set to ' ', and Col is
+      --  set to zero. One or more such entries can follow any other reference.
    end record;
 
    package Xref is new Table.Table (

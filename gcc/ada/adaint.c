@@ -622,7 +622,8 @@ __gnat_open_new_temp (path, fmode)
 
 #if defined (linux) && !defined (__vxworks)
   return mkstemp (path);
-
+#elif defined (__Lynx__)
+  mktemp (path);
 #else
   if (mktemp (path) == NULL)
     return -1;

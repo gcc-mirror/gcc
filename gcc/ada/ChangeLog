@@ -1,3 +1,71 @@
+2001-12-14  Vincent Celier <celier@gnat.com>
+
+	* osint.adb(Create_Debug_File): When an object file is specified, 
+	put the .dg file in the same directory as the object file.
+	
+2001-12-14  Robert Dewar <dewar@gnat.com>
+
+	* osint.adb: Minor reformatting
+	
+	* lib-xref.adb (Output_Instantiation): New procedure to generate 
+	instantiation references.
+	
+	* lib-xref.ads: Add documentation of handling of generic references.
+	
+	* ali.adb (Read_Instantiation_Ref): New procedure to read 
+	instantiation references
+	
+	* ali.ads: Add spec for storing instantiation references
+	
+	* bindusg.adb: Minor reformatting
+	
+	* switch.adb: Add entry for Latin-5 (Cyrillic ISO-8859-5)
+	
+	* usage.adb: Add entry for Latin-5 (Cyrillic ISO-8859-5)
+	
+	* gnatcmd.adb: Add entry for Latin-5 (Cyrillic ISO-8859-5)
+	
+	* csets.adb: Add entry for Latin-5 (Cyrillic ISO-8859-5)
+	
+	* csets.ads:
+	Fix header format
+	Add 2001 to copyright date
+	Add entry for Latin-5 (Cyrillic ISO-8859-5)
+	
+2001-12-14  Matt Gingell <gingell@gnat.com>
+
+	* adaint.c: mktemp is a macro on Lynx and can not be used as an 
+	expression.
+	
+2001-12-14  Richard Kenner <kenner@gnat.com>
+
+	* misc.c (gnat_expand_constant): Do not strip UNCHECKED_CONVERT_EXPR 
+	if operand is CONSTRUCTOR.
+	
+2001-12-14  Ed Schonberg <schonber@gnat.com>
+
+	* trans.c (tree_transform, case N_Assignment_Statement): Set lineno 
+	before emiting check on right-hand side, so that exception information 
+	is correct.
+
+2001-12-14  Richard Kenner <kenner@gnat.com>
+	
+	* utils.c (create_var_decl): Throw away initializing expression 
+	if just annotating types and non-constant.
+	
+2001-12-14  Vincent Celier <celier@gnat.com>
+
+	* prj-nmsc.adb: (Ada_Check): Migrate drom Ada_Default_... to
+	Default_Ada_...
+	
+	* prj.adb: (Ada_Default_Spec_Suffix, Ada_Default_Impl_Suffix): 
+	Remove functions.
+	(Default_Ada_Spec_Suffix, Default_Ada_Impl_Suffix): Move to spec.
+	
+	* prj.ads: (Ada_Default_Spec_Suffix, Ada_Default_Impl_Suffix): 
+	Remove functions.
+	(Default_Ada_Spec_Suffix, Default_Ada_Impl_Suffix): Move from body.
+
 2001-12-16  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* ChangeLog: Remove piece of diff output.

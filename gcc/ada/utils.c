@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.4 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -1314,9 +1314,11 @@ create_var_decl (var_name, asm_name, type, var_init, const_flag, public_flag,
      any variable elaborations for the elaboration routine.  Otherwise, if
      the initializing expression is not the same as TYPE, generate the
      initialization with an assignment statement, since it knows how
-     to do the required adjustents.  */
+     to do the required adjustents.  If we are just annotating types,
+     throw away the initialization if it isn't a constant.  */
 
-  if (extern_flag && TREE_CODE (var_decl) != CONST_DECL)
+  if ((extern_flag && TREE_CODE (var_decl) != CONST_DECL)
+      || (type_annotate_only && var_init != 0 && ! TREE_CONSTANT (var_init)))
     var_init = 0;
 
   if (global_bindings_p () && var_init != 0 && ! init_const)

@@ -188,7 +188,7 @@ begin
    --  Line for -gnati switch
 
    Write_Switch_Char ("i?");
-   Write_Line ("Identifier char set (?=1/2/3/4/8/p/f/n/w)");
+   Write_Line ("Identifier char set (?=1/2/3/4/5/8/p/f/n/w)");
 
    --  Line for -gnatk switch
 

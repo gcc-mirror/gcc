@@ -255,15 +255,12 @@ package body Switch is
             Ptr := Ptr + 1;
             C := Switch_Chars (Ptr);
 
-            if C = '1' or else
-               C = '2' or else
-               C = '3' or else
-               C = '4' or else
-               C = '8' or else
-               C = 'p' or else
-               C = 'f' or else
-               C = 'n' or else
-               C = 'w'
+            if C in  '1' .. '5'
+              or else C = '8'
+              or else C = 'p'
+              or else C = 'f'
+              or else C = 'n'
+              or else C = 'w'
             then
                Identifier_Character_Set := C;
                Ptr := Ptr + 1;
@@ -681,15 +678,12 @@ package body Switch is
                Ptr := Ptr + 1;
                C := Switch_Chars (Ptr);
 
-               if C = '1' or else
-                  C = '2' or else
-                  C = '3' or else
-                  C = '4' or else
-                  C = '8' or else
-                  C = 'p' or else
-                  C = 'f' or else
-                  C = 'n' or else
-                  C = 'w'
+               if C in '1' .. '5'
+                 or else C = '8'
+                 or else C = 'p'
+                 or else C = 'f'
+                 or else C = 'n'
+                 or else C = 'w'
                then
                   Identifier_Character_Set := C;
                   Ptr := Ptr + 1;
