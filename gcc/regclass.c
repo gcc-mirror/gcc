@@ -674,6 +674,10 @@ regclass (f, nregs)
 		     being used in such addresses.  */
 
 		  if ((0
+#ifdef SECONDARY_RELOAD_CLASS
+		       || (SECONDARY_RELOAD_CLASS (BASE_REG_CLASS, m, r)
+			   != NO_REGS)
+#else
 #ifdef SECONDARY_INPUT_RELOAD_CLASS
 		       || (SECONDARY_INPUT_RELOAD_CLASS (BASE_REG_CLASS, m, r)
 			   != NO_REGS)
@@ -681,6 +685,7 @@ regclass (f, nregs)
 #ifdef SECONDARY_OUTPUT_RELOAD_CLASS
 		       || (SECONDARY_OUTPUT_RELOAD_CLASS (BASE_REG_CLASS, m, r)
 			   != NO_REGS)
+#endif
 #endif
 		       )
 		      && ! auto_inc_dec_reg_p (r, m))

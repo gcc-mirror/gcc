@@ -2542,6 +2542,11 @@ find_split_point (loc, insn)
       if (split && split != &SET_SRC (x))
 	return split;
 
+      /* See if we can split SET_DEST as it stands.  */
+      split = find_split_point (&SET_DEST (x), insn);
+      if (split && split != &SET_DEST (x))
+	return split;
+
       /* See if this is a bitfield assignment with everything constant.  If
 	 so, this is an IOR of an AND, so split it into that.  */
       if (GET_CODE (SET_DEST (x)) == ZERO_EXTRACT
