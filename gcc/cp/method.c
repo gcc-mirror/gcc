@@ -1056,7 +1056,7 @@ build_mangled_name (parmtypes, begin, end)
 #else
                   /* This is bug compatible with 2.7.x  */
                   flush_repeats (parmtype);
-endif
+#endif
                   continue;
                 }
 
