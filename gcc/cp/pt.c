@@ -367,7 +367,7 @@ determine_explicit_specialization (template_id, type, targs_out,
        fn != NULL_TREE; 
        fn = overloaded ? DECL_CHAIN (fn) : NULL_TREE)
     {
-      int dummy;
+      int dummy = 0;
       tree targs;
 
       if (name == NULL_TREE)

@@ -1,3 +1,8 @@
+Thu Oct 16 15:31:09 1997  Judy Goldberg <judygold@sanwafp.com>
+
+	* pt.c (determine_explicit_specialization): Initialize "dummy"
+	to keep Purify quiet.
+
 Thu Oct 16 00:14:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* method.c (build_overload_value): Handle TEMPLATE_CONST_PARMs here.
