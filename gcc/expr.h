@@ -216,6 +216,7 @@ enum direction {none, upward, downward};  /* Value has this type.  */
    So a value padded in memory at the upper end can't go in a register.
    For a little-endian machine, the reverse is true.  */
 
+#ifndef MUST_PASS_IN_STACK
 #define MUST_PASS_IN_STACK(MODE,TYPE)			\
   ((TYPE) != 0						\
    && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
@@ -226,6 +227,7 @@ enum direction {none, upward, downward};  /* Value has this type.  */
 			  % (PARM_BOUNDARY / BITS_PER_UNIT))) \
 	   && (FUNCTION_ARG_PADDING (MODE, TYPE)	\
 	       == (BYTES_BIG_ENDIAN ? upward : downward)))))
+#endif
 
 /* Nonzero if type TYPE should be returned in memory.
    Most machines can use the following default definition.  */

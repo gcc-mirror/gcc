@@ -2696,6 +2696,13 @@ argument, the compiler will abort.  If @code{REG_PARM_STACK_SPACE} is
 defined, the argument will be computed in the stack and then loaded into
 a register.
 
+@findex MUST_PASS_IN_STACK
+@item MUST_PASS_IN_STACK (@var{mode}, @var{type})
+Define as a C expression that evaluates to nonzero if we do not know how
+to pass TYPE solely in registers.  The file @file{expr.h} defines a
+definition that is usually appropriate, refer to @file{expr.h} for additional
+documentation.
+
 @findex FUNCTION_INCOMING_ARG
 @item FUNCTION_INCOMING_ARG (@var{cum}, @var{mode}, @var{type}, @var{named})
 Define this macro if the target machine has ``register windows'', so
