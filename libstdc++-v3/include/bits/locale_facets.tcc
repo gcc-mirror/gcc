@@ -1151,8 +1151,8 @@ namespace std
       const ios_base::fmtflags __flags = __io.flags();
       if ((__flags & ios_base::boolalpha) == 0)
         {
-          unsigned long __uv = __v;
-          __s = _M_insert_int(__s, __io, __fill, __uv);
+          const long __l = __v;
+          __s = _M_insert_int(__s, __io, __fill, __l);
         }
       else
         {
@@ -1229,8 +1229,7 @@ namespace std
            const void* __v) const
     {
       const ios_base::fmtflags __flags = __io.flags();
-      const ios_base::fmtflags __fmt = ~(ios_base::showpos
-					 | ios_base::basefield
+      const ios_base::fmtflags __fmt = ~(ios_base::basefield
 					 | ios_base::uppercase
 					 | ios_base::internal);
       __io.flags(__flags & __fmt | (ios_base::hex | ios_base::showbase));
