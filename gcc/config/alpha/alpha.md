@@ -1323,7 +1323,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   "eqv %r1,%2,%0"
   [(set_attr "type" "ilog")])
 
-;; Handle the FFS insn iff we support CIX.
+;; Handle FFS and related insns iff we support CIX.
 
 (define_expand "ffsdi2"
   [(set (match_dup 2)
@@ -1346,6 +1346,27 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   "cttz %1,%0"
   ; EV6 calls all mvi and cttz/ctlz/popc class imisc, so just
   ; reuse the existing type name.
+  [(set_attr "type" "mvi")])
+
+(define_insn "clzdi2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(clz:DI (match_operand:DI 1 "register_operand" "r")))]
+  "TARGET_CIX"
+  "ctlz %1,%0"
+  [(set_attr "type" "mvi")])
+
+(define_insn "ctzdi2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ctz:DI (match_operand:DI 1 "register_operand" "r")))]
+  "TARGET_CIX"
+  "cttz %1,%0"
+  [(set_attr "type" "mvi")])
+
+(define_insn "popcountdi2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(popcount:DI (match_operand:DI 1 "register_operand" "r")))]
+  "TARGET_CIX"
+  "ctpop %1,%0"
   [(set_attr "type" "mvi")])
 
 ;; Next come the shifts and the various extract and insert operations.

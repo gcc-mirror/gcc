@@ -811,16 +811,6 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  *.[0-9][0-9].* *.[si] libcpp.a libbackend.a libgcc.mk \
  $(LANG_STAGESTUFF)
 
-# Library members defined in libgcc2.c.
-# Variable length limited to 255 charactes when passed to a shell script.
-LIB2FUNCS_1 = _muldi3 _negdi2 _lshrdi3 _ashldi3 _ashrdi3 _ffsdi2 _clz \
-    _cmpdi2 _ucmpdi2 _floatdidf _floatdisf _fixunsdfsi _fixunssfsi \
-    _fixunsdfdi _fixdfdi _fixunssfdi _fixsfdi _fixxfdi _fixunsxfdi
-
-LIB2FUNCS_2 = _floatdixf _fixunsxfsi _fixtfdi _fixunstfdi _floatditf \
-    _clear_cache _trampoline __main _exit _absvsi2 _absvdi2 _addvsi3 \
-    _addvdi3 _subvsi3 _subvdi3 _mulvsi3 _mulvdi3 _negvsi2 _negvdi2 _ctors
-
 # Defined in libgcc2.c, included only in the static library.
 LIB2FUNCS_ST = _eprintf __gcc_bcmp
 
@@ -1051,8 +1041,6 @@ LIB2ADD_ST = $(LIB2FUNCS_STATIC_EXTRA)
 libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext) specs
 	objext='$(objext)' \
 	LIB1ASMFUNCS='$(LIB1ASMFUNCS)' \
-	LIB2FUNCS_1='$(LIB2FUNCS_1)' \
-	LIB2FUNCS_2='$(LIB2FUNCS_2)' \
 	LIB2FUNCS_ST='$(LIB2FUNCS_ST)' \
 	LIBGCOV='$(LIBGCOV)' \
 	LIB2ADD='$(LIB2ADD)' \

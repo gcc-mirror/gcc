@@ -614,7 +614,12 @@ DEFTREECODE (MAX_EXPR, "max_expr", '2', 2)
    operand of the ABS_EXPR must have the same type.  */
 DEFTREECODE (ABS_EXPR, "abs_expr", '1', 1)
 
+/* Bit scanning and counting.  */
 DEFTREECODE (FFS_EXPR, "ffs_expr", '1', 1)
+DEFTREECODE (CLZ_EXPR, "clz_expr", '1', 1)
+DEFTREECODE (CTZ_EXPR, "ctz_expr", '1', 1)
+DEFTREECODE (POPCOUNT_EXPR, "popcount_expr", '1', 1)
+DEFTREECODE (PARITY_EXPR, "parity_expr", '1', 1)
 
 /* Shift operations for shift and rotate.
    Shift means logical shift if done on an

@@ -1161,6 +1161,10 @@ check_attr_value (exp, attr)
       break;
 
     case FFS:
+    case CLZ:
+    case CTZ:
+    case POPCOUNT:
+    case PARITY:
       XEXP (exp, 0) = check_attr_value (XEXP (exp, 0), attr);
       break;
 

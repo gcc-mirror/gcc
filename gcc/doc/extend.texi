@@ -4986,6 +4986,81 @@ Similar to @code{__builtin_nans}, except the return type is @code{float}.
 Similar to @code{__builtin_nans}, except the return type is @code{long double}.
 @end deftypefn
 
+@deftypefn {Built-in Function} int __builtin_ffs (unsigned int x)
+Returns one plus the index of the least significant 1-bit of @var{x}, or
+if @var{x} is zero, returns zero.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_clz (unsigned int x)
+Returns the number of leading 0-bits in @var{x}, starting at the most
+significant bit position.  If @var{x} is 0, the result is undefined.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_ctz (unsigned int x)
+Returns the number of trailing 0-bits in @var{x}, starting at the least
+significant bit position.  If @var{x} is 0, the result is undefined.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_popcount (unsigned int x)
+Returns the number of 1-bits in @var{x}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_parity (unsigned int x)
+Returns the parity of @var{x}, i.@:e. the number of 1-bits in @var{x}
+modulo 2.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_ffsl (unsigned long)
+Similar to @code{__builtin_ffs}, except the argument type is
+@code{unsigned long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_clzl (unsigned long)
+Similar to @code{__builtin_clz}, except the argument type is
+@code{unsigned long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_ctzl (unsigned long)
+Similar to @code{__builtin_ctz}, except the argument type is
+@code{unsigned long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_popcountl (unsigned long)
+Similar to @code{__builtin_popcount}, except the argument type is
+@code{unsigned long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_parityl (unsigned long)
+Similar to @code{__builtin_parity}, except the argument type is
+@code{unsigned long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_ffsll (unsigned long long)
+Similar to @code{__builtin_ffs}, except the argument type is
+@code{unsigned long long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_clzll (unsigned long long)
+Similar to @code{__builtin_clz}, except the argument type is
+@code{unsigned long long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_ctzll (unsigned long long)
+Similar to @code{__builtin_ctz}, except the argument type is
+@code{unsigned long long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_popcountll (unsigned long long)
+Similar to @code{__builtin_popcount}, except the argument type is
+@code{unsigned long long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} int __builtin_parityll (unsigned long long)
+Similar to @code{__builtin_parity}, except the argument type is
+@code{unsigned long long}.
+@end deftypefn
+
+
 @node Target Builtins
 @section Built-in Functions Specific to Particular Target Machines
 

@@ -2663,6 +2663,36 @@ generating the instruction.
 The @code{ffs} built-in function of C always uses the mode which
 corresponds to the C data type @code{int}.
 
+@cindex @code{clz@var{m}2} instruction pattern
+@item @samp{clz@var{m}2}
+Store into operand 0 the number of leading 0-bits in @var{x}, starting
+at the most significant bit position.  If @var{x} is 0, the result is
+undefined.  @var{m} is the mode of operand 0; operand 1's mode is
+specified by the instruction pattern, and the compiler will convert the
+operand to that mode before generating the instruction.
+
+@cindex @code{ctz@var{m}2} instruction pattern
+@item @samp{ctz@var{m}2}
+Store into operand 0 the number of trailing 0-bits in @var{x}, starting
+at the least significant bit position.  If @var{x} is 0, the result is
+undefined.  @var{m} is the mode of operand 0; operand 1's mode is
+specified by the instruction pattern, and the compiler will convert the
+operand to that mode before generating the instruction.
+
+@cindex @code{popcount@var{m}2} instruction pattern
+@item @samp{popcount@var{m}2}
+Store into operand 0 the number of 1-bits in @var{x}.  @var{m} is the
+mode of operand 0; operand 1's mode is specified by the instruction
+pattern, and the compiler will convert the operand to that mode before
+generating the instruction.
+
+@cindex @code{parity@var{m}2} instruction pattern
+@item @samp{parity@var{m}2}
+Store into operand 0 the parity of @var{x}, i.@:e. the number of 1-bits
+in @var{x} modulo 2.  @var{m} is the mode of operand 0; operand 1's mode
+is specified by the instruction pattern, and the compiler will convert
+the operand to that mode before generating the instruction.
+
 @cindex @code{one_cmpl@var{m}2} instruction pattern
 @item @samp{one_cmpl@var{m}2}
 Store the bitwise-complement of operand 1 into operand 0.
