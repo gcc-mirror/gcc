@@ -1,6 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for some
    generic System V Release 4 system.
-   Copyright (C) 1991, 94-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.

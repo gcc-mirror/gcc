@@ -1,5 +1,6 @@
 /* Functions for generic NeXT as target machine for GNU C compiler.
-   Copyright (C) 1989, 90-93, 96, 97, 98, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1990, 1991, 1992, 1993, 1996, 1997, 1998,
+   2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

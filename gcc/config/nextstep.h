@@ -1,6 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC
    for NeXTSTEP.
-   Copyright (C) 1989, 90-93, 1996, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1990, 1991, 1992, 1993, 1996, 1997,
+   1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
