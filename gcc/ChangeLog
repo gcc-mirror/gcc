@@ -1,3 +1,8 @@
+2003-06-11  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (SUBTARGET_ASM_RELAX_SPEC): Rewrite without
+	brackets.
+
 2003-06-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* hooks.c (hook_int_size_t_constcharptr_int_0): New.
