@@ -1,3 +1,8 @@
+Thu Aug  5 22:27:15 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* config/sh/lib1funcs.asm (___movstrSI0): Change or r0,r0,r0 to nop.
+	(___mulsi3): Use '!' comment character.
+
 Thu Aug  5 13:34:14 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* reload1.c (maybe_fix_stack_asms): Also declare P as "const char *".
