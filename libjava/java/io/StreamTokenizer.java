@@ -407,7 +407,7 @@ public class StreamTokenizer
 	ttype = TT_WORD;
 	sval = tokbuf.toString();
 	if (lowerCase)
-	  sval.toLowerCase();
+	  sval = sval.toLowerCase();
       }
     else if (isComment(ch))
       {
