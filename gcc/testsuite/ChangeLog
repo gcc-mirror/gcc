@@ -1,3 +1,7 @@
+Thu Oct 22 16:01:44 1998  Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>
+
+	* compile/981022-1.c, compile/981022-1.x: New test and driver.
+
 Mon Oct 19 14:03:07 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* 981019-1.c: New test.
