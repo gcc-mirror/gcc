@@ -5,7 +5,7 @@
 /* { dg-final { scan-assembler "four" } } */
 /* { dg-final { scan-assembler-not "_four" } } */
 
-#ifndef __EXTERN_PREFIX
+#ifndef __PRAGMA_EXTERN_PREFIX
 #error
 #endif
 

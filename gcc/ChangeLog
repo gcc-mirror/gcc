@@ -1,3 +1,16 @@
+2003-02-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/alpha/osf.h (CPP_SUBTARGET_SPEC): Rename
+	__EXTERN_PREFIX to __PRAGMA_EXTERN_PREFIX.
+	* doc/extend.texi (Tru64 Pragmas): Reflect this.
+
+	* fixinc/inclhack.def (alpha___extern_prefix): Indicate #pragma
+	extern_prefix support for Tru64 UNIX V5 <sys/stat.h>. 
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/sys/stat.h [ALPHA___EXTERN_PREFIX_CHECK]: New
+	testcase.
+	Fixes PR c/5059, c/6126, other/9671.
+
 2003-02-24  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	Fixes PR libgcj/9652.
