@@ -1,3 +1,10 @@
+2001-03-20  Stan Shebs  <shebs@apple.com>
+
+	* objc/objc-act.c (get_static_reference): Use NULL_TREE.
+	(get_object_reference): Ditto.
+	(error_with_ivar): Use error_with_file_and_line.
+	(warn_with_method): Use warning_with_file_and_line.
+
 2001-03-20  Tom Tromey  <tromey@redhat.com>
 
 	* libgcc-std.ver: Added __fixunssfsi and __fixunsdfsi.

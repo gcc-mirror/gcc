@@ -1126,7 +1126,7 @@ get_static_reference (interface, protocols)
 	 (in build_pointer_type)...so that the new template
 	 we just created will actually be used...what a hack!  */
       if (TYPE_POINTER_TO (t))
-	TYPE_POINTER_TO (t) = 0;
+	TYPE_POINTER_TO (t) = NULL_TREE;
 
       type = t;
     }
@@ -1176,7 +1176,7 @@ get_object_reference (protocols)
 	 (in build_pointer_type)...so that the new template
 	 we just created will actually be used...what a hack!  */
       if (TYPE_POINTER_TO (t))
-	TYPE_POINTER_TO (t) = NULL;
+	TYPE_POINTER_TO (t) = NULL_TREE;
 
       type = t;
     }
@@ -3616,10 +3616,13 @@ error_with_ivar (message, decl, rawdecl)
 
   report_error_function (DECL_SOURCE_FILE (decl));
 
-  fprintf (stderr, "%s:%d: ",
-	   DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
-  memset (errbuf, 0, BUFSIZE);
-  fprintf (stderr, "%s `%s'\n", message, gen_declaration (rawdecl, errbuf));
+  strcpy (errbuf, message);
+  strcat (errbuf, " `");
+  gen_declaration (rawdecl, errbuf + strlen (errbuf));
+  strcat (errbuf, "'");
+  error_with_file_and_line (DECL_SOURCE_FILE (decl),
+			    DECL_SOURCE_LINE (decl),
+			    errbuf);
 }
 
 #define USERTYPE(t) \
@@ -7043,11 +7046,14 @@ warn_with_method (message, mtype, method)
 
   report_error_function (DECL_SOURCE_FILE (method));
 
-  fprintf (stderr, "%s:%d: warning: ",
-	   DECL_SOURCE_FILE (method), DECL_SOURCE_LINE (method));
-  memset (errbuf, 0, BUFSIZE);
-  fprintf (stderr, "%s `%c%s'\n",
-	   message, mtype, gen_method_decl (method, errbuf));
+  /* Add a readable method name to the warning.  */
+  sprintf (errbuf, "%s `%c", message, mtype);
+  gen_method_decl (method, errbuf + strlen (errbuf));
+  strcat (errbuf, "'");
+
+  warning_with_file_and_line (DECL_SOURCE_FILE (method),
+			      DECL_SOURCE_LINE (method),
+			      errbuf);
 }
 
 /* Return 1 if METHOD is consistent with PROTO.  */
