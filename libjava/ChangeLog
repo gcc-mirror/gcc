@@ -1,5 +1,10 @@
 2002-10-07  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/ByteBuffer.java:
+	removed import of not commited class.
+
+2002-10-07  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/ByteBuffer.java,
 	java/nio/MappedByteBuffer.java:
 	New files, forgot to add these dummies.
