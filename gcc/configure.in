@@ -2532,11 +2532,10 @@ changequote([,])dnl
 		;;
 	mips*el-*-openbsd*)	# mips little endian
 		target_cpu_default="MASK_GAS|MASK_ABICALLS"
-		tm_file=mips/openbsd.h
 		;;
 	mips*-*-openbsd*)		# mips big endian
 		target_cpu_default="MASK_GAS|MASK_ABICALLS"
-		tm_file=mips/openbsd-be.h
+		tm_file="mips/openbsd-be.h ${tm_file}"
 		;;
 	mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
 		tm_file="mips/news4.h ${tm_file}"
