@@ -1,3 +1,7 @@
+2000-12-07  Geoffrey Keating  <geoffk@redhat.com>
+
+	* g++.old-deja/g++.other/eh3.C: New testcase.
+
 2000-12-07  Neil Booth  <neilb@earthling.net>
 
         * gcc.dg/wtr-aggr-init-1.c, wtr-escape-1.c, wtr-int-type-1.c,
