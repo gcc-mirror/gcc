@@ -1,3 +1,7 @@
+Wed Sep  3 10:39:42 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* alias.c (true_dependence): Test x for BLKmode, in addition to mem.
+
 Wed Sep  3 09:28:50 CDT 1997  Joel Sherrill (joel@OARcorp.com)
 
 	* i386/go32-rtems.h, i386/rtems.h, i960/rtems.h, m68k/rtems.h,

@@ -815,7 +815,7 @@ true_dependence (mem, mem_mode, x, varies)
      about aliasing.  */
   if (MEM_IN_STRUCT_P (x) == MEM_IN_STRUCT_P (mem)
       || mem_mode == QImode || mem_mode == BLKmode
-      || GET_MODE (x) == QImode || GET_MODE (mem) == BLKmode
+      || GET_MODE (x) == QImode || GET_MODE (x) == BLKmode
       || varies (x_addr) == varies (mem_addr))
     return 1;
 
