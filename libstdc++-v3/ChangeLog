@@ -1,3 +1,8 @@
+2002-07-08  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/23_containers/howto.html:  Link to dk_std::vector paper
+	and homepage.
+
 2002-07-07  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/7186
