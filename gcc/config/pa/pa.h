@@ -1050,6 +1050,18 @@ extern enum cmp_type hppa_branch_type;
        fprintf (FILE, ",ARGW%d=FR", (ARG1));} while (0)
 #endif
 
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
+{ char *my_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (THUNK_FNDECL)); \
+  char *target_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)); \
+  output_function_prologue (FILE, 0); \
+  if (VAL_14_BITS_P (DELTA)) \
+    fprintf (FILE, "\tb %s\n\tldo %d(%%r26),%%r26\n", target_name, DELTA); \
+  else \
+    fprintf (FILE, "\taddil L%%%d,%r26\n\tb %s\n\tldo R%%%d(%%r1),%%r26\n", \
+	     DELTA, target_name, DELTA); \
+  fprintf (FILE, "\n\t.EXIT\n\t.PROCEND\n"); \
+}
+
 #define ASM_OUTPUT_FUNCTION_PREFIX(FILE, NAME) \
   {									\
     char *name;								\
