@@ -34,6 +34,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef TARGET_VERSION
 #define TARGET_VERSION fputs (" (Xtensa GNU/Linux with ELF)", stderr);
 
+#undef WCHAR_TYPE
+#define WCHAR_TYPE "long int"
+
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE 32
+
 #undef ASM_SPEC
 #define ASM_SPEC "%{v} %{mno-density:--no-density} \
                   %{mtext-section-literals:--text-section-literals} \
