@@ -1,3 +1,8 @@
+2001-11-01  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* gcc.c-torture/compile/20010327-1.c: Use __SIZE_TYPE__ instead
+        of unsigned long.
+
 2001-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20011029-2.c: New test.
