@@ -1,3 +1,16 @@
+2002-11-11  Jonathan Wakely <redi@gcc.gnu.org>
+
+	* docs/html/17_intro/howto.html: Make "chapter 22 notes" a link.
+	* docs/html/faq/index.html: Mention that GCC ships with a newer
+	version of the library than the last snapshot. Make "see below" a
+	link. Add missing <html> tag.
+	* docs/html/faq/index.txt: Regenerate.
+	* docs/html/22_locale/locale.html, docs/html/22_locale/messages.html,
+	docs/html/23_containers/howto.html, docs/html/24_iterators/howto.html,
+	docs/html/25_algorithms/howto.html, docs/html/26_numerics/howto.html,
+	docs/html/27_io/howto.html, docs/html/ext/howto.html,
+	docs/html/ext/sgiexts.html: Add missing <html> tag.
+
 2002-11-07  Phil Edwards  <pme@gcc.gnu.org>
             Richard Earnshaw  <rearnsha@arm.com>
 
