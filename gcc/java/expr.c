@@ -2981,7 +2981,11 @@ process_jvm_instruction (PC, byte_ops, length)
   }
 
 #define JSR(OPERAND_TYPE, OPERAND_VALUE) \
-  build_java_jsr (oldpc+OPERAND_VALUE, PC);
+  {						    \
+    /* OPERAND_VALUE may have side-effects on PC */ \
+    int opvalue = OPERAND_VALUE;		    \
+    build_java_jsr (oldpc + opvalue, PC);	    \
+  }
 
 /* Push a constant onto the stack. */
 #define PUSHC(OPERAND_TYPE, OPERAND_VALUE) \

@@ -1,3 +1,7 @@
+2002-06-25  Andreas Schwab  <schwab@suse.de>
+
+	* expr.c (JSR): Avoid undefined operation on PC.
+
 2002-06-10  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	Don't use RTL inlining. Fix for PR java/6820.
