@@ -1240,14 +1240,29 @@ EOF
 	    # provide a proper gxx_include_dir to all subdirs.
 	    # Note, if you change the default, make sure to fix both here
 	    # and in the gcc subdirectory.
-	    if test -z "${with_gxx_include_dir}"; then
+	    # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
+	    gxx_include_dir=
+	    if test -n "${with_gxx_include_dir}"; then
+		case "${with_gxx_include_dir}" in
+		  yes )
+		    echo "configure: error: bad value ${withval} given for g++ include directory" 1>&2
+		    exit 1
+		    ;;
+		  no )
+		    ;;
+		  * )
+		    gxx_include_dir=${with_gxx_include_dir}
+		    ;;
+		esac
+	    fi
+	    if test x${gxx_include_dir} = x; then
 	        if test x${enable_version_specific_runtime_libs} = xyes; then
 		    echo gxx_include_dir = '${libsubdir}/include/g++' >> ${Makefile}
 		else
 		    echo gxx_include_dir = '${prefix}/include/g++' >> ${Makefile}
 		fi
 	    else
-		echo gxx_include_dir = ${with_gxx_include_dir} >> ${Makefile}
+		echo gxx_include_dir = ${gxx_include_dir} >> ${Makefile}
 	    fi
 
 	    # record if we want to build shared libs.
