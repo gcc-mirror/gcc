@@ -82,7 +82,7 @@ typedef struct {
 
 
 #define FIX_PROC_HEAD( fix )                    \
-static t_fix_proc fix; /* avoid warning */      \
+static void fix PARAMS ((const char *, const char *, tFixDesc *)); /* avoid warning */      \
 static void fix ( filname, text, p_fixd )       \
     const char* filname;                        \
     const char* text;                           \
