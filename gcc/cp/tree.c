@@ -1969,19 +1969,19 @@ variably_modified_type_p (tree type)
 
 int
 zero_init_p (t)
-     tree t;
+     tree t ATTRIBUTE_UNUSED;
 {
-  t = strip_array_types (t);
+  /* This is not a correct implementation of this function.  As a
+     result, pointers-to-members will not be correctly
+     zero-initialized.
 
-  /* NULL pointers to data members are initialized with -1.  */
-  if (TYPE_PTRMEM_P (t))
-    return 0;
+     However, using a correct implementation of this function results
+     in many other failures.  Correcting these other failures required
+     a major infrastructure improvement, which was undertaken in the
+     GCC 3.3 source base.  
 
-  /* Classes that contain types that can't be zero-initialized, cannot
-     be zero-initialized themselves.  */
-  if (CLASS_TYPE_P (t) && CLASSTYPE_NON_ZERO_INIT_P (t))
-    return 0;
-
+     In order to reduce risk, these changes were not ported to the GCC
+     3.2 source base.  */
   return 1;
 }
 
