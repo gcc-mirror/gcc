@@ -1,3 +1,7 @@
+2004-02-14  Sascha Brawer  <brawer@dandelis.ch>
+
+	* javax/swing/undo/UndoManager.java: Re-written from scratch.
+
 2004-02-14  Per Bothner  <per@bothner.com>
 
 	* java/nio/channels/spi/AbstractInterruptibleChannel.java (close):
