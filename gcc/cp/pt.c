@@ -1040,6 +1040,12 @@ determine_specialization (template_id, decl, targs_out,
 	     Here, S<int>::f is a non-template, but S<int> is a
 	     template class.  If FN has the same type as DECL, we
 	     might be in business.  */
+
+	  if (!DECL_TEMPLATE_INFO (fn))
+	    /* Its enclosing class is an explicit specialization
+	       of a template class.  This is not a candidate.  */
+	    continue;
+
 	  if (!same_type_p (TREE_TYPE (TREE_TYPE (decl)),
 			    TREE_TYPE (TREE_TYPE (fn))))
 	    /* The return types differ.  */

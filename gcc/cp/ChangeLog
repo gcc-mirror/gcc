@@ -1,3 +1,8 @@
+2001-10-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (determine_specialization): Ignore functions without
+	DECL_TEMPLATE_INFO.
+
 2001-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR g++/4476
