@@ -1,3 +1,14 @@
+2003-05-05  Roger Sayle  <roger@eyesopen.com>
+
+	* real.c (real_powi): New function to calculate the value of
+	a real raised to an integer power, i.e. pow(x,n) for int n.
+	(real_sqrt): Convert to using the faster do_add, do_multiply
+	and do_divide API for consistency with the rest of real.c.
+	* real.h (real_powi): Prototype here.
+	* builtins.c (fold_builtin):  Avoid local variable mode when
+	evaluating sqrt at compile time.  Attempt to evaluate pow at
+	compile-time, by checking for an integral exponent.
+
 2003-05-05  Richard Henderson  <rth@redhat.com>
 
 	* doc/extend.texi (Variable Attributes): Re-sort table and tidy.
