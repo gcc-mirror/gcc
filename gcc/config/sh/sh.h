@@ -898,7 +898,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 
 /* Register to hold the addressing base for position independent
    code access to data items.  */
-#define PIC_OFFSET_TABLE_REGNUM	PIC_REG
+#define PIC_OFFSET_TABLE_REGNUM	(flag_pic ? PIC_REG : INVALID_REGNUM)
 
 #define GOT_SYMBOL_NAME "*_GLOBAL_OFFSET_TABLE_"
 

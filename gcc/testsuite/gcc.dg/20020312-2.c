@@ -94,6 +94,8 @@
 /* No pic register.  */
 #elif defined(__XTENSA__)
 /* No pic register.  */
+#elif defined(__sh__)
+# define PIC_REG  "r12"
 #else
 # error "Modify the test for your target."
 #endif
