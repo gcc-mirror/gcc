@@ -1513,9 +1513,16 @@ void
 start_catch_handler (rtime)
      tree rtime;
 {
-  rtx handler_label = catchstack.top->entry->exception_handler_label;
-  int insn_region_num = CODE_LABEL_NUMBER (handler_label);
-  int eh_region_entry = find_func_region (insn_region_num);
+  rtx handler_label;
+  int insn_region_num;
+  int eh_region_entry;
+
+  if (! doing_eh (1))
+    return;
+
+  handler_label = catchstack.top->entry->exception_handler_label;
+  insn_region_num = CODE_LABEL_NUMBER (handler_label);
+  eh_region_entry = find_func_region (insn_region_num);
 
   /* If we've already issued this label, pick a new one */
   if (catchstack.top->entry->label_used)

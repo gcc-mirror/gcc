@@ -1,3 +1,7 @@
+Wed Jun 24 09:14:04 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* except.c (start_catch_handler): Do nothing if EH is not on.
+
 1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (gxx_include_dir): Initialize default value depending on
