@@ -30,7 +30,7 @@ public class ZipOutputStream extends DeflaterOutputStream
   {
     int uncompressed_size = def.getTotalIn();
     int compressed_size = def.getTotalOut();
-    int crc = (int) (filter.getChecksum().getValue());
+    long crc = filter.getChecksum().getValue();
 
     bytes_written += compressed_size;
 
