@@ -87,8 +87,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
 %{bestGnum} %{shared} %{non_shared} \
 %{call_shared} %{no_archive} %{exact_version} \
-%{!shared: -u __main -init __main %{!non_shared: \
-	   %{!call_shared: -call_shared -no_unresolved}}} \
+%{!shared:%{!non_shared:%{!call_shared: -call_shared -no_unresolved}}} \
 -_SYSTYPE_SVR4"
 
 /* We now support shared libraries.  */

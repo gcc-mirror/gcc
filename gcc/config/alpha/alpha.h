@@ -52,7 +52,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    optimizing, -O1 if we are not.  Pass -shared, -non_shared or
    -call_shared as appropriate.  Also pass -pg.  */
 #define LINK_SPEC  \
-  "-G 8 %{O*:-O3} %{!O*:-O1} %{!shared:-init __main} %{static:-non_shared} \
+  "-G 8 %{O*:-O3} %{!O*:-O1} %{static:-non_shared} \
    %{!static:%{shared:-shared} %{!shared:-call_shared}} %{pg} %{taso} \
    %{rpath*}"
 
