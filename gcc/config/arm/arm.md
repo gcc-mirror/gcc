@@ -1243,7 +1243,7 @@
 ;; Unnamed template to match long long unsigned multiply-accumlate (umlal)
 
 (define_insn "*umulsidi3adddi"
-  [(set (match_operand:DI 0 "s_register_operand" "+&r")
+  [(set (match_operand:DI 0 "s_register_operand" "=&r")
 	(plus:DI
 	 (mult:DI
 	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" "%r"))
