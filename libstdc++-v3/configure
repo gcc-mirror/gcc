@@ -959,7 +959,7 @@ fi
   
 PACKAGE=libstdc++
 
-VERSION=2.91
+VERSION=2.92
 
 if test "`cd $srcdir && pwd`" != "`pwd`" && test -f $srcdir/config.status; then
   { echo "configure: error: source directory already configured; run "make distclean" there first" 1>&2; exit 1; }
@@ -16498,10 +16498,10 @@ glibcpp_toolexecdir=no
 glibcpp_toolexeclibdir=no
 
 # Export build and source directories.
-tmp_builddir=`pwd`
-glibcpp_builddir=$tmp_builddir
-glibcpp_srcdir=${srcdir}
-glibcpp_prefixdir=${prefix}
+# These need to be absolute paths, thus the use of pwd.
+glibcpp_builddir=`pwd`
+glibcpp_srcdir=`cd ${srcdir} && pwd`
+glibcpp_prefixdir=`cd ${prefix} && pwd`
 
 echo $ac_n "checking for interface version number""... $ac_c" 1>&6
 echo "configure:16508: checking for interface version number" >&5

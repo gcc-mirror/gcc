@@ -1,3 +1,11 @@
+2001-05-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Set glibcpp_srcdir
+	amd glibcpp_prefixdir with absolute paths.
+
+	* include/bits/c++config (__GLIBCPP__): Bump.
+	* acinclude.m4 (GLIBCPP_CONFIGURE): Correct version number.
+
 2001-05-18  Gabriel Dos Reis  <gdr@codesourcery.com>
 
         * include/bits/std_valarray.h (valarray<>::operator[] const):
