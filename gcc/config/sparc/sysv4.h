@@ -24,8 +24,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Undefine some symbols which are defined in "sparc.h" but which are
    appropriate only for SunOS 4.x, and not for svr4.  */
 
-#undef DBX_DEBUGGING_INFO
 #undef WORD_SWITCH_TAKES_ARG
+#undef ASM_OUTPUT_SOURCE_LINE
 #undef SELECT_SECTION
 #undef ASM_DECLARE_FUNCTION_NAME
 #undef TEXT_SECTION_ASM_OP

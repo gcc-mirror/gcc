@@ -244,6 +244,64 @@ do {				 				\
 
 #undef DBX_REGISTER_NUMBER
 
+/* gas on SVR4 supports the use of .stabs.  Permit -gstabs to be used
+   in general, although it will only work when using gas.  */
+
+#define DBX_DEBUGGING_INFO
+
+/* Use DWARF debugging info by default.  */
+
+#define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
+
+/* Make LBRAC and RBRAC addresses relative to the start of the
+   function.  The native Solaris stabs debugging format works this
+   way, gdb expects it, and it reduces the number of relocation
+   entries.  */
+
+#define DBX_BLOCKS_FUNCTION_RELATIVE 1
+
+/* When using stabs, gcc2_compiled must be a stabs entry, not an
+   ordinary symbol, or gdb won't see it.  Furthermore, since gdb reads
+   the input piecemeal, starting with each N_SO, it's a lot easier if
+   the gcc2 flag symbol is *after* the N_SO rather than before it.  So
+   we emit an N_OPT stab there.  */
+
+#define ASM_IDENTIFY_GCC(FILE)						\
+do									\
+  {									\
+    if (write_symbols != DBX_DEBUG)					\
+      fputs ("gcc2_compiled.:\n", FILE);				\
+  }									\
+while (0)
+
+#define ASM_IDENTIFY_GCC_AFTER_SOURCE(FILE)				\
+do									\
+  {									\
+    if (write_symbols == DBX_DEBUG)					\
+      fputs ("\t.stabs\t\"gcc2_compiled.\", 0x3c, 0, 0, 0\n", FILE);	\
+  }									\
+while (0)
+
+/* Like block addresses, stabs line numbers are relative to the
+   current function.  */
+
+#define ASM_OUTPUT_SOURCE_LINE(file, line)				\
+do									\
+  {									\
+    static int sym_lineno = 1;						\
+    fprintf (file, ".stabn 68,0,%d,.LM%d-%s\n.LM%d:\n",			\
+	     line, sym_lineno, 						\
+	     XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0), 	\
+	     sym_lineno);						\
+    sym_lineno += 1;							\
+  }									\
+while (0)
+
+/* In order for relative line numbers to work, we must output the
+   stabs entry for the function name first.  */
+
+#define DBX_FUNCTION_FIRST
+
 /* Define the actual types of some ANSI-mandated types.  (These
    definitions should work for most SVR4 systems).  */
 
