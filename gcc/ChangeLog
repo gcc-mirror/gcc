@@ -1,3 +1,9 @@
+2000-08-11  Mark Elbrecht  <snowball3@bigfoot.com>
+ 
+	* gcc.texi (The Configuration File): Document
+	COLLECT2_HOST_INITIALIZATION, GCC_DRIVER_HOST_INITIALIZATION, and
+	UPDATE_PATH_HOST_CANONICALIZATION.
+
 2000-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-parse.in (cast_expr): Avoid -Wstrict-prototype warnings for
