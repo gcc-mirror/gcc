@@ -3087,13 +3087,14 @@ rest_of_compilation (decl)
   close_dump_file (DFI_cfg, print_rtl_with_bb, insns);
 
   /* Do branch profiling and static profile estimation passes.  */
-  if (optimize > 0 || cfun->arc_profile || flag_branch_probabilities)
+  if (optimize > 0
+      || profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
     {
       struct loops loops;
 
       timevar_push (TV_BRANCH_PROB);
       open_dump_file (DFI_bp, decl);
-      if (cfun->arc_profile || flag_branch_probabilities)
+      if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
 	branch_prob ();
 
       /* Discover and record the loop depth at the head of each basic

@@ -452,9 +452,6 @@ struct function GTY(())
      generated.  */
   unsigned int instrument_entry_exit : 1;
 
-  /* Nonzero if arc profiling should be done for the function.  */
-  unsigned int arc_profile : 1;
-
   /* Nonzero if profiling code should be generated.  */
   unsigned int profile : 1;
 

@@ -72,17 +72,18 @@ typedef struct counts_entry
   
 } counts_entry_t;
 
-static unsigned fn_ident = 1;
 static struct function_list *functions_head = 0;
 static struct function_list **functions_tail = &functions_head;
+static unsigned no_coverage = 0;
 
 /* Cumulative counter information for whole program.  */
 static unsigned prg_ctr_mask; /* Mask of counter types generated.  */
-static unsigned prg_n_ctrs[GCOV_COUNTERS];
+static unsigned prg_n_ctrs[GCOV_COUNTERS]; /* Total counters allocated.  */
 
 /* Counter information for current function.  */
-static unsigned fn_ctr_mask;
-static unsigned fn_n_ctrs[GCOV_COUNTERS];
+static unsigned fn_ctr_mask; /* Mask of counters used. */
+static unsigned fn_n_ctrs[GCOV_COUNTERS]; /* Counters allocated.  */
+static unsigned fn_b_ctrs[GCOV_COUNTERS]; /* Allocation base.  */
 
 /* Name of the output file for coverage output file.  */
 static char *bbg_file_name;
@@ -313,7 +314,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
       return NULL;
     }
 
-  elt.ident = fn_ident;
+  elt.ident = current_function_funcdef_no + 1;
   elt.ctr = counter;
   entry = htab_find (counts_hash, &elt);
   if (!entry)
@@ -337,15 +338,18 @@ get_coverage_counts (unsigned counter, unsigned expected,
   return entry->counts;
 }
 
-/* Generate a MEM rtl to access COUNTER NO .  */
+/* Allocate NUM counters of type COUNTER. Returns non-zero if the
+   allocation succeeded.  */
 
-rtx
-coverage_counter_ref (unsigned counter, unsigned no)
+int
+coverage_counter_alloc (unsigned counter, unsigned num)
 {
-  unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
-  enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
-  rtx ref;
-
+  if (no_coverage)
+    return 0;
+  
+  if (!num)
+    return 1;
+  
   if (!ctr_labels[counter])
     {
       /* Generate and save a copy of this so it can be shared.  */
@@ -354,13 +358,24 @@ coverage_counter_ref (unsigned counter, unsigned no)
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", counter + 1);
       ctr_labels[counter] = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
     }
-  if (no + 1 > fn_n_ctrs[counter])
-    {
-      fn_n_ctrs[counter] = no + 1;
-      fn_ctr_mask |= 1 << counter;
-    }
+  fn_b_ctrs[counter] = fn_n_ctrs[counter];
+  fn_n_ctrs[counter] += num;
+  fn_ctr_mask |= 1 << counter;
+  return 1;
+}
 
-  no += prg_n_ctrs[counter];
+/* Generate a MEM rtl to access COUNTER NO.  */
+
+rtx
+coverage_counter_ref (unsigned counter, unsigned no)
+{
+  unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
+  enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
+  rtx ref;
+
+  if (no >= fn_n_ctrs[counter] - fn_b_ctrs[counter])
+    abort ();
+  no += prg_n_ctrs[counter] + fn_b_ctrs[counter];
   ref = plus_constant (ctr_labels[counter], gcov_size / BITS_PER_UNIT * no);
   ref = gen_rtx_MEM (mode, ref);
   set_mem_alias_set (ref, new_alias_set ());
@@ -415,6 +430,9 @@ compute_checksum ()
 int
 coverage_begin_output ()
 {
+  if (no_coverage)
+    return 0;
+  
   if (!bbg_function_announced)
     {
       const char *file = DECL_SOURCE_FILE (current_function_decl);
@@ -435,7 +453,7 @@ coverage_begin_output ()
       
       /* Announce function */
       offset = gcov_write_tag (GCOV_TAG_FUNCTION);
-      gcov_write_unsigned (fn_ident);
+      gcov_write_unsigned (current_function_funcdef_no + 1);
       gcov_write_unsigned (compute_checksum ());
       gcov_write_string (IDENTIFIER_POINTER
 			 (DECL_ASSEMBLER_NAME (current_function_decl)));
@@ -472,20 +490,18 @@ coverage_end_function ()
       functions_tail = &item->next;
 	
       item->next = 0;
-      /* It would be nice to use the unique source location. */
-      item->ident = fn_ident;
+      item->ident = current_function_funcdef_no + 1;
       item->checksum = compute_checksum ();
       for (i = 0; i != GCOV_COUNTERS; i++)
 	{
 	  item->n_ctrs[i] = fn_n_ctrs[i];
 	  prg_n_ctrs[i] += fn_n_ctrs[i];
-	  fn_n_ctrs[i] = 0;
+	  fn_n_ctrs[i] = fn_b_ctrs[i] = 0;
 	}
       prg_ctr_mask |= fn_ctr_mask;
       fn_ctr_mask = 0;
     }
   bbg_function_announced = 0;
-  fn_ident++;
 }
 
 /* Creates the gcov_fn_info RECORD_TYPE.  */
@@ -799,8 +815,9 @@ create_coverage ()
   char *ctor_name;
   tree ctor;
   rtx gcov_info_address;
-  int save_flag_inline_functions = flag_inline_functions;
 
+  no_coverage = 1; /* Disable any further coverage.  */
+  
   if (!prg_ctr_mask)
     return;
   
@@ -830,6 +847,7 @@ create_coverage ()
   TREE_PUBLIC (ctor) = ! targetm.have_ctors_dtors;
   TREE_USED (ctor) = 1;
   DECL_RESULT (ctor) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
+  DECL_UNINLINABLE (ctor) = 1;
 
   ctor = (*lang_hooks.decls.pushdecl) (ctor);
   rest_of_decl_compilation (ctor, 0, 1, 0);
@@ -840,7 +858,6 @@ create_coverage ()
   init_function_start (ctor, input_filename, input_line);
   (*lang_hooks.decls.pushlevel) (0);
   expand_function_start (ctor, 0);
-  cfun->arc_profile = 0;
 
   /* Actually generate the code to call __gcov_init.  */
   gcov_info_address = force_reg (Pmode, XEXP (DECL_RTL (gcov_info), 0));
@@ -850,15 +867,7 @@ create_coverage ()
   expand_function_end (input_filename, input_line, 0);
   (*lang_hooks.decls.poplevel) (1, 0, 1);
 
-  /* Since ctor isn't in the list of globals, it would never be emitted
-     when it's considered to be 'safe' for inlining, so turn off
-     flag_inline_functions.  */
-  flag_inline_functions = 0;
-
   rest_of_compilation (ctor);
-
-  /* Reset flag_inline_functions to its original value.  */
-  flag_inline_functions = save_flag_inline_functions;
 
   if (! quiet_flag)
     fflush (asm_out_file);

@@ -25,10 +25,21 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 extern void coverage_init (const char *);
 extern void coverage_finish (void);
+
+/* Complete the coverage information for the current function. Once
+   per function.  */
 extern void coverage_end_function (void);
+
+/* Start outputting coverage information for the current
+   function. Repeatable per function.  */
 extern int coverage_begin_output (void);
 
+/* Allocate some counters. Repeatable per function.  */
+extern int coverage_counter_alloc (unsigned /*counter*/, unsigned/*num*/);
+/* Use a counter from the most recent allocation.  */
 extern rtx coverage_counter_ref (unsigned /*counter*/, unsigned/*num*/);
+
+/* Get all the counters for the current function.  */
 extern gcov_type *get_coverage_counts (unsigned /*counter*/,
 				       unsigned /*expected*/,
 				       const struct gcov_ctr_summary **);
