@@ -1,3 +1,9 @@
+2003-06-13  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* unwind-c.c: Define NO_SIZE_OF_ENCODED_VALUE.
+	* unwind-pe.h (size_of_encoded_value): Do not define if
+	NO_SIZE_OF_ENCODED_VALUE is defined.
+
 2003-06-13  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c (expand_expr <COMPLEX_CST>): Handle the case of
