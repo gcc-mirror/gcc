@@ -1,3 +1,7 @@
+1999-08-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* dwarf1.C, dwarf2.C, dwarf3.C: New tests.
+
 1999-07-20  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* template8.C, typeof1.C: New test.
