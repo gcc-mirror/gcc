@@ -5924,7 +5924,7 @@ do_pragma (buf, limit)
       return 0;
 
     fname = p + 1;
-    if (p = (U_CHAR *) strchr (fname, '\"'))
+    if (p = (U_CHAR *) index (fname, '\"'))
       *p = '\0';
     
     for (ptr = all_include_files; ptr; ptr = ptr->next) {
