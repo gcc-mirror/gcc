@@ -2529,7 +2529,8 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtend.o"
 		;;
 	sparc-*-vxsim*)
-		xm_file="sparc/xm-sysv4.h sparc/xm-sol2.h"
+		xm_file="xm-siglist.h sparc/xm-sysv4.h sparc/xm-sol2.h"
+		xm_defines="USG POSIX"
 		tm_file=sparc/vxsim.h
 		tmake_file=sparc/t-vxsparc
 		xmake_file=sparc/x-sysv4
