@@ -1,3 +1,20 @@
+2004-05-24  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* intl.h (open_quote, close_quote): New.
+	* intl.c (open_quote, close_quote): New.
+	(gcc_init_libintl): Set them.
+	* pretty-print.c: Include "intl.h".
+	(pp_base_format_text): Support 'q' format flag and %` and %'
+	formats.  Use ' instead of ` in comments.
+	* c-format.c (gcc_diag_flag_specs, gcc_cxxdiag_flag_specs,
+	gcc_diag_char_table, gcc_cdiag_char_table, gcc_cxxdiag_char_table,
+	foramt_types_orig): Describe these new formats.
+	(decode_format_attr, check_function_format,
+	check_format_info_main): Use these new formats.
+	(status_warning): Use ATTRIBUTE_GCC_DIAG.
+	* toplev.c (ATTRIBUTE_GCC_DIAG): Increase required GCC version to
+	check these formats to 3.5.
+
 2004-05-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in (CPPLIBS): Renamed to CPPLIB.

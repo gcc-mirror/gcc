@@ -1,5 +1,5 @@
 /* intl.h - internationalization
-   Copyright 1998, 2001, 2003 Free Software Foundation, Inc.
+   Copyright 1998, 2001, 2003, 2004 Free Software Foundation, Inc.
 
    GCC is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -50,5 +50,8 @@ extern size_t gcc_gettext_width (const char *);
 #ifndef N_
 # define N_(msgid) msgid
 #endif
+
+extern const char *open_quote;
+extern const char *close_quote;
 
 #endif /* intl.h */
