@@ -1559,6 +1559,14 @@ gfc_build_library_function_decl (tree name, tree rettype, int nargs, ...)
 static void
 gfc_build_intrinsic_function_decls (void)
 {
+  tree gfc_int4_type_node = gfc_get_int_type (4);
+  tree gfc_int8_type_node = gfc_get_int_type (8);
+  tree gfc_logical4_type_node = gfc_get_logical_type (4);
+  tree gfc_real4_type_node = gfc_get_real_type (4);
+  tree gfc_real8_type_node = gfc_get_real_type (8);
+  tree gfc_complex4_type_node = gfc_get_complex_type (4);
+  tree gfc_complex8_type_node = gfc_get_complex_type (8);
+
   /* String functions.  */
   gfor_fndecl_copy_string =
     gfc_build_library_function_decl (get_identifier (PREFIX("copy_string")),
@@ -1738,6 +1746,10 @@ gfc_build_intrinsic_function_decls (void)
 void
 gfc_build_builtin_function_decls (void)
 {
+  tree gfc_int4_type_node = gfc_get_int_type (4);
+  tree gfc_int8_type_node = gfc_get_int_type (8);
+  tree gfc_logical4_type_node = gfc_get_logical_type (4);
+
   gfor_fndecl_internal_malloc =
     gfc_build_library_function_decl (get_identifier (PREFIX("internal_malloc")),
 				     pvoid_type_node, 1, gfc_int4_type_node);

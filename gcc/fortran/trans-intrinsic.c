@@ -1945,6 +1945,7 @@ gfc_conv_intrinsic_len_trim (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_index (gfc_se * se, gfc_expr * expr)
 {
+  tree gfc_logical4_type_node = gfc_get_logical_type (4);
   tree args;
   tree back;
   tree type;
@@ -2245,6 +2246,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 static void
 gfc_conv_intrinsic_scan (gfc_se * se, gfc_expr * expr)
 {
+  tree gfc_logical4_type_node = gfc_get_logical_type (4);
   tree args;
   tree back;
   tree type;
@@ -2277,6 +2279,7 @@ gfc_conv_intrinsic_scan (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_verify (gfc_se * se, gfc_expr * expr)
 {
+  tree gfc_logical4_type_node = gfc_get_logical_type (4);
   tree args;
   tree back;
   tree type;
@@ -2529,6 +2532,7 @@ gfc_conv_intrinsic_sr_kind (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
 {
+  tree gfc_int4_type_node = gfc_get_int_type (4);
   tree var;
   tree len;
   tree addr;
@@ -2570,6 +2574,7 @@ gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 {
+  tree gfc_int4_type_node = gfc_get_int_type (4);
   tree tmp;
   tree len;
   tree args;

@@ -24,28 +24,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GFC_BACKEND_H
 #define GFC_BACKEND_H
 
-enum
-{
-  F95_INT1_TYPE,
-  F95_INT2_TYPE,
-  F95_INT4_TYPE,
-  F95_INT8_TYPE,
-  F95_INT16_TYPE,
-  F95_REAL4_TYPE,
-  F95_REAL8_TYPE,
-  F95_REAl16_TYPE,
-  F95_COMPLEX4_TYPE,
-  F95_COMPLEX8_TYPE,
-  F95_COMPLEX16_TYPE,
-  F95_LOGICAL1_TYPE,
-  F95_LOGICAL2_TYPE,
-  F95_LOGICAL4_TYPE,
-  F95_LOGICAL8_TYPE,
-  F95_LOGICAL16_TYPE,
-  F95_CHARACTER1_TYPE,
-  NUM_F95_TYPES
-};
-
 #define GFC_DTYPE_RANK_MASK 0x07
 #define GFC_DTYPE_TYPE_SHIFT 3
 #define GFC_DTYPE_TYPE_MASK 0x38
@@ -62,37 +40,12 @@ enum
   GFC_DTYPE_CHARACTER
 };
 
-extern GTY(()) tree gfc_type_nodes[NUM_F95_TYPES];
-
 extern GTY(()) tree gfc_array_index_type;
+extern GTY(()) tree gfc_character1_type_node;
 extern GTY(()) tree ppvoid_type_node;
 extern GTY(()) tree pvoid_type_node;
 extern GTY(()) tree pchar_type_node;
-
-#define gfc_int1_type_node  gfc_type_nodes[F95_INT1_TYPE]
-#define gfc_int2_type_node  gfc_type_nodes[F95_INT2_TYPE]
-#define gfc_int4_type_node  gfc_type_nodes[F95_INT4_TYPE]
-#define gfc_int8_type_node  gfc_type_nodes[F95_INT8_TYPE]
-#define gfc_int16_type_node gfc_type_nodes[F95_INT16_TYPE]
-
-#define gfc_real4_type_node  gfc_type_nodes[F95_REAL4_TYPE]
-#define gfc_real8_type_node  gfc_type_nodes[F95_REAL8_TYPE]
-#define gfc_real16_type_node gfc_type_nodes[F95_REAL16_TYPE]
-
-#define gfc_complex4_type_node  gfc_type_nodes[F95_COMPLEX4_TYPE]
-#define gfc_complex8_type_node  gfc_type_nodes[F95_COMPLEX8_TYPE]
-#define gfc_complex16_type_node gfc_type_nodes[F95_COMPLEX16_TYPE]
-
-#define gfc_logical1_type_node  gfc_type_nodes[F95_LOGICAL1_TYPE]
-#define gfc_logical2_type_node  gfc_type_nodes[F95_LOGICAL2_TYPE]
-#define gfc_logical4_type_node  gfc_type_nodes[F95_LOGICAL4_TYPE]
-#define gfc_logical8_type_node  gfc_type_nodes[F95_LOGICAL8_TYPE]
-#define gfc_logical16_type_node gfc_type_nodes[F95_LOGICAL16_TYPE]
-
-#define gfc_character1_type_node gfc_type_nodes[F95_CHARACTER1_TYPE]
-
-#define gfc_strlen_kind 4
-#define gfc_strlen_type_node gfc_int4_type_node
+extern GTY(()) tree gfc_strlen_type_node;
 
 /* These C-specific types are used while building builtin function decls.
    For now it doesn't really matter what these are defined to as we don't

@@ -553,6 +553,7 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
 static void
 gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 {
+  tree gfc_int4_type_node;
   int kind;
   int ikind;
   gfc_se lse;
@@ -572,6 +573,8 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 	 && expr->op2->expr_type == EXPR_CONSTANT)
     if (gfc_conv_cst_int_power (se, lse.expr, rse.expr))
       return;        
+
+  gfc_int4_type_node = gfc_get_int_type (4);
 
   kind = expr->op1->ts.kind;
   switch (expr->op2->ts.type)

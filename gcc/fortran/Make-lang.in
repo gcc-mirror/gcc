@@ -278,14 +278,17 @@ $(F95_PARSER_OBJS): fortran/gfortran.h fortran/intrinsic.h fortran/match.h \
 GFORTRAN_TRANS_DEPS = fortran/gfortran.h fortran/intrinsic.h fortran/trans-array.h \
     fortran/trans-const.h fortran/trans-const.h fortran/trans.h \
     fortran/trans-stmt.h fortran/trans-types.h \
-    $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_H) coretypes.h
+    $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_H) coretypes.h $(GGC_H)
 
 fortran/f95-lang.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
-  gt-fortran-f95-lang.h gtype-fortran.h cgraph.h
+  gt-fortran-f95-lang.h gtype-fortran.h cgraph.h $(TARGET_H)
 fortran/convert.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans.o: $(GFORTRAN_TRANS_DEPS)
-fortran/trans-decl.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-decl.h cgraph.h
-fortran/trans-types.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-types.h
+fortran/trans-decl.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-decl.h \
+  cgraph.h $(TARGET_H) function.h errors.h $(FLAGS_H) tree-gimple.h \
+  tree-dump.h
+fortran/trans-types.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-types.h \
+  real.h toplev.h $(TARGET_H)
 fortran/trans-const.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans-expr.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans-stmt.o: $(GFORTRAN_TRANS_DEPS)

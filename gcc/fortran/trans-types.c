@@ -50,15 +50,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static tree gfc_get_derived_type (gfc_symbol * derived);
 
-tree gfc_type_nodes[NUM_F95_TYPES];
-
 tree gfc_array_index_type;
 tree pvoid_type_node;
 tree ppvoid_type_node;
 tree pchar_type_node;
+tree gfc_character1_type_node;
+tree gfc_strlen_type_node;
 
-static GTY(()) tree gfc_desc_dim_type = NULL;
-
+static GTY(()) tree gfc_desc_dim_type;
 static GTY(()) tree gfc_max_array_element_size;
 
 /* Arrays for all integral and real kinds.  We'll fill this in at runtime
@@ -67,9 +66,13 @@ static GTY(()) tree gfc_max_array_element_size;
 #define MAX_INT_KINDS 5
 gfc_integer_info gfc_integer_kinds[MAX_INT_KINDS + 1];
 gfc_logical_info gfc_logical_kinds[MAX_INT_KINDS + 1];
+static GTY(()) tree gfc_integer_types[MAX_INT_KINDS + 1];
+static GTY(()) tree gfc_logical_types[MAX_INT_KINDS + 1];
 
 #define MAX_REAL_KINDS 4
 gfc_real_info gfc_real_kinds[MAX_REAL_KINDS + 1];
+static GTY(()) tree gfc_real_types[MAX_REAL_KINDS + 1];
+static GTY(()) tree gfc_complex_types[MAX_REAL_KINDS + 1];
 
 /* The integer kind to use for array indices.  This will be set to the
    proper value based on target information from the backend.  */
@@ -178,6 +181,7 @@ gfc_init_kinds (void)
       gfc_real_kinds[r_index].digits = fmt->p;
       gfc_real_kinds[r_index].min_exponent = fmt->emin;
       gfc_real_kinds[r_index].max_exponent = fmt->emax;
+      gfc_real_kinds[r_index].mode_precision = GET_MODE_PRECISION (mode);
       r_index += 1;
     }
 
@@ -324,6 +328,127 @@ gfc_validate_kind (bt type, int kind, bool may_fail)
 }
 
 
+/* Four subroutines of gfc_init_types.  Create type nodes for the given kind.
+   Reuse common type nodes where possible.  Recognize if the kind matches up
+   with a C type.  This will be used later in determining which routines may
+   be scarfed from libm.  */
+
+static tree
+gfc_build_int_type (gfc_integer_info *info)
+{
+  int mode_precision = info->bit_size;
+
+  if (mode_precision == CHAR_TYPE_SIZE)
+    info->c_char = 1;
+  if (mode_precision == SHORT_TYPE_SIZE)
+    info->c_short = 1;
+  if (mode_precision == INT_TYPE_SIZE)
+    info->c_int = 1;
+  if (mode_precision == LONG_TYPE_SIZE)
+    info->c_long = 1;
+  if (mode_precision == LONG_LONG_TYPE_SIZE)
+    info->c_long_long = 1;
+
+  if (TYPE_PRECISION (intQI_type_node) == mode_precision)
+    return intQI_type_node;
+  if (TYPE_PRECISION (intHI_type_node) == mode_precision)
+    return intHI_type_node;
+  if (TYPE_PRECISION (intSI_type_node) == mode_precision)
+    return intSI_type_node;
+  if (TYPE_PRECISION (intDI_type_node) == mode_precision)
+    return intDI_type_node;
+  if (TYPE_PRECISION (intTI_type_node) == mode_precision)
+    return intTI_type_node;
+
+  return make_signed_type (mode_precision);
+}
+
+static tree
+gfc_build_real_type (gfc_real_info *info)
+{
+  int mode_precision = info->mode_precision;
+  tree new_type;
+
+  if (mode_precision == FLOAT_TYPE_SIZE)
+    info->c_float = 1;
+  if (mode_precision == DOUBLE_TYPE_SIZE)
+    info->c_double = 1;
+  if (mode_precision == LONG_DOUBLE_TYPE_SIZE)
+    info->c_long_double = 1;
+
+  if (TYPE_PRECISION (float_type_node) == mode_precision)
+    return float_type_node;
+  if (TYPE_PRECISION (double_type_node) == mode_precision)
+    return double_type_node;
+  if (TYPE_PRECISION (long_double_type_node) == mode_precision)
+    return long_double_type_node;
+
+  new_type = make_node (REAL_TYPE);
+  TYPE_PRECISION (new_type) = mode_precision;
+  layout_type (new_type);
+  return new_type;
+}
+
+static tree
+gfc_build_complex_type (tree scalar_type)
+{
+  tree new_type;
+
+  if (scalar_type == NULL)
+    return NULL;
+  if (scalar_type == float_type_node)
+    return complex_float_type_node;
+  if (scalar_type == double_type_node)
+    return complex_double_type_node;
+  if (scalar_type == long_double_type_node)
+    return complex_long_double_type_node;
+
+  new_type = make_node (COMPLEX_TYPE);
+  TREE_TYPE (new_type) = scalar_type;
+  layout_type (new_type);
+  return new_type;
+}
+
+static tree
+gfc_build_logical_type (gfc_logical_info *info)
+{
+  int bit_size = info->bit_size;
+  tree new_type;
+
+  if (bit_size == BOOL_TYPE_SIZE)
+    {
+      info->c_bool = 1;
+      return boolean_type_node;
+    }
+
+  new_type = make_unsigned_type (bit_size);
+  TREE_SET_CODE (new_type, BOOLEAN_TYPE);
+  TYPE_MAX_VALUE (new_type) = build_int_cst (new_type, 1);
+  TYPE_PRECISION (new_type) = 1;
+
+  return new_type;
+}
+
+#if 0
+/* Return the bit size of the C "size_t".  */
+
+static unsigned int
+c_size_t_size (void)
+{
+#ifdef SIZE_TYPE  
+  if (strcmp (SIZE_TYPE, "unsigned int") == 0)
+    return INT_TYPE_SIZE;
+  if (strcmp (SIZE_TYPE, "long unsigned int") == 0)
+    return LONG_TYPE_SIZE;
+  if (strcmp (SIZE_TYPE, "short unsigned int") == 0)
+    return SHORT_TYPE_SIZE;
+  abort ();
+#else
+  return LONG_TYPE_SIZE;
+#endif
+}
+#endif
+
 /* Create the backend type nodes. We map them to their
    equivalent C type, at least for now.  We also give
    names to the types here, and we push them in the
@@ -332,69 +457,49 @@ gfc_validate_kind (bt type, int kind, bool may_fail)
 void
 gfc_init_types (void)
 {
+  char name_buf[16];
+  int index;
+  tree type;
   unsigned n;
   unsigned HOST_WIDE_INT hi;
   unsigned HOST_WIDE_INT lo;
 
-  /* Name the types.  */
+  /* Create and name the types.  */
 #define PUSH_TYPE(name, node) \
   pushdecl (build_decl (TYPE_DECL, get_identifier (name), node))
 
-  gfc_int1_type_node = signed_char_type_node;
-  PUSH_TYPE ("int1", gfc_int1_type_node);
-  gfc_int2_type_node = short_integer_type_node;
-  PUSH_TYPE ("int2", gfc_int2_type_node);
-  gfc_int4_type_node = gfc_type_for_size (32, 0 /*unsigned */ );
-  PUSH_TYPE ("int4", gfc_int4_type_node);
-  gfc_int8_type_node = gfc_type_for_size (64, 0 /*unsigned */ );
-  PUSH_TYPE ("int8", gfc_int8_type_node);
-#if (GFC_USE_TYPES16 && (HOST_BITS_PER_WIDE_INT >= 64))
-  gfc_int16_type_node = gfc_type_for_size (128, 0 /*unsigned */ );
-  PUSH_TYPE ("int16", gfc_int16_type_node);
-#endif
+  for (index = 0; gfc_integer_kinds[index].kind != 0; ++index)
+    {
+      type = gfc_build_int_type (&gfc_integer_kinds[index]);
+      gfc_integer_types[index] = type;
+      snprintf (name_buf, sizeof(name_buf), "int%d",
+		gfc_integer_kinds[index].kind);
+      PUSH_TYPE (name_buf, type);
+    }
 
-  gfc_real4_type_node = float_type_node;
-  PUSH_TYPE ("real4", gfc_real4_type_node);
-  gfc_real8_type_node = double_type_node;
-  PUSH_TYPE ("real8", gfc_real8_type_node);
-#if (GFC_USE_TYPES16 && (HOST_BITS_PER_WIDE_INT >= 64))
-  /* Hmm, this will not work. Ref. g77 */
-  gfc_real16_type_node = long_double_type_node;
-  PUSH_TYPE ("real16", gfc_real16_type_node);
-#endif
+  for (index = 0; gfc_logical_kinds[index].kind != 0; ++index)
+    {
+      type = gfc_build_logical_type (&gfc_logical_kinds[index]);
+      gfc_logical_types[index] = type;
+      snprintf (name_buf, sizeof(name_buf), "logical%d",
+		gfc_logical_kinds[index].kind);
+      PUSH_TYPE (name_buf, type);
+    }
 
-  gfc_complex4_type_node = complex_float_type_node;
-  PUSH_TYPE ("complex4", gfc_complex4_type_node);
-  gfc_complex8_type_node = complex_double_type_node;
-  PUSH_TYPE ("complex8", gfc_complex8_type_node);
-#if (GFC_USE_TYPES16 && (HOST_BITS_PER_WIDE_INT >= 64))
-  /* Hmm, this will not work. Ref. g77 */
-  gfc_complex16_type_node = complex_long_double_type_node;
-  PUSH_TYPE ("complex16", gfc_complex16_type_node);
-#endif
+  for (index = 0; gfc_real_kinds[index].kind != 0; index++)
+    {
+      type = gfc_build_real_type (&gfc_real_kinds[index]);
+      gfc_real_types[index] = type;
+      snprintf (name_buf, sizeof(name_buf), "real%d",
+		gfc_real_kinds[index].kind);
+      PUSH_TYPE (name_buf, type);
 
-  gfc_logical1_type_node = make_node (BOOLEAN_TYPE);
-  TYPE_PRECISION (gfc_logical1_type_node) = 8;
-  fixup_unsigned_type (gfc_logical1_type_node);
-  PUSH_TYPE ("logical1", gfc_logical1_type_node);
-  gfc_logical2_type_node = make_node (BOOLEAN_TYPE);
-  TYPE_PRECISION (gfc_logical2_type_node) = 16;
-  fixup_unsigned_type (gfc_logical2_type_node);
-  PUSH_TYPE ("logical2", gfc_logical2_type_node);
-  gfc_logical4_type_node = make_node (BOOLEAN_TYPE);
-  TYPE_PRECISION (gfc_logical4_type_node) = 32;
-  fixup_unsigned_type (gfc_logical4_type_node);
-  PUSH_TYPE ("logical4", gfc_logical4_type_node);
-  gfc_logical8_type_node = make_node (BOOLEAN_TYPE);
-  TYPE_PRECISION (gfc_logical8_type_node) = 64;
-  fixup_unsigned_type (gfc_logical8_type_node);
-  PUSH_TYPE ("logical8", gfc_logical8_type_node);
-#if (GFC_USE_TYPES16 && (HOST_BITS_PER_WIDE_INT >= 64))
-  gfc_logical16_type_node = make_node (BOOLEAN_TYPE);
-  TYPE_PRECISION (gfc_logical16_type_node) = 128;
-  fixup_unsigned_type (gfc_logical16_type_node);
-  PUSH_TYPE ("logical16", gfc_logical16_type_node);
-#endif
+      type = gfc_build_complex_type (type);
+      gfc_complex_types[index] = type;
+      snprintf (name_buf, sizeof(name_buf), "complex%d",
+		gfc_real_kinds[index].kind);
+      PUSH_TYPE (name_buf, type);
+    }
 
   gfc_character1_type_node = build_type_variant (signed_char_type_node, 0, 0);
   PUSH_TYPE ("char", gfc_character1_type_node);
@@ -407,6 +512,7 @@ gfc_init_types (void)
     PUSH_TYPE ("c_integer", integer_type_node);
   if (!TYPE_NAME (char_type_node))
     PUSH_TYPE ("c_char", char_type_node);
+
 #undef PUSH_TYPE
 
   pvoid_type_node = build_pointer_type (void_type_node);
@@ -419,116 +525,53 @@ gfc_init_types (void)
      by the number of bits available to store this field in the array
      descriptor.  */
 
-  n = TREE_INT_CST_LOW (TYPE_SIZE (gfc_array_index_type))
-      - GFC_DTYPE_SIZE_SHIFT;
-
-  if (n > sizeof (HOST_WIDE_INT) * 8)
-    {
-      lo = ~(unsigned HOST_WIDE_INT) 0;
-      hi = lo >> (sizeof (HOST_WIDE_INT) * 16 - n);
-    }
+  n = TYPE_PRECISION (gfc_array_index_type) - GFC_DTYPE_SIZE_SHIFT;
+  lo = ~ (unsigned HOST_WIDE_INT) 0;
+  if (n > HOST_BITS_PER_WIDE_INT)
+    hi = lo >> (2*HOST_BITS_PER_WIDE_INT - n);
   else
-    {
-      hi = 0;
-      lo = (~(unsigned HOST_WIDE_INT) 0) >> (sizeof (HOST_WIDE_INT) * 8 - n);
-    }
+    hi = 0, lo >>= HOST_BITS_PER_WIDE_INT - n;
   gfc_max_array_element_size
     = build_int_cst_wide (long_unsigned_type_node, lo, hi);
 
   size_type_node = gfc_array_index_type;
-  boolean_type_node = gfc_get_logical_type (gfc_default_logical_kind);
 
+  boolean_type_node = gfc_get_logical_type (gfc_default_logical_kind);
   boolean_true_node = build_int_cst (boolean_type_node, 1);
   boolean_false_node = build_int_cst (boolean_type_node, 0);
+
+  /* ??? Shouldn't this be based on gfc_index_integer_kind or so?  */
+  gfc_strlen_type_node = gfc_get_int_type (4);
 }
 
-/* Get a type node for an integer kind.  */
+/* Get the type node for the given type and kind.  */
 
 tree
 gfc_get_int_type (int kind)
 {
-  switch (kind)
-    {
-    case 1:
-      return (gfc_int1_type_node);
-    case 2:
-      return (gfc_int2_type_node);
-    case 4:
-      return (gfc_int4_type_node);
-    case 8:
-      return (gfc_int8_type_node);
-#if (GFC_USE_TYPES16 && (HOST_BITS_PER_WIDE_INT >= 64))
-    case 16:
-      return (95 _int16_type_node);
-#endif
-    default:
-      fatal_error ("integer kind=%d not available", kind);
-    }
+  int index = gfc_validate_kind (BT_INTEGER, kind, false);
+  return gfc_integer_types[index];
 }
-
-/* Get a type node for a real kind.  */
 
 tree
 gfc_get_real_type (int kind)
 {
-  switch (kind)
-    {
-    case 4:
-      return (gfc_real4_type_node);
-    case 8:
-      return (gfc_real8_type_node);
-#if (GFC_USE_TYPES16 && (HOST_BITS_PER_WIDE_INT >= 64))
-    case 16:
-      return (gfc_real16_type_node);
-#endif
-    default:
-      fatal_error ("real kind=%d not available", kind);
-    }
+  int index = gfc_validate_kind (BT_REAL, kind, false);
+  return gfc_real_types[index];
 }
-
-/* Get a type node for a complex kind.  */
 
 tree
 gfc_get_complex_type (int kind)
 {
-
-  switch (kind)
-    {
-    case 4:
-      return (gfc_complex4_type_node);
-    case 8:
-      return (gfc_complex8_type_node);
-#if (GFC_USE_TYPES16 && (HOST_BITS_PER_WIDE_INT >= 64))
-    case 16:
-      return (gfc_complex16_type_node);
-#endif
-    default:
-      fatal_error ("complex kind=%d not available", kind);
-    }
+  int index = gfc_validate_kind (BT_COMPLEX, kind, false);
+  return gfc_complex_types[index];
 }
-
-/* Get a type node for a logical kind.  */
 
 tree
 gfc_get_logical_type (int kind)
 {
-  switch (kind)
-    {
-    case 1:
-      return (gfc_logical1_type_node);
-    case 2:
-      return (gfc_logical2_type_node);
-    case 4:
-      return (gfc_logical4_type_node);
-    case 8:
-      return (gfc_logical8_type_node);
-#if (GFC_USE_TYPES16 && (HOST_BITS_PER_WIDE_INT >= 64))
-    case 16:
-      return (gfc_logical16_type_node);
-#endif
-    default:
-      fatal_error ("logical kind=%d not available", kind);
-    }
+  int index = gfc_validate_kind (BT_LOGICAL, kind, false);
+  return gfc_logical_types[index];
 }
 
 /* Create a character type with the given kind and length.  */
@@ -536,22 +579,12 @@ gfc_get_logical_type (int kind)
 tree
 gfc_get_character_type_len (int kind, tree len)
 {
-  tree base;
-  tree bounds;
-  tree type;
+  tree bounds, type;
 
-  switch (kind)
-    {
-    case 1:
-      base = gfc_character1_type_node;
-      break;
-
-    default:
-      fatal_error ("character kind=%d not available", kind);
-    }
+  gfc_validate_kind (BT_CHARACTER, kind, false);
 
   bounds = build_range_type (gfc_array_index_type, gfc_index_one_node, len);
-  type = build_array_type (base, bounds);
+  type = build_array_type (gfc_character1_type_node, bounds);
   TYPE_STRING_FLAG (type) = 1;
 
   return type;
@@ -1534,8 +1567,7 @@ gfc_get_function_type (gfc_symbol * sym)
   return type;
 }
 
-/* Routines for getting integer type nodes.  */
-
+/* Language hooks for middle-end access to type nodes.  */
 
 /* Return an integer type with BITS bits of precision,
    that is unsigned if UNSIGNEDP is nonzero, otherwise signed.  */
@@ -1543,185 +1575,67 @@ gfc_get_function_type (gfc_symbol * sym)
 tree
 gfc_type_for_size (unsigned bits, int unsignedp)
 {
-  if (bits == TYPE_PRECISION (integer_type_node))
-    return unsignedp ? unsigned_type_node : integer_type_node;
+  if (!unsignedp)
+    {
+      int i;
+      for (i = 0; i <= MAX_INT_KINDS; ++i)
+	{
+	  tree type = gfc_integer_types[i];
+	  if (type && bits == TYPE_PRECISION (type))
+	    return type;
+	}
+    }
+  else
+    {
+      if (bits == TYPE_PRECISION (unsigned_intQI_type_node))
+        return unsigned_intQI_type_node;
+      if (bits == TYPE_PRECISION (unsigned_intHI_type_node))
+	return unsigned_intHI_type_node;
+      if (bits == TYPE_PRECISION (unsigned_intSI_type_node))
+	return unsigned_intSI_type_node;
+      if (bits == TYPE_PRECISION (unsigned_intDI_type_node))
+	return unsigned_intDI_type_node;
+      if (bits == TYPE_PRECISION (unsigned_intTI_type_node))
+	return unsigned_intTI_type_node;
+    }
 
-  if (bits == TYPE_PRECISION (signed_char_type_node))
-    return unsignedp ? unsigned_char_type_node : signed_char_type_node;
-
-  if (bits == TYPE_PRECISION (short_integer_type_node))
-    return unsignedp ? short_unsigned_type_node : short_integer_type_node;
-
-  if (bits == TYPE_PRECISION (long_integer_type_node))
-    return unsignedp ? long_unsigned_type_node : long_integer_type_node;
-
-  if (bits == TYPE_PRECISION (long_long_integer_type_node))
-    return (unsignedp ? long_long_unsigned_type_node
-	    : long_long_integer_type_node);
-/*TODO: We currently don't initialise this...
-  if (bits == TYPE_PRECISION (widest_integer_literal_type_node))
-    return (unsignedp ? widest_unsigned_literal_type_node
-            : widest_integer_literal_type_node);*/
-
-  if (bits <= TYPE_PRECISION (intQI_type_node))
-    return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
-
-  if (bits <= TYPE_PRECISION (intHI_type_node))
-    return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
-
-  if (bits <= TYPE_PRECISION (intSI_type_node))
-    return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
-
-  if (bits <= TYPE_PRECISION (intDI_type_node))
-    return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
-
-  return 0;
+  return NULL_TREE;
 }
 
-/* Return a data type that has machine mode MODE.
-   If the mode is an integer,
-   then UNSIGNEDP selects between signed and unsigned types.  */
+/* Return a data type that has machine mode MODE.  If the mode is an
+   integer, then UNSIGNEDP selects between signed and unsigned types.  */
 
 tree
 gfc_type_for_mode (enum machine_mode mode, int unsignedp)
 {
-  if (mode == TYPE_MODE (integer_type_node))
-    return unsignedp ? unsigned_type_node : integer_type_node;
+  int i;
+  tree *base;
 
-  if (mode == TYPE_MODE (signed_char_type_node))
-    return unsignedp ? unsigned_char_type_node : signed_char_type_node;
-
-  if (mode == TYPE_MODE (short_integer_type_node))
-    return unsignedp ? short_unsigned_type_node : short_integer_type_node;
-
-  if (mode == TYPE_MODE (long_integer_type_node))
-    return unsignedp ? long_unsigned_type_node : long_integer_type_node;
-
-  if (mode == TYPE_MODE (long_long_integer_type_node))
-    return unsignedp ? long_long_unsigned_type_node :
-      long_long_integer_type_node;
-
-/*TODO: see above
-  if (mode == TYPE_MODE (widest_integer_literal_type_node))
-    return unsignedp ? widest_unsigned_literal_type_node
-                     : widest_integer_literal_type_node;
-*/
-
-  if (mode == QImode)
-    return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
-
-  if (mode == HImode)
-    return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
-
-  if (mode == SImode)
-    return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
-
-  if (mode == DImode)
-    return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
-
-#if HOST_BITS_PER_WIDE_INT >= 64
-  if (mode == TYPE_MODE (intTI_type_node))
-    return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
-#endif
-
-  if (mode == TYPE_MODE (float_type_node))
-    return float_type_node;
-
-  if (mode == TYPE_MODE (double_type_node))
-    return double_type_node;
-
-  if (mode == TYPE_MODE (long_double_type_node))
-    return long_double_type_node;
-
-  if (mode == TYPE_MODE (build_pointer_type (char_type_node)))
-    return build_pointer_type (char_type_node);
-
-  if (mode == TYPE_MODE (build_pointer_type (integer_type_node)))
-    return build_pointer_type (integer_type_node);
-
-  if (VECTOR_MODE_P (mode))
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+    base = gfc_real_types;
+  else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+    base = gfc_complex_types;
+  else if (SCALAR_INT_MODE_P (mode))
+    return gfc_type_for_size (GET_MODE_PRECISION (mode), unsignedp);
+  else if (VECTOR_MODE_P (mode))
     {
       enum machine_mode inner_mode = GET_MODE_INNER (mode);
       tree inner_type = gfc_type_for_mode (inner_mode, unsignedp);
       if (inner_type != NULL_TREE)
         return build_vector_type_for_mode (inner_type, mode);
+      return NULL_TREE;
+    }
+  else
+    abort ();
+
+  for (i = 0; i <= MAX_REAL_KINDS; ++i)
+    {
+      tree type = base[i];
+      if (type && mode == TYPE_MODE (type))
+	return type;
     }
 
-  return 0;
-}
-
-/* Return an unsigned type the same as TYPE in other respects.  */
-
-tree
-gfc_unsigned_type (tree type)
-{
-  tree type1 = TYPE_MAIN_VARIANT (type);
-
-  if (type1 == signed_char_type_node || type1 == char_type_node)
-    return unsigned_char_type_node;
-  if (type1 == integer_type_node)
-    return unsigned_type_node;
-  if (type1 == short_integer_type_node)
-    return short_unsigned_type_node;
-  if (type1 == long_integer_type_node)
-    return long_unsigned_type_node;
-  if (type1 == long_long_integer_type_node)
-    return long_long_unsigned_type_node;
-/*TODO :see others
-  if (type1 == widest_integer_literal_type_node)
-    return widest_unsigned_literal_type_node;
-*/
-#if HOST_BITS_PER_WIDE_INT >= 64
-  if (type1 == intTI_type_node)
-    return unsigned_intTI_type_node;
-#endif
-  if (type1 == intDI_type_node)
-    return unsigned_intDI_type_node;
-  if (type1 == intSI_type_node)
-    return unsigned_intSI_type_node;
-  if (type1 == intHI_type_node)
-    return unsigned_intHI_type_node;
-  if (type1 == intQI_type_node)
-    return unsigned_intQI_type_node;
-
-  return gfc_signed_or_unsigned_type (1, type);
-}
-
-/* Return a signed type the same as TYPE in other respects.  */
-
-tree
-gfc_signed_type (tree type)
-{
-  tree type1 = TYPE_MAIN_VARIANT (type);
-
-  if (type1 == unsigned_char_type_node || type1 == char_type_node)
-    return signed_char_type_node;
-  if (type1 == unsigned_type_node)
-    return integer_type_node;
-  if (type1 == short_unsigned_type_node)
-    return short_integer_type_node;
-  if (type1 == long_unsigned_type_node)
-    return long_integer_type_node;
-  if (type1 == long_long_unsigned_type_node)
-    return long_long_integer_type_node;
-/*TODO: see others
-  if (type1 == widest_unsigned_literal_type_node)
-    return widest_integer_literal_type_node;
-*/
-#if HOST_BITS_PER_WIDE_INT >= 64
-  if (type1 == unsigned_intTI_type_node)
-    return intTI_type_node;
-#endif
-  if (type1 == unsigned_intDI_type_node)
-    return intDI_type_node;
-  if (type1 == unsigned_intSI_type_node)
-    return intSI_type_node;
-  if (type1 == unsigned_intHI_type_node)
-    return intHI_type_node;
-  if (type1 == unsigned_intQI_type_node)
-    return intQI_type_node;
-
-  return gfc_signed_or_unsigned_type (0, type);
+  return NULL_TREE;
 }
 
 /* Return a type the same as TYPE except unsigned or
@@ -1730,39 +1644,26 @@ gfc_signed_type (tree type)
 tree
 gfc_signed_or_unsigned_type (int unsignedp, tree type)
 {
-  if (!INTEGRAL_TYPE_P (type) || TYPE_UNSIGNED (type) == unsignedp)
+  if (TREE_CODE (type) != INTEGER_TYPE || TYPE_UNSIGNED (type) == unsignedp)
     return type;
+  else
+    return gfc_type_for_size (TYPE_PRECISION (type), unsignedp);
+}
 
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (signed_char_type_node))
-    return unsignedp ? unsigned_char_type_node : signed_char_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node))
-    return unsignedp ? unsigned_type_node : integer_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (short_integer_type_node))
-    return unsignedp ? short_unsigned_type_node : short_integer_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (long_integer_type_node))
-    return unsignedp ? long_unsigned_type_node : long_integer_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (long_long_integer_type_node))
-    return (unsignedp ? long_long_unsigned_type_node
-	    : long_long_integer_type_node);
-/*TODO: see others
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (widest_integer_literal_type_node))
-    return (unsignedp ? widest_unsigned_literal_type_node
-            : widest_integer_literal_type_node);
-*/
-#if HOST_BITS_PER_WIDE_INT >= 64
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (intTI_type_node))
-    return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
-#endif
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (intDI_type_node))
-    return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (intSI_type_node))
-    return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (intHI_type_node))
-    return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
-  if (TYPE_PRECISION (type) == TYPE_PRECISION (intQI_type_node))
-    return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
+/* Return an unsigned type the same as TYPE in other respects.  */
 
-  return type;
+tree
+gfc_unsigned_type (tree type)
+{
+  return gfc_signed_or_unsigned_type (1, type);
+}
+
+/* Return a signed type the same as TYPE in other respects.  */
+
+tree
+gfc_signed_type (tree type)
+{
+  return gfc_signed_or_unsigned_type (0, type);
 }
 
 #include "gt-fortran-trans-types.h"
