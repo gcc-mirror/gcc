@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "rtl.h"
+#include "tree.h"
 #include "function.h"
 #include "expr.h"
 #include "regs.h"
@@ -1333,6 +1334,149 @@ output_dependence (mem, x)
      register rtx x;
 {
   return write_dependence_p (mem, x, /*writep=*/1);
+}
+
+/* Returns non-zero if X might refer to something which is not
+   local to the function and is not constant.  */
+
+static int
+nonlocal_reference_p (x)
+     rtx x;
+{
+  rtx base;
+  register RTX_CODE code;
+  int regno;
+
+  code = GET_CODE (x);
+
+  if (GET_RTX_CLASS (code) == 'i')
+    {
+      /* Constant functions are constant.  */
+      if (code == CALL_INSN && CONST_CALL_P (x))
+	return 0;
+      x = PATTERN (x);
+      code = GET_CODE (x);
+    }
+
+  switch (code)
+    {
+    case SUBREG:
+      if (GET_CODE (SUBREG_REG (x)) == REG)
+	{
+	  /* Global registers are not local.  */
+	  if (REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
+	      && global_regs[REGNO (SUBREG_REG (x)) + SUBREG_WORD (x)])
+	    return 1;
+	  return 0;
+	}
+      break;
+
+    case REG:
+      regno = REGNO (x);
+      /* Global registers are not local.  */
+      if (regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
+	return 1;
+      return 0;
+
+    case SCRATCH:
+    case PC:
+    case CC0:
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST:
+    case LABEL_REF:
+      return 0;
+
+    case SYMBOL_REF:
+      /* Constants in the function's constants pool are constant.  */
+      if (CONSTANT_POOL_ADDRESS_P (x))
+	return 0;
+      return 1;
+
+    case CALL:
+      /* Recursion introduces no additional considerations.  */
+      if (GET_CODE (XEXP (x, 0)) == MEM
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+	  && strcmp(XSTR (XEXP (XEXP (x, 0), 0), 0),
+		    IDENTIFIER_POINTER (
+			  DECL_ASSEMBLER_NAME (current_function_decl))) == 0)
+	return 0;
+      return 1;
+
+    case MEM:
+      /* Be overly conservative and consider any volatile memory
+	 reference as not local.  */
+      if (MEM_VOLATILE_P (x))
+	return 1;
+      base = find_base_term (XEXP (x, 0));
+      if (base)
+	{
+	  /* Stack references are local.  */
+	  if (GET_CODE (base) == ADDRESS && GET_MODE (base) == Pmode)
+	    return 0;
+	  /* Constants in the function's constant pool are constant.  */
+	  if (GET_CODE (base) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (base))
+	    return 0;
+	}
+      return 1;
+
+    case ASM_INPUT:
+    case ASM_OPERANDS:
+      return 1;
+
+    default:
+      break;
+    }
+
+  /* Recursively scan the operands of this expression.  */
+
+  {
+    register char *fmt = GET_RTX_FORMAT (code);
+    register int i;
+    
+    for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+      {
+	if (fmt[i] == 'e')
+	  {
+	    if (nonlocal_reference_p (XEXP (x, i)))
+	      return 1;
+	  }
+	if (fmt[i] == 'E')
+	  {
+	    register int j;
+	    for (j = 0; j < XVECLEN (x, i); j++)
+	      if (nonlocal_reference_p (XVECEXP (x, i, j)))
+		return 1;
+	  }
+      }
+  }
+
+  return 0;
+}
+
+/* Mark the function if it is constant.  */
+
+void
+mark_constant_function ()
+{
+  rtx insn;
+
+  if (TREE_PUBLIC (current_function_decl)
+      || TREE_READONLY (current_function_decl)
+      || TREE_THIS_VOLATILE (current_function_decl)
+      || TYPE_MODE (TREE_TYPE (current_function_decl)) == VOIDmode)
+    return;
+
+  /* Determine if this is a constant function.  */
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	&& nonlocal_reference_p (insn))
+      return;
+
+  /* Mark the function.  */
+
+  TREE_READONLY (current_function_decl) = 1;
 }
 
 

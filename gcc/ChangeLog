@@ -1,3 +1,10 @@
+Thu Aug 19 11:51:22 EDT 1999  John Wehle  (john@feith.com)
+
+	* alias.c: Include tree.h.
+	(nonlocal_reference_p, mark_constant_function): New functions.
+	* flow.c (life_analysis): Call mark_constant_function.
+	* rtl.h (mark_constant_function): Declare it.
+
 Thu Aug 19 15:02:01 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Fix test for
