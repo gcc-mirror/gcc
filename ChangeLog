@@ -1,3 +1,8 @@
+2000-05-18  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* Makefile.in (configure-target-libiberty): Depend on
+	configure-target-newlib.
+
 2000-05-16  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* configure.in, Makefile.in: Merge all libffi-related
