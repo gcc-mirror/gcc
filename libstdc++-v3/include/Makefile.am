@@ -287,6 +287,7 @@ extra_target_headers = \
 thread_target_headers = \
 	${target_builddir}/gthr.h \
 	${target_builddir}/gthr-single.h \
+	${target_builddir}/gthr-posix.h \
 	${target_builddir}/gthr-default.h
 
 # List of all timestamp files.  By keeping only one copy of this list, both
@@ -388,11 +389,19 @@ ${target_builddir}/gthr-single.h: ${toplevel_srcdir}/gcc/gthr-single.h \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
 	    < ${toplevel_srcdir}/gcc/gthr-single.h > $@
 
+${target_builddir}/gthr-posix.h: ${toplevel_srcdir}/gcc/gthr-posix.h \
+				   stamp-${target_alias}
+	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
+	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
+	    -e 's/\(${uppercase}*WEAK\)/_GLIBCPP_\1/g' \
+	    < ${toplevel_srcdir}/gcc/gthr-posix.h > $@
+
 ${target_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcpp_thread_h} \
 				   stamp-${target_alias}
 	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
 	    -e 's/\(${uppercase}*WEAK\)/_GLIBCPP_\1/g' \
+	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
 	    < ${toplevel_srcdir}/gcc/${glibcpp_thread_h} > $@
 
 # For robustness sake (in light of junk files or in-source

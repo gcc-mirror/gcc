@@ -1,3 +1,13 @@
+2002-02-26  Loren Rittle <ljrittle@acm.org>
+
+	* include/Makefile.am (thread_target_headers): Unconditionally
+	stage and install gthr-posix.h.
+	(${target_builddir}/gthr-posix.h): New rule cloned off
+	${target_builddir}/gthr-default.h.
+	(${target_builddir}/gthr-default.h): Support chained inclusion
+	of gthr support headers.
+	* include/Makefile.in: Rebuilt.
+
 2002-02-26  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc (num_put::_M_widen_int):
