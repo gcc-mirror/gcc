@@ -45,6 +45,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=403: -mppc} \
 %{mcpu=601: -m601} \
 %{mcpu=603: -mppc} \
+%{mcpu=603e: -mppc} \
 %{mcpu=604: -mppc}"
 
 /* Define the options for the binder: Start text at 512, align all segments
@@ -65,10 +66,17 @@ Boston, MA 02111-1307, USA.  */
    as per README.RS6000.  */
 
 #undef	LINK_SPEC
+#ifndef CROSS_COMPILE
 #define LINK_SPEC "-T512 -H512 %{!r:-btextro} -bhalt:4 -bnodelcsect\
    %{static:-bnso -bI:/lib/syscalls.exp} \
    %{mcpu=common: milli.exp%s} \
    %{!shared:%{g*:-bexport:/usr/lib/libg.exp}} %{shared:-bM:SRE}"
+#else
+#define LINK_SPEC "-T512 -H512 %{!r:-btextro} -bhalt:4 -bnodelcsect\
+   %{static:-bnso} \
+   %{mcpu=common: milli.exp%s} \
+   %{shared:-bM:SRE}"
+#endif
 
 /* These are not necessary when we pass -u to the assembler, and undefining
    them saves a great deal of space in object files.  */

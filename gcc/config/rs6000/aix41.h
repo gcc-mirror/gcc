@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=403: -mppc} \
 %{mcpu=601: -m601} \
 %{mcpu=603: -mppc} \
+%{mcpu=603e: -mppc} \
 %{mcpu=604: -mppc}"
 
 /* These are not necessary when we pass -u to the assembler, and undefining
@@ -65,6 +66,13 @@ Boston, MA 02111-1307, USA.  */
 }
 
 #undef LINK_SPEC
+#ifndef CROSS_COMPILE
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
    %{static:-bnso -bI:/lib/syscalls.exp} %{g*:-bexport:/usr/lib/libg.exp}\
    %{shared:-bM:SRE}"
+#else
+#define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
+   %{static:-bnso} \
+   %{shared:-bM:SRE}"
+#endif
+

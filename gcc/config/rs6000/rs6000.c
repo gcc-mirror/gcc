@@ -74,6 +74,12 @@ int rs6000_pic_labelno;
 /* Whether a System V.4 varargs area was created.  */
 int rs6000_sysv_varargs_p;
 
+/* Whether we need to save the TOC register.  */
+int rs6000_save_toc_p;
+
+/* ABI enumeration available for subtarget to use.  */
+enum rs6000_abi rs6000_current_abi;
+
 /* Temporary memory used to convert integer -> float */
 static rtx stack_temps[NUM_MACHINE_MODES];
 
@@ -223,10 +229,19 @@ rs6000_override_options ()
 	 {"601", PROCESSOR_PPC601,
 	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	 {"602", PROCESSOR_PPC602,
+	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS,
+	    MASK_POWER2 | POWERPC_OPT_MASKS | MASK_POWERPC64},
 	 {"603", PROCESSOR_PPC603,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+	 {"603e", PROCESSOR_PPC603,
+	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
 	 {"604", PROCESSOR_PPC604,
+	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+	 {"620", PROCESSOR_PPC620,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64}};
 
@@ -348,6 +363,23 @@ any_operand (op, mode)
      enum machine_mode mode;
 {
   return 1;
+}
+
+/* Returns 1 if op is the count register */
+int count_register_operand(op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) != REG)
+    return 0;
+
+  if (REGNO (op) == COUNT_REGISTER_REGNUM)
+    return 1;
+
+  if (REGNO (op) > FIRST_PSEUDO_REGISTER)
+    return 1;
+
+  return 0;
 }
 
 /* Return 1 if OP is a constant that can fit in a D field.  */
@@ -476,6 +508,10 @@ easy_fp_constant (op, mode)
       || GET_MODE_CLASS (mode) != MODE_FLOAT)
     return 0;
 
+  /* Consider all constants with -msoft-float to be easy */
+  if (TARGET_SOFT_FLOAT)
+    return 1;
+
   high = operand_subword (op, 0, 0, mode);
   low = operand_subword (op, 1, 0, mode);
 
@@ -484,6 +520,34 @@ easy_fp_constant (op, mode)
 
   return (mode == SFmode
 	  || (low != 0 && input_operand (low, word_mode)));
+}
+
+/* Return 1 if the operand is in volatile memory.  Note that during the
+   RTL generation phase, memory_operand does not return TRUE for
+   volatile memory references.  So this function allows us to
+   recognize volatile references where its safe.  */
+
+int
+volatile_mem_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) != MEM)
+    return 0;
+
+  if (!MEM_VOLATILE_P (op))
+    return 0;
+
+  if (mode != GET_MODE (op))
+    return 0;
+
+  if (reload_completed)
+    return memory_operand (op, mode);
+
+  if (reload_in_progress)
+    return strict_memory_address_p (mode, XEXP (op, 0));
+
+  return memory_address_p (mode, XEXP (op, 0));
 }
 
 /* Return 1 if the operand is an offsettable memory address.  */
@@ -506,6 +570,7 @@ fp_reg_or_mem_operand (op, mode)
      enum machine_mode mode;
 {
   return (memory_operand (op, mode)
+	  || volatile_mem_operand (op, mode)
 	  || (register_operand (op, mode)
 	      && (GET_CODE (op) != REG
 		  || REGNO (op) >= FIRST_PSEUDO_REGISTER
@@ -640,7 +705,9 @@ reg_or_mem_operand (op, mode)
      register rtx op;
      register enum machine_mode mode;
 {
-  return gpc_reg_operand (op, mode) || memory_operand (op, mode);
+  return (gpc_reg_operand (op, mode)
+	  || memory_operand (op, mode)
+	  || volatile_mem_operand (op, mode));
 }
 
 /* Return 1 if the operand is a general register or memory operand without
@@ -732,6 +799,12 @@ input_operand (op, mode)
   if (LEGITIMATE_CONSTANT_POOL_ADDRESS_P (op))
     return 1;
 
+  /* Windows NT allows SYMBOL_REFs and LABEL_REFs against the TOC
+     directly in the instruction stream */
+  if (DEFAULT_ABI == ABI_NT
+      && (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF))
+    return 1;
+
   /* Otherwise, we will be doing this SET with an add, so anything valid
      for an add will be valid.  */
   return add_operand (op, mode);
@@ -796,6 +869,26 @@ init_cumulative_args (cum, fntype, libname, incoming)
     }
 }
 
+/* If defined, a C expression that gives the alignment boundary, in bits,
+   of an argument with the specified mode and type.  If it is not defined, 
+   PARM_BOUNDARY is used for all arguments.
+   
+   Windows NT wants anything >= 8 bytes to be double word aligned.  */
+
+int
+function_arg_boundary (mode, type)
+     enum machine_mode mode;
+     tree type;
+{
+  if (DEFAULT_ABI != ABI_NT || TARGET_64BIT)
+    return PARM_BOUNDARY;
+
+  if (mode != BLKmode)
+    return (GET_MODE_SIZE (mode)) >= 8 ? 64 : 32;
+
+  return (int_size_in_bytes (type) >= 8) ? 64 : 32;
+}
+
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
@@ -807,6 +900,8 @@ function_arg_advance (cum, mode, type, named)
      tree type;
      int named;
 {
+  int align = ((cum->words & 1) != 0 && function_arg_boundary (mode, type) == 64) ? 1 : 0;
+  cum->words += align;
   cum->nargs_prototype--;
 
 #ifdef TARGET_V4_CALLS
@@ -846,8 +941,8 @@ function_arg_advance (cum, mode, type, named)
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
-	     "function_adv: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, named = %d\n",
-	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), named);
+	     "function_adv: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, named = %d, align = %d\n",
+	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), named, align);
 }
 
 /* Determine where to put an argument to a function.
@@ -880,10 +975,13 @@ function_arg (cum, mode, type, named)
      tree type;
      int named;
 {
+  int align = ((cum->words & 1) != 0 && function_arg_boundary (mode, type) == 64) ? 1 : 0;
+  int align_words = cum->words + align;
+
   if (TARGET_DEBUG_ARG)
     fprintf (stderr,
-	     "function_arg: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, named = %d\n",
-	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), named);
+	     "function_arg: words = %2d, fregno = %2d, nargs = %4d, proto = %d, mode = %4s, named = %d, align = %d\n",
+	     cum->words, cum->fregno, cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode), named, align);
 
   /* Return a marker to indicate whether CR1 needs to set or clear the bit that V.4
      uses to say fp args were passed in registers.  Assume that we don't need the
@@ -920,8 +1018,8 @@ function_arg (cum, mode, type, named)
 	return gen_rtx (REG, mode, cum->fregno);
 
       return gen_rtx (EXPR_LIST, VOIDmode,
-		      ((cum->words < GP_ARG_NUM_REG)
-		       ? gen_rtx (REG, mode, GP_ARG_MIN_REG + cum->words)
+		      ((align_words < GP_ARG_NUM_REG)
+		       ? gen_rtx (REG, mode, GP_ARG_MIN_REG + align_words)
 		       : NULL_RTX),
 		      gen_rtx (REG, mode, cum->fregno));
     }
@@ -929,14 +1027,14 @@ function_arg (cum, mode, type, named)
 #ifdef TARGET_V4_CALLS
   /* Long longs won't be split between register and stack */
   else if (TARGET_V4_CALLS &&
-	   cum->words + RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG)
+	   align_words + RS6000_ARG_SIZE (mode, type, named) > GP_ARG_NUM_REG)
     {
       return NULL_RTX;
     }
 #endif
 
-  else if (cum->words < GP_ARG_NUM_REG)
-    return gen_rtx (REG, mode, GP_ARG_MIN_REG + cum->words);
+  else if (align_words < GP_ARG_NUM_REG)
+    return gen_rtx (REG, mode, GP_ARG_MIN_REG + align_words);
 
   return NULL_RTX;
 }
@@ -1164,8 +1262,13 @@ expand_block_move_mem (mode, addr, orig_mem)
      rtx orig_mem;
 {
   rtx mem = gen_rtx (MEM, mode, addr);
+
+  RTX_UNCHANGING_P (mem) = RTX_UNCHANGING_P (orig_mem);
   MEM_VOLATILE_P (mem) = MEM_VOLATILE_P (orig_mem);
   MEM_IN_STRUCT_P (mem) = MEM_IN_STRUCT_P (orig_mem);
+#ifdef MEM_UNALIGNED_P
+  MEM_UNALIGNED_P (mem) = MEM_UNALIGNED_P (orig_mem);
+#endif
   return mem;
 }
 
@@ -1183,6 +1286,8 @@ int
 expand_block_move (operands)
      rtx operands[];
 {
+  rtx orig_dest = operands[0];
+  rtx orig_src	= operands[1];
   rtx bytes_rtx	= operands[2];
   rtx align_rtx = operands[3];
   int constp	= (GET_CODE (bytes_rtx) == CONST_INT);
@@ -1224,8 +1329,8 @@ expand_block_move (operands)
     return 0;
 
   /* Move the address into scratch registers.  */
-  dest_reg = copy_addr_to_reg (XEXP (operands[0], 0));
-  src_reg  = copy_addr_to_reg (XEXP (operands[1], 0));
+  dest_reg = copy_addr_to_reg (XEXP (orig_dest, 0));
+  src_reg  = copy_addr_to_reg (XEXP (orig_src,  0));
 
   if (TARGET_STRING)	/* string instructions are available */
     {
@@ -1242,8 +1347,8 @@ expand_block_move (operands)
 	      && !fixed_regs[12])
 	    {
 	      move_bytes = (bytes > 32) ? 32 : bytes;
-	      emit_insn (gen_movstrsi_8reg (dest_reg,
-					    src_reg,
+	      emit_insn (gen_movstrsi_8reg (expand_block_move_mem (BLKmode, dest_reg, orig_dest),
+					    expand_block_move_mem (BLKmode, src_reg, orig_src),
 					    GEN_INT ((move_bytes == 32) ? 0 : move_bytes),
 					    align_rtx));
 	    }
@@ -1256,8 +1361,8 @@ expand_block_move (operands)
 		   && !fixed_regs[12])
 	    {
 	      move_bytes = (bytes > 24) ? 24 : bytes;
-	      emit_insn (gen_movstrsi_6reg (dest_reg,
-					    src_reg,
+	      emit_insn (gen_movstrsi_6reg (expand_block_move_mem (BLKmode, dest_reg, orig_dest),
+					    expand_block_move_mem (BLKmode, src_reg, orig_src),
 					    GEN_INT (move_bytes),
 					    align_rtx));
 	    }
@@ -1268,16 +1373,16 @@ expand_block_move (operands)
 		   && !fixed_regs[12])
 	    {
 	      move_bytes = (bytes > 16) ? 16 : bytes;
-	      emit_insn (gen_movstrsi_4reg (dest_reg,
-					    src_reg,
+	      emit_insn (gen_movstrsi_4reg (expand_block_move_mem (BLKmode, dest_reg, orig_dest),
+					    expand_block_move_mem (BLKmode, src_reg, orig_src),
 					    GEN_INT (move_bytes),
 					    align_rtx));
 	    }
 	  else if (bytes > 4 && !TARGET_64BIT)
 	    {			/* move up to 8 bytes at a time */
 	      move_bytes = (bytes > 8) ? 8 : bytes;
-	      emit_insn (gen_movstrsi_2reg (dest_reg,
-					    src_reg,
+	      emit_insn (gen_movstrsi_2reg (expand_block_move_mem (BLKmode, dest_reg, orig_dest),
+					    expand_block_move_mem (BLKmode, src_reg, orig_src),
 					    GEN_INT (move_bytes),
 					    align_rtx));
 	    }
@@ -1285,28 +1390,28 @@ expand_block_move (operands)
 	    {			/* move 4 bytes */
 	      move_bytes = 4;
 	      tmp_reg = gen_reg_rtx (SImode);
-	      emit_move_insn (tmp_reg, gen_rtx (MEM, SImode, src_reg));
-	      emit_move_insn (gen_rtx (MEM, SImode, dest_reg), tmp_reg);
+	      emit_move_insn (tmp_reg, expand_block_move_mem (SImode, src_reg, orig_src));
+	      emit_move_insn (expand_block_move_mem (SImode, dest_reg, orig_dest), tmp_reg);
 	    }
 	  else if (bytes == 2 && (align >= 2 || !STRICT_ALIGNMENT))
 	    {			/* move 2 bytes */
 	      move_bytes = 2;
 	      tmp_reg = gen_reg_rtx (HImode);
-	      emit_move_insn (tmp_reg, gen_rtx (MEM, HImode, src_reg));
-	      emit_move_insn (gen_rtx (MEM, HImode, dest_reg), tmp_reg);
+	      emit_move_insn (tmp_reg, expand_block_move_mem (HImode, src_reg, orig_src));
+	      emit_move_insn (expand_block_move_mem (HImode, dest_reg, orig_dest), tmp_reg);
 	    }
 	  else if (bytes == 1)	/* move 1 byte */
 	    {
 	      move_bytes = 1;
 	      tmp_reg = gen_reg_rtx (QImode);
-	      emit_move_insn (tmp_reg, gen_rtx (MEM, QImode, src_reg));
-	      emit_move_insn (gen_rtx (MEM, QImode, dest_reg), tmp_reg);
+	      emit_move_insn (tmp_reg, expand_block_move_mem (QImode, src_reg, orig_src));
+	      emit_move_insn (expand_block_move_mem (QImode, dest_reg, orig_dest), tmp_reg);
 	    }
 	  else
 	    {			/* move up to 4 bytes at a time */
 	      move_bytes = (bytes > 4) ? 4 : bytes;
-	      emit_insn (gen_movstrsi_1reg (dest_reg,
-					    src_reg,
+	      emit_insn (gen_movstrsi_1reg (expand_block_move_mem (BLKmode, dest_reg, orig_dest),
+					    expand_block_move_mem (BLKmode, src_reg, orig_src),
 					    GEN_INT (move_bytes),
 					    align_rtx));
 	    }
@@ -1337,26 +1442,33 @@ expand_block_move (operands)
 	    }
 
 	  /* Generate the appropriate load and store, saving the stores for later */
-	  if (bytes >= 4 && (align >= 4 || !STRICT_ALIGNMENT))
+	  if (bytes >= 8 && TARGET_64BIT && (align >= 8 || !STRICT_ALIGNMENT))
+	    {
+	      move_bytes = 8;
+	      tmp_reg = gen_reg_rtx (DImode);
+	      emit_insn (gen_movdi (tmp_reg, expand_block_move_mem (DImode, src_addr, orig_src)));
+	      stores[ num_reg++ ] = gen_movdi (expand_block_move_mem (DImode, dest_addr, orig_dest), tmp_reg);
+	    }
+	  else if (bytes >= 4 && (align >= 4 || !STRICT_ALIGNMENT))
 	    {
 	      move_bytes = 4;
 	      tmp_reg = gen_reg_rtx (SImode);
-	      emit_insn (gen_movsi (tmp_reg, gen_rtx (MEM, SImode, src_addr)));
-	      stores[ num_reg++ ] = gen_movsi (gen_rtx (MEM, SImode, dest_addr), tmp_reg);
+	      emit_insn (gen_movsi (tmp_reg, expand_block_move_mem (SImode, src_addr, orig_src)));
+	      stores[ num_reg++ ] = gen_movsi (expand_block_move_mem (SImode, dest_addr, orig_dest), tmp_reg);
 	    }
 	  else if (bytes >= 2 && (align >= 2 || !STRICT_ALIGNMENT))
 	    {
 	      move_bytes = 2;
 	      tmp_reg = gen_reg_rtx (HImode);
-	      emit_insn (gen_movhi (tmp_reg, gen_rtx (MEM, HImode, src_addr)));
-	      stores[ num_reg++ ] = gen_movhi (gen_rtx (MEM, HImode, dest_addr), tmp_reg);
+	      emit_insn (gen_movsi (tmp_reg, expand_block_move_mem (HImode, src_addr, orig_src)));
+	      stores[ num_reg++ ] = gen_movhi (expand_block_move_mem (HImode, dest_addr, orig_dest), tmp_reg);
 	    }
 	  else
 	    {
 	      move_bytes = 1;
 	      tmp_reg = gen_reg_rtx (QImode);
-	      emit_insn (gen_movqi (tmp_reg, gen_rtx (MEM, QImode, src_addr)));
-	      stores[ num_reg++ ] = gen_movqi (gen_rtx (MEM, QImode, dest_addr), tmp_reg);
+	      emit_insn (gen_movsi (tmp_reg, expand_block_move_mem (QImode, src_addr, orig_src)));
+	      stores[ num_reg++ ] = gen_movqi (expand_block_move_mem (QImode, dest_addr, orig_dest), tmp_reg);
 	    }
 
 	  if (num_reg >= MAX_MOVE_REG)
@@ -1367,11 +1479,8 @@ expand_block_move (operands)
 	    }
 	}
 
-      if (num_reg > 0)
-	{
-	  for (i = 0; i < num_reg; i++)
-	    emit_insn (stores[i]);
-	}
+      for (i = 0; i < num_reg; i++)
+	emit_insn (stores[i]);
     }
 
   return 1;
@@ -2127,9 +2236,26 @@ print_operand (file, x, code)
       if (GET_CODE (x) != SYMBOL_REF)
 	abort ();
 
-#ifndef USING_SVR4_H
-      putc ('.', file);
-#endif
+      if (XSTR (x, 0)[0] != '.')
+	{
+	  switch (DEFAULT_ABI)
+	    {
+	    default:
+	      abort ();
+
+	    case ABI_AIX:
+	      putc ('.', file);
+	      break;
+
+	    case ABI_V4:
+	    case ABI_AIX_NODESC:
+	      break;
+
+	    case ABI_NT:
+	      fputs ("..", file);
+	      break;
+	    }
+	}
       RS6000_OUTPUT_BASENAME (file, XSTR (x, 0));
       return;
 
@@ -2235,11 +2361,9 @@ first_reg_to_save ()
      to 23 to do this.  Don't use the frame pointer in reg 31.
 
      For now, save enough room for all of the parameter registers.  */
-#ifndef USING_SVR4_H
-  if (profile_flag)
+  if (DEFAULT_ABI == ABI_AIX && profile_flag)
     if (first_reg > 23)
       first_reg = 23;
-#endif
 
   return first_reg;
 }
@@ -2333,7 +2457,49 @@ rs6000_makes_calls ()
 		+---------------------------------------+
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
-*/
+
+
+   A PowerPC Windows/NT frame looks like:
+
+	SP---->	+---------------------------------------+
+		| back chain to caller			| 0
+		+---------------------------------------+
+		| reserved				| 4
+		+---------------------------------------+
+		| reserved				| 8
+		+---------------------------------------+
+		| reserved				| 12
+		+---------------------------------------+
+		| reserved				| 16
+		+---------------------------------------+
+		| reserved				| 20
+		+---------------------------------------+
+		| Parameter save area (P)		| 24
+		+---------------------------------------+
+		| Alloca space (A)			| 24+P
+		+---------------------------------------+
+		| Local variable space (L)		| 24+P+A
+		+---------------------------------------+
+		| Save area for FP registers (F)	| 24+P+A+L
+		+---------------------------------------+
+		| Possible alignment area (X)		| 24+P+A+L+F
+		+---------------------------------------+
+		| Save area for GP registers (G)	| 24+P+A+L+F+X
+		+---------------------------------------+
+		| Save area for CR (C)			| 24+P+A+L+F+X+G
+		+---------------------------------------+
+		| Save area for TOC (T)			| 24+P+A+L+F+X+G+C
+		+---------------------------------------+
+		| Save area for LR (R)			| 24+P+A+L+F+X+G+C+T
+		+---------------------------------------+
+	old SP->| back chain to caller's caller		|
+		+---------------------------------------+
+
+   For NT, there is no specific order to save the registers, but in
+   order to support __builtin_return_address, the save area for the
+   link register needs to be in a known place, so we use -4 off of the
+   old SP.  To support calls through pointers, we also allocate a
+   fixed slot to store the TOC, -8 off the old SP.  */
 
 rs6000_stack_t *
 rs6000_stack_info ()
@@ -2342,19 +2508,13 @@ rs6000_stack_info ()
   rs6000_stack_t *info_ptr = &info;
   int reg_size = TARGET_64BIT ? 8 : 4;
   enum rs6000_abi abi;
+  int total_raw_size;
 
   /* Zero all fields portably */
   info = zero_info;
 
   /* Select which calling sequence */
-#ifdef TARGET_V4_CALLS
-  if (TARGET_V4_CALLS)
-    abi = ABI_V4;
-  else
-#endif
-    abi = ABI_AIX;
-
-  info_ptr->abi = abi;
+  info_ptr->abi = abi = DEFAULT_ABI;
 
   /* Calculate which registers need to be saved & save area size */
   info_ptr->first_gp_reg_save = first_reg_to_save ();
@@ -2365,6 +2525,39 @@ rs6000_stack_info ()
 
   /* Does this function call anything? */
   info_ptr->calls_p = rs6000_makes_calls ();
+
+  /* Do we need to allocate space to save the toc? */
+  if (rs6000_save_toc_p)
+    {
+      info_ptr->toc_save_p = 1;
+      info_ptr->toc_size = reg_size;
+    }
+
+  /* If this is main and we need to call a function to set things up,
+     save main's arguments around the call.  */
+  if (strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)), "main") == 0)
+    {
+      info_ptr->main_p = 1;
+
+#ifdef NAME__MAIN
+      if (DECL_ARGUMENTS (current_function_decl))
+	{
+	  int i;
+	  tree arg;
+
+	  info_ptr->main_save_p = 1;
+	  info_ptr->main_size = 0;
+	  info_ptr->calls_p = 1;
+
+	  for ((i = 0), (arg = DECL_ARGUMENTS (current_function_decl));
+	       arg != NULL_TREE && i < 8;
+	       (arg = TREE_CHAIN (arg)), i++)
+	    {
+	      info_ptr->main_size += reg_size;
+	    }
+	}
+#endif
+    }
 
   /* Determine if we need to save the link register */
   if (regs_ever_live[65] || profile_flag
@@ -2378,13 +2571,15 @@ rs6000_stack_info ()
     {
       info_ptr->lr_save_p = 1;
       regs_ever_live[65] = 1;
+      if (abi == ABI_NT)
+	info_ptr->lr_size = reg_size;
     }
 
   /* Determine if we need to save the condition code registers */
   if (regs_ever_live[70] || regs_ever_live[71] || regs_ever_live[72])
     {
       info_ptr->cr_save_p = 1;
-      if (abi == ABI_V4)
+      if (abi == ABI_V4 || abi == ABI_NT)
 	info_ptr->cr_size = reg_size;
     }
 
@@ -2394,12 +2589,20 @@ rs6000_stack_info ()
   info_ptr->varargs_size = RS6000_VARARGS_AREA;
   info_ptr->vars_size    = ALIGN (get_frame_size (), 8);
   info_ptr->parm_size    = ALIGN (current_function_outgoing_args_size, 8);
-  info_ptr->save_size    = ALIGN (info_ptr->fp_size + info_ptr->gp_size + info_ptr->cr_size, 8);
-  info_ptr->total_size   = ALIGN (info_ptr->vars_size
-				  + info_ptr->parm_size
-				  + info_ptr->save_size
-				  + info_ptr->varargs_size
-				  + info_ptr->fixed_size, STACK_BOUNDARY / BITS_PER_UNIT);
+  info_ptr->save_size    = ALIGN (info_ptr->fp_size
+				  + info_ptr->gp_size
+				  + info_ptr->cr_size
+				  + info_ptr->lr_size
+				  + info_ptr->toc_size
+				  + info_ptr->main_size, 8);
+
+  total_raw_size	 = (info_ptr->vars_size
+			    + info_ptr->parm_size
+			    + info_ptr->save_size
+			    + info_ptr->varargs_size
+			    + info_ptr->fixed_size);
+
+  info_ptr->total_size   = ALIGN (total_raw_size, STACK_BOUNDARY / BITS_PER_UNIT);
 
   /* Determine if we need to allocate any stack frame.
      For AIX We need to push the stack if a frame pointer is needed (because
@@ -2412,8 +2615,8 @@ rs6000_stack_info ()
   if (info_ptr->calls_p)
     info_ptr->push_p = 1;
 
-  else if (abi == ABI_V4)
-    info_ptr->push_p = (info_ptr->total_size > info_ptr->fixed_size
+  else if (abi == ABI_V4 || abi == ABI_NT)
+    info_ptr->push_p = (total_raw_size > info_ptr->fixed_size
 			|| info_ptr->lr_save_p);
 
   else
@@ -2422,18 +2625,40 @@ rs6000_stack_info ()
 			|| info_ptr->total_size > 220);
 
   /* Calculate the offsets */
-  info_ptr->fp_save_offset = - info_ptr->fp_size;
-  info_ptr->gp_save_offset = info_ptr->fp_save_offset - info_ptr->gp_size;
   switch (abi)
     {
+    case ABI_NONE:
     default:
-      info_ptr->cr_save_offset = 4;
-      info_ptr->lr_save_offset = 8;
+      abort ();
+
+    case ABI_AIX:
+    case ABI_AIX_NODESC:
+      info_ptr->fp_save_offset   = - info_ptr->fp_size;
+      info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
+      info_ptr->main_save_offset = info_ptr->gp_save_offset - info_ptr->main_size;
+      info_ptr->cr_save_offset   = 4;
+      info_ptr->lr_save_offset   = 8;
       break;
 
     case ABI_V4:
-      info_ptr->cr_save_offset = info_ptr->gp_save_offset - reg_size;
-      info_ptr->lr_save_offset = reg_size;
+      info_ptr->fp_save_offset   = - info_ptr->fp_size;
+      info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
+      info_ptr->cr_save_offset   = info_ptr->gp_save_offset - reg_size;
+      info_ptr->toc_save_offset  = info_ptr->cr_save_offset - info_ptr->cr_size;
+      info_ptr->main_save_offset = info_ptr->toc_save_offset - info_ptr->toc_size;
+      info_ptr->lr_save_offset   = reg_size;
+      break;
+
+    case ABI_NT:
+      info_ptr->lr_save_offset    = -4;
+      info_ptr->toc_save_offset   = info_ptr->lr_save_offset - info_ptr->lr_size;
+      info_ptr->cr_save_offset    = info_ptr->toc_save_offset - info_ptr->toc_size;
+      info_ptr->gp_save_offset    = info_ptr->cr_save_offset - info_ptr->cr_size - info_ptr->gp_size + reg_size;
+      info_ptr->fp_save_offset    = info_ptr->gp_save_offset - info_ptr->fp_size;
+      if (info_ptr->fp_size && ((- info_ptr->fp_save_offset) % 8) != 0)
+	info_ptr->fp_save_offset -= 4;
+
+      info_ptr->main_save_offset = info_ptr->fp_save_offset - info_ptr->main_size;
       break;
     }
 
@@ -2449,6 +2674,12 @@ rs6000_stack_info ()
 
   if (!info_ptr->cr_save_p)
     info_ptr->cr_save_offset = 0;
+
+  if (!info_ptr->toc_save_p)
+    info_ptr->toc_save_offset = 0;
+
+  if (!info_ptr->main_save_p)
+    info_ptr->main_save_offset = 0;
 
   return info_ptr;
 }
@@ -2469,10 +2700,12 @@ debug_stack_info (info)
 
   switch (info->abi)
     {
-    default:	   abi_string = "Unknown";	break;
-    case ABI_NONE: abi_string = "NONE";		break;
-    case ABI_AIX:  abi_string = "AIX";		break;
-    case ABI_V4:   abi_string = "V.4";		break;
+    default:		 abi_string = "Unknown";	break;
+    case ABI_NONE:	 abi_string = "NONE";		break;
+    case ABI_AIX:	 abi_string = "AIX";		break;
+    case ABI_AIX_NODESC: abi_string = "AIX";		break;
+    case ABI_V4:	 abi_string = "V.4";		break;
+    case ABI_NT:	 abi_string = "NT";		break;
     }
 
   fprintf (stderr, "\tABI                 = %5s\n", abi_string);
@@ -2489,11 +2722,20 @@ debug_stack_info (info)
   if (info->cr_save_p)
     fprintf (stderr, "\tcr_save_p           = %5d\n", info->cr_save_p);
 
+  if (info->toc_save_p)
+    fprintf (stderr, "\ttoc_save_p          = %5d\n", info->toc_save_p);
+
   if (info->push_p)
     fprintf (stderr, "\tpush_p              = %5d\n", info->push_p);
 
   if (info->calls_p)
     fprintf (stderr, "\tcalls_p             = %5d\n", info->calls_p);
+
+  if (info->main_p)
+    fprintf (stderr, "\tmain_p              = %5d\n", info->main_p);
+
+  if (info->main_save_p)
+    fprintf (stderr, "\tmain_save_p         = %5d\n", info->main_save_p);
 
   if (info->gp_save_offset)
     fprintf (stderr, "\tgp_save_offset      = %5d\n", info->gp_save_offset);
@@ -2507,8 +2749,14 @@ debug_stack_info (info)
   if (info->cr_save_offset)
     fprintf (stderr, "\tcr_save_offset      = %5d\n", info->cr_save_offset);
 
+  if (info->toc_save_offset)
+    fprintf (stderr, "\ttoc_save_offset     = %5d\n", info->toc_save_offset);
+
   if (info->varargs_save_offset)
     fprintf (stderr, "\tvarargs_save_offset = %5d\n", info->varargs_save_offset);
+
+  if (info->main_save_offset)
+    fprintf (stderr, "\tmain_save_offset    = %5d\n", info->main_save_offset);
 
   if (info->total_size)
     fprintf (stderr, "\ttotal_size          = %5d\n", info->total_size);
@@ -2531,8 +2779,17 @@ debug_stack_info (info)
   if (info->fp_size)
     fprintf (stderr, "\tfp_size             = %5d\n", info->fp_size);
 
+ if (info->lr_size)
+    fprintf (stderr, "\tlr_size             = %5d\n", info->cr_size);
+
   if (info->cr_size)
     fprintf (stderr, "\tcr_size             = %5d\n", info->cr_size);
+
+ if (info->toc_size)
+    fprintf (stderr, "\ttoc_size            = %5d\n", info->toc_size);
+
+ if (info->main_size)
+    fprintf (stderr, "\tmain_size           = %5d\n", info->main_size);
 
   if (info->save_size)
     fprintf (stderr, "\tsave_size           = %5d\n", info->save_size);
@@ -2544,65 +2801,6 @@ debug_stack_info (info)
 }
 
 
-
-#ifdef USING_SVR4_H
-/* Write out a System V.4 style traceback table before the prologue
-
-   At present, only emit the basic tag table (ie, do not emit tag_types other
-   than 0, which might use more than 1 tag word).
-
-   The first tag word looks like:
-
-    0			1		    2			3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |         0 |ver| tag |e|s| alloca  | # fprs  | # gprs  |s|l|c|f|
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-*/
-
-void
-svr4_traceback (file, name, decl)
-     FILE *file;
-     tree name, decl;
-{
-  rs6000_stack_t *info = rs6000_stack_info ();
-  long tag;
-  long version		= 0;				/* version number */
-  long tag_type		= 0;				/* function type */
-  long extended_tag	= 0;				/* additional tag words needed */
-  long spare		= 0;				/* reserved for future use */
-  long fpscr_max	= 0;				/* 1 if the function has a FPSCR save word */
-  long fpr_max		= 64 - info->first_fp_reg_save;	/* # of floating point registers saved */
-  long gpr_max		= 32 - info->first_gp_reg_save;	/* # of general purpose registers saved */
-  long alloca_reg;					/* stack/frame register */
-
-  if (frame_pointer_needed)
-    alloca_reg = 31;
-
-  else if (info->push_p != 0)
-    alloca_reg = 1;
-
-  else
-    alloca_reg = 0;
-
-  tag = ((version << 24)
-	 | (tag_type << 21)
-	 | (extended_tag << 20)
-	 | (spare << 19)
-	 | (alloca_reg << 14)
-	 | (fpr_max << 9)
-	 | (gpr_max << 4)
-	 | (info->push_p << 3)
-	 | (info->lr_save_p << 2)
-	 | (info->cr_save_p << 1)
-	 | (fpscr_max << 0));
-	   
-  fprintf (file, "\t.long 0x%lx\n", tag);
-}
-
-#endif /* USING_SVR4_H */
-
 /* Write function prologue.  */
 void
 output_prolog (file, size)
@@ -2610,19 +2808,30 @@ output_prolog (file, size)
      int size;
 {
   rs6000_stack_t *info = rs6000_stack_info ();
-  char *store_reg = (TARGET_64BIT) ? "\tstd %s,%d(%s)" : "\t{st|stw} %s,%d(%s)\n";
+  int reg_size = info->reg_size;
+  char *store_reg;
+  char *load_reg;
+
+  if (TARGET_64BIT)
+    {
+      store_reg = "\tstd %s,%d(%s)";
+      load_reg = "\tlld %s,%d(%s)";
+    }
+  else
+    {
+      store_reg = "\t{st|stw} %s,%d(%s)\n";
+      load_reg = "\t{l|lwz} %s,%d(%s)\n";
+    }
 
   if (TARGET_DEBUG_STACK)
     debug_stack_info (info);
 
   /* Write .extern for any function we will call to save and restore fp
      values.  */
-#ifndef USING_SVR4_H
-  if (info->first_fp_reg_save < 62)
+  if (info->first_fp_reg_save < 64 && !FP_SAVE_INLINE (info->first_fp_reg_save))
     fprintf (file, "\t.extern %s%d%s\n\t.extern %s%d%s\n",
 	     SAVE_FP_PREFIX, info->first_fp_reg_save - 32, SAVE_FP_SUFFIX,
 	     RESTORE_FP_PREFIX, info->first_fp_reg_save - 32, RESTORE_FP_SUFFIX);
-#endif
 
   /* Write .extern for truncation routines, if needed.  */
   if (rs6000_trunc_used && ! trunc_defined)
@@ -2672,7 +2881,6 @@ output_prolog (file, size)
     {
       int regno    = info->first_gp_reg_save;
       int loc      = info->gp_save_offset;
-      int reg_size = (TARGET_64BIT) ? 8 : 4;
 
       for ( ; regno < 32; regno++, loc += reg_size)
 	asm_fprintf (file, store_reg, reg_names[regno], loc, reg_names[1]);
@@ -2684,6 +2892,19 @@ output_prolog (file, size)
 		 info->gp_save_offset,
 		 reg_names[1]);
 
+  /* Save main's arguments if we need to call a function */
+#ifdef NAME__MAIN
+  if (info->main_save_p)
+    {
+      int regno;
+      int loc = info->main_save_offset;
+      int size = info->main_size;
+
+      for (regno = 3; size > 0; regno++, loc -= reg_size, size -= reg_size)
+	asm_fprintf (file, store_reg, reg_names[regno], loc, reg_names[1]);
+    }
+#endif
+
   /* Save lr if we used it.  */
   if (info->lr_save_p)
     asm_fprintf (file, store_reg, reg_names[0], info->lr_save_offset, reg_names[1]);
@@ -2691,6 +2912,9 @@ output_prolog (file, size)
   /* Save CR if we use any that must be preserved.  */
   if (info->cr_save_p)
     asm_fprintf (file, store_reg, reg_names[12], info->cr_save_offset, reg_names[1]);
+
+  if (info->toc_save_p)
+    asm_fprintf (file, store_reg, reg_names[2], info->toc_save_offset, reg_names[1]);
 
   /* Update stack and set back pointer.  */
   if (info->push_p)
@@ -2715,13 +2939,62 @@ output_prolog (file, size)
   if (frame_pointer_needed)
     asm_fprintf (file, "\tmr %s,%s\n", reg_names[31], reg_names[1]);
 
+#ifdef NAME__MAIN
+  /* If we need to call a function to set things up for main, do so now
+     before dealing with the TOC.  */
+  if (info->main_p)
+    {
+      char *prefix = "";
+
+      switch (DEFAULT_ABI)
+	{
+	case ABI_AIX:	prefix = ".";	break;
+	case ABI_NT:	prefix = "..";	break;
+	}
+
+      fprintf (file, "\tbl %s%s\n", prefix, NAME__MAIN);
+#ifdef RS6000_CALL_GLUE2
+      fprintf (file, "\t%s%s%s\n", RS6000_CALL_GLUE2, prefix, NAME_MAIN);
+#else
+#ifdef RS6000_CALL_GLUE
+      if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)
+	fprintf (file, "\t%s\n", RS6000_CALL_GLUE);
+#endif
+#endif
+
+      if (info->main_save_p)
+	{
+	  int regno;
+	  int loc;
+	  int size = info->main_size;
+
+	  if (info->total_size < 32767)
+	    {
+	      loc = info->total_size + info->main_save_offset;
+	      for (regno = 3; size > 0; regno++, size -= reg_size, loc -= reg_size)
+		asm_fprintf (file, load_reg, reg_names[regno], loc, reg_names[1]);
+	    }
+	  else
+	    {			/* for large frames, reg 0 above contains -frame size */
+	      loc = info->main_save_offset;
+	      asm_fprintf (file, "\t{sf|subf} %s,%s,%s\n", reg_names[0], reg_names[0],
+			   reg_names[1]);
+
+	      for (regno = 3; size > 0; regno++, size -= reg_size, loc -= reg_size)
+		asm_fprintf (file, load_reg, reg_names[regno], loc, reg_names[0]);
+	    }
+	}
+    }
+#endif
+
+
   /* If TARGET_MINIMAL_TOC, and the constant pool is needed, then load the
      TOC_TABLE address into register 30.  */
   if (TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
     {
       char buf[256];
 
-#ifdef USING_SVR4_H
+#ifdef TARGET_RELOCATABLE
       if (TARGET_RELOCATABLE)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
@@ -2732,13 +3005,7 @@ output_prolog (file, size)
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCF", rs6000_pic_labelno);
 	  fprintf (file, "\tmflr %s\n", reg_names[30]);
 
-	  if (TARGET_POWERPC64)
-	    fprintf (file, "\tld");
-	  else if (TARGET_NEW_MNEMONICS)
-	    fprintf (file, "\tlwz");
-	  else
-	    fprintf (file, "\tl");
-
+	  asm_fprintf (file, TARGET_64BIT ? "\tld" : "\t{l|lwz}");
 	  fprintf (file, " %s,(", reg_names[0]);
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
 	  assemble_name (file, buf);
@@ -2750,34 +3017,51 @@ output_prolog (file, size)
 		       reg_names[30], reg_names[0], reg_names[30]);
 	  rs6000_pic_labelno++;
 	}
-      else if (!TARGET_64BIT)
-	{
-	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
-	  asm_fprintf (file, "\t{cau|addis} %s,%s,", reg_names[30], reg_names[0]);
-	  assemble_name (file, buf);
-	  asm_fprintf (file, "@ha\n");
-	  if (TARGET_NEW_MNEMONICS)
-	    {
-	      asm_fprintf (file, "\taddi %s,%s,", reg_names[30], reg_names[30]);
-	      assemble_name (file, buf);
-	      asm_fprintf (file, "@l\n");
-	    }
-	  else
-	    {
-	      asm_fprintf (file, "\tcal %s,", reg_names[30]);
-	      assemble_name (file, buf);
-	      asm_fprintf (file, "@l(%s)\n", reg_names[30]);
-	    }
-	}
       else
-	abort ();
+#endif
 
-#else	/* !USING_SVR4_H */
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 0);
-      asm_fprintf (file, "\t{l|lwz} %s,", reg_names[30]);
-      assemble_name (file, buf);
-      asm_fprintf (file, "(%s)\n", reg_names[2]);
-#endif /* USING_SVR4_H */
+	switch (DEFAULT_ABI)
+	  {
+	  case ABI_V4:
+	  case ABI_AIX_NODESC:
+	    if (!TARGET_64BIT)
+	      {
+		ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
+		asm_fprintf (file, "\t{cau|addis} %s,%s,", reg_names[30], reg_names[0]);
+		assemble_name (file, buf);
+		asm_fprintf (file, "@ha\n");
+		if (TARGET_NEW_MNEMONICS)
+		  {
+		    asm_fprintf (file, "\taddi %s,%s,", reg_names[30], reg_names[30]);
+		    assemble_name (file, buf);
+		    asm_fprintf (file, "@l\n");
+		  }
+		else
+		  {
+		    asm_fprintf (file, "\tcal %s,", reg_names[30]);
+		    assemble_name (file, buf);
+		    asm_fprintf (file, "@l(%s)\n", reg_names[30]);
+		  }
+	      }
+	    else
+	      abort ();
+
+	  break;
+
+	case ABI_NT:
+	case ABI_AIX:
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 0);
+	  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[30]);
+	  assemble_name (file, buf);
+	  asm_fprintf (file, "(%s)\n", reg_names[2]);
+	  break;
+	}
+    }
+
+  if (DEFAULT_ABI == ABI_NT)
+    {
+      assemble_name (file, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
+      fputs (".b:\n", file);
     }
 }
 
@@ -2886,13 +3170,15 @@ output_epilog (file, size)
      traceback table itself.
 
      System V.4 Powerpc's (and the embedded ABI derived from it) use a
-     different traceback table located before the prologue.  */
-#ifndef USING_SVR4_H
-  if (! flag_inhibit_size_directive)
+     different traceback table.  */
+  if (DEFAULT_ABI == ABI_AIX && ! flag_inhibit_size_directive)
     {
       char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
       int fixed_parms, float_parms, parm_info;
       int i;
+
+      while (*fname == '.')	/* V.4 encodes . in the name */
+	fname++;
 
       /* Need label immediately before tbtab, so we can compute its offset
 	 from the function start.  */
@@ -3065,10 +3351,18 @@ output_epilog (file, size)
       if (frame_pointer_needed)
 	fprintf (file, "\t.byte 31\n");
     }
-#endif /* !USING_SVR4_H */
 
-  /* Reset varargs indicator */
+  /* Reset varargs and save TOC indicator */
   rs6000_sysv_varargs_p = 0;
+  rs6000_save_toc_p = 0;
+
+  if (DEFAULT_ABI == ABI_NT)
+    {
+      RS6000_OUTPUT_BASENAME (file, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
+      fputs (".e:\nFE_MOT_RESVD..", file);
+      RS6000_OUTPUT_BASENAME (file, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
+      fputs (":\n", file);
+    }
 }
 
 /* Output a TOC entry.  We derive the entry name from what is
@@ -3082,6 +3376,7 @@ output_toc (file, x, labelno)
 {
   char buf[256];
   char *name = buf;
+  char *real_name;
   rtx base = x;
   int offset = 0;
 
@@ -3098,8 +3393,7 @@ output_toc (file, x, labelno)
   }
 
 
-#ifdef USING_SVR4_H
-  if (TARGET_MINIMAL_TOC)
+  if (TARGET_ELF && TARGET_MINIMAL_TOC)
     {
       ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LC");
       fprintf (file, "%d = .-", labelno);
@@ -3107,7 +3401,6 @@ output_toc (file, x, labelno)
       fprintf (file, "1\n");
     }
   else
-#endif /* USING_SVR4_H */
     ASM_OUTPUT_INTERNAL_LABEL (file, "LC", labelno);
 
   /* Handle FP constants specially.  Note that if we have a minimal
@@ -3163,8 +3456,8 @@ output_toc (file, x, labelno)
     fprintf (file, "\t.long ");
   else
     {
-      fprintf (file, "\t.tc ");
-      RS6000_OUTPUT_BASENAME (file, name);
+      STRIP_NAME_ENCODING (real_name, name);
+      fprintf (file, "\t.tc %s", real_name);
 
       if (offset < 0)
 	fprintf (file, ".N%d", - offset);
@@ -3309,13 +3602,13 @@ output_function_profiler (file, labelno)
   FILE *file;
   int labelno;
 {
-#ifdef USING_SVR4_H
-  abort ();
-#else
   /* The last used parameter register.  */
   int last_parm_reg;
   int i, j;
   char buf[100];
+
+  if (DEFAULT_ABI != ABI_AIX)
+    abort ();
 
   /* Set up a TOC entry for the profiler label.  */
   toc_section ();
@@ -3363,7 +3656,6 @@ output_function_profiler (file, labelno)
 
   for (i = 3, j = 30; i <= last_parm_reg; i++, j--)
     fprintf (file, "\tai %d,%d,0\n", i, j);
-#endif
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
@@ -3398,4 +3690,276 @@ rs6000_adjust_cost (insn, link, dep_insn, cost)
     }
 
   return cost;
+}
+
+/* Return how many instructions the machine can issue per cycle */
+int get_issue_rate()
+{
+  switch (rs6000_cpu_attr) {
+  case CPU_RIOS1:
+    return 3;       /* ? */
+  case CPU_RIOS2:
+    return 4;
+  case CPU_PPC601:
+    return 3;       /* ? */
+  case CPU_PPC602:
+    return 1; 
+  case CPU_PPC603:
+    return 2; 
+  case CPU_PPC604:
+    return 4;
+  case CPU_PPC620:
+    return 4;
+  default:
+    return 1;
+  }
+}
+
+
+/* Output insns to flush the {data|instruction} caches after building a
+   trampoline. */
+
+static void
+rs6000_sync_trampoline (addr)
+     rtx addr;
+{
+  enum machine_mode pmode = Pmode;
+  rtx reg = gen_reg_rtx (pmode);
+  rtx mem2;
+  rtx mem1;
+  int size = rs6000_trampoline_size ();
+  rtx (*sub_fcn) PROTO ((rtx, rtx, rtx));
+  rtx (*cmp_fcn) PROTO ((rtx, rtx));
+  rtx label;
+
+  if (TARGET_64BIT)
+    {
+      abort ();			/* no cmpdi function yet */
+    }
+  else
+    {
+      sub_fcn = gen_subsi3;
+      cmp_fcn = gen_cmpsi;
+    }
+
+  addr = force_reg (pmode, addr);
+  mem2 = gen_rtx (MEM, pmode, gen_rtx (PLUS, pmode, addr, reg));
+  mem1 = gen_rtx (MEM, pmode, addr);
+
+  /* Issue a loop of dcbst's to flush the data cache */
+  emit_move_insn (reg, GEN_INT (size-4));
+  label = gen_label_rtx ();
+  emit_label (label);
+  emit_insn (gen_dcbst (mem2, addr, reg));
+  emit_insn ((*sub_fcn) (reg, reg, GEN_INT (4)));
+  emit_insn ((*cmp_fcn) (reg, const0_rtx));
+  emit_jump_insn (gen_bgt (label));
+
+  /* Issue a sync after the dcbst's to let things settle down */
+  emit_insn (gen_sync (mem1));
+
+  /* Issue a loop of icbi's to flush the instruction cache */
+  emit_move_insn (reg, GEN_INT (size-4));
+  label = gen_label_rtx ();
+  emit_label (label);
+  emit_insn (gen_icbi (mem2, addr, reg));
+  emit_insn ((*sub_fcn) (reg, reg, GEN_INT (4)));
+  emit_insn ((*cmp_fcn) (reg, const0_rtx));
+  emit_jump_insn (gen_bgt (label));
+
+  /* Issue a sync after the icbi's to let things settle down */
+  emit_insn (gen_sync (mem1));
+
+  /* Finally issue an isync to synchronize the icache */
+  emit_insn (gen_isync (mem1));
+}
+
+
+/* Output assembler code for a block containing the constant parts
+   of a trampoline, leaving space for the variable parts.
+
+   The trampoline should set the static chain pointer to value placed
+   into the trampoline and should branch to the specified routine.  */
+
+void
+rs6000_trampoline_template (file)
+     FILE *file;
+{
+  char *sc = reg_names[STATIC_CHAIN_REGNUM];
+  char *r0 = reg_names[0];
+
+  switch (DEFAULT_ABI)
+    {
+    default:
+      abort ();
+
+    /* Under AIX, this is not code at all, but merely a data area,
+       since that is the way all functions are called.  The first word is
+       the address of the function, the second word is the TOC pointer (r2),
+       and the third word is the static chain value.  */
+    case ABI_AIX:
+      fprintf (file, "\t.long %s\n", (TARGET_64BIT) ? "0,0,0,0,0,0" : "0,0,0");
+      break;
+
+
+    /* V.4/eabi function pointers are just a single pointer, so we need to
+       do the full gory code to load up the static chain.  */
+    case ABI_V4:
+    case ABI_AIX_NODESC:
+      if (STATIC_CHAIN_REGNUM == 0 || !TARGET_NEW_MNEMONICS)
+	abort ();
+
+      if (TARGET_64BIT)
+	{
+	  fprintf (file, "\tmflr %s\n", r0);		/* offset  0 */
+	  fprintf (file, "\tbl .LTRAMP1\n");		/* offset  4 */
+	  fprintf (file, "\t.long 0,0,0,0\n");		/* offset  8 */
+	  fprintf (file, ".LTRAMP1:\n");
+	  fprintf (file, "\tmflr %s\n", sc);		/* offset 28 */
+	  fprintf (file, "\tmtlr %s\n", r0);		/* offset 32 */
+	  fprintf (file, "\tld %s,0(%s)\n", r0, sc);	/* offset 36 */
+	  fprintf (file, "\tld %s,8(%s)\n", sc, sc);	/* offset 40 */
+	  fprintf (file, "\tmtctr %s\n", r0);		/* offset 44 */
+	  fprintf (file, "\tbctr\n");			/* offset 48 */
+	}
+      else
+	{
+	  fprintf (file, "\tmflr %s\n", r0);		/* offset  0 */
+	  fprintf (file, "\tbl .LTRAMP1\n");		/* offset  4 */
+	  fprintf (file, "\t.long 0,0\n");		/* offset  8 */
+	  fprintf (file, ".LTRAMP1:\n");
+	  fprintf (file, "\tmflr %s\n", sc);		/* offset 20 */
+	  fprintf (file, "\tmtlr %s\n", r0);		/* offset 24 */
+	  fprintf (file, "\tlwz %s,0(%s)\n", r0, sc);	/* offset 28 */
+	  fprintf (file, "\tlwz %s,4(%s)\n", sc, sc);	/* offset 32 */
+	  fprintf (file, "\tmtctr %s\n", r0);		/* offset 36 */
+	  fprintf (file, "\tbctr\n");			/* offset 40 */
+	}
+      break;
+
+  /* NT function pointers point to a two word area (real address, TOC)
+     which unfortunately does not include a static chain field.  So we
+     need to have a 2 word area followed by the code to load up the
+     static chain.  */
+    case ABI_NT:
+      if (STATIC_CHAIN_REGNUM == 0 || !TARGET_NEW_MNEMONICS || TARGET_64BIT)
+	abort ();
+
+      fprintf (file, "\t.ualong 0,0\n");		/* offset  0 */
+      fprintf (file, "\tmflr %s\n", r0);		/* offset  8 */
+      fprintf (file, "\tbl .LTRAMP1\n");		/* offset 12 */
+      fprintf (file, "\t.ualong 0,0\n");		/* offset 16 */
+      fprintf (file, ".LTRAMP1:\n");
+      fprintf (file, "\tmflr %s\n", sc);		/* offset 28 */
+      fprintf (file, "\tmtlr %s\n", r0);		/* offset 32 */
+      fprintf (file, "\tlwz %s,0(%s)\n", r0, sc);	/* offset 36 */
+      fprintf (file, "\tlwz %s,4(%s)\n", sc, sc);	/* offset 40 */
+      fprintf (file, "\tmtctr %s\n", r0);		/* offset 44 */
+      fprintf (file, "\tbctr\n");			/* offset 48 */
+      break;
+    }
+
+  return;
+}
+
+/* Length in units of the trampoline for entering a nested function.  */
+
+int
+rs6000_trampoline_size ()
+{
+  int ret = 0;
+
+  switch (DEFAULT_ABI)
+    {
+    default:
+      abort ();
+
+    case ABI_AIX:
+      ret = (TARGET_64BIT) ? 24 : 12;
+      break;
+
+    case ABI_V4:
+    case ABI_AIX_NODESC:
+      ret = (TARGET_64BIT ? 48 : 40);
+      break;
+
+    case ABI_NT:
+      ret = 52;
+      break;
+    }
+
+  return ret;
+}
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNADDR is an RTX for the address of the function's pure code.
+   CXT is an RTX for the static chain value for the function.  */
+
+void
+rs6000_initialize_trampoline (addr, fnaddr, cxt)
+     rtx addr;
+     rtx fnaddr;
+     rtx cxt;
+{
+  rtx reg, reg2, reg3;
+
+  switch (DEFAULT_ABI)
+    {
+    default:
+      abort ();
+
+    /* Under AIX, just build the 3 word function descriptor */
+    case ABI_AIX:
+      emit_move_insn (gen_rtx (MEM, SImode,
+			       memory_address (SImode, (addr))),
+		      gen_rtx (MEM, SImode,
+			       memory_address (SImode, (fnaddr))));
+      emit_move_insn (gen_rtx (MEM, SImode,
+			       memory_address (SImode,
+					       plus_constant ((addr), 4))),
+		      gen_rtx (MEM, SImode,
+			       memory_address (SImode,
+					       plus_constant ((fnaddr), 4))));
+      emit_move_insn (gen_rtx (MEM, SImode,
+			       memory_address (SImode,
+					       plus_constant ((addr), 8))),
+		      force_reg (SImode, (cxt)));
+      break;
+
+    /* Under V.4/eabi, update the two words after the bl to have the real
+       function address and the static chain.  */
+    case ABI_V4:
+    case ABI_AIX_NODESC:
+      reg = gen_reg_rtx (Pmode);
+
+      emit_move_insn (reg, fnaddr);
+      emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (addr, 8)), reg);
+      emit_move_insn (gen_rtx (MEM, Pmode,
+			       plus_constant (addr, (TARGET_64BIT ? 16 : 12))),
+		      cxt);
+
+      rs6000_sync_trampoline (addr);
+      break;
+
+    /* Under NT, update the first 2 words to look like a normal descriptor, and
+       then fill in the fields with the function address and static chain after
+       the bl instruction.  */
+    case ABI_NT:
+      reg  = gen_reg_rtx (Pmode);
+      reg2 = gen_reg_rtx (Pmode);
+      reg3 = gen_reg_rtx (Pmode);
+
+      emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (addr, 4)),
+		      gen_rtx (REG, Pmode, 2));
+      emit_move_insn (reg, fnaddr);
+      emit_move_insn (reg2, gen_rtx (MEM, Pmode, reg));
+      emit_move_insn (reg3, plus_constant (addr, 8));
+      emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (addr, 16)), reg);
+      emit_move_insn (gen_rtx (MEM, Pmode, addr), reg3);
+      emit_move_insn (gen_rtx (MEM, Pmode, plus_constant (addr, 20)), cxt);
+      rs6000_sync_trampoline (addr);
+      break;
+    }
+
+  return;
 }

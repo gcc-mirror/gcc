@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+#define TARGET_AIX 0
+
 #include "rs6000/powerpc.h"
 
 /* Don't generate XCOFF debugging information.  */
@@ -32,8 +34,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* The XCOFF support uses weird symbol suffixes, which we don't want
    for ELF.  */
 
-#undef RS6000_OUTPUT_BASENAME
-#define RS6000_OUTPUT_BASENAME(FILE, NAME) assemble_name (FILE, NAME)
+#undef STRIP_NAME_ENCODING
 
 /* Don't bother to output .extern pseudo-ops.  They are not needed by
    ELF assemblers.  */

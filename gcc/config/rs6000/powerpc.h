@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=403: -mppc} \
 %{mcpu=601: -m601} \
 %{mcpu=603: -mppc} \
+%{mcpu=603e: -mppc} \
 %{mcpu=604: -mppc}"
 
 #undef CPP_PREDEFINES
@@ -68,8 +69,11 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=403: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
+%{mcpu=602: -D_ARCH_PPC} \
 %{mcpu=603: -D_ARCH_PPC} \
-%{mcpu=604: -D_ARCH_PPC}"
+%{mcpu=603e: -D_ARCH_PPC} \
+%{mcpu=604: -D_ARCH_PPC} \
+%{mcpu=620: -D_ARCH_PPC}"
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS)

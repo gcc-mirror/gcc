@@ -60,7 +60,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Invoke an initializer function to set up the GOT */
 #define NAME__MAIN "__eabi"
-#define INVOKE__main 1
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC Embedded)");
@@ -69,57 +68,19 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES \
   "-DPPC -D__embedded__ -Asystem(embedded) -Acpu(powerpc) -Amachine(powerpc)"
 
-/* Don't use startfiles or libraries except for libgcc.a */
+/* Use the simulator crt0 or mvme and libgloss/newlib libraries if desired */
 #undef  STARTFILE_SPEC
-#define	STARTFILE_SPEC ""
+#define	STARTFILE_SPEC "\
+%{mmvme: mvme-crt0.o%s} \
+%{msim:  sim-crt0.o%s}"
 
 #undef	LIB_SPEC
-#define	LIB_SPEC ""
+#define	LIB_SPEC "\
+%{mmvme: -lmvme -lc -lmvme} \
+%{msim: -lsim -lc -lsim}"
 
 #undef	LIBGCC_SPEC
 #define	LIBGCC_SPEC "libgcc.a%s"
 
 #undef	ENDFILE_SPEC
 #define	ENDFILE_SPEC ""
-
-/* This is how to output an assembler line defining an `int' constant.
-   For -mrelocatable, we mark all addresses that need to be fixed up
-   in the .fixup section.  */
-#undef	ASM_OUTPUT_INT
-#define ASM_OUTPUT_INT(FILE,VALUE)					\
-do {									\
-  static int recurse = 0;						\
-  if (TARGET_RELOCATABLE						\
-      && in_section != in_toc						\
-      && in_section != in_text						\
-      && in_section != in_ctors						\
-      && in_section != in_dtors						\
-      && !recurse							\
-      && GET_CODE (VALUE) != CONST_INT					\
-      && GET_CODE (VALUE) != CONST_DOUBLE				\
-      && CONSTANT_P (VALUE))						\
-    {									\
-      static int labelno = 0;						\
-      char buf[256], *p;						\
-									\
-      recurse = 1;							\
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LCP", labelno++);		\
-      STRIP_NAME_ENCODING (p, buf);					\
-      fprintf (FILE, "%s:\n", p);					\
-      fprintf (FILE, "\t.long (");					\
-      output_addr_const (FILE, (VALUE));				\
-      fprintf (FILE, ")@fixup\n");					\
-      fprintf (FILE, "\t.section\t\".fixup\",\"aw\"\n");		\
-      ASM_OUTPUT_ALIGN (FILE, 2);					\
-      fprintf (FILE, "\t.long\t%s\n", p);				\
-      fprintf (FILE, "\t.previous\n");					\
-      recurse = 0;							\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "\t.long ");					\
-      output_addr_const (FILE, (VALUE));				\
-      fprintf (FILE, "\n");						\
-    }									\
-} while (0)
-

@@ -25,30 +25,38 @@ Boston, MA 02111-1307, USA.  */
 #define	MASK_NO_BITFIELD_TYPE	0x40000000	/* Set PCC_BITFIELD_TYPE_MATTERS to 0 */
 #define	MASK_STRICT_ALIGN	0x20000000	/* Set STRICT_ALIGNMENT to 1.  */
 #define MASK_RELOCATABLE	0x10000000	/* GOT pointers are PC relative */
-#define	MASK_NO_TRACEBACK	0x08000000	/* eliminate traceback words */
+#define	MASK_UNUSED		0x08000000	/* UNUSED, was no-traceback */
 #define MASK_LITTLE_ENDIAN	0x04000000	/* target is little endian */
-#define MASK_AIX_CALLS		0x02000000	/* Use AIX calling sequence */
+#define MASK_CALLS_1		0x02000000	/* First ABI bit (AIX, AIXDESC) */
 #define MASK_PROTOTYPE		0x01000000	/* Only prototyped fcns pass variable args */
+#define	MASK_CALLS_2		0x00800000	/* Second ABI bit (NT) */
+
+#define	MASK_CALLS		(MASK_CALLS_1 | MASK_CALLS_2)
+#define	MASK_CALLS_V4		0
+#define	MASK_CALLS_AIX		MASK_CALLS_1
+#define	MASK_CALLS_NT		MASK_CALLS_2
+#define	MASK_CALLS_AIXDESC	MASK_CALLS
 
 #define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
 #define TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
 #define TARGET_RELOCATABLE	(target_flags & MASK_RELOCATABLE)
-#define TARGET_NO_TRACEBACK	(target_flags & MASK_NO_TRACEBACK)
 #define TARGET_LITTLE_ENDIAN	(target_flags & MASK_LITTLE_ENDIAN)
-#define TARGET_AIX_CALLS	(target_flags & MASK_AIX_CALLS)
 #define	TARGET_PROTOTYPE	(target_flags & MASK_PROTOTYPE)
-#define	TARGET_TOC		(target_flags & (MASK_64BIT		\
+#define	TARGET_TOC		((target_flags & (MASK_64BIT		\
 						 | MASK_RELOCATABLE	\
-						 | MASK_MINIMAL_TOC))
+						 | MASK_MINIMAL_TOC))	\
+				 || DEFAULT_ABI == ABI_AIX		\
+				 || DEFAULT_ABI == ABI_NT)
 
 #define	TARGET_BITFIELD_TYPE	(! TARGET_NO_BITFIELD_TYPE)
-#define	TARGET_TRACEBACK	(! TARGET_NO_TRACEBACK)
 #define TARGET_BIG_ENDIAN	(! TARGET_LITTLE_ENDIAN)
-#define TARGET_NO_AIX_CALLS	(! TARGET_AIX_CALLS)
 #define	TARGET_NO_PROTOTYPE	(! TARGET_PROTOTYPE)
 #define	TARGET_NO_TOC		(! TARGET_TOC)
 
-#define TARGET_V4_CALLS		TARGET_NO_AIX_CALLS
+#define TARGET_AIX_CALLS	(target_flags & MASK_CALLS_1)	/* either -mcall-aix or -mcall-aixdesc */
+#define TARGET_V4_CALLS		((target_flags & MASK_CALLS) == MASK_CALLS_V4)
+#define TARGET_NT_CALLS		((target_flags & MASK_CALLS) == MASK_CALLS_NT)
+#define TARGET_AIXDESC_CALLS	((target_flags & MASK_CALLS) == MASK_CALLS_AIXDESC)
 
 /* Pseudo target to indicate whether the object format is ELF
    (to get around not having conditional compilation in the md file)  */
@@ -64,8 +72,8 @@ Boston, MA 02111-1307, USA.  */
   { "no-strict-align",	-MASK_STRICT_ALIGN },				\
   { "relocatable",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC }, \
   { "no-relocatable",	-MASK_RELOCATABLE },				\
-  { "traceback",	-MASK_NO_TRACEBACK },				\
-  { "no-traceback",	 MASK_NO_TRACEBACK },				\
+  { "relocatable-lib",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC }, \
+  { "no-relocatable-lib", -MASK_RELOCATABLE },				\
   { "little-endian",	 MASK_LITTLE_ENDIAN },				\
   { "little",		 MASK_LITTLE_ENDIAN },				\
   { "big-endian",	-MASK_LITTLE_ENDIAN },				\
@@ -73,10 +81,19 @@ Boston, MA 02111-1307, USA.  */
   { "no-toc",		 0 },						\
   { "toc",		 MASK_MINIMAL_TOC },				\
   { "full-toc",		 MASK_MINIMAL_TOC },				\
-  { "call-aix",		 MASK_AIX_CALLS },				\
-  { "call-sysv",	-MASK_AIX_CALLS },				\
+  { "call-aix",		 MASK_CALLS_AIX },				\
+  { "call-aix",		-MASK_CALLS_NT },				\
+  { "call-aixdesc",	 MASK_CALLS_AIXDESC },				\
+  { "call-aixdesc",	-MASK_LITTLE_ENDIAN },				\
+  { "call-sysv",	-MASK_CALLS },					\
+  { "call-nt",		 MASK_CALLS_NT | MASK_LITTLE_ENDIAN },		\
+  { "call-nt",		-MASK_CALLS_AIX },				\
   { "prototype",	 MASK_PROTOTYPE },				\
-  { "no-prototype",	-MASK_PROTOTYPE },
+  { "no-prototype",	-MASK_PROTOTYPE },				\
+  { "no-traceback",	 0 },						\
+  { "sim",		 0 },						\
+  { "mvme",		 0 },						\
+  { "emb",		 0 },						\
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
@@ -94,7 +111,39 @@ do {									\
       target_flags |= MASK_MINIMAL_TOC;					\
       error ("-mrelocatable and -mno-minimal-toc are incompatible.");	\
     }									\
+									\
+  if (TARGET_RELOCATABLE && TARGET_AIXDESC_CALLS)			\
+    {									\
+      target_flags &= ~MASK_RELOCATABLE;				\
+      error ("-mrelocatable and -mcall-aixdesc are incompatible.");	\
+    }									\
+									\
+  if (TARGET_RELOCATABLE && TARGET_NT_CALLS)				\
+    {									\
+      target_flags &= ~MASK_MINIMAL_TOC;				\
+      error ("-mrelocatable and -mcall-nt are incompatible.");		\
+    }									\
+									\
+  if (TARGET_AIXDESC_CALLS && TARGET_LITTLE_ENDIAN)			\
+    {									\
+      target_flags &= ~MASK_LITTLE_ENDIAN;				\
+      error ("-mcall-aixdesc must be big endian");			\
+    }									\
+									\
+  if (TARGET_NT_CALLS && TARGET_BIG_ENDIAN)				\
+    {									\
+      target_flags |= MASK_LITTLE_ENDIAN;				\
+      error ("-mcall-nt must be little endian");			\
+    }									\
+									\
+  rs6000_current_abi = ((TARGET_AIXDESC_CALLS) ? ABI_AIX :		\
+			(TARGET_NT_CALLS)      ? ABI_NT :		\
+			(TARGET_AIX_CALLS)     ? ABI_AIX_NODESC :	\
+						 ABI_V4);		\
 } while (0)
+
+/* Default ABI to compile code for */
+#define DEFAULT_ABI rs6000_current_abi
 
 #include "rs6000/powerpc.h"
 
@@ -151,12 +200,6 @@ do {									\
 /* Don't use the COFF object file format.  */
 
 #undef OBJECT_FORMAT_COFF
-
-/* The XCOFF support uses weird symbol suffixes, which we don't want
-   for ELF.  */
-
-#undef RS6000_OUTPUT_BASENAME
-#define RS6000_OUTPUT_BASENAME(FILE, NAME) assemble_name (FILE, NAME)
 
 /* Don't bother to output .extern pseudo-ops.  They are not needed by
    ELF assemblers.  */
@@ -237,12 +280,39 @@ toc_section ()								\
   if (in_section != in_toc)						\
     {									\
       in_section = in_toc;						\
-      fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);	\
-      if (! toc_initialized)						\
+      if ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)		\
+	  && TARGET_MINIMAL_TOC						\
+	  && !TARGET_RELOCATABLE)					\
 	{								\
-	  ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1");	\
-	  fprintf (asm_out_file, " = .+32768\n");			\
-	  toc_initialized = 1;						\
+	  if (! toc_initialized)					\
+	    {								\
+	      toc_initialized = 1;					\
+	      fprintf (asm_out_file, "%s\n", TOC_SECTION_ASM_OP);	\
+	      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LCTOC", 0);	\
+	      fprintf (asm_out_file, "\t.tc ");				\
+	      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1[TC],"); \
+	      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1"); \
+	      fprintf (asm_out_file, "\n");				\
+									\
+	      fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP); \
+	      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1"); \
+	      fprintf (asm_out_file, " = .+32768\n");			\
+	    }								\
+	  else								\
+	    fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);	\
+	}								\
+      else if ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)	\
+	       && !TARGET_RELOCATABLE)					\
+	fprintf (asm_out_file, "%s\n", TOC_SECTION_ASM_OP);		\
+      else								\
+	{								\
+	  fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);	\
+	  if (! toc_initialized)					\
+	    {								\
+	      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1"); \
+	      fprintf (asm_out_file, " = .+32768\n");			\
+	      toc_initialized = 1;					\
+	    }								\
 	}								\
     }									\
 }
@@ -260,6 +330,30 @@ toc_section ()								\
     const_section ();				\
 }
 
+/* Return non-zero if this entry is to be written into the constant pool
+   in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF or a CONST
+   containing one of them.  If -mfp-in-toc (the default), we also do
+   this for floating-point constants.  We actually can only do this
+   if the FP formats of the target and host machines are the same, but
+   we can't check that since not every file that uses
+   GO_IF_LEGITIMATE_ADDRESS_P includes real.h.
+
+   Unlike AIX, we don't key off of -mmininal-toc, but instead do not
+   allow floating point constants in the TOC if -mrelocatable.  */
+
+#undef	ASM_OUTPUT_SPECIAL_POOL_ENTRY_P
+#define ASM_OUTPUT_SPECIAL_POOL_ENTRY_P(X)				\
+  (TARGET_TOC								\
+   && (GET_CODE (X) == SYMBOL_REF					\
+       || (GET_CODE (X) == CONST && GET_CODE (XEXP (X, 0)) == PLUS	\
+	   && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF)		\
+       || GET_CODE (X) == LABEL_REF					\
+       || (!TARGET_NO_FP_IN_TOC						\
+	   && !TARGET_RELOCATABLE					\
+	   && GET_CODE (X) == CONST_DOUBLE				\
+	   && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
+	   && BITS_PER_WORD == HOST_BITS_PER_INT)))
+
 /* These macros generate the special .type and .size directives which
    are used to set the corresponding fields of the linker symbol table
    entries in an ELF object file under SVR4.  These macros also output
@@ -269,37 +363,53 @@ toc_section ()								\
    Some svr4 assemblers need to also have something extra said about the
    function's return value.  We allow for that here.  */
 
-extern void svr4_traceback ();
 extern int rs6000_pic_labelno;
 
 #undef	ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
+    char *orig_name;							\
+    char *init_ptr = (TARGET_64BIT) ? ".quad" : ".long";		\
+    STRIP_NAME_ENCODING (orig_name, NAME);				\
+									\
     if (TARGET_RELOCATABLE && get_pool_size () != 0)			\
       {									\
-	char buf[256];							\
+	char buf[256], *buf_ptr;					\
 									\
 	ASM_OUTPUT_INTERNAL_LABEL (FILE, "LCL", rs6000_pic_labelno);	\
 									\
 	ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);			\
-	fprintf (FILE, (TARGET_POWERPC64) ? "\t.quad " : "\t.long ");	\
-	assemble_name (FILE, buf);					\
-	putc ('-', FILE);						\
+	STRIP_NAME_ENCODING (buf_ptr, buf);				\
+	fprintf (FILE, "\t%s %s-", init_ptr, buf_ptr);			\
 									\
 	ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);	\
-	assemble_name (FILE, buf);					\
-	putc ('\n', FILE);						\
+	fprintf (FILE, "%s\n", buf_ptr);				\
       }									\
 									\
-    fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
-    assemble_name (FILE, NAME);						\
-    putc (',', FILE);							\
+    fprintf (FILE, "\t%s\t %s,", TYPE_ASM_OP, orig_name);		\
     fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
     putc ('\n', FILE);							\
-    if (TARGET_TRACEBACK)						\
-      svr4_traceback (FILE, NAME, DECL);				\
     ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
-    ASM_OUTPUT_LABEL(FILE, NAME);					\
+									\
+    if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)		\
+      {									\
+	char *desc_name = orig_name;					\
+									\
+	while (*desc_name == '.')					\
+	  desc_name++;							\
+									\
+	if (TREE_PUBLIC (DECL))						\
+	  fprintf (FILE, "\t.globl %s\n", desc_name);			\
+									\
+	fprintf (FILE, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);		\
+	fprintf (FILE, "%s:\n", desc_name);				\
+	fprintf (FILE, "\t%s %s\n", init_ptr, orig_name);		\
+	fprintf (FILE, "\t%s _GLOBAL_OFFSET_TABLE_\n", init_ptr);	\
+	if (DEFAULT_ABI == ABI_AIX)					\
+	  fprintf (FILE, "\t%s 0\n", init_ptr);				\
+	fprintf (FILE, "\t.previous\n");				\
+      }									\
+    fprintf (FILE, "%s:\n", orig_name);					\
   } while (0)
 
 /* How to renumber registers for dbx and gdb.  */
@@ -315,11 +425,30 @@ extern int rs6000_pic_labelno;
 /* Pass -mppc to the assembler, since that is what powerpc.h currently
    implies.  */
 #undef ASM_SPEC
-#define ASM_SPEC \
-  "-u \
-%{mcpu=601: -m601} %{!mcpu=601: -mppc} \
+#define ASM_SPEC "\
+-u \
+%{!mcpu*: \
+  %{mpower2: -mpwrx} \
+  %{mpowerpc*: %{!mpower: -mppc}} \
+  %{mno-powerpc: %{!mpower: %{!mpower2: -mcom}}} \
+  %{mno-powerpc: %{mpower: %{!mpower2: -mpwr}}} \
+  %{!mno-powerpc: %{mpower: -m601}} \
+  %{!mno-powerpc: %{!mpower: -mppc}}} \
+%{mcpu=common: -mcom} \
+%{mcpu=power: -mpwr} \
+%{mcpu=powerpc: -mppc} \
+%{mcpu=rios: -mpwr} \
+%{mcpu=rios1: -mpwr} \
+%{mcpu=rios2: -mpwrx} \
+%{mcpu=rsc: -mpwr} \
+%{mcpu=rsc1: -mpwr} \
+%{mcpu=403: -mppc} \
+%{mcpu=601: -m601} \
+%{mcpu=603: -mppc} \
+%{mcpu=603e: -mppc} \
+%{mcpu=604: -mppc} \
 %{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
-%{mrelocatable} \
+%{mrelocatable} %{mrelocatable-lib} %{memb} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
 
 /* Output .file and comments listing what options there are */
@@ -330,6 +459,61 @@ do {									\
   output_file_directive ((FILE), main_input_filename);			\
 } while (0)
 
+
+/* This is how to output an assembler line defining an `int' constant.
+   For -mrelocatable, we mark all addresses that need to be fixed up
+   in the .fixup section.  */
+#undef	ASM_OUTPUT_INT
+#define ASM_OUTPUT_INT(FILE,VALUE)					\
+do {									\
+  static int recurse = 0;						\
+  if (TARGET_RELOCATABLE						\
+      && in_section != in_toc						\
+      && in_section != in_text						\
+      && in_section != in_ctors						\
+      && in_section != in_dtors						\
+      && !recurse							\
+      && GET_CODE (VALUE) != CONST_INT					\
+      && GET_CODE (VALUE) != CONST_DOUBLE				\
+      && CONSTANT_P (VALUE))						\
+    {									\
+      static int labelno = 0;						\
+      char buf[256], *p;						\
+									\
+      recurse = 1;							\
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LCP", labelno++);		\
+      STRIP_NAME_ENCODING (p, buf);					\
+      fprintf (FILE, "%s:\n", p);					\
+      fprintf (FILE, "\t.long (");					\
+      output_addr_const (FILE, (VALUE));				\
+      fprintf (FILE, ")@fixup\n");					\
+      fprintf (FILE, "\t.section\t\".fixup\",\"aw\"\n");		\
+      ASM_OUTPUT_ALIGN (FILE, 2);					\
+      fprintf (FILE, "\t.long\t%s\n", p);				\
+      fprintf (FILE, "\t.previous\n");					\
+      recurse = 0;							\
+    }									\
+  /* Remove initial .'s to turn a -mcall-aixdesc or -mcall-nt function	\
+     address into the address of the descriptor, not the function	\
+     itself.  */							\
+  else if (GET_CODE (VALUE) == SYMBOL_REF				\
+	   && XSTR (VALUE, 0)[0] == '.'					\
+	   && (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT))	\
+    {									\
+      char *name = XSTR (VALUE, 0);					\
+      while (*name == '.')						\
+	name++;								\
+									\
+      fprintf (FILE, "\t.long %s\n", name);				\
+    }									\
+  else									\
+    {									\
+      fprintf (FILE, "\t.long ");					\
+      output_addr_const (FILE, (VALUE));				\
+      fprintf (FILE, "\n");						\
+    }									\
+} while (0)
+
 /* This is the end of what might become sysv4.h.  */
 
 /* Allow stabs and dwarf, prefer dwarf.  */
@@ -337,30 +521,41 @@ do {									\
 #define	DBX_DEBUGGING_INFO
 #define	DWARF_DEBUGGING_INFO
 
+/* If we are referencing a function that is static or is known to be
+   in this file, make the SYMBOL_REF special.  We can use this to indicate
+   that we can branch to this function without emitting a no-op after the
+   call.  For real AIX and NT calling sequences, we also replace the
+   function name with the real name (1 or 2 leading .'s), rather than
+   the function descriptor name.  This saves a lot of overriding code
+   to readd the prefixes.  */
+
+#undef	ENCODE_SECTION_INFO
+#define ENCODE_SECTION_INFO(DECL)					\
+  do {									\
+    if (TREE_CODE (DECL) == FUNCTION_DECL)				\
+      {									\
+	rtx sym_ref = XEXP (DECL_RTL (DECL), 0);			\
+	if (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL))		\
+	  SYMBOL_REF_FLAG (sym_ref) = 1;				\
+									\
+	if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)		\
+	  {								\
+	    char *prefix = (DEFAULT_ABI == ABI_AIX) ? "." : "..";	\
+	    char *str = permalloc (strlen (prefix) + 1			\
+				   + strlen (XSTR (sym_ref, 0)));	\
+	    strcpy (str, prefix);					\
+	    strcat (str, XSTR (sym_ref, 0));				\
+	    XSTR (sym_ref, 0) = str;					\
+	  }								\
+      }									\
+  } while (0)
+
 /* This macro gets just the user-specified name
    out of the string in a SYMBOL_REF.  Discard
    a leading * */
 #undef  STRIP_NAME_ENCODING
 #define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
   (VAR) = ((SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'))
-
-/* Like block addresses, stabs line numbers are relative to the
-   current function.  */
-
-#undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(file, line)				\
-do									\
-  {									\
-    static int sym_lineno = 1;						\
-    char *_p;								\
-    fprintf (file, "\t.stabn 68,0,%d,.LM%d-",				\
-	     line, sym_lineno);						\
-    STRIP_NAME_ENCODING (_p, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0)); \
-    assemble_name (file, _p);						\
-    fprintf (file, "\n.LM%d:\n", sym_lineno);				\
-    sym_lineno += 1;							\
-  }									\
-while (0)
 
 /* But, to make this work, we have to output the stabs for the function
    name *first*...  */
@@ -371,77 +566,6 @@ while (0)
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC System V.4)");
-
-
-/* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.
-
-   The trampoline should set the static chain pointer to value placed
-   into the trampoline and should branch to the specified routine.
-
-   Unlike AIX, this needs real code.  */
-
-#undef	TRAMPOLINE_TEMPLATE
-#define TRAMPOLINE_TEMPLATE(FILE)					\
-do {									\
-  char *sc = reg_names[STATIC_CHAIN_REGNUM];				\
-  char *r0 = reg_names[0];						\
-									\
-  if (STATIC_CHAIN_REGNUM == 0 || !TARGET_NEW_MNEMONICS)		\
-    abort ();								\
-									\
-  if (TARGET_64BIT)							\
-    {									\
-      fprintf (FILE, "\tmflr %s\n", r0);		/* offset  0 */	\
-      fprintf (FILE, "\tbl .LTRAMP1\n");		/* offset  4 */	\
-      fprintf (FILE, "\t.long 0,0,0,0\n");		/* offset  8 */	\
-      fprintf (FILE, ".LTRAMP1:\n");					\
-      fprintf (FILE, "\tmflr %s\n", sc);		/* offset 28 */	\
-      fprintf (FILE, "\tmtlr %s\n", r0);		/* offset 32 */	\
-      fprintf (FILE, "\tld %s,0(%s)\n", r0, sc);	/* offset 36 */	\
-      fprintf (FILE, "\tld %s,8(%s)\n", sc, sc);	/* offset 40 */	\
-      fprintf (FILE, "\tmtctr %s\n", r0);		/* offset 44 */	\
-      fprintf (FILE, "\tbctr\n");			/* offset 48 */	\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "\tmflr %s\n", r0);		/* offset  0 */	\
-      fprintf (FILE, "\tbl .LTRAMP1\n");		/* offset  4 */	\
-      fprintf (FILE, "\t.long 0,0\n");			/* offset  8 */	\
-      fprintf (FILE, ".LTRAMP1:\n");					\
-      fprintf (FILE, "\tmflr %s\n", sc);		/* offset 20 */	\
-      fprintf (FILE, "\tmtlr %s\n", r0);		/* offset 24 */	\
-      fprintf (FILE, "\tlwz %s,0(%s)\n", r0, sc);	/* offset 28 */	\
-      fprintf (FILE, "\tlwz %s,4(%s)\n", sc, sc);	/* offset 32 */	\
-      fprintf (FILE, "\tmtctr %s\n", r0);		/* offset 36 */	\
-      fprintf (FILE, "\tbctr\n");			/* offset 40 */	\
-    }									\
-} while (0)
-
-/* Length in units of the trampoline for entering a nested function.  */
-
-#undef	TRAMPOLINE_SIZE
-#define TRAMPOLINE_SIZE    (TARGET_64BIT ? 48 : 40)
-
-/* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-
-#undef	INITIALIZE_TRAMPOLINE
-#define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, CXT)			\
-{									\
-  rtx reg = gen_reg_rtx (Pmode);					\
-									\
-  emit_move_insn (reg, FNADDR);						\
-  emit_move_insn (gen_rtx (MEM, Pmode,					\
-			   plus_constant (ADDR, 8)),			\
-		  reg);							\
-  emit_move_insn (gen_rtx (MEM, Pmode,					\
-			   plus_constant (ADDR, (TARGET_64BIT ? 16 : 12))), \
-		  CXT);							\
-  emit_insn (gen_sync_isync (gen_rtx (MEM, BLKmode, ADDR)));		\
-}
-
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
@@ -482,7 +606,9 @@ do {									\
 #define CPP_SPEC "\
 %{posix: -D_POSIX_SOURCE} \
 %{mrelocatable: -D_RELOCATABLE} \
-%{mcall-sysv: -D_CALL_SYSV} %{mcall-aix: -D_CALL_AIX} %{!mcall-sysv: %{!mcall-aix: -D_CALL_SYSV}} \
+%{mcall-sysv: -D_CALL_SYSV} %{mcall-nt: -D_CALL_NT} \
+%{mcall-aix: -D_CALL_AIX} %{mcall-aixdesc: -D_CALL_AIX -D_CALL_AIXDESC} \
+%{!mcall-sysv: %{!mcall-aix: %{!mcall-aixdesc: %{!mcall-nt: -D_CALL_SYSV}}}} \
 %{msoft-float: -D_SOFT_FLOAT} %{mcpu=403: -D_SOFT_FLOAT} \
 %{mlittle: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
 %{mlittle-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
@@ -503,5 +629,20 @@ do {									\
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=403: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
+%{mcpu=602: -D_ARCH_PPC} \
 %{mcpu=603: -D_ARCH_PPC} \
-%{mcpu=604: -D_ARCH_PPC}"
+%{mcpu=603e: -D_ARCH_PPC} \
+%{mcpu=604: -D_ARCH_PPC} \
+%{mcpu=620: -D_ARCH_PPC}"
+
+/* Define this macro as a C expression for the initializer of an
+   array of string to tell the driver program which options are
+   defaults for this target and thus do not need to be handled
+   specially when using `MULTILIB_OPTIONS'.
+
+   Do not define this macro if `MULTILIB_OPTIONS' is not defined in
+   the target makefile fragment or if none of the options listed in
+   `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
+
+#undef	MULTILIB_DEFAULTS
+#define	MULTILIB_DEFAULTS { "mbig", "mbig-endian", "mcall-sysv" }
