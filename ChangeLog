@@ -1,3 +1,7 @@
+Fri Jul 13 14:31:57 2001  Nicola Pero  <nicola@brainstorm.co.uk>
+
+	* MAINTAINERS (Write After Approval): Added myself.
+
 2001-07-12  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* configure.in (noconfigdirs): Don't compile libiberty, libstdcxx
