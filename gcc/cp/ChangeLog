@@ -1,3 +1,9 @@
+2003-01-02  Steven Bosscher <s.bosscher@student.tudelft.nl>
+
+	* cp/except.c, cp/expr.c, cp/friend.c, cp/g++spec.c,
+	cp/lang-options.h, cp/lang-specs.h, cp/lex.h, cp/ptree.c,
+	cp/repo.c: Fix copyright years.
+
 2003-01-01  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lex.c: Remove superfluous include of cpplib.h.
@@ -89,7 +95,7 @@
 	(finish_named_return_value): Remove.
 	(cp_expand_stmt): Remove RETURN_INIT case.
 	* tree.c (cp_statement_code_p): Remove RETURN_INIT case.
-	
+
 2002-12-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9112
@@ -129,7 +135,7 @@
 
 2002-12-30  Nathanael Nerode  <neroden@gcc.gnu.org>
 
-	* config-lang.in, Make-lang.in, operators.def, cp-tree.def:  
+	* config-lang.in, Make-lang.in, operators.def, cp-tree.def:
 	GCC, not GNU CC.
 
 2002-12-30  Mark Mitchell  <mark@codesourcery.com>
@@ -159,7 +165,7 @@
 	(pending_lang_change): Likewise.
 	(yylex): Likewise.
 	* semantics.c (finish_id_expr): Remove.
-	
+
 	* decl.c (grokdeclarator): Diagnost "extern thread" and "static
 	thread" correctly.
 
@@ -250,7 +256,7 @@
 	cxx_warn_unused_global_decl, cp_expr_size): Likewise.
 	* cxxfilt.c (demangle_it, print_demangler_list, usage,
 	standard_symbol_characters, hp_symbol_characters, main, fatal):
-	Likewise. 
+	Likewise.
 	(strip_underscore):  Change type from 'int' to 'bool'.
 	(main): Use boolean constants.
 
@@ -359,7 +365,7 @@
 	(grokdeclarator): Obscure tweaks for slightly different declarator
 	representations.
 	(start_method): Return error_mark_node to indicate failure.
-	(cp_tree_node_structure_enum): Use TS_CP_DEFAULT_ARG for DEFAULT_ARGs. 
+	(cp_tree_node_structure_enum): Use TS_CP_DEFAULT_ARG for DEFAULT_ARGs.
 	* decl2.c (constructor_name_full): Simplify.
 	(constructor_name): Use it.
 	(build_expr_from_tree): Adjust for changes to do new parser.
@@ -435,7 +441,7 @@
 	(finish_class_member_access_expr): Use it.
 	(convert_arguments): Simplify.
 	(build_unary_op): Handle BASELINKs.
-	
+
 2002-12-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/4803
@@ -461,7 +467,7 @@
 	PR c++/9053
 	* decl.c (duplicate_decls): Templates may be disambiguated by
 	return type.
-	
+
 	PR c++/8702
 	* decl2.c (check_classfn): Use lookup_fnfield_1. List all
 	conversion operators on failure.
@@ -560,7 +566,7 @@
 
 	* decl.c (finish_function): Also complain about no return in
 	templates.
-	* semantics.c (finish_return_stmt): Also call check_return_expr in 
+	* semantics.c (finish_return_stmt): Also call check_return_expr in
 	templates.
 	* typeck.c (check_return_expr): In a template, just remember that we
 	saw a return.
@@ -593,7 +599,7 @@
 2002-12-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR C++/8031
-	* cvt.c (convert_to_pointer_force): Don't try comparing against 
+	* cvt.c (convert_to_pointer_force): Don't try comparing against
 	erronous type.
 
 2002-12-13  Geoffrey Keating  <geoffk@apple.com>
@@ -616,10 +622,10 @@
 2002-12-10  Matt Austern   <austern@apple.com>
 
 	* cp-tree.h: get rid of needs_virtual_reinit bit.
-	
+
 2002-12-09  Mark Mitchell  <mark@codesourcery.com>
 
-	* NEWS: Document removal of in-class initialization extension for 
+	* NEWS: Document removal of in-class initialization extension for
 	static data members of non-arithmetic, non-enumeration type.
 	* decl.c (check_static_variable_definition): Do not allow that
 	extension.
@@ -639,7 +645,7 @@
 
 	PR C++/8799
 	* error.c (dump_expr): Don't ever try to dump a non-existent
-	expression. 
+	expression.
 
 2002-12-03  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -681,7 +687,7 @@
 	PR c++/8461, c++/8625
 	* call.c (convert_for_arg_passing): Don't mess with error_mark_node.
 	(cp_convert_parm_for_inlining): Remove.
-	* cp-lang.c (LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING): 
+	* cp-lang.c (LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING):
 	Remove.
 	* cp-tree.h (ADDR_IS_INVISIREF): Remove.
 	* except.c (stabilize_throw_expr): Remove ADDR_IS_INVISIREF code.
@@ -703,7 +709,7 @@
 	PR c++/8615
 	* error.c (dump_expr): Handle character constants with
 	TREE_OVERFLOW set.
-	
+
 2002-12-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	DR 180
@@ -715,7 +721,7 @@
 	PR c++/5919
 	* pt.c (unify): Use variably_modified_type_p to test validity of
 	template argument types.
-	
+
 	PR c++/8727
 	* cp-tree.h (lang_type_class): Add typeinfo_var.
 	(CLASSTYPE_TYPEINFO_VAR): New macro.
@@ -750,7 +756,7 @@
 	(check_initializer): Validate the type of the initialized
 	variable, even if the initializer is absent.
 	* typeck.c (cp_type_quals): Deal gracefully with erroneous types.
-	
+
 	PR c++/8214
 	* typeck.c (convert_for_assignment): Do not use
 	decl_constant_value on the operand.
@@ -763,7 +769,7 @@
 
 	* parse.y (class_head_defn): Set CLASSTYPE_DECLARED_CLASS for
 	anonymous structs.
-	
+
 2002-11-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (walk_subobject_offsets): Recur on binfos as well as on
@@ -772,7 +778,7 @@
 	base class.
 	(layout_empty_base): Likewise.
 	(build_base_field): Likewise.
-	
+
 2002-11-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_base_field): Make sure we get the canonical base
@@ -802,7 +808,7 @@
 	(build_base_field): Record offsets of empty bases in primary
 	virtual bases.
 	(layout_class_type): Record offsets of empty bases in fields.
-	
+
 	* search.c (is_subobject_of_p_1): Fix thinko.
 	(lookup_field_queue_p): Likewise.
 
@@ -1334,7 +1340,7 @@
 
 2002-10-03  Mark Mitchell  <mark@codesourcery.com>
 
- 	PR c++/7931
+	PR c++/7931
 	* pt.c (for_each_template_parm_r): Handle BASELINKs.
 
 	PR c++/7754

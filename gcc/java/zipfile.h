@@ -1,5 +1,5 @@
 /* Definitions for using a zipped' archive.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003
    Free Software Foundation, Inc.
 
 This file is part of GCC.

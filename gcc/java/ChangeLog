@@ -1,3 +1,9 @@
+2003-01-02  Steven Bosscher <s.bosscher@student.tudelft.nl>
+
+	* java/jcf-reader.c, java/jvgenmain.c, java/keyword.gperf,
+	java/lang-options.h, java/mangle.c, java/mangle_name.c,
+	java/xref.c, java/zextract.c,java/zipfile.h: Fix copyright years.
+
 2003-01-01  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	* Make-lang.in, boehm.c, buffer.c,
@@ -8,7 +14,7 @@
 	  java-tree.h, javaop.def,
 	  jcf-parse.c, jcf-write.c,
 	  jv-scan.c, jvgenmain.c,
-	  jvspec.c, keyword.gperf, 
+	  jvspec.c, keyword.gperf,
 	  keyword.h, lang-options.h,
 	  lang-specs.h, lang.c, lex.c,
 	  lex.h, mangle.c, mangle_name.c,
@@ -38,7 +44,7 @@
 	(print_cxx_classname): Add add_scope parameter.
 	(print_class_decls): Do not emit a semicolon after the extern
 	"Java" block.
-	(process_file): Adjust calls to print_cxx_classname.	
+	(process_file): Adjust calls to print_cxx_classname.
 
 2002-12-23  Joseph S. Myers  <jsm@polyomino.org.uk>
 
