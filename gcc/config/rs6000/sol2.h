@@ -48,7 +48,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
-%{!ansi:%{!traditional: -D__STDC__=0}} \
 %(cpp_sysv) %(cpp_endian) %(cpp_cpu) \
 %{mmvme: %(cpp_os_mvme) } \
 %{msim: %(cpp_os_sim) } \

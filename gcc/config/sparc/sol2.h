@@ -31,7 +31,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
-%{!ansi:%{!traditional:-D__STDC__=0 }}\
 %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude} \
 %(cpp_cpu) \
 "
