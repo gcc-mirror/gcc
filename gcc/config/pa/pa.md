@@ -2604,7 +2604,7 @@
 ;; Note since this pattern can be created at reload time (via movsi), all
 ;; the same rules for movsi apply here.  (no new pseudos, no temporaries).
 (define_insn ""
-  [(set (match_operand 0 "pmode_register_operand" "=r")
+  [(set (match_operand 0 "pmode_register_operand" "=a")
 	(match_operand 1 "pic_label_operand" ""))]
   "TARGET_PA_20"
   "*
