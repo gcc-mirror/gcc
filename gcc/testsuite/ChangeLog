@@ -1,3 +1,8 @@
+2004-05-13  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/15314
+	* gfortran.fortran-torture/execute/der_init_s.f90: New test.
+
 2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/uninit-H.c: Test for __PPC__ and __ppc__
