@@ -1,6 +1,6 @@
 // HP/SGI iterator extensions -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -81,7 +81,11 @@ namespace __gnu_cxx
     {
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      while (__first != __last) { ++__first; ++__n; }
+      while (__first != __last)
+	{
+	  ++__first;
+	  ++__n;
+	}
     }
 
   template<typename _RandomAccessIterator, typename _Distance>
@@ -90,7 +94,8 @@ namespace __gnu_cxx
 	       _Distance& __n, std::random_access_iterator_tag)
     {
       // concept requirements
-      __glibcxx_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
+      __glibcxx_function_requires(_RandomAccessIteratorConcept<
+				  _RandomAccessIterator>)
       __n += __last - __first;
     }
 
