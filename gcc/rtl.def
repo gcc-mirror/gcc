@@ -342,6 +342,147 @@ DEF_RTL_EXPR(SEQUENCE, "sequence", "E", 'x')
 DEF_RTL_EXPR(ADDRESS, "address", "e", 'm')
 
 /* ----------------------------------------------------------------------
+   Constructions for CPU pipeline description described by NDFAs.
+   These do not appear in actual rtl code in the compiler.
+   ---------------------------------------------------------------------- */
+
+/* (define_cpu_unit string [string]) describes cpu functional
+   units (separated by comma).
+
+   1st operand: Names of cpu functional units.
+   2nd operand: Name of automaton (see comments for DEFINE_AUTOMATON).
+
+   All define_reservations, define_cpu_units, and
+   define_query_cpu_units should have unique names which may not be
+   "nothing".  */
+DEF_RTL_EXPR(DEFINE_CPU_UNIT, "define_cpu_unit", "sS", 'x')
+
+/* (define_query_cpu_unit string [string]) describes cpu functional
+   units analogously to define_cpu_unit.  If we use automaton without
+   minimization, the reservation of such units can be queried for
+   automaton state.  */
+DEF_RTL_EXPR(DEFINE_QUERY_CPU_UNIT, "define_query_cpu_unit", "sS", 'x')
+
+/* (exclusion_set string string) means that each CPU functional unit
+   in the first string can not be reserved simultaneously with any
+   unit whose name is in the second string and vise versa.  CPU units
+   in the string are separated by commas.  For example, it is useful
+   for description CPU with fully pipelined floating point functional
+   unit which can execute simultaneously only single floating point
+   insns or only double floating point insns.  All CPU functional
+   units in a set should belong the same automaton.  */
+DEF_RTL_EXPR(EXCLUSION_SET, "exclusion_set", "ss", 'x')
+
+/* (presence_set string string) means that each CPU functional unit in
+   the first string can not be reserved unless at least one of units
+   whose names are in the second string is reserved.  This is an
+   asymmetric relation.  CPU units in the string are separated by
+   commas.  For example, it is useful for description that slot1 is
+   reserved after slot0 reservation for VLIW processor.  All CPU
+   functional units in a set should belong the same automaton.  */
+DEF_RTL_EXPR(PRESENCE_SET, "presence_set", "ss", 'x')
+
+/* (absence_set string string) means that each CPU functional unit in
+   the first string can not be reserved only if each unit whose name
+   is in the second string is not reserved.  This is an asymmetric
+   relation (actually exclusion set is analogous to this one but it is
+   symmetric).  CPU units in the string are separated by commas.  For
+   example, it is useful for description that slot0 can not be
+   reserved after slot1 or slot2 reservation for VLIW processor.  All
+   CPU functional units in a set should belong the same automaton.  */
+DEF_RTL_EXPR(ABSENCE_SET, "absence_set", "ss", 'x')
+
+/* (define_bypass number out_insn_names in_insn_names) names bypass
+   with given latency (the first number) from insns given by the first
+   string (see define_insn_reservation) into insns given by the second
+   string.  Insn names in the strings are separated by commas.  The
+   third operand is optional name of function which is additional
+   guard for the bypass.  The function will get the two insns as
+   parameters.  If the function returns zero the bypass will be
+   ignored for this case.  Additional guard is necessary to recognize
+   complicated bypasses, e.g. when consumer is load address.  */
+DEF_RTL_EXPR(DEFINE_BYPASS, "define_bypass", "issS", 'x')
+
+/* (define_automaton string) describes names of automata generated and
+   used for pipeline hazards recognition.  The names are separated by
+   comma.  Actually it is possibly to generate the single automaton
+   but unfortunately it can be very large.  If we use more one
+   automata, the summary size of the automata usually is less than the
+   single one.  The automaton name is used in define_cpu_unit and
+   define_query_cpu_unit.  All automata should have unique names.  */
+DEF_RTL_EXPR(DEFINE_AUTOMATON, "define_automaton", "s", 'x')
+
+/* (automata_option string) describes option for generation of
+   automata.  Currently there are the following options:
+
+   o "no-minimization" which makes no minimization of automata.  This
+     is only worth to do when we are going to query CPU functional
+     unit reservations in an automaton state.
+
+   o "w" which means generation of file describing the result
+     automaton.  The file can be used for the description verification.
+
+   o "ndfa" which makes nondeterministic finite state automata.  */
+DEF_RTL_EXPR(AUTOMATA_OPTION, "automata_option", "s", 'x')
+
+/* (define_reservation string string) names reservation (the first
+   string) of cpu functional units (the 2nd string).  Sometimes unit
+   reservations for different insns contain common parts.  In such
+   case, you can describe common part and use its name (the 1st
+   parameter) in regular expression in define_insn_reservation.  All
+   define_reservations, define_cpu_units, and define_query_cpu_units
+   should have unique names which may not be "nothing".  */
+DEF_RTL_EXPR(DEFINE_RESERVATION, "define_reservation", "ss", 'x')
+
+/* (define_insn_reservation name default_latency condition regexpr)
+   describes reservation of cpu functional units (the 3nd operand) for
+   instruction which is selected by the condition (the 2nd parameter).
+   The first parameter is used for output of debugging information.
+   The reservations are described by a regular expression according
+   the following syntax:
+
+       regexp = regexp "," oneof
+              | oneof
+
+       oneof = oneof "|" allof
+             | allof
+
+       allof = allof "+" repeat
+             | repeat
+ 
+       repeat = element "*" number
+              | element
+
+       element = cpu_function_unit_name
+               | reservation_name
+               | result_name
+               | "nothing"
+               | "(" regexp ")"
+
+       1. "," is used for describing start of the next cycle in
+       reservation.
+
+       2. "|" is used for describing the reservation described by the
+       first regular expression *or* the reservation described by the
+       second regular expression *or* etc.
+
+       3. "+" is used for describing the reservation described by the
+       first regular expression *and* the reservation described by the
+       second regular expression *and* etc.
+
+       4. "*" is used for convinience and simply means sequence in
+       which the regular expression are repeated NUMBER times with
+       cycle advancing (see ",").
+
+       5. cpu functional unit name which means its reservation.
+
+       6. reservation name -- see define_reservation.
+
+       7. string "nothing" means no units reservation.  */
+
+DEF_RTL_EXPR(DEFINE_INSN_RESERVATION, "define_insn_reservation", "sies", 'x')
+
+/* ----------------------------------------------------------------------
    Expressions used for insn attributes.  These also do not appear in
    actual rtl code in the compiler.
    ---------------------------------------------------------------------- */

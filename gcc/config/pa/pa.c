@@ -49,6 +49,17 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 
+static int hppa_use_dfa_pipeline_interface PARAMS ((void));
+
+#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE 
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hppa_use_dfa_pipeline_interface
+
+static int
+hppa_use_dfa_pipeline_interface ()
+{
+  return 1;
+}
+
 #ifndef DO_FRAME_NOTES
 #ifdef INCOMING_RETURN_ADDR_RTX
 #define DO_FRAME_NOTES 1
@@ -172,6 +183,11 @@ override_options ()
       pa_cpu_string = "7200";
       pa_cpu = PROCESSOR_7200;
     }
+  else if (pa_cpu_string && ! strcmp (pa_cpu_string, "7300"))
+    {
+      pa_cpu_string = "7300";
+      pa_cpu = PROCESSOR_7300;
+    }
   else if (pa_cpu_string && ! strcmp (pa_cpu_string, "8000"))
     {
       pa_cpu_string = "8000";
@@ -179,7 +195,7 @@ override_options ()
     }
   else
     {
-      warning ("unknown -mschedule= option (%s).\nValid options are 700, 7100, 7100LC, 7200, and 8000\n", pa_cpu_string);
+      warning ("unknown -mschedule= option (%s).\nValid options are 700, 7100, 7100LC, 7200, 7300, and 8000\n", pa_cpu_string);
     }
 
   /* Set the instruction set architecture.  */
@@ -3929,7 +3945,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		{
 		case TYPE_FPLOAD:
 		  /* This cost 3 cycles, not 2 as the md says for the
-		     700 and 7100.  */
+		     700 and 7100, 7100lc, 7200 and 7300.  */
 		  return cost + 1;
 
 		case TYPE_FPALU:
@@ -3947,6 +3963,11 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		  return cost;
 		}
 	    }
+
+	  /* A flop-flop true depenendency where the sizes of the operand
+	     carrying the dependency is difference causes an additional
+	     cycle stall on the 7100lc, 7200, and 7300.   Similarly for
+	     a fpload-flop true dependency.  */
 	}
 
       /* For other data dependencies, the default cost specified in the
@@ -3989,7 +4010,10 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		     preceding arithmetic operation has finished if
 		     the target of the fpload is any of the sources
 		     (or destination) of the arithmetic operation.  */
-		  return cost - 1;
+		  if (hppa_use_dfa_pipeline_interface ())
+		    return insn_default_latency (dep_insn) - 1;
+		  else
+		    return cost - 1;
 
 		default:
 		  return 0;
@@ -4024,7 +4048,10 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		     preceding divide or sqrt operation has finished if
 		     the target of the ALU flop is any of the sources
 		     (or destination) of the divide or sqrt operation.  */
-		  return cost - 2;
+		  if (hppa_use_dfa_pipeline_interface ())
+		    return insn_default_latency (dep_insn) - 2;
+		  else
+		    return cost - 2;
 
 		default:
 		  return 0;
@@ -4069,8 +4096,15 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		  /* A fpload can't be issued until one cycle before a
 		     preceding arithmetic operation has finished if
 		     the target of the fpload is the destination of the
-		     arithmetic operation.  */
-		  return cost - 1;
+		     arithmetic operation. 
+
+		     Exception: For PA7100LC, PA7200 and PA7300, the cost
+		     is 3 cycles, unless they bundle together.   We also
+		     pay the penalty if the second insn is a fpload.  */
+		  if (hppa_use_dfa_pipeline_interface ())
+		    return insn_default_latency (dep_insn) - 1;
+		  else
+		    return cost - 1;
 
 		default:
 		  return 0;
@@ -4105,7 +4139,10 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		     preceding divide or sqrt operation has finished if
 		     the target of the ALU flop is also the target of
 		     the divide or sqrt operation.  */
-		  return cost - 2;
+		  if (hppa_use_dfa_pipeline_interface ())
+		    return insn_default_latency (dep_insn) - 2;
+		  else
+		    return cost - 2;
 
 		default:
 		  return 0;
@@ -4165,6 +4202,7 @@ pa_issue_rate ()
     case PROCESSOR_7100:	return 2;
     case PROCESSOR_7100LC:	return 2;
     case PROCESSOR_7200:	return 2;
+    case PROCESSOR_7300:	return 2;
     case PROCESSOR_8000:	return 4;
 
     default:

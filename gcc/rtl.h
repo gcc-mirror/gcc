@@ -130,11 +130,9 @@ struct rtx_def
   /* 1 in an INSN if it can alter flow of control
      within this function.
      MEM_KEEP_ALIAS_SET_P in a MEM.
-     LINK_COST_ZERO in an INSN_LIST.
      SET_IS_RETURN_P in a SET.  */
   unsigned int jump : 1;
-  /* 1 in an INSN if it can call another function.
-     LINK_COST_FREE in an INSN_LIST.  */
+  /* 1 in an INSN if it can call another function.  */
   unsigned int call : 1;
   /* 1 in a REG if value of this expression will never change during
      the current function, even though it is not manifestly constant.
@@ -982,16 +980,6 @@ do {						\
 /* During sched, for an insn, 1 means that the insn must be scheduled together
    with the preceding insn.  */
 #define SCHED_GROUP_P(INSN) ((INSN)->in_struct)
-
-/* During sched, for the LOG_LINKS of an insn, these cache the adjusted
-   cost of the dependence link.  The cost of executing an instruction
-   may vary based on how the results are used.  LINK_COST_ZERO is 1 when
-   the cost through the link varies and is unchanged (i.e., the link has
-   zero additional cost).  LINK_COST_FREE is 1 when the cost through the
-   link is zero (i.e., the link makes the cost free).  In other cases,
-   the adjustment to the cost is recomputed each time it is needed.  */
-#define LINK_COST_ZERO(X) ((X)->jump)
-#define LINK_COST_FREE(X) ((X)->call)
 
 /* For a SET rtx, SET_DEST is the place that is set
    and SET_SRC is the value it is set to.  */

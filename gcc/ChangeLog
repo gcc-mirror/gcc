@@ -1,3 +1,365 @@
+2002-04-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Merging code from dfa-branch:
+	
+	2002-04-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (output_reserv_sets): Fix typo.
+
+	2002-04-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (output_reserv_sets): Remove
+	next_cycle_output_flag.
+
+	Thu Apr 18 08:57:06 2002  Jeffrey A Law  (law@redhat.com)
+
+        * sched-rgn.c (init_ready_list): Make the DFA code handle
+        USE/CLOBBER insns in the same way as the traditional
+        scheduler.
+        (new_ready): Similarly..
+
+	2002-04-17  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* haifa-sched.c (schedule_block): Change the DFA state only after
+	issuing insn.
+
+	Wed Apr 17 15:38:36 2002  Jeffrey A Law  (law@redhat.com)
+
+	* pa.c (hppa_use_dfa_pipeline_interface): New function.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE): Define.
+	(override_options): Add PA7300 scheduling support.
+	(pa_adjust_cost): Update various comments.  Properly
+	handle anti and output dependencies when using the
+	DFA scheduler.
+	(pa_issue_rate): Add PA7300 scheduling support.
+	(pa_can_combine_p): Call extract_insn before calling
+	constrain_operands (taken from mainline tree).
+	* pa.h (enum processor_type): Add PROCESSOR_PA7300.
+	* pa.md (cpu attr): Add 7300.  Rewrite pipeline
+	descriptions using DFA descriptions.  Add PA7300
+	scheduling support.
+
+	2002-03-30  David S. Miller  <davem@redhat.com>
+
+	Add UltraSPARC-III DFA scheduling support.
+	* config/sparc/sparc.md (define_attr type): Add fpcrmove.
+	Update FP conditional move on register insn patterns to use it, as
+	appropriate.
+	(define_attr cpu): Add ultrasparc3.
+	(define_attr us3load_type): New, update integer load patterns to
+	set it, as appropriate.
+	(define_automaton): Add ultrasparc3_0 and ultrasparc3_1.
+	(rest): Add UltraSPARC3 scheduling description.
+	* config/sparc/sparc.h (TARGET_CPU_ultrasparc3): New.
+	(PROCESSOR_ULTRASPARC3): New.
+	({ASM,CPP}_CPU64_DEFAULT_SPEC): Handle ultrasparc3.
+	({ASM,CPP}_CPU_SPEC): Likewise.
+	(REGISTER_MOVE_COST): Likewise.
+	(RTX_COSTS): Likewise.
+	* config/sparc/sparc.c (sparc_override_options,
+	sparc_initialize_trampoline, sparc64_initialize_trampoline,
+	sparc_use_dfa_pipeline_interface, sparc_use_sched_lookahead,
+	sparc_issue_rate): Likewise.
+	* config/sparc/sol2.h: Likewise.
+	* config/sparc/sol2-sld-64.h: Likewise.
+	* config/sparc/linux64.h: Likewise.
+	
+	2002-03-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* doc/md.texi: Add comments about usage the latency time for the
+	different dependencies and about case when two or more conditions
+	in different define_insn_reservations returns TRUE for an insn.
+
+	* doc/md.texi: Add reference for automaton based pipeline
+	description.
+	
+	2002-03-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* doc/passes.texi: Add missed information about genattrtab.
+
+	2002-03-01  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (output_automata_list_transition_code): Check
+	automata_list on NULL.
+
+	2002-02-28  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (output_insn_code_cases,
+	output_automata_list_min_issue_delay_code,
+	output_automata_list_transition_code,
+	output_automata_list_state_alts_code): Comment the functions.
+
+	2002-02-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (automata_list_el_t): New typedef.
+	(get_free_automata_list_el,free_automata_list_el,
+	free_automata_list, automata_list_hash, automata_list_eq_p,
+	initiate_automata_lists, automata_list_start, automata_list_add,
+	automata_list_finish, finish_automata_lists,
+	output_insn_code_cases, output_automata_list_min_issue_delay_code,
+	output_automata_list_transition_code,
+	output_automata_list_state_alts_code, add_automaton_state,
+	form_important_insn_automata_lists): New functions and prototypes.
+	(insn_reserv_decl): Add members important_automata_list and
+	processed_p.
+	(ainsn): Add members important_p.
+	(automata_list_el): New structure.
+	(first_free_automata_list_el, current_automata_list,
+	automata_list_table): New global variables.
+	(create_ainsns): Initiate member important_p.
+	(output_internal_min_issue_delay_func): Generate the switch and
+	call output_insn_code_cases.
+	(output_internal_trans_func, output_internal_state_alts_func):
+	Ditto.
+	(generate): Call initiate_automata_lists.
+	(automaton_states): New global variable.
+	(expand_automata): Call form_important_insn_automata_lists.
+	(write_automata): Call finish_automata_lists.
+	
+	2002-02-21  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (add_excls, add_presence_absence): Check that
+        cpu units in the sets belong the same automaton.
+
+	* rtl.def (EXCLUSION_SET, PRESENCE_SET, ABSENCE_SET): Add comment
+	about that cpu units in the sets belong the same automaton.
+
+	* doc/md.texi: Ditto.
+	
+	2001-12-20  Naveen Sharma,Nitin Gupta     <naveens@noida.hcltech.com,niting@noida.hcltech.com>
+
+	* config/sh/sh.c (sh_use_dfa_interface): New function.
+
+	(sh_issue_rate): New Function.
+	TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE: define.
+	TARGET_SCHED_ISSUE_RATE: define.
+
+	* config/sh/sh.md: Add DFA based pipeline description for SH4.
+
+	(define_attr insn_class): New attribute used for DFA 
+         scheduling.
+	(define_insn cmpgtsi_t): Set attribute insn_class mt_group.
+	(cmpgesi_t,cmpgtusi_t,cmpgeusi_t,cmpeqsi_t,
+	 cmpeqdi_t): Likewise.
+
+	(add,addc1,addsi3,subc,subc1,*subsi3_internal,
+	 negc,negsi2,ashldi3_k,lshrdi3_k,ashrdi3_k): Set insn_class 
+	 ex_group.
+	(iorsi3,rotlsi3_1,rotlsi3_31,rotlsi3_16): Likewise.
+	   
+	2001-10-03  Vladimir Makarov  <vmakarov@toke.toronto.redhat.com>
+
+	* haifa-sched.c (queue_to_ready): Remove unnecessary condition for
+	break.
+
+	2001-10-03  Vladimir Makarov  <vmakarov@toke.toronto.redhat.com>
+
+	* genautomata.c (DFA_INSN_CODES_LENGTH_VARIABLE_NAME): New macro.
+	(output_dfa_insn_code_func): Expand dfa_insn_codes if it is
+	necessary.
+	(output_dfa_start_func): Initiate new variable insn_codes_length,
+	(write_automata): Output definition of the new variable.
+	
+	2001-10-02  David S. Miller  <davem@redhat.com>
+
+	* haifa-sched.c (advance_one_cycle): New function.
+	(schedule_block): Use it.
+	(queue_to_ready): Use it, and also make sure to advance the DFA
+	state on all stall cycles, not just those where insn_queue links
+	are found.
+
+	2001-10-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* haifa-sched.c (max_issue): Remove last_p argument.  Only return
+	non-zero if the highest-priority instruction could be scheduled.
+	(choose_ready): Remove last argument from max_issue call.
+
+	2001-09-28  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.c (sparc_use_sched_lookahead): Use 4 for
+	ultrasparc and 3 for other multi-issue sparcs.
+
+	2001-09-27  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.md (cycle_display): New pattern.
+	* config/sparc/sparc.c (sparc_cycle_display): New.
+	(TARGET_SCHED_CYCLE_DISPLAY): Set it.
+
+	2001-09-25  David S. Miller  <davem@redhat.com>
+
+	Convert all of Sparc scheduling to DFA
+	* config/sparc/sparc.md: Kill all define_function_unit
+	directives and replace with DFA equivalent.
+	* config/sparc/sparc.c (ultrasparc_adjust_cost,
+	mark_ultrasparc_pipeline_state, ultra_cmove_results_ready_p,
+	ultra_fpmode_conflict_exists, ultra_find_type,
+	ultra_build_types_avail, ultra_flush_pipeline,
+	ultra_rescan_pipeline_state, ultrasparc_sched_reorder,
+	ultrasparc_variable_issue, ultrasparc_sched_init,
+	sparc_variable_issue, sparc_sched_reorder, ultra_code_from_mask,
+	ultra_schedule_insn, ultra_code_names, ultra_pipe_hist,
+	ultra_cur_hist, ultra_cycles_elapsed): Kill.
+	(sparc_use_dfa_pipeline_interface, sparc_use_sched_lookahead,
+	ultrasparc_store_bypass_p): New.
+	* config/sparc/sparc-protos.h (ultrasparc_store_bypass_p):
+	Declare.
+
+	2001-09-24  David S. Miller  <davem@redhat.com>
+
+	* haifa-sched.c (ready_remove): Fix thinko, we want to copy around
+	ready->vec[foo] not ready[foo].
+
+	2001-09-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* doc/md.texi: Correct examples for define_insn_reservations
+	`mult' and `div'.
+
+	2001-09-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (create_automata): Print message about creation of
+	each automaton.
+	(generate): Remove printing meease about creation of
+	automata.
+
+	2001-09-05  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/linux.h: Set CPLUSPLUS_CPP_SPEC.
+	* config/sparc/linux64.h: Likewise.
+
+	2001-08-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* haifa-sched.c (insn_cost, schedule_insn, queue_to_ready,
+	schedule_block, sched_init, sched_finish): Add missed calls of
+	use_dfa_pipeline_interface.
+
+	* sched-rgn.c (init_ready_list, new_ready, debug_dependencies):
+	Ditto.
+
+	* sched-vis.c (get_visual_tbl_length): Ditto.
+	
+	2001-08-27  Richard Henderson  <rth@redhat.com>
+
+	* genattr.c (main): Emit state_t even when not doing scheduling.
+
+	2001-08-27  Richard Henderson  <rth@redhat.com>
+
+	* genautomata.c (expand_automata): Always create a description.
+
+	2001-08-27  Vladimir Makarov  <vmakarov@touchme.toronto.redhat.com>
+
+        * rtl.def (DEFINE_CPU_UNIT, DEFINE_QUERY_CPU_UNIT, EXCLUSION_SET,
+	PRESENCE_SET, ABSENCE_SET, DEFINE_BYPASS, DEFINE_AUTOMATON,
+	AUTOMATA_OPTION, DEFINE_RESERVATION, DEFINE_INSN_RESERVATION): New
+	RTL constructions.
+
+	* genattr.c (main): New variable num_insn_reservations.  Increase
+	it if there is DEFINE_INSN_RESERVATION.  Output automaton based
+	pipeline hazard recognizer interface.
+
+	* genattrtab.h: New file.
+
+	* genattrtab.c: Include genattrtab.h.
+	(attr_printf, check_attr_test, make_internal_attr,
+	make_numeric_value): Move protypes into genattrtab.h.  Define them
+	as external.
+	(num_dfa_decls): New global variable.
+	(main): Process DEFINE_CPU_UNIT, DEFINE_QUERY_CPU_UNIT,
+	DEFINE_BYPASS, EXCLUSION_SET, PRESENCE_SET, ABSENCE_SET,
+	DEFINE_AUTOMATON, AUTOMATA_OPTION, DEFINE_RESERVATION,
+	DEFINE_INSN_RESERVATION.  Call expand_automata and write_automata.
+
+	* genautomata.c: New file.
+
+	* rtl.h (LINK_COST_ZERO, LINK_COST_FREE): Remove them.
+
+        * sched-int.h: (curr_state): Add the external definition for
+	automaton pipeline interface.
+	(haifa_insn_data): Add comments for members blockage and units.
+
+	* target-def.h (TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE,
+	TARGET_SCHED_INIT_DFA_PRE_CYCLE_INSN,
+	TARGET_SCHED_DFA_PRE_CYCLE_INSN,
+	TARGET_SCHED_INIT_DFA_POST_CYCLE_INSN,
+	TARGET_SCHED_DFA_POST_CYCLE_INSN,
+	TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD,
+	TARGET_SCHED_INIT_DFA_BUBBLES, TARGET_SCHED_DFA_BUBBLE): New
+	macros.
+	(TARGET_SCHED): Use the new macros.
+
+	* target.h (use_dfa_pipeline_interface, init_dfa_pre_cycle_insn,
+	dfa_pre_cycle_insn, init_dfa_post_cycle_insn, dfa_post_cycle_insn,
+	first_cycle_multipass_dfa_lookahead, init_dfa_bubbles,
+	dfa_bubble): New members in gcc_target.sched.
+
+        * haifa-sched.c (insert_schedule_bubbles_p): New variable.
+	(MAX_INSN_QUEUE_INDEX): New macro for automaton interface.
+	(insn_queue): Redefine it as pointer to array.
+	(NEXT_Q, NEXT_Q_AFTER): Use MAX_INSN_QUEUE_INDEX instead of
+	INSN_QUEUE_SIZE.
+	(max_insn_queue_index_macro_value): New variable.
+	(curr_state, dfa_state_size, ready_try): New varaibles for
+	automaton interface.
+	(ready_element, ready_remove, max_issue): New function prototypes
+	for automaton interface.
+	(choose_ready): New function prototype.
+	(insn_unit, blockage_range): Add comments.
+	(unit_last_insn, unit_tick, unit_n_insns): Define them for case
+	FUNCTION_UNITS_SIZE == 0.
+	(insn_issue_delay, actual_hazard_this_instance, schedule_unit,
+	actual_hazard, potential_hazard): Add comments.
+	(insn_cost): Use cost -1 as undefined value.  Remove
+	LINK_COST_ZERO and LINK_COST_FREE.  Add new code for automaton
+	pipeline interface.
+	(ready_element, ready_remove): New functions for automaton
+	interface.
+	(schedule_insn): Add new code for automaton pipeline interface.
+	(queue_to_ready): Add new code for automaton pipeline interface.
+	Use MAX_INSN_QUEUE_INDEX instead of INSN_QUEUE_SIZE.
+	(debug_ready_list): Print newline when the queue is empty.
+	(max_issue): New function for automaton pipeline interface.
+	(choose_ready): New function.
+	(schedule_block): Add new code for automaton pipeline interface.
+	Print ready list before scheduling each insn.
+	(sched_init): Add new code for automaton pipeline interface.
+	Initiate insn cost by -1.
+	(sched_finish): Free the current automaton state and finalize
+	automaton pipeline interface.
+
+	* sched-rgn.c: Include target.h.
+	(init_ready_list, new_ready, debug_dependencies): Add new code for
+	automaton pipeline interface.
+
+	* sched-vis.c: Include target.h.
+	(get_visual_tbl_length): Add code for automaton interface.
+	(target_units, print_block_visualization):  Add comments.
+
+        * Makefile.in (GETRUNTIME, HASHTAB, HOST_GETRUNTIME, HOST_HASHTAB,
+	USE_HOST_GETRUNTIME, USE_HOST_HASHTAB, HOST_VARRAY): New variables.
+	(sched-rgn.o, sched-vis.o): Add new dependency file target.h.
+	(getruntime.o, genautomata.o): New entries.
+	(genattrtab.o): Add new dependency file genattrtab.h.
+	(genattrtab): Add new dependencies.  Link it with `libm.a'.
+	(getruntime.o, hashtab.o): New entries for canadian cross.
+
+	* doc/md.texi: Description of automaton based model.
+
+	* doc/tm.texi (TARGET_SCHED_ISSUE_RATE, TARGET_SCHED_ADJUST_COST):
+	Add comments.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE,
+	TARGET_SCHED_DFA_PRE_CYCLE_INSN,
+	TARGET_SCHED_INIT_DFA_PRE_CYCLE_INSN,
+	TARGET_SCHED_DFA_POST_CYCLE_INSN,
+	TARGET_SCHED_INIT_DFA_POST_CYCLE_INSN,
+	TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD,
+	TARGET_SCHED_INIT_DFA_BUBBLES, TARGET_SCHED_DFA_BUBBLE): The new
+	hook descriptions.
+	(TRADITIONAL_PIPELINE_INTERFACE, DFA_PIPELINE_INTERFACE,
+	MAX_DFA_ISSUE_RATE): New macro descriptions.
+
+	* doc/contrib.texi: Add dfa based scheduler contribution.
+
+	* doc/gcc.texi: Add more information about genattrtab.
+
 Mon Apr 29 17:19:10 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload1.c (eliminate_regs, case SUBREG): Fix typo in

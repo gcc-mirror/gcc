@@ -193,6 +193,7 @@ main (argc, argv)
   int have_delay = 0;
   int have_annul_true = 0;
   int have_annul_false = 0;
+  int num_insn_reservations = 0;
   int num_units = 0;
   struct range all_simultaneity, all_multiplicity;
   struct range all_ready_cost, all_issue_delay, all_blockage;
@@ -308,10 +309,18 @@ main (argc, argv)
 	  extend_range (&all_issue_delay,
 			unit->issue_delay.min, unit->issue_delay.max);
 	}
+      else if (GET_CODE (desc) == DEFINE_INSN_RESERVATION)
+	num_insn_reservations++;
     }
 
-  if (num_units > 0)
+  if (num_units > 0 || num_insn_reservations > 0)
     {
+      if (num_units > 0)
+	printf ("#define TRADITIONAL_PIPELINE_INTERFACE 1\n");
+
+      if (num_insn_reservations > 0)
+	printf ("#define DFA_PIPELINE_INTERFACE 1\n");
+
       /* Compute the range of blockage cost values.  See genattrtab.c
 	 for the derivation.  BLOCKAGE (E,C) when SIMULTANEITY is zero is
 
@@ -348,6 +357,102 @@ main (argc, argv)
 
       write_units (num_units, &all_multiplicity, &all_simultaneity,
 		   &all_ready_cost, &all_issue_delay, &all_blockage);
+
+      /* Output interface for pipeline hazards recognition based on
+	 DFA (deterministic finite state automata.  */
+      printf ("\n/* DFA based pipeline interface.  */");
+      printf ("\n#ifndef AUTOMATON_STATE_ALTS\n");
+      printf ("#define AUTOMATON_STATE_ALTS 0\n");
+      printf ("#endif\n\n");
+      printf ("#ifndef CPU_UNITS_QUERY\n");
+      printf ("#define CPU_UNITS_QUERY 0\n");
+      printf ("#endif\n\n");
+      /* Interface itself: */
+      printf ("extern int max_dfa_issue_rate;\n\n");
+      printf ("/* The following macro value is calculated from the\n");
+      printf ("   automaton based pipeline description and is equal to\n");
+      printf ("   maximal number of all insns described in constructions\n");
+      printf ("   `define_insn_reservation' which can be issued on the\n");
+      printf ("   same processor cycle. */\n");
+      printf ("#define MAX_DFA_ISSUE_RATE max_dfa_issue_rate\n\n");
+      printf ("/* Insn latency time defined in define_insn_reservation. */\n");
+      printf ("extern int insn_default_latency PARAMS ((rtx));\n\n");
+      printf ("/* Return nonzero if there is a bypass for given insn\n");
+      printf ("   which is a data producer.  */\n");
+      printf ("extern int bypass_p PARAMS ((rtx));\n\n");
+      printf ("/* Insn latency time on data consumed by the 2nd insn.\n");
+      printf ("   Use the function if bypass_p returns nonzero for\n");
+      printf ("   the 1st insn. */\n");
+      printf ("extern int insn_latency PARAMS ((rtx, rtx));\n\n");
+      printf ("/* The following function returns number of alternative\n");
+      printf ("   reservations of given insn.  It may be used for better\n");
+      printf ("   insns scheduling heuristics. */\n");
+      printf ("extern int insn_alts PARAMS ((rtx));\n\n");
+      printf ("/* Maximal possible number of insns waiting results being\n");
+      printf ("   produced by insns whose execution is not finished. */\n");
+      printf ("extern int max_insn_queue_index;\n\n");
+      printf ("/* Pointer to data describing current state of DFA.  */\n");
+      printf ("typedef void *state_t;\n\n");
+      printf ("/* Size of the data in bytes.  */\n");
+      printf ("extern int state_size PARAMS ((void));\n\n");
+      printf ("/* Initiate given DFA state, i.e. Set up the state\n");
+      printf ("   as all functional units were not reserved.  */\n");
+      printf ("extern void state_reset PARAMS ((state_t));\n");
+      printf ("/* The following function returns negative value if given\n");
+      printf ("   insn can be issued in processor state described by given\n");
+      printf ("   DFA state.  In this case, the DFA state is changed to\n");
+      printf ("   reflect the current and future reservations by given\n");
+      printf ("   insn.  Otherwise the function returns minimal time\n");
+      printf ("   delay to issue the insn.  This delay may be zero\n");
+      printf ("   for superscalar or VLIW processors.  If the second\n");
+      printf ("   parameter is NULL the function changes given DFA state\n");
+      printf ("   as new processor cycle started.  */\n");
+      printf ("extern int state_transition PARAMS ((state_t, rtx));\n");
+      printf ("\n#if AUTOMATON_STATE_ALTS\n");
+      printf ("/* The following function returns number of possible\n");
+      printf ("   alternative reservations of given insn in given\n");
+      printf ("   DFA state.  It may be used for better insns scheduling\n");
+      printf ("   heuristics.  By default the function is defined if\n");
+      printf ("   macro AUTOMATON_STATE_ALTS is defined because its\n");
+      printf ("   implementation may require much memory.  */\n");
+      printf ("extern int state_alts PARAMS ((state_t, rtx));\n");
+      printf ("#endif\n\n");
+      printf ("extern int min_issue_delay PARAMS ((state_t, rtx));\n");
+      printf ("/* The following function returns nonzero if no one insn\n");
+      printf ("   can be issued in current DFA state. */\n");
+      printf ("extern int state_dead_lock_p PARAMS ((state_t));\n");
+      printf ("/* The function returns minimal delay of issue of the 2nd\n");
+      printf ("   insn after issuing the 1st insn in given DFA state.\n");
+      printf ("   The 1st insn should be issued in given state (i.e.\n");
+      printf ("    state_transition should return negative value for\n");
+      printf ("    the insn and the state).  Data dependencies between\n");
+      printf ("    the insns are ignored by the function.  */\n");
+      printf
+	("extern int min_insn_conflict_delay PARAMS ((state_t, rtx, rtx));\n");
+      printf ("/* The following function outputs reservations for given\n");
+      printf ("   insn as they are described in the corresponding\n");
+      printf ("   define_insn_reservation.  */\n");
+      printf ("extern void print_reservation PARAMS ((FILE *, rtx));\n");
+      printf ("\n#if CPU_UNITS_QUERY\n");
+      printf ("/* The following function returns code of functional unit\n");
+      printf ("   with given name (see define_cpu_unit). */\n");
+      printf ("extern int get_cpu_unit_code PARAMS ((const char *));\n");
+      printf ("/* The following function returns nonzero if functional\n");
+      printf ("   unit with given code is currently reserved in given\n");
+      printf ("   DFA state.  */\n");
+      printf ("extern int cpu_unit_reservation_p PARAMS ((state_t, int));\n");
+      printf ("#endif\n\n");
+      printf ("/* Initiate and finish work with DFA.  They should be\n");
+      printf ("   called as the first and the last interface\n");
+      printf ("   functions.  */\n");
+      printf ("extern void dfa_start PARAMS ((void));\n");
+      printf ("extern void dfa_finish PARAMS ((void));\n");
+    }
+  else
+    {
+      /* Otherwise we do no scheduling, but we need these typedefs
+	 in order to avoid uglifying other code with more ifdefs.  */
+      printf ("typedef void *state_t;\n\n");
     }
 
   /* Output flag masks for use by reorg.  

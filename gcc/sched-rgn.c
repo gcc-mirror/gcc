@@ -62,6 +62,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "cfglayout.h"
 #include "sched-int.h"
+#include "target.h"
 
 /* Define when we want to do count REG_DEAD notes before and after scheduling
    for sanity checking.  We can't do that when conditional execution is used,
@@ -2057,7 +2058,14 @@ init_ready_list (ready)
 
 	    if (!CANT_MOVE (insn)
 		&& (!IS_SPECULATIVE_INSN (insn)
-		    || (insn_issue_delay (insn) <= 3
+		    || ((((!targetm.sched.use_dfa_pipeline_interface
+			   || !(*targetm.sched.use_dfa_pipeline_interface) ())
+			  && insn_issue_delay (insn) <= 3)
+			 || (targetm.sched.use_dfa_pipeline_interface
+			     && (*targetm.sched.use_dfa_pipeline_interface) ()
+			     && (recog_memoized (insn) < 0
+			         || min_insn_conflict_delay (curr_state,
+							     insn, insn) <= 3)))
 			&& check_live (insn, bb_src)
 			&& is_exception_free (insn, bb_src, target_bb))))
 	      {
@@ -2165,7 +2173,15 @@ new_ready (next)
       && (!IS_VALID (INSN_BB (next))
 	  || CANT_MOVE (next)
 	  || (IS_SPECULATIVE_INSN (next)
-	      && (insn_issue_delay (next) > 3
+	      && (0
+		  || (targetm.sched.use_dfa_pipeline_interface
+		      && (*targetm.sched.use_dfa_pipeline_interface) ()
+		      && recog_memoized (next) >= 0
+		      && min_insn_conflict_delay (curr_state, next,
+						  next) > 3)
+		  || ((!targetm.sched.use_dfa_pipeline_interface
+		       || !(*targetm.sched.use_dfa_pipeline_interface) ())
+		      && insn_issue_delay (next) > 3)
 		  || !check_live (next, INSN_BB (next))
 		  || !is_exception_free (next, INSN_BB (next), target_bb)))))
     return 0;
@@ -2589,14 +2605,27 @@ debug_dependencies ()
 	  fprintf (sched_dump, "\n;;   --- Region Dependences --- b %d bb %d \n",
 		   BB_TO_BLOCK (bb), bb);
 
-	  fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%11s%6s\n",
-	  "insn", "code", "bb", "dep", "prio", "cost", "blockage", "units");
-	  fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%11s%6s\n",
-	  "----", "----", "--", "---", "----", "----", "--------", "-----");
+	  if (targetm.sched.use_dfa_pipeline_interface
+	      && (*targetm.sched.use_dfa_pipeline_interface) ())
+	    {
+	      fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%14s\n",
+		       "insn", "code", "bb", "dep", "prio", "cost",
+		       "reservation");
+	      fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%14s\n",
+		       "----", "----", "--", "---", "----", "----",
+		       "-----------");
+	    }
+	  else
+	    {
+	      fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%11s%6s\n",
+	      "insn", "code", "bb", "dep", "prio", "cost", "blockage", "units");
+	      fprintf (sched_dump, ";;   %7s%6s%6s%6s%6s%6s%11s%6s\n",
+	      "----", "----", "--", "---", "----", "----", "--------", "-----");
+	    }
+
 	  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
 	    {
 	      rtx link;
-	      int unit, range;
 
 	      if (! INSN_P (insn))
 		{
@@ -2616,22 +2645,46 @@ debug_dependencies ()
 		  continue;
 		}
 
-	      unit = insn_unit (insn);
-	      range = (unit < 0
-		 || function_units[unit].blockage_range_function == 0) ? 0 :
-		function_units[unit].blockage_range_function (insn);
-	      fprintf (sched_dump,
-		       ";;   %s%5d%6d%6d%6d%6d%6d  %3d -%3d   ",
-		       (SCHED_GROUP_P (insn) ? "+" : " "),
-		       INSN_UID (insn),
-		       INSN_CODE (insn),
-		       INSN_BB (insn),
-		       INSN_DEP_COUNT (insn),
-		       INSN_PRIORITY (insn),
-		       insn_cost (insn, 0, 0),
-		       (int) MIN_BLOCKAGE_COST (range),
-		       (int) MAX_BLOCKAGE_COST (range));
-	      insn_print_units (insn);
+	      if (targetm.sched.use_dfa_pipeline_interface
+		  && (*targetm.sched.use_dfa_pipeline_interface) ())
+		{
+		  fprintf (sched_dump,
+			   ";;   %s%5d%6d%6d%6d%6d%6d   ",
+			   (SCHED_GROUP_P (insn) ? "+" : " "),
+			   INSN_UID (insn),
+			   INSN_CODE (insn),
+			   INSN_BB (insn),
+			   INSN_DEP_COUNT (insn),
+			   INSN_PRIORITY (insn),
+			   insn_cost (insn, 0, 0));
+		  
+		  if (recog_memoized (insn) < 0)
+		    fprintf (sched_dump, "nothing");
+		  else
+		    print_reservation (sched_dump, insn);
+		}
+	      else
+		{
+		  int unit = insn_unit (insn);
+		  int range
+		    = (unit < 0
+		       || function_units[unit].blockage_range_function == 0
+		       ? 0
+		       : function_units[unit].blockage_range_function (insn));
+		  fprintf (sched_dump,
+			   ";;   %s%5d%6d%6d%6d%6d%6d  %3d -%3d   ",
+			   (SCHED_GROUP_P (insn) ? "+" : " "),
+			   INSN_UID (insn),
+			   INSN_CODE (insn),
+			   INSN_BB (insn),
+			   INSN_DEP_COUNT (insn),
+			   INSN_PRIORITY (insn),
+			   insn_cost (insn, 0, 0),
+			   (int) MIN_BLOCKAGE_COST (range),
+			   (int) MAX_BLOCKAGE_COST (range));
+		  insn_print_units (insn);
+		}
+
 	      fprintf (sched_dump, "\t: ");
 	      for (link = INSN_DEPEND (insn); link; link = XEXP (link, 1))
 		fprintf (sched_dump, "%d ", INSN_UID (XEXP (link, 0)));

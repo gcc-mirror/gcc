@@ -122,9 +122,11 @@ extern enum cmodel sparc_cmodel;
 #define TARGET_CPU_sparcv9	7	/* alias */
 #define TARGET_CPU_sparc64	7	/* alias */
 #define TARGET_CPU_ultrasparc	8
+#define TARGET_CPU_ultrasparc3	9
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9 \
- || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc
+ || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc \
+ || TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3
 
 #define CPP_CPU32_DEFAULT_SPEC ""
 #define ASM_CPU32_DEFAULT_SPEC ""
@@ -140,6 +142,10 @@ extern enum cmodel sparc_cmodel;
 #if TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc
 #define CPP_CPU64_DEFAULT_SPEC "-D__sparc_v9__"
 #define ASM_CPU64_DEFAULT_SPEC "-Av9a"
+#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc3
+#define CPP_CPU64_DEFAULT_SPEC "-D__sparc_v9__"
+#define ASM_CPU64_DEFAULT_SPEC "-Av9b"
 #endif
 
 #else
@@ -230,6 +236,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{mcpu=sparclite86x:-D__sparclite86x__} \
 %{mcpu=v9:-D__sparc_v9__} \
 %{mcpu=ultrasparc:-D__sparc_v9__} \
+%{mcpu=ultrasparc3:-D__sparc_v9__} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(cpp_cpu_default)}}}}}}} \
 "
 
@@ -296,6 +303,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{mv8plus:-Av8plus} \
 %{mcpu=v9:-Av9} \
 %{mcpu=ultrasparc:%{!mv8plus:-Av9a}} \
+%{mcpu=ultrasparc3:%{!mv8plus:-Av9b}} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(asm_cpu_default)}}}}}}} \
 "
 
@@ -623,7 +631,8 @@ enum processor_type {
   PROCESSOR_SPARCLET,
   PROCESSOR_TSC701,
   PROCESSOR_V9,
-  PROCESSOR_ULTRASPARC
+  PROCESSOR_ULTRASPARC,
+  PROCESSOR_ULTRASPARC3
 };
 
 /* This is set from -m{cpu,tune}=xxx.  */
@@ -2622,7 +2631,8 @@ do {                                                                    \
   (((FP_REG_CLASS_P (CLASS1) && GENERAL_OR_I64 (CLASS2)) \
     || (GENERAL_OR_I64 (CLASS1) && FP_REG_CLASS_P (CLASS2)) \
     || (CLASS1) == FPCC_REGS || (CLASS2) == FPCC_REGS)		\
-   ? (sparc_cpu == PROCESSOR_ULTRASPARC ? 12 : 6) : 2)
+   ? ((sparc_cpu == PROCESSOR_ULTRASPARC \
+       || sparc_cpu == PROCESSOR_ULTRASPARC3) ? 12 : 6) : 2)
 
 /* Provide the cost of a branch.  For pre-v9 processors we use
    a value of 3 to take into account the potential annulling of
@@ -2653,6 +2663,8 @@ do {                                                                    \
     if (sparc_cpu == PROCESSOR_ULTRASPARC)		\
       return (GET_MODE (X) == DImode ?			\
               COSTS_N_INSNS (34) : COSTS_N_INSNS (19));	\
+    if (sparc_cpu == PROCESSOR_ULTRASPARC3)		\
+      return COSTS_N_INSNS (6);				\
     return TARGET_HARD_MUL ? COSTS_N_INSNS (5) : COSTS_N_INSNS (25); \
   case DIV:						\
   case UDIV:						\
@@ -2661,6 +2673,9 @@ do {                                                                    \
     if (sparc_cpu == PROCESSOR_ULTRASPARC)		\
       return (GET_MODE (X) == DImode ?			\
               COSTS_N_INSNS (68) : COSTS_N_INSNS (37));	\
+    if (sparc_cpu == PROCESSOR_ULTRASPARC3)		\
+      return (GET_MODE (X) == DImode ?			\
+              COSTS_N_INSNS (71) : COSTS_N_INSNS (40));	\
     return COSTS_N_INSNS (25);				\
   /* Make FLOAT and FIX more expensive than CONST_DOUBLE,\
      so that cse will favor the latter.  */		\

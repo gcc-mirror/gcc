@@ -44,7 +44,7 @@
 ;;
 ;; FIXME: Add 800 scheduling for completeness?
 
-(define_attr "cpu" "700,7100,7100LC,7200,8000" (const (symbol_ref "pa_cpu_attr")))
+(define_attr "cpu" "700,7100,7100LC,7200,7300,8000" (const (symbol_ref "pa_cpu_attr")))
 
 ;; Length (in # of bytes).
 (define_attr "length" ""
@@ -139,34 +139,9 @@
 		       (const_int 0)))
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
-;; Function units of the HPPA. The following data is for the 700 CPUs
-;; (Mustang CPU + Timex FPU aka PA-89) because that's what I have the docs for.
-;; Scheduling instructions for PA-83 machines according to the Snake
-;; constraints shouldn't hurt.
-
-;; (define_function_unit {name} {num-units} {n-users} {test}
-;;                       {ready-delay} {issue-delay} [{conflict-list}])
-
-;; The integer ALU.
-;; (Noted only for documentation; units that take one cycle do not need to
-;; be specified.)
-
-;; (define_function_unit "alu" 1 0
-;;  (and (eq_attr "type" "unary,shift,nullshift,binary,move,address")
-;;	 (eq_attr "cpu" "700"))
-;;  1 0)
-
-
 ;; Memory. Disregarding Cache misses, the Mustang memory times are:
 ;; load: 2, fpload: 3
 ;; store, fpstore: 3, no D-cache operations should be scheduled.
-
-(define_function_unit "pa700memory" 1 0
-  (and (eq_attr "type" "load,fpload")
-       (eq_attr "cpu" "700")) 2 0)
-(define_function_unit "pa700memory" 1 0 
-  (and (eq_attr "type" "store,fpstore")
-       (eq_attr "cpu" "700")) 3 3)
 
 ;; The Timex (aka 700) has two floating-point units: ALU, and MUL/DIV/SQRT.
 ;; Timings:
@@ -186,44 +161,73 @@
 ;; fdiv,dbl	12	MPY	12
 ;; fsqrt,sgl	14	MPY	14
 ;; fsqrt,dbl	18	MPY	18
+;;
+;; We don't model fmpyadd/fmpysub properly as those instructions
+;; keep both the FP ALU and MPY units busy.  Given that these
+;; processors are obsolete, I'm not going to spend the time to
+;; model those instructions correctly.
 
-(define_function_unit "pa700fp_alu" 1 0
+(define_automaton "pa700")
+(define_cpu_unit "dummy_700,mem_700,fpalu_700,fpmpy_700" "pa700")
+
+(define_insn_reservation "W0" 4
   (and (eq_attr "type" "fpcc")
-       (eq_attr "cpu" "700")) 4 2)
-(define_function_unit "pa700fp_alu" 1 0
+       (eq_attr "cpu" "700"))
+  "fpalu_700*2")
+
+(define_insn_reservation "W1" 3
   (and (eq_attr "type" "fpalu")
-       (eq_attr "cpu" "700")) 3 2)
-(define_function_unit "pa700fp_mpy" 1 0
+       (eq_attr "cpu" "700"))
+  "fpalu_700*2")
+
+(define_insn_reservation "W2" 3
   (and (eq_attr "type" "fpmulsgl,fpmuldbl")
-       (eq_attr "cpu" "700")) 3 2)
-(define_function_unit "pa700fp_mpy" 1 0
+       (eq_attr "cpu" "700"))
+  "fpmpy_700*2")
+
+(define_insn_reservation "W3" 10
   (and (eq_attr "type" "fpdivsgl")
-       (eq_attr "cpu" "700")) 10 10)
-(define_function_unit "pa700fp_mpy" 1 0
+       (eq_attr "cpu" "700"))
+  "fpmpy_700*10")
+
+(define_insn_reservation "W4" 12
   (and (eq_attr "type" "fpdivdbl")
-       (eq_attr "cpu" "700")) 12 12)
-(define_function_unit "pa700fp_mpy" 1 0
+       (eq_attr "cpu" "700"))
+  "fpmpy_700*12")
+
+(define_insn_reservation "W5" 14
   (and (eq_attr "type" "fpsqrtsgl")
-       (eq_attr "cpu" "700")) 14 14)
-(define_function_unit "pa700fp_mpy" 1 0
+       (eq_attr "cpu" "700"))
+  "fpmpy_700*14")
+
+(define_insn_reservation "W6" 18
   (and (eq_attr "type" "fpsqrtdbl")
-       (eq_attr "cpu" "700")) 18 18)
+       (eq_attr "cpu" "700"))
+  "fpmpy_700*18")
+
+(define_insn_reservation "W7" 2
+  (and (eq_attr "type" "load,fpload")
+       (eq_attr "cpu" "700"))
+  "mem_700")
+
+(define_insn_reservation "W8" 3
+  (and (eq_attr "type" "store,fpstore")
+       (eq_attr "cpu" "700"))
+  "mem_700*3")
+
+(define_insn_reservation "W9" 1
+  (and (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,load,fpload,store,fpstore")
+       (eq_attr "cpu" "700"))
+  "dummy_700")
 
 ;; Function units for the 7100 and 7150.  The 7100/7150 can dual-issue
 ;; floating point computations with non-floating point computations (fp loads
 ;; and stores are not fp computations).
 ;;
-
 ;; Memory. Disregarding Cache misses, memory loads take two cycles; stores also
 ;; take two cycles, during which no Dcache operations should be scheduled.
 ;; Any special cases are handled in pa_adjust_cost.  The 7100, 7150 and 7100LC
 ;; all have the same memory characteristics if one disregards cache misses.
-(define_function_unit "pa7100memory" 1 0
-  (and (eq_attr "type" "load,fpload")
-       (eq_attr "cpu" "7100,7100LC")) 2 0)
-(define_function_unit "pa7100memory" 1 0 
-  (and (eq_attr "type" "store,fpstore")
-       (eq_attr "cpu" "7100,7100LC")) 2 2)
 
 ;; The 7100/7150 has three floating-point units: ALU, MUL, and DIV.
 ;; Timings:
@@ -243,41 +247,46 @@
 ;; fdiv,dbl	15	DIV	15
 ;; fsqrt,sgl	8	DIV	8
 ;; fsqrt,dbl	15	DIV	15
+;;
+;; We don't really model the FP ALU/MPY units properly (they are
+;; distinct subunits in the FP unit).  However, there can never be
+;; a functional unit; conflict given the latency and issue rates
+;; for those units.
 
-(define_function_unit "pa7100fp_alu" 1 0
-  (and (eq_attr "type" "fpcc,fpalu")
-       (eq_attr "cpu" "7100")) 2 1)
-(define_function_unit "pa7100fp_mpy" 1 0
-  (and (eq_attr "type" "fpmulsgl,fpmuldbl")
-       (eq_attr "cpu" "7100")) 2 1)
-(define_function_unit "pa7100fp_div" 1 0
+(define_automaton "pa7100")
+(define_cpu_unit "i_7100, f_7100,fpmac_7100,fpdivsqrt_7100,mem_7100" "pa7100")
+
+(define_insn_reservation "X0" 2
+  (and (eq_attr "type" "fpcc,fpalu,fpmulsgl,fpmuldbl")
+       (eq_attr "cpu" "7100"))
+  "f_7100,fpmac_7100")
+
+(define_insn_reservation "X1" 8
   (and (eq_attr "type" "fpdivsgl,fpsqrtsgl")
-       (eq_attr "cpu" "7100")) 8 8)
-(define_function_unit "pa7100fp_div" 1 0
+       (eq_attr "cpu" "7100"))
+  "f_7100+fpdivsqrt_7100,fpdivsqrt_7100*7")
+
+(define_insn_reservation "X2" 15
   (and (eq_attr "type" "fpdivdbl,fpsqrtdbl")
-       (eq_attr "cpu" "7100")) 15 15)
+       (eq_attr "cpu" "7100"))
+  "f_7100+fpdivsqrt_7100,fpdivsqrt_7100*14")
 
-;; To encourage dual issue we define function units corresponding to
-;; the instructions which can be dual issued.    This is a rather crude
-;; approximation, the "pa7100nonflop" test in particular could be refined.
-(define_function_unit "pa7100flop" 1 1
-  (and
-    (eq_attr "type" "fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl")
-    (eq_attr "cpu" "7100")) 1 1)
+(define_insn_reservation "X3" 2
+  (and (eq_attr "type" "load,fpload")
+       (eq_attr "cpu" "7100"))
+  "i_7100+mem_7100")
 
-(define_function_unit "pa7100nonflop" 1 1
-  (and
-    (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl")
-    (eq_attr "cpu" "7100")) 1 1)
+(define_insn_reservation "X4" 2
+  (and (eq_attr "type" "store,fpstore")
+       (eq_attr "cpu" "7100"))
+  "i_7100+mem_7100,mem_7100")
 
-
-;; Memory subsystem works just like 7100/7150 (except for cache miss times which
-;; we don't model here).  
+(define_insn_reservation "X5" 1
+  (and (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl,load,fpload,store,fpstore")
+       (eq_attr "cpu" "7100"))
+  "i_7100")
 
 ;; The 7100LC has three floating-point units: ALU, MUL, and DIV.
-;; Note divides and sqrt flops lock the cpu until the flop is
-;; finished.  fmpy and xmpyu (fmpyi) lock the cpu for one cycle.
-;; There's no way to avoid the penalty.
 ;; Timings:
 ;; Instruction	Time	Unit	Minimum Distance (unit contention)
 ;; fcpy		2	ALU	1
@@ -299,106 +308,179 @@
 ;; fdiv,dbl	15	DIV	15
 ;; fsqrt,sgl	8	DIV	8
 ;; fsqrt,dbl	15	DIV	15
+;;
+;; The PA7200 is just like the PA7100LC except that there is
+;; no store-store penalty.
+;;
+;; The PA7300 is just like the PA7200 except that there is
+;; no store-load penalty.
+;;
+;; Note there are some aspects of the 7100LC we are not modeling
+;; at the moment.  I'll be reviewing the 7100LC scheduling info
+;; shortly and updating this description.
+;;
+;;   load-load pairs
+;;   store-store pairs
+;;   fmpyadd,dbl
+;;   fmpysub,dbl
+;;   other issue modeling
 
-(define_function_unit "pa7100LCfp_alu" 1 0
+(define_automaton "pa7100lc")
+(define_cpu_unit "i0_7100lc, i1_7100lc, f_7100lc" "pa7100lc")
+(define_cpu_unit "fpalu_7100lc,fpdivsqrt_7100lc,fpmul_7100lc" "pa7100lc")
+(define_cpu_unit "mem_7100lc" "pa7100lc")
+
+(define_insn_reservation "Y0" 2
   (and (eq_attr "type" "fpcc,fpalu")
-       (eq_attr "cpu" "7100LC,7200")) 2 1)
-(define_function_unit "pa7100LCfp_mpy" 1 0
+       (eq_attr "cpu" "7100LC,7200,7300"))
+  "f_7100lc,fpalu_7100lc")
+
+(define_insn_reservation "Y1" 2
   (and (eq_attr "type" "fpmulsgl")
-       (eq_attr "cpu" "7100LC,7200")) 2 1)
-(define_function_unit "pa7100LCfp_mpy" 1 0
+       (eq_attr "cpu" "7100LC,7200,7300"))
+  "f_7100lc,fpmul_7100lc")
+
+(define_insn_reservation "Y2" 3
   (and (eq_attr "type" "fpmuldbl")
-       (eq_attr "cpu" "7100LC,7200")) 3 2)
-(define_function_unit "pa7100LCfp_div" 1 0
+       (eq_attr "cpu" "7100LC,7200,7300"))
+  "f_7100lc,fpmul_7100lc,fpmul_7100lc")
+
+(define_insn_reservation "Y3" 8
   (and (eq_attr "type" "fpdivsgl,fpsqrtsgl")
-       (eq_attr "cpu" "7100LC,7200")) 8 8)
-(define_function_unit "pa7100LCfp_div" 1 0
+       (eq_attr "cpu" "7100LC,7200,7300"))
+  "f_7100lc+fpdivsqrt_7100lc,fpdivsqrt_7100lc*7")
+
+(define_insn_reservation "Y4" 15
   (and (eq_attr "type" "fpdivdbl,fpsqrtdbl")
-       (eq_attr "cpu" "7100LC,7200")) 15 15)
+       (eq_attr "cpu" "7100LC,7200,7300"))
+  "f_7100lc+fpdivsqrt_7100lc,fpdivsqrt_7100lc*14")
 
-;; Define the various functional units for dual-issue.
+(define_insn_reservation "Y5" 2
+  (and (eq_attr "type" "load,fpload")
+       (eq_attr "cpu" "7100LC,7200,7300"))
+  "i1_7100lc+mem_7100lc")
 
-;; There's only one floating point unit.
-(define_function_unit "pa7100LCflop" 1 1
-  (and
-    (eq_attr "type" "fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl")
-    (eq_attr "cpu" "7100LC,7200")) 1 1)
+(define_insn_reservation "Y6" 2
+  (and (eq_attr "type" "store,fpstore")
+       (eq_attr "cpu" "7100LC"))
+  "i1_7100lc+mem_7100lc,mem_7100lc")
 
-;; Shifts and memory ops execute in only one of the integer ALUs
-(define_function_unit "pa7100LCshiftmem" 1 1
-  (and
-    (eq_attr "type" "shift,nullshift,load,fpload,store,fpstore")
-    (eq_attr "cpu" "7100LC,7200")) 1 1)
+(define_insn_reservation "Y7" 1
+  (and (eq_attr "type" "shift,nullshift")
+       (eq_attr "cpu" "7100LC,7200,7300"))
+  "i1_7100lc")
 
-;; We have two basic ALUs.
-(define_function_unit "pa7100LCalu" 2 1
-  (and
-    (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl")
-   (eq_attr "cpu" "7100LC,7200")) 1 1)
+(define_insn_reservation "Y8" 1
+  (and (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl,load,fpload,store,fpstore,shift,nullshift")
+       (eq_attr "cpu" "7100LC,7200,7300"))
+  "(i0_7100lc|i1_7100lc)")
 
-;; I don't have complete information on the PA7200; however, most of
-;; what I've heard makes it look like a 7100LC without the store-store
-;; penalty.  So that's how we'll model it.
+;; The 7200 has a store-load penalty
+(define_insn_reservation "Y9" 2
+  (and (eq_attr "type" "store,fpstore")
+       (eq_attr "cpu" "7200"))
+  "i0_7100lc,mem_7100lc")
 
-;; Memory. Disregarding Cache misses, memory loads and stores take
-;; two cycles.  Any special cases are handled in pa_adjust_cost.
-(define_function_unit "pa7200memory" 1 0
-  (and (eq_attr "type" "load,fpload,store,fpstore")
-       (eq_attr "cpu" "7200")) 2 0)
+;; The 7300 has no penalty for store-store or store-load
+(define_insn_reservation "YA" 2
+  (and (eq_attr "type" "store,fpstore")
+       (eq_attr "cpu" "7300"))
+  "i0_7100lc")
 
-;; I don't have detailed information on the PA7200 FP pipeline, so I
-;; treat it just like the 7100LC pipeline.
-;; Similarly for the multi-issue fake units.
-
-;; 
 ;; Scheduling for the PA8000 is somewhat different than scheduling for a
 ;; traditional architecture.
 ;;
 ;; The PA8000 has a large (56) entry reorder buffer that is split between
 ;; memory and non-memory operations.
 ;;
-;; The PA800 can issue two memory and two non-memory operations per cycle to
-;; the function units.  Similarly, the PA8000 can retire two memory and two
-;; non-memory operations per cycle.
+;; The PA8000 can issue two memory and two non-memory operations per cycle to
+;; the function units, with the exception of branches and multi-output
+;; instructions.  The PA8000 can retire two non-memory operations per cycle
+;; and two memory operations per cycle, only one of which may be a store.
 ;;
 ;; Given the large reorder buffer, the processor can hide most latencies.
 ;; According to HP, they've got the best results by scheduling for retirement
 ;; bandwidth with limited latency scheduling for floating point operations.
 ;; Latency for integer operations and memory references is ignored.
 ;;
+;;
 ;; We claim floating point operations have a 2 cycle latency and are
-;; fully pipelined, except for div and sqrt which are not pipelined.
+;; fully pipelined, except for div and sqrt which are not pipelined and
+;; take from 17 to 31 cycles to complete.
 ;;
-;; It is not necessary to define the shifter and integer alu units.
-;;
-;; These first two define_unit_unit descriptions model retirement from
-;; the reorder buffer.
-(define_function_unit "pa8000lsu" 2 1
-  (and
-    (eq_attr "type" "load,fpload,store,fpstore")
-    (eq_attr "cpu" "8000")) 1 1)
+;; It's worth noting that there is no way to saturate all the functional
+;; units on the PA8000 as there is not enough issue bandwidth.
 
-(define_function_unit "pa8000alu" 2 1
-  (and
-    (eq_attr "type" "!load,fpload,store,fpstore")
-    (eq_attr "cpu" "8000")) 1 1)
+(define_automaton "pa8000")
+(define_cpu_unit "inm0_8000, inm1_8000, im0_8000, im1_8000" "pa8000")
+(define_cpu_unit "rnm0_8000, rnm1_8000, rm0_8000, rm1_8000" "pa8000")
+(define_cpu_unit "store_8000" "pa8000")
+(define_cpu_unit "f0_8000, f1_8000" "pa8000")
+(define_cpu_unit "fdivsqrt0_8000, fdivsqrt1_8000" "pa8000")
+(define_reservation "inm_8000" "inm0_8000 | inm1_8000")
+(define_reservation "im_8000" "im0_8000 | im1_8000")
+(define_reservation "rnm_8000" "rnm0_8000 | rnm1_8000")
+(define_reservation "rm_8000" "rm0_8000 | rm1_8000")
+(define_reservation "f_8000" "f0_8000 | f1_8000")
+(define_reservation "fdivsqrt_8000" "fdivsqrt0_8000 | fdivsqrt1_8000")
 
-;; Claim floating point ops have a 2 cycle latency, excluding div and
-;; sqrt, which are not pipelined and issue to different units.
-(define_function_unit "pa8000fmac" 2 0
+;; We can issue any two memops per cycle, but we can only retire
+;; one memory store per cycle.  We assume that the reorder buffer
+;; will hide any memory latencies per HP's recommendation.
+(define_insn_reservation "Z0" 0
   (and
-    (eq_attr "type" "fpcc,fpalu,fpmulsgl,fpmuldbl")
-    (eq_attr "cpu" "8000")) 2 1)
+    (eq_attr "type" "load,fpload")
+    (eq_attr "cpu" "8000"))
+  "im_8000,rm_8000")
 
-(define_function_unit "pa8000fdiv" 2 1
+(define_insn_reservation "Z1" 0
   (and
-    (eq_attr "type" "fpdivsgl,fpsqrtsgl")
-    (eq_attr "cpu" "8000")) 17 17)
+    (eq_attr "type" "store,fpstore")
+    (eq_attr "cpu" "8000"))
+  "im_8000,rm_8000+store_8000")
 
-(define_function_unit "pa8000fdiv" 2 1
+;; We can issue and retire two non-memory operations per cycle with
+;; a few exceptions (branches).  This group catches those we want
+;; to assume have zero latency.
+(define_insn_reservation "Z2" 0
   (and
-    (eq_attr "type" "fpdivdbl,fpsqrtdbl")
-    (eq_attr "cpu" "8000")) 31 31)
+    (eq_attr "type" "!load,fpload,store,fpstore,uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch,fpcc,fpalu,fpmulsgl,fpmuldbl,fpsqrtsgl,fpsqrtdbl,fpdivsgl,fpdivdbl")
+    (eq_attr "cpu" "8000"))
+  "inm_8000,rnm_8000")
+
+;; Branches use both slots in the non-memory issue and
+;; retirement unit.
+(define_insn_reservation "Z3" 0
+  (and
+    (eq_attr "type" "uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,parallel_branch")
+    (eq_attr "cpu" "8000"))
+  "inm0_8000+inm1_8000,rnm0_8000+rnm1_8000")
+
+;; We partial latency schedule the floating point units.
+;; They can issue/retire two at a time in the non-memory
+;; units.  We fix their latency at 2 cycles and they
+;; are fully pipelined.
+(define_insn_reservation "Z4" 1
+ (and
+   (eq_attr "type" "fpcc,fpalu,fpmulsgl,fpmuldbl")
+   (eq_attr "cpu" "8000"))
+ "inm_8000,f_8000,rnm_8000")
+
+;; The fdivsqrt units are not pipelined and have a very long latency.  
+;; To keep the DFA from exploding, we do not show all the
+;; reservations for the divsqrt unit.
+(define_insn_reservation "Z5" 17
+ (and
+   (eq_attr "type" "fpdivsgl,fpsqrtsgl")
+   (eq_attr "cpu" "8000"))
+ "inm_8000,fdivsqrt_8000*6,rnm_8000")
+
+(define_insn_reservation "Z6" 31
+ (and
+   (eq_attr "type" "fpdivdbl,fpsqrtdbl")
+   (eq_attr "cpu" "8000"))
+ "inm_8000,fdivsqrt_8000*6,rnm_8000")
+
 
 
 ;; Compare instructions.

@@ -195,6 +195,28 @@
  "cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,other,load,load_si,store,move,fmove,smpy,dmpy,return,pload,prset,pstore,prget,pcload,pcload_si,pt,ptabs,rte,sfunc,call,fp,fdiv,dfp_arith,dfp_cmp,dfp_conv,dfdiv,gp_fpul,nil"
   (const_string "other"))
 
+;; We define a new attribute namely "insn_class".We use
+;; this for DFA based pipeline description.
+;; Although the "type" attribute covers almost all insn 
+;; classes,it is more convenient to define new attribute
+;; for certain reservations.
+;;
+;; mt_group      SH4 "mt" group instructions.
+;;
+;; ex_group      SH4 "ex" group instructions.They mostly
+;;               overlap with arithmetic instructions but
+;;               new attribute defined to distinguish from
+;;	         mt group instructions.
+;;
+;; lds_to_fpscr  The "type" attribute couldn't sufficiently
+;;               distinguish it from others.It is part of 
+;;               new attribute.Similar case with ldsmem_to_fpscr
+;;	  	 and cwb. 
+
+(define_attr "insn_class"
+	     "mt_group,ex_group,lds_to_fpscr,ldsmem_to_fpscr,cwb,none"
+	     (const_string "none"))
+
 ;; Indicate what precision must be selected in fpscr for this insn, if any.
 
 (define_attr "fp_mode" "single,double,none" (const_string "none"))
@@ -631,7 +653,8 @@
 		       (match_operand:SI 1 "arith_operand" "L,r"))
 	       (const_int 0)))]
   "TARGET_SH1"
-  "tst	%1,%0")
+  "tst	%1,%0"
+  [(set_attr "insn_class" "mt_group")])
 
 ;; ??? Perhaps should only accept reg/constant if the register is reg 0.
 ;; That would still allow reload to create cmpi instructions, but would
@@ -647,7 +670,8 @@
   "@
 	tst	%0,%0
 	cmp/eq	%1,%0
-	cmp/eq	%1,%0")
+	cmp/eq	%1,%0"
+   [(set_attr "insn_class" "mt_group,mt_group,mt_group")])
 
 (define_insn "cmpgtsi_t"
   [(set (reg:SI T_REG)
@@ -656,7 +680,8 @@
   "TARGET_SH1"
   "@
 	cmp/gt	%1,%0
-	cmp/pl	%0")
+	cmp/pl	%0"
+   [(set_attr "insn_class" "mt_group,mt_group")])
 
 (define_insn "cmpgesi_t"
   [(set (reg:SI T_REG)
@@ -665,8 +690,9 @@
   "TARGET_SH1"
   "@
 	cmp/ge	%1,%0
-	cmp/pz	%0")
-
+	cmp/pz	%0"
+   [(set_attr "insn_class" "mt_group,mt_group")])
+
 ;; -------------------------------------------------------------------------
 ;; SImode unsigned integer comparisons
 ;; -------------------------------------------------------------------------
@@ -676,14 +702,16 @@
 	(geu:SI (match_operand:SI 0 "arith_reg_operand" "r")
 		(match_operand:SI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
-  "cmp/hs	%1,%0")
+  "cmp/hs	%1,%0"
+   [(set_attr "insn_class" "mt_group")])
 
 (define_insn "cmpgtusi_t"
   [(set (reg:SI T_REG)
 	(gtu:SI (match_operand:SI 0 "arith_reg_operand" "r")
 		(match_operand:SI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
-  "cmp/hi	%1,%0")
+  "cmp/hi	%1,%0"
+   [(set_attr "insn_class" "mt_group")])
 
 ;; We save the compare operands in the cmpxx patterns and use them when
 ;; we generate the branch.
@@ -1050,7 +1078,8 @@
 	(ltu:SI (plus:SI (match_dup 1) (match_dup 2)) (match_dup 1)))]
   "TARGET_SH1"
   "addc	%2,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "addc1"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -1060,7 +1089,8 @@
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "addc	%2,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_expand "addsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "")
@@ -1088,8 +1118,9 @@
 		 (match_operand:SI 2 "arith_operand" "rI")))]
   "TARGET_SH1"
   "add	%2,%0"
-  [(set_attr "type" "arith")])
-
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
+
 ;; -------------------------------------------------------------------------
 ;; Subtraction instructions
 ;; -------------------------------------------------------------------------
@@ -1155,7 +1186,8 @@
 	(gtu:SI (minus:SI (match_dup 1) (match_dup 2)) (match_dup 1)))]
   "TARGET_SH1"
   "subc	%2,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "subc1"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -1165,7 +1197,8 @@
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "subc	%2,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "*subsi3_internal"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -1173,7 +1206,8 @@
 		  (match_operand:SI 2 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "sub	%2,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "*subsi3_media"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -1909,7 +1943,8 @@
 		(match_operand:SI 2 "logical_operand" "r,L")))]
   "TARGET_SH1"
   "and	%2,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 ;; If the constant is 255, then emit a extu.b instruction instead of an
 ;; and, since that will give better code.
@@ -1951,7 +1986,8 @@
 		(match_operand:SI 2 "logical_operand" "r,L")))]
   "TARGET_SH1"
   "or	%2,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "iordi3"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r,r")
@@ -1968,7 +2004,8 @@
 		(match_operand:SI 2 "logical_operand" "L,r")))]
   "TARGET_SH1"
   "xor	%2,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "xordi3"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r,r")
@@ -1991,7 +2028,8 @@
 	(lshiftrt:SI (match_dup 1) (const_int 31)))]
   "TARGET_SH1"
   "rotl	%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "rotlsi3_31"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2000,7 +2038,8 @@
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "rotr	%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "rotlsi3_16"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2008,7 +2047,8 @@
 		   (const_int 16)))]
   "TARGET_SH1"
   "swap.w	%1,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+  (set_attr "insn_class" "ex_group")])
 
 (define_expand "rotlsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "")
@@ -2072,7 +2112,8 @@
 		   (const_int 8)))]
   "TARGET_SH1"
   "swap.b	%1,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_expand "rotlhi3"
   [(set (match_operand:HI 0 "arith_reg_operand" "")
@@ -2114,7 +2155,8 @@
      (clobber (match_dup 4))])]
   "operands[4] = gen_rtx_SCRATCH (SImode);"
   [(set_attr "length" "*,*,*,4")
-   (set_attr "type" "dyn_shift,arith,arith,arith")])
+   (set_attr "type" "dyn_shift,arith,arith,arith")
+   (set_attr "insn_class" "ex_group,ex_group,ex_group,ex_group")])
 
 (define_insn "ashlhi3_k"
   [(set (match_operand:HI 0 "arith_reg_operand" "=r,r")
@@ -2124,7 +2166,8 @@
   "@
 	add	%0,%0
 	shll%O2	%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "ashlsi3_n"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2141,7 +2184,8 @@
 	       (eq (symbol_ref "shift_insns_rtx (insn)") (const_int 3))
 	       (const_string "6")]
 	      (const_string "8")))
-   (set_attr "type" "arith")])
+   (set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_split
   [(set (match_operand:SI 0 "arith_reg_operand" "")
@@ -2229,7 +2273,8 @@
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && INTVAL (operands[2]) == 1"
   "shar	%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 ;; We can't do HImode right shifts correctly unless we start out with an
 ;; explicit zero / sign extension; doing that would result in worse overall
@@ -2288,7 +2333,8 @@
 	(lt:SI (match_dup 1) (const_int 0)))]
   "TARGET_SH1"
   "shll	%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "ashrsi3_d"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2296,7 +2342,8 @@
 		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
   "TARGET_SH3"
   "shad	%2,%0"
-  [(set_attr "type" "dyn_shift")])
+  [(set_attr "type" "dyn_shift")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "ashrsi3_n"
   [(set (reg:SI R4_REG)
@@ -2346,7 +2393,8 @@
 		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
   "TARGET_SH3"
   "shld	%2,%0"
-  [(set_attr "type" "dyn_shift")])
+  [(set_attr "type" "dyn_shift")
+   (set_attr "insn_class" "ex_group")])
 
 ;;  Only the single bit shift clobbers the T bit.
 
@@ -2357,7 +2405,8 @@
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && CONST_OK_FOR_M (INTVAL (operands[2]))"
   "shlr	%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "lshrsi3_k"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2366,7 +2415,8 @@
   "TARGET_SH1 && CONST_OK_FOR_K (INTVAL (operands[2]))
    && ! CONST_OK_FOR_M (INTVAL (operands[2]))"
   "shlr%O2	%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "lshrsi3_n"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2444,7 +2494,8 @@
   "TARGET_SH1"
   "shll	%R0\;rotcl	%S0"
   [(set_attr "length" "4")
-   (set_attr "type" "arith")])
+   (set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "ashldi3_media"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r,r")
@@ -2483,7 +2534,8 @@
   "TARGET_SH1"
   "shlr	%S0\;rotcr	%R0"
   [(set_attr "length" "4")
-   (set_attr "type" "arith")])
+   (set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "lshrdi3_media"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r,r")
@@ -2522,7 +2574,8 @@
   "TARGET_SH1"
   "shar	%S0\;rotcr	%R0"
   [(set_attr "length" "4")
-   (set_attr "type" "arith")])
+   (set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "ashrdi3_media"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r,r")
@@ -2756,7 +2809,8 @@
 			     (const_int 16))))]
   "TARGET_SH1"
   "xtrct	%1,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "xtrct_right"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -2766,8 +2820,9 @@
 			   (const_int 16))))]
   "TARGET_SH1"
   "xtrct	%2,%0"
-  [(set_attr "type" "arith")])
-
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
+
 ;; -------------------------------------------------------------------------
 ;; Unary arithmetic
 ;; -------------------------------------------------------------------------
@@ -2781,7 +2836,8 @@
 	       (const_int 0)))]
   "TARGET_SH1"
   "negc	%1,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "*negdi_media"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
@@ -2819,14 +2875,16 @@
 	(neg:SI (match_operand:SI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "neg	%1,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "one_cmplsi2"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(not:SI (match_operand:SI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "not	%1,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_expand "one_cmpldi2"
   [(set (match_operand:DI 0 "arith_reg_operand" "")
@@ -2872,22 +2930,25 @@
 	(zero_extend:SI (match_operand:HI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "extu.w	%1,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "zero_extendqisi2"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(zero_extend:SI (match_operand:QI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "extu.b	%1,%0"
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
 
 (define_insn "zero_extendqihi2"
   [(set (match_operand:HI 0 "arith_reg_operand" "=r")
 	(zero_extend:HI (match_operand:QI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "extu.b	%1,%0"
-  [(set_attr "type" "arith")])
-
+  [(set_attr "type" "arith")
+   (set_attr "insn_class" "ex_group")])
+
 ;; -------------------------------------------------------------------------
 ;; Sign extension instructions
 ;; -------------------------------------------------------------------------
@@ -2941,7 +3002,8 @@
   "@
 	exts.w	%1,%0
    	mov.w	%1,%0"
-  [(set_attr "type" "arith,load")])
+  [(set_attr "type" "arith,load")
+   (set_attr "insn_class" "ex_group,*")])
 
 (define_insn "extendqisi2"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r,r")
@@ -2950,7 +3012,8 @@
   "@
 	exts.b	%1,%0
 	mov.b	%1,%0"
-  [(set_attr "type" "arith,load")])
+  [(set_attr "type" "arith,load")
+   (set_attr "insn_class" "ex_group,*")])
 
 (define_insn "extendqihi2"
   [(set (match_operand:HI 0 "arith_reg_operand" "=r,r")
@@ -2959,8 +3022,9 @@
   "@
 	exts.b	%1,%0
 	mov.b	%1,%0"
-  [(set_attr "type" "arith,load")])
-
+  [(set_attr "type" "arith,load")
+   (set_attr "insn_class" "ex_group,*")])
+
 ;; -------------------------------------------------------------------------
 ;; Move instructions
 ;; -------------------------------------------------------------------------
@@ -3070,6 +3134,7 @@
 	lds.l	%1,%0
 	fake	%1,%0"
   [(set_attr "type" "pcload_si,move,*,load_si,move,prget,move,store,store,pstore,move,prset,load,pload,pcload_si")
+   (set_attr "insn_class"  "*,*,mt_group,*,*,*,*,*,*,*,*,*,*,*,*")
    (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 ;; t/r must come after r/r, lest reload will try to reload stuff like
@@ -3227,7 +3292,8 @@
    (clobber (match_scratch:SI 2 "=&r"))]
   "TARGET_HARD_SH4"
   "ocbwb\\t@%0\;extu.w\\t%0,%2\;or\\t%1,%2\;mov.l\\t%0,@%2"
-  [(set_attr "length" "8")])
+  [(set_attr "length" "8")
+   (set_attr "insn_class" "cwb")])
 
 (define_insn "ic_invalidate_line_media"
   [(unspec_volatile [(match_operand 0 "register_operand" "r")]
@@ -7415,7 +7481,8 @@
 	mov.l	%1,%0
 	sts	fpscr,%0"
   [(set_attr "length" "0,2,2,4,2,2,2,2")
-   (set_attr "type" "dfp_conv,dfp_conv,load,dfp_conv,dfp_conv,move,store,gp_fpul")])
+   (set_attr "type" "dfp_conv,dfp_conv,load,dfp_conv,dfp_conv,move,store,gp_fpul")
+   (set_attr "insn_class" "ldsmem_to_fpscr,*,*,lds_to_fpscr,*,*,*,*")])
 
 (define_split
   [(set (reg:PSI FPSCR_REG)
@@ -8557,3 +8624,292 @@
   "TARGET_SH1"
   "mov.l @r15+,r15\;mov.l @r15+,r0"
   [(set_attr "length" "4")])
+
+;; The following description  models the
+;; SH4 pipeline using the DFA based scheduler. 
+;; The DFA based description is better way to model 
+;; a superscalar pipeline as compared to function unit
+;; reservation model.   
+;; 1. The function unit based model is oriented to describe at most one 
+;;    unit reservation by each insn. It is difficult to model unit reservations in multiple 
+;;    pipeline units by same insn. This can be done using DFA based description.
+;; 2. The execution performance of DFA based scheduler does not depend on processor complexity.
+;; 3. Writing all unit reservations for an instruction class is more natural description 
+;;    of the pipeline and makes interface of the hazard recognizer simpler than the 
+;;    old function unit based model.
+;; 4. The DFA model is richer and is a part of greater overall framework of RCSP.
+
+
+;; Two automata are defined to reduce number of states
+;; which a single large automaton will have.(Factoring)
+
+(define_automaton "inst_pipeline,fpu_pipe")
+
+;; This unit is basically the decode unit of the processor.
+;; Since SH4 is a dual issue machine,it is as if there are two 
+;; units so that any insn can be processed by either one
+;; of the decoding unit.
+
+(define_cpu_unit "pipe_01,pipe_02" "inst_pipeline")
+
+
+;; The fixed point arithmetic calculator(?? EX Unit).
+
+(define_cpu_unit  "int" "inst_pipeline")
+
+;; f1_1 and f1_2 are floating point units.Actually there is
+;; a f1 unit which can overlap with other f1 unit but
+;; not another F1 unit.It is as though there were two
+;; f1 units.
+
+(define_cpu_unit "f1_1,f1_2" "fpu_pipe")
+
+;; The floating point units.
+
+(define_cpu_unit "F1,F2,F3,FS" "fpu_pipe")
+
+;; This is basically the MA unit of SH4
+;; used in LOAD/STORE pipeline.
+
+(define_cpu_unit "memory" "inst_pipeline")
+
+;; The address calculator used for branch instructions.
+;; This will be reserved with "issue" of branch instructions
+;; and this is to make sure that  no two branch instructions 
+;; can be issued in parallel. 
+
+(define_cpu_unit "pcr_addrcalc" "inst_pipeline")
+
+;; ----------------------------------------------------
+;; This reservation is to simplify the dual issue description.
+
+(define_reservation  "issue"  "pipe_01|pipe_02")
+
+;; This is to express the locking of D stage.
+
+(define_reservation  "d_lock" "pipe_01+pipe_02")
+
+;; This is to simplify description where F1,F2,FS
+;; are used simultaneously.
+
+(define_reservation "fpu" "F1+F2+FS")
+
+;; This is to highlight the fact that f1 
+;; cannot overlap with F1.
+
+(exclusion_set  "f1_1,f1_2" "F1")
+
+;; Although reg moves have a latency of zero 
+;; we need to highlight that they use D stage
+;; for one cycle.
+
+(define_insn_reservation "reg_mov" 0
+               (eq_attr "type" "move,fmove")
+              "issue")
+
+;; Other MT  group intructions(1 step operations)
+;; Group:	MT
+;; Latency: 	1
+;; Issue Rate: 	1
+
+(define_insn_reservation "mt" 1
+                      (eq_attr "insn_class" "mt_group")
+                      "issue,nothing")
+
+;; Fixed Point Arithmetic Instructions(1 step operations)
+;; Group:	EX
+;; Latency: 	1
+;; Issue Rate: 	1
+
+(define_insn_reservation "simple_arith" 1 
+            (eq_attr "insn_class" "ex_group")
+            "issue,int")
+
+;; Load Store instructions. (MOV.[BWL]@(d,GBR)
+;; Group:	LS
+;; Latency: 	2
+;; Issue Rate: 	1
+
+(define_insn_reservation "load_store" 2
+       (eq_attr "type" "load,load_si,pcload,pcload_si,store")
+       "issue,memory*2")
+
+;; Branch (BF,BF/S,BT,BT/S,BRA)
+;; Group:	BR
+;; Latency: 	2 (or 1) Actually Observed to be 5/7
+;; Issue Rate: 	1
+;; The latency is 1 when displacement is 0.
+;; This reservation can be further broken into 2
+;;    1. branch_zero : One with latency 1 and in the TEST 
+;;       part it also checks for 0 (ZERO) displacement 
+;;    2. branch: Latency 2.
+
+(define_insn_reservation "branch_zero"  5
+             (and (eq_attr "type" "cbranch")
+		  (eq_attr "length" "2"))
+             "(issue+pcr_addrcalc),pcr_addrcalc,nothing")
+
+(define_insn_reservation "branch"  7
+             (eq_attr "type" "cbranch")
+             "(issue+pcr_addrcalc),pcr_addrcalc,nothing")
+
+;; Branch Far (JMP,RTS,BRAF)
+;; Group:	CO
+;; Latency: 	3
+;; Issue Rate: 	2
+;;    Since issue stage (D stage) is blocked for 2nd cycle, 
+;;    cpu_unit  int  is reserved since it might be required for far
+;;    address calculation.
+
+(define_insn_reservation "branch_far" 12
+         (and (eq_attr "type" "jump,return")
+	      (eq_attr "length" "6"))
+         "d_lock*2,int+pcr_addrcalc,pcr_addrcalc")
+
+;; RTE
+;; Group:	CO
+;; atency: 	5
+;; Issue Rate: 	5
+;; this instruction can be executed in any of the pipelines 
+;; and blocks the pipeline for next 4 stages.
+
+(define_insn_reservation "return_from_exp" 5
+          (eq_attr "type" "rte")
+         "(issue+pcr_addrcalc),d_lock*4,int+pcr_addrcalc,nothing")
+
+;; OCBP, OCBWB
+;; Group:	CO
+;; Latency: 	5
+;; Issue Rate: 	1
+
+(define_insn_reservation "ocbwb"  5
+          (eq_attr "insn_class" "cwb") 
+ 	   "issue,(int+memory),memory*5")
+		
+;; LDS to PR,JSR
+;; Group:	CO
+;; Latency: 	3
+;; Issue Rate: 	2
+;; The SX stage is blocked for last 2 cycles.
+
+(define_insn_reservation "lds_to_pr" 3 
+          (eq_attr "type" "prset,call,sfunc") 
+          "(issue+pcr_addrcalc),(issue+int+pcr_addrcalc),(int+pcr_addrcalc)*2")
+
+;; LDS.L to PR 
+;; Group:	CO
+;; Latency: 	3
+;; Issue Rate: 	2
+;; The SX unit is blocked for last 2 cycles.
+ 
+(define_insn_reservation "ldsmem_to_pr"  3
+      (eq_attr "type" "pload") 
+     "(issue+pcr_addrcalc),(issue+int+pcr_addrcalc),(int+memory+pcr_addrcalc),(int+pcr_addrcalc)")
+
+;; STS from PR
+;; Group:	CO
+;; Latency: 	2
+;; Issue Rate: 	2
+;; The SX unit in second and third cycles.
+
+(define_insn_reservation "sts_from_pr" 2
+        (eq_attr "type" "prget")
+       "(issue+pcr_addrcalc),(pipe_01+int+pcr_addrcalc),(int+pcr_addrcalc),nothing")
+
+;; STS.L from PR
+;; Group:	CO
+;; Latency: 	2
+;; Issue Rate: 	2
+
+(define_insn_reservation "prload_mem" 2 
+          (eq_attr "type" "pstore")
+           "(issue+pcr_addrcalc),(pipe_01+int+pcr_addrcalc),(int+memory+pcr_addrcalc),memory")
+
+;; LDS to FPSCR
+;; Group:	CO
+;; Latency: 	4
+;; Issue Rate: 	1
+;; F1 is blocked for last three cycles. 
+
+(define_insn_reservation "fpscr_store" 4
+        (eq_attr "insn_class" "lds_to_fpscr")
+       "issue,int,F1*3")
+
+;; LDS.L to FPSCR
+;; Group:	CO
+;; Latency: 	1 / 4
+;; Latency to update Rn is 1 and latency to update FPSCR is 4
+;; Issue Rate: 	1
+;; F1 is blocked for last three cycles.
+
+(define_insn_reservation "fpscr_store_mem" 4
+        (eq_attr "insn_class"  "ldsmem_to_fpscr") 
+        "issue,(int+memory),(F1+memory),F1*2")
+
+
+;; Fixed point multiplication (DMULS.L DMULU.L MUL.L MULS.W,MULU.W)
+;; Group:	CO
+;; Latency: 	4 / 4
+;; Issue Rate: 	1
+
+(define_insn_reservation "multi" 4
+	(eq_attr "type" "smpy,dmpy")
+ 	"issue,(issue+int+f1_1),(int+f1_1),(f1_1|f1_2)*2,F2,FS")
+
+
+;; Single precision floating point computation FCMP/EQ,
+;; FCP/GT, FADD, FLOAT, FMAC, FMUL, FSUB, FTRC, FRVHG, FSCHG
+;; Group:	FE
+;; Latency: 	4
+;; Issue Rate: 	1
+
+(define_insn_reservation "fp_arith"  4
+              (eq_attr "type" "fp")
+ 	      "issue,F1,F2,FS")
+
+;; Single Precision FDIV/SQRT
+;; Group:	FE
+;; Latency: 	12/13
+;; Issue Rate: 	1
+
+(define_insn_reservation "fp_div" 13
+               (eq_attr "type" "fdiv")
+               "issue,F1+F3,F1+F2+F3,F3*7,F1+F3,F2,FS")
+
+;; Double Precision floating point computation
+;; (FCNVDS, FCNVSD, FLOAT, FTRC)
+;; Group:	FE
+;; Latency: 	(3,4)/5
+;; Issue Rate: 	1
+
+(define_insn_reservation "dp_float" 5
+         (eq_attr "type" "dfp_conv")
+	 "issue,F1,F1+F2,F2+FS,FS")
+
+;; Double-precision floating-point (FADD ,FMUL,FSUB) 
+;; Group:	FE
+;; Latency: 	(7,8)/9
+;; Issue Rate: 	1
+
+(define_insn_reservation "fp_double_arith" 9
+        (eq_attr "type" "dfp_arith")
+	"issue,F1,F1+F2,fpu*4,F2+FS,FS")
+
+;; Double-precision FCMP (FCMP/EQ,FCMP/GT) 
+;; Group:	FE
+;; Latency: 	3/5
+;; Issue Rate: 	2
+
+(define_insn_reservation "fp_double_cmp" 5 
+        (eq_attr "type" "dfp_cmp")
+	"issue,(issue+F1),F1+F2,F2+FS,FS")
+
+;; Double precision FDIV/SQRT
+;; Group:	FE
+;; Latency: 	(24,25)/26
+;; Issue Rate: 	1
+
+(define_insn_reservation "dp_div" 26
+        (eq_attr "type" "dfdiv")
+ 	"issue,F1+F3,F1+F2+F3,F2+F3+FS,F3*16,F1+F3,F1+F2+F3,fpu+F3,F2+FS,FS")
+
