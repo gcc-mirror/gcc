@@ -1,3 +1,9 @@
+2004-11-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR target/16458
+	* config/rs6000/rs6000.c (rs6000_generate_compare): Generate an
+	unsigned equality compare when we know the operands are unsigned.
+
 2004-11-10  Peter S. Mazinger  <ps.m@gmx.net>
 
 	* config/mips/linux.h (LINUX_TARGET_OS_CPP_BUILTINS): Define
@@ -398,6 +404,7 @@
 	them static.
 	* expr.h: Remove the corresponding prototypes.
 
+>>>>>>> 2.6266
 2004-11-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_handle_notshared_attribute): Wrap declaration and use
