@@ -38,7 +38,6 @@ package Exp_Disp is
        Get_Prim_Op_Address,
        Get_RC_Offset,
        Get_Remotely_Callable,
-       Get_TSD,
        Inherit_DT,
        Inherit_TSD,
        Register_Tag,
