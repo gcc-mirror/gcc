@@ -1900,70 +1900,127 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case UDIV:
-	  /* Convert divide by power of two into shift (divide by 1 handled
-	     below).  */
-	  if (GET_CODE (trueop1) == CONST_INT
-	      && (arg1 = exact_log2 (INTVAL (trueop1))) > 0)
-	    return simplify_gen_binary (LSHIFTRT, mode, op0, GEN_INT (arg1));
-
-	  /* Fall through....  */
-
-	case DIV:
-	  if (trueop1 == CONST1_RTX (mode))
+	  /* 0/x is 0 (or x&0 if x has side-effects).  */
+	  if (trueop0 == const0_rtx)
+	    return side_effects_p (op1)
+		   ? simplify_gen_binary (AND, mode, op1, const0_rtx)
+		   : const0_rtx;
+	  /* x/1 is x.  */
+	  if (trueop1 == const1_rtx)
 	    {
-	      /* On some platforms DIV uses narrower mode than its
-		 operands.  */
+	      /* Handle narrowing UDIV.  */
 	      rtx x = gen_lowpart_common (mode, op0);
 	      if (x)
 		return x;
-	      else if (mode != GET_MODE (op0) && GET_MODE (op0) != VOIDmode)
+	      if (mode != GET_MODE (op0) && GET_MODE (op0) != VOIDmode)
 		return gen_lowpart_SUBREG (mode, op0);
-	      else
-		return op0;
+	      return op0;
 	    }
+	  /* Convert divide by power of two into shift.  */
+	  if (GET_CODE (trueop1) == CONST_INT
+	      && (arg1 = exact_log2 (INTVAL (trueop1))) > 0)
+	    return simplify_gen_binary (LSHIFTRT, mode, op0, GEN_INT (arg1));
+	  break;
 
-	  /* Maybe change 0 / x to 0.  This transformation isn't safe for
-	     modes with NaNs, since 0 / 0 will then be NaN rather than 0.
-	     Nor is it safe for modes with signed zeros, since dividing
-	     0 by a negative number gives -0, not 0.  */
-	  if (!HONOR_NANS (mode)
-	      && !HONOR_SIGNED_ZEROS (mode)
-	      && trueop0 == CONST0_RTX (mode)
-	      && ! side_effects_p (op1))
-	    return op0;
-
-	  /* Change division by a constant into multiplication.  Only do
-	     this with -funsafe-math-optimizations.  */
-	  else if (GET_CODE (trueop1) == CONST_DOUBLE
-		   && GET_MODE_CLASS (GET_MODE (trueop1)) == MODE_FLOAT
-		   && trueop1 != CONST0_RTX (mode)
-		   && flag_unsafe_math_optimizations)
+	case DIV:
+	  /* Handle floating point and integers separately.  */
+	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	    {
-	      REAL_VALUE_TYPE d;
-	      REAL_VALUE_FROM_CONST_DOUBLE (d, trueop1);
+	      /* Maybe change 0.0 / x to 0.0.  This transformation isn't
+		 safe for modes with NaNs, since 0.0 / 0.0 will then be
+		 NaN rather than 0.0.  Nor is it safe for modes with signed
+		 zeros, since dividing 0 by a negative number gives -0.0  */
+	      if (trueop0 == CONST0_RTX (mode)
+		  && !HONOR_NANS (mode)
+		  && !HONOR_SIGNED_ZEROS (mode)
+		  && ! side_effects_p (op1))
+		return op0;
+	      /* x/1.0 is x.  */
+	      if (trueop1 == CONST1_RTX (mode)
+		  && !HONOR_SNANS (mode))
+		return op0;
 
-	      if (! REAL_VALUES_EQUAL (d, dconst0))
+	      if (GET_CODE (trueop1) == CONST_DOUBLE
+		  && trueop1 != CONST0_RTX (mode))
 		{
-		  REAL_ARITHMETIC (d, rtx_to_tree_code (DIV), dconst1, d);
-		  tem = CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
-		  return simplify_gen_binary (MULT, mode, op0, tem);
+		  REAL_VALUE_TYPE d;
+		  REAL_VALUE_FROM_CONST_DOUBLE (d, trueop1);
+
+		  /* x/-1.0 is -x.  */
+		  if (REAL_VALUES_EQUAL (d, dconstm1)
+		      && !HONOR_SNANS (mode))
+		    return simplify_gen_unary (NEG, mode, op0, mode);
+
+	          /* Change FP division by a constant into multiplication.
+		     Only do this with -funsafe-math-optimizations.  */
+		  if (flag_unsafe_math_optimizations
+		      && !REAL_VALUES_EQUAL (d, dconst0))
+		    {
+		      REAL_ARITHMETIC (d, RDIV_EXPR, dconst1, d);
+		      tem = CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
+		      return simplify_gen_binary (MULT, mode, op0, tem);
+		    }
+		}
+	    }
+	  else
+	    {
+	      /* 0/x is 0 (or x&0 if x has side-effects).  */
+	      if (trueop0 == const0_rtx)
+		return side_effects_p (op1)
+		       ? simplify_gen_binary (AND, mode, op1, const0_rtx)
+		       : const0_rtx;
+	      /* x/1 is x.  */
+	      if (trueop1 == const1_rtx)
+		{
+		  /* Handle narrowing DIV.  */
+		  rtx x = gen_lowpart_common (mode, op0);
+		  if (x)
+		    return x;
+		  if (mode != GET_MODE (op0) && GET_MODE (op0) != VOIDmode)
+		    return gen_lowpart_SUBREG (mode, op0);
+		  return op0;
+		}
+	      /* x/-1 is -x.  */
+	      if (trueop1 == constm1_rtx)
+		{
+		  rtx x = gen_lowpart_common (mode, op0);
+		  if (!x)
+		    x = (mode != GET_MODE (op0) && GET_MODE (op0) != VOIDmode)
+			? gen_lowpart_SUBREG (mode, op0) : op0;
+		  return simplify_gen_unary (NEG, mode, x, mode);
 		}
 	    }
 	  break;
 
 	case UMOD:
-	  /* Handle modulus by power of two (mod with 1 handled below).  */
+	  /* 0%x is 0 (or x&0 if x has side-effects).  */
+	  if (trueop0 == const0_rtx)
+	    return side_effects_p (op1)
+		   ? simplify_gen_binary (AND, mode, op1, const0_rtx)
+		   : const0_rtx;
+	  /* x%1 is 0 (of x&0 if x has side-effects).  */
+	  if (trueop1 == const1_rtx)
+	    return side_effects_p (op0)
+		   ? simplify_gen_binary (AND, mode, op0, const0_rtx)
+		   : const0_rtx;
+	  /* Implement modulus by power of two as AND.  */
 	  if (GET_CODE (trueop1) == CONST_INT
 	      && exact_log2 (INTVAL (trueop1)) > 0)
 	    return simplify_gen_binary (AND, mode, op0,
 					GEN_INT (INTVAL (op1) - 1));
-
-	  /* Fall through....  */
+	  break;
 
 	case MOD:
-	  if ((trueop0 == const0_rtx || trueop1 == const1_rtx)
-	      && ! side_effects_p (op0) && ! side_effects_p (op1))
-	    return const0_rtx;
+	  /* 0%x is 0 (or x&0 if x has side-effects).  */
+	  if (trueop0 == const0_rtx)
+	    return side_effects_p (op1)
+		   ? simplify_gen_binary (AND, mode, op1, const0_rtx)
+		   : const0_rtx;
+	  /* x%1 and x%-1 is 0 (or x&0 if x has side-effects).  */
+	  if (trueop1 == const1_rtx || trueop1 == constm1_rtx)
+	    return side_effects_p (op0)
+		   ? simplify_gen_binary (AND, mode, op0, const0_rtx)
+		   : const0_rtx;
 	  break;
 
 	case ROTATERT:

@@ -1,3 +1,12 @@
+2004-04-12  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_binary_operation) <UDIV, DIV, UMOD, MOD>:
+	Remove fall throughs.  Convert 0/x and 0%x into x&0 when x has
+	side-effects.  Don't convert x/1.0 into x if we honor signaling NaNs.
+	Convert x/-1.0 into -x if we don't honor signaling NaNs.  Convert
+	x/-1 into -x.  Optimize x%1 into x&0 if x has side-effects.  Optimize
+	x%-1 into 0 (or x&0 if x has side-effects).
+
 2004-04-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md: Document why a pattern is not
