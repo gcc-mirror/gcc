@@ -970,7 +970,7 @@ namespace std
 
   // Generic helper function
   template<typename _CharT, typename _OutIter>
-    static _OutIter
+    _OutIter
     _S_output_float(_OutIter __s, ios_base& __io, _CharT __fill,
                     const char* __sptr, size_t __slen)
     {
@@ -980,7 +980,7 @@ namespace std
 
   // Partial specialization for ostreambuf_iterator.
   template<typename _CharT>
-    static ostreambuf_iterator<_CharT>
+    ostreambuf_iterator<_CharT>
     _S_output_float(ostreambuf_iterator<_CharT> __s, ios_base& __io, 
 		    _CharT __fill, const char* __sptr, size_t __slen)
     {

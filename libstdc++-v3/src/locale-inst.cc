@@ -282,5 +282,31 @@ namespace std {
     locale::facet** 
     fill_n<locale::facet**, unsigned long, locale::facet*>
     (locale::facet**, unsigned long, locale::facet* const&);
+
+  template
+    const numpunct<char>& 
+    use_facet(const locale&);
+
+  template
+    void __sink_unused_warning<locale::facet*>(locale::facet*);
+
+  template
+    __normal_iterator<locale::facet**, 
+                      vector<locale::facet*> >
+    fill_n(__normal_iterator<locale::facet**, 
+	                     vector<locale::facet*> >,
+	   unsigned, locale::facet* const&);
+
+  template
+    void
+    fill (__normal_iterator<locale::facet**, 
+	                    vector<locale::facet*> >,
+	  __normal_iterator<locale::facet**, 
+	                    vector<locale::facet*> >,
+	  locale::facet* const&);
+
+  template
+    const collate<char>&
+    use_facet<collate<char> >(const locale&);
 } //std
 

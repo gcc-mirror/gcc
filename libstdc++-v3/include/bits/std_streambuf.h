@@ -43,7 +43,7 @@
 namespace std {
 
   template<typename _CharT, typename _Traits>
-    static streamsize
+    streamsize
     _S_copy_streambufs(basic_ios<_CharT, _Traits>& _ios,
 		       basic_streambuf<_CharT, _Traits>* __sbin,
 		       basic_streambuf<_CharT, _Traits>* __sbout);

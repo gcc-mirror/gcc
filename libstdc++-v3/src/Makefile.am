@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.67 2001/02/03 09:01:44 bkoz Exp $
+## $Id: Makefile.am,v 1.68 2001/02/06 06:32:01 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -298,13 +298,13 @@ myinstallheaders:
 # for things like vptrs, type_info bits, etc. when using
 # -fno-implicit-templates.
 misc-inst.o: misc-inst.cc
-	$(CXXCOMPILE) -fimplicit-templates -c $<
+	$(CXXCOMPILE) -c $<
 misc-inst.lo: misc-inst.cc
-	$(LTCXXCOMPILE) -fimplicit-templates -c $<
+	$(LTCXXCOMPILE) -c $<
 locale-inst.o: locale-inst.cc
-	$(CXXCOMPILE) -fimplicit-templates -c $<
+	$(CXXCOMPILE) -c $<
 locale-inst.lo: locale-inst.cc
-	$(LTCXXCOMPILE) -fimplicit-templates -c $<
+	$(LTCXXCOMPILE) -c $<
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.
@@ -315,9 +315,9 @@ strstream.o: strstream.cc
 
 # Make wstring-inst.cc from string-inst.cc
 wstring-inst.o: string-inst.cc
-	$(CXXCOMPILE) -fimplicit-templates -c -DC=wchar_t $< -o $@
+	$(CXXCOMPILE) -c -DC=wchar_t $< -o $@
 wstring-inst.lo: string-inst.cc
-	$(LTCXXCOMPILE) -fimplicit-templates -c -DC=wchar_t $< -o $@
+	$(LTCXXCOMPILE) -c -DC=wchar_t $< -o $@
 
 
 # Alexandre put this in here for some libtool-related reason.
