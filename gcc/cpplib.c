@@ -3112,6 +3112,14 @@ do_include (pfile, keyword, unused1, unused2)
   int pcfnum;
   f= -1;			/* JF we iz paranoid! */
 
+  if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
+    {
+      if (importing)
+	cpp_pedwarn (pfile, "ANSI C does not allow `#import'");
+      if (skip_dirs)
+	cpp_pedwarn (pfile, "ANSI C does not allow `#include_next'");
+    }
+
   if (importing && CPP_OPTIONS (pfile)->warn_import
       && !CPP_OPTIONS (pfile)->inhibit_warnings
       && !CPP_BUFFER (pfile)->system_header_p && !pfile->import_warning)
@@ -3905,7 +3913,9 @@ do_warning (pfile, keyword, buf, limit)
   bcopy (buf, copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
-  cpp_warning (pfile, "#warning %s", copy);
+  /* Use `pedwarn' not `warning', because #warning isn't in the C Standard;
+     if -pedantic-errors is given, #warning should cause an error.  */
+  cpp_pedwarn (pfile, "#warning %s", copy);
   return 0;
 }
 

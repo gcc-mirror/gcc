@@ -4220,6 +4220,14 @@ do_include (buf, limit, op, keyword)
   char *pcfbuflimit;
   int pcfnum;
 
+  if (pedantic && !instack[indepth].system_header_p)
+    {
+      if (importing)
+	pedwarn ("ANSI C does not allow `#import'");
+      if (skip_dirs)
+	pedwarn ("ANSI C does not allow `#include_next'");
+    }
+
   if (importing && warn_import && !inhibit_warnings
       && !instack[indepth].system_header_p && !import_warning) {
     import_warning = 1;
@@ -6752,7 +6760,9 @@ do_warning (buf, limit, op, keyword)
   bcopy ((char *) buf, (char *) copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
-  warning ("#warning %s", copy);
+  /* Use `pedwarn' not `warning', because #warning isn't in the C Standard;
+     if -pedantic-errors is given, #warning should cause an error.  */
+  pedwarn ("#warning %s", copy);
   return 0;
 }
 
