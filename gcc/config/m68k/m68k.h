@@ -988,24 +988,64 @@ while(0)
 
 #ifdef MOTOROLA
 #define MACHINE_STATE_SAVE(id)		\
-  asm ("move.w %ccr,-(%sp)");		\
-  asm ("movm.l &0xc0c0,-(%sp)");
+  if (TARGET_5200)			\
+    {					\
+      asm ("sub.l 20,%sp");		\
+      asm ("movm.l &0x0303,4(%sp)");	\
+      asm ("move.w %ccr,%d0");		\
+      asm ("movm.l &0x0001,(%sp)");	\
+    }					\
+  else					\
+    {					\
+      asm ("move.w %ccr,-(%sp)");	\
+      asm ("movm.l &0xc0c0,-(%sp)");	\
+    }
 #else
 #define MACHINE_STATE_SAVE(id)		\
-  asm ("movew cc,sp@-");		\
-  asm ("moveml d0/d1/a0/a1,sp@-");
+  if (TARGET_5200)			\
+    {					\
+      asm ("subl 20,sp");		\
+      asm ("movml d0/d1/a0/a1,sp@(4)");	\
+      asm ("movew cc,d0");		\
+      asm ("movml d0,sp@");		\
+    }					\
+  else					\
+    {					\
+      asm ("movew cc,sp@-");		\
+      asm ("moveml d0/d1/a0/a1,sp@-");	\
+    }
 #endif
 
 /* Restore all registers saved by MACHINE_STATE_SAVE. */
 
 #ifdef MOTOROLA
 #define MACHINE_STATE_RESTORE(id)	\
-  asm ("movm.l (%sp)+,&0x0303");	\
-  asm ("move.w (%sp)+,%ccr");
+  if (TARGET_5200)			\
+    {					\
+      asm ("movm.l (%sp),&0x0001");	\
+      asm ("move.w %d0,%ccr");		\
+      asm ("movm.l 4(%sp),&0x0303");	\
+      asm ("add.l 20,%sp");		\
+    }					\
+  else					\
+    {					\
+      asm ("movm.l (%sp)+,&0x0303");	\
+      asm ("move.w (%sp)+,%ccr");	\
+    }
 #else
 #define MACHINE_STATE_RESTORE(id)	\
-  asm ("moveml sp@+,d0/d1/a0/a1");	\
-  asm ("movew sp@+,cc");
+  if (TARGET_5200)			\
+    {					\
+      asm ("movml sp@,d0");		\
+      asm ("movew d0,cc");		\
+      asm ("movml sp@(4),d0/d1/a0/a1");	\
+      asm ("addl 20,sp");		\
+    }					\
+  else					\
+    {					\
+      asm ("moveml sp@+,d0/d1/a0/a1");	\
+      asm ("movew sp@+,cc");		\
+    }
 #endif
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
