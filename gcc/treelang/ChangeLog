@@ -1,3 +1,7 @@
+2004-03-21  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* treelang.texi: Update link to "G++ and GCC".
+
 2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (doc/treelang.dvi): Use $(abs_docdir). 

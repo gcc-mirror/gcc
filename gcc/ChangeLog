@@ -1,3 +1,10 @@
+2004-03-21  Zack Weinberg  <zack@codesourcery.com>
+            Chris Devers  <cdevers@pobox.com>
+            Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/frontends.texi: Rewrite.
+	* doc/gcc.texi: Update last modification date.
+
 2004-03-20  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	PR c/12373
