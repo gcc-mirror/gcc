@@ -3064,8 +3064,8 @@ find_split_point (loc, insn)
 	    SUBST (SET_SRC (x),
 		   gen_binary (IOR, mode,
 			       gen_binary (AND, mode, dest,
-					   GEN_INT (~(mask << pos)
-						    & GET_MODE_MASK (mode))),
+					   gen_int_mode (~(mask << pos),
+							 mode)),
 			       GEN_INT (src << pos)));
 
 	  SUBST (SET_DEST (x), dest);
