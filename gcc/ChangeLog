@@ -1,3 +1,23 @@
+2005-03-01  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (thumb_find_work_register): Check all of the
+	argument registers to see if they are free, and a couple of
+	special cases where the last argument register but can be proved
+	to be available during the function's prologue.
+	(print_multi_reg, arm_compute_save_reg0_reg12_mask,
+	output_return_instruction, emit_multi_reg_push, thumb_pushpop,
+	thumb_unexpanded_epilogue): Use unsigned long as the type for the
+	register bit-mask.
+	(thumb_compute_save_reg_mask): Likewise.  Also use
+	thumb_find_work_register() to ensure that there is agreement about
+	which work register is going to be used in the prologue.
+	(thumb_output_function_prologue): Use unsigned long as the type
+	for the register bit-mask.  Also delay pushing the link register if
+	other high registers are going to be pushed.
+	(thumb_compute_save_reg_mask, emit_multi_reg_push,
+	print_multi-reg, number_of_first_bit_set, thumb_pushpop): Remove
+	redundant prototypes.
+
 2005-02-28  John David Anglin  <dave.anglin#nrc-cnrc.gc.ca>
 
 	PR target/19819

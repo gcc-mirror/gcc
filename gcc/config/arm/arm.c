@@ -71,9 +71,7 @@ static int thumb_base_register_rtx_p (rtx, enum machine_mode, int);
 inline static int thumb_index_register_rtx_p (rtx, int);
 static int thumb_far_jump_used_p (void);
 static bool thumb_force_lr_save (void);
-static unsigned long thumb_compute_save_reg_mask (void);
 static int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
-static rtx emit_multi_reg_push (int);
 static rtx emit_sfm (int, int);
 #ifndef AOF_ASSEMBLER
 static bool arm_assemble_integer (rtx, unsigned int, int);
@@ -84,13 +82,10 @@ static HOST_WIDE_INT int_log2 (HOST_WIDE_INT);
 static rtx is_jump_table (rtx);
 static const char *output_multi_immediate (rtx *, const char *, const char *,
 					   int, HOST_WIDE_INT);
-static void print_multi_reg (FILE *, const char *, int, int);
 static const char *shift_op (rtx, HOST_WIDE_INT *);
 static struct machine_function *arm_init_machine_status (void);
-static int number_of_first_bit_set (int);
 static void replace_symbols_in_block (tree, rtx, rtx);
 static void thumb_exit (FILE *, int);
-static void thumb_pushpop (FILE *, int, int, int *, int);
 static rtx is_jump_table (rtx);
 static HOST_WIDE_INT get_jump_table_size (rtx);
 static Mnode *move_minipool_fix_forward_ref (Mnode *, Mnode *, HOST_WIDE_INT);
@@ -3102,24 +3097,57 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 }
 
 
-/* Find a spare low register.  */
+/* Find a spare low register to use during the prolog of a function.  */
 
 static int
-thumb_find_work_register (int live_regs_mask)
+thumb_find_work_register (unsigned long pushed_regs_mask)
 {
   int reg;
 
-  /* Use a spare arg register.  */
-  if (!regs_ever_live[LAST_ARG_REGNUM])
-    return LAST_ARG_REGNUM;
-
-  /* Look for a pushed register.  This is used before the frame pointer is
-     setup, so r7 is a candidate.  */
-  for (reg = LAST_LO_REGNUM; reg >=0; reg--)
-    if (live_regs_mask & (1 << reg))
+  /* Check the argument registers first as these are call-used.  The
+     register allocation order means that sometimes r3 might be used
+     but earlier argument registers might not, so check them all.  */
+  for (reg = LAST_ARG_REGNUM; reg >= 0; reg --)
+    if (!regs_ever_live[reg])
       return reg;
 
-  /* Something went wrong.  */
+  /* Before going on to check the call-saved registers we can try a couple
+     more ways of deducing that r3 is available.  The first is when we are
+     pushing anonymous arguments onto the stack and we have less than 4
+     registers worth of fixed arguments(*).  In this case r3 will be part of
+     the variable argument list and so we can be sure that it will be
+     pushed right at the start of the function.  Hence it will be available
+     for the rest of the prologue.
+     (*): ie current_function_pretend_args_size is greater than 0.  */
+  if (cfun->machine->uses_anonymous_args
+      && current_function_pretend_args_size > 0)
+    return LAST_ARG_REGNUM;
+
+  /* The other case is when we have fixed arguments but less than 4 registers
+     worth.  In this case r3 might be used in the body of the function, but
+     it is not being used to convey an argument into the function.  In theory
+     we could just check current_function_args_size to see how many bytes are
+     being passed in argument registers, but it seems that it is unreliable.
+     Sometimes it will have the value 0 when in fact arguments are being
+     passed.  (See testcase execute/20021111-1.c for an example).  So we also
+     check the args_info.nregs field as well.  The problem with this field is
+     that it makes no allowances for arguments that are passed to the
+     function but which are not used.  Hence we could miss an opportunity
+     when a function has an unused argument in r3.  But it is better to be
+     safe than to be sorry.  */
+  if (! cfun->machine->uses_anonymous_args
+      && current_function_args_size >= 0
+      && current_function_args_size <= (LAST_ARG_REGNUM * UNITS_PER_WORD)
+      && cfun->args_info.nregs < 4)
+    return LAST_ARG_REGNUM;
+  
+  /* Otherwise look for a call-saved register that is going to be pushed.  */
+  for (reg = LAST_LO_REGNUM; reg > LAST_ARG_REGNUM; reg --)
+    if (pushed_regs_mask & (1 << reg))
+      return reg;
+
+  /* Something went wrong - thumb_compute_save_reg_mask()
+     should have arranged for a suitable register to be pushed.  */
   abort ();
 }
 
@@ -7668,11 +7696,13 @@ fp_const_from_val (REAL_VALUE_TYPE *r)
    MASK is the ARM register set mask of which only bits 0-15 are important.
    REG is the base register, either the frame pointer or the stack pointer,
    INSTR is the possibly suffixed load or store instruction.  */
+
 static void
-print_multi_reg (FILE *stream, const char *instr, int reg, int mask)
+print_multi_reg (FILE *stream, const char *instr, unsigned reg,
+		 unsigned long mask)
 {
-  int i;
-  int not_first = FALSE;
+  unsigned i;
+  bool not_first = FALSE;
 
   fputc ('\t', stream);
   asm_fprintf (stream, instr, reg);
@@ -8707,11 +8737,12 @@ output_ascii_pseudo_op (FILE *stream, const unsigned char *p, int len)
 
 /* Compute the register save mask for registers 0 through 12
    inclusive.  This code is used by arm_compute_save_reg_mask.  */
+
 static unsigned long
 arm_compute_save_reg0_reg12_mask (void)
 {
   unsigned long func_type = arm_current_func_type ();
-  unsigned int save_reg_mask = 0;
+  unsigned long save_reg_mask = 0;
   unsigned int reg;
 
   if (IS_INTERRUPT (func_type))
@@ -8871,31 +8902,42 @@ static unsigned long
 thumb_compute_save_reg_mask (void)
 {
   unsigned long mask;
-  int reg;
+  unsigned reg;
 
   mask = 0;
   for (reg = 0; reg < 12; reg ++)
-    {
-      if (regs_ever_live[reg] && !call_used_regs[reg])
-	mask |= 1 << reg;
-    }
+    if (regs_ever_live[reg] && !call_used_regs[reg])
+      mask |= 1 << reg;
 
   if (flag_pic && !TARGET_SINGLE_PIC_BASE)
     mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
+
   if (TARGET_SINGLE_PIC_BASE)
     mask &= ~(1 << arm_pic_register);
+
   /* See if we might need r11 for calls to _interwork_r11_call_via_rN().  */
   if (!frame_pointer_needed && CALLER_INTERWORKING_SLOT_SIZE > 0)
     mask |= 1 << ARM_HARD_FRAME_POINTER_REGNUM;
 
-  /* lr will also be pushed if any lo regs are pushed.  */
+  /* LR will also be pushed if any lo regs are pushed.  */
   if (mask & 0xff || thumb_force_lr_save ())
     mask |= (1 << LR_REGNUM);
 
-  /* Make sure we have a low work register if we need one.  */
-  if (((mask & 0xff) == 0 && regs_ever_live[LAST_ARG_REGNUM])
+  /* Make sure we have a low work register if we need one.
+     We will need one if we are going to push a high register,
+     but we are not currently intending to push a low register.  */
+  if ((mask & 0xff) == 0
       && ((mask & 0x0f00) || TARGET_BACKTRACE))
-    mask |= 1 << LAST_LO_REGNUM;
+    {
+      /* Use thumb_find_work_register to choose which register
+	 we will use.  If the register is live then we will
+	 have to push it.  Use LAST_LO_REGNUM as our fallback
+	 choice for the register to select.  */
+      reg = thumb_find_work_register (1 << LAST_LO_REGNUM);
+
+      if (! call_used_regs[reg])
+	mask |= 1 << reg;
+    }
 
   return mask;
 }
@@ -8951,7 +8993,7 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 {
   char conditional[10];
   char instr[100];
-  int reg;
+  unsigned reg;
   unsigned long live_regs_mask;
   unsigned long func_type;
   arm_stack_offsets *offsets;
@@ -9030,10 +9072,9 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 	 we have to use LDM to load the PC so that the CPSR is also
 	 restored.  */
       for (reg = 0; reg <= LAST_ARM_REGNUM; reg++)
-	{
-	  if (live_regs_mask == (unsigned int)(1 << reg))
-	    break;
-	}
+	if (live_regs_mask == (1U << reg))
+	  break;
+
       if (reg <= LAST_ARM_REGNUM
 	  && (reg != LR_REGNUM
 	      || ! really_return
@@ -9064,8 +9105,8 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 		sprintf (instr, "ldm%sib\t%%|sp, {", conditional);
 	      else
 		{
-		  /* If we can't use ldmib (SA110 bug), then try to pop r3
-		     instead.  */
+		  /* If we can't use ldmib (SA110 bug),
+		     then try to pop r3 instead.  */
 		  if (stack_adjust)
 		    live_regs_mask |= 1 << 3;
 		  sprintf (instr, "ldm%sfd\t%%|sp, {", conditional);
@@ -9663,7 +9704,7 @@ arm_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
    semantics of the operation, we need to annotate the insn for the benefit
    of DWARF2 frame unwind information.  */
 static rtx
-emit_multi_reg_push (int mask)
+emit_multi_reg_push (unsigned long mask)
 {
   int num_regs = 0;
   int num_dwarf_regs;
@@ -12352,7 +12393,7 @@ replace_symbols_in_block (tree block, rtx orig, rtx new)
    the least significant set bit in MASK.  */
 
 inline static int
-number_of_first_bit_set (int mask)
+number_of_first_bit_set (unsigned mask)
 {
   int bit;
 
@@ -12362,6 +12403,102 @@ number_of_first_bit_set (int mask)
     continue;
 
   return bit;
+}
+
+/* Emit code to push or pop registers to or from the stack.  F is the
+   assembly file.  MASK is the registers to push or pop.  PUSH is
+   nonzero if we should push, and zero if we should pop.  For debugging
+   output, if pushing, adjust CFA_OFFSET by the amount of space added
+   to the stack.  REAL_REGS should have the same number of bits set as
+   MASK, and will be used instead (in the same order) to describe which
+   registers were saved - this is used to mark the save slots when we
+   push high registers after moving them to low registers.  */
+static void
+thumb_pushpop (FILE *f, unsigned long mask, int push, int *cfa_offset,
+	       unsigned long real_regs)
+{
+  int regno;
+  int lo_mask = mask & 0xFF;
+  int pushed_words = 0;
+
+  if (mask == 0)
+    abort ();
+
+  if (lo_mask == 0 && !push && (mask & (1 << PC_REGNUM)))
+    {
+      /* Special case.  Do not generate a POP PC statement here, do it in
+	 thumb_exit() */
+      thumb_exit (f, -1);
+      return;
+    }
+
+  fprintf (f, "\t%s\t{", push ? "push" : "pop");
+
+  /* Look at the low registers first.  */
+  for (regno = 0; regno <= LAST_LO_REGNUM; regno++, lo_mask >>= 1)
+    {
+      if (lo_mask & 1)
+	{
+	  asm_fprintf (f, "%r", regno);
+
+	  if ((lo_mask & ~1) != 0)
+	    fprintf (f, ", ");
+
+	  pushed_words++;
+	}
+    }
+
+  if (push && (mask & (1 << LR_REGNUM)))
+    {
+      /* Catch pushing the LR.  */
+      if (mask & 0xFF)
+	fprintf (f, ", ");
+
+      asm_fprintf (f, "%r", LR_REGNUM);
+
+      pushed_words++;
+    }
+  else if (!push && (mask & (1 << PC_REGNUM)))
+    {
+      /* Catch popping the PC.  */
+      if (TARGET_INTERWORK || TARGET_BACKTRACE
+	  || current_function_calls_eh_return)
+	{
+	  /* The PC is never poped directly, instead
+	     it is popped into r3 and then BX is used.  */
+	  fprintf (f, "}\n");
+
+	  thumb_exit (f, -1);
+
+	  return;
+	}
+      else
+	{
+	  if (mask & 0xFF)
+	    fprintf (f, ", ");
+
+	  asm_fprintf (f, "%r", PC_REGNUM);
+	}
+    }
+
+  fprintf (f, "}\n");
+
+  if (push && pushed_words && dwarf2out_do_frame ())
+    {
+      char *l = dwarf2out_cfi_label ();
+      int pushed_mask = real_regs;
+
+      *cfa_offset += pushed_words * 4;
+      dwarf2out_def_cfa (l, SP_REGNUM, *cfa_offset);
+
+      pushed_words = 0;
+      pushed_mask = real_regs;
+      for (regno = 0; regno <= 14; regno++, pushed_mask >>= 1)
+	{
+	  if (pushed_mask & 1)
+	    dwarf2out_reg_save (l, regno, 4 * pushed_words++ - *cfa_offset);
+	}
+    }
 }
 
 /* Generate code to return from a thumb function.
@@ -12641,97 +12778,6 @@ thumb_exit (FILE *f, int reg_containing_return_addr)
   asm_fprintf (f, "\tbx\t%r\n", reg_containing_return_addr);
 }
 
-/* Emit code to push or pop registers to or from the stack.  F is the
-   assembly file.  MASK is the registers to push or pop.  PUSH is
-   nonzero if we should push, and zero if we should pop.  For debugging
-   output, if pushing, adjust CFA_OFFSET by the amount of space added
-   to the stack.  REAL_REGS should have the same number of bits set as
-   MASK, and will be used instead (in the same order) to describe which
-   registers were saved - this is used to mark the save slots when we
-   push high registers after moving them to low registers.  */
-static void
-thumb_pushpop (FILE *f, int mask, int push, int *cfa_offset, int real_regs)
-{
-  int regno;
-  int lo_mask = mask & 0xFF;
-  int pushed_words = 0;
-
-  if (lo_mask == 0 && !push && (mask & (1 << PC_REGNUM)))
-    {
-      /* Special case.  Do not generate a POP PC statement here, do it in
-	 thumb_exit() */
-      thumb_exit (f, -1);
-      return;
-    }
-
-  fprintf (f, "\t%s\t{", push ? "push" : "pop");
-
-  /* Look at the low registers first.  */
-  for (regno = 0; regno <= LAST_LO_REGNUM; regno++, lo_mask >>= 1)
-    {
-      if (lo_mask & 1)
-	{
-	  asm_fprintf (f, "%r", regno);
-
-	  if ((lo_mask & ~1) != 0)
-	    fprintf (f, ", ");
-
-	  pushed_words++;
-	}
-    }
-
-  if (push && (mask & (1 << LR_REGNUM)))
-    {
-      /* Catch pushing the LR.  */
-      if (mask & 0xFF)
-	fprintf (f, ", ");
-
-      asm_fprintf (f, "%r", LR_REGNUM);
-
-      pushed_words++;
-    }
-  else if (!push && (mask & (1 << PC_REGNUM)))
-    {
-      /* Catch popping the PC.  */
-      if (TARGET_INTERWORK || TARGET_BACKTRACE
-	  || current_function_calls_eh_return)
-	{
-	  /* The PC is never poped directly, instead
-	     it is popped into r3 and then BX is used.  */
-	  fprintf (f, "}\n");
-
-	  thumb_exit (f, -1);
-
-	  return;
-	}
-      else
-	{
-	  if (mask & 0xFF)
-	    fprintf (f, ", ");
-
-	  asm_fprintf (f, "%r", PC_REGNUM);
-	}
-    }
-
-  fprintf (f, "}\n");
-
-  if (push && pushed_words && dwarf2out_do_frame ())
-    {
-      char *l = dwarf2out_cfi_label ();
-      int pushed_mask = real_regs;
-
-      *cfa_offset += pushed_words * 4;
-      dwarf2out_def_cfa (l, SP_REGNUM, *cfa_offset);
-
-      pushed_words = 0;
-      pushed_mask = real_regs;
-      for (regno = 0; regno <= 14; regno++, pushed_mask >>= 1)
-	{
-	  if (pushed_mask & 1)
-	    dwarf2out_reg_save (l, regno, 4 * pushed_words++ - *cfa_offset);
-	}
-    }
-}
 
 void
 thumb_final_prescan_insn (rtx insn)
@@ -12851,7 +12897,7 @@ const char *
 thumb_unexpanded_epilogue (void)
 {
   int regno;
-  int live_regs_mask = 0;
+  unsigned long live_regs_mask = 0;
   int high_regs_pushed = 0;
   int had_to_push_lr;
   int size;
@@ -12890,7 +12936,7 @@ thumb_unexpanded_epilogue (void)
 
   if (high_regs_pushed)
     {
-      int mask = live_regs_mask & 0xff;
+      unsigned long mask = live_regs_mask & 0xff;
       int next_hi_reg;
 
       /* The available low registers depend on the size of the value we are
@@ -13127,8 +13173,8 @@ thumb_expand_prologue (void)
     }
 
   live_regs_mask = thumb_compute_save_reg_mask ();
-  /* Load the pic register before setting the frame pointer, so we can use r7
-     as a temporary work register.  */
+  /* Load the pic register before setting the frame pointer,
+     so we can use r7 as a temporary work register.  */
   if (flag_pic)
     arm_load_pic_register (thumb_find_work_register (live_regs_mask));
 
@@ -13302,9 +13348,9 @@ thumb_expand_epilogue (void)
 static void
 thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  int live_regs_mask = 0;
-  int l_mask;
-  int high_regs_pushed = 0;
+  unsigned long live_regs_mask = 0;
+  unsigned long l_mask;
+  unsigned high_regs_pushed = 0;
   int cfa_offset = 0;
   int regno;
 
@@ -13375,19 +13421,23 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       if (dwarf2out_do_frame ())
 	{
 	  char *l = dwarf2out_cfi_label ();
+
 	  cfa_offset = cfa_offset + current_function_pretend_args_size;
 	  dwarf2out_def_cfa (l, SP_REGNUM, cfa_offset);
 	}
     }
 
+  /* Get the registers we are going to push.  */
   live_regs_mask = thumb_compute_save_reg_mask ();
-  /* Just low regs and lr. */
+  /* Extract a mask of the ones we can give to the Thumb's push instruction.  */
   l_mask = live_regs_mask & 0x40ff;
+  /* Then count how many other high registers will need to be pushed.  */
+  high_regs_pushed = bit_count (live_regs_mask & 0x0f00);
 
   if (TARGET_BACKTRACE)
     {
-      int    offset;
-      int    work_register;
+      unsigned offset;
+      unsigned work_register;
 
       /* We have been asked to create a stack backtrace structure.
          The code looks like this:
@@ -13416,6 +13466,7 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       if (dwarf2out_do_frame ())
 	{
 	  char *l = dwarf2out_cfi_label ();
+
 	  cfa_offset = cfa_offset + 16;
 	  dwarf2out_def_cfa (l, SP_REGNUM, cfa_offset);
 	}
@@ -13465,15 +13516,18 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       asm_fprintf (f, "\tmov\t%r, %r\t\t%@ Backtrace structure created\n",
 		   ARM_HARD_FRAME_POINTER_REGNUM, work_register);
     }
-  else if (l_mask)
+  /* Optimisation:  If we are not pushing any low registers but we are going
+     to push some high registers then delay our first push.  This will just
+     be a push of LR and we can combine it with the push of the first high
+     register.  */
+  else if ((l_mask & 0xff) != 0
+	   || (high_regs_pushed == 0 && l_mask))
     thumb_pushpop (f, l_mask, 1, &cfa_offset, l_mask);
-
-  high_regs_pushed = bit_count (live_regs_mask & 0x0f00);
 
   if (high_regs_pushed)
     {
-      int pushable_regs = 0;
-      int next_hi_reg;
+      unsigned pushable_regs;
+      unsigned next_hi_reg;
 
       for (next_hi_reg = 12; next_hi_reg > LAST_LO_REGNUM; next_hi_reg--)
 	if (live_regs_mask & (1 << next_hi_reg))
@@ -13486,21 +13540,21 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
       while (high_regs_pushed > 0)
 	{
-	  int real_regs_mask = 0;
+	  unsigned long real_regs_mask = 0;
 
-	  for (regno = LAST_LO_REGNUM; regno >= 0; regno--)
+	  for (regno = LAST_LO_REGNUM; regno >= 0; regno --)
 	    {
 	      if (pushable_regs & (1 << regno))
 		{
 		  asm_fprintf (f, "\tmov\t%r, %r\n", regno, next_hi_reg);
 
-		  high_regs_pushed--;
+		  high_regs_pushed --;
 		  real_regs_mask |= (1 << next_hi_reg);
 
 		  if (high_regs_pushed)
 		    {
-		      for (next_hi_reg--; next_hi_reg > LAST_LO_REGNUM;
-			   next_hi_reg--)
+		      for (next_hi_reg --; next_hi_reg > LAST_LO_REGNUM;
+			   next_hi_reg --)
 			if (live_regs_mask & (1 << next_hi_reg))
 			  break;
 		    }
@@ -13512,7 +13566,17 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 		}
 	    }
 
-	  thumb_pushpop (f, pushable_regs, 1, &cfa_offset, real_regs_mask);
+	  /* If we had to find a work register and we have not yet
+	     saved the LR then add it to the list of regs to push.  */
+	  if (l_mask == (1 << LR_REGNUM))
+	    {
+	      thumb_pushpop (f, pushable_regs | (1 << LR_REGNUM),
+			     1, &cfa_offset,
+			     real_regs_mask | (1 << LR_REGNUM));
+	      l_mask = 0;
+	    }
+	  else
+	    thumb_pushpop (f, pushable_regs, 1, &cfa_offset, real_regs_mask);
 	}
     }
 }
