@@ -1,5 +1,43 @@
 2003-06-02  Mark Mitchell  <mark@codesourcery.com>
 
+	* lib/scanasm.exp (dg-scan): New function, factored out of ...
+	(scan-assembler): ... here.  Use dg-scan.
+	(scan-assembler-not): Likewise.
+	(scan-file): New function.
+	(scan-file-not): Likewise.
+	* gcc.dg/cpp/19990228-1.c: Use scan-file and/or scan-file-not.
+	* gcc.dg/cpp/_Pragma4.c: Likewise.
+	* gcc.dg/cpp/_Pragma5.c: Likewise.
+	* gcc.dg/cpp/avoidpaste1.c: Likewise.
+	* gcc.dg/cpp/avoidpaste2.c: Likewise.
+	* gcc.dg/cpp/cmdlne-C2.c: Likewise.
+	* gcc.dg/cpp/cmdlne-P.c: Likewise.
+	* gcc.dg/cpp/cmdlne-dD-M.c: Likewise.
+	* gcc.dg/cpp/cmdlne-dD-dM.c: Likewise.
+	* gcc.dg/cpp/cmdlne-dI-M.c: Likewise.
+	* gcc.dg/cpp/cmdlne-dM-M.c: Likewise.
+	* gcc.dg/cpp/cmdlne-dM-dD.c: Likewise.
+	* gcc.dg/cpp/cmdlne-dN-M.c: Likewise.
+	* gcc.dg/cpp/cxxcom1.c: Likewise.
+	* gcc.dg/cpp/line1.c: Likewise.
+	* gcc.dg/cpp/maccom1.c: Likewise.
+	* gcc.dg/cpp/maccom2.c: Likewise.
+	* gcc.dg/cpp/maccom3.c: Likewise.
+	* gcc.dg/cpp/maccom4.c: Likewise.
+	* gcc.dg/cpp/maccom5.c: Likewise.
+	* gcc.dg/cpp/maccom6.c: Likewise.
+	* gcc.dg/cpp/multiline.c: Likewise.
+	* gcc.dg/cpp/spacing1.c: Likewise.
+	* gcc.dg/cpp/spacing2.c: Likewise.
+	* gcc.dg/cpp/trad/cmdlne-C2.c: Likewise.
+	* gcc.dg/cpp/trad/maccom1.c: Likewise.
+	* gcc.dg/cpp/trad/maccom2.c: Likewise.
+	* gcc.dg/cpp/trad/maccom3.c: Likewise.
+	* gcc.dg/cpp/trad/maccom4.c: Likewise.
+	* gcc.dg/cpp/trad/maccom6.c: Likewise.
+	* gcc.dg/cpp/cxxcom2.c: Likewise.
+	* gcc.dg/cpp/cxxcom2.h: New file.
+
 	* gcc.dg/cpp/truefalse.cpp: Move it to ...
 	* g++.dg/cpp/truefalse.C: Here.
 	* gcc.dg/cpp/cpp.exp: Remove scanning of ".cpp" files.

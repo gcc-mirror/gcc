@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 Free Software Foundation, Inc.  */
+/* Copyright (C) 2001, 2003 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
 
@@ -24,10 +24,5 @@ in future, this test needs to change.  */
 :: :g: :f(): :f(^): tricky
 :f(:): .. .__INCLUDE_LEVEL__ __INCLUDE_LEVEL__. /* Check builtins, too.  */
 
-/*
-   { dg-final { if ![file exists avoidpaste1.i] { return }                } }
-   { dg-final { if { [grep avoidpaste1.i ":: : : : : :\\^: 1.0e- 1"] != "" } \{   } }
-   { dg-final { if { [grep avoidpaste1.i ": : : \\\.\\\. \\\. 0 0 \\\."] != "" } \{  } }
-   { dg-final { return \} \}                                              } }
-   { dg-final { fail "avoidpaste1.c: paste avoidance"                     } }
-*/
+/* { dg-final { scan-file avoidpaste1.i ":: : : : : :\\^: 1.0e- 1" } }
+   { dg-final { scan-file avoidpaste1.i ": : : \\\.\\\. \\\. 0 0 \\\." } } */

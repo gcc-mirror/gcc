@@ -1,4 +1,4 @@
-/* Copyright (C) 2002 Free Software Foundation, Inc.  */
+/* Copyright (C) 2002, 2003 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
 /* { dg-options "-dI -M" } */
@@ -11,8 +11,6 @@
 #define funlike(like) fun like
 int variable;
 
-/* { dg-final { if ![file exists cmdlne-dI-M.i] { return }                } }
-   { dg-final { if { [grep cmdlne-dI-M.i "^#define foo bar$"] != "" } { fail "cmdlne-dI-M.c: #define line printed" } } }
-   { dg-final { if { [grep cmdlne-dI-M.i "variable"] != "" } { fail "cmdlne-dI-M.c: non-#define line printed" } } }
-   { dg-final { if { [grep cmdlne-dI-M.i "^cmdlne-dI-M.*:.*cmdlne-dI-M.c"] == "" } { xfail "cmdlne-dI-M.c: dependency rule not printed" } } }
-   { dg-final { return } }  */
+/* { dg-final { scan-file-not cmdlne-dI-M.i "(^|\\n)#define foo bar($|\\n)" } }
+   { dg-final { scan-file-not cmdlne-dI-M.i "variable" } }
+   { dg-final { scan-file cmdlne-dI-M.i "(^|\\n)cmdlne-dI-M.*:\[^\\n\]*cmdlne-dI-M.c" { xfail *-*-* } } } */

@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.  */
+/* Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
 /* { dg-options "-C" } */
@@ -13,9 +13,5 @@
 
 ZERO:
 
-/*
-   { dg-final { if ![file exists cmdlne-C2.i] { return }                  } }
-   { dg-final { if { [grep cmdlne-C2.i "c+omment:"] == "" } { return }    } }
-   { dg-final { fail "cmdlne-C2.i: C++ comments in macros with -C"        } }
-*/
+/* { dg-final { scan-file-not cmdlne-C2.i "c+omment:" } } */
 

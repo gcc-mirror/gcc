@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 Free Software Foundation, Inc.  */
+/* Copyright (C) 2001, 2003 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
 
@@ -13,9 +13,4 @@
 a = EMPTY
 foo..				/* No leading space on output.  */
 
-/*
-   { dg-final { if ![file exists spacing2.i] { return }                   } }
-   { dg-final { if \{ [grep spacing2.i "^bar\.\."] != "" \}           \{  } }
-   { dg-final { return \}                                                 } }
-   { dg-final { fail "spacing2.c: spacing issues"			  } }
-*/
+/* { dg-final { scan-file spacing2.i "(^|\n)bar\.\." } } */

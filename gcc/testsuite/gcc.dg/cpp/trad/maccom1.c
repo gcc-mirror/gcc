@@ -10,8 +10,4 @@
 
 def
 
-/*
-   { dg-final { if ![file exists maccom1.i] { return }                    } }
-   { dg-final { if { [grep maccom1.i "^passed"] != "" } { return }        } }
-   { dg-final { fail "maccom1.c: comment between # and directive name with -CC" } }
-*/
+/* { dg-final { scan-file maccom1.i "(^|\n)passed" } } */

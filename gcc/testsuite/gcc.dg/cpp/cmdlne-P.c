@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation, Inc.  */
+/* Copyright (C) 2000, 2003 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
 /* { dg-options "-P" } */
@@ -8,6 +8,4 @@
 
 int x = 1;
 
-/* { dg-final { if ![file exists cmdlne-P.i] { return }                } }
-   { dg-final { if { [grep cmdlne-P.i "^int x = 1;$"] != "" } { return } } }
-   { dg-final { fail "cmdlne-P.c: stair-stepping with -P"              } } */
+/* { dg-final { scan-file cmdlne-P.i "(^|\n)int x = 1;($|\n)" } } */

@@ -13,7 +13,5 @@ def
 
 /*
    /* The + in the regexp prevents it from matching itself.  */
-   { dg-final { if ![file exists maccom4.i] { return }                    } }
-   { dg-final { if { [grep maccom4.i "p+assed"] != "" } { return }        } }
-   { dg-final { fail "maccom4.c: comment in macro expansion with -CC"     } }
+   { dg-final { scan-file maccom4.i "p+assed" } }
 */

@@ -11,8 +11,4 @@
 
 def
 
-/*
-   { dg-final { if ![file exists maccom2.i] { return }                    } }
-   { dg-final { if { [grep maccom2.i "^passed"] != "" } { return }        } }
-   { dg-final { fail "maccom2.c: comment between #define and identifier with -CC" } }
-*/
+/* { dg-final { scan-file maccom2.i "(^|\n)passed" } } */

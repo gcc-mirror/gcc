@@ -17,8 +17,4 @@ failed
 passed
 #endif
 
-/*
-   { dg-final { if ![file exists maccom6.i] { return }                    } }
-   { dg-final { if { [grep maccom6.i "^passed"] != "" } { return }        } }
-   { dg-final { fail "maccom6.c: comments in macro expressions with -CC"  } }
-*/
+/* { dg-final { scan-file maccom6.i "(^|\n)passed" } } */
