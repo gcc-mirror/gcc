@@ -1,3 +1,14 @@
+Wed Sep 02 09:25:29 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* lex.c (ffe_lex_hash):  Change how HANDLE_PRAGMA and
+	HANDLE_SYSV_PRAGMA would be called if they pragma parsing was
+	enabled in this code.
+	Generate warning messages if unknown pragmas are encountered.
+	(pragma_getc): New function: retrieves characters from the
+	input stream.  Defined when HANDLE_PRAGMA is defined.
+	(pragma_ungetc): New function: replaces characters back into the
+	input stream.  Defined when HANDLE_PRAGMA is defined.
+
 Tue Sep  1 10:00:21 1998  Craig Burley  <burley@gnu.org>
 
 	* bugs.texi, g77.1, g77.texi, intdoc.in, news.texi: Doc updates

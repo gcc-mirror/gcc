@@ -1,5 +1,5 @@
 /* Implementation of Fortran lexer
-   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998 Free Software Foundation, Inc.
    Contributed by James Craig Burley (burley@gnu.org).
 
 This file is part of GNU Fortran.
@@ -1077,6 +1077,23 @@ ffelex_get_directive_line_ (char **text, FILE *finput)
    Returns the next character unhandled, which is always newline or EOF.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
+
+#if defined HANDLE_PRAGMA
+/* Local versions of these macros, that can be passed as function pointers.  */
+static int
+pragma_getc ()
+{
+  return getc (finput);
+}
+
+static void
+pragma_ungetc (arg)
+     int arg;
+{
+  ungetc (arg, finput);
+}
+#endif /* HANDLE_PRAGMA */
+
 static int
 ffelex_hash_ (FILE *finput)
 {
@@ -1105,17 +1122,42 @@ ffelex_hash_ (FILE *finput)
 	      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'
 		  || c == EOF))
 	    {
-	      goto skipline;
 #if 0	/* g77 doesn't handle pragmas, so ignores them FOR NOW. */
-#ifdef HANDLE_SYSV_PRAGMA
-	      return handle_sysv_pragma (finput, c);
-#else /* !HANDLE_SYSV_PRAGMA */
+	      static char buffer [128];
+	      char * buff = buffer;
+
+	      /* Read the pragma name into a buffer.  */
+	      while (isspace (c = getc (finput)))
+		continue;
+	      
+	      do
+		{
+		  * buff ++ = c;
+		  c = getc (finput);
+		}
+	      while (c != EOF && ! isspace (c) && c != '\n'
+		     && buff < buffer + 128);
+
+	      pragma_ungetc (c);
+		
+	      * -- buff = 0;
 #ifdef HANDLE_PRAGMA
-	      HANDLE_PRAGMA (finput);
+	      if (HANDLE_PRAGMA (pragma_getc, pragma_ungetc, buffer))
+		goto skipline;
 #endif /* HANDLE_PRAGMA */
-	      goto skipline;
+#ifdef HANDLE_SYSV_PRAGMA
+	      if (handle_sysv_pragma (buffer))
+		goto skipline;
 #endif /* !HANDLE_SYSV_PRAGMA */
+
+	      /* Issue a warning message if we have been asked to do so.
+		 Ignoring unknown pragmas in system header file unless
+		 an explcit -Wunknown-pragmas has been given. */
+	      if (warn_unknown_pragmas > 1
+		  || (warn_unknown_pragmas && ! in_system_header))
+		warning ("ignoring pragma: %s", token_buffer);
 #endif /* 0 */
+	      goto skipline;
 	    }
 	}
 
