@@ -220,6 +220,7 @@ if [ "${SUBDIRS}" != "" ] ; then
   echo >&2 '	"tooldir=$(tooldir)" \'
   echo >&2 '	"gxx_include_dir=$(gxx_include_dir)" \'
   echo >&2 '	"libsubdir=$(libsubdir)" \'
+  echo >&2 '	"gcc_version=$(gcc_version)" \'
   echo >&2 '	"AR=$(AR)" \'
   echo >&2 '	"AR_FLAGS=$(AR_FLAGS)" \'
   echo >&2 '	"CC=$(CC)" \'
