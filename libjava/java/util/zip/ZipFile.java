@@ -40,7 +40,7 @@ public class ZipFile implements ZipConstants
     if ((mode & OPEN_DELETE) != 0)
       {
 	delete_on_close = f;
-	// f.deleteOnExit(); XXX - Not yet implemented in libgcj
+	f.deleteOnExit();
       }
     else
       {
