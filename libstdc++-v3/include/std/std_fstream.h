@@ -45,6 +45,7 @@
 #include <istream>
 #include <ostream>
 #include <locale>	// For codecvt
+#include <cstdio>       // For SEEK_SET, SEEK_CUR, SEEK_END, BUFSIZ     
 #include <bits/basic_file.h>
 #include <bits/gthr.h>
 
@@ -112,6 +113,13 @@ namespace std
       */
       __state_type		_M_state_cur;
       __state_type 		_M_state_beg;
+
+      /**
+       *  @if maint
+       *  Actual size of internal buffer.
+       *  @endif
+      */
+      size_t			_M_buf_size;
 
       // Set iff _M_buf is allocated memory from _M_allocate_internal_buffer.
       /**
@@ -209,6 +217,7 @@ namespace std
       ~basic_filebuf()
       {
 	this->close();
+	_M_buf_size = 0;
 	_M_last_overflowed = false;
       }
 

@@ -1,5 +1,13 @@
 2003-04-28  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/std/std_streambuf.h (_M_buf_size): is currently
+	used only for basic_filebuf, therefore move it there.
+	(basic_streambuf(), ~basic_streambuf()): Adjust.
+	* include/std/std_fstream.h (_M_buf_size): Moved here.
+	* include/bits/fstream.tcc (basic_filebuf()): Adjust.
+
+2003-04-28  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/bits/streambuf.tcc (__copy_streambufs): Don't use
 	_M_buf_size (synced input is now correctly dealt with
 	elsewhere); when the output buffer is full don't fall back
