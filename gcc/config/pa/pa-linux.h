@@ -18,6 +18,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* Wide characters are signed.  */
+#undef WCHAR_UNSIGNED
+#define WCHAR_UNSIGNED 0
+
 /* Use DWARF2 debugging info and unwind.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG

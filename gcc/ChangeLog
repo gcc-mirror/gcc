@@ -1,5 +1,10 @@
 2002-05-31  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* pa-linux.h (WCHAR_UNSIGNED): Define to 0.
+	* pa.h (WCHAR_UNSIGNED): Define to 1.
+	
+2002-05-31  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
 	* pa.c (output_millicode_call): Correct "be,l" insn for TARGET_PA_20.
 	(output_call): Likewise.
 

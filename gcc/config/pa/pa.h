@@ -348,6 +348,7 @@ extern int target_flags;
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
 #define WCHAR_TYPE "unsigned int"
+#define WCHAR_UNSIGNED 1
 #define WCHAR_TYPE_SIZE 32
 
 /* Show we can debug even without a frame pointer.  */
