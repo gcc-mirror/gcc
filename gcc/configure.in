@@ -378,6 +378,8 @@ else
     AC_MSG_RESULT(no)
 fi
 
+AC_C_INLINE
+
 # Find some useful tools
 AC_PROG_AWK
 AC_PROG_LEX

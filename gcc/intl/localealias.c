@@ -20,6 +20,10 @@
 # include <config.h>
 #endif
 
+# ifndef _GNU_SOURCE
+#  define _GNU_SOURCE	1
+# endif
+
 #include <ctype.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -53,9 +57,6 @@ void free ();
 #endif
 
 #if defined HAVE_STRING_H || defined _LIBC
-# ifndef _GNU_SOURCE
-#  define _GNU_SOURCE	1
-# endif
 # include <string.h>
 #else
 # include <strings.h>
@@ -227,13 +228,8 @@ read_alias_file (fname, fname_len)
 
   full_fname = (char *) alloca (fname_len + sizeof aliasfile);
   ADD_BLOCK (block_list, full_fname);
-#ifdef HAVE_MEMPCPY
-  mempcpy (mempcpy (full_fname, fname, fname_len),
-	   aliasfile, sizeof aliasfile);
-#else
   memcpy (full_fname, fname, fname_len);
   memcpy (&full_fname[fname_len], aliasfile, sizeof aliasfile);
-#endif
 
   fp = fopen (full_fname, "r");
   if (fp == NULL)
@@ -255,7 +251,7 @@ read_alias_file (fname, fname_len)
       unsigned char *value;
       unsigned char *cp;
 
-      if (fgets (buf, sizeof buf, fp) == NULL)
+      if (fgets ((char *)buf, sizeof buf, fp) == NULL)
 	/* EOF reached.  */
 	break;
 
@@ -314,8 +310,8 @@ read_alias_file (fname, fname_len)
 	      if (nmap >= maxmap)
 		extend_alias_table ();
 
-	      alias_len = strlen (alias) + 1;
-	      value_len = strlen (value) + 1;
+	      alias_len = strlen ((char *)alias) + 1;
+	      value_len = strlen ((char *)value) + 1;
 
 	      if (string_space_act + alias_len + value_len > string_space_max)
 		{
@@ -333,12 +329,12 @@ read_alias_file (fname, fname_len)
 		  string_space_max = new_size;
 		}
 
-	      map[nmap].alias = memcpy (&string_space[string_space_act],
-					alias, alias_len);
+	      memcpy (&string_space[string_space_act], alias, alias_len);
+	      map[nmap].alias = &string_space[string_space_act];
 	      string_space_act += alias_len;
 
-	      map[nmap].value = memcpy (&string_space[string_space_act],
-					value, value_len);
+	      memcpy (&string_space[string_space_act], value, value_len);
+	      map[nmap].value = &string_space[string_space_act];
 	      string_space_act += value_len;
 
 	      ++nmap;

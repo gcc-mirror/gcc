@@ -1,3 +1,10 @@
+2000-06-04  Philipp Thomas  <pthomas@suse.de>
+
+	* Makefile.in(INTLLIBS): New macro.
+	(LIBS): Add INTLLIBS.
+	(DEPLIBS): Likewise.
+	* config-lang(outputs): Specify ch/Makefile.
+
 Sat Jun  3 15:31:07 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* chill.texi (INFO-DIR-ENTRY): Fix chill entry.

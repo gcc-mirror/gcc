@@ -91,7 +91,7 @@ _nl_load_domain (domain_file)
 
   /* We must know about the size of the file.  */
   if (fstat (fd, &st) != 0
-      || (size = (size_t) st.st_size) != st.st_size
+      || (size = (size_t) st.st_size) != (size_t) st.st_size
       || size < sizeof (struct mo_file_header))
     {
       /* Something went wrong.  */

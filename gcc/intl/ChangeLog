@@ -1,3 +1,19 @@
+2000-06-06  Philipp Thomas  <pthomas@suse.de>
+	* Makefile.in: Add -DIN_GCC to DEFS, add appropriate -I switches.
+	* dcgettext.c: Define _GNU_SOURCE before any system header is
+	included. Guard getcwd declaration with HAVE_DECL_GETCWD.
+	* loadmsgcat.c (_nl_load_domain): Cast st.st_size in compaison to
+	size_t.
+	* localealias.c: Define _GNU_SOURCE before any system header is
+	included. Don't use return value of memcpy because it could be a
+	macro defined in terms of bcopy.
+	(read_alias_file): Remove HAVE_MEMCPY guard and just don't use the
+	return value of memcpy. Cast argument to fgets and strlen to char *.
+	* explodename.c (_nl_explode_name): Cast codeset to unsigned char **
+	in call to _nl_normalize_codeset.
+	* l10nflist.c: Define _GNU_SOURCE before any system header is
+	included.
+	
 1998-04-29  Ulrich Drepper  <drepper@cygnus.com>
 
 	* intl/localealias.c (read_alias_file): Use unsigned char for

@@ -1,3 +1,9 @@
+2000-06-04  Philipp Thomas  <pthomas@suse.de>
+
+	* Makefile.in (INTLLIBS): New.
+	(LIBS): Add above.
+	(DEPLIBS): Ditto.
+
 Fri Jun  2 16:48:55 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (get_dispatch_table): Build the vtable dummy entry list

@@ -108,8 +108,9 @@ _nl_explode_name (name, language, modifier, territory, codeset,
 
 	  if (*codeset != cp && (*codeset)[0] != '\0')
 	    {
-	      *normalized_codeset = _nl_normalize_codeset (*codeset,
-							   cp - *codeset);
+	      *normalized_codeset = _nl_normalize_codeset (
+	      				*((unsigned char **) codeset),
+	      				cp - *codeset);
 	      if (strcmp (*codeset, *normalized_codeset) == 0)
 		free ((char *) *normalized_codeset);
 	      else
