@@ -35,6 +35,9 @@ toolexeclib_LTLIBRARIES = libgcj.la lib-org-xml-sax.la lib-org-w3c-dom.la \
     $(cond_gtk_ltlibrary) $(cond_x_ltlibrary)
 toolexecmainlib_DATA = libgcj.spec
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libgcj.pc
+
 jardir = $(datadir)/java
 jar_DATA = libgcj-@gcc_version@.jar
 

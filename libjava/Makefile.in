@@ -162,6 +162,9 @@ toolexeclib_LTLIBRARIES = libgcj.la lib-org-xml-sax.la lib-org-w3c-dom.la \
 
 toolexecmainlib_DATA = libgcj.spec
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libgcj.pc
+
 jardir = $(datadir)/java
 jar_DATA = libgcj-@gcc_version@.jar
 
@@ -2484,7 +2487,7 @@ MULTIDO = true
 MULTICLEAN = true
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 CONFIG_HEADER = ./include/config.h ./gcj/libgcj-config.h
-CONFIG_CLEAN_FILES =  libgcj.spec libgcj-test.spec
+CONFIG_CLEAN_FILES =  libgcj.pc libgcj.spec libgcj-test.spec
 LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
 
 
@@ -2668,11 +2671,11 @@ COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CF
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
-DATA =  $(jar_DATA) $(toolexecmainlib_DATA)
+DATA =  $(jar_DATA) $(pkgconfig_DATA) $(toolexecmainlib_DATA)
 
 DIST_COMMON =  README COPYING ChangeLog Makefile.am Makefile.in NEWS \
 THANKS acinclude.m4 aclocal.m4 configure configure.in \
-libgcj-test.spec.in libgcj.spec.in
+libgcj-test.spec.in libgcj.pc.in libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -2768,6 +2771,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/xlib/natXImage.P .deps/gnu/gcj/xlib/natXUnmapEvent.P \
 .deps/gnu/java/awt/BitMaskExtent.P .deps/gnu/java/awt/Buffers.P \
 .deps/gnu/java/awt/ComponentDataBlitOp.P \
+.deps/gnu/java/awt/EmbeddedWindow.P \
+.deps/gnu/java/awt/EmbeddedWindowSupport.P \
 .deps/gnu/java/awt/EventModifier.P \
 .deps/gnu/java/awt/GLightweightPeer.P \
 .deps/gnu/java/awt/image/ImageDecoder.P \
@@ -4294,6 +4299,8 @@ config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
+libgcj.pc: $(top_builddir)/config.status libgcj.pc.in
+	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 libgcj.spec: $(top_builddir)/config.status libgcj.spec.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 libgcj-test.spec: $(top_builddir)/config.status libgcj-test.spec.in
@@ -4467,6 +4474,25 @@ uninstall-jarDATA:
 	@$(NORMAL_UNINSTALL)
 	list='$(jar_DATA)'; for p in $$list; do \
 	  rm -f $(DESTDIR)$(jardir)/$$p; \
+	done
+
+install-pkgconfigDATA: $(pkgconfig_DATA)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(pkgconfigdir)
+	@list='$(pkgconfig_DATA)'; for p in $$list; do \
+	  if test -f $(srcdir)/$$p; then \
+	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(pkgconfigdir)/$$p"; \
+	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(pkgconfigdir)/$$p; \
+	  else if test -f $$p; then \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(pkgconfigdir)/$$p"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(pkgconfigdir)/$$p; \
+	  fi; fi; \
+	done
+
+uninstall-pkgconfigDATA:
+	@$(NORMAL_UNINSTALL)
+	list='$(pkgconfig_DATA)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(pkgconfigdir)/$$p; \
 	done
 
 install-toolexecmainlibDATA: $(toolexecmainlib_DATA)
@@ -4703,7 +4729,8 @@ install-exec-am: install-toolexeclibLTLIBRARIES install-binPROGRAMS \
 		install-binSCRIPTS install-toolexecmainlibDATA
 install-exec: install-exec-recursive
 
-install-data-am: install-jarDATA install-data-local
+install-data-am: install-jarDATA install-pkgconfigDATA \
+		install-data-local
 install-data: install-data-recursive
 
 install-am: all-am
@@ -4711,7 +4738,7 @@ install-am: all-am
 install: install-recursive
 uninstall-am: uninstall-toolexeclibLTLIBRARIES uninstall-binPROGRAMS \
 		uninstall-binSCRIPTS uninstall-jarDATA \
-		uninstall-toolexecmainlibDATA
+		uninstall-pkgconfigDATA uninstall-toolexecmainlibDATA
 uninstall: uninstall-recursive
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA)
 all-redirect: all-recursive
@@ -4721,6 +4748,7 @@ installdirs: installdirs-recursive
 installdirs-am:
 	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir) $(DESTDIR)$(bindir) \
 		$(DESTDIR)$(bindir) $(DESTDIR)$(jardir) \
+		$(DESTDIR)$(pkgconfigdir) \
 		$(DESTDIR)$(toolexecmainlibdir)
 
 
@@ -4780,7 +4808,8 @@ distclean-binPROGRAMS clean-binPROGRAMS maintainer-clean-binPROGRAMS \
 uninstall-binPROGRAMS install-binPROGRAMS mostlyclean-noinstPROGRAMS \
 distclean-noinstPROGRAMS clean-noinstPROGRAMS \
 maintainer-clean-noinstPROGRAMS uninstall-binSCRIPTS install-binSCRIPTS \
-uninstall-jarDATA install-jarDATA uninstall-toolexecmainlibDATA \
+uninstall-jarDATA install-jarDATA uninstall-pkgconfigDATA \
+install-pkgconfigDATA uninstall-toolexecmainlibDATA \
 install-toolexecmainlibDATA install-data-recursive \
 uninstall-data-recursive install-exec-recursive \
 uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
