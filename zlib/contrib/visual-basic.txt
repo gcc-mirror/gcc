@@ -67,3 +67,94 @@ Declare Function gzclose Lib "ZLIB32.DLL"
 -Jon Caruana
 jon-net@usa.net
 Microsoft Sitebuilder Network Level 1 Member - HTML Writer's Guild Member
+
+
+Here is another example from Michael <michael_borgsys@hotmail.com> that he
+says conforms to the VB guidelines, and that solves the problem of not
+knowing the uncompressed size by storing it at the end of the file:
+
+'Calling the functions:
+'bracket meaning: <parameter> [optional] {Range of possible values}
+'Call subCompressFile(<path with filename to compress> [, <path with
+filename to write to>, [level of compression {1..9}]])
+'Call subUncompressFile(<path with filename to compress>)
+
+Option Explicit
+Private lngpvtPcnSml As Long 'Stores value for 'lngPercentSmaller'
+Private Const SUCCESS As Long = 0
+Private Const strFilExt As String = ".cpr"
+Private Declare Function lngfncCpr Lib "zlib.dll" Alias "compress2" (ByRef
+dest As Any, ByRef destLen As Any, ByRef src As Any, ByVal srcLen As Long,
+ByVal level As Integer) As Long
+Private Declare Function lngfncUcp Lib "zlib.dll" Alias "uncompress" (ByRef
+dest As Any, ByRef destLen As Any, ByRef src As Any, ByVal srcLen As Long)
+As Long
+
+Public Sub subCompressFile(ByVal strargOriFilPth As String, Optional ByVal
+strargCprFilPth As String, Optional ByVal intLvl As Integer = 9)
+    Dim strCprPth As String
+    Dim lngOriSiz As Long
+    Dim lngCprSiz As Long
+    Dim bytaryOri() As Byte
+    Dim bytaryCpr() As Byte
+    lngOriSiz = FileLen(strargOriFilPth)
+    ReDim bytaryOri(lngOriSiz - 1)
+    Open strargOriFilPth For Binary Access Read As #1
+        Get #1, , bytaryOri()
+    Close #1
+    strCprPth = IIf(strargCprFilPth = "", strargOriFilPth, strargCprFilPth)
+'Select file path and name
+    strCprPth = strCprPth & IIf(Right(strCprPth, Len(strFilExt)) =
+strFilExt, "", strFilExt) 'Add file extension if not exists
+    lngCprSiz = (lngOriSiz * 1.01) + 12 'Compression needs temporary a bit
+more space then original file size
+    ReDim bytaryCpr(lngCprSiz - 1)
+    If lngfncCpr(bytaryCpr(0), lngCprSiz, bytaryOri(0), lngOriSiz, intLvl) =
+SUCCESS Then
+        lngpvtPcnSml = (1# - (lngCprSiz / lngOriSiz)) * 100
+        ReDim Preserve bytaryCpr(lngCprSiz - 1)
+        Open strCprPth For Binary Access Write As #1
+            Put #1, , bytaryCpr()
+            Put #1, , lngOriSiz 'Add the the original size value to the end
+(last 4 bytes)
+        Close #1
+    Else
+        MsgBox "Compression error"
+    End If
+    Erase bytaryCpr
+    Erase bytaryOri
+End Sub
+
+Public Sub subUncompressFile(ByVal strargFilPth As String)
+    Dim bytaryCpr() As Byte
+    Dim bytaryOri() As Byte
+    Dim lngOriSiz As Long
+    Dim lngCprSiz As Long
+    Dim strOriPth As String
+    lngCprSiz = FileLen(strargFilPth)
+    ReDim bytaryCpr(lngCprSiz - 1)
+    Open strargFilPth For Binary Access Read As #1
+        Get #1, , bytaryCpr()
+    Close #1
+    'Read the original file size value:
+    lngOriSiz = bytaryCpr(lngCprSiz - 1) * (2 ^ 24) _
+              + bytaryCpr(lngCprSiz - 2) * (2 ^ 16) _
+              + bytaryCpr(lngCprSiz - 3) * (2 ^ 8) _
+              + bytaryCpr(lngCprSiz - 4)
+    ReDim Preserve bytaryCpr(lngCprSiz - 5) 'Cut of the original size value
+    ReDim bytaryOri(lngOriSiz - 1)
+    If lngfncUcp(bytaryOri(0), lngOriSiz, bytaryCpr(0), lngCprSiz) = SUCCESS
+Then
+        strOriPth = Left(strargFilPth, Len(strargFilPth) - Len(strFilExt))
+        Open strOriPth For Binary Access Write As #1
+            Put #1, , bytaryOri()
+        Close #1
+    Else
+        MsgBox "Uncompression error"
+    End If
+    Erase bytaryCpr
+    Erase bytaryOri
+End Sub
+Public Property Get lngPercentSmaller() As Long
+    lngPercentSmaller = lngpvtPcnSml
+End Property
