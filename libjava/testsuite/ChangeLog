@@ -1,3 +1,12 @@
+2003-11-10  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/12996:
+	* libjava.jar/simple.jar: New file.
+	* libjava.jar/simple.xfail: New file.
+	* libjava.jar/simple.out: New file.
+	* libjava.jar/simple.java: New file.
+	* libjava.jar/jar.exp: New file.
+
 2003-11-08  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.jacks/jacks.xfail: Updated.

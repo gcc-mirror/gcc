@@ -1,0 +1,59 @@
+# Tests for .jar files.
+
+# Compile a single .jar file to an executable.
+# Returns 0 on failure.
+proc gcj_jar_link {jarfile mainclass} {
+}
+
+proc gcj_jar_compile_one {jarfile mainclass} {
+  set base [file rootname [file tail $jarfile]]
+  set out [file rootname $jarfile].out
+
+  if {! [gcj_link $base $mainclass [list $jarfile]]} {
+    return
+  }
+
+  gcj_invoke $base $out {}
+}
+
+proc gcj_jar_interpret {jarfile} {
+  global INTERPRETER srcdir
+
+  set gij [libjava_find_gij] 
+  # libjava_find_gij will return `gij' if it couldn't find the
+  # program; in this case we want to skip the test.
+  if {$INTERPRETER != "yes" || $gij == "gij"} {
+    untested "$jarfile execution - gij test"
+    untested "$jarfile output - gij test"
+    return
+  }
+
+  set opts(_) {}
+  set out [file rootname $jarfile].out
+  libjava_invoke $jarfile "gij test" opts $gij {} $out \
+    -jar $jarfile
+}
+
+proc gcj_jar_run {} {
+  global srcdir subdir
+  foreach jar [lsort [glob -nocomplain ${srcdir}/${subdir}/*.jar]] {
+    set xff [file rootname $jar].xfail
+    set main {}
+    set interp 1
+    foreach item [libjava_read_xfail $xff] {
+      if {[string match main=* $item]} {
+	set main [string range $item 5 end]
+	break
+      } elseif {$item == "no-interpret"} {
+	set interp 0
+      }
+    }
+
+    gcj_jar_compile_one $jar $main
+    if {$interp} {
+      gcj_jar_interpret $jar
+    }
+  }
+}
+
+gcj_jar_run
