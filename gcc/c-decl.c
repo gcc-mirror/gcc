@@ -2568,17 +2568,9 @@ init_decl_processing ()
       temp = builtin_function ("abort", void_ftype_any, NOT_BUILT_IN, 0);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
-#if 0
-      /* Suppress error if redefined as a non-function.  */
-      DECL_BUILT_IN_NONANSI (temp) = 1;
-#endif
       temp = builtin_function ("exit", void_ftype_any, NOT_BUILT_IN, 0);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
-#if 0
-      /* Suppress error if redefined as a non-function.  */
-      DECL_BUILT_IN_NONANSI (temp) = 1;
-#endif
     }
 
 #if 0
@@ -2618,6 +2610,11 @@ builtin_function (name, type, function_code, library_name)
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
   TREE_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
+  /* If -traditional, permit redefining a builtin function any way you like.
+     (Though really, if the program redefines these functions,
+     it probably won't work right unless compiled with -fno-builtin.)  */
+  if (flag_traditional && name[0] != '_')
+    DECL_BUILT_IN_NONANSI (decl) = 1;
   if (library_name)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
   make_decl_rtl (decl, 0, 1);
