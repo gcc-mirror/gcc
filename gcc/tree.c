@@ -53,19 +53,19 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Each tree code class has an associated string representation.
    These must correspond to the tree_code_class entries.  */
 
-const char* tree_code_class_strings[] =
-  {
-    "exceptional",
-    "constant",
-    "type",
-    "declaration",
-    "reference",
-    "comparison",
-    "unary",
-    "binary",
-    "statement",
-    "expression",
-  };
+const char *const tree_code_class_strings[] =
+{
+  "exceptional",
+  "constant",
+  "type",
+  "declaration",
+  "reference",
+  "comparison",
+  "unary",
+  "binary",
+  "statement",
+  "expression",
+};
 
 /* obstack.[ch] explicitly declined to prototype this.  */
 extern int _obstack_allocated_p (struct obstack *h, void *obj);

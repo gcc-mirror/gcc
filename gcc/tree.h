@@ -65,7 +65,7 @@ enum tree_code_class {
 /* Each tree code class has an associated string representation.
    These must correspond to the tree_code_class entries.  */
 
-extern const char* tree_code_class_strings[];
+extern const char *const tree_code_class_strings[];
 
 /* Returns the string representing CLASS.  */
 
