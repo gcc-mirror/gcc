@@ -1454,7 +1454,11 @@ main (argc, argv)
 	if (! strcmp (argv[i], "-lang-c"))
 	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 1, objc = 0;
 	else if (! strcmp (argv[i], "-lang-c89"))
-	  cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
+	  {
+	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
+	    no_trigraphs = 0;
+	    pend_defs[i] = "__STRICT_ANSI__=199000";
+	  }
 	else if (! strcmp (argv[i], "-lang-c++"))
 	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, c9x = 0, objc = 0;
 	else if (! strcmp (argv[i], "-lang-objc"))
@@ -1472,15 +1476,37 @@ main (argc, argv)
 	break;
 
       case 's':
-	if (!strcmp (argv[i], "-std=iso9899:1990")
-	    || !strcmp (argv[i], "-std=iso9899:199409")
-	    || !strcmp (argv[i], "-std=c89")
-	    || !strcmp (argv[i], "-std=gnu89"))
-	  cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
+	if (!strcmp (argv[i], "-std=gnu89"))
+	  {
+	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
+	  }
+	else if (!strcmp (argv[i], "-std=gnu9x")
+		 || !strcmp (argv[i], "-std=gnu99"))
+	  {
+	    cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 1, objc = 0;
+	  }
+	else if (!strcmp (argv[i], "-std=iso9899:1990")
+		 || !strcmp (argv[i], "-std=c89"))
+	  {
+	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
+	    no_trigraphs = 0;
+	    pend_defs[i] = "__STRICT_ANSI__=199000";
+	  }
+	else if (!strcmp (argv[i], "-std=iso9899:199409"))
+	  {
+	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
+	    no_trigraphs = 0;
+	    pend_defs[i] = "__STRICT_ANSI__=199409";
+	  }
         else if (!strcmp (argv[i], "-std=iso9899:199x")
+		 || !strcmp (argv[i], "-std=iso9899:1999")
 		 || !strcmp (argv[i], "-std=c9x")
-		 || !strcmp (argv[i], "-std=gnu9x"))
-	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 1, objc = 0;
+		 || !strcmp (argv[i], "-std=c99"))
+	  {
+	    cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 1, objc = 0;
+	    no_trigraphs = 0;
+	    pend_defs[i] = "__STRICT_ANSI__=199900";
+	  }
 	break;
 
       case 'w':
