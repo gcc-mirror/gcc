@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 extern tree builtin_return_address_fndecl;
 
 extern struct obstack permanent_obstack;
+extern struct obstack* saveable_obstack;
 
 extern int current_class_depth;
 
@@ -3368,11 +3369,52 @@ pushdecl (x)
             }
           else if (type != error_mark_node && TYPE_NAME (type) != x)
             {
+	      push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
+
+	      if (!TREE_PERMANENT (x) 
+		  && TYPE_OBSTACK (type) != saveable_obstack)
+		{
+		  /* X should have been allocated on the saveable
+		     obstack.  Since the type was not, the type may
+		     outlive X, unless we make a copy of X.  Here are
+		     some examples:
+		     
+		     template <class T>
+		     void f()
+		     {
+		       typedef S<T> Type_t;
+		       Type_t::foo();
+		     }
+		     
+		     Here, we will create a SCOPE_REF with Type_t as
+		     its first argument, and save the SCOPE_REF for
+		     later, so that we can tsubst into it.  But, that
+		     means we need to save the TYPE_DECL for Type_t.
+		     
+		     But, we must save the TYPE_DECL even when not
+		     processing_template_decl.  For example,
+		     
+		     void f() 
+		     {
+		       typedef int I;
+		       g<I>();
+		     }
+		     
+		     may create a declaration of g with `I' as one of
+		     the arguments.  In the old days, we used to use
+		     the underlying types for things, but now we try
+		     to use the typedef names for readability.  */
+		  x = copy_node (x);
+		  copy_lang_decl (x);
+		}
+
 	      DECL_ORIGINAL_TYPE (x) = type;
               type = build_type_copy (type);
 	      TYPE_STUB_DECL (type) = TYPE_STUB_DECL (DECL_ORIGINAL_TYPE (x));
               TYPE_NAME (type) = x;
               TREE_TYPE (x) = type;
+
+	      pop_obstacks ();
             }
 
 	  if (type != error_mark_node
