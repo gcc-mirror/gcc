@@ -158,6 +158,8 @@ struct pretty_print_info
 #define pp_append_text(PP, B, E) \
   pp_base_append_text (pp_base (PP), B, E)
 #define pp_flush(PP)            pp_base_flush (pp_base (PP))
+#define pp_prepare_to_format(PP, TI, LOC) \
+  pp_base_prepare_to_format (pp_base (PP), TI, LOC)
 #define pp_format_text(PP, TI)  pp_base_format_text (pp_base (PP), TI)
 #define pp_format_verbatim(PP, TI) \
   pp_base_format_verbatim (pp_base (PP), TI)
@@ -261,6 +263,8 @@ extern void pp_printf (pretty_printer *, const char *, ...)
 
 extern void pp_verbatim (pretty_printer *, const char *, ...);
 extern void pp_base_flush (pretty_printer *);
+extern void pp_base_prepare_to_format (pretty_printer *, text_info *,
+				       location_t *);
 extern void pp_base_format_text (pretty_printer *, text_info *);
 extern void pp_base_format_verbatim (pretty_printer *, text_info *);
 

@@ -16409,5 +16409,22 @@ emit_test_initialization (void **entry_p, void *info)
   return true;
 }
 
+#ifdef __XGETTEXT__
+/* Depending on the version of Bison used to compile this grammar,
+   it may issue generic diagnostics spelled "syntax error" or
+   "parse error".  To prevent this from changing the translation
+   template randomly, we list all the variants of this particular
+   diagnostic here.  Translators: there is no fine distinction
+   between diagnostics with "syntax error" in them, and diagnostics
+   with "parse error" in them.  It's okay to give them both the same
+   translation.  */
+const char d1[] = N_("syntax error");
+const char d2[] = N_("parse error");
+const char d3[] = N_("syntax error; also virtual memory exhausted");
+const char d4[] = N_("parse error; also virtual memory exhausted");
+const char d5[] = N_("syntax error: cannot back up");
+const char d6[] = N_("parse error: cannot back up");
+#endif
+
 #include "gt-java-parse.h"
 #include "gtype-java.h"
