@@ -478,7 +478,7 @@ __gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
 {
   mutex->depth = 0;
   mutex->owner = (thread_t) 0;
-  return mutex_init (&mutex->actual, USYNC_THREAD, NULL);
+  return mutex_init (&mutex->actual, USYNC_THREAD, 0);
 }
 
 static inline int
