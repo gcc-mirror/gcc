@@ -3405,6 +3405,13 @@
   ""
   [(set_attr "length" "0")])
 
+(define_insn "switch_jump"
+  [(set:DI (pc) (label_ref (match_operand 0 "" "")))]
+  ""
+  "bl %l0,0%#"
+  [(set_attr "type" "uncond_branch")
+   (set_attr "length" "4")])
+
 (define_insn "jump"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
