@@ -3365,7 +3365,7 @@ changequote([,])dnl
 		tmake_file=sparc/t-sparclite
 		;;
 	sparclite-*-elf*)
-		tm_file="sparc/liteelf.h libgloss.h"
+		tm_file="sparc/liteelf.h"
 		tmake_file=sparc/t-sparclite
                 extra_parts="crtbegin.o crtend.o"
 		;;
@@ -3374,7 +3374,7 @@ changequote([,])dnl
 		tmake_file=sparc/t-sp86x
 		;;
 	sparc86x-*-elf*)	
-		tm_file="sparc/sp86x-elf.h libgloss.h"
+		tm_file="sparc/sp86x-elf.h"
 		tmake_file=sparc/t-sp86x
                 extra_parts="crtbegin.o crtend.o"
 		;;
