@@ -1,34 +1,34 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
-This file is part of GNU G95.
+This file is part of GCC.
 
-GNU G95 is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
 
-GNU G95 is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
 You should have received a copy of the GNU General Public License
-along with GNU G95; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 59 Temple Place - Suite 330,Boston, MA
+02111-1307, USA.  */
 
 
 /* Notes for DATA statement implementation:
-                                                                                
+                                                                               
    We first assign initial value to each symbol by gfc_assign_data_value
    during resolveing DATA statement. Refer to check_data_variable and
    traverse_data_list in resolve.c.
-                                                                                
+                                                                               
    The complexity exists in the handleing of array section, implied do
    and array of struct appeared in DATA statement.
-                                                                                
+                                                                               
    We call gfc_conv_structure, gfc_con_array_array_initializer,
    etc., to convert the initial value. Refer to trans-expr.c and
    trans-array.c.  */
