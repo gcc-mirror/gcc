@@ -877,6 +877,7 @@ find_matches (insn, matchp)
 
       likely_spilled[operand_number] = 0;
       matchp->use[operand_number] = READ;
+      matchp->early_clobber[operand_number] = 0;
       if (*p == '=')
 	matchp->use[operand_number] = WRITE;
       else if (*p == '+')

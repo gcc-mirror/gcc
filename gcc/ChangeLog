@@ -1,3 +1,7 @@
+Thu Jan 22 14:49:14 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* regmove.c (find_matches): Initialize matches->earlyclobber too.
+
 Thu Jan 22 01:40:52 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (abssf2, absdf2): Disable in IEEE mode.
