@@ -409,13 +409,13 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       int save_volatile_ok = volatile_ok;
       volatile_ok = 1;
 
-      /* If this machine's insv can only insert into a register, or if we
-	 are to force MEMs into a register, copy OP0 into a register and
-	 save it back later.  */
+      /* If this machine's insv can only insert into a register, copy OP0
+	 into a register and save it back later.  */
+      /* This used to check flag_force_mem, but that was a serious
+	 de-optimization now that flag_force_mem is enabled by -O2.  */
       if (GET_CODE (op0) == MEM
-	  && (flag_force_mem
-	      || ! ((*insn_operand_predicate[(int) CODE_FOR_insv][0])
-		    (op0, VOIDmode))))
+	  && ! ((*insn_operand_predicate[(int) CODE_FOR_insv][0])
+		(op0, VOIDmode)))
 	{
 	  rtx tempreg;
 	  enum machine_mode bestmode;
