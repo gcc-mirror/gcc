@@ -62,8 +62,8 @@ struct include_file
 				/* location in search path where file was
 				   found, for #include_next */
   int fd;			/* file descriptor possibly open on file */
-  unsigned char before;		/* file has been included before */
-  unsigned char sysp;		/* file is a system header */
+  unsigned short include_count;	/* number of times file has been read */
+  unsigned short sysp;		/* file is a system header */
 };
 
 /* The cmacro works like this: If it's NULL, the file is to be

@@ -60,6 +60,7 @@ static ssize_t read_with_read	PARAMS ((cpp_buffer *, int, ssize_t));
 static ssize_t read_file	PARAMS ((cpp_buffer *, int, ssize_t));
 
 static void destroy_include_file_node	PARAMS ((splay_tree_value));
+static int close_cached_fd	PARAMS ((splay_tree_node, void *));
 
 #if 0
 static void hack_vms_include_specification PARAMS ((char *));
@@ -85,6 +86,20 @@ destroy_include_file_node (v)
 	close (f->fd);
       free (f);
     }
+}
+
+static int
+close_cached_fd (n, dummy)
+     splay_tree_node n;
+     void *dummy ATTRIBUTE_UNUSED;
+{
+  struct include_file *f = (struct include_file *)n->value;
+  if (f && f->fd != -1)
+    {
+      close (f->fd);
+      f->fd = -1;
+    }
+  return 0;
 }
 
 void
@@ -153,6 +168,8 @@ open_include_file (pfile, filename)
      ourselves.
 
      Special case: the empty string is translated to stdin.  */
+ retry:
+
   if (filename[0] == '\0')
     fd = 0;
   else
@@ -167,6 +184,21 @@ open_include_file (pfile, filename)
 		     filename);
 	}
 #endif
+      if (0
+#ifdef EMFILE
+	  || errno == EMFILE
+#endif
+#ifdef ENFILE
+	  || errno == ENFILE
+#endif
+	  )
+	{
+	  /* Too many files open.  Close all cached file descriptors and
+	     try again.  */
+	  splay_tree_foreach (pfile->all_include_files, close_cached_fd, 0);
+	  goto retry;
+	}
+
       /* Nonexistent or inaccessible file.  Create a negative node for it.  */
       if (nd)
 	{
@@ -185,7 +217,7 @@ open_include_file (pfile, filename)
     {
       file = xnew (struct include_file);
       file->cmacro = 0;
-      file->before = 0;
+      file->include_count = 0;
       file->sysp = 0;
       file->foundhere = 0;
       file->name = xstrdup (filename);
@@ -367,9 +399,9 @@ _cpp_execute_include (pfile, f, len, no_reinclude, search_start)
 	return;
 
       /* For -M, add the file to the dependencies on its first inclusion. */
-      if (!inc->before && PRINT_THIS_DEP (pfile, angle_brackets))
+      if (!inc->include_count && PRINT_THIS_DEP (pfile, angle_brackets))
 	deps_add_dep (pfile->deps, inc->name);
-      inc->before = 1;
+      inc->include_count++;
 
       /* Handle -H option.  */
       if (CPP_OPTION (pfile, print_include_names))
