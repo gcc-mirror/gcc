@@ -1,3 +1,16 @@
+2004-12-03  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR libgcj/7305
+	* configure.ac: Use TL_AC_GXX_INCLUDE_DIR.
+	* Makefile.am (install-data-local): Install headers into 
+	$(gxx_include_dir) rather than $(includedir).
+	(AM_MAKEFLAGS): Pass down gxx_include_dir.
+	* gcj/Makefile.am (gcjdir): Set to $(gxx_include_dir)/gcj.
+	* include/Makefile.am (tool_include__HEADERS): Define this...
+	(include_HEADERS): ...instead of this.
+	* configure, aclocal.m4, Makefile.in, gcj/Makefile.in: Regenerate.
+	* include/Makefile.in, testsuite/Makefile.in: Regenerate.
+
 2004-12-02  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/16675:

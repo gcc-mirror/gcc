@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS = foreign
 # autoconf2.13's target_alias
 target_noncanonical = @target_noncanonical@
 
-gcjdir = $(includedir)/gcj
+gcjdir = $(gxx_include_dir)/gcj
 gcj_HEADERS = array.h cni.h field.h javaprims.h method.h
 
 toolgcjdir = @tool_include_dir@/gcj

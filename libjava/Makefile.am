@@ -872,10 +872,10 @@ install-data-local:
 	@: $(call write_entries_to_file,$(nat_headers_install) $(extra_headers),tmp-ilist)
 	@cat tmp-ilist | while read f; do \
 	  d="`echo $$f | sed -e 's,/[^/]*$$,,'`"; \
-	  $(mkinstalldirs) $(DESTDIR)$(includedir)/$$d; \
+	  $(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/$$d; \
 	  if test -f $(srcdir)/$$f; then p=$(srcdir)/$$f; else p=$$f; fi; \
-	  echo " $(INSTALL_DATA) $$p $(DESTDIR)$(includedir)/$$f"; \
-	  $(INSTALL_DATA) $$p $(DESTDIR)$(includedir)/$$f; \
+	  echo " $(INSTALL_DATA) $$p $(DESTDIR)$(gxx_include_dir)/$$f"; \
+	  $(INSTALL_DATA) $$p $(DESTDIR)$(gxx_include_dir)/$$f; \
 	done
 	-@rm -f tmp-ilist
 ## FIXME: the obvious approach using lib_DATA doesn't work with
@@ -887,16 +887,16 @@ install-data-local:
 	done
 	$(INSTALL_DATA) $(srcdir)/java/util/logging/logging.properties $(DESTDIR)$(propdir)/logging.properties
 ## Install inner class headers.
-	$(INSTALL_DATA) 'java/io/ObjectOutputStream$$PutField.h' $(DESTDIR)$(includedir)/java/io/
-	$(INSTALL_DATA) 'java/io/ObjectInputStream$$GetField.h' $(DESTDIR)$(includedir)/java/io/
-	$(INSTALL_DATA) 'java/nio/channels/Pipe$$SinkChannel.h' $(DESTDIR)$(includedir)/java/nio/channels/
-	$(INSTALL_DATA) 'java/nio/channels/Pipe$$SourceChannel.h' $(DESTDIR)$(includedir)/java/nio/channels/
-	$(INSTALL_DATA) 'java/lang/reflect/Proxy$$ProxyData.h' $(DESTDIR)$(includedir)/java/lang/reflect/
-	$(INSTALL_DATA) 'java/lang/reflect/Proxy$$ProxyType.h' $(DESTDIR)$(includedir)/java/lang/reflect/
-	$(INSTALL_DATA) 'gnu/java/net/PlainSocketImpl$$SocketInputStream.h' $(DESTDIR)$(includedir)/gnu/java/net/
-	$(INSTALL_DATA) 'gnu/java/net/PlainSocketImpl$$SocketOutputStream.h' $(DESTDIR)$(includedir)/gnu/java/net/
-	$(INSTALL_DATA) 'gnu/java/nio/PipeImpl$$SinkChannelImpl.h' $(DESTDIR)$(includedir)/gnu/java/nio/
-	$(INSTALL_DATA) 'gnu/java/nio/PipeImpl$$SourceChannelImpl.h' $(DESTDIR)$(includedir)/gnu/java/nio/
+	$(INSTALL_DATA) 'java/io/ObjectOutputStream$$PutField.h' $(DESTDIR)$(gxx_include_dir)/java/io/
+	$(INSTALL_DATA) 'java/io/ObjectInputStream$$GetField.h' $(DESTDIR)$(gxx_include_dir)/java/io/
+	$(INSTALL_DATA) 'java/nio/channels/Pipe$$SinkChannel.h' $(DESTDIR)$(gxx_include_dir)/java/nio/channels/
+	$(INSTALL_DATA) 'java/nio/channels/Pipe$$SourceChannel.h' $(DESTDIR)$(gxx_include_dir)/java/nio/channels/
+	$(INSTALL_DATA) 'java/lang/reflect/Proxy$$ProxyData.h' $(DESTDIR)$(gxx_include_dir)/java/lang/reflect/
+	$(INSTALL_DATA) 'java/lang/reflect/Proxy$$ProxyType.h' $(DESTDIR)$(gxx_include_dir)/java/lang/reflect/
+	$(INSTALL_DATA) 'gnu/java/net/PlainSocketImpl$$SocketInputStream.h' $(DESTDIR)$(gxx_include_dir)/gnu/java/net/
+	$(INSTALL_DATA) 'gnu/java/net/PlainSocketImpl$$SocketOutputStream.h' $(DESTDIR)$(gxx_include_dir)/gnu/java/net/
+	$(INSTALL_DATA) 'gnu/java/nio/PipeImpl$$SinkChannelImpl.h' $(DESTDIR)$(gxx_include_dir)/gnu/java/nio/
+	$(INSTALL_DATA) 'gnu/java/nio/PipeImpl$$SourceChannelImpl.h' $(DESTDIR)$(gxx_include_dir)/gnu/java/nio/
 ## Don't install java/nio/DirectByteBufferImpl$$ReadWrite.h here. It's for internal use only.
 
 
@@ -3604,6 +3604,7 @@ AM_MAKEFLAGS = \
 	"infodir=$(infodir)" \
 	"libdir=$(libdir)" \
 	"prefix=$(prefix)" \
+	"gxx_include_dir=$(gxx_include_dir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
 	"LD=$(LD)" \

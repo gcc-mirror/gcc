@@ -38,12 +38,13 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 subdir = include
-DIST_COMMON = $(include_HEADERS) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/config.h.in
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/config.h.in $(tool_include__HEADERS)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/accross.m4 \
 	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/gcc-version.m4 \
+	$(top_srcdir)/../config/gxx-include-dir.m4 \
 	$(top_srcdir)/../config/iconv.m4 \
 	$(top_srcdir)/../config/lcmessage.m4 \
 	$(top_srcdir)/../config/lib-ld.m4 \
@@ -65,9 +66,9 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(includedir)"
-includeHEADERS_INSTALL = $(INSTALL_HEADER)
-HEADERS = $(include_HEADERS)
+am__installdirs = "$(DESTDIR)$(tool_include_dir)"
+tool_include_HEADERS_INSTALL = $(INSTALL_HEADER)
+HEADERS = $(tool_include__HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -257,6 +258,7 @@ exec_prefix = @exec_prefix@
 gcc_version = @gcc_version@
 gcc_version_full = @gcc_version_full@
 gcc_version_trigger = @gcc_version_trigger@
+gxx_include_dir = @gxx_include_dir@
 here = @here@
 host = @host@
 host_alias = @host_alias@
@@ -269,6 +271,7 @@ install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 libgcj_basedir = @libgcj_basedir@
+libstdcxx_incdir = @libstdcxx_incdir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
@@ -293,7 +296,7 @@ toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 toolexecmainlibdir = @toolexecmainlibdir@
 AUTOMAKE_OPTIONS = foreign
-include_HEADERS = jni.h jvmpi.h
+tool_include__HEADERS = jni.h jvmpi.h
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -354,22 +357,22 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
-install-includeHEADERS: $(include_HEADERS)
+install-tool_include_HEADERS: $(tool_include__HEADERS)
 	@$(NORMAL_INSTALL)
-	test -z "$(includedir)" || $(mkdir_p) "$(DESTDIR)$(includedir)"
-	@list='$(include_HEADERS)'; for p in $$list; do \
+	test -z "$(tool_include_dir)" || $(mkdir_p) "$(DESTDIR)$(tool_include_dir)"
+	@list='$(tool_include__HEADERS)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f=$(am__strip_dir) \
-	  echo " $(includeHEADERS_INSTALL) '$$d$$p' '$(DESTDIR)$(includedir)/$$f'"; \
-	  $(includeHEADERS_INSTALL) "$$d$$p" "$(DESTDIR)$(includedir)/$$f"; \
+	  echo " $(tool_include_HEADERS_INSTALL) '$$d$$p' '$(DESTDIR)$(tool_include_dir)/$$f'"; \
+	  $(tool_include_HEADERS_INSTALL) "$$d$$p" "$(DESTDIR)$(tool_include_dir)/$$f"; \
 	done
 
-uninstall-includeHEADERS:
+uninstall-tool_include_HEADERS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(include_HEADERS)'; for p in $$list; do \
+	@list='$(tool_include__HEADERS)'; for p in $$list; do \
 	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(includedir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(includedir)/$$f"; \
+	  echo " rm -f '$(DESTDIR)$(tool_include_dir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(tool_include_dir)/$$f"; \
 	done
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
@@ -451,7 +454,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(HEADERS) config.h
 installdirs:
-	for dir in "$(DESTDIR)$(includedir)"; do \
+	for dir in "$(DESTDIR)$(tool_include_dir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: install-am
@@ -497,7 +500,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-includeHEADERS
+install-data-am: install-tool_include_HEADERS
 
 install-exec-am:
 
@@ -523,19 +526,19 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-includeHEADERS uninstall-info-am
+uninstall-am: uninstall-info-am uninstall-tool_include_HEADERS
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
 	clean-libtool ctags distclean distclean-generic distclean-hdr \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
-	install-data-am install-exec install-exec-am \
-	install-includeHEADERS install-info install-info-am \
-	install-man install-strip installcheck installcheck-am \
+	install-data-am install-exec install-exec-am install-info \
+	install-info-am install-man install-strip \
+	install-tool_include_HEADERS installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
-	ps ps-am tags uninstall uninstall-am uninstall-includeHEADERS \
-	uninstall-info-am
+	ps ps-am tags uninstall uninstall-am uninstall-info-am \
+	uninstall-tool_include_HEADERS
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

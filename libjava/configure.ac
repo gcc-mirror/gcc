@@ -1202,6 +1202,8 @@ GCJVERSION=$gcjversion
 AC_SUBST(GCJVERSION)
 AC_DEFINE_UNQUOTED(GCJVERSION, "$GCJVERSION", [Short GCJ version ID])
 
+TL_AC_GXX_INCLUDE_DIR
+
 # We check for sys/filio.h because Solaris 2.5 defines FIONREAD there.
 # On that system, sys/ioctl.h will not include sys/filio.h unless
 # BSD_COMP is defined; just including sys/filio.h is simpler.
