@@ -232,7 +232,8 @@ package body Bindgen is
 
    procedure Gen_Adafinal_C is
    begin
-      WBI ("void " & Ada_Final_Name.all & " () {");
+      WBI ("void " & Ada_Final_Name.all & " (void)");
+      WBI ("{");
       WBI ("   system__standard_library__adafinal ();");
       WBI ("}");
       WBI ("");
@@ -472,7 +473,7 @@ package body Bindgen is
       Main_Priority : Int renames ALIs.Table (ALIs.First).Main_Priority;
 
    begin
-      WBI ("void " & Ada_Init_Name.all & " ()");
+      WBI ("void " & Ada_Init_Name.all & " (void)");
       WBI ("{");
 
       --  Generate externals for elaboration entities
@@ -821,7 +822,7 @@ package body Bindgen is
             Set_Unit_Name;
             Set_String ("___elab");
             Set_Char (Name_Buffer (Name_Len)); -- 's' or 'b' for spec/body
-            Set_String (" PARAMS ((void));");
+            Set_String (" (void);");
             Write_Statement_Buffer;
          end if;
 
@@ -1340,7 +1341,7 @@ package body Bindgen is
       --  Normal case with command line arguments present
 
       else
-         Set_String (" (argc, argv, envp)");
+         Set_String (" (int argc, char **argv, char **envp)");
       end if;
 
       Write_Statement_Buffer;
@@ -1357,9 +1358,6 @@ package body Bindgen is
       --  Normal case of arguments present
 
       else
-         WBI ("    int argc;");
-         WBI ("    char **argv;");
-         WBI ("    char **envp;");
          WBI ("{");
 
          --  Generate a reference to __gnat_ada_main_program_name. This symbol
@@ -1984,30 +1982,22 @@ package body Bindgen is
 
       Resolve_Binder_Options;
 
-      WBI ("#ifdef __STDC__");
-      WBI ("#define PARAMS(paramlist) paramlist");
-      WBI ("#else");
-      WBI ("#define PARAMS(paramlist) ()");
-      WBI ("#endif");
-      WBI ("");
+      WBI ("extern void __gnat_set_globals (int, int, int, int, int, int,");
+      WBI ("                                const char *, int, int, int);");
+      WBI ("extern void " & Ada_Final_Name.all & " (void);");
+      WBI ("extern void " & Ada_Init_Name.all & " (void);");
 
-      WBI ("extern void __gnat_set_globals ");
-      WBI (" PARAMS ((int, int, int, int, int, int, const char *,");
-      WBI ("          int, int, int));");
-      WBI ("extern void " & Ada_Final_Name.all & " PARAMS ((void));");
-      WBI ("extern void " & Ada_Init_Name.all & " PARAMS ((void));");
-
-      WBI ("extern void system__standard_library__adafinal PARAMS ((void));");
+      WBI ("extern void system__standard_library__adafinal (void);");
 
       if not No_Main_Subprogram then
-         WBI ("extern int main PARAMS ((int, char **, char **));");
+         WBI ("extern int main (int, char **, char **);");
          if Hostparm.OpenVMS then
-            WBI ("extern void __posix_exit PARAMS ((int));");
+            WBI ("extern void __posix_exit (int);");
          else
-            WBI ("extern void exit PARAMS ((int));");
+            WBI ("extern void exit (int);");
          end if;
 
-         WBI ("extern void __gnat_break_start PARAMS ((void));");
+         WBI ("extern void __gnat_break_start (void);");
          Set_String ("extern ");
 
          if ALIs.Table (ALIs.First).Main_Program = Proc then
@@ -2018,14 +2008,14 @@ package body Bindgen is
 
          Get_Name_String (Units.Table (First_Unit_Entry).Uname);
          Set_Main_Program_Name;
-         Set_String (" PARAMS ((void));");
+         Set_String (" (void);");
          Write_Statement_Buffer;
       end if;
 
       if not No_Run_Time_Specified then
-         WBI ("extern void __gnat_initialize PARAMS ((void));");
-         WBI ("extern void __gnat_finalize PARAMS ((void));");
-         WBI ("extern void __gnat_install_handler PARAMS ((void));");
+         WBI ("extern void __gnat_initialize (void);");
+         WBI ("extern void __gnat_finalize (void);");
+         WBI ("extern void __gnat_install_handler (void);");
       end if;
 
       WBI ("");

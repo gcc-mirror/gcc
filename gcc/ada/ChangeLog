@@ -1,3 +1,8 @@
+2003-06-05  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* bindgen.adb (Gen_Adafinal_C, Gen_Adainit_C, Gen_Elab_Defs_C)
+	(Gen_Main_C, Gen_Output_File_C): Generate ISO C.
+
 2003-06-04  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* gnat_ug.texi (The GNAT Run-Time Library Builder gnatlbr):
