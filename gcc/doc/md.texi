@@ -5596,8 +5596,17 @@ only worth to do when we are going to query CPU functional unit
 reservations in an automaton state.
 
 @item
-@dfn{w} means a generation of the file describing the result
-automaton.  The file can be used to verify the description.
+@dfn{time} means printing additional time statistics about
+generation of automata.
+
+@item
+@dfn{v} means a generation of the file describing the result automata.
+The file has suffix @samp{.dfa} and can be used for the description
+verification and debugging.
+
+@item
+@dfn{w} means a generation of warning instead of error for
+non-critical errors.
 
 @item
 @dfn{ndfa} makes nondeterministic finite state automata.  This affects

@@ -638,6 +638,10 @@ static struct obstack irp;
 
 #define NO_MINIMIZATION_OPTION "-no-minimization"
 
+#define TIME_OPTION "-time"
+
+#define V_OPTION "-v"
+
 #define W_OPTION "-w"
 
 #define NDFA_OPTION "-ndfa"
@@ -1639,6 +1643,10 @@ gen_automata_option (def)
 {
   if (strcmp ((char *) XSTR (def, 0), NO_MINIMIZATION_OPTION + 1) == 0)
     no_minimization_flag = 1;
+  else if (strcmp ((char *) XSTR (def, 0), TIME_OPTION + 1) == 0)
+    time_flag = 1;
+  else if (strcmp ((char *) XSTR (def, 0), V_OPTION + 1) == 0)
+    v_flag = 1;
   else if (strcmp ((char *) XSTR (def, 0), W_OPTION + 1) == 0)
     w_flag = 1;
   else if (strcmp ((char *) XSTR (def, 0), NDFA_OPTION + 1) == 0)
@@ -4507,9 +4515,9 @@ transform_2 (regexp)
 {
   if (regexp->mode == rm_sequence)
     {
-      regexp_t sequence;
+      regexp_t sequence = NULL;
       regexp_t result;
-      int sequence_index;
+      int sequence_index = 0;
       int i, j;
 
       for (i = 0; i < regexp->regexp.sequence.regexps_num; i++)
@@ -4552,9 +4560,9 @@ transform_2 (regexp)
     }
   else if (regexp->mode == rm_allof)
     {
-      regexp_t allof;
+      regexp_t allof = NULL;
       regexp_t result;
-      int allof_index;
+      int allof_index = 0;
       int i, j;
 
       for (i = 0; i < regexp->regexp.allof.regexps_num; i++)
@@ -4596,9 +4604,9 @@ transform_2 (regexp)
     }
   else if (regexp->mode == rm_oneof)
     {
-      regexp_t oneof;
+      regexp_t oneof = NULL;
       regexp_t result;
-      int oneof_index;
+      int oneof_index = 0;
       int i, j;
 
       for (i = 0; i < regexp->regexp.oneof.regexps_num; i++)
@@ -4652,8 +4660,8 @@ transform_3 (regexp)
 {
   if (regexp->mode == rm_sequence)
     {
-      regexp_t oneof;
-      int oneof_index;
+      regexp_t oneof = NULL;
+      int oneof_index = 0;
       regexp_t result;
       regexp_t sequence;
       int i, j;
@@ -4701,10 +4709,10 @@ transform_3 (regexp)
     }
   else if (regexp->mode == rm_allof)
     {
-      regexp_t oneof, seq;
-      int oneof_index, max_seq_length, allof_length;
+      regexp_t oneof = NULL, seq;
+      int oneof_index = 0, max_seq_length, allof_length;
       regexp_t result;
-      regexp_t allof, allof_op;
+      regexp_t allof = NULL, allof_op;
       int i, j;
 
       for (i = 0; i < regexp->regexp.allof.regexps_num; i++)
@@ -9157,9 +9165,9 @@ initiate_automaton_gen (argc, argv)
   for (i = 2; i < argc; i++)
     if (strcmp (argv [i], NO_MINIMIZATION_OPTION) == 0)
       no_minimization_flag = 1;
-    else if (strcmp (argv [i], "-time") == 0)
+    else if (strcmp (argv [i], TIME_OPTION) == 0)
       time_flag = 1;
-    else if (strcmp (argv [i], "-v") == 0)
+    else if (strcmp (argv [i], V_OPTION) == 0)
       v_flag = 1;
     else if (strcmp (argv [i], W_OPTION) == 0)
       w_flag = 1;

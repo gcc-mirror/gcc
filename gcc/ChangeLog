@@ -1,3 +1,15 @@
+2002-06-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* rtl.def (DEFINE_AUTOMATON): Add description of new options
+	`time' and `v'.  Fix incorrect description of option `w'.
+
+	* doc/md.texi: Ditto.
+
+	* genautomata.c (TIME_OPTION, V_OPTION): New macros.
+	(gen_automata_option): Process the new options.
+	(transform_2, transform_3): Initialize some variables.
+	(initiate_automaton_gen): Use the new macros.
+	
 2002-06-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_initial_elimination_offset): Declare.

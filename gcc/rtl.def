@@ -419,8 +419,15 @@ DEF_RTL_EXPR(DEFINE_AUTOMATON, "define_automaton", "s", 'x')
      is only worth to do when we are going to query CPU functional
      unit reservations in an automaton state.
 
-   o "w" which means generation of file describing the result
-     automaton.  The file can be used for the description verification.
+   o "time" which means printing additional time statistics about
+      generation of automata.
+  
+   o "v" which means generation of file describing the result
+     automata.  The file has suffix `.dfa' and can be used for the
+     description verification and debugging.
+
+   o "w" which means generation of warning instead of error for
+     non-critical errors.
 
    o "ndfa" which makes nondeterministic finite state automata.  */
 DEF_RTL_EXPR(AUTOMATA_OPTION, "automata_option", "s", 'x')
