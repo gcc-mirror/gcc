@@ -34,6 +34,11 @@ extern func_ptr __CTOR_END__ [];
 extern func_ptr __DTOR_LIST__[];
 extern func_ptr __DTOR_END__ [];
 
+extern void __do_global_ctors (void);
+extern void __do_global_dtors (void);
+
+void (*__atexit)(func_ptr);
+
 /* Call all global constructors */
 void
 __do_global_ctors (void)
@@ -41,8 +46,12 @@ __do_global_ctors (void)
   func_ptr *ptr = &__CTOR_LIST__[0];
   func_ptr *end = &__CTOR_END__[0];
 
+  if (__atexit)
+    __atexit (__do_global_dtors);
+
   for ( ; ptr != end; ptr++)
-    (*ptr)();
+    if (*ptr)
+      (*ptr)();
 }
 
 /* Call all global destructors */
@@ -53,6 +62,7 @@ __do_global_dtors (void)
   func_ptr *end = &__DTOR_END__[0];
 
   for ( ; ptr != end; ptr++)
-    (*ptr)();
+    if (*ptr)
+      (*ptr)();
 }
 
