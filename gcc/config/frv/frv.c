@@ -263,6 +263,9 @@ static void frv_init_libfuncs			(void);
 static bool frv_in_small_data_p			(tree);
 static void frv_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
+static void frv_setup_incoming_varargs		(CUMULATIVE_ARGS *,
+						 enum machine_mode,
+						 tree, int *, int);
 static rtx frv_expand_builtin_saveregs		(void);
 static bool frv_rtx_costs			(rtx, int, int, int*);
 static void frv_asm_out_constructor		(rtx, int);
@@ -306,6 +309,8 @@ static rtx frv_struct_value_rtx			(tree, int);
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS frv_expand_builtin_saveregs
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS frv_setup_incoming_varargs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1906,9 +1911,9 @@ frv_initial_elimination_offset (int from, int to)
 }
 
 
-/* Worker function for SETUP_INCOMING_VARARGS.  */
+/* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */
 
-void
+static void
 frv_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
                             enum machine_mode mode,
                             tree type ATTRIBUTE_UNUSED,

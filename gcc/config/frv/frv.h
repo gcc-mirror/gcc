@@ -2077,10 +2077,6 @@ struct machine_function GTY(())
 
 /* Implementing the Varargs Macros.  */
 
-#define SETUP_INCOMING_VARARGS(ARGS_SO_FAR, MODE, TYPE, PRETEND_ARGS_SIZE, SECOND_TIME) \
-  frv_setup_incoming_varargs (& ARGS_SO_FAR, (int) MODE, TYPE, 	\
-			      & PRETEND_ARGS_SIZE, SECOND_TIME)
-
 /* Implement the stdarg/varargs va_start macro.  STDARG_P is nonzero if this
    is stdarg.h instead of varargs.h.  VALIST is the tree of the va_list
    variable to initialize.  NEXTARG is the machine independent notion of the
