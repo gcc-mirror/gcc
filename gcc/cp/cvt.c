@@ -715,10 +715,7 @@ ocp_convert (type, expr, convtype, flags)
 
   if (code == VOID_TYPE && (convtype & CONV_STATIC))
     {
-      e = require_complete_type_in_void (e);
-      if (e != error_mark_node)
-        e = build1 (CONVERT_EXPR, void_type_node, e);
-
+      e = convert_to_void (e, /*implicit=*/NULL);
       return e;
     }
 
@@ -854,6 +851,140 @@ ocp_convert (type, expr, convtype, flags)
   if (flags & LOOKUP_SPECULATIVELY)
     return NULL_TREE;
   return error_mark_node;
+}
+
+/* When an expression is used in a void context, its value is discarded and
+   no lvalue-rvalue and similar conversions happen [expr.static.cast/4,
+   stmt.expr/1, expr.comma/1].  This permits dereferencing an incomplete type
+   in a void context. The C++ standard does not define what an `access' to an
+   object is, but there is reason to beleive that it is the lvalue to rvalue
+   conversion -- if it were not, `*&*p = 1' would violate [expr]/4 in that it
+   accesses `*p' not to calculate the value to be stored. But, dcl.type.cv/8
+   indicates that volatile semantics should be the same between C and C++
+   where ever possible. C leaves it implementation defined as to what
+   constitutes an access to a volatile. So, we interpret `*vp' as a read of
+   the volatile object `vp' points to, unless that is an incomplete type. For
+   volatile references we do not do this interpretation, because that would
+   make it impossible to ignore the reference return value from functions. We
+   issue warnings in the confusing cases.
+   
+   IMPLICIT is tells us the context of an implicit void conversion.  */
+
+tree
+convert_to_void (expr, implicit)
+     tree expr;
+     const char *implicit;
+{
+  if (expr == error_mark_node)
+    return expr;
+  if (!TREE_TYPE (expr))
+    return expr;
+  if (same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (expr)), void_type_node))
+    return expr;
+  switch (TREE_CODE (expr))
+    {
+    case COND_EXPR:
+      {
+        /* The two parts of a cond expr might be separate lvalues.  */
+        tree op1 = TREE_OPERAND (expr,1);
+        tree op2 = TREE_OPERAND (expr,2);
+        tree new_op1 = convert_to_void (op1, implicit);
+        tree new_op2 = convert_to_void (op2, implicit);
+        
+        if (new_op1 != op1 || new_op2 != op2)
+          expr = build (COND_EXPR,
+                        implicit ? TREE_TYPE (expr) : void_type_node,
+                        TREE_OPERAND (expr, 0), new_op1, new_op2);
+        break;
+      }
+    
+    case COMPOUND_EXPR:
+      {
+        /* The second part of a compound expr contains the value.  */
+        tree op1 = TREE_OPERAND (expr,1);
+        tree new_op1 = convert_to_void (op1, implicit);
+        
+        if (new_op1 != op1)
+          expr = build (COMPOUND_EXPR, TREE_TYPE (new_op1),
+                        TREE_OPERAND (expr, 0), new_op1);
+        break;
+      }
+    
+    case NON_LVALUE_EXPR:
+    case NOP_EXPR:
+      /* These have already decayed to rvalue. */
+      break;
+    
+    case CALL_EXPR:   /* we have a special meaning for volatile void fn() */
+      break;
+    
+    case INDIRECT_REF:
+      {
+        tree type = TREE_TYPE (expr);
+        int is_reference = TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0)))
+                           == REFERENCE_TYPE;
+        int is_volatile = TYPE_VOLATILE (type);
+        int is_complete = TYPE_SIZE (complete_type (type)) != NULL_TREE;
+        
+        if (is_volatile && !is_complete)
+          cp_warning ("object of incomplete type `%T' will not be accessed in %s",
+                      type, implicit ? implicit : "void context");
+        else if (is_reference && is_volatile)
+          cp_warning ("object of type `%T' will not be accessed in %s",
+                      TREE_TYPE (TREE_OPERAND (expr, 0)),
+                      implicit ? implicit : "void context");
+        if (is_reference || !is_volatile || !is_complete)
+          expr = TREE_OPERAND (expr, 0);
+      
+        break;
+      }
+    
+    case VAR_DECL:
+      {
+        /* External variables might be incomplete.  */
+        tree type = TREE_TYPE (expr);
+        int is_complete = TYPE_SIZE (complete_type (type)) != NULL_TREE;
+        
+        if (TYPE_VOLATILE (type) && !is_complete)
+          cp_warning ("object `%E' of incomplete type `%T' will not be accessed in %s",
+                      expr, type, implicit ? implicit : "void context");
+        break;
+      }
+    
+    default:;
+    }
+  {
+    tree probe = expr;
+  
+    if (TREE_CODE (probe) == ADDR_EXPR)
+      probe = TREE_OPERAND (expr, 0);
+    if (!is_overloaded_fn (probe))
+      ;/* OK */
+    else if (really_overloaded_fn (probe))
+        {
+          /* [over.over] enumerates the places where we can take the address
+             of an overloaded function, and this is not one of them.  */
+          cp_pedwarn ("%s has no context for overloaded function name `%E'",
+                      implicit ? implicit : "void cast", expr);
+        }
+    else if (implicit && probe == expr)
+      /* Only warn when there is no &.  */
+      cp_warning ("%s is a reference, not call, to function `%E'",
+                    implicit, expr);
+  }
+  
+  if (expr != error_mark_node
+      && !same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (expr)), void_type_node))
+    {
+      /* FIXME: This is where we should check for expressions with no
+         effects.  At the moment we do that in both build_x_component_expr
+         and expand_expr_stmt -- inconsistently too.  For the moment
+         leave implicit void conversions unadorned so that expand_expr_stmt
+         has a chance of detecting some of the cases.  */
+      if (!implicit)
+        expr = build1 (CONVERT_EXPR, void_type_node, expr);
+    }
+  return expr;
 }
 
 /* Create an expression whose value is that of EXPR,

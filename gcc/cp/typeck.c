@@ -128,100 +128,6 @@ require_complete_type (value)
     return error_mark_node;
 }
 
-/* Makes sure EXPR is a complete type when used in a void context, like a
-   whole expression, or lhs of a comma operator. Issue a diagnostic and
-   return error_mark_node on failure. This is a little tricky, because some
-   valid void types look stunningly similar to invalid void types. We err on
-   the side of caution */
-
-tree
-require_complete_type_in_void (expr)
-     tree expr;
-{
-  switch (TREE_CODE (expr))
-    {
-    case COND_EXPR:
-      {
-        tree op;
-        
-        op = TREE_OPERAND (expr,2);
-        op = require_complete_type_in_void (op);
-        TREE_OPERAND (expr,2) = op;
-        if (op == error_mark_node)
-          {
-            expr = op;
-            break;
-          }
-        
-        /* fallthrough */
-      }
-    
-    case COMPOUND_EXPR:
-      {
-        tree op;
-        
-        op = TREE_OPERAND (expr,1);
-        op = require_complete_type_in_void (op);
-        TREE_OPERAND (expr,1) = op;
-        if (op == error_mark_node)
-          {
-            expr = op;
-            break;
-          }
-        
-        break;
-      }
-    
-    case NON_LVALUE_EXPR:
-    case NOP_EXPR:
-      {
-        tree op;
-        
-        op = TREE_OPERAND (expr,0);
-        op = require_complete_type_in_void (op);
-        TREE_OPERAND (expr,0) = op;
-        if (op == error_mark_node)
-          {
-            expr = op;
-            break;
-          }
-        break;
-      }
-    
-    case CALL_EXPR:   /* function call return can be ignored */
-    case RTL_EXPR:    /* RTL nodes have no value */
-    case DELETE_EXPR: /* delete expressions have no type */
-    case VEC_DELETE_EXPR:
-    case INTEGER_CST: /* used for null pointer */
-    case EXIT_EXPR:   /* have no return */
-    case LOOP_EXPR:   /* have no return */
-    case BIND_EXPR:   /* have no return */
-    case STMT_EXPR: /* have no return */
-    case THROW_EXPR:  /* have no return */
-    case MODIFY_EXPR: /* sometimes this has a void type, but that's ok */
-    case CONVERT_EXPR:  /* sometimes has a void type */
-      break;
-    
-    case INDIRECT_REF:
-      {
-        tree op = TREE_OPERAND (expr,0);
-        
-        /* Calling a function returning a reference has an implicit
-           dereference applied. We don't want to make that an error. */
-        if (TREE_CODE (op) == CALL_EXPR
-            && TREE_CODE (TREE_TYPE (op)) == REFERENCE_TYPE)
-          break;
-        /* else fallthrough */
-      }
-    
-    default:
-      expr = require_complete_type (expr);
-      break;
-    }
-
-  return expr;
-}
-
 /* Try to complete TYPE, if it is incomplete.  For example, if TYPE is
    a template instantiation, do the instantiation.  Returns TYPE,
    whether or not it could be completed, unless something goes
@@ -5160,6 +5066,7 @@ build_x_compound_expr (list)
 
   if (! TREE_SIDE_EFFECTS (TREE_VALUE (list)))
     {
+      /* FIXME: This test should be in the implicit cast to void of the LHS. */
       /* the left-hand operand of a comma expression is like an expression
          statement: we should warn if it doesn't have any side-effects,
          unless it was explicitly cast to (void).  */
@@ -5208,7 +5115,7 @@ build_compound_expr (list)
     }
 
   first = TREE_VALUE (list);
-  first = require_complete_type_in_void (first);
+  first = convert_to_void (first, "lhs of comma");
   if (first == error_mark_node)
     return error_mark_node;
   
@@ -5251,7 +5158,10 @@ build_static_cast (type, expr)
     expr = TREE_OPERAND (expr, 0);
 
   if (TREE_CODE (type) == VOID_TYPE)
-    return build1 (CONVERT_EXPR, type, expr);
+    {
+      expr = convert_to_void (expr, /*implicit=*/NULL);
+      return expr;
+    }
 
   if (TREE_CODE (type) == REFERENCE_TYPE)
     return (convert_from_reference
@@ -5539,6 +5449,14 @@ build_c_cast (type, expr)
       return t;
     }
 
+  if (TREE_CODE (type) == VOID_TYPE)
+    {
+      /* Conversion to void does not cause any of the normal function to
+       * pointer, array to pointer and lvalue to rvalue decays.  */
+      
+      value = convert_to_void (value, /*implicit=*/NULL);
+      return value;
+    }
   /* Convert functions and arrays to pointers and
      convert references to their expanded types,
      but don't convert any other types.  If, however, we are
@@ -5607,13 +5525,7 @@ build_c_cast (type, expr)
     warning ("cast to pointer from integer of different size");
 #endif
 
-  if (TREE_CODE (type) == VOID_TYPE)
-    {
-      value = require_complete_type_in_void (value);
-      if (value != error_mark_node)
-        value = build1 (CONVERT_EXPR, void_type_node, value);
-    }
-  else if (TREE_CODE (type) == REFERENCE_TYPE)
+  if (TREE_CODE (type) == REFERENCE_TYPE)
     value = (convert_from_reference
 	     (convert_to_reference (type, value, CONV_C_CAST,
 				    LOOKUP_COMPLAIN, NULL_TREE)));
