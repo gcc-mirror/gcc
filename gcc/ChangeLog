@@ -1,3 +1,10 @@
+Tue May 12 00:47:33 1998  John Wehle  (john@feith.com)
+
+	* varasm.c (assemble_variable): Compute the alignment of the data 
+	earlier so that both initialized and uninitialized variables are
+	effected by DATA_ALIGNMENT.
+	* tm.texi (DATA_ALIGNMENT): Updated appropriately.
+
 Mon May 11 19:57:58 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mips.c: Prototype static functions.
