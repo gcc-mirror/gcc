@@ -1,3 +1,14 @@
+Thu Apr 29 23:02:22 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* emit-rtl.c (start_sequence): Expand comments.
+	(start_sequence_for_rtl_expr): Likewise.
+	(push_to_sequence): Likewise.
+	(end_sequence): Likewise.
+	* expr.c (inhibit_defer_pop): Likewise.
+	* expr.h (inhibit_defer_pop): Likewise.
+	(NO_DEFER_POP): Likewise.
+	(OK_DEFER_POP): Likewise.
+
 Thu Apr 29 22:13:46 1999  Robert Lipe  <robertlipe@usa.net>
 
 	* configure.in (i?86-UnixWare7*-sysv): Set thread_file to 'posix'
