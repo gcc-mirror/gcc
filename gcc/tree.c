@@ -2427,6 +2427,13 @@ contains_placeholder_p (exp)
 	 here will be valid.  */
       return contains_placeholder_p (TREE_OPERAND (exp, 0));
 
+    case 'x':
+      if (code == TREE_LIST)
+	return (contains_placeholder_p (TREE_VALUE (exp))
+		|| (TREE_CHAIN (exp) != 0
+		    && contains_placeholder_p (TREE_CHAIN (exp))));
+      break;
+					
     case '1':
     case '2':  case '<':
     case 'e':
@@ -2448,6 +2455,10 @@ contains_placeholder_p (exp)
 	case SAVE_EXPR:
 	   return (SAVE_EXPR_RTL (exp) == 0
 		   && contains_placeholder_p (TREE_OPERAND (exp, 0)));
+
+	case CALL_EXPR:
+	  return (TREE_OPERAND (exp, 1) != 0
+		  && contains_placeholder_p (TREE_OPERAND (exp, 1)));
 
 	default:
 	  break;
@@ -2472,7 +2483,8 @@ contains_placeholder_p (exp)
 /* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
    return a tree with all occurrences of references to F in a
    PLACEHOLDER_EXPR replaced by R.   Note that we assume here that EXP
-   contains only arithmetic expressions.  */
+   contains only arithmetic expressions or a CALL_EXPR with a
+   PLACEHOLDER_EXPR occurring only in its arglist.  */
 
 tree
 substitute_in_expr (exp, f, r)
@@ -2494,6 +2506,17 @@ substitute_in_expr (exp, f, r)
     case 'x':
       if (code == PLACEHOLDER_EXPR)
 	return exp;
+      else if (code == TREE_LIST)
+	{
+	  op0 = (TREE_CHAIN (exp) == 0
+		 ? 0 : substitute_in_expr (TREE_CHAIN (exp), f, r));
+	  op1 = substitute_in_expr (TREE_VALUE (exp), f, r);
+	  if (op0 == TREE_CHAIN (exp) || op1 == TREE_VALUE (exp))
+	    return exp;
+
+	  return tree_cons (TREE_PURPOSE (exp), op0, op1);
+	}
+
       abort ();
 
     case '1':
@@ -2532,7 +2555,17 @@ substitute_in_expr (exp, f, r)
 	  if (code == SAVE_EXPR)
 	    return exp;
 
-	  if (code != COND_EXPR)
+	  else if (code == CALL_EXPR)
+	    {
+	      op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
+	      if (op1 == TREE_OPERAND (exp, 1))
+		return exp;
+
+	      return build (code, TREE_TYPE (exp),
+			    TREE_OPERAND (exp, 0), op1, NULL_TREE);
+	    }
+
+	  else if (code != COND_EXPR)
 	    abort ();
 
 	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
