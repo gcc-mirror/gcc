@@ -1,3 +1,12 @@
+2003-08-10  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* java/io/PrintStream.java (print): Always flush if auto_flush is
+	set. Don't check for newline characters.
+	(write (int)): Implement without using a temporary array.
+	(write (byte[], int, int): Always flush if auto_flush is set. Don't
+	check for newline characters.
+	Fixes PR libgcj/11778.
+
 2003-08-08  Andrew Haley  <aph@redhat.com>
 
 	* Makefile.am (AM_CXXFLAGS): Define BOOT_CLASS_PATH.

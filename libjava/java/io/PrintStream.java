@@ -95,7 +95,9 @@ public class PrintStream extends FilterOutputStream
    * This method intializes a new <code>PrintStream</code> object to write
    * to the specified output sink.  This constructor also allows "auto-flush"
    * functionality to be specified where the stream will be flushed after
-   * every line is terminated or newline character is written.
+   * every <code>print</code> or <code>println</code> call, when the 
+   * <code>write</code> methods with array arguments are called, or when a 
+   * single new-line character is written.
    * <p>
    *
    * @param out The <code>OutputStream</code> to write to.
@@ -114,7 +116,9 @@ public class PrintStream extends FilterOutputStream
    * This method intializes a new <code>PrintStream</code> object to write
    * to the specified output sink.  This constructor also allows "auto-flush"
    * functionality to be specified where the stream will be flushed after
-   * every line is terminated or newline character is written.
+   * every <code>print</code> or <code>println</code> call, when the 
+   * <code>write</code> methods with array arguments are called, or when a 
+   * single new-line character is written.
    * <p>
    *
    * @param out The <code>OutputStream</code> to write to.
@@ -256,10 +260,8 @@ public class PrintStream extends FilterOutputStream
   {
     pw.print (str);
 
-    if (str != null && auto_flush)
-      if ((str.indexOf ('\r') != -1)
-          || (str.indexOf ('\n') != -1))
-        flush ();
+    if (auto_flush)
+      flush ();
   }
 
   /**
@@ -422,9 +424,21 @@ public class PrintStream extends FilterOutputStream
    */
   public void write (int oneByte)
   {
-    byte[] data = new byte [1];
-    data [0] = (byte) (oneByte & 0xff);
-    write (data, 0, 1);
+    // We actually have to implement this method. Flush first so that
+    // things get written in the right order.
+    flush();
+
+    try
+      {
+        out.write (oneByte & 0xff);
+        
+        if (auto_flush && (oneByte == '\n'))
+          flush ();
+      }
+    catch (IOException e)
+      {
+        setError ();
+      }
   }
 
   /**
@@ -446,19 +460,12 @@ public class PrintStream extends FilterOutputStream
         out.write (buffer, offset, len);
         
         if (auto_flush)
-          for (int i = offset; i < len; i++)
-            if ((buffer [i] == '\r')
-                || (buffer [i] == '\n'))
-              {
-                flush ();
-                break;
-              }
+          flush ();
       }
     catch (IOException e)
       {
         setError ();
       }
   }
-
 } // class PrintStream
 
