@@ -1,5 +1,10 @@
 2002-02-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* pa.h (PREFERRED_STACK_BOUNDARY): Define to match standard rounding.
+	(BIGGEST_ALIGNMENT): Change to 128.
+
+2002-02-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
 	* pa32-linux.h (LINK_COMMAND_SPEC): Define.
 
 2002-02-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>

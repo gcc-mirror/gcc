@@ -423,6 +423,8 @@ extern int target_flags;
    but that happens late in the compilation process.  */
 #define STACK_BOUNDARY (TARGET_64BIT ? 128 : 64)
 
+#define PREFERRED_STACK_BOUNDARY 512
+
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY (TARGET_64BIT ? 64 : 32)
 
@@ -435,8 +437,9 @@ extern int target_flags;
 /* A bitfield declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* No data type wants to be aligned rounder than this.  */
-#define BIGGEST_ALIGNMENT 64
+/* No data type wants to be aligned rounder than this.  This is set
+   to 128 bits to allow for lock semaphores in the stack frame.*/
+#define BIGGEST_ALIGNMENT 128
 
 /* Get around hp-ux assembler bug, and make strcpy of constants fast.  */
 #define CONSTANT_ALIGNMENT(CODE, TYPEALIGN) \
