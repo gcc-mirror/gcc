@@ -82,7 +82,7 @@ DEFTREECODE (TREE_VEC, "tree_vec", 'x', 2)
    outermost scope of a particular inlining of a function).
    BLOCK_ABSTRACT is non-zero if the block represents an abstract
    instance of a block (i.e. one which is nested within an abstract
-   instance of a inline function). */
+   instance of an inline function). */
 DEFTREECODE (BLOCK, "block", 'b', 0)
 
 /* Each data type is represented by a tree node whose code is one of

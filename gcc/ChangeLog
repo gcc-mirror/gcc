@@ -1,3 +1,7 @@
+Mon Apr 19 21:13:02 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* tree.def (BLOCK): Fix typo in comment.
+
 1999-04-19 14:51 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cpplib.c (output_line_command): Drop CONDITIONAL argument.
