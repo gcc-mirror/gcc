@@ -107,6 +107,8 @@ static char **g77_newargv;
 
 extern char *xmalloc PROTO((size_t));
 
+extern char *version_string;
+
 /* --- This comes from gcc.c (2.8.1) verbatim: */
 
 /* This defines which switch letters take arguments.  */
@@ -375,7 +377,8 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 
 	case OPTION_v:
 	  if (! verbose)
-	    fprintf (stderr, "g77 version %s\n", ffe_version_string);
+	    fprintf (stderr, "g77 version %s (from FSF-g77 version %s)\n",
+		     version_string, ffe_version_string);
 	  verbose = 1;
 	  break;
 
