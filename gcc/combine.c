@@ -701,10 +701,8 @@ setup_incoming_promotions ()
 #endif
 }
 
-/* Called via note_stores.  If X is a pseudo that is used in more than
-   one basic block, is narrower that HOST_BITS_PER_WIDE_INT, and is being
-   set, record what bits are known zero.  If we are clobbering X,
-   ignore this "set" because the clobbered value won't be used. 
+/* Called via note_stores.  If X is a pseudo that is narrower than
+   HOST_BITS_PER_WIDE_INT and is being set, record what bits are known zero.
 
    If we are setting only a portion of X and we can't figure out what
    portion, assume all bits will be used since we don't know what will
@@ -723,8 +721,6 @@ set_nonzero_bits_and_sign_copies (x, set)
 
   if (GET_CODE (x) == REG
       && REGNO (x) >= FIRST_PSEUDO_REGISTER
-      && reg_n_sets[REGNO (x)] > 1
-      && reg_basic_block[REGNO (x)] < 0
       /* If this register is undefined at the start of the file, we can't
 	 say what its contents were.  */
       && ! (basic_block_live_at_start[0][REGNO (x) / REGSET_ELT_BITS]
@@ -6888,26 +6884,25 @@ nonzero_bits (x, mode)
 	nonzero &= GET_MODE_MASK (ptr_mode);
 #endif
 
-#ifdef STACK_BOUNDARY
-      /* If this is the stack pointer, we may know something about its
-	 alignment.  If PUSH_ROUNDING is defined, it is possible for the
+      /* We may know something about the alignment of this register.
+	 But if PUSH_ROUNDING is defined, it is possible for the
 	 stack to be momentarily aligned only to that amount, so we pick
 	 the least alignment.  */
 
-      if (x == stack_pointer_rtx)
+      if (REGNO_POINTER_ALIGN (REGNO (x)) != 0)
 	{
-	  int sp_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
+	  int alignment = REGNO_POINTER_ALIGN (REGNO (x));
 
 #ifdef PUSH_ROUNDING
-	  sp_alignment = MIN (PUSH_ROUNDING (1), sp_alignment);
+	  if (REGNO (x) == STACK_POINTER_REGNUM)
+	    alignment = MIN (PUSH_ROUNDING (1), alignment);
 #endif
 
 	  /* We must return here, otherwise we may get a worse result from
 	     one of the choices below.  There is nothing useful below as
 	     far as the stack pointer is concerned.  */
-	  return nonzero &= ~ (sp_alignment - 1);
+	  return nonzero &= ~ (alignment - 1);
 	}
-#endif
 
       /* If X is a register whose nonzero bits value is current, use it.
 	 Otherwise, if X is a register whose value we can find, use that
