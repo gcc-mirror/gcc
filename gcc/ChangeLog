@@ -1,3 +1,7 @@
+Mon Sep 28 14:24:03 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* tree.h (TYPE_BINFO): Document.
+
 Mon Sep 28 12:55:49 1998   Stan Cox  <scox@cygnus.com>
 
 	* i386-coff.h (dbxcoff.h): Added.
