@@ -34,28 +34,114 @@ or based on this library.  If you modify this library, you may extend
 this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
+
 package java.util;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.text.NumberFormat;
 
-public final class Currency implements Serializable
+/**
+ * Representation of a currency for a particular locale.  Each currency
+ * is identified by its ISO 4217 code, and only one instance of this
+ * class exists per currency.  As a result, instances are created
+ * via the <code>getInstance()</code> methods rather than by using
+ * a constructor.
+ *
+ * @see java.util.Locale
+ * @author Guilhem Lavaux  <guilhem.lavaux@free.fr>
+ * @author Dalibor Topic <robilad@kaffe.org>
+ * @author Bryce McKinlay <mckinlay@redhat.com>
+ * @author Andrew John Hughes <gnu_andrew@member.fsf.org>
+ * @since 1.4
+ */
+public final class Currency 
+  implements Serializable
 {
+  /**
+   * For compatability with Sun's JDK
+   */
   static final long serialVersionUID = -158308464356906721L;
 
-  private Locale locale;
-  private ResourceBundle res;
+  /**
+   * The locale associated with this currency.
+   *
+   * @see #Currency(java.util.Locale)
+   * @see #getInstance(java.util.Locale)
+   * @see #getSymbol(java.util.Locale)
+   * @serial ignored.
+   */
+  private transient Locale locale;
 
-  // For deserialization
+  /**
+   * The resource bundle which maps the currency to
+   * a ISO 4217 currency code.
+   *
+   * @see #getCurrencyCode()
+   * @serial ignored.
+   */
+  private transient ResourceBundle res;
+
+  /**
+   * The ISO 4217 currency code associated with this
+   * particular instance.
+   *
+   * @see #getCurrencyCode()
+   * @serial the ISO 4217 currency code
+   */
+  private String currencyCode;
+
+  /**
+   * A cache of <code>Currency</code> instances to
+   * ensure the singleton nature of this class.  The key
+   * is the locale of the currency.
+   *
+   * @see #getInstance(java.util.Locale)
+   * @see #readResolve()
+   * @serial ignored.
+   */
+  private transient static Map cache;
+
+  /**
+   * Instantiates the cache.
+   */
+  static
+  {
+    cache = new HashMap();
+  }
+
+  /**
+   * Default constructor for deserialization
+   */
   private Currency ()
   {
   }
 
+  /**
+   * Constructor to create a <code>Currency</code> object
+   * for a particular <code>Locale</code>.
+   * All components of the given locale, other than the
+   * country code, are ignored.  The results of calling this
+   * method may vary over time, as the currency associated with
+   * a particular country changes.  For countries without
+   * a given currency (e.g. Antarctica), the result is null. 
+   *
+   * @param loc the locale for the new currency.
+   */
   private Currency (Locale loc)
   {
     this.locale = loc;
     this.res = ResourceBundle.getBundle ("gnu.java.locale.LocaleInformation", 
       locale, ClassLoader.getSystemClassLoader());
+    /* Retrieve the ISO4217 currency code */
+    try
+      {
+	currencyCode = res.getString ("intlCurrencySymbol");
+      }
+    catch (Exception _)
+      {
+	currencyCode = null;
+      }
   }
 
   /**
@@ -65,18 +151,20 @@ public final class Currency implements Serializable
    */
   public String getCurrencyCode ()
   {
-    try
-      {
-	return res.getString ("intlCurrencySymbol");
-      }
-    catch (Exception _)
-      {
-	return null;
-      }
+    return currencyCode;
   }
 
   /**
-   * @return number of digits after decimal separator for this currency.
+   * Returns the number of digits which occur after the decimal point
+   * for this particular currency.  For example, currencies such
+   * as the U.S. dollar, the Euro and the Great British pound have two
+   * digits following the decimal point to indicate the value which exists
+   * in the associated lower-valued coinage (cents in the case of the first
+   * two, pennies in the latter).  Some currencies such as the Japanese
+   * Yen have no digits after the decimal point.  In the case of pseudo
+   * currencies, such as IMF Special Drawing Rights, -1 is returned.
+   *
+   * @return the number of digits after the decimal separator for this currency.
    */   
   public int getDefaultFractionDigits ()
   {
@@ -87,48 +175,87 @@ public final class Currency implements Serializable
     
   /**
    * Builds a new currency instance for this locale.
+   * All components of the given locale, other than the
+   * country code, are ignored.  The results of calling this
+   * method may vary over time, as the currency associated with
+   * a particular country changes.  For countries without
+   * a given currency (e.g. Antarctica), the result is null. 
    *
    * @param locale a <code>Locale</code> instance.
-   * 
    * @return a new <code>Currency</code> instance.
+   * @throws NullPointerException if the locale or its
+   *         country code is null.
+   * @throws IllegalArgumentException if the country of
+   *         the given locale is not a supported ISO3166 code.
    */ 
   public static Currency getInstance (Locale locale)
   {
-    return new Currency (locale);
+    /**
+     * The new instance must be the only available instance
+     * for the currency it supports.  We ensure this happens,
+     * while maintaining a suitable performance level, by
+     * creating the appropriate object on the first call to
+     * this method, and returning the cached instance on
+     * later calls.
+     */
+    Currency newCurrency;
+
+    /* Attempt to get the currency from the cache */
+    newCurrency = (Currency) cache.get(locale);
+    if (newCurrency == null)
+      {
+        /* Create the currency for this locale */
+        newCurrency = new Currency (locale);
+        /* Cache it */
+        cache.put(locale, newCurrency);
+      }
+    /* Return the instance */
+    return newCurrency;
   }
 
   /**
    * Builds the currency corresponding to the specified currency code.
    *
    * @param currencyCode a string representing a currency code.
-   *
    * @return a new <code>Currency</code> instance.
+   * @throws NullPointerException if currencyCode is null.
+   * @throws IllegalArgumentException if the supplied currency code
+   *         is not a supported ISO 4217 code.
    */
   public static Currency getInstance (String currencyCode)
   {
-    Locale[] all_locales = Locale.getAvailableLocales ();
+    Locale[] allLocales = Locale.getAvailableLocales ();
     
-    for (int i=0;i<all_locales.length;i++)
+    for (int i = 0;i < allLocales.length; i++)
       {
-	Currency test_currency = getInstance (all_locales[i]);
+	Currency testCurrency = getInstance (allLocales[i]);
 	
-	if (test_currency.getCurrencyCode() != null &&
-	    test_currency.getCurrencyCode().equals(currencyCode))
-	  return test_currency;
+	if (testCurrency.getCurrencyCode() != null &&
+	    testCurrency.getCurrencyCode().equals(currencyCode))
+	  return testCurrency;
       }
-    
-    return null;
+    /* 
+     * If we get this far, the code is not supported by any of
+     * our locales.
+     */
+    throw new IllegalArgumentException("The currency code, " + currencyCode +
+                                       ", is not supported.");
   }
 
   /**
-   * This method returns the currency symbol.
+   * This method returns the symbol which precedes or follows a
+   * value in this particular currency.  In cases where there is no
+   * such symbol for the currency, the ISO 4217 currency
+   * code is returned.
    *
-   * @return the currency symbol.
+   * @return the currency symbol, or the ISO 4217 currency code if
+   *         one doesn't exist.
    */
   public String getSymbol()
   {
     try
       {
+        /* What does this return if there is no mapping? */
 	return res.getString ("currencySymbol");
       }
     catch (Exception _)
@@ -138,25 +265,51 @@ public final class Currency implements Serializable
   }
 
   /**
-   * This methods returns the currency symbol expressed in the specified locale.
+   * <p>
+   * This method returns the symbol which precedes or follows a
+   * value in this particular currency.  The returned value is
+   * the symbol used to denote the currency in the specified locale.
+   * </p>
+   * <p>
+   * For example, a supplied locale may specify a different symbol
+   * for the currency, due to conflicts with its own currency.
+   * This would be the case with the American currency, the dollar.
+   * Locales that also use a dollar-based currency (e.g. Canada, Australia)
+   * need to differentiate the American dollar using 'US$' rather than '$'.
+   * So, supplying one of these locales to <code>getSymbol()</code> would
+   * return this value, rather than the standard '$'.
+   * </p>
+   * <p>
+   * In cases where there is no such symbol for a particular currency,
+   * the ISO 4217 currency code is returned.
+   * </p>
    *
    * @param locale the locale to express the symbol in.
-   * @return the currency symbol.
+   * @return the currency symbol, or the ISO 4217 currency code if
+   *         one doesn't exist.
+   * @throws NullPointerException if the locale is null.
    */
   public String getSymbol(Locale locale)
   {
     // TODO. The behaviour is unclear if locale != this.locale.
     // First we need to implement fully LocaleInformation*.java
+
+    /* 
+     * FIXME: My reading of how this method works has this implementation
+     * as wrong.  It should return a value relating to how the specified
+     * locale handles the symbol for this currency.  This implementation
+     * seems to just do a variation of getInstance(locale).
+     */
     try
       {
-	ResourceBundle res = 
+	ResourceBundle localeResource = 
 	  ResourceBundle.getBundle ("gnu.java.locale.LocaleInformation", 
 				    locale, Currency.class.getClassLoader());
 
-	if (res.equals(this.res))
-	  return res.getString ("currencySymbol");
+	if (localeResource.equals(res))
+	  return localeResource.getString ("currencySymbol");
 	else
-	  return res.getString ("intlCurrencySymbol");
+	  return localeResource.getString ("intlCurrencySymbol");
       }
     catch (Exception e1)
       {
@@ -178,13 +331,25 @@ public final class Currency implements Serializable
    */
   public String toString()
   {
-    try
-      {
-	return res.getString ("intlCurrencySymbol");
-      }
-    catch (Exception _)
-      {
-	return "(unknown currency)";
-      }
+    return getCurrencyCode();
   }
+
+  /**
+   * Resolves the deserialized object to the singleton instance for its
+   * particular currency.  The currency code of the deserialized instance
+   * is used to return the correct instance.
+   *
+   * @return the singleton instance for the currency specified by the
+   *         currency code of the deserialized object.  This replaces
+   *         the deserialized object as the returned object from
+   *         deserialization.
+   * @throws ObjectStreamException if a problem occurs with deserializing
+   *         the object.
+   */
+  private Object readResolve()
+    throws ObjectStreamException
+  {
+    return getInstance(currencyCode);
+  }
+
 }
