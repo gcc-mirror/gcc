@@ -1064,8 +1064,6 @@ extern union tree_node *current_function_decl;
    || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
    || GET_CODE (X) == HIGH) && ! symbolic_expression_p (X))
 
- (CONSTANT_P (X) && ! symbolic_expression_p (X))
-
 /* Include all constant integers and constant doubles, but not
    floating-point, except for floating-point zero.  */
 
