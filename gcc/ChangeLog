@@ -1,3 +1,9 @@
+Thu Mar 15 12:57:14 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* reload1.c (reload_cse_simplify_set): For LOAD_EXTEND_OP, do not
+	"widen" a destination that is already wider than a word.  Also do
+	not widen if LOAD_EXTEND_OP is NIL for the given mode.
+
 2001-03-15  Bernd Schmidt  <bernds@redhat.com>
 
 	* config/ia64/ia64.c (ia64_sched_reorder): Remove debugging aids.
