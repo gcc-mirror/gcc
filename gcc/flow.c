@@ -1113,16 +1113,14 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
      useful work.  We use AUX non-null to flag that the block is queued.  */
   if (blocks_in)
     {
-      /* Clear out the garbage that might be hanging out in bb->aux.  */
       FOR_ALL_BB (bb)
-	bb->aux = NULL;
-
-      EXECUTE_IF_SET_IN_SBITMAP (blocks_in, 0, i,
-	{
-	  bb = BASIC_BLOCK (i);
-	  *--qhead = bb;
-	  bb->aux = bb;
-	});
+	if (TEST_BIT (blocks_in, bb->sindex))
+	  {
+	    *--qhead = bb;
+	    bb->aux = bb;
+	  }
+	else
+	  bb->aux = NULL;
     }
   else
     {
