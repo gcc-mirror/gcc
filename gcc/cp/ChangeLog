@@ -1,3 +1,22 @@
+2004-02-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14138
+	* name-lookup.h (push_scope): Change prototype.
+	* name-lookup.c (push_scope): Do not reenter the current class
+	scope.
+	* decl.c (grokfndecl): Check return code from push_scope before
+	calling pop_scope.
+	* decl2.c (check_classfn): Likewise.
+	* parser.c (cp_parser_conversion_function_id): Likewise.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_class_specifier): Likewise.
+	(cp_parser_class_head): Likewise.
+	(cp_parser_lookup_name): Likewise.
+	(cp_parser_constructor_declarator_p): Likewise.
+	* pt.c (instantiate_class_template): Likewise.
+	(resolve_typename_type): Likewise.
+
 2004-02-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR debug/12103

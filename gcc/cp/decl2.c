@@ -652,9 +652,10 @@ check_classfn (tree ctype, tree function, bool template_header_p)
       tree methods = CLASSTYPE_METHOD_VEC (ctype);
       tree fndecls, fndecl = 0;
       bool is_conv_op;
+      bool pop_p;
       const char *format = NULL;
       
-      push_scope (ctype);
+      pop_p = push_scope (ctype);
       for (fndecls = TREE_VEC_ELT (methods, ix);
 	   fndecls; fndecls = OVL_NEXT (fndecls))
 	{
@@ -690,7 +691,8 @@ check_classfn (tree ctype, tree function, bool template_header_p)
 		      == DECL_TI_TEMPLATE (fndecl))))
 	    break;
 	}
-      pop_scope (ctype);
+      if (pop_p)
+	pop_scope (ctype);
       if (fndecls)
 	return OVL_CURRENT (fndecls);
       error ("prototype for `%#D' does not match any in class `%T'",

@@ -267,7 +267,7 @@ extern void pop_from_top_level (void);
 extern void pop_everything (void);
 extern void keep_next_level (bool);
 extern bool is_ancestor (tree, tree);
-extern void push_scope (tree);
+extern bool push_scope (tree);
 extern void pop_scope (tree);
 
 extern void push_namespace (tree);

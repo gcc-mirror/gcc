@@ -5406,12 +5406,13 @@ instantiate_class_template (tree type)
       tree pbases = BINFO_BASETYPES (pbinfo);
       tree paccesses = BINFO_BASEACCESSES (pbinfo);
       tree context = TYPE_CONTEXT (type);
+      bool pop_p;
       int i;
 
       /* We must enter the scope containing the type, as that is where
 	 the accessibility of types named in dependent bases are
 	 looked up from.  */
-      push_scope (context ? context : global_namespace);
+      pop_p = push_scope (context ? context : global_namespace);
   
       /* Substitute into each of the bases to determine the actual
 	 basetypes.  */
@@ -5440,7 +5441,8 @@ instantiate_class_template (tree type)
 	 information.  */
       xref_basetypes (type, base_list);
 
-      pop_scope (context ? context : global_namespace);
+      if (pop_p)
+	pop_scope (context ? context : global_namespace);
     }
 
   /* Now that our base classes are set up, enter the scope of the
@@ -12017,6 +12019,7 @@ resolve_typename_type (tree type, bool only_current_p)
   tree name;
   tree decl;
   int quals;
+  bool pop_p;
 
   my_friendly_assert (TREE_CODE (type) == TYPENAME_TYPE,
 		      20010702);
@@ -12046,7 +12049,7 @@ resolve_typename_type (tree type, bool only_current_p)
   /* Enter the SCOPE so that name lookup will be resolved as if we
      were in the class definition.  In particular, SCOPE will no
      longer be considered a dependent type.  */
-  push_scope (scope);
+  pop_p = push_scope (scope);
   /* Look up the declaration.  */
   decl = lookup_member (scope, name, /*protect=*/0, /*want_type=*/true);
   /* Obtain the set of qualifiers applied to the TYPE.  */
@@ -12076,7 +12079,8 @@ resolve_typename_type (tree type, bool only_current_p)
   if (type != error_mark_node && quals)
     type = cp_build_qualified_type (type, quals);
   /* Leave the SCOPE.  */
-  pop_scope (scope);
+  if (pop_p)
+    pop_scope (scope);
 
   return type;
 }
