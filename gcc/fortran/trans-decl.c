@@ -1135,6 +1135,7 @@ create_function_arglist (gfc_symbol * sym)
       DECL_CONTEXT (parm) = fndecl;
       DECL_ARG_TYPE (parm) = type;
       TREE_READONLY (parm) = 1;
+      DECL_ARTIFICIAL (parm) = 1;
       gfc_finish_decl (parm, NULL_TREE);
 
       arglist = chainon (arglist, parm);
@@ -1162,6 +1163,7 @@ create_function_arglist (gfc_symbol * sym)
 	  DECL_CONTEXT (length) = fndecl;
 	  DECL_ARG_TYPE (length) = type;
 	  TREE_READONLY (length) = 1;
+	  DECL_ARTIFICIAL (length) = 1;
 	  gfc_finish_decl (length, NULL_TREE);
 	}
     }
@@ -1216,6 +1218,7 @@ create_function_arglist (gfc_symbol * sym)
 
       arglist = chainon (arglist, length);
       DECL_CONTEXT (length) = fndecl;
+      DECL_ARTIFICIAL (length) = 1;
       DECL_ARG_TYPE (length) = type;
       TREE_READONLY (length) = 1;
       gfc_finish_decl (length, NULL_TREE);
