@@ -31,6 +31,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define SDB_DEBUGGING_INFO  1
 
+/* CYGNUS LOCAL stabs-in-coff */
+/* Output DBX (stabs) debugging information if doing -gstabs.  */
+
+#define DBX_DEBUGGING_INFO
+
+/* Generate SDB debugging information by default. */
+
+#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+
 #define SDB_DELIM ";"
 
 #define CPP_PREDEFINES "-D__sh__ -Acpu(sh) -Amachine(sh)"
@@ -179,7 +188,7 @@ extern int target_flags;
   {"",   	TARGET_DEFAULT} 	\
 }
 
-#define TARGET_DEFAULT  (FAST_BIT | BIGTABLE_BIT)
+#define TARGET_DEFAULT  (FAST_BIT)
 
 /* Macro to define table for command options with values.  */
 #define TARGET_OPTIONS \
@@ -918,17 +927,22 @@ extern int current_function_anonymous_args;
 #endif
 
 /* The Q is a pc relative load operand */
-#define EXTRA_CONSTRAINT_Q(OP)    \
-   (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP,0)) == LABEL_REF)
+#define EXTRA_CONSTRAINT_Q(OP)                          		\
+  (GET_CODE (OP) == MEM && 						\
+   ((GET_CODE (XEXP (OP, 0)) == LABEL_REF)				\
+    || (GET_CODE (XEXP (OP, 0)) == CONST                		\
+	&& GET_CODE (XEXP (XEXP (OP, 0), 0)) == PLUS 			\
+	&& GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == LABEL_REF	\
+	&& GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT)))
 
 /* The U is a label ref */
 #define EXTRA_CONSTRAINT_U(OP)    \
    (GET_CODE (OP) == LABEL_REF)
 
-#define IS_INDEX(OP) 								\
-  ((GET_CODE(OP) == PLUS && 							\
-    (INDEX_REGISTER_RTX_P(XEXP(OP,0)) && BASE_REGISTER_RTX_P(XEXP(OP,1))) ||	\
-    (INDEX_REGISTER_RTX_P(XEXP(OP,1)) && BASE_REGISTER_RTX_P(XEXP(OP,0)))))
+#define IS_INDEX(OP) 									\
+  ((GET_CODE (OP) == PLUS && 								\
+    (INDEX_REGISTER_RTX_P (XEXP (OP, 0)) && BASE_REGISTER_RTX_P (XEXP (OP, 1))) ||	\
+    (INDEX_REGISTER_RTX_P (XEXP (OP, 1)) && BASE_REGISTER_RTX_P (XEXP (OP, 0)))))
 
 
 
@@ -1045,7 +1059,7 @@ extern int current_function_anonymous_args;
 /* Define this if the tablejump instruction expects the table
    to contain offsets from the address of the table.
    Do not define this if the table should contain absolute addresses.  */
-/*#define CASE_VECTOR_PC_RELATIVE */
+#define CASE_VECTOR_PC_RELATIVE 
 
 /* Specify the tree operation to be used to convert reals to integers.  */
 #define IMPLICIT_FIX_EXPR  FIX_ROUND_EXPR
@@ -1206,12 +1220,10 @@ extern int current_function_anonymous_args;
 
 #define TEXT_SECTION_ASM_OP  		"\t.text"
 #define DATA_SECTION_ASM_OP  		"\t.data"
-#define READONLY_DATA_SECTION_ASM_OP 	"\t.section\t.rdata\n"
 #define CTORS_SECTION_ASM_OP 		"\t.section\t.ctors\n"
 #define DTORS_SECTION_ASM_OP 		"\t.section\t.dtors\n"
 #define INIT_SECTION_ASM_OP  		"\t.section\t.init\n"
-#define EXTRA_SECTIONS 			in_ctors, in_dtors, in_rdata
-#define READONLY_DATA_SECTION   	rdata_section
+#define EXTRA_SECTIONS 			in_ctors, in_dtors
 #define EXTRA_SECTION_FUNCTIONS                              \
 void							     \
 ctors_section() 					     \
@@ -1230,16 +1242,7 @@ dtors_section() 					     \
       fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);  \
       in_section = in_dtors;				     \
     }							     \
-}                                                            \
-void							     \
-rdata_section() 					     \
-{							     \
-  if (in_section != in_rdata)				     \
-    {							     \
-      fprintf (asm_out_file, "%s\n", READONLY_DATA_SECTION_ASM_OP);  \
-      in_section = in_rdata;				     \
-    }							     \
-}							      
+}                                                            
 
 /* Assemble generic sections.
    This is currently only used to support section attributes.  */

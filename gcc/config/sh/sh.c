@@ -1365,7 +1365,7 @@ output_file_start (file, f_options, f_len, W_options, W_len)
   data_section ();
 
 
-  pos = fprintf (file, "\n! Hitachi SH cc1 (%s) (release E-2) arguments:", version_string);
+  pos = fprintf (file, "\n! Hitachi SH cc1 (%s) (release H-1) arguments:", version_string);
   output_options (file, f_options, f_len, W_options, W_len,
 		  pos, 75, " ", "\n! ", "\n\n");
 }
@@ -1748,18 +1748,16 @@ hi_const (src)
 /* Find the last barrier less than MAX_COUNT bytes from FROM, or create one.
    If an HI move is found, then make sure that MAX_COUNT_HI isn't broken from that one. */
 
-static rtx from;
 static
 rtx
-find_barrier (from_)
-     rtx from_;
+find_barrier (from)
+     rtx from;
 {
   int count_si = 0;
   int count_hi = 0;
   int found_hi = 0;
   int found_si = 0;
   rtx found_barrier = 0;
-from = from_;
   while (from
 	 && count_si < max_count_si
 	 && count_hi < max_count_hi)
@@ -1769,8 +1767,8 @@ from = from_;
 	{
 	  found_barrier = from;
 	}
-      /* Count the length of this insn - we assume that all the pcrelloads
-         will work out to be only 2 bytes long */
+      /* Count the length of this insn - we assume that all moves will
+	 be 2 bytes long, except the DIs */
 
       if (GET_CODE (from) == INSN &&
 	  GET_CODE (PATTERN (from)) == SET)
@@ -1780,7 +1778,7 @@ from = from_;
 	    found_hi = 1;
 	  else
 	    found_si = 1;
-	  inc = 2;
+	  inc = (GET_MODE_SIZE (GET_MODE (src)) > 4) ? 4 : 2;
 	}
       else
 	{
@@ -1799,7 +1797,7 @@ from = from_;
 	 dump our stuff, so we'll make one */
       rtx label = gen_label_rtx ();
       /* Walk back to be just before any jump */
-	  from = PREV_INSN (from);
+      from = PREV_INSN (from);
       while (GET_CODE (from) == JUMP_INSN
 	     || GET_CODE (from) == NOTE
 	     || GET_CODE (from) == CODE_LABEL)
@@ -2128,12 +2126,12 @@ handle_pragma (file)
       if (psize == 9 && strncmp (pbuf, "interrupt", 9) == 0)
 	{
 	  pragma_interrupt = 1;
-	  return c;
+	  return ' ';
 	}
       if (psize == 5 && strncmp (pbuf, "trapa", 5) == 0)
 	{
 	  pragma_interrupt = pragma_trapa = 1;
-	  return c;
+	  return ' ';
 	}
       c = getc (file);
     }
@@ -2206,23 +2204,35 @@ general_movsrc_operand (op, mode)
      enum machine_mode mode;
 {
   /* Any MEM(label_ref) is ok, that's a pcrel load */
-  if (GET_CODE (op) == MEM &&
-      GET_CODE (XEXP (op, 0)) == LABEL_REF)
+xo  if (GET_CODE (op) == MEM
+      && GET_CODE (XEXP (op, 0)) == LABEL_REF)
     return 1;
 
-  /* No post inc allowed */
+  if (GET_CODE (op) == MEM)
+    {
+      rtx inside = XEXP (op, 0);
+      if (GET_CODE (inside) == CONST)
+	inside = XEXP (inside, 0);
 
-  if (GET_CODE (op) == MEM
-      && (GET_CODE (XEXP (op, 0)) == POST_DEC
-	  || GET_CODE (XEXP (op, 0)) == PRE_INC
-	  || GET_CODE (XEXP (op, 0)) == PRE_DEC))
-    return 0;
+      if (GET_CODE (inside) == LABEL_REF)
+	return 1;
 
-  /* Can't do that with large modes */
-  if (GET_CODE (op) == MEM
-      && GET_CODE (XEXP (op, 0)) == POST_INC
-      && GET_MODE_SIZE (mode) > 4)
-    return 0;
+      if (GET_CODE (inside) == PLUS
+	  && GET_CODE (XEXP (inside,0)) == LABEL_REF
+	  && GET_CODE (XEXP (inside,1)) == CONST_INT)
+	return 1;
+      
+      /* No post inc allowed */
+      if (GET_CODE (inside) == POST_DEC
+	  || GET_CODE (inside) == PRE_INC
+	  || GET_CODE (inside) == PRE_DEC)
+	return 0;
+
+      /* Can't do that with large modes */
+      if (GET_CODE (inside) == POST_INC
+	  && GET_MODE_SIZE (mode) > 4)
+	return 0;
+    }
 
   if ((mode == QImode || mode == HImode)
       && (GET_CODE (op) == SUBREG
@@ -2438,12 +2448,12 @@ sh_function_arg (cum, mode, type, named)
 
       if (rr < NPARM_REGS)
 	{
-	  return ((((mode) != BLKmode
-		    && ((type) == 0 || !TREE_ADDRESSABLE ((tree) (type)))
-		    && ((type) == 0 || (mode) != BLKmode
-			|| (TYPE_ALIGN ((type)) % PARM_BOUNDARY == 0))
-		    ? gen_rtx (REG, (mode),
-			       (FIRST_PARM_REG + rr)) : 0)));
+	  return (((type) == 0 || !TREE_ADDRESSABLE ((tree) (type)))
+		  && ((type) == 0 || (mode) != BLKmode
+		      || (TYPE_ALIGN ((type)) % PARM_BOUNDARY == 0))
+		  ? gen_rtx (REG, (mode),
+			     (FIRST_PARM_REG + rr)) 
+		  : 0);
 
 	}
     }
@@ -2466,8 +2476,7 @@ sh_function_arg_partial_nregs (CUM, MODE, TYPE, NAMED)
   if ((CUM) < NPARM_REGS)
     {
       if (((TYPE) == 0 || !TREE_ADDRESSABLE ((tree) (TYPE)))
-	  && ((TYPE) == 0 || (MODE) != BLKmode
-	      || (TYPE_ALIGN ((TYPE)) % PARM_BOUNDARY == 0))
+	  && ((TYPE) == 0 || (TYPE_ALIGN ((TYPE)) % PARM_BOUNDARY == 0))
 	  && ((CUM) + ((MODE) == BLKmode
 		       ? ROUND_ADVANCE (int_size_in_bytes (TYPE))
 		  : ROUND_ADVANCE (GET_MODE_SIZE (MODE))) - NPARM_REGS > 0))
