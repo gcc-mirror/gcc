@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler for Hitachi Super-H 5.
+/* Definitions of target machine for GNU compiler for SuperH SH 5.
    Copyright 2000, 2001 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
@@ -18,6 +18,10 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
+
+#undef TARGET_VERSION
+#define TARGET_VERSION \
+  fputs (" (SuperH SH)", stderr);
 
 #undef CPP_DEFAULT_CPU_SPEC
 #define CPP_DEFAULT_CPU_SPEC "-D__SH5__=32 -D__SHMEDIA__"
