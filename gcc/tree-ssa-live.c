@@ -135,7 +135,8 @@ var_union (var_map map, tree var1, tree var2)
 
       /* If there is no root_var set, or its not a user variable, set the
 	 root_var to this one.  */
-      if (!root_var || is_gimple_tmp_var (root_var))
+      if (!root_var
+          || (TREE_CODE (root_var) == VAR_DECL && DECL_ARTIFICIAL (root_var)))
         {
 	  other_var = root_var;
 	  root_var = var2;
