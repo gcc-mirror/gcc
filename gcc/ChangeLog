@@ -1,3 +1,9 @@
+2000-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (movsi_pic_label_ref): Avoid creating new
+	pseudos if expanded after first flow.
+	(movdi_pic_label_ref): Likewise.
+
 2000-01-20  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (jump_optimize_1): Don't do addr_vec optimizations at -O0.
