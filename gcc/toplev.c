@@ -3484,7 +3484,7 @@ rest_of_compilation (decl)
   open_dump_file (DFI_flow2, decl);
 
   jump_optimize (insns, !JUMP_CROSS_JUMP,
-		 !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
+		 JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 
   /* On some machines, the prologue and epilogue code, or parts thereof,
