@@ -1299,7 +1299,6 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
 
 extern int s390_pool_count;
 extern int s390_nr_constants;
-extern int s390_pool_overflow;
 
 #define ASM_OUTPUT_POOL_PROLOGUE(FILE, FUNNAME, fndecl, size)  	        \
 {								       	\

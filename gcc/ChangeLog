@@ -1,3 +1,46 @@
+2002-10-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_split_branches): Add return
+	value.  Add parameters TEMP_REG and TEMP_USED.  Use unspec 104.
+
+	(find_base_register_in_addr): New function.
+	(find_base_register_ref): New function.
+	(replace_base_register_ref): New function.
+
+	(struct constant_pool): Add members pool_insn, insns, and anchor.
+	Remove member last_insn.
+	(s390_start_pool): Initialize them.
+	(s390_end_pool): Emit pool placeholder insn. 
+	(s390_add_pool_insn): New function.
+	(s390_find_pool): Use insns bitmap instead of addresses.
+	(s390_dump_pool): Replace placeholder insn.  Emit anchor.
+	Replace unspec 104 by local-pool-relative references.
+	(s390_output_constant_pool): Output anchor label if required.
+	(s390_output_symbolic_const): Handle unspec 104 and 105.
+	(s390_add_pool): Remove, replace by ...
+	(s390_add_constant, s390_find_constant): ... these new functions.
+	(s390_add_anchor): New function.
+
+	(s390_chunkify_pool): Delete, replace by ...
+	(s390_chunkify_start, s390_chunkify_finish, 
+	s390_chunkify_cancel): ... these new functions.
+	(s390_optimize_prolog): Add parameter TEMP_REGNO.
+	Recompute register live data for special registers.
+	(s390_fixup_clobbered_return_reg): New function.
+	(s390_machine_dependent_reorg): Rewrite to use new
+	s390_chunkify_... routines.
+
+	config/s390/s390.md ("reload_base"): Rename to ...
+	("reload_base_31"): ... this.
+	("reload_base_64"): New insn.
+	("reload_base2"): Remove.
+	("reload_anchor"): New insn.
+	("pool"): New insn.
+
+	s390.c (s390_pool_overflow): Remove.
+	s390.h (s390_pool_overflow): Likewise.
+	s390.md ("cjump", "icjump", "doloop_si"): Remove s390_pool_overflow.
+
 Tue Oct 15 16:51:04 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (movv8qi_i+2): Don't split if source is -1.
