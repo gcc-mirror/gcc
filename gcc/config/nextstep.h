@@ -295,7 +295,7 @@ extern int handle_pragma PARAMS ((int(*)(void), void (*)(int), const char *));
 #undef	ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
-    fprintf (FILE, "\t%s %d\n", ALIGN_ASM_OP, (LOG))
+    fprintf (FILE, "%s%d\n", ALIGN_ASM_OP, (LOG))
 
 /* Ensure correct alignment of bss data.  */
 
