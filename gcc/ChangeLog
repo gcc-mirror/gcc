@@ -1,3 +1,7 @@
+Sun Feb 27 07:44:17 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Makefile.in (libcpp.a): Start by deleting it.
+
 2000-02-27  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* cpplib.h (enum file_change_code): Added rename_file.
@@ -52,9 +56,9 @@
 
 2000-02-26  Bruce Korb  <bkorb@gnu.org>
 
-	fixinc/inclhack.def(undefine_null): the bypass pattern needs to
+	* fixinc/inclhack.def (undefine_null): the bypass pattern needs to
 	match for DOS headers, too.
-	fixinc/inclhack.sh,fixincl.x: regen
+	* fixinc/inclhack.sh,fixincl.x: Regenerate.
 
 2000-02-26  Geoff Keating  <geoffk@cygnus.com>
 
