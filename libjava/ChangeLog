@@ -1,5 +1,10 @@
 2003-08-12  Graydon Hoare  <graydon@redhat.com>
 
+	* java/awt/Font.java: 
+	Stub out more recent API. 
+
+2003-08-12  Graydon Hoare  <graydon@redhat.com>
+
 	* java/awt/Color.java (getAlpha): 
 	Prevent sign-extended alpha values.
 
