@@ -1,5 +1,9 @@
 2004-05-24  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/altivec-7.c: Don't use 'vector long'.
+	* gcc.dg/altivec-14.c: New test.
+	* g++.dg/ext/altivec-7.C: Don't use 'vector long'.
+
 	* gcc.dg/altivec-6.c: Use -maltivec, don't limit to darwin.
 	* gcc.dg/altivec-12.c: Ditto.
 
