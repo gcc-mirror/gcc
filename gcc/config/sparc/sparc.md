@@ -2386,8 +2386,8 @@
 
 ;; Sparc V9 conditional move instructions.
 
-;; We can handle larger constants here for some flavors, but for now we play
-;; it safe and only allow those constants supported by all flavours.
+;; We can handle larger constants here for some flavors, but for now we keep
+;; it simple and only allow those constants supported by all flavours.
 ;; Note that emit_conditional_move canonicalizes operands 2,3 so that operand
 ;; 3 contains the constant if one is present, but we handle either for
 ;; generality (sparc.c puts a constant in operand 2).
@@ -2605,8 +2605,8 @@
 	(if_then_else:QI (match_operator 1 "comparison_operator"
 				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
 				 (const_int 0)])
-		      (match_operand:QI 3 "arith11_operand" "ri,0")
-		      (match_operand:QI 4 "arith11_operand" "0,ri")))]
+		      (match_operand:QI 3 "arith11_operand" "rL,0")
+		      (match_operand:QI 4 "arith11_operand" "0,rL")))]
   "TARGET_V9"
   "@
    mov%C1 %x2,%3,%0
@@ -2618,8 +2618,8 @@
 	(if_then_else:HI (match_operator 1 "comparison_operator"
 				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
 				 (const_int 0)])
-		      (match_operand:HI 3 "arith11_operand" "ri,0")
-		      (match_operand:HI 4 "arith11_operand" "0,ri")))]
+		      (match_operand:HI 3 "arith11_operand" "rL,0")
+		      (match_operand:HI 4 "arith11_operand" "0,rL")))]
   "TARGET_V9"
   "@
    mov%C1 %x2,%3,%0
@@ -2631,21 +2631,22 @@
 	(if_then_else:SI (match_operator 1 "comparison_operator"
 				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
 				 (const_int 0)])
-		      (match_operand:SI 3 "arith11_operand" "ri,0")
-		      (match_operand:SI 4 "arith11_operand" "0,ri")))]
+		      (match_operand:SI 3 "arith11_operand" "rL,0")
+		      (match_operand:SI 4 "arith11_operand" "0,rL")))]
   "TARGET_V9"
   "@
    mov%C1 %x2,%3,%0
    mov%c1 %x2,%4,%0"
   [(set_attr "type" "cmove")])
 
+;; ??? The constraints of operands 3,4 need work.
 (define_insn "*movdi_cc_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(if_then_else:DI (match_operator 1 "comparison_operator"
 				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
 				 (const_int 0)])
-		      (match_operand:DI 3 "arith11_double_operand" "rHI,0")
-		      (match_operand:DI 4 "arith11_double_operand" "0,rHI")))]
+		      (match_operand:DI 3 "arith11_double_operand" "rLH,0")
+		      (match_operand:DI 4 "arith11_double_operand" "0,rLH")))]
   "TARGET_ARCH64"
   "@
    mov%C1 %x2,%3,%0
@@ -2696,8 +2697,8 @@
 	(if_then_else:QI (match_operator 1 "v9_regcmp_op"
 				[(match_operand:DI 2 "register_operand" "r,r")
 				 (const_int 0)])
-		      (match_operand:QI 3 "arith10_operand" "ri,0")
-		      (match_operand:QI 4 "arith10_operand" "0,ri")))]
+		      (match_operand:QI 3 "arith10_operand" "rM,0")
+		      (match_operand:QI 4 "arith10_operand" "0,rM")))]
   "TARGET_ARCH64"
   "@
    movr%D1 %2,%r3,%0
@@ -2709,8 +2710,8 @@
 	(if_then_else:HI (match_operator 1 "v9_regcmp_op"
 				[(match_operand:DI 2 "register_operand" "r,r")
 				 (const_int 0)])
-		      (match_operand:HI 3 "arith10_operand" "ri,0")
-		      (match_operand:HI 4 "arith10_operand" "0,ri")))]
+		      (match_operand:HI 3 "arith10_operand" "rM,0")
+		      (match_operand:HI 4 "arith10_operand" "0,rM")))]
   "TARGET_ARCH64"
   "@
    movr%D1 %2,%r3,%0
@@ -2722,21 +2723,22 @@
 	(if_then_else:SI (match_operator 1 "v9_regcmp_op"
 				[(match_operand:DI 2 "register_operand" "r,r")
 				 (const_int 0)])
-		      (match_operand:SI 3 "arith10_operand" "ri,0")
-		      (match_operand:SI 4 "arith10_operand" "0,ri")))]
+		      (match_operand:SI 3 "arith10_operand" "rM,0")
+		      (match_operand:SI 4 "arith10_operand" "0,rM")))]
   "TARGET_ARCH64"
   "@
    movr%D1 %2,%r3,%0
    movr%d1 %2,%r4,%0"
   [(set_attr "type" "cmove")])
 
+;; ??? The constraints of operands 3,4 need work.
 (define_insn "*movdi_cc_reg_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(if_then_else:DI (match_operator 1 "v9_regcmp_op"
 				[(match_operand:DI 2 "register_operand" "r,r")
 				 (const_int 0)])
-		      (match_operand:DI 3 "arith10_double_operand" "ri,0")
-		      (match_operand:DI 4 "arith10_double_operand" "0,ri")))]
+		      (match_operand:DI 3 "arith10_double_operand" "rMH,0")
+		      (match_operand:DI 4 "arith10_double_operand" "0,rMH")))]
   "TARGET_ARCH64"
   "@
    movr%D1 %2,%r3,%0
