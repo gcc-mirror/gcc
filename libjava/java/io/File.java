@@ -119,6 +119,12 @@ public class File implements Serializable
     return path.substring(0, last);
   }
 
+  public File getParentFile ()
+  {
+    String parent = getParent ();
+    return (parent == null ? null : new File (parent));
+  }
+
   public String getPath ()
   {
     return path;
