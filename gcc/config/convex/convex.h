@@ -1402,7 +1402,7 @@ extern double atof();
 /* This is how to output an element of a case-vector that is relative.  
    (not used on Convex) */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
   fprintf (FILE, "\tds.w L%d-L%d\n", VALUE, REL)
 
 /* This is how to output an assembler line

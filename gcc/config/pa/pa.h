@@ -2269,7 +2269,7 @@ DTORS_SECTION_FUNCTION
    on the PA since ASM_OUTPUT_ADDR_VEC_ELT uses pc-relative jump instructions
    rather than a table of absolute addresses.  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
   if (TARGET_BIG_SWITCH)					\
     fprintf (FILE, "\tstw %%r1,-16(%%r30)\n\tldw T'L$%04d(%%r19),%%r1\n\tbv 0(%%r1)\n\tldw -16(%%r30),%%r1\n", VALUE);				\
   else								\

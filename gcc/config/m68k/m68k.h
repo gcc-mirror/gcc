@@ -1920,7 +1920,7 @@ do { long l;						\
 
 /* This is how to output an element of a case-vector that is relative.  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
   asm_fprintf (FILE, "\t.word %LL%d-%LL%d\n", VALUE, REL)
 
 /* This is how to output an assembler line

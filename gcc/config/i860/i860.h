@@ -1146,7 +1146,7 @@ do { ASM_OUTPUT_ALIGN ((FILE), 2);					\
    (The i860 does not use such vectors,
    but we must define this macro anyway.)  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
   fprintf (FILE, "\t.word .L%d-.L%d\n", VALUE, REL)
 
 /* This is how to output an assembler line

@@ -315,7 +315,7 @@ do { long l;					\
   fprintf (FILE, "\tlong L%%%d\n", (VALUE))
 
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
   fprintf (FILE, "\tshort L%%%d-L%%%d\n", (VALUE), (REL))
 
 #undef ASM_OUTPUT_ALIGN

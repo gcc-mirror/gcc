@@ -547,7 +547,7 @@ do { long l;					\
 /* This is how to output an element of a case-vector that is relative.  */
 
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)	\
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)	\
     asm_fprintf (FILE, "\t%s %LL%d-%LL%d\n", ASM_SHORT, (VALUE), (REL))
 
 #ifndef USE_GAS

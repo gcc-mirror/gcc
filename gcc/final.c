@@ -893,6 +893,7 @@ insn_current_reference_address (branch)
        any alignment we'd encounter, so we skip the call to align_fuzz.  */
     return insn_current_address;
   dest = JUMP_LABEL (branch);
+  /* BRANCH has no proper alignment chain set, so use SEQ.  */
   if (INSN_SHUID (branch) < INSN_SHUID (dest))
     {
       /* Forward branch. */
@@ -1085,13 +1086,12 @@ shorten_branches (first)
   for (i = MAX_CODE_ALIGN; --i >= 0; )
     align_tab[i] = NULL_RTX;
   seq = get_last_insn ();
-  for (insn_current_address = 0; seq; seq = PREV_INSN (seq))
+  for (; seq; seq = PREV_INSN (seq))
     {
       int uid = INSN_UID (seq);
       int log;
       log = (GET_CODE (seq) == CODE_LABEL ? LABEL_TO_ALIGNMENT (seq) : 0);
       uid_align[uid] = align_tab[0];
-      insn_addresses[uid] = --insn_current_address;
       if (log)
 	{
 	  /* Found an alignment label.  */
@@ -1099,14 +1099,63 @@ shorten_branches (first)
 	  for (i = log - 1; i >= 0; i--)
 	    align_tab[i] = seq;
 	}
-      if (GET_CODE (seq) != INSN || GET_CODE (PATTERN (seq)) != SEQUENCE)
-	insn = seq;
-      else
+    }
+#ifdef CASE_VECTOR_SHORTEN_MODE
+  if (optimize)
+    {
+      /* Look for ADDR_DIFF_VECs, and initialize their minimum and maximum
+         label fields.  */
+
+      int min_shuid = INSN_SHUID (get_insns ()) - 1;
+      int max_shuid = INSN_SHUID (get_last_insn ()) + 1;
+      int rel;
+
+      for (insn = first; insn != 0; insn = NEXT_INSN (insn))
 	{
-	  insn = XVECEXP (PATTERN (seq), 0, 0);
-	  uid = INSN_UID (insn);
+	  rtx min_lab = NULL_RTX, max_lab = NULL_RTX, pat;
+	  int len, i, min, max, insn_shuid;
+	  int min_align;
+	  addr_diff_vec_flags flags;
+
+	  if (GET_CODE (insn) != JUMP_INSN
+	      || GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC)
+	    continue;
+	  pat = PATTERN (insn);
+	  len = XVECLEN (pat, 1);
+	  if (len <= 0)
+	    abort ();
+	  min_align = MAX_CODE_ALIGN;
+	  for (min = max_shuid, max = min_shuid, i = len - 1; i >= 0; i--)
+	    {
+	      rtx lab = XEXP (XVECEXP (pat, 1, i), 0);
+	      int shuid = INSN_SHUID (lab);
+	      if (shuid < min)
+		{
+		  min = shuid;
+		  min_lab = lab;
+		}
+	      if (shuid > max)
+		{
+		  max = shuid;
+		  max_lab = lab;
+		}
+	      if (min_align > LABEL_TO_ALIGNMENT (lab))
+		min_align = LABEL_TO_ALIGNMENT (lab);
+	    }
+	  XEXP (pat, 2) = gen_rtx_LABEL_REF (VOIDmode, min_lab);
+	  XEXP (pat, 3) = gen_rtx_LABEL_REF (VOIDmode, max_lab);
+	  insn_shuid = INSN_SHUID (insn);
+	  rel = INSN_SHUID (XEXP (XEXP (pat, 0), 0));
+	  flags.min_align = min_align;
+	  flags.base_after_vec = rel > insn_shuid;
+	  flags.min_after_vec  = min > insn_shuid;
+	  flags.max_after_vec  = max > insn_shuid;
+	  flags.min_after_base = min > rel;
+	  flags.max_after_base = max > rel;
+	  ADDR_DIFF_VEC_FLAGS (pat) = flags;
 	}
     }
+#endif /* CASE_VECTOR_SHORTEN_MODE */
 
 
   /* Compute initial lengths, addresses, and varying flags for each insn.  */
@@ -1247,7 +1296,110 @@ shorten_branches (first)
 	  insn_last_address = insn_addresses[uid];
 	  insn_addresses[uid] = insn_current_address;
 
-	  if (! varying_length[uid])
+	  if (optimize && GET_CODE (insn) == JUMP_INSN
+	      && GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
+	    {
+#ifdef CASE_VECTOR_SHORTEN_MODE
+	      rtx body = PATTERN (insn);
+	      int old_length = insn_lengths[uid];
+	      rtx rel_lab = XEXP (XEXP (body, 0), 0);
+	      rtx min_lab = XEXP (XEXP (body, 2), 0);
+	      rtx max_lab = XEXP (XEXP (body, 3), 0);
+	      addr_diff_vec_flags flags = ADDR_DIFF_VEC_FLAGS (body);
+	      int rel_addr = insn_addresses[INSN_UID (rel_lab)];
+	      int min_addr = insn_addresses[INSN_UID (min_lab)];
+	      int max_addr = insn_addresses[INSN_UID (max_lab)];
+	      rtx prev;
+	      int rel_align = 0;
+
+	      /* Try to find a known alignment for rel_lab.  */
+	      for (prev = rel_lab;
+		   prev
+		   && ! insn_lengths[INSN_UID (prev)]
+		   && ! (varying_length[INSN_UID (prev)] & 1);
+		   prev = PREV_INSN (prev))
+		if (varying_length[INSN_UID (prev)] & 2)
+		  {
+		    rel_align = LABEL_TO_ALIGNMENT (prev);
+		    break;
+		  }
+
+	      /* See the comment on addr_diff_vec_flags in rtl.h for the
+		 meaning of the flags values.  base: REL_LAB   vec: INSN  */
+	      /* Anything after INSN has still addresses from the last
+		 pass; adjust these so that they reflect our current
+		 estimate for this pass.  */
+	      if (flags.base_after_vec)
+		rel_addr += insn_current_address - insn_last_address;
+	      if (flags.min_after_vec)
+		min_addr += insn_current_address - insn_last_address;
+	      if (flags.max_after_vec)
+		max_addr += insn_current_address - insn_last_address;
+	      /* We want to know the worst case, i.e. lowest possible value
+		 for the offset of MIN_LAB.  If MIN_LAB is after REL_LAB,
+		 its offset is positive, and we have to be wary of code shrink;
+		 otherwise, it is negative, and we have to be vary of code
+		 size increase.  */
+	      if (flags.min_after_base)
+		{
+		  /* If INSN is between REL_LAB and MIN_LAB, the size
+		     changes we are about to make can change the alignment
+		     within the observed offset, therefore we have to break
+		     it up into two parts that are independent.  */
+		  if (! flags.base_after_vec && flags.min_after_vec)
+		    {
+		      min_addr -= align_fuzz (rel_lab, insn, rel_align, 0);
+		      min_addr -= align_fuzz (insn, min_lab, 0, 0);
+		    }
+		  else
+		    min_addr -= align_fuzz (rel_lab, min_lab, rel_align, 0);
+		}
+	      else
+		{
+		  if (flags.base_after_vec && ! flags.min_after_vec)
+		    {
+		      min_addr -= align_fuzz (min_lab, insn, 0, ~0);
+		      min_addr -= align_fuzz (insn, rel_lab, 0, ~0);
+		    }
+		  else
+		    min_addr -= align_fuzz (min_lab, rel_lab, 0, ~0);
+		}
+	      /* Likewise, determine the highest lowest possible value
+		 for the offset of MAX_LAB.  */
+	      if (flags.max_after_base)
+		{
+		  if (! flags.base_after_vec && flags.max_after_vec)
+		    {
+		      max_addr += align_fuzz (rel_lab, insn, rel_align, ~0);
+		      max_addr += align_fuzz (insn, max_lab, 0, ~0);
+		    }
+		  else
+		    max_addr += align_fuzz (rel_lab, max_lab, rel_align, ~0);
+		}
+	      else
+		{
+		  if (flags.base_after_vec && ! flags.max_after_vec)
+		    {
+		      max_addr += align_fuzz (max_lab, insn, 0, 0);
+		      max_addr += align_fuzz (insn, rel_lab, 0, 0);
+		    }
+		  else
+		    max_addr += align_fuzz (max_lab, rel_lab, 0, 0);
+		}
+	      PUT_MODE (body, CASE_VECTOR_SHORTEN_MODE (min_addr - rel_addr,
+							max_addr - rel_addr,
+							body));
+#if !defined(READONLY_DATA_SECTION) || defined(JUMP_TABLES_IN_TEXT_SECTION)
+	      insn_lengths[uid]
+		= (XVECLEN (body, 1) * GET_MODE_SIZE (GET_MODE (body)));
+	      insn_current_address += insn_lengths[uid];
+	      if (insn_lengths[uid] != old_length)
+		something_changed = 1;
+#endif
+	      continue;
+#endif /* CASE_VECTOR_SHORTEN_MODE */
+	    }
+	  else if (! (varying_length[uid]))
 	    {
 	      insn_current_address += insn_lengths[uid];
 	      continue;
@@ -2161,6 +2313,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #ifdef ASM_OUTPUT_ADDR_DIFF_ELT
 		    ASM_OUTPUT_ADDR_DIFF_ELT
 		      (file,
+		       body,
 		       CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 1, idx), 0)),
 		       CODE_LABEL_NUMBER (XEXP (XEXP (body, 0), 0)));
 #else

@@ -316,7 +316,7 @@ do { long l[3];								\
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   fprintf (FILE, "\tlong L%d\n", VALUE)
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
   fprintf (FILE, "\tshort L%d-L%d\n", VALUE, REL)
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\

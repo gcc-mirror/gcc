@@ -1029,7 +1029,7 @@ enum reg_class
 
 /* This is how to output an element of a case-vector that is relative.  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) 			\
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) 		\
   mvs_check_page (FILE, 4, 0);						\
   fprintf (FILE, "\tDC\tA(L%d-L%d)\n", VALUE, REL)
 

@@ -2004,11 +2004,15 @@ how much space is given to each address; normally @var{m} would be
 @code{Pmode}.
 
 @findex addr_diff_vec
-@item (addr_diff_vec:@var{m} @var{base} [@var{lr0} @var{lr1} @dots{}])
+@item (addr_diff_vec:@var{m} @var{base} [@var{lr0} @var{lr1} @dots{}] @var{min} @var{max} @var{flags})
 Represents a table of jump addresses expressed as offsets from
 @var{base}.  The vector elements @var{lr0}, etc., are @code{label_ref}
 expressions and so is @var{base}.  The mode @var{m} specifies how much
-space is given to each address-difference.@refill
+space is given to each address-difference.  @var{min} and @var{max}
+are set up by branch shortening and hold a label with a minimum and a
+maximum address, respectively.  @var{flags} indicates the relative
+position of @var{base}, @var{min} and @var{max} to the cointaining insn
+and of @var{min} and @var{max} to @var{base}.  See rtl.def for details.@refill
 @end table
 
 @node Incdec, Assembler, Side Effects, RTL

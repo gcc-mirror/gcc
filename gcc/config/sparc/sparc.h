@@ -2969,7 +2969,7 @@ do {									\
 /* This is how to output an element of a case-vector that is relative.
    (SPARC uses such vectors only when generating PIC.)  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)			\
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)		\
 do {									\
   char label[30];							\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);			\

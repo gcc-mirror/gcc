@@ -2,7 +2,7 @@
    Copyright (C) 1996 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
-   Adapted from Linux version by John Polstra.
+   Adapted from GNU/Linux version by John Polstra.
 
 This file is part of GNU CC.
 
@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
    This is only used for PIC code.  See comments by the `casesi' insn in
    i386.md for an explanation of the expression this outputs. */
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
   fprintf (FILE, "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
 
 /* Indicate that jump tables go in the text section.  This is
