@@ -1313,6 +1313,7 @@ struct bb
 #ifdef BLOCK_PROFILER_CODE
 BLOCK_PROFILER_CODE
 #else
+#ifndef inhibit_libc
 
 /* Simple minded basic block profiling output dumper for
    systems that don't provde tcov support.  At present,
@@ -1483,8 +1484,9 @@ __bb_init_func (struct bb *blocks)
   bb_head = blocks;
 }
 
-#endif	/* !BLOCK_PROFILER_CODE */
-#endif	/* L_bb */
+#endif /* not inhibit_libc */
+#endif /* not BLOCK_PROFILER_CODE */
+#endif /* L_bb */
 
 /* frills for C++ */
 
