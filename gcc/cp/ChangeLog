@@ -1,5 +1,13 @@
 1998-10-16  Mark Mitchell  <mark@markmitchell.com>
 
+	* decl.c (expand_static_init): Build cleanups before entering the
+	anonymous function used to do them to avoid access-checking
+	confusion.
+
+	* decl.c (grokfndecl): Add back call to cplus_decl_attributes
+	accidentally removed by previous change, and make DECL_RTL here.
+	* class.c (add_method): Don't make DECL_RTL here.
+	
 	* pt.c (for_each_template_parm): Don't examine uninstantiated
 	default arguments.
 

@@ -7814,8 +7814,13 @@ expand_static_init (decl, init)
 	      pop_obstacks ();
 	    }
 	      
+	  /* Call build_cleanup before we enter the anonymous function
+	     so that any access checks will be done relative to the
+	     current scope, rather than the scope of the anonymous
+	     function.  */
+	  fcall = build_cleanup (decl);
 	  cleanup = start_anon_func ();
-	  expand_expr_stmt (build_cleanup (decl));
+	  expand_expr_stmt (fcall);
 	  end_anon_func ();
 	  mark_addressable (cleanup);
 	  cleanup = build_unary_op (ADDR_EXPR, cleanup, 0);
@@ -8234,6 +8239,11 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 
       if (ctype == NULL_TREE || check)
 	return decl;
+
+      if (attrlist)
+	cplus_decl_attributes (decl, TREE_PURPOSE (attrlist), 
+			       TREE_VALUE (attrlist));
+      make_decl_rtl (decl, NULL_PTR, 1);
 
       if (virtualp)
 	{
