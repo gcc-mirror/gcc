@@ -1,3 +1,9 @@
+2004-09-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/17512
+	* convert.c (convert_to_integer): Don't handle TRUTH_*_EXPR as
+	special cases.
+
 2004-09-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* dbxout.c (get_lang_number): Do not define if
