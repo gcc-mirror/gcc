@@ -41,10 +41,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cgraph.h"
 #include "except.h"
 
-#ifndef STACK_POINTER_OFFSET
-#define STACK_POINTER_OFFSET    0
-#endif
-
 /* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
 #define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
 

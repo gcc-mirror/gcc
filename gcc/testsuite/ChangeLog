@@ -1,3 +1,8 @@
+2003-10-07  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/darwin-abi-2.c: New file.
+	* gcc.c-torture/execute/va-arg-24.c: New file.
+
 2003-10-06  Bob Wilson  <bob.wilson@acm.org>
 
 	* g++.dg/template/spec10.C: Set exit value to zero on success.  Fix

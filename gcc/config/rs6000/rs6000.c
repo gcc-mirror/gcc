@@ -544,134 +544,149 @@ rs6000_override_options (const char *default_cpu)
   /* Simplify the entries below by making a mask for any POWER
      variant and any PowerPC variant.  */
 
-#define POWER_MASKS (MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING)
-#define POWERPC_MASKS (MASK_POWERPC | MASK_PPC_GPOPT \
-		       | MASK_PPC_GFXOPT | MASK_POWERPC64)
-#define POWERPC_OPT_MASKS (MASK_PPC_GPOPT | MASK_PPC_GFXOPT)
+  enum {
+    POWER_MASKS = MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING,
+    POWERPC_BASE_MASK = MASK_POWERPC | MASK_NEW_MNEMONICS,
+    POWERPC_MASKS = (POWERPC_BASE_MASK | MASK_PPC_GPOPT 
+		     | MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_ALTIVEC),
+    POWERPC_OPT_MASKS = MASK_PPC_GPOPT | MASK_PPC_GFXOPT | MASK_ALTIVEC,
+    
+    SET_MASKS = (POWER_MASKS | POWERPC_MASKS | MASK_SOFT_FLOAT)
+  };
+
+  /* FIXME: In this table, there are a few places where SET_MASKS is
+     used with MASK_POWERPC64 masked off; these indicate processors
+     that are 64-bit but that don't yet have 64-bit switched on by
+     default because it doesn't work in the rest of the backend.
+     There are also some places that SET_MASKS is used with other
+     flags, those are because earlier versions of this table didn't
+     specifically set or clear those flags and I didn't know what the
+     processor supported.  Please delete this comment when all of those
+     cases are gone.  */
 
   static struct ptt
     {
       const char *const name;		/* Canonical processor name.  */
       const enum processor_type processor; /* Processor type enum value.  */
       const int target_enable;	/* Target flags to enable.  */
-      const int target_disable;	/* Target flags to disable.  */
+      const int target_set;	/* Target flags to change.  */
     } const processor_target_table[]
       = {{"common", PROCESSOR_COMMON, MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_MASKS},
+	    SET_MASKS},
 	 {"power", PROCESSOR_POWER,
 	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
-	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
+	    SET_MASKS},
 	 {"power2", PROCESSOR_POWER,
 	    MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING,
-	    POWERPC_MASKS | MASK_NEW_MNEMONICS},
+	    SET_MASKS},
 	 {"power3", PROCESSOR_PPC630,
-	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS},
+	    POWERPC_BASE_MASK | MASK_PPC_GFXOPT,
+	    SET_MASKS & ~MASK_POWERPC64 & ~MASK_PPC_GPOPT},
 	 {"power4", PROCESSOR_POWER4,
-            MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-            POWER_MASKS},
+            POWERPC_BASE_MASK | MASK_PPC_GFXOPT,
+	    SET_MASKS & ~MASK_POWERPC64 & ~MASK_PPC_GPOPT},
 	 {"powerpc", PROCESSOR_POWERPC,
-	    MASK_POWERPC | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK,
+	    SET_MASKS},
 	 {"powerpc64", PROCESSOR_POWERPC64,
-	    MASK_POWERPC | MASK_POWERPC64 | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS},
+	    POWERPC_BASE_MASK | MASK_POWERPC64,
+	    SET_MASKS},
 	 {"rios", PROCESSOR_RIOS1,
 	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
-	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
+	    SET_MASKS},
 	 {"rios1", PROCESSOR_RIOS1,
 	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
-	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
+	    SET_MASKS},
 	 {"rsc", PROCESSOR_PPC601,
 	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
-	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
+	    SET_MASKS},
 	 {"rsc1", PROCESSOR_PPC601,
 	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
-	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
+	    SET_MASKS},
 	 {"rios2", PROCESSOR_RIOS2,
 	    MASK_POWER | MASK_MULTIPLE | MASK_STRING | MASK_POWER2,
-	    POWERPC_MASKS | MASK_NEW_MNEMONICS},
+	    SET_MASKS},
 	 {"rs64a", PROCESSOR_RS64A,
-	    MASK_POWERPC | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS},
+	    POWERPC_BASE_MASK,
+	    SET_MASKS},
 	 {"401", PROCESSOR_PPC403,
-	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_SOFT_FLOAT,
+	    SET_MASKS},
 	 {"403", PROCESSOR_PPC403,
-	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS | MASK_STRICT_ALIGN,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_SOFT_FLOAT | MASK_STRICT_ALIGN,
+	    SET_MASKS},
 	 {"405", PROCESSOR_PPC405,
-	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_SOFT_FLOAT,
+	    SET_MASKS},
 	 {"405fp", PROCESSOR_PPC405,
-	    MASK_POWERPC | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK,
+	    SET_MASKS},
 	 {"440", PROCESSOR_PPC440,
-	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_SOFT_FLOAT,
+	    SET_MASKS},
 	 {"440fp", PROCESSOR_PPC440,
-	    MASK_POWERPC | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK,
+	    SET_MASKS},
 	 {"505", PROCESSOR_MPCCORE,
-	    MASK_POWERPC | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK,
+	    SET_MASKS},
 	 {"601", PROCESSOR_PPC601,
-	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_MULTIPLE | MASK_STRING,
-	    MASK_POWER2 | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    MASK_POWER | POWERPC_BASE_MASK | MASK_MULTIPLE | MASK_STRING,
+	    SET_MASKS},
 	 {"602", PROCESSOR_PPC603,
-	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_PPC_GFXOPT,
+	    SET_MASKS},
 	 {"603", PROCESSOR_PPC603,
-	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_PPC_GFXOPT,
+	    SET_MASKS},
 	 {"603e", PROCESSOR_PPC603,
-	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_PPC_GFXOPT,
+	    SET_MASKS},
 	 {"ec603e", PROCESSOR_PPC603,
-	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_SOFT_FLOAT,
+	    SET_MASKS},
 	 {"604", PROCESSOR_PPC604,
-	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_PPC_GFXOPT,
+	    SET_MASKS},
 	 {"604e", PROCESSOR_PPC604e,
-	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_PPC_GFXOPT,
+	    SET_MASKS},
 	 {"620", PROCESSOR_PPC620,
-	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS},
+	    POWERPC_BASE_MASK | MASK_PPC_GFXOPT,
+	    SET_MASKS & ~MASK_POWERPC64 & ~MASK_PPC_GPOPT},
 	 {"630", PROCESSOR_PPC630,
-	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS},
+	    POWERPC_BASE_MASK | MASK_PPC_GFXOPT,
+	    SET_MASKS & ~MASK_POWERPC64 & ~MASK_PPC_GPOPT},
 	 {"740", PROCESSOR_PPC750,
- 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
- 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+ 	    POWERPC_BASE_MASK | MASK_PPC_GFXOPT,
+ 	    SET_MASKS},
 	 {"750", PROCESSOR_PPC750,
- 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
- 	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+ 	    POWERPC_BASE_MASK | MASK_PPC_GFXOPT,
+ 	    SET_MASKS},
 	 {"7400", PROCESSOR_PPC7400,
-            MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-            POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+            POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_ALTIVEC,
+            SET_MASKS},
 	 {"7450", PROCESSOR_PPC7450,
-            MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-            POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+            POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_ALTIVEC,
+            SET_MASKS},
 	 {"8540", PROCESSOR_PPC8540,
-	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_PPC_GFXOPT,
+	    SET_MASKS},
 	 {"801", PROCESSOR_MPCCORE,
-	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_SOFT_FLOAT,
+	    SET_MASKS},
 	 {"821", PROCESSOR_MPCCORE,
-	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_SOFT_FLOAT,
+	    SET_MASKS},
 	 {"823", PROCESSOR_MPCCORE,
-	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_SOFT_FLOAT,
+	    SET_MASKS},
 	 {"860", PROCESSOR_MPCCORE,
-	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	    POWERPC_BASE_MASK | MASK_SOFT_FLOAT,
+	    SET_MASKS},
 	 {"970", PROCESSOR_POWER4,
-	    MASK_POWERPC | POWERPC_OPT_MASKS | MASK_NEW_MNEMONICS,
-	    POWER_MASKS}};
+	    POWERPC_BASE_MASK | POWERPC_OPT_MASKS | MASK_ALTIVEC,
+	    SET_MASKS & ~MASK_POWERPC64}};
 
   const size_t ptt_size = ARRAY_SIZE (processor_target_table);
 
@@ -697,8 +712,8 @@ rs6000_override_options (const char *default_cpu)
 
 		if (ptr->set_arch_p)
 		  {
+		    target_flags &= ~processor_target_table[j].target_set;
 		    target_flags |= processor_target_table[j].target_enable;
-		    target_flags &= ~processor_target_table[j].target_disable;
 		  }
 		break;
 	      }
@@ -3732,10 +3747,25 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   if (TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
     {
-      if (cum->vregno <= ALTIVEC_ARG_MAX_REG && cum->nargs_prototype >= 0)
+      if (named && cum->vregno <= ALTIVEC_ARG_MAX_REG)
 	cum->vregno++;
       else
-	cum->words += RS6000_ARG_SIZE (mode, type);
+	{
+	  int align;
+	  
+	  /* Vector parameters must be 16-byte aligned.  This places them at
+	     2 mod 4 in terms of words (on both ABIs).  */
+	  align = ((6 - (cum->words & 3)) & 3);
+	  cum->words += align + RS6000_ARG_SIZE (mode, type);
+
+	  if (TARGET_DEBUG_ARG)
+	    {
+	      fprintf (stderr, "function_adv: words = %2d, align=%d, ", 
+		       cum->words, align);
+	      fprintf (stderr, "nargs = %4d, proto = %d, mode = %4s\n",
+		       cum->nargs_prototype, cum->prototype, GET_MODE_NAME (mode));
+	    }
+	}
     }
   else if (TARGET_SPE_ABI && TARGET_SPE && SPE_VECTOR_MODE (mode)
 	   && !cum->stdarg
@@ -3913,8 +3943,37 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     {
       if (named && cum->vregno <= ALTIVEC_ARG_MAX_REG)
 	return gen_rtx_REG (mode, cum->vregno);
+      else if (named || abi == ABI_V4)
+	return NULL_RTX;
       else
-	return NULL;
+	{
+	  /* Vector parameters to varargs functions under AIX or Darwin
+	     get passed in memory and possibly also in GPRs.  */
+	  int align, align_words;
+	  rtx reg;
+
+	  /* Vector parameters must be 16-byte aligned.  This places them at
+	     2 mod 4 in terms of words.  */
+	  align = ((6 - (cum->words & 3)) & 3);
+	  align_words = cum->words + align;
+
+	  /* Out of registers?  Memory, then.  */
+	  if (align_words >= GP_ARG_NUM_REG)
+	    return NULL_RTX;
+	  
+	  /* The vector value goes in both memory and GPRs.  Varargs
+	     vector regs will always be saved in R5-R8 or R9-R12.  */
+	  reg = gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
+
+	  return gen_rtx_PARALLEL (mode,
+				   gen_rtvec (2,
+					      gen_rtx_EXPR_LIST (VOIDmode,
+								 NULL_RTX, 
+								 const0_rtx),
+					      gen_rtx_EXPR_LIST (VOIDmode,
+								 reg, 
+								 const0_rtx)));
+	}
     }
   else if (TARGET_SPE_ABI && TARGET_SPE && SPE_VECTOR_MODE (mode))
     return rs6000_spe_function_arg (cum, mode, type);
@@ -4302,7 +4361,29 @@ rs6000_va_arg (tree valist, tree type)
 	  return expand_expr (t, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 	}
       else
-	return std_expand_builtin_va_arg (valist, type);
+	{
+	  /* Altivec arguments must be aligned to a 128-bit boundary.  */
+	  if (ALTIVEC_VECTOR_MODE (TYPE_MODE (type)))
+	    {
+	      tree vtype = TREE_TYPE (valist);
+	      tree new_valist, modify;
+	      
+	      /* Round address up to multiple of 16.  Computes
+		 (addr+15)&~0xf.  */
+	      new_valist = fold (build (BIT_AND_EXPR, vtype,
+					fold (build (PLUS_EXPR, vtype, valist,
+						     build_int_2 (15, 0))),
+					build_int_2 (~15, -1)));
+
+	      /* Update valist.  */
+	      modify = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
+			      new_valist);
+	      TREE_SIDE_EFFECTS (modify) = 1;
+	      expand_expr (modify, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	    }
+	  
+	  return std_expand_builtin_va_arg (valist, type);
+	}
     }
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
