@@ -769,9 +769,10 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    reduce the impact of not being able to allocate a pseudo to a
    hard register.  */
 
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)				\
-  (TARGET_CIX || ((CLASS1) == FLOAT_REGS) == ((CLASS2) == FLOAT_REGS)	\
-   ? 2 : 4+2*alpha_memory_latency)
+#define REGISTER_MOVE_COST(CLASS1, CLASS2)		\
+  (((CLASS1) == FLOAT_REGS) == ((CLASS2) == FLOAT_REGS)	\
+   ? 2							\
+   : TARGET_CIX ? 3 : 4+2*alpha_memory_latency)
 
 /* A C expressions returning the cost of moving data of MODE from a register to
    or from memory.
@@ -1596,7 +1597,7 @@ extern void alpha_init_expanders ();
    our own exit function.  */
 #define HAVE_ATEXIT
 
-/* The EV4 is dual issue; EV5 is quad issue.  */
+/* The EV4 is dual issue; EV5/EV6 are quad issue.  */
 #define ISSUE_RATE  (alpha_cpu == PROCESSOR_EV4 ? 2 : 4)
 
 /* Compute the cost of computing a constant rtl expression RTX

@@ -24,7 +24,7 @@
 ;; Processor type -- this attribute must exactly match the processor_type
 ;; enumeration in alpha.h.
 
-(define_attr "cpu" "ev4,ev5"
+(define_attr "cpu" "ev4,ev5,ev6"
   (const (symbol_ref "alpha_cpu")))
 
 ;; Define an insn type attribute.  This is used in function unit delay
@@ -33,194 +33,319 @@
 ;; separately.
 
 (define_attr "type"
-  "ld,st,ibr,fbr,jsr,iadd,ilog,shift,cmov,icmp,imull,imulq,imulh,fadd,fmul,fcpys,fdivs,fdivt,ldsym,misc,mvi"
+  "ild,fld,ldsym,ist,fst,ibr,fbr,jsr,iadd,ilog,shift,icmov,fcmov,icmp,imul,fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof"
   (const_string "iadd"))
+
+(define_attr "opsize" "si,di,udi" (const_string "di"))
 
 ;; The TRAP_TYPE attribute marks instructions that may generate traps
 ;; (which are imprecise and may need a trapb if software completion
 ;; is desired).
 (define_attr "trap" "no,yes" (const_string "no"))
 
-;; For the EV4 we include four function units: ABOX, which computes
-;; the address, BBOX, used for branches, EBOX, used for integer
-;; operations, and FBOX, used for FP operations.
+
+;; On EV4 there are two classes of resources to consider: resources needed
+;; to issue, and resources needed to execute.  IBUS[01] are in the first
+;; category.  ABOX, BBOX, EBOX, FBOX, IMUL & FDIV make up the second.
+;; (There are are a few other register-like resources, but ...)
 
-;; Memory delivers its result in three cycles.  Actually return one and
-;; take care of this in adjust_cost, since we want to handle user-defined
-;; memory latencies.
-(define_function_unit "ev4_abox" 1 0
+; First, describe all of the issue constraints with single cycle delays.
+; All insns need a bus, but all except loads require one or the other.
+(define_function_unit "ev4_ibus0" 1 0
   (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "ld,ldsym,st"))
+       (eq_attr "type" "fst,fbr,iadd,imul,ilog,shift,icmov,icmp"))
   1 1)
 
-;; Branches have no delay cost, but do tie up the unit for two cycles.
+(define_function_unit "ev4_ibus1" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "ist,ibr,jsr,fadd,fcmov,fcpys,fmul,fdiv,misc"))
+  1 1)
+
+; Memory delivers its result in three cycles.  Actually return one and
+; take care of this in adjust_cost, since we want to handle user-defined
+; memory latencies.
+(define_function_unit "ev4_abox" 1 0
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "ild,fld,ldsym,ist,fst"))
+  1 1)
+
+; Branches have no delay cost, but do tie up the unit for two cycles.
 (define_function_unit "ev4_bbox" 1 1
   (and (eq_attr "cpu" "ev4")
        (eq_attr "type" "ibr,fbr,jsr"))
   2 2)
 
-;; Arithmetic insns are normally have their results available after
-;; two cycles.  There are a number of exceptions.  They are encoded in
-;; ADJUST_COST.  Some of the other insns have similar exceptions.
-
+; Arithmetic insns are normally have their results available after
+; two cycles.  There are a number of exceptions.  They are encoded in
+; ADJUST_COST.  Some of the other insns have similar exceptions.
 (define_function_unit "ev4_ebox" 1 0
   (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "iadd,ilog,shift,cmov,icmp"))
+       (eq_attr "type" "iadd,ilog,shift,icmov,icmp,misc"))
   2 1)
 
-;; These really don't take up the integer pipeline, but they do occupy
-;; IBOX1; we approximate here.
-
-(define_function_unit "ev4_ebox" 1 0
+(define_function_unit "imul" 1 0
   (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "imull"))
-  21 1)
-
-(define_function_unit "ev4_ebox" 1 0
-  (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "imulq,imulh"))
-  23 1)
-
-(define_function_unit "ev4_imult" 1 0
-  (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "imull"))
+       (and (eq_attr "type" "imul")
+	    (eq_attr "opsize" "si")))
   21 19)
 
-(define_function_unit "ev4_imult" 1 0
+(define_function_unit "imul" 1 0
   (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "imulq,imulh"))
+       (and (eq_attr "type" "imul")
+	    (eq_attr "opsize" "!si")))
   23 21)
 
 (define_function_unit "ev4_fbox" 1 0
   (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "fadd,fmul,fcpys"))
+       (eq_attr "type" "fadd,fmul,fcpys,fcmov"))
   6 1)
 
-(define_function_unit "ev4_fbox" 1 0
+(define_function_unit "fdiv" 1 0
   (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "fdivs"))
-  34 0)
-
-(define_function_unit "ev4_fbox" 1 0
-  (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "fdivt"))
-  63 0)
-
-(define_function_unit "ev4_divider" 1 0
-  (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "fdivs"))
+       (and (eq_attr "type" "fdiv")
+	    (eq_attr "opsize" "si")))
   34 30)
 
-(define_function_unit "ev4_divider" 1 0
+(define_function_unit "fdiv" 1 0
   (and (eq_attr "cpu" "ev4")
-       (eq_attr "type" "fdivt"))
-  64 59)
+       (and (eq_attr "type" "fdiv")
+	    (eq_attr "opsize" "di")))
+  63 59)
 
 ;; EV5 scheduling.  EV5 can issue 4 insns per clock.
-;; We consider the EV6 and EV5 for now.
-
-;; EV5 has two asymetric integer units.  Model this with ebox,e0,e1.
-;; Everything uses ebox, and those that require particular pipes grab
-;; those as well.
+;;
+;; EV5 has two asymetric integer units.  Model this with E0 & E1 along
+;; with the combined resource EBOX.
 
 (define_function_unit "ev5_ebox" 2 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "iadd,ilog,icmp,st,shift,imull,imulq,imulh,mvi"))
+       (eq_attr "type" "!fbr,fcmov,fadd,fmul,fcpys,fdiv"))
   1 1)
 
-;; Memory takes at least 2 clocks, and load cannot dual issue with stores.
-;; Return one from here and fix up with user-defined latencies in adjust_cost.
+; Memory takes at least 2 clocks.  Return one from here and fix up with
+; user-defined latencies in adjust_cost.
+; ??? How to: "An instruction of class LD cannot be issued in the _second_
+; cycle after an instruction of class ST is issued."
 (define_function_unit "ev5_ebox" 2 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "ld,ldsym"))
+       (eq_attr "type" "ild,fld,ldsym"))
   1 1)
 
+; Stores, shifts, multiplies can only issue to E0
 (define_function_unit "ev5_e0" 1 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "ld,ldsym"))
-  0 1
-  [(eq_attr "type" "st")])
-
-;; Conditional moves always take 2 ticks.
-(define_function_unit "ev5_ebox" 2 0
-  (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "cmov"))
-  2 1)
-
-;; Stores, shifts, multiplies can only issue to E0
-(define_function_unit "ev5_e0" 1 0
-  (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "st"))
+       (eq_attr "type" "ist,fst,shift,imul"))
   1 1)
 
-;; Motion video insns also issue only to E0, and take two ticks.
+; Motion video insns also issue only to E0, and take two ticks.
 (define_function_unit "ev5_e0" 1 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "mvi"))
   2 1)
 
-;; But shifts and multiplies don't conflict with loads.
-(define_function_unit "ev5_e0" 1 0
+; Conditional moves always take 2 ticks.
+(define_function_unit "ev5_ebox" 2 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "shift,imull,imulq,imulh,mvi"))
-  1 1
-  [(eq_attr "type" "st,shift,imull,imulq,imulh,mvi")])
+       (eq_attr "type" "icmov"))
+  2 1)
 
-;; Branches can only issue to E1
+; Branches can only issue to E1
 (define_function_unit "ev5_e1" 1 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "ibr,jsr"))
   1 1)
 
-;; Multiplies also use the integer multiplier.
-(define_function_unit "ev5_imult" 1 0
+; Multiplies also use the integer multiplier.
+; ??? How to: "No instruction can be issued to pipe E0 exactly two
+; cycles before an integer multiplication completes."
+(define_function_unit "imul" 1 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "imull"))
+       (and (eq_attr "type" "imul")
+	    (eq_attr "opsize" "si")))
   8 4)
 
-(define_function_unit "ev5_imult" 1 0
+(define_function_unit "imul" 1 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "imulq"))
+       (and (eq_attr "type" "imul")
+	    (eq_attr "opsize" "di")))
   12 8)
 
-(define_function_unit "ev5_imult" 1 0
+(define_function_unit "imul" 1 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "imulh"))
+       (and (eq_attr "type" "imul")
+	    (eq_attr "opsize" "udi")))
   14 8)
 
 ;; Similarly for the FPU we have two asymetric units.  But fcpys can issue
 ;; on either so we have to play the game again.
 
-(define_function_unit "ev5_fpu" 2 0
+(define_function_unit "ev5_fbox" 2 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "fadd,fmul,fcpys,fbr,fdivs,fdivt"))
+       (eq_attr "type" "fadd,fcmov,fmul,fcpys,fbr,fdiv"))
   4 1)
   
-;; Multiplies (resp. adds) also use the fmul (resp. fadd) units.
 (define_function_unit "ev5_fm" 1 0
   (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "fmul"))
   4 1)
 
+; Add and cmov as you would expect; fbr never produces a result;
+; fdiv issues through fa to the divider, 
 (define_function_unit "ev5_fa" 1 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "fadd"))
+       (eq_attr "type" "fadd,fcmov,fbr,fdiv"))
   4 1)
 
-(define_function_unit "ev5_fa" 1 0
+; ??? How to: "No instruction can be issued to pipe FA exactly five
+; cycles before a floating point divide completes."
+(define_function_unit "fdiv" 1 0
   (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "fbr"))
+       (and (eq_attr "type" "fdiv")
+	    (eq_attr "opsize" "si")))
+  15 15)				; 15 to 31 data dependant
+
+(define_function_unit "fdiv" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (and (eq_attr "type" "fdiv")
+	    (eq_attr "opsize" "di")))
+  22 22)				; 22 to 60 data dependant
+
+;; EV6 scheduling.  EV6 can issue 4 insns per clock.
+;;
+;; EV6 has two symmetric pairs ("clusters") of two asymetric integer units
+;; ("upper" and "lower"), yielding pipe names U0, U1, L0, L1.
+
+;; Conditional moves decompose into two independant primitives, each 
+;; taking one cycle.  Since ev6 is out-of-order, we can't see anything
+;; but two cycles.
+(define_function_unit "ev6_ebox" 4 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "icmov"))
+  2 1)
+
+(define_function_unit "ev6_ebox" 4 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "!fbr,fcmov,fadd,fmul,fcpys,fdiv,fsqrt"))
   1 1)
 
-(define_function_unit "ev5_fa" 1 0
-  (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "fdivs"))
-  15 1)
+;; Integer loads take at least 3 clocks, and only issue to lower units.
+;; Return one from here and fix up with user-defined latencies in adjust_cost.
+(define_function_unit "ev6_l" 2 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "ild,ldsym,ist,fst"))
+  1 1)
 
-(define_function_unit "ev5_fa" 1 0
-  (and (eq_attr "cpu" "ev5")
-       (eq_attr "type" "fdivt"))
-  22 1)
+;; FP loads take at least 4 clocks.  Return two from here...
+(define_function_unit "ev6_l" 2 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "fld"))
+  2 1)
+
+;; Motion video insns also issue only to U0, and take three ticks.
+(define_function_unit "ev6_u0" 1 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "mvi"))
+  3 1)
+
+(define_function_unit "ev6_u" 2 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "mvi"))
+  3 1)
+
+;; Shifts issue to either upper pipe.
+(define_function_unit "ev6_u" 2 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "shift"))
+  1 1)
+
+;; Multiplies issue only to U1, and all take 7 ticks.
+;; Rather than create a new function unit just for U1, reuse IMUL
+(define_function_unit "imul" 1 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "imul"))
+  7 1)
+
+(define_function_unit "ev6_u" 2 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "imul"))
+  7 1)
+
+;; Branches issue to either upper pipe
+(define_function_unit "ev6_u" 2 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "ibr"))
+  3 1)
+
+;; Calls only issue to L0.
+(define_function_unit "ev6_l0" 1 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "jsr"))
+  1 1)
+
+(define_function_unit "ev6_l" 2 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "jsr"))
+  1 1)
+
+;; Ftoi/itof only issue to lower pipes
+(define_function_unit "ev6_l" 2 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "ftoi"))
+  3 1)
+
+(define_function_unit "ev6_l" 2 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "itof"))
+  4 1)
+
+;; For the FPU we are very similar to EV5, except there's no insn that
+;; can issue to fm & fa, so we get to leave that out.
+  
+(define_function_unit "ev6_fm" 1 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "fmul"))
+  4 1)
+
+(define_function_unit "ev6_fa" 1 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "fadd,fcpys,fbr,fdiv,fsqrt"))
+  4 1)
+
+(define_function_unit "ev6_fa" 1 0
+  (and (eq_attr "cpu" "ev6")
+       (eq_attr "type" "fcmov"))
+  8 1)
+
+(define_function_unit "fdiv" 1 0
+  (and (eq_attr "cpu" "ev6")
+       (and (eq_attr "type" "fdiv")
+	    (eq_attr "opsize" "si")))
+  12 10)
+
+(define_function_unit "fdiv" 1 0
+  (and (eq_attr "cpu" "ev6")
+       (and (eq_attr "type" "fdiv")
+	    (eq_attr "opsize" "di")))
+  15 13)
+
+(define_function_unit "fsqrt" 1 0
+  (and (eq_attr "cpu" "ev6")
+       (and (eq_attr "type" "fsqrt")
+	    (eq_attr "opsize" "si")))
+  16 14)
+
+(define_function_unit "fsqrt" 1 0
+  (and (eq_attr "cpu" "ev6")
+       (and (eq_attr "type" "fsqrt")
+	    (eq_attr "opsize" "di")))
+  32 30)
+
+; ??? The FPU communicates with memory and the integer register file
+; via two fp store units.  We need a slot in the fst immediately, and
+; a slot in LOW after the operand data is ready.  At which point the
+; data may be movedeither to the store queue or the integer register
+; file and the insn retired.
+
 
 ;; First define the arithmetic insns.  Note that the 32-bit forms also
 ;; sign-extend.
@@ -238,7 +363,7 @@
    addl %1,$31,%0
    ldl %0,%1
    cvtql %1,%0\;cvtlq %0,%0"
-  [(set_attr "type" "iadd,ld,fadd")])
+  [(set_attr "type" "iadd,ild,fadd")])
 
 ;; Do addsi3 the way expand_binop would do if we didn't have one.  This
 ;; generates better code.  We have the anonymous addsi3 pattern below in
@@ -595,7 +720,8 @@
 		 (match_operand:SI 2 "reg_or_0_operand" "rJ")))]
   ""
   "mull %r1,%r2,%0"
-  [(set_attr "type" "imull")])
+  [(set_attr "type" "imul")
+   (set_attr "opsize" "si")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -603,7 +729,8 @@
 				 (match_operand:SI 2 "reg_or_0_operand" "rJ"))))]
   ""
   "mull %r1,%r2,%0"
-  [(set_attr "type" "imull")])
+  [(set_attr "type" "imul")
+   (set_attr "opsize" "si")])
 
 (define_insn "muldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -611,7 +738,7 @@
 		 (match_operand:DI 2 "reg_or_0_operand" "rJ")))]
   ""
   "mulq %r1,%r2,%0"
-  [(set_attr "type" "imulq")])
+  [(set_attr "type" "imul")])
 
 (define_insn "umuldi3_highpart"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -622,7 +749,8 @@
 	  (const_int 64))))]
   ""
   "umulh %1,%2,%0"
-  [(set_attr "type" "imulh")])
+  [(set_attr "type" "imul")
+   (set_attr "opsize" "udi")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -633,7 +761,8 @@
 	  (const_int 64))))]
   ""
   "umulh %1,%2,%0"
-  [(set_attr "type" "imulh")])
+  [(set_attr "type" "imul")
+   (set_attr "opsize" "udi")])
 
 ;; The divide and remainder operations always take their inputs from
 ;; r24 and r25, put their output in r27, and clobber r23 and r28.
@@ -824,7 +953,7 @@
   "@
    and %1,255,%0
    ldbu %0,%1"
-  [(set_attr "type" "ilog,ld")])
+  [(set_attr "type" "ilog,ild")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -846,7 +975,7 @@
   "@
    and %1,255,%0
    ldbu %0,%1"
-  [(set_attr "type" "ilog,ld")])
+  [(set_attr "type" "ilog,ild")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -868,7 +997,7 @@
   "@
    zapnot %1,3,%0
    ldwu %0,%1"
-  [(set_attr "type" "shift,ld")])
+  [(set_attr "type" "shift,ild")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -890,7 +1019,7 @@
   "@
    zapnot %1,3,%0
    ldwu %0,%1"
-  [(set_attr "type" "shift,ld")])
+  [(set_attr "type" "shift,ild")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -985,7 +1114,9 @@
 	(unspec [(match_operand:DI 1 "register_operand" "r")] 1))]
   "TARGET_CIX"
   "cttz %1,%0"
-  [(set_attr "type" "shift")])
+  ; ev6 calls all mvi and cttz/ctlz/popc class imisc, so just 
+  ; reuse the existing type name.
+  [(set_attr "type" "mvi")])
 
 ;; Next come the shifts and the various extract and insert operations.
 
@@ -1619,7 +1750,7 @@
    cpys %1,%1,%0
    ld%, %0,%1
    st%- %1,%0"
-  [(set_attr "type" "fcpys,ld,st")
+  [(set_attr "type" "fcpys,fld,fst")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1644,7 +1775,8 @@
 		(match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
   "div%,%)%& %R1,%R2,%0"
-  [(set_attr "type" "fdivs")
+  [(set_attr "type" "fdiv")
+   (set_attr "opsize" "si")
    (set_attr "trap" "yes")])
 
 (define_insn "divsf3"
@@ -1653,7 +1785,8 @@
 		(match_operand:SF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "div%,%)%& %R1,%R2,%0"
-  [(set_attr "type" "fdivs")
+  [(set_attr "type" "fdiv")
+   (set_attr "opsize" "si")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1662,7 +1795,7 @@
 		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
   "div%-%)%& %R1,%R2,%0"
-  [(set_attr "type" "fdivt")
+  [(set_attr "type" "fdiv")
    (set_attr "trap" "yes")])
 
 (define_insn "divdf3"
@@ -1671,7 +1804,7 @@
 		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
   "div%-%)%& %R1,%R2,%0"
-  [(set_attr "type" "fdivt")
+  [(set_attr "type" "fdiv")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1680,7 +1813,7 @@
 		(match_operand:DF 2 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
   "div%-%)%& %R1,%R2,%0"
-  [(set_attr "type" "fdivt")
+  [(set_attr "type" "fdiv")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1690,7 +1823,7 @@
 		 (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
   "div%-%)%& %R1,%R2,%0"
-  [(set_attr "type" "fdivt")
+  [(set_attr "type" "fdiv")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1699,7 +1832,7 @@
 		(float_extend:DF (match_operand:SF 2 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
   "div%-%)%& %R1,%R2,%0"
-  [(set_attr "type" "fdivt")
+  [(set_attr "type" "fdiv")
    (set_attr "trap" "yes")])
 
 (define_insn ""
@@ -1826,29 +1959,38 @@
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=&f")
+	(sqrt:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && TARGET_CIX && alpha_tp == ALPHA_TP_INSN"
+  "sqrt%,%)%& %R1,%0"
+  [(set_attr "type" "fsqrt")
+   (set_attr "opsize" "si")
+   (set_attr "trap" "yes")])
+
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(sqrt:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && TARGET_CIX"
-  "sqrt%, %1,%0"
-  [(set_attr "type" "fdivs")
+  "sqrt%,%)%& %R1,%0"
+  [(set_attr "type" "fsqrt")
+   (set_attr "opsize" "si")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=&f")
+	(sqrt:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && TARGET_CIX && alpha_tp == ALPHA_TP_INSN"
+  "sqrt%-%)%& %R1,%0"
+  [(set_attr "type" "fsqrt")
    (set_attr "trap" "yes")])
 
 (define_insn "sqrtdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(sqrt:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP && TARGET_CIX"
-  "sqrt%- %1,%0"
-  [(set_attr "type" "fdivt")
-   (set_attr "trap" "yes")])
-
-(define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(sqrt:DF (float_extend:DF
-		  (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
-  "TARGET_FP && TARGET_CIX&& alpha_tp != ALPHA_TP_INSN"
-  "sqrt%- %1,%0"
-  [(set_attr "type" "fdivt")
+  "sqrt%-%)%& %1,%0"
+  [(set_attr "type" "fsqrt")
    (set_attr "trap" "yes")])
 
 ;; Next are all the integer comparisons, and conditional moves and branches
@@ -1889,7 +2031,7 @@
    cmov%D2 %r3,%5,%0
    cmov%c2 %r4,%1,%0
    cmov%d2 %r4,%5,%0"
-  [(set_attr "type" "cmov")])
+  [(set_attr "type" "icmov")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
@@ -1905,7 +2047,7 @@
    cmov%D2 %r3,%5,%0
    cmov%c2 %r4,%1,%0
    cmov%d2 %r4,%5,%0"
-  [(set_attr "type" "cmov")])
+  [(set_attr "type" "icmov")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -1920,7 +2062,7 @@
   "@
    cmovlbc %r2,%1,%0
    cmovlbs %r2,%3,%0"
-  [(set_attr "type" "cmov")])
+  [(set_attr "type" "icmov")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -1935,7 +2077,7 @@
   "@
    cmovlbs %r2,%1,%0
    cmovlbc %r2,%3,%0"
-  [(set_attr "type" "cmov")])
+  [(set_attr "type" "icmov")])
 
 ;; This form is added since combine thinks that an IF_THEN_ELSE with both
 ;; arms constant is a single insn, so it won't try to form it if combine
@@ -1954,7 +2096,7 @@
    (clobber (match_scratch:DI 4 "=&r"))]
   ""
   "addq %0,%1,%4\;cmov%C2 %r3,%4,%0"
-  [(set_attr "type" "cmov")])
+  [(set_attr "type" "icmov")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -2165,7 +2307,7 @@
 		 (const_int 0)))]
   ""
   "cmovlt %0,0,%0"
-  [(set_attr "type" "cmov")])
+  [(set_attr "type" "icmov")])
 
 (define_expand "smindi3"
   [(set (match_dup 3)
@@ -2196,7 +2338,7 @@
 		 (const_int 0)))]
   ""
   "cmovgt %0,0,%0"
-  [(set_attr "type" "cmov")])
+  [(set_attr "type" "icmov")])
 
 (define_expand "umaxdi3"
   [(set (match_dup 3) 
@@ -2389,7 +2531,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fadd")])
+  [(set_attr "type" "fcmov")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
@@ -2403,7 +2545,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fadd")])
+  [(set_attr "type" "fcmov")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f,f")
@@ -2417,7 +2559,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fadd")])
+  [(set_attr "type" "fcmov")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f,f")
@@ -2431,7 +2573,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fadd")])
+  [(set_attr "type" "fcmov")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
@@ -2445,7 +2587,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fadd")])
+  [(set_attr "type" "fcmov")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
@@ -2460,7 +2602,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fadd")])
+  [(set_attr "type" "fcmov")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f,f")
@@ -2475,7 +2617,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fadd")])
+  [(set_attr "type" "fcmov")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
@@ -2490,7 +2632,7 @@
   "@
    fcmov%C3 %R4,%R1,%0
    fcmov%D3 %R4,%R5,%0"
-  [(set_attr "type" "fadd")])
+  [(set_attr "type" "fcmov")])
 
 (define_expand "maxdf3"
   [(set (match_dup 3)
@@ -3687,7 +3829,7 @@
 ;; want to have to include pal.h in our .s file.
 ;;
 ;; Technically the type for call_pal is jsr, but we use that for determining
-;; if we need a GP.  Use ibr instead since it has the same scheduling 
+;; if we need a GP.  Use ibr instead since it has the same EV5 scheduling
 ;; characteristics.
 (define_insn ""
   [(unspec_volatile [(const_int 0)] 0)]
@@ -3702,8 +3844,9 @@
 (define_insn ""
   [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m,f,f,f,m")
 	(match_operand:SF 1 "input_operand" "rG,m,rG,f,G,m,fG"))]
-  "register_operand (operands[0], SFmode)
-   || reg_or_fp0_operand (operands[1], SFmode)"
+  "! TARGET_CIX
+   && (register_operand (operands[0], SFmode)
+       || reg_or_fp0_operand (operands[1], SFmode))"
   "@
    bis %r1,%r1,%0
    ldl %0,%1
@@ -3712,13 +3855,32 @@
    cpys $f31,$f31,%0
    ld%, %0,%1
    st%, %R1,%0"
-  [(set_attr "type" "ilog,ld,st,fcpys,fcpys,ld,st")])
+  [(set_attr "type" "ilog,ild,ist,fcpys,fcpys,fld,fst")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m,f,f,f,m,f,*r")
+	(match_operand:SF 1 "input_operand" "rG,m,rG,f,G,m,fG,r,*f"))]
+  "TARGET_CIX
+   && (register_operand (operands[0], SFmode)
+       || reg_or_fp0_operand (operands[1], SFmode))"
+  "@
+   bis %r1,%r1,%0
+   ldl %0,%1
+   stl %r1,%0
+   cpys %1,%1,%0
+   cpys $f31,$f31,%0
+   ld%, %0,%1
+   st%, %R1,%0
+   itofs %1,%0
+   ftois %1,%0"
+  [(set_attr "type" "ilog,ild,ist,fcpys,fcpys,fld,fst,itof,ftoi")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m,f,f,f,m")
 	(match_operand:DF 1 "input_operand" "rG,m,rG,f,G,m,fG"))]
-  "register_operand (operands[0], DFmode)
-   || reg_or_fp0_operand (operands[1], DFmode)"
+  "! TARGET_CIX
+   && (register_operand (operands[0], DFmode)
+       || reg_or_fp0_operand (operands[1], DFmode))"
   "@
    bis %r1,%r1,%0
    ldq %0,%1
@@ -3727,7 +3889,25 @@
    cpys $f31,$f31,%0
    ld%- %0,%1
    st%- %R1,%0"
-  [(set_attr "type" "ilog,ld,st,fcpys,fcpys,ld,st")])
+  [(set_attr "type" "ilog,ild,ist,fcpys,fcpys,fld,fst")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m,f,f,f,m,f,*r")
+	(match_operand:DF 1 "input_operand" "rG,m,rG,f,G,m,fG,r,*f"))]
+  "TARGET_CIX
+   && (register_operand (operands[0], DFmode)
+       || reg_or_fp0_operand (operands[1], DFmode))"
+  "@
+   bis %r1,%r1,%0
+   ldq %0,%1
+   stq %r1,%0
+   cpys %1,%1,%0
+   cpys $f31,$f31,%0
+   ld%- %0,%1
+   st%- %R1,%0
+   itoft %1,%0
+   ftoit %1,%0"
+  [(set_attr "type" "ilog,ild,ist,fcpys,fcpys,fld,fst,itof,ftoi")])
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "nonimmediate_operand" "")
@@ -3769,11 +3949,11 @@
    cpys $f31,$f31,%0
    ld%, %0,%1
    st%, %R1,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ld,st,fcpys,fcpys,ld,st")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ild,ist,fcpys,fcpys,fld,fst")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,f,f,f,m,r,f")
-	(match_operand:SI 1 "input_operand" "r,J,I,K,L,m,rJ,f,J,m,fG,f,r"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,f,f,f,m,r,*f")
+	(match_operand:SI 1 "input_operand" "r,J,I,K,L,m,rJ,f,J,m,fG,f,*r"))]
   "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && TARGET_CIX
    && (register_operand (operands[0], SImode)
        || reg_or_0_operand (operands[1], SImode))"
@@ -3790,8 +3970,8 @@
    ld%, %0,%1
    st%, %R1,%0
    ftois %1,%0
-   itof%, %1,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ld,st,fcpys,fcpys,ld,st,ld,st")])
+   itofs %1,%0"
+  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ild,ist,fcpys,fcpys,fld,fst,ftoi,itof")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,r,m,f,f,f,m")
@@ -3812,7 +3992,7 @@
    cpys $f31,$f31,%0
    ld%, %0,%1
    st%, %R1,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ld,st,fcpys,fcpys,ld,st")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ild,ist,fcpys,fcpys,fld,fst")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
@@ -3844,7 +4024,7 @@
    stw %r1,%0
    cpys %1,%1,%0
    cpys $f31,$f31,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,ld,st,fcpys,fcpys")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,ild,ist,fcpys,fcpys")])
 
 (define_insn ""
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
@@ -3876,7 +4056,7 @@
    stb %r1,%0
    cpys %1,%1,%0
    cpys $f31,$f31,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,ld,st,fcpys,fcpys")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,ild,ist,fcpys,fcpys")])
 
 ;; We do two major things here: handle mem->mem and construct long
 ;; constants.
@@ -3940,11 +4120,11 @@
    cpys $f31,$f31,%0
    ldt %0,%1
    stt %R1,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ld,st,fcpys,fcpys,ld,st")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ild,ist,fcpys,fcpys,fld,fst")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,r,r,r,m,f,f,f,Q,r,f")
-	(match_operand:DI 1 "input_operand" "r,J,I,K,L,s,m,rJ,f,J,Q,fG,f,r"))]
+  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,r,r,r,m,f,f,f,Q,r,*f")
+	(match_operand:DI 1 "input_operand" "r,J,I,K,L,s,m,rJ,f,J,Q,fG,f,*r"))]
   "TARGET_CIX
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
@@ -3963,7 +4143,7 @@
    stt %R1,%0
    ftoit %1,%0
    itoft %1,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ld,st,fcpys,fcpys,ld,st,ld,st")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ild,ist,fcpys,fcpys,fld,fst,ftoi,itof")])
 
 ;; We do three major things here: handle mem->mem, put 64-bit constants in
 ;; memory, and construct long 32-bit constants.

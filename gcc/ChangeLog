@@ -1,3 +1,35 @@
+Tue Dec 23 05:17:28 1997  Richard Henderson  <rth@cygnus.com>
+
+	* genattrtab.c (expand_units): For large nr opclasses, expand
+	function_units_used with ORX to prevent blowups.  Tag with FFS.
+	(num_unit_opclasses): New variable.
+	(gen_unit): Update it.
+	(enum operator): Add ORX_OP.
+	(operate_exp): Treat ORX as or, except don't expand across an if.
+	Reuse number rtx's after operating on them.
+	(check_attr_value): Accept IOR, AND, & FFS.
+	(write_test_expr): Transmute `in_comparison' to `flags'.  Allow
+	for attribute value caching.  Handle CONST_STRING, IF_THEN_ELSE.
+	(write_expr_attr_cache, write_toplevel_expr): New functions.
+	(write_attr_get): Handle FFS-tagged expressions.
+	(make_canonical): Don't expand const attributes.
+	(convert_const_symbol_ref): Dike out.
+	(evaluate_eq_attr): Handle SYMBOL_REF.
+	(main): Don't emit get_attr_foo for const attributes.
+
+	* alpha.c (override_options): Reinstate PROCESSOR_EV6.
+	(alpha_adjust_cost): Add EV6 tuning; streamline EV5 tests.
+	* alpha.h (REGISTER_MOVE_COST): Increase ftoi/itof cost slightly.
+	* alpha.md: Redo all of the scheduling, adding EV6 support, and 
+	combining function units where possible.  
+	(attr "type"): Split loads, stores, cmov into int/fp.  Combine
+	multiplies and divides.  Add EV6 sqrt, ftoi, itof.
+	(attr "opsize"): New attribute.
+	(sqrtsf2-1, sqrtdf2-1): Provide proper TP_INSN patterns.
+	(movsf2-[12], movdf2-[12]): Provide CIX varients; don't allow CIX
+	to control register allocation.
+	(movsi2-1, movdi2-1): Likewise.
+
 Tue Dec 23 03:53:21 1997  Richard Henderson  <rth@cygnus.com>
 	
 	* alpha.h (CPP_PREDEFINES, LIB_SPEC, LINK_SPEC, STARTFILE_SPEC,
