@@ -322,7 +322,8 @@ input_operand (op, mode)
     case LABEL_REF:
     case SYMBOL_REF:
     case CONST:
-      return mode == DImode;
+        /* This handles both the Windows/NT and OSF cases.  */
+      return mode == ptr_mode || mode == DImode;
 
     case REG:
       return 1;
@@ -1209,7 +1210,7 @@ direct_return ()
 /* Write a version stamp.  Don't write anything if we are running as a
    cross-compiler.  Otherwise, use the versions in /usr/include/stamp.h.  */
 
-#ifndef CROSS_COMPILE
+#if !defined(CROSS_COMPILE) && !defined(WINNT)
 #include <stamp.h>
 #endif
 
