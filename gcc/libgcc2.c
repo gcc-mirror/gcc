@@ -3367,11 +3367,41 @@ EH_TABLE_LOOKUP
    an inner block.  */
 
 static void *
+old_find_exception_handler (void *pc, old_exception_table *table)
+{
+  if (table)
+    {
+      int pos;
+      int best = -1;
+
+      /* We can't do a binary search because the table isn't guaranteed
+         to be sorted from function to function.  */
+      for (pos = 0; table[pos].start_region != (void *) -1; ++pos)
+        {
+          if (table[pos].start_region <= pc && table[pos].end_region > pc)
+            {
+              /* This can apply.  Make sure it is at least as small as
+                 the previous best.  */
+              if (best == -1 || (table[pos].end_region <= table[best].end_region
+                        && table[pos].start_region >= table[best].start_region))
+                best = pos;
+            }
+          /* But it is sorted by starting PC within a function.  */
+          else if (best >= 0 && table[pos].start_region > pc)
+            break;
+        }
+      if (best != -1)
+        return table[best].exception_handler;
+    }
+
+  return (void *) 0;
+}
+
+static void *
 find_exception_handler (void *pc, exception_descriptor *table, void *eh_info)
 {
   if (table)
     {
-#ifdef NEW_EH_MODEL
       /* The new model assumed the table is sorted inner-most out so the
          first region we find which matches is the correct one */
 
@@ -3406,29 +3436,6 @@ find_exception_handler (void *pc, exception_descriptor *table, void *eh_info)
                 return tab[pos].exception_handler;
             }
         }
-#else
-      int pos;
-      int best = -1;
-
-      /* We can't do a binary search because the table isn't guaranteed
-         to be sorted from function to function.  */
-      for (pos = 0; table[pos].start_region != (void *) -1; ++pos)
-        {
-          if (table[pos].start_region <= pc && table[pos].end_region > pc)
-            {
-              /* This can apply.  Make sure it is at least as small as
-                 the previous best.  */
-              if (best == -1 || (table[pos].end_region <= table[best].end_region
-                        && table[pos].start_region >= table[best].start_region))
-                best = pos;
-            }
-          /* But it is sorted by starting PC within a function.  */
-          else if (best >= 0 && table[pos].start_region > pc)
-            break;
-        }
-      if (best != -1)
-        return table[best].exception_handler;
-#endif
     }
 
   return (void *) 0;
@@ -3568,6 +3575,7 @@ __throw ()
   frame_state *sub_udata = &ustruct2;
   frame_state my_ustruct, *my_udata = &my_ustruct;
   long args_size;
+  int new_exception_model;
 
   /* This is required for C++ semantics.  We must call terminate if we
      try and rethrow an exception, when there is no exception currently
@@ -3611,7 +3619,16 @@ label:
       if (! udata)
 	break;
 
-      handler = find_exception_handler (pc, udata->eh_ptr, eh->info);
+      if (udata->eh_ptr == NULL)
+        new_exception_model = 0;
+      else
+        new_exception_model = (((exception_descriptor *)(udata->eh_ptr))->
+                                          runtime_id_field == NEW_EH_RUNTIME);
+
+      if (new_exception_model)
+        handler = find_exception_handler (pc, udata->eh_ptr, eh->info);
+      else
+        handler = old_find_exception_handler (pc, udata->eh_ptr);
 
       /* If we found one, we can stop searching.  */
       if (handler)
@@ -3630,9 +3647,7 @@ label:
   if (! handler)
     __terminate ();
 
-#ifdef NEW_EH_MODEL
   eh->handler_label = handler;
-#endif
 
   if (pc == saved_pc)
     /* We found a handler in the throw context, no need to unwind.  */
@@ -3691,7 +3706,10 @@ label:
   /* udata now refers to the frame called by the handler frame.  */
 
   /* Emit the stub to adjust sp and jump to the handler.  */
-  retaddr = __builtin_eh_stub ();
+  if (new_exception_model)
+    retaddr = __builtin_eh_stub ();
+  else
+    retaddr =  __builtin_eh_stub_old ();
 
   /* And then set our return address to point to the stub.  */
   if (my_udata->saved[my_udata->retaddr_column] == REG_SAVED_OFFSET)
@@ -3702,19 +3720,23 @@ label:
   /* Set up the registers we use to communicate with the stub.
      We check STACK_GROWS_DOWNWARD so the stub can use adjust_stack.  */
 
-#ifdef NEW_EH_MODEL
-  __builtin_set_eh_regs ((void *)eh,
+  if (new_exception_model)
+    __builtin_set_eh_regs ((void *)eh,
+#ifdef STACK_GROWS_DOWNWARD
+			 udata->cfa - my_udata->cfa
 #else
-  __builtin_set_eh_regs (handler,
+			 my_udata->cfa - udata->cfa
 #endif
+			 + args_size);
+  else
+    __builtin_set_eh_regs (handler,
 
 #ifdef STACK_GROWS_DOWNWARD
 			 udata->cfa - my_udata->cfa
 #else
 			 my_udata->cfa - udata->cfa
 #endif
-			 + args_size
-			 );
+			 + args_size);
 
   /* Epilogue:  restore the handler frame's register values and return
      to the stub.  */

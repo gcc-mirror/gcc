@@ -149,12 +149,8 @@ extern int doing_eh				       PROTO ((int));
 
 /* Toplevel initialization for EH.  */
 
-#ifdef NEW_EH_MODEL
-
 void set_exception_lang_code                    PROTO((short));
 void set_exception_version_code                 PROTO((short));
-
-#endif
 
 /* A list of handlers asocciated with an exception region. HANDLER_LABEL
    is the the label that control should be transfered to if the data
@@ -381,6 +377,7 @@ extern void expand_fixup_region_end	PROTO((tree));
 void expand_builtin_unwind_init		PROTO((void));
 rtx expand_builtin_dwarf_fp_regnum	PROTO((void));
 rtx expand_builtin_eh_stub		PROTO((void));
+rtx expand_builtin_eh_stub_old          PROTO((void));
 #ifdef TREE_CODE
 rtx expand_builtin_frob_return_addr	PROTO((tree));
 rtx expand_builtin_extract_return_addr	PROTO((tree));

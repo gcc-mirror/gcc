@@ -1,3 +1,16 @@
+1998-06-08  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* except.c (init_exception_processing): Remove NEW_EH_MODEL compile 
+	time flag.  Call __cp_eh_info instead of __cp_exception_info.
+	* exception.cc (struct cp_eh_info): Remove NEW_EH_MODEL flag.
+	(__cp_exception_info): Return offset into cp_eh_info structure to 
+	match what use to be the start of this structure.
+	(__cp_eh_info): New function to return a pointer to cp_eh_info struct.
+	(__cplus_type_matcher, __cp_push_exception): Remove NEW_EH_MODEL
+	compile time flag.
+	(__uncatch_exception, __check_eh_spec, std::uncaught_exception): Call 
+	__cp_eh_info instead of __cp_exception_info.
+
 1998-06-08  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (cp_finish_decl): Disable inlining of extern inlines

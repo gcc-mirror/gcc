@@ -8954,6 +8954,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_SET_RETURN_ADDR_REG:
       expand_builtin_set_return_addr_reg (TREE_VALUE (arglist));
       return const0_rtx;
+    case BUILT_IN_EH_STUB_OLD:
+      return expand_builtin_eh_stub_old ();
     case BUILT_IN_EH_STUB:
       return expand_builtin_eh_stub ();
     case BUILT_IN_SET_EH_REGS:

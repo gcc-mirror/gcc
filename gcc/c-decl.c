@@ -3260,6 +3260,8 @@ init_decl_processing ()
 						    ptr_type_node,
 						    endlink)),
 		    BUILT_IN_SET_RETURN_ADDR_REG, NULL_PTR);
+  builtin_function ("__builtin_eh_stub_old", ptr_ftype_void,
+		    BUILT_IN_EH_STUB_OLD, NULL_PTR);
   builtin_function ("__builtin_eh_stub", ptr_ftype_void,
 		    BUILT_IN_EH_STUB, NULL_PTR);
   builtin_function

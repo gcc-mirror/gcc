@@ -203,10 +203,8 @@ init_exception_processing ()
 
   push_lang_context (lang_name_c);
 
-#ifdef NEW_EH_MODEL
   set_exception_lang_code (EH_LANG_C_plus_plus);
   set_exception_version_code (1);
-#endif
 
   CatchMatch
     = builtin_function (flag_rtti
@@ -245,25 +243,20 @@ call_eh_info ()
 {
   tree fn;
 
-  fn = get_identifier ("__cp_exception_info");
+  fn = get_identifier ("__cp_eh_info");
   if (IDENTIFIER_GLOBAL_VALUE (fn))
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
-#ifdef NEW_EH_MODEL
-      tree t1;
-#endif
-      tree t, fields[7];
-      int fo = 0;
+      tree t1, t, fields[7];
 
-      /* Declare cp_eh_info * __cp_exception_info (void),
+      /* Declare cp_eh_info * __cp_eh_info (void),
 	 as defined in exception.cc. */
       push_obstacks_nochange ();
       end_temporary_allocation ();
 
       /* struct cp_eh_info.  This must match exception.cc.  Note that this
 	 type is not pushed anywhere.  */
-#ifdef NEW_EH_MODEL
       t1= make_lang_type (RECORD_TYPE);
       fields[0] = build_lang_field_decl (FIELD_DECL, 
                     get_identifier ("handler_label"), ptr_type_node);
@@ -288,31 +281,27 @@ call_eh_info ()
       /* N.B.: The fourth field LEN is expected to be
 	 the number of fields - 1, not the total number of fields.  */
       finish_builtin_type (t1, "__eh_info", fields, 3, ptr_type_node);
-      fo = 1;
-#endif
       t = make_lang_type (RECORD_TYPE);
-#ifdef NEW_EH_MODEL
-      fields[0] = build_lang_field_decl (FIELD_DECL, get_identifier ("eh_info"),
-					 t1);
-#endif
-      fields[0+fo] = build_lang_field_decl (FIELD_DECL, get_identifier ("value"),
+      fields[0] = build_lang_field_decl (FIELD_DECL, 
+                                              get_identifier ("eh_info"), t1);
+      fields[1] = build_lang_field_decl (FIELD_DECL, get_identifier ("value"),
 					 ptr_type_node);
-      fields[1+fo] = build_lang_field_decl (FIELD_DECL, get_identifier ("type"),
+      fields[2] = build_lang_field_decl (FIELD_DECL, get_identifier ("type"),
 					 ptr_type_node);
-      fields[2+fo] = build_lang_field_decl
+      fields[3] = build_lang_field_decl
 	(FIELD_DECL, get_identifier ("cleanup"),
 	 build_pointer_type (build_function_type
 			     (ptr_type_node, tree_cons
 			      (NULL_TREE, ptr_type_node, void_list_node))));
-      fields[3+fo] = build_lang_field_decl (FIELD_DECL, get_identifier ("caught"),
+      fields[4] = build_lang_field_decl (FIELD_DECL, get_identifier ("caught"),
 					 boolean_type_node);
-      fields[4+fo] = build_lang_field_decl (FIELD_DECL, get_identifier ("next"),
+      fields[5] = build_lang_field_decl (FIELD_DECL, get_identifier ("next"),
 					 build_pointer_type (t));
-      fields[5+fo] = build_lang_field_decl
+      fields[6] = build_lang_field_decl
 	(FIELD_DECL, get_identifier ("handlers"), long_integer_type_node);
       /* N.B.: The fourth field LEN is expected to be
 	 the number of fields - 1, not the total number of fields.  */
-      finish_builtin_type (t, "cp_eh_info", fields, 5+fo, ptr_type_node);
+      finish_builtin_type (t, "cp_eh_info", fields, 6, ptr_type_node);
       t = build_pointer_type (t);
 
       /* And now the function.  */
