@@ -253,6 +253,7 @@ case "${host}" in
   mips*-*-linux*)
     atomicity_dir="cpu/mips"
     abi_baseline_pair="mips-linux-gnu"
+    cpu_include_dir="cpu/mips"
     ;;
   sparc*-*-freebsd5*)
     abi_baseline_pair="sparc-freebsd5"
