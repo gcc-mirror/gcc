@@ -2984,8 +2984,10 @@ store_constructor (exp, target)
 
       /* If we are building a static constructor into a register,
 	 set the initial value as zero so we can fold the value into
-	 a constant.  */
-      else if (GET_CODE (target) == REG && TREE_STATIC (exp))
+	 a constant.  But if more than one register is involved,
+	 this probably loses.  */
+      else if (GET_CODE (target) == REG && TREE_STATIC (exp)
+	       && GET_MODE_SIZE (GET_MODE (target)) <= UNITS_PER_WORD)
 	emit_move_insn (target, const0_rtx);
 
       /* If the constructor has fewer fields than the structure,
@@ -4473,8 +4475,8 @@ expand_expr (exp, target, tmode, modifier)
 		    || TREE_ADDRESSABLE (exp)
 		    || (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 			&& (move_by_pieces_ninsns
-			    (TREE_INT_CST_LOW (TYPE_SIZE (type)),
-			     TYPE_ALIGN (type))
+			    (TREE_INT_CST_LOW (TYPE_SIZE (type))/BITS_PER_UNIT,
+			     TYPE_ALIGN (type) / BITS_PER_UNIT)
 			    > MOVE_RATIO))))
 	       || (modifier == EXPAND_INITIALIZER && TREE_CONSTANT (exp)))
 	{
