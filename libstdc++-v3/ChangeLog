@@ -1,3 +1,16 @@
+2003-07-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h (__num_base::_S_atoms_in): Add -+xX.
+	(num_get::_M_convert_int): To _M_insert_int.
+	(num_get::_M_convert_float): To _M_insert_float.	
+	* include/bits/locale_facets.tcc (num_get::_M_extract_float):
+	Use caches for ctype, num_get.
+	(num_get::_M_extract_int): Same.
+	(num_get::get(bool)): Same.
+	(__verify_grouping): Use size_t.
+	* src/locale-inst.cc: Update.
+	* src/locale.cc: Adjust _S_atoms_in.
+
 2003-07-16  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/mainpage.html:  Move building/writing instructions...
