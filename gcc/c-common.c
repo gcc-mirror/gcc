@@ -4918,6 +4918,7 @@ cb_register_builtins (pfile)
   builtin_define_type_max ("__INT_MAX__", integer_type_node, 0);
   builtin_define_type_max ("__LONG_MAX__", long_integer_type_node, 1);
   builtin_define_type_max ("__LONG_LONG_MAX__", long_long_integer_type_node, 2);
+  builtin_define_type_max ("__WCHAR_MAX__", wchar_type_node, 0);
 
   builtin_define_type_precision ("__CHAR_BIT__", char_type_node);
 

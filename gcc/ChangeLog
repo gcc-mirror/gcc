@@ -4,6 +4,11 @@
 
 2002-10-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* c-common.c (cb_register_builtins): Define __WCHAR_MAX__.
+	* doc/cpp.texi (Common Predefined Macros): Document.
+
+2002-10-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	PR doc/7484
 	* doc/invoke.texi (Option Summary): List
 	-Wmissing-declarations as a C only option.
