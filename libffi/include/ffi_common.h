@@ -60,6 +60,7 @@ void ffi_type_test(/*@temp@*/ /*@out@*/ ffi_type *a, /*@temp@*/ char *file, int 
 #endif
 
 #define ALIGN(v, a)  (((((size_t) (v))-1) | ((a)-1))+1)
+#define ALIGN_DOWN(v, a) (((size_t) (v)) & -a)
 
 /* Perform machine dependent cif processing */
 ffi_status ffi_prep_cif_machdep(ffi_cif *cif);
