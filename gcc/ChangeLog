@@ -1,3 +1,10 @@
+2002-09-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (hppa_encode_label): Don't drop '*' from function labels.
+	(pa_strip_name_encoding): Strip '@' and '*', in that order.
+	* pa.h (ASM_OUTPUT_LABELREF): Output user_label_prefix except when
+	there is a '*' prefix in NAME.
+
 Mon Sep 30 21:33:23 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* reload.c (push_reload): Handle subregs and secondary memory.
