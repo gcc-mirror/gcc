@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-optimized" } */
+/* { dg-options "-O1 -fdump-tree-dom1 -fdump-tree-optimized" } */
 
 void foo(int k)
 {
@@ -21,3 +21,6 @@ y: ;
 }
 
 /* { dg-final { scan-tree-dump-times "dont_remove \\(\\)" 1 "optimized"} } */
+
+/* We should have folded away the goto &x  */
+/* { dg-final { scan-tree-dump-times "goto &x" 0 "optimized"} } */

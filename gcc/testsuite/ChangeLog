@@ -1,3 +1,10 @@
+2005-03-07  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/20030821-1.c: Verify that the computed goto
+	was folded away.
+	* gcc.dg/tree-ssa/pr18133-1.c: New test.
+	* gcc.dg/tree-ssa/pr18133-2.c: New test.
+
 2005-03-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* g++.dg/warn/weak1.C: Skip test on hppa*-*-hpux*.
