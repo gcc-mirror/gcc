@@ -117,8 +117,8 @@ namespace std {
         static bool max() throw()
         { return true; }
 
-        static const int digits = 8;
-        static const int digits10 = 2;
+        static const int digits = 1;
+        static const int digits10 = 0;
         static const bool is_signed = false;
         static const bool is_integer = true;
         static const bool is_exact = true;
@@ -148,9 +148,9 @@ namespace std {
         static bool denorm_min() throw()
         { return static_cast<bool>(0); }
 
-        static const bool is_iec559 = true;
+        static const bool is_iec559 = false;
         static const bool is_bounded = true;
-        static const bool is_modulo = true;
+        static const bool is_modulo = false;
 
         static const bool traps = false;
         static const bool tinyness_before = false;
