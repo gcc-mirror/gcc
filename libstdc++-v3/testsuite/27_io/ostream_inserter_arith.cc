@@ -368,7 +368,26 @@ test05()
   istringstream istr (sval);
   double d;
   istr >> d;
-  VERIFY (abs(pi-d)/pi < DBL_EPSILON);
+  VERIFY( abs(pi-d)/pi < DBL_EPSILON );
+  return 0;
+}
+
+
+// libstdc++/9151
+int
+test06()
+{
+  int prec = numeric_limits<double>::digits10 + 2;
+  double oval = numeric_limits<double>::min();
+
+  stringstream ostr;
+  ostr.precision(prec);
+  ostr << oval;
+  string sval = ostr.str();
+  istringstream istr (sval);
+  double ival;
+  istr >> ival;
+  VERIFY( abs(oval-ival)/oval < DBL_EPSILON ); 
   return 0;
 }
 
@@ -380,6 +399,7 @@ main()
   test03();
   test04();
   test05();
+  test06();
 #ifdef TEST_NUMPUT_VERBOSE
   cout << "Test passed!" << endl;
 #endif
