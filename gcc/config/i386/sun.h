@@ -18,11 +18,11 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-#include "i386.h"
+#include "i386/i386.h"
 
 /* Use the Sun assembler syntax.  */
 
-#include "sun386.h"
+#include "i386/sun386.h"
 
 /* Use crt0.o as a startup file.  */
 
