@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.3 2001/08/10 15:47:21 gdr Exp $
+## $Id: Makefile.am,v 1.4 2001/08/10 20:44:53 ljrittle Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -285,7 +285,8 @@ target_headers = \
 	${target_srcdir}/ctype_inline.h \
 	${target_srcdir}/ctype_noninline.h \
 	${target_srcdir}/os_defines.h \
-	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h
+	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h \
+	${glibcpp_srcdir}/@LIMITS_INC_SRCDIR@/limits.h
 
 thread_builddir = ./${target_alias}/bits
 thread_headers = \

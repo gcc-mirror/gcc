@@ -1,3 +1,13 @@
+2001-08-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.in (LIMITS_INC_SRCDIR): New variable.
+	* configure.target (LIMITSH): New variable.
+	* porting.texi: Discuss numeric limits.
+	* config/cpu/generic/bits/limits.h: New file.
+	* config/cpu/i386/bits/limits.h: New file.
+	* include/Makefile.am: Install bits/limits.h.
+	* include/bits/c++config: Include bits/limits.h.
+
 2001-08-13  H.J. Lu  (hjl@gnu.org)
 
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-copy-files):

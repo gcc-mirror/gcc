@@ -19156,6 +19156,8 @@ fi
 # Propagate the target-specific source directories through the build chain.
 OS_INC_SRCDIR=$os_include_dir/bits
 ATOMICITY_INC_SRCDIR=$ATOMICITYH/bits
+LIMITS_INC_SRCDIR=$LIMITSH/bits
+
 
 
 
@@ -19237,13 +19239,13 @@ glibcpp_toolexeclibdir=no
 glibcpp_prefixdir=${prefix}
 
 echo $ac_n "checking for interface version number""... $ac_c" 1>&6
-echo "configure:19241: checking for interface version number" >&5
+echo "configure:19243: checking for interface version number" >&5
 libstdcxx_interface=$INTERFACE
 echo "$ac_t""$libstdcxx_interface" 1>&6
 
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:19247: checking for --with-gxx-include-dir" >&5
+echo "configure:19249: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -19267,7 +19269,7 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:19271: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:19273: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -19308,7 +19310,7 @@ if test x"$glibcpp_toolexecdir" = x"no"; then
 fi
 
 echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:19312: checking for install location" >&5
+echo "configure:19314: checking for install location" >&5
 echo "$ac_t""$gxx_include_dir" 1>&6
 
 
@@ -19603,6 +19605,7 @@ s%@USE_COMPLEX_LONG_DOUBLE@%$USE_COMPLEX_LONG_DOUBLE%g
 s%@WERROR@%$WERROR%g
 s%@OS_INC_SRCDIR@%$OS_INC_SRCDIR%g
 s%@ATOMICITY_INC_SRCDIR@%$ATOMICITY_INC_SRCDIR%g
+s%@LIMITS_INC_SRCDIR@%$LIMITS_INC_SRCDIR%g
 s%@GLIBCPP_IS_CROSS_COMPILING@%$GLIBCPP_IS_CROSS_COMPILING%g
 s%@CANADIAN_TRUE@%$CANADIAN_TRUE%g
 s%@CANADIAN_FALSE@%$CANADIAN_FALSE%g
