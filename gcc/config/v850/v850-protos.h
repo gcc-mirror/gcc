@@ -53,6 +53,10 @@ extern void   notice_update_cc              PARAMS ((rtx, rtx));
 extern char * construct_save_jarl           PARAMS ((rtx));
 extern char * construct_restore_jr          PARAMS ((rtx));
 #ifdef HAVE_MACHINE_MODES
+extern char * construct_dispose_instruction PARAMS ((rtx));
+extern char * construct_prepare_instruction PARAMS ((rtx));
+extern int    pattern_is_ok_for_prepare     PARAMS ((rtx, Mmode));
+extern int    pattern_is_ok_for_dispose     PARAMS ((rtx, Mmode));
 extern int    ep_memory_operand             PARAMS ((rtx, Mmode, int));
 extern int    reg_or_0_operand              PARAMS ((rtx, Mmode));
 extern int    reg_or_int5_operand           PARAMS ((rtx, Mmode));

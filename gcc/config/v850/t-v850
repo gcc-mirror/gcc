@@ -29,7 +29,34 @@ LIB1ASMFUNCS	= _mulsi3 \
 		  _save_31c \
 		  _save_varargs \
 		  _save_interrupt \
-		  _save_all_interrupt
+		  _save_all_interrupt \
+                  _callt_save_20 \
+		  _callt_save_21 \
+		  _callt_save_22 \
+		  _callt_save_23 \
+		  _callt_save_24 \
+		  _callt_save_25 \
+		  _callt_save_26 \
+		  _callt_save_27 \
+		  _callt_save_28 \
+		  _callt_save_29 \
+		  _callt_save_20c \
+		  _callt_save_21c \
+		  _callt_save_22c \
+		  _callt_save_23c \
+		  _callt_save_24c \
+		  _callt_save_25c \
+		  _callt_save_26c \
+		  _callt_save_27c \
+		  _callt_save_28c \
+		  _callt_save_29c \
+		  _callt_save_31c \
+		  _callt_save_varargs \
+		  _callt_save_interrupt \
+		  _callt_save_all_interrupt \
+		  _callt_save_r2_r29 \
+		  _callt_save_r2_r31 \
+		  _callt_save_r6_r9
 
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.
@@ -50,6 +77,8 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 TCFLAGS = -Wa,-mwarn-signed-overflow -Wa,-mwarn-unsigned-overflow
+# Create non-target specific versions of the libraries
+TCFLAGS += -mno-app-regs -msmall-sld -mv850 -D__v850e__ -Wa,-mv850any
 
 v850-c.o: $(srcdir)/config/v850/v850-c.c $(RTL_H) $(TREE_H) $(CONFIG_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

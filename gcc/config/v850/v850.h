@@ -31,8 +31,8 @@ Boston, MA 02111-1307, USA.  */
 #undef STARTFILE_SPEC
 #undef ASM_SPEC
 
-
 #define TARGET_CPU_generic 	1
+#define TARGET_CPU_v850e   	2
 
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT	TARGET_CPU_generic
@@ -43,9 +43,22 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_CPP_SPEC 	"%{!mv*:-D__v850__}"
 #define TARGET_VERSION 		fprintf (stderr, " (NEC V850)");
 
+/* Choose which processor will be the default.
+   We must pass a -mv850xx option to the assembler if no explicit -mv* option
+   is given, because the assembler's processor default may not be correct.  */
+#if TARGET_CPU_DEFAULT == TARGET_CPU_v850e
+#undef  MASK_DEFAULT
+#define MASK_DEFAULT            MASK_V850E
+#undef  SUBTARGET_ASM_SPEC
+#define SUBTARGET_ASM_SPEC 	"%{!mv*:-mv850e}"
+#undef  SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC 	"%{!mv*:-D__v850e__}"
+#undef  TARGET_VERSION
+#define TARGET_VERSION 		fprintf (stderr, " (NEC V850E)");
+#endif
 
 #define ASM_SPEC "%{mv*:-mv%*}"
-#define CPP_SPEC		"%{mv850ea:-D__v850ea__} %{mv850e:-D__v850e__} %{mv850:-D__v850__} %(subtarget_cpp_spec)"
+#define CPP_SPEC		"%{mv850e:-D__v850e__} %{mv850:-D__v850__} %(subtarget_cpp_spec)"
 
 #define EXTRA_SPECS \
  { "subtarget_asm_spec", SUBTARGET_ASM_SPEC }, \
@@ -67,8 +80,15 @@ extern int target_flags;
 
 #define MASK_CPU                0x00000030
 #define MASK_V850               0x00000010
+#define MASK_V850E              0x00000020
+#define MASK_SMALL_SLD          0x00000040
 
 #define MASK_BIG_SWITCH		0x00000100
+#define MASK_NO_APP_REGS        0x00000200
+#define MASK_DISABLE_CALLT      0x00000400
+
+#define MASK_US_BIT_SET         0x00001000
+#define MASK_US_MASK_SET        0x00002000
 
 /* Macros used in the machine description to test the flags.  */
 
@@ -107,8 +127,23 @@ extern int target_flags;
 /* Whether to emit 2 byte per entry or 4 byte per entry switch tables.  */
 #define TARGET_BIG_SWITCH (target_flags & MASK_BIG_SWITCH)
 
-/* General debug flag */
-#define TARGET_DEBUG (target_flags & MASK_DEBUG)
+/* General debug flag.  */
+#define TARGET_DEBUG 		(target_flags & MASK_DEBUG)
+#define TARGET_V850E   		((target_flags & MASK_V850E) == MASK_V850E)
+
+#define TARGET_US_BIT_SET	(target_flags & MASK_US_BIT_SET)
+
+/* Whether to assume that the SLD.B and SLD.H instructions only have small
+   displacement fields, thus allowing the generated code to run on any of
+   the V850 range of processors.  */
+#define TARGET_SMALL_SLD 	(target_flags & MASK_SMALL_SLD)
+
+/* True if callt will not be used for function prolog & epilog.  */
+#define TARGET_DISABLE_CALLT 	(target_flags & MASK_DISABLE_CALLT)
+
+/* False if r2 and r5 can be used by the compiler.  True if r2
+   and r5 are to be fixed registers (for compatibility with GHS).  */
+#define TARGET_NO_APP_REGS  	(target_flags & MASK_NO_APP_REGS)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -134,6 +169,19 @@ extern int target_flags;
    { "v850",		 	 MASK_V850,				\
                                 N_("Compile for the v850 processor") },	\
    { "v850",		 	 -(MASK_V850 ^ MASK_CPU), "" },		\
+   { "v850e",			 MASK_V850E, N_("Compile for v850e processor") }, \
+   { "v850e",		        -(MASK_V850E ^ MASK_CPU), "" }, /* Make sure that the other bits are cleared.  */ \
+   { "small-sld",		 MASK_SMALL_SLD, N_("Enable the use of the short load instructions") },	\
+   { "no-small-sld",		-MASK_SMALL_SLD, "" },			\
+   { "disable-callt",            MASK_DISABLE_CALLT, 			\
+       				N_("Do not use the callt instruction") },   \
+   { "no-disable-callt",        -MASK_DISABLE_CALLT, "" },             	\
+   { "US-bit-set",		 (MASK_US_BIT_SET | MASK_US_MASK_SET), "" },	\
+   { "no-US-bit-set",		-MASK_US_BIT_SET, "" },			\
+   { "no-US-bit-set",		 MASK_US_MASK_SET, "" },		\
+   { "app-regs",                -MASK_NO_APP_REGS, ""  },               \
+   { "no-app-regs",              MASK_NO_APP_REGS, 			\
+       				N_("Do not use registers r2 and r5") }, \
    { "big-switch",		 MASK_BIG_SWITCH, 			\
        				N_("Use 4 byte entries in switch tables") },\
    { "",			 MASK_DEFAULT, ""}}
@@ -327,6 +375,17 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    0,  1,  3,  4,  5, 30, 32, 33	/* fixed registers */		\
 }
 
+/* If TARGET_NO_APP_REGS is not defined then add r2 and r5 to
+   the pool of fixed registers. See PR 14505. */
+#define CONDITIONAL_REGISTER_USAGE  \
+{                                                       \
+  if (TARGET_NO_APP_REGS)                               \
+    {                                                   \
+     fixed_regs[2] = 1;  call_used_regs[2] = 1;         \
+     fixed_regs[5] = 1;  call_used_regs[5] = 1;         \
+    }                                                   \
+}
+
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
 
@@ -457,10 +516,10 @@ enum reg_class
 #define CONST_OK_FOR_M(VALUE) ((unsigned)(VALUE) < 0x10000)
 /* 5 bit unsigned immediate in shift instructions */
 #define CONST_OK_FOR_N(VALUE) ((unsigned) (VALUE) <= 31)
+/* 9 bit signed immediate for word multiply instruction.  */
+#define CONST_OK_FOR_O(VALUE) ((unsigned) (VALUE) + 0x100 < 0x200)
 
-#define CONST_OK_FOR_O(VALUE) 0
 #define CONST_OK_FOR_P(VALUE) 0
-
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)  \
   ((C) == 'I' ? CONST_OK_FOR_I (VALUE) : \
@@ -851,7 +910,7 @@ extern int current_function_anonymous_args;
  ((C) == 'Q'   ? ep_memory_operand (OP, GET_MODE (OP), 0)			\
   : (C) == 'R' ? special_symbolref_operand (OP, VOIDmode)		\
   : (C) == 'S' ? (GET_CODE (OP) == SYMBOL_REF && ! ZDA_NAME_P (XSTR (OP, 0))) \
-  : (C) == 'T' ? 0							\
+  : (C) == 'T' ? ep_memory_operand(OP,GET_MODE(OP),TRUE)			\
   : (C) == 'U' ? ((GET_CODE (OP) == SYMBOL_REF && ZDA_NAME_P (XSTR (OP, 0))) \
 		  || (GET_CODE (OP) == CONST				\
 		      && GET_CODE (XEXP (OP, 0)) == PLUS		\
@@ -1136,17 +1195,9 @@ zbss_section ()								\
 #undef  USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
 
-/* When assemble_integer is used to emit the offsets for a switch
-   table it can encounter (TRUNCATE:HI (MINUS:SI (LABEL_REF:SI) (LABEL_REF:SI))).
-   output_addr_const will normally barf at this, but it is OK to omit
-   the truncate and just emit the difference of the two labels.  The
-   .hword directive will automatically handle the truncation for us.  */
-
-#define OUTPUT_ADDR_CONST_EXTRA(FILE, X, FAIL)		\
-  if (GET_CODE (x) == TRUNCATE)				\
-    output_addr_const (FILE, XEXP (X, 0));		\
-  else							\
-    goto FAIL;
+#define OUTPUT_ADDR_CONST_EXTRA(FILE, X, FAIL)  \
+  if (! v850_output_addr_const_extra (FILE, X)) \
+     goto FAIL
 
 /* This says how to output the assembler to define a global
    uninitialized but not common symbol.  */
@@ -1243,10 +1294,12 @@ zbss_section ()								\
 
 /* This is how to output an element of a case-vector that is relative.  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf (FILE, "\t%s .L%d-.L%d\n",					\
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) 		\
+  fprintf (FILE, "\t%s %s.L%d-.L%d%s\n",				\
 	   (TARGET_BIG_SWITCH ? ".long" : ".short"),			\
-	   VALUE, REL)
+	   (! TARGET_BIG_SWITCH && TARGET_V850E ? "(" : ""),		\
+	   VALUE, REL,							\
+	   (! TARGET_BIG_SWITCH && TARGET_V850E ? ")>>1" : ""))
 
 #define ASM_OUTPUT_ALIGN(FILE, LOG)	\
   if ((LOG) != 0)			\
@@ -1426,6 +1479,9 @@ extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_K
 { "pattern_is_ok_for_prologue",	{ PARALLEL }},				\
 { "pattern_is_ok_for_epilogue",	{ PARALLEL }},				\
 { "register_is_ok_for_epilogue",{ REG }},				\
+{ "pattern_is_ok_for_dispose",	{ PARALLEL }},				\
+{ "pattern_is_ok_for_prepare",	{ PARALLEL }},				\
+{ "register_is_ok_for_dispose",	{ REG }},				\
 { "not_power_of_two_operand",	{ CONST_INT }},
   
 #endif /* ! GCC_V850_H */
