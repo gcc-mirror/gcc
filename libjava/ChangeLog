@@ -1,3 +1,12 @@
+2004-05-06  Bryce McKinlay  <mckinlay@redhat.com>
+
+	Run the jni tests using the interpreter.
+	* testsuite/libjava.jni/jni.exp (gcj_jni_compile_c_to_so): Append
+	options_cxx to shared lib compile command.
+	(gcj_jni_test_one): Pass cxxflags to gcj_jni_compile_c_to_so, so
+	they are used to link the shared lib, not the main binary.
+	Use libjava_invoke to run gij.
+
 2004-05-06  Michael Koch  <konqueror@gmx.de>
 
 	* java/util/logging/Level.java
