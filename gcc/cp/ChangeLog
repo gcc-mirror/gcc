@@ -1,3 +1,19 @@
+1999-01-18  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (copy_template_template_parm): Use permanent_obstack.
+
+1999-01-18  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
+
+        * pt.c (unify): Remove restrictions on deduction of argument
+        of template template parameters.
+
+1999-01-18  Nathan Sidwell  <nathan@acm.org>
+
+	* rtti.c (build_dynamic_cast_1): Resolve OFFSET_REF exprs.
+
+	* class.c (resolve_address_of_overloaded_function): Show list of
+	all candidates, when none of them match.
+
 1999-01-18  Chip Salzenberg  <chip@perlsupport.com>
 
 	* typeck.c (comp_ptr_ttypes_reinterpret): Per ANSI, tighten up

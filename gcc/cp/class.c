@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1987, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 92-97, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -5188,10 +5188,18 @@ resolve_address_of_overloaded_function (target_type,
       /* There were *no* matches.  */
       if (complain)
 	{
- 	  cp_error ("cannot convert overloaded function `%D' to type `%#T'", 
+ 	  cp_error ("no matches converting function `%D' to type `%#T'", 
 		    DECL_NAME (OVL_FUNCTION (overload)),
 		    target_type);
-	  cp_error ("because no suitable overload exists");
+
+	  /* print_candidates expects a chain with the functions in
+             TREE_VALUE slots, so we cons one up here (we're losing anyway,
+             so why be clever?).  */
+          for (; overload; overload = OVL_NEXT (overload))
+            matches = scratch_tree_cons (NULL_TREE, OVL_CURRENT (overload),
+                                         matches);
+          
+	  print_candidates (matches);
 	}
       return error_mark_node;
     }
