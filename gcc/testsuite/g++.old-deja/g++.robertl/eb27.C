@@ -7,7 +7,7 @@
 // for the test<T> record_type.  This is marked as an expected failure for now,
 // until we actually fix it.
 
-#include <iostream.h>
+#include <iostream>
 
 template <class T> class test;
 template <class T> test<T> operator + (const test<T>& a, const test<T>& b);
@@ -22,7 +22,7 @@ class test
    test (const T& a)  { elem = a; };
    test<T>& operator += (const test<T>& a)  { elem += a.elem; return *this; };
    friend test<T> operator + <> (const test<T>&, const test<T>&);
-   friend ostream& operator << (ostream& os, const test<T>& a)
+   friend std::ostream& operator << (std::ostream& os, const test<T>& a)
      { return os << a.elem; };
 };
 
@@ -34,6 +34,8 @@ test<T> operator + (const test<T>& a, const test<T>& b) return c(a);
 int main()
 {
    test<int> x, y;
-   x += 5; cout << x << endl;
-   y = x + test<int>(2); cout << y << endl;
+   x += 5; 
+   std::cout << x << std::endl;
+   y = x + test<int>(2); 
+   std::cout << y << std::endl;
 }
