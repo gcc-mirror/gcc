@@ -66,6 +66,12 @@ Sat May 11 14:34:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* cfglayout.c (cleanup_unconditional_jumps): New static function.
 	(cfg_layout_initialize): Use it.
 
+2002-05-11  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (avr_mcu_types): Update supported devices.
+	* config/avr/avr.h (CPP_SPEC, LINK_SPEC, CRT_BINUTILS_SPECS): Likewise.
+	* config/avr/t-avr (MULTILIB_MATCHES): Likewise.
+
 2002-05-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* dbxout.c: Fix formatting.
