@@ -167,6 +167,9 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 		}
 	      saw_speclang = 1;
 	    }
+	  /* Unrecognized libraries (e.g. -lfoo) may require libstdc++.  */
+	  else if (strncmp (argv[i], "-l", 2) == 0)
+	    library = (library == 0) ? 1 : library;
 	  else if (((argv[i][2] == '\0'
 		     && strchr ("bBVDUoeTuIYmLiA", argv[i][1]) != NULL)
 		    || strcmp (argv[i], "-Xlinker") == 0
