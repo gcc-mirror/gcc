@@ -1,5 +1,5 @@
 /* Configuration for a ns32532 running NetBSD as the target machine.
-   Copyright (C) 1988, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -99,11 +99,6 @@ Boston, MA 02111-1307, USA.
    continuation back on).  */
 
 #define DBX_CONTIN_CHAR '?'
-
-/* Don't use the `xsfoo;' construct in DBX output; this system
-   doesn't support it.  */
-
-#define DBX_NO_XREFS
 
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
