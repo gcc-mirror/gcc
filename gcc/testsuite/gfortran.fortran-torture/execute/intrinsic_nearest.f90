@@ -1,7 +1,7 @@
 !Program to test NEAREST intrinsic function.
 
 program test_nearest
-  real s, r, x, y, inf, max, min
+  real s, r, x, y, inf, max
   integer i, infi, maxi
   equivalence (s,i)
   equivalence (inf,infi)
@@ -25,19 +25,26 @@ program test_nearest
   y = nearest(s, -r)
   if (.not. (x .gt. s .and. y .lt. s )) call abort()
 
+! ??? This is pretty sketchy, but passes on most targets.
   infi = z'7f800000'
   maxi = z'7f7fffff'
-  min = tiny(1.0)
 
   call test_up(max, inf)
   call test_up(-inf, -max)
-  call test_up(0, min)
-  call test_up(-min, 0)
-
   call test_down(inf, max)
   call test_down(-max, -inf)
-  call test_down(0, -min)
-  call test_down(min, 0)
+
+! ??? Here we require the F2003 IEEE_ARITHMETIC module to
+! determine if denormals are supported.  If they are, then
+! nearest(0,1) is the minimum denormal.  If they are not,
+! then it's the minimum normalized number, TINY.  This fails
+! much more often than the infinity test above, so it's
+! disabled for now.
+
+! call test_up(0, min)
+! call test_up(-min, 0)
+! call test_down(0, -min)
+! call test_down(min, 0)
 end
 
 subroutine test_up(s, e)
