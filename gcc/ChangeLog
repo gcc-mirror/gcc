@@ -1,3 +1,11 @@
+Tue May 26 07:31:04 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.c (bad_signed_byte_operand): New predicate function.
+	* arm.h (PREDICATE_CODES): Add it to the list.
+	* arm.md (*extendqi[sh]i_insn): Split any addresses that ldrsb
+	can't handle.
+	(define_split): Two new splits for above insns.
+
 Mon May 25 22:49:56 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

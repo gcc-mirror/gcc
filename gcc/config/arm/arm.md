@@ -2344,16 +2344,52 @@
   operands[2] = gen_reg_rtx (SImode);
 }")
 
+; Rather than restricting all byte accesses to memory addresses that ldrsb
+; can handle, we fix up the ones that ldrsb can't grok with a split.
 (define_insn "*extendqihi_insn"
   [(set (match_operand:HI 0 "s_register_operand" "=r")
-	(sign_extend:HI (match_operand:QI 1 "memory_operand" "o<>")))]
+	(sign_extend:HI (match_operand:QI 1 "memory_operand" "m")))]
   "arm_arch4"
-  "ldr%?sb\\t%0, %1"
-[(set_attr "type" "load")])
+  "*
+  /* If the address is invalid, this will split the instruction into two. */
+  if (bad_signed_byte_operand(operands[1], QImode))
+    return \"#\";
+  return \"ldr%?sb\\t%0, %1\";
+"
+[(set_attr "type" "load")
+ (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:HI 0 "s_register_operand" "")
+	(sign_extend:HI (match_operand:QI 1 "bad_signed_byte_operand" "")))]
+  "arm_arch4 && reload_completed"
+  [(set (match_dup 3) (match_dup 1))
+   (set (match_dup 0) (sign_extend:HI (match_dup 2)))]
+  "
+  {
+    HOST_WIDE_INT offset;
+
+    operands[3] = gen_rtx (REG, SImode, REGNO (operands[0]));
+    operands[2] = gen_rtx (MEM, QImode, operands[3]);
+    MEM_IN_STRUCT_P (operands[2]) = MEM_IN_STRUCT_P (operands[1]);
+    RTX_UNCHANGING_P (operands[2]) = RTX_UNCHANGING_P (operands[1]);
+    operands[1] = XEXP (operands[1], 0);
+    if (GET_CODE (operands[1]) == PLUS
+	&& GET_CODE (XEXP (operands[1], 1)) == CONST_INT
+	&& ! (const_ok_for_arm (offset = INTVAL (XEXP (operands[1], 1)))
+	      || const_ok_for_arm (-offset)))
+      {
+	HOST_WIDE_INT low = (offset > 0
+			     ? (offset & 0xff) : -((-offset) & 0xff));
+	XEXP (operands[2], 0) = plus_constant (operands[3], low);
+	operands[1] = plus_constant (XEXP (operands[1], 0), offset - low);
+      }
+  }
+")
 
 (define_expand "extendqisi2"
   [(set (match_dup 2)
-	(ashift:SI (match_operand:QI 1 "s_register_operand" "")
+	(ashift:SI (match_operand:QI 1 "general_operand" "")
 		   (const_int 24)))
    (set (match_operand:SI 0 "s_register_operand" "")
 	(ashiftrt:SI (match_dup 2)
@@ -2373,12 +2409,47 @@
   operands[2] = gen_reg_rtx (SImode);
 }")
 
+; Rather than restricting all byte accesses to memory addresses that ldrsb
+; can handle, we fix up the ones that ldrsb can't grok with a split.
 (define_insn "*extendqisi_insn"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(sign_extend:SI (match_operand:QI 1 "memory_operand" "o<>")))]
+	(sign_extend:SI (match_operand:QI 1 "memory_operand" "m")))]
   "arm_arch4"
-  "ldr%?sb\\t%0, %1"
-[(set_attr "type" "load")])
+  "*
+  /* If the address is invalid, this will split the instruction into two. */
+  if (bad_signed_byte_operand(operands[1], QImode))
+    return \"#\";
+  return \"ldr%?sb\\t%0, %1\";
+"
+[(set_attr "type" "load")
+ (set_attr "length" "8")])
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(sign_extend:SI (match_operand:QI 1 "bad_signed_byte_operand" "")))]
+  "arm_arch4 && reload_completed"
+  [(set (match_dup 0) (match_dup 1))
+   (set (match_dup 0) (sign_extend:SI (match_dup 2)))]
+  "
+  {
+    HOST_WIDE_INT offset;
+
+    operands[2] = gen_rtx (MEM, QImode, operands[0]);
+    MEM_IN_STRUCT_P (operands[2]) = MEM_IN_STRUCT_P (operands[1]);
+    RTX_UNCHANGING_P (operands[2]) = RTX_UNCHANGING_P (operands[1]);
+    operands[1] = XEXP (operands[1], 0);
+    if (GET_CODE (operands[1]) == PLUS
+	&& GET_CODE (XEXP (operands[1], 1)) == CONST_INT
+	&& ! (const_ok_for_arm (offset = INTVAL (XEXP (operands[1], 1)))
+	      || const_ok_for_arm (-offset)))
+      {
+	HOST_WIDE_INT low = (offset > 0
+			     ? (offset & 0xff) : -((-offset) & 0xff));
+	XEXP (operands[2], 0) = plus_constant (operands[0], low);
+	operands[1] = plus_constant (XEXP (operands[1], 0), offset - low);
+      }
+  }
+")
 
 (define_insn "extendsfdf2"
   [(set (match_operand:DF 0 "s_register_operand" "=f")

@@ -1745,6 +1745,33 @@ reload_memory_operand (op, mode)
 		  && REGNO (op) >= FIRST_PSEUDO_REGISTER)));
 }
 
+/* Return 1 if OP is a valid memory address, but not valid for a signed byte
+   memory access (architecture V4) */
+int
+bad_signed_byte_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (! memory_operand (op, mode) || GET_CODE (op) != MEM)
+    return 0;
+
+  op = XEXP (op, 0);
+
+  /* A sum of anything more complex than reg + reg or reg + const is bad */
+  if ((GET_CODE (op) == PLUS || GET_CODE (op) == MINUS)
+      && ! s_register_operand (XEXP (op, 0), VOIDmode))
+    return 1;
+
+  /* Big constants are also bad */
+  if (GET_CODE (op) == PLUS && GET_CODE (XEXP (op, 1)) == CONST_INT
+      && (INTVAL (XEXP (op, 1)) > 0xff
+	  || -INTVAL (XEXP (op, 1)) > 0xff))
+    return 1;
+
+  /* Everything else is good, or can will automatically be made so. */
+  return 0;
+}
+
 /* Return TRUE for valid operands for the rhs of an ARM instruction.  */
 
 int
