@@ -1764,6 +1764,15 @@ package body Sinfo is
       return Flag7 (N);
    end No_Ctrl_Actions;
 
+   function No_Elaboration_Check
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Function_Call
+        or else NT (N).Nkind = N_Procedure_Call_Statement);
+      return Flag14 (N);
+   end No_Elaboration_Check;
+
    function No_Entities_Ref_In_Spec
       (N : Node_Id) return Boolean is
    begin
@@ -4186,6 +4195,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Assignment_Statement);
       Set_Flag7 (N, Val);
    end Set_No_Ctrl_Actions;
+
+   procedure Set_No_Elaboration_Check
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Function_Call
+        or else NT (N).Nkind = N_Procedure_Call_Statement);
+      Set_Flag14 (N, Val);
+   end Set_No_Elaboration_Check;
 
    procedure Set_No_Entities_Ref_In_Spec
       (N : Node_Id; Val : Boolean := True) is

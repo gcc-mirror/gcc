@@ -548,9 +548,9 @@ package body Sem_Ch3 is
    --  Create new modular type. Verify that modulus is in  bounds and is
    --  a power of two (implementation restriction).
 
-   procedure New_Binary_Operator (Op_Name : Name_Id; Typ : Entity_Id);
+   procedure New_Concatenation_Op (Typ : Entity_Id);
    --  Create an abbreviated declaration for an operator in order to
-   --  materialize minimally operators on derived types.
+   --  materialize concatenation on array types.
 
    procedure Ordinary_Fixed_Point_Type_Declaration
      (T   : Entity_Id;
@@ -2865,7 +2865,7 @@ package body Sem_Ch3 is
       if Number_Dimensions (T) = 1
          and then not Is_Packed_Array_Type (T)
       then
-         New_Binary_Operator (Name_Op_Concat, T);
+         New_Concatenation_Op (T);
       end if;
 
       --  In the case of an unconstrained array the parser has already
@@ -3068,7 +3068,7 @@ package body Sem_Ch3 is
         and then not Is_Derived_Type (Parent_Type)
         and then not Is_Package (Scope (Base_Type (Parent_Type)))
       then
-         New_Binary_Operator (Name_Op_Concat, Derived_Type);
+         New_Concatenation_Op (Derived_Type);
       end if;
    end Build_Derived_Array_Type;
 
@@ -10945,11 +10945,11 @@ package body Sem_Ch3 is
 
    end Modular_Type_Declaration;
 
-   -------------------------
-   -- New_Binary_Operator --
-   -------------------------
+   --------------------------
+   -- New_Concatenation_Op --
+   --------------------------
 
-   procedure New_Binary_Operator (Op_Name : Name_Id; Typ : Entity_Id) is
+   procedure New_Concatenation_Op (Typ : Entity_Id) is
       Loc : constant Source_Ptr := Sloc (Typ);
       Op  : Entity_Id;
 
@@ -10971,26 +10971,26 @@ package body Sem_Ch3 is
          return Formal;
       end Make_Op_Formal;
 
-   --  Start of processing for New_Binary_Operator
+   --  Start of processing for New_Concatenation_Op
 
    begin
-      Op := Make_Defining_Operator_Symbol (Loc, Op_Name);
+      Op := Make_Defining_Operator_Symbol (Loc, Name_Op_Concat);
 
       Set_Ekind                   (Op, E_Operator);
       Set_Scope                   (Op, Current_Scope);
       Set_Etype                   (Op, Typ);
-      Set_Homonym                 (Op, Get_Name_Entity_Id (Op_Name));
+      Set_Homonym                 (Op, Get_Name_Entity_Id (Name_Op_Concat));
       Set_Is_Immediately_Visible  (Op);
       Set_Is_Intrinsic_Subprogram (Op);
       Set_Has_Completion          (Op);
       Append_Entity               (Op, Current_Scope);
 
-      Set_Name_Entity_Id (Op_Name, Op);
+      Set_Name_Entity_Id (Name_Op_Concat, Op);
 
       Append_Entity (Make_Op_Formal (Typ, Op), Op);
       Append_Entity (Make_Op_Formal (Typ, Op), Op);
 
-   end New_Binary_Operator;
+   end New_Concatenation_Op;
 
    -------------------------------------------
    -- Ordinary_Fixed_Point_Type_Declaration --

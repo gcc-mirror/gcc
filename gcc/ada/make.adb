@@ -24,12 +24,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Exceptions;   use Ada.Exceptions;
-with Ada.Command_Line; use Ada.Command_Line;
-
-with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-with GNAT.Case_Util;            use GNAT.Case_Util;
-
 with ALI;      use ALI;
 with ALI.Util; use ALI.Util;
 with Csets;
@@ -64,6 +58,12 @@ with Switch.M; use Switch.M;
 with System.HTable;
 with Targparm;
 with Tempdir;
+
+with Ada.Exceptions;   use Ada.Exceptions;
+with Ada.Command_Line; use Ada.Command_Line;
+
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+with GNAT.Case_Util;            use GNAT.Case_Util;
 
 package body Make is
 
@@ -479,6 +479,9 @@ package body Make is
    ----------------------
    -- Marking Routines --
    ----------------------
+
+   Marking_Label : Byte := 1;
+   --  Value to mark the source files
 
    procedure Mark (Source_File : File_Name_Type);
    --  Mark Source_File. Marking is used to signal that Source_File has
@@ -2233,7 +2236,9 @@ package body Make is
       -------------
 
       function Compile
-        (S : Name_Id; L : Name_Id; Args : Argument_List) return Process_Id
+        (S    : Name_Id;
+         L    : Name_Id;
+         Args : Argument_List) return Process_Id
       is
          Comp_Args : Argument_List (Args'First .. Args'Last + 8);
          Comp_Next : Integer := Args'First;
@@ -3692,7 +3697,7 @@ package body Make is
          else
             --  Output usage information if no files to compile
 
-            Makeusg;
+            Usage;
             Exit_Program (E_Fatal);
          end if;
       end if;
@@ -4227,6 +4232,18 @@ package body Make is
       --  We do the same process for each main
 
       Multiple_Main_Loop : for N_File in 1 .. Osint.Number_Of_Files loop
+
+         --  Increase the marking label to be sure to check sources
+         --  for all executables.
+
+         Marking_Label := Marking_Label + 1;
+
+         --  Make sure it is not 0, which is the default value for
+         --  a file that has never been marked.
+
+         if Marking_Label = 0 then
+            Marking_Label := 1;
+         end if;
 
          --  First, find the executable name and path
 
@@ -5573,7 +5590,7 @@ package body Make is
       end loop Scan_Args;
 
       if Usage_Requested then
-         Makeusg;
+         Usage;
       end if;
 
       --  Test for trailing -P switch
@@ -5695,6 +5712,10 @@ package body Make is
                Make_Failed (Exception_Message (Err));
          end;
       end if;
+
+      --  Set the marking label to a value that is not zero
+
+      Marking_Label := 1;
    end Initialize;
 
    -----------------------------------
@@ -5707,10 +5728,11 @@ package body Make is
       Into_Q       : Boolean)
    is
       Put_In_Q : Boolean := Into_Q;
-      Unit  : Com.Unit_Data;
-      Sfile : Name_Id;
+      Unit     : Com.Unit_Data;
+      Sfile    : Name_Id;
+
       Extending : constant Boolean :=
-        Projects.Table (The_Project).Extends /= No_Project;
+                    Projects.Table (The_Project).Extends /= No_Project;
 
       function Check_Project (P : Project_Id) return Boolean;
       --  Returns True if P is The_Project or a project extended by
@@ -6044,7 +6066,7 @@ package body Make is
 
    function Is_Marked (Source_File : File_Name_Type) return Boolean is
    begin
-      return Get_Name_Table_Byte (Source_File) /= 0;
+      return Get_Name_Table_Byte (Source_File) = Marking_Label;
    end Is_Marked;
 
    ----------
@@ -6228,7 +6250,7 @@ package body Make is
 
    procedure Mark (Source_File : File_Name_Type) is
    begin
-      Set_Name_Table_Byte (Source_File, 1);
+      Set_Name_Table_Byte (Source_File, Marking_Label);
    end Mark;
 
    --------------------

@@ -261,7 +261,9 @@ package body Scn is
    begin
       Scanner.Initialize_Scanner (Unit, Index);
 
-      --  Set default for Comes_From_Source. All nodes built now until we
+      --  Set default for Comes_From_Source (except if we are going to process
+      --  an artificial string internally created within the compiler and
+      --  placed into internal source duffer). All nodes built now until we
       --  reenter the analyzer will have Comes_From_Source set to True
 
       if Index /= Internal_Source_File then
@@ -279,6 +281,16 @@ package body Scn is
       --  Because of the License stuff above, Scng.Initialize_Scanner cannot
       --  call Scan. Scan initial token (note this initializes Prev_Token,
       --  Prev_Token_Ptr).
+
+      --  There are two reasons not to do the Scan step in case if we
+      --  initialize the scanner for the internal source buffer:
+
+      --  - The artificial string may not be created by the compiler in this
+      --    buffer when we call Initialize_Scanner
+
+      --  - For these artificial strings a special way of scanning is used, so
+      --    the standard step of the scanner may just break the algorithm of
+      --    processing these strings.
 
       if Index /= Internal_Source_File then
          Scan;

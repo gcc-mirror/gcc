@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,8 @@ with Osint;    use Osint;
 with Sinput.L; use Sinput.L;
 with Stylesw;  use Stylesw;
 with Validsw;  use Validsw;
+
+with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
 
 separate (Par)
 procedure Load is
@@ -188,26 +190,45 @@ begin
                     or else
                   Name_Buffer (1) = 'g')
       then
-         --  In the predefined file case, we know the user did not construct
-         --  their own package, but we got the wrong one. This means that the
-         --  name supplied by the user crunched to something we recognized,
-         --  but then the file did not contain the unit expected. Most likely
-         --  this is due to a misspelling, e.g.
+         declare
+            Expect_Name : constant Name_Id := Expected_Unit (Cur_Unum);
+            Actual_Name : constant Name_Id := Unit_Name (Cur_Unum);
 
-         --    with Ada.Calender;
+         begin
+            Error_Msg_Name_1 := Expect_Name;
+            Error_Msg ("% is not a predefined library unit!", Loc);
 
-         --  This crunches to a-calend, which indeed contains the unit
-         --  Ada.Calendar, and we can diagnose the misspelling. This is
-         --  a simple heuristic, but it catches many common cases of
-         --  misspelling of predefined unit names without needing a full
-         --  list of them.
+            --  In the predefined file case, we know the user did not
+            --  construct their own package, but we got the wrong one.
+            --  This means that the name supplied by the user crunched
+            --  to something we recognized, but then the file did not
+            --  contain the unit expected. Most likely this is due to
+            --  a misspelling, e.g.
 
-         Error_Msg_Name_1 := Expected_Unit (Cur_Unum);
-         Error_Msg ("% is not a predefined library unit!", Loc);
-         Error_Msg_Name_1 := Unit_Name (Cur_Unum);
-         Error_Msg ("possible misspelling of %!", Loc);
+            --    with Ada.Calender;
 
-      --  Non-predefined file name case
+            --  This crunches to a-calend, which indeed contains the unit
+            --  Ada.Calendar, and we can diagnose the misspelling. This
+            --  is a simple heuristic, but it catches many common cases
+            --  of misspelling of predefined unit names without needing
+            --  a full list of them.
+
+            --  Before actually issinying the message, we will check that the
+            --  unit name is indeed a plausible misspelling of the one we got.
+
+            if Is_Bad_Spelling_Of
+              (Found  => Get_Name_String (Expect_Name),
+               Expect => Get_Name_String (Actual_Name))
+            then
+               Error_Msg_Name_1 := Actual_Name;
+               Error_Msg ("possible misspelling of %!", Loc);
+            end if;
+         end;
+
+      --  Non-predefined file name case. In this case we generate a message
+      --  and then we quit, because we are in big trouble, and if we try
+      --  to continue compilation, we get into some nasty situations
+      --  (for example in some subunit cases).
 
       else
          Error_Msg ("file { does not contain expected unit!", Loc);
@@ -217,7 +238,10 @@ begin
          Error_Msg ("found unit $!", Loc);
       end if;
 
-      raise Unrecoverable_Error;
+      --  In both cases, remove the unit if it is the last unit (which it
+      --  normally (always?) will be) so that it is out of the way later.
+
+      Remove_Unit (Cur_Unum);
    end if;
 
    --  If current unit is a body, load its corresponding spec

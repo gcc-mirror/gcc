@@ -325,11 +325,16 @@ begin
         Storage_Elements.To_Address
           (Storage_Elements.Integer_Address (SIG_IGN));
 
-      for I in Interrupt_ID loop
-         if Keep_Unmasked (I) then
-            Result := sigaddset (mask'Access, Signal (I));
+      for J in Interrupt_ID loop
+
+         --  We need to check whether J is in Keep_Unmasked because
+         --  the index type of the Keep_Unmasked array is not always
+         --  Interrupt_ID; it may be a subtype of Interrupt_ID.
+
+         if J in Keep_Unmasked'Range and then Keep_Unmasked (J) then
+            Result := sigaddset (mask'Access, Signal (J));
             pragma Assert (Result = 0);
-            Result := sigdelset (allmask'Access, Signal (I));
+            Result := sigdelset (allmask'Access, Signal (J));
             pragma Assert (Result = 0);
          end if;
       end loop;

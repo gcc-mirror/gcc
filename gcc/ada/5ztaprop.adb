@@ -45,8 +45,8 @@ with System.Tasking.Debug;
 
 with System.Interrupt_Management;
 --  used for Keep_Unmasked
---           Abort_Task_Interrupt
---           Interrupt_ID
+--           Abort_Task_Signal
+--           Signal_ID
 --           Initialize_Interrupts
 
 with System.Soft_Links;
@@ -262,7 +262,7 @@ package body System.Task_Primitives.Operations is
 
       Result :=
         sigaction
-          (Signal (Interrupt_Management.Abort_Task_Interrupt),
+          (Signal (Interrupt_Management.Abort_Task_Signal),
            act'Unchecked_Access,
            old_act'Unchecked_Access);
       pragma Assert (Result = 0);
@@ -1008,7 +1008,7 @@ package body System.Task_Primitives.Operations is
 
    begin
       Result := kill (T.Common.LL.Thread,
-        Signal (Interrupt_Management.Abort_Task_Interrupt));
+        Signal (Interrupt_Management.Abort_Task_Signal));
       pragma Assert (Result = 0);
    end Abort_Task;
 
@@ -1125,6 +1125,13 @@ package body System.Task_Primitives.Operations is
 
       Result := sigemptyset (Unblocked_Signal_Mask'Access);
       pragma Assert (Result = 0);
+
+      for J in Interrupt_Management.Signal_ID loop
+         if System.Interrupt_Management.Keep_Unmasked (J) then
+            Result := sigaddset (Unblocked_Signal_Mask'Access, Signal (J));
+            pragma Assert (Result = 0);
+         end if;
+      end loop;
 
       Environment_Task_ID := Environment_Task;
 

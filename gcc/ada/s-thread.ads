@@ -38,6 +38,10 @@
 --  VxWorks AE653 with the restricted / cert runtime
 
 with Ada.Exceptions;
+--  used for Exception_Occurrence
+
+with System.Soft_Links;
+--  used for TSD
 
 package System.Threads is
 
@@ -137,27 +141,6 @@ package System.Threads is
 
 private
 
-   ------------------------
-   -- Task Specific Data --
-   ------------------------
-
-   type ATSD is limited record
-      Jmpbuf_Address : Address := Null_Address;
-      --  Address of jump buffer used to store the address of the
-      --  current longjmp/setjmp buffer for exception management.
-      --  These buffers are threaded into a stack, and the address
-      --  here is the top of the stack. A null address means that
-      --  no exception handler is currently active.
-
-      Sec_Stack_Addr : Address := Null_Address;
-      --  Address of currently allocated secondary stack
-
-      Current_Excep : aliased EO;
-      --  Exception occurrence that contains the information for the
-      --  current exception. Note that any exception in the same task
-      --  destroys this information, so the data in this variable must
-      --  be copied out before another exception can occur.
-
-   end record;
+   type ATSD is new System.Soft_Links.TSD;
 
 end System.Threads;

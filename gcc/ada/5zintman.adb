@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,21 +62,26 @@ package body System.Interrupt_Management is
    use System.OS_Interface;
    use type Interfaces.C.int;
 
-   type Interrupt_List is array (Interrupt_ID range <>) of Interrupt_ID;
-   Exception_Interrupts : constant Interrupt_List (1 .. 4) :=
-     (SIGFPE, SIGILL, SIGSEGV, SIGBUS);
+   type Signal_List is array (Signal_ID range <>) of Signal_ID;
+   Exception_Signals : constant Signal_List (1 .. 4) :=
+                         (SIGFPE, SIGILL, SIGSEGV, SIGBUS);
 
-   --  Keep these variables global so that they are initialized only once.
+   --  Keep these variables global so that they are initialized only once
+   --  What are "these variables" ???, I see only one
 
    Exception_Action : aliased struct_sigaction;
 
-   ----------------------
-   -- Notify_Exception --
-   ----------------------
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
 
    procedure Notify_Exception (signo : Signal);
    --  Identify the Ada exception to be raised using
    --  the information when the system received a synchronous signal.
+
+   ----------------------
+   -- Notify_Exception --
+   ----------------------
 
    procedure Notify_Exception (signo : Signal) is
       Mask   : aliased sigset_t;
@@ -126,10 +131,10 @@ package body System.Interrupt_Management is
       old_act : aliased struct_sigaction;
 
    begin
-      for J in Exception_Interrupts'Range loop
+      for J in Exception_Signals'Range loop
          Result :=
            sigaction
-             (Signal (Exception_Interrupts (J)), Exception_Action'Access,
+             (Signal (Exception_Signals (J)), Exception_Action'Access,
               old_act'Unchecked_Access);
          pragma Assert (Result = 0);
       end loop;
@@ -160,15 +165,15 @@ begin
       --  Change this if you want to use another signal for task abort.
       --  SIGTERM might be a good one.
 
-      Abort_Task_Interrupt := SIGABRT;
+      Abort_Task_Signal := SIGABRT;
 
       Exception_Action.sa_handler := Notify_Exception'Address;
       Exception_Action.sa_flags := SA_ONSTACK;
       Result := sigemptyset (mask'Access);
       pragma Assert (Result = 0);
 
-      for J in Exception_Interrupts'Range loop
-         Result := sigaddset (mask'Access, Signal (Exception_Interrupts (J)));
+      for J in Exception_Signals'Range loop
+         Result := sigaddset (mask'Access, Signal (Exception_Signals (J)));
          pragma Assert (Result = 0);
       end loop;
 
@@ -185,5 +190,15 @@ begin
             Reserve (J) := True;
          end if;
       end loop;
+
+      --  Add exception signals to the set of unmasked signals
+
+      for J in Exception_Signals'Range loop
+         Keep_Unmasked (Exception_Signals (J)) := True;
+      end loop;
+
+      --  The abort signal must also be unmasked
+
+      Keep_Unmasked (Abort_Task_Signal) := True;
    end;
 end System.Interrupt_Management;

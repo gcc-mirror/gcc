@@ -186,6 +186,7 @@ package body Opt is
    ----------------
 
    procedure Tree_Write is
+      Version_String : String := Gnat_Version_String;
    begin
       Tree_Write_Int  (ASIS_Version_Number);
       Tree_Write_Bool (Brief_Output);
@@ -202,9 +203,9 @@ package body Opt is
       Tree_Write_Bool (Assertions_Enabled);
       Tree_Write_Bool (Enable_Overflow_Checks);
       Tree_Write_Bool (Full_List);
-      Tree_Write_Int  (Int (Gnat_Version_String'Length));
-      Tree_Write_Data (Gnat_Version_String'Address,
-                       Gnat_Version_String'Length);
+      Tree_Write_Int  (Int (Version_String'Length));
+      Tree_Write_Data (Version_String'Address,
+                       Version_String'Length);
       Tree_Write_Data (Distribution_Stub_Mode'Address,
                        Distribution_Stub_Mode_Type'Object_Size / Storage_Unit);
       Tree_Write_Bool (Immediate_Errors);

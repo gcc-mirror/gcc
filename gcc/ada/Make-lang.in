@@ -290,10 +290,10 @@ regnattools:
 # use host-gcc host-gnatmake host-gnatbind host-gnatlink
 # put the host RTS dir first in the PATH to hide the default runtime
 # files that are among the sources
-RTS_DIR:=$(dir $(subst \,/,$(shell $(CC) -print-libgcc-file-name)))
+RTS_DIR:=$(strip $(subst \,/,$(shell gnatls -v | grep adalib )))
 cross-gnattools: force
 	$(MAKE)  -C ada $(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)\
-	   ADA_INCLUDES="-I$(RTS_DIR)adainclude -I$(RTS_DIR)adalib" \
+	   ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
 	   GNATMAKE="gnatmake" \
 	   GNATBIND="gnatbind" \
 	   GNATLINK="gnatlink" \

@@ -417,6 +417,10 @@ package Lib is
    function Num_Units return Nat;
    --  Number of units currently in unit table
 
+   procedure Remove_Unit (U : Unit_Number_Type);
+   --  Remove unit U from unit table. Currently this is effective only
+   --  if U is the last unit currently stored in the unit table.
+
    function Entity_Is_In_Main_Unit (E : Entity_Id) return Boolean;
    --  Returns True if the entity E is declared in the main unit, or, in
    --  its corresponding spec, or one of its subunits. Entities declared
