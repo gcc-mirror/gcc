@@ -1,3 +1,8 @@
+2002-03-15  Anthony Green  <green@redhat.com>
+
+	* jcf-parse.c (yyparse): Don't emit class registration
+	constructor when compiling resource files.
+
 2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lang.c (java_tree_code_type, java_tree_code_length,
