@@ -10096,6 +10096,12 @@ patch_method_invocation (patch, primary, where, from_super,
       qualify_ambiguous_name (wfl);
       resolved = resolve_field_access (wfl, NULL, NULL);
 
+      if (TREE_CODE (resolved) == VAR_DECL && FIELD_STATIC (resolved)
+         && FIELD_FINAL (resolved) 
+         && !inherits_from_p (DECL_CONTEXT (resolved), current_class)
+         && !flag_emit_class_files && !flag_emit_xref)
+       resolved = build_class_init (DECL_CONTEXT (resolved), resolved);
+
       if (resolved == error_mark_node)
 	PATCH_METHOD_RETURN_ERROR ();
 
