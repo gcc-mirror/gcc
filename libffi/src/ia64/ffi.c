@@ -196,7 +196,7 @@ ffi_prep_args(struct ia64_args *stack, extended_cif *ecif, int bytes)
 	      *fp_argp++ = *(float *)(* p_argv);
 	    }
 	  /* Also put it into the integer registers or memory: */
-	    *(UINT64 *) argp = *(UINT32 *)(* p_argv);
+	  *(UINT64 *) argp = *(UINT32 *)(* p_argv);
 	  break;
 
 	case FFI_TYPE_DOUBLE:
@@ -204,7 +204,7 @@ ffi_prep_args(struct ia64_args *stack, extended_cif *ecif, int bytes)
 	  if (fp_argp - stack->fp_regs < 8)
 	    *fp_argp++ = *(double *)(* p_argv);
 	  /* Also put it into the integer registers or memory: */
-	    *(double *) argp = *(double *)(* p_argv);
+	  *(double *) argp = *(double *)(* p_argv);
 	  break;
 
 	case FFI_TYPE_STRUCT:
@@ -547,7 +547,7 @@ ffi_prep_incoming_args_UNIX(struct ia64_args *args, void **rvalue,
   register unsigned int i;
   register unsigned int avn;
   register void **p_argv;
-  register unsigned long *argp = args -> out_regs;
+  register long *argp = args -> out_regs;
   unsigned fp_reg_num = 0;
   register ffi_type **p_arg;
 
@@ -576,17 +576,15 @@ ffi_prep_incoming_args_UNIX(struct ia64_args *args, void **rvalue,
 	case FFI_TYPE_FLOAT:
 	  z = 1;
 	  /* Convert argument back to float in place from the saved value */
-	  if (fp_reg_num < 8) {
+	  if (argp - args->out_regs < 8 && fp_reg_num < 8) {
 	      *(float *)argp = args -> fp_regs[fp_reg_num++];
-	  } else {
-	      *(float *)argp = *(double *)argp;
 	  }
 	  *p_argv = (void *)argp;
 	  break;
 
 	case FFI_TYPE_DOUBLE:
 	  z = 1;
-	  if (fp_reg_num < 8) {
+	  if (argp - args->out_regs < 8 && fp_reg_num < 8) {
 	      *p_argv = args -> fp_regs + fp_reg_num++;
 	  } else {
 	      *p_argv = (void *)argp;
@@ -598,7 +596,8 @@ ffi_prep_incoming_args_UNIX(struct ia64_args *args, void **rvalue,
 	      size_t sz = (*p_arg)->size;
 	      unsigned short element_type;
               z = ((*p_arg)->size + FFI_SIZEOF_ARG - 1)/FFI_SIZEOF_ARG;
-	      if (is_homogeneous_fp_aggregate(*p_arg, 8, &element_type)) {
+	      if (argp - args->out_regs < 8
+		  && is_homogeneous_fp_aggregate(*p_arg, 8, &element_type)) {
 		int nelements = sz/float_type_size(element_type);
 		if (nelements + fp_reg_num >= 8) {
 		  /* hard case NYI.	*/
