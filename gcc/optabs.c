@@ -4786,6 +4786,7 @@ init_optabs (void)
   vec_set_optab = init_optab (UNKNOWN);
   vec_init_optab = init_optab (UNKNOWN);
   vec_realign_load_optab = init_optab (UNKNOWN);
+  movmisalign_optab = init_optab (UNKNOWN);
 
   /* Conversions.  */
   sext_optab = init_convert_optab (SIGN_EXTEND);
