@@ -1,3 +1,8 @@
+1999-12-08  Tom Tromey  <tromey@cygnus.com>
+
+	* include/posix-threads.h (_Jv_PthreadCheckMonitor): Handle case
+	where no recursive mutexes exist.  Fixes PR libgcj/117.
+
 1999-12-05  Anthony Green  <green@cygnus.com>
 
 	* include/jvm.h: Declare many functions with
