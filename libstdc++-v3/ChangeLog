@@ -1,3 +1,20 @@
+2004-11-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/22_locale/time_get/get_date/char/1.cc: In the checks
+	use, more correctly (and consistently with other testcases) the
+	return value of the facet (the iterator arguments are by value).
+	* testsuite/22_locale/time_get/get_date/char/12791.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/12791.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/wchar_t/1.cc: Likewise.
+
 2004-11-19  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* Makefile.am (doxygen, doxygen-maint, doxygen-man): Remove extra '$'

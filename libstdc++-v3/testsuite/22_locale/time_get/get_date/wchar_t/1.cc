@@ -41,7 +41,8 @@ void test01()
 
   wistringstream iss;
   iss.imbue(loc_c);
-  const time_get<wchar_t>& tim_get = use_facet<time_get<wchar_t> >(iss.getloc()); 
+  const time_get<wchar_t>& tim_get =
+    use_facet<time_get<wchar_t> >(iss.getloc()); 
 
   const ios_base::iostate good = ios_base::goodbit;
   ios_base::iostate errorstate = good;
@@ -67,24 +68,26 @@ void test01()
   iterator_type is_it02(iss);
   tm time02;
   errorstate = good;
-  tim_get.get_date(is_it02, end, iss, errorstate, &time02);
+  iterator_type ret02 = tim_get.get_date(is_it02, end, iss, errorstate,
+					 &time02);
   VERIFY( time02.tm_year == time_bday.tm_year );
   VERIFY( time02.tm_mon == time_bday.tm_mon );
   VERIFY( time02.tm_mday == time_bday.tm_mday );
   VERIFY( errorstate == good );
-  VERIFY( *is_it02 == L' ' );
+  VERIFY( *ret02 == L' ' );
 
   iss.str(L"04/04d/71 ");
   iterator_type is_it03(iss);
   tm time03;
   time03.tm_year = 3;
   errorstate = good;
-  tim_get.get_date(is_it03, end, iss, errorstate, &time03);
+  iterator_type ret03 = tim_get.get_date(is_it03, end, iss, errorstate,
+					 &time03);
   VERIFY( time03.tm_year == 3 );
   VERIFY( time03.tm_mon == time_bday.tm_mon );
   VERIFY( time03.tm_mday == time_bday.tm_mday );
   VERIFY( errorstate == ios_base::failbit );
-  VERIFY( *is_it03 == L'd' );
+  VERIFY( *ret03 == L'd' );
 }
 
 int main()

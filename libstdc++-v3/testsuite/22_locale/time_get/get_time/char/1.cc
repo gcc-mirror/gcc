@@ -87,9 +87,10 @@ void test01()
   iterator_type is_it04(iss);
   tm time04;
   errorstate = good;
-  tim_get.get_time(is_it04, end, iss, errorstate, &time04);
+  iterator_type ret04 = tim_get.get_time(is_it04, end, iss, errorstate,
+					 &time04);
   VERIFY( time01.tm_hour == time_bday.tm_hour );
-  VERIFY( *is_it04 == 'a');
+  VERIFY( *ret04 == 'a' );
   VERIFY( errorstate == ios_base::failbit );
 
   // inspection of named locales, de_DE
