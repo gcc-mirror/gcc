@@ -1,3 +1,8 @@
+2003-07-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/extend.texi (Deprecated Features): Implicit typename is
+	gone. Default args on types is going.
+
 2003-07-26  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* Makefile.in (ifcvt.o): Depend on target.h
