@@ -4300,6 +4300,7 @@ for_each_template_parm (t, fn, data)
     case DOTSTAR_EXPR:
     case TYPEID_EXPR:
     case LOOKUP_EXPR:
+    case PSEUDO_DTOR_EXPR:
       if (!fn)
 	return 1;
       /* Fall through.  */
@@ -7078,6 +7079,7 @@ tsubst_copy (t, args, complain, in_decl)
 
     case COND_EXPR:
     case MODOP_EXPR:
+    case PSEUDO_DTOR_EXPR:
       {
 	r = build_nt
 	  (code, tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl),

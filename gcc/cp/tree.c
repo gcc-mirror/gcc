@@ -1675,6 +1675,7 @@ search_tree (t, func)
     case ARROW_EXPR:
     case DOTSTAR_EXPR:
     case TYPEID_EXPR:
+    case PSEUDO_DTOR_EXPR:
       break;
 
     case COMPLEX_CST:
