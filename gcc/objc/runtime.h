@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime internal declarations
-   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -55,9 +55,6 @@ extern int  __objc_init_thread_system(void);    /* thread.c                 */
 extern int  __objc_fini_thread_system(void);    /* thread.c                 */
 
 extern void class_add_method_list(Class, MethodList_t);
-
-extern void objc_error(id object, const char* fmt, va_list);
-extern void (*_objc_error)(id, const char*, va_list);
 
 /* True when class links has been resolved */     
 extern BOOL __objc_class_links_resolved;
