@@ -105,11 +105,6 @@ static void ffetarget_print_char_ (FILE *f, unsigned char c);
 
 /* Internal macros. */
 
-#ifdef REAL_VALUE_ATOF
-#define FFETARGET_ATOF_(p,m) REAL_VALUE_ATOF ((p),(m))
-#else
-#define FFETARGET_ATOF_(p,m) atof ((p))
-#endif
 
 
 /* ffetarget_print_char_ -- Print a single character (in apostrophe context)
@@ -2279,7 +2274,7 @@ ffetarget_real1 (ffetargetReal1 *value, ffelexToken integer,
 
   {
     REAL_VALUE_TYPE rv;
-    rv = FFETARGET_ATOF_ (ptr, SFmode);
+    real_from_string (&rv, ptr);
     ffetarget_make_real1 (value, rv);
   }
 
@@ -2367,7 +2362,7 @@ ffetarget_real2 (ffetargetReal2 *value, ffelexToken integer,
 
   {
     REAL_VALUE_TYPE rv;
-    rv = FFETARGET_ATOF_ (ptr, DFmode);
+    real_from_string (&rv, ptr);
     ffetarget_make_real2 (value, rv);
   }
 

@@ -579,13 +579,13 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
 #define FFETARGET_REAL_VALUE_FROM_INT_(resr, lf, kt)		\
   REAL_VALUE_FROM_INT (resr, (HOST_WIDE_INT) lf,		\
                        (HOST_WIDE_INT) ((lf < 0) ? -1 : 0),	\
-		       ((kt == 1) ? SFmode : DFmode))
+                       mode_for_size (kt == 1 ? 32 : 64, MODE_FLOAT, 0))
 
 #if HOST_BITS_PER_LONGLONG > HOST_BITS_PER_WIDE_INT
 #define FFETARGET_REAL_VALUE_FROM_LONGLONG_(resr, lf, kt)		\
   REAL_VALUE_FROM_INT (resr, (HOST_WIDE_INT) lf,			\
 		       (HOST_WIDE_INT) (lf >> HOST_BITS_PER_WIDE_INT),	\
-		       ((kt == 1) ? SFmode : DFmode))
+                       mode_for_size (kt == 1 ? 32 : 64, MODE_FLOAT, 0))
 #define FFETARGET_LONGLONG_FROM_INTS_(hi, lo)		\
   (((long long int) hi << HOST_BITS_PER_WIDE_INT)	\
    | (long long int) ((unsigned HOST_WIDE_INT) lo))
