@@ -1,5 +1,10 @@
 2001-12-31  Graham Stott  <grahams@redhat.com>
 
+       * cfgloop.c (flow_loop_entry_edges_find): Fix typo.
+        (flow_loop_exit_edges_find): Likewise.
+
+2001-12-31  Graham Stott  <grahams@redhat.com>
+
 	* gcse.c (gcse_main): Fix typos.
 	(alloc_gcse_mem): Likewise.
 
