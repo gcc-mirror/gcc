@@ -1,3 +1,8 @@
+Wed Nov 18 16:31:28 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* reload.c (find_reloads_toplev): Pass &x instead of NULL_PTR in
+	find_reloads_address call.
+
 Wed Nov 18 22:13:00 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* expr.c (store_expr): Don't generate load-store pair
