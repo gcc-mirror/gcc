@@ -1,5 +1,11 @@
 2004-02-01  Roger Sayle  <roger@eyesopen.com>
 
+	* builtins.c (expand_builtin_pow): If flag_unsafe_math_optimizations
+	isn't set, don't call expand_builtin_mathfn_2 to use the pow optab.
+	(expand_builtin): Always call expand_builtin_pow.
+
+2004-02-01  Roger Sayle  <roger@eyesopen.com>
+
 	* builtins.def (BUILT_IN_SIGNBIT, BUILT_IN_SIGNBITF,
 	BUILT_IN_SIGNBITL): New GCC builtins.
 	* builtins.c (expand_builtin_signbit): New function to RTL expand

@@ -2141,7 +2141,10 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
 	    }
 	}
     }
-  return expand_builtin_mathfn_2 (exp, target, NULL_RTX);
+
+  if (! flag_unsafe_math_optimizations)
+    return NULL_RTX;
+  return expand_builtin_mathfn_2 (exp, target, subtarget);
 }
 
 /* Expand expression EXP which is a call to the strlen builtin.  Return 0
@@ -5162,8 +5165,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_POW:
     case BUILT_IN_POWF:
     case BUILT_IN_POWL:
-      if (! flag_unsafe_math_optimizations)
-	break;
       target = expand_builtin_pow (exp, target, subtarget);
       if (target)
 	return target;
