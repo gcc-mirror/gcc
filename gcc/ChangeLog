@@ -1,3 +1,58 @@
+Mon Sep 20 10:49:05 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* Makefile.in (distclean): Delete tm_p.h.
+	* configure.in: Create a new file, "tm_p.h", from a list in
+	"tm_p_file". For ix86 systems, set up "tm_p_file" to include
+	"i386/i386-protos.h".
+
+	* alias.c: Include "tm_p.h".
+	* c-typeck.c: Likewise.
+	* calls.c: Likewise.
+	* cse.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* explow.c: Likewise.
+	* expmed.c: Likewise.
+	* expr.c: Likewise.
+	* final.c: Likewise.
+	* flow.c: Likewise.
+	* fold-const.c: Likewise.
+	* function.c: Likewise.
+	* gcse.c: Likewise.
+	* global.c: Likewise.
+	* haifa-sched.c: Likewise.
+	* integrate.c: Likewise.
+	* jump.c: Likewise.
+	* local-alloc.c: Likewise.
+	* loop.c: Likewise.
+	* optabs.c: Likewise.
+	* recog.c: Likewise.
+	* reg-stack.c: Likewise.
+	* regclass.c: Likewise.
+	* regmove.c: Likewise.
+	* reload.c: Likewise.
+	* reload1.c: Likewise.
+	* reorg.c: Likewise.
+	* resource.c: Likewise.
+	* stmt.c: Likewise.
+	* stor-layout.c: Likewise.
+	* toplev.c: Likewise.
+	* tree.c: Likewise.
+	* unroll.c: Likewise.
+	* genattrtab.c (main): Make generated file include "tm_p.h".
+	* genemit.c (main): Likewise.
+	* genoutput.c (main): Likewise.
+	* genrecog.c (main): Likewise.
+
+	* i386.h: Delete all prototypes.
+	* i386.c: Include "tm_p.h".
+	(ix86_attr_length_default): Call constant_call_address_operand
+	with correct number of arguments.
+	* i386-protos.h: New file.
+	* i386.md (unnamed patterns): Call constant_call_address_operand
+	with correct number of arguments.
+	(exception_receiver): Call load_pic_register with correct number
+	of arguments.
+
 Sun Sep 19 14:18:39 1999  Richard Henderson  <rth@cygnus.com>
 
 	* c-pragma.c (mark_align_stack): Dereference the void* properly.

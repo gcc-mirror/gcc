@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "rtl.h" /* stdio.h must precede rtl.h for FFS.  */
+#include "tm_p.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "output.h"

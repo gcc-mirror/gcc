@@ -159,6 +159,7 @@
 #include "system.h"
 #include "toplev.h"
 #include "rtl.h"
+#include "tm_p.h"
 #include "basic-block.h"
 #include "regs.h"
 #include "function.h"

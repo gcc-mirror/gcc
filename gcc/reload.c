@@ -90,6 +90,7 @@ a register with any other reload.  */
 #include "config.h"
 #include "system.h"
 #include "rtl.h"
+#include "tm_p.h"
 #include "insn-config.h"
 #include "insn-codes.h"
 #include "recog.h"
