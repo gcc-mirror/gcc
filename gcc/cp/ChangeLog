@@ -1,3 +1,7 @@
+2002-10-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (check_field_decls): Fix typo.
+
 2002-10-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8067
