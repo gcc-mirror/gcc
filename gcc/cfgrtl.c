@@ -130,7 +130,7 @@ delete_insn (rtx insn)
 	  really_delete = false;
 	  PUT_CODE (insn, NOTE);
 	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED_LABEL;
-	  NOTE_SOURCE_FILE (insn) = name;
+	  NOTE_DELETED_LABEL_NAME (insn) = name;
 	}
 
       remove_node_from_expr_list (insn, &nonlocal_goto_handler_labels);

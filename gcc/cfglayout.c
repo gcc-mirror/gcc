@@ -254,7 +254,7 @@ insn_locators_initialize (void)
   rtx insn, next;
   int loc = 0;
   int line_number = 0, last_line_number = 0;
-  char *file_name = NULL, *last_file_name = NULL;
+  const char *file_name = NULL, *last_file_name = NULL;
 
   prologue_locator = epilogue_locator = 0;
 
@@ -293,7 +293,7 @@ insn_locators_initialize (void)
 	    {
 	      loc++;
 	      VARRAY_PUSH_INT (file_locators_locs, loc);
-	      VARRAY_PUSH_CHAR_PTR (file_locators_files, file_name);
+	      VARRAY_PUSH_CHAR_PTR (file_locators_files, (char *) file_name);
 	      last_file_name = file_name;
 	    }
 	}
@@ -324,8 +324,10 @@ insn_locators_initialize (void)
 	    default:
 	      if (NOTE_LINE_NUMBER (insn) > 0)
 		{
-		  line_number = NOTE_LINE_NUMBER (insn);
-		  file_name = (char *)NOTE_SOURCE_FILE (insn);
+		  expanded_location xloc;
+		  NOTE_EXPANDED_LOCATION (xloc, insn);
+		  line_number = xloc.line;
+		  file_name = xloc.file;
 		}
 	      break;
 	    }

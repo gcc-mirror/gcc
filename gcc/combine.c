@@ -2770,19 +2770,13 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	PATTERN (i2) = newi2pat;
       }
     else
-      {
-	PUT_CODE (i2, NOTE);
-	NOTE_LINE_NUMBER (i2) = NOTE_INSN_DELETED;
-	NOTE_SOURCE_FILE (i2) = 0;
-      }
+      SET_INSN_DELETED (i2);
 
     if (i1)
       {
 	LOG_LINKS (i1) = 0;
 	REG_NOTES (i1) = 0;
-	PUT_CODE (i1, NOTE);
-	NOTE_LINE_NUMBER (i1) = NOTE_INSN_DELETED;
-	NOTE_SOURCE_FILE (i1) = 0;
+	SET_INSN_DELETED (i1);
       }
 
     /* Get death notes for everything that is now used in either I3 or
@@ -12045,9 +12039,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 			  distribute_notes (old_notes, tem, tem, NULL_RTX);
 			  distribute_links (LOG_LINKS (tem));
 
-			  PUT_CODE (tem, NOTE);
-			  NOTE_LINE_NUMBER (tem) = NOTE_INSN_DELETED;
-			  NOTE_SOURCE_FILE (tem) = 0;
+			  SET_INSN_DELETED (tem);
 
 #ifdef HAVE_cc0
 			  /* Delete the setter too.  */
@@ -12061,10 +12053,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 						cc0_setter, NULL_RTX);
 			      distribute_links (LOG_LINKS (cc0_setter));
 
-			      PUT_CODE (cc0_setter, NOTE);
-			      NOTE_LINE_NUMBER (cc0_setter)
-				= NOTE_INSN_DELETED;
-			      NOTE_SOURCE_FILE (cc0_setter) = 0;
+			      SET_INSN_DELETED (cc0_setter);
 			    }
 #endif
 			}

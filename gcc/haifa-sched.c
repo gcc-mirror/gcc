@@ -1559,8 +1559,13 @@ restore_line_notes (rtx head, rtx tail)
 	     && (note = LINE_NOTE (insn)) != 0
 	     && note != line
 	     && (line == 0
+#ifdef USE_MAPPED_LOCATION
+		 || NOTE_SOURCE_LOCATION (note) != NOTE_SOURCE_LOCATION (line)
+#else
 		 || NOTE_LINE_NUMBER (note) != NOTE_LINE_NUMBER (line)
-		 || NOTE_SOURCE_FILE (note) != NOTE_SOURCE_FILE (line)))
+		 || NOTE_SOURCE_FILE (note) != NOTE_SOURCE_FILE (line)
+#endif
+		 ))
       {
 	line = note;
 	prev = PREV_INSN (insn);
@@ -1577,7 +1582,9 @@ restore_line_notes (rtx head, rtx tail)
 	  {
 	    added_notes++;
 	    new = emit_note_after (NOTE_LINE_NUMBER (note), prev);
+#ifndef USE_MAPPED_LOCATION
 	    NOTE_SOURCE_FILE (new) = NOTE_SOURCE_FILE (note);
+#endif
 	  }
       }
   if (sched_verbose && added_notes)
@@ -1605,17 +1612,20 @@ rm_redundant_line_notes (void)
 	if (active_insn == 0)
 	  {
 	    notes++;
-	    NOTE_SOURCE_FILE (insn) = 0;
-	    NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	    SET_INSN_DELETED (insn);
 	  }
 	/* If the line number is unchanged, LINE is redundant.  */
 	else if (line
+#ifdef USE_MAPPED_LOCATION
+		 && NOTE_SOURCE_LOCATION (line) == NOTE_SOURCE_LOCATION (insn)
+#else
 		 && NOTE_LINE_NUMBER (line) == NOTE_LINE_NUMBER (insn)
-		 && NOTE_SOURCE_FILE (line) == NOTE_SOURCE_FILE (insn))
+		 && NOTE_SOURCE_FILE (line) == NOTE_SOURCE_FILE (insn)
+#endif
+)
 	  {
 	    notes++;
-	    NOTE_SOURCE_FILE (line) = 0;
-	    NOTE_LINE_NUMBER (line) = NOTE_INSN_DELETED;
+	    SET_INSN_DELETED (line);
 	    line = insn;
 	  }
 	else

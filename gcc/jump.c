@@ -142,8 +142,13 @@ purge_line_number_notes (rtx f)
 	  {
 	    /* Delete this note if it is identical to previous note.  */
 	    if (last_note
+#ifdef USE_MAPPED_LOCATION
+		&& NOTE_SOURCE_LOCATION (insn) == NOTE_SOURCE_LOCATION (last_note)
+#else
 		&& NOTE_SOURCE_FILE (insn) == NOTE_SOURCE_FILE (last_note)
-		&& NOTE_LINE_NUMBER (insn) == NOTE_LINE_NUMBER (last_note))
+		&& NOTE_LINE_NUMBER (insn) == NOTE_LINE_NUMBER (last_note)
+#endif
+)
 	      {
 		delete_related_insns (insn);
 		continue;

@@ -2677,9 +2677,7 @@ split_insn (rtx insn)
     return NULL_RTX;
 
   /* try_split returns the NOTE that INSN became.  */
-  PUT_CODE (insn, NOTE);
-  NOTE_SOURCE_FILE (insn) = 0;
-  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+  SET_INSN_DELETED (insn);
 
   /* ??? Coddle to md files that generate subregs in post-reload
      splitters instead of computing the proper hard register.  */

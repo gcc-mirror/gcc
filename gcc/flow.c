@@ -3391,8 +3391,7 @@ attempt_auto_inc (struct propagate_block_info *pbi, rtx inc, rtx insn,
 	}
 
       PUT_CODE (incr, NOTE);
-      NOTE_LINE_NUMBER (incr) = NOTE_INSN_DELETED;
-      NOTE_SOURCE_FILE (incr) = 0;
+      SET_INSN_DELETED (incr);
     }
 
   if (regno >= FIRST_PSEUDO_REGISTER)

@@ -59,10 +59,14 @@ location_for_asm (rtx insn)
     asmop = NULL;
 
   if (asmop)
+#ifdef USE_MAPPED_LOCATION
+    loc = ASM_OPERANDS_SOURCE_LOCATION (asmop);
+#else
     {
       loc.file = ASM_OPERANDS_SOURCE_FILE (asmop);
       loc.line = ASM_OPERANDS_SOURCE_LINE (asmop);
     }
+#endif
   else
     loc = input_location;
   return loc;

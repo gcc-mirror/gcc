@@ -231,13 +231,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       && (flags & TDF_LINENO)
       && EXPR_HAS_LOCATION (node))
     {
+      expanded_location xloc = expand_location (EXPR_LOCATION (node));
       pp_character (buffer, '[');
-      if (EXPR_FILENAME (node))
+      if (xloc.file)
 	{
-	  pp_string (buffer, EXPR_FILENAME (node));
+	  pp_string (buffer, xloc.file);
 	  pp_string (buffer, " : ");
 	}
-      pp_decimal_int (buffer, EXPR_LINENO (node));
+      pp_decimal_int (buffer, xloc.line);
       pp_string (buffer, "] ");
     }
 
@@ -556,7 +557,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case TYPE_DECL:
-      if (strcmp (DECL_SOURCE_FILE (node), "<built-in>") == 0)
+      if (DECL_IS_BUILTIN (node))
 	{
 	  /* Don't print the declaration of built-in types.  */
 	  break;
@@ -2224,15 +2225,27 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
     {
       INDENT (indent);
 
-      if ((flags & TDF_LINENO) && e->goto_locus)
+      if ((flags & TDF_LINENO)
+#ifdef USE_MAPPED_LOCATION
+	  && e->goto_locus != UNKNOWN_LOCATION
+#else
+	  && e->goto_locus
+#endif
+	  )
 	{
+	  expanded_location goto_xloc;
+#ifdef USE_MAPPED_LOCATION
+	  goto_xloc = expand_location (e->goto_locus);
+#else
+	  goto_xloc = *e->goto_locus;
+#endif
 	  pp_character (buffer, '[');
-	  if (e->goto_locus->file)
+	  if (goto_xloc.file)
 	    {
-	      pp_string (buffer, e->goto_locus->file);
+	      pp_string (buffer, goto_xloc.file);
 	      pp_string (buffer, " : ");
 	    }
-	  pp_decimal_int (buffer, e->goto_locus->line);
+	  pp_decimal_int (buffer, goto_xloc.line);
 	  pp_string (buffer, "] ");
 	}
 

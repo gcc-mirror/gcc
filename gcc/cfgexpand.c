@@ -319,7 +319,11 @@ construct_exit_block (void)
 
   /* Make sure the locus is set to the end of the function, so that 
      epilogue line numbers and warnings are set properly.  */
+#ifdef USE_MAPPED_LOCATION
+  if (cfun->function_end_locus != UNKNOWN_LOCATION)
+#else
   if (cfun->function_end_locus.file)
+#endif
     input_location = cfun->function_end_locus;
 
   /* The following insns belong to the top scope.  */

@@ -305,11 +305,12 @@ pp_base_format_text (pretty_printer *pp, text_info *text)
 
         case 'H':
           {
-            const location_t *locus = va_arg (*text->args_ptr, location_t *);
+            location_t *locus = va_arg (*text->args_ptr, location_t *);
+	    expanded_location s = expand_location (*locus);
             pp_string (pp, "file '");
-            pp_string (pp, locus->file);
+            pp_string (pp, s.file);
             pp_string (pp, "', line ");
-            pp_decimal_int (pp, locus->line);
+            pp_decimal_int (pp, s.line);
           }
           break;
 
