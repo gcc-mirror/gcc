@@ -6,7 +6,8 @@ Tue Jan 20 09:29:09 1998  Jeffrey A Law  (law@cygnus.com)
 	* expr.c, expr.h function.c, integrate.c: Likewise.
 	* output.h, regclass.c, rtl.h, stmt.c, toplev.c: Likewise.
 	* tree.h, varasm.c: Likewise.
-	* bi-*, bc-*: Delete bytecode related files.
+	* config/m68k/m68k.h: Likewise.
+	* bi-*, bc-*, bytecode*: Delete bytecode related files.
 	
 
 Tue Jan 20 09:02:31 1998  Gavin Koch  (gavin@cygnus.com)
