@@ -100,7 +100,10 @@ mark_reference_fields (field, low, high, ubit,
 	continue;
 
       offset = int_byte_position (field);
-      if (JREFERENCE_TYPE_P (TREE_TYPE (field)))
+      if (JREFERENCE_TYPE_P (TREE_TYPE (field))
+	  /* An `object' of type gnu.gcj.RawData is actually non-Java
+	     data.  */
+	  && TREE_TYPE (field) != rawdata_ptr_type_node)
 	{
 	  unsigned int count;
 
@@ -117,8 +120,14 @@ mark_reference_fields (field, low, high, ubit,
 	  set_bit (low, high, ubit - count - 1);
 	  if (count > ubit - 2)
 	    *pointer_after_end = 1;
+
+	  /* If we saw a non-reference field earlier, then we can't
+	     use the count representation.  We keep track of that in
+	     *ALL_BITS_SET.  */
+	  if (! *all_bits_set)
+	    *all_bits_set = -1;
 	}
-      else
+      else if (*all_bits_set > 0)
 	*all_bits_set = 0;
 
       *last_view_index = offset;
@@ -172,9 +181,13 @@ get_boehm_type_descriptor (tree type)
   /* If the object is all pointers, or if the part with pointers fits
      in our bitmap, then we are ok.  Otherwise we have to allocate it
      a different way.  */
-  if (all_bits_set)
+  if (all_bits_set != -1)
     {
-      /* In the GC the computation looks something like this:
+      /* In this case the initial part of the object is all reference
+	 fields, and the end of the object is all non-reference
+	 fields.  We represent the mark as a count of the fields,
+	 shifted.  In the GC the computation looks something like
+	 this:
 	 value = DS_LENGTH | WORDS_TO_BYTES (last_set_index + 1);
 	 DS_LENGTH is 0.
 	 WORDS_TO_BYTES shifts by log2(bytes-per-pointer).  */

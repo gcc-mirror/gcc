@@ -1,3 +1,14 @@
+2000-05-04  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.c (mark_reference_fields): Don't mark RawData fields.
+	Keep track of when we've seen a reference field after a
+	non-reference field.
+	(get_boehm_type_descriptor): Handle case where we see
+	non-reference fields but no trailing reference field.
+	* decl.c (rawdata_ptr_type_node): Define.
+	(init_decl_processing): Initialize rawdata_ptr_type_node.
+	* java-tree.h (rawdata_ptr_type_node): Declare.
+
 2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jcf-dump.c (SPECIAL_IINC): Ensure arguments match format
@@ -13,11 +24,6 @@
 
 	* gjavah.c (decode_signature_piece): Don't treat `$' as namespace
 	separator.
-
-2000-05-02  Tom Tromey  <tromey@cygnus.com>
-
-	* expr.c (build_jni_stub): Cache the result of
-	_Jv_LookupJNIMethod.
 
 2000-04-19  Tom Tromey  <tromey@cygnus.com>
 

@@ -225,6 +225,7 @@ extern tree string_ptr_type_node;
 extern tree throwable_type_node;
 extern tree runtime_exception_type_node;
 extern tree error_exception_type_node;
+extern tree rawdata_ptr_type_node;
 
 extern tree *predef_filenames;
 extern int predef_filenames_size;

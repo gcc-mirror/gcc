@@ -295,6 +295,7 @@ tree string_ptr_type_node;
 tree throwable_type_node;
 tree runtime_exception_type_node;
 tree error_exception_type_node;
+tree rawdata_ptr_type_node;
 tree *predef_filenames;
 int  predef_filenames_size;
 
@@ -586,6 +587,8 @@ init_decl_processing ()
     lookup_class (get_identifier ("java.lang.RuntimeException"));
   error_exception_type_node = 
     lookup_class (get_identifier ("java.lang.Error"));
+  rawdata_ptr_type_node
+    = promote_type (lookup_class (get_identifier ("gnu.gcj.RawData")));
 
   /* This section has to be updated as items are added to the previous
      section. */
