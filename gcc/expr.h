@@ -539,6 +539,15 @@ extern void adjust_stack ();
 /* Add some bytes to the stack.  An rtx says how many.  */
 extern void anti_adjust_stack ();
 
+/* This enum is used for the following two functions.  */
+enum save_level {SAVE_BLOCK, SAVE_FUNCTION, SAVE_NONLOCAL};
+
+/* Save the stack pointer at the specified level.  */
+extern void emit_stack_save ();
+
+/* Restore the stack pointer from a save area of the specified level.  */
+extern void emit_stack_restore ();
+
 /* Allocate some space on the stack dynamically and return its address.  An rtx
    says how many bytes.  */
 extern rtx allocate_dynamic_stack_space ();
