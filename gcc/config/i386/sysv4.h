@@ -22,8 +22,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "i386.h"	/* Base i386 target machine definitions */
 #include "att386.h"	/* Use the i386 AT&T assembler syntax */
 #include "svr4.h"	/* Definitions common to all SVR4 targets */
-#include "machmode.h"
-#include "real.h"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 System V Release 4)");
