@@ -1023,14 +1023,16 @@ extern int current_function_anonymous_args;
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
   fprintf (FILE, "%s%d:\n", PREFIX, NUM)
 
-/* Nothing special is done about jump tables */
-/* #define ASM_OUTPUT_CASE_LABEL(STREAM,PREFIX,NUM,TABLE)   */
 /* #define ASM_OUTPUT_CASE_END(STREAM,NUM,TABLE)	    */
 
 /* Construct a private name.  */
 #define ASM_FORMAT_PRIVATE_NAME(OUTVAR,NAME,NUMBER)  \
   ((OUTVAR) = (char *) alloca (strlen (NAME) + 10),  \
    sprintf ((OUTVAR), "%s.%d", (NAME), (NUMBER)))
+
+/* Jump tables must be 32 bit aligned. */
+#define ASM_OUTPUT_CASE_LABEL(STREAM,PREFIX,NUM,TABLE) \
+  fprintf (STREAM, "\t.align 2\n%s%d:\n", PREFIX, NUM);
 
 /* Output a relative address. Not needed since jump tables are absolute
    but we must define it anyway.  */
