@@ -594,7 +594,7 @@ glue_header_name (pfile)
 	  break;
 	}
 
-      len = cpp_token_len (token);
+      len = cpp_token_len (token) + 2; /* Leading space, terminating \0.  */
       if (total_len + len > capacity)
 	{
 	  capacity = (capacity + len) * 2;

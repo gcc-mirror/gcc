@@ -1,3 +1,10 @@
+2003-04-24  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpplex.c (cpp_token_len): Tighten up.
+	(cpp_token_as_text): Need extra byte now.
+	* cpplib.c (glue_header_name): Need extra 2 bytes.
+	* cppmacro.c (cpp_macro_definition): Need extra byte.
+
 2003-04-24  Alexander Kabaev <kan@FreeBSD.ORG>
 
 	* config/sparc/sparc.md (umulsidi3, mulsidi3): Avoid using
