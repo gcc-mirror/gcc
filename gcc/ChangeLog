@@ -1,5 +1,8 @@
 2000-09-18  Jim Wilson  <wilson@cygnus.com>
 
+	* unroll.c (final_giv_value): Pass increment through
+	extend_value_for_giv before passing it to emit_iv_add_mult.
+
 	* function.c (fixup_var_refs_1, case ZERO_EXTRACT): If we have a
 	paradoxical subreg, then directly substitute the replacement and
 	return.
