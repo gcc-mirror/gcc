@@ -1,3 +1,10 @@
+2004-07-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/16115
+	* stor-layout.c (relayout_decl): New fn.
+	* tree.h: Declare it.
+	(DECL_BY_REFERENCE): New macro.
+
 2004-07-17  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* libgcc2.c (__enable_execute_stack): New symbol.

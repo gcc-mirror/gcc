@@ -4503,7 +4503,11 @@ type_passed_as (tree type)
 {
   /* Pass classes with copy ctors by invisible reference.  */
   if (TREE_ADDRESSABLE (type))
-    type = build_reference_type (type);
+    {
+      type = build_reference_type (type);
+      /* There are no other pointers to this temporary.  */
+      type = build_qualified_type (type, TYPE_QUAL_RESTRICT);
+    }
   else if (targetm.calls.promote_prototypes (type)
 	   && INTEGRAL_TYPE_P (type)
 	   && COMPLETE_TYPE_P (type)

@@ -234,6 +234,8 @@ struct tree_common GTY(())
            ..._DECL
        CALL_EXPR_HAS_RETURN_SLOT_ADDR in
            CALL_EXPR
+       DECL_BY_REFERENCE in
+           PARM_DECL, RESULT_DECL
 
    protected_flag:
 
@@ -854,6 +856,10 @@ extern void tree_operand_check_failed (int, enum tree_code,
 /* In a CALL_EXPR, means that the address of the return slot is part of the
    argument list.  */
 #define CALL_EXPR_HAS_RETURN_SLOT_ADDR(NODE) ((NODE)->common.private_flag)
+
+/* In a RESULT_DECL or PARM_DECL, means that it is passed by invisible
+   reference (and the TREE_TYPE is a pointer to the true type).  */
+#define DECL_BY_REFERENCE(NODE) (DECL_CHECK (NODE)->common.private_flag)
 
 /* In a CALL_EXPR, means that the call is the jump from a thunk to the
    thunked-to function.  */
@@ -2976,6 +2982,11 @@ extern tree type_hash_canon (unsigned int, tree);
 
 extern void layout_decl (tree, unsigned);
 
+/* Given a VAR_DECL, PARM_DECL or RESULT_DECL, clears the results of
+   a previous call to layout_decl and calls it again.  */
+
+extern void relayout_decl (tree);
+
 /* Return the mode for data of a given size SIZE and mode class CLASS.
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
    The value is BLKmode if no other mode is found.  This is like
@@ -3659,11 +3670,13 @@ extern void dwarf2out_return_save (const char *, HOST_WIDE_INT);
 
 extern void dwarf2out_return_reg (const char *, unsigned);
 
+/* In tree-inline.c  */
+
 /* The type of a callback function for walking over tree structure.  */
 
 typedef tree (*walk_tree_fn) (tree *, int *, void *);
-tree walk_tree (tree*, walk_tree_fn, void*, void*);
-tree walk_tree_without_duplicates (tree*, walk_tree_fn, void*);
+extern tree walk_tree (tree*, walk_tree_fn, void*, void*);
+extern tree walk_tree_without_duplicates (tree*, walk_tree_fn, void*);
 
 /* In tree-dump.c */
 

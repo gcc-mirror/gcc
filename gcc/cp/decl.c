@@ -9991,11 +9991,16 @@ store_parm_decls (tree current_function_parms)
      DECL_ARGUMENTS is not modified.  */
   current_binding_level->names = chainon (nonparms, DECL_ARGUMENTS (fndecl));
 
-  /* Do the starting of the exception specifications, if we have any.  */
-  if (flag_exceptions && !processing_template_decl
-      && flag_enforce_eh_specs
-      && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
-    current_eh_spec_block = begin_eh_spec_block ();
+  /* For a cloned function, we've already got all the code we need;
+     there's no need to add any extra bits.  */
+  if (!DECL_CLONED_FUNCTION_P (fndecl))
+    {
+      /* Do the starting of the exception specifications, if we have any.  */
+      if (flag_exceptions && !processing_template_decl
+	  && flag_enforce_eh_specs
+	  && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
+	current_eh_spec_block = begin_eh_spec_block ();
+    }
 }
 
 

@@ -29,7 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-common.h"
 #include "toplev.h"
 #include "tree-gimple.h"
-
+#include "hashtab.h"
 
 /* Genericize a TRY_BLOCK.  */
 
@@ -264,31 +264,88 @@ cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
   return ret;
 }
 
-/* Genericize a CLEANUP_STMT.  This just turns into a TRY_FINALLY or
-   TRY_CATCH depending on whether it's EH-only.  */
+static inline bool
+is_invisiref_parm (tree t)
+{
+  return (TREE_CODE (t) == PARM_DECL
+	  && DECL_BY_REFERENCE (t));
+}
+
+/* Perform any pre-gimplification lowering of C++ front end trees to
+   GENERIC.  */
 
 static tree
-gimplify_cleanup_stmt (tree *stmt_p, int *walk_subtrees,
-		       void *data ATTRIBUTE_UNUSED)
+cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 {
   tree stmt = *stmt_p;
+  htab_t htab = (htab_t) data;
+  void **slot;
 
-  if (DECL_P (stmt) || TYPE_P (stmt))
+  if (is_invisiref_parm (stmt))
+    {
+      *stmt_p = build_fold_indirect_ref (stmt);
+      *walk_subtrees = 0;
+      return NULL;
+    }
+
+  /* Other than invisiref parms, don't walk the same tree twice.  */
+  slot = htab_find_slot (htab, stmt, INSERT);
+  if (*slot)
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (stmt) == ADDR_EXPR
+      && is_invisiref_parm (TREE_OPERAND (stmt, 0)))
+    {
+      *stmt_p = convert (TREE_TYPE (stmt), TREE_OPERAND (stmt, 0));
+      *walk_subtrees = 0;
+    }
+  else if (DECL_P (stmt) || TYPE_P (stmt))
     *walk_subtrees = 0;
+
+  /* Due to the way voidify_wrapper_expr is written, we don't get a chance
+     to lower this construct before scanning it, so we need to lower these
+     before doing anything else.  */
   else if (TREE_CODE (stmt) == CLEANUP_STMT)
     *stmt_p = build (CLEANUP_EH_ONLY (stmt) ? TRY_CATCH_EXPR : TRY_FINALLY_EXPR,
 		     void_type_node, CLEANUP_BODY (stmt), CLEANUP_EXPR (stmt));
 
+  *slot = *stmt_p;
   return NULL;
 }
 
 void
 cp_genericize (tree fndecl)
 {
-  /* Due to the way voidify_wrapper_expr is written, we don't get a chance
-     to lower this construct before scanning it.  So we need to lower these
-     before doing anything else.  */
-  walk_tree (&DECL_SAVED_TREE (fndecl), gimplify_cleanup_stmt, NULL, NULL);
+  tree t;
+  htab_t htab;
+
+  /* Fix up the types of parms passed by invisible reference.  */
+  for (t = DECL_ARGUMENTS (fndecl); t; t = TREE_CHAIN (t))
+    {
+      if (DECL_BY_REFERENCE (t))
+	abort ();
+      if (TREE_ADDRESSABLE (TREE_TYPE (t)))
+	{
+	  if (DECL_ARG_TYPE (t) == TREE_TYPE (t))
+	    abort ();
+	  DECL_BY_REFERENCE (t) = 1;
+	  TREE_TYPE (t) = DECL_ARG_TYPE (t);
+	  relayout_decl (t);
+	}
+    }
+
+  /* If we're a clone, the body is already GIMPLE.  */
+  if (DECL_CLONED_FUNCTION_P (fndecl))
+    return;
+
+  /* We do want to see every occurrence of the parms, so we can't just use
+     walk_tree's hash functionality.  */
+  htab = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
+  walk_tree (&DECL_SAVED_TREE (fndecl), cp_genericize_r, htab, NULL);
+  htab_delete (htab);
 
   /* Do everything else.  */
   c_genericize (fndecl);

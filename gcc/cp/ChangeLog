@@ -1,3 +1,15 @@
+2004-07-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/16115
+	* call.c (type_passed_as): Make the invisible reference type
+	__restrict.
+	* cp-gimplify.c (gimplify_cleanup_stmt): Rename to
+	cp_genericize_r.  Handle invisible reference lowering.
+	(is_invisiref_parm): New fn.
+	(cp_genericize): Adjust the types of invisible reference parms.
+	Don't repeat the walk for clones.
+	* decl.c (store_parm_decls): Don't generate any code for clones.
+
 2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* cp-tree.h (builtin_function): Declare.
