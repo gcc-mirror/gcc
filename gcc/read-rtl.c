@@ -21,6 +21,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 #include "bconfig.h"
+
+/* Disable rtl checking; it conflicts with the macro handling.  */
+#undef ENABLE_RTL_CHECKING
+
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -316,8 +320,11 @@ apply_macro_to_rtx (rtx original, struct mapping *macro, int value)
   for (i = 0; format_ptr[i] != 0; i++)
     switch (format_ptr[i])
       {
-      case 'S':
       case 'T':
+	XTMPL (x, i) = apply_macro_to_string (XTMPL (x, i), macro, value);
+	break;
+
+      case 'S':
       case 's':
 	XSTR (x, i) = apply_macro_to_string (XSTR (x, i), macro, value);
 	break;
