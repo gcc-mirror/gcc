@@ -624,6 +624,8 @@ static int one_classic_gcse_pass      PROTO ((int));
 static void invalidate_nonnull_info	PROTO ((rtx, rtx, void *));
 static rtx process_insert_insn	PROTO ((struct expr *));
 static int pre_edge_insert	PROTO ((struct edge_list *, struct expr **));
+static int expr_reaches_here_p_work	PROTO ((struct occr *, struct expr *, int, int, char *));
+static int pre_expr_reaches_here_p_work	PROTO ((int, struct expr *, int, int, char *));
 
 /* Entry point for global common subexpression elimination.
    F is the first instruction in the function.  */

@@ -349,6 +349,7 @@ static int try_pre_increment		PROTO((rtx, rtx, HOST_WIDE_INT));
 #endif
 static void mark_used_regs		PROTO((regset, regset, rtx, int, rtx));
 void dump_flow_info			PROTO((FILE *));
+void debug_flow_info			PROTO((void));
 static void dump_edge_info		PROTO((FILE *, edge, int));
 
 static int_list_ptr alloc_int_list_node PROTO ((int_list_block **));
