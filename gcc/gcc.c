@@ -720,7 +720,8 @@ static char *link_command_spec = "\
  %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
 			%{!A:%{!nostartfiles:%S}} %{static:}\
-			%{L*} %{T*} %o %{!nostdlib:%G %L %G %{!A:%E}}\n }}}}}}";
+			%{L*} %{T*} %o %{!nostdlib:%G %L %G}\
+			%{!A:%{!nostartfiles:%E}}\n }}}}}}";
 #else
 /* Use -L.  */
 static char *link_command_spec = "\
@@ -728,7 +729,8 @@ static char *link_command_spec = "\
  %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{t} %{u*} %{x} %{z} %{Z}\
 			%{!A:%{!nostartfiles:%S}} %{static:}\
-			%{L*} %D %{T*} %o %{!nostdlib:%G %L %G %{!A:%E}}\n }}}}}}";
+			%{L*} %D %{T*} %o %{!nostdlib:%G %L %G}\
+			%{!A:%{!nostartfiles:%E}}\n }}}}}}";
 #endif
 
 /* A vector of options to give to the linker.
