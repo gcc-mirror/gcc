@@ -437,6 +437,13 @@ struct function GTY(())
      we should try to cut corners where we can.  */
   unsigned int is_thunk : 1;
 
+  /* This bit is used by the exception handling logic.  It is set if all
+     calls (if any) are sibling calls.  Such functions do not have to
+     have EH tables generated, as they cannot throw.  A call to such a
+     function, however, should be treated as throwing if any of its callees
+     can throw. */
+  unsigned int all_throwers_are_sibcalls : 1;
+ 
   /* Nonzero if instrumentation calls for function entry and exit should be
      generated.  */
   unsigned int instrument_entry_exit : 1;
