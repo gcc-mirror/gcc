@@ -90,9 +90,9 @@ extern int target_flags;
 #define MASK_STACK_PROBE	0x00000100	/* Enable stack probing */
 
 /* Temporary codegen switches */
-#define MASK_INTEL_SYNTAX	0x10000000
-#define MASK_DEBUG_ARG		0x20000000	/* function_arg */   
-#define MASK_DEBUG_ADDR		0x40000000	/* GO_IF_LEGITIMATE_ADDRESS */
+#define MASK_INTEL_SYNTAX	0x00000200
+#define MASK_DEBUG_ARG		0x00000400	/* function_arg */   
+#define MASK_DEBUG_ADDR		0x00000800	/* GO_IF_LEGITIMATE_ADDRESS */
 
 /* Use the floating point instructions */
 #define TARGET_80387 (target_flags & MASK_80387)
