@@ -578,7 +578,10 @@ static unsigned lookup_filename ();
 
 #ifndef ASM_OUTPUT_SOURCE_FILENAME
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE,NAME) \
-  fprintf ((FILE), "\t%s\t\"%s\"\n", FILE_ASM_OP, NAME)
+  do {	fprintf (FILE, "\t%s\t", FILE_ASM_OP);				\
+	output_quoted_string (FILE, NAME);				\
+	fputc ('\n', FILE);						\
+  } while (0)
 #endif
 
 #ifndef ASM_OUTPUT_DEF

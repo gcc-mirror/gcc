@@ -727,7 +727,10 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /* Output the name of the file we are compiling.  */
 #define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME) \
-    fprintf(STREAM, "\t.file\t\"%s\"\n", NAME);
+  do {	fprintf (STREAM, "\t.file\t");			\
+	output_quoted_string (STREAM, NAME);		\
+	fprintf (STREAM, "\n");				\
+  } while (0)
 
 /* Output at beginning of assembler file.  */
 #define ASM_FILE_START(FILE) fprintf (FILE, "");

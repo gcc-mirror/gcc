@@ -181,7 +181,10 @@ do { long l;					\
 /* The beginnings of sdb support... */
 
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, FILENAME) \
-  fprintf (FILE, "\tfile\t\"%s\"\n", FILENAME)
+  do {	fprintf (FILE, "\tfile\t");		\
+	output_quoted_string (FILE, FILENAME);	\
+	fprintf (FILE, "\n");			\
+  } while (0)
 
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINENO)	\
   fprintf (FILE, "\tln\t%d\n",			\

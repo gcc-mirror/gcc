@@ -460,7 +460,10 @@ do { long l[2];						\
     }}
 
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, FILENAME) \
-  fprintf (FILE, "\t; file\t\"%s\"\n", FILENAME)
+  do {	fprintf (FILE, "\t; file\t");			\
+	output_quoted_string (FILE, FILENAME);		\
+	fprintf (FILE, "\n");				\
+  } while (0)
 
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINENO)	\
   fprintf (FILE, "\t; ln\t%d\n",			\
