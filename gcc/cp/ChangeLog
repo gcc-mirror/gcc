@@ -1,5 +1,11 @@
 1998-05-27  Mark Mitchell  <mark@markmitchell.com>
 
+	* decl.c (shadow_label): Don't treat decls as identifiers.
+	(maybe_push_to_top_level): Clear shadowed_labels.
+
+	* pt.c (instantiate_decl): Reset lineno and filename after calling
+	regenerate_decl_from_template. 
+
 	* decl.c (grokdeclarator): Don't try to use TYPE_OBSTACK on an
 	error_mark_node.
 

@@ -7158,10 +7158,12 @@ instantiate_decl (d)
       goto out;
     }
 
+  regenerate_decl_from_template (d, td);
+
+  /* We already set the file and line above.  Reset them now in case
+     they changed as a result of calling regenerate_decl_from_template.  */
   lineno = DECL_SOURCE_LINE (d);
   input_filename = DECL_SOURCE_FILE (d);
-
-  regenerate_decl_from_template (d, td);
 
   if (TREE_CODE (d) == VAR_DECL)
     {
