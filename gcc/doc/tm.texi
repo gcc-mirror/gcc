@@ -1181,17 +1181,19 @@ go slower in that case, define this macro as 0.
 Define this if you wish to imitate the way many other C compilers handle
 alignment of bit-fields and the structures that contain them.
 
-The behavior is that the type written for a bit-field (@code{int},
-@code{short}, or other integer type) imposes an alignment for the
-entire structure, as if the structure really did contain an ordinary
-field of that type.  In addition, the bit-field is placed within the
-structure so that it would fit within such a field, not crossing a
-boundary for it.
+The behavior is that the type written for a named bit-field (@code{int},
+@code{short}, or other integer type) imposes an alignment for the entire
+structure, as if the structure really did contain an ordinary field of
+that type.  In addition, the bit-field is placed within the structure so
+that it would fit within such a field, not crossing a boundary for it.
 
-Thus, on most machines, a bit-field whose type is written as @code{int}
-would not cross a four-byte boundary, and would force four-byte
-alignment for the whole structure.  (The alignment used may not be four
-bytes; it is controlled by the other alignment parameters.)
+Thus, on most machines, a named bit-field whose type is written as
+@code{int} would not cross a four-byte boundary, and would force
+four-byte alignment for the whole structure.  (The alignment used may
+not be four bytes; it is controlled by the other alignment parameters.)
+
+An unnamed bit-field will not affect the alignment of the containing
+structure.
 
 If the macro is defined, its definition should be a C expression;
 a nonzero value for the expression enables this behavior.

@@ -1,3 +1,10 @@
+2002-12-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* stor-layout.c (update_alignment_for_field): Correct handling of
+	unnamed bitfields on PCC_BITFIELD_TYPE_MATTERS machines.
+	* doc/tm.texi (PCC_BITFIELD_TYPE_MATTERS): Note that an unnamed
+	bitfield does not affect alignment.
+
 2002-12-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* expr.c (expand_assignment): Apply special treatment to
