@@ -5562,7 +5562,7 @@ static void
 sh_asm_named_section (name, flags, align)
      const char *name;
      unsigned int flags ATTRIBUTE_UNUSED;
-     unsigned int flags ATTRIBUTE_UNUSED;
+     unsigned int align ATTRIBUTE_UNUSED;
 {
   /* ??? Perhaps we should be using default_coff_asm_named_section.  */
   fprintf (asm_out_file, "\t.section %s\n", name);
