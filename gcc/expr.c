@@ -10045,6 +10045,7 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size)
      enum machine_mode mode;
      rtx size;
 {
+  enum rtx_code ucode;
   rtx tem;
 
   /* If one operand is constant, make it the second one.  Only do this
@@ -10066,8 +10067,8 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size)
 
   do_pending_stack_adjust ();
 
-  if (GET_CODE (op0) == CONST_INT && GET_CODE (op1) == CONST_INT
-      && (tem = simplify_relational_operation (code, mode, op0, op1)) != 0)
+  ucode = unsignedp ? unsigned_condition (code) : code;
+  if ((tem = simplify_relational_operation (ucode, mode, op0, op1)) != 0)
     return tem;
 
 #if 0
@@ -10117,6 +10118,7 @@ do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, size,
      rtx size;
      rtx if_false_label, if_true_label;
 {
+  enum rtx_code ucode;
   rtx tem;
   int dummy_true_label = 0;
 
@@ -10148,8 +10150,8 @@ do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, size,
 
   do_pending_stack_adjust ();
 
-  if (GET_CODE (op0) == CONST_INT && GET_CODE (op1) == CONST_INT
-      && (tem = simplify_relational_operation (code, mode, op0, op1)) != 0)
+  ucode = unsignedp ? unsigned_condition (code) : code;
+  if ((tem = simplify_relational_operation (ucode, mode, op0, op1)) != 0)
     {
       if (tem == const_true_rtx)
 	{

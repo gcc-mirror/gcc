@@ -1,3 +1,10 @@
+2002-06-15  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.c (compare_from_rtx): Call simplify_relational_operation
+	on all comparisons, not just those between integer constants,
+	with the correct (possibly unsigned) comparison code.
+	(do_compare_rtx_and_jump): Likewise.
+
 2002-06-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* Makefile.in (tm_defines): New configuration variable.
