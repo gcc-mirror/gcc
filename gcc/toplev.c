@@ -4556,6 +4556,7 @@ main (argc, argv)
       if (!strcmp (argv[i], "-O"))
 	{
 	  optimize = 1;
+	  optimize_size = 0;
 	}
       else if (argv[i][0] == '-' && argv[i][1] == 'O')
 	{
@@ -4564,22 +4565,26 @@ main (argc, argv)
 	  int c;
 	  
 	  if ((p[0] == 's') && (p[1] == 0))
-	    optimize_size = 1;
+	    {
+	      optimize_size = 1;
+	      
+	      /* Optimizing for size forces optimize to be 2. */
+	      optimize = 2;
+	    }
 	  else
 	    {	    
 	      while ((c = *p++))
 		if (! (c >= '0' && c <= '9'))
 		  break;
 	      if (c == 0)
-		optimize = atoi (&argv[i][2]);
+		{
+		  optimize = atoi (&argv[i][2]);
+		  optimize_size = 0;
+		}
 	    }
 	}
     }
 
-  /* Optimizing for size forces optimize to be no less than 2. */
-  if (optimize_size && (optimize < 2))
-    optimize = 2;
-    
   obey_regdecls = (optimize == 0);
 
   if (optimize >= 1)

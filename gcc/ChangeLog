@@ -1,3 +1,9 @@
+Wed Dec 16 17:30:35 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* toplev.c (main): Disable optimize_size if a specific
+	optimization level is requested.  Always set optimization
+	level to 2 if -Os is specified.
+
 Wed Dec 16 16:33:04 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* objc/lang-specs.h: Pass -MD, -MMD and -MG to cc1obj if configured with
