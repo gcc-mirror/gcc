@@ -3558,8 +3558,11 @@ finish_decl (decl, init, asmspec_tree)
     }
 
   /* ??? After 2.3, test (init != 0) instead of TREE_CODE.  */
+  /* This test used to include TREE_PERMANENT, however, we have the same
+     problem with initializers at the function level.  Such initializers get
+     saved until the end of the function on the momentary_obstack.  */
   if (!(TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))
-      && temporary && TREE_PERMANENT (decl)
+      && temporary
       /* DECL_INITIAL is not defined in PARM_DECLs, since it shares
 	 space with DECL_ARG_TYPE.  */
       && TREE_CODE (decl) != PARM_DECL)
@@ -3572,10 +3575,12 @@ finish_decl (decl, init, asmspec_tree)
 	 to have a copy of the top-level decl's DECL_INLINE.  */
       if (DECL_INITIAL (decl) != 0)
 	{
-	  /* If this is a static const variable, then preserve the
+	  /* If this is a const variable, then preserve the
 	     initializer instead of discarding it so that we can optimize
 	     references to it.  */
-	  if (TREE_STATIC (decl) && TREE_READONLY (decl))
+	  /* This test used to include TREE_STATIC, but this won't be set
+	     for function level initializers.  */
+	  if (TREE_READONLY (decl))
 	    {
 	      preserve_initializer ();
 	      /* Hack?  Set the permanent bit for something that is permanent,
@@ -3616,7 +3621,7 @@ finish_decl (decl, init, asmspec_tree)
   /* If we have gone back from temporary to permanent allocation,
      actually free the temporary space that we no longer need.  */
   if (temporary && !allocation_temporary_p ())
-    permanent_allocation ();
+    permanent_allocation (0);
 
   /* At the end of a declaration, throw away any variable type sizes
      of types defined inside that declaration.  There is no use
@@ -6545,7 +6550,7 @@ finish_function (nested)
   /* Switch back to allocating nodes permanently
      until we start another function.  */
   if (! nested)
-    permanent_allocation ();
+    permanent_allocation (1);
 
   if (DECL_SAVED_INSNS (fndecl) == 0 && ! nested)
     {
