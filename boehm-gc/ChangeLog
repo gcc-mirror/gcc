@@ -1,5 +1,7 @@
 1999-11-02  Tom Tromey  <tromey@cygnus.com>
 
+	* quick_threads.c: Include gcconfig.h, not boehm-config.h.
+
 	* configure: Rebuilt.
 	* configure.in: Don't create boehm-config.h.
 	* Makefile.in: Rebuilt.
