@@ -1399,8 +1399,19 @@ package Einfo is
 
 --    Has_Per_Object_Constraint (Flag154)
 --       Present in E_Component entities, true if the subtype of the
---       component has a per object constraint, i.e. an actual discriminant
---       value of the form T'Access, where T is the enclosing type.
+--       component has a per object constraint. Per object constraints result
+--       from the following situations:
+--
+--       1. N_Attribute_Reference - when the prefix is the enclosing type and
+--          the attribute is Access.
+--       2. N_Discriminant_Association - when the expression uses the
+--          discriminant of the enclosing type.
+--       3. N_Index_Or_Discriminant_Constraint - when at least one of the
+--          individual constraints is a per object constraint.
+--       4. N_Range - when the lower or upper bound uses the discriminant of
+--          the enclosing type.
+--       5. N_Range_Constraint - when the range expression uses the
+--          discriminant of the enclosing type.
 
 --    Has_Pragma_Controlled (Flag27) [implementation base type only]
 --       Present in access type entities. It is set if a pragma Controlled

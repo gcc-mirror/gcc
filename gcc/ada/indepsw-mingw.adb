@@ -2,11 +2,12 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---             S Y S T E M . S O F T _ L I N K S . T A S K I N G            --
+--                              I N D E P S W                               --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
+--                            (Windows version)                             --
 --                                                                          --
---             Copyright (C) 2004, Free Software Foundation, Inc.           --
+--            Copyright (C) 2004 Free Software Foundation, Inc.             --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,15 +32,38 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the tasking versions soft links that are common
---  to the full and the restricted run times. The rest of the required soft
---  links are set by System.Tasking.Initialization and System.Tasking.Stages
---  (full run time) or System.Tasking.Restricted.Stages (restricted run time).
+--  This is the Windows version
 
-package System.Soft_Links.Tasking is
+package body Indepsw is
 
-   procedure Init_Tasking_Soft_Links;
-   --  Set the tasking soft links that are common to the full and the
-   --  restricted run times.
+   Map_Switch : aliased constant String := "-Wl,-Map,";
 
-end System.Soft_Links.Tasking;
+   -------------
+   -- Convert --
+   -------------
+
+   procedure Convert
+     (Switch   : Switch_Kind;
+      Argument : String;
+      To       : out String_List_Access)
+   is
+   begin
+      case Switch is
+         when Map_File =>
+            To := new Argument_List'(1 => new String'(Map_Switch & Argument));
+      end case;
+   end Convert;
+
+   ------------------
+   -- Is_Supported --
+   ------------------
+
+   function Is_Supported (Switch : Switch_Kind) return Boolean is
+   begin
+      case Switch is
+         when Map_File =>
+            return True;
+      end case;
+   end Is_Supported;
+
+end Indepsw;

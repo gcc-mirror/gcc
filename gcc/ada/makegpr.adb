@@ -1337,6 +1337,7 @@ package body Makegpr is
 
       Object_Name : Name_Id;
       Time_Stamp  : Time_Stamp_Type;
+      Driver_Name : Name_Id := No_Name;
 
    begin
       Check_Archive_Builder;
@@ -1527,61 +1528,76 @@ package body Makegpr is
 
          Last_Argument := 0;
 
-            --  If there are sources in Ada, then gnatmake will build the
-            --  library, so nothing to do.
+         --  If there are sources in Ada, then gnatmake will build the
+         --  library, so nothing to do.
 
-            if not Data.Languages (Lang_Ada) then
+         if not Data.Languages (Lang_Ada) then
 
-               --  Get all the object files of the project
+            --  Get all the object files of the project
 
-               Source_Id := Data.First_Other_Source;
+            Source_Id := Data.First_Other_Source;
 
-               while Source_Id /= No_Other_Source loop
-                  Source := Other_Sources.Table (Source_Id);
-                  Add_Argument
-                    (Get_Name_String (Source.Object_Name), Verbose_Mode);
-                  Source_Id := Source.Next;
-               end loop;
+            while Source_Id /= No_Other_Source loop
+               Source := Other_Sources.Table (Source_Id);
+               Add_Argument
+                 (Get_Name_String (Source.Object_Name), Verbose_Mode);
+               Source_Id := Source.Next;
+            end loop;
 
-               --  If it is a library, it need to be built it the same way
-               --  Ada libraries are built.
+            --  If it is a library, it need to be built it the same way
+            --  Ada libraries are built.
 
-               if Data.Library_Kind = Static then
-                  MLib.Build_Library
-                    (Ofiles => Arguments (1 .. Last_Argument),
-                     Afiles => No_Argument,
-                     Output_File => Get_Name_String (Data.Library_Name),
-                     Output_Dir  => Get_Name_String (Data.Library_Dir));
+            if Data.Library_Kind = Static then
+               MLib.Build_Library
+                 (Ofiles      => Arguments (1 .. Last_Argument),
+                  Afiles      => No_Argument,
+                  Output_File => Get_Name_String (Data.Library_Name),
+                  Output_Dir  => Get_Name_String (Data.Library_Dir));
 
-               else
-                  MLib.Tgt.Build_Dynamic_Library
-                    (Ofiles       => Arguments (1 .. Last_Argument),
-                     Foreign      => Arguments (1 .. Last_Argument),
-                     Afiles       => No_Argument,
-                     Options      => No_Argument,
-                     Interfaces   => No_Argument,
-                     Lib_Filename => Get_Name_String (Data.Library_Name),
-                     Lib_Dir      => Get_Name_String (Data.Library_Dir),
-                     Symbol_Data  => No_Symbols,
-                     Driver_Name  => No_Name,
-                     Lib_Version  => "",
-                     Auto_Init    => False);
+            else
+               --  Link with g++ if C++ is one of the languages, otherwise
+               --  building the library may fail with unresolved symbols.
+
+               if C_Plus_Plus_Is_Used then
+                  if Compiler_Names (Lang_C_Plus_Plus) = null then
+                     Get_Compiler (Lang_C_Plus_Plus);
+                  end if;
+
+                  if Compiler_Is_Gcc (Lang_C_Plus_Plus) then
+                     Name_Len := 0;
+                     Add_Str_To_Name_Buffer
+                       (Compiler_Names (Lang_C_Plus_Plus).all);
+                     Driver_Name := Name_Find;
+                  end if;
                end if;
+
+               MLib.Tgt.Build_Dynamic_Library
+                 (Ofiles       => Arguments (1 .. Last_Argument),
+                  Foreign      => Arguments (1 .. Last_Argument),
+                  Afiles       => No_Argument,
+                  Options      => No_Argument,
+                  Interfaces   => No_Argument,
+                  Lib_Filename => Get_Name_String (Data.Library_Name),
+                  Lib_Dir      => Get_Name_String (Data.Library_Dir),
+                  Symbol_Data  => No_Symbols,
+                  Driver_Name  => Driver_Name,
+                  Lib_Version  => "",
+                  Auto_Init    => False);
             end if;
+         end if;
 
-            --  Create fake empty archive, so we can check its time stamp later
+         --  Create fake empty archive, so we can check its time stamp later
 
-            declare
-               Archive : Ada.Text_IO.File_Type;
-               use Ada.Text_IO;
-            begin
-               Create (Archive, Out_File, Archive_Name);
-               Close (Archive);
-            end;
+         declare
+            Archive : Ada.Text_IO.File_Type;
+            use Ada.Text_IO;
+         begin
+            Create (Archive, Out_File, Archive_Name);
+            Close (Archive);
+         end;
 
-            Create_Archive_Dependency_File
-              (Archive_Dep_Name, Data.First_Other_Source);
-
+         Create_Archive_Dependency_File
+           (Archive_Dep_Name, Data.First_Other_Source);
       end if;
    end Build_Library;
 
@@ -2539,12 +2555,13 @@ package body Makegpr is
                Need_To_Rebuild_Global_Archive := True;
             end if;
 
-            --  If there was no compilation error, build/rebuild the archive
-            --  if necessary.
+            --  If there was no compilation error and -c was not used,
+            --  build / rebuild the archive if necessary.
 
             if not Local_Errors
               and then Data.Library
               and then not Data.Languages (Lang_Ada)
+              and then not Compile_Only
             then
                Build_Library (Project, Need_To_Rebuild_Archive);
             end if;
@@ -2985,7 +3002,11 @@ package body Makegpr is
          end if;
 
       else
-         --  First compile sources and build archives for library project,
+         --  First check for C++, to link libraries with g++, rather than gcc
+
+         Check_For_C_Plus_Plus;
+
+         --  Compile sources and build archives for library project,
          --  if necessary.
 
          Compile_Sources;
@@ -3000,7 +3021,6 @@ package body Makegpr is
 
          if not Compile_Only then
             Build_Global_Archive;
-            Check_For_C_Plus_Plus;
             Link_Executables;
          end if;
 

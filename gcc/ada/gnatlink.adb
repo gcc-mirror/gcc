@@ -29,6 +29,7 @@
 with ALI;      use ALI;
 with Gnatvsn;  use Gnatvsn;
 with Hostparm;
+with Indepsw;  use Indepsw;
 with Namet;    use Namet;
 with Opt;
 with Osint;    use Osint;
@@ -156,6 +157,10 @@ procedure Gnatlink is
 
    Compile_Bind_File : Boolean := True;
    --  Set to False if bind file is not to be compiled
+
+   Create_Map_File : Boolean := False;
+   --  Set to True by switch -M. The map file name is derived from
+   --  the ALI file name (mainprog.ali => mainprog.map).
 
    Object_List_File_Supported : Boolean;
    pragma Import
@@ -327,6 +332,21 @@ procedure Gnatlink is
                   Binder_Options.Table (Binder_Options.Last) :=
                     Linker_Options.Table (Linker_Options.Last);
 
+               elsif Arg'Length >= 3 and then Arg (2) = 'M' then
+                  declare
+                     Switches : String_List_Access;
+                  begin
+                     Convert (Map_File, Arg (3 .. Arg'Last), Switches);
+
+                     if Switches /= null then
+                        for J in Switches'Range loop
+                           Linker_Options.Increment_Last;
+                           Linker_Options.Table (Linker_Options.Last) :=
+                             Switches (J);
+                        end loop;
+                     end if;
+                  end;
+
                elsif Arg'Length = 2 then
                   case Arg (2) is
                      when 'A' =>
@@ -376,6 +396,9 @@ procedure Gnatlink is
                            Exit_With_Error
                              ("Object list file not supported on this target");
                         end if;
+
+                     when 'M' =>
+                        Create_Map_File := True;
 
                      when 'n' =>
                         Compile_Bind_File := False;
@@ -1287,6 +1310,12 @@ procedure Gnatlink is
       Write_Line ("  -o nam     Use 'nam' as the name of the executable");
       Write_Line ("  -b target  Compile the binder source to run on target");
       Write_Line ("  -Bdir      Load compiler executables from dir");
+
+      if Is_Supported (Map_File) then
+         Write_Line ("  -Mmap      Create map file map");
+         Write_Line ("  -M         Create map file mainprog.map");
+      end if;
+
       Write_Line ("  --GCC=comp Use comp as the compiler");
       Write_Line ("  --LINK=nam Use 'nam' for the linking rather than 'gcc'");
       Write_Eol;
@@ -1490,6 +1519,25 @@ begin
    then
       Error_Msg ("warning: executable name """ & Output_File_Name.all
                    & """ may conflict with shell command");
+   end if;
+
+   --  If -M switch was specified, add the switches to create the map file
+
+   if Create_Map_File then
+      declare
+         Map_Name : constant String := Base_Name (Ali_File_Name.all) & ".map";
+         Switches : String_List_Access;
+
+      begin
+         Convert (Map_File, Map_Name, Switches);
+
+         if Switches /= null then
+            for J in Switches'Range loop
+               Linker_Options.Increment_Last;
+               Linker_Options.Table (Linker_Options.Last) := Switches (J);
+            end loop;
+         end if;
+      end;
    end if;
 
    --  Perform consistency checks

@@ -403,7 +403,7 @@ package body GNAT.Sockets.Thin is
       R : Boolean;
    begin
       Task_Lock.Lock;
-      R := Is_Socket_In_Set (Non_Blocking_Sockets, S);
+      R := (Is_Socket_In_Set (Non_Blocking_Sockets, S) /= 0);
       Task_Lock.Unlock;
       return R;
    end Non_Blocking_Socket;

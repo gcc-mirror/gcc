@@ -348,7 +348,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 not a deferred constant but a constant whose value is built
 	 manually.  */
 
-      if (definition && !gnu_expr 
+      if (definition && !gnu_expr
 	  && !No_Initialization (Declaration_Node (gnat_entity))
 	  && No (Renamed_Object (gnat_entity)))
 	{
@@ -1786,7 +1786,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 does not overflow in SIZETYPE, ignore the overflow
 		 indications.  */
 	      if ((TYPE_PRECISION (gnu_index_subtype)
-		   > TYPE_PRECISION (sizetype))
+		   > TYPE_PRECISION (sizetype)
+		   || TYPE_UNSIGNED (gnu_index_subtype)
+		      != TYPE_UNSIGNED (sizetype))
 		  && TREE_CODE (gnu_min) == INTEGER_CST
 		  && TREE_CODE (gnu_max) == INTEGER_CST
 		  && TREE_OVERFLOW (gnu_min) && TREE_OVERFLOW (gnu_max)
@@ -1801,7 +1803,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      /* Similarly, if the range is null, use bounds of 1..0 for
 		 the sizetype bounds.  */
 	      else if ((TYPE_PRECISION (gnu_index_subtype)
-			> TYPE_PRECISION (sizetype))
+			> TYPE_PRECISION (sizetype)
+		       || TYPE_UNSIGNED (gnu_index_subtype)
+		          != TYPE_UNSIGNED (sizetype))
 		       && TREE_CODE (gnu_min) == INTEGER_CST
 		       && TREE_CODE (gnu_max) == INTEGER_CST
 		       && (TREE_OVERFLOW (gnu_min) || TREE_OVERFLOW (gnu_max))
@@ -5450,7 +5454,7 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
   else if (gnu_our_rep_list)
     {
       tree gnu_rep_type
-	= (gnu_field_list ? gnu_record_type : make_node (RECORD_TYPE));
+	= (gnu_field_list ? make_node (RECORD_TYPE) : gnu_record_type);
       int len = list_length (gnu_our_rep_list);
       tree *gnu_arr = (tree *) alloca (sizeof (tree) * len);
       int i;

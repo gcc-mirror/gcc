@@ -1,21 +1,21 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                 GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS              --
 --                                                                          --
---             S Y S T E M . S O F T _ L I N K S . T A S K I N G            --
+--                        S Y S T E M . V X W O R K S                       --
 --                                                                          --
---                                 S p e c                                  --
+--                                   S p e c                                --
 --                                                                          --
---             Copyright (C) 2004, Free Software Foundation, Inc.           --
+--            Copyright (C) 1998-2004 Free Software Foundation, Inc.        --
 --                                                                          --
--- GNAT is free software;  you can  redistribute it  and/or modify it under --
+-- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 2,  or (at your option) any later ver- --
--- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
+-- sion. GNARL is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
 -- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNAT;  see file COPYING.  If not, write --
+-- Public License  distributed with GNARL; see file COPYING.  If not, write --
 -- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
@@ -26,20 +26,28 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT was originally developed  by the GNAT team at  New York University. --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the tasking versions soft links that are common
---  to the full and the restricted run times. The rest of the required soft
---  links are set by System.Tasking.Initialization and System.Tasking.Stages
---  (full run time) or System.Tasking.Restricted.Stages (restricted run time).
+--  This is the x86 VxWorks version of this package
 
-package System.Soft_Links.Tasking is
+package System.VxWorks is
+   pragma Preelaborate (System.VxWorks);
 
-   procedure Init_Tasking_Soft_Links;
-   --  Set the tasking soft links that are common to the full and the
-   --  restricted run times.
+   --  Floating point context record. x86 version
 
-end System.Soft_Links.Tasking;
+   --  For now this is a dummy implementation (more work needed ???)
+
+   type FP_CONTEXT is record
+      Dummy : Integer;
+   end record;
+
+   for FP_CONTEXT'Alignment use 4;
+   pragma Convention (C, FP_CONTEXT);
+
+   Num_HW_Interrupts : constant := 256;
+   --  Number of entries in hardware interrupt vector table
+
+end System.VxWorks;

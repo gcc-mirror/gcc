@@ -1376,6 +1376,12 @@ package body Exp_Ch6 is
                  New_Occurrence_Of (Standard_True, Loc),
                  Extra_Constrained (Formal));
 
+            --  Do not produce extra actuals for Unchecked_Union parameters.
+            --  Jump directly to the end of the loop.
+
+            elsif Is_Unchecked_Union (Base_Type (Etype (Actual))) then
+               goto Skip_Extra_Actual_Generation;
+
             else
                --  If the actual is a type conversion, then the constrained
                --  test applies to the actual, not the target type.
@@ -1659,6 +1665,11 @@ package body Exp_Ch6 is
                   Make_Raise_Program_Error (Loc,
                     Reason => PE_Illegal_RACW_E_4_18))));
          end if;
+
+         --  This label is required when skipping extra actual generation for
+         --  Unchecked_Union parameters.
+
+         <<Skip_Extra_Actual_Generation>>
 
          Next_Actual (Actual);
          Next_Formal (Formal);

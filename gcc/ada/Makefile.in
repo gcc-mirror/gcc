@@ -298,7 +298,7 @@ Makefile: ../config.status $(srcdir)/Makefile.in $(srcdir)/../version.c
 
 GNATLINK_OBJS = gnatlink.o \
  a-except.o ali.o alloc.o butil.o casing.o csets.o debug.o fmap.o fname.o gnatvsn.o \
- hostparm.o interfac.o i-c.o i-cstrin.o namet.o opt.o osint.o output.o rident.o \
+ hostparm.o indepsw.o interfac.o i-c.o i-cstrin.o namet.o opt.o osint.o output.o rident.o \
  s-exctab.o s-secsta.o s-stalib.o s-stoele.o sdefault.o stylesw.o switch.o system.o \
  table.o tree_io.o types.o validsw.o widechar.o
 
@@ -592,6 +592,46 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
 endif
 
+ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
+  LIBGNAT_TARGET_PAIRS = \
+  a-sytaco.ads<a-sytaco-vxworks.ads \
+  a-sytaco.adb<a-sytaco-vxworks.adb \
+  a-intnam.ads<a-intnam-vxworks.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-interr.adb<s-interr-vxworks.adb \
+  s-intman.ads<s-intman-vxworks.ads \
+  s-intman.adb<s-intman-vxworks.adb \
+  a-numaux.adb<a-numaux-x86.adb \
+  a-numaux.ads<a-numaux-x86.ads \
+  s-osinte.adb<s-osinte-vxworks.adb \
+  s-osinte.ads<s-osinte-vxworks.ads \
+  s-osprim.adb<s-osprim-vxworks.adb \
+  s-parame.ads<s-parame-vxworks.ads \
+  s-stchop.adb<s-stchop-vxworks.adb \
+  s-taprop.adb<s-taprop-vxworks.adb \
+  s-taspri.ads<s-taspri-vxworks.ads \
+  s-tpopsp.adb<s-tpopsp-vxworks.adb \
+  s-vxwork.ads<s-vxwork-x86.ads \
+  g-soccon.ads<g-soccon-vxworks.ads \
+  g-socthi.ads<g-socthi-vxworks.ads \
+  g-socthi.adb<g-socthi-vxworks.adb \
+  system.ads<system-vxworks-x86.ads
+
+  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
+
+  ifeq ($(strip $(filter-out yes,$(TRACE))),)
+    LIBGNAT_TARGET_PAIRS += \
+    s-traces.adb<s-traces-default.adb \
+    s-trafor.adb<s-trafor-default.adb \
+    s-trafor.ads<s-trafor-default.ads \
+    s-tratas.adb<s-tratas-default.adb \
+    s-tfsetr.adb<s-tfsetr-vxworks.adb
+  endif
+
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+endif
+
 ifeq ($(strip $(filter-out xscale% coff wrs vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
   a-sytaco.ads<a-sytaco-vxworks.ads \
@@ -784,7 +824,8 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   system.ads<system-linux-x86.ads
 
   TOOLS_TARGET_PAIRS =  \
-    mlib-tgt.adb<mlib-tgt-linux.adb
+    mlib-tgt.adb<mlib-tgt-linux.adb \
+    indepsw.adb<indepsw-linux.adb
 
   SYMLIB = $(ADDR2LINE_SYMLIB)
   THREADSLIB = -lpthread
@@ -1033,7 +1074,10 @@ ifeq ($(strip $(filter-out ibm aix%,$(manu) $(osys))),)
     THREADSLIB = -lgthreads -lmalloc
   endif
 
-  TOOLS_TARGET_PAIRS = mlib-tgt.adb<mlib-tgt-aix.adb
+  TOOLS_TARGET_PAIRS = \
+  mlib-tgt.adb<mlib-tgt-aix.adb \
+  indepsw.adb<indepsw-aix.adb
+
   GMEM_LIB = gmemlib
   SYMLIB = $(ADDR2LINE_SYMLIB)
 
@@ -1253,7 +1297,10 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
   g-soliop.ads<g-soliop-mingw.ads \
   system.ads<system-mingw.ads
 
-  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-mingw.adb
+  TOOLS_TARGET_PAIRS= \
+  mlib-tgt.adb<mlib-tgt-mingw.adb \
+  indepsw.adb<indepsw-mingw.adb
+
   MISCLIB = -lwsock32
   SYMLIB = $(ADDR2LINE_SYMLIB)
   GMEM_LIB = gmemlib

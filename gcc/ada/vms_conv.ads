@@ -24,11 +24,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package is part of the GNAT driver. It contains a procedure
---  VMS_Conversion to convert the command line in VMS form to the equivalent
---  command line with switches for the GNAT tools that the GNAT driver will
---  invoke.
---
+--  This package is part of the GNAT driver. It contains the procedure
+--  VMS_Conversion to convert a VMS command line to the equivalent command
+--  line with switches for the GNAT tools that the GNAT driver will invoke.
 --  The qualifier declarations are contained in package VMS_Data.
 
 with Table;
@@ -61,7 +59,7 @@ package VMS_Conv is
    --  Set true if /? switch causes display of generated command (on VMS)
 
    -------------------
-   -- COMMAND TABLE --
+   -- Command Table --
    -------------------
 
    --  The command table contains an entry for each command recognized by
@@ -71,10 +69,10 @@ package VMS_Conv is
    --  A parameter is defined as a whitespace bounded string, not begining
    --   with a slash. (But see note under FILES_OR_WILDCARD).
      (File,
-      --  A required file or directory parameter.
+      --  A required file or directory parameter
 
       Optional_File,
-      --  An optional file or directory parameter.
+      --  An optional file or directory parameter
 
       Other_As_Is,
       --  A parameter that's passed through as is (not canonicalized)
@@ -96,12 +94,29 @@ package VMS_Conv is
    type Parameter_Ref is access all Parameter_Array;
 
    type Command_Type is
-     (Bind, Chop, Clean, Compile, Elim, Find, Krunch, Library, Link, List,
-      Make, Metric, Name, Preprocess, Pretty, Setup, Shared, Stub, Xref,
+     (Bind,
+      Chop,
+      Clean,
+      Compile,
+      Elim,
+      Find,
+      Krunch,
+      Library,
+      Link,
+      List,
+      Make,
+      Metric,
+      Name,
+      Preprocess,
+      Pretty,
+      Setup,
+      Shared,
+      Stub,
+      Xref,
       Undefined);
 
    type Alternate_Command is (Comp, Ls, Kr, Pp, Prep);
-   --  Alternate command libel for non VMS system
+   --  Alternate command label for non VMS system use
 
    Corresponding_To : constant array (Alternate_Command) of Command_Type :=
      (Comp  => Compile,
@@ -144,7 +159,7 @@ package VMS_Conv is
    end record;
 
    -------------------------
-   -- INTERNAL STRUCTURES --
+   -- Internal Structures --
    -------------------------
 
    --  The switches and commands are defined by strings in the previous
@@ -271,9 +286,9 @@ package VMS_Conv is
    subtype Switch_Item  is Item (Id_Switch);
    subtype Option_Item  is Item (Id_Option);
 
-   ------------------
-   -- SWITCH TABLE --
-   ------------------
+   -------------------
+   -- Switch Tables --
+   -------------------
 
    --  The switch tables contain an entry for each switch recognized by the
    --  command processor. It is initialized by procedure Initialize.

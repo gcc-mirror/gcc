@@ -950,6 +950,63 @@ package body Sem_Ch3 is
       T  : Entity_Id;
       P  : Entity_Id;
 
+      function Contains_POC (Constr : Node_Id) return Boolean;
+      --  Determines whether a constraint uses the discriminant of a record
+      --  type thus becoming a per-object constraint (POC).
+
+      ------------------
+      -- Contains_POC --
+      ------------------
+
+      function Contains_POC (Constr : Node_Id) return Boolean is
+      begin
+         case Nkind (Constr) is
+
+            when N_Attribute_Reference =>
+               return Attribute_Name (Constr) = Name_Access
+                        and
+                      Prefix (Constr) = Scope (Entity (Prefix (Constr)));
+
+            when N_Discriminant_Association =>
+               return Denotes_Discriminant (Expression (Constr));
+
+            when N_Identifier =>
+               return Denotes_Discriminant (Constr);
+
+            when N_Index_Or_Discriminant_Constraint =>
+               declare
+                  IDC : Node_Id := First (Constraints (Constr));
+               begin
+                  while Present (IDC) loop
+
+                     --  One per-object constraint is sufficent
+
+                     if Contains_POC (IDC) then
+                        return True;
+                     end if;
+
+                     Next (IDC);
+                  end loop;
+
+                  return False;
+               end;
+
+            when N_Range =>
+               return Denotes_Discriminant (Low_Bound (Constr))
+                        or
+                      Denotes_Discriminant (High_Bound (Constr));
+
+            when N_Range_Constraint =>
+               return Denotes_Discriminant (Range_Expression (Constr));
+
+            when others =>
+               return False;
+
+         end case;
+      end Contains_POC;
+
+   --  Start of processing for Analyze_Component_Declaration
+
    begin
       Generate_Definition (Id);
       Enter_Name (Id);
@@ -1041,6 +1098,24 @@ package body Sem_Ch3 is
 
       Set_Etype (Id, T);
       Set_Is_Aliased (Id, Aliased_Present (Component_Definition (N)));
+
+      --  The component declaration may have a per-object constraint, set the
+      --  appropriate flag in the defining identifier of the subtype.
+
+      if Present (Subtype_Indication (Component_Definition (N))) then
+         declare
+            Sindic : constant Node_Id :=
+               Subtype_Indication (Component_Definition (N));
+
+         begin
+            if Nkind (Sindic) = N_Subtype_Indication
+              and then Present (Constraint (Sindic))
+              and then Contains_POC (Constraint (Sindic))
+            then
+               Set_Has_Per_Object_Constraint (Id);
+            end if;
+         end;
+      end if;
 
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute and carry
       --  out some static checks
@@ -9492,9 +9567,6 @@ package body Sem_Ch3 is
 
          return;
 
-      elsif Is_Unchecked_Union (Parent_Type) then
-         Error_Msg_N ("cannot derive from Unchecked_Union type", N);
-
       --  Ada 2005 (AI-231): Static check
 
       elsif Is_Access_Type (Parent_Type)
@@ -12580,13 +12652,6 @@ package body Sem_Ch3 is
 
          P := Parent (S);
          Subtype_Mark_Id := Entity (Subtype_Mark (S));
-
-         if Is_Unchecked_Union (Subtype_Mark_Id)
-           and then Comes_From_Source (Related_Nod)
-         then
-            Error_Msg_N
-              ("cannot create subtype of Unchecked_Union", Related_Nod);
-         end if;
 
          --  Explicit subtype declaration case
 

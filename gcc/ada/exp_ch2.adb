@@ -56,9 +56,9 @@ package body Exp_Ch2 is
    --  Given a node N for a variable whose Current_Value field is set.
    --  If the node is for a discrete type, replaces the node with a
    --  copy of the referenced value. This provides a limited form of
-   --  value propagation for variables which are initialized and have
-   --  not been modified at the time of reference. The call has no
-   --  effect if the Current_Value refers to a conditional with a
+   --  value propagation for variables which are initialized or assigned
+   --  not been further modified at the time of reference. The call has
+   --  no effect if the Current_Value refers to a conditional with a
    --  condition other than equality.
 
    procedure Expand_Discriminant (N : Node_Id);
@@ -159,11 +159,7 @@ package body Exp_Ch2 is
                CS := Scope (CS);
 
             --  Otherwise, the reference is dubious, and we cannot be
-            --  sure that it is safe to do the replacement. Note in
-            --  particular, in a loop (except for the special case
-            --  tested above), we cannot safely do a replacement since
-            --  there may be an assignment at the bottom of the loop
-            --  that will affect a reference at the top of the loop.
+            --  sure that it is safe to do the replacement.
 
             else
                exit;
@@ -177,6 +173,10 @@ package body Exp_Ch2 is
 
    begin
       if True
+
+         --  No replacement if value raises constraint error
+
+         and then Nkind (CV) /= N_Raise_Constraint_Error
 
          --  Do this only for discrete types
 
@@ -419,7 +419,6 @@ package body Exp_Ch2 is
                or else
              Ekind (E) = E_Out_Parameter)
         and then Present (Current_Value (E))
-        and then Nkind (Current_Value (E)) /= N_Raise_Constraint_Error
       then
          Expand_Current_Value (N);
 

@@ -73,7 +73,7 @@ package System.Secondary_Stack is
    --  to System.Null_Address.
 
    type Mark_Id is private;
-   --  Type used to mark the stack
+   --  Type used to mark the stack for mark/release processing
 
    function SS_Mark return Mark_Id;
    --  Return the Mark corresponding to the current state of the stack
@@ -102,6 +102,15 @@ private
    --  Unused entity that is just present to ease the sharing of the pool
    --  mechanism for specific allocation/deallocation in the compiler
 
-   type Mark_Id is new SSE.Integer_Address;
+   type SS_Ptr is new SSE.Integer_Address;
+   --  Stack pointer value for secondary stack
+
+   type Mark_Id is record
+      Sstk : System.Address;
+      Sptr : SS_Ptr;
+   end record;
+   --  A mark value contains the address of the secondary stack structure,
+   --  as returned by System.Soft_Links.Get_Sec_Stack_Addr, and a stack
+   --  pointer value corresponding to the point of the mark call.
 
 end System.Secondary_Stack;

@@ -193,8 +193,7 @@ present_gnu_tree (Entity_Id gnat_entity)
 int
 global_bindings_p (void)
 {
-  return (force_global || !current_binding_level
-	  || !current_binding_level->chain ? -1 : 0);
+  return ((force_global || !current_function_decl) ? -1 : 0);
 }
 
 /* Enter a new binding level. */
@@ -365,7 +364,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
     TYPE_NAME (TREE_TYPE (decl)) = decl;
 
   if (TREE_CODE (decl) != CONST_DECL)
-    rest_of_decl_compilation (decl, NULL, global_bindings_p (), 0);
+    rest_of_decl_compilation (decl, global_bindings_p (), 0);
 }
 
 /* Do little here.  Set up the standard declarations later after the

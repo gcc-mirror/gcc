@@ -43,6 +43,7 @@ with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sinfo;    use Sinfo;
 with Sem;      use Sem;
+with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
@@ -1096,13 +1097,22 @@ package body Exp_Ch5 is
          --  the type may be private and resolution by identifier alone would
          --  fail.
 
-         function Make_Component_List_Assign (CL : Node_Id) return List_Id;
+         function Make_Component_List_Assign
+           (CL  : Node_Id;
+            U_U : Boolean := False) return List_Id;
          --  Returns a sequence of statements to assign the components that
-         --  are referenced in the given component list.
+         --  are referenced in the given component list. The flag U_U is
+         --  used to force the usage of the inferred value of the variant
+         --  part expression as the switch for the generated case statement.
 
-         function Make_Field_Assign (C : Entity_Id) return Node_Id;
-         --  Given C, the entity for a discriminant or component, build
-         --  an assignment for the corresponding field values.
+         function Make_Field_Assign
+           (C : Entity_Id;
+            U_U : Boolean := False) return Node_Id;
+         --  Given C, the entity for a discriminant or component, build an
+         --  assignment for the corresponding field values. The flag U_U
+         --  signals the presence of an Unchecked_Union and forces the usage
+         --  of the inferred discriminant value of C as the right hand side
+         --  of the assignment.
 
          function Make_Field_Assigns (CI : List_Id) return List_Id;
          --  Given CI, a component items list, construct series of statements
@@ -1136,15 +1146,19 @@ package body Exp_Ch5 is
          -- Make_Component_List_Assign --
          --------------------------------
 
-         function Make_Component_List_Assign (CL : Node_Id) return List_Id is
+         function Make_Component_List_Assign
+           (CL  : Node_Id;
+            U_U : Boolean := False) return List_Id
+         is
             CI : constant List_Id := Component_Items (CL);
             VP : constant Node_Id := Variant_Part (CL);
 
-            Result : List_Id;
             Alts   : List_Id;
-            V      : Node_Id;
             DC     : Node_Id;
             DCH    : List_Id;
+            Expr   : Node_Id;
+            Result : List_Id;
+            V      : Node_Id;
 
          begin
             Result := Make_Field_Assigns (CI);
@@ -1170,15 +1184,29 @@ package body Exp_Ch5 is
                   Next_Non_Pragma (V);
                end loop;
 
+               --  If we have an Unchecked_Union, use the value of the inferred
+               --  discriminant of the variant part expression as the switch
+               --  for the case statement. The case statement may later be
+               --  folded.
+
+               if U_U then
+                  Expr :=
+                    New_Copy (Get_Discriminant_Value (
+                      Entity (Name (VP)),
+                      Etype (Rhs),
+                      Discriminant_Constraint (Etype (Rhs))));
+               else
+                  Expr :=
+                    Make_Selected_Component (Loc,
+                      Prefix => Duplicate_Subexpr (Rhs),
+                      Selector_Name =>
+                        Make_Identifier (Loc, Chars (Name (VP))));
+               end if;
+
                Append_To (Result,
                  Make_Case_Statement (Loc,
-                   Expression =>
-                     Make_Selected_Component (Loc,
-                       Prefix => Duplicate_Subexpr (Rhs),
-                       Selector_Name =>
-                         Make_Identifier (Loc, Chars (Name (VP)))),
+                   Expression => Expr,
                    Alternatives => Alts));
-
             end if;
 
             return Result;
@@ -1188,10 +1216,29 @@ package body Exp_Ch5 is
          -- Make_Field_Assign --
          -----------------------
 
-         function Make_Field_Assign (C : Entity_Id) return Node_Id is
-            A : Node_Id;
+         function Make_Field_Assign
+           (C : Entity_Id;
+            U_U : Boolean := False) return Node_Id
+         is
+            A    : Node_Id;
+            Expr : Node_Id;
 
          begin
+            --  In the case of an Unchecked_Union, use the discriminant
+            --  constraint value as on the right hand side of the assignment.
+
+            if U_U then
+               Expr :=
+                 New_Copy (Get_Discriminant_Value (C,
+                   Etype (Rhs),
+                   Discriminant_Constraint (Etype (Rhs))));
+            else
+               Expr :=
+                 Make_Selected_Component (Loc,
+                   Prefix => Duplicate_Subexpr (Rhs),
+                   Selector_Name => New_Occurrence_Of (C, Loc));
+            end if;
+
             A :=
               Make_Assignment_Statement (Loc,
                 Name =>
@@ -1199,10 +1246,7 @@ package body Exp_Ch5 is
                     Prefix => Duplicate_Subexpr (Lhs),
                     Selector_Name =>
                       New_Occurrence_Of (Find_Component (L_Typ, C), Loc)),
-                Expression =>
-                  Make_Selected_Component (Loc,
-                    Prefix => Duplicate_Subexpr (Rhs),
-                    Selector_Name => New_Occurrence_Of (C, Loc)));
+                Expression => Expr);
 
             --  Set Assignment_OK, so discriminants can be assigned
 
@@ -1221,7 +1265,6 @@ package body Exp_Ch5 is
          begin
             Item := First (CI);
             Result := New_List;
-
             while Present (Item) loop
                if Nkind (Item) = N_Component_Declaration then
                   Append_To
@@ -1251,7 +1294,13 @@ package body Exp_Ch5 is
          if Has_Discriminants (L_Typ) then
             F := First_Discriminant (R_Typ);
             while Present (F) loop
-               Insert_Action (N, Make_Field_Assign (F));
+
+               if Is_Unchecked_Union (Base_Type (R_Typ)) then
+                  Insert_Action (N, Make_Field_Assign (F, True));
+               else
+                  Insert_Action (N, Make_Field_Assign (F));
+               end if;
+
                Next_Discriminant (F);
             end loop;
          end if;
@@ -1270,8 +1319,14 @@ package body Exp_Ch5 is
          if Nkind (RDef) = N_Record_Definition
            and then Present (Component_List (RDef))
          then
-            Insert_Actions
-              (N, Make_Component_List_Assign (Component_List (RDef)));
+
+            if Is_Unchecked_Union (R_Typ) then
+               Insert_Actions (N,
+                 Make_Component_List_Assign (Component_List (RDef), True));
+            else
+               Insert_Actions
+                 (N, Make_Component_List_Assign (Component_List (RDef)));
+            end if;
 
             Rewrite (N, Make_Null_Statement (Loc));
          end if;
@@ -3032,7 +3087,6 @@ package body Exp_Ch5 is
 
       Res       : List_Id;
       Tag_Tmp   : Entity_Id;
-      Original_Size, Range_Type, Opaque_Type : Entity_Id;
 
    begin
       Res := New_List;
@@ -3091,83 +3145,21 @@ package body Exp_Ch5 is
          Tag_Tmp := Empty;
       end if;
 
-      --  We really need a comment here ???
+      --  Processing for controlled types and types with controlled components
+
+      --  Variables of such types contain pointers used to chain them in
+      --  finalization lists, in addition to user data. These pointers are
+      --  specific to each object of the type, not to the value being assigned.
+      --  Thus they need to be left intact during the assignment. We achieve
+      --  this by constructing a Storage_Array subtype, and by overlaying
+      --  objects of this type on the source and target of the assignment.
+      --  The assignment is then rewritten to assignments of slices of these
+      --  arrays, copying the user data, and leaving the pointers untouched.
 
       if Ctrl_Act then
-
-         --  subtype G is Storage_Offset range 1 .. Expr'Size
-
-         Original_Size :=
-           Make_Defining_Identifier (Loc,
-             New_Internal_Name ('S'));
-
-         Append_To (Res,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Original_Size,
-             Constant_Present    => True,
-             Object_Definition   => New_Occurrence_Of (
-               RTE (RE_Storage_Offset), Loc),
-             Expression          =>
-               Make_Op_Divide (Loc,
-                 Left_Opnd =>
-                   Make_Attribute_Reference (Loc,
-                     Prefix =>
-                       Duplicate_Subexpr_No_Checks (L),
-                     Attribute_Name => Name_Size),
-                 Right_Opnd => Make_Integer_Literal (Loc,
-                     Intval => System_Storage_Unit))));
-
-         Range_Type :=
-           Make_Defining_Identifier (Loc,
-             New_Internal_Name ('G'));
-
-         Append_To (Res,
-           Make_Subtype_Declaration (Loc,
-             Defining_Identifier => Range_Type,
-             Subtype_Indication =>
-               Make_Subtype_Indication (Loc,
-                 Subtype_Mark =>
-                   New_Reference_To (RTE (RE_Storage_Offset), Loc),
-                 Constraint   => Make_Range_Constraint (Loc,
-                   Range_Expression =>
-                     Make_Range (Loc,
-                       Low_Bound  => Make_Integer_Literal (Loc, 1),
-                       High_Bound => New_Occurrence_Of (
-                         Original_Size, Loc))))));
-
-         --  subtype S is Storage_Array (G)
-
-         Append_To (Res,
-           Make_Subtype_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc,
-                 New_Internal_Name ('S')),
-             Subtype_Indication  =>
-               Make_Subtype_Indication (Loc,
-                 Subtype_Mark =>
-                   New_Reference_To (RTE (RE_Storage_Array), Loc),
-                 Constraint =>
-                   Make_Index_Or_Discriminant_Constraint (Loc,
-                     Constraints =>
-                       New_List (New_Reference_To (Range_Type, Loc))))));
-
-         --  type A is access S
-
-         Opaque_Type := Make_Defining_Identifier (Loc,
-           New_Internal_Name ('A'));
-         Append_To (Res,
-           Make_Full_Type_Declaration (Loc,
-             Defining_Identifier => Opaque_Type,
-             Type_Definition     =>
-               Make_Access_To_Object_Definition (Loc,
-                 Subtype_Indication =>
-                   New_Occurrence_Of (
-                     Defining_Identifier (Last (Res)), Loc))));
-
-         --  Give a label name to this declare block, and add comments here???
-
-         declare
+         Controlled_Actions : declare
             Prev_Ref : Node_Id;
+            --  A reference to the Prev component of the record controller
 
             First_After_Root : Node_Id := Empty;
             --  Index of first byte to be copied (used to skip
@@ -3184,31 +3176,44 @@ package body Exp_Ch5 is
             --  Index of first byte to be copied after outermost record
             --  controller data.
 
+            Expr, Source_Size      : Node_Id;
+            --  Used for computation of the size of the data to be copied
+
+            Range_Type  : Entity_Id;
+            Opaque_Type : Entity_Id;
+
             function Build_Slice
-              (Rec    : Entity_Id;
-               Lo, Hi : Node_Id) return Node_Id;
-            --  Function specs must have comments, saying what all the
-            --  parameters are and what the function does ???
+              (Rec : Entity_Id;
+               Lo  : Node_Id;
+               Hi  : Node_Id) return Node_Id;
+            --  Build and return a slice of an array of type S overlaid
+            --  on object Rec, with bounds specified by Lo and Hi. If either
+            --  bound is empty, a default of S'First (respectively S'Last)
+            --  is used.
 
             -----------------
             -- Build_Slice --
             -----------------
 
             function Build_Slice
-              (Rec    : Node_Id;
-               Lo, Hi : Node_Id) return Node_Id
+              (Rec : Node_Id;
+               Lo  : Node_Id;
+               Hi  : Node_Id) return Node_Id
             is
-               Lo_Bound, Hi_Bound : Node_Id;
+               Lo_Bound : Node_Id;
+               Hi_Bound : Node_Id;
 
                Opaque : constant Node_Id :=
                           Unchecked_Convert_To (Opaque_Type,
                             Make_Attribute_Reference (Loc,
                               Prefix         => Rec,
                               Attribute_Name => Name_Address));
-               --  Comment required, what is this???
+               --  Access value designating an opaque storage array of
+               --  type S overlaid on record Rec.
 
             begin
-               --  Comments required in this body ???
+               --  Compute slice bounds using S'First (1) and S'Last
+               --  as default values when not specified by the caller.
 
                if No (Lo) then
                   Lo_Bound := Make_Integer_Literal (Loc, 1);
@@ -3231,12 +3236,102 @@ package body Exp_Ch5 is
                    Lo_Bound, Hi_Bound));
             end Build_Slice;
 
-         --  Start of processing for ??? (name of block)
+         --  Start of processing for Controlled_Actions
 
          begin
+            --  Create a constrained subtype of Storage_Array whose size
+            --  corresponds to the value being assigned.
+
+            --  subtype G is Storage_Offset range
+            --    1 .. (Expr'Size + Storage_Unit - 1) / Storage_Unit
+
+            Expr := Duplicate_Subexpr_No_Checks (Expression (N));
+
+            if Nkind (Expr) = N_Qualified_Expression then
+               Expr := Expression (Expr);
+            end if;
+
+            Source_Size :=
+              Make_Op_Add (Loc,
+                Left_Opnd =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix =>
+                      Expr,
+                    Attribute_Name =>
+                      Name_Size),
+                Right_Opnd =>
+                  Make_Integer_Literal (Loc,
+                  System_Storage_Unit - 1));
+
+            --  If Expr is a type conversion, standard Ada does not allow
+            --  'Size to be taken on it, but Gigi can handle this case,
+            --  and thus we can determine the amount of data to be copied.
+            --  The appropriate circuitry is enabled only for conversions
+            --  that do not Come_From_Source.
+
+            Set_Comes_From_Source (Prefix (Left_Opnd (Source_Size)), False);
+
+            Source_Size :=
+              Make_Op_Divide (Loc,
+                Left_Opnd => Source_Size,
+                Right_Opnd =>
+                  Make_Integer_Literal (Loc,
+                    Intval => System_Storage_Unit));
+
+            Range_Type :=
+              Make_Defining_Identifier (Loc,
+                New_Internal_Name ('G'));
+
+            Append_To (Res,
+              Make_Subtype_Declaration (Loc,
+                Defining_Identifier => Range_Type,
+                Subtype_Indication =>
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To (RTE (RE_Storage_Offset), Loc),
+                    Constraint   => Make_Range_Constraint (Loc,
+                      Range_Expression =>
+                        Make_Range (Loc,
+                          Low_Bound  => Make_Integer_Literal (Loc, 1),
+                          High_Bound => Source_Size)))));
+
+            --  subtype S is Storage_Array (G)
+
+            Append_To (Res,
+              Make_Subtype_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc,
+                    New_Internal_Name ('S')),
+                Subtype_Indication  =>
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark =>
+                      New_Reference_To (RTE (RE_Storage_Array), Loc),
+                    Constraint =>
+                      Make_Index_Or_Discriminant_Constraint (Loc,
+                        Constraints =>
+                          New_List (New_Reference_To (Range_Type, Loc))))));
+
+            --  type A is access S
+
+            Opaque_Type :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_Internal_Name ('A'));
+
+            Append_To (Res,
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Opaque_Type,
+                Type_Definition     =>
+                  Make_Access_To_Object_Definition (Loc,
+                    Subtype_Indication =>
+                      New_Occurrence_Of (
+                        Defining_Identifier (Last (Res)), Loc))));
+
+            --  Generate appropriate slice assignments
+
             First_After_Root := Make_Integer_Literal (Loc, 1);
 
-            --  Comment ???
+            --  For the case of a controlled object, skip the
+            --  Root_Controlled part.
 
             if Is_Controlled (T) then
                First_After_Root :=
@@ -3250,12 +3345,12 @@ package body Exp_Ch5 is
                      Make_Integer_Literal (Loc, System_Storage_Unit)));
             end if;
 
+            --  For the case of a record with controlled components, skip
+            --  the Prev and Next components of the record controller.
+            --  These components constitute a 'hole' in the middle of the
+            --  data to be copied.
+
             if Has_Controlled_Component (T) then
-
-               --  The record controller Prev and Next pointers must be left
-               --  intact in the target object, not copied. Compute the bounds
-               --  of the hole to be skipped in copying the objecct.
-
                Prev_Ref :=
                  Make_Selected_Component (Loc,
                    Prefix =>
@@ -3265,7 +3360,8 @@ package body Exp_Ch5 is
                          New_Reference_To (Controller_Component (T), Loc)),
                    Selector_Name =>  Make_Identifier (Loc, Name_Prev));
 
-               --  Last index before hole
+               --  Last index before hole: determined by position of
+               --  the _Controller.Prev component.
 
                Last_Before_Hole :=
                  Make_Defining_Identifier (Loc,
@@ -3285,18 +3381,20 @@ package body Exp_Ch5 is
                          Prefix => New_Copy_Tree (Prefix (Prev_Ref)),
                          Attribute_Name => Name_Position))));
 
-               --  Hole length
+               --  Hole length: size of the Prev and Next components
 
                Hole_Length :=
                  Make_Op_Multiply (Loc,
-                   Make_Integer_Literal (Loc, Uint_2),
+                   Left_Opnd  => Make_Integer_Literal (Loc, Uint_2),
+                   Right_Opnd =>
                      Make_Op_Divide (Loc,
-                       Make_Attribute_Reference (Loc,
-                         Prefix =>
-                           New_Copy_Tree (Prev_Ref),
-                         Attribute_Name =>
-                           Name_Size),
-                     Make_Integer_Literal (Loc, System_Storage_Unit)));
+                       Left_Opnd =>
+                         Make_Attribute_Reference (Loc,
+                           Prefix         => New_Copy_Tree (Prev_Ref),
+                           Attribute_Name => Name_Size),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Loc,
+                           Intval => System_Storage_Unit)));
 
                --  First index after hole
 
@@ -3312,44 +3410,55 @@ package body Exp_Ch5 is
                    Constant_Present    => True,
                    Expression          =>
                      Make_Op_Add (Loc,
-                       Make_Op_Add (Loc,
-                         New_Occurrence_Of (Last_Before_Hole, Loc),
-                         Hole_Length),
-                       Make_Integer_Literal (Loc, 1))));
+                       Left_Opnd  =>
+                         Make_Op_Add (Loc,
+                           Left_Opnd  =>
+                             New_Occurrence_Of (Last_Before_Hole, Loc),
+                           Right_Opnd => Hole_Length),
+                       Right_Opnd => Make_Integer_Literal (Loc, 1))));
 
                Last_Before_Hole := New_Occurrence_Of (Last_Before_Hole, Loc);
                First_After_Hole := New_Occurrence_Of (First_After_Hole, Loc);
             end if;
 
-            --  More comments needed everywhere ???
+            --  Assign the first slice (possibly skipping Root_Controlled,
+            --  up to the beginning of the record controller if present,
+            --  up to the end of the object if not).
 
             Append_To (Res, Make_Assignment_Statement (Loc,
-              Name       => Build_Slice (Duplicate_Subexpr_No_Checks (L),
-                                         First_After_Root,
-                                         Last_Before_Hole),
+              Name       => Build_Slice (
+                Rec => Duplicate_Subexpr_No_Checks (L),
+                Lo  => First_After_Root,
+                Hi  => Last_Before_Hole),
 
-              Expression => Build_Slice (Expression (N),
-                                         First_After_Root,
-                                         New_Copy_Tree (Last_Before_Hole))));
-
+              Expression => Build_Slice (
+                Rec => Expression (N),
+                Lo  => First_After_Root,
+                Hi  => New_Copy_Tree (Last_Before_Hole))));
 
             if Present (First_After_Hole) then
-               Remove_Side_Effects (Expression (N));
+
+               --  If a record controller is present, copy the second slice,
+               --  from right after the _Controller.Next component up to the
+               --  end of the object.
+
                Append_To (Res, Make_Assignment_Statement (Loc,
-                 Name       => Build_Slice (Duplicate_Subexpr_No_Checks (L),
-                                            First_After_Hole,
-                                            Empty),
-                 Expression => Build_Slice (New_Copy_Tree (Expression (N)),
-                                            New_Copy_Tree (First_After_Hole),
-                                            Empty)));
+                 Name       => Build_Slice (
+                   Rec => Duplicate_Subexpr_No_Checks (L),
+                   Lo  => First_After_Hole,
+                   Hi  => Empty),
+                 Expression => Build_Slice (
+                   Rec => Duplicate_Subexpr_No_Checks (Expression (N)),
+                   Lo  => New_Copy_Tree (First_After_Hole),
+                   Hi  => Empty)));
             end if;
-         end;
+         end Controlled_Actions;
 
       else
          Append_To (Res, Relocate_Node (N));
       end if;
 
-      --  Restore the Tag
+      --  Restore the tag
 
       if Save_Tag then
          Append_To (Res,

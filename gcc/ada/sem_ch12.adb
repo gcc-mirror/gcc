@@ -8178,6 +8178,26 @@ package body Sem_Ch12 is
       else
          Act_T := Entity (Actual);
 
+         --  Ada 2005 (AI-216): An Unchecked_Union subtype shall only be passed
+         --  as a generic actual parameter if the corresponding formal type
+         --  does not have a known_discriminant_part, or is a formal derived
+         --  type that is an Unchecked_Union type.
+
+         if Is_Unchecked_Union (Base_Type (Act_T)) then
+            if not Has_Discriminants (A_Gen_T)
+                     or else
+                   (Is_Derived_Type (A_Gen_T)
+                     and then
+                    Is_Unchecked_Union (A_Gen_T))
+            then
+               null;
+            else
+               Error_Msg_N ("Unchecked_Union cannot be the actual for a" &
+                 " discriminated formal type", Act_T);
+
+            end if;
+         end if;
+
          --  Deal with fixed/floating restrictions
 
          if Is_Floating_Point_Type (Act_T) then
