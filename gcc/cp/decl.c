@@ -7598,14 +7598,10 @@ emit_local_var (decl)
    If the length of an array type is not known before,
    it must be determined now, from the initial value, or it is an error.
 
-   For C++, `cp_finish_decl' must be fairly evasive:  it must keep initializers
-   for aggregates that have constructors alive on the permanent obstack,
-   so that the global initializing functions can be written at the end.
-
    INIT0 holds the value of an initializer that should be allowed to escape
    the normal rules.
 
-   FLAGS is LOOKUP_ONLYCONVERTING is the = init syntax was used, else 0
+   FLAGS is LOOKUP_ONLYCONVERTING if the = init syntax was used, else 0
    if the (init) syntax was used.
 
    For functions that take default parameters, DECL points to its
@@ -7624,7 +7620,6 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
   const char *asmspec = NULL;
   int was_readonly = 0;
 
-  /* If this is 0, then we did not change obstacks.  */
   if (! decl)
     {
       if (init)
@@ -7658,7 +7653,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 
   if (init && TREE_CODE (init) == NAMESPACE_DECL)
     {
-      cp_error ("Cannot initialize `%D' to namespace `%D'",
+      cp_error ("cannot initialize `%D' to namespace `%D'",
 		decl, init);
       init = NULL_TREE;
     }
