@@ -33,6 +33,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "c-tree.h"
 #include "flags.h"
 
+/* Nonzero if we've already printed a "partly bracketed initializer"
+   message within this initializer.  */
+static int partial_bracket_mentioned = 0;
+
 extern char *index ();
 extern char *rindex ();
 
@@ -4689,7 +4693,8 @@ pedwarn_init (format, local, ofwhat)
 
    If OFWHAT is nonnull, it specifies what we are initializing, for error
    messages.   Examples: variable name, variable.member, array[44].
-   If OFWHAT is null, the component name is stored on the spelling stack.  */
+   If OFWHAT is null, the component name is stored on the spelling stack.
+   (That is true for all nested calls to digest_init.)  */
 
 tree
 digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
@@ -4705,6 +4710,11 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
   int raw_constructor
     = TREE_CODE (init) == CONSTRUCTOR && TREE_TYPE (init) == 0;
   tree inside_init = init;
+
+  /* Make sure there is just one "partially bracketed" message
+     per top-level initializer or constructor.  */
+  if (ofwhat != 0)
+    partial_bracket_mentioned = 0;
 
   /* By default, assume we use one element from a list.
      We correct this later in the sole case where it is not true.  */
@@ -5030,8 +5040,10 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 
    OFWHAT is a character string describing the object being initialized,
    for error messages.  It might be "variable" or "variable.member"
-   or "variable[17].member[5]".  If OFWHAT is null, the description string
-   is stored on the spelling stack.  */
+   or "variable[17].member[5]".
+
+   If OFWHAT is null, the description string is stored on the spelling
+   stack.  That is always true for recursive calls.  */
 
 static tree
 process_init_constructor (type, init, elts, constant_value, constant_element,
@@ -5059,7 +5071,11 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
   if (elts)
     {
       if (warn_missing_braces)
-	warning ("aggregate has a partly bracketed initializer");
+	{
+	  if (! partial_bracket_mentioned)
+	    warning ("aggregate has a partly bracketed initializer");
+	  partial_bracket_mentioned = 1;
+	}
       tail = *elts;
     }
   else
