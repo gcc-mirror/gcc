@@ -1,3 +1,8 @@
+2004-03-04  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.md (divdf3_internal_thr): Fix algorithm.
+	* testsuite/gcc.dg/20040303-1.c: New test.
+
 2004-03-04  Steven Bosscher  <stevenb@suse.de>
 
 	* ppro.md: Rewrite as a DFA pipeline description.
