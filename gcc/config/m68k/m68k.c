@@ -146,7 +146,7 @@ output_function_prologue (stream, size)
   else if (fsize)
     {
       /* Adding negative number is faster on the 68040.  */
-      if (fsize + 4 < 0x8000)
+      if (fsize + 4 < 0x8000 && ! TARGET_5200)
 	{
 	/* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
@@ -524,7 +524,7 @@ output_function_epilogue (stream, size)
 	     reg_names[FRAME_POINTER_REGNUM]);
   else if (fsize)
     {
-      if (fsize + 4 < 0x8000)
+      if (fsize + 4 < 0x8000 && ! TARGET_5200)
 	{
 	/* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
