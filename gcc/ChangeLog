@@ -1,5 +1,19 @@
 Sat Jan 17 23:41:36 1998  David S. Miller  <davem@tanya.rutgers.edu>
 
+	* varasm.c (immed_double_const): Add casts to HOST_WIDE_INT where
+	necessary.
+	(const_hash): Hash val is unsigned long.
+	(SYMHASH): Likewise.
+
+	* tree.c (TYPE_HASH): Type of hash val is unsigned long.
+
+	* print-tree.c (print_node_brief): HOST_PTR_PRINTF format wants a
+	char pointer, not HOST_WIDE_INT.
+	(print_node): Likewise.  Also hash is unsigned long not
+	HOST_WIDE_INT.
+
+	* cse.c (canon_hash): Hash is unsigned long not HOST_WIDE_INT.
+
 	* explow.c (optimize_save_area_alloca): New function for targets
 	where SETJMP_VIA_SAVE_AREA is true.
 	(allocate_dynamic_stack_space): On SETJMP_VIA_SAVE_AREA targets,
