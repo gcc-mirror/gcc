@@ -3898,7 +3898,7 @@ extern tree build_member_call			PARAMS ((tree, tree, tree));
 extern tree build_offset_ref			PARAMS ((tree, tree));
 extern tree resolve_offset_ref			PARAMS ((tree));
 extern tree build_new				PARAMS ((tree, tree, tree, int));
-extern tree build_vec_init			PARAMS ((tree, tree, int));
+extern tree build_vec_init			PARAMS ((tree, tree, tree, int));
 extern tree build_x_delete			PARAMS ((tree, int, tree));
 extern tree build_delete			PARAMS ((tree, tree, special_function_kind, int, int));
 extern void push_base_cleanups			PARAMS ((void));

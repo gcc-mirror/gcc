@@ -5357,7 +5357,7 @@ build_modify_expr (lhs, modifycode, rhs)
 
       from_array = TREE_CODE (TREE_TYPE (newrhs)) == ARRAY_TYPE
 	           ? 1 + (modifycode != INIT_EXPR): 0;
-      return build_vec_init (lhs, newrhs, from_array);
+      return build_vec_init (lhs, NULL_TREE, newrhs, from_array);
     }
 
   if (modifycode == INIT_EXPR)
