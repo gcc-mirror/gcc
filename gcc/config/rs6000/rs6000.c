@@ -552,7 +552,7 @@ direct_return ()
 
 int
 any_operand (op, mode)
-     register rtx op ATTRIBUTE_UNUSED;
+     rtx op ATTRIBUTE_UNUSED;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return 1;
@@ -561,7 +561,7 @@ any_operand (op, mode)
 /* Returns 1 if op is the count register */
 int
 count_register_operand(op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != REG)
@@ -578,7 +578,7 @@ count_register_operand(op, mode)
 
 int
 xer_operand(op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != REG)
@@ -594,7 +594,7 @@ xer_operand(op, mode)
 
 int
 short_cint_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
@@ -605,7 +605,7 @@ short_cint_operand (op, mode)
 
 int
 u_short_cint_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
@@ -616,7 +616,7 @@ u_short_cint_operand (op, mode)
 
 int
 non_short_cint_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
@@ -628,7 +628,7 @@ non_short_cint_operand (op, mode)
 
 int
 exact_log2_cint_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
@@ -641,7 +641,7 @@ exact_log2_cint_operand (op, mode)
 
 int
 gpc_reg_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
@@ -656,7 +656,7 @@ gpc_reg_operand (op, mode)
 
 int
 cc_reg_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
@@ -670,7 +670,7 @@ cc_reg_operand (op, mode)
 
 int
 cc_reg_not_cr0_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
@@ -685,7 +685,7 @@ cc_reg_not_cr0_operand (op, mode)
 
 int
 reg_or_short_operand (op, mode)
-      register rtx op;
+      rtx op;
       enum machine_mode mode;
 {
   return short_cint_operand (op, mode) || gpc_reg_operand (op, mode);
@@ -696,7 +696,7 @@ reg_or_short_operand (op, mode)
 
 int
 reg_or_neg_short_operand (op, mode)
-      register rtx op;
+      rtx op;
       enum machine_mode mode;
 {
   if (GET_CODE (op) == CONST_INT)
@@ -710,7 +710,7 @@ reg_or_neg_short_operand (op, mode)
 
 int
 reg_or_u_short_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   return u_short_cint_operand (op, mode) || gpc_reg_operand (op, mode);
@@ -721,7 +721,7 @@ reg_or_u_short_operand (op, mode)
 
 int
 reg_or_cint_operand (op, mode)
-    register rtx op;
+    rtx op;
     enum machine_mode mode;
 {
      return (GET_CODE (op) == CONST_INT || gpc_reg_operand (op, mode));
@@ -732,7 +732,7 @@ reg_or_cint_operand (op, mode)
 
 int
 reg_or_arith_cint_operand (op, mode)
-    register rtx op;
+    rtx op;
     enum machine_mode mode;
 {
      return (gpc_reg_operand (op, mode)
@@ -749,7 +749,7 @@ reg_or_arith_cint_operand (op, mode)
 
 int
 reg_or_add_cint64_operand (op, mode)
-    register rtx op;
+    rtx op;
     enum machine_mode mode;
 {
      return (gpc_reg_operand (op, mode)
@@ -767,7 +767,7 @@ reg_or_add_cint64_operand (op, mode)
 
 int
 reg_or_sub_cint64_operand (op, mode)
-    register rtx op;
+    rtx op;
     enum machine_mode mode;
 {
      return (gpc_reg_operand (op, mode)
@@ -785,7 +785,7 @@ reg_or_sub_cint64_operand (op, mode)
 
 int
 reg_or_logical_cint_operand (op, mode)
-    register rtx op;
+    rtx op;
     enum machine_mode mode;
 {
   if (GET_CODE (op) == CONST_INT)
@@ -818,7 +818,7 @@ reg_or_logical_cint_operand (op, mode)
 
 int
 got_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == SYMBOL_REF
@@ -831,7 +831,7 @@ got_operand (op, mode)
 
 int
 got_no_const_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF);
@@ -960,8 +960,8 @@ num_insns_constant (op, mode)
 
 int
 easy_fp_constant (op, mode)
-     register rtx op;
-     register enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode;
 {
   if (GET_CODE (op) != CONST_DOUBLE
       || GET_MODE (op) != mode
@@ -1019,8 +1019,8 @@ easy_fp_constant (op, mode)
 /* Return 1 if the operand is 0.0.  */
 int
 zero_fp_constant (op, mode)
-     register rtx op;
-     register enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode;
 {
   return GET_MODE_CLASS (mode) == MODE_FLOAT && op == CONST0_RTX (mode);
 }
@@ -1032,7 +1032,7 @@ zero_fp_constant (op, mode)
 
 int
 volatile_mem_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   if (GET_CODE (op) != MEM)
@@ -1057,7 +1057,7 @@ volatile_mem_operand (op, mode)
 
 int
 offsettable_mem_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == MEM)
@@ -1070,7 +1070,7 @@ offsettable_mem_operand (op, mode)
 
 int
 mem_or_easy_const_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   return memory_operand (op, mode) || easy_fp_constant (op, mode);
@@ -1081,7 +1081,7 @@ mem_or_easy_const_operand (op, mode)
 
 int
 add_operand (op, mode)
-    register rtx op;
+    rtx op;
     enum machine_mode mode;
 {
   if (GET_CODE (op) == CONST_INT)
@@ -1095,7 +1095,7 @@ add_operand (op, mode)
 
 int
 non_add_cint_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
@@ -1108,7 +1108,7 @@ non_add_cint_operand (op, mode)
 
 int
 logical_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   HOST_WIDE_INT opl, oph;
@@ -1147,7 +1147,7 @@ logical_operand (op, mode)
 
 int
 non_logical_cint_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE)
@@ -1162,7 +1162,7 @@ non_logical_cint_operand (op, mode)
 
 int
 mask_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   HOST_WIDE_INT c, lsb;
@@ -1204,7 +1204,7 @@ mask_operand (op, mode)
 
 int
 mask64_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   if (GET_CODE (op) == CONST_INT)
@@ -1262,7 +1262,7 @@ mask64_operand (op, mode)
 
 int
 and64_operand (op, mode)
-    register rtx op;
+    rtx op;
     enum machine_mode mode;
 {
   if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis. */
@@ -1276,7 +1276,7 @@ and64_operand (op, mode)
 
 int
 and_operand (op, mode)
-    register rtx op;
+    rtx op;
     enum machine_mode mode;
 {
   if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis. */
@@ -1289,8 +1289,8 @@ and_operand (op, mode)
 
 int
 reg_or_mem_operand (op, mode)
-     register rtx op;
-     register enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode;
 {
   return (gpc_reg_operand (op, mode)
 	  || memory_operand (op, mode)
@@ -1303,8 +1303,8 @@ reg_or_mem_operand (op, mode)
 
 int
 lwa_operand (op, mode)
-     register rtx op;
-     register enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode;
 {
   rtx inner = op;
 
@@ -1326,7 +1326,7 @@ lwa_operand (op, mode)
 
 int
 call_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   if (mode != VOIDmode && GET_MODE (op) != mode)
@@ -1342,7 +1342,7 @@ call_operand (op, mode)
 
 int
 current_file_function_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == SYMBOL_REF
@@ -1356,7 +1356,7 @@ current_file_function_operand (op, mode)
 
 int
 input_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   /* Memory is always valid.  */
@@ -3506,7 +3506,7 @@ validate_condition_mode (code, mode)
 
 int
 branch_comparison_operator (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (op);
@@ -3530,7 +3530,7 @@ branch_comparison_operator (op, mode)
 
 int
 branch_positive_comparison_operator (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   enum rtx_code code;
@@ -3551,7 +3551,7 @@ branch_positive_comparison_operator (op, mode)
 
 int
 scc_comparison_operator (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   enum rtx_code code = GET_CODE (op);
@@ -3618,8 +3618,8 @@ min_max_operator (op, mode)
 
 int
 includes_lshift_p (shiftop, andop)
-     register rtx shiftop;
-     register rtx andop;
+     rtx shiftop;
+     rtx andop;
 {
   unsigned HOST_WIDE_INT shift_mask = ~(unsigned HOST_WIDE_INT) 0;
 
@@ -3632,8 +3632,8 @@ includes_lshift_p (shiftop, andop)
 
 int
 includes_rshift_p (shiftop, andop)
-     register rtx shiftop;
-     register rtx andop;
+     rtx shiftop;
+     rtx andop;
 {
   unsigned HOST_WIDE_INT shift_mask = ~(unsigned HOST_WIDE_INT) 0;
 
@@ -3648,8 +3648,8 @@ includes_rshift_p (shiftop, andop)
 
 int
 includes_rldic_lshift_p (shiftop, andop)
-     register rtx shiftop;
-     register rtx andop;
+     rtx shiftop;
+     rtx andop;
 {
   if (GET_CODE (andop) == CONST_INT)
     {
@@ -3743,8 +3743,8 @@ includes_rldic_lshift_p (shiftop, andop)
 
 int
 includes_rldicr_lshift_p (shiftop, andop)
-     register rtx shiftop;
-     register rtx andop;
+     rtx shiftop;
+     rtx andop;
 {
   if (GET_CODE (andop) == CONST_INT)
     {
@@ -3831,8 +3831,8 @@ registers_ok_for_quad_peep (reg1, reg2)
 
 int
 addrs_ok_for_quad_peep (addr1, addr2)
-     register rtx addr1;
-     register rtx addr2;
+     rtx addr1;
+     rtx addr2;
 {
   unsigned int reg1;
   int offset1;
@@ -3959,7 +3959,7 @@ secondary_reload_class (class, mode, in)
 
 int
 ccr_bit (op, scc_p)
-     register rtx op;
+     rtx op;
      int scc_p;
 {
   enum rtx_code code = GET_CODE (op);
@@ -4744,7 +4744,7 @@ print_operand (file, x, code)
 void
 print_operand_address (file, x)
      FILE *file;
-     register rtx x;
+     rtx x;
 {
   if (GET_CODE (x) == REG)
     fprintf (file, "0(%s)", reg_names[ REGNO (x) ]);
@@ -5322,7 +5322,7 @@ first_fp_reg_to_save ()
    complicated by having two separate calling sequences, the AIX calling
    sequence and the V.4 calling sequence.
 
-   AIX (and Darwin/Mac OS) stack frames look like:
+   AIX (and Darwin/Mac OS X) stack frames look like:
 							  32-bit  64-bit
 	SP---->	+---------------------------------------+
 		| back chain to caller			| 0	  0
@@ -5434,7 +5434,7 @@ rs6000_stack_info ()
   info_ptr->first_fp_reg_save = first_fp_reg_to_save ();
   info_ptr->fp_size = 8 * (64 - info_ptr->first_fp_reg_save);
 
-  /* Does this function call anything? */
+  /* Does this function call anything?  */
   info_ptr->calls_p = (! current_function_is_leaf
 		       || cfun->machine->ra_needs_full_frame);
 
@@ -5478,7 +5478,7 @@ rs6000_stack_info ()
   else
     ehrd_size = 0;
 
-  /* Determine various sizes */
+  /* Determine various sizes.  */
   info_ptr->reg_size     = reg_size;
   info_ptr->fixed_size   = RS6000_SAVE_AREA;
   info_ptr->varargs_size = RS6000_VARARGS_AREA;
@@ -5493,7 +5493,7 @@ rs6000_stack_info ()
   if (DEFAULT_ABI == ABI_DARWIN)
     info_ptr->save_size = RS6000_ALIGN (info_ptr->save_size, 16);
 
-  /* Calculate the offsets */
+  /* Calculate the offsets.  */
   switch (abi)
     {
     case ABI_NONE:
@@ -8487,7 +8487,7 @@ rs6000_add_gc_roots ()
 
 int
 symbolic_operand (op)
-     register rtx op;
+     rtx op;
 {
   switch (GET_CODE (op))
     {

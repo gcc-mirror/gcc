@@ -1,3 +1,8 @@
+2001-10-12  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/rs6000.c: Remove uses of "register" specifier in
+	declarations of arguments and local variables.
+
 2001-10-12  Christopher Faylor  <cgf@redhat.com>
 
 	* config/i386/cygwin.h: Revert erroneous checkin of crtbegin and
