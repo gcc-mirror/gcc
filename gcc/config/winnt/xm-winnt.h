@@ -53,6 +53,10 @@ Boston, MA 02111-1307, USA.  */
 /* Allows checks for drive names.  */
 #define HAVE_DOS_BASED_FILE_SYSTEM
 
+/* Tell GCC about NT's bit bucket. */
+
+#define HOST_BIT_BUCKET "NUL"
+
 #define S_IRUSR 0000400
 #define S_IWUSR 0000200
 #define S_IXUSR 0000100
