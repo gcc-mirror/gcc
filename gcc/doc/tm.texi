@@ -329,7 +329,7 @@ et al, within sysroot+suffix.
 @defmac SYSROOT_HEADERS_SUFFIX_SPEC
 Define this macro to add a headers_suffix to the target sysroot when
 GCC is configured with a sysroot.  This will cause GCC to pass the
-updated sysroot+headers_suffix to CPP@, causing it to search for
+updated sysroot+headers_suffix to CPP, causing it to search for
 usr/include, et al, within sysroot+headers_suffix.
 @end defmac
 
