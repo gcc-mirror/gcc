@@ -2692,6 +2692,7 @@ layout_chill_range_type (rangetype, must_be_const)
   TYPE_PRECISION (rangetype) = TYPE_PRECISION (type);
   TYPE_MODE (rangetype) = TYPE_MODE (type);
   TYPE_SIZE (rangetype) = TYPE_SIZE (type);
+  TYPE_SIZE_UNIT (rangetype) = TYPE_SIZE_UNIT (type);
   TYPE_ALIGN (rangetype) = TYPE_ALIGN (type);
   TREE_UNSIGNED (rangetype) = TREE_UNSIGNED (type);
   CH_NOVELTY (rangetype) = CH_NOVELTY (type);

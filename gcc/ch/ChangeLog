@@ -1,3 +1,7 @@
+Thu Sep  3 15:32:03 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* typeck.c (layout_chill_range_type): set TYPE_SIZE_UNIT.
+
 Wed Sep 02 09:25:29 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* lex.c (check_newline):  Change how HANDLE_PRAGMA is called.
