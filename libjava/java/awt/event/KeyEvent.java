@@ -251,7 +251,7 @@ public class KeyEvent extends InputEvent
 
   public String paramString ()
   {
-    String r;
+    String r = "";
     switch (id)
       {
         case KEY_PRESSED:

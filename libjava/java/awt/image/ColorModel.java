@@ -54,11 +54,11 @@ public abstract class ColorModel implements Transparency
   protected int pixel_bits;
   protected int transferType;
 
-  private int[] bits;
-  private ColorSpace cspace;
-  private int transparency;
-  private boolean hasAlpha;
-  private boolean isAlphaPremultiplied;
+  int[] bits;
+  ColorSpace cspace;
+  int transparency;
+  boolean hasAlpha;
+  boolean isAlphaPremultiplied;
     
   static int[] nArray(int value, int times)
   {

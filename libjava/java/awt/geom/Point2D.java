@@ -64,7 +64,11 @@ public abstract class Point2D implements Cloneable
 
   public Object clone()
   {
-    return super.clone();
+    try
+    {
+      return super.clone ();
+    } 
+    catch (CloneNotSupportedException _) {return null;}
   }
 
   public static class Double extends Point2D

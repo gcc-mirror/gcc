@@ -21,12 +21,15 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 // import javax.accessibility.AccessibleContext;
 
-/* Status: Incomplete. The event dispatch mechanism is implemented. All 
-   other methods defined in the J2SE 1.3 API javadoc exist, but are mostly 
-   incomplete or only stubs; except for methods relating to the Drag and Drop, 
-   Input Method, and Accessibility frameworks: These methods are present but 
-   commented out. */
-
+/**
+  * The root of all evil.
+  *
+  * Status: Incomplete. The event dispatch mechanism is implemented. All 
+  * other methods defined in the J2SE 1.3 API javadoc exist, but are mostly 
+  * incomplete or only stubs; except for methods relating to the Drag and Drop, 
+  * Input Method, and Accessibility frameworks: These methods are present but 
+  * commented out.
+  */
 public abstract class Component implements ImageObserver, MenuContainer, 
 					   java.io.Serializable
 {
@@ -38,11 +41,11 @@ public abstract class Component implements ImageObserver, MenuContainer,
 			    RIGHT_ALIGNMENT  = 1.0f,
 			    TOP_ALIGNMENT    = 0.0f;
 
-    /* Make the treelock a String so that it can easily be identified
-       in debug dumps. We clone the String in order to avoid a conflict in 
-       the unlikely event that some other package uses exactly the same string
-       as a lock object. */
-    static Object treeLock = new String("AWT_TREE_LOCK");
+  /* Make the treelock a String so that it can easily be identified
+     in debug dumps. We clone the String in order to avoid a conflict in 
+     the unlikely event that some other package uses exactly the same string
+     as a lock object. */
+  static Object treeLock = new String("AWT_TREE_LOCK");
 
   /* Serialized fields from the serialization spec. */
   // FIXME: Default values?
@@ -140,7 +143,8 @@ public abstract class Component implements ImageObserver, MenuContainer,
   /** @since 1.3 */
   public GraphicsConfiguration getGraphicsConfiguration()
   {
-    // FIXME
+    if (parent != null)
+      return parent.getGraphicsConfiguration();
     return null;
   }
 
@@ -166,8 +170,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
   /** @since 1.2 */
   public boolean isDisplayable()
   {
-    // FIXME
-    return false;
+    return (peer != null);
   }
   
   public boolean isVisible()
@@ -225,28 +228,38 @@ public abstract class Component implements ImageObserver, MenuContainer,
     // FIXME
   }
   
+  /** @specnote  Inspection by subclassing shows that Sun's implementation
+                 calls show(boolean) which then calls show() or hide(). It is
+		 the show() method that is overriden in subclasses like Window.
+		 We do the same to preserve compatibility for subclasses. */
   public void setVisible(boolean b)
   {
-    visible = true;
-    // FIXME
+    show (b);
   }
   
   /** @deprecated */
   public void show()
   {
-    setVisible(true);
+    if (peer != null)
+      peer.setVisible(true);
+    this.visible = true;
   }
   
   /** @deprecated */
   public void show(boolean b)
   {
-    setVisible(b);
+    if (b)
+      show();
+    else
+      hide();
   }
   
   /** @deprecated */
   public void hide()
   {
-    setVisible(false);
+    if (peer != null)
+      peer.setVisible(false);
+    this.visible = false;
   }
   
   public Color getForeground()
@@ -256,6 +269,8 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public void setForeground(Color c)
   {
+    if (peer != null)
+      peer.setForeground(c);
     this.foreground = c;
   }
   
@@ -266,6 +281,8 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public void setBackground(Color c)
   {
+    if (peer != null)
+      peer.setBackground(c);
     this.background = c;
   }
   
@@ -276,6 +293,8 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public void setFont(Font f)
   {
+    if (peer != null)
+      peer.setFont(f);
     this.font = f;
   }
 
@@ -633,7 +652,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
   public int checkImage(Image image, ImageObserver observer)
   {
     // FIXME
-    return false;
+    return 0;
   }
   
   public int checkImage(Image image, int width, int height, ImageObserver observer)
@@ -699,41 +718,6 @@ public abstract class Component implements ImageObserver, MenuContainer,
   {
     dispatchEventImpl(e);
   }
-  /* This code needs to be split up and put in to dispatchEventImpl() in the
-     appropriate Component subclasses:
-   
-    else if ((e.id <= WindowEvent.WINDOW_LAST
-             && e.id >= WindowEvent.WINDOW_FIRST)
-	&& (windowListener != null
-	    || eventMask & AWTEvent.WINDOW_EVENT_MASK != 0))
-      processEvent(e);
-    else if ((e.id <= AdjustmentEvent.ADJUSTMENT_LAST
-             && e.id >= AdjustmentEvent.ADJUSTMENT_FIRST)
-	&& (adjustmentListener != null
-	    || eventMask & AWTEvent.ADJUSTMENT_EVENT_MASK != 0))
-      processEvent(e);
-    else if ((e.id <= ItemEvent.ITEM_LAST
-             && e.id >= ItemEvent.ITEM_FIRST)
-	&& (itemListener != null
-	    || eventMask & AWTEvent.ITEM_EVENT_MASK != 0))
-      processEvent(e);
-    else if ((e.id <= PaintEvent.PAINT_LAST
-             && e.id >= PaintEvent.PAINT_FIRST)
-	&& (paintListener != null
-	    || eventMask & AWTEvent.PAINT_EVENT_MASK != 0))
-      processEvent(e);
-    else if ((e.id <= TextEvent.TEXT_LAST
-             && e.id >= TextEvent.TEXT_FIRST)
-	&& (textListener != null
-	    || eventMask & AWTEvent.TEXT_EVENT_MASK != 0))
-      processEvent(e);
-    else if ((e.id <= InvocationEvent.INVOCATION_LAST
-             && e.id >= InvocationEvent.INVOCATION_FIRST)
-	&& (invocationListener != null
-	    || eventMask & AWTEvent.INVOCATION_EVENT_MASK != 0))
-      processEvent(e);
-  }
-  */      
   
   void dispatchEventImpl(AWTEvent e)
   {
@@ -1218,12 +1202,16 @@ public abstract class Component implements ImageObserver, MenuContainer,
 
   public void addNotify()
   {
-    // FIXME
+    if (peer == null)
+      peer = getToolkit().createComponent(this);
   }
   
   public void removeNotify()
-  {
-    // FIXME
+  {    
+    if (peer != null)
+      peer.dispose();
+    peer = null;
+    visible = false;
   }
   
   /** @deprecated */
@@ -1312,26 +1300,37 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public void addPropertyChangeListener(PropertyChangeListener listener)
   {
-
+    if (changeSupport == null)
+      changeSupport = new PropertyChangeSupport(this);
+    changeSupport.addPropertyChangeListener(listener);
   }
   
   public void removePropertyChangeListener(PropertyChangeListener listener)
   {
+    if (changeSupport != null)
+      changeSupport.removePropertyChangeListener(listener);         
   }
   
   public void addPropertyChangeListener(String propertyName,
                                 	PropertyChangeListener listener)
   {
+    if (changeSupport == null)
+      changeSupport = new PropertyChangeSupport(this);
+    changeSupport.addPropertyChangeListener(propertyName, listener);  
   }
   
   public void removePropertyChangeListener(String propertyName,
                                            PropertyChangeListener listener)
   {
+    if (changeSupport != null)
+      changeSupport.removePropertyChangeListener(propertyName, listener);
   }
   
   protected void firePropertyChange(String propertyName, Object oldValue, 
                                     Object newValue)
   {
+    if (changeSupport != null)
+      changeSupport.firePropertyChange(propertyName, oldValue, newValue);    
   }
   
   public void setComponentOrientation(ComponentOrientation o)
