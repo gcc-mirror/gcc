@@ -309,7 +309,6 @@ gfc_done_1 (void)
 
   gfc_scanner_done_1 ();
   gfc_intrinsic_done_1 ();
-  gfc_simplify_done_1 ();
   gfc_iresolve_done_1 ();
   gfc_arith_done_1 ();
 }

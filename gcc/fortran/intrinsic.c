@@ -1492,6 +1492,11 @@ add_functions (void)
              gfc_check_rand, NULL, NULL,
              i, BT_INTEGER, 4, 0);
 
+  /* Compatibility with HP FORTRAN 77/iX Reference.  Note, rand() and 
+     ran() use slightly different shoddy multiplicative congruential 
+     PRNG.  */
+  make_alias ("ran");
+
   make_generic ("rand", GFC_ISYM_RAND);
 
   add_sym_1 ("range", 0, 1, BT_INTEGER, di,

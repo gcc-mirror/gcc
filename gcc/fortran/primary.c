@@ -1,5 +1,5 @@
 /* Primary expression subroutines
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GNU G95.
@@ -436,7 +436,7 @@ done:
   buffer = alloca (count + 1);
   memset (buffer, '\0', count + 1);
 
-  /* Hack for mpf_init_set_str().  */
+  /* Hack for mpfr_set_str().  */
   p = buffer;
   while (count > 0)
     {
@@ -497,7 +497,7 @@ done:
     case ARITH_UNDERFLOW:
       if (gfc_option.warn_underflow)
         gfc_warning ("Real constant underflows its kind at %C");
-      mpf_set_ui(e->value.real, 0);
+      mpfr_set_ui (e->value.real, 0, GFC_RND_MODE);
       break;
 
     default:
@@ -1076,12 +1076,12 @@ done:
   buffer = alloca (count + 1);
   memset (buffer, '\0', count + 1);
 
-  /* Hack for mpf_init_set_str().  */
+  /* Hack for mpfr_set_str().  */
   p = buffer;
   while (count > 0)
     {
       c = gfc_next_char ();
-      if (c == 'd')
+      if (c == 'd' || c == 'q')
 	c = 'e';
       *p++ = c;
       count--;

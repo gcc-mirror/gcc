@@ -234,7 +234,7 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
 /* Converts a real constant into backend form.  Uses an intermediate string
    representation.  */
 tree
-gfc_conv_mpf_to_tree (mpf_t f, int kind)
+gfc_conv_mpfr_to_tree (mpfr_t f, int kind)
 {
   tree res;
   tree type;
@@ -251,13 +251,9 @@ gfc_conv_mpf_to_tree (mpf_t f, int kind)
     }
   assert (gfc_real_kinds[n].kind);
 
-  assert (gfc_real_kinds[n].radix == 2);
-
   n = MAX (abs (gfc_real_kinds[n].min_exponent),
 	   abs (gfc_real_kinds[n].max_exponent));
-#if 0
-  edigits = 2 + (int) (log (n) / log (gfc_real_kinds[n].radix));
-#endif
+
   edigits = 1;
   while (n > 0)
     {
@@ -265,8 +261,11 @@ gfc_conv_mpf_to_tree (mpf_t f, int kind)
       edigits += 3;
     }
 
+  if (kind == gfc_default_double_kind())
+    p = mpfr_get_str (NULL, &exp, 10, 17, f, GFC_RND_MODE);
+  else
+    p = mpfr_get_str (NULL, &exp, 10, 8, f, GFC_RND_MODE);
 
-  p = mpf_get_str (NULL, &exp, 10, 0, f);
 
   /* We also have one minus sign, "e", "." and a null terminator.  */
   q = (char *) gfc_getmem (strlen (p) + edigits + 4);
@@ -294,6 +293,7 @@ gfc_conv_mpf_to_tree (mpf_t f, int kind)
 
   type = gfc_get_real_type (kind);
   res = build_real (type, REAL_VALUE_ATOF (q, TYPE_MODE (type)));
+
   gfc_free (q);
   gfc_free (p);
 
@@ -321,16 +321,16 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
       return gfc_conv_mpz_to_tree (expr->value.integer, expr->ts.kind);
 
     case BT_REAL:
-      return gfc_conv_mpf_to_tree (expr->value.real, expr->ts.kind);
+      return gfc_conv_mpfr_to_tree (expr->value.real, expr->ts.kind);
 
     case BT_LOGICAL:
       return build_int_2 (expr->value.logical, 0);
 
     case BT_COMPLEX:
       {
-	tree real = gfc_conv_mpf_to_tree (expr->value.complex.r,
+	tree real = gfc_conv_mpfr_to_tree (expr->value.complex.r,
 					  expr->ts.kind);
-	tree imag = gfc_conv_mpf_to_tree (expr->value.complex.i,
+	tree imag = gfc_conv_mpfr_to_tree (expr->value.complex.i,
 					  expr->ts.kind);
 
 	return build_complex (NULL_TREE, real, imag);

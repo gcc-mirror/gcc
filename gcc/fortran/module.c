@@ -71,6 +71,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <time.h>
 
 #include "gfortran.h"
+#include "arith.h"
 #include "match.h"
 #include "parse.h" /* FIXME */
 
@@ -519,7 +520,7 @@ gfc_match_use (void)
 	tail->next = new;
       tail = new;
 
-      /* See what kind of interface we're dealing with.  Asusume it is
+      /* See what kind of interface we're dealing with.  Assume it is
          not an operator.  */
       new->operator = INTRINSIC_NONE;
       if (gfc_match_generic_spec (&type, name, &operator) == MATCH_ERROR)
@@ -2245,7 +2246,7 @@ mio_gmp_integer (mpz_t * integer)
 
 
 static void
-mio_gmp_real (mpf_t * real)
+mio_gmp_real (mpfr_t * real)
 {
   mp_exp_t exponent;
   char *p;
@@ -2255,14 +2256,14 @@ mio_gmp_real (mpf_t * real)
       if (parse_atom () != ATOM_STRING)
 	bad_module ("Expected real string");
 
-      mpf_init (*real);
-      mpf_set_str (*real, atom_string, -16);
+      mpfr_init (*real);
+      mpfr_set_str (*real, atom_string, 16, GFC_RND_MODE);
       gfc_free (atom_string);
 
     }
   else
     {
-      p = mpf_get_str (NULL, &exponent, 16, 0, *real);
+      p = mpfr_get_str (NULL, &exponent, 16, 0, *real, GFC_RND_MODE);
       atom_string = gfc_getmem (strlen (p) + 20);
 
       sprintf (atom_string, "0.%s@%ld", p, exponent);
@@ -2507,10 +2508,12 @@ mio_expr (gfc_expr ** ep)
 	  break;
 
 	case BT_REAL:
+          gfc_set_model_kind (e->ts.kind);
 	  mio_gmp_real (&e->value.real);
 	  break;
 
 	case BT_COMPLEX:
+          gfc_set_model_kind (e->ts.kind);
 	  mio_gmp_real (&e->value.complex.r);
 	  mio_gmp_real (&e->value.complex.i);
 	  break;

@@ -59,7 +59,6 @@ char *alloca ();
 /* Major control parameters.  */
 
 #define GFC_MAX_SYMBOL_LEN 63
-#define GFC_REAL_BITS 100	/* Number of bits in g95's floating point numbers.  */
 #define GFC_MAX_LINE 132	/* Characters beyond this are not seen.  */
 #define GFC_MAX_DIMENSIONS 7	/* Maximum dimensions in an array.  */
 #define GFC_LETTERS 26		/* Number of letters in the alphabet.  */
@@ -184,7 +183,7 @@ extern mstring intrinsic_operators[];
 
 /* Arithmetic results.  */
 typedef enum
-{ ARITH_OK = 1, ARITH_OVERFLOW, ARITH_UNDERFLOW,
+{ ARITH_OK = 1, ARITH_OVERFLOW, ARITH_UNDERFLOW, ARITH_NAN,
   ARITH_DIV0, ARITH_0TO0, ARITH_INCOMMENSURATE
 }
 arith;
@@ -930,6 +929,8 @@ gfc_intrinsic_sym;
    EXPR_ARRAY      An array constructor.  */
 
 #include <gmp.h>
+#include <mpfr.h>
+#define GFC_RND_MODE GMP_RNDN
 
 typedef struct gfc_expr
 {
@@ -953,13 +954,14 @@ typedef struct gfc_expr
 
   union
   {
-    mpz_t integer;
-    mpf_t real;
     int logical;
+    mpz_t integer;
+
+    mpfr_t real;
 
     struct
     {
-      mpf_t r, i;
+      mpfr_t r, i;
     }
     complex;
 
@@ -1023,7 +1025,7 @@ typedef struct
   int kind, radix, digits, min_exponent, max_exponent;
 
   int range, precision;
-  mpf_t epsilon, huge, tiny;
+  mpfr_t epsilon, huge, tiny;
 }
 gfc_real_info;
 
@@ -1555,7 +1557,6 @@ match gfc_intrinsic_sub_interface (gfc_code *, int);
 
 /* simplify.c */
 void gfc_simplify_init_1 (void);
-void gfc_simplify_done_1 (void);
 
 /* match.c -- FIXME */
 void gfc_free_iterator (gfc_iterator *, int);

@@ -154,7 +154,7 @@ free_expr0 (gfc_expr * e)
 	  break;
 
 	case BT_REAL:
-	  mpf_clear (e->value.real);
+	  mpfr_clear (e->value.real);
 	  break;
 
 	case BT_CHARACTER:
@@ -162,8 +162,8 @@ free_expr0 (gfc_expr * e)
 	  break;
 
 	case BT_COMPLEX:
-	  mpf_clear (e->value.complex.r);
-	  mpf_clear (e->value.complex.i);
+	  mpfr_clear (e->value.complex.r);
+	  mpfr_clear (e->value.complex.i);
 	  break;
 
 	default:
@@ -365,12 +365,17 @@ gfc_copy_expr (gfc_expr * p)
 	  break;
 
 	case BT_REAL:
-	  mpf_init_set (q->value.real, p->value.real);
+          gfc_set_model_kind (q->ts.kind);
+          mpfr_init (q->value.real);
+	  mpfr_set (q->value.real, p->value.real, GFC_RND_MODE);
 	  break;
 
 	case BT_COMPLEX:
-	  mpf_init_set (q->value.complex.r, p->value.complex.r);
-	  mpf_init_set (q->value.complex.i, p->value.complex.i);
+          gfc_set_model_kind (q->ts.kind);
+          mpfr_init (q->value.complex.r);
+          mpfr_init (q->value.complex.i);
+	  mpfr_set (q->value.complex.r, p->value.complex.r, GFC_RND_MODE);
+	  mpfr_set (q->value.complex.i, p->value.complex.i, GFC_RND_MODE);
 	  break;
 
 	case BT_CHARACTER:
