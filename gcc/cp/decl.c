@@ -11576,7 +11576,7 @@ finish_function (lineno, call_poplevel)
   /* Free all the tree nodes making up this function.  */
   /* Switch back to allocating nodes permanently
      until we start another function.  */
-  permanent_allocation ();
+  permanent_allocation (1);
 
   if (flag_cadillac)
     cadillac_finish_function (fndecl);
