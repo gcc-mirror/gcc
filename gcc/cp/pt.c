@@ -520,7 +520,7 @@ determine_specialization (template_id, decl, targs_out,
       else if (TREE_CODE (fn) != TEMPLATE_DECL
 	       || (need_member_template && !is_member_template (fn)))
 	{
-	  if (decls_match (decl, fn))
+	  if (decls_match (decl, fn) && 0)
 	    {
 	      cp_error ("`template <>' applied to non-specialization `%D'",
 			fn);
