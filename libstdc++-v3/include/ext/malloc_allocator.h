@@ -1,6 +1,6 @@
 // Allocator that wraps "C" malloc -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -78,12 +78,12 @@ namespace __gnu_cxx
       // NB: __n is permitted to be 0.  The C++ standard says nothing
       // about what the return value is when __n == 0.
       pointer
-      allocate(size_type __n, std::allocator<void>::const_pointer __h = 0)
+      allocate(size_type __n, std::allocator<void>::const_pointer = 0)
       { return static_cast<_Tp*>(malloc(__n * sizeof(_Tp))); }
 
       // __p is not permitted to be a null pointer.
       void
-      deallocate(pointer __p, size_type __n)
+      deallocate(pointer __p, size_type)
       { free(static_cast<void*>(__p)); }
 
       size_type
