@@ -190,25 +190,6 @@ init_reg_tables ()
     }
 }
 
-static tree interrupt_ident;
-static tree model_ident;
-static tree small_ident;
-static tree medium_ident;
-static tree large_ident;
-
-static void
-init_idents ()
-{
-  if (interrupt_ident == 0)
-    {
-      interrupt_ident = get_identifier ("interrupt");
-      model_ident = get_identifier ("model");
-      small_ident = get_identifier ("small");
-      medium_ident = get_identifier ("medium");
-      large_ident = get_identifier ("large");
-    }
-}
-
 /* M32R specific attribute support.
 
    interrupt - for interrupt functions
@@ -222,6 +203,35 @@ init_idents ()
 	Grep for MODEL in m32r.h for more info.
 */
 
+static tree interrupt_ident1;
+static tree interrupt_ident2;
+static tree model_ident1;
+static tree model_ident2;
+static tree small_ident1;
+static tree small_ident2;
+static tree medium_ident1;
+static tree medium_ident2;
+static tree large_ident1;
+static tree large_ident2;
+
+static void
+init_idents PROTO ((void))
+{
+  if (interrupt_ident1 == 0)
+    {
+      interrupt_ident1 = get_identifier ("interrupt");
+      interrupt_ident2 = get_identifier ("__interrupt__");
+      model_ident1 = get_identifier ("model");
+      model_ident2 = get_identifier ("__model__");
+      small_ident1 = get_identifier ("small");
+      small_ident2 = get_identifier ("__small__");
+      medium_ident1 = get_identifier ("medium");
+      medium_ident2 = get_identifier ("__medium__");
+      large_ident1 = get_identifier ("large");
+      large_ident2 = get_identifier ("__large__");
+    }
+}
+
 /* Return nonzero if IDENTIFIER is a valid decl attribute.  */
 
 int
@@ -233,15 +243,20 @@ m32r_valid_machine_decl_attribute (type, attributes, identifier, args)
 {
   init_idents ();
 
-  if (identifier == interrupt_ident
+  if ((identifier == interrupt_ident1
+       || identifier == interrupt_ident2)
       && list_length (args) == 0)
     return 1;
 
-  if (identifier == model_ident
+  if ((identifier == model_ident1
+       || identifier == model_ident2)
       && list_length (args) == 1
-      && (TREE_VALUE (args) == small_ident
-	  || TREE_VALUE (args) == medium_ident
-	  || TREE_VALUE (args) == large_ident))
+      && (TREE_VALUE (args) == small_ident1
+	  || TREE_VALUE (args) == small_ident2
+	  || TREE_VALUE (args) == medium_ident1
+	  || TREE_VALUE (args) == medium_ident2
+	  || TREE_VALUE (args) == large_ident1
+	  || TREE_VALUE (args) == large_ident2))
     return 1;
 
   return 0;
@@ -380,13 +395,17 @@ m32r_encode_section_info (decl)
     {
       if (model)
 	{
-	  init_idents ();
+	  tree id;
 	  
-	  if (TREE_VALUE (TREE_VALUE (model)) == small_ident)
+	  init_idents ();
+
+	  id = TREE_VALUE (TREE_VALUE (model));
+
+	  if (id == small_ident1 || id == small_ident2)
 	    ; /* don't mark the symbol specially */
-	  else if (TREE_VALUE (TREE_VALUE (model)) == medium_ident)
+	  else if (id == medium_ident1 || id == medium_ident2)
 	    prefix = MEDIUM_FLAG_CHAR;
-	  else if (TREE_VALUE (TREE_VALUE (model)) == large_ident)
+	  else if (id == large_ident1 || id == large_ident2)
 	    prefix = LARGE_FLAG_CHAR;
 	  else
 	    abort (); /* shouldn't happen */
