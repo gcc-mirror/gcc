@@ -1,3 +1,8 @@
+2001-01-07  Richard Henderson  <rth@redhat.com>
+
+	* collect2.c (COFF specific stuff): Revert 12-06 patch
+	to prototype system functions.
+
 2001-01-07  Michael Hayes  <mhayes@redhat.com>
 
 	* hard-reg-set.h: Add multiple include guard.

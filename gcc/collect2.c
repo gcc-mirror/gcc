@@ -2688,9 +2688,7 @@ scan_libraries (prog_name)
       || (HEADER (X).f_magic == 0757 && aix64_flag))
 #endif
 
-extern char *ldgetname PARAMS ((LDFILE *, GCC_SYMENT *));
-extern int ldtbread PARAMS ((LDFILE *, long, GCC_SYMENT *));
-extern int ldclose PARAMS ((LDFILE *));
+extern char *ldgetname ();
 
 /* COFF version to scan the name list of the loaded program for
    the symbols g++ uses for static constructors and destructors.
