@@ -693,6 +693,7 @@ convert.h
 cp/call.c
 cp/cfns.h
 cp/class.c
+cp/cp-lang.c
 cp/cp-tree.h
 cp/cvt.c
 cp/decl.c
@@ -973,6 +974,8 @@ java/xref.h
 java/zextract.c
 java/zipfile.h
 jump.c
+langhooks.h
+langhooks.c
 lcm.c
 libfuncs.h
 #libgcc2.c is part of the GCC library
@@ -1067,6 +1070,8 @@ toplev.h
 tradcif.y
 tradcpp.c
 tradcpp.h
+tree-inline.c
+tree-inline.h
 tree.c
 tree.h
 tsystem.h
