@@ -1537,7 +1537,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define FUNCTION_MODE SImode
 
 /* A barrier will be aligned so account for the possible expansion.
-   A volatile load may be preceeded by a serializing instruction.
+   A volatile load may be preceded by a serializing instruction.
    Account for profiling code output at NOTE_INSN_PROLOGUE_END.
    Account for block profiling code at basic block boundaries.  */
 #define ADJUST_INSN_LENGTH(RTX, LENGTH)					\

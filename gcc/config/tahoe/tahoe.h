@@ -338,7 +338,7 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
   gen_rtx (REG, TYPE_MODE (VALTYPE), 0)
 
-/* libarary routines also return things in reg 0 */
+/* library routines also return things in reg 0 */
 
 #define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, 0)
 

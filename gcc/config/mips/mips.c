@@ -1846,7 +1846,7 @@ block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align, orig_src)
     }
 
 #if 0
-  /* Don't generate unligned moves here, rather defer those to the
+  /* Don't generate unaligned moves here, rather defer those to the
      general movestrsi_internal pattern.  */
   else if (bytes >= UNITS_PER_WORD)
     {

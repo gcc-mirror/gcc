@@ -3024,7 +3024,7 @@ sparc_type_code (type)
 	  abort ();
   
 	case COMPLEX_TYPE:	/* GNU Fortran COMPLEX type.  */
-	  /* ??? We need to dinguish between double and float complex types,
+	  /* ??? We need to distinguish between double and float complex types,
 	     but I don't know how yet because I can't reach this code from
 	     existing front-ends.  */
 	  return (qualifiers | 7);	/* Who knows? */

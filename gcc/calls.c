@@ -525,7 +525,7 @@ expand_call (exp, target, ignore)
 	    is_integrable = 1;
 	  else if (! TREE_ADDRESSABLE (fndecl))
 	    {
-	      /* In case this function later becomes inlineable,
+	      /* In case this function later becomes inlinable,
 		 record that there was already a non-inline call to it.
 
 		 Use abstraction instead of setting TREE_ADDRESSABLE
