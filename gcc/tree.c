@@ -4793,6 +4793,7 @@ dump_tree_statistics ()
 #endif	/* NO_DOLLAR_IN_LABEL */
 
 extern char * first_global_object_name;
+extern char * weak_global_object_name;
 
 /* If KIND=='I', return a suitable global initializer (constructor) name.
    If KIND=='D', return a suitable global clean-up (destructor) name.  */
@@ -4806,6 +4807,8 @@ get_file_function_name (kind)
 
   if (first_global_object_name)
     p = first_global_object_name;
+  else if (weak_global_object_name)
+    p = weak_global_object_name;
   else if (main_input_filename)
     p = main_input_filename;
   else
