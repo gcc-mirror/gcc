@@ -2070,7 +2070,7 @@ execute ()
       {
 	int status;
 	int pid;
-	char *prog;
+	char *prog = "unknown";
 
 #ifdef __MSDOS__
         status = pid = commands[i].pid;
