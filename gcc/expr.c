@@ -163,9 +163,6 @@ static rtx store_field		PARAMS ((rtx, HOST_WIDE_INT,
 					 unsigned int, HOST_WIDE_INT, int));
 static enum memory_use_mode
   get_memory_usage_from_modifier PARAMS ((enum expand_modifier));
-static tree save_noncopied_parts PARAMS ((tree, tree));
-static tree init_noncopied_parts PARAMS ((tree, tree));
-static int fixed_type_p		PARAMS ((tree));
 static rtx var_rtx		PARAMS ((tree));
 static rtx expand_expr_unaligned PARAMS ((tree, unsigned int *));
 static rtx expand_increment	PARAMS ((tree, int, int));
@@ -5659,68 +5656,6 @@ force_operand (value, target)
   return value;
 }
 
-/* Subroutine of expand_expr:
-   save the non-copied parts (LIST) of an expr (LHS), and return a list
-   which can restore these values to their previous values,
-   should something modify their storage.  */
-
-static tree
-save_noncopied_parts (lhs, list)
-     tree lhs;
-     tree list;
-{
-  tree tail;
-  tree parts = 0;
-
-  for (tail = list; tail; tail = TREE_CHAIN (tail))
-    if (TREE_CODE (TREE_VALUE (tail)) == TREE_LIST)
-      parts = chainon (parts, save_noncopied_parts (lhs, TREE_VALUE (tail)));
-    else
-      {
-	tree part = TREE_VALUE (tail);
-	tree part_type = TREE_TYPE (part);
-	tree to_be_saved = build (COMPONENT_REF, part_type, lhs, part);
-	rtx target
-	  = assign_temp (build_qualified_type (part_type,
-					       (TYPE_QUALS (part_type)
-						| TYPE_QUAL_CONST)),
-			 0, 1, 1);
-
-	parts = tree_cons (to_be_saved,
-			   build (RTL_EXPR, part_type, NULL_TREE,
-				  (tree) validize_mem (target)),
-			   parts);
-	store_expr (TREE_PURPOSE (parts),
-		    RTL_EXPR_RTL (TREE_VALUE (parts)), 0);
-      }
-  return parts;
-}
-
-/* Subroutine of expand_expr:
-   record the non-copied parts (LIST) of an expr (LHS), and return a list
-   which specifies the initial values of these parts.  */
-
-static tree
-init_noncopied_parts (lhs, list)
-     tree lhs;
-     tree list;
-{
-  tree tail;
-  tree parts = 0;
-
-  for (tail = list; tail; tail = TREE_CHAIN (tail))
-    if (TREE_CODE (TREE_VALUE (tail)) == TREE_LIST)
-      parts = chainon (parts, init_noncopied_parts (lhs, TREE_VALUE (tail)));
-    else if (TREE_PURPOSE (tail))
-      {
-	tree part = TREE_VALUE (tail);
-	tree part_type = TREE_TYPE (part);
-	tree to_be_initialized = build (COMPONENT_REF, part_type, lhs, part);
-	parts = tree_cons (TREE_PURPOSE (tail), to_be_initialized, parts);
-      }
-  return parts;
-}
-
 /* Subroutine of expand_expr: return nonzero iff there is no way that
    EXP can reference X, which is being modified.  TOP_P is nonzero if this
    call is going to be used to determine whether we need a temporary
@@ -5943,22 +5878,6 @@ safe_from_p (x, exp, top_p)
 
   /* If we reach here, it is safe.  */
   return 1;
-}
-
-/* Subroutine of expand_expr: return nonzero iff EXP is an
-   expression whose type is statically determinable.  */
-
-static int
-fixed_type_p (exp)
-     tree exp;
-{
-  if (TREE_CODE (exp) == PARM_DECL
-      || TREE_CODE (exp) == VAR_DECL
-      || TREE_CODE (exp) == CALL_EXPR || TREE_CODE (exp) == TARGET_EXPR
-      || TREE_CODE (exp) == COMPONENT_REF
-      || TREE_CODE (exp) == ARRAY_REF)
-    return 1;
-  return 0;
 }
 
 /* Subroutine of expand_expr: return rtx if EXP is a
@@ -8505,37 +8424,23 @@ expand_expr (exp, target, tmode, modifier)
       {
 	tree lhs = TREE_OPERAND (exp, 0);
 	tree rhs = TREE_OPERAND (exp, 1);
-	tree noncopied_parts = 0;
-	tree lhs_type = TREE_TYPE (lhs);
 
 	temp = expand_assignment (lhs, rhs, ! ignore, original_target != 0);
-	if (TYPE_NONCOPIED_PARTS (lhs_type) != 0 && !fixed_type_p (rhs))
-	  noncopied_parts
-	    = init_noncopied_parts (stabilize_reference (lhs),
-				    TYPE_NONCOPIED_PARTS (lhs_type));
-
-	while (noncopied_parts != 0)
-	  {
-	    expand_assignment (TREE_VALUE (noncopied_parts),
-			       TREE_PURPOSE (noncopied_parts), 0, 0);
-	    noncopied_parts = TREE_CHAIN (noncopied_parts);
-	  }
 	return temp;
       }
 
     case MODIFY_EXPR:
       {
 	/* If lhs is complex, expand calls in rhs before computing it.
-	   That's so we don't compute a pointer and save it over a call.
-	   If lhs is simple, compute it first so we can give it as a
-	   target if the rhs is just a call.  This avoids an extra temp and copy
-	   and that prevents a partial-subsumption which makes bad code.
-	   Actually we could treat component_ref's of vars like vars.  */
+	   That's so we don't compute a pointer and save it over a
+	   call.  If lhs is simple, compute it first so we can give it
+	   as a target if the rhs is just a call.  This avoids an
+	   extra temp and copy and that prevents a partial-subsumption
+	   which makes bad code.  Actually we could treat
+	   component_ref's of vars like vars.  */
 
 	tree lhs = TREE_OPERAND (exp, 0);
 	tree rhs = TREE_OPERAND (exp, 1);
-	tree noncopied_parts = 0;
-	tree lhs_type = TREE_TYPE (lhs);
 
 	temp = 0;
 
@@ -8571,19 +8476,8 @@ expand_expr (exp, target, tmode, modifier)
 	    return const0_rtx;
 	  }
 
-	if (TYPE_NONCOPIED_PARTS (lhs_type) != 0
-	    && ! (fixed_type_p (lhs) && fixed_type_p (rhs)))
-	  noncopied_parts
-	    = save_noncopied_parts (stabilize_reference (lhs),
-				    TYPE_NONCOPIED_PARTS (lhs_type));
-
 	temp = expand_assignment (lhs, rhs, ! ignore, original_target != 0);
-	while (noncopied_parts != 0)
-	  {
-	    expand_assignment (TREE_PURPOSE (noncopied_parts),
-			       TREE_VALUE (noncopied_parts), 0, 0);
-	    noncopied_parts = TREE_CHAIN (noncopied_parts);
-	  }
+	
 	return temp;
       }
 

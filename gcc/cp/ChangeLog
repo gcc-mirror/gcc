@@ -1,3 +1,13 @@
+2001-09-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Remove TYPE_NONCOPIED_PARTS.
+	* cp-tree.h (CLASSTYPE_INLINE_FRIENDS): Map onto
+	CLASSTYPE_PURE_VIRTUALS.
+	(TYPE_RAISES_EXCEPTIONS): Map onto TYPE_BINFO.
+	* class.c (duplicate_tag_error): Remove TYPE_NONCOPIED_PARTS.
+	(layout_class_type): Don't call fixup_inlin_methods here ...
+	(finish_struct_1): ... call it here.
+
 2001-09-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (duplicate_decls): Remove code deadling with

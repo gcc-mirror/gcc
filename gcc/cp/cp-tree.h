@@ -117,6 +117,7 @@ Boston, MA 02111-1307, USA.  */
      For a TYPENAME_TYPE, this is TYPENAME_TYPE_FULLNAME.
      For a TEMPLATE_TEMPLATE_PARM or BOUND_TEMPLATE_TEMPLATE_PARM,
      this is TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
+     For a FUNCTION_TYPE or METHOD_TYPE, this is TYPE_RAISES_EXCEPTIONS
 
   BINFO_VIRTUALS
      For a binfo, this is a TREE_LIST.  The BV_DELTA of each node
@@ -1266,7 +1267,7 @@ struct lang_type
    After the class is defined, these fields hold other information.  */
 
 /* List of friends which were defined inline in this class definition.  */
-#define CLASSTYPE_INLINE_FRIENDS(NODE) (TYPE_NONCOPIED_PARTS (NODE))
+#define CLASSTYPE_INLINE_FRIENDS(NODE) (CLASSTYPE_PURE_VIRTUALS (NODE))
 
 /* Nonzero for _CLASSTYPE means that operator delete is defined.  */
 #define TYPE_GETS_DELETE(NODE) (TYPE_LANG_SPECIFIC(NODE)->gets_delete)
@@ -1660,7 +1661,7 @@ struct lang_type
    this type can raise.  Each TREE_VALUE is a _TYPE.  The TREE_VALUE
    will be NULL_TREE to indicate a throw specification of `()', or
    no exceptions allowed.  */
-#define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_NONCOPIED_PARTS (NODE)
+#define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_BINFO (NODE)
 
 /* For FUNCTION_TYPE or METHOD_TYPE, return 1 iff it is declared `throw()'.  */
 #define TYPE_NOTHROW_P(NODE) \

@@ -399,7 +399,6 @@ ggc_mark_trees ()
 	  ggc_mark_tree (TYPE_NEXT_VARIANT (t));
 	  ggc_mark_tree (TYPE_MAIN_VARIANT (t));
 	  ggc_mark_tree (TYPE_BINFO (t));
-	  ggc_mark_tree (TYPE_NONCOPIED_PARTS (t));
 	  ggc_mark_tree (TYPE_CONTEXT (t));
 	  lang_mark_tree (t);
 	  break;

@@ -2189,7 +2189,6 @@ duplicate_tag_error (t)
   TYPE_METHODS (t) = NULL_TREE;
   TYPE_VFIELD (t) = NULL_TREE;
   TYPE_CONTEXT (t) = NULL_TREE;
-  TYPE_NONCOPIED_PARTS (t) = NULL_TREE;
   
   /* Clear TYPE_LANG_FLAGS -- those in TYPE_LANG_SPECIFIC are cleared above.  */
   TYPE_LANG_FLAG_0 (t) = 0;
@@ -4866,10 +4865,6 @@ layout_class_type (t, empty_p, vfuns_p,
   if (build_base_fields (rli, empty_p, empty_base_offsets, t))
     CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
   
-  /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
-     we have to save this before we zap TYPE_NONCOPIED_PARTS.  */
-  fixup_inline_methods (t);
-
   /* Layout the non-static data members.  */
   for (field = non_static_data_members; field; field = TREE_CHAIN (field))
     {
@@ -5077,6 +5072,8 @@ finish_struct_1 (t)
   vfuns = 0;
   CLASSTYPE_RTTI (t) = NULL_TREE;
 
+  fixup_inline_methods (t);
+  
   /* Do end-of-class semantic processing: checking the validity of the
      bases and members and add implicitly generated methods.  */
   check_bases_and_members (t, &empty);

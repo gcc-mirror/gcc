@@ -918,7 +918,6 @@ struct tree_block
 #define TYPE_NAME(NODE) (TYPE_CHECK (NODE)->type.name)
 #define TYPE_NEXT_VARIANT(NODE) (TYPE_CHECK (NODE)->type.next_variant)
 #define TYPE_MAIN_VARIANT(NODE) (TYPE_CHECK (NODE)->type.main_variant)
-#define TYPE_NONCOPIED_PARTS(NODE) (TYPE_CHECK (NODE)->type.noncopied_parts)
 #define TYPE_CONTEXT(NODE) (TYPE_CHECK (NODE)->type.context)
 #define TYPE_LANG_SPECIFIC(NODE) (TYPE_CHECK (NODE)->type.lang_specific)
 
@@ -1191,7 +1190,6 @@ struct tree_type
   tree next_variant;
   tree main_variant;
   tree binfo;
-  tree noncopied_parts;
   tree context;
   HOST_WIDE_INT alias_set;
   /* Points to a structure whose details depend on the language in use.  */
