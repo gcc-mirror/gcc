@@ -3724,6 +3724,10 @@ and @file{rtl.def}, and subroutines in file @file{rtl.c}.  The tools
 @code{gen*} also use these files to read and work with the machine
 description RTL@.
 
+@item
+All the tools that read the machine description use support routines
+found in @file{gensupport.c}, @file{errors.c}, and @file{read-rtl.c}.
+
 @findex genconfig
 @item
 Several passes refer to the header file @file{insn-config.h} which

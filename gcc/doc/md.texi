@@ -184,9 +184,26 @@ Here is an actual example of an instruction pattern, for the 68000/68020.
         (match_operand:SI 0 "general_operand" "rm"))]
   ""
   "*
-@{ if (TARGET_68020 || ! ADDRESS_REG_P (operands[0]))
+@{ 
+  if (TARGET_68020 || ! ADDRESS_REG_P (operands[0]))
     return \"tstl %0\";
-  return \"cmpl #0,%0\"; @}")
+  return \"cmpl #0,%0\"; 
+@}")
+@end example
+
+@noindent
+This can also be written using braced strings:
+
+@example
+(define_insn "tstsi"
+  [(set (cc0)
+        (match_operand:SI 0 "general_operand" "rm"))]
+  ""
+@{ 
+  if (TARGET_68020 || ! ADDRESS_REG_P (operands[0]))
+    return "tstl %0";
+  return "cmpl #0,%0"; 
+@})
 @end example
 
 This is an instruction that sets the condition codes based on the value of
@@ -620,6 +637,11 @@ template-string you want.  Most such templates use C string literals, which
 require doublequote characters to delimit them.  To include these
 doublequote characters in the string, prefix each one with @samp{\}.
 
+If the output control string is written as a brace block instead of a
+double-quoted string, it is automatically assumed to be C code.  In that
+case, it is not necessary to put in a leading asterisk, or to escape the
+doublequotes surrounding C string literals.
+
 The operands may be found in the array @code{operands}, whose C data type
 is @code{rtx []}.
 
@@ -656,10 +678,10 @@ a pattern could use @code{which_alternative} to choose between them:
   [(set (match_operand:SI 0 "general_operand" "=r,m")
         (const_int 0))]
   ""
-  "*
+  @{
   return (which_alternative == 0
-          ? \"clrreg %0\" : \"clrmem %0\");
-  ")
+          ? "clrreg %0" : "clrmem %0");
+  @})
 @end smallexample
 
 The example above, where the assembler code to generate was
@@ -3943,21 +3965,19 @@ Here is an example, taken from the 68000 machine description:
    (set (match_operand:DF 0 "register_operand" "=f")
         (match_operand:DF 1 "register_operand" "ad"))]
   "FP_REG_P (operands[0]) && ! FP_REG_P (operands[1])"
-  "*
 @{
   rtx xoperands[2];
   xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
 #ifdef MOTOROLA
-  output_asm_insn (\"move.l %1,(sp)\", xoperands);
-  output_asm_insn (\"move.l %1,-(sp)\", operands);
-  return \"fmove.d (sp)+,%0\";
+  output_asm_insn ("move.l %1,(sp)", xoperands);
+  output_asm_insn ("move.l %1,-(sp)", operands);
+  return "fmove.d (sp)+,%0";
 #else
-  output_asm_insn (\"movel %1,sp@@\", xoperands);
-  output_asm_insn (\"movel %1,sp@@-\", operands);
-  return \"fmoved sp@@+,%0\";
+  output_asm_insn ("movel %1,sp@@", xoperands);
+  output_asm_insn ("movel %1,sp@@-", operands);
+  return "fmoved sp@@+,%0";
 #endif
-@}
-")
+@})
 @end smallexample
 
 @need 1000
@@ -4656,11 +4676,10 @@ as follows:
   [(set (pc)
         (label_ref (match_operand 0 "" "")))]
   ""
-  "*
 @{
    return (get_attr_length (insn) == 4
-           ? \"b %l0\" : \"l r15,=a(%l0); br r15\");
-@}"
+           ? "b %l0" : "l r15,=a(%l0); br r15");
+@}
   [(set (attr "length") (if_then_else (lt (match_dup 0) (const_int 4096))
                                       (const_int 4)
                                       (const_int 6)))])
