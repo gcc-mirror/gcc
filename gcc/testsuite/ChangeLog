@@ -1,5 +1,13 @@
 2002-10-06  Andreas Jaeger  <aj@suse.de>
 
+	* gcc.dg/cpp/c++98-pedantic.C: Moved to g++.dg/cpp.
+	* gcc.dg/cpp/c++98.C: Likewise.
+
+	* g++.dg/cpp/c++98-pedantic.C: Moved from gcc.dg/cpp to here.
+	* g++.dg/cpp/c++98.C: Likewise.
+
+	* g++.dg/README (Subdirectories): Mention cpp directory.
+
 	PR target/7559
 	* gcc.dg/20021006-1.c: New test.
 
