@@ -2170,8 +2170,19 @@ pushtag (name, type, globalize)
   if (name)
     {
       context = type ? TYPE_CONTEXT (type) : NULL_TREE;
-      if (! context && ! globalize)
-        context = current_scope ();
+      if (! context)
+	{
+	  tree cs = current_scope ();
+
+	  if (! globalize)
+	    context = cs;
+	  else if (cs != NULL_TREE 
+		   && TREE_CODE_CLASS (TREE_CODE (cs)) == 't')
+	    /* When declaring a friend class of a local class, we want
+	       to inject the newly named class into the scope
+	       containing the local class, not the namespace scope.  */
+	    context = hack_decl_function_context (get_type_decl (cs));
+	}
       if (context)
 	c_decl = TREE_CODE (context) == FUNCTION_DECL
 	  ? context : TYPE_MAIN_DECL (context);
