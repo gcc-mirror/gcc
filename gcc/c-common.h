@@ -630,6 +630,10 @@ extern tree strip_array_types                   PARAMS ((tree));
    the given label statement.  */
 #define LABEL_STMT_LABEL(NODE)  TREE_OPERAND (LABEL_STMT_CHECK (NODE), 0)
 
+/* COMPOUND_LITERAL_EXPR accessor.  */
+#define COMPOUND_LITERAL_EXPR_DECL(NODE)		\
+  TREE_OPERAND (COMPOUND_LITERAL_EXPR_CHECK (NODE), 0)
+
 /* Nonzero if this SCOPE_STMT is for the beginning of a scope.  */
 #define SCOPE_BEGIN_P(NODE) \
   (TREE_LANG_FLAG_0 (SCOPE_STMT_CHECK (NODE)))
@@ -812,6 +816,8 @@ extern rtx c_expand_expr            PARAMS ((tree, rtx, enum machine_mode,
 #endif
 
 extern int c_safe_from_p                        PARAMS ((rtx, tree));
+
+extern int c_staticp                            PARAMS ((tree));
 
 extern int c_unsafe_for_reeval			PARAMS ((tree));
 

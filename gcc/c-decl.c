@@ -3793,6 +3793,59 @@ clear_parm_order ()
   current_binding_level->parm_order = NULL_TREE;
 }
 
+/* Build a COMPOUND_LITERAL_EXPR.  TYPE is the type given in the compound
+   literal, which may be an incomplete array type completed by the
+   initializer; INIT is a CONSTRUCTOR that initializes the compound
+   literal.  */
+
+tree
+build_compound_literal (type, init)
+     tree type;
+     tree init;
+{
+  /* We do not use start_decl here because we have a type, not a declarator;
+     and do not use finish_decl because the decl should be stored inside
+     the COMPOUND_LITERAL_EXPR rather than added elsewhere as a DECL_STMT.  */
+  tree decl = build_decl (VAR_DECL, NULL_TREE, type);
+  tree complit;
+  DECL_EXTERNAL (decl) = 0;
+  TREE_PUBLIC (decl) = 0;
+  TREE_STATIC (decl) = (current_binding_level == global_binding_level);
+  DECL_CONTEXT (decl) = current_function_decl;
+  TREE_USED (decl) = 1;
+  TREE_TYPE (decl) = type;
+  store_init_value (decl, init);
+
+  if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
+    {
+      int failure = complete_array_type (type, DECL_INITIAL (decl), 1);
+      if (failure)
+	abort ();
+    }
+
+  type = TREE_TYPE (decl);
+  if (type == error_mark_node || !COMPLETE_TYPE_P (type))
+    return error_mark_node;
+
+  complit = build1 (COMPOUND_LITERAL_EXPR, TREE_TYPE (decl), decl);
+  TREE_SIDE_EFFECTS (complit) = 1;
+
+  layout_decl (decl, 0);
+
+  if (TREE_STATIC (decl))
+    {
+      /* This decl needs a name for the assembler output.  We also need
+	 a unique suffix to be added to the name, for which DECL_CONTEXT
+	 must be set.  */
+      DECL_NAME (decl) = get_identifier ("__compound_literal");
+      DECL_CONTEXT (decl) = complit;
+      rest_of_decl_compilation (decl, NULL, 1, 0);
+      DECL_CONTEXT (decl) = NULL_TREE;
+    }
+
+  return complit;
+}
+
 /* Make TYPE a complete type based on INITIAL_VALUE.
    Return 0 if successful, 1 if INITIAL_VALUE can't be deciphered,
    2 if there was no information (in which case assume 1 if DO_DEFAULT).  */

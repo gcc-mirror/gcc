@@ -1,3 +1,11 @@
+2001-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.c-torture/execute/20000722-1.x,
+	gcc.c-torture/execute/20010123-1.x: Remove.
+	* gcc.c-torture/compile/init-3.c: Don't use a compound literal.
+	* gcc.dg/c90-complit-1.c, gcc.dg/c99-complit-1.c,
+	gcc.dg/c99-complit-2.c: New tests.
+
 2001-12-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/inherit/base1.C: New test.

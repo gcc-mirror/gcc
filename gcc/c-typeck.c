@@ -910,8 +910,7 @@ default_function_array_conversion (exp)
 	}
 
       lvalue_array_p = !not_lvalue && lvalue_p (exp);
-      if (!flag_isoc99 && !lvalue_array_p
-	  && !(TREE_CODE (exp) == CONSTRUCTOR && TREE_STATIC (exp)))
+      if (!flag_isoc99 && !lvalue_array_p)
 	{
 	  /* Before C99, non-lvalue arrays do not decay to pointers.
 	     Normally, using such an array would be invalid; but it can
@@ -3141,10 +3140,6 @@ build_unary_op (code, xarg, flag)
 	}
 #endif
 
-      /* Allow the address of a constructor if all the elements
-	 are constant.  */
-      if (TREE_CODE (arg) == CONSTRUCTOR && TREE_CONSTANT (arg))
-	;
       /* Anything not already handled and not a true memory reference
 	 or a non-lvalue array is an error.  */
       else if (typecode != FUNCTION_TYPE && !flag
@@ -3256,6 +3251,7 @@ lvalue_p (ref)
     case COMPONENT_REF:
       return lvalue_p (TREE_OPERAND (ref, 0));
 
+    case COMPOUND_LITERAL_EXPR:
     case STRING_CST:
       return 1;
 
@@ -3411,6 +3407,7 @@ mark_addressable (exp)
 	x = TREE_OPERAND (x, 0);
 	break;
 
+      case COMPOUND_LITERAL_EXPR:
       case CONSTRUCTOR:
 	TREE_ADDRESSABLE (x) = 1;
 	return 1;

@@ -1608,9 +1608,8 @@ foo (float f, float g)
 ISO C99 supports compound literals.  A compound literal looks like
 a cast containing an initializer.  Its value is an object of the
 type specified in the cast, containing the elements specified in
-the initializer.  (GCC does not yet implement the full ISO C99 semantics
-for compound literals.)  As an extension, GCC supports compound literals
-in C89 mode and in C++.
+the initializer; it is an lvalue.  As an extension, GCC supports
+compound literals in C89 mode and in C++.
 
 Usually, the specified type is a structure.  Assume that
 @code{struct foo} and @code{structure} are declared as shown:
@@ -1638,26 +1637,12 @@ This is equivalent to writing the following:
 
 You can also construct an array.  If all the elements of the compound literal
 are (made up of) simple constant expressions, suitable for use in
-initializers, then the compound literal is an lvalue and can be coerced to a
-pointer to its first element, as shown here:
+initializers of objects of static storage duration, then the compound
+literal can be coerced to a pointer to its first element and used in
+such an initializer, as shown here:
 
 @example
 char **foo = (char *[]) @{ "x", "y", "z" @};
-@end example
-
-Array compound literals whose elements are not simple constants are
-not very useful, because the compound literal is not an lvalue; ISO C99
-specifies that it is, being a temporary object with automatic storage
-duration associated with the enclosing block, but GCC does not yet
-implement this.  There are currently only two valid ways to use it with
-GCC: to subscript it, or initialize
-an array variable with it.  The former is probably slower than a
-@code{switch} statement, while the latter does the same thing an
-ordinary C initializer would do.  Here is an example of
-subscripting an array compound literal:
-
-@example
-output = ((int[]) @{ 2, x, 28 @}) [input];
 @end example
 
 Compound literals for scalar types and union types are is

@@ -1738,6 +1738,7 @@ This macro returns the attributes on the type @var{type}.
 @tindex COND_EXPR
 @tindex CALL_EXPR
 @tindex CONSTRUCTOR
+@tindex COMPOUND_LITERAL_EXPR
 @tindex STMT_EXPR
 @tindex BIND_EXPR
 @tindex LOOP_EXPR
@@ -2200,6 +2201,15 @@ next available array element.
 
 Conceptually, before any initialization is done, the entire area of
 storage is initialized to zero.
+
+@item COMPOUND_LITERAL_EXPR
+@findex COMPOUND_LITERAL_EXPR_DECL
+These nodes represent ISO C99 compound literals.  The
+@code{COMPOUND_LITERAL_EXPR_DECL} is an anonymous @code{VAR_DECL} for
+the unnamed object represented by the compound literal; the
+@code{DECL_INITIAL} of that @code{VAR_DECL} is a @code{CONSTRUCTOR}
+representing the brace-enclosed list of initializers in the compound
+literal.
 
 @item SAVE_EXPR
 
