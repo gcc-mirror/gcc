@@ -1,12 +1,30 @@
 // GridLayout.java - Grid-based layout engine
 
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 
 package java.awt;
 
@@ -15,16 +33,24 @@ import java.io.Serializable;
 /** This class implements a grid-based layout scheme.  Components are
  * all given the same size and are laid out from left to right and top
  * to bottom.  A GridLayout is configured with a number of rows and a
- * number of columns.  If either is zero then that dimension is
- * computed based on the actual size of the container.  An exception
- * is thrown if an attempt is made to set both the number of rows and
- * the number of columns to 0.  This class also support horizontal and
- * vertical gaps; these are used as spacing between cells.
+ * number of columns.  If both are specified, then the number of
+ * columns is ignored and is derived from the number of rows and the
+ * total number of components.  If either is zero then that dimension
+ * is computed based on the actual size of the container.  An
+ * exception is thrown if an attempt is made to set both the number of
+ * rows and the number of columns to 0.  This class also supports
+ * horizontal and vertical gaps; these are used as spacing between
+ * cells.
+ *
+ * @author Tom Tromey <tromey@redhat.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public class GridLayout implements LayoutManager, Serializable
 {
   /** Add a new component to the layout.  This particular implementation
    * does nothing.
+   * @param name The name of the component to add.
+   * @param component The component to add.
    */
   public void addLayoutComponent (String name, Component comp)
   {
@@ -55,16 +81,18 @@ public class GridLayout implements LayoutManager, Serializable
     return vgap;
   }
 
-  /** Create a new GridLayout with one row and any number of columns.
-   * Both gaps are set to 0.
+  /** Create a new <code>GridLayout</code> with one row and any number
+   * of columns.  Both gaps are set to 0.
    */
   public GridLayout ()
   {
     this (1, 0, 0, 0);
   }
 
-  /** Create a new GridLayout with the specified number of rows and
-   * columns.  Both gaps are set to 0.
+  /** Create a new <code>GridLayout</code> with the specified number
+   * of rows and columns.  Both gaps are set to 0.  Note that the row
+   * and column settings cannot both be zero.  If both the row and
+   * column values are non-zero, the rows value takes precedence.
    * @param rows Number of rows
    * @param cols Number of columns
    * @exception IllegalArgumentException If rows and columns are both
@@ -77,6 +105,9 @@ public class GridLayout implements LayoutManager, Serializable
 
   /** Create a new GridLayout with the specified number of rows and
    * columns and the specified gaps.
+   * Note that the row and column settings cannot both be
+   * zero.  If both the row and column values are non-zero, the rows value
+   * takes precedence.
    * @param rows Number of rows
    * @param cols Number of columns
    * @param hgap The horizontal gap
@@ -103,11 +134,13 @@ public class GridLayout implements LayoutManager, Serializable
   }
 
   /** Lay out the container's components based on current settings.
-   * @param parent The parent container
+   * The free space in the container is divided evenly into the specified
+   * number of rows and columns in this object.
+   * @param parent The container to lay out
    */
   public void layoutContainer (Container parent)
   {
-    int num = parent.getComponentCount ();
+    int num = parent.ncomponents;
     // This is more efficient than calling getComponents().
     Component[] comps = parent.component;
 
@@ -118,14 +151,25 @@ public class GridLayout implements LayoutManager, Serializable
     else
       real_cols = (num + real_rows - 1) / real_rows;
 
+    // We might have less than a single row.  In this case we expand
+    // to fill.
+    if (num < real_cols)
+      real_cols = num;
+
     Dimension d = parent.getSize ();
     Insets ins = parent.getInsets ();
 
+    // Compute width and height of each cell in the grid.
     int tw = d.width - ins.left - ins.right;
+    tw = (tw - (real_rows - 1) * hgap) / real_rows;
     int th = d.height - ins.top - ins.bottom;
+    th = (th - (real_cols - 1) * vgap) / real_cols;
 
-    int w = (tw - (real_rows - 1) * hgap) / real_rows;
-    int h = (th - (real_cols - 1) * vgap) / real_cols;
+    // If the cells are too small, still try to do something.
+    if (tw < 0)
+      tw = 1;
+    if (th < 0)
+      th = 1;
 
     int x = ins.left;
     int y = ins.top;
@@ -191,6 +235,7 @@ public class GridLayout implements LayoutManager, Serializable
 
   /** Set the horizontal gap
    * @param hgap The horizontal gap
+   * @exception IllegalArgumentException If the hgap value is less than zero.
    */
   public void setHgap (int hgap)
   {
@@ -216,6 +261,7 @@ public class GridLayout implements LayoutManager, Serializable
 
   /** Set the vertical gap.
    * @param vgap The vertical gap
+   * @exception IllegalArgumentException If the vgap value is less than zero.
    */
   public void setVgap (int vgap)
   {
@@ -236,14 +282,12 @@ public class GridLayout implements LayoutManager, Serializable
   // This method is used to compute the various sizes.
   private Dimension getSize (Container parent, boolean is_min)
   {
-    int w = 0, h = 0, num = parent.getComponentCount ();
+    int w = 0, h = 0, num = parent.ncomponents;
     // This is more efficient than calling getComponents().
     Component[] comps = parent.component;
 
     for (int i = 0; i < num; ++i)
       {
-	// FIXME: can we just directly read the fields in Component?
-	// Or will that not work with subclassing?
 	Dimension d;
 
 	if (is_min)
@@ -262,16 +306,31 @@ public class GridLayout implements LayoutManager, Serializable
     else
       real_cols = (num + real_rows - 1) / real_rows;
 
+    Insets ins = parent.getInsets ();
     // We subtract out an extra gap here because the gaps are only
     // between cells.
-    return new Dimension (real_rows * (w + hgap) - hgap,
-			  real_cols * (h + vgap) - vgap);
+    w = ins.left + ins.right + real_rows * (w + hgap) - hgap;
+    h = ins.top + ins.bottom + real_cols * (h + vgap) - vgap;
+    return new Dimension (w, h);
   }
 
-  // The gaps.
-  private int hgap;
-  private int vgap;
-  // Number of rows and columns.
-  private int rows;
+  /**
+   * @serial The number of columns in the grid.
+   */
   private int cols;
+
+  /**
+   * @serial The number of rows in the grid.
+   */
+  private int rows;
+
+  /**
+   * @serial The horizontal gap between columns
+   */
+  private int hgap;
+
+  /**
+   * @serial The vertical gap between rows
+   */
+  private int vgap;
 }
