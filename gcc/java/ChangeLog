@@ -1,3 +1,10 @@
+2003-01-30  Loren James Rittle  <ljrittle@acm.org>
+
+	* Make-lang.in (po-generated): Find the targets in $(parsedir).
+	Propagate change to all other rules as required.
+	(java/parse-scan.o): Add explicit dependency on
+	$(parsedir)/java/parse-scan.c .
+
 2003-01-29  Tom Tromey  <tromey@redhat.com>
 
 	* parse.y (patch_assignment): Only transform the rhs of an
