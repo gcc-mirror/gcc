@@ -2718,13 +2718,13 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
   int size = GET_MODE_BITSIZE (mode);
   rtx op1, wide_op1;
 
-  /* We can't support modes wider than HOST_BITS_PER_WIDE_INT.  */
+  /* We can't support modes wider than HOST_BITS_PER_INT.  */
   if (size > HOST_BITS_PER_WIDE_INT)
     abort ();
 
-  op1 = GEN_INT (cnst1 | -(cnst1 & ((HOST_WIDE_INT) 1 << (size - 1))));
+  op1 = GEN_INT (cnst1);
 
-  if (GET_MODE_BITSIZE (wider_mode) <= HOST_BITS_PER_WIDE_INT)
+  if (GET_MODE_BITSIZE (wider_mode) <= HOST_BITS_PER_INT)
     wide_op1 = op1;
   else
     wide_op1
@@ -3726,8 +3726,6 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 
 	    post_shift = floor_log2 (d & -d);
 	    ml = invert_mod2n (d >> post_shift, size);
-	    /* Sign-extend ml for compute_mode.  */
-	    ml |= -(ml & (1 << (GET_MODE_BITSIZE (compute_mode)-1)));
 	    t1 = expand_mult (compute_mode, op0, GEN_INT (ml), NULL_RTX,
 			      unsignedp);
 	    quotient = expand_shift (RSHIFT_EXPR, compute_mode, t1,
