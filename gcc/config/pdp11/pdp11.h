@@ -91,6 +91,9 @@ extern int target_flags;
 /* optimize for space instead of time - just in a couple of places */ \
     { "space", 512 },		\
     { "time", -512 },		\
+/* split instruction and data memory? */ \
+    { "split", 1024 },		\
+    { "no-split", -1024 },	\
 /* default */			\
     { "", TARGET_DEFAULT}	\
 }
@@ -122,6 +125,9 @@ extern int target_flags;
 
 #define TARGET_SPACE 		(target_flags & 512)
 #define TARGET_TIME		(! TARGET_SPACE)
+
+#define TARGET_SPLIT		(target_flags & 1024)
+#define TARGET_NOSPLIT		(! TARGET_SPLIT)
 
 
 /* TYPE SIZES */
@@ -1254,6 +1260,9 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
 
 #define TRAMPOLINE_TEMPLATE(FILE)	\
 {					\
+  if (TARGET_SPLIT)			\
+    abort();				\
+					\
   ASM_OUTPUT_INT (FILE, gen_rtx(CONST_INT, VOIDmode, 0x9400+STATIC_CHAIN_REGNUM)); \
   ASM_OUTPUT_INT (FILE, const0_rtx);				\
   ASM_OUTPUT_INT (FILE, gen_rtx(CONST_INT, VOIDmode, 0x0058));	\
@@ -1269,6 +1278,9 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
 
 #define INITIALIZE_TRAMPOLINE(TRAMP,FNADDR,CXT)	\
 {					\
+  if (TARGET_SPLIT)			\
+    abort();				\
+					\
   emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 2)), CXT); \
   emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 6)), FNADDR); \
 }
