@@ -21,6 +21,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define CPP_PREDEFINES "-Dmc68000 -D__vxworks -D__vxworks_5 -Acpu(m68k) -Amachine(m68k)"
 
+/* Vxworks header files require that the macro CPU be set, so we must override
+   the CPP_SPEC from m68k-none.h.  */
+
+#define CPP_SPEC \
+"%{!mc68000:%{!m68000:%{!m68332:%{!msoft-float:%{mfpa:-D__HAVE_FPA__ }%{!mfpa:-D__HAVE_68881__ }}}}}\
+%{!ansi:%{m68000:-DCPU=MC68000 }%{m68010:-Dmc68010 -DCPU=MC68010 }%{m68020:-Dmc68020 -DCPU=MC68020 }%{mc68020:-Dmc68020 -DCPU=MC68020 }%{m68030:-Dmc68030 -DCPU=MC68030 }%{m68040:-Dmc68040 -DCPU=MC68040 }%{m68020-40:-Dmc68020 -Dmc68030 -Dmc68040 -DCPU=MC68020 }%{m68302:-Dmc68302 -DCPU=MC68000 }%{m68332:-Dmc68332 -DCPU=CPU32 }%{!mc68000:%{!m68000:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68302:%{!m68332:-Dmc68020 -DCPU=MC68020 }}}}}}}}}}}\
+%{m68010:-D__mc68010__ -D__mc68010 }%{m68020:-D__mc68020__ -D__mc68020 }%{mc68020:-D__mc68020__ -D__mc68020 }%{m68030:-D__mc68030__ -D__mc68030 }%{m68040:-D__mc68040__ -D__mc68040 }%{m68020-40:-D__mc68020__ -D__mc68030__ -D__mc68040__ -D__mc68020 -D__mc68030 -D__mc68040 }%{m68302:-D__mc68302__ -D__mc68302 }%{m68332:-D__mc68332__ -D__mc68332 }%{!mc68000:%{!m68000:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68302:%{!m68332:-D__mc68020__ -D__mc68020 }}}}}}}}}}"
+
 #include "m68k/m68k-none.h"
 #include "aoutos.h"
 
