@@ -5429,6 +5429,7 @@ compute_flow_dominators (dominators, post_dominators)
 	}
     }
 
+  free (worklist);
   free (temp_bitmap);
 }
 
