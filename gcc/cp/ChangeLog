@@ -1,3 +1,14 @@
+2000-03-09  Jason Merrill  <jason@casey.cygnus.com>
+
+	* call.c (build_call): Set TREE_NOTHROW on the CALL_EXPR as
+	appropriate.
+	* decl.c (define_function): Set TREE_NOTHROW on the FUNCTION_DECL.
+	* except.c (call_eh_info, alloc_eh_object, expand_throw): Set
+	TREE_NOTHROW or TREE_THIS_VOLATILE on the function as appropriate.
+	* rtti.c (build_runtime_decl, get_tinfo_decl, build_dynamic_cast_1,
+	expand_si_desc, expand_class_desc, expand_ptr_desc, expand_attr_desc,
+	expand_generic_desc): Likewise.
+
 2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* exception.cc (__cp_pop_exception): Cleanup the original object.

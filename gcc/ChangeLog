@@ -1,11 +1,23 @@
 2000-03-09  Jason Merrill  <jason@casey.cygnus.com>
 
+	* tree.h (struct tree_common): Rename raises_flag to nothrow_flag.
+	(TREE_NOTHROW): Rename from TREE_RAISES.
+	* toplev.c (rest_of_compilation): Set it.
+	* print-tree.c (print_node): Adjust.
+	* tree.c (stabilize_reference, build, build1): Don't set TREE_RAISES.
+	(stabilize_reference_1, get_unwidened, get_narrower): Likewise.
+	* calls.c (emit_call_1): Add 'nothrow' parm.  Add 
+	REG_EH_REGION note as appropriate.
+	(libfunc_nothrow): New fn.
+	(emit_library_call, emit_library_call_value): Use it.
+	(expand_call): Check TREE_NOTHROW.
+
 	* varasm.c (make_decl_rtl): Skip initial '*' when setting
 	DECL_ASSEMBLER_NAME.
 
 2000-03-09  Andreas Jaeger  <aj@suse.de>
 
-	* config/mips/linux.h (NO_IMPLICIT_EXTERN_C): Define.
+	* mips/linux.h (NO_IMPLICIT_EXTERN_C): Define.
 	(TARGET_MEM_FUNCTIONS): Define.
 
 2000-03-09  Jason Merrill  <jason@casey.cygnus.com>

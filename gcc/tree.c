@@ -3025,7 +3025,6 @@ stabilize_reference (ref)
   TREE_READONLY (result) = TREE_READONLY (ref);
   TREE_SIDE_EFFECTS (result) = TREE_SIDE_EFFECTS (ref);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (ref);
-  TREE_RAISES (result) = TREE_RAISES (ref);
 
   return result;
 }
@@ -3108,7 +3107,6 @@ stabilize_reference_1 (e)
   TREE_READONLY (result) = TREE_READONLY (e);
   TREE_SIDE_EFFECTS (result) = TREE_SIDE_EFFECTS (e);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (e);
-  TREE_RAISES (result) = TREE_RAISES (e);
 
   return result;
 }
@@ -3161,15 +3159,11 @@ build VPARAMS ((enum tree_code code, tree tt, ...))
 	{
 	  if (TREE_SIDE_EFFECTS (arg0))
 	    TREE_SIDE_EFFECTS (t) = 1;
-	  if (TREE_RAISES (arg0))
-	    TREE_RAISES (t) = 1;
 	}
       if (arg1 && fro > 1)
 	{
 	  if (TREE_SIDE_EFFECTS (arg1))
 	    TREE_SIDE_EFFECTS (t) = 1;
-	  if (TREE_RAISES (arg1))
-	    TREE_RAISES (t) = 1;
 	}
     }
   else if (length == 1)
@@ -3184,7 +3178,6 @@ build VPARAMS ((enum tree_code code, tree tt, ...))
 	{
 	  if (arg0 && TREE_SIDE_EFFECTS (arg0))
 	    TREE_SIDE_EFFECTS (t) = 1;
-	  TREE_RAISES (t) = (arg0 && TREE_RAISES (arg0));
 	}
     }
   else
@@ -3197,8 +3190,6 @@ build VPARAMS ((enum tree_code code, tree tt, ...))
 	    {
 	      if (TREE_SIDE_EFFECTS (operand))
 		TREE_SIDE_EFFECTS (t) = 1;
-	      if (TREE_RAISES (operand))
-		TREE_RAISES (t) = 1;
 	    }
 	}
     }
@@ -3254,8 +3245,6 @@ build1 (code, type, node)
     {
       if (TREE_SIDE_EFFECTS (node))
 	TREE_SIDE_EFFECTS (t) = 1;
-      if (TREE_RAISES (node))
-	TREE_RAISES (t) = 1;
     }
 
   switch (code)
@@ -4827,7 +4816,6 @@ get_unwidened (op, for_type)
 		       TREE_OPERAND (op, 1));
 	  TREE_SIDE_EFFECTS (win) = TREE_SIDE_EFFECTS (op);
 	  TREE_THIS_VOLATILE (win) = TREE_THIS_VOLATILE (op);
-	  TREE_RAISES (win) = TREE_RAISES (op);
 	}
     }
   return win;
@@ -4914,7 +4902,6 @@ get_narrower (op, unsignedp_ptr)
 		       TREE_OPERAND (op, 1));
 	  TREE_SIDE_EFFECTS (win) = TREE_SIDE_EFFECTS (op);
 	  TREE_THIS_VOLATILE (win) = TREE_THIS_VOLATILE (op);
-	  TREE_RAISES (win) = TREE_RAISES (op);
 	}
     }
   *unsignedp_ptr = uns;

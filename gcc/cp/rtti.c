@@ -185,6 +185,7 @@ build_runtime_decl (name, type)
       DECL_EXTERNAL (d) = 1;
       TREE_PUBLIC (d) = 1;
       DECL_ARTIFICIAL (d) = 1;
+      TREE_THIS_VOLATILE (d) = 1;
       pushdecl_top_level (d);
       make_function_rtl (d);
     }
@@ -423,6 +424,7 @@ get_tinfo_decl (type)
       DECL_EXTERNAL (d) = 1;
       TREE_PUBLIC (d) = 1;
       DECL_ARTIFICIAL (d) = 1;
+      TREE_NOTHROW (d) = 1;
       DECL_NOT_REALLY_EXTERN (d) = 1;
       SET_DECL_TINFO_FN_P (d);
       TREE_TYPE (name) = type;
@@ -818,9 +820,10 @@ build_dynamic_cast_1 (type, expr)
 	      DECL_EXTERNAL (dcast_fn) = 1;
 	      TREE_PUBLIC (dcast_fn) = 1;
 	      DECL_ARTIFICIAL (dcast_fn) = 1;
+	      TREE_NOTHROW (dcast_fn) = 1;
 	      pushdecl (dcast_fn);
 	      if (new_abi_rtti_p ())
-	        /* We want it's name mangling.  */
+	        /* We want its name mangling.  */
 	        set_mangled_name_for_decl (dcast_fn);
 	      make_function_rtl (dcast_fn);
               pop_nested_namespace (ns);
@@ -915,6 +918,7 @@ expand_si_desc (tdecl, type)
       DECL_EXTERNAL (fn) = 1;
       TREE_PUBLIC (fn) = 1;
       DECL_ARTIFICIAL (fn) = 1;
+      TREE_NOTHROW (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
     }
@@ -1074,6 +1078,7 @@ expand_class_desc (tdecl, type)
       DECL_EXTERNAL (fn) = 1;
       TREE_PUBLIC (fn) = 1;
       DECL_ARTIFICIAL (fn) = 1;
+      TREE_NOTHROW (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
     }
@@ -1118,6 +1123,7 @@ expand_ptr_desc (tdecl, type)
       DECL_EXTERNAL (fn) = 1;
       TREE_PUBLIC (fn) = 1;
       DECL_ARTIFICIAL (fn) = 1;
+      TREE_NOTHROW (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
     }
@@ -1163,6 +1169,7 @@ expand_attr_desc (tdecl, type)
       DECL_EXTERNAL (fn) = 1;
       TREE_PUBLIC (fn) = 1;
       DECL_ARTIFICIAL (fn) = 1;
+      TREE_NOTHROW (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
     }
@@ -1200,6 +1207,7 @@ expand_generic_desc (tdecl, type, fnname)
       DECL_EXTERNAL (fn) = 1;
       TREE_PUBLIC (fn) = 1;
       DECL_ARTIFICIAL (fn) = 1;
+      TREE_NOTHROW (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
     }

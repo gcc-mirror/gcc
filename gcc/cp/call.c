@@ -368,6 +368,7 @@ build_call (function, result_type, parms)
      tree function, result_type, parms;
 {
   int is_constructor = 0;
+  int nothrow;
   tree tmp;
   tree decl;
 
@@ -385,6 +386,11 @@ build_call (function, result_type, parms)
   else
     decl = NULL_TREE;
 
+  /* We check both the decl and the type; a function may be known not to
+     throw without being declared throw().  */
+  nothrow = ((decl && TREE_NOTHROW (decl))
+	     || TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (function))));
+  
   if (decl && DECL_CONSTRUCTOR_P (decl))
     is_constructor = 1;
 
@@ -408,6 +414,7 @@ build_call (function, result_type, parms)
   TREE_HAS_CONSTRUCTOR (function) = is_constructor;
   TREE_TYPE (function) = result_type;
   TREE_SIDE_EFFECTS (function) = 1;
+  TREE_NOTHROW (function) = nothrow;
   
   return function;
 }

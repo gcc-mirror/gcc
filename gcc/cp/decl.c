@@ -6479,6 +6479,10 @@ define_function (name, type, pfn, library_name)
   TREE_PUBLIC (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
 
+  /* If no exception specifier was given, assume it doesn't throw.  */
+  if (TYPE_RAISES_EXCEPTIONS (type) == NULL_TREE)
+    TREE_NOTHROW (decl) = 1;
+
   my_friendly_assert (DECL_CONTEXT (decl) == NULL_TREE, 392);
   DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 
