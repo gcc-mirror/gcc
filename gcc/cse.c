@@ -7607,7 +7607,12 @@ cse_insn (insn, libcall_insn)
 	    enum machine_mode mode
 	      = GET_MODE (src) == VOIDmode ? GET_MODE (dest) : GET_MODE (src);
 
-	    if (sets[i].src_elt == 0)
+	    /* Don't put a hard register source into the table if this is
+	       the last insn of a libcall.  */
+	    if (sets[i].src_elt == 0
+		&& (GET_CODE (src) != REG
+		    || REGNO (src) >= FIRST_PSEUDO_REGISTER
+		    || ! find_reg_note (insn, REG_RETVAL, NULL_RTX)))
 	      {
 		register struct table_elt *elt;
 
