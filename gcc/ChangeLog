@@ -1,5 +1,9 @@
 2001-01-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+        * cppspec.c (DEFAULT_WORD_SWITCH_TAKES_ARG): Add -MQ. 
+
+2001-01-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
         * cppinit.c (cpp_start_read): If -fpreprocessed, ignore
         -D, -U and -A, and don't initialize the builtins.
         * cppmain.c (cb_define, cb_undef): Unconditionally process
