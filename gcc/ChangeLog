@@ -1,5 +1,10 @@
 2001-10-09  Danny Smith  <danny_r_smith_2001@yahoo.co.nz>
 
+	* config.gcc (i[34567]86-*-mingw32*): Make msvcrt-dependent
+	version default.
+
+2001-10-09  Danny Smith  <danny_r_smith_2001@yahoo.co.nz>
+
 	* config/i386/i386.c (ix86_attribute_table): Correct 
 	min_len, max_len fields for dllimport, dllexport and shared.
 
