@@ -119,7 +119,7 @@ $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf
 		$(srcdir)/cp/cfns.gperf > $(srcdir)/cp/cfns.h
 
 $(srcdir)/cp/parse.h $(srcdir)/cp/parse.c: $(srcdir)/cp/parse.y
-	@echo "Expect 33 shift/reduce conflicts and 58 reduce/reduce conflicts."
+	@echo "Expect 36 shift/reduce conflicts and 58 reduce/reduce conflicts."
 	cd $(srcdir)/cp; $(BISON) $(BISONFLAGS) -d -o p$$$$.c parse.y ; \
 	grep '^#define[ 	]*YYEMPTY' p$$$$.c >> p$$$$.h ; \
 	mv -f p$$$$.c parse.c ; mv -f p$$$$.h parse.h
