@@ -93,19 +93,6 @@ tree dtable_ident = NULL_TREE;
    before static field references.  */
 int always_initialize_class_p;
 
-void
-init_expr_processing()
-{
-  operand_type[21] = operand_type[54] = int_type_node;
-  operand_type[22] = operand_type[55] = long_type_node;
-  operand_type[23] = operand_type[56] = float_type_node;
-  operand_type[24] = operand_type[57] = double_type_node;
-  operand_type[25] = operand_type[58] = ptr_type_node;
-  ggc_add_tree_root (operand_type, 59);
-  ggc_add_tree_root (&methods_ident, 1);
-  ggc_add_tree_root (&ncode_ident, 1);
-}
-
 /* We store the stack state in two places:
    Within a basic block, we use the quick_stack, which is a
    pushdown list (TREE_LISTs) of expression nodes.
@@ -133,10 +120,10 @@ init_expr_processing()
    So dup cannot just add an extra element to the quick_stack, but iadd can.
 */
 
-tree quick_stack = NULL_TREE;
+static tree quick_stack = NULL_TREE;
 
 /* A free-list of unused permamnet TREE_LIST nodes. */
-tree tree_list_free_list = NULL_TREE;
+static tree tree_list_free_list = NULL_TREE;
 
 /* The stack pointer of the Java virtual machine.
    This does include the size of the quick_stack. */
@@ -145,6 +132,21 @@ int stack_pointer;
 
 const unsigned char *linenumber_table;
 int linenumber_count;
+
+void
+init_expr_processing()
+{
+  operand_type[21] = operand_type[54] = int_type_node;
+  operand_type[22] = operand_type[55] = long_type_node;
+  operand_type[23] = operand_type[56] = float_type_node;
+  operand_type[24] = operand_type[57] = double_type_node;
+  operand_type[25] = operand_type[58] = ptr_type_node;
+  ggc_add_tree_root (operand_type, 59);
+  ggc_add_tree_root (&methods_ident, 1);
+  ggc_add_tree_root (&ncode_ident, 1);
+  ggc_add_tree_root (&quick_stack, 1);
+  ggc_add_tree_root (&tree_list_free_list, 1);
+}
 
 tree
 truthvalue_conversion (expr)
