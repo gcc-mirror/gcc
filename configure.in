@@ -68,7 +68,9 @@ host_tools="texinfo byacc flex bison binutils ld gas gcc sim gdb make patch prms
 target_libs="target-libiberty \
 		target-libgloss \
 		target-newlib \
+		target-librx \
 		${libstdcxx_version} \
+		target-libg++ \
 		target-libf2c \
 		target-libchill \
 		target-libffi \
@@ -571,7 +573,7 @@ esac
 
 case "${target}" in
   *-*-netware)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-newlib target-libiberty target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-newlib target-libiberty target-libgloss target-libffi"
     ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss target-libffi"
@@ -587,6 +589,12 @@ case "${target}" in
     ;;
   alpha*-*-*vms*)
     noconfigdirs="$noconfigdirs gdb ld target-newlib target-libgloss target-libffi"
+    ;;
+  alpha*-*-linux*)
+    # newlib is not 64 bit ready
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    # linux has rx in libc
+    skipdirs="$skipdirs target-librx"
     ;;
   alpha*-*-*)
     # newlib is not 64 bit ready
@@ -629,7 +637,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libgloss target-libffi"
     ;;
   c4x-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss target-libffi"
     ;;
   c54x*-*-* | tic54x-*-*)
     noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss target-libffi gcc gdb newlib"
@@ -662,7 +670,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ld target-libgloss target-libffi"
     ;;
   d10v-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-librx target-libg++ ${libstdcxx_version} target-libgloss target-libffi"
     ;;
   d30v-*-*)
     ;;
@@ -673,7 +681,7 @@ case "${target}" in
     ;;
   h8300*-*-* | \
   h8500-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss target-libffi"
     ;;
   hppa*-*-*elf* | \
   hppa*-*-linux-gnu* | \
@@ -702,7 +710,11 @@ case "${target}" in
     ;;
   i[3456]86-*-go32* | i[3456]-*-msdosdjgpp*)
     # but don't build gdb
-    noconfigdirs="$noconfigdirs gdb ${libstdcxx_version} target-libffi"
+    noconfigdirs="$noconfigdirs gdb target-libg++ ${libstdcxx_version} target-librx target-libffi"
+    ;;
+  *-*-linux*)
+    # linux has rx in libc
+    skipdirs="$skipdirs target-librx"
     ;;
   i[3456]86-*-mingw32*)
     target_configdirs="$target_configdirs target-mingw"
@@ -729,7 +741,7 @@ case "${target}" in
     esac
     ;;    
   i[3456]86-*-pe)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss target-libffi"
     ;;
   i[3456]86-*-sco3.2v5*)
     # The linker does not yet know about weak symbols in COFF,
@@ -881,7 +893,7 @@ case "${target}" in
     fi
     ;;
   v810-*-*)
-    noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld ${libstdcxx_version} opcodes target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld target-libg++ ${libstdcxx_version} opcodes target-libgloss target-libffi"
     ;;
   v850-*-*)
     noconfigdirs="$noconfigdirs target-libgloss target-libffi"
@@ -1192,7 +1204,7 @@ fi
 
 # provide a proper gxx_include_dir.
 # Note, if you change the default, make sure to fix both here and in
-# the gcc, libio, and libstdc++ subdirectories.
+# the gcc, libio, libstdc++ and libg++ subdirectories.
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 gxx_include_dir=
 if test -n "${with_gxx_include_dir}"; then
