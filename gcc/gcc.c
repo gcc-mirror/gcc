@@ -3048,19 +3048,6 @@ process_command (argc, argv)
 
   switches[n_switches].part1 = 0;
   infiles[n_infiles].name = 0;
-
-  /* If we have a GCC_EXEC_PREFIX envvar, modify it for cpp's sake.  */
-  if (gcc_exec_prefix)
-    {
-      temp = (char *) xmalloc (strlen (gcc_exec_prefix) + strlen (spec_version)
-			       + strlen (spec_machine) + 3);
-      strcpy (temp, gcc_exec_prefix);
-      strcat (temp, spec_machine);
-      strcat (temp, dir_separator_str);
-      strcat (temp, spec_version);
-      strcat (temp, dir_separator_str);
-      gcc_exec_prefix = temp;
-    }
 }
 
 /* Process a spec string, accumulating and running commands.  */
@@ -4446,6 +4433,27 @@ main (argc, argv)
 #if 0 /* Can cause surprises, and one can use -B./ instead.  */
       add_prefix (&startfile_prefixes, "./", 0, 1, NULL_PTR);
 #endif
+    }
+  else
+    {
+      if (*standard_startfile_prefix != DIR_SEPARATOR && gcc_exec_prefix)
+	add_prefix (&startfile_prefixes,
+		    concat (gcc_exec_prefix, standard_startfile_prefix),
+		    0, 0, NULL_PTR);
+    }
+
+  /* If we have a GCC_EXEC_PREFIX envvar, modify it for cpp's sake.  */
+  if (gcc_exec_prefix)
+    {
+      char * temp = (char *) xmalloc (strlen (gcc_exec_prefix)
+				      + strlen (spec_version)
+				      + strlen (spec_machine) + 3);
+      strcpy (temp, gcc_exec_prefix);
+      strcat (temp, spec_machine);
+      strcat (temp, dir_separator_str);
+      strcat (temp, spec_version);
+      strcat (temp, dir_separator_str);
+      gcc_exec_prefix = temp;
     }
 
   /* Now we have the specs.
