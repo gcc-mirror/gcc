@@ -1735,42 +1735,54 @@ operand_equal_p (arg0, arg1, only_const)
   STRIP_NOPS (arg0);
   STRIP_NOPS (arg1);
 
+  if (TREE_CODE (arg0) != TREE_CODE (arg1)
+      /* This is needed for conversions and for COMPONENT_REF.
+	 Might as well play it safe and always test this.  */
+      || TYPE_MODE (TREE_TYPE (arg0)) != TYPE_MODE (TREE_TYPE (arg1)))
+    return 0;
+
   /* If ARG0 and ARG1 are the same SAVE_EXPR, they are necessarily equal.
      We don't care about side effects in that case because the SAVE_EXPR
-     takes care of that for us.  */
-  if (TREE_CODE (arg0) == SAVE_EXPR && arg0 == arg1)
-    return ! only_const;
-
-  if (TREE_SIDE_EFFECTS (arg0) || TREE_SIDE_EFFECTS (arg1))
-    return 0;
-
-  if (TREE_CODE (arg0) == TREE_CODE (arg1)
-      && TREE_CODE (arg0) == ADDR_EXPR
-      && TREE_OPERAND (arg0, 0) == TREE_OPERAND (arg1, 0))
+     takes care of that for us. In all other cases, two expressions are
+     equal if they have no side effects.  If we have two identical
+     expressions with side effects that should be treated the same due
+     to the only side effects being identical SAVE_EXPR's, that will
+     be detected in the recursive calls below.  */
+  if (arg0 == arg1 && ! only_const
+      && (TREE_CODE (arg0) == SAVE_EXPR
+	  || (! TREE_SIDE_EFFECTS (arg0) && ! TREE_SIDE_EFFECTS (arg1))))
     return 1;
 
-  if (TREE_CODE (arg0) == TREE_CODE (arg1)
-      && TREE_CODE (arg0) == INTEGER_CST
-      && TREE_INT_CST_LOW (arg0) == TREE_INT_CST_LOW (arg1)
-      && TREE_INT_CST_HIGH (arg0) == TREE_INT_CST_HIGH (arg1))
-    return 1;
+  /* Next handle constant cases, those for which we can return 1 even
+     if ONLY_CONST is set.  */
+  if (TREE_CONSTANT (arg0) && TREE_CONSTANT (arg1))
+    switch (TREE_CODE (arg0))
+      {
+      case INTEGER_CST:
+	return (TREE_INT_CST_LOW (arg0) == TREE_INT_CST_LOW (arg1)
+		&& TREE_INT_CST_HIGH (arg0) == TREE_INT_CST_HIGH (arg1));
 
-  /* Detect when real constants are equal.  */
-  if (TREE_CODE (arg0) == TREE_CODE (arg1)
-      && TREE_CODE (arg0) == REAL_CST)
-    return REAL_VALUES_EQUAL (TREE_REAL_CST (arg0), TREE_REAL_CST (arg1));
+      case REAL_CST:
+	return REAL_VALUES_EQUAL (TREE_REAL_CST (arg0), TREE_REAL_CST (arg1));
+
+      case COMPLEX_CST:
+	return (operand_equal_p (TREE_REALPART (arg0), TREE_REALPART (arg1),
+				 only_const)
+		&& operand_equal_p (TREE_IMAGPART (arg0), TREE_IMAGPART (arg1),
+				    only_const));
+
+      case STRING_CST:
+	return (TREE_STRING_LENGTH (arg0) == TREE_STRING_LENGTH (arg1)
+		&& ! strncmp (TREE_STRING_POINTER (arg0),
+			      TREE_STRING_POINTER (arg1),
+			      TREE_STRING_LENGTH (arg0)));
+
+      case ADDR_EXPR:
+	return operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 0),
+				0);
+      }
 
   if (only_const)
-    return 0;
-
-  if (arg0 == arg1)
-    return 1;
-
-  if (TREE_CODE (arg0) != TREE_CODE (arg1))
-    return 0;
-  /* This is needed for conversions and for COMPONENT_REF.
-     Might as well play it safe and always test this.  */
-  if (TYPE_MODE (TREE_TYPE (arg0)) != TYPE_MODE (TREE_TYPE (arg1)))
     return 0;
 
   switch (TREE_CODE_CLASS (TREE_CODE (arg0)))
@@ -1787,10 +1799,22 @@ operand_equal_p (arg0, arg1, only_const)
 
     case '<':
     case '2':
-      return (operand_equal_p (TREE_OPERAND (arg0, 0),
-			       TREE_OPERAND (arg1, 0), 0)
+      if (operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 0), 0)
+	  && operand_equal_p (TREE_OPERAND (arg0, 1), TREE_OPERAND (arg1, 1),
+			      0))
+	return 1;
+
+      /* For commutative ops, allow the other order.  */
+      return ((TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MULT_EXPR
+	       || TREE_CODE (arg0) == MIN_EXPR || TREE_CODE (arg0) == MAX_EXPR
+	       || TREE_CODE (arg0) == BIT_IOR_EXPR
+	       || TREE_CODE (arg0) == BIT_XOR_EXPR
+	       || TREE_CODE (arg0) == BIT_AND_EXPR
+	       || TREE_CODE (arg0) == NE_EXPR || TREE_CODE (arg0) == EQ_EXPR)
+	      && operand_equal_p (TREE_OPERAND (arg0, 0),
+				  TREE_OPERAND (arg1, 1), 0)
 	      && operand_equal_p (TREE_OPERAND (arg0, 1),
-				  TREE_OPERAND (arg1, 1), 0));
+				  TREE_OPERAND (arg1, 0), 0));
 
     case 'r':
       switch (TREE_CODE (arg0))
