@@ -2880,7 +2880,7 @@ Annotate the assembler output with miscellaneous debugging information.
 Dump after computing branch probabilities, to @file{@var{file}.14.bp}.
 @item B
 @opindex dB
-Dump after block reordering, to @file{@var{file}.28.bbro}.
+Dump after block reordering, to @file{@var{file}.29.bbro}.
 @item c
 @opindex dc
 Dump after instruction combination, to the file @file{@var{file}.16.combine}.
@@ -2913,6 +2913,9 @@ Dump after global register allocation, to @file{@var{file}.21.greg}.
 @item h
 @opindex dh
 Dump after finalization of EH handling code, to @file{@var{file}.02.eh}.
+@item k
+@opindex dk
+Dump after reg-to-stack conversion, to @file{@var{file}.28.stack}.
 @item o
 @opindex do
 Dump after post-reload optimizations, to @file{@var{file}.22.postreload}.

@@ -1,3 +1,9 @@
+2002-01-16  Kazu Hirata  <kazu@hxi.com>
+
+	* doc/invoke.texi: Change the dump file name of block
+	reordering pass from 28.bbro to 29.bbro.
+	Mention -dk option.
+
 Wed Jan 16 17:54:22 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (minsf splitter): Fix pasto.
