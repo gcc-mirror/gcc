@@ -1,3 +1,8 @@
+2001-10-31  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config.gcc (cris-*-linux*, tm_file): Rearrange order.
+	* config/cris/linux.h (LIB_SPEC, STARTFILE_SPEC): Don't redefine.
+
 2001-10-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (INTL_TARGETS, POSUB): Delete all references.
