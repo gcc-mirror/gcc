@@ -5697,9 +5697,6 @@
 		    gen_rtx_PLUS (word_mode, virtual_outgoing_args_rtx,
 				  GEN_INT (64)));
 
-  if (flag_pic && PIC_OFFSET_TABLE_SAVE_RTX == NULL_RTX)
-    hppa_init_pic_save ();
-
   /* Use two different patterns for calls to explicitly named functions
      and calls through function pointers.  This is necessary as these two
      types of calls use different calling conventions, and CSE might try
@@ -5728,7 +5725,7 @@
 
       /* After each call we must restore the PIC register, even if it
 	 doesn't appear to be used.  */
-      emit_move_insn (pic_offset_table_rtx, PIC_OFFSET_TABLE_SAVE_RTX);
+      emit_move_insn (pic_offset_table_rtx, hppa_pic_save_rtx ());
     }
   DONE;
 }")
@@ -5869,9 +5866,6 @@
 		    gen_rtx_PLUS (word_mode, virtual_outgoing_args_rtx,
 				  GEN_INT (64)));
 
-  if (flag_pic && PIC_OFFSET_TABLE_SAVE_RTX == NULL_RTX)
-    hppa_init_pic_save ();
-
   /* Use two different patterns for calls to explicitly named functions
      and calls through function pointers.  This is necessary as these two
      types of calls use different calling conventions, and CSE might try
@@ -5904,7 +5898,7 @@
 
       /* After each call we must restore the PIC register, even if it
 	 doesn't appear to be used.  */
-      emit_move_insn (pic_offset_table_rtx, PIC_OFFSET_TABLE_SAVE_RTX);
+      emit_move_insn (pic_offset_table_rtx, hppa_pic_save_rtx ());
     }
   DONE;
 }")
@@ -6067,9 +6061,6 @@
 
   op = XEXP (operands[0], 0);
 
-  if (flag_pic && PIC_OFFSET_TABLE_SAVE_RTX == NULL_RTX)
-    hppa_init_pic_save ();
-
   /* We do not allow indirect sibling calls.  */
   call_insn = emit_call_insn (gen_sibcall_internal_symref (op, operands[1]));
 
@@ -6079,7 +6070,7 @@
 
       /* After each call we must restore the PIC register, even if it
 	 doesn't appear to be used.  */
-      emit_move_insn (pic_offset_table_rtx, PIC_OFFSET_TABLE_SAVE_RTX);
+      emit_move_insn (pic_offset_table_rtx, hppa_pic_save_rtx ());
     }
   DONE;
 }")
@@ -6125,9 +6116,6 @@
 
   op = XEXP (operands[1], 0);
 
-  if (flag_pic && PIC_OFFSET_TABLE_SAVE_RTX == NULL_RTX)
-    hppa_init_pic_save ();
-
   /* We do not allow indirect sibling calls.  */
   call_insn = emit_call_insn (gen_sibcall_value_internal_symref (operands[0],
 								 op,
@@ -6138,7 +6126,7 @@
 
       /* After each call we must restore the PIC register, even if it
 	 doesn't appear to be used.  */
-      emit_move_insn (pic_offset_table_rtx, PIC_OFFSET_TABLE_SAVE_RTX);
+      emit_move_insn (pic_offset_table_rtx, hppa_pic_save_rtx ());
     }
   DONE;
 }")
@@ -7135,12 +7123,9 @@
   "flag_pic"
   "
 {
-  if (PIC_OFFSET_TABLE_SAVE_RTX == NULL_RTX)
-    hppa_init_pic_save ();
-
   /* Restore the PIC register.  Hopefully, this will always be from
      a stack slot.  The only registers that are valid after a
      builtin_longjmp are the stack and frame pointers.  */
-  emit_move_insn (pic_offset_table_rtx, PIC_OFFSET_TABLE_SAVE_RTX);
+  emit_move_insn (pic_offset_table_rtx, hppa_pic_save_rtx ());
   DONE;
 }")

@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "expr.h"
 #include "c-tree.h"
+#include "integrate.h"
 #include "function.h"
 #include "obstack.h"
 #include "toplev.h"
@@ -52,9 +53,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
-static void pa_init_machine_status PARAMS ((struct function *));
-static void pa_mark_machine_status PARAMS ((struct function *));
-static void pa_free_machine_status PARAMS ((struct function *));
 static inline rtx force_mode PARAMS ((enum machine_mode, rtx));
 static void pa_combine_instructions PARAMS ((rtx));
 static int pa_can_combine_p PARAMS ((rtx, rtx, rtx, int, rtx, rtx, rtx));
@@ -202,45 +200,7 @@ override_options ()
 
   /* Register global variables with the garbage collector.  */
   pa_add_gc_roots ();
-
-  /* Arrange to save and restore machine status around nested functions.  */
-  init_machine_status = pa_init_machine_status;
-  mark_machine_status = pa_mark_machine_status;
-  free_machine_status = pa_free_machine_status;
 }
-
-/* Functions to initialize pic_offset_table_save_rtx.
-   These will be called, via pointer variables,
-   from push_function_context and pop_function_context.  */
-
-static void
-pa_init_machine_status (p)
-     struct function *p;
-{
-  p->machine = (machine_function *) xmalloc (sizeof (machine_function));
-
-  p->machine->pic_offset_table_save_rtx = NULL_RTX;
-}
-
-static void
-pa_mark_machine_status (p)
-     struct function *p;
-{
-  if (p->machine)
-    ggc_mark_rtx (p->machine->pic_offset_table_save_rtx);
-}
-
-static void
-pa_free_machine_status (p)
-     struct function *p;
-{
-  if (p->machine == NULL)
-    return;
-
-  free (p->machine);
-  p->machine = NULL;
-}
-
 
 /* Return non-zero only if OP is a register of mode MODE,
    or CONST0_RTX.  */
@@ -3397,23 +3357,10 @@ hppa_expand_epilogue ()
     FRP (load_reg (2, ret_off, STACK_POINTER_REGNUM));
 }
 
-/* Set up a callee saved register for the pic offset table register.  */
-void
-hppa_init_pic_save ()
+rtx
+hppa_pic_save_rtx ()
 {
-  rtx insn, picreg;
-
-  picreg = gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM);
-  PIC_OFFSET_TABLE_SAVE_RTX = gen_reg_rtx (Pmode);
-  RTX_UNCHANGING_P (PIC_OFFSET_TABLE_SAVE_RTX) = 1;
-  insn = gen_rtx_SET (VOIDmode, PIC_OFFSET_TABLE_SAVE_RTX, picreg);
-
-  /* Emit the insn at the beginning of the function after the prologue.  */
-  if (tail_recursion_reentry)
-    emit_insn_before (insn, tail_recursion_reentry);
-  else
-    /* We must have been called via PROFILE_HOOK.  */
-    emit_insn (insn);
+  return get_hard_reg_initial_val (word_mode, PIC_OFFSET_TABLE_REGNUM);
 }
 
 void
@@ -3433,9 +3380,6 @@ hppa_profile_hook (label_no)
     emit_move_insn (arg_pointer_rtx,
 		    gen_rtx_PLUS (word_mode, virtual_outgoing_args_rtx,
 				  GEN_INT (64)));
-
-  if (flag_pic && PIC_OFFSET_TABLE_SAVE_RTX == NULL_RTX)
-    hppa_init_pic_save ();
 
   emit_move_insn (gen_rtx_REG (word_mode, 26), gen_rtx_REG (word_mode, 2));
 
@@ -3495,7 +3439,7 @@ hppa_profile_hook (label_no)
       if (TARGET_64BIT)
 	use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), arg_pointer_rtx);
 
-      emit_move_insn (pic_offset_table_rtx, PIC_OFFSET_TABLE_SAVE_RTX);
+      emit_move_insn (pic_offset_table_rtx, hppa_pic_save_rtx ());
     }
 }
 
