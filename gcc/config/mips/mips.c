@@ -1634,6 +1634,9 @@ mips_load_got (rtx base, rtx addr, int reloc)
 		     gen_rtx_PLUS (Pmode, base, mips_reloc (addr, reloc)));
   set_mem_alias_set (mem, mips_got_alias_set);
 
+  /* GOT references can't trap.  */
+  MEM_NOTRAP_P (mem) = 1;
+
   /* If we allow a function's address to be lazily bound, its entry
      may change after the first call.  Other entries are constant.  */
   if (reloc != RELOC_CALL16 && reloc != RELOC_CALL_LO)

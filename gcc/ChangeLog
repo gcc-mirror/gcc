@@ -1,3 +1,8 @@
+2003-10-03  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/12485
+	* config/mips/mips.c (mips_load_got): GOT accesses can't trap.
+
 2003-10-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR optimization/12180
