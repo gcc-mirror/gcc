@@ -679,12 +679,12 @@ ocp_convert (type, expr, convtype, flags)
 	/* The call to fold will not always remove the NOP_EXPR as
 	   might be expected, since if one of the types is a typedef;
 	   the comparsion in fold is just equality of pointers, not a
-	   call to comptypes.  */
-	;
+	   call to comptypes.  We don't call fold in this case because
+	   that can result in infinite recursion; fold will call
+	   convert, which will call ocp_convert, etc.  */
+	return e;
       else
-	e = build1 (NOP_EXPR, type, e);
-
-      return fold (e);
+	return fold (build1 (NOP_EXPR, type, e));
     }
 
   if (code == VOID_TYPE && (convtype & CONV_STATIC))
