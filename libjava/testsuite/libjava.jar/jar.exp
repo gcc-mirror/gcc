@@ -19,7 +19,7 @@ proc gcj_jar_compile_one {jarfile mainclass} {
 proc gcj_jar_interpret {jarfile} {
   global INTERPRETER srcdir
 
-  set gij [libjava_find_gij] 
+  set gij [libjava_find_gij]
   # libjava_find_gij will return `gij' if it couldn't find the
   # program; in this case we want to skip the test.
   if {$INTERPRETER != "yes" || $gij == "gij"} {
@@ -35,7 +35,7 @@ proc gcj_jar_interpret {jarfile} {
 }
 
 proc gcj_jar_run {} {
-  global srcdir subdir
+  global srcdir subdir env
   foreach jar [lsort [glob -nocomplain ${srcdir}/${subdir}/*.jar]] {
     set xff [file rootname $jar].xfail
     set main {}
@@ -54,6 +54,14 @@ proc gcj_jar_run {} {
       gcj_jar_interpret $jar
     }
   }
+    # When we succeed we remove all our clutter.
+    eval gcj_cleanup [glob -nocomplain -- ${main}.*] [list $main ]
+
+    # Reset CLASSPATH that we do not look into testsuite/libjava.jar for *.jar
+    # files which do not belong to the libgcj itself.
+    set env(CLASSPATH) ""
+
+    return 1
 }
 
 gcj_jar_run
