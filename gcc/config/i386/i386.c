@@ -7287,6 +7287,7 @@ output_fix_trunc (rtx insn, rtx *operands, int fisttp)
 {
   int stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != 0;
   int dimode_p = GET_MODE (operands[0]) == DImode;
+  int round_mode = get_attr_i387_cw (insn);
 
   /* Jump through a hoop or two for DImode, since the hardware has no
      non-popping instruction.  We used to do this a different way, but
@@ -7304,12 +7305,14 @@ output_fix_trunc (rtx insn, rtx *operands, int fisttp)
       output_asm_insn ("fisttp%z0\t%0", operands);
   else
     {
-      output_asm_insn ("fldcw\t%3", operands);
+      if (round_mode != I387_CW_ANY)
+	output_asm_insn ("fldcw\t%3", operands);
       if (stack_top_dies || dimode_p)
 	output_asm_insn ("fistp%z0\t%0", operands);
       else
 	output_asm_insn ("fist%z0\t%0", operands);
-      output_asm_insn ("fldcw\t%2", operands);
+      if (round_mode != I387_CW_ANY)
+	output_asm_insn ("fldcw\t%2", operands);
     }
 
   return "";
