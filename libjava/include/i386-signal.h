@@ -45,7 +45,6 @@ do									\
   void **_p = (void **)&_dummy;						\
   struct sigcontext_struct *_regs = (struct sigcontext_struct *)++_p;	\
 									\
-  register unsigned long *_ebp = (unsigned long *)_regs->ebp;		\
   register unsigned char *_eip = (unsigned char *)_regs->eip;		\
 									\
   /* According to the JVM spec, "if the dividend is the negative	\
