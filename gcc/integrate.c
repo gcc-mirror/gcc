@@ -1920,7 +1920,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	      if (rtx_equal_p (SET_SRC (set), stack_pointer_rtx))
 		temp = SET_SRC (set);
 	      else
-		temp = force_operand (plus_constant (SET_SRC (set), offset),
+		temp = force_operand (plus_constant (SET_SRC (set), - offset),
 				      NULL_RTX);
 
 	      copy = emit_move_insn (SET_DEST (set), temp);
