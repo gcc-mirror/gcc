@@ -43,6 +43,12 @@ G77_INSTALL_NAME = `t='$(program_transform_name)'; echo g77 | sed $$t`
 
 # Actual name to use when installing a cross-compiler.
 G77_CROSS_NAME = `t='$(program_transform_cross_name)'; echo g77 | sed $$t`
+
+# Some versions of `touch' (such as the version on Solaris 2.8) 
+# do not correctly set the timestamp due to buggy versions of `utime'
+# in the kernel.  So, we use `echo' instead. 
+STAMP = echo timestamp >
+
 #
 # Define the names for selecting f77 in LANGUAGES.
 # Note that it would be nice to move the dependency on g77
@@ -62,7 +68,7 @@ F77 f77: f771$(exeext)
 g77spec.o: $(srcdir)/f/g77spec.c $(srcdir)/f/version.h $(SYSTEM_H) $(GCC_H) \
 	$(CONFIG_H)
 	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch lang-f77;; \
+	  *[fF]77*) $(STAMP) lang-f77;; \
 	  *) rm -f lang-f77;; \
 	esac
 	if [ -f lang-f77 ]; then \
@@ -72,7 +78,7 @@ g77spec.o: $(srcdir)/f/g77spec.c $(srcdir)/f/version.h $(SYSTEM_H) $(GCC_H) \
 
 g77version.o: $(srcdir)/f/version.c
 	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch lang-f77;; \
+	  *[fF]77*) $(STAMP) lang-f77;; \
 	  *) rm -f lang-f77;; \
 	esac
 	if [ -f lang-f77 ]; then \
@@ -114,7 +120,7 @@ f771$(exeext): $(F77_OBJS) $(BACKEND) $(LIBDEPS)
 f/stamp-str: f/str-1t.h f/str-1t.j f/str-2t.h f/str-2t.j \
  f/str-fo.h f/str-fo.j f/str-io.h f/str-io.j f/str-nq.h  f/str-nq.j \
  f/str-op.h f/str-op.j f/str-ot.h f/str-ot.j
-	touch f/stamp-str
+	$(STAMP) f/stamp-str
 
 f/str-1t.h f/str-1t.j: f/fini$(build_exeext) f/str-1t.fin
 	./f/fini$(build_exeext) $(srcdir)/f/str-1t.fin f/str-1t.j f/str-1t.h
@@ -168,7 +174,7 @@ $(srcdir)/f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	    $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
 	    $(srcdir)/f/intdoc.texi $(srcdir)/f/root.texi
 	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch lang-f77;; \
+	  *[fF]77*) $(STAMP) lang-f77;; \
 	  *) rm -f lang-f77;; \
 	esac
 	if [ -f lang-f77 ] && [ x$(BUILD_INFO) = xinfo ]; then \
@@ -181,7 +187,7 @@ f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 	    $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
 	    $(srcdir)/f/intdoc.texi $(srcdir)/f/root.texi
 	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch lang-f77;; \
+	  *[fF]77*) $(STAMP) lang-f77;; \
 	  *) rm -f lang-f77;; \
 	esac
 # `tex2dvi' was used below, but the Texinfo 3.12 one won't work properly
@@ -264,7 +270,7 @@ f77.install-normal:
 # run, since we use libsubdir to store our `flag' file, lang-f77.
 f77.install-common: installdirs
 	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch $(libsubdir)/lang-f77.com;; \
+	  *[fF]77*) $(STAMP) $(libsubdir)/lang-f77.com;; \
 	  *) rm -f $(libsubdir)/lang-f77.com;; \
 	esac
 	-if [ -f $(libsubdir)/lang-f77.com -a -f f771$(exeext) ] ; then \
@@ -295,7 +301,7 @@ f77.install-common: installdirs
 # run, since we use libsubdir to store our `flag' file, lang-f77.
 f77.install-info: f77.info installdirs
 	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch $(libsubdir)/lang-f77.info;; \
+	  *[fF]77*) $(STAMP) $(libsubdir)/lang-f77.info;; \
 	  *) rm -f $(libsubdir)/lang-f77.info;; \
 	esac
 	if [ -f $(libsubdir)/lang-f77.info -a -f $(srcdir)/f/g77.info ] ; then \
@@ -318,7 +324,7 @@ f77.install-info: f77.info installdirs
 # run, since we use libsubdir to store our `flag' file, lang-f77.
 f77.install-man: $(srcdir)/f/g77.1 installdirs
 	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch $(libsubdir)/lang-f77.man;; \
+	  *[fF]77*) $(STAMP) $(libsubdir)/lang-f77.man;; \
 	  *) rm -f $(libsubdir)/lang-f77.man;; \
 	esac
 	-if [ -f $(libsubdir)/lang-f77.man -a -f f771$(exeext) ] ; then \
@@ -338,7 +344,7 @@ f77.install-man: $(srcdir)/f/g77.1 installdirs
 # run, since we use libsubdir to store our `flag' file, lang-f77.
 f77.uninstall: installdirs
 	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch $(libsubdir)/lang-f77.un;; \
+	  *[fF]77*) $(STAMP) $(libsubdir)/lang-f77.un;; \
 	  *) rm -f $(libsubdir)/lang-f77.un;; \
 	esac
 	@if [ -f $(libsubdir)/lang-f77.un ] ; then \

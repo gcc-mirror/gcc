@@ -1,3 +1,7 @@
+Sun May 13 12:25:06 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in: Replace all uses of `touch' with $(STAMP).
+
 Wed May  2 10:20:08 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c: NULL_PTR -> NULL.

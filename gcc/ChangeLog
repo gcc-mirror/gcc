@@ -1,3 +1,9 @@
+2001-05-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (STAMP): New macro.
+	Replace all uses of `touch' with $(STAMP).
+	* fixinc/Makefile.in: Likewise.
+
 Sun May 13 07:26:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* configure.in: ldopen is never in -lexc, so don't test for it.

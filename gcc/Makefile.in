@@ -138,6 +138,11 @@ MAKEOVERRIDES =
 # In stage2 and beyond, we force this to "-o $@" since we know we're using gcc.
 OUTPUT_OPTION = @OUTPUT_OPTION@
 
+# Some versions of `touch' (such as the version on Solaris 2.8) 
+# do not correctly set the timestamp due to buggy versions of `utime'
+# in the kernel.  So, we use `echo' instead. 
+STAMP = echo timestamp >
+
 # This is where we get zlib from.  zlibdir is -L../zlib and zlibinc is
 # -I../zlib, unless we were configured with --with-system-zlib, in which
 # case both are empty.
@@ -1100,7 +1105,7 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	  "`test @enable_multilib@ = yes && echo $(MULTILIB_EXCLUSIONS)`" \
 		> tmp-mlib.h
 	$(SHELL) $(srcdir)/move-if-change tmp-mlib.h multilib.h
-	touch s-mlib
+	$(STAMP) s-mlib
 
 # Build multiple copies of libgcc.a, one for each target switch.
 stmp-multilib: $(LIBGCC_DEPS)
@@ -1120,7 +1125,7 @@ stmp-multilib: $(LIBGCC_DEPS)
 	  LIB1ASMSRC='$(LIB1ASMSRC)' \
 	  MAKEOVERRIDES= \
 	  -f libgcc.mk all
-	touch stmp-multilib
+	$(STAMP) stmp-multilib
 
 # Compile two additional files that are linked with every program
 # linked using GCC on systems using COFF or ELF, for the sake of C++
@@ -1166,7 +1171,7 @@ s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 	  -o crt0.o -c $(CRT0_S)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(CRT0STUFF_T_CFLAGS) \
 	  -o mcrt0.o -c $(MCRT0_S)
-	touch s-crt0
+	$(STAMP) s-crt0
 #
 # Compiling object files from source files.
 
@@ -1267,7 +1272,7 @@ s-under: $(GCC_PASSES)
 	fi
 	$(SHELL) $(srcdir)/move-if-change tmp-under.c underscore.c
 	-rm -f tmp-dum.c tmp-dum.s
-	touch s-under
+	$(STAMP) s-under
 
 # A file used by all variants of C.
 
@@ -1313,7 +1318,7 @@ tree-check.h: s-check ; @true
 s-check : gencheck$(build_exeext) $(srcdir)/move-if-change
 	./gencheck$(build_exeext) > tmp-check.h
 	$(SHELL) $(srcdir)/move-if-change tmp-check.h tree-check.h
-	touch s-check
+	$(STAMP) s-check
 
 gencheck$(build_exeext) : gencheck.o $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
@@ -1621,19 +1626,19 @@ insn-config.h: s-config ; @true
 s-config : $(md_file) genconfig$(build_exeext) $(srcdir)/move-if-change
 	./genconfig$(build_exeext) $(md_file) > tmp-config.h
 	$(SHELL) $(srcdir)/move-if-change tmp-config.h insn-config.h
-	touch s-config
+	$(STAMP) s-config
 
 insn-flags.h: s-flags ; @true
 s-flags : $(md_file) genflags$(build_exeext) $(srcdir)/move-if-change
 	./genflags$(build_exeext) $(md_file) > tmp-flags.h
 	$(SHELL) $(srcdir)/move-if-change tmp-flags.h insn-flags.h
-	touch s-flags
+	$(STAMP) s-flags
 
 insn-codes.h: s-codes ; @true
 s-codes : $(md_file) gencodes$(build_exeext) $(srcdir)/move-if-change
 	./gencodes$(build_exeext) $(md_file) > tmp-codes.h
 	$(SHELL) $(srcdir)/move-if-change tmp-codes.h insn-codes.h
-	touch s-codes
+	$(STAMP) s-codes
 
 insn-emit.o : insn-emit.c $(CONFIG_H) $(RTL_H) $(EXPR_H) real.h output.h \
   insn-config.h $(SYSTEM_H) reload.h $(RECOG_H) toplev.h \
@@ -1644,7 +1649,7 @@ insn-emit.c: s-emit ; @true
 s-emit : $(md_file) genemit$(build_exeext) $(srcdir)/move-if-change
 	./genemit$(build_exeext) $(md_file) > tmp-emit.c
 	$(SHELL) $(srcdir)/move-if-change tmp-emit.c insn-emit.c
-	touch s-emit
+	$(STAMP) s-emit
 
 insn-recog.o : insn-recog.c $(CONFIG_H) $(RTL_H) insn-config.h $(RECOG_H) \
   real.h output.h flags.h $(SYSTEM_H) function.h hard-reg-set.h resource.h \
@@ -1655,7 +1660,7 @@ insn-recog.c: s-recog ; @true
 s-recog : $(md_file) genrecog$(build_exeext) $(srcdir)/move-if-change
 	./genrecog$(build_exeext) $(md_file) > tmp-recog.c
 	$(SHELL) $(srcdir)/move-if-change tmp-recog.c insn-recog.c
-	touch s-recog
+	$(STAMP) s-recog
 
 insn-opinit.o : insn-opinit.c $(CONFIG_H) $(RTL_H) \
   insn-config.h flags.h $(RECOG_H) $(EXPR_H) reload.h $(SYSTEM_H)
@@ -1665,7 +1670,7 @@ insn-opinit.c: s-opinit ; @true
 s-opinit : $(md_file) genopinit$(build_exeext) $(srcdir)/move-if-change
 	./genopinit$(build_exeext) $(md_file) > tmp-opinit.c
 	$(SHELL) $(srcdir)/move-if-change tmp-opinit.c insn-opinit.c
-	touch s-opinit
+	$(STAMP) s-opinit
 
 insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) toplev.h \
   insn-config.h $(RECOG_H)
@@ -1675,7 +1680,7 @@ insn-extract.c: s-extract ; @true
 s-extract : $(md_file) genextract$(build_exeext) $(srcdir)/move-if-change
 	./genextract$(build_exeext) $(md_file) > tmp-extract.c
 	$(SHELL) $(srcdir)/move-if-change tmp-extract.c insn-extract.c
-	touch s-extract
+	$(STAMP) s-extract
 
 insn-peep.o : insn-peep.c $(CONFIG_H) $(RTL_H) $(REGS_H) output.h real.h \
 	$(SYSTEM_H) insn-config.h $(RECOG_H) except.h function.h $(TM_P_H)
@@ -1685,7 +1690,7 @@ insn-peep.c: s-peep ; @true
 s-peep : $(md_file) genpeep$(build_exeext) $(srcdir)/move-if-change
 	./genpeep$(build_exeext) $(md_file) > tmp-peep.c
 	$(SHELL) $(srcdir)/move-if-change tmp-peep.c insn-peep.c
-	touch s-peep
+	$(STAMP) s-peep
 
 insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(RTL_H) $(REGS_H) real.h \
     output.h $(INSN_ATTR_H) insn-config.h $(SYSTEM_H) toplev.h $(RECOG_H) \
@@ -1696,13 +1701,13 @@ insn-attr.h: s-attr ; @true
 s-attr : $(md_file) genattr$(build_exeext) $(srcdir)/move-if-change
 	./genattr$(build_exeext) $(md_file) > tmp-attr.h
 	$(SHELL) $(srcdir)/move-if-change tmp-attr.h insn-attr.h
-	touch s-attr
+	$(STAMP) s-attr
 
 insn-attrtab.c: s-attrtab ; @true
 s-attrtab : $(md_file) genattrtab$(build_exeext) $(srcdir)/move-if-change
 	./genattrtab$(build_exeext) $(md_file) > tmp-attrtab.c
 	$(SHELL) $(srcdir)/move-if-change tmp-attrtab.c insn-attrtab.c
-	touch s-attrtab
+	$(STAMP) s-attrtab
 
 insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) $(GGC_H) $(REGS_H) real.h \
     conditions.h hard-reg-set.h insn-config.h $(INSN_ATTR_H) $(EXPR_H) \
@@ -1714,7 +1719,7 @@ insn-output.c: s-output ; @true
 s-output : $(md_file) genoutput$(build_exeext) $(srcdir)/move-if-change
 	./genoutput$(build_exeext) $(md_file) > tmp-output.c
 	$(SHELL) $(srcdir)/move-if-change tmp-output.c insn-output.c
-	touch s-output
+	$(STAMP) s-output
 
 genrtl.o : genrtl.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) $(GGC_H)
 genrtl.c genrtl.h : s-genrtl
@@ -1725,7 +1730,7 @@ s-genrtl: gengenrtl$(build_exeext) $(srcdir)/move-if-change $(RTL_BASE_H)
 	$(SHELL) $(srcdir)/move-if-change tmp-genrtl.h genrtl.h
 	./gengenrtl$(build_exeext) >tmp-genrtl.c
 	$(SHELL) $(srcdir)/move-if-change tmp-genrtl.c genrtl.c
-	touch s-genrtl
+	$(STAMP) s-genrtl
 #
 # Compile the programs that generate insn-* from the machine description.
 # They are compiled with $(HOST_CC), and associated libraries,
@@ -1893,7 +1898,7 @@ $(HOST_PREFIX_1)errors.o: errors.c $(HCONFIG_H) $(SYSTEM_H)
 # This satisfies the dependency that we get if you cross-compile a compiler
 # that does not need to compile doprint or whatever.
 $(HOST_PREFIX_1):
-	touch $(HOST_PREFIX_1)
+	$(STAMP) $(HOST_PREFIX_1)
 
 $(HOST_PREFIX_1)ggc-none.o: ggc-none.c $(HCONFIG_H) $(SYSTEM_H)
 	rm -f $(HOST_PREFIX)ggc-none.c
@@ -2077,7 +2082,7 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h
 	for file in .. $(USER_H); do \
 	  if [ X$$file != X.. ]; then \
 	    realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	    touch include/$$realfile; \
+	    $(STAMP) include/$$realfile; \
 	    rm -f include/$$realfile; \
 	    cp $$file include; \
 	    chmod a+r include/$$realfile; \
@@ -2095,7 +2100,7 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h
 	rm -f include/README
 	cp $(srcdir)/README-fixinc include/README
 	chmod a+r include/README
-	touch $@
+	$(STAMP) $@
 
 # fixinc.sh depends on this, not on specs directly.
 # The idea is to make sure specs gets built, but not rerun fixinc.sh
@@ -2104,7 +2109,7 @@ specs.ready: specs
 	-if [ -f specs.ready ] ; then \
 		true; \
 	else \
-		touch specs.ready; \
+		$(STAMP) specs.ready; \
 	fi
 
 FIXINCSRCDIR=$(srcdir)/fixinc
@@ -2147,7 +2152,7 @@ stmp-fixinc: fixinc.sh gsyslimits.h
 	  if [ -d $(libdir)/gcc-lib/$(target_alias) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias) ; fi; \
 	  if [ -d $(libdir)/gcc-lib/$(target_alias)/$(version) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias)/$(version) ; fi; \
 	else true; fi
-	touch stmp-fixinc
+	$(STAMP) stmp-fixinc
 
 # Files related to the fixproto script.
 # gen-protos and fix-header are compiled with HOST_CC, but they are only
@@ -2162,7 +2167,7 @@ deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 	  $(SHELL) $(srcdir)/scan-types.sh "$(srcdir)" >tmp-deduced.h; \
 	  mv tmp-deduced.h deduced.h; \
 	else \
-	  touch deduced.h; \
+	  $(STAMP) deduced.h; \
 	fi
 
 GEN_PROTOS_OBJS = gen-protos.o scan.o
@@ -2208,7 +2213,7 @@ fixhdr.ready: fix-header$(build_exeext)
 	-if [ -f fixhdr.ready ] ; then \
 		true; \
 	else \
-		touch fixhdr.ready; \
+		$(STAMP) fixhdr.ready; \
 	fi
 
 # stmp-int-headers is to make sure fixincludes has already finished.
@@ -2225,9 +2230,9 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 	    $(SHELL) ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR); \
 	    if [ $$? -eq 0 ] ; then true ; else exit 1 ; fi ; \
 	  else true; fi; \
-	  touch include/fixed; \
+	  $(STAMP) include/fixed; \
 	fi
-	touch stmp-fixproto
+	$(STAMP) stmp-fixproto
 #
 # Remake the info files.
 
@@ -2270,7 +2275,7 @@ cpp.dvi: $(srcdir)/cpp.texi
 generated-manpages: $(srcdir)/gcov.1 $(srcdir)/cpp.1 $(srcdir)/gcc.1
 
 $(srcdir)/gcov.1: $(srcdir)/gcov.texi
-	touch $(srcdir)/gcov.1
+	$(STAMP) $(srcdir)/gcov.1
 	-$(TEXI2POD) < $(srcdir)/gcov.texi > gcov.pod
 	-($(POD2MAN) gcov.pod > $(srcdir)/gcov.1.T$$$$ && \
 		mv -f $(srcdir)/gcov.1.T$$$$ $(srcdir)/gcov.1) || \
@@ -2278,7 +2283,7 @@ $(srcdir)/gcov.1: $(srcdir)/gcov.texi
 	-rm -f gcov.pod
 
 $(srcdir)/cpp.1: $(srcdir)/cpp.texi
-	touch $(srcdir)/cpp.1
+	$(STAMP) $(srcdir)/cpp.1
 	-$(TEXI2POD) < $(srcdir)/cpp.texi > cpp.pod
 	-($(POD2MAN) cpp.pod > $(srcdir)/cpp.1.T$$$$ && \
 		mv -f $(srcdir)/cpp.1.T$$$$ $(srcdir)/cpp.1) || \
@@ -2286,7 +2291,7 @@ $(srcdir)/cpp.1: $(srcdir)/cpp.texi
 	-rm -f cpp.pod
 
 $(srcdir)/gcc.1: $(srcdir)/invoke.texi
-	touch $(srcdir)/gcc.1
+	$(STAMP) $(srcdir)/gcc.1
 	-$(TEXI2POD) < $(srcdir)/invoke.texi > gcc.pod
 	-($(POD2MAN) gcc.pod > $(srcdir)/gcc.1.T$$$$ && \
 		mv -f $(srcdir)/gcc.1.T$$$$ $(srcdir)/gcc.1) || \
@@ -2759,7 +2764,7 @@ target_subdir = @target_subdir@
 site.exp: ./config.status Makefile
 	@echo "Making a new config file..."
 	-@rm -f ./tmp?
-	@touch site.exp
+	@$(STAMP) site.exp
 	-@mv site.exp site.bak
 	@echo "## these variables are automatically generated by make ##" > ./tmp0
 	@echo "# Do not edit here. If you wish to override these values" >> ./tmp0
@@ -2924,54 +2929,54 @@ stage1_build:
 	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" \
 		CFLAGS="$(STAGE1_CFLAGS)" MAKEINFO="$(MAKEINFO)" \
 		MAKEINFOFLAGS="$(MAKEINFOFLAGS)"
-	touch stage1_build
+	$(STAMP) stage1_build
 	echo stage1_build > stage_last
 
 stage1_copy: stage1_build
 	$(MAKE) stage1
-	touch stage1_copy
+	$(STAMP) stage1_copy
 	echo stage2_build > stage_last
 
 stage2_build: stage1_copy
 	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
 		 STAGE_PREFIX=stage1/ \
 		 $(STAGE2_FLAGS_TO_PASS)
-	touch stage2_build
+	$(STAMP) stage2_build
 	echo stage2_build > stage_last
 
 stage2_copy: stage2_build
 	$(MAKE) stage2
-	touch stage2_copy
+	$(STAMP) stage2_copy
 	echo stage3_build > stage_last
 
 stage3_build: stage2_copy
 	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" \
 		 STAGE_PREFIX=stage2/ \
 		 $(STAGE2_FLAGS_TO_PASS)
-	touch stage3_build
+	$(STAMP) stage3_build
 	echo stage3_build > stage_last
 
 # For bootstrap4:
 stage3_copy: stage3_build
 	$(MAKE) stage3
-	touch stage3_copy
+	$(STAMP) stage3_copy
 	echo stage4_build > stage_last
 
 stage4_build: stage3_copy
 	$(MAKE) CC="stage3/xgcc$(exeext) -Bstage3/ -B$(build_tooldir)/bin/" \
 		 STAGE_PREFIX=stage3/ \
 		 $(STAGE2_FLAGS_TO_PASS)
-	touch stage4_build
+	$(STAMP) stage4_build
 	echo stage4_build > stage_last
 
 # Additional steps for *-lean targets:
 clean_s1: stage1_copy
 	-(cd stage1 && rm -f $(VOL_FILES))
-	touch clean_s1
+	$(STAMP) clean_s1
 
 clean_s2: stage2_copy
 	-rm -rf stage1
-	touch clean_s2
+	$(STAMP) clean_s2
 
 # The various entry points for bootstrapping.
 
