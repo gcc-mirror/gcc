@@ -1134,6 +1134,7 @@ struct lang_type_class GTY(())
 
   unsigned anon_aggr : 1;
   unsigned non_zero_init : 1;
+  unsigned empty_p : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1142,7 +1143,7 @@ struct lang_type_class GTY(())
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 6;
+  unsigned dummy : 5;
 
   int vsize;
 
@@ -1446,6 +1447,10 @@ struct lang_type GTY(())
    data members).  */
 #define CLASSTYPE_NON_ZERO_INIT_P(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->non_zero_init)
+
+/* Nonzero if this class is "empty" in the sense of the C++ ABI.  */
+#define CLASSTYPE_EMPTY_P(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->empty_p)
 
 /* Nonzero if this class is "nearly empty", i.e., contains only a
    virtual function table pointer.  */

@@ -1,3 +1,20 @@
+2002-10-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (check_field_decls): Remove empty_p parameter.  Instead,
+	clear CLASSTYPE_EMPTY_P.
+	(build_base_field): Likewise.
+	(build_base_fields): Likewise.
+	(check_bases_and_members): Likewise.
+	(create_vtbl_ptr): Likewise.
+	(layout_class_type): Likewise.  Ensure that empty classes have
+	size zero when used as base classes in the 3.2 ABI.
+	(finish_struct_1): Initialize CLASSTYPE_EMPTY_P and
+	CLASSTYPE_NEARLY_EMPTY_P.  Adjust calls to avoid passing empty_p
+	parameter.
+	(is_empty_class): Correct definition when using post-3.2 ABI.
+	* cp-tree.h (lang_type_class): Add empty_p.
+	(CLASSTYPE_EMPTY_P): New macro.
+
 2002-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* init.c (build_delete): Do not apply save_expr for arrays.
