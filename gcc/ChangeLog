@@ -1,3 +1,13 @@
+2002-11-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (print_operand): Update the use of
+	EIGHTBIT_CONSTANT_ADDRESS_P.
+	(h8300_adjust_insn_length): Likewise.
+	(h8300_eightbit_constant_address_p): Check if the given rtx is
+	a variable with __attribute__((eightbit_data)).
+	* config/h8300/h8300.h (OK_FOR_U): Update the use of
+	EIGHTBIT_CONSTANT_ADDRESS_P.
+
 2002-11-19  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Add self as second contact in
