@@ -1,3 +1,8 @@
+2005-03-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-phiopt.c: Update copyright.  Fix indentations.
+	Remove trailing spaces.
+
 2005-03-07  Per Bothner  <per@bothner.com>
 
 	* tree.h (DECL_IS_BUILTIN): Reverted my patch from earlier today.
