@@ -56,6 +56,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    -Asystem(unix) -Asystem(svr4) -Acpu(sparc) -Amachine(sparc) \
    -D__GCC_NEW_VARARGS__"
 
+/* The native assembler can't compute differences between symbols in different
+   sections when generating pic code, so we must put jump tables in the
+   text section.  */
+#define JUMP_TABLES_IN_TEXT_SECTION 1
+
 /* The specialized code which needs to appear in the .init section prior
    to the prologue code for `__do_global_ctors' (see crtstuff.c).
 
