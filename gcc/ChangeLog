@@ -1,3 +1,236 @@
+2001-11-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* doc/invoke.texi: Add -maltivec, -mno-altivec, and -mabi=altivec
+	for rs6000.
+
+	* config/rs6000/rs6000.h (MASK_ALTIVEC): New.
+	(TARGET_ALTIVEC): New.
+	(TARGET_SWITCHES): Add altivec.
+	(FIRST_PSEUDO_REGISTER): Change to 109.
+	(CALL_USED_REGISTERS): Same.
+	(FIRST_ALTIVEC_REGNO): New.
+	(LAST_ALTIVEC_REGNO): New.
+	(ALTIVEC_REGNO_P): New.
+	(UNITS_PER_ALTIVEC_WORD): New.
+	(ALTIVEC_VECTOR_MODE): New.
+	(FIXED_REGISTERS): Add altivec registers.
+	(REG_ALLOC_ORDER): Same.
+	(HARD_REGNO_NREGS): Adjust for altivec registers.
+	(HARD_REGNO_MODE_OK): Same.
+	(MODES_TIEABLE_P): Same.
+	(REGISTER_MOVE_COST): Same.
+	(REGNO_REG_CLASS): Same.
+	(reg_class): Add ALTIVEC_REGS.
+	(REG_CLASS_NAMES): Same.
+	(REG_CLASS_CONTENTS): Same.
+	(REG_CLASS_FROM_LETTER): Add 'v' constraint for ALTIVEC_REGS.
+	(ALTIVEC_ARG_RETURN): New.
+	(FUNCTION_VALUE): Handle VECTOR_TYPE.
+	(LIBCALL_VALUE): Handle altivec vector modes.
+	(VECTOR_MODE_SUPPORTED_P): New.
+	(ALTIVEC_ARG_MIN_REG): New.
+	(ALTIVEC_ARG_MAX_REG): New.
+	(ALTIVEC_ARG_NUM_REG): New.
+	(FUNCTION_VALUE_REGNO_P): Return true for altivec return register.
+	(FUNCTION_ARG_REGNO_P): Support passing args in altivec registers.
+	(REGISTER_NAMES): Add altivec regs.
+	(DEBUG_REGISTER_NAMES): Same.
+	(ADDITIONAL_REGISTER_NAMES): Same.
+	(rs6000_builtins): New.
+	(MD_EXPAND_BUILTIN): New.
+	(MD_INIT_BUILTINS): New.
+	(LEGITIMATE_OFFSET_ADDRESS_P): This addressing mode is not valid
+	for AltiVec instructions.
+	(LEGITIMATE_LO_SUM_ADDRESS_P): Same.
+	(HARD_REGNO_MODE_OK): Altivec modes can only go in altivec
+	registers.
+	(SECONDARY_MEMORY_NEEDED): We need memory to copy vector modes.
+	(TARGET_SWITCHES): Add no-altivec.
+	(DATA_ALIGNMENT): Align vectors to 128 bits.
+	(TARGET_OPTIONS): Add abi= option.
+	Add rs6000_abi_string extern.
+	(LOCAL_ALIGNMENT): New.
+	(CPP_CPU_SPEC): Define __ALTIVEC__ when -maltivec.
+	(MASK_ALTIVEC_ABI): New.
+	(TARGET_ALTIVEC_ABI): New.
+	(CONDITIONAL_REGISTER_USAGE): Set first 20 AltiVec registers to
+	call-saved.
+	(STACK_BOUNDARY): Adjust for altivec.
+	(BIGGEST_ALIGNMENT): Same.
+	(rs6000_args): Add vregno.
+	(USE_ALTIVEC_FOR_ARG_P): New.
+	(FIXED_REGISTERS): Add vrsave register.
+	(CALL_USED_REGISTERS): Same.
+	(CONDITIONAL_REGISTER_USAGE): Set VRSAVE info.
+	(VRSAVE_REGNO): New.
+	(reg_class): Add VRSAVE_REGS.
+	(REG_CLASS_NAMES): Same.
+	(REG_CLASS_CONTENTS): Same.
+	(REGNO_REG_CLASS): Same.
+	
+	* config/rs6000/sysv4.h (STACK_BOUNDARY): Adjust for altivec.
+	(ABI_STACK_BOUNDARY): Same.
+	(BIGGEST_ALIGNMENT): Same.
+	(ADJUST_FIELD_ALIGN): Remove undef.  Define anew.
+	(ROUND_TYPE_ALIGN): Same.
+	
+	* config/rs6000/aix.h (ROUND_TYPE_ALIGN): Change BIGGEST_ALIGNMENT
+	to 64.
+
+	* config/rs6000/rs6000.c (rs6000_expand_builtin): New.
+	(altivec_expand_builtin): New.
+	(altivec_init_builtins): New.
+	(TARGET_EXPAND_BUILTIN): New.
+	(TARGET_INIT_BUILTINS): New.
+	(rs6000_init_builtins): New.
+	(struct builtin_description): New.
+	(bdesc_2arg): New.
+	(rs6000_reg_names): Add altivec registers.
+	(alt_reg_names): Same.
+	(secondary_reload_class): Altivec regs can hold altivec regs and
+	memory.
+	(rs6000_emit_move): Force constants into memory for AltiVec moves.
+	(print_operand): Add 'y' case for printing altivec memory
+	operands.
+	(rs6000_legitimize_address): Legitimize vector addresses into
+	[REG+REG] or [REG].
+	(altivec_expand_binop_builtin): New.
+	New string rs6000_current_abi.
+	(rs6000_override_options): Call rs6000_parse_abi_options.
+	(rs6000_parse_abi_options): New.
+	(function_arg_boundary): Vector arguments must be 16
+	byte aligned.
+	(function_arg_advance): Handle vector arguments.
+	(function_arg_partial_nregs): Same.
+	(init_cumulative_args): Same.
+	(function_arg): Same.
+
+	* config/rs6000/rs6000.md (altivec_lvx): New.
+	(type): Add altivec attribute.
+	(movv4si): New.
+	(*movv4si_internal): New.
+	(movv16qi): New.
+	(*movv16qi_internal): New.
+	(movv8hi): New.
+	(*movv8hi_internal1): New.
+	(movv4sf): New.
+	(*movv4sf_internal1): New.
+	(altivec_stvx): New.
+	(vaddubm): New.
+	(vadduhm): New.
+	(vadduwm): New.
+	(vaddfp): New.
+	(vaddcuw): New.
+	(vaddubs): New.
+	(vaddsbs): New.
+	(vadduhs): New.
+	(vaddshs): New.
+	(vadduws): New.
+	(vaddsws): New.
+	(vand): New.
+	(vandc): New.
+	(vavgub): New.
+	(vavgsb): New.
+	(vavguh): New.
+	(vavgsh): New.
+	(vavguw): New.
+	(vavgsw): New.
+	(vcmpbfp): New.
+	(vcmpequb): New.
+	(vcmpequh): New.
+	(vcmpequw): New.
+	(vcmpeqfp): New.
+	(vcmpgefp): New.
+	(vcmpgtub): New.
+	(vcmpgtsb): New.
+	(vcmpgtuh): New.
+	(vcmpgtsh): New.
+	(vcmpgtuw): New.
+	(vcmpgtsw): New.
+	(vcmpgtfp): New.
+	(vcmpgefp): New.
+	(vcmpgtub): New.
+	(vcmpgtsb): New.
+	(vcmpgtuh): New.
+	(vcmpgtsh): New.
+	(vcmpgtuw): New.
+	(vcmpgtsw): New.
+	(vcmpgtfp): New.
+	(vmaxub): New.
+	(vmaxsb): New.
+	(vmaxuh): New.
+	(vmaxsh): New.
+	(vmaxuw): New.
+	(vmaxsw): New.
+	(vmaxfp): New.
+	(vmrghb): New.
+	(vmrghh): New.
+	(vmrghw): New.
+	(vmrglb): New.
+	(vmrglh): New.
+	(vmrglw): New.
+	(vminub): New.
+	(vminsb): New.
+	(vminuh): New.
+	(vminsh): New.
+	(vminuw): New.
+	(vminsw): New.
+	(vminfp): New.
+	(vmuleub): New.
+	(vmulesb): New.
+	(vmuleuh): New.
+	(vmulesh): New.
+	(vmuloub): New.
+	(vmulosb): New.
+	(vmulouh): New.
+	(vmulosh): New.
+	(vnor): New.
+	(vor): New.
+	(vpkuhum): New.
+	(vpkuwum): New.
+	(vpkpx): New.
+	(vpkuhss): New.
+	(vpkshss): New.
+	(vpkuwss): New.
+	(vpkswss): New.
+	(vpkuhus): New.
+	(vpkshus): New.
+	(vpkuwus): New.
+	(vpkswus): New.
+	(vrlb): New.
+	(vrlh): New.
+	(vrlw): New.
+	(vslb): New.
+	(vslh): New.
+	(vslw): New.
+	(vsl): New.
+	(vslo): New.
+	(vsrb): New.
+	(vrsh): New.
+	(vrsw): New.
+	(vsrab): New.
+	(vsrah): New.
+	(vsraw): New.
+	(vsr): New.
+	(vsro): New.
+	(vsububm): New.
+	(vsubuhm): New.
+	(vsubuwm): New.
+	(vsubfp): New.
+	(vsubcuw): New.
+	(vsububs): New.
+	(vsubsbs): New.
+	(vsubuhs): New.
+	(vsubshs): New.
+	(vsubuws): New.
+	(vsubsws): New.
+	(vsum4ubs): New.
+	(vsum4sbs): New.
+	(vsum4shs): New.
+	(vsum2sws): New.
+	(vsumsws): New.
+	(vxor): New.
+
 2001-11-07  Daniel Berlin  <dan@cgsoftware.com>
 
         * Makefile.in (df.o): Add fibheap.h to dependencies.
