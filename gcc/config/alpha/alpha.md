@@ -7301,12 +7301,12 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
     {
       rtx mask = alpha_expand_zap_mask (INTVAL (operands[2]));
 
-      if (operands[1] == const0_rtx)
+      if (mask == const0_rtx)
 	{
 	  emit_move_insn (operands[0], const0_rtx);
 	  DONE;
 	}
-      if (operands[1] == constm1_rtx)
+      if (mask == constm1_rtx)
 	{
 	  emit_move_insn (operands[0], operands[1]);
 	  DONE;
@@ -7394,12 +7394,12 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
     {
       rtx mask = alpha_expand_zap_mask (~ INTVAL (operands[2]));
 
-      if (operands[1] == const0_rtx)
+      if (mask == const0_rtx)
 	{
 	  emit_move_insn (operands[0], const0_rtx);
 	  DONE;
 	}
-      if (operands[1] == constm1_rtx)
+      if (mask == constm1_rtx)
 	{
 	  emit_move_insn (operands[0], operands[1]);
 	  DONE;
