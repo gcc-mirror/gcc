@@ -255,32 +255,7 @@ struct named_label_list GTY(())
 };
 
 #define named_labels cp_function_chain->x_named_labels
-
-/* Nonzero means use the ISO C94 dialect of C.  */
-
-int flag_isoc94;
-
-/* Nonzero means use the ISO C99 dialect of C.  */
-
-int flag_isoc99;
-
-/* Nonzero means we are a hosted implementation for code shared with C.  */
-
-int flag_hosted = 1;
-
-/* Nonzero means add default format_arg attributes for functions not
-   in ISO C.  */
-
-int flag_noniso_default_format_attributes = 1;
-
-/* Nonzero if we want to conserve space in the .o files.  We do this
-   by putting uninitialized data and runtime initialized data into
-   .common instead of .data at the expense of not flagging multiple
-   definitions.  */
-extern int flag_conserve_space;
 
-/* C and C++ flags are in decl2.c.  */
-
 /* The name of the anonymous namespace, throughout this translation
    unit.  */
 tree anonymous_namespace_name;

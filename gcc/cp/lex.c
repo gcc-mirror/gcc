@@ -81,11 +81,6 @@ extern int yychar;		/*  the lookahead symbol		*/
 extern YYSTYPE yylval;		/*  the semantic value of the		*/
 				/*  lookahead symbol			*/
 
-/* These flags are used by c-lex.c.  In C++, they're always off and on,
-   respectively.  */
-int warn_traditional = 0;
-int flag_digraphs = 1;
-
 /* the declaration found for the last IDENTIFIER token read in.  yylex
    must look this up to detect typedefs, which get token type
    tTYPENAME, so it is left around in case the identifier is not a
