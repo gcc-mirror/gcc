@@ -1082,9 +1082,11 @@ synth_module_prologue ()
 
   /* static SEL _OBJC_SELECTOR_TABLE[]; */
 
+  temp_type = build_array_type (selector_type, NULLT);
+  layout_type (temp_type);
   if (! flag_next_runtime)
     UOBJC_SELECTOR_TABLE_decl
-      = create_builtin_decl (VAR_DECL, build_array_type (selector_type, NULLT),
+      = create_builtin_decl (VAR_DECL, temp_type,
 			     "_OBJC_SELECTOR_TABLE");
 
   generate_forward_declaration_to_string_table ();
