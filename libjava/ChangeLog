@@ -1,5 +1,11 @@
 2003-12-02  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/protocol/file/Connection.java
+	(getLastModified): Implement for file connections.
+	(getContentLength): Likewise.
+
+2003-12-02  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/file/Connection.java:
 	Some reformating.
 	(file): Renamed from fileIn.
