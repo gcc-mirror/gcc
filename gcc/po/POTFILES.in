@@ -690,7 +690,6 @@ gsyms.h
 gsyslimits.h
 gthr-dce.h
 gthr-posix.h
-gthr-qt.h
 gthr-single.h
 gthr-solaris.h
 gthr-vxworks.h
@@ -765,8 +764,6 @@ pself2.c
 pself3.c
 pself4.c
 pself5.c
-range.c
-range.h
 real.c
 real.h
 recog.c
@@ -804,7 +801,6 @@ timevar.h
 tlink.c
 toplev.c
 toplev.h
-tradcif.c
 tradcpp.c
 tree.c
 tree.h
