@@ -14049,15 +14049,6 @@ convert (type, expr)
   return error_mark_node;
 }
 
-/* integrate_decl_tree calls this function, but since we don't use the
-   DECL_LANG_SPECIFIC field, this is a no-op.  */
-
-void
-copy_lang_decl (node)
-     tree node UNUSED;
-{
-}
-
 /* Return the list of declarations of the current level.
    Note that this list is in reverse order unless/until
    you nreverse it; and when you do nreverse it, you must

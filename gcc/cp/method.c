@@ -302,7 +302,7 @@ make_thunk (function, delta, vcall_index)
     {
       thunk = build_decl (FUNCTION_DECL, thunk_id, TREE_TYPE (func_decl));
       DECL_LANG_SPECIFIC (thunk) = DECL_LANG_SPECIFIC (func_decl);
-      copy_lang_decl (func_decl);
+      cxx_dup_lang_specific_decl (func_decl);
       SET_DECL_ASSEMBLER_NAME (thunk, thunk_id);
       DECL_CONTEXT (thunk) = DECL_CONTEXT (func_decl);
       TREE_READONLY (thunk) = TREE_READONLY (func_decl);

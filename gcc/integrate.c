@@ -43,6 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "params.h"
 #include "ggc.h"
 #include "target.h"
+#include "langhooks.h"
 
 #include "obstack.h"
 #define	obstack_chunk_alloc	xmalloc
@@ -368,8 +369,7 @@ copy_decl_for_inlining (decl, from_fn, to_fn)
   else
     {
       copy = copy_node (decl);
-      if (DECL_LANG_SPECIFIC (copy))
-	copy_lang_decl (copy);
+      (*lang_hooks.dup_lang_specific_decl) (copy);
 
       /* TREE_ADDRESSABLE isn't used to indicate that a label's
 	 address has been taken; it's for internal bookkeeping in

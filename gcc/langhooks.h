@@ -128,6 +128,10 @@ struct lang_hooks
   /* Hook called by staticp for language-specific tree codes.  */
   int (*staticp) PARAMS ((tree));
 
+  /* Replace the DECL_LANG_SPECIFIC data, which may be NULL, of the
+     DECL_NODE with a newly GC-allocated copy.  */
+  void (*dup_lang_specific_decl) PARAMS ((tree));
+
   /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
   bool honor_readonly;
 

@@ -1543,13 +1543,20 @@ set_block (block)
 /* integrate_decl_tree calls this function. */
 
 void
-copy_lang_decl (node)
+java_dup_lang_specific_decl (node)
      tree node;
 {
-  int lang_decl_size
-    = TREE_CODE (node) == VAR_DECL ? sizeof (struct lang_decl_var)
-    : sizeof (struct lang_decl);
-  struct lang_decl *x = (struct lang_decl *) ggc_alloc (lang_decl_size);
+  int lang_decl_size;
+  struct lang_decl *x;
+
+  if (!DECL_LANG_SPECIFIC (node))
+    return;
+
+  if (TREE_CODE (node) == VAR_DECL)
+    lang_decl_size = sizeof (struct lang_decl_var);
+  else
+    lang_decl_size = sizeof (struct lang_decl);
+  x = (struct lang_decl *) ggc_alloc (lang_decl_size);
   memcpy (x, DECL_LANG_SPECIFIC (node), lang_decl_size);
   DECL_LANG_SPECIFIC (node) = x;
 }

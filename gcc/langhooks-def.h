@@ -38,6 +38,7 @@ extern HOST_WIDE_INT hook_get_alias_set_0	PARAMS ((tree));
 /* See langhooks.h for the definition and documentation of each hook.  */
 
 extern void lhd_do_nothing PARAMS ((void));
+extern void lhd_do_nothing_t PARAMS ((tree));
 extern int lhd_decode_option PARAMS ((int, char **));
 extern HOST_WIDE_INT lhd_get_alias_set PARAMS ((tree));
 extern tree lhd_return_tree PARAMS ((tree));
@@ -75,6 +76,7 @@ void lhd_tree_inlining_end_inlining		PARAMS ((tree));
 #define LANG_HOOKS_EXPAND_CONSTANT	lhd_return_tree
 #define LANG_HOOKS_SAFE_FROM_P		lhd_safe_from_p
 #define LANG_HOOKS_STATICP		lhd_staticp
+#define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL lhd_do_nothing_t
 #define LANG_HOOKS_HONOR_READONLY	false
 #define LANG_HOOKS_PRINT_STATISTICS	lhd_do_nothing
 #define LANG_HOOKS_PRINT_XNODE		lhd_print_tree_nothing
@@ -143,6 +145,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_EXPAND_CONSTANT, \
   LANG_HOOKS_SAFE_FROM_P, \
   LANG_HOOKS_STATICP, \
+  LANG_HOOKS_DUP_LANG_SPECIFIC_DECL, \
   LANG_HOOKS_HONOR_READONLY, \
   LANG_HOOKS_PRINT_STATISTICS, \
   LANG_HOOKS_PRINT_XNODE, \

@@ -46,6 +46,8 @@ static void objc_post_options                   PARAMS ((void));
 #define LANG_HOOKS_POST_OPTIONS objc_post_options
 #undef LANG_HOOKS_STATICP
 #define LANG_HOOKS_STATICP c_staticp
+#undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL
+#define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL c_dup_lang_specific_decl
 #undef LANG_HOOKS_PRINT_IDENTIFIER
 #define LANG_HOOKS_PRINT_IDENTIFIER c_print_identifier
 #undef LANG_HOOKS_SET_YYDEBUG

@@ -7200,10 +7200,10 @@ mark_c_function_context (f)
   mark_binding_level (&p->binding_level);
 }
 
-/* Copy the DECL_LANG_SPECIFIC data associated with NODE.  */
+/* Copy the DECL_LANG_SPECIFIC data associated with DECL.  */
 
 void
-copy_lang_decl (decl)
+c_dup_lang_specific_decl (decl)
      tree decl;
 {
   struct lang_decl *ld;
