@@ -1,3 +1,10 @@
+2001-12-02  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/xcoff.h (ASM_OUTPUT_INTERNAL_LABEL): Display count
+	unsigned.
+	(ASM_GENERATE_INTERNAL_LABEL): Same.
+	(UNIQUE_SECTION): Fix typo.
+
 2001-12-02  Richard Henderson  <rth@redhat.com>
 
 	* c-decl.c (duplicate_decls): Conditionalize DECL_SAVED_TREE copy.
@@ -234,7 +241,7 @@ objc:
 	strchr, strrchr, isascii, gettimeofday.
 	* config.in, configure: Regenerate.
 
-2001-11-30  Zoltan Hidvegi <hzoli@hzoli.2y.net>
+2001-11-30  Zoltan Hidvegi  <hzoli@hzoli.2y.net>
 
 	* unroll.c (unroll_loop): Correct special exit cases.
 

@@ -393,7 +393,7 @@ toc_section ()						\
    PREFIX is the class of label and NUM is the number within the class.  */
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
-  fprintf (FILE, "%s..%d:\n", PREFIX, NUM)
+  fprintf (FILE, "%s..%u:\n", (PREFIX), (unsigned) (NUM))
 
 /* This is how to output an internal label prefix.  rs6000.c uses this
    when generating traceback tables.  */
@@ -414,7 +414,7 @@ toc_section ()						\
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s..%ld", (PREFIX), (long)(NUM))
+  sprintf (LABEL, "*%s..%u", (PREFIX), (unsigned) (NUM))
 
 /* This is how to output an assembler line to define N characters starting
    at P to FILE.  */
@@ -484,7 +484,7 @@ toc_section ()						\
     if (TREE_CODE (DECL) == FUNCTION_DECL) {		\
       name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL)); \
       len = strlen (name) + 5;				\
-      string = alloca (len) + 1;			\
+      string = alloca (len + 1);			\
       sprintf (string, ".%s[PR]", name);		\
       DECL_SECTION_NAME (DECL) = build_string (len, string); \
     }							\
