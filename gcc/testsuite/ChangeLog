@@ -1,3 +1,7 @@
+2004-01-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/eh/simd-1.c: Ajust line number for dg-error line.
+
 2004-01-09  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/rs6000-ldouble-1.c: New.
@@ -20045,3 +20049,4 @@ rlsruhe.de>
 	correspond to c-torture	1.11.
 
 	* New file.
+
