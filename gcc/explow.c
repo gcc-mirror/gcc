@@ -1261,7 +1261,7 @@ allocate_dynamic_stack_space (size, target, known_align)
       if (insn_operand_predicate[(int) CODE_FOR_allocate_stack][0]
 	  && ! ((*insn_operand_predicate[(int) CODE_FOR_allocate_stack][0])
 		(target, Pmode)))
-	target = copy_to_mode_reg (Pmode, target);
+	target = convert_to_mode (Pmode, target, 1);
       size = convert_modes (mode, ptr_mode, size, 1);
       if (insn_operand_predicate[(int) CODE_FOR_allocate_stack][1]
 	  && ! ((*insn_operand_predicate[(int) CODE_FOR_allocate_stack][1])
