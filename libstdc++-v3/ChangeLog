@@ -1,9 +1,12 @@
+2001-10-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h (__timepunct::_M_put_helper):
+	Declare specializations for char, wchar_t.
+
 2001-10-19  Andreas Jaeger  <aj@suse.de>
 
 	* config/cpu/x86-64/bits/limits.h: New file.
-
 	* config/cpu/x86-64/bits/atomicity.h: New file.
-
 	* configure.target: Add x86-64.
 
 2001-10-17  Phil Edwards  <pme@gcc.gnu.org>
