@@ -1,5 +1,10 @@
 2001-10-23  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/i386/i386.c (override_options): Default to minimum
+	stack alignment when optimizing for code size.
+	* doc/invoke.texi (-mpreferred-stack-boundary): Document the
+	change.
+
 	* config/i386/i386.c (override_options): Set upper limit of
 	-mpreferred-stack-boundary to 12.
 
