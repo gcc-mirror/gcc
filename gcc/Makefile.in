@@ -422,10 +422,6 @@ LIB2FUNCS_EXTRA =
 # Assembler files should have names ending in `.asm'.
 LIB2FUNCS_STATIC_EXTRA =
 
-# Handle cpp installation.
-INSTALL_CPP=
-UNINSTALL_CPP=
-
 # We do not try to build float.h anymore.  Let configure select the
 # appropriate pre-built float.h file for the target.
 FLOAT_H=@float_h_file@
@@ -2567,7 +2563,7 @@ maintainer-clean:
 # Install the driver last so that the window when things are
 # broken is small.
 install: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
-    $(INSTALL_CPP) install-man install-info intl.install install-@POSUB@ \
+    install-cpp install-man install-info intl.install install-@POSUB@ \
     lang.install-normal install-driver
 
 # Handle cpp installation.
@@ -2587,14 +2583,6 @@ install-cpp: cpp$(exeext)
 	    $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
 	  else true; fi; \
 	fi
-
-uninstall-cpp:
-	-rm -f $(bindir)/$(CPP_INSTALL_NAME)$(exeext)
-	-rm -f $(bindir)/$(CPP_CROSS_NAME)$(exeext)
-	-if [ x$(cpp_install_dir) != x ]; then \
-	  rm -f $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
-	  rm -f $(prefix)/$(cpp_install_dir)/$(CPP_CROSS_NAME)$(exeext); \
-	else true; fi
 
 # Create the installation directories.
 installdirs:
@@ -2891,10 +2879,16 @@ install-collect2: collect2 installdirs
 	$(INSTALL_PROGRAM) xgcc$(exeext) $(libsubdir)/gcc$(exeext)
 
 # Cancel installation by deleting the installed files.
-uninstall: intl.uninstall lang.uninstall $(UNINSTALL_CPP)
+uninstall: intl.uninstall lang.uninstall
 	-rm -rf $(libsubdir)
 	-rm -rf $(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-rm -rf $(bindir)/$(GCC_CROSS_NAME)$(exeext)
+	-rm -f $(bindir)/$(CPP_INSTALL_NAME)$(exeext)
+	-rm -f $(bindir)/$(CPP_CROSS_NAME)$(exeext)
+	-if [ x$(cpp_install_dir) != x ]; then \
+	  rm -f $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  rm -f $(prefix)/$(cpp_install_dir)/$(CPP_CROSS_NAME)$(exeext); \
+	else true; fi
 	-rm -rf $(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext)
 	-rm -rf $(bindir)/$(PROTOIZE_CROSS_NAME)$(exeext)
 	-rm -rf $(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext)
