@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.32 $"
+version="$Revision: 1.33 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -457,7 +457,7 @@ case "${fatal}" in
 					fi
 					;;
 				esac
-				echo "Configuring for a ${host_alias} host." 1>&2
+				echo "Configuring for a ${host_alias} host."
 				arguments="--host=$host_alias $arguments"
 			else
 				echo 'Config.guess failed to determine the host type.  You need to specify one.' 1>&2
