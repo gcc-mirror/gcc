@@ -119,7 +119,6 @@ extern "Java"
       class Error;
       class Exception;
       class ExceptionInInitializerError;
-      class FirstThread;
       class Float;
       class IllegalAccessError;
       class IllegalAccessException;

@@ -1,3 +1,20 @@
+2000-03-08  Anthony Green  <green@redhat.com>
+
+	* gcj/javaprims.h ("Java"): Remove FirstThread.
+
+	* configure.host: Fix __NO_MATH_INLNES botch.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Move natFirstThread.cc.
+	(gnu/gcj/runtime/FirstThread.h): Moved.
+	(ordinary_java_source_files): Move FirstThread.java.
+	* prims.cc: Deal with FirstThread movement.
+	(JvRunMain): Ditto.
+	(_Jv_RunMain): Ditto.
+
+	* gnu/gcj/runtime/FirstThread.java: Moved from java/lang.
+	* gnu/gcj/runtime/natFirstThread.cc: Ditto.
+
 2000-03-05  Warren Levy  <warrenl@cygnus.com>
 
 	* java/net/DatagramSocket.java(DatagramSocket(int,InetAddress)):
