@@ -15,7 +15,10 @@ AC_ARG_WITH(target-subdir,
 AC_ARG_WITH(cross-host,
 [  --with-cross-host=HOST  configuring with a cross compiler])
 
+# Runs configure.host and configure.target. Have to run this before
+# the GLIBCPP_ENABLE_* macros below.
 GLIBCPP_CONFIGURE(.)
+
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
 AC_SUBST(enable_shared)
@@ -279,9 +282,3 @@ if test ! -f stamp-sanity-warned; then
   echo "before proceeding with ${_cv_gnu_make_command}."
   echo ""
 fi
-
-
-
-
-
-
