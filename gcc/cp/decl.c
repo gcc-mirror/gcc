@@ -5534,7 +5534,7 @@ bad_specifiers (tree object,
     error ("%qD declared as an %<inline%> %s", object, type);
   if (quals)
     error ("%<const%> and %<volatile%> function specifiers on "
-           "q%D invalid in %s declaration",
+           "%qD invalid in %s declaration",
            object, type);
   if (friendp)
     cp_error_at ("%qD declared as a friend", object);
