@@ -1,3 +1,11 @@
+1999-08-21  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* java/lang/natSystem.cc (getpwuid_adaptor): New overloaded
+	function that detects the signature of getpwuid_r.
+	(init_properties): Use it.
+	* java/util/natDate.cc (ctime_adaptor): Likewise for ctime_r.
+	(toString): Use it.
+
 1999-08-20  Kresten Krab Thorup  <krab@samam.daimi.au.dk>
 
 	* interpret.cc (continue1): Implement explicit dispatch table.
