@@ -1,3 +1,12 @@
+2002-10-28  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* testsuite/thread/pthread1.cc: Enable on *-*-netbsd*.
+	* testsuite/thread/pthread2.cc: Likewise.
+	* testsuite/thread/pthread3.cc: Likewise.
+	* testsuite/thread/pthread4.cc: Likewise.
+	* testsuite/thread/pthread5.cc: Likewise.
+	* testsuite/thread/pthread6.cc: Likewise.
+
 2002-10-27  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/8347
