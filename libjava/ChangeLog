@@ -1,3 +1,7 @@
+1999-07-19  Tom Tromey  <tromey@cygnus.com>
+
+	* include/stamp-h.in: New file.
+
 1999-07-12  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/mprec.h: Protect definition of uint32_t with #ifndef
