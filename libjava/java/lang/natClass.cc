@@ -981,14 +981,14 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
 {
   if (source == target)
     return true;
-     
+
   // If target is array, so must source be.  
-  if (target->isArray ())
+  while (target->isArray ())
     {
       if (! source->isArray())
 	return false;
-      return _Jv_IsAssignableFrom(target->getComponentType(), 
-                                  source->getComponentType());
+      target = target->getComponentType();
+      source = source->getComponentType();
     }
 
   if (target->isInterface())
@@ -998,7 +998,7 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
       if (__builtin_expect 
           (source->idt == NULL || source->isInterface(), false))
         return _Jv_InterfaceAssignableFrom (target, source);
-	
+
       _Jv_IDispatchTable *cl_idt = source->idt;
       _Jv_IDispatchTable *if_idt = target->idt;
 
@@ -1014,23 +1014,31 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
 	}
       return false;
     }
-     
+
   // Primitive TYPE classes are only assignable to themselves.
-  if (__builtin_expect (target->isPrimitive(), false))
+  if (__builtin_expect (target->isPrimitive() || source->isPrimitive(), false))
     return false;
-    
+
   if (target == &java::lang::Object::class$)
+    return true;
+  else if (source->ancestors == NULL || target->ancestors == NULL)
     {
-      if (source->isPrimitive())
-        return false;
-      return true;
+      // We need this case when either SOURCE or TARGET has not has
+      // its constant-time tables prepared.
+
+      // At this point we know that TARGET can't be Object, so it is
+      // safe to use that as the termination point.
+      while (source && source != &java::lang::Object::class$)
+	{
+	  if (source == target)
+	    return true;
+	  source = source->getSuperclass();
+	}
     }
-  else if (source->ancestors != NULL
-	   && target->ancestors != NULL
-	   && source->depth >= target->depth
+  else if (source->depth >= target->depth
 	   && source->ancestors[source->depth - target->depth] == target)
     return true;
-      
+
   return false;
 }
 
@@ -1373,7 +1381,7 @@ _Jv_AppendPartialITable (jclass klass, jclass iface, void **itable,
 }
 
 static _Jv_Mutex_t iindex_mutex;
-bool iindex_mutex_initialized = false;
+static bool iindex_mutex_initialized = false;
 
 // We need to find the correct offset in the Class Interface Dispatch 
 // Table for a given interface. Once we have that, invoking an interface 
