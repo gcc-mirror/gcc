@@ -1193,7 +1193,6 @@ reload (first, global, dumpfile)
 		      new_basic_block_needs = 1;
 		    }
 
-
 		  mode = reload_inmode[i];
 		  if (GET_MODE_SIZE (reload_outmode[i]) > GET_MODE_SIZE (mode))
 		    mode = reload_outmode[i];
@@ -1326,10 +1325,9 @@ reload (first, global, dumpfile)
 			   k < reload_n_operands; k++)
 			{
 			  in_max
-			    = MAX (in_max, insn_needs.in_addr[k].regs[j][i]);
-			  in_max
 			    = MAX (in_max,
-				   insn_needs.in_addr_addr[k].regs[j][i]);
+				   (insn_needs.in_addr[k].regs[j][i]
+				    + insn_needs.in_addr_addr[k].regs[j][i]));
 			  out_max
 			    = MAX (out_max, insn_needs.out_addr[k].regs[j][i]);
 			  out_max
@@ -5437,12 +5435,14 @@ choose_reload_regs (insn, avoid_return_reg)
 	  register int r = reload_order[j];
 
 	  /* Ignore reloads that got marked inoperative.  */
-	  if (reload_out[r] == 0 && reload_in[r] == 0 && ! reload_secondary_p[r])
+	  if (reload_out[r] == 0 && reload_in[r] == 0
+	      && ! reload_secondary_p[r])
 	    continue;
 
 	  /* If find_reloads chose a to use reload_in or reload_out as a reload
-	     register, we don't need to chose one.  Otherwise, try even if it found
-	     one since we might save an insn if we find the value lying around.  */
+	     register, we don't need to chose one.  Otherwise, try even if it
+	     found one since we might save an insn if we find the value lying
+	     around.  */
 	  if (reload_in[r] != 0 && reload_reg_rtx[r] != 0
 	      && (rtx_equal_p (reload_in[r], reload_reg_rtx[r])
 		  || rtx_equal_p (reload_out[r], reload_reg_rtx[r])))
@@ -5474,9 +5474,9 @@ choose_reload_regs (insn, avoid_return_reg)
 	     an object that is already in a register of the desired class.
 	     This would avoid the need for the secondary reload register.
 	     But this is complex because we can't easily determine what
-	     objects might want to be loaded via this reload.  So let a register
-	     be allocated here.  In `emit_reload_insns' we suppress one of the
-	     loads in the case described above.  */
+	     objects might want to be loaded via this reload.  So let a
+	     register be allocated here.  In `emit_reload_insns' we suppress
+	     one of the loads in the case described above.  */
 
 	  if (inheritance)
 	    {
