@@ -55,7 +55,7 @@ then os=`echo $1 | sed 's/.*-/-/'`
 else os=; fi
 
 # Lets recognize common machines as not being OS so that things like
-# config.subr decstation-3100 as legal.
+# config.subr decstation-3100 work.
 case $os in
 	-dec* | -mips* | -sequent* | -encore* | -pc532* | -sgi* | -sony* | \
 	-att* | -7300* | -3300* | -delta* | -motorola* | -sun[234]* | \
@@ -81,7 +81,7 @@ case $basic_machine in
 	# Recognize the basic CPU types with without company name.
 	# Some are omitted here because they have special meanings below.
 	tahoe | i[34]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
-		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 | we32)
+		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 | we32k)
 		basic_machine=$basic_machine-unknown
 		;;
 	# Recognize the basic CPU types with with company name.
@@ -89,7 +89,7 @@ case $basic_machine in
 	      | sparc-* | ns32k-* | fx80-* | arm-* | c[123]* \
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
-	      | hppa1.0-* | hppa1.1-* | we32-*)
+	      | hppa1.0-* | hppa1.1-* | we32k-*)
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
@@ -186,7 +186,7 @@ case $basic_machine in
 		basic_machine=m68000-att
 		;;
 	3b*)
-		basic_machine=we32-att
+		basic_machine=we32k-att
 		;;
 	delta | 3300 | motorola-3300 | motorola-delta \
 	      | 3300-motorola | delta-motorola)
@@ -248,6 +248,9 @@ case $basic_machine in
 	ps2)
 		basic_machine=i386-ibm
 		;;
+	fx2800)
+		basic_machine=i860-alliant
+		;;
 	next)
 		basic_machine=m68k-next
 		os=-bsd
@@ -288,7 +291,7 @@ case $basic_machine in
 		basic_machine=mips-sony
 		os=-newsos
 		;;
-	decstation-dec | decstation | decstation-3100 | pmax | pmin | dec3100 | decstatn)
+	decstation | decstation-3100 | pmax | pmin | dec3100 | decstatn)
 		basic_machine=mips-dec
 		;;
 	magnum | m3230)
@@ -417,11 +420,11 @@ case $basic_machine in
 	vax)
 		basic_machine=vax-dec
 		;;
+	we32k)
+		basic_machine=we32k-att
+		;;
 	sparc)
 		basic_machine=sparc-sun
-		;;
-	fx2800)
-		basic_machine=i860-alliant
 		;;
 	*)
 		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
