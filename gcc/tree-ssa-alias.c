@@ -387,9 +387,9 @@ delete_alias_info (struct alias_info *ai)
 {
   size_t i;
 
-  BITMAP_FREE (ai->ssa_names_visited);
+  BITMAP_XFREE (ai->ssa_names_visited);
   ai->processed_ptrs = NULL;
-  BITMAP_FREE (ai->addresses_needed);
+  BITMAP_XFREE (ai->addresses_needed);
 
   for (i = 0; i < ai->num_addressable_vars; i++)
     {
@@ -406,9 +406,9 @@ delete_alias_info (struct alias_info *ai)
   free (ai->pointers);
 
   ai->num_references = NULL;
-  BITMAP_FREE (ai->written_vars);
-  BITMAP_FREE (ai->dereferenced_ptrs_store);
-  BITMAP_FREE (ai->dereferenced_ptrs_load);
+  BITMAP_XFREE (ai->written_vars);
+  BITMAP_XFREE (ai->dereferenced_ptrs_store);
+  BITMAP_XFREE (ai->dereferenced_ptrs_load);
 
   free (ai);
 }
