@@ -22,7 +22,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef MAKING_DEPENDENCIES
 #ifndef _J_f_output
 #define _J_f_output
-#include "gansidecl.h"
 #include "output.h"
 #endif
 #endif

@@ -46,7 +46,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-#include "gansidecl.h"
 #include <f/version.h>
 
 #ifndef MATH_LIBRARY
