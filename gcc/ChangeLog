@@ -1,3 +1,17 @@
+2002-07-09  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.h: #include location.h
+	(location_t): Move definition to..
+	* location.h: ... here.  New file.
+	* tree.h: #include location.h
+	(DECL_SOURCE_LOCATION): New macro.
+	(DECL_SOURCE_FILE): Use.
+	(DECL_SOURCE_LINE): Likewise.
+	(struct tree_decl): REplace filename and linenum with locus.
+	* Makefile.in (TREE_H): add location.h
+	(diagnostic.o): Depends on gt-location.h
+	(gt-location.h): Depends on s-gtype
+
 2002-07-09  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* config/rs6000/aix.h: Convert CPP_PREDEFINES to

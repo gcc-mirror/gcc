@@ -23,6 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GCC_DIAGNOSTIC_H
 
 #include "obstack.h"
+#include "location.h"
 
 /* The type of a text to be formatted according a format specification
    along with a list of things.  */
@@ -40,16 +41,6 @@ typedef enum
 #undef DEFINE_DIAGNOSTIC_KIND
   DK_LAST_DIAGNOSTIC_KIND
 } diagnostic_t;
-
-/* The data structure used to record the location of a diagnostic.  */
-typedef struct
-{
-  /* The name of the source file involved in the diagnostic.  */     
-  const char *file;
-
-  /* The line-location in the source file.  */
-  int line;
-} location_t;
 
 /* A diagnostic is described by the MESSAGE to send, the FILE and LINE of
    its context and its KIND (ice, error, warning, note, ...)  See complete
