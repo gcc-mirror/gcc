@@ -1567,16 +1567,6 @@ convert_arguments (typelist, values, name, fundecl)
 	    }
 	  else
 	    {
-#ifdef PROMOTE_PROTOTYPES
-	      /* Rather than truncating and then reextending,
-		 convert directly to int, if that's the type we will want.  */
-	      if (! flag_traditional
-		  && (TREE_CODE (type) == INTEGER_TYPE
-		      || TREE_CODE (type) == ENUMERAL_TYPE)
-		  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
-		type = integer_type_node;
-#endif
-
 #if 0 /* This turns out not to win--there's no way to write a prototype
 	 for a function whose arg type is a union with no tag.  */
 	      /* Nameless union automatically casts the types it contains.  */
