@@ -18,12 +18,4 @@ foo ("\
 ",
 NULL);
 
-/*
-   { dg-final { if ![file exists 990228-1.i] { return }			} }
-   { dg-final { set tmp [grep 990228-1.i ".#"]				} }
-   { dg-final { if { [string length $tmp] == 0 } \{			} }
-   { dg-final {     pass "990228-1.c: linemarkers in middle of line"	} }
-   { dg-final { \} else \{						} }
-   { dg-final {     fail "990228-1.c: linemarkers in middle of line"    } }
-   { dg-final { \}							} }
- */
+/* { dg-final { scan-file-not 19990228-1.i "\[^\\n\]#" } } */

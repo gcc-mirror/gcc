@@ -10,8 +10,4 @@
 
 def(x,y)
 
-/*
-   { dg-final { if ![file exists maccom3.i] { return }                     } }
-   { dg-final { if { [grep maccom3.i "^passed"] != "" } { return }         } }
-   { dg-final { fail "maccom3.c: comment in macro parameter list with -CC" } }
-*/
+/* { dg-final { scan-file maccom3.i "(^|\n)passed" } } */

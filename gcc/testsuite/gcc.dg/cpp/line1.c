@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation.
+/* Copyright (C) 2000, 2003  Free Software Foundation.
 
    by Alexandre Oliva  <oliva@lsd.ic.unicamp.br>  */
 
@@ -9,10 +9,4 @@
 #line 10 "baz"
 wibble
 
-/*
-  { dg-final { if \{ [grep line1.i baz] != "" \} \{ } }
-  { dg-final {   pass "line1.i: #line directive optimization" } }
-  { dg-final { \} else \{ } }
-  { dg-final {   fail "line1.i: #line directive optimization" } }
-  { dg-final { \} } }
-*/
+/* { dg-final { scan-file line1.i baz } } */

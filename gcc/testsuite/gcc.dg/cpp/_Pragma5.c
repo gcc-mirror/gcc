@@ -7,8 +7,4 @@
 #define GAMMA(C) _Pragma("moose") ALPHA(C) BETA(C)
 GAMMA(baz);
 
-/*
-   { dg-final { if ![file exists _Pragma5.i] { return }                   } }
-   { dg-final { if { [grep _Pragma5.i "alpha_baz beta_baz;"] != "" } { return }  } }
-   { dg-final { fail "_Pragma5.c: _Pragma in macro"                       } }
-*/
+/* { dg-final { scan-file "_Pragma5.i" "alpha_baz beta_baz;" } } */

@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 Free Software Foundation, Inc.  */
+/* Copyright (C) 2001, 2003 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
 
@@ -26,10 +26,5 @@ We used to get a space at the start of the line.  */
 f(:,) 
 g(2, 2)
 
-/*
-   { dg-final { if ![file exists avoidpaste2.i] { return }                } }
-   { dg-final { if { [grep avoidpaste2.i "^: : : - > - >"] != "" } \{     } }
-   { dg-final { if { [grep avoidpaste2.i "^:2: :22 22:"] != "" }   \{     } }
-   { dg-final { return \} \}                                              } }
-   { dg-final { fail "avoidpaste2.c: paste avoidance"                     } }
-*/
+/* { dg-final { scan-file avoidpaste2.i "(^|\\n): : : - > - >" } } 
+   { dg-final { scan-file avoidpaste2.i "(^|\\n):2: :22 22:" } } */

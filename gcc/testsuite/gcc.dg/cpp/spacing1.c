@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.  */
+/* Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
 
@@ -43,13 +43,8 @@ f (g) str
 ) f
 (bam) baz
 
-/*
-   { dg-final { if ![file exists spacing1.i] { return }                   } }
-   { dg-final { if \{ [grep spacing1.i " 44 ;"] != "" \}              \{  } }
-   { dg-final { if \{ [grep spacing1.i "B Q B Q A Q A:"] != "" \}     \{  } }
-   { dg-final { if \{ [grep spacing1.i "f.*bar"] == "" \} \{              } }
-   { dg-final { if \{ [grep spacing1.i "^bar"] != "" \}   \{              } }
-   { dg-final { if \{ [grep spacing1.i "g \"1 2\" bam baz"] != "" \} \{   } }
-   { dg-final { return \} \} \} \} \}                                     } }
-   { dg-final { fail "spacing1.c: spacing and new-line preservation"      } }
-*/
+/* { dg-final { scan-file spacing1.i " 44 ;" } }
+   { dg-final { scan-file spacing1.i "B Q B Q A Q A:" } }
+   { dg-final { scan-file-not spacing1.i "f\[^\n\]*bar" } }
+   { dg-final { scan-file spacing1.i "(^|\n)bar" } }
+   { dg-final { scan-file spacing1.i "g \"1 2\" bam baz" } } */

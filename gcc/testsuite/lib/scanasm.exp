@@ -1,4 +1,4 @@
-#   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+#   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,18 +18,25 @@
 # g++-dg.exp.
 
 # Utility for scanning compiler result, invoked via dg-final.
-# Call pass if pattern is present, otherwise fail.
-proc scan-assembler { args } {
-    if { [llength $args] < 1 } {
-	error "scan-assembler: too few arguments"
+
+# Scan the OUTPUT_FILE for a pattern.  If it is present and POSITIVE
+# is non-zero, or it is not present and POSITIVE is zero, the test
+# passes.  The ORIG_ARGS is the list of arguments provided by dg-final
+# to scan-assembler.  The first element in ORIG_ARGS is the regular
+# expression to look for in the file.  The second element, if present,
+# is a DejaGNU target selector.
+
+proc dg-scan { name positive testcase output_file orig_args } {
+    if { [llength $orig_args] < 1 } {
+	error "$name: too few arguments"
         return
     }
-    if { [llength $args] > 2 } {
-	error "scan-assembler: too many arguments"
+    if { [llength $orig_args] > 2 } {
+	error "$name: too many arguments"
 	return
     }
-    if { [llength $args] >= 2 } {
-	switch [dg-process-target [lindex $args 1]] {
+    if { [llength $orig_args] >= 2 } {
+	switch [dg-process-target [lindex $orig_args 1]] {
 	    "S" { }
 	    "N" { return }
 	    "F" { setup_xfail "*-*-*" }
@@ -37,23 +44,51 @@ proc scan-assembler { args } {
 	}
     }
 
-    # This assumes that we are two frames down from dg-test, and that
-    # it still stores the filename of the testcase in a local variable "name".
-    # A cleaner solution would require a new dejagnu release.
-    upvar 2 name testcase
-
-    # This must match the rule in gcc-dg.exp.
-    set output_file "[file rootname [file tail $testcase]].s"
-
     set fd [open $output_file r]
     set text [read $fd]
     close $fd
 
-    if [regexp -- [lindex $args 0] $text] {
-	pass "$testcase scan-assembler [lindex $args 0]"
+    set match [regexp -- [lindex $orig_args 0] $text]
+    if { $match == $positive } {
+	pass "$testcase $name [lindex $orig_args 0]"
     } else {
-	fail "$testcase scan-assembler [lindex $args 0]"
+	fail "$testcase $name [lindex $orig_args 0]"
     }
+}
+
+# Look for a pattern in the .s file produced by the compiler.  See
+# dg-scan for details.
+
+proc scan-assembler { args } {
+    upvar 2 name testcase
+    set output_file "[file rootname [file tail $testcase]].s"
+
+    dg-scan "scan-assembler" 1 $testcase $output_file $args
+}
+
+# Check that a pattern is not present in the .s file produced by the
+# compiler.  See dg-scan for details.
+
+proc scan-assembler-not { args } {
+    upvar 2 name testcase
+    set output_file "[file rootname [file tail $testcase]].s"
+
+    dg-scan "scan-assembler-not" 0 $testcase $output_file $args
+}
+
+# Look for a pattern in OUTPUT_FILE.  See dg-scan for details.
+
+proc scan-file { output_file args } {
+    upvar 2 name testcase
+    dg-scan "scan-file" 1 $testcase $output_file $args
+}
+
+# Check that a pattern is not present in the OUTPUT_FILE.  See dg-scan
+# for details.
+
+proc scan-file-not { output_file args } {
+    upvar 2 name testcase
+    dg-scan "scan-file-not" 0 $testcase $output_file $args
 }
 
 # Call pass if pattern is present given number of times, otherwise fail.
@@ -91,39 +126,6 @@ proc scan-assembler-times { args } {
 	pass "$testcase scan-assembler-times [lindex $args 0] [lindex $args 1]"
     } else {
 	fail "$testcase scan-assembler-times [lindex $args 0] [lindex $args 1]"
-    }
-}
-
-# Call pass if pattern is not present, otherwise fail.
-proc scan-assembler-not { args } {
-    if { [llength $args] < 1 } {
-	error "scan-assembler-not: too few arguments"
-        return
-    }
-    if { [llength $args] > 2 } {
-	error "scan-assembler-not: too many arguments"
-	return
-    }
-    if { [llength $args] >= 2 } {
-	switch [dg-process-target [lindex $args 1]] {
-	    "S" { }
-	    "N" { return }
-	    "F" { setup_xfail "*-*-*" }
-	    "P" { }
-	}
-    }
-
-    upvar 2 name testcase
-    set output_file "[file rootname [file tail $testcase]].s"
-
-    set fd [open $output_file r]
-    set text [read $fd]
-    close $fd
-
-    if ![regexp -- [lindex $args 0] $text] {
-	pass "$testcase scan-assembler-not [lindex $args 0]"
-    } else {
-	fail "$testcase scan-assembler-not [lindex $args 0]"
     }
 }
 
