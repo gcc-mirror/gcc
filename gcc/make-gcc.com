@@ -8,7 +8,7 @@ $!
 $!
 $! First, build the preprocessor.
 $!
-$ @make-cccp
+$ @make-cccp.com 'p1' 'p2'
 $!
 $! To build the GNU C++ compiler in addition to the GNU CC compiler, comment
 $! out the `@make-cc1' line, and uncomment the `@make-cc1 cc1 cc1plus' line.
@@ -16,7 +16,7 @@ $! To also build Objective-C, add "cc1obj" to the list.
 $!
 $! See the file make-cc1.com for a complete list of options.
 $!
-$ @make-cc1
+$ @make-cc1.com  'p1' 'p2' 'p3' 'p4' 'p5' 'p6' 'p7' 'p8'
 $! @make-cc1 cc1 cc1plus
 $!
 $!
@@ -28,5 +28,5 @@ $! these same routines with different module names.
 $!
 $! Now build gcclib2.olb
 $!
-$ @make-l2
+$ @make-l2.com
 $!
