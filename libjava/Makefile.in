@@ -160,6 +160,8 @@ INCLUDES = -Iinclude -I$(top_srcdir)/include $(GCINCS) $(THREADINCS) \
 	$(EH_COMMON_INCLUDE) $(ZINCS)
 
 
+DIVIDESPEC = @DIVIDESPEC@
+
 nat_files = $(nat_source_files:.cc=.lo)
 c_files = $(c_source_files:.c=.lo)
 javao_files = $(java_source_files:.java=.lo) \

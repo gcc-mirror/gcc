@@ -167,6 +167,9 @@ LIBGCJ_JAVAFLAGS="[$]{libgcj_javaflags}"
 AC_SUBST(LIBGCJ_CFLAGS)
 AC_SUBST(LIBGCJ_CXXFLAGS)
 AC_SUBST(LIBGCJ_JAVAFLAGS)
+
+AC_SUBST(DIVIDESPEC)
+
 ])dnl
 
 # Do all the work for Automake.  This macro actually does too much --

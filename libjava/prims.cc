@@ -64,8 +64,9 @@ SIGNAL_HANDLER (catch_segv)
 }
 #endif
 
-#ifdef HANDLE_FPE
 static java::lang::ArithmeticException *arithexception;
+
+#ifdef HANDLE_FPE
 SIGNAL_HANDLER (catch_fpe)
 {
 #ifdef HANDLE_DIVIDE_OVERFLOW
@@ -574,7 +575,12 @@ void
 JvRunMain (jclass klass, int argc, const char **argv)
 {
   INIT_SEGV;
+#ifdef HANDLE_FPE
   INIT_FPE;
+#else
+  arithexception = new java::lang::ArithmeticException
+    (JvNewStringLatin1 ("/ by zero"));
+#endif
 
   no_memory = new java::lang::OutOfMemoryError;
 
@@ -610,3 +616,59 @@ _Jv_Free (void* ptr)
 {
   return free (ptr);
 }
+
+
+
+// In theory, these routines can be #ifdef'd away on machines which
+// support divide overflow signals.  However, we never know if some
+// code might have been compiled with "-fuse-divide-subroutine", so we
+// always include them in libgcj.
+
+jint
+_Jv_divI (jint dividend, jint divisor)
+{
+  if (divisor == 0)
+    _Jv_Throw (arithexception);
+  
+  if (dividend == 0x80000000L && divisor == -1)
+    return dividend;
+
+  return dividend / divisor;
+}
+
+jint
+_Jv_remI (jint dividend, jint divisor)
+{
+  if (divisor == 0)
+    _Jv_Throw (arithexception);
+  
+  if (dividend == 0x80000000L && divisor == -1)
+    return 0;
+
+  return dividend % divisor;
+}
+
+jlong
+_Jv_divJ (jlong dividend, jlong divisor)
+{
+  if (divisor == 0)
+    _Jv_Throw (arithexception);
+  
+  if (dividend == 0x8000000000000000LL && divisor == -1)
+    return dividend;
+
+  return dividend / divisor;
+}
+
+jlong
+_Jv_remJ (jlong dividend, jlong divisor)
+{
+  if (divisor == 0)
+    _Jv_Throw (arithexception);
+  
+  if (dividend == 0x8000000000000000LL && divisor == -1)
+    return 0;
+
+  return dividend % divisor;
+}
+
