@@ -1091,6 +1091,7 @@ operand_subword (op, i, validate_address, mode)
 {
   HOST_WIDE_INT val;
   int size_ratio = HOST_BITS_PER_WIDE_INT / BITS_PER_WORD;
+  int bits_per_word = BITS_PER_WORD;
 
   if (mode == VOIDmode)
     mode = GET_MODE (op);
@@ -1339,9 +1340,9 @@ operand_subword (op, i, validate_address, mode)
      bit are all one.  So we get either a reasonable negative value or a
      reasonable unsigned value for this mode.  */
   if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT
-      && ((val & ((HOST_WIDE_INT) (-1) << (BITS_PER_WORD - 1)))
-          != ((HOST_WIDE_INT) (-1) << (BITS_PER_WORD - 1))))
-    val &= ((HOST_WIDE_INT) 1 << BITS_PER_WORD) - 1;
+      && ((val & ((HOST_WIDE_INT) (-1) << (bits_per_word - 1)))
+          != ((HOST_WIDE_INT) (-1) << (bits_per_word - 1))))
+    val &= ((HOST_WIDE_INT) 1 << bits_per_word) - 1;
 
   /* If this would be an entire word for the target, but is not for
      the host, then sign-extend on the host so that the number will look
@@ -1353,8 +1354,8 @@ operand_subword (op, i, validate_address, mode)
      The later confuses the sparc backend.  */
 
   if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT
-      && (val & ((HOST_WIDE_INT) 1 << (BITS_PER_WORD - 1))))
-    val |= ((HOST_WIDE_INT) (-1) << BITS_PER_WORD);
+      && (val & ((HOST_WIDE_INT) 1 << (bits_per_word - 1))))
+    val |= ((HOST_WIDE_INT) (-1) << bits_per_word);
 
   return GEN_INT (val);
 }
