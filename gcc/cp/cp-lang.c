@@ -77,6 +77,8 @@ static bool ok_to_generate_alias_set_for_type PARAMS ((tree));
 #define LANG_HOOKS_PRINT_IDENTIFIER cxx_print_identifier
 #undef LANG_HOOKS_DECL_PRINTABLE_NAME
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	cxx_printable_name
+#undef LANG_HOOKS_PRINT_ERROR_FUNCTION
+#define LANG_HOOKS_PRINT_ERROR_FUNCTION	cxx_print_error_function
 #undef LANG_HOOKS_SET_YYDEBUG
 #define LANG_HOOKS_SET_YYDEBUG cxx_set_yydebug
 

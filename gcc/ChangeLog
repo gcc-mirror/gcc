@@ -1,3 +1,16 @@
+2002-03-31  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* diagnostic.c (print_error_function): Remove.
+	(default_print_error_function): Rename.
+	(report_error_function): Update.
+	* diagnostic.h (print_error_function): Remove.
+	(default_print_error_function): Remove.
+	* langhooks-def.h (struct diagnostic_context): Predeclare.
+	(lhd_print_error_function, LANG_HOOKS_PRINT_ERROR_FUNCTION): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.h (struct diagnostic context): Predeclare.
+	(struct lang_hooks): New hook.
+
 2002-03-31  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/rs6000.h (RS6000_PIC_OFFSET_TABLE_REGNUM): New.

@@ -1,3 +1,9 @@
+Sun Mar 31 23:50:22 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (lang_print_error_function): Rename.
+	(LANG_HOOKS_PRINT_ERROR_FUNCTION): Redefine.
+	(ffe_init): Don't set hook.
+
 Fri Mar 29 21:59:15 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c (LANG_HOOKS_TYPE_FOR_MODE, LANG_HOOKS_TYPE_FOR_SIZE):
