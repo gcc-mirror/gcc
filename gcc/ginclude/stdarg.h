@@ -94,6 +94,15 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #undef _BSD_VA_LIST
 #endif
 
+#ifdef __SVR4_2__
+/* SVR4.2 uses _VA_LIST for an internal alias for va_list,
+   so we must avoid testing it and setting it here.  */
+#ifndef _VA_LIST_
+#define _VA_LIST_
+typedef __gnuc_va_list va_list;
+#endif /* _VA_LIST_ */
+#else /* not __SVR4_2__ */
+
 /* The macro _VA_LIST_ is the same thing used by this file in Ultrix.  */
 #ifndef _VA_LIST_
 /* The macro _VA_LIST is used in SCO Unix 3.2.  */
@@ -103,6 +112,9 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 typedef __gnuc_va_list va_list;
 #endif /* _VA_LIST */
 #endif /* _VA_LIST_ */
+
+#endif /* not __SVR4_2__ */
+
 #endif /* _STDARG_H */
 
 #endif /* __GNUC__ */
