@@ -12881,7 +12881,7 @@ xref_tag (code_type_node, name, globalize)
 	CLASSTYPE_DECLARED_CLASS (ref) = 0;
     }
 
-  TREE_TYPE (ref) = attributes;
+  TYPE_ATTRIBUTES (ref) = attributes;
 
   return ref;
 }
