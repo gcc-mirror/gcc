@@ -1,3 +1,152 @@
+2001-10-11  Pascal Obry <obry@gnat.com>
+
+	* Makefile.in:
+	(GNAT_ADA_OBJS): add g-crc32.o, a-tags.o, a-stream.o
+	(GNATBIND_OBJS): add g-crc32.o, a-tags.o, a-stream.o
+	(GNATLS_RTL_OBJS): add g-crc32.o
+	(GNATMAKE_RTL_OBJS): add g-crc32.o
+	
+	* ali-util.adb:
+	(CRC_Match): new function.
+	(Get_File_Checksum): renamed Get_File_CRC. Use the GNAT.CRC32 unit 
+	instead of the previous simple checksum algorithm.
+	(Time_Stamp_Mismatch): use CRC_Match for comparison.
+	(Set_Source_Table): idem.
+	
+	* ali-util.ads:
+	(Get_File_Checksum): renamed Get_File_CRC as now we compute CRC 
+	instead of simple checksum.
+	(CRC_Match): new function.
+	(CRC_Error): new constant.
+	
+	* ali.adb (Scan_ALI): rename variable Chk to CRC as we are handling 
+	a CRC now and not a simple checksum. A CRC uses lower-case hex 
+	letters, fixes ambiguity in parsing.
+	
+	* ali.ads (Sdep_Record.Checksum): renamed Sdep_Record.CRC as this 
+	is what this variable will store.
+	
+	* bcheck.adb: Change reference to chechsum in comments by CRC.
+	(Check_Consistency): Rename Get_File_Checksum to Get_File_CRC. 
+	rename All_Checksum_Match to All_CRC_Match. Change due to API 
+	renaming since now GNAT does not use a simple checksum but a 
+	CRC using GNAT.CRC32.
+	
+	* gnatls.adb: Rename Checksum to CRC in many places, we use a CRC 
+	now and not anymore a simple checksum.
+	
+	* lib-load.adb: Use Source_CRC instead of Source_Checksum in many 
+	places.
+	
+	* lib-writ.adb (Write_ALI): Use Source_CRC instead of Source_Checksum.
+	
+	* scans.adb:
+	(Restore_Scan_State): rename Checksum to CRC.
+	(Save_Scan_State): idem.
+	
+	* scans.ads:
+	With GNAT.CRC32.
+	(Checksum): rename to CRC.
+	(Saved_Scan_State): Save_Checksum field renamed to Save_CRC
+	
+	* scn-nlit.adb: Rename many Accumulate_Checksum to Update (from 
+	GNAT.CRC32).  Update copyright notice.
+	
+	* scn-slit.adb: Rename many Accumulate_Checksum to Update (from 
+	GNAT.CRC32).  Update copyright notice.
+	
+	* scn.adb:
+	(Accumulate_Checksum): removed.
+	(Update): new procedure. Add a wide-character into the CRC.
+	
+	* sinput-l.adb:
+	(Complete_Source_File_Entry): use CRC32 instead of simple checksum.
+	(Load_File): fix initialization of S (change Source_Checksum to 
+	Source_CRC)
+	
+	* sinput-p.adb (Load_Project_File): rename Source_Checksum to 
+	Source_CRC in S initialization.
+	
+	* sinput.adb (Source_Checksum): renamed to Source_CRC.
+	
+	* sinput.ads (Source_Checksum): renamed to Source_CRC.
+	Update comments for the CRC.
+	
+	* types.adb (Hex): Use lowercase for the letter part.
+	
+	* types.ads (Get_Hex_String): Returns the hexadecimal representation 
+	for a word. This is currently used only for CRC. In previous version, 
+	the checksum was using a representation with all letter being 
+	upper-case. With the new implementation (using CRC) we do not remove 
+	the 32th bit of the CRC, so we can have an upper-case starting letter 
+	in the CRC. This is not possible to parse in Scan_ALI (ali.adb). 
+	It is ambigous since the CRC was optional and could be followed by 
+	options like EB, EE. So now this routines uses lower-case letter for 
+	the hexadecimal representation. Strange enough only lower case letters 
+	where checked in Scan_ALI (even if this was not a possible case).
+	
+	* gnatvsn.ads (Library_Version): changed to 3.15a.
+	
+	* s-crc32.ads: Initial version from GNAT.CRC32. This is the version 
+	for the compiler.
+	
+	* s-crc32.adb: Initial version from GNAT.CRC32. This is the version 
+	for the compiler.
+	
+	* ali-util.adb: Redo previous change to avoid using word CRC everywhere
+	Add 2001 to copyright notice
+	(Accumulate_Checksum): Modify to use System.CRC32.
+	
+	* ali-util.ads: Redo changes of previous revision to continue to use 
+	the word Checksum. Add 2001 to copyright notice.
+	
+	* ali.adb: Undo some of previous changes, not needed.
+	Keep the change for lower case letters in the checksum.
+	
+	* ali.ads: Undo previous change not needed.
+
+	* bcheck.adb: Undo most of previous change, not needed.
+	But do use Checksums_Match for checksum comparison.
+	
+	* gnatls.adb: Undo most of previous change, not needed.
+	But do use Checksums_Match for comparing checksums.
+	
+	* lib-load.adb: Undo previous change, not needed.
+	
+	* lib-writ.adb: Undo previous change, not needed.
+	
+	* lib-writ.ads: Document that checksums use lower case, 
+	not upper case letters.
+	
+	* scans.adb: Undo previous change, not needed
+	
+	* scans.ads: Undo previous change, not needed.
+	
+	* scn-nlit.adb: Undo previous changes, not needed.
+	
+	* scn-slit.adb: Undo previous change, not needed.  Fix header format.
+	
+	* scn.adb:
+	(Accumulate_Checksum): Use System.CRC32.
+	(Initialize_Checksum): New procedure.
+	Remove other changes of previous revision.
+	
+	* sinput-p.adb: Undo previous change, not needed.
+	
+	* sinput.adb: Undo previous change, not needed.
+
+	* sinput-l.adb: Undo previous change, not needed.
+	
+	* sinput.ads: Undo previous change, not needed.  Keep only comment 
+	on new checksum algorithm
+	
+	* Makefile.in: Add s-crc32 as needed, remove g-crc32.
+	Also remove a-tags and a-stream from GNAT sources.
+	
+	* ali.adb (Scan_ALI): fix typo introduce in latest check-in.
+	
+	* Makefile.in (GNATRTL_NONTASKING_OBJS): Add g-crc32.o.
+
 2001-10-11  Geert Bosch  <bosch@gnat.com>
 
 	* einfo.h: Regenerate.

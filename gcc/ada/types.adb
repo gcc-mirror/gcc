@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.20 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -140,7 +140,7 @@ package body Types is
    --------------------
 
    subtype Wordh is Word range 0 .. 15;
-   Hex : constant array (Wordh) of Character := "0123456789ABCDEF";
+   Hex : constant array (Wordh) of Character := "0123456789abcdef";
 
    function Get_Hex_String (W : Word) return Word_Hex_String is
       X  : Word := W;

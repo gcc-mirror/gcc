@@ -1,14 +1,14 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                              G N A T V S N                               --
+--                        S Y S T E M  . C R C 3 2                          --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--              Copyright (C) 2001 Ada Core Technologies, Inc.              --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,38 +28,57 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package spec holds version information for GNAT, GNATBIND and
---  GNATMAKE. It is updated whenever the release number is changed.
+--  This package provides routines for computing a commonly used checksum
+--  called CRC-32. This is a checksum based on treating the binary data
+--  as a polynomial over a binary field, and the exact specifications of
+--  the CRC-32 algorithm are as follows:
+--
+--     Name   : "CRC-32"
+--     Width  : 32
+--     Poly   : 04C11DB7
+--     Init   : FFFFFFFF
+--     RefIn  : True
+--     RefOut : True
+--     XorOut : FFFFFFFF
+--     Check  : CBF43926
+--
+--  Note that this is the algorithm used by PKZip, Ethernet and FDDI.
+--
+--  For more information about this algorithm see:
+--
+--  ftp://ftp.rocksoft.com/papers/crc_v3.txt
 
-package Gnatvsn is
+--  "A Painless Guide to CRC Error Detection Algorithms", Ross N. Williams
+--
+--  "Computation of Cyclic Redundancy Checks via Table Look-Up", Communications
+--  of the ACM, Vol. 31 No. 8, pp.1008-1013 Aug. 1988. Sarwate, D.V.
 
-   Gnat_Version_String : constant String := "5.00w (20010924)";
-   --  Version output when GNAT (compiler), or its related tools, including
-   --  GNATBIND, GNATCHOP, GNATFIND, GNATLINK, GNATMAKE, GNATXREF, are run
-   --  (with appropriate verbose option switch set).
-   --
-   --  WARNING: some gnatmail scripts (at least make-bin and corcs) rely on
-   --  the format of this string. Any change must be coordinated with
-   --  a gnatmail maintainer.
+with Interfaces;
 
-   Ver_Len_Max : constant := 32;
-   --  Longest possible length for Gnat_Version_String in this or any
-   --  other version of GNAT. This is used by the binder to establish
-   --  space to store any possible version string value for checks. This
-   --  value should never be decreased in the future, but it would be
-   --  OK to increase it if absolutely necessary.
+package System.CRC32 is
 
-   Library_Version : constant String := "GNAT Lib v3.15a";
-   --  Library version. This value must be updated whenever any change to the
-   --  compiler affects the library formats in such a way as to obsolete
-   --  previously compiled library modules.
-   --
-   --  Note: Makefile.in relies on the precise format of the library version
-   --  string in order to correctly construct the soname value.
+   type CRC32 is new Interfaces.Unsigned_32;
+   --  Used to represent CRC32 values, which are 32 bit bit-strings
 
-end Gnatvsn;
+   procedure Initialize (C : out CRC32);
+   pragma Inline (Initialize);
+   --  Initialize CRC value by assigning the standard Init value (16#FFFF_FFFF)
+
+   procedure Update
+     (C     : in out CRC32;
+      Value : Character);
+   pragma Inline (Update);
+   --  Evolve CRC by including the contribution from Character'Pos (Value)
+
+   function Get_Value (C : CRC32) return Interfaces.Unsigned_32;
+   pragma Inline (Get_Value);
+   --  Get_Value computes the CRC32 value by performing an XOR with the
+   --  standard XorOut value (16#FFFF_FFFF). Note that this does not
+   --  change the value of C, so it may be used to retrieve intermediate
+   --  values of the CRC32 value during a sequence of Update calls.
+
+end System.CRC32;

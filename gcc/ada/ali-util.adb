@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.7 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,8 @@ with Namet;   use Namet;
 with Opt;     use Opt;
 with Osint;   use Osint;
 
+with System.CRC32;
+
 package body ALI.Util is
 
    -----------------------
@@ -48,18 +50,26 @@ package body ALI.Util is
    --  generate code, so it is not necessary to worry about making the right
    --  sequence of calls in any error situation.
 
+   procedure Initialize_Checksum (Csum : in out Word);
+   --  Sets initial value of Csum before any calls to Accumulate_Checksum
+
    -------------------------
    -- Accumulate_Checksum --
    -------------------------
 
    procedure Accumulate_Checksum (C : Character; Csum : in out Word) is
    begin
-      Csum := Csum + Csum + Character'Pos (C);
-
-      if Csum > 16#8000_0000# then
-         Csum := (Csum + 1) and 16#7FFF_FFFF#;
-      end if;
+      System.CRC32.Update (System.CRC32.CRC32 (Csum), C);
    end Accumulate_Checksum;
+
+   ---------------------
+   -- Checksums_Match --
+   ---------------------
+
+   function Checksums_Match (Checksum1, Checksum2 : Word) return Boolean is
+   begin
+      return Checksum1 = Checksum2 and then Checksum1 /= Checksum_Error;
+   end Checksums_Match;
 
    -----------------------
    -- Get_File_Checksum --
@@ -101,7 +111,7 @@ package body ALI.Util is
          raise Bad;
       end if;
 
-      Csum := 0;
+      Initialize_Checksum (Csum);
       Ptr := 0;
 
       loop
@@ -249,7 +259,7 @@ package body ALI.Util is
    exception
       when Bad =>
          Free_Source;
-         return 16#FFFF_FFFF#;
+         return Checksum_Error;
 
    end Get_File_Checksum;
 
@@ -271,6 +281,15 @@ package body ALI.Util is
 
       Source.Init;
    end Initialize_ALI_Source;
+
+   -------------------------
+   -- Initialize_Checksum --
+   -------------------------
+
+   procedure Initialize_Checksum (Csum : in out Word) is
+   begin
+      System.CRC32.Initialize (System.CRC32.CRC32 (Csum));
+   end Initialize_Checksum;
 
    --------------
    -- Read_ALI --
@@ -406,7 +425,9 @@ package body ALI.Util is
 
             --  Update checksum flag
 
-            if Sdep.Table (D).Checksum /= Source.Table (S).Checksum then
+            if not Checksums_Match
+                     (Sdep.Table (D).Checksum, Source.Table (S).Checksum)
+            then
                Source.Table (S).All_Checksums_Match := False;
             end if;
 
@@ -492,8 +513,9 @@ package body ALI.Util is
             --  ??? It is probably worth updating the ALI file with a new
             --  field to avoid recomputing it each time.
 
-            if Get_File_Checksum (Sdep.Table (D).Sfile) =
-                                             Source.Table (Src).Checksum
+            if Checksums_Match
+                 (Get_File_Checksum (Sdep.Table (D).Sfile),
+                  Source.Table (Src).Checksum)
             then
                Sdep.Table (D).Stamp := Source.Table (Src).Stamp;
             end if;

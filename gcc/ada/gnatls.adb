@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.37 $
+--                            $Revision$
 --                                                                          --
 --           Copyright (C) 1992-2001 Free Software Foundation, Inc.         --
 --                                                                          --
@@ -352,7 +352,7 @@ procedure Gnatls is
          FS     := Tmp1;
          Status := OK;
 
-      elsif Get_File_Checksum (FS) = Checksum then
+      elsif Checksums_Match (Get_File_Checksum (FS), Checksum) then
          FS := Tmp1;
          Status := Checksum_OK;
 

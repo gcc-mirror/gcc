@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.14 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -411,7 +411,7 @@ package Lib.Writ is
    --      time stamp representation.
 
    --      The checksum is an 8-hex digit representation of the source
-   --      file checksum, with letters given in upper case.
+   --      file checksum, with letters given in lower case.
 
    --      The subunit name is present only if the dependency line is for
    --      a subunit. It contains the fully qualified name of the subunit

@@ -1,14 +1,14 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                              G N A T V S N                               --
+--                           G N A T . C R C 3 2                            --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--              Copyright (C) 2001 Ada Core Technologies, Inc.              --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,38 +28,65 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package spec holds version information for GNAT, GNATBIND and
---  GNATMAKE. It is updated whenever the release number is changed.
+with Unchecked_Conversion;
 
-package Gnatvsn is
+package body GNAT.CRC32 is
 
-   Gnat_Version_String : constant String := "5.00w (20010924)";
-   --  Version output when GNAT (compiler), or its related tools, including
-   --  GNATBIND, GNATCHOP, GNATFIND, GNATLINK, GNATMAKE, GNATXREF, are run
-   --  (with appropriate verbose option switch set).
-   --
-   --  WARNING: some gnatmail scripts (at least make-bin and corcs) rely on
-   --  the format of this string. Any change must be coordinated with
-   --  a gnatmail maintainer.
+   ------------
+   -- Update --
+   ------------
 
-   Ver_Len_Max : constant := 32;
-   --  Longest possible length for Gnat_Version_String in this or any
-   --  other version of GNAT. This is used by the binder to establish
-   --  space to store any possible version string value for checks. This
-   --  value should never be decreased in the future, but it would be
-   --  OK to increase it if absolutely necessary.
+   procedure Update (C : in out CRC32; Value : String) is
+   begin
+      for K in Value'Range loop
+         Update (C, Value (K));
+      end loop;
+   end Update;
 
-   Library_Version : constant String := "GNAT Lib v3.15a";
-   --  Library version. This value must be updated whenever any change to the
-   --  compiler affects the library formats in such a way as to obsolete
-   --  previously compiled library modules.
-   --
-   --  Note: Makefile.in relies on the precise format of the library version
-   --  string in order to correctly construct the soname value.
+   procedure Update (C : in out CRC32; Value : Ada.Streams.Stream_Element) is
+      function To_Char is new Unchecked_Conversion
+        (Ada.Streams.Stream_Element, Character);
 
-end Gnatvsn;
+      V : constant Character := To_Char (Value);
+
+   begin
+      Update (C, V);
+   end Update;
+
+   procedure Update
+     (C     : in out CRC32;
+      Value : Ada.Streams.Stream_Element_Array)
+   is
+   begin
+      for K in Value'Range loop
+         Update (C, Value (K));
+      end loop;
+   end Update;
+
+   -----------------
+   -- Wide_Update --
+   -----------------
+
+   procedure Wide_Update (C : in out CRC32; Value : Wide_Character) is
+      subtype S2 is String (1 .. 2);
+      function To_S2 is new Unchecked_Conversion (Wide_Character, S2);
+
+      VS : S2 := To_S2 (Value);
+
+   begin
+      Update (C, VS (1));
+      Update (C, VS (2));
+   end Wide_Update;
+
+   procedure Wide_Update (C : in out CRC32; Value : Wide_String) is
+   begin
+      for K in Value'Range loop
+         Wide_Update (C, Value (K));
+      end loop;
+   end Wide_Update;
+
+end GNAT.CRC32;

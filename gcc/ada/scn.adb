@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.111 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -39,6 +39,7 @@ with Snames;   use Snames;
 with Style;
 with Widechar; use Widechar;
 
+with System.CRC32;
 with System.WCh_Con; use System.WCh_Con;
 
 package body Scn is
@@ -72,6 +73,10 @@ package body Scn is
    --  code value instead of a character. This is used when wide characters
    --  are scanned. We use the character code rather than the ASCII characters
    --  so that the checksum is independent of wide character encoding method.
+
+   procedure Initialize_Checksum;
+   pragma Inline (Initialize_Checksum);
+   --  Initialize checksum value
 
    procedure Check_End_Of_Line;
    --  Called when end of line encountered. Checks that line is not
@@ -135,20 +140,13 @@ package body Scn is
 
    procedure Accumulate_Checksum (C : Character) is
    begin
-      Checksum := Checksum + Checksum + Character'Pos (C);
-
-      if Checksum > 16#8000_0000# then
-         Checksum := (Checksum + 1) and 16#7FFF_FFFF#;
-      end if;
+      System.CRC32.Update (System.CRC32.CRC32 (Checksum), C);
    end Accumulate_Checksum;
 
    procedure Accumulate_Checksum (C : Char_Code) is
    begin
-      Checksum := Checksum + Checksum + Char_Code'Pos (C);
-
-      if Checksum > 16#8000_0000# then
-         Checksum := (Checksum + 1) and 16#7FFF_FFFF#;
-      end if;
+      Accumulate_Checksum (Character'Val (C / 256));
+      Accumulate_Checksum (Character'Val (C mod 256));
    end Accumulate_Checksum;
 
    -----------------------
@@ -367,6 +365,15 @@ package body Scn is
       Error_Msg_S ("two consecutive underlines not permitted");
    end Error_No_Double_Underline;
 
+   -------------------------
+   -- Initialize_Checksum --
+   -------------------------
+
+   procedure Initialize_Checksum is
+   begin
+      System.CRC32.Initialize (System.CRC32.CRC32 (Checksum));
+   end Initialize_Checksum;
+
    ------------------------
    -- Initialize_Scanner --
    ------------------------
@@ -465,7 +472,8 @@ package body Scn is
       Token_Name                := No_Name;
       Start_Column              := Set_Start_Column;
       First_Non_Blank_Location  := Scan_Ptr;
-      Checksum                  := 0;
+
+      Initialize_Checksum;
 
       --  Set default for Comes_From_Source. All nodes built now until we
       --  reenter the analyzer will have Comes_From_Source set to True
