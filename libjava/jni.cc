@@ -212,7 +212,7 @@ unwrap (T *obj)
   using namespace gnu::gcj::runtime;
   // We can compare the class directly because JNIWeakRef is `final'.
   // Doing it this way is much faster.
-  if (obj == NULL || obj->getClass () == &JNIWeakRef::class$)
+  if (obj == NULL || obj->getClass () != &JNIWeakRef::class$)
     return obj;
   JNIWeakRef *wr = reinterpret_cast<JNIWeakRef *> (obj);
   return reinterpret_cast<T *> (wr->get ());
