@@ -1,3 +1,10 @@
+2005-02-22  Tom Tromey  <tromey@redhat.com>
+
+	PR java/20056:
+	* verify.cc (type::EITHER): New constant.
+	(check_field_constant): Use it.
+	(type::compatible): Handle it.
+
 2005-02-22  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/security/PolicyFile.java,
