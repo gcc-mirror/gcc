@@ -1248,6 +1248,43 @@ setup_vtbl_ptr ()
   vtbls_set_up_p = 1;
 }
 
+/* Add a scope-statement to the statement-tree.  BEGIN_P indicates
+   whether this statements opens or closes a scope.  PARTIAL_P is true
+   for a partial scope, i.e, the scope that begins after a label when
+   an object that needs a cleanup is created.  */
+
+void
+add_scope_stmt (begin_p, partial_p)
+     int begin_p;
+     int partial_p;
+{
+  tree ss;
+
+  /* Build the statement.  */
+  ss = build_min_nt (SCOPE_STMT);
+  SCOPE_BEGIN_P (ss) = begin_p;
+  SCOPE_PARTIAL_P (ss) = partial_p;
+
+  /* If we're finishing a scope, figure out whether the scope was
+     really necessary.  */
+  if (!begin_p)
+    {
+      SCOPE_NULLIFIED_P (ss) = !kept_level_p ();
+      SCOPE_NULLIFIED_P (TREE_VALUE (current_scope_stmt_stack))
+	= SCOPE_NULLIFIED_P (ss);
+    }
+
+  /* Keep the scope stack up to date.  */
+  if (begin_p)
+    current_scope_stmt_stack 
+      = tree_cons (NULL_TREE, ss, current_scope_stmt_stack);
+  else
+    current_scope_stmt_stack = TREE_CHAIN (current_scope_stmt_stack);
+
+  /* Add the new statement to the statement-tree.  */
+  add_tree (ss);
+}
+
 /* Begin a new scope.  */
 
 void
@@ -1266,13 +1303,7 @@ do_pushlevel ()
 	  && !current_function->x_whole_function_mode_p)
 	expand_start_bindings (0);
       else if (building_stmt_tree () && !processing_template_decl)
-	{
-	  tree ss = build_min_nt (SCOPE_STMT);
-	  SCOPE_BEGIN_P (ss) = 1;
-	  add_tree (ss);
-	  current_scope_stmt_stack 
-	    = tree_cons (NULL_TREE, ss, current_scope_stmt_stack);
-	}
+	add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
     }
 }
 
@@ -1290,12 +1321,7 @@ do_poplevel ()
 	expand_end_bindings (getdecls (), kept_level_p (), 0);
       else if (building_stmt_tree () && !processing_template_decl)
 	{
-	  tree ss = build_min_nt (SCOPE_STMT);
-	  SCOPE_NULLIFIED_P (ss) = !kept_level_p ();
-	  SCOPE_NULLIFIED_P (TREE_VALUE (current_scope_stmt_stack))
-	    = SCOPE_NULLIFIED_P (ss);
-	  add_tree (ss);
-	  current_scope_stmt_stack = TREE_CHAIN (current_scope_stmt_stack);
+	  add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0);
 
 	  /* When not in function-at-a-time mode, expand_end_bindings
 	     will warn about unused variables.  But, in
@@ -2455,7 +2481,8 @@ expand_stmt (t)
 	  if (SCOPE_BEGIN_P (t))
 	    expand_start_bindings (2 * SCOPE_NULLIFIED_P (t));
 	  else if (SCOPE_END_P (t))
-	    expand_end_bindings (NULL_TREE, !SCOPE_NULLIFIED_P (t), 0);
+	    expand_end_bindings (NULL_TREE, !SCOPE_NULLIFIED_P (t), 
+				 SCOPE_PARTIAL_P (t));
 	  break;
 
 	case RETURN_INIT:

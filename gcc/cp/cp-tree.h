@@ -69,6 +69,7 @@ Boston, MA 02111-1307, USA.  */
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
           or FIELD_DECL).
       NEED_TEMPORARY_P (in REF_BIND, BASE_CONV)
+      SCOPE_PARTIAL_P (in SCOPE_STMT)
    5: Not used.
    6: Not used.
 
@@ -2651,6 +2652,21 @@ extern int flag_new_for_scope;
 #define SCOPE_NULLIFIED_P(NODE) \
   (TREE_LANG_FLAG_3 (SCOPE_STMT_CHECK (NODE)))
 
+/* Nonzero for a SCOPE_STMT if this statement is for a partial scope.
+   For example, in:
+  
+     S s;
+     l:
+     S s2;
+     goto l;
+
+   there is (implicitly) a new scope after `l', even though there are
+   no curly braces.  In particular, when we hit the goto, we must
+   destroy s2 and then re-construct it.  For the implicit scope,
+   SCOPE_PARTIAL_P will be set.  */
+#define SCOPE_PARTIAL_P(NODE) \
+  (TREE_LANG_FLAG_4 (SCOPE_STMT_CHECK (NODE)))
+
 /* Nonzero for an ASM_STMT if the assembly statement is volatile.  */
 #define ASM_VOLATILE_P(NODE)			\
   (ASM_CV_QUAL (ASM_STMT_CHECK (NODE)) != NULL_TREE)
@@ -3336,7 +3352,6 @@ extern int pseudo_global_level_p		PROTO((void));
 extern void set_class_shadows			PROTO((tree));
 extern void pushlevel				PROTO((int));
 extern void note_level_for_for			PROTO((void));
-extern void pushlevel_temporary			PROTO((int));
 extern void resume_level			PROTO((struct binding_level *));
 extern void delete_block			PROTO((tree));
 extern void insert_block			PROTO((tree));
@@ -3886,6 +3901,7 @@ extern void expand_body                         PROTO((tree));
 extern void begin_stmt_tree                     PROTO((tree *));
 extern void finish_stmt_tree                    PROTO((tree *));
 extern void prep_stmt                           PROTO((tree));
+extern void add_scope_stmt                      PROTO((int, int));
 extern void do_pushlevel                        PROTO((void));
 extern tree do_poplevel                         PROTO((void));
 /* Non-zero if we are presently building a statement tree, rather

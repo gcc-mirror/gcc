@@ -825,21 +825,6 @@ note_level_for_for ()
   current_binding_level->is_for_scope = 1;
 }
 
-void
-pushlevel_temporary (tag_transparent)
-     int tag_transparent;
-{
-  pushlevel (tag_transparent);
-  current_binding_level->keep = 2;
-  clear_last_expr ();
-
-  /* Note we don't call push_momentary() here.  Otherwise, it would cause
-     cleanups to be allocated on the momentary obstack, and they will be
-     overwritten by the next statement.  */
-
-  expand_start_bindings (0);
-}
-
 /* For a binding between a name and an entity at a block scope,
    this is the `struct binding_level' for the block.  */
 #define BINDING_LEVEL(NODE) \
@@ -1458,13 +1443,13 @@ poplevel (keep, reverse, functionbody)
   /* Take care of compiler's internal binding structures.  */
   if (tmp == 2)
     {
-      expand_end_bindings (getdecls (), keep, 1);
+      add_scope_stmt (/*begin_p=*/0, /*partial_p=*/1);
       /* Each and every BLOCK node created here in `poplevel' is important
 	 (e.g. for proper debugging information) so if we created one
 	 earlier, mark it as "used".  */
       if (block)
 	TREE_USED (block) = 1;
-      block = poplevel (keep, reverse, real_functionbody);
+      block = poplevel (keep, reverse, functionbody);
     }
 
   /* Each and every BLOCK node created here in `poplevel' is important
@@ -6874,12 +6859,17 @@ start_decl_1 (decl)
   if (type == error_mark_node)
     return;
 
-  /* If this type of object needs a cleanup, and control may
-     jump past it, make a new binding level so that it is cleaned
-     up only when it is initialized first.  */
+  /* If this type of object needs a cleanup, but we're not allowed to
+     add any more objects with cleanups to the current scope, create a
+     new binding level.  */
   if (TYPE_NEEDS_DESTRUCTOR (type)
       && current_binding_level->more_cleanups_ok == 0)
-    pushlevel_temporary (1);
+    {
+      keep_next_level (2);
+      pushlevel (1);
+      clear_last_expr ();
+      add_scope_stmt (/*begin_p=*/1, /*partial_p=*/1);
+    }
 
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?
