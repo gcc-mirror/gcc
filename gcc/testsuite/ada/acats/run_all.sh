@@ -89,7 +89,7 @@ cp $testdir/tests/cd/*.c $dir/support
 cp $testdir/tests/cxb/*.c $dir/support
 
 rm -rf $dir/run
-mv $dir/tests $dir/tests.$$
+mv $dir/tests $dir/tests.$$ 2> /dev/null
 rm -rf $dir/tests.$$ &
 mkdir -p $dir/run
 
