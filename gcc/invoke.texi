@@ -6480,7 +6480,7 @@ will be modified.
 
 @item -m96bit-long-double
 @itemx -m96bit-long-double
-Set the size of @code{long double} to 96 bytes as required by the i386
+Set the size of @code{long double} to 96 bits as required by the i386
 application binary interface.  This is the default.
 
 @item -msvr3-shlib
