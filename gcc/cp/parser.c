@@ -374,30 +374,9 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
                                  cp_token *token)
 {
   static int is_extern_c = 0;
-  bool done;
 
-  done = false;
-  /* Keep going until we get a token we like.  */
-  while (!done)
-    {
-      /* Get a new token from the preprocessor.  */
-      token->type = c_lex_with_flags (&token->value, &token->flags);
-      /* Issue messages about tokens we cannot process.  */
-      switch (token->type)
-	{
-	case CPP_ATSIGN:
-	case CPP_HASH:
-	case CPP_PASTE:
-	  error ("invalid token");
-	  break;
-
-	default:
-	  /* This is a good token, so we exit the loop.  */
-	  done = true;
-	  break;
-	}
-    }
-  /* Now we've got our token.  */
+   /* Get a new token from the preprocessor.  */
+  token->type = c_lex_with_flags (&token->value, &token->flags);
   token->location = input_location;
   token->in_system_header = in_system_header;
 
