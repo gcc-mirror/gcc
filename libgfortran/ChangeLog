@@ -1,3 +1,16 @@
+2005-01-22  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/18982
+	* io/unix.c (regular_file):  No need to change flags->action
+	if an error occurs.  Document this.  
+	No need to call stat() for STATUS_OLD, open() will
+	fail anyway.
+	For ACTION_UNSPECIFIED, try open for read-write, then for
+	read-only if open fails with EACCES, then for write-only
+	if that fails with EACCES again.
+	* io/unix.c (open_external): Document changed behavior of
+	regular_file.
+
 2005-01-22  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 	
 	PR fortran/19194
