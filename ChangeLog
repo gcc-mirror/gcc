@@ -1,6 +1,7 @@
 2002-12-30  Daniel Jacobowitz  <drow@mvista.com>
 
 	* configure.in (baseargs): Don't remove first configure argument.
+	* configure: Regenerated.
 
 2002-12-28  Alexandre Oliva  <aoliva@redhat.com>
 
