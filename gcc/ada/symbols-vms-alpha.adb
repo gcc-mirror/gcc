@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003 Free Software Foundation, Inc.               --
+--          Copyright (C) 2003-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -229,25 +229,52 @@ package body Symbols is
 
       Success := True;
 
-      --  If policy is not autonomous, attempt to read the reference file
+      --  If policy is Compliant or Controlled, attempt to read the reference
+      --  file. If policy is Restricted, attempt to read the symbol file.
 
       if Sym_Policy /= Autonomous then
-         begin
-            Open (File, In_File, Reference);
+         case Sym_Policy is
+            when Autonomous =>
+               null;
 
-         exception
-            when Ada.Text_IO.Name_Error =>
-               return;
+            when Compliant | Controlled =>
+               begin
+                  Open (File, In_File, Reference);
 
-            when X : others =>
-               if not Quiet then
-                  Put_Line ("could not open """ & Reference & """");
-                  Put_Line (Exception_Message (X));
-               end if;
+               exception
+                  when Ada.Text_IO.Name_Error =>
+                     Success := False;
+                     return;
 
-               Success := False;
-               return;
-         end;
+                  when X : others =>
+                     if not Quiet then
+                        Put_Line ("could not open """ & Reference & """");
+                        Put_Line (Exception_Message (X));
+                     end if;
+
+                     Success := False;
+                     return;
+               end;
+
+            when Restricted =>
+               begin
+                  Open (File, In_File, Symbol_File);
+
+               exception
+                  when Ada.Text_IO.Name_Error =>
+                     Success := False;
+                     return;
+
+                  when X : others =>
+                     if not Quiet then
+                        Put_Line ("could not open """ & Symbol_File & """");
+                        Put_Line (Exception_Message (X));
+                     end if;
+
+                     Success := False;
+                     return;
+               end;
+         end case;
 
          --  Read line by line
 
@@ -637,7 +664,7 @@ package body Symbols is
                             """ is no longer present in the object files");
                end if;
 
-               if Sym_Policy = Controlled then
+               if Sym_Policy = Controlled or else Sym_Policy = Restricted then
                   Success := False;
                   return;
 
@@ -656,78 +683,83 @@ package body Symbols is
             end if;
          end loop;
 
-         --  Append additional symbols, if any, to the Original_Symbols table
+         if Sym_Policy /= Restricted then
 
-         for Index in 1 .. Symbol_Table.Last (Complete_Symbols) loop
-            S_Data := Complete_Symbols.Table (Index);
+            --  Append additional symbols, if any, to the Original_Symbols
+            --  table.
 
-            if S_Data.Present then
+            for Index in 1 .. Symbol_Table.Last (Complete_Symbols) loop
+               S_Data := Complete_Symbols.Table (Index);
 
-               if Sym_Policy = Controlled then
-                  Put_Line ("symbol """ & S_Data.Name.all &
-                            """ is not in the reference symbol file");
-                  Success := False;
-                  return;
+               if S_Data.Present then
 
-               elsif Soft_Minor_ID then
-                  Minor_ID := Minor_ID + 1;
-                  Soft_Minor_ID := False;
+                  if Sym_Policy = Controlled then
+                     Put_Line ("symbol """ & S_Data.Name.all &
+                               """ is not in the reference symbol file");
+                     Success := False;
+                     return;
+
+                  elsif Soft_Minor_ID then
+                     Minor_ID := Minor_ID + 1;
+                     Soft_Minor_ID := False;
+                  end if;
+
+                  Symbol_Table.Increment_Last (Original_Symbols);
+                  Original_Symbols.Table
+                    (Symbol_Table.Last (Original_Symbols)) := S_Data;
+                  Complete_Symbols.Table (Index).Present := False;
                end if;
+            end loop;
 
-               Symbol_Table.Increment_Last (Original_Symbols);
-               Original_Symbols.Table (Symbol_Table.Last (Original_Symbols)) :=
-                 S_Data;
-               Complete_Symbols.Table (Index).Present := False;
-            end if;
-         end loop;
+            --  Create the symbol file
 
-         --  Create the symbol file
+            Create (File, Ada.Text_IO.Out_File, Symbol_File_Name.all);
 
-         Create (File, Ada.Text_IO.Out_File, Symbol_File_Name.all);
+            Put (File, Case_Sensitive);
+            Put_Line (File, "yes");
 
-         Put (File, Case_Sensitive);
-         Put_Line (File, "yes");
+            --  Put a line in the symbol file for each symbol in the symbol
+            --  table.
 
-         --  Put a line in the symbol file for each symbol in the symbol table
+            for Index in 1 .. Symbol_Table.Last (Original_Symbols) loop
+               if Original_Symbols.Table (Index).Present then
+                  Put (File, Symbol_Vector);
+                  Put (File, Original_Symbols.Table (Index).Name.all);
 
-         for Index in 1 .. Symbol_Table.Last (Original_Symbols) loop
-            if Original_Symbols.Table (Index).Present then
-               Put (File, Symbol_Vector);
-               Put (File, Original_Symbols.Table (Index).Name.all);
+                  if Original_Symbols.Table (Index).Kind = Data then
+                     Put_Line (File, Equal_Data);
 
-               if Original_Symbols.Table (Index).Kind = Data then
-                  Put_Line (File, Equal_Data);
+                  else
+                     Put_Line (File, Equal_Procedure);
+                  end if;
 
-               else
-                  Put_Line (File, Equal_Procedure);
+                  Free (Original_Symbols.Table (Index).Name);
                end if;
+            end loop;
 
-               Free (Original_Symbols.Table (Index).Name);
-            end if;
-         end loop;
+            Put (File, Case_Sensitive);
+            Put_Line (File, "NO");
 
-         Put (File, Case_Sensitive);
-         Put_Line (File, "NO");
+            --  Put the version IDs
 
-         --  Put the version IDs
+            Put (File, Gsmatch);
+            Put (File, Image (Major_ID));
+            Put (File, ',');
+            Put_Line  (File, Image (Minor_ID));
 
-         Put (File, Gsmatch);
-         Put (File, Image (Major_ID));
-         Put (File, ',');
-         Put_Line  (File, Image (Minor_ID));
+            --  And we are done
 
-         --  And we are done
+            Close (File);
 
-         Close (File);
+            --  Reset both tables
 
-         --  Reset both tables
+            Symbol_Table.Set_Last (Original_Symbols, 0);
+            Symbol_Table.Set_Last (Complete_Symbols, 0);
 
-         Symbol_Table.Set_Last (Original_Symbols, 0);
-         Symbol_Table.Set_Last (Complete_Symbols, 0);
+            --  Clear the symbol file name
 
-         --  Clear the symbol file name
-
-         Free (Symbol_File_Name);
+            Free (Symbol_File_Name);
+         end if;
 
          Success := True;
       end if;

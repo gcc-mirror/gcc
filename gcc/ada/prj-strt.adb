@@ -260,8 +260,48 @@ package body Prj.Strt is
    -- End_Case_Construction --
    ---------------------------
 
-   procedure End_Case_Construction is
+   procedure End_Case_Construction
+     (Check_All_Labels   : Boolean;
+      Case_Location      : Source_Ptr)
+   is
+      Non_Used : Natural := 0;
+      First_Non_Used : Choice_Node_Id := First_Choice_Node_Id;
    begin
+      --  First, if Check_All_Labels is True, check if all values
+      --  of the string type have been used.
+
+      if Check_All_Labels then
+         for Choice in Choice_First .. Choices.Last loop
+               if not Choices.Table (Choice).Already_Used then
+                  Non_Used := Non_Used + 1;
+
+                  if Non_Used = 1 then
+                     First_Non_Used := Choice;
+                  end if;
+               end if;
+         end loop;
+
+         --  If only one is not used, report a single warning for this value
+         if Non_Used = 1 then
+            Error_Msg_Name_1 := Choices.Table (First_Non_Used).The_String;
+            Error_Msg ("?value { is not used as label", Case_Location);
+
+         --  If several are not used, report a warning for each one of them
+
+         elsif Non_Used > 1 then
+            Error_Msg
+              ("?the following values are not used as labels:",
+               Case_Location);
+
+            for Choice in First_Non_Used .. Choices.Last loop
+               if not Choices.Table (Choice).Already_Used then
+                  Error_Msg_Name_1 := Choices.Table (Choice).The_String;
+                  Error_Msg ("\?{", Case_Location);
+               end if;
+            end loop;
+         end if;
+      end if;
+
       --  If this is the only case construction, empty the tables
 
       if Choice_Lasts.Last = 1 then

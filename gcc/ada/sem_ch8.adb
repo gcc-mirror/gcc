@@ -1436,7 +1436,7 @@ package body Sem_Ch8 is
                Set_Alias (New_S, Old_S);
             end if;
 
-            --  Note that we do not set Is_Instrinsic_Subprogram if we have
+            --  Note that we do not set Is_Intrinsic_Subprogram if we have
             --  a renaming as body, since the entity in this case is not an
             --  intrinsic (it calls an intrinsic, but we have a real body
             --  for this call, and it is in this body that the required

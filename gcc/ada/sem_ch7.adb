@@ -691,6 +691,12 @@ package body Sem_Ch7 is
       --  Child and Unit are entities of compilation units. True if Child
       --  is a public child of Parent as defined in 10.1.1
 
+      procedure Inspect_Deferred_Constant_Completion;
+      --  Examines the deferred constants in the private part of the
+      --  package specification. Emits the error "constant declaration
+      --  requires initialization expression " if not completed by an
+      --  import pragma.
+
       ---------------------
       -- Clear_Constants --
       ---------------------
@@ -793,6 +799,42 @@ package body Sem_Ch7 is
          end if;
       end Is_Public_Child;
 
+      --------------------------------------------
+      --  Inspect_Deferred_Constant_Completion  --
+      --------------------------------------------
+
+      procedure Inspect_Deferred_Constant_Completion is
+         Decl   : Node_Id;
+      begin
+
+         Decl := First (Priv_Decls);
+         while Present (Decl) loop
+
+            --  Deferred constant signature
+
+            if Nkind (Decl) = N_Object_Declaration
+              and then Constant_Present (Decl)
+              and then No (Expression (Decl))
+
+               --  No need to check internally generated constants
+
+              and then Comes_From_Source (Decl)
+
+               --  The constant is not completed. A full object declaration
+               --  or a pragma Import complete a deferred constant.
+
+              and then not Has_Completion (Defining_Identifier (Decl))
+            then
+               Error_Msg_N
+                 ("constant declaration requires initialization expression",
+                 Defining_Identifier (Decl));
+
+            end if;
+
+            Decl := Next (Decl);
+         end loop;
+      end Inspect_Deferred_Constant_Completion;
+
    --  Start of processing for Analyze_Package_Specification
 
    begin
@@ -886,6 +928,11 @@ package body Sem_Ch7 is
          end if;
 
          Analyze_Declarations (Priv_Decls);
+
+         --  Check the private declarations for incomplete deferred
+         --  constants.
+
+         Inspect_Deferred_Constant_Completion;
 
          --  The first private entity is the immediate follower of the last
          --  visible entity, if there was one.

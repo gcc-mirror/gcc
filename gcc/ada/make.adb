@@ -502,12 +502,8 @@ package body Make is
    procedure Debug_Msg (S : String; N : Name_Id);
    --  If Debug.Debug_Flag_W is set outputs string S followed by name N.
 
-   type Project_Array is array (Positive range <>) of Project_Id;
-   No_Projects : constant Project_Array := (1 .. 0 => No_Project);
-
    procedure Recursive_Compute_Depth
      (Project : Project_Id;
-      Visited : Project_Array;
       Depth   : Natural);
    --  Compute depth of Project and of the projects it depends on
 
@@ -5554,8 +5550,6 @@ package body Make is
    ----------------
 
    procedure Initialize is
-      Next_Arg : Positive;
-
    begin
       --  Override default initialization of Check_Object_Consistency
       --  since this is normally False for GNATBIND, but is True for
@@ -5585,10 +5579,37 @@ package body Make is
 
       Mains.Delete;
 
-      Next_Arg := 1;
-      Scan_Args : while Next_Arg <= Argument_Count loop
+      --  Add the directory where gnatmake is invoked in the front of the
+      --  path, if gnatmake is invoked with directory information.
+      --  Only do this if the platform is not VMS, where the notion of path
+      --  does not really exist.
+
+      if not OpenVMS then
+         declare
+            Command : constant String := Command_Name;
+         begin
+            for Index in reverse Command'Range loop
+               if Command (Index) = Directory_Separator then
+                  declare
+                     Absolute_Dir : constant String :=
+                       Normalize_Pathname (Command (Command'First .. Index));
+                     PATH : constant String :=
+                       Absolute_Dir & Path_Separator & Getenv ("PATH").all;
+
+                  begin
+                     Setenv ("PATH", PATH);
+                  end;
+
+                  exit;
+               end if;
+            end loop;
+         end;
+      end if;
+
+      --  Scan the switches and arguments
+
+      Scan_Args : for Next_Arg in 1 .. Argument_Count loop
          Scan_Make_Arg (Argument (Next_Arg), And_Save => True);
-         Next_Arg := Next_Arg + 1;
       end loop Scan_Args;
 
       if Usage_Requested then
@@ -5688,8 +5709,13 @@ package body Make is
 
          --  Compute depth of each project
 
+         for Proj in 1 .. Projects.Last loop
+            Projects.Table (Proj).Seen := False;
+            Projects.Table (Proj).Depth := 0;
+         end loop;
+
          Recursive_Compute_Depth
-           (Main_Project, Visited => No_Projects, Depth => 0);
+           (Main_Project, Depth => 1);
 
       else
 
@@ -6189,26 +6215,28 @@ package body Make is
 
    procedure Recursive_Compute_Depth
      (Project : Project_Id;
-      Visited : Project_Array;
       Depth   : Natural)
    is
       List : Project_List;
       Proj : Project_Id;
-      OK : Boolean;
-      New_Visited : constant Project_Array := Visited & Project;
 
    begin
-      --  Nothing to do if there is no project
+      --  Nothing to do if there is no project or if the project has already
+      --  been seen or if the depth is large enough.
 
-      if Project = No_Project then
+      if Project = No_Project
+        or else Projects.Table (Project).Seen
+        or else Projects.Table (Project).Depth >= Depth
+      then
          return;
       end if;
 
-      --  If current depth of project is lower than Depth, adjust it
+      Projects.Table (Project).Depth := Depth;
 
-      if Projects.Table (Project).Depth < Depth then
-         Projects.Table (Project).Depth := Depth;
-      end if;
+      --  Mark the project as Seen to avoid endless loop caused by limited
+      --  withs.
+
+      Projects.Table (Project).Seen := True;
 
       List := Projects.Table (Project).Imported_Projects;
 
@@ -6217,34 +6245,20 @@ package body Make is
       while List /= Empty_Project_List loop
          Proj := Project_Lists.Table (List).Project;
          List := Project_Lists.Table (List).Next;
-
-         OK := True;
-
-         --  To avoid endless loops due to cycles with limited widts,
-         --  do not revisit a project that is already in the chain of imports
-         --  that brought us here.
-
-         for J in Visited'Range loop
-            if Visited (J) = Proj then
-               OK := False;
-               exit;
-            end if;
-         end loop;
-
-         if OK then
-            Recursive_Compute_Depth
-              (Project => Proj,
-               Visited => New_Visited,
-               Depth => Depth + 1);
-         end if;
+         Recursive_Compute_Depth
+           (Project => Proj,
+            Depth => Depth + 1);
       end loop;
 
       --  Visit a project being extended, if any
 
       Recursive_Compute_Depth
         (Project => Projects.Table (Project).Extends,
-         Visited => New_Visited,
-         Depth => Depth + 1);
+         Depth   => Depth + 1);
+
+      --  Reset the Seen flag, as we leave this project
+
+      Projects.Table (Project).Seen := False;
    end Recursive_Compute_Depth;
 
    -----------------------

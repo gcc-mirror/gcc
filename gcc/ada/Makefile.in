@@ -1622,6 +1622,9 @@ install-gnatlib: ../stamp-gnatlib
 	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	    $(RANLIB) $(DESTDIR)$(ADA_RTL_OBJ_DIR)/$$file; \
 	done
+	-$(foreach file, $(EXTRA_ADALIB_FILES), \
+	    $(INSTALL_DATA_DATE) rts/$(file) $(DESTDIR)$(ADA_RTL_OBJ_DIR) && \
+	) true
 #     Install the shared libraries, if any, using $(INSTALL) instead
 #     of $(INSTALL_DATA). The latter may force a mode inappropriate
 #     for shared libraries on some targets, e.g. on HP-UX where the x

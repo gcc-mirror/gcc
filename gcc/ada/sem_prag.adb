@@ -2705,6 +2705,12 @@ package body Sem_Prag is
                Set_Is_Public (Def_Id);
                Process_Interface_Name (Def_Id, Arg3, Arg4);
 
+               --  pragma Import completes deferred constants
+
+               if Ekind (Def_Id) = E_Constant then
+                  Set_Has_Completion (Def_Id);
+               end if;
+
                --  It is not possible to import a constant of an unconstrained
                --  array type (e.g. string) because there is no simple way to
                --  write a meaningful subtype for it.

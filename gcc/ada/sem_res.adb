@@ -6355,6 +6355,7 @@ package body Sem_Res is
       if Warn_On_Redundant_Constructs
         and then Comes_From_Source (Orig_N)
         and then Nkind (Orig_N) = N_Type_Conversion
+        and then not In_Instance
       then
          Orig_N := Original_Node (Expression (Orig_N));
          Orig_T := Target_Type;

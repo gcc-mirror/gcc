@@ -671,12 +671,8 @@ package body Sem_Attr is
             --  object, and that the expression, if present, is static
             --  and within the range of the dimensions of the type.
 
-            if Is_Array_Type (P_Type) then
-               Index := First_Index (P_Base_Type);
-
-            else pragma Assert (Is_Access_Type (P_Type));
-               Index := First_Index (Base_Type (Designated_Type (P_Type)));
-            end if;
+            pragma Assert (Is_Array_Type (P_Type));
+            Index := First_Index (P_Base_Type);
 
             if No (E1) then
 
@@ -722,6 +718,7 @@ package body Sem_Attr is
          --  Normal case of array type or subtype
 
          Check_Either_E0_Or_E1;
+         Check_Dereference;
 
          if Is_Array_Type (P_Type) then
             if not Is_Constrained (P_Type)
@@ -740,25 +737,17 @@ package body Sem_Attr is
 
             D := Number_Dimensions (P_Type);
 
-         elsif Is_Access_Type (P_Type)
-           and then Is_Array_Type (Designated_Type (P_Type))
-         then
-            if Is_Entity_Name (P) and then Is_Type (Entity (P)) then
-               Error_Attr ("prefix of % attribute cannot be access type", P);
-            end if;
-
-            D := Number_Dimensions (Designated_Type (P_Type));
-
-            --  If there is an implicit dereference, then we must freeze
-            --  the designated type of the access type, since the type of
-            --  the referenced array is this type (see AI95-00106).
-
-            Freeze_Before (N, Designated_Type (P_Type));
-
          else
             if Is_Private_Type (P_Type) then
                Error_Attr
                  ("prefix for % attribute may not be private type", P);
+
+            elsif Is_Access_Type (P_Type)
+              and then Is_Array_Type (Designated_Type (P_Type))
+              and then Is_Entity_Name (P)
+              and then Is_Type (Entity (P))
+            then
+               Error_Attr ("prefix of % attribute cannot be access type", P);
 
             elsif Attr_Id = Attribute_First
                     or else
@@ -874,6 +863,13 @@ package body Sem_Attr is
 
          Resolve (P);
          if Is_Access_Type (P_Type) then
+
+            --  If there is an implicit dereference, then we must freeze
+            --  the designated type of the access type, since the type of
+            --  the referenced array is this type (see AI95-00106).
+
+            Freeze_Before (N, Designated_Type (P_Type));
+
             Rewrite (P,
               Make_Explicit_Dereference (Sloc (P),
                 Prefix => Relocate_Node (P)));
@@ -1861,6 +1857,7 @@ package body Sem_Attr is
 
          --  If the prefix is a selected component whose prefix is of an
          --  access type, then introduce an explicit dereference.
+         --  ??? Could we reuse Check_Dereference here?
 
          if Nkind (Pref) = N_Selected_Component
            and then Is_Access_Type (Ptyp)

@@ -122,6 +122,7 @@ package body System.Stack_Checking.Operations is
          Td_ErrorStatus  : Interfaces.C.int; -- most recent task error status
          Td_Delay        : Interfaces.C.int; -- delay/timeout ticks
       end record;
+      pragma Convention (C, Task_Descriptor);
 
       --  This VxWorks procedure fills in a specified task descriptor
       --  for a specified task.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -249,20 +249,35 @@ private
       Storage_Address          : out Address;
       Size_In_Storage_Elements : Storage_Count;
       Alignment                : Storage_Count);
+   --  Allocate a new chunk of memory, and set it up so that the debug pool
+   --  can check accesses to its data, and report incorrect access later on.
+   --  The parameters have the same semantics as defined in the ARM95.
 
    procedure Deallocate
      (Pool                     : in out Debug_Pool;
       Storage_Address          : Address;
       Size_In_Storage_Elements : Storage_Count;
       Alignment                : Storage_Count);
+   --  Mark a block of memory as invalid. It might not be physically removed
+   --  immediately, depending on the setup of the debug pool, so that checks
+   --  are still possible.
+   --  The parameters have the same semantics as defined in the ARM95.
 
    function Storage_Size (Pool : Debug_Pool) return SSC;
+   --  Return the maximal size of data that can be allocated through Pool.
+   --  Since Pool uses the malloc() system call, all the memory is accessible
+   --  through the pool
 
    procedure Dereference
      (Pool                     : in out Debug_Pool;
       Storage_Address          : System.Address;
       Size_In_Storage_Elements : Storage_Count;
       Alignment                : Storage_Count);
+   --  Check whether a derefence statement is valid, ie whether the pointer
+   --  was allocated through Pool. As documented above, errors will be
+   --  reported either by a special error message or an exception, depending
+   --  on the setup of the storage pool.
+   --  The parameters have the same semantics as defined in the ARM95.
 
    type Byte_Count is mod System.Max_Binary_Modulus;
    --  Type used for maintaining byte counts, needs to be large enough

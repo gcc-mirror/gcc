@@ -26,6 +26,7 @@
 
 with Err_Vars; use Err_Vars;
 with Namet;    use Namet;
+with Opt;      use Opt;
 with Prj.Err;  use Prj.Err;
 with Prj.Strt; use Prj.Strt;
 with Prj.Tree; use Prj.Tree;
@@ -535,7 +536,10 @@ package body Prj.Dect is
 
       First_Declarative_Item : Project_Node_Id := Empty_Node;
 
-      First_Choice : Project_Node_Id := Empty_Node;
+      First_Choice           : Project_Node_Id := Empty_Node;
+
+      When_Others            : Boolean := False;
+      --  Set to True when there is a "when others =>" clause
 
    begin
       Case_Construction  :=
@@ -612,6 +616,7 @@ package body Prj.Dect is
          Scan;
 
          if Token = Tok_Others then
+            When_Others := True;
 
             --  Scan past "others"
 
@@ -661,7 +666,9 @@ package body Prj.Dect is
          end if;
       end loop When_Loop;
 
-      End_Case_Construction;
+      End_Case_Construction
+        (Check_All_Labels => not When_Others and not Quiet_Output,
+         Case_Location    => Location_Of (Case_Construction));
 
       Expect (Tok_End, "`END CASE`");
       Remove_Next_End_Node;

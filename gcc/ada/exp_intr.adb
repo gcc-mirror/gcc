@@ -72,7 +72,7 @@ package body Exp_Intr is
 
    procedure Expand_Shift (N : Node_Id; E : Entity_Id; K : Node_Kind);
    --  Expand an intrinsic shift operation, N and E are from the call to
-   --  Expand_Instrinsic_Call (call node and subprogram spec entity) and
+   --  Expand_Intrinsic_Call (call node and subprogram spec entity) and
    --  K is the kind for the shift node
 
    procedure Expand_Unc_Conversion (N : Node_Id; E : Entity_Id);

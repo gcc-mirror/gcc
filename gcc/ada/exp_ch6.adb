@@ -2278,6 +2278,9 @@ package body Exp_Ch6 is
       --  If procedure body has no local variables, inline body without
       --  creating block,  otherwise rewrite call with block.
 
+      function Formal_Is_Used_Once (Formal : Entity_Id) return Boolean;
+      --  Determine whether a formal parameter is used only once in Orig_Bod
+
       ---------------------
       -- Make_Exit_Label --
       ---------------------
@@ -2512,6 +2515,62 @@ package body Exp_Ch6 is
          end if;
       end Rewrite_Procedure_Call;
 
+      -------------------------
+      -- Formal_Is_Used_Once --
+      ------------------------
+
+      function Formal_Is_Used_Once (Formal : Entity_Id) return Boolean is
+         Use_Counter : Int := 0;
+
+         function Count_Uses (N : Node_Id) return Traverse_Result;
+         --  Traverse the tree and count the uses of the formal parameter.
+         --  In this case, for optimization purposes, we do not need to
+         --  continue the traversal once more than one use is encountered.
+
+         function Count_Uses (N : Node_Id) return Traverse_Result is
+         begin
+
+            --  The original node is an identifier
+
+            if Nkind (N) = N_Identifier
+              and then Present (Entity (N))
+
+               --  The original node's entity points to the one in the
+               --  copied body.
+
+              and then Nkind (Entity (N)) = N_Identifier
+              and then Present (Entity (Entity (N)))
+
+               --  The entity of the copied node is the formal parameter
+
+              and then Entity (Entity (N)) = Formal
+            then
+               Use_Counter := Use_Counter + 1;
+
+               if Use_Counter > 1 then
+
+                  --  Denote more than one use and abandon the traversal
+
+                  Use_Counter := 2;
+                  return Abandon;
+
+               end if;
+            end if;
+
+            return OK;
+         end Count_Uses;
+
+         procedure Count_Formal_Uses is new Traverse_Proc (Count_Uses);
+
+      --  Start of processing for Formal_Is_Used_Once
+
+      begin
+
+         Count_Formal_Uses (Orig_Bod);
+         return Use_Counter = 1;
+
+      end Formal_Is_Used_Once;
+
    --  Start of processing for Expand_Inlined_Call
 
    begin
@@ -2607,6 +2666,13 @@ package body Exp_Ch6 is
               and then
                (not Is_Scalar_Type (Etype (A))
                  or else Ekind (Entity (A)) = E_Enumeration_Literal))
+
+         --  When the actual is an identifier and the corresponding formal
+         --  is used only once in the original body, the formal can be
+         --  substituted directly with the actual parameter.
+
+           or else (Nkind (A) = N_Identifier
+             and then Formal_Is_Used_Once (F))
 
            or else Nkind (A) = N_Real_Literal
            or else Nkind (A) = N_Integer_Literal
