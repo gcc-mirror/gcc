@@ -744,6 +744,7 @@ static int ix86_comp_type_attributes PARAMS ((tree, tree));
 const struct attribute_spec ix86_attribute_table[];
 static tree ix86_handle_cdecl_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static tree ix86_handle_regparm_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static int ix86_value_regno PARAMS ((enum machine_mode));
 
 #if defined (DO_GLOBAL_CTORS_BODY) && defined (HAS_INIT_SECTION)
 static void ix86_svr3_asm_out_constructor PARAMS ((rtx, int));
@@ -2235,7 +2236,8 @@ ix86_function_value (valtype)
       return ret;
     }
   else
-    return gen_rtx_REG (TYPE_MODE (valtype), VALUE_REGNO (TYPE_MODE (valtype)));
+    return gen_rtx_REG (TYPE_MODE (valtype),
+			ix86_value_regno (TYPE_MODE (valtype)));
 }
 
 /* Return false iff type is returned in memory.  */
@@ -2285,7 +2287,20 @@ ix86_libcall_value (mode)
 	}
     }
   else
-   return gen_rtx_REG (mode, VALUE_REGNO (mode));
+   return gen_rtx_REG (mode, ix86_value_regno (mode));
+}
+
+/* Given a mode, return the register to use for a return value.  */
+
+static int
+ix86_value_regno (mode)
+     enum machine_mode mode;
+{
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_FLOAT_RETURNS_IN_80387)
+    return FIRST_FLOAT_REG;
+  if (mode == TImode || VECTOR_MODE_P (mode))
+    return FIRST_SSE_REG;
+  return 0;
 }
 
 /* Create the va_list data type.  */
@@ -3950,6 +3965,11 @@ output_set_got (dest)
       else
 	output_asm_insn ("call\t%a2", xops);
 
+#if TARGET_MACHO
+      /* Output the "canonical" label name ("Lxx$pb") here too.  This
+         is what will be referred to by the Mach-O PIC subsystem.  */
+      ASM_OUTPUT_LABEL (asm_out_file, machopic_function_base_name ());
+#endif
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
 				 CODE_LABEL_NUMBER (XEXP (xops[2], 0)));
 
@@ -3969,7 +3989,7 @@ output_set_got (dest)
 
   if (!flag_pic || TARGET_DEEP_BRANCH_PREDICTION)
     output_asm_insn ("add{l}\t{%1, %0|%0, %1}", xops);
-  else
+  else if (!TARGET_MACHO)
     output_asm_insn ("add{l}\t{%1+[.-%a2], %0|%0, %a1+(.-%a2)}", xops);
 
   return "";
@@ -4861,6 +4881,10 @@ constant_address_p (x)
       return TARGET_64BIT;
 
     case CONST:
+      /* For Mach-O, really believe the CONST.  */
+      if (TARGET_MACHO)
+	return true;
+      /* Otherwise fall through.  */
     case SYMBOL_REF:
       return !flag_pic && legitimate_constant_p (x);
 
@@ -4957,6 +4981,19 @@ legitimate_pic_address_disp_p (disp)
 	return 0;
       disp = XEXP (disp, 0);
       saw_plus = true;
+    }
+
+  /* Allow {LABEL | SYMBOL}_REF - SYMBOL_REF-FOR-PICBASE for Mach-O.  */
+  if (TARGET_MACHO && GET_CODE (disp) == MINUS)
+    {
+      if (GET_CODE (XEXP (disp, 0)) == LABEL_REF
+          || GET_CODE (XEXP (disp, 0)) == SYMBOL_REF)
+        if (GET_CODE (XEXP (disp, 1)) == SYMBOL_REF)
+          {
+            const char *sym_name = XSTR (XEXP (disp, 1), 0);
+            if (strstr (sym_name, "$pb") != 0)
+              return 1;
+          }
     }
 
   if (GET_CODE (disp) != UNSPEC)
@@ -5160,7 +5197,11 @@ legitimate_address_p (mode, addr, strict)
 	    goto report_error;
 	  }
 
-      else if (flag_pic && SYMBOLIC_CONST (disp))
+      else if (flag_pic && (SYMBOLIC_CONST (disp)
+#if TARGET_MACHO
+			    && !machopic_operand_p (disp)
+#endif
+			    ))
 	{
 	is_legitimate_pic:
 	  if (TARGET_64BIT && (index || base))
@@ -5254,6 +5295,13 @@ legitimize_pic_address (orig, reg)
   rtx addr = orig;
   rtx new = orig;
   rtx base;
+
+#if TARGET_MACHO
+  if (reg == 0)
+    reg = gen_reg_rtx (Pmode);
+  /* Use the generic Mach-O PIC machinery.  */
+  return machopic_legitimize_pic_address (orig, GET_MODE (orig), reg);
+#endif
 
   if (local_symbolic_operand (addr, Pmode))
     {
@@ -5767,7 +5815,7 @@ output_pic_addr_const (file, x, code)
 
     case SYMBOL_REF:
       assemble_name (file, XSTR (x, 0));
-      if (code == 'P' && ! SYMBOL_REF_FLAG (x))
+      if (!TARGET_MACHO && code == 'P' && ! SYMBOL_REF_FLAG (x))
 	fputs ("@PLT", file);
       break;
 
@@ -5825,11 +5873,13 @@ output_pic_addr_const (file, x, code)
       break;
 
     case MINUS:
-      putc (ASSEMBLER_DIALECT == ASM_INTEL ? '(' : '[', file);
+      if (!TARGET_MACHO)
+	putc (ASSEMBLER_DIALECT == ASM_INTEL ? '(' : '[', file);
       output_pic_addr_const (file, XEXP (x, 0), code);
       putc ('-', file);
       output_pic_addr_const (file, XEXP (x, 1), code);
-      putc (ASSEMBLER_DIALECT == ASM_INTEL ? ')' : ']', file);
+      if (!TARGET_MACHO)
+	putc (ASSEMBLER_DIALECT == ASM_INTEL ? ')' : ']', file);
       break;
 
      case UNSPEC:
@@ -7266,6 +7316,11 @@ ix86_output_addr_diff_elt (file, value, rel)
 	     ASM_LONG, LPREFIX, value, LPREFIX, rel);
   else if (HAVE_AS_GOTOFF_IN_DATA)
     fprintf (file, "%s%s%d@GOTOFF\n", ASM_LONG, LPREFIX, value);
+#if TARGET_MACHO
+  else if (TARGET_MACHO)
+    fprintf (file, "%s%s%d-%s\n", ASM_LONG, LPREFIX, value,
+	     machopic_function_base_name () + 1);
+#endif
   else
     asm_fprintf (file, "%s%U_GLOBAL_OFFSET_TABLE_+[.-%s%d]\n",
 		 ASM_LONG, LPREFIX, value);
@@ -7378,6 +7433,29 @@ ix86_expand_move (mode, operands)
     }
   else if (flag_pic && mode == Pmode && symbolic_operand (op1, Pmode))
     {
+#if TARGET_MACHO
+      if (MACHOPIC_PURE)
+	{
+	  rtx temp = ((reload_in_progress
+		       || ((op0 && GET_CODE (op0) == REG)
+			   && mode == Pmode))
+		      ? op0 : gen_reg_rtx (Pmode));
+	  op1 = machopic_indirect_data_reference (op1, temp);
+	  op1 = machopic_legitimize_pic_address (op1, mode,
+						 temp == op1 ? 0 : temp);
+	}
+      else
+	{
+	  if (MACHOPIC_INDIRECT)
+	    op1 = machopic_indirect_data_reference (op1, 0);
+	}
+      if (op0 != op1)
+	{
+	  insn = gen_rtx_SET (VOIDmode, op0, op1);
+	  emit_insn (insn);
+	}
+      return;
+#endif /* TARGET_MACHO */
       if (GET_CODE (op0) == MEM)
 	op1 = force_reg (Pmode, op1);
       else
@@ -10495,6 +10573,10 @@ ix86_expand_call (retval, fnaddr, callarg1, callarg2, pop)
   if (TARGET_64BIT && pop)
     abort ();
 
+#if TARGET_MACHO
+  if (flag_pic && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF)
+    fnaddr = machopic_indirect_call_target (fnaddr);
+#else
   /* Static functions and indirect calls don't need the pic register.  */
   if (! TARGET_64BIT && flag_pic
       && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
@@ -10507,6 +10589,7 @@ ix86_expand_call (retval, fnaddr, callarg1, callarg2, pop)
       emit_move_insn (al, callarg2);
       use_reg (&use, al);
     }
+#endif /* TARGET_MACHO */
 
   if (! call_insn_operand (XEXP (fnaddr, 0), Pmode))
     {
@@ -13544,6 +13627,71 @@ ix86_svr3_asm_out_constructor (symbol, priority)
   fputc ('\n', asm_out_file);
 }
 #endif
+
+#if TARGET_MACHO
+
+static int current_machopic_label_num;
+
+/* Given a symbol name and its associated stub, write out the
+   definition of the stub.  */
+
+void
+machopic_output_stub (file, symb, stub)
+     FILE *file;
+     const char *symb, *stub;
+{
+  unsigned int length;
+  char *binder_name, *symbol_name, lazy_ptr_name[32];
+  int label = ++current_machopic_label_num;
+
+  /* Lose our funky encoding stuff so it doesn't contaminate the stub.  */
+  symb = (*targetm.strip_name_encoding) (symb);
+
+  length = strlen (stub);
+  binder_name = alloca (length + 32);
+  GEN_BINDER_NAME_FOR_STUB (binder_name, stub, length);
+
+  length = strlen (symb);
+  symbol_name = alloca (length + 32);
+  GEN_SYMBOL_NAME_FOR_SYMBOL (symbol_name, symb, length);
+
+  sprintf (lazy_ptr_name, "L%d$lz", label);
+
+  if (MACHOPIC_PURE)
+    machopic_picsymbol_stub_section ();
+  else
+    machopic_symbol_stub_section ();
+
+  fprintf (file, "%s:\n", stub);
+  fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
+
+  if (MACHOPIC_PURE)
+    {
+      fprintf (file, "\tcall LPC$%d\nLPC$%d:\tpopl %%eax\n", label, label);
+      fprintf (file, "\tmovl %s-LPC$%d(%%eax),%%edx\n", lazy_ptr_name, label);
+      fprintf (file, "\tjmp %%edx\n");
+    }
+  else
+    fprintf (file, "\tjmp *%s\n", lazy_ptr_name);
+  
+  fprintf (file, "%s:\n", binder_name);
+  
+  if (MACHOPIC_PURE)
+    {
+      fprintf (file, "\tlea %s-LPC$%d(%%eax),%%eax\n", lazy_ptr_name, label);
+      fprintf (file, "\tpushl %%eax\n");
+    }
+  else
+    fprintf (file, "\t pushl $%s\n", lazy_ptr_name);
+
+  fprintf (file, "\tjmp dyld_stub_binding_helper\n");
+
+  machopic_lazy_symbol_ptr_section ();
+  fprintf (file, "%s:\n", lazy_ptr_name);
+  fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
+  fprintf (file, "\t.long %s\n", binder_name);
+}
+#endif /* TARGET_MACHO */
 
 /* Order the registers for register allocator.  */
 

@@ -66,14 +66,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_SUBTARGET_DEFAULT (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS)
 
-/* Floating-point return values come in the FP register.  */
-
-#define VALUE_REGNO(MODE) \
-  (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
-   && TARGET_FLOAT_RETURNS_IN_80387 ? FIRST_FLOAT_REG		\
-   : (MODE) == TImode || VECTOR_MODE_P (MODE) ? FIRST_SSE_REG	\
-   : 0)
-
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
