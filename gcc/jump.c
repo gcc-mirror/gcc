@@ -1494,6 +1494,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		 into our sequence.  */
 
 	      if ((temp5 = prev_active_insn (insn)) != 0
+		  && no_labels_between_p (temp5, insn)
 		  && GET_CODE (temp5) == INSN
 		  && (temp6 = single_set (temp5)) != 0
 		  && rtx_equal_p (temp2, SET_DEST (temp6))
