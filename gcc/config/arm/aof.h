@@ -308,36 +308,26 @@ do {					\
   fputs ("\n", STREAM);			\
 } while (0)
 
-#define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL)	\
-{							\
-  if (output_bytecode)					\
-    BC_OUTPUT_LABEL (STREAM, NAME);			\
-  else							\
-    {							\
-      ASM_OUTPUT_LABEL (STREAM, NAME);			\
-      if (! TREE_PUBLIC (DECL))				\
-	{						\
-	  fputs ("\tKEEP ", STREAM);			\
-	  ASM_OUTPUT_LABEL (STREAM, NAME);		\
-	}						\
-      aof_delete_import ((NAME));			\
-    }							\
+#define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL) \
+{						\
+  ASM_OUTPUT_LABEL (STREAM, NAME);		\
+  if (! TREE_PUBLIC (DECL))			\
+    {						\
+      fputs ("\tKEEP ", STREAM);		\
+      ASM_OUTPUT_LABEL (STREAM, NAME);		\
+    }						\
+  aof_delete_import ((NAME));			\
 }
 
 #define ASM_DECLARE_OBJECT_NAME(STREAM,NAME,DECL) \
 {						\
-  if (output_bytecode)				\
-    BC_OUTPUT_LABEL (STREAM, NAME);		\
-  else						\
+  ASM_OUTPUT_LABEL (STREAM, NAME);		\
+  if (! TREE_PUBLIC (DECL))			\
     {						\
+      fputs ("\tKEEP ", STREAM);		\
       ASM_OUTPUT_LABEL (STREAM, NAME);		\
-      if (! TREE_PUBLIC (DECL))			\
-	{					\
-	  fputs ("\tKEEP ", STREAM);		\
-	  ASM_OUTPUT_LABEL (STREAM, NAME);	\
-	}					\
-      aof_delete_import ((NAME));		\
     }						\
+  aof_delete_import ((NAME));			\
 }
 
 #define ASM_OUTPUT_EXTERNAL(STREAM,DECL,NAME)	\
