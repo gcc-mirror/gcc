@@ -184,7 +184,8 @@ static const char *o_file;		/* <xxx>.o for constructor/destructor list.  */
 #ifdef COLLECT_EXPORT_LIST
 static const char *export_file;	        /* <xxx>.x for AIX export list.  */
 #endif
-const char *ldout;			/* File for ld errors.  */
+const char *ldout;			/* File for ld stdout.  */
+const char *lderrout;			/* File for ld stderr.  */
 static const char *output_file;		/* Output file for ld.  */
 static const char *nm_file_name;	/* pathname of nm */
 #ifdef LDD_SUFFIX
@@ -308,8 +309,14 @@ collect_exit (int status)
 
   if (ldout != 0 && ldout[0])
     {
-      dump_file (ldout);
+      dump_file (ldout, stdout);
       maybe_unlink (ldout);
+    }
+
+  if (lderrout != 0 && lderrout[0])
+    {
+      dump_file (lderrout, stderr);
+      maybe_unlink (lderrout);
     }
 
   if (status != 0 && output_file != 0 && output_file[0])
@@ -398,6 +405,9 @@ handler (int signo)
   if (ldout != 0 && ldout[0])
     maybe_unlink (ldout);
 
+  if (lderrout != 0 && lderrout[0])
+    maybe_unlink (lderrout);
+
 #ifdef COLLECT_EXPORT_LIST
   if (export_file != 0 && export_file[0])
     maybe_unlink (export_file);
@@ -447,7 +457,7 @@ extract_string (const char **pp)
 }
 
 void
-dump_file (const char *name)
+dump_file (const char *name, FILE *to)
 {
   FILE *stream = fopen (name, "r");
 
@@ -467,7 +477,7 @@ dump_file (const char *name)
 	  word = obstack_finish (&temporary_obstack);
 
 	  if (*word == '.')
-	    ++word, putc ('.', stderr);
+	    ++word, putc ('.', to);
 	  p = word;
 	  if (!strncmp (p, USER_LABEL_PREFIX, strlen (USER_LABEL_PREFIX)))
 	    p += strlen (USER_LABEL_PREFIX);
@@ -484,25 +494,25 @@ dump_file (const char *name)
 	  if (result)
 	    {
 	      int diff;
-	      fputs (result, stderr);
+	      fputs (result, to);
 
 	      diff = strlen (word) - strlen (result);
 	      while (diff > 0 && c == ' ')
-		--diff, putc (' ', stderr);
+		--diff, putc (' ', to);
 	      while (diff < 0 && c == ' ')
 		++diff, c = getc (stream);
 
 	      free (result);
 	    }
 	  else
-	    fputs (word, stderr);
+	    fputs (word, to);
 
-	  fflush (stderr);
+	  fflush (to);
 	  obstack_free (&temporary_obstack, temporary_firstobj);
 	}
       if (c == EOF)
 	break;
-      putc (c, stderr);
+      putc (c, to);
     }
   fclose (stream);
 }
@@ -990,6 +1000,7 @@ main (int argc, char **argv)
   export_file = make_temp_file (".x");
 #endif
   ldout = make_temp_file (".ld");
+  lderrout = make_temp_file (".le");
   *c_ptr++ = c_file_name;
   *c_ptr++ = "-x";
   *c_ptr++ = "c";
@@ -1525,7 +1536,8 @@ do_wait (const char *prog, struct pex_obj *pex)
 /* Execute a program, and wait for the reply.  */
 
 struct pex_obj *
-collect_execute (const char *prog, char **argv, const char *redir)
+collect_execute (const char *prog, char **argv, const char *outname,
+		 const char *errname)
 {
   struct pex_obj *pex;
   const char *errmsg;
@@ -1560,10 +1572,8 @@ collect_execute (const char *prog, char **argv, const char *redir)
   if (pex == NULL)
     fatal_perror ("pex_init failed");
 
-  errmsg = pex_run (pex,
-		    (PEX_LAST | PEX_SEARCH
-		     | (redir ? PEX_STDERR_TO_STDOUT : 0)),
-		    argv[0], argv, redir, NULL, &err);
+  errmsg = pex_run (pex, PEX_LAST | PEX_SEARCH, argv[0], argv, outname,
+		    errname, &err);
   if (errmsg != NULL)
     {
       if (err != 0)
@@ -1583,7 +1593,7 @@ fork_execute (const char *prog, char **argv)
 {
   struct pex_obj *pex;
 
-  pex = collect_execute (prog, argv, NULL);
+  pex = collect_execute (prog, argv, NULL, NULL);
   do_wait (prog, pex);
 }
 

@@ -1,3 +1,19 @@
+2005-03-31  Ian Lance Taylor  <ian@airs.com>
+
+	* collect2.c (lderrout): New variable.
+	(collect_exit): Dump ldout to stdout.  Dump and unlink lderrout,
+	if it is set, to stderr.
+	(handler): Unlink lderrout if it is set.
+	(dump_file): Add "to" parameter.  Change all callers.
+	(main): Initialize lderrout.
+	(collect_execute): Add errname parameter.  Change all callers.
+	Rename redir parameter to outname.  Never pass
+	PEX_STDERR_TO_STDOUT to pex_run.
+	* collect2.h (collect_execute, dump_file): Update declarations.
+	* tlink.c (tlink_execute): Add errname parameter.  Change all
+	callers.
+	(do_tlink): Check lderrout as well as ldout.
+
 2005-03-31  Olivier Hainque  <hainque@adacore.com>
 
         * dwarf2out.c (dwarf2out_frame_finish): Honor DWARF2_FRAME_INFO
