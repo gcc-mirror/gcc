@@ -55,6 +55,12 @@
 /* Define if you have the `localtime_r' function.  */
 #undef HAVE_LOCALTIME_R
 
+/* Define to `int' if `ssize_t' is not defined.  */
+#undef ssize_t
+
+/* Define to `struct in_addr' if `in_addr_t' is not defined.  */
+#undef in_addr_t
+
 /* Define if inet6 structures are defined in netinet/in.h.  */
 #undef HAVE_INET6
 
