@@ -1,5 +1,9 @@
 Sat Dec 26 06:31:43 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* genconfig.c (have_cond_arith_flag): New variable.
+	(walk_insn_part, case IF_THEN_ELSE): Set it.
+	(main): Define HAVE_conditional_arithmetic if have_cond_arith_flag.
+
 	* reorg.c (optimize_skip): Count insns in delay slots for epilogue
 	as being after a conditional return.
 
