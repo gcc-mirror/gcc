@@ -47,7 +47,7 @@ static void
 version ()
 {
   printf ("gij (GNU libgcj) version %s\n\n", __VERSION__);
-  printf ("Copyright (C) 2002 Free Software Foundation, Inc.\n");
+  printf ("Copyright (C) 2005 Free Software Foundation, Inc.\n");
   printf ("This is free software; see the source for copying conditions.  There is NO\n");
   printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }

@@ -1,5 +1,6 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2002, 2005
+  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -109,7 +110,7 @@ public static void version() {
 			   + System.getProperty("java.vm.name")
 			   + ") "
 			   + System.getProperty("java.vm.version"));
-	System.out.println("Copyright 2002 Free Software Foundation, Inc.");
+	System.out.println("Copyright 2005 Free Software Foundation, Inc.");
 	System.out.println("This is free software; see the source for copying conditions.  There is NO");
 	System.out.println("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
 	System.exit(0);

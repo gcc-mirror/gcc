@@ -1,3 +1,13 @@
+2005-02-18  Anthony Green  <green@redhat.com>
+
+	* gij.cc (version): Change year for '--version' to 2005.
+	* gnu/gcj/convert/Convert.java: Ditto.
+	* gnu/java/rmi/rmic/RMIC.java: Ditto.
+	* gnu/java/rmi/registry/RegistryImpl.java: Ditto.
+
+	* gnu/gcj/tools/gcj_dbtool/Main.java: Only show the most
+	recent copyright year in `--version' output.
+
 2005-02-18  Robert Schuster <thebohemian@gmx.net>
 
 	* java/nio/charset/Charset.java (forName): Throws
