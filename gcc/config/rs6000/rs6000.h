@@ -101,10 +101,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Don't turn -B into -L if the argument specifies a relative file name.  */
 #define RELATIVE_PREFIX_NOT_LINKDIR
 
-/* The AIX linker will discard static constructors in object files before
-   collect has a chance to see them, so scan the object files directly.  */
-#define COLLECT_SCAN_OBJECTS
-
 /* Architecture type.  */
 
 extern int target_flags;

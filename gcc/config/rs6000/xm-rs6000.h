@@ -52,3 +52,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Big buffers improve performance.  */
 #define IO_BUFFER_SIZE (0x8000 - 4096)
+
+#ifndef CROSS_COMPILE
+/* The AIX linker will discard static constructors in object files before
+   collect has a chance to see them, so scan the object files directly.  */
+#define COLLECT_EXPORT_LIST
+#endif
