@@ -1,3 +1,10 @@
+2004-06-30  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (expand_shift): Consider expanding LSHIFT_EXPR by a
+	constant as a sequence of additions depending upon the rtx_costs.
+	(synth_mult): Update the "observed" cost of a shift, based upon
+	the above optimization.
+
 2004-06-28  Geoffrey Keating  <geoffk@apple.com>
 	    Andreas Tobler  <a.tobler@schweiz.ch>
 

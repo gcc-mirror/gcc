@@ -2017,6 +2017,24 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
   if (op1 == const0_rtx)
     return shifted;
 
+  /* Check whether its cheaper to implement a left shift by a constant
+     bit count by a sequence of additions.  */
+  if (code == LSHIFT_EXPR
+      && GET_CODE (op1) == CONST_INT
+      && INTVAL (op1) > 0
+      && INTVAL (op1) < GET_MODE_BITSIZE (mode)
+      && shift_cost[mode][INTVAL (op1)] > INTVAL (op1) * add_cost[mode])
+    {
+      int i;
+      for (i = 0; i < INTVAL (op1); i++)
+	{
+	  temp = force_reg (mode, shifted);
+	  shifted = expand_binop (mode, add_optab, temp, temp, NULL_RTX,
+				  unsignedp, OPTAB_LIB_WIDEN);
+	}
+      return shifted;
+    }
+
   for (try = 0; temp == 0 && try < 3; try++)
     {
       enum optab_methods methods;
@@ -2242,7 +2260,12 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       if (m < maxm)
 	{
 	  q = t >> m;
-	  cost = shift_cost[mode][m];
+	  /* The function expand_shift will choose between a shift and
+	     a sequence of additions, so the observed cost is given as
+	     MIN (m * add_cost[mode], shift_cost[mode][m]).  */
+	  cost = m * add_cost[mode];
+	  if (shift_cost[mode][m] < cost)
+	    cost = shift_cost[mode][m];
 	  synth_mult (alg_in, q, cost_limit - cost, mode);
 
 	  cost += alg_in->cost;
