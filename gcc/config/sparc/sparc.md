@@ -1533,6 +1533,22 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
+(define_insn "pic_lo_sum_di"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (lo_sum:SI (match_operand:DI 1 "register_operand" "r")
+                   (unspec:SI [(match_operand:DI 2 "immediate_operand" "in")] 0)))]
+  "TARGET_ARCH64 && flag_pic"
+  "add %1,%%lo(%a2),%0"
+  [(set_attr "length" "1")])
+
+(define_insn "pic_sethi_di"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (high:SI (unspec:SI [(match_operand 1 "" "")] 0)))]
+  "TARGET_ARCH64 && flag_pic && check_pic (1)"
+  "sethi %%hi(%a1),%0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
 (define_insn "get_pc_via_call"
   [(set (pc) (label_ref (match_operand 0 "" "")))
    (set (reg:SI 15) (label_ref (match_operand 1 "" "")))]
