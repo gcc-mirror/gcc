@@ -1,3 +1,8 @@
+2002-12-19  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.tpl, configure.in: Substitute libstdcxx_incdir.
+	* Makefile.in: Regenerate.
+
 2002-12-18  H.J. Lu <hjl@gnu.org>
 
 	* Makefile.tpl: Add @build_prefix@ before $(BUILD_SUBDIR).
