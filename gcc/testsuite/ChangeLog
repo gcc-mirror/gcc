@@ -1,3 +1,7 @@
+2002-10-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/init/ctor1.C: New test.
+
 2002-10-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.c-torture/execute/20021015-1.c: New test.

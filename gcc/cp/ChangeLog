@@ -1,3 +1,8 @@
+2002-10-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* init.c (build_delete): Do not apply save_expr for arrays.
+	(build_vec_delete): Likewise.
+
 2002-10-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (layout_var_decl): Call layout_decl even for variables 

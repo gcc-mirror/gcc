@@ -3099,8 +3099,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
     handle_array:
-      if (TREE_SIDE_EFFECTS (addr))
-	addr = save_expr (addr);
+      
       if (TYPE_DOMAIN (type) == NULL_TREE)
 	{
 	  error ("unknown array size in delete");
@@ -3342,15 +3341,13 @@ build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
 
   base = stabilize_reference (base);
 
-  /* Since we can use base many times, save_expr it.  */
-  if (TREE_SIDE_EFFECTS (base))
-    base = save_expr (base);
-
   if (TREE_CODE (type) == POINTER_TYPE)
     {
       /* Step back one from start of vector, and read dimension.  */
       tree cookie_addr;
 
+      if (TREE_SIDE_EFFECTS (base))
+	base = save_expr (base);
       type = strip_array_types (TREE_TYPE (type));
       cookie_addr = build (MINUS_EXPR,
 			   build_pointer_type (sizetype),
@@ -3364,6 +3361,8 @@ build_vec_delete (base, maxindex, auto_delete_vec, use_global_delete)
       maxindex = array_type_nelts_total (type);
       type = strip_array_types (type);
       base = build_unary_op (ADDR_EXPR, base, 1);
+      if (TREE_SIDE_EFFECTS (base))
+	base = save_expr (base);
     }
   else
     {
