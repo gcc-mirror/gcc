@@ -1,3 +1,10 @@
+2000-09-15  Will Cohen  <wcohen@redhat.com>
+
+	* dwarf2out.c (add_const_value_attribute): Changed array into a
+	xmalloced object, so it exists after function exit.
+	(free_AT): Added case for dw_val_class_float to free allocated
+	memory.
+
 2000-09-15  Kazu Hirata  <kazu@hxi.com>
 
 	* config/i386/i386.md: Fix a comment typo.
@@ -79,6 +86,7 @@ Fri 15-Sep-2000 06:49:07 BST  Neil Booth  <NeilB@earthling.net>
 	Remove undefine before config/elfos.h.
 	* config/sh/t-sh (EXTRA_MULTILIB_PARTS): Comment out.
 
+>>>>>>> 1.7757
 2000-09-14  Kazu Hirata  <kazu@hxi.com>
 
 	* invoke.texi (H8/300 Options): Add -ms2600.
@@ -177,6 +185,7 @@ Tue Sep 12 13:51:13 2000  Denis Chertykov  <denisc@overta.ru>
 	(extendhisi2): Use `movw' for enhanced avr cores.
 	(zero_extendhisi2): Likewise.
 
+>>>>>>> 1.7742
 Wed Sep 13 02:31:23 EDT 2000  John Wehle  (john@feith.com)
 
 	* alias.c (find_base_term): Use frame_pointer_rtx
