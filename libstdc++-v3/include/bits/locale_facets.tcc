@@ -378,10 +378,6 @@ namespace std
           // refer to a derived class.
           string __xtrc;
           int __base;
-	  // According to 18.2.1.2.9, digits10 is "Number of base 10 digits
-	  // that can be represented without change" so we have to add 1 to it
-	  // in order to obtain the max number of digits. The same for the
-	  // other do_get for integral types below.
           __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
 
 	  unsigned long __ul; 
@@ -1849,18 +1845,18 @@ namespace std
       return static_cast<long>(__val);
     }
 
-  // Convert string to numeric value of type T and store results.  
+  // Convert string to numeric value of type _Tv and store results.  
   // NB: This is specialized for all required types, there is no
   // generic definition.
-  template<typename _T>
+  template<typename _Tv>
     void
-    __convert_to_v(const char* __in, _T& __out, ios_base::iostate& __err, 
+    __convert_to_v(const char* __in, _Tv& __out, ios_base::iostate& __err, 
 		   const __c_locale& __cloc, int __base = 10);
 
-  // Convert numeric value of type T to string and return length of string.
-  template<typename _T>
+  // Convert numeric value of type _Tv to string and return length of string.
+  template<typename _Tv>
     int
-    __convert_from_v(char* __out, const char* __fmt, _T __v, 
+    __convert_from_v(char* __out, const char* __fmt, _Tv __v, 
 		     const __c_locale&, int __prec = -1)
     {
       int __ret;
