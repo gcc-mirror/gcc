@@ -12482,7 +12482,7 @@ static int
 ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 {
   enum attr_type insn_type, dep_insn_type;
-  enum attr_memory memory, dep_memory;
+  enum attr_memory memory;
   rtx set, set2;
   int dep_insn_code_number;
 
@@ -12550,17 +12550,12 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 
     case PROCESSOR_K6:
       memory = get_attr_memory (insn);
-      dep_memory = get_attr_memory (dep_insn);
+
       /* The esp dependency is resolved before the instruction is really
          finished.  */
       if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
 	  && (dep_insn_type == TYPE_PUSH || dep_insn_type == TYPE_POP))
 	return 1;
-
-      /* Since we can't represent delayed latencies of load+operation,
-	 increase the cost here for non-imov insns.  */
-      if (dep_memory == MEMORY_LOAD || dep_memory == MEMORY_BOTH)
-	cost += (dep_insn_type != TYPE_IMOV) ? 2 : 1;
 
       /* INT->FP conversion is expensive.  */
       if (get_attr_fp_int_src (dep_insn))
@@ -12587,7 +12582,6 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
     case PROCESSOR_ATHLON:
     case PROCESSOR_K8:
       memory = get_attr_memory (insn);
-      dep_memory = get_attr_memory (dep_insn);
 
       /* Show ability of reorder buffer to hide latency of load by executing
 	 in parallel with previous instruction in case
@@ -12626,6 +12620,7 @@ ia32_use_dfa_pipeline_interface (void)
 {
   if (TARGET_PENTIUM
       || TARGET_PENTIUMPRO
+      || TARGET_K6
       || TARGET_ATHLON_K8)
     return 1;
   return 0;
@@ -12641,7 +12636,8 @@ ia32_multipass_dfa_lookahead (void)
   if (ix86_tune == PROCESSOR_PENTIUM)
     return 2;
 
-  if (ix86_tune == PROCESSOR_PENTIUMPRO)
+  if (ix86_tune == PROCESSOR_PENTIUMPRO
+      || ix86_tune == PROCESSOR_K6)
     return 1;
 
   else
