@@ -1,3 +1,9 @@
+2004-01-15  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/13692
+	* sched-deps.c (sched_analyze_1, sched_analyze_2): Fix thinko in
+	previous patch.
+
 2004-01-15  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.h (REG_ALLOC_ORDER): Reorder fp regs after
