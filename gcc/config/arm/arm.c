@@ -4815,6 +4815,15 @@ arm_coproc_mem_operand (rtx op, bool wb)
   return FALSE;
 }
 
+/* Return true if X is a register that will be eliminated later on.  */
+int
+arm_eliminable_register (rtx x)
+{
+  return REG_P (x) && (REGNO (x) == FRAME_POINTER_REGNUM
+		       || REGNO (x) == ARG_POINTER_REGNUM
+		       || (REGNO (x) >= FIRST_VIRTUAL_REGISTER
+			   && REGNO (x) <= LAST_VIRTUAL_REGISTER));
+}
 
 /* Return GENERAL_REGS if a scratch register required to reload x to/from
    VFP registers.  Otherwise return NO_REGS.  */
@@ -5086,24 +5095,25 @@ adjacent_mem_locations (rtx a, rtx b)
 	  || (GET_CODE (XEXP (b, 0)) == PLUS
 	      && GET_CODE (XEXP (XEXP (b, 0), 1)) == CONST_INT)))
     {
-      int val0 = 0, val1 = 0;
-      int reg0, reg1;
+      HOST_WIDE_INT val0 = 0, val1 = 0;
+      rtx reg0, reg1;
+      int val_diff;
 
       if (GET_CODE (XEXP (a, 0)) == PLUS)
         {
-	  reg0 = REGNO  (XEXP (XEXP (a, 0), 0));
+	  reg0 = XEXP (XEXP (a, 0), 0);
 	  val0 = INTVAL (XEXP (XEXP (a, 0), 1));
         }
       else
-	reg0 = REGNO (XEXP (a, 0));
+	reg0 = XEXP (a, 0);
 
       if (GET_CODE (XEXP (b, 0)) == PLUS)
         {
-	  reg1 = REGNO  (XEXP (XEXP (b, 0), 0));
+	  reg1 = XEXP (XEXP (b, 0), 0);
 	  val1 = INTVAL (XEXP (XEXP (b, 0), 1));
         }
       else
-	reg1 = REGNO (XEXP (b, 0));
+	reg1 = XEXP (b, 0);
 
       /* Don't accept any offset that will require multiple
 	 instructions to handle, since this would cause the
@@ -5111,8 +5121,16 @@ adjacent_mem_locations (rtx a, rtx b)
       if (!const_ok_for_op (PLUS, val0) || !const_ok_for_op (PLUS, val1))
 	return 0;
 
-      return (reg0 == reg1) && ((val1 - val0) == 4 || (val0 - val1) == 4);
+      /* Don't allow an eliminable register: register elimination can make
+	 the offset too large.  */
+      if (arm_eliminable_register (reg0))
+	return 0;
+
+      val_diff = val1 - val0;
+      return ((REGNO (reg0) == REGNO (reg1))
+	      && (val_diff == 4 || val_diff == -4));
     }
+
   return 0;
 }
 

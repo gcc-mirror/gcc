@@ -115,6 +115,7 @@ extern int    arm_emit_vector_const (FILE *, rtx);
 extern const char * arm_output_load_gr (rtx *);
 extern const char *vfp_output_fstmx (rtx *);
 extern void arm_set_return_address (rtx, rtx);
+extern int arm_eliminable_register (rtx);
 
 #if defined TREE_CODE
 extern rtx arm_function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
