@@ -2547,7 +2547,7 @@ store_expr (exp, target, want_value)
 	emit_move_insn (target, temp);
     }
 
-  if (dont_return_target)
+  if (dont_return_target && GET_CODE (temp) != MEM)
     return temp;
   if (want_value && GET_MODE (target) != BLKmode)
     return copy_to_reg (target);
