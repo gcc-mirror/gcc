@@ -82,6 +82,7 @@ static tree grokfndecl PARAMS ((tree, tree, tree, tree, int,
 			      enum overload_flags, tree,
 			      tree, int, int, int, int, int, int, tree));
 static tree grokvardecl PARAMS ((tree, tree, RID_BIT_TYPE *, int, int, tree));
+static tree follow_tag_typedef PARAMS ((tree));
 static tree lookup_tag PARAMS ((enum tree_code, tree,
 			      struct binding_level *, int));
 static void set_identifier_type_value_with_scope
@@ -3426,6 +3427,18 @@ duplicate_decls (newdecl, olddecl)
 	}
     }
 
+  /* Do not merge an implicit typedef with an explicit one.  In:
+
+       class A;
+       ...
+       typedef class A A __attribute__ ((foo));
+
+     the attribute should apply only to the typedef.  */
+  if (TREE_CODE (olddecl) == TYPE_DECL
+      && (DECL_IMPLICIT_TYPEDEF_P (olddecl)
+	  || DECL_IMPLICIT_TYPEDEF_P (newdecl)))
+    return 0;
+
   /* If new decl is `static' and an `extern' was seen previously,
      warn about it.  */
   warn_extern_redeclared_static (newdecl, olddecl);
@@ -5285,6 +5298,45 @@ storetags (tags)
   current_binding_level->tags = tags;
 }
 
+/* Return the type that should be used when TYPE's name is preceded
+   by a tag such as 'struct' or 'union', or null if the name cannot
+   be used in this way.
+
+   For example, when processing the third line of:
+
+	struct A;
+	typedef struct A A;
+	struct A;
+
+   lookup of A will find the typedef.  Given A's typedef, this function
+   will return the type associated with "struct A".  For the tag to be
+   anything other than TYPE, TYPE must be a typedef whose original type
+   has the same name and context as TYPE itself.
+
+   It is not valid for a typedef of an anonymous type to be used with
+   an explicit tag:
+
+       typedef struct { ... } B;
+       struct B;
+
+   Return null for this case.  */
+
+static tree
+follow_tag_typedef (type)
+     tree type;
+{
+  tree original;
+
+  original = original_type (type);
+  if (TYPE_IDENTIFIER (original) == TYPE_IDENTIFIER (type)
+      && (CP_DECL_CONTEXT (TYPE_NAME (original))
+	  == CP_DECL_CONTEXT (TYPE_NAME (type)))
+      && !(CLASS_TYPE_P (original) && TYPE_WAS_ANONYMOUS (original)))
+    return original;
+  else
+    return NULL_TREE;
+}
+
 /* Given NAME, an IDENTIFIER_NODE,
    return the structure (or union or enum) definition for that name.
    Searches binding levels from BINDING_LEVEL up to the global level.
@@ -5336,18 +5388,23 @@ lookup_tag (form, name, binding_level, thislevel_only)
 	    else
 	      old = BINDING_TYPE (old);
 
-	    /* If it has an original type, it is a typedef, and we
-	       should not return it.  */
-	    if (old && DECL_ORIGINAL_TYPE (TYPE_NAME (old)))
-	      old = NULL_TREE;
-	    if (old && TREE_CODE (old) != form
-		&& (form == ENUMERAL_TYPE || TREE_CODE (old) == ENUMERAL_TYPE))
-	      {
-		error ("`%#D' redeclared as %C", old, form);
-		return NULL_TREE;
-	      }
 	    if (old)
-	      return old;
+	      {
+		/* We've found something at this binding level.  If it is
+		   a typedef, extract the tag it refers to.  Lookup fails
+		   if the typedef doesn't refer to a taggable type.  */
+		old = follow_tag_typedef (old);
+		if (!old)
+		  return NULL_TREE;
+		if (TREE_CODE (old) != form
+		    && (form == ENUMERAL_TYPE
+			|| TREE_CODE (old) == ENUMERAL_TYPE))
+		  {
+		    error ("`%#D' redeclared as %C", old, form);
+		    return NULL_TREE;
+		  }
+		return old;
+	      }
 	    if (thislevel_only || tail == global_namespace)
 	      return NULL_TREE;
 	  }
@@ -12686,7 +12743,6 @@ xref_tag (code_type_node, name, globalize)
   enum tree_code code;
   register tree ref, t;
   struct binding_level *b = current_binding_level;
-  int got_type = 0;
   tree attributes = NULL_TREE;
   tree context = NULL_TREE;
 
@@ -12723,7 +12779,6 @@ xref_tag (code_type_node, name, globalize)
     {
       t = name;
       name = TYPE_IDENTIFIER (t);
-      got_type = 1;
     }
   else
     t = IDENTIFIER_TYPE_VALUE (name);
@@ -12768,18 +12823,20 @@ xref_tag (code_type_node, name, globalize)
     {
       if (t)
 	{
+	  ref = follow_tag_typedef (t);
+
 	  /* [dcl.type.elab] If the identifier resolves to a
 	     typedef-name or a template type-parameter, the
 	     elaborated-type-specifier is ill-formed.  */
-	  if (t != TYPE_MAIN_VARIANT (t)
-	      || (CLASS_TYPE_P (t) && TYPE_WAS_ANONYMOUS (t)))
-	    pedwarn ("using typedef-name `%D' after `%s'",
-			TYPE_NAME (t), tag_name (tag_code));
+	  if (!ref)
+	    {
+	      pedwarn ("using typedef-name `%D' after `%s'",
+		       TYPE_NAME (t), tag_name (tag_code));
+	      ref = t;
+	    }
 	  else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
 	    error ("using template type parameter `%T' after `%s'",
-		      t, tag_name (tag_code));
-
-	  ref = t;
+		   t, tag_name (tag_code));
 	}
       else
 	ref = lookup_tag (code, name, b, 0);
