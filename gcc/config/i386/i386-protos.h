@@ -195,6 +195,9 @@ extern void x86_function_profiler PARAMS ((FILE *, int));
 #ifdef TREE_CODE
 extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx));
 extern rtx function_arg PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int));
+extern int function_arg_pass_by_reference PARAMS ((CUMULATIVE_ARGS *,
+						   enum machine_mode,
+						   tree, int));
 extern void function_arg_advance PARAMS ((CUMULATIVE_ARGS *, enum machine_mode,
 					tree, int));
 extern rtx ix86_function_value PARAMS ((tree));
