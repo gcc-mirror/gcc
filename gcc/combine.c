@@ -392,6 +392,7 @@ static void setup_incoming_promotions   PROTO((void));
 static void set_nonzero_bits_and_sign_copies  PROTO((rtx, rtx));
 static int can_combine_p	PROTO((rtx, rtx, rtx, rtx, rtx *, rtx *));
 static int combinable_i3pat	PROTO((rtx, rtx *, rtx, rtx, int, rtx *));
+static int contains_muldiv	PROTO((rtx));
 static rtx try_combine		PROTO((rtx, rtx, rtx));
 static void undo_all		PROTO((void));
 static rtx *find_split_point	PROTO((rtx *, rtx));
@@ -1232,6 +1233,36 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
     }
 
   return 1;
+}
+
+/* Return 1 if X is an arithmetic expression that contains a multiplication
+   and division.  We don't count multiplications by powers of two here.  */
+
+static int
+contains_muldiv (x)
+     rtx x;
+{
+  switch (GET_CODE (x))
+    {
+    case MOD:  case DIV:  case UMOD:  case UDIV:
+      return 1;
+
+    case MULT:
+      return ! (GET_CODE (XEXP (x, 1)) == CONST_INT
+		&& exact_log2 (INTVAL (XEXP (x, 1))) >= 0);
+    }
+
+  switch (GET_RTX_CLASS (GET_CODE (x)))
+    {
+    case 'c':  case '<':  case '2':
+      return contains_muldiv (XEXP (x, 0)) || contains_muldiv (XEXP (x, 1));
+
+    case '1':
+      return contains_muldiv (XEXP (x, 0));
+
+    default:
+      return 0;
+    }
 }
 
 /* Try to combine the insns I1 and I2 into I3.
@@ -2088,7 +2119,9 @@ try_combine (i3, i2, i1)
 	   && ! reg_referenced_p (SET_DEST (XVECEXP (newpat, 0, 1)),
 				  XVECEXP (newpat, 0, 0))
 	   && ! reg_referenced_p (SET_DEST (XVECEXP (newpat, 0, 0)),
-				  XVECEXP (newpat, 0, 1)))
+				  XVECEXP (newpat, 0, 1))
+	   && ! (contains_muldiv (SET_SRC (XVECEXP (newpat, 0, 0)))
+		 && contains_muldiv (SET_SRC (XVECEXP (newpat, 0, 1)))))
     {
       /* Normally, it doesn't matter which of the two is done first,
 	 but it does if one references cc0.  In that case, it has to
@@ -3685,9 +3718,13 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	return SUBREG_REG (XEXP (x, 0));
 
       /* If we know that the value is already truncated, we can
-         replace the TRUNCATE with a SUBREG.  */
+         replace the TRUNCATE with a SUBREG.  But don't do this for
+	 an (LSHIFTRT (MULT ...)) since this will cause problems with
+	 the umulXi3_highpart patterns.  */
       if (num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
-	  >= GET_MODE_BITSIZE (mode) + 1)
+	  >= GET_MODE_BITSIZE (mode) + 1
+	  && ! (GET_CODE (XEXP (x, 0)) == LSHIFTRT
+		&& GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT))
 	return gen_lowpart_for_combine (mode, XEXP (x, 0));
 
       /* A truncate of a comparison can be replaced with a subreg if
