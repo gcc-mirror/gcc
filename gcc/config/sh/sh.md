@@ -391,9 +391,9 @@
 	 (eq_attr "type" "jump")
 	 (cond [(eq_attr "med_branch_p" "yes")
 		(const_int 2)
-		(and (eq (symbol_ref "GET_CODE (PREV_INSN (insn))")
+		(and (eq (symbol_ref "GET_CODE (prev_nonnote_insn (insn))")
 			 (symbol_ref "INSN"))
-		     (eq (symbol_ref "INSN_CODE (PREV_INSN (insn))")
+		     (eq (symbol_ref "INSN_CODE (prev_nonnote_insn (insn))")
 			 (symbol_ref "code_for_indirect_jump_scratch")))
 		(if_then_else (eq_attr "braf_branch_p" "yes")
 			      (const_int 6)
@@ -5035,9 +5035,14 @@
 
 ;; This one has the additional purpose to record a possible scratch register
 ;; for the following branch.
+;; ??? Unfortunately, just setting the scratch register is not good enough,
+;; because the insn then might be deemed dead and deleted.  And we can't
+;; make the use in the jump insn explicit because that would disable
+;; delay slot scheduling from the target.
 (define_insn "indirect_jump_scratch"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(unspec:SI [(match_operand 1 "const_int_operand" "")] UNSPEC_BBR))]
+	(unspec:SI [(match_operand 1 "const_int_operand" "")] UNSPEC_BBR)) 
+   (set (pc) (unspec [(const_int 0)] UNSPEC_BBR))]
   "TARGET_SH1"
   ""
   [(set_attr "length" "0")])
@@ -5474,6 +5479,19 @@
 }"
   [(set_attr "type" "jump")
    (set_attr "needs_delay_slot" "yes")])
+
+;; ??? It would be much saner to explicitly use the scratch register
+;; in the jump insn, and have indirect_jump_scratch only set it,
+;; but fill_simple_delay_slots would refuse to do delay slot filling
+;; from the target then, as it uses simplejump_p.
+;;(define_insn "jump_compact_far"
+;;  [(set (pc)
+;;	(label_ref (match_operand 0 "" "")))
+;;   (use (match_operand 1 "register_operand" "r")]
+;;  "TARGET_SH1"
+;;  "* return output_far_jump(insn, operands[0], operands[1]);"
+;;  [(set_attr "type" "jump")
+;;   (set_attr "needs_delay_slot" "yes")])
 
 (define_insn "jump_media"
   [(set (pc)
