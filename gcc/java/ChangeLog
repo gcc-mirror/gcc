@@ -1,3 +1,14 @@
+2004-08-06  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* lang.c (flag_emit_class_files, flag_filelist_file, flag_redundant,
+	flag_use_divide_subroutine, flag_use_boehm_gc, flag_store_check,
+	flag_hash_synchronization, flag_assert, flag_jni, flag_newer,
+	flag_check_references, flag_extraneous_semicolon, flag_deprecated,
+	flag_force_classes_archive_check, flag_optimize_sci,
+	flag_indirect_dispatch): Remove explicit declarations.
+	* lang.opt: Add implicit declare/define/assign.  Remove obsolete
+	final comment.
+
 2004-08-05  Michael Chastain  <mec.gnu@mindspring.com>
 
 	PR bootstrap/14893

@@ -62,19 +62,19 @@ Java
 ; Documented for C
 
 Wdeprecated
-Java
+Java Var(flag_deprecated) Init(1)
 Warn if deprecated class, method, or field is used
 
 Wextraneous-semicolon
-Java
+Java Var(flag_extraneous_semicolon)
 Warn if deprecated empty statements are found
 
 Wout-of-date
-Java
+Java Var(flag_newer) Init(1)
 Warn if .class files are out of date
 
 Wredundant-modifiers
-Java
+Java Var(flag_redundant)
 Warn if modifiers are specified when not necessary
 
 fCLASSPATH=
@@ -82,7 +82,8 @@ Java JoinedOrMissing RejectNegative
 --CLASSPATH	Deprecated; use --classpath instead
 
 fassert
-Java
+Java Var(flag_assert) Init(1)
+Permit the use of the assert keyword
 
 fassume-compiled
 Java
@@ -107,7 +108,8 @@ Java JoinedOrMissing RejectNegative
 --bootclasspath=<path>	Replace system path
 
 fcheck-references
-Java
+Java Var(flag_check_references)
+Generate checks for references to NULL
 
 fclasspath=
 Java JoinedOrMissing RejectNegative
@@ -117,10 +119,12 @@ fcompile-resource=
 Java Joined RejectNegative
 
 femit-class-file
-Java
+Java Var(flag_emit_class_files) VarExists
+Output a class file
 
 femit-class-files
-Java
+Java Var(flag_emit_class_files)
+Alias for -femit-class-file
 
 fencoding=
 Java Joined RejectNegative
@@ -130,44 +134,46 @@ fextdirs=
 Java Joined RejectNegative
 
 ffilelist-file
-Java
+Java Var(flag_filelist_file)
+Input file is a file with a list of filenames to compile
 
 fforce-classes-archive-check
-Java
+Java Var(flag_force_classes_archive_check)
 Always check for non gcj generated classes archives
 
 fhash-synchronization
-Java
+Java Var(flag_hash_synchronization)
+Assume the runtime uses a hash table to map an object to its synchronization structure
 
 findirect-dispatch
-Java
+Java Var(flag_indirect_dispatch)
 Use offset tables for virtual method calls
 
 finline-functions
 Java
 
 fjni
-Java
+Java Var(flag_jni)
 Assume native functions are implemented using JNI
 
 foptimize-static-class-initialization
-Java
+Java Var(flag_optimize_sci)
 Enable optimization of static class initialization code
 
 foutput-class-dir=
 Java Joined RejectNegative
 
 fstore-check
-Java
+Java Var(flag_store_check) Init(1)
 Enable assignability checks for stores into object arrays
 
 fuse-boehm-gc
-Java
+Java Var(flag_use_boehm_gc)
+Generate code for the Boehm GC
 
 fuse-divide-subroutine
-Java
+Java Var(flag_use_divide_subroutine) Init(1)
+Call a library routine to do integer divisions
 
 version
 Java
-
-; This comment is to ensure we retain the blank line above.
