@@ -1,5 +1,8 @@
 Fri Jun 19 20:38:34 1998  H.J. Lu  (hjl@gnu.org)
 
+	* c-tree.h (comptypes_record_hook): Removed.
+	(finish_incomplete_decl): New prototype.
+
 	* alias.c (find_base_value): Add prototype.
 	(true_dependence): Add prototype for function argument.
 
