@@ -1074,7 +1074,7 @@ assemble_trampoline_template ()
   /* Some assemblers don't like instructions in data segment, so always
      put trampoline template in text segment.  */
 
-  text_section ();
+  readonly_data_section ();
 
   /* Write the assembler code to define one.  */
   align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
