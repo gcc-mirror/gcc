@@ -135,23 +135,15 @@ Boston, MA 02111-1307, USA.  */
  : ((n) >= FIRST_STACK_REG && (n) <= LAST_STACK_REG) ? (n)+3 \
  : (-1))
 
-/* Output assembler code to FILE to increment profiler label # LABELNO
-   for profiling a function entry.  */
+/* Tell final.c that we don't need a label passed to mcount.  */
 
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
 {									\
   if (flag_pic)								\
-    {									\
-      fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%edx\n",		\
-	       LPREFIX, (LABELNO));					\
-      fprintf (FILE, "\tcall *mcount@GOT(%%ebx)\n");			\
-    }									\
+      fprintf (FILE, "\tcall *.mcount@GOT(%%ebx)\n");			\
   else									\
-    {									\
-      fprintf (FILE, "\tmovl $%sP%d,%%edx\n", LPREFIX, (LABELNO));	\
-      fprintf (FILE, "\tcall mcount\n");				\
-    }									\
+      fprintf (FILE, "\tcall .mcount\n");				\
 }
 
 #undef SIZE_TYPE
