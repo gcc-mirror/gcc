@@ -34,10 +34,14 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_LONG64
 #define TARGET_LONG64		(mips_abi == ABI_64)
 
+/* We must pass -D_LONGLONG always, even when -ansi is used, because irix6
+   system header files require it.  This is OK, because gcc never warns
+   when long long is used in system header files.  Alternatively, we can
+   add support for the SGI builtin type __long_long.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
  "-Dunix -Dmips -Dsgi -Dhost_mips -DMIPSEB -D_MIPSEB -DSYSTYPE_SVR4 \
-  -D_SVR4_SOURCE -D_MODERN_C -D__DSO__ \
+  -D_LONGLONG -D_SVR4_SOURCE -D_MODERN_C -D__DSO__ \
   -Asystem(unix) -Asystem(svr4) -Acpu(mips) -Amachine(sgi)"
 
 #undef SUBTARGET_CPP_SIZE_SPEC
@@ -57,7 +61,7 @@ Boston, MA 02111-1307, USA.  */
 /* ??? Same for __SIZE_TYPE and __PTRDIFF_TYPE.  */
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "\
-%{!ansi:-D__EXTENSIONS__ -D_SGI_SOURCE -D_LONGLONG} \
+%{!ansi:-D__EXTENSIONS__ -D_SGI_SOURCE} \
 %{mfp32: -D_MIPS_FPSET=16}%{!mfp32: -D_MIPS_FPSET=32} \
 %{mips1: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
 %{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
