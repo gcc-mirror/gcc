@@ -1,3 +1,11 @@
+2001-07-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/alpha/osf.h (ASM_OUTPUT_WEAK_ALIAS, ASM_WEAKEN_LABEL,
+	HANDLE_SYSV_PRAGMA): Define.
+	* mips-tfile.c (add_ext_symbol): Pass complete symbol ptr, inline
+	previous args.
+	(copy_object): Caller changed.
+
 2001-07-19  Andreas Schwab  <schwab@suse.de>
 
 	* configure.in (assembler dwarf2 debug_line support): Define nop

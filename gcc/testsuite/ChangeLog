@@ -1,3 +1,10 @@
+2001-07-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* g++.old-deja/g++.pt/static3.C: Removed alpha*-*-osf* XFAIL.
+	g++.old-deja/g++.pt/static6.C: Likewise.
+	* lib/target-supports.exp (check_weak_available): alpha*-*-osf*
+	supports weak symbols.
+
 2001-07-18  Andreas Jaeger  <aj@suse.de>
 
 	* g++.dg/vtgc1.C: Revert patch from 2001-04-26 since vtable-gc is

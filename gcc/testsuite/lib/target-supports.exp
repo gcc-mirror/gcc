@@ -27,12 +27,19 @@
 # this proc returns 1 if they're supported, 0 if they're not, or -1 if unsure
 
 proc check_weak_available { } {
+    global target_triplet
     global target_cpu
 
     # All mips targets should support it
     
     if { [ string first "mips" $target_cpu ] >= 0 } {
         return 1
+    }
+
+    # DEC OSF/1/Digital UNIX/Tru64 UNIX supports it
+
+    if { [regexp "alpha.*osf.*" $target_triplet] } {
+	return 1
     }
 
     # ELF and ECOFF support it. a.out does with gas/gld but may also with
