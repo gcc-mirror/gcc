@@ -6064,16 +6064,25 @@ c4xtoe (d, e, mode)
      enum machine_mode mode;
 {
   UEMUSHORT y[NI];
+  UEMUSHORT dn[4];
   int r;
   int isnegative;
   int size;
   int i;
   int carry;
 
+  dn[0] = d[0];
+  dn[1] = d[1];
+  if (mode != QFmode)
+    {
+      dn[2] = d[3] << 8;
+      dn[3] = 0;
+    }
+
   /* Short-circuit the zero case.  */
-  if ((d[0] == 0x8000)
-      && (d[1] == 0x0000)
-      && ((mode == QFmode) || ((d[2] == 0x0000) && (d[3] == 0x0000))))
+  if ((dn[0] == 0x8000)
+      && (dn[1] == 0x0000)
+      && ((mode == QFmode) || ((dn[2] == 0x0000) && (dn[3] == 0x0000))))
     {
       e[0] = 0;
       e[1] = 0;
@@ -6085,87 +6094,79 @@ c4xtoe (d, e, mode)
     }
 
   ecleaz (y);			/* start with a zero */
-  r = d[0];			/* get sign/exponent part */
+  r = dn[0];			/* get sign/exponent part */
   if (r & (unsigned int) 0x0080)
-  {
-     y[0] = 0xffff;		/* fill in our sign */
-     isnegative = TRUE;
-  }
+    {
+      y[0] = 0xffff;		/* fill in our sign */
+      isnegative = TRUE;
+    }
   else
-  {
-     isnegative = FALSE;
-  }
+    isnegative = FALSE;
 
   r >>= 8;			/* Shift exponent word down 8 bits.  */
   if (r & 0x80)			/* Make the exponent negative if it is.  */
-  {
-     r = r | (~0 & ~0xff);
-  }
+    r = r | (~0 & ~0xff);
 
   if (isnegative)
-  {
-     /* Now do the high order mantissa.  We don't "or" on the high bit
-	because it is 2 (not 1) and is handled a little differently
-	below.  */
-     y[M] = d[0] & 0x7f;
+    {
+      /* Now do the high order mantissa.  We don't "or" on the high bit
+	 because it is 2 (not 1) and is handled a little differently
+	 below.  */
+      y[M] = dn[0] & 0x7f;
 
-     y[M+1] = d[1];
-     if (mode != QFmode)	/* There are only 2 words in QFmode.  */
-     {
-	y[M+2] = d[2];		/* Fill in the rest of our mantissa.  */
-	y[M+3] = d[3];
-	size = 4;
-     }
-     else
-     {
+      y[M+1] = dn[1];
+      if (mode != QFmode)	/* There are only 2 words in QFmode.  */
+        {
+	  y[M+2] = dn[2];	/* Fill in the rest of our mantissa.  */
+	  y[M+3] = dn[3];
+	  size = 4;
+        }
+      else
 	size = 2;
-     }
-     eshift(y, -8);
+      eshift(y, -8);
 
-     /* Now do the two's complement on the data.  */
+      /* Now do the two's complement on the data.  */
 
-     carry = 1;	/* Initially add 1 for the two's complement.  */
-     for (i=size + M; i > M; i--)
-     {
-	if (carry && (y[i] == 0x0000))
-	{
-	   /* We overflowed into the next word, carry is the same.  */
-	   y[i] = carry ? 0x0000 : 0xffff;
-	}
-	else
-	{
-	   /* No overflow, just invert and add carry.  */
-	   y[i] = ((~y[i]) + carry) & 0xffff;
-	   carry = 0;
-	}
-     }
+      carry = 1;	/* Initially add 1 for the two's complement.  */
+      for (i=size + M; i > M; i--)
+        {
+	  if (carry && (y[i] == 0x0000))
+	    /* We overflowed into the next word, carry is the same.  */
+	    y[i] = carry ? 0x0000 : 0xffff;
+	  else
+	    {
+	      /* No overflow, just invert and add carry.  */
+	      y[i] = ((~y[i]) + carry) & 0xffff;
+	      carry = 0;
+	    }
+        }
 
-     if (carry)
-     {
-	eshift(y, -1);
-	y[M+1] |= 0x8000;
-	r++;
-     }
-     y[1] = r + EXONE;
-  }
+      if (carry)
+        {
+	  eshift(y, -1);
+	  y[M+1] |= 0x8000;
+	  r++;
+         }
+       y[1] = r + EXONE;
+    }
   else
-  {
-    /* Add our e type exponent offset to form our exponent.  */
-     r += EXONE;
-     y[1] = r;
+    {
+      /* Add our e type exponent offset to form our exponent.  */
+      r += EXONE;
+      y[1] = r;
 
      /* Now do the high order mantissa strip off the exponent and sign
 	bits and add the high 1 bit.  */
-     y[M] = (d[0] & 0x7f) | 0x80;
+     y[M] = (dn[0] & 0x7f) | 0x80;
 
-     y[M+1] = d[1];
+     y[M+1] = dn[1];
      if (mode != QFmode)	/* There are only 2 words in QFmode.  */
-     {
-	y[M+2] = d[2];		/* Fill in the rest of our mantissa.  */
-	y[M+3] = d[3];
-     }
+       {
+	 y[M+2] = dn[2];	/* Fill in the rest of our mantissa.  */
+	 y[M+3] = dn[3];
+       }
      eshift(y, -8);
-  }
+    }
 
   emovo (y, e);
 }
@@ -6243,9 +6244,7 @@ toc4x (x, y, mode)
       while (v > M)
 	{
 	  if (x[v] == 0x0000)
-	    {
-	      x[v] = carry ? 0x0000 : 0xffff;
-	    }
+	    x[v] = carry ? 0x0000 : 0xffff;
 	  else
 	    {
 	      x[v] = ((~x[v]) + carry) & 0xffff;
@@ -6267,9 +6266,7 @@ toc4x (x, y, mode)
 	}
     }
   else
-    {
-      i = ((int) x[1]) - 0x7f;
-    }
+    i = ((int) x[1]) - 0x7f;
 
   if ((i < -128) || (i > 127))
     {
@@ -6279,6 +6276,8 @@ toc4x (x, y, mode)
 	{
 	  y[2] = 0xffff;
 	  y[3] = 0xffff;
+	  y[3] = (y[1] << 8) | ((y[2] >> 8) & 0xff);
+	  y[2] = (y[0] << 8) | ((y[1] >> 8) & 0xff);
 	}
 #ifdef ERANGE
       errno = ERANGE;
@@ -6296,6 +6295,8 @@ toc4x (x, y, mode)
     {
       y[2] = x[M + 2];
       y[3] = x[M + 3];
+      y[3] = (y[1] << 8) | ((y[2] >> 8) & 0xff);
+      y[2] = (y[0] << 8) | ((y[1] >> 8) & 0xff);
     }
 }
 #endif /* C4X */
