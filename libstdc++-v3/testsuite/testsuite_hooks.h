@@ -1,6 +1,6 @@
 // Utility subroutines for the C++ library testsuite.
 //
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,7 @@
 //   allocation.  We provide a default memory limit if none is passed by the
 //   calling application.  The argument to __set_testsuite_memlimit() is the
 //   limit in megabytes (a floating-point number).  If _GLIBCPP_MEM_LIMITS is
-//   #defined before including this header, then no limiting is attempted.
+//   not #defined before including this header, then no limiting is attempted.
 //
 // 3)  gnu_counting_struct
 //   This is a POD with a static data member, gnu_counting_struct::count,
