@@ -74,4 +74,4 @@ stamp_wchar:
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
-	     testsuite_files testsuite_wchar_t site.exp abi_check 
+	     testsuite_* site.exp abi_check 

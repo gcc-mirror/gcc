@@ -54,8 +54,11 @@ proc libstdc++-v3-init { args } {
     set dg-do-what-default run
 
     # Copy any required data files.
-    libstdc++-v3-copy-files [glob -nocomplain "$srcdir/{,*/}*/*.tst"] $outdir
-    libstdc++-v3-copy-files [glob -nocomplain "$srcdir/{,*/}*/*.txt"] $outdir
+    libstdc++-v3-copy-files [glob -nocomplain "$srcdir/data/*.tst"] $outdir
+    libstdc++-v3-copy-files [glob -nocomplain "$srcdir/data/*.txt"] $outdir
+
+    # Compute lists of files to test.
+    v3-compute-tests
 
     # set LD_LIBRARY_PATH so that libgcc_s, libstdc++ binaries can be found.
     # locate libgcc.a so we don't need to account for different values of
@@ -209,54 +212,109 @@ proc libstdc++-v3_target_compile { source dest type options } {
 }
 
 
-# A bit sloppy...  Returns a list of source files (full pathnames) to
-# compile.  We mimic the mkcheck script in that the first time this is run,
-# all existing files are listed in "testsuite_files" in the output
-# directory.  Subsequent runs pull the list from that file, allowing users
-# to trim the list down to problematic tests.
-### This is supposed to be done via RUNTESTFLAGS, but that doesn't work.
-proc libstdc++-v3-list-sourcefiles { } {
+# Constructs lists of source files (full pathnames) to test.  Two
+# files are constructed: testsuite_files, which is used to test with
+# the default dg-runtest command, and testsuite_files_interactive,
+# which is used to test cases that require input to be entered. In
+# addition, both lists are pruned of wchar_t tests if the toolchain
+# under test does not support wchar_t functionality.
+#
+# We mimic the mkcheck script in that the first time this is run, all
+# existing files are listed in "testsuite_files" in the output
+# directory.  Subsequent runs pull the list from that file, allowing
+# users to trim the list down to problematic tests, or just run
+# paticular directories or sub-directories of tests.
+#
+# Selecting individual tests can also be done with RUNTESTFLAGS, but
+# that doesn't really do all that we are trying to accomplish here.
+proc v3-compute-tests { } {
     global srcdir
     global outdir
 
-    set files_file "${outdir}/testsuite_files"
+    set tests_file "${outdir}/testsuite_files"
+    set tests_file_inter "${outdir}/testsuite_files_interactive"
     set sfiles ""
-    if { [file exists $files_file] } {
-	set f [open $files_file]
-	while { ! [eof $f] } {
-	    set t [gets $f]
-	    if { [string length "$t"] != 0 } {
-		lappend sfiles ${srcdir}/${t}
-	    }
-	}
-    } else {
-	set f [open $files_file "w"]
-	set where_we_were [pwd]
-	cd $srcdir
-	foreach s [lsort [glob -nocomplain "*/*.cc" "*/*/*.cc" "{,*/}*/*/*/*.cc" ]] {
-	    lappend sfiles ${srcdir}/${s}
-	    puts $f $s
-	}
-	cd $where_we_were
-    }
-    close $f
 
+    # If there is a testsuite_file, use it. 
+    if { [file exists $tests_file] } {
+	return 
+    } 
+
+    # If not, generate it. 
+    set where_we_were [pwd]
+    cd $srcdir
+    foreach s [lsort [glob -nocomplain "*/*.cc" "*/*/*.cc" "{,*/}*/*/*/*.cc" ]] {
+	lappend sfiles ${s}
+    }
+    cd $where_we_were
+
+    # Filter wchar_t tests.
     # Disable wchar_t tests if library not configured to support
     # wchar_t testing. 
     set wchar_file "${outdir}/testsuite_wchar_t"    
-    if { [file exists $wchar_file] } {
-	return $sfiles
-    } else {
+    if { ! [file exists $wchar_file] } {
 	# Remove wchar_t tests files from list.
 	set res {}
 	foreach w $sfiles {
 	    if [regexp "wchar_t" $w] {
-		verbose "element out list is $w"
+		verbose "element wchar list is $w"
 	    } else {
-		verbose "element in list is $w"
+		verbose "element non-wchar list is $w"
 		lappend res $w
 	    }
 	}
-	return $res
+	set sfiles ${res}
     }
+
+    # Filter interactive tests.
+    # Use special rules to run these tests.
+    set restwo {}
+    set sfiles_inter {}
+    foreach i $sfiles {
+	if [regexp "_xin" $i] {
+	    verbose "element interactive list is $i"
+	    lappend sfiles_inter $i
+	} else {
+	    verbose "element non-interactive list is $i"
+	    lappend restwo $i
+	}
+    }
+    set sfiles ${restwo}
+
+    # Write out testsuite_files.
+    set f [open $tests_file "w"]
+    foreach t $sfiles {
+	puts $f $t
+    }
+    close $f
+
+    # Write out testsuite_files_interactive.
+    set f [open $tests_file_inter "w"]
+    foreach t $sfiles_inter {
+	puts $f $t
+    }
+    close $f
+}
+
+proc v3-list-tests { filename } {
+    global srcdir
+    global outdir
+    
+    set tests_file "${outdir}/${filename}"
+    set sfiles ""
+
+    # If there is a testsuite_file, use it. 
+    if { [file exists $tests_file] } {
+	set f [open $tests_file]
+	while { ! [eof $f] } {
+	    set t [gets $f]
+	    if { [string length "$t"] != 0 } {
+		lappend sfiles  ${srcdir}/${t}
+	    }
+	} 
+	close $f
+    } else {
+	verbose "cannot open $tests_file"
+    }
+    return $sfiles
 }

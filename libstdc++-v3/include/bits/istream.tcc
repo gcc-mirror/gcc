@@ -841,6 +841,7 @@ namespace std
     basic_istream<_CharT, _Traits>::
     putback(char_type __c)
     {
+      _M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb) 
 	{

@@ -1,0 +1,56 @@
+// 1999-07-28 bkoz
+
+// Copyright (C) 1999, 2001, 2003 Free Software Foundation
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+// 27.6.1.2.3 basic_istream::operator>>
+// @require@ %-*.tst %-*.txt
+// @diff@ %-*.tst %-*.txt
+
+#include <istream>
+#include <sstream>
+#include <fstream>
+#include <testsuite_hooks.h>
+
+void test03() 
+{
+  using namespace std;  
+  bool test = true;
+
+  // template<_CharT, _Traits>
+  //  basic_istream& operator>>(ios_base& (*pf) (ios_base&))
+  {
+    int i = 0;
+    std::istringstream iss(" 43");
+    iss >> std::noskipws >> i;
+    std::ios::iostate i3 = iss.rdstate();
+    VERIFY ( !iss ); //should set failbit
+  }
+
+  // template<_CharT, _Traits>
+  //  basic_istream& operator>>(basic_ios& (*pf) (basic_ios&))
+
+  // template<_CharT, _Traits>
+  //  basic_istream& operator>>(basic_istream& (*pf) (basic_istream&))
+}
+
+int main()
+{
+  test03();
+  return 0;
+}

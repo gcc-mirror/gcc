@@ -26,11 +26,12 @@ if ![info exists DEFAULT_CXXFLAGS] then {
 }
 
 # Initialize 'dg' last or dejagnu exits with an error...
-libstdc++-v3-init
 dg-init
+libstdc++-v3-init
 
 # Main loop.
-dg-runtest [libstdc++-v3-list-sourcefiles] "" $DEFAULT_CXXFLAGS
+dg-runtest [v3-list-tests testsuite_files] "" $DEFAULT_CXXFLAGS
+#dg-runtest [v3-list-tests testsuite_files_interactive] "" $DEFAULT_CXXFLAGS
 
 # All done.
 dg-finish
