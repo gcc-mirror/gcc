@@ -1,3 +1,8 @@
+2003-10-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/linuxspe.h: Define TARGET_SPE_ABI, TARGET_SPE,
+	TARGET_E500, TARGET_ISEL, and TARGET_FPRS.
+
 2003-10-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-pretty-print.c: Fix comment typos.
