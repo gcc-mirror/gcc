@@ -742,6 +742,8 @@ extern void build_ssa_operands (tree, stmt_ann_t, stmt_operands_p,
 /* In tree-loop-linear.c  */
 extern void linear_transform_loops (struct loops *);
 
+/* In tree-ssa-loop-ivopts.c  */
+extern bool expr_invariant_in_loop_p (struct loop *loop, tree expr);
 /* In gimplify.c  */
 
 tree force_gimple_operand (tree, tree *, bool, tree);

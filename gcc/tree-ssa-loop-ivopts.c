@@ -1191,7 +1191,7 @@ find_interesting_uses_cond (struct ivopts_data *data, tree stmt, tree *cond_p)
 /* Returns true if expression EXPR is obviously invariant in LOOP,
    i.e. if all its operands are defined outside of the LOOP.  */
 
-static bool
+bool
 expr_invariant_in_loop_p (struct loop *loop, tree expr)
 {
   basic_block def_bb;
