@@ -104,7 +104,7 @@ public class DefaultCaret extends Rectangle implements Caret, FocusListener, Mou
     Point magic = null;
     public void setMagicCaretPosition(Point p)
     {	magic = p;    }
-    public Point getMagicaretPosition()
+    public Point getMagicCaretPosition()
     {	return magic;    }
 
     
@@ -167,6 +167,3 @@ public class DefaultCaret extends Rectangle implements Caret, FocusListener, Mou
 	repaint();
     }
 }
-
-
-

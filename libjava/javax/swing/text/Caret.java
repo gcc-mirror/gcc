@@ -46,7 +46,7 @@ public interface Caret
     void deinstall(JTextComponent c);
     int getBlinkRate();
     int getDot();
-    Point getMagicaretPosition();
+    Point getMagicCaretPosition();
     int getMark();
     void install(JTextComponent c);
     boolean isSelectionVisible();
