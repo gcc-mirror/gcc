@@ -1,5 +1,10 @@
 2004-08-25  Paul Brook  <paul@codesourcery.com>
 
+	PR fortran/17190
+	* arith.c (gfc_mpfr_to_mpz): Workaround mpfr bug.
+
+2004-08-25  Paul Brook  <paul@codesourcery.com>
+
 	PR fortran/17144
 	* trans-array.c (gfc_trans_allocate_temp_array): Remove
 	string_length argument.
