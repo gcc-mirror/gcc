@@ -1,6 +1,6 @@
-;; libgcc routines for the Hitachi H8/300 CPU.
+;; libgcc routines for the Renesas H8/300 CPU.
 ;; Contributed by Steve Chamberlain <sac@cygnus.com>
-;; Optimizations by Toshiyasu Morita <toshiyasu.morita@hsa.hitachi.com>
+;; Optimizations by Toshiyasu Morita <toshiyasu.morita@renesas.com>
 
 /* Copyright (C) 1994, 2000, 2001, 2002 Free Software Foundation, Inc.
 
@@ -769,7 +769,7 @@ _done:
 #else /* __H8300H__ */
 
 ;
-; mulsi3 for H8/300H - based on Hitachi SH implementation
+; mulsi3 for H8/300H - based on Renesas SH implementation
 ;
 ; by Toshiyasu Morita
 ;
