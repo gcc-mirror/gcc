@@ -1,5 +1,15 @@
 2005-03-31  Alan Modra  <amodra@bigpond.net.au>
 
+	PR target/20611
+	* config/rs6000/rs6000.md (load_toc_v4_PIC_1b): Remove inline
+	label operand.  Remove (use (unspec..)).  Don't emit a label on
+	the offset word.
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Don't
+	generate inline label for load_toc_v4_PIC_1b.
+	(rs6000_emit_load_toc_table): Likewise.
+
+2005-03-31  Alan Modra  <amodra@bigpond.net.au>
+
 	* config.gcc (cpu_is_64bit): Set for 64-bit powerpc cpus.
 	(powerpc64-*-linux*): Use it.  Rearrange tm_file assignment.
 	(powerpc-*-linux*): Build a biarch compiler when --enable-targets

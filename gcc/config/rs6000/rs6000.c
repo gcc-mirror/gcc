@@ -3001,13 +3001,9 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 		rs6000_emit_move (got, gsym, Pmode);
 	      else
 		{
-		  char buf[30];
-		  static int tls_got_labelno = 0;
-		  rtx tempLR, lab, tmp3, mem;
+		  rtx tempLR, tmp3, mem;
 		  rtx first, last;
 
-		  ASM_GENERATE_INTERNAL_LABEL (buf, "LTLS", tls_got_labelno++);
-		  lab = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
 		  tempLR = gen_reg_rtx (Pmode);
 		  tmp1 = gen_reg_rtx (Pmode);
 		  tmp2 = gen_reg_rtx (Pmode);
@@ -3015,8 +3011,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 		  mem = gen_rtx_MEM (Pmode, tmp1);
 		  RTX_UNCHANGING_P (mem) = 1;
 
-		  first = emit_insn (gen_load_toc_v4_PIC_1b (tempLR, lab,
-							     gsym));
+		  first = emit_insn (gen_load_toc_v4_PIC_1b (tempLR, gsym));
 		  emit_move_insn (tmp1, tempLR);
 		  emit_move_insn (tmp2, mem);
 		  emit_insn (gen_addsi3 (tmp3, tmp1, tmp2));
@@ -11467,7 +11462,6 @@ rs6000_emit_load_toc_table (int fromprolog)
       rtx temp0 = (fromprolog
 		   ? gen_rtx_REG (Pmode, 0)
 		   : gen_reg_rtx (Pmode));
-      rtx symF;
 
       /* possibly create the toc section */
       if (! toc_initialized)
@@ -11478,7 +11472,7 @@ rs6000_emit_load_toc_table (int fromprolog)
 
       if (fromprolog)
 	{
-	  rtx symL;
+	  rtx symF, symL;
 
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
 	  symF = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
@@ -11496,14 +11490,9 @@ rs6000_emit_load_toc_table (int fromprolog)
       else
 	{
 	  rtx tocsym;
-	  static int reload_toc_labelno = 0;
 
 	  tocsym = gen_rtx_SYMBOL_REF (Pmode, toc_label_name);
-
-	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCG", reload_toc_labelno++);
-	  symF = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
-
-	  emit_insn (gen_load_toc_v4_PIC_1b (tempLR, symF, tocsym));
+	  emit_insn (gen_load_toc_v4_PIC_1b (tempLR, tocsym));
 	  emit_move_insn (dest, tempLR);
 	  emit_move_insn (temp0, gen_rtx_MEM (Pmode, dest));
 	}
