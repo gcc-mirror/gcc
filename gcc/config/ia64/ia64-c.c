@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-common.h"
 #include "c-pragma.h"
 #include "toplev.h"
+#include "tm_p.h"
 
 static void ia64_hpux_add_pragma_builtin PARAMS ((tree func));
 
