@@ -1,4 +1,8 @@
-Wed Jan  7 12:05:51 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+Tue Jan 13 22:14:57 1998  Klaus Kaempf <kkaempf@progis.de>
+
+	* alpha/vms.h (DIR_SEPARATOR): define
+
+Tue Jan 13 22:13:04 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
 
 	* Makefile.in (stamp-proto): Remove.
 	(protoize.o, unprotoize.o): Straightforward compile.
