@@ -2727,7 +2727,7 @@ cris_file_start (void)
 
 /* Rename the function calls for integer multiply and divide.  */
 static void
-cris_init_libfuncs ()
+cris_init_libfuncs (void)
 {
   set_optab_libfunc (smul_optab, SImode, "__Mul");
   set_optab_libfunc (sdiv_optab, SImode, "__Div");

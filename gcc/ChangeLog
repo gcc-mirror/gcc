@@ -1,3 +1,8 @@
+2003-10-02  Zack Weinberg  <zack@codesourcery.com>
+
+	* system.h: Poison macros obsoleted by earlier patch.
+	* config/cris/cris.c: C90-ify a function definition.
+
 2003-10-02  Josef Zlomek  <zlomekj@suse.cz>
 
 	PR/12292
@@ -11,7 +16,7 @@
 	(cgraph_node_for_identifier): Use NO_INSERT.
 	(cgraph_remove_node): Use NO_INSERT.
 	(cgraph_varpool_node): Use INSERT.
-	(cgraph_varpool_node_for_identifier): Use NO_INSERT.     	
+	(cgraph_varpool_node_for_identifier): Use NO_INSERT.
 
 2003-10-02  Josef Zlomek  <zlomekj@suse.cz>
 
