@@ -1,3 +1,8 @@
+2002-03-21  Eric Blake  <ebb9@email.byu.edu>
+
+	Fix for PR java/6026:
+	* lex.c (java_lex): Fix parsing of consecutive floats.
+
 2002-03-21  Tom Tromey  <tromey@redhat.com>
 
 	* parse.y (build_access_to_thisn): Stop when FROM is not an inner
