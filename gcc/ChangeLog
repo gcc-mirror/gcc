@@ -1,5 +1,16 @@
 2002-12-21  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300-protos.h: Update the prototype for
+	split_adds_subs.
+	Add prototypes for const_le_2_operand and const_le_6_operand.
+	* config/h8300/h8300.c (split_adds_subs): Add an argument to
+	specify whether inc/dec should be used when possible.
+	(const_le_2_operand): New.
+	(const_le_6_operand): Likewise.
+	* config/h8300/h8300.md (two peepholes): New.
+
+2002-12-21  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/fr30/fr30.md: Fix a comment typo.
 	* config/i386/i386.c: Likewise.
 	* config/ip2k/ip2k.h: Likewise.
