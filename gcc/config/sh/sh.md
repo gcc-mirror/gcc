@@ -4219,9 +4219,8 @@ else
    (set_attr "fp_mode" "single")])
 
 (define_expand "floatsisf2"
-  [(parallel [(set (match_operand:SF 0 "arith_reg_operand" "")
-		   (float:SF (match_operand:SI 1 "arith_reg_operand" "")))
-	      (use (match_dup 2))])]
+  [(set (match_operand:SF 0 "arith_reg_operand" "")
+	(float:SF (match_operand:SI 1 "reg_no_subreg_operand" "")))]
   "TARGET_SH3E"
   "
 {
@@ -4230,25 +4229,23 @@ else
       emit_sf_insn (gen_floatsisf2_i4 (operands[0], operands[1], get_fpscr_rtx ()));
       DONE;
     }
-  operands[2] = get_fpscr_rtx ();
 }")
 
 (define_insn "floatsisf2_i4"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
 	(float:SF (match_operand:SI 1 "reg_no_subreg_operand" "y")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
-  "TARGET_SH3E"
+  "TARGET_SH4"
   "float	%1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
 
-;; ??? This pattern is used nowhere.  floatsisf always expands to floatsisf_i4.
-;; (define_insn "*floatsisf2_ie"
-;;  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-;;	(float:SF (reg:SI 22)))]
-;;  "TARGET_SH3E && ! TARGET_SH4"
-;;  "float	fpul,%0"
-;;  [(set_attr "type" "fp")])
+(define_insn "*floatsisf2_ie"
+  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
+	(float:SF (match_operand:SI 1 "reg_no_subreg_operand" "y")))]
+  "TARGET_SH3E && ! TARGET_SH4"
+  "float	%1,%0"
+  [(set_attr "type" "fp")])
 
 (define_expand "fix_truncsfsi2"
   [(set (match_operand:SI 0 "register_operand" "=y")
@@ -4480,7 +4477,7 @@ else
 
 (define_expand "floatsidf2"
   [(match_operand:DF 0 "arith_reg_operand" "")
-   (match_operand:SI 1 "arith_reg_operand" "")]
+   (match_operand:SI 1 "reg_no_subreg_operand" "")]
   "TARGET_SH4"
   "
 {
@@ -4624,7 +4621,7 @@ else
 
 (define_expand "extendsfdf2"
   [(match_operand:DF 0 "arith_reg_operand" "")
-   (match_operand:SF 1 "arith_reg_operand" "")]
+   (match_operand:SF 1 "reg_no_subreg_operand" "")]
   "TARGET_SH4"
   "
 {
