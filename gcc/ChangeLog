@@ -1,3 +1,44 @@
+2005-03-31  Jan Hubicka  <jh@suse.cz>
+
+	2004-11-02  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_varpool_node_name): New function.
+	(dump_cgraph_varpool_node): New function.
+	(dump_varpool): New function.
+	* cgraphunit.c (cgraph_optimize): Dump varpool.
+
+	2004-10-16  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (decide_is_variable_needed): New function.
+	(cgraph_varpool_finalize_decl): Use it.
+	* cgraphunit.c (cgraph_optimize): Assemble_pending_decls when not doing
+	unit-at-a-time.
+	* final.c (output_addr_const): Do not call mark_referenced.
+	* passes.c (rest_of_decl_compilation): ifdef out DECL_RTL_SET_P hack;
+	always go via cgraph.
+	* toplev.c (wrapup_global_declarations): Kill non-unit-at-a-time code.
+	(check_global_declarations): Ifdef out code clearing DECL_RTL.
+	* tree-optimize.c (execute_inline): Mark functions called.
+	* i386.c (output_pic_addr_const): Do not call mark_decl_referenced.
+
+	2004-10-11  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_varpool_first_unanalyzed_node): New global voriable
+	(cgraph_varpool_last_needed_node): New static variable.
+	(enqueue_needed_varpool_node): Break out from ...; add items to the
+	end of queue; update first pointers.
+	(cgraph_varpool_mark_needed_node): ... here.
+	(cgraph_varpool_finalize_decl): Use enqueue_needed_varpool_node.
+	(cgraph_varpool_assemble_pending_decls): Move to cgraphunit.c
+	* cgraph.h (cgraph_varpool_node): Add analyzed field.
+	(cgraph_varpool_first_unanalyzed_node): Declare.
+	* cgraphunit.c: Include output.h.
+	(cgraph_varpool_analyze_pending_decls): New function.
+	(cgraph_varpool_assemble_pending_decls): Move from cgraph.c; bail out
+	for errors, analyze pending decls.
+	(cgraph_finalize_compilation_unit): Only analyze decls.
+	(cgraph_optimize): Assemble the decls after expanding.
+
 2005-03-30  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): Make sure

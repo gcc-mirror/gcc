@@ -781,11 +781,11 @@ wrapup_global_declarations (tree *vec, int len)
 	      bool needed = 1;
 	      node = cgraph_varpool_node (decl);
 
-	      if (flag_unit_at_a_time && node->finalized)
+	      if (node->finalized)
 		needed = 0;
 	      else if (node->alias)
 		needed = 0;
-	      else if ((flag_unit_at_a_time && !cgraph_global_info_ready)
+	      else if (!cgraph_global_info_ready
 		       && (TREE_USED (decl)
 			   || TREE_USED (DECL_ASSEMBLER_NAME (decl))))
 		/* needed */;

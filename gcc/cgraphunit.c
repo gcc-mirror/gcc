@@ -189,6 +189,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "intl.h"
 #include "function.h"
 #include "tree-gimple.h"
+#include "output.h"
 
 #define INSNS_PER_CALL 10
 
@@ -281,6 +282,64 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
   return false;
 }
 
+/* Walk the decls we marked as neccesary and see if they reference new variables
+   or functions and add them into the worklists.  */
+static bool
+cgraph_varpool_analyze_pending_decls (void)
+{
+  bool changed = false;
+  timevar_push (TV_CGRAPH);
+
+  while (cgraph_varpool_first_unanalyzed_node)
+    {
+      tree decl = cgraph_varpool_first_unanalyzed_node->decl;
+
+      cgraph_varpool_first_unanalyzed_node->analyzed = true;
+
+      cgraph_varpool_first_unanalyzed_node = cgraph_varpool_first_unanalyzed_node->next_needed;
+
+      if (DECL_INITIAL (decl))
+	cgraph_create_edges (NULL, DECL_INITIAL (decl));
+      changed = true;
+    }
+  timevar_pop (TV_CGRAPH);
+  return changed;
+}
+
+/* Optimization of function bodies might've rendered some variables as
+   unnecesary so we want to avoid these from being compiled.
+
+   This is done by prunning the queue and keeping only the variables that
+   really appear needed (ie thery are either externally visible or referenced
+   by compiled function). Re-doing the reachability analysis on variables
+   brings back the remaining variables referenced by these.  */
+static void
+cgraph_varpool_remove_unreferenced_decls (void)
+{
+  struct cgraph_varpool_node *next, *node = cgraph_varpool_nodes_queue;
+
+  cgraph_varpool_reset_queue ();
+
+  if (errorcount || sorrycount)
+    return;
+
+  while (node)
+    {
+      tree decl = node->decl;
+      next = node->next_needed;
+      node->needed = 0;
+
+      if (node->finalized
+	  && ((DECL_ASSEMBLER_NAME_SET_P (decl)
+	       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+	      || node->force_output
+	      || decide_is_variable_needed (node, decl)))
+	cgraph_varpool_mark_needed_node (node);
+
+      node = next;
+    }
+  cgraph_varpool_analyze_pending_decls ();
+}
 
 
 /* When not doing unit-at-a-time, output all functions enqueued.
@@ -421,7 +480,7 @@ record_call_1 (tree *tp, int *walk_subtrees, void *data)
       /* ??? Really, we should mark this decl as *potentially* referenced
 	 by this function and re-examine whether the decl is actually used
 	 after rtl has been generated.  */
-      if (TREE_STATIC (t))
+      if (TREE_STATIC (t) || DECL_EXTERNAL (t))
 	{
 	  cgraph_varpool_mark_needed_node (cgraph_varpool_node (t));
 	  if (lang_hooks.callgraph.analyze_expr)
@@ -639,6 +698,37 @@ verify_cgraph (void)
     verify_cgraph_node (node);
 }
 
+
+/* Output all variables enqueued to be assembled.  */
+bool
+cgraph_varpool_assemble_pending_decls (void)
+{
+  bool changed = false;
+
+  if (errorcount || sorrycount)
+    return false;
+ 
+  /* EH might mark decls as needed during expansion.  This should be safe since
+     we don't create references to new function, but it should not be used
+     elsewhere.  */
+  cgraph_varpool_analyze_pending_decls ();
+
+  while (cgraph_varpool_nodes_queue)
+    {
+      tree decl = cgraph_varpool_nodes_queue->decl;
+      struct cgraph_varpool_node *node = cgraph_varpool_nodes_queue;
+
+      cgraph_varpool_nodes_queue = cgraph_varpool_nodes_queue->next_needed;
+      if (!TREE_ASM_WRITTEN (decl) && !node->alias && !DECL_EXTERNAL (decl))
+	{
+	  assemble_variable (decl, 0, 1, 0);
+	  changed = true;
+	}
+      node->next_needed = NULL;
+    }
+  return changed;
+}
+
 /* Analyze the function scheduled to be output.  */
 static void
 cgraph_analyze_function (struct cgraph_node *node)
@@ -681,6 +771,9 @@ void
 cgraph_finalize_compilation_unit (void)
 {
   struct cgraph_node *node;
+  /* Keep track of already processed nodes when called multiple times for
+     intermodule optmization.  */
+  static struct cgraph_node *first_analyzed;
 
   finish_aliases_1 ();
 
@@ -690,15 +783,18 @@ cgraph_finalize_compilation_unit (void)
       return;
     }
 
-  cgraph_varpool_assemble_pending_decls ();
   if (!quiet_flag)
-    fprintf (stderr, "\nAnalyzing compilation unit\n");
+    {
+      fprintf (stderr, "\nAnalyzing compilation unit");
+      fflush (stderr);
+    }
 
   timevar_push (TV_CGRAPH);
+  cgraph_varpool_analyze_pending_decls ();
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "Initial entry points:");
-      for (node = cgraph_nodes; node; node = node->next)
+      for (node = cgraph_nodes; node != first_analyzed; node = node->next)
 	if (node->needed && DECL_SAVED_TREE (node->decl))
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
       fprintf (cgraph_dump_file, "\n");
@@ -732,7 +828,7 @@ cgraph_finalize_compilation_unit (void)
 	if (!edge->callee->reachable)
 	  cgraph_mark_reachable_node (edge->callee);
 
-      cgraph_varpool_assemble_pending_decls ();
+      cgraph_varpool_analyze_pending_decls ();
     }
 
   /* Collect entry points to the unit.  */
@@ -740,7 +836,7 @@ cgraph_finalize_compilation_unit (void)
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "Unit entry points:");
-      for (node = cgraph_nodes; node; node = node->next)
+      for (node = cgraph_nodes; node != first_analyzed; node = node->next)
 	if (node->needed && DECL_SAVED_TREE (node->decl))
 	  fprintf (cgraph_dump_file, " %s", cgraph_node_name (node));
       fprintf (cgraph_dump_file, "\n\nInitial ");
@@ -750,7 +846,7 @@ cgraph_finalize_compilation_unit (void)
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "\nReclaiming functions:");
 
-  for (node = cgraph_nodes; node; node = node->next)
+  for (node = cgraph_nodes; node != first_analyzed; node = node->next)
     {
       tree decl = node->decl;
 
@@ -768,6 +864,7 @@ cgraph_finalize_compilation_unit (void)
       fprintf (cgraph_dump_file, "\n\nReclaimed ");
       dump_cgraph (cgraph_dump_file);
     }
+  first_analyzed = cgraph_nodes;
   ggc_collect ();
   timevar_pop (TV_CGRAPH);
 }
@@ -1766,9 +1863,16 @@ cgraph_optimize (void)
   verify_cgraph ();
 #endif
   if (!flag_unit_at_a_time)
-    return;
+    {
+      cgraph_varpool_assemble_pending_decls ();
+      return;
+    }
 
   process_pending_assemble_externals ();
+  
+  /* Frontend may output common variables after the unit has been finalized.
+     It is safe to deal with them here as they are always zero initialized.  */
+  cgraph_varpool_analyze_pending_decls ();
 
   timevar_push (TV_CGRAPHOPT);
   if (!quiet_flag)
@@ -1788,6 +1892,7 @@ cgraph_optimize (void)
     {
       fprintf (cgraph_dump_file, "Optimized ");
       dump_cgraph (cgraph_dump_file);
+      dump_varpool (cgraph_dump_file);
     }
   timevar_pop (TV_CGRAPHOPT);
 
@@ -1799,8 +1904,11 @@ cgraph_optimize (void)
 #endif
   
   cgraph_mark_functions_to_output ();
-  
   cgraph_expand_all_functions ();
+  cgraph_varpool_remove_unreferenced_decls ();
+
+  cgraph_varpool_assemble_pending_decls ();
+
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "\nFinal ");

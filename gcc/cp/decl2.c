@@ -2110,6 +2110,7 @@ finish_objects (int method_type, int initp, tree body)
   if (targetm.have_ctors_dtors)
     {
       rtx fnsym = XEXP (DECL_RTL (fn), 0);
+      cgraph_mark_needed_node (cgraph_node (fn));
       if (method_type == 'I')
 	(* targetm.asm_out.constructor) (fnsym, initp);
       else
@@ -2959,9 +2960,9 @@ cp_finish_file (void)
       /* Ask the back end to emit functions and variables that are
 	 enqueued.  These emissions may result in marking more entities
 	 as needed.  */
-      if (cgraph_assemble_pending_functions ())
+      if (!flag_unit_at_a_time && cgraph_assemble_pending_functions ())
 	reconsider = true;
-      if (cgraph_varpool_assemble_pending_decls ())
+      if (!flag_unit_at_a_time && cgraph_varpool_assemble_pending_decls ())
 	reconsider = true;
 
       retries++;
