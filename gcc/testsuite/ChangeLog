@@ -1,5 +1,11 @@
 2004-06-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/14957
+	* gfortran.fortran-torture/execute/stack_varsize.f90: Correct
+        syntax errors in end statements of contained subroutines. 
+	
+2004-06-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	PR fortran/12841
 	* gfortran.fortran-torture/execute/null_arg.f90: New test.
 

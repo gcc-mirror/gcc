@@ -1,5 +1,11 @@
 2004-06-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/14957
+	* decl.c (gfc_match_end): Require END {SUBROUTINE|FUNCTION} for
+	contained procedure.
+	
+2004-06-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	PR fortran/12841
 	* interface.c (compare_parameter, compare_actual_formal): Don't
 	check types and array shapes for NULL()

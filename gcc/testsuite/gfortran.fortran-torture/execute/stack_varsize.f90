@@ -17,7 +17,7 @@ contains
       k = 30
       if ((a .ne. 10.0).or.(b(1) .ne. 20.0).or.(c(1) .ne. 30.0)) call abort
       if ((m .ne. 10).or.(n(256,4) .ne. 20).or.(k(1,1024) .ne. 30)) call abort
-   end     
+   end subroutine
 
    ! Local variables defined in recursive subroutine are always put on stack.
    recursive subroutine sub2 (n)
@@ -26,5 +26,5 @@ contains
       if (n .ge. 1) call sub2 (n-1)
       if (a(1) .ne. 42) call abort
       a (1) = 0
-   end
+   end subroutine
 end
