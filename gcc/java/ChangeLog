@@ -16,6 +16,25 @@
         argument on the first pass for CNI as well as JNI.
         (print_method_info): Set up method name on the first pass only.
 	
+2000-07-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (parser_qualified_classname): Removed parameter
+	`is_static'.
+	(create_interface): Removed first passed parameter to
+	parser_qualified_classname.
+	(create_class): Likewise. Don't install alias on static
+	innerclasses. Fixes gcj/275.
+
+2000-07-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (maybe_generate_pre_expand_clinit): Don't build a
+	debugable statement with empty_stmt_node. Fixes gcj/272
+
+2000-07-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (build_instanceof): Layout type after it's loaded. Fixes
+	gcj/271.
+
 2000-06-29  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-write.c (push_long_const): Appropriately cast short negative

@@ -156,7 +156,7 @@ static tree  find_field PARAMS ((tree, tree));
 static tree lookup_field_wrapper PARAMS ((tree, tree));
 static int   duplicate_declaration_error_p PARAMS ((tree, tree, tree));
 static void  register_fields PARAMS ((int, tree, tree));
-static tree parser_qualified_classname PARAMS ((int, tree));
+static tree parser_qualified_classname PARAMS ((tree));
 static int  parser_check_super PARAMS ((tree, tree, tree));
 static int  parser_check_super_interface PARAMS ((tree, tree, tree));
 static void check_modifiers_consistency PARAMS ((int));
@@ -6347,7 +6347,7 @@ create_interface (flags, id, super)
      tree id, super;
 {
   tree raw_name = EXPR_WFL_NODE (id);
-  tree q_name = parser_qualified_classname (flags & ACC_STATIC, raw_name);
+  tree q_name = parser_qualified_classname (raw_name);
   tree decl = IDENTIFIER_CLASS_VALUE (q_name);
 
   EXPR_WFL_NODE (id) = q_name;	/* Keep source location, even if refined. */
@@ -6482,7 +6482,7 @@ create_class (flags, id, super, interfaces)
   tree class_id, decl;
   tree super_decl_type;
 
-  class_id = parser_qualified_classname (0, raw_name);
+  class_id = parser_qualified_classname (raw_name);
   decl = IDENTIFIER_CLASS_VALUE (class_id);
   EXPR_WFL_NODE (id) = class_id;
 
@@ -6537,13 +6537,6 @@ create_class (flags, id, super, interfaces)
   ctxp->interface_number = 0;
   CLASS_COMPLETE_P (decl) = 1;
   add_superinterfaces (decl, interfaces);
-
-  /* If the class is a top level inner class, install an alias. */
-  if (INNER_CLASS_DECL_P (decl) && CLASS_STATIC (decl))
-    {
-      tree alias = parser_qualified_classname (1, raw_name);
-      IDENTIFIER_GLOBAL_VALUE (alias) = decl;
-    }
 
   /* Add the private this$<n> field, Replicate final locals still in
      scope as private final fields mangled like val$<local_name>.
@@ -7484,14 +7477,12 @@ unresolved_type_p (wfl, returned)
    qualification from the current package definition. */
 
 static tree
-parser_qualified_classname (is_static, name)
-     int is_static;
+parser_qualified_classname (name)
      tree name;
 {
   tree nested_class_name;
 
-  if (!is_static 
-      && (nested_class_name = maybe_make_nested_class_name (name)))
+  if ((nested_class_name = maybe_make_nested_class_name (name)))
     return nested_class_name;
 
   if (ctxp->package)
@@ -10159,7 +10150,7 @@ maybe_generate_pre_expand_clinit (class_type)
       /* We build the assignment expression that will initialize the
 	 field to its value. There are strict rules on static
 	 initializers (8.5). FIXME */
-      if (TREE_CODE (stmt) != BLOCK)
+      if (TREE_CODE (stmt) != BLOCK && stmt != empty_stmt_node)
 	stmt = build_debugable_stmt (EXPR_WFL_LINECOL (stmt), stmt);
       java_method_add_stmt (mdecl, stmt);
     }
