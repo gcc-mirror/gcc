@@ -1,3 +1,12 @@
+2004-09-17  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (sh_gimplify_va_arg_expr): Don't call pass_by_reference.
+	(sh_pass_by_reference): Work around std_gimplify_va_arg_expr bug.
+	* t-sh (MULTILIB_CPUS): s/ML_m/ML_sh/g .
+	* t-sh64 (MULTILIB_CPU_DIRS): Likewise.  Match dashes and trailing
+	slashes in substitutions.
+	(MULTILIB_DIRNAMES): Remove defunct removal of /media32.
+
 2004-09-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h, c-decl.c, c-parse.in, cgraphunit.c, ddg.c,
