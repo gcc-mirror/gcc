@@ -1,3 +1,7 @@
+1998-10-28  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* reload1.c (delete_output_reload): Avoid ambigous else.
+
 Wed Oct 28 00:10:35 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* final.c (cleanup_subreg_operands): New function.
