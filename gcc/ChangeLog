@@ -1,3 +1,8 @@
+Mon Jan 14 20:18:19 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgcleanup.c (try_forward_edges): Avoid infinite loop at infinite
+	threaded loop.
+
 2002-01-14  Tom Rix  <trix@redhat.com>
 
 	* config/rs6000/rs6000.md: Fix typo with sradi.
