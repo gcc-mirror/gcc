@@ -46,8 +46,33 @@ void test01()
   typedef test_iterator::iterator_category iteratory_category;
 }
 
+
+// Make sure iterator can be instantiated.
+template class std::reverse_iterator<int*>;
+
+void test02()
+{
+  typedef std::reverse_iterator<int*> iterator_type;
+  iterator_type it01;
+  iterator_type it02;
+
+  // Sanity check non-member operators and functions can be instantiated. 
+  it01 == it02;
+  it01 != it02;
+  it01 < it02;
+  it01 <= it02;
+  it01 > it02;
+  it01 >= it02;
+  it01 - it02;
+  5 + it02;
+}
+
+
 int main() 
 { 
   test01();
+  test02();
   return 0;
 }
+
+

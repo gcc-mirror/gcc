@@ -43,8 +43,20 @@ void test01()
   typedef test_iterator::container_type container_type;
 }
 
+
+// Make sure iterator can be instantiated.
+template class std::back_insert_iterator<std::list<int> >;
+
+void test02()
+{
+  typedef std::back_insert_iterator<std::list<int> > iterator_type;
+  std::list<int> li;
+  iterator_type it = std::back_inserter(li);
+}
+
 int main() 
 { 
   test01();
+  test02();
   return 0;
 }
