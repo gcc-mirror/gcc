@@ -216,6 +216,7 @@ proc check_profiling_available { test_what } {
 
 proc check_iconv_available { test_what } {
     global tool
+    global libiconv
 
     set result ""
 
@@ -229,15 +230,19 @@ proc check_iconv_available { test_what } {
     puts $f "return 0;\n}"
     close $f
 
-    set lines [${tool}_target_compile "tmp.c" "tmp.x" executable ""]
+    set lines [${tool}_target_compile "tmp.c" "tmp.x" executable "libs=$libiconv" ]
 
-    set result [${tool}_load "./tmp.x" "" ""]
-    set status [lindex $result 0];
+    if [string match "" $lines] then {
+	# No error messages, everything is OK.
 
-    verbose "status is <$status>"
+	set result [${tool}_load "./tmp.x" "" ""]
+	set status [lindex $result 0];
 
-    if { $status == "pass" } then {
-	return 1
+	verbose "status is <$status>"
+
+	if { $status == "pass" } then {
+	    return 1
+	}
     }
 
     return 0
