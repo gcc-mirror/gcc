@@ -262,7 +262,9 @@ static void trigraph_pcp ();
 static int finclude ();
 static void validate_else ();
 static int comp_def_part ();
+#ifdef abort
 extern void fancy_abort ();
+#endif
 static void pipe_closed ();
 static void print_containing_files ();
 static int lookup_import ();
@@ -288,7 +290,7 @@ static void push_macro_expansion PARAMS ((cpp_reader *,
 					  U_CHAR*, int, HASHNODE*));
 static struct cpp_pending *nreverse_pending PARAMS ((struct cpp_pending*));
 extern char *xrealloc ();
-extern char *xcalloc ();
+static char *xcalloc ();
 static char *savestring ();
 
 static void conditional_skip ();
@@ -605,7 +607,6 @@ make_assertion (pfile, option, str)
      char *option;
      U_CHAR *str;
 {
-  cpp_buffer *ip;
   struct directive *kt;
   U_CHAR *buf, *p, *q;
 
@@ -637,9 +638,11 @@ make_assertion (pfile, option, str)
     return;
   }
   
-  ip = cpp_push_buffer (pfile, buf, strlen (buf));
-  do_assert (pfile, NULL, NULL, NULL);
-  cpp_pop_buffer (pfile);
+  if (cpp_push_buffer (pfile, buf, strlen (buf)) != NULL)
+    {
+      do_assert (pfile, NULL, NULL, NULL);
+      cpp_pop_buffer (pfile);
+    }
 }
 
 /* Append a chain of `struct file_name_list's
@@ -950,7 +953,7 @@ cpp_skip_hspace (pfile)
 /* Read the rest of the current line.
    The line is appended to PFILE's output buffer. */
 
-void
+static void
 copy_rest_of_line (pfile)
      cpp_reader *pfile;
 {
@@ -1864,7 +1867,11 @@ cpp_push_buffer (pfile, buffer, length)
 {
   register cpp_buffer *buf = CPP_BUFFER (pfile);
   if (buf == pfile->buffer_stack)
-    fatal ("%s: macro or `#include' recursion too deep", buf->fname);
+    {
+      cpp_fatal (pfile, "%s: macro or `#include' recursion too deep",
+		 buf->fname);
+      return NULL;
+    }
   buf--;
   bzero ((char *) buf, sizeof (cpp_buffer));
   CPP_BUFFER (pfile) = buf;
@@ -1946,6 +1953,8 @@ cpp_expand_to_buffer (pfile, buf, length)
   buf1[length] = 0;
 
   ip = cpp_push_buffer (pfile, buf1, length);
+  if (ip == NULL)
+    return;
   ip->has_escapes = 1;
 #if 0
   ip->lineno = obuf.lineno = 1;
@@ -2067,11 +2076,15 @@ output_line_command (pfile, conditional, file_change)
   long line, col;
   cpp_buffer *ip = CPP_BUFFER (pfile);
 
-  if (ip->fname == NULL || CPP_OPTIONS (pfile)->no_output) {
+  if (ip->fname == NULL)
     return;
-  }
 
   update_position (ip);
+
+  if (CPP_OPTIONS (pfile)->no_line_commands
+      || CPP_OPTIONS (pfile)->no_output)
+    return;
+
   line = CPP_BUFFER (pfile)->lineno;
   col = CPP_BUFFER (pfile)->colno;
   adjust_position (CPP_LINE_BASE (ip), ip->cur, &line, &col);
@@ -2986,6 +2999,8 @@ push_macro_expansion (pfile, xbuf, xbuf_len, hp)
      HASHNODE *hp;
 {
   register cpp_buffer *mbuf = cpp_push_buffer (pfile, xbuf, xbuf_len);
+  if (mbuf == NULL)
+    return;
   mbuf->cleanup = macro_cleanup;
   mbuf->data = hp;
 
@@ -3453,7 +3468,8 @@ do_include (pfile, keyword, unused1, unused2)
 #endif
     
     /* Actually process the file */
-    cpp_push_buffer (pfile, NULL, 0);
+    if (cpp_push_buffer (pfile, NULL, 0) == NULL)
+      return 0;
     if (finclude (pfile, f, fname, is_system_include (pfile, fname),
 		  searchptr != dsp ? searchptr : SELF_DIR_DUMMY))
       {
@@ -5681,6 +5697,8 @@ cpp_start_read (pfile, fname)
   /* Do partial setup of input buffer for the sake of generating
      early #line directives (when -g is in effect).  */
   fp = cpp_push_buffer (pfile, NULL, 0);
+  if (!fp)
+    return 0;
   if (opts->in_fname == NULL)
     opts->in_fname = "";
   fp->nominal_fname = fp->fname = opts->in_fname;
@@ -5945,7 +5963,8 @@ cpp_start_read (pfile, fname)
 	      cpp_perror_with_name (pfile, pend->arg);
 	      return 0;
 	    }
-	  cpp_push_buffer (pfile, NULL, 0);
+	  if (!cpp_push_buffer (pfile, NULL, 0))
+	      return 0;
 	  finclude (pfile, fd, pend->arg, 0, NULL_PTR);
 	  cpp_scan_buffer (pfile);
 	}
@@ -6113,7 +6132,8 @@ cpp_start_read (pfile, fname)
 	      cpp_perror_with_name (pfile, pend->arg);
 	      return 0;
 	    }
-	  cpp_push_buffer (pfile, NULL, 0);
+	  if (!cpp_push_buffer (pfile, NULL, 0))
+	    return 0;
 	  finclude (pfile, fd, pend->arg, 0, NULL_PTR);
 	}
     }
@@ -7170,6 +7190,16 @@ safe_read (desc, ptr, len)
 }
 
 static char *
+xcalloc (number, size)
+     unsigned number, size;
+{
+  register unsigned total = number * size;
+  register char *ptr = (char *) xmalloc (total);
+  bzero (ptr, total);
+  return ptr;
+}
+
+static char *
 savestring (input)
      char *input;
 {
@@ -7199,7 +7229,7 @@ parse_clear_mark (pmark)
 {
   struct parse_marker **pp = &pmark->buf->marks;
   for (; ; pp = &(*pp)->next) {
-    if (*pp == NULL) fatal ("internal error", "in parse_set_mark");
+    if (*pp == NULL) abort ();
     if (*pp == pmark) break;
   }
   *pp = pmark->next;
