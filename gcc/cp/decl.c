@@ -8023,7 +8023,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
   type = TREE_TYPE (decl);
 
   if (type == error_mark_node)
-    return;
+    goto finish_end0;
 
   if (TYPE_HAS_MUTABLE_P (type))
     TREE_READONLY (decl) = 0;
