@@ -234,6 +234,15 @@ tree unsigned_intSI_type_node;
 tree unsigned_intDI_type_node;
 tree unsigned_intTI_type_node;
 
+tree java_byte_type_node;
+tree java_short_type_node;
+tree java_int_type_node;
+tree java_long_type_node;
+tree java_float_type_node;
+tree java_double_type_node;
+tree java_char_type_node;
+tree java_boolean_type_node;
+
 /* A VOID_TYPE node, and the same, packaged in a TREE_LIST.  */
 
 tree void_type_node, void_list_node;
@@ -2227,6 +2236,8 @@ pushtag (name, type, globalize)
 	    {
 	      newdecl = 1;
 	      d = build_decl (TYPE_DECL, name, type);
+	      if (current_lang_name == lang_name_java)
+		TYPE_FOR_JAVA (type) = 1;
 	      SET_DECL_ARTIFICIAL (d);
 	      if (! in_class)
 		set_identifier_type_value_with_scope (name, type, b);
@@ -5055,6 +5066,37 @@ record_builtin_type (rid_index, name, type)
     }
 }
 
+/* Record one of the standard Java types.
+ * Declare it as having the given NAME.
+ * If SIZE > 0, it is the size of one of the integral types;
+ * otherwise it is the negative of the size of one of the other types.  */
+
+static tree
+record_builtin_java_type (name, size)
+     char *name;
+     int size;
+{
+  tree type, decl;
+  if (size > 0)
+    type = make_signed_type (size);
+  else if (size > -32)
+    { /* "__java_char" or ""__java_boolean". */
+      type = make_unsigned_type (-size);
+      /*if (size == -1)	TREE_SET_CODE (type, BOOLEAN_TYPE);*/
+    }
+  else
+    { /* "__java_float" or ""__java_double". */
+      type = make_node (REAL_TYPE);
+      TYPE_PRECISION (type) = - size;
+      layout_type (type);
+    }
+  record_builtin_type (RID_MAX, name, type);
+  decl = TYPE_NAME (type);
+  DECL_IGNORED_P (decl) = 1;
+  TYPE_FOR_JAVA (type) = 1;
+  return type;
+}
+
 /* Push a type into the namespace so that the back-ends ignore it. */
 
 static void
@@ -5328,6 +5370,15 @@ init_decl_processing ()
 			complex_long_double_type_node));
   TREE_TYPE (complex_long_double_type_node) = long_double_type_node;
   layout_type (complex_long_double_type_node);
+
+  java_byte_type_node = record_builtin_java_type ("__java_byte", 8);
+  java_short_type_node = record_builtin_java_type ("__java_short", 16);
+  java_int_type_node = record_builtin_java_type ("__java_int", 32);
+  java_long_type_node = record_builtin_java_type ("__java_long", 64);
+  java_float_type_node = record_builtin_java_type ("__java_float", -32);
+  java_double_type_node = record_builtin_java_type ("__java_double", -64);
+  java_char_type_node = record_builtin_java_type ("__java_char", -16);
+  java_boolean_type_node = record_builtin_java_type ("__java_boolean", -1);
 
   integer_zero_node = build_int_2 (0, 0);
   TREE_TYPE (integer_zero_node) = integer_type_node;
@@ -7617,7 +7668,8 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 					    2 * (funcdef_flag != 0) + 
 					    4 * (friendp != 0));
 
-      if (check)
+      if ((! TYPE_FOR_JAVA (ctype) || check_java_method (ctype, decl))
+	  && check)
 	{
 	  tmp = check_classfn (ctype, decl);
 
@@ -7662,8 +7714,9 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 					    template_count, 
 					    2 * (funcdef_flag != 0) + 
 					    4 * (friendp != 0));
-
-      if (ctype != NULL_TREE && check)
+      if (ctype != NULL_TREE
+	  && (! TYPE_FOR_JAVA (ctype) || check_java_method (ctype, decl))
+	  && check)
 	{
 	  tmp = check_classfn (ctype, decl);
 
@@ -9572,6 +9625,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	 in typenames, fields or parameters.  */
       if (constp || volatilep)
 	type = cp_build_type_variant (type, constp, volatilep);
+      if (current_lang_name == lang_name_java)
+	TYPE_FOR_JAVA (type) = 1;
 
       if (decl_context == FIELD)
 	{
@@ -9582,8 +9637,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  if (IS_SIGNATURE (current_class_type) && opaque_typedef)
 	    SIGNATURE_HAS_OPAQUE_TYPEDECLS (current_class_type) = 1;
 	}
-      else if (current_lang_name == lang_name_java)
-	decl = build_lang_decl (TYPE_DECL, declarator, type);
       else
 	{
 	  /* Make sure this typedef lives as long as its type,
@@ -11248,6 +11301,10 @@ xref_basetypes (code_type_node, name, ref, binfo)
 		cp_error ("duplicate base type `%T' invalid", basetype);
 	      continue;
 	    }
+
+	  if (TYPE_FOR_JAVA (basetype)
+	      && current_lang_stack == current_lang_base)
+	    TYPE_FOR_JAVA (ref) = 1;
 
 	  /* Note that the BINFO records which describe individual
 	     inheritances are *not* shared in the lattice!  They

@@ -3601,7 +3601,7 @@ finish_struct_1 (t, warn_anon)
     }
 
   /* Create default copy constructor, if needed.  */
-  if (! TYPE_HAS_INIT_REF (t) && ! IS_SIGNATURE (t))
+  if (! TYPE_HAS_INIT_REF (t) && ! IS_SIGNATURE (t) && ! TYPE_FOR_JAVA (t))
     {
       /* ARM 12.18: You get either X(X&) or X(const X&), but
 	 not both.  --Chip  */
@@ -3616,7 +3616,7 @@ finish_struct_1 (t, warn_anon)
   TYPE_HAS_COMPLEX_ASSIGN_REF (t)
     |= TYPE_HAS_ASSIGN_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t);
 
-  if (! TYPE_HAS_ASSIGN_REF (t) && ! IS_SIGNATURE (t))
+  if (! TYPE_HAS_ASSIGN_REF (t) && ! IS_SIGNATURE (t) && ! TYPE_FOR_JAVA (t))
     {
       tree default_fn = cons_up_default_function (t, name,
 						  5 + no_const_asn_ref);
@@ -4915,7 +4915,8 @@ void
 pop_lang_context ()
 {
   current_lang_name = *--current_lang_stack;
-  if (current_lang_name == lang_name_cplusplus)
+  if (current_lang_name == lang_name_cplusplus
+      || current_lang_name == lang_name_java)
     strict_prototype = strict_prototypes_lang_cplusplus;
   else if (current_lang_name == lang_name_c)
     strict_prototype = strict_prototypes_lang_c;

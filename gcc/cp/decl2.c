@@ -1375,6 +1375,56 @@ check_member_template (tmpl)
     cp_error ("template declaration of `%#D'", decl);
 }
 
+/* Return true iff TYPE is a valid Java parameter or return type. */
+
+int
+acceptable_java_type (type)
+     tree type;
+{
+  if (TREE_CODE (type) == VOID_TYPE || TYPE_FOR_JAVA (type))
+    return 1;
+  if (TREE_CODE (type) == POINTER_TYPE)
+    {
+      type = TREE_TYPE (type);
+      if (TREE_CODE (type) == RECORD_TYPE)
+	{
+	  complete_type (type);
+	  return TYPE_FOR_JAVA (type);
+	}
+    }
+  return 0;
+}
+
+/* For a METHOD in a Java class CTYPE, return 1 if
+   the parameter and return types are valid Java types.
+   Otherwise, print appropriate error messages, and return 0.  */
+
+int
+check_java_method (ctype, method)
+     tree ctype, method;
+{
+  int jerr = 0;
+  tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (method));
+  tree ret_type = TREE_TYPE (TREE_TYPE (method));
+  if (! acceptable_java_type (ret_type))
+    {
+      cp_error ("Java method '%D' has non-Java return type `%T'",
+		method, ret_type);
+      jerr++;
+    }
+  for (; arg_types != NULL_TREE; arg_types = TREE_CHAIN (arg_types))
+    {
+      tree type = TREE_VALUE (arg_types);
+      if (! acceptable_java_type (type))
+	{
+	  cp_error ("Java method '%D' has non-Java parameter type `%T'",
+		    method, type);
+	  jerr++;
+	}
+    }
+  return jerr ? 0 : 1;
+}
+
 /* Sanity check: report error if this function FUNCTION is not
    really a member of the class (CTYPE) it is supposed to belong to.
    CNAME is the same here as it is for grokclassfn above.  */

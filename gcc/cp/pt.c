@@ -3749,6 +3749,7 @@ instantiate_class_template (type)
     = TYPE_USES_VIRTUAL_BASECLASSES (pattern);
   TYPE_PACKED (type) = TYPE_PACKED (pattern);
   TYPE_ALIGN (type) = TYPE_ALIGN (pattern);
+  TYPE_FOR_JAVA (type) = TYPE_FOR_JAVA (pattern); /* For libjava's JArray<T> */
 
   CLASSTYPE_LOCAL_TYPEDECLS (type) = CLASSTYPE_LOCAL_TYPEDECLS (pattern);
 
@@ -4498,14 +4499,13 @@ tsubst (t, args, in_decl)
 	    else
 	      member = 1;
 	    ctx = tsubst (DECL_CLASS_CONTEXT (t), args, t);
-	    type = tsubst (type, args, in_decl);
 	  }
 	else
 	  {
 	    member = 0;
 	    ctx = NULL_TREE;
-	    type = tsubst (type, args, in_decl);
 	  }
+	type = tsubst (type, args, in_decl);
 
 	/* If we are instantiating a specialization, get the other args.  */
 	if (DECL_TEMPLATE_INFO (t) != NULL_TREE)
