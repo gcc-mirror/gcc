@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.241 1998/06/21 20:48:38 karl Exp $
+% $Id: texinfo.tex,v 2.242 1998/06/22 20:00:53 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.241 $
+\deftexinfoversion$Revision: 2.242 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -2636,21 +2636,35 @@ width0pt\relax} \fi
 % These macros are used by the sorted index file itself.
 % Change them to control the appearance of the index.
 
-% Same as \bigskipamount except no shrink.
-% \balancecolumns gets confused if there is any shrink.
-\newskip\initialskipamount \initialskipamount 12pt plus4pt
-
-\def\initial #1{%
-{\let\tentt=\sectt \let\tt=\sectt \let\sf=\sectt
-\ifdim\lastskip<\initialskipamount
-\removelastskip \penalty-200 \vskip \initialskipamount\fi
-\line{\secbf#1\hfill}\kern 2pt\penalty10000}}
+\def\initial#1{{%
+  % Some minor font changes for the special characters.
+  \let\tentt=\sectt \let\tt=\sectt \let\sf=\sectt
+  %
+  % Remove any glue we may have, we'll be inserting our own.
+  \removelastskip
+  % 
+  % We like breaks before the index initials, so insert a bonus.
+  \penalty -300
+  %
+  % Typeset the initial.  Making this add up to a whole number of
+  % baselineskips increases the chance of the dots lining up from column
+  % to column.  It still won't often be perfect, because of the stretch
+  % we need before each entry, but it's better.
+  % 
+  % No shrink because it confuses \balancecolumns.
+  \vskip 1.67\baselineskip plus .5\baselineskip
+  \leftline{\secbf #1}%
+  \vskip .33\baselineskip plus .1\baselineskip
+  %
+  % Do our best not to break after the initial.
+  \nobreak
+}}
 
 % This typesets a paragraph consisting of #1, dot leaders, and then #2
 % flush to the right margin.  It is used for index and table of contents
 % entries.  The paragraph is indented by \leftskip.
 %
-\def\entry #1#2{\begingroup
+\def\entry#1#2{\begingroup
   %
   % Start a new paragraph if necessary, so our assignments below can't
   % affect previous text.
@@ -2673,11 +2687,14 @@ width0pt\relax} \fi
   %
   % \hangafter is reset to 1 (which is the value we want) at the start
   % of each paragraph, so we need not do anything with that.
-  \hangindent=2em
+  \hangindent = 2em
   %
   % When the entry text needs to be broken, just fill out the first line
   % with blank space.
   \rightskip = 0pt plus1fil
+  %
+  % A bit of stretch before each entry for the benefit of balancing columns.
+  \vskip 0pt plus1pt
   %
   % Start a ``paragraph'' for the index entry so the line breaking
   % parameters we've set above will have an effect.
@@ -2777,14 +2794,21 @@ width0pt\relax} \fi
   %
   % Double the \vsize as well.  (We don't need a separate register here,
   % since nobody clobbers \vsize.)
+  \advance\vsize by -\ht\partialpage
   \vsize = 2\vsize
 }
+
+% The double-column output routine for all double-column pages except
+% the last.
+% 
 \def\doublecolumnout{%
   \splittopskip=\topskip \splitmaxdepth=\maxdepth
   % Get the available space for the double columns -- the normal
   % (undoubled) page height minus any material left over from the
   % previous page.
-  \dimen@=\pageheight \advance\dimen@ by-\ht\partialpage
+  \dimen@ = \vsize
+  \divide\dimen@ by 2
+  %
   % box0 will be the left-hand column, box2 the right.
   \setbox0=\vsplit255 to\dimen@ \setbox2=\vsplit255 to\dimen@
   \onepageout\pagesofar
@@ -2793,35 +2817,60 @@ width0pt\relax} \fi
 }
 \def\pagesofar{%
   % Re-output the contents of the output page -- any previous material,
-  % followed by the two boxes we just split.
+  % followed by the two boxes we just split, in box0 and box2.
+  \advance\vsize by \ht\partialpage
   \unvbox\partialpage
+  %
   \hsize = \doublecolumnhsize
-  \wd0=\hsize \wd2=\hsize \hbox to\pagewidth{\box0\hfil\box2}%
+  \wd0=\hsize \wd2=\hsize
+  \hbox to\pagewidth{\box0\hfil\box2}%
 }
 \def\enddoublecolumns{%
-  \output = {\balancecolumns}\eject % split what we have
+  \output = {%
+    % Split the last of the double-column material.  Leave on the
+    % current page, no automatic page break.
+    \balancecolumns
+    %
+    % If we end up splitting too much material for the current page,
+    % though, there will be another page break right after this \output
+    % invocation ends.  Having called \balancecolumns once, we do not
+    % want to call it again.  Therefore, reset \output to its normal
+    % definition right away.  (We hope \balancecolumns will never be
+    % called on to balance too much material, but if it is, this makes
+    % the output somewhat more palatable.)
+    \global\output = {\onepageout{\pagecontents\PAGE}}%
+    %
+    % \pagegoal was set to the doubled \vsize above, since we restarted
+    % the current page.  We're now back to normal single-column
+    % typesetting, so reset \pagegoal to the normal \vsize.
+    \pagegoal = \vsize
+  }%
+  \eject
   \endgroup % started in \begindoublecolumns
-  %
-  % Back to normal single-column typesetting, but take account of the
-  % fact that we just accumulated some stuff on the output page.
-  \pagegoal = \vsize
 }
 \def\balancecolumns{%
   % Called at the end of the double column material.
-  \setbox0 = \vbox{\unvbox255}%
+  \setbox0 = \vbox{\unvbox255}% like \box255 but more efficient, see p.120.
   \dimen@ = \ht0
   \advance\dimen@ by \topskip
   \advance\dimen@ by-\baselineskip
-  \divide\dimen@ by 2
+  \divide\dimen@ by 2 % target to split to
+  %debug\message{final 2-column material height=\the\ht0, target=\the\dimen@.}%
   \splittopskip = \topskip
   % Loop until we get a decent breakpoint.
-  {\vbadness=10000 \loop
-    \global\setbox3=\copy0
-    \global\setbox1=\vsplit3 to\dimen@
-    \ifdim\ht3>\dimen@ \global\advance\dimen@ by1pt
-   \repeat}%
+  {%
+    \vbadness = 10000
+    \loop
+      \global\setbox3 = \copy0
+      \global\setbox1 = \vsplit3 to \dimen@
+    \ifdim\ht3>\dimen@
+      \global\advance\dimen@ by 1pt
+    \repeat
+  }%
+  %debug\message{split to \the\dimen@, column heights: \the\ht1, \the\ht3.}%
   \setbox0=\vbox to\dimen@{\unvbox1}%
   \setbox2=\vbox to\dimen@{\unvbox3}%
+  %
   \pagesofar
 }
 \catcode`\@ = \other
@@ -4377,6 +4426,7 @@ width0pt\relax} \fi
 
 \def\deftpx #1 {\errmessage{@deftpx in invalid context}}
 
+
 \message{macros,}
 % @macro.
 
@@ -5023,6 +5073,9 @@ width0pt\relax} \fi
 
 % Prevent underfull vbox error messages.
 \vbadness = 10000
+
+% Don't be so finicky about underfull hboxes, either.
+\hbadness = 2000
 
 % Following George Bush, just get rid of widows and orphans.
 \widowpenalty=10000
