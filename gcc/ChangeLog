@@ -1,3 +1,7 @@
+2003-04-30  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* doc/install.texi (--enable-threads): Document "gnat" option.
+
 2003-04-30  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* diagnostic.h (output_formatted_scalar): Tweak.
