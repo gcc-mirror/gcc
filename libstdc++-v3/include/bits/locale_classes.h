@@ -69,7 +69,7 @@ namespace std
   public:
     // Types:
     /// Definition of locale::category.
-    typedef unsigned int 	category;
+    typedef int	category;
 
     // Forward decls and friends:
     class facet;
