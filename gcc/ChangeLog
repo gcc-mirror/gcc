@@ -247,7 +247,6 @@ Sat Mar 16 12:57:28 CET 2002  Jan HUbicka  <jh@suse.cz>
 	(COMMAND_LINE_OPTIONS): Remove OPT_MD, OPT_MMD.
 	(cpp_handle_option): Update.
 
->>>>>>> 1.13408
 2002-03-15  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.h (SUBTARGET_CPP_SIZE_SPEC): Provide an
