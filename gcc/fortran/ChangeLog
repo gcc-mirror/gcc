@@ -1,3 +1,9 @@
+2004-06-09  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* trans-expr.c (gfc_conv_cst_int_power): Compute
+	x**(-n) by converting it to (1/x)**n instead of
+	1/x**n.
+
 2004-06-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/13372

@@ -526,13 +526,14 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
 
   memset (vartmp, 0, sizeof (vartmp));
   vartmp[1] = lhs;
-
-  se->expr = gfc_conv_powi (se, n, vartmp);
   if (sgn == -1)
     {
       tmp = gfc_build_const (type, integer_one_node);
-      se->expr = build (RDIV_EXPR, type, tmp, se->expr);
+      vartmp[1] = build (RDIV_EXPR, type, tmp, vartmp[1]);
     }
+
+  se->expr = gfc_conv_powi (se, n, vartmp);
+
   return 1;
 }
 
