@@ -1,5 +1,24 @@
 2002-06-01  Roger Sayle  <roger@eyesopen.com>
 
+	* gcse.c (cprop_cc0_jump): Function deleted.
+	(cprop_jump): Take an additional argument which is the possibly
+	NULL cc setting insn immediately before the conditional jump.
+	When a MODE_CC set is present, substitute it into the JUMP_INSN
+	before attempting the constant propagation.
+	(cprop_insn):  Recognize cc setters followed by conditional jumps
+	as a special case.   Use cprop_jump instead of cprop_cc0_jump.
+	(cprop_one_pass):  Call bypass_conditional_jumps if altering jumps.
+	(find_bypass_set): New function based upon find_avail_set used by
+	cprop, but finds constant expressions available at the end of
+	basic blocks.
+	(bypass_block): New function.  Given a basic block that begins
+	with a conditional jump and multiple incoming edges, perform
+	the jump bypass optimization.
+	(bypass_conditional_jumps): New function.  Call bypass_block with
+	each suitable basic block in the CFG using a simple single pass.
+
+2002-06-01  Roger Sayle  <roger@eyesopen.com>
+
 	* tree.c (real_minus_onep): New function to test for -1.0.
 	* fold-const.c (fold) [MULT_EXPR]:  Optimize -1.0*x into -x.
 

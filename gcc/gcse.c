@@ -609,16 +609,16 @@ static void compute_cprop_data	PARAMS ((void));
 static void find_used_regs	PARAMS ((rtx *, void *));
 static int try_replace_reg	PARAMS ((rtx, rtx, rtx));
 static struct expr *find_avail_set PARAMS ((int, rtx));
-static int cprop_jump		PARAMS ((basic_block, rtx, rtx, rtx));
-#ifdef HAVE_cc0
-static int cprop_cc0_jump	PARAMS ((basic_block, rtx, struct reg_use *, rtx));
-#endif
+static int cprop_jump		PARAMS ((basic_block, rtx, rtx, rtx, rtx));
 static void mems_conflict_for_gcse_p PARAMS ((rtx, rtx, void *));
 static int load_killed_in_block_p    PARAMS ((basic_block, int, rtx, int));
 static void canon_list_insert        PARAMS ((rtx, rtx, void *));
 static int cprop_insn		PARAMS ((basic_block, rtx, int));
 static int cprop		PARAMS ((int));
 static int one_cprop_pass	PARAMS ((int, int));
+static struct expr *find_bypass_set PARAMS ((int, int));
+static int bypass_block		    PARAMS ((basic_block, rtx, rtx));
+static int bypass_conditional_jumps PARAMS ((void));
 static void alloc_pre_mem	PARAMS ((int, int));
 static void free_pre_mem	PARAMS ((void));
 static void compute_pre_data	PARAMS ((void));
@@ -4077,39 +4077,59 @@ find_avail_set (regno, insn)
 }
 
 /* Subroutine of cprop_insn that tries to propagate constants into
-   JUMP_INSNS.  INSN must be a conditional jump.  FROM is what we will try to
-   replace, SRC is the constant we will try to substitute for it.  Returns
-   nonzero if a change was made.  We know INSN has just a SET.  */
+   JUMP_INSNS.  JUMP must be a conditional jump.  If SETCC is non-NULL
+   it is the instruction that immediately preceeds JUMP, and must be a
+   single SET of a CC_MODE register.  FROM is what we will try to replace,
+   SRC is the constant we will try to substitute for it.  Returns nonzero
+   if a change was made. */
 
 static int
-cprop_jump (bb, insn, from, src)
-     rtx insn;
+cprop_jump (bb, setcc, jump, from, src)
+     basic_block bb;
+     rtx setcc;
+     rtx jump;
      rtx from;
      rtx src;
-     basic_block bb;
 {
-  rtx set = PATTERN (insn);
-  rtx new = simplify_replace_rtx (SET_SRC (set), from, src);
+  rtx new, new_set;
+  rtx set = pc_set (jump);
+
+  /* First substitute in the INSN condition as the SET_SRC of the JUMP,
+     then substitute that given values in this expanded JUMP.  */
+  if (setcc != NULL)
+    new_set = simplify_replace_rtx (SET_SRC (set),
+				    SET_DEST (PATTERN (setcc)),
+				    SET_SRC (PATTERN (setcc)));
+  else
+    new_set = set;
+
+  new = simplify_replace_rtx (new_set, from, src);
 
   /* If no simplification can be made, then try the next
      register.  */
-  if (rtx_equal_p (new, SET_SRC (set)))
+  if (rtx_equal_p (new, new_set))
     return 0;
  
   /* If this is now a no-op delete it, otherwise this must be a valid insn.  */
   if (new == pc_rtx)
-    delete_insn (insn);
+    delete_insn (jump);
   else
     {
-      if (! validate_change (insn, &SET_SRC (set), new, 0))
+      if (! validate_change (jump, &SET_SRC (set), new, 0))
 	return 0;
 
       /* If this has turned into an unconditional jump,
 	 then put a barrier after it so that the unreachable
 	 code will be deleted.  */
       if (GET_CODE (SET_SRC (set)) == LABEL_REF)
-	emit_barrier_after (insn);
+	emit_barrier_after (jump);
      }
+
+#ifdef HAVE_cc0
+  /* Delete the cc0 setter.  */
+  if (setcc != NULL && SET_DEST (PATTERN (setcc)) == cc0_rtx)
+    delete_insn (setcc);
+#endif
 
   run_jump_opt_after_gcse = 1;
 
@@ -4118,7 +4138,7 @@ cprop_jump (bb, insn, from, src)
     {
       fprintf (gcse_file,
 	       "CONST-PROP: Replacing reg %d in insn %d with constant ",
-	       REGNO (from), INSN_UID (insn));
+	       REGNO (from), INSN_UID (jump));
       print_rtl (gcse_file, src);
       fprintf (gcse_file, "\n");
     }
@@ -4127,37 +4147,6 @@ cprop_jump (bb, insn, from, src)
   return 1;
 }
 
-#ifdef HAVE_cc0
-
-/* Subroutine of cprop_insn that tries to propagate constants into JUMP_INSNS
-   for machines that have CC0.  INSN is a single set that stores into CC0;
-   the insn following it is a conditional jump.  REG_USED is the use we will
-   try to replace, SRC is the constant we will try to substitute for it.
-   Returns nonzero if a change was made.  */
-
-static int
-cprop_cc0_jump (bb, insn, reg_used, src)
-     basic_block bb;
-     rtx insn;
-     struct reg_use *reg_used;
-     rtx src;
-{
-  /* First substitute in the SET_SRC of INSN, then substitute that for
-     CC0 in JUMP.  */
-  rtx jump = NEXT_INSN (insn);
-  rtx new_src = simplify_replace_rtx (SET_SRC (PATTERN (insn)),
-				      reg_used->reg_rtx, src);
-
-  if (! cprop_jump (bb, jump, cc0_rtx, new_src))
-    return 0;
-
-  /* If we succeeded, delete the cc0 setter.  */
-  delete_insn (insn);
-
-  return 1;
-}
-#endif
- 
 /* Perform constant and copy propagation on INSN.
    The result is non-zero if a change was made.  */
 
@@ -4216,7 +4205,27 @@ cprop_insn (bb, insn, alter_jumps)
       /* Constant propagation.  */
       if (CONSTANT_P (src))
 	{
-	  /* Handle normal insns first.  */
+	  /* Check for MODE_CC setting instructions followed by
+	     conditional branch instructions first.  */
+	  if (alter_jumps
+	      && single_set (insn)
+	      && any_condjump_p (NEXT_INSN (insn))
+              && onlyjump_p (NEXT_INSN (insn)))
+	    {
+	      rtx dest = SET_DEST (PATTERN (insn));
+	      if ((GET_MODE_CLASS (GET_MODE (dest)) == MODE_CC
+#ifdef HAVE_cc0
+		   || dest == cc0_rtx
+#endif
+		  ) && cprop_jump (bb, insn, NEXT_INSN (insn),
+				   reg_used->reg_rtx, src))
+		{
+		  changed = 1;
+		  break;
+		}
+	    }
+
+	  /* Handle normal insns next.  */
 	  if (GET_CODE (insn) == INSN
 	      && try_replace_reg (reg_used->reg_rtx, src, insn))
 	    {
@@ -4243,26 +4252,10 @@ cprop_insn (bb, insn, alter_jumps)
 	     Right now the insn in question must look like
 	     (set (pc) (if_then_else ...))  */
 	  else if (alter_jumps
-		   && GET_CODE (insn) == JUMP_INSN
-		   && condjump_p (insn)
-		   && ! simplejump_p (insn))
-	    changed |= cprop_jump (bb, insn, reg_used->reg_rtx, src);
+		   && any_condjump_p (insn)
+		   && onlyjump_p (insn))
+	    changed |= cprop_jump (bb, NULL, insn, reg_used->reg_rtx, src);
 
-#ifdef HAVE_cc0
-	  /* Similar code for machines that use a pair of CC0 setter and
-	     conditional jump insn.  */
-	  else if (alter_jumps
-		   && GET_CODE (PATTERN (insn)) == SET
-		   && SET_DEST (PATTERN (insn)) == cc0_rtx
-		   && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
-		   && condjump_p (NEXT_INSN (insn))
-		   && ! simplejump_p (NEXT_INSN (insn))
-		   && cprop_cc0_jump (bb, insn, reg_used, src))
-	    {
-	      changed = 1;
-	      break;
-	    }
-#endif
 	}
       else if (GET_CODE (src) == REG
 	       && REGNO (src) >= FIRST_PSEUDO_REGISTER
@@ -4362,6 +4355,8 @@ one_cprop_pass (pass, alter_jumps)
       alloc_cprop_mem (last_basic_block, n_sets);
       compute_cprop_data ();
       changed = cprop (alter_jumps);
+      if (alter_jumps)
+	changed |= bypass_conditional_jumps ();
       free_cprop_mem ();
     }
 
@@ -4374,6 +4369,208 @@ one_cprop_pass (pass, alter_jumps)
       fprintf (gcse_file, "%d const props, %d copy props\n\n",
 	       const_prop_count, copy_prop_count);
     }
+
+  return changed;
+}
+
+/* Bypass conditional jumps.  */
+
+/* Find a set of REGNO to a constant that is available at the end of basic
+   block BB.  Returns NULL if no such set is found.  Based heavily upon
+   find_avail_set.  */
+
+static struct expr *
+find_bypass_set (regno, bb)
+     int regno;
+     int bb;
+{
+  struct expr *result = 0;
+
+  for (;;)
+    {
+      rtx src;
+      struct expr *set = lookup_set (regno, NULL_RTX);
+
+      while (set)
+	{
+	  if (TEST_BIT (cprop_avout[bb], set->bitmap_index))
+	    break;
+	  set = next_set (regno, set);
+	}
+
+      if (set == 0)
+	break;
+
+      if (GET_CODE (set->expr) != SET)
+	abort ();
+
+      src = SET_SRC (set->expr);
+      if (CONSTANT_P (src))
+	result = set;
+
+      if (GET_CODE (src) != REG)
+	break;
+
+      regno = REGNO (src);
+    }
+  return result;
+}
+
+
+/* Subroutine of bypass_conditional_jumps that attempts to bypass the given
+   basic block BB which has more than one predecessor.  If not NULL, SETCC
+   is the first instruction of BB, which is immediately followed by JUMP_INSN
+   JUMP.  Otherwise, SETCC is NULL, and JUMP is the first insn of BB.
+   Returns nonzero if a change was made.  */
+
+static int
+bypass_block (bb, setcc, jump)
+     basic_block bb;
+     rtx setcc, jump;
+{
+  rtx insn, note;
+  edge e, enext;
+  int i,change;
+
+  insn = (setcc != NULL) ? setcc : jump;
+
+  /* Determine set of register uses in INSN.  */
+  reg_use_count = 0;
+  note_uses (&PATTERN (insn), find_used_regs, NULL);
+  note = find_reg_equal_equiv_note (insn);
+  if (note)
+    find_used_regs (&XEXP (note, 0), NULL);
+
+  change = 0;
+  for (e = bb->pred; e; e = enext)
+    {
+      enext = e->pred_next;
+      for (i = 0; i < reg_use_count; i++)
+	{
+	  struct reg_use *reg_used = &reg_use_table[i];
+          unsigned int regno = REGNO (reg_used->reg_rtx);
+	  basic_block dest;
+          struct expr *set;
+          rtx src, new;
+
+          if (regno >= max_gcse_regno)
+            continue;
+
+          set = find_bypass_set (regno, e->src->index);
+
+	  if (! set)
+	    continue;
+
+          src = SET_SRC (pc_set (jump));
+
+	  if (setcc != NULL)
+	      src = simplify_replace_rtx (src,
+                                          SET_DEST (PATTERN (setcc)),
+                                          SET_SRC (PATTERN (setcc)));
+
+	  new = simplify_replace_rtx (src, reg_used->reg_rtx,
+                                      SET_SRC (set->expr));
+
+          if (new == pc_rtx)
+	    dest = FALLTHRU_EDGE (bb)->dest;
+	  else if (GET_CODE (new) == LABEL_REF)
+	    dest = BRANCH_EDGE (bb)->dest;
+	  else
+	    dest = NULL;
+
+	  /* Once basic block indices are stable, we should be able
+	     to use redirect_edge_and_branch_force instead.  */
+	  if ((dest != NULL) && (dest != e->dest)
+	      && redirect_edge_and_branch (e, dest))
+	    {
+	      /* Copy the MODE_CC setter to the redirected edge.
+		 Don't copy CC0 setters, as CC0 is dead after jump.  */
+	      if (setcc)
+		{
+		  rtx pat = PATTERN (setcc);
+		  if (GET_MODE_CLASS (GET_MODE (SET_DEST (pat))) == MODE_CC)
+		    insert_insn_on_edge (copy_insn (pat), e);
+		}
+
+	      if (gcse_file != NULL)
+		{
+		  fprintf (gcse_file, "JUMP-BYPASS: Replacing reg %d in ",
+			   regno);
+		  fprintf (gcse_file, "insn %d with constant ",
+			   INSN_UID (jump));
+		  print_rtl (gcse_file, SET_SRC (set->expr));
+		  fprintf (gcse_file, "\nBypass edge from %d->%d to %d\n",
+			   e->src->index, e->dest->index, dest->index);
+		}
+	      change = 1;
+	      break;
+	    }
+	}
+    }
+  return change;
+}
+
+/* Find basic blocks with more than one predecessor that only contain a
+   single conditional jump.  If the result of the comparison is known at
+   compile-time from any incoming edge, redirect that edge to the
+   appropriate target.  Returns nonzero if a change was made.  */
+
+static int
+bypass_conditional_jumps ()
+{
+  basic_block bb;
+  int changed;
+  rtx setcc;
+  rtx insn;
+  rtx dest;
+
+  /* Note we start at block 1.  */
+  if (ENTRY_BLOCK_PTR->next_bb == EXIT_BLOCK_PTR)
+    return 0;
+
+  changed = 0;
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb->next_bb,
+                  EXIT_BLOCK_PTR, next_bb)
+    {
+      /* Check for more than one predecessor.  */
+      if (bb->pred && bb->pred->pred_next)
+	{
+	  setcc = NULL_RTX;
+	  for (insn = bb->head;
+	       insn != NULL && insn != NEXT_INSN (bb->end);
+	       insn = NEXT_INSN (insn))
+	    if (GET_CODE (insn) == INSN)
+	      {
+		if (setcc)
+		  break;
+		if (!single_set (insn))
+		  break;
+
+		dest = SET_DEST (PATTERN (insn));
+		if (GET_MODE_CLASS (GET_MODE (dest)) == MODE_CC)
+		  setcc = insn;
+#ifdef HAVE_cc0
+		else if (dest == cc0_rtx)
+		  setcc = insn;
+#endif
+		else
+		  break;
+	      }
+	    else if (GET_CODE (insn) == JUMP_INSN)
+	      {
+		if (any_condjump_p (insn) && onlyjump_p (insn))
+		  changed |= bypass_block (bb, setcc, insn);
+		break;
+	      }
+	    else if (INSN_P (insn))
+	      break;
+	}
+    }
+
+  /* If we bypassed any MODE_CC setting insns, we inserted a
+     copy on the redirected edge.  These need to be commited.  */
+  if (changed)
+    commit_edge_insertions();
 
   return changed;
 }
