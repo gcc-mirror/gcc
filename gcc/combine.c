@@ -4104,7 +4104,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       if (TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
 				 GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))))
 	  && num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
-	     >= GET_MODE_BITSIZE (mode) + 1
+	     >= (unsigned int) (GET_MODE_BITSIZE (mode) + 1)
 	  && ! (GET_CODE (XEXP (x, 0)) == LSHIFTRT
 		&& GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT))
 	return gen_lowpart_for_combine (mode, XEXP (x, 0));
@@ -4865,7 +4865,8 @@ simplify_if_then_else (x)
 	       && subreg_lowpart_p (XEXP (XEXP (t, 0), 0))
 	       && rtx_equal_p (SUBREG_REG (XEXP (XEXP (t, 0), 0)), f)
 	       && (num_sign_bit_copies (f, GET_MODE (f))
-		   > (GET_MODE_BITSIZE (mode)
+		   > (unsigned int)
+		     (GET_MODE_BITSIZE (mode)
 		      - GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (t, 0), 0))))))
 	{
 	  c1 = XEXP (XEXP (t, 0), 1); z = f; op = GET_CODE (XEXP (t, 0));
@@ -4880,7 +4881,8 @@ simplify_if_then_else (x)
 	       && subreg_lowpart_p (XEXP (XEXP (t, 0), 1))
 	       && rtx_equal_p (SUBREG_REG (XEXP (XEXP (t, 0), 1)), f)
 	       && (num_sign_bit_copies (f, GET_MODE (f))
-		   > (GET_MODE_BITSIZE (mode)
+		   > (unsigned int)
+		     (GET_MODE_BITSIZE (mode)
 		      - GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (t, 0), 1))))))
 	{
 	  c1 = XEXP (XEXP (t, 0), 0); z = f; op = GET_CODE (XEXP (t, 0));
@@ -8804,8 +8806,8 @@ extended_count (x, mode, unsignedp)
 
   return (unsignedp
 	  ? (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
-	     ? (GET_MODE_BITSIZE (mode) - 1
-		- floor_log2 (nonzero_bits (x, mode)))
+	     ? (unsigned int) (GET_MODE_BITSIZE (mode) - 1
+			       - floor_log2 (nonzero_bits (x, mode)))
 	     : 0)
 	  : num_sign_bit_copies (x, mode) - 1);
 }
@@ -9035,7 +9037,7 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 	 multiple operations, each of which are defined, we know what the
 	 result is supposed to be.  */
 
-      if (count > GET_MODE_BITSIZE (shift_mode) - 1)
+      if (count > (unsigned int) (GET_MODE_BITSIZE (shift_mode) - 1))
 	{
 	  if (code == ASHIFTRT)
 	    count = GET_MODE_BITSIZE (shift_mode) - 1;
@@ -9151,9 +9153,9 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 	  if (subreg_lowpart_p (varop)
 	      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (varop)))
 		  > GET_MODE_SIZE (GET_MODE (varop)))
-	      && (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (varop)))
-		    + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		  == mode_words))
+	      && (unsigned int) ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (varop)))
+				  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
+		 == mode_words)
 	    {
 	      varop = SUBREG_REG (varop);
 	      if (GET_MODE_SIZE (GET_MODE (varop)) > GET_MODE_SIZE (mode))
@@ -9194,7 +9196,8 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 	     bit of a wider mode may be different from what would be
 	     interpreted as the sign bit in a narrower mode, so, if
 	     the result is narrower, don't discard the shift.  */
-	  if (code == LSHIFTRT && count == GET_MODE_BITSIZE (result_mode) - 1
+	  if (code == LSHIFTRT
+	      && count == (unsigned int) (GET_MODE_BITSIZE (result_mode) - 1)
 	      && (GET_MODE_BITSIZE (result_mode)
 		  >= GET_MODE_BITSIZE (GET_MODE (varop))))
 	    {
@@ -9228,8 +9231,9 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 		 (ashiftrt:M1 (ashift:M1 (and:M1 (subreg:M1 FOO 0 C2) C3) C1).
 		 This simplifies certain SIGN_EXTEND operations.  */
 	      if (code == ASHIFT && first_code == ASHIFTRT
-		  && (GET_MODE_BITSIZE (result_mode)
-		      - GET_MODE_BITSIZE (GET_MODE (varop))) == count)
+		  && count == (unsigned int)
+			      (GET_MODE_BITSIZE (result_mode)
+			       - GET_MODE_BITSIZE (GET_MODE (varop))))
 		{
 		  /* C3 has the low-order C1 bits zero.  */
 
@@ -9385,7 +9389,8 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 	      && XEXP (XEXP (varop, 0), 1) == constm1_rtx
 	      && (STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
 	      && (code == LSHIFTRT || code == ASHIFTRT)
-	      && count == GET_MODE_BITSIZE (GET_MODE (varop)) - 1
+	      && count == (unsigned int)
+			  (GET_MODE_BITSIZE (GET_MODE (varop)) - 1)
 	      && rtx_equal_p (XEXP (XEXP (varop, 0), 0), XEXP (varop, 1)))
 	    {
 	      count = 0;
@@ -9440,7 +9445,7 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 	  if (code == LSHIFTRT
 	      && XEXP (varop, 1) == const0_rtx
 	      && GET_MODE (XEXP (varop, 0)) == result_mode
-	      && count == GET_MODE_BITSIZE (result_mode) - 1
+	      && count == (unsigned int) (GET_MODE_BITSIZE (result_mode) - 1)
 	      && GET_MODE_BITSIZE (result_mode) <= HOST_BITS_PER_WIDE_INT
 	      && ((STORE_FLAG_VALUE
 		   & ((HOST_WIDE_INT) 1
@@ -9459,7 +9464,8 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 	case NEG:
 	  /* (lshiftrt (neg A) C) where A is either 0 or 1 and C is one less
 	     than the number of bits in the mode is equivalent to A.  */
-	  if (code == LSHIFTRT && count == GET_MODE_BITSIZE (result_mode) - 1
+	  if (code == LSHIFTRT
+	      && count == (unsigned int) (GET_MODE_BITSIZE (result_mode) - 1)
 	      && nonzero_bits (XEXP (varop, 0), result_mode) == 1)
 	    {
 	      varop = XEXP (varop, 0);
@@ -9483,7 +9489,8 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 	  /* (lshiftrt (plus A -1) C) where A is either 0 or 1 and C
 	     is one less than the number of bits in the mode is
 	     equivalent to (xor A 1).  */
-	  if (code == LSHIFTRT && count == GET_MODE_BITSIZE (result_mode) - 1
+	  if (code == LSHIFTRT
+	      && count == (unsigned int) (GET_MODE_BITSIZE (result_mode) - 1)
 	      && XEXP (varop, 1) == constm1_rtx
 	      && nonzero_bits (XEXP (varop, 0), result_mode) == 1
 	      && merge_outer_ops (&outer_op, &outer_const, XOR,
@@ -9548,10 +9555,12 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 
 	  if ((STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
 	      && GET_CODE (XEXP (varop, 0)) == ASHIFTRT
-	      && count == GET_MODE_BITSIZE (GET_MODE (varop)) - 1
+	      && count == (unsigned int)
+			  (GET_MODE_BITSIZE (GET_MODE (varop)) - 1)
 	      && (code == LSHIFTRT || code == ASHIFTRT)
 	      && GET_CODE (XEXP (XEXP (varop, 0), 1)) == CONST_INT
-	      && INTVAL (XEXP (XEXP (varop, 0), 1)) == count
+	      && (unsigned HOST_WIDE_INT) INTVAL (XEXP (XEXP (varop, 0), 1))
+		 == count
 	      && rtx_equal_p (XEXP (XEXP (varop, 0), 0), XEXP (varop, 1)))
 	    {
 	      count = 0;
@@ -9615,7 +9624,7 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
 
   if (x && GET_RTX_CLASS (GET_CODE (x)) == '2'
       && GET_CODE (XEXP (x, 1)) == CONST_INT
-      && INTVAL (XEXP (x, 1)) == count)
+      && (unsigned HOST_WIDE_INT) INTVAL (XEXP (x, 1)) == count)
     const_rtx = XEXP (x, 1);
   else
     const_rtx = GEN_INT (count);
@@ -10527,7 +10536,8 @@ simplify_comparison (code, pop0, pop1)
 			& ~GET_MODE_MASK (mode))
 		  || (num_sign_bit_copies (XEXP (SUBREG_REG (op0), 0),
 					   GET_MODE (SUBREG_REG (op0)))
-		      > (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
+		      > (unsigned int)
+			(GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
 			 - GET_MODE_BITSIZE (mode)))))
 	    {
 	      op0 = SUBREG_REG (op0);
@@ -10611,7 +10621,8 @@ simplify_comparison (code, pop0, pop1)
 	     of bits in X minus 1, is one iff X > 0.  */
 	  if (sign_bit_comparison_p && GET_CODE (XEXP (op0, 0)) == ASHIFTRT
 	      && GET_CODE (XEXP (XEXP (op0, 0), 1)) == CONST_INT
-	      && INTVAL (XEXP (XEXP (op0, 0), 1)) == mode_width - 1
+	      && (unsigned HOST_WIDE_INT) INTVAL (XEXP (XEXP (op0, 0), 1))
+		 == mode_width - 1
 	      && rtx_equal_p (XEXP (XEXP (op0, 0), 0), XEXP (op0, 1)))
 	    {
 	      op0 = XEXP (op0, 1);
@@ -10869,7 +10880,8 @@ simplify_comparison (code, pop0, pop1)
 	     low-order bit.  */
 	  if (const_op == 0 && equality_comparison_p
 	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
-	      && INTVAL (XEXP (op0, 1)) == mode_width - 1)
+	      && (unsigned HOST_WIDE_INT) INTVAL (XEXP (op0, 1))
+		 == mode_width - 1)
 	    {
 	      op0 = simplify_and_const_int (NULL_RTX, mode, XEXP (op0, 0),
 					    (HOST_WIDE_INT) 1);
@@ -10966,7 +10978,8 @@ simplify_comparison (code, pop0, pop1)
 	  if (const_op == 0
 	      && (equality_comparison_p || sign_bit_comparison_p)
 	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
-	      && INTVAL (XEXP (op0, 1)) == mode_width - 1)
+	      && (unsigned HOST_WIDE_INT) INTVAL (XEXP (op0, 1))
+		 == mode_width - 1)
 	    {
 	      op0 = XEXP (op0, 0);
 	      code = (code == NE || code == GT ? LT : GE);
@@ -11067,9 +11080,11 @@ simplify_comparison (code, pop0, pop1)
 
 	  if (zero_extended
 	      || ((num_sign_bit_copies (op0, tmode)
-		   > GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))
+		   > (unsigned int) (GET_MODE_BITSIZE (tmode)
+				     - GET_MODE_BITSIZE (mode)))
 		  && (num_sign_bit_copies (op1, tmode)
-		      > GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))))
+		      > (unsigned int) (GET_MODE_BITSIZE (tmode)
+					- GET_MODE_BITSIZE (mode)))))
 	    {
 	      /* If OP0 is an AND and we don't have an AND in MODE either,
 		 make a new AND in the proper mode.  */
