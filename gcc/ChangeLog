@@ -1,3 +1,8 @@
+2005-01-27  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/frv/frv.c (frv_class_likely_spilled_p): Add GR8_REGS,
+	GR9_REGS, GR89_REGS, FDPIC_FPTR_REGS, FDPIC_REGS.
+
 2005-01-27  Steven Bosscher  <stevenb@suse.de>
 
 	* tree.h (SWITCH_COND, SWITCH_BODY, SWITCH_LABELS, CASE_LOW,
