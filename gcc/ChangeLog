@@ -1,3 +1,7 @@
+Sat Mar 27 21:17:36 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000/{aix41.h,aix43.h} (ASM_CPU_SPEC): Add 604e.
+
 Sat Mar 27 16:13:50 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (mark_used_regs): Improve handling of ASMs.
