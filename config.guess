@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
 #   Free Software Foundation, Inc.
 
-timestamp='2001-08-09'
+timestamp='2001-08-23'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -332,6 +332,9 @@ EOF
 	exit 0 ;;
     aushp:SunOS:*:*)
 	echo sparc-auspex-sunos${UNAME_RELEASE}
+	exit 0 ;;
+    sparc*:NetBSD:*)
+	echo `uname -p`-unknown-netbsd${UNAME_RELEASE}
 	exit 0 ;;
     atari*:OpenBSD:*:*)
 	echo m68k-unknown-openbsd${UNAME_RELEASE}
@@ -1110,6 +1113,9 @@ EOF
 	exit 0 ;;
     i*86:XTS-300:*:STOP)
 	echo ${UNAME_MACHINE}-unknown-stop
+	exit 0 ;;
+    i*86:atheos:*:*)
+	echo ${UNAME_MACHINE}-unknown-atheos
 	exit 0 ;;
 esac
 
