@@ -1,3 +1,7 @@
+2002-03-19  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (LIBGCC2_DEBUG_CFLAGS): Set to -g.
+
 2002-03-19  Dale Johannesen  <dalej@apple.com>
 
 	PR optimization/5999, middle-end/5731
