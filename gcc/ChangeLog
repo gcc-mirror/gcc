@@ -1,5 +1,9 @@
 2001-10-30  Kazu Hirata  <kazu@hxi.com>
 
+	* cfgcleanup.c: Fix a comment typo.
+
+2001-10-30  Kazu Hirata  <kazu@hxi.com>
+
 	* alias.c: Fix comment formatting.
 	* recog.c: Likewise.
 	* config/cris/cris.c: Likewise.

@@ -45,7 +45,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "obstack.h"
 
-/* cleanup_cfg maitains following flags for each basic block.  */
+/* cleanup_cfg maintains following flags for each basic block.  */
 enum bb_flags {
     /* Set if life info needs to be recomputed for given BB.  */
     BB_UPDATE_LIFE = 1,
