@@ -154,7 +154,7 @@ tree_may_unswitch_on (basic_block bb, struct loop *loop)
 
 /* Simplifies COND using checks in front of the entry of the LOOP.  Just very
    simplish (sufficient to prevent us from duplicating loop in unswitching
-   unneccesarily).  */
+   unnecessarily).  */
 
 static tree
 simplify_using_entry_checks (struct loop *loop, tree cond)
