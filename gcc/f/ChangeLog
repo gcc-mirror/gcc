@@ -1,3 +1,8 @@
+2002-02-09  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* invoke.texi: Add a short debugging session
+	as an example to the documentation of -g.
+
 2002-02-06  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/4730 fortran/5473

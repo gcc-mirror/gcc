@@ -1,11 +1,11 @@
-@c Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+@c Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
 @c Free Software Foundation, Inc.
 @c This is part of the G77 manual.   
 @c For copying conditions, see the file g77.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 1996, 1997, 1998, 1999, 2000, 2001
+Copyright @copyright{} 1996, 1997, 1998, 1999, 2000, 2001, 2002
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -1398,6 +1398,37 @@ either your program or @command{g77}
 Produce debugging information in the operating system's native format
 (stabs, COFF, XCOFF, or DWARF).  GDB can work with this debugging
 information.
+
+A sample debugging session looks like this (note the use of the breakpoint):
+@smallexample
+$ cat gdb.f
+      PROGRAM PROG
+      DIMENSION A(10)
+      DATA A /1.,2.,3.,4.,5.,6.,7.,8.,9.,10./
+      A(5) = 4.
+      PRINT*,A
+      END
+$ g77 -g -O gdb.f
+$ gdb a.out
+...
+(gdb) break MAIN__ 
+Breakpoint 1 at 0x8048e96: file gdb.f, line 4.
+(gdb) run
+Starting program: /home/toon/g77-bugs/./a.out 
+Breakpoint 1, MAIN__ () at gdb.f:4
+4             A(5) = 4.
+Current language:  auto; currently fortran
+(gdb) print a(5)
+$1 = 5
+(gdb) step 
+5             PRINT*,A
+(gdb) print a(5)
+$2 = 4
+...
+@end smallexample
+One could also add the setting of the breakpoint and the first run command
+to the file @file{.gdbinit} in the current directory, to simplify the debugging
+session.
 @end table
 
 @xref{Debugging Options,,Options for Debugging Your Program or GCC,
