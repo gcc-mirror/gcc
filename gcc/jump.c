@@ -1699,80 +1699,174 @@ jump_back_p (insn, target)
 	  && rtx_renumbered_equal_p (XEXP (cinsn, 1), XEXP (ctarget, 1)));
 }
 
+/* Given a comparison (CODE ARG0 ARG1), inside a insn, INSN, return an code
+   of reversed comparison if it is possible to do so.  Otherwise return UNKNOWN.
+   UNKNOWN may be returned in case we are having CC_MODE compare and we don't
+   know whether it's source is floating point or integer comparison.  Machine
+   description should define REVERSIBLE_CC_MODE and REVERSE_CONDITION macros
+   to help this function avoid overhead in these cases.  */
+enum rtx_code
+reversed_comparison_code_parts (code, arg0, arg1, insn)
+     rtx insn, arg0, arg1;
+     enum rtx_code code;
+{
+  enum machine_mode mode;
+
+  /* If this is not actually a comparison, we can't reverse it.  */
+  if (GET_RTX_CLASS (code) != '<')
+    return UNKNOWN;
+
+  mode = GET_MODE (arg0);
+  if (mode == VOIDmode)
+    mode = GET_MODE (arg1);
+
+  /* First see if machine description supply us way to reverse the comparison.
+     Give it priority over everything else to allow machine description to do
+     tricks.  */
+#ifdef REVERSIBLE_CC_MODE
+  if (GET_MODE_CLASS (mode) == MODE_CC)
+      && REVERSIBLE_CC_MODE (mode))
+    {
+#ifdef REVERSE_CONDITION
+	   return REVERSE_CONDITION (code, mode);
+#endif
+	   return reverse_condition (code);
+	}
+#endif
+
+  /* Try few special cases based on the comparison code.  */
+  switch (code)
+    {
+      case GEU:
+      case GTU:
+      case LEU:
+      case LTU:
+      case NE:
+      case EQ:
+        /* It is always safe to reverse EQ and NE, even for the floating
+	   point.  Similary the unsigned comparisons are never used for
+	   floating point so we can reverse them in the default way.  */
+	return reverse_condition (code);
+      case ORDERED:
+      case UNORDERED:
+      case LTGT:
+      case UNEQ:
+	/* In case we already see unordered comparison, we can be sure to
+	   be dealing with floating point so we don't need any more tests.  */
+	return reverse_condition_maybe_unordered (code);
+      case UNLT:
+      case UNLE:
+      case UNGT:
+      case UNGE:
+	/* We don't have safe way to reverse these yet.  */
+	return UNKNOWN;
+      default:
+	break;
+    }
+
+  /* In case we give up IEEE compatibility, all comparisons are reversible.  */
+  if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+      || flag_fast_math)
+    return reverse_condition (code);
+
+  if (GET_MODE_CLASS (mode) == MODE_CC
+#ifdef HAVE_cc0
+      || arg0 == cc0_rtx
+#endif
+      )
+    {
+      rtx prev;
+      /* Try to search for the comparison to determine the real mode.
+         This code is expensive, but with sane machine description it
+         will be never used, since REVERSIBLE_CC_MODE will return true
+         in all cases.  */
+      if (! insn)
+	return UNKNOWN;
+
+      for (prev = prev_nonnote_insn (insn);
+	   prev != 0 && GET_CODE (prev) != CODE_LABEL;
+	   prev = prev_nonnote_insn (prev))
+	{
+	  rtx set = set_of (arg0, prev);
+	  if (set && GET_CODE (set) == SET
+	      && rtx_equal_p (SET_DEST (set), arg0))
+	    {
+	      rtx src = SET_SRC (set);
+
+	      if (GET_CODE (src) == COMPARE)
+		{
+		  rtx comparison = src;
+		  arg0 = XEXP (src, 0);
+		  mode = GET_MODE (arg0);
+		  if (mode == VOIDmode)
+		    mode = GET_MODE (XEXP (comparison, 1));
+		  break;
+		}
+	      /* We can get past reg-reg moves.  This may be usefull for model
+	         of i387 comparisons that first move flag registers around.  */
+	      if (REG_P (src))
+		{
+		  arg0 = src;
+		  continue;
+		}
+	    }
+	  /* If register is clobbered in some ununderstandable way,
+	     give up.  */
+	  if (set)
+	    return UNKNOWN;
+	}
+    }
+
+  /* An integer condition.  */
+  if (GET_CODE (arg0) == CONST_INT
+      || (GET_MODE (arg0) != VOIDmode
+	  && GET_MODE_CLASS (mode) != MODE_CC
+	  && ! FLOAT_MODE_P (mode)))
+    return reverse_condition (code);
+
+  return UNKNOWN;
+}
+
+/* An wrapper around the previous function to take COMPARISON as rtx
+   expression.  This simplifies many callers.  */
+enum rtx_code
+reversed_comparison_code (comparison, insn)
+     rtx comparison, insn;
+{
+  if (GET_RTX_CLASS (GET_CODE (comparison)) != '<')
+    return UNKNOWN;
+  return reversed_comparison_code_parts (GET_CODE (comparison),
+					 XEXP (comparison, 0),
+					 XEXP (comparison, 1), insn);
+}
+
 /* Given a comparison, COMPARISON, inside a conditional jump insn, INSN,
    return non-zero if it is safe to reverse this comparison.  It is if our
    floating-point is not IEEE, if this is an NE or EQ comparison, or if
-   this is known to be an integer comparison.  */
+   this is known to be an integer comparison.  
+ 
+   Use of this function is depreached and you should use
+   REVERSED_COMPARISON_CODE bits instead.
+ */
 
 int
 can_reverse_comparison_p (comparison, insn)
      rtx comparison;
      rtx insn;
 {
-  rtx arg0;
+  enum rtx_code code;
 
   /* If this is not actually a comparison, we can't reverse it.  */
   if (GET_RTX_CLASS (GET_CODE (comparison)) != '<')
     return 0;
 
-  if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-      /* If this is an NE comparison, it is safe to reverse it to an EQ
-	 comparison and vice versa, even for floating point.  If no operands
-	 are NaNs, the reversal is valid.  If some operand is a NaN, EQ is
-	 always false and NE is always true, so the reversal is also valid.  */
-      || flag_fast_math
-      || GET_CODE (comparison) == NE
-      || GET_CODE (comparison) == EQ)
-    return 1;
+  code = reversed_comparison_code (comparison, insn);
+  if (code == UNKNOWN)
+    return 0;
 
-  arg0 = XEXP (comparison, 0);
-
-  /* Make sure ARG0 is one of the actual objects being compared.  If we
-     can't do this, we can't be sure the comparison can be reversed.
-
-     Handle cc0 and a MODE_CC register.  */
-  if ((GET_CODE (arg0) == REG && GET_MODE_CLASS (GET_MODE (arg0)) == MODE_CC)
-#ifdef HAVE_cc0
-      || arg0 == cc0_rtx
-#endif
-      )
-    {
-      rtx prev, set;
-
-      /* First see if the condition code mode alone if enough to say we can
-	 reverse the condition.  If not, then search backwards for a set of
-	 ARG0. We do not need to check for an insn clobbering it since valid
-	 code will contain set a set with no intervening clobber.  But
-	 stop when we reach a label.  */
-#ifdef REVERSIBLE_CC_MODE
-      if (GET_MODE_CLASS (GET_MODE (arg0)) == MODE_CC
-	  && REVERSIBLE_CC_MODE (GET_MODE (arg0)))
-	return 1;
-#endif
-
-      if (! insn)
-	return 0;
-
-      for (prev = prev_nonnote_insn (insn);
-	   prev != 0 && GET_CODE (prev) != CODE_LABEL;
-	   prev = prev_nonnote_insn (prev))
-	if ((set = single_set (prev)) != 0
-	    && rtx_equal_p (SET_DEST (set), arg0))
-	  {
-	    arg0 = SET_SRC (set);
-
-	    if (GET_CODE (arg0) == COMPARE)
-	      arg0 = XEXP (arg0, 0);
-	    break;
-	  }
-    }
-
-  /* We can reverse this if ARG0 is a CONST_INT or if its mode is
-     not VOIDmode and neither a MODE_CC nor MODE_FLOAT type.  */
-  return (GET_CODE (arg0) == CONST_INT
-	  || (GET_MODE (arg0) != VOIDmode
-	      && GET_MODE_CLASS (GET_MODE (arg0)) != MODE_CC
-	      && GET_MODE_CLASS (GET_MODE (arg0)) != MODE_FLOAT));
+  /* The code will follow can_reverse_comparison_p with reverse_condition,
+     so see if it will get proper result.  */
+  return (code == reverse_condition (GET_CODE (comparison)));
 }
 
 /* Given an rtx-code for a comparison, return the code for the negated
@@ -1781,7 +1875,7 @@ can_reverse_comparison_p (comparison, insn)
    WATCH OUT!  reverse_condition is not safe to use on a jump that might
    be acting on the results of an IEEE floating point comparison, because
    of the special treatment of non-signaling nans in comparisons.
-   Use can_reverse_comparison_p to be sure.  */
+   Use reversed_comparison_code instead.  */
 
 enum rtx_code
 reverse_condition (code)
@@ -1855,14 +1949,6 @@ reverse_condition_maybe_unordered (code)
       return UNGT;
     case LTGT:
       return UNEQ;
-    case GTU:
-      return LEU;
-    case GEU:
-      return LTU;
-    case LTU:
-      return GEU;
-    case LEU:
-      return GTU;
     case UNORDERED:
       return ORDERED;
     case ORDERED:
