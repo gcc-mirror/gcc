@@ -1,3 +1,41 @@
+2000-04-04  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/t-ppccomm (EXTRA_MULTILIB_PARTS): Add crtbegin,
+	crtend.
+	(CRTSTUFF_T_CFLAGS_S): Delete definition.
+	* config/rs6000/sysv4.h (STARTFILE_LINUX_SPEC): Always use crtbegin.
+	(ENDFILE_LINUX_SPEC): Always use crtend.
+	* configure.in (powerpc-*-linux-gnulibc1): Don't define extra_parts.
+	(powerpc-*-linux-gnu): Likewise.
+	* configure: Regenerate.
+
+	* config/rs6000/eabi.h:	Don't include sysv4.h.
+	(MULTILIB_DEFAULTS): Don't define.
+	* config/rs6000/eabiaix.h: Don't include eabi.h.
+	* config/rs6000/eabile.h: Delete.
+	* config/rs6000/eabilesim.h: Delete.
+	* config/rs6000/eabisim.h: Don't include eabi.h.
+	* config/rs6000/linux.h: Don't include sysv4.h.
+	(JUMP_TABLES_IN_TEXT_SECTION): Don't redefine.
+	(MULTILIB_DEFAULTS): Don't redefine.
+	* config/rs6000/rtems.h: Don't include eabi.h.
+	* config/rs6000/sol2.h: Don't include sysv4le.h.
+	* config/rs6000/sysv4le.h: Don't include sysv4.h.
+	* config/rs6000/t-ppc: Delete.
+	* config/rs6000/t-ppcgas: Correct comment.
+	* config/rs6000/t-ppcos: Correct comment.  Don't build 
+	multilibs for -fPIC, rather use -fPIC -mstrict-align 
+	as default.
+	* config/rs6000/t-ppc: Delete.
+	* config/rs6000/vxppc.h: Don't include sysv4.h.
+	* config/rs6000/vxppcle.h: Delete.
+	* configure.in: Use multiple header files for p2pc ELF targets
+	powerpc-eabiaix, powerpc-eabisim, powerpc-rtems, powerpcle-eabi,
+	powerpcle-eabisim, powerpc-elf, powerpcle-elf, powerpc-linux-gnu,
+	powerpc-linux-gnulibc1, powerpc-sysv, powerpcle-sysv,
+	powerpc-vxworks, powerpcle-vxworks.  Assume GAS functionality is
+	always available for these platforms.
+
 2000-04-04  Richard Henderson  <rth@cygnus.com>
 
 	* calls.c (try_to_integrate): Initialize reg_parm_stack_space.

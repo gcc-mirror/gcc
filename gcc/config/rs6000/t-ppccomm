@@ -1,4 +1,4 @@
-# Common support for PowerPC eabi, System V targets.
+# Common support for PowerPC ELF targets (both EABI and SVR4).
 
 # Do not build libgcc1.
 LIBGCC1 =
@@ -43,7 +43,8 @@ MULTILIB_MATCHES_SYSV	= mcall-sysv=mcall-sysv-eabi mcall-sysv=mcall-sysv-noeabi 
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
-EXTRA_MULTILIB_PARTS = ecrti$(objext) ecrtn$(objext) scrt0$(objext) scrti$(objext) scrtn$(objext)
+EXTRA_MULTILIB_PARTS = crtbegin$(objext) crtend$(objext) \
+  ecrti$(objext) ecrtn$(objext) scrt0$(objext) scrti$(objext) scrtn$(objext)
 
 # We build {e,s}crti.o, {e,s}crtn.o, and scrt0.o which serve to add begin and
 # end labels to all of the special sections used when we link using gcc.
@@ -82,4 +83,4 @@ $(T)scrt0$(objext): scrt0.c
 
 # It is important that crtbegin.o, etc., aren't surprised by stuff in .sdata.
 CRTSTUFF_T_CFLAGS = -msdata=none
-CRTSTUFF_T_CFLAGS_S = -fpic -msdata=none
+

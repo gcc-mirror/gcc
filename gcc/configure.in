@@ -2992,79 +2992,57 @@ changequote([,])dnl
 		tmake_file=rs6000/t-beos
 		xmake_file=rs6000/x-beos
 		;;
-	powerpc-*-sysv* | powerpc-*-elf*)
+	powerpc-*-sysv*)
 		tm_file=rs6000/sysv4.h
 		xm_file="rs6000/xm-sysv4.h"
 		xm_defines="USG POSIX"
 		extra_headers=ppc-asm.h
-		if test x$gas = xyes
-		then
-			tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
-		else
-			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
-		fi
+		tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 		xmake_file=rs6000/x-sysv4
 		;;
 	powerpc-*-eabiaix*)
-		tm_file=rs6000/eabiaix.h
+		tm_file="rs6000/sysv4.h rs6000/eabi.h rs6000/eabiaix.h"
 		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		extra_headers=ppc-asm.h
 		;;
 	powerpc-*-eabisim*)
-		tm_file=rs6000/eabisim.h
+		tm_file="rs6000/sysv4.h rs6000/eabi.h rs6000/eabisim.h"
+		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
+		extra_headers=ppc-asm.h
+		;;
+	powerpc-*-elf*)
+		tm_file="rs6000/sysv4.h"
 		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		extra_headers=ppc-asm.h
 		;;
 	powerpc-*-eabi*)
-		tm_file=rs6000/eabi.h
-		if test x$gas = xyes
-		then
-			tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-		else
-			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
-		fi
+		tm_file="rs6000/sysv4.h rs6000/eabi.h"
+		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		extra_headers=ppc-asm.h
 		;;
 	powerpc-*-rtems*)
-		tm_file=rs6000/rtems.h
-		if test x$gas = xyes
-		then
-		     tmake_file="rs6000/t-ppcgas t-rtems rs6000/t-ppccomm"
-		else
-		     tmake_file="rs6000/t-ppc t-rtems rs6000/t-ppccomm"
-		fi
+		tm_file="rs6000/sysv4.h rs6000/eabi.h rs6000/rtems.h"
+		tmake_file="rs6000/t-ppcgas t-rtems rs6000/t-ppccomm"
 		extra_headers=ppc-asm.h
 		;;
 	powerpc-*-linux-gnulibc1)
-		tm_file=rs6000/linux.h
+		tm_file="rs6000/sysv4.h rs6000/linux.h"
 		xm_file=rs6000/xm-sysv4.h
 		out_file=rs6000/rs6000.c
-		if test x$gas = xyes
-		then
-			tmake_file="rs6000/t-ppcos t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
-		else
-			tmake_file="rs6000/t-ppc t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
-		fi
+		tmake_file="rs6000/t-ppcos t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
 		xmake_file=x-linux
-		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		extra_headers=ppc-asm.h
 		if test x$enable_threads = xyes; then
 			thread_file='posix'
 		fi
 		;;
 	powerpc-*-linux-gnu*)
-		tm_file=rs6000/linux.h
+		tm_file="rs6000/sysv4.h rs6000/linux.h"
 		xm_file="rs6000/xm-sysv4.h"
 		xm_defines="USG ${xm_defines}"
 		out_file=rs6000/rs6000.c
-		if test x$gas = xyes
-		then
-			tmake_file="rs6000/t-ppcos t-linux rs6000/t-ppccomm"
-		else
-			tmake_file="rs6000/t-ppc t-linux rs6000/t-ppccomm"
-		fi
+		tmake_file="rs6000/t-ppcos t-linux rs6000/t-ppccomm"
 		xmake_file=x-linux
-		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		extra_headers=ppc-asm.h
 		if test x$enable_threads = xyes; then
 			thread_file='posix'
@@ -3074,7 +3052,7 @@ changequote([,])dnl
                 cpu_type=rs6000
 		xm_file="rs6000/xm-sysv4.h"
 		xm_defines="USG POSIX"
-                tm_file=rs6000/vxppc.h
+                tm_file="rs6000/sysv4.h rs6000/vxppc.h"
                 tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		extra_headers=ppc-asm.h
 		thread_file='vxworks'
@@ -3083,49 +3061,39 @@ changequote([,])dnl
                 cpu_type=rs6000
 		xm_file="rs6000/xm-sysv4.h"
 		xm_defines="USG POSIX"
-                tm_file=rs6000/vxppcle.h
+                tm_file="rs6000/sysv4.h rs6000/sysv4le.h rs6000/vxppc.h"
                 tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		extra_headers=ppc-asm.h
 		thread_file='vxworks'
                 ;;
-	powerpcle-*-sysv* | powerpcle-*-elf*)
-		tm_file=rs6000/sysv4le.h
+	powerpcle-*-sysv*)
+		tm_file="rs6000/sysv4.h rs6000/sysv4le.h"
 		xm_file="rs6000/xm-sysv4.h"
 		xm_defines="USG POSIX"
-		if test x$gas = xyes
-		then
-			tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
-		else
-			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
-		fi
+		tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 		xmake_file=rs6000/x-sysv4
 		extra_headers=ppc-asm.h
 		;;
+	powerpcle-*-elf*)
+		tm_file="rs6000/sysv4.h rs6000/sysv4le.h"
+		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
+		extra_headers=ppc-asm.h
+		;;
 	powerpcle-*-eabisim*)
-		tm_file=rs6000/eabilesim.h
+		tm_file="rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h rs6000/eabisim.h"
 		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		extra_headers=ppc-asm.h
 		;;
 	powerpcle-*-eabi*)
-		tm_file=rs6000/eabile.h
-		if test x$gas = xyes
-		then
-			tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-		else
-			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
-		fi
+		tm_file="rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h"
+		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
 		extra_headers=ppc-asm.h
 		;;
 	powerpcle-*-solaris2*)
-		tm_file=rs6000/sol2.h
+		tm_file="rs6000/sysv4.h rs6000/sysv4le.h rs6000/sol2.h"
 		xm_file="rs6000/xm-sysv4.h"
 		xm_defines="USG POSIX"
-		if test x$gas = xyes
-		then
-			tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
-		else
-			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
-		fi
+		tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 		xmake_file=rs6000/x-sysv4
 		extra_headers=ppc-asm.h
 		;;
