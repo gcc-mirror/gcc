@@ -1,5 +1,10 @@
 2003-09-29  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (*tst_extzv_1_n): Combine with the
+	define_split immediately below to form define_insn_and_split.
+
+2003-09-29  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (*tstsi_variable_bit): New.
 	(*tstsi_variable_bit_qi): Likewise.
 
