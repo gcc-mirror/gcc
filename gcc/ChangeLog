@@ -1,3 +1,15 @@
+2004-09-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* final.c (output_in_slot): New global variable.
+	(final_scan_insn): Add new state '2' to the 'nopeepholes' parameter.
+	Pass 2 as 'nopeepholes' to self for insns in a SEQUENCE.  Set
+	'output_in_slot' before invoking output_asm_insn.
+	(output_asm_insn): Add a space after the tab if 'output_in_slot'
+	is set.
+	* config/sparc/sparc.c (output_return): Pass 2 as 'nopeepholes' to
+	final_scan_insn.
+	(output_sibcall): Likewise.
+
 2004-09-03  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-operands.c (fini_ssa_operands): ggc_free unused arrays.
