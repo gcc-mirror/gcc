@@ -3291,7 +3291,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   f_ovf = TREE_CHAIN (f_fpr);
   f_sav = TREE_CHAIN (f_ovf);
 
-  valist = build_fold_indirect_ref (valist);
+  valist = build_va_arg_indirect_ref (valist);
   gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
   fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
   ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
@@ -3440,12 +3440,12 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	      src_addr = fold_convert (addr_type, src_addr);
 	      src_addr = fold (build2 (PLUS_EXPR, addr_type, src_addr,
 				       size_int (src_offset)));
-	      src = build_fold_indirect_ref (src_addr);
+	      src = build_va_arg_indirect_ref (src_addr);
 
 	      dest_addr = fold_convert (addr_type, addr);
 	      dest_addr = fold (build2 (PLUS_EXPR, addr_type, dest_addr,
 					size_int (INTVAL (XEXP (slot, 1)))));
-	      dest = build_fold_indirect_ref (dest_addr);
+	      dest = build_va_arg_indirect_ref (dest_addr);
 
 	      t = build2 (MODIFY_EXPR, void_type_node, dest, src);
 	      gimplify_and_add (t, pre_p);
@@ -3507,8 +3507,8 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   addr = fold_convert (ptrtype, addr);
 
   if (indirect_p)
-    addr = build_fold_indirect_ref (addr);
-  return build_fold_indirect_ref (addr);
+    addr = build_va_arg_indirect_ref (addr);
+  return build_va_arg_indirect_ref (addr);
 }
 
 /* Return nonzero if OPNUM's MEM should be matched

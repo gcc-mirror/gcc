@@ -1,3 +1,12 @@
+2004-09-09  Frank Ch. Eigler  <fche@redhat.com>
+
+	* builtins.c (build_va_arg_indirect_ref): New function.
+	(std_gimplify_va_arg_expr): Call it instead of mudflap check and
+	build_fold_indirect_ref.
+	* config/i386/i386.c (ix86_gimplify_va_arg): Ditto.
+	* config/ia64/ia64.c (ia64_gimplify_va_arg): Ditto.
+	* tree.h: Declare new function.
+
 2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cgraphunit.c (cgraph_mark_functions_to_output): Renable node

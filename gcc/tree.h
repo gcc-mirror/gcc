@@ -3462,6 +3462,7 @@ extern tree strip_float_extensions (tree);
 extern tree simplify_builtin (tree, int);
 extern tree c_strlen (tree, int);
 extern tree std_gimplify_va_arg_expr (tree, tree, tree *, tree *);
+extern tree build_va_arg_indirect_ref (tree);
 
 /* In convert.c */
 extern tree strip_float_extensions (tree);

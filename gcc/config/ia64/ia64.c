@@ -3379,7 +3379,7 @@ ia64_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
     {
       tree ptrtype = build_pointer_type (type);
       tree addr = std_gimplify_va_arg_expr (valist, ptrtype, pre_p, post_p);
-      return build_fold_indirect_ref (addr);
+      return build_va_arg_indirect_ref (addr);
     }
 
   /* Aggregate arguments with alignment larger than 8 bytes start at

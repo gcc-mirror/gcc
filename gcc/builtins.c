@@ -4358,13 +4358,18 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
   addr = fold_convert (build_pointer_type (type), addr);
 
   if (indirect)
-    {
-      addr = build_fold_indirect_ref (addr);
-      if (flag_mudflap) /* Don't instrument va_arg INDIRECT_REF.  */
-        mf_mark (addr);
-    }
+    addr = build_va_arg_indirect_ref (addr);
 
+  return build_va_arg_indirect_ref (addr);
+}
+
+/* Build an indirect-ref expression over the given TREE, which represents a
+   piece of a va_arg() expansion.  */
+tree
+build_va_arg_indirect_ref (tree addr)
+{
   addr = build_fold_indirect_ref (addr);
+
   if (flag_mudflap) /* Don't instrument va_arg INDIRECT_REF.  */
     mf_mark (addr);
 
