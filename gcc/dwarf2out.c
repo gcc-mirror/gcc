@@ -58,15 +58,6 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 
-/* We cannot use <assert.h> in GCC source, since that would include
-   GCC's assert.h, which may not be compatible with the host compiler.  */
-#undef assert
-#ifdef NDEBUG
-# define assert(e)
-#else
-# define assert(e) do { if (! (e)) abort (); } while (0)
-#endif
-
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
 
@@ -1123,7 +1114,8 @@ dwarf2out_stack_adjust (insn)
 	insn = XVECEXP (insn, 0, 0);
       if (GET_CODE (insn) == SET)
 	insn = SET_SRC (insn);
-      assert (GET_CODE (insn) == CALL);
+      if (GET_CODE (insn) != CALL)
+	abort ();
       dwarf2out_args_size ("", INTVAL (XEXP (insn, 1)));
       return;
     }
