@@ -73,7 +73,7 @@ template<typename _Tp>
 inline void
 __valarray_copy (const _Tp* __restrict__ __a, size_t __n, size_t __s,
                  _Tp* __restrict__ __b)
-{ for (size_t __i=0; __i<__n; ++__i, ++__b, __a += __s) *__b += *__a; }
+{ for (size_t __i=0; __i<__n; ++__i, ++__b, __a += __s) *__b = *__a; }
 
 // copy plain __a[<__n>] in strided __b[<__n : __s>]
 template<typename _Tp>

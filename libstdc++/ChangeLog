@@ -1,3 +1,7 @@
+1999-09017 Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+
+	* std/valarray_array.h (__valarray_copy): Fix typo.
+
 1999-09-17 Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* std/complext.cc (pow): Don't expect floating point promotion
