@@ -823,6 +823,17 @@ struct parser_ctxt {
                                      TREE_VALUE (GET_ENCLOSING_CPC ()) :      \
 				     NULL_TREE)
 
+/* Make sure that innerclass T sits in an appropriate enclosing
+   context.  */
+#define INNER_ENCLOSING_SCOPE_CHECK(T)					\
+  (INNER_CLASS_TYPE_P ((T)) && !ANONYMOUS_CLASS_P ((T))			\
+   /* We have a this and it's not the right one */			\
+   && ((current_this							\
+	&& (DECL_CONTEXT (TYPE_NAME ((T)))				\
+	    != TYPE_NAME (TREE_TYPE (TREE_TYPE (current_this)))))	\
+       /* We don't have a this. */					\
+       || !current_this))
+
 /* Push macro. First argument to PUSH_CPC is a DECL_TYPE, second
    argument is the unqualified currently parsed class name.  */
 #define PUSH_CPC(C,R) { 					\

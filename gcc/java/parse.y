@@ -238,6 +238,7 @@ static void start_artificial_method_body PARAMS ((tree));
 static void end_artificial_method_body PARAMS ((tree));
 static int check_method_redefinition PARAMS ((tree, tree));
 static int reset_method_name PARAMS ((tree));
+static int check_method_types_complete PARAMS ((tree));
 static void java_check_regular_methods PARAMS ((tree));
 static void java_check_abstract_methods PARAMS ((tree));
 static tree maybe_build_primttype_type_ref PARAMS ((tree, tree));
@@ -313,6 +314,9 @@ static tree patch_incomplete_class_ref PARAMS ((tree));
 static tree create_anonymous_class PARAMS ((int, tree));
 static void patch_anonymous_class PARAMS ((tree, tree, tree));
 static void add_inner_class_fields PARAMS ((tree, tree));
+
+static tree build_dot_class_method PARAMS ((tree));
+static tree build_dot_class_method_invocation PARAMS ((tree));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -3832,8 +3836,8 @@ create_class (flags, id, super, interfaces)
   /* Eventually sets the @deprecated tag flag */
   CHECK_DEPRECATED (decl);
 
-  /* Reset the anonymous class counter when declaring a toplevel class */
-  if (TOPLEVEL_CLASS_DECL_P (decl))
+  /* Reset the anonymous class counter when declaring non inner classes */
+  if (!INNER_CLASS_DECL_P (decl))
     anonymous_class_counter = 1;
 
   return decl;
@@ -4702,9 +4706,16 @@ unresolved_type_p (wfl, returned)
 {
   if (TREE_CODE (wfl) == EXPR_WITH_FILE_LOCATION)
     {
-      tree decl = IDENTIFIER_CLASS_VALUE (EXPR_WFL_NODE (wfl));
       if (returned)
-	*returned = (decl ? TREE_TYPE (decl) : NULL_TREE);
+	{
+	  tree decl = IDENTIFIER_CLASS_VALUE (EXPR_WFL_NODE (wfl));
+	  if (decl && current_class && (decl == TYPE_NAME (current_class)))
+	    *returned = TREE_TYPE (decl);
+	  else if (GET_CPC_UN () == EXPR_WFL_NODE (wfl))
+	    *returned = TREE_TYPE (GET_CPC ());
+	  else
+	    *returned = NULL_TREE;
+	}
       return 1;
     }
   if (returned)
@@ -4883,7 +4894,10 @@ register_incomplete_type (kind, wfl, decl, ptr)
   JDEP_WFL (new) = wfl;
   JDEP_CHAIN (new) = NULL;
   JDEP_MISC (new) = NULL_TREE;
-  if(!(JDEP_ENCLOSING (new) = GET_ENCLOSING_CPC_CONTEXT ()))
+  if ((kind == JDEP_SUPER || kind == JDEP_INTERFACE)
+      && GET_ENCLOSING_CPC ())
+    JDEP_ENCLOSING (new) = TREE_VALUE (GET_ENCLOSING_CPC ());
+  else
     JDEP_ENCLOSING (new) = GET_CPC ();
   JDEP_GET_PATCH (new) = (tree *)NULL;
 
@@ -5228,9 +5242,14 @@ java_complete_class ()
 		{
 		  tree mdecl = JDEP_DECL (dep), signature;
 		  push_obstacks (&permanent_obstack, &permanent_obstack);
-		  /* Recompute and reset the signature */
-		  signature = build_java_signature (TREE_TYPE (mdecl));
-		  set_java_signature (TREE_TYPE (mdecl), signature);
+		  /* Recompute and reset the signature, check first that
+		     all types are now defined. If they're not,
+		     dont build the signature. */
+		  if (check_method_types_complete (mdecl))
+		    {
+		      signature = build_java_signature (TREE_TYPE (mdecl));
+		      set_java_signature (TREE_TYPE (mdecl), signature);
+		    }
 		  pop_obstacks ();
 		}
 	      else
@@ -5698,6 +5717,7 @@ check_abstract_method_definitions (do_interface, class_decl, type)
     {
       tree other_super, other_method, method_sig, method_name;
       int found = 0;
+      int end_type_reached = 0;
       
       if (!METHOD_ABSTRACT (method) || METHOD_FINAL (method))
 	continue;
@@ -5711,27 +5731,31 @@ check_abstract_method_definitions (do_interface, class_decl, type)
       if (TREE_CODE (method_name) == EXPR_WITH_FILE_LOCATION)
 	method_name = EXPR_WFL_NODE (method_name);
 
-      for (other_super = class; other_super != end_type; 
-	   other_super = CLASSTYPE_SUPER (other_super))
-	{
-	  for (other_method = TYPE_METHODS (other_super); other_method;
-	       other_method = TREE_CHAIN (other_method))
-	    {
-	      tree s = build_java_signature (TREE_TYPE (other_method));
-	      tree other_name = DECL_NAME (other_method);
-
-	      if (TREE_CODE (other_name) == EXPR_WITH_FILE_LOCATION)
-		other_name = EXPR_WFL_NODE (other_name);
-	      if (!DECL_CLINIT_P (other_method)
-		  && !DECL_CONSTRUCTOR_P (other_method)
-		  && method_name == other_name && method_sig == s)
-		{
-		  found = 1;
-		  break;
-		}
-	    }
-	}
-      
+      other_super = class;
+      do {
+	if (other_super == end_type)
+	  end_type_reached = 1;
+	
+	/* Method search */
+	for (other_method = TYPE_METHODS (other_super); other_method;
+            other_method = TREE_CHAIN (other_method))
+	  {
+	    tree s = build_java_signature (TREE_TYPE (other_method));
+	    tree other_name = DECL_NAME (other_method);
+	    
+	    if (TREE_CODE (other_name) == EXPR_WITH_FILE_LOCATION)
+	      other_name = EXPR_WFL_NODE (other_name);
+	    if (!DECL_CLINIT_P (other_method)
+		&& !DECL_CONSTRUCTOR_P (other_method)
+		&& method_name == other_name && method_sig == s)
+             {
+               found = 1;
+               break;
+             }
+	  }
+	other_super = CLASSTYPE_SUPER (other_super);
+      } while (!end_type_reached);
+ 
       /* Report that abstract METHOD didn't find an implementation
 	 that CLASS can use. */
       if (!found)
@@ -5781,14 +5805,11 @@ java_check_abstract_method_definitions (class_decl)
     return;
 
   /* Check for inherited types */
-  for (super = CLASSTYPE_SUPER (class); super != object_type_node; 
-       super = CLASSTYPE_SUPER (super))
-    {
-      if (!CLASS_ABSTRACT (TYPE_NAME (super)))
-	continue;
-
-      check_abstract_method_definitions (0, class_decl, super);
-    }
+  super = class;
+  do {
+    super = CLASSTYPE_SUPER (super);
+    check_abstract_method_definitions (0, class_decl, super);
+  } while (super != object_type_node);
 
   /* Check for implemented interfaces. */
   vector = TYPE_BINFO_BASETYPES (class);
@@ -5797,6 +5818,30 @@ java_check_abstract_method_definitions (class_decl)
       super = BINFO_TYPE (TREE_VEC_ELT (vector, i));
       check_abstract_method_definitions (1, class_decl, super);
     }
+}
+
+/* Check all the types method DECL uses and return 1 if all of them
+   are now complete, 0 otherwise. This is used to check whether its
+   safe to build a method signature or not.  */
+
+static int
+check_method_types_complete (decl)
+     tree decl;
+{
+  tree type = TREE_TYPE (decl);
+  tree args;
+
+  if (!INCOMPLETE_TYPE_P (TREE_TYPE (type)))
+    return 0;
+  
+  args = TYPE_ARG_TYPES (type);
+  if (TREE_CODE (type) == METHOD_TYPE)
+    args = TREE_CHAIN (args);
+  for (; args != end_params_node; args = TREE_CHAIN (args))
+    if (INCOMPLETE_TYPE_P (TREE_VALUE (args)))
+      return 0;
+
+  return 1;
 }
 
 /* Check all the methods of CLASS_DECL. Methods are first completed
@@ -7227,6 +7272,10 @@ java_complete_expand_methods (class_decl)
       ctxp->explicit_constructor_p = 0;
     }
   
+  /* We might have generated a class$ that we now want to expand */
+  if (TYPE_DOT_CLASS (current_class))
+    java_complete_expand_method (TYPE_DOT_CLASS (current_class));
+
   /* Now verify constructor circularity (stop after the first one we
      prove wrong.) */
   if (!CLASS_INTERFACE (class_decl))
@@ -7893,6 +7942,129 @@ build_thisn_assign ()
 }
 
 
+/* Building the synthetic `class$' used to implement the `.class' 1.1
+   extension for non primitive types. This method looks like:
+
+    static Class class$(String type) throws NoClassDefFoundError
+    {
+      try {return (java.lang.Class.forName (String));}
+      catch (ClassNotFoundException e) {
+        throw new NoClassDefFoundError(e.getMessage());}
+    } */
+
+static tree
+build_dot_class_method (class)
+     tree class;
+{
+#define BWF(S) build_wfl_node (get_identifier ((S)))
+#define MQN(X,Y) make_qualified_name ((X), (Y), 0)
+  tree args, tmp, saved_current_function_decl, mdecl;
+  tree stmt, throw_stmt, catch, catch_block, try_block;
+  tree catch_clause_param;
+  tree class_not_found_exception, no_class_def_found_error;
+
+  static tree get_message_wfl, type_parm_wfl;
+
+  if (!get_message_wfl)
+    {
+      get_message_wfl = build_wfl_node (get_identifier ("getMessage"));
+      type_parm_wfl = build_wfl_node (get_identifier ("type$"));
+    }
+
+  /* Build the arguments */
+  args = build_tree_list (get_identifier ("type$"),
+			  build_pointer_type (string_type_node));
+  TREE_CHAIN (args) = end_params_node;
+
+  /* Build the qualified name java.lang.Class.forName */
+  tmp = MQN (MQN (MQN (BWF ("java"), 
+		       BWF ("lang")), BWF ("Class")), BWF ("forName"));
+
+  /* For things we have to catch and throw */
+  class_not_found_exception = 
+    lookup_class (get_identifier ("java.lang.ClassNotFoundException"));
+  no_class_def_found_error = 
+    lookup_class (get_identifier ("java.lang.NoClassDefFoundError"));
+  load_class (class_not_found_exception, 1);
+  load_class (no_class_def_found_error, 1);
+
+  /* Create the "class$" function */
+  mdecl = create_artificial_method (class, ACC_STATIC, 
+				    build_pointer_type (class_type_node),
+				    get_identifier ("class$"), args);
+  DECL_FUNCTION_THROWS (mdecl) = build_tree_list (NULL_TREE,
+						  no_class_def_found_error);
+  
+  /* We start by building the try block. We need to build:
+       return (java.lang.Class.forName (type)); */
+  stmt = build_method_invocation (tmp, 
+				  build_tree_list (NULL_TREE, type_parm_wfl));
+  stmt = build_return (0, stmt);
+  /* Put it in a block. That's the try block */
+  try_block = build_expr_block (stmt, NULL_TREE);
+
+  /* Now onto the catch block. We start by building the expression
+     throwing a new exception: 
+       throw new NoClassDefFoundError (_.getMessage); */
+  throw_stmt = make_qualified_name (build_wfl_node (wpv_id), 
+				    get_message_wfl, 0);
+  throw_stmt = build_method_invocation (throw_stmt, NULL_TREE);
+  
+  /* Build new NoClassDefFoundError (_.getMessage) */
+  throw_stmt = build_new_invocation 
+    (build_wfl_node (get_identifier ("NoClassDefFoundError")),
+     build_tree_list (build_pointer_type (string_type_node), throw_stmt));
+
+  /* Build the throw, (it's too early to use BUILD_THROW) */
+  throw_stmt = build1 (THROW_EXPR, NULL_TREE, throw_stmt);
+
+  /* Build the catch block to encapsulate all this. We begin by
+     building an decl for the catch clause parameter and link it to
+     newly created block, the catch block. */
+  catch_clause_param = 
+    build_decl (VAR_DECL, wpv_id, 
+		build_pointer_type (class_not_found_exception));
+  catch_block = build_expr_block (NULL_TREE, catch_clause_param);
+  
+  /* We initialize the variable with the exception handler. */
+  catch = build (MODIFY_EXPR, NULL_TREE, catch_clause_param,
+		 soft_exceptioninfo_call_node);
+  add_stmt_to_block (catch_block, NULL_TREE, catch);
+
+  /* We add the statement throwing the new exception */
+  add_stmt_to_block (catch_block, NULL_TREE, throw_stmt);
+
+  /* Build a catch expression for all this */
+  catch_block = build1 (CATCH_EXPR, NULL_TREE, catch_block);
+
+  /* Build the try/catch sequence */
+  stmt = build_try_statement (0, try_block, catch_block);
+
+  fix_method_argument_names (args, mdecl);
+  layout_class_method (class, NULL_TREE, mdecl, NULL_TREE);
+  saved_current_function_decl = current_function_decl;
+  start_artificial_method_body (mdecl);
+  java_method_add_stmt (mdecl, stmt);
+  end_artificial_method_body (mdecl);
+  current_function_decl = saved_current_function_decl;
+  TYPE_DOT_CLASS (class) = mdecl;
+
+  return mdecl;
+}
+
+static tree
+build_dot_class_method_invocation (name)
+     tree name;
+{
+  tree s = make_node (STRING_CST);
+  TREE_STRING_LENGTH (s) = IDENTIFIER_LENGTH (name);
+  TREE_STRING_POINTER (s) = obstack_alloc (expression_obstack,
+					   TREE_STRING_LENGTH (s)+1);
+  strcpy (TREE_STRING_POINTER (s), IDENTIFIER_POINTER (name));
+  return build_method_invocation (build_wfl_node (get_identifier ("class$")),
+				  build_tree_list (NULL_TREE, s));
+}
+
 /* This section of the code deals with constructor.  */
 
 /* Craft a body for default constructor. Patch existing constructor
@@ -8503,13 +8675,13 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	  /* If we're creating an inner class instance, check for that
 	     an enclosing instance is in scope */
 	  if (TREE_CODE (qual_wfl) == NEW_CLASS_EXPR
-	      && INNER_CLASS_TYPE_P (type) && current_this
-	      && (DECL_CONTEXT (TYPE_NAME (type)) 
-		  != TYPE_NAME (TREE_TYPE (TREE_TYPE (current_this)))))
+	      && INNER_ENCLOSING_SCOPE_CHECK (type))
 	    {
 	      parse_error_context 
-		(qual_wfl, "No enclosing instance for inner class `%s' is in scope; an explicit one must be provided when creating this inner class", 
-		 lang_printable_name (type, 0));
+		(qual_wfl, "No enclosing instance for inner class `%s' is in scope%s",
+		 lang_printable_name (type, 0),
+		 (!current_this ? "" :
+		  "; an explicit one must be provided when creating this inner class"));
 	      RESTORE_THIS_AND_CURRENT_CLASS;
 	      return 1;
 	    }
@@ -8586,6 +8758,13 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	    return 1;
 	  if ((type = patch_string (decl)))
 	    decl = type;
+	  *where_found = QUAL_RESOLUTION (q) = decl;
+	  *type_found = type = TREE_TYPE (decl);
+	  break;
+
+	case CLASS_LITERAL:
+	  if ((decl = java_complete_tree (qual_wfl)) == error_mark_node)
+	    return 1;
 	  *where_found = QUAL_RESOLUTION (q) = decl;
 	  *type_found = type = TREE_TYPE (decl);
 	  break;
@@ -9206,6 +9385,19 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 					     class_to_search, primary))
 	PATCH_METHOD_RETURN_ERROR ();
 
+      /* Check for inner classes creation from illegal contexts */
+      if (lc && (INNER_CLASS_TYPE_P (class_to_search)
+		 && !CLASS_STATIC (TYPE_NAME (class_to_search)))
+	  && INNER_ENCLOSING_SCOPE_CHECK (class_to_search))
+	{
+	  parse_error_context 
+	    (wfl, "No enclosing instance for inner class `%s' is in scope%s",
+	     lang_printable_name (class_to_search, 0),
+	     (!current_this ? "" :
+	      "; an explicit one must be provided when creating this inner class"));
+	  PATCH_METHOD_RETURN_ERROR ();
+	}
+
       /* Non static methods are called with the current object extra
 	 argument. If patch a `new TYPE()', the argument is the value
 	 returned by the object allocator. If method is resolved as a
@@ -9281,7 +9473,10 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	args = nreverse (args);
       
       /* Secretely pass the current_this/primary as a second argument */
-      args = tree_cons (NULL_TREE, (primary ? primary : current_this), args);
+      if (primary || current_this)
+	args = tree_cons (NULL_TREE, (primary ? primary : current_this), args);
+      else
+	args = tree_cons (NULL_TREE, integer_zero_node, args);
     }
 
   is_static_flag = METHOD_STATIC (list);
@@ -9367,7 +9562,9 @@ maybe_use_access_method (is_super_init, mdecl, this_arg)
   int non_static_context = !METHOD_STATIC (md);
 
   if (is_super_init 
-      || !INNER_CLASS_TYPE_P (current_class) || DECL_FINIT_P (md))
+      || DECL_CONTEXT (md) == current_class
+      || !PURE_INNER_CLASS_TYPE_P (current_class) 
+      || DECL_FINIT_P (md))
     return 0;
   
   /* If we're calling a method found in an enclosing class, generate
@@ -9629,6 +9826,7 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
      int lc;
      tree class, name, arglist;
 {
+  static int object_done = 0;
   tree list = NULL_TREE, all_list = NULL_TREE;
 
   if (!CLASS_LOADED_P (class) && !CLASS_FROM_SOURCE_P (class))
@@ -9638,15 +9836,15 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
     }
 
   /* Search interfaces */
-  if (CLASS_INTERFACE (TYPE_NAME (class))
-      || CLASS_ABSTRACT (TYPE_NAME (class)))
+  if (CLASS_INTERFACE (TYPE_NAME (class)))
     {
       static tree searched_interfaces = NULL_TREE;
       static int search_not_done = 0;
       int i, n;
       tree basetype_vec = TYPE_BINFO_BASETYPES (class);
 
-      /* Have we searched this interface already? */
+      /* Have we searched this interface already? We shoud use a hash
+         table, FIXME */
       if (searched_interfaces)
 	{  
 	  tree current;  
@@ -9657,23 +9855,18 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
 	}
       searched_interfaces = tree_cons (NULL_TREE, class, searched_interfaces);
 
-      search_applicable_methods_list 
-	(lc, TYPE_METHODS (class), name, arglist, &list, &all_list);
-
+      search_applicable_methods_list (lc, TYPE_METHODS (class), 
+				      name, arglist, &list, &all_list);
       n = TREE_VEC_LENGTH (basetype_vec);
-      for (i = 0; i < n; i++)
+      for (i = 1; i < n; i++)
 	{
 	  tree t = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
 	  tree rlist;
 
-	  /* Skip java.lang.Object (we'll search it once later.) */
-	  if (t == object_type_node)
-	    continue;
-	  
 	  search_not_done++;
 	  rlist = find_applicable_accessible_methods_list (lc,  t, name, 
 							   arglist);
-	  all_list = chainon (rlist, (list ? list : all_list)); 
+	  list = chainon (rlist, list);
 	  search_not_done--;
 	}
 
@@ -9681,32 +9874,61 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
          java.lang.Object */
       if (!search_not_done)
 	{  
+	  if (!object_done)
+	    search_applicable_methods_list (lc, 
+					    TYPE_METHODS (object_type_node),
+					    name, arglist, &list, &all_list);
 	  searched_interfaces = NULL_TREE;  
-	  search_applicable_methods_list (lc, TYPE_METHODS (object_type_node),
-					  name, arglist, &list, &all_list);
 	}
     }
   /* Search classes */
   else
     {
-      tree saved_class = class;
+      tree sc = class;
+      int seen_inner_class = 0;
       search_applicable_methods_list (lc, TYPE_METHODS (class), 
 				      name, arglist, &list, &all_list);
+
+      /* We must search all interfaces of this class */
+      if (!lc)
+      {
+	tree basetype_vec = TYPE_BINFO_BASETYPES (sc);
+	int n = TREE_VEC_LENGTH (basetype_vec), i;
+	object_done = 1;
+	for (i = 1; i < n; i++)
+	  {
+	    tree t = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
+	    tree rlist;
+	    if (t != object_type_node)
+	      rlist = find_applicable_accessible_methods_list (lc, t,
+							       name, arglist);
+	    list = chainon (rlist, list);
+	  }
+	object_done = 0;
+      }
 
       /* Search enclosing context of inner classes before looking
          ancestors up. */
       while (!lc && INNER_CLASS_TYPE_P (class))
 	{
+	  tree rlist;
+	  seen_inner_class = 1;
 	  class = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (class)));
-	  search_applicable_methods_list (lc, TYPE_METHODS (class),
-					  name, arglist, &list, &all_list);
+	  rlist = find_applicable_accessible_methods_list (lc, class, 
+							   name, arglist);
+	  list = chainon (rlist, list);
 	}
-      
-      for (class = saved_class, class = (lc ? NULL_TREE : 
-					 CLASSTYPE_SUPER (class)); class;
-	   class = CLASSTYPE_SUPER (class))
-	search_applicable_methods_list 
-	  (lc, TYPE_METHODS (class), name, arglist, &list, &all_list);
+
+      if (!lc && seen_inner_class 
+	  && TREE_TYPE (DECL_CONTEXT (TYPE_NAME (sc))) == CLASSTYPE_SUPER (sc))
+	class = CLASSTYPE_SUPER (sc);
+      else
+	class = sc;
+
+      for (class = (lc ? NULL_TREE : CLASSTYPE_SUPER (class)); 
+        class; class = CLASSTYPE_SUPER (class))
+       search_applicable_methods_list (lc, TYPE_METHODS (class), 
+                                       name, arglist, &list, &all_list);
     }
 
   /* Either return the list obtained or all selected (but
@@ -9782,16 +10004,31 @@ find_most_specific_methods_list (list)
     if (DECL_SPECIFIC_COUNT (TREE_VALUE (current)) == max)
       new_list = tree_cons (NULL_TREE, TREE_VALUE (current), new_list);
 
+  /* If we have several and they're all abstract, just pick the
+     closest one. */
+
+  if (new_list && TREE_CHAIN (new_list))
+    {
+      tree c;
+      for (c = new_list; c && METHOD_ABSTRACT (TREE_VALUE (c)); 
+	   c = TREE_CHAIN (c))
+        ;
+      if (!c)
+	{
+	  new_list = nreverse (new_list);
+	  TREE_CHAIN (new_list) = NULL_TREE;
+	}
+    }
+
   /* If we can't find one, lower expectations and try to gather multiple
      maximally specific methods */
-  while (!new_list)
+  while (!new_list && max)
     {
       while (--max > 0)
 	{
 	  if (DECL_SPECIFIC_COUNT (TREE_VALUE (current)) == max)
 	    new_list = tree_cons (NULL_TREE, TREE_VALUE (current), new_list);
 	}
-      return new_list;
     }
 
   return new_list;
@@ -9898,6 +10135,10 @@ qualify_ambiguous_name (id)
 	qual = TREE_CHAIN (qual);
 	qual_wfl = QUAL_WFL (qual);
 	break;
+      case CLASS_LITERAL:
+	qual = TREE_CHAIN (qual);
+	qual_wfl = QUAL_WFL (qual);
+      break;
       default:
 	/* Fix for -Wall. Just break doing nothing */
 	break;
@@ -11067,7 +11308,6 @@ build_this_super_qualified_invocation (use_this, name, args, lloc, rloc)
      int use_this;
      tree name, args;
      int lloc, rloc;
-
 {
   tree invok;
   tree wfl = 
@@ -12478,7 +12718,17 @@ patch_incomplete_class_ref (node)
   if (!(ref_type = resolve_type_during_patch (type)))
     return error_mark_node;
 
-  return build_class_ref (ref_type);
+  if (!flag_emit_class_files || JPRIMITIVE_TYPE_P (ref_type))
+    return build_class_ref (ref_type);
+
+  /* If we're emitting class files and we have to deal with non
+     primitive types, we invoke (and consider generating) the
+     synthetic static method `class$'. */
+  if (!TYPE_DOT_CLASS (current_class))
+      build_dot_class_method (current_class);
+  ref_type = 
+    build_dot_class_method_invocation (DECL_NAME (TYPE_NAME (ref_type)));
+  return java_complete_tree (ref_type);
 }
 
 /* 15.14 Unary operators. We return error_mark_node in case of error,
@@ -13722,7 +13972,7 @@ patch_switch_statement (node)
   return node;
 }
 
-/* 14.18 The try statement */
+/* 14.18 The try/catch statements */
 
 static tree
 build_try_statement (location, try_block, catches)

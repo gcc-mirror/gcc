@@ -547,6 +547,9 @@ struct lang_decl_var
 #define TYPE_FINIT_STMT_LIST(T)  (TYPE_LANG_SPECIFIC(T)->finit_stmt_list)
 #define TYPE_CLINIT_STMT_LIST(T) (TYPE_LANG_SPECIFIC(T)->clinit_stmt_list)
 #define TYPE_II_STMT_LIST(T)     (TYPE_LANG_SPECIFIC(T)->ii_block)
+/* The decl of the synthetic method `class$' used to handle `.class'
+   for non primitive types when compiling to bytecode. */
+#define TYPE_DOT_CLASS(T)        (TYPE_LANG_SPECIFIC(T)->dot_class)
 
 struct lang_type
 {
@@ -557,6 +560,10 @@ struct lang_type
   tree finit_stmt_list;		/* List of statements $finit$ will use */
   tree clinit_stmt_list;	/* List of statements <clinit> will use  */
   tree ii_block;		/* Instance initializer block */
+  tree dot_class;		/* The decl of the `class$' function that
+				   needs to be invoked and generated when
+				   compiling to bytecode to implement
+				   <non_primitive_type>.class */
 };
 
 #ifdef JAVA_USE_HANDLES

@@ -50,7 +50,7 @@ DEFTREECODE (DEFAULT_EXPR, "default", 'x', 0)
 /* Try expression
    Operand 0 is the tried block,
    Operand 1 contains chained catch nodes. */
-DEFTREECODE (TRY_EXPR, "try-catch-finally", 'e', 2)
+DEFTREECODE (TRY_EXPR, "try-catch", 'e', 2)
 
 /* Catch clause.
    Operand 0 is the catch clause block, which contains the declaration of
@@ -86,7 +86,7 @@ DEFTREECODE (NEW_ARRAY_INIT, "new_array_init", '1', 1)
 /* Class literal.
    Operand 0 is the name of the class we're trying to build a
    reference from.  */
-DEFTREECODE (CLASS_LITERAL, "class_litteral", '1', 1)
+DEFTREECODE (CLASS_LITERAL, "class_literal", '1', 1)
 
 /* Instance initializer.
    Operand 0 contains the intance initializer statement. This tree node

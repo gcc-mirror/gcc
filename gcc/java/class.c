@@ -967,8 +967,7 @@ build_static_field_ref (fdecl)
   else
     {
       /* Compile as:
-       * *(FTYPE*)build_class_ref(FCLASS)->fields[INDEX].info.addr
-       */
+       * *(FTYPE*)build_class_ref(FCLASS)->fields[INDEX].info.addr */
       static tree fields_ident = NULL_TREE;
       static tree info_ident = NULL_TREE;
       tree ref = build_class_ref (fclass);
