@@ -1,5 +1,9 @@
 2005-03-31  Janis Johnson  <janis187@us.ibm.com>
 
+	* lib/profopt.exp: Treat prof_ext as a list.
+	* gcc.misc-tests/bprob.exp: Ditto.
+	* g++.dg/bprob/bprob.exp: Ditto.
+
 	* g++.dg/opt/nothrow1.C: Use cleanup-tree-dump.
 	g++.dg/tree-ssa/empty-1.C, g++.dg/tree-ssa/nothrow-1.C,
 	g++.dg/tree-ssa/pointer-reference-alias.C,
