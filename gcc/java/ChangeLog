@@ -1,3 +1,7 @@
+Thu Mar 28 13:22:22 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* java/lang.c (java_init_options): Set flag_trapping_math to 0.
+
 2002-03-28  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* parse.y (resolve_package): Initialize "decl".

@@ -1366,7 +1366,7 @@ print-rtl.o : print-rtl.c $(GCONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) \
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 rtlanal.o : rtlanal.c $(CONFIG_H) $(SYSTEM_H) toplev.h $(RTL_H) \
-   hard-reg-set.h $(TM_P_H) insn-config.h $(RECOG_H)
+   hard-reg-set.h $(TM_P_H) insn-config.h $(RECOG_H) flags.h
 
 errors.o : errors.c $(GCONFIG_H) $(SYSTEM_H) errors.h
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
