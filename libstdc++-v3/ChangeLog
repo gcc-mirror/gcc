@@ -1,5 +1,42 @@
 2004-01-30  Paolo Carlini  <pcarlini@suse.de>
 
+	Reshuffle performance testsuite.
+	* testsuite/performance/allocator.cc, allocator_map_thread.cc,
+	allocator_thread.cc, complex_norm.cc, container_benchmark.cc,
+	cout_insert_int.cc, filebuf_copy.cc, filebuf_sputc.cc,
+	fstream_seek_write.cc, ifstream_extract_float.cc,
+	ifstream_extract_int.cc, ifstream_getline.cc, is_wchar_t.cc,
+	list_create_fill_sort.cc, map_create_fill.cc,
+	narrow_widen_char.cc, narrow_widen_wchar_t.cc,
+	ofstream_insert_float.cc, ofstream_insert_int.cc,
+	string_append.cc, wchar_t_in.cc, wchar_t_length.cc,
+	wchar_t_out.cc: Split into...
+	* testsuite/performance/20_util/allocator.cc: New.
+	* testsuite/performance/20_util/allocator_map_thread.cc: New.
+	* testsuite/performance/20_util/allocator_thread.cc: New.
+	* testsuite/performance/21_strings/string_append: New.
+	* testsuite/performance/22_locale/is_wchar_t.cc: New.
+	* testsuite/performance/22_locale/narrow_widen_char.cc: New.
+	* testsuite/performance/22_locale/narrow_widen_wchar_t.cc: New.
+	* testsuite/performance/22_locale/wchar_t_in.cc: New.
+	* testsuite/performance/22_locale/wchar_t_length.cc: New.
+	* testsuite/performance/22_locale/wchar_t_out.cc: New.
+	* testsuite/performance/23_containers/container_benchmark.cc: New.
+	* testsuite/performance/23_containers/list_create_fill_sort.cc: New.
+	* testsuite/performance/23_containers/map_create_fill.cc: New.
+	* testsuite/performance/26_numerics/complex_norm.cc: New.
+	* testsuite/performance/27_io/cout_insert_int.cc: New.
+	* testsuite/performance/27_io/filebuf_copy.cc: New.
+	* testsuite/performance/27_io/filebuf_sputc.cc: New.
+	* testsuite/performance/27_io/fstream_seek_write.cc: New.
+	* testsuite/performance/27_io/ifstream_extract_float.cc: New.
+	* testsuite/performance/27_io/ifstream_extract_int.cc: New.
+	* testsuite/performance/27_io/ifstream_getline.cc: New.
+	* testsuite/performance/27_io/ofstream_insert_float.cc: New.
+	* testsuite/performance/27_io/ofstream_insert_int.cc: New.
+
+2004-01-30  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.tcc (_Rep::_S_create):
 	Never allocate a string bigger than max_size(); always keep
 	__capacity and __size in sync to avoid memory leaks at
