@@ -1698,6 +1698,13 @@ function_epilogue (file, size)
       output_asm_insn (AS2 (add%L2,%0,%2), xops);
     }
 
+#ifdef FUNCTION_BLOCK_PROFILER_EXIT
+  if (profile_block_flag == 2)
+    {
+      FUNCTION_BLOCK_PROFILER_EXIT(file);
+    }
+#endif
+
   if (current_function_pops_args && current_function_args_size)
     {
       xops[1] = GEN_INT (current_function_pops_args);
