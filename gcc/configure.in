@@ -1776,6 +1776,7 @@ changequote([,])dnl
 		xmake_file=m68k/x-next
 		extra_objs=nextstep.o
 		extra_headers=math-68881.h
+		use_collect2=yes
 		float_format=m68k
  		if test x$enable_threads = xyes; then
 			thread_file='mach'
