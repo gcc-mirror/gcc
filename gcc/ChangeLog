@@ -1,3 +1,7 @@
+Mon May 11 19:57:58 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.c: Prototype static functions.
+
 Mon May 11 17:43:03 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* regmove.c (fixup_match_2, find_matches, regmove_profitable):
