@@ -1,4 +1,4 @@
-Mon Feb  9 18:57:45 1999  Vladimir N. Makarov  <vmakarov@cygnus.com>
+Mon Feb  8 18:57:45 1999  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
 	* c-typeck.c (check_init_type_bitfields): Use nonincremental
 	initialization of unions whose first member is a bitfield.
