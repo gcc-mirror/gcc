@@ -1,3 +1,31 @@
+2003-12-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* acconfig.h: Add _GLIBCXX_USE_C99_MATH.
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Define GLIBCXX_USE_C99_MATH.
+	* configure.ac: Define HAVE_S_ISREG and HAVE_S_IFREG when
+	targeting newlib.
+	* aclocal.m4: Regenerated.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* libmath/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* include/c_std/std_cmath.h (_GLIBCXX_USE_C99): Replace with ...
+	(_GLIBCXX_USE_C99_MATH): ... this.
+
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-in.cc: XFAIL for
+	arm-none-elf.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_istream/readsome/char/6476-2.cc: Likewise.
+	* testsuite/27_io/objects/char/9.cc: Likewise.
+	* testsuite/ext/stdio_filebuf/char/10063-2.cc: Likewise.
+
 2003-12-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/pool_allocator.h (class __pool_alloc): Use
