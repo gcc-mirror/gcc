@@ -85,7 +85,7 @@ maybe_objc_comptypes (lhs, rhs, reflexive)
      tree lhs, rhs;
      int reflexive;
 {
-  return 0;
+  return -1;
 }
 
 tree
