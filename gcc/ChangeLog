@@ -1,3 +1,8 @@
+2000-12-29  Alexandre Oliva  <aoliva@redhat.com>
+
+	* function.c (assign_parms): Convert arguments passed by
+	reference to the right mode.
+
 2000-12-28  Geoffrey Keating  <geoffk@redhat.com>
 
 	* c-parse.in (select_or_iter_stmt): Use truthvalue_conversion
