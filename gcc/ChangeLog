@@ -24,6 +24,10 @@
 	* config/i386/i386.c (i386_simplify_dwarf_addr): Simplify @GOT
 	references as well.
 
+2000-11-21  Neil Booth  <neilb@earthling.net>
+
+        * do_includes: Revert to using cpp_read_file.
+
 2000-11-21  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* loop.c (consec_sets_giv): If the reg we're examining is anything
