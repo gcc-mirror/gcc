@@ -1326,12 +1326,12 @@ typespec_nonreserved_nonattr:
 	| CLASSNAME protocolrefs
 		{ $$ = get_static_reference ($1, $2); }
 	| OBJECTNAME protocolrefs
-		{ $$ = get_object_reference ($2); }
+		{ $$ = get_protocol_reference ($2); }
 
 /* Make "<SomeProtocol>" equivalent to "id <SomeProtocol>"
    - nisse@lysator.liu.se */
         | non_empty_protocolrefs
-                { $$ = get_object_reference ($1); }
+                { $$ = get_protocol_reference ($1); }
 @@end_ifobjc
 	| typeof '(' expr ')'
 		{ skip_evaluation--;

@@ -37,3 +37,9 @@ DEFTREECODE (CLASS_METHOD_DECL, "class_method_decl", 'd', 0)
 /* Objective-C expressions.  */
 DEFTREECODE (MESSAGE_SEND_EXPR, "message_send_expr", 'e', 3)
 DEFTREECODE (CLASS_REFERENCE_EXPR, "class_reference_expr", 'e', 1)
+
+/*
+Local variables:
+mode:c
+End:
+*/
