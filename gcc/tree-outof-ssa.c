@@ -1460,6 +1460,7 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
   int num_use_ops, version;
   var_map map = tab->map;
   ssa_op_iter iter;
+  tree call_expr;
 
   if (TREE_CODE (stmt) != MODIFY_EXPR)
     return false;
@@ -1485,6 +1486,15 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
   /* Float expressions must go through memory if float-store is on.  */
   if (flag_float_store && FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (stmt, 1))))
     return false;
+
+  /* Calls to functions with side-effects cannot be replaced.  */
+  if ((call_expr = get_call_expr_in (stmt)) != NULL_TREE)
+    {
+      int call_flags = call_expr_flags (call_expr);
+      if (TREE_SIDE_EFFECTS (call_expr)
+	  && !(call_flags & (ECF_PURE | ECF_CONST | ECF_NORETURN)))
+	return false;
+    }
 
   uses = USE_OPS (ann);
   num_use_ops = NUM_USES (uses);

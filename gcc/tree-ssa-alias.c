@@ -621,6 +621,16 @@ ptr_is_dereferenced_by (tree ptr, tree stmt, bool *is_store)
 	  return true;
 	}
     }
+  else
+    {
+      /* CALL_EXPRs may also contain pointer dereferences for types
+	 that are not GIMPLE register types.  If the CALL_EXPR is on
+	 the RHS of an assignment, it will be handled by the
+	 MODIFY_EXPR handler above.  */
+      tree call = get_call_expr_in (stmt);
+      if (call && walk_tree (&call, find_ptr_dereference, ptr, NULL))
+	return true;
+    }
 
   return false;
 }
@@ -1538,26 +1548,7 @@ maybe_create_global_var (struct alias_info *ai)
 	  n_clobbered++;
 	}
 
-      /* Create .GLOBAL_VAR if we have too many call-clobbered
-	 variables.  We also create .GLOBAL_VAR when there no
-	 call-clobbered variables to prevent code motion
-	 transformations from re-arranging function calls that may
-	 have side effects.  For instance,
-
-		foo ()
-		{
-		  int a = f ();
-		  g ();
-		  h (a);
-		}
-
-	 There are no call-clobbered variables in foo(), so it would
-	 be entirely possible for a pass to want to move the call to
-	 f() after the call to g().  If f() has side effects, that
-	 would be wrong.  Creating .GLOBAL_VAR in this case will
-	 insert VDEFs for it and prevent such transformations.  */
-      if (n_clobbered == 0
-	  || ai->num_calls_found * n_clobbered >= (size_t) GLOBAL_VAR_THRESHOLD)
+      if (ai->num_calls_found * n_clobbered >= (size_t) GLOBAL_VAR_THRESHOLD)
 	create_global_var ();
     }
 

@@ -1,3 +1,13 @@
+2005-01-26  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/19633
+	* tree-ssa-alias.c (ptr_is_dereferenced_by): Also handle
+	CALL_EXPRs.
+	(maybe_create_global_var): Do not create .GLOBAL_VAR if there
+	are no call-clobbered variables.
+	* tree-outof-ssa.c (check_replaceable): Return false for calls
+	with side-effects.
+
 2005-01-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* dbxout.c (dbxout_symbol_location): Resolve constant pool references
