@@ -3944,18 +3944,32 @@ __cxa_demangle (mangled_name, output_buffer, length, status)
   char *demangled;
   size_t alc;
 
-  if (status == NULL)
-    return NULL;
-
   if (mangled_name == NULL)
     {
-      *status = -3;
+      if (status != NULL)
+	*status = -3;
       return NULL;
     }
 
   if (output_buffer != NULL && length == NULL)
     {
-      *status = -3;
+      if (status != NULL)
+	*status = -3;
+      return NULL;
+    }
+
+  /* The specification for __cxa_demangle() is that if the mangled
+     name could be either an extern "C" identifier, or an internal
+     built-in type name, then we resolve it as the identifier.  All
+     internal built-in type names are a single lower case character.
+     Frankly, this simplistic disambiguation doesn't make sense to me,
+     but it is documented, so we implement it here.  */
+  if (mangled_name[1] == '\0'
+      && IS_LOWER (mangled_name[0])
+      && cplus_demangle_builtin_types[mangled_name[0] - 'a'].name != NULL)
+    {
+      if (status != NULL)
+	*status = -2;
       return NULL;
     }
 
@@ -3963,10 +3977,13 @@ __cxa_demangle (mangled_name, output_buffer, length, status)
 
   if (demangled == NULL)
     {
-      if (alc == 1)
-	*status = -1;
-      else
-	*status = -2;
+      if (status != NULL)
+	{
+	  if (alc == 1)
+	    *status = -1;
+	  else
+	    *status = -2;
+	}
       return NULL;
     }
 
@@ -3990,7 +4007,8 @@ __cxa_demangle (mangled_name, output_buffer, length, status)
 	}
     }
 
-  *status = 0;
+  if (status != NULL)
+    *status = 0;
 
   return demangled;
 }
@@ -4296,7 +4314,11 @@ main (argc, argv)
 
 	  if (dyn_string_length (mangled) > 0)
 	    {
+#ifdef IN_GLIBCPP_V3
+	      s = __cxa_demangle (dyn_string_buf (mangled), NULL, NULL, NULL);
+#else
 	      s = cplus_demangle_v3 (dyn_string_buf (mangled), options);
+#endif
 
 	      if (s != NULL)
 		{
@@ -4328,9 +4350,16 @@ main (argc, argv)
       for (i = optind; i < argc; ++i)
 	{
 	  char *s;
+#ifdef IN_GLIBCPP_V3
+	  int status;
+#endif
 
 	  /* Attempt to demangle.  */
+#ifdef IN_GLIBCPP_V3
+	  s = __cxa_demangle (argv[i], NULL, NULL, &status);
+#else
 	  s = cplus_demangle_v3 (argv[i], options);
+#endif
 
 	  /* If it worked, print the demangled name.  */
 	  if (s != NULL)
@@ -4339,7 +4368,13 @@ main (argc, argv)
 	      free (s);
 	    }
 	  else
-	    fprintf (stderr, "Failed: %s\n", argv[i]);
+	    {
+#ifdef IN_GLIBCPP_V3
+	      fprintf (stderr, "Failed: %s (status %d)\n", argv[i], status);
+#else
+	      fprintf (stderr, "Failed: %s\n", argv[i]);
+#endif
+	    }
 	}
     }
 
