@@ -54,8 +54,6 @@ typedef JArray<jlong> *jlongArray;
 typedef JArray<jfloat> *jfloatArray;
 typedef JArray<jdouble> *jdoubleArray;
 typedef JArray<jstring> *jstringArray;
-// Temporary work-around for gcjh bug.  FIXME
-typedef JArray<jcharArray> *jobjectArrayjchar;
 
 extern "C" jbooleanArray JvNewBooleanArray (jint length);
 extern "C" jbyteArray JvNewByteArray (jint length);
