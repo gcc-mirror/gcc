@@ -4,6 +4,8 @@
 
 	* emit-rtl.c (try_split): Copy NORETURN, SETJMP, ALWAYS_RETURN
 	and NON_LOCAL_GOTO notes.
+	* recog.c (peephole2_optimize): Likewise.  Handle EH_REGION;
+	copy over CALL_INSN_FUNCTION_USAGE.
 
 2001-09-18  Catherine Moore  <clm@redhat.com>
 

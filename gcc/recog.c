@@ -3059,6 +3059,69 @@ peephole2_optimize (dump_file)
 	      try = peephole2_insns (PATTERN (insn), insn, &match_len);
 	      if (try != NULL)
 		{
+		  /* If we are splitting a CALL_INSN, look for the CALL_INSN
+		     in SEQ and copy our CALL_INSN_FUNCTION_USAGE and other
+		     cfg-related call notes.  */
+		  for (i = 0; i <= match_len; ++i)
+		    {
+		      int j, k;
+		      rtx old_insn, new_insn, note;
+
+		      j = i + peep2_current;
+		      if (j >= MAX_INSNS_PER_PEEP2 + 1)
+			j -= MAX_INSNS_PER_PEEP2 + 1;
+		      old_insn = peep2_insn_data[j].insn;
+		      if (GET_CODE (old_insn) != CALL_INSN)
+			continue;
+
+		      new_insn = NULL_RTX;
+		      if (GET_CODE (try) == SEQUENCE)
+			for (k = XVECLEN (try, 0) - 1; k >= 0; k--)
+			  {
+			    rtx x = XVECEXP (try, 0, k);
+			    if (GET_CODE (x) == CALL_INSN)
+			      {
+				new_insn = x;
+				break;
+			      }
+			  }
+		      else if (GET_CODE (try) == CALL_INSN)
+			new_insn = try;
+		      if (! new_insn)
+			abort ();
+
+		      CALL_INSN_FUNCTION_USAGE (new_insn)
+			= CALL_INSN_FUNCTION_USAGE (old_insn);
+
+		      for (note = REG_NOTES (old_insn);
+			   note;
+			   note = XEXP (note, 1))
+			switch (REG_NOTE_KIND (note))
+			  {
+			  case REG_EH_REGION:
+			  case REG_NORETURN:
+			  case REG_SETJMP:
+			  case REG_ALWAYS_RETURN:
+			    REG_NOTES (new_insn)
+			      = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
+						   XEXP (note, 0),
+						   REG_NOTES (new_insn));
+			    break;
+			  }
+
+		      /* Croak if there is another call in the sequence.  */
+		      while (++i <= match_len)
+			{
+			  j = i + peep2_current;
+			  if (j >= MAX_INSNS_PER_PEEP2 + 1)
+			    j -= MAX_INSNS_PER_PEEP2 + 1;
+			  old_insn = peep2_insn_data[j].insn;
+			  if (GET_CODE (old_insn) == CALL_INSN)
+			    abort ();
+			}
+		      break;
+		    }
+
 		  i = match_len + peep2_current;
 		  if (i >= MAX_INSNS_PER_PEEP2 + 1)
 		    i -= MAX_INSNS_PER_PEEP2 + 1;
