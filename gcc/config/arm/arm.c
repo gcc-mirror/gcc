@@ -7207,11 +7207,14 @@ print_multi_reg (stream, instr, reg, mask)
   fprintf (stream, "}");
 
   /* Add a ^ character for the 26-bit ABI, but only if we were loading
-     the PC or not updating the stack pointer.  Otherwise we generate
-     an UNPREDICTABLE instruction.  */
+     the PC.  Otherwise we would generate an UNPREDICTABLE instruction.
+     Strictly speaking the instruction would be unpredicatble only if
+     we were writing back the base register as well, but since we never
+     want to generate an LDM type 2 instruction (register bank switching)
+     which is what you get if the PC is not being loaded, we do not need
+     to check for writeback.  */
   if (! TARGET_APCS_32
-      && (((mask & (1 << PC_REGNUM)) != 0)
-	  || strchr (instr, '!') == NULL))
+      && ((mask & (1 << PC_REGNUM)) != 0))
     fprintf (stream, "^");
   
   fprintf (stream, "\n");
