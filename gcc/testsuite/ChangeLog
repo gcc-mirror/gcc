@@ -1,3 +1,9 @@
+2004-10-18  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/ppc-sdata-1.c: Update to consider the possibility of the
+	compiler referring to register 0 when accessing sdata.  The linker
+	now patches things up.
+
 2004-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/17529
