@@ -59,8 +59,8 @@ namespace std
 	      }
 	    else
 	      {
-		string __res;
 		// LANG may set a default different from "C".
+		string __res;
 		char* __env = std::getenv("LANG");
 		if (!__env || std::strcmp(__env, "") == 0 
 		    || std::strcmp(__env, "C") == 0 

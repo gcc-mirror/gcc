@@ -28,7 +28,7 @@
 
 #include <clocale>
 #include <cstring>
-#include <cstdlib>     // For getenv, free.
+#include <cstdlib>     // For getenv
 #include <cctype>
 #include <cwctype>     // For towupper, etc.
 #include <locale>
@@ -54,7 +54,6 @@ namespace std
 #ifdef __GTHREADS
   __gthread_once_t 		locale::_S_once = __GTHREAD_ONCE_INIT;
 #endif
-
 
   locale::locale(const locale& __other) throw()
   { (_M_impl = __other._M_impl)->_M_add_reference(); }
