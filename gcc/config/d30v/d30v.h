@@ -2870,6 +2870,16 @@ typedef int CUMULATIVE_ARGS;
    varargs.  */
 /* #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) */
 
+/* A C structure for machine-specific, per-function data.
+   This is added to the cfun structure.  */
+typedef struct machine_function
+{
+  /* Additionsl stack adjustment in __builtin_eh_throw.  */
+  struct rtx_def * eh_epilogue_sp_ofs;
+  /* Records __builtin_return address.  */
+  struct rtx_def * ra_rtx;
+} machine_function;
+
 
 /* Generating Code for Profiling.  */
 
