@@ -414,7 +414,10 @@ mmix_return_addr_rtx (count, frame)
 {
   return count == 0
     ? (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS
-       /* FIXME: Set frame_alias_set on the following.  */
+       /* FIXME: Set frame_alias_set on the following.  (Why?)
+	  See mmix_initial_elimination_offset for the reason we can't use
+	  get_hard_reg_initial_val for both.  Always using a stack slot
+	  and not a register would be suboptimal.  */
        ? validize_mem (gen_rtx_MEM (Pmode, plus_constant (frame_pointer_rtx, -16)))
        : get_hard_reg_initial_val (Pmode, MMIX_INCOMING_RETURN_ADDRESS_REGNUM))
     : NULL_RTX;
@@ -440,7 +443,10 @@ mmix_initial_elimination_offset (fromreg, toreg)
   int fp_sp_offset
     = (get_frame_size () + current_function_outgoing_args_size + 7) & ~7;
 
-  /* There is no actual difference between these two.  */
+  /* There is no actual offset between these two virtual values, but for
+     the frame-pointer, we have the old one in the stack position below
+     it, so the offset for the frame-pointer to the stack-pointer is one
+     octabyte larger.  */
   if (fromreg == MMIX_ARG_POINTER_REGNUM
       && toreg == MMIX_FRAME_POINTER_REGNUM)
     return 0;
@@ -661,14 +667,8 @@ mmix_target_asm_function_prologue (stream, locals_size)
   int stack_space_to_allocate
     = (current_function_outgoing_args_size
        + current_function_pretend_args_size
-       + (int) locals_size + 8 + 7) & ~7;
+       + (int) locals_size + 7) & ~7;
   int offset = -8;
-  int empty_stack_frame
-    = (current_function_outgoing_args_size == 0
-       && locals_size == 0
-       && current_function_pretend_args_size == 0
-       && current_function_varargs == 0
-       && current_function_stdarg == 0);
   int doing_dwarf = dwarf2out_do_frame ();
   long cfa_offset = 0;
 
@@ -752,16 +752,10 @@ mmix_target_asm_function_prologue (stream, locals_size)
 	}
     }
 
-  /* In any case, skip over the return-address slot.  FIXME: Not needed
-     now.  */
-  offset -= 8;
-
   /* Store the frame-pointer.  */
 
   if (frame_pointer_needed)
     {
-      empty_stack_frame = 0;
-
       if (offset < 0)
 	{
 	  /* Get 8 less than otherwise, since we need to reach offset + 8.  */
@@ -799,8 +793,9 @@ mmix_target_asm_function_prologue (stream, locals_size)
 
   if (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS)
     {
-      /* Store the return-address, if one is needed on the stack.  */
-      empty_stack_frame = 0;
+      /* Store the return-address, if one is needed on the stack.  We
+	 usually store it in a register when needed, but that doesn't work
+	 with -fexceptions.  */
 
       if (offset < 0)
 	{
@@ -837,8 +832,6 @@ mmix_target_asm_function_prologue (stream, locals_size)
     {
       /* Store the register defining the numbering of local registers, so
 	 we know how long to unwind the register stack.  */
-
-      empty_stack_frame = 0;
 
       if (offset < 0)
 	{
@@ -894,8 +887,6 @@ mmix_target_asm_function_prologue (stream, locals_size)
 	 && regs_ever_live[regno] && ! call_used_regs[regno])
 	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
       {
-	empty_stack_frame = 0;
-
 	if (offset < 0)
 	  {
 	    int stack_chunk;
@@ -950,11 +941,10 @@ mmix_target_asm_function_prologue (stream, locals_size)
 	offset -= 8;
       }
 
-  /* Finally, allocate room for local vars (if they weren't allocated for
-     above) and outgoing args.  This might be any number of bytes (well,
-     we assume it fits in a host-int).
-     Don't allocate (the return-address slot) if the stack frame is empty.  */
-  if (stack_space_to_allocate && ! empty_stack_frame)
+  /* Finally, allocate room for outgoing args and local vars if room
+     wasn't allocated above.  This might be any number of bytes (well, we
+     assume it fits in a host-int).  */
+  if (stack_space_to_allocate)
     {
       if (stack_space_to_allocate < 256)
 	{
@@ -1006,19 +996,13 @@ mmix_target_asm_function_epilogue (stream, locals_size)
   int stack_space_to_deallocate
     = (current_function_outgoing_args_size
        + current_function_pretend_args_size
-       + (int) locals_size + 8 + 7) & ~7;
+       + (int) locals_size + 7) & ~7;
 
   /* The assumption that locals_size fits in an int is asserted in
      mmix_target_asm_function_prologue.  */
 
   /* The first address to access is beyond the outgoing_args area.  */
   int offset = current_function_outgoing_args_size;
-  int empty_stack_frame
-    = (current_function_outgoing_args_size == 0
-       && locals_size == 0
-       && current_function_pretend_args_size == 0
-       && ! MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS
-       && ! MMIX_CFUN_HAS_LANDING_PAD);
 
   /* Add the space for global non-register-stack registers.
      It is assumed that the frame-pointer register can be one of these
@@ -1059,8 +1043,6 @@ mmix_target_asm_function_epilogue (stream, locals_size)
 	 && regs_ever_live[regno] && !call_used_regs[regno])
 	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
       {
-	empty_stack_frame = 0;
-
 	if (offset > 255)
 	  {
 	    if (offset > 65535)
@@ -1106,8 +1088,6 @@ mmix_target_asm_function_epilogue (stream, locals_size)
   /* Get back the old frame-pointer-value.  */
   if (frame_pointer_needed)
     {
-      empty_stack_frame = 0;
-
       if (offset > 255)
 	{
 	  if (offset > 65535)
@@ -1135,27 +1115,22 @@ mmix_target_asm_function_epilogue (stream, locals_size)
       offset += 8;
     }
 
-  /* Do not deallocate the return-address slot if the stack frame is
-     empty, because then it was never allocated.  */
-  if (! empty_stack_frame)
+  /* We do not need to restore pretended incoming args, just add back
+     offset to sp.  */
+  if (stack_space_to_deallocate > 65535)
     {
-      /* We do not need to restore pretended incoming args, just add
-	 back offset to sp.  */
-      if (stack_space_to_deallocate > 65535)
-	{
-	  /* There's better support for incrementing than decrementing, so
-	     we might be able to optimize this as we see a need.  */
-	  mmix_output_register_setting (stream, 255,
-					stack_space_to_deallocate, 1);
-	  fprintf (stream, "\tADDU %s,%s,$255\n",
-		   reg_names[MMIX_STACK_POINTER_REGNUM],
-		   reg_names[MMIX_STACK_POINTER_REGNUM]);
-	}
-      else
-	fprintf (stream, "\tINCL %s,%d\n",
-		 reg_names[MMIX_STACK_POINTER_REGNUM],
-		 stack_space_to_deallocate);
+      /* There's better support for incrementing than decrementing, so
+	 we might be able to optimize this as we see a need.  */
+      mmix_output_register_setting (stream, 255,
+				    stack_space_to_deallocate, 1);
+      fprintf (stream, "\tADDU %s,%s,$255\n",
+	       reg_names[MMIX_STACK_POINTER_REGNUM],
+	       reg_names[MMIX_STACK_POINTER_REGNUM]);
     }
+  else if (stack_space_to_deallocate != 0)
+    fprintf (stream, "\tINCL %s,%d\n",
+	     reg_names[MMIX_STACK_POINTER_REGNUM],
+	     stack_space_to_deallocate);
 
   if (current_function_calls_eh_return)
     /* Adjustment the (normal) stack-pointer to that of the receiver.
@@ -1343,9 +1318,9 @@ void
 mmix_trampoline_template (stream)
      FILE * stream;
 {
-  /* Read a value from to static-chain, jump somewhere.  The static chain
-     is stored at offset 16, and the function address is stored at offset
-     24.  */
+  /* Read a value into the static-chain register and jump somewhere.  The
+     static chain is stored at offset 16, and the function address is
+     stored at offset 24.  */
   /* FIXME: GCC copies this using *intsize* (tetra), when it should use
      register size (octa).  */
   fprintf (stream, "\tGETA $255,1F\n\t");
