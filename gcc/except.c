@@ -256,7 +256,7 @@ static tree lookup_type_for_runtime		PARAMS ((tree));
 
 static struct eh_region *expand_eh_region_end	PARAMS ((void));
 
-static rtx get_exception_filter			PARAMS ((void));
+static rtx get_exception_filter			PARAMS ((struct function *));
 
 static void collect_eh_region_array		PARAMS ((void));
 static void resolve_fixup_regions		PARAMS ((void));
@@ -720,9 +720,9 @@ expand_eh_region_end_cleanup (handler)
   /* In case this cleanup involves an inline destructor with a try block in
      it, we need to save the EH return data registers around it.  */
   data_save[0] = gen_reg_rtx (Pmode);
-  emit_move_insn (data_save[0], get_exception_pointer ());
+  emit_move_insn (data_save[0], get_exception_pointer (cfun));
   data_save[1] = gen_reg_rtx (word_mode);
-  emit_move_insn (data_save[1], get_exception_filter ());
+  emit_move_insn (data_save[1], get_exception_filter (cfun));
 
   expand_expr (handler, const0_rtx, VOIDmode, 0);
 
@@ -951,13 +951,14 @@ expand_eh_region_end_fixup (handler)
    within a handler.  */
 
 rtx
-get_exception_pointer ()
+get_exception_pointer (fun)
+     struct function *fun;
 {
-  rtx exc_ptr = cfun->eh->exc_ptr;
-  if (! exc_ptr)
+  rtx exc_ptr = fun->eh->exc_ptr;
+  if (fun == cfun && ! exc_ptr)
     {
       exc_ptr = gen_reg_rtx (Pmode);
-      cfun->eh->exc_ptr = exc_ptr;
+      fun->eh->exc_ptr = exc_ptr;
     }
   return exc_ptr;
 }
@@ -966,13 +967,14 @@ get_exception_pointer ()
    within a handler.  */
 
 static rtx
-get_exception_filter ()
+get_exception_filter (fun)
+     struct function *fun;
 {
-  rtx filter = cfun->eh->filter;
-  if (! filter)
+  rtx filter = fun->eh->filter;
+  if (fun == cfun && ! filter)
     {
       filter = gen_reg_rtx (word_mode);
-      cfun->eh->filter = filter;
+      fun->eh->filter = filter;
     }
   return filter;
 }
@@ -2356,8 +2358,8 @@ finish_eh_generation ()
 
   /* These registers are used by the landing pads.  Make sure they
      have been generated.  */
-  get_exception_pointer ();
-  get_exception_filter ();
+  get_exception_pointer (cfun);
+  get_exception_filter (cfun);
 
   /* Construct the landing pads.  */
 
