@@ -9938,6 +9938,33 @@ ix86_split_long_move (rtx operands[])
 	  operands[6] = part[1][1];
 	}
     }
+
+  /* If optimizing for size, attempt to locally unCSE non-zero constants.  */
+  if (optimize_size)
+    {
+      if (GET_CODE (operands[5]) == CONST_INT
+	  && operands[5] != const0_rtx
+	  && REG_P (operands[2]))
+	{
+	  if (GET_CODE (operands[6]) == CONST_INT
+	      && INTVAL (operands[6]) == INTVAL (operands[5]))
+	    operands[6] = operands[2];
+
+	  if (nparts == 3
+	      && GET_CODE (operands[7]) == CONST_INT
+	      && INTVAL (operands[7]) == INTVAL (operands[5]))
+	    operands[7] = operands[2];
+	}
+
+      if (nparts == 3
+	  && GET_CODE (operands[6]) == CONST_INT
+	  && operands[6] != const0_rtx
+	  && REG_P (operands[3])
+	  && GET_CODE (operands[7]) == CONST_INT
+	  && INTVAL (operands[7]) == INTVAL (operands[6]))
+	operands[7] = operands[3];
+    }
+
   emit_move_insn (operands[2], operands[5]);
   emit_move_insn (operands[3], operands[6]);
   if (nparts == 3)
