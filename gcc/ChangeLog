@@ -1,3 +1,14 @@
+Mon Jun 21 20:10:42 1999  Richard Henderson  <rth@cygnus.com>
+
+	* collect2.c (main): Log frame table count.
+	(GCC_OK_SYMBOL) [ECOFF]: Accept stGlobal.
+	(scan_prog_file) [COFF]: Handle frame tables.
+
+	* alpha/alpha.h (UNALIGNED_SHORT_ASM_OP): Define.
+	(UNALIGNED_INT_ASM_OP, UNALIGNED_DOUBLE_INT_ASM_OP): Define.
+	* alpha/elf.h: Undef them again.
+	* alpha/vms.h: Remove their definitions.
+
 1999-06-21  Jakub Jelinek  <jj@ultra.linux.cz>
 
 	* real.c (ereal_from_double): Fix for 64-bit big endian hosts.
