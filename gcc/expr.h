@@ -211,6 +211,11 @@ enum direction {none, upward, downward};  /* Value has this type.  */
    So a value padded in memory at the upper end can't go in a register.
    For a little-endian machine, the reverse is true.  */
 
+/* ??? Perhaps later rename this to FUNCTION_ARG_MUST_PASS_IN_STACK?
+   (although it is a little long).  */
+
+#ifndef MUST_PASS_IN_STACK
+
 #if BYTES_BIG_ENDIAN
 #define MUST_PASS_IN_STACK_BAD_PADDING	upward
 #else
@@ -224,6 +229,7 @@ enum direction {none, upward, downward};  /* Value has this type.  */
        || ((MODE) == BLKmode 				\
 	   && (FUNCTION_ARG_PADDING (MODE, TYPE)	\
 	       == MUST_PASS_IN_STACK_BAD_PADDING))))
+#endif
 
 /* Nonzero if type TYPE should be returned in memory.
    Most machines can use the following default definition.  */
