@@ -127,6 +127,7 @@ extern void fnotice			PROTO ((FILE *, const char *, ...))
 
 extern int wrapup_global_declarations   PROTO ((union tree_node **, int));
 extern void check_global_declarations   PROTO ((union tree_node **, int));
+extern void note_deferral_of_defined_inline_function PROTO ((union tree_node *));
 extern int errorcount;
 extern int warningcount;
 extern int sorrycount;

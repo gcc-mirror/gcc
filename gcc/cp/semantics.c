@@ -2694,6 +2694,8 @@ expand_body (fn)
       /* Remember this function.  In finish_file we'll decide if
 	 we actually need to write this function out.  */
       mark_inline_for_output (fn);
+      /* Let the back-end know that this funtion exists.  */
+      note_deferral_of_defined_inline_function (fn);
       return;
     }
 

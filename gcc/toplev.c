@@ -2729,6 +2729,42 @@ rest_of_type_compilation (type, toplev)
 #endif
 }
 
+/* DECL is an inline function, whose body is present, but which is not
+   being output at this point.  (We're putting that off until we need
+   to do it.)  If there are any actions that need to take place,
+   including the emission of debugging information for the function,
+   this is where they should go.  This function may be called by
+   language-dependent code for front-ends that do not even generate
+   RTL for functions that don't need to be put out.  */
+
+void
+note_deferral_of_defined_inline_function (decl)
+     tree decl;
+{
+#ifdef DWARF_DEBUGGING_INFO
+  /* Generate the DWARF info for the "abstract" instance of a function
+     which we may later generate inlined and/or out-of-line instances
+     of.  */
+  if (write_symbols == DWARF_DEBUG)
+    {
+      /* The front-end may not have set CURRENT_FUNCTION_DECL, but the
+	 DWARF code expects it to be set in this case.  Intuitively,
+	 DECL is the function we just finished defining, so setting
+	 CURRENT_FUNCTION_DECL is sensible.  */
+      tree saved_cfd = current_function_decl;
+      current_function_decl = decl;
+
+      /* Let the DWARF code do its work.  */
+      set_decl_abstract_flags (decl, 1);
+      dwarfout_file_scope_decl (decl, 0);
+      set_decl_abstract_flags (decl, 0);
+
+      /* Reset CURRENT_FUNCTION_DECL.  */
+      current_function_decl = saved_cfd;
+    }
+#endif
+}
+
 /* This is called from finish_function (within yyparse)
    after each top-level definition is parsed.
    It is supposed to compile that function or variable
@@ -2857,17 +2893,7 @@ rest_of_compilation (decl)
 	      optimize = saved_optimize;
 	    }
 
-#ifdef DWARF_DEBUGGING_INFO
-	  /* Generate the DWARF info for the "abstract" instance
-	     of a function which we may later generate inlined and/or
-	     out-of-line instances of.  */
-	  if (write_symbols == DWARF_DEBUG)
-	    {
-	      set_decl_abstract_flags (decl, 1);
-	      TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 0));
-	      set_decl_abstract_flags (decl, 0);
-	    }
-#endif
+	  note_deferral_of_defined_inline_function (decl);
 	  TIMEVAR (integration_time, save_for_inline_nocopy (decl));
 	  DECL_SAVED_INSNS (decl)->inlinable = inlinable;
 	  goto exit_rest_of_compilation;
