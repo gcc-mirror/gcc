@@ -1,3 +1,8 @@
+2002-01-03  Graham Stott  <grahams@redhat.com>
+
+        * gcc/jcf-parse.c: Update copyright date.
+        (yyparse): Constify resource_filename.
+
 2002-01-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* parse.y (src_parse_roots): Don't needlessly zero init.
