@@ -3948,6 +3948,7 @@ function_arg_advance (cum, mode, type, named)
       break;
 
     case DImode:
+    case TImode:
       cum->gp_reg_found = 1;
       cum->arg_words += (TARGET_64BIT ? 1 : 2);
       break;
@@ -4074,6 +4075,7 @@ function_arg (cum, mode, type, named)
       break;
 
     case DImode:
+    case TImode:
       if (! TARGET_64BIT)
 	cum->arg_words += (cum->arg_words & 1);
       regbase = GP_ARG_FIRST;

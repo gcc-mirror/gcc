@@ -1,3 +1,9 @@
+2002-02-05  Richard Henderson  <rth@redhat.com>
+
+	PR fortran/3392
+	* config/mips/mips.c (function_arg): Handle TImode.
+	(function_arg_advance): Likewise.
+
 2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/altivec.h (vec_step_help): Rename to
