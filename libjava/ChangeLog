@@ -1,3 +1,19 @@
+2004-01-27  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/Class.java
+	(getConstructor): Removed SecurityException from throws clause.
+	(_getConstructors): Likewise.
+	(getConstructors): Likewise.
+	(getDeclaredConstructor): Likewise.
+	(getDeclaredClasses): Likewise.
+	(getDeclaredConstructors): Likewise.
+	(getDeclaredField): Likewise.
+	(getDeclaredMethod): Likewise.
+	(getDeclaredMethods): Likewise.
+	(getField): Likewise.
+	(getMethod): Likewise.
+	(getMethods): Likewise.
+
 2004-01-27  Kim Ho  <kho@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkFramePeer.java
