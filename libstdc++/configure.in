@@ -150,7 +150,7 @@ LN_S=$LN_S
 if [ -n "${with_cross_host}" ] ; then
     rm -f Makefile.tem
     sed \
-        -e 's|\(^[ 	]*INSTALLDIR[ 	]*=[ 	]*\)\$(libdir)|\1$(tooldir)/lib|' \
+        -e 's|^\([ 	]*INSTALLDIR[ 	]*=[ 	]*\)\$(libdir)|\1$(tooldir)/lib|' \
         Makefile >Makefile.tem
     mv -f Makefile.tem Makefile
 fi
