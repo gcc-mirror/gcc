@@ -1,3 +1,9 @@
+1998-11-22  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (poplevel): Remove code to handle KEEP == 2.
+	(finish_function): Don't confuse BLOCK-order when
+	processing a destructor.
+
 1998-11-21  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (require_complete_types_for_parms): Call layout_decl
