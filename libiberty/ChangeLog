@@ -1,3 +1,9 @@
+2004-01-13  Daniel Jacobowitz  <drow@mvista.com>
+
+	* cp-demangle.c (d_make_comp): DEMANGLE_COMPONENT_CONSTRUCTION_VTABLE
+	takes two parameters.
+	* cp-demint.c (cplus_demangle_fill_component): Likewise.
+
 2004-01-12  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c: Include "cp-demangle.h".  If IN_GLIBCPP_V3 is

@@ -70,6 +70,7 @@ cplus_demangle_fill_component (p, type, left, right)
     case DEMANGLE_COMPONENT_LOCAL_NAME:
     case DEMANGLE_COMPONENT_TYPED_NAME:
     case DEMANGLE_COMPONENT_TEMPLATE:
+    case DEMANGLE_COMPONENT_CONSTRUCTION_VTABLE:
     case DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL:
     case DEMANGLE_COMPONENT_FUNCTION_TYPE:
     case DEMANGLE_COMPONENT_ARRAY_TYPE:
@@ -89,7 +90,6 @@ cplus_demangle_fill_component (p, type, left, right)
       /* These component types only have one subtree.  */
     case DEMANGLE_COMPONENT_VTABLE:
     case DEMANGLE_COMPONENT_VTT:
-    case DEMANGLE_COMPONENT_CONSTRUCTION_VTABLE:
     case DEMANGLE_COMPONENT_TYPEINFO:
     case DEMANGLE_COMPONENT_TYPEINFO_NAME:
     case DEMANGLE_COMPONENT_TYPEINFO_FN:
