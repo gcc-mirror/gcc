@@ -535,7 +535,7 @@ static char *multilib_select = MULTILIB_SELECT;
 #define SWITCH_TAKES_ARG(CHAR)      \
   ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o' \
    || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u' \
-   || (CHAR) == 'I' || (CHAR) == 'm' \
+   || (CHAR) == 'I' || (CHAR) == 'm' || (CHAR) == 'x' \
    || (CHAR) == 'L' || (CHAR) == 'A')
 #endif
 
@@ -2884,23 +2884,23 @@ process_command (argc, argv)
 	  for (j = 4; argv[i][j]; j++)
 	    if (argv[i][j] == ',')
 	      {
-		infiles[n_infiles].language = spec_lang;
+		infiles[n_infiles].language = 0;
 		infiles[n_infiles++].name
 		  = save_string (argv[i] + prev, j - prev);
 		prev = j + 1;
 	      }
 	  /* Record the part after the last comma.  */
-	  infiles[n_infiles].language = spec_lang;
+	  infiles[n_infiles].language = 0;
 	  infiles[n_infiles++].name = argv[i] + prev;
 	}
       else if (strcmp (argv[i], "-Xlinker") == 0)
 	{
-	  infiles[n_infiles].language = spec_lang;
+	  infiles[n_infiles].language = 0;
 	  infiles[n_infiles++].name = argv[++i];
 	}
       else if (strncmp (argv[i], "-l", 2) == 0)
 	{
-	  infiles[n_infiles].language = spec_lang;
+	  infiles[n_infiles].language = 0;
 	  infiles[n_infiles++].name = argv[i];
 	}
       else if (argv[i][0] == '-' && argv[i][1] != 0)
@@ -2924,9 +2924,9 @@ process_command (argc, argv)
 	      else
 		spec_lang = p + 1;
 	      if (! strcmp (spec_lang, "none"))
-		/* Suppress the warning if -xnone comes after the last input file,
-		   because alternate command interfaces like g++ might find it
-		   useful to place -xnone after each input file.  */
+		/* Suppress the warning if -xnone comes after the last input
+		   file, because alternate command interfaces like g++ might
+		   find it useful to place -xnone after each input file.  */
 		spec_lang = 0;
 	      else
 		last_language_n_infiles = n_infiles;
