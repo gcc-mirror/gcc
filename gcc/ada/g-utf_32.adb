@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT RUNTIME COMPONENTS                          --
 --                                                                          --
---                             W I D E C H A R                              --
+--                          G N A T . U T F _ 3 2                           --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--             Copyright (C) 2005 Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,30 +31,21 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Note: this package uses the generic subprograms in System.Wch_Cnv, which
---  completely encapsulate the set of wide character encoding methods, so no
---  modifications are required when adding new encoding methods.
+pragma Style_Checks (Off);
+--  Allow long lines in this unit
 
-with Opt; use Opt;
+package body GNAT.UTF_32 is
 
-with System.WCh_Cnv; use System.WCh_Cnv;
-with System.WCh_Con; use System.WCh_Con;
-
-package body Widechar is
-
-   pragma Style_Checks (Off);
-   --  Allow long lines in this unit
-
-   -----------------------------------------------
-   -- Tables for UTF_32 Categorization Routines --
-   -----------------------------------------------
+   ----------------------
+   -- Character Tables --
+   ----------------------
 
    --  Note these tables are derived from those given in AI-285. For details
    --  see //www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs/AI-00285.TXT?rev=1.22.
 
    type UTF_32_Range is record
-      Lo : Char_Code;
-      Hi : Char_Code;
+      Lo : UTF_32;
+      Hi : UTF_32;
    end record;
 
    type UTF_32_Ranges is array (Positive range <>) of UTF_32_Range;
@@ -468,8 +459,7 @@ package body Widechar is
      (16#000AD#, 16#000AD#),  -- SOFT HYPHEN .. SOFT HYPHEN
      (16#00600#, 16#00603#),  -- ARABIC NUMBER SIGN .. ARABIC SIGN SAFHA
      (16#006DD#, 16#006DD#),  -- ARABIC END OF AYAH .. ARABIC END OF AYAH
-
-                                                    (16#0070F#, 16#0070F#),  -- SYRIAC ABBREVIATION MARK .. SYRIAC ABBREVIATION MARK
+     (16#0070F#, 16#0070F#),  -- SYRIAC ABBREVIATION MARK .. SYRIAC ABBREVIATION MARK
      (16#017B4#, 16#017B5#),  -- KHMER VOWEL INHERENT AQ .. KHMER VOWEL INHERENT AA
      (16#0200C#, 16#0200F#),  -- ZERO WIDTH NON-JOINER .. RIGHT-TO-LEFT MARK
      (16#0202A#, 16#0202E#),  -- LEFT-TO-RIGHT EMBEDDING .. RIGHT-TO-LEFT OVERRIDE
@@ -1074,8 +1064,7 @@ package body Widechar is
      (16#0FF41#, 16#0FF5A#),  -- FULLWIDTH LATIN SMALL LETTER A .. FULLWIDTH LATIN SMALL LETTER Z
      (16#10428#, 16#1044D#)); -- DESERET SMALL LETTER LONG I .. DESERET SMALL LETTER ENG
 
-   Upper_Case_Adjust : constant array
-                         (Lower_Case_Letters'Range) of Char_Code'Base := (
+   Upper_Case_Adjust : constant array (Lower_Case_Letters'Range) of UTF_32 := (
        -32,  -- LATIN SMALL LETTER A .. LATIN SMALL LETTER Z
        743,  -- MICRO SIGN .. MICRO SIGN
        -32,  -- LATIN SMALL LETTER A WITH GRAVE .. LATIN SMALL LETTER O WITH DIAERESIS
@@ -1496,11 +1485,12 @@ package body Widechar is
        -32,  -- FULLWIDTH LATIN SMALL LETTER A .. FULLWIDTH LATIN SMALL LETTER Z
        -40); -- DESERET SMALL LETTER LONG I .. DESERET SMALL LETTER ENG
 
+
    -----------------------
    -- Local Subprograms --
    -----------------------
 
-   function Range_Search (U : Char_Code; R : UTF_32_Ranges) return Natural;
+   function Range_Search (U : UTF_32; R : UTF_32_Ranges) return Natural;
    --  Searches the given ranges (which must be in ascending order by Lo value)
    --  and returns the index of the matching range in R if U matches one of the
    --  ranges. If U matches none of the ranges, returns zero.
@@ -1509,7 +1499,7 @@ package body Widechar is
    -- Is_UTF_32_Digit --
    ---------------------
 
-   function Is_UTF_32_Digit (U : Char_Code) return Boolean is
+   function Is_UTF_32_Digit (U : UTF_32) return Boolean is
    begin
       return Range_Search (U, UTF_32_Digits) /= 0;
    end Is_UTF_32_Digit;
@@ -1518,7 +1508,7 @@ package body Widechar is
    -- Is_UTF_32_Letter --
    ----------------------
 
-   function Is_UTF_32_Letter (U : Char_Code) return Boolean is
+   function Is_UTF_32_Letter (U : UTF_32) return Boolean is
    begin
       return Range_Search (U, UTF_32_Letters) /= 0;
    end Is_UTF_32_Letter;
@@ -1527,7 +1517,7 @@ package body Widechar is
    -- Is_UTF_32_Line_Terminator --
    -------------------------------
 
-   function Is_UTF_32_Line_Terminator (U : Char_Code) return Boolean is
+   function Is_UTF_32_Line_Terminator (U : UTF_32) return Boolean is
    begin
       return U in 10 .. 13     -- Ascii.LF Ascii.VT Ascii.FF Ascii.CR
         or else U = 16#02028#  -- LINE SEPARATOR
@@ -1538,7 +1528,7 @@ package body Widechar is
    -- Is_UTF_32_Mark --
    --------------------
 
-   function Is_UTF_32_Mark (U : Char_Code) return Boolean is
+   function Is_UTF_32_Mark (U : UTF_32) return Boolean is
    begin
       return Range_Search (U, UTF_32_Marks) /= 0;
    end Is_UTF_32_Mark;
@@ -1547,7 +1537,7 @@ package body Widechar is
    -- Is_UTF_32_Non_Graphic --
    ---------------------------
 
-   function Is_UTF_32_Non_Graphic (U : Char_Code) return Boolean is
+   function Is_UTF_32_Non_Graphic (U : UTF_32) return Boolean is
    begin
       return Range_Search (U, UTF_32_Non_Graphic) /= 0;
    end Is_UTF_32_Non_Graphic;
@@ -1556,7 +1546,7 @@ package body Widechar is
    -- Is_UTF_32_Other --
    ---------------------
 
-   function Is_UTF_32_Other (U : Char_Code) return Boolean is
+   function Is_UTF_32_Other (U : UTF_32) return Boolean is
    begin
       return Range_Search (U, UTF_32_Other_Format) /= 0;
    end Is_UTF_32_Other;
@@ -1565,7 +1555,7 @@ package body Widechar is
    -- Is_UTF_32_Punctuation --
    ---------------------------
 
-   function Is_UTF_32_Punctuation (U : Char_Code) return Boolean is
+   function Is_UTF_32_Punctuation (U : UTF_32) return Boolean is
    begin
       return Range_Search (U, UTF_32_Punctuation) /= 0;
    end Is_UTF_32_Punctuation;
@@ -1574,52 +1564,16 @@ package body Widechar is
    -- Is_UTF_32_Space --
    ---------------------
 
-   function Is_UTF_32_Space (U : Char_Code) return Boolean is
+   function Is_UTF_32_Space (U : UTF_32) return Boolean is
    begin
       return Range_Search (U, UTF_32_Spaces) /= 0;
    end Is_UTF_32_Space;
-
-   ---------------------------
-   -- Is_Start_Of_Wide_Char --
-   ---------------------------
-
-   function Is_Start_Of_Wide_Char
-     (S : Source_Buffer_Ptr;
-      P : Source_Ptr) return Boolean
-   is
-   begin
-      case Wide_Character_Encoding_Method is
-         when WCEM_Hex =>
-            return S (P) = ASCII.ESC;
-
-         when WCEM_Upper     |
-              WCEM_Shift_JIS |
-              WCEM_EUC       |
-              WCEM_UTF8      =>
-            return S (P) >= Character'Val (16#80#);
-
-         when WCEM_Brackets =>
-            return P <= S'Last - 2
-              and then S (P) = '['
-              and then S (P + 1) = '"'
-              and then S (P + 2) /= '"';
-      end case;
-   end Is_Start_Of_Wide_Char;
-
-   -----------------
-   -- Length_Wide --
-   -----------------
-
-   function Length_Wide return Nat is
-   begin
-      return WC_Longest_Sequence;
-   end Length_Wide;
 
    ------------------
    -- Range_Search --
    ------------------
 
-   function Range_Search (U : Char_Code; R : UTF_32_Ranges) return Natural is
+   function Range_Search (U : UTF_32; R : UTF_32_Ranges) return Natural is
       Lo  : Integer;
       Hi  : Integer;
       Mid : Integer;
@@ -1651,137 +1605,11 @@ package body Widechar is
       end loop;
    end Range_Search;
 
-   ---------------
-   -- Scan_Wide --
-   ---------------
-
-   procedure Scan_Wide
-     (S   : Source_Buffer_Ptr;
-      P   : in out Source_Ptr;
-      C   : out Char_Code;
-      Err : out Boolean)
-   is
-      function In_Char return Character;
-      --  Function to obtain characters of wide character escape sequence
-
-      -------------
-      -- In_Char --
-      -------------
-
-      function In_Char return Character is
-      begin
-         P := P + 1;
-         return S (P - 1);
-      end In_Char;
-
-      function WC_In is new Char_Sequence_To_UTF_32 (In_Char);
-
-   --  Start of processingf for Scan_Wide
-
-   begin
-      C := Char_Code (WC_In (In_Char, Wide_Character_Encoding_Method));
-      Err := False;
-
-   exception
-      when Constraint_Error =>
-         C := Char_Code (0);
-         P := P - 1;
-         Err := True;
-   end Scan_Wide;
-
-   --------------
-   -- Set_Wide --
-   --------------
-
-   procedure Set_Wide
-     (C : Char_Code;
-      S : in out String;
-      P : in out Natural)
-   is
-      procedure Out_Char (C : Character);
-      --  Procedure to store one character of wide character sequence
-
-      --------------
-      -- Out_Char --
-      --------------
-
-      procedure Out_Char (C : Character) is
-      begin
-         P := P + 1;
-         S (P) := C;
-      end Out_Char;
-
-      procedure WC_Out is new UTF_32_To_Char_Sequence (Out_Char);
-
-   --  Start of processing for Set_Wide
-
-   begin
-      WC_Out (UTF_32_Code (C), Wide_Character_Encoding_Method);
-   end Set_Wide;
-
-   ---------------
-   -- Skip_Wide --
-   ---------------
-
-   procedure Skip_Wide (S : String; P : in out Natural) is
-      function Skip_Char return Character;
-      --  Function to skip one character of wide character escape sequence
-
-      ---------------
-      -- Skip_Char --
-      ---------------
-
-      function Skip_Char return Character is
-      begin
-         P := P + 1;
-         return S (P - 1);
-      end Skip_Char;
-
-      function WC_Skip is new Char_Sequence_To_UTF_32 (Skip_Char);
-
-      Discard : UTF_32_Code;
-      pragma Warnings (Off, Discard);
-
-   --  Start of processing for Skip_Wide
-
-   begin
-      Discard := WC_Skip (Skip_Char, Wide_Character_Encoding_Method);
-   end Skip_Wide;
-
-   ---------------
-   -- Skip_Wide --
-   ---------------
-
-   procedure Skip_Wide (S : Source_Buffer_Ptr; P : in out Source_Ptr) is
-      function Skip_Char return Character;
-      --  Function to skip one character of wide character escape sequence
-
-      ---------------
-      -- Skip_Char --
-      ---------------
-
-      function Skip_Char return Character is
-      begin
-         P := P + 1;
-         return S (P - 1);
-      end Skip_Char;
-
-      function WC_Skip is new Char_Sequence_To_UTF_32 (Skip_Char);
-
-      Discard : UTF_32_Code;
-      pragma Warnings (Off, Discard);
-
-   --  Start of processing for Skip_Wide
-
-   begin
-      Discard := WC_Skip (Skip_Char, Wide_Character_Encoding_Method);
-   end Skip_Wide;
-
    --------------------------
    -- UTF_32_To_Upper_Case --
    --------------------------
 
-   function UTF_32_To_Upper_Case (U : Char_Code) return Char_Code is
+   function UTF_32_To_Upper_Case (U : UTF_32) return UTF_32 is
       Index : constant Integer := Range_Search (U, Lower_Case_Letters);
    begin
       if Index = 0 then
@@ -1791,4 +1619,4 @@ package body Widechar is
       end if;
    end UTF_32_To_Upper_Case;
 
-end Widechar;
+end GNAT.UTF_32;

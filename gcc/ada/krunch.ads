@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,7 +111,12 @@
 
 --    a-wtflio
 
---  This is the only irregularity required (so far!) to keep the file names
+--  More problems arise with Wide_Wide, so we replace this sequence by
+--  a z (which is not used much) and also (as in the Wide_Text_IO case),
+--  we replace the prefix ada.wide_wide_text_io- by a-zt- and then
+--  the normal crunching rules are applied.
+
+--  These are the only irregularity required (so far!) to keep the file names
 --  unique in the standard predefined libraries.
 
 procedure Krunch

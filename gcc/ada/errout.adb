@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1090,7 +1090,9 @@ package body Errout is
       --  Source_Reference. This ensures outputting the proper name of
       --  the source file in this situation.
 
-      if Num_SRef_Pragmas (Main_Source_File) /= 0 then
+      if Main_Source_File = No_Source_File or else
+        Num_SRef_Pragmas (Main_Source_File) /= 0
+      then
          Current_Error_Source_File := No_Source_File;
       end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -174,7 +174,20 @@ package body Ch3 is
       --  separate declaration (but not use) of a reserved identifier.
 
       if Token = Tok_Identifier then
-         null;
+
+         --  Ada 2005 (AI-284): Compiling in Ada95 mode we notify
+         --  that interface, overriding, and synchronized are
+         --  new reserved words
+
+         if Ada_Version = Ada_95 then
+            if Token_Name = Name_Overriding
+              or else Token_Name = Name_Synchronized
+              or else (Token_Name = Name_Interface
+                        and then Prev_Token /= Tok_Pragma)
+            then
+               Error_Msg_N ("& is a reserved word in Ada 2005?", Token_Node);
+            end if;
+         end if;
 
       --  If we have a reserved identifier, manufacture an identifier with
       --  a corresponding name after posting an appropriate error message

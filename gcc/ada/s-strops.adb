@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -101,27 +101,5 @@ package body System.String_Ops is
          end;
       end if;
    end Str_Concat_SC;
-
-   -------------------
-   -- Str_Normalize --
-   -------------------
-
-   procedure Str_Normalize (A : in out String) is
-   begin
-      for J in A'Range loop
-         A (J) := Character'Last;
-      end loop;
-   end Str_Normalize;
-
-   ------------------------
-   -- Wide_Str_Normalize --
-   ------------------------
-
-   procedure Wide_Str_Normalize (A : in out Wide_String) is
-   begin
-      for J in A'Range loop
-         A (J) := Wide_Character'Last;
-      end loop;
-   end Wide_Str_Normalize;
 
 end System.String_Ops;

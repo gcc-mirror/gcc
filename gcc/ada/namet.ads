@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,17 +48,18 @@ package Namet is
 
 --  The forms of the entries are as follows:
 
---    Identifiers        Stored with upper case letters folded to lower case.
---                       Upper half (16#80# bit set) and wide characters are
---                       stored in an encoded form (Uhh for upper half and
---                       Whhhh for wide characters, as provided by the routine
---                       Store_Encoded_Character, where hh are hex digits for
---                       the character code using lower case a-f). Normally
---                       the use of U or W in other internal names is avoided,
---                       but these letters may be used in internal names
---                       (without this special meaning), if the appear as
---                       the last character of the name, or they are followed
---                       by an upper case letter or an underscore.
+--    Identifiers Stored with upper case letters folded to lower case. Upper
+--                       half (16#80# bit set) and wide characters are stored
+--                       in an encoded form (Uhh for upper half char, Whhhh
+--                       for wide characters, WWhhhhhhhh as provided by the
+--                       routine Store_Encoded_Character, where hh are hex
+--                       digits for the character code using lower case a-f).
+--                       Normally the use of U or W in other internal names is
+--                       avoided, but these letters may be used in internal
+--                       names (without this special meaning), if they appear
+--                       as the last character of the name, or they are
+--                       followed by an upper case letter (other than the WW
+--                       sequence), or an underscore.
 
 
 --    Operator symbols   Stored with an initial letter O, and the remainder
@@ -73,7 +74,7 @@ package Namet is
 --    Character literals Character literals have names that are used only for
 --                       debugging and error message purposes. The form is a
 --                       upper case Q followed by a single lower case letter,
---                       or by a Uxx or Wxxxx encoding as described for
+--                       or by a Uxx/Wxxxx/WWxxxxxxx encoding as described for
 --                       identifiers. The Set_Character_Literal_Name procedure
 --                       should be used to construct these encodings. Normally
 --                       the use of O in other internal names is avoided, but
@@ -83,9 +84,9 @@ package Namet is
 --                       underscore.
 
 --    Unit names         Stored with upper case letters folded to lower case,
---                       using Uhh/Whhhh encoding as described for identifiers,
---                       and a %s or %b suffix for specs/bodies. See package
---                       Uname for further details.
+--                       using Uhh/Whhhh/WWhhhhhhhh encoding as described for
+--                       identifiers, and a %s or %b suffix for specs/bodies.
+--                       See package Uname for further details.
 
 --    File names         Are stored in the form provided by Osint. Typically
 --                       they may include wide character escape sequences and
@@ -100,12 +101,12 @@ package Namet is
 --                       characters may appear for such entries.
 
 --  Note: the encodings Uhh (upper half characters), Whhhh (wide characters),
---  and Qx (character literal names) are described in the spec, since they are
---  visible throughout the system (e.g. in debugging output). However, no code
---  should depend on these particular encodings, so it should be possible to
---  change the encodings by making changes only to the Namet specification (to
---  change these comments) and the body (which actually implements the
---  encodings).
+--  WWhhhhhhhh (wide wide characters) and Qx (character literal names) are
+--  described in the spec, since they are visible throughout the system (e.g.
+--  in debugging output). However, no code should depend on these particular
+--  encodings, so it should be possible to change the encodings by making
+--  changes only to the Namet specification (to change these comments) and the
+--  body (which actually implements the encodings).
 
 --  The names are hashed so that a given name appears only once in the table,
 --  except that names entered with Name_Enter as opposed to Name_Find are
@@ -188,13 +189,14 @@ package Namet is
 
    procedure Get_Decoded_Name_String_With_Brackets (Id : Name_Id);
    --  This routine is similar to Decoded_Name, except that the brackets
-   --  notation (Uhh replaced by ["hh"], Whhhh replaced by ["hhhh"]) is used
-   --  for all non-lower half characters, regardless of the setting of
-   --  Opt.Wide_Character_Encoding_Method, and also in that characters in the
-   --  range 16#80# .. 16#FF# are converted to brackets notation in all cases.
-   --  This routine can be used when there is a requirement for a canonical
-   --  representation not affected by the character set options (e.g. in the
-   --  binder generation of symbols).
+   --  notation (Uhh replaced by ["hh"], Whhhh replaced by ["hhhh"],
+   --  WWhhhhhhhh replaced by ["hhhhhhhh"]) is used for all non-lower half
+   --  characters, regardless of how Opt.Wide_Character_Encoding_Method is
+   --  set, and also in that characters in the range 16#80# .. 16#FF# are
+   --  converted to brackets notation in all cases. This routine can be used
+   --  when there is a requirement for a canonical representation not affected
+   --  by the character set options (e.g. in the binder generation of
+   --  symbols).
 
    function Get_Name_Table_Byte (Id : Name_Id) return Byte;
    pragma Inline (Get_Name_Table_Byte);
@@ -328,11 +330,12 @@ package Namet is
    --  Stores given character code at the end of Name_Buffer, updating the
    --  value in Name_Len appropriately. Lower case letters and digits are
    --  stored unchanged. Other 8-bit characters are stored using the Uhh
-   --  encoding (hh = hex code), and other 16-bit wide-character values are
-   --  stored using the Whhhh (hhhh = hex code) encoding. Note that this
-   --  procedure does not fold upper case letters (they are stored using the
-   --  Uhh encoding). If folding is required, it must be done by the caller
-   --  prior to the call.
+   --  encoding (hh = hex code), other 16-bit wide character values are stored
+   --  using the Whhhh (hhhh = hex code) encoding, and other 32-bit wide wide
+   --  character values are stored using the WWhhhhhhhh (hhhhhhhh = hex code).
+   --  Note that this procedure does not fold upper case letters (they are
+   --  stored using the Uhh encoding). If folding is required, it must be done
+   --  by the caller prior to the call.
 
    procedure Tree_Read;
    --  Initializes internal tables from current tree file using the relevant

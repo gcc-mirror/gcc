@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -124,6 +124,7 @@ package Scans is
       Tok_Constant,        -- CONSTANT     Eterm, Sterm
       Tok_Do,              -- DO           Eterm, Sterm
       Tok_Is,              -- IS           Eterm, Sterm
+      Tok_Interface,       -- INTERFACE    Eterm, Sterm
       Tok_Limited,         -- LIMITED      Eterm, Sterm
       Tok_Of,              -- OF           Eterm, Sterm
       Tok_Out,             -- OUT          Eterm, Sterm
@@ -166,6 +167,8 @@ package Scans is
       Tok_Task,            -- TASK         Eterm, Sterm, Declk, Deckn, After_SM
       Tok_Type,            -- TYPE         Eterm, Sterm, Declk, Deckn, After_SM
       Tok_Subtype,         -- SUBTYPE      Eterm, Sterm, Declk, Deckn, After_SM
+      Tok_Overriding,      -- OVERRIDING   Eterm, Sterm, Declk, Declk, After_SM
+      Tok_Synchronized,    -- SYNCHRONIZED Eterm, Sterm, Declk, Deckn, After_SM
       Tok_Use,             -- USE          Eterm, Sterm, Declk, Deckn, After_SM
 
       Tok_Function,        -- FUNCTION     Eterm, Sterm, Cunit, Declk, After_SM

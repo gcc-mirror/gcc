@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -390,7 +390,7 @@ package body Bindgen is
 
             --  Don't generate reference for stand alone library
 
-              and then not U.Interface
+              and then not U.SAL_Interface
 
             --  Don't generate reference for predefined file in No_Run_Time
             --  mode, since we don't include the object files in this case
@@ -715,7 +715,7 @@ package body Bindgen is
 
             --  Don't generate reference for stand alone library
 
-              and then not U.Interface
+              and then not U.SAL_Interface
 
             --  Don't generate reference for predefined file in No_Run_Time
             --  mode, since we don't include the object files in this case
@@ -979,7 +979,7 @@ package body Bindgen is
                --  to True, we do not need to test if this has already been
                --  done, since it is quicker to set the flag than to test it.
 
-               if not U.Interface and then U.Utype = Is_Body
+               if not U.SAL_Interface and then U.Utype = Is_Body
                  and then Units.Table (Unum_Spec).Set_Elab_Entity
                then
                   Set_String ("      E");
@@ -1004,7 +1004,7 @@ package body Bindgen is
             --  The uname_E assignment is skipped if this is a separate spec,
             --  since the assignment will be done when we process the body.
 
-            elsif not U.Interface then
+            elsif not U.SAL_Interface then
                if Force_Checking_Of_Elaboration_Flags or
                   Interface_Library_Unit or
                   (not Bind_Main_Program)
@@ -1097,7 +1097,7 @@ package body Bindgen is
                --  to True, we do not need to test if this has already been
                --  done, since it is quicker to set the flag than to test it.
 
-               if not U.Interface and then U.Utype = Is_Body
+               if not U.SAL_Interface and then U.Utype = Is_Body
                  and then Units.Table (Unum_Spec).Set_Elab_Entity
                then
                   Set_String ("   ");
@@ -1118,7 +1118,7 @@ package body Bindgen is
             --  The uname_E assignment is skipped if this is a separate spec,
             --  since the assignment will be done when we process the body.
 
-            elsif not U.Interface then
+            elsif not U.SAL_Interface then
                Get_Name_String (U.Uname);
 
                if Force_Checking_Of_Elaboration_Flags or
@@ -1270,7 +1270,7 @@ package body Bindgen is
 
       Num := 0;
       for A in ALIs.First .. ALIs.Last loop
-         if not ALIs.Table (A).Interface
+         if not ALIs.Table (A).SAL_Interface
            and then ALIs.Table (A).Unit_Exception_Table
          then
             Num := Num + 1;
@@ -1308,7 +1308,7 @@ package body Bindgen is
       end if;
 
       for A in ALIs.First .. ALIs.Last loop
-         if not ALIs.Table (A).Interface
+         if not ALIs.Table (A).SAL_Interface
            and then ALIs.Table (A).Unit_Exception_Table
          then
             Get_Decoded_Name_String_With_Brackets
@@ -1436,7 +1436,7 @@ package body Bindgen is
 
       Num := 0;
       for A in ALIs.First .. ALIs.Last loop
-         if not ALIs.Table (A).Interface
+         if not ALIs.Table (A).SAL_Interface
            and then ALIs.Table (A).Unit_Exception_Table
          then
             Num := Num + 1;
@@ -1466,7 +1466,7 @@ package body Bindgen is
 
       Num2 := 0;
       for A in ALIs.First .. ALIs.Last loop
-         if not ALIs.Table (A).Interface
+         if not ALIs.Table (A).SAL_Interface
            and then ALIs.Table (A).Unit_Exception_Table
          then
             Num2 := Num2 + 1;
@@ -1584,15 +1584,24 @@ package body Bindgen is
          Write_Statement_Buffer;
       end if;
 
+      if Opt.Default_Exit_Status /= 0
+        and then Bind_Main_Program
+        and then not Configurable_Run_Time_Mode
+      then
+         WBI ("      procedure Set_Exit_Status (Status : Integer);");
+         WBI ("      pragma Import (C, Set_Exit_Status, " &
+                     """__gnat_set_exit_status"");");
+         WBI ("");
+      end if;
+
       --  Initialize and Finalize
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
-         WBI ("      procedure initialize;");
+         WBI ("      procedure initialize (Addr : System.Address);");
          WBI ("      pragma Import (C, initialize, ""__gnat_initialize"");");
          WBI ("");
          WBI ("      procedure finalize;");
          WBI ("      pragma Import (C, finalize, ""__gnat_finalize"");");
-         WBI ("");
       end if;
 
       --  Deal with declarations for main program case
@@ -1630,6 +1639,13 @@ package body Bindgen is
 
          Write_Statement_Buffer;
          WBI ("");
+
+         if Bind_Main_Program
+           and then not Suppress_Standard_Library_On_Target
+         then
+            WBI ("      SEH : aliased array (1 .. 2) of Integer;");
+            WBI ("");
+         end if;
       end if;
 
       --  Generate a reference to Ada_Main_Program_Name. This symbol is
@@ -1670,8 +1686,26 @@ package body Bindgen is
          WBI ("      gnat_envp := System.Null_Address;");
       end if;
 
+      if Opt.Default_Exit_Status /= 0
+        and then Bind_Main_Program
+        and then not Configurable_Run_Time_Mode
+      then
+         Set_String ("      Set_Exit_Status (");
+         Set_Int (Opt.Default_Exit_Status);
+         Set_String (");");
+         Write_Statement_Buffer;
+      end if;
+
       if not Cumulative_Restrictions.Set (No_Finalization) then
-         WBI ("      Initialize;");
+
+         if not No_Main_Subprogram
+           and then Bind_Main_Program
+           and then not Suppress_Standard_Library_On_Target
+         then
+            WBI ("      Initialize (SEH'Address);");
+         else
+            WBI ("      Initialize (System.Null_Address);");
+         end if;
       end if;
 
       WBI ("      " & Ada_Init_Name.all & ";");
@@ -1758,6 +1792,13 @@ package body Bindgen is
          WBI ("   char *ensure_reference __attribute__ ((__unused__)) = " &
               "__gnat_ada_main_program_name;");
          WBI ("");
+
+         if not Suppress_Standard_Library_On_Target
+           and then not No_Main_Subprogram
+         then
+            WBI ("   int SEH [2];");
+            WBI ("");
+         end if;
       end if;
 
       --  If main program is a function, generate result variable
@@ -1790,11 +1831,24 @@ package body Bindgen is
          WBI ("   gnat_envp = 0;");
       end if;
 
+      if Opt.Default_Exit_Status /= 0
+        and then Bind_Main_Program
+        and then not Configurable_Run_Time_Mode
+      then
+         Set_String ("   __gnat_set_exit_status (");
+         Set_Int (Opt.Default_Exit_Status);
+         Set_String (");");
+         Write_Statement_Buffer;
+      end if;
+
       --  The __gnat_initialize routine is used only if we have a run-time
 
       if not Suppress_Standard_Library_On_Target then
-         WBI
-          ("   __gnat_initialize ();");
+         if not No_Main_Subprogram and then Bind_Main_Program then
+            WBI ("   __gnat_initialize ((void *)SEH);");
+         else
+            WBI ("   __gnat_initialize ((void *)0);");
+         end if;
       end if;
 
       WBI ("   " & Ada_Init_Name.all & " ();");
@@ -1938,7 +1992,7 @@ package body Bindgen is
          --  If not spec that has an associated body, then generate a
          --  comment giving the name of the corresponding object file.
 
-         if (not Units.Table (Elab_Order.Table (E)).Interface)
+         if (not Units.Table (Elab_Order.Table (E)).SAL_Interface)
            and then Units.Table (Elab_Order.Table (E)).Utype /= Is_Spec
          then
             Get_Name_String
@@ -2502,7 +2556,7 @@ package body Bindgen is
       end if;
 
       if not Suppress_Standard_Library_On_Target then
-         WBI ("extern void __gnat_initialize (void);");
+         WBI ("extern void __gnat_initialize (void *);");
          WBI ("extern void __gnat_finalize (void);");
          WBI ("extern void __gnat_install_handler (void);");
       end if;
@@ -2530,7 +2584,6 @@ package body Bindgen is
             WBI ("extern int gnat_argc;");
             WBI ("extern char **gnat_argv;");
             WBI ("extern char **gnat_envp;");
-            WBI ("extern int gnat_exit_status;");
 
          --  If configurable run time and no command line args, then the
          --  generation of these variables is entirely suppressed.
@@ -2545,7 +2598,6 @@ package body Bindgen is
             WBI ("int gnat_argc;");
             WBI ("char **gnat_argv;");
             WBI ("char **gnat_envp;");
-            WBI ("int gnat_exit_status = 0;");
          end if;
 
          --  Similarly deal with exit status

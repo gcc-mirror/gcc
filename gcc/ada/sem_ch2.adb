@@ -32,6 +32,7 @@ with Rident;   use Rident;
 with Sem_Ch8;  use Sem_Ch8;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
+with Uintp;    use Uintp;
 
 package body Sem_Ch2 is
 
@@ -51,7 +52,7 @@ package body Sem_Ch2 is
       Set_Is_Static_Expression (N);
 
       if Comes_From_Source (N)
-        and then not In_Character_Range (Char_Literal_Value (N))
+        and then not In_Character_Range (UI_To_CC (Char_Literal_Value (N)))
       then
          Check_Restriction (No_Wide_Characters, N);
       end if;

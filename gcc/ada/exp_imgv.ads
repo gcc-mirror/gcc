@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2000 Free Software Foundation, Inc.             --
+--          Copyright (C) 2000-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,8 +78,12 @@ package Exp_Imgv is
    --  This procedure is called from Exp_Attr to expand an occurrence
    --  of the attribute Value.
 
-   procedure Expand_Width_Attribute (N : Node_Id; Wide : Boolean);
-   --  This procedure is called from Exp_Attr to expand an occurrence of
-   --  the attributes Width (Wide = False) or Wide_Width (Wide = True).
+   type Atype is (Normal, Wide, Wide_Wide);
+   --  Type of attribute in call to Expand_Width_Attribute
+
+   procedure Expand_Width_Attribute (N : Node_Id; Attr : Atype := Normal);
+   --  This procedure is called from Exp_Attr to expand an occurrence of the
+   --  attributes Width (Attr = Normal), or Wide_Width (Attr Wide), or
+   --  Wide_Wide_Width (Attr = Wide_Wide).
 
 end Exp_Imgv;

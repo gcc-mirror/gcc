@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -837,7 +837,10 @@ package body Sem_Aggr is
          C := Get_String_Char (Str, J);
          Set_Character_Literal_Name (C);
 
-         C_Node :=  Make_Character_Literal (P, Name_Find, C);
+         C_Node :=
+           Make_Character_Literal (P,
+             Chars              => Name_Find,
+             Char_Literal_Value => UI_From_CC (C));
          Set_Etype (C_Node, Any_Character);
          Append_To (Exprs, C_Node);
 
@@ -915,8 +918,10 @@ package body Sem_Aggr is
          if Number_Dimensions (Typ) = 1
            and then
              (Root_Type (Component_Type (Typ)) = Standard_Character
-               or else
-              Root_Type (Component_Type (Typ)) = Standard_Wide_Character)
+                or else
+              Root_Type (Component_Type (Typ)) = Standard_Wide_Character
+                or else
+              Root_Type (Component_Type (Typ)) = Standard_Wide_Wide_Character)
            and then No (Component_Associations (N))
            and then not Is_Limited_Composite (Typ)
            and then not Is_Private_Composite (Typ)
@@ -939,7 +944,7 @@ package body Sem_Aggr is
 
                   Expr := First (Expressions (N));
                   while Present (Expr) loop
-                     Store_String_Char (Char_Literal_Value (Expr));
+                     Store_String_Char (UI_To_CC (Char_Literal_Value (Expr)));
                      Next (Expr);
                   end loop;
 
@@ -1672,7 +1677,9 @@ package body Sem_Aggr is
 
                --  Ada 2005 (AI-231)
 
-               Check_Can_Never_Be_Null (N, Expression (Assoc));
+               if Ada_Version >= Ada_05 then
+                  Check_Can_Never_Be_Null (Etype (N), Expression (Assoc));
+               end if;
 
                --  Ada 2005 (AI-287): In case of default initialized component
                --  we delay the resolution to the expansion phase
@@ -1798,7 +1805,11 @@ package body Sem_Aggr is
          while Present (Expr) loop
             Nb_Elements := Nb_Elements + 1;
 
-            Check_Can_Never_Be_Null (N, Expr); -- Ada 2005 (AI-231)
+            --  Ada 2005 (AI-231)
+
+            if Ada_Version >= Ada_05 then
+               Check_Can_Never_Be_Null (Etype (N), Expr);
+            end if;
 
             if not Resolve_Aggr_Expr (Expr, Single_Elmt => True) then
                return Failure;
@@ -1810,8 +1821,12 @@ package body Sem_Aggr is
          if Others_Present then
             Assoc := Last (Component_Associations (N));
 
-            Check_Can_Never_Be_Null
-              (N, Expression (Assoc)); -- Ada 2005 (AI-231)
+            --  Ada 2005 (AI-231)
+
+            if Ada_Version >= Ada_05 then
+               Check_Can_Never_Be_Null
+                 (Etype (N), Expression (Assoc));
+            end if;
 
             --  Ada 2005 (AI-287): In case of default initialized component
             --  we delay the resolution to the expansion phase.
@@ -2050,6 +2065,9 @@ package body Sem_Aggr is
                --  whether it is an ancestor of the extension aggregate (much
                --  less which ancestor). It is not possible to determine the
                --  required components of the extension part.
+
+               --  This check implements AI-306, which in fact was motivated
+               --  by an ACT query to the ARG after this test was added.
 
                Error_Msg_N ("ancestor part must be statically tagged", A);
             else
@@ -2358,13 +2376,9 @@ package body Sem_Aggr is
                      --  Ada 2005 (AI-231)
 
                      if Ada_Version >= Ada_05
-                       and then Present (Expression (Assoc))
                        and then Nkind (Expression (Assoc)) = N_Null
-                       and then Can_Never_Be_Null (Compon)
                      then
-                        Error_Msg_N
-                          ("(Ada 2005) NULL not allowed in null-excluding " &
-                           "components", Expression (Assoc));
+                        Check_Can_Never_Be_Null (Compon, Expression (Assoc));
                      end if;
 
                      --  We need to duplicate the expression when several
@@ -2679,13 +2693,8 @@ package body Sem_Aggr is
 
                --  Ada 2005 (AI-231)
 
-               if Ada_Version >= Ada_05
-                 and then Nkind (Positional_Expr) = N_Null
-                 and then Can_Never_Be_Null (Discrim)
-               then
-                  Error_Msg_N
-                    ("(Ada 2005) NULL not allowed in null-excluding " &
-                     "components", Positional_Expr);
+               if Ada_Version >= Ada_05 then
+                  Check_Can_Never_Be_Null (Discrim, Positional_Expr);
                end if;
 
                Next (Positional_Expr);
@@ -2921,13 +2930,8 @@ package body Sem_Aggr is
 
          --  Ada 2005 (AI-231)
 
-         if Ada_Version >= Ada_05
-           and then Nkind (Positional_Expr) = N_Null
-           and then Can_Never_Be_Null (Component)
-         then
-            Error_Msg_N
-              ("(Ada 2005) NULL not allowed in null-excluding components",
-               Positional_Expr);
+         if Ada_Version >= Ada_05 then
+            Check_Can_Never_Be_Null (Component, Positional_Expr);
          end if;
 
          if Present (Get_Value (Component, Component_Associations (N))) then
@@ -3081,12 +3085,17 @@ package body Sem_Aggr is
 
    procedure Check_Can_Never_Be_Null (N : Node_Id; Expr : Node_Id) is
    begin
-      if Ada_Version >= Ada_05
-        and then Nkind (Expr) = N_Null
-        and then Can_Never_Be_Null (Etype (N))
+      pragma Assert (Ada_Version >= Ada_05);
+
+      if Nkind (Expr) = N_Null
+        and then Can_Never_Be_Null (N)
       then
-         Error_Msg_N
-           ("(Ada 2005) NULL not allowed in null-excluding components", Expr);
+         Apply_Compile_Time_Constraint_Error
+           (N      => Expr,
+            Msg    => "(Ada 2005) NULL not allowed in"
+                       & " null-excluding components?",
+            Reason => CE_Null_Not_Allowed,
+            Rep    => False);
       end if;
    end Check_Can_Never_Be_Null;
 

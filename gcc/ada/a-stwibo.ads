@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -55,805 +55,848 @@ pragma Preelaborate (Wide_Bounded);
 
       subtype Length_Range is Natural range 0 .. Max_Length;
 
-      function Length (Source : in Bounded_Wide_String) return Length_Range;
+      function Length (Source : Bounded_Wide_String) return Length_Range;
 
       --------------------------------------------------------
       -- Conversion, Concatenation, and Selection Functions --
       --------------------------------------------------------
 
       function To_Bounded_Wide_String
-        (Source : in Wide_String;
-         Drop   : in Truncation := Error)
-         return   Bounded_Wide_String;
+        (Source : Wide_String;
+         Drop   : Truncation := Error) return Bounded_Wide_String;
 
       function To_Wide_String
-        (Source : in Bounded_Wide_String)
-         return   Wide_String;
+        (Source : Bounded_Wide_String) return Wide_String;
+
+      procedure Set_Bounded_Wide_String
+        (Target : out Bounded_Wide_String;
+         Source : Wide_String;
+         Drop   : Truncation := Error);
+      pragma Ada_05 (Set_Bounded_Wide_String);
 
       function Append
-        (Left, Right : in Bounded_Wide_String;
-         Drop        : in Truncation  := Error)
-         return        Bounded_Wide_String;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String;
+         Drop  : Truncation  := Error) return Bounded_Wide_String;
 
       function Append
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String;
-         Drop  : in Truncation := Error)
-         return  Bounded_Wide_String;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String;
+         Drop  : Truncation := Error) return Bounded_Wide_String;
 
       function Append
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String;
-         Drop  : in Truncation := Error)
-         return  Bounded_Wide_String;
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String;
+         Drop  : Truncation := Error) return Bounded_Wide_String;
 
       function Append
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_Character;
-         Drop  : in Truncation := Error)
-         return  Bounded_Wide_String;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_Character;
+         Drop  : Truncation := Error) return Bounded_Wide_String;
 
       function Append
-        (Left  : in Wide_Character;
-         Right : in Bounded_Wide_String;
-         Drop  : in Truncation := Error)
-         return  Bounded_Wide_String;
+        (Left  : Wide_Character;
+         Right : Bounded_Wide_String;
+         Drop  : Truncation := Error) return Bounded_Wide_String;
 
       procedure Append
         (Source   : in out Bounded_Wide_String;
-         New_Item : in Bounded_Wide_String;
-         Drop     : in Truncation  := Error);
+         New_Item : Bounded_Wide_String;
+         Drop     : Truncation  := Error);
 
       procedure Append
         (Source   : in out Bounded_Wide_String;
-         New_Item : in Wide_String;
-         Drop     : in Truncation  := Error);
+         New_Item : Wide_String;
+         Drop     : Truncation  := Error);
 
       procedure Append
         (Source   : in out Bounded_Wide_String;
-         New_Item : in Wide_Character;
-         Drop     : in Truncation  := Error);
+         New_Item : Wide_Character;
+         Drop     : Truncation  := Error);
 
       function "&"
-        (Left, Right : in Bounded_Wide_String)
-         return        Bounded_Wide_String;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String) return Bounded_Wide_String;
 
       function "&"
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String)
-         return  Bounded_Wide_String;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String) return Bounded_Wide_String;
 
       function "&"
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Bounded_Wide_String;
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String) return Bounded_Wide_String;
 
       function "&"
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_Character)
-         return  Bounded_Wide_String;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_Character) return Bounded_Wide_String;
 
       function "&"
-        (Left  : in Wide_Character;
-         Right : in Bounded_Wide_String)
-         return  Bounded_Wide_String;
+        (Left  : Wide_Character;
+         Right : Bounded_Wide_String) return Bounded_Wide_String;
 
       function Element
-        (Source : in Bounded_Wide_String;
-         Index  : in Positive)
-         return   Wide_Character;
+        (Source : Bounded_Wide_String;
+         Index  : Positive) return Wide_Character;
 
       procedure Replace_Element
         (Source : in out Bounded_Wide_String;
-         Index  : in Positive;
-         By     : in Wide_Character);
+         Index  : Positive;
+         By     : Wide_Character);
 
       function Slice
-        (Source : in Bounded_Wide_String;
-         Low    : in Positive;
-         High   : in Natural)
-         return   Wide_String;
+        (Source : Bounded_Wide_String;
+         Low    : Positive;
+         High   : Natural) return Wide_String;
+
+      function Bounded_Slice
+        (Source : Bounded_Wide_String;
+         Low    : Positive;
+         High   : Natural) return Bounded_Wide_String;
+      pragma Ada_05 (Bounded_Slice);
+
+      procedure Bounded_Slice
+        (Source : Bounded_Wide_String;
+         Target : out Bounded_Wide_String;
+         Low    : Positive;
+         High   : Natural);
+      pragma Ada_05 (Bounded_Slice);
 
       function "="
-        (Left  : in Bounded_Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String) return Boolean;
 
       function "="
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String)
-         return  Boolean;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String) return Boolean;
 
       function "="
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean;
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String) return Boolean;
 
       function "<"
-        (Left  : in Bounded_Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String) return Boolean;
 
       function "<"
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String)
-         return  Boolean;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String) return Boolean;
 
       function "<"
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean;
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String) return Boolean;
 
       function "<="
-        (Left  : in Bounded_Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String) return Boolean;
 
       function "<="
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String)
-         return  Boolean;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String) return Boolean;
 
       function "<="
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean;
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String) return Boolean;
 
       function ">"
-        (Left  : in Bounded_Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String) return Boolean;
 
       function ">"
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String)
-         return  Boolean;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String) return Boolean;
 
       function ">"
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean;
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String) return Boolean;
 
       function ">="
-        (Left  : in Bounded_Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String) return Boolean;
 
       function ">="
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String)
-         return  Boolean;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String) return Boolean;
 
       function ">="
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean;
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String) return Boolean;
 
       ----------------------
       -- Search Functions --
       ----------------------
 
       function Index
-        (Source  : in Bounded_Wide_String;
-         Pattern : in Wide_String;
-         Going   : in Direction := Forward;
-         Mapping : in Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
-         return    Natural;
+        (Source  : Bounded_Wide_String;
+         Pattern : Wide_String;
+         Going   : Direction := Forward;
+         Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+         return Natural;
 
       function Index
-        (Source  : in Bounded_Wide_String;
-         Pattern : in Wide_String;
-         Going   : in Direction := Forward;
-         Mapping : in Wide_Maps.Wide_Character_Mapping_Function)
-         return    Natural;
+        (Source  : Bounded_Wide_String;
+         Pattern : Wide_String;
+         Going   : Direction := Forward;
+         Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural;
 
       function Index
-        (Source : in Bounded_Wide_String;
-         Set    : in Wide_Maps.Wide_Character_Set;
-         Test   : in Membership := Inside;
-         Going  : in Direction  := Forward)
-         return   Natural;
+        (Source : Bounded_Wide_String;
+         Set    : Wide_Maps.Wide_Character_Set;
+         Test   : Membership := Inside;
+         Going  : Direction  := Forward) return Natural;
+
+      function Index
+        (Source  : Bounded_Wide_String;
+         Pattern : Wide_String;
+         From    : Positive;
+         Going   : Direction := Forward;
+         Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+         return Natural;
+      pragma Ada_05 (Index);
+
+      function Index
+        (Source  : Bounded_Wide_String;
+         Pattern : Wide_String;
+         From    : Positive;
+         Going   : Direction := Forward;
+         Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural;
+      pragma Ada_05 (Index);
+
+      function Index
+        (Source  : Bounded_Wide_String;
+         Set     : Wide_Maps.Wide_Character_Set;
+         From    : Positive;
+         Test    : Membership := Inside;
+         Going   : Direction := Forward) return Natural;
+      pragma Ada_05 (Index);
 
       function Index_Non_Blank
-        (Source : in Bounded_Wide_String;
-         Going  : in Direction := Forward)
-         return   Natural;
+        (Source : Bounded_Wide_String;
+         Going  : Direction := Forward) return Natural;
+
+      function Index_Non_Blank
+        (Source : Bounded_Wide_String;
+         From   : Positive;
+         Going  : Direction := Forward) return Natural;
+      pragma Ada_05 (Index_Non_Blank);
 
       function Count
-        (Source  : in Bounded_Wide_String;
-         Pattern : in Wide_String;
-         Mapping : in Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
-         return    Natural;
+        (Source  : Bounded_Wide_String;
+         Pattern : Wide_String;
+         Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+         return Natural;
 
       function Count
-        (Source  : in Bounded_Wide_String;
-         Pattern : in Wide_String;
-         Mapping : in Wide_Maps.Wide_Character_Mapping_Function)
-         return    Natural;
+        (Source  : Bounded_Wide_String;
+         Pattern : Wide_String;
+         Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural;
 
       function Count
-        (Source : in Bounded_Wide_String;
-         Set    : in Wide_Maps.Wide_Character_Set)
-         return   Natural;
+        (Source : Bounded_Wide_String;
+         Set    : Wide_Maps.Wide_Character_Set) return Natural;
 
       procedure Find_Token
-        (Source : in Bounded_Wide_String;
-         Set    : in Wide_Maps.Wide_Character_Set;
-         Test   : in Membership;
+        (Source : Bounded_Wide_String;
+         Set    : Wide_Maps.Wide_Character_Set;
+         Test   : Membership;
          First  : out Positive;
          Last   : out Natural);
 
       ------------------------------------
-      -- Wide_String Translation Subprograms --
+      -- String Translation Subprograms --
       ------------------------------------
 
       function Translate
-        (Source   : in Bounded_Wide_String;
-         Mapping  : in Wide_Maps.Wide_Character_Mapping)
-         return     Bounded_Wide_String;
-
-      procedure Translate
-        (Source   : in out Bounded_Wide_String;
-         Mapping  : in Wide_Maps.Wide_Character_Mapping);
-
-      function Translate
-        (Source  : in Bounded_Wide_String;
-         Mapping : in Wide_Maps.Wide_Character_Mapping_Function)
-         return    Bounded_Wide_String;
+        (Source  : Bounded_Wide_String;
+         Mapping : Wide_Maps.Wide_Character_Mapping)
+         return Bounded_Wide_String;
 
       procedure Translate
         (Source  : in out Bounded_Wide_String;
-         Mapping : in Wide_Maps.Wide_Character_Mapping_Function);
+         Mapping : Wide_Maps.Wide_Character_Mapping);
+
+      function Translate
+        (Source  : Bounded_Wide_String;
+         Mapping : Wide_Maps.Wide_Character_Mapping_Function)
+         return Bounded_Wide_String;
+
+      procedure Translate
+        (Source  : in out Bounded_Wide_String;
+         Mapping : Wide_Maps.Wide_Character_Mapping_Function);
 
       ---------------------------------------
-      -- Wide_String Transformation Subprograms --
+      -- String Transformation Subprograms --
       ---------------------------------------
 
       function Replace_Slice
-        (Source   : in Bounded_Wide_String;
-         Low      : in Positive;
-         High     : in Natural;
-         By       : in Wide_String;
-         Drop     : in Truncation := Error)
-         return     Bounded_Wide_String;
+        (Source : Bounded_Wide_String;
+         Low    : Positive;
+         High   : Natural;
+         By     : Wide_String;
+         Drop   : Truncation := Error) return Bounded_Wide_String;
 
       procedure Replace_Slice
         (Source   : in out Bounded_Wide_String;
-         Low      : in Positive;
-         High     : in Natural;
-         By       : in Wide_String;
-         Drop     : in Truncation := Error);
+         Low      : Positive;
+         High     : Natural;
+         By       : Wide_String;
+         Drop     : Truncation := Error);
 
       function Insert
-        (Source   : in Bounded_Wide_String;
-         Before   : in Positive;
-         New_Item : in Wide_String;
-         Drop     : in Truncation := Error)
-         return     Bounded_Wide_String;
+        (Source   : Bounded_Wide_String;
+         Before   : Positive;
+         New_Item : Wide_String;
+         Drop     : Truncation := Error) return Bounded_Wide_String;
 
       procedure Insert
         (Source   : in out Bounded_Wide_String;
-         Before   : in Positive;
-         New_Item : in Wide_String;
-         Drop     : in Truncation := Error);
+         Before   : Positive;
+         New_Item : Wide_String;
+         Drop     : Truncation := Error);
 
       function Overwrite
-        (Source    : in Bounded_Wide_String;
-         Position  : in Positive;
-         New_Item  : in Wide_String;
-         Drop      : in Truncation := Error)
-         return      Bounded_Wide_String;
+        (Source   : Bounded_Wide_String;
+         Position : Positive;
+         New_Item : Wide_String;
+         Drop     : Truncation := Error) return Bounded_Wide_String;
 
       procedure Overwrite
         (Source    : in out Bounded_Wide_String;
-         Position  : in Positive;
-         New_Item  : in Wide_String;
-         Drop      : in Truncation := Error);
+         Position  : Positive;
+         New_Item  : Wide_String;
+         Drop      : Truncation := Error);
 
       function Delete
-        (Source  : in Bounded_Wide_String;
-         From    : in Positive;
-         Through : in Natural)
-         return    Bounded_Wide_String;
+        (Source  : Bounded_Wide_String;
+         From    : Positive;
+         Through : Natural) return Bounded_Wide_String;
 
       procedure Delete
         (Source  : in out Bounded_Wide_String;
-         From    : in Positive;
-         Through : in Natural);
+         From    : Positive;
+         Through : Natural);
 
       ---------------------------------
-      -- Wide_String Selector Subprograms --
+      -- String Selector Subprograms --
       ---------------------------------
 
       function Trim
-        (Source : in Bounded_Wide_String;
-         Side   : in Trim_End)
-         return   Bounded_Wide_String;
+        (Source : Bounded_Wide_String;
+         Side   : Trim_End) return Bounded_Wide_String;
 
       procedure Trim
         (Source : in out Bounded_Wide_String;
-         Side   : in Trim_End);
+         Side   : Trim_End);
 
       function Trim
-        (Source  : in Bounded_Wide_String;
-          Left   : in Wide_Maps.Wide_Character_Set;
-          Right  : in Wide_Maps.Wide_Character_Set)
-          return   Bounded_Wide_String;
+        (Source : Bounded_Wide_String;
+          Left  : Wide_Maps.Wide_Character_Set;
+          Right : Wide_Maps.Wide_Character_Set) return Bounded_Wide_String;
 
       procedure Trim
         (Source : in out Bounded_Wide_String;
-         Left   : in Wide_Maps.Wide_Character_Set;
-         Right  : in Wide_Maps.Wide_Character_Set);
+         Left   : Wide_Maps.Wide_Character_Set;
+         Right  : Wide_Maps.Wide_Character_Set);
 
       function Head
-        (Source : in Bounded_Wide_String;
-         Count  : in Natural;
-         Pad    : in Wide_Character := Wide_Space;
-         Drop   : in Truncation := Error)
-         return   Bounded_Wide_String;
+        (Source : Bounded_Wide_String;
+         Count  : Natural;
+         Pad    : Wide_Character := Wide_Space;
+         Drop   : Truncation := Error) return Bounded_Wide_String;
 
       procedure Head
         (Source : in out Bounded_Wide_String;
-         Count  : in Natural;
-         Pad    : in Wide_Character  := Wide_Space;
-         Drop   : in Truncation := Error);
+         Count  : Natural;
+         Pad    : Wide_Character  := Wide_Space;
+         Drop   : Truncation := Error);
 
       function Tail
-        (Source : in Bounded_Wide_String;
-         Count  : in Natural;
-         Pad    : in Wide_Character  := Wide_Space;
-         Drop   : in Truncation := Error)
-         return Bounded_Wide_String;
+        (Source : Bounded_Wide_String;
+         Count  : Natural;
+         Pad    : Wide_Character := Wide_Space;
+         Drop   : Truncation     := Error) return Bounded_Wide_String;
 
       procedure Tail
         (Source : in out Bounded_Wide_String;
-         Count  : in Natural;
-         Pad    : in Wide_Character  := Wide_Space;
-         Drop   : in Truncation := Error);
+         Count  : Natural;
+         Pad    : Wide_Character := Wide_Space;
+         Drop   : Truncation     := Error);
 
       ------------------------------------
-      -- Wide_String Constructor Subprograms --
+      -- String Constructor Subprograms --
       ------------------------------------
 
       function "*"
-        (Left  : in Natural;
-         Right : in Wide_Character)
-         return  Bounded_Wide_String;
+        (Left  : Natural;
+         Right : Wide_Character) return Bounded_Wide_String;
 
       function "*"
-        (Left  : in Natural;
-         Right : in Wide_String)
-         return  Bounded_Wide_String;
+        (Left  : Natural;
+         Right : Wide_String) return Bounded_Wide_String;
 
       function "*"
-        (Left  : in Natural;
-         Right : in Bounded_Wide_String)
-         return  Bounded_Wide_String;
+        (Left  : Natural;
+         Right : Bounded_Wide_String) return Bounded_Wide_String;
 
       function Replicate
-        (Count : in Natural;
-         Item  : in Wide_Character;
-         Drop  : in Truncation := Error)
-         return  Bounded_Wide_String;
+        (Count : Natural;
+         Item  : Wide_Character;
+         Drop  : Truncation := Error) return Bounded_Wide_String;
 
       function Replicate
-        (Count : in Natural;
-         Item  : in Wide_String;
-         Drop  : in Truncation := Error)
-         return  Bounded_Wide_String;
+        (Count : Natural;
+         Item  : Wide_String;
+         Drop  : Truncation := Error) return Bounded_Wide_String;
 
       function Replicate
-        (Count : in Natural;
-         Item  : in Bounded_Wide_String;
-         Drop  : in Truncation := Error)
-         return  Bounded_Wide_String;
+        (Count : Natural;
+         Item  : Bounded_Wide_String;
+         Drop  : Truncation := Error) return Bounded_Wide_String;
 
    private
+      --  Most of the implementation is in the separate non generic package
+      --  Ada.Strings.Wide_Superbounded. Type Bounded_Wide_String is derived
+      --  from type Wide_Superbounded.Super_String with the maximum length
+      --  constraint. In almost all cases, the routines in Wide_Superbounded
+      --  can be called with no requirement to pass the maximum length
+      --  explicitly, since there is at least one Bounded_Wide_String argument
+      --  from which the maximum length can be obtained. For all such
+      --  routines, the implementation in this private part is simply a
+      --  renaming of the corresponding routine in the super bouded package.
 
-      --  Most of the implementation is in the non generic package
-      --  Ada.Strings.Superbounded. Type Bounded_Wide_String is derived from
-      --  type Wide_Superbounded.Super_String with the maximum length
-      --  constraint. Except for five, all subprograms are renames of
-      --  subprograms that are inherited from Wide_Superbounded.Super_String.
+      --  The five exceptions are the * and Replicate routines operating on
+      --  character values. For these cases, we have a routine in the body
+      --  that calls the superbounded routine passing the maximum length
+      --  explicitly as an extra parameter.
 
       type Bounded_Wide_String is
         new Wide_Superbounded.Super_String (Max_Length);
+      --  Deriving Bounded_Wide_String from Wide_Superbounded.Super_String is
+      --  the real trick, it ensures that the type Bounded_Wide_String
+      --  declared in the generic instantiation is compatible with the
+      --  Super_String type declared in the Wide_Superbounded package.
 
       Null_Bounded_Wide_String : constant Bounded_Wide_String :=
-        (Max_Length     => Max_Length,
-         Current_Length => 0,
-         Data           => (1 .. Max_Length => Wide_Superbounded.Wide_NUL));
+                                   (Max_Length         => Max_Length,
+                                    Current_Length     => 0,
+                                    Data               =>
+                                      (1 .. Max_Length =>
+                                         Wide_Superbounded.Wide_NUL));
 
       pragma Inline (To_Bounded_Wide_String);
 
-      function Length (Source : in Bounded_Wide_String) return Length_Range
-        renames Super_Length;
+      procedure Set_Bounded_Wide_String
+        (Target : out Bounded_Wide_String;
+         Source : Wide_String;
+         Drop   : Truncation := Error)
+         renames Set_Super_String;
+
+      function Length
+        (Source : Bounded_Wide_String) return Length_Range
+         renames Super_Length;
 
       function To_Wide_String
-        (Source : in Bounded_Wide_String)
-         return    Wide_String
-        renames Super_To_String;
+        (Source : Bounded_Wide_String) return Wide_String
+         renames Super_To_String;
 
       function Append
-        (Left, Right : in Bounded_Wide_String;
-         Drop        : in Truncation  := Error)
-         return        Bounded_Wide_String
-        renames Super_Append;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String;
+         Drop  : Truncation  := Error) return Bounded_Wide_String
+         renames Super_Append;
 
       function Append
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String;
-         Drop  : in Truncation := Error)
-         return  Bounded_Wide_String
-        renames Super_Append;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String;
+         Drop  : Truncation := Error) return Bounded_Wide_String
+         renames Super_Append;
 
       function Append
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String;
-         Drop  : in Truncation := Error)
-         return  Bounded_Wide_String
-        renames Super_Append;
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String;
+         Drop  : Truncation := Error) return Bounded_Wide_String
+         renames Super_Append;
 
       function Append
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_Character;
-         Drop  : in Truncation := Error)
-         return  Bounded_Wide_String
-        renames Super_Append;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_Character;
+         Drop  : Truncation := Error) return Bounded_Wide_String
+         renames Super_Append;
 
       function Append
-        (Left  : in Wide_Character;
-         Right : in Bounded_Wide_String;
-         Drop  : in Truncation := Error)
-         return  Bounded_Wide_String
-        renames Super_Append;
+        (Left  : Wide_Character;
+         Right : Bounded_Wide_String;
+         Drop  : Truncation := Error) return Bounded_Wide_String
+         renames Super_Append;
 
       procedure Append
         (Source   : in out Bounded_Wide_String;
-         New_Item : in Bounded_Wide_String;
-         Drop     : in Truncation  := Error)
-        renames Super_Append;
+         New_Item : Bounded_Wide_String;
+         Drop     : Truncation  := Error)
+         renames Super_Append;
 
       procedure Append
         (Source   : in out Bounded_Wide_String;
-         New_Item : in Wide_String;
-         Drop     : in Truncation  := Error)
-        renames Super_Append;
+         New_Item : Wide_String;
+         Drop     : Truncation  := Error)
+         renames Super_Append;
 
       procedure Append
         (Source   : in out Bounded_Wide_String;
-         New_Item : in Wide_Character;
-         Drop     : in Truncation  := Error)
-        renames Super_Append;
+         New_Item : Wide_Character;
+         Drop     : Truncation  := Error)
+         renames Super_Append;
 
       function "&"
-        (Left, Right : in Bounded_Wide_String)
-         return        Bounded_Wide_String
-        renames Concat;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String) return Bounded_Wide_String
+         renames Concat;
 
       function "&"
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String)
-         return  Bounded_Wide_String
-        renames Concat;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String) return Bounded_Wide_String
+         renames Concat;
 
       function "&"
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Bounded_Wide_String
-        renames Concat;
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String) return Bounded_Wide_String
+         renames Concat;
 
       function "&"
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_Character)
-         return  Bounded_Wide_String
-        renames Concat;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_Character) return Bounded_Wide_String
+         renames Concat;
 
       function "&"
-        (Left  : in Wide_Character;
-         Right : in Bounded_Wide_String)
-         return  Bounded_Wide_String
-        renames Concat;
+        (Left  : Wide_Character;
+         Right : Bounded_Wide_String) return Bounded_Wide_String
+         renames Concat;
 
       function Element
-        (Source : in Bounded_Wide_String;
-         Index  : in Positive)
-         return   Wide_Character
-        renames Super_Element;
+        (Source : Bounded_Wide_String;
+         Index  : Positive) return Wide_Character
+         renames Super_Element;
 
       procedure Replace_Element
         (Source : in out Bounded_Wide_String;
-         Index  : in Positive;
-         By     : in Wide_Character)
-        renames Super_Replace_Element;
+         Index  : Positive;
+         By     : Wide_Character)
+         renames Super_Replace_Element;
 
       function Slice
-        (Source : in Bounded_Wide_String;
-         Low    : in Positive;
-         High   : in Natural)
-         return   Wide_String
-        renames Super_Slice;
+        (Source : Bounded_Wide_String;
+         Low    : Positive;
+         High   : Natural) return Wide_String
+         renames Super_Slice;
 
-      function "="  (Left, Right : in Bounded_Wide_String) return Boolean
-        renames Equal;
+      function Bounded_Slice
+        (Source : Bounded_Wide_String;
+         Low    : Positive;
+         High   : Natural) return Bounded_Wide_String
+         renames Super_Slice;
+
+      procedure Bounded_Slice
+        (Source : Bounded_Wide_String;
+         Target : out Bounded_Wide_String;
+         Low    : Positive;
+         High   : Natural)
+         renames Super_Slice;
 
       function "="
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String)
-         return  Boolean
-        renames Equal;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String) return Boolean
+         renames Equal;
 
       function "="
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean
-        renames Equal;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String) return Boolean
+         renames Equal;
 
-      function "<"  (Left, Right : in Bounded_Wide_String) return Boolean
-        renames Less;
-
-      function "<"
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String)
-         return  Boolean
-        renames Less;
+      function "="
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String) return Boolean
+         renames Equal;
 
       function "<"
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean
-        renames Less;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String) return Boolean
+         renames Less;
 
-      function "<=" (Left, Right : in Bounded_Wide_String) return Boolean
-        renames Less_Or_Equal;
+      function "<"
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String) return Boolean
+         renames Less;
+
+      function "<"
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String) return Boolean
+         renames Less;
 
       function "<="
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String)
-         return  Boolean
-        renames Less_Or_Equal;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String) return Boolean
+         renames Less_Or_Equal;
 
       function "<="
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean
-        renames Less_Or_Equal;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String) return Boolean
+         renames Less_Or_Equal;
 
-      function ">"  (Left, Right : in Bounded_Wide_String) return Boolean
-        renames Greater;
-
-      function ">"
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String)
-         return  Boolean
-        renames Greater;
+      function "<="
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String) return Boolean
+         renames Less_Or_Equal;
 
       function ">"
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean
-        renames Greater;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String) return Boolean
+         renames Greater;
 
-      function ">=" (Left, Right : in Bounded_Wide_String) return Boolean
-        renames Greater_Or_Equal;
+      function ">"
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String) return Boolean
+         renames Greater;
+
+      function ">"
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String) return Boolean
+         renames Greater;
 
       function ">="
-        (Left  : in Bounded_Wide_String;
-         Right : in Wide_String)
-         return  Boolean
-        renames Greater_Or_Equal;
+        (Left  : Bounded_Wide_String;
+         Right : Bounded_Wide_String) return Boolean
+         renames Greater_Or_Equal;
 
       function ">="
-        (Left  : in Wide_String;
-         Right : in Bounded_Wide_String)
-         return  Boolean
-        renames Greater_Or_Equal;
+        (Left  : Bounded_Wide_String;
+         Right : Wide_String) return Boolean
+         renames Greater_Or_Equal;
+
+      function ">="
+        (Left  : Wide_String;
+         Right : Bounded_Wide_String) return Boolean
+         renames Greater_Or_Equal;
 
       function Index
-        (Source  : in Bounded_Wide_String;
-         Pattern : in Wide_String;
-         Going   : in Direction := Forward;
-         Mapping : in Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
-         return    Natural
-        renames Super_Index;
+        (Source  : Bounded_Wide_String;
+         Pattern : Wide_String;
+         Going   : Direction := Forward;
+         Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+         return Natural
+         renames Super_Index;
 
       function Index
-        (Source  : in Bounded_Wide_String;
-         Pattern : in Wide_String;
-         Going   : in Direction := Forward;
-         Mapping : in Wide_Maps.Wide_Character_Mapping_Function)
-         return    Natural
-        renames Super_Index;
+        (Source  : Bounded_Wide_String;
+         Pattern : Wide_String;
+         Going   : Direction := Forward;
+         Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural
+         renames Super_Index;
 
       function Index
-        (Source : in Bounded_Wide_String;
-         Set    : in Wide_Maps.Wide_Character_Set;
-         Test   : in Membership := Inside;
-         Going  : in Direction  := Forward)
-         return   Natural
-        renames Super_Index;
+        (Source : Bounded_Wide_String;
+         Set    : Wide_Maps.Wide_Character_Set;
+         Test   : Membership := Inside;
+         Going  : Direction  := Forward) return Natural
+         renames Super_Index;
+
+      function Index
+        (Source  : Bounded_Wide_String;
+         Pattern : Wide_String;
+         From    : Positive;
+         Going   : Direction := Forward;
+         Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+         return Natural
+         renames Super_Index;
+
+      function Index
+        (Source  : Bounded_Wide_String;
+         Pattern : Wide_String;
+         From    : Positive;
+         Going   : Direction := Forward;
+         Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural
+      renames Super_Index;
+
+      function Index
+        (Source  : Bounded_Wide_String;
+         Set     : Wide_Maps.Wide_Character_Set;
+         From    : Positive;
+         Test    : Membership := Inside;
+         Going   : Direction := Forward) return Natural
+      renames Super_Index;
 
       function Index_Non_Blank
-        (Source : in Bounded_Wide_String;
-         Going  : in Direction := Forward)
-         return   Natural
-        renames Super_Index_Non_Blank;
+        (Source : Bounded_Wide_String;
+         Going  : Direction := Forward) return Natural
+         renames Super_Index_Non_Blank;
+
+      function Index_Non_Blank
+        (Source : Bounded_Wide_String;
+         From   : Positive;
+         Going  : Direction := Forward) return Natural
+         renames Super_Index_Non_Blank;
 
       function Count
-        (Source  : in Bounded_Wide_String;
-         Pattern : in Wide_String;
-         Mapping : in Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
-         return    Natural
-        renames Super_Count;
+        (Source  : Bounded_Wide_String;
+         Pattern : Wide_String;
+         Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+         return Natural
+         renames Super_Count;
 
       function Count
-        (Source  : in Bounded_Wide_String;
-         Pattern : in Wide_String;
-         Mapping : in Wide_Maps.Wide_Character_Mapping_Function)
-         return    Natural
-        renames Super_Count;
+        (Source  : Bounded_Wide_String;
+         Pattern : Wide_String;
+         Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural
+         renames Super_Count;
 
       function Count
-        (Source : in Bounded_Wide_String;
-         Set    : in Wide_Maps.Wide_Character_Set)
-         return   Natural
-        renames Super_Count;
+        (Source : Bounded_Wide_String;
+         Set    : Wide_Maps.Wide_Character_Set) return Natural
+         renames Super_Count;
 
       procedure Find_Token
-        (Source : in Bounded_Wide_String;
-         Set    : in Wide_Maps.Wide_Character_Set;
-         Test   : in Membership;
+        (Source : Bounded_Wide_String;
+         Set    : Wide_Maps.Wide_Character_Set;
+         Test   : Membership;
          First  : out Positive;
          Last   : out Natural)
-        renames Super_Find_Token;
+         renames Super_Find_Token;
 
       function Translate
-        (Source   : in Bounded_Wide_String;
-         Mapping  : in Wide_Maps.Wide_Character_Mapping)
-         return     Bounded_Wide_String
-        renames Super_Translate;
+        (Source  : Bounded_Wide_String;
+         Mapping : Wide_Maps.Wide_Character_Mapping)
+         return Bounded_Wide_String
+         renames Super_Translate;
 
       procedure Translate
         (Source   : in out Bounded_Wide_String;
-         Mapping  : in Wide_Maps.Wide_Character_Mapping)
-        renames Super_Translate;
+         Mapping  : Wide_Maps.Wide_Character_Mapping)
+         renames Super_Translate;
 
       function Translate
-        (Source  : in Bounded_Wide_String;
-         Mapping : in Wide_Maps.Wide_Character_Mapping_Function)
-         return    Bounded_Wide_String
-        renames Super_Translate;
+        (Source  : Bounded_Wide_String;
+         Mapping : Wide_Maps.Wide_Character_Mapping_Function)
+         return Bounded_Wide_String
+         renames Super_Translate;
 
       procedure Translate
         (Source  : in out Bounded_Wide_String;
-         Mapping : in Wide_Maps.Wide_Character_Mapping_Function)
-        renames Super_Translate;
+         Mapping : Wide_Maps.Wide_Character_Mapping_Function)
+         renames Super_Translate;
 
       function Replace_Slice
-        (Source   : in Bounded_Wide_String;
-         Low      : in Positive;
-         High     : in Natural;
-         By       : in Wide_String;
-         Drop     : in Truncation := Error)
-         return     Bounded_Wide_String
-        renames Super_Replace_Slice;
+        (Source : Bounded_Wide_String;
+         Low    : Positive;
+         High   : Natural;
+         By     : Wide_String;
+         Drop   : Truncation := Error) return Bounded_Wide_String
+         renames Super_Replace_Slice;
 
       procedure Replace_Slice
         (Source   : in out Bounded_Wide_String;
-         Low      : in Positive;
-         High     : in Natural;
-         By       : in Wide_String;
-         Drop     : in Truncation := Error)
-        renames Super_Replace_Slice;
+         Low      : Positive;
+         High     : Natural;
+         By       : Wide_String;
+         Drop     : Truncation := Error)
+         renames Super_Replace_Slice;
 
       function Insert
-        (Source   : in Bounded_Wide_String;
-         Before   : in Positive;
-         New_Item : in Wide_String;
-         Drop     : in Truncation := Error)
-         return     Bounded_Wide_String
-        renames Super_Insert;
+        (Source   : Bounded_Wide_String;
+         Before   : Positive;
+         New_Item : Wide_String;
+         Drop     : Truncation := Error) return Bounded_Wide_String
+         renames Super_Insert;
 
       procedure Insert
         (Source   : in out Bounded_Wide_String;
-         Before   : in Positive;
-         New_Item : in Wide_String;
-         Drop     : in Truncation := Error)
-        renames Super_Insert;
+         Before   : Positive;
+         New_Item : Wide_String;
+         Drop     : Truncation := Error)
+         renames Super_Insert;
 
       function Overwrite
-        (Source    : in Bounded_Wide_String;
-         Position  : in Positive;
-         New_Item  : in Wide_String;
-         Drop      : in Truncation := Error)
-         return      Bounded_Wide_String
-        renames Super_Overwrite;
+        (Source   : Bounded_Wide_String;
+         Position : Positive;
+         New_Item : Wide_String;
+         Drop     : Truncation := Error) return Bounded_Wide_String
+         renames Super_Overwrite;
 
       procedure Overwrite
         (Source    : in out Bounded_Wide_String;
-         Position  : in Positive;
-         New_Item  : in Wide_String;
-         Drop      : in Truncation := Error)
-        renames Super_Overwrite;
+         Position  : Positive;
+         New_Item  : Wide_String;
+         Drop      : Truncation := Error)
+         renames Super_Overwrite;
 
       function Delete
-        (Source  : in Bounded_Wide_String;
-         From    : in Positive;
-         Through : in Natural)
-         return    Bounded_Wide_String
-        renames Super_Delete;
+        (Source  : Bounded_Wide_String;
+         From    : Positive;
+         Through : Natural) return Bounded_Wide_String
+         renames Super_Delete;
 
       procedure Delete
         (Source  : in out Bounded_Wide_String;
-         From    : in Positive;
-         Through : in Natural)
-        renames Super_Delete;
+         From    : Positive;
+         Through : Natural)
+         renames Super_Delete;
 
       function Trim
-        (Source : in Bounded_Wide_String;
-         Side   : in Trim_End)
-         return   Bounded_Wide_String
-        renames Super_Trim;
+        (Source : Bounded_Wide_String;
+         Side   : Trim_End) return Bounded_Wide_String
+         renames Super_Trim;
 
       procedure Trim
         (Source : in out Bounded_Wide_String;
-         Side   : in Trim_End)
-        renames Super_Trim;
+         Side   : Trim_End)
+         renames Super_Trim;
 
       function Trim
-        (Source  : in Bounded_Wide_String;
-          Left   : in Wide_Maps.Wide_Character_Set;
-          Right  : in Wide_Maps.Wide_Character_Set)
-          return   Bounded_Wide_String
-        renames Super_Trim;
+        (Source : Bounded_Wide_String;
+         Left   : Wide_Maps.Wide_Character_Set;
+         Right  : Wide_Maps.Wide_Character_Set) return Bounded_Wide_String
+         renames Super_Trim;
 
       procedure Trim
         (Source : in out Bounded_Wide_String;
-         Left   : in Wide_Maps.Wide_Character_Set;
-         Right  : in Wide_Maps.Wide_Character_Set)
-        renames Super_Trim;
+         Left   : Wide_Maps.Wide_Character_Set;
+         Right  : Wide_Maps.Wide_Character_Set)
+         renames Super_Trim;
 
       function Head
-        (Source : in Bounded_Wide_String;
-         Count  : in Natural;
-         Pad    : in Wide_Character := Wide_Space;
-         Drop   : in Truncation := Error)
-         return   Bounded_Wide_String
-        renames Super_Head;
+        (Source : Bounded_Wide_String;
+         Count  : Natural;
+         Pad    : Wide_Character := Wide_Space;
+         Drop   : Truncation     := Error) return Bounded_Wide_String
+         renames Super_Head;
 
       procedure Head
         (Source : in out Bounded_Wide_String;
-         Count  : in Natural;
-         Pad    : in Wide_Character  := Wide_Space;
-         Drop   : in Truncation := Error)
-        renames Super_Head;
+         Count  : Natural;
+         Pad    : Wide_Character := Wide_Space;
+         Drop   : Truncation     := Error)
+         renames Super_Head;
 
       function Tail
-        (Source : in Bounded_Wide_String;
-         Count  : in Natural;
-         Pad    : in Wide_Character  := Wide_Space;
-         Drop   : in Truncation := Error)
-         return Bounded_Wide_String
-        renames Super_Tail;
+        (Source : Bounded_Wide_String;
+         Count  : Natural;
+         Pad    : Wide_Character := Wide_Space;
+         Drop   : Truncation     := Error) return Bounded_Wide_String
+         renames Super_Tail;
 
       procedure Tail
         (Source : in out Bounded_Wide_String;
-         Count  : in Natural;
-         Pad    : in Wide_Character  := Wide_Space;
-         Drop   : in Truncation := Error)
-        renames Super_Tail;
+         Count  : Natural;
+         Pad    : Wide_Character := Wide_Space;
+         Drop   : Truncation := Error)
+         renames Super_Tail;
 
       function "*"
-        (Left  : in Natural;
-         Right : in Bounded_Wide_String)
-         return  Bounded_Wide_String
-        renames Times;
+        (Left  : Natural;
+         Right : Bounded_Wide_String) return Bounded_Wide_String
+         renames Times;
 
       function Replicate
-        (Count : in Natural;
-         Item  : in Bounded_Wide_String;
-         Drop  : in Truncation := Error)
-         return  Bounded_Wide_String
+        (Count : Natural;
+         Item  : Bounded_Wide_String;
+         Drop  : Truncation := Error) return Bounded_Wide_String
          renames Super_Replicate;
 
    end Generic_Bounded_Length;

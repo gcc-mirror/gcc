@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,11 +42,9 @@ package body System.WWd_Char is
 
    begin
       W := 0;
-
       for C in Lo .. Hi loop
          declare
             S : constant Wide_String := Character'Wide_Image (C);
-
          begin
             W := Natural'Max (W, S'Length);
          end;
@@ -54,5 +52,25 @@ package body System.WWd_Char is
 
       return W;
    end Wide_Width_Character;
+
+   -------------------------------
+   -- Wide_Wide_Width_Character --
+   -------------------------------
+
+   function Wide_Wide_Width_Character (Lo, Hi : Character) return Natural is
+      W : Natural;
+
+   begin
+      W := 0;
+      for C in Lo .. Hi loop
+         declare
+            S : constant Wide_Wide_String := Character'Wide_Wide_Image (C);
+         begin
+            W := Natural'Max (W, S'Length);
+         end;
+      end loop;
+
+      return W;
+   end Wide_Wide_Width_Character;
 
 end System.WWd_Char;

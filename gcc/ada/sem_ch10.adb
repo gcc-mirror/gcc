@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1692,14 +1692,26 @@ package body Sem_Ch10 is
 
          if Implementation_Unit_Warnings
            and then Current_Sem_Unit = Main_Unit
-           and then Implementation_Unit (Get_Source_Unit (U))
            and then not Intunit
            and then not Implicit_With (N)
+           and then not GNAT_Mode
          then
-            Error_Msg_N ("& is an internal 'G'N'A'T unit?", Name (N));
-            Error_Msg_N
-              ("\use of this unit is non-portable and version-dependent?",
-               Name (N));
+            declare
+               U_Kind : constant Kind_Of_Unit :=
+                          Get_Kind_Of_Unit (Get_Source_Unit (U));
+
+            begin
+               if U_Kind = Implementation_Unit then
+                  Error_Msg_N ("& is an internal 'G'N'A'T unit?", Name (N));
+                  Error_Msg_N
+                    ("\use of this unit is non-portable " &
+                     "and version-dependent?",
+                     Name (N));
+
+               elsif U_Kind = Ada_05_Unit and then Ada_Version = Ada_95 then
+                  Error_Msg_N ("& is an Ada 2005 unit?", Name (N));
+               end if;
+            end;
          end if;
       end if;
 

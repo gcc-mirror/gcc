@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,6 +44,7 @@ is
    Krlen    : Natural;
    Num_Seps : Natural;
    Startloc : Natural;
+   J        : Natural;
 
 begin
    --  Deal with special predefined children cases. Startloc is the first
@@ -63,6 +64,15 @@ begin
       Buffer (6 .. Len - 12) := Buffer (18 .. Len);
       Curlen := Len - 12;
       Krlen  := 8;
+
+   elsif Len >= 23
+     and then Buffer (1 .. 22) = "ada-wide_wide_text_io-"
+   then
+      Startloc := 3;
+      Buffer (2 .. 5) := "-zt-";
+      Buffer (6 .. Len - 17) := Buffer (23 .. Len);
+      Curlen := Len - 17;
+      Krlen := 8;
 
    elsif Len >= 4 and then Buffer (1 .. 4) = "ada-" then
       Startloc := 3;
@@ -138,6 +148,26 @@ begin
       return;
    end if;
 
+   --  If string contains Wide_Wide, replace by a single z
+
+   J := Startloc;
+   while J <= Curlen - 8 loop
+      if Buffer (J .. J + 8) = "wide_wide"
+        and then (J = Startloc
+                    or else Buffer (J - 1) = '-'
+                    or else Buffer (J - 1) = '_')
+        and then (J + 8 = Curlen
+                    or else Buffer (J + 9) = '-'
+                    or else Buffer (J + 9) = '_')
+      then
+         Buffer (J) := 'z';
+         Buffer (J + 1 .. Curlen - 8) := Buffer (J + 9 .. Curlen);
+         Curlen := Curlen - 8;
+      end if;
+
+      J := J + 1;
+   end loop;
+
    --  For now, refuse to krunch a name that contains an ESC character (wide
    --  character sequence) since it's too much trouble to do this right ???
 
@@ -152,7 +182,6 @@ begin
    --  the krunching process, and then we eliminate them as the last step
 
    Num_Seps := 0;
-
    for J in Startloc .. Curlen loop
       if Buffer (J) = '-' or else Buffer (J) = '_' then
          Buffer (J) := ' ';

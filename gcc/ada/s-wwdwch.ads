@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---        Copyright (C) 1992,1993,1994 Free Software Foundation, Inc.       --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,16 +31,33 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routine used for Wide_Character'Wide_Width
+--  This package contains routines for [Wide_]Wide_Character'[Wide_]Wide_Width
 
 package System.Wwd_WChar is
 pragma Pure (Wwd_WChar);
 
    function Wide_Width_Wide_Character
-     (Lo, Hi : Wide_Character)
-      return   Natural;
+     (Lo, Hi : Wide_Character) return Natural;
    --  Compute Wide_Width attribute for non-static type derived from
    --  Wide_Character. The arguments are the low and high bounds for
+   --  the type. EM is the wide-character encoding method.
+
+   function Wide_Width_Wide_Wide_Character
+     (Lo, Hi : Wide_Wide_Character) return Natural;
+   --  Compute Wide_Width attribute for non-static type derived from
+   --  Wide_Wide_Character. The arguments are the low and high bounds for
+   --  the type. EM is the wide-character encoding method.
+
+   function Wide_Wide_Width_Wide_Character
+     (Lo, Hi : Wide_Character) return Natural;
+   --  Compute Wide_Wide_Width attribute for non-static type derived from
+   --  Wide_Character. The arguments are the low and high bounds for
+   --  the type. EM is the wide-character encoding method.
+
+   function Wide_Wide_Width_Wide_Wide_Char
+     (Lo, Hi : Wide_Wide_Character) return Natural;
+   --  Compute Wide_Wide_Width attribute for non-static type derived from
+   --  Wide_Wide_Character. The arguments are the low and high bounds for
    --  the type. EM is the wide-character encoding method.
 
 end System.Wwd_WChar;

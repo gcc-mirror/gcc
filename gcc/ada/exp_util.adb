@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -489,7 +489,7 @@ package body Exp_Util is
              Make_Character_Literal (Loc,
                Chars => Name_Find,
                Char_Literal_Value =>
-                 Char_Code (Character'Pos ('(')))));
+                 UI_From_Int (Character'Pos ('(')))));
 
       Append_To (Stats,
          Make_Assignment_Statement (Loc,
@@ -548,7 +548,7 @@ package body Exp_Util is
                    Make_Character_Literal (Loc,
                      Chars => Name_Find,
                      Char_Literal_Value =>
-                       Char_Code (Character'Pos (',')))));
+                       UI_From_Int (Character'Pos (',')))));
 
             Append_To (Stats,
               Make_Assignment_Statement (Loc,
@@ -571,7 +571,7 @@ package body Exp_Util is
              Make_Character_Literal (Loc,
                Chars => Name_Find,
                Char_Literal_Value =>
-                 Char_Code (Character'Pos (')')))));
+                 UI_From_Int (Character'Pos (')')))));
       return Build_Task_Image_Function (Loc, Decls, Stats, Res);
    end Build_Task_Array_Image;
 
@@ -870,7 +870,7 @@ package body Exp_Util is
              Make_Character_Literal (Loc,
                Chars => Name_Find,
                Char_Literal_Value =>
-                 Char_Code (Character'Pos ('.')))));
+                 UI_From_Int (Character'Pos ('.')))));
 
       Append_To (Stats,
         Make_Assignment_Statement (Loc,
@@ -1833,8 +1833,9 @@ package body Exp_Util is
                N_Entry_Body                             |
                N_Exception_Declaration                  |
                N_Exception_Renaming_Declaration         |
+               N_Formal_Abstract_Subprogram_Declaration |
+               N_Formal_Concrete_Subprogram_Declaration |
                N_Formal_Object_Declaration              |
-               N_Formal_Subprogram_Declaration          |
                N_Formal_Type_Declaration                |
                N_Full_Type_Declaration                  |
                N_Function_Instantiation                 |

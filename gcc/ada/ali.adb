@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -654,6 +654,7 @@ package body ALI is
         Ofile_Full_Name            => Full_Object_File_Name,
         Queuing_Policy             => ' ',
         Restrictions               => Restrictions_Initial,
+        SAL_Interface              => False,
         Sfile                      => No_Name,
         Task_Dispatching_Policy    => ' ',
         Time_Slice_Value           => -1,
@@ -661,7 +662,6 @@ package body ALI is
         Unit_Exception_Table       => False,
         Ver                        => (others => ' '),
         Ver_Len                    => 0,
-        Interface                  => False,
         Zero_Cost_Exceptions       => False);
 
       --  Now we acquire the input lines from the ALI file. Note that the
@@ -878,7 +878,7 @@ package body ALI is
                --  Processing for SL
 
                if C = 'L' then
-                  ALIs.Table (Id).Interface := True;
+                  ALIs.Table (Id).SAL_Interface := True;
 
                --  Processing for SS
 
@@ -1194,7 +1194,8 @@ package body ALI is
          Units.Table (Units.Last).First_With      := Withs.Last + 1;
          Units.Table (Units.Last).First_Arg       := First_Arg;
          Units.Table (Units.Last).Elab_Position   := 0;
-         Units.Table (Units.Last).Interface       := ALIs.Table (Id).Interface;
+         Units.Table (Units.Last).SAL_Interface   := ALIs.Table (Id).
+                                                       SAL_Interface;
          Units.Table (Units.Last).Body_Needed_For_SAL := False;
 
          if Debug_Flag_U then
@@ -1290,7 +1291,6 @@ package body ALI is
                   Fatal_Error_Ignore;
                end if;
 
-
             --  DE parameter (Dynamic elaboration checks)
 
             elsif C = 'D' then
@@ -1376,7 +1376,6 @@ package body ALI is
                   Fatal_Error_Ignore;
                end if;
 
-
             --  PR/PU/PK parameters
 
             elsif C = 'P' then
@@ -1459,7 +1458,7 @@ package body ALI is
                Withs.Table (Withs.Last).Elaborate          := False;
                Withs.Table (Withs.Last).Elaborate_All      := False;
                Withs.Table (Withs.Last).Elab_All_Desirable := False;
-               Withs.Table (Withs.Last).Interface          := False;
+               Withs.Table (Withs.Last).SAL_Interface      := False;
 
                --  Generic case with no object file available
 

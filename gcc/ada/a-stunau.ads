@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 --  This child package of Ada.Strings.Unbounded provides some specialized
 --  access functions which are intended to allow more efficient use of the
 --  facilities of Ada.Strings.Unbounded, particularly by other layered
---  utilities (such as GNAT.Patterns).
+--  utilities (such as GNAT.SPITBOL.Patterns).
 
 package Ada.Strings.Unbounded.Aux is
 pragma Preelaborate (Aux);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,6 +51,7 @@ with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
 with Sem_Ch13; use Sem_Ch13;
+with Sem_Disp; use Sem_Disp;
 with Sem_Elab; use Sem_Elab;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
@@ -261,7 +262,11 @@ package body Sem_Ch12 is
       T   : Entity_Id;
       Def : Node_Id);
 
-   --  All the following need comments???
+   --  The following subprograms create abbreviated declarations for formal
+   --  scalar types. We introduce an anonymous base of the proper class for
+   --  each of them, and define the formals as constrained first subtypes of
+   --  their bases. The bounds are expressions that are non-static in the
+   --  generic.
 
    procedure Analyze_Formal_Decimal_Fixed_Point_Type
                                                 (T : Entity_Id; Def : Node_Id);
@@ -879,7 +884,7 @@ package body Sem_Ch12 is
             case Nkind (Formal) is
 
                when N_Formal_Subprogram_Declaration =>
-                  exit when Kind = N_Formal_Subprogram_Declaration
+                  exit when Kind in N_Formal_Subprogram_Declaration
                     and then
                       Chars
                         (Defining_Unit_Name (Specification (Formal))) =
@@ -900,7 +905,7 @@ package body Sem_Ch12 is
                   --  unrecognized pragmas.
 
                   exit when
-                    Kind /= N_Formal_Subprogram_Declaration
+                    Kind not in N_Formal_Subprogram_Declaration
                       and then Kind /= N_Subprogram_Declaration
                       and then Kind /= N_Freeze_Entity
                       and then Kind /= N_Null_Statement
@@ -1038,7 +1043,7 @@ package body Sem_Ch12 is
                   then
                      Temp_Formal := First (Formals);
                      while Present (Temp_Formal) loop
-                        if Nkind (Temp_Formal) =
+                        if Nkind (Temp_Formal) in
                              N_Formal_Subprogram_Declaration
                           and then Temp_Formal /= Formal
                           and then
@@ -1279,6 +1284,7 @@ package body Sem_Ch12 is
       Set_Delta_Value    (T, Delta_Val);
       Set_Small_Value    (T, Delta_Val);
       Set_Scalar_Range   (T, Scalar_Range (Base));
+      Set_Is_Constrained (T);
 
       Check_Restriction (No_Fixed_Point, Def);
    end Analyze_Formal_Decimal_Fixed_Point_Type;
@@ -1357,12 +1363,17 @@ package body Sem_Ch12 is
       Lo  : Node_Id;
       Hi  : Node_Id;
 
+      Base : constant Entity_Id :=
+               New_Internal_Entity
+                 (E_Floating_Point_Type, Current_Scope, Sloc (Def), 'G');
    begin
-      Enter_Name     (T);
-      Set_Ekind      (T, E_Enumeration_Type);
-      Set_Etype      (T, T);
-      Init_Size      (T, 8);
-      Init_Alignment (T);
+      Enter_Name          (T);
+      Set_Ekind           (T, E_Enumeration_Subtype);
+      Set_Etype           (T, Base);
+      Init_Size           (T, 8);
+      Init_Alignment      (T);
+      Set_Is_Generic_Type (T);
+      Set_Is_Constrained  (T);
 
       --  For semantic analysis, the bounds of the type must be set to some
       --  non-static value. The simplest is to create attribute nodes for
@@ -1386,6 +1397,14 @@ package body Sem_Ch12 is
           Low_Bound => Lo,
           High_Bound => Hi));
 
+      Set_Ekind           (Base, E_Enumeration_Type);
+      Set_Etype           (Base, Base);
+      Init_Size           (Base, 8);
+      Init_Alignment      (Base);
+      Set_Is_Generic_Type (Base);
+      Set_Scalar_Range    (Base, Scalar_Range (T));
+      Set_Parent          (Base, Parent (Def));
+
    end Analyze_Formal_Discrete_Type;
 
    ----------------------------------
@@ -1404,12 +1423,13 @@ package body Sem_Ch12 is
       --  the generic itself.
 
       Enter_Name (T);
-      Set_Ekind        (T, E_Floating_Point_Subtype);
-      Set_Etype        (T, Base);
-      Set_Size_Info    (T,              (Standard_Float));
-      Set_RM_Size      (T, RM_Size      (Standard_Float));
-      Set_Digits_Value (T, Digits_Value (Standard_Float));
-      Set_Scalar_Range (T, Scalar_Range (Standard_Float));
+      Set_Ekind          (T, E_Floating_Point_Subtype);
+      Set_Etype          (T, Base);
+      Set_Size_Info      (T,              (Standard_Float));
+      Set_RM_Size        (T, RM_Size      (Standard_Float));
+      Set_Digits_Value   (T, Digits_Value (Standard_Float));
+      Set_Scalar_Range   (T, Scalar_Range (Standard_Float));
+      Set_Is_Constrained (T);
 
       Set_Is_Generic_Type (Base);
       Set_Etype           (Base, Base);
@@ -1562,6 +1582,7 @@ package body Sem_Ch12 is
         Make_Range (Loc,
           Low_Bound  => Make_Real_Literal (Loc, Ureal_1),
           High_Bound => Make_Real_Literal (Loc, Ureal_1)));
+      Set_Is_Constrained   (T);
 
       Set_Is_Generic_Type (Base);
       Set_Etype           (Base, Base);
@@ -1773,11 +1794,12 @@ package body Sem_Ch12 is
    begin
       Enter_Name (T);
 
-      Set_Ekind        (T, E_Signed_Integer_Subtype);
-      Set_Etype        (T, Base);
-      Set_Size_Info    (T, Standard_Integer);
-      Set_RM_Size      (T, RM_Size (Standard_Integer));
-      Set_Scalar_Range (T, Scalar_Range (Standard_Integer));
+      Set_Ekind          (T, E_Signed_Integer_Subtype);
+      Set_Etype          (T, Base);
+      Set_Size_Info      (T, Standard_Integer);
+      Set_RM_Size        (T, RM_Size (Standard_Integer));
+      Set_Scalar_Range   (T, Scalar_Range (Standard_Integer));
+      Set_Is_Constrained (T);
 
       Set_Is_Generic_Type (Base);
       Set_Size_Info       (Base, Standard_Integer);
@@ -1810,6 +1832,25 @@ package body Sem_Ch12 is
       Analyze_Subprogram_Declaration (N);
       Set_Is_Formal_Subprogram (Nam);
       Set_Has_Completion (Nam);
+
+      if Nkind (N) = N_Formal_Abstract_Subprogram_Declaration then
+         Set_Is_Abstract (Nam);
+         Set_Is_Dispatching_Operation (Nam);
+
+         declare
+            Ctrl_Type : constant Entity_Id := Find_Dispatching_Type (Nam);
+
+         begin
+            if not Present (Ctrl_Type) then
+               Error_Msg_N
+                 ("abstract formal subprogram must have a controlling type",
+                  N);
+
+            else
+               Check_Controlling_Formals (Ctrl_Type, Nam);
+            end if;
+         end;
+      end if;
 
       --  Default name is resolved at the point of instantiation
 
@@ -6966,10 +7007,12 @@ package body Sem_Ch12 is
 
       --  The generic instantiation freezes the actual. This can only be
       --  done once the actual is resolved, in the analysis of the renaming
-      --  declaration. To indicate that must be done, we set the corresponding
-      --  spec of the node to point to the formal subprogram entity.
+      --  declaration. To make the formal subprogram entity available, we set
+      --  Corresponding_Formal_Spec to point to the formal subprogram entity.
+      --  This is also needed in Analyze_Subprogram_Renaming for the processing
+      --  of formal abstract subprograms.
 
-      Set_Corresponding_Spec (Decl_Node, Analyzed_S);
+      Set_Corresponding_Formal_Spec (Decl_Node, Analyzed_S);
 
       --  We cannot analyze the renaming declaration, and thus find the
       --  actual, until the all the actuals are assembled in the instance.

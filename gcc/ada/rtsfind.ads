@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,6 +68,9 @@ package Rtsfind is
 
    --    Names of the form Ada_Wide_Text_IO_xxx are second level children
    --    of Ada.Wide_Text_IO.
+
+   --    Names of the form Ada_Wide_Wide_Text_IO_xxx are second level children
+   --    of Ada.Wide_Wide_Text_IO.
 
    --    Names of the form Interfaces_xxx are first level children of
    --    Interfaces_CPP refers to package Interfaces.CPP
@@ -155,6 +158,15 @@ package Rtsfind is
       Ada_Wide_Text_IO_Float_IO,
       Ada_Wide_Text_IO_Integer_IO,
       Ada_Wide_Text_IO_Modular_IO,
+
+      --  Children of Ada.Wide_Wide_Text_IO (for Text_IO_Kludge)
+
+      Ada_Wide_Wide_Text_IO_Decimal_IO,
+      Ada_Wide_Wide_Text_IO_Enumeration_IO,
+      Ada_Wide_Wide_Text_IO_Fixed_IO,
+      Ada_Wide_Wide_Text_IO_Float_IO,
+      Ada_Wide_Wide_Text_IO_Integer_IO,
+      Ada_Wide_Wide_Text_IO_Modular_IO,
 
       --  Interfaces
 
@@ -343,7 +355,7 @@ package Rtsfind is
       System_Tasking_Stages);
 
    subtype Ada_Child is RTU_Id
-     range Ada_Calendar .. Ada_Wide_Text_IO_Modular_IO;
+     range Ada_Calendar .. Ada_Wide_Wide_Text_IO_Modular_IO;
    --  Range of values for children or grand-children of Ada
 
    subtype Ada_Calendar_Child is Ada_Child
@@ -372,6 +384,10 @@ package Rtsfind is
    subtype Ada_Wide_Text_IO_Child is Ada_Child
      range Ada_Wide_Text_IO_Decimal_IO .. Ada_Wide_Text_IO_Modular_IO;
    --  Range of values for children of Ada.Text_IO
+
+   subtype Ada_Wide_Wide_Text_IO_Child is Ada_Child
+     range Ada_Wide_Wide_Text_IO_Decimal_IO ..
+           Ada_Wide_Wide_Text_IO_Modular_IO;
 
    subtype Interfaces_Child is RTU_Id
      range Interfaces_CPP .. Interfaces_Packed_Decimal;
@@ -700,6 +716,7 @@ package Rtsfind is
      RE_Image_Unsigned,                  -- System.Img_Uns
 
      RE_Image_Wide_Character,            -- System.Img_WChar
+     RE_Image_Wide_Wide_Character,       -- System.Img_WChar
 
      RE_Bind_Interrupt_To_Entry,         -- System.Interrupts
      RE_Default_Interrupt_Priority,      -- System.Interrupts
@@ -1033,7 +1050,6 @@ package Rtsfind is
      RE_Do_Rpc,                          -- System.RPC
      RE_Params_Stream_Type,              -- System.RPC
      RE_Partition_ID,                    -- System.RPC
-     RE_RPC_Receiver,                    -- System.RPC
 
      RE_To_PolyORB_String,               -- System.PolyORB_Interface
      RE_To_Standard_String,              -- System.PolyORB_Interface
@@ -1103,6 +1119,7 @@ package Rtsfind is
      RE_FA_SU,                           -- System.PolyORB_Interface
      RE_FA_U,                            -- System.PolyORB_Interface
      RE_FA_WC,                           -- System.PolyORB_Interface
+     RE_FA_WWC,                          -- System.PolyORB_Interface
      RE_FA_String,                       -- System.PolyORB_Interface
      RE_FA_ObjRef,                       -- System.PolyORB_Interface
 
@@ -1125,6 +1142,7 @@ package Rtsfind is
      RE_TA_SU,                           -- System.PolyORB_Interface
      RE_TA_U,                            -- System.PolyORB_Interface
      RE_TA_WC,                           -- System.PolyORB_Interface
+     RE_TA_WWC,                          -- System.PolyORB_Interface
      RE_TA_String,                       -- System.PolyORB_Interface
      RE_TA_ObjRef,                       -- System.PolyORB_Interface
      RE_TA_TC,                           -- System.PolyORB_Interface
@@ -1154,6 +1172,7 @@ package Rtsfind is
      RE_TC_Void,                         -- System.PolyORB_Interface
      RE_TC_Opaque,                       -- System.PolyORB_Interface,
      RE_TC_WC,                           -- System.PolyORB_Interface
+     RE_TC_WWC,                          -- System.PolyORB_Interface
      RE_TC_Array,                        -- System.PolyORB_Interface,
      RE_TC_Sequence,                     -- System.PolyORB_Interface,
      RE_TC_String,                       -- System.PolyORB_Interface,
@@ -1169,6 +1188,10 @@ package Rtsfind is
      RE_IS_Iu2,                          -- System.Scalar_Values
      RE_IS_Iu4,                          -- System.Scalar_Values
      RE_IS_Iu8,                          -- System.Scalar_Values
+     RE_IS_Iz1,                          -- System.Scalar_Values
+     RE_IS_Iz2,                          -- System.Scalar_Values
+     RE_IS_Iz4,                          -- System.Scalar_Values
+     RE_IS_Iz8,                          -- System.Scalar_Values
      RE_IS_Isf,                          -- System.Scalar_Values
      RE_IS_Ifl,                          -- System.Scalar_Values
      RE_IS_Ilf,                          -- System.Scalar_Values
@@ -1222,6 +1245,7 @@ package Rtsfind is
      RE_I_SU,                            -- System.Stream_Attributes
      RE_I_U,                             -- System.Stream_Attributes
      RE_I_WC,                            -- System.Stream_Attributes
+     RE_I_WWC,                           -- System.Stream_Attributes
 
      RE_W_AD,                            -- System.Stream_Attributes
      RE_W_AS,                            -- System.Stream_Attributes
@@ -1242,6 +1266,7 @@ package Rtsfind is
      RE_W_SU,                            -- System.Stream_Attributes
      RE_W_U,                             -- System.Stream_Attributes
      RE_W_WC,                            -- System.Stream_Attributes
+     RE_W_WWC,                           -- System.Stream_Attributes
 
      RE_Block_Stream_Ops_OK,             -- System.Stream_Attributes
 
@@ -1249,8 +1274,6 @@ package Rtsfind is
      RE_Str_Concat_CC,                   -- System.String_Ops
      RE_Str_Concat_CS,                   -- System.String_Ops
      RE_Str_Concat_SC,                   -- System.String_Ops
-     RE_Str_Normalize,                   -- System.String_Ops
-     RE_Wide_Str_Normalize,              -- System.String_Ops
 
      RE_Str_Concat_3,                    -- System.String_Ops_Concat_3
 
@@ -1350,6 +1373,7 @@ package Rtsfind is
      RE_Value_Unsigned,                  -- System.Val_Uns
 
      RE_Value_Wide_Character,            -- System.Val_WChar
+     RE_Value_Wide_Wide_Character,       -- System.Val_WChar
 
      RE_D,                               -- System.Vax_Float_Operations
      RE_F,                               -- System.Vax_Float_Operations
@@ -1398,16 +1422,26 @@ package Rtsfind is
      RE_Register_VMS_Exception,          -- System.VMS_Exception_Table
 
      RE_String_To_Wide_String,           -- System.WCh_StW
+     RE_String_To_Wide_Wide_String,      -- System.WCh_StW
 
      RE_Wide_String_To_String,           -- System.WCh_WtS
+     RE_Wide_Wide_String_To_String,      -- System.WCh_WtS
 
      RE_Wide_Width_Character,            -- System.WWd_Char
+     RE_Wide_Wide_Width_Character,       -- System.WWd_Char
+
+     RE_Wide_Wide_Width_Enumeration_8,   -- System.WWd_Enum
+     RE_Wide_Wide_Width_Enumeration_16,  -- System.WWd_Enum
+     RE_Wide_Wide_Width_Enumeration_32,  -- System.WWd_Enum
 
      RE_Wide_Width_Enumeration_8,        -- System.WWd_Enum
      RE_Wide_Width_Enumeration_16,       -- System.WWd_Enum
      RE_Wide_Width_Enumeration_32,       -- System.WWd_Enum
 
+     RE_Wide_Wide_Width_Wide_Character,  -- System.WWd_Wchar
+     RE_Wide_Wide_Width_Wide_Wide_Char,  -- System.WWd_Wchar
      RE_Wide_Width_Wide_Character,       -- System.WWd_Wchar
+     RE_Wide_Width_Wide_Wide_Character,  -- System.WWd_Wchar
 
      RE_Width_Boolean,                   -- System.Wid_Bool
 
@@ -1422,6 +1456,7 @@ package Rtsfind is
      RE_Width_Long_Long_Unsigned,        -- System.Wid_LLU
 
      RE_Width_Wide_Character,            -- System.Wid_WChar
+     RE_Width_Wide_Wide_Character,       -- System.Wid_WChar
 
      RE_Protected_Entry_Body_Array,      -- Tasking.Protected_Objects.Entries
      RE_Protection_Entries,              -- Tasking.Protected_Objects.Entries
@@ -1781,6 +1816,7 @@ package Rtsfind is
      RE_Image_Unsigned                   => System_Img_Uns,
 
      RE_Image_Wide_Character             => System_Img_WChar,
+     RE_Image_Wide_Wide_Character        => System_Img_WChar,
 
      RE_Bind_Interrupt_To_Entry          => System_Interrupts,
      RE_Default_Interrupt_Priority       => System_Interrupts,
@@ -2174,6 +2210,7 @@ package Rtsfind is
      RE_FA_SU                            => System_PolyORB_Interface,
      RE_FA_U                             => System_PolyORB_Interface,
      RE_FA_WC                            => System_PolyORB_Interface,
+     RE_FA_WWC                           => System_PolyORB_Interface,
      RE_FA_String                        => System_PolyORB_Interface,
      RE_FA_ObjRef                        => System_PolyORB_Interface,
 
@@ -2196,6 +2233,7 @@ package Rtsfind is
      RE_TA_SU                            => System_PolyORB_Interface,
      RE_TA_U                             => System_PolyORB_Interface,
      RE_TA_WC                            => System_PolyORB_Interface,
+     RE_TA_WWC                           => System_PolyORB_Interface,
      RE_TA_String                        => System_PolyORB_Interface,
      RE_TA_ObjRef                        => System_PolyORB_Interface,
      RE_TA_TC                            => System_PolyORB_Interface,
@@ -2225,6 +2263,7 @@ package Rtsfind is
      RE_TC_Void                          => System_PolyORB_Interface,
      RE_TC_Opaque                        => System_PolyORB_Interface,
      RE_TC_WC                            => System_PolyORB_Interface,
+     RE_TC_WWC                           => System_PolyORB_Interface,
      RE_TC_Array                         => System_PolyORB_Interface,
      RE_TC_Sequence                      => System_PolyORB_Interface,
      RE_TC_String                        => System_PolyORB_Interface,
@@ -2240,7 +2279,6 @@ package Rtsfind is
      RE_Do_Rpc                           => System_RPC,
      RE_Params_Stream_Type               => System_RPC,
      RE_Partition_ID                     => System_RPC,
-     RE_RPC_Receiver                     => System_RPC,
 
      RE_IS_Is1                           => System_Scalar_Values,
      RE_IS_Is2                           => System_Scalar_Values,
@@ -2250,6 +2288,10 @@ package Rtsfind is
      RE_IS_Iu2                           => System_Scalar_Values,
      RE_IS_Iu4                           => System_Scalar_Values,
      RE_IS_Iu8                           => System_Scalar_Values,
+     RE_IS_Iz1                           => System_Scalar_Values,
+     RE_IS_Iz2                           => System_Scalar_Values,
+     RE_IS_Iz4                           => System_Scalar_Values,
+     RE_IS_Iz8                           => System_Scalar_Values,
      RE_IS_Isf                           => System_Scalar_Values,
      RE_IS_Ifl                           => System_Scalar_Values,
      RE_IS_Ilf                           => System_Scalar_Values,
@@ -2303,6 +2345,7 @@ package Rtsfind is
      RE_I_SU                             => System_Stream_Attributes,
      RE_I_U                              => System_Stream_Attributes,
      RE_I_WC                             => System_Stream_Attributes,
+     RE_I_WWC                            => System_Stream_Attributes,
 
      RE_W_AD                             => System_Stream_Attributes,
      RE_W_AS                             => System_Stream_Attributes,
@@ -2323,12 +2366,10 @@ package Rtsfind is
      RE_W_SU                             => System_Stream_Attributes,
      RE_W_U                              => System_Stream_Attributes,
      RE_W_WC                             => System_Stream_Attributes,
-
+     RE_W_WWC                            => System_Stream_Attributes,
      RE_Block_Stream_Ops_OK              => System_Stream_Attributes,
 
      RE_Str_Concat                       => System_String_Ops,
-     RE_Str_Normalize                    => System_String_Ops,
-     RE_Wide_Str_Normalize               => System_String_Ops,
      RE_Str_Concat_CC                    => System_String_Ops,
      RE_Str_Concat_CS                    => System_String_Ops,
      RE_Str_Concat_SC                    => System_String_Ops,
@@ -2431,6 +2472,7 @@ package Rtsfind is
      RE_Value_Unsigned                   => System_Val_Uns,
 
      RE_Value_Wide_Character             => System_Val_WChar,
+     RE_Value_Wide_Wide_Character        => System_Val_WChar,
 
      RE_D                                => System_Vax_Float_Operations,
      RE_F                                => System_Vax_Float_Operations,
@@ -2479,16 +2521,27 @@ package Rtsfind is
      RE_Register_VMS_Exception           => System_VMS_Exception_Table,
 
      RE_String_To_Wide_String            => System_WCh_StW,
+     RE_String_To_Wide_Wide_String       => System_WCh_StW,
 
      RE_Wide_String_To_String            => System_WCh_WtS,
+     RE_Wide_Wide_String_To_String       => System_WCh_WtS,
 
+     RE_Wide_Wide_Width_Character        => System_WWd_Char,
      RE_Wide_Width_Character             => System_WWd_Char,
+
+     RE_Wide_Wide_Width_Enumeration_8    => System_WWd_Enum,
+     RE_Wide_Wide_Width_Enumeration_16   => System_WWd_Enum,
+     RE_Wide_Wide_Width_Enumeration_32   => System_WWd_Enum,
 
      RE_Wide_Width_Enumeration_8         => System_WWd_Enum,
      RE_Wide_Width_Enumeration_16        => System_WWd_Enum,
      RE_Wide_Width_Enumeration_32        => System_WWd_Enum,
 
+     RE_Wide_Wide_Width_Wide_Character   => System_WWd_Wchar,
+     RE_Wide_Wide_Width_Wide_Wide_Char   => System_WWd_Wchar,
+
      RE_Wide_Width_Wide_Character        => System_WWd_Wchar,
+     RE_Wide_Width_Wide_Wide_Character   => System_WWd_Wchar,
 
      RE_Width_Boolean                    => System_Wid_Bool,
 
@@ -2503,6 +2556,7 @@ package Rtsfind is
      RE_Width_Long_Long_Unsigned         => System_Wid_LLU,
 
      RE_Width_Wide_Character             => System_Wid_WChar,
+     RE_Width_Wide_Wide_Character        => System_Wid_WChar,
 
      RE_Protected_Entry_Body_Array       =>
        System_Tasking_Protected_Objects_Entries,
@@ -2754,13 +2808,13 @@ package Rtsfind is
    --  with'ed automatically. The important result of this approach is that
    --  Text_IO does not drag in all the code for the subpackages unless they
    --  are used. Our test is a little crude, and could drag in stuff when it
-   --  is not necessary, but that doesn't matter. Wide_Text_IO is handled in
-   --  a similar manner.
+   --  is not necessary, but that doesn't matter. Wide_[Wide_]Text_IO is
+   --  handled in a similar manner.
 
    function Is_Text_IO_Kludge_Unit (Nam : Node_Id) return Boolean;
-   --  Returns True if the given Nam is an Expanded Name, whose Prefix is
-   --  Ada, and whose selector is either Text_IO.xxx or Wide_Text_IO.xxx
-   --  where xxx is one of the subpackages of Text_IO that is specially
-   --  handled as described above for Text_IO_Kludge.
+   --  Returns True if the given Nam is an Expanded Name, whose Prefix is Ada,
+   --  and whose selector is either Text_IO.xxx or Wide_Text_IO.xxx or
+   --  Wide_Wide_Text_IO.xxx, where xxx is one of the subpackages of Text_IO
+   --  that is specially handled as described above for Text_IO_Kludge.
 
 end Rtsfind;

@@ -358,7 +358,7 @@ package body Exp_Dist is
    --  Mapping between a RCI subprogram and the corresponding calling stubs
 
    procedure Add_Stub_Type
-     (Designated_Type    : Entity_Id;
+     (Designated_Type   : Entity_Id;
       RACW_Type         : Entity_Id;
       Decls             : List_Id;
       Stub_Type         : out Entity_Id;
@@ -551,10 +551,18 @@ package body Exp_Dist is
    --  class-wide type before doing the real call using any of the RACW type
    --  pointing on the designated type.
 
+   procedure Specific_Add_Obj_RPC_Receiver_Completion
+     (Loc           : Source_Ptr;
+      Decls         : List_Id;
+      RPC_Receiver  : Entity_Id;
+      Stub_Elements : Stub_Structure);
+   --  Add the necessary code to Decls after the completion of generation
+   --  of the RACW RPC receiver described by Stub_Elements.
+
    procedure Specific_Add_Receiving_Stubs_To_Declarations
      (Pkg_Spec : Node_Id;
       Decls    : List_Id);
-   --  Add receiving stubs to the declarative part
+   --  Add receiving stubs to the declarative part of an RCI unit
 
    package GARLIC_Support is
 
@@ -610,6 +618,12 @@ package body Exp_Dist is
          Stub_Type                : Entity_Id := Empty;
          RACW_Type                : Entity_Id := Empty;
          Parent_Primitive         : Entity_Id := Empty) return Node_Id;
+
+      procedure Add_Obj_RPC_Receiver_Completion
+        (Loc           : Source_Ptr;
+         Decls         : List_Id;
+         RPC_Receiver  : Entity_Id;
+         Stub_Elements : Stub_Structure);
 
       procedure Add_Receiving_Stubs_To_Declarations
         (Pkg_Spec : Node_Id;
@@ -679,6 +693,12 @@ package body Exp_Dist is
          Stub_Type                : Entity_Id := Empty;
          RACW_Type                : Entity_Id := Empty;
          Parent_Primitive         : Entity_Id := Empty) return Node_Id;
+
+      procedure Add_Obj_RPC_Receiver_Completion
+        (Loc           : Source_Ptr;
+         Decls         : List_Id;
+         RPC_Receiver  : Entity_Id;
+         Stub_Elements : Stub_Structure);
 
       procedure Add_Receiving_Stubs_To_Declarations
         (Pkg_Spec : Node_Id;
@@ -1108,6 +1128,7 @@ package body Exp_Dist is
       RPC_Receiver                   : Entity_Id;
       RPC_Receiver_Statements        : List_Id;
       RPC_Receiver_Case_Alternatives : constant List_Id := New_List;
+      RPC_Receiver_Elsif_Parts       : List_Id;
       RPC_Receiver_Request           : Entity_Id;
       RPC_Receiver_Subp_Id           : Entity_Id;
       RPC_Receiver_Subp_Index        : Entity_Id;
@@ -1145,6 +1166,20 @@ package body Exp_Dist is
            Subp_Index   => RPC_Receiver_Subp_Index,
            Stmts        => RPC_Receiver_Statements,
            Decl         => RPC_Receiver_Decl);
+
+         if Get_PCS_Name = Name_PolyORB_DSA then
+
+            --  For the case of PolyORB, we need to map a textual operation
+            --  name into a primitive index. Currently we do so using a
+            --  simple sequence of string comparisons.
+
+            RPC_Receiver_Elsif_Parts := New_List;
+            Append_To (RPC_Receiver_Statements,
+              Make_Implicit_If_Statement (Designated_Type,
+                Condition       => New_Occurrence_Of (Standard_False, Loc),
+                Then_Statements => New_List,
+                Elsif_Parts     => RPC_Receiver_Elsif_Parts));
+         end if;
       end if;
 
       --  Build callers, receivers for every primitive operations and a RPC
@@ -1238,6 +1273,26 @@ package body Exp_Dist is
 
                   --  Add a case alternative to the receiver
 
+                  if Get_PCS_Name = Name_PolyORB_DSA then
+                     Append_To (RPC_Receiver_Elsif_Parts,
+                       Make_Elsif_Part (Loc,
+                         Condition =>
+                           Make_Function_Call (Loc,
+                             Name =>
+                               New_Occurrence_Of (
+                                 RTE (RE_Caseless_String_Eq), Loc),
+                             Parameter_Associations => New_List (
+                               New_Occurrence_Of (RPC_Receiver_Subp_Id, Loc),
+                               Make_String_Literal (Loc, Subp_Str))),
+                         Then_Statements => New_List (
+                           Make_Assignment_Statement (Loc,
+                             Name => New_Occurrence_Of (
+                                       RPC_Receiver_Subp_Index, Loc),
+                             Expression =>
+                               Make_Integer_Literal (Loc,
+                                  Current_Primitive_Number)))));
+                  end if;
+
                   Append_To (RPC_Receiver_Case_Alternatives,
                     Make_Case_Statement_Alternative (Loc,
                       Discrete_Choices => New_List (
@@ -1275,21 +1330,8 @@ package body Exp_Dist is
              Alternatives => RPC_Receiver_Case_Alternatives));
 
          Append_To (Decls, RPC_Receiver_Decl);
-
-         --  The RPC receiver body should not be the completion of the
-         --  declaration recorded in the stub structure, because then the
-         --  occurrences of the formal parameters within the body should
-         --  refer to the entities from the declaration, not from the
-         --  completion, to which we do not have easy access. Instead, the
-         --  RPC receiver body acts as its own declaration, and the RPC
-         --  receiver declaration is completed by a renaming-as-body.
-
-         Append_To (Decls,
-           Make_Subprogram_Renaming_Declaration (Loc,
-             Specification =>
-               Copy_Specification (Loc,
-                 Specification (Stub_Elements.RPC_Receiver_Decl)),
-             Name          => New_Occurrence_Of (RPC_Receiver, Loc)));
+         Specific_Add_Obj_RPC_Receiver_Completion (Loc,
+           Decls, RPC_Receiver, Stub_Elements);
       end if;
 
       --  Do not analyze RPC receiver at this stage since it will otherwise
@@ -2170,7 +2212,12 @@ package body Exp_Dist is
       E   : Entity_Id) return Node_Id
    is
    begin
-      return Make_Integer_Literal (Loc, Get_Subprogram_Id (E));
+      case Get_PCS_Name is
+         when Name_PolyORB_DSA =>
+            return Make_String_Literal  (Loc, Get_Subprogram_Id (E));
+         when others =>
+            return Make_Integer_Literal (Loc, Get_Subprogram_Id (E));
+      end case;
    end Build_Subprogram_Id;
 
    ------------------------
@@ -2442,7 +2489,12 @@ package body Exp_Dist is
    begin
       if Nkind (Unit_Node) = N_Package_Declaration then
          Spec  := Specification (Unit_Node);
-         Decls := Visible_Declarations (Spec);
+         Decls := Private_Declarations (Spec);
+
+         if No (Decls) then
+            Decls := Visible_Declarations (Spec);
+         end if;
+
          New_Scope (Scope_Of_Spec (Spec));
          Specific_Add_Receiving_Stubs_To_Declarations (Spec, Decls);
 
@@ -2496,6 +2548,32 @@ package body Exp_Dist is
 
       procedure Add_RAS_Access_TSS (N : Node_Id);
       --  Add a subprogram body for RAS Access TSS
+
+      -------------------------------------
+      -- Add_Obj_RPC_Receiver_Completion --
+      -------------------------------------
+
+      procedure Add_Obj_RPC_Receiver_Completion
+        (Loc           : Source_Ptr;
+         Decls         : List_Id;
+         RPC_Receiver  : Entity_Id;
+         Stub_Elements : Stub_Structure) is
+      begin
+         --  The RPC receiver body should not be the completion of the
+         --  declaration recorded in the stub structure, because then the
+         --  occurrences of the formal parameters within the body should
+         --  refer to the entities from the declaration, not from the
+         --  completion, to which we do not have easy access. Instead, the
+         --  RPC receiver body acts as its own declaration, and the RPC
+         --  receiver declaration is completed by a renaming-as-body.
+
+         Append_To (Decls,
+           Make_Subprogram_Renaming_Declaration (Loc,
+             Specification =>
+               Copy_Specification (Loc,
+                 Specification (Stub_Elements.RPC_Receiver_Decl)),
+             Name          => New_Occurrence_Of (RPC_Receiver, Loc)));
+      end Add_Obj_RPC_Receiver_Completion;
 
       -----------------------
       -- Add_RACW_Features --
@@ -5050,6 +5128,52 @@ package body Exp_Dist is
 
       procedure Add_RAS_Access_TSS (N : Node_Id);
       --  Add a subprogram body for RAS Access TSS
+
+      -------------------------------------
+      -- Add_Obj_RPC_Receiver_Completion --
+      -------------------------------------
+
+      procedure Add_Obj_RPC_Receiver_Completion
+        (Loc           : Source_Ptr;
+         Decls         : List_Id;
+         RPC_Receiver  : Entity_Id;
+         Stub_Elements : Stub_Structure)
+      is
+         Desig : constant Entity_Id :=
+           Etype (Designated_Type (Stub_Elements.RACW_Type));
+      begin
+         Append_To (Decls,
+           Make_Procedure_Call_Statement (Loc,
+              Name =>
+                New_Occurrence_Of (
+                  RTE (RE_Register_Obj_Receiving_Stub), Loc),
+
+                Parameter_Associations => New_List (
+
+               --  Name
+
+                Make_String_Literal (Loc,
+                  Full_Qualified_Name (Desig)),
+
+               --  Handler
+
+                Make_Attribute_Reference (Loc,
+                  Prefix =>
+                    New_Occurrence_Of (
+                      Defining_Unit_Name (Parent (RPC_Receiver)), Loc),
+                  Attribute_Name =>
+                    Name_Access),
+
+               --  Receiver
+
+                Make_Attribute_Reference (Loc,
+                  Prefix =>
+                    New_Occurrence_Of (
+                      Defining_Identifier (
+                        Stub_Elements.RPC_Receiver_Decl), Loc),
+                  Attribute_Name =>
+                    Name_Access))));
+      end Add_Obj_RPC_Receiver_Completion;
 
       -----------------------
       -- Add_RACW_Features --
@@ -8137,6 +8261,9 @@ package body Exp_Dist is
             elsif U_Type = Standard_Wide_Character then
                Lib_RE := RE_FA_WC;
 
+            elsif U_Type = Standard_Wide_Wide_Character then
+               Lib_RE := RE_FA_WWC;
+
             --  Floating point types
 
             elsif U_Type = Standard_Short_Float then
@@ -8915,6 +9042,9 @@ package body Exp_Dist is
             elsif U_Type = Standard_Wide_Character then
                Lib_RE := RE_TA_WC;
 
+            elsif U_Type = Standard_Wide_Wide_Character then
+               Lib_RE := RE_TA_WWC;
+
             --  Floating point types
 
             elsif U_Type = Standard_Short_Float then
@@ -9618,6 +9748,9 @@ package body Exp_Dist is
 
                elsif U_Type = Standard_Wide_Character then
                   Lib_RE := RE_TC_WC;
+
+               elsif U_Type = Standard_Wide_Wide_Character then
+                  Lib_RE := RE_TC_WWC;
 
                --  Floating point types
 
@@ -10664,6 +10797,26 @@ package body Exp_Dist is
       Set_TSS (Typ, Snam);
    end Set_Renaming_TSS;
 
+   ----------------------------------------------
+   -- Specific_Add_Obj_RPC_Receiver_Completion --
+   ----------------------------------------------
+
+   procedure Specific_Add_Obj_RPC_Receiver_Completion
+     (Loc           : Source_Ptr;
+      Decls         : List_Id;
+      RPC_Receiver  : Entity_Id;
+      Stub_Elements : Stub_Structure) is
+   begin
+      case Get_PCS_Name is
+         when Name_PolyORB_DSA =>
+            PolyORB_Support.Add_Obj_RPC_Receiver_Completion (Loc,
+              Decls, RPC_Receiver, Stub_Elements);
+         when others =>
+            GARLIC_Support.Add_Obj_RPC_Receiver_Completion (Loc,
+              Decls, RPC_Receiver, Stub_Elements);
+      end case;
+   end Specific_Add_Obj_RPC_Receiver_Completion;
+
    --------------------------------
    -- Specific_Add_RACW_Features --
    --------------------------------
@@ -10674,8 +10827,7 @@ package body Exp_Dist is
       Stub_Type         : Entity_Id;
       Stub_Type_Access  : Entity_Id;
       RPC_Receiver_Decl : Node_Id;
-      Declarations      : List_Id)
-   is
+      Declarations      : List_Id) is
    begin
       case Get_PCS_Name is
          when Name_PolyORB_DSA =>

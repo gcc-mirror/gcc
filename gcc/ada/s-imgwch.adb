@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,9 +42,8 @@ package body System.Img_WChar is
    --------------------------
 
    function Image_Wide_Character
-     (V    : Wide_Character;
-      EM   : WC_Encoding_Method)
-      return String
+     (V  : Wide_Character;
+      EM : WC_Encoding_Method) return String
    is
       Val : constant Natural := Wide_Character'Pos (V);
       WS  : Wide_String (1 .. 3);
@@ -79,7 +78,38 @@ package body System.Img_WChar is
 
          return Wide_String_To_String (WS, EM);
       end if;
-
    end Image_Wide_Character;
+
+   -------------------------------
+   -- Image_Wide_Wide_Character --
+   -------------------------------
+
+   function Image_Wide_Wide_Character
+     (V  : Wide_Wide_Character;
+      EM : WC_Encoding_Method) return String
+   is
+      Val : constant Natural := Wide_Wide_Character'Pos (V);
+      WS  : Wide_Wide_String (1 .. 3);
+
+   begin
+      --  If in range of standard Wide_Character, then we use the
+      --  Wide_Character routine
+
+      if Val <= 16#FFFF# then
+         return Image_Wide_Character (Wide_Character'Val (Val), EM);
+
+      --  Otherwise return an appropriate escape sequence (i.e. one matching
+      --  the convention implemented by Scn.Wide_Wide_Char). The easiest thing
+      --  is to build a wide string for the result, and then use the
+      --  Wide_Wide_Value function to build the resulting String.
+
+      else
+         WS (1) := ''';
+         WS (2) := V;
+         WS (3) := ''';
+
+         return Wide_Wide_String_To_String (WS, EM);
+      end if;
+   end Image_Wide_Wide_Character;
 
 end System.Img_WChar;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,11 +45,9 @@
 
 with System;
 with System.Storage_Elements;
+with Unchecked_Conversion;
 
 package Interfaces.CPP is
-
-   package S   renames System;
-   package SSE renames System.Storage_Elements;
 
    type Vtable_Ptr is private;
 
@@ -57,6 +55,15 @@ package Interfaces.CPP is
    function External_Tag  (T : Vtable_Ptr) return String;
 
 private
+   package S   renames System;
+   package SSE renames System.Storage_Elements;
+
+   type Vtable;
+   type Vtable_Ptr is access all Vtable;
+
+   type Type_Specific_Data;
+   type Type_Specific_Data_Ptr is access all Type_Specific_Data;
+
    --  These subprograms are in the private part. They are never accessed
    --  directly except from compiler generated code, which has access to
    --  private components of packages via the Rtsfind interface.
@@ -98,8 +105,13 @@ private
 
    CPP_DT_Prologue_Size : constant SSE.Storage_Count :=
                             SSE.Storage_Count
-                              (1 * (Standard'Address_Size / S.Storage_Unit));
+                              (2 * (Standard'Address_Size / S.Storage_Unit));
    --  Size of the first part of the dispatch table
+
+   CPP_DT_Typeinfo_Ptr_Size : constant SSE.Storage_Count :=
+                            SSE.Storage_Count
+                              (Standard'Address_Size / System.Storage_Unit);
+   --  Size of the Typeinfo_Ptr field of the Dispatch Table.
 
    CPP_DT_Entry_Size : constant SSE.Storage_Count :=
                          SSE.Storage_Count
@@ -174,8 +186,21 @@ private
    --  compatible with MI.
    --  (used for virtual function calls)
 
-   type Vtable;
-   type Vtable_Ptr is access all Vtable;
+   function TSD (T : Vtable_Ptr) return Type_Specific_Data_Ptr;
+   --  This function is conceptually equivalent to Get_TSD, but
+   --  returning a Type_Specific_Data_Ptr type (rather than an Address)
+   --  simplifies the implementation of the other subprograms.
+
+   type Addr_Ptr is access System.Address;
+
+   function To_Address is
+     new Unchecked_Conversion (Vtable_Ptr, System.Address);
+
+   function To_Addr_Ptr is
+      new Unchecked_Conversion (System.Address, Addr_Ptr);
+
+   function To_Type_Specific_Data_Ptr is
+     new Unchecked_Conversion (System.Address, Type_Specific_Data_Ptr);
 
    pragma Inline (CPP_Set_Prim_Op_Address);
    pragma Inline (CPP_Get_Prim_Op_Address);
@@ -192,5 +217,6 @@ private
    pragma Inline (CPP_Set_Remotely_Callable);
    pragma Inline (CPP_Get_Remotely_Callable);
    pragma Inline (Displaced_This);
+   pragma Inline (TSD);
 
 end Interfaces.CPP;

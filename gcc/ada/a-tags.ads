@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -78,6 +78,12 @@ private
    --  The compiler generates calls to the following SET routines to
    --  initialize those structures and uses the GET functions to
    --  retreive the information when needed
+
+   type Dispatch_Table;
+   type Tag is access all Dispatch_Table;
+
+   type Type_Specific_Data;
+   type Type_Specific_Data_Ptr is access all Type_Specific_Data;
 
    package SSE renames System.Storage_Elements;
 
@@ -188,16 +194,26 @@ private
 
    procedure Set_Remotely_Callable (T : Tag; Value : Boolean);
    --  Set to true if the type has been declared in a context described
-   --  in E.4 (18)
+   --  in E.4 (18).
+
+   function TSD (T : Tag) return Type_Specific_Data_Ptr;
+   --  This function is conceptually equivalent to Get_TSD, but
+   --  returning a Type_Specific_Data_Ptr type (rather than an Address)
+   --  simplifies the implementation of the other subprograms.
 
    DT_Prologue_Size : constant SSE.Storage_Count :=
                         SSE.Storage_Count
-                          (Standard'Address_Size / System.Storage_Unit);
+                          (2 * (Standard'Address_Size / System.Storage_Unit));
    --  Size of the first part of the dispatch table
+
+   DT_Typeinfo_Ptr_Size : constant SSE.Storage_Count :=
+                            SSE.Storage_Count
+                              (Standard'Address_Size / System.Storage_Unit);
+   --  Size of the Typeinfo_Ptr field of the Dispatch Table.
 
    DT_Entry_Size : constant SSE.Storage_Count :=
                      SSE.Storage_Count
-                       (Standard'Address_Size / System.Storage_Unit);
+                       (1 * (Standard'Address_Size / System.Storage_Unit));
    --  Size of each primitive operation entry in the Dispatch Table.
 
    TSD_Prologue_Size : constant SSE.Storage_Count :=
@@ -206,7 +222,7 @@ private
    --  Size of the first part of the type specific data
 
    TSD_Entry_Size : constant SSE.Storage_Count :=
-     SSE.Storage_Count (Standard'Address_Size / System.Storage_Unit);
+     SSE.Storage_Count (1 * (Standard'Address_Size / System.Storage_Unit));
    --  Size of each ancestor tag entry in the TSD
 
    type Address_Array is array (Natural range <>) of System.Address;
@@ -215,17 +231,19 @@ private
    --  of this type are declared with a dummy size of 1, the actual size
    --  depending on the number of primitive operations.
 
-   type Dispatch_Table;
-   type Tag is access all Dispatch_Table;
-
-   type Type_Specific_Data;
-   type Type_Specific_Data_Ptr is access all Type_Specific_Data;
-
    function To_Type_Specific_Data_Ptr is
      new Unchecked_Conversion (System.Address, Type_Specific_Data_Ptr);
 
    function To_Address is
      new Unchecked_Conversion (Type_Specific_Data_Ptr, System.Address);
+
+   function To_Address is
+     new Unchecked_Conversion (Tag, System.Address);
+
+   type Addr_Ptr is access System.Address;
+
+   function To_Addr_Ptr is
+      new Unchecked_Conversion (System.Address, Addr_Ptr);
 
    --  Primitive dispatching operations are always inlined, to facilitate
    --  use in a minimal/no run-time environment for high integrity use.
@@ -247,5 +265,6 @@ private
    pragma Inline_Always (Set_RC_Offset);
    pragma Inline_Always (Set_Remotely_Callable);
    pragma Inline_Always (Set_TSD);
+   pragma Inline_Always (TSD);
 
 end Ada.Tags;

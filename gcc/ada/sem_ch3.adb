@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1970,8 +1970,9 @@ package body Sem_Ch3 is
          Remove_Side_Effects (E);
       end if;
 
-      if T = Standard_Wide_Character
+      if T = Standard_Wide_Character or else T = Standard_Wide_Wide_Character
         or else Root_Type (T) = Standard_Wide_String
+        or else Root_Type (T) = Standard_Wide_Wide_String
       then
          Check_Restriction (No_Wide_Characters, Object_Definition (N));
       end if;
@@ -3705,6 +3706,7 @@ package body Sem_Ch3 is
 
       if Root_Type (Parent_Type) = Standard_Character
         or else Root_Type (Parent_Type) = Standard_Wide_Character
+        or else Root_Type (Parent_Type) = Standard_Wide_Wide_Character
       then
          Derived_Standard_Character (N, Parent_Type, Derived_Type);
 
@@ -4122,10 +4124,12 @@ package body Sem_Ch3 is
 
       begin
          if Ekind (Parent_Type) in Record_Kind
-           or else (Ekind (Parent_Type) in Enumeration_Kind
-             and then Root_Type (Parent_Type) /= Standard_Character
-             and then Root_Type (Parent_Type) /= Standard_Wide_Character
-             and then not Is_Generic_Type (Root_Type (Parent_Type)))
+           or else
+             (Ekind (Parent_Type) in Enumeration_Kind
+               and then Root_Type (Parent_Type) /= Standard_Character
+               and then Root_Type (Parent_Type) /= Standard_Wide_Character
+               and then Root_Type (Parent_Type) /= Standard_Wide_Wide_Character
+               and then not Is_Generic_Type (Root_Type (Parent_Type)))
          then
             Full_N := New_Copy_Tree (N);
             Insert_After (N, Full_N);
@@ -10192,7 +10196,9 @@ package body Sem_Ch3 is
       end if;
 
       if Typ = Standard_Wide_Character
+        or else Typ = Standard_Wide_Wide_Character
         or else Typ = Standard_Wide_String
+        or else Typ = Standard_Wide_Wide_String
       then
          Check_Restriction (No_Wide_Characters, S);
       end if;
@@ -12706,6 +12712,12 @@ package body Sem_Ch3 is
               ("incorrect constraint for this kind of type", Constraint (S));
 
             Rewrite (S, New_Copy_Tree (Subtype_Mark (S)));
+
+            --  Set Ekind of orphan itype, to prevent cascaded errors.
+
+            if Present (Def_Id) then
+               Set_Ekind (Def_Id, Ekind (Any_Type));
+            end if;
 
             --  Make recursive call, having got rid of the bogus constraint
 

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2002, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -39,6 +39,10 @@ struct Uint_Entry
 #define UI_Is_In_Int_Range  uintp__ui_is_in_int_range
 extern Boolean UI_Is_In_Int_Range	(Uint);
 
+/* Obtain Char_Code value from Uint input. Value must be in range.  */
+#define UI_To_CC uintp__ui_to_cc
+extern Char_Code UI_To_CC               (Uint);
+
 /* Obtain Int value from Uint input. This will abort if the result is
    out of range.  */
 #define UI_To_Int uintp__ui_to_int
@@ -47,6 +51,10 @@ extern Int UI_To_Int			(Uint);
 /* Convert an Int into a Uint.  */
 #define UI_From_Int uintp__ui_from_int
 extern Uint UI_From_Int			(int);
+
+/* Convert a Char_Code into a Uint.  */
+#define UI_From_CC uintp__ui_from_cc
+extern Uint UI_From_CC                  (Char_Code);
 
 /* Similarly, but return a GCC INTEGER_CST.  Overflow is tested by the
    constant-folding used to build the node.  TYPE is the GCC type of the

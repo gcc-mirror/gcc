@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -103,7 +103,7 @@ package ALI is
       --  Length of characters stored in Ver. Not set if V lines are
       --  ignored as a result of the Ignore_Lines parameter.
 
-      Interface : Boolean;
+      SAL_Interface : Boolean;
       --  Set True when this is an interface to a standalone library
 
       First_Unit : Unit_Id;
@@ -332,7 +332,7 @@ package ALI is
       --  Set True if IS qualifier appears in ALI file, indicating that
       --  an Initialize_Scalars pragma applies to the unit.
 
-      Interface : Boolean;
+      SAL_Interface : Boolean;
       --  Set True when this is an interface to a standalone library
 
       Body_Needed_For_SAL : Boolean;
@@ -475,7 +475,7 @@ package ALI is
       Elab_All_Desirable : Boolean;
       --  Indicates presence of ED parameter
 
-      Interface : Boolean := False;
+      SAL_Interface : Boolean := False;
       --  True if the Unit is an Interface of a Stand-Alone Library
 
    end record;

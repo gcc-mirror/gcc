@@ -6,32 +6,10 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
---                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
---                                                                          --
--- GNAT is free software;  you can  redistribute it  and/or modify it under --
--- terms of the  GNU General Public License as published  by the Free Soft- --
--- ware  Foundation;  either version 2,  or (at your option) any later ver- --
--- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
--- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
--- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
--- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNAT;  see file COPYING.  If not, write --
--- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
--- MA 02111-1307, USA.                                                      --
---                                                                          --
--- As a special exception,  if other files  instantiate  generics from this --
--- unit, or you link  this unit with other files  to produce an executable, --
--- this  unit  does not  by itself cause  the resulting  executable  to  be --
--- covered  by the  GNU  General  Public  License.  This exception does not --
--- however invalidate  any other reasons why  the executable file  might be --
--- covered by the  GNU Public License.                                      --
---                                                                          --
--- GNAT was originally developed  by the GNAT team at  New York University. --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- This specification is adapted from the Ada Reference Manual for use with --
+-- GNAT.  In accordance with the copyright of that document, you can freely --
+-- copy and modify this specification,  provided that if you redistribute a --
+-- modified version,  any changes that you have made are clearly indicated. --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -104,26 +82,24 @@ pragma Pure (C);
    function Is_Nul_Terminated (Item : in char_array) return Boolean;
 
    function To_C
-     (Item       : in String;
-      Append_Nul : in Boolean := True)
-      return       char_array;
+     (Item       : String;
+      Append_Nul : Boolean := True) return char_array;
 
    function To_Ada
-     (Item     : in char_array;
-      Trim_Nul : in Boolean := True)
-      return     String;
+     (Item     : char_array;
+      Trim_Nul : Boolean := True) return String;
 
    procedure To_C
-     (Item       : in String;
+     (Item       : String;
       Target     : out char_array;
       Count      : out size_t;
-      Append_Nul : in Boolean := True);
+      Append_Nul : Boolean := True);
 
    procedure To_Ada
-     (Item     : in char_array;
+     (Item     : char_array;
       Target   : out String;
       Count    : out Natural;
-      Trim_Nul : in Boolean := True);
+      Trim_Nul : Boolean := True);
 
    ------------------------------------
    -- Wide Character and Wide String --
@@ -134,37 +110,121 @@ pragma Pure (C);
 
    wide_nul : constant wchar_t := wchar_t'First;
 
-   function To_C   (Item : in Wide_Character) return wchar_t;
-   function To_Ada (Item : in wchar_t)        return Wide_Character;
+   function To_C   (Item : Wide_Character) return wchar_t;
+   function To_Ada (Item : wchar_t)        return Wide_Character;
 
    type wchar_array is array (size_t range <>) of aliased wchar_t;
 
-   function Is_Nul_Terminated (Item : in wchar_array) return Boolean;
+   function Is_Nul_Terminated (Item : wchar_array) return Boolean;
 
    function To_C
-     (Item       : in Wide_String;
-      Append_Nul : in Boolean := True)
-      return       wchar_array;
+     (Item       : Wide_String;
+      Append_Nul : Boolean := True) return wchar_array;
 
    function To_Ada
-     (Item     : in wchar_array;
-      Trim_Nul : in Boolean := True)
-      return     Wide_String;
+     (Item     : wchar_array;
+      Trim_Nul : Boolean := True) return Wide_String;
 
    procedure To_C
-     (Item       : in Wide_String;
+     (Item       : Wide_String;
       Target     : out wchar_array;
       Count      : out size_t;
-      Append_Nul : in Boolean := True);
+      Append_Nul : Boolean := True);
 
    procedure To_Ada
-     (Item     : in wchar_array;
+     (Item     : wchar_array;
       Target   : out Wide_String;
       Count    : out Natural;
-      Trim_Nul : in Boolean := True);
+      Trim_Nul : Boolean := True);
 
    Terminator_Error : exception;
 
-private
-   --  No private declarations required
+   --  The remaining declarations are for Ada 2005 (AI-285)
+
+   --  ISO/IEC 10646:2003 compatible types defined by SC22/WG14 document N1010
+
+   type char16_t is new Wide_Character;
+   pragma Ada_05 (char16_t);
+
+   char16_nul : constant char16_t := char16_t'Val (0);
+   pragma Ada_05 (char16_nul);
+
+   function To_C (Item : Wide_Character) return char16_t;
+   pragma Ada_05 (To_C);
+
+   function To_Ada (Item : char16_t) return Wide_Character;
+   pragma Ada_05 (To_Ada);
+
+   type char16_array is array (size_t range <>) of aliased char16_t;
+   pragma Ada_05 (char16_array);
+
+   function Is_Nul_Terminated (Item : char16_array) return Boolean;
+   pragma Ada_05 (Is_Nul_Terminated);
+
+   function To_C
+     (Item       : Wide_String;
+      Append_Nul : Boolean := True) return char16_array;
+   pragma Ada_05 (To_C);
+
+   function To_Ada
+     (Item     : char16_array;
+      Trim_Nul : Boolean := True) return Wide_String;
+   pragma Ada_05 (To_Ada);
+
+   procedure To_C
+     (Item       : Wide_String;
+      Target     : out char16_array;
+      Count      : out size_t;
+      Append_Nul : Boolean := True);
+   pragma Ada_05 (To_C);
+
+   procedure To_Ada
+     (Item     : char16_array;
+      Target   : out Wide_String;
+      Count    : out Natural;
+      Trim_Nul : Boolean := True);
+   pragma Ada_05 (To_Ada);
+
+   type char32_t is new Wide_Wide_Character;
+   pragma Ada_05 (char32_t);
+
+   char32_nul : constant char32_t := char32_t'Val (0);
+   pragma Ada_05 (char32_nul);
+
+   function To_C (Item : Wide_Wide_Character) return char32_t;
+   pragma Ada_05 (To_C);
+
+   function To_Ada (Item : char32_t) return Wide_Wide_Character;
+   pragma Ada_05 (To_Ada);
+
+   type char32_array is array (size_t range <>) of aliased char32_t;
+   pragma Ada_05 (char32_array);
+
+   function Is_Nul_Terminated (Item : char32_array) return Boolean;
+   pragma Ada_05 (Is_Nul_Terminated);
+
+   function To_C
+     (Item       : Wide_Wide_String;
+      Append_Nul : Boolean := True) return char32_array;
+   pragma Ada_05 (To_C);
+
+   function To_Ada
+     (Item     : char32_array;
+      Trim_Nul : Boolean := True) return Wide_Wide_String;
+   pragma Ada_05 (To_Ada);
+
+   procedure To_C
+     (Item       : Wide_Wide_String;
+      Target     : out char32_array;
+      Count      : out size_t;
+      Append_Nul : Boolean := True);
+   pragma Ada_05 (To_C);
+
+   procedure To_Ada
+     (Item     : char32_array;
+      Target   : out Wide_Wide_String;
+      Count    : out Natural;
+      Trim_Nul : Boolean := True);
+   pragma Ada_05 (To_Ada);
+
 end Interfaces.C;

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2004, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2005, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -161,8 +161,6 @@ typedef int Union_Id;
 #define Uint_Table_Start        2000000000
 #define Uint_High_Bound	        2099999999
 
-#define Char_Code_Bias		2100000000
-
 SUBTYPE (List_Range,      Int, List_Low_Bound,    List_High_Bound)
 SUBTYPE (Node_Range,      Int, Node_Low_Bound,    Node_High_Bound)
 SUBTYPE (Elist_Range,     Int, Elist_Low_Bound,   Elist_High_Bound)
@@ -171,7 +169,6 @@ SUBTYPE (Names_Range,     Int, Names_Low_Bound,   Names_High_Bound)
 SUBTYPE (Strings_Range,   Int, Strings_Low_Bound, Strings_High_Bound)
 SUBTYPE (Uint_Range,      Int, Uint_Low_Bound,    Uint_High_Bound)
 SUBTYPE (Ureal_Range,     Int, Ureal_Low_Bound,   Ureal_High_Bound)
-SUBTYPE (Char_Code_Range, Int, Char_Code_Bias,    (Char_Code_Bias + 65535))
 
 /* Types for Names_Table Package:  */
 
@@ -286,8 +283,8 @@ typedef Int Ureal;
 
 /* Character Code Type:  */
 
-/* Character code value, intended to be 16 bits.  */
-typedef short Char_Code;
+/* Character code value, intended to be 32 bits.  */
+typedef unsigned Char_Code;
 
 /* Types Used for Library Management:  */
 
@@ -341,27 +338,28 @@ typedef Int Mechanism_Type;
 #define CE_Index_Check_Failed               5
 #define CE_Invalid_Data                     6
 #define CE_Length_Check_Failed              7
-#define CE_Overflow_Check_Failed            8
-#define CE_Partition_Check_Failed           9
-#define CE_Range_Check_Failed              10
-#define CE_Tag_Check_Failed                11
-#define PE_Access_Before_Elaboration       12
-#define PE_Accessibility_Check_Failed      13
-#define PE_All_Guards_Closed               14
-#define PE_Duplicated_Entry_Address        15
-#define PE_Explicit_Raise                  16
-#define PE_Finalize_Raised_Exception       17
-#define PE_Misaligned_Address_Value        18
-#define PE_Missing_Return                  19
-#define PE_Overlaid_Controlled_Object      20
-#define PE_Potentially_Blocking_Operation  21
-#define PE_Stubbed_Subprogram_Called       22
-#define PE_Unchecked_Union_Restriction     23
-#define PE_Illegal_RACW_E_4_18             24
-#define SE_Empty_Storage_Pool              25
-#define SE_Explicit_Raise                  26
-#define SE_Infinite_Recursion              27
-#define SE_Object_Too_Large                28
-#define SE_Restriction_Violation           29
+#define CE_Null_Not_Allowed                 8
+#define CE_Overflow_Check_Failed            9
+#define CE_Partition_Check_Failed          10
+#define CE_Range_Check_Failed              11
+#define CE_Tag_Check_Failed                12
+#define PE_Access_Before_Elaboration       13
+#define PE_Accessibility_Check_Failed      14
+#define PE_All_Guards_Closed               15
+#define PE_Duplicated_Entry_Address        16
+#define PE_Explicit_Raise                  17
+#define PE_Finalize_Raised_Exception       18
+#define PE_Misaligned_Address_Value        19
+#define PE_Missing_Return                  20
+#define PE_Overlaid_Controlled_Object      21
+#define PE_Potentially_Blocking_Operation  22
+#define PE_Stubbed_Subprogram_Called       23
+#define PE_Unchecked_Union_Restriction     24
+#define PE_Illegal_RACW_E_4_18             25
+#define SE_Empty_Storage_Pool              26
+#define SE_Explicit_Raise                  27
+#define SE_Infinite_Recursion              28
+#define SE_Object_Too_Large                29
+#define SE_Restriction_Violation           30
 
-#define LAST_REASON_CODE                   29
+#define LAST_REASON_CODE                   30

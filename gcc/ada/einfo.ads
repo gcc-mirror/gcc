@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,10 @@ package Einfo is
 
 --  This package defines the annotations to the abstract syntax tree that
 --  are needed to support semantic processing of an Ada compilation.
+
+--  Note that after editing this spec and the corresponding body it is
+--  required to run ceinfo to check the consistentcy of spec and body.
+--  See ceinfo.adb for more information about the checks made.
 
 --  These annotations are for the most part attributes of declared entities,
 --  and they correspond to conventional symbol table information. Other
@@ -527,7 +531,7 @@ package Einfo is
 
 --    Component_Size (Uint22) [implementation base type only]
 --       Present in array types. It contains the component size value for
---       the array. A value of zero means that the value is not yet set.
+--       the array. A value of No_Uint means that the value is not yet set.
 --       The value can be set by the use of a component size clause, or
 --       by the front end in package Layout, or by the backend. A negative
 --       value is used to represent a value which is not known at compile
@@ -1517,6 +1521,10 @@ package Einfo is
 --       of access types, this flag is present only in the root type, since a
 --       storage size clause cannot be given to a derived type.
 
+--    Has_Stream_Size_Clause (Flag184)
+--       This flag is set on types which have a Stream_Size clause attribute.
+--       Used to prevent multiple Stream_Size clauses for a given entity.
+
 --    Has_Subprogram_Descriptor (Flag93)
 --       This flag is set on entities for which zero-cost exception subprogram
 --       descriptors can be generated (subprograms and library level package
@@ -1649,6 +1657,10 @@ package Einfo is
 
 --    Is_Access_Type (synthesized)
 --       Applies to all entities, true for access types and subtypes
+
+--    Is_Ada_2005 (Flag185)
+--       Applies to all entities, true if a valid pragma Ada_05 applies to the
+--       entity, indicating that the entity is Ada 2005 only.
 
 --    Is_Aliased (Flag15)
 --       Present in objects whose declarations carry the keyword aliased,
@@ -2090,6 +2102,10 @@ package Einfo is
 --    Is_Object (synthesized)
 --       Applies to all entities, true for entities representing objects,
 --       including generic formal parameters.
+
+--    Is_Obsolescent (Flag153)
+--       Present in subprogram entities. Set if a valid pragma Obsolescent
+--       applies to the subprogram.
 
 --    Is_Optional_Parameter (Flag134)
 --       Present in parameter entities. Set if the parameter is specified as
@@ -2648,6 +2664,11 @@ package Einfo is
 --    Number_Formals (synthesized)
 --       Applies to subprograms and subprogram types. Yields the number of
 --       formals as a value of type Pos.
+
+--    Obsolescent_Warning (Node24)
+--       Present in subprogram entities. Set non-empty only if the pragma
+--       Obsolescent had a string argument, in which case it records the
+--       contents of the corresponding string literal node.
 
 --    Original_Access_Type (Node21)
 --       Present in access to subprogram types. Anonymous access to protected
@@ -3912,6 +3933,7 @@ package Einfo is
    --    Has_Qualified_Name            (Flag161)
    --    Has_Unknown_Discriminants     (Flag72)
    --    Has_Xref_Entry                (Flag182)
+   --    Is_Ada_2005                   (Flag185)
    --    Is_Bit_Packed_Array           (Flag122)  (base type only)
    --    Is_Child_Unit                 (Flag73)
    --    Is_Compilation_Unit           (Flag149)
@@ -4297,6 +4319,7 @@ package Einfo is
    --    Generic_Renamings             (Elist23)  (for an instance)
    --    Inner_Instances               (Elist23)  (for a generic function)
    --    Privals_Chain                 (Elist23)  (for a protected function)
+   --    Obsolescent_Warning           (Node24)
    --    Body_Needed_For_SAL           (Flag40)
    --    Elaboration_Entity_Required   (Flag174)
    --    Function_Returns_With_DSP     (Flag169)
@@ -4321,6 +4344,7 @@ package Einfo is
    --    Is_Instantiated               (Flag126)  (generic case only)
    --    Is_Intrinsic_Subprogram       (Flag64)
    --    Is_Machine_Code_Subprogram    (Flag137)  (non-generic case only)
+   --    Is_Obsolescent                (Flag153)
    --    Is_Overriding_Operation       (Flag39)   (non-generic case only)
    --    Is_Private_Descendant         (Flag53)
    --    Is_Pure                       (Flag44)
@@ -4542,6 +4566,7 @@ package Einfo is
    --    Generic_Renamings             (Elist23)  (for an instance)
    --    Inner_Instances               (Elist23)  (for a generic procedure)
    --    Privals_Chain                 (Elist23)  (for a protected procedure)
+   --    Obsolescent_Warning           (Node24)
    --    Body_Needed_For_SAL           (Flag40)
    --    Elaboration_Entity_Required   (Flag174)
    --    Function_Returns_With_DSP     (Flag169)  (always False for procedure)
@@ -4566,6 +4591,7 @@ package Einfo is
    --    Is_Intrinsic_Subprogram       (Flag64)
    --    Is_Machine_Code_Subprogram    (Flag137)  (non-generic case only)
    --    Is_Null_Init_Proc             (Flag178)
+   --    Is_Obsolescent                (Flag153)
    --    Is_Overriding_Operation       (Flag39)   (non-generic case only)
    --    Is_Private_Descendant         (Flag53)
    --    Is_Pure                       (Flag44)
@@ -5114,6 +5140,7 @@ package Einfo is
    function Has_Small_Clause                   (Id : E) return B;
    function Has_Specified_Layout               (Id : E) return B;
    function Has_Storage_Size_Clause            (Id : E) return B;
+   function Has_Stream_Size_Clause             (Id : E) return B;
    function Has_Subprogram_Descriptor          (Id : E) return B;
    function Has_Task                           (Id : E) return B;
    function Has_Unchecked_Union                (Id : E) return B;
@@ -5130,6 +5157,7 @@ package Einfo is
    function Is_AST_Entry                       (Id : E) return B;
    function Is_Abstract                        (Id : E) return B;
    function Is_Access_Constant                 (Id : E) return B;
+   function Is_Ada_2005                        (Id : E) return B;
    function Is_Aliased                         (Id : E) return B;
    function Is_Asynchronous                    (Id : E) return B;
    function Is_Atomic                          (Id : E) return B;
@@ -5172,6 +5200,7 @@ package Einfo is
    function Is_Machine_Code_Subprogram         (Id : E) return B;
    function Is_Non_Static_Subtype              (Id : E) return B;
    function Is_Null_Init_Proc                  (Id : E) return B;
+   function Is_Obsolescent                     (Id : E) return B;
    function Is_Optional_Parameter              (Id : E) return B;
    function Is_Package_Body_Entity             (Id : E) return B;
    function Is_Packed                          (Id : E) return B;
@@ -5225,6 +5254,7 @@ package Einfo is
    function Normalized_Position                (Id : E) return U;
    function Normalized_Position_Max            (Id : E) return U;
    function Object_Ref                         (Id : E) return E;
+   function Obsolescent_Warning                (Id : E) return N;
    function Original_Access_Type               (Id : E) return E;
    function Original_Array_Type                (Id : E) return E;
    function Original_Record_Component          (Id : E) return E;
@@ -5385,6 +5415,7 @@ package Einfo is
    function Root_Type                          (Id : E) return E;
    function Scope_Depth_Set                    (Id : E) return B;
    function Size_Clause                        (Id : E) return N;
+   function Stream_Size_Clause                 (Id : E) return N;
    function Tag_Component                      (Id : E) return E;
    function Type_High_Bound                    (Id : E) return N;
    function Type_Low_Bound                     (Id : E) return N;
@@ -5583,6 +5614,7 @@ package Einfo is
    procedure Set_Has_Small_Clause              (Id : E; V : B := True);
    procedure Set_Has_Specified_Layout          (Id : E; V : B := True);
    procedure Set_Has_Storage_Size_Clause       (Id : E; V : B := True);
+   procedure Set_Has_Stream_Size_Clause        (Id : E; V : B := True);
    procedure Set_Has_Subprogram_Descriptor     (Id : E; V : B := True);
    procedure Set_Has_Task                      (Id : E; V : B := True);
    procedure Set_Has_Unchecked_Union           (Id : E; V : B := True);
@@ -5599,6 +5631,7 @@ package Einfo is
    procedure Set_Is_AST_Entry                  (Id : E; V : B := True);
    procedure Set_Is_Abstract                   (Id : E; V : B := True);
    procedure Set_Is_Access_Constant            (Id : E; V : B := True);
+   procedure Set_Is_Ada_2005                   (Id : E; V : B := True);
    procedure Set_Is_Aliased                    (Id : E; V : B := True);
    procedure Set_Is_Asynchronous               (Id : E; V : B := True);
    procedure Set_Is_Atomic                     (Id : E; V : B := True);
@@ -5646,6 +5679,7 @@ package Einfo is
    procedure Set_Is_Machine_Code_Subprogram    (Id : E; V : B := True);
    procedure Set_Is_Non_Static_Subtype         (Id : E; V : B := True);
    procedure Set_Is_Null_Init_Proc             (Id : E; V : B := True);
+   procedure Set_Is_Obsolescent                (Id : E; V : B := True);
    procedure Set_Is_Optional_Parameter         (Id : E; V : B := True);
    procedure Set_Is_Overriding_Operation       (Id : E; V : B := True);
    procedure Set_Is_Package_Body_Entity        (Id : E; V : B := True);
@@ -5699,6 +5733,7 @@ package Einfo is
    procedure Set_Normalized_Position           (Id : E; V : U);
    procedure Set_Normalized_Position_Max       (Id : E; V : U);
    procedure Set_Object_Ref                    (Id : E; V : E);
+   procedure Set_Obsolescent_Warning           (Id : E; V : N);
    procedure Set_Original_Access_Type          (Id : E; V : E);
    procedure Set_Original_Array_Type           (Id : E; V : E);
    procedure Set_Original_Record_Component     (Id : E; V : E);
@@ -6109,6 +6144,7 @@ package Einfo is
    pragma Inline (Has_Small_Clause);
    pragma Inline (Has_Specified_Layout);
    pragma Inline (Has_Storage_Size_Clause);
+   pragma Inline (Has_Stream_Size_Clause);
    pragma Inline (Has_Subprogram_Descriptor);
    pragma Inline (Has_Task);
    pragma Inline (Has_Unchecked_Union);
@@ -6125,6 +6161,7 @@ package Einfo is
    pragma Inline (Is_AST_Entry);
    pragma Inline (Is_Abstract);
    pragma Inline (Is_Access_Constant);
+   pragma Inline (Is_Ada_2005);
    pragma Inline (Is_Access_Type);
    pragma Inline (Is_Aliased);
    pragma Inline (Is_Array_Type);
@@ -6194,6 +6231,7 @@ package Einfo is
    pragma Inline (Is_Named_Number);
    pragma Inline (Is_Non_Static_Subtype);
    pragma Inline (Is_Null_Init_Proc);
+   pragma Inline (Is_Obsolescent);
    pragma Inline (Is_Numeric_Type);
    pragma Inline (Is_Object);
    pragma Inline (Is_Optional_Parameter);
@@ -6261,6 +6299,7 @@ package Einfo is
    pragma Inline (Normalized_Position);
    pragma Inline (Normalized_Position_Max);
    pragma Inline (Object_Ref);
+   pragma Inline (Obsolescent_Warning);
    pragma Inline (Original_Access_Type);
    pragma Inline (Original_Array_Type);
    pragma Inline (Original_Record_Component);
@@ -6468,6 +6507,7 @@ package Einfo is
    pragma Inline (Set_Is_AST_Entry);
    pragma Inline (Set_Is_Abstract);
    pragma Inline (Set_Is_Access_Constant);
+   pragma Inline (Set_Is_Ada_2005);
    pragma Inline (Set_Is_Aliased);
    pragma Inline (Set_Is_Asynchronous);
    pragma Inline (Set_Is_Atomic);
@@ -6515,6 +6555,7 @@ package Einfo is
    pragma Inline (Set_Is_Machine_Code_Subprogram);
    pragma Inline (Set_Is_Non_Static_Subtype);
    pragma Inline (Set_Is_Null_Init_Proc);
+   pragma Inline (Set_Is_Obsolescent);
    pragma Inline (Set_Is_Optional_Parameter);
    pragma Inline (Set_Is_Overriding_Operation);
    pragma Inline (Set_Is_Package_Body_Entity);
@@ -6568,6 +6609,7 @@ package Einfo is
    pragma Inline (Set_Normalized_Position);
    pragma Inline (Set_Normalized_Position_Max);
    pragma Inline (Set_Object_Ref);
+   pragma Inline (Set_Obsolescent_Warning);
    pragma Inline (Set_Original_Access_Type);
    pragma Inline (Set_Original_Array_Type);
    pragma Inline (Set_Original_Record_Component);

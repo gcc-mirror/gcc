@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Wide_Text_IO; use Ada.Wide_Text_IO;
+with Ada.Strings.Wide_Unbounded.Aux; use Ada.Strings.Wide_Unbounded.Aux;
+with Ada.Wide_Text_IO;               use Ada.Wide_Text_IO;
 
 package body Ada.Strings.Wide_Unbounded.Wide_Text_IO is
 
@@ -44,11 +45,11 @@ package body Ada.Strings.Wide_Unbounded.Wide_Text_IO is
       Last   : Natural;
       Str1   : Wide_String_Access;
       Str2   : Wide_String_Access;
+      Result : Unbounded_Wide_String;
 
    begin
       Get_Line (Buffer, Last);
       Str1 := new Wide_String'(Buffer (1 .. Last));
-
       while Last = Buffer'Last loop
          Get_Line (Buffer, Last);
          Str2 := new Wide_String'(Str1.all & Buffer (1 .. Last));
@@ -56,17 +57,18 @@ package body Ada.Strings.Wide_Unbounded.Wide_Text_IO is
          Str1 := Str2;
       end loop;
 
-      return To_Unbounded_Wide_String (Str1.all);
+      Set_Wide_String (Result, Str1);
+      return Result;
    end Get_Line;
 
    function Get_Line
-     (File : Ada.Wide_Text_IO.File_Type)
-      return Unbounded_Wide_String
+     (File : Ada.Wide_Text_IO.File_Type) return Unbounded_Wide_String
    is
       Buffer : Wide_String (1 .. 1000);
       Last   : Natural;
       Str1   : Wide_String_Access;
       Str2   : Wide_String_Access;
+      Result : Unbounded_Wide_String;
 
    begin
       Get_Line (File, Buffer, Last);
@@ -79,7 +81,49 @@ package body Ada.Strings.Wide_Unbounded.Wide_Text_IO is
          Str1 := Str2;
       end loop;
 
-      return To_Unbounded_Wide_String (Str1.all);
+      Set_Wide_String (Result, Str1);
+      return Result;
+   end Get_Line;
+
+   procedure Get_Line (Item : out Unbounded_Wide_String) is
+      Buffer : Wide_String (1 .. 1000);
+      Last   : Natural;
+      Str1   : Wide_String_Access;
+      Str2   : Wide_String_Access;
+
+   begin
+      Get_Line (Buffer, Last);
+      Str1 := new Wide_String'(Buffer (1 .. Last));
+      while Last = Buffer'Last loop
+         Get_Line (Buffer, Last);
+         Str2 := new Wide_String'(Str1.all & Buffer (1 .. Last));
+         Free (Str1);
+         Str1 := Str2;
+      end loop;
+
+      Set_Wide_String (Item, Str1);
+   end Get_Line;
+
+   procedure Get_Line
+     (File : Ada.Wide_Text_IO.File_Type;
+      Item : out Unbounded_Wide_String)
+   is
+      Buffer : Wide_String (1 .. 1000);
+      Last   : Natural;
+      Str1   : Wide_String_Access;
+      Str2   : Wide_String_Access;
+
+   begin
+      Get_Line (File, Buffer, Last);
+      Str1 := new Wide_String'(Buffer (1 .. Last));
+      while Last = Buffer'Last loop
+         Get_Line (Buffer, Last);
+         Str2 := new Wide_String'(Str1.all & Buffer (1 .. Last));
+         Free (Str1);
+         Str1 := Str2;
+      end loop;
+
+      Set_Wide_String (Item, Str1);
    end Get_Line;
 
    ---------
@@ -88,12 +132,12 @@ package body Ada.Strings.Wide_Unbounded.Wide_Text_IO is
 
    procedure Put (U : Unbounded_Wide_String) is
    begin
-      Put (To_Wide_String (U));
+      Put (Get_Wide_String (U).all);
    end Put;
 
    procedure Put (File : File_Type; U : Unbounded_Wide_String) is
    begin
-      Put (File, To_Wide_String (U));
+      Put (File, Get_Wide_String (U).all);
    end Put;
 
    --------------
@@ -102,12 +146,12 @@ package body Ada.Strings.Wide_Unbounded.Wide_Text_IO is
 
    procedure Put_Line (U : Unbounded_Wide_String) is
    begin
-      Put_Line (To_Wide_String (U));
+      Put_Line (Get_Wide_String (U).all);
    end Put_Line;
 
    procedure Put_Line (File : File_Type; U : Unbounded_Wide_String) is
    begin
-      Put_Line (File, To_Wide_String (U));
+      Put_Line (File, Get_Wide_String (U).all);
    end Put_Line;
 
 end Ada.Strings.Wide_Unbounded.Wide_Text_IO;

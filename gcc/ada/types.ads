@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,6 +106,10 @@ pragma Preelaborate (Types);
 
    subtype Line_Terminator is Character range ASCII.LF .. ASCII.CR;
    --  Line terminator characters (LF, VT, FF, CR)
+   --  This definition is dubious now that we have two more wide character
+   --  sequences that constitute a line terminator. Every reference to
+   --  this subtype needs checking to make sure the wide character case
+   --  is handled appropriately.
 
    subtype Upper_Half_Character is
      Character range Character'Val (16#80#) .. Character'Val (16#FF#);
@@ -234,7 +238,6 @@ pragma Preelaborate (Types);
    --    Strings (type String_Id)
    --    Universal integers (type Uint)
    --    Universal reals (type Ureal)
-   --    Character codes (type Char_Code stored with a bias)
 
    --  In most contexts, the strongly typed interface determines which of
    --  these types is present. However, there are some situations (involving
@@ -325,10 +328,6 @@ pragma Preelaborate (Types);
    --  The range of Uint values is very large, since a substantial part
    --  of this range is used to store direct values, see Uintp for details.
 
-   Char_Code_Bias : constant := 2_100_000_000;
-   --  A bias value added to character code values stored in the tree which
-   --  ensures that they have different values from any of the above types.
-
    --  The following subtype definitions are used to provide convenient names
    --  for membership tests on Int values to see what data type range they
    --  lie in. Such tests appear only in the lowest level packages.
@@ -356,9 +355,6 @@ pragma Preelaborate (Types);
 
    subtype Ureal_Range     is Union_Id
      range Ureal_Low_Bound    .. Ureal_High_Bound;
-
-   subtype Char_Code_Range is Union_Id
-     range Char_Code_Bias    .. Char_Code_Bias + 2**16 - 1;
 
    -----------------------------
    -- Types for Namet Package --
@@ -525,16 +521,19 @@ pragma Preelaborate (Types);
    --  The type Char is used for character data internally in the compiler,
    --  but character codes in the source are represented by the Char_Code
    --  type. Each character literal in the source is interpreted as being one
-   --  of the 2**16 possible Wide_Character codes, and a unique integer value
-   --  is assigned, corresponding to the POS value in the Wide_Character type.
-   --  String literals are similarly interpreted as a sequence of such codes.
+   --  of the 16#8000_0000 possible Wide_Wide_Character codes, and a unique
+   --  Integer Value is assigned, corresponding to the UTF_32 value, which
+   --  also correspondds to the POS value in the Wide_Wide_Character type,
+   --  and also corresponds to the POS value in the Wide_Character and
+   --  Character types for values that are in appropriate range. String
+   --  literals are similarly interpreted as a sequence of such codes.
 
-   --  Note: when character code values are stored in the tree, they are stored
-   --  by adding a bias value (Char_Code_Bias) that results in values that can
-   --  be distinguished from other types of values stored in the tree.
+   type Char_Code_Base is mod 2 ** 32;
+   for Char_Code_Base'Size use 32;
 
-   type Char_Code is mod 2 ** 16;
-   for Char_Code'Size use 16;
+   subtype Char_Code is Char_Code_Base range 0 .. 16#7FFF_FFFF#;
+   for Char_Code'Value_Size use 32;
+   for Char_Code'Object_Size use 32;
 
    function Get_Char_Code (C : Character) return Char_Code;
    pragma Inline (Get_Char_Code);
@@ -548,11 +547,21 @@ pragma Preelaborate (Types);
    --  Determines if the given character code is in range of type Character,
    --  and if so, returns True. If not, returns False.
 
+   function In_Wide_Character_Range (C : Char_Code) return Boolean;
+   pragma Inline (In_Wide_Character_Range);
+   --  Determines if the given character code is in range of the type
+   --  Wide_Character, and if so, returns True. If not, returns False.
+
    function Get_Character (C : Char_Code) return Character;
    pragma Inline (Get_Character);
-   --  For a character C that is in character range (see above function), this
+   --  For a character C that is in Character range (see above function), this
    --  function returns the corresponding Character value. It is an error to
-   --  call Get_Character if C is not in character range
+   --  call Get_Character if C is not in C haracter range
+
+   function Get_Wide_Character (C : Char_Code) return Wide_Character;
+   --  For a character C that is in Wide_Character range (see above function),
+   --  this function returns the corresponding Wide_Character value. It is an
+   --  error to call Get_Wide_Character if C is not in Wide_Character range.
 
    ---------------------------------------
    -- Types used for Library Management --
@@ -768,6 +777,7 @@ pragma Preelaborate (Types);
      CE_Index_Check_Failed,
      CE_Invalid_Data,
      CE_Length_Check_Failed,
+     CE_Null_Not_Allowed,
      CE_Overflow_Check_Failed,
      CE_Partition_Check_Failed,
      CE_Range_Check_Failed,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,12 +34,13 @@
 pragma Style_Checks (All_Checks);
 --  Subprograms not all in alpha order
 
-with Debug;   use Debug;
-with Namet;   use Namet;
-with Opt;     use Opt;
-with Output;  use Output;
-with Tree_IO; use Tree_IO;
-with System;  use System;
+with Debug;    use Debug;
+with Namet;    use Namet;
+with Opt;      use Opt;
+with Output;   use Output;
+with Tree_IO;  use Tree_IO;
+with System;   use System;
+with Widechar; use Widechar;
 
 with System.Memory;
 
@@ -644,53 +645,36 @@ package body Sinput is
    -- Skip_Line_Terminators --
    ---------------------------
 
-   --  There are two distinct concepts of line terminator in GNAT
-
-   --    A logical line terminator is what corresponds to the "end of a line"
-   --    as described in RM 2.2 (13). Any of the characters FF, LF, CR or VT
-   --    acts as an end of logical line in this sense, and it is essentially
-   --    irrelevant whether one or more appears in sequence (since if a
-   --    sequence of such characters is regarded as separate ends of line,
-   --    then the intervening logical lines are null in any case).
-
-   --    A physical line terminator is a sequence of format effectors that
-   --    is treated as ending a physical line. Physical lines have no Ada
-   --    semantic significance, but they are significant for error reporting
-   --    purposes, since errors are identified by line and column location.
-
-   --  In GNAT, a physical line is ended by any of the sequences LF, CR/LF,
-   --  CR or LF/CR. LF is used in typical Unix systems, CR/LF in DOS systems,
-   --  and CR alone in System 7. We don't know of any system using LF/CR, but
-   --  it seems reasonable to include this case for consistency. In addition,
-   --  we recognize any of these sequences in any of the operating systems,
-   --  for better behavior in treating foreign files (e.g. a Unix file with
-   --  LF terminators transferred to a DOS system).
-
    procedure Skip_Line_Terminators
      (P        : in out Source_Ptr;
       Physical : out Boolean)
    is
-   begin
-      pragma Assert (Source (P) in Line_Terminator);
+      Chr : constant Character := Source (P);
 
-      if Source (P) = CR then
+   begin
+      if  Chr = CR then
          if Source (P + 1) = LF then
             P := P + 2;
          else
             P := P + 1;
          end if;
 
-      elsif Source (P) = LF then
-         if Source (P + 1) = CR then
+      elsif Chr = LF then
+         if Source (P) = CR then
             P := P + 2;
          else
             P := P + 1;
          end if;
 
-      else -- Source (P) = FF or else Source (P) = VT
+      elsif Chr = FF or else Chr = VT then
          P := P + 1;
          Physical := False;
          return;
+
+         --  Otherwise we have a wide character
+
+      else
+         Skip_Wide (Source, P);
       end if;
 
       --  Fall through in the physical line terminator case. First deal with

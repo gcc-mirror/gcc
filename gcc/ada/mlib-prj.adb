@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001-2004, Ada Core Technologies, Inc.        --
+--              Copyright (C) 2001-2005, Ada Core Technologies, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1419,19 +1419,19 @@ package body MLib.Prj is
             Data := Projects.Table (For_Project);
 
             declare
-               Interface : String_List_Id := Data.Lib_Interface_ALIs;
-               ALI       : File_Name_Type;
+               Iface : String_List_Id := Data.Lib_Interface_ALIs;
+               ALI   : File_Name_Type;
 
             begin
-               while Interface /= Nil_String loop
-                  ALI := String_Elements.Table (Interface).Value;
+               while Iface /= Nil_String loop
+                  ALI := String_Elements.Table (Iface).Value;
                   Interface_ALIs.Set (ALI, True);
-                  Get_Name_String (String_Elements.Table (Interface).Value);
+                  Get_Name_String (String_Elements.Table (Iface).Value);
                   Add_Argument (Name_Buffer (1 .. Name_Len));
-                  Interface := String_Elements.Table (Interface).Next;
+                  Iface := String_Elements.Table (Iface).Next;
                end loop;
 
-               Interface := Data.Lib_Interface_ALIs;
+               Iface := Data.Lib_Interface_ALIs;
 
                if not Opt.Quiet_Output then
 
@@ -1439,10 +1439,10 @@ package body MLib.Prj is
                   --  library that is needed by an interface should also be an
                   --  interface. If it is not the case, output a warning.
 
-                  while Interface /= Nil_String loop
-                     ALI := String_Elements.Table (Interface).Value;
+                  while Iface /= Nil_String loop
+                     ALI := String_Elements.Table (Iface).Value;
                      Process (ALI);
-                     Interface := String_Elements.Table (Interface).Next;
+                     Iface := String_Elements.Table (Iface).Next;
                   end loop;
                end if;
             end;

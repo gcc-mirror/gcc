@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              I M P U N I T                               --
+--           G N A T . W I D E _ W I D E _ S T R I N G _ S P L I T          --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -19,43 +19,28 @@
 -- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
+-- As a special exception,  if other files  instantiate  generics from this --
+-- unit, or you link  this unit with other files  to produce an executable, --
+-- this  unit  does not  by itself cause  the resulting  executable  to  be --
+-- covered  by the  GNU  General  Public  License.  This exception does not --
+-- however invalidate  any other reasons why  the executable file  might be --
+-- covered by the  GNU Public License.                                      --
+--                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains data and functions used to determine if a given
---  unit is an internal unit intended only for use by the implementation
---  and which should not be directly WITH'ed by user code. It also checks
---  for Ada 05 units that should only be WITH'ed in Ada 05 mode.
+--  Useful wide_string-manipulation routines: given a set of separators, split
+--  a wide_string wherever the separators appear, and provide direct access
+--  to the resulting slices. See GNAT.Array_Split for full documentation.
 
-with Types; use Types;
+with Ada.Strings.Wide_Wide_Maps; use Ada.Strings;
+with GNAT.Array_Split;
 
-package Impunit is
-
-   type Kind_Of_Unit is
-     (Implementation_Unit,
-      --  Unit from predefined library intended to be used only by the
-      --  compiler generated code, or from the implementation of the run time.
-      --  Use of such a unit generates a warning unless the client is compiled
-      --  with the -gnatg switch. If we are being super strict, this should be
-      --  an error for the case of Ada units, but that seems over strenuous.
-
-      Not_Predefined_Unit,
-      --  This is not a predefined unit, so no checks are needed
-
-      Ada_95_Unit,
-      --  This unit is defined in the Ada 95 RM, and can be freely with'ed
-      --  in both Ada 95 mode and Ada 05 mode. Note that in Ada 83 mode, no
-      --  child units are allowed, so you can't even name such a unit.
-
-      Ada_05_Unit);
-   --  This unit is defined in the Ada 05 RM. Withing this unit from a
-   --  Ada 95 mode program will generate a warning (again, strictly speaking
-   --  this should be an error, but that seems over-strenuous).
-
-   function Get_Kind_Of_Unit (U : Unit_Number_Type) return Kind_Of_Unit;
-   --  Given the unit number of a unit, this function determines the type
-   --  of the unit, as defined above.
-
-end Impunit;
+package GNAT.Wide_Wide_String_Split is new GNAT.Array_Split
+  (Element          => Wide_Wide_Character,
+   Element_Sequence => Wide_Wide_String,
+   Element_Set      => Wide_Wide_Maps.Wide_Wide_Character_Set,
+   To_Set           => Wide_Wide_Maps.To_Set,
+   Is_In            => Wide_Wide_Maps.Is_In);

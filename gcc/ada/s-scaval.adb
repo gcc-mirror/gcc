@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2003 Free Software Foundation, Inc.            --
+--          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -159,6 +159,11 @@ package body System.Scalar_Values is
          IS_Iu4 := 16#FFFF_FFFF#;
          IS_Iu8 := 16#FFFF_FFFF_FFFF_FFFF#;
 
+         IS_Iz1 := 16#00#;
+         IS_Iz2 := 16#0000#;
+         IS_Iz4 := 16#0000_0000#;
+         IS_Iz8 := 16#0000_0000_0000_0000#;
+
          IV_Isf := IS_Iu4;
          IV_Ifl := IS_Iu4;
          IV_Ilf := IS_Iu8;
@@ -180,6 +185,11 @@ package body System.Scalar_Values is
          IS_Iu4 := 16#0000_0000#;
          IS_Iu8 := 16#0000_0000_0000_0000#;
 
+         IS_Iz1 := 16#00#;
+         IS_Iz2 := 16#0000#;
+         IS_Iz4 := 16#0000_0000#;
+         IS_Iz8 := 16#0000_0000_0000_0000#;
+
          IV_Isf := 16#FF80_0000#;
          IV_Ifl := 16#FF80_0000#;
          IV_Ilf := 16#FFF0_0000_0000_0000#;
@@ -200,6 +210,11 @@ package body System.Scalar_Values is
          IS_Iu2 := 16#FFFF#;
          IS_Iu4 := 16#FFFF_FFFF#;
          IS_Iu8 := 16#FFFF_FFFF_FFFF_FFFF#;
+
+         IS_Iz1 := 16#FF#;
+         IS_Iz2 := 16#FFFF#;
+         IS_Iz4 := 16#FFFF_FFFF#;
+         IS_Iz8 := 16#FFFF_FFFF_FFFF_FFFF#;
 
          IV_Isf := 16#7F80_0000#;
          IV_Ifl := 16#7F80_0000#;
@@ -238,6 +253,11 @@ package body System.Scalar_Values is
          IS_Iu4 := IS_Is4;
          IS_Iu8 := IS_Is8;
 
+         IS_Iz1 := IS_Is1;
+         IS_Iz2 := IS_Is2;
+         IS_Iz4 := IS_Is4;
+         IS_Iz8 := IS_Is8;
+
          IV_Isf := IS_Is4;
          IV_Ifl := IS_Is4;
          IV_Ilf := IS_Is8;
@@ -259,8 +279,6 @@ package body System.Scalar_Values is
             IV_Ill := To_ByteLF (IV_Ilf);
          end;
       end if;
-
-
    end Initialize;
 
 end System.Scalar_Values;

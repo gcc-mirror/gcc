@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -159,7 +159,7 @@ package body Rtsfind is
    --  A value of False means nothing special need be done. A value of
    --  True indicates that this flag must be set to True. It is needed
    --  only in the Text_IO_Kludge procedure, which may materialize an
-   --  entity of Text_IO (or Wide_Text_IO) that was previously unknown.
+   --  entity of Text_IO (or [Wide_]Wide_Text_IO) that was previously unknown.
    --  Id is the RE_Id value of the entity which was originally requested.
    --  Id is used only for error message detail, and if it is RE_Null, then
    --  the attempt to output the entity name is ignored.
@@ -248,6 +248,9 @@ package body Rtsfind is
 
          elsif U_Id in Ada_Wide_Text_IO_Child then
             Name_Buffer (17) := '.';
+
+         elsif U_Id in Ada_Wide_Wide_Text_IO_Child then
+            Name_Buffer (22) := '.';
          end if;
 
       elsif U_Id in Interfaces_Child then
@@ -435,7 +438,11 @@ package body Rtsfind is
       return
         Nkind (Prf) = N_Identifier
           and then
-        (Chars (Prf) = Name_Text_IO or else Chars (Prf) = Name_Wide_Text_IO)
+           (Chars (Prf) = Name_Text_IO
+              or else
+            Chars (Prf) = Name_Wide_Text_IO
+              or else
+            Chars (Prf) = Name_Wide_Wide_Text_IO)
           and then
         Nkind (Sel) = N_Identifier
           and then
@@ -830,7 +837,7 @@ package body Rtsfind is
                        or else
                      E = RE_Params_Stream_Type
                        or else
-                     E = RE_RPC_Receiver)
+                     E = RE_Request_Access)
          then
             declare
                DSA_Implementation : constant Entity_Id :=
@@ -1143,6 +1150,14 @@ package body Rtsfind is
         Name_Integer_IO     => Ada_Wide_Text_IO_Integer_IO,
         Name_Modular_IO     => Ada_Wide_Text_IO_Modular_IO);
 
+      Wide_Wide_Name_Map : constant Name_Map_Type := Name_Map_Type'(
+        Name_Decimal_IO     => Ada_Wide_Wide_Text_IO_Decimal_IO,
+        Name_Enumeration_IO => Ada_Wide_Wide_Text_IO_Enumeration_IO,
+        Name_Fixed_IO       => Ada_Wide_Wide_Text_IO_Fixed_IO,
+        Name_Float_IO       => Ada_Wide_Wide_Text_IO_Float_IO,
+        Name_Integer_IO     => Ada_Wide_Wide_Text_IO_Integer_IO,
+        Name_Modular_IO     => Ada_Wide_Wide_Text_IO_Modular_IO);
+
    begin
       --  Nothing to do if name is not identifier or a selected component
       --  whose selector_name is not an identifier.
@@ -1161,7 +1176,7 @@ package body Rtsfind is
 
       --  Nothing to do if name is not one of the Text_IO subpackages
       --  Otherwise look through loaded units, and if we find Text_IO
-      --  or Wide_Text_IO already loaded, then load the proper child.
+      --  or [Wide_]Wide_Text_IO already loaded, then load the proper child.
 
       if Chrs in Text_IO_Package_Name then
          for U in Main_Unit .. Last_Unit loop
@@ -1169,17 +1184,17 @@ package body Rtsfind is
 
             if Name_Len = 12 then
 
-               --  Here is where we do the loads if we find one of the
-               --  units Ada.Text_IO or Ada.Wide_Text_IO. An interesting
-               --  detail is that these units may already be used (i.e.
-               --  their In_Use flags may be set). Normally when the In_Use
-               --  flag is set, the Is_Potentially_Use_Visible flag of all
-               --  entities in the package is set, but the new entity we
-               --  are mysteriously adding was not there to have its flag
-               --  set at the time. So that's why we pass the extra parameter
-               --  to RTU_Find, to make sure the flag does get set now.
-               --  Given that those generic packages are in fact child units,
-               --  we must indicate that they are visible.
+               --  Here is where we do the loads if we find one of the units
+               --  Ada.Text_IO or Ada.[Wide_]Wide_Text_IO. An interesting
+               --  detail is that these units may already be used (i.e. their
+               --  In_Use flags may be set). Normally when the In_Use flag is
+               --  set, the Is_Potentially_Use_Visible flag of all entities in
+               --  the package is set, but the new entity we are mysteriously
+               --  adding was not there to have its flag set at the time. So
+               --  that's why we pass the extra parameter to RTU_Find, to make
+               --  sure the flag does get set now. Given that those generic
+               --  packages are in fact child units, we must indicate that
+               --  they are visible.
 
                if Name_Buffer (1 .. 12) = "a-textio.ads" then
                   Load_RTU
@@ -1194,6 +1209,13 @@ package body Rtsfind is
                      Use_Setting => In_Use (Cunit_Entity (U)));
                   Set_Is_Visible_Child_Unit
                     (RT_Unit_Table (Wide_Name_Map (Chrs)).Entity);
+
+               elsif Name_Buffer (1 .. 12) = "a-ztexio.ads" then
+                  Load_RTU
+                    (Wide_Wide_Name_Map (Chrs),
+                     Use_Setting => In_Use (Cunit_Entity (U)));
+                  Set_Is_Visible_Child_Unit
+                    (RT_Unit_Table (Wide_Wide_Name_Map (Chrs)).Entity);
                end if;
             end if;
          end loop;

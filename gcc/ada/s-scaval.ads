@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,14 +53,27 @@ package System.Scalar_Values is
    --  The explicit initializations here are not really required, since these
    --  variables are always set by System.Scalar_Values.Initialize.
 
-   IS_Is1 : Byte1 := 0;           -- Initialize 1 byte signed
-   IS_Is2 : Byte2 := 0;           -- Initialize 2 byte signed
-   IS_Is4 : Byte4 := 0;           -- Initialize 4 byte signed
-   IS_Is8 : Byte8 := 0;           -- Initialize 8 byte signed
-   IS_Iu1 : Byte1 := 0;           -- Initialize 1 byte unsigned
-   IS_Iu2 : Byte2 := 0;           -- Initialize 2 byte unsigned
-   IS_Iu4 : Byte4 := 0;           -- Initialize 4 byte unsigned
-   IS_Iu8 : Byte8 := 0;           -- Initialize 8 byte unsigned
+   IS_Is1 : Byte1 := 0;  -- Initialize 1 byte signed
+   IS_Is2 : Byte2 := 0;  -- Initialize 2 byte signed
+   IS_Is4 : Byte4 := 0;  -- Initialize 4 byte signed
+   IS_Is8 : Byte8 := 0;  -- Initialize 8 byte signed
+   --  For the above cases, the undefined value (set by the binder -Sin switch)
+   --  is the largest negative number (1 followed by all zero bits).
+
+   IS_Iu1 : Byte1 := 0;  -- Initialize 1 byte unsigned
+   IS_Iu2 : Byte2 := 0;  -- Initialize 2 byte unsigned
+   IS_Iu4 : Byte4 := 0;  -- Initialize 4 byte unsigned
+   IS_Iu8 : Byte8 := 0;  -- Initialize 8 byte unsigned
+   --  For the above cases, the undefined value (set by the binder -Sin switch)
+   --  is the largest unsigned number (all 1 bits).
+
+   IS_Iz1 : Byte1 := 0;  -- Initialize 1 byte zeroes
+   IS_Iz2 : Byte2 := 0;  -- Initialize 2 byte zeroes
+   IS_Iz4 : Byte4 := 0;  -- Initialize 4 byte zeroes
+   IS_Iz8 : Byte8 := 0;  -- Initialize 8 byte zeroes
+   --  For the above cases, the undefined value (set by the binder -Sin switch)
+   --  is the zero (all 0 bits). This is used when zero is known to be an
+   --  invalid value.
 
    --  The float definitions are aliased, because we use overlays to set them
 

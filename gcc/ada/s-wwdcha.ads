@@ -6,8 +6,8 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---        Copyright (C) 1992,1993,1994 Free Software Foundation, Inc.       --
---                                                                          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--                                                                           --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 2,  or (at your option) any later ver- --
@@ -31,13 +31,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routine used for Character'Wide_Width
+--  This package contains the routine used for Character'Wide_[Wide_]Width
 
 package System.WWd_Char is
 pragma Pure (WWd_Char);
 
    function Wide_Width_Character (Lo, Hi : Character) return Natural;
    --  Compute Wide_Width attribute for non-static type derived from
+   --  Character. The arguments are the low and high bounds for the type.
+
+   function Wide_Wide_Width_Character (Lo, Hi : Character) return Natural;
+   --  Compute Wide_Wide_Width attribute for non-static type derived from
    --  Character. The arguments are the low and high bounds for the type.
 
 end System.WWd_Char;

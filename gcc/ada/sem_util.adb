@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -985,7 +985,7 @@ package body Sem_Util is
 
             if Is_Overloadable (Id)
               and then Nkind (Parent (Parent (Id)))
-                         /= N_Formal_Subprogram_Declaration
+                         not in N_Formal_Subprogram_Declaration
             then
                Is_Prim := False;
 
@@ -2526,23 +2526,23 @@ package body Sem_Util is
       Loc : Source_Ptr) return Node_Id
    is
       Lit : Node_Id;
-      P   : constant Nat := UI_To_Int (Pos);
 
    begin
-      --  In the case where the literal is either of type Wide_Character
-      --  or Character or of a type derived from them, there needs to be
-      --  some special handling since there is no explicit chain of
-      --  literals to search. Instead, an N_Character_Literal node is
-      --  created with the appropriate Char_Code and Chars fields.
+      --  In the case where the literal is of type Character, Wide_Character
+      --  or Wide_Wide_Character or of a type derived from them, there needs
+      --  to be some special handling since there is no explicit chain of
+      --  literals to search. Instead, an N_Character_Literal node is created
+      --  with the appropriate Char_Code and Chars fields.
 
       if Root_Type (T) = Standard_Character
         or else Root_Type (T) = Standard_Wide_Character
+        or else Root_Type (T) = Standard_Wide_Wide_Character
       then
-         Set_Character_Literal_Name (Char_Code (P));
+         Set_Character_Literal_Name (UI_To_CC (Pos));
          return
            Make_Character_Literal (Loc,
-             Chars => Name_Find,
-             Char_Literal_Value => Char_Code (P));
+             Chars              => Name_Find,
+             Char_Literal_Value => Pos);
 
       --  For all other cases, we have a complete table of literals, and
       --  we simply iterate through the chain of literal until the one
@@ -2551,7 +2551,7 @@ package body Sem_Util is
 
       else
          Lit := First_Literal (Base_Type (T));
-         for J in 1 .. P loop
+         for J in 1 .. UI_To_Int (Pos) loop
             Next_Literal (Lit);
          end loop;
 
@@ -2565,7 +2565,6 @@ package body Sem_Util is
 
    function Get_Generic_Entity (N : Node_Id) return Entity_Id is
       Ent : constant Entity_Id := Entity (Name (N));
-
    begin
       if Present (Renamed_Object (Ent)) then
          return Renamed_Object (Ent);
@@ -4591,6 +4590,18 @@ package body Sem_Util is
       begin
          if Is_Access_Type (Etype (P)) then
             return not Is_Access_Constant (Root_Type (Etype (P)));
+
+         --  For the case of an indexed component whose prefix has a packed
+         --  array type, the prefix has been rewritten into a type conversion.
+         --  Determine variable-ness from the converted expression.
+
+         elsif Nkind (P) = N_Type_Conversion
+           and then not Comes_From_Source (P)
+           and then Is_Array_Type (Etype (P))
+           and then Is_Packed (Etype (P))
+         then
+            return Is_Variable (Expression (P));
+
          else
             return Is_Variable (P);
          end if;
@@ -6465,7 +6476,6 @@ package body Sem_Util is
 
       while Nkind (N) /= N_Abstract_Subprogram_Declaration
         and then Nkind (N) /= N_Formal_Package_Declaration
-        and then Nkind (N) /= N_Formal_Subprogram_Declaration
         and then Nkind (N) /= N_Function_Instantiation
         and then Nkind (N) /= N_Generic_Package_Declaration
         and then Nkind (N) /= N_Generic_Subprogram_Declaration
@@ -6481,6 +6491,7 @@ package body Sem_Util is
         and then Nkind (N) /= N_Subprogram_Renaming_Declaration
         and then Nkind (N) /= N_Task_Body
         and then Nkind (N) /= N_Task_Type_Declaration
+        and then Nkind (N) not in N_Formal_Subprogram_Declaration
         and then Nkind (N) not in N_Generic_Renaming_Declaration
       loop
          N := Parent (N);

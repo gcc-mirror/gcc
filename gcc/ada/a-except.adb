@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -484,6 +484,7 @@ package body Ada.Exceptions is
    procedure Rcheck_27 (File : Big_String_Ptr; Line : Integer);
    procedure Rcheck_28 (File : Big_String_Ptr; Line : Integer);
    procedure Rcheck_29 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_30 (File : Big_String_Ptr; Line : Integer);
 
    pragma Export (C, Rcheck_00, "__gnat_rcheck_00");
    pragma Export (C, Rcheck_01, "__gnat_rcheck_01");
@@ -515,6 +516,7 @@ package body Ada.Exceptions is
    pragma Export (C, Rcheck_27, "__gnat_rcheck_27");
    pragma Export (C, Rcheck_28, "__gnat_rcheck_28");
    pragma Export (C, Rcheck_29, "__gnat_rcheck_29");
+   pragma Export (C, Rcheck_30, "__gnat_rcheck_30");
 
    --  None of these procedures ever returns (they raise an exception!). By
    --  using pragma No_Return, we ensure that any junk code after the call,
@@ -550,6 +552,7 @@ package body Ada.Exceptions is
    pragma No_Return (Rcheck_27);
    pragma No_Return (Rcheck_28);
    pragma No_Return (Rcheck_29);
+   pragma No_Return (Rcheck_30);
 
    ---------------------------------------------
    -- Reason Strings for Run-Time Check Calls --
@@ -568,29 +571,30 @@ package body Ada.Exceptions is
    Rmsg_05 : constant String := "index check failed"               & NUL;
    Rmsg_06 : constant String := "invalid data"                     & NUL;
    Rmsg_07 : constant String := "length check failed"              & NUL;
-   Rmsg_08 : constant String := "overflow check failed"            & NUL;
-   Rmsg_09 : constant String := "partition check failed"           & NUL;
-   Rmsg_10 : constant String := "range check failed"               & NUL;
-   Rmsg_11 : constant String := "tag check failed"                 & NUL;
-   Rmsg_12 : constant String := "access before elaboration"        & NUL;
-   Rmsg_13 : constant String := "accessibility check failed"       & NUL;
-   Rmsg_14 : constant String := "all guards closed"                & NUL;
-   Rmsg_15 : constant String := "duplicated entry address"         & NUL;
-   Rmsg_16 : constant String := "explicit raise"                   & NUL;
-   Rmsg_17 : constant String := "finalize/adjust raised exception" & NUL;
-   Rmsg_18 : constant String := "misaligned address value"         & NUL;
-   Rmsg_19 : constant String := "missing return"                   & NUL;
-   Rmsg_20 : constant String := "overlaid controlled object"       & NUL;
-   Rmsg_21 : constant String := "potentially blocking operation"   & NUL;
-   Rmsg_22 : constant String := "stubbed subprogram called"        & NUL;
-   Rmsg_23 : constant String := "unchecked union restriction"      & NUL;
-   Rmsg_24 : constant String := "illegal use of"
+   Rmsg_08 : constant String := "null-exclusion check failed"      & NUL;
+   Rmsg_09 : constant String := "overflow check failed"            & NUL;
+   Rmsg_10 : constant String := "partition check failed"           & NUL;
+   Rmsg_11 : constant String := "range check failed"               & NUL;
+   Rmsg_12 : constant String := "tag check failed"                 & NUL;
+   Rmsg_13 : constant String := "access before elaboration"        & NUL;
+   Rmsg_14 : constant String := "accessibility check failed"       & NUL;
+   Rmsg_15 : constant String := "all guards closed"                & NUL;
+   Rmsg_16 : constant String := "duplicated entry address"         & NUL;
+   Rmsg_17 : constant String := "explicit raise"                   & NUL;
+   Rmsg_18 : constant String := "finalize/adjust raised exception" & NUL;
+   Rmsg_19 : constant String := "misaligned address value"         & NUL;
+   Rmsg_20 : constant String := "missing return"                   & NUL;
+   Rmsg_21 : constant String := "overlaid controlled object"       & NUL;
+   Rmsg_22 : constant String := "potentially blocking operation"   & NUL;
+   Rmsg_23 : constant String := "stubbed subprogram called"        & NUL;
+   Rmsg_24 : constant String := "unchecked union restriction"      & NUL;
+   Rmsg_25 : constant String := "illegal use of"
              & " remote access-to-class-wide type, see RM E.4(18)" & NUL;
-   Rmsg_25 : constant String := "empty storage pool"               & NUL;
-   Rmsg_26 : constant String := "explicit raise"                   & NUL;
-   Rmsg_27 : constant String := "infinite recursion"               & NUL;
-   Rmsg_28 : constant String := "object too large"                 & NUL;
-   Rmsg_29 : constant String := "restriction violation"            & NUL;
+   Rmsg_26 : constant String := "empty storage pool"               & NUL;
+   Rmsg_27 : constant String := "explicit raise"                   & NUL;
+   Rmsg_28 : constant String := "infinite recursion"               & NUL;
+   Rmsg_29 : constant String := "object too large"                 & NUL;
+   Rmsg_30 : constant String := "restriction violation"            & NUL;
 
    -----------------------
    -- Polling Interface --
@@ -1097,7 +1101,7 @@ package body Ada.Exceptions is
 
    procedure Rcheck_12 (File : Big_String_Ptr; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_12'Address));
+      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_12'Address));
    end Rcheck_12;
 
    procedure Rcheck_13 (File : Big_String_Ptr; Line : Integer) is
@@ -1162,7 +1166,7 @@ package body Ada.Exceptions is
 
    procedure Rcheck_25 (File : Big_String_Ptr; Line : Integer) is
    begin
-      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_25'Address));
+      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_25'Address));
    end Rcheck_25;
 
    procedure Rcheck_26 (File : Big_String_Ptr; Line : Integer) is
@@ -1184,6 +1188,11 @@ package body Ada.Exceptions is
    begin
       Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_29'Address));
    end Rcheck_29;
+
+   procedure Rcheck_30 (File : Big_String_Ptr; Line : Integer) is
+   begin
+      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_30'Address));
+   end Rcheck_30;
 
    -------------
    -- Reraise --

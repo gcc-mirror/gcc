@@ -273,9 +273,9 @@ package body Namet is
 
          procedure Copy_One_Character;
          --  Copy a character from Name_Buffer to New_Buf. Includes case
-         --  of copying a Uhh or Whhhh sequence and decoding it.
+         --  of copying a Uhh,Whhhh,WWhhhhhhhh sequence and decoding it.
 
-         function Hex (N : Natural) return Natural;
+         function Hex (N : Natural) return Word;
          --  Scans past N digits using Old pointer and returns hex value
 
          procedure Insert_Character (C : Character);
@@ -301,6 +301,15 @@ package body Namet is
                Old := Old + 1;
                Insert_Character (Character'Val (Hex (2)));
 
+            --  WW (wide wide character insertion)
+
+            elsif C = 'W'
+              and then Old < Name_Len
+              and then Name_Buffer (Old + 1) = 'W'
+            then
+               Old := Old + 2;
+               Widechar.Set_Wide (Char_Code (Hex (8)), New_Buf, New_Len);
+
             --  W (wide character insertion)
 
             elsif C = 'W'
@@ -323,8 +332,8 @@ package body Namet is
          -- Hex --
          ---------
 
-         function Hex (N : Natural) return Natural is
-            T : Natural := 0;
+         function Hex (N : Natural) return Word is
+            T : Word := 0;
             C : Character;
 
          begin
@@ -492,7 +501,7 @@ package body Namet is
       elsif Name_Buffer (1) = 'Q' then
          Get_Decoded_Name_String (Id);
 
-      --  Only remaining issue is U/W sequences
+      --  Only remaining issue is U/W/WW sequences
 
       else
          Get_Name_String (Id);
@@ -501,6 +510,8 @@ package body Namet is
          while P < Name_Len loop
             if Name_Buffer (P + 1) in 'A' .. 'Z' then
                P := P + 1;
+
+            --  Uhh encoding
 
             elsif Name_Buffer (P) = 'U' then
                for J in reverse P + 3 .. P + Name_Len loop
@@ -516,22 +527,38 @@ package body Namet is
                Name_Buffer (P + 5) := ']';
                P := P + 6;
 
+            --  WWhhhhhhhh encoding
+
+            elsif Name_Buffer (P) = 'W'
+              and then P + 9 <= Name_Len
+              and then Name_Buffer (P + 1) = 'W'
+              and then Name_Buffer (P + 2) not in 'A' .. 'Z'
+              and then Name_Buffer (P + 2) /= '_'
+            then
+               Name_Buffer (P + 12 .. Name_Len + 2) :=
+                 Name_Buffer (P + 10 .. Name_Len);
+               Name_Buffer (P)     := '[';
+               Name_Buffer (P + 1) := '"';
+               Name_Buffer (P + 10) := '"';
+               Name_Buffer (P + 11) := ']';
+               Name_Len := Name_Len + 2;
+               P := P + 12;
+
+            --  Whhhh encoding
+
             elsif Name_Buffer (P) = 'W'
               and then P < Name_Len
               and then Name_Buffer (P + 1) not in 'A' .. 'Z'
               and then Name_Buffer (P + 1) /= '_'
             then
-               Name_Buffer (P + 8 .. P + Name_Len + 5) :=
+               Name_Buffer (P + 8 .. P + Name_Len + 3) :=
                  Name_Buffer (P + 5 .. Name_Len);
-               Name_Buffer (P + 5) := Name_Buffer (P + 4);
-               Name_Buffer (P + 4) := Name_Buffer (P + 3);
-               Name_Buffer (P + 3) := Name_Buffer (P + 2);
-               Name_Buffer (P + 2) := Name_Buffer (P + 1);
+               Name_Buffer (P + 2 .. P + 5) := Name_Buffer (P + 1 .. P + 4);
                Name_Buffer (P)     := '[';
                Name_Buffer (P + 1) := '"';
                Name_Buffer (P + 6) := '"';
                Name_Buffer (P + 7) := ']';
-               Name_Len := Name_Len + 5;
+               Name_Len := Name_Len + 3;
                P := P + 8;
 
             else
@@ -1135,18 +1162,24 @@ package body Namet is
 
    procedure Store_Encoded_Character (C : Char_Code) is
 
-      procedure Set_Hex_Chars (N : Natural);
+      procedure Set_Hex_Chars (C : Char_Code);
       --  Stores given value, which is in the range 0 .. 255, as two hex
-      --  digits (using lower case a-f) in Name_Buffer, incrementing Name_Len
+      --  digits (using lower case a-f) in Name_Buffer, incrementing Name_Len.
 
-      procedure Set_Hex_Chars (N : Natural) is
+      -------------------
+      -- Set_Hex_Chars --
+      -------------------
+
+      procedure Set_Hex_Chars (C : Char_Code) is
          Hexd : constant String := "0123456789abcdef";
-
+         N    : constant Natural := Natural (C);
       begin
          Name_Buffer (Name_Len + 1) := Hexd (N / 16 + 1);
          Name_Buffer (Name_Len + 2) := Hexd (N mod 16 + 1);
          Name_Len := Name_Len + 2;
       end Set_Hex_Chars;
+
+   --  Start of processing for Store_Encoded_Character
 
    begin
       Name_Len := Name_Len + 1;
@@ -1159,16 +1192,24 @@ package body Namet is
                Name_Buffer (Name_Len) := CC;
             else
                Name_Buffer (Name_Len) := 'U';
-               Set_Hex_Chars (Natural (C));
+               Set_Hex_Chars (C);
             end if;
          end;
 
+      elsif In_Wide_Character_Range (C) then
+         Name_Buffer (Name_Len) := 'W';
+         Set_Hex_Chars (C / 256);
+         Set_Hex_Chars (C mod 256);
+
       else
          Name_Buffer (Name_Len) := 'W';
-         Set_Hex_Chars (Natural (C) / 256);
-         Set_Hex_Chars (Natural (C) mod 256);
+         Name_Len := Name_Len + 1;
+         Name_Buffer (Name_Len) := 'W';
+         Set_Hex_Chars (C / 2 ** 24);
+         Set_Hex_Chars ((C / 2 ** 16) mod 256);
+         Set_Hex_Chars ((C / 256) mod 256);
+         Set_Hex_Chars (C mod 256);
       end if;
-
    end Store_Encoded_Character;
 
    --------------------------------------
