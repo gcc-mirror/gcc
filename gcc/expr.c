@@ -6490,7 +6490,7 @@ do_store_flag (exp, target, mode, only_cheap)
 
 /* INDEX is the value being switched on, with the lowest value
    in the table already subtracted.
-   MODE is its expected mode (needed if INDEX is ever constant).
+   MODE is its expected mode (needed if INDEX is constant).
    RANGE is the length of the jump table.
    TABLE_LABEL is a CODE_LABEL rtx for the table itself.
 
@@ -6504,13 +6504,22 @@ do_tablejump (index, mode, range, table_label, default_label)
 {
   register rtx temp, vector;
 
-  /* Code below assumes that MODE is Pmode,
-     but I think that is a mistake.  Let's see if that is true.  */
-  if (mode != Pmode)
-    abort ();
+  /* Do an unsigned comparison (in the proper mode) between the index
+     expression and the value which represents the length of the range.
+     Since we just finished subtracting the lower bound of the range
+     from the index expression, this comparison allows us to simultaneously
+     check that the original index expression value is both greater than
+     or equal to the minimum value of the range and less than or equal to
+     the maximum value of the range.  */
 
   emit_cmp_insn (range, index, LTU, 0, mode, 0, 0);
   emit_jump_insn (gen_bltu (default_label));
+
+  /* If index is in range, it must fit in Pmode.
+     Convert to Pmode so we can index with it.  */
+  if (mode != Pmode)
+    index = convert_to_mode (Pmode, index, 1);
+
   /* If flag_force_addr were to affect this address
      it could interfere with the tricky assumptions made
      about addresses that contain label-refs,
