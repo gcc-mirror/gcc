@@ -10593,20 +10593,8 @@ grokdeclarator (tree declarator,
 
 	case ARRAY_REF:
 	  {
-	    register tree size;
-
-	    size = TREE_OPERAND (declarator, 1);
+	    tree size = TREE_OPERAND (declarator, 1);
 	    declarator = TREE_OPERAND (declarator, 0);
-
-	    /* C99 spells a flexible array member [].  */
-	    if (size == NULL_TREE && decl_context == FIELD && !	staticp
-		&& ! RIDBIT_SETP (RID_TYPEDEF, specbits)
-		&& !(declarator &&
-		    (TREE_CODE (declarator) == CALL_EXPR
-		      || TREE_CODE (declarator) == INDIRECT_REF
-		      || TREE_CODE (declarator) == ADDR_EXPR
-		      || TREE_CODE (declarator) == ARRAY_REF)))
-	      size = integer_zero_node;
 
 	    type = create_array_type_for_decl (dname, type, size);
 
@@ -11355,6 +11343,14 @@ grokdeclarator (tree declarator,
       }
     else if (decl_context == FIELD)
       {
+	/* The C99 flexible array extension.  */
+	if (!staticp && TREE_CODE (type) == ARRAY_TYPE
+	    && TYPE_DOMAIN (type) == NULL_TREE)
+	  {
+	    tree itype = compute_array_index_type (dname, integer_zero_node);
+	    type = build_cplus_array_type (TREE_TYPE (type), itype);
+	  }
+
 	if (type == error_mark_node)
 	  {
 	    /* Happens when declaring arrays of sizes which
