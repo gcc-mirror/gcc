@@ -194,6 +194,10 @@ case $basic_machine in
 		basic_machine=m68k-apollo
 		os=-sysv
 		;;
+	aux)
+		basic_machine=m68k-apple
+		os=-aux
+		;;
 	balance)
 		basic_machine=ns32k-sequent
 		os=-dynix
@@ -649,7 +653,7 @@ case $os in
 	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* \
 	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf* \
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
-	      | -udi* | -eabi* | -lites* | -ieee* | -go32*)
+	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-sunos5*)
@@ -873,6 +877,8 @@ case $basic_machine in
 			-vxworks*)
 				vendor=wrs
 				;;
+			-aux*)
+				vendor=apple
 		esac
 		basic_machine=`echo $basic_machine | sed "s/unknown/$vendor/"`
 		;;
