@@ -1,3 +1,7 @@
+2002-08-06  Federico G. Schwindt <fgsch@olimpo.com.br>
+
+	* configure.in (hppa*-*-openbsd*): Treat like hppa*-*-*elf*.
+
 2002-08-04  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in (mips*-*-linux*): Don't skip target-libffi.
