@@ -2008,9 +2008,16 @@ type_unification (tparms, targs, parms, args, nsubsts, subr)
 	  arg = TREE_TYPE (arg);
 	}
 #endif
-      if (TREE_CODE (arg) == FUNCTION_TYPE
-	  || TREE_CODE (arg) == METHOD_TYPE)
-	arg = build_pointer_type (arg);
+      if (TREE_CODE (parm) != REFERENCE_TYPE)
+	{
+	  if (TREE_CODE (arg) == FUNCTION_TYPE
+	      || TREE_CODE (arg) == METHOD_TYPE)
+	    arg = build_pointer_type (arg);
+	  else if (TREE_CODE (arg) == ARRAY_TYPE)
+	    arg = build_pointer_type (TREE_TYPE (arg));
+	  else
+	    arg = TYPE_MAIN_VARIANT (arg);
+	}
 
       switch (unify (tparms, targs, ntparms, parm, arg, nsubsts))
 	{
@@ -2428,6 +2435,7 @@ do_function_instantiation (declspecs, declarator, storage)
       TREE_PUBLIC (result) = 1;
       DECL_EXTERNAL (result) = (DECL_INLINE (result)
 				&& ! flag_implement_inlines);
+      TREE_STATIC (result) = ! DECL_EXTERNAL (result);
     }
   else if (storage == ridpointers[(int) RID_EXTERN])
     ;
@@ -2506,6 +2514,7 @@ do_type_instantiation (name, storage)
 	    TREE_PUBLIC (tmp) = 1;
 	    DECL_EXTERNAL (tmp) = (DECL_INLINE (tmp)
 				   && ! flag_implement_inlines);
+	    TREE_STATIC (tmp) = ! DECL_EXTERNAL (tmp);
 	  }
       }
 

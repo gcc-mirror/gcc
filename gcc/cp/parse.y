@@ -1251,6 +1251,8 @@ expr_or_declarator:
 		{ $$ = build_parse_node (INDIRECT_REF, $2); }
 	| '&' expr_or_declarator %prec UNARY
 		{ $$ = build_parse_node (ADDR_EXPR, $2); }
+	| '(' expr_or_declarator ')'
+		{ $$ = $2; }
 	;
 
 direct_notype_declarator:
@@ -1259,6 +1261,8 @@ direct_notype_declarator:
 	| notype_qualified_id
 		{ push_nested_class (TREE_TYPE (OP0 ($$)), 3);
 		  TREE_COMPLEXITY ($$) = current_class_depth; }
+	| '(' expr_or_declarator ')'
+		{ $$ = finish_decl_parsing ($2); }
 	;
 
 primary:
@@ -2831,8 +2835,6 @@ complex_direct_notype_declarator:
 		{ $$ = build_parse_node (CALL_EXPR, $$, empty_parms (), $3); }
 	| direct_notype_declarator '(' error ')' type_quals  %prec '.'
 		{ $$ = build_parse_node (CALL_EXPR, $$, NULL_TREE, NULL_TREE); }
-	| '(' expr_or_declarator ')'
-		{ $$ = finish_decl_parsing ($2); }
 	| '(' complex_notype_declarator ')'
 		{ $$ = $2; }
 	| direct_notype_declarator '[' nonmomentary_expr ']'
