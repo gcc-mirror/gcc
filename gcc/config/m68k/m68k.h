@@ -1080,10 +1080,12 @@ __transfer_from_trampoline ()					\
    that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
 #define LEGITIMATE_PIC_OPERAND_P(X)	\
-  (! symbolic_operand (X, VOIDmode)				\
-   && ! (GET_CODE (X) == CONST_DOUBLE && CONST_DOUBLE_MEM (X)	\
-	 && GET_CODE (CONST_DOUBLE_MEM (X)) == MEM		\
-	 && symbolic_operand (XEXP (CONST_DOUBLE_MEM (X), 0), VOIDmode)))
+  ((! symbolic_operand (X, VOIDmode)				\
+    && ! (GET_CODE (X) == CONST_DOUBLE && CONST_DOUBLE_MEM (X)	\
+	  && GET_CODE (CONST_DOUBLE_MEM (X)) == MEM		\
+	  && symbolic_operand (XEXP (CONST_DOUBLE_MEM (X), 0),	\
+			       VOIDmode)))			\
+   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X)))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
