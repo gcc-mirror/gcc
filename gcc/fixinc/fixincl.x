@@ -1961,7 +1961,7 @@ tSCC zHpux10_Cpp_Pow_InlineName[] =
  *  File name selection pattern
  */
 tSCC zHpux10_Cpp_Pow_InlineList[] =
-  "|math.h|";
+  "|fixinc-test-limits.h|math.h|";
 /*
  *  Machine/OS name selection pattern
  */

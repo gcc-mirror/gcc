@@ -1124,7 +1124,7 @@ fix = {
  */
 fix = {
     hackname  = hpux10_cpp_pow_inline;
-    files     = math.h;
+    files     = fixinc-test-limits.h, math.h;
     select    = "^# +ifdef +__cplusplus\n +}\n +inline +double +pow"
 	        "\\(double +__d,int +__expon\\) +{\n[ \t]+return +pow"
 		"\\(__d,\\(double\\)__expon\\);\n +}\n +extern"

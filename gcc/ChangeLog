@@ -1,3 +1,10 @@
+2001-06-14  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.def(hpux10_cpp_pow_inline): add a phoney file for
+	testing purposes
+	* fixinc/fixincl.x: regenerate with the phoney file
+	* fixinc/tests/base/fixinc-test-limits.h: Add new test results
+
 2001-06-15  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* doc/install.texi: Update for C4x.

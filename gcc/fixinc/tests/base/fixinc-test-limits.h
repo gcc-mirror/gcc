@@ -9,6 +9,11 @@
 
 
 
+#if defined( HPUX10_CPP_POW_INLINE_CHECK )
+
+#endif  /* HPUX10_CPP_POW_INLINE_CHECK */
+
+
 #if defined( IRIX_LIMITS_CONST_CHECK )
 extern __const char limit; /* test limits */
 #endif  /* IRIX_LIMITS_CONST_CHECK */
