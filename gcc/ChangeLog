@@ -1,3 +1,17 @@
+Thu Sep 16 11:37:32 1999  Richard Henderson  <rth@cygnus.com>
+
+	* m32r.c: Include toplev.h.
+	(*): Add ATTRIBUTE_UNUSED as needed to arguments.
+	(gen_compare): Rename swap_p to must_swap to match uses.
+	Add default abort case.
+	(m32r_output_function_epilogue): Remove unused variables.
+	(m32r_print_operand): Use HOST_WIDE_INT_PRINT_HEX.
+	* m32r.h (PROTO, STDIO_PROTO): Rename XPROTO; unconditionally
+	define to empty parameter list.  Update all uses.
+	(predicate decls): Use enum machine_mode not int.
+	* m32r.md (movsi): Call abort, not fatal_insn.
+	(zero_branch_insn, rev_zero_branch_insn): Add default abort case.
+
 1999-09-14  Andrew Haley  <aph@cygnus.com>
 
 	* config/mips/mips.md (movsi_usw): if operand 1 is const_int 0,

@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "function.h"
 #include "recog.h"
+#include "toplev.h"
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -237,8 +238,8 @@ init_idents PROTO ((void))
 
 int
 m32r_valid_machine_decl_attribute (type, attributes, identifier, args)
-     tree type;
-     tree attributes;
+     tree type ATTRIBUTE_UNUSED;
+     tree attributes ATTRIBUTE_UNUSED;
      tree identifier;
      tree args;
 {
@@ -269,7 +270,8 @@ m32r_valid_machine_decl_attribute (type, attributes, identifier, args)
 
 int
 m32r_comp_type_attributes (type1, type2)
-     tree type1, type2;
+     tree type1 ATTRIBUTE_UNUSED;
+     tree type2 ATTRIBUTE_UNUSED;
 {
   return 1;
 }
@@ -278,7 +280,7 @@ m32r_comp_type_attributes (type1, type2)
 
 void
 m32r_set_default_type_attributes (type)
-     tree type;
+     tree type ATTRIBUTE_UNUSED;
 {
 }
 
@@ -477,7 +479,7 @@ call_operand (op, int_mode)
 int
 symbolic_operand (op, int_mode)
      rtx op;
-     int int_mode;
+     int int_mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -496,7 +498,7 @@ symbolic_operand (op, int_mode)
 int
 small_data_operand (op, int_mode)
      rtx op;
-     int int_mode;
+     int int_mode ATTRIBUTE_UNUSED;
 {
   if (! TARGET_SDATA_USE)
     return 0;
@@ -519,7 +521,7 @@ small_data_operand (op, int_mode)
 int
 addr24_operand (op, int_mode)
      rtx op;
-     int int_mode;
+     int int_mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == LABEL_REF)
     return TARGET_ADDR24;
@@ -577,7 +579,7 @@ addr32_operand (op, int_mode)
 int
 call26_operand (op, int_mode)
      rtx op;
-     int int_mode;
+     int int_mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == SYMBOL_REF)
     return ! LARGE_NAME_P (XSTR (op, 0));
@@ -590,7 +592,7 @@ call26_operand (op, int_mode)
 int
 seth_add3_operand (op, int_mode)
      rtx op;
-     int int_mode;
+     int int_mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == SYMBOL_REF
       || GET_CODE (op) == LABEL_REF)
@@ -612,7 +614,7 @@ seth_add3_operand (op, int_mode)
 int
 cmp_int16_operand (op, int_mode)
      rtx op;
-     int int_mode;
+     int int_mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -624,7 +626,7 @@ cmp_int16_operand (op, int_mode)
 int
 uint16_operand (op, int_mode)
      rtx op;
-     int int_mode;
+     int int_mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -684,7 +686,7 @@ reg_or_cmp_int16_operand (op, int_mode)
 int
 two_insn_const_operand (op, int_mode)
      rtx op;
-     int int_mode;
+     int int_mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -853,7 +855,7 @@ easy_df_const (op)
 int
 eqne_comparison_operator (op, int_mode)
     rtx op;
-    int int_mode;
+    int int_mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (op);
 
@@ -867,7 +869,7 @@ eqne_comparison_operator (op, int_mode)
 int
 signed_comparison_operator (op, int_mode)
     rtx op;
-    int int_mode;
+    int int_mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (op);
 
@@ -883,7 +885,7 @@ signed_comparison_operator (op, int_mode)
 int
 memreg_operand (op, int_mode)
      rtx op;
-     int int_mode;
+     int int_mode ATTRIBUTE_UNUSED;
 {
   return GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == REG;
 }
@@ -894,7 +896,7 @@ memreg_operand (op, int_mode)
 int
 small_insn_p (op, int_mode)
      rtx op;
-     int int_mode;
+     int int_mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == CONST_INT && INTVAL (op) == 0)
     return 1;
@@ -910,7 +912,7 @@ small_insn_p (op, int_mode)
 int
 large_insn_p (op, int_mode)
      rtx op;
-     int int_mode;
+     int int_mode ATTRIBUTE_UNUSED;
 {
   if (GET_RTX_CLASS (GET_CODE (op)) != 'i')
     return 0;
@@ -926,8 +928,9 @@ large_insn_p (op, int_mode)
 
 int
 m32r_select_cc_mode (op, x, y)
-     int op;
-     rtx x, y;
+     int op ATTRIBUTE_UNUSED;
+     rtx x ATTRIBUTE_UNUSED;
+     rtx y ATTRIBUTE_UNUSED;
 {
   return (int)SImode;
 }
@@ -946,7 +949,7 @@ gen_compare (code, x, y, need_compare)
   enum machine_mode mode = SELECT_CC_MODE (code, x, y);
   enum rtx_code compare_code, branch_code;
   rtx cc_reg = gen_rtx_REG (mode, CARRY_REGNUM);
-  int swap_p = 0;
+  int must_swap = 0;
 
   switch (code)
     {
@@ -960,6 +963,9 @@ gen_compare (code, x, y, need_compare)
     case LEU: compare_code = LTU; branch_code = EQ; must_swap = 1; break;
     case GTU: compare_code = LTU; branch_code = NE; must_swap = 1; break;
     case GEU: compare_code = LTU; branch_code = EQ; break;
+
+    default:
+      abort();
     }
 
   if (need_compare)
@@ -1135,6 +1141,9 @@ gen_compare (code, x, y, need_compare)
     case LTU :
       emit_insn (gen_cmp_ltusi_insn (must_swap ? y : x, must_swap ? x : y));
       break;
+
+    default:
+      abort ();
     }
 
   return gen_rtx (branch_code, VOIDmode, cc_reg, CONST0_RTX (mode));
@@ -1275,7 +1284,7 @@ function_arg_partial_nregs (cum, int_mode, type, named)
      CUMULATIVE_ARGS *cum;
      int int_mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
   enum machine_mode mode = (enum machine_mode)int_mode;
   int ret;
@@ -1416,7 +1425,7 @@ m32r_va_arg (valist, type)
 
 int
 m32r_address_cost (addr)
-     rtx addr;
+     rtx addr ATTRIBUTE_UNUSED;
 {
   return 1;
 }
@@ -1733,7 +1742,7 @@ m32r_output_function_prologue (file, size)
 void
 m32r_output_function_epilogue (file, size)
      FILE * file;
-     int    size;
+     int    size ATTRIBUTE_UNUSED;
 {
   int regno;
   int noepilogue = FALSE;
@@ -1761,8 +1770,6 @@ m32r_output_function_epilogue (file, size)
 
   if (!noepilogue)
     {
-      unsigned int pretend_size = current_frame_info.pretend_size;
-      unsigned int frame_size = total_size - pretend_size;
       unsigned int var_size = current_frame_info.var_size;
       unsigned int args_size = current_frame_info.args_size;
       unsigned int gmask = current_frame_info.gmask;
@@ -1860,7 +1867,9 @@ m32r_finalize_pic ()
 
 void
 m32r_initialize_trampoline (tramp, fnaddr, cxt)
-     rtx tramp, fnaddr, cxt;
+     rtx tramp ATTRIBUTE_UNUSED;
+     rtx fnaddr ATTRIBUTE_UNUSED;
+     rtx cxt ATTRIBUTE_UNUSED;
 {
 }
 
@@ -1945,7 +1954,7 @@ m32r_print_operand (file, x, code)
 	  rtx first, second;
 
 	  split_double (x, &first, &second);
-	  fprintf (file, "0x%08x",
+	  fprintf (file, HOST_WIDE_INT_PRINT_HEX,
 		   code == 'L' ? INTVAL (first) : INTVAL (second));
 	}
       else
@@ -2269,7 +2278,7 @@ conditional_move_operand (operand, int_mode)
 int
 carry_compare_operand (op, int_mode)
      rtx op;
-     int int_mode;
+     int int_mode ATTRIBUTE_UNUSED;
 {
   rtx x;
 
@@ -2299,7 +2308,7 @@ carry_compare_operand (op, int_mode)
 char *
 emit_cond_move (operands, insn)
      rtx * operands;
-     rtx   insn;
+     rtx   insn ATTRIBUTE_UNUSED;
 {
   static char buffer [100];
   char * dest = reg_names [REGNO (operands [0])];
@@ -2470,7 +2479,7 @@ m32r_expand_block_move (operands)
 
 char *
 m32r_output_block_move (insn, operands)
-     rtx insn;
+     rtx insn ATTRIBUTE_UNUSED;
      rtx operands[];
 {
   HOST_WIDE_INT bytes = INTVAL (operands[2]);
@@ -2591,7 +2600,7 @@ m32r_output_block_move (insn, operands)
 int
 m32r_block_immediate_operand (op, mode)
      rtx op;
-     int mode;
+     int mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != CONST_INT
       || INTVAL (op) > MAX_MOVE_BYTES
