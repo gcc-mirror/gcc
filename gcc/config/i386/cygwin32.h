@@ -253,20 +253,6 @@ do {									\
   fprintf (STREAM, "%s%s", USER_LABEL_PREFIX, 		\
            I386_PE_STRIP_ENCODING (NAME))		\
 
-/* Output a function definition label.  */
-#undef ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL)	\
-do {							\
-  if (i386_pe_dllexport_name_p (NAME))			\
-    {							\
-      drectve_section ();				\
-      fprintf ((STREAM), "\t.ascii \" -export:%s\"\n", 	\
-               I386_PE_STRIP_ENCODING (NAME));		\
-      function_section (DECL);				\
-    }							\
-  ASM_OUTPUT_LABEL ((STREAM), (NAME));			\
-} while (0)
-
 /* Output a common block.  */
 #undef ASM_OUTPUT_COMMON
 #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)	\
@@ -359,9 +345,17 @@ do {								\
 /* Write the extra assembler code needed to declare a function
    properly.  If we are generating SDB debugging information, this
    will happen automatically, so we only need to handle other cases.  */
+#undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do									\
     {									\
+      if (i386_pe_dllexport_name_p (NAME))				\
+	{								\
+	  drectve_section ();						\
+	  fprintf ((FILE), "\t.ascii \" -export:%s\"\n", 		\
+		   I386_PE_STRIP_ENCODING (NAME));			\
+	  function_section (DECL);					\
+	}								\
       if (write_symbols != SDB_DEBUG)					\
 	i386_pe_declare_function_type (FILE, NAME, TREE_PUBLIC (DECL));	\
       ASM_OUTPUT_LABEL (FILE, NAME);					\
