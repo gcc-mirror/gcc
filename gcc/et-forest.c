@@ -30,638 +30,714 @@ Boston, MA 02111-1307, USA.
 #include "et-forest.h"
 #include "alloc-pool.h"
 
-struct et_forest_occurrence;
-typedef struct et_forest_occurrence* et_forest_occurrence_t;
+/* We do not enable this with ENABLE_CHECKING, since it is awfully slow.  */
+#undef DEBUG_ET
 
-/* The ET-forest type.  */
-struct et_forest
+#ifdef DEBUG_ET
+#include "basic-block.h"
+#endif
+
+/* The occurence of a node in the et tree.  */
+struct et_occ
 {
-  /* Linked list of nodes is used to destroy the structure.  */
-  int nnodes;
-  alloc_pool node_pool;
-  alloc_pool occur_pool;
+  struct et_node *of;		/* The node.  */
+
+  struct et_occ *parent;	/* Parent in the splay-tree.  */
+  struct et_occ *prev;		/* Left son in the splay-tree.  */
+  struct et_occ *next;		/* Right son in the splay-tree.  */
+
+  int depth;			/* The depth of the node is the sum of depth
+				   fields on the path to the root.  */
+  int min;			/* The minimum value of the depth in the subtree
+				   is obtained by adding sum of depth fields
+				   on the path to the root.  */
+  struct et_occ *min_occ;	/* The occurence in the subtree with the minimal
+				   depth.  */
 };
 
-/* Single occurrence of node in ET-forest.
-   A single node may have multiple occurrences.
- */
-struct et_forest_occurrence
+static alloc_pool et_nodes;
+static alloc_pool et_occurences;
+
+/* Changes depth of OCC to D.  */
+
+static inline void
+set_depth (struct et_occ *occ, int d)
 {
-  /* Parent in the splay-tree.  */
-  et_forest_occurrence_t parent;
+  if (!occ)
+    return;
 
-  /* Children in the splay-tree.  */
-  et_forest_occurrence_t left, right;
-
-  /* Counts of vertices in the two splay-subtrees.  */
-  int count_left, count_right;
-
-  /* Next occurrence of this node in the sequence.  */
-  et_forest_occurrence_t next;
-
-  /* The node, which this occurrence is of.  */
-  et_forest_node_t node;
-};
-
-
-/* ET-forest node.  */
-struct et_forest_node
-{
-  et_forest_t forest;
-  void *value;
-
-  /* First and last occurrence of this node in the sequence.  */
-  et_forest_occurrence_t first, last;
-};
-
-
-static et_forest_occurrence_t splay (et_forest_occurrence_t);
-static void remove_all_occurrences (et_forest_t, et_forest_node_t);
-static inline et_forest_occurrence_t find_leftmost_node
-  (et_forest_occurrence_t);
-static inline et_forest_occurrence_t find_rightmost_node
-  (et_forest_occurrence_t);
-static int calculate_value (et_forest_occurrence_t);
-
-/* Return leftmost node present in the tree roted by OCC.  */
-static inline et_forest_occurrence_t
-find_leftmost_node (et_forest_occurrence_t occ)
-{
-  while (occ->left)
-    occ = occ->left;
-
-  return occ;
+  occ->min += d - occ->depth;
+  occ->depth = d;
 }
 
-/* Return rightmost node present in the tree roted by OCC.  */
-static inline et_forest_occurrence_t
-find_rightmost_node (et_forest_occurrence_t occ)
+/* Adds D to the depth of OCC.  */
+
+static inline void
+set_depth_add (struct et_occ *occ, int d)
 {
-  while (occ->right)
-    occ = occ->right;
-  return occ;
+  if (!occ)
+    return;
+
+  occ->min += d;
+  occ->depth += d;
 }
 
+/* Sets prev field of OCC to P.  */
 
-/* Operation splay for splay tree structure representing occurrences.  */
-static et_forest_occurrence_t
-splay (et_forest_occurrence_t node)
+static inline void
+set_prev (struct et_occ *occ, struct et_occ *t)
 {
-  et_forest_occurrence_t parent;
-  et_forest_occurrence_t grandparent;
+#ifdef DEBUG_ET
+  if (occ == t)
+    abort ();
+#endif
 
-  while (1)
+  occ->prev = t;
+  if (t)
+    t->parent = occ;
+}
+
+/* Sets next field of OCC to P.  */
+
+static inline void
+set_next (struct et_occ *occ, struct et_occ *t)
+{
+#ifdef DEBUG_ET
+  if (occ == t)
+    abort ();
+#endif
+
+  occ->next = t;
+  if (t)
+    t->parent = occ;
+}
+
+/* Recompute minimum for occurence OCC.  */
+
+static inline void
+et_recomp_min (struct et_occ *occ)
+{
+  struct et_occ *mson = occ->prev;
+
+  if (!mson
+      || (occ->next
+	  && mson->min > occ->next->min))
+      mson = occ->next;
+
+  if (mson && mson->min < 0)
     {
-      parent = node->parent;
+      occ->min = mson->min + occ->depth;
+      occ->min_occ = mson->min_occ;
+    }
+  else
+    {
+      occ->min = occ->depth;
+      occ->min_occ = occ;
+    }
+}
 
-      if (! parent)
-	return node;  /* node == root.  */
+#ifdef DEBUG_ET
+/* Checks whether neighbourhood of OCC seems sane.  */
 
-      grandparent = parent->parent;
+static void
+et_check_occ_sanity (struct et_occ *occ)
+{
+  if (!occ)
+    return;
 
-      if (! grandparent)
-	break;
+  if (occ->parent == occ)
+    abort ();
 
-      /* Now there are four possible combinations:  */
+  if (occ->prev == occ)
+    abort ();
 
-      if (node == parent->left)
+  if (occ->next == occ)
+    abort ();
+
+  if (occ->next && occ->next == occ->prev)
+    abort ();
+
+  if (occ->next)
+    {
+      if (occ->next == occ->parent)
+	abort ();
+
+      if (occ->next->parent != occ)
+	abort ();
+    }
+
+  if (occ->prev)
+    {
+      if (occ->prev == occ->parent)
+	abort ();
+
+      if (occ->prev->parent != occ)
+	abort ();
+    }
+
+  if (occ->parent
+      && occ->parent->prev != occ
+      && occ->parent->next != occ)
+    abort ();
+}
+
+/* Checks whether tree rooted at OCC is sane.  */
+
+static void
+et_check_sanity (struct et_occ *occ)
+{
+  et_check_occ_sanity (occ);
+  if (occ->prev)
+    et_check_sanity (occ->prev);
+  if (occ->next)
+    et_check_sanity (occ->next);
+}
+
+/* Checks whether tree containing OCC is sane.  */
+
+static void
+et_check_tree_sanity (struct et_occ *occ)
+{
+  while (occ->parent)
+    occ = occ->parent;
+
+  et_check_sanity (occ);
+}
+
+/* For recording the paths.  */
+
+static int len;
+static void *datas[100000];
+static int depths[100000];
+
+/* Records the path represented by OCC, with depth incremented by DEPTH.  */
+
+static int
+record_path_before_1 (struct et_occ *occ, int depth)
+{
+  int mn, m;
+
+  depth += occ->depth;
+  mn = depth;
+
+  if (occ->prev)
+    {
+      m = record_path_before_1 (occ->prev, depth); 
+      if (m < mn)
+	mn = m;
+    }
+
+  fprintf (stderr, "%d (%d); ", ((basic_block) occ->of->data)->index, depth);
+  depths[len] = depth;
+  datas[len] = occ->of;
+  len++;
+
+  if (occ->next)
+    {
+      m = record_path_before_1 (occ->next, depth);
+      if (m < mn)
+	mn = m;
+    }
+
+  if (mn != occ->min + depth - occ->depth)
+    abort ();
+
+  return mn;
+}
+
+/* Records the path represented by a tree containing OCC.  */
+
+static void
+record_path_before (struct et_occ *occ)
+{
+  while (occ->parent)
+    occ = occ->parent;
+
+  len = 0;
+  record_path_before_1 (occ, 0);
+  fprintf (stderr, "\n");
+}
+
+/* Checks whether the path represented by OCC, with depth incremented by DEPTH,
+   was not changed since the last recording.  */
+
+static int
+check_path_after_1 (struct et_occ *occ, int depth)
+{
+  int mn, m;
+
+  depth += occ->depth;
+  mn = depth;
+
+  if (occ->next)
+    {
+      m = check_path_after_1 (occ->next, depth); 
+      if (m < mn)
+	mn =  m;
+    }
+
+  len--;
+  if (depths[len] != depth
+      || datas[len] != occ->of)
+    abort ();
+
+  if (occ->prev)
+    {
+      m = check_path_after_1 (occ->prev, depth);
+      if (m < mn)
+	mn =  m;
+    }
+
+  if (mn != occ->min + depth - occ->depth)
+    abort ();
+
+  return mn;
+}
+
+/* Checks whether the path represented by a tree containing OCC was
+   not changed since the last recording.  */
+
+static void
+check_path_after (struct et_occ *occ)
+{
+  while (occ->parent)
+    occ = occ->parent;
+
+  check_path_after_1 (occ, 0);
+  if (len != 0)
+    abort ();
+}
+
+#endif
+
+/* Splay the occurence OCC to the root of the tree.  */
+
+static inline void
+et_splay (struct et_occ *occ)
+{
+  struct et_occ *f, *gf, *ggf;
+  int occ_depth, f_depth, gf_depth;
+
+#ifdef DEBUG_ET
+  record_path_before (occ);
+  et_check_tree_sanity (occ);
+#endif
+ 
+  while (occ->parent)
+    {
+      occ_depth = occ->depth;
+
+      f = occ->parent;
+      f_depth = f->depth;
+
+      gf = f->parent;
+
+      if (!gf)
 	{
-	  if (parent == grandparent->left)
+	  set_depth_add (occ, f_depth);
+	  occ->min_occ = f->min_occ;
+	  occ->min = f->min;
+
+	  if (f->prev == occ)
 	    {
-	      et_forest_occurrence_t node1, node2;
-	      int count1, count2;
-
-	      node1 = node->right;
-	      count1 = node->count_right;
-	      node2 = parent->right;
-	      count2 = parent->count_right;
-
-	      grandparent->left = node2;
-	      grandparent->count_left = count2;
-	      if (node2)
-		node2->parent = grandparent;
-	      parent->left = node1;
-	      parent->count_left = count1;
-	      if (node1)
-		node1->parent = parent;
-	      parent->right = grandparent;
-	      parent->count_right = count2 + grandparent->count_right + 1;
-	      node->right = parent;
-	      node->count_right = count1 + parent->count_right + 1;
-
-	      node->parent = grandparent->parent;
-	      parent->parent = node;
-	      grandparent->parent = parent;
-
-	      if (node->parent)
-		{
-		  if (node->parent->left == grandparent)
-		    node->parent->left = node;
-		  else
-		    node->parent->right = node;
-		}
+	      /* zig */
+	      set_prev (f, occ->next);
+	      set_next (occ, f);
+	      set_depth_add (f->prev, occ_depth);
 	    }
 	  else
 	    {
-	      /* parent == grandparent->right && node == parent->left*/
-	      et_forest_occurrence_t node1, node2;
-	      int count1, count2;
+	      /* zag */
+	      set_next (f, occ->prev);
+	      set_prev (occ, f);
+	      set_depth_add (f->next, occ_depth);
+	    }
+	  set_depth (f, -occ_depth);
+	  occ->parent = NULL;
 
-	      node1 = node->left;
-	      count1 = node->count_left;
-	      node2 = node->right;
-	      count2 = node->count_right;
+	  et_recomp_min (f);
+#ifdef DEBUG_ET
+	  et_check_tree_sanity (occ);
+	  check_path_after (occ);
+#endif
+	  return;
+	}
 
-	      grandparent->right = node1;
-	      grandparent->count_right = count1;
-	      if (node1)
-		node1->parent = grandparent;
-	      parent->left = node2;
-	      parent->count_left = count2;
-	      if (node2)
-		node2->parent = parent;
-	      node->left = grandparent;
-	      node->count_left = grandparent->count_left + count1 + 1;
-	      node->right = parent;
-	      node->count_right = parent->count_right + count2 + 1;
+      gf_depth = gf->depth;
 
-	      node->parent = grandparent->parent;
-	      parent->parent = node;
-	      grandparent->parent = node;
+      set_depth_add (occ, f_depth + gf_depth);
+      occ->min_occ = gf->min_occ;
+      occ->min = gf->min;
 
-	      if (node->parent)
-		{
-		  if (node->parent->left == grandparent)
-		    node->parent->left = node;
-		  else
-		    node->parent->right = node;
-		}
+      ggf = gf->parent;
+
+      if (gf->prev == f)
+	{
+	  if (f->prev == occ)
+	    {
+	      /* zig zig */
+	      set_prev (gf, f->next);
+	      set_prev (f, occ->next);
+	      set_next (occ, f);
+	      set_next (f, gf);
+
+	      set_depth (f, -occ_depth);
+	      set_depth_add (f->prev, occ_depth);
+	      set_depth (gf, -f_depth);
+	      set_depth_add (gf->prev, f_depth);
+	    }
+	  else
+	    {
+	      /* zag zig */
+	      set_prev (gf, occ->next);
+	      set_next (f, occ->prev);
+	      set_prev (occ, f);
+	      set_next (occ, gf);
+
+	      set_depth (f, -occ_depth);
+	      set_depth_add (f->next, occ_depth);
+	      set_depth (gf, -occ_depth - f_depth);
+	      set_depth_add (gf->prev, occ_depth + f_depth);
 	    }
 	}
       else
 	{
-	  /* node == parent->right.  */
-	  if (parent == grandparent->left)
+	  if (f->prev == occ)
 	    {
-	      et_forest_occurrence_t node1, node2;
-	      int count1, count2;
+	      /* zig zag */
+	      set_next (gf, occ->prev);
+	      set_prev (f, occ->next);
+	      set_prev (occ, gf);
+	      set_next (occ, f);
 
-	      node1 = node->left;
-	      count1 = node->count_left;
-	      node2 = node->right;
-	      count2 = node->count_right;
-
-	      parent->right = node1;
-	      parent->count_right = count1;
-	      if (node1)
-		node1->parent = parent;
-	      grandparent->left = node2;
-	      grandparent->count_left = count2;
-	      if (node2)
-		node2->parent = grandparent;
-	      node->left = parent;
-	      node->count_left = parent->count_left + count1 + 1;
-	      node->right = grandparent;
-	      node->count_right = grandparent->count_right + count2 + 1;
-
-	      node->parent = grandparent->parent;
-	      parent->parent = node;
-	      grandparent->parent = node;
-
-	      if (node->parent)
-		{
-		  if (node->parent->left == grandparent)
-		    node->parent->left = node;
-		  else
-		    node->parent->right = node;
-		}
+	      set_depth (f, -occ_depth);
+	      set_depth_add (f->prev, occ_depth);
+	      set_depth (gf, -occ_depth - f_depth);
+	      set_depth_add (gf->next, occ_depth + f_depth);
 	    }
 	  else
 	    {
-	      /* parent == grandparent->right && node == parent->right*/
-	      et_forest_occurrence_t node1, node2;
-	      int count1, count2;
+	      /* zag zag */
+	      set_next (gf, f->prev);
+	      set_next (f, occ->prev);
+	      set_prev (occ, f);
+	      set_prev (f, gf);
 
-	      node1 = node->left;
-	      count1 = node->count_left;
-	      node2 = parent->left;
-	      count2 = parent->count_left;
-
-	      grandparent->right = node2;
-	      grandparent->count_right = count2;
-	      if (node2)
-		node2->parent = grandparent;
-	      parent->right = node1;
-	      parent->count_right = count1;
-	      if (node1)
-		node1->parent = parent;
-	      parent->left = grandparent;
-	      parent->count_left = count2 + grandparent->count_left + 1;
-	      node->left = parent;
-	      node->count_left = count1 + parent->count_left + 1;
-
-	      node->parent = grandparent->parent;
-	      parent->parent = node;
-	      grandparent->parent = parent;
-
-	      if (node->parent)
-		{
-		  if (node->parent->left == grandparent)
-		    node->parent->left = node;
-		  else
-		    node->parent->right = node;
-		}
+	      set_depth (f, -occ_depth);
+	      set_depth_add (f->next, occ_depth);
+	      set_depth (gf, -f_depth);
+	      set_depth_add (gf->next, f_depth);
 	    }
 	}
 
-    }
-
-  /* parent == root.  */
-  /* There are two possible combinations:  */
-
-  if (node == parent->left)
-    {
-      et_forest_occurrence_t node1;
-      int count1;
-
-      node1 = node->right;
-      count1 = node->count_right;
-
-      parent->left = node1;
-      parent->count_left = count1;
-      if (node1)
-	node1->parent = parent;
-      node->right = parent;
-      node->count_right = parent->count_right + 1 + count1;
-      node->parent = parent->parent;  /* the same as = 0;  */
-      parent->parent = node;
-
-      if (node->parent)
+      occ->parent = ggf;
+      if (ggf)
 	{
-	  if (node->parent->left == parent)
-	    node->parent->left = node;
+	  if (ggf->prev == gf)
+	    ggf->prev = occ;
 	  else
-	    node->parent->right = node;
+	    ggf->next = occ;
 	}
-    }
-  else
-    {
-      /* node == parent->right.  */
-      et_forest_occurrence_t node1;
-      int count1;
 
-      node1 = node->left;
-      count1 = node->count_left;
-
-      parent->right = node1;
-      parent->count_right = count1;
-      if (node1)
-	node1->parent = parent;
-      node->left = parent;
-      node->count_left = parent->count_left + 1 + count1;
-      node->parent = parent->parent;  /* the same as = 0;  */
-      parent->parent = node;
-
-      if (node->parent)
-	{
-	  if (node->parent->left == parent)
-	    node->parent->left = node;
-	  else
-	    node->parent->right = node;
-	}
+      et_recomp_min (gf);
+      et_recomp_min (f);
+#ifdef DEBUG_ET
+      et_check_tree_sanity (occ);
+#endif
     }
 
-  return node;
+#ifdef DEBUG_ET
+  et_check_sanity (occ);
+  check_path_after (occ);
+#endif
 }
 
-/* Remove all occurrences of the given node before destroying the node.  */
-static void
-remove_all_occurrences (et_forest_t forest, et_forest_node_t forest_node)
+/* Create a new et tree occurence of NODE.  */
+
+static struct et_occ *
+et_new_occ (struct et_node *node)
 {
-  et_forest_occurrence_t first = forest_node->first;
-  et_forest_occurrence_t last = forest_node->last;
-  et_forest_occurrence_t node;
+  struct et_occ *nw;
+  
+  if (!et_occurences)
+    et_occurences = create_alloc_pool ("et_occ pool", sizeof (struct et_occ), 300);
+  nw = pool_alloc (et_occurences);
 
-  splay (first);
+  nw->of = node;
+  nw->parent = NULL;
+  nw->prev = NULL;
+  nw->next = NULL;
 
-  if (first->left)
-    first->left->parent = 0;
-  if (first->right)
-    first->right->parent = 0;
+  nw->depth = 0;
+  nw->min_occ = nw;
+  nw->min = 0;
 
-  if (last != first)
-    {
-      splay (last);
-
-      if (last->left)
-	last->left->parent = 0;
-      if (last->right)
-	last->right->parent = 0;
-    }
-
-  if (last->right && first->left) /* actually, first->left would suffice.  */
-    {
-      /* Need to join them.  */
-      et_forest_occurrence_t prev_node, next_node;
-
-      prev_node = splay (find_rightmost_node (first->left));
-      next_node = splay (find_leftmost_node (last->right));
-      /* prev_node and next_node are consecutive occurrences
-	 of the same node.  */
-      if (prev_node->next != next_node)
-	abort ();
-
-      prev_node->right = next_node->right;
-      prev_node->count_right = next_node->count_right;
-      prev_node->next = next_node->next;
-      if (prev_node->right)
-	prev_node->right->parent = prev_node;
-
-      if (prev_node->node->last == next_node)
-	prev_node->node->last = prev_node;
-
-      pool_free (forest->occur_pool, next_node);
-    }
-
-  if (first != last)
-    {
-      node = first->next;
-
-      while (node != last)
-	{
-	  et_forest_occurrence_t next_node;
-
-	  splay (node);
-
-	  if (node->left)
-	    node->left->parent = 0;
-	  if (node->right)
-	    node->right->parent = 0;
-
-	  next_node = node->next;
-	  pool_free (forest->occur_pool, node);
-	  node = next_node;
-	}
-    }
-
-  pool_free (forest->occur_pool, first);
-  if (first != last)
-    pool_free (forest->occur_pool, last);
+  return nw;
 }
 
-/* Calculate ET value of the given node.  */
-static inline int
-calculate_value (et_forest_occurrence_t node)
+/* Create a new et tree containing DATA.  */
+
+struct et_node *
+et_new_tree (void *data)
 {
-  int value = node->count_left;
+  struct et_node *nw;
+  
+  if (!et_nodes)
+    et_nodes = create_alloc_pool ("et_node pool", sizeof (struct et_node), 300);
+  nw = pool_alloc (et_nodes);
 
-  while (node->parent)
-    {
-      if (node == node->parent->right)
-	value += node->parent->count_left + 1;
+  nw->data = data;
+  nw->father = NULL;
+  nw->left = NULL;
+  nw->right = NULL;
+  nw->son = NULL;
 
-      node = node->parent;
-    }
+  nw->rightmost_occ = et_new_occ (nw);
+  nw->parent_occ = NULL;
 
-  return value;
+  return nw;
 }
 
+/* Releases et tree T.  */
 
-
-
-/* Create ET-forest structure.  */
-et_forest_t
-et_forest_create (void)
-{
-  et_forest_t forest = xmalloc (sizeof (struct et_forest));
-
-  forest->nnodes = 0;
-  forest->occur_pool = create_alloc_pool ("et_forest_occurrence pool", sizeof (struct et_forest_occurrence), 300);
-  forest->node_pool = create_alloc_pool ("et_forest_node pool", sizeof (struct et_forest_node), 300);
-  return forest;
-}
-
-
-
-/* Deallocate the structure.  */
 void
-et_forest_delete (et_forest_t forest)
+et_free_tree (struct et_node *t)
 {
-  if (forest->nnodes)
-    abort ();
-  free_alloc_pool (forest->occur_pool);
-  free_alloc_pool (forest->node_pool);
-  free (forest);
+  while (t->son)
+    et_split (t->son);
+
+  if (t->father)
+    et_split (t);
+
+  pool_free (et_occurences, t->rightmost_occ);
+  pool_free (et_nodes, t);
 }
 
-/* Create new node with VALUE and return the edge.
-   Return NULL when memory allocation failed.  */
-et_forest_node_t
-et_forest_add_node (et_forest_t forest, void *value)
-{
-  /* Create node with one occurrence.  */
-  et_forest_node_t node;
-  et_forest_occurrence_t occ;
+/* Sets father of et tree T to FATHER.  */
 
-  node = pool_alloc (forest->node_pool);
-  occ = pool_alloc (forest->occur_pool);
-
-  node->first = node->last = occ;
-  node->value = value;
-  forest->nnodes++;
-
-  occ->node = node;
-  occ->left = occ->right = occ->parent = 0;
-  occ->next = 0;
-  occ->count_left = occ->count_right = 0;
-  return node;
-}
-
-/* Add new edge to the tree, return 1 if successful.
-   0 indicates that creation of the edge will close the cycle in graph.  */
-int
-et_forest_add_edge (et_forest_t forest ATTRIBUTE_UNUSED,
-		    et_forest_node_t parent_node, et_forest_node_t child_node)
-{
-  et_forest_occurrence_t new_occ, parent_occ, child_occ;
-
-  if (! parent_node || ! child_node)
-    abort ();
-
-  parent_occ = parent_node->first;
-  child_occ = child_node->first;
-
-  splay (parent_occ);
-  splay (child_occ);
-
-  if (parent_occ->parent)
-    return 0; /* Both child and parent are in the same tree.  */
-
-  if (child_occ->left)
-    abort ();  /* child must be root of its containing tree.  */
-
-  new_occ = pool_alloc (forest->occur_pool);
-
-  new_occ->node = parent_node;
-  new_occ->left = child_occ;
-  new_occ->count_left = child_occ->count_right + 1; /* count_left is 0.  */
-  new_occ->right = parent_occ->right;
-  new_occ->count_right = parent_occ->count_right;
-  new_occ->parent = parent_occ;
-  new_occ->next = parent_occ->next;
-  child_occ->parent = new_occ;
-  parent_occ->right = new_occ;
-  parent_occ->count_right = new_occ->count_left + new_occ->count_right + 1;
-  parent_occ->next = new_occ;
-  if (new_occ->right)
-    new_occ->right->parent = new_occ;
-
-  if (parent_node->last == parent_occ)
-    parent_node->last = new_occ;
-  return 1;
-}
-
-/* Remove NODE from the tree and all connected edges.  */
 void
-et_forest_remove_node (et_forest_t forest, et_forest_node_t node)
+et_set_father (struct et_node *t, struct et_node *father)
 {
-  remove_all_occurrences (forest, node);
-  forest->nnodes--;
+  struct et_node *left, *right;
+  struct et_occ *rmost, *left_part, *new_f_occ, *p;
 
-  pool_free (forest->node_pool, node);
-}
+  /* Update the path represented in the splay tree.  */
+  new_f_occ = et_new_occ (father);
 
-/* Remove edge from the tree, return 1 if successful,
-   0 indicates nonexisting edge.  */
-int
-et_forest_remove_edge (et_forest_t forest ATTRIBUTE_UNUSED,
-		       et_forest_node_t parent_node,
-		       et_forest_node_t child_node)
-{
-  et_forest_occurrence_t parent_pre_occ, parent_post_occ;
+  rmost = father->rightmost_occ;
+  et_splay (rmost);
 
-  splay (child_node->first);
+  left_part = rmost->prev;
 
-  if (! child_node->first->left)
-    return 0;
+  p = t->rightmost_occ;
+  et_splay (p);
 
-  parent_pre_occ = find_rightmost_node (child_node->first->left);
-  if (parent_pre_occ->node != parent_node)
-    abort ();
+  set_prev (new_f_occ, left_part);
+  set_next (new_f_occ, p);
 
-  splay (parent_pre_occ);
-  parent_pre_occ->right->parent = 0;
+  p->depth++;
+  p->min++;
+  et_recomp_min (new_f_occ);
 
-  parent_post_occ = parent_pre_occ->next;
-  splay (parent_post_occ);
+  set_prev (rmost, new_f_occ);
 
-  parent_post_occ->left->parent = 0;
+  if (new_f_occ->min + rmost->depth < rmost->min)
+    {
+      rmost->min = new_f_occ->min + rmost->depth;
+      rmost->min_occ = new_f_occ->min_occ;
+    }
 
-  parent_pre_occ->right = parent_post_occ->right;
-  parent_pre_occ->count_right = parent_post_occ->count_right;
-  if (parent_post_occ->right)
-    parent_post_occ->right->parent = parent_pre_occ;
+  t->parent_occ = new_f_occ;
 
-  parent_pre_occ->next = parent_post_occ->next;
-
-  if (parent_post_occ == parent_node->last)
-    parent_node->last = parent_pre_occ;
-
-  pool_free (forest->occur_pool, parent_post_occ);
-  return 1;
-}
-
-/* Return the parent of the NODE if any, NULL otherwise.  */
-et_forest_node_t
-et_forest_parent (et_forest_t forest ATTRIBUTE_UNUSED, et_forest_node_t node)
-{
-  splay (node->first);
-
-  if (node->first->left)
-    return find_rightmost_node (node->first->left)->node;
+  /* Update the tree.  */
+  t->father = father;
+  right = father->son;
+  if (right)
+    left = right->left;
   else
-    return 0;
+    left = right = t;
+
+  left->right = t;
+  right->left = t;
+  t->left = left;
+  t->right = right;
+
+  father->son = t;
+
+#ifdef DEBUG_ET
+  et_check_tree_sanity (rmost);
+  record_path_before (rmost);
+#endif
 }
 
+/* Splits the edge from T to its father.  */
 
-/* Return nearest common ancestor of NODE1 and NODE2.
-   Return NULL of they are in different trees.  */
-et_forest_node_t
-et_forest_common_ancestor (et_forest_t forest ATTRIBUTE_UNUSED,
-			   et_forest_node_t node1, et_forest_node_t node2)
+void
+et_split (struct et_node *t)
 {
-  int value1, value2, max_value;
-  et_forest_node_t ancestor;
+  struct et_node *father = t->father;
+  struct et_occ *r, *l, *rmost, *p_occ;
 
-  if (node1 == node2)
-    return node1;
+  /* Update the path represented by the splay tree.  */
+  rmost = t->rightmost_occ;
+  et_splay (rmost);
 
-  if (! node1 || ! node2)
-    abort ();
+  for (r = rmost->next; r->prev; r = r->prev)
+    continue;
+  et_splay (r); 
 
-  splay (node1->first);
-  splay (node2->first);
+  r->prev->parent = NULL;
+  p_occ = t->parent_occ;
+  et_splay (p_occ);
+  t->parent_occ = NULL;
 
-  if (! node1->first->parent)  /* The two vertices are in different trees.  */
-    return 0;
+  l = p_occ->prev;
+  p_occ->next->parent = NULL;
 
-  value2 = calculate_value (node2->first);
-  value1 = calculate_value (node1->first);
+  set_prev (r, l);
 
-  if (value1 < value2)
+  et_recomp_min (r);
+
+  et_splay (rmost);
+  rmost->depth = 0;
+  rmost->min = 0;
+
+  pool_free (et_occurences, p_occ);
+
+  /* Update the tree.  */
+  if (father->son == t)
+    father->son = t->right;
+  if (father->son == t)
+    father->son = NULL;
+  else
     {
-      ancestor = node1;
-      max_value = value2;
+      t->left->right = t->right;
+      t->right->left = t->left;
+    }
+  t->left = t->right = NULL;
+  t->father = NULL;
+
+#ifdef DEBUG_ET
+  et_check_tree_sanity (rmost);
+  record_path_before (rmost);
+
+  et_check_tree_sanity (r);
+  record_path_before (r);
+#endif
+}
+
+/* Finds the nearest common ancestor of the nodes N1 and N2.  */
+
+struct et_node *
+et_nca (struct et_node *n1, struct et_node *n2)
+{
+  struct et_occ *o1 = n1->rightmost_occ, *o2 = n2->rightmost_occ, *om;
+  struct et_occ *l, *r, *ret;
+  int mn;
+
+  if (n1 == n2)
+    return n1;
+
+  et_splay (o1);
+  l = o1->prev;
+  r = o1->next;
+  if (l)
+    l->parent = NULL;
+  if (r)
+    r->parent = NULL;
+  et_splay (o2);
+
+  if (l == o2 || (l && l->parent != NULL))
+    {
+      ret = o2->next;
+
+      set_prev (o1, o2);
+      if (r)
+	r->parent = o1;
     }
   else
     {
-      ancestor = node2;
-      max_value = value1;
+      ret = o2->prev;
+
+      set_next (o1, o2);
+      if (l)
+	l->parent = o1;
     }
 
-  while (calculate_value (ancestor->last) < max_value)
+  if (0 < o2->depth)
     {
-      /* Find parent node.  */
-      splay (ancestor->first);
-      ancestor = find_rightmost_node (ancestor->first->left) ->node;
+      om = o1;
+      mn = o1->depth;
+    }
+  else
+    {
+      om = o2;
+      mn = o2->depth + o1->depth;
     }
 
-  return ancestor;
+#ifdef DEBUG_ET
+  et_check_tree_sanity (o2);
+#endif
+
+  if (ret && ret->min + o1->depth + o2->depth < mn)
+    return ret->min_occ->of;
+  else
+    return om->of;
 }
 
-/* Return the value pointer of node set during it's creation.  */
-void *
-et_forest_node_value (et_forest_t forest ATTRIBUTE_UNUSED,
-		      et_forest_node_t node)
-{
-  /* Alloc threading NULL as a special node of the forest.  */
-  if (!node)
-    return NULL;
-  return node->value;
-}
+/* Checks whether the node UP is an ancestor of the node DOWN.  */
 
-/* Find all sons of NODE and store them into ARRAY allocated by the caller.
-   Return number of nodes found.  */
-int
-et_forest_enumerate_sons (et_forest_t forest ATTRIBUTE_UNUSED,
-			  et_forest_node_t node, et_forest_node_t *array)
+bool
+et_below (struct et_node *down, struct et_node *up)
 {
-  int n = 0;
-  et_forest_occurrence_t occ = node->first, stop = node->last, occ1;
+  struct et_occ *u = up->rightmost_occ, *d = down->rightmost_occ;
+  struct et_occ *l, *r;
 
-  /* Parent is the rightmost node of the left successor.
-     Look for all occurrences having no right successor
-     and lookup the sons.  */
-  while (occ != stop)
+  if (up == down)
+    return true;
+
+  et_splay (u);
+  l = u->prev;
+  r = u->next;
+
+  if (!l)
+    return false;
+
+  l->parent = NULL;
+
+  if (r)
+    r->parent = NULL;
+
+  et_splay (d);
+
+  if (l == d || l->parent != NULL)
     {
-      splay (occ);
-      if (occ->right)
-	{
-          occ1 = find_leftmost_node (occ->right);
-	  if (occ1->node->first == occ1)
-	    array[n++] = occ1->node;
-	}
-      occ = occ->next;
+      if (r)
+	r->parent = u;
+      set_prev (u, d);
+#ifdef DEBUG_ET
+      et_check_tree_sanity (u);
+#endif
     }
-  return n;
+  else
+    {
+      l->parent = u;
+
+      /* In case O1 and O2 are in two different trees, we must just restore the
+	 original state.  */
+      if (r && r->parent != NULL)
+	set_next (u, d);
+      else
+	set_next (u, r);
+
+#ifdef DEBUG_ET
+      et_check_tree_sanity (u);
+#endif
+      return false;
+    }
+
+  if (0 >= d->depth)
+    return false;
+
+  return !d->next || d->next->min + d->depth >= 0;
 }

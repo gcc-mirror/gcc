@@ -2477,6 +2477,7 @@ rest_of_handle_branch_prob (tree decl, rtx insns)
     estimate_probability (&loops);
 
   flow_loops_free (&loops);
+  free_dominance_info (CDI_DOMINATORS);
   close_dump_file (DFI_bp, print_rtl_with_bb, insns);
   timevar_pop (TV_BRANCH_PROB);
 }
@@ -3014,8 +3015,9 @@ rest_of_handle_loop_optimize (tree decl, rtx insns)
    sooner, but we want the profile feedback to work more
    efficiently.  */
 static void
-rest_of_handle_loop2 (tree decl, rtx insns)
+rest_of_handle_loop2 (tree decl ATTRIBUTE_UNUSED, rtx insns ATTRIBUTE_UNUSED)
 {
+#if 0
   struct loops *loops;
   timevar_push (TV_LOOP);
   open_dump_file (DFI_loop2, decl);
@@ -3047,6 +3049,7 @@ rest_of_handle_loop2 (tree decl, rtx insns)
   close_dump_file (DFI_loop2, print_rtl_with_bb, get_insns ());
   timevar_pop (TV_LOOP);
   ggc_collect ();
+#endif
 }
 
 /* This is called from finish_function (within langhooks.parse_file)

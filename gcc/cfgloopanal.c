@@ -39,14 +39,13 @@ static bool invariant_rtx_wrto_regs_p (rtx, regset);
 static rtx test_for_iteration (struct loop_desc *desc, unsigned HOST_WIDE_INT);
 static bool constant_iterations (struct loop_desc *, unsigned HOST_WIDE_INT *,
 				 bool *);
-static bool simple_loop_exit_p (struct loops *, struct loop *, edge, regset,
+static bool simple_loop_exit_p (struct loop *, edge, regset,
 				rtx *, struct loop_desc *);
 static rtx variable_initial_value (rtx, regset, rtx, rtx *, enum machine_mode);
 static rtx variable_initial_values (edge, rtx, enum machine_mode);
 static bool simple_condition_p (struct loop *, rtx, regset,
 				struct loop_desc *);
-static basic_block simple_increment (struct loops *, struct loop *, rtx *,
-				     struct loop_desc *);
+static basic_block simple_increment (struct loop *, rtx *, struct loop_desc *);
 static rtx count_strange_loop_iterations (rtx, rtx, enum rtx_code,
 					  int, rtx, enum machine_mode,
 					  enum machine_mode);
@@ -73,10 +72,10 @@ inverse (unsigned HOST_WIDEST_INT x, int mod)
 
 /* Checks whether BB is executed exactly once in each LOOP iteration.  */
 bool
-just_once_each_iteration_p (struct loops *loops, struct loop *loop, basic_block bb)
+just_once_each_iteration_p (struct loop *loop, basic_block bb)
 {
   /* It must be executed at least once each iteration.  */
-  if (!dominated_by_p (loops->cfg.dom, loop->latch, bb))
+  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
     return false;
 
   /* And just once.  */
@@ -295,8 +294,8 @@ simple_condition_p (struct loop *loop ATTRIBUTE_UNUSED, rtx condition,
    iteration.  Fills in DESC->stride and returns block in that DESC->var is
    modified.  */
 static basic_block
-simple_increment (struct loops *loops, struct loop *loop,
-		  rtx *simple_increment_regs, struct loop_desc *desc)
+simple_increment (struct loop *loop, rtx *simple_increment_regs,
+		  struct loop_desc *desc)
 {
   rtx mod_insn, mod_insn1, set, set_src, set_add;
   basic_block mod_bb, mod_bb1;
@@ -308,7 +307,7 @@ simple_increment (struct loops *loops, struct loop *loop,
   mod_bb = BLOCK_FOR_INSN (mod_insn);
 
   /* Check that it is executed exactly once each iteration.  */
-  if (!just_once_each_iteration_p (loops, loop, mod_bb))
+  if (!just_once_each_iteration_p (loop, mod_bb))
     return NULL;
 
   /* mod_insn must be a simple increment/decrement.  */
@@ -355,7 +354,7 @@ simple_increment (struct loops *loops, struct loop *loop,
 	return NULL;
 
       mod_bb1 = BLOCK_FOR_INSN (mod_insn1);
-      if (!dominated_by_p (loops->cfg.dom, mod_bb, mod_bb1))
+      if (!dominated_by_p (CDI_DOMINATORS, mod_bb, mod_bb1))
 	return NULL;
       if (mod_bb1 == mod_bb)
 	{
@@ -962,7 +961,7 @@ test_for_iteration (struct loop_desc *desc, unsigned HOST_WIDE_INT iter)
    description joined to it in in DESC.  INVARIANT_REGS and SINGLE_SET_REGS
    are results of blocks_{invariant,single_set}_regs over BODY.  */
 static bool
-simple_loop_exit_p (struct loops *loops, struct loop *loop, edge exit_edge,
+simple_loop_exit_p (struct loop *loop, edge exit_edge,
 		    regset invariant_regs, rtx *single_set_regs,
 		    struct loop_desc *desc)
 {
@@ -979,7 +978,7 @@ simple_loop_exit_p (struct loops *loops, struct loop *loop, edge exit_edge,
     return false;
 
   /* It must be tested (at least) once during any iteration.  */
-  if (!dominated_by_p (loops->cfg.dom, loop->latch, exit_bb))
+  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, exit_bb))
     return false;
 
   /* It must end in a simple conditional jump.  */
@@ -1003,11 +1002,11 @@ simple_loop_exit_p (struct loops *loops, struct loop *loop, edge exit_edge,
 
   /*  Var must be simply incremented or decremented in exactly one insn that
      is executed just once every iteration.  */
-  if (!(mod_bb = simple_increment (loops, loop, single_set_regs, desc)))
+  if (!(mod_bb = simple_increment (loop, single_set_regs, desc)))
     return false;
 
   /* OK, it is simple loop.  Now just fill in remaining info.  */
-  desc->postincr = !dominated_by_p (loops->cfg.dom, exit_bb, mod_bb);
+  desc->postincr = !dominated_by_p (CDI_DOMINATORS, exit_bb, mod_bb);
   desc->neg = !fallthru_out;
 
   /* Find initial value of var and alternative values for lim.  */
@@ -1026,7 +1025,7 @@ simple_loop_exit_p (struct loops *loops, struct loop *loop, edge exit_edge,
 /* Tests whether LOOP is simple for loop.  Returns simple loop description
    in DESC.  */
 bool
-simple_loop_p (struct loops *loops, struct loop *loop, struct loop_desc *desc)
+simple_loop_p (struct loop *loop, struct loop_desc *desc)
 {
   unsigned i;
   basic_block *body;
@@ -1051,7 +1050,7 @@ simple_loop_p (struct loops *loops, struct loop *loop, struct loop_desc *desc)
     {
       for (e = body[i]->succ; e; e = e->succ_next)
 	if (!flow_bb_inside_loop_p (loop, e->dest)
-	    && simple_loop_exit_p (loops, loop, e,
+	    && simple_loop_exit_p (loop, e,
 		   invariant_regs, single_set_regs, &act))
 	  {
 	    /* Prefer constant iterations; the less the better.  */

@@ -161,6 +161,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "basic-block.h"
 #include "output.h"
 #include "function.h"
+#include "langhooks.h"
 #include "expr.h"
 #include "except.h"
 #include "ggc.h"
@@ -855,7 +856,8 @@ gcse_main (rtx f, FILE *file)
   if (file)
     {
       fprintf (file, "GCSE of %s: %d basic blocks, ",
-	       current_function_name, n_basic_blocks);
+	       (*lang_hooks.decl_printable_name) (current_function_decl, 2),
+	       n_basic_blocks);
       fprintf (file, "%d pass%s, %d bytes\n\n",
 	       pass, pass > 1 ? "es" : "", max_pass_bytes);
     }
@@ -3614,7 +3616,8 @@ one_classic_gcse_pass (int pass)
     {
       fprintf (gcse_file, "\n");
       fprintf (gcse_file, "GCSE of %s, pass %d: %d bytes needed, %d substs,",
-	       current_function_name, pass, bytes_used, gcse_subst_count);
+	       (*lang_hooks.decl_printable_name) (current_function_decl, 2),
+	       pass, bytes_used, gcse_subst_count);
       fprintf (gcse_file, "%d insns created\n", gcse_create_count);
     }
 
@@ -4686,7 +4689,8 @@ one_cprop_pass (int pass, int cprop_jumps, int bypass_jumps)
   if (gcse_file)
     {
       fprintf (gcse_file, "CPROP of %s, pass %d: %d bytes needed, ",
-	       current_function_name, pass, bytes_used);
+	       (*lang_hooks.decl_printable_name) (current_function_decl, 2),
+	       pass, bytes_used);
       fprintf (gcse_file, "%d const props, %d copy props\n\n",
 	       const_prop_count, copy_prop_count);
     }
@@ -5788,7 +5792,8 @@ one_pre_gcse_pass (int pass)
   if (gcse_file)
     {
       fprintf (gcse_file, "\nPRE GCSE of %s, pass %d: %d bytes needed, ",
-	       current_function_name, pass, bytes_used);
+	       (*lang_hooks.decl_printable_name) (current_function_decl, 2),
+	       pass, bytes_used);
       fprintf (gcse_file, "%d substs, %d insns created\n",
 	       gcse_subst_count, gcse_create_count);
     }
@@ -6182,9 +6187,6 @@ static sbitmap *hoist_vbeout;
 /* Hoistable expressions.  */
 static sbitmap *hoist_exprs;
 
-/* Dominator bitmaps.  */
-dominance_info dominators;
-
 /* ??? We could compute post dominators and run this algorithm in
    reverse to perform tail merging, doing so would probably be
    more effective than the tail merging code in jump.c.
@@ -6221,7 +6223,7 @@ free_code_hoist_mem (void)
   sbitmap_vector_free (hoist_exprs);
   sbitmap_vector_free (transpout);
 
-  free_dominance_info (dominators);
+  free_dominance_info (CDI_DOMINATORS);
 }
 
 /* Compute the very busy expressions at entry/exit from each block.
@@ -6270,7 +6272,7 @@ compute_code_hoist_data (void)
   compute_local_properties (transp, comp, antloc, &expr_hash_table);
   compute_transpout ();
   compute_code_hoist_vbeinout ();
-  dominators = calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_DOMINATORS);
   if (gcse_file)
     fprintf (gcse_file, "\n");
 }
@@ -6362,7 +6364,7 @@ hoist_code (void)
       int found = 0;
       int insn_inserted_p;
 
-      domby_len = get_dominated_by (dominators, bb, &domby);
+      domby_len = get_dominated_by (CDI_DOMINATORS, bb, &domby);
       /* Examine each expression that is very busy at the exit of this
 	 block.  These are the potentially hoistable expressions.  */
       for (i = 0; i < hoist_vbeout[bb->index]->n_bits; i++)
@@ -8020,7 +8022,8 @@ bypass_jumps (FILE *file)
   if (file)
     {
       fprintf (file, "BYPASS of %s: %d basic blocks, ",
-	       current_function_name, n_basic_blocks);
+	       (*lang_hooks.decl_printable_name) (current_function_decl, 2),
+	       n_basic_blocks);
       fprintf (file, "%d bytes\n\n", bytes_used);
     }
 

@@ -68,14 +68,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static void decide_unrolling_and_peeling (struct loops *, int);
 static void peel_loops_completely (struct loops *, int);
-static void decide_peel_simple (struct loops *, struct loop *, int);
-static void decide_peel_once_rolling (struct loops *, struct loop *, int);
-static void decide_peel_completely (struct loops *, struct loop *, int);
-static void decide_unroll_stupid (struct loops *, struct loop *, int);
-static void decide_unroll_constant_iterations (struct loops *,
-					       struct loop *, int);
-static void decide_unroll_runtime_iterations (struct loops *, struct loop *,
-					      int);
+static void decide_peel_simple (struct loop *, int);
+static void decide_peel_once_rolling (struct loop *, int);
+static void decide_peel_completely (struct loop *, int);
+static void decide_unroll_stupid (struct loop *, int);
+static void decide_unroll_constant_iterations (struct loop *, int);
+static void decide_unroll_runtime_iterations (struct loop *, int);
 static void peel_loop_simple (struct loops *, struct loop *);
 static void peel_loop_completely (struct loops *, struct loop *);
 static void unroll_loop_stupid (struct loops *, struct loop *);
@@ -140,7 +138,7 @@ unroll_and_peel_loops (struct loops *loops, int flags)
       if (check)
 	{
 #ifdef ENABLE_CHECKING
-	  verify_dominators (loops->cfg.dom);
+	  verify_dominators (CDI_DOMINATORS);
 	  verify_loop_structure (loops);
 #endif
 	}
@@ -178,15 +176,15 @@ peel_loops_completely (struct loops *loops, int flags)
 
       loop->ninsns = num_loop_insns (loop);
 
-      decide_peel_once_rolling (loops, loop, flags);
+      decide_peel_once_rolling (loop, flags);
       if (loop->lpt_decision.decision == LPT_NONE)
-	decide_peel_completely (loops, loop, flags);
+	decide_peel_completely (loop, flags);
 
       if (loop->lpt_decision.decision == LPT_PEEL_COMPLETELY)
 	{
 	  peel_loop_completely (loops, loop);
 #ifdef ENABLE_CHECKING
-	  verify_dominators (loops->cfg.dom);
+	  verify_dominators (CDI_DOMINATORS);
 	  verify_loop_structure (loops);
 #endif
 	}
@@ -254,13 +252,13 @@ decide_unrolling_and_peeling (struct loops *loops, int flags)
       /* Try transformations one by one in decreasing order of
 	 priority.  */
 
-      decide_unroll_constant_iterations (loops, loop, flags);
+      decide_unroll_constant_iterations (loop, flags);
       if (loop->lpt_decision.decision == LPT_NONE)
-	decide_unroll_runtime_iterations (loops, loop, flags);
+	decide_unroll_runtime_iterations (loop, flags);
       if (loop->lpt_decision.decision == LPT_NONE)
-	decide_unroll_stupid (loops, loop, flags);
+	decide_unroll_stupid (loop, flags);
       if (loop->lpt_decision.decision == LPT_NONE)
-	decide_peel_simple (loops, loop, flags);
+	decide_peel_simple (loop, flags);
 
       loop = next;
     }
@@ -269,8 +267,7 @@ decide_unrolling_and_peeling (struct loops *loops, int flags)
 /* Decide whether the LOOP is once rolling and suitable for complete
    peeling.  */
 static void
-decide_peel_once_rolling (struct loops *loops, struct loop *loop,
-			  int flags ATTRIBUTE_UNUSED)
+decide_peel_once_rolling (struct loop *loop, int flags ATTRIBUTE_UNUSED)
 {
   if (rtl_dump_file)
     fprintf (rtl_dump_file, ";; Considering peeling once rolling loop\n");
@@ -284,7 +281,7 @@ decide_peel_once_rolling (struct loops *loops, struct loop *loop,
     }
 
   /* Check for simple loops.  */
-  loop->simple = simple_loop_p (loops, loop, &loop->desc);
+  loop->simple = simple_loop_p (loop, &loop->desc);
   loop->has_desc = 1;
 
   /* Check number of iterations.  */
@@ -303,8 +300,7 @@ decide_peel_once_rolling (struct loops *loops, struct loop *loop,
 
 /* Decide whether the LOOP is suitable for complete peeling.  */
 static void
-decide_peel_completely (struct loops *loops, struct loop *loop,
-			int flags ATTRIBUTE_UNUSED)
+decide_peel_completely (struct loop *loop, int flags ATTRIBUTE_UNUSED)
 {
   unsigned npeel;
 
@@ -352,7 +348,7 @@ decide_peel_completely (struct loops *loops, struct loop *loop,
   /* Check for simple loops.  */
   if (!loop->has_desc)
     {
-      loop->simple = simple_loop_p (loops, loop, &loop->desc);
+      loop->simple = simple_loop_p (loop, &loop->desc);
       loop->has_desc = 1;
     }
 
@@ -441,8 +437,7 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
 
 /* Decide whether to unroll LOOP iterating constant number of times and how much.  */
 static void
-decide_unroll_constant_iterations (struct loops *loops, struct loop *loop,
-				   int flags)
+decide_unroll_constant_iterations (struct loop *loop, int flags)
 {
   unsigned nunroll, nunroll_by_av, best_copies, best_unroll = -1, n_copies, i;
 
@@ -475,7 +470,7 @@ decide_unroll_constant_iterations (struct loops *loops, struct loop *loop,
   /* Check for simple loops.  */
   if (!loop->has_desc)
     {
-      loop->simple = simple_loop_p (loops, loop, &loop->desc);
+      loop->simple = simple_loop_p (loop, &loop->desc);
       loop->has_desc = 1;
     }
 
@@ -649,8 +644,7 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 /* Decide whether to unroll LOOP iterating runtime computable number of times
    and how much.  */
 static void
-decide_unroll_runtime_iterations (struct loops *loops, struct loop *loop,
-				  int flags)
+decide_unroll_runtime_iterations (struct loop *loop, int flags)
 {
   unsigned nunroll, nunroll_by_av, i;
 
@@ -683,7 +677,7 @@ decide_unroll_runtime_iterations (struct loops *loops, struct loop *loop,
   /* Check for simple loops.  */
   if (!loop->has_desc)
     {
-      loop->simple = simple_loop_p (loops, loop, &loop->desc);
+      loop->simple = simple_loop_p (loop, &loop->desc);
       loop->has_desc = 1;
     }
 
@@ -774,7 +768,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       unsigned nldom;
       basic_block *ldom;
 
-      nldom = get_dominated_by (loops->cfg.dom, body[i], &ldom);
+      nldom = get_dominated_by (CDI_DOMINATORS, body[i], &ldom);
       for (j = 0; j < nldom; j++)
 	if (!flow_bb_inside_loop_p (loop, ldom[j]))
 	  dom_bbs[n_dom_bbs++] = ldom[j];
@@ -821,7 +815,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
   end_sequence ();
 
   /* Precondition the loop.  */
-  loop_split_edge_with (loop_preheader_edge (loop), init_code, loops);
+  loop_split_edge_with (loop_preheader_edge (loop), init_code);
 
   remove_edges = xcalloc (max_unroll + n_peel + 1, sizeof (edge));
   n_remove_edges = 0;
@@ -844,7 +838,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
 
   /* Record the place where switch will be built for preconditioning.  */
   swtch = loop_split_edge_with (loop_preheader_edge (loop),
-				NULL_RTX, loops);
+				NULL_RTX);
 
   for (i = 0; i < n_peel; i++)
     {
@@ -862,8 +856,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       j = n_peel - i - (extra_zero_check ? 0 : 1);
       p = REG_BR_PROB_BASE / (i + 2);
 
-      preheader = loop_split_edge_with (loop_preheader_edge (loop),
-					NULL_RTX, loops);
+      preheader = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
       label = block_label (preheader);
       start_sequence ();
       do_compare_rtx_and_jump (copy_rtx (niter), GEN_INT (j), EQ, 0,
@@ -879,8 +872,8 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       branch_code = get_insns ();
       end_sequence ();
 
-      swtch = loop_split_edge_with (swtch->pred, branch_code, loops);
-      set_immediate_dominator (loops->cfg.dom, preheader, swtch);
+      swtch = loop_split_edge_with (swtch->pred, branch_code);
+      set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
       swtch->succ->probability = REG_BR_PROB_BASE - p;
       e = make_edge (swtch, preheader,
 		     swtch->succ->flags & EDGE_IRREDUCIBLE_LOOP);
@@ -892,8 +885,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       /* Add branch for zero iterations.  */
       p = REG_BR_PROB_BASE / (max_unroll + 1);
       swtch = ezc_swtch;
-      preheader = loop_split_edge_with (loop_preheader_edge (loop),
-					NULL_RTX, loops);
+      preheader = loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
       label = block_label (preheader);
       start_sequence ();
       do_compare_rtx_and_jump (copy_rtx (niter), const0_rtx, EQ, 0,
@@ -909,8 +901,8 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       branch_code = get_insns ();
       end_sequence ();
 
-      swtch = loop_split_edge_with (swtch->succ, branch_code, loops);
-      set_immediate_dominator (loops->cfg.dom, preheader, swtch);
+      swtch = loop_split_edge_with (swtch->succ, branch_code);
+      set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
       swtch->succ->probability = REG_BR_PROB_BASE - p;
       e = make_edge (swtch, preheader,
 		     swtch->succ->flags & EDGE_IRREDUCIBLE_LOOP);
@@ -918,7 +910,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
     }
 
   /* Recount dominators for outer blocks.  */
-  iterate_fix_dominators (loops->cfg.dom, dom_bbs, n_dom_bbs);
+  iterate_fix_dominators (CDI_DOMINATORS, dom_bbs, n_dom_bbs);
 
   /* And unroll loop.  */
 
@@ -946,7 +938,7 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
 
 /* Decide whether to simply peel LOOP and how much.  */
 static void
-decide_peel_simple (struct loops *loops, struct loop *loop, int flags)
+decide_peel_simple (struct loop *loop, int flags)
 {
   unsigned npeel;
 
@@ -975,7 +967,7 @@ decide_peel_simple (struct loops *loops, struct loop *loop, int flags)
   /* Check for simple loops.  */
   if (!loop->has_desc)
     {
-      loop->simple = simple_loop_p (loops, loop, &loop->desc);
+      loop->simple = simple_loop_p (loop, &loop->desc);
       loop->has_desc = 1;
     }
 
@@ -1062,7 +1054,7 @@ peel_loop_simple (struct loops *loops, struct loop *loop)
 
 /* Decide whether to unroll LOOP stupidly and how much.  */
 static void
-decide_unroll_stupid (struct loops *loops, struct loop *loop, int flags)
+decide_unroll_stupid (struct loop *loop, int flags)
 {
   unsigned nunroll, nunroll_by_av, i;
 
@@ -1095,7 +1087,7 @@ decide_unroll_stupid (struct loops *loops, struct loop *loop, int flags)
   /* Check for simple loops.  */
   if (!loop->has_desc)
     {
-      loop->simple = simple_loop_p (loops, loop, &loop->desc);
+      loop->simple = simple_loop_p (loop, &loop->desc);
       loop->has_desc = 1;
     }
 

@@ -55,26 +55,28 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct et_forest *et_forest_t;
-typedef struct et_forest_node *et_forest_node_t;
+/* The node representing the node in an et tree.  */
+struct et_node
+{
+  void *data;			/* The data represented by the node.  */
 
-extern et_forest_t et_forest_create (void);
+  int dfs_num_in, dfs_num_out;	/* Number of the node in the dfs ordering.  */
 
-extern void et_forest_delete (et_forest_t);
+  struct et_node *father;	/* Father of the node.  */
+  struct et_node *son;		/* The first of the sons of the node.  */
+  struct et_node *left;
+  struct et_node *right;	/* The brothers of the node.  */
 
-extern et_forest_node_t et_forest_add_node (et_forest_t, void *);
-extern int et_forest_add_edge (et_forest_t, et_forest_node_t,
-			       et_forest_node_t);
-extern void et_forest_remove_node (et_forest_t, et_forest_node_t);
-extern int et_forest_remove_edge (et_forest_t, et_forest_node_t,
-				  et_forest_node_t);
-extern et_forest_node_t et_forest_parent (et_forest_t, et_forest_node_t);
-extern et_forest_node_t et_forest_common_ancestor (et_forest_t,
-						   et_forest_node_t,
-						   et_forest_node_t);
-extern void * et_forest_node_value (et_forest_t, et_forest_node_t);
-extern int et_forest_enumerate_sons (et_forest_t, et_forest_node_t,
-				     et_forest_node_t *);
+  struct et_occ *rightmost_occ;	/* The rightmost occurence.  */
+  struct et_occ *parent_occ;	/* The occurence of the parent node.  */
+};
+
+struct et_node *et_new_tree (void *data);
+void et_free_tree (struct et_node *);
+void et_set_father (struct et_node *, struct et_node *);
+void et_split (struct et_node *);
+struct et_node *et_nca (struct et_node *, struct et_node *);
+bool et_below (struct et_node *, struct et_node *);
 
 #ifdef __cplusplus
 }

@@ -230,9 +230,6 @@ struct loops
   /* Information derived from the CFG.  */
   struct cfg
   {
-    /* The bitmap vector of dominators or NULL if not computed.  */
-    dominance_info dom;
-
     /* The ordering of the basic blocks in a depth first search.  */
     int *dfs_order;
 
@@ -265,7 +262,7 @@ extern void flow_loops_dump (const struct loops *, FILE *,
 			     void (*)(const struct loop *, FILE *, int), int);
 extern void flow_loop_dump (const struct loop *, FILE *,
 			    void (*)(const struct loop *, FILE *, int), int);
-extern int flow_loop_scan (struct loops *, struct loop *, int);
+extern int flow_loop_scan (struct loop *, int);
 extern void flow_loop_free (struct loop *);
 void mark_irreducible_loops (struct loops *);
 
@@ -292,7 +289,7 @@ extern void remove_bb_from_loops (basic_block);
 extern void cancel_loop (struct loops *, struct loop *);
 extern void cancel_loop_tree (struct loops *, struct loop *);
 
-extern basic_block loop_split_edge_with (edge, rtx, struct loops *);
+extern basic_block loop_split_edge_with (edge, rtx);
 extern int fix_loop_placement (struct loop *);
 
 enum
@@ -306,10 +303,9 @@ extern void force_single_succ_latches (struct loops *);
 extern void verify_loop_structure (struct loops *);
 
 /* Loop analysis.  */
-extern bool simple_loop_p (struct loops *, struct loop *, struct loop_desc *);
+extern bool simple_loop_p (struct loop *, struct loop_desc *);
 extern rtx count_loop_iterations (struct loop_desc *, rtx, rtx);
-extern bool just_once_each_iteration_p (struct loops *,struct loop *,
-					basic_block);
+extern bool just_once_each_iteration_p (struct loop *, basic_block);
 extern unsigned expected_loop_iterations (const struct loop *);
 
 /* Loop manipulation.  */
@@ -324,7 +320,7 @@ extern int duplicate_loop_to_header_edge (struct loop *, edge, struct loops *,
 extern struct loop *loopify (struct loops *, edge, edge, basic_block);
 extern void unloop (struct loops *, struct loop *);
 extern bool remove_path (struct loops *, edge);
-extern edge split_loop_bb (struct loops *, basic_block, rtx);
+extern edge split_loop_bb (basic_block, rtx);
 
 /* Loop optimizer initialization.  */
 extern struct loops *loop_optimizer_init (FILE *);

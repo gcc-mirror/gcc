@@ -81,7 +81,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static struct loop *unswitch_loop (struct loops *, struct loop *,
 				   basic_block);
 static void unswitch_single_loop (struct loops *, struct loop *, rtx, int);
-static bool may_unswitch_on_p (struct loops *, basic_block, struct loop *,
+static bool may_unswitch_on_p (basic_block, struct loop *,
 			       basic_block *);
 static rtx reversed_condition (rtx);
 
@@ -107,7 +107,7 @@ unswitch_loops (struct loops *loops)
 
       unswitch_single_loop (loops, loop, NULL_RTX, 0);
 #ifdef ENABLE_CHECKING
-      verify_dominators (loops->cfg.dom);
+      verify_dominators (CDI_DOMINATORS);
       verify_loop_structure (loops);
 #endif
     }
@@ -117,8 +117,7 @@ unswitch_loops (struct loops *loops)
    basic blocks (for what it means see comments below).  List of basic blocks
    inside LOOP is provided in BODY to save time.  */
 static bool
-may_unswitch_on_p (struct loops *loops, basic_block bb, struct loop *loop,
-		   basic_block *body)
+may_unswitch_on_p (basic_block bb, struct loop *loop, basic_block *body)
 {
   rtx test;
   unsigned i;
@@ -136,7 +135,7 @@ may_unswitch_on_p (struct loops *loops, basic_block bb, struct loop *loop,
 
   /* It must be executed just once each iteration (because otherwise we
      are unable to update dominator/irreducible loop information correctly).  */
-  if (!just_once_each_iteration_p (loops, loop, bb))
+  if (!just_once_each_iteration_p (loop, bb))
     return false;
 
   /* Condition must be invariant.  We use just a stupid test of invariantness
@@ -239,7 +238,7 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
       /* Find a bb to unswitch on.  */
       bbs = get_loop_body (loop);
       for (i = 0; i < loop->num_nodes; i++)
-	if (may_unswitch_on_p (loops, bbs[i], loop, bbs))
+	if (may_unswitch_on_p (bbs[i], loop, bbs))
 	  break;
 
       if (i == loop->num_nodes)
@@ -295,7 +294,7 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
     rconds = cond_checked;
 
   /* Separate condition in a single basic block.  */
-  bb = split_loop_bb (loops, bbs[i], PREV_INSN (split_before))->dest;
+  bb = split_loop_bb (bbs[i], PREV_INSN (split_before))->dest;
   free (bbs);
   true_first = !(bb->succ->flags & EDGE_FALLTHRU);
   if (rtl_dump_file)
@@ -335,7 +334,7 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on)
   if (!unswitch_on->succ || !unswitch_on->succ->succ_next ||
       unswitch_on->succ->succ_next->succ_next)
     abort ();
-  if (!just_once_each_iteration_p (loops, loop, unswitch_on))
+  if (!just_once_each_iteration_p (loop, unswitch_on))
     abort ();
   if (loop->inner)
     abort ();
@@ -382,7 +381,7 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on)
       switch_bb->succ->flags &= ~EDGE_IRREDUCIBLE_LOOP;
       switch_bb->succ->succ_next->flags &= ~EDGE_IRREDUCIBLE_LOOP;
     }
-  add_to_dominance_info (loops->cfg.dom, switch_bb);
+  add_to_dominance_info (CDI_DOMINATORS, switch_bb);
   unswitch_on->rbi->copy = unswitch_on_alt;
 
   /* Loopify from the copy of LOOP body, constructing the new loop.  */
@@ -403,8 +402,8 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on)
   fix_loop_placement (nloop);
 
   /* Preserve the simple loop preheaders.  */
-  loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX, loops);
-  loop_split_edge_with (loop_preheader_edge (nloop), NULL_RTX, loops);
+  loop_split_edge_with (loop_preheader_edge (loop), NULL_RTX);
+  loop_split_edge_with (loop_preheader_edge (nloop), NULL_RTX);
 
   return nloop;
 }

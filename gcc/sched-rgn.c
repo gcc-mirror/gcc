@@ -155,7 +155,7 @@ static int *containing_rgn;
 
 void debug_regions (void);
 static void find_single_block_region (void);
-static void find_rgns (struct edge_list *, dominance_info);
+static void find_rgns (struct edge_list *);
 static int too_large (int, int *, int *);
 
 extern void debug_live (int, int);
@@ -613,7 +613,7 @@ too_large (int block, int *num_bbs, int *num_insns)
    of edge tables.  That would simplify it somewhat.  */
 
 static void
-find_rgns (struct edge_list *edge_list, dominance_info dom)
+find_rgns (struct edge_list *edge_list)
 {
   int *max_hdr, *dfs_nr, *stack, *degree;
   char no_loops = 1;
@@ -827,7 +827,7 @@ find_rgns (struct edge_list *edge_list, dominance_info dom)
 		    {
 		      /* Now verify that the block is dominated by the loop
 			 header.  */
-		      if (!dominated_by_p (dom, jbb, bb))
+		      if (!dominated_by_p (CDI_DOMINATORS, jbb, bb))
 			break;
 		    }
 		}
@@ -2597,7 +2597,6 @@ init_regions (void)
 	}
       else
 	{
-	  dominance_info dom;
 	  struct edge_list *edge_list;
 
 	  /* The scheduler runs after estimate_probabilities; therefore, we
@@ -2607,7 +2606,7 @@ init_regions (void)
 	  edge_list = create_edge_list ();
 
 	  /* Compute the dominators and post dominators.  */
-	  dom = calculate_dominance_info (CDI_DOMINATORS);
+	  calculate_dominance_info (CDI_DOMINATORS);
 
 	  /* build_control_flow will return nonzero if it detects unreachable
 	     blocks or any other irregularity with the cfg which prevents
@@ -2615,7 +2614,7 @@ init_regions (void)
 	  if (build_control_flow (edge_list) != 0)
 	    find_single_block_region ();
 	  else
-	    find_rgns (edge_list, dom);
+	    find_rgns (edge_list);
 
 	  if (sched_verbose >= 3)
 	    debug_regions ();
@@ -2625,7 +2624,7 @@ init_regions (void)
 
 	  /* For now.  This will move as more and more of haifa is converted
 	     to using the cfg code in flow.c.  */
-	  free_dominance_info (dom);
+	  free_dominance_info (CDI_DOMINATORS);
 	}
     }
 

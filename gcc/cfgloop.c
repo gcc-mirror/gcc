@@ -38,7 +38,7 @@ static void flow_loop_entry_edges_find (struct loop *);
 static void flow_loop_exit_edges_find (struct loop *);
 static int flow_loop_nodes_find (basic_block, struct loop *);
 static void flow_loop_pre_header_scan (struct loop *);
-static basic_block flow_loop_pre_header_find (basic_block, dominance_info);
+static basic_block flow_loop_pre_header_find (basic_block);
 static int flow_loop_level_compute (struct loop *);
 static int flow_loops_level_compute (struct loops *);
 static void establish_preds (struct loop *);
@@ -55,7 +55,7 @@ flow_loops_cfg_dump (const struct loops *loops, FILE *file)
   int i;
   basic_block bb;
 
-  if (! loops->num || ! file || ! loops->cfg.dom)
+  if (! loops->num || ! file)
     return;
 
   FOR_EACH_BB (bb)
@@ -211,9 +211,6 @@ flow_loops_free (struct loops *loops)
 
       free (loops->parray);
       loops->parray = NULL;
-
-      if (loops->cfg.dom)
-	free_dominance_info (loops->cfg.dom);
 
       if (loops->cfg.dfs_order)
 	free (loops->cfg.dfs_order);
@@ -391,11 +388,10 @@ flow_loop_pre_header_scan (struct loop *loop)
 }
 
 /* Return the block for the pre-header of the loop with header
-   HEADER where DOM specifies the dominator information.  Return NULL if
-   there is no pre-header.  */
+   HEADER.  Return NULL if there is no pre-header.  */
 
 static basic_block
-flow_loop_pre_header_find (basic_block header, dominance_info dom)
+flow_loop_pre_header_find (basic_block header)
 {
   basic_block pre_header;
   edge e;
@@ -408,7 +404,7 @@ flow_loop_pre_header_find (basic_block header, dominance_info dom)
       basic_block node = e->src;
 
       if (node != ENTRY_BLOCK_PTR
-	  && ! dominated_by_p (dom, node, header))
+	  && ! dominated_by_p (CDI_DOMINATORS, node, header))
 	{
 	  if (pre_header == NULL)
 	    pre_header = node;
@@ -522,7 +518,7 @@ flow_loops_level_compute (struct loops *loops)
    about it specified by FLAGS.  */
 
 int
-flow_loop_scan (struct loops *loops, struct loop *loop, int flags)
+flow_loop_scan (struct loop *loop, int flags)
 {
   if (flags & LOOP_ENTRY_EDGES)
     {
@@ -541,8 +537,7 @@ flow_loop_scan (struct loops *loops, struct loop *loop, int flags)
   if (flags & LOOP_PRE_HEADER)
     {
       /* Look to see if the loop has a pre-header node.  */
-      loop->pre_header
-	= flow_loop_pre_header_find (loop->header, loops->cfg.dom);
+      loop->pre_header = flow_loop_pre_header_find (loop->header);
 
       /* Find the blocks within the extended basic block of
 	 the loop pre-header.  */
@@ -627,12 +622,11 @@ make_forwarder_block (basic_block bb, int redirect_latch, int redirect_nonlatch,
 static void
 canonicalize_loop_headers (void)
 {
-  dominance_info dom;
   basic_block header;
   edge e;
 
   /* Compute the dominators.  */
-  dom = calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_DOMINATORS);
 
   alloc_aux_for_blocks (sizeof (int));
   alloc_aux_for_edges (sizeof (int));
@@ -651,7 +645,7 @@ canonicalize_loop_headers (void)
 	    have_abnormal_edge = 1;
 
 	  if (latch != ENTRY_BLOCK_PTR
-	      && dominated_by_p (dom, latch, header))
+	      && dominated_by_p (CDI_DOMINATORS, latch, header))
 	    {
 	      num_latches++;
 	      LATCH_EDGE (e) = 1;
@@ -662,6 +656,8 @@ canonicalize_loop_headers (void)
       else
 	HEADER_BLOCK (header) = num_latches;
     }
+
+  free_dominance_info (CDI_DOMINATORS);
 
   if (HEADER_BLOCK (ENTRY_BLOCK_PTR->succ->dest))
     {
@@ -728,7 +724,6 @@ canonicalize_loop_headers (void)
 
   free_aux_for_blocks ();
   free_aux_for_edges ();
-  free_dominance_info (dom);
 }
 
 /* Find all the natural loops in the function and save in LOOPS structure and
@@ -744,7 +739,6 @@ flow_loops_find (struct loops *loops, int flags)
   int num_loops;
   edge e;
   sbitmap headers;
-  dominance_info dom;
   int *dfs_order;
   int *rc_order;
   basic_block header;
@@ -770,7 +764,7 @@ flow_loops_find (struct loops *loops, int flags)
   canonicalize_loop_headers ();
 
   /* Compute the dominators.  */
-  dom = loops->cfg.dom = calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_DOMINATORS);
 
   /* Count the number of loop headers.  This should be the
      same as the number of natural loops.  */
@@ -804,7 +798,8 @@ flow_loops_find (struct loops *loops, int flags)
 	     node (header) that dominates all the nodes in the
 	     loop.  It also has single back edge to the header
 	     from a latch node.  */
-	  if (latch != ENTRY_BLOCK_PTR && dominated_by_p (dom, latch, header))
+	  if (latch != ENTRY_BLOCK_PTR
+	      && dominated_by_p (CDI_DOMINATORS, latch, header))
 	    {
 	      /* Shared headers should be eliminated by now.  */
 	      if (more_latches)
@@ -849,7 +844,6 @@ flow_loops_find (struct loops *loops, int flags)
       flow_depth_first_order_compute (dfs_order, rc_order);
 
       /* Save CFG derived information to avoid recomputing it.  */
-      loops->cfg.dom = dom;
       loops->cfg.dfs_order = dfs_order;
       loops->cfg.rc_order = rc_order;
 
@@ -878,7 +872,7 @@ flow_loops_find (struct loops *loops, int flags)
 	      basic_block latch = e->src;
 
 	      if (latch != ENTRY_BLOCK_PTR
-		  && dominated_by_p (dom, latch, header))
+		  && dominated_by_p (CDI_DOMINATORS, latch, header))
 		{
 		  loop->latch = latch;
 		  break;
@@ -897,14 +891,13 @@ flow_loops_find (struct loops *loops, int flags)
 
       /* Scan the loops.  */
       for (i = 1; i < num_loops; i++)
-	flow_loop_scan (loops, loops->parray[i], flags);
+	flow_loop_scan (loops->parray[i], flags);
 
       loops->num = num_loops;
     }
   else
     {
-      loops->cfg.dom = NULL;
-      free_dominance_info (dom);
+      free_dominance_info (CDI_DOMINATORS);
     }
 
   loops->state = 0;

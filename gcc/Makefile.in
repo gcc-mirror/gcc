@@ -1322,7 +1322,7 @@ c-convert.o : c-convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) 
 c-pragma.o: c-pragma.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
     function.h c-pragma.h toplev.h output.h $(GGC_H) $(TM_P_H) $(C_COMMON_H) gt-c-pragma.h
 graph.o: graph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h flags.h output.h \
-    $(RTL_H) function.h hard-reg-set.h $(BASIC_BLOCK_H) graph.h
+    $(RTL_H) function.h langhooks.h hard-reg-set.h $(BASIC_BLOCK_H) graph.h $(TREE_H)
 sbitmap.o: sbitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h \
     hard-reg-set.h $(BASIC_BLOCK_H)
 
@@ -1651,7 +1651,7 @@ web.o : web.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h $(BASIC_BLOCK_H) function.h output.h toplev.h df.h
 gcse.o : gcse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h real.h insn-config.h $(GGC_H) $(RECOG_H) $(EXPR_H) \
-   $(BASIC_BLOCK_H) function.h output.h toplev.h $(TM_P_H) $(PARAMS_H) \
+   $(BASIC_BLOCK_H) function.h langhooks.h output.h toplev.h $(TM_P_H) $(PARAMS_H) \
    except.h gt-gcse.h $(TREE_H)
 sibcall.o : sibcall.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    function.h hard-reg-set.h flags.h insn-config.h $(RECOG_H) $(BASIC_BLOCK_H)
