@@ -212,14 +212,37 @@ collect_iterators (exp, list)
       switch (TREE_CODE_CLASS (TREE_CODE (exp)))
 	{
 	case '1':
+	  return collect_iterators (TREE_OPERAND (exp, 0), list);
+
 	case '2':
 	case '<':
+	  return collect_iterators (TREE_OPERAND (exp, 0),
+				    collect_iterators (TREE_OPERAND (exp, 1),
+						       list));
+
 	case 'e':
 	case 'r':
 	  {
 	    int num_args = tree_code_length[TREE_CODE (exp)];
 	    int i;
 
+	    /* Some tree codes have RTL, not trees, as operands.  */
+	    switch (TREE_CODE (exp))
+	      {
+	      case SAVE_EXPR:
+	      case CALL_EXPR:
+		num_args = 2;
+		break;
+	      case METHOD_CALL_EXPR:
+		num_args = 3;
+		break;
+	      case WITH_CLEANUP_EXPR:
+		num_args = 1;
+		break;
+	      case RTL_EXPR:
+		return list;
+	      }
+		
 	    for (i = 0; i < num_args; i++)
 	      list = collect_iterators (TREE_OPERAND (exp, i), list);
 	    return list;
