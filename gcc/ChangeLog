@@ -1,3 +1,17 @@
+Wed Oct 15 18:21:46 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (final_prescan_insn): Gut, remove and transform to ...
+	(alpha_handle_trap_shadows): ... a new function.  Handle the entire
+	function in one go.  Emit RTL for trapb, instead of printf directly.
+	(alpha_reorg): New function.  Call alpha_handle_trap_shadows.
+	(trap_pending): Kill global variable.
+	(output_epilog): Don't call final_prescan_insn.
+	(struct shadow_summary): Elide $31 and $f31; now it fits in a word.
+	* alpha.h (FINAL_PRESCAN_INSN): Remove.
+	(MACHINE_DEPENENT_REORG): Define.
+	* alpha.md (jsr patterns with trapb): Stupid and useless.  Kill.
+	(trapb): New insn.
+
 Wed Oct 15 18:16:05 1997  Richard Henderson  <rth@cygnus.com>
 
 	Tune Haifa scheduler for Alpha:
