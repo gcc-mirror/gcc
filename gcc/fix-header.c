@@ -1140,7 +1140,7 @@ main (argc, argv)
 	  if (entry->flags)
 	    add_symbols (entry->flags, entry->names);
 	  entry++;
-	  if (strcmp (entry->name, CONTINUED) != 0)
+	  if (!entry->name || strcmp (entry->name, CONTINUED) != 0)
 	    break;
 	}
     }
