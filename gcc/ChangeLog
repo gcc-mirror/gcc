@@ -1,3 +1,8 @@
+Wed Jan 12 03:20:31 2000  John Marshall <john_w_marshall@palm.com>
+
+	* gcc.texi (Funding, GNU/Linux, Copying, Contributors): Format
+	these nodes even if INTERNALS is not set.
+
 Wed Jan 12 09:39:22 2000  Nick Burrett  <nick.burrett@btinternet.com>
 
 	* gcse.c (delete_null_pointer_checks_1): Cope when

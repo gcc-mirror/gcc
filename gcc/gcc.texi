@@ -4022,6 +4022,7 @@ compilation.
 @item INSTALL
 The install program to use.
 @end table
+@end ifset
 
 @node Funding
 @unnumbered Funding Free Software
@@ -4753,12 +4754,6 @@ port.
 
 @node Index
 @unnumbered Index
-@end ifset
-
-@ifclear INTERNALS
-@node Index
-@unnumbered Index
-@end ifclear
 
 @printindex cp
 
