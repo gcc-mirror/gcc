@@ -1,19 +1,10 @@
-1998-07-06  Mike Stump  <mrs@wrs.com>
-
-	* Make-lang.in (f77.stage?): Use mv -f instead of just mv so that
-	we can move g77.c.
-
 Sat Jun 27 12:18:33 1998  Jeffrey A Law  (law@cygnus.com)
 
-	* Make-lang.in (g77): Depend on mkstemp.o.  Link in mkstemp.o
+	* Make-lang.in (g77): Depend on mkstemp.o.  Link in mkstemp.o.
 	
 Wed Jun 24 01:01:23 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* g77spec.c (lang_specific_driver): Revert last change.
-
-Mon Jun 22 23:12:05 1998  H.J. Lu  (hjl@gnu.org)
-
-	* Make-lang.in (G77STAGESTUFF): Add g77.c.
 
 Fri Jun 19 07:54:40 1998  H.J. Lu  (hjl@gnu.org)
 
@@ -36,11 +27,6 @@ Fri Jun  5 15:53:17 1998  Per Bothner  <bothner@cygnus.com>
 Fri May 15 01:44:22 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
 	* Make-lang.in (f77.mostlyclean): Add missing exeext.
-
-Thu Apr 30 18:59:43 1998  Jim Wilson  <wilson@cygnus.com>
-
-	* Make-lang.in (g77.info, g77.dvi, BUGS, INSTALL, NEWS): Put -o
-	option before input file.
 
 Sat Apr 18 15:26:57 1998  Jim Wilson  <wilson@cygnus.com>
 
@@ -67,7 +53,7 @@ Sat Apr  4 17:45:01 1998  Richard Henderson  <rth@cygnus.com>
 
 1998-03-28  Dave Love  <d.love@dl.ac.uk>
 
-	* Make-lang.in (f771$(exeext)): Fix typpo.
+	* Make-lang.in (f771$(exeext)): Fix typo.
 
 1998-03-24  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
@@ -91,58 +77,10 @@ Tue Mar  3 10:52:35 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* g77.texi: Use @url for citing URLs.
 
-Fri Feb 13 00:14:56 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
-
-	* com.c (type_for_mode): Add explicit braces to avoid ambiguous `else'.
- 
-	* expr.c (ffeexpr_type_combine): Likewise.
-	(ffeexpr_reduce_): Likewise.
-	(ffeexpr_declare_parenthesized_): Likewise.
- 
-	* src.c (ffesrc_strcmp_1ns2i): Likewise.
-	(ffesrc_strcmp_2c): Likewise.
-	(ffesrc_strncmp_2c): Likewise.
- 
-	* stb.c (ffestb_halt1_): Likewise.
-	(ffestb_R90910_): Likewise.
-	(ffestb_R9109_): Likewise.
-
-	* stc.c (ffestc_R544_equiv_): Likewise.
- 
-	* std.c (ffestd_subr_copy_easy_): Likewise.
-	(ffestd_R1001dump_): Likewise.
-	(ffestd_R1001dump_1005_1_): Likewise.
-	(ffestd_R1001dump_1005_2_): Likewise.
-	(ffestd_R1001dump_1005_3_): Likewise.
-	(ffestd_R1001dump_1005_4_): Likewise.
-	(ffestd_R1001dump_1005_5_): Likewise.
-	(ffestd_R1001dump_1010_2_): Likewise.
- 
-	* ste.c (ffeste_R840): Likewise.
- 
-	* sts.c (ffests_puttext): Likewise.
- 
-	* symbol.c (ffesymbol_check_token_): Likewise.
- 
-	* target.c (ffetarget_real1): Likewise.
-	(ffetarget_real2): Likewise.
- 
 Wed Feb 11 01:44:48 1998  Richard Henderson  (rth@cygnus.com)
 
 	* com.c (ffecom_ptr_to_expr) [FFEBLD_opARRAYREF]:  Do upper - lower
 	in the native type, so as to properly handle negative indices.
-
-Fri Jan  9 19:09:07 1998  Craig Burley  <burley@gnu.org>
-
-	Fix -fpedantic combined with `F()' invocation,
-	also -fugly-comma combined with `IARGC()' invocation:
-	* bad.def (FFEBAD_NULL_ARGUMENT_W): New diagnostic.
-	* expr.c (ffeexpr_finished_): Don't reject null expressions
-	in the argument-expression context -- let outer context
-	handle that.
-	(ffeexpr_token_arguments_): Warn about null expressions
-	here if -fpedantic (as appropriate).
-	Obey -fugly-comma for only external-procedure invocations.
 
 Tue Feb  3 20:13:05 1998  Richard Henderson  <rth@cygnus.com>
 
@@ -159,17 +97,9 @@ Sun Feb  1 12:43:49 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Sun Feb  1 02:26:58 1998  Richard Henderson  <rth@cygnus.com>
 
-	* runtime directory -- moved into "libfc2" in the toplevel
+	* runtime directory -- moved into "libf2c" in the toplevel
 	directory.
 	* Make-lang.in: Remove all runtime related stuff.
-
-Sun Jan 25 12:32:15 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
-
-	* Make-lang.in (f77.stage1): Depend on stage1-start so parallel
- 	make works better.
-	* (f77.stage2): Likewise for stage2-start.
-	* (f77.stage3): Likewise for stage3-start.
-	* (f77.stage4): Likewise for stage4-start.
 
 Sat Jan 17 21:28:08 1998  Pieter Nagel <pnagel@epiuse.co.za>
 
