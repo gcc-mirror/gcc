@@ -1,5 +1,10 @@
 2004-05-31  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/SequenceInputStream.java:
+	Rename enum to e because enum is a keyword in Java 1.5.
+
+2004-05-31  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/rmi/rmic/CompilerProcess.java:
 	Fixed javadoc to by XHTML compliant.
 
