@@ -1,3 +1,7 @@
+2003-03-15  Andreas Jaeger  <aj@suse.de>
+
+	* treetree.c (cpp_handle_option): Remove.
+
 2003-03-13  Andreas Jaeger  <aj@suse.de>
 
 	* Make-lang.in (tree1$(exeext)): Fix previous patch.
