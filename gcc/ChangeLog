@@ -1,3 +1,8 @@
+2001-05-31  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c (init_gcc_specs): When linking against libgcc_s.so,
+	also link against libgcc.a.
+
 Thu May 31 19:17:01 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_int_movcc): Force one of operands to be register.

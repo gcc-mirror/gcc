@@ -1275,15 +1275,15 @@ init_gcc_specs (obstack, shared_name, static_name)
   char buffer[128];
 
   /* If we see -shared-libgcc, then use the shared version.  */
-  sprintf (buffer, "%%{shared-libgcc:%s}", shared_name);
+  sprintf (buffer, "%%{shared-libgcc:%s %s}", shared_name, static_name);
   obstack_grow (obstack, buffer, strlen (buffer));
   /* If we see -static-libgcc, then use the static version.  */
   sprintf (buffer, "%%{static-libgcc:%s}", static_name);
   obstack_grow (obstack, buffer, strlen (buffer));
   /* Otherwise, if we see -shared, then use the shared version.  */
   sprintf (buffer,
-	   "%%{!shared-libgcc:%%{!static-libgcc:%%{shared:%s}}}", 
-	   shared_name);
+	   "%%{!shared-libgcc:%%{!static-libgcc:%%{shared:%s %s}}}", 
+	   shared_name, static_name);
   obstack_grow (obstack, buffer, strlen (buffer));
   /* Otherwise, use the static version.  */
   sprintf (buffer, 
