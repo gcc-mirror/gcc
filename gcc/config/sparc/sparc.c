@@ -2982,7 +2982,7 @@ enum sparc_mode_class {
 #define DF_MODES (S_MODES | D_MODES)
 
 /* Modes for double-float only quantities.  */
-#define DF_MODES_NO_S (D_MODES)
+#define DF_MODES_NO_S ((1 << (int) D_MODE) | (1 << (int) DF_MODE))
 
 /* Modes for quad-float only quantities.  */
 #define TF_ONLY_MODES (1 << (int) TF_MODE)
