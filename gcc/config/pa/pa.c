@@ -1432,7 +1432,7 @@ hppa_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  *total = COSTS_N_INSNS (14);
 	  return true;
 	}
-      /* Fall through.  */
+      /* FALLTHRU */
 
     case UDIV:
     case MOD:

@@ -425,7 +425,7 @@ sdata_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 	  || GET_CODE (XEXP (XEXP (op, 0), 0)) != SYMBOL_REF)
 	break;
       op = XEXP (XEXP (op, 0), 0);
-      /* Fall through.  */
+      /* FALLTHRU */
 
     case SYMBOL_REF:
       if (CONSTANT_POOL_ADDRESS_P (op))
@@ -5299,7 +5299,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 
     case SUBREG:
       x = SUBREG_REG (x);
-      /* Fall through.  */
+      /* FALLTHRU */
     case REG:
       if (REGNO (x) == AR_UNAT_REGNUM)
 	{
@@ -5550,7 +5550,7 @@ group_barrier_needed_p (rtx insn)
 	  need_barrier = 1;
 	  break;
 	}
-      /* Fall through.  */
+      /* FALLTHRU */
 
     case INSN:
       if (GET_CODE (PATTERN (insn)) == USE
