@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -79,10 +79,14 @@ public class PushbackReader extends FilterReader
         throw new ArrayIndexOutOfBoundsException();
 
       int numBytes = Math.min(buf.length - pos, len);
-      for (int i = 0; i < numBytes; i++)
-        b[off++] = buf[pos++];
+      if (numBytes > 0)
+	{
+	  System.arraycopy (buf, pos, b, off, numBytes);
+	  pos += numBytes;
+	  return numBytes;
+	}
 
-      return numBytes + super.read(b, off, len - numBytes);
+      return super.read(b, off, len);
     }
   }
 
