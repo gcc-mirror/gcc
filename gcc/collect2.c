@@ -277,7 +277,7 @@ fatal_perror (string, arg1, arg2, arg3)
 {
   int e = errno;
 
-  fprintf (stderr, "collect: ");
+  fprintf (stderr, "collect2: ");
   fprintf (stderr, string, arg1, arg2, arg3);
   fprintf (stderr, ": %s\n", my_strerror (e));
   my_exit (1);
@@ -289,7 +289,7 @@ static void
 fatal (string, arg1, arg2, arg3)
      char *string;
 {
-  fprintf (stderr, "collect: ");
+  fprintf (stderr, "collect2: ");
   fprintf (stderr, string, arg1, arg2, arg3);
   fprintf (stderr, "\n");
   my_exit (1);
@@ -301,7 +301,7 @@ static void
 error (string, arg1, arg2, arg3, arg4)
      char *string;
 {
-  fprintf (stderr, "collect: ");
+  fprintf (stderr, "collect2: ");
   fprintf (stderr, string, arg1, arg2, arg3, arg4);
   fprintf (stderr, "\n");
 }
