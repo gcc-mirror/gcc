@@ -268,28 +268,13 @@ struct _Jv_ClassReader {
    */
 };
 
-/* This is used for the isJavaIdentifierStart & isJavaIdentifierPart
-   methods, so we avoid doing _Jv_InitClass all the time */
-
-static const java::lang::Character *character = 0;
-static void prepare_character ();
-
 void
 _Jv_DefineClass (jclass klass, jbyteArray data, jint offset, jint length)
 {
-  if (character == 0)
-    prepare_character ();
-
   _Jv_ClassReader reader (klass, data, offset, length);
   reader.parse();
 
   /* that's it! */
-}
-
-/** put it after _Jv_DefineClass, so it doesn't get inlined */
-static void prepare_character ()
-{
-  character = new java::lang::Character ('!');
 }
 
 
@@ -1523,7 +1508,7 @@ is_identifier_start (int c)
   if (ch == 0x5FU)       		/* _ */
     return 1;
 
-  return character->isJavaIdentifierStart ((jchar) ch);
+  return java::lang::Character::isJavaIdentifierStart ((jchar) ch);
 }
 
 static __inline__ int 
@@ -1540,7 +1525,7 @@ is_identifier_part (int c)
   if (ch == 0x5FU || ch == 0x24U)       /* _ $ */
     return 1;
 
-  return character->isJavaIdentifierStart ((jchar) ch);
+  return java::lang::Character::isJavaIdentifierStart ((jchar) ch);
 }
 
 bool
