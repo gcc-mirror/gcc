@@ -1,3 +1,9 @@
+Thu Oct 29 23:55:43 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* reload1.c (choose_reload_regs): Fix typo in Oct 17 change.
+	(emit_reload_insns): Ensure that when we set reg_reloaded_valid for
+	any hard reg, reg_reloaded_dead contains valid data.
+
 Thu Oct 29 22:30:54 1998  Marcus Meissner <Marcus.Meissner@informatik.uni-erlangen.de>
 
 	* i386.c (i386_valid_type_attribute_p): Return nonzero for mismatched
