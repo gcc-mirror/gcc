@@ -419,51 +419,49 @@ in the following sections.
 -mfused-madd  -mno-fused-madd  -mbit-align  -mno-bit-align @gol
 -mstrict-align  -mno-strict-align  -mrelocatable @gol
 -mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib @gol
--mtoc  -mno-toc -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
+-mtoc  -mno-toc  -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
 -mdynamic-no-pic @gol
--mcall-aix -mcall-sysv -mcall-netbsd @gol
--maix-struct-return -msvr4-struct-return @gol
--mabi=altivec -mabi=no-altivec @gol
--mabi=spe -mabi=no-spe @gol
--misel=yes -misel=no @gol
--mspe=yes -mspe=no @gol
--mfloat-gprs=yes -mfloat-gprs=no @gol
+-mcall-aix  -mcall-sysv  -mcall-netbsd @gol
+-maix-struct-return  -msvr4-struct-return @gol
+-mabi=altivec  -mabi=no-altivec @gol
+-mabi=spe  -mabi=no-spe @gol
+-misel=yes  -misel=no @gol
+-mspe=yes  -mspe=no @gol
+-mfloat-gprs=yes  -mfloat-gprs=no @gol
 -mprototype  -mno-prototype @gol
--msim  -mmvme  -mads  -myellowknife  -memb -msdata @gol
--msdata=@var{opt}  -mvxworks -mwindiss -G @var{num} -pthread}
+-msim  -mmvme  -mads  -myellowknife  -memb  -msdata @gol
+-msdata=@var{opt}  -mvxworks  -mwindiss  -G @var{num}  -pthread}
 
 @emph{Darwin Options}
-@gccoptlist{
--all_load -allowable_client -arch -arch_errors_fatal @gol
--arch_only -bind_at_load -bundle -bundle_loader @gol
--client_name -compatibility_version -current_version @gol
--dependency-file -dylib_file -dylinker_install_name @gol
--dynamic -dynamiclib -exported_symbols_list @gol
--filelist -flat_namespace -force_cpusubtype_ALL @gol
--force_flat_namespace -headerpad_max_install_names @gol
--image_base -init -install_name -keep_private_externs @gol
--multi_module -multiply_defined -multiply_defined_unused @gol
--noall_load -nomultidefs -noprebind -noseglinkedit @gol
--pagezero_size -prebind -prebind_all_twolevel_modules @gol
--private_bundle -read_only_relocs -sectalign @gol
--sectobjectsymbols -whyload -seg1addr @gol
--sectcreate -sectobjectsymbols -sectorder @gol
--seg_addr_table -seg_addr_table_filename -seglinkedit @gol
--segprot -segs_read_only_addr -segs_read_write_addr @gol
--single_module -static -sub_library -sub_umbrella @gol
--twolevel_namespace -umbrella -undefined @gol
--unexported_symbols_list -weak_reference_mismatches -whatsloaded}
+@gccoptlist{-all_load  -allowable_client  -arch  -arch_errors_fatal @gol
+-arch_only  -bind_at_load  -bundle  -bundle_loader @gol
+-client_name  -compatibility_version  -current_version @gol
+-dependency-file  -dylib_file  -dylinker_install_name @gol
+-dynamic  -dynamiclib  -exported_symbols_list @gol
+-filelist  -flat_namespace  -force_cpusubtype_ALL @gol
+-force_flat_namespace  -headerpad_max_install_names @gol
+-image_base  -init  -install_name  -keep_private_externs @gol
+-multi_module  -multiply_defined  -multiply_defined_unused @gol
+-noall_load  -nomultidefs  -noprebind  -noseglinkedit @gol
+-pagezero_size  -prebind  -prebind_all_twolevel_modules @gol
+-private_bundle  -read_only_relocs  -sectalign @gol
+-sectobjectsymbols  -whyload  -seg1addr @gol
+-sectcreate  -sectobjectsymbols  -sectorder @gol
+-seg_addr_table  -seg_addr_table_filename  -seglinkedit @gol
+-segprot  -segs_read_only_addr  -segs_read_write_addr @gol
+-single_module  -static  -sub_library  -sub_umbrella @gol
+-twolevel_namespace  -umbrella  -undefined @gol
+-unexported_symbols_list  -weak_reference_mismatches @gol
+-whatsloaded}
 
 @emph{RT Options}
-@gccoptlist{
--mcall-lib-mul  -mfp-arg-in-fpregs  -mfp-arg-in-gregs @gol
+@gccoptlist{-mcall-lib-mul  -mfp-arg-in-fpregs  -mfp-arg-in-gregs @gol
 -mfull-fp-blocks  -mhc-struct-return  -min-line-mul @gol
 -mminimum-fp-blocks  -mnohc-struct-return}
 
 @emph{MIPS Options}
-@gccoptlist{
--mabicalls -march=@var{cpu-type} -mtune=@var{cpu=type} @gol
--mcpu=@var{cpu-type} -membedded-data  -muninit-const-in-rodata @gol
+@gccoptlist{-mabicalls  -march=@var{cpu-type}  -mtune=@var{cpu=type} @gol
+-mcpu=@var{cpu-type}  -membedded-data  -muninit-const-in-rodata @gol
 -membedded-pic  -mfp32  -mfp64  -mfused-madd  -mno-fused-madd @gol
 -mgas  -mgp32  -mgp64 @gol
 -mgpopt  -mhalf-pic  -mhard-float  -mint64  -mips1 @gol
