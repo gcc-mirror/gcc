@@ -8450,7 +8450,8 @@ ix86_agi_dependant (insn, dep_insn, insn_type)
 {
   rtx addr;
 
-  if (insn_type == TYPE_LEA)
+  if (insn_type == TYPE_LEA
+      && TARGET_PENTIUM)
     {
       addr = PATTERN (insn);
       if (GET_CODE (addr) == SET)
@@ -8485,7 +8486,7 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
      int cost;
 {
   enum attr_type insn_type, dep_insn_type;
-  enum attr_memory memory;
+  enum attr_memory memory, dep_memory;
   rtx set, set2;
   int dep_insn_code_number;
 
@@ -8521,12 +8522,14 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
       break;
 
     case PROCESSOR_PENTIUMPRO:
+      memory = get_attr_memory (insn);
+      dep_memory = get_attr_memory (dep_insn);
+
       /* Since we can't represent delayed latencies of load+operation,
 	 increase the cost here for non-imov insns.  */
       if (dep_insn_type != TYPE_IMOV
-	  && dep_insn_type != TYPE_FMOV
-	  && ((memory = get_attr_memory (dep_insn) == MEMORY_LOAD)
-              || memory == MEMORY_BOTH))
+          && dep_insn_type != TYPE_FMOV
+          && (dep_memory == MEMORY_LOAD || dep_memory == MEMORY_BOTH))
 	cost += 1;
 
       /* INT->FP conversion is expensive.  */
@@ -8540,9 +8543,26 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
 	  && rtx_equal_p (SET_DEST (set), SET_SRC (set2))
 	  && GET_CODE (SET_DEST (set2)) == MEM)
 	cost += 1;
+
+      /* Show ability of reorder buffer to hide latency of load by executing
+	 in parallel with previous instruction in case
+	 previous instruction is not needed to compute the address.  */
+      if ((memory == MEMORY_LOAD || memory == MEMORY_BOTH)
+	  && !ix86_agi_dependant (insn, dep_insn, insn_type))
+ 	{
+	  /* Claim moves to take one cycle, as core can issue one load
+	     at time and the next load can start cycle later.  */
+	  if (dep_insn_type == TYPE_IMOV
+	      || dep_insn_type == TYPE_FMOV)
+	    cost = 1;
+	  else if (cost > 1)
+	    cost--;
+	}
       break;
 
     case PROCESSOR_K6:
+      memory = get_attr_memory (insn);
+      dep_memory = get_attr_memory (dep_insn);
       /* The esp dependency is resolved before the instruction is really
          finished.  */
       if ((insn_type == TYPE_PUSH || insn_type == TYPE_POP)
@@ -8551,24 +8571,58 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
 
       /* Since we can't represent delayed latencies of load+operation,
 	 increase the cost here for non-imov insns.  */
-      if ((memory = get_attr_memory (dep_insn) == MEMORY_LOAD)
-          || memory == MEMORY_BOTH)
+      if (dep_memory == MEMORY_LOAD || dep_memory == MEMORY_BOTH)
 	cost += (dep_insn_type != TYPE_IMOV) ? 2 : 1;
 
       /* INT->FP conversion is expensive.  */
       if (get_attr_fp_int_src (dep_insn))
 	cost += 5;
+
+      /* Show ability of reorder buffer to hide latency of load by executing
+	 in parallel with previous instruction in case
+	 previous instruction is not needed to compute the address.  */
+      if ((memory == MEMORY_LOAD || memory == MEMORY_BOTH)
+	  && !ix86_agi_dependant (insn, dep_insn, insn_type))
+ 	{
+	  /* Claim moves to take one cycle, as core can issue one load
+	     at time and the next load can start cycle later.  */
+	  if (dep_insn_type == TYPE_IMOV
+	      || dep_insn_type == TYPE_FMOV)
+	    cost = 1;
+	  else if (cost > 2)
+	    cost -= 2;
+	  else
+	    cost = 1;
+	}
       break;
 
     case PROCESSOR_ATHLON:
-      if ((memory = get_attr_memory (dep_insn)) == MEMORY_LOAD
-           || memory == MEMORY_BOTH)
+      memory = get_attr_memory (insn);
+      dep_memory = get_attr_memory (dep_insn);
+
+      if (dep_memory == MEMORY_LOAD || dep_memory == MEMORY_BOTH)
 	{
 	  if (dep_insn_type == TYPE_IMOV || dep_insn_type == TYPE_FMOV)
 	    cost += 2;
 	  else
 	    cost += 3;
         }
+      /* Show ability of reorder buffer to hide latency of load by executing
+	 in parallel with previous instruction in case
+	 previous instruction is not needed to compute the address.  */
+      if ((memory == MEMORY_LOAD || memory == MEMORY_BOTH)
+	  && !ix86_agi_dependant (insn, dep_insn, insn_type))
+ 	{
+	  /* Claim moves to take one cycle, as core can issue one load
+	     at time and the next load can start cycle later.  */
+	  if (dep_insn_type == TYPE_IMOV
+	      || dep_insn_type == TYPE_FMOV)
+	    cost = 0;
+	  else if (cost >= 3)
+	    cost -= 3;
+	  else
+	    cost = 0;
+	}
 
     default:
       break;
