@@ -14,7 +14,6 @@ Sat Dec 18 16:28:43 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* cse.c: Move a comment.
 	* tree.c: Minor reformatting.
 	(int_size_in_bytes): Return -1 if constant overflows.
-	* reload.c (combine_reloads): Do nothing if no output reload
 
 Sat Dec 18 18:30:20 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
