@@ -1,3 +1,13 @@
+2004-05-06  Jan Hubicka  <jh@suse.cz>
+
+	PR c/15004
+	* function.c (do_warn_unused_parameter): Break out form ...
+	(expand_function_end): ... here; warn only when not using cgraphunit.
+	* function.h (do_warn_unused_parameter): Declare.
+	* cgraphunit.c: Include function.h.
+	(cgraph_finalize_function): Do unused parameter warning.
+	* Makefile.in (cgraphunit.o): Depend on function.h
+
 2004-05-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/15290

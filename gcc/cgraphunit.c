@@ -39,6 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "fibheap.h"
 #include "c-common.h"
 #include "intl.h"
+#include "function.h"
 
 #define INSNS_PER_CALL 10
 
@@ -356,6 +357,10 @@ cgraph_analyze_function (struct cgraph_node *node)
 
   node->analyzed = true;
   current_function_decl = NULL;
+
+  /* Possibly warn about unused parameters.  */
+  if (warn_unused_parameter)
+    do_warn_unused_parameter (decl);
 }
 
 /* Analyze the whole compilation unit once it is parsed completely.  */
