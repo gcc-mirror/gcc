@@ -1,3 +1,11 @@
+Sun Jun  2 08:55:20 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libI77/inquire.c (f_inqu): Avoid ambiguous else clauses.
+	* libI77/lread.c (l_C, l_L): Likewise.
+	* libI77/open.c (f_open): Likewise.
+	* libI77/rsne.c (x_rsne): Likewise.
+	* libI77/wref.c (wrt_F): Likewise.
+
 Sun Jun  2 08:53:15 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libF77/getenv_.c (G77_getenv_0): Avoid signed/unsigned warning.

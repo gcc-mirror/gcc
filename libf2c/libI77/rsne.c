@@ -525,21 +525,23 @@ have_amp:
 	mustend:
 	  GETC (ch);
 	  if (readall)
-	    if (iva >= ivae)
-	      readall = 0;
-	    else
-	      for (;;)
-		{
-		  switch (ch)
-		    {
-		    case ' ':
-		    case '\t':
-		    case '\n':
-		      GETC (ch);
-		      continue;
-		    }
-		  break;
-		}
+	    {
+	      if (iva >= ivae)
+		readall = 0;
+	      else
+		for (;;)
+		  {
+		    switch (ch)
+		      {
+		      case ' ':
+		      case '\t':
+		      case '\n':
+			GETC (ch);
+			continue;
+		      }
+		    break;
+		  }
+	    }
 	  if (ch == '/' || ch == '$' || ch == '&')
 	    {
 	      f__lquit = 1;
