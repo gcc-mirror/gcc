@@ -1,5 +1,14 @@
 Wed Oct 28 03:59:29 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
+	* regclass.c (renumber, regno_allocated): New static variables, moved
+	out of allocate_reg_info.
+	(allocate_reg_info): Move these two variables outside the function.
+	Move code to free memory into new function free_reg_info.
+	(free_reg_info): New function, broken out of allocate_reg_info.
+	* toplev.c (compile_file): Call free_reg_info, not allocate_reg_info.
+	* rtl.h (allocate_reg_info): Don't declare.
+	(free_reg_info): Declare.
+
 	* final.c (cleanup_subreg_operands):  ASM_INPUTs need no treatment.
 
 Wed Oct 28 02:38:12 1998  Jason Merrill  <jason@yorick.cygnus.com>
