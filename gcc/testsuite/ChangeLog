@@ -1,3 +1,9 @@
+2004-06-10  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* gcc.dg/i386-bitfield1.c: Add mingw32 and cygwin to targets
+	that use default windows32 struct layout.
+	* gcc.dg/i386-bitfield2.c: Likewise.
+
 2004-06-09  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* g++.dg/abi/bitfield3.C: Add -mno-align-double compile option
