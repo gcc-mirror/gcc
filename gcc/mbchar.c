@@ -34,7 +34,6 @@ Boston, MA 02111-1307, USA.  */
 #ifdef MULTIBYTE_CHARS
 #include "config.h"
 #include "system.h"
-#include "gansidecl.h"
 #include "mbchar.h"
 #include <locale.h>
 

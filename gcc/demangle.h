@@ -21,7 +21,6 @@
 #define DEMANGLE_H
 
 #ifdef IN_GCC
-#include "gansidecl.h"
 #define PARAMS(ARGS) PROTO(ARGS)
 #else /* ! IN_GCC */
 #include <ansidecl.h>

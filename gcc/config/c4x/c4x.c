@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "config.h"
-#include "gansidecl.h"
 #include "toplev.h"
 #include "rtl.h"
 #include "regs.h"

@@ -47,7 +47,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "demangle.h"
 #include "obstack.h"
-#include "gansidecl.h"
 #ifdef __CYGWIN32__
 #include <process.h>
 #endif

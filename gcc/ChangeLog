@@ -1,3 +1,54 @@
+Sat Nov  7 15:35:25 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (host_xm_file, build_xm_file, xm_file, tm_file):
+	Arrange to include gansidecl.h in {ht}config.h & tm.h just
+	before the config/ directory headers.
+	(tm_file_list, host_xm_file_list, build_xm_file_list): Handle
+        gansidecl.h in the list of dependencies.
+
+	* Makefile.in (RTL_BASE_H): Don't depend on gansidecl.h.
+	(TREE_H, DEMANGLE_H, RECOG_H, REGS_H, libgcc2.a, stmp-multilib,
+ 	mbchar.o, collect2.o, pexecute.o, vfprintf.o, splay-tree.o, gcc.o,
+ 	gencheck.o, choose-temp.o, mkstemp.o, mkstemp.o, prefix.o,
+ 	dyn-string.o, cexp.o, cccp.o, cppmain.o, cpplib.o, cpperror.o,
+ 	cppexp.o, cppfiles.o, cpphash.o, cppalloc.o, scan-decls.o):
+ 	Likewise.
+
+	* cccp.c: Don't include gansidecl.h.
+	* cexp.y: Likewise.
+	* collect2.c: Likewise.
+	* config/c4x/c4x.c: Likewise.
+	* config/v850/v850.h: Likewise.
+	* cppalloc.c: Likewise.
+	* cpperror.c: Likewise.
+	* cppexp.c: Likewise.
+	* cppfiles.c: Likewise.
+	* cpphash.c: Likewise.
+	* cpplib.c: Likewise.
+	* cppmain.c: Likewise.
+	* cppulp.c: Likewise.
+	* demangle.h: Likewise.
+	* doprint.c: Likewise.
+	* dyn-string.c: Likewise.
+	* eh-common.h: Likewise.
+	* fix-header.c: Likewise.
+	* frame.c: Likewise.
+	* gcc.c: Likewise.
+	* gcov.c: Likewise.
+	* gen-protos.c: Likewise.
+	* gencheck.c: Likewise.
+	* halfpic.h: Likewise.
+	* hash.c: Likewise.
+	* machmode.h: Likewise.
+	* mbchar.c: Likewise.
+	* prefix.c: Likewise.
+	* protoize.c: Likewise.
+	* recog.h: Likewise.
+	* rtl.h: Likewise.
+	* scan-decls.c: Likewise.
+	* tree.h: Likewise.
+	* varray.h: Likewise.
+	
 Sat Nov  7 11:37:53 1998  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (call_value_pop): If we're not popping anything,

@@ -718,14 +718,14 @@ DPBIT_FUNCS = _pack_df _unpack_df _addsub_df _mul_df _div_df \
 # If it is, rm *.o is an easy way to do it.
 # CONFIG_H = $(host_xm_file) $(tm_file)
 CONFIG_H =
-RTL_BASE_H = rtl.h rtl.def gansidecl.h machmode.h machmode.def
+RTL_BASE_H = rtl.h rtl.def machmode.h machmode.def
 RTL_H = $(RTL_BASE_H) genrtl.h
-TREE_H = tree.h real.h tree.def gansidecl.h machmode.h machmode.def tree-check.h
+TREE_H = tree.h real.h tree.def machmode.h machmode.def tree-check.h
 BASIC_BLOCK_H = basic-block.h bitmap.h
-DEMANGLE_H = demangle.h gansidecl.h
-RECOG_H = recog.h gansidecl.h
+DEMANGLE_H = demangle.h
+RECOG_H = recog.h
 EXPR_H = expr.h insn-codes.h
-REGS_H = regs.h varray.h machmode.h machmode.def gansidecl.h
+REGS_H = regs.h varray.h machmode.h machmode.def
 #
 # Language makefile fragments.
 
@@ -1012,7 +1012,7 @@ libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs $(STMP_FIXPROTO)
 
 LIB2ADD = $(srcdir)/frame.c $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
 libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
-   machmode.h longlong.h frame.h gansidecl.h gbl-ctors.h config.status
+   machmode.h longlong.h frame.h gbl-ctors.h config.status
 # Actually build it in tmplibgcc2.a, then rename at end,
 # so that libgcc2.a itself remains nonexistent if compilation is aborted.
 	-rm -f tmplibgcc2.a
@@ -1139,7 +1139,7 @@ s-mlib: $(srcdir)/genmultilib Makefile
 
 # Build multiple copies of libgcc.a, one for each target switch.
 stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
-   frame.h gansidecl.h \
+   frame.h \
    $(LIB2ADD) machmode.h longlong.h gbl-ctors.h config.status
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
@@ -1286,7 +1286,7 @@ c-pragma.o: c-pragma.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) except.h \
     function.h defaults.h c-pragma.h toplev.h
 c-iterate.o: c-iterate.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-tree.h \
     flags.h toplev.h $(EXPR_H)
-mbchar.o: mbchar.c $(CONFIG_H) system.h gansidecl.h mbchar.h
+mbchar.o: mbchar.c $(CONFIG_H) system.h mbchar.h
 
 collect2$(exeext): collect2.o tlink.o hash.o cplus-dem.o underscore.o \
 	version.o choose-temp.o mkstemp.o $(LIBDEPS)
@@ -1295,7 +1295,7 @@ collect2$(exeext): collect2.o tlink.o hash.o cplus-dem.o underscore.o \
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ collect2.o tlink.o hash.o \
 	  cplus-dem.o underscore.o version.o choose-temp.o mkstemp.o $(LIBS)
 
-collect2.o : collect2.c $(CONFIG_H) system.h gansidecl.h gstab.h \
+collect2.o : collect2.c $(CONFIG_H) system.h gstab.h \
 	$(srcdir)/../include/obstack.h $(DEMANGLE_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
 	-DTARGET_MACHINE=\"$(target_alias)\" $(MAYBE_USE_COLLECT2) \
@@ -1309,19 +1309,18 @@ cplus-dem.o: $(srcdir)/../libiberty/cplus-dem.c $(DEMANGLE_H)
 	$(LN_S) $(srcdir)/../libiberty/cplus-dem.c cplus-dem.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) cplus-dem.c
 
-pexecute.o: $(srcdir)/../libiberty/pexecute.c $(CONFIG_H) system.h gansidecl.h
+pexecute.o: $(srcdir)/../libiberty/pexecute.c $(CONFIG_H) system.h
 	rm -f pexecute.c
 	$(LN_S) $(srcdir)/../libiberty/pexecute.c pexecute.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) pexecute.c
 
-vfprintf.o: $(srcdir)/../libiberty/vfprintf.c $(CONFIG_H) system.h gansidecl.h
+vfprintf.o: $(srcdir)/../libiberty/vfprintf.c $(CONFIG_H) system.h
 	rm -f vfprintf.c
 	$(LN_S) $(srcdir)/../libiberty/vfprintf.c vfprintf.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) vfprintf.c
 
 splay-tree.o: $(srcdir)/../libiberty/splay-tree.c \
-  $(srcdir)/../include/splay-tree.h $(srcdir)/../include/libiberty.h \
-  gansidecl.h
+  $(srcdir)/../include/splay-tree.h $(srcdir)/../include/libiberty.h
 	rm -f splay-tree.c
 	$(LN_S) $(srcdir)/../libiberty/splay-tree.c splay-tree.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) splay-tree.c
@@ -1354,7 +1353,7 @@ DRIVER_DEFINES = \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
   -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\"
-gcc.o: gcc.c $(CONFIG_H) system.h gansidecl.h multilib.h Makefile \
+gcc.o: gcc.c $(CONFIG_H) system.h multilib.h Makefile \
 	$(lang_specs_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
@@ -1370,7 +1369,7 @@ gencheck : gencheck.o tree.def $(lang_tree_files) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 gencheck.o $(HOST_LIBS)
 
-gencheck.o : gencheck.c hconfig.h system.h gansidecl.h
+gencheck.o : gencheck.c hconfig.h system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gencheck.c
 
 dumpvers: dumpvers.c
@@ -1381,18 +1380,17 @@ obstack.o: $(srcdir)/../libiberty/obstack.c $(CONFIG_H)
 	$(LN_S) $(srcdir)/../libiberty/obstack.c obstack.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) obstack.c
 
-choose-temp.o: $(srcdir)/../libiberty/choose-temp.c $(CONFIG_H) gansidecl.h \
-	system.h
+choose-temp.o: $(srcdir)/../libiberty/choose-temp.c $(CONFIG_H) system.h
 	rm -f choose-temp.c
 	$(LN_S) $(srcdir)/../libiberty/choose-temp.c choose-temp.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) choose-temp.c
 
-mkstemp.o: $(srcdir)/../libiberty/mkstemp.c $(CONFIG_H) gansidecl.h system.h
+mkstemp.o: $(srcdir)/../libiberty/mkstemp.c $(CONFIG_H) system.h
 	rm -f mkstemp.c
 	$(LN_S) $(srcdir)/../libiberty/mkstemp.c mkstemp.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) mkstemp.c
 
-prefix.o: prefix.c $(CONFIG_H) system.h gansidecl.h Makefile
+prefix.o: prefix.c $(CONFIG_H) system.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	-DPREFIX=\"$(prefix)\" \
 	  -c `echo $(srcdir)/prefix.c | sed 's,^\./,,'`
@@ -1529,7 +1527,7 @@ recog.o : recog.c $(CONFIG_H) system.h $(RTL_H)  \
    insn-flags.h insn-codes.h real.h toplev.h
 reg-stack.o : reg-stack.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) \
    $(REGS_H) hard-reg-set.h flags.h insn-config.h insn-flags.h toplev.h
-dyn-string.o: dyn-string.c dyn-string.h $(CONFIG_H) system.h gansidecl.h
+dyn-string.o: dyn-string.c dyn-string.h $(CONFIG_H) system.h
 
 $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h real.h insn-config.h conditions.h \
@@ -1864,14 +1862,14 @@ cpp$(exeext): $(CCCP)$(exeext)
 cccp$(exeext): cccp.o cexp.o version.o prefix.o mbchar.o @extra_cpp_objs@ $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cccp.o cexp.o prefix.o mbchar.o \
 	  version.o @extra_cpp_objs@ $(LIBS)
-cexp.o: $(srcdir)/cexp.c $(CONFIG_H) system.h gansidecl.h
+cexp.o: $(srcdir)/cexp.c $(CONFIG_H) system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/cexp.c
 $(srcdir)/cexp.c: $(srcdir)/cexp.y
 	cd $(srcdir); $(BISON) -o cexp.c cexp.y
 
 # We use $(libsubdir)/$(unlibsubdir) to match the
 # -iprefix argument which gcc will pass if GCC_EXEC_PREFIX is used.
-cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status system.h gansidecl.h \
+cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status system.h \
            mbchar.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
@@ -1892,10 +1890,9 @@ cppmain$(exeext): cppmain.o libcpp.a $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cppmain$(exeext) cppmain.o \
 	libcpp.a $(LIBS)
 
-cppmain.o: cppmain.c $(CONFIG_H) cpplib.h system.h gansidecl.h
+cppmain.o: cppmain.c $(CONFIG_H) cpplib.h system.h
 
-cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status system.h \
-	gansidecl.h
+cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1904,15 +1901,15 @@ cpplib.o: cpplib.c $(CONFIG_H) cpplib.h cpphash.h config.status system.h \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -c `echo $(srcdir)/cpplib.c | sed 's,^\./,,'`
 
-cpperror.o: cpperror.c $(CONFIG_H) cpplib.h system.h gansidecl.h
+cpperror.o: cpperror.c $(CONFIG_H) cpplib.h system.h
 
-cppexp.o: cppexp.c $(CONFIG_H) cpplib.h system.h gansidecl.h
+cppexp.o: cppexp.c $(CONFIG_H) cpplib.h system.h
 
-cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h system.h gansidecl.h
+cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h system.h
 
-cpphash.o: cpphash.c cpplib.h cpphash.h $(CONFIG_H) system.h gansidecl.h
+cpphash.o: cpphash.c cpplib.h cpphash.h $(CONFIG_H) system.h
 
-cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h system.h gansidecl.h
+cppalloc.o: cppalloc.c $(CONFIG_H) cpplib.h system.h
 
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
@@ -2132,7 +2129,7 @@ fix-header.o: fix-header.c $(srcdir)/../include/obstack.h scan.h \
 	xsys-protos.h $(build_xm_file) system.h cpplib.h cpphash.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
 
-scan-decls.o: scan-decls.c scan.h cpplib.h $(build_xm_file) system.h gansidecl.h
+scan-decls.o: scan-decls.c scan.h cpplib.h $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan-decls.c
 
 # stmp-fixproto depends on this, not on fix-header directly.

@@ -20,7 +20,6 @@
 
 #include "config.h"
 #include "system.h"
-#include "gansidecl.h"
 #include "dyn-string.h"
 
 extern char *xmalloc ();

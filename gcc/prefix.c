@@ -69,8 +69,6 @@ Boston, MA 02111-1307, USA.  */
 #include <windows.h>
 #endif
 
-#include "gansidecl.h"
-
 static char *std_prefix = PREFIX;
 
 static char *get_key_value	PROTO((char *));
