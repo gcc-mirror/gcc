@@ -1529,7 +1529,7 @@ all-stage[+id+]-gcc: configure-stage[+id+]-gcc
 	$(GCC_HOST_EXPORTS) [+ ENDIF prev +] \
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS) [+ IF prev +] \
-		CC="$${CC}" CC_FOR_BUILD="${CC_FOR_BUILD}" \
+		CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
 		STAGE_PREFIX=$$r/stage[+prev+]-gcc/ [+ ENDIF prev +] \
 		[+extra_make_flags+] && $(STAMP) ../all-stage[+id+]-gcc
 

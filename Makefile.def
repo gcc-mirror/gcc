@@ -222,7 +222,7 @@ bootstrap_stage = {
 	extra_make_flags='CFLAGS="$(STAGE1_CFLAGS)"' ; };
 bootstrap_stage = {
 	id=2 ; prev=1 ; next=3 ;
-	bootstrap_target=new-bootstrap2 ;
+	bootstrap_target=bootstrap2 ;
 	extra_configure_flags="@stage2_werror_flag@" ;
 	extra_make_flags="$(POSTSTAGE1_FLAGS_TO_PASS)" ; };
 bootstrap_stage = {

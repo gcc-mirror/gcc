@@ -1,3 +1,8 @@
+2004-06-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl: Fix typo.
+	* Makefile.in: Regenerate.
+
 2004-06-01  Paolo Bonzini <bonzini@gnu.org>
 
 	* configure.in: Remove new- prefix from toplevel
