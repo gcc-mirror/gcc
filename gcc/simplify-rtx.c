@@ -981,16 +981,15 @@ simplify_binary_operation (code, mode, op0, op1)
       switch (code)
 	{
 	case PLUS:
-	  /* In IEEE floating point, x+0 is not the same as x.  Similarly
-	     for the other optimizations below.  */
-	  if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-	      && FLOAT_MODE_P (mode) && ! flag_unsafe_math_optimizations)
-	    break;
-
-	  if (trueop1 == CONST0_RTX (mode))
+	  /* Maybe simplify x + 0 to x.  The two expressions are equivalent
+	     when x is NaN, infinite, or finite and non-zero.  They aren't
+	     when x is -0 and the rounding mode is not towards -infinity,
+	     since (-0) + 0 is then 0.  */
+	  if (!HONOR_SIGNED_ZEROS (mode) && trueop1 == CONST0_RTX (mode))
 	    return op0;
 
-	  /* ((-a) + b) -> (b - a) and similarly for (a + (-b)) */
+	  /* ((-a) + b) -> (b - a) and similarly for (a + (-b)).  These
+	     transformations are safe even for IEEE.  */
 	  if (GET_CODE (op0) == NEG)
 	    return simplify_gen_binary (MINUS, mode, op1, XEXP (op0, 0));
 	  else if (GET_CODE (op1) == NEG)
@@ -1122,12 +1121,6 @@ simplify_binary_operation (code, mode, op0, op1)
 	  break;	      
 
 	case MINUS:
-	  /* None of these optimizations can be done for IEEE
-	     floating point.  */
-	  if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-	      && FLOAT_MODE_P (mode) && ! flag_unsafe_math_optimizations)
-	    break;
-
 	  /* We can't assume x-x is 0 even with non-IEEE floating point,
 	     but since it is zero except in very strange circumstances, we
 	     will treat it as zero with -funsafe-math-optimizations.  */
@@ -1136,16 +1129,23 @@ simplify_binary_operation (code, mode, op0, op1)
 	      && (! FLOAT_MODE_P (mode) || flag_unsafe_math_optimizations))
 	    return CONST0_RTX (mode);
 
-	  /* Change subtraction from zero into negation.  */
-	  if (trueop0 == CONST0_RTX (mode))
+	  /* Change subtraction from zero into negation.  (0 - x) is the
+	     same as -x when x is NaN, infinite, or finite and non-zero.
+	     But if the mode has signed zeros, and does not round towards
+	     -infinity, then 0 - 0 is 0, not -0.  */
+	  if (!HONOR_SIGNED_ZEROS (mode) && trueop0 == CONST0_RTX (mode))
 	    return gen_rtx_NEG (mode, op1);
 
 	  /* (-1 - a) is ~a.  */
 	  if (trueop0 == constm1_rtx)
 	    return gen_rtx_NOT (mode, op1);
 
-	  /* Subtracting 0 has no effect.  */
-	  if (trueop1 == CONST0_RTX (mode))
+	  /* Subtracting 0 has no effect unless the mode has signed zeros
+	     and supports rounding towards -infinity.  In such a case,
+	     0 - 0 is -0.  */
+	  if (!(HONOR_SIGNED_ZEROS (mode)
+		&& HONOR_SIGN_DEPENDENT_ROUNDING (mode))
+	      && trueop1 == CONST0_RTX (mode))
 	    return op0;
 
 	  /* See if this is something like X * C - X or vice versa or
@@ -1202,7 +1202,7 @@ simplify_binary_operation (code, mode, op0, op1)
 		}
 	    }
 
-	  /* (a - (-b)) -> (a + b).  */
+	  /* (a - (-b)) -> (a + b).  True even for IEEE.  */
 	  if (GET_CODE (op1) == NEG)
 	    return simplify_gen_binary (PLUS, mode, op0, XEXP (op1, 0));
 
@@ -1248,9 +1248,12 @@ simplify_binary_operation (code, mode, op0, op1)
 	      return tem ? tem : gen_rtx_NEG (mode, op0);
 	    }
 
-	  /* In IEEE floating point, x*0 is not always 0.  */
-	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	       || ! FLOAT_MODE_P (mode) || flag_unsafe_math_optimizations)
+	  /* Maybe simplify x * 0 to 0.  The reduction is not valid if
+	     x is NaN, since x * 0 is then also NaN.  Nor is it valid
+	     when the mode has signed zeros, since multiplying a negative
+	     number by 0 will give -0, not 0.  */
+	  if (!HONOR_NANS (mode)
+	      && !HONOR_SIGNED_ZEROS (mode)
 	      && trueop1 == CONST0_RTX (mode)
 	      && ! side_effects_p (op0))
 	    return op1;
@@ -1361,9 +1364,12 @@ simplify_binary_operation (code, mode, op0, op1)
 		return op0;
 	    }
 
-	  /* In IEEE floating point, 0/x is not always 0.  */
-	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	       || ! FLOAT_MODE_P (mode) || flag_unsafe_math_optimizations)
+	  /* Maybe change 0 / x to 0.  This transformation isn't safe for
+	     modes with NaNs, since 0 / 0 will then be NaN rather than 0.
+	     Nor is it safe for modes with signed zeros, since dividing
+	     0 by a negative number gives -0, not 0.  */
+	  if (!HONOR_NANS (mode)
+	      && !HONOR_SIGNED_ZEROS (mode)
 	      && trueop0 == CONST0_RTX (mode)
 	      && ! side_effects_p (op1))
 	    return op0;
@@ -2018,12 +2024,9 @@ simplify_relational_operation (code, mode, op0, op1)
   if (flag_unsafe_math_optimizations && code == UNORDERED)
     return const0_rtx;
 
-  /* For non-IEEE floating-point, if the two operands are equal, we know the
+  /* For modes without NaNs, if the two operands are equal, we know the
      result.  */
-  if (rtx_equal_p (trueop0, trueop1)
-      && (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	  || ! FLOAT_MODE_P (GET_MODE (trueop0)) 
-	  || flag_unsafe_math_optimizations))
+  if (!HONOR_NANS (GET_MODE (trueop0)) && rtx_equal_p (trueop0, trueop1))
     equal = 1, op0lt = 0, op0ltu = 0, op1lt = 0, op1ltu = 0;
 
   /* If the operands are floating-point constants, see if we can fold

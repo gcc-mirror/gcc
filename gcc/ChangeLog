@@ -1,3 +1,33 @@
+2002-03-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* defaults.h (MODE_HAS_NANS, MODE_HAS_INFINITIES): New.
+	(MODE_HAS_SIGNED_ZEROS, MODE_HAS_SIGN_DEPENDENT_ROUNDING): New.
+	* flags.h (HONOR_NANS, HONOR_INFINITIES, HONOR_SIGNED_ZEROS): New.
+	(HONOR_SIGN_DEPENDENT_ROUNDING): New.
+	* builtins.c (expand_builtin_mathfn): Use HONOR_NANS.
+	* c-common.c (truthvalue_conversion): Reduce x - y != 0 to x != y
+	unless x and y could be infinite.
+	(expand_unordered_cmp): New, mostly split from expand_tree_builtin.
+	Check that the common type of both arguments is a real, even for
+	targets without unordered comparisons.  Allow an integer argument
+	to be compared against a real.
+	(expand_tree_builtin): Use expand_unordered_cmp.
+	* combine.c (combine_simplify_rtx): Use the new HONOR_... macros.
+	* cse.c (fold_rtx): Likewise.  Fix indentation.
+	* fold-const.c (fold_real_zero_addition_p): New.
+	(fold): Use it, and the new HONOR_... macros.
+	* ifcvt.c (noce_try_minmax): Use the new HONOR_... macros.
+	* jump.c (reversed_comparison_code_parts): After searching for
+	the true comparison mode, use HONOR_NANS to decide whether it
+	can be safely reversed.
+	(reverse_condition_maybe_unordered): Remove IEEE check.
+	* simplify-rtx.c (simplify_binary_operation): Use the new macros
+	to decide which simplifications are valid.  Allow the following
+	simplifications for IEEE: (-a + b) to (b - a), (a + -b) to (a - b),
+	and (a - -b) to (a + b).
+	(simplify_relational_operation): Use HONOR_NANS.
+	* doc/tm.texi: Document the MODE_HAS_... macros.
+
 2002-03-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	* combine.c (simplify_comparison): If simplifying a logical shift

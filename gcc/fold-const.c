@@ -105,6 +105,7 @@ static tree constant_boolean_node PARAMS ((int, tree));
 static int count_cond		PARAMS ((tree, int));
 static tree fold_binary_op_with_conditional_arg 
   PARAMS ((enum tree_code, tree, tree, tree, int));
+static bool fold_real_zero_addition_p	PARAMS ((tree, tree, int));
 							 
 #ifndef BRANCH_COST
 #define BRANCH_COST 1
@@ -4372,6 +4373,43 @@ fold_binary_op_with_conditional_arg (code, type, cond, arg, cond_first_p)
 }
 
 
+/* Subroutine of fold() that checks for the addition of +/- 0.0.
+
+   If !NEGATE, return true if ADDEND is +/-0.0 and, for all X of type
+   TYPE, X + ADDEND is the same as X.  If NEGATE, return true if X -
+   ADDEND is the same as X.
+
+   X + 0 and X - 0 both give X when X is NaN, infinite, or non-zero
+   and finite.  The problematic cases are when X is zero, and its mode
+   has signed zeros.  In the case of rounding towards -infinity,
+   X - 0 is not the same as X because 0 - 0 is -0.  In other rounding
+   modes, X + 0 is not the same as X because -0 + 0 is 0.  */
+
+static bool
+fold_real_zero_addition_p (type, addend, negate)
+     tree type, addend;
+     int negate;
+{
+  if (!real_zerop (addend))
+    return false;
+
+  /* Allow the fold if zeros aren't signed, or their sign isn't important.  */
+  if (!HONOR_SIGNED_ZEROS (TYPE_MODE (type)))
+    return true;
+
+  /* Treat x + -0 as x - 0 and x - -0 as x + 0.  */
+  if (TREE_CODE (addend) == REAL_CST
+      && REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (addend)))
+    negate = !negate;
+
+  /* The mode has signed zeros, and we have to honor their sign.
+     In this situation, there is only one case we can return true for.
+     X - 0 is the same as X unless rounding towards -infinity is
+     supported.  */
+  return negate && !HONOR_SIGN_DEPENDENT_ROUNDING (TYPE_MODE (type));
+}
+
+
 /* Perform constant folding and related simplification of EXPR.
    The related simplifications include x*1 => x, x*0 => 0, etc.,
    and application of the associative law.
@@ -5001,15 +5039,14 @@ fold (expr)
 				    same));
 	    }
 	}
-      /* In IEEE floating point, x+0 may not equal x.  */
-      else if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-		|| flag_unsafe_math_optimizations)
-	       && real_zerop (arg1))
+
+      /* See if ARG1 is zero and X + ARG1 reduces to X.  */
+      else if (fold_real_zero_addition_p (TREE_TYPE (arg0), arg1, 0))
 	return non_lvalue (convert (type, arg0));
-      /* x+(-0) equals x, even for IEEE.  */
-      else if (TREE_CODE (arg1) == REAL_CST
-	       && REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (arg1)))
-	return non_lvalue (convert (type, arg0));
+
+      /* Likewise if the operands are reversed.  */
+      else if (fold_real_zero_addition_p (TREE_TYPE (arg1), arg0, 0))
+	return non_lvalue (convert (type, arg1));
 
      bit_rotate:
       /* (A << C1) + (A >> C2) if A is unsigned and C1+C2 is the size of A
@@ -5163,16 +5200,15 @@ fold (expr)
 				TREE_OPERAND (arg0, 1)));
 	}
 
-      else if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	       || flag_unsafe_math_optimizations)
-	{
-	  /* Except with IEEE floating point, 0-x equals -x.  */
-	  if (! wins && real_zerop (arg0))
-	    return negate_expr (convert (type, arg1));
-	  /* Except with IEEE floating point, x-0 equals x.  */
-	  if (real_zerop (arg1))
-	    return non_lvalue (convert (type, arg0));
-	}
+      /* See if ARG1 is zero and X - ARG1 reduces to X.  */
+      else if (fold_real_zero_addition_p (TREE_TYPE (arg0), arg1, 1))
+	return non_lvalue (convert (type, arg0));
+
+      /* (ARG0 - ARG1) is the same as (-ARG1 + ARG0).  So check whether
+	 ARG0 is zero and X + ARG0 reduces to X, since that would mean
+	 (-ARG1 + ARG0) reduces to -ARG1.  */
+      else if (!wins && fold_real_zero_addition_p (TREE_TYPE (arg1), arg0, 0))
+	return negate_expr (convert (type, arg1));
 
       /* Fold &x - &x.  This can happen from &x.foo - &x.
 	 This is unsafe for certain floats even in non-IEEE formats.
@@ -5217,9 +5253,12 @@ fold (expr)
 	}
       else
 	{
-	  /* x*0 is 0, except for IEEE floating point.  */
-	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	       || flag_unsafe_math_optimizations)
+	  /* Maybe fold x * 0 to 0.  The expressions aren't the same
+	     when x is NaN, since x * 0 is also NaN.  Nor are they the
+	     same in modes with signed zeros, since multiplying a
+	     negative value by 0 gives -0, not +0.  */
+	  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0)))
+	      && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0)))
 	      && real_zerop (arg1))
 	    return omit_one_operand (type, arg1, arg0);
 	  /* In IEEE floating point, x*1 is not equivalent to x for snans.
@@ -6504,23 +6543,38 @@ fold (expr)
 
       /* If we have A op B ? A : C, we may be able to convert this to a
 	 simpler expression, depending on the operation and the values
-	 of B and C.  IEEE floating point prevents this though,
-	 because A or B might be -0.0 or a NaN.  */
+	 of B and C.  Signed zeros prevent all of these transformations,
+	 for reasons given above each one.  */
 
       if (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
-	  && (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	      || ! FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (arg0, 0)))
-	      || flag_unsafe_math_optimizations)
 	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0),
-					     arg1, TREE_OPERAND (arg0, 1)))
+					     arg1, TREE_OPERAND (arg0, 1))
+	  && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
 	{
 	  tree arg2 = TREE_OPERAND (t, 2);
 	  enum tree_code comp_code = TREE_CODE (arg0);
 
 	  STRIP_NOPS (arg2);
 
-	  /* If we have A op 0 ? A : -A, this is A, -A, abs (A), or -abs (A),
-	     depending on the comparison operation.  */
+	  /* If we have A op 0 ? A : -A, consider applying the following
+	     transformations:
+
+	     A == 0? A : -A    same as -A
+	     A != 0? A : -A    same as A
+	     A >= 0? A : -A    same as abs (A)
+	     A > 0?  A : -A    same as abs (A)
+	     A <= 0? A : -A    same as -abs (A)
+	     A < 0?  A : -A    same as -abs (A)
+
+	     None of these transformations work for modes with signed
+	     zeros.  If A is +/-0, the first two transformations will
+	     change the sign of the result (from +0 to -0, or vice
+	     versa).  The last four will fix the sign of the result,
+	     even though the original expressions could be positive or
+	     negative, depending on the sign of A.
+
+	     Note that all these transformations are correct if A is
+	     NaN, since the two alternatives (A and -A) are also NaNs.  */
 	  if ((FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (arg0, 1)))
 	       ? real_zerop (TREE_OPERAND (arg0, 1))
 	       : integer_zerop (TREE_OPERAND (arg0, 1)))
@@ -6535,7 +6589,6 @@ fold (expr)
 			      negate_expr
 			      (convert (TREE_TYPE (TREE_OPERAND (t, 1)),
 					arg1))));
-
 	      case NE_EXPR:
 		return pedantic_non_lvalue (convert (type, arg1));
 	      case GE_EXPR:
@@ -6558,8 +6611,10 @@ fold (expr)
 		abort ();
 	      }
 
-	  /* If this is A != 0 ? A : 0, this is simply A.  For ==, it is
-	     always zero.  */
+	  /* A != 0 ? A : 0 is simply A, unless A is -0.  Likewise
+	     A == 0 ? A : 0 is always 0 unless A is -0.  Note that
+	     both transformations are correct when A is NaN: A != 0
+	     is then true, and A == 0 is false.  */
 
 	  if (integer_zerop (TREE_OPERAND (arg0, 1)) && integer_zerop (arg2))
 	    {
@@ -6569,9 +6624,32 @@ fold (expr)
 		return pedantic_non_lvalue (convert (type, integer_zero_node));
 	    }
 
-	  /* If this is A op B ? A : B, this is either A, B, min (A, B),
-	     or max (A, B), depending on the operation.  */
+	  /* Try some transformations of A op B ? A : B.
 
+	     A == B? A : B    same as B
+	     A != B? A : B    same as A
+	     A >= B? A : B    same as max (A, B)
+	     A > B?  A : B    same as max (B, A)
+	     A <= B? A : B    same as min (A, B)
+	     A < B?  A : B    same as min (B, A)
+
+	     As above, these transformations don't work in the presence
+	     of signed zeros.  For example, if A and B are zeros of
+	     opposite sign, the first two transformations will change
+	     the sign of the result.  In the last four, the original
+	     expressions give different results for (A=+0, B=-0) and
+	     (A=-0, B=+0), but the transformed expressions do not.
+
+	     The first two transformations are correct if either A or B
+	     is a NaN.  In the first transformation, the condition will
+	     be false, and B will indeed be chosen.  In the case of the
+	     second transformation, the condition A != B will be true,
+	     and A will be chosen.
+
+	     The conversions to max() and min() are not correct if B is
+	     a number and A is not.  The conditions in the original
+	     expressions will be false, so all four give B.  The min()
+	     and max() versions would give a NaN instead.  */
 	  if (operand_equal_for_comparison_p (TREE_OPERAND (arg0, 1),
 					      arg2, TREE_OPERAND (arg0, 0)))
 	    {
@@ -6595,21 +6673,23 @@ fold (expr)
 		     operand which will be used if they are equal first
 		     so that we can convert this back to the
 		     corresponding COND_EXPR.  */
-		  return pedantic_non_lvalue
-		    (convert (type, fold (build (MIN_EXPR, comp_type,
-						 (comp_code == LE_EXPR
-						  ? comp_op0 : comp_op1),
-						 (comp_code == LE_EXPR
-						  ? comp_op1 : comp_op0)))));
+		  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1))))
+		    return pedantic_non_lvalue
+		      (convert (type, fold (build (MIN_EXPR, comp_type,
+						   (comp_code == LE_EXPR
+						    ? comp_op0 : comp_op1),
+						   (comp_code == LE_EXPR
+						    ? comp_op1 : comp_op0)))));
 		  break;
 		case GE_EXPR:
 		case GT_EXPR:
-		  return pedantic_non_lvalue
-		    (convert (type, fold (build (MAX_EXPR, comp_type,
-						 (comp_code == GE_EXPR
-						  ? comp_op0 : comp_op1),
-						 (comp_code == GE_EXPR
-						  ? comp_op1 : comp_op0)))));
+		  if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg1))))
+		    return pedantic_non_lvalue
+		      (convert (type, fold (build (MAX_EXPR, comp_type,
+						   (comp_code == GE_EXPR
+						    ? comp_op0 : comp_op1),
+						   (comp_code == GE_EXPR
+						    ? comp_op1 : comp_op0)))));
 		  break;
 		default:
 		  abort ();

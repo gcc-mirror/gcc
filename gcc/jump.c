@@ -704,11 +704,6 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
       break;
     }
 
-  /* In case we give up IEEE compatibility, all comparisons are reversible.  */
-  if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-      || flag_unsafe_math_optimizations)
-    return reverse_condition (code);
-
   if (GET_MODE_CLASS (mode) == MODE_CC
 #ifdef HAVE_cc0
       || arg0 == cc0_rtx
@@ -757,11 +752,12 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
 	}
     }
 
-  /* An integer condition.  */
+  /* Test for an integer condition, or a floating-point comparison
+     in which NaNs can be ignored.  */
   if (GET_CODE (arg0) == CONST_INT
       || (GET_MODE (arg0) != VOIDmode
 	  && GET_MODE_CLASS (mode) != MODE_CC
-	  && ! FLOAT_MODE_P (mode)))
+	  && !HONOR_NANS (mode)))
     return reverse_condition (code);
 
   return UNKNOWN;
@@ -840,10 +836,6 @@ enum rtx_code
 reverse_condition_maybe_unordered (code)
      enum rtx_code code;
 {
-  /* Non-IEEE formats don't have unordered conditions.  */
-  if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT)
-    return reverse_condition (code);
-
   switch (code)
     {
     case EQ:

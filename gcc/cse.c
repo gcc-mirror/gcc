@@ -3981,19 +3981,18 @@ fold_rtx (x, insn)
 					& HASH_MASK), mode_arg0))
 		      && p0->first_same_value == p1->first_same_value))
 		{
-		   /* Sadly two equal NaNs are not equivalent.  */
-		   if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-		       || ! FLOAT_MODE_P (mode_arg0) 
-		       || flag_unsafe_math_optimizations)
-		      return ((code == EQ || code == LE || code == GE
-			       || code == LEU || code == GEU || code == UNEQ
-			       || code == UNLE || code == UNGE || code == ORDERED)
-			      ? true_rtx : false_rtx);
-		   /* Take care for the FP compares we can resolve.  */
-		   if (code == UNEQ || code == UNLE || code == UNGE)
-		     return true_rtx;
-		   if (code == LTGT || code == LT || code == GT)
-		     return false_rtx;
+		  /* Sadly two equal NaNs are not equivalent.  */
+		  if (!HONOR_NANS (mode_arg0))
+		    return ((code == EQ || code == LE || code == GE
+			     || code == LEU || code == GEU || code == UNEQ
+			     || code == UNLE || code == UNGE
+			     || code == ORDERED)
+			    ? true_rtx : false_rtx);
+		  /* Take care for the FP compares we can resolve.  */
+		  if (code == UNEQ || code == UNLE || code == UNGE)
+		    return true_rtx;
+		  if (code == LTGT || code == LT || code == GT)
+		    return false_rtx;
 		}
 
 	      /* If FOLDED_ARG0 is a register, see if the comparison we are
