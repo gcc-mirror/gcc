@@ -962,7 +962,7 @@ if (TARGET_ARCH64				\
 */
 
 #define FIXED_REGISTERS  \
- {1, 0, 0, 0, 0, 0, 1, 1,	\
+ {1, 0, 2, 2, 2, 2, 1, 1,	\
   0, 0, 0, 0, 0, 0, 1, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 1, 1,	\
@@ -1015,10 +1015,12 @@ do								\
 	fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
 	call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
       }								\
-    if (TARGET_ARCH32)						\
-      {								\
-	fixed_regs[5] = 1;					\
-      }								\
+    /* If the user has passed -f{fixed,call-{used,saved}}-g5 */	\
+    /* then honour it.  */					\
+    if (TARGET_ARCH32 && fixed_regs[5])				\
+      fixed_regs[5] = 1;					\
+    else if (TARGET_ARCH64 && fixed_regs[5] == 2)		\
+      fixed_regs[5] = 0;					\
     if (TARGET_LIVE_G0)						\
       fixed_regs[0] = 0;					\
     if (! TARGET_V9)						\
@@ -1040,10 +1042,18 @@ do								\
 	for (regno = 32; regno < SPARC_LAST_V9_FCC_REG; regno++) \
 	  fixed_regs[regno] = 1;				\
       }								\
-    /* Don't unfix g2-g4 if they were fixed with -ffixed-.  */	\
-    fixed_regs[2] |= ! TARGET_APP_REGS;				\
-    fixed_regs[3] |= ! TARGET_APP_REGS;				\
-    fixed_regs[4] |= ! TARGET_APP_REGS || TARGET_CM_EMBMEDANY;	\
+    /* If the user has passed -f{fixed,call-{used,saved}}-g2 */	\
+    /* then honour it.  Likewise with g3 and g4.  */		\
+    if (fixed_regs[2] == 2)					\
+      fixed_regs[2] = ! TARGET_APP_REGS;			\
+    if (fixed_regs[3] == 2)					\
+      fixed_regs[3] = ! TARGET_APP_REGS;			\
+    if (TARGET_ARCH32 && fixed_regs[4] == 2)			\
+      fixed_regs[4] = ! TARGET_APP_REGS;			\
+    else if (TARGET_CM_EMBMEDANY)				\
+      fixed_regs[4] = 1;					\
+    else if (fixed_regs[4] == 2)				\
+      fixed_regs[4] = 0;					\
     if (TARGET_FLAT)						\
       {								\
 	/* Let the compiler believe the frame pointer is still	\
@@ -1335,11 +1345,12 @@ extern enum reg_class sparc_regno_reg_class[];
   1, 4, 5, 6, 7, 0, 14, 30}
 
 /* This is the order in which to allocate registers for
-   leaf functions.  If all registers can fit in the "i" registers,
+   leaf functions.  If all registers can fit in the "gi" registers,
    then we have the possibility of having a leaf function.  */
 
 #define REG_LEAF_ALLOC_ORDER \
 { 2, 3, 24, 25, 26, 27, 28, 29,		\
+  4, 5, 6, 7, 1,			\
   15, 8, 9, 10, 11, 12, 13,		\
   16, 17, 18, 19, 20, 21, 22, 23,	\
   34, 35, 36, 37, 38, 39,		\
@@ -1352,8 +1363,8 @@ extern enum reg_class sparc_regno_reg_class[];
   88, 89, 90, 91, 92, 93, 94, 95,	\
   32, 33,				\
   96, 97, 98, 99, 100,			\
-  1, 4, 5, 6, 7, 0, 14, 30, 31}
-
+  0, 14, 30, 31}
+  
 #define ORDER_REGS_FOR_LOCAL_ALLOC order_regs_for_local_alloc ()
 
 /* ??? %g7 is not a leaf register to effectively #undef LEAF_REGISTERS when
@@ -1889,6 +1900,8 @@ do {									\
 #define FUNCTION_BLOCK_PROFILER_EXIT(FILE) \
   sparc_function_block_profiler_exit(FILE)
 
+#ifdef IN_LIBGCC2
+
 /* The function `__bb_trace_func' is called in every basic block
    and is not allowed to change the machine state. Saving (restoring)
    the state can either be done in the BLOCK_PROFILER macro,
@@ -1908,12 +1921,18 @@ do {									\
    On sparc it is sufficient to save the psw register to memory.
    Unfortunately the psw register can be read in supervisor mode only,
    so we read only the condition codes by using branch instructions
-   and hope that this is enough. */
+   and hope that this is enough.
+   
+   On V9, life is much sweater:  there is a user accessible %ccr
+   register, but we use it for 64bit libraries only.  */
+
+#if TARGET_ARCH32
 
 #define MACHINE_STATE_SAVE(ID)			\
   int ms_flags, ms_saveret;			\
   asm volatile(					\
-	"mov %%g0,%0\n\
+	"mov %%g2,%1\n\
+	mov %%g0,%0\n\
 	be,a LFLGNZ"ID"\n\
 	or %0,4,%0\n\
 LFLGNZ"ID":\n\
@@ -1925,9 +1944,19 @@ LFLGNC"ID":\n\
 LFLGNV"ID":\n\
 	bneg,a LFLGNN"ID"\n\
 	or %0,8,%0\n\
-LFLGNN"ID":\n\
-	mov %%g2,%1"				\
+LFLGNN"ID":"					\
 	: "=r"(ms_flags), "=r"(ms_saveret));
+
+#else
+
+#define MACHINE_STATE_SAVE(ID)			\
+  unsigned long ms_flags, ms_saveret;		\
+  asm volatile(					\
+	"mov %%g2,%1\n\				\
+	rd %%ccr,%0"				\
+	: "=r"(ms_flags), "=r"(ms_saveret));
+
+#endif
 
 /* On sparc MACHINE_STATE_RESTORE restores the psw register from memory.
    The psw register can be written in supervisor mode only,
@@ -1936,6 +1965,8 @@ LFLGNN"ID":\n\
    proper condition codes, but some flag combinations can not
    be generated in this way. If this happens an unimplemented
    instruction will be executed to abort the program. */
+
+#if TARGET_ARCH32
 
 #define MACHINE_STATE_RESTORE(ID)				\
 { extern char flgtab[] __asm__("LFLGTAB"ID);			\
@@ -1995,7 +2026,20 @@ LFLGRET"ID":\n\
 	: "=r"(scratch)						\
 	: "r"(ms_flags*8), "r"(flgtab), "r"(-1),		\
 	  "r"(0x80000000), "r"(ms_saveret)			\
-	: "cc", "%g2"); }
+	: "cc", "g2"); }
+
+#else
+
+#define MACHINE_STATE_RESTORE(ID)				\
+  asm volatile (						\
+	"wr %0,0,%%ccr\n\
+	mov %1,%%g2"						\
+	: : "r"(ms_flags), "r"(ms_saveret)			\
+	: "cc", "g2");
+
+#endif
+
+#endif /* IN_LIBGCC2 */
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in

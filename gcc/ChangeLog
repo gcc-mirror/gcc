@@ -1,5 +1,26 @@
 1999-11-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/sparc/sparc.h (FIXED_REGISTERS, CONDITIONAL_REGISTER_USAGE):
+	Allow the user to override call-used/fixed state of %g2-5
+	registers from the command line (with the exception of %g4 for
+	embedded model).
+	(REG_LEAF_ALLOC_ORDER): Move %g1 and %g4-7 registers to front, so that
+	there is a higher chance of having a leaf function.
+	(MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Provide separate macros
+	for ARCH64 which has %ccr register.
+	* config/sparc/sparc.md (return_losum_si, return_losum_di): New
+	patterns.
+	* config/sparc/sparc.c (eligible_for_epilogue_delay): For the return
+	insn accept into delay slot any insn which does not use %[ol]
+	registers.  Accept some LO_SUM and shift left by 1 for the normal
+	restore case.
+	(output_function_epilogue): Likewise.
+	(epilogue_renumber): Added argument which inhibits any renumbering
+	and just tests if the rtx does not use any %[ol] registers.
+	(output_return): Reflect above change.
+
+1999-11-30  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/sparc/sparc.c (sparc_va_arg): Fix sparc64 va_arg
 	aggregate passing for sizes <= 16 bytes.
 
