@@ -87,7 +87,7 @@ noinst_LTLIBRARIES = libffi_convenience.la
 
 noinst_PROGRAMS = ffitest
 
-ffitest_SOURCES = src/ffitest.c
+ffitest_OBJECTS = ffitest.lo
 ffitest_LDADD = libffi.la
 ffitest_LDFLAGS = -shared-libgcc
 
