@@ -1,5 +1,12 @@
 2002-08-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/rs6000/rs6000.h, config/rs6000/aix.h,
+	config/rs6000/darwin.h, config/rs6000/linux64.h: Revert last
+	two patches.
+	* config/rs6000/sysv4.h: Likewise, remove #undef ADJUST_FIELD_ALIGN.
+
+2002-08-08  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/rs6000/rs6000-protos.h (rs6000_field_alignment): Remove.
 	* config/rs6000/rs6000.c (rs6000_field_alignment): Move...
 	* config/rs6000/rs6000.h (ADJUST_FIELD_ALIGN): ...inline into the
