@@ -16,10 +16,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.2 1991/11/07 22:30:54 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.3 1991/11/07 23:23:40 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/07 22:30:54 $
+  $Date: 1991/11/07 23:23:40 $
   $Log: hash.c,v $
+ * Revision 0.3  1991/11/07  23:23:40  dennisg
+ * implemented hash table expansion as suggested by rms.
+ *
  * Revision 0.2  1991/11/07  22:30:54  dennisg
  * added copyleft
  *
@@ -31,6 +34,7 @@
 
 #include  <hash.h>
 #include  <ObjC.h>
+#include	<ObjC-private.h>
 
 #include  <assert.h>
 #include  <libc.h>
@@ -43,8 +47,10 @@
 																									
 																									These equations are 
 																									percentages. */
-#define	FULLNESS		( 100 / 75 )
-#define	EXPANSION		( 135 / 100 )
+#define	FULLNESS(cache)	\
+	((((cache)->sizeOfHash * 75	) / 100 ) <= (cache)->entriesInHash)
+#define	EXPANSION(cache) \
+	(((cache)->sizeOfHash * 175 ) / 100 )
 
                                                 /* Local forward decl. */
   u_int hashValue( Cache_t, void* );
@@ -94,13 +100,13 @@ Cache_t hash_new( u_int sizeOfHash ) {
 
 void hash_delete( Cache_t theCache ) {
 
-  void* aNode;
+  CacheNode_t aNode;
   
 
                                                 /* Purge all key/value pairs 
                                                   from the table. */
   while( aNode = hash_next( theCache, NULL ))
-    hash_remove( theCache, aNode );
+    hash_remove( theCache, aNode->theKey );
 
                                                 /* Release the array of nodes 
                                                   and the cache itself. */
@@ -120,14 +126,14 @@ void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
                                                 /* Initialize the new node. */
   aCacheNode->theKey    = aKey;
   aCacheNode->theValue  = aValue;
-  aCacheNode->nextNode  = ( *( **theCache ).theNodeTable )[ indx ];
+  aCacheNode->nextNode  = ( *( *theCache )->theNodeTable )[ indx ];
   
                                                 /* Debugging.
                                                 
                                                   Check the list for another 
                                                   key. */
 #ifdef DEBUG
-    { CacheNode_t checkHashNode = ( *( **theCache ).theNodeTable )[ indx ];
+    { CacheNode_t checkHashNode = ( *( *theCache )->theNodeTable )[ indx ];
     
       while( checkHashNode ) {
     
@@ -139,17 +145,17 @@ void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
 
                                                 /* Install the node as the
                                                   first element on the list. */
-  ( *( **theCache ).theNodeTable )[ indx ] = aCacheNode;
+  ( *( *theCache )->theNodeTable )[ indx ] = aCacheNode;
 
 																								/* Bump the number of entries
 																									in the cache. */
-	++( **theCache ).entriesInHash;
+	++( *theCache )->entriesInHash;
 	
 																								/* Check the hash table's
 																									fullness.   We're going
 																									to expand if it is above
 																									the fullness level. */
-	if(( **theCache ).entriesInHash * FULLNESS ) {
+	if(FULLNESS( *theCache )) {
 																								/* The hash table has reached
 																									its fullness level.  Time to
 																									expand it. 
@@ -159,9 +165,12 @@ void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
 																									primitive functions thereby
 																									increasing its 
 																									correctness. */
-		Cache_t			newCache = hash_new(( **theCache ).sizeOfHash * EXPANSION );
+		Cache_t			newCache = hash_new(EXPANSION( *theCache ));
 		CacheNode_t	aNode = NULL;
-		
+
+		DEBUG_PRINTF (stderr, "Expanding cache %#x from %d to %d\n",
+			*theCache, ( *theCache )->sizeOfHash, newCache->sizeOfHash);
+			
 																								/* Copy the nodes from the
 																									first hash table to the
 																									new one. */
