@@ -1,5 +1,9 @@
 2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/invoke.texi: Remove a duplicate -dk.
+
+2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doc/invoke.texi: Update dump file names.
 
 2003-06-22  Zack Weinberg  <zack@codesourcery.com>
