@@ -1,5 +1,10 @@
 2001-05-10  David Edelsohn  <edelsohn@gnu.org>
 
+	* expr.c (emit_push_insn): Convert PUSH_ROUNDING argument to
+	bytes.  Reported by Kazu Hirata <kazu@hxi.com>.
+
+2001-05-10  David Edelsohn  <edelsohn@gnu.org>
+
 	* expr.c (emit_group_load): extract_bit_field requires a REG or
 	MEM as an argument.
 
