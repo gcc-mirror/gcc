@@ -1,3 +1,8 @@
+2002-05-27  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* update_version (textstring_FILES): Change gcc/ada/gnatvsn.ads to
+	gcc/gcc/ada/gnatvsn.ads.
+
 2002-05-26  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc_release: Add gcc/ada/gnatvsn.ads to list of files in which
