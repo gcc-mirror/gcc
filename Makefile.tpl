@@ -1259,8 +1259,8 @@ $(INSTALL_X11_MODULES): installdirs
 .PHONY: all-gcc
 all-gcc:
 	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD_COMMAND_COMMAND}`; export r; \
-	  s=`cd $(srcdir); ${PWD_COMMAND_COMMAND}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) all); \
 	else \
@@ -1323,8 +1323,8 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 .PHONY: check-gcc
 check-gcc:
 	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD_COMMAND_COMMAND}`; export r; \
-	  s=`cd $(srcdir); ${PWD_COMMAND_COMMAND}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) check); \
 	else \

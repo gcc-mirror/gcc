@@ -1,5 +1,10 @@
 2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
 
+	* Makefile.tpl: Fix typos in the last change.
+	* Makefile.in: Regenerated.
+
+2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
+
 	* config-ml.in: Replace PWD with PWD_COMMAND.
 	* Makefile.tpl: Likewise.
 	* Makefile.in: Regenerated.
