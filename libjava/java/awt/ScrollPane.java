@@ -15,9 +15,6 @@ import java.awt.peer.ScrollPanePeer;
  * scrollbars as well as a single child which is scrolled by them.
  * @author Tom Tromey <tromey@redhat.com>
  * @date December 31, 2000
- * Status: Unfinished.  The Adjustables are probably wrong (there
- * isn't a mechanism for scrollbar events to affect them), and also
- * doLayout() is not finished.
  */
 public class ScrollPane extends Container
 {
@@ -90,7 +87,8 @@ public class ScrollPane extends Container
     Dimension c = component[0].getPreferredSize ();
     component[0].setSize (c.width, c.height);
     spp.childResized (c.width, c.height);
-    // FIXME
+    // Update the scrollbar position to the closest valid value.
+    setScrollPosition (hscroll.getValue (), vscroll.getValue ());
   }
 
   /** Returns an Adjustable representing the horizontal scrollbar.
@@ -121,8 +119,7 @@ public class ScrollPane extends Container
   /** Returns the viewport's scroll position.  */
   public Point getScrollPosition ()
   {
-    // FIXME
-    return null;
+    return new Point (hscroll.getValue (), vscroll.getValue ());
   }
 
   /** Returns an Adjustable representing the vertical scrollbar.
@@ -138,6 +135,9 @@ public class ScrollPane extends Container
   /** Returns the size of the viewport.  */
   public Dimension getViewportSize ()
   {
+    // Note: according to the online docs, the Insets are
+    // automatically updated by the peer to include the scrollbar
+    // sizes.
     Insets ins = getInsets ();
     int myw = width - ins.left - ins.right;
     int myh = height - ins.top - ins.bottom;
@@ -147,14 +147,6 @@ public class ScrollPane extends Container
       cs = component[0].getPreferredSize ();
     else
       cs = new Dimension (myw, myh);
-
-    if (policy == SCROLLBARS_ALWAYS
-	|| (policy == SCROLLBARS_AS_NEEDED && myw < cs.width))
-      myw -= getVScrollbarWidth ();
-
-    if (policy == SCROLLBARS_ALWAYS
-	|| (policy == SCROLLBARS_AS_NEEDED && myh < cs.height))
-      myh -= getHScrollbarHeight ();
 
     // A little optimization -- reuse the Dimension.
     cs.setSize (myw, myh);
@@ -228,6 +220,12 @@ public class ScrollPane extends Container
     setScrollPosition (p.x, p.y);
   }
 
+  // This implements the Adjustable for each scrollbar.  The
+  // expectation is that the peer will look at these objects directly
+  // and modify the values in them when the user manipulates the
+  // scrollbars.  This has to be done from CNI to bypass Java
+  // protection rules.  The peer should also take care of calling the
+  // adjustment listeners.
   class ScrollPaneAdjustable implements Adjustable
   {
     AdjustmentListener listeners;
@@ -295,12 +293,7 @@ public class ScrollPane extends Container
 
     public void setBlockIncrement (int b)
     {
-      block = b;
-      if (peer != null)
-	{
-	  ScrollPanePeer spp = (ScrollPanePeer) peer;
-	  spp.setBlockIncrement (this, b);
-	}
+      throw new AWTError ("can't use setBlockIncrement on this Adjustable");
     }
 
     public void setMaximum (int max)

@@ -1,3 +1,11 @@
+2001-01-03  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/ScrollPane.java (setBlockIncrement): Throw error.
+	(getViewportSize): Insets include scrollbar size.
+	(doLayout): Finished.
+	(getScrollPosition): Wrote.
+	* java/awt/peer/ScrollPanePeer.java (setBlockIncrement): Removed.
+
 2001-01-02  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/ScrollPane.java: Wrote.
