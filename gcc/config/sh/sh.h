@@ -1565,6 +1565,10 @@ do { char dstr[30];					\
 #define ASM_OUTPUT_BYTE(STREAM, VALUE)  	\
   fprintf ((STREAM), "\t.byte\t%d\n", (VALUE)) 	\
 
+/* The next two are used for debug info when compiling with -gdwarf.  */
+#define UNALIGNED_SHORT_ASM_OP	".uaword"
+#define UNALIGNED_INT_ASM_OP	".ualong"
+
 /* Loop alignment is now done in machine_dependent_reorg, so that
    branch shortening can know about it.  */
 
