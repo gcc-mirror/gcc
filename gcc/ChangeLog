@@ -1,3 +1,7 @@
+2001-08-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/install.texi: Document fine-grained multilib configuration.
+
 2001-08-06  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.h (FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN): New.

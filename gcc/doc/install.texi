@@ -502,6 +502,28 @@ libraries to support different target variants, calling
 conventions, etc should not be built.  The default is to build a
 predefined set of them.
 
+Some targets provide finer-grained control over which multilibs are built
+(e.g., @option{--disable-softfloat}):
+@table @code
+
+@item arc-*-elf*
+biendian.
+
+@item arm-*-*
+fpu, 26bit, underscore, interwork, biendian, nofmult.
+
+@item m68*-*-*
+softfloat, m68881, m68000, m68020.
+
+@item mips*-*-*
+single-float, biendian, softfloat.
+
+@item powerpc*-*-*, rs6000*-*-*
+aix64, pthread, softfloat, powercpu, powerpccpu, powerpcos, biendian,
+sysv, aix. 
+
+@end table
+
 @item --enable-threads
 Specify that the target
 supports threads.  This affects the Objective-C compiler and runtime
