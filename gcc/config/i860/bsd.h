@@ -1,5 +1,8 @@
 #include "i860.h"
 
+#undef TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (i860, BSD)")
+
 /* BSD UN*X systems use BSD STABS debugging info.  */
 
 #define DBX_DEBUGGING_INFO
