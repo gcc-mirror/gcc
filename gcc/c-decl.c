@@ -5828,8 +5828,7 @@ store_parm_decls_newstyle (tree fndecl, tree arg_info)
      warning if we got here because ARG_INFO_TYPES was error_mark_node
      (this happens when a function definition has just an ellipsis in
      its parameter list).  */
-  else if (warn_traditional && !in_system_header
-	   && !current_scope->outer_function
+  else if (warn_traditional && !in_system_header && !current_function_scope
 	   && ARG_INFO_TYPES (arg_info) != error_mark_node)
     warning ("%Jtraditional C rejects ISO C style function definitions",
 	     fndecl);
