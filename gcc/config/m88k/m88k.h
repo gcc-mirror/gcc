@@ -206,9 +206,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"08/28/92"
+#define VERSION_INFO2	"09/01/92"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.7.6 08/28/92 07:51:00"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.7.7 09/01/92 17:32:13"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1439,7 +1439,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
-#define MOVE_MAX 64
+#define MOVE_MAX 8
 
 /* Define if normal loads of shorter-than-word items from memory clears
    the rest of the bigs in the register.  */
