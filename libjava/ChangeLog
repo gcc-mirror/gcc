@@ -1,5 +1,12 @@
 2003-12-18  Michael Koch  <konqueror@gmx.de>
 
+	* mauve-libgcj: Removed the disabling of java.text.ACIAttribute and
+	java.text.CollationElementIterator tests as they compile again.
+	* testsuite/libjava.mauve/xfails: Added failing
+	java.text.CollationElementIterator tests.
+
+2003-12-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/prefs/AbstractPreferences.java
 	(cachedChildren): New method.
 
