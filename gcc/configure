@@ -7950,7 +7950,7 @@ EOF
     ;;
 esac
 
-if test "$prefix" != "/usr" && test "$prefix" != "/usr/local" ; then
+if test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
   cat >> confdefs.h <<EOF
 #define PREFIX_INCLUDE_DIR "$prefix/include"
 EOF

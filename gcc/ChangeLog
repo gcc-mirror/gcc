@@ -1,3 +1,9 @@
+2002-08-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* configure.in (PREFIX_INCLUDE_DIR): Don't define if prefix and
+	local_prefix are the same.
+	* configure: Rebuilt.
+
 2002-08-07  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 
