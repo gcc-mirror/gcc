@@ -1,3 +1,8 @@
+2003-09-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/expr/lval1.C: New test.
+	* g++.dg/ext/lvcast.C: Remove.
+
 2003-09-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/11700.

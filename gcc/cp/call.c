@@ -3193,8 +3193,9 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 
      If the second and third operands are lvalues and have the same
      type, the result is of that type and is an lvalue.  */
-  if (real_lvalue_p (arg2) && real_lvalue_p (arg3) && 
-      same_type_p (arg2_type, arg3_type))
+  if (real_lvalue_p (arg2) 
+      && real_lvalue_p (arg3) 
+      && same_type_p (arg2_type, arg3_type))
     {
       result_type = arg2_type;
       goto valid_operands;
@@ -4126,7 +4127,7 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner,
 	tree ref_type = totype;
 
 	/* If necessary, create a temporary.  */
-	if (NEED_TEMPORARY_P (convs) || !non_cast_lvalue_p (expr))
+	if (NEED_TEMPORARY_P (convs) || !lvalue_p (expr))
 	  {
 	    tree type = TREE_TYPE (TREE_OPERAND (convs, 0));
 
@@ -6089,7 +6090,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	base_conv_type = NULL_TREE;
       /* Perform the remainder of the conversion.  */
       expr = convert_like (conv, expr);
-      if (!real_non_cast_lvalue_p (expr))
+      if (!real_lvalue_p (expr))
 	{
 	  tree init;
 	  tree type;

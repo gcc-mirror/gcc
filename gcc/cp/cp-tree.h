@@ -4167,10 +4167,7 @@ extern int zero_init_p				(tree);
 extern tree canonical_type_variant              (tree);
 extern tree copy_base_binfos			(tree, tree, tree);
 extern int member_p				(tree);
-extern cp_lvalue_kind real_lvalue_p		(tree);
-extern int non_cast_lvalue_p			(tree);
-extern cp_lvalue_kind real_non_cast_lvalue_p    (tree);
-extern int non_cast_lvalue_or_else		(tree, const char *);
+extern cp_lvalue_kind real_lvalue_p             (tree);
 extern tree build_min				(enum tree_code, tree,
 							 ...);
 extern tree build_min_nt			(enum tree_code, ...);

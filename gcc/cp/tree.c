@@ -41,7 +41,7 @@ static tree build_cplus_array_type_1 (tree, tree);
 static int list_hash_eq (const void *, const void *);
 static hashval_t list_hash_pieces (tree, tree, tree);
 static hashval_t list_hash (const void *);
-static cp_lvalue_kind lvalue_p_1 (tree, int, int);
+static cp_lvalue_kind lvalue_p_1 (tree, int);
 static tree no_linkage_helper (tree *, int *, void *);
 static tree mark_local_for_remap_r (tree *, int *, void *);
 static tree cp_unsave_r (tree *, int *, void *);
@@ -60,8 +60,7 @@ static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
 
 static cp_lvalue_kind
 lvalue_p_1 (tree ref, 
-            int treat_class_rvalues_as_lvalues, 
-            int allow_cast_as_lvalue)
+            int treat_class_rvalues_as_lvalues)
 {
   cp_lvalue_kind op1_lvalue_kind = clk_none;
   cp_lvalue_kind op2_lvalue_kind = clk_none;
@@ -85,21 +84,11 @@ lvalue_p_1 (tree ref,
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       return lvalue_p_1 (TREE_OPERAND (ref, 0),
-			 treat_class_rvalues_as_lvalues,
-			 allow_cast_as_lvalue);
-
-    case NOP_EXPR:
-      if (allow_cast_as_lvalue)
-	return lvalue_p_1 (TREE_OPERAND (ref, 0),
-			   treat_class_rvalues_as_lvalues,
-			   allow_cast_as_lvalue);
-      else
-	return clk_none;
+			 treat_class_rvalues_as_lvalues);
 
     case COMPONENT_REF:
       op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0),
-				    treat_class_rvalues_as_lvalues,
-				    allow_cast_as_lvalue);
+				    treat_class_rvalues_as_lvalues);
       if (!op1_lvalue_kind 
 	  /* The "field" can be a FUNCTION_DECL or an OVERLOAD in some	
   	     situations.  */
@@ -140,20 +129,16 @@ lvalue_p_1 (tree ref,
     case MAX_EXPR:
     case MIN_EXPR:
       op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0),
-				    treat_class_rvalues_as_lvalues,
-				    allow_cast_as_lvalue);
+				    treat_class_rvalues_as_lvalues);
       op2_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 1),
-				    treat_class_rvalues_as_lvalues,
-				    allow_cast_as_lvalue);
+				    treat_class_rvalues_as_lvalues);
       break;
 
     case COND_EXPR:
       op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 1),
-				    treat_class_rvalues_as_lvalues,
-				    allow_cast_as_lvalue);
+				    treat_class_rvalues_as_lvalues);
       op2_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 2),
-				    treat_class_rvalues_as_lvalues,
-				    allow_cast_as_lvalue);
+				    treat_class_rvalues_as_lvalues);
       break;
 
     case MODIFY_EXPR:
@@ -161,8 +146,7 @@ lvalue_p_1 (tree ref,
 
     case COMPOUND_EXPR:
       return lvalue_p_1 (TREE_OPERAND (ref, 1),
-			 treat_class_rvalues_as_lvalues,
-			 allow_cast_as_lvalue);
+			 treat_class_rvalues_as_lvalues);
 
     case TARGET_EXPR:
       return treat_class_rvalues_as_lvalues ? clk_class : clk_none;
@@ -205,27 +189,15 @@ lvalue_p_1 (tree ref,
   return op1_lvalue_kind;
 }
 
-/* If REF is an lvalue, returns the kind of lvalue that REF is.
-   Otherwise, returns clk_none.  Lvalues can be assigned, unless they
-   have TREE_READONLY, or unless they are FUNCTION_DECLs.  Lvalues can
-   have their address taken, unless they have DECL_REGISTER.  */
-
-cp_lvalue_kind
-real_lvalue_p (tree ref)
-{
-  return lvalue_p_1 (ref, /*treat_class_rvalues_as_lvalues=*/ 0, /*cast*/ 1);
-}
-
 /* Returns the kind of lvalue that REF is, in the sense of
    [basic.lval].  This function should really be named lvalue_p; it
    computes the C++ definition of lvalue.  */
 
 cp_lvalue_kind
-real_non_cast_lvalue_p (tree ref)
+real_lvalue_p (tree ref)
 {
   return lvalue_p_1 (ref, 
-		     /*treat_class_rvalues_as_lvalues=*/0, 
-		     /*allow_cast_as_lvalue=*/0);
+		     /*treat_class_rvalues_as_lvalues=*/0);
 }
 
 /* This differs from real_lvalue_p in that class rvalues are
@@ -235,14 +207,7 @@ int
 lvalue_p (tree ref)
 {
   return 
-    (lvalue_p_1 (ref, /*class rvalue ok*/ 1, /*cast*/ 1) != clk_none);
-}
-
-int
-non_cast_lvalue_p (tree ref)
-{
-  return 
-    (lvalue_p_1 (ref, /*class rvalue ok*/ 1, /*cast*/ 0) != clk_none);
+    (lvalue_p_1 (ref, /*class rvalue ok*/ 1) != clk_none);
 }
 
 /* Return nonzero if REF is an lvalue valid for this language;
@@ -251,21 +216,12 @@ non_cast_lvalue_p (tree ref)
 int
 lvalue_or_else (tree ref, const char* string)
 {
-  int ret = lvalue_p_1 (ref, /* class rvalue ok */ 1, /* cast ok */ 1);
-  int win = (ret != clk_none);
-  if (! win)
-    error ("non-lvalue in %s", string);
-  return win;
-}
-
-int
-non_cast_lvalue_or_else (tree ref, const char* string)
-{
-  int ret = lvalue_p_1 (ref, /* class rvalue ok */ 1, /* cast ok */ 0);
-  int win = (ret != clk_none);
-  if (! win)
-    error ("non-lvalue in %s", string);
-  return win;
+  if (!lvalue_p (ref))
+    {
+      error ("non-lvalue in %s", string);
+      return 0;
+    }
+  return 1;
 }
 
 /* Build a TARGET_EXPR, initializing the DECL with the VALUE.  */
