@@ -1,4 +1,4 @@
-2000-0508  Steven King  <sxking@uswest.net>
+2000-05-08  Steven King  <sxking@uswest.net>
 
         * bits/char_traits.h: use wchar_t utility functions for
         char_traits<wchar_t> methods.
