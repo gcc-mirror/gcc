@@ -1,3 +1,7 @@
+2000-11-22  Loren J. Rittle  <ljrittle@acm.org>
+
+        * g++.old-deja/g++.robertl/eb39.C: Don't include libio.h.
+
 2000-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/ieee/20001122-1.c: New test.
@@ -61,6 +65,7 @@
 
 	* gcc.dg/20001117-1.c: New test.
 
+>>>>>>> 1.855
 2000-11-18  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/nestfunc-3.c (main): Mask result to 32 bits.

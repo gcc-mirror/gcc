@@ -2,7 +2,7 @@
 #include <ctype.h>
 #include <iostream.h>
 // #include <streambuf.h>
-#include <libio.h>
+// #include <libio.h>
 #include <strstream.h>
 #include <string.h>
 
