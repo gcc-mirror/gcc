@@ -1,3 +1,8 @@
+2004-04-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree.c (reconstruct_complex_type): Use TYPE_READONLY
+	and TYPE_VOLATILE.
+
 2004-04-05  Caroline Tice  <ctice@apple.com>
 
         * gcc.c (combine_flag): New global variable, for new driver option.

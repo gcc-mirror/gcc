@@ -5344,8 +5344,8 @@ reconstruct_complex_type (tree type, tree bottom)
   else
     return bottom;
 
-  TREE_READONLY (outer) = TREE_READONLY (type);
-  TREE_THIS_VOLATILE (outer) = TREE_THIS_VOLATILE (type);
+  TYPE_READONLY (outer) = TYPE_READONLY (type);
+  TYPE_VOLATILE (outer) = TYPE_VOLATILE (type);
 
   return outer;
 }
