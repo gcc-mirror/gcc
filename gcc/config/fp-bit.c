@@ -604,7 +604,7 @@ sub (FLO_type arg_a, FLO_type arg_b)
 #endif /* L_addsub_sf || L_addsub_df */
 
 #if defined(L_mul_sf) || defined(L_mul_df)
-static INLINE fp_number_type *
+static inline __attribute__ ((__always_inline__)) fp_number_type *
 _fpmul_parts ( fp_number_type *  a,
 	       fp_number_type *  b,
 	       fp_number_type * tmp)
@@ -796,7 +796,7 @@ multiply (FLO_type arg_a, FLO_type arg_b)
 #endif /* L_mul_sf || L_mul_df */
 
 #if defined(L_div_sf) || defined(L_div_df)
-static INLINE fp_number_type *
+static inline __attribute__ ((__always_inline__)) fp_number_type *
 _fpdiv_parts (fp_number_type * a,
 	      fp_number_type * b)
 {

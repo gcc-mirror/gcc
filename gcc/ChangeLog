@@ -1,3 +1,9 @@
+2002-06-18  Hans-Peter Nilsson  <hp@axis.com>
+            Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/fp-bit.c (_fpmul_parts, _fpdiv_parts): Mark with
+	attribute __always_inline__.
+
 2002-06-18  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (FUNCTION_PROFILER): Respect flag_pic
