@@ -81,7 +81,7 @@ proc objc-torture-compile { src option } {
 
     # Run the compiler and analyze the results.
     set options ""
-    lappend options "additional_flags=-w $option -I${srcdir}/../../libobjc"
+    lappend options "additional_flags=-w $option"
 
     set comp_output [objc_target_compile "$src" "$output" object $options];
     objc_check_compile $testcase $option $output $comp_output
@@ -160,7 +160,7 @@ proc objc-torture-execute { src args } {
 	verbose "Testing $testcase, $option" 1
 
 	set options ""
-	lappend options "additional_flags=-w $option -I${srcdir}/../../libobjc"
+	lappend options "additional_flags=-w $option"
 	if { $additional_flags != "" } {
 	    lappend options "additional_flags=$additional_flags";
 	}
