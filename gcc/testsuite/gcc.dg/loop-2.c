@@ -3,7 +3,7 @@
    0 iterations of the loop rather than the correct 1.  */
 /* { dg-do run } */
 
-inline int tag() { return 0; }
+__inline__ int tag() { return 0; }
 
 void f ();
 
