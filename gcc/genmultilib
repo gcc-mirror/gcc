@@ -1,6 +1,6 @@
 #!/bin/sh 
 # Generates multilib.h.
-#   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+#   Copyright (C) 1994, 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -25,9 +25,14 @@
 
 # The first argument is a list of sets of options.  The elements in
 # the list are separated by spaces.  Within an element, the options
-# are separated by slashes.  No leading dash is used on the options.
-# Each option in a set is mutually incompatible with all other options
+# are separated by slashes or pipes.  No leading dash is used on the
+# options.
+# Each option in a set separated by slashes is mutually incompatible
+# with all other options
 # in the set.
+# Each option in a set separated by pipes will be used for the library
+# compilation and any of the options in the set will be sufficient
+# for it to be triggered.
 
 # The optional second argument is a list of subdirectory names.  If
 # the second argument is non-empty, there must be as many elements in
@@ -106,13 +111,23 @@ cat >tmpmultilib <<\EOF
 if [ "$#" != "0" ]; then
   first=$1
   shift
-  for opt in `echo $first | sed -e 's|/| |'g`; do
-    echo ${initial}${opt}/
-  done
-  ./tmpmultilib $@
-  for opt in `echo $first | sed -e 's|/| |'g`; do
-    initial="${initial}${opt}/" ./tmpmultilib $@
-  done
+  case "$first" in
+  *\|*)
+    all=${initial}`echo $first | sed -e 's_|_/_'g`
+    first=`echo $first | sed -e 's_|_ _'g`
+    echo ${all}/
+    initial="${initial}${all}/" ./tmpmultilib $@
+    ./tmpmultilib $first $@ | grep -v "^${all}"
+    ;;
+  *)
+    for opt in `echo $first | sed -e 's|/| |'g`; do
+      echo ${initial}${opt}/
+    done
+    ./tmpmultilib $@
+    for opt in `echo $first | sed -e 's|/| |'g`; do
+      initial="${initial}${opt}/" ./tmpmultilib $@
+    done
+  esac
 fi
 EOF
 chmod +x tmpmultilib
@@ -155,10 +170,17 @@ if [ -n "${dirnames}" ]; then
   set x ${dirnames}
   shift
   for set in ${options}; do
-    for opt in `echo ${set} | sed -e 's|/| |'g`; do
-      if [ "$1" != "${opt}" ]; then
-        todirnames="${todirnames} -e s|/${opt}/|/${1}/|g"
-      fi
+    for opts in `echo ${set} | sed -e 's|/| |'g`; do
+      patt="/"
+      for opt in `echo ${opts} | sed -e 's_|_ _'g`; do
+        if [ "$1" != "${opt}" ]; then
+          todirnames="${todirnames} -e s|/${opt}/|/${1}/|g"
+	  patt="${patt}${1}/"
+	  if [ "${patt}" != "/${1}/" ]; then
+	    todirnames="${todirnames} -e s|${patt}|/${1}/|g"
+          fi
+        fi
+      done
       shift
     done
   done
@@ -198,7 +220,7 @@ chmod +x tmpmultilib2
 # Start with the current directory, which includes only negations.
 optout=
 for set in ${options}; do
-  for opt in `echo ${set} | sed -e 's|/| |'g`; do
+  for opt in `echo ${set} | sed -e 's_[/|]_ _g'`; do
     optout="${optout} !${opt}"
   done
 done
@@ -223,7 +245,7 @@ for combo in ${combinations}; do
   # present, and negate each option that is not present.
   optout=
   for set in ${options}; do
-    setopts=`echo ${set} | sed -e 's|/| |g'`
+    setopts=`echo ${set} | sed -e 's_[/|]_ _g'`
     for opt in ${setopts}; do
       if expr "${combo} " : ".*/${opt}/.*" > /dev/null; then
 	optout="${optout} ${opt}"
@@ -254,7 +276,7 @@ for match in ${matches}; do
   echo "\"${r} ${l};\","
 done
 for set in ${options}; do
-  for opt in `echo ${set} | sed -e 's|/| |'g`; do
+  for opt in `echo ${set} | sed -e 's_[/|]_ _'g`; do
     echo "\"${opt} ${opt};\","
   done
 done
