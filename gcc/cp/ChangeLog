@@ -1,5 +1,11 @@
 2001-07-26  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/3621
+	* spew.c (yylex): Only copy the token's lineno, if it is
+	non-zero.
+
+2001-07-26  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/3624
 	* call.c (resolve_args): Simplify, call
 	convert_from_reference.
