@@ -1,3 +1,13 @@
+2001-12-27  Richard Henderson  <rth@redhat.com>
+
+	* haifa-sched.c (reemit_other_notes): New.
+	(schedule_block): Use it.
+	* sched-ebb.c (schedule_ebbs): Call remove_unnecessary_notes.
+	* sched-rgn.c (schedule_insns): Likewise.
+	* cfglayout.c (remove_scope_notes): Handle removing note at
+	the end of the insn chain.
+	* function.c (debug_find_var_in_block_tree): New.
+
 2001-12-27  Alan Modra  <amodra@bigpond.net.au>
 	    David Edelsohn  <edelsohn@gnu.org>
 
