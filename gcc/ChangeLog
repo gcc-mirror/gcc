@@ -1,3 +1,8 @@
+Sat Aug  8 19:20:22 1998 Gary Thomas (gdt@linuxppc.org)
+
+	* rs6000.c (rs6000_allocate_stack_space) Fix typo which
+	caused bad assembly code to be generated.
+
 Sat Aug  8 18:53:28 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* netbsd.h: Fix typo.
