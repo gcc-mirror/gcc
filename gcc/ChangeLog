@@ -1,3 +1,14 @@
+2003-02-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/9100
+	Backport patch from mainline:
+
+	2003-01-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9264
+	* c-lex.c (c_lex): Set the token value to error_mark_node for
+	invalid numeric constants.
+
 Tue Feb 11 23:33:40 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (ahi?v*3): Set third operand type to TImode.
