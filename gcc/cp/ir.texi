@@ -682,9 +682,10 @@ there is no @code{FIELD_DECL} for the ``base-class portion'' of an
 object.
 
 The @code{TYPE_VFIELD} is a compiler-generated field used to point to
-virtual function tables.  It does not appear on the @code{TYPE_FIELDS}
-list.  However, back-ends should handle the @code{TYPE_VFIELD} just like
-all the entries on the @code{TYPE_FIELDS} list.
+virtual function tables.  It may or may not appear on the
+@code{TYPE_FIELDS} list.  However, back-ends should handle the
+@code{TYPE_VFIELD} just like all the entries on the @code{TYPE_FIELDS}
+list.
 
 The function members are available on the @code{TYPE_METHODS} list.
 Again, subsequent members are found by following the @code{TREE_CHAIN}
@@ -1078,6 +1079,7 @@ the function.
 @tindex DO_STMT
 @findex DO_BODY
 @findex DO_COND
+@tindex EMPTY_CLASS_EXPR
 @tindex EXPR_STMT
 @findex EXPR_STMT_EXPR
 @tindex FOR_STMT
@@ -1285,6 +1287,12 @@ Used to represent a @code{do} loop.  The body of the loop is given by
 @code{DO_BODY} while the termination condition for the loop is given by
 @code{DO_COND}.  The condition for a @code{do}-statement is always an
 expression.
+
+@item EMPTY_CLASS_EXPR
+
+Used to represent a temporary object of a class with no data whose
+address is never taken.  (All such objects are interchangeable.)  The
+@code{TREE_TYPE} represents the type of the object.
 
 @item EXPR_STMT
 

@@ -70,6 +70,10 @@ DEFTREECODE (AGGR_INIT_EXPR, "aggr_init_expr", 'e', 3)
    else it is NULL_TREE.  */
 DEFTREECODE (THROW_EXPR, "throw_expr", 'e', 1)
 
+/* An empty class object.  The TREE_TYPE gives the class type.  We use
+   these to avoid actually creating instances of the empty classes.  */
+DEFTREECODE (EMPTY_CLASS_EXPR, "empty_class_expr", 'e', 0)
+
 /* Template definition.  The following fields have the specified uses,
    although there are other macros in cp-tree.h that should be used for
    accessing this data.
