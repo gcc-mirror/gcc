@@ -1,3 +1,8 @@
+2004-08-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* fold-const.c (rtl_expr_nonnegative_p): Delete.
+	* tree.h (rtl_expr_nonnegative_p): Remove.
+
 2004-08-22  Steven Bosscher  <stevenb@suse.de>
 
 	* config/i386/ppro.md (ppro_complex_insn): Add missing check

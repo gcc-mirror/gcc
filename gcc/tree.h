@@ -2798,7 +2798,6 @@ extern HOST_WIDE_INT tree_low_cst (tree, int);
 extern int tree_int_cst_msb (tree);
 extern int tree_int_cst_sgn (tree);
 extern int tree_expr_nonnegative_p (tree);
-extern int rtl_expr_nonnegative_p (rtx);
 extern tree get_inner_array_type (tree);
 
 /* From expmed.c.  Since rtl.h is included after tree.h, we can't

@@ -9700,50 +9700,6 @@ tree_expr_nonzero_p (tree t)
   return false;
 }
 
-/* Return true if `r' is known to be non-negative.
-   Only handles constants at the moment.  */
-
-int
-rtl_expr_nonnegative_p (rtx r)
-{
-  switch (GET_CODE (r))
-    {
-    case CONST_INT:
-      return INTVAL (r) >= 0;
-
-    case CONST_DOUBLE:
-      if (GET_MODE (r) == VOIDmode)
-	return CONST_DOUBLE_HIGH (r) >= 0;
-      return 0;
-
-    case CONST_VECTOR:
-      {
-	int units, i;
-	rtx elt;
-
-	units = CONST_VECTOR_NUNITS (r);
-
-	for (i = 0; i < units; ++i)
-	  {
-	    elt = CONST_VECTOR_ELT (r, i);
-	    if (!rtl_expr_nonnegative_p (elt))
-	      return 0;
-	  }
-
-	return 1;
-      }
-
-    case SYMBOL_REF:
-    case LABEL_REF:
-      /* These are always nonnegative.  */
-      return 1;
-
-    default:
-      return 0;
-    }
-}
-
-
 /* See if we are applying CODE, a relational to the highest or lowest
    possible integer of TYPE.  If so, then the result is a compile
    time constant.  */
