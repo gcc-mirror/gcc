@@ -1186,7 +1186,7 @@ __builtin_new (sz)
 {
   void *p;
 
-  p = malloc (sz);
+  p = (void *) malloc (sz);
   if (p == 0)
     (*__new_handler) ();
   return p;
