@@ -911,6 +911,10 @@ maybe_clone_body (fn)
       DECL_WEAK (clone) = DECL_WEAK (fn);
       DECL_ONE_ONLY (clone) = DECL_ONE_ONLY (fn);
       DECL_SECTION_NAME (clone) = DECL_SECTION_NAME (fn);
+      DECL_USE_TEMPLATE (clone) = DECL_USE_TEMPLATE (fn);
+      DECL_EXTERNAL (clone) = DECL_EXTERNAL (fn);
+      DECL_INTERFACE_KNOWN (clone) = DECL_INTERFACE_KNOWN (fn);
+      DECL_NOT_REALLY_EXTERN (clone) = DECL_NOT_REALLY_EXTERN (fn);
 
       /* Start processing the function.  */
       push_to_top_level ();

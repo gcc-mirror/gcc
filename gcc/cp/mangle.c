@@ -208,8 +208,8 @@ static tree mangle_special_for_type PARAMS ((tree, const char *));
 #define mangled_position()                                              \
   obstack_object_size (&G.name_obstack)
 
-/* Non-zero if NODE1__ and NODE2__ are both TREE_LIST nodes and have
-   the same purpose (context, which may be a type) and value (template
+/* Non-zero if NODE1 and NODE2 are both TREE_LIST nodes and have the
+   same purpose (context, which may be a type) and value (template
    decl).  See write_template_prefix for more information on what this
    is used for.  */
 #define NESTED_TEMPLATE_MATCH(NODE1, NODE2)                         \
@@ -348,12 +348,11 @@ is_std_substitution (node, index)
     /* These are not the droids you're looking for.  */
     return 0;
 
-  return 
-    DECL_NAMESPACE_STD_P (CP_DECL_CONTEXT (decl))
-    && TYPE_LANG_SPECIFIC (type) 
-    && CLASSTYPE_USE_TEMPLATE (type)
-    && (DECL_NAME (CLASSTYPE_TI_TEMPLATE (type)) 
-	== subst_identifiers[index]);
+  return (DECL_NAMESPACE_STD_P (CP_DECL_CONTEXT (decl))
+	  && TYPE_LANG_SPECIFIC (type) 
+	  && CLASSTYPE_TEMPLATE_INFO (type)
+	  && (DECL_NAME (CLASSTYPE_TI_TEMPLATE (type)) 
+	      == subst_identifiers[index]));
 }
 
 /* Helper function for find_substitution.  Returns non-zero if NODE,
@@ -441,7 +440,9 @@ find_substitution (node)
   type = TYPE_P (node) ? node : TREE_TYPE (node);
 
   /* Check for std::allocator.  */
-  if (decl && is_std_substitution (decl, SUBID_ALLOCATOR))
+  if (decl 
+      && is_std_substitution (decl, SUBID_ALLOCATOR)
+      && !CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl)))
     {
       write_string ("Sa");
       return 1;
@@ -782,32 +783,7 @@ write_prefix (node)
 }
 
 /* <template-prefix> ::= <prefix> <template component>
-                     ::= <substitution>  
-
-   Names of templates are substitution candidates.  For a nested
-   template, though, the template name for the innermost name must
-   have all the outer template levels instantiated.  For instance,
-   consider
-
-     template<typename T> struct Outer
-     {
-       template<typename U> struct Inner {};
-     };
-
-   The template name for `Inner' in `Outer<int>::Inner<float>' is
-   `Outer<int>::Inner<U>'.  In g++, we don't instantiate the template
-   levels separately, so there's no TEMPLATE_DECL available for this
-   (there's only `Outer<T>::Inner<U>').
-
-   In order to get the substitutions right, we create a special
-   TREE_LIST to represent the substitution candidate for a nested
-   template.  The TREE_PURPOSE is the tempate's context, fully
-   instantiated, and the TREE_VALUE is the TEMPLATE_DECL for the inner
-   template.  
-
-   So, for the example above, `Inner' is represented as a substitution
-   candidate by a TREE_LIST whose purpose is `Outer<int>' and whose
-   value is `Outer<T>::Inner<U>'.  */
+                     ::= <substitution>  */
 
 static void
 write_template_prefix (node)
@@ -830,8 +806,32 @@ write_template_prefix (node)
     /* Oops, not a template.  */
     my_friendly_abort (20000524);
 
-  /* Build the substitution candidate TREE_LIST.  */
-  substitution = build_tree_list (context, template);
+  /* For a member template, though, the template name for the
+     innermost name must have all the outer template levels
+     instantiated.  For instance, consider
+
+       template<typename T> struct Outer {
+	 template<typename U> struct Inner {};
+       };
+
+     The template name for `Inner' in `Outer<int>::Inner<float>' is
+     `Outer<int>::Inner<U>'.  In g++, we don't instantiate the template
+     levels separately, so there's no TEMPLATE_DECL available for this
+     (there's only `Outer<T>::Inner<U>').
+
+     In order to get the substitutions right, we create a special
+     TREE_LIST to represent the substitution candidate for a nested
+     template.  The TREE_PURPOSE is the template's context, fully
+     instantiated, and the TREE_VALUE is the TEMPLATE_DECL for the inner
+     template.
+
+     So, for the example above, `Outer<int>::Inner' is represented as a
+     substitution candidate by a TREE_LIST whose purpose is `Outer<int>'
+     and whose value is `Outer<T>::Inner<U>'.  */
+  if (TYPE_P (context))
+    substitution = build_tree_list (context, template);
+  else
+    substitution = template;
 
   if (find_substitution (substitution))
     return;
@@ -1768,7 +1768,12 @@ write_array_type (type)
 	 array.  */
       max = TYPE_MAX_VALUE (index_type);
       if (TREE_CODE (max) == INTEGER_CST)
-	write_unsigned_number (tree_low_cst (max, 1));
+	{
+	  /* The ABI specifies that we should mangle the number of
+	     elements in the array, not the largest allowed index.  */
+	  max = size_binop (PLUS_EXPR, max, size_one_node);
+	  write_unsigned_number (tree_low_cst (max, 1));
+	}
       else
 	write_expression (TREE_OPERAND (max, 0));
     }

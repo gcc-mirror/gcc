@@ -9469,6 +9469,7 @@ regenerate_decl_from_template (decl, tmpl)
   DECL_TI_TEMPLATE (new_decl) = DECL_TI_TEMPLATE (decl);
   DECL_ASSEMBLER_NAME (new_decl) = DECL_ASSEMBLER_NAME (decl);
   DECL_RTL (new_decl) = DECL_RTL (decl);
+  DECL_USE_TEMPLATE (new_decl) = DECL_USE_TEMPLATE (decl);
 
   /* Call duplicate decls to merge the old and new declarations.  */
   duplicate_decls (new_decl, decl);
