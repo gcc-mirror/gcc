@@ -1,3 +1,8 @@
+2004-11-15  Bruce Korb  <bkorb@gnu.org>
+
+	* fixincl.c(fix_with_system): correct misuse of variables and
+	incorrect application of "sizeof()".
+
 2004-11-13  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* inclhack.def (hpux_maxint, limits_ifndefs, math_huge_val_ifndef,
