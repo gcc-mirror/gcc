@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -120,6 +120,12 @@ static rtx debug_insn = 0;
 
 /* Line number of last NOTE.  */
 static int last_linenum;
+
+/* Highest line number in current block.  */
+static int high_block_linenum;
+
+/* Likewise for function.  */
+static int high_function_linenum;
 
 /* Filename of last NOTE.  */
 static char *last_filename;
@@ -877,19 +883,19 @@ final_start_function (first, file, optimize)
      in the last statement of the preceding function.  */
   if (NOTE_LINE_NUMBER (first) != NOTE_INSN_DELETED)
     {
+      last_linenum = high_block_linenum = high_function_linenum
+	= NOTE_LINE_NUMBER (first);
+
       if (write_symbols == SDB_DEBUG)
 	/* For sdb, let's not, but say we did.
 	   We need to set last_linenum for sdbout_function_begin,
 	   but we can't have an actual line number before the .bf symbol.
 	   (sdb_begin_function_line is not set,
 	   and other compilers don't do it.)  */
-	last_linenum = NOTE_LINE_NUMBER (first);
+	;
 #ifdef XCOFF_DEBUGGING_INFO
       else if (write_symbols == XCOFF_DEBUG)
-	{
-	  last_linenum = NOTE_LINE_NUMBER (first);
-	  xcoffout_output_first_source_line (file, last_linenum);
-	}
+	xcoffout_output_first_source_line (file, last_linenum);
 #endif	  
       else
 	output_source_line (file, first);
@@ -1033,7 +1039,7 @@ final_end_function (first, file, optimize)
 
 #ifdef SDB_DEBUGGING_INFO
   if (write_symbols == SDB_DEBUG)
-    sdbout_end_function (last_linenum);
+    sdbout_end_function (high_function_linenum);
 #endif
 
 #ifdef DWARF_DEBUGGING_INFO
@@ -1043,7 +1049,7 @@ final_end_function (first, file, optimize)
 
 #ifdef XCOFF_DEBUGGING_INFO
   if (write_symbols == XCOFF_DEBUG)
-    xcoffout_end_function (file, last_linenum);
+    xcoffout_end_function (file, high_function_linenum);
 #endif
 
 #ifdef FUNCTION_EPILOGUE
@@ -1344,6 +1350,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    }
 	  pending_blocks[block_depth++] = next_block_index;
 
+	  high_block_linenum = last_linenum;
+
 	  /* Output debugging info about the symbol-block beginning.  */
 
 #ifdef SDB_DEBUGGING_INFO
@@ -1381,7 +1389,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 #ifdef XCOFF_DEBUGGING_INFO
 	  if (write_symbols == XCOFF_DEBUG && block_depth >= 0)
-	    xcoffout_end_block (file, last_linenum, pending_blocks[block_depth]);
+	    xcoffout_end_block (file, high_block_linenum,
+				pending_blocks[block_depth]);
 #endif
 #ifdef DBX_DEBUGGING_INFO
 	  if (write_symbols == DBX_DEBUG && block_depth >= 0)
@@ -1390,7 +1399,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #endif
 #ifdef SDB_DEBUGGING_INFO
 	  if (write_symbols == SDB_DEBUG && block_depth >= 0)
-	    sdbout_end_block (file, last_linenum, pending_blocks[block_depth]);
+	    sdbout_end_block (file, high_block_linenum,
+			      pending_blocks[block_depth]);
 #endif
 #ifdef DWARF_DEBUGGING_INFO
 	  if (write_symbols == DWARF_DEBUG && block_depth >= 1)
@@ -2018,6 +2028,8 @@ output_source_line (file, insn)
 
   last_filename = filename;
   last_linenum = NOTE_LINE_NUMBER (insn);
+  high_block_linenum = MAX (last_linenum, high_block_linenum);
+  high_function_linenum = MAX (last_linenum, high_function_linenum);
 
   if (write_symbols != NO_DEBUG)
     {
