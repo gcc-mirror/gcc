@@ -1,5 +1,10 @@
 2004-05-13  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/15074	
+	* docs/html/faq/index.html: Update docs for libsupc++ usage.
+
+2004-05-13  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/15412
 	* include/bits/stl_threads.h (_GLIBCXX_mutex): Move to namespace
 	__gnu_internal.
