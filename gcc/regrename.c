@@ -1214,6 +1214,7 @@ copy_value (dest, src, vd)
 {
   unsigned int dr = REGNO (dest);
   unsigned int sr = REGNO (src);
+  unsigned int dn, sn;
   unsigned int i;
 
   /* ??? At present, it's possible to see noop sets.  It'd be nice if
@@ -1228,6 +1229,13 @@ copy_value (dest, src, vd)
 
   /* Likewise with the frame pointer, if we're using one.  */
   if (frame_pointer_needed && dr == HARD_FRAME_POINTER_REGNUM)
+    return;
+
+  /* If SRC and DEST overlap, don't record anything.  */
+  dn = HARD_REGNO_NREGS (dr, GET_MODE (dest));
+  sn = HARD_REGNO_NREGS (sr, GET_MODE (dest));
+  if ((dr > sr && dr < sr + sn)
+      || (sr > dr && sr < dr + dn))
     return;
 
   /* If SRC had no assigned mode (i.e. we didn't know it was live)
