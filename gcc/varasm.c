@@ -2796,7 +2796,8 @@ copy_constant (exp)
       return copy_node (exp);
 
     case COMPLEX_CST:
-      return build_complex (copy_constant (TREE_REALPART (exp)),
+      return build_complex (TREE_TYPE (exp),
+			    copy_constant (TREE_REALPART (exp)),
 			    copy_constant (TREE_IMAGPART (exp)));
 
     case PLUS_EXPR:
