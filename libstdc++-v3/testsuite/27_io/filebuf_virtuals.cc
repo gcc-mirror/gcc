@@ -584,6 +584,46 @@ void test09()
   VERIFY( r == filebuf::traits_type::eof() );
 }
 
+class Cvt_to_upper : public std::codecvt<char, char, mbstate_t>
+{
+  bool do_always_noconv() const throw()
+  {
+    return false;
+  }
+};
+
+// libstdc++/9169
+void test10()
+{
+  using namespace std;
+  bool test = true;
+
+  locale c_loc;
+  locale loc(c_loc, new Cvt_to_upper);
+
+  string str("abcdefghijklmnopqrstuvwxyz");
+  string tmp;
+
+  {
+    ofstream out;
+    out.imbue(loc);
+    out.open("filebuf_virtuals-4.txt");
+    copy(str.begin(), str.end(),
+	 ostreambuf_iterator<char>(out));
+  }
+
+  {
+    ifstream in;
+    in.open("filebuf_virtuals-4.txt");
+    copy(istreambuf_iterator<char>(in),
+	 istreambuf_iterator<char>(),
+	 back_inserter(tmp));
+  }
+
+  VERIFY( tmp.size() == str.size() );
+  VERIFY( tmp == str );
+}
+
 main() 
 {
   test01();
@@ -597,5 +637,6 @@ main()
   test07();
   test08();
   test09();
+  test10();
   return 0;
 }
