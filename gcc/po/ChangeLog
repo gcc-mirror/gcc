@@ -1,3 +1,8 @@
+2000-04-05  Geoff Keating  <geoffk@cygnus.com>
+
+	* POTFILES.in: Update for config/rs6000 changes.  Comment out
+	rs6000 files which are not built into GCC.
+
 2000-03-29  Philipp Thomas  <pthomas@suse.de>
 
 	* POTFILES.in: Remove config/rs6000/cygwin.h
