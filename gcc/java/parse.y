@@ -326,7 +326,7 @@ static void patch_anonymous_class (tree, tree, tree);
 static void add_inner_class_fields (tree, tree);
 
 static tree build_dot_class_method (tree);
-static tree build_dot_class_method_invocation (tree);
+static tree build_dot_class_method_invocation (tree, tree);
 static void create_new_parser_context (int);
 static tree maybe_build_class_init_for_field (tree, tree);
 
@@ -2660,7 +2660,9 @@ create_new_parser_context (int copy_from_previous)
   if (copy_from_previous)
     {
       memcpy (new, ctxp, sizeof (struct parser_ctxt));
-      new->saved_data_ctx = 1;
+      /* This flag, indicating the context saves global values,
+	 should only be set by java_parser_context_save_global.  */
+      new->saved_data_ctx = 0;
     }
   else
     memset (new, 0, sizeof (struct parser_ctxt));
@@ -2733,7 +2735,10 @@ java_parser_context_save_global (void)
   /* If this context already stores data, create a new one suitable
      for data storage. */
   else if (ctxp->saved_data)
-    create_new_parser_context (1);
+    {
+      create_new_parser_context (1);
+      ctxp->saved_data_ctx = 1;
+    }
 
   ctxp->lineno = input_line;
   ctxp->class_type = current_class;
@@ -8724,7 +8729,7 @@ build_dot_class_method (tree class)
 {
 #define BWF(S) build_wfl_node (get_identifier ((S)))
 #define MQN(X,Y) make_qualified_name ((X), (Y), 0)
-  tree args, tmp, saved_current_function_decl, mdecl;
+  tree args, tmp, saved_current_function_decl, mdecl, qual_name;
   tree stmt, throw_stmt;
 
   if (!get_message_wfl)
@@ -8741,15 +8746,17 @@ build_dot_class_method (tree class)
   /* Build the qualified name java.lang.Class.forName */
   tmp = MQN (MQN (MQN (BWF ("java"),
 		       BWF ("lang")), BWF ("Class")), BWF ("forName"));
-  load_class (class_not_found_type_node, 1);
-  load_class (no_class_def_found_type_node, 1);
 
   /* Create the "class$" function */
   mdecl = create_artificial_method (class, ACC_STATIC,
 				    build_pointer_type (class_type_node),
 				    classdollar_identifier_node, args);
-  DECL_FUNCTION_THROWS (mdecl) =
-    build_tree_list (NULL_TREE, no_class_def_found_type_node);
+  qual_name = MQN (MQN (BWF ("java"), BWF ("lang")),
+		   BWF ("NoClassDefFoundError"));
+  DECL_FUNCTION_THROWS (mdecl) = build_tree_list (NULL_TREE, qual_name);
+  register_incomplete_type (JDEP_EXCEPTION, qual_name, NULL_TREE, NULL_TREE);
+  JDEP_GET_PATCH (CLASSD_LAST (ctxp->classd_list)) =
+    &TREE_VALUE (DECL_FUNCTION_THROWS (mdecl));
 
   /* We start by building the try block. We need to build:
        return (java.lang.Class.forName (type)); */
@@ -8772,8 +8779,9 @@ build_dot_class_method (tree class)
   throw_stmt = build1 (THROW_EXPR, NULL_TREE, throw_stmt);
 
   /* Encapsulate STMT in a try block. The catch clause executes THROW_STMT */
-  stmt = encapsulate_with_try_catch (0, class_not_found_type_node,
-				     stmt, throw_stmt);
+  qual_name = MQN (MQN (BWF ("java"), BWF ("lang")),
+		   BWF ("ClassNotFoundException"));
+  stmt = encapsulate_with_try_catch (0, qual_name, stmt, throw_stmt);
 
   fix_method_argument_names (args, mdecl);
   layout_class_method (class, NULL_TREE, mdecl, NULL_TREE);
@@ -8788,9 +8796,10 @@ build_dot_class_method (tree class)
 }
 
 static tree
-build_dot_class_method_invocation (tree type)
+build_dot_class_method_invocation (tree this_class, tree type)
 {
-  tree sig_id, s;
+  tree dot_class_method = TYPE_DOT_CLASS (this_class);
+  tree sig_id, s, t;
 
   if (TYPE_ARRAY_P (type))
     sig_id = build_java_signature (type);
@@ -8803,8 +8812,14 @@ build_dot_class_method_invocation (tree type)
 
   s = build_string (IDENTIFIER_LENGTH (sig_id),
 		    IDENTIFIER_POINTER (sig_id));
-  return build_method_invocation (build_wfl_node (classdollar_identifier_node),
-				  build_tree_list (NULL_TREE, s));
+  t = build_method_invocation (build_wfl_node (DECL_NAME (dot_class_method)),
+			       build_tree_list (NULL_TREE, s));
+  if (DECL_CONTEXT (dot_class_method) != this_class)
+    {
+      tree class_name = DECL_NAME (TYPE_NAME (DECL_CONTEXT (dot_class_method)));
+      t = make_qualified_primary (build_wfl_node (class_name), t, 0);
+    }
+  return t;
 }
 
 /* This section of the code deals with constructor.  */
@@ -14099,6 +14114,44 @@ static tree
 build_incomplete_class_ref (int location, tree class_name)
 {
   tree node = build1 (CLASS_LITERAL, NULL_TREE, class_name);
+  tree class_decl = GET_CPC ();
+  tree this_class = TREE_TYPE (class_decl);
+
+  /* Generate the synthetic static method `class$'.  (Previously we
+     deferred this, causing different method tables to be emitted
+     for native code and bytecode.)  */
+  if (!TYPE_DOT_CLASS (this_class)
+      && !JPRIMITIVE_TYPE_P (class_name)
+      && !(TREE_CODE (class_name) == VOID_TYPE))
+    {
+      tree target_class;
+
+      if (CLASS_INTERFACE (TYPE_NAME (this_class)))
+	{
+	  /* For interfaces, adding a static 'class$' method directly 
+	     is illegal.  So create an inner class to contain the new
+	     method.  Empirically this matches the behavior of javac.  */
+	  tree t = build_wfl_node (DECL_NAME (TYPE_NAME (object_type_node)));
+	  tree inner = create_anonymous_class (0, t);
+	  target_class = TREE_TYPE (inner);
+	  end_class_declaration (1);
+	}
+      else
+	{
+	  /* For inner classes, add a 'class$' method to their outermost
+	     context, creating it if necessary.  */
+	  while (INNER_CLASS_DECL_P (class_decl))
+	    class_decl = DECL_CONTEXT (class_decl);
+	  target_class = TREE_TYPE (class_decl);
+	}
+
+      if (TYPE_DOT_CLASS (target_class) == NULL_TREE)
+	build_dot_class_method (target_class);
+
+      if (this_class != target_class)
+      	TYPE_DOT_CLASS (this_class) = TYPE_DOT_CLASS (target_class);
+    }
+
   EXPR_WFL_LINECOL (node) = location;
   return node;
 }
@@ -14112,12 +14165,6 @@ patch_incomplete_class_ref (tree node)
 
   if (!(ref_type = resolve_type_during_patch (type)))
     return error_mark_node;
-
-  /* Generate the synthetic static method `class$'.  (Previously we
-     deferred this, causing different method tables to be emitted
-     for native code and bytecode.)  */
-  if (!TYPE_DOT_CLASS (current_class))
-      build_dot_class_method (current_class);
 
   /* If we're not emitting class files and we know ref_type is a
      compiled class, build a direct reference.  */
@@ -14134,7 +14181,7 @@ patch_incomplete_class_ref (tree node)
 
   /* If we're emitting class files and we have to deal with non
      primitive types, we invoke the synthetic static method `class$'.  */
-  ref_type = build_dot_class_method_invocation (ref_type);
+  ref_type = build_dot_class_method_invocation (current_class, ref_type);
   return java_complete_tree (ref_type);
 }
 
@@ -15398,7 +15445,7 @@ build_assertion (int location, tree condition, tree value)
 
       if (!TYPE_DOT_CLASS (class_type))
 	build_dot_class_method (class_type);
-      classdollar = build_dot_class_method_invocation (class_type);
+      classdollar = build_dot_class_method_invocation (class_type, class_type);
 
       /* Call CLASS.desiredAssertionStatus().  */
       id = build_wfl_node (get_identifier ("desiredAssertionStatus"));
@@ -15456,7 +15503,7 @@ build_assertion (int location, tree condition, tree value)
    catches TYPE and executes CATCH_STMTS.  */
 
 static tree
-encapsulate_with_try_catch (int location, tree type, tree try_stmts,
+encapsulate_with_try_catch (int location, tree type_or_name, tree try_stmts,
 			    tree catch_stmts)
 {
   tree try_block, catch_clause_param, catch_block, catch;
@@ -15465,8 +15512,20 @@ encapsulate_with_try_catch (int location, tree type, tree try_stmts,
   try_block = build_expr_block (try_stmts, NULL_TREE);
 
   /* Build a catch block: we need a catch clause parameter */
-  catch_clause_param = build_decl (VAR_DECL,
-				   wpv_id, build_pointer_type (type));
+  if (TREE_CODE (type_or_name) == EXPR_WITH_FILE_LOCATION)
+    {
+      tree catch_type = obtain_incomplete_type (type_or_name);
+      jdep *dep;
+      catch_clause_param = build_decl (VAR_DECL, wpv_id, catch_type);
+      register_incomplete_type (JDEP_VARIABLE, type_or_name,
+				catch_clause_param, catch_type);
+      dep = CLASSD_LAST (ctxp->classd_list);
+      JDEP_GET_PATCH (dep) = &TREE_TYPE (catch_clause_param);
+    }
+  else
+    catch_clause_param = build_decl (VAR_DECL, wpv_id,
+				     build_pointer_type (type_or_name));
+
   /* And a block */
   catch_block = build_expr_block (NULL_TREE, catch_clause_param);
 
