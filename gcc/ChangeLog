@@ -1,3 +1,10 @@
+2001-06-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (verify_tree): Check for x being NULL.
+	* doc/c-tree.texi: Document COMPOUND_BODY of an empty
+	COMPOUND_STMT.
+	Fixes PR c/3259.
+
 2001-06-21  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix.h (USE_FP_FOR_ARG_P): Override macro to match
