@@ -26,6 +26,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "aoutos.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dm88000 -Dm88k"
+#define CPP_PREDEFINES "-Dm88000 -Dm88k -Acpu(m88k) -Amachine(m88k)"
 
 /* end of m88k-aout.h */
