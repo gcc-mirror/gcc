@@ -1,5 +1,21 @@
 2002-01-15  Aldy Hernandez  <aldyh@redhat.com>
 
+        * config/rs6000/rs6000.md (altivec_stvx): Add parallels to stvx.
+        (altivec_lvsl): Change constraint to b.
+        (altivec_lvsr): Same.
+        (altivec_lvebx): Same.
+        (altivec_lvehx): Same.
+        (altivec_lvewx): Same.
+        (altivec_lvxl): Same.
+        (altivec_lvx): Same.
+        (altivec_stvx): Add parallel.
+        (altivec_stvxl): Same.
+        (altivec_stvehx): Same.
+        (altivec_stvebx): Same.
+        (altivec_stvebx): Same.
+
+2002-01-15  Aldy Hernandez  <aldyh@redhat.com>
+
         * config.gcc: Change altivec.h to altivec-defs.h.
 
         * config/rs6000/altivec.h: Delete.
