@@ -5712,6 +5712,28 @@ pop_init_level (implicit)
     }
   else if (constructor_type == 0)
     ;
+  else if (TREE_CODE (constructor_type) != RECORD_TYPE
+	   && TREE_CODE (constructor_type) != UNION_TYPE
+	   && TREE_CODE (constructor_type) != ARRAY_TYPE
+	   && ! constructor_incremental)
+    {
+      /* A nonincremental scalar initializer--just return
+	 the element, after verifying there is just one.  */
+      if (constructor_elements == 0)
+	{
+	  error_init ("empty scalar initializer%s",
+		      " for `%s'", NULL);
+	  constructor = error_mark_node;
+	}
+      else if (TREE_CHAIN (constructor_elements) != 0)
+	{
+	  error_init ("extra elements in scalar initializer%s",
+		      " for `%s'", NULL);
+	  constructor = TREE_VALUE (constructor_elements);
+	}
+      else
+	constructor = TREE_VALUE (constructor_elements);
+    }
   else if (! constructor_incremental)
     {
       if (constructor_erroneous)
@@ -5726,6 +5748,7 @@ pop_init_level (implicit)
 	    TREE_CONSTANT (constructor) = 1;
 	  if (constructor_constant && constructor_simple)
 	    TREE_STATIC (constructor) = 1;
+
 	  resume_momentary (momentary);
 	}
     }
