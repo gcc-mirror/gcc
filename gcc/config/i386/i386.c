@@ -8465,7 +8465,7 @@ ix86_split_to_parts (operand, parts, mode)
 		case XFmode:
 		case TFmode:
 		  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
-		  parts[2] = GEN_INT (l[2]);
+		  parts[2] = GEN_INT (trunc_int_for_mode (l[2], SImode));
 		  break;
 		case DFmode:
 		  REAL_VALUE_TO_TARGET_DOUBLE (r, l);
@@ -8473,8 +8473,8 @@ ix86_split_to_parts (operand, parts, mode)
 		default:
 		  abort ();
 		}
-	      parts[1] = GEN_INT (l[1]);
-	      parts[0] = GEN_INT (l[0]);
+	      parts[1] = GEN_INT (trunc_int_for_mode (l[1], SImode));
+	      parts[0] = GEN_INT (trunc_int_for_mode (l[0], SImode));
 	    }
 	  else
 	    abort ();
@@ -8506,10 +8506,12 @@ ix86_split_to_parts (operand, parts, mode)
 	      REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
 	      /* Do not use shift by 32 to avoid warning on 32bit systems.  */
 	      if (HOST_BITS_PER_WIDE_INT >= 64)
-	        parts[0] = GEN_INT (l[0] + ((l[1] << 31) << 1));
+	        parts[0]
+		  = GEN_INT (trunc_int_for_mode (l[0] + ((l[1] << 31) << 1),
+						 SImode));
 	      else
 	        parts[0] = immed_double_const (l[0], l[1], DImode);
-	      parts[1] = GEN_INT (l[2]);
+	      parts[1] = GEN_INT (trunc_int_for_mode (l[2], SImode));
 	    }
 	  else
 	    abort ();
