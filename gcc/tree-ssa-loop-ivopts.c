@@ -3615,7 +3615,7 @@ try_add_cand_for (struct ivopts_data *data, bitmap ivs, bitmap inv,
      just one generic biv.  If we added here many ivs specific to the uses,
      the optimization algorithm later would be likely to get stuck in a local
      minimum, thus causing us to create too many ivs.  The approach from
-     few ivs to more seems more likely to be succesful -- starting from few
+     few ivs to more seems more likely to be successful -- starting from few
      ivs, replacing an expensive use by a specific iv should always be a
      win.  */
   EXECUTE_IF_SET_IN_BITMAP (data->important_candidates, 0, i, bi)

@@ -5322,7 +5322,7 @@ default value, 0, implies that GCC will select the most appropriate
 size itself.
 
 @item sra-field-structure-ratio
-The treshold ratio (as a percentage) between instantiated fields and
+The threshold ratio (as a percentage) between instantiated fields and
 the complete structure size.  We say that if the ratio of the number
 of bytes in instantiated fields to the number of bytes in the complete
 structure exceeds this parameter, then block copies are not used.  The
