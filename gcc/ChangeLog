@@ -1,3 +1,7 @@
+2003-07-15  James A. Morrison  <ja2morri@student.math.uwaterloo.ca>
+
+	* doc/include/texinfo.tex: Upgrade to texinfo 4.6.
+
 2003-07-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/11320
