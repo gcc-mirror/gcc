@@ -7778,6 +7778,32 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  return temp;
 	}
 
+      /* If no set-flag instruction, must generate a conditional store
+	 into a temporary variable.  Drop through and handle this
+	 like && and ||.  */
+
+      if (! ignore
+	  && (target == 0
+	      || modifier == EXPAND_STACK_PARM
+	      || ! safe_from_p (target, exp, 1)
+	      /* Make sure we don't have a hard reg (such as function's return
+		 value) live across basic blocks, if not optimizing.  */
+	      || (!optimize && REG_P (target)
+		  && REGNO (target) < FIRST_PSEUDO_REGISTER)))
+	target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
+
+      if (target)
+	emit_move_insn (target, const0_rtx);
+
+      op1 = gen_label_rtx ();
+      jumpifnot (exp, op1);
+
+      if (target)
+	emit_move_insn (target, const1_rtx);
+
+      emit_label (op1);
+      return ignore ? const0_rtx : target;
+
     case TRUTH_NOT_EXPR:
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;

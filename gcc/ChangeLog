@@ -1,3 +1,7 @@
+2004-08-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	* expr.c (expand_expr_real_1): Add back code that was not dead.
+
 2004-08-09  Andrew Pinski  <apinski@apple.com>
 
 	* c-common.c (c_common_get_alias_set): Set the aliasing set of the type
