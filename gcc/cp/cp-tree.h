@@ -3620,7 +3620,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
    TFF_CLASS_SCOPE: if possible, include the class-name part of a
         qualified-id.  This flag may be implied in some circumstances by
         TFF_NAMESPACE_SCOPE.
-   TFF_SCOPE: the combinaison of the two above.
+   TFF_SCOPE: the combination of the two above.
    TFF_CHASE_TYPEDEF: print the original type-id instead of the typedef-name.
    TFF_DECL_SPECIFIERS: print decl-specifiers.
    TFF_CLASS_KEY_OR_ENUM: precede a class-type name (resp. enum name) with
@@ -3628,9 +3628,9 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
    TFF_RETURN_TYPE: include function return type.
    TFF_FUNCTION_DEFAULT_ARGUMENTS: include function default parameter values.
    TFF_EXCEPTION_SPECIFICATION: show function exception specification.
-   TFF_TEMPLATE_HEADER: show the template<...> hearder in a
+   TFF_TEMPLATE_HEADER: show the template<...> header in a
        template-declaration.
-   TFF_TEMPLATE_DEFAULT_ARGUMENTS: show template paramter default values.
+   TFF_TEMPLATE_DEFAULT_ARGUMENTS: show template parameter default values.
    TFF_TEMPLATE_NAME: show only template-name.
    TFF_EXPR_IN_PARENS: Parenthesize expressions.  */
 

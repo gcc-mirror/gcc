@@ -1,3 +1,7 @@
+2001-02-16  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* cp-tree.h: Fix typos in comments.
+
 2001-02-16  Jason Merrill  <jason@redhat.com>
 
 	* optimize.c (remap_block): If we're compiling a clone, pass the
