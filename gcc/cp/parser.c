@@ -3707,9 +3707,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	      = grok_array_decl (postfix_expression, index);
 	    idk = CP_ID_KIND_NONE;
 	    /* Array references are not permitted in
-	       constant-expressions.  */
-	    if (cp_parser_non_integral_constant_expression 
-		(parser, "an array reference"))
+	       constant-expressions (but they are allowed
+	       in offsetof).  */
+	    if (!parser->in_offsetof_p
+		&& cp_parser_non_integral_constant_expression
+		    (parser, "an array reference"))
 	      postfix_expression = error_mark_node;
 	  }
 	  break;

@@ -1,3 +1,9 @@
+2004-06-01  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14932
+	* parser.c (cp_parser_postfix_expression): Allow subscript
+	operator in offsetof.
+
 2004-05-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15701
