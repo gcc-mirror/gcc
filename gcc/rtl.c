@@ -613,22 +613,32 @@ rtx_equal_p (x, y)
   if (GET_MODE (x) != GET_MODE (y))
     return 0;
 
-  /* REG, LABEL_REF, and SYMBOL_REF can be compared nonrecursively.  */
+  /* Some RTL can be compared nonrecursively.  */
+  switch (code)
+    {
+    case REG:
+      /* Until rtl generation is complete, don't consider a reference to the
+	 return register of the current function the same as the return from a
+	 called function.  This eases the job of function integration.  Once the
+	 distinction is no longer needed, they can be considered equivalent.  */
+      return (REGNO (x) == REGNO (y)
+	      && (! rtx_equal_function_value_matters
+		  || REG_FUNCTION_VALUE_P (x) == REG_FUNCTION_VALUE_P (y)));
 
-  if (code == REG)
-    /* Until rtl generation is complete, don't consider a reference to the
-       return register of the current function the same as the return from a
-       called function.  This eases the job of function integration.  Once the
-       distinction is no longer needed, they can be considered equivalent.  */
-    return (REGNO (x) == REGNO (y)
-	    && (! rtx_equal_function_value_matters
-		|| REG_FUNCTION_VALUE_P (x) == REG_FUNCTION_VALUE_P (y)));
-  else if (code == LABEL_REF)
-    return XEXP (x, 0) == XEXP (y, 0);
-  else if (code == SYMBOL_REF)
-    return XSTR (x, 0) == XSTR (y, 0);
-  else if (code == SCRATCH || code == CONST_DOUBLE)
-    return 0;
+    case LABEL_REF:
+      return XEXP (x, 0) == XEXP (y, 0);
+
+    case SYMBOL_REF:
+      return XSTR (x, 0) == XSTR (y, 0);
+
+    case SCRATCH:
+    case CONST_DOUBLE:
+    case CONST_INT:
+      return 0;
+
+    default:
+      break;
+    }
 
   /* Compare the elements.  If any pair of corresponding elements
      fail to match, return 0 for the whole things.  */

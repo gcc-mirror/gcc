@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "regs.h"
 #include "hard-reg-set.h"
+#include "hashtab.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "real.h"
@@ -137,6 +138,11 @@ rtx return_address_pointer_rtx;	/* (REG:Pmode RETURN_ADDRESS_POINTER_REGNUM) */
 
 rtx const_int_rtx[MAX_SAVED_CONST_INT * 2 + 1];
 
+/* A hash table storing CONST_INTs whose absolute value is greater
+   than MAX_SAVED_CONST_INT.  */
+
+static htab_t const_int_htab;
+
 /* start_sequence and gen_sequence can make a lot of rtx expressions which are
    shortly thrown away.  We use two mechanisms to prevent this waste:
 
@@ -172,16 +178,67 @@ static rtx make_call_insn_raw		PARAMS ((rtx));
 static rtx find_line_note		PARAMS ((rtx));
 static void mark_sequence_stack         PARAMS ((struct sequence_stack *));
 static void unshare_all_rtl_1		PARAMS ((rtx));
+static hashval_t const_int_htab_hash    PARAMS ((const void *));
+static int const_int_htab_eq            PARAMS ((const void *,
+						 const void *));
+static int rtx_htab_mark_1              PARAMS ((void **, void *));
+static void rtx_htab_mark               PARAMS ((void *));
+
 
+/* Returns a hash code for X (which is a really a CONST_INT).  */
+
+static hashval_t
+const_int_htab_hash (x)
+     const void *x;
+{
+  return (hashval_t) INTVAL ((rtx) x);
+}
+
+/* Returns non-zero if the value represented by X (which is really a
+   CONST_INT) is the same as that given by Y (which is really a
+   HOST_WIDE_INT *).  */
+
+static int
+const_int_htab_eq (x, y)
+     const void *x;
+     const void *y;
+{
+  return (INTVAL ((rtx) x) == *((HOST_WIDE_INT *) y));
+}
+
+/* Mark the hash-table element X (which is really a pointer to an
+   rtx).  */
+
+static int
+rtx_htab_mark_1 (x, data)
+     void **x;
+     void *data ATTRIBUTE_UNUSED;
+{
+  ggc_mark_rtx (*x);
+  return 1;
+}
+
+/* Mark all the elements of HTAB (which is really an htab_t full of
+   rtxs).  */
+
+static void
+rtx_htab_mark (htab)
+     void *htab;
+{
+  htab_traverse (*((htab_t *) htab), rtx_htab_mark_1, NULL);
+}
+
 /* There are some RTL codes that require special attention; the generation
    functions do the raw handling.  If you add to this list, modify
    special_rtx in gengenrtl.c as well.  */
 
 rtx
 gen_rtx_CONST_INT (mode, arg)
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      HOST_WIDE_INT arg;
 {
+  void **slot;
+
   if (arg >= - MAX_SAVED_CONST_INT && arg <= MAX_SAVED_CONST_INT)
     return const_int_rtx[arg + MAX_SAVED_CONST_INT];
 
@@ -190,7 +247,15 @@ gen_rtx_CONST_INT (mode, arg)
     return const_true_rtx;
 #endif
 
-  return gen_rtx_raw_CONST_INT (mode, arg);
+  /* Look up the CONST_INT in the hash table.  */
+  slot = htab_find_slot_with_hash (const_int_htab, 
+				   &arg,
+				   (hashval_t) arg,
+				   /*insert=*/1);
+  if (!*slot)
+    *slot = gen_rtx_raw_CONST_INT (VOIDmode, arg);
+
+  return (rtx) *slot;
 }
 
 /* CONST_DOUBLEs needs special handling because its length is known
@@ -1627,9 +1692,7 @@ unshare_all_rtl (fndecl, insn)
 
   /* Make sure that virtual parameters are not shared.  */
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
-    {
-      copy_rtx_if_shared (DECL_RTL (decl));
-    }
+    copy_rtx_if_shared (DECL_RTL (decl));
 
   /* Unshare just about everything else.  */
   unshare_all_rtl_1 (insn);
@@ -4083,6 +4146,14 @@ init_emit_once (line_numbers)
   ggc_add_rtx_root (&static_chain_rtx, 1);
   ggc_add_rtx_root (&static_chain_incoming_rtx, 1);
   ggc_add_rtx_root (&return_address_pointer_rtx, 1);
+
+  /* Initialize the CONST_INT hash table.  */
+  const_int_htab = htab_create (37, 
+				const_int_htab_hash, 
+				const_int_htab_eq, 
+				NULL);
+  ggc_add_root (&const_int_htab, 1, sizeof (const_int_htab), 
+		rtx_htab_mark);
 }
 
 /* Query and clear/ restore no_line_numbers.  This is used by the

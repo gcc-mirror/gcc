@@ -153,8 +153,10 @@ static unsigned int reg_base_value_size; /* size of reg_base_value array */
    after reload.  */
 static rtx *alias_invariant;
 
-/* Vector indexed by N giving the initial (unchanging) value known
-   for pseudo-register N.  */
+/* Vector indexed by N giving the initial (unchanging) value known for
+   pseudo-register N.  This array is initialized in
+   init_alias_analysis, and does not change until end_alias_analysis
+   is called.  */
 rtx *reg_known_value;
 
 /* Indicates number of valid entries in reg_known_value.  */
@@ -1569,6 +1571,9 @@ init_alias_once ()
 
   alias_sets = splay_tree_new (splay_tree_compare_ints, 0, 0);
 }
+
+/* Initialize the aliasing machinery.  Initialize the REG_KNOWN_VALUE
+   array.  */
 
 void
 init_alias_analysis ()

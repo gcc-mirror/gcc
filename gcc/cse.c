@@ -2367,10 +2367,8 @@ exp_equiv_p (x, y, validate, equal_values)
     {
     case PC:
     case CC0:
-      return x == y;
-
     case CONST_INT:
-      return INTVAL (x) == INTVAL (y);
+      return x == y;
 
     case LABEL_REF:
       return XEXP (x, 0) == XEXP (y, 0);
@@ -6898,7 +6896,7 @@ cse_basic_block (from, to, next_branch, around_loop)
 
       /* If we have processed 1,000 insns, flush the hash table to
 	 avoid extreme quadratic behavior.  We must not include NOTEs
-	 in the count since there may be more or them when generating
+	 in the count since there may be more of them when generating
 	 debugging information.  If we clear the table at different
 	 times, code generated with -g -O might be different than code
 	 generated with -O but not -g.
