@@ -112,10 +112,10 @@ output_function_prologue (stream, size)
       else
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tlink.w %s,%I0\n\tadd.l %0I%d,%Rsp\n",
+	  asm_fprintf (stream, "\tlink.w %s,%0I0\n\tadd.l %0I%d,%Rsp\n",
 		       reg_names[FRAME_POINTER_REGNUM], -fsize);
 #else
-	  asm_fprintf (stream, "\tlink %s,%I0\n\taddl %0I%d,%Rsp\n",
+	  asm_fprintf (stream, "\tlink %s,%0I0\n\taddl %0I%d,%Rsp\n",
 		       reg_names[FRAME_POINTER_REGNUM], -fsize);
 #endif
 	}
@@ -159,9 +159,9 @@ output_function_prologue (stream, size)
   if ((mask & 0xff) != 0)
     {
 #ifdef MOTOROLA
-      asm_fprintf (stream, "\tfmovm %I0x%x,-(%Rsp)\n", mask & 0xff);
+      asm_fprintf (stream, "\tfmovm %0I0x%x,-(%Rsp)\n", mask & 0xff);
 #else
-      asm_fprintf (stream, "\tfmovem %I0x%x,%Rsp@-\n", mask & 0xff);
+      asm_fprintf (stream, "\tfmovem %0I0x%x,%Rsp@-\n", mask & 0xff);
 #endif
     }
   mask = 0;
@@ -199,21 +199,21 @@ output_function_prologue (stream, size)
   else if (mask)
     {
 #ifdef MOTOROLA
-      asm_fprintf (stream, "\tmovm.l %I0x%x,-(%Rsp)\n", mask);
+      asm_fprintf (stream, "\tmovm.l %0I0x%x,-(%Rsp)\n", mask);
 #else
-      asm_fprintf (stream, "\tmoveml %I0x%x,%Rsp@-\n", mask);
+      asm_fprintf (stream, "\tmoveml %0I0x%x,%Rsp@-\n", mask);
 #endif
     }
   if (flag_pic && current_function_uses_pic_offset_table)
     {
 #ifdef MOTOROLA
-      asm_fprintf (stream, "\t%Omove.l %I__GLOBAL_OFFSET_TABLE_, %s\n",
+      asm_fprintf (stream, "\t%Omove.l %0I__GLOBAL_OFFSET_TABLE_, %s\n",
 		   reg_names[PIC_OFFSET_TABLE_REGNUM]);
       asm_fprintf (stream, "\tlea.l (%Rpc,%s.l),%s\n",
 		   reg_names[PIC_OFFSET_TABLE_REGNUM],
 		   reg_names[PIC_OFFSET_TABLE_REGNUM]);
 #else
-      asm_fprintf (stream, "\tmovel %I__GLOBAL_OFFSET_TABLE_, %s\n",
+      asm_fprintf (stream, "\tmovel %0I__GLOBAL_OFFSET_TABLE_, %s\n",
 		   reg_names[PIC_OFFSET_TABLE_REGNUM]);
       asm_fprintf (stream, "\tlea %Rpc@(0,%s:l),%s\n",
 		   reg_names[PIC_OFFSET_TABLE_REGNUM],
@@ -268,7 +268,12 @@ output_function_epilogue (stream, size)
   if (GET_CODE (insn) == NOTE)
     insn = prev_nonnote_insn (insn);
   if (insn && GET_CODE (insn) == BARRIER)
-    return;
+    {
+      /* Output just a no-op so that debuggers don't get confused
+	 about which function the pc is in at this address.  */
+      asm_fprintf (stream, "\tnop\n");
+      return;
+    }
 
 #ifdef FUNCTION_EXTRA_EPILOGUE
   FUNCTION_EXTRA_EPILOGUE (stream, size);
@@ -366,12 +371,12 @@ output_function_epilogue (stream, size)
       if (big)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tmovm.l -%d(%s,%Ra0.l),%I0x%x\n",
+	  asm_fprintf (stream, "\tmovm.l -%d(%s,%Ra0.l),%0I0x%x\n",
 		       offset + fsize,
 		       reg_names[FRAME_POINTER_REGNUM],
 		       mask);
 #else
-	  asm_fprintf (stream, "\tmoveml %s@(-%d,%Ra0:l),%I0x%x\n",
+	  asm_fprintf (stream, "\tmoveml %s@(-%d,%Ra0:l),%0I0x%x\n",
 		       reg_names[FRAME_POINTER_REGNUM],
 		       offset + fsize, mask);
 #endif
@@ -379,20 +384,20 @@ output_function_epilogue (stream, size)
       else if (! frame_pointer_needed)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tmovm.l (%Rsp)+,%I0x%x\n", mask);
+	  asm_fprintf (stream, "\tmovm.l (%Rsp)+,%0I0x%x\n", mask);
 #else
-	  asm_fprintf (stream, "\tmoveml %Rsp@+,%I0x%x\n", mask);
+	  asm_fprintf (stream, "\tmoveml %Rsp@+,%0I0x%x\n", mask);
 #endif
 	}
       else
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tmovm.l -%d(%s),%I0x%x\n",
+	  asm_fprintf (stream, "\tmovm.l -%d(%s),%0I0x%x\n",
 		       offset + fsize,
 		       reg_names[FRAME_POINTER_REGNUM],
 		       mask);
 #else
-	  asm_fprintf (stream, "\tmoveml %s@(-%d),%I0x%x\n",
+	  asm_fprintf (stream, "\tmoveml %s@(-%d),%0I0x%x\n",
 		       reg_names[FRAME_POINTER_REGNUM],
 		       offset + fsize, mask);
 #endif
@@ -403,12 +408,12 @@ output_function_epilogue (stream, size)
       if (big)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tfmovm -%d(%s,%Ra0.l),%I0x%x\n",
+	  asm_fprintf (stream, "\tfmovm -%d(%s,%Ra0.l),%0I0x%x\n",
 		       foffset + fsize,
 		       reg_names[FRAME_POINTER_REGNUM],
 		       fmask);
 #else
-	  asm_fprintf (stream, "\tfmovem %s@(-%d,%Ra0:l),%I0x%x\n",
+	  asm_fprintf (stream, "\tfmovem %s@(-%d,%Ra0:l),%0I0x%x\n",
 		       reg_names[FRAME_POINTER_REGNUM],
 		       foffset + fsize, fmask);
 #endif
@@ -416,20 +421,20 @@ output_function_epilogue (stream, size)
       else if (! frame_pointer_needed)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tfmovm (%Rsp)+,%I0x%x\n", fmask);
+	  asm_fprintf (stream, "\tfmovm (%Rsp)+,%0I0x%x\n", fmask);
 #else
-	  asm_fprintf (stream, "\tfmovem %Rsp@+,%I0x%x\n", fmask);
+	  asm_fprintf (stream, "\tfmovem %Rsp@+,%0I0x%x\n", fmask);
 #endif
 	}
       else
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tfmovm -%d(%s),%I0x%x\n",
+	  asm_fprintf (stream, "\tfmovm -%d(%s),%0I0x%x\n",
 		       foffset + fsize,
 		       reg_names[FRAME_POINTER_REGNUM],
 		       fmask);
 #else
-	  asm_fprintf (stream, "\tfmovem %s@(-%d),%I0x%x\n",
+	  asm_fprintf (stream, "\tfmovem %s@(-%d),%0I0x%x\n",
 		       reg_names[FRAME_POINTER_REGNUM],
 		       foffset + fsize, fmask);
 #endif
@@ -1525,7 +1530,7 @@ print_operand (file, op, letter)
     }
   else if (letter == '#')
     {
-      asm_fprintf (file, "%I");
+      asm_fprintf (file, "%0I");
     }
   else if (letter == '-')
     {
@@ -1553,11 +1558,7 @@ print_operand (file, op, letter)
     }
   else if (letter == '!')
     {
-#ifdef MOTOROLA
-      asm_fprintf (file, "(%Rcc)");
-#else
-      asm_fprintf (file, "%Rcc");
-#endif
+      asm_fprintf (file, "%Rfpcr");
     }
   else if (letter == '$')
     {
@@ -1623,7 +1624,7 @@ print_operand (file, op, letter)
     }
   else
     {
-      asm_fprintf (file, "%I"); output_addr_const (file, op);
+      asm_fprintf (file, "%0I"); output_addr_const (file, op);
     }
 }
 
