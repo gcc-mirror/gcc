@@ -306,6 +306,12 @@ DEFPARAM(PARAM_MAX_CROSSJUMP_EDGES,
 	 "The maximum number of incoming edges to consider for crossjumping",
 	 100)
 
+/* The minimum number of matching instructions to consider for crossjumping.  */
+DEFPARAM(PARAM_MIN_CROSSJUMP_INSNS,
+     "min-crossjump-insns",
+     "The minimum number of matching instructions to consider for crossjumping",
+     5)
+
 /* The maximum length of path considered in cse.  */
 DEFPARAM(PARAM_MAX_CSE_PATH_LENGTH,
 	 "max-cse-path-length",
