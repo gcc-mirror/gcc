@@ -7299,9 +7299,12 @@ for am_file in include/config.h gcj/libgcj-config.h; do
   esac
   am_indx=`expr "$am_indx" + 1`
 done
-if test -n "$CONFIG_FILES"; then
-  ac_file=Makefile . ${libgcj_basedir}/../config-ml.in
-fi
+# Only add multilib support code if we just rebuilt top-level Makefile.
+case " $CONFIG_FILES " in
+ *" Makefile "*)
+   ac_file=Makefile . ${libgcj_basedir}/../config-ml.in
+   ;;
+esac
 
 # Make subdirectories and `.d' files.  Look in both srcdir and
 # builddir for the .java files.
