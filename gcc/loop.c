@@ -5731,7 +5731,9 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	 case, the insn should have been moved out of the loop.  */
 
       if (num_mem_sets == 1)
-	reversible_mem_store = ! invariant_p (XEXP (loop_store_mems[0], 0));
+	reversible_mem_store
+	  = (! unknown_address_altered
+	     && ! invariant_p (XEXP (loop_store_mems[0], 0)));
 
       /* This code only acts for innermost loops.  Also it simplifies
 	 the memory address check by only reversing loops with
