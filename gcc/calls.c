@@ -140,6 +140,9 @@ static void store_unaligned_arguments_into_pseudos PROTO ((struct arg_data *,
 static int finalize_must_preallocate		PROTO ((int, int,
 							struct arg_data *,
 							struct args_size *));
+static void precompute_arguments 		PROTO ((int, int, int,
+							struct arg_data *,
+							struct args_size *));
 
 
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
@@ -823,6 +826,78 @@ store_unaligned_arguments_into_pseudos (args, num_actuals)
 						BITS_PER_WORD),
 			     bitalign / BITS_PER_UNIT, BITS_PER_WORD);
 	  }
+      }
+}
+
+/* Precompute parameters has needed for a function call.
+
+   IS_CONST indicates the target function is a pure function.
+
+   MUST_PREALLOCATE indicates that we must preallocate stack space for
+   any stack arguments.
+
+   NUM_ACTUALS is the number of arguments.
+
+   ARGS is an array containing information for each argument; this routine
+   fills in the INITIAL_VALUE and VALUE fields for each precomputed argument.
+
+   ARGS_SIZE contains information about the size of the arg list.  */
+
+static void
+precompute_arguments (is_const, must_preallocate, num_actuals, args, args_size)
+     int is_const;
+     int must_preallocate;
+     int num_actuals;
+     struct arg_data *args;
+     struct args_size *args_size;
+{
+  int i;
+
+  /* If this function call is cse'able, precompute all the parameters.
+     Note that if the parameter is constructed into a temporary, this will
+     cause an additional copy because the parameter will be constructed
+     into a temporary location and then copied into the outgoing arguments.
+     If a parameter contains a call to alloca and this function uses the
+     stack, precompute the parameter.  */
+
+  /* If we preallocated the stack space, and some arguments must be passed
+     on the stack, then we must precompute any parameter which contains a
+     function call which will store arguments on the stack.
+     Otherwise, evaluating the parameter may clobber previous parameters
+     which have already been stored into the stack.  */
+
+  for (i = 0; i < num_actuals; i++)
+    if (is_const
+	|| ((args_size->var != 0 || args_size->constant != 0)
+	    && calls_function (args[i].tree_value, 1))
+	|| (must_preallocate
+	    && (args_size->var != 0 || args_size->constant != 0)
+	    && calls_function (args[i].tree_value, 0)))
+      {
+	/* If this is an addressable type, we cannot pre-evaluate it.  */
+	if (TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)))
+	  abort ();
+
+	push_temp_slots ();
+
+	args[i].initial_value = args[i].value
+	  = expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
+
+	preserve_temp_slots (args[i].value);
+	pop_temp_slots ();
+
+	/* ANSI doesn't require a sequence point here,
+	   but PCC has one, so this will avoid some problems.  */
+	emit_queue ();
+
+	args[i].initial_value = args[i].value
+	  = protect_from_queue (args[i].initial_value, 0);
+
+	if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) != args[i].mode)
+	  args[i].value
+	    = convert_modes (args[i].mode, 
+			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
+			     args[i].value, args[i].unsignedp);
       }
 }
 
@@ -1649,51 +1724,9 @@ expand_call (exp, target, ignore)
 	  ))
     structure_value_addr = copy_to_reg (structure_value_addr);
 
-  /* If this function call is cse'able, precompute all the parameters.
-     Note that if the parameter is constructed into a temporary, this will
-     cause an additional copy because the parameter will be constructed
-     into a temporary location and then copied into the outgoing arguments.
-     If a parameter contains a call to alloca and this function uses the
-     stack, precompute the parameter.  */
-
-  /* If we preallocated the stack space, and some arguments must be passed
-     on the stack, then we must precompute any parameter which contains a
-     function call which will store arguments on the stack.
-     Otherwise, evaluating the parameter may clobber previous parameters
-     which have already been stored into the stack.  */
-
-  for (i = 0; i < num_actuals; i++)
-    if (is_const
-	|| ((args_size.var != 0 || args_size.constant != 0)
-	    && calls_function (args[i].tree_value, 1))
-	|| (must_preallocate && (args_size.var != 0 || args_size.constant != 0)
-	    && calls_function (args[i].tree_value, 0)))
-      {
-	/* If this is an addressable type, we cannot pre-evaluate it.  */
-	if (TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)))
-	  abort ();
-
-	push_temp_slots ();
-
-	args[i].initial_value = args[i].value
-	  = expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
-
-	preserve_temp_slots (args[i].value);
-	pop_temp_slots ();
-
-	/* ANSI doesn't require a sequence point here,
-	   but PCC has one, so this will avoid some problems.  */
-	emit_queue ();
-
-	args[i].initial_value = args[i].value
-	  = protect_from_queue (args[i].initial_value, 0);
-
-	if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) != args[i].mode)
-	  args[i].value
-	    = convert_modes (args[i].mode, 
-			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
-			     args[i].value, args[i].unsignedp);
-      }
+  /* Precompute any arguments as needed.  */
+  precompute_arguments (is_const, must_preallocate, num_actuals,
+                        args, &args_size);
 
   /* Now we are about to start emitting insns that can be deleted
      if a libcall is deleted.  */
