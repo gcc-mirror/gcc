@@ -17,6 +17,10 @@
 
 2003-04-14  Olivier Hainque <hainque@act-europe.fr>
 
+	* global.c (global_conflicts): Prevent allocation of call clobbered
+	hard regs to pseudos live across abnormal edges, as later passes are
+	not ready to handle them.
+
         * fold-const.c (fold): Reorder tests for conditional expressions.
 
         * expr.c (highest_pow2_factor): Return unsigned.

@@ -703,26 +703,38 @@ global_conflicts ()
 	    scan the instruction that makes either X or Y become live.  */
 	record_conflicts (block_start_allocnos, ax);
 
-#ifdef STACK_REGS
+ 	/* Pseudos can't go in stack regs at the start of a basic block that
+ 	   is reached by an abnormal edge. Likewise for call clobbered regs,
+ 	   because because caller-save, fixup_abnormal_edges, and possibly
+ 	   the table driven EH machinery are not quite ready to handle such
+ 	   regs live across such edges.  */
 	{
-	  /* Pseudos can't go in stack regs at the start of a basic block
-	     that is reached by an abnormal edge.  */
-
 	  edge e;
+
 	  for (e = b->pred; e ; e = e->pred_next)
 	    if (e->flags & EDGE_ABNORMAL)
 	      break;
+
 	  if (e != NULL)
 	    {
+#ifdef STACK_REGS
 	      EXECUTE_IF_SET_IN_ALLOCNO_SET (allocnos_live, ax,
-		{
-		  allocno[ax].no_stack_reg = 1;
-		});
+					     {
+					       allocno[ax].no_stack_reg = 1;
+					     });
 	      for (ax = FIRST_STACK_REG; ax <= LAST_STACK_REG; ax++)
 		record_one_conflict (ax);
+#endif
+
+	      /* No need to record conflicts for call clobbered regs if we have
+		 nonlocal labels around, as we don't ever try to allocate such
+		 regs in this case.  */
+	      if (! current_function_has_nonlocal_label)
+		for (ax = 0; ax < FIRST_PSEUDO_REGISTER; ax++)
+		  if (call_used_regs [ax])
+		    record_one_conflict (ax);
 	    }
 	}
-#endif
       }
 
       insn = b->head;
