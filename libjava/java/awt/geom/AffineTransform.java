@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libjava.
 
@@ -51,7 +51,7 @@ public class AffineTransform implements Cloneable, Serializable
     this.m11 = m11;
     this.m02 = m02;
     this.m12 = m12;
-    this.type = 0; // fixme;
+    this.type = TYPE_GENERAL_TRANSFORM;
   }
 
   public AffineTransform (float[] flatmatrix)
@@ -260,6 +260,20 @@ public class AffineTransform implements Cloneable, Serializable
     type = TYPE_GENERAL_ROTATION;
   }
 
+  public void setToRotation (double theta, double x, double y)
+  {
+    double c = Math.cos (theta);
+    double s = Math.sin (theta);
+
+    m00 = c;
+    m01 = -s;
+    m02 = x - x * c + y * s;
+    m10 = s;
+    m11 = c;
+    m12 = y - x * s - y * c;
+    type = TYPE_GENERAL_TRANSFORM;
+  }
+
   public void setToScale (double sx, double sy)
   {
     m00 = sx;
@@ -274,7 +288,7 @@ public class AffineTransform implements Cloneable, Serializable
     m01 = shx;
     m10 = shy;
     m02 = m12 = 0;
-    type = 0;			// FIXME
+    type = TYPE_GENERAL_TRANSFORM;
   }
 
   public void setTransform (AffineTransform tx)

@@ -1,5 +1,16 @@
 2001-05-10  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added Polygon.java.
+	* java/awt/Polygon.java: New file.
+
+	* java/awt/geom/AffineTransform.java
+	(setToRotation(double,double,double)): New method.
+	(AffineTransform): Set type to TYPE_GENERAL_TRANSFORM.
+	(setToShear): Likewise.
+
+2001-05-10  Tom Tromey  <tromey@redhat.com>
+
 	* java/util/GregorianCalendar.java: Imported from Classpath.
 	* gnu/java/locale/LocaleInformation_nl.java: New file from
 	Classpath.
