@@ -279,8 +279,7 @@ gctest_DEPENDENCIES =  ./libgcjgc.la
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 DIST_COMMON =  ChangeLog Makefile.am Makefile.in acinclude.m4 aclocal.m4 \
-config.guess config.sub configure configure.in install-sh ltconfig \
-ltmain.sh mkinstalldirs
+configure configure.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)

@@ -24,8 +24,6 @@ AC_INIT(gcj_mlc.c)
 # exported.
 ORIGINAL_LD_FOR_MULTILIBS=$LD
 
-AC_CONFIG_AUX_DIR(.)
-
 dnl Default to --enable-multilib
 AC_ARG_ENABLE(multilib,
 [  --enable-multilib       build many library versions (default)],

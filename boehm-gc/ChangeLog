@@ -1,5 +1,14 @@
 2004-02-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* ltconfig, ltmain.sh: Remove unused files.
+	* configure.in: Remove bogus extra early invocation of
+	AC_CONFIG_AUX_DIR.
+	* configure: Regenerate.
+	* mkinstalldirs, install-sh, config.sub, config.guess:
+	Remove (now) unused files.
+	* Makefile.in: Regenerate (losing references to vanished
+	files).
+
 	* configure.in: Add CCAS, CCASFLAGS for future automakes.
 	* configure, Makefile.in, include/Makefile.in: Regenerate.
 
