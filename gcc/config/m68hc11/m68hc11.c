@@ -1,5 +1,6 @@
 /* Subroutines for code generation on Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GCC.
@@ -4161,8 +4162,10 @@ m68hc11_check_z_replacement (rtx insn, struct replace_info *info)
 	{
 	  if ((GET_CODE (src) == REG && REGNO (src) == HARD_Z_REGNUM)
 	      || (GET_CODE (src) == COMPARE &&
-		  (rtx_equal_p (XEXP (src, 0), z_reg)
-		   || rtx_equal_p (XEXP (src, 1), z_reg))))
+		  ((rtx_equal_p (XEXP (src, 0), z_reg)
+                    && H_REG_P (XEXP (src, 1)))
+		   || (rtx_equal_p (XEXP (src, 1), z_reg)
+                       && H_REG_P (XEXP (src, 0))))))
 	    {
 	      if (insn == info->first)
 		{
