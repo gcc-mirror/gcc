@@ -160,6 +160,11 @@ for ml in $MULTILIBS; do
   libgcc_s_so=
   libunwind_a=
   libunwind_so=
+  if [ "$dir" = . ]; then
+    suffix=
+  else
+    suffix=`echo $dir | sed s,/,_,g`
+  fi
 
   if [ "$LIBUNWIND" ]; then
     libunwind_a=$dir/libunwind.a
@@ -177,7 +182,6 @@ for ml in $MULTILIBS; do
 	  libunwind_soname=libunwind
 	fi
       else
-        suffix=`echo $dir | sed s,/,_,g`
 	libgcc_eh_a=$dir/libgcc_eh.a
 	libgcc_s_so_base=$dir/libgcc_s_${suffix}
 	libgcc_s_so=${libgcc_s_so_base}${SHLIB_EXT}
@@ -655,37 +659,45 @@ for ml in $MULTILIBS; do
   done
 
   # EXTRA_MULTILIB_PARTS.
-  echo
-  for f in $EXTRA_MULTILIB_PARTS; do
-    case $dir in
-    .) out=$f ; t= ;;
-    *) out=$dir/$f ; t=$dir/ ;;
-    esac
-    case $out in
-    # Prevent `make' from interpreting $out as a macro assignment
-    *'$(EQ)'*) targ="T_TARGET=$out T_TARGET" ;;
-    *) targ=$out ;;
-    esac
+  if [ -n "$EXTRA_MULTILIB_PARTS" ]; then
+    # Each of the EXTRA_MULTILIB_PARTS is built by recursive invocation
+    # of the parent Makefile.  We must do this just once for each
+    # multilib, passing it all the EXTRA_MULTILIB_PARTS as
+    # simultaneous goal targets, so that rules which cannot execute
+    # simultaneously are properly serialized.
+    
+    # We don't need to build the default ones since they have been
+    # built before we get here.
+    if [ $dir != "." ]; then
+      extra=
+      t=$dir/
+      echo
+      for f in $EXTRA_MULTILIB_PARTS; do
+	out=$dir/$f
+	case $out in
+	# Prevent `make' from interpreting $out as a macro assignment
+	*'$(EQ)'*) targ="T_TARGET=$out T_TARGET" ;;
+	*) targ=$out ;;
+	esac
+	extra="$extra $targ"
+      done
 
-    echo $out: stmp-dirs
-    echo "	$make_compile" \\
-    echo '	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)' $flags '" ' \\
-    echo '	  MULTILIB_CFLAGS="'$flags'"' T=$t $targ
-    echo "all: $out"
+      echo extra$suffix: stmp-dirs
+      echo "	$make_compile" \\
+      echo '	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)' $flags '" ' \\
+      echo '	  MULTILIB_CFLAGS="'$flags'"' T=$t $extra
+      echo "all: extra$suffix"
 
-    # Make libunwind.so and libgcc_s.so depend on these, since they are
-    # likely to be implicitly used by the link process.  However, we must
-    # then arrange to remove them from the explicit object list generated
-    # from $^ - see below.
-    if [ "$libgcc_s_so" ]; then
-      libgcc_s_so_extra="$libgcc_s_so_extra $out"
-      echo "$libgcc_s_so: $out"
+      # Make libunwind.so and libgcc_s.so depend on these, since they
+      # are likely to be implicitly used by the link process.
+      if [ "$libgcc_s_so" ]; then
+	echo "$libgcc_s_so: extra$suffix"
+	fi
+      if [ "$libunwind_so" ]; then
+	echo "$libunwind_so: extra$suffix"
+      fi
     fi
-    if [ "$libunwind_so" ]; then
-      libunwind_so_extra="$libunwind_so_extra $out"
-      echo "$libunwind_so: $out"
-    fi
-  done
+  fi
 
   # Library build rules.
   dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
@@ -760,7 +772,7 @@ EOF
     echo "	$SHLIB_LINK" \
 	 | sed -e "s%@multilib_flags@%$flags%g" \
 	       -e "s%@multilib_dir@%$dir%g" \
-	       -e "s%@shlib_objs@%\$(filter-out $libgcc_s_so_extra,\$(objects))%g" \
+	       -e "s%@shlib_objs@%\$(objects)%g" \
 	       -e "s%@shlib_base_name@%$libgcc_s_so_base%g" \
 	       -e "s%@shlib_so_name@%$libgcc_s_soname%g" \
 	       -e "s%@shlib_map_file@%$mapfile%g" \
@@ -775,7 +787,7 @@ EOF
     echo "	$SHLIBUNWIND_LINK" \
 	   | sed -e "s%@multilib_flags@%$flags%g" \
 		 -e "s%@multilib_dir@%$dir%g" \
-		 -e "s%@shlib_objs@%\$(filter-out $libunwind_so_extra,\$(objects))%g" \
+		 -e "s%@shlib_objs@%\$(objects)%g" \
 		 -e "s%@shlib_base_name@%$libunwind_so_base%g" \
 		 -e "s%@shlib_so_name@%$libunwind_soname%g" \
 		 -e "s%@shlib_dir@%$shlib_dir%g" \
