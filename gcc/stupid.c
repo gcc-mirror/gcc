@@ -1,5 +1,5 @@
 /* Dummy data flow analysis for GNU compiler in nonoptimizing mode.
-   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -476,7 +476,10 @@ stupid_mark_refs (x, insn)
 		 insn so that it will conflict with any other outputs of
 		 this insn.  */
 	      if (reg_where_dead[regno] < where_born + 2)
-		reg_where_dead[regno] = where_born + 2;
+		{
+		  reg_where_dead[regno] = where_born + 2;
+		  regs_live[regno] = 1;
+		}
 
 	      /* Count the refs of this reg.  */
 	      reg_n_refs[regno]++;
