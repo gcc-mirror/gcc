@@ -171,6 +171,9 @@ while [ $# != 0 ]; do
   shift; shift
 done
 
+# We shouldn't stay in the directory we just copied.
+cd ${INPUT}
+
 # Fix first broken decl of getcwd present on some svr4 systems.
 
 file=stdlib.h
@@ -297,6 +300,10 @@ fi
 # the class exception defined in the C++ file std/stdexcept.h.  We
 # redefine it to __math_exception.  This is not a great fix, but I
 # haven't been able to think of anything better.
+#
+# OpenServer's math.h declares abs as inline int abs...  Unfortunately,
+# we blow over that one (with C++ linkage) and stick a new one in stdlib.h
+# with C linkage.   So we eat the one out of math.h.
 file=math.h
 base=`basename $file`
 if [ -r ${LIB}/$file ]; then
@@ -317,7 +324,9 @@ if [ \! -z "$file_to_fix" ]; then
       -e '/struct exception/a\
 #ifdef __cplusplus\
 #undef exception\
-#endif' $file_to_fix > /tmp/$base
+#endif' \
+      -e 's@inline int abs(int [a-z][a-z]*) {.*}@extern "C" int abs(int);@' \
+ $file_to_fix > /tmp/$base
   if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
     true
   else
