@@ -8246,12 +8246,11 @@ function_value (valtype, func)
    ??? We might want to restructure this so that it looks more like other
    ports.  */
 rtx
-function_arg (cum, mode, type, named, incoming)
+function_arg (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
      int named ATTRIBUTE_UNUSED;
-     int incoming;
 {
   int max_arg_words = (TARGET_64BIT ? 8 : 4);
   int alignment = 0;
@@ -8393,7 +8392,7 @@ function_arg (cum, mode, type, named, incoming)
   if (((TARGET_PORTABLE_RUNTIME || TARGET_64BIT || TARGET_ELF32)
        /* If we are doing soft-float with portable runtime, then there
 	  is no need to worry about FP regs.  */
-       && ! TARGET_SOFT_FLOAT
+       && !TARGET_SOFT_FLOAT
        /* The parameter must be some kind of float, else we can just
 	  pass it in integer registers.  */
        && FLOAT_MODE_P (mode)
@@ -8402,14 +8401,15 @@ function_arg (cum, mode, type, named, incoming)
        /* libcalls do not need to pass items in both FP and general
 	  registers.  */
        && type != NULL_TREE
-       /* All this hair applies to outgoing args only.  */
-       && ! incoming)
+       /* All this hair applies to "outgoing" args only.  This includes
+	  sibcall arguments setup with FUNCTION_INCOMING_ARG.  */
+       && !cum->incoming)
       /* Also pass outgoing floating arguments in both registers in indirect
 	 calls with the 32 bit ABI and the HP assembler since there is no
 	 way to the specify argument locations in static functions.  */
-      || (! TARGET_64BIT
-	  && ! TARGET_GAS
-	  && ! incoming
+      || (!TARGET_64BIT
+	  && !TARGET_GAS
+	  && !cum->incoming
 	  && cum->indirect
 	  && FLOAT_MODE_P (mode)))
     {
