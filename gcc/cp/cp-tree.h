@@ -1753,6 +1753,8 @@ struct lang_type GTY(())
 #define VF_BASETYPE_VALUE(NODE) TREE_VALUE (NODE)
 
 /* Accessor macros for the BINFO_VIRTUALS list. */
+#define VF_DERIVED_VALUE(NODE) \
+   (VF_BINFO_VALUE (NODE) ? BINFO_TYPE (VF_BINFO_VALUE (NODE)) : NULL_TREE)
 
 /* The number of bytes by which to adjust the `this' pointer when
    calling this virtual function.  Subtract this value from the this
