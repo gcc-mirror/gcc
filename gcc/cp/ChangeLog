@@ -1,3 +1,7 @@
+2001-11-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lex.c (copy_lang_type): Add static prototype.
+
 2001-11-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (unify): Handle SCOPE_REF.

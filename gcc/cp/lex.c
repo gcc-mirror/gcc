@@ -71,6 +71,7 @@ static int token_cmp PARAMS ((int *, int *));
 #endif
 static int is_global PARAMS ((tree));
 static void init_operators PARAMS ((void));
+static void copy_lang_type PARAMS ((tree));
 
 /* A constraint that can be tested at compile time.  */
 #ifdef __STDC__
@@ -1573,7 +1574,7 @@ copy_decl (decl)
 
 /* Replace the shared language-specific parts of NODE with a new copy.  */
 
-void
+static void
 copy_lang_type (node)
      tree node;
 {
