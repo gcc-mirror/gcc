@@ -2338,7 +2338,7 @@ mark_vtable_entries (decl)
 
       fn = TREE_OPERAND (fnaddr, 0);
       TREE_ADDRESSABLE (fn) = 1;
-      if (TREE_CODE (fn) == THUNK_DECL && DECL_EXTERNAL (fn))
+      if (DECL_THUNK_P (fn) && DECL_EXTERNAL (fn))
 	{
 	  DECL_EXTERNAL (fn) = 0;
 	  emit_thunk (fn);

@@ -556,7 +556,6 @@ dequeue_and_dump (di)
       break;
 
     case FUNCTION_DECL:
-    case THUNK_DECL:
       dump_child ("mngl", DECL_ASSEMBLER_NAME (t));
       dump_child ("args", DECL_ARGUMENTS (t));
       if (DECL_EXTERNAL (t))

@@ -1,3 +1,28 @@
+2000-05-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (THUNK_DECL): Remove.
+	* cp-tree.h (DECL_THUNK_P): New macro.
+	(DECL_NON_THUNK_FUNCTION_P): Likewise.
+	(DECL_EXTERN_C_FUNCTION_P): Likewise.
+	(SET_DECL_THUNK_P): Likewise.
+	(DELTA_FROM_VTABLE_ENTRY): Use DECL_THUNK_P.
+	(FNADDR_FROM_VTABLE_ENTRY): Likewise.
+	(DECL_MAIN_P): Use DECL_EXTERN_C_FUNCTION_P.
+	* decl.c (decls_match): Use DECL_EXTERN_C_P.
+	(duplicate_decls): Likewise.
+	(pushdecl): Likewise.  Adjust thunk handling.
+	(grokfndecl): Use DECL_EXTERN_C_P.
+	* decl2.c (mark_vtable_entries): Use DECL_THUNK_P.
+	* dump.c (dequeue_and_dump): Remove THUNK_DECL handling.
+	* except.c (nothrow_libfn_p): Use DECL_EXTERN_C_P.
+	* expr.c (cplus_expand_expr): Remove THUNK_DECL handling.
+	* method.c (make_thunk): Use SET_DECL_THUNK_P.  Set
+	DECL_NO_STATIC_CHAIN.
+	(emit_thunk): Don't play games with TREE_CODE on thunks.  Don't
+	set DECL_DESTRUCTOR_P or DECL_CONSTRUCTOR_P on a thunk.
+	* search.c (covariant_return_p): Remove THUNK_DECL handling.
+	* ir.texi: Update.
+	
 2000-05-01  Jason Merrill  <jason@casey.cygnus.com>
 
 	* tree.c (walk_tree): Set lineno.

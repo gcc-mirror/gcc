@@ -885,21 +885,6 @@ contains the instantiations.  The @code{TREE_VALUE} of each node is an
 instantiation of the class.  The @code{DECL_TEMPLATE_SPECIALIZATIONS}
 contains partial specializations of the class.
 
-@item THUNK_DECL
-
-These nodes represent stub code that adjusts the @code{this} pointer and
-then jumps to another function.  When the jumped-to function returns,
-control is transferred directly to the caller, without returning to the
-thunk.  The first parameter to the thunk is always the @code{this}
-pointer; the thunk should add @code{THUNK_DELTA} to this value.  (The
-@code{THUNK_DELTA} is an @code{int}, not an @code{INTEGER_CST}.)  Then,
-the thunk should jump to the location given by @code{DECL_INITIAL}; this
-will always be an expression for the address of a function.  
-
-You can use @code{DECL_ASSEMBLER_NAME}, @code{TREE_PUBLIC}, and
-@code{DECL_ARGUMENTS} with a @code{THUNK_DECL}, just as with a
-@code{FUNCTION_DECL}.
-
 @item USING_DECL
 
 Back-ends can safely ignore these nodes.
@@ -1043,6 +1028,19 @@ function.
 @item DECL_GLOBAL_DTOR_P
 This predicate holds if the function is a file-scope finalization
 function.
+
+@item DECL_THUNK_P
+This predicate holds if the function is a thunk.
+
+These functions represent stub code that adjusts the @code{this} pointer
+and then jumps to another function.  When the jumped-to function
+returns, control is transferred directly to the caller, without
+returning to the thunk.  The first parameter to the thunk is always the
+@code{this} pointer; the thunk should add @code{THUNK_DELTA} to this
+value.  (The @code{THUNK_DELTA} is an @code{int}, not an
+@code{INTEGER_CST}.)  Then, the thunk should jump to the location given
+by @code{DECL_INITIAL}; this will always be an expression for the
+address of a function.
 
 @item GLOBAL_INIT_PRIORITY
 If either @code{DECL_GLOBAL_CTOR_P} or @code{DECL_GLOBAL_DTOR_P} holds,
@@ -1895,7 +1893,7 @@ by the last @code{EXPR_STMT} in the outermost scope of the
 @end example
 the value is @code{3} while in:
 @example
-(@{ if (x) { 3; } @})
+(@{ if (x) @{ 3; @} @})
 @end example
 (represented by a nested @code{COMPOUND_STMT}), there is no value.  If
 the @code{STMT_EXPR} does not yield a value, it's type will be

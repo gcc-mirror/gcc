@@ -1294,19 +1294,22 @@ enum languages { lang_c, lang_cplusplus, lang_java };
   ((CP_TYPE_QUALS (NODE) & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE))	\
    == TYPE_QUAL_CONST)
 
-#define DELTA_FROM_VTABLE_ENTRY(ENTRY) \
-  (!flag_vtable_thunks ? \
-     TREE_VALUE (CONSTRUCTOR_ELTS (ENTRY)) \
-   : TREE_CODE (TREE_OPERAND ((ENTRY), 0)) != THUNK_DECL ? integer_zero_node \
+#define DELTA_FROM_VTABLE_ENTRY(ENTRY)				\
+  (!flag_vtable_thunks ?					\
+     TREE_VALUE (CONSTRUCTOR_ELTS (ENTRY))			\
+   : !DECL_THUNK_P (TREE_OPERAND ((ENTRY), 0)) 			\
+   ? integer_zero_node						\
    : build_int_2 (THUNK_DELTA (TREE_OPERAND ((ENTRY), 0)), 0))
 
 /* Virtual function addresses can be gotten from a virtual function
    table entry using this macro.  */
-#define FNADDR_FROM_VTABLE_ENTRY(ENTRY) \
-  (!flag_vtable_thunks ? \
-     TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (ENTRY)))) \
-   : TREE_CODE (TREE_OPERAND ((ENTRY), 0)) != THUNK_DECL ? (ENTRY) \
+#define FNADDR_FROM_VTABLE_ENTRY(ENTRY)					\
+  (!flag_vtable_thunks ?						\
+     TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (ENTRY))))	\
+   : !DECL_THUNK_P (TREE_OPERAND ((ENTRY), 0))				\
+   ? (ENTRY)								\
    : DECL_INITIAL (TREE_OPERAND ((ENTRY), 0)))
+
 #define SET_FNADDR_FROM_VTABLE_ENTRY(ENTRY,VALUE) \
   (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (ENTRY)))) = (VALUE))
 #define FUNCTION_ARG_CHAIN(NODE) (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (NODE))))
@@ -2098,6 +2101,27 @@ struct lang_decl
 /* Nonzero for FUNCTION_DECL means that this member function
    must be overridden by derived classes.  */
 #define DECL_NEEDS_FINAL_OVERRIDER_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.needs_final_overrider)
+
+/* Nonzero if NODE is a thunk, rather than an ordinary function.  */
+#define DECL_THUNK_P(NODE)			\
+  (TREE_CODE (NODE) == FUNCTION_DECL		\
+   && DECL_LANG_FLAG_7 (NODE))
+
+/* Nonzero if NODE is a FUNCTION_DECL, but not a thunk.  */
+#define DECL_NON_THUNK_FUNCTION_P(NODE)				\
+  (TREE_CODE (NODE) == FUNCTION_DECL && !DECL_THUNK_P (NODE))
+
+/* Nonzero if NODE is `extern "C"'.  */
+#define DECL_EXTERN_C_P(NODE) \
+  (DECL_LANGUAGE (NODE) == lang_c)
+
+/* Nonzero if NODE is an `extern "C"' function.  */
+#define DECL_EXTERN_C_FUNCTION_P(NODE) \
+  (DECL_NON_THUNK_FUNCTION_P (NODE) && DECL_EXTERN_C_P (NODE))
+
+/* Set DECL_THUNK_P for node.  */
+#define SET_DECL_THUNK_P(NODE) \
+  (DECL_LANG_FLAG_7 (NODE) = 1)
 
 /* Nonzero if this DECL is the __PRETTY_FUNCTION__ variable in a
    template function.  */
@@ -2986,6 +3010,27 @@ extern int flag_new_for_scope;
 #define DECL_REALLY_EXTERN(NODE) \
   (DECL_EXTERNAL (NODE) && ! DECL_NOT_REALLY_EXTERN (NODE))
 
+/* A thunk is a stub function.
+
+   A thunk is an alternate entry point for an ordinary FUNCTION_DECL.
+   The address of the ordinary FUNCTION_DECL is given by the
+   DECL_INITIAL, which is always an ADDR_EXPR whose operand is a
+   FUNCTION_DECL.  The job of the thunk is to adjust the `this'
+   pointer before transferring control to the FUNCTION_DECL.
+
+   A thunk may perform either, or both, of the following operations:
+
+   o Adjust the `this' pointer by a constant offset.
+   o Adjust the `this' pointer by looking up a vcall-offset
+     in the vtable.
+
+   If both operations are performed, then the constant adjument to
+   `this' is performed first.
+
+   The constant adjustment is given by THUNK_DELTA.  If the
+   vcall-offset is required, the index into the vtable is given by
+   THUNK_VCALL_OFFSET.  */
+
 /* An integer indicating how many bytes should be subtracted from the
    `this' pointer when this function is called.  */
 #define THUNK_DELTA(DECL) (DECL_CHECK (DECL)->decl.u1.i)
@@ -3472,8 +3517,7 @@ extern tree original_function_name;
 /* Returns non-zero iff NODE is a declaration for the global function
    `main'.  */
 #define DECL_MAIN_P(NODE)				\
-   (TREE_CODE (NODE) == FUNCTION_DECL			\
-    && DECL_LANGUAGE (NODE) == lang_c	 		\
+   (DECL_EXTERN_C_FUNCTION_P (NODE)                     \
     && DECL_NAME (NODE) != NULL_TREE			\
     && MAIN_NAME_P (DECL_NAME (NODE)))
 

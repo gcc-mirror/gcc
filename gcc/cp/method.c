@@ -2046,7 +2046,7 @@ make_thunk (function, delta, vcall_index)
   thunk_id = get_identifier (obstack_base (&scratch_obstack));
 
   thunk = IDENTIFIER_GLOBAL_VALUE (thunk_id);
-  if (thunk && TREE_CODE (thunk) != THUNK_DECL)
+  if (thunk && !DECL_THUNK_P (thunk))
     {
       cp_error ("implementation-reserved name `%D' used", thunk_id);
       thunk = NULL_TREE;
@@ -2058,7 +2058,7 @@ make_thunk (function, delta, vcall_index)
       TREE_READONLY (thunk) = TREE_READONLY (func_decl);
       TREE_THIS_VOLATILE (thunk) = TREE_THIS_VOLATILE (func_decl);
       comdat_linkage (thunk);
-      TREE_SET_CODE (thunk, THUNK_DECL);
+      SET_DECL_THUNK_P (thunk);
       DECL_INITIAL (thunk) = function;
       THUNK_DELTA (thunk) = delta;
       THUNK_VCALL_OFFSET (thunk) 
@@ -2066,6 +2066,9 @@ make_thunk (function, delta, vcall_index)
       DECL_EXTERNAL (thunk) = 1;
       DECL_ARTIFICIAL (thunk) = 1;
       DECL_CONTEXT (thunk) = DECL_CONTEXT (func_decl);
+      /* Even if this thunk is a member of a local class, we don't
+	 need a static chain.  */
+      DECL_NO_STATIC_CHAIN (thunk) = 1;
       /* So that finish_file can write out any thunks that need to be: */
       pushdecl_top_level (thunk);
     }
@@ -2093,8 +2096,6 @@ emit_thunk (thunk_fndecl)
 
   if (current_function_decl)
     abort ();
-
-  TREE_SET_CODE (thunk_fndecl, FUNCTION_DECL);
 
 #ifdef ASM_OUTPUT_MI_THUNK
   if (!flag_syntax_only && vcall_offset == 0)
@@ -2145,6 +2146,11 @@ emit_thunk (thunk_fndecl)
     DECL_INTERFACE_KNOWN (thunk_fndecl) = 1;
     DECL_NOT_REALLY_EXTERN (thunk_fndecl) = 1;
     DECL_SAVED_FUNCTION_DATA (thunk_fndecl) = NULL;
+
+    /* The thunk itself is not a constructor or destructor, even if
+       the thing it is thunking to is.  */
+    DECL_DESTRUCTOR_P (thunk_fndecl) = 0;
+    DECL_CONSTRUCTOR_P (thunk_fndecl) = 0;
 
     push_to_top_level ();
     start_function (NULL_TREE, thunk_fndecl, NULL_TREE, SF_PRE_PARSED);
@@ -2207,8 +2213,6 @@ emit_thunk (thunk_fndecl)
     if (DECL_DEFER_OUTPUT (thunk_fndecl))
       output_inline_function (thunk_fndecl);
   }
-
-  TREE_SET_CODE (thunk_fndecl, THUNK_DECL);
 }
 
 /* Code for synthesizing methods which have default semantics defined.  */
