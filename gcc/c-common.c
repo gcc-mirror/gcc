@@ -41,7 +41,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "langhooks.h"
 #include "tree-inline.h"
-
+#include "c-tree.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -792,6 +792,8 @@ static tree handle_nonnull_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
 static tree handle_nothrow_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
+static tree handle_cleanup_attribute	PARAMS ((tree *, tree, tree, int,
+						 bool *));
 static tree vector_size_helper PARAMS ((tree, tree));
 
 static void check_function_nonnull	PARAMS ((tree, tree));
@@ -868,6 +870,8 @@ const struct attribute_spec c_common_attribute_table[] =
   { "nothrow",                0, 0, true,  false, false,
 			      handle_nothrow_attribute },
   { "may_alias",	      0, 0, false, true, false, NULL },
+  { "cleanup",		      1, 1, true, false, false,
+			      handle_cleanup_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
@@ -6090,6 +6094,55 @@ handle_nothrow_attribute (node, name, args, flags, no_add_attrs)
       warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
+
+  return NULL_TREE;
+}
+
+/* Handle a "cleanup" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_cleanup_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  tree decl = *node;
+  tree cleanup_id, cleanup_decl;
+
+  /* ??? Could perhaps support cleanups on TREE_STATIC, much like we do
+     for global destructors in C++.  This requires infrastructure that
+     we don't have generically at the moment.  It's also not a feature
+     we'd be missing too much, since we do have attribute constructor.  */
+  if (TREE_CODE (decl) != VAR_DECL || TREE_STATIC (decl))
+    {
+      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* Verify that the argument is a function in scope.  */
+  /* ??? We could support pointers to functions here as well, if
+     that was considered desirable.  */
+  cleanup_id = TREE_VALUE (args);
+  if (TREE_CODE (cleanup_id) != IDENTIFIER_NODE)
+    {
+      error ("cleanup arg not an identifier");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+  cleanup_decl = lookup_name (cleanup_id);
+  if (!cleanup_decl || TREE_CODE (cleanup_decl) != FUNCTION_DECL)
+    {
+      error ("cleanup arg not a function");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* That the function has proper type is checked with the 
+     eventual call to build_function_call.  */
 
   return NULL_TREE;
 }

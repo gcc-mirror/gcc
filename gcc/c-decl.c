@@ -50,6 +50,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-pragma.h"
 #include "cgraph.h"
 #include "hashtab.h"
+#include "libfuncs.h"
+#include "except.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -2985,6 +2987,41 @@ finish_decl (decl, init, asmspec_tree)
      computing them in the following function definition.  */
   if (current_binding_level == global_binding_level)
     get_pending_sizes ();
+
+  /* Install a cleanup (aka destructor) if one was given.  */
+  if (TREE_CODE (decl) == VAR_DECL && !TREE_STATIC (decl))
+    {
+      tree attr = lookup_attribute ("cleanup", DECL_ATTRIBUTES (decl));
+      if (attr)
+	{
+	  static bool eh_initialized_p;
+
+	  tree cleanup_id = TREE_VALUE (TREE_VALUE (attr));
+	  tree cleanup_decl = lookup_name (cleanup_id);
+	  tree cleanup;
+
+	  /* Build "cleanup(&decl)" for the destructor.  */
+	  cleanup = build_unary_op (ADDR_EXPR, decl, 0);
+	  cleanup = build_tree_list (NULL_TREE, cleanup);
+	  cleanup = build_function_call (cleanup_decl, cleanup);
+
+	  /* Don't warn about decl unused; the cleanup uses it.  */
+	  TREE_USED (decl) = 1;
+
+	  /* Initialize EH, if we've been told to do so.  */
+	  if (flag_exceptions && !eh_initialized_p)
+	    {
+	      eh_initialized_p = true;
+	      eh_personality_libfunc
+		= init_one_libfunc (USING_SJLJ_EXCEPTIONS
+				    ? "__gcc_personality_sj0"
+				    : "__gcc_personality_v0");
+	      using_eh_for_cleanups ();
+	    }
+
+	  add_stmt (build_stmt (CLEANUP_STMT, decl, cleanup));
+	}
+    }
 }
 
 /* Given a parsed parameter declaration,

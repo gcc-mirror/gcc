@@ -1,3 +1,13 @@
+2003-06-04  Richard Henderson  <rth@redhat.com>
+
+        * gcc.dg/cleanup-1.c: New.
+        * gcc.dg/cleanup-2.c: New.
+        * gcc.dg/cleanup-3.c: New.
+        * gcc.dg/cleanup-4.c: New.
+        * gcc.dg/cleanup-5.c: New.
+        * gcc.dg/cleanup-6.c: New.
+        * gcc.dg/cleanup-7.c: New.
+
 2003-06-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/vague1.C: Use xfail, rather than embedded Tcl code.
