@@ -1,3 +1,8 @@
+2002-06-10  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (override_options): Don't warn about
+	using -fpic or -fPIC when PIC is enabled by default.
+
 2002-06-10  Roger Sayle  <roger@eyesopen.com>
 
 	* toplev.c (rest_of_compilation): Revert flag_if_conversion change.
