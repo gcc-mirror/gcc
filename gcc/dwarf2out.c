@@ -1852,6 +1852,7 @@ dwarf2out_begin_prologue ()
   ASM_GENERATE_INTERNAL_LABEL (label, FUNC_BEGIN_LABEL,
 			       current_funcdef_number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
+  current_function_func_begin_label = get_identifier (label);
 
   /* Expand the fde table if necessary.  */
   if (fde_table_in_use == fde_table_allocated)

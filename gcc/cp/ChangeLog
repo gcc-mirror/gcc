@@ -1,3 +1,7 @@
+2000-03-01  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (current_function_decl): Move to toplev.c.
+
 2000-02-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (fn_type_unification): Unify return type, whenever

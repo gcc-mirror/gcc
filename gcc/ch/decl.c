@@ -375,10 +375,6 @@ static tree current_function_parms;
 
 static int c_function_varargs;
 
-/* The FUNCTION_DECL for the function currently being compiled,
-   or 0 if between functions.  */
-tree current_function_decl;
-
 /* These are irrelevant for Chill, but are referenced from from c-typeck.c. */
 int warn_format;
 int warn_traditional;

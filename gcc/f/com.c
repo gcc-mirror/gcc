@@ -217,12 +217,6 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 
-/* tree.h declares a bunch of stuff that it expects the front end to
-   define.  Here are the definitions, which in the C front end are
-   found in the file c-decl.c.  */
-
-tree current_function_decl;
-
 /* ~~gcc/tree.h *should* declare this, because toplev.c and dwarfout.c
    reference it.  */
 

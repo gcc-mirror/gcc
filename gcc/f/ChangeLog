@@ -1,3 +1,7 @@
+Wed Mar  1 00:31:44 2000  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* com.c (current_function_decl): Move to toplev.c.
+
 Sun Feb 27 16:40:33 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* com.c (ffecom_arrayref_): Convert args to size_binop to proper type.

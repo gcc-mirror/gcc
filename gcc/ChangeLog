@@ -1,3 +1,21 @@
+2000-03-01  Martin von Loewis  <loewis@informatik.hu-berlin.de>
+
+	* c-decl.c (current_function_decl): Move to toplev.c.
+	(init_decl_processing): Don't add current_function_decl as a ggc
+	root here.
+	* dbxout.c (dbxout_symbol): Change return type to int.
+	(dbxout_symbol_location, dbxout_syms): Likewise.
+	(dbxout_block): Don't emit LBRAC/RBRAC pairs for blocks without
+	any locals. Use current_function_func_begin_label if set.
+	* dbxout.h (dbxout_symbol, dbxout_syms): Change return type.
+	* dwarf2out.c (dwarf2out_begin_prologue): Set
+	current_function_func_begin_label.
+	* final.c (final_start_function): Reset it.
+	* toplev.c (current_function_decl): Define it here.
+	(current_function_func_begin_label): New variable.
+	(main): Add both as ggc roots.
+	* tree.h (current_function_func_begin_label): Declare.
+
 Tue Feb 29 14:07:04 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcse.c: Cleanups throughout: mostly white-space, but also

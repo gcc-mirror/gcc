@@ -1599,6 +1599,8 @@ final_start_function (first, file, optimize)
   /* Output DWARF definition of the function.  */
   if (dwarf2out_do_frame ())
     dwarf2out_begin_prologue ();
+  else
+    current_function_func_begin_label = 0;
 #endif
 
   /* For SDB and XCOFF, the function beginning must be marked between
