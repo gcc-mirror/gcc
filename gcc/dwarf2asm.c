@@ -821,7 +821,8 @@ dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
   if (encoding == DW_EH_PE_aligned)
     {
       assemble_align (POINTER_SIZE);
-      encoding = DW_EH_PE_absptr;
+      assemble_integer (addr, size, POINTER_SIZE, 1);
+      return;
     }
 
   /* NULL is _always_ represented as a plain zero.  */
