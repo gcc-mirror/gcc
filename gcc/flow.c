@@ -432,7 +432,9 @@ static basic_block flow_dfs_compute_reverse_execute
   PARAMS ((depth_first_search_ds));
 static void flow_dfs_compute_reverse_finish
   PARAMS ((depth_first_search_ds));
-static basic_block flow_loop_pre_header_find PARAMS ((basic_block, const sbitmap *));
+static void flow_loop_pre_header_scan PARAMS ((struct loop *));
+static basic_block flow_loop_pre_header_find PARAMS ((basic_block,
+						      const sbitmap *));
 static void flow_loop_tree_node_add	PARAMS ((struct loop *, struct loop *));
 static void flow_loops_tree_build	PARAMS ((struct loops *));
 static int flow_loop_level_compute	PARAMS ((struct loop *, int));
@@ -7374,13 +7376,20 @@ flow_loop_dump (loop, file, loop_dump_aux, verbose)
 	   loop->depth, loop->level,
 	   (long) (loop->outer ? loop->outer->num : -1));
 
-  flow_edge_list_print (";;   entry edges", loop->entry_edges,
+  if (loop->pre_header_root)
+    fprintf (file, ";;  pre-header root %d\n", 
+	     loop->pre_header_root->index);
+  if (loop->pre_header_trace)
+    flow_nodes_print (";;  pre-header trace", loop->pre_header_trace,
+		      file);
+  flow_edge_list_print (";;  entry edges", loop->entry_edges,
 			loop->num_entries, file);
   fprintf (file, ";;  %d", loop->num_nodes);
   flow_nodes_print (" nodes", loop->nodes, file);
-  flow_edge_list_print (";;   exit edges", loop->exit_edges,
+  flow_edge_list_print (";;  exit edges", loop->exit_edges,
 			loop->num_exits, file);
-
+  if (loop->exits_doms)
+    flow_nodes_print (";;  exit doms", loop->exits_doms, file);
   if (loop_dump_aux)
     loop_dump_aux (loop, file, verbose);
 }
@@ -7463,12 +7472,16 @@ flow_loops_free (loops)
 	{
 	  struct loop *loop = &loops->array[i];
 
+	  if (loop->pre_header_trace)
+	    sbitmap_free (loop->pre_header_trace);
 	  if (loop->nodes)
 	    sbitmap_free (loop->nodes);
 	  if (loop->entry_edges)
 	    free (loop->entry_edges);
 	  if (loop->exit_edges)
 	    free (loop->exit_edges);
+	  if (loop->exits_doms)
+	    sbitmap_free (loop->exits_doms);
 	}
       free (loops->array);
       loops->array = NULL;
@@ -7478,7 +7491,8 @@ flow_loops_free (loops)
       if (loops->cfg.dfs_order)
 	free (loops->cfg.dfs_order);
 
-      sbitmap_free (loops->shared_headers);
+      if (loops->shared_headers)
+	sbitmap_free (loops->shared_headers);
     }
 }
 
@@ -7839,6 +7853,36 @@ flow_dfs_compute_reverse_finish (data)
   return;
 }
 
+
+/* Find the root node of the loop pre-header extended basic block and
+   the blocks along the trace from the root node to the loop header.  */
+
+static void
+flow_loop_pre_header_scan (loop)
+     struct loop *loop;
+{
+  basic_block ebb;
+
+  if (loop->num_entries != 1)
+     return;
+
+  /* Find pre_header root note and trace from root node to pre_header.  */
+  loop->pre_header_trace = sbitmap_alloc (n_basic_blocks);
+  sbitmap_zero (loop->pre_header_trace);
+  
+  ebb = loop->entry_edges[0]->src;
+  SET_BIT (loop->pre_header_trace, ebb->index);
+  while (ebb->pred->src != ENTRY_BLOCK_PTR
+	 && ! ebb->pred->pred_next)
+    {
+      ebb = ebb->pred->src;
+      SET_BIT (loop->pre_header_trace, ebb->index);
+    }
+  
+  loop->pre_header_root = ebb;
+}
+
+
 /* Return the block for the pre-header of the loop with header
    HEADER where DOM specifies the dominator information.  Return NULL if
    there is no pre-header.  */
@@ -7987,13 +8031,16 @@ flow_loops_level_compute (loops)
   return levels;
 }
 
+
 /* Find all the natural loops in the function and save in LOOPS structure
    and recalculate loop_depth information in basic block structures.
+   FLAGS controls which loop information is collected.
    Return the number of natural loops found.  */
 
 int
-flow_loops_find (loops)
+flow_loops_find (loops, flags)
      struct loops *loops;
+     int flags;
 {
   int i;
   int b;
@@ -8004,32 +8051,38 @@ flow_loops_find (loops)
   int *dfs_order;
   int *rc_order;
 
-  loops->num = 0;
-  loops->array = NULL;
-  loops->tree = NULL;
-  dfs_order = NULL;
-  rc_order = NULL;
+  /* This function cannot be repeatedly called with different
+     flags to build up the loop information.  The loop tree
+     must always be built if this function is called.  */
+  if (! (flags & LOOP_TREE))
+    abort ();
+    
+  memset (loops, 0, sizeof (*loops));
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
   if (n_basic_blocks == 0)
     return 0;
 
+  dfs_order = NULL;
+  rc_order = NULL;
+
   /* Compute the dominators.  */
   dom = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
   compute_flow_dominators (dom, NULL);
 
   /* Count the number of loop edges (back edges).  This should be the
-     same as the number of natural loops.  Also clear the loop_depth
-     and as we work from inner->outer in a loop nest we call
-     find_loop_nodes_find which will increment loop_depth for nodes
-     within the current loop, which happens to enclose inner loops.  */
+     same as the number of natural loops.  */
 
   num_loops = 0;
   for (b = 0; b < n_basic_blocks; b++)
     {
-      BASIC_BLOCK (b)->loop_depth = 0;
-      for (e = BASIC_BLOCK (b)->pred; e; e = e->pred_next)
+      basic_block header;
+
+      header = BASIC_BLOCK (b);
+      header->loop_depth = 0;
+
+      for (e = header->pred; e; e = e->pred_next)
 	{
 	  basic_block latch = e->src;
 
@@ -8039,6 +8092,9 @@ flow_loops_find (loops)
 	     loop.  It also has single back edge to the header
 	     from a latch node.  Note that multiple natural loops
 	     may share the same header.  */
+	  if (b != header->index)
+	    abort ();
+
 	  if (latch != ENTRY_BLOCK_PTR && TEST_BIT (dom[latch->index], b))
 	    num_loops++;
 	}
@@ -8069,8 +8125,8 @@ flow_loops_find (loops)
 	{
 	  basic_block header;
 
-	  /* Search the nodes of the CFG in DFS order that we can find
-	     outer loops first.  */
+	  /* Search the nodes of the CFG in reverse completion order
+	     so that we can find outer loops first.  */
 	  header = BASIC_BLOCK (rc_order[b]);
 
 	  /* Look for all the possible latch blocks for this header.  */
@@ -8095,43 +8151,72 @@ flow_loops_find (loops)
 		  loop->latch = latch;
 		  loop->num = num_loops;
 
-		  /* Keep track of blocks that are loop headers so
-		     that we can tell which loops should be merged.  */
-		  if (TEST_BIT (headers, header->index))
-		    SET_BIT (loops->shared_headers, header->index);
-		  SET_BIT (headers, header->index);
-
-		  /* Find nodes contained within the loop.  */
-		  loop->nodes = sbitmap_alloc (n_basic_blocks);
-		  loop->num_nodes
-		    = flow_loop_nodes_find (header, latch, loop->nodes);
-
-		  /* Compute first and last blocks within the loop.
-		     These are often the same as the loop header and
-		     loop latch respectively, but this is not always
-		     the case.  */
-		  loop->first
-		    = BASIC_BLOCK (sbitmap_first_set_bit (loop->nodes));
-		  loop->last
-		    = BASIC_BLOCK (sbitmap_last_set_bit (loop->nodes));
-
-		  /* Find edges which enter the loop header.
-		     Note that the entry edges should only
-		     enter the header of a natural loop.  */
-		  loop->num_entries
-		    = flow_loop_entry_edges_find (loop->header, loop->nodes,
-						  &loop->entry_edges);
-
-		  /* Find edges which exit the loop.  */
-		  loop->num_exits
-		    = flow_loop_exit_edges_find (loop->nodes,
-						 &loop->exit_edges);
-
-		  /* Look to see if the loop has a pre-header node.  */
-		  loop->pre_header = flow_loop_pre_header_find (header, dom);
-
 		  num_loops++;
 		}
+	    }
+	}
+
+      for (i = 0; i < num_loops; i++)
+	{
+	  struct loop *loop = &loops->array[i];
+	  int j;
+
+	  /* Keep track of blocks that are loop headers so
+	     that we can tell which loops should be merged.  */
+	  if (TEST_BIT (headers, loop->header->index))
+	    SET_BIT (loops->shared_headers, loop->header->index);
+	  SET_BIT (headers, loop->header->index);
+
+	  /* Find nodes contained within the loop.  */
+	  loop->nodes = sbitmap_alloc (n_basic_blocks);
+	  loop->num_nodes
+	    = flow_loop_nodes_find (loop->header, loop->latch, loop->nodes);
+	  
+	  /* Compute first and last blocks within the loop.
+	     These are often the same as the loop header and
+	     loop latch respectively, but this is not always
+	     the case.  */
+	  loop->first
+	    = BASIC_BLOCK (sbitmap_first_set_bit (loop->nodes));
+	  loop->last
+	    = BASIC_BLOCK (sbitmap_last_set_bit (loop->nodes));
+	  
+	  if (flags & LOOP_EDGES)
+	    {
+	      /* Find edges which enter the loop header.
+		 Note that the entry edges should only
+		 enter the header of a natural loop.  */
+	      loop->num_entries
+		= flow_loop_entry_edges_find (loop->header,
+					      loop->nodes,
+					      &loop->entry_edges);
+	      
+	      /* Find edges which exit the loop.  */
+	      loop->num_exits
+		= flow_loop_exit_edges_find (loop->nodes,
+					     &loop->exit_edges);
+	      
+	      /* Determine which loop nodes dominate all the exits
+		 of the loop.  */
+	      loop->exits_doms = sbitmap_alloc (n_basic_blocks);
+	      sbitmap_copy (loop->exits_doms, loop->nodes);
+	      for (j = 0; j < loop->num_exits; j++)
+		sbitmap_a_and_b (loop->exits_doms, loop->exits_doms,
+				 dom[loop->exit_edges[j]->src->index]);
+	      
+	      /* The header of a natural loop must dominate
+		 all exits.  */
+	      if (! TEST_BIT (loop->exits_doms, loop->header->index))
+		abort ();
+	    }
+	  
+	  if (flags & LOOP_PRE_HEADER)
+	    {
+	      /* Look to see if the loop has a pre-header node.  */
+	      loop->pre_header 
+		= flow_loop_pre_header_find (loop->header, dom);
+
+	      flow_loop_pre_header_scan (loop);
 	    }
 	}
 
@@ -8162,6 +8247,23 @@ flow_loops_find (loops)
 
   return num_loops;
 }
+
+
+/* Update the information regarding the loops in the CFG
+   specified by LOOPS.  */
+int
+flow_loops_update (loops, flags)
+     struct loops *loops;
+     int flags;
+{
+  /* One day we may want to update the current loop data.  For now
+     throw away the old stuff and rebuild what we need.  */
+  if (loops->array)
+    flow_loops_free (loops);
+  
+  return flow_loops_find (loops, flags);
+}
+
 
 /* Return non-zero if edge E enters header of LOOP from outside of LOOP.  */
 
