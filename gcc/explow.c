@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-codes.h"
 
 static rtx break_out_memory_refs	PROTO((rtx));
-
+static void emit_stack_probe		PROTO((rtx));
 /* Return an rtx for the sum of X and the integer C.
 
    This function should be used via the `plus_constant' macro.  */
@@ -1077,6 +1077,11 @@ allocate_dynamic_stack_space (size, target, known_align)
 
   do_pending_stack_adjust ();
 
+  /* If needed, check that we have the required amount of stack.  Take into
+     account what has already been checked.  */
+  if (flag_stack_check && ! STACK_CHECK_BUILTIN)
+    probe_stack_range (STACK_CHECK_MAX_FRAME_SIZE + STACK_CHECK_PROTECT, size);
+
   /* Don't use a TARGET that isn't a pseudo.  */
   if (target == 0 || GET_CODE (target) != REG
       || REGNO (target) < FIRST_PSEUDO_REGISTER)
@@ -1145,6 +1150,133 @@ allocate_dynamic_stack_space (size, target, known_align)
     emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, NULL_RTX);
 
   return target;
+}
+
+/* Emit one stack probe at ADDRESS, an address within the stack.  */
+
+static void
+emit_stack_probe (address)
+     rtx address;
+{
+  rtx memref = gen_rtx (MEM, word_mode, address);
+
+  MEM_VOLATILE_P (memref) = 1;
+
+  if (STACK_CHECK_PROBE_LOAD)
+    emit_move_insn (gen_reg_rtx (word_mode), memref);
+  else
+    emit_move_insn (memref, const0_rtx);
+}
+
+/* Probe a range of stack addresses from FIRST to FIRST+SIZE, inclusive. 
+   FIRST is a constant and size is a Pmode RTX.  These are offsets from the
+   current stack pointer.  STACK_GROWS_DOWNWARD says whether to add or
+   subtract from the stack.  If SIZE is constant, this is done
+   with a fixed number of probes.  Otherwise, we must make a loop.  */
+
+#ifdef STACK_GROWS_DOWNWARD
+#define STACK_GROW_OP MINUS
+#else
+#define STACK_GROW_OP PLUS
+#endif
+
+void
+probe_stack_range (first, size)
+     HOST_WIDE_INT first;
+     rtx size;
+{
+  /* First see if we have an insn to check the stack.  Use it if so.  */
+#ifdef HAVE_check_stack
+  if (HAVE_check_stack)
+    {
+      rtx last_addr = force_operand (gen_rtx (STACK_GROW_OP, Pmode,
+					      stack_pointer_rtx,
+					      plus_constant (size, first)),
+				     NULL_RTX);
+
+      if (insn_operand_predicate[(int) CODE_FOR_check_stack][0]
+	  && ! ((*insn_operand_predicate[(int) CODE_FOR_check_stack][0])
+		(last_address, Pmode)))
+	last_address = copy_to_mode_reg (Pmode, last_address);
+
+      emit_insn (gen_check_stack (last_address));
+      return;
+    }
+#endif
+
+  /* If we have to generate explicit probes, see if we have a constant
+     number of them to generate.  If so, that's the easy case.  */
+  if (GET_CODE (size) == CONST_INT)
+    {
+      HOST_WIDE_INT offset;
+
+      /* Start probing at FIRST + N * STACK_CHECK_PROBE_INTERVAL
+	 for values of N from 1 until it exceeds LAST.  If only one
+	 probe is needed, this will not generate any code.  Then probe
+	 at LAST.  */
+      for (offset = first + STACK_CHECK_PROBE_INTERVAL;
+	   offset < INTVAL (size);
+	   offset = offset + STACK_CHECK_PROBE_INTERVAL)
+	emit_stack_probe (gen_rtx (STACK_GROW_OP, Pmode,
+				   stack_pointer_rtx, GEN_INT (offset)));
+
+      emit_stack_probe (gen_rtx (STACK_GROW_OP, Pmode, stack_pointer_rtx,
+				 plus_constant (size, first)));
+    }
+
+  /* In the variable case, do the same as above, but in a loop.  We emit loop
+     notes so that loop optimization can be done.  */
+  else
+    {
+      rtx test_addr
+	= force_operand (gen_rtx (STACK_GROW_OP, Pmode, stack_pointer_rtx,
+				  GEN_INT (first
+					   + STACK_CHECK_PROBE_INTERVAL)),
+			 NULL_RTX);
+      rtx last_addr
+	= force_operand (gen_rtx (STACK_GROW_OP, Pmode, stack_pointer_rtx,
+				  plus_constant (size, first)),
+			 NULL_RTX);
+      rtx incr = GEN_INT (STACK_CHECK_PROBE_INTERVAL);
+      rtx loop_lab = gen_label_rtx ();
+      rtx test_lab = gen_label_rtx ();
+      rtx end_lab = gen_label_rtx ();
+      rtx temp;
+
+      if (GET_CODE (test_addr) != REG
+	  || REGNO (test_addr) < FIRST_PSEUDO_REGISTER)
+	test_addr = force_reg (Pmode, test_addr);
+
+      emit_note (NULL_PTR, NOTE_INSN_LOOP_BEG);
+      emit_jump (test_lab);
+
+      emit_label (loop_lab);
+      emit_stack_probe (test_addr);
+
+      emit_note (NULL_PTR, NOTE_INSN_LOOP_CONT);
+
+#ifdef STACK_GROWS_DOWNWARD
+#define CMP_OPCODE GTU
+      temp = expand_binop (Pmode, sub_optab, test_addr, incr, test_addr,
+			   1, OPTAB_WIDEN);
+#else
+#define CMP_OPCODE LTU
+      temp = expand_binop (Pmode, add_optab, test_addr, incr, test_addr,
+			   1, OPTAB_WIDEN);
+#endif
+
+      if (temp != test_addr)
+	abort ();
+
+      emit_label (test_lab);
+      emit_cmp_insn (test_addr, last_addr, CMP_OPCODE, NULL_RTX, Pmode, 1, 0);
+      emit_jump_insn ((*bcc_gen_fctn[(int) CMP_OPCODE]) (loop_lab));
+      emit_jump (end_lab);
+      emit_note (NULL_PTR, NOTE_INSN_LOOP_END);
+      emit_label (end_lab);
+
+      emit_stack_probe (last_addr);
+    }
 }
 
 /* Return an rtx representing the register or memory location
