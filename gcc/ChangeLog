@@ -1,3 +1,12 @@
+2004-08-03  David Edelsohn  <edelsohn@gnu.org>
+	    Dale Johannesen  <dalej@apple.com>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Calculate cost of
+	constants more accurately.  Adjust costs for FMA instructions.
+	Add cases for most logical and float operations.  Recurse into
+	most operands.
+
 2004-08-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config.gcc (strongarm-*, xscale-*): Add t-arm to tmake_files.
