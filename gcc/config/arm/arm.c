@@ -526,12 +526,6 @@ arm_override_options ()
       target_flags &= ~ARM_FLAG_APCS_FRAME;
     }
 
-  if (TARGET_HARD_FLOAT && (insn_flags & FL_XSCALE))
-    {
-      warning ("XScale does not support hardware FP instructions.");
-      target_flags |= ARM_FLAG_SOFT_FLOAT;
-    }
-
   /* TARGET_BACKTRACE calls leaf_function_p, which causes a crash if done
      from here where no function is being compiled currently.  */
   if ((target_flags & (THUMB_FLAG_LEAF_BACKTRACE | THUMB_FLAG_BACKTRACE))
