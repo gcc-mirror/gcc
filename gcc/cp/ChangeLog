@@ -1,3 +1,8 @@
+2000-05-06  Richard Henderson  <rth@cygnus.com>
+
+	* typeck.c (build_c_cast): Don't warn integer->pointer size
+	mismatch for constants.
+
 2000-05-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* rtti.c (ptmd_initializer): Set non-public, if class is
