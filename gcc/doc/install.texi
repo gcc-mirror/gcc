@@ -1747,6 +1747,8 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#vax-dec-ultrix,,vax-dec-ultrix}
 @item
+@uref{#x86_64-*-*,,x86_64-*-*, amd64-*-*}
+@item
 @uref{#xtensa-*-elf,,xtensa-*-elf}
 @item
 @uref{#xtensa-*-linux*,,xtensa-*-linux*}
@@ -3303,6 +3305,16 @@ On a System V release 4 system, make sure @file{/usr/bin} precedes
 @heading @anchor{vax-dec-ultrix}vax-dec-ultrix
 Don't try compiling with VAX C (@command{vcc}).  It produces incorrect code
 in some cases (for example, when @code{alloca} is used).
+
+@html
+<hr />
+@end html
+@heading @anchor{x86_64-*-*}x86_64-*-*, amd64-*-*
+
+GCC supports the x86-64 architecture implemented by the AMD64 processor
+(amd64-*-* is an alias for x86_64-*-*) on GNU/Linux, FreeBSD and NetBSD.
+On GNU/Linux the default is a bi-arch compiler which is able to generate
+both 64-bit x86-64 and 32-bit x86 code (via the @option{-m32} switch).
 
 @html
 <hr />
