@@ -1682,7 +1682,7 @@ build_module_descriptor ()
 				      tree_cons (NULL_TREE, NULL_TREE,
 						 void_list_node),
 				      NULL_TREE),
-		    NULL_TREE, 0);
+		    NULL_TREE, NULL_TREE, 0);
 #if 0 /* This should be turned back on later
 	 for the systems where collect is not needed.  */
     /* Make these functions nonglobal
@@ -6960,7 +6960,7 @@ really_start_method (method, parmlist)
       method_decl = ret_decl;
 
       /* Fool the parser into thinking it is starting a function. */
-      start_function (decl_specs, method_decl, NULL_TREE, 0);
+      start_function (decl_specs, method_decl, NULL_TREE, NULL_TREE, 0);
 
       /* Unhook: this has the effect of restoring the abstract declarator. */
       TREE_OPERAND (save_expr, 0) = NULL_TREE;
@@ -6971,7 +6971,7 @@ really_start_method (method, parmlist)
       TREE_VALUE (TREE_TYPE (method)) = method_decl;
 
       /* Fool the parser into thinking it is starting a function. */
-      start_function (decl_specs, method_decl, NULL_TREE, 0);
+      start_function (decl_specs, method_decl, NULL_TREE, NULL_TREE, 0);
 
       /* Unhook: this has the effect of restoring the abstract declarator. */
       TREE_VALUE (TREE_TYPE (method)) = NULL_TREE;
