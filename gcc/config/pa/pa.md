@@ -4837,3 +4837,65 @@
   "mfsp %%sr0,%4\;ldsid (0,%2),%3\;mtsp %3,%%sr0\;fic 0(%%sr0,%0)\;fic 0(%%sr0,%1)\;sync\;mtsp %4,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop"
   [(set_attr "type" "multi")
    (set_attr "length" "52")])
+
+;; An out-of-line prologue.
+(define_insn "outline_prologue_call"
+  [(unspec_volatile [(const_int 0)] 0)
+   (clobber (reg:SI 31))
+   (clobber (reg:SI 22))
+   (clobber (reg:SI 21))
+   (clobber (reg:SI 20))
+   (clobber (reg:SI 19))
+   (clobber (reg:SI 1))]
+  ""
+  "*
+{
+  /* Must import the magic millicode routine.  */
+  output_asm_insn (\".IMPORT __outline_prologue,MILLICODE\", NULL);
+
+  /* The out-of-line prologue will make sure we return to the right
+     instruction.  */
+  if (TARGET_PORTABLE_RUNTIME)
+    {
+      output_asm_insn (\"ldil L'__outline_prologue,%%r31\", NULL);
+      output_asm_insn (\"ble,n R'__outline_prologue(%%sr0,%%r31)\", NULL);
+    }
+  else
+    output_asm_insn (\"bl,n __outline_prologue,%%r31\", NULL);
+  return \"\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+;; An out-of-line epilogue.
+(define_insn "outline_epilogue_call"
+  [(unspec_volatile [(const_int 1)] 0)
+   (use (reg:SI 29))
+   (use (reg:SI 28))
+   (clobber (reg:SI 31))
+   (clobber (reg:SI 22))
+   (clobber (reg:SI 21))
+   (clobber (reg:SI 20))
+   (clobber (reg:SI 19))
+   (clobber (reg:SI 2))
+   (clobber (reg:SI 1))]
+  ""
+  "*
+{
+  /* Must import the magic millicode routine.  */
+  output_asm_insn (\".IMPORT __outline_epilogue,MILLICODE\", NULL);
+
+  /* The out-of-line prologue will make sure we return to the right
+     instruction.  */
+  if (TARGET_PORTABLE_RUNTIME)
+    {
+      output_asm_insn (\"ldil L'__outline_epilogue,%%r31\", NULL);
+      output_asm_insn (\"ble,n R'__outline_epilogue(%%sr0,%%r31)\", NULL);
+    }
+  else
+    output_asm_insn (\"bl,n __outline_epilogue,%%r31\", NULL);
+  return \"\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
