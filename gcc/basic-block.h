@@ -446,6 +446,11 @@ extern void estimate_probability        PARAMS ((struct loops *));
 
 /* In flow.c */
 extern void reorder_basic_blocks	PARAMS ((void));
+extern void dump_bb			PARAMS ((basic_block, FILE *));
+extern void debug_bb			PARAMS ((basic_block));
+extern void debug_bb_n			PARAMS ((int));
+extern void dump_regset			PARAMS ((regset, FILE *));
+extern void debug_regset		PARAMS ((regset));
 
 
 #endif /* _BASIC_BLOCK_H */
