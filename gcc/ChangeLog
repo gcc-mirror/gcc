@@ -1,3 +1,41 @@
+2004-09-16 Jeff Law  <law@redhat.com>
+
+	* tree-into-ssa.c (block_defs_stack): New toplevel varray.
+	(rewrite_block_data): Remove, no longer used.
+	(rewrite_initialize_block_local_data): Remove, no longer used.
+	(rewrite_initialize_block): Mark parameters as unused as needed.
+	Change references to the block local block_defs to be block_defs_stack.
+	Push a marker onto the block_defs_stack.
+	(ssa_rewrite_initialize_block): Similarly.
+	(rewrite_stmt, ssa_rewrite_stmt): Similarly.
+	(ssa_register_new_def): No longer needs varray argument.  Use
+	block_defs_stack instead.  No longer handle possibly null block_defs
+	varray.  Reverse order of items we push on the stack to make it
+	easier to identify our marker.
+	(register_new_def): No longer handle possibly null block_defs
+	varray.
+	(rewrite_finalize_block): Revamp to look for markers in the global
+	block_defs_stack varray rather than wiping a block local varray.
+	Mark arguments as unused as needed.
+	(ssa_rewrite_finalize_block): Similarly.
+	(rewrite_into_ssa): Update initialization of dom walker structure
+	to reflect that we don't need block local data anymore.  Initialize
+	the block_defs_stack varray.
+	(rewrite_ssa_into_ssa): Similarly.
+	* tree-ssa-dom.c (block_defs_stack): New toplevel varray.
+	(struct dom_walk_data): Kill block_defs field.
+	(tree_ssa_dominator_optimize): Initialize block_defs_stack.
+	(thread_across_edge): Use the global block_defs_stack instead of
+	the old block_defs varray.
+	(dom_opt_initialize_block_local_data): Update now that we don't have
+	block_defs field to check anymore.
+	(dom_opt_initialize_block): Push a marker onto block_defs_stack.
+	(restore_currdefs_to_original_value): Use the new block_defs_stack
+	instead of a block local varray.
+	(dom_opt_finalize_block): Similarly.
+	(record_equivalencs_from_phis): Similarly.
+	(optimize_stmt, register_definitions_for_stmt): Similarly.
+
 2004-09-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/17517
