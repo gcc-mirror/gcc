@@ -264,7 +264,7 @@ namespace std
     {
       for (size_t __i = 1; __i < _Nw; ++__i)
 	if (_M_w[__i])
-	  __throw_overflow_error(__N("bitset value is too large to fit in unsigned long"));
+	  __throw_overflow_error(__N("_Base_bitset::_M_do_to_ulong"));
       return _M_w[0];
     }
 
@@ -466,7 +466,10 @@ namespace std
       // localized to this single should-never-get-this-far function.
       _WordT&
       _M_getword(size_t) const
-      { __throw_out_of_range(__N("bitset is zero-length")); return *new _WordT; }
+      { 
+	__throw_out_of_range(__N("_Base_bitset::_M_getword")); 
+	return *new _WordT; 
+      }
 
       _WordT
       _M_hiword() const { return 0; }
@@ -706,8 +709,7 @@ namespace std
 		      size_t __pos = 0) : _Base()
       {
 	if (__pos > __s.size())
-	  __throw_out_of_range("bitset -- initial position is larger than "
-	                       "the string itself");
+	  __throw_out_of_range("bitset::bitset initial position not valid");
 	_M_copy_from_string(__s, __pos,
 			    basic_string<_CharT, _Traits, _Alloc>::npos);
       }
@@ -726,8 +728,7 @@ namespace std
 	     size_t __pos, size_t __n) : _Base()
       {
 	if (__pos > __s.size())
-	  __throw_out_of_range("bitset -- initial position is larger than "
-	                       "the string itself");
+	  __throw_out_of_range("bitset::bitset initial position not valid");
 	_M_copy_from_string(__s, __pos, __n);
       }
 
@@ -862,7 +863,7 @@ namespace std
     set(size_t __pos, bool __val = true)
     {
       if (__pos >= _Nb)
-	__throw_out_of_range(__N("bitset::set() argument too large"));
+	__throw_out_of_range(__N("bitset::set"));
       return _Unchecked_set(__pos, __val);
     }
 
@@ -887,7 +888,7 @@ namespace std
     reset(size_t __pos)
     {
       if (__pos >= _Nb)
-	__throw_out_of_range(__N("bitset::reset() argument too large"));
+	__throw_out_of_range(__N("bitset::reset"));
       return _Unchecked_reset(__pos);
     }
 
@@ -911,7 +912,7 @@ namespace std
     flip(size_t __pos)
     {
       if (__pos >= _Nb)
-	__throw_out_of_range(__N("bitset::flip() argument too large"));
+	__throw_out_of_range(__N("bitset::flip"));
       return _Unchecked_flip(__pos);
     }
 
@@ -1014,7 +1015,7 @@ namespace std
     test(size_t __pos) const
     {
       if (__pos >= _Nb)
-	__throw_out_of_range(__N("bitset::test() argument too large"));
+	__throw_out_of_range(__N("bitset::test"));
       return _Unchecked_test(__pos);
     }
 
@@ -1083,8 +1084,7 @@ namespace std
 	      set(__i);
 	      break;
 	    default:
-	      __throw_invalid_argument("bitset -- string contains characters "
-	                               "which are neither 0 nor 1");
+	      __throw_invalid_argument("bitset::_M_copy_from_string");
 	    }
 	}
     }

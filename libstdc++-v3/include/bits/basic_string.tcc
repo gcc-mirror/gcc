@@ -142,7 +142,7 @@ namespace std
 
 	// NB: Not required, but considered best practice.
 	if (__builtin_expect(__beg == _InIter(), 0))
-	  __throw_logic_error("attempt to create string with null pointer");
+	  __throw_logic_error("basic_string::_S_construct NULL not valid");
 
 	size_type __dnew = static_cast<size_type>(std::distance(__beg, __end));
 	

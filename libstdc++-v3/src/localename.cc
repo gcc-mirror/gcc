@@ -321,7 +321,7 @@ namespace std
   {
     size_t __index = __idp->_M_id();
     if ((__index > (__imp->_M_facets_size - 1)) || !__imp->_M_facets[__index])
-      __throw_runtime_error("no locale facet");
+      __throw_runtime_error("locale::_Impl::_M_replace_facet");
     _M_install_facet(__idp, __imp->_M_facets[__index]); 
   }
 

@@ -1,3 +1,21 @@
+2003-04-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/localename.cc: Standardize exception strings.
+	* src/locale.cc: Same.
+	* src/ios.cc: Same.
+	* include/bits/basic_string.tcc: Same.
+	* include/bits/basic_ios.tcc: Same.
+	* include/std/std_bitset.h: Same.
+	* include/ext/ropeimpl.h: Same.
+	* include/bits/stl_vector.h: Same.
+	* include/bits/stl_deque.h: Same.
+	* include/bits/stl_bvector.h: Same.
+	* config/locale/generic/c_locale.cc: Same.
+	* config/locale/gnu/c_locale.cc: Same.
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Same.
+
+	* testsuite/testsuite_hooks.cc (__gnu_cxx_test): Modify.
+	
 2003-04-28  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_streambuf.h (_M_buf_size): is currently
