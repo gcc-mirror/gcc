@@ -852,24 +852,19 @@ collect_dfa_stats_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 static tree
 find_vars_r (tree *tp, int *walk_subtrees, void *data)
 {
-  tree t = *tp;
-  struct walk_state *walk_state = (struct walk_state *)data;
+  struct walk_state *walk_state = (struct walk_state *) data;
 
-  if (SSA_VAR_P (t))
-    {
-      /* If T is a regular variable that the optimizers are interested
-	 in, add it to the list of variables.  */
-      add_referenced_var (t, walk_state);
-    }
-  else if (DECL_P (t)
-	   || TYPE_P (t)
-	   || TREE_CODE_CLASS (TREE_CODE (t)) == 'c')
-    {
-      /* Type, _DECL and constant nodes have no interesting children.
-	 Ignore them.  */
-      *walk_subtrees = 0;
-    }
+  /* If T is a regular variable that the optimizers are interested
+     in, add it to the list of variables.  */
+  if (SSA_VAR_P (*tp))
+    add_referenced_var (*tp, walk_state);
 
+  /* Type, _DECL and constant nodes have no interesting children.
+     Ignore them.  */
+  else if (DECL_P (*tp)
+	   || TYPE_P (*tp)
+	   || TREE_CODE_CLASS (TREE_CODE (*tp)) == 'c')
+    *walk_subtrees = 0;
 
   return NULL_TREE;
 }

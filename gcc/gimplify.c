@@ -77,13 +77,12 @@ static enum gimplify_status gimplify_modify_expr_rhs (tree *, tree *, tree *,
 static enum gimplify_status gimplify_compound_expr (tree *, tree *, bool);
 
 
-
 /* Return a hash value for a formal temporary table entry.  */
 
 static hashval_t
 gimple_tree_hash (const void *p)
 {
-  tree t = ((const elt_t *)p)->val;
+  tree t = ((const elt_t *) p)->val;
   return iterative_hash_expr (t, 0);
 }
 
@@ -92,8 +91,8 @@ gimple_tree_hash (const void *p)
 static int
 gimple_tree_eq (const void *p1, const void *p2)
 {
-  tree t1 = ((const elt_t *)p1)->val;
-  tree t2 = ((const elt_t *)p2)->val;
+  tree t1 = ((const elt_t *) p1)->val;
+  tree t2 = ((const elt_t *) p2)->val;
   enum tree_code code = TREE_CODE (t1);
 
   if (TREE_CODE (t2) != code
@@ -194,6 +193,7 @@ static void
 gimple_pop_condition (tree *pre_p)
 {
   int conds = --(gimplify_ctxp->conditions);
+
   if (conds == 0)
     {
       append_to_statement_list (gimplify_ctxp->conditional_cleanups, pre_p);
@@ -281,6 +281,7 @@ tree
 create_artificial_label (void)
 {
   tree lab = build_decl (LABEL_DECL, NULL_TREE, void_type_node);
+
   DECL_ARTIFICIAL (lab) = 1;
   DECL_CONTEXT (lab) = current_function_decl;
   return lab;
@@ -298,6 +299,7 @@ create_tmp_var_name (const char *prefix)
   if (prefix)
     {
       char *preftmp = ASTRDUP (prefix);
+
       remove_suffix (preftmp, strlen (preftmp));
       prefix = preftmp;
     }
@@ -486,8 +488,7 @@ is_gimple_tmp_var (tree t)
 	  && !TREE_STATIC (t) && !DECL_EXTERNAL (t));
 }
 
-/* Declares all the variables in VARS in SCOPE.  Returns the last
-   DECL_STMT emitted.  */
+/* Declares all the variables in VARS in SCOPE.  */
 
 void
 declare_tmp_vars (tree vars, tree scope)
@@ -497,7 +498,7 @@ declare_tmp_vars (tree vars, tree scope)
     {
       tree temps;
 
-      /* C99 mode puts the default 'return 0;' for main() outside the outer
+      /* C99 mode puts the default 'return 0;' for main outside the outer
 	 braces.  So drill down until we find an actual scope.  */
       while (TREE_CODE (scope) == COMPOUND_EXPR)
 	scope = TREE_OPERAND (scope, 0);
@@ -1577,9 +1578,8 @@ canonicalize_component_ref (tree *expr_p)
       (T *)&array
    ==>
       &array[L]
-   where L is the lower bound.  Only do this for constant lower bound since
-   we have no place to put any statements made during gimplification of
-   the lower bound.  */
+   where L is the lower bound.  For simplicity, only do this for constant
+   lower bound.  */
 
 static void
 canonicalize_addr_expr (tree *expr_p)
