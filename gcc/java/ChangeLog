@@ -1,7 +1,9 @@
 Mon Nov  1 01:32:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-	* parse.y (resolve_qualified_expression_name): Prevent `this'
- 	from being before the superclass constructor has been called.
+	* parse.y (resolve_qualified_expression_name): Prevent `this' from
+ 	being used before the superclass constructor has been called.
+	(complete_function_arguments): Use CALL_EXPLICIT_CONSTRUCTOR_P
+ 	instead of `CALL_THIS_CONSTRUCTOR_P'.
 
 Sat Oct 30 21:35:13 1999  Todd T. Fries <todd@lighthouse.fries.net>
 
