@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-  "-Dlinux -Asystem(linux) -Acpu(s390) -Amachine(s390) -D__s390x__ \
+  "-Dlinux -Asystem(linux) -Acpu(s390) -Amachine(s390) -D__s390__ -D__s390x__ \
    -Asystem(unix) -Dunix -D__ELF__ \
    -D__LONG_MAX__=9223372036854775807L"
 
