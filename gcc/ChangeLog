@@ -1,3 +1,9 @@
+1999-02-08  Nick Clifton  <nickc@cygnus.com>
+
+	* config/v850/v850.md: Enforce TARGET_LONG_CALLS option.
+	* config/v850/v850.c (construct_restore_jr, construct_save_jarl):
+	Enforce TARGET_LONG_CALLS option. 
+
 Mon Feb  8 11:43:07 1999  Donn Terry <donn@interix.com>
 
 	* real.c (PUT_REAL) [XFmode]: Zero the balance of the structure.
