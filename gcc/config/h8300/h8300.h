@@ -850,7 +850,7 @@ struct cum_arg
    && INTVAL (XEXP (XEXP (XEXP (OP, 0), 1), 1)) == - (int) STACK_BOUNDARY / 8 \
    && XEXP (XEXP (OP, 0), 0) == stack_pointer_rtx)
 
- /* 'U' if valid for a bset destination;
+/* 'U' if valid for a bset destination;
    i.e. a register, register indirect, or the eightbit memory region
    (a SYMBOL_REF with an SYMBOL_REF_FLAG set).
 
@@ -1175,15 +1175,15 @@ readonly_data ()							\
    so the call patterns can generate the correct code.  */
 #define ENCODE_SECTION_INFO(DECL)			\
   if (TREE_CODE (DECL) == FUNCTION_DECL			\
-       && h8300_funcvec_function_p (DECL))		\
+      && h8300_funcvec_function_p (DECL))		\
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;	\
   else if ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL))	\
-      && TREE_CODE (DECL) == VAR_DECL			\
-      && h8300_eightbit_data_p (DECL))			\
+	   && TREE_CODE (DECL) == VAR_DECL		\
+	   && h8300_eightbit_data_p (DECL))		\
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;	\
   else if ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL))	\
-      && TREE_CODE (DECL) == VAR_DECL			\
-      && h8300_tiny_data_p (DECL))			\
+	   && TREE_CODE (DECL) == VAR_DECL		\
+	   && h8300_tiny_data_p (DECL))			\
     h8300_encode_label (DECL);
 
 /* Store the user-specified part of SYMBOL_NAME in VAR.
