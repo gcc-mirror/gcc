@@ -1427,10 +1427,11 @@ gen-protos: gen-protos.o scan.o
 	${HOST_CC} -o gen-protos gen-protos.o scan.o
 
 xsys-protos.h: $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
-	cat deduced.h $(srcdir)/sys-protos.h >tmp.c
-	$(GCC_FOR_TARGET) tmp.c -E \
+	cat deduced.h $(srcdir)/sys-protos.h > fixtmp.c
+	$(GCC_FOR_TARGET) fixtmp.c -E \
 	  | sed -e 's/	/ /g' -e 's/ *(/ (/g' -e 's/ [ ]*/ /g' -e 's/( )/()/' \
 	  | ./gen-protos >xsys-protos.h
+	rm -rf fixtmp.c
 
 scan-decls: scan-decls.o scan.o
 	$(HOST_CC) -o scan-decls scan-decls.o scan.o
