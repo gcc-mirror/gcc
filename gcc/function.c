@@ -7025,6 +7025,7 @@ epilogue_done:
       basic_block bb = e->src;
       rtx insn = bb->end;
       rtx i;
+      rtx newinsn;
 
       if (GET_CODE (insn) != CALL_INSN
 	  || ! SIBLING_CALL_P (insn))
@@ -7035,7 +7036,7 @@ epilogue_done:
       end_sequence ();
 
       i = PREV_INSN (insn);
-      emit_insn_before (seq, insn);
+      newinsn = emit_insn_before (seq, insn);
 
       /* Update the UID to basic block map.  */
       for (i = NEXT_INSN (i); i != insn; i = NEXT_INSN (i))
@@ -7043,7 +7044,8 @@ epilogue_done:
 
       /* Retain a map of the epilogue insns.  Used in life analysis to
 	 avoid getting rid of sibcall epilogue insns.  */
-      record_insns (seq, &sibcall_epilogue);
+      record_insns (GET_CODE (seq) == SEQUENCE
+		    ? seq : newinsn, &sibcall_epilogue);
     }
 #endif
 }
