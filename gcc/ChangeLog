@@ -1,3 +1,10 @@
+2004-08-31  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (fcond): New code macro and attribute.
+	(sunordered_[sd]f, suneq_[sd]f, sunlt_[sd]f, sunle_[sd]f)
+	(seq_[sd]f, slt_[sd]f, sle_[sd]f): Redefine using :SCALARF and fcond.
+	(sgt_[sd]f, sge_[sd]f): Redefine using :SCALARF.
+
 2004-08-30  Mark Mitchell  <mark@codesourcery.com>
 
 	Revert:
