@@ -329,8 +329,7 @@
 	javax/swing/ViewportLayout.java,
 	javax/swing/WindowConstants.java: New files, from GNU Classpath.
 	
-	* gnu/awt/xlib/XGraphicsConfiguration.java,
-	gnu/awt/xlib/XToolkit.java, java/awt/ActiveEvent.java,
+	* java/awt/ActiveEvent.java,
 	java/awt/Adjustable.java, java/awt/AWTError.java,
 	java/awt/AWTEvent.java,	java/awt/AWTEventMulticaster.java,
 	java/awt/AWTException.java, java/awt/AWTPermission.java,
@@ -408,6 +407,10 @@
 	* gnu/java/awt/EventModifier.java,
 	gnu/java/awt/image/ImageDecoder.java,
 	gnu/java/awt/image/XBMDecoder.java: New files from GNU Classpath.
+
+	* gnu/awt/xlib/XGraphicsConfiguration.java,
+	gnu/awt/xlib/XToolkit.java: Updated to compile against 1.4 abstract
+	API.
 
 	* Makefile.am: Add new files.
 	* Makefile.in: Rebuilt.
