@@ -20,7 +20,7 @@ int test (void)
 
 int main()
 {
-    if (test ())
+    if (test () != 1)
       abort ();
     
     exit (0);
