@@ -1,3 +1,8 @@
+2003-05-06  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (loc_descriptor_from_tree): Return 0 for 
+	language-specific tree codes.
+
 2003-06-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/9986

@@ -1,3 +1,7 @@
+2003-06-05  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/debug/20030605-1.c: New.
+
 2003-06-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* README.QMTEST: Update.
