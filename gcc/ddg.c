@@ -68,7 +68,7 @@ static bool mem_ref_p;
 static int
 mark_mem_use (rtx *x, void *data ATTRIBUTE_UNUSED)
 {
-  if (GET_CODE (*x) == MEM)
+  if (MEM_P (*x))
     mem_ref_p = true;
   return 0;
 }
@@ -92,7 +92,7 @@ mem_read_insn_p (rtx insn)
 static void
 mark_mem_store (rtx loc, rtx setter ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED)
 {
-  if (GET_CODE (loc) == MEM)
+  if (MEM_P (loc))
     mem_ref_p = true;
 }
 
@@ -116,7 +116,7 @@ rtx_mem_access_p (rtx x)
   if (x == 0)
     return false;
 
-  if (GET_CODE (x) == MEM)
+  if (MEM_P (x))
     return true;
 
   code = GET_CODE (x);
