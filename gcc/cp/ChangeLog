@@ -1,3 +1,8 @@
+Fri Mar 27 20:23:18 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* error.c (dump_decl): Be a bit more explicit with template
+	type arguments, when verbose.
+	
 Fri Mar 27 18:16:40 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* inc/exception: Reorder closing braces.
