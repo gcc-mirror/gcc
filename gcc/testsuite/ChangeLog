@@ -1,3 +1,8 @@
+2002-02-07  Richard Henderson  <rth@redhat.com>
+
+	* g++.old-deja/g++.brendan/new2.C: Arrange for allocated memory
+	to be sufficiently aligned for integers.
+
 2002-02-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/template/friend4.C: New test.

@@ -48,8 +48,8 @@ int main ()
 	return 0;
 }
 
-char allocation_space[1000];
-char* allocation_ptr = allocation_space;
+int allocation_space[100];
+int* allocation_ptr = allocation_space;
 
 void base::operator delete (void* p)
 {
@@ -57,11 +57,11 @@ void base::operator delete (void* p)
 
 void *base::operator new (size_t size)
 {
-	char* return_value = allocation_ptr;
+	int* return_value = allocation_ptr;
 
 	new_call_count++;
 	if (size != expected_size)
 		errors++;
-	allocation_ptr = allocation_ptr + size;
+	allocation_ptr += (size + sizeof(int) - 1) / sizeof(int);
 	return (void*) return_value;
 }
