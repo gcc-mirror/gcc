@@ -1764,10 +1764,10 @@ setup_core_dumping ()
   {
     struct rlimit rlim;
     if (getrlimit (RLIMIT_CORE, &rlim) != 0)
-      fatal_io_error ("getting core file size maximum limit");
+      fatal_error ("getting core file size maximum limit: %m");
     rlim.rlim_cur = rlim.rlim_max;
     if (setrlimit (RLIMIT_CORE, &rlim) != 0)
-      fatal_io_error ("setting core file size limit to maximum");
+      fatal_error ("setting core file size limit to maximum: %m");
   }
 #endif
   diagnostic_abort_on_error (global_dc);
@@ -1913,7 +1913,7 @@ open_dump_file (index, decl)
 
   rtl_dump_file = fopen (dump_name, open_arg);
   if (rtl_dump_file == NULL)
-    fatal_io_error ("can't open %s", dump_name);
+    fatal_error ("can't open %s: %m", dump_name);
 
   free (dump_name);
 
@@ -4878,7 +4878,7 @@ init_asm_output (name)
       else
 	asm_out_file = fopen (asm_file_name, "w+");
       if (asm_out_file == 0)
-	fatal_io_error ("can't open %s for writing", asm_file_name);
+	fatal_error ("can't open %s for writing: %m", asm_file_name);
     }
 
 #ifdef IO_BUFFER_SIZE
@@ -5367,7 +5367,7 @@ process_options ()
     {
       aux_info_file = fopen (aux_info_file_name, "w");
       if (aux_info_file == 0)
-	fatal_io_error ("can't open %s", aux_info_file_name);
+	fatal_error ("can't open %s: %m", aux_info_file_name);
     }
 
   if (! targetm.have_named_sections)
@@ -5519,9 +5519,9 @@ finalize ()
   if (asm_out_file)
     {
       if (ferror (asm_out_file) != 0)
-	fatal_io_error ("error writing to %s", asm_file_name);
+	fatal_error ("error writing to %s: %m", asm_file_name);
       if (fclose (asm_out_file) != 0)
-	fatal_io_error ("error closing %s", asm_file_name);
+	fatal_error ("error closing %s: %m", asm_file_name);
     }
 
   /* Do whatever is necessary to finish printing the graphs.  */

@@ -1,3 +1,9 @@
+2003-05-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* com.c: Replace all calls to fatal_io_error with calls to
+	fatal_error; add ": %m" to the end of all the affected error
+	messages.
+
 2003-05-12  Zack Weinberg  <zack@codesourcery.com>
 
 	* bad.c: Don't call diagnostic_count_diagnostic.

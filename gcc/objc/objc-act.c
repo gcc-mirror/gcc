@@ -449,7 +449,7 @@ objc_init ()
       register char * const dumpname = concat (dump_base_name, ".decl", NULL);
       gen_declaration_file = fopen (dumpname, "w");
       if (gen_declaration_file == 0)
-	fatal_io_error ("can't open %s", dumpname);
+	fatal_error ("can't open %s: %m", dumpname);
       free (dumpname);
     }
 

@@ -1,3 +1,9 @@
+2003-05-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* jcf-parse.c, jcf-write.c, lex.c: Replace all calls to
+	fatal_io_error with calls to fatal_error; add ": %m" to the end of
+	all the affected error messages.
+
 2003-05-13  Richard Henderson  <rth@redhat.com>
 
 	* class.c (layout_class_method): Set DECL_EXTERNAL.

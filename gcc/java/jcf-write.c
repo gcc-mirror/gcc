@@ -3341,7 +3341,7 @@ make_class_file_name (tree clas)
       if (stat (r, &sb) == -1
 	  /* Try to make it.  */
 	  && mkdir (r, 0755) == -1)
-	fatal_io_error ("can't create directory %s", r);
+	fatal_error ("can't create directory %s: %m", r);
 
       *s = sep;
       /* Skip consecutive separators.  */
@@ -3374,14 +3374,14 @@ write_classfile (tree clas)
       temporary_file_name = concat (class_file_name, ".tmp", NULL);
       stream = fopen (temporary_file_name, "wb");
       if (stream == NULL)
-	fatal_io_error ("can't open %s for writing", temporary_file_name);
+	fatal_error ("can't open %s for writing: %m", temporary_file_name);
 
       jcf_dependency_add_target (class_file_name);
       init_jcf_state (state, work);
       chunks = generate_classfile (clas, state);
       write_chunks (stream, chunks);
       if (fclose (stream))
-	fatal_io_error ("error closing %s", temporary_file_name);
+	fatal_error ("error closing %s: %m", temporary_file_name);
 
       /* If a file named by the string pointed to by `new' exists
          prior to the call to the `rename' function, the bahaviour
@@ -3394,7 +3394,7 @@ write_classfile (tree clas)
       if (rename (temporary_file_name, class_file_name) == -1)
 	{
 	  remove (temporary_file_name);
-	  fatal_io_error ("can't create %s", class_file_name);
+	  fatal_error ("can't create %s: %m", class_file_name);
 	}
       free (temporary_file_name);
       free (class_file_name);

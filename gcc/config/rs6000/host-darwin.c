@@ -128,13 +128,13 @@ darwin_rs6000_extra_signals ()
   sigstk.ss_size = SIGSTKSZ;
   sigstk.ss_flags = 0;
   if (sigaltstack (&sigstk, NULL) < 0)
-    fatal_io_error ("While setting up signal stack");
+    fatal_error ("While setting up signal stack: %m");
 
   sigemptyset(&sact.sa_mask);
   sact.sa_flags = SA_ONSTACK | SA_SIGINFO;
   sact.sa_sigaction = segv_handler;
   if (sigaction (SIGSEGV, &sact, 0) < 0) 
-    fatal_io_error ("While setting up signal handler");
+    fatal_error ("While setting up signal handler: %m");
 }
 
 const struct host_hooks host_hooks = HOST_HOOKS_INITIALIZER;

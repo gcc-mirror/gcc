@@ -86,13 +86,13 @@ pch_init ()
   
   f = fopen (pch_file, "w+b");
   if (f == NULL)
-    fatal_io_error ("can't open %s", pch_file);
+    fatal_error ("can't open %s: %m", pch_file);
   pch_outfile = f;
   
   v.debug_info_type = write_symbols;
   if (fwrite (get_ident(), IDENT_LENGTH, 1, f) != 1
       || fwrite (&v, sizeof (v), 1, f) != 1)
-    fatal_io_error ("can't write to %s", pch_file);
+    fatal_error ("can't write to %s: %m", pch_file);
 
   /* We need to be able to re-read the output.  */
   /* The driver always provides a valid -o option.  */
@@ -127,13 +127,13 @@ c_common_write_pch ()
   h.asm_size = asm_file_end - asm_file_startpos;
   
   if (fwrite (&h, sizeof (h), 1, pch_outfile) != 1)
-    fatal_io_error ("can't write %s", pch_file);
+    fatal_error ("can't write %s: %m", pch_file);
   
   buf = xmalloc (16384);
   fflush (asm_out_file);
 
   if (fseek (asm_out_file, asm_file_startpos, SEEK_SET) != 0)
-    fatal_io_error ("can't seek in %s", asm_file_name);
+    fatal_error ("can't seek in %s: %m", asm_file_name);
 
   for (written = asm_file_startpos; written < asm_file_end; )
     {
@@ -141,9 +141,9 @@ c_common_write_pch ()
       if (size > 16384)
 	size = 16384;
       if (fread (buf, size, 1, asm_out_file) != 1)
-	fatal_io_error ("can't read %s", asm_file_name);
+	fatal_error ("can't read %s: %m", asm_file_name);
       if (fwrite (buf, size, 1, pch_outfile) != 1)
-	fatal_io_error ("can't write %s", pch_file);
+	fatal_error ("can't write %s: %m", pch_file);
       written += size;
     }
   free (buf);
@@ -177,10 +177,7 @@ c_common_valid_pch (pfile, name, fd)
 
   sizeread = read (fd, ident, IDENT_LENGTH);
   if (sizeread == -1)
-    {
-      fatal_io_error ("can't read %s", name);
-      return 2;
-    }
+    fatal_error ("can't read %s: %m", name);
   else if (sizeread != IDENT_LENGTH)
     return 2;
   
@@ -206,10 +203,7 @@ c_common_valid_pch (pfile, name, fd)
     }
 
   if (read (fd, &v, sizeof (v)) != sizeof (v))
-    {
-      fatal_io_error ("can't read %s", name);
-      return 2;
-    }
+    fatal_error ("can't read %s: %m", name);
 
   /* The allowable debug info combinations are that either the PCH file
      was built with the same as is being used now, or the PCH file was

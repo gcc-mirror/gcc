@@ -419,7 +419,7 @@ clean_graph_dump_file (base, suffix)
   fp = fopen (buf, "w");
 
   if (fp == NULL)
-    fatal_io_error ("can't open %s", buf);
+    fatal_error ("can't open %s: %m", buf);
 
   switch (graph_dump_format)
     {

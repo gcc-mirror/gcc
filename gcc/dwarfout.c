@@ -6285,7 +6285,7 @@ dwarfout_init (main_input_filename)
 	    char *dirname;
 
 	    if (!pwd)
-	      fatal_io_error ("can't get current directory");
+	      fatal_error ("can't get current directory: %m");
 
 	    dirname = concat (pwd, "/", NULL);
 	    ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, dirname);
