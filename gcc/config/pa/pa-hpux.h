@@ -1,7 +1,15 @@
 #include "pa.h"
 
 /* Make GCC agree with types.h.  */
+#undef SIZE_TYPE
+#undef PTRDIFF_TYPE
+#undef WCHAR_TYPE
+#undef WCHAR_TYPE_SIZE
+
 #define SIZE_TYPE "unsigned int"
+#define PTRDIFF_TYPE "int"
+#define WCHAR_TYPE "unsigned int"
+#define WCHAR_TYPE_SIZE 32
 
 /* HPUX doesn't use any debugging format that GCC knows about.  */
 #undef DBX_DEBUGGING_INFO
