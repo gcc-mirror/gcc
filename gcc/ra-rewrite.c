@@ -31,6 +31,8 @@
 #include "output.h"
 #include "except.h"
 #include "ra.h"
+#include "insn-config.h"
+#include "reload.h"
 
 /* This file is part of the graph coloring register allocator, and
    contains the functions to change the insn stream.  I.e. it adds

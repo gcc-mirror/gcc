@@ -1,3 +1,10 @@
+2002-07-15  Daniel Berlin  <dberlin@dberlin.org>
+
+	* ra-rewrite.c: #include reload.h, insn-config.h
+	* ra-build.c: #include reload.h
+	* Makefile.in: Update ra-rewrite.o, ra-build.o dependencies to
+	depend on reload.h, insn-config.h. 
+
 Tue Jul 16 11:57:45 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* expr.c (emit_move_insn_1): Handle arbitrary moves that are
