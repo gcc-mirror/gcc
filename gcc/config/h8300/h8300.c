@@ -927,7 +927,6 @@ const_costs (r, c)
 
 /* Documentation for the machine specific operand escapes:
 
-   'A' print rn in H8/300 mode, erN in H8/300H mode
    'E' like s but negative.
    'F' like t but negative.
    'G' constant just the negative
@@ -1003,12 +1002,6 @@ print_operand (file, x, code)
 
   switch (code)
     {
-    case 'A':
-      if (GET_CODE (x) == REG)
-	fprintf (file, "%s", h8_reg_names[REGNO (x)]);
-      else
-	goto def;
-      break;
     case 'E':
       switch (GET_CODE (x))
 	{
