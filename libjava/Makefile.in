@@ -280,6 +280,7 @@ convert_source_files = \
 gnu/gcj/convert/BytesToUnicode.java \
 gnu/gcj/convert/Convert.java \
 gnu/gcj/convert/Input_8859_1.java \
+gnu/gcj/convert/Input_ASCII.java \
 gnu/gcj/convert/Input_EUCJIS.java \
 gnu/gcj/convert/Input_JavaSrc.java \
 gnu/gcj/convert/Input_SJIS.java \
@@ -287,6 +288,7 @@ gnu/gcj/convert/Input_UTF8.java	\
 gnu/gcj/convert/Input_iconv.java \
 gnu/gcj/convert/IOConverter.java \
 gnu/gcj/convert/Output_8859_1.java \
+gnu/gcj/convert/Output_ASCII.java \
 gnu/gcj/convert/Output_EUCJIS.java \
 gnu/gcj/convert/Output_JavaSrc.java \
 gnu/gcj/convert/Output_SJIS.java \
@@ -1197,6 +1199,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/convert/BytesToUnicode.P .deps/gnu/gcj/convert/Convert.P \
 .deps/gnu/gcj/convert/IOConverter.P \
 .deps/gnu/gcj/convert/Input_8859_1.P \
+.deps/gnu/gcj/convert/Input_ASCII.P \
 .deps/gnu/gcj/convert/Input_EUCJIS.P \
 .deps/gnu/gcj/convert/Input_JavaSrc.P \
 .deps/gnu/gcj/convert/Input_SJIS.P .deps/gnu/gcj/convert/Input_UTF8.P \
@@ -1204,6 +1207,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/convert/JIS0208_to_Unicode.P \
 .deps/gnu/gcj/convert/JIS0212_to_Unicode.P \
 .deps/gnu/gcj/convert/Output_8859_1.P \
+.deps/gnu/gcj/convert/Output_ASCII.P \
 .deps/gnu/gcj/convert/Output_EUCJIS.P \
 .deps/gnu/gcj/convert/Output_JavaSrc.P \
 .deps/gnu/gcj/convert/Output_SJIS.P .deps/gnu/gcj/convert/Output_UTF8.P \

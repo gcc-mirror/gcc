@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -9,14 +9,13 @@ details.  */
 package gnu.gcj.convert;
 
 /**
- * Convert ISO-Latin-1 (8859-1) text to Unicode.
- * @author Per Bothner <bothner@cygnus.com>
- * @date March 1999.
+ * Convert ASCII text to Unicode.
+ * @date October 2000
  */
 
-public class Input_8859_1 extends BytesToUnicode
+public class Input_ASCII extends BytesToUnicode
 {
-  public String getName() { return "8859_1"; }
+  public String getName() { return "ASCII"; }
 
   public int read (char[] outbuffer, int outpos, int count)
   {
@@ -30,7 +29,7 @@ public class Input_8859_1 extends BytesToUnicode
       outavail = inavail;
     while (--outavail >= 0)
       {
-	outbuffer[outpos++] = (char) (inbuffer[inpos++] & 0xFF);
+	outbuffer[outpos++] = (char) (inbuffer[inpos++] & 0x7f);
       }
     this.inpos = inpos;
     return outpos - origpos;

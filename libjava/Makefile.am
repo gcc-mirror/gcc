@@ -506,6 +506,7 @@ convert_source_files = \
 gnu/gcj/convert/BytesToUnicode.java \
 gnu/gcj/convert/Convert.java \
 gnu/gcj/convert/Input_8859_1.java \
+gnu/gcj/convert/Input_ASCII.java \
 gnu/gcj/convert/Input_EUCJIS.java \
 gnu/gcj/convert/Input_JavaSrc.java \
 gnu/gcj/convert/Input_SJIS.java \
@@ -513,6 +514,7 @@ gnu/gcj/convert/Input_UTF8.java	\
 gnu/gcj/convert/Input_iconv.java \
 gnu/gcj/convert/IOConverter.java \
 gnu/gcj/convert/Output_8859_1.java \
+gnu/gcj/convert/Output_ASCII.java \
 gnu/gcj/convert/Output_EUCJIS.java \
 gnu/gcj/convert/Output_JavaSrc.java \
 gnu/gcj/convert/Output_SJIS.java \
