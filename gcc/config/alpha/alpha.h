@@ -53,7 +53,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    -call_shared as appropriate.  Also pass -pg.  */
 #define LINK_SPEC  \
   "-G 8 %{O*:-O3} %{!O*:-O1} %{!shared:-init __main} %{static:-non_shared} \
-   %{!static:%{shared:-shared} %{!shared:-call_shared}} %{pg}"
+   %{!static:%{shared:-shared} %{!shared:-call_shared}} %{pg} %{taso} \
+   %{rpath*}"
+
+#define WORD_SWITCH_TAKES_ARG(STR)		\
+ (!strcmp (STR, "rpath") || !strcmp (STR, "include")	\
+  || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
+  || !strcmp (STR, "idirafter") || !strcmp (STR, "iprefix") \
+  || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
+  || !strcmp (STR, "isystem"))
 
 #define STARTFILE_SPEC  \
   "%{!shared:%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}"
