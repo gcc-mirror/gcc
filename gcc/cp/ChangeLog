@@ -1,3 +1,8 @@
+1999-12-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (init_decl_processing): #if 0 last patch.
+	(finish_function): Likewise.
+
 1999-12-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (init_decl_processing): Set flag_inline_trees if

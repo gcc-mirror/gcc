@@ -5973,8 +5973,10 @@ init_decl_processing ()
     flag_strict_prototype = pedantic;
   if (! flag_permissive && ! pedantic)
     flag_pedantic_errors = 1;
+#if 0
   if (!flag_no_inline)
     flag_inline_trees = 1;
+#endif
 
   strict_prototypes_lang_c = flag_strict_prototype;
 
@@ -13667,6 +13669,7 @@ finish_function (lineno, flags)
   if (!expanding_p && !processing_template_decl)
     save_function_data (fndecl);
 
+#if 0
   /* If this function calls `setjmp' it cannot be inlined.  When
      `longjmp' is called it is not guaranteed to restore the value of
      local variables that have been modified since the call to
@@ -13678,6 +13681,7 @@ finish_function (lineno, flags)
      function.)  */
   if (!expanding_p && !processing_template_decl && calls_setjmp_p (fndecl))
     DECL_UNINLINABLE (fndecl) = 1;
+#endif
 
   if (expand_p)
     {
