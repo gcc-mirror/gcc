@@ -158,12 +158,12 @@ print_operand (file, x, code)
 		    case DFmode:
 		      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
 		      REAL_VALUE_TO_TARGET_DOUBLE (rv, val);
-		      print_operand_address (file, GEN_INT (val[0]));
+		      fprintf (file, "0x%lx", val[0]);
 		      break;;
 		    case SFmode:
 		      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
 		      REAL_VALUE_TO_TARGET_SINGLE (rv, val[0]);
-		      print_operand_address (file, GEN_INT (val[0]));
+		      fprintf (file, "0x%lx", val[0]);
 		      break;;
 		    case VOIDmode:
 		    case DImode:
@@ -215,7 +215,7 @@ print_operand (file, x, code)
 		    case DFmode:
 		      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
 		      REAL_VALUE_TO_TARGET_DOUBLE (rv, val);
-		      print_operand_address (file, GEN_INT (val[1]));
+		      fprintf (file, "0x%lx", val[1]);
 		      break;;
 		    case SFmode:
 		      abort ();
@@ -296,7 +296,7 @@ print_operand (file, x, code)
 
 	      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
 	      REAL_VALUE_TO_TARGET_SINGLE (rv, val);
-	      print_operand_address (file, GEN_INT (val));
+	      fprintf (file, "0x%lx", val);
 	      break;
 	    }
 

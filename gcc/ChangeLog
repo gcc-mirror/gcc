@@ -1,5 +1,10 @@
 2000-05-11  Alexandre Oliva  <aoliva@cygnus.com>
 
+	* config/mn10300/mn10300.c (print_operand): Print FP constants in
+	hexadecimal.
+	* config/mn10300/mn10300.md (movsf, movdf): Use the `F' constraint
+	for FP values.
+
 	* mklibgcc.in (EQ): Define it to an equal sign in the Makefile,
 	and replace any occurrences of `=' in multilib dirs with `$(EQ)'.
 
