@@ -1,3 +1,10 @@
+2003-01-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/13797
+	* pt.c (instantiate_class_template): Add an error_mark_node
+	check.
+	(tsubst_decl) <TEMPLATE_DECL case>: Likewise.
+
 2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* call.c: Update copyright.
