@@ -1,3 +1,9 @@
+2001-08-06  David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	* g77.f-torture/execute/f90-intrinsic-bit.x: XFAIL on irix6.* and
+	solaris2.*
+	* g77.f-torture/compile/pr3743.x: Likewise
+
 2001-08-05  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* g++.dg/other/using-declaration.C: New test.
