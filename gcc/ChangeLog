@@ -1,3 +1,7 @@
+2001-04-09  Bo Thorsen  <bo@suse.co.uk>
+
+	* config/i386/i386.md: "TARGET_64BIT && TARGET_64BIT": Removed one.
+
 2001-04-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* output.h (set_block_num): Missed it earlier, remove deprecated 
