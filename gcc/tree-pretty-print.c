@@ -217,6 +217,35 @@ dump_function_declaration (pretty_printer *buffer, tree node,
   pp_character (buffer, ')');
 }
 
+/* Dump the domain associated with an array.  */
+
+static void
+dump_array_domain (pretty_printer *buffer, tree domain, int spc, int flags)
+{
+  pp_character (buffer, '[');
+  if (domain)
+    {
+      tree min = TYPE_MIN_VALUE (domain);
+      tree max = TYPE_MAX_VALUE (domain);
+
+      if (min && max
+	  && integer_zerop (min)
+	  && host_integerp (max, 0))
+	pp_wide_integer (buffer, TREE_INT_CST_LOW (max) + 1);
+      else
+	{
+	  if (min)
+	    dump_generic_node (buffer, min, spc, flags, false);
+	  pp_character (buffer, ':');
+	  if (max)
+	    dump_generic_node (buffer, max, spc, flags, false);
+	}
+    }
+  else
+    pp_string (buffer, "<unknown>");
+  pp_character (buffer, ']');
+}
+
 /* Dump the node NODE on the pretty_printer BUFFER, SPC spaces of indent.
    FLAGS specifies details to show in the dump (see TDF_* in tree.h).  If
    IS_STMT is true, the object printed is considered to be a statement
@@ -427,31 +456,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	dump_generic_node (buffer, tmp, spc, flags, false);
 
 	/* Print the dimensions.  */
-	for (tmp = node; TREE_CODE (tmp) == ARRAY_TYPE;
-	     tmp = TREE_TYPE (tmp))
-	  {
-	    tree domain = TYPE_DOMAIN (tmp);
-
-	    pp_character (buffer, '[');
-	    if (domain)
-	      {
-		if (TYPE_MIN_VALUE (domain)
-		    && !integer_zerop (TYPE_MIN_VALUE (domain)))
-		  {
-		    dump_generic_node (buffer, TYPE_MIN_VALUE (domain),
-				       spc, flags, false);
-		    pp_string (buffer, " .. ");
-		  }
-
-		if (TYPE_MAX_VALUE (domain))
-		  dump_generic_node (buffer, TYPE_MAX_VALUE (domain),
-				     spc, flags, false);
-	      }
-	    else
-	      pp_string (buffer, "<unknown>");
-
-	    pp_character (buffer, ']');
-	  }
+	for (tmp = node; TREE_CODE (tmp) == ARRAY_TYPE; tmp = TREE_TYPE (tmp))
+	  dump_array_domain (buffer, TYPE_DOMAIN (tmp), spc, flags);
 	break;
       }
 
@@ -1515,23 +1521,7 @@ print_declaration (pretty_printer *buffer, tree t, int spc, int flags)
       tmp = TREE_TYPE (t);
       while (TREE_CODE (tmp) == ARRAY_TYPE)
 	{
-	  pp_character (buffer, '[');
-	  if (TYPE_DOMAIN (tmp))
-	    {
-	      if (TYPE_MIN_VALUE (TYPE_DOMAIN (tmp))
-		  && !integer_zerop (TYPE_MIN_VALUE (TYPE_DOMAIN (tmp))))
-		{
-		  dump_generic_node (buffer,
-				     TYPE_MIN_VALUE (TYPE_DOMAIN (tmp)),
-				     spc, flags, false);
-		  pp_string (buffer, " .. ");
-		}
-
-	      if (TYPE_MAX_VALUE (TYPE_DOMAIN (tmp)))
-		dump_generic_node (buffer, TYPE_MAX_VALUE (TYPE_DOMAIN (tmp)),
-				   spc, flags, false);
-	    }
-	  pp_character (buffer, ']');
+	  dump_array_domain (buffer, TYPE_DOMAIN (tmp), spc, flags);
 	  tmp = TREE_TYPE (tmp);
 	}
     }
