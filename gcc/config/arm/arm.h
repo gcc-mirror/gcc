@@ -1133,15 +1133,42 @@ do {									\
 #define FUNCTION_PROLOGUE(STREAM, SIZE)  \
   output_func_prologue ((STREAM), (SIZE))
 
-/* Call the function profiler with a given profile label.  The Acorn compiler
-   puts this BEFORE the prolog but gcc puts it afterwards.  The ``mov ip,lr''
-   seems like a good idea to stick with cc convention.  ``prof'' doesn't seem
-   to mind about this!  */
+/* If your target environment doesn't prefix user functions with an
+   underscore, you may wish to re-define this to prevent any conflicts.
+   e.g. AOF may prefix mcount with an underscore.  */
+#ifndef ARM_MCOUNT_NAME
+#define ARM_MCOUNT_NAME "*mcount"
+#endif
+
+/* Call the function profiler with a given profile label.  The Acorn
+   compiler puts this BEFORE the prolog but gcc puts it afterwards.
+   On the ARM the full profile code will look like:
+	.data
+	LP1
+		.word	0
+	.text
+		mov	ip, lr
+		bl	mcount
+		.word	LP1
+
+   profile_function() in final.c outputs the .data section, FUNCTION_PROFILER
+   will output the .text section.
+
+   The ``mov ip,lr'' seems like a good idea to stick with cc convention.
+   ``prof'' doesn't seem to mind about this!  */
 #define FUNCTION_PROFILER(STREAM,LABELNO)  				    \
 {									    \
-    fprintf(STREAM, "\tmov\t%sip, %slr\n", REGISTER_PREFIX, REGISTER_PREFIX); \
-    fprintf(STREAM, "\tbl\tmcount\n");					    \
-    fprintf(STREAM, "\t.word\tLP%d\n", (LABELNO));			    \
+  char temp[20];							    \
+  rtx sym;								    \
+									    \
+  fprintf ((STREAM), "\tmov\t%s%s, %s%s\n\tbl\t",			    \
+	   REGISTER_PREFIX, reg_names[12] /* ip */,			    \
+	   REGISTER_PREFIX, reg_names[14] /* lr */);			    \
+  assemble_name ((STREAM), ARM_MCOUNT_NAME);				    \
+  fputc ('\n', (STREAM));						    \
+  ASM_GENERATE_INTERNAL_LABEL (temp, "LP", (LABELNO));			    \
+  sym = gen_rtx (SYMBOL_REF, Pmode, temp);				    \
+  ASM_OUTPUT_INT ((STREAM), sym);					    \
 }
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
@@ -1243,12 +1270,14 @@ do {									\
    ??? FIXME: When the trampoline returns, r8 will be clobbered.  */
 #define TRAMPOLINE_TEMPLATE(FILE)				\
 {								\
-  fprintf ((FILE), "\tldr\t%sr8, [%spc, #0]\n",			\
-	   REGISTER_PREFIX, REGISTER_PREFIX);			\
-  fprintf ((FILE), "\tldr\t%spc, [%spc, #0]\n",			\
-	   REGISTER_PREFIX, REGISTER_PREFIX);			\
-  fprintf ((FILE), "\t.word\t0\n");				\
-  fprintf ((FILE), "\t.word\t0\n");				\
+  fprintf ((FILE), "\tldr\t%s%s, [%s%s, #0]\n",			\
+	   REGISTER_PREFIX, reg_names[STATIC_CHAIN_REGNUM],	\
+	   REGISTER_PREFIX, reg_names[PC_REGNUM]);		\
+  fprintf ((FILE), "\tldr\t%s%s, [%s%s, #0]\n",			\
+	   REGISTER_PREFIX, reg_names[PC_REGNUM],		\
+	   REGISTER_PREFIX, reg_names[PC_REGNUM]);		\
+  ASM_OUTPUT_INT ((FILE), const0_rtx);				\
+  ASM_OUTPUT_INT ((FILE), const0_rtx);				\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
