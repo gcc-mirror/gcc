@@ -1673,6 +1673,7 @@ fini_section ()							\
     if (TARGET_C30) dspversion = 30;				\
     if (TARGET_C31) dspversion = 31;				\
     if (TARGET_C32) dspversion = 32;				\
+    if (TARGET_C33) dspversion = 33;                            \
     if (TARGET_C40) dspversion = 40;				\
     if (TARGET_C44) dspversion = 44;				\
     fprintf (FILE, "\t.version\t%d\n", dspversion);		\

@@ -1,3 +1,8 @@
+2003-02-24  Svein E. Seldal  <Svein.Seldal@solidas.com>
+
+	* config/c4x/c4x.h (ASM_FILE_START): Added support for the c33
+	processor.
+
 2003-02-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/iris6.h (TARGET_OS_CPP_BUILTINS): Define __c99 for
