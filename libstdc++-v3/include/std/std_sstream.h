@@ -208,12 +208,12 @@ namespace std
       virtual __streambuf_type*
       setbuf(char_type* __s, streamsize __n)
       {
-	if (__s && __n)
+	if (__s && __n >= 0)
 	  {
 	    // This is implementation-defined behavior, and assumes
-	    // that an external char_type array of length (__s + __n)
-	    // exists and has been pre-allocated. If this is not the
-	    // case, things will quickly blow up.
+	    // that an external char_type array of length __n exists
+	    // and has been pre-allocated. If this is not the case,
+	    // things will quickly blow up.
 	    
 	    // Step 1: Destroy the current internal array.
 	    _M_string = __string_type(__s, __n);

@@ -1,4 +1,10 @@
 2003-06-18  Paolo Carlini  <pcarlini@unitus.it>
+            Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/std_sstream.h (setbuf): Check __n >= 0.
+	* include/bits/fstream.tcc (setbuf): Tweak.
+
+2003-06-18  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/sstream.tcc (seekoff): We can't seek beyond
 	_M_out_lim, therefore _M_move_out_cur boils down to simply
