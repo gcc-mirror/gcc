@@ -1,3 +1,8 @@
+1998-11-30  Nick Clifton  <nickc@cygnus.com>
+
+	* execute/981130-1.c: New test.
+	* execute/981130-1.x: New test failure expectations.
+
 Sun Oct 11 05:04:28 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* execute/memcheck: New directory of tests for
