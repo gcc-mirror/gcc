@@ -1,3 +1,8 @@
+2004-09-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (x86_branch_hints): Remove m_PENT4 and
+	m_NOCONA.
+
 2004-09-03  Richard Henderson  <rth@redhat.com>
 
         PR middle-end/9997
