@@ -1291,8 +1291,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define POINTER_SIZE ((TARGET_LONG64 && TARGET_64BIT) ? 64 : 32)
 #endif
 
-#define POINTERS_EXTEND_UNSIGNED 0
-
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY ((mips_abi == ABI_O64 \
 			|| TARGET_NEWABI \

@@ -1,3 +1,7 @@
+2004-09-15  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (POINTERS_EXTEND_UNSIGNED): Delete.
+
 2004-09-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Properly format warning.
