@@ -634,12 +634,12 @@ read_scan_file (char *in_fname, int argc, char **argv)
 	      if (argv[i][2] != '\0')
 		{
 		  strings_processed = 1;
-		  add_path (xstrdup (argv[i] + 2), BRACKET, false);
+		  add_path (xstrdup (argv[i] + 2), BRACKET, false, false);
 		}
 	      else if (i + 1 != argc)
 		{
 		  strings_processed = 2;
-		  add_path (xstrdup (argv[i + 1]), BRACKET, false);
+		  add_path (xstrdup (argv[i + 1]), BRACKET, false, false);
 		}
 	    }
 	  else if (argv[i][1] == 'D')
@@ -1317,7 +1317,7 @@ static void
 fatal (const char *str, ...)
 {
   va_list ap;
-  
+
   va_start (ap, str);
   v_fatal (str, ap);
   va_end (ap);
