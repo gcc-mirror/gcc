@@ -4820,7 +4820,7 @@ check-bison:
 	  $(SET_LIB_PATH) \
 	  $(HOST_EXPORTS) \
 	  (cd $(HOST_SUBDIR)/bison && \
-	    $(MAKE) $(FLAGS_TO_PASS)  check)
+	    $(MAKE) $(FLAGS_TO_PASS)  check); \
 	fi
 
 @endif bison
@@ -5151,7 +5151,7 @@ check-byacc:
 	  $(SET_LIB_PATH) \
 	  $(HOST_EXPORTS) \
 	  (cd $(HOST_SUBDIR)/byacc && \
-	    $(MAKE) $(FLAGS_TO_PASS)  check)
+	    $(MAKE) $(FLAGS_TO_PASS)  check); \
 	fi
 
 @endif byacc
@@ -7116,7 +7116,7 @@ check-fastjar:
 	  $(SET_LIB_PATH) \
 	  $(HOST_EXPORTS) \
 	  (cd $(HOST_SUBDIR)/fastjar && \
-	    $(MAKE) $(FLAGS_TO_PASS)  check)
+	    $(MAKE) $(FLAGS_TO_PASS)  check); \
 	fi
 
 @endif fastjar
@@ -8678,7 +8678,7 @@ check-flex:
 	  $(SET_LIB_PATH) \
 	  $(HOST_EXPORTS) \
 	  (cd $(HOST_SUBDIR)/flex && \
-	    $(MAKE) $(FLAGS_TO_PASS)  check)
+	    $(MAKE) $(FLAGS_TO_PASS)  check); \
 	fi
 
 @endif flex
@@ -21446,7 +21446,7 @@ check-zip:
 	  $(SET_LIB_PATH) \
 	  $(HOST_EXPORTS) \
 	  (cd $(HOST_SUBDIR)/zip && \
-	    $(MAKE) $(FLAGS_TO_PASS)  check)
+	    $(MAKE) $(FLAGS_TO_PASS)  check); \
 	fi
 
 @endif zip
