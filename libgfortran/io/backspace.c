@@ -149,7 +149,7 @@ st_backspace (void)
       if (file_position (u->s) == 0)
 	goto done;		/* Common special case */
 
-      if (u->flags.form == FORM_UNFORMATTED)
+      if (u->flags.form == FORM_FORMATTED)
 	formatted_backspace ();
       else
 	unformatted_backspace ();
