@@ -1,3 +1,9 @@
+2004-11-29  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/18479
+	* c-common.c (handle_visibility_attribute): When the type decl
+	is really a identifier node, warn about being ignored and return.
+
 2004-11-29  Richard Henderson  <rth@redhat.com>
 
 	* tree-cfg.c (tree_node_can_be_shared): Fix typo'd error_mark_node.
