@@ -1,3 +1,7 @@
+1999-11-11  Bruce Korb  <autogen@linuxbox.com>
+
+	* fixinc/fixincl.c: Added verbose levels for status messages
+
 Thu Nov 11 13:23:04 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* jump.c (jump_optimize_1): Avoid passing an rtx that is not an
