@@ -1,3 +1,11 @@
+2002-12-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (output_logical_op): Use extu.w in more
+	cases.
+	(compute_logical_op_length): Update to reflect the change in
+	output_logical_op.
+	(compute_logical_op_cc): Likewise.
+
 2002-12-30  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/service.texi: Uncomment and update FAQ link.
