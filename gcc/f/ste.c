@@ -1,5 +1,5 @@
 /* ste.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -2725,7 +2725,15 @@ ffeste_R810 (ffestw block, unsigned long casenum)
 	  }
 	else
 	  pushok = pushcase (texprlow, convert, tlabel, &duplicate);
-	assert (pushok == 0);
+	assert((pushok !=2) || (pushok !=0));
+	if (pushok==2)
+	  {
+	    ffebad_start_msg ("SELECT (at %0) has duplicate cases -- check integer overflow of CASE(s)",
+	      FFEBAD_severityFATAL);
+	    ffebad_here (0, ffestw_line (block), ffestw_col (block));
+	    ffebad_finish ();
+	    ffestw_set_select_texpr (block, error_mark_node);
+	  }
 	c = c->next_stmt;
 	/* Unlink prev.  */
 	c->previous_stmt->previous_stmt->next_stmt = c;

@@ -1,3 +1,10 @@
+2003-01-03  Bud Davis <bdavis11@directvinternet.com>
+
+	* stc.c (ffestc_R810): Allow any kind integer in
+	case statements.
+	* ste.c (ffeste_R810): Give error message when
+	case selector exceeds its valid values.
+
 2003-01-01  Andreas Jaeger  <aj@suse.de>
 
 	* f/Make-lang.in ($(srcdir)/f/BUGS): Add include path for
