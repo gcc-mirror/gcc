@@ -772,20 +772,6 @@ extern int avr_case_values_threshold;
 
 #define NO_DOLLAR_IN_LABEL 1
 
-#define GIV_SORT_CRITERION(X, Y)	\
-  if (GET_CODE ((X)->add_val) == CONST_INT		\
-      && GET_CODE ((Y)->add_val) == CONST_INT)		\
-    return INTVAL ((X)->add_val) - INTVAL ((Y)->add_val);
-
-/* `GIV_SORT_CRITERION(GIV1, GIV2)'
-   In some cases, the strength reduction optimization pass can
-   produce better code if this is defined.  This macro controls the
-   order that induction variables are combined.  This macro is
-   particularly useful if the target has limited addressing modes.
-   For instance, the SH target has only positive offsets in
-   addresses.  Thus sorting to put the smallest address first allows
-   the most combinations to be found.  */
-
 #define TRAMPOLINE_TEMPLATE(FILE) \
   internal_error ("trampolines not supported")
 
