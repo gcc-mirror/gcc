@@ -1,3 +1,13 @@
+Thu Aug 20 16:39:09 1998  Per Bothner  <bothner@cygnus.com>
+
+	Handle new'ing of Java classes.
+	* init.c (build_class_classref):  New function.
+	(build_new_1):  If type is TYPE_FOR_JAVA:  Call _Jv_AllocObject;
+	constructor does not return this;  don't need to exception-protect.
+
+	* pt.c (lookup_template_class):  Copy TYPE_FOR_JAVA flag.
+	* decl2.c (acceptable_java_type):  Handle template-derived types.
+
 1998-08-20  Per Bothner  <bothner@cygnus.com>
 
 	* decl2.c (import_export_vtable):  Suppress vtables for Java classes.
