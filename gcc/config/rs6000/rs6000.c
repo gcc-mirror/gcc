@@ -3508,7 +3508,11 @@ first_reg_to_save ()
 
   /* Find lowest numbered live register.  */
   for (first_reg = 13; first_reg <= 31; first_reg++)
-    if (regs_ever_live[first_reg] && ! call_used_regs[first_reg])
+    if (regs_ever_live[first_reg] 
+	&& (! call_used_regs[first_reg]
+	    || (first_reg == PIC_OFFSET_TABLE_REGNUM
+		&& (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+		&& flag_pic == 1)))
       break;
 
   if (profile_flag)
