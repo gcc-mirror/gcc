@@ -1,3 +1,7 @@
+2000-05-19  Andreas Jaeger  <aj@suse.de>
+
+	* lib/c-torture.exp: Also test with -O3 -fssa.
+
 2000-05-18  Michael Meissner  <meissner@redhat.com>
 
 	* gcc.c-torture/compile/920501-1.c: Remove CYGNUS LOCAL markers.

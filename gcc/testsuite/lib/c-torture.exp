@@ -1,15 +1,15 @@
-# Copyright (C) 1992-1998, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1992-1998, 1999, 2000 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
@@ -40,6 +40,7 @@ if ![info exists TORTURE_OPTIONS] {
 	{ -O3 -fomit-frame-pointer -funroll-loops } \
 	{ -O3 -fomit-frame-pointer -funroll-all-loops -finline-functions } \
 	{ -O3 -g } \
+	{ -O3 -fssa } \
 	{ -Os } ]
 }
 
@@ -98,7 +99,7 @@ proc c-torture-compile { src option } {
 # to more than 14 chars.
 #
 proc c-torture-execute { src args } {
-    global tmpdir tool srcdir output 
+    global tmpdir tool srcdir output
 
     if { [llength $args] > 0 } {
 	set additional_flags [lindex $args 0];
@@ -114,7 +115,7 @@ proc c-torture-execute { src args } {
 	    return
 	}
     }
-   
+
     # Look for a loop within the source code - if we don't find one,
     # don't pass -funroll[-all]-loops.
     global torture_with_loops torture_without_loops
@@ -149,13 +150,13 @@ proc c-torture-execute { src args } {
 	if [info exists torture_compile_xfail] {
 	    setup_xfail $torture_compile_xfail
 	}
-	
+
 	# torture_execute_before_{compile,execute} can be set by the .x script
 	# (if present)
 	if [info exists torture_eval_before_compile] {
             set ignore_me [eval $torture_eval_before_compile]
 	}
-	
+
 	remote_file build delete $execname;
 	verbose "Testing $testcase, $option" 1
 
@@ -188,7 +189,7 @@ proc c-torture-execute { src args } {
 	if [info exists torture_eval_before_execute] {
             set ignore_me [eval $torture_eval_before_execute]
 	}
-	
+
 
 	# Sometimes we end up creating identical executables for two
 	# consecutive sets of different of compiler options.
@@ -277,7 +278,7 @@ proc c-torture { args } {
 	    return
 	}
     }
-   
+
     # Look for a loop within the source code - if we don't find one,
     # don't pass -funroll[-all]-loops.
     global torture_with_loops torture_without_loops
@@ -298,7 +299,7 @@ proc c-torture { args } {
 	if [info exists torture_eval_before_compile] {
             set ignore_me [eval $torture_eval_before_compile]
 	}
-	
+
 	c-torture-compile $src "$option $options"
     }
 }
