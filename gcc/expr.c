@@ -4602,7 +4602,9 @@ expand_expr (exp, target, tmode, modifier)
       if (RTL_EXPR_RTL (exp) == 0)
 	{
 	  RTL_EXPR_RTL (exp)
-	    = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
+	    = expand_expr (TREE_OPERAND (exp, 0),
+			   target ? target : const0_rtx,
+			   tmode, modifier);
 	  cleanups_this_call
 	    = tree_cons (NULL_TREE, TREE_OPERAND (exp, 2), cleanups_this_call);
 	  /* That's it for this cleanup.  */
@@ -5611,29 +5613,23 @@ expand_expr (exp, target, tmode, modifier)
 		DECL_RTL (slot) = target;
 	      }
 
-#if 0
-	    /* I bet this needs to be done, and I bet that it needs to
-	       be above, inside the else clause.  The reason is
-	       simple, how else is it going to get cleaned up? (mrs)
+	    /* We set IGNORE when we know that we're already
+	       doing this for a cleanup.  */
+	    if (ignore == 0)
+	      {
+		/* Since SLOT is not known to the called function
+		   to belong to its stack frame, we must build an explicit
+		   cleanup.  This case occurs when we must build up a reference
+		   to pass the reference as an argument.  In this case,
+		   it is very likely that such a reference need not be
+		   built here.  */
 
-	       The reason is probably did not work before, and was
-	       commented out is because this was re-expanding already
-	       expanded target_exprs (target == 0 and DECL_RTL (slot)
-	       != 0) also cleaning them up many times as well.  :-( */
-
-	    /* Since SLOT is not known to the called function
-	       to belong to its stack frame, we must build an explicit
-	       cleanup.  This case occurs when we must build up a reference
-	       to pass the reference as an argument.  In this case,
-	       it is very likely that such a reference need not be
-	       built here.  */
-
-	    if (TREE_OPERAND (exp, 2) == 0)
-	      TREE_OPERAND (exp, 2) = maybe_build_cleanup (slot);
-	    if (TREE_OPERAND (exp, 2))
-	      cleanups_this_call = tree_cons (NULL_TREE, TREE_OPERAND (exp, 2),
-					      cleanups_this_call);
-#endif
+		if (TREE_OPERAND (exp, 2) == 0)
+		  TREE_OPERAND (exp, 2) = maybe_build_cleanup (slot);
+		if (TREE_OPERAND (exp, 2))
+		  cleanups_this_call = tree_cons (NULL_TREE, TREE_OPERAND (exp, 2),
+						  cleanups_this_call);
+	      }
 	  }
 	else
 	  {
@@ -5771,7 +5767,10 @@ expand_expr (exp, target, tmode, modifier)
 	}
       else
 	{
-	  op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode,
+	  /* We make sure to pass const0_rtx down if we came in with
+	     ignore set, to avoid doing the cleanups twice for something.  */
+	  op0 = expand_expr (TREE_OPERAND (exp, 0),
+			     ignore ? const0_rtx : NULL_RTX, VOIDmode,
 			     (modifier == EXPAND_INITIALIZER
 			      ? modifier : EXPAND_CONST_ADDRESS));
 
