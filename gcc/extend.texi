@@ -366,7 +366,8 @@ does not refer to anything that has gone out of scope, you should be
 safe.
 
 GNU CC implements taking the address of a nested function using a
-technique called @dfn{trampolines}.
+technique called @dfn{trampolines}.   A paper describing them is
+available as @samp{http://master.debian.org/~karlheg/Usenix88-lexic.pdf}.
 
 A nested function can jump to a label inherited from a containing
 function, provided the label was explicitly declared in the containing
