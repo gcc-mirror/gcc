@@ -1,3 +1,11 @@
+Tue Apr 27 15:33:42 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.h (read_only_data_section, private_data_section,
+	read_only_private_data_section, toc_section): Align CSECT on
+	doubleword boundary for 64-bit target.
+	(DATA_SECTION_ASM_OP): Likewise.
+	* rs6000.c (rs6000_stack_info): Leaf procedure stack limit is 288.
+
 Tue Apr 27 20:19:47 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (insv): Use copy_addr_to_reg.

@@ -2551,8 +2551,9 @@ read_only_data_section ()				\
 {							\
   if (in_section != read_only_data)			\
     {							\
-      fprintf (asm_out_file, ".csect %s[RO]\n",		\
-	       xcoff_read_only_section_name);		\
+      fprintf (asm_out_file, ".csect %s[RO]%s\n",	\
+	       xcoff_read_only_section_name,		\
+	       (TARGET_32BIT ? "" : ",3"));		\
       in_section = read_only_data;			\
     }							\
 }							\
@@ -2562,9 +2563,9 @@ private_data_section ()					\
 {							\
   if (in_section != private_data)			\
     {							\
-      fprintf (asm_out_file, ".csect %s[RW]\n",		\
-	       xcoff_private_data_section_name);	\
-							\
+      fprintf (asm_out_file, ".csect %s[RW]%s\n",	\
+	       xcoff_private_data_section_name,		\
+	       (TARGET_32BIT ? "" : ",3"));		\
       in_section = private_data;			\
     }							\
 }							\
@@ -2574,8 +2575,9 @@ read_only_private_data_section ()			\
 {							\
   if (in_section != read_only_private_data)		\
     {							\
-      fprintf (asm_out_file, ".csect %s[RO]\n",		\
-	       xcoff_private_data_section_name);	\
+      fprintf (asm_out_file, ".csect %s[RO]%s\n",	\
+	       xcoff_private_data_section_name,		\
+	       (TARGET_32BIT ? "" : ",3"));		\
       in_section = read_only_private_data;		\
     }							\
 }							\
@@ -2596,7 +2598,8 @@ toc_section ()						\
 	}						\
 							\
       if (in_section != toc)				\
-	fputs (".csect toc_table[RW]\n", asm_out_file); \
+	fprintf (asm_out_file, ".csect toc_table[RW]%s\n",	\
+		 (TARGET_32BIT ? "" : ",3"));		\
     }							\
   else							\
     {							\
@@ -2809,7 +2812,8 @@ extern int toc_initialized;
 
 /* Output before writable data.  */
 
-#define DATA_SECTION_ASM_OP ".csect .data[RW]"
+#define DATA_SECTION_ASM_OP (TARGET_32BIT \
+			     ? ".csect .data[RW]" : ".csect .data[RW],3")
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */

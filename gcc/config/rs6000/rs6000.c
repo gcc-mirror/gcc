@@ -308,7 +308,7 @@ rs6000_override_options (default_cpu)
      little endian mode, and causes an alignment trap.  The 750 does not cause
      an alignment trap (except when the target is unaligned).  */
 
-  if (!BYTES_BIG_ENDIAN && rs6000_cpu != PROCESSOR_PPC750)
+  if (! BYTES_BIG_ENDIAN && rs6000_cpu != PROCESSOR_PPC750)
     {
       if (TARGET_MULTIPLE)
 	{
@@ -335,11 +335,11 @@ rs6000_override_options (default_cpu)
   /* Set debug flags */
   if (rs6000_debug_name)
     {
-      if (!strcmp (rs6000_debug_name, "all"))
+      if (! strcmp (rs6000_debug_name, "all"))
 	rs6000_debug_stack = rs6000_debug_arg = 1;
-      else if (!strcmp (rs6000_debug_name, "stack"))
+      else if (! strcmp (rs6000_debug_name, "stack"))
 	rs6000_debug_stack = 1;
-      else if (!strcmp (rs6000_debug_name, "arg"))
+      else if (! strcmp (rs6000_debug_name, "arg"))
 	rs6000_debug_arg = 1;
       else
 	error ("Unknown -mdebug-%s switch", rs6000_debug_name);
@@ -349,7 +349,8 @@ rs6000_override_options (default_cpu)
   /* If the user desires alternate register names, copy in the alternate names
      now.  */
   if (TARGET_REGNAMES)
-    bcopy ((char *)alt_reg_names, (char *)rs6000_reg_names, sizeof (rs6000_reg_names));
+    bcopy ((char *)alt_reg_names, (char *)rs6000_reg_names,
+	   sizeof (rs6000_reg_names));
 #endif
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
@@ -3607,7 +3608,7 @@ rs6000_stack_info ()
      the stack might be dynamically adjusted), if we are debugging, if we
      make calls, or if the sum of fp_save, gp_save, fpmem, and local variables
      are more than the space needed to save all non-volatile registers:
-     32-bit: 18*8 + 19*4 = 220 or 64-bit: 18*8 + 19*8 = 296
+     32-bit: 18*8 + 19*4 = 220 or 64-bit: 18*8 + 18*8 = 288 (GPR13 reserved).
 
      For V.4 we don't have the stack cushion that AIX uses, but assume that
      the debugger can handle stackless frames.  */
@@ -3624,7 +3625,7 @@ rs6000_stack_info ()
     info_ptr->push_p = (frame_pointer_needed
 			|| write_symbols != NO_DEBUG
 			|| ((total_raw_size - info_ptr->fixed_size)
-			    > (TARGET_32BIT ? 220 : 296)));
+			    > (TARGET_32BIT ? 220 : 288)));
 
   if (info_ptr->fpmem_p)
     {
