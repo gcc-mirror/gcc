@@ -1,3 +1,18 @@
+2000-07-08  Neil Booth  <NeilB@earthling.net>
+
+	* cpphash.c (is__va_args__): New function.
+	(count_params): Fix line reported in error messages.  Use
+	is__va_args__.  Don't return ')' on error.  Flag GNU style
+	rest args macro definitions.
+	(parse_define): Check macro name is not __VA_ARGS__.
+	(save_expansion): Check identifier in non-varargs-macro is
+	not __VA_ARGS__.  Don't flag GNU_VARARGS.
+	* cpplex.c (parse_args): Accept no argument iff GNU_REST_ARGS.
+	(maybe_paste_with_next): Use per-macro GNU_REST_ARGS rather
+	 than per-token GNU_VARARGS.
+	* cpplib.h (GNU_VARARGS): Remove.
+	(GNU_REST_ARGS): New.
+
 Sat Jul  8 01:38:25 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (call_pop, call, call_value_pop): Do not set

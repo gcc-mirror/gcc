@@ -52,6 +52,7 @@ static void dump_funlike_macro	PARAMS ((cpp_reader *, cpp_hashnode *));
 static const cpp_token *count_params PARAMS ((cpp_reader *,
 					      const cpp_token *,
 					      cpp_toklist *));
+static int is__va_args__ PARAMS ((cpp_reader *, const cpp_token *));
 static cpp_toklist *parse_define PARAMS((cpp_reader *));
 static int check_macro_redefinition PARAMS((cpp_reader *, cpp_hashnode *hp,
 					     const cpp_toklist *));
@@ -197,6 +198,26 @@ find_param (first, token)
   return 0;
 }
 
+/* Constraint 6.10.3.5: __VA_ARGS__ should only appear in the
+   replacement list of a variable-arguments macro.  TOKEN is assumed
+   to be of type CPP_NAME.  */
+static int
+is__va_args__ (pfile, token)
+     cpp_reader *pfile;
+     const cpp_token *token;
+{
+  if (!CPP_OPTION (pfile, pedantic)
+      || token->val.name.len != sizeof (var_args_str) - 1
+      || ustrncmp (token->val.name.text, var_args_str,
+		   sizeof (var_args_str) - 1))
+    return 0;
+
+  cpp_pedwarn_with_line (pfile, token->line, token->col,
+       "\"%s\" is only valid in the replacement list of a function-like macro",
+		       var_args_str);
+  return 1;
+}
+
 /* Counts the parameters to a function like macro, and saves their
    spellings if necessary.  Returns the token that we stopped scanning
    at; if it's type isn't CPP_CLOSE_PAREN there was an error, which
@@ -208,7 +229,6 @@ count_params (pfile, first, list)
      cpp_toklist *list;
 {
   unsigned int params_len = 0, prev_ident = 0;
-  unsigned int line = pfile->token_list.line;
   const cpp_token *token, *temp;
 
   list->paramc = 0;
@@ -217,7 +237,8 @@ count_params (pfile, first, list)
       switch (token->type)
 	{
 	case CPP_EOF:
-	  cpp_error_with_line (pfile, line, token->col,
+	missing_paren:
+	  cpp_error_with_line (pfile, token->line, token->col,
 			       "missing ')' in macro parameter list");
 	  goto out;
 
@@ -227,21 +248,14 @@ count_params (pfile, first, list)
 	case CPP_NAME:
 	  if (prev_ident)
 	    {
-	      cpp_error_with_line (pfile, line, token->col,
+	      cpp_error_with_line (pfile, token->line, token->col,
 			   "macro parameters must be comma-separated");
 	      goto out;
 	    }
 
 	  /* Constraint 6.10.3.5  */
-	  if (token->val.name.len == sizeof (var_args_str) - 1
-	      && !ustrncmp (token->val.name.text, var_args_str,
-			    sizeof (var_args_str) - 1))
-	    {
-	      cpp_error_with_line (pfile, line, token->col,
-				   "\"%s\" is not a valid parameter name",
-				   var_args_str);
-	      goto out;
-	    }
+	  if (is__va_args__ (pfile, token))
+	    goto out;
 
 	  params_len += token->val.name.len + 1;
 	  prev_ident = 1;
@@ -250,7 +264,7 @@ count_params (pfile, first, list)
 	  /* Constraint 6.10.3.6 - duplicate parameter names.  */
 	  if (find_param (first, token))
 	    {
-	      cpp_error_with_line (pfile, line, token->col,
+	      cpp_error_with_line (pfile, token->line, token->col,
 				   "duplicate macro parameter \"%.*s\"",
 				   (int) token->val.name.len,
 				   token->val.name.text);
@@ -259,7 +273,7 @@ count_params (pfile, first, list)
 	  break;
 
 	default:
-	  cpp_error_with_line (pfile, line, token->col,
+	  cpp_error_with_line (pfile, token->line, token->col,
 			       "illegal token in macro parameter list");
 	  goto out;
 
@@ -271,8 +285,10 @@ count_params (pfile, first, list)
 	case CPP_COMMA:
 	  if (!prev_ident)
 	    {
-	      cpp_error_with_line (pfile, line, token->col,
-				   "missing parameter name");
+	      cpp_error_with_line (pfile, token->line, token->col,
+				   "parameter name expected");
+	      if (token->type == CPP_CLOSE_PAREN)
+		token--;		/* Return the ',' not ')'.  */
 	      goto out;
 	    }
 	  prev_ident = 0;
@@ -293,22 +309,24 @@ count_params (pfile, first, list)
 	      tok->val.name.len = sizeof (var_args_str) - 1;
 	      tok->val.name.text = var_args_str; /* Safe.  */
 	      list->paramc++;
-
+	  
 	      if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, c99))
 		cpp_pedwarn (pfile,
 			     "C89 does not permit anon varargs macros");
 	    }
-	  else if (CPP_PEDANTIC (pfile))
-	    cpp_pedwarn (pfile,
-			 "ISO C does not permit named varargs parameters");
+	  else
+	    {
+	      list->flags |= GNU_REST_ARGS;
+	      if (CPP_PEDANTIC (pfile))
+		cpp_pedwarn (pfile,
+			     "ISO C does not permit named varargs parameters");
+	    }
 
 	  list->flags |= VAR_ARGS;
 	  token++;
 	  if (token->type == CPP_CLOSE_PAREN)
 	    goto scanned;
-	  cpp_error_with_line (pfile, line, token->col,
-			       "')' expected after \"...\"");
-	  goto out;
+	  goto missing_paren;
 	}
     }
 
@@ -345,8 +363,15 @@ parse_define (pfile)
   cpp_toklist *list;
   int prev_white = 0;
 
-  while ((token = cpp_get_token (pfile))->type == CPP_COMMENT)
-    prev_white = 1;
+  /* The first token after the macro's name.  */
+  token = cpp_get_token (pfile);
+
+  /* Constraint 6.10.3.5  */
+  if (is__va_args__ (pfile, token - 1))
+    return 0;
+
+  while (token->type == CPP_COMMENT)
+    token++, prev_white = 1;
 
   /* Allocate the expansion's list.  It will go in the hash table.  */
   list = (cpp_toklist *) xmalloc (sizeof (cpp_toklist));
@@ -461,6 +486,12 @@ save_expansion (pfile, list, first, first_param)
 		}
 	    }
 	}
+      else if (token->type == CPP_NAME)
+	{
+	  /* Constraint 6.10.3.5  */
+	  if (!(list->flags & VAR_ARGS) && is__va_args__ (pfile, token))
+	    return 1;
+	}
       ntokens++;
       if (token_spellings[token->type].type > SPELL_NONE)
 	len += token->val.name.len;
@@ -497,10 +528,6 @@ save_expansion (pfile, list, first, first_param)
 	    dest->flags = token[-1].flags | STRINGIFY_ARG;
 	  else
 	    dest->flags = token->flags;  /* Particularly PREV_WHITE.  */
-
-	  if ((int) param_no == list->paramc && list->flags & VAR_ARGS
-	      && dest != list->tokens && dest[-1].flags & PASTE_LEFT)
-	    dest[-1].flags |= GNU_VARARGS;
 	  dest++;
 	  continue;
 

@@ -2222,9 +2222,9 @@ parse_args (pfile, hp, args)
 	 e.g. #define debug(format, args...) ...
 	 debug("string");
 	 This is exactly the same as if the rest argument had received no
-	 tokens - debug("string",);  */
+	 tokens - debug("string",);  This extension is deprecated.  */
 	
-      if (argc + 1 == macro->paramc && (macro->flags & VAR_ARGS))
+      if (argc + 1 == macro->paramc && (macro->flags & GNU_REST_ARGS))
 	{
 	  /* Duplicate the placemarker.  Then we can set its flags and
              position and safely be using more than one.  */
@@ -2525,15 +2525,19 @@ maybe_paste_with_next (pfile, token)
   second = cpp_get_token (pfile);
   pfile->paste_level = 0;
 
-  /* Ignore placemarker argument tokens.  */
+  /* Ignore placemarker argument tokens (cannot be from an empty macro
+     since macros are not expanded).  */
   if (token->type == CPP_PLACEMARKER)
      pasted = duplicate_token (pfile, second);
   else if (second->type == CPP_PLACEMARKER)
     {
+      cpp_context *mac_context = CURRENT_CONTEXT (pfile) - 1;
       /* GCC has special extended semantics for a ## b where b is a
 	 varargs parameter: a disappears if b consists of no tokens.
 	 This extension is deprecated.  */
-      if (token->flags & GNU_VARARGS)
+      if ((mac_context->u.list->flags & GNU_REST_ARGS)
+	  && (mac_context->u.list->tokens[mac_context->posn - 1].val.aux + 1
+	      == (unsigned) mac_context->u.list->paramc))
 	{
 	  cpp_warning (pfile, "deprecated GNU ## extension used");
 	  pasted = duplicate_token (pfile, second);
