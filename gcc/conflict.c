@@ -2,22 +2,22 @@
    Copyright (C) 2000 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC
 
-   This file is part of GNU CC.
+This file is part of GNU CC.
 
-   GNU CC is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
 
-   GNU CC is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with GNU CC; see the file COPYING.  If not, write to
-   the Free Software Foundation, 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.  */
 
 /* References:
 
@@ -27,7 +27,6 @@
 
 #include "config.h"
 #include "system.h"
-
 #include "obstack.h"
 #include "hashtab.h"
 #include "rtl.h"
@@ -108,23 +107,18 @@ struct conflict_graph_def
 
 /* The initial capacity (number of conflict arcs) for newly-created
    conflict graphs.  */
-#define INITIAL_ARC_CAPACITY (64)
+#define INITIAL_ARC_CAPACITY 64
 
 
 /* Computes the hash value of the conflict graph arc connecting regs
-   R1__ and R2__.  R1__ is assumed to be smaller or equal to R2__.  */
-#define CONFLICT_HASH_FN(r1__, r2__) ((r2__) * ((r2__) - 1) / 2 + (r1__))
+   R1 and R2.  R1 is assumed to be smaller or equal to R2.  */
+#define CONFLICT_HASH_FN(R1, R2) ((R2) * ((R2) - 1) / 2 + (R1))
 
-static unsigned arc_hash
-  PARAMS ((const void *arcp));
-static int arc_eq 
-  PARAMS ((const void *arcp1, const void *arcp2));
-static int print_conflict
-  PARAMS ((int reg1, int reg2, void *contextp));
-static void mark_reg 
-  PARAMS ((rtx reg, rtx setter, void *data));
-
-
+static unsigned arc_hash	PARAMS ((const void *));
+static int arc_eq		PARAMS ((const void *, const void *));
+static int print_conflict	PARAMS ((int, int, void *));
+static void mark_reg		PARAMS ((rtx, rtx, void *));
+
 /* Callback function to compute the hash value of an arc.  Uses
    current_graph to locate the graph to which the arc belongs. */
 
@@ -133,6 +127,7 @@ arc_hash (arcp)
      const void *arcp;
 {
   conflict_graph_arc arc = (conflict_graph_arc) arcp;
+
   return CONFLICT_HASH_FN (arc->smaller, arc->larger);
 }
 
@@ -146,6 +141,7 @@ arc_eq (arcp1, arcp2)
 {
   conflict_graph_arc arc1 = (conflict_graph_arc) arcp1;
   conflict_graph_arc arc2 = (conflict_graph_arc) arcp2;
+
   return arc1->smaller == arc2->smaller && arc1->larger == arc2->larger;
 }
 
@@ -156,24 +152,23 @@ conflict_graph
 conflict_graph_new (num_regs)
      int num_regs;
 {
-  conflict_graph graph = 
-    (conflict_graph) xmalloc (sizeof (struct conflict_graph_def));
+  conflict_graph graph
+    = (conflict_graph) xmalloc (sizeof (struct conflict_graph_def));
   graph->num_regs = num_regs;
 
   /* Set up the hash table.  No delete action is specified; memory
      management of arcs is through the obstack.  */
-  graph->arc_hash_table = 
-    htab_create (INITIAL_ARC_CAPACITY, &arc_hash, &arc_eq, NULL);
+  graph->arc_hash_table
+    = htab_create (INITIAL_ARC_CAPACITY, &arc_hash, &arc_eq, NULL);
 
   /* Create an obstack for allocating arcs.  */
-  obstack_init (&(graph->arc_obstack));
+  obstack_init (&graph->arc_obstack);
 	     
   /* Create and zero the lookup table by register number.  */
-  graph->neighbor_heads = (conflict_graph_arc *) 
-    xmalloc (num_regs * sizeof (conflict_graph_arc));
-  memset (graph->neighbor_heads, 0, 
-	  num_regs * sizeof (conflict_graph_arc));
+  graph->neighbor_heads
+    = (conflict_graph_arc *) xmalloc (num_regs * sizeof (conflict_graph_arc));
 
+  memset (graph->neighbor_heads, 0, num_regs * sizeof (conflict_graph_arc));
   return graph;
 }
 
@@ -183,7 +178,7 @@ void
 conflict_graph_delete (graph)
      conflict_graph graph;
 {
-  obstack_free (&(graph->arc_obstack), NULL);
+  obstack_free (&graph->arc_obstack, NULL);
   htab_delete (graph->arc_hash_table);
   free (graph->neighbor_heads);
   free (graph);
@@ -218,10 +213,11 @@ conflict_graph_add (graph, reg1, reg2)
     return 0;
 
   /* Allocate an arc.  */
-  arc = (conflict_graph_arc) 
-    obstack_alloc (&(graph->arc_obstack),
-		   sizeof (struct conflict_graph_arc_def));
-
+  arc
+    = (conflict_graph_arc)
+      obstack_alloc (&graph->arc_obstack,
+		     sizeof (struct conflict_graph_arc_def));
+  
   /* Record the reg numbers.  */
   arc->smaller = smaller;
   arc->larger = larger;
@@ -299,6 +295,7 @@ conflict_graph_merge_regs (graph, target, src)
   while (arc != NULL)
     {
       int other = arc->smaller;
+
       if (other == src)
 	other = arc->larger;
 
@@ -372,19 +369,22 @@ conflict_graph_print (graph, fp)
 {
   int reg;
   struct print_context context;
-  context.fp = fp;
 
+  context.fp = fp;
   fprintf (fp, "Conflicts:\n");
+
   /* Loop over registers supported in this graph.  */
   for (reg = 0; reg < graph->num_regs; ++reg)
     {
       context.reg = reg;
       context.started = 0;
+
       /* Scan the conflicts for reg, printing as we go.  A label for
 	 this line will be printed the first time a conflict is
 	 printed for the reg; we won't start a new line if this reg
 	 has no conflicts.  */
       conflict_graph_enum (graph, reg, &print_conflict, &context);
+
       /* If this reg does have conflicts, end the line.  */
       if (context.started)
 	fputc ('\n', fp);
@@ -469,9 +469,7 @@ conflict_graph_compute (regs, p)
       /* Walk the instruction stream backwards.  */
       head = bb->head;
       insn = bb->end;
-      for (insn = bb->end; 
-	   insn != head; 
-	   insn = PREV_INSN (insn))
+      for (insn = bb->end; insn != head; insn = PREV_INSN (insn))
 	{
 	  int born_reg;
 	  int live_reg;
@@ -497,20 +495,21 @@ conflict_graph_compute (regs, p)
 
 	      /* For every reg born here, add a conflict with every other
   	         reg live coming into this insn.  */
-	      EXECUTE_IF_SET_IN_REG_SET (born, 
-					 FIRST_PSEUDO_REGISTER, 
-					 born_reg, {
-		EXECUTE_IF_SET_IN_REG_SET (live,
-					   FIRST_PSEUDO_REGISTER,
-					   live_reg, {
-		  /* Build the conflict graph in terms of canonical
-		     regnos.  */
-		  int b = partition_find (p, born_reg);
-		  int l = partition_find (p, live_reg);
-		  if (b != l)
-		    conflict_graph_add (graph, b, l);
-		});
-	      });
+	      EXECUTE_IF_SET_IN_REG_SET
+		(born, FIRST_PSEUDO_REGISTER, born_reg,
+		 {
+		   EXECUTE_IF_SET_IN_REG_SET
+		     (live, FIRST_PSEUDO_REGISTER, live_reg,
+		      {
+			/* Build the conflict graph in terms of canonical
+			   regnos.  */
+			int b = partition_find (p, born_reg);
+			int l = partition_find (p, live_reg);
+
+			if (b != l)
+			  conflict_graph_add (graph, b, l);
+		      });
+		 });
 
 	      /* Morgan's algorithm checks the operands of the insn
 	         and adds them to the set of live regs.  Instead, we
@@ -519,7 +518,8 @@ conflict_graph_compute (regs, p)
 	      for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 		if (REG_NOTE_KIND (link) == REG_DEAD)
 		  {
-		    int regno = REGNO (XEXP (link, 0));
+		    unsigned int regno = REGNO (XEXP (link, 0));
+
 		    if (REGNO_REG_SET_P (regs, regno))
 		      SET_REGNO_REG_SET (live, regno);
 		  }
