@@ -1,5 +1,12 @@
 2004-09-22  Andreas Tobler  <a.tobler@schweiz.ch>
 
+	* Makefile.am (lib_org_ietf_jgss_la_DEPENDENCIES): Add missing
+	dependencies.
+	(lib_org_ietf_jgss_la_LIBADD): Likewise.
+	* Makefile.in: Regenerated.
+
+2004-09-22  Andreas Tobler  <a.tobler@schweiz.ch>
+
 	* configure.ac: Introduce AC_C_BIGENDIAN_CROSS for WORDS_BIGENDIAN.
 	* configure: Regenerate.
 	* include/config.h.in: Likewise.
