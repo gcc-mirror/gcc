@@ -5999,7 +5999,7 @@ msgstr "-fwritable-strings veraltet, schauen Sie in die Dokumentation für Detai
 #: opts.c:1534
 #, c-format
 msgid "%s: --param arguments should be of the form NAME=VALUE"
-msgstr "%s: »--param«-Argumente sollten der von der Form NAME=VALUE sein"
+msgstr "%s: »--param«-Argumente sollten von der Form NAME=VALUE sein"
 
 #: opts.c:1539
 #, c-format
@@ -6027,7 +6027,7 @@ msgstr "Testausgabestufe »%s« ist zu groß"
 
 #: opts.c:1679
 msgid "The following options are language-independent:\n"
-msgstr ""
+msgstr "Die folgenden Optionen sind sprach-unabhängig:\n"
 
 #: opts.c:1686
 #, c-format
@@ -6035,10 +6035,12 @@ msgid ""
 "The %s front end recognizes the following options:\n"
 "\n"
 msgstr ""
+"Das %s-Frontend erkennt die folgenden Optionen:\n"
+"\n"
 
 #: opts.c:1700
 msgid "The --param option recognizes the following as parameters:\n"
-msgstr ""
+msgstr "Die Option »--param« erkennt die folgenden Parameter:\n"
 
 #. If we didn't find this parameter, issue an error message.
 #: params.c:76
@@ -6048,11 +6050,11 @@ msgstr "ungültiger Parameter »%s«"
 
 #: profile.c:288
 msgid "corrupted profile info: run_max * runs < sum_max"
-msgstr ""
+msgstr "beschädigte Profilinformation: run_max * runs < sum_max"
 
 #: profile.c:294
 msgid "corrupted profile info: sum_all is smaller than sum_max"
-msgstr ""
+msgstr "beschädigte Profilinformation: sum_all ist kleiner als sum_max"
 
 #: profile.c:336
 #, c-format
@@ -6134,12 +6136,12 @@ msgstr "%s:%d: Deklaration der Funktion »%s« nimmt verschiedene Formen an\n"
 #: protoize.c:1901
 #, c-format
 msgid "%s: compiling `%s'\n"
-msgstr "%s: kompiliere »%s«\n"
+msgstr "%s: »%s« wird kompiliert\n"
 
 #: protoize.c:1924
 #, c-format
 msgid "%s: wait: %s\n"
-msgstr "%s: warte: %s\n"
+msgstr "%s: warten: %s\n"
 
 #: protoize.c:1929
 #, c-format
@@ -6159,17 +6161,17 @@ msgstr "%s: Warnung: SYSCALLS-Datei »%s« fehlt\n"
 #: protoize.c:1995 protoize.c:2024
 #, c-format
 msgid "%s: can't read aux info file `%s': %s\n"
-msgstr "%s: kann Datei mit Hilfsinformationen »%s« nicht lesen: %s\n"
+msgstr "%s: Datei mit Hilfsinformationen »%s« kann nicht gelesen werden: %s\n"
 
 #: protoize.c:2040 protoize.c:2068
 #, c-format
 msgid "%s: can't get status of aux info file `%s': %s\n"
-msgstr "%s: kann Status der Datei mit Hilfsinformationen »%s« nicht ermitteln: %s\n"
+msgstr "%s: Status der Datei mit Hilfsinformationen »%s« kann nicht ermittelt werden: %s\n"
 
 #: protoize.c:2096
 #, c-format
 msgid "%s: can't open aux info file `%s' for reading: %s\n"
-msgstr "%s: kann Datei mit Hilfsinformationen »%s« nicht zum Lesen öffnen: %s\n"
+msgstr "%s: Datei mit Hilfsinformationen »%s« kann nicht zum Lesen geöffnet werden: %s\n"
 
 #: protoize.c:2114
 #, c-format
@@ -6224,7 +6226,7 @@ msgstr "%s: %d: »%s« verwendet, fehlt jedoch in SYSCALLS\n"
 #: protoize.c:2510
 #, c-format
 msgid "%s: %d: warning: no extern definition for `%s'\n"
-msgstr "%s: %d: Warning: keine externe Definition für »%s«\n"
+msgstr "%s: %d: Warnung: keine externe Definition für »%s«\n"
 
 #: protoize.c:2540
 #, c-format
@@ -6594,7 +6596,7 @@ msgstr "dazu passende Bedingung in Ausgabeoperanden ungültig"
 
 #: stmt.c:1260
 msgid "read-write constraint does not allow a register"
-msgstr ""
+msgstr "Schreib- und Lesebeschränkungen erlauben kein Register"
 
 #: stmt.c:1292
 #, c-format
@@ -6681,7 +6683,7 @@ msgstr "benannter Operand »%s« ist nicht definiert"
 
 #: stmt.c:2161
 msgid "%Hstatement with no effect"
-msgstr ""
+msgstr "%HAnweisung ohne Effekt"
 
 #: stmt.c:2317
 msgid "%Hvalue computed is not used"
@@ -6758,11 +6760,11 @@ msgstr "gepacktes Attribut ist unnötig für »%s«"
 
 #: stor-layout.c:1282
 msgid "packed attribute causes inefficient alignment"
-msgstr ""
+msgstr "gepacktes Attribut führt zu ineffizienter Ausrichtung"
 
 #: stor-layout.c:1284
 msgid "packed attribute is unnecessary"
-msgstr ""
+msgstr "gepacktes Attribut ist unnötig"
 
 #: targhooks.c:154
 msgid "__builtin_saveregs not supported by this target"
@@ -6771,48 +6773,50 @@ msgstr "__builtin_saveregs wird von diesem Ziel nicht unterstützt"
 #: timevar.c:314
 #, c-format
 msgid "cannot timevar_pop '%s' when top of timevars stack is '%s'"
-msgstr ""
+msgstr "timevar_pop '%s' kann nicht ausgeführt werden, wenn am Anfang des timevars-Stacks '%s' steht"
 
 #: timevar.c:440
 msgid ""
 "\n"
 "Execution times (seconds)\n"
 msgstr ""
+"\n"
+"Ausführungszeiten (Sekunden)\n"
 
 #. Print total time.
 #: timevar.c:490
 msgid " TOTAL                 :"
-msgstr ""
+msgstr " GESAMT                :"
 
 #: timevar.c:513
 #, c-format
 msgid "time in %s: %ld.%06ld (%ld%%)\n"
-msgstr ""
+msgstr "Zeit in %s: %ld.%06ld (%ld%%)\n"
 
 #: tlink.c:377
 #, c-format
 msgid "collect: reading %s\n"
-msgstr ""
+msgstr "sammeln: %s lesen\n"
 
 #: tlink.c:478
 #, c-format
 msgid "collect: recompiling %s\n"
-msgstr ""
+msgstr "sammeln: %s neu kompilieren\n"
 
 #: tlink.c:654
 #, c-format
 msgid "collect: tweaking %s in %s\n"
-msgstr ""
+msgstr "sammeln: %s wird in %s eingestellt\n"
 
 #: tlink.c:700
 #, c-format
 msgid "collect: relinking\n"
-msgstr ""
+msgstr "sammeln: neu binden\n"
 
 #: tlink.c:709
 #, c-format
 msgid "ld returned %d exit status"
-msgstr ""
+msgstr "ld gab %d als Ende-Status zurück"
 
 #: toplev.c:1226
 #, c-format
@@ -6832,12 +6836,12 @@ msgstr "ungültiges Optionsargument »%s«"
 #: toplev.c:1356
 #, c-format
 msgid "getting core file size maximum limit: %m"
-msgstr ""
+msgstr "Kern-Dateigrößenlimit wird geholt: %m"
 
 #: toplev.c:1359
 #, c-format
 msgid "setting core file size limit to maximum: %m"
-msgstr ""
+msgstr "Kern-Dateigrößenlimit wird gesetzt: %m"
 
 #: toplev.c:1678
 msgid "%J'%F' used but never defined"
@@ -6873,11 +6877,11 @@ msgstr "Typ ist veraltet"
 #: toplev.c:1956
 #, c-format
 msgid "invalid register name `%s' for register variable"
-msgstr ""
+msgstr "ungültiger Registername »%s« für Registervariable"
 
 #: toplev.c:3522
 msgid "branch target register load optimization is not intended to be run twice"
-msgstr ""
+msgstr "Ladeoptimierung für Zweig-Zielregister ist nicht dafür vorgesehen, mehrfach zu laufen"
 
 #: toplev.c:3689
 #, c-format
@@ -6885,11 +6889,13 @@ msgid ""
 "\n"
 "Target specific options:\n"
 msgstr ""
+"\n"
+"Zielspezifische Optionen:\n"
 
 #: toplev.c:3703 toplev.c:3722
 #, c-format
 msgid "  -m%-23s [undocumented]\n"
-msgstr ""
+msgstr "  -m%-23s [undokumentiert]\n"
 
 #: toplev.c:3731
 #, c-format
@@ -6897,16 +6903,18 @@ msgid ""
 "\n"
 "There are undocumented target specific options as well.\n"
 msgstr ""
+"\n"
+"Es gibt auch undokumentierte zielspezifische Optionen.\n"
 
 #: toplev.c:3733
 #, c-format
 msgid "  They exist, but they are not documented.\n"
-msgstr ""
+msgstr "  Es gibt sie, aber sie sind nicht dokumentiert.\n"
 
 #: toplev.c:3788
 #, c-format
 msgid "unrecognized gcc debugging option: %c"
-msgstr ""
+msgstr "gcc-Debuggingoption nicht erkannt: %c"
 
 #: toplev.c:3850 config/rs6000/rs6000.c:909
 #, c-format
@@ -6920,19 +6928,22 @@ msgid ""
 "%s\tcompiled by GNU C version %s.\n"
 "%s%s%s version %s (%s) compiled by CC.\n"
 msgstr ""
+"%s%s%s Version %s (%s)\n"
+"%s\tkompiliert von GNU-C-Version %s.\n"
+"%s%s%s Version %s (%s) kompiliert von CC.\n"
 
 #: toplev.c:3872
 #, c-format
 msgid "%s%sGGC heuristics: --param ggc-min-expand=%d --param ggc-min-heapsize=%d\n"
-msgstr ""
+msgstr "%s%sGGC-Heuristik: --param ggc-min-expand=%d --param ggc-min-heapsize=%d\n"
 
 #: toplev.c:3924
 msgid "options passed: "
-msgstr ""
+msgstr "angegebene Optionen: "
 
 #: toplev.c:3953
 msgid "options enabled: "
-msgstr ""
+msgstr "angeschaltete Optionen: "
 
 #: toplev.c:4011 java/jcf-write.c:3422
 #, c-format
@@ -6941,33 +6952,33 @@ msgstr "Datei »%s« kann nicht zum Schreiben geöffnet werden: %m"
 
 #: toplev.c:4094 config/sh/sh.c:6883
 msgid "created and used with different settings of -fpic"
-msgstr ""
+msgstr "erzeugt und mit anderen Einstellungen von -fpic verwendet"
 
 #: toplev.c:4096 config/sh/sh.c:6885
 msgid "created and used with different settings of -fpie"
-msgstr ""
+msgstr "erzeugt und mit anderen Einstellungen von -fpie verwendet"
 
 #: toplev.c:4147 config/sh/sh.c:6935
 #, c-format
 msgid "created and used with differing settings of `-m%s'"
-msgstr ""
+msgstr "erzeugt und mit anderen Einstellungen von »-m%s« verwendet"
 
 #: toplev.c:4150 config/sh/sh.c:6938
 msgid "out of memory"
-msgstr ""
+msgstr "Platz im Hauptspeicher reicht nicht aus"
 
 #: toplev.c:4331
 msgid "instruction scheduling not supported on this target machine"
-msgstr ""
+msgstr "Befehlsplanung wird von dieser Zielmaschine nicht unterstützt"
 
 #: toplev.c:4335
 msgid "this target machine does not have delayed branches"
-msgstr ""
+msgstr "diese Zielmaschine hat keine verzögerten Zweige"
 
 #: toplev.c:4349
 #, c-format
 msgid "-f%sleading-underscore not supported on this target machine"
-msgstr ""
+msgstr "-f%sleading-underscore wird auf dieser Zielmaschine nicht unterstützt"
 
 #: toplev.c:4398
 #, c-format
@@ -6980,19 +6991,19 @@ msgstr "-ffunction-sections wird für dieses Ziel nicht unterstützt"
 
 #: toplev.c:4420
 msgid "-fdata-sections not supported for this target"
-msgstr ""
+msgstr "-fdata-sections wird für dieses Ziel nicht unterstützt"
 
 #: toplev.c:4427
 msgid "-ffunction-sections disabled; it makes profiling impossible"
-msgstr ""
+msgstr "-ffunction-sections ausgeschaltet; das macht Profiling unmöglich"
 
 #: toplev.c:4434
 msgid "-fprefetch-loop-arrays not supported for this target"
-msgstr ""
+msgstr "-fprefetch-loop-arrays wird für dieses Ziel nicht unterstützt"
 
 #: toplev.c:4440
 msgid "-fprefetch-loop-arrays not supported for this target (try -march switches)"
-msgstr ""
+msgstr "-fprefetch-loop-arrays wird für dieses Ziel nicht unterstützt (versuchen Sie die »-march«-Schalter)"
 
 #: toplev.c:4449
 msgid "-fprefetch-loop-arrays is not supported with -Os"
