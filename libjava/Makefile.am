@@ -284,11 +284,11 @@ gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class libgcj.zip
 	    -friend 'java::lang::ClassLoader;' \
 	    $(basename $<)
 
-java/io/ObjectInputStream$$GetField.h: java/io/ObjectInputStream$$GetField.class libgcj.zip
+java/io/ObjectInputStream$$GetField.h: libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 	'java/io/ObjectInputStream$$GetField'
 
-java/io/ObjectOutputStream$$PutField.h: java/io/ObjectOutputStream$$PutField.class libgcj.zip
+java/io/ObjectOutputStream$$PutField.h: libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 	'java/io/ObjectOutputStream$$PutField'
 
