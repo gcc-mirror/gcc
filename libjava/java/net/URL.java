@@ -76,7 +76,7 @@ public final class URL implements Serializable
       this.handler = setURLStreamHandler(protocol);
 
     if (this.handler == null)
-      throw new MalformedURLException("Handler for protocol not found");
+      throw new MalformedURLException("Protocol handler not found: " + protocol);
 
     this.host = host;
 
@@ -175,7 +175,7 @@ public final class URL implements Serializable
       this.handler = setURLStreamHandler(protocol);
 
     if (this.handler == null)
-      throw new MalformedURLException("Handler for protocol not found");
+      throw new MalformedURLException("Protocol handler not found: " + protocol);
 
     // JDK 1.2 doc for parseURL specifically states that any '#' ref
     // is to be excluded by passing the 'limit' as the indexOf the '#'
