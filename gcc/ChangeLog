@@ -1,3 +1,8 @@
+2001-06-19  Geoffrey Keating  <geoffk@redhat.com>
+
+	* doc/rtl.texi (Machine Modes): Correct description of
+	floating-point modes on machines with non-8-bit bytes.
+
 2001-06-19  Bernd Schmidt  <bernds@redhat.com>
 
 	* regmove.c (optimize_reg_copy_3): Do nothing if previous insn
