@@ -1,3 +1,17 @@
+Sat Jan 11 21:31:10 2003  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (ffecom_convert_narrow_, ffecom_convert_widen_,
+	pushdecl_top_level, storedecls, convert, delete_block,
+	insert_block, ffe_init, ffe_mark_addressable, poplevel,
+	ffe_print_identifier, pushdecl, pushlevel, set_block,
+	ffe_signed_or_unsigned_type, ffe_signed_type,
+	ffe_truthvalue_conversion, ffe_type_for_mode, ffe_type_for_size,
+	ffe_unsigned_type, append_include_chain, open_include_file,
+	read_filename_string, read_name_map): Convert to ISO C style function
+	definitions.
+	* parse.c (ffe_parse_file): Likewise.
+	* top.c (ffe_is_digit_string_): Likewise.
+
 2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Make-lang.in (f77.install-common, f77.install-info,
