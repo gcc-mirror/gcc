@@ -40,6 +40,7 @@ do {  \
        output_file_directive ((FILE), main_input_filename); \
    } while (0)
 
+#undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
 do {  \
   if (TREE_PUBLIC (DECL)) \
@@ -81,6 +82,7 @@ do {  \
    (__main for example).  To make sure all libcall names have section
    info recorded in them, we do it here.  */
 
+#undef ASM_OUTPUT_EXTERNAL_LIBCALL
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, RTL) \
   do { fputs ("\t.IMPORT ", FILE);					\
        if (!function_label_operand (RTL, VOIDmode))			\

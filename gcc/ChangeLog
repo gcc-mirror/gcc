@@ -1,5 +1,9 @@
 2001-11-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* pa/elf.h (ASM_DECLARE_FUNCTION_NAME,
+	ASM_OUTPUT_EXTERNAL_LIBCALL): Undef before defining.
+	* config.gcc (hppa1.1-*-rtems*): Remove duplicate clause.
+
 	* clipper.h (ASM_OUTPUT_REG_POP): Fix typo.
 
 	* tlink.c (recompile_files): Copy strings passed to `putenv'.
