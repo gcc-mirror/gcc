@@ -1890,28 +1890,6 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 
 # The autoconf 2.5x version of the no-executables hack.
-# GCC_NO_EXECUTABLES
-# -----------------
-# FIXME: The GCC team has specific needs which the current Autoconf
-# framework cannot solve elegantly.  This macro implements a dirty
-# hack until Autoconf is able to provide the services its users
-# need.
-#
-# Several of the support libraries that are often built with GCC can't
-# assume the tool-chain is already capable of linking a program: the
-# compiler often expects to be able to link with some of such
-# libraries.
-#
-# In several of these libraries, workarounds have been introduced to
-# avoid the AC_PROG_CC_WORKS test, that would just abort their
-# configuration.  The introduction of AC_EXEEXT, enabled either by
-# libtool or by CVS autoconf, have just made matters worse.
-#
-# Unlike the previous AC_NO_EXECUTABLES, this test does not
-# disable link tests at autoconf time, but at configure time.
-# This allows AC_NO_EXECUTABLES to be invoked conditionally.
-# GCC_NO_EXECUTABLES
-
 
 
 # Yak.  We must force CC and CXX to /not/ be precious variables; otherwise
@@ -4741,7 +4719,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4744 "configure"' > conftest.$ac_ext
+  echo '#line 4722 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?

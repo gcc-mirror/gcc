@@ -1,3 +1,13 @@
+2004-11-04  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am: Define ACLOCAL_AMFLAGS.
+	* configure.ac: Remove redundant sinclude.
+	* acinclude.m4: Delete file.
+	* aclocal.m4: Regenerate.
+	* Makefile.in, include/Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+
 2004-10-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* include/private/gc_priv.h (GC_generic_malloc_words_small_inner):
