@@ -1,3 +1,8 @@
+1998-09-19  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config.sub: Add support for C4x target.
+	* configure.in: Likewise.
+
 1998-09-13  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config.sub: Recognize sparcv9 just like sparc64.
