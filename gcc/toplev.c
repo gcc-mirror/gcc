@@ -3273,6 +3273,10 @@ rest_of_compilation (decl)
 
   resume_temporary_allocation ();
 
+  /* Show no temporary slots allocated.  */
+
+  init_temp_slots ();
+
   /* The parsing time is all the time spent in yyparse
      *except* what is spent in this function.  */
 
