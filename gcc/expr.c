@@ -3116,13 +3116,19 @@ expand_assignment (to, from, want_value, suggest_reg)
     to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_WO);
 
   /* Don't move directly into a return register.  */
-  if (TREE_CODE (to) == RESULT_DECL && GET_CODE (to_rtx) == REG)
+  if (TREE_CODE (to) == RESULT_DECL
+      && (GET_CODE (to_rtx) == REG || GET_CODE (to_rtx) == PARALLEL))
     {
       rtx temp;
 
       push_temp_slots ();
       temp = expand_expr (from, 0, GET_MODE (to_rtx), 0);
-      emit_move_insn (to_rtx, temp);
+
+      if (GET_CODE (to_rtx) == PARALLEL)
+	emit_group_load (to_rtx, temp);
+      else
+	emit_move_insn (to_rtx, temp);
+
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
       pop_temp_slots ();
