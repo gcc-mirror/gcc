@@ -1,3 +1,8 @@
+2000-05-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* simplify-rtx.c: Rename macro SIGN_EXTEND to HWI_SIGN_EXTEND.
+	All callers changed.
+
 2000-05-24  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* expr.c (expand_assignment, store_expr, expand_expr,

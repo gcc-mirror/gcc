@@ -96,7 +96,7 @@ Boston, MA 02111-1307, USA.  */
    unsigned wide int, the high value a signed wide int.  We
    occasionally need to sign extend from low to high as if low were a
    signed wide int.  */
-#define SIGN_EXTEND(low) \
+#define HWI_SIGN_EXTEND(low) \
  ((((HOST_WIDE_INT) low) < 0) ? ((HOST_WIDE_INT) -1) : ((HOST_WIDE_INT) 0))
 
 static rtx simplify_plus_minus		PARAMS ((enum rtx_code,
@@ -252,7 +252,7 @@ simplify_unary_operation (code, mode, op, op_mode)
       REAL_VALUE_TYPE d;
 
       if (GET_CODE (op) == CONST_INT)
-	lv = INTVAL (op), hv = SIGN_EXTEND (lv);
+	lv = INTVAL (op), hv = HWI_SIGN_EXTEND (lv);
       else
 	lv = CONST_DOUBLE_LOW (op),  hv = CONST_DOUBLE_HIGH (op);
 
@@ -285,7 +285,7 @@ simplify_unary_operation (code, mode, op, op_mode)
       REAL_VALUE_TYPE d;
 
       if (GET_CODE (op) == CONST_INT)
-	lv = INTVAL (op), hv = SIGN_EXTEND (lv);
+	lv = INTVAL (op), hv = HWI_SIGN_EXTEND (lv);
       else
 	lv = CONST_DOUBLE_LOW (op),  hv = CONST_DOUBLE_HIGH (op);
 
@@ -411,7 +411,7 @@ simplify_unary_operation (code, mode, op, op_mode)
       if (GET_CODE (op) == CONST_DOUBLE)
 	l1 = CONST_DOUBLE_LOW (op), h1 = CONST_DOUBLE_HIGH (op);
       else
-	l1 = INTVAL (op), h1 = SIGN_EXTEND (l1);
+	l1 = INTVAL (op), h1 = HWI_SIGN_EXTEND (l1);
 
       switch (code)
 	{
@@ -465,7 +465,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 			    << (GET_MODE_BITSIZE (op_mode) - 1))) != 0)
 		lv -= (HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (op_mode);
 
-	      hv = SIGN_EXTEND (lv);
+	      hv = HWI_SIGN_EXTEND (lv);
 	    }
 	  break;
 
@@ -722,12 +722,12 @@ simplify_binary_operation (code, mode, op0, op1)
       if (GET_CODE (op0) == CONST_DOUBLE)
 	l1 = CONST_DOUBLE_LOW (op0), h1 = CONST_DOUBLE_HIGH (op0);
       else
-	l1 = INTVAL (op0), h1 = SIGN_EXTEND (l1);
+	l1 = INTVAL (op0), h1 = HWI_SIGN_EXTEND (l1);
 
       if (GET_CODE (op1) == CONST_DOUBLE)
 	l2 = CONST_DOUBLE_LOW (op1), h2 = CONST_DOUBLE_HIGH (op1);
       else
-	l2 = INTVAL (op1), h2 = SIGN_EXTEND (l2);
+	l2 = INTVAL (op1), h2 = HWI_SIGN_EXTEND (l2);
 
       switch (code)
 	{
@@ -1760,7 +1760,7 @@ simplify_relational_operation (code, mode, op0, op1)
       else
 	{
 	  l0u = l0s = INTVAL (op0);
-	  h0u = h0s = SIGN_EXTEND (l0s);
+	  h0u = h0s = HWI_SIGN_EXTEND (l0s);
 	}
 	  
       if (GET_CODE (op1) == CONST_DOUBLE)
@@ -1771,13 +1771,13 @@ simplify_relational_operation (code, mode, op0, op1)
       else
 	{
 	  l1u = l1s = INTVAL (op1);
-	  h1u = h1s = SIGN_EXTEND (l1s);
+	  h1u = h1s = HWI_SIGN_EXTEND (l1s);
 	}
 
       /* If WIDTH is nonzero and smaller than HOST_BITS_PER_WIDE_INT,
 	 we have to sign or zero-extend the values.  */
       if (width != 0 && width <= HOST_BITS_PER_WIDE_INT)
-	h0u = h1u = 0, h0s = SIGN_EXTEND (l0s), h1s = SIGN_EXTEND (l1s);
+	h0u = h1u = 0, h0s = HWI_SIGN_EXTEND (l0s), h1s = HWI_SIGN_EXTEND (l1s);
 
       if (width != 0 && width < HOST_BITS_PER_WIDE_INT)
 	{
