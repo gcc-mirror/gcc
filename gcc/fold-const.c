@@ -9692,8 +9692,9 @@ fold_read_from_constant_string (tree exp)
 	  && (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_TYPE (string))))
 	      == MODE_INT)
 	  && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (string)))) == 1))
-	return build_int_2 ((TREE_STRING_POINTER (string)
-			     [TREE_INT_CST_LOW (index)]), 0);
+	return fold_convert (TREE_TYPE (exp),
+			     build_int_2 ((TREE_STRING_POINTER (string)
+					  [TREE_INT_CST_LOW (index)]), 0));
     }
   return NULL;
 }
