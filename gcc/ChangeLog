@@ -1,5 +1,11 @@
 2004-11-24  Devang Patel  <dpatel@apple.com>
 
+	PR/18555
+	* gcc.h (DEFAULT_WORD_SWITCH_TAKES_ARG): Add isysroot.
+	* config/darwin-c.c (darwin_register_frameworks): Use sysroot.
+
+2004-11-24  Devang Patel  <dpatel@apple.com>
+
 	* gcc.c (process_command): Supply -v to linker.
 	
 2004-11-24  David Edelsohn  <edelsohn@gnu.org>
