@@ -42,7 +42,7 @@ import javax.swing.event.ListDataListener;
  * This is an interface to general list-like data, typically used as the
  * model object of a {@link JList} component.
  *
- * @author Graydon Hoare (graydon&064;redhat.com)
+ * @author Graydon Hoare (graydon@redhat.com)
  */
 public interface ListModel
 {

@@ -163,7 +163,7 @@ public class Popup
 
 
     /**
-     * Displays the popup&#x2019;s <code>JWindow</code> on the screen.
+     * Displays the popup's <code>JWindow</code> on the screen.
      * Nothing happens if it is already visible.
      */
     public void show()
@@ -173,7 +173,7 @@ public class Popup
     
     
     /**
-     * Removes the popup&#x2019;s <code>JWindow</code> from the
+     * Removes the popup's <code>JWindow</code> from the
      * screen.  Nothing happens if it is currently not visible.
      */
     public void hide()

@@ -99,7 +99,7 @@ import javax.swing.plaf.ListUI;
  * <tr><td>visibleRowCount                </td><td>list     </td><td>no    </td></tr>
  * </table> 
  *
- * @author Graydon Hoare (graydon&064;redhat.com)
+ * @author Graydon Hoare (graydon@redhat.com)
  */
 
 public class JList extends JComponent implements Accessible, Scrollable

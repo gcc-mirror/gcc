@@ -203,7 +203,7 @@ public class DefaultBoundedRangeModel
    * Changes the current value of this bounded range model. In a
    * scroll bar visualization of a {@link BoundedRangeModel}, the
    * <code>value</code> is displayed as the position of the thumb;
-   * changing the <code>value</code> of a scroll bar&#x2019;s model
+   * changing the <code>value</code> of a scroll bar's model
    * thus moves the thumb to a different position.
    */
   public void setValue(int value)

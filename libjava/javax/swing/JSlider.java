@@ -411,7 +411,7 @@ public class JSlider extends JComponent implements SwingConstants, Accessible,
    * This method returns a name to identify which look and feel class will be
    * the UI delegate for the slider.
    *
-   * @return The L&F classID. "SliderUI"
+   * @return The Look and Feel classID. "SliderUI"
    */
   public String getUIClassID()
   {
