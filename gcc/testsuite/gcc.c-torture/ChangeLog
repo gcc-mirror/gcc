@@ -1,3 +1,7 @@
+2000-04-26  Geoff Keating  <geoffk@cygnus.com>
+
+	* execute/loop-5.c: New test.
+
 2000-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* execute/va-arg-20.c: New test.
