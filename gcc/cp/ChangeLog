@@ -1,3 +1,10 @@
+2002-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5104
+	* typeck.c (comptypes) [FUNCTION_TYPE]: Don't compare exception
+	specifiers.
+	[METHOD_TYPE]: Use same code as FUNCTION_TYPE.
+
 2002-04-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/5998:
@@ -77,7 +84,7 @@
 
 2002-03-21  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree.c (cp_cannot_inline_tree_fn): Same.
+	* tree.c (cp_cannot_inline_tree_fn): Same.
 
 2002-03-20  Jason Merrill  <jason@redhat.com>
 
