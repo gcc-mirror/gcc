@@ -1,5 +1,10 @@
 2004-03-01  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* system.h (DBX_OUTPUT_STANDARD_TYPES): Poison.
+	* doc/tm.texi (DBX_OUTPUT_STANDARD_TYPES): Remove.
+
+2004-03-01  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (gtle_operator): Accept GT and LE.
 	* config/h8300/h8300.md: Split several peephole2's, each into
 	two.
