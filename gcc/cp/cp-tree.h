@@ -1984,12 +1984,24 @@ struct lang_decl
   (DECL_LANG_SPECIFIC(NODE)->decl_flags.pretty_function_p)
 
 /* The _TYPE context in which this _DECL appears.  This field holds the
-   class where a virtual function instance is actually defined, and the
-   lexical scope of a friend function defined in a class body. */
-#define DECL_CLASS_CONTEXT(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.context)
-#define DECL_REAL_CONTEXT(NODE) \
-  ((TREE_CODE (NODE) == FUNCTION_DECL && DECL_FUNCTION_MEMBER_P (NODE)) \
-   ? DECL_CLASS_CONTEXT (NODE) : CP_DECL_CONTEXT (NODE))
+   class where a virtual function instance is actually defined. */
+#define DECL_CLASS_CONTEXT(NODE) \
+  (DECL_CLASS_SCOPE_P (NODE) ? DECL_CONTEXT (NODE) : NULL_TREE)
+
+/* For a non-member friend function, the class (if any) in which this
+   friend was defined.  For example, given:
+   
+     struct S { friend void f (); };
+
+   the DECL_FRIEND_CONTEXT for `f' will be `S'.  */
+#define DECL_FRIEND_CONTEXT(NODE)				\
+  ((DECL_FRIEND_P (NODE) && !DECL_FUNCTION_MEMBER_P (NODE))	\
+   ? DECL_LANG_SPECIFIC (NODE)->decl_flags.context              \
+   : NULL_TREE)
+
+/* Set the DECL_FRIEND_CONTEXT for NODE to CONTEXT.  */
+#define SET_DECL_FRIEND_CONTEXT(NODE, CONTEXT) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.context = (CONTEXT))
 
 /* NULL_TREE in DECL_CONTEXT represents the global namespace. */
 #define CP_DECL_CONTEXT(NODE) \
@@ -1998,7 +2010,8 @@ struct lang_decl
 
 /* For a virtual function, the base where we find its vtable entry.
    For a non-virtual function, the base where it is defined.  */
-#define DECL_VIRTUAL_CONTEXT(NODE) DECL_CONTEXT (NODE)
+#define DECL_VIRTUAL_CONTEXT(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.context)
 
 /* 1 iff NODE has namespace scope, including the global namespace.  */
 #define DECL_NAMESPACE_SCOPE_P(NODE)				\
@@ -2007,8 +2020,7 @@ struct lang_decl
 
 /* 1 iff NODE is a class member.  */
 #define DECL_CLASS_SCOPE_P(NODE) \
-  (DECL_CONTEXT (NODE) \
-   && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (NODE))) == 't')
+  (DECL_CONTEXT (NODE) && TYPE_P (DECL_CONTEXT (NODE)))
 
 /* 1 iff NODE is function-local.  */
 #define DECL_FUNCTION_SCOPE_P(NODE) \
@@ -3867,7 +3879,6 @@ extern tree cplus_expand_constant               PARAMS ((tree));
 extern int is_friend				PARAMS ((tree, tree));
 extern void make_friend_class			PARAMS ((tree, tree));
 extern void add_friend                          PARAMS ((tree, tree));
-extern void add_friends                         PARAMS ((tree, tree, tree));
 extern tree do_friend				PARAMS ((tree, tree, tree, tree, tree, enum overload_flags, tree, int));
 
 /* in init.c */
@@ -4252,7 +4263,6 @@ extern tree array_type_nelts_top		PARAMS ((tree));
 extern tree break_out_target_exprs		PARAMS ((tree));
 extern tree get_type_decl			PARAMS ((tree));
 extern tree vec_binfo_member			PARAMS ((tree, tree));
-extern tree hack_decl_function_context 		PARAMS ((tree));
 extern tree decl_namespace_context 		PARAMS ((tree));
 extern tree lvalue_type				PARAMS ((tree));
 extern tree error_type				PARAMS ((tree));

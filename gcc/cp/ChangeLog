@@ -1,3 +1,108 @@
+2000-02-16  Mark Mitchell  <mark@codesourcery.com>
+
+	Make DECL_CONTEXT mean the class in which a member function was
+	declared, even for a virtual function.
+	* cp-tree.h (DECL_CLASS_CONTEXT): Adjust.
+	(DECL_FRIEND_CONTEXT): New macro.
+	(DECL_REAL_CONTEXT): Remove.
+	(SET_DECL_FRIEND_CONTEXT): Likewise.
+	(DECL_VIRTUAL_CONTEXT): Adjust.
+	(DECL_CLASS_SCOPE_P): Use TYPE_P.
+	(add_friends): Remove.
+	(hack_decl_function_context): Likewise.
+	* call.c (build_new_function_call): Replace DECL_REAL_CONTEXT with
+	CP_DECL_CONTEXT.
+	(build_over_call): Fix indentation.  Use DECL_CONTEXT
+	instead of DECL_CLASS_CONTEXT.
+	* class.c (dfs_build_vcall_offset_vtbl_entries): Likewise.
+	(add_method): Set DECL_VIRTUAL_CONTEXT, not DECL_CLASS_CONTEXT.
+	(strictly_overrides): Use DECL_CONTEXT, not DECL_CLASS_CONTEXT.
+	(build_vtbl_or_vbase_field): Don't set DECL_CLASS_CONTEXT.
+	(build_base_field): Likewise.
+	(finish_struct_1): Likewise.
+	(build_self_reference): Likewise.
+	* decl.c (push_class_binding): Use CP_DECL_CONTEXT, not
+	DECL_REAL_CONTEXT.
+	(pushtag): Use decl_function_context, not
+	hack_decl_function_context.
+	(decls_match): Use CP_DECL_CONTEXT, not DECL_REAL_CONTEXT.
+	(duplicate_decls): Use DECL_VIRTUAL_CONTEXT.
+	(pushdecl): Remove bogus code.
+	(start_decl): Use DECL_CONTEXT rather than DECL_CLASS_CONTEXT.
+	(cp_finish_decl): Use CP_DECL_CONTEXT, not DECL_REAL_CONTEXT.
+	(grokfndecl): Use DECL_CONTEXT, not DECL_CLASS_CONTEXT.
+	Use decl_function_context, nothack_decl_function_context.
+	(grokvardecl): Don't set DECL_CLASS_CONTEXT.
+	(grokdeclarator): Likewise.  Use decl_function_context, not
+	hack_decl_function_context.
+	(copy_args_p): Document.  Don't use DECL_CLASS_CONTEXT.
+	(start_function): Use DECL_FRIEND_CONTEXT, not
+	DECL_CLASS_CONTEXT.  Use decl_function_context, not
+	hack_decl_function_context.
+	(finish_function): Use decl_function_context, not
+	hack_decl_function_context.
+	(maybe_retrofit_in_chrg): Use DECL_CONTEXT, not
+	DECL_CLASS_CONTEXT.
+	(grokclassfn): Set DECL_VIRTUAL_CONTEXT, not DECL_CONTEXT.
+	(finish_static_data_member_decl): Don't set DECL_CLASS_CONTEXT.
+	(grokfield): Likewise.
+	(finish_builtin_type): Likewise.
+	(finish_vtable_vardec): Use decl_function_context, not
+	hack_decl_function_context.
+	(import_export_decl): Use DECL_CONTEXT, not DECL_CLASS_CONTEXT.
+	(start_static_initialization_or_destruction): Likewise.
+	(finish_static_initialization_or_destruction): Likewise.
+	(mark_used): Adjust logic for deciding when to synthesize methods.
+	* dump.c (dequeue_and_dump): Use CP_DECL_CONTEXT, not
+	DECL_REAL_CONTEXT.
+	* error.c (dump_function_decl): Use DECL_CONTEXT, not
+	DECL_CLASS_CONTEXT.
+	* friend.c (is_friend): Likewise.
+	(add_friends): Remove.
+	(do_friend): Use SET_DECL_FRIEND_CONTEXT.
+	* lex.c (begin_definition_of_inclass_inline): Use
+	decl_function_context, not hack_decl_function_context.
+	(process_next_inline): Likewise.
+	(do_identifier): Use CP_DECL_CONTEXT, not DECL_REAL_CONTEXT.
+	* method.c (set_mangled_name_for_decl): Use DECL_CONTEXT, not
+	DECL_CLASSS_CONTEXT.
+	(hack_identifier): Likewise.
+	(synthesize_method):  Use decl_function_context, not
+	hack_decl_function_context.
+	* pt.c (template_class_depth_real): Use CP_DECL_CONTEXT, not
+	DECL_REAL_CONTEXT.
+	(is_member_template): Use decl_function_context, not
+	hack_decl_function_context.  Use DECL_CONTEXT, not
+	DECL_CLASS_CONTEXT.
+	(build_template_decl): Set DECL_VIRTUAL_CONTEXT, not 
+	DECL_CLASS_CONTEXT.
+	(check_default_tmpl_args): Use CP_DECL_CONTEXT, not
+	DECL_REAL_CONTEXT.
+	(push_template_decl_real): Likewise.
+	(instantiate_class_template): Don't call add_friends.
+	(tsubst_default_argument): Use DECL_CONTEXT, not
+	DECL_REAL_CONTEXT.
+	(tsubst_decl): Set DECL_VIRTUAL_CONTEXT, not DECL_CLASS_CONTEXT.
+	Use DECL_CONTEXT, not DECL_CLASS_CONTEXT.
+	(set_meangled_name_for_template_decl): Use DECL_CONTEXT, not
+	DECL_CLASS_CONTEXT.
+	* repo.c (repo_inline_used): Likewise.
+	* search.c (current_scope): Adjust for new _CONTEXT macros.
+	(context_for_name_lookup): Use CP_DECL_CONTEXT, not
+	DECL_REAL_CONTEXT.
+	(friend_accessible_p): Use DECL_CONTEXT, not DECL_CLASS_CONTEXT.
+	(lookup_fnfields_here):Likewise.
+	(check_final_overrider): Likewise.
+	(init_vbase_pointers): Likewise.
+	(virtual_context): Likewise.
+	* semantics.c (finish_member_declaration): Just set DECL_CONTEXT.
+	(expand_body): Use decl_function_context, not
+	hack_decl_function_context.
+	* tree.c (hack_decl_function_context): Remove.
+	* typeck.c (build_x_function_call): Use DECL_CONTEXT, not
+	DECL_CLASS_CONTEXT.
+	* typeck2.c (error_not_base_type): Likewise.
+	
 2000-02-15  Jason Merrill  <jason@casey.cygnus.com>
 
 	* decl.c (xref_tag): Don't SET_IDENTIFIER_NAMESPACE_VALUE.

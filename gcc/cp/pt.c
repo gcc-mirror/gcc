@@ -244,7 +244,7 @@ template_class_depth_real (type, count_specializations)
   for (depth = 0; 
        type && TREE_CODE (type) != NAMESPACE_DECL;
        type = (TREE_CODE (type) == FUNCTION_DECL) 
-	 ? DECL_REAL_CONTEXT (type) : TYPE_CONTEXT (type))
+	 ? CP_DECL_CONTEXT (type) : TYPE_CONTEXT (type))
     {
       if (TREE_CODE (type) != FUNCTION_DECL)
 	{
@@ -430,7 +430,7 @@ is_member_template (t)
     return 0;
 
   /* A local class can't have member templates.  */
-  if (hack_decl_function_context (t))
+  if (decl_function_context (t))
     return 0;
 
   return (DECL_FUNCTION_MEMBER_P (DECL_TEMPLATE_RESULT (t))
@@ -438,7 +438,7 @@ is_member_template (t)
 	     there are template classes surrounding the declaration,
 	     then we have a member template.  */
 	  && (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (t)) > 
-	      template_class_depth (DECL_CLASS_CONTEXT (t))));
+	      template_class_depth (DECL_CONTEXT (t))));
 }
 
 #if 0 /* UNUSED */
@@ -1934,7 +1934,7 @@ build_template_decl (decl, parms)
   DECL_CONTEXT (tmpl) = DECL_CONTEXT (decl);
   if (DECL_LANG_SPECIFIC (decl))
     {
-      DECL_CLASS_CONTEXT (tmpl) = DECL_CLASS_CONTEXT (decl);
+      DECL_VIRTUAL_CONTEXT (tmpl) = DECL_VIRTUAL_CONTEXT (decl);
       DECL_STATIC_FUNCTION_P (tmpl) = DECL_STATIC_FUNCTION_P (decl);
       DECL_CONSTRUCTOR_P (tmpl) = DECL_CONSTRUCTOR_P (decl);
       DECL_NONCONVERTING_P (tmpl) = DECL_NONCONVERTING_P (decl);
@@ -2197,7 +2197,7 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
      in the template-parameter-list of the definition of a member of a
      class template.  */
 
-  if (TREE_CODE (DECL_REAL_CONTEXT (decl)) == FUNCTION_DECL)
+  if (TREE_CODE (CP_DECL_CONTEXT (decl)) == FUNCTION_DECL)
     /* You can't have a function template declaration in a local
        scope, nor you can you define a member of a class template in a
        local scope.  */
@@ -2208,7 +2208,11 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
       && DECL_LANG_SPECIFIC (decl)
       /* If this is either a friend defined in the scope of the class
 	 or a member function.  */
-      && DECL_CLASS_CONTEXT (decl) == current_class_type
+      && ((DECL_CONTEXT (decl) 
+	   && same_type_p (DECL_CONTEXT (decl), current_class_type))
+	  || (DECL_FRIEND_CONTEXT (decl)
+	      && same_type_p (DECL_FRIEND_CONTEXT (decl), 
+			      current_class_type)))
       /* And, if it was a member function, it really was defined in
 	 the scope of the class.  */
       && (!DECL_FUNCTION_MEMBER_P (decl) || DECL_DEFINED_IN_CLASS_P (decl)))
@@ -2348,11 +2352,11 @@ push_template_decl_real (decl, is_friend)
     /* For a friend, we want the context of the friend function, not
        the type of which it is a friend.  */
     ctx = DECL_CONTEXT (decl);
-  else if (DECL_REAL_CONTEXT (decl)
-	   && TREE_CODE (DECL_REAL_CONTEXT (decl)) != NAMESPACE_DECL)
+  else if (CP_DECL_CONTEXT (decl)
+	   && TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL)
     /* In the case of a virtual function, we want the class in which
        it is defined.  */
-    ctx = DECL_REAL_CONTEXT (decl);
+    ctx = CP_DECL_CONTEXT (decl);
   else
     /* Otherwise, if we're currently definining some class, the DECL
        is assumed to be a member of the class.  */
@@ -5012,11 +5016,7 @@ instantiate_class_template (type)
 		      tsubst_friend_function (TREE_VALUE (friends),
 					      args));
 	else
-	  add_friends (type, 
-		       tsubst_copy (TREE_PURPOSE (t), args,
-				    /*complain=*/1, NULL_TREE),
-		       tsubst (TREE_PURPOSE (friends), args,
-			       /*complain=*/1, NULL_TREE));
+	  my_friendly_abort (20000216);
     }
 
   for (t = CLASSTYPE_FRIEND_CLASSES (pattern);
@@ -5337,7 +5337,7 @@ tsubst_default_argument (fn, type, arg)
      we must be careful to do name lookup in the scope of S<T>,
      rather than in the current class.  */
   if (DECL_CLASS_SCOPE_P (fn))
-    pushclass (DECL_REAL_CONTEXT (fn), 2);
+    pushclass (DECL_CONTEXT (fn), 2);
 
   arg = tsubst_expr (arg, DECL_TI_ARGS (fn), /*complain=*/1, NULL_TREE);
   
@@ -5453,12 +5453,13 @@ tsubst_decl (t, args, type, in_decl)
 	  }
 
 	DECL_CONTEXT (r) 
-	  = tsubst_aggr_type (DECL_CONTEXT (t), args, /*complain=*/1,
-			      in_decl, /*entering_scope=*/1);
-	DECL_CLASS_CONTEXT (r) 
-	  = tsubst_aggr_type (DECL_CLASS_CONTEXT (t), args, 
+	  = tsubst_aggr_type (DECL_CONTEXT (t), args, 
 			      /*complain=*/1, in_decl, 
 			      /*entering_scope=*/1); 
+	DECL_VIRTUAL_CONTEXT (r) 
+	  = tsubst_aggr_type (DECL_VIRTUAL_CONTEXT (t), args, 
+			      /*complain=*/1, in_decl, 
+			      /*entering_scope=*/1);
 	DECL_TEMPLATE_INFO (r) = build_tree_list (t, args);
 
 	if (TREE_CODE (decl) == TYPE_DECL)
@@ -5660,14 +5661,14 @@ tsubst_decl (t, args, type, in_decl)
 	      member = 2;
 	    else
 	      member = 1;
-	    ctx = tsubst_aggr_type (DECL_CLASS_CONTEXT (t), args, 
+	    ctx = tsubst_aggr_type (DECL_CONTEXT (t), args, 
 				    /*complain=*/1, t, 
 				    /*entering_scope=*/1);
 	  }
 	else
 	  {
 	    member = 0;
-	    ctx = NULL_TREE;
+	    ctx = DECL_CONTEXT (t);
 	  }
 	type = tsubst (type, args, /*complain=*/1, in_decl);
 	if (type == error_mark_node)
@@ -5683,10 +5684,11 @@ tsubst_decl (t, args, type, in_decl)
 	DECL_USE_TEMPLATE (r) = 0;
 	TREE_TYPE (r) = type;
 
-	DECL_CONTEXT (r)
-	  = tsubst_aggr_type (DECL_CONTEXT (t), args, /*complain=*/1, t,
+	DECL_CONTEXT (r) = ctx;
+	DECL_VIRTUAL_CONTEXT (r)
+	  = tsubst_aggr_type (DECL_VIRTUAL_CONTEXT (t), args, 
+			      /*complain=*/1, t,
 			      /*entering_scope=*/1);
-	DECL_CLASS_CONTEXT (r) = ctx;
 
 	if (member && IDENTIFIER_TYPENAME_P (DECL_NAME (r)))
 	  /* Type-conversion operator.  Reconstruct the name, in
@@ -5909,7 +5911,6 @@ tsubst_decl (t, args, type, in_decl)
 	DECL_RTL (r) = 0;
 	DECL_SIZE (r) = 0;
 	copy_lang_decl (r);
-	DECL_CLASS_CONTEXT (r) = DECL_CONTEXT (r);
 
 	/* For __PRETTY_FUNCTION__ we have to adjust the initializer.  */
 	if (DECL_PRETTY_FUNCTION_P (r))
@@ -9888,7 +9889,7 @@ set_mangled_name_for_template_decl (decl)
      with the innermost level omitted.  */
   fn_type = TREE_TYPE (tmpl);
   if (DECL_STATIC_FUNCTION_P (decl))
-    context = DECL_CLASS_CONTEXT (decl);
+    context = DECL_CONTEXT (decl);
 
   if (parm_depth == 1)
     /* No substitution is necessary.  */

@@ -556,7 +556,7 @@ dequeue_and_dump (di)
 
     case FUNCTION_DECL:
     case THUNK_DECL:
-      dump_child ("scpe", DECL_REAL_CONTEXT (t));
+      dump_child ("scpe", CP_DECL_CONTEXT (t));
       dump_child ("mngl", DECL_ASSEMBLER_NAME (t));
       dump_child ("args", DECL_ARGUMENTS (t));
       if (DECL_EXTERNAL (t))

@@ -2615,18 +2615,18 @@ build_x_function_call (function, params, decl)
       if (TREE_CODE (function) == FUNCTION_DECL
 	  || DECL_FUNCTION_TEMPLATE_P (function))
 	{
-	  basetype = DECL_CLASS_CONTEXT (function);
+	  basetype = DECL_CONTEXT (function);
 
 	  if (DECL_NAME (function))
 	    function = DECL_NAME (function);
 	  else
-	    function = TYPE_IDENTIFIER (DECL_CLASS_CONTEXT (function));
+	    function = TYPE_IDENTIFIER (DECL_CONTEXT (function));
 	}
       else if (TREE_CODE (function) == TREE_LIST)
 	{
 	  my_friendly_assert (TREE_CODE (TREE_VALUE (function))
 			      == FUNCTION_DECL, 312);
-	  basetype = DECL_CLASS_CONTEXT (TREE_VALUE (function));
+	  basetype = DECL_CONTEXT (TREE_VALUE (function));
 	  function = TREE_PURPOSE (function);
 	}
       else if (TREE_CODE (function) != IDENTIFIER_NODE)
@@ -6269,7 +6269,7 @@ expand_ptrmemfunc_cst (cst, delta, idx, pfn, delta2)
   my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 0);
 
   /* The class that the function belongs to.  */
-  fn_class = DECL_CLASS_CONTEXT (fn);
+  fn_class = DECL_CONTEXT (fn);
 
   /* The class that we're creating a pointer to member of.  */
   ptr_class = TYPE_PTRMEMFUNC_OBJECT_TYPE (type);

@@ -1005,12 +1005,12 @@ push_class_binding (id, decl)
       else
 	{
 	  if (TREE_CODE (decl) == OVERLOAD)
-	    context = DECL_REAL_CONTEXT (OVL_CURRENT (decl));
+	    context = CP_DECL_CONTEXT (OVL_CURRENT (decl));
 	  else
 	    {
 	      my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd',
 				  0);
-	      context = DECL_REAL_CONTEXT (decl);
+	      context = CP_DECL_CONTEXT (decl);
 	    }
 
 	  if (is_properly_derived_from (current_class_type, context))
@@ -2662,7 +2662,7 @@ pushtag (name, type, globalize)
 		/* When declaring a friend class of a local class, we want
 		   to inject the newly named class into the scope
 		   containing the local class, not the namespace scope.  */
-		context = hack_decl_function_context (get_type_decl (cs));
+		context = decl_function_context (get_type_decl (cs));
 	    }
 	  if (!context)
 	    context = current_namespace;
@@ -2805,7 +2805,7 @@ decls_match (newdecl, olddecl)
       tree p1 = TYPE_ARG_TYPES (f1);
       tree p2 = TYPE_ARG_TYPES (f2);
 
-      if (DECL_REAL_CONTEXT (newdecl) != DECL_REAL_CONTEXT (olddecl)
+      if (CP_DECL_CONTEXT (newdecl) != CP_DECL_CONTEXT (olddecl)
 	  && ! (DECL_LANGUAGE (newdecl) == lang_c
 		&& DECL_LANGUAGE (olddecl) == lang_c))
 	return 0;
@@ -3070,7 +3070,7 @@ duplicate_decls (newdecl, olddecl)
     }
   else if (!types_match)
     {
-      if (DECL_REAL_CONTEXT (newdecl) != DECL_REAL_CONTEXT (olddecl))
+      if (CP_DECL_CONTEXT (newdecl) != CP_DECL_CONTEXT (olddecl))
 	/* These are certainly not duplicate declarations; they're
 	   from different scopes.  */
 	return 0;
@@ -3255,10 +3255,10 @@ duplicate_decls (newdecl, olddecl)
 	 definition.  */
       if (DECL_VINDEX (olddecl))
 	DECL_VINDEX (newdecl) = DECL_VINDEX (olddecl);
+      if (DECL_VIRTUAL_CONTEXT (olddecl))
+	DECL_VIRTUAL_CONTEXT (newdecl) = DECL_VIRTUAL_CONTEXT (olddecl);
       if (DECL_CONTEXT (olddecl))
 	DECL_CONTEXT (newdecl) = DECL_CONTEXT (olddecl);
-      if (DECL_CLASS_CONTEXT (olddecl))
-	DECL_CLASS_CONTEXT (newdecl) = DECL_CLASS_CONTEXT (olddecl);
       if (DECL_PENDING_INLINE_INFO (newdecl) == (struct pending_inline *)0)
 	DECL_PENDING_INLINE_INFO (newdecl) = DECL_PENDING_INLINE_INFO (olddecl);
       DECL_STATIC_CONSTRUCTOR (newdecl) |= DECL_STATIC_CONSTRUCTOR (olddecl);
@@ -3641,8 +3641,6 @@ pushdecl (x)
 	     scoped of the current namespace, not the current
 	     function.  */
 	  && !(TREE_CODE (x) == VAR_DECL && DECL_EXTERNAL (x))
-	  /* Don't change DECL_CONTEXT of virtual methods.  */
-	  && (TREE_CODE (x) != FUNCTION_DECL || !DECL_VIRTUAL_P (x))
 	  && !DECL_CONTEXT (x))
 	DECL_CONTEXT (x) = current_function_decl;
       if (!DECL_CONTEXT (x))
@@ -6713,10 +6711,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   if (type == error_mark_node)
     return NULL_TREE;
 
-  context
-    = (TREE_CODE (decl) == FUNCTION_DECL && DECL_VIRTUAL_P (decl))
-      ? DECL_CLASS_CONTEXT (decl)
-      : DECL_CONTEXT (decl);
+  context = DECL_CONTEXT (decl);
 
   if (initialized && context && TREE_CODE (context) == NAMESPACE_DECL
       && context != current_namespace && TREE_CODE (decl) == VAR_DECL)
@@ -7690,7 +7685,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
     }
 
   if (current_class_type
-      && DECL_REAL_CONTEXT (decl) == current_class_type
+      && CP_DECL_CONTEXT (decl) == current_class_type
       && TYPE_BEING_DEFINED (current_class_type)
       && (DECL_INITIAL (decl) || init))
     DECL_DEFINED_IN_CLASS_P (decl) = 1;
@@ -7855,7 +7850,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 	 due to initialization of qualified member variable.
 	 I.e., Foo::x = 10;  */
       {
-	tree context = DECL_REAL_CONTEXT (decl);
+	tree context = CP_DECL_CONTEXT (decl);
 	if (context
 	    && TREE_CODE_CLASS (TREE_CODE (context)) == 't'
 	    && (TREE_CODE (decl) == VAR_DECL
@@ -8465,7 +8460,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
     }
 
   if (ctype)
-    DECL_CLASS_CONTEXT (decl) = ctype;
+    DECL_CONTEXT (decl) = ctype;
 
   if (ctype == NULL_TREE && DECL_MAIN_P (decl))
     {
@@ -8482,7 +8477,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   /* Members of anonymous types and local classes have no linkage; make
      them internal.  */
   if (ctype && (ANON_AGGRNAME_P (TYPE_IDENTIFIER (ctype))
-		|| hack_decl_function_context (TYPE_MAIN_DECL (ctype))))
+		|| decl_function_context (TYPE_MAIN_DECL (ctype))))
     publicp = 0;
 
   if (publicp)
@@ -8530,7 +8525,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   if (IDENTIFIER_OPNAME_P (DECL_NAME (decl)))
     grok_op_properties (decl, virtualp, check < 0);
 
-  if (ctype && hack_decl_function_context (decl))
+  if (ctype && decl_function_context (decl))
     DECL_NO_STATIC_CHAIN (decl) = 1;
 
   for (t = TYPE_ARG_TYPES (TREE_TYPE (decl)); t; t = TREE_CHAIN (t))
@@ -8719,7 +8714,6 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
       type = TREE_TYPE (type);
       decl = build_lang_decl (VAR_DECL, declarator, type);
       DECL_CONTEXT (decl) = basetype;
-      DECL_CLASS_CONTEXT (decl) = basetype;
       DECL_ASSEMBLER_NAME (decl) = build_static_name (basetype, declarator);
     }
   else
@@ -10488,7 +10482,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  template_count += 1;
 		t = TYPE_MAIN_DECL (t);
 		if (DECL_LANG_SPECIFIC (t))
-		  t = DECL_CLASS_CONTEXT (t);
+		  t = DECL_CONTEXT (t);
 		else
 		  t = NULL_TREE;
 	      }
@@ -10975,7 +10969,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    /* Tell grokfndecl if it needs to set TREE_PUBLIC on the node.  */
 	    function_context = (ctype != NULL_TREE) ?
-	      hack_decl_function_context (TYPE_MAIN_DECL (ctype)) : NULL_TREE;
+	      decl_function_context (TYPE_MAIN_DECL (ctype)) : NULL_TREE;
 	    publicp = (! friendp || ! staticp)
 	      && function_context == NULL_TREE;
 	    decl = grokfndecl (ctype, type,
@@ -11718,17 +11712,26 @@ replace_defarg (arg, init)
   TREE_PURPOSE (arg) = init;
 }
 
+/* D is a constructor or overloaded `operator='.  Returns non-zero if
+   D's arguments allow it to be a copy constructor, or copy assignment
+   operator.  */
+
 int
 copy_args_p (d)
      tree d;
 {
-  tree t = FUNCTION_ARG_CHAIN (d);
+  tree t;
+
+  if (!DECL_FUNCTION_MEMBER_P (d))
+    return 0;
+
+  t = FUNCTION_ARG_CHAIN (d);
   if (DECL_CONSTRUCTOR_P (d)
       && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (d)))
     t = TREE_CHAIN (t);
   if (t && TREE_CODE (TREE_VALUE (t)) == REFERENCE_TYPE
       && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (t)))
-	  == DECL_CLASS_CONTEXT (d))
+	  == DECL_CONTEXT (d))
       && (TREE_CHAIN (t) == NULL_TREE
 	  || TREE_CHAIN (t) == void_list_node
 	  || TREE_PURPOSE (TREE_CHAIN (t))))
@@ -12972,7 +12975,7 @@ start_function (declspecs, declarator, attrs, flags)
 	 defined.  */
       if (!ctype && DECL_FRIEND_P (decl1))
 	{
-	  ctype = DECL_CLASS_CONTEXT (decl1);
+	  ctype = DECL_FRIEND_CONTEXT (decl1);
 
 	  /* CTYPE could be null here if we're dealing with a template;
 	     for example, `inline friend float foo()' inside a template
@@ -13216,7 +13219,7 @@ start_function (declspecs, declarator, attrs, flags)
 
   if (DECL_INTERFACE_KNOWN (decl1))
     {
-      tree ctx = hack_decl_function_context (decl1);
+      tree ctx = decl_function_context (decl1);
 
       if (DECL_NOT_REALLY_EXTERN (decl1))
 	DECL_EXTERNAL (decl1) = 0;
@@ -13273,7 +13276,7 @@ start_function (declspecs, declarator, attrs, flags)
       if ((DECL_THIS_INLINE (decl1) || DECL_TEMPLATE_INSTANTIATION (decl1))
 	  && ! DECL_INTERFACE_KNOWN (decl1)
 	  /* Don't try to defer nested functions for now.  */
-	  && ! hack_decl_function_context (decl1))
+	  && ! decl_function_context (decl1))
 	DECL_DEFER_OUTPUT (decl1) = 1;
       else
 	DECL_INTERFACE_KNOWN (decl1) = 1;
@@ -13921,7 +13924,7 @@ finish_function (lineno, flags)
       can_reach_end = 0;
 
       if (DECL_CONTEXT (fndecl) != NULL_TREE
-	  && hack_decl_function_context (fndecl))
+	  && decl_function_context (fndecl))
 	/* Trick rest_of_compilation into not deferring output of this
 	   function, even if it is inline, since the rtl_obstack for
 	   this function is the function_obstack of the enclosing

@@ -1726,7 +1726,7 @@ set_mangled_name_for_decl (decl)
 
   if (DECL_STATIC_FUNCTION_P (decl))
     parm_types = 
-      hash_tree_chain (build_pointer_type (DECL_CLASS_CONTEXT (decl)),
+      hash_tree_chain (build_pointer_type (DECL_CONTEXT (decl)),
 					   parm_types);
   else
     /* The only member functions whose type is a FUNCTION_TYPE, rather
@@ -1930,7 +1930,7 @@ hack_identifier (value, name)
       if (TREE_CODE (value) == OVERLOAD)
 	value = OVL_CURRENT (value);
 
-      decl = maybe_dummy_object (DECL_CLASS_CONTEXT (value), 0);
+      decl = maybe_dummy_object (DECL_CONTEXT (value), 0);
       value = build_component_ref (decl, name, NULL_TREE, 1);
     }
   else if (really_overloaded_fn (value))
@@ -1979,15 +1979,10 @@ hack_identifier (value, name)
   if (TREE_CODE_CLASS (TREE_CODE (value)) == 'd' && DECL_NONLOCAL (value))
     {
       if (DECL_CLASS_SCOPE_P (value)
-	  && DECL_CLASS_CONTEXT (value) != current_class_type)
+	  && DECL_CONTEXT (value) != current_class_type)
 	{
 	  tree path;
-	  register tree context
-	    = (TREE_CODE (value) == FUNCTION_DECL && DECL_VIRTUAL_P (value))
-	      ? DECL_CLASS_CONTEXT (value)
-	      : DECL_CONTEXT (value);
-
-	  path = currently_open_derived_class (context);
+	  path = currently_open_derived_class (DECL_CONTEXT (value));
 	  enforce_access (path, value);
 	}
     }
@@ -2349,7 +2344,7 @@ synthesize_method (fndecl)
      tree fndecl;
 {
   int nested = (current_function_decl != NULL_TREE);
-  tree context = hack_decl_function_context (fndecl);
+  tree context = decl_function_context (fndecl);
   int need_body = 1;
 
   if (at_eof)

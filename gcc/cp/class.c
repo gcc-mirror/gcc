@@ -409,7 +409,7 @@ dfs_build_vcall_offset_vtbl_entries (binfo, data)
 
       /* Figure out what function we're looking at.  */
       fn = TREE_VALUE (virtuals);
-      base = DECL_CLASS_CONTEXT (fn);
+      base = DECL_CONTEXT (fn);
 
       /* The FN is comes from BASE.  So, we must caculate the
 	 adjustment from the virtual base that derived from BINFO to
@@ -1428,10 +1428,10 @@ void
 add_method (type, fields, method)
      tree type, *fields, method;
 {
-  /* Setting the DECL_CONTEXT and DECL_CLASS_CONTEXT here is probably
-     redundant.  */
+  /* Setting the DECL_CONTEXT and DECL_VIRTUAL_CONTEXT 
+     here is probably redundant.  */
   DECL_CONTEXT (method) = type;
-  DECL_CLASS_CONTEXT (method) = type;
+  DECL_VIRTUAL_CONTEXT (method) = type;
   
   if (fields && *fields)
     *fields = build_overload (method, *fields);
@@ -3153,8 +3153,8 @@ static int
 strictly_overrides (fndecl1, fndecl2)
      tree fndecl1, fndecl2;
 {
-  int distance = get_base_distance (DECL_CLASS_CONTEXT (fndecl2),
-				    DECL_CLASS_CONTEXT (fndecl1),
+  int distance = get_base_distance (DECL_CONTEXT (fndecl2),
+				    DECL_CONTEXT (fndecl1),
 				    0, (tree *)0);
   if (distance == -2 || distance > 0)
     return 1;
@@ -4003,7 +4003,6 @@ build_vtbl_or_vbase_field (name, assembler_name, type, class_type, fcontext,
   DECL_VIRTUAL_P (field) = 1;
   DECL_ARTIFICIAL (field) = 1;
   DECL_FIELD_CONTEXT (field) = class_type;
-  DECL_CLASS_CONTEXT (field) = class_type;
   DECL_FCONTEXT (field) = fcontext;
   DECL_SAVED_INSNS (field) = 0;
   DECL_FIELD_SIZE (field) = 0;
@@ -4063,7 +4062,7 @@ build_base_field (t, binfo, empty_p, saw_empty_p, base_align)
   
   decl = build_lang_decl (FIELD_DECL, NULL_TREE, basetype);
   DECL_ARTIFICIAL (decl) = 1;
-  DECL_FIELD_CONTEXT (decl) = DECL_CLASS_CONTEXT (decl) = t;
+  DECL_FIELD_CONTEXT (decl) = t;
   DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
   DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
   
@@ -4936,7 +4935,6 @@ finish_struct_1 (t)
       if (! integer_zerop (offset))
 	offset = size_binop (MULT_EXPR, offset, size_int (BITS_PER_UNIT));
       DECL_FIELD_CONTEXT (vfield) = t;
-      DECL_CLASS_CONTEXT (vfield) = t;
       DECL_FIELD_BITPOS (vfield)
 	= size_binop (PLUS_EXPR, offset, DECL_FIELD_BITPOS (vfield));
       TYPE_VFIELD (t) = vfield;
@@ -6195,7 +6193,6 @@ build_self_reference ()
 
   DECL_NONLOCAL (value) = 1;
   DECL_CONTEXT (value) = current_class_type;
-  DECL_CLASS_CONTEXT (value) = current_class_type;
   DECL_ARTIFICIAL (value) = 1;
 
   if (processing_template_decl)

@@ -1990,14 +1990,7 @@ finish_member_declaration (decl)
     }
 
   /* Mark the DECL as a member of the current class.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL 
-      || DECL_FUNCTION_TEMPLATE_P (decl))
-    /* Historically, DECL_CONTEXT was not set for a FUNCTION_DECL in
-       finish_struct.  Presumably it is already set as the function is
-       parsed.  Perhaps DECL_CLASS_CONTEXT is already set, too?  */
-    DECL_CLASS_CONTEXT (decl) = current_class_type;
-  else
-    DECL_CONTEXT (decl) = current_class_type;
+  DECL_CONTEXT (decl) = current_class_type;
 
   /* Put functions on the TYPE_METHODS list and everything else on the
      TYPE_FIELDS list.  Note that these are built up in reverse order.
@@ -2722,7 +2715,7 @@ expand_body (fn)
 	 DECL_COMDAT.  */
       && (!at_eof || DECL_COMDAT (fn))
       /* Or if this is a nested function.  */
-      && !hack_decl_function_context (fn))
+      && !decl_function_context (fn))
     {
       /* Give the function RTL now so that we can assign it to a
 	 function pointer, etc.  */

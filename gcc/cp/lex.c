@@ -1278,7 +1278,7 @@ begin_definition_of_inclass_inline (pi)
   /* If this is an inline function in a local class, we must make sure
      that we save all pertinent information about the function
      surrounding the local class.  */
-  context = hack_decl_function_context (pi->fndecl);
+  context = decl_function_context (pi->fndecl);
   if (context)
     push_function_context_to (context);
 
@@ -1340,7 +1340,7 @@ process_next_inline (i)
      struct pending_inline *i;
 {
   tree context;
-  context = hack_decl_function_context (i->fndecl);  
+  context = decl_function_context (i->fndecl);  
   if (context)
     pop_function_context_from (context);
   i = i->next;
@@ -3176,7 +3176,7 @@ do_identifier (token, parsing, args)
     {
       /* Check access.  */
       if (IDENTIFIER_CLASS_VALUE (token) == id)
-	enforce_access (DECL_REAL_CONTEXT(id), id);
+	enforce_access (CP_DECL_CONTEXT(id), id);
       if (!processing_template_decl || DECL_TEMPLATE_PARM_P (id))
 	id = DECL_INITIAL (id);
     }
