@@ -1,3 +1,11 @@
+2004-10-01  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* common.opt (ftree-loop-ivcanon): Enable by default.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely):
+	Enable complete loop unrolling.
+	(canonicalize_induction_variables, tree_unroll_loops_completely):
+	Reset scev info.
+
 2004-01-01  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (thumb_compute_saved_rag_mask): Or with bitmask,

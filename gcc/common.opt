@@ -857,7 +857,7 @@ Common Report Var(flag_tree_loop_linear)
 Enable linear loop transforms on trees
 
 ftree-loop-ivcanon
-Common Report Var(flag_tree_loop_ivcanon)
+Common Report Var(flag_tree_loop_ivcanon) Init(1)
 Create canonical induction variables in loops
 
 ftree-loop-optimize
