@@ -1298,10 +1298,12 @@ static const char *
 (JNICALL _Jv_JNI_GetStringUTFChars) (JNIEnv *env, jstring string, 
                                      jboolean *isCopy)
 {
-  string = unwrap (string);
-  jsize len = JvGetStringUTFLength (string);
   try
     {
+      string = unwrap (string);
+      if (string == NULL)
+	return NULL;
+      jsize len = JvGetStringUTFLength (string);
       char *r = (char *) _Jv_Malloc (len + 1);
       JvGetStringUTFRegion (string, 0, string->length(), r);
       r[len] = '\0';
