@@ -1,6 +1,6 @@
 2005-03-16  Daniel Berlin  <dberlin@dberlin.org>
 
-	Fix PR tree-optimization/20940
+	Fix PR tree-optimization/20490
 	
 	* tree-ssa-pre.c (create_expression_by_pieces): Use
 	force_gimple_operand on result of fold.
