@@ -1,3 +1,8 @@
+2000-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (build_vtable_entry): Don't build thunks for type-info
+	functions.
+
 2000-04-16  Jason Merrill  <jason@casey.cygnus.com>
 
 	* decl.c (decls_match): Allow a redeclaration of a builtin to

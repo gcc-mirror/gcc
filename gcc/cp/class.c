@@ -6924,11 +6924,14 @@ build_vtable_entry (delta, vcall_index, entry)
     {
       HOST_WIDE_INT idelta;
       HOST_WIDE_INT ivindex;
+      tree fn;
 
       idelta = tree_low_cst (delta, 0);
       ivindex = tree_low_cst (vcall_index, 0);
+      fn = TREE_OPERAND (entry, 0);
       if ((idelta || ivindex) 
-	  && TREE_OPERAND (entry, 0) != abort_fndecl)
+	  && fn != abort_fndecl
+	  && !DECL_TINFO_FN_P (fn))
 	{
 	  entry = make_thunk (entry, idelta, ivindex);
 	  entry = build1 (ADDR_EXPR, vtable_entry_type, entry);
