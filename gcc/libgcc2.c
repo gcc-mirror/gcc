@@ -3178,10 +3178,15 @@ eh_context_initialize ()
 static struct eh_context *
 eh_context_static ()
 {
-  static struct eh_context *eh;
-  if (! eh)
-    eh = new_eh_context ();
-  return eh;
+  static struct eh_context eh;
+  static int initialized;
+  if (! initialized)
+    {
+      initialized = 1;
+      memset (&eh, 0, sizeof eh);
+      eh.dynamic_handler_chain = top_elt;
+    }
+  return &eh;
 }
 
 #if __GTHREADS
