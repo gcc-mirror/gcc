@@ -1,6 +1,6 @@
-/* Definitions of target machine for GNU compiler, MIL-STD-1750A version.
+/* Definitions of target machine for GNU compiler.
    Copyright (C) 1994 Free Software Foundation, Inc.
-   Contributed by O.M.Kellogg, Deutsche Aerospace (okellogg@salyko.cube.net).
+   Contributed by O.M.Kellogg, DASA (okellogg@salyko.cube.net).
 
 This file is part of GNU CC.
 
@@ -48,7 +48,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* SPECIAL ADDITION FOR MIL-STD-1750A     by O.M.Kellogg, 15-Apr-1993 */
 /* See file aux-output.c for the actual data instances. */
 struct datalabel_array {
-    char name[14];
+    char *name;
     char value[14];
     int size;
 };
@@ -56,7 +56,7 @@ struct jumplabel_array {
     int pc;
     int num;
 };
-enum section { NREL, IREL, KREL, SREL };
+enum section { Init, Normal, Konst, Static };
 #define DATALBL_ARRSIZ 256
 #define JMPLBL_ARRSIZ  256
 #ifndef __datalbl
@@ -65,6 +65,7 @@ extern struct jumplabel_array jmplbl[];
 extern int datalbl_ndx, jmplbl_ndx, label_pending, program_counter;
 extern enum section current_section;
 extern char *sectname[4];
+extern char *strdup(), *float_label();
 #endif
 /*--------------------------------------------------------------------*/
 
@@ -179,12 +180,11 @@ extern char *sectname[4];
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
-   R15 is the 1750A stack pointer. R14 would be the frame 
-   pointer, but we'd like to try avoid using it if possible. */
+   R15 is the 1750A stack pointer. R14 is the frame pointer. */
 
 #define FIXED_REGISTERS  \
  { 0, 0, 0, 0, 0, 0, 0, 0, \
-   0, 0, 0, 0, 0, 0, 0, 1 }
+   0, 0, 0, 0, 0, 0, 1, 1 }
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -232,7 +232,7 @@ extern char *sectname[4];
    Zero means the frame pointer need not be set up (and parms
    may be accessed via the stack pointer) in functions that seem suitable.
    This is computed in `reload', in reload1.c. */
-#define FRAME_POINTER_REQUIRED 0
+#define FRAME_POINTER_REQUIRED 1
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 14
@@ -348,11 +348,8 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
    (C) == 'O' ? (VALUE) == 0 :				0)
 
 /* Similar, but for floating constants, and defining letter 'G'.
-   Here VALUE is the CONST_DOUBLE rtx itself.
-   1750 longfloat constant 0.0 is worth recognizing 'cause it's got 
-   all bits zero. */
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'G' && (VALUE) == CONST0_RTX(HFmode))
+   Here VALUE is the CONST_DOUBLE rtx itself.  */
+#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  0
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -452,7 +449,7 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /* 1 if the tree TYPE should be returned in memory instead of in regs. 
    #define RETURN_IN_MEMORY(TYPE) \
-   (int_size_in_bytes(TYPE) > 13)
+   (int_size_in_bytes(TYPE) > 12)
 */
 
 /* Define this if PCC uses the nonreentrant convention for returning
@@ -471,7 +468,7 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
    and about the args processed so far, enough to enable macros
    such as FUNCTION_ARG to determine where the next arg should go.
 
-   For 1750A, this is a single integer, which is a number of bytes
+   For 1750A, this is a single integer, which is a number of words
    of arguments scanned so far.  */
 
 #define CUMULATIVE_ARGS int
@@ -548,10 +545,10 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
     fprintf(FILE," (none)");				 	\
   fprintf(FILE,"\n");					 	\
   if (SIZE > 0)							\
-    fprintf(FILE,"\t%s   R15,%d  ; reserve local-variable space\n",\
-			 (SIZE <= 16 ? "SISP" : "SIM "),SIZE);	\
-  fprintf(FILE,"\tPSHM   R14,R14 ; push old frame\n");		\
-  fprintf(FILE,"\tLR     R14,R15 ; set new frame\n");		\
+    fprintf(FILE,"\t%s\tr15,%d  ; reserve local-variable space\n",\
+			 (SIZE <= 16 ? "sisp" : "sim"),SIZE);	\
+  fprintf(FILE,"\tpshm\tr14,r14 ; push old frame\n");		\
+  fprintf(FILE,"\tlr\tr14,r15 ; set new frame\n");		\
   program_counter = 0; jmplbl_ndx = -1;				\
 }
 
@@ -591,10 +588,11 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define FUNCTION_EPILOGUE(FILE, SIZE) {			\
   if (SIZE > 0)							\
-    fprintf(FILE,"\t%s   R14,%d ; free up local-var space\n",	\
-			 (SIZE <= 16 ? "AISP" : "AIM "),SIZE);	\
-  fprintf(FILE,"\tLR     R15,R14 ; set stack to return addr\n");\
-  fprintf(FILE,"\tURS    R15\n"); }
+    fprintf(FILE,"\t%s\tr14,%d ; free up local-var space\n",	\
+			 (SIZE <= 16 ? "aisp" : "aim"),SIZE);	\
+  fprintf(FILE,"\tlr\tr15,r14 ; set stack to return addr\n");	\
+  fprintf(FILE,"\tpopm\tr14,r14 ; restore prev. frame ptr\n");	\
+  fprintf(FILE,"\turs\tr15\n"); }
 
 /* If the memory address ADDR is relative to the frame pointer,
    correct it to be relative to the stack pointer instead.
@@ -602,7 +600,7 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
    ADDR should be a variable name. */
 
 #define FIX_FRAME_POINTER_ADDRESS(ADDR,DEPTH)  \
-   fprintf(asm_out_file,"FIX_FRAME_POINTER_ADDRESS called, DEPTH=%d\n"), \
+   fprintf(stderr,"FIX_FRAME_POINTER_ADDRESS called, DEPTH=%d\n"), \
            DEPTH), abort()
 
 /* Store in the variable DEPTH the initial difference between the
@@ -795,7 +793,7 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 /* (was: "1750: not counting the MOV instruction") */
-#define MOVE_MAX 256
+#define MOVE_MAX 16
 
 /* Define this if zero-extension is slow (more than one real instruction).  */
 /* #define SLOW_ZERO_EXTEND */
@@ -883,49 +881,51 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
    strcpy(name,p);							\
    if (p = (char *)strchr(name,'.'))					\
 	*p = '\0';							\
-   if (strlen(name) > 12)						\
-	name[12] = '\0';   /* TekAs can handle only up to 12 char. */	\
-   fprintf(FILE,"\tNAME %s\n",name); 					\
-   fprintf(FILE,"\tNOLIST\n\tINCLUDE \"M1750.INC\"\n\tLIST\n");		\
-   fprintf(FILE,"\n\tSECTION SREL\n\tSECTION KREL\n\tSECTION IREL\n");	\
-   fprintf(FILE,"\tSECTION NREL\n"); }
+   fprintf(FILE,"\tname %s\n",name); 					\
+   fprintf(FILE,"\tnolist\n\tinclude \"ms1750.inc\"\n\tlist\n\n");	\
+   fprintf(FILE,"\tglobal\t__main\n\n");  }
 
 /* Output at end of assembler file.  
    For 1750, we copy the data labels accrued in datalbl[] from the Constants 
-   section (KREL) to the Writable-Data section (SREL).     */
+   section (Konst) to the Writable-Data section (Static).     */
 
 #define ASM_FILE_END(FILE)	\
    do {									\
       if (datalbl_ndx >= 0) {						\
          int i, cum_size=0;						\
-         fprintf(FILE,"\n\tRESUME SREL\nINIT_SREL\n");			\
+         fprintf(FILE,"\n\tstatic\ninit_srel\n");			\
          for (i = 0; i <= datalbl_ndx; i++) {				\
-            fprintf(FILE,"%s\t BLOCK %d\n",				\
+	    if (datalbl[i].name == NULL)				\
+	    {								\
+	       fprintf(stderr, "asm_file_end internal datalbl err\n");	\
+	       exit (0);						\
+	    }								\
+            fprintf(FILE,"%s \tblock %d\n",				\
                  datalbl[i].name,datalbl[i].size);			\
             cum_size += datalbl[i].size;				\
 	 }								\
-         fprintf(FILE,"\n\tRESUME IREL\n");				\
-         fprintf(FILE,"\tLIM  R0,INIT_SREL\n");           /* destin. */	\
-         fprintf(FILE,"\tLIM  R1,%d\n",cum_size);         /* count */	\
-         fprintf(FILE,"\tLIM  R2,K%s\n",datalbl[0].name); /* source */	\
-         fprintf(FILE,"\tMOV  R0,R2\n");				\
-         fprintf(FILE,"\n\tRESUME NREL\n");				\
+         fprintf(FILE,"\n\tinit\n");					\
+         fprintf(FILE,"\tlim\tr0,init_srel\n");           /* destin. */	\
+         fprintf(FILE,"\tlim\tr1,%d\n",cum_size);         /* count */	\
+         fprintf(FILE,"\tlim\tr2,K%s\n",datalbl[0].name); /* source */	\
+         fprintf(FILE,"\tmov\tr0,r2\n");				\
+         fprintf(FILE,"\n\tnormal\n");					\
          datalbl_ndx = -1;			/* reset stuff */	\
          for (i = 0; i < DATALBL_ARRSIZ; i++)				\
             datalbl[i].size = 0;					\
       }									\
-      fprintf(FILE,"\n\tEND\n");					\
+      fprintf(FILE,"\n\tend\n");					\
    } while (0)
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 
-#define ASM_APP_ON "\n\tIF 0\n; by ASM_APP_ON\n"
+#define ASM_APP_ON "\n\tif 0\n; by ASM_APP_ON\n"
 
 /* Output to assembler file text saying following lines
    no longer contain unusual constructs.  */
 
-#define ASM_APP_OFF "\n\tENDIF\n"
+#define ASM_APP_OFF "\n\tendif\n"
 
 
 #define EXTRA_SECTIONS  in_readonly_data
@@ -933,23 +933,24 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define EXTRA_SECTION_FUNCTIONS		\
     void const_section()				\
     {							\
-	fprintf(asm_out_file,"\tRESUME KREL\n");	\
-	current_section = KREL;				\
+	fprintf(asm_out_file,"\tkonst\n");		\
+	current_section = Konst;				\
     }							\
     check_section(enum section sect)			\
     {							\
         if (current_section != sect) {			\
-	    fprintf(asm_out_file,"\tRESUME %s\n",sectname[(int)sect]); \
+	    fprintf(asm_out_file,"\t%s\n",sectname[(int)sect]); \
 	    current_section = sect;			\
 	}						\
 	switch (sect) {					\
-	  case NREL:					\
+	  case Init:					\
+	  case Normal:					\
 	    in_section = in_text;			\
 	    break;					\
-	  case SREL:					\
+	  case Static:					\
 	    in_section = in_data;			\
 	    break;					\
-	  case KREL:					\
+	  case Konst:					\
 	    in_section = in_readonly_data;		\
 	    break;					\
 	}						\
@@ -959,11 +960,14 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Function that switches to the read-only data section (optional) */
 #define READONLY_DATA_SECTION	const_section
 
+/* Output before program init section */
+#define INIT_SECTION_ASM_OP "\n\tinit     ; init_section\n"
+
 /* Output before program text section */
-#define TEXT_SECTION_ASM_OP "\n\tRESUME NREL   ; text_section\n"
+#define TEXT_SECTION_ASM_OP "\n\tnormal   ; text_section\n"
 
 /* Output before writable data.  */
-#define DATA_SECTION_ASM_OP "\n\tRESUME SREL   ; data_section\n"
+#define DATA_SECTION_ASM_OP "\n\tstatic   ; data_section\n"
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
@@ -978,7 +982,7 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /******************  Assembler output formatting  **********************/
 
-#define ASM_IDENTIFY_GCC(FILE)
+#define ASM_IDENTIFY_GCC(FILE)  fputs ("; gcc2_compiled:\n", FILE)
 
 #define ASM_COMMENT_START  ";"
 
@@ -986,6 +990,13 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 	fprintf(FILE,"%s\n",NAME)
 
 #define ASM_OUTPUT_OPCODE(FILE,PTR)  do {		\
+	while (*(PTR) != '\0' && *(PTR) != ' ') {	\
+	    putc (*(PTR), FILE);			\
+	    (PTR)++;					\
+	  }						\
+	while (*(PTR) == ' ')				\
+	    (PTR)++;					\
+	putc ('\t', FILE);				\
 	program_counter += 2;				\
      } while (0)
 
@@ -996,21 +1007,22 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
    such as the label on a static function or variable NAME.  */
 /* 1750 note: Labels are prefixed with a 'K'. This is because handling
    has been changed for labels to be output in the "Constants" section
-   (named "KREL"), and special initialization code takes care of copying
-   the Const-section data into the writable data section (named "SREL").
-   In the SREL section we therefore have the true label names (i.e.
+   (named "Konst"), and special initialization code takes care of copying
+   the Const-section data into the writable data section (named "Static").
+   In the Static section we therefore have the true label names (i.e.
    not prefixed with 'K').  */
 
 #define ASM_OUTPUT_LABEL(FILE,NAME)	\
-  do {  if (NAME[0] == '.')				\
-	   fprintf(FILE,"%s\n",NAME);			\
-	else {						\
-	   if (strlen(NAME) > 11) NAME[11] = '\0';	\
-	   check_section(KREL);				\
-	   fprintf(FILE,"K%s\n",NAME);			\
-	   strcpy(datalbl[++datalbl_ndx].name,NAME);	\
-	   label_pending = 1;				\
-	}						\
+  do {  if (NAME[0] == '.') {					\
+	   fprintf(stderr,"Oops! label %s can't begin with '.'\n",NAME); \
+	   abort();						\
+	}							\
+	else {							\
+	   check_section(Konst);				\
+	   fprintf(FILE,"K%s\n",NAME);				\
+	   datalbl[++datalbl_ndx].name = (char *)strdup (NAME);	\
+	   label_pending = 1;					\
+	}							\
   } while (0)
 
 
@@ -1018,9 +1030,8 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
    defined for reference from other files.  */
 
 #define ASM_GLOBALIZE_LABEL(FILE,NAME) do {		\
-	   check_section(NREL);				\
-	   fputs ("\tGLOBAL ", FILE); assemble_name (FILE, NAME); \
-	   fputs ("   ; export\n", FILE); } while (0)
+	   fprintf (FILE, "\tglobal  %s\t; export\n", NAME);	\
+  } while (0)
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
@@ -1035,8 +1046,9 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 	do {							\
 	  if (strcmp(PREFIX,"LC") == 0) {			\
 	     label_pending = 1;					\
-	     sprintf(datalbl[++datalbl_ndx].name,"LC%d",NUM);	\
-	     check_section(KREL);				\
+	     datalbl[++datalbl_ndx].name = (char *) malloc (9); \
+	     sprintf(datalbl[datalbl_ndx].name,"LC%d",NUM);	\
+	     check_section(Konst);				\
 	     fprintf(FILE,"K%s%d\n",PREFIX,NUM);		\
 	  }							\
 	  else if (find_jmplbl(NUM) < 0) {			\
@@ -1058,17 +1070,15 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* This is how to output an assembler line defining a 1750A `float'
    constant.  */
 
-#define ASM_OUTPUT_FLOAT(FILE,VALUE) 			\
+#define ASM_OUTPUT_SHORT_FLOAT(FILE,VALUE) 			\
   do {								\
-      char *tekfltstr = (char *)tekasm_float('E',VALUE);	\
       if (label_pending)					\
 	 label_pending = 0;					\
       else							\
-         strcpy(datalbl[++datalbl_ndx].name,			\
-		(char *)float_label('E',tekfltstr));		\
-      strcpy(datalbl[datalbl_ndx].value,tekfltstr);		\
+         datalbl[++datalbl_ndx].name = float_label('D',VALUE);	\
+      sprintf (datalbl[datalbl_ndx].value, "%lf", (double) VALUE); \
       datalbl[datalbl_ndx].size = 2;				\
-      fprintf (FILE, "\tDATAF %s\n",tekfltstr);			\
+      fprintf (FILE, "\tdataf\t%lf\n",VALUE);			\
   } while(0)
 
 /* This is how to output an assembler line defining a 1750A `double'
@@ -1076,15 +1086,13 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define ASM_OUTPUT_THREE_QUARTER_FLOAT(FILE,VALUE)		\
   do {								\
-      char *tekfltstr = (char *)tekasm_float('D',VALUE);	\
       if (label_pending)					\
 	 label_pending = 0;					\
       else							\
-         strcpy(datalbl[++datalbl_ndx].name,			\
-		(char *)float_label('D',tekfltstr));		\
-      strcpy(datalbl[datalbl_ndx].value,tekfltstr);		\
+         datalbl[++datalbl_ndx].name = float_label('E',VALUE);	\
+      sprintf (datalbl[datalbl_ndx].value, "%lf", VALUE);	\
       datalbl[datalbl_ndx].size = 3;				\
-      fprintf(FILE,"\tDATAF %s\n",tekfltstr);			\
+      fprintf(FILE,"\tdataef\t%lf\n",VALUE);			\
   } while (0)
 
 /* This is how to output an assembler line defining a string constant.  */
@@ -1099,9 +1107,9 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 	}								\
 	for (i = 0; i < LEN; i++)					\
 	  if (PTR[i] >= 32 && PTR[i] < 127)				\
-	    fprintf(FILE,"\tDATA   %d\t; '%c'\n",PTR[i],PTR[i]);	\
+	    fprintf(FILE,"\tdata\t%d\t; '%c'\n",PTR[i],PTR[i]);		\
 	  else								\
-	    fprintf(FILE,"\tDATA   %d\t; (ascii)\n",PTR[i]);		\
+	    fprintf(FILE,"\tdata\t%d\t; (ascii)\n",PTR[i]);		\
   } while (0)
 
 /* This is how to output an assembler line defining an `int' constant.  */
@@ -1113,7 +1121,7 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 	   label_pending = 0;						\
 	   datalbl[datalbl_ndx].size = 1;				\
 	}								\
-	fprintf(FILE, "\tDATA "); output_addr_const(FILE,VALUE);	\
+	fprintf(FILE, "\tdata\t"); output_addr_const(FILE,VALUE);	\
 	fprintf(FILE, "\n"); } while (0)
 
 /* This is how to output an assembler line defining a `long int' constant. */
@@ -1125,7 +1133,7 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 	   label_pending = 0;						\
 	   datalbl[datalbl_ndx].size = 2;				\
 	}								\
-	fprintf(FILE, "\tDATAL "); output_addr_const(FILE,VALUE);	\
+	fprintf(FILE, "\tdatal\t"); output_addr_const(FILE,VALUE);	\
 	fprintf(FILE, "\n"); } while (0)
 
 /* Likewise for `short' and `char' constants.  */
@@ -1156,12 +1164,12 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* This is how to output an element of a case-vector that is absolute. */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)   \
-	fprintf (FILE, "\tDATA   L%d ;addr_vec_elt\n", VALUE)
+	fprintf (FILE, "\tdata\tL%d ;addr_vec_elt\n", VALUE)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
-	fprintf (FILE, "\tDATA   L%d-L%d ;addr_diff_elt\n", VALUE,REL)
+	fprintf (FILE, "\tdata\tL%d-L%d ;addr_diff_elt\n", VALUE,REL)
 
 /* This is how to output an assembler line
    that says to advance the location counter
@@ -1177,21 +1185,19 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
    to define a global common symbol.  */
 
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  do {	\
-	check_section(NREL);					\
-	fprintf(FILE,"\tGLOBAL "); assemble_name(FILE,NAME);	\
-	fprintf(FILE,"   ; common\n"); } while (0)
+	fprintf (FILE, "\tcommon  %s,%d\n", NAME, SIZE);	\
+     } while (0)
 
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)  do {		\
-	check_section(NREL);					\
-	fprintf(FILE,"\tGLOBAL "); assemble_name(FILE,NAME);	\
-	fprintf(FILE,"\t; external\n"); } while (0)
+	fprintf (FILE, "\tglobal  %s\t; import\n", NAME);	\
+     }  while (0)
 
 /* This says how to output an assembler line
    to define a local common symbol.  */
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  do {  \
-	check_section(SREL);					\
-	fprintf(FILE,"%s \tBLOCK %d  ; local\n",NAME,SIZE);	\
+	check_section (Static);					\
+	fprintf(FILE,"%s \tblock   %d\t; local common\n",NAME,SIZE);	\
      } while (0)
 
 /* Store in OUTPUT a string (made with alloca) containing
@@ -1201,6 +1207,14 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
+
+#define ASM_OUTPUT_CONSTRUCTOR(FILE, NAME)  do {	\
+	fprintf(FILE, "\tinit\n\t"); assemble_name(NAME); \
+        fprintf(FILE,"  ;constructor"); } while (0)
+
+#define ASM_OUTPUT_DESTRUCTOR(FILE, NAME)  do {	\
+	fprintf(FILE, "\tinit\n\t"); assemble_name(NAME); \
+        fprintf(FILE,"  ;destructor"); } while (0)
 
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
