@@ -1612,12 +1612,6 @@ do {							\
    words.  */
 #define LONG_LONG_TYPE_SIZE 64
 
-/* A C expression for the size in bits of the type `char' on the
-   target machine.  If you don't define this, the default is one
-   quarter of a word.  (If this would be less than one storage unit,
-   it is rounded up to one unit.)  */
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
-
 /* A C expression for the size in bits of the type `float' on the
    target machine.  If you don't define this, the default is one
    word.  */

@@ -317,9 +317,6 @@ extern const struct processor_costs *m68hc11_cost;
 /* Size (bits) of the type "long long" on target machine */
 #define LONG_LONG_TYPE_SIZE     64
 
-/* Size (bits) of the type "char" on target machine */
-#define CHAR_TYPE_SIZE		8
-
 /* A C expression for the size in bits of the type `float' on the
    target machine. If you don't define this, the default is one word.
    Don't use default: a word is only 16.  */

@@ -1,5 +1,11 @@
 2002-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* 1750a.h, avr.h, convex.h, d30v.h, dsp16xx.h, fr30.h, ia64.h,
+	m68hc11.h, m88k.h, mips.h, pdp11.h, rs6000.h, sparc.c,
+	stormy16.h, xtensa.h, vmsdbgout.c (CHAR_TYPE_SIZE): Delete.
+
+2002-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* attribs.c (init_attributes, decl_attributes): Use ARRAY_SIZE in
 	lieu of explicit sizeof/sizeof.
 	* i386.c (override_options, ix86_init_mmx_sse_builtins,

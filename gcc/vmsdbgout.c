@@ -79,9 +79,6 @@ dst_file_info_entry;
    are only defaults.  If the sizes are different for your target, you should
    override these values by defining the appropriate symbols in your tm.h
    file.  */
-#ifndef CHAR_TYPE_SIZE
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
-#endif
 #ifndef PTR_SIZE
 #define PTR_SIZE 4 /* Must be 32 bits for VMS debug info */
 #endif

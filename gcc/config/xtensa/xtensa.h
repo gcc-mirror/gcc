@@ -253,7 +253,6 @@ extern unsigned xtensa_current_frame_size;
 #define LONG_TYPE_SIZE 32
 #define MAX_LONG_TYPE_SIZE 32
 #define LONG_LONG_TYPE_SIZE 64
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
 #define FLOAT_TYPE_SIZE 32
 #define DOUBLE_TYPE_SIZE 64
 #define LONG_DOUBLE_TYPE_SIZE 64

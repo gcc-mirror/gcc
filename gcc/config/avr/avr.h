@@ -194,12 +194,6 @@ extern int avr_enhanced_p;
    of macro must be at least 64.  */
 
 
-#define  CHAR_TYPE_SIZE 8
-/* A C expression for the size in bits of the type `char' on the
-   target machine.  If you don't define this, the default is one
-   quarter of a word.  (If this would be less than one storage unit,
-   it is rounded up to one unit.)  */
-
 #define FLOAT_TYPE_SIZE 32
 /* A C expression for the size in bits of the type `float' on the
    target machine.  If you don't define this, the default is one word.  */
