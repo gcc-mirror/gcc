@@ -331,8 +331,18 @@ void GC_get_next_stack(char *start, char **lo, char **hi)
     if (*lo < start) *lo = start;
 }
 
+#if !defined(MSWINCE) && !(defined(__MINGW32__) && !defined(_DLL))
 
-# ifdef MSWINCE
+HANDLE WINAPI GC_CreateThread(
+    LPSECURITY_ATTRIBUTES lpThreadAttributes, 
+    DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, 
+    LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId )
+{
+    return CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress,
+                        lpParameter, dwCreationFlags, lpThreadId);
+}
+
+#else /* !defined(MSWINCE) && !(defined(__MINGW32__) && !defined(_DLL)) 
 
 typedef struct {
     HANDLE child_ready_h, parent_ready_h;
@@ -450,6 +460,9 @@ static DWORD WINAPI thread_start(LPVOID arg)
 
     return ret;
 }
+#endif /* !defined(MSWINCE) && !(defined(__MINGW32__) && !defined(_DLL)) 
+
+#ifdef MSWINCE
 
 typedef struct {
     HINSTANCE hInstance;

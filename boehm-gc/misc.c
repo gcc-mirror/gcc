@@ -436,6 +436,11 @@ void GC_init()
     DCL_LOCK_STATE;
     
     DISABLE_SIGNALS();
+
+#ifdef MSWIN32
+    if (!GC_is_initialized) InitializeCriticalSection(&GC_allocate_ml);
+#endif /* MSWIN32 */
+
     LOCK();
     GC_init_inner();
     UNLOCK();
