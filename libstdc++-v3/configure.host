@@ -1,7 +1,7 @@
-# configure.target
+# configure.host
 #
-# This shell script handles all target based configuration for libstdc++.
-# It sets various shell variables based on the the target and the
+# This shell script handles all host based configuration for libstdc++.
+# It sets various shell variables based on the the host and the
 # configuration options.  You can modify this shell script without needing
 # to rerun autoconf/aclocal/etc.  This file is "sourced" not executed.
 #
@@ -9,15 +9,15 @@
 #
 #
 # It uses the following shell variables as set by config.guess:
-#   target                The configuration target (full CPU-vendor-OS triplet)
-#   target_cpu            The configuration target CPU
-#   target_os             The configuration target OS
+#   host                The configuration host (full CPU-vendor-OS triplet)
+#   host_cpu            The configuration host CPU
+#   host_os             The configuration host OS
 #
 #
 # It sets the following shell variables:
 #
 #   cpu_include_dir        CPU-specific directory, defaults to cpu/generic
-#                              if cpu/target_cpu doesn't exist.  This is
+#                              if cpu/host_cpu doesn't exist.  This is
 #                              used to set ATOMICITYH.
 #
 #   os_include_dir         OS-specific directory, defaults to os/generic.
@@ -28,7 +28,7 @@
 #                              defaults to no.
 #
 #   abi_baseline_triplet   directory name for ABI compat testing,
-#                              defaults to target (as per config.guess)
+#                              defaults to host (as per config.guess)
 #
 #   ATOMICITYH             location of atomicity.h,
 #                              defaults to cpu_include_dir
@@ -42,7 +42,7 @@
 #
 # If the defaults will not work for your platform, you need only change the
 # variables that won't work, i.e., you do not need to explicitly set a
-# working variable to its default.  Most targets only need to change the two
+# working variable to its default.  Most hosts only need to change the two
 # *_include_dir variables.
 
 
@@ -50,22 +50,22 @@
 # Try to guess a default cpu_include_dir based on the name of the CPU.  We
 # cannot do this for os_include_dir; there are too many portable operating
 # systems out there.  :-)
-abi_baseline_triplet=${target}
+abi_baseline_triplet=${host}
 c_model=c_std
 c_compatibility=no
-if test -d ${glibcpp_srcdir}/config/cpu/${target_cpu}; then
-    cpu_include_dir="cpu/${target_cpu}"
+if test -d ${glibcpp_srcdir}/config/cpu/${host_cpu}; then
+    cpu_include_dir="cpu/${host_cpu}"
 else
     cpu_include_dir="cpu/generic"
 fi
 
 
-# TARGET-SPECIFIC OVERRIDES
+# HOST-SPECIFIC OVERRIDES
 # Set any CPU-dependent bits.
 # Here we override defaults and catch more general cases due to naming
 # conventions (e.g., chip_name* to catch all variants).
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
-case "${target_cpu}" in
+case "${host_cpu}" in
   alpha*)
     cpu_include_dir="cpu/alpha"
     ;;
@@ -114,7 +114,7 @@ unset _cpu_incdir_fullpath
 # If atomic ops and/or numeric limits are OS-specific rather than
 # CPU-specifc, set those here too.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
-case "${target_os}" in
+case "${host_os}" in
   aix4.[3456789]* | aix[56789]*)
     # We set os_include_dir to os/aix only on AIX 4.3 and newer, but
     # os/aix/atomicity.h works on earlier versions of AIX 4.*, so we
@@ -142,7 +142,7 @@ case "${target_os}" in
   freebsd*)
     os_include_dir="os/bsd/freebsd"
     # The FreeBSD ABI is expressed in the major version number only.
-    abi_baseline_triplet=`echo ${target} | sed 's,\(\.[0-9]*\)*$,,'`
+    abi_baseline_triplet=`echo ${host} | sed 's,\(\.[0-9]*\)*$,,'`
     ;;
   gnu* | linux*)
     os_include_dir="os/gnu-linux"
@@ -189,7 +189,7 @@ esac
 
 # Set any OS-dependent and CPU-dependent bits.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
-case "${target}" in
+case "${host}" in
   mips*-*-linux*)
     ATOMICITYH="cpu/mips"
     ;;

@@ -30,14 +30,10 @@ GLIBCPP_TOPREL_CONFIGURE
 # Also, if v3 is being configured as part of a cross compiler, the top-level
 # configure script will pass the "real" host as $with_cross_host.
 #
-# AC 2.5x sets target_alias iff the user specified --target, but we use it
-# everywhere, so we set it here just to be sure.  In AC 2.13
-# AC_CANONICAL_TARGET was known as AC_CANONICAL_SYSTEM.
+# In AC 2.13 AC_CANONICAL_TARGET was known as AC_CANONICAL_SYSTEM.
 AC_CANONICAL_SYSTEM
-target_alias=${target_alias-$target}
-AC_SUBST(target_alias)
 
-# Runs configure.target, finds CC, CXX and assorted other critical bits.
+# Runs configure.host, finds CC, CXX and assorted other critical bits.
 # Must run this before the GLIBCPP_ENABLE_* macros below.
 GLIBCPP_CONFIGURE(.)
 
@@ -82,7 +78,7 @@ if test $ATOMICITYH = cpu/generic ; then
 fi
 
 
-if test -n "$with_cross_host" || test x"$build" != x"$host"; then
+if test x"$build" != x"$host"; then
 
   # We are being configured with some form of cross compiler.
   GLIBCPP_IS_CROSS_COMPILING=1
@@ -103,7 +99,8 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
 
   # If Canadian cross, then don't pick up tools from the build directory.
   # Used in GLIBCPP_EXPORT_INCLUDES (and nowhere else?).
-  if test -n "$with_cross_host" && test x"$build" != x"$with_cross_host"; then
+  if test -n "$with_cross_host" && test x"$build" != x"$with_cross_host" \
+    && test x"$build" != x"$target"; then
     CANADIAN=yes
   else
     CANADIAN=no
@@ -114,7 +111,7 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
   # GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT
   # GLIBCPP_CHECK_MATH_SUPPORT
 
-  case "$target" in
+  case "${host}" in
     *-freebsd*)
       os_include_dir="os/bsd/freebsd"
       AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
@@ -329,40 +326,44 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
       AC_DEFINE(HAVE_TANHF)
       ;;
     *)
-      os_include_dir="os/newlib"
-      AC_DEFINE(HAVE_HYPOT)
+      if test "x${with_newlib}" = "xyes"; then
+        os_include_dir="os/newlib"
+        AC_DEFINE(HAVE_HYPOT)
 
-      # GLIBCPP_CHECK_STDLIB_SUPPORT
-      AC_DEFINE(HAVE_STRTOF)        
-      AC_DEFINE(HAVE_STRTOLD)        
-      # AC_FUNC_MMAP
-      AC_DEFINE(HAVE_MMAP)
+        # GLIBCPP_CHECK_STDLIB_SUPPORT
+        AC_DEFINE(HAVE_STRTOF)        
+        AC_DEFINE(HAVE_STRTOLD)        
+        # AC_FUNC_MMAP
+        AC_DEFINE(HAVE_MMAP)
 
-      AC_DEFINE(HAVE_ACOSF)
-      AC_DEFINE(HAVE_ASINF)
-      AC_DEFINE(HAVE_ATAN2F)
-      AC_DEFINE(HAVE_ATANF)
-      AC_DEFINE(HAVE_CEILF)
-      AC_DEFINE(HAVE_COPYSIGN)
-      AC_DEFINE(HAVE_COPYSIGNF)
-      AC_DEFINE(HAVE_COSF)
-      AC_DEFINE(HAVE_COSHF)
-      AC_DEFINE(HAVE_EXPF)
-      AC_DEFINE(HAVE_FABSF)
-      AC_DEFINE(HAVE_FLOORF)
-      AC_DEFINE(HAVE_FMODF)
-      AC_DEFINE(HAVE_FREXPF)
-      AC_DEFINE(HAVE_LDEXPF)
-      AC_DEFINE(HAVE_LOG10F)
-      AC_DEFINE(HAVE_LOGF)
-      AC_DEFINE(HAVE_MODFF)
-      AC_DEFINE(HAVE_POWF)
-      AC_DEFINE(HAVE_SINF)
-      AC_DEFINE(HAVE_SINHF)
-      AC_DEFINE(HAVE_SQRTF)
-      AC_DEFINE(HAVE_TANF)
-      AC_DEFINE(HAVE_TANHF)
-      ;;
+        AC_DEFINE(HAVE_ACOSF)
+        AC_DEFINE(HAVE_ASINF)
+        AC_DEFINE(HAVE_ATAN2F)
+        AC_DEFINE(HAVE_ATANF)
+        AC_DEFINE(HAVE_CEILF)
+        AC_DEFINE(HAVE_COPYSIGN)
+        AC_DEFINE(HAVE_COPYSIGNF)
+        AC_DEFINE(HAVE_COSF)
+        AC_DEFINE(HAVE_COSHF)
+        AC_DEFINE(HAVE_EXPF)
+        AC_DEFINE(HAVE_FABSF)
+        AC_DEFINE(HAVE_FLOORF)
+        AC_DEFINE(HAVE_FMODF)
+        AC_DEFINE(HAVE_FREXPF)
+        AC_DEFINE(HAVE_LDEXPF)
+        AC_DEFINE(HAVE_LOG10F)
+        AC_DEFINE(HAVE_LOGF)
+        AC_DEFINE(HAVE_MODFF)
+        AC_DEFINE(HAVE_POWF)
+        AC_DEFINE(HAVE_SINF)
+        AC_DEFINE(HAVE_SINHF)
+        AC_DEFINE(HAVE_SQRTF)
+        AC_DEFINE(HAVE_TANF)
+        AC_DEFINE(HAVE_TANHF)
+      else
+        AC_MSG_ERROR([No support for this host/target combination.])
+      fi 
+     ;;
   esac
 
   # At some point, we should differentiate between architectures
