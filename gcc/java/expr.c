@@ -2774,6 +2774,7 @@ note_instructions (jcf, method)
   if (!saw_index)  NOTE_LABEL(oldpc + INT_temp);
 #define PRE_JSR(OPERAND_TYPE, OPERAND_VALUE) \
   saw_index = 0;  INT_temp = (OPERAND_VALUE); \
+  NOTE_LABEL (PC); \
   if (!saw_index)  NOTE_LABEL(oldpc + INT_temp);
 
 #define PRE_RET(OPERAND_TYPE, OPERAND_VALUE)  (void)(OPERAND_VALUE)
