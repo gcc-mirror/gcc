@@ -1705,6 +1705,7 @@ tree_could_trap_p (tree expr)
   bool honor_nans = false;
   bool honor_snans = false;
   bool fp_operation = false;
+  bool honor_trapv = false;
   tree t, base, idx;
 
   if (TREE_CODE_CLASS (code) == '<'
@@ -1718,6 +1719,8 @@ tree_could_trap_p (tree expr)
 	  honor_nans = flag_trapping_math && !flag_finite_math_only;
 	  honor_snans = flag_signaling_nans != 0;
 	}
+      else if (INTEGRAL_TYPE_P (t) && TYPE_TRAP_SIGNED (t))
+	honor_trapv = true;
     }
 
   switch (code)
@@ -1765,7 +1768,7 @@ tree_could_trap_p (tree expr)
     case ROUND_MOD_EXPR:
     case TRUNC_MOD_EXPR:
     case RDIV_EXPR:
-      if (honor_snans)
+      if (honor_snans || honor_trapv)
 	return true;
       if (fp_operation && flag_trapping_math)
 	return true;
@@ -1804,7 +1807,19 @@ tree_could_trap_p (tree expr)
     case NEGATE_EXPR:
     case ABS_EXPR:
     case CONJ_EXPR:
-      /* These operations don't trap even with floating point.  */
+      /* These operations don't trap with floating point.  */
+      if (honor_trapv)
+	return true;
+      return false;
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+      /* Any floating arithmetic may trap.  */
+      if (fp_operation && flag_trapping_math)
+	return true;
+      if (honor_trapv)
+	return true;
       return false;
 
     default:

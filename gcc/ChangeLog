@@ -1,3 +1,25 @@
+2004-07-11  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_builtin_fputs): Don't bother converting the
+	return type to integer_type_node, as we've already checked that
+	the result will be ignored.
+
+	* tree-eh.c (tree_could_trap_p): Add support for -ftrapv such
+	that signed addition, subtraction, multiplication, division,
+	remainder, negation and absolute value may potentially trap.
+
+	* fold-const.c (fold_ignored_result): New function to strip
+	non-side-effecting tree nodes from an expression whose result
+	is ignored.
+	(fold_convert): Call fold_ignored_result when casting a value
+	to VOID_TYPE.
+	(omit_one_operand):  Call fold_ignored_result on the "omitted"
+	operand when building a COMPOUND_EXPR.
+	(pedantic_omit_one_operand): Likewise.
+	* tree.h (fold_ignored_result): Prototype here.
+	* tree-ssa-ccp.c (ccp_fold_builtin): Call fold_ignored_result
+	when we're going to ignore the result.
+
 2004-07-11  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/16383
