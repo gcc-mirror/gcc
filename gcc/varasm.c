@@ -2954,6 +2954,7 @@ struct rtx_const
   union {
     union real_extract du;
     struct addr_const addr;
+    struct {HOST_WIDE_INT high, low;} di;
   } un;
 };
 
@@ -2984,9 +2985,16 @@ decode_rtx_const (mode, x, value)
     case CONST_DOUBLE:
       value->kind = RTX_DOUBLE;
       if (GET_MODE (x) != VOIDmode)
-	value->mode = GET_MODE (x);
-      bcopy ((char *) &CONST_DOUBLE_LOW (x),
-	     (char *) &value->un.du, sizeof value->un.du);
+	{
+	  value->mode = GET_MODE (x);
+	  bcopy ((char *) &CONST_DOUBLE_LOW (x),
+		 (char *) &value->un.du, sizeof value->un.du);
+	}
+      else
+	{
+	  value->un.di.low = CONST_DOUBLE_LOW (x);
+	  value->un.di.high = CONST_DOUBLE_HIGH (x);
+	}
       break;
 
     case CONST_INT:
