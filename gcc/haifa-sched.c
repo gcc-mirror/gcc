@@ -2052,6 +2052,12 @@ schedule_block (int b, int rgn_n_insns)
 	  if (cost >= 1)
 	    {
 	      queue_insn (insn, cost);
+ 	      if (SCHED_GROUP_P (insn))
+ 		{
+ 		  advance = cost;
+ 		  break;
+ 		}
+ 
 	      continue;
 	    }
 
