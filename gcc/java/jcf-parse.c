@@ -887,7 +887,7 @@ java_emit_static_constructor (void)
   write_resource_constructor (&body);
 
   if (body)
-    cgraph_build_static_cdtor ('I', body);
+    cgraph_build_static_cdtor ('I', body, DEFAULT_INIT_PRIORITY);
 }
 
 void
