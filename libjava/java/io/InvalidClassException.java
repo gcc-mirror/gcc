@@ -44,67 +44,44 @@ package java.io;
   */
 public class InvalidClassException extends ObjectStreamException
 {
+  /**
+    * The name of the class which encountered the error.
+    */
+  public String classname;
 
-/*
- * Instance Variables
- */
+  /**
+    * Create a new InvalidClassException with a descriptive error message String
+    *
+    * @param message The descriptive error message
+    */
+  public InvalidClassException(String message)
+  {
+    super(message);
+  }
 
-/**
-  * The name of the class which encountered the error.
-  */
-public String classname;
+  /**
+    * Create a new InvalidClassException with a descriptive error message 
+    * String, and the name of the class that caused the problem.
+    * 
+    * @param classname The number of bytes tranferred before the interruption
+    * @param message The descriptive error message
+    */
+  public InvalidClassException(String classname, String message)
+  {
+    super(message);
+    this.classname = classname;
+  }
 
-/*************************************************************************/
-
-/*
- * Constructors
- */
-
-/**
-  * Create a new InvalidClassException with a descriptive error message String
-  *
-  * @param message The descriptive error message
-  */
-public
-InvalidClassException(String message)
-{
-  super(message);
+  /**
+    * Returns the descriptive error message for this exception.  It will
+    * include the class name that caused the problem if known.  This method
+    * overrides Throwable.getMessage()
+    *
+    * @return A descriptive error message
+    */
+  public String getMessage()
+  {
+    return super.getMessage() + (classname == null ? "" : ": " + classname);
+  }
 }
-
-/*************************************************************************/
-
-/**
-  * Create a new InvalidClassException with a descriptive error message 
-  * String, and the name of the class that caused the problem.
-  * 
-  * @param classname The number of bytes tranferred before the interruption
-  * @param message The descriptive error message
-  */
-public
-InvalidClassException(String classname, String message)
-{
-  super(message);
-  this.classname = classname;
-}
-
-/*************************************************************************/
-
-/*
- * Instance Methods
- */
-
-/**
-  * Returns the descriptive error message for this exception.  It will
-  * include the class name that caused the problem if known.  This method
-  * overrides Throwable.getMessage()
-  *
-  * @return A descriptive error message
-  */
-public String
-getMessage()
-{
-  return(super.getMessage() + ": " + classname);
-}
-
-} // class InvalidClassException
 

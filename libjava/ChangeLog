@@ -1,9 +1,24 @@
+2001-04-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	Fix PR libgcj/2237:
+	* java/io/ObjectStreamClass.java (setClass): Calculate 
+	serialVersionUID for local class and compare it against the UID
+	from the Object Stream. Throw InvalidClassException upon mismatch.
+	(setUID): Renamed to...
+	(getClassUID): this. Return the calculated class UID rather than 
+	setting uid field directly.
+	(getDefinedSUID): Removed.
+	* java/io/ObjectInputStream.java (resolveClass): Use the 
+	three-argument Class.forName(). 
+	* java/io/InvalidClassException (toString): Don't include classname in
+	result if it is null.
+
 2001-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* java/net/natInetAddress.cc (java::net::InetAddress::aton):
 	Wrap use of inet_pton in HAVE_INET6.
 
-2001-04-25  Bryce McKinlay  <bryce@albatross.co.nz>
+2001-04-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	java.security merge and ClassLoader compliance fixes.
 
