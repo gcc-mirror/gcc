@@ -1,3 +1,22 @@
+Fri Mar 24 20:13:49 2000  Jason Eckhardt  <jle@cygnus.com>
+
+	* bb-reorder.c (REORDER_MOVED_BLOCK_END): Removed.
+	(reorder_block_def): New members eff_head and eff_end.
+	(REORDER_BLOCK_EFF_HEAD, REORDER_BLOCK_EFF_END): New macros.
+	(verify_insn_chain): New function.
+	(skip_insns_between_block): Add code to skip deleted insns.
+	Check for note before using.
+	(chain_reorder_blocks): Replace calls to skip_insns_between_block
+	with references to REORDER_BLOCK_EFF_HEAD and REORDER_BLOCK_EFF_END.
+	Check for note before using.
+	(make_reorder_chain): Use INTVAL rather than XINT to get REG_BR_PROB.
+	(fixup_reorder_chain): Restructure, clean up, defect removal.
+	(reorder_basic_blocks): Remove last_insn and references to it.
+	Moved insn chain verification code into a new function (see above).
+	Delete defective code that sets last insn.
+	Initialize REORDER_BLOCK_EFF_HEAD and REORDER_BLOCK_EFF_END for
+	all blocks.
+
 2000-03-25  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (CPP_SPEC): Remove erroneous space.
