@@ -1,3 +1,22 @@
+2003-07-10  Fergus Henderson  <fjh@cs.mu.oz.au>
+	    Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-convert.c: New file.
+	* treetree.c: Don't include c-tree.h.  Include target.h.
+	(struct lang_identifier, union lang_tree_node, struct lang_type,
+	struct lang_function): New, minimal language-specific datastructs.
+	(tree_lang_truthvalue_conversion, tree_mark_addressable,
+	tree_lang_type_for_size, tree_lang_type_for_mode,
+	tree_lang_unsigned_type, tree_lang_signed_type,
+	tree_lang_signed_or_unsigned): New functions.
+	(LANG_HOOKS_*): Don't use C front end langhooks.  Use new functions.
+	(pushlevel, poplevel, global_bindings_p, insert_block, set_block,
+	pushdecl, getdecls, kept_level_p, tree_push_type_decl,
+	tree_push_atomic_type_decl): New functions.
+	(struct resword, struct reswords): Remove.
+	* Make-lang.in: Update.  Don't depend on C front end objects.
+	* config-lang.in: Likewise.
+
 2003-07-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* treelang/treetree.c (tree_code_if_start, tree_code_if_else,

@@ -36,4 +36,4 @@ diff_excludes="-x lex.c -x parse.c -x parse.h"
 headers=
 build_by_default="no"
 
-gtfiles="\$(srcdir)/c-decl.c \$(srcdir)/c-common.c \$(srcdir)/c-common.h \$(srcdir)/treelang/tree1.c \$(srcdir)/treelang/treelang.h"
+gtfiles="\$(srcdir)/treelang/tree1.c \$(srcdir)/treelang/treetree.c \$(srcdir)/treelang/treelang.h"

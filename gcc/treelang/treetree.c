@@ -63,13 +63,13 @@
 #include "tree.h"
 #include "flags.h"
 #include "output.h"
-#include "c-tree.h"
 #include "rtl.h"
 #include "ggc.h"
 #include "toplev.h"
 #include "varray.h"
 #include "langhooks-def.h"
 #include "langhooks.h"
+#include "target.h"
 
 #include "treelang.h"
 #include "treetree.h"
@@ -78,31 +78,94 @@
 extern int option_main;
 extern char **file_names;
 
+/* Types expected by gcc's garbage collector.
+   These types exist to allow language front-ends to
+   add extra information in gcc's parse tree data structure.
+   But the treelang front end doesn't use them -- it has
+   its own parse tree data structure.
+   We define them here only to satisfy gcc's garbage collector.  */
+
+/* Language-specific identifier information.  */
+
+struct lang_identifier GTY(())
+{
+  struct tree_identifier common;
+};
+
+/* Language-specific tree node information.  */
+
+union lang_tree_node 
+  GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE")))
+{
+  union tree_node GTY ((tag ("0"), 
+			desc ("tree_node_structure (&%h)"))) 
+    generic;
+  struct lang_identifier GTY ((tag ("1"))) identifier;
+};
+
+/* Language-specific type information.  */
+
+struct lang_type GTY(())
+{
+  char junk; /* dummy field to ensure struct is not empty */
+};
+
+/* Language-specific declaration information.  */
+
+struct lang_decl GTY(())
+{
+  char junk; /* dummy field to ensure struct is not empty */
+};
+
+struct language_function GTY(())
+{
+  char junk; /* dummy field to ensure struct is not empty */
+};
+
+static tree tree_lang_truthvalue_conversion PARAMS((tree expr));
+static bool tree_mark_addressable PARAMS((tree exp));
+static tree tree_lang_type_for_size PARAMS((unsigned precision,
+					    int unsignedp));
+static tree tree_lang_type_for_mode PARAMS((enum machine_mode mode,
+					    int unsignedp));
+static tree tree_lang_unsigned_type PARAMS((tree type_node));
+static tree tree_lang_signed_type PARAMS((tree type_node));
+static tree tree_lang_signed_or_unsigned_type PARAMS((int unsignedp,
+						      tree type));
+
+/* XXX these should be static */
+void pushlevel PARAMS((int ignore));
+tree poplevel PARAMS((int keep, int reverse, int functionbody));
+int global_bindings_p PARAMS((void));
+void insert_block PARAMS((tree block));
+void set_block PARAMS((tree block));
+tree pushdecl PARAMS((tree decl));
+tree getdecls PARAMS((void));
+int kept_level_p PARAMS((void));
+
+static void tree_push_type_decl PARAMS((tree id, tree type_node));
+static void tree_push_atomic_type_decl PARAMS((tree id, tree type_node));
+
 /* The front end language hooks (addresses of code for this front
-   end).  Mostly just use the C routines.  */
+   end).  These are not really very language-dependent, i.e.
+   treelang, C, Mercury, etc. can all use almost the same definitions.  */
 
 #undef LANG_HOOKS_TRUTHVALUE_CONVERSION
-#define LANG_HOOKS_TRUTHVALUE_CONVERSION c_common_truthvalue_conversion
+#define LANG_HOOKS_TRUTHVALUE_CONVERSION tree_lang_truthvalue_conversion
 #undef LANG_HOOKS_MARK_ADDRESSABLE
-#define LANG_HOOKS_MARK_ADDRESSABLE c_mark_addressable
+#define LANG_HOOKS_MARK_ADDRESSABLE tree_mark_addressable
 #undef LANG_HOOKS_SIGNED_TYPE
-#define LANG_HOOKS_SIGNED_TYPE c_common_signed_type
+#define LANG_HOOKS_SIGNED_TYPE tree_lang_signed_type
 #undef LANG_HOOKS_UNSIGNED_TYPE
-#define LANG_HOOKS_UNSIGNED_TYPE c_common_unsigned_type
+#define LANG_HOOKS_UNSIGNED_TYPE tree_lang_unsigned_type
 #undef LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE
-#define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE c_common_signed_or_unsigned_type
+#define LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE tree_lang_signed_or_unsigned_type
 #undef LANG_HOOKS_TYPE_FOR_MODE
-#define LANG_HOOKS_TYPE_FOR_MODE c_common_type_for_mode
+#define LANG_HOOKS_TYPE_FOR_MODE tree_lang_type_for_mode
 #undef LANG_HOOKS_TYPE_FOR_SIZE
-#define LANG_HOOKS_TYPE_FOR_SIZE c_common_type_for_size
+#define LANG_HOOKS_TYPE_FOR_SIZE tree_lang_type_for_size
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE treelang_parse_file
-#undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
-#define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE c_common_attribute_table
-#undef LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE
-#define LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE c_common_format_attribute_table
-#undef LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES
-#define LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES c_insert_default_attributes
 
 /* Hook routines and data unique to treelang.  */
 
@@ -805,474 +868,6 @@ tree_code_get_numeric_type (unsigned int size1, unsigned int sign1)
   return ret1;
 }
 
-/* Garbage Collection.  */
-
-/* Callback to mark storage M as used always.  */
-
-void
-tree_ggc_storage_always_used (void * m)
-{
-  void **mm; /* Actually M is a pointer to a pointer to the memory.  */
-  mm = (void**)m;
-
-  if (*mm)
-    ggc_mark (*mm);
-}
-
-/* Following  from c-lang.c.  */
-
-/* Used by c-typeck.c (build_external_ref), but only for objc.  */
-
-tree
-lookup_objc_ivar (tree id ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-/* Dummy routines called from c code. Save copying c-decl.c, c-common.c etc.  */
-
-tree
-objc_is_id (tree arg ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-void
-check_function_format (int *status ATTRIBUTE_UNUSED,
-                       tree attrs ATTRIBUTE_UNUSED,
-                       tree params ATTRIBUTE_UNUSED)
-{
-  return;
-}
-
-/* Tell the c code we are not objective C.  */
-
-int
-objc_comptypes (tree lhs ATTRIBUTE_UNUSED,
-                tree rhs ATTRIBUTE_UNUSED,
-                int reflexive ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-/* Should not be called for treelang.  Needed by RS6000 backend.  */
-
-int c_lex (tree *value);
-
-int
-c_lex (tree *value ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-tree
-build_stmt (enum tree_code code  ATTRIBUTE_UNUSED, ...)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-tree
-add_stmt (tree t ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-tree
-build_return_stmt (tree expr ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* C warning, ignore.  */
-
-void
-pedwarn_c99 (const char *msgid ATTRIBUTE_UNUSED, ...)
-{
-  return;
-}
-
-/* Should not be called for treelang.   */
-
-tree
-build_case_label (tree low_value ATTRIBUTE_UNUSED,
-                  tree high_value ATTRIBUTE_UNUSED,
-                  tree label_decl ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-void
-emit_local_var (tree decl ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-void
-expand_stmt (tree t ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-cpp_reader *
-cpp_create_reader (enum c_lang lang ATTRIBUTE_UNUSED,
-		   struct ht *table ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-void
-init_c_lex (void)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-void init_pragma (void);
-
-void
-init_pragma ()
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-int
-cpp_finish (cpp_reader *pfile ATTRIBUTE_UNUSED, FILE *f ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-unsigned int
-cpp_errors (cpp_reader *pfile ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Dummy called by C.   */
-
-tree
-handle_format_attribute (tree *node ATTRIBUTE_UNUSED,
-                         tree name ATTRIBUTE_UNUSED,
-                         tree args ATTRIBUTE_UNUSED,
-                         int flags ATTRIBUTE_UNUSED,
-                         bool *no_add_attrs ATTRIBUTE_UNUSED)
-{
-  return NULL_TREE;
-}
-
-/* Should not be called for treelang.   */
-
-tree
-handle_format_arg_attribute (tree *node ATTRIBUTE_UNUSED,
-     tree name ATTRIBUTE_UNUSED,
-     tree args ATTRIBUTE_UNUSED,
-     int flags ATTRIBUTE_UNUSED,
-     bool *no_add_attrs ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-void
-cpp_assert (cpp_reader * cr ATTRIBUTE_UNUSED,
-            const char *s ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-void
-set_Wformat (int setting ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Used for objective C.  */
-
-void
-objc_check_decl (tree decl ATTRIBUTE_UNUSED);
-
-void
-objc_check_decl (tree decl ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Tell the c code we are not objective C.  */
-
-tree
-objc_message_selector (void);
-
-tree
-objc_message_selector ()
-{
-  return 0;
-}
-
-/* Should not be called for treelang.   */
-
-void
-gen_aux_info_record (tree fndecl ATTRIBUTE_UNUSED,
-                     int is_definition ATTRIBUTE_UNUSED,
-                     int is_implicit ATTRIBUTE_UNUSED,
-                     int is_prototyped ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang, but it is.   */
-
-void
-c_parse_init ()
-{
-  return;
-}
-
-/* Should not be called for treelang.   */
-
-void maybe_apply_pragma_weak (tree decl);
-
-void
-maybe_apply_pragma_weak (tree decl ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-void
-add_decl_stmt (tree decl ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-tree
-maybe_apply_renaming_pragma (tree decl, tree asmname);
-
-/* Should not be called for treelang.   */
-
-tree
-maybe_apply_renaming_pragma (tree decl ATTRIBUTE_UNUSED, tree asmname ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-void
-begin_stmt_tree (tree *t ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-void
-finish_stmt_tree (tree *t ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-int
-defer_fn (tree fn ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-cpp_options
-*cpp_get_options (cpp_reader * cr ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-void
-cpp_define (cpp_reader * cr ATTRIBUTE_UNUSED, const char * c ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-cpp_callbacks *
-cpp_get_callbacks (cpp_reader * cr ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Create the predefined scalar types of C,
-   and some nodes representing standard constants (0, 1, (void *) 0).
-   Initialize the global binding level.
-   Make definitions for built-in primitive functions.  */
-
-  /* `unsigned long' is the standard type for sizeof.
-     Note that stddef.h uses `unsigned long',
-     and this must agree, even if long and int are the same size.  */
-
-/* The reserved keyword table.  */
-struct resword
-{
-  const char *word;
-  ENUM_BITFIELD(rid) rid : 16;
-  unsigned int disable   : 16;
-};
-
-static const struct resword reswords[] =
-{
-  { "_Bool",		RID_BOOL,	0 },
-  { "_Complex",		RID_COMPLEX,	0 },
-  { "__FUNCTION__",	RID_FUNCTION_NAME, 0 },
-  { "__PRETTY_FUNCTION__", RID_PRETTY_FUNCTION_NAME, 0 },
-  { "__alignof",	RID_ALIGNOF,	0 },
-  { "__alignof__",	RID_ALIGNOF,	0 },
-  { "__asm",		RID_ASM,	0 },
-  { "__asm__",		RID_ASM,	0 },
-  { "__attribute",	RID_ATTRIBUTE,	0 },
-  { "__attribute__",	RID_ATTRIBUTE,	0 },
-  { "__builtin_choose_expr", RID_CHOOSE_EXPR, 0 },
-  { "__builtin_types_compatible_p", RID_TYPES_COMPATIBLE_P, 0 },
-  { "__builtin_va_arg",	RID_VA_ARG,	0 },
-  { "__complex",	RID_COMPLEX,	0 },
-  { "__complex__",	RID_COMPLEX,	0 },
-  { "__const",		RID_CONST,	0 },
-  { "__const__",	RID_CONST,	0 },
-  { "__extension__",	RID_EXTENSION,	0 },
-  { "__func__",		RID_C99_FUNCTION_NAME, 0 },
-  { "__imag",		RID_IMAGPART,	0 },
-  { "__imag__",		RID_IMAGPART,	0 },
-  { "__inline",		RID_INLINE,	0 },
-  { "__inline__",	RID_INLINE,	0 },
-  { "__label__",	RID_LABEL,	0 },
-  { "__ptrbase",	RID_PTRBASE,	0 },
-  { "__ptrbase__",	RID_PTRBASE,	0 },
-  { "__ptrextent",	RID_PTREXTENT,	0 },
-  { "__ptrextent__",	RID_PTREXTENT,	0 },
-  { "__ptrvalue",	RID_PTRVALUE,	0 },
-  { "__ptrvalue__",	RID_PTRVALUE,	0 },
-  { "__real",		RID_REALPART,	0 },
-  { "__real__",		RID_REALPART,	0 },
-  { "__restrict",	RID_RESTRICT,	0 },
-  { "__restrict__",	RID_RESTRICT,	0 },
-  { "__signed",		RID_SIGNED,	0 },
-  { "__signed__",	RID_SIGNED,	0 },
-  { "__typeof",		RID_TYPEOF,	0 },
-  { "__typeof__",	RID_TYPEOF,	0 },
-  { "__volatile",	RID_VOLATILE,	0 },
-  { "__volatile__",	RID_VOLATILE,	0 },
-  { "asm",		RID_ASM,	0 },
-  { "auto",		RID_AUTO,	0 },
-  { "break",		RID_BREAK,	0 },
-  { "case",		RID_CASE,	0 },
-  { "char",		RID_CHAR,	0 },
-  { "const",		RID_CONST,	0 },
-  { "continue",		RID_CONTINUE,	0 },
-  { "default",		RID_DEFAULT,	0 },
-  { "do",		RID_DO,		0 },
-  { "double",		RID_DOUBLE,	0 },
-  { "else",		RID_ELSE,	0 },
-  { "enum",		RID_ENUM,	0 },
-  { "extern",		RID_EXTERN,	0 },
-  { "float",		RID_FLOAT,	0 },
-  { "for",		RID_FOR,	0 },
-  { "goto",		RID_GOTO,	0 },
-  { "if",		RID_IF,		0 },
-  { "inline",		RID_INLINE,	0 },
-  { "int",		RID_INT,	0 },
-  { "long",		RID_LONG,	0 },
-  { "register",		RID_REGISTER,	0 },
-  { "restrict",		RID_RESTRICT,	0 },
-  { "return",		RID_RETURN,	0 },
-  { "short",		RID_SHORT,	0 },
-  { "signed",		RID_SIGNED,	0 },
-  { "sizeof",		RID_SIZEOF,	0 },
-  { "static",		RID_STATIC,	0 },
-  { "struct",		RID_STRUCT,	0 },
-  { "switch",		RID_SWITCH,	0 },
-  { "typedef",		RID_TYPEDEF,	0 },
-  { "typeof",		RID_TYPEOF,	0 },
-  { "union",		RID_UNION,	0 },
-  { "unsigned",		RID_UNSIGNED,	0 },
-  { "void",		RID_VOID,	0 },
-  { "volatile",		RID_VOLATILE,	0 },
-  { "while",		RID_WHILE,	0 },
-};
-#define N_reswords (sizeof reswords / sizeof (struct resword))
-
-/* Init enough to allow the C decl code to work, then clean up
-   afterwards.  */
-
-void
-treelang_init_decl_processing ()
-{
-  unsigned int i;
-  tree id;
-
-  ridpointers = (tree *) ggc_calloc ((int) RID_MAX, sizeof (tree));
-
-  for (i = 0; i < N_reswords; i++)
-    {
-      id = get_identifier (reswords[i].word);
-      C_RID_CODE (id) = reswords[i].rid;
-      C_IS_RESERVED_WORD (id) = 1;
-      ridpointers [(int) reswords[i].rid] = id;
-    }
-
-  c_init_decl_processing ();
-
-  /* ix86_return_pops_args takes the type of these so need to patch
-     their own type as themselves.  */
-
-  for (i = 0; i < itk_none; i++)
-    {
-      if (integer_types[i])
-        TREE_TYPE (integer_types [i]) = integer_types[i];
-    }
-
-  /* Probably these ones too.  */
-  TREE_TYPE (float_type_node) = float_type_node;
-  TREE_TYPE (double_type_node) = double_type_node;
-  TREE_TYPE (long_double_type_node) = long_double_type_node;
-
-}
-
-/* Save typing debug_tree all the time. Dump a tree T pretty and
-   concise.  */
-
-void dt (tree t);
-
-void
-dt (tree t)
-{
-  debug_tree (t);
-}
-
 /* Get a stringpool entry for a string S of length L.  This is needed
    because the GTY routines don't mark strings, forcing you to put
    them into stringpool, which is never freed.  */
@@ -1284,4 +879,560 @@ get_string (const char *s, size_t l)
   t = get_identifier_with_length (s, l);
   return IDENTIFIER_POINTER(t);
 }
+  
+/* Save typing debug_tree all the time. Dump a tree T pretty and
+   concise.  */
 
+void dt (tree t);
+
+void
+dt (tree t)
+{
+  debug_tree (t);
+}
+
+/* Routines Expected by gcc:  */
+
+/* These are used to build types for various sizes.  The code below
+   is a simplified version of that of GNAT.  */
+
+#ifndef MAX_BITS_PER_WORD
+#define MAX_BITS_PER_WORD  BITS_PER_WORD
+#endif
+
+/* This variable keeps a table for types for each precision so that we only 
+   allocate each of them once. Signed and unsigned types are kept separate.  */
+static GTY(()) tree signed_and_unsigned_types[MAX_BITS_PER_WORD + 1][2];
+
+/* XXX is this definition OK? */
+static tree
+tree_lang_truthvalue_conversion (expr)
+     tree expr;
+{
+  return expr;
+}
+
+/* Mark EXP saying that we need to be able to take the
+   address of it; it should not be allocated in a register.
+   Value is 1 if successful.  
+   
+   This implementation was copied from c-decl.c. */
+
+static bool
+tree_mark_addressable (exp)
+     tree exp;
+{
+  register tree x = exp;
+  while (1)
+    switch (TREE_CODE (x))
+      {
+      case COMPONENT_REF:
+      case ADDR_EXPR:
+      case ARRAY_REF:
+      case REALPART_EXPR:
+      case IMAGPART_EXPR:
+	x = TREE_OPERAND (x, 0);
+	break;
+  
+      case CONSTRUCTOR:
+	TREE_ADDRESSABLE (x) = 1;
+	return 1;
+
+      case VAR_DECL:
+      case CONST_DECL:
+      case PARM_DECL:
+      case RESULT_DECL:
+	if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x)
+	    && DECL_NONLOCAL (x))
+	  {
+	    if (TREE_PUBLIC (x))
+	      {
+		error ("global register variable `%s' used in nested function",
+		       IDENTIFIER_POINTER (DECL_NAME (x)));
+		return 0;
+	      }
+	    pedwarn ("register variable `%s' used in nested function",
+		     IDENTIFIER_POINTER (DECL_NAME (x)));
+	  }
+	else if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x))
+	  {
+	    if (TREE_PUBLIC (x))
+	      {
+		error ("address of global register variable `%s' requested",
+		       IDENTIFIER_POINTER (DECL_NAME (x)));
+		return 0;
+	      }
+
+	    pedwarn ("address of register variable `%s' requested",
+		     IDENTIFIER_POINTER (DECL_NAME (x)));
+	  }
+	put_var_into_stack (x, /*rescan=*/ true);
+
+	/* drops in */
+      case FUNCTION_DECL:
+	TREE_ADDRESSABLE (x) = 1;
+
+      default:
+	return 1;
+    }
+}
+  
+/* Return an integer type with the number of bits of precision given by  
+   PRECISION.  UNSIGNEDP is nonzero if the type is unsigned; otherwise
+   it is a signed type.  */
+  
+static tree
+tree_lang_type_for_size (precision, unsignedp)
+     unsigned precision;
+     int unsignedp;
+{
+  tree t;
+
+  if (precision <= MAX_BITS_PER_WORD
+      && signed_and_unsigned_types[precision][unsignedp] != 0)
+    return signed_and_unsigned_types[precision][unsignedp];
+
+  if (unsignedp)
+    t = signed_and_unsigned_types[precision][1]
+      = make_unsigned_type (precision);
+  else
+    t = signed_and_unsigned_types[precision][0]
+      = make_signed_type (precision);
+  
+  return t;
+}
+
+/* Return a data type that has machine mode MODE.  UNSIGNEDP selects
+   an unsigned type; otherwise a signed type is returned.  */
+
+static tree
+tree_lang_type_for_mode (mode, unsignedp)
+     enum machine_mode mode;
+     int unsignedp;
+{
+  return tree_lang_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);
+}
+
+/* Return the unsigned version of a TYPE_NODE, a scalar type.  */
+
+static tree
+tree_lang_unsigned_type (type_node)
+     tree type_node;
+{
+  return tree_lang_type_for_size (TYPE_PRECISION (type_node), 1);
+}
+
+/* Return the signed version of a TYPE_NODE, a scalar type.  */
+
+static tree
+tree_lang_signed_type (type_node)
+     tree type_node;
+{
+  return tree_lang_type_for_size (TYPE_PRECISION (type_node), 0);
+}
+
+/* Return a type the same as TYPE except unsigned or signed according to
+   UNSIGNEDP.  */
+
+static tree
+tree_lang_signed_or_unsigned_type (unsignedp, type)
+     int unsignedp;
+     tree type;
+{
+  if (! INTEGRAL_TYPE_P (type) || TREE_UNSIGNED (type) == unsignedp)
+    return type;
+  else
+    return tree_lang_type_for_size (TYPE_PRECISION (type), unsignedp);
+}
+
+/* These functions and variables deal with binding contours.  We only
+   need these functions for the list of PARM_DECLs, but we leave the
+   functions more general; these are a simplified version of the
+   functions from GNAT.  */
+
+/* For each binding contour we allocate a binding_level structure which records
+   the entities defined or declared in that contour. Contours include:
+
+	the global one
+	one for each subprogram definition
+	one for each compound statement (declare block)
+
+   Binding contours are used to create GCC tree BLOCK nodes.  */
+
+struct binding_level
+{
+  /* A chain of ..._DECL nodes for all variables, constants, functions,
+     parameters and type declarations.  These ..._DECL nodes are chained
+     through the TREE_CHAIN field. Note that these ..._DECL nodes are stored
+     in the reverse of the order supplied to be compatible with the
+     back-end.  */
+  tree names;
+  /* For each level (except the global one), a chain of BLOCK nodes for all
+     the levels that were entered and exited one level down from this one.  */
+  tree blocks;
+  /* The back end may need, for its own internal processing, to create a BLOCK
+     node. This field is set aside for this purpose. If this field is non-null
+     when the level is popped, i.e. when poplevel is invoked, we will use such
+     block instead of creating a new one from the 'names' field, that is the
+     ..._DECL nodes accumulated so far.  Typically the routine 'pushlevel'
+     will be called before setting this field, so that if the front-end had
+     inserted ..._DECL nodes in the current block they will not be lost.   */
+  tree block_created_by_back_end;
+  /* The binding level containing this one (the enclosing binding level). */
+  struct binding_level *level_chain;
+};
+
+/* The binding level currently in effect.  */
+static struct binding_level *current_binding_level = NULL;
+
+/* The outermost binding level. This binding level is created when the
+   compiler is started and it will exist through the entire compilation.  */
+static struct binding_level *global_binding_level;
+
+/* Binding level structures are initialized by copying this one.  */
+static struct binding_level clear_binding_level = {NULL, NULL, NULL, NULL};
+
+/* Return non-zero if we are currently in the global binding level.  */
+
+int
+global_bindings_p ()
+{
+  return current_binding_level == global_binding_level ? -1 : 0;
+}
+
+/* Return the list of declarations in the current level. Note that this list
+   is in reverse order (it has to be so for back-end compatibility).  */
+
+tree
+getdecls ()
+{
+  return current_binding_level->names;
+}
+
+/* Nonzero if the current level needs to have a BLOCK made.  */
+
+int
+kept_level_p ()
+{
+  return (current_binding_level->names != 0);
+}
+
+/* Enter a new binding level. The input parameter is ignored, but has to be
+   specified for back-end compatibility.  */
+
+void
+pushlevel (ignore)
+     int ignore ATTRIBUTE_UNUSED;
+{
+  struct binding_level *newlevel
+    = (struct binding_level *) xmalloc (sizeof (struct binding_level));
+
+  *newlevel = clear_binding_level;
+
+  /* Add this level to the front of the chain (stack) of levels that are
+     active.  */
+  newlevel->level_chain = current_binding_level;
+  current_binding_level = newlevel;
+}
+
+/* Exit a binding level.
+   Pop the level off, and restore the state of the identifier-decl mappings
+   that were in effect when this level was entered.
+
+   If KEEP is nonzero, this level had explicit declarations, so
+   and create a "block" (a BLOCK node) for the level
+   to record its declarations and subblocks for symbol table output.
+
+   If FUNCTIONBODY is nonzero, this level is the body of a function,
+   so create a block as if KEEP were set and also clear out all
+   label names.
+
+   If REVERSE is nonzero, reverse the order of decls before putting
+   them into the BLOCK.  */
+
+tree
+poplevel (keep, reverse, functionbody)
+     int keep;
+     int reverse;
+     int functionbody;
+{
+  /* Points to a BLOCK tree node. This is the BLOCK node construted for the
+     binding level that we are about to exit and which is returned by this
+     routine.  */
+  tree block_node = NULL_TREE;
+  tree decl_chain;
+  tree subblock_chain = current_binding_level->blocks;
+  tree subblock_node;
+  tree block_created_by_back_end;
+
+  /* Reverse the list of *_DECL nodes if desired.  Note that the ..._DECL
+     nodes chained through the `names' field of current_binding_level are in
+     reverse order except for PARM_DECL node, which are explicitely stored in
+     the right order.  */
+  decl_chain = (reverse) ? nreverse (current_binding_level->names)
+			 : current_binding_level->names;
+
+  block_created_by_back_end = current_binding_level->block_created_by_back_end;
+  if (block_created_by_back_end != 0)
+    {
+      block_node = block_created_by_back_end;
+
+      /* Check if we are about to discard some information that was gathered
+	 by the front-end. Nameley check if the back-end created a new block 
+	 without calling pushlevel first. To understand why things are lost
+	 just look at the next case (i.e. no block created by back-end.  */
+      if ((keep || functionbody) && (decl_chain || subblock_chain))
+	abort ();
+    }
+
+  /* If there were any declarations in the current binding level, or if this
+     binding level is a function body, or if there are any nested blocks then
+     create a BLOCK node to record them for the life of this function.  */
+  else if (keep || functionbody)
+    block_node = build_block (keep ? decl_chain : 0, 0, subblock_chain, 0, 0);
+
+  /* Record the BLOCK node just built as the subblock its enclosing scope.  */
+  for (subblock_node = subblock_chain; subblock_node;
+       subblock_node = TREE_CHAIN (subblock_node))
+    BLOCK_SUPERCONTEXT (subblock_node) = block_node;
+
+  /* Clear out the meanings of the local variables of this level.  */
+
+  for (subblock_node = decl_chain; subblock_node;
+       subblock_node = TREE_CHAIN (subblock_node))
+    if (DECL_NAME (subblock_node) != 0)
+      /* If the identifier was used or addressed via a local extern decl,  
+	 don't forget that fact.   */
+      if (DECL_EXTERNAL (subblock_node))
+	{
+	  if (TREE_USED (subblock_node))
+	    TREE_USED (DECL_NAME (subblock_node)) = 1;
+	  if (TREE_ADDRESSABLE (subblock_node))
+	    TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (subblock_node)) = 1;
+	}
+
+  /* Pop the current level.  */
+  current_binding_level = current_binding_level->level_chain;
+
+  if (functionbody)
+    {
+      /* This is the top level block of a function. The ..._DECL chain stored
+	 in BLOCK_VARS are the function's parameters (PARM_DECL nodes). Don't
+	 leave them in the BLOCK because they are found in the FUNCTION_DECL
+	 instead.  */
+      DECL_INITIAL (current_function_decl) = block_node;
+      BLOCK_VARS (block_node) = 0;
+    }
+  else if (block_node)
+    {
+      if (block_created_by_back_end == NULL)
+	current_binding_level->blocks
+	  = chainon (current_binding_level->blocks, block_node);
+    }
+
+  /* If we did not make a block for the level just exited, any blocks made for
+     inner levels (since they cannot be recorded as subblocks in that level)
+     must be carried forward so they will later become subblocks of something
+     else.  */
+  else if (subblock_chain)
+    current_binding_level->blocks
+      = chainon (current_binding_level->blocks, subblock_chain);
+  if (block_node)
+    TREE_USED (block_node) = 1;
+
+  return block_node;
+}
+
+/* Insert BLOCK at the end of the list of subblocks of the
+   current binding level.  This is used when a BIND_EXPR is expanded,
+   to handle the BLOCK node inside the BIND_EXPR.  */
+
+void
+insert_block (block)
+     tree block;
+{
+  TREE_USED (block) = 1;
+  current_binding_level->blocks
+    = chainon (current_binding_level->blocks, block);
+}
+
+/* Set the BLOCK node for the innermost scope
+   (the one we are currently in).  */
+
+void
+set_block (block)
+     tree block;
+{
+  current_binding_level->block_created_by_back_end = block;
+}
+
+/* Records a ..._DECL node DECL as belonging to the current lexical scope.
+   Returns the ..._DECL node. */
+
+tree
+pushdecl (decl)
+     tree decl;
+{
+  /* External objects aren't nested, other objects may be.  */
+    
+  if ((DECL_EXTERNAL (decl)) || (decl==current_function_decl))
+    DECL_CONTEXT (decl) = 0;
+  else
+    DECL_CONTEXT (decl) = current_function_decl;
+
+  /* Put the declaration on the list.  The list of declarations is in reverse
+     order. The list will be reversed later if necessary.  This needs to be
+     this way for compatibility with the back-end.  */
+
+  TREE_CHAIN (decl) = current_binding_level->names;
+  current_binding_level->names = decl;
+
+  /* For the declartion of a type, set its name if it is not already set. */
+
+  if (TREE_CODE (decl) == TYPE_DECL
+      && TYPE_NAME (TREE_TYPE (decl)) == 0)
+    TYPE_NAME (TREE_TYPE (decl)) = DECL_NAME (decl);
+
+  return decl;
+}
+
+
+static void
+tree_push_type_decl(id, type_node)
+     tree id;
+     tree type_node;
+{
+  tree decl = build_decl (TYPE_DECL, id, type_node);
+  TYPE_NAME (type_node) = decl;
+  TYPE_STUB_DECL (type_node) = decl;
+  pushdecl (decl);
+}
+
+/* push_atomic_type_decl() ensures that the type's type is itself. 
+   Needed for DBX.  Must only be used for atomic types,
+   not for e.g. pointer or array types.  */
+
+static void
+tree_push_atomic_type_decl(id, type_node)
+     tree id;
+     tree type_node;
+{
+  TREE_TYPE (type_node) = type_node;
+  tree_push_type_decl (id, type_node);
+}
+
+#define NULL_BINDING_LEVEL (struct binding_level *) NULL                        
+
+/* Create the predefined scalar types of C,
+   and some nodes representing standard constants (0, 1, (void *) 0).
+   Initialize the global binding level.
+   Make definitions for built-in primitive functions.  */
+
+void
+treelang_init_decl_processing ()
+{
+  current_function_decl = NULL;
+  current_binding_level = NULL_BINDING_LEVEL;
+  pushlevel (0);	/* make the binding_level structure for global names */
+  global_binding_level = current_binding_level;
+
+  build_common_tree_nodes (flag_signed_char);
+
+  /* set standard type names */
+
+  /* Define `int' and `char' first so that dbx will output them first.  */
+
+  tree_push_atomic_type_decl (get_identifier ("int"), integer_type_node);
+  tree_push_atomic_type_decl (get_identifier ("char"), char_type_node);
+  tree_push_atomic_type_decl (get_identifier ("long int"),
+			      long_integer_type_node);
+  tree_push_atomic_type_decl (get_identifier ("unsigned int"),
+			      unsigned_type_node);
+  tree_push_atomic_type_decl (get_identifier ("long unsigned int"),
+			      long_unsigned_type_node);
+  tree_push_atomic_type_decl (get_identifier ("long long int"),
+			      long_long_integer_type_node);
+  tree_push_atomic_type_decl (get_identifier ("long long unsigned int"),
+			      long_long_unsigned_type_node);
+  tree_push_atomic_type_decl (get_identifier ("short int"),
+			      short_integer_type_node);
+  tree_push_atomic_type_decl (get_identifier ("short unsigned int"),
+			      short_unsigned_type_node);
+  tree_push_atomic_type_decl (get_identifier ("signed char"),
+			      signed_char_type_node);
+  tree_push_atomic_type_decl (get_identifier ("unsigned char"),
+			      unsigned_char_type_node);
+  tree_push_atomic_type_decl (NULL_TREE, intQI_type_node);
+  tree_push_atomic_type_decl (NULL_TREE, intHI_type_node);
+  tree_push_atomic_type_decl (NULL_TREE, intSI_type_node);
+  tree_push_atomic_type_decl (NULL_TREE, intDI_type_node);
+#if HOST_BITS_PER_WIDE_INT >= 64
+  tree_push_atomic_type_decl (NULL_TREE, intTI_type_node);
+#endif
+  tree_push_atomic_type_decl (NULL_TREE, unsigned_intQI_type_node);
+  tree_push_atomic_type_decl (NULL_TREE, unsigned_intHI_type_node);
+  tree_push_atomic_type_decl (NULL_TREE, unsigned_intSI_type_node);
+  tree_push_atomic_type_decl (NULL_TREE, unsigned_intDI_type_node);
+#if HOST_BITS_PER_WIDE_INT >= 64
+  tree_push_atomic_type_decl (NULL_TREE, unsigned_intTI_type_node);
+#endif
+  
+  size_type_node = make_unsigned_type (POINTER_SIZE);
+  tree_push_atomic_type_decl (get_identifier ("size_t"), size_type_node);
+  set_sizetype (size_type_node);
+
+  build_common_tree_nodes_2 (/* short_double= */ 0);
+
+  tree_push_atomic_type_decl (get_identifier ("float"), float_type_node);
+  tree_push_atomic_type_decl (get_identifier ("double"), double_type_node);
+  tree_push_atomic_type_decl (get_identifier ("long double"), long_double_type_node);
+  tree_push_atomic_type_decl (get_identifier ("void"), void_type_node);
+
+  /* Add any target-specific builtin functions.  */
+  (*targetm.init_builtins) ();
+
+  pedantic_lvalues = pedantic;
+}
+
+/* Return a definition for a builtin function named NAME and whose data type
+   is TYPE.  TYPE should be a function type with argument types.
+   FUNCTION_CODE tells later passes how to compile calls to this function.
+   See tree.h for its possible values.
+
+   If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
+   the name to be called if we can't opencode the function.  If
+   ATTRS is nonzero, use that for the function's attribute list.
+
+   copied from gcc/c-decl.c
+*/
+
+tree
+builtin_function (name, type, function_code, class, library_name, attrs)
+     const char *name;
+     tree type;
+     int function_code;
+     enum built_in_class class;
+     const char *library_name;
+     tree attrs;
+{
+  tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
+  DECL_EXTERNAL (decl) = 1;
+  TREE_PUBLIC (decl) = 1;
+  if (library_name)
+    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
+  make_decl_rtl (decl, NULL);
+  pushdecl (decl);
+  DECL_BUILT_IN_CLASS (decl) = class;
+  DECL_FUNCTION_CODE (decl) = function_code;
+
+  /* Possibly apply some default attributes to this built-in function.  */
+  if (attrs)
+    decl_attributes (&decl, attrs, ATTR_FLAG_BUILT_IN);
+  else
+    decl_attributes (&decl, NULL_TREE, 0);
+
+  return decl;
+}
+
+#include "debug.h" /* for debug_hooks, needed by gt-treelang-treetree.h */
+#include "gt-treelang-treetree.h"
