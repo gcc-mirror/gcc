@@ -1,6 +1,6 @@
 /* Compiler driver program that can handle many languages.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -5154,6 +5154,18 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    p = handle_braces (p);
 	    if (p == 0)
 	      return -1;
+	    /* End any pending argument.  */
+	    if (arg_going)
+	      {
+		obstack_1grow (&obstack, 0);
+		string = obstack_finish (&obstack);
+		if (this_is_library_file)
+		  string = find_file (string);
+		store_arg (string, delete_this_arg, this_is_output_file);
+		if (this_is_output_file)
+		  outfiles[input_file_number] = string;
+		arg_going = 0;
+	      }
 	    break;
 
 	  case ':':
