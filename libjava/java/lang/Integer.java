@@ -155,13 +155,15 @@ public final class Integer extends Number implements Comparable
   public static Integer getInteger(String prop, Integer defobj)
   {
     try
-    {
-      return decode(System.getProperty(prop));
-    }
+      {
+        String val = System.getProperty(prop);
+	if (val != null)
+	  return decode(val);
+      }
     catch (NumberFormatException ex)
-    {
-      return defobj;
-    }
+      {
+      }
+    return defobj;
   }
 
   public int hashCode()

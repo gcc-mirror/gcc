@@ -156,13 +156,15 @@ public final class Long extends Number implements Comparable
   public static Long getLong(String prop, Long defobj)
   {
     try
-    {
-      return decode(System.getProperty(prop));
-    }
+      {
+        String val = System.getProperty(prop);
+	if (val != null)    
+	  return decode(val);
+      }
     catch (NumberFormatException ex)
-    {
-      return defobj;
-    }
+      {
+      }
+    return defobj;
   }
 
   public int hashCode()
