@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  64 bit ABI support.
-   Copyright (C) 1994, 1995, 1996, 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -213,25 +213,6 @@ Boston, MA 02111-1307, USA.  */
 #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED)		\
   (mips_abi == ABI_EABI && (NAMED)					\
    && FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED))
-
-/* Define LONG_MAX correctly for all users.  We need to handle 32 bit EABI,
-   64 bit EABI, N32, and N64 as possible defaults.  The checks performed here
-   are the same as the checks in override_options in mips.c that determines
-   whether MASK_LONG64 will be set.
-
-   This does not handle inappropriate options or ununusal option
-   combinations.  */
-
-#undef LONG_MAX_SPEC
-#if ((MIPS_ABI_DEFAULT == ABI_64) || ((MIPS_ABI_DEFAULT == ABI_EABI) && ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_64BIT)))
-#define LONG_MAX_SPEC \
-  "%{!mabi=32:%{!mabi=n32:%{!mlong32:%{!mgp32:%{!mips1:%{!mips2:-D__LONG_MAX__=9223372036854775807L}}}}}}"
-#else
-#define LONG_MAX_SPEC \
-  "%{mabi=64:-D__LONG_MAX__=9223372036854775807L} \
-   %{mlong64:-D__LONG_MAX__=9223372036854775807L} \
-   %{mgp64:-D__LONG_MAX__=9223372036854775807L}"
-#endif
 
 /* ??? Unimplemented stuff follows.  */
 

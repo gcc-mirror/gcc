@@ -1,5 +1,9 @@
 2002-03-08  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/mips/mips.h (LONG_MAX_SPEC): Rewrite, along with
+	SUBTARGET_CPP_SIZE_SPEC.
+	* config/mips/abi64.h (LONG_MAX_SPEC): Delete.
+
 	* config/mips/mips.h (SUBTARGET_CPP_SIZE_SPEC): Simplify.
 
 2002-03-07  Alexandre Oliva  <aoliva@redhat.com>

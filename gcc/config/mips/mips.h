@@ -1060,6 +1060,23 @@ extern int mips_abi;
  %{mgp64:%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
 %{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 "
+#define LONG_MAX_SPEC "\
+%{mlong64:-D__LONG_MAX__=9223372036854775807L}\
+%{!mlong64:\
+ %{mabi=eabi|!mabi=*:\
+  %{!mips1:%{!mips2:%{!mips32:%{!mgp32:%{!mlong32: \
+    %{mips3|mips4|mips5|mips64|mgp64: \
+      -D__LONG_MAX__=9223372036854775807L}}}}}}}} \
+"
+#else /* ABI_DEFAULT != ABI_EABI */
+#define LONG_MAX_SPEC "\
+%{mlong64:-D__LONG_MAX__=9223372036854775807L}\
+%{!mlong64:\
+ %{mabi=eabi:\
+  %{!mips1:%{!mips2:%{!mips32:%{!mgp32:%{!mlong32: \
+    %{mips3|mips4|mips5|mips64|mgp64: \
+      -D__LONG_MAX__=9223372036854775807L}}}}}}}} \
+"
 #endif
 
 #if MIPS_ABI_DEFAULT == ABI_O64
@@ -1131,6 +1148,21 @@ extern int mips_abi;
  %{!mgp32:%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
 %{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 "
+#define LONG_MAX_SPEC "\
+%{mlong64:-D__LONG_MAX__=9223372036854775807L}\
+%{!mlong64:\
+ %{mabi=eabi|!mabi=*:\
+  %{!mips1:%{!mips2:%{!mips32:%{!mgp32:%{!mlong32: \
+    -D__LONG_MAX__=9223372036854775807L}}}}}}}\
+"
+#else /* ABI_DEFAULT != ABI_EABI */
+#define LONG_MAX_SPEC "\
+%{mlong64:-D__LONG_MAX__=9223372036854775807L}\
+%{!mlong64:\
+ %{mabi=eabi:\
+  %{!mips1:%{!mips2:%{!mips32:%{!mgp32:%{!mlong32: \
+    -D__LONG_MAX__=9223372036854775807L}}}}}}}\
+"
 #endif
 
 #if MIPS_ABI_DEFAULT == ABI_O64
@@ -1186,16 +1218,6 @@ extern int mips_abi;
    overridden by subtargets.  */
 #ifndef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC ""
-#endif
-
-/* If we're using 64bit longs, then we have to define __LONG_MAX__
-   correctly.  Similarly for 64bit ints and __INT_MAX__.  */
-#ifndef LONG_MAX_SPEC
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_LONG64)
-#define LONG_MAX_SPEC "%{!mlong32:-D__LONG_MAX__=9223372036854775807L}"
-#else
-#define LONG_MAX_SPEC "%{mlong64:-D__LONG_MAX__=9223372036854775807L}"
-#endif
 #endif
 
 /* Define appropriate macros for fpr register size.  */
