@@ -1,3 +1,18 @@
+2003-09-30  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR optimization/12345
+	* config/mips/mips-protos.h (mips_restore_gp): Remove.
+	(mips_gp_save_slot): Declare.
+	* config/mips/mips.c (mips_restore_gp): Remove in favor of...
+	(mips_gp_save_slot): ...this new function.
+	* config/mips/mips.md (exception_receiver): Use mips_gp_save_slot
+	and mips_output_move to generate the output template.
+	(call_internal): Force splitting if TARGET_SPLIT_CALLS.  Don't emit
+	a gp load after a noreturn call.  Load the gp using a move rather
+	than an exception_receiver pattern.
+	(call_value_internal, call_value_multiple_internal): Likewise.
+	(call_split, call_value_split, call_value_multiple_split): Clobber $28.
+
 2003-09-30  Carlo Wood  <carlo@alinoe.com>
 
 	PR debug/12319
