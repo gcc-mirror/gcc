@@ -1,4 +1,4 @@
-/* Configuration for an i386 running MS-DOS with DJGPP.  */
+/* Configuration for an i386 running MS-DOS with DJGPP.
    Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
