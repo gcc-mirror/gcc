@@ -659,11 +659,11 @@ free_dominance_info (enum cdi_direction dir)
 
   FOR_ALL_BB (bb)
     {
-      delete_from_dominance_info (dir, bb);
+      et_free_tree_force (bb->dom[dir]);
+      bb->dom[dir] = NULL;
     }
 
-  /* If there are any nodes left, something is wrong.  */
-  gcc_assert (!n_bbs_in_dom_tree[dir]);
+  n_bbs_in_dom_tree[dir] = 0;
 
   dom_computed[dir] = DOM_NONE;
 }

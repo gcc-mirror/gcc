@@ -499,6 +499,15 @@ et_free_tree (struct et_node *t)
   pool_free (et_nodes, t);
 }
 
+/* Releases et tree T without maintaining other nodes.  */
+
+void
+et_free_tree_force (struct et_node *t)
+{
+  pool_free (et_occurrences, t->rightmost_occ);
+  pool_free (et_nodes, t);
+}
+
 /* Sets father of et tree T to FATHER.  */
 
 void
