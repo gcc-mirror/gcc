@@ -3119,7 +3119,8 @@ cleanup_subreg_operands (insn)
       if (GET_CODE (recog_data.operand[i]) == SUBREG)
 	recog_data.operand[i] = alter_subreg (recog_data.operand[i]);
       else if (GET_CODE (recog_data.operand[i]) == PLUS
-	       || GET_CODE (recog_data.operand[i]) == MULT)
+	       || GET_CODE (recog_data.operand[i]) == MULT
+	       || GET_CODE (recog_data.operand[i]) == MEM)
 	recog_data.operand[i] = walk_alter_subreg (recog_data.operand[i]);
     }
 
@@ -3128,7 +3129,8 @@ cleanup_subreg_operands (insn)
       if (GET_CODE (*recog_data.dup_loc[i]) == SUBREG)
 	*recog_data.dup_loc[i] = alter_subreg (*recog_data.dup_loc[i]);
       else if (GET_CODE (*recog_data.dup_loc[i]) == PLUS
-	       || GET_CODE (*recog_data.dup_loc[i]) == MULT)
+	       || GET_CODE (*recog_data.dup_loc[i]) == MULT
+	       || GET_CODE (*recog_data.dup_loc[i]) == MEM)
 	*recog_data.dup_loc[i] = walk_alter_subreg (*recog_data.dup_loc[i]);
     }
 }
