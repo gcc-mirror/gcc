@@ -1,4 +1,4 @@
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -92,11 +92,23 @@ const int integer_base_rep = 2;
 
 jmp_buf env;
 
+/* The prototype of signal() may vary.  Accomodate variations such as
+   void(*)(int) and void(*)(...).  */
+template <typename signal_handler_type, typename signal_number_type>
+inline void (*signal_adapter (signal_handler_type
+			      (*signal_func)(signal_number_type,
+					     signal_handler_type),
+		       signal_number_type arg,
+		       void (*handler)(int)))(int)
+{
+  return (void (*)(int))(*signal_func)(arg, (signal_handler_type)handler);
+}
+
 void signal_handler(int sig) 
 { 
 #ifdef __CYGWIN__
   static sigset_t x;
-  signal (sig, signal_handler);
+  signal_adapter (signal, sig, signal_handler);
   sigemptyset (&x);
   sigprocmask(SIG_SETMASK, &x, NULL);
 #endif /* __CYGWIN__ */
@@ -137,10 +149,12 @@ template<typename T> struct underflow {};
 // traps
 template<typename T> void traps()
 {
-    signal(SIGFPE, signal_handler);
+    signal_adapter (signal, SIGFPE, signal_handler);
+    signal_adapter (signal, SIGTRAP, signal_handler);
     bool trap_flag = trapping(division_by_zero<T>());
-    signal(SIGFPE, signal_handler);
-    trap_flag = trap_flag && trapping(overflow<T>());
+    signal_adapter (signal, SIGFPE, signal_handler);
+    signal_adapter (signal, SIGTRAP, signal_handler);
+    trap_flag = trap_flag || trapping(overflow<T>());
     const char* p = bool_alpha[trap_flag];
     printf("%s%s = %s;\n", tab2, "static const bool traps", p);    
 }
@@ -148,7 +162,8 @@ template<typename T> void traps()
 #define SPECIALIZE_TRAPPING(T)                                          \
 template<> void traps< T >()                                            \
 {                                                                       \
-    signal(SIGFPE, signal_handler);                                     \
+    signal_adapter (signal, SIGFPE, signal_handler);                    \
+    signal_adapter (signal, SIGTRAP, signal_handler);                    \
     const char* p = bool_alpha[trapping(division_by_zero<T>())];        \
     printf("%s%s = %s;\n", tab2, "static const bool traps", p);         \
 }
