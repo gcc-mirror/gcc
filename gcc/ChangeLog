@@ -1,3 +1,22 @@
+2005-03-15  Richard Sandiford  <rsandifo@redhat.com>
+
+	* toplev.c (display_target_options): Avoid unused variable warning if
+	TARGET_SWITCHES and TARGET_OPTIONS are both undefined.
+	* config/mips/mips.c (mips_arch_string, mips_tune_string): Make static.
+	(mips_isa_string, mips_abi_string, mips_fix_vr4130_string): Delete.
+	(mips_isa): Initialize to MIPS_ABI_DEFAULT.
+	(mips_isa_info): New variable.
+	(mips_parse_cpu): Remove the first argument and leave the caller
+	to report errors.
+	(TARGET_HANDLE_OPTION): Override default.
+	(mips_handle_option): New function.  Move option validation code from...
+	(override_options): ...here.  Update calls to mips_parse_cpu.
+	* config/mips/mips.h (mips_arch_string, mips_tune_string)
+	(mips_isa_string, mips_abi_string, TARGET_OPTIONS)
+	(SUBTARGET_TARGET_OPTIONS): Delete.
+	* config/mips/mips.opt (mabi=, march=, mflush-func=, mips)
+	(mno-flush-func, mtune=): New options.
+
 2005-03-15  Roger Sayle  <roger@eyesopen.com>
 	    Richard Henderson  <rth@redhat.com>
 

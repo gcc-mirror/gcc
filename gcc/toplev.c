@@ -1067,7 +1067,10 @@ compile_file (void)
 void
 display_target_options (void)
 {
-  int undoc, i;
+  int undoc;
+#if defined (TARGET_SWITCHES) || defined (TARGET_OPTIONS)
+  int i;
+#endif
   unsigned int cli;
   static bool displayed = false;
 

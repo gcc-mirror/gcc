@@ -1,3 +1,7 @@
+mabi=
+Target RejectNegative Joined
+-mabi=ABI	Generate code that conforms to the given ABI
+
 mabicalls
 Target Report Mask(ABICALLS)
 Use SVR4-style PIC
@@ -5,6 +9,10 @@ Use SVR4-style PIC
 mad
 Target Report Var(TARGET_MAD)
 Use PMC-style 'mad' instructions
+
+march=
+Target RejectNegative Joined
+-march=ISA	Generate code for the given ISA
 
 mbranch-likely
 Target Report Mask(BRANCHLIKELY)
@@ -84,6 +92,10 @@ mfp64
 Target Report RejectNegative Mask(FLOAT64)
 Use 64-bit floating-point registers
 
+mflush-func=
+Target RejectNegative Joined
+-mflush-func=FUNC	Use FUNC to flush the cache before calling stack trampolines
+
 mfused-madd
 Target Report Mask(FUSED_MADD)
 Generate floating-point multiply-add instructions
@@ -103,6 +115,10 @@ Allow the use of hardware floating-point instructions
 mint64
 Target Report RejectNegative Mask(INT64)
 Use a 64-bit int type
+
+mips
+Target RejectNegative Joined
+-mipsN	Generate code for ISA level N
 
 mips16
 Target Report RejectNegative Mask(MIPS16)
@@ -132,6 +148,10 @@ mmips-tfile
 Target
 Use the mips-tfile postpass
 
+mno-flush-func
+Target RejectNegative
+Do not use a cache-flushing function before calling stack trampolines
+
 mno-mips16
 Target Report RejectNegative InverseMask(MIPS16)
 Generate normal-mode code
@@ -159,6 +179,10 @@ Optimize lui/addiu address loads
 msym32
 Target Report Var(TARGET_SYM32)
 Assume all symbols have 32-bit values
+
+mtune=
+Target RejectNegative Joined
+-mtune=PROCESSOR	Optimize the output for PROCESSOR
 
 muninit-const-in-rodata
 Target Report Var(TARGET_UNINIT_CONST_IN_RODATA)
