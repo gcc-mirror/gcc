@@ -1,3 +1,7 @@
+2003-11-14  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* nmake.ads, nmake.adb: Regenerated.
+
 2003-11-13  Vincent Celier  <celier@gnat.com>
 
 	* 5bml-tgt.adb (Build_Dynamic_Library): Use

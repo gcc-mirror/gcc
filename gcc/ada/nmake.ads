@@ -371,7 +371,8 @@ package Nmake is
 
    function Make_Component_Association (Sloc : Source_Ptr;
       Choices                      : List_Id;
-      Expression                   : Node_Id)
+      Expression                   : Node_Id;
+      Box_Present                  : Boolean := False)
       return Node_Id;
    pragma Inline (Make_Component_Association);
 

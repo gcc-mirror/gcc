@@ -692,7 +692,8 @@ package body Nmake is
 
    function Make_Component_Association (Sloc : Source_Ptr;
       Choices                      : List_Id;
-      Expression                   : Node_Id)
+      Expression                   : Node_Id;
+      Box_Present                  : Boolean := False)
       return Node_Id
    is
       N : constant Node_Id :=
@@ -700,6 +701,7 @@ package body Nmake is
    begin
       Set_Choices (N, Choices);
       Set_Expression (N, Expression);
+      Set_Box_Present (N, Box_Present);
       return N;
    end Make_Component_Association;
 
