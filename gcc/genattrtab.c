@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93-98, 1999 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.

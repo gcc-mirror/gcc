@@ -1,5 +1,5 @@
 ;; Machine description for DEC Alpha for GNU C compiler
-;; Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
+;; Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GNU CC.
