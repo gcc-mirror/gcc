@@ -1066,20 +1066,26 @@ const_method (constant)
   i = INTVAL (constant);
   if (USE_MOVQ (i))
     return MOVQ;
-  /* if -256 < N < 256 but N is not in range for a moveq
-     N^ff will be, so use moveq #N^ff, dreg; not.b dreg. */
-  if (USE_MOVQ (i ^ 0xff))
-    return NOTB;
-  /* Likewise, try with not.w */
-  if (USE_MOVQ (i ^ 0xffff))
-    return NOTW;
-  /* This is the only value where neg.w is useful */
-  if (i == -65408)
-    return NEGW;
-  /* Try also with swap */
-  u = i;
-  if (USE_MOVQ ((u >> 16) | (u << 16)))
-    return SWAP;
+
+  /* The Coldfire doesn't have byte or word operations. */
+  /* FIXME: This may not be useful for the m68060 either */
+  if (!TARGET_5200) 
+    {
+      /* if -256 < N < 256 but N is not in range for a moveq
+	 N^ff will be, so use moveq #N^ff, dreg; not.b dreg. */
+      if (USE_MOVQ (i ^ 0xff))
+	return NOTB;
+      /* Likewise, try with not.w */
+      if (USE_MOVQ (i ^ 0xffff))
+	return NOTW;
+      /* This is the only value where neg.w is useful */
+      if (i == -65408)
+	return NEGW;
+      /* Try also with swap */
+      u = i;
+      if (USE_MOVQ ((u >> 16) | (u << 16)))
+	return SWAP;
+    }
   /* Otherwise, use move.l */
   return MOVL;
 }
