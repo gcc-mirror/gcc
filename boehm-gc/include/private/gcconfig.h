@@ -249,6 +249,10 @@
 #    define SH
 #    define mach_type_known
 # endif
+# if defined(LINUX) && defined(__m32r__)
+#    define M32R
+#    define mach_type_known
+# endif
 # if defined(__alpha) || defined(__alpha__)
 #   define ALPHA
 #   if !defined(LINUX) && !defined(NETBSD) && !defined(OPENBSD) && !defined(FREEBSD)
@@ -1816,6 +1820,23 @@
 #   define OS_TYPE "MSWINCE"
 #   define ALIGNMENT 4
 #   define DATAEND /* not needed */
+# endif
+
+# ifdef M32R
+#   define CPP_WORDSZ 32
+#   define MACH_TYPE "M32R"
+#   define ALIGNMENT 4
+#   ifdef LINUX
+#     define OS_TYPE "LINUX"
+#     define LINUX_STACKBOTTOM
+#     undef STACK_GRAN
+#     define STACK_GRAN 0x10000000
+#     define USE_GENERIC_PUSH_REGS
+#     define DYNAMIC_LOADING
+#     define SEARCH_FOR_DATA_START
+      extern int _end[];
+#     define DATAEND (_end)
+#   endif
 # endif
 
 # ifdef X86_64

@@ -1,3 +1,7 @@
+2004-10-13  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	* include/private/gcconfig.h: Add m32r-linux target.
+
 2004-09-27  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.ac: Update all AC_DEFINEs to newer style.
