@@ -119,8 +119,9 @@ struct c_expr
   /* The value of the expression.  */
   tree value;
   /* Record the original binary operator of an expression, which may
-     have been changed by fold, or ERROR_MARK for other expressions
-     (including parenthesized expressions).  */
+     have been changed by fold, STRING_CST for unparenthesised string
+     constants, or ERROR_MARK for other expressions (including
+     parenthesized expressions).  */
   enum tree_code original_code;
 };
 
@@ -244,14 +245,15 @@ extern tree build_modify_expr (tree, enum tree_code, tree);
 extern void store_init_value (tree, tree);
 extern void error_init (const char *);
 extern void pedwarn_init (const char *);
+extern void maybe_warn_string_init (tree, struct c_expr);
 extern void start_init (tree, tree, int);
 extern void finish_init (void);
 extern void really_start_incremental_init (tree);
 extern void push_init_level (int);
-extern tree pop_init_level (int);
+extern struct c_expr pop_init_level (int);
 extern void set_init_index (tree, tree);
 extern void set_init_label (tree);
-extern void process_init_element (tree);
+extern void process_init_element (struct c_expr);
 extern tree build_compound_literal (tree, tree);
 extern void pedwarn_c90 (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern void pedwarn_c99 (const char *, ...) ATTRIBUTE_PRINTF_1;

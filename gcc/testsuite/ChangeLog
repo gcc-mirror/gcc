@@ -1,3 +1,8 @@
+2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/11250
+	* gcc.dg/init-string-1.c: New test.
+
 2004-07-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/15345
