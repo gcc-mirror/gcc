@@ -192,15 +192,7 @@ tree_size (tree node)
 					+ (PHI_ARG_CAPACITY (node) - 1) *
 					sizeof (struct phi_arg_d));
 
-	case EPHI_NODE:		return (sizeof (struct tree_ephi_node)
-					+ (EPHI_ARG_CAPACITY (node) - 1) *
-					sizeof (struct ephi_arg_d));
-
 	case SSA_NAME:		return sizeof (struct tree_ssa_name);
-	case EUSE_NODE:		return sizeof (struct tree_euse_node);
-
-	case EKILL_NODE:
-	case EEXIT_NODE: 	return sizeof (struct tree_eref_common);
 
 	case STATEMENT_LIST:	return sizeof (struct tree_statement_list);
 	case BLOCK:		return sizeof (struct tree_block);
@@ -231,9 +223,9 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 #endif
   struct tree_common ttmp;
 
-  /* We can't allocate a TREE_VEC, PHI_NODE, EPHI_NODE or STRING_CST
+  /* We can't allocate a TREE_VEC, PHI_NODE, or STRING_CST
      without knowing how many elements it will have.  */
-  if (code == TREE_VEC || code == PHI_NODE || code == EPHI_NODE)
+  if (code == TREE_VEC || code == PHI_NODE)
     abort ();
 
   TREE_SET_CODE ((tree)&ttmp, code);
@@ -1501,10 +1493,6 @@ tree_node_structure (tree t)
     case TREE_LIST:		return TS_LIST;
     case TREE_VEC:		return TS_VEC;
     case PHI_NODE:		return TS_PHI_NODE;
-    case EPHI_NODE:		return TS_EPHI_NODE;
-    case EUSE_NODE:             return TS_EUSE_NODE;
-    case EKILL_NODE:            return TS_EREF_NODE;
-    case EEXIT_NODE:            return TS_EREF_NODE;
     case SSA_NAME:		return TS_SSA_NAME;
     case PLACEHOLDER_EXPR:	return TS_COMMON;
     case STATEMENT_LIST:	return TS_STATEMENT_LIST;
@@ -5174,18 +5162,6 @@ tree_vec_elt_check_failed (int idx, int len, const char *file, int line,
      idx + 1, len, function, trim_filename (file), line);
 }
 
-/* Similar to above, except that the check is for the bounds of a EPHI_NODE's
-   (dynamically sized) vector.  */
-
-void
-ephi_node_elt_check_failed (int idx, int len, const char *file, int line,
-			    const char *function)
-{
-  internal_error
-    ("tree check: accessed elt %d of ephi_node with %d elts in %s, at %s:%d",
-     idx + 1, len, function, trim_filename (file), line);
-}
-
 /* Similar to above, except that the check is for the bounds of a PHI_NODE's
    (dynamically sized) vector.  */
 
@@ -5554,15 +5530,6 @@ tree
 build_empty_stmt (void)
 {
   return build1 (NOP_EXPR, void_type_node, size_zero_node);
-}
-
-bool
-is_essa_node (tree t)
-{
-  if (TREE_CODE (t) == EPHI_NODE || TREE_CODE (t) == EUSE_NODE 
-      || TREE_CODE (t) == EEXIT_NODE || TREE_CODE (t) == EKILL_NODE)
-    return true;
-  return false;
 }
 
 

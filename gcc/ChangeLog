@@ -1,3 +1,29 @@
+2004-06-15  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-flow-inline.h (stmt_ann): Remove use of is_essa_node.
+	* tree-dfa.c (create_stmt_ann): Ditto.
+	* tree-pretty-print.c (dump_generic_node): Remove E* node handling.
+	* tree-inline.c (estimate_num_insns_1): Ditto.
+	* tree.c (tree_size): Ditto.
+	(make_node_stat): Ditto.
+	(tree_node_structure): Ditto.
+	(ephi_node_elt_check_failed): Remove.
+	(is_essa_node): Ditto.
+	* tree.def (EPHI_NODE): Ditto.
+	(EEXIT_NODE): Ditto.
+	(EUSE_NODE): Ditto.
+	(EKILL_NODE): Ditto.
+	* tree.h (EREF_NODE_CHECK): Remove.
+	(EPHI_NODE_ELT_CHECK): Ditto.
+	(struct tree_eref_common): Ditto.
+	(struct tree_euse_node): Ditto.
+	(struct ephi_arg_d): Ditto.
+	(struct tree_ephi_node): Ditto.
+	(ephi_node_elt_check_failed): Remove prototype.
+	(is_essa_node): Ditto.
+	(enum tree_node_structure_enum): Remove TS_E*_NODE.
+	(union tree_node): Remove E*_NODE uses.
+
 2004-06-15  Jerry Quinn  <jlquinn@optonline.net>
 
 	* alias.c (record_set, record_base_value, canon_rtx, get_addr,

@@ -443,7 +443,7 @@ create_stmt_ann (tree t)
   stmt_ann_t ann;
 
 #if defined ENABLE_CHECKING
-  if ((!is_gimple_stmt (t) && !is_essa_node (t))
+  if ((!is_gimple_stmt (t))
       || (t->common.ann
 	  && t->common.ann->common.type != STMT_ANN))
     abort ();
