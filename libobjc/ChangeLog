@@ -1,3 +1,9 @@
+2004-08-28  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.ac: Switch from _GCC_TOPLEV_NONCANONICAL_TARGET to
+	ACX_NONCANONICAL_TARGET.
+	* configure: Regenerate.
+
 2004-08-13  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc/sarray.h: Hoist include of assert.h near the top of file,
