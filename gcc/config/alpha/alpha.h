@@ -948,14 +948,14 @@ extern char *alpha_function_name;
     do {							\
 	int blockn = (BLOCKNO);					\
 	fputs ("\tsubq $30,16,$30\n", (FILE));			\
-	fputs ("\tstq $0,0($30)\n", (FILE));			\
-	fputs ("\tstq $1,8($30)\n", (FILE));			\
-	fputs ("\tlda $0,$PBX34\n", (FILE));			\
-	fprintf ((FILE), "\tldq $1,%d($0)\n", 8*blockn);	\
-	fputs ("\taddq $1,1,$1\n", (FILE));			\
-	fprintf ((FILE), "\tstq $1,%d($0)\n", 8*blockn);	\
-	fputs ("\tldq $0,0($30)\n", (FILE));			\
-	fputs ("\tldq $1,8($30)\n", (FILE));			\
+	fputs ("\tstq $26,0($30)\n", (FILE));			\
+	fputs ("\tstq $27,8($30)\n", (FILE));			\
+	fputs ("\tlda $26,$PBX34\n", (FILE));			\
+	fprintf ((FILE), "\tldq $27,%d($26)\n", 8*blockn);	\
+	fputs ("\taddq $27,1,$27\n", (FILE));			\
+	fprintf ((FILE), "\tstq $27,%d($26)\n", 8*blockn);	\
+	fputs ("\tldq $26,0($30)\n", (FILE));			\
+	fputs ("\tldq $27,8($30)\n", (FILE));			\
 	fputs ("\taddq $30,16,$30\n", (FILE));			\
     } while (0)
 
