@@ -397,7 +397,7 @@ namespace std
 	      // and output.
 	      if (_M_convert_to_external(this->pbase(),
 					 this->pptr() - this->pbase())
-		  && (!__testeof || (__testeof && !_M_file.sync())))
+		  && (!__testeof || !_M_file.sync()))
 		{
 		  _M_set_buffer(0);
 		  __ret = traits_type::not_eof(__c);
@@ -437,12 +437,12 @@ namespace std
     _M_convert_to_external(_CharT* __ibuf, streamsize __ilen)
     {
       // Sizes of external and pending output.
-      streamsize __elen = 0;
-      streamsize __plen = 0;
+      streamsize __elen;
+      streamsize __plen;
       if (__check_facet(_M_codecvt).always_noconv())
 	{
-	  __elen += _M_file.xsputn(reinterpret_cast<char*>(__ibuf), __ilen);
-	  __plen += __ilen;
+	  __elen = _M_file.xsputn(reinterpret_cast<char*>(__ibuf), __ilen);
+	  __plen = __ilen;
 	}
       else
 	{
@@ -466,19 +466,14 @@ namespace std
 	      __blen = __ilen;
 	    }
 	  else
-	    {
-	      // Result == error.
-	      __blen = 0;
-	    }
-
-	  if (__blen)
-	    {
-	      __elen += _M_file.xsputn(__buf, __blen);
-	      __plen += __blen;
-	    }
+	    __throw_ios_failure(__N("basic_filebuf::_M_convert_to_external "
+				    "conversion error"));
+  
+	  __elen = _M_file.xsputn(__buf, __blen);
+	  __plen = __blen;
 
 	  // Try once more for partial conversions.
-	  if (__r == codecvt_base::partial)
+	  if (__r == codecvt_base::partial && __elen == __plen)
 	    {
 	      const char_type* __iresume = __iend;
 	      streamsize __rlen = this->pptr() - __iend;
@@ -488,12 +483,15 @@ namespace std
 	      if (__r != codecvt_base::error)
 		{
 		  __rlen = __bend - __buf;
-		  __elen += _M_file.xsputn(__buf, __rlen);
-		  __plen += __rlen;
+		  __elen = _M_file.xsputn(__buf, __rlen);
+		  __plen = __rlen;
 		}
+	      else
+		__throw_ios_failure(__N("basic_filebuf::_M_convert_to_external "
+					"conversion error"));
 	    }
 	}
-      return __elen && __elen == __plen;
+      return __elen == __plen;
     }
 
    template<typename _CharT, typename _Traits>

@@ -1,4 +1,6 @@
-// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+// 2004-02-14  Petur Runolfsson  <peturr02@ru.is>
+
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,23 +21,43 @@
 // 27.8.1.4 Overridden virtual functions
 
 #include <fstream>
+#include <locale>
 
-void test03()
+class Cvt : public std::codecvt<wchar_t, char, std::mbstate_t>
+{
+protected:
+  virtual std::codecvt_base::result
+  do_out(std::mbstate_t&, const wchar_t* from, const wchar_t*,
+	 const wchar_t*& from_next, char* to, char*,
+	 char*& to_next) const
+  {
+    from_next = from;
+    to_next = to;
+    return std::codecvt_base::error;
+  }
+  
+  virtual bool
+  do_always_noconv() const throw()
+  { return false; }
+};
+
+// libstdc++/13858
+void test01()
 {
   using namespace std;
-
-  const char* name = "tmp_seekoff_3";
-
+  
   wfilebuf fb;
-
-  fb.open(name, ios_base::out);
-  fb.sputc(0xf001);
-
+  fb.pubimbue(locale(locale::classic(), new Cvt));
+  fb.open("tmp_13858_wchar_t", ios_base::out);
+  
   try
     {
-      // seekoff should flush the output sequence, which will fail
-      // if the output buffer contains illegal characters.
-      fb.pubseekoff(0, ios_base::cur);
+      fb.sputc(L'a');
+      fb.sputc(L'b');
+      fb.pubimbue(locale::classic());
+      fb.sputc(L'c');
+      fb.pubsync();
+      fb.close();
     }
   catch (exception&)
     {
@@ -44,6 +66,6 @@ void test03()
 
 int main()
 {
-  test03();
+  test01();
   return 0;
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,13 +20,11 @@
 
 #include <locale>
 #include <fstream>
-#include <testsuite_hooks.h>
 
 void test01()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   const char* name = "tmp_seekpos_1";
 
   wfilebuf fb;
@@ -35,8 +33,13 @@ void test01()
   streampos pos = fb.pubseekoff(0, ios_base::beg);
   fb.sputc(0xf001);
 
-  streampos ret = fb.pubseekpos(pos);
-  VERIFY( ret == streampos(streamoff(-1)) );
+  try
+    {
+      fb.pubseekpos(pos);
+    }
+  catch (exception&)
+    {
+    }
 }
 
 int main()

@@ -1,6 +1,6 @@
 // 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,6 @@
 
 #include <fstream>
 #include <locale>
-#include <testsuite_hooks.h>
 
 const char name_07[] = "filebuf_virtuals-7.txt"; // empty file, need to create
 
@@ -51,7 +50,6 @@ protected:
 void test13()
 {
   using namespace std;
-  bool test __attribute__((unused)) = true;
 
   locale loc =  locale::classic();
   loc = locale(loc, new errorcvt);
@@ -59,10 +57,16 @@ void test13()
   filebuf fbuf1;
   fbuf1.pubimbue(loc);
   fbuf1.open(name_07, ios_base::out | ios_base::trunc);
-  fbuf1.sputn("ison", 4); 
-  int r = fbuf1.pubsync();
-  VERIFY( r == -1 );
-  fbuf1.close();
+
+  try
+    {  
+      fbuf1.sputn("ison", 4); 
+      fbuf1.pubsync();
+      fbuf1.close();
+    }
+  catch (exception&)
+    {
+    }
 }
 
 int main() 
