@@ -128,9 +128,9 @@ BEGIN {nnames = 0}
   }
 END {
   # Heuristics called combined predicts just everything.
-  maxcounts = longeval(counts["first match"])
-  maxbranches = branches["first match"]
-  max = names["first match"]
+  maxcounts = longeval(counts["combined"])
+  maxbranches = branches["combined"]
+  max = names["combined"]
   printf("HEURISTICS                  BRANCHES  (REL)  HITRATE             COVERAGE  (REL)\n")
   for (i = 0; i < nnames ; i++)
    {

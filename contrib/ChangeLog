@@ -1,3 +1,7 @@
+Mon Aug 13 02:29:08 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* analyze_brprob: Update for changes in gcc debug output.
+
 Sat Jul 28 22:37:49 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* analyze_brprob: Avoid more overflows.
