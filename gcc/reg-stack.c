@@ -230,7 +230,7 @@ static rtx FP_mode_reg[FIRST_PSEUDO_REGISTER][(int) MAX_MACHINE_MODE];
     : block_number)[INSN_UID (INSN)])
 
 extern rtx gen_jump ();
-extern rtx gen_movdf ();
+extern rtx gen_movdf (), gen_movxf ();
 extern rtx find_regno_note ();
 extern rtx emit_jump_insn_before ();
 extern rtx emit_label_after ();
@@ -1722,6 +1722,24 @@ move_for_stack_reg (insn, regstack, pat)
 	  replace_reg (&XEXP (note, 0), FIRST_STACK_REG);
 	  regstack->top--;
 	  CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (*src));
+	}
+      else if (GET_MODE (*src) == XFmode && regstack->top != REG_STACK_SIZE)
+	{
+	  /* A 387 cannot write an XFmode value to a MEM without
+	     clobbering the source reg.  The output code can handle
+	     this by reading back the value from the MEM.
+	     But it is more efficient to use a temp register if one is
+	     available.  Push the source value here if the register
+	     stack is not full, and then write the value to memory via
+	     a pop.  */
+	  rtx push_rtx, push_insn;
+	  rtx top_stack_reg = FP_mode_reg[FIRST_STACK_REG][(int) XFmode];
+
+	  push_rtx = gen_movxf (top_stack_reg, top_stack_reg);
+	  push_insn = emit_insn_before (push_rtx, insn);
+	  PUT_MODE (push_insn, QImode);
+	  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD, top_stack_reg,
+				      REG_NOTES (insn));
 	}
 
       replace_reg (src, FIRST_STACK_REG);
