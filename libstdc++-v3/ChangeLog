@@ -1,3 +1,8 @@
+2002-02-10  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/stl_algo.h (transform (both signatures), generate_n):
+	Use __typeof__ in concept checks.
+
 2002-02-10  Jonathan Wakely  <cow@compsoc.man.ac.uk>
 
 	* include/bits/stl_algo.h (__median, for_each, find, find_if,
