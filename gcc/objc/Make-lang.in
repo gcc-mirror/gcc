@@ -66,8 +66,9 @@ cc1obj$(exeext): $(P) $(OBJS) $(OBJC_OBJS) $(LIBDEPS)
 
 objc-parse.o : $(srcdir)/objc/objc-parse.c \
    $(CONFIG_H) $(TREE_H) $(srcdir)/toplev.h \
-   $(srcdir)/c-lex.h $(srcdir)/c-tree.h $(srcdir)/input.h \
-   $(srcdir)/flags.h $(srcdir)/output.h $(srcdir)/objc/objc-act.h system.h
+   $(srcdir)/c-lex.h $(srcdir)/c-tree.h $(srcdir)/c-common.h \
+   $(srcdir)/input.h $(srcdir)/flags.h $(srcdir)/output.h \
+   $(srcdir)/objc/objc-act.h system.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
 	-c $(srcdir)/objc/objc-parse.c
 
@@ -85,9 +86,10 @@ $(srcdir)/objc/objc-parse.y: $(srcdir)/c-parse.in
 
 objc-act.o : $(srcdir)/objc/objc-act.c \
    $(CONFIG_H) $(TREE_H) $(RTL_H) system.h \
-   $(srcdir)/c-tree.h $(srcdir)/c-lex.h $(srcdir)/toplev.h \
-   $(srcdir)/flags.h $(srcdir)/objc/objc-act.h $(srcdir)/input.h \
-   $(srcdir)/function.h $(srcdir)/output.h $(srcdir)/c-parse.h
+   $(srcdir)/c-tree.h $(srcdir)/c-common.h $(srcdir)/c-lex.h \
+   $(srcdir)/toplev.h $(srcdir)/flags.h $(srcdir)/objc/objc-act.h \
+   $(srcdir)/input.h $(srcdir)/function.h $(srcdir)/output.h \
+   $(srcdir)/c-parse.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
 	-c $(srcdir)/objc/objc-act.c
 

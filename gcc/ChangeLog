@@ -1,3 +1,24 @@
+Tue Jul 20 11:24:19 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* c-common.h: New file.
+	* c-common.c (permanent_obstack): Delete unused declaration.
+	(c_global_trees): New array.
+	(c_common_nodes_and_builtins): New function; split off common code
+	from init_decl_processing in both c-decl.c and cp/decl.c.
+	* c-tree.h: Delete lots of declarations of tree nodes; replaced by
+	c_global_trees and accessor macros defined in c-common.h.
+	Include c-common.h.
+	* c-decl.c: Delete definitions for tree nodes that were replaced by
+	c_global_trees.
+	(init_decl_processing): Build void_list_node.
+	Call c_common_nodes_and_builtins; delete code to generate the common
+	builtins here.
+	* objc/objc-act.c (build_module_descriptor): Rename variable
+	void_list_node to avoid clash with c-common.h.
+
+	* Makefile.in: Update dependencies.
+	* objc/Make-lang.in: Likewise.
+
 Mon Jul 19 14:22:18 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* config/mips/iris6gld.h (MAKE_DECL_ONE_ONLY): Define.

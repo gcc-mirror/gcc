@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef _C_TREE_H
 #define _C_TREE_H
 
+#include "c-common.h"
+
 /* Language-dependent contents of an identifier.  */
 
 /* The limbo_value is used for block level extern declarations, which need
@@ -175,116 +177,11 @@ extern tree build_objc_string			PROTO((int, const char *));
 /* in c-aux-info.c */
 extern void gen_aux_info_record                 PROTO((tree, int, int, int));
 
-/* in c-common.c */
-extern void declare_function_name               PROTO((void));
-extern void decl_attributes                     PROTO((tree, tree, tree));
-extern void init_function_format_info		PROTO((void));
-extern void check_function_format		PROTO((tree, tree, tree));
-extern int c_get_alias_set                      PROTO((tree));
-extern void c_apply_type_quals_to_decl          PROTO((int, tree));
-/* Print an error message for invalid operands to arith operation CODE.
-   NOP_EXPR is used as a special case (see truthvalue_conversion).  */
-extern void binary_op_error                     PROTO((enum tree_code));
-extern void c_expand_expr_stmt                  PROTO((tree));
-extern void c_expand_start_cond                 PROTO((tree, int, int));
-extern void c_expand_start_else                 PROTO((void));
-extern void c_expand_end_cond                   PROTO((void));
-/* Validate the expression after `case' and apply default promotions.  */
-extern tree check_case_value                    PROTO((tree));
-/* Concatenate a list of STRING_CST nodes into one STRING_CST.  */
-extern tree combine_strings                     PROTO((tree));
-extern void constant_expression_warning         PROTO((tree));
-extern tree convert_and_check			PROTO((tree, tree));
-extern void overflow_warning			PROTO((tree));
-extern void unsigned_conversion_warning		PROTO((tree, tree));
-/* Read the rest of the current #-directive line.  */
-#if USE_CPPLIB
-extern char *get_directive_line                 PROTO((void));
-#define GET_DIRECTIVE_LINE() get_directive_line ()
-#else
-extern char *get_directive_line                 PROTO((FILE *));
-#define GET_DIRECTIVE_LINE() get_directive_line (finput)
-#endif
-
-/* Subroutine of build_binary_op, used for comparison operations.
-   See if the operands have both been converted from subword integer types
-   and, if so, perhaps change them both back to their original type.  */
-extern tree shorten_compare                     PROTO((tree *, tree *, tree *, enum tree_code *));
-/* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
-   or validate its data type for an `if' or `while' statement or ?..: exp. */
-extern tree truthvalue_conversion               PROTO((tree));
-extern tree type_for_mode                       PROTO((enum machine_mode, int));
-extern tree type_for_size                       PROTO((unsigned, int));
-
 /* in c-convert.c */
 extern tree convert                             PROTO((tree, tree));
 
 /* in c-decl.c */
-/* Standard named or nameless data types of the C compiler.  */
-extern tree char_array_type_node;
-extern tree char_type_node;
-extern tree const_ptr_type_node;
-extern tree const_string_type_node;
-extern tree default_function_type;
-extern tree double_ftype_double;
-extern tree double_ftype_double_double;
-extern tree double_type_node;
-extern tree float_type_node;
-#if HOST_BITS_PER_WIDE_INT >= 64
-extern tree intTI_type_node;
-#endif
-extern tree intDI_type_node;
-extern tree intHI_type_node;
-extern tree intQI_type_node;
-extern tree intSI_type_node;
-extern tree int_array_type_node;
-extern tree int_ftype_cptr_cptr_sizet;
-extern tree int_ftype_int;
-extern tree int_ftype_ptr_ptr_int;
-extern tree int_ftype_string_string;
-extern tree integer_type_node;
-extern tree long_double_type_node;
-extern tree long_ftype_long;
-extern tree long_integer_type_node;
-extern tree long_unsigned_type_node;
-extern tree long_long_integer_type_node;
-extern tree long_long_unsigned_type_node;
-extern tree widest_integer_literal_type_node;
-extern tree widest_unsigned_literal_type_node;
-extern tree complex_integer_type_node;
-extern tree complex_float_type_node;
-extern tree complex_double_type_node;
-extern tree complex_long_double_type_node;
-extern tree ptr_type_node;
-extern tree ptrdiff_type_node;
-extern tree short_integer_type_node;
-extern tree short_unsigned_type_node;
-extern tree signed_char_type_node;
-extern tree signed_wchar_type_node;
-extern tree string_ftype_ptr_ptr;
-extern tree string_type_node;
-extern tree unsigned_char_type_node;
-#if HOST_BITS_PER_WIDE_INT >= 64
-extern tree unsigned_intTI_type_node;
-#endif
-extern tree unsigned_intDI_type_node;
-extern tree unsigned_intHI_type_node;
-extern tree unsigned_intQI_type_node;
-extern tree unsigned_intSI_type_node;
-extern tree unsigned_type_node;
-extern tree unsigned_wchar_type_node;
-extern tree void_ftype_ptr_int_int;
-extern tree void_ftype_ptr_ptr_int;
-extern tree void_type_node;
-extern tree wchar_array_type_node;
-extern tree wchar_type_node;
-extern tree boolean_type_node;
-extern tree boolean_true_node;
-extern tree boolean_false_node;
-
 extern tree build_enumerator                    PROTO((tree, tree));
-/* Declare a predefined function.  Return the declaration.  */
-extern tree builtin_function                    PROTO((const char *, tree, enum built_in_function function_, const char *));
 /* Add qualifiers to a type, in the fashion for C.  */
 extern tree c_build_qualified_type              PROTO((tree, int));
 #define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \

@@ -2394,8 +2394,6 @@ coerce_delete_type (type)
   return type;
 }
 
-extern tree abort_fndecl;
-
 static void
 mark_vtable_entries (decl)
      tree decl;

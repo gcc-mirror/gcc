@@ -37,7 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_free free
 
 extern struct obstack *current_obstack;
-extern tree abort_fndecl;
 
 #include "stack.h"
 

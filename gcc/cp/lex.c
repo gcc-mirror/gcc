@@ -2002,7 +2002,6 @@ cons_up_default_function (type, full_name, kind)
      tree type, full_name;
      int kind;
 {
-  extern tree void_list_node;
   tree declspecs = NULL_TREE;
   tree fn, args = NULL_TREE;
   tree argtype;
