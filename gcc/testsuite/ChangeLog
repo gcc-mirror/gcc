@@ -1,3 +1,9 @@
+2002-03-26  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/20001101-1.c: Add -mcpu=ultrasparc.  Only run on
+	sparcv9 systems.
+	* gcc.dg/20001102-1.c: Likewise.
+
 2002-03-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/abi/vbase9.C: New test.
