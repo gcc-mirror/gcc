@@ -38,69 +38,72 @@ extern "C" {
 
 #include <ansidecl.h>
 
-/* The hash table element is represented by the following type. */
+/* Callback function pointer types.  */
 
-typedef const void *hash_table_entry_t;
+/* Calculate hash of a table entry.  */
+typedef unsigned int (*htab_hash) PARAMS ((const void *));
+
+/* Compare a table entry with a possible entry.  The entry already in
+   the table always comes first.  */
+typedef int (*htab_eq) PARAMS ((const void *, const void *));
+
+/* Function called by htab_traverse for each live element.  The first
+   arg is the element, the second arg is the auxiliary pointer handed
+   to htab_traverse.  Return 1 to continue scan, 0 to stop.  */
+typedef int (*htab_trav) PARAMS ((void *, void *));
 
 /* Hash tables are of the following type.  The structure
    (implementation) of this type is not needed for using the hash
    tables.  All work with hash table should be executed only through
    functions mentioned below. */
 
-typedef struct hash_table
+struct htab
 {
+  /* Pointer to hash function.  */
+  htab_hash hash_f;
+
+  /* Pointer to comparison function. */
+  htab_eq eq_f;
+
+  /* Table itself */
+  void **entries;
+
   /* Current size (in entries) of the hash table */
   size_t size;
+
   /* Current number of elements including also deleted elements */
-  size_t number_of_elements;
+  size_t n_elements;
+
   /* Current number of deleted elements in the table */
-  size_t number_of_deleted_elements;
+  size_t n_deleted;
+
   /* The following member is used for debugging. Its value is number
-     of all calls of `find_hash_table_entry' for the hash table. */
-  int searches;
+     of all calls of `htab_find_slot' for the hash table. */
+  unsigned int searches;
+
   /* The following member is used for debugging.  Its value is number
      of collisions fixed for time of work with the hash table. */
-  int collisions;
-  /* Pointer to function for evaluation of hash value (any unsigned value).
-     This function has one parameter of type hash_table_entry_t. */
-  unsigned (*hash_function) PARAMS ((hash_table_entry_t));
-  /* Pointer to function for test on equality of hash table elements (two
-     parameter of type hash_table_entry_t. */
-  int (*eq_function) PARAMS ((hash_table_entry_t, hash_table_entry_t));
-  /* Table itself */
-  hash_table_entry_t *entries;
-} *hash_table_t;
+  unsigned int collisions;
+};
 
+typedef struct htab *htab_t;
 
 /* The prototypes of the package functions. */
 
-extern hash_table_t create_hash_table
-  PARAMS ((size_t, unsigned (*) (hash_table_entry_t),
-	   int (*) (hash_table_entry_t, hash_table_entry_t)));
+extern htab_t	htab_create	PARAMS ((size_t, htab_hash, htab_eq));
+extern void	htab_delete	PARAMS ((htab_t));
+extern void	htab_empty	PARAMS ((htab_t));
 
-extern void delete_hash_table PARAMS ((hash_table_t));
+extern void    *htab_find	PARAMS ((htab_t, const void *));
+extern void   **htab_find_slot	PARAMS ((htab_t, const void *, int));
+extern void	htab_clear_slot	PARAMS ((htab_t, void **));
+extern void	htab_remove_elt	PARAMS ((htab_t, void *));
 
-extern void empty_hash_table PARAMS ((hash_table_t));
+extern void	htab_traverse	PARAMS ((htab_t, htab_trav, void *));
 
-extern hash_table_entry_t *find_hash_table_entry
-  PARAMS ((hash_table_t, hash_table_entry_t, int));
-
-extern void remove_element_from_hash_table_entry PARAMS ((hash_table_t,
-							  hash_table_entry_t));
-
-extern void clear_hash_table_slot PARAMS ((hash_table_t, hash_table_entry_t *));
-
-extern void traverse_hash_table PARAMS ((hash_table_t,
-					 int (*) (hash_table_entry_t, void *),
-					 void *));
-    
-extern size_t hash_table_size PARAMS ((hash_table_t));
-
-extern size_t hash_table_elements_number PARAMS ((hash_table_t));
-
-extern int hash_table_collisions PARAMS ((hash_table_t));
-
-extern int all_hash_table_collisions PARAMS ((void));
+extern size_t	htab_size	PARAMS ((htab_t));
+extern size_t	htab_elements	PARAMS ((htab_t));
+extern double	htab_collisions	PARAMS ((htab_t));
 
 #ifdef __cplusplus
 }

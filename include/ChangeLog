@@ -1,3 +1,13 @@
+2000-03-08  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* hashtab.h (hash_table_t): Rename to htab_t.
+	(struct hash_table): Rename to struct htab.  Shorten element
+	names.  Reorder elements by size.
+	(htab_hash, htab_eq, htab_trav): New typedefs for the callback
+	function pointers.
+	(hash_table_entry_t): Discard; just use void * for element
+	type.
+
 Sat Jan  1 19:06:52 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* symcat.h (STRINGX) [!__STDC__ || ALMOST_STDC]: Change "?" to "s"
@@ -25,10 +35,10 @@ Sat Jan  1 19:06:52 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 	(asprintf, vasprintf): Provide declarations.
 
 Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
-                          Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+			  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ansidecl.h: Define and test `GCC_VERSION', not `HAVE_GCC_VERSION'.
-	
+
 1999-10-23 08:51 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* hashtab.h: Give hash_table_t a struct tag.  Add prototypes
@@ -43,7 +53,7 @@ Fri Oct 15 01:47:51 1999  Vladimir Makarov  <vmakarov@loony.cygnus.com>
 
 	* ansidecl.h (HAVE_GCC_VERSION): New macro.  Use it instead of
 	explicitly testing __GNUC__ and __GNUC_MINOR__.
-	
+
 	(ATTRIBUTE_PRINTF): Use `__format__', not `format'.
 
 1999-09-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -96,20 +106,20 @@ Mon Dec 14 09:53:31 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* demangle.h: Don't check IN_GCC anymore.
 	* splay-tree.h: Likewise.
 
-Tue Dec  8 00:30:31 1998  Elena Zannoni  <ezannoni@kwikemart.cygnus.com> 
+Tue Dec  8 00:30:31 1998  Elena Zannoni  <ezannoni@kwikemart.cygnus.com>
 
-        * demangle.h: (DMGL_EDG): new macro for Kuck and Associates
-        (DMGL_STYLE_MASK): modify to include Kuck and Assoc style
-        (demangling_styles): add new edg_demangling style
-        (EDG_DEMANGLING_STYLE_STRING): new macro
-        (EDG_DEMANGLING): new macro
+	* demangle.h: (DMGL_EDG): new macro for Kuck and Associates
+	(DMGL_STYLE_MASK): modify to include Kuck and Assoc style
+	(demangling_styles): add new edg_demangling style
+	(EDG_DEMANGLING_STYLE_STRING): new macro
+	(EDG_DEMANGLING): new macro
 
-        * demangle.h (DMGL_HP): new macro, for HP/aCC compiler.
-        (DMGL_STYLE_MASK): modify to include new HP's style.
-        (demangling_styles): add new hp_demangling value.
-        (HP_DEMANGLING_STYLE_STRING): new macro.
-        (ARM_DEMANGLING): coerce to int.
-        (HP_DEMANGLING): new macro.
+	* demangle.h (DMGL_HP): new macro, for HP/aCC compiler.
+	(DMGL_STYLE_MASK): modify to include new HP's style.
+	(demangling_styles): add new hp_demangling value.
+	(HP_DEMANGLING_STYLE_STRING): new macro.
+	(ARM_DEMANGLING): coerce to int.
+	(HP_DEMANGLING): new macro.
 
 Fri Nov 20 13:14:00 1998  Andrew Cagney  <cagney@b1.cygnus.com>
 
@@ -806,8 +816,8 @@ Thu Apr 28 19:06:50 1994  Ken Raeburn  (raeburn@cujo.cygnus.com)
 
 Fri Apr  1 00:38:17 1994  Jim Wilson  (wilson@mole.gnu.ai.mit.edu)
 
-        * obstack.h: Delete use of IN_GCC to control whether
-        stddef.h or gstddef.h is included.
+	* obstack.h: Delete use of IN_GCC to control whether
+	stddef.h or gstddef.h is included.
 
 Tue Mar 22 13:06:02 1994  Ian Lance Taylor  (ian@tweedledumb.cygnus.com)
 
