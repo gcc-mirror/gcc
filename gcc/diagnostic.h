@@ -176,6 +176,7 @@ void init_output_buffer		PARAMS ((output_buffer *, const char *, int));
 void flush_diagnostic_buffer    PARAMS ((void));
 void output_clear		PARAMS ((output_buffer *));
 const char *output_get_prefix	PARAMS ((const output_buffer *));
+const char *output_last_position PARAMS ((const output_buffer *));
 void output_set_prefix		PARAMS ((output_buffer *, const char *));
 void output_destroy_prefix      PARAMS ((output_buffer *));
 void output_set_maximum_length  PARAMS ((output_buffer *, int));

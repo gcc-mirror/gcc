@@ -230,8 +230,12 @@ static void
 set_real_maximum_length (buffer)
      output_buffer *buffer;
 {
-  /* If we're told not to wrap lines then do the obvious thing.  */
-  if (! output_is_line_wrapping (buffer))
+  /* If we're told not to wrap lines then do the obvious thing.  In case
+   we'll emit prefix only once per diagnostic message, it is appropriate
+  not to increase unncessarily the line-length cut-off.  */
+  if (! output_is_line_wrapping (buffer)
+      || prefixing_policy (buffer) == DIAGNOSTICS_SHOW_PREFIX_ONCE
+      || prefixing_policy (buffer) == DIAGNOSTICS_SHOW_PREFIX_NEVER)
     line_wrap_cutoff (buffer) = ideal_line_wrap_cutoff (buffer);
   else
     {
@@ -269,6 +273,19 @@ output_set_prefix (buffer, prefix)
   set_real_maximum_length (buffer);
   prefix_was_emitted_for (buffer) = 0;
   output_indentation (buffer) = 0;
+}
+
+/*  Return a pointer to the last character emitted in the output
+    BUFFER area.  A NULL pointer means no character available.  */
+const char *
+output_last_position (buffer)
+     const output_buffer *buffer;
+{
+  const char *p = NULL;
+  
+  if (obstack_base (&buffer->obstack) != obstack_next_free (&buffer->obstack))
+    p = ((const char *) obstack_next_free (&buffer->obstack)) - 1;
+  return p;
 }
 
 /* Free BUFFER's prefix, a previously malloc'd string.  */
