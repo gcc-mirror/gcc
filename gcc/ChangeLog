@@ -1,3 +1,20 @@
+Sun Dec  6 00:28:16 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (valid_parallel_load_store): Flog functionality
+	from old valid_parallel_operands_4.
+	(valid_parallel_operands_4): Check that operands for 4 operand
+	parallel insns are valid, excluding load/store insns.
+	* config/c4x/c4x.h (valid_parallel_load_store): Add prototype.
+	* config/c4x/c4x.md (*movqf_parallel, *movqi_parallel): Use
+	valid_parallel_load_store instead of valid_parallel_operands_4.
+	(*absqf2_movqf_clobber, *floatqiqf2_movqf_clobber, 
+	*negqf2_movqf_clobber, *absqi2_movqi_clobber,
+	*fixqfqi2_movqi_clobber, *negqi2_movqi_clobber,
+	*notqi_movqi_clobber): Use valid_parallel_operands_4.
+	(*subqf3_movqf_clobber, *ashlqi3_movqi_clobber,
+	*ashrqi3_movqi_clobber, *lshrqi3_movqi_clobber,
+	*subqi3_movqi_clobber): Use valid_parallel_operands_5.
+
 Sat Dec  5 23:52:01 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (iteration_info): Delete extern.

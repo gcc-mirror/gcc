@@ -2663,6 +2663,8 @@ extern int legitimize_operands ();
 
 extern int valid_operands ();
 
+extern int valid_parallel_load_store ();
+
 extern int valid_parallel_operands_4 ();
 
 extern int valid_parallel_operands_5 ();
