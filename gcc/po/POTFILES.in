@@ -587,6 +587,7 @@ defaults.h
 ../include/demangle.h
 diagnostic.c
 diagnostic.h
+doloop.c
 dominance.c
 #doprint.c
 doschk.c
