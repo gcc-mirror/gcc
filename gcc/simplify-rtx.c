@@ -50,6 +50,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
  ((((HOST_WIDE_INT) low) < 0) ? ((HOST_WIDE_INT) -1) : ((HOST_WIDE_INT) 0))
 
 static rtx neg_const_int (enum machine_mode, rtx);
+static bool plus_minus_operand_p (rtx);
 static int simplify_plus_minus_op_data_cmp (const void *, const void *);
 static rtx simplify_plus_minus (enum rtx_code, enum machine_mode, rtx,
 				rtx, int);
@@ -1567,12 +1568,8 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	     and subtle programs can break if operations are associated.  */
 
 	  if (INTEGRAL_MODE_P (mode)
-	      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
-		  || GET_CODE (op1) == PLUS || GET_CODE (op1) == MINUS
-		  || (GET_CODE (op0) == CONST
-		      && GET_CODE (XEXP (op0, 0)) == PLUS)
-		  || (GET_CODE (op1) == CONST
-		      && GET_CODE (XEXP (op1, 0)) == PLUS))
+	      && (plus_minus_operand_p (op0)
+		  || plus_minus_operand_p (op1))
 	      && (tem = simplify_plus_minus (code, mode, op0, op1, 0)) != 0)
 	    return tem;
 
@@ -1724,12 +1721,8 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	     and subtle programs can break if operations are associated.  */
 
 	  if (INTEGRAL_MODE_P (mode)
-	      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
-		  || GET_CODE (op1) == PLUS || GET_CODE (op1) == MINUS
-		  || (GET_CODE (op0) == CONST
-		      && GET_CODE (XEXP (op0, 0)) == PLUS)
-		  || (GET_CODE (op1) == CONST
-		      && GET_CODE (XEXP (op1, 0)) == PLUS))
+	      && (plus_minus_operand_p (op0)
+		  || plus_minus_operand_p (op1))
 	      && (tem = simplify_plus_minus (code, mode, op0, op1, 0)) != 0)
 	    return tem;
 
@@ -2675,6 +2668,18 @@ simplify_plus_minus (enum rtx_code code, enum machine_mode mode, rtx op0,
 			     mode, result, ops[i].op);
 
   return result;
+}
+
+/* Check whether an operand is suitable for calling simplify_plus_minus.  */
+static bool
+plus_minus_operand_p (rtx x)
+{
+  return GET_CODE (x) == PLUS
+         || GET_CODE (x) == MINUS
+	 || (GET_CODE (x) == CONST
+	     && GET_CODE (XEXP (x, 0)) == PLUS
+	     && CONSTANT_P (XEXP (XEXP (x, 0), 0))
+	     && CONSTANT_P (XEXP (XEXP (x, 0), 1)));
 }
 
 /* Like simplify_binary_operation except used for relational operators.

@@ -1,3 +1,8 @@
+2004-12-13  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/18928
+	* gcc.dg/pr18928-1.c: New test case.
+
 2004-12-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR tree-opt/16951
