@@ -349,7 +349,7 @@ __divsi3:
 	fcvt.xf f9 = f9
 	;;
 	setf.exp f11 = r2
-	frcpa f10, p6 = f8, f9
+	frcpa.s1 f10, p6 = f8, f9
 	;;
 (p6)	fmpy.s1 f8 = f8, f10
 (p6)	fnma.s1 f9 = f9, f10, f1
@@ -393,7 +393,7 @@ __modsi3:
 	fcvt.xf f9 = f9
 	;;
 	setf.exp f11 = r2
-	frcpa f10, p6 = f8, f9
+	frcpa.s1 f10, p6 = f8, f9
 	;;
 (p6)	fmpy.s1 f12 = f8, f10
 (p6)	fnma.s1 f10 = f9, f10, f1
@@ -435,8 +435,11 @@ __udivsi3:
 	setf.sig f8 = in0
 	setf.sig f9 = in1
 	;;
+	fcvt.xf f8 = f8
+	fcvt.xf f9 = f9
+	;;
 	setf.exp f11 = r2
-	frcpa f10, p6 = f8, f9
+	frcpa.s1 f10, p6 = f8, f9
 	;;
 (p6)	fmpy.s1 f8 = f8, f10
 (p6)	fnma.s1 f9 = f9, f10, f1
@@ -480,7 +483,7 @@ __umodsi3:
 	fcvt.xf f9 = f9
 	;;
 	setf.exp f11 = r2
-	frcpa f10, p6 = f8, f9
+	frcpa.s1 f10, p6 = f8, f9
 	;;
 (p6)	fmpy.s1 f12 = f8, f10
 (p6)	fnma.s1 f10 = f9, f10, f1
