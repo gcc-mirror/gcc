@@ -139,6 +139,8 @@ struct fix_desc
 char *pz_dest_dir = NULL;
 char *pz_src_dir = NULL;
 char *pz_machine = NULL;
+char *pz_find_base = NULL;
+int find_base_len = 0;
 
 pid_t process_chain_head = (pid_t) -1;
 
@@ -240,6 +242,17 @@ main (argc, argv)
       }
   }
 
+  {
+    static const char var[] = "FIND_BASE";
+    pz_find_base = getenv (var);
+    if (pz_find_base == (char *) NULL)
+      {
+        fprintf (stderr, var_not_found, var);
+        exit (EXIT_FAILURE);
+      }
+    find_base_len = strlen( pz_find_base );
+  }
+
   /*  Compile all the regular expressions now.
       That way, it is done only once for the whole run.
       */
@@ -298,10 +311,15 @@ main (argc, argv)
                    errno, strerror (errno));
           exit (EXIT_FAILURE);
         }
-#ifdef DEBUG
+#ifndef DEBUG
+      {
+        int status;
+        (void)wait (&status);
+      }
+#else
       fprintf (stderr, "Waiting for %d to complete %d files\n",
                child, file_name_ct);
-#endif
+
       {
         int status;
         pid_t dead_kid = wait (&status);
@@ -309,16 +327,17 @@ main (argc, argv)
         if (dead_kid != child)
           fprintf (stderr, "fixincl woke up from a strange child %d (not %d)\n",
                    dead_kid, child);
-#ifdef DEBUG
         else
           fprintf (stderr, "child finished %d files %s\n", file_name_ct,
                    status ? strerror (status & 0xFF) : "ok");
-#endif
       }
+#endif
     }
 #else
 #error "NON-BOGUS LIMITS NOT SUPPORTED?!?!"
 #endif
+
+  signal (SIGCLD,  SIG_IGN);
 
 #ifdef DEBUG
   fprintf (stderr, "Child start  --  processing %d files\n",
@@ -411,8 +430,10 @@ load_file (pz_file_name)
 
             if (ferror (fp))
               {
-                fprintf (stderr, "error %d (%s) reading %s\n", errno,
-                         strerror (errno), pz_file_name);
+                int err = errno;
+                if (err != EISDIR)
+                  fprintf (stderr, "error %d (%s) reading %s\n", err,
+                           strerror (err), pz_file_name);
                 free ((void *) pz_data);
                 fclose (fp);
                 return (char *) NULL;
@@ -596,7 +617,16 @@ create_file (pz_file_name)
   FILE *pf;
   char fname[MAXPATHLEN];
 
-  sprintf (fname, "%s/%s", pz_dest_dir, pz_file_name);
+#ifdef DEBUG
+  if (strncmp( pz_file_name, pz_find_base, find_base_len ) != 0)
+    {
+      fprintf (stderr, "Error:  input file %s does not match %s/*\n",
+	       pz_file_name, pz_find_base );
+      exit (1);
+    }
+#endif
+
+  sprintf (fname, "%s/%s", pz_dest_dir, pz_file_name + find_base_len);
 
   fd = open (fname, O_WRONLY | O_CREAT | O_TRUNC, S_IRALL);
 
@@ -911,7 +941,7 @@ process (pz_data, pz_file_name)
             }
         }
 
-      fprintf (stderr, "Applying %-32s to %s\n",
+      fprintf (stderr, "Applying %-24s to %s\n",
                p_fixd->fix_name, pz_file_name);
 
       /*  IF we do not have a read pointer,

@@ -5,19 +5,15 @@
 #  fixincl program.  It is the repetitive guts of the fixincludes logic.
 #
 =]
-  if $LINKS; then
-    files=`find . -name '*.h' \( -type f -o -type l \) -print`
-  else
-    files=`find . -name '*.h' -type f -print`
-  fi
   echo Checking header files
   for file in $files; do
 
-    if ( test ! -r $file -o \
-    -n "`fgrep 'This file is part of the GNU C Library' $file`" )
+    if ( test ! -r ${file} -o \
+    -n "`fgrep 'This file is part of the GNU C Library' ${file}`" )
     then continue ; fi
 
     fixlist=""
+    DESTFILE=${DESTDIR}/`echo ${file} | sed "s;${FIND_BASE}/;;" `
 [=
 #
 #  FOR  every fix description,
@@ -30,7 +26,7 @@ _FOR fix "\n\n" =]
     # Fix [=_eval _index 1 + #%3d _printf=]:  [=hackname _Cap=]
     #[=
     _IF files _exist=]
-    case "$file" in [=_FOR files " | \\\n\t"=]./[=files=][=/files=] )[=
+    case "${file}" in [=_FOR files " | \\\n\t"=]./[=files=][=/files=] )[=
     _ENDIF=][=
 
     _IF mach _exist=]
@@ -52,8 +48,8 @@ _FOR fix "\n\n" =]
        true or false.  It is enclosed in parenthesis to avoid
        precedence problems.  The output looks like this:
 
-       if ( test -n "`egrep 'find-expr' $file`" -a
-                 -z "`egrep 'not-find'  $file`" -a
+       if ( test -n "`egrep 'find-expr' ${file}`" -a
+                 -z "`egrep 'not-find'  ${file}`" -a
                  '(' <some-test-expression> ')'
           ) > /dev/null 2>&1 ; then
 
@@ -62,13 +58,13 @@ _FOR fix "\n\n" =]
     _IF select _exist =]
     if ( test [=
         _FOR select " -a \\\n              "
-              =]-n [=select _shrstr "#`egrep %s $file`"
+              =]-n [=select _shrstr "#`egrep %s ${file}`"
                             _printf _shstr =][=
         /select=][=
 
         _IF bypass _exist =][=
             _FOR bypass=] -a \
-              -z [=bypass _shrstr "#`egrep %s $file`"
+              -z [=bypass _shrstr "#`egrep %s ${file}`"
                             _printf _shstr =][=
             /bypass=][=
         _ENDIF=][=
@@ -89,7 +85,7 @@ _FOR fix "\n\n" =]
 
         _IF bypass _exist=][=
             _FOR bypass=] -a \
-              -z [=bypass _shrstr "#`egrep %s $file`"
+              -z [=bypass _shrstr "#`egrep %s ${file}`"
                             _printf _shstr=][=
             /bypass=][=
         _ENDIF=]
@@ -98,16 +94,16 @@ _FOR fix "\n\n" =]
 
     _ELIF bypass _exist =]
     if ( test [=_FOR bypass " -a \\\n              "
-              =]-z [=bypass _shrstr "#`egrep %s $file`"
+              =]-z [=bypass _shrstr "#`egrep %s ${file}`"
                             _printf _shstr=][=/bypass=]
        ) > /dev/null 2>&1 ; then[=
 
       _ENDIF=]
     fixlist="${fixlist}
       [=hackname=]"
-    if [ ! -r ${DESTDIR}/$file ]
-    then infile=$file
-    else infile=${DESTDIR}/$file ; fi [=
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi [=
 
     _IF sed _exist=][=
         _IF shell _exist =][=
@@ -118,16 +114,16 @@ _FOR fix "\n\n" =]
     sed [=
         _FOR sed =]-e [=sed _shrstr=] \
         [=
-        /sed=]  < $infile > ${DESTDIR}/$file.[=
+        /sed=]  < $infile > ${DESTFILE}.[=
 
 
     _ELIF shell _exist =]
-    ( [=shell=] ) < $infile > ${DESTDIR}/$file.
+    ( [=shell=] ) < $infile > ${DESTDIR}/FIXINC.tmp
 
     #  Shell scripts have the potential of removing the output
     #  We interpret that to mean the file is not to be altered
     #
-    if test ! -f ${DESTDIR}/$file.
+    if test ! -f ${DESTDIR}/fixinc.tmp
     then continue ; fi [=
 
 
@@ -135,8 +131,8 @@ _FOR fix "\n\n" =]
         _ERROR hackname _get "ERROR:  %s has no fixup" _printf=][=
 
     _ENDIF=]
-    
-    mv -f ${DESTDIR}/$file. ${DESTDIR}/$file[=
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}[=
 
     #  Close off any opened "if" or "case" statements in reverse order
 
@@ -165,21 +161,23 @@ _FOR fix "\n\n" =]
     #  THEN ensure the output is gone
     #  ELSE look for local directory include syntax
     #
-    if ( test ! -f ${DESTDIR}/$file || \
-         cmp $file ${DESTDIR}/$file ) > /dev/null 2>&1
+    if ( test ! -f ${DESTFILE} || \
+         cmp ${file} ${DESTFILE} ) > /dev/null 2>&1
     then
-      rm -f ${DESTDIR}/$file
+      rm -f ${DESTFILE}
     else
-      echo "Fixed $file:${fixlist}"
+      echo "Fixed ${file}:${fixlist}"
 
       # Find any include directives that use "file".
       #
+      dir=`echo ${file} | sed -e s';/[^/]*$;;'`
+      ddir=`echo ${DESTDIR} | sed 's;/[^/]*$;;'`/$dir
+
       for include in `
-         egrep '^[ 	]*#[ 	]*include[ 	]*"[^/]' ${DESTDIR}/$file |
-     sed -e 's/^[ 	]*#[ 	]*include[ 	]*"\([^"]*\)".*$/\1/'`
+         egrep '^[      ]*#[    ]*include[      ]*"[^/]' ${DESTFILE} |
+         sed -e 's/^[   ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`
       do
-    dir=`echo $file | sed -e s'|/[^/]*$||'`
-    required="$required ${SRCDIR} $dir/$include ${DESTDIR}/$dir/$include"
+        required="$required ${SRCDIR} $dir/$include ${ddir}/$include"
       done
     fi
   done # for file in $files
