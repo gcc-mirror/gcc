@@ -1,5 +1,15 @@
 Sat Jun  2 06:53:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree.h (struct record_layout_info_s): New field unpadded_align.
+	(set_lang_adjust_rli): New declaration.
+	* stor-layout.c (layout_decl): If DECL is packed, but at alignment
+	it would have if not packed, do not downgrade DECL_ALIGN.
+	(lang_adjust_rli, set_lang_adjust_rli): New.
+	(start_record_layout): Initialize new field unpadded_align.
+	(debug_rli): Display it.
+	(place_union_field, place_field): Set it.
+	(layout_type, case RECORD_TYPE): Call via lang_adjust_rli if set.
+
 	* print-tree.c (print_node): Don't print "regdecl" when bit doesn't
 	mean that; use proper names instead.
 	Print DECL_NO_STATIC_CHAIN.

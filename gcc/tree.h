@@ -2118,12 +2118,17 @@ typedef struct record_layout_info_s
   unsigned int record_align;
   /* The alignment of the record so far, not including padding, in bits.  */
   unsigned int unpacked_align;
+  /* The alignment of the record so far, allowing for the record to be
+     padded only at the end, in bits.  */
+  unsigned int unpadded_align;
   /* The static variables (i.e., class variables, as opposed to
      instance variables) encountered in T.  */
   tree pending_statics;
   int packed_maybe_necessary;
 } *record_layout_info;
 
+extern void set_lang_adjust_rli		PARAMS ((void (*) PARAMS
+						 ((record_layout_info))));
 extern record_layout_info start_record_layout PARAMS ((tree));
 extern tree bit_from_pos		PARAMS ((tree, tree));
 extern tree byte_from_pos		PARAMS ((tree, tree));

@@ -381,7 +381,7 @@ layout_decl (decl, known_align)
       DECL_BIT_FIELD_TYPE (decl) = DECL_BIT_FIELD (decl) ? type : 0;
       if (maximum_field_alignment != 0)
 	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), maximum_field_alignment);
-      else if (DECL_PACKED (decl))
+      else if (DECL_PACKED (decl) && known_align % DECL_ALIGN (decl) != 0)
 	{
 	  DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
 	  DECL_USER_ALIGN (decl) = 0;
@@ -444,6 +444,18 @@ layout_decl (decl, known_align)
     }
 }
 
+/* Hook for a front-end function that can modify the record layout as needed
+   immediately before it is finalized.  */
+
+void (*lang_adjust_rli) PARAMS ((record_layout_info)) = 0;
+
+void
+set_lang_adjust_rli (f)
+     void (*f) PARAMS ((record_layout_info));
+{
+  lang_adjust_rli = f;
+}
+
 /* Begin laying out type T, which may be a RECORD_TYPE, UNION_TYPE, or
    QUAL_UNION_TYPE.  Return a pointer to a struct record_layout_info which
    is to be passed to all other layout functions for this record.  It is the
@@ -464,7 +476,7 @@ start_record_layout (t)
      declaration, for example) use it -- otherwise, start with a
      one-byte alignment.  */
   rli->record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (t));
-  rli->unpacked_align = rli->record_align;
+  rli->unpacked_align = rli->unpadded_align = rli->record_align;
   rli->offset_align = MAX (rli->record_align, BIGGEST_ALIGNMENT);
 
 #ifdef STRUCTURE_SIZE_BOUNDARY
@@ -571,8 +583,9 @@ debug_rli (rli)
   print_node_brief (stderr, "\noffset", rli->offset, 0);
   print_node_brief (stderr, " bitpos", rli->bitpos, 0);
 
-  fprintf (stderr, "\nrec_align = %u, unpack_align = %u, off_align = %u\n",
-	   rli->record_align, rli->unpacked_align, rli->offset_align);
+  fprintf (stderr, "\naligns: rec = %u, unpack = %u, unpad = %u, off = %u\n",
+	   rli->record_align, rli->unpacked_align, rli->unpadded_align,
+	   rli->offset_align);
   if (rli->packed_maybe_necessary)
     fprintf (stderr, "packed may be necessary\n");
 
@@ -639,13 +652,18 @@ place_union_field (rli, field)
 
   /* Union must be at least as aligned as any field requires.  */
   rli->record_align = MAX (rli->record_align, desired_align);
+  rli->unpadded_align = MAX (rli->unpadded_align, desired_align);
 
 #ifdef PCC_BITFIELD_TYPE_MATTERS
   /* On the m88000, a bit field of declare type `int' forces the
      entire union to have `int' alignment.  */
   if (PCC_BITFIELD_TYPE_MATTERS && DECL_BIT_FIELD_TYPE (field))
-    rli->record_align = MAX (rli->record_align, 
-			     TYPE_ALIGN (TREE_TYPE (field)));
+    {
+      rli->record_align = MAX (rli->record_align, 
+			       TYPE_ALIGN (TREE_TYPE (field)));
+      rli->unpadded_align = MAX (rli->unpadded_align,
+				 TYPE_ALIGN (TREE_TYPE (field)));
+    }
 #endif
 
   /* We assume the union's size will be a multiple of a byte so we don't
@@ -773,9 +791,9 @@ place_field (rli, field)
 	    type_align = MIN (type_align, BITS_PER_UNIT);
 
 	  rli->record_align = MAX (rli->record_align, type_align);
+	  rli->unpadded_align = MAX (rli->unpadded_align, DECL_ALIGN (field));
 	  if (warn_packed)
-	    rli->unpacked_align = MAX (rli->unpacked_align, 
-				       TYPE_ALIGN (type));
+	    rli->unpacked_align = MAX (rli->unpacked_align, TYPE_ALIGN (type));
 	}
     }
   else
@@ -783,6 +801,7 @@ place_field (rli, field)
     {
       rli->record_align = MAX (rli->record_align, desired_align);
       rli->unpacked_align = MAX (rli->unpacked_align, TYPE_ALIGN (type));
+      rli->unpadded_align = MAX (rli->unpadded_align, DECL_ALIGN (field));
     }
 
   if (warn_packed && DECL_PACKED (field))
@@ -1497,6 +1516,9 @@ layout_type (type)
 
 	if (TREE_CODE (type) == QUAL_UNION_TYPE)
 	  TYPE_FIELDS (type) = nreverse (TYPE_FIELDS (type));
+
+	if (lang_adjust_rli)
+	  (*lang_adjust_rli) (rli);
 
 	/* Finish laying out the record.  */
 	finish_record_layout (rli);
