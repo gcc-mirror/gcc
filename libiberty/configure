@@ -2082,7 +2082,7 @@ fi
 
 
 case "${host}" in
-  *-*-cygwin*)
+  *-*-cygwin* | *-*-mingw*)
     cat >> confdefs.h <<\EOF
 #define HAVE_SYS_ERRLIST 1
 EOF

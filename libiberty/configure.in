@@ -249,7 +249,7 @@ fi
 AC_SUBST(CHECK)
 
 case "${host}" in
-  *-*-cygwin*)
+  *-*-cygwin* | *-*-mingw*)
     AC_DEFINE_NOAUTOHEADER(HAVE_SYS_ERRLIST)
     AC_DEFINE_NOAUTOHEADER(HAVE_SYS_NERR)
     ;;
