@@ -264,7 +264,7 @@ complete support for international character sets in a future release.
 
 Different systems use different conventions to indicate the end of a
 line.  GCC accepts the ASCII control sequences @kbd{LF}, @kbd{@w{CR
-LF}}, @kbd{CR} as end-of-line markers.  These
+LF}} and @kbd{CR} as end-of-line markers.  These
 are the canonical sequences used by Unix, DOS and VMS, and the
 classic Mac OS (before OSX) respectively.  You may therefore safely copy
 source code written on any of those systems to a different one and use
@@ -1857,7 +1857,8 @@ use.  You can use @code{__OBJC__} to test whether a header is compiled
 by a C compiler or a Objective-C compiler.
 
 @item __ASSEMBLER__
-This macro is defined with value 1 when preprocessing assembler.
+This macro is defined with value 1 when preprocessing assembly
+language.
 
 @end table
 
