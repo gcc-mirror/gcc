@@ -533,6 +533,9 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
 		      sb->toString ());
     }
 
+  // The name used to invoke this process (argv[0] in C).
+  SET ("gnu.gcj.progname", _Jv_ThisExecutable());
+
   // Allow platform specific settings and overrides.
   _Jv_platform_initProperties (newprops);
 }
