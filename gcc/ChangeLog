@@ -1,3 +1,7 @@
+2002-02-17  Philipp Thomas  <pthomas@suse.de>
+
+	* config/i386/i386.h: Don't mark empty strings for translation.
+
 2002-02-16  H.J. Lu <hjl@gnu.org>
 
 	* config/mips/linux.h (ASM_PREFERRED_EH_DATA_FORMAT): New.
