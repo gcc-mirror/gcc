@@ -2280,117 +2280,29 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      goto return_shift_special;
 	    }
 	}
-      else if (count == 8)
+      else if (8 <= count && count <= 12)
 	{
+	  info->remainder = count - 8;
+
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
 	      info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0";
+	      info->shift1  = "shal.b\t%t0";
+	      info->shift2  = "shal.b\t#2,%t0";
 	      goto return_shift_special;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0";
+	      info->shift1  = "shlr.b\t%s0";
+	      info->shift2  = "shlr.b\t#2,%s0";
 	      goto return_shift_special;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300)
-		info->special = "mov.b\t%t0,%s0\n\tshll\t%t0\n\tsubx\t%t0,%t0";
+		info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0";
 	      else
 		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0";
-	      goto return_shift_special;
-	    }
-	}
-      else if (count == 9)
-	{
-	  switch (shift_type)
-	    {
-	    case SHIFT_ASHIFT:
-	      info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0";
-	      goto return_shift_special;
-	    case SHIFT_LSHIFTRT:
-	      info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t%s0";
-	      goto return_shift_special;
-	    case SHIFT_ASHIFTRT:
-	      if (TARGET_H8300)
-		info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0";
-	      else
-		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0";
-	      goto return_shift_special;
-	    }
-	}
-      else if (count == 10)
-	{
-	  switch (shift_type)
-	    {
-	    case SHIFT_ASHIFT:
-	      if (TARGET_H8300S)
-		info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t#2,%t0";
-	      else
-		info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0\n\tshal.b\t%t0";
-	      goto return_shift_special;
-	    case SHIFT_LSHIFTRT:
-	      if (TARGET_H8300S)
-		info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t#2,%s0";
-	      else
-		info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t%s0\n\tshlr.b\t%s0";
-	      goto return_shift_special;
-	    case SHIFT_ASHIFTRT:
-	      if (TARGET_H8300)
-		info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0\n\tshar.b\t%s0";
-	      else if (TARGET_H8300H)
-		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0\n\tshar.b\t%s0";
-	      else if (TARGET_H8300S)
-		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t#2,%s0";
-	      goto return_shift_special;
-	    }
-	}
-      else if (count == 11)
-	{
-	  switch (shift_type)
-	    {
-	    case SHIFT_ASHIFT:
-	      if (TARGET_H8300S)
-		info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t#2,%t0\n\tshal.b\t%t0";
-	      else
-		info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0\n\tshal.b\t%t0\n\tshal.b\t%t0";
-	      goto return_shift_special;
-	    case SHIFT_LSHIFTRT:
-	      if (TARGET_H8300S)
-		info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t#2,%s0\n\tshlr.b\t%s0";
-	      else
-		info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t%s0\n\tshlr.b\t%s0\n\tshlr.b\t%s0";
-	      goto return_shift_special;
-	    case SHIFT_ASHIFTRT:
-	      if (TARGET_H8300)
-		info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
-	      else if (TARGET_H8300H)
-		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
-	      else if (TARGET_H8300S)
-		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t#2,%s0\n\tshar.b\t%s0";
-	      goto return_shift_special;
-	    }
-	}
-      else if (count == 12)
-	{
-	  switch (shift_type)
-	    {
-	    case SHIFT_ASHIFT:
-	      if (TARGET_H8300S)
-		info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t#2,%t0\n\tshal.b\t#2,%t0";
-	      else
-		info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tshal.b\t%t0\n\tshal.b\t%t0\n\tshal.b\t%t0\n\tshal.b\t%t0";
-	      goto return_shift_special;
-	    case SHIFT_LSHIFTRT:
-	      if (TARGET_H8300S)
-		info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t#2,%s0\n\tshlr.b\t#2,%s0";
-	      else
-		info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0\n\tshlr.b\t%s0\n\tshlr.b\t%s0\n\tshlr.b\t%s0\n\tshlr.b\t%s0";
-	      goto return_shift_special;
-	    case SHIFT_ASHIFTRT:
-	      if (TARGET_H8300)
-		info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
-	      else if (TARGET_H8300H)
-		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0\n\tshar.b\t%s0";
-	      else if (TARGET_H8300S)
-		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.b\t#2,%s0\n\tshar.b\t#2,%s0";
+	      info->shift1 = "shar.b\t%s0";
+	      info->shift2 = "shar.b\t#2,%s0";
 	      goto return_shift_special;
 	    }
 	}
@@ -2446,99 +2358,31 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      goto return_shift_special;
 	    }
 	}
-      else if (count == 16)
+      else if ((TARGET_H8300 && count == 16)
+	       || (TARGET_H8300H && 16 <= count && count <= 19)
+	       || (TARGET_H8300S && 16 <= count && count <= 20))
 	{
+	  info->remainder = count - 16;
+
 	  switch (shift_type)
 	    {
 	    case SHIFT_ASHIFT:
 	      info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0";
+	      info->shift1  = "shll.l\t%S0";
+	      info->shift2  = "shll.l\t#2,%S0";
 	      goto return_shift_special;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0";
+	      info->shift1  = "shlr.l\t%S0";
+	      info->shift2  = "shlr.l\t#2,%S0";
 	      goto return_shift_special;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300)
 		info->special = "mov.w\t%e0,%f0\n\tshll\t%z0\n\tsubx\t%z0,%z0\n\tmov.b\t%z0,%y0";
 	      else
 		info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0";
-	      goto return_shift_special;
-	    }
-	}
-      else if (count == 17 && !TARGET_H8300)
-	{
-	  switch (shift_type)
-	    {
-	    case SHIFT_ASHIFT:
-	      info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t%S0";
-	      goto return_shift_special;
-	    case SHIFT_LSHIFTRT:
-	      info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t%S0";
-	      goto return_shift_special;
-	    case SHIFT_ASHIFTRT:
-	      info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t%S0";
-	      goto return_shift_special;
-	    }
-	}
-      else if (count == 18 && !TARGET_H8300)
-	{
-	  switch (shift_type)
-	    {
-	    case SHIFT_ASHIFT:
-	      if (TARGET_H8300S)
-		info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t#2,%S0";
-	      else
-		info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t%S0\n\tshll.l\t%S0";
-	      goto return_shift_special;
-	    case SHIFT_LSHIFTRT:
-	      if (TARGET_H8300S)
-		info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t#2,%S0";
-	      else
-		info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t%S0\n\tshlr.l\t%S0";
-	      goto return_shift_special;
-	    case SHIFT_ASHIFTRT:
-	      if (TARGET_H8300S)
-		info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t#2,%S0";
-	      else
-		info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t%S0\n\tshar.l\t%S0";
-	      goto return_shift_special;
-	    }
-	}
-      else if (count == 19 && !TARGET_H8300)
-	{
-	  switch (shift_type)
-	    {
-	    case SHIFT_ASHIFT:
-	      if (TARGET_H8300S)
-		info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t#2,%S0\n\tshll.l\t%S0";
-	      else
-		info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t%S0\n\tshll.l\t%S0\n\tshll.l\t%S0";
-	      goto return_shift_special;
-	    case SHIFT_LSHIFTRT:
-	      if (TARGET_H8300S)
-		info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t#2,%S0\n\tshlr.l\t%S0";
-	      else
-		info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t%S0\n\tshlr.l\t%S0\n\tshlr.l\t%S0";
-	      goto return_shift_special;
-	    case SHIFT_ASHIFTRT:
-	      if (TARGET_H8300S)
-		info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t#2,%S0\n\tshar.l\t%S0";
-	      else
-		info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t%S0\n\tshar.l\t%S0\n\tshar.l\t%S0";
-	      goto return_shift_special;
-	    }
-	}
-      else if (count == 20 && TARGET_H8300S)
-	{
-	  switch (shift_type)
-	    {
-	    case SHIFT_ASHIFT:
-	      info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0\n\tshll.l\t#2,%S0\n\tshll.l\t#2,%S0";
-	      goto return_shift_special;
-	    case SHIFT_LSHIFTRT:
-	      info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0\n\tshlr.l\t#2,%S0\n\tshlr.l\t#2,%S0";
-	      goto return_shift_special;
-	    case SHIFT_ASHIFTRT:
-	      info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0\n\tshar.l\t#2,%S0\n\tshar.l\t#2,%S0";
+	      info->shift1 = "shar.l\t%S0";
+	      info->shift2 = "shar.l\t#2,%S0";
 	      goto return_shift_special;
 	    }
 	}
