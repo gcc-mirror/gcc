@@ -1,3 +1,7 @@
+2000-02-05  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* i386/osf1elf.h: Add missing backslash to multiline string.
+
 2000-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* longlong.h [sparc] (udiv_qrnnd): Avoid stringifying macro arg.

@@ -18,7 +18,7 @@
 /* Note, -fpic and -fPIC are equivalent */
 #undef  CPP_SPEC
 #define CPP_SPEC "\
-%(cpp_cpu)
+%(cpp_cpu) \
 %{fpic: -D__SHARED__} %{fPIC: %{!fpic: -D__SHARED__}} \
 %{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
 %{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
