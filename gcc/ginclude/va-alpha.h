@@ -94,9 +94,9 @@ __extension__								\
       /* Get a pointer to the value.  If we want a float instead of	\
 	 a double, we have to make one and point to it instead.  */     \
 									\
-      __rv = (void *) & (__va.__va_arg < 6				\
-			 ? __va.__va_fregs[__va.__va_arg]		\
-			 : __va.__va_stack[__va.__va_arg - 6]);		\
+      __rv = (void *) & ((__va).__va_arg < 6				\
+			 ? (__va).__va_fregs[(__va).__va_arg]		\
+			 : (__va).__va_stack[(__va).__va_arg - 6]);	\
 									\
       if (sizeof (__type) == sizeof (float))				\
 	{								\
@@ -120,23 +120,23 @@ __extension__								\
 									\
       /* Force this on the stack if it's alignment isn't right.  */	\
 									\
-      if (__va.__va_arg < 6)						\
+      if ((__va).__va_arg < 6)						\
 	switch (sizeof (__type))					\
 	  {								\
 	  case sizeof (char):						\
 	    break;							\
 	  case sizeof (short):						\
 	    if (__alignof__ (__type) < sizeof (short))			\
-	      __va.__va_arg = 6;					\
+	      (__va).__va_arg = 6;					\
 	    break;							\
 	  case 3:							\
 	  case sizeof (int):						\
 	    if (__alignof__ (__type) < sizeof (int))			\
-	      __va.__va_arg = 6;					\
+	      (__va).__va_arg = 6;					\
 	    break;							\
 	  default:							\
 	    if (__alignof__ (__type) < sizeof (long))			\
-	      __va.__va_arg = 6;					\
+	      (__va).__va_arg = 6;					\
 	    break;							\
 	  }								\
 									\
@@ -145,20 +145,20 @@ __extension__								\
 	 passed both in registers and in memory.  */			\
 									\
       if (sizeof (__type) <= sizeof (long)				\
-	  || __va.__va_arg >= 6					\
-	  || __va.__va_arg + __va_nwords (__type) < 6)			\
-	__rv = (void *) & (__va.__va_arg < 6				\
-			   ? __va.__va_iregs[__va.__va_arg]		\
-			   : __va.__va_stack[__va.__va_arg - 6]);	\
+	  || (__va).__va_arg >= 6					\
+	  || (__va).__va_arg + __va_nwords (__type) < 6)		\
+	__rv = (void *) & ((__va).__va_arg < 6				\
+			   ? (__va).__va_iregs[(__va).__va_arg]		\
+			   : (__va).__va_stack[(__va).__va_arg - 6]);	\
       else								\
 	{								\
 	  long __obj[__va_nwords (__type)];				\
 	  int __i;							\
 									\
 	  for (__i = 0; __i < __va_nwords (__type); __i++)		\
-	    __obj[__i] = (__va.__va_arg < 6				\
-			  ? __va.__va_iregs[__va.__va_arg]		\
-			  : __va.__va_stack[__va.__va_arg - 6]);	\
+	    __obj[__i] = ((__va).__va_arg < 6				\
+			  ? (__va).__va_iregs[(__va).__va_arg]		\
+			  : (__va).__va_stack[(__va).__va_arg - 6]);	\
 									\
 	  __rv = (void *) &__obj[0];					\
 	}								\
@@ -177,7 +177,7 @@ __extension__								\
 	abort ();							\
     }									\
 									\
-  __va.__va_arg += __va_nwords (__type);				\
+  (__va).__va_arg += __va_nwords (__type);				\
 									\
   __rv;									\
 }))
