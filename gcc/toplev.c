@@ -4988,6 +4988,14 @@ process_options ()
     }
 #endif
 
+  /* This combination of options isn't handled for i386 targets and doesn't
+     make much sense anyway, so don't allow it.  */
+  if (flag_prefetch_loop_arrays && optimize_size)
+    {
+      warning ("-fprefetch-loop-arrays is not supported with -Os");
+      flag_prefetch_loop_arrays = 0;
+    }
+
 #ifndef OBJECT_FORMAT_ELF
   if (flag_function_sections && write_symbols != NO_DEBUG)
     warning ("-ffunction-sections may affect debugging on some targets");
