@@ -1,3 +1,11 @@
+2001-07-18  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/2812:
+	* configure: Rebuilt.
+	* configure.in: Don't check for iconv.h or iconv(); use AM_ICONV
+	instead.
+	* aclocal.m4 (AM_ICONV): New macro from Bruno Haible.
+
 Wed Jul 18 12:05:29 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* gthr-posix.h (__gthread_objc_mutex_trylock): Fixed return value
