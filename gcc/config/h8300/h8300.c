@@ -2206,7 +2206,9 @@ output_logical_op (mode, operands)
 	 using multiple insns.  */
       if ((TARGET_H8300H || TARGET_H8300S)
 	  && w0 != 0 && w1 != 0
-	  && !(lower_half_easy_p && upper_half_easy_p))
+	  && !(lower_half_easy_p && upper_half_easy_p)
+	  && !(code == IOR && w1 == 0xffff
+	       && (w0 & 0x8000) != 0 && lower_half_easy_p))
 	{
 	  sprintf (insn_buf, "%s.l\t%%S2,%%S0", opname);
 	  output_asm_insn (insn_buf, operands);
@@ -2250,6 +2252,13 @@ output_logical_op (mode, operands)
 	    output_asm_insn ((code == AND)
 			     ? "sub.w\t%e0,%e0" : "not.w\t%e0",
 			     operands);
+	  else if ((TARGET_H8300H || TARGET_H8300S)
+		   && code == IOR
+		   && w1 == 0xffff
+		   && (w0 & 0x8000) != 0)
+	    {
+	      output_asm_insn ("exts.l\t%S0", operands);
+	    }
 	  else if ((TARGET_H8300H || TARGET_H8300S)
 		   && code == AND
 		   && w1 == 0xff00)
@@ -2354,7 +2363,9 @@ compute_logical_op_length (mode, operands)
 	 using multiple insns.  */
       if ((TARGET_H8300H || TARGET_H8300S)
 	  && w0 != 0 && w1 != 0
-	  && !(lower_half_easy_p && upper_half_easy_p))
+	  && !(lower_half_easy_p && upper_half_easy_p)
+	  && !(code == IOR && w1 == 0xffff
+	       && (w0 & 0x8000) != 0 && lower_half_easy_p))
 	{
 	  if (REG_P (operands[2]))
 	    length += 4;
@@ -2391,6 +2402,13 @@ compute_logical_op_length (mode, operands)
 
 	  if (w1 == 0xffff
 	      && (TARGET_H8300 ? (code == AND) : (code != IOR)))
+	    {
+	      length += 2;
+	    }
+	  else if ((TARGET_H8300H || TARGET_H8300S)
+		   && code == IOR
+		   && w1 == 0xffff
+		   && (w0 & 0x8000) != 0)
 	    {
 	      length += 2;
 	    }
@@ -2475,9 +2493,21 @@ compute_logical_op_cc (mode, operands)
 	 using multiple insns.  */
       if ((TARGET_H8300H || TARGET_H8300S)
 	  && w0 != 0 && w1 != 0
-	  && !(lower_half_easy_p && upper_half_easy_p))
+	  && !(lower_half_easy_p && upper_half_easy_p)
+	  && !(code == IOR && w1 == 0xffff
+	       && (w0 & 0x8000) != 0 && lower_half_easy_p))
 	{
 	  cc = CC_SET_ZNV;
+	}
+      else
+	{
+	  if ((TARGET_H8300H || TARGET_H8300S)
+	      && code == IOR
+	      && w1 == 0xffff
+	      && (w0 & 0x8000) != 0)
+	    {
+	      cc = CC_SET_ZNV;
+	    }
 	}
       break;
     default:

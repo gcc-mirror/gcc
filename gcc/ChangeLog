@@ -1,3 +1,10 @@
+2003-02-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (output_logical_op): Optimize or.l when
+	ORing with 0xffff??00 with the highest bit of the ?? part set.
+	(compute_logical_op_length): Update.
+	(compute_logical_op_cc): Likewise.
+
 2003-02-19  Josef Zlomek  <zlomekj@suse.cz>
 
 	* bb-reorder.c (find_traces_1_round): Fixed condition for small
