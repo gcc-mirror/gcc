@@ -175,6 +175,7 @@ static int hwint_to_ascii PARAMS ((unsigned HOST_WIDE_INT, unsigned int, char *,
 static void write_number PARAMS ((unsigned HOST_WIDE_INT, int,
 				  unsigned int));
 static void write_integer_cst PARAMS ((tree));
+static void write_real_cst PARAMS ((tree));
 static void write_identifier PARAMS ((const char *));
 static void write_special_name_constructor PARAMS ((tree));
 static void write_special_name_destructor PARAMS ((tree));
@@ -1192,6 +1193,72 @@ write_integer_cst (cst)
     }
 }
 
+/* Write out a floating-point literal.  
+    
+    "Floating-point literals are encoded using the bit pattern of the
+    target processor's internal representation of that number, as a
+    fixed-length lowercase hexadecimal string, high-order bytes first
+    (even if the target processor would store low-order bytes first).
+    The "n" prefix is not used for floating-point literals; the sign
+    bit is encoded with the rest of the number.
+
+    Here are some examples, assuming the IEEE standard representation
+    for floating point numbers.  (Spaces are for readability, not
+    part of the encoding.)
+
+        1.0f                    Lf 3f80 0000 E
+       -1.0f                    Lf bf80 0000 E
+        1.17549435e-38f         Lf 0080 0000 E
+        1.40129846e-45f         Lf 0000 0001 E
+        0.0f                    Lf 0000 0000 E"
+
+   Caller is responsible for the Lx and the E.  */
+static void
+write_real_cst (value)
+     tree value;
+{
+  if (abi_version_at_least (2))
+    {
+      long target_real[4];  /* largest supported float */
+      char buffer[9];       /* eight hex digits in a 32-bit number */
+      int i, limit, dir;
+
+      tree type = TREE_TYPE (value);
+      int words = GET_MODE_BITSIZE (TYPE_MODE (type)) / 32;
+
+      real_to_target (target_real, &TREE_REAL_CST (value),
+		      TYPE_MODE (type));
+
+      /* The value in target_real is in the target word order,
+         so we must write it out backward if that happens to be
+	 little-endian.  write_number cannot be used, it will
+	 produce uppercase.  */
+      if (FLOAT_WORDS_BIG_ENDIAN)
+	i = 0, limit = words, dir = 1;
+      else
+	i = words - 1, limit = -1, dir = -1;
+
+      for (; i != limit; i += dir)
+	{
+	  sprintf (buffer, "%08lx", target_real[i]);
+	  write_chars (buffer, 8);
+	}
+    }
+  else
+    {
+      /* In G++ 3.3 and before the REAL_VALUE_TYPE was written out
+	 literally.  Note that compatibility with 3.2 is impossible,
+	 because the old floating-point emulator used a different
+	 format for REAL_VALUE_TYPE.  */
+      size_t i;
+      for (i = 0; i < sizeof (TREE_REAL_CST (value)); ++i)
+	write_number (((unsigned char *) &TREE_REAL_CST (value))[i], 
+		      /*unsigned_p*/ 1,
+		      /*base*/ 16);
+      G.need_abi_warning = 1;
+    }
+}
+
 /* Non-terminal <identifier>.
 
      <identifier> ::= </unqualified source code identifier>  */
@@ -2024,11 +2091,7 @@ write_expression (expr)
      "Literal arguments, e.g. "A<42L>", are encoded with their type
      and value. Negative integer values are preceded with "n"; for
      example, "A<-42L>" becomes "1AILln42EE". The bool value false is
-     encoded as 0, true as 1. If floating-point arguments are accepted
-     as an extension, their values should be encoded using a
-     fixed-length lowercase hexadecimal string corresponding to the
-     internal representation (IEEE on IA-64), high-order bytes first,
-     without leading zeroes. For example: "Lfbff000000E" is -1.0f."  */
+     encoded as 0, true as 1."  */
 
 static void
 write_template_arg_literal (value)
@@ -2055,24 +2118,7 @@ write_template_arg_literal (value)
 	write_integer_cst (value);
     }
   else if (TREE_CODE (value) == REAL_CST)
-    {
-#ifdef CROSS_COMPILE
-      static int explained;
-
-      if (!explained) 
-	{
-	  sorry ("real-valued template parameters when cross-compiling");
-	  explained = 1;
-	}
-#else
-      size_t i;
-      for (i = 0; i < sizeof (TREE_REAL_CST (value)); ++i)
-	write_number (((unsigned char *) 
-		       &TREE_REAL_CST (value))[i], 
-		      /*unsigned_p=*/1,
-		      16);
-#endif
-    }
+    write_real_cst (value);
   else
     abort ();
 

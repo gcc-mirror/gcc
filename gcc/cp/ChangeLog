@@ -1,3 +1,12 @@
+2003-06-09  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 8861
+	* mangle.c (write_real_cst): New function.  Implement
+	ABI-compliant mangling of floating-point literals when
+	-fabi-version>=2; provide backward compatibility with 3.3 when
+	-fabi-version=1 (with warning).  Clarify commentary.
+	(write_template_arg_literal): Use write_real_cst.
+
 2003-06-07  Andreas Jaeger  <aj@suse.de>
 
 	* cp/decl.c (xref_tag): Remove undefined macro NONNESTED_CLASSES.
@@ -23,11 +32,11 @@ Thu Jun  5 18:33:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-03  Jason Merrill  <jason@redhat.com>
 
-        * cp/cp-tree.h (CP_AGGREGATE_TYPE_P): Accept vectors.
+	* cp/cp-tree.h (CP_AGGREGATE_TYPE_P): Accept vectors.
 
-        * cp/decl.c (reshape_init): Handle vectors.
+	* cp/decl.c (reshape_init): Handle vectors.
 
-        * testsuite/g++.dg/init/array10.C: New.
+	* testsuite/g++.dg/init/array10.C: New.
 
 2003-06-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
