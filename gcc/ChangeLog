@@ -1,3 +1,16 @@
+Tue Jan  4 22:55:41 2000  Steve Chamberlain <sac@pobox.com>
+
+	* configure.in: Add pj target.
+	* configure: Regenerate.
+	* config/pj: New directory.
+	* config/pj/lib1funcs.S: New file.
+	* config/pj/linux.h: New file.
+	* config/pj/pj.c: New file.
+	* config/pj/pj.md: New file.
+	* config/pj/pjl.h: New file.
+	* config/pj/t-pj: New file.
+	* config/pj/xm-pj.h: New file
+
 Tue Jan  4 22:30:16 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* toplev.c (rest_of_compilation): Run shorten-branches before
