@@ -1,3 +1,10 @@
+2000-11-15  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libI77/configure.in: See if `mkstemp' is available.
+	* libI77/configure: Regenerate.
+	* libI77/open.c: Use `mkstemp' to create scratch
+	file atomically.
+
 2000-07-03  Donn Terry  (donnte@microsoft.com)
         * libU77/aclocal.m4: check for 2 argument gettimeofday without
 	struct timezone
