@@ -4238,14 +4238,17 @@ store_expr (exp, target, want_value)
        || (temp != target && (side_effects_p (temp)
 			      || side_effects_p (target))))
       && TREE_CODE (exp) != ERROR_MARK
-      /* If there's nothing to copy, don't bother.  */
-      && expr_size (exp) != const0_rtx
       && ! dont_store_target
 	 /* If store_expr stores a DECL whose DECL_RTL(exp) == TARGET,
 	    but TARGET is not valid memory reference, TEMP will differ
 	    from TARGET although it is really the same location.  */
       && (TREE_CODE_CLASS (TREE_CODE (exp)) != 'd'
-	  || target != DECL_RTL_IF_SET (exp)))
+	  || target != DECL_RTL_IF_SET (exp))
+      /* If there's nothing to copy, don't bother.  Don't call expr_size
+	 unless necessary, because some front-ends (C++) expr_size-hook
+	 aborts on objects that are not supposed to be bit-copied or
+	 bit-initialized.  */
+      && expr_size (exp) != const0_rtx)
     {
       target = protect_from_queue (target, 1);
       if (GET_MODE (temp) != GET_MODE (target)
