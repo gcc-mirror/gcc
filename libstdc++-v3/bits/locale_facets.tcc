@@ -386,7 +386,7 @@ namespace std
                   __base = 16;
                   __testzero = false; // "0x" is not a leading zero
                 }
-              else
+              else if (__base == 0)
                 __base = 8;
             }
 

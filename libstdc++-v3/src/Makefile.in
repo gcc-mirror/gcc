@@ -255,7 +255,7 @@ std_headers = \
 	streambuf string strstream typeinfo utility valarray vector 
 
 @GLIBCPP_NEED_LIBIO_TRUE@libio_headers = @GLIBCPP_NEED_LIBIO_TRUE@\
-@GLIBCPP_NEED_LIBIO_TRUE@	$(top_builddir)/libio/_G_config.h $(top_srcdir)/libio/libio.h
+@GLIBCPP_NEED_LIBIO_TRUE@	$(top_srcdir)/libio/_G_config.h $(top_srcdir)/libio/libio.h
 @GLIBCPP_NEED_LIBIO_FALSE@libio_headers = 
 
 generated_headers = \

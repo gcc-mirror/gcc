@@ -87,7 +87,7 @@ until cmp -s $OLDH $HDRS; do #  (until no new headers found)
   | while read file; do
      drop=no
      for ignore in `cat $IGNORES`; do
-       if [ "$ignore" == "$file" ]; then drop=yes; fi
+       if [ "$ignore" = "$file" ]; then drop=yes; fi
      done
      case "$file" in /*) drop=yes;; esac   # no absolute paths
      case $drop in no) echo "$file";; esac

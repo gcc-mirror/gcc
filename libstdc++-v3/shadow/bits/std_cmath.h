@@ -365,7 +365,7 @@
       { return atan2(static_cast<double>(__y), static_cast<double>(__x)); }
 #endif
 
-#elif _GLIBCPP_HAVE_CEILL
+#if _GLIBCPP_HAVE_CEILL
     inline long double _CPP_ceil_capture(long double __x)
       { return ceill(__x); }
 #else

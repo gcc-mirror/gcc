@@ -175,7 +175,7 @@ std_headers = \
 
 if GLIBCPP_NEED_LIBIO 
 libio_headers = \
-	$(top_builddir)/libio/_G_config.h $(top_srcdir)/libio/libio.h
+	$(top_srcdir)/libio/_G_config.h $(top_srcdir)/libio/libio.h
 else
 libio_headers =
 endif
