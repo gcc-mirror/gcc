@@ -9,14 +9,13 @@
    <TITLE>libstdc++-v3 HOWTO:  Chapter 22</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/docs/22_locale/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.2 2000/07/11 21:45:07 pme Exp $ -->
+<!-- $Id: howto.html,v 1.3 2000/08/25 08:52:56 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
 <H1 CLASS="centered"><A NAME="top">Chapter 22:  Localization</A></H1>
 
-<P>Chapter 22 deals with the FORTRAN subroutines for automatically
-   transforming lemmings into gold.
+<P>Chapter 22 deals with the C++ localization facilities.
 </P>
 
 
@@ -24,8 +23,10 @@
 <HR>
 <H1>Contents</H1>
 <UL>
-   <LI><A HREF="#1">Stroustrup on Locales</A>
-   <LI><A HREF="#2">Notes on the codecvt implementation</A>
+   <LI><A HREF="#1">Bjarne Stroustrup on Locales</A>
+   <LI><A HREF="#2">Nathan Myers on Locales</A>   
+   <LI><A HREF="#3">codecvt</A>
+   <LI><A HREF="#4">ctype</A>
 </UL>
 
 <HR>
@@ -45,15 +46,51 @@
    </P>
 
 <HR>
-<H2><A NAME="2">Notes on the codecvt implementation</A></H2>
-   <P> This document turned out to be larger than anticipated. As
-   such, it gets its own page, which can be found 
-   <A HREF="codecvt.html">here</A>.
+<H2><A NAME="2">Nathan Myers on Locales</A></H2>
+   <P> An article entitled "The Standard C++ Locale" was published in
+   Dr. Dobb's Journal and can be found
+      <A HREF="http://www.cantrip.org/locale.html">here</A>
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
    </P>
 
+<HR>
+<H2><A NAME="3">codecvt</A></H2>
+   <P> Notes made during the implementation of codecvt can be found 
+   <A HREF="codecvt.html">here</A>.
+   </P>
+
+   <P> The following is the abstract from the implementation notes:
+<BLOCKQUOTE>
+	The standard class codecvt attempts to address conversions
+between different character encoding schemes. In particular, the
+standard attempts to detail conversions between the
+implementation-defined wide characters (hereafter referred to as
+wchar_t) and the standard type char that is so beloved in classic
+&quot;C&quot; (which can now be referred to as narrow characters.)
+This document attempts to describe how the GNU libstdc++-v3
+implementation deals with the conversion between wide and narrow
+characters, and also presents a framework for dealing with the huge
+number of other encodings that iconv can convert, including Unicode
+and UTF8. Design issues and requirements are addressed, and examples
+of correct usage for both the required specializations for wide and
+narrow characters and the implementation-provided extended
+functionality are given.
+</BLOCKQUOTE>
+
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="4">ctype</A></H2>
+   <P> Notes made during the implementation of ctype can be found 
+   <A HREF="ctype.html">here</A>.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
 
 
 
@@ -64,7 +101,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.2 2000/07/11 21:45:07 pme Exp $
+<BR> $Id: howto.html,v 1.3 2000/08/25 08:52:56 bkoz Exp $
 </EM></P>
 
 
