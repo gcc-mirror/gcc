@@ -38,6 +38,9 @@ typedef double *__gnuc_va_list;
 			& (sizeof(TYPE) > 4 ? ~0x7 : ~0x3))),	\
      (*((TYPE *) (void *) ((char *)AP + ((8 - sizeof(TYPE)) % 4))))))
 
+#ifndef va_end
+void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
+#endif
 #define va_end(AP)
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
