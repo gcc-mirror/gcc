@@ -433,6 +433,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Vector Extensions::   Using vector instructions through built-in functions.
 * Other Builtins::      Other built-in functions.
 * Pragmas::             Pragmas accepted by GCC.
+* Unnamed Fields::      Unnamed struct/union fields within structs/unions.
 @end menu
 @end ifset
 @ifclear INTERNALS
@@ -4502,6 +4503,47 @@ produce warnings for the listed variables.  The effect is similar to
 that of the @code{unused} attribute, except that this pragma may appear
 anywhere within the variables' scopes.
 @end table
+
+@node Unnamed Fields
+@section Unnamed struct/union fields within structs/unions.
+@cindex struct
+@cindex union
+
+For compatibility with other compilers, GCC allows you to define
+a structure or union that contains, as fields, structures and unions
+without names.  For example:
+
+@example
+struct @{
+  int a;
+  union @{
+    int b;
+    float c;
+  @};
+  int d;
+@} foo;
+@end example
+
+In this example, the user would be able to access members of the unnamed
+union with code like @samp{foo.b}.  Note that only unnamed structs and
+unions are allowed, you may not have, for example, an unnamed
+@code{int}.
+
+You must never create such structures that cause ambiguous field definitions.
+For example, this structure:
+
+@example
+struct @{
+  int a;
+  struct @{
+    int a;
+  @};
+@} foo;
+@end example
+
+It is ambiguous which @code{a} is being referred to with @samp{foo.a}.
+Such constructs are not supported and must be avoided.  In the future,
+such constructs may be detected and treated as compilation errors.
 
 @node C++ Extensions
 @chapter Extensions to the C++ Language

@@ -1,3 +1,10 @@
+2001-10-08  DJ Delorie  <dj@redhat.com>
+
+	* c-decl.c (grokfield): Make sure the only unnamed fields
+	we're allowing are either structs or unions.
+	* doc/extend.texi: Add documentation for the unnamed field
+	extension.
+
 2001-10-08  Zack Weinberg  <zack@codesourcery.com>
 
 	* aclocal.m4 (gcc_AC_PROG_GNAT): New.
