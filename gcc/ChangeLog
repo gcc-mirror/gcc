@@ -1,3 +1,20 @@
+2001-12-05  Daniel Berlin  <dan@cgsoftware.com>
+
+	* config/rs6000/rs6000.h (enum rs6000_builtins): Add more altivec
+	builtins. 
+
+	* config/rs6000/rs6000.md: Modeling of 7450 altivec changed to
+	better reflect reality (change from Apple's tree).
+	Add more of altivec instructions.
+	Add ftruncv4sf2 pattern.
+	Remove more unspecs (vector merge instructions, etc).
+
+	* config/rs6000/rs6000.c (bdesc_3arg): New, for 3 argument altivec
+	builtins. 
+	(bdesc_1arg): New, for 1 argument altivec builtins.
+	(altivec_expand_builtin): Handle unary and ternary ops.
+	(altivec_init_builtins): Ditto.
+
 Wed Dec  5 09:33:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/alpha/vms.h (ADA_LONG_TYPE_SIZE): New macro.
