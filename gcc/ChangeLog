@@ -1,5 +1,8 @@
 2000-11-12  Mark Mitchell  <mark@codesourcery.com>
 
+	* configure.in: Turn on libstdc++ V3 by default.
+	* configure: Regenerated.
+	
 	* fixinc/mkfixinc.sh: Use the ordinary fixincludes on Solaris.
 
 2000-11-12  Jakub Jelinek  <jakub@redhat.com>
