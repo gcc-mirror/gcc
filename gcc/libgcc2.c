@@ -44,13 +44,6 @@ Boston, MA 02111-1307, USA.  */
 #undef abort
 #endif
 
-/* In a cross-compilation situation, default to inhibiting compilation
-   of routines that use libc.  */
-
-#if defined(CROSS_COMPILE) && !defined(inhibit_libc)
-#define inhibit_libc
-#endif
-
 #include "libgcc2.h"
 
 #if defined (L_negdi2) || defined (L_divdi3) || defined (L_moddi3)
