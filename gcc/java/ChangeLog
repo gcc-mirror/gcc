@@ -1,3 +1,9 @@
+2004-08-16  Elliot Lee <sopwith@redhat.com>
+
+	PR java/9677
+	* jcf-parse.c (java_parse_file): Handle filenames with embedded
+	spaces, and quoted filelists.
+
 2004-08-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* boehm.c (get_boehm_type_descriptor): Use build_int_cst.
