@@ -1,5 +1,5 @@
 /* Write out a Java(TM) class file.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2794,7 +2794,9 @@ perform_relocations (struct jcf_partial *state)
 	  int n = (old_ptr - old_buffer) - start;
 	  new_ptr -= n;
 	  old_ptr -= n;
-	  if (n > 0)
+	  /* Don't "copy" bytes in place, this causes valgrind
+	     warnings.  */
+	  if (n > 0 && new_ptr != old_ptr)
 	    memcpy (new_ptr, old_ptr, n);
 	  if (old_ptr == old_buffer)
 	    break;
