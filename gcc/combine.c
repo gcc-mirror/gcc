@@ -11138,49 +11138,45 @@ simplify_comparison (code, pop0, pop1)
 	      continue;
 	    }
 
-	  /* If this is (and:M1 (subreg:M2 X 0) (const_int C1)) where C1 fits
-	     in both M1 and M2 and the SUBREG is either paradoxical or
-	     represents the low part, permute the SUBREG and the AND and
-	     try again.  */
-	  if (GET_CODE (XEXP (op0, 0)) == SUBREG
+	  /* If this is (and:M1 (subreg:M2 X 0) (const_int C1)) where C1
+	     fits in both M1 and M2 and the SUBREG is either paradoxical
+	     or represents the low part, permute the SUBREG and the AND
+	     and try again.  */
+	  if (GET_CODE (XEXP (op0, 0)) == SUBREG)
+	    {
+	      unsigned HOST_WIDE_INT c1;
+	      tmode = GET_MODE (SUBREG_REG (XEXP (op0, 0)));
 	      /* Require an integral mode, to avoid creating something like
 		 (AND:SF ...).  */
-	      && SCALAR_INT_MODE_P (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
-	      /* It is unsafe to commute the AND into the SUBREG if the SUBREG
-		 is paradoxical and WORD_REGISTER_OPERATIONS is not defined.
-		 As originally written the upper bits have a defined value
-		 due to the AND operation.  However, if we commute the AND
-		 inside the SUBREG then they no longer have defined values
-		 and the meaning of the code has been changed.  */
-	      && (0
+	      if (SCALAR_INT_MODE_P (tmode)
+		  /* It is unsafe to commute the AND into the SUBREG if the
+		     SUBREG is paradoxical and WORD_REGISTER_OPERATIONS is
+		     not defined.  As originally written the upper bits
+		     have a defined value due to the AND operation.
+		     However, if we commute the AND inside the SUBREG then
+		     they no longer have defined values and the meaning of
+		     the code has been changed.  */
+		  && (0
 #ifdef WORD_REGISTER_OPERATIONS
-		  || ((mode_width
-		       > (GET_MODE_BITSIZE
-			   (GET_MODE (SUBREG_REG (XEXP (op0, 0))))))
-		      && mode_width <= BITS_PER_WORD)
+		      || (mode_width > GET_MODE_BITSIZE (tmode)
+			  && mode_width <= BITS_PER_WORD)
 #endif
-		  || ((mode_width
-		       <= (GET_MODE_BITSIZE
-			   (GET_MODE (SUBREG_REG (XEXP (op0, 0))))))
-		      && subreg_lowpart_p (XEXP (op0, 0))))
-	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
-	      && mode_width <= HOST_BITS_PER_WIDE_INT
-	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
-		  <= HOST_BITS_PER_WIDE_INT)
-	      && (INTVAL (XEXP (op0, 1)) & ~mask) == 0
-	      && 0 == (~GET_MODE_MASK (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
-		       & INTVAL (XEXP (op0, 1)))
-	      && (unsigned HOST_WIDE_INT) INTVAL (XEXP (op0, 1)) != mask
-	      && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (op0, 1))
-		  != GET_MODE_MASK (GET_MODE (SUBREG_REG (XEXP (op0, 0))))))
-
-	    {
-	      op0
-		= gen_lowpart_for_combine
-		  (mode,
-		   gen_binary (AND, GET_MODE (SUBREG_REG (XEXP (op0, 0))),
-			       SUBREG_REG (XEXP (op0, 0)), XEXP (op0, 1)));
-	      continue;
+		      || (mode_width <= GET_MODE_BITSIZE (tmode)
+			  && subreg_lowpart_p (XEXP (op0, 0))))
+		  && GET_CODE (XEXP (op0, 1)) == CONST_INT
+		  && mode_width <= HOST_BITS_PER_WIDE_INT
+		  && GET_MODE_BITSIZE (tmode) <= HOST_BITS_PER_WIDE_INT
+		  && ((c1 = INTVAL (XEXP (op0, 1))) & ~mask) == 0
+		  && (c1 & ~GET_MODE_MASK (tmode)) == 0
+		  && c1 != mask
+		  && c1 != GET_MODE_MASK (tmode))
+		{
+		  op0 = gen_binary (AND, tmode,
+				    SUBREG_REG (XEXP (op0, 0)),
+				    gen_int_mode (c1, tmode));
+		  op0 = gen_lowpart_for_combine (mode, op0);
+		  continue;
+		}
 	    }
 
 	  /* Convert (ne (and (lshiftrt (not X)) 1) 0) to
