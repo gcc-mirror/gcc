@@ -2267,12 +2267,13 @@ tTestDesc aLibc1_Ifdefd_MemxTests[] = {
  */
 const char* apzLibc1_Ifdefd_MemxPatch[] = {
     "format",
-    "%1 || defined(__cplusplus)\n\
-%2",
+    "%1",
     "/\\* `mem...' is a built-in function for gcc 2\\.x\\. \\*/\n\
-(#if defined\\(__STDC__\\) && __GNUC__ < 2)\n\
+#if defined\\(__STDC__\\) && __GNUC__ < 2\n\
 (/\\* .* \\*/\n\
-extern [a-z_]+ mem)",
+extern [a-z_]+ mem.*(\n\
+[^#].*)*;)\n\
+#endif",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *

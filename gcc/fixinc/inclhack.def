@@ -622,7 +622,7 @@ fix = {
 };
 
 
-/* 
+/*
  * Remove erroneous parentheses in sym.h on Alpha OSF/1.
  */
 fix = {
@@ -1279,9 +1279,11 @@ fix = {
 };
 
 
-/* GNU libc1 string.h does not prototype memcpy and memcmp for gcc
-   versions > 1.  That's a problem.  This fix will expose the prototype
-   for C++.  */
+/*
+ *  GNU libc1 string.h does not prototype memcpy and memcmp for gcc
+ *  versions > 1.  That's a problem.  This fix will expose the prototype
+ *  for C++.
+ */
 fix = {
     hackname  = libc1_ifdefd_memx;
 
@@ -1294,11 +1296,13 @@ fix = {
     c_fix     = format;
     select    = "' is a built-in function for gcc 2\\.x\\. \\*/";
     bypass    = __cplusplus;
-    c_fix_arg = "%1 || defined(__cplusplus)\n%2";
-    c_fix_arg = "/\\* `mem...' is a built-in function for gcc 2\\.x\\. \\*/\n"
-                "(#if defined\\(__STDC__\\) && __GNUC__ < 2)\n"
-                "(/\\* .* \\*/\n"
-                "extern [a-z_]+ mem)";
+    c_fix_arg = "%1";
+    c_fix_arg =
+       '/\* `mem...\' is a built-in function for gcc 2\.x\. \*/' "\n"
+       '#if defined\(__STDC__\) && __GNUC__ < 2'                 "\n"
+       "(/\\* .* \\*/\n"
+       "extern [a-z_]+ mem.*(\n[^#].*)*;)\n"
+       "#endif";
 
     test_text =
     "/* \\`memcpy' is a built-in function for gcc 2.x. */\n"

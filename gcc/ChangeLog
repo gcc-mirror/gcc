@@ -14,6 +14,8 @@ Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
 	* fixinc/fixtests.c(double_slash): obsolete
 	(else_endif_label): likewise
 	* fixinc/inclhack.def(irix_multiline_cmnt): obsolete
+	(libc1_ifdefd_memx): correct initial comment
+	and omit the #if/#endif pair from the memxxx declarations
 	* fixinc/fixincl.x: regen
 
 2000-07-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
