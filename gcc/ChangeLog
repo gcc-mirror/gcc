@@ -1,4 +1,4 @@
-1997-09-30  Brendan Kehoe  <brendan@lisa.cygnus.com>
+Tue Sep 30 11:00:00 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* except.c (find_exception_handler_labels): Free LABELS when we're
 	done.
