@@ -1067,7 +1067,7 @@ forces it to remain until the end of the scope of the name.  For
 example:
 
 @smallexample
-string& tmp = strfunc ();
+const string& tmp = strfunc ();
 charfunc (tmp.c_str ());
 @end smallexample
 

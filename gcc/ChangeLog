@@ -1,3 +1,7 @@
+2004-08-24  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* doc/trouble.texi (C++ misunderstandings): Fix example code.
+
 2004-08-23  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/17078
