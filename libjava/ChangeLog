@@ -1,3 +1,23 @@
+2004-03-21  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/net/URI.java (parseURI): Added unquoting.
+	(unquote): New method.
+	(quoteAuthority): Implemented.
+	(quote(String,String)): New method.
+	(quotePath): Implemented.
+	(getRawSchemeSpecificPart): Return new rawSchemeSpecificPart field.
+	(getSchemeSpecificPart): Removed FIXME comment.
+	(getRawAuthority): Return new rawAuthority field.
+	(getAuthority): Removed FIXME comment.
+	(getRawUserInfo): Return new rawUserInfo field.
+	(getUserInfo): Removed FIXME comment.
+	(getRawPath): Return new rawPath field.
+	(getPath): Removed FIXME comment.
+	(getRawQuery): Return new rawQuery field.
+	(getQuery): Removed FIXME comment.
+	(getRawFragment): Return new rawFragment field.
+	(getFragment): Removed FIXME comment.
+
 2004-03-20  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URLConnection.java: Merged copyright year with classpath.
