@@ -1,3 +1,8 @@
+2001-03-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* sdbout.c (sdbout_symbol): Use DECL_RTL_SET_P, SET_DECL_RTL.
+	(sdbout_parms): Likewise.
+
 Thu Mar 15 12:51:00 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* reload1.c (reload_cse_simplify_set): For LOAD_EXTEND_OP, do not
