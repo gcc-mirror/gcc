@@ -1,3 +1,8 @@
+Tue Feb 10 03:13:48 1998  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (ffecom_ptr_to_expr) [FFEBLD_opARRAYREF]: Do upper - lower
+	in the native type, so as to properly handle negative indices.
+
 Mon Feb  9 00:49:55 1998  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	Fix -fpedantic combined with `F()' invocation,
