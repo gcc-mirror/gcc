@@ -665,6 +665,10 @@ Here is a table of machine modes.  The term ``byte'' below refers to an
 object of @code{BITS_PER_UNIT} bits (@pxref{Storage Layout}).
 
 @table @code
+@findex BImode
+@item BImode
+``Bit'' mode represents a single bit, for predicate registers.
+
 @findex QImode
 @item QImode
 ``Quarter-Integer'' mode represents a single byte treated as an integer.
@@ -696,6 +700,10 @@ this is the right mode to use for certain pointers.
 @findex TImode
 @item TImode
 ``Tetra Integer'' (?) mode represents a sixteen-byte integer.
+
+@findex OImode
+@item OImode
+``Octa Integer'' (?) mode represents a thirty-two-byte integer.
 
 @findex SFmode
 @item SFmode

@@ -1,3 +1,7 @@
+2000-11-30  Phil Edwards  <pme@sources.redhat.com>
+
+	* rtl.texi (Machine Modes):  Document BImode and OImode.
+
 2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c (default_compilers): Add suffixes .mi, .cp, .ii, .FOR and
