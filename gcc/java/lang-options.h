@@ -33,10 +33,12 @@ DEFINE_LANG_NAME ("Java")
   { "-fno-assume-compiled", "" },
   { "-femit-class-file", "" },
   { "-femit-class-files", "Dump class files to <name>.class" },
+#if ! USE_CPPLIB
   { "-MD", "Print dependencies to FILE.d" },
   { "-MMD", "Print dependencies to FILE.d" },
   { "-M", "Print dependencies to stdout" },
   { "-MM", "Print dependencies to stdout" },
+#endif /* ! USE_CPPLIB */
   { "-fclasspath", "Set class path and suppress system path" },
   { "-fCLASSPATH", "Set class path" },
   { "-I", "Add directory to class path" },
