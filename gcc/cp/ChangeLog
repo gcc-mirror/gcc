@@ -1,3 +1,13 @@
+2004-09-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16716
+	* parser.c (cp_parser_parse_and_diagnose_invalid_type_name):
+	Robustify.
+
+	PR c++/17327
+	* pt.c (unify): Add ENUMERAL_TYPE case.  Replace sorry with
+	gcc_unreacable.
+
 2004-09-12  Richard Henderson  <rth@redhat.com>
 
 	PR c++/16254
