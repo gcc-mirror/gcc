@@ -1,3 +1,11 @@
+2000-11-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* mklibgcc.in (EXTRA_MULTILIB_PARTS): Prevent `make' from
+	interpreting $out as a macro assignment.
+	* Makefile.in (T_TARGET): New auxiliary macro and target.
+	(all): Add a target right in the beginning, so that we don't build
+	T_TARGET by default.
+
 2000-11-09  Graham Stott  <grahams@redhat.com>
 
         * config/i386/i386.md (mmx_pinsrw): Output operands in correct
