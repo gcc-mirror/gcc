@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390
    Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
-                  Ulrich Weigand (weigand@de.ibm.com).
+                  Ulrich Weigand (uweigand@de.ibm.com).
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify
@@ -48,22 +48,27 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES           		       		       \
-{ { "hard-float",    1,N_("Use hardware fp")},         		       \
-  { "soft-float",   -1,N_("Don't use hardware fp")},	      	       \
-  { "backchain",     2,N_("Set backchain")},           		       \
-  { "no-backchain", -2,N_("Don't set backchain (faster, but debug harder")}, \
-  { "small-exec",    4,N_("Use bras for execucable < 64k")},           \
-  { "no-small-exec",-4,N_("Don't use bras")},            	       \
-  { "debug_arg",     8,N_("Additional debug prints")},        	       \
-  { "no-debug_arg", -8,N_("Don't print additional debug prints")},     \
-  { "64",           16,N_("64 bit mode")},         	               \
-  { "31",          -16,N_("31 bit mode")},                             \
-  { "mvcle",        32,N_("mvcle use")},         	               \
-  { "no-mvcle",    -32,N_("mvc&ex")},                                  \
+{ { "hard-float",    1, N_("Use hardware fp")},         		       \
+  { "soft-float",   -1, N_("Don't use hardware fp")},	      	       \
+  { "backchain",     2, N_("Set backchain")},           		       \
+  { "no-backchain", -2, N_("Don't set backchain (faster, but debug harder")}, \
+  { "small-exec",    4, N_("Use bras for execucable < 64k")},           \
+  { "no-small-exec",-4, N_("Don't use bras")},            	       \
+  { "debug",         8, N_("Additional debug prints")},        	       \
+  { "no-debug",     -8, N_("Don't print additional debug prints")},     \
+  { "64",           16, N_("64 bit mode")},         	               \
+  { "31",          -16, N_("31 bit mode")},                             \
+  { "mvcle",        32, N_("mvcle use")},         	               \
+  { "no-mvcle",    -32, N_("mvc&ex")},                                  \
   { "", TARGET_DEFAULT, 0 } }
 
 /* Define this to change the optimizations performed by default.  */
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) optimization_options(LEVEL,SIZE)
+#define OPTIMIZATION_OPTIONS(LEVEL, SIZE) optimization_options(LEVEL, SIZE)
+
+/* Defines for REAL_ARITHMETIC.  */
+#define IEEE_FLOAT 1
+#define TARGET_IBM_FLOAT           0
+#define TARGET_IEEE_FLOAT          1 
 
 /* The current function count for create unique internal labels.  */
 
@@ -95,7 +100,7 @@ extern int current_function_outgoing_args_size;
 /* Width in bits of a "word", which is the contents of a machine register.  */
 
 #define BITS_PER_WORD (TARGET_64BIT ? 64 : 32)
-#define MAX_BITS_PER_WORD 32
+#define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */
 
@@ -121,7 +126,7 @@ extern int current_function_outgoing_args_size;
    target machine.  If you don't define this, the default is one
    word.  */
 #define LONG_TYPE_SIZE (TARGET_64BIT ? 64 : 32)
-#define MAX_LONG_TYPE_SIZE 32
+#define MAX_LONG_TYPE_SIZE 64
 
 /* A C expression for the size in bits of the type `long long' on the
    target machine.  If you don't define this, the default is two
@@ -683,14 +688,14 @@ CUMULATIVE_ARGS;
    may not be available.) */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)                    \
-  s390_function_arg_advance(&CUM, MODE, TYPE, NAMED)
+  s390_function_arg_advance (&CUM, MODE, TYPE, NAMED)
 
 /* Define where to put the arguments to a function.  Value is zero to push
    the argument on the stack, or a hard register in which to store the
    argument.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)   \
-  s390_function_arg(&CUM, MODE, TYPE, NAMED)
+  s390_function_arg (&CUM, MODE, TYPE, NAMED)
 
 /* Define where to expect the arguments of a function.  Value is zero, if
    the argument is on the stack, or a hard register in which the argument
@@ -1102,7 +1107,7 @@ do									           \
       {						                                   \
     	rtx tmp[1];	                                                           \
 	fprintf (FILE, "# block profiler %d block %d \n",                          \
-			 profile_block_flag,BLOCKNO); 	                           \
+			 profile_block_flag, BLOCKNO); 	                           \
 	output_asm_insn ("ipm   14", tmp);              		           \
 	output_asm_insn ("aghi  15,-224", tmp);                           	   \
 	output_asm_insn ("stmg  14,5,160(15)", tmp);             		   \
@@ -1326,7 +1331,7 @@ do {                                                                       \
   ((REGNO) < 16 || (unsigned) reg_renumber[REGNO] < 16)
 
 #define REGNO_OK_FOR_FP_P(REGNO)                                        \
-  FLOAT_REGNO_P(REGNO)
+  FLOAT_REGNO_P (REGNO)
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.  */
@@ -1573,7 +1578,7 @@ do {                                                                       \
   case LABEL_REF:                                               \
   case SYMBOL_REF:                                              \
   case CONST_DOUBLE:                                            \
-    return 1;                                                   \
+    return 0;                                                   \
 
 
 /* Like `CONST_COSTS' but applies to nonconstant RTL expressions.
@@ -1690,7 +1695,7 @@ do {                                                                       \
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison. */
  
-#define SELECT_CC_MODE(OP,X,Y)              \
+#define SELECT_CC_MODE(OP, X, Y)            \
  (   (OP) == EQ  || (OP) == NE  ? CCZmode   \
    : (OP) == LE  || (OP) == LT  ||          \
      (OP) == GE  || (OP) == GT  ? CCSmode   \
@@ -1722,6 +1727,17 @@ extern int s390_match_ccmode PARAMS ((struct rtx_def *, int));
 /* implicit call of memcpy, not bcopy   */
 
 #define TARGET_MEM_FUNCTIONS
+
+
+/* Define results of standard character escape sequences.  */
+
+#define TARGET_BELL     (0x07)
+#define TARGET_BS       (0x08)
+#define TARGET_TAB      (0x09)
+#define TARGET_NEWLINE  (0x0A)
+#define TARGET_VT       11
+#define TARGET_FF       12
+#define TARGET_CR       13
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
@@ -1810,7 +1826,7 @@ extern int s390_nr_constants;
     /* Mark entries referenced by other entries */			\
     for (pool = first_pool; pool; pool = pool->next)		       	\
       if (pool->mark)							\
-        mark_constants(pool->constant);					\
+        mark_constants (pool->constant);					\
 								       	\
     s390_asm_output_pool_prologue (FILE, FUNNAME, fndecl, size);     	\
 }

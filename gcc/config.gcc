@@ -2973,6 +2973,28 @@ rs6000-*-lynxos*)
 	xmake_file=rs6000/x-lynx
 	use_collect2=yes
 	;;
+s390-*-linux*)
+	tm_file="s390/s390.h linux.h s390/linux.h"
+	tmake_file="t-linux s390/t-linux"
+	xmake_file=x-linux
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	if test x$enable_threads = xyes; then
+		thread_file='posix'
+	fi
+	;;
+s390x-*-linux*)
+	tm_file="s390/s390.h linux.h s390/linux.h s390/linux64.h"
+	tm_p_file=s390/s390-protos.h
+	xm_file=s390/xm-s390x.h
+	md_file=s390/s390.md
+	out_file=s390/s390.c
+	tmake_file="t-linux s390/t-linux"
+	xmake_file=x-linux
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	if test x$enable_threads = xyes; then
+		thread_file='posix'
+	fi
+	;;
 sh-*-elf*)
 	tmake_file="sh/t-sh sh/t-elf"
 	tm_file="sh/sh.h sh/elf.h"

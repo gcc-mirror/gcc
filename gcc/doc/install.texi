@@ -1374,6 +1374,10 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#romp-*-aos,,romp-*-aos, romp-*-mach}
 @item
+@uref{#s390-*-linux*}
+@item
+@uref{#s390x-*-linux*}
+@item
 @uref{#*-*-solaris*,,*-*-solaris*}
 @item
 @uref{#sparc-sun-solaris*,,sparc-sun-solaris*}
@@ -2935,6 +2939,20 @@ with @command{hc}, the Metaware compiler, it will work, but you will get
 mismatches between the stage 2 and stage 3 compilers in various files.
 These errors are minor differences in some floating-point constants and
 can be safely ignored; the stage 3 compiler is correct.
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{s390-*-linux*}s390-*-linux*
+IBM S/390 system running Linux for S/390. 
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{s390x-*-linux*}s390x-*-linux*
+IBM zSeries system (64 bit) running Linux for zSeries. 
 
 @html
 </p>

@@ -1,7 +1,7 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
    Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
-                  Ulrich Weigand (weigand@de.ibm.com).
+                  Ulrich Weigand (uweigand@de.ibm.com).
 
 This file is part of GNU CC.
 
@@ -21,39 +21,27 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <setjmp.h>
 #include "system.h"
 #include "rtl.h"
+#include "expr.h"
 #include "tree.h"
-#include "tm_p.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
+#include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
 #include "flags.h"
+#include "recog.h"
+#include "math.h"
+#include "obstack.h"
 #include "except.h"
 #include "function.h"
-#include "recog.h"
-#include "expr.h"
 #include "toplev.h"
-#include "basic-block.h"
-#include "ggc.h"
-#include "target.h"
-#include "target-def.h"
 
-
-
-
-#undef  TARGET_ASM_FUNCTION_PROLOGUE 
-#define TARGET_ASM_FUNCTION_PROLOGUE s390_function_prologue
-
-#undef  TARGET_ASM_FUNCTION_EPILOGUE 
-#define TARGET_ASM_FUNCTION_EPILOGUE s390_function_epilogue
-
-struct gcc_target targetm = TARGET_INITIALIZER;
+#include "tm_p.h"
 
 extern int reload_completed;
 
@@ -63,25 +51,6 @@ int  s390_function_count = 0;
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
 rtx s390_compare_op0, s390_compare_op1;
-
-
-struct s390_address
-{
-  rtx base;
-  rtx indx;
-  rtx disp;
-};
-
-static int s390_match_ccmode_set 
-  PARAMS ((rtx set, int req_mode));
-static int base_n_index_p 
-  PARAMS ((rtx op));
-static int check_mode 
-  PARAMS ((register rtx op, enum machine_mode *mode));
-static int s390_decompose_address 
-  PARAMS ((register rtx addr, struct s390_address *out, int strict));
-static int check_mode 
-  PARAMS ((register rtx op, enum machine_mode *mode));
  
 /* Return TRUE or FALSE depending on whether every SET in INSN that
    set the CC register has source and destination with matching CC modes, 
@@ -92,10 +61,10 @@ s390_match_ccmode_set (set, req_mode)
      rtx set;
      int req_mode;
 {
-  unsigned int set_mode;
+  int set_mode;
 
   if (GET_CODE (set) != SET)
-    abort();
+    abort ();
 
   if (GET_CODE (SET_DEST (set)) != REG || !CC_REGNO_P (REGNO (SET_DEST (set))))
     return 1;
@@ -173,7 +142,7 @@ enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
   FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
   FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
   FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
-  ADDR_REGS,    CC_REGS 
+  ADDR_REGS,    NO_REGS 
 };
 
 
@@ -577,6 +546,10 @@ symbolic_reference_mentioned_p (op)
 }
 
 
+/* Returns 1 if OP is a legitimate general operand when 
+   generating PIC code.  It is given that flag_pic is on 
+   and that OP satisfies CONSTANT_P or is a CONST_DOUBLE.  */
+
 int
 legitimate_pic_operand_p (op)
      register rtx op;
@@ -594,6 +567,9 @@ legitimate_pic_operand_p (op)
      via emit_pic_move.  */
   return 0;
 }
+
+/* Returns 1 if the constant value OP is a legitimate general operand.
+   It is given that OP satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
 int
 legitimate_constant_p (op)
@@ -626,22 +602,32 @@ legitimate_constant_p (op)
 }
 
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.
-   The MODE argument is the machine mode for the MEM expression
-   that wants to use this address.
+/* Structure used to hold the components of a S/390 memory
+   address.  A legitimate address on S/390 is of the general
+   form  
+          base + index + displacement
+   where any of the components is optional.
 
-   On S/390, legitimate addresses are:
-	base				l    reg,(base)
-	displacement			l    reg,disp
-	base + displacement		l    reg,disp(base)
-	index + base			l    reg,(base,index),reg
-	(index + base) + displacement	l    reg,disp(base,index)
+   base and index are registers of the class ADDR_REGS,
+   displacement is an unsigned 12-bit immediate constant.  */
 
-   It only recognizes address in canonical form.  LEGITIMIZE_ADDRESS should
-   convert common non-canonical forms to canonical form so that they will
-   be recognized.  */
+struct s390_address
+{
+  rtx base;
+  rtx indx;
+  rtx disp;
+};
 
+/* Decompose a RTL expression ADDR for a memory address into
+   its components, returned in OUT.  The boolean STRICT 
+   specifies whether strict register checking applies.
+   Returns 0 if ADDR is not a valid memory address, nonzero
+   otherwise.  If OUT is NULL, don't return the components,
+   but check for validity only.
+
+   Note: Only addresses in canonical form are recognized.
+   LEGITIMIZE_ADDRESS should convert non-canonical forms to the
+   canonical form so that they will be recognized.  */
 
 static int
 s390_decompose_address (addr, out, strict)
@@ -815,6 +801,9 @@ s390_decompose_address (addr, out, strict)
   return TRUE;
 }
 
+/* Returns nonzero if ADDR is a valid memory address.
+   STRICT specifies whether strict register checking applies.  */
+
 int
 legitimate_address_p (mode, addr, strict)
      enum machine_mode mode;
@@ -950,7 +939,7 @@ legitimize_pic_address (orig, reg)
 	  if (GET_CODE (addr) == UNSPEC)
 	    {
 	      if (XVECLEN (addr, 0) != 1)
-                abort();
+                abort ();
               switch (XINT (addr, 1))
                 {
                   /* If someone moved an @GOT or lt-relative UNSPEC
@@ -1001,7 +990,7 @@ legitimize_pic_address (orig, reg)
                 }
 	    }
 	  else if (GET_CODE (addr) != PLUS)
-	    abort();
+	    abort ();
 	}
       if (GET_CODE (addr) == PLUS)
 	{
@@ -1075,9 +1064,9 @@ legitimize_pic_address (orig, reg)
 	           && GET_CODE (op1) == CONST_INT)
             {
 	      if (XVECLEN (op0, 0) != 1)
-                abort();
+                abort ();
               if (XINT (op0, 1) != 100)
-                abort();
+                abort ();
 
               new = force_const_mem (SImode, orig);
               if (reg != 0)
@@ -1158,7 +1147,8 @@ legitimize_address (x, oldx, mode)
 }
 
 
-/* Output branch conditions.  */
+/* Output branch condition code of RTX code in assembler
+   syntax to stdio stream FILE.  */
 
 static void
 output_branch_condition (FILE *file, rtx code)
@@ -1192,6 +1182,9 @@ output_branch_condition (FILE *file, rtx code)
     }
 }
 
+/* Output the inverse of the branch condition code of RTX code 
+   in assembler syntax to stdio stream FILE.  */
+
 static void
 output_inverse_branch_condition (FILE *file, rtx code)
 {
@@ -1224,7 +1217,8 @@ output_inverse_branch_condition (FILE *file, rtx code)
     }
 }
 
-/* Output a symbolic constant.  */
+/* Output symbolic constant X in assembler syntax to 
+   stdio stream FILE.  */
 
 void
 s390_output_symbolic_const (FILE *file, rtx x)
@@ -1307,7 +1301,8 @@ s390_output_symbolic_const (FILE *file, rtx x)
     }
 }
 
-/* Output an address operand.  */
+/* Output address operand ADDR in assembler syntax to 
+   stdio stream FILE.  */
 
 void
 print_operand_address (FILE *file, rtx addr)
@@ -1329,7 +1324,21 @@ print_operand_address (FILE *file, rtx addr)
     fprintf (file, "(%s)", reg_names[REGNO (ad.base)]);
 }
 
-/* Output an operand.  */
+/* Output operand X in assembler syntax to stdio stream FILE.  
+   The following format flags are recognized as CODE:
+
+    'C': print opcode suffix for branch condition.
+    'D': print opcode suffix for inverse branch condition.
+    'Y': print current constant pool address (pc-relative).
+    'y': print current constant pool address (absolute).
+    'O': print only the displacement of a memory reference.
+    'R': print only the base register of a memory reference.
+    'N': print the second word of a DImode operand.
+    'M': print the second word of a TImode operand.
+
+    'b': print integer X as if it's a unsigned byte.
+    'x': print integer X as if it's a unsigned word.
+    'h': print integer X as if it's a signed word.  */
 
 void
 print_operand (FILE *file, rtx x, char code)
@@ -1359,7 +1368,7 @@ print_operand (FILE *file, rtx x, char code)
         if (GET_CODE (x) != MEM
             || !s390_decompose_address (XEXP (x, 0), &ad, TRUE)
             || ad.indx)
-          abort();
+          abort ();
 
         if (ad.disp)
           s390_output_symbolic_const (file, ad.disp);
@@ -1375,7 +1384,7 @@ print_operand (FILE *file, rtx x, char code)
         if (GET_CODE (x) != MEM
             || !s390_decompose_address (XEXP (x, 0), &ad, TRUE)
             || ad.indx)
-          abort();
+          abort ();
 
         if (ad.base)
           fprintf (file, "%s", reg_names[REGNO (ad.base)]);
@@ -1390,7 +1399,7 @@ print_operand (FILE *file, rtx x, char code)
       else if (GET_CODE (x) == MEM)
 	x = change_address (x, VOIDmode, plus_constant (XEXP (x, 0), 4));
       else
-        abort();
+        abort ();
       break;
 
     case 'M':
@@ -1399,7 +1408,7 @@ print_operand (FILE *file, rtx x, char code)
       else if (GET_CODE (x) == MEM)
 	x = change_address (x, VOIDmode, plus_constant (XEXP (x, 0), 8));
       else
-        abort();
+        abort ();
       break;
     }
 
@@ -1441,8 +1450,8 @@ print_operand (FILE *file, rtx x, char code)
 
 #define DEBUG_SCHED 0
 
-/* True, if register regno is used  for forming a memory address in
-   a expression x.  */
+/* Returns true if register REGNO is used  for forming 
+   a memory address in expression X.  */
 
 static int
 reg_used_in_mem_p (int regno, rtx x)
@@ -1473,8 +1482,8 @@ reg_used_in_mem_p (int regno, rtx x)
   return 0;
 }
 
-/* Returns true, if expression dep_rtx sets a address register
-   used by instruction insn to address memory.  */
+/* Returns true if expression DEP_RTX sets a address register
+   used by instruction INSN to address memory.  */
 
 static int 
 addr_generation_dependency_p (rtx dep_rtx, rtx insn)
@@ -1507,7 +1516,7 @@ addr_generation_dependency_p (rtx dep_rtx, rtx insn)
    to the right cost.  */
 
 int
-s390_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost )
+s390_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 {
   rtx dep_rtx, dest, x;
   int i;
@@ -1579,18 +1588,17 @@ s390_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost )
      - in this case, a branch from one chunk to other chunk needs
        a reload of base register at the code label branched to.  */
 
-
-
 rtx s390_pool_start_insn = NULL_RTX;
 
 /* Count of actual pool in function (-1 -> before function).  */
 
 int s390_pool_count = -1;
 
-
 static int pool_stop_uid;
 
-
+/* Called from the ASM_OUTPUT_POOL_PROLOGUE macro to 
+   prepare for printing a literal pool chunk.  */
+ 
 void 
 s390_asm_output_pool_prologue (FILE *file, char *fname, tree fndecl, int size)
 {
@@ -1604,7 +1612,7 @@ s390_asm_output_pool_prologue (FILE *file, char *fname, tree fndecl, int size)
 	fprintf (file, "\tlarl\t%s,.LT%X_%X\n", 
 		 reg_names[BASE_REGISTER],
 		 s390_function_count, s390_pool_count);
-	readonly_data_section();
+	readonly_data_section ();
 	ASM_OUTPUT_ALIGN (file, floor_log2 (3));
 	fprintf (file, ".LT%X_%X:\t# Pool %d\n",
 		 s390_function_count, s390_pool_count, s390_pool_count);
@@ -1618,9 +1626,9 @@ s390_asm_output_pool_prologue (FILE *file, char *fname, tree fndecl, int size)
     function_section (fndecl);
 }
 
-/* Check if other addr is in different chunk than my addr,
-   return symbol_ref to other pool in that case.  */
-
+/* Return 1 if OTHER_ADDR is in different chunk than MY_ADDR.
+   LTORG points to a list of all literal pools inserted
+   into the current function.  */
 
 static int
 other_chunk (int *ltorg, int my_addr, int other_addr)
@@ -1643,7 +1651,8 @@ other_chunk (int *ltorg, int my_addr, int other_addr)
   return 1;
 }
 
-/* Check, if other label is to far away to branch relative.  */
+/* Return 1 if OTHER_ADDR is too far away from MY_ADDR
+   to use a relative branch instruction.  */
 
 static int 
 far_away (int my_addr, int other_addr)
@@ -1656,7 +1665,13 @@ far_away (int my_addr, int other_addr)
   return 0;
 }
 
-
+/* Go through all insns in the current function (starting
+   at INSN), replacing branch insn if necessary.  A branch
+   needs to be modified if either the distance to the 
+   target is too far to use a relative branch, or if the
+   target uses a different literal pool than the origin.
+   LTORG_UIDS points to a list of all literal pool insns
+   that have been inserted.  */
 
 static rtx 
 check_and_change_labels (rtx insn, int *ltorg_uids)
@@ -1798,6 +1813,12 @@ check_and_change_labels (rtx insn, int *ltorg_uids)
 
 static int chunk_max=0;
 
+
+/* Called from s390_function_prologue to make final adjustments
+   before outputting code.  CHUNKIFY specifies whether we need
+   to use multiple literal pools (because the total size of the
+   literals exceeds 4K).  */
+
 void
 s390_final_chunkify (int chunkify)
 {
@@ -1854,7 +1875,7 @@ s390_final_chunkify (int chunkify)
 		  fprintf (stderr, "s390 multiple literalpool support:"
 			   "\n No code label between this insn %X %X",
 			   naddr, INSN_ADDRESSES (INSN_UID (tmp)));
-		  abort();
+		  abort ();
 		}
 	    }
 	  if (tmp == NULL) 
@@ -1912,7 +1933,6 @@ s390_final_chunkify (int chunkify)
 /* Return 1 if next literal pool is reached (check for ltorg insn)
    maybe should use unspec insn.  */
 
-
 int 
 s390_stop_dump_lit_p (rtx insn)
 {
@@ -1929,6 +1949,9 @@ s390_stop_dump_lit_p (rtx insn)
   else
     return 0;   
 }
+
+/* Output literal pool chunk to be used for insns
+   between ACT_INSN and STOP.  */
 
 void
 s390_dump_literal_pool (rtx act_insn, rtx stop)
@@ -1955,7 +1978,8 @@ int s390_nr_constants;
 
 /* Returns 1 if floating point registers need to be saved.  */
 
-static int save_fprs_p()
+static int 
+save_fprs_p ()
 {
   int i;
   if (!TARGET_64BIT)
@@ -1987,7 +2011,8 @@ cur_is_leaf_function ()
 /* Calculate offset between argument pointer and frame pointer 
    initialy after prologue.  */
 
-int s390_arg_frame_offset ()
+int 
+s390_arg_frame_offset ()
 {
   int lsize =  get_frame_size () + current_function_outgoing_args_size
     + save_fprs_p () * 64;
@@ -1998,9 +2023,12 @@ int s390_arg_frame_offset ()
     return 2*STACK_POINTER_OFFSET + lsize;
 }
 
-/* Save Floating point register on current stack.  */
+/* Output code to stdio stream FILE to save floating point 
+   registers on current stack, at offset OFFSET to the frame
+   pointer register FP.  */
 
-static int save_fprs(FILE *file, long offset, int fp)
+static int 
+save_fprs (FILE *file, long offset, int fp)
 {
   int i;
 
@@ -2017,16 +2045,19 @@ static int save_fprs(FILE *file, long offset, int fp)
     }
 }
 
-/* Restore Floating point register on current stack.  */
+/* Output code to stdio stream FILE to restore floating point 
+   registers from current stack, at offset OFFSET to the frame
+   pointer register FP.  */
 
-static int restore_fprs(FILE *file, long offset, int fp)
+static int 
+restore_fprs (FILE *file, long offset, int fp)
 {
   int i;
 
   if (!TARGET_64BIT)
     return 0;
 
-  if (!save_fprs_p())
+  if (!save_fprs_p ())
     return 0;
 
   if (offset < 0) 
@@ -2051,7 +2082,7 @@ static int restore_fprs(FILE *file, long offset, int fp)
 /* Output constant pool in function prologue (31 bit) or in readonly section.  */ 
 
 static int
-s390_output_constant_pool(FILE* file)
+s390_output_constant_pool (FILE* file)
 {
   /* Output constant pool.  */
   if (s390_nr_constants || regs_ever_live[BASE_REGISTER])
@@ -2061,7 +2092,7 @@ s390_output_constant_pool(FILE* file)
 	{
 	  fprintf (file, "\tlarl\t%s,.LT%X_%X\n", reg_names[BASE_REGISTER],
 		   s390_function_count, s390_pool_count);
-	  readonly_data_section();
+	  readonly_data_section ();
 	  ASM_OUTPUT_ALIGN (file, floor_log2 (3));
 	}
       else
@@ -2074,14 +2105,16 @@ s390_output_constant_pool(FILE* file)
       fprintf (file, ".LTN%X_%X:\n", s390_function_count,
 	       s390_pool_count);
       if (TARGET_64BIT)
-	function_section(current_function_decl);
+	function_section (current_function_decl);
       
       regs_ever_live[BASE_REGISTER] = 1;
     }
 }
 
-
-/* This function generates the assembly code for function entry.  */
+/* Add constant CTX to the constant pool at a late time 
+   (after the initial pass to count the number of constants
+   was already done).  Returns the resulting constant 
+   pool reference.  */
 
 static rtx
 s390_force_const_mem_late (rtx cst)
@@ -2095,6 +2128,12 @@ s390_force_const_mem_late (rtx cst)
 
   return cst;
 }
+
+/* Add a reference to the symbol NAME to the constant pool.
+   FUNC specifies whether NAME refers to a function, while
+   GLOBAL specifies whether NAME is a global symbol.  Depending
+   on these flags, the appopriate PLT or GOT references are
+   generated.  Returns the constant pool reference.  */
 
 static rtx
 s390_force_const_mem_symbol (char *name, int func, int global)
@@ -2125,10 +2164,12 @@ s390_force_const_mem_symbol (char *name, int func, int global)
   return s390_force_const_mem_late (symbol);
 }
 
-/* This function generates the assembly code for function entry.  */
+/* Output the function prologue assembly code to the 
+   stdio stream FILE.  The local frame size is passed
+   in LSIZE.  */
 
-void
-s390_function_prologue (FILE *file, HOST_WIDE_INT lsize)
+int
+s390_function_prologue (FILE * file, int lsize)
 {
   extern int profile_label_no;
   int i, j;
@@ -2140,9 +2181,8 @@ s390_function_prologue (FILE *file, HOST_WIDE_INT lsize)
 
   /* Check for too large size of local variables */
 
-  if (lsize > 0x7fff0000)
+  if (lsize > 0x7fff0000) 
     fatal_error ("Total size of local variables exceeds architecture limit.");
-
   /* Profile code (-p, -a, -ax needs some literals).  */
 
   if (profile_block_flag && !TARGET_64BIT)
@@ -2339,14 +2379,14 @@ s390_function_prologue (FILE *file, HOST_WIDE_INT lsize)
 	}
 
       
-      if (save_fprs_p() && frame_size > 4095) 
+      if (save_fprs_p () && frame_size > 4095) 
 	{
 	  int fp = 1;
 	  int offset = 0;
 	  fprintf (file, "\tlgr\t%s,%s\n", reg_names[fp], 
 		   reg_names[STACK_POINTER_REGNUM]); 
 	  fprintf (file, "\taghi\t%s,-64\n", reg_names[fp]);
-	  save_fprs(file, 0, fp);
+	  save_fprs (file, 0, fp);
 	}
 
       /* Decrement stack.  */
@@ -2433,13 +2473,15 @@ s390_function_prologue (FILE *file, HOST_WIDE_INT lsize)
   if (frame_size <= 4095)
     save_fprs (file, frame_size - 64, STACK_POINTER_REGNUM);
 
-  return;
+  return 0;
 }
 
-/* This function generates the assembly code for function exit.  */
+/* Output the function epilogue assembly code to the 
+   stdio stream FILE.  The local frame size is passed
+   in LSIZE.  */
 
-void
-s390_function_epilogue (FILE *file, HOST_WIDE_INT lsize)
+int
+s390_function_epilogue (FILE * file, int lsize)
 {
 /* Register is call clobbered and not used for eh or return.  */
 #define FREE_REG 4
@@ -2533,21 +2575,21 @@ s390_function_epilogue (FILE *file, HOST_WIDE_INT lsize)
   s390_pool_start_insn = NULL_RTX;
   s390_pool_count = -1;
   s390_function_count++;
-  return;
+  return 0;
 }
 
-/* For structs of odd size the address is passed as reference. 
-   Complex number are also passes on the stack. 
+/* This is epilogue code, maybe should use generic in except.c.  */ 
 
-   Note: We don't use mode, since a struct with the following format 
-   is BLKmode, but has size 4.
-   struct 
-     {
-       char a;
-       char b[3]
-     }. 
-   The ABI states, that this value has to be passed in register.  */
+void
+s390_expand_eh_epilogue (rtx reg1, rtx reg2, rtx reg3)
+{
+  abort ();
+}
 
+
+/* Return the size in bytes of a function argument of 
+   type TYPE and/or mode MODE.  At least one of TYPE or
+   MODE must be specified.  */
 
 static int
 s390_function_arg_size (enum machine_mode mode, tree type)
@@ -2560,8 +2602,14 @@ s390_function_arg_size (enum machine_mode mode, tree type)
     return GET_MODE_SIZE (mode);
 
   /* If we have neither type nor mode, abort */
-  fatal_error ("no type info available for BLKmode\n");
+  abort ();
 }
+
+/* Return 1 if a function argument of type TYPE and mode MODE
+   is to be passed by reference.  The ABI specifies that only
+   structures of size 1, 2, 4, or 8 bytes are passed by value,
+   all other structures (and complex numbers) are passed by
+   reference.  */
 
 int
 s390_function_arg_pass_by_reference (enum machine_mode mode, tree type)
@@ -2604,13 +2652,24 @@ s390_function_arg_advance (CUMULATIVE_ARGS * cum,
     }
 }
 
+/* Define where to put the arguments to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
 
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).  
 
-/* Define where to put the arguments to a function.  Value is zero to push
-   the argument on the stack, or a hard register in which to store the
-   argument. Gprs 2-6 and Fprs 0 and 2 are used as arguments.
-   All integral values go into register, until all are used up, the rest
-   goes onto stack. The same is valid for floating-point values.  */
+   On S/390, we use general purpose registers 2 through 6 to
+   pass integer, pointer, and certain structure arguments, and
+   floating point registers 0 and 2 (0, 2, 4, and 6 on 64-bit)
+   to pass floating point arguments.  All remaining arguments
+   are pushed to the stack.  */
 
 rtx
 s390_function_arg (CUMULATIVE_ARGS * cum,
@@ -2639,14 +2698,19 @@ s390_function_arg (CUMULATIVE_ARGS * cum,
 }
 
 
-/* Builtin va_list stuff
-   va_list is a structure of four elements:
-      __gpr:  number of named args passed in general purpose register 
-      __gpr:  number of named args passed in floating purpose register 
-      __overflow_arg_area:  address of area, where arguments are passed
-                          if they do not fit in gprs 2 to 6 and fpr 0 and 2
-      __reg_save_area:  address, where register passed args are saved 
-                      in prologue.  */
+/* Create the va_list datatype.
+
+   On S/390, va_list is a structure of four elements:
+
+      __gpr:  number of general purpose registers used for arguments
+      __fpr:  number of floating point registers used for arguments
+      __overflow_arg_area:  
+              address of area holding arguments that are not 
+              passed in a register
+      __reg_save_area:  
+              address of register save area; the function prologue
+              saves all registers used for argument passing into this
+              area, if the function uses variable arguments.  */
 
 tree
 s390_build_va_list ()
@@ -2685,14 +2749,16 @@ s390_build_va_list ()
   return build_array_type (record, build_index_type (size_zero_node));
 }
 
-/* Builtin va_start 
-   The va_list struct is set with the values.
-   gpr: compile time known got out of  current_function_args_info
-   fpr: compile time known got out of  current_function_args_info
-   overflow_arg_area: address passed with register 7 (incoming args register)
-                  (setup in prologue)
-   reg_save_area: address of save area where first 5 gprs and 2 fprs sare 
-                  saved (saved in prologue).  */
+/* Implement va_start. 
+
+   The following global variables are used to initalize
+   the va_list structure:
+
+     current_function_args_info:
+       holds number of gprs and fprs used for arguments.
+     current_function_arg_offset_rtx:
+       holds the offset to the overflow argument area on the stack 
+       (relative to the virtual arg pointer).  */
 
 void
 s390_va_start (int stdarg_p, tree valist, rtx nextarg)
@@ -2752,10 +2818,9 @@ s390_va_start (int stdarg_p, tree valist, rtx nextarg)
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
 
-
-/* Builtin va_arg.  
+/* Implement va_arg.  
    
-   Works like following:
+   Generates code equivalent to:
    
    if (integral value) {
      if (size  <= 4 && args.gpr < 5 ||
@@ -2774,7 +2839,6 @@ s390_va_start (int stdarg_p, tree valist, rtx nextarg)
      else
        ret = **args.overflow_arg_area++;
    } */
-
 
 rtx
 s390_va_arg (tree valist, tree type)
@@ -2936,10 +3000,89 @@ s390_va_arg (tree valist, tree type)
   return addr_rtx;
 }
 
-/* Implementation of Trampoline
-   Gpr 1 is used as base register and for the jump
-   to the nested function. 
-   Gpr 0 is static chain.  */
+/* Do what is necessary for `va_start'.  The argument is ignored;
+   we look at the current function to determine if stdarg or varargs
+   is used.  */
+
+rtx
+s390_builtin_saveregs (arglist)
+     tree arglist ATTRIBUTE_UNUSED;
+{
+  rtx off, block, dest, tmp;
+  tree fntype = TREE_TYPE (current_function_decl);
+
+  int stdarg = (TYPE_ARG_TYPES (fntype) != 0
+		&& (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+		    != void_type_node));
+
+  /* Allocate the va_list block.  */
+
+  block = assign_stack_local (BLKmode, 4 * UNITS_PER_WORD, BITS_PER_WORD);
+  RTX_UNCHANGING_P (block) = 1;
+  RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
+
+  /* Store the # of named gpr and fpr in 1st and 2nd word of va_list.  */
+
+  dest = change_address (block, ptr_mode, 
+			 plus_constant (XEXP (block, 0), 0));
+  emit_move_insn (dest, GEN_INT (current_function_args_info.gprs));
+  dest = change_address (block, ptr_mode, 
+			 plus_constant (XEXP (block, 0), UNITS_PER_WORD));
+  emit_move_insn (dest, GEN_INT (current_function_args_info.fprs));
+
+  /* Store the address of the overflow area in 3rd word of va_list.  */
+
+  if (stdarg)
+    off = current_function_arg_offset_rtx;
+  else
+    {
+      if (GET_CODE (current_function_arg_offset_rtx) != CONST_INT) 
+        {
+          debug_rtx (current_function_arg_offset_rtx);
+          abort ();
+        }
+    
+      if (INTVAL (current_function_arg_offset_rtx) != 0)
+        off = gen_rtx_CONST_INT (Pmode,
+    			      INTVAL (current_function_arg_offset_rtx)-
+			      UNITS_PER_WORD);
+      else
+        off = current_function_arg_offset_rtx;
+    }
+
+  dest = change_address (block, ptr_mode,
+			 plus_constant (XEXP (block, 0),
+                                        2 * UNITS_PER_WORD));
+
+  tmp = expand_binop (Pmode, add_optab, virtual_incoming_args_rtx,
+		      off,
+		      dest, 0, OPTAB_WIDEN);
+  if (tmp != dest)
+    emit_move_insn (dest, tmp);
+
+  /* Store the address of the register save area in 4th word of va_list.  */
+
+  dest = change_address (block, ptr_mode,
+			 plus_constant (XEXP (block, 0),
+                                        3 * UNITS_PER_WORD));
+
+  tmp = expand_binop (Pmode, add_optab, virtual_incoming_args_rtx,
+		      GEN_INT (-STACK_POINTER_OFFSET),
+		      dest, 0, OPTAB_WIDEN);
+  if (tmp != dest)
+    emit_move_insn (dest, tmp);
+
+  /* Return the address of the va_list block.  */
+
+  return XEXP (block, 0);
+}
+
+
+/* Output assembly code for the trampoline template to
+   stdio stream FILE.
+
+   On S/390, we use gpr 1 internally in the trampoline code;
+   gpr 0 is used to hold the static chain.  */
 
 void
 s390_trampoline_template (FILE * file)
@@ -2964,6 +3107,10 @@ s390_trampoline_template (FILE * file)
     }
 }
 
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNADDR is an RTX for the address of the function's pure code.
+   CXT is an RTX for the static chain value for the function.  */
+
 void
 s390_initialize_trampoline (addr, fnaddr, cxt)
      rtx addr;
@@ -2973,9 +3120,9 @@ s390_initialize_trampoline (addr, fnaddr, cxt)
   emit_move_insn (gen_rtx 
 		  (MEM, Pmode,
 		   memory_address (Pmode, 
-		   plus_constant (addr,(TARGET_64BIT ? 20 : 12) ))), cxt);
+		   plus_constant (addr, (TARGET_64BIT ? 20 : 12) ))), cxt);
   emit_move_insn (gen_rtx
 		  (MEM, Pmode,
 		   memory_address (Pmode, 
-		   plus_constant (addr,(TARGET_64BIT ? 28 : 16) ))), fnaddr);
+		   plus_constant (addr, (TARGET_64BIT ? 28 : 16) ))), fnaddr);
 }

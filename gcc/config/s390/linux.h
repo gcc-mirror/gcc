@@ -1,7 +1,7 @@
 /* Definitions for Linux for S/390.
    Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
-                  Ulrich Weigand (weigand@de.ibm.com).
+                  Ulrich Weigand (uweigand@de.ibm.com).
 
 This file is part of GNU CC.
 
@@ -22,14 +22,6 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef _LINUX_H
 #define _LINUX_H
-
-#define IEEE_FLOAT 1
-#define TARGET_IBM_FLOAT           0
-#define TARGET_IEEE_FLOAT          1
-
-#include <s390/s390.h>              /* Base s390 target machine definitions*/
-
-#include <linux.h>
 
 #undef SIZE_TYPE                       /* use default                      */
 
@@ -76,6 +68,7 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE "int"
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
+#define MAX_LONG_TYPE_SIZE 64
 
 /* Character to start a comment.  */
 
@@ -140,7 +133,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_OUTPUT_DOUBLE_INT(FILE, VALUE)      \
 do { fprintf (FILE, "%s\t", ASM_QUAD);          \
-  output_addr_const (FILE,(VALUE));             \
+  output_addr_const (FILE, (VALUE));            \
   putc ('\n',FILE);                             \
  } while (0)
 
@@ -150,7 +143,7 @@ do { fprintf (FILE, "%s\t", ASM_QUAD);          \
 #undef ASM_OUTPUT_INT
 #define ASM_OUTPUT_INT(FILE, VALUE)             \
 do { fprintf (FILE, "%s\t", ASM_LONG);          \
-  output_addr_const (FILE,(VALUE));             \
+  output_addr_const (FILE, (VALUE));            \
   putc ('\n',FILE);                             \
  } while (0)
 
@@ -159,7 +152,7 @@ do { fprintf (FILE, "%s\t", ASM_LONG);          \
 
 #define ASM_OUTPUT_SHORT(FILE, VALUE)           \
 ( fprintf (FILE, "%s ", ASM_SHORT),             \
-  output_addr_const (FILE,(VALUE)),             \
+  output_addr_const (FILE, (VALUE)),            \
   putc ('\n',FILE))
 
 #define ASM_OUTPUT_CHAR(FILE, VALUE)            \
@@ -180,14 +173,15 @@ do { fprintf (FILE, "%s\t", ASM_LONG);          \
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  			\
-  fprintf (FILE, "%s %s%d\n", TARGET_64BIT?ASM_QUAD:ASM_LONG, 	\
+  fprintf (FILE, "%s\t%s%d\n", TARGET_64BIT?ASM_QUAD:ASM_LONG, 	\
 	   LPREFIX, VALUE)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) 		\
-  fprintf (FILE, "%s %s%d-.LT%X_%X\n" ,TARGET_64BIT?ASM_QUAD:ASM_LONG, 	\
-	   LPREFIX, VALUE, s390_function_count,s390_pool_count)
+  fprintf (FILE, "%s\t%s%d-%s%d\n", TARGET_64BIT?ASM_QUAD:ASM_LONG, 	\
+	   LPREFIX, VALUE, LPREFIX, REL)
+
 
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
@@ -288,7 +282,7 @@ do {                                                                    \
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)  \
+#define ASM_GLOBALIZE_LABEL(FILE, NAME)  \
   (fputs (".globl ", FILE), assemble_name (FILE, NAME), fputs ("\n", FILE))
 
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)

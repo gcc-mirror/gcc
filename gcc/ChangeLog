@@ -1,3 +1,21 @@
+
+2001-08-03  Ulrich Weigand  <uweigand@de.ibm.com>
+ 
+ 	* config.gcc (s390-*-linux*, s390x-*-linux*): Added.
+ 	* doc/install.texi: Add s390 and s390x targets.
+ 	* doc/invoke.texi: Add s390 and s390x target options.
+ 	* doc/md.texi: Add s390 and s390x extra constraints.
+ 	* config/s390/s390.c: New. Subroutines for code generation.
+ 	* config/s390/s390.h: New. Definitions for S/390.
+ 	* config/s390/s390-protos.h: New. Prototypes.
+ 	* config/s390/linux.h: New. Definitions for Linux for S/390.
+ 	* config/s390/linux64.h: New. Definitions for Linux for zSeries.
+ 	* config/s390/t-linux: New. Makefile fragment.
+ 	* config/s390/s390.md: New. Machine description for S/390 and zSeries.
+ 	* config/s390/xm-390.h: New. Host definitions for S/390.
+ 	* config/s390/xm-390x.h: New. Host definitions for zSeries.
+ 	* config/s390/fixdfdi.h: New. Fix L_fix*di.
+ 
 2001-08-03  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* cpplex.c (parse_string): Warn once per string.

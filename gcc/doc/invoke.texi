@@ -576,6 +576,12 @@ in the following sections.
 -minline-divide-max-throughput  -mno-dwarf2-asm @gol
 -mfixed-range=@var{register-range}}
 
+@emph{S/390 and zSeries Options}
+@gccoptlist{
+-mhard-float  -msoft-float  -mbackchain  -mno-backchain @gol
+-msmall-exec  -mno-small-exec  -mmvcle -mno-mvcle @gol
+-m64 -m31 -mdebug -mno-debug}
+
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @gccoptlist{
@@ -4962,6 +4968,7 @@ that macro, which enables you to change the defaults.
 * MCore Options::
 * IA-64 Options::
 * D30V Options::
+* S/390 and zSeries Options::
 @end menu
 
 @node M680x0 Options
@@ -8872,6 +8879,71 @@ The default is 2.
 Specify the maximum number of conditionally executed instructions that
 replace a branch.  The default is 4.
 @end table
+
+@node S/390 and zSeries Options
+@subsection S/390 and zSeries Options
+@cindex S/390 and zSeries Options
+
+These are the @samp{-m} options defined for the S/390 and zSeries architecture.
+
+@table @gcctabopt
+@item -mhard-float
+@itemx -msoft-float
+@opindex mhard-float
+@opindex msoft-float
+Use (do not use) the hardware floating-point instructions and registers
+for floating-point operations.  When @option{-msoft-float} is specified,
+functions in @file{libgcc.a} will be used to perform floating-point
+operations.  When @option{-mhard-float} is specified, the compiler
+generates IEEE floating-point instructions.  This is the default.
+
+@item -mbackchain
+@itemx -mno-backchain
+@opindex mbackchain
+@opindex mno-backchain
+Generate (or do not generate) code which maintains an explicit 
+backchain within the stack frame that points to the caller's frame.
+This is currently needed to allow debugging.  The default is to
+generate the backchain.
+
+@item -msmall-exec
+@itemx -mno-small-exec
+@opindex msmall-exec
+@opindex mno-small-exec
+Generate (or do not generate) code using the @code{bras} instruction 
+to do subroutine calls. 
+This only works reliably if the total executable size does not
+exceed 64k.  The default is to use the @code{basr} instruction instead,
+which does not have this limitation.
+
+@item -m64
+@itemx -m31
+@opindex m64
+@opindex m31
+When @option{-m31} is specified, generate code compliant to the
+Linux for S/390 ABI@.  When @option{-m64} is specified, generate
+code compliant to the Linux for zSeries ABI@.  This allows GCC in
+particular to generate 64-bit instructions.  For the @samp{s390}
+targets, the default is @option{-m31}, while the @samp{s390x} 
+targets default to @option{-m64}.
+
+@item -mmvcle
+@itemx -mno-mvcle
+@opindex mmvcle
+@opindex mno-mvcle
+Generate (or do not generate) code using the @code{mvcle} instruction 
+to perform block moves.  When @option{-mno-mvcle} is specifed,
+use a @code{mvc} loop instead.  This is the default.
+
+@item -mdebug
+@itemx -mno-debug
+@opindex mdebug
+@opindex mno-debug
+Print (or do not print) additional debug information when compiling.
+The default is to not print debug information.
+
+@end table
+
 
 @node Code Gen Options
 @section Options for Code Generation Conventions

@@ -1,7 +1,7 @@
-/* Definitions for Linux for s/390 zSeries
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
-   Contributed by Hartmut Penner (hpenner@de.ibm.com) and
-                  Ulrich Weigand (weigand@de.ibm.com).
+/* Definitions for Linux for S/390 64bit.
+   Copyright (C) 2000 Free Software Foundation, Inc.
+   Contributed by Hartmut Penner <hpenner@de.ibm.com>
+
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify
@@ -21,8 +21,6 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef _LINUX64_H
 #define _LINUX64_H
-
-#include <s390/linux.h>              /* Base linux target machine definitions*/
 
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
@@ -77,6 +75,6 @@ Boston, MA 02111-1307, USA.  */
   1, 1, 1, 1, 					\
   0, 0, 0, 0, 					\
   0, 0, 0, 0, 					\
-  1 }
+  1, 1 }
 
 #endif

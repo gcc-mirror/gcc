@@ -31,14 +31,11 @@ extern void s390_va_start PARAMS ((int, tree, rtx));
 
 extern int fp_operand PARAMS ((rtx, enum machine_mode));
 extern int s_operand PARAMS ((rtx, enum machine_mode));
-extern int larl_operand PARAMS ((rtx, enum machine_mode));
 extern int r_or_im8_operand PARAMS ((rtx, enum machine_mode));
 extern int r_or_s_operand PARAMS ((rtx, enum machine_mode)); 
 extern int r_or_s_or_im8_operand PARAMS ((rtx, enum machine_mode));
 extern int r_or_x_or_im16_operand PARAMS ((rtx, enum machine_mode));
 extern int bras_sym_operand PARAMS ((rtx, enum machine_mode));
-extern int load_multiple_operation PARAMS ((rtx, enum machine_mode));
-extern int store_multiple_operation PARAMS ((rtx, enum machine_mode));
 extern int dead_p PARAMS ((rtx, rtx));
 extern void print_operand PARAMS ((FILE *, rtx, char));
 extern void print_operand_address PARAMS ((FILE *, rtx));
@@ -82,7 +79,7 @@ extern void encode_section_info PARAMS ((tree));
 
 
 extern void s390_trampoline_template PARAMS ((FILE *));
-extern void s390_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-extern void s390_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+extern int s390_function_prologue PARAMS ((FILE *, int));
+extern int s390_function_epilogue PARAMS ((FILE *, int));
 extern void s390_final_chunkify PARAMS ((int));
 extern int s390_arg_frame_offset PARAMS ((void));

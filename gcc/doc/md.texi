@@ -1916,6 +1916,38 @@ Direct memory reference
 Symbolic address
 
 @end table
+
+@item S/390 and zSeries---@file{s390.h}
+@table @code
+@item a
+Address register (general purpose register except r0)
+
+@item d
+Data register (arbitrary general purpose register)
+
+@item f
+Floating-point register
+
+@item I
+Unsigned 8-bit constant (0--255)
+
+@item J
+Unsigned 12-bit constant (0--4095)
+
+@item K
+Signed 16-bit constant (@minus{}32768--32767)
+
+@item L
+Unsigned 16-bit constant (0--65535)
+
+@item Q
+Memory reference without index register
+
+@item S
+Symbolic constant suitable for use with the @code{larl} instruction
+
+@end table
+
 @end table
 
 @ifset INTERNALS
