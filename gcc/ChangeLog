@@ -1,3 +1,8 @@
+Thu Nov 19 19:05:49 1998  Per Bothner  <bothner@cygnus.com>
+
+	* print-tree.c (print_node):  After printing BLOCK or BIND_EXPR,
+	break instead of return (which loses closing '>').
+
 Thu Nov 19 19:34:13 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* i386.md (jump): Explicitly set "memory" attribute.
