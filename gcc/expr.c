@@ -5419,10 +5419,10 @@ get_memory_usage_from_modifier (modifier)
     }
 }
 
-/* Given an rtx VALUE that may contain additions and multiplications,
-   return an equivalent value that just refers to a register or memory.
-   This is done by generating instructions to perform the arithmetic
-   and returning a pseudo-register containing the value.
+/* Given an rtx VALUE that may contain additions and multiplications, return
+   an equivalent value that just refers to a register, memory, or constant.
+   This is done by generating instructions to perform the arithmetic and
+   returning a pseudo-register containing the value.
 
    The returned value may be a REG, SUBREG, MEM or constant.  */
 
