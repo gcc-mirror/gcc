@@ -40,15 +40,19 @@ package java.lang;
 
 import gnu.java.util.EmptyEnumeration;
 import java.lang.reflect.Constructor;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.security.AllPermission;
 import java.security.Permission;
 import java.security.Permissions;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * java.lang.VMClassLoader is a package-private helper for VMs to implement

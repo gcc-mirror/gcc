@@ -24,6 +24,7 @@ details.  */
 #include <java/lang/VMClassLoader.h>
 #include <java/lang/VMCompiler.h>
 #include <gnu/gcj/runtime/VMClassLoader.h>
+#include <gnu/gcj/runtime/SystemClassLoader.h>
 #include <java/lang/ClassLoader.h>
 #include <java/lang/Class.h>
 #include <java/lang/Throwable.h>
@@ -114,7 +115,7 @@ java::lang::ClassLoader *
 java::lang::VMClassLoader::getSystemClassLoaderInternal()
 {
   _Jv_InitClass (&gnu::gcj::runtime::VMClassLoader::class$);
-  return gnu::gcj::runtime::VMClassLoader::instance;
+  return gnu::gcj::runtime::VMClassLoader::system_instance;
 }
 
 jclass

@@ -1,5 +1,19 @@
 2005-02-02  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/19681:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Added new class.
+	* java/lang/natVMClassLoader.cc (getSystemClassLoaderInternal):
+	Use system_instance, not instance.
+	* gnu/gcj/runtime/SystemClassLoader.java: New file.
+	* gnu/gcj/runtime/VMClassLoader.java (init): Don't search
+	java.class.path.
+	(system_instance): New field.
+	(initialize): Initialize the system loader as well.
+	(VMClassLoader): Default to LIB_CACHE.
+
+2005-02-02  Tom Tromey  <tromey@redhat.com>
+
 	* gnu/gcj/runtime/PersistentByteMap.java: Fixed typo.
 	* prims.cc: Fixed comment.
 
