@@ -1375,13 +1375,14 @@ reload_cse_move2add (rtx first)
 
       /* If INSN is a conditional branch, we try to extract an
 	 implicit set out of it.  */
-      if (any_condjump_p (insn) && onlyjump_p (insn))
+      if (any_condjump_p (insn))
 	{
 	  rtx cnd = fis_get_condition (insn);
 
 	  if (cnd != NULL_RTX
 	      && GET_CODE (cnd) == NE
 	      && REG_P (XEXP (cnd, 0))
+	      && !reg_set_p (XEXP (cnd, 0), insn)
 	      /* The following two checks, which are also in
 		 move2add_note_store, are intended to reduce the
 		 number of calls to gen_rtx_SET to avoid memory
