@@ -1,3 +1,8 @@
+2004-01-20  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	* config/m32r/m32r.h (TARGET_M32R2). Test for TARGET_M32R2_MASK
+	not TARGET_M32RX_MASK.
+
 2004-01-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/13557
