@@ -2269,6 +2269,37 @@ set_nonvarying_address_components (addr, size, pbase, pstart, pend)
       start = INTVAL (XEXP (base, 1));
       base = qty_const[reg_qty[REGNO (XEXP (base, 0))]];
     }
+  /* This can happen as the result of virtual register instantiation,
+     if the inital offset is too large to be a valid address.  */
+  else if (GET_CODE (base) == PLUS
+	   && GET_CODE (XEXP (base, 0)) == REG
+	   && GET_CODE (XEXP (base, 1)) == REG
+	   && qty_const != 0
+	   && REGNO_QTY_VALID_P (REGNO (XEXP (base, 0)))
+	   && (qty_mode[reg_qty[REGNO (XEXP (base, 0))]]
+	       == GET_MODE (XEXP (base, 0)))
+	   && qty_const[reg_qty[REGNO (XEXP (base, 0))]]
+	   && REGNO_QTY_VALID_P (REGNO (XEXP (base, 1)))
+	   && (qty_mode[reg_qty[REGNO (XEXP (base, 1))]]
+	       == GET_MODE (XEXP (base, 1)))
+	   && qty_const[reg_qty[REGNO (XEXP (base, 1))]])
+    {
+      rtx tem = qty_const[reg_qty[REGNO (XEXP (base, 1))]];
+      base = qty_const[reg_qty[REGNO (XEXP (base, 0))]];
+
+      /* One of the two values must be a constant.  */
+      if (GET_CODE (base) != CONST_INT)
+	{
+	  if (GET_CODE (tem) != CONST_INT)
+	    abort ();
+	  start = INTVAL (tem);
+	}
+      else
+	{
+	  start = INTVAL (base);
+	  base = tem;
+	}
+    }
 
   /* Handle everything that we can find inside an address that has been
      viewed as constant.  */
@@ -2437,6 +2468,25 @@ cse_rtx_addr_varies_p (x)
       && (GET_MODE (XEXP (XEXP (x, 0), 0))
 	  == qty_mode[reg_qty[REGNO (XEXP (XEXP (x, 0), 0))]])
       && qty_const[reg_qty[REGNO (XEXP (XEXP (x, 0), 0))]])
+    return 0;
+
+  /* This can happen as the result of virtual register instantiation, if
+     the initial constant is too large to be a valid address.  This gives
+     us a three instruction sequence, load large offset into a register,
+     load fp minus a constant into a register, then a MEM which is the
+     sum of the two `constant' registers.  */
+  if (GET_CODE (x) == MEM
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == REG
+      && REGNO_QTY_VALID_P (REGNO (XEXP (XEXP (x, 0), 0)))
+      && (GET_MODE (XEXP (XEXP (x, 0), 0))
+	  == qty_mode[reg_qty[REGNO (XEXP (XEXP (x, 0), 0))]])
+      && qty_const[reg_qty[REGNO (XEXP (XEXP (x, 0), 0))]]
+      && REGNO_QTY_VALID_P (REGNO (XEXP (XEXP (x, 0), 1)))
+      && (GET_MODE (XEXP (XEXP (x, 0), 1))
+	  == qty_mode[reg_qty[REGNO (XEXP (XEXP (x, 0), 1))]])
+      && qty_const[reg_qty[REGNO (XEXP (XEXP (x, 0), 1))]])
     return 0;
 
   return rtx_addr_varies_p (x);
