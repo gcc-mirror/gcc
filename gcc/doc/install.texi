@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.19 2001/06/11 21:29:37 mmitchel Exp $
+@comment $Id: install.texi,v 1.20 2001/06/12 19:36:53 jsm28 Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -1204,8 +1204,6 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#ix86-*-sco3.2v5*,,i?86-*-sco3.2v5*}
 @item
-@uref{#ix86-*-solaris*,,i?86-*-solaris*}
-@item
 @uref{#ix86-*-udk,,i?86-*-udk}
 @item
 @uref{#ix86-*-isc,,i?86-*-isc}
@@ -1945,19 +1943,6 @@ Affected faults, when analyzed in a debugger, will show a stack
 backtrace with a fault occurring in @code{rtld()} and the program
 running as @file{/usr/lib/ld.so.1}.  This problem has been reported to SCO 
 engineering and will hopefully be addressed in later releases.
-
-
-@html
-</p>
-<hr>
-@end html
-@heading @anchor{ix86-*-solaris*}i?86-*-solaris*
-
-GCC 2.95.2, when configured to use the GNU assembler, would invoke
-it with the @code{-s} switch, that GNU as up to 2.9.5.0.12 does
-not support.  If you'd rather not use a newer GNU as nor the native
-assembler, you'll need the patch 
-@uref{x86-sol2-gas.patch,,@file{x86-sol2-gas.patch}}.
 
 
 @html
@@ -2911,6 +2896,12 @@ error: can't compute value of an expression involving an external symbol.}
 This is Sun bug 4237974.  This is fixed with patch 108908-02 and has
 been fixed in later (5.x) versions of the assembler.
 
+Solaris' /bin/sh will often fail to configure libstdc++-v3, boehm-gc or
+libjava.  If you encounter this problem, set @var{CONFIG_SHELL} to
+@code{/bin/ksh} in your environment and run @samp{make bootstrap} again.
+Another possibility that sometimes helps is to remove
+@code{*-*-solaris*/config.cache}.
+
 @html
 <p>
 <hr>
@@ -2957,15 +2948,15 @@ On Solaris 2, trying to use the linker and other tools in
 For example, the linker may hang indefinitely.  The fix is to remove
 @file{/usr/ucb} from your @code{PATH}.
 
-binutils 2.9.1 has known bugs on this platform. We recommend to use
-binutils 2.10 or the vendor tools (Sun as, Sun ld).
+All releases of GNU binutils prior to 2.11.1 have known bugs on this
+platform. We recommend the use of GNU binutils 2.11.1 or the vendor
+tools (Sun as, Sun ld).
 
 Unfortunately, C++ shared libraries, including libstdc++, won't work
 properly if assembled with Sun as: the linker will complain about
 relocations in read-only sections, in the definition of virtual
 tables. Also, Sun as fails to process long symbols resulting from
 mangling template-heavy C++ function names.
-
 
 @html
 </p>
@@ -3026,6 +3017,12 @@ will assume that any missing type is 'int' (as defined by C89).
 For Solaris 8, this is fixed by revision 24 or later of patch 108652
 (for SPARCs) or 108653 (for Intels).
 
+Solaris 8's linker fails to link some libjava programs if
+previously-installed GCC java libraries already exist in the configured
+prefix.  For this reason, libgcj is disabled by default on Solaris 8.
+If you use GNU ld, or if you don't have a previously-installed libgcj in
+the same prefix, use @option{--enable-libgcj} to build and install the
+Java libraries.
 
 @html
 <p>
