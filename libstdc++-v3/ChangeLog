@@ -2,7 +2,8 @@
 
 	* include/bits/locale_facets.h (ctype<char>): Remove throw specs not in
 	base class signature.
-
+	* config/os/*/bits/ctype_inline.h (is): Same.
+	
 2000-12-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/os/generic/bits/ctype_base.h (ctype_base): Consistency
