@@ -70,7 +70,7 @@ extern const char * const *h8_reg_names;
     }							\
   while (0)
 
-#define LINK_SPEC "%{mh:-m h8300h} %{ms:-m h8300s}"
+#define LINK_SPEC "%{mh:%{mn:-m h8300hn}} %{mh:%{!mn:-m h8300h}} %{ms:%{mn:-m h8300sn}} %{ms:%{!mn:-m h8300s}}"
 
 #define LIB_SPEC "%{mrelax:-relax} %{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 

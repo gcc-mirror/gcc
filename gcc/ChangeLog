@@ -1,5 +1,17 @@
 2003-05-30  Dhananjay Deshpande  <dhananjayd@kpitcummins.com>
 
+	* config/h8300/crti.asm: Use .h8300hn and .h8300sn for normal
+	mode.
+	* config/h8300/crtn.asm: Likewise.
+	* config/h8300/lib1funcs.asm: Likewise.
+	* config/h8300/h8300.c (asm_file_start): Likewise.
+	* config/h8300/elf.h (LINK_SPEC): Use h8300hnelf and
+	h8300snelf emulations for normal mode.
+	* config/h8300/h8300.h (LINK_SPEC): Use h8300hn and h8300sn
+	emulations for normal mode.
+
+2003-05-30  Dhananjay Deshpande  <dhananjayd@kpitcummins.com>
+
 	* config/h8300/h8300.c (h8300_tiny_constant_address_p): Return
 	true if TARGET_NORMAL_MODE.
 
