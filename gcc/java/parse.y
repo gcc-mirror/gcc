@@ -9617,10 +9617,9 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 
       /* We have a type name. It's been already resolved when the
 	 expression was qualified. */
-      else if (RESOLVE_TYPE_NAME_P (qual_wfl))
+      else if (RESOLVE_TYPE_NAME_P (qual_wfl) && QUAL_RESOLUTION (q))
 	{
-	  if (!(decl = QUAL_RESOLUTION (q)))
-	    return 1;		/* Error reported already */
+	  decl = QUAL_RESOLUTION (q);
 
 	  /* Sneak preview. If next we see a `new', we're facing a
 	     qualification with resulted in a type being selected
@@ -9648,7 +9647,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	  type = TREE_TYPE (decl);
 	  from_type = 1;
 	}
-      /* We resolve and expression name */
+      /* We resolve an expression name */
       else 
 	{
 	  tree field_decl = NULL_TREE;
@@ -9682,6 +9681,16 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 			*where_found = TREE_TYPE (*where_found);
 		    }
 		}
+	    }
+
+	  /* Report and error if we're using a numerical litteral as a
+             qualifier. It can only be an INTEGER_CST. */
+	  else if (TREE_CODE (qual_wfl) == INTEGER_CST)
+	    {
+	      parse_error_context
+		(wfl, "Can't use type `%s' as a qualifier",
+		 lang_printable_name (TREE_TYPE (qual_wfl), 0));
+	      return 1;
 	    }
 
 	  /* We have to search for a field, knowing the type of its

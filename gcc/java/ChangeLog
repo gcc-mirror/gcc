@@ -8,6 +8,12 @@
 	* jcf-write.c (generate_bytecode_insns): Generate an integer to
 	real conversion for increments and decrements of reals.
 
+2001-08-27  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (resolve_qualified_expression_name): Handle unresolved
+	qualified expressions, prevent numerical qualifiers, fixed typo.
+	Fixes PR java/4141
+
 2001-08-24  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (check_deprecation): Handle TYPE_DECL in a special case,
@@ -37,6 +43,7 @@
 	descriptor.
 	* class.c (make_method_value): Compute `throws' field for method.
 
+>>>>>>> 1.790
 2001-08-22  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (resolve_inner_class): Keep local_enclosing to NULL if
@@ -62,6 +69,7 @@
 	superclass if necessary.
 	Fixes PR java/4007
 
+>>>>>>> 1.785
 2001-08-16  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-dump.c (main): Updated for change to jcf_path_seal.
