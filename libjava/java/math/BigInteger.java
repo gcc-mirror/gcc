@@ -1,5 +1,5 @@
 /* java.math.BigInteger -- Arbitary precision integers
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -110,6 +110,12 @@ public class BigInteger extends Number implements Comparable
       109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181,
       191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251 };
 
+  /** HAC (Handbook of Applied Cryptography), Alfred Menezes & al. Table 4.4. */
+  private static final int[] k =
+      {100,150,200,250,300,350,400,500,600,800,1250, Integer.MAX_VALUE};
+  private static final int[] t =
+      { 27, 18, 15, 12,  9,  8,  7,  6,  5,  4,   3, 2};
+
   private BigInteger()
   {
   }
@@ -218,27 +224,18 @@ public class BigInteger extends Number implements Comparable
   }
 
   /** Return a (possibly-shared) BigInteger with a given long value. */
-  private static BigInteger make(long value)
+  public static BigInteger valueOf(long val)
   {
-    if (value >= minFixNum && value <= maxFixNum)
-      return smallFixNums[(int)value - minFixNum];
-    int i = (int) value;
-    if ((long)i == value)
+    if (val >= minFixNum && val <= maxFixNum)
+      return smallFixNums[(int) val - minFixNum];
+    int i = (int) val;
+    if ((long) i == val)
       return new BigInteger(i);
     BigInteger result = alloc(2);
     result.ival = 2;
     result.words[0] = i;
-    result.words[1] = (int) (value >> 32);
+    result.words[1] = (int)(val >> 32);
     return result;
-  }
-
-  // FIXME: Could simply rename 'make' method above as valueOf while
-  // changing all instances of 'make'.  Don't do this until this class
-  // is done as the Kawa class this is based on has 'make' methods
-  // with other parameters; wait to see if they are used in BigInteger.
-  public static BigInteger valueOf(long val)
-  {
-    return make(val);
   }
 
   /** Make a canonicalized BigInteger from an array of words.
@@ -246,10 +243,10 @@ public class BigInteger extends Number implements Comparable
   private static BigInteger make(int[] words, int len)
   {
     if (words == null)
-      return make(len);
+      return valueOf(len);
     len = BigInteger.wordsNeeded(words, len);
     if (len <= 1)
-      return len == 0 ? ZERO : make(words[0]);
+      return len == 0 ? ZERO : valueOf(words[0]);
     BigInteger num = new BigInteger();
     num.words = words;
     num.ival = len;
@@ -267,15 +264,15 @@ public class BigInteger extends Number implements Comparable
     int bptr = 0;
     int word = sign;
     for (int i = bytes.length % 4; i > 0; --i, bptr++)
-      word = (word << 8) | (((int) bytes[bptr]) & 0xff);
+      word = (word << 8) | (bytes[bptr] & 0xff);
     words[--nwords] = word;
 
     // Elements remaining in byte[] are a multiple of 4.
     while (nwords > 0)
       words[--nwords] = bytes[bptr++] << 24 |
-			(((int) bytes[bptr++]) & 0xff) << 16 |
-			(((int) bytes[bptr++]) & 0xff) << 8 |
-			(((int) bytes[bptr++]) & 0xff);
+			(bytes[bptr++] & 0xff) << 16 |
+			(bytes[bptr++] & 0xff) << 8 |
+			(bytes[bptr++] & 0xff);
     return words;
   }
 
@@ -284,9 +281,8 @@ public class BigInteger extends Number implements Comparable
    */
   private static BigInteger alloc(int nwords)
   {
-    if (nwords <= 1)
-      return new BigInteger();
     BigInteger result = new BigInteger();
+    if (nwords > 1)
     result.words = new int[nwords];
     return result;
   }
@@ -376,12 +372,6 @@ public class BigInteger extends Number implements Comparable
     return compareTo(this, val) > 0 ? this : val;
   }
 
-  private final boolean isOdd()
-  {
-    int low = words == null ? ival : words[0];
-    return (low & 1) != 0;
-  }
-
   private final boolean isZero()
   {
     return words == null && ival == 0;
@@ -390,11 +380,6 @@ public class BigInteger extends Number implements Comparable
   private final boolean isOne()
   {
     return words == null && ival == 1;
-  }
-
-  private final boolean isMinusOne()
-  {
-    return words == null && ival == -1;
   }
 
   /** Calculate how many words are significant in words[0:len-1].
@@ -433,14 +418,14 @@ public class BigInteger extends Number implements Comparable
 	words = null;
       }
     if (words == null && ival >= minFixNum && ival <= maxFixNum)
-      return smallFixNums[(int) ival - minFixNum];
+      return smallFixNums[ival - minFixNum];
     return this;
   }
 
   /** Add two ints, yielding a BigInteger. */
   private static final BigInteger add(int x, int y)
   {
-    return BigInteger.make((long) x + (long) y);
+    return valueOf((long) x + (long) y);
   }
 
   /** Add a BigInteger and an int, yielding a new BigInteger. */
@@ -526,13 +511,13 @@ public class BigInteger extends Number implements Comparable
   private static BigInteger add(BigInteger x, BigInteger y, int k)
   {
     if (x.words == null && y.words == null)
-      return BigInteger.make((long) k * (long) y.ival + (long) x.ival);
+      return valueOf((long) k * (long) y.ival + (long) x.ival);
     if (k != 1)
       {
 	if (k == -1)
 	  y = BigInteger.neg(y);
 	else
-	  y = BigInteger.times(y, BigInteger.make(k));
+	  y = BigInteger.times(y, valueOf(k));
       }
     if (x.words == null)
       return BigInteger.add(y, x.ival);
@@ -580,7 +565,7 @@ public class BigInteger extends Number implements Comparable
     int[] xwords = x.words;
     int xlen = x.ival;
     if (xwords == null)
-      return BigInteger.make((long) xlen * (long) y);
+      return valueOf((long) xlen * (long) y);
     boolean negative;
     BigInteger result = BigInteger.alloc(xlen + 1);
     if (xwords[xlen - 1] < 0)
@@ -662,7 +647,7 @@ public class BigInteger extends Number implements Comparable
 	xNegative = true;
 	if (x == Long.MIN_VALUE)
 	  {
-	    divide(BigInteger.make(x), BigInteger.make(y),
+	    divide(valueOf(x), valueOf(y),
 		   quotient, remainder, rounding_mode);
 	    return;
 	  }
@@ -684,7 +669,7 @@ public class BigInteger extends Number implements Comparable
 		  remainder.set(x);
 	      }
 	    else
-	      divide(BigInteger.make(x), BigInteger.make(y),
+	      divide(valueOf(x), valueOf(y),
 		      quotient, remainder, rounding_mode);
 	    return;
 	  }
@@ -966,39 +951,6 @@ public class BigInteger extends Number implements Comparable
     return rem.canonicalize();
   }
 
-  /** Calculate power for BigInteger exponents.
-   * @param y exponent assumed to be non-negative. */
-  private BigInteger pow(BigInteger y)
-  {
-    if (isOne())
-      return this;
-    if (isMinusOne())
-      return y.isOdd () ? this : ONE;
-    if (y.words == null && y.ival >= 0)
-      return pow(y.ival);
-
-    // Assume exponent is non-negative.
-    if (isZero())
-      return this;
-
-    // Implemented by repeated squaring and multiplication.
-    BigInteger pow2 = this;
-    BigInteger r = null;
-    for (;;)  // for (i = 0;  ; i++)
-      {
-        // pow2 == x**(2**i)
-        // prod = x**(sum(j=0..i-1, (y>>j)&1))
-        if (y.isOdd())
-          r = r == null ? pow2 : times(r, pow2);  // r *= pow2
-        y = BigInteger.shift(y, -1);
-        if (y.isZero())
-          break;
-        // pow2 *= pow2;
-        pow2 = times(pow2, pow2);
-      }
-    return r == null ? ONE : r;
-  }
-
   /** Calculate the integral power of a BigInteger.
    * @param exponent the exponent (must be non-negative)
    */
@@ -1008,7 +960,6 @@ public class BigInteger extends Number implements Comparable
       {
 	if (exponent == 0)
 	  return ONE;
-	else
 	  throw new ArithmeticException("negative exponent");
       }
     if (isZero())
@@ -1051,51 +1002,36 @@ public class BigInteger extends Number implements Comparable
 
   private static final int[] euclidInv(int a, int b, int prevDiv)
   {
-    // Storage for return values, plus one slot for a temp int (see below).
-    int[] xy;
-
     if (b == 0)
       throw new ArithmeticException("not invertible");
-    else if (b == 1)
-      {
+
+    if (b == 1)
 	// Success:  values are indeed invertible!
 	// Bottom of the recursion reached; start unwinding.
-        xy = new int[3];
-	xy[0] = -prevDiv;
-	xy[1] = 1;
-	return xy;
-      }
+	return new int[] { -prevDiv, 1 };
 
-    xy = euclidInv(b, a % b, a / b);	// Recursion happens here.
-
-    // xy[2] is just temp storage for intermediate results in the following
-    // calculation.  This saves us a bit of space over having an int
-    // allocated at every level of this recursive method.
-    xy[2] = xy[0];
-    xy[0] = xy[2] * -prevDiv + xy[1];
-    xy[1] = xy[2];
+    int[] xy = euclidInv(b, a % b, a / b);	// Recursion happens here.
+    a = xy[0]; // use our local copy of 'a' as a work var
+    xy[0] = a * -prevDiv + xy[1];
+    xy[1] = a;
     return xy;
   }
 
-  private static final BigInteger[]
-    euclidInv(BigInteger a, BigInteger b, BigInteger prevDiv)
+  private static final void euclidInv(BigInteger a, BigInteger b,
+                                      BigInteger prevDiv, BigInteger xy0,
+                                      BigInteger xy1, BigInteger xy2)
   {
-    // FIXME: This method could be more efficient memory-wise and should be
-    // modified as such since it is recursive.
-
-    // Storage for return values, plus one slot for a temp int (see below).
-    BigInteger[] xy;
-
     if (b.isZero())
       throw new ArithmeticException("not invertible");
-    else if (b.isOne())
+
+    if (b.isOne())
       {
 	// Success:  values are indeed invertible!
 	// Bottom of the recursion reached; start unwinding.
-        xy = new BigInteger[3];
-	xy[0] = neg(prevDiv);
-	xy[1] = ONE;
-	return xy;
+        // WARNING: xy1 is, and xy0 may be, a shared BI!
+	xy0 = neg(prevDiv);
+	xy1 = ONE;
+	return;
       }
 
     // Recursion happens in the following conditional!
@@ -1104,9 +1040,8 @@ public class BigInteger extends Number implements Comparable
     if (a.words == null)
       {
         int[] xyInt = euclidInv(b.ival, a.ival % b.ival, a.ival / b.ival);
-        xy = new BigInteger[3];
-	xy[0] = new BigInteger(xyInt[0]);
-	xy[1] = new BigInteger(xyInt[1]);
+	xy0 = new BigInteger(xyInt[0]); // non-shared BI
+	xy1 = new BigInteger(xyInt[1]); // non-shared BI
       }
     else
       {
@@ -1116,16 +1051,15 @@ public class BigInteger extends Number implements Comparable
         // quot and rem may not be in canonical form. ensure
         rem.canonicalize();
         quot.canonicalize();
-        xy = euclidInv(b, rem, quot);
+        euclidInv(b, rem, quot, xy0, xy1, xy2);
       }
 
-    // xy[2] is just temp storage for intermediate results in the following
+    // xy2 is just temp storage for intermediate results in the following
     // calculation.  This saves us a bit of space over having a BigInteger
     // allocated at every level of this recursive method.
-    xy[2] = xy[0];
-    xy[0] = add(xy[1], times(xy[2], prevDiv), -1);
-    xy[1] = xy[2];
-    return xy;
+    xy2 = xy0;
+    xy0 = add(xy1, times(xy2, prevDiv), -1);
+    xy1 = xy2;
   }
 
   public BigInteger modInverse(BigInteger y)
@@ -1136,7 +1070,7 @@ public class BigInteger extends Number implements Comparable
     // Degenerate cases.
     if (y.isOne())
       return ZERO;
-    else if (isOne())
+    if (isOne())
       return ONE;
 
     // Use Euclid's algorithm as in gcd() but do this recursively
@@ -1144,8 +1078,6 @@ public class BigInteger extends Number implements Comparable
     // unwind from the recursion.
     // Used http://www.math.nmsu.edu/~crypto/EuclideanAlgo.html as reference.
     BigInteger result = new BigInteger();
-    int xval = ival;
-    int yval = y.ival;
     boolean swapped = false;
 
     if (y.words == null)
@@ -1156,8 +1088,8 @@ public class BigInteger extends Number implements Comparable
 	// math.  Note that BigInteger.mod() must be used even if this is
 	// already an int as the % operator would provide a negative result if
 	// this is negative, BigInteger.mod() never returns negative values.
-	if (words != null || isNegative())
-	  xval = mod(y).ival;
+        int xval = (words != null || isNegative()) ? mod(y).ival : ival;
+        int yval = y.ival;
 
 	// Swap values so x > y.
 	if (yval > xval)
@@ -1178,16 +1110,13 @@ public class BigInteger extends Number implements Comparable
       }
     else
       {
-	BigInteger x = this;
-
 	// As above, force this to be a positive value via modulo math.
-	if (isNegative())
-	  x = mod(y);
+	BigInteger x = isNegative() ? this.mod(y) : this;
 
 	// Swap values so x > y.
 	if (x.compareTo(y) < 0)
 	  {
-	    BigInteger tmp = x; x = y; y = tmp;
+	    result = x; x = y; y = result; // use 'result' as a work var
 	    swapped = true;
 	  }
 	// As above (for ints), result will be in the 2nd element unless
@@ -1198,7 +1127,10 @@ public class BigInteger extends Number implements Comparable
         // quot and rem may not be in canonical form. ensure
         rem.canonicalize();
         quot.canonicalize();
-	result = euclidInv(y, rem, quot)[swapped ? 0 : 1];
+        BigInteger xy0 = new BigInteger();
+        BigInteger xy1 = new BigInteger();
+        euclidInv(y, rem, quot, xy0, xy1, result);
+	result = swapped ? xy0 : xy1;
 
 	// Result can't be negative, so make it positive by adding the
 	// original modulus, y (which is now x if they were swapped).
@@ -1222,16 +1154,13 @@ public class BigInteger extends Number implements Comparable
     // To do this naively by first raising this to the power of exponent
     // and then performing modulo m would be extremely expensive, especially
     // for very large numbers.  The solution is found in Number Theory
-    // where a combination of partial powers and modulos can be done easily.
+    // where a combination of partial powers and moduli can be done easily.
     //
     // We'll use the algorithm for Additive Chaining which can be found on
     // p. 244 of "Applied Cryptography, Second Edition" by Bruce Schneier.
-    BigInteger s, t, u;
-    int i;
-
-    s = ONE;
-    t = this;
-    u = exponent;
+    BigInteger s = ONE;
+    BigInteger t = this;
+    BigInteger u = exponent;
 
     while (!u.isZero())
       {
@@ -1248,24 +1177,22 @@ public class BigInteger extends Number implements Comparable
   private static final int gcd(int a, int b)
   {
     // Euclid's algorithm, copied from libg++.
+    int tmp;
     if (b > a)
       {
-	int tmp = a; a = b; b = tmp;
+	tmp = a; a = b; b = tmp;
       }
     for(;;)
       {
 	if (b == 0)
 	  return a;
-	else if (b == 1)
+        if (b == 1)
 	  return b;
-	else
-	  {
-	    int tmp = b;
+        tmp = b;
 	    b = a % b;
 	    a = tmp;
 	  }
       }
-  }
 
   public BigInteger gcd(BigInteger y)
   {
@@ -1274,7 +1201,7 @@ public class BigInteger extends Number implements Comparable
     if (words == null)
       {
 	if (xval == 0)
-	  return BigInteger.abs(y);
+	  return abs(y);
 	if (y.words == null
 	    && xval != Integer.MIN_VALUE && yval != Integer.MIN_VALUE)
 	  {
@@ -1282,14 +1209,14 @@ public class BigInteger extends Number implements Comparable
 	      xval = -xval;
 	    if (yval < 0)
 	      yval = -yval;
-	    return BigInteger.make(BigInteger.gcd(xval, yval));
+	    return valueOf(gcd(xval, yval));
 	  }
 	xval = 1;
       }
     if (y.words == null)
       {
 	if (yval == 0)
-	  return BigInteger.abs(this);
+	  return abs(this);
 	yval = 1;
       }
     int len = (xval > yval ? xval : yval) + 1;
@@ -1304,8 +1231,24 @@ public class BigInteger extends Number implements Comparable
     return result.canonicalize();
   }
 
+  /**
+   * <p>Returns <code>true</code> if this BigInteger is probably prime,
+   * <code>false</code> if it's definitely composite. If <code>certainty</code>
+   * is <code><= 0</code>, <code>true</code> is returned.</p>
+   *
+   * @param certainty a measure of the uncertainty that the caller is willing
+   * to tolerate: if the call returns <code>true</code> the probability that
+   * this BigInteger is prime exceeds <code>(1 - 1/2<sup>certainty</sup>)</code>.
+   * The execution time of this method is proportional to the value of this
+   * parameter.
+   * @return <code>true</code> if this BigInteger is probably prime,
+   * <code>false</code> if it's definitely composite.
+   */
   public boolean isProbablePrime(int certainty)
   {
+    if (certainty < 1)
+      return true;
+
     /** We'll use the Rabin-Miller algorithm for doing a probabilistic
      * primality test.  It is fast, easy and has faster decreasing odds of a
      * composite passing than with other tests.  This means that this
@@ -1317,19 +1260,20 @@ public class BigInteger extends Number implements Comparable
      * Cryptography, Second Edition" by Bruce Schneier.
      */
 
-    // First rule out small prime factors and assure the number is odd.
-    for (int i = 0; i < primes.length; i++)
+    // First rule out small prime factors
+    BigInteger rem = new BigInteger();
+    int i;
+    for (i = 0; i < primes.length; i++)
       {
 	if (words == null && ival == primes[i])
 	  return true;
-        if (remainder(make(primes[i])).isZero())
+
+        divide(this, smallFixNums[primes[i] - minFixNum], null, rem, TRUNCATE);
+        if (rem.canonicalize().isZero())
 	  return false;
       }
 
     // Now perform the Rabin-Miller test.
-    // NB: I know that this can be simplified programatically, but
-    // I have tried to keep it as close as possible to the algorithm
-    // as written in the Schneier book for reference purposes.
 
     // Set b to the number of times 2 evenly divides (this - 1).
     // I.e. 2^b is the largest power of 2 that divides (this - 1).
@@ -1337,22 +1281,31 @@ public class BigInteger extends Number implements Comparable
     int b = pMinus1.getLowestSetBit();
 
     // Set m such that this = 1 + 2^b * m.
-    BigInteger m = pMinus1.divide(make(2L << b - 1));
+    BigInteger m = pMinus1.divide(valueOf(2L << b - 1));
 
-    Random rand = new Random();
-    while (certainty-- > 0)
+    // The HAC (Handbook of Applied Cryptography), Alfred Menezes & al. Note
+    // 4.49 (controlling the error probability) gives the number of trials
+    // for an error probability of 1/2**80, given the number of bits in the
+    // number to test.  we shall use these numbers as is if/when 'certainty'
+    // is less or equal to 80, and twice as much if it's greater.
+    int bits = this.bitLength();
+    for (i = 0; i < k.length; i++)
+      if (bits <= k[i])
+        break;
+    int trials = t[i];
+    if (certainty > 80)
+      trials *= 2;
+    BigInteger z;
+    for (int t = 0; t < trials; t++)
       {
-        // Pick a random number greater than 1 and less than this.
-	// The algorithm says to pick a small number to make the calculations
-	// go faster, but it doesn't say how small; we'll use 2 to 1024.
-	int a = rand.nextInt();
-	a = (a < 0 ? -a : a) % 1023 + 2;
-
-	BigInteger z = make(a).modPow(m, this);
+        // The HAC (Handbook of Applied Cryptography), Alfred Menezes & al.
+        // Remark 4.28 states: "...A strategy that is sometimes employed
+        // is to fix the bases a to be the first few primes instead of
+        // choosing them at random.
+	z = smallFixNums[primes[t] - minFixNum].modPow(m, this);
 	if (z.isOne() || z.equals(pMinus1))
 	  continue;			// Passes the test; may be prime.
 
-	int i;
 	for (i = 0; i < b; )
 	  {
 	    if (z.isOne())
@@ -1361,7 +1314,7 @@ public class BigInteger extends Number implements Comparable
 	    if (z.equals(pMinus1))
 	      break;			// Passes the test; may be prime.
 
-	    z = z.modPow(make(2), this);
+	    z = z.modPow(valueOf(2), this);
 	  }
 
 	if (i == b && !z.equals(pMinus1))
@@ -1462,9 +1415,9 @@ public class BigInteger extends Number implements Comparable
     if (x.words == null)
       {
 	if (count <= 0)
-	  return make(count > -32 ? x.ival >> (-count) : x.ival < 0 ? -1 : 0);
+	  return valueOf(count > -32 ? x.ival >> (-count) : x.ival < 0 ? -1 : 0);
 	if (count < 32)
-	  return make((long) x.ival << count);
+	  return valueOf((long) x.ival << count);
       }
     if (count == 0)
       return x;
@@ -1502,7 +1455,6 @@ public class BigInteger extends Number implements Comparable
 	  work = words;
 	int len = ival;
 
-	int buf_size = len * (MPN.chars_per_word(radix) + 1);
 	if (radix == 16)
 	  {
 	    if (neg)
@@ -1555,7 +1507,7 @@ public class BigInteger extends Number implements Comparable
   {
     if (words == null)
       return Integer.toString(ival, radix);
-    else if (ival <= 2)
+    if (ival <= 2)
       return Long.toString(longValue(), radix);
     int buf_size = ival * (MPN.chars_per_word(radix) + 1);
     StringBuffer buffer = new StringBuffer(buf_size);
@@ -1605,7 +1557,7 @@ public class BigInteger extends Number implements Comparable
   {
     if (obj == null || ! (obj instanceof BigInteger))
       return false;
-    return BigInteger.equals(this, (BigInteger) obj);
+    return equals(this, (BigInteger) obj);
   }
 
   private static BigInteger valueOf(String s, int radix)
@@ -1615,7 +1567,7 @@ public class BigInteger extends Number implements Comparable
     // Testing (len < MPN.chars_per_word(radix)) would be more accurate,
     // but slightly more expensive, for little practical gain.
     if (len <= 15 && radix <= 16)
-      return BigInteger.make(Long.parseLong(s, radix));
+      return valueOf(Long.parseLong(s, radix));
     
     int byte_len = 0;
     byte[] bytes = new byte[len];
@@ -1660,8 +1612,7 @@ public class BigInteger extends Number implements Comparable
     if (ival <= 2)
       return (double) longValue();
     if (isNegative())
-      return BigInteger.neg(this).roundToDouble(0, true, false);
-    else
+      return neg(this).roundToDouble(0, true, false);
       return roundToDouble(0, false, false);
   }
 
@@ -1769,7 +1720,6 @@ public class BigInteger extends Number implements Comparable
    * Assumes words.length >= (this.words == null ? 1 : this.ival).
    * Result is zero-extended, but need not be a valid 2's complement number.
    */
-    
   private void getAbsolute(int[] words)
   {
     int len;
@@ -1820,7 +1770,7 @@ public class BigInteger extends Number implements Comparable
 	return;
       }
     realloc(len + 1);
-    if (BigInteger.negate(words, x.words, len))
+    if (negate(words, x.words, len))
       words[len++] = 0;
     ival = len;
   }
@@ -1844,7 +1794,7 @@ public class BigInteger extends Number implements Comparable
   private static BigInteger neg(BigInteger x)
   {
     if (x.words == null && x.ival != Integer.MIN_VALUE)
-      return make(- x.ival);
+      return valueOf(- x.ival);
     BigInteger result = new BigInteger(0);
     result.setNegative(x);
     return result.canonicalize();
@@ -1852,7 +1802,7 @@ public class BigInteger extends Number implements Comparable
 
   public BigInteger negate()
   {
-    return BigInteger.neg(this);
+    return neg(this);
   }
 
   /** Calculates ceiling(log2(this < 0 ? -this : this+1))
@@ -1862,7 +1812,6 @@ public class BigInteger extends Number implements Comparable
   {
     if (words == null)
       return MPN.intLength(ival);
-    else
       return MPN.intLength(words, ival);
   }
 
@@ -1913,7 +1862,7 @@ public class BigInteger extends Number implements Comparable
         case 1:  return x.and(y);
         case 3:  return x;
         case 5:  return y;
-        case 15: return make(-1);
+        case 15: return valueOf(-1);
       }
     BigInteger result = new BigInteger();
     setBitOp(result, op, x, y);
@@ -2111,15 +2060,15 @@ public class BigInteger extends Number implements Comparable
   private static BigInteger and(BigInteger x, int y)
   {
     if (x.words == null)
-      return BigInteger.make(x.ival & y);
+      return valueOf(x.ival & y);
     if (y >= 0)
-      return BigInteger.make(x.words[0] & y);
+      return valueOf(x.words[0] & y);
     int len = x.ival;
     int[] words = new int[len];
     words[0] = x.words[0] & y;
     while (--len > 0)
       words[len] = x.words[len];
-    return BigInteger.make(words, x.ival);
+    return make(words, x.ival);
   }
 
   /** Return the logical (bit-wise) "and" of two BigIntegers. */
@@ -2142,7 +2091,7 @@ public class BigInteger extends Number implements Comparable
       words[i] = x.words[i] & y.words[i];
     for ( ; i < len;  i++)
       words[i] = x.words[i];
-    return BigInteger.make(words, len);
+    return make(words, len);
   }
 
   /** Return the logical (bit-wise) "(inclusive) or" of two BigIntegers. */
