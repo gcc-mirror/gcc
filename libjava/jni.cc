@@ -1,6 +1,6 @@
 // jni.cc - JNI implementation, including the jump table.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -1388,6 +1388,7 @@ static jarray
       elementClass = unwrap (elementClass);
       init = unwrap (init);
 
+      _Jv_CheckCast (elementClass, init);
       jarray result = JvNewObjectArray (length, elementClass, init);
       return (jarray) wrap_value (env, result);
     }
@@ -1402,6 +1403,8 @@ static jobject
 (JNICALL _Jv_JNI_GetObjectArrayElement) (JNIEnv *env, jobjectArray array, 
                                          jsize index)
 {
+  if ((unsigned) index >= (unsigned) array->length)
+    _Jv_ThrowBadArrayIndex (index);
   jobject *elts = elements (unwrap (array));
   return wrap_value (env, elts[index]);
 }
@@ -1416,6 +1419,8 @@ static void
       value = unwrap (value);
 
       _Jv_CheckArrayStore (array, value);
+      if ((unsigned) index >= (unsigned) array->length)
+	_Jv_ThrowBadArrayIndex (index);
       jobject *elts = elements (array);
       elts[index] = value;
     }
