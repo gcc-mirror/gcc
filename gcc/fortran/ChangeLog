@@ -1,3 +1,9 @@
+2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-decl.c (gfc_create_module_variable): Nothing to do if
+	symbol is in common, because we ...
+	(gfc_generate_module_vars): Call gfc_trans_common.
+
 2004-07-10  Paul Brook  <paul@codesourcery.com>
 
 	* trans-array.c (gfc_build_null_descriptor): New function.
