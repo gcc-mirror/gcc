@@ -616,7 +616,18 @@ GC_thread GC_lookup_thread(thread_t id)
     return(p);
 }
 
+/* Solaris 2/Intel uses an initial stack size limit slightly bigger than the
+   SPARC default of 8 MB.  Account for this to warn only if the user has
+   raised the limit beyond the default.
+
+   This is identical to DFLSSIZ defined in <sys/vm_machparam.h>.  This file
+   is installed in /usr/platform/`uname -m`/include, which is not in the
+   default include directory list, so copy the definition here.  */
+#ifdef I386
+# define MAX_ORIG_STACK_SIZE (8 * 1024 * 1024 + ((USRSTACK) & 0x3FFFFF))
+#else
 # define MAX_ORIG_STACK_SIZE (8 * 1024 * 1024)
+#endif
 
 word GC_get_orig_stack_size() {
     struct rlimit rl;
@@ -627,7 +638,7 @@ word GC_get_orig_stack_size() {
     result = (word)rl.rlim_cur & ~(HBLKSIZE-1);
     if (result > MAX_ORIG_STACK_SIZE) {
 	if (!warned) {
-	    WARN("Large stack limit(%ld): only scanning 8 MB", result);
+	    WARN("Large stack limit(%ld): only scanning 8 MB\n", result);
 	    warned = 1;
 	}
 	result = MAX_ORIG_STACK_SIZE;

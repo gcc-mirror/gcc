@@ -1,3 +1,18 @@
+2001-09-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* solaris_threads.c (MAX_ORIG_STACK_SIZE) [I386]: Provide special
+	Solaris 2/Intel definition.
+	(GC_get_orig_stack_size): NL-terminate warning message.
+	
+	* configure.in (i?86-*-solaris2.[89]*): Define
+	SOLARIS25_PROC_VDB_BUG_FIXED.
+	* gcconfig.h [I386 && SUNOS5]: Use it.
+	* configure: Regenerate.
+
+	* gcconfig.h [I386 && SUNOS5] (DATASTART): Use _etext.
+	(DATAEND): Define using _end.
+	(STACKBOTTOM): Define.
+
 2001-08-19  Release Manager
 
 	* GCC 3.0.1 Released.
