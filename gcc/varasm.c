@@ -3513,16 +3513,14 @@ force_const_mem (mode, x)
       const_rtx_hash_table[hash] = desc;
 
       /* Align the location counter as required by EXP's data type.  */
-      align = (mode == VOIDmode) ? UNITS_PER_WORD : GET_MODE_SIZE (mode);
-      if (align > BIGGEST_ALIGNMENT / BITS_PER_UNIT)
-	align = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
+      align = GET_MODE_ALIGNMENT (mode == VOIDmode ? word_mode : mode);
 #ifdef CONSTANT_ALIGNMENT
       align = CONSTANT_ALIGNMENT (make_tree (type_for_mode (mode, 0), x),
-				 align * BITS_PER_UNIT) / BITS_PER_UNIT;
+				  align);
 #endif
 
-      pool_offset += align - 1;
-      pool_offset &= ~ (align - 1);
+      pool_offset += (align / BITS_PER_UNIT) - 1;
+      pool_offset &= ~ ((align / BITS_PER_UNIT) - 1);
 
       if (GET_CODE (x) == LABEL_REF)
 	LABEL_PRESERVE_P (XEXP (x, 0)) = 1;
@@ -3731,8 +3729,7 @@ output_constant_pool (fnname, fndecl)
 				     pool->align, pool->labelno, done);
 #endif
 
-      if (pool->align > 1)
-	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (pool->align));
+      assemble_align (pool->align);
 
       /* Output the label.  */
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LC", pool->labelno);
