@@ -83,6 +83,7 @@ union hashval
   struct hashnode *aschain;	/* #assert */
 };
 
+typedef struct hashnode HASHNODE;
 struct hashnode {
   struct hashnode *next;	/* double links for easy deletion */
   struct hashnode *prev;
@@ -97,6 +98,8 @@ struct hashnode {
 
 extern HASHNODE *cpp_install	  PARAMS ((cpp_reader *, const U_CHAR *, int,
 					   enum node_type, const char *));
+extern HASHNODE *cpp_lookup	  PARAMS ((cpp_reader *, const U_CHAR *, int));
+extern void free_definition	  PARAMS ((DEFINITION *));
 extern void delete_macro	  PARAMS ((HASHNODE *));
 
 extern MACRODEF create_definition PARAMS ((U_CHAR *, U_CHAR *,

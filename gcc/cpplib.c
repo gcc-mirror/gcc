@@ -93,11 +93,12 @@ static int null_cleanup			PARAMS ((cpp_buffer *, cpp_reader *));
 static int skip_comment			PARAMS ((cpp_reader *, int));
 static int copy_comment			PARAMS ((cpp_reader *, int));
 static void copy_rest_of_line		PARAMS ((cpp_reader *));
+static void skip_rest_of_line		PARAMS ((cpp_reader *));
+static void cpp_skip_hspace		PARAMS ((cpp_reader *));
 static int handle_directive		PARAMS ((cpp_reader *));
 static void pass_thru_directive		PARAMS ((const U_CHAR *, size_t,
 						 cpp_reader *,
 						 const struct directive *));
-static enum cpp_token get_directive_token PARAMS ((cpp_reader *));
 static int read_line_number		PARAMS ((cpp_reader *, int *));
 static U_CHAR *detect_if_not_defined	PARAMS ((cpp_reader *));
 static int consider_directive_while_skipping PARAMS ((cpp_reader *,
@@ -192,12 +193,7 @@ cpp_grow_buffer (pfile, n)
   CPP_SET_WRITTEN (pfile, old_written);
 }
 
-/* Process the string STR as if it appeared as the body of a #define
-   If STR is just an identifier, define it with value 1.
-   If STR has anything after the identifier, then it should
-   be identifier=definition. */
-
-/* Process the string STR as if it appeared as the body of a #define
+/* Process the string STR as if it appeared as the body of a #define.
    If STR is just an identifier, define it with value 1.
    If STR has anything after the identifier, then it should
    be identifier=definition. */
@@ -252,6 +248,21 @@ cpp_assert (pfile, str)
     }
 }
 
+/* Determine whether the identifier ID, of length LEN, is a defined macro.  */
+int
+cpp_defined (pfile, id, len)
+     cpp_reader *pfile;
+     const U_CHAR *id;
+     int len;
+{
+  HASHNODE *hp = cpp_lookup (pfile, id, len);
+  if (hp && hp->type == T_POISON)
+    {
+      cpp_error (pfile, "attempt to use poisoned `%s'", hp->name);
+      return 0;
+    }
+  return (hp != NULL);
+}
 
 static enum cpp_token
 null_underflow (pfile)
@@ -407,7 +418,7 @@ copy_comment (pfile, m)
 
 /* Skip whitespace \-newline and comments.  Does not macro-expand.  */
 
-void
+static void
 cpp_skip_hspace (pfile)
      cpp_reader *pfile;
 {
@@ -508,7 +519,7 @@ copy_rest_of_line (pfile)
    the scan itself.  >75% of calls to copy_r_o_l are from here or
    skip_if_group, which means the common case is to copy stuff into the
    token_buffer only to discard it.  */
-void
+static void
 skip_rest_of_line (pfile)
      cpp_reader *pfile;
 {
@@ -684,11 +695,8 @@ do_define (pfile, keyword)
   if ((hp = cpp_lookup (pfile, mdef.symnam, mdef.symlen)) != NULL)
     {
       int ok = 0;
-      /* Redefining a precompiled key is ok.  */
-      if (hp->type == T_PCSTRING)
-	ok = 1;
       /* Redefining a poisoned identifier is even worse than `not ok'.  */
-      else if (hp->type == T_POISON)
+      if (hp->type == T_POISON)
 	ok = -1;
       /* Redefining a macro is ok if the definitions are the same.  */
       else if (hp->type == T_MACRO)
@@ -713,6 +721,7 @@ do_define (pfile, keyword)
 	{
 	  /* Replace the old definition.  */
 	  hp->type = new_type;
+	  free_definition (hp->value.defn);
 	  hp->value.defn = mdef.defn;
 	}
     }
@@ -986,7 +995,7 @@ output_line_command (pfile, file_change)
 /* Like cpp_get_token, except that it does not read past end-of-line.
    Also, horizontal space is skipped, and macros are popped.  */
 
-static enum cpp_token
+enum cpp_token
 get_directive_token (pfile)
      cpp_reader *pfile;
 {
@@ -1872,8 +1881,13 @@ eval_if_expression (pfile)
   HOST_WIDEST_INT value;
   long old_written = CPP_WRITTEN (pfile);
 
+  /* Work around bug in cpp_get_token where it may mistake an
+     assertion for a directive.  */
+  pfile->only_seen_white = 0;
+
   value = cpp_parse_expr (pfile);
 
+  skip_rest_of_line (pfile);
   CPP_SET_WRITTEN (pfile, old_written); /* Pop */
 
   return value;
@@ -2631,10 +2645,7 @@ cpp_get_token (pfile)
 		return CPP_NAME;
 	      }
 
-	    /* If macro wants an arglist, verify that a '(' follows.
-	       first skip all whitespace, copying it to the output
-	       after the macro name.  Then, if there is no '(',
-	       decide this is not a macro call and leave things that way.  */
+	    /* If macro wants an arglist, verify that a '(' follows.  */
 	    if (hp->type == T_MACRO && hp->value.defn->nargs >= 0)
 	    {
 	      int macbuf_whitespace = 0;
@@ -3130,9 +3141,9 @@ int
 cpp_read_check_assertion (pfile)
      cpp_reader *pfile;
 {
-  U_CHAR *name = CPP_PWRITTEN (pfile);
+  U_CHAR *name;
   int result;
-  HASHNODE *hp;
+  long written = CPP_WRITTEN (pfile);
   
   FORWARD (1);  /* Skip '#' */
   cpp_skip_hspace (pfile);
@@ -3140,15 +3151,21 @@ cpp_read_check_assertion (pfile)
     result = 0;
   else
     {
-      hp = cpp_lookup (pfile, name, CPP_PWRITTEN (pfile) - name);
-      result = (hp != 0);
+      name = pfile->token_buffer + written;
+      result = cpp_defined (pfile, name, CPP_PWRITTEN (pfile) - name);
     }
 
-  pfile->limit = name;
+  CPP_SET_WRITTEN (pfile, written);
   return result;
 }
 
-/* Remember the current position of PFILE.  */
+/* Remember the current position of PFILE so it may be returned to
+   after looking ahead a bit.
+
+   Note that when you set a mark, you _must_ return to that mark.  You
+   may not forget about it and continue parsing.  You may not pop a
+   buffer with an active mark.  You may not call CPP_BUMP_LINE while a
+   mark is active.  */
 
 static void
 parse_set_mark (pfile)

@@ -1,3 +1,39 @@
+2000-02-10  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppexp.c: Don't include cpphash.h.
+	(parse_charconst, cpp_lex): Use cpp_defined.
+	(cpp_lex): Use get_directive_token throughout.  Remove
+	unnecessary cases from switch.  Move assertion-handling code
+	down to OTHER case.
+	(cpp_parse_expr): If we see '+' or '-', check the context to
+	determine if they are unary or binary operators.  Streamline
+	the jumps a bit.  Do not call skip_rest_of_line.
+
+	* cpplib.c: Make skip_rest_of_line and cpp_skip_hspace
+	static.  Export get_directive_token.  Update commentary.
+	(cpp_defined): New function.
+	(do_define): Remove reference to T_PCSTRING.  Call
+	free_definition to release memory for old definition, when
+	redefining a macro.
+	(eval_if_expression): Set only_seen_white to 0 before calling
+	cpp_parse_expr.  Call skip_rest_of_line after it returns.
+	(cpp_read_check_assertion): Don't preserve a pointer into the
+	token buffer across a call to cpp_get_token.
+
+	* Makefile.in (cppexp.o): Don't depend on cpphash.h.
+	* cppfiles.c (redundant_include_p): Use cpp_defined.
+	* cpphash.c (free_definition): New function.
+	(delete_macro): Use it.  Update commentary.
+	* cpphash.h: Typedef HASHNODE here.  Prototype cpp_lookup and
+	free_definition.
+	* cpplib.h: Don't typedef HASHNODE here. Delete T_PCSTRING
+	from enum node_type.  Prototype cpp_defined and get_directive_token.
+	Don't prototype cpp_lookup, skip_rest_of_line, or cpp_skip_hspace.
+
+	* fix-header.c (check_macro_names): Use cpp_defined.
+	(read_scan_file): Set inhibit_warnings and inhibit_errors in
+	the options structure.
+
 2000-02-10  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* c-pragma.c (maximum_field_alignment): Remove duplicate declaration.

@@ -61,8 +61,8 @@ typedef int (*parse_cleanup_t) PARAMS((cpp_buffer *, cpp_reader *));
 extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
 extern enum cpp_token cpp_get_token PARAMS ((cpp_reader *));
-extern void cpp_skip_hspace PARAMS((cpp_reader *));
 extern enum cpp_token cpp_get_non_space_token PARAMS ((cpp_reader *));
+extern enum cpp_token get_directive_token PARAMS ((cpp_reader *));
 
 /* This frees resources used by PFILE. */
 extern void cpp_cleanup PARAMS ((cpp_reader *PFILE));
@@ -139,9 +139,6 @@ struct file_name_map_list;
    Applying cpp_get_token repeatedly yields a stream of pre-processor
    tokens.  Usually, there is only one cpp_reader object active. */
 
-struct hashnode;
-typedef struct hashnode HASHNODE;
-
 struct cpp_reader
 {
   parse_underflow_t get_token;
@@ -169,7 +166,7 @@ struct cpp_reader
 
   /* Hash table of macros and assertions.  See cpphash.c */
 #define HASHSIZE 1403
-  HASHNODE **hashtab;
+  struct hashnode **hashtab;
 
   /* Hash table of other included files.  See cppfiles.c */
 #define ALL_INCLUDE_HASHSIZE 71
@@ -600,7 +597,6 @@ enum node_type {
  T_CONST,	/* Constant string, used by `__SIZE_TYPE__' etc */
  T_MACRO,	/* macro defined by `#define' */
  T_DISABLED,	/* macro temporarily turned off for rescan */
- T_PCSTRING,	/* precompiled string (hashval is KEYDEF *) */
  T_POISON,	/* defined with `#pragma poison' */
  T_UNUSED	/* Used for something not defined.  */
  };
@@ -686,13 +682,12 @@ extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
 					    unsigned char *, long));
 extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
-extern HASHNODE *cpp_lookup PARAMS ((cpp_reader *, const U_CHAR *, int));
+extern int cpp_defined PARAMS ((cpp_reader *, const U_CHAR *, int));
 
 extern void cpp_reader_init PARAMS ((cpp_reader *));
 extern void cpp_options_init PARAMS ((cpp_options *));
 extern int cpp_start_read PARAMS ((cpp_reader *, char *));
 extern int cpp_read_check_assertion PARAMS ((cpp_reader *));
-extern void skip_rest_of_line PARAMS ((cpp_reader *));
 extern void cpp_finish PARAMS ((cpp_reader *));
 
 extern void quote_string		PARAMS ((cpp_reader *, const char *));

@@ -603,7 +603,7 @@ check_macro_names (pfile, names)
 {
   while (*names)
     {
-      if (cpp_lookup (pfile, names, -1))
+      if (cpp_defined (pfile, names, -1))
 	recognized_macro (names);
       names += strlen (names) + 1;
     }
@@ -626,6 +626,10 @@ read_scan_file (in_fname, argc, argv)
   cpp_reader_init (&scan_in);
   scan_in.opts = &scan_options;
   cpp_options_init (&scan_options);
+  /* We are going to be scanning a header file out of its proper context,
+     so ignore warnings and errors.  */
+  scan_options.inhibit_warnings = 1;
+  scan_options.inhibit_errors = 1;
   i = cpp_handle_options (&scan_in, argc, argv);
   if (i < argc && ! CPP_FATAL_ERRORS (&scan_in))
     cpp_fatal (&scan_in, "Invalid option `%s'", argv[i]);
