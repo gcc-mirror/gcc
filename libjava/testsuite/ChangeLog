@@ -1,3 +1,8 @@
+2002-06-12  Tom Tromey  <tromey@redhat.com>
+
+	* lib/libjava.exp (test_libjava): Fixed typo.
+	* libjava.compile/PR6865.xfail: New file.
+
 2002-06-11  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.compile/PR6865.java: New file.  For PR java/6865.
