@@ -1,3 +1,12 @@
+2005-01-08  Mark Wielaard  <mark@klomp.org>
+
+	* parse.y (process_imports): Allocate (and free) original_name only
+	when not already defined.
+	* jcf-parse.c (read_class): Free results of find_class() and
+	lrealpath().
+	(java_parse_file): Keep pointer to head of file_list and free when
+	done. Free result of lrealpath().
+
 2005-01-05  Tom Tromey  <tromey@redhat.com>
 
 	* gcj.texi (Standard Properties): java.ext.dirs is now used.
