@@ -2769,6 +2769,8 @@ extern int is_fp_dest ();
 extern int is_fp_store ();
 extern int agi_dependent ();
 extern int reg_mentioned_in_mem ();
+extern char *output_int_conditional_move ();
+extern char *output_fp_conditional_move ();
 
 #ifdef NOTYET
 extern struct rtx_def *copy_all_rtx ();

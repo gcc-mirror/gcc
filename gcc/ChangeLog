@@ -1,5 +1,8 @@
 Sat Jun 20 00:36:16 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* i386.h (output_int_conditional_move): Declare.
+	(output_fp_conditional_move): Likewise.
+
 	* optabs.c (init_traps): Put prototype inside a suitable #ifdef.
 
 Sat Jun 20 00:27:40 1998  Graham  <grahams@rcp.co.uk>
