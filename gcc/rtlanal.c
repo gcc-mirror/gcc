@@ -1573,7 +1573,9 @@ reg_overlap_mentioned_p (x, in)
   unsigned int regno, endregno;
 
   /* Overly conservative.  */
-  if (GET_CODE (x) == STRICT_LOW_PART)
+  if (GET_CODE (x) == STRICT_LOW_PART
+      || GET_CODE (x) == ZERO_EXTRACT
+      || GET_CODE (x) == SIGN_EXTRACT)
     x = XEXP (x, 0);
 
   /* If either argument is a constant, then modifying X can not affect IN.  */
