@@ -3501,13 +3501,13 @@ print_operand (file, x, code)
 	case NE:
 	  fputs ("=", file);  break;
 	case GT:
-	  fputs ("!>", file);  break;
+	  fputs ("<=", file);  break;
 	case GE:
-	  fputs ("!>=", file);  break;
+	  fputs ("<", file);  break;
 	case LT:
-	  fputs ("!<", file);  break;
+	  fputs (">=", file);  break;
 	case LE:
-	  fputs ("!<=", file);  break;
+	  fputs (">", file);  break;
 	default:
 	  abort ();
 	}
