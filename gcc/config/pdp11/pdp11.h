@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -838,7 +838,7 @@ extern int current_function_pretend_args_size;
 	&& REG_OK_FOR_BASE_P (XEXP (xfoob, 0)))				\
       goto ADDR;							\
 									\
-  /* anything else is illegal */					\
+  /* anything else is invalid */					\
   fail: ;								\
 }
 
