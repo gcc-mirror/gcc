@@ -678,31 +678,34 @@ enum reg_class
 /* A C statement (sans semicolon) to jump to LABEL for legitimate index RTXs
    used by the macro GO_IF_LEGITIMATE_ADDRESS.  Floating point indices can
    only be small constants. */
-#define GO_IF_LEGITIMATE_INDEX(MODE, BASE_REGNO, INDEX, LABEL)  \
-do \
-{										      \
-  int range;									      \
-										      \
-  if (GET_MODE_CLASS (MODE) == MODE_FLOAT)					      \
-    range = 1024;								      \
-  else										      \
-    {										      \
-      if (INDEX_REGISTER_RTX_P (INDEX))						      \
-	goto LABEL;								      \
-      if (GET_MODE_SIZE (MODE) <= 4  &&  GET_CODE (INDEX) == MULT)		      \
-	{									      \
-	  rtx xiop0 = XEXP (INDEX, 0);						      \
-	  rtx xiop1 = XEXP (INDEX, 1);						      \
-	  if (INDEX_REGISTER_RTX_P (xiop0) &&  power_of_two_operand (xiop1, SImode))  \
-	    goto LABEL;								      \
-	  if (INDEX_REGISTER_RTX_P (xiop1) &&  power_of_two_operand (xiop0, SImode))  \
-	    goto LABEL;								      \
-	}									      \
-      range = 4096;								      \
-    }										      \
-										      \
-    if (GET_CODE (INDEX) == CONST_INT && abs (INTVAL (INDEX)) < range)  	      \
-      goto LABEL;								      \
+#define GO_IF_LEGITIMATE_INDEX(MODE, BASE_REGNO, INDEX, LABEL)		\
+do									\
+{									\
+  int range;								\
+									\
+  if (GET_MODE_CLASS (MODE) == MODE_FLOAT)				\
+    range = 1024;							\
+  else									\
+    {									\
+      if (INDEX_REGISTER_RTX_P (INDEX))					\
+	goto LABEL;							\
+      if (GET_MODE_SIZE (MODE) <= 4  &&  GET_CODE (INDEX) == MULT)	\
+	{								\
+	  rtx xiop0 = XEXP (INDEX, 0);					\
+	  rtx xiop1 = XEXP (INDEX, 1);					\
+	  if (INDEX_REGISTER_RTX_P (xiop0)				\
+	      && power_of_two_operand (xiop1, SImode))			\
+	    goto LABEL;							\
+	  if (INDEX_REGISTER_RTX_P (xiop1)				\
+	      && power_of_two_operand (xiop0, SImode))			\
+	    goto LABEL;							\
+	}								\
+      range = 4096;							\
+    }									\
+									\
+    if (GET_CODE (INDEX) == CONST_INT && INTVAL (INDEX) < range		\
+	&& INTVAL (INDEX) > -range)					\
+      goto LABEL;							\
 } while (0)
 
 /* Jump to LABEL if X is a valid address RTX.  This must also take
