@@ -1,3 +1,13 @@
+2001-10-01  Tom Tromey  <tromey@redhat.com>
+
+	* prims.cc (_Jv_NewMultiArrayUnchecked): New method.
+	(_Jv_NewMultiArray): Use it.  Check each array dimension.
+	(_Jv_NewMultiArray): Likewise.
+	* java/lang/reflect/natMethod.cc (can_widen): Nothing promotes to
+	`char'.
+	* java/lang/reflect/natArray.cc (newInstance): Throw
+	IllegalArgumentException if there are no dimensions.
+
 2001-10-01  Mark Wielaard  <mark@klomp.org>
 
 	* java/io/FileWriter.java: Merge with Classpath.
