@@ -45,11 +45,9 @@ import java.io.Serializable;
  * @author Warren Levy <warrenl@redhat.com>
  * @date June 14, 2001
  */
-
 public interface Attribute extends Cloneable, Serializable
 {
-  // FIXME: Need to set value from JNDI 1.1.1 fro interoperability.
-  // public static final long serialVersionUID = ;
+  public static final long serialVersionUID = 8707690322213556804L;
 
   public NamingEnumeration getAll() throws NamingException;
   public Object get() throws NamingException;
