@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.27 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -66,6 +66,16 @@ package body Exp_Ch8 is
    --  set the flag Is_Renaming_Of_Object which means that any reference
    --  to the object will be handled by macro substitution in the front
    --  end, and the back end will know to ignore the renaming declaration.
+
+   --  An additional odd case that requires processing by expansion is
+   --  the renaming of a discriminant of a mutable record type. The object
+   --  is a constant because it renames something that cannot be assigned to,
+   --  but in fact the underlying value can change and must be reevaluated
+   --  at each reference. Gigi does have a notion of a "constant view" of
+   --  an object, and therefore the front-end must perform the expansion.
+   --  For simplicity, and to bypass some obscure code-generation problem,
+   --  we use macro substitution for all renamed discriminants, whether the
+   --  enclosing type is constrained or not.
 
    --  The other special processing required is for the case of renaming
    --  of an object of a class wide type, where it is necessary to build
@@ -203,6 +213,13 @@ package body Exp_Ch8 is
          elsif Nkind (Nam) = N_Selected_Component then
             if Present (Component_Clause (Entity (Selector_Name (Nam)))) then
                return True;
+
+            elsif Ekind (Entity (Selector_Name (Nam))) = E_Discriminant
+              and then Is_Record_Type (Etype (Prefix (Nam)))
+              and then not Is_Concurrent_Record_Type (Etype (Prefix (Nam)))
+            then
+               return True;
+
             else
                return Evaluation_Required (Prefix (Nam));
             end if;
