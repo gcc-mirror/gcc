@@ -1,5 +1,11 @@
 2001-08-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md ("cmphi_1", "cmpqi_1"): Allow memory 
+	and soft register for operand 0.
+	("cmphi_z_used", "cmpqi_z_used"): Allow memory for operand 0.
+
+2001-08-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.md ("bitcmpqi"): Allow memory and soft
 	register for operand 0.
 	("bitcmpqi_z_used"): Allow memory for operand 0.
