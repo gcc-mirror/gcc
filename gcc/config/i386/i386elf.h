@@ -46,7 +46,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This used to define X86, but james@bigtex.cactus.org says that
    is supposed to be defined optionally by user programs--not by default.  */
 #define CPP_PREDEFINES \
-  "-Di386 -Acpu(i386) -Amachine(i386)"
+  "-D__i386__ -Acpu(i386) -Amachine(i386)"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu)"
