@@ -761,6 +761,6 @@ convert_to_vector (tree type, tree expr)
 
     default:
       error ("can't convert value to a vector");
-      return convert_to_vector (type, integer_zero_node);
+      return error_mark_node;
     }
 }

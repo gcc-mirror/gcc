@@ -10,6 +10,9 @@
 
 2004-09-10  James E Wilson  <wilson@specifixinc.com>
 
+	* convert.c (convert_to_vector): Replace recursive call with
+	error_mark_node.
+
 	* emit-rtl.c (gen_const_vector): Renamed from gen_const_vector_0.
 	Add integer argument named constant.  Use const_tiny_rtx instead of
 	CONST0_RTX.

@@ -1,3 +1,7 @@
+2004-09-10  James E Wilson  <wilson@specifixinc.com>
+
+	* gcc.dg/convert-vec-1.c: New test.
+
 2004-09-10  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/17024
