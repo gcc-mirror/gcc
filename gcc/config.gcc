@@ -188,6 +188,10 @@ case ${target} in
  | sparclite-*-elf*	\
  | sparc86x-*-elf*	\
  | sparc-*-openbsd*	\
+ | i860-*-sysv4*	\
+ | ip2k-*-elf		\
+ | ns32k-*-netbsdelf*	\
+ | ns32k-*-netbsd*	\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
