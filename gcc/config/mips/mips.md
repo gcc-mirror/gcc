@@ -4073,8 +4073,7 @@ dsrl\t%3,%3,1\n\
   "!TARGET_MIPS16"
   "lwl\t%0,%2"
   [(set_attr "type" "load")
-   (set_attr "mode" "SI")
-   (set_attr "hazard" "none")])
+   (set_attr "mode" "SI")])
 
 (define_insn "mov_lwr"
   [(set (match_operand:SI 0 "register_operand" "=d")
