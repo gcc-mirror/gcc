@@ -2042,8 +2042,8 @@ dnl       controlled by 'style'.
 dnl --disable-symvers does not.
 dnl  +  Usage:  GLIBCPP_ENABLE_SYMVERS[(DEFAULT)]
 dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
-dnl       defaults to `yes'.  Passing `yes' tries to choose a default style
-dnl       based on linker characteristics. Passing 'no' disables versioning.
+dnl       defaults to `no'.  Passing `yes' tries to choose a default style
+dnl       based on linker characteristics.  Passing 'no' disables versioning.
 AC_DEFUN(GLIBCPP_ENABLE_SYMVERS, [dnl
 define([GLIBCPP_ENABLE_SYMVERS_DEFAULT], ifelse($1, yes, yes, no))dnl
 AC_ARG_ENABLE(symvers,
