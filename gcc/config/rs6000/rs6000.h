@@ -351,6 +351,8 @@ extern int target_flags;
   {"no-powerpc-gpopt",	- MASK_PPC_GPOPT},				\
   {"powerpc-gfxopt",	MASK_POWERPC | MASK_PPC_GFXOPT},		\
   {"no-powerpc-gfxopt",	- MASK_PPC_GFXOPT},				\
+  {"powerpc64",		MASK_POWERPC64},				\
+  {"no-powerpc64",	- MASK_POWERPC64},				\
   {"new-mnemonics",	MASK_NEW_MNEMONICS},				\
   {"old-mnemonics",	-MASK_NEW_MNEMONICS},				\
   {"full-toc",		- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC	\
@@ -577,7 +579,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 #define PARM_BOUNDARY (TARGET_32BIT ? 32 : 64)
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
-#define STACK_BOUNDARY 64
+#define STACK_BOUNDARY (TARGET_32BIT ? 64 : 128)
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
@@ -587,7 +589,10 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 
 /* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
 #define ADJUST_FIELD_ALIGN(FIELD, COMPUTED) \
-  (DECL_MODE (FIELD) != DFmode ? (COMPUTED) : MIN ((COMPUTED), 32))
+  (TYPE_MODE (TREE_CODE (TREE_TYPE (FIELD)) == ARRAY_TYPE \
+	      ? get_inner_array_type (FIELD) \
+	      : TREE_TYPE (FIELD)) == DFmode \
+   ? MIN ((COMPUTED), 32) : (COMPUTED))
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
@@ -737,8 +742,8 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.
 
-   On RS/6000, ordinary registers hold 32 bits worth;
-   a single floating point register holds 64 bits worth.  */
+   POWER and PowerPC GPRs hold 32 bits worth;
+   PowerPC64 GPRs and FPRs point register holds 64 bits worth.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   (FP_REGNO_P (REGNO) || FPMEM_REGNO_P (REGNO)				\
@@ -1042,7 +1047,7 @@ enum reg_class
 #define CONST_OK_FOR_LETTER_P(VALUE, C)					\
    ( (C) == 'I' ? (unsigned HOST_WIDE_INT) ((VALUE) + 0x8000) < 0x10000	\
    : (C) == 'J' ? ((VALUE) & 0xffff) == 0				\
-   : (C) == 'K' ? ((VALUE) & 0xffff0000) == 0				\
+   : (C) == 'K' ? ((VALUE) & (~ (HOST_WIDE_INT) 0xffff)) == 0		\
    : (C) == 'L' ? mask_constant (VALUE)					\
    : (C) == 'M' ? (VALUE) > 31						\
    : (C) == 'N' ? exact_log2 (VALUE) >= 0				\
@@ -1068,15 +1073,13 @@ enum reg_class
 
    'Q' means that is a memory operand that is just an offset from a reg.
    'R' is for AIX TOC entries.
-   'S' is for Windows NT SYMBOL_REFs
-   'T' is for Windows NT LABEL_REFs.
+   'S' is a constant that can be placed into a 64-bit mask operand
    'U' is for V.4 small data references.  */
 
 #define EXTRA_CONSTRAINT(OP, C)						\
   ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG	\
    : (C) == 'R' ? LEGITIMATE_CONSTANT_POOL_ADDRESS_P (OP)		\
-   : (C) == 'S' ? (TARGET_WINDOWS_NT && DEFAULT_ABI == ABI_NT && GET_CODE (OP) == SYMBOL_REF)\
-   : (C) == 'T' ? (TARGET_WINDOWS_NT && DEFAULT_ABI == ABI_NT && GET_CODE (OP) == LABEL_REF) \
+   : (C) == 'S' ? mask64_operand (OP, VOIDmode)				\
    : (C) == 'U' ? ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) \
 		   && small_data_operand (OP, GET_MODE (OP)))		\
    : 0)
@@ -1201,7 +1204,7 @@ typedef struct rs6000_stack {
 #define RS6000_SAVE_AREA (TARGET_32BIT ? 24 : 48)
 
 /* Address to save the TOC register */
-#define RS6000_SAVE_TOC plus_constant (stack_pointer_rtx, 20)
+#define RS6000_SAVE_TOC plus_constant (stack_pointer_rtx, (TARGET_32BIT ? 20 : 40))
 
 /* Offset & size for fpmem stack locations used for converting between
    float and integral types.  */
@@ -1319,6 +1322,14 @@ extern int rs6000_sysv_varargs_p;
 #define RETURN_IN_MEMORY(TYPE)						\
   (TYPE_MODE (TYPE) == BLKmode						\
    && (DEFAULT_ABI != ABI_SOLARIS || int_size_in_bytes (TYPE) > 8))
+
+/* Mode of stack savearea.
+   FUNCTION is VOIDmode because calling convention maintains SP.
+   BLOCK needs Pmode for SP.
+   NONLOCAL needs twice Pmode to maintain both backchain and SP.  */
+#define STACK_SAVEAREA_MODE(MODE,LEVEL)	\
+  (LEVEL == SAVE_FUNCTION ? VOIDmode	\
+  : LEVEL == SAVE_NONLOCAL ? (TARGET_32BIT ? DImode : TImode) : Pmode)
 
 /* Minimum and maximum general purpose registers used to hold arguments.  */
 #define GP_ARG_MIN_REG 3
@@ -1723,6 +1734,7 @@ typedef struct rs6000_args
 
 #define LEGITIMATE_CONSTANT_P(X)				\
   (GET_CODE (X) != CONST_DOUBLE || GET_MODE (X) == VOIDmode	\
+   || (TARGET_POWERPC64 && GET_MODE (X) == DImode)		\
    || easy_fp_constant (X, GET_MODE (X)))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
@@ -1777,7 +1789,7 @@ typedef struct rs6000_args
    && CONSTANT_POOL_ADDRESS_P (X)					\
    && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (X)))
 
-/* TARGET_64BIT TOC64 guaranteed to have 64 bit alignment.  */
+/* AIX64 guaranteed to have 64 bit TOC alignment.  */
 #define LEGITIMATE_CONSTANT_POOL_ADDRESS_P(X)				\
   (LEGITIMATE_CONSTANT_POOL_BASE_P (X)					\
    || (TARGET_TOC							\
@@ -2052,10 +2064,9 @@ typedef struct rs6000_args
 #define OBJECT_FORMAT_COFF
 
 /* Define the magic numbers that we recognize as COFF.
-   AIX 4.3 adds U803XTOCMAGIC (0757) for 64-bit executables, but collect2.c
-   does not include these files in the right order to conditionally define
-   the value in the macro.  */
-
+   AIX 4.3 adds U803XTOCMAGIC (0757) for 64-bit objects, but collect2.c
+   does not include files in the correct order to conditionally define
+   the symbolic name in this macro.  */
 #define MY_ISCOFF(magic) \
   ((magic) == U802WRMAGIC || (magic) == U802ROMAGIC \
    || (magic) == U802TOCMAGIC || (magic) == 0757)
@@ -2085,7 +2096,6 @@ typedef struct rs6000_args
 #define Pmode (TARGET_32BIT ? SImode : DImode)
 
 /* Mode of a function address in a call instruction (for indexing purposes).
-
    Doesn't matter on RS/6000.  */
 #define FUNCTION_MODE (TARGET_32BIT ? SImode : DImode)
 
@@ -2130,17 +2140,17 @@ typedef struct rs6000_args
 #define RTX_COSTS(X,CODE,OUTER_CODE)					\
   case PLUS:								\
     return ((GET_CODE (XEXP (X, 1)) == CONST_INT			\
-	     && (unsigned HOST_WIDE_INT) ((INTVAL (XEXP (X, 1))		\
-					   + 0x8000) >= 0x10000))	\
+	     && ((unsigned HOST_WIDE_INT) (INTVAL (XEXP (X, 1))		\
+					   + 0x8000) >= 0x10000)	\
+	     && (INTVAL (XEXP (X, 1)) & 0xffff != 0))			\
 	    ? COSTS_N_INSNS (2)						\
 	    : COSTS_N_INSNS (1));					\
   case AND:								\
-    return ((non_and_cint_operand (XEXP (X, 1), SImode))		\
-	    ? COSTS_N_INSNS (2)						\
-	    : COSTS_N_INSNS (1));					\
   case IOR:								\
   case XOR:								\
-    return ((non_logical_cint_operand (XEXP (X, 1), SImode))		\
+    return ((GET_CODE (XEXP (X, 1)) == CONST_INT			\
+	     && (INTVAL (XEXP (X, 1)) & (~ (HOST_WIDE_INT) 0xffff)) != 0 \
+	     && (INTVAL (XEXP (X, 1)) & 0xffff != 0))			\
 	    ? COSTS_N_INSNS (2)						\
 	    : COSTS_N_INSNS (1));					\
   case MULT:								\
@@ -2306,6 +2316,8 @@ extern int rs6000_trunc_used;
 			   main_input_filename, ".ro_");	\
 								\
   output_file_directive (FILE, main_input_filename);		\
+  if (TARGET_64BIT)						\
+    fputs ("\t.machine\t\"ppc64\"\n", FILE);			\
   toc_section ();						\
   if (write_symbols != NO_DEBUG)				\
     private_data_section ();					\
@@ -2374,7 +2386,7 @@ extern int rs6000_trunc_used;
 
 /* Indicate that jump tables go in the text section.  */
 
-#define JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* Define the routines to implement these extra sections.  */
 
@@ -2468,10 +2480,10 @@ extern int toc_initialized;
     }								\
   fputs (".csect ", FILE);					\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
-  fputs ("[DS]\n", FILE);					\
+  fputs (TARGET_32BIT ? "[DS]\n" : "[DS],3\n", FILE);		\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fputs (":\n", FILE);						\
-  fputs ((TARGET_32BIT) ? "\t.long ." : "\t.llong .", FILE);	\
+  fputs (TARGET_32BIT ? "\t.long ." : "\t.llong .", FILE);	\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fputs (", TOC[tc0], 0\n", FILE);				\
   fputs (".csect .text[PR]\n.", FILE);				\
@@ -2497,8 +2509,11 @@ extern int toc_initialized;
        || GET_CODE (X) == LABEL_REF					\
        || (! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC)		\
 	   && GET_CODE (X) == CONST_DOUBLE				\
-	   && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
+	   && (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
+	       || (TARGET_POWERPC64 && GET_MODE (X) == DImode)))))
+#if 0
 	   && BITS_PER_WORD == HOST_BITS_PER_INT)))
+#endif
 
 /* Select section for constant in constant pool.
 
@@ -2948,7 +2963,7 @@ do {									\
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)		\
   do { char buf[100];					\
-       fputs ((TARGET_32BIT) ? "\t.long " : "\t.llong ", FILE);	\
+       fputs (TARGET_32BIT ? "\t.long " : "\t.llong ", FILE);	\
        ASM_GENERATE_INTERNAL_LABEL (buf, "L", VALUE);	\
        assemble_name (FILE, buf);			\
        putc ('\n', FILE);				\
@@ -2956,9 +2971,9 @@ do {									\
 
 /* This is how to output an element of a case-vector that is relative.  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)	\
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)\
   do { char buf[100];					\
-       fputs ((TARGET_32BIT) ? "\t.long " : "\t.llong ", FILE);	\
+       fputs (TARGET_32BIT ? "\t.long " : "\t.llong ", FILE);	\
        ASM_GENERATE_INTERNAL_LABEL (buf, "L", VALUE);	\
        assemble_name (FILE, buf);			\
        putc ('-', FILE);				\
@@ -3060,15 +3075,16 @@ do {									\
   {"add_operand", {SUBREG, REG, CONST_INT}},			\
   {"non_add_cint_operand", {CONST_INT}},			\
   {"and_operand", {SUBREG, REG, CONST_INT}},			\
-  {"non_and_cint_operand", {CONST_INT}},			\
+  {"and64_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
   {"logical_operand", {SUBREG, REG, CONST_INT}},		\
   {"non_logical_cint_operand", {CONST_INT}},			\
   {"mask_operand", {CONST_INT}},				\
+  {"mask64_operand", {CONST_INT, CONST_DOUBLE}},		\
   {"count_register_operand", {REG}},				\
   {"fpmem_operand", {REG}},					\
   {"call_operand", {SYMBOL_REF, REG}},				\
   {"current_file_function_operand", {SYMBOL_REF}},		\
-  {"input_operand", {SUBREG, MEM, REG, CONST_INT, SYMBOL_REF}},	\
+  {"input_operand", {SUBREG, MEM, REG, CONST_INT, CONST_DOUBLE, SYMBOL_REF}}, \
   {"load_multiple_operation", {PARALLEL}},			\
   {"store_multiple_operation", {PARALLEL}},			\
   {"branch_comparison_operator", {EQ, NE, LE, LT, GE,		\
@@ -3097,7 +3113,6 @@ extern void output_options ();
 extern void rs6000_override_options ();
 extern void rs6000_file_start ();
 extern struct rtx_def *rs6000_float_const ();
-extern struct rtx_def *rs6000_immed_double_const ();
 extern struct rtx_def *rs6000_got_register ();
 extern int direct_return ();
 extern int get_issue_rate ();
@@ -3122,13 +3137,13 @@ extern int add_operand ();
 extern int non_add_cint_operand ();
 extern int non_logical_cint_operand ();
 extern int logical_operand ();
-extern int non_logical_operand ();
 extern int mask_constant ();
 extern int mask_operand ();
+extern int mask64_operand ();
+extern int and64_operand ();
 extern int and_operand ();
 extern int count_register_operand ();
 extern int fpmem_operand ();
-extern int non_and_cint_operand ();
 extern int reg_or_mem_operand ();
 extern int lwa_operand ();
 extern int call_operand ();
