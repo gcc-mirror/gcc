@@ -2703,7 +2703,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	  if (width_mask != 0
 	      && ! (GET_CODE (target) == MEM && MEM_VOLATILE_P (target)))
 	    {
-	      rtx count;
+	      tree count;
 	      enum machine_mode tmode;
 	      if (unsignedp)
 		return expand_and (temp, GEN_INT (width_mask), NULL_RTX);
