@@ -317,8 +317,8 @@ Sun Aug  2 01:10:15 1998  Paul Eggert  <eggert@twinsun.com>
 	Translate strings passed to functions expecting translated
 	strings.
 	(get_spelling): Remove; it was a no-op.  All callers changed.
-	(error_init, pedwarn_init): Now takes just one arg.  All callers
-	and decls changed.  This makes it easier to localize.
+	(error_init, pedwarn_init): Now takes one arg.  All callers changed.
+	* c-tree.h (error_init, pedwarn_init): Likewise.
 	* cccp.c: Include intl.h.
 	(char_name): Remove.
 	(check_macro_name): 2nd arg now int, not char *.  All callers changed.
