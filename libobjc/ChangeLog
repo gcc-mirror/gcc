@@ -1,5 +1,9 @@
 2001-01-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* objc-features.texi: Use @email.
+
+2001-01-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* sendmsg.c (__objc_print_dtable_stats): Don't use #ifdef inside
 	printf.
 
