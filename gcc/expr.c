@@ -174,6 +174,7 @@ static void do_jump_by_parts_equality PARAMS ((tree, rtx, rtx));
 static void do_compare_and_jump	PARAMS ((tree, enum rtx_code, enum rtx_code,
 					 rtx, rtx));
 static rtx do_store_flag	PARAMS ((tree, rtx, enum machine_mode, int));
+static void emit_single_push_insn PARAMS ((enum machine_mode, rtx, tree));
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
@@ -1387,6 +1388,10 @@ convert_modes (mode, oldmode, x, unsignedp)
    from block FROM to block TO.  (These are MEM rtx's with BLKmode).
    The caller must pass FROM and TO
     through protect_from_queue before calling.
+
+   When TO is NULL, the emit_single_push_insn is used to push the
+   FROM to stack.
+
    ALIGN is maximum alignment we can assume.  */
 
 void
@@ -1396,19 +1401,36 @@ move_by_pieces (to, from, len, align)
      unsigned int align;
 {
   struct move_by_pieces data;
-  rtx to_addr = XEXP (to, 0), from_addr = XEXP (from, 0);
+  rtx to_addr, from_addr = XEXP (from, 0);
   unsigned int max_size = MOVE_MAX_PIECES + 1;
   enum machine_mode mode = VOIDmode, tmode;
   enum insn_code icode;
 
   data.offset = 0;
-  data.to_addr = to_addr;
   data.from_addr = from_addr;
-  data.to = to;
+  if (to)
+    {
+      to_addr = XEXP (to, 0);
+      data.to = to;
+      data.autinc_to
+	= (GET_CODE (to_addr) == PRE_INC || GET_CODE (to_addr) == PRE_DEC
+	   || GET_CODE (to_addr) == POST_INC || GET_CODE (to_addr) == POST_DEC);
+      data.reverse
+	= (GET_CODE (to_addr) == PRE_DEC || GET_CODE (to_addr) == POST_DEC);
+    }
+  else
+    {
+      to_addr = NULL_RTX;
+      data.to = NULL_RTX;
+      data.autinc_to = 1;
+#ifdef STACK_GROWS_DOWNWARD
+      data.reverse = 1;
+#else
+      data.reverse = 0;
+#endif
+    }
+  data.to_addr = to_addr;
   data.from = from;
-  data.autinc_to
-    = (GET_CODE (to_addr) == PRE_INC || GET_CODE (to_addr) == PRE_DEC
-       || GET_CODE (to_addr) == POST_INC || GET_CODE (to_addr) == POST_DEC);
   data.autinc_from
     = (GET_CODE (from_addr) == PRE_INC || GET_CODE (from_addr) == PRE_DEC
        || GET_CODE (from_addr) == POST_INC
@@ -1416,8 +1438,6 @@ move_by_pieces (to, from, len, align)
 
   data.explicit_inc_from = 0;
   data.explicit_inc_to = 0;
-  data.reverse
-    = (GET_CODE (to_addr) == PRE_DEC || GET_CODE (to_addr) == POST_DEC);
   if (data.reverse) data.offset = len;
   data.len = len;
 
@@ -1550,14 +1570,17 @@ move_by_pieces_1 (genfun, mode, data)
       if (data->reverse)
 	data->offset -= size;
 
-      if (data->autinc_to)
+      if (data->to)
 	{
-	  to1 = gen_rtx_MEM (mode, data->to_addr);
-	  MEM_COPY_ATTRIBUTES (to1, data->to);
+	  if (data->autinc_to)
+	    {
+	      to1 = gen_rtx_MEM (mode, data->to_addr);
+	      MEM_COPY_ATTRIBUTES (to1, data->to);
+	    }
+	  else
+	    to1 = change_address (data->to, mode,
+				  plus_constant (data->to_addr, data->offset));
 	}
-      else
-	to1 = change_address (data->to, mode,
-			      plus_constant (data->to_addr, data->offset));
 
       if (data->autinc_from)
 	{
@@ -1573,7 +1596,10 @@ move_by_pieces_1 (genfun, mode, data)
       if (HAVE_PRE_DECREMENT && data->explicit_inc_from < 0)
 	emit_insn (gen_add2_insn (data->from_addr, GEN_INT (-size)));
 
-      emit_insn ((*genfun) (to1, from1));
+      if (data->to)
+	emit_insn ((*genfun) (to1, from1));
+      else
+	emit_single_push_insn (mode, from1, NULL);
 
       if (HAVE_POST_INCREMENT && data->explicit_inc_to > 0)
 	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (size)));
@@ -3078,11 +3104,6 @@ push_block (size, extra, below)
   return memory_address (GET_CLASS_NARROWEST_MODE (MODE_INT), temp);
 }
 
-rtx
-gen_push_operand ()
-{
-  return gen_rtx_fmt_e (STACK_PUSH_CODE, Pmode, stack_pointer_rtx);
-}
 
 /* Return an rtx for the address of the beginning of a as-if-it-was-pushed
    block of SIZE bytes.  */
@@ -3101,6 +3122,51 @@ get_push_address (size)
     temp = stack_pointer_rtx;
 
   return copy_to_reg (temp);
+}
+
+/* Emit single push insn.  */
+static void
+emit_single_push_insn (mode, x, type)
+     rtx x;
+     enum machine_mode mode;
+     tree type;
+{
+#ifdef PUSH_ROUNDING
+  rtx dest_addr;
+  int rounded_size = PUSH_ROUNDING (GET_MODE_SIZE (mode));
+  rtx dest;
+
+  if (GET_MODE_SIZE (mode) == rounded_size)
+    dest_addr = gen_rtx_fmt_e (STACK_PUSH_CODE, Pmode, stack_pointer_rtx);
+  else
+    {
+#ifdef STACK_GROWS_DOWNWARD
+      dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				GEN_INT (-rounded_size));
+#else
+      dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				GEN_INT (rounded_size));
+#endif
+      dest_addr = gen_rtx_PRE_MODIFY (Pmode, stack_pointer_rtx, dest_addr);
+    }
+
+  dest = gen_rtx_MEM (mode, dest_addr);
+
+  stack_pointer_delta += PUSH_ROUNDING (GET_MODE_SIZE (mode));
+
+  if (type != 0)
+    {
+      set_mem_attributes (dest, type, 1);
+      /* Function incoming arguments may overlap with sibling call
+         outgoing arguments and we cannot allow reordering of reads
+         from function arguments with stores to outgoing arguments
+         of sibling calls.  */
+      MEM_ALIAS_SET (dest) = 0;
+    }
+  emit_move_insn (dest, x);
+#else
+  abort();
+#endif
 }
 
 /* Generate code to push X onto the stack, assuming it has mode MODE and
@@ -3223,9 +3289,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      && where_pad != none && where_pad != stack_direction)
 	    anti_adjust_stack (GEN_INT (extra));
 
-	  stack_pointer_delta += INTVAL (size) - used;
-	  move_by_pieces (gen_rtx_MEM (BLKmode, gen_push_operand ()), xinner,
-			  INTVAL (size) - used, align);
+	  move_by_pieces (NULL, xinner, INTVAL (size) - used, align);
 
 	  if (current_function_check_memory_usage && ! in_check_memory_usage)
 	    {
@@ -3477,10 +3541,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 
 #ifdef PUSH_ROUNDING
       if (args_addr == 0 && PUSH_ARGS)
-	{
-	  addr = gen_push_operand ();
-	  stack_pointer_delta += PUSH_ROUNDING (GET_MODE_SIZE (mode));
-	}
+	emit_single_push_insn (mode, x, type);
       else
 #endif
 	{
@@ -3493,20 +3554,20 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	    addr = memory_address (mode, gen_rtx_PLUS (Pmode, args_addr,
 						       args_so_far));
 	  target = addr;
-	}
+	  dest = gen_rtx_MEM (mode, addr);
+	  if (type != 0)
+	    {
+	      set_mem_attributes (dest, type, 1);
+	      /* Function incoming arguments may overlap with sibling call
+		 outgoing arguments and we cannot allow reordering of reads
+		 from function arguments with stores to outgoing arguments
+		 of sibling calls.  */
+	      MEM_ALIAS_SET (dest) = 0;
+	    }
 
-      dest = gen_rtx_MEM (mode, addr);
-      if (type != 0)
-	{
-	  set_mem_attributes (dest, type, 1);
-	  /* Function incoming arguments may overlap with sibling call
-	     outgoing arguments and we cannot allow reordering of reads
-	     from function arguments with stores to outgoing arguments
-	     of sibling calls.  */
-	  MEM_ALIAS_SET (dest) = 0;
-	}
+	  emit_move_insn (dest, x);
 
-      emit_move_insn (dest, x);
+	}
 
       if (current_function_check_memory_usage && ! in_check_memory_usage)
 	{
