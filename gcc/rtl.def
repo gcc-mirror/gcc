@@ -779,10 +779,8 @@ DEF_RTL_EXPR(RESX, "resx", "i", 'x')
 DEF_RTL_EXPR(CONST_INT, "const_int", "w", 'o')
 
 /* numeric floating point constant.
-   Operand 0 ('0') is a chain of all CONST_DOUBLEs in use in the
-   current function.
-   Remaining operands hold the actual value.  They are all 'w' and
-   there may be from 1 to 4; see rtl.c.  */
+   Operands hold the value.  They are all 'w' and there may be from 2 to 6;
+   see real.h.  */
 DEF_RTL_EXPR(CONST_DOUBLE, "const_double", CONST_DOUBLE_FORMAT, 'o')
 
 /* Describes a vector constant.  */
