@@ -1,5 +1,10 @@
 2004-11-15  Mark Mitchell <mark@codesourcery.com>
 
+	* config/sparc/sol2.h (SUPPORTS_INIT_PRIORITY): Remove.
+	* config/sol2.h (SUPPORTS_INIT_PRIORITY): Define here.
+
+2004-11-15  Mark Mitchell <mark@codesourcery.com>
+
 	* config/t-slibgcc-sld (SHLIB_LINK): Make symlinks entirely
 	within the multilib directory.
 

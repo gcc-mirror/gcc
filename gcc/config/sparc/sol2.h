@@ -129,9 +129,6 @@ Boston, MA 02111-1307, USA.  */
   ((flag_pic || GLOBAL) ? DW_EH_PE_aligned : DW_EH_PE_absptr)
 #endif
 
-/* The Solaris linker doesn't understand constructor priorities.  */
-#undef SUPPORTS_INIT_PRIORITY
-#define SUPPORTS_INIT_PRIORITY 0
 
 /* Define for support of TFmode long double.
    SPARC ABI says that long double is 4 words.  */
