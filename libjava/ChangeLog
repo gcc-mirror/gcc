@@ -1,5 +1,15 @@
 2003-03-18  Michael Koch  <konqueror@gmx.de>
 
+	* configure.in: Fixed links to platform dependant java.net files.
+	* configure: Regenerated.
+	* java/net/natInetAddress.cc,
+	java/net/natNetworkInterface.cc,
+	java/net/natPlainDatagramSocketImpl.cc,
+	java/net/natPlainSocketImpl.cc:
+	Removed.
+
+2003-03-18  Michael Koch  <konqueror@gmx.de>
+
 	* configure.in: Create links to architecture dependent files,
 	introduced PLATFORMNET variable (set to NoNet for newlib usage).
 	* configure: Regenerated.
