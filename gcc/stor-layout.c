@@ -524,6 +524,20 @@ layout_decl (tree decl, unsigned int known_align)
       SET_DECL_RTL (decl, rtl);
     }
 }
+
+/* Given a VAR_DECL, PARM_DECL or RESULT_DECL, clears the results of
+   a previous call to layout_decl and calls it again.  */
+
+void
+relayout_decl (tree decl)
+{
+  DECL_SIZE (decl) = DECL_SIZE_UNIT (decl) = 0;
+  DECL_MODE (decl) = VOIDmode;
+  DECL_ALIGN (decl) = 0;
+  SET_DECL_RTL (decl, 0);
+
+  layout_decl (decl, 0);
+}
 
 /* Hook for a front-end function that can modify the record layout as needed
    immediately before it is finalized.  */
