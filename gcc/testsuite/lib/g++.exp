@@ -313,7 +313,7 @@ proc g++_target_compile { source dest type options } {
 	if [is_remote host] {
 	    lappend options "additional_flags=$additional_sources"
 	}
-	regsub -all " " $additional_sources " [file dirname $source]/" additional_sources
+	regsub -all "^| " $additional_sources " [file dirname $source]/" additional_sources
 	if ![is_remote host] {
 	    lappend options "additional_flags=$additional_sources"
 	}
