@@ -6231,9 +6231,10 @@ force_to_mode (x, mode, mask, reg, just_select)
 
     case NE:
       /* (and (ne FOO 0) CONST) can be (and FOO CONST) if CONST is included
-	 in STORE_FLAG_VALUE and FOO has no bits that might be nonzero not
-	 in CONST.  */
-      if ((mask & ~ STORE_FLAG_VALUE) == 0 && XEXP (x, 0) == const0_rtx
+	 in STORE_FLAG_VALUE and FOO has a single bit that might be nonzero,
+	 which is in CONST.  */
+      if ((mask & ~ STORE_FLAG_VALUE) == 0 && XEXP (x, 1) == const0_rtx
+	  && exact_log2 (nonzero_bits (XEXP (x, 0), mode)) >= 0
 	  && (nonzero_bits (XEXP (x, 0), mode) & ~ mask) == 0)
 	return force_to_mode (XEXP (x, 0), mode, mask, reg, next_select);
 
@@ -8992,8 +8993,9 @@ simplify_comparison (code, pop0, pop1)
     }
      
   /* If the first operand is a constant, swap the operands and adjust the
-     comparison code appropriately.  */
-  if (CONSTANT_P (op0))
+     comparison code appropriately, but don't do this if the second operand
+     is already a constant integer.  */
+  if (CONSTANT_P (op0) && GET_CODE (op1) != CONST_INT)
     {
       tem = op0, op0 = op1, op1 = tem;
       code = swap_condition (code);
