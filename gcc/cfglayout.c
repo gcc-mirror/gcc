@@ -50,9 +50,6 @@ static void cleanup_unconditional_jumps	PARAMS ((void));
 static void fixup_fallthru_exit_predecessor PARAMS ((void));
 static rtx unlink_insn_chain PARAMS ((rtx, rtx));
 static rtx duplicate_insn_chain PARAMS ((rtx, rtx));
-
-/* Map insn uid to lexical block.  */
-static varray_type insn_scopes;
 
 static rtx
 unlink_insn_chain (first, last)
@@ -219,8 +216,6 @@ scope_to_insns_initialize ()
   tree block = NULL;
   rtx insn, next;
 
-  VARRAY_TREE_INIT (insn_scopes, get_max_uid (), "insn scopes");
-
   for (insn = get_insns (); insn; insn = next)
     {
       next = NEXT_INSN (insn);
@@ -228,7 +223,7 @@ scope_to_insns_initialize ()
       if (active_insn_p (insn)
 	  && GET_CODE (PATTERN (insn)) != ADDR_VEC
 	  && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC)
-	VARRAY_TREE (insn_scopes, INSN_UID (insn)) = block;
+        INSN_SCOPE (insn) = block;
       else if (GET_CODE (insn) == NOTE)
 	{
 	  switch (NOTE_LINE_NUMBER (insn))
@@ -324,13 +319,14 @@ scope_to_insns_finalize ()
      the common parent easily.  */
   set_block_levels (cur_block, 0);
 
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+  insn = get_insns ();
+  if (!active_insn_p (insn))
+    insn = next_active_insn (insn);
+  for (; insn; insn = next_active_insn (insn))
     {
       tree this_block;
 
-      if ((size_t) INSN_UID (insn) >= insn_scopes->num_elements)
-	continue;
-      this_block = VARRAY_TREE (insn_scopes, INSN_UID (insn));
+      this_block = INSN_SCOPE (insn);
       if (! this_block)
 	continue;
 
@@ -340,8 +336,6 @@ scope_to_insns_finalize ()
 	  cur_block = this_block;
 	}
     }
-
-  VARRAY_FREE (insn_scopes);
 
   /* change_scope emits before the insn, not after.  */
   note = emit_note (NULL, NOTE_INSN_DELETED);
@@ -742,10 +736,6 @@ duplicate_insn_chain (from, to)
 	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
 	    break;
 	  new = emit_copy_of_insn_after (insn, get_last_insn ());
-	  /* Record the INSN_SCOPE.  */
-	  VARRAY_GROW (insn_scopes, INSN_UID (new) + 1);
-	  VARRAY_TREE (insn_scopes, INSN_UID (new))
-	    = VARRAY_TREE (insn_scopes, INSN_UID (insn));
 	  break;
 
 	case CODE_LABEL:
@@ -958,8 +948,6 @@ cfg_layout_initialize ()
 
   cleanup_unconditional_jumps ();
 
-  scope_to_insns_initialize ();
-
   record_effective_endpoints ();
 }
 
@@ -975,8 +963,6 @@ cfg_layout_finalize ()
 #ifdef ENABLE_CHECKING
   verify_insn_chain ();
 #endif
-
-  scope_to_insns_finalize ();
 
   free_aux_for_blocks ();
 

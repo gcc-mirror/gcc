@@ -305,8 +305,6 @@ duplicate_loop_exit_test (loop_start)
 	 is a CODE_LABEL
 	 has a REG_RETVAL or REG_LIBCALL note (hard to adjust)
 	 is a NOTE_INSN_LOOP_BEG because this means we have a nested loop
-	 is a NOTE_INSN_BLOCK_{BEG,END} because duplicating these notes
-	      is not valid.
 
      We also do not do this if we find an insn with ASM_OPERANDS.  While
      this restriction should not be necessary, copying an insn with
@@ -326,18 +324,6 @@ duplicate_loop_exit_test (loop_start)
 	case CALL_INSN:
 	  return 0;
 	case NOTE:
-	  /* We could be in front of the wrong NOTE_INSN_LOOP_END if there is
-	     a jump immediately after the loop start that branches outside
-	     the loop but within an outer loop, near the exit test.
-	     If we copied this exit test and created a phony
-	     NOTE_INSN_LOOP_VTOP, this could make instructions immediately
-	     before the exit test look like these could be safely moved
-	     out of the loop even if they actually may be never executed.
-	     This can be avoided by checking here for NOTE_INSN_LOOP_CONT.  */
-
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_CONT)
-	    return 0;
 
 	  if (optimize < 2
 	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
@@ -423,6 +409,7 @@ duplicate_loop_exit_test (loop_start)
 	    replace_regs (PATTERN (copy), reg_map, max_reg, 1);
 
 	  mark_jump_label (PATTERN (copy), copy, 0);
+	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
 
 	  /* Copy all REG_NOTES except REG_LABEL since mark_jump_label will
 	     make them.  */
@@ -448,6 +435,7 @@ duplicate_loop_exit_test (loop_start)
 	case JUMP_INSN:
 	  copy = emit_jump_insn_before (copy_insn (PATTERN (insn)),
 					loop_start);
+	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
 	  if (reg_map)
 	    replace_regs (PATTERN (copy), reg_map, max_reg, 1);
 	  mark_jump_label (PATTERN (copy), copy, 0);

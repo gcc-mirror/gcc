@@ -2570,9 +2570,10 @@ rest_of_compilation (decl)
 	    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_PREDICTION)
 	  delete_insn (insn);
     }
-   close_dump_file (DFI_sibling, print_rtl, get_insns ());
-   timevar_pop (TV_JUMP);
+  close_dump_file (DFI_sibling, print_rtl, get_insns ());
+  timevar_pop (TV_JUMP);
 
+  scope_to_insns_initialize ();
   /* Complete generation of exception handling code.  */
   find_exception_handler_labels ();
   if (doing_eh (0))

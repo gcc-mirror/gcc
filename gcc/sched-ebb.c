@@ -286,8 +286,6 @@ schedule_ebbs (dump_file)
   if (n_basic_blocks == 0)
     return;
 
-  scope_to_insns_initialize ();
-
   sched_init (dump_file);
 
   current_sched_info = &ebb_sched_info;
@@ -354,8 +352,6 @@ schedule_ebbs (dump_file)
 
   if (write_symbols != NO_DEBUG)
     rm_redundant_line_notes ();
-
-  scope_to_insns_finalize ();
 
   sched_finish ();
 }

@@ -303,14 +303,12 @@ extern struct basic_block_def entry_exit_blocks[2];
 #define ENTRY_BLOCK_PTR	(&entry_exit_blocks[0])
 #define EXIT_BLOCK_PTR	(&entry_exit_blocks[1])
 
-extern varray_type basic_block_for_insn;
-#define BLOCK_FOR_INSN(INSN)  VARRAY_BB (basic_block_for_insn, INSN_UID (INSN))
 #define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
+#define set_block_for_insn(INSN, BB)  (BLOCK_FOR_INSN (INSN) = BB)
 
 extern void compute_bb_for_insn		PARAMS ((int));
 extern void free_bb_for_insn		PARAMS ((void));
 extern void update_bb_for_insn		PARAMS ((basic_block));
-extern void set_block_for_insn		PARAMS ((rtx, basic_block));
 
 extern void free_basic_block_vars	PARAMS ((int));
 

@@ -64,9 +64,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define gen_return() NULL_RTX
 #endif
 
-/* The basic block structure for every insn, indexed by uid.  */
-varray_type basic_block_for_insn;
-
 /* The labels mentioned in non-jump rtl.  Valid during find_basic_blocks.  */
 /* ??? Should probably be using LABEL_NUSES instead.  It would take a
    bit of surgery to be able to use or co-opt the routines in jump.  */
@@ -187,9 +184,7 @@ delete_insn_and_edges (insn)
   rtx x;
   bool purge = false;
 
-  if (basic_block_for_insn
-      && INSN_P (insn)
-      && (unsigned int)INSN_UID (insn) < basic_block_for_insn->num_elements
+  if (INSN_P (insn)
       && BLOCK_FOR_INSN (insn)
       && BLOCK_FOR_INSN (insn)->end == insn)
     purge = true;
@@ -232,9 +227,7 @@ delete_insn_chain_and_edges (first, last)
 {
   bool purge = false;
 
-  if (basic_block_for_insn
-      && INSN_P (last)
-      && (unsigned int)INSN_UID (last) < basic_block_for_insn->num_elements
+  if (INSN_P (last)
       && BLOCK_FOR_INSN (last)
       && BLOCK_FOR_INSN (last)->end == last)
     purge = true;
@@ -277,7 +270,7 @@ create_basic_block_structure (index, head, end, bb_note, after)
 	}
 
       if (after != bb_note && NEXT_INSN (after) != bb_note)
-	reorder_insns (bb_note, bb_note, after);
+	reorder_insns_nobb (bb_note, bb_note, after);
     }
   else
     {
@@ -315,8 +308,7 @@ create_basic_block_structure (index, head, end, bb_note, after)
   bb->flags = BB_NEW;
   link_block (bb, after);
   BASIC_BLOCK (index) = bb;
-  if (basic_block_for_insn)
-    update_bb_for_insn (bb);
+  update_bb_for_insn (bb);
 
   /* Tag the block so that we know it has been used when considering
      other basic block notes.  */
@@ -440,11 +432,6 @@ compute_bb_for_insn (max)
 {
   basic_block bb;
 
-  if (basic_block_for_insn)
-    VARRAY_FREE (basic_block_for_insn);
-
-  VARRAY_BB_INIT (basic_block_for_insn, max, "basic_block_for_insn");
-
   FOR_EACH_BB (bb)
     {
       rtx end = bb->end;
@@ -452,9 +439,7 @@ compute_bb_for_insn (max)
 
       for (insn = bb->head; ; insn = NEXT_INSN (insn))
 	{
-	  if (INSN_UID (insn) < max)
-	    VARRAY_BB (basic_block_for_insn, INSN_UID (insn)) = bb;
-
+	  BLOCK_FOR_INSN (insn) = bb;
 	  if (insn == end)
 	    break;
 	}
@@ -466,10 +451,10 @@ compute_bb_for_insn (max)
 void
 free_bb_for_insn ()
 {
-  if (basic_block_for_insn)
-    VARRAY_FREE (basic_block_for_insn);
-
-  basic_block_for_insn = 0;
+  rtx insn;
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) != BARRIER)
+      BLOCK_FOR_INSN (insn) = NULL;
 }
 
 /* Update insns block within BB.  */
@@ -480,35 +465,12 @@ update_bb_for_insn (bb)
 {
   rtx insn;
 
-  if (! basic_block_for_insn)
-    return;
-
   for (insn = bb->head; ; insn = NEXT_INSN (insn))
     {
       set_block_for_insn (insn, bb);
       if (insn == bb->end)
 	break;
     }
-}
-
-/* Record INSN's block as BB.  */
-
-void
-set_block_for_insn (insn, bb)
-     rtx insn;
-     basic_block bb;
-{
-  size_t uid = INSN_UID (insn);
-
-  if (uid >= basic_block_for_insn->num_elements)
-    {
-      /* Add one-eighth the size so we don't keep calling xrealloc.  */
-      size_t new_size = uid + (uid + 7) / 8;
-
-      VARRAY_GROW (basic_block_for_insn, new_size);
-    }
-
-  VARRAY_BB (basic_block_for_insn, uid) = bb;
 }
 
 /* Split a block BB after insn INSN creating a new fallthru edge.
@@ -668,15 +630,12 @@ merge_blocks_nomove (a, b)
   /* Reassociate the insns of B with A.  */
   if (!b_empty)
     {
-      if (basic_block_for_insn)
-	{
-	  rtx x;
+      rtx x;
 
-	  for (x = a_end; x != b_end; x = NEXT_INSN (x))
-	    set_block_for_insn (x, a);
+      for (x = a_end; x != b_end; x = NEXT_INSN (x))
+	set_block_for_insn (x, a);
 
-	  set_block_for_insn (b_end, a);
-	}
+      set_block_for_insn (b_end, a);
 
       a_end = b_end;
     }
@@ -697,8 +656,6 @@ block_label (block)
   if (GET_CODE (block->head) != CODE_LABEL)
     {
       block->head = emit_label_before (gen_label_rtx (), block->head);
-      if (basic_block_for_insn)
-	set_block_for_insn (block->head, block);
     }
 
   return block->head;
@@ -1972,7 +1929,7 @@ verify_flow_info ()
 	}
 
       for (x = bb->head; x != NEXT_INSN (bb->end); x = NEXT_INSN (x))
-	if (basic_block_for_insn && BLOCK_FOR_INSN (x) != bb)
+	if (BLOCK_FOR_INSN (x) != bb)
 	  {
 	    debug_rtx (x);
 	    if (! BLOCK_FOR_INSN (x))

@@ -545,37 +545,37 @@ DEF_RTL_EXPR (ATTR_FLAG, "attr_flag", "s", 'x')
    ---------------------------------------------------------------------- */
 
 /* An instruction that cannot jump.  */
-DEF_RTL_EXPR(INSN, "insn", "iuueiee", 'i')
+DEF_RTL_EXPR(INSN, "insn", "iuuBteiee", 'i')
 
 /* An instruction that can possibly jump.
    Fields ( rtx->fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuueiee0", 'i')
+DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "iuuBteiee0", 'i')
 
 /* An instruction that can possibly call a subroutine
    but which will not change which instruction comes next
    in the current function.
-   Field ( rtx->fld[7] ) is CALL_INSN_FUNCTION_USAGE.
+   Field ( rtx->fld[9] ) is CALL_INSN_FUNCTION_USAGE.
    All other fields ( rtx->fld[] ) have exact same meaning as INSN's.  */
-DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuueieee", 'i')
+DEF_RTL_EXPR(CALL_INSN, "call_insn", "iuuBteieee", 'i')
 
 /* A marker that indicates that control will not flow through.  */
 DEF_RTL_EXPR(BARRIER, "barrier", "iuu", 'x')
 
 /* Holds a label that is followed by instructions.
    Operand:
-   3: is used in jump.c for the use-count of the label.
-   4: is used in flow.c to point to the chain of label_ref's to this label.
-   5: is a number that is unique in the entire compilation.
-   6: is the user-given name of the label, if any.
-   7: is the alternate label name.  */
-DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuu00iss", 'x')
+   4: is used in jump.c for the use-count of the label.
+   5: is used in flow.c to point to the chain of label_ref's to this label.
+   6: is a number that is unique in the entire compilation.
+   7: is the user-given name of the label, if any.
+   8: is the alternate label name.  */
+DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuB00iss", 'x')
      
 /* Say where in the code a source line starts, for symbol table's sake.
    Operand:
-   3: filename, if line number > 0, note-specific data otherwise.
-   4: line number if > 0, enum note_insn otherwise.
-   5: unique number if line number == note_insn_deleted_label.  */
-DEF_RTL_EXPR(NOTE, "note", "iuu0ni", 'x')
+   4: filename, if line number > 0, note-specific data otherwise.
+   5: line number if > 0, enum note_insn otherwise.
+   6: unique number if line number == note_insn_deleted_label.  */
+DEF_RTL_EXPR(NOTE, "note", "iuuB0ni", 'x')
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.

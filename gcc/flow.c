@@ -373,10 +373,14 @@ check_function_return_warnings ()
 	 is no longer in the chain.  */
       if (INSN_UID (cfun->x_clobber_return_insn) < max_uid)
 	{
-	  /* Recompute insn->block mapping, since the initial mapping is
-	     set before we delete unreachable blocks.  */
-	  if (BLOCK_FOR_INSN (cfun->x_clobber_return_insn) != NULL)
-	    warning ("control reaches end of non-void function");
+	  rtx insn;
+
+	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	    if (insn == cfun->x_clobber_return_insn)
+	      {
+	        warning ("control reaches end of non-void function");
+		break;
+	      }
 	}
     }
 }

@@ -566,13 +566,6 @@ loop_optimize (f, dumpfile, flags)
 	scan_loop (loop, flags);
     }
 
-  /* If there were lexical blocks inside the loop, they have been
-     replicated.  We will now have more than one NOTE_INSN_BLOCK_BEG
-     and NOTE_INSN_BLOCK_END for each such block.  We must duplicate
-     the BLOCKs as well.  */
-  if (write_symbols != NO_DEBUG)
-    reorder_blocks ();
-
   end_alias_analysis ();
 
   /* Clean up.  */
@@ -4139,6 +4132,7 @@ emit_prefetch_instructions (loop)
 	  int bytes_ahead = PREFETCH_BLOCK * (ahead + y);
 	  rtx before_insn = info[i].giv->insn;
 	  rtx prev_insn = PREV_INSN (info[i].giv->insn);
+	  rtx seq;
 
 	  /* We can save some effort by offsetting the address on
 	     architectures with offsettable memory references.  */
@@ -4153,13 +4147,16 @@ emit_prefetch_instructions (loop)
 	      loc = reg;
 	    }
 
+	  start_sequence ();
 	  /* Make sure the address operand is valid for prefetch.  */
 	  if (! (*insn_data[(int)CODE_FOR_prefetch].operand[0].predicate)
 		  (loc, insn_data[(int)CODE_FOR_prefetch].operand[0].mode))
 	    loc = force_reg (Pmode, loc);
-	  emit_insn_before (gen_prefetch (loc, GEN_INT (info[i].write),
-					  GEN_INT (3)),
-			    before_insn);
+	  emit_insn (gen_prefetch (loc, GEN_INT (info[i].write),
+				   GEN_INT (3)));
+	  seq = gen_sequence ();
+	  end_sequence ();
+	  emit_insn_before (seq, before_insn);
 
 	  /* Check all insns emitted and record the new GIV
 	     information.  */

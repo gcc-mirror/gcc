@@ -2989,8 +2989,6 @@ schedule_insns (dump_file)
   if (n_basic_blocks == 0)
     return;
 
-  scope_to_insns_initialize ();
-
   nr_inter = 0;
   nr_spec = 0;
 
@@ -3078,8 +3076,6 @@ schedule_insns (dump_file)
   /* Delete redundant line notes.  */
   if (write_symbols != NO_DEBUG)
     rm_redundant_line_notes ();
-
-  scope_to_insns_finalize ();
 
   if (sched_verbose)
     {

@@ -617,8 +617,6 @@ find_basic_blocks (f, nregs, file)
 
   timevar_push (TV_CFG);
 
-  basic_block_for_insn = 0;
-
   /* Flush out existing data.  */
   if (basic_block_info != NULL)
     {
