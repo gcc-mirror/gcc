@@ -123,21 +123,22 @@ HFILES = alloca-conf.h
 # NOTE: If you add new files to the library, add them to this list
 # (alphabetical), and add them to REQUIRED_OFILES or funcs in
 # configure.in.
-CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c \
+CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c	      \
 	bzero.c calloc.c choose-temp.c clock.c concat.c cplus-dem.c fdmatch.c \
-	fnmatch.c getcwd.c getpwd.c getopt.c getopt1.c getpagesize.c \
-	getruntime.c floatformat.c hashtab.c hex.c index.c insque.c memchr.c \
-	memcmp.c memcpy.c memmove.c memset.c mkstemps.c objalloc.c obstack.c \
-	pexecute.c putenv.c random.c rename.c rindex.c setenv.c sigsetmask.c \
-	spaces.c splay-tree.c strcasecmp.c strncasecmp.c strchr.c strdup.c \
-	strerror.c strrchr.c strsignal.c strstr.c strtod.c strtol.c strtoul.c \
-	tmpnam.c vasprintf.c vfork.c vfprintf.c vprintf.c vsprintf.c \
-	waitpid.c xatexit.c xexit.c xmalloc.c xmemdup.c xstrdup.c xstrerror.c
+	fnmatch.c getcwd.c getpwd.c getopt.c getopt1.c getpagesize.c	      \
+	getruntime.c floatformat.c hashtab.c hex.c index.c insque.c memchr.c  \
+	memcmp.c memcpy.c memmove.c memset.c mkstemps.c objalloc.c obstack.c  \
+	partition.c pexecute.c putenv.c random.c rename.c rindex.c	      \
+	setenv.c sigsetmask.c spaces.c splay-tree.c strcasecmp.c	      \
+	strncasecmp.c strchr.c strdup.c strerror.c strrchr.c		      \
+	strsignal.c strstr.c strtod.c strtol.c strtoul.c tmpnam.c	      \
+	vasprintf.c vfork.c vfprintf.c vprintf.c vsprintf.c waitpid.c	      \
+	xatexit.c xexit.c xmalloc.c xmemdup.c xstrdup.c xstrerror.c
 
 # These are always included in the library.
 REQUIRED_OFILES = argv.o choose-temp.o concat.o cplus-dem.o \
   fdmatch.o fnmatch.o getopt.o getopt1.o getpwd.o getruntime.o hashtab.o \
-  hex.o floatformat.o objalloc.o obstack.o pexecute.o spaces.o \
+  hex.o floatformat.o objalloc.o obstack.o partition.o pexecute.o spaces.o \
   splay-tree.o strerror.o strsignal.o xatexit.o xexit.o xmalloc.o \
   xmemdup.o xstrdup.o xstrerror.o
 
@@ -271,6 +272,7 @@ floatformat.o: $(INCDIR)/floatformat.h
 mkstemps.o: config.h
 objalloc.o: $(INCDIR)/objalloc.h
 obstack.o: config.h $(INCDIR)/obstack.h
+partition.o: $(INCDIR)/partition.h
 pexecute.o: config.h $(INCDIR)/libiberty.h
 setenv.o: config.h
 spaces.o: $(INCDIR)/libiberty.h

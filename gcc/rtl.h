@@ -1149,6 +1149,7 @@ void free_EXPR_LIST_node 		PARAMS ((rtx));
 void free_INSN_LIST_node 		PARAMS ((rtx));
 rtx alloc_INSN_LIST			PARAMS ((rtx, rtx));
 rtx alloc_EXPR_LIST			PARAMS ((int, rtx, rtx));
+void clear_log_links                    PARAMS ((rtx));
 
 /* regclass.c */
 
@@ -1709,6 +1710,10 @@ extern rtx addr_side_effect_eval	PARAMS ((rtx, int, int));
 #ifdef STACK_REGS
 extern int stack_regs_mentioned		PARAMS ((rtx insn));
 #endif
+
+/* In ssa.c */
+extern void convert_to_ssa		PARAMS ((void));
+extern void convert_from_ssa		PARAMS ((void));
 
 /* In toplev.c */
 

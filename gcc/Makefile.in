@@ -674,7 +674,7 @@ OBJS = diagnostic.o \
  insn-opinit.o insn-recog.o insn-extract.o insn-output.o insn-emit.o lcm.o \
  profile.o insn-attrtab.o $(out_object_file) $(EXTRA_OBJS) convert.o \
  mbchar.o dyn-string.o splay-tree.o graph.o sbitmap.o resource.o hash.o \
- predict.o lists.o ggc-common.o $(GGC) simplify-rtx.o
+ predict.o lists.o ggc-common.o $(GGC) simplify-rtx.o ssa.o
 
 # GEN files are listed separately, so they can be built before doing parallel
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
@@ -704,6 +704,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  gcov$(exeext) *.bp \
  *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop \
  *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack *.gcse *.flow2 *.peephole2 \
+ *.ssa *.ussa \
  *.[si] libcpp.a \
  $(LANG_STAGESTUFF)
 
@@ -1565,6 +1566,8 @@ resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h system.h \
    insn-attr.h
 lcm.o : lcm.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h insn-attr.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H)
+ssa.o : ssa.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) $(BASIC_BLOCK_H) \
+   output.h insn-config.h
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \
    gcov-io.h $(TREE_H) output.h $(REGS_H) toplev.h function.h insn-config.h \
    ggc.h
@@ -2355,11 +2358,11 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # Delete debugging dump files.
 	-rm -f *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop
 	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack *.addressof
-	-rm -f *.regmove *.mach *.bp *.gcse *.flow2 *.peephole2
+	-rm -f *.regmove *.mach *.bp *.gcse *.flow2 *.peephole2 *.ssa *.ussa
 	-rm -f */*.greg */*.lreg */*.combine */*.flow */*.cse */*.jump */*.rtl
 	-rm -f */*.tree */*.loop */*.dbr */*.jump2 */*.sched */*.cse2
 	-rm -f */*.sched2 */*.stack */*.regmove */*.gcse */*.flow2
-	-rm -f */*.peephole2
+	-rm -f */*.peephole2 */*.ssa */*.ussa
 # Delete some files made during installation.
 	-rm -f specs float.h-* enquire SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 mips-tfile mips-tdump alloca.s

@@ -257,6 +257,7 @@ int stack_reg_dump = 0;
 #ifdef MACHINE_DEPENDENT_REORG
 int mach_dep_reorg_dump = 0;
 #endif
+int ssa_dump = 0;
 static int flag_print_mem = 0;
 static int version_flag = 0;
 static char * filename = 0;
@@ -695,6 +696,9 @@ int flag_gnu_linker = 0;
 int flag_gnu_linker = 1;
 #endif
 
+/* Enable SSA.  */
+int flag_ssa = 0;
+
 /* Tag all structures with __attribute__(packed) */
 int flag_pack_struct = 0;
 
@@ -997,6 +1001,8 @@ lang_independent_options f_options[] =
    "Suppress output of instruction numbers and line number notes in debugging dumps"},
   {"instrument-functions", &flag_instrument_function_entry_exit, 1,
    "Instrument function entry/exit with profiling calls"},
+  {"ssa", &flag_ssa, 1,
+   "Enable SSA optimizations" },
   {"leading-underscore", &flag_leading_underscore, 1,
    "External symbols have a leading underscore" },
   {"ident", &flag_no_ident, 0,
@@ -2152,6 +2158,11 @@ compile_file (name)
       if (graph_dump_format != no_graph)
 	clean_graph_dump_file (dump_base_name, ".03.addressof");
     }
+  if (ssa_dump)
+    {
+      clean_dump_file (".033.ssa");
+      clean_dump_file (".037.ussa");
+    }
   if (gcse_dump)
     {
       clean_dump_file (".04.gcse");
@@ -3125,6 +3136,30 @@ rest_of_compilation (decl)
   if (ggc_p)
     ggc_collect ();
 
+  if (flag_ssa)
+    {
+      if (ssa_dump)
+	open_dump_file (".033.ssa", decl_printable_name (decl, 2));
+      convert_to_ssa ();
+      if (ssa_dump)
+	close_dump_file (print_rtl_with_bb, insns);
+
+      if (ssa_dump)
+	open_dump_file (".037.ussa", decl_printable_name (decl, 2));
+      convert_from_ssa ();
+      /* New registers have been created.  Rescan their usage.  */
+      reg_scan (insns, max_reg_num (), 1);
+      if (ssa_dump)
+	close_dump_file (print_rtl_with_bb, insns);
+
+      /* Life analysis used in SSA adds log_links but these shouldn't
+	 be there until the flow stage, so clear them away.  */
+      clear_log_links (insns);
+
+      if (ggc_p)
+	ggc_collect ();
+    }
+
   /* Perform global cse.  */
 
   if (optimize > 0 && flag_gcse)
@@ -4021,6 +4056,7 @@ decode_d_option (arg)
 	mach_dep_reorg_dump = 1;
 #endif
 	peephole2_dump = 1;
+	ssa_dump = 1;
 	break;
       case 'A':
 	flag_debug_asm = 1;
@@ -4039,6 +4075,9 @@ decode_d_option (arg)
 	dbr_sched_dump = 1;
 	break;
 #endif
+      case 'e':
+	ssa_dump = 1;
+	break;
       case 'f':
 	flow_dump = 1;
 	break;
