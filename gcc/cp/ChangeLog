@@ -1,5 +1,9 @@
 2002-04-09  Jason Merrill  <jason@redhat.com>
 
+	PR optimization/6189
+	* semantics.c (genrtl_start_function): Don't free
+	DECL_SAVED_FUNCTION_DATA for inline functions.
+
 	* init.c (build_member_call): For now, don't convert to
 	intermediate base if it would cause an error.
 
