@@ -259,14 +259,12 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
    : (REGNO) < 32 ? GENERAL_REGS					\
    : (REGNO) < 56 ? FP_REGS						\
    : (REGNO) < 88 ? FPUPPER_REGS					\
-   : (REGNO) < 88 ? FPUPPER_REGS					\
    : SHIFT_REGS)
 
 /* Get reg_class from a letter such as appears in the machine description.  */
 /* Keep 'x' for backward compatibility with user asm.   */
 #define REG_CLASS_FROM_LETTER(C) \
   ((C) == 'f' ? FP_REGS :					\
-   (C) == 'y' ? FPUPPER_REGS :					\
    (C) == 'y' ? FPUPPER_REGS :					\
    (C) == 'x' ? FP_REGS :					\
    (C) == 'q' ? SHIFT_REGS :					\
