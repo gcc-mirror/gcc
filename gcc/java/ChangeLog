@@ -1,3 +1,8 @@
+2002-03-11  Eric Blake  <ebb9@email.byu.edu>
+
+	Fix for PR java/5902:
+	* lex.c (java_lex): Fix parsing of literals.
+
 2002-03-11  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* parse.y (patch_assignment): Wrap the right-hand-side with a save_expr

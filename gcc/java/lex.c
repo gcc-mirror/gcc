@@ -1,5 +1,5 @@
 /* Language lexer for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -994,7 +994,7 @@ java_lex (java_lval)
       /* End borrowed section  */
       char literal_token [256];
       int  literal_index = 0, radix = 10, long_suffix = 0, overflow = 0, bytes;
-      int  found_hex_digits = 0;
+      int  found_hex_digits = 0, found_non_octal_digits = 0;
       int  i;
 #ifndef JC1_LITE
       int  number_beginning = ctxp->c_line->current;
@@ -1056,18 +1056,20 @@ java_lex (java_lval)
 	}
       /* Parse the first part of the literal, until we find something
 	 which is not a number.  */
-      while ((radix == 10 && JAVA_ASCII_DIGIT (c)) ||
-	     (radix == 16 && JAVA_ASCII_HEXDIGIT (c)) ||
-	     (radix == 8  && JAVA_ASCII_OCTDIGIT (c)))
+      while ((radix == 16 && JAVA_ASCII_HEXDIGIT (c)) ||
+	     JAVA_ASCII_DIGIT (c))
 	{
 	  /* We store in a string (in case it turns out to be a FP) and in
 	     PARTS if we have to process a integer literal.  */
 	  int numeric = hex_value (c);
 	  int count;
 
-	  /* Remember when we find a valid hexadecimal digit */
+	  /* Remember when we find a valid hexadecimal digit. */
 	  if (radix == 16)
 	    found_hex_digits = 1;
+          /* Remember when we find an invalid octal digit. */
+          else if (radix == 8 && !JAVA_ASCII_OCTDIGIT (c))
+            found_non_octal_digits = 1;
 
 	  literal_token [literal_index++] = c;
 	  /* This section of code if borrowed from gcc/c-lex.c  */
@@ -1188,19 +1190,14 @@ java_lex (java_lval)
 	    }
 	} /* JAVA_ASCCI_FPCHAR (c) */
 
+      /* Here we get back to converting the integral literal.  */
       if (radix == 16 && ! found_hex_digits)
 	java_lex_error
 	  ("0x must be followed by at least one hexadecimal digit", 0);
-
-      /* Here we get back to converting the integral literal.  */
-      if (c == 'L' || c == 'l')
+      else if (radix == 8 && found_non_octal_digits)
+	java_lex_error ("Octal literal contains digit out of range", 0);
+      else if (c == 'L' || c == 'l')
 	long_suffix = 1;
-      else if (radix == 16 && JAVA_ASCII_LETTER (c))
-	java_lex_error ("Digit out of range in hexadecimal literal", 0);
-      else if (radix == 8  && JAVA_ASCII_DIGIT (c))
-	java_lex_error ("Digit out of range in octal literal", 0);
-      else if (radix == 16 && !literal_index)
-	java_lex_error ("No digit specified for hexadecimal literal", 0);
       else
 	java_unget_unicode ();
 
