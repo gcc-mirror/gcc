@@ -1,3 +1,8 @@
+Tue Sep 18 09:51:11 2001  Eric Christopher  <ecechristo@redhat.com>
+
+        * config/mips/mips.c (mips_asm_file_start): Conditionalize Elf
+        code generation only for Gnu assembler.
+
 2001-09-18  Catherine Moore  <clm@redhat.com>
 
         * config/stormy16 (LIB_SPEC): Remove -lnosys.
