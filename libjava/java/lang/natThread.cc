@@ -16,6 +16,7 @@ details.  */
 #include <jvm.h>
 #include <java-threads.h>
 
+#include <gnu/gcj/RawDataManaged.h>
 #include <java/lang/Thread.h>
 #include <java/lang/ThreadGroup.h>
 #include <java/lang/IllegalArgumentException.h>
@@ -59,11 +60,7 @@ java::lang::Thread::initialize_native (void)
 {
   natThread *nt = (natThread *) _Jv_AllocBytes (sizeof (natThread));
   
-  // The native thread data is kept in a Object field, not a RawData, so that
-  // the GC allocator can be used and a finalizer run after the thread becomes
-  // unreachable. Note that this relies on the GC's ability to finalize 
-  // non-Java objects. FIXME?
-  data = reinterpret_cast<jobject> (nt);
+  data = (gnu::gcj::RawDataManaged *) nt;
   
   // Register a finalizer to clean up the native thread resources.
   _Jv_RegisterFinalizer (data, finalize_native);
