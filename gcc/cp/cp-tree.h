@@ -1642,6 +1642,8 @@ extern int current_function_parms_stored;
 
 #else /* NO_DOT_IN_LABEL */
 
+#define JOINER '_'
+
 #define VPTR_NAME "__vptr"
 #define VPTR_NAME_P(ID_NODE) \
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VPTR_NAME, sizeof (VPTR_NAME) - 1))
