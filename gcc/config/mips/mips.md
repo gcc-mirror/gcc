@@ -92,7 +92,7 @@
 ;;          (const_string "default"))))
 
 ;; ??? Fix everything that tests this attribute.
-(define_attr "cpu" "default,r3000,r6000,r4000,r4600,r8000"
+(define_attr "cpu" "default,r3000,r6000,r4000,r4600,r4650,r8000"
   (const (symbol_ref "mips_cpu_attr")))
 
 ;; Attribute defining whether or not we can use the branch-likely instructions
@@ -150,11 +150,11 @@
 ;; Make the default case (PROCESSOR_DEFAULT) handle the worst case
 
 (define_function_unit "memory" 1 0
-  (and (eq_attr "type" "load") (eq_attr "cpu" "!r3000,r4600"))
+  (and (eq_attr "type" "load") (eq_attr "cpu" "!r3000,r4600,r4650"))
   3 0)
 
 (define_function_unit "memory" 1 0
-  (and (eq_attr "type" "load") (eq_attr "cpu" "r3000,r4600"))
+  (and (eq_attr "type" "load") (eq_attr "cpu" "r3000,r4600,r4650"))
   2 0)
 
 (define_function_unit "memory"   1 0 (eq_attr "type" "store") 1 0)
@@ -166,7 +166,7 @@
   1 3)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "imul") (eq_attr "cpu" "!r3000,r4000,r4600"))
+  (and (eq_attr "type" "imul") (eq_attr "cpu" "!r3000,r4000,r4600,r4650"))
   17 17)
 
 (define_function_unit "imuldiv"  1 0
@@ -178,7 +178,11 @@
   10 10)
 
 (define_function_unit "imuldiv"  1 0
-  (and (eq_attr "type" "idiv") (eq_attr "cpu" "!r3000,r4000,r4600"))
+  (and (eq_attr "type" "imul") (eq_attr "cpu" "r4650"))
+  4 4)
+
+(define_function_unit "imuldiv"  1 0
+  (and (eq_attr "type" "idiv") (eq_attr "cpu" "!r3000,r4000,r4600,r4650"))
   38 38)
 
 (define_function_unit "imuldiv"  1 0
@@ -188,6 +192,10 @@
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "idiv") (eq_attr "cpu" "r4600"))
   42 42)
+
+(define_function_unit "imuldiv"  1 0
+  (and (eq_attr "type" "idiv") (eq_attr "cpu" "r4650"))
+  36 36)
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "idiv") (eq_attr "cpu" "r4000"))
@@ -214,15 +222,15 @@
   3 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "!r3000,r4600"))
+  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "!r3000,r4600,r4650"))
   2 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "r3000,r4600"))
+  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "r3000,r4600,r4650"))
   1 0)
 
 (define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r3000,r6000,r4600")))
+  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r3000,r6000,r4600,r4650")))
   7 0)
 
 (define_function_unit "mult" 1 1
@@ -234,7 +242,7 @@
   5 0)
 
 (define_function_unit "mult" 1 1
-  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600")))
+  (and (eq_attr "type" "fmul") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
   8 0)
 
 (define_function_unit "mult" 1 1
@@ -250,7 +258,7 @@
   6 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r3000,r6000,r4600")))
+  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r3000,r6000,r4600,r4650")))
   23 0)
 
 (define_function_unit "divide" 1 1
@@ -262,11 +270,11 @@
   15 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600")))
+  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
   32 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r6000,r4600")))
+  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r6000,r4600,r4650")))
   36 0)
 
 (define_function_unit "divide" 1 1
@@ -278,23 +286,23 @@
   16 0)
 
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4600")))
+  (and (eq_attr "type" "fdiv") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4600,r4650")))
   61 0)
 
 ;;; ??? Is this number right?
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r4600")))
+  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r4600,r4650")))
   54 0)
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600")))
+  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "SF") (eq_attr "cpu" "r4600,r4650")))
   31 0)
 
 ;;; ??? Is this number right?
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r4600")))
+  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r4600,r4650")))
   112 0)
 (define_function_unit "divide" 1 1
-  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4600")))
+  (and (eq_attr "type" "fsqrt") (and (eq_attr "mode" "DF") (eq_attr "cpu" "r4600,r4650")))
   60 0)
 
 
@@ -826,7 +834,9 @@
   ""
   "
 {
-  if (mips_cpu != PROCESSOR_R4000)
+  if (TARGET_MAD)
+    emit_insn (gen_mulsi3_r4650 (operands[0], operands[1], operands[2]));
+  else if (mips_cpu != PROCESSOR_R4000)
     emit_insn (gen_mulsi3_internal (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_mulsi3_r4000 (operands[0], operands[1], operands[2]));
@@ -865,6 +875,18 @@
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])		;; mult + mflo + delay
+
+(define_insn "mulsi3_r4650"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(mult:SI (match_operand:SI 1 "register_operand" "d")
+		 (match_operand:SI 2 "register_operand" "d")))
+   (clobber (match_scratch:SI 3 "=h"))
+   (clobber (match_scratch:SI 4 "=l"))]
+  "TARGET_MAD"
+  "mul\\t%0,%1,%2"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1")])
 
 (define_expand "muldi3"
   [(set (match_operand:DI 0 "register_operand" "=l")
