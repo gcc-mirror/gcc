@@ -1,3 +1,7 @@
+2003-04-28  Mike Stump  <mrs@apple.com>
+
+	* gdbinit.in: Update to reflect new identifier structure.
+
 2003-04-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* tree.h (TREE_CST_RTL, CST_OR_CONSTRUCTOR_CHECK): Delete.
