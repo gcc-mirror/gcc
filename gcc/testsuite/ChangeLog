@@ -2,6 +2,8 @@
 
 	* gcc.dg/20011029-2.c: New test.
 
+	* gcc.c-torture/compile/20011029-1.c: New test.
+
 Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/execute/class_self-1.m: New test.
