@@ -244,8 +244,7 @@ extern bool c_warn_unused_global_decl (tree);
 
 /* For use with comptypes.  */
 enum {
-  COMPARE_STRICT = 0,
-  COMPARE_DIFFERENT_TU = 1
+  COMPARE_STRICT = 0
 };
 
 extern tree require_complete_type (tree);
