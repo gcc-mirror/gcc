@@ -337,7 +337,7 @@ GNU_xref_decl (fndecl,decl)
    tree decl;
 {
   XREF_FILE xf,xf1;
-  char *cls;
+  char *cls = 0;
   char *name;
   char buf[10240];
   int uselin;

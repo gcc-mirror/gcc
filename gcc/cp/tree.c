@@ -323,7 +323,7 @@ tree
 break_out_calls (exp)
      tree exp;
 {
-  register tree t1, t2;
+  register tree t1, t2 = NULL_TREE;
   register enum tree_code code;
   register int changed = 0;
   register int i;
@@ -574,7 +574,7 @@ propagate_binfo_offsets (binfo, offset)
 	{
 	  int j;
 	  tree base_binfos = BINFO_BASETYPES (base_binfo);
-	  tree delta;
+	  tree delta = NULL_TREE;
 
 	  for (j = i+1; j < n_baselinks; j++)
 	    if (! TREE_VIA_VIRTUAL (TREE_VEC_ELT (binfos, j)))
@@ -1046,7 +1046,7 @@ hash_tree_cons (via_public, via_virtual, via_protected, purpose, value, chain)
 {
   struct obstack *ambient_obstack = current_obstack;
   tree t;
-  int hashcode;
+  int hashcode = 0;
 
   if (! debug_no_list_hash)
     {
@@ -1928,7 +1928,7 @@ can_free (obstack, t)
      struct obstack *obstack;
      tree t;
 {
-  int size;
+  int size = 0;
 
   if (TREE_CODE (t) == TREE_VEC)
     size = (TREE_VEC_LENGTH (t)-1) * sizeof (tree) + sizeof (struct tree_vec);
@@ -1997,10 +1997,12 @@ cp_tree_equal (t1, t2)
   code2 = TREE_CODE (t2);
 
   if (code1 == NOP_EXPR || code1 == CONVERT_EXPR || code1 == NON_LVALUE_EXPR)
-    if (code2 == NOP_EXPR || code2 == CONVERT_EXPR || code2 == NON_LVALUE_EXPR)
-      return cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
-    else
-      return cp_tree_equal (TREE_OPERAND (t1, 0), t2);
+    {
+      if (code2 == NOP_EXPR || code2 == CONVERT_EXPR || code2 == NON_LVALUE_EXPR)
+	return cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
+      else
+	return cp_tree_equal (TREE_OPERAND (t1, 0), t2);
+    }
   else if (code2 == NOP_EXPR || code2 == CONVERT_EXPR
 	   || code2 == NON_LVALUE_EXPR)
     return cp_tree_equal (t1, TREE_OPERAND (t2, 0));

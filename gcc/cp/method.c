@@ -42,6 +42,12 @@ Boston, MA 02111-1307, USA.  */
 #ifdef HAVE_STRING_H
 #include <string.h>
 #else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+
+#ifdef NEED_DECLARATION_INDEX
 extern char *index ();
 #endif
 

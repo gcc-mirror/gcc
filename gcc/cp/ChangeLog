@@ -1,3 +1,127 @@
+Mon Feb  2 00:57:38 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c (user_harshness): Initialize `code' to 0.
+	(build_method_call): Initialize `candidates', `cp' and `len' to 0.
+	(null_ptr_cst_p): Add parentheses around && within ||.
+	(standard_conversion): Likewise.
+	(z_candidate): Likewise.
+	(build_user_type_conversion_1): Initialize `args' to NULL_TREE.
+	(build_object_call): Likewise for `mem_args'.
+	(build_new_op): Likewise for `mem_arglist'.  Add `return' from
+	default case in enumeration switch.
+
+	* class.c (build_vtable_entry): Add explicit braces to avoid
+	ambiguous `else'.
+	(build_class_init_list): Likewise.
+	(finish_struct_1): Initialize `width' to 0.
+	(instantiate_type): Initialize `name' to NULL_TREE.  Add
+	explicit braces to avoid ambiguous `else'.
+
+	* cvt.c (convert_to_aggr): Add explicit braces to avoid ambiguous
+	`else'.
+
+	* decl.c (grok_reference_init): Eliminate unused parameter, all
+	callers changed.
+	(record_builtin_type): Initialize `tdecl' to NULL_TREE.
+	(init_decl_processing): Initialize `vb_off_identifier' to NULL_TREE.
+	(cp_finish_decl): Initialize `ttype' to NULL_TREE.
+	(grokdeclarator): Add parentheses around && within ||.  Add
+	explicit braces to avoid ambiguous `else'.
+	(grokparms): Initialize `type' to NULL_TREE.
+	(xref_tag): Remove unused label	`just_return'.
+	(finish_enum): Initialize `minnode' and `maxnode' to NULL_TREE.
+	(finish_function): Initialize `cond' and `thenclause' to NULL_TREE.
+	(hack_incomplete_structures): Add parentheses around assignment
+	used as truth value.
+
+	* decl2.c (coerce_delete_type): Hide definition of `e3'.
+
+	* error.c: Include <stdlib.h>.
+	(dump_expr): Change the type of `i' to size_t.  Remove unused
+	label `error'. 
+
+	* except.c (init_exception_processing): Remove unused variable `d'.
+	(expand_throw): Likewise for `label'.
+
+	* friend.c (add_friends): Add explicit braces to avoid ambiguous
+	`else'.
+
+	* init.c (sort_member_init): Initialize `last_field' to NULL_TREE.
+	(sort_base_init): Likewise for `binfo'.
+	(expand_member_init): Likewise for `rval'.
+	(build_member_call): Add parentheses around assignment used as
+	truth value.
+	(build_offset_ref): Add explicit braces to avoid ambiguous `else'.
+	(build_new): Initialize `nelts' to NULL_TREE.  Initialize
+	`old_immediate_size_expand' to 0.
+	(build_new_1): Initialize `nelts' and `alloc_node' to NULL_TREE.
+	(build_vec_delete_1): Remove unused variable `block'.
+	(expand_vec_init): Initialize `itype' to NULL_TREE.
+
+	* lex.c: Include <strings.h> if we don't have <string.h>.  Protect
+	declaration of `index' and `rindex' with autoconf macros.
+	(reinit_parse_for_expr): Remove unused variables
+	`look_for_semicolon' and `look_for_lbrac'.
+	(cons_up_default_function): Initialize `args' to NULL_TREE.
+	(readescape): Initialize `firstdig' to 0.
+	(real_yylex): Add parentheses around assignment used as truth value. 
+
+	* method.c: Include <strings.h> if we don't have <string.h>.
+	Protect declaration of `index' with autoconf macro.
+
+	* parse.y (primary): Add explicit braces to avoid ambiguous `else'.
+	Initialize `type' to NULL_TREE.
+	(structsp): Remove unused variable `id'.
+
+	* pt.c (coerce_template_parms): Add explicit braces to avoid
+	ambiguous `else'.
+	(lookup_template_class): Initialize `template' to NULL_TREE.
+	(instantiate_class_template): Remove unused variable `name' and `e'.
+	(tsubst): Likewise for `i'.  Initialize `last' to NULL_TREE.
+	(do_poplevel): Initialize `saved_warn_unused' to 0.
+	(type_unification): Remove unused varable `parm'.
+	(unify): Likewise for `j'.
+
+	* repo.c (init_repo): Add parentheses around assignment used as
+	truth value.
+	(finish_repo): Remove unused varable `p'.
+	
+	* search.c (get_binfo): Initiize `type' to NULL_TREE.
+	(get_base_distance): Likewise.
+	(lookup_field): Initialize `rval_binfo_h', `type', `basetype_path'
+	and `new_v' to NULL_TREE.
+	(lookup_fnfields): Likewise for `rval_binfo_h'.
+	(breadth_first_search): Add parentheses around assignment used as
+	truth value.
+	(get_template_base): Initialize `type' to NULL_TREE.
+
+	* sig.c (append_signature_fields): Initialize `last_mfptr' to
+	NULL_TREE.
+	(build_signature_table_constructor): Likewise for
+	`last_rhs_field', `pfn' and `vt_off'.
+	(build_sigtable): Likewise for `init'.
+
+	* tree.c (break_out_calls): Initialize `t2' to NULL_TREE.
+	(propagate_binfo_offsets): Likewise for `delta'.
+	(hash_tree_cons): Initialize hashcode to 0.
+	(can_free): Likewise for `size'.
+	(cp_tree_equal): Add explicit braces to avoid ambiguous `else'.
+	
+	* typeck.c (convert_sequence): Hide prototype.
+	(common_type): Add explicit braces to avoid ambiguous `else'.
+	(comp_target_types): Likewise.
+	(build_x_function_call): Initialize `ctypeptr' to NULL_TREE.
+	(build_function_call_real): Add explicit braces to avoid ambiguous
+	`else'.
+	(convert_arguments): Initialize `called_thing' to 0.
+	(convert_for_initialization): Initialize `savew' and `savee' to 0.
+
+	* typeck2.c (incomplete_type_error): Initialize `errmsg' to 0.
+	(digest_init): Initialize `old_tail_contents' to NULL_TREE.
+	(build_x_arrow): Likewise for `last_rval'.
+
+	* xref.c (GNU_xref_decl): Initialize `cls' to 0.
+
 Sun Feb  1 12:45:34 1998 J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* decl.c (init_decl_processing): Use set_sizetype.

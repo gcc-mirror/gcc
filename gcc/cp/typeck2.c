@@ -208,7 +208,7 @@ incomplete_type_error (value, type)
      tree value;
      tree type;
 {
-  char *errmsg;
+  char *errmsg = 0;
 
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
@@ -685,7 +685,7 @@ digest_init (type, init, tail)
 {
   enum tree_code code = TREE_CODE (type);
   tree element = NULL_TREE;
-  tree old_tail_contents;
+  tree old_tail_contents = NULL_TREE;
   /* Nonzero if INIT is a braced grouping, which comes in as a CONSTRUCTOR
      tree node which has no TREE_TYPE.  */
   int raw_constructor;
@@ -1265,7 +1265,7 @@ build_x_arrow (datum)
   tree types_memoized = NULL_TREE;
   register tree rval = datum;
   tree type = TREE_TYPE (rval);
-  tree last_rval;
+  tree last_rval = NULL_TREE;
 
   if (type == error_mark_node)
     return error_mark_node;

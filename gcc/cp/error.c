@@ -21,6 +21,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include <stdio.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 #include "tree.h"
 #include "cp-tree.h"
 #include "obstack.h"
@@ -1221,7 +1224,7 @@ dump_expr (t, nop)
 #else
       {
 	unsigned char *p = (unsigned char *) &TREE_REAL_CST (t);
-	int i;
+	size_t i;
 	strcpy (digit_buffer, "0x");
 	for (i = 0; i < sizeof TREE_REAL_CST (t); i++)
 	  sprintf (digit_buffer + 2 + 2*i, "%02x", *p++);
@@ -1629,7 +1632,6 @@ dump_expr (t, nop)
 
       /* fall through to ERROR_MARK...  */
     case ERROR_MARK:
-    error:
       OB_PUTCP ("{error}");
       break;
     }

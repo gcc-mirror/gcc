@@ -692,7 +692,7 @@ user_harshness (type, parmtype)
 {
   tree conv;
   tree winner = NULL_TREE;
-  int code;
+  int code = 0;
 
   {
     tree typename = build_typename_overload (type);
@@ -2195,9 +2195,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
   for (pass = 0; pass < 2; pass++)
     {
-      struct candidate *candidates;
-      struct candidate *cp;
-      int len;
+      struct candidate *candidates = 0;
+      struct candidate *cp = 0;
+      int len = 0;
       unsigned best = 1;
 
       baselink = result;
@@ -3000,7 +3000,7 @@ null_ptr_cst_p (t)
      tree t;
 {
   if (t == null_node
-      || integer_zerop (t) && TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE)
+      || (integer_zerop (t) && TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE))
     return 1;
   return 0;
 }
@@ -3192,8 +3192,8 @@ standard_conversion (to, from, expr)
 	return 0;
 
       conv = build_conv (STD_CONV, to, conv);
-      if (fcode == POINTER_TYPE || TYPE_PTRMEMFUNC_P (from)
-	  && ICS_STD_RANK (conv) < PBOOL_RANK)
+      if (fcode == POINTER_TYPE
+	  || (TYPE_PTRMEMFUNC_P (from) && ICS_STD_RANK (conv) < PBOOL_RANK))
 	ICS_STD_RANK (conv) = PBOOL_RANK;
     }
   /* We don't check for ENUMERAL_TYPE here because there are no standard
@@ -3768,8 +3768,8 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
 
     case EQ_EXPR:
     case NE_EXPR:
-      if (TYPE_PTRMEMFUNC_P (type1) && TYPE_PTRMEMFUNC_P (type2)
-	  || TYPE_PTRMEM_P (type1) && TYPE_PTRMEM_P (type2))
+      if ((TYPE_PTRMEMFUNC_P (type1) && TYPE_PTRMEMFUNC_P (type2))
+	  || (TYPE_PTRMEM_P (type1) && TYPE_PTRMEM_P (type2)))
 	break;
       if ((TYPE_PTRMEMFUNC_P (type1) || TYPE_PTRMEM_P (type1))
 	  && null_ptr_cst_p (args[1]))
@@ -3789,8 +3789,8 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
     case GE_EXPR:
     case MAX_EXPR:
     case MIN_EXPR:
-      if (ARITHMETIC_TYPE_P (type1) && ARITHMETIC_TYPE_P (type2)
-	  || TYPE_PTR_P (type1) && TYPE_PTR_P (type2))
+      if ((ARITHMETIC_TYPE_P (type1) && ARITHMETIC_TYPE_P (type2))
+	  || (TYPE_PTR_P (type1) && TYPE_PTR_P (type2)))
 	break;
       if (TYPE_PTR_P (type1) && null_ptr_cst_p (args[1]))
 	{
@@ -4322,7 +4322,7 @@ build_user_type_conversion_1 (totype, expr, flags)
   struct z_candidate *candidates, *cand;
   tree fromtype = TREE_TYPE (expr);
   tree ctors = NULL_TREE, convs = NULL_TREE, *p;
-  tree args;
+  tree args = NULL_TREE;
   tree templates = NULL_TREE;
 
   if (IS_AGGR_TYPE (totype))
@@ -4597,7 +4597,7 @@ build_object_call (obj, args)
      tree obj, args;
 {
   struct z_candidate *candidates = 0, *cand;
-  tree fns, convs, mem_args;
+  tree fns, convs, mem_args = NULL_TREE;
   tree type = TREE_TYPE (obj);
   tree templates = NULL_TREE;
 
@@ -4725,7 +4725,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
      tree arg1, arg2, arg3;
 {
   struct z_candidate *candidates = 0, *cand;
-  tree fns, mem_arglist, arglist, fnname;
+  tree fns, mem_arglist = NULL_TREE, arglist, fnname;
   enum tree_code code2 = NOP_EXPR;
   tree templates = NULL_TREE;
   tree conv;
@@ -5117,6 +5117,7 @@ builtin:
 
     default:
       my_friendly_abort (367);
+      return NULL_TREE;
     }
 }
 
@@ -5665,7 +5666,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 {
   struct z_candidate *candidates = 0, *cand;
   tree explicit_targs = NULL_TREE;
-  tree basetype, mem_args, fns, instance_ptr;
+  tree basetype, mem_args = NULL_TREE, fns, instance_ptr;
   tree pretty_name;
   tree user_args = args;
   tree templates = NULL_TREE;

@@ -336,7 +336,7 @@ init_repo (filename)
   if (repo_file == 0)
     return;
 
-  while (buf = afgets (repo_file))
+  while ((buf = afgets (repo_file)))
     {
       switch (buf[0])
 	{
@@ -396,7 +396,6 @@ void
 finish_repo ()
 {
   tree t;
-  char *p;
   int repo_changed = 0;
   char *dir, *args;
 

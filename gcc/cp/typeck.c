@@ -56,7 +56,9 @@ static int comp_array_types PROTO((int (*) (tree, tree, int), tree,
 				   tree, int));
 static tree build_ptrmemfunc1 PROTO((tree, tree, tree, tree, tree));
 static tree common_base_type PROTO((tree, tree));
+#if 0
 static tree convert_sequence PROTO((tree, tree));
+#endif
 static tree lookup_anon_field PROTO((tree, tree));
 static tree pointer_diff PROTO((tree, tree, tree));
 static tree qualify_type PROTO((tree, tree));
@@ -327,25 +329,27 @@ common_type (t1, t2)
     /* One that completely contains the other?  Take it.  */
 
     else if (a2 && !attribute_list_contained (a1, a2))
-       if (attribute_list_contained (a2, a1))
+      {
+	if (attribute_list_contained (a2, a1))
 	  attributes = a2;
-       else
-	{
-	  /* Pick the longest list, and hang on the other list.  */
-	  /* ??? For the moment we punt on the issue of attrs with args.  */
+	else
+	  {
+	    /* Pick the longest list, and hang on the other list.  */
+	    /* ??? For the moment we punt on the issue of attrs with args.  */
 	
-	  if (list_length (a1) < list_length (a2))
-	     attributes = a2, a2 = a1;
+	    if (list_length (a1) < list_length (a2))
+	      attributes = a2, a2 = a1;
 
-	  for (; a2; a2 = TREE_CHAIN (a2))
-	    if (lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (a2)),
-				  attributes) == NULL_TREE)
-	      {
-		a1 = copy_node (a2);
-		TREE_CHAIN (a1) = attributes;
-		attributes = a1;
-	      }
-	}
+	    for (; a2; a2 = TREE_CHAIN (a2))
+	      if (lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (a2)),
+				    attributes) == NULL_TREE)
+		{
+		  a1 = copy_node (a2);
+		  TREE_CHAIN (a1) = attributes;
+		  attributes = a1;
+		}
+	  }
+      }
   }
 
   /* Treat an enum type as the unsigned integer type of the same width.  */
@@ -966,21 +970,22 @@ comp_target_types (ttl, ttr, nptrs)
   if (TREE_CODE (ttr) == ARRAY_TYPE)
     return comp_array_types (comp_target_types, ttl, ttr, 0);
   else if (TREE_CODE (ttr) == FUNCTION_TYPE || TREE_CODE (ttr) == METHOD_TYPE)
-    if (comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), -1))
-      switch (comp_target_parms (TYPE_ARG_TYPES (ttl), TYPE_ARG_TYPES (ttr), 1))
-	{
-	case 0:
-	  return 0;
-	case 1:
-	  return 1;
-	case 2:
-	  return -1;
-	default:
-	  my_friendly_abort (112);
-	}
-    else
-      return 0;
-
+    {
+      if (comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), -1))
+	switch (comp_target_parms (TYPE_ARG_TYPES (ttl), TYPE_ARG_TYPES (ttr), 1))
+	  {
+	  case 0:
+	    return 0;
+	  case 1:
+	    return 1;
+	  case 2:
+	    return -1;
+	  default:
+	    my_friendly_abort (112);
+	  }
+      else
+	return 0;
+    }
   /* for C++ */
   else if (TREE_CODE (ttr) == OFFSET_TYPE)
     {
@@ -2521,7 +2526,7 @@ build_x_function_call (function, params, decl)
   if (is_method)
     {
       tree fntype = TREE_TYPE (function);
-      tree ctypeptr;
+      tree ctypeptr = NULL_TREE;
 
       /* Explicitly named method?  */
       if (TREE_CODE (function) == FUNCTION_DECL)
@@ -2746,10 +2751,12 @@ build_function_call_real (function, params, require_complete, flags)
 					params, fndecl, 0);
 
   if (coerced_params == error_mark_node)
-    if (flags & LOOKUP_SPECULATIVELY)
-      return NULL_TREE;
-    else
-      return error_mark_node;
+    {
+      if (flags & LOOKUP_SPECULATIVELY)
+	return NULL_TREE;
+      else
+	return error_mark_node;
+    }
 
   /* Check for errors in format strings.  */
 
@@ -2831,7 +2838,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 {
   register tree typetail, valtail;
   register tree result = NULL_TREE;
-  char *called_thing;
+  char *called_thing = 0;
   int i = 0;
 
   if (! flag_elide_constructors)
@@ -7048,7 +7055,7 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
     {
       /* This should eventually happen in convert_arguments.  */
       extern int warningcount, errorcount;
-      int savew, savee;
+      int savew = 0, savee = 0;
 
       if (fndecl)
 	savew = warningcount, savee = errorcount;

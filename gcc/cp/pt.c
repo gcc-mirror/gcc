@@ -1742,31 +1742,33 @@ coerce_template_parms (parms, arglist, in_decl,
     }
 
   if (arglist && TREE_CODE (arglist) == TREE_VEC)
-    if (nargs == nparms)
-      vec = copy_node (arglist);
-    else
-      {
-	/* We arrive here when a template with some default arguments
-	   is used as template template argument.  */
-	is_tmpl_parm = 1;
-	vec = make_tree_vec (nparms);
-	for (i = 0; i < nparms; i++)
-	  {
-	    tree arg;
-
-	    if (i < nargs)
+    {
+      if (nargs == nparms)
+	vec = copy_node (arglist);
+      else
+	{
+	  /* We arrive here when a template with some default arguments
+	     is used as template template argument.  */
+	  is_tmpl_parm = 1;
+	  vec = make_tree_vec (nparms);
+	  for (i = 0; i < nparms; i++)
+	    {
+	      tree arg;
+	      
+	      if (i < nargs)
 	      arg = TREE_VEC_ELT (arglist, i);
-	    else if (TREE_CODE (TREE_VALUE (TREE_VEC_ELT (parms, i)))
-		     == TYPE_DECL)
-	      arg = tsubst (TREE_PURPOSE (TREE_VEC_ELT (parms, i)),
-			    vec, i, in_decl);
-	    else
-	      arg = tsubst_expr (TREE_PURPOSE (TREE_VEC_ELT (parms, i)),
-				 vec, i, in_decl);
-
-	    TREE_VEC_ELT (vec, i) = arg;
-	  }
-      }
+	      else if (TREE_CODE (TREE_VALUE (TREE_VEC_ELT (parms, i)))
+		       == TYPE_DECL)
+		arg = tsubst (TREE_PURPOSE (TREE_VEC_ELT (parms, i)),
+			      vec, i, in_decl);
+	      else
+		arg = tsubst_expr (TREE_PURPOSE (TREE_VEC_ELT (parms, i)),
+				   vec, i, in_decl);
+	      
+	      TREE_VEC_ELT (vec, i) = arg;
+	    }
+	}
+    }
   else
     {
       vec = make_tree_vec (nparms);
@@ -2213,7 +2215,7 @@ lookup_template_class (d1, arglist, in_decl, context)
      tree in_decl;
      tree context;
 {
-  tree template, parmlist;
+  tree template = NULL_TREE, parmlist;
   char *mangled_name;
   tree id, t;
 
@@ -2819,14 +2821,13 @@ instantiate_class_template (type)
 
   for (t = CLASSTYPE_TAGS (pattern); t; t = TREE_CHAIN (t))
     {
-      tree name = TREE_PURPOSE (t);
       tree tag = TREE_VALUE (t);
 
       /* These will add themselves to CLASSTYPE_TAGS for the new type.  */
       if (TREE_CODE (tag) == ENUMERAL_TYPE)
 	{
-	  tree e, newtag = tsubst_enum (tag, args, 
-					TREE_VEC_LENGTH (args), field_chain);
+	  tree newtag =
+	    tsubst_enum (tag, args, TREE_VEC_LENGTH (args), field_chain);
 
 	  while (*field_chain)
 	    {
@@ -3190,7 +3191,6 @@ tsubst (t, args, nargs, in_decl)
 	tree new_decl;
 	tree parms;
 	tree spec;
-	int i;
 
 	/* We might already have an instance of this template. */
 	spec = retrieve_specialization (t, args);
@@ -3785,7 +3785,7 @@ tsubst (t, args, nargs, in_decl)
 	    /* This should probably be rewritten to use hash_tree_cons for
                the memory savings.  */
 	    tree first = NULL_TREE;
-	    tree last;
+	    tree last = NULL_TREE;
 
 	    for (; values && values != void_list_node;
 		 values = TREE_CHAIN (values))
@@ -3934,7 +3934,7 @@ tree
 do_poplevel ()
 {
   tree t;
-  int saved_warn_unused;
+  int saved_warn_unused = 0;
 
   if (processing_template_decl)
     {
@@ -4652,7 +4652,6 @@ type_unification (tparms, targs, parms, args, targs_in, nsubsts,
 {
   int ntparms = TREE_VEC_LENGTH (tparms);
   tree arg;
-  tree parm;
   int i;
   int r;
 
@@ -4937,7 +4936,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 	    tree argvec = CLASSTYPE_TI_ARGS (arg);
 	    tree argtmplvec
 	      = DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (arg));
-	    int i, j;
+	    int i;
 
 	    /* The parameter and argument roles have to be switched here 
 	       in order to handle default arguments properly.  For example, 

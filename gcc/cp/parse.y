@@ -1381,21 +1381,23 @@ primary:
 		  if (TREE_CODE ($$) == BIT_NOT_EXPR)
 		    $$ = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND ($$, 0));
 		  else if (TREE_CODE ($$) != TEMPLATE_ID_EXPR)
-		    if (processing_template_arg)
-		      {
-			tree id;
-			arg_looking_for_template = processing_template_arg;
-			id = lookup_name ($$, 0);
-			arg_looking_for_template = 0;
+		    {
+		      if (processing_template_arg)
+			{
+			  tree id;
+			  arg_looking_for_template = processing_template_arg;
+			  id = lookup_name ($$, 0);
+			  arg_looking_for_template = 0;
 			
-			if (!id || id == error_mark_node
-			    || (TREE_CODE (id) != TEMPLATE_DECL
-				&& TREE_CODE (id) != TEMPLATE_TEMPLATE_PARM))
-			  id = do_identifier ($$, 1);
-			$$ = id;
-		      } 
-		    else
-		      $$ = do_identifier ($$, 1);
+			  if (!id || id == error_mark_node
+			      || (TREE_CODE (id) != TEMPLATE_DECL
+				  && TREE_CODE (id) != TEMPLATE_TEMPLATE_PARM))
+			    id = do_identifier ($$, 1);
+			  $$ = id;
+			} 
+		      else
+			$$ = do_identifier ($$, 1);
+		    }
 		}		
 	| CONSTANT
 	| boolean.literal
@@ -1509,7 +1511,7 @@ primary:
 		}
 	| CV_QUALIFIER '(' nonnull_exprlist ')'
 		{
-		  tree type;
+		  tree type = NULL_TREE;
 		  tree id = $$;
 
 		  /* This is a C cast in C++'s `functional' notation.  */
@@ -2306,7 +2308,6 @@ structsp:
           opt.component_decl_list '}' maybe_attribute
 		{
 		  int semi;
-		  tree id;
 
 		  $<ttype>$ = $1;
 #if 0
