@@ -1,3 +1,13 @@
+Thu Nov 13 11:07:41 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.c (num_insns_constant): Use REAL_VALUE_FROM_CONST_DOUBLE to
+	pick apart floating point values, instead of using CONST_DOUBLE_LOW
+	and CONST_DOUBLE_HIGH.
+
+	* rs6000.md (define_splits for DF constants): Use the appropriate
+	REAL_VALUE_* interface to pick apart DF floating point constants in
+	a machine independent fashion.
+
 Thu Nov 13 00:06:58 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* fold-const.c (fold_truthop): When changing a one-bit comparison
@@ -65,6 +75,11 @@ Mon Nov 10 00:05:56 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* alias.c (MAX_ALIAS_LOOP_PASSES): Define.
 	(init_alias_analysis): Break out of loops after MAX_ALIAS_LOOP_PASSES.
+
+Sun Nov  9 14:34:47 1997  David Edelsohn  <edelsohn@mhpcc.edu>
+
+        * rs6000.md (lshrdi3_power): Delete '&' from first alternative and
+        swap instruction order.
 
 Sun Nov  9 02:07:16 1997  Jeffrey A Law  (law@cygnus.com)
 
