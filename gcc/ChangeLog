@@ -1,6 +1,14 @@
+2002-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/6475
+	* reload1.c (alter_reg): Only call set_mem_expr if I is home pseudo
+	register of REGNO_DECL (i).
+	* Makefile.in (reload1.o): Add $(TREE_H).
+
 2002-04-28  Bruce Korb  <bkorb@gnu.org>
 
-	* fixinc/check.tpl(set-writable): verify that it exists before invoking.
+	* fixinc/check.tpl (set-writable): verify that it exists before
+	invoking.
 
 2002-04-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
@@ -360,7 +368,7 @@
 	(fixup_var_refs_insn): Adjust accordingly.
 	(fixup_var_refs_1): Likewise.
 
-2002-04-22	Joel Sherrill <joel@OARcorp.com>
+2002-04-22  Joel Sherrill  <joel@OARcorp.com>
 
 	* gthr-rtems.h: Correct prototypes to remove warnings.
 
