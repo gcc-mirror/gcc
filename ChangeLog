@@ -1,3 +1,7 @@
+2003-07-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* MAINTAINERS: Alphabetize.
+
 2003-07-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure: Rebuilt.
