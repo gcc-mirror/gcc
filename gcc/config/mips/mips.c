@@ -5060,18 +5060,21 @@ function_prologue (file, size)
     ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl));
 #endif
 
+  inside_function = 1;
+
+#ifndef FUNCTION_NAME_ALREADY_DECLARED
   /* Get the function name the same way that toplev.c does before calling
      assemble_start_function.  This is needed so that the name used here
      exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
   fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
 
-  inside_function = 1;
   fputs ("\t.ent\t", file);
   assemble_name (file, fnname);
   fputs ("\n", file);
 
   assemble_name (file, fnname);
   fputs (":\n", file);
+#endif
 
   fprintf (file, "\t.frame\t%s,%d,%s\t\t# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
 	   reg_names[ (frame_pointer_needed) ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM ],
@@ -5458,6 +5461,7 @@ function_epilogue (file, size)
 	}
     }
 
+#ifndef FUNCTION_NAME_ALREADY_DECLARED
   /* Get the function name the same way that toplev.c does before calling
      assemble_start_function.  This is needed so that the name used here
      exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
@@ -5466,6 +5470,7 @@ function_epilogue (file, size)
   fputs ("\t.end\t", file);
   assemble_name (file, fnname);
   fputs ("\n", file);
+#endif
 
   if (TARGET_STATS)
     {
