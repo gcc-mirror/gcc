@@ -50,6 +50,7 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "obstack.h"
 #include "bitmap.h"
+#include "basic-block.h"
 #include "ggc.h"
 
 /* Commonly used modes.  */
@@ -2600,6 +2601,20 @@ emit_insn_before (pattern, before)
   return insn;
 }
 
+/* Similar to emit_insn_before, but update basic block boundaries as well.  */
+
+rtx
+emit_block_insn_before (pattern, before, block)
+     rtx pattern, before;
+     basic_block block;
+{
+  rtx prev = PREV_INSN (before);
+  rtx r = emit_insn_before (pattern, before);
+  if (block && block->head == before)
+    block->head = NEXT_INSN (prev);
+  return r;
+}
+
 /* Make an instruction with body PATTERN and code JUMP_INSN
    and output it before the instruction BEFORE.  */
 
@@ -2740,6 +2755,19 @@ emit_insn_after_with_line_notes (pattern, after, from)
     emit_line_note_after (NOTE_SOURCE_FILE (after_line),
 			  NOTE_LINE_NUMBER (after_line),
 			  insn);
+}
+
+/* Similar to emit_insn_after, but update basic block boundaries as well.  */
+
+rtx
+emit_block_insn_after (pattern, after, block)
+     rtx pattern, after;
+     basic_block block;
+{
+  rtx r = emit_insn_after (pattern, after);
+  if (block && block->end == after)
+    block->end = r;
+  return r;
 }
 
 /* Make an insn of code JUMP_INSN with body PATTERN

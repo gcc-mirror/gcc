@@ -1410,9 +1410,10 @@ extern int condjump_in_parallel_p	PROTO ((rtx));
 extern void never_reached_warning	PROTO ((rtx));
 
 /* Flags for jump_optimize() */
-#define JUMP_CROSS_JUMP		1
-#define JUMP_NOOP_MOVES		1
-#define JUMP_AFTER_REGSCAN	1
+#define JUMP_CROSS_JUMP			1
+#define JUMP_CROSS_JUMP_DEATH_MATTERS	2
+#define JUMP_NOOP_MOVES			1
+#define JUMP_AFTER_REGSCAN		1
 
 /* In emit-rtl.c. */
 extern int max_reg_num				PROTO ((void));

@@ -1,3 +1,56 @@
+Tue Oct 26 18:23:38 1999  Jan Hubicka  <hubicka@freesoft.cz>
+			  Richard Henderson  <rth@cygnus.com>
+
+	* emit-rtl.c (emit_block_insn_before): New.
+	(emit_block_insn_after): New.
+	* basic-block.h: Declare them.
+
+	* bitmap.h: Protect from multiple inclusion.
+
+	* recog.c (scratch_operand): Handle VOIDmode correctly.
+
+	* rtl.h (JUMP_CROSS_JUMP_DEATH_MATTERS): New.
+
+	* builtins.c (expand_builtin_apply_args_1): Remove STACK_REGS hack.
+	* function.c (assign_parms): Likewise.
+	* global.c (global_conflicts): Clarify STACK_REGS commentary.
+
+	* reg-stack.c (max_uid): Remove.
+	(blocks, block_begin, block_end, block_drops_in): Remove.
+	(block_stack_in, block_out_reg_set, block_number): Remove.
+	(struct block_info_def, BLOCK_INFO): New.
+	(enum emit_where): New.
+	(current_block): New.
+	(BLOCK_NUM): Remove.
+	(mark_regs_pat, record_label_references): Remove.
+	(record_reg_life_pat, record_reg_life, find_blocks): Remove.
+	(nan): New.
+	(goto_block_pat, print_blocks, dump_stack_info): Remove.
+	(reg_to_stack): Simplified test for existance of fp code.  Use
+	flow.c code.  Call shorten_branches after cross-jump opt.
+	(check_asm_stack_operands): Renamed from record_asm_reg_life.
+	Return false if the asm doesn't use stack regs.  Don't do life
+	analysis on the asm.
+	(emit_pop_insn): Replace function pointer arg `when' with
+	enum `where'.  Update all callers.
+	(change_stack): Likewise.  Update basic block end.
+	(emit_swap_insn): Use current_block->head to limit reverse search
+	for start of block.  Use emit_block_insn_after.
+	(subst_stack_regs_pat): Handle USE and CLOBBER patterns.
+	(subst_asm_stack_regs): Use check_asm_stack_operands.  Use direct
+	structure assignment instead of bcopy.
+	(print_stack): New.
+	(convert_regs_entry, convert_regs_exit): New.
+	(convert_regs_1, convert_regs_2): Split out from convert_regs.
+	Work on basic blocks and the CFG.
+	(convert_regs): Use them.
+
+	* i386.c (output_fix_trunc): Remove code for DImode input operand
+	not at top-of-stack.
+	* i386.c (fix_truncdfdi2, fix_truncsfdi2): Use scratch with
+	appropriate mode.
+	(fix_truncdi_1): Allow any mode scratch.
+
 Tue Oct 26 13:30:35 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (TARGET_MEM_FUNCTIONS): Define here.

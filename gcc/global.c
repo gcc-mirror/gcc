@@ -673,16 +673,12 @@ global_conflicts ()
 #ifdef STACK_REGS
 	{
 	  /* Pseudos can't go in stack regs at the start of a basic block
-	     that can be reached through a computed goto, since reg-stack
-	     can't handle computed gotos.  */
-	  /* ??? Seems more likely that reg-stack can't handle any abnormal
-	     edges, critical or not, computed goto or otherwise.  */
+	     that is reached by an abnormal edge.  */
 
 	  edge e;
 	  for (e = BASIC_BLOCK (b)->pred; e ; e = e->pred_next)
 	    if (e->flags & EDGE_ABNORMAL)
 	      break;
-
 	  if (e != NULL)
 	    for (ax = FIRST_STACK_REG; ax <= LAST_STACK_REG; ax++)
 	      record_one_conflict (ax);

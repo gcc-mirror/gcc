@@ -4323,17 +4323,6 @@ assign_parms (fndecl)
 	}
 #endif /* 0 */
 
-#ifdef STACK_REGS
-      /* We need this "use" info, because the gcc-register->stack-register
-	 converter in reg-stack.c needs to know which registers are active
-	 at the start of the function call.  The actual parameter loading
-	 instructions are not always available then anymore, since they might
-	 have been optimised away.  */
-
-      if (GET_CODE (entry_parm) == REG && !(hide_last_arg && last_named))
-	  emit_insn (gen_rtx_USE (GET_MODE (entry_parm), entry_parm));
-#endif
-
       /* ENTRY_PARM is an RTX for the parameter as it arrives,
 	 in the mode in which it arrives.
 	 STACK_PARM is an RTX for a stack slot where the parameter can live
