@@ -2149,7 +2149,9 @@
 	(and:SI (match_operand:SI 1 "register_operand" "%r,0")
 		(match_operand:SI 2 "and_operand" "rO,P")))]
   ""
-  "* return output_and (operands); ")
+  "* return output_and (operands); "
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2204,7 +2206,9 @@
 	(ior:SI (match_operand:SI 1 "register_operand" "0")
 		(match_operand:SI 2 "ior_operand" "")))]
   ""
-  "* return output_ior (operands); ")
+  "* return output_ior (operands); "
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2461,7 +2465,9 @@
 	(ashift:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:SI 2 "const_int_operand" "n")))]
   ""
-  "zdep %1,%P2,%L2,%0")
+  "zdep %1,%P2,%L2,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
 
 ; Match cases of op1 a CONST_INT here that zvdep_imm doesn't handle.
 ; Doing it like this makes slightly better code since reload can
@@ -2514,7 +2520,9 @@
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
 		     (match_operand:SI 2 "const_int_operand" "n")))]
   ""
-  "extrs %1,%P2,%L2,%0")
+  "extrs %1,%P2,%L2,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
 
 (define_insn "vextrs32"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2531,7 +2539,9 @@
   ""
   "@
    vshd 0,%1,%0
-   extru %1,%P2,%L2,%0")
+   extru %1,%P2,%L2,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
 
 (define_insn "rotrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -2547,7 +2557,9 @@
     }
   else
     return \"vshd %1,%1,%0\";
-}")
+}"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
 
 (define_insn "rotlsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2558,7 +2570,9 @@
 {
   operands[2] = GEN_INT ((32 - INTVAL (operands[2])) & 31);
   return \"shd %1,%1,%2,%0\";
-}")
+}"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2596,7 +2610,9 @@
   operands[3] = GEN_INT (exact_log2 (1 + (INTVAL (operands[3]) >> cnt)));
   operands[2] = GEN_INT (31 - cnt);
   return \"zdep %1,%2,%3,%0\";
-}")
+}"
+  [(set_attr "type" "binary")
+   (set_attr "length" "1")])
 
 ;; Unconditional and other jump instructions.
 
