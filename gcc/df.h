@@ -20,18 +20,18 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-#define DF_RD		 1	/* Reaching definitions.  */
-#define DF_RU		 2	/* Reaching uses.  */
-#define DF_LR		 4	/* Live registers.  */
-#define DF_DU_CHAIN	 8	/* Def-use chain.  */
-#define DF_UD_CHAIN     16	/* Use-def chain.  */
+#define DF_RD		1	/* Reaching definitions.  */
+#define DF_RU		2	/* Reaching uses.  */
+#define DF_LR		4	/* Live registers.  */
+#define DF_DU_CHAIN	8	/* Def-use chain.  */
+#define DF_UD_CHAIN	16	/* Use-def chain.  */
 #define DF_REG_INFO	32	/* Register info.  */
 #define DF_RD_CHAIN	64	/* Reg-def chain.  */
-#define DF_RU_CHAIN    128	/* Reg-use chain.  */
-#define DF_ALL	       255
-#define DF_HARD_REGS  1024	/* Mark hard registers.  */
-#define DF_EQUIV_NOTES 2048	/* Mark uses present in EQUIV/EQUAL notes.  */
-#define DF_FOR_REGALLOC 4096    /* If called for the register allocator.  */
+#define DF_RU_CHAIN	128	/* Reg-use chain.  */
+#define DF_ALL		255
+#define DF_HARD_REGS	1024	/* Mark hard registers.  */
+#define DF_EQUIV_NOTES	2048	/* Mark uses present in EQUIV/EQUAL notes.  */
+#define DF_FOR_REGALLOC	4096    /* If called for the register allocator.  */
 
 enum df_ref_type {DF_REF_REG_DEF, DF_REF_REG_USE, DF_REF_REG_MEM_LOAD,
 		  DF_REF_REG_MEM_STORE};
