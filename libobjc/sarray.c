@@ -402,9 +402,6 @@ sarray_free (struct sarray *array) {
 #else
   old_buckets = array->buckets;
 #endif
-  
-  if ((array->is_copy_of) && ((array->is_copy_of->ref_count - 1) == 0))
-    sarray_free (array->is_copy_of);
 
   /* Free all entries that do not point to empty_bucket */
   for (counter = 0; counter <= old_max_index; counter++ ) {
@@ -462,6 +459,10 @@ sarray_free (struct sarray *array) {
 
 #endif
   
+  /* If this is a copy, go ahead and decrement/deallocate the original */
+  if (array->is_copy_of)
+    sarray_free (array->is_copy_of);
+
   /* free array */
   sarray_free_garbage (array);
 }
