@@ -173,7 +173,6 @@ static void mark_lang_function PROTO((struct language_function *));
 static void mark_stmt_tree PROTO((struct stmt_tree *));
 static void save_function_data PROTO((tree));
 static void check_function_type PROTO((tree));
-static void destroy_local_static PROTO((tree));
 static void destroy_local_var PROTO((tree));
 static void finish_constructor_body PROTO((void));
 static void finish_destructor_body PROTO((void));
@@ -8054,11 +8053,11 @@ end_cleanup_fn ()
   pop_from_top_level ();
 }
 
-/* Generate code to handle the destruction of the function-scoped
-   static variable DECL.  */
+/* Generate code to handle the destruction of DECL, an object with
+   static storage duration.  */
 
-static void
-destroy_local_static (decl)
+void
+register_dtor_fn (decl)
      tree decl;
 {
   tree cleanup;
@@ -8067,6 +8066,9 @@ destroy_local_static (decl)
   tree fcall;
 
   int saved_flag_access_control;
+
+  if (!TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
+    return;
 
   /* Call build_cleanup before we enter the anonymous function so that
      any access checks will be done relative to the current scope,
@@ -8193,8 +8195,7 @@ expand_static_init (decl, init)
 
       /* Use atexit to register a function for destroying this static
 	 variable.  */
-      if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
-	destroy_local_static (decl);
+      register_dtor_fn (decl);
 
       finish_compound_stmt (/*has_no_scope=*/0, then_clause);
       finish_then_clause (if_stmt);

@@ -3680,6 +3680,7 @@ extern void make_rtl_for_local_static           PROTO((tree));
 extern int local_variable_p                     PROTO((tree));
 extern int nonstatic_local_decl_p               PROTO((tree));
 extern tree declare_global_var                  PROTO((tree, tree));
+extern void register_dtor_fn                    PROTO((tree));
 
 /* in decl2.c */
 extern void init_decl2				PROTO((void));

@@ -3120,8 +3120,11 @@ convert_arguments (typelist, values, fndecl, flags)
       if (type == void_type_node)
 	{
 	  if (fndecl)
-            cp_error_at ("too many arguments to %s `%+#D' at this point",
-                         called_thing, fndecl);
+	    {
+	      cp_error_at ("too many arguments to %s `%+#D'", called_thing,
+			   fndecl);
+	      error ("at this point in file");
+	    }
 	  else
 	    error ("too many arguments to function");
 	  /* In case anybody wants to know if this argument
@@ -3219,8 +3222,11 @@ convert_arguments (typelist, values, fndecl, flags)
       else
 	{
 	  if (fndecl)
-            cp_error_at ("too few arguments to %s `%+#D' at this point",
-                         called_thing, fndecl);
+	    {
+	      cp_error_at ("too few arguments to %s `%+#D'",
+	                   called_thing, fndecl);
+	      error ("at this point in file");
+	    }
 	  else
 	    error ("too few arguments to function");
 	  return error_mark_list;
