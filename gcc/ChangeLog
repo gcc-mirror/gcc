@@ -1,3 +1,9 @@
+2003-05-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* vax.h (ASM_GENERATE_INTERNAL_LABEL): Fix format specifier
+	warnings.
+	(PRINT_OPERAND): Likewise.
+
 2003-05-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/mips.h (SUBTARGET_ASM_DEBUGGING_SPEC): Move

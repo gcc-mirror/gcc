@@ -1019,7 +1019,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s%d", PREFIX, NUM)
+  sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM))
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
@@ -1138,20 +1138,20 @@ VAX operand formatting codes:
   else if (CODE == 'D' && GET_CODE (X) == CONST_INT && INTVAL (X) < 0)	\
     fprintf (FILE, "$0xffffffff%08x", INTVAL (X));			\
   else if (CODE == 'P' && GET_CODE (X) == CONST_INT)			\
-    fprintf (FILE, "$%d", INTVAL (X) + 1);				\
+    fprintf (FILE, "$" HOST_WIDE_INT_PRINT_DEC, INTVAL (X) + 1);	\
   else if (CODE == 'N' && GET_CODE (X) == CONST_INT)			\
-    fprintf (FILE, "$%d", ~ INTVAL (X));				\
+    fprintf (FILE, "$" HOST_WIDE_INT_PRINT_DEC, ~ INTVAL (X));		\
   /* rotl instruction cannot deal with negative arguments.  */		\
   else if (CODE == 'R' && GET_CODE (X) == CONST_INT)			\
-    fprintf (FILE, "$%d", 32 - INTVAL (X));				\
+    fprintf (FILE, "$" HOST_WIDE_INT_PRINT_DEC, 32 - INTVAL (X));	\
   else if (CODE == 'H' && GET_CODE (X) == CONST_INT)			\
-    fprintf (FILE, "$%d", 0xffff & ~ INTVAL (X));			\
+    fprintf (FILE, "$%d", (int) (0xffff & ~ INTVAL (X)));		\
   else if (CODE == 'h' && GET_CODE (X) == CONST_INT)			\
     fprintf (FILE, "$%d", (short) - INTVAL (x));			\
   else if (CODE == 'B' && GET_CODE (X) == CONST_INT)			\
-    fprintf (FILE, "$%d", 0xff & ~ INTVAL (X));				\
+    fprintf (FILE, "$%d", (int) (0xff & ~ INTVAL (X)));			\
   else if (CODE == 'b' && GET_CODE (X) == CONST_INT)			\
-    fprintf (FILE, "$%d", 0xff & - INTVAL (X));				\
+    fprintf (FILE, "$%d", (int) (0xff & - INTVAL (X)));			\
   else if (CODE == 'M' && GET_CODE (X) == CONST_INT)			\
     fprintf (FILE, "$%d", ~((1 << INTVAL (x)) - 1));			\
   else if (GET_CODE (X) == REG)						\
