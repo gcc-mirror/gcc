@@ -1,3 +1,11 @@
+Thu Mar  6 16:35:27 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation):  Defer RTL compilation only when
+	RTL inlining is done.
+
+	* i386.c (ix86_expand_vector_move): Do not crash when offloading
+	to memory in PIC mode.
+
 2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppinit.c (cpp_finish_options): Set first_unused_line to -1.
