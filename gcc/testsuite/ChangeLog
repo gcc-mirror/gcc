@@ -1,3 +1,11 @@
+2004-10-28  Adam Nemet  <anemet@lnxw.com>
+
+	PR middle-end/18160  
+	* gcc.dg/register-var-1.c: New test.
+	* gcc.dg/register-var-2.c: New test.
+	* gcc.dg/asm-7.c: Taking the address of a register variable is an
+	error now.
+
 2004-10-28  Dorit Naishlos <dorit@il.ibm.com>
 
 	PR other/18172
