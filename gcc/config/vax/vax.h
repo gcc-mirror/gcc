@@ -319,6 +319,12 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    of the first local allocated.  */
 #define STARTING_FRAME_OFFSET 0
 
+/* Given an rtx for the address of a frame,
+   return an rtx for the address of the word in the frame
+   that holds the dynamic chain--the previous frame's address.  */
+#define DYNAMIC_CHAIN_ADDRESS(frame) \
+gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
+
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
    On the vax, -(sp) pushes only the bytes of the operands.  */
