@@ -1008,8 +1008,8 @@ extern const char * structure_size_string;
 #define IS_CIRRUS_REGNUM(REGNUM) \
   (((REGNUM) >= FIRST_CIRRUS_FP_REGNUM) && ((REGNUM) <= LAST_CIRRUS_FP_REGNUM))
 
-/* The number of hard registers is 16 ARM + 8 FPA + 1 CC + 1 SFP.  */
-/* Cirrus registers take us up to 43... */
+/* The number of hard registers is 16 ARM + 8 FPA + 1 CC + 1 SFP + 1 AFP.  */
+/* + 16 Cirrus registers take us up to 43.  */
 #define FIRST_PSEUDO_REGISTER	43
 
 /* Value should be nonzero if functions must have frame pointers.

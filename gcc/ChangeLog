@@ -1,3 +1,10 @@
+2003-03-12  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/pe.h (FIXED_REGISTERS): Add Maverick registers.
+	(CALL_USED_REGISTERS): Likewise.
+	* config/arm/arm.h (FIRST_PSEUDO_REGISTER): Update comment
+	describing how this value is calculated.
+
 2003-03-12  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* configure.in (rlim_t): Define to long if no valid definition
