@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -135,7 +135,7 @@ Boston, MA 02111-1307, USA.  */
    Thus 6 or more means all following args should go on the stack.  */
 
 enum avms_arg_type {I64, FF, FD, FG, FS, FT};
-typedef struct {char num_args; enum avms_arg_type atypes[6];} avms_arg_info;
+typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 
 #undef CUMULATIVE_ARGS
 #define CUMULATIVE_ARGS avms_arg_info
