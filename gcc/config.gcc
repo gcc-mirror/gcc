@@ -3086,6 +3086,13 @@ sparc-*-openbsd*)
 	# we need collect2 until our bug is fixed...
 	use_collect2=yes
 	;;
+sparc64-*-openbsd*)
+	tm_file="sparc/openbsd1-64.h sparc/sparc.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sp64-elf.h openbsd.h sparc/openbsd64.h"
+	xm_file=sparc/xm-sp64.h
+	gas=yes gnu_ld=yes
+	with_cpu=ultrasparc
+	float_format=i128
+	;;
 sparc-*-bsd*)
 	tm_file="${tm_file} sparc/bsd.h"
 	;;
