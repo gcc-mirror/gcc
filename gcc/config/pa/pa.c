@@ -3775,7 +3775,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
 	  if (dbr_sequence_length () != 0
 	      && ! forward_branch_p (insn)
 	      && nullify)
-	    return "movb,%N2,n %1,%0,.+12\n\ttbl %3,0";
+	    return "movb,%N2,n %1,%0,.+12\n\tbl %3,0";
 
 	  /* Handle short backwards branch with an unfilled delay slot.
 	     Using a movb;nop rather than or;bl saves 1 cycle for both
