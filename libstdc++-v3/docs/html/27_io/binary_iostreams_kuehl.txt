@@ -80,7 +80,7 @@ on the streams level.
 
 When I wrote the above paragraph about confirming your choice, I haven't
 read this question! As I said above: You told us what solution you have
-chosen without stating what problem is solved. We cannot determine
+choosen without stating what problem is solved. We cannot determine
 whether your choice is the right one. Actually, I'm pretty sure it is
 the wrong one but without seen the details I can't be certain.
 --
