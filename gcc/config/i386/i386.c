@@ -5719,7 +5719,10 @@ legitimate_constant_p (x)
 	switch (XINT (inner, 1))
 	  {
 	  case UNSPEC_TPOFF:
+	  case UNSPEC_NTPOFF:
 	    return local_exec_symbolic_operand (XVECEXP (inner, 0, 0), Pmode);
+	  case UNSPEC_DTPOFF:
+	    return local_dynamic_symbolic_operand (XVECEXP (inner, 0, 0), Pmode);
 	  default:
 	    return false;
 	  }
