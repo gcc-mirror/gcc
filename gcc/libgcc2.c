@@ -2866,7 +2866,7 @@ __do_global_dtors ()
       (*(p-1)) ();
     }
 #endif
-#ifdef EH_FRAME_SECTION
+#if defined (EH_FRAME_SECTION) && !defined (HAS_INIT_SECTION)
   {
     static int completed = 0;
     if (! completed)
