@@ -4001,3 +4001,102 @@ get_file_function_name (kind)
 
   return get_identifier (buf);
 }
+
+/* Expand (the constant part of) a SET_TYPE CONTRUCTOR node.
+   The result is placed in BUFFER (which has length BIT_SIZE),
+   with one bit in each char ('\000' or '\001').
+
+   If the constructor is constant, NULL_TREE is returned.
+   Otherwise, a TREE_LIST of the non-constant elements is emitted. */
+
+tree
+get_set_constructor_bits (init, buffer, bit_size)
+     tree init;
+     char *buffer;
+     int bit_size;
+{
+  int i;
+  tree vals;
+  HOST_WIDE_INT domain_min
+    = TREE_INT_CST_LOW (TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (init))));
+  tree non_const_bits = NULL_TREE;
+  for (i = 0; i < bit_size; i++)
+    buffer[i] = 0;
+
+  for (vals = TREE_OPERAND (init, 1); 
+       vals != NULL_TREE; vals = TREE_CHAIN (vals))
+    {
+      if (TREE_CODE (TREE_VALUE (vals)) != INTEGER_CST
+	  || (TREE_PURPOSE (vals) != NULL_TREE
+	      && TREE_CODE (TREE_PURPOSE (vals)) != INTEGER_CST))
+	non_const_bits =
+	  tree_cons (TREE_PURPOSE (vals), TREE_VALUE (vals), non_const_bits);
+      else if (TREE_PURPOSE (vals) != NULL_TREE)
+	{
+	  /* Set a range of bits to ones. */
+	  HOST_WIDE_INT lo_index
+	    = TREE_INT_CST_LOW (TREE_PURPOSE (vals)) - domain_min;
+	  HOST_WIDE_INT hi_index
+	    = TREE_INT_CST_LOW (TREE_VALUE (vals)) - domain_min;
+	  if (lo_index < 0 || lo_index >= bit_size
+	    || hi_index < 0 || hi_index >= bit_size)
+	    abort ();
+	  for ( ; lo_index <= hi_index; lo_index++)
+	    buffer[lo_index] = 1;
+	}
+      else
+	{
+	  /* Set a single bit to one. */
+	  HOST_WIDE_INT index
+	    = TREE_INT_CST_LOW (TREE_VALUE (vals)) - domain_min;
+	  if (index < 0 || index >= bit_size)
+	    {
+	      error ("invalid initializer for bit string");
+	      return NULL_TREE;
+	    }
+	  buffer[index] = 1;
+	}
+    }
+  return non_const_bits;
+}
+
+/* Expand (the constant part of) a SET_TYPE CONTRUCTOR node.
+   The result is placed in BUFFER (which is an array of WD_SIZE
+   words).  TYPE_ALIGN bits are stored in each element of BUFFER.
+   If the constructor is constant, NULL_TREE is returned.
+   Otherwise, a TREE_LIST of the non-constant elements is emitted. */
+
+tree
+get_set_constructor_words (init, buffer, wd_size)
+     tree init;
+     HOST_WIDE_INT *buffer;
+     int wd_size;
+{
+  int i;
+  tree vals = TREE_OPERAND (init, 1);
+  int set_word_size = TYPE_ALIGN (TREE_TYPE (init));
+  int bit_size = wd_size * set_word_size;
+  int bit_pos = 0;
+  HOST_WIDE_INT *wordp = buffer;
+  char *bit_buffer = (char*)alloca(bit_size);
+  tree non_const_bits = get_set_constructor_bits (init, bit_buffer, bit_size);
+
+  for (i = 0; i < wd_size; i++)
+    buffer[i] = 0;
+
+  for (i = 0; i < bit_size; i++)
+    {
+      if (bit_buffer[i])
+	{
+#if BITS_BIG_ENDIAN
+	  *wordp |= (1 << (set_word_size - 1 - bit_pos));
+#else
+	  *wordp |= 1 << bit_pos;
+#endif
+	}
+      bit_pos++;
+      if (bit_pos >= set_word_size)
+	bit_pos = 0, wordp++;
+    }
+  return non_const_bits;
+}
