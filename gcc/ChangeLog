@@ -1,3 +1,9 @@
+2003-01-08  Jeff Sturm  <jsturm@one-point.com>
+
+	PR target/9210
+	* config/rs6000/rs6000.c (rs6000_elf_encode_section_info):
+	Set SYMBOL_REF_FLAG on local data sym_ref.
+
 Wed Jan  8 19:53:56 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR target/8322
