@@ -42,7 +42,6 @@ static int list_hash_eq (const void *, const void *);
 static hashval_t list_hash_pieces (tree, tree, tree);
 static hashval_t list_hash (const void *);
 static cp_lvalue_kind lvalue_p_1 (tree, int);
-static tree mark_local_for_remap_r (tree *, int *, void *);
 static tree build_target_expr (tree, tree);
 static tree count_trees_r (tree *, int *, void *);
 static tree verify_stmt_tree_r (tree *, int *, void *);
@@ -2123,51 +2122,6 @@ void
 init_tree (void)
 {
   list_hash_table = htab_create_ggc (31, list_hash, list_hash_eq, NULL);
-}
-
-/* Called via walk_tree.  If *TP points to a DECL_EXPR for a local
-   declaration, copies the declaration and enters it in the splay_tree
-   pointed to by DATA (which is really a `splay_tree *').  */
-
-static tree
-mark_local_for_remap_r (tree* tp,
-                        int* walk_subtrees ATTRIBUTE_UNUSED ,
-                        void* data)
-{
-  tree t = *tp;
-  splay_tree st = (splay_tree) data;
-  tree decl;
-
-
-  if (TREE_CODE (t) == DECL_EXPR
-      && nonstatic_local_decl_p (DECL_EXPR_DECL (t)))
-    decl = DECL_EXPR_DECL (t);
-  else if (TREE_CODE (t) == LABEL_EXPR)
-    decl = LABEL_EXPR_LABEL (t);
-  else if (TREE_CODE (t) == TARGET_EXPR
-	   && nonstatic_local_decl_p (TREE_OPERAND (t, 0)))
-    decl = TREE_OPERAND (t, 0);
-  else if (TREE_CODE (t) == CASE_LABEL_EXPR)
-    decl = CASE_LABEL (t);
-  else
-    decl = NULL_TREE;
-
-  if (decl)
-    {
-      tree copy;
-
-      /* Make a copy.  */
-      copy = copy_decl_for_inlining (decl,
-				     DECL_CONTEXT (decl),
-				     DECL_CONTEXT (decl));
-
-      /* Remember the copy.  */
-      splay_tree_insert (st,
-			 (splay_tree_key) decl,
-			 (splay_tree_value) copy);
-    }
-
-  return NULL_TREE;
 }
 
 /* Returns the kind of special function that DECL (a FUNCTION_DECL)
