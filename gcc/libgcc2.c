@@ -29,7 +29,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    do not apply.  */
 
 #include "tm.h"
+#ifndef L_trampoline
 #include "gstddef.h"
+#endif
 
 /* Don't use `fancy_abort' here even if config.h says to use it.  */
 #ifdef abort
@@ -864,8 +866,13 @@ asm ("__builtin_saveregs:");
 #endif /* not SVR4 */
 #else /* not __i860__ */
 #ifdef __sparc__
+#ifdef NO_UNDERSCORES
+	asm (".global __builtin_saveregs");
+	asm ("__builtin_saveregs:");
+#else
 	asm (".global ___builtin_saveregs");
 	asm ("___builtin_saveregs:");
+#endif
 	asm ("st %i0,[%fp+68]");
 	asm ("st %i1,[%fp+72]");
 	asm ("st %i2,[%fp+76]");
@@ -1219,6 +1226,31 @@ __enable_execute_stack ()
   asm ("pich");
 }
 #endif /* __convex__ */
+
+#ifdef __pyr__
+
+#include <stdio.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/vmmac.h>
+
+/* Modified from the convex -code above.
+   mremap promises to clear the i-cache. */
+
+void
+__enable_execute_stack ()
+{
+  int fp;
+  if (mprotect (((unsigned int)&fp/PAGSIZ)*PAGSIZ, PAGSIZ,
+		PROT_READ|PROT_WRITE|PROT_EXEC))
+    {
+      perror ("mprotect in __enable_execute_stack");
+      fflush (stderr);
+      abort ();
+    }
+}
+#endif /* __pyr__ */
 #endif /* L_trampoline */
 
 #ifdef L__main
@@ -1271,7 +1303,9 @@ __do_global_ctors ()
   DO_GLOBAL_CTORS_BODY;
   ON_EXIT (__do_global_dtors, 0);
 }
+#endif /* no INIT_SECTION_ASM_OP */
 
+#if !defined (INIT_SECTION_ASM_OP) || defined (INVOKE__main)
 /* Subroutine called automatically by `main'.
    Compiling a global function named `main'
    produces an automatic call to this function at the beginning.
@@ -1291,7 +1325,7 @@ __main ()
       __do_global_ctors ();
     }
 }
-#endif /* no INIT_SECTION_ASM_OP */
+#endif /* no INIT_SECTION_ASM_OP or INVOKE__main */
 
 #endif /* L__main */
 
@@ -1306,10 +1340,10 @@ __main ()
 
 /* We declare the lists here with two elements each,
    so that they are valid empty lists if no other definition is loaded.  */
-#ifndef INIT_SECTION_ASM_OP
+#if !defined(INIT_SECTION_ASM_OP) && !defined(CTOR_LISTS_DEFINED_EXTERNALLY)
 func_ptr __CTOR_LIST__[2];
 func_ptr __DTOR_LIST__[2];
-#endif /* INIT_SECTION_ASM_OP */
+#endif /* no INIT_SECTION_ASM_OP and not CTOR_LISTS_DEFINED_EXTERNALLY */
 
 #ifndef ON_EXIT
 

@@ -59,15 +59,38 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	USE_LIBG
 #define	USE_LIBG
 
-/* Define a few machine-specific details
-   of the implementation of constructors.
+/* Define a few machine-specific details of the implementation of
+   constructors.  */
 
-   CTORS_SECTION_ASM_OP should be defined to concatenate
-   the macro INIT_SECTION_ASM_OP, a newline, and a push instruction
-   to push a word containing 0 (or some equivalent of that).
+/* Although the .init section is used, it is not automatically invoked.  */
+#define INVOKE__main
 
-   ASM_OUTPUT_CONSTRUCTOR should be defined
-   to push the address of the constructor.  */
+/* State that atexit exists so __do_global_ctors will register
+   __do_global_dtors.  */
+#define HAVE_ATEXIT
+
+#if (STACK_BOUNDARY / BITS_PER_UNIT) == 16 && REG_PARM_STACK_SPACE (0) == 32
+#define CTOR_LIST_BEGIN	    		\
+  asm (INIT_SECTION_ASM_OP);		\
+  asm ("\tsubu\t r31,r31,16");		\
+  asm ("\tst\t r0,r31,32");		
+#define CTOR_LIST_END
+#endif
+
+/* ASM_OUTPUT_CONSTRUCTOR outputs code into the .init section to push the
+   address of the constructor.  This becomes the body of __do_global_ctors
+   in crtstuff.c.  r13 is a temporary register.  */
+#undef	ASM_OUTPUT_CONSTRUCTOR
+#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
+  do {									\
+    init_section ();							\
+    fprintf (FILE, "\tor.u\t r13,r0,hi16(");				\
+    assemble_name (FILE, NAME);						\
+    fprintf (FILE, ")\n\tor\t r13,r13,lo16(");				\
+    assemble_name (FILE, NAME);						\
+    fprintf (FILE, ")\n\tsubu\t r31,r31,%d\n\tst\t r13,r31,%d\n",	\
+	     STACK_BOUNDARY / BITS_PER_UNIT, REG_PARM_STACK_SPACE (0));	\
+  } while (0)
 
 #undef	DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY						\
@@ -77,26 +100,41 @@ do {									\
     (*p) ();								\
 } while (0)
 
-#undef	CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP  			\
-  INIT_SECTION_ASM_OP "\n"			\
-  "subu\t r31,r31,16\n\tst\t r0,r31,32\n\t"	\
-  DATA_SECTION_ASM_OP
+#define DTOR_LIST_BEGIN							\
+  asm (FINI_SECTION_ASM_OP);						\
+  func_ptr __DTOR_LIST__[4] = { (func_ptr) (-1), (func_ptr) (-1),	\
+				(func_ptr) (-1), (func_ptr) (-1) }
+#define DTOR_LIST_END						  	\
+  asm (FINI_SECTION_ASM_OP);						\
+  func_ptr __DTOR_END__[4] = { (func_ptr) 0, (func_ptr) 0,		\
+			       (func_ptr) 0, (func_ptr) 0 }  
 
-/* The reason we end with DATA_SECTION_ASM_OP is to prevent the
-   initial and final table elements (see crtstuff.c) from getting into
-   the .init section and causing a crash.  */
-
-#undef	ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
+/* A C statement (sans semicolon) to output an element in the table of
+   global destructors.  The table is constructed in the .fini section
+   so that an explicit linker script is not required.  The complication
+   is that this section is padded with NOP instructions and to either
+   8 or 16 byte alignment depending on the specific system.  A clever
+   way to avoid trouble is to output a block of 16 bytes where the
+   extra words are known values (-1).  */
+#undef	ASM_OUTPUT_DESTRUCTOR
+#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
   do {						\
-    init_section ();				\
-    fprintf (FILE, "\tor.u r13,r0,hi16(");	\
-    assemble_name (FILE, NAME);			\
-    fprintf (FILE, ")\nor\t r13,r13,lo16(");	\
-    assemble_name (FILE, NAME);			\
-    fprintf (FILE, ")\n\tsubu r31,r31,16\nst\t r13,r31,32\n"); \
-  } while (0)
+    register int i;				\
+    fini_section ();				\
+    fprintf (FILE, "\t%s\t ", ASM_LONG);	\
+    assemble_name (FILE,NAME);			\
+    fprintf (FILE, "\n");			\
+    for (i = 1; i < 4; i++)			\
+      fprintf (FILE, "\t%s\t -1\n", ASM_LONG);	\
+    } while (0)
 
-#undef	DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP FINI_SECTION_ASM_OP
+/* Walk the list looking for the terminating zero and ignoring all values of
+   -1.  */
+#undef	DO_GLOBAL_DTORS_BODY
+#define DO_GLOBAL_DTORS_BODY			\
+  do {						\
+    int i;					\
+    for (i = 0; __DTOR_LIST__[i] != 0; i++)	\
+      if (((int *)__DTOR_LIST__)[i] != -1)	\
+	__DTOR_LIST__[i] ();			\
+  } while (0)					

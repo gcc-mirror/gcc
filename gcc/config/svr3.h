@@ -172,25 +172,25 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
    unless the specific tm.h file turns it on by defining
    USE_CONST_SECTION as 1.  */
 
-/* The support for constructors and destructors depends on two
-   machine-specific macros that the individual tm.h file has to define:
+/* Define a few machine-specific details of the implementation of
+   constructors.
 
-   CTORS_SECTION_ASM_OP should be defined to concatenate
-   the macro INIT_SECTION_ASM_OP, a newline, and a push instruction
-   to push a word containing 0 (or some equivalent of that).
+   The __CTORS_LIST__ goes in the .init section.  Define CTOR_LIST_BEGIN
+   and CTOR_LIST_END to contribute to the .init section an instruction to
+   push a word containing 0 (or some equivalent of that).
 
-   ASM_OUTPUT_CONSTRUCTOR should be defined
-   to push the address of the constructor.  */
+   Define ASM_OUTPUT_CONSTRUCTOR to push the address of the constructor.  */
 
 #define USE_CONST_SECTION	0
 
 #define INIT_SECTION_ASM_OP     ".section\t.init"
 #define FINI_SECTION_ASM_OP     ".section .fini,\"x\""
 #define CONST_SECTION_ASM_OP	".section\t.rodata, \"x\""
-
+#define CTORS_SECTION_ASM_OP	INIT_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP    FINI_SECTION_ASM_OP
-/* CTORS_SECTION_ASM_OP is machine-dependent
-   because it pushes on the stack.  */
+
+/* CTOR_LIST_BEGIN and CTOR_LIST_END are machine-dependent
+   because they push on the stack.  */
 
 #define DO_GLOBAL_CTORS_BODY						\
 do {									\

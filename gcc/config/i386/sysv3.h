@@ -99,26 +99,23 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define FRAME_POINTER_REQUIRED \
   (current_function_calls_setjmp || current_function_calls_longjmp)
 
-/* Define a few machine-specific details
-   of the implementation of constructors.
+/* Define a few machine-specific details of the implementation of
+   constructors.
 
-   CTORS_SECTION_ASM_OP should be defined to concatenate
-   the macro INIT_SECTION_ASM_OP, a newline, and a push instruction
-   to push a word containing 0 (or some equivalent of that).
+   The __CTORS_LIST__ goes in the .init section.  Define CTOR_LIST_BEGIN
+   and CTOR_LIST_END to contribute to the .init section an instruction to
+   push a word containing 0 (or some equivalent of that).
 
-   ASM_OUTPUT_CONSTRUCTOR should be defined
-   to push the address of the constructor.  */
+   ASM_OUTPUT_CONSTRUCTOR should be defined to push the address of the
+   constructor.  */
 
 #undef INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP     ".section .init,\"x\""
 
-#define CTORS_SECTION_ASM_OP \
-  INIT_SECTION_ASM_OP "\n"	\
-  "\tpushl $0\n\t"		\
-  DATA_SECTION_ASM_OP
-/* The reason we end with DATA_SECTION_ASM_OP is to prevent the
-   initial and final table elements (see crtstuff.c) from getting into
-   the .init section and causing a crash.  */
+#define CTOR_LIST_BEGIN				\
+  asm (INIT_SECTION_ASM_OP);			\
+  asm ("pushl $0")
+#define CTOR_LIST_END CTOR_LIST_BEGIN
 
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
   do {						\
