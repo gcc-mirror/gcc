@@ -11,7 +11,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002,2003
 
-@set last-update-news 2003-01-26
+@set last-update-news 2003-01-31
 
 @ifset DOC-NEWS
 @include root.texi
@@ -201,8 +201,12 @@ of induction variables in unrolled loops.
 @item
 Problem Reports fixed (in chronological order of submission):
 @table @code
+@item 7681
+ICE in compensate_edge, at reg-stack.c:2591
 @item 8308
 gcc-3.x does not compile files with suffix .r (RATFOR) [Fixed in 3.2.1]
+@item 9258
+[3.2/3.3/3.4 regression] ICE in compensate_edge, at reg-stack.c:2589
 @end table
 @end itemize
 
