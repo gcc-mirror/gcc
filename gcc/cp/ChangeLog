@@ -1,6 +1,16 @@
+2003-11-14  Bernardo Innocenti  <bernie@develer.com>
+
+	Backport from 3.4-branch.
+
+	2003-06-25  Giovanni Bajo  <giovannibajo@libero.it>
+
+        PR c++/2094
+        * pt.c (unify): Add support for PTRMEM_CST and
+        FIELD_DECL unification.
+
 2003-11-08  Bernardo Innocenti  <bernie@develer.com>
 
-	Backport from 3.4-branch
+	Backport from 3.4-branch.
 
 	2003-10-08  Giovanni Bajo  <giovannibajo@libero.it>
 
