@@ -1,3 +1,14 @@
+2002-03-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/template/qualttp20.C: Revert previous change.
+	* g++.dg/template/qualttp3.C: Likewise.
+	* g++.dg/template/qualttp4.C: Likewise
+	* g++.dg/template/qualttp5.C: Likewise
+	* g++.dg/template/qualttp6.C: Likewise
+	* g++.dg/template/qualttp7.C: Likewise
+	* g++.dg/template/qualttp8.C: Likewise
+	* g++.dg/template/recurse.C: Likewise.
+
 2002-03-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/wchar-1.c: Update.
