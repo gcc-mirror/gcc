@@ -3558,13 +3558,13 @@ works correctly.
 
 Both the C and C++ standard have the concept of volatile objects. These
 are normally accessed by pointers and used for accessing hardware. The
-standards encourage compilers to refrain from optimizations on
+standards encourage compilers to refrain from optimizations
 concerning accesses to volatile objects that it might perform on
 non-volatile objects. The C standard leaves it implementation defined
 as to what constitutes a volatile access. The C++ standard omits to
 specify this, except to say that C++ should behave in a similar manner
 to C with respect to volatiles, where possible. The minimum either
-standard specifies is that at a sequence point all previous access to
+standard specifies is that at a sequence point all previous accesses to
 volatile objects have stabilized and no subsequent accesses have
 occurred. Thus an implementation is free to reorder and combine
 volatile accesses which occur between sequence points, but cannot do so

@@ -1,3 +1,7 @@
+2000-08-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* extend.texi (Volatiles): Fix typos.
+
 2000-08-11  Kazu Hirata  <kazu@hxi.com>
 
 	* flow.c: Fix formatting.
