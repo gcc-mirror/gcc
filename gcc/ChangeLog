@@ -1,5 +1,8 @@
 2000-07-31  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (init_function_format_info): Add C99 format functions
+	in C99 mode.
+
 	* c-decl.c (get_parm_info): Don't treat 'const void', 'volatile
 	void' or 'register void' as being the special case of 'void' alone
 	in a parameter list.
