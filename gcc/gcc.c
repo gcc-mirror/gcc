@@ -852,6 +852,8 @@ struct option_map option_map[] =
    {"--ansi", "-ansi", 0},
    {"--assemble", "-S", 0},
    {"--assert", "-A", "a"},
+   {"--classpath", "-fclasspath=", "aj"},
+   {"--CLASSPATH", "-fCLASSPATH=", "aj"},
    {"--comments", "-C", 0},
    {"--compile", "-c", 0},
    {"--debug", "-g", "oj"},

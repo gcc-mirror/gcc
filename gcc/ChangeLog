@@ -1,3 +1,7 @@
+Mon Oct 19 16:34:05 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* gcc.c (option_map): Added --classpath and --CLASSPATH.
+
 Tue Oct 20 10:59:02 1998  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* regclass.c (fix_register): Add error message.
@@ -146,7 +150,6 @@ Sat Oct 17 23:18:08 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* toplev.c (check_lang_option): Cast the result of `strlen' to
 	`int' when comparing against one.
 
->>>>>>> 1.2327
 Sat Oct 17 13:09:09 1998  Graham  <grahams@rcp.co.uk>
 
 	* gcse.c (dump_cuid_table): Correct typo.
@@ -336,6 +339,7 @@ Fri Oct 16 15:26:24 1998  Dave Brolley  <brolley@cygnus.com>
         * c-lex.c (yylex): Fix unaligned access of wchar_t.
 
 >>>>>>> 1.2326
+>>>>>>> 1.2342
 Fri Oct 16 10:47:53 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.h (TARGET_SWITCHES): Add --help documentation.
