@@ -191,23 +191,6 @@ static bool magic_varargs_p (tree);
 static tree build_temp (tree, tree, int, void (**)(const char *, ...));
 static void check_constructor_callable (tree, tree);
 
-tree
-build_vfield_ref (tree datum, tree type)
-{
-  if (datum == error_mark_node)
-    return error_mark_node;
-
-  if (TREE_CODE (TREE_TYPE (datum)) == REFERENCE_TYPE)
-    datum = convert_from_reference (datum);
-
-  if (TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (type)
-      && !same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (datum), type))
-    datum = convert_to_base (datum, type, /*check_access=*/false);
-
-  return build3 (COMPONENT_REF, TREE_TYPE (TYPE_VFIELD (type)),
-		 datum, TYPE_VFIELD (type), NULL_TREE);
-}
-
 /* Returns nonzero iff the destructor name specified in NAME
    (a BIT_NOT_EXPR) matches BASETYPE.  The operand of NAME can take many
    forms...  */

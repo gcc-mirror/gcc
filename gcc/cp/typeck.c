@@ -1711,9 +1711,14 @@ build_class_member_access_expr (tree object, tree member,
 	 give the right answer.  Note that we complain whether or not they
 	 actually used the offsetof macro, since there's no way to know at this
 	 point.  So we just give a warning, instead of a pedwarn.  */
+      /* Do not produce this warning for base class field references, because
+	 we know for a fact that didn't come from offsetof.  This does occur
+	 in various testsuite cases where a null object is passed where a
+	 vtable access is required.  */
       if (null_object_p && warn_invalid_offsetof
 	  && CLASSTYPE_NON_POD_P (object_type)
-	  && ! skip_evaluation)
+	  && !DECL_FIELD_IS_BASE (member)
+	  && !skip_evaluation)
 	{
 	  warning ("invalid access to non-static data member `%D' of NULL object", 
 		   member);

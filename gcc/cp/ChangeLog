@@ -1,3 +1,14 @@
+2004-09-10  Richard Henderson  <rth@redhat.com>
+
+	PR c++/17386
+	* call.c (build_vfield_ref): Move...
+	* class.c (build_vfield_ref): ... here.  Convert datum to the
+	primary base containing the vptr.
+	(make_new_vtable): Simplify build_primary_vtable arguments.
+	(finish_struct_1): Do not duplicate TYPE_VFIELD.
+	* typeck.c (build_class_member_access_expr): Don't warn for
+	null object access to base fields.
+
 2004-09-10  Ziemowit Laski  <zlaski@apple.com>
 
 	* decl.c (objc_get_current_scope, objc_mark_locals_volatile):
