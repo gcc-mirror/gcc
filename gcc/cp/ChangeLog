@@ -1,3 +1,13 @@
+1999-09-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* rtti.c (get_tinfo_var): These should always be global
+	(expand_si_desc): Use tree, not RTL, functions to generate code.
+	(expand_class_desc): Likewise.
+	(expand_ptr_desc): Likewise.
+	(expand_attr_desc): Likewise.
+	(expand_generic_desc): Likewise.
+	(synthesize_tinfo_fn): Likewise.
+
 1999-09-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (RECHAIN_STMTS): Remove `last' parameter.
