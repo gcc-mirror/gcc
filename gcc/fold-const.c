@@ -3170,9 +3170,13 @@ fold (expr)
 			   fold (build1 (code, type, TREE_OPERAND (arg0, 2)))));
 
 	  /* If this was a conversion, and all we did was to move into
-	     inside the COND_EXPR, bring it back out.  Then return so we
-	     don't get into an infinite recursion loop taking the conversion
-	     out and then back in.  */
+	     inside the COND_EXPR, bring it back out.  But leave it if
+	     it is a conversion from integer to integer and the
+	     result precision is no wider than a word since such a
+	     conversion is cheap and may be optimized away by combine,
+	     while it couldn't if it were outside the COND_EXPR.  Then return
+	     so we don't get into an infinite recursion loop taking the
+	     conversion out and then back in.  */
 
 	  if ((code == NOP_EXPR || code == CONVERT_EXPR
 	       || code == NON_LVALUE_EXPR)
@@ -3180,7 +3184,10 @@ fold (expr)
 	      && TREE_CODE (TREE_OPERAND (t, 1)) == code
 	      && TREE_CODE (TREE_OPERAND (t, 2)) == code
 	      && (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0))
-		  == TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 2), 0))))
+		  == TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 2), 0)))
+	      && ! (INTEGRAL_TYPE_P (TREE_TYPE (t))
+		    && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0)))
+		    && TYPE_PRECISION (TREE_TYPE (t)) <= BITS_PER_WORD))
 	    t = build1 (code, type,
 			build (COND_EXPR,
 			       TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 1), 0)),
@@ -3326,6 +3333,9 @@ fold (expr)
     case CONVERT_EXPR:
     case FIX_TRUNC_EXPR:
       /* Other kinds of FIX are not handled properly by fold_convert.  */
+
+      if (TREE_TYPE (TREE_OPERAND (t, 0)) == TREE_TYPE (t))
+	return TREE_OPERAND (t, 0);
 
       /* In addition to the cases of two conversions in a row 
 	 handled below, if we are converting something to its own
@@ -4822,6 +4832,28 @@ fold (expr)
 	      }
 	}
 
+      /* If the second operand is simpler than the third, swap them
+	 since that produces better jump optimization results.  */
+      if ((TREE_CONSTANT (arg1) || TREE_CODE_CLASS (TREE_CODE (arg1)) == 'd'
+	   || TREE_CODE (arg1) == SAVE_EXPR)
+	  && ! (TREE_CONSTANT (TREE_OPERAND (t, 2))
+		|| TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, 2))) == 'd'
+		|| TREE_CODE (TREE_OPERAND (t, 2)) == SAVE_EXPR))
+	{
+	  /* See if this can be inverted.  If it can't, possibly because
+	     it was a floating-point inequality comparison, don't do
+	     anything.  */
+	  tem = invert_truthvalue (arg0);
+
+	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
+	    {
+	      arg0 = TREE_OPERAND (t, 0) = tem;
+	      TREE_OPERAND (t, 1) = TREE_OPERAND (t, 2);
+	      TREE_OPERAND (t, 2) = arg1;
+	      arg1 = TREE_OPERAND (t, 1);
+	    }
+	}
+
       /* Convert A ? 1 : 0 to simply A.  */
       if (integer_onep (TREE_OPERAND (t, 1))
 	  && integer_zerop (TREE_OPERAND (t, 2))
@@ -4831,7 +4863,6 @@ fold (expr)
 	     is probably the best choice, so leave it alone.  */
 	  && type == TREE_TYPE (arg0))
 	return pedantic_non_lvalue (arg0);
-
 
       /* Look for expressions of the form A & 2 ? 2 : 0.  The result of this
 	 operation is simply A & 2.  */
