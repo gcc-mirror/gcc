@@ -1,3 +1,7 @@
+2001-02-21  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* g++.old-deja/g++.other/lookup22.C: New test.
+
 2001-02-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.old-deja/g++.other/inline19.c: Remove XFAIL.
