@@ -54,10 +54,10 @@ Boston, MA 02111-1307, USA.  */
    "or %o7,%g0,X; call Y; or X,%g0,%o7" always, so that it can be optimized.
    With sethi/jmp, neither 'as' nor 'ld' has an easy way how to find out if
    somebody does not branch between the sethi and jmp.  */
-#define SIBCALL_SLOT_EMPTY_P 0
+#define LEAF_SIBCALL_SLOT_RESERVED_P 1
 #else
-#define SIBCALL_SLOT_EMPTY_P \
-  ((TARGET_ARCH32 || TARGET_CM_MEDLOW) && ! flag_pic)
+#define LEAF_SIBCALL_SLOT_RESERVED_P \
+  ((TARGET_ARCH64 && !TARGET_CM_MEDLOW) || flag_pic)
 #endif
 
 /* Global variables for machine-dependent things.  */
@@ -2946,7 +2946,7 @@ eligible_for_sibcall_delay (rtx trial)
     {
       /* If the tail call is done using the call instruction,
 	 we have to restore %o7 in the delay slot.  */
-      if (! SIBCALL_SLOT_EMPTY_P)
+      if (LEAF_SIBCALL_SLOT_RESERVED_P)
 	return 0;
 
       /* %g1 is used to build the function address */
@@ -4355,17 +4355,16 @@ sparc_asm_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 /* Output a 'restore' instruction.  */
  
 static void
-output_restore (rtx insn)
+output_restore (rtx pat)
 {
-  rtx operands[3], pat;
+  rtx operands[3];
 
-  if (! insn)
+  if (! pat)
     {
       fputs ("\t restore\n", asm_out_file);
       return;
     }
 
-  pat = PATTERN (insn);
   if (GET_CODE (pat) != SET)
     abort ();
 
@@ -4483,7 +4482,7 @@ output_return (rtx insn)
 	    {
 	      fprintf (asm_out_file, "\tjmp\t%%i7+%d\n",
 		       sparc_skip_caller_unimp ? 12 : 8);
-	      output_restore (delay);
+	      output_restore (pat);
 	    }
 
 	  PATTERN (delay) = gen_blockage ();
@@ -4521,7 +4520,7 @@ output_sibcall (rtx insn, rtx call_operand)
 	 register window.  We simply output the jump to the function and
 	 the insn in the delay slot (if any).  */
 
-      if (! SIBCALL_SLOT_EMPTY_P && delay_slot_filled_p)
+      if (LEAF_SIBCALL_SLOT_RESERVED_P && delay_slot_filled_p)
 	abort();
 
       if (delay_slot_filled_p)
@@ -4560,13 +4559,13 @@ output_sibcall (rtx insn, rtx call_operand)
 	  if (! delay)
 	    abort ();
 
-	  output_restore (delay);
+	  output_restore (PATTERN (delay));
 
 	  PATTERN (delay) = gen_blockage ();
 	  INSN_CODE (delay) = -1;
 	}
       else
-	output_restore (0);
+	output_restore (NULL_RTX);
     }
 
   return "";
