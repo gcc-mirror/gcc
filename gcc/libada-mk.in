@@ -26,7 +26,7 @@ libdir=@libdir@
 gcc_version=@gcc_version@
 NOCOMMON_FLAG=@nocommon_flag@
 WARN_CFLAGS=@warn_cflags@
-cc_set_by_configure=@cc_set_by_configure@
+cc_set_by_configure=@cc_for_cross_gnattools@
 gcc_tmake_file=@tmake_file@
 gcc_xmake_file=@xmake_file@
 

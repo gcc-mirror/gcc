@@ -1519,6 +1519,11 @@ case "$LN_S" in
 		;;
 esac
 
+# This is a terrible hack which will go away when a gnattools directory
+# is created.
+cc_for_cross_gnattools=${CC}
+AC_SUBST(cc_for_cross_gnattools)
+
 out_object_file=`basename $out_file .c`.o
 
 tm_file_list=
