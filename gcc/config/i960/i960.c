@@ -1311,10 +1311,10 @@ i960_function_epilogue (file, size)
   if (epilogue_string[0] != '\0')
     fprintf (file, "%s", epilogue_string);
 
-  /* Must clear g14 on return.  */
+  /* Must clear g14 on return if this function set it.
+     Only varargs/stdarg functions modify g14.  */
 
-  if (current_function_args_size != 0
-      || VARARGS_STDARG_FUNCTION (current_function_decl))
+  if (VARARGS_STDARG_FUNCTION (current_function_decl))
     fprintf (file, "\tmov	0,g14\n");
 
   fprintf (file, "\tret\n");
@@ -1362,8 +1362,13 @@ i960_output_call_insn (target, argsize_rtx, arg_pointer, insn)
 
   output_asm_insn ("callx	%0", operands);
 
+  /* If the caller sets g14 to the address of the argblock, then the caller
+     must clear it after the return.  */
+
   if (current_function_args_size != 0 || varargs_stdarg_function)
     output_asm_insn ("mov	r3,g14", operands);
+  else if (argsize > 48)
+    output_asm_insn ("mov	0,g14", operands);
 
   return "";
 }
@@ -1385,8 +1390,10 @@ i960_output_ret_insn (insn)
       return lbuf;
     }
 
-  if (current_function_args_size != 0
-      || VARARGS_STDARG_FUNCTION (current_function_decl))
+  /* Must clear g14 on return if this function set it.
+     Only varargs/stdarg functions modify g14.  */
+
+  if (VARARGS_STDARG_FUNCTION (current_function_decl))
     output_asm_insn ("mov	0,g14", 0);
 
   if (i960_leaf_ret_reg >= 0)
