@@ -112,6 +112,10 @@ struct inline_remap
   /* Record the last thing assigned to cc0.  */
   rtx last_cc0_value;
 #endif
+  /* Note mode of COMPARE if the mode would be otherwise lost (comparing of
+     two VOIDmode constants.  */
+  rtx compare_src;
+  enum machine_mode compare_mode;
 };
 
 /* Return a copy of an rtx (as needed), substituting pseudo-register,

@@ -788,6 +788,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   map->max_insnno = inl_max_uid;
 
   map->integrating = 1;
+  map->compare_src = NULL_RTX;
+  map->compare_mode = VOIDmode;
 
   /* const_equiv_varray maps pseudos in our routine to constants, so
      it needs to be large enough for all our pseudos.  This is the
@@ -2440,6 +2442,25 @@ subst_constants (loc, insn, map, memonly)
 	rtx *dest_loc = &SET_DEST (x);
 	rtx dest = *dest_loc;
 	rtx src, tem;
+	enum machine_mode compare_mode = VOIDmode;
+
+	/* If SET_SRC is a COMPARE which subst_constants would turn into
+	   COMPARE of 2 VOIDmode constants, note the mode in which comparison
+	   is to be done.  */
+	if (GET_CODE (SET_SRC (x)) == COMPARE)
+	  {
+	    src = SET_SRC (x);
+	    if (GET_MODE_CLASS (GET_MODE (src)) == MODE_CC
+#ifdef HAVE_cc0
+		|| dest == cc0_rtx
+#endif
+		)
+	      {
+		compare_mode = GET_MODE (XEXP (src, 0));
+		if (compare_mode == VOIDmode)
+		  compare_mode = GET_MODE (XEXP (src, 1));
+	      }
+	  }
 
 	subst_constants (&SET_SRC (x), insn, map, memonly);
 	src = SET_SRC (x);
@@ -2495,8 +2516,22 @@ subst_constants (loc, insn, map, memonly)
 	    /* Normally, this copy won't do anything.  But, if SRC is a COMPARE
 	       it will cause us to save the COMPARE with any constants
 	       substituted, which is what we want for later.  */
-	    map->equiv_sets[map->num_sets].equiv = copy_rtx (src);
+	    rtx src_copy = copy_rtx (src);
+	    map->equiv_sets[map->num_sets].equiv = src_copy;
 	    map->equiv_sets[map->num_sets++].dest = dest;
+	    if (compare_mode != VOIDmode
+		&& GET_CODE (src) == COMPARE
+		&& (GET_MODE_CLASS (GET_MODE (src)) == MODE_CC
+#ifdef HAVE_cc0
+		    || dest == cc0_rtx
+#endif
+		    )
+		&& GET_MODE (XEXP (src, 0)) == VOIDmode
+		&& GET_MODE (XEXP (src, 1)) == VOIDmode)
+	      {
+		map->compare_src = src_copy;
+		map->compare_mode = compare_mode;
+	      }
 	  }
       }
       return;
@@ -2600,9 +2635,34 @@ subst_constants (loc, insn, map, memonly)
 	if (op0_mode == MAX_MACHINE_MODE)
 	  abort ();
 
-	new = simplify_ternary_operation (code, GET_MODE (x), op0_mode,
-					  XEXP (x, 0), XEXP (x, 1),
-					  XEXP (x, 2));
+	if (code == IF_THEN_ELSE)
+	  {
+	    rtx op0 = XEXP (x, 0);
+
+	    if (GET_RTX_CLASS (GET_CODE (op0)) == '<'
+		&& GET_MODE (op0) == VOIDmode
+		&& ! side_effects_p (op0)
+		&& XEXP (op0, 0) == map->compare_src
+		&& GET_MODE (XEXP (op0, 1)) == VOIDmode)
+	      {
+		/* We have compare of two VOIDmode constants for which
+		   we recorded the comparison mode.  */
+		rtx temp =
+		  simplify_relational_operation (GET_CODE (op0),
+						 map->compare_mode,
+						 XEXP (op0, 0),
+						 XEXP (op0, 1));
+
+		if (temp == const0_rtx)
+		  new = XEXP (x, 2);
+		else if (temp == const1_rtx)
+		  new = XEXP (x, 1);
+	      }
+	  }
+	if (!new)
+	  new = simplify_ternary_operation (code, GET_MODE (x), op0_mode,
+					    XEXP (x, 0), XEXP (x, 1),
+					    XEXP (x, 2));
 	break;
       }
 

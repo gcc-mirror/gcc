@@ -1,3 +1,12 @@
+2001-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* integrate.h (struct inline_remap): Add compare_src, compare_mode.
+	* integrate.c (expand_inline_function): Initialize them.
+	(subst_constants): If changing COMPARE so that both its arguments
+	will be VOIDmode and the comparison mode will be lost, note
+	compare_mode.  Use the recorded compare_mode to optimize
+	IF_THEN_ELSE.
+
 2001-01-23  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (new_die): Use xcalloc.
