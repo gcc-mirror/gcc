@@ -100,9 +100,9 @@ static void init_library		PARAMS ((void));
 static void init_builtins		PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
 						 char *, int, int));
-struct search_path * remove_dup_dir	PARAMS ((cpp_reader *,
+static struct search_path * remove_dup_dir	PARAMS ((cpp_reader *,
 						 struct search_path *));
-struct search_path * remove_dup_dirs PARAMS ((cpp_reader *,
+static struct search_path * remove_dup_dirs PARAMS ((cpp_reader *,
 						 struct search_path *));
 static void merge_include_chains	PARAMS ((cpp_reader *));
 static void do_includes			PARAMS ((cpp_reader *,
@@ -264,7 +264,7 @@ append_include_chain (pfile, dir, path, cxx_aware)
 /* Handle a duplicated include path.  PREV is the link in the chain
    before the duplicate.  The duplicate is removed from the chain and
    freed.  Returns PREV.  */
-struct search_path *
+static struct search_path *
 remove_dup_dir (pfile, prev)
      cpp_reader *pfile;
      struct search_path *prev;
@@ -285,7 +285,7 @@ remove_dup_dir (pfile, prev)
    chain, or NULL if the chain is empty.  This algorithm is quadratic
    in the number of -I switches, which is acceptable since there
    aren't usually that many of them.  */
-struct search_path *
+static struct search_path *
 remove_dup_dirs (pfile, head)
      cpp_reader *pfile;
      struct search_path *head;
@@ -297,20 +297,18 @@ remove_dup_dirs (pfile, head)
       for (other = head; other != cur; other = other->next)
         if (INO_T_EQ (cur->ino, other->ino) && cur->dev == other->dev)
 	  {
-	    if (cur->sysp)
+	    if (cur->sysp && !other->sysp)
 	      {
 		cpp_warning (pfile,
 			     "changing search order for system directory \"%s\"",
 			     cur->name);
 		if (strcmp (cur->name, other->name))
-		  cpp_warning (pfile, other->sysp
-			       ? "  as it is the same as system directory \"%s\""
-			       : "  as it is the same as non-system directory \"%s\"",
+		  cpp_warning (pfile, 
+			       "  as it is the same as non-system directory \"%s\"",
 			       other->name);
 		else
-		  cpp_warning (pfile, other->sysp
-			       ? "  as it has already been specified as a system directory"
-			       : "  as it has already been specified as a non-system directory");
+		  cpp_warning (pfile, 
+			       "  as it has already been specified as a non-system directory");
 	      }
 	    cur = remove_dup_dir (pfile, prev);
 	    break;
