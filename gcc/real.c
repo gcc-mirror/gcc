@@ -57,7 +57,7 @@ _Methods and Programs for Mathematical Functions_, Prentice-Hall
 or Simon & Schuster Int'l, 1989.  A library of XFmode elementary
 transcendental functions can be obtained by ftp from
 research.att.com: netlib/cephes/ldouble.shar.Z  */
-
+
 /* Type of computer arithmetic.
  * Only one of DEC, IBM, MIEEE, IBMPC, or UNK should get defined.
  */
@@ -166,7 +166,7 @@ unknown arithmetic type
 #define INFINITY
 #endif
 #endif
-
+
 /* Find a host integer type that is at least 16 bits wide,
    and another type at least twice whatever that size is. */
 
@@ -325,7 +325,7 @@ void mtherr (), make_nan ();
 void enan ();
 extern unsigned EMUSHORT ezero[], ehalf[], eone[], etwo[];
 extern unsigned EMUSHORT elog2[], esqrt2[];
-
+
 /* Pack output array with 32-bit numbers obtained from
    array containing 16-bit numbers, swapping ends if required. */
 void 
@@ -883,6 +883,20 @@ real_value_truncate (mode, arg)
 
 #endif /* REAL_ARITHMETIC defined */
 
+/* Used for debugging--print the value of R in human-readable format
+   on stderr.  */
+
+void
+debug_real (r)
+     REAL_VALUE_TYPE r;
+{
+  char dstr[30];
+
+  REAL_VALUE_TO_DECIMAL (r, "%.20g", dstr);
+  fprintf (stderr, "%s", dstr);
+}  
+
+
 /* Target values are arrays of host longs. A long is guaranteed
    to be at least 32 bits wide. */
 
@@ -970,7 +984,7 @@ ereal_isneg (x)
 }
 
 /* End of REAL_ARITHMETIC interface */
-
+
 /*							ieee.c
  *
  *    Extended precision IEEE binary floating point arithmetic routines
