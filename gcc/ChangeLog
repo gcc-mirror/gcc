@@ -1,3 +1,7 @@
+2002-05-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (c_common_init): Use intmax_t for now.
+
 2002-05-24  Andrew Haley  <aph@redhat.com>
 
 	* fold-const.c (fold): Don't convert (T)(x & c) into (T)x & (T)c
