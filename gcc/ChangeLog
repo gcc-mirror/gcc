@@ -1,3 +1,7 @@
+Fri Nov  6 04:07:53 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* jump.c (calculate_can_reach_end): Fix thinko.
+
 Fri Nov  6 00:16:04 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reorg.c (fill_simple_delay_slots): Fix typo.

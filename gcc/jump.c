@@ -2465,8 +2465,8 @@ calculate_can_reach_end (last, check_deleted, delete_final_note)
   if (insn != NULL_RTX
       && GET_CODE (insn) == NOTE
       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_END
-      && (check_deleted != 0
-	  && ! INSN_DELETED_P (insn)))
+      && (check_deleted == 0
+	  || ! INSN_DELETED_P (insn)))
     {
       if (delete_final_note)
 	delete_insn (insn);
