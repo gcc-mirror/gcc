@@ -8028,14 +8028,6 @@ This macro should not be defined if the default output is correct, or
 if it can be made correct by defining @code{DBX_LINES_FUNCTION_RELATIVE}.
 @end defmac
 
-@defmac DBX_OUTPUT_FUNCTION_END (@var{stream}, @var{function})
-Define this macro if the target machine requires special output at the
-end of the debugging information for a function.  The definition should
-be a C statement (sans semicolon) to output the appropriate information
-to @var{stream}.  @var{function} is the @code{FUNCTION_DECL} node for
-the function.
-@end defmac
-
 @defmac NO_DBX_FUNCTION_END
 Some stabs encapsulation formats (in particular ECOFF), cannot handle the
 @code{.stabs "",N_FUN,,0,0,Lscope-function-1} gdb dbx extension construct.
