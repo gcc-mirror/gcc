@@ -8717,6 +8717,13 @@ tree_expr_nonnegative_p (tree t)
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
 	     && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
 
+    case BIT_AND_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 1))
+	     || tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
+    case BIT_IOR_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
+	     && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+
     case NOP_EXPR:
       {
 	tree inner_type = TREE_TYPE (TREE_OPERAND (t, 0));
@@ -8954,6 +8961,10 @@ tree_expr_nonzero_p (tree t)
     case SAVE_EXPR:
     case NON_LVALUE_EXPR:
       return tree_expr_nonzero_p (TREE_OPERAND (t, 0));
+
+    case BIT_IOR_EXPR:
+      return tree_expr_nonzero_p (TREE_OPERAND (t, 1))
+	     || tree_expr_nonzero_p (TREE_OPERAND (t, 0));
 
     default:
       break;
