@@ -1,3 +1,10 @@
+Fri Dec 19 09:35:48 1997  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in (target frags): Add *-linux-gnu.
+
+	* streambuf.cc (streambuf::~streambuf): Don't delete _lock
+	for _IO_stdin/_IO_stdout/_IO_stderr.
+
 Thu Nov 27 01:32:43 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (insatll): Change gxx_includedir to gcc_include_dir.
