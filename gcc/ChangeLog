@@ -1,6 +1,8 @@
 1998-06-26  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.md (ne 0, non power case): Add missing & constraint.
+	Name pattern ne0.
+	(negative abs insns): Add pattern names.
 
 Fri Jun 26 17:36:42 1998  Dave Love  <d.love@dl.ac.uk>
 
