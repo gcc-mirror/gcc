@@ -1,3 +1,8 @@
+Sun Jan 14 06:20:49 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* ggc-page.c (alloc_annon): Call perror and correctly call exit.
+	(alloc_page, ggc_alloc): Add casts to remove warnings.
+
 2001-01-14  Geoffrey Keating  <geoffk@redhat.com>
 
 	* combine.c (simplify_comparison): Don't change `code' when
