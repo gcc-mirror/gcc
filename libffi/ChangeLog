@@ -1,5 +1,7 @@
 2004-02-09  Alan Modra  <amodra@bigpond.net.au>
 
+	* src/types.c (pointer): POWERPC64 has 8 byte pointers.
+
 	* src/powerpc/ffi.c (ffi_prep_args64): Correct long double handling.
 	(ffi_closure_helper_LINUX64): Fix typo.
 	* testsuite/libffi.call/cls_align_longdouble.c: Pass -mlong-double-128
