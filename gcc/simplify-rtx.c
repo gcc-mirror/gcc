@@ -1925,7 +1925,7 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	    return const0_rtx;
 
 	  /* Transform (and (extend X) C) into (zero_extend (and X C)) if
-	     there are no non-zero bits of C outside of X's mode.  */
+	     there are no nonzero bits of C outside of X's mode.  */
 	  if ((GET_CODE (op0) == SIGN_EXTEND
 	       || GET_CODE (op0) == ZERO_EXTEND)
 	      && GET_CODE (trueop1) == CONST_INT
