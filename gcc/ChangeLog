@@ -1,3 +1,7 @@
+2001-06-05  scott snyder  <snyder@fnal.gov>
+
+	* gccbug.in:  Fix typo.
+
 2001-06-05  Andreas Jaeger  <aj@suse.de>
 
 	* builtins.def: Fix definition of __builtin_cosf, it uses float as
