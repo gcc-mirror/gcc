@@ -1,3 +1,13 @@
+2003-06-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR bootstrap/10835
+	* haifa-sched.c (max_lookahead_tries,
+        cached_first_cycle_multipass_dfa_lookahead,
+        cached_issue_rate): New variables.
+	(max_issue): Check the number of tries.
+	(choose_ready): Calculate max_lookahead_tries.
+	(sched_init): Check cached_issue_rate.
+
 2003-06-13  Richard Henderson  <rth@redhat.com>
 
 	* cfgbuild.c (make_edges): Set ABNORMAL with SIBCALL.
