@@ -5162,70 +5162,90 @@ mark_used (decl)
     instantiate_decl (decl, /*defer_ok=*/1);
 }
 
-/* Helper function for named_class_head_sans_basetype nonterminal.  We
-   have just seen something of the form `AGGR SCOPE::ID'.  Return a
-   TYPE_DECL for the type declared by ID in SCOPE.  */
+/* Helper function for class_head_decl and class_head_defn
+   nonterminals. AGGR is the class, union or struct tag. SCOPE is the
+   explicit scope used (NULL for no scope resolution). ID is the
+   name. DEFN_P is true, if this is a definition of the class and
+   NEW_TYPE_P is set to non-zero, if we push into the scope containing
+   the to be defined aggregate.
+   
+   Return a TYPE_DECL for the type declared by ID in SCOPE.  */
 
 tree
-handle_class_head (aggr, scope, id)
+handle_class_head (aggr, scope, id, defn_p, new_type_p)
      tree aggr, scope, id;
+     int defn_p;
+     int *new_type_p;
 {
   tree decl = NULL_TREE;
-
-  if (TREE_CODE (id) == TYPE_DECL)
-    /* We must bash typedefs back to the main decl of the type. Otherwise
-       we become confused about scopes.  */
-    decl = TYPE_MAIN_DECL (TREE_TYPE (id));
-  else if (DECL_CLASS_TEMPLATE_P (id))
-    decl = DECL_TEMPLATE_RESULT (id);
-  else 
-    {
-      tree current = current_scope ();
+  tree current = current_scope ();
+  bool xrefd_p = false;
   
-      if (current == NULL_TREE)
-        current = current_namespace;
-      if (scope == NULL_TREE)
-        scope = global_namespace;
+  if (current == NULL_TREE)
+    current = current_namespace;
 
-      if (TYPE_P (scope))
-	{
-	  /* According to the suggested resolution of core issue 180,
-	     'typename' is assumed after a class-key.  */
-	  decl = make_typename_type (scope, id, 1);
-	  if (decl != error_mark_node)
-	    decl = TYPE_MAIN_DECL (decl);
-	  else
-	    decl = NULL_TREE;
-	}
-      else if (scope == current)
-        {
-          /* We've been given AGGR SCOPE::ID, when we're already inside SCOPE.
-             Be nice about it.  */
-          if (pedantic)
-            pedwarn ("extra qualification `%T::' on member `%D' ignored",
-                        FROB_CONTEXT (scope), id);
-        }
-      else if (scope != global_namespace)
-	error ("`%T' does not have a nested type named `%D'", scope, id);
+  *new_type_p = 0;
+  
+  if (scope)
+    {
+      if (TREE_CODE (id) == TYPE_DECL)
+	/* We must bash typedefs back to the main decl of the
+       	   type. Otherwise we become confused about scopes.  */
+	decl = TYPE_MAIN_DECL (TREE_TYPE (id));
+      else if (DECL_CLASS_TEMPLATE_P (id))
+	decl = DECL_TEMPLATE_RESULT (id);
       else
-	error ("no file-scope type named `%D'", id);
-      
-      /* Inject it at the current scope.  */
-      if (! decl)
-	decl = TYPE_MAIN_DECL (xref_tag (aggr, id, 1));
+	{
+	  if (TYPE_P (scope))
+	    {
+	      /* According to the suggested resolution of core issue
+	     	 180, 'typename' is assumed after a class-key.  */
+	      decl = make_typename_type (scope, id, 1);
+	      if (decl != error_mark_node)
+		decl = TYPE_MAIN_DECL (decl);
+	      else
+		decl = NULL_TREE;
+	    }
+	  else if (scope == current)
+	    {
+	      /* We've been given AGGR SCOPE::ID, when we're already
+             	 inside SCOPE.  Be nice about it.  */
+	      if (pedantic)
+		pedwarn ("extra qualification `%T::' on member `%D' ignored",
+			 scope, id);
+	    }
+	  else
+	    error ("`%T' does not have a class or union named `%D'",
+		   scope, id);
+	}
     }
- 
-  /* Enter the SCOPE.  If this turns out not to be a definition, the
-     parser must leave the scope.  */
-  push_scope (CP_DECL_CONTEXT (decl));
+  
+  if (!decl)
+    {
+      decl = TYPE_MAIN_DECL (xref_tag (aggr, id, !defn_p));
+      xrefd_p = true;
+    }
 
-  /* If we see something like:
+  if (!TYPE_BINFO (TREE_TYPE (decl)))
+    {
+      error ("`%T' is not a class or union type", decl);
+      return error_mark_node;
+    }
+  
+  if (defn_p)
+    {
+      /* For a definition, we want to enter the containing scope
+	 before looking up any base classes etc. Only do so, if this
+	 is different to the current scope.  */
+      tree context = CP_DECL_CONTEXT (decl);
 
-       template <typename T> struct S::I ....
-       
-     we must create a TEMPLATE_DECL for the nested type.  */
-  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
-    decl = push_template_decl (decl);
+      *new_type_p = current != context;
+      if (*new_type_p)
+	push_scope (context);
+  
+      if (!xrefd_p && PROCESSING_REAL_TEMPLATE_DECL_P ())
+	decl = push_template_decl (decl);
+    }
 
   return decl;
 }
