@@ -1,5 +1,9 @@
 1999-04-11  Mark Mitchell  <mark@codesourcery.com>
 
+	* friend.c (add_friend): Deal gracefully with error_mark_node.
+	* method.c (build_overload_value): Handle pointers-to-members as
+	template parameters.
+
 	* decl.c (push_binding): Fix typo in comment.
 
 1999-04-10  Mark Mitchell  <mark@codesourcery.com>

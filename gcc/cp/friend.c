@@ -141,10 +141,16 @@ void
 add_friend (type, decl)
      tree type, decl;
 {
-  tree typedecl = TYPE_MAIN_DECL (type);
-  tree list = DECL_FRIENDLIST (typedecl);
-  tree name = DECL_NAME (decl);
+  tree typedecl;
+  tree list;
+  tree name;
 
+  if (decl == error_mark_node)
+    return;
+
+  typedecl = TYPE_MAIN_DECL (type);
+  list = DECL_FRIENDLIST (typedecl);
+  name = DECL_NAME (decl);
   type = TREE_TYPE (typedecl);
 
   while (list)
