@@ -1,3 +1,9 @@
+2004-07-29  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-ccp.c (visit_assignment): Move code to prevent
+	setting a non-register to UNDEFINED right before the call to
+	set_lattice_value.
+
 2004-07-29  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/lib1funcs.asm: Make aliases movstr* for movmem*.
