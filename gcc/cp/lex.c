@@ -4992,7 +4992,7 @@ handle_generic_pragma (token)
 	  return handle_pragma_token (NULL_PTR, NULL_TREE);
 
 	default:
-	  handle_pragma_token (token_buffer, NULL);
+	  handle_pragma_token (token_buffer, NULL_TREE);
 	}
       
       token = real_yylex ();
