@@ -1,3 +1,8 @@
+2002-06-23  Jan Hubicka  <jh@suse.cz>
+
+	* reg-stack.c (convert_regs_exit): Push the registers to stack in
+	proper order.
+
 2002-06-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR middle-end/6963
@@ -29,12 +34,12 @@
 2002-06-21  Matt Thomas  <matt@3am-software.com>
 
 	* config/vax/vax.c (vax_output_function_prologue): Use
-	REGISTER_PREFIX.  Fix some indentation. 
+	REGISTER_PREFIX.  Fix some indentation.
 	* config/vax/vax.h (FUNCTION_PROFILER): Use reg_names[].
 	(VAX_ISTREAM_SYNC): Define.
 	(INITIALIZE_TRAMPOLINE): Use VAX_ISTREAM_SYNC.  Move the
-	i-stream sync to the end. 
-	(REGISTER_PREFIX): Define as "".  
+	i-stream sync to the end.
+	(REGISTER_PREFIX): Define as "".
 	(ASM_OUTPUT_MI_THUNK): Use REGISTER_PREFIX.
 
 2002-06-21  Jason Thorpe  <thorpej@wasabisystems.com>
@@ -55,8 +60,8 @@
 2002-06-21  Richard Henderson  <rth@redhat.com>
 
 	* bb-reorder.c (make_reorder_chain_1): Search harder for the
-	vax casesi fallthru edge. 
-	* cfglayout.c (cleanup_unconditional_jumps): Use 
+	vax casesi fallthru edge.
+	* cfglayout.c (cleanup_unconditional_jumps): Use
 	redirect_edge_succ_nodup.  Do not delete ADDR_VEC insns as dead.
 	* cfgrtl.c (force_nonfallthru_and_redirect): Place redirection
 	block after ADDR_VEC.
@@ -255,7 +260,7 @@ Thu Jun 20 17:25:29 CEST 2002  JAn HUbicka  <jh@suse.cz>
 	(sparclite-*-elf*): Likewise.
 	(sparc86x-*-elf*): Likewise.
 	(sparc64-*-elf*): Likewise.
-	
+
 	* config/i386/sol2.h (PREFERRED_DEBUGGING_TYPE): Moved to
 	config/sol2.h.
 	(ASM_SPEC): Override config/sol2.h version for now.
@@ -270,7 +275,7 @@ Thu Jun 20 17:25:29 CEST 2002  JAn HUbicka  <jh@suse.cz>
 	(SWITCH_TAKES_ARG, STDC_0_IN_SYSTEM_HEADERS): Likewise.
 	(ASM_CPU_SPEC): Define.
 	(SUBTARGET_EXTRA_SPECS): Define.
-	
+
 	* config/sparc/sol2-bi.h (LONG_DOUBLE_TYPE_SIZE): Removed, already
 	in config/sparc/sol2.h.
 	(ASM_SPEC): Moved to config/sol2.h.
@@ -286,7 +291,7 @@ Thu Jun 20 17:25:29 CEST 2002  JAn HUbicka  <jh@suse.cz>
 	(LINK_ARCH64_SPEC): Simplified.
 	(LINK_ARCH_SPEC): Redefined config/sol2.h version for 64-bit support.
 	(LINK_SPEC): Moved to config/sol2.h
-	
+
 	* config/sparc/sol2.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Moved to
 	config/sol2.h.
 	Use BITS_PER_WORD for size.
@@ -302,7 +307,7 @@ Thu Jun 20 17:25:29 CEST 2002  JAn HUbicka  <jh@suse.cz>
 	(SWITCH_TAKES_ARG, STDC_0_IN_SYSTEM_HEADERS): Likewise.
 	(TARGET_DEFAULT): Reordered to match config/sparc/sol2-bi.h version.
 	(TRANSFER_FROM_TRAMPOLINE): Moved to config/sol2.h
-	
+
 	* config.gcc (i?86-*-solaris2*): Removed obsolete gas support.
 	* config/i386/sol2gas.h: Removed.
 

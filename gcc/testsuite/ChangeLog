@@ -1,3 +1,7 @@
+2002-06-23  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.c-torture/execute/complex-6.c: New.
+
 2002-06-22  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/trad/comment-2.c. gcc.dg/cpp/trad/funlike-2.c,
@@ -47,7 +51,7 @@
 2002-06-18  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/20020615-1.c: Fix typo in comment.
-	
+
 2002-06-18  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.c-torture/execute/simd-1.c: New.
@@ -145,7 +149,7 @@
 
 2002-06-02  Richard Henderson  <rth@redhat.com>
 
-	* gcc.c-torture/execute/pure-1.c: Don't mark any of the 
+	* gcc.c-torture/execute/pure-1.c: Don't mark any of the
 	test functions static.
 
 2002-06-02  Andreas Jaeger  <aj@suse.de>
