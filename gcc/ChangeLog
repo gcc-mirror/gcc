@@ -1,3 +1,21 @@
+2001-01-14  Andreas Jaeger  <aj@suse.de>
+
+	* config/i386/i386.c (ix86_split_fp_branch): Remove unused
+	variables.
+	(ix86_fp_compare_mode): Add unused attribute.
+	(ix86_expand_fp_movcc): Remove unused variable.
+	(ix86_expand_builtin): Make fcode unsigned.
+
+	* expr.c (MOVE_BY_PIECES_P): Cast MOVE_RATIO to unsigned.
+	(expand_expr): Add cast to avoid signed warning.
+	(store_field): Likewise.
+	(store_constructor_field): Likewise.
+	(store_constructor): Likewise.
+	(store_expr): Likewise.
+	(clear_storage): Likewise.
+	(emit_group_store): Likewise.
+	(emit_group_load): Likewise.
+
 2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c: Move format checking code to ...

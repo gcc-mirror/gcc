@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -4651,7 +4651,7 @@ ix86_expand_int_compare (code, op0, op1)
 
 enum machine_mode
 ix86_fp_compare_mode (code)
-     enum rtx_code code;
+     enum rtx_code code ATTRIBUTE_UNUSED;
 {
   /* ??? In order to make all comparisons reversible, we do all comparisons
      non-trapping when compiling for IEEE.  Once gcc is able to distinguish
@@ -5355,7 +5355,6 @@ ix86_split_fp_branch (condition, op1, op2, target1, target2, tmp)
   rtx second, bypass;
   rtx label = NULL_RTX;
   enum rtx_code code = GET_CODE (condition);
-  enum rtx_code bypass_code, second_code, first;
 
   if (target2 != pc_rtx)
     {
@@ -5811,7 +5810,6 @@ ix86_expand_fp_movcc (operands)
      rtx operands[];
 {
   enum rtx_code code;
-  enum machine_mode mode;
   rtx tmp;
   rtx compare_op;
 
@@ -8156,7 +8154,7 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
   tree arg0, arg1, arg2, arg3;
   rtx op0, op1, op2, pat;
   enum machine_mode tmode, mode0, mode1, mode2;
-  int fcode = DECL_FUNCTION_CODE (fndecl);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
   switch (fcode)
     {
