@@ -1,3 +1,8 @@
+2002-01-30  Richard Henderson  <rth@redhat.com>
+
+	* ste.c (ffeste_begin_iterdo_): Use expand_exit_loop_top_cond.
+	(ffeste_R819B): Likewise.
+
 2002-01-30  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* intrin.c (upcasecmp_): New function.

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision$
+ *                            $Revision: 1.10 $
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -2350,7 +2350,7 @@ tree_transform (gnat_node)
 	if (Present (gnat_top_condition))
 	  gnu_top_condition = gnat_to_gnu (gnat_top_condition);
 
-	expand_exit_loop_if_false (0, gnu_top_condition);
+	expand_exit_loop_top_cond (0, gnu_top_condition);
 
         /* Make the loop body into its own block, so any allocated
            storage will be released every iteration.  This is needed
