@@ -1,3 +1,11 @@
+Fri May 31 13:50:19 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (classify_argument): Properly handle base types.
+
+	* dwarf2out.c (expand_builin_init_dwarf_reg_sizes):
+	Store first DWARF_FRAME_REGISTERS dwarf registers, not pseudo
+	registers.
+
 Fri May 31 13:37:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (gcse_emit_move_after): New.
