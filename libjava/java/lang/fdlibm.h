@@ -15,7 +15,7 @@
 #include <config.h>
 #include <stdlib.h>
 
-/* CYGNUS LOCAL: Include files.  */
+/* GCJ LOCAL: Include files.  */
 #include "ieeefp.h"
 
 #include "mprec.h"

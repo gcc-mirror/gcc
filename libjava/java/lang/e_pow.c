@@ -179,7 +179,7 @@ ivln2_l  =  1.92596299112661746887e-08; /* 0x3E54AE0B, 0xF85DDF44 =1/ln2 tail*/
 	}
 
     /* (x<0)**(non-int) is NaN */
-    /* CYGNUS LOCAL: This used to be
+    /* GCJ LOCAL: This used to be
 	if((((hx>>31)+1)|yisint)==0) return (x-x)/(x-x);
        but ANSI C says a right shift of a signed negative quantity is
        implementation defined.  */
