@@ -4278,9 +4278,6 @@ reload_as_needed (live_known)
 			    spill_reg_order);
 	    }
 
-	  if (num_eliminable && chain->need_elim)
-	    update_eliminable_offsets ();
-
 	  if (n_reloads > 0)
 	    {
 	      rtx next = NEXT_INSN (insn);
@@ -4327,6 +4324,10 @@ reload_as_needed (live_known)
 		      NOTE_LINE_NUMBER (p) = NOTE_INSN_DELETED;
 		    }
 	    }
+
+	  if (num_eliminable && chain->need_elim)
+	    update_eliminable_offsets ();
+
 	  /* Any previously reloaded spilled pseudo reg, stored in this insn,
 	     is no longer validly lying around to save a future reload.
 	     Note that this does not detect pseudos that were reloaded
@@ -8071,7 +8072,9 @@ delete_output_reload (insn, j, last_reload_reg)
     }
   n_occurrences = count_occurrences (PATTERN (insn), reg);
   if (substed)
-    n_occurrences += count_occurrences (PATTERN (insn), substed);
+    n_occurrences += count_occurrences (PATTERN (insn),
+					eliminate_regs (substed, 0,
+							NULL_RTX));
   if (n_occurrences > n_inherited)
     return;
 

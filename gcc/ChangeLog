@@ -2,6 +2,9 @@
 
 	* jump.c (delete_barrier_successors): Fix error in last change.
 
+	* reload1.c (delete_output_reload): Call eliminate_regs on substed.
+	(reload_as_needed): Call update_eliminable_offsets a bit later.
+
 2001-03-28  Bernd Schmidt  <bernds@redhat.com>
 
 	* flow.c (propagate_block): When trying to delete a case vector, cope
