@@ -564,6 +564,7 @@ parse_format_list (void)
 
     case FMT_COLON:
       get_fnode (&head, &tail, FMT_COLON);
+      tail->repeat = 1;
       goto optional_comma;
 
     case FMT_SLASH:
