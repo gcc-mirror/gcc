@@ -9250,16 +9250,7 @@ ix86_expand_int_movcc (operands)
 	      && (GET_CODE (tmp) != SUBREG || SUBREG_REG (tmp) != out))
 	    {
 	      if (nops == 1)
-		{
-		  rtx clob;
-
-		  clob = gen_rtx_REG (CCmode, FLAGS_REG);
-		  clob = gen_rtx_CLOBBER (VOIDmode, clob);
-
-		  tmp = gen_rtx_SET (VOIDmode, out, tmp);
-		  tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, tmp, clob));
-		  emit_insn (tmp);
-		}
+		out = force_operand (tmp, out);
 	      else
 		emit_insn (gen_rtx_SET (VOIDmode, out, tmp));
 	    }
