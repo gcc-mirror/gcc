@@ -1,6 +1,5 @@
 // Build don't link: 
 // GROUPS passed visibility
-// excess errors test - XFAIL *-*-*
 // visibility file
 // From: Robert Carden <carden@thoth.ics.uci.edu>
 // Date:     Thu, 12 Aug 1993 13:48:05 -0700
