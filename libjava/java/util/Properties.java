@@ -147,7 +147,7 @@ public class Properties extends Hashtable
 	if (pos == line.length() || c == '#' || c == '!')
 	  continue;
 
-	// The characaters up to the next Whitespace, ':', or '='
+	// The characters up to the next Whitespace, ':', or '='
 	// describe the key.  But look for escape sequences.
 	StringBuffer key = new StringBuffer();
 	while (pos < line.length()
@@ -185,6 +185,7 @@ public class Properties extends Hashtable
 			    char uni = (char) Integer.parseInt
 			      (line.substring(pos, pos + 4), 16);
 			    key.append(uni);
+			    pos += 4;
 			  }	// else throw exception?
 			break;
 		      default:
@@ -247,6 +248,7 @@ public class Properties extends Hashtable
 			    char uni = (char) Integer.parseInt
 			      (line.substring(pos, pos + 4), 16);
 			    element.append(uni);
+			    pos += 4;
 			  }	// else throw exception?
 			break;
 		      default:

@@ -1,3 +1,8 @@
+2001-09-10  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/Properties.java (load): Correctly read \u sequences.
+	Report from Anthony Green.
+
 2001-09-10  Manfred Hollstein  <manfredh@redhat.com>
 
 	* configure.in (LIBFFIINCS): Quote uses of $(top_srcdir)
