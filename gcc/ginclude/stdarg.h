@@ -120,7 +120,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #undef _BSD_VA_LIST
 #endif
 
-#ifdef __svr4__
+#if defined(__svr4__) || defined(_SCO_DS)
 /* SVR4.2 uses _VA_LIST for an internal alias for va_list,
    so we must avoid testing it and setting it here.
    SVR4 uses _VA_LIST as a flag in stdarg.h, but we should
@@ -134,7 +134,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #endif /* __i860__ */
 typedef __gnuc_va_list va_list;
 #endif /* _VA_LIST_ */
-#else /* not __svr4__ */
+#else /* not __svr4__ || _SCO_DS */
 
 /* The macro _VA_LIST_ is the same thing used by this file in Ultrix.
    But on BSD NET2 we must not test or define or undef it.
