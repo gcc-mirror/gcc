@@ -7838,9 +7838,11 @@ fold_builtin_1 (tree exp)
     case BUILT_IN_STRNCPY:
       return fold_builtin_strncpy (exp);
 
+    case BUILT_IN_INDEX:
     case BUILT_IN_STRCHR:
       return fold_builtin_strchr (exp, false);
 
+    case BUILT_IN_RINDEX:
     case BUILT_IN_STRRCHR:
       return fold_builtin_strchr (exp, true);
 

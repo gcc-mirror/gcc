@@ -1,3 +1,8 @@
+2004-05-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/15743.
+	* builtins.c (fold_builtin_1): Fold index() and rindex().
+
 2004-05-31  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/15069
