@@ -61,6 +61,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define MATH_LIBRARY "-lm"
 #endif
 
+extern char *xmalloc PROTO((size_t));
 extern int do_spec		PROTO((char *));
 extern char *input_filename;
 extern size_t input_filename_length;
@@ -160,7 +161,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   int saw_C = 0;
   int saw_o = 0;
 
-  /* Saw soem -O* or -g* option, respectively. */
+  /* Saw some -O* or -g* option, respectively. */
   int saw_O = 0;
   int saw_g = 0;
 
