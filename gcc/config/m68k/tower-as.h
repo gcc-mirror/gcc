@@ -155,8 +155,26 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (68k, Motorola/SGS/Tower32 syntax)");
 
-#undef BLOCK_PROFILER
 #undef FUNCTION_BLOCK_PROFILER
+#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)				\
+  do {									\
+    char label1[20], label2[20];					\
+    ASM_GENERATE_INTERNAL_LABEL (label1, "LPBX", 0);			\
+    ASM_GENERATE_INTERNAL_LABEL (label2, "LPI", LABELNO);		\
+    fprintf (FILE, "\ttst.l %s\n\tbne %s\n\tpea %s\n\tjsr __bb_init_func\n\taddq.l &4,%%sp\n",	\
+	     label1, label2, label1);					\
+    ASM_OUTPUT_INTERNAL_LABEL (FILE, "LPI", LABELNO);			\
+    putc ('\n', FILE);						\
+    } while (0)
+
+#undef BLOCK_PROFILER
+#define BLOCK_PROFILER(FILE, BLOCKNO)				\
+  do {								\
+    char label[20];						\
+    ASM_GENERATE_INTERNAL_LABEL (label, "LPBX", 2);		\
+    fprintf (FILE, "\taddq.l &1,%s+%d\n", label, 4 * BLOCKNO);	\
+    } while (0)
+
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABEL_NO)	\
     fprintf (FILE, "\tmov.l &LP%%%d,%%a0\n\tjsr mcount%%\n", (LABEL_NO))
