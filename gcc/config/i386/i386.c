@@ -2080,6 +2080,31 @@ classify_argument (enum machine_mode mode, tree type,
 		}
 	    }
 	}
+      else if (TREE_CODE (type) == SET_TYPE)
+	{
+	  if (bytes <= 4)
+	    {
+	      classes[0] = X86_64_INTEGERSI_CLASS;
+	      return 1;
+	    }
+	  else if (bytes <= 8)
+	    {
+	      classes[0] = X86_64_INTEGER_CLASS;
+	      return 1;
+	    }
+	  else if (bytes <= 12)
+	    {
+	      classes[0] = X86_64_INTEGER_CLASS;
+	      classes[1] = X86_64_INTEGERSI_CLASS;
+	      return 2;
+	    }
+	  else
+	    {
+	      classes[0] = X86_64_INTEGER_CLASS;
+	      classes[1] = X86_64_INTEGER_CLASS;
+	      return 2;
+	    }
+	}
       else
 	abort ();
 
