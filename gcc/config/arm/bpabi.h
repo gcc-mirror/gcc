@@ -38,7 +38,7 @@
 
 /* Tell the assembler to build BPABI binaries.  */
 #undef SUBTARGET_EXTRA_ASM_SPEC
-#define SUBTARGET_EXTRA_ASM_SPEC "-meabi=3"
+#define SUBTARGET_EXTRA_ASM_SPEC "-meabi=4"
 
 /* The generic link spec in elf.h does not support shared libraries.  */
 #undef LINK_SPEC
