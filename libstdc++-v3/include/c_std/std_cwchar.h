@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -225,9 +225,23 @@ namespace std
 
 namespace __gnu_cxx
 {
+#if _GLIBCPP_USE_C99_CHECK || _GLIBCPP_USE_C99_DYNAMIC
+  extern "C" long double
+    (wcstold)(const wchar_t * restrict, wchar_t ** restrict);
+#endif
+#if !_GLIBCPP_USE_C99_DYNAMIC
   using ::wcstold;
+#endif
+#if _GLIBCPP_USE_C99_LONG_LONG_CHECK || _GLIBCPP_USE_C99_LONG_LONG_DYNAMIC
+  extern "C" long long int
+    (wcstoll)(const wchar_t * restrict, wchar_t ** restrict, int);
+  extern "C" unsigned long long int
+    (wcstoull)(const wchar_t * restrict, wchar_t ** restrict, int);
+#endif
+#if !_GLIBCPP_USE_C99_LONG_LONG_DYNAMIC
   using ::wcstoll;
   using ::wcstoull;
+#endif
 }
 
 namespace std

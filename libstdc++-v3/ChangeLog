@@ -3,6 +3,19 @@
 	* include/c_std/std_cmath.h (C99 FP capture): Only undefine said
 	C99 FP macros, if actually captured.
 
+	* docs/html/17_intro/porting.texi (_GLIBCPP_USE_C99_CHECK): New macro.
+	(_GLIBCPP_USE_C99_DYNAMIC): New macro.
+	(_GLIBCPP_USE_C99_LONG_LONG_CHECK): New macro.
+	(_GLIBCPP_USE_C99_LONG_LONG_DYNAMIC): New macro.
+	* config/os/bsd/freebsd/os_defines.h (_GLIBCPP_USE_C99_CHECK):
+	New macro.
+	(_GLIBCPP_USE_C99_DYNAMIC): New macro.
+	(_GLIBCPP_USE_C99_LONG_LONG_CHECK): New macro.
+	(_GLIBCPP_USE_C99_LONG_LONG_DYNAMIC): New macro.
+	* include/c_std/std_cstdlib.h: Use new macros.
+	* include/c_std/std_cstdio.h: Use new macros.
+	* include/c_std/std_cwchar.h: Use new macros.
+
 2003-04-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/9555
