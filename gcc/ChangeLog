@@ -1,5 +1,10 @@
 2004-11-05  Richard Henderson  <rth@redhat.com>
 
+	* expmed.c (extract_force_align_mem_bit_field): New.
+	(extract_split_bit_field): Call it.
+
+2004-11-05  Richard Henderson  <rth@redhat.com>
+
 	* ia64.md (UNSPEC_SHRP): New.
 	(dshift_count_operand): New.
 	(ashrti3, ashrti3_internal, lshrti3, lshrti3_internal, shrp): New.
