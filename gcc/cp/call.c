@@ -3171,7 +3171,11 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 	{
 	  arg2 = convert_like (conv2, arg2);
 	  arg2 = convert_from_reference (arg2);
-	  if (!same_type_p (TREE_TYPE (arg2), arg3_type))
+	  if (!same_type_p (TREE_TYPE (arg2), arg3_type)
+	      && CLASS_TYPE_P (arg3_type))
+	    /* The types need to match if we're converting to a class type.
+	       If not, we don't care about cv-qual mismatches, since
+	       non-class rvalues are not cv-qualified.  */
 	    abort ();
 	  arg2_type = TREE_TYPE (arg2);
 	}
@@ -3179,7 +3183,8 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 	{
 	  arg3 = convert_like (conv3, arg3);
 	  arg3 = convert_from_reference (arg3);
-	  if (!same_type_p (TREE_TYPE (arg3), arg2_type))
+	  if (!same_type_p (TREE_TYPE (arg3), arg2_type)
+	      && CLASS_TYPE_P (arg2_type))
 	    abort ();
 	  arg3_type = TREE_TYPE (arg3);
 	}
