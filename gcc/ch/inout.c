@@ -35,26 +35,26 @@ extern int ignore_case;
 /* set non-zero if special words are to be entered in uppercase */
 extern int special_UC;
 
-static int intsize_of_charsexpr		PROTO ((tree));
-static tree add_enum_to_list		PROTO ((tree, tree));
-static void build_chill_io_list_type	PROTO ((void));
-static void build_io_types		PROTO ((void));
-static void declare_predefined_file	PROTO ((const char *, const char *));
-static tree build_access_part	        PROTO ((void));
-static tree textlocation_mode		PROTO ((tree));
-static int check_assoc			PROTO ((tree, int, const char *));
-static tree assoc_call			PROTO ((tree, tree, const char *));
-static int check_transfer		PROTO ((tree, int, const char *));
-static int connect_process_optionals	PROTO ((tree, tree *, tree *, tree));
-static tree connect_text		PROTO ((tree, tree, tree, tree));
-static tree connect_access		PROTO ((tree, tree, tree, tree));
-static int check_access			PROTO ((tree, int, const char *));
-static int check_text			PROTO ((tree, int, const char *));
-static tree get_final_type_and_range	PROTO ((tree, tree *, tree *));
-static void process_io_list		PROTO ((tree, tree *, tree *, rtx *,
+static int intsize_of_charsexpr		PARAMS ((tree));
+static tree add_enum_to_list		PARAMS ((tree, tree));
+static void build_chill_io_list_type	PARAMS ((void));
+static void build_io_types		PARAMS ((void));
+static void declare_predefined_file	PARAMS ((const char *, const char *));
+static tree build_access_part	        PARAMS ((void));
+static tree textlocation_mode		PARAMS ((tree));
+static int check_assoc			PARAMS ((tree, int, const char *));
+static tree assoc_call			PARAMS ((tree, tree, const char *));
+static int check_transfer		PARAMS ((tree, int, const char *));
+static int connect_process_optionals	PARAMS ((tree, tree *, tree *, tree));
+static tree connect_text		PARAMS ((tree, tree, tree, tree));
+static tree connect_access		PARAMS ((tree, tree, tree, tree));
+static int check_access			PARAMS ((tree, int, const char *));
+static int check_text			PARAMS ((tree, int, const char *));
+static tree get_final_type_and_range	PARAMS ((tree, tree *, tree *));
+static void process_io_list		PARAMS ((tree, tree *, tree *, rtx *,
 						int, int));
-static void check_format_string		PROTO ((tree, tree, int));
-static int get_max_size			PROTO ((tree));
+static void check_format_string		PARAMS ((tree, tree, int));
+static int get_max_size			PARAMS ((tree));
 
 /* association mode */
 tree association_type_node;
@@ -3807,7 +3807,7 @@ typedef enum
 } convcode_t;
 static convcode_t     convcode;
 
-static tree check_exprlist		PROTO ((convcode_t, tree, int,
+static tree check_exprlist		PARAMS ((convcode_t, tree, int,
 						unsigned long));
 
 typedef enum
@@ -3844,7 +3844,7 @@ typedef enum {
   NormalEnd, EndAtParen, TextFailEnd 
 } formatexit_t;
 
-static formatexit_t scanformcont	PROTO ((char *, int, char **, int *,
+static formatexit_t scanformcont	PARAMS ((char *, int, char **, int *,
 						tree, tree *, int, int *));
 
 /* NOTE: varibale have to be set to False before calling check_format_string */

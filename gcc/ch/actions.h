@@ -20,15 +20,15 @@ Boston, MA 02111-1307, USA.  */
 
 /* used by compile_file */
 
-void init_chill PROTO((void));
+void init_chill PARAMS ((void));
 
 extern int grant_count;
 
-extern void push_handler PROTO((void));
-extern void pop_handler PROTO((int));
-extern void push_action PROTO((void));
+extern void push_handler PARAMS ((void));
+extern void pop_handler PARAMS ((int));
+extern void push_action PARAMS ((void));
 
-extern int  chill_handle_single_dimension_case_label PROTO((tree, tree, int *, int *));
-extern tree build_chill_multi_dimension_case_expr    PROTO((tree, tree, tree));
-extern tree build_multi_case_selector_expression     PROTO((tree, tree));
-extern void compute_else_ranges                      PROTO((tree, tree));
+extern int  chill_handle_single_dimension_case_label PARAMS ((tree, tree, int *, int *));
+extern tree build_chill_multi_dimension_case_expr    PARAMS ((tree, tree, tree));
+extern tree build_multi_case_selector_expression     PARAMS ((tree, tree));
+extern void compute_else_ranges                      PARAMS ((tree, tree));

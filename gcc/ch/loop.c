@@ -36,15 +36,15 @@ Boston, MA 02111-1307, USA.  */
 int flag_local_loop_counter = 1;
 
 /* forward declarations */
-static int  declare_temps            PROTO((void));
-static int  initialize_iter_var      PROTO((void));
-static void maybe_skip_loop          PROTO((void));
-static int  bottom_loop_end_check    PROTO((void));
-static int  increment_temps          PROTO((void));
-static tree build_temporary_variable PROTO((const char *, tree));
-static tree maybe_make_for_temp      PROTO((tree, const char *, tree));
+static int  declare_temps            PARAMS ((void));
+static int  initialize_iter_var      PARAMS ((void));
+static void maybe_skip_loop          PARAMS ((void));
+static int  bottom_loop_end_check    PARAMS ((void));
+static int  increment_temps          PARAMS ((void));
+static tree build_temporary_variable PARAMS ((const char *, tree));
+static tree maybe_make_for_temp      PARAMS ((tree, const char *, tree));
 #if 0
-static tree chill_unsigned_type      PROTO((tree));
+static tree chill_unsigned_type      PARAMS ((tree));
 #endif
 
 /* In terms of the parameters passed to build_loop_iterator,

@@ -60,10 +60,10 @@ static tree link_handler_decl;
 static tree handler_link_pointer_type;
 static tree unlink_handler_decl;
 static int exceptions_initialized = 0;
-static void emit_setup_handler PROTO((void));
-static void initialize_exceptions PROTO((void));
-static tree start_handler_array PROTO((void));
-static void finish_handler_array PROTO((void));
+static void emit_setup_handler PARAMS ((void));
+static void initialize_exceptions PARAMS ((void));
+static tree start_handler_array PARAMS ((void));
+static void finish_handler_array PARAMS ((void));
 static tree char_pointer_type_for_handler;
 
 /* If this is 1, operations to push and pop on the __exceptionStack

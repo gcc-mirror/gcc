@@ -34,7 +34,7 @@ extern struct obstack permanent_obstack;
    to layout_chill_range_type for the index range of a string. */
 tree string_index_type_dummy;
 
-static tree make_powerset_type				PROTO ((tree));
+static tree make_powerset_type				PARAMS ((tree));
 
 /* Build a chill string type.
    For a character string, ELT_TYPE==char_type_node; 

@@ -40,16 +40,16 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 
 /* forward declarations */
-static int chill_l_equivalent PROTO((tree, tree, struct mode_chain*));
-static tree extract_constant_from_buffer PROTO((tree, const unsigned char *, int));
-static int expand_constant_to_buffer PROTO((tree, unsigned char *, int));
-static tree build_empty_string PROTO((tree));
-static tree make_chill_pointer_type PROTO((tree, enum tree_code));
-static tree make_chill_range_type PROTO((tree, tree, tree));
-static void apply_chill_array_layout PROTO((tree));
-static int field_decl_cmp PROTO((tree *, tree*));
-static tree make_chill_struct_type PROTO((tree));
-static int apply_chill_field_layout PROTO((tree, int *));
+static int chill_l_equivalent PARAMS ((tree, tree, struct mode_chain*));
+static tree extract_constant_from_buffer PARAMS ((tree, const unsigned char *, int));
+static int expand_constant_to_buffer PARAMS ((tree, unsigned char *, int));
+static tree build_empty_string PARAMS ((tree));
+static tree make_chill_pointer_type PARAMS ((tree, enum tree_code));
+static tree make_chill_range_type PARAMS ((tree, tree, tree));
+static void apply_chill_array_layout PARAMS ((tree));
+static int field_decl_cmp PARAMS ((tree *, tree*));
+static tree make_chill_struct_type PARAMS ((tree));
+static int apply_chill_field_layout PARAMS ((tree, int *));
 
 /*
  * This function checks an array access.
@@ -3292,7 +3292,7 @@ layout_chill_struct_type (t)
 	  field_array[len++] = x;
 
 	qsort (field_array, len, sizeof (tree),
-	       (int (*) PROTO ((const void *, const void *))) field_decl_cmp);
+	       (int (*) PARAMS ((const void *, const void *))) field_decl_cmp);
       }
   }
 

@@ -45,18 +45,18 @@ tree chill_taskingcode_type_node;
 
 /* forward declarations */
 #if 0
-static void validate_process_parameters		PROTO((tree));
-static tree get_struct_variable_name		PROTO((tree));
-static tree decl_tasking_code_variable		PROTO((tree, tree *, int));
+static void validate_process_parameters		PARAMS ((tree));
+static tree get_struct_variable_name		PARAMS ((tree));
+static tree decl_tasking_code_variable		PARAMS ((tree, tree *, int));
 #endif
-static tree get_struct_debug_type_name		PROTO((tree));
-static tree get_process_wrapper_name		PROTO((tree));
-static tree build_tasking_enum			PROTO((void));
-static void build_tasking_message_type		PROTO((void));
-static tree build_receive_signal_case_label	PROTO((tree, tree));
-static tree build_receive_buffer_case_label	PROTO((tree, tree));
-static void build_receive_buffer_case_end	PROTO((tree, tree));
-static void build_receive_signal_case_end	PROTO((tree, tree));
+static tree get_struct_debug_type_name		PARAMS ((tree));
+static tree get_process_wrapper_name		PARAMS ((tree));
+static tree build_tasking_enum			PARAMS ((void));
+static void build_tasking_message_type		PARAMS ((void));
+static tree build_receive_signal_case_label	PARAMS ((tree, tree));
+static tree build_receive_buffer_case_label	PARAMS ((tree, tree));
+static void build_receive_buffer_case_end	PARAMS ((tree, tree));
+static void build_receive_signal_case_end	PARAMS ((tree, tree));
 
 /* list of this module's process, buffer, etc. decls.
  This is a list of TREE_VECs, chain by their TREE_CHAINs. */

@@ -52,8 +52,8 @@ extern FILE* finput;
 
 extern int maximum_field_alignment;
 
-static int deep_const_expr			PROTO ((tree));
-static void chill_print_error_function		PROTO ((const char *));
+static int deep_const_expr			PARAMS ((tree));
+static void chill_print_error_function		PARAMS ((const char *));
 
 /* return 1 if the expression tree given has all
    constant nodes as its leaves; return 0 otherwise. */

@@ -68,26 +68,26 @@ extern struct obstack permanent_obstack;
 extern struct obstack temporary_obstack;
 
 /* forward declarations */
-static void close_input_file         PROTO((const char *));
-static tree convert_bitstring        PROTO((char *));
-static tree convert_integer          PROTO((char *));
-static void maybe_downcase           PROTO((char *));
-static int  maybe_number             PROTO((const char *));
-static tree equal_number             PROTO((void));
-static void handle_use_seizefile_directive PROTO((int));
-static int  handle_name		     PROTO((tree));
-static char *readstring              PROTO((int, int *));
-static void read_directive	     PROTO((void));
-static tree read_identifier	     PROTO((int));
-static tree read_number              PROTO((int));
-static void skip_c_comment           PROTO((void));
-static void skip_line_comment        PROTO((void));
-static int  skip_whitespace          PROTO((void));
-static tree string_or_char           PROTO((int, const char *));
-static void ch_lex_init              PROTO((void));
-static void skip_directive           PROTO((void));
-static int same_file                 PROTO((const char *, const char *));
-static int getlc                     PROTO((FILE *));
+static void close_input_file         PARAMS ((const char *));
+static tree convert_bitstring        PARAMS ((char *));
+static tree convert_integer          PARAMS ((char *));
+static void maybe_downcase           PARAMS ((char *));
+static int  maybe_number             PARAMS ((const char *));
+static tree equal_number             PARAMS ((void));
+static void handle_use_seizefile_directive PARAMS ((int));
+static int  handle_name		     PARAMS ((tree));
+static char *readstring              PARAMS ((int, int *));
+static void read_directive	     PARAMS ((void));
+static tree read_identifier	     PARAMS ((int));
+static tree read_number              PARAMS ((int));
+static void skip_c_comment           PARAMS ((void));
+static void skip_line_comment        PARAMS ((void));
+static int  skip_whitespace          PARAMS ((void));
+static tree string_or_char           PARAMS ((int, const char *));
+static void ch_lex_init              PARAMS ((void));
+static void skip_directive           PARAMS ((void));
+static int same_file                 PARAMS ((const char *, const char *));
+static int getlc                     PARAMS ((FILE *));
 
 /* next variables are public, because ch-actions uses them */
 
@@ -294,8 +294,8 @@ finish_parse ()
     fclose (finput);
 }
 
-static int yywrap PROTO ((void));
-static int yy_refill PROTO ((void));
+static int yywrap PARAMS ((void));
+static int yy_refill PARAMS ((void));
 
 #define YY_PUTBACK_SIZE 5
 #define YY_BUF_SIZE 1000

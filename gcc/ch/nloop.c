@@ -35,26 +35,26 @@ Boston, MA 02111-1307, USA.  */
    ch-actions.c (lang_decode_option) will set this flag. */
 int flag_local_loop_counter = 0;
 
-extern tree chill_truthvalue_conversion PROTO((tree));
-extern rtx  emit_line_note              PROTO((char *, int)); 
-extern void error                       PROTO((char *, ...));
-extern rtx  expand_assignment           PROTO((tree, tree, int, int));
-extern void save_expr_under_name        PROTO((tree, tree));
-extern void stamp_nesting_label         PROTO((tree));
-extern int  int_fits_type_p             PROTO((tree, tree));
-extern void warning                     PROTO((char *, ...));
+extern tree chill_truthvalue_conversion PARAMS ((tree));
+extern rtx  emit_line_note              PARAMS ((char *, int)); 
+extern void error                       PARAMS ((char *, ...));
+extern rtx  expand_assignment           PARAMS ((tree, tree, int, int));
+extern void save_expr_under_name        PARAMS ((tree, tree));
+extern void stamp_nesting_label         PARAMS ((tree));
+extern int  int_fits_type_p             PARAMS ((tree, tree));
+extern void warning                     PARAMS ((char *, ...));
 
 /* forward declarations */
-static int  classify_loop            PROTO((void));
-static int  declare_temps            PROTO((void));
-static int  initialize_iter_var      PROTO((void));
-static int  maybe_skip_loop          PROTO((void));
-static int  top_loop_end_check       PROTO((void));
-static int  bottom_loop_end_check    PROTO((void));
-static int  increment_temps          PROTO((void));
-static tree build_temporary_variable PROTO((char *, tree));
-static tree maybe_make_for_temp      PROTO((tree, char *, tree));
-static tree chill_unsigned_type      PROTO((tree));
+static int  classify_loop            PARAMS ((void));
+static int  declare_temps            PARAMS ((void));
+static int  initialize_iter_var      PARAMS ((void));
+static int  maybe_skip_loop          PARAMS ((void));
+static int  top_loop_end_check       PARAMS ((void));
+static int  bottom_loop_end_check    PARAMS ((void));
+static int  increment_temps          PARAMS ((void));
+static tree build_temporary_variable PARAMS ((char *, tree));
+static tree maybe_make_for_temp      PARAMS ((tree, char *, tree));
+static tree chill_unsigned_type      PARAMS ((tree));
 
 /* In terms of the parameters passed to build_loop_iterator,
  *   there are several types of loops.  They are encoded by

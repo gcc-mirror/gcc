@@ -32,21 +32,21 @@ Boston, MA 02111-1307, USA.  */
 #include "assert.h"
 #include "toplev.h"
 
-static int id_cmp PROTO ((tree *, tree *));
-static void warn_unhandled PROTO ((const char *));
-static tree adjust_return_value PROTO ((tree, const char *));
-static tree update_else_range_for_int_const PROTO ((tree, tree));
-static tree update_else_range_for_range PROTO ((tree, tree, tree));
-static tree update_else_range_for_range_expr PROTO ((tree, tree));
-static tree update_else_range_for_type PROTO ((tree, tree));
-static tree compute_else_range PROTO ((tree, tree, int));
-static tree check_case_value PROTO ((tree, tree));
-static void chill_handle_case_label_range PROTO ((tree, tree, tree));
-static tree chill_handle_multi_case_label_range PROTO ((tree, tree, tree));
-static tree chill_handle_multi_case_else_label PROTO ((tree));
-static tree chill_handle_multi_case_label PROTO ((tree, tree));
-static tree chill_handle_multi_case_label_list PROTO ((tree, tree));
-static void print_missing_cases PROTO ((tree, const unsigned char *, long));
+static int id_cmp PARAMS ((tree *, tree *));
+static void warn_unhandled PARAMS ((const char *));
+static tree adjust_return_value PARAMS ((tree, const char *));
+static tree update_else_range_for_int_const PARAMS ((tree, tree));
+static tree update_else_range_for_range PARAMS ((tree, tree, tree));
+static tree update_else_range_for_range_expr PARAMS ((tree, tree));
+static tree update_else_range_for_type PARAMS ((tree, tree));
+static tree compute_else_range PARAMS ((tree, tree, int));
+static tree check_case_value PARAMS ((tree, tree));
+static void chill_handle_case_label_range PARAMS ((tree, tree, tree));
+static tree chill_handle_multi_case_label_range PARAMS ((tree, tree, tree));
+static tree chill_handle_multi_case_else_label PARAMS ((tree));
+static tree chill_handle_multi_case_label PARAMS ((tree, tree));
+static tree chill_handle_multi_case_label_list PARAMS ((tree, tree));
+static void print_missing_cases PARAMS ((tree, const unsigned char *, long));
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -172,7 +172,7 @@ build_exception_variant (type, raises)
       /* NULL terminator for list.  */
       a[i] = NULL_TREE;
       qsort (a, i, sizeof (tree),
-	     (int (*) PROTO((const void*, const void*))) id_cmp);
+	     (int (*) PARAMS ((const void*, const void*))) id_cmp);
       while (i--)
 	TREE_CHAIN (a[i]) = a[i+1];
       raises = a[0];
