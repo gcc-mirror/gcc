@@ -4684,6 +4684,12 @@ reload_reg_free_before_p (regno, opnum, type)
       return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
 
     case RELOAD_FOR_OPERAND_ADDRESS:
+      /* Earlier reloads include RELOAD_FOR_OPADDR_ADDR reloads.  */
+      if (TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno))
+	return 0;
+
+      /* ... fall through ...  */
+
     case RELOAD_FOR_OPADDR_ADDR:
     case RELOAD_FOR_INSN:
       /* These can't conflict with inputs, or each other, so all we have to
