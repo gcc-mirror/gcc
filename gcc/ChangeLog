@@ -1,3 +1,8 @@
+Thu Mar 19 13:39:52 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000/sysv4.h (RELATIVE_PREFIX_NOT_LINKDIR): Undef for System V
+	and EABI.
+
 Thu Mar 19 06:17:59 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (toplev.o): Depend on Makefile.

@@ -332,6 +332,11 @@ do {									\
 /* Put jump tables in read-only memory, rather than in .text.  */
 #undef JUMP_TABLES_IN_TEXT_SECTION
 
+/* Disable AIX-ism that disables turning -B into -L if the argument specifies a
+   relative file name.  This breaks setting GCC_EXEC_PREFIX to D:\path under
+   Windows.  */
+#undef RELATIVE_PREFIX_NOT_LINKDIR
+
 /* Undefine some things which are defined by the generic svr4.h.  */
 
 #undef ASM_FILE_END
