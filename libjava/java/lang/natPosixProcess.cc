@@ -168,12 +168,13 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
       if (envp)
         {
 	  // preserve PATH unless specified explicitly
-	  char *path_val = getenv("PATH");
+	  char *path_val = getenv ("PATH");
 	  environ = env;
-	  if (getenv("PATH") == NULL)
+	  if (getenv ("PATH") == NULL)
 	    {
-	      char *path_env = (char *) _Jv_Malloc (strlen(path_val) + 5 + 1);
-	      sprintf (path_env, "PATH=%s", path_val); 
+	      char *path_env = (char *) _Jv_Malloc (strlen (path_val) + 5 + 1);
+	      strcpy (path_env, "PATH=");
+	      strcat (path_env, path_val);
 	      putenv (path_env);
 	    }
 	}

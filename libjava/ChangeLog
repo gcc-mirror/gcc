@@ -1,3 +1,7 @@
+1999-12-17  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natPosixProcess.cc (startProcess): Don't use sprintf.
+
 1999-12-16  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Boolean.java (Boolean(String)): Set `value' to false on a 
