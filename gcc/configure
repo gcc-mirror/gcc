@@ -14683,8 +14683,9 @@ fi
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }
     then
-	# ??? This fails with non-gnu grep.  Maybe use objdump?
-   if grep debug_line conftest.o > /dev/null 2>&1; then
+	if test x$gcc_cv_objdump != x \
+   && $gcc_cv_objdump -h conftest.o 2> /dev/null \
+      | grep debug_line > /dev/null 2>&1; then
      gcc_cv_as_dwarf2_debug_line=yes
    fi
     else
