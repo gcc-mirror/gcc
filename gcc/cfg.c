@@ -472,7 +472,7 @@ dump_flow_info (file)
 	if (REG_N_SETS (i))
 	  fprintf (file, "; set %d time%s", REG_N_SETS (i),
 		   (REG_N_SETS (i) == 1) ? "" : "s");
-	if (REG_USERVAR_P (regno_reg_rtx[i]))
+	if (regno_reg_rtx[i] != NULL && REG_USERVAR_P (regno_reg_rtx[i]))
 	  fprintf (file, "; user var");
 	if (REG_N_DEATHS (i) != 1)
 	  fprintf (file, "; dies in %d places", REG_N_DEATHS (i));
@@ -480,7 +480,8 @@ dump_flow_info (file)
 	  fprintf (file, "; crosses 1 call");
 	else if (REG_N_CALLS_CROSSED (i))
 	  fprintf (file, "; crosses %d calls", REG_N_CALLS_CROSSED (i));
-	if (PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
+	if (regno_reg_rtx[i] != NULL
+	    && PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
 	  fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));
 
 	class = reg_preferred_class (i);
@@ -497,7 +498,7 @@ dump_flow_info (file)
 		       reg_class_names[(int) altclass]);
 	  }
 
-	if (REG_POINTER (regno_reg_rtx[i]))
+	if (regno_reg_rtx[i] != NULL && REG_POINTER (regno_reg_rtx[i]))
 	  fprintf (file, "; pointer");
 	fprintf (file, ".\n");
       }
