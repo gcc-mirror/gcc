@@ -3240,7 +3240,7 @@ assign_parms (fndecl, second_time)
       && ! current_function_returns_pcc_struct
       && struct_value_incoming_rtx == 0)
     {
-      tree type = build_pointer_type (fntype);
+      tree type = build_pointer_type (TREE_TYPE (fntype));
 
       function_result_decl = build_decl (PARM_DECL, NULL_TREE, type);
 
