@@ -2,7 +2,7 @@
 #include "i386mach.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Di386"
+#define CPP_PREDEFINES "-Dunix -Di386 -D____386BSD____"
 
 /* Specify extra dir to search for include files.  */
 #undef SYSTEM_INCLUDE_DIR
