@@ -1,3 +1,10 @@
+Sun Aug 30 22:14:44 1998  H.J. Lu  (hjl@gnu.org)
+
+	* configure (gxx_include_dir): Changed to
+	'${prefix}/include/g++'-${libstdcxx_interface}.
+
+	* config.if: New to determine the interfaces.
+
 Sun Aug 30 21:15:19 1998  Mark Klein (mklein@dis.com)
 
 	* config.guess: Detect and handle MPE/IX.

@@ -1259,7 +1259,8 @@ EOF
 	        if test x${enable_version_specific_runtime_libs} = xyes; then
 		    echo gxx_include_dir = '${libsubdir}/include/g++' >> ${Makefile}
 		else
-		    echo gxx_include_dir = '${prefix}/include/g++' >> ${Makefile}
+		    . ${topsrcdir}/config.if
+		    echo gxx_include_dir = '${prefix}/include/g++'-${libstdcxx_interface} >> ${Makefile}
 		fi
 	    else
 		echo gxx_include_dir = ${gxx_include_dir} >> ${Makefile}
