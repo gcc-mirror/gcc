@@ -1,3 +1,33 @@
+2003-03-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* except.c (init_exception_processing): Use C90 prototype style.
+	(cp_protect_cleanup_actions): Likewise.
+	(prepare_eh_type): Likewise.
+	(build_eh_type_type): Likewise.
+	(build_exc_ptr): Likewise.
+	(do_begin_catch): Likewise.
+	(dtor_nothrow): Likewise.
+	(do_end_catch): Likewise.
+	(push_eh_cleanup): Likewise.
+	(decl_is_java_type): Likewise.
+	(choose_personality_routine): Likewise.
+	(initialize_handler_parm): Likewise.
+	(expand_start_catch_block): Likewise.
+	(expand_end_catch_block): Likewise.
+	(begin_eh_spec_block): Likewise.
+	(finish_eh_spec_block): Likewise.
+	(do_allocate_exception): Likewise.
+	(do_free_exception): Likewise.
+	(wrap_cleanups_r): Likewise.
+	(stabilize_throw_expr): Likewise.
+	(build_throw): Likewise.
+	(complete_ptr_ref_or_void_ptr_p): Likewise.
+	(is_admissible_throw_operand): Likewise.
+	(nothrow_libfn_p): Likewise.
+	(can_convert_eh): Likewise.
+	(check_handlers_1): Likewise.
+	(check_handlers): Likewise.
+	
 2003-03-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (merge_conversion_sequences): New function.

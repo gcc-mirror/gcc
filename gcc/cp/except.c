@@ -38,29 +38,29 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "tree-inline.h"
 
-static void push_eh_cleanup PARAMS ((tree));
-static tree prepare_eh_type PARAMS ((tree));
-static tree build_eh_type_type PARAMS ((tree));
-static tree do_begin_catch PARAMS ((void));
-static int dtor_nothrow PARAMS ((tree));
-static tree do_end_catch PARAMS ((tree));
-static void push_eh_cleanup PARAMS ((tree));
-static bool decl_is_java_type PARAMS ((tree decl, int err));
-static void initialize_handler_parm PARAMS ((tree, tree));
-static tree do_allocate_exception PARAMS ((tree));
-static tree stabilize_throw_expr PARAMS ((tree, tree *));
-static tree wrap_cleanups_r PARAMS ((tree *, int *, void *));
-static int complete_ptr_ref_or_void_ptr_p PARAMS ((tree, tree));
-static bool is_admissible_throw_operand PARAMS ((tree));
-static int can_convert_eh PARAMS ((tree, tree));
-static void check_handlers_1 PARAMS ((tree, tree));
-static tree cp_protect_cleanup_actions PARAMS ((void));
+static void push_eh_cleanup (tree);
+static tree prepare_eh_type (tree);
+static tree build_eh_type_type (tree);
+static tree do_begin_catch (void);
+static int dtor_nothrow (tree);
+static tree do_end_catch (tree);
+static void push_eh_cleanup (tree);
+static bool decl_is_java_type (tree decl, int err);
+static void initialize_handler_parm (tree, tree);
+static tree do_allocate_exception (tree);
+static tree stabilize_throw_expr (tree, tree *);
+static tree wrap_cleanups_r (tree *, int *, void *);
+static int complete_ptr_ref_or_void_ptr_p (tree, tree);
+static bool is_admissible_throw_operand (tree);
+static int can_convert_eh (tree, tree);
+static void check_handlers_1 (tree, tree);
+static tree cp_protect_cleanup_actions (void);
 
 /* Sets up all the global eh stuff that needs to be initialized at the
    start of compilation.  */
 
 void
-init_exception_processing ()
+init_exception_processing (void)
 {
   tree tmp;
 
@@ -90,7 +90,7 @@ init_exception_processing ()
    propagated out of a cleanup region.  */
 
 static tree
-cp_protect_cleanup_actions ()
+cp_protect_cleanup_actions (void)
 {
   /* [except.terminate]
 
@@ -100,8 +100,7 @@ cp_protect_cleanup_actions ()
 }     
 
 static tree
-prepare_eh_type (type)
-     tree type;
+prepare_eh_type (tree type)
 {
   if (type == NULL_TREE)
     return type;
@@ -122,8 +121,7 @@ prepare_eh_type (type)
    matching field of the exception model.  */
 
 static tree
-build_eh_type_type (type)
-     tree type;
+build_eh_type_type (tree type)
 {
   tree exp;
 
@@ -142,7 +140,7 @@ build_eh_type_type (type)
 }
 
 tree
-build_exc_ptr ()
+build_exc_ptr (void)
 {
   return build (EXC_PTR_EXPR, ptr_type_node);
 }
@@ -151,7 +149,7 @@ build_exc_ptr ()
    exception has been handled.  */
 
 static tree
-do_begin_catch ()
+do_begin_catch (void)
 {
   tree fn;
 
@@ -173,8 +171,7 @@ do_begin_catch ()
    NULL_TREE for a ... handler) will not throw an exception.  */
 
 static int
-dtor_nothrow (type)
-     tree type;
+dtor_nothrow (tree type)
 {
   if (type == NULL_TREE)
     return 0;
@@ -189,8 +186,7 @@ dtor_nothrow (type)
    for the current catch block if no others are currently using it.  */
 
 static tree
-do_end_catch (type)
-     tree type;
+do_end_catch (tree type)
 {
   tree fn, cleanup;
 
@@ -214,8 +210,7 @@ do_end_catch (type)
 /* This routine creates the cleanup for the current exception.  */
 
 static void
-push_eh_cleanup (type)
-     tree type;
+push_eh_cleanup (tree type)
 {
   finish_decl_cleanup (NULL_TREE, do_end_catch (type));
 }
@@ -224,9 +219,7 @@ push_eh_cleanup (type)
    throw.  */
 
 static bool
-decl_is_java_type (decl, err)
-     tree decl;
-     int err;
+decl_is_java_type (tree decl, int err)
 {
   bool r = (TREE_CODE (decl) == POINTER_TYPE
 	    && TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
@@ -273,8 +266,7 @@ decl_is_java_type (decl, err)
    __gxx_personality_(sj|v)0 in init_exception_processing - should it
    be done here instead?  */
 void
-choose_personality_routine (lang)
-     enum languages lang;
+choose_personality_routine (enum languages lang)
 {
   static enum {
     chose_none,
@@ -328,9 +320,7 @@ choose_personality_routine (lang)
 /* Initialize the catch parameter DECL.  */
 
 static void 
-initialize_handler_parm (decl, exp)
-     tree decl;
-     tree exp;
+initialize_handler_parm (tree decl, tree exp)
 {
   tree init;
   tree init_type;
@@ -383,8 +373,7 @@ initialize_handler_parm (decl, exp)
 /* Call this to start a catch block.  DECL is the catch parameter.  */
 
 tree
-expand_start_catch_block (decl)
-     tree decl;
+expand_start_catch_block (tree decl)
 {
   tree exp = NULL_TREE;
   tree type;
@@ -451,7 +440,7 @@ expand_start_catch_block (decl)
    the label to jump to if this catch block didn't match.  */
 
 void
-expand_end_catch_block ()
+expand_end_catch_block (void)
 {
   if (! doing_eh (1))
     return;
@@ -465,7 +454,7 @@ expand_end_catch_block ()
 }
 
 tree
-begin_eh_spec_block ()
+begin_eh_spec_block (void)
 {
   tree r = build_stmt (EH_SPEC_BLOCK, NULL_TREE, NULL_TREE);
   add_stmt (r);
@@ -473,9 +462,7 @@ begin_eh_spec_block ()
 }
 
 void
-finish_eh_spec_block (raw_raises, eh_spec_block)
-     tree raw_raises;
-     tree eh_spec_block;
+finish_eh_spec_block (tree raw_raises, tree eh_spec_block)
 {
   tree raises;
 
@@ -494,8 +481,7 @@ finish_eh_spec_block (raw_raises, eh_spec_block)
 /* Return a pointer to a buffer for an exception object of type TYPE.  */
 
 static tree
-do_allocate_exception (type)
-     tree type;
+do_allocate_exception (tree type)
 {
   tree fn;
 
@@ -518,8 +504,7 @@ do_allocate_exception (type)
    directly, but see the comment for stabilize_throw_expr.  */
 
 static tree
-do_free_exception (ptr)
-     tree ptr;
+do_free_exception (tree ptr)
 {
   tree fn;
 
@@ -541,10 +526,8 @@ do_free_exception (ptr)
    Called from build_throw via walk_tree_without_duplicates.  */
 
 static tree
-wrap_cleanups_r (tp, walk_subtrees, data)
-     tree *tp;
-     int *walk_subtrees ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+wrap_cleanups_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
+                 void *data ATTRIBUTE_UNUSED)
 {
   tree exp = *tp;
   tree cleanup;
@@ -583,9 +566,7 @@ wrap_cleanups_r (tp, walk_subtrees, data)
    rather than in a MUST_NOT_THROW_EXPR, for this case only.  */
 
 static tree
-stabilize_throw_expr (exp, initp)
-     tree exp;
-     tree *initp;
+stabilize_throw_expr (tree exp, tree *initp)
 {
   tree init_expr;
 
@@ -626,8 +607,7 @@ stabilize_throw_expr (exp, initp)
 /* Build a throw expression.  */
 
 tree
-build_throw (exp)
-     tree exp;
+build_throw (tree exp)
 {
   tree fn;
 
@@ -805,9 +785,7 @@ build_throw (exp)
    the expr or decl from whence TYPE came, if available.  */
 
 static int
-complete_ptr_ref_or_void_ptr_p (type, from)
-     tree type;
-     tree from;
+complete_ptr_ref_or_void_ptr_p (tree type, tree from)
 {
   int is_ptr;
   
@@ -835,8 +813,7 @@ complete_ptr_ref_or_void_ptr_p (type, from)
    a type or of an abstract class type.  */
 
 static bool
-is_admissible_throw_operand (expr)
-     tree expr;
+is_admissible_throw_operand (tree expr)
 {
   tree type = TREE_TYPE (expr);
 
@@ -873,8 +850,7 @@ is_admissible_throw_operand (expr)
 #include "cfns.h"
 
 int
-nothrow_libfn_p (fn)
-     tree fn;
+nothrow_libfn_p (tree fn)
 {
   tree id;
 
@@ -895,8 +871,7 @@ nothrow_libfn_p (fn)
    handler for type TO, as per [except.handle].  */
 
 static int
-can_convert_eh (to, from)
-     tree to, from;
+can_convert_eh (tree to, tree from)
 {
   if (TREE_CODE (to) == REFERENCE_TYPE)
     to = TREE_TYPE (to);
@@ -931,9 +906,7 @@ can_convert_eh (to, from)
    for B would catch an exception of type C.  */
 
 static void
-check_handlers_1 (master, handlers)
-     tree master;
-     tree handlers;
+check_handlers_1 (tree master, tree handlers)
 {
   tree type = TREE_TYPE (master);
   tree handler;
@@ -954,8 +927,7 @@ check_handlers_1 (master, handlers)
 /* Given a chain of HANDLERs, make sure that they're OK.  */
 
 void
-check_handlers (handlers)
-     tree handlers;
+check_handlers (tree handlers)
 {
   tree handler;
   int save_line = lineno;
