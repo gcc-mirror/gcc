@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+#define VMS_TARGET
+
 /* This enables certain macros in vax.h, which will make an indirect
    reference to an external symbol an invalid address.  This needs to be
    defined before we include vax.h, since it determines which macros
