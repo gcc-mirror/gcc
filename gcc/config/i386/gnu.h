@@ -3,12 +3,21 @@
 /* This does it mostly for us.  */
 #include <i386/linux.h>
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Di386 -Acpu(i386) -Amachine(i386) \
--Dunix -Asystem(unix)  -DMACH -Asystem(mach) -D__GNU__ -Asystem(gnu)"
+/* Get machine-independent configuration parameters for the GNU system.  */
+#include <gnu.h>
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 GNU)");
+
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-D__ELF__ -D__i386__ -DMACH -Asystem(mach) \
+  -Dunix -Asystem(unix) -Asystem(posix) -D__GNU__ -Asystem(gnu)"
+
+#undef CPP_SPEC
+#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} %{bsd:-D_BSD_SOURCE}"
+
+#undef CC1_SPEC
+#define CC1_SPEC "%(cc1_cpu)"
 
 #undef	LINK_SPEC
 #define LINK_SPEC "-m elf_i386 %{shared:-shared} \
@@ -18,6 +27,10 @@
       %{!dynamic-linker:-dynamic-linker /lib/ld.so}} \
     %{static:-static}}"
 
-
-/* Get machine-independent configuration parameters for the GNU system.  */
-#include <gnu.h>
+#undef	STARTFILE_SPEC
+#define STARTFILE_SPEC \
+  "%{!shared: \
+     %{!static: \
+       %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} \
+     %{static:crt0.o%s}} \
+   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
