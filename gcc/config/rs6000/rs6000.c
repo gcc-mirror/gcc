@@ -7225,7 +7225,7 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 	  }
 
 	if (! (*insn_data[d->icode].operand[0].predicate) (op0, mode0))
-	  op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
+	  op0 = copy_to_mode_reg (Pmode, op0);
 	if (! (*insn_data[d->icode].operand[1].predicate) (op1, mode1))
 	  op1 = copy_to_mode_reg (mode1, op1);
 
