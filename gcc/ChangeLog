@@ -1,3 +1,7 @@
+2001-07-18  Andreas Jaeger  <aj@suse.de>
+
+	* integrate.c (output_inline_function): Correct type of debug_hooks.
+
 2001-07-18  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* combine.c (combine_simplify_rtx): DIV can be treated
@@ -25,7 +29,7 @@
 	* config/chorus.h: Moved here.
 
 2001-07-17  Andreas Schwab  <schwab@suse.de>
- 
+
        * configure.in  (assembler eh_frame optimization): Handle big
        endian.
        * configure: Regenerated.
