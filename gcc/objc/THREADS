@@ -1,0 +1,206 @@
+This file describes in little detail the modifications to the
+Objective-C runtime needed to make it thread safe. 
+
+First off, kudos to Galen Hunt who is the author of this great work.
+
+If you have an comments or just want to know where to
+send me money to express your undying graditude for threading the
+Objective-C runtime you can reach Galen at:
+
+	gchunt@cs.rochester.edu
+
+Any questions, comments, bug reports, etc. should send email either to the
+GCC bug account or to:
+
+	Scott Christley <scottc@ocbi.com>
+
+******************************************************************************
+* Simple test program:
+
+A simple test program can be found in the thread-test directory.
+
+******************************************************************************
+* Sarray Threading:
+
+The most critical component of the Objective-C runtime is the sparse array
+structure (sarray).  Sarrays store object selectors and implementations.  
+Following in the tradition of the Objective-C runtime, my threading
+support assumes that fast message dispatching is far more important
+than *ANY* and *ALL* other operations.  The message dispatching thus
+uses *NO* locks on any kind.  In fact, if you look in sarray.h, you
+will notice that the message dispatching has not been modified.
+Instead, I have modified the sarray management functions so that all
+updates to the sarray data structure can be made in parallel will
+message dispatching.  
+
+To support concurrent message dispatching, no dynamically allocated
+sarray data structures are freed while more than one thread is
+operational.  Sarray data structures that are no longer in use are
+kept in a linked list of garbage and are released whenever the program
+is operating with a single thread.  The programmer can also flush the 
+garbage list by calling sarray_remove_garbage when the programmer can
+ensure that no message dispatching is taking place concurrently.  The
+amount of un-reclaimed sarray garbage should normally be extremely
+small in a real program as sarray structures are freed only when using
+the "poseAs" functionality and early in program initialization, which
+normally occurs while the program is single threaded.
+
+******************************************************************************
+* Static Variables:
+
+The following variables are either statically or globally defined. This list 
+does not include variables which are internal to implementation dependent 
+versions of thread-*.c.
+
+The following threading designations are used:
+	SAFE   : Implicitly thread safe.
+	SINGLE : Must only be used in single thread mode.
+	MUTEX  : Protected by single global mutex objc_runtime_mutex.
+	UNUSED : Not used in the runtime.
+
+Variable Name:			Usage:  Defined:	Also used in:
+===========================	======	============	=====================
+__objc_class_hash		MUTEX	class.c
+__objc_class_links_resolved	UNUSED	class.c		runtime.h
+__objc_class_number		MUTEX	class.c
+__objc_dangling_categories	UNUSED	init.c
+__objc_module_list		MUTEX	init.c
+__objc_selector_array		MUTEX	selector.c
+__objc_selector_hash		MUTEX	selector.c
+__objc_selector_max_index	MUTEX	selector.c	sendmsg.c runtime.h
+__objc_selector_names		MUTEX	selector.c
+__objc_thread_exit_status	SAFE	thread.c
+__objc_uninstalled_dtable	MUTEX	sendmsg.c	selector.c
+_objc_load_callback		SAFE	init.c		objc-api.h
+_objc_lookup_class		SAFE	class.c		objc-api.h
+_objc_object_alloc		SINGLE	objects.c	objc-api.h
+_objc_object_copy		SINGLE	objects.c	objc-api.h
+_objc_object_dispose		SINGLE	objects.c	objc-api.h
+frwd_sel			SAFE2	sendmsg.c
+idxsize				MUTEX	sarray.c	sendmsg.c sarray.h
+initialize_sel			SAFE2	sendmsg.c
+narrays				MUTEX	sarray.c	sendmsg.c sarray.h
+nbuckets			MUTEX	sarray.c	sendmsg.c sarray.h
+nindices			MUTEX	sarray.c	sarray.h
+previous_constructors		SAFE1	init.c
+proto_class			SAFE1	init.c
+unclaimed_categories		MUTEX	init.c
+unclaimed_proto_list		MUTEX	init.c
+uninitialized_statics		MUTEX	init.c
+
+Notes:
+1) Initialized once in unithread mode.
+2) Initialized value will always be same, guaranteed by lock on selector 
+   hash table.
+
+******************************************************************************
+* Linking:
+
+On Solaris, you must link with -lthread to include the system
+thread library.  We use its low level thread and mutex implementations.
+
+On OSF/1, you must link with -lpthreads to include the pthreads library.
+
+On WIN32, thread support is built-in to the WIN32 API; refer to your
+compiler documentation for the appropriate library.
+
+******************************************************************************
+* Threads:
+
+The thread system attempts to create multiple threads using whatever
+operating system or library thread support is available.  It does
+assume that all system functions are thread safe.  Notably this means
+that the system implementation of malloc and free must be thread safe.
+If a system has multiple processors, the threads are configured for
+full parallel processing.
+
+__objc_init_thread_system(void), int
+	Initialize the thread subsystem.  Call once by __objc_exec_class.
+
+__objc_fini_thread_system(void), int
+	Closes the thread subsystem.
+
+objc_thread_detach(SEL selector, id object, id argument), int
+	Creates and detaches a new thread.  The new thread starts by
+	sending the given selector with a single argument to the
+	given object.
+
+objc_thread_set_priority(int priority), int
+	Sets a threads relative priority within the program.  Valid
+	options are:
+	
+	OBJC_THREAD_INTERACTIVE_PRIORITY
+	OBJC_THREAD_BACKGROUND_PRIORITY
+	OBJC_THREAD_LOW_PRIORITY
+
+objc_thread_get_priority(void), int
+	Query a threads priority.
+
+objc_thread_yield(void), void
+	Yields processor to another thread with equal or higher
+	priority.  It is up to the system scheduler to determine if
+	the processor is taken or not.
+
+objc_thread_exit(void), int
+	Terminates a thread.  If this is the last thread executing
+	then the program will terminate.
+
+objc_thread_id(void), int
+	Returns the current thread's id.
+
+objc_thread_set_data(void *value), int
+	Set a pointer to the thread's local storage.  Local storage is
+	thread specific.
+
+objc_thread_get_data(void), void *
+	Returns the pointer to the thread's local storage.
+
+******************************************************************************
+* Mutexs:
+
+Mutexs can be locked recursively.  Each mutex locked mutex remembers
+its owner (by thread id) and how many times it has been locked.  The
+last unlock on a mutex removes the system lock and allows other
+threads to access the mutex.
+
+objc_mutex_allocate(void), Mutex_t
+	Allocates a new mutex.  Mutex is initially unlocked.
+
+objc_mutex_deallocate(Mutex_t mutex), int
+	Free a mutex.  Before freeing the mutex, makes sure that no
+	one else is using it.
+
+objc_mutex_lock(Mutex_t mutex), int
+	Locks a mutex.  As mentioned earlier, the same thread may call
+	this routine repeatedly.
+	
+objc_mutex_trylock(Mutex_t mutex), int
+	Attempts to lock a mutex.  Returns -1 if failed.  If lock on
+	mutex can be acquired then function operates exactly as
+	objc_mutex_lock.
+
+objc_mutex_unlock(Mutex_t mutex), int
+	Unlocks the mutex by one level.  Other threads may not acquire
+	the mutex until this thread has released all locks on it.
+
+******************************************************************************
+* Sample run of thread-test/checks/test01.m
+
+<< program started >>				-- Program started
+__objc_exec_class(Object.m)			-- Initialize once 
+__objc_init_mutex_system
+__objc_init_thread_system
+__objc_init_selector_tables()  
+__objc_init_class_tables()  
+__objc_init_dispatch_tables() 
+__objc_exec_class(Protocol.m)			-- Called repeatedly
+__objc_init_protocols(0x000746d4) 		-- Called repeatedly
+class_add_method_list(0x74718, 0x74208) 	-- Called repeatedly
+<< main called >>				-- Main called
+__objc_init_install_dtable(0x6d980, 0x6d5c0)    -- Called repeatedly
+<< delegatePool filled, count=10 >>		-- Code in secondary function
+__objc_init_install_dtable(0x76268, 0x70614)    -- Called repeatedly
+Array: count=1					-- More secondary code.
+EltNodeCollector: count=1
+<< end of program >>				-- End of program
+
