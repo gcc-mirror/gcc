@@ -123,6 +123,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define FUNCTION_VALUE_REGNO_P(N) \
   ((N) == 0 || (N) == 8 || (TARGET_68881 && (N) == 16))
 
+/* Define this to be true when FUNCTION_VALUE_REGNO_P is true for
+   more than one register.  */
+
+#undef NEEDS_UNTYPED_CALL
+#define NEEDS_UNTYPED_CALL 1
+
 /* Define how to generate (in the callee) the output value of a function
    and how to find (in the caller) the value returned by a function.  VALTYPE
    is the data type of the value (as a tree).  If the precise function being

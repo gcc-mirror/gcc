@@ -774,6 +774,11 @@ extern enum reg_class regno_reg_class[];
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == 0)
 
+/* Define this to be true when FUNCTION_VALUE_REGNO_P is true for
+   more than one register.  */
+
+#define NEEDS_UNTYPED_CALL 0
+
 /* Define this if PCC uses the nonreentrant convention for returning
    structure and union values.  */
 
