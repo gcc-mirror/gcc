@@ -929,6 +929,7 @@ scan_loop (struct loop *loop, int flags)
 			  || (! (GET_CODE (SET_SRC (set)) == REG
 				 && (REGNO (SET_SRC (set))
 				     < FIRST_PSEUDO_REGISTER))))
+		      && regno >= FIRST_PSEUDO_REGISTER 
 		      /* This test is not redundant; SET_SRC (set) might be
 			 a call-clobbered register and the life of REGNO
 			 might span a call.  */

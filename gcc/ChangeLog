@@ -1,3 +1,9 @@
+2004-06-25  Philip Blundell  <philb@gnu.org>
+
+	PR wrong-code/15089
+	* loop.c (scan_loop): Do not move user-specified register
+	assignments.
+	
 2004-06-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR wrong-code/16129
