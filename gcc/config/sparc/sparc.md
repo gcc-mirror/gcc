@@ -4049,14 +4049,25 @@ return \"srl %1,0,%0\";
 {
   if (CONSTANT_P (operands[2]))
     {
+      if (TARGET_V8PLUS)
+	{
+	  emit_insn (gen_const_mulsidi3_v8plus (operands[0], operands[1],
+						operands[2]));
+	  DONE;
+	}
       emit_insn (gen_const_mulsidi3 (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+  if (TARGET_V8PLUS)
+    {
+      emit_insn (gen_mulsidi3_v8plus (operands[0], operands[1], operands[2]));
       DONE;
     }
 }")
 
 ;; V9 puts the 64 bit product in a 64 bit register.  Only out or global
 ;; registers can hold 64 bit values in the V8plus environment.
-(define_insn "*mulsidi3_v8plus"
+(define_insn "mulsidi3_v8plus"
   [(set (match_operand:DI 0 "register_operand" "=h,r")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
 		 (sign_extend:DI (match_operand:SI 2 "register_operand" "r,r"))))
@@ -4067,7 +4078,7 @@ return \"srl %1,0,%0\";
    smul %1,%2,%3\;srlx %3,32,%H0\;mov %3,%L0"
   [(set_attr "length" "2,3")])
 
-(define_insn "*const_mulsidi3_v8plus"
+(define_insn "const_mulsidi3_v8plus"
   [(set (match_operand:DI 0 "register_operand" "=h,r")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
 		 (match_operand:SI 2 "small_int" "I,I")))
@@ -4117,18 +4128,26 @@ return \"srl %1,0,%0\";
 {
   if (CONSTANT_P (operands[2]))
     {
+      if (TARGET_V8PLUS)
+	{
+	  emit_insn (gen_const_smulsi3_highpart_v8plus (operands[0],
+							operands[1],
+							operands[2],
+							GEN_INT (32)));
+	  DONE;
+	}
       emit_insn (gen_const_smulsi3_highpart (operands[0], operands[1], operands[2]));
       DONE;
     }
   if (TARGET_V8PLUS)
     {
-      emit_insn (gen_smulsidi3_highpart_v8plus (operands[0], operands[1],
-						operands[2], GEN_INT (32)));
+      emit_insn (gen_smulsi3_highpart_v8plus (operands[0], operands[1],
+					      operands[2], GEN_INT (32)));
       DONE;
     }
 }")
 
-(define_insn "smulsidi3_highpart_v8plus"
+(define_insn "smulsi3_highpart_v8plus"
   [(set (match_operand:SI 0 "register_operand" "=h,r")
 	(truncate:SI
 	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
@@ -4141,7 +4160,20 @@ return \"srl %1,0,%0\";
    smul %1,%2,%4\;srlx %4,%3,%0"
   [(set_attr "length" "2")])
 
-(define_insn "*smulsidi3_highpart_sp32"
+(define_insn "const_smulsi3_highpart_v8plus"
+  [(set (match_operand:SI 0 "register_operand" "=h,r")
+	(truncate:SI
+	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
+			       (match_operand:SI 2 "register_operand" "r,r"))
+		      (match_operand:SI 3 "const_int_operand" "i,i"))))
+   (clobber (match_scratch:SI 4 "=X,&h"))]
+  "TARGET_V8PLUS"
+  "@
+   smul %1,%2,%0\;srlx %0,%3,%0
+   smul %1,%2,%4\;srlx %4,%3,%0"
+  [(set_attr "length" "2")])
+
+(define_insn "*smulsi3_highpart_sp32"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(truncate:SI
 	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
@@ -4170,6 +4202,12 @@ return \"srl %1,0,%0\";
 {
   if (CONSTANT_P (operands[2]))
     {
+      if (TARGET_V8PLUS)
+	{
+	  emit_insn (gen_const_umulsidi3_v8plus (operands[0], operands[1],
+						 operands[2]));
+	  DONE;
+	}
       emit_insn (gen_const_umulsidi3 (operands[0], operands[1], operands[2]));
       DONE;
     }
@@ -4239,20 +4277,28 @@ return \"srl %1,0,%0\";
   "TARGET_HARD_MUL"
   "
 {
-  if (TARGET_V8PLUS)
-    {
-      emit_insn (gen_umulsidi3_highpart_v8plus (operands[0], operands[1],
-						operands[2], GEN_INT (32)));
-      DONE;
-    }
   if (CONSTANT_P (operands[2]))
     {
+      if (TARGET_V8PLUS)
+	{
+	  emit_insn (gen_const_umulsi3_highpart_v8plus (operands[0],
+							operands[1],
+							operands[2],
+							GEN_INT (32)));
+	  DONE;
+	}
       emit_insn (gen_const_umulsi3_highpart (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+  if (TARGET_V8PLUS)
+    {
+      emit_insn (gen_umulsi3_highpart_v8plus (operands[0], operands[1],
+					      operands[2], GEN_INT (32)));
       DONE;
     }
 }")
 
-(define_insn "umulsidi3_highpart_v8plus"
+(define_insn "umulsi3_highpart_v8plus"
   [(set (match_operand:SI 0 "register_operand" "=h,r")
 	(truncate:SI
 	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r,r"))
@@ -4278,7 +4324,7 @@ return \"srl %1,0,%0\";
    umul %1,%2,%4\;srlx %4,%3,%0"
   [(set_attr "length" "2")])
 
-(define_insn "*umulsidi3_highpart_sp32"
+(define_insn "*umulsi3_highpart_sp32"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(truncate:SI
 	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))

@@ -1,3 +1,17 @@
+Tue Apr 28 17:53:33 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* sparc.md (mulsidi3): Call const v8plus and v8plus routines.
+	(mulsidi3_v8plus, const_mulsidi3_v8plus): Delete asterisk from name.
+	(smuldi3_highpart): Call const v8plus routine.
+	(smulsi3_highpart_v8plus): Renamed from smulsidi3_highpart_v8plus.
+	(const_smulsi3_highpart_v8plus): New pattern.
+	(smulsi3_highpart_sp32): Renamed from smulsidi3_highpart_sp32.
+	(umulsidi3): Call const v8plus routine.
+	(umulsi3_highpart): Handle const before v8plus.  Call const v8plus
+	routine.
+	(umulsi3_highpart_v8plus): Renamed from umulsidi3_highpart_v8plus.
+	(umulsi3_highpart_sp32): Renamed from umulsidi3_highpart_sp32.
+
 Tue Apr 28 08:55:26 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* m32r.c (*_oper{and|ator}): Change enum arguments and return
