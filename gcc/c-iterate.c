@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 88, 89, 92, 93, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -255,6 +255,8 @@ collect_iterators (exp, list)
 		break;
 	      case RTL_EXPR:
 		return list;
+	      default:
+		break;
 	      }
 		
 	    for (i = 0; i < num_args; i++)
