@@ -1,3 +1,8 @@
+Fri May  8 10:57:33 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* config/m68k/t-linux: Remove extra stuff already included in
+	config/t-linux.
+
 Fri May  8 09:53:24  Paul Eggert  <eggert@twinsun.com>
 
 	* fixinc.wrap: Renamed from fixinc.math.  Put wrapper around
