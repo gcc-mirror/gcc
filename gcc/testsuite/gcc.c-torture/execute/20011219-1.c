@@ -42,7 +42,7 @@ foo (enum X x, const void *y)
 int
 main ()
 {
-  int i = 24;
+  long i = 24;
   if (foo (N, &i) != 24)
     abort ();
   exit (0);
