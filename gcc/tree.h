@@ -717,6 +717,11 @@ struct tree_vec
 #define SAVE_EXPR_CONTEXT(NODE) TREE_OPERAND(NODE, 1)
 #define SAVE_EXPR_RTL(NODE) (*(struct rtx_def **) &EXPR_CHECK (NODE)->exp.operands[2])
 #define SAVE_EXPR_NOPLACEHOLDER(NODE) TREE_UNSIGNED (NODE)
+/* Nonzero if the SAVE_EXPRs value should be kept, even if it occurs
+   both in normal code and in a handler.  (Normally, in a handler, all
+   SAVE_EXPRs are unsaved, meaning that there values are
+   recalculated.)  */
+#define SAVE_EXPR_PERSISTENT_P(NODE) TREE_ASM_WRITTEN (NODE)
 
 /* In a RTL_EXPR node.  */
 #define RTL_EXPR_SEQUENCE(NODE) (*(struct rtx_def **) &EXPR_CHECK (NODE)->exp.operands[0])

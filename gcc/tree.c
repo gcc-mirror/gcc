@@ -2236,10 +2236,7 @@ int_size_in_bytes (type)
 }
 
 /* Return, as a tree node, the number of elements for TYPE (which is an
-   ARRAY_TYPE) minus one. This counts only elements of the top array.
-
-   Don't let any SAVE_EXPRs escape; if we are called as part of a cleanup
-   action, they would get unsaved.  */
+   ARRAY_TYPE) minus one. This counts only elements of the top array.  */
 
 tree
 array_type_nelts (type)
@@ -2255,26 +2252,6 @@ array_type_nelts (type)
   index_type = TYPE_DOMAIN (type);
   min = TYPE_MIN_VALUE (index_type);
   max = TYPE_MAX_VALUE (index_type);
-
-  if (! TREE_CONSTANT (min))
-    {
-      STRIP_NOPS (min);
-      if (TREE_CODE (min) == SAVE_EXPR && SAVE_EXPR_RTL (min))
-	min = build (RTL_EXPR, TREE_TYPE (TYPE_MIN_VALUE (index_type)), 0,
-		     SAVE_EXPR_RTL (min));
-      else
-	min = TYPE_MIN_VALUE (index_type);
-    }
-
-  if (! TREE_CONSTANT (max))
-    {
-      STRIP_NOPS (max);
-      if (TREE_CODE (max) == SAVE_EXPR && SAVE_EXPR_RTL (max))
-	max = build (RTL_EXPR, TREE_TYPE (TYPE_MAX_VALUE (index_type)), 0,
-		     SAVE_EXPR_RTL (max));
-      else
-	max = TYPE_MAX_VALUE (index_type);
-    }
 
   return (integer_zerop (min)
 	  ? max
@@ -2465,7 +2442,8 @@ unsave_expr_now (expr)
   switch (code)
     {
     case SAVE_EXPR:
-      SAVE_EXPR_RTL (expr) = 0;
+      if (!SAVE_EXPR_PERSISTENT_P (expr))
+	SAVE_EXPR_RTL (expr) = 0;
       break;
 
     case TARGET_EXPR:
