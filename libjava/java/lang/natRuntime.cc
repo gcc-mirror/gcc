@@ -119,6 +119,8 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
       _Jv_Throw (new UnsatisfiedLinkError (JvNewStringLatin1 (msg)));
     }
 
+  add_library (h);
+
   void *onload = lt_dlsym (h, "JNI_OnLoad");
   if (onload != NULL)
     {
@@ -150,6 +152,8 @@ java::lang::Runtime::loadLibraryInternal (jstring lib)
   buf[total] = '\0';
   // FIXME: make sure path is absolute.
   lt_dlhandle h = lt_dlopenext (buf);
+  if (h != NULL)
+    add_library (h);
   return h != NULL;
 #else
   return false;
