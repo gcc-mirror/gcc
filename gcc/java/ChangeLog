@@ -1,3 +1,8 @@
+2002-02-07  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (Input Options): --CLASSPATH does not suppress system
+	path.
+
 2002-02-04  Anthony Green  <green@redhat.com>
 
 	* class.c (build_utf8_ref): Put UTF-8 constants into merged

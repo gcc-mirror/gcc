@@ -247,7 +247,7 @@ This sets the class path to @var{path}, a colon-separated list of paths
 @item --CLASSPATH=@var{path}
 This sets the class path to @var{path}, a colon-separated list of paths
 (on Windows-based systems, a semicolon-separate list of paths).  This
-differs from the @code{--classpath} option in that it also suppresses
+differs from the @code{--classpath} option in that it does not suppress
 the built-in system path.
 
 @item CLASSPATH
