@@ -1,3 +1,15 @@
+2002-12-24  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* g++.dg/init/new1.C, g++.dg/template/alignof1.C,
+	gcc.c-torture/compile/20021015-1.c,
+	gcc.c-torture/compile/20021015-2.c,
+	gcc.c-torture/compile/20021123-1.c,
+	gcc.c-torture/compile/20021123-2.c,
+	gcc.c-torture/compile/20021123-3.c,
+	gcc.c-torture/compile/20021123-4.c,
+	gcc.c-torture/execute/20021024-1.c: Add tests previously added
+	only to 3.1 or 3.2 branch.
+
 2002-12-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/parse/conv_op1.C: New test.
