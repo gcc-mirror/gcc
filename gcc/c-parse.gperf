@@ -5,8 +5,8 @@ struct resword { char *name; short token; enum rid rid; };
 %%
 __alignof, ALIGNOF, NORID
 __alignof__, ALIGNOF, NORID
-__asm, ASM, NORID
-__asm__, ASM, NORID
+__asm, ASM_KEYWORD, NORID
+__asm__, ASM_KEYWORD, NORID
 __attribute, ATTRIBUTE, NORID
 __attribute__, ATTRIBUTE, NORID
 __const, TYPE_QUAL, RID_CONST
@@ -21,7 +21,7 @@ __typeof, TYPEOF, NORID
 __typeof__, TYPEOF, NORID
 __volatile, TYPE_QUAL, RID_VOLATILE
 __volatile__, TYPE_QUAL, RID_VOLATILE
-asm, ASM, NORID
+asm, ASM_KEYWORD, NORID
 auto, SCSPEC, RID_AUTO
 break, BREAK, NORID
 case, CASE, NORID
