@@ -4100,7 +4100,7 @@ set this to empty.
 @item CROSS_LIBGCC1
 The rule to use to build @file{libgcc1.a} when building a cross
 compiler.  If your target does not need to use the functions in
-@file{libgcc1.a}, set this to empty.  @xref{Cross Runtime}.
+@file{libgcc1.a}, set this to empty.
 
 @findex LIBGCC2_CFLAGS
 @item LIBGCC2_CFLAGS

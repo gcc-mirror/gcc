@@ -1542,7 +1542,6 @@ for the target machine that you can install on the host machine.
 * Tools and Libraries:: Where to put the linker and assembler, and the C library.
 * Cross Headers::       Finding and installing header files
                           for a cross-compiler.
-* Cross Runtime::       Supplying arithmetic runtime routines (@file{libgcc1.a}).
 * Build Cross::         Actually compiling the cross-compiler.
 @end menu
 
@@ -1666,97 +1665,6 @@ mget *crt*.o
 quit
 @end example
 
-@node Cross Runtime
-@subsection @file{libgcc.a} and Cross-Compilers
-
-Code compiled by GNU CC uses certain runtime support functions
-implicitly.  Some of these functions can be compiled successfully with
-GNU CC itself, but a few cannot be.  These problem functions are in the
-source file @file{libgcc1.c}; the library made from them is called
-@file{libgcc1.a}.
-
-When you build a native compiler, these functions are compiled with some
-other compiler--the one that you use for bootstrapping GNU CC.
-Presumably it knows how to open code these operations, or else knows how
-to call the run-time emulation facilities that the machine comes with.
-But this approach doesn't work for building a cross-compiler.  The
-compiler that you use for building knows about the host system, not the
-target system.
-
-So, when you build a cross-compiler you have to supply a suitable
-library @file{libgcc1.a} that does the job it is expected to do.
-
-To compile @file{libgcc1.c} with the cross-compiler itself does not
-work.  The functions in this file are supposed to implement arithmetic
-operations that GNU CC does not know how to open code for your target
-machine.  If these functions are compiled with GNU CC itself, they
-will compile into infinite recursion.
-
-On any given target, most of these functions are not needed.  If GNU CC
-can open code an arithmetic operation, it will not call these functions
-to perform the operation.  It is possible that on your target machine,
-none of these functions is needed.  If so, you can supply an empty
-library as @file{libgcc1.a}.
-
-Many targets need library support only for multiplication and division.
-If you are linking with a library that contains functions for
-multiplication and division, you can tell GNU CC to call them directly
-by defining the macros @code{MULSI3_LIBCALL}, and the like.  These
-macros need to be defined in the target description macro file.  For
-some targets, they are defined already.  This may be sufficient to
-avoid the need for libgcc1.a; if so, you can supply an empty library.
-
-Some targets do not have floating point instructions; they need other
-functions in @file{libgcc1.a}, which do floating arithmetic.
-Recent versions of GNU CC have a file which emulates floating point.
-With a certain amount of work, you should be able to construct a
-floating point emulator that can be used as @file{libgcc1.a}.  Perhaps
-future versions will contain code to do this automatically and
-conveniently.  That depends on whether someone wants to implement it.
-
-Some embedded targets come with all the necessary @file{libgcc1.a}
-routines written in C or assembler.  These targets build
-@file{libgcc1.a} automatically and you do not need to do anything
-special for them.  Other embedded targets do not need any
-@file{libgcc1.a} routines since all the necessary operations are
-supported by the hardware.
-
-If your target system has another C compiler, you can configure GNU CC
-as a native compiler on that machine, build just @file{libgcc1.a} with
-@samp{make libgcc1.a} on that machine, and use the resulting file with
-the cross-compiler.  To do this, execute the following on the target
-machine:
-
-@example
-cd @var{target-build-dir}
-./configure --host=sparc --target=sun3
-make libgcc1.a
-@end example
-
-@noindent
-And then this on the host machine:
-
-@example
-ftp @var{target-machine}
-binary
-cd @var{target-build-dir}
-get libgcc1.a
-quit
-@end example
-
-Another way to provide the functions you need in @file{libgcc1.a} is to
-define the appropriate @code{perform_@dots{}} macros for those
-functions.  If these definitions do not use the C arithmetic operators
-that they are meant to implement, you should be able to compile them
-with the cross-compiler you are building.  (If these definitions already
-exist for your target file, then you are all set.)
-
-To build @file{libgcc1.a} using the perform macros, use
-@samp{LIBGCC1=libgcc1.a OLDCC=./xgcc} when building the compiler.
-Otherwise, you should place your replacement library under the name
-@file{libgcc1.a} in the directory in which you will build the
-cross-compiler, before you run @code{make}.
-
 @node Cross Headers
 @subsection Cross-Compilers and Header Files
 
@@ -1813,22 +1721,17 @@ tar xf tarfile
 @subsection Actually Building the Cross-Compiler
 
 Now you can proceed just as for compiling a single-machine compiler
-through the step of building stage 1.  If you have not provided some
-sort of @file{libgcc1.a}, then compilation will give up at the point
-where it needs that file, printing a suitable error message.  If you
-do provide @file{libgcc1.a}, then building the compiler will automatically
-compile and link a test program called @file{libgcc1-test}; if you get
-errors in the linking, it means that not all of the necessary routines
-in @file{libgcc1.a} are available.
+through the step of building stage 1.
 
-You must provide the header file @file{float.h}.  One way to do this is
-to compile @file{enquire} and run it on your target machine.  The job of
-@file{enquire} is to run on the target machine and figure out by
-experiment the nature of its floating point representation.
-@file{enquire} records its findings in the header file @file{float.h}.
-If you can't produce this file by running @file{enquire} on the target
-machine, then you will need to come up with a suitable @file{float.h} in
-some other way (or else, avoid using it in your programs).
+If your target is exotic, you may need to provide the header file
+@file{float.h}.One way to do this is to compile @file{enquire} and run
+it on your target machine.  The job of @file{enquire} is to run on the
+target machine and figure out by experiment the nature of its floating
+point representation.  @file{enquire} records its findings in the header
+file @file{float.h}.  If you can't produce this file by running
+@file{enquire} on the target machine, then you will need to come up with
+a suitable @file{float.h} in some other way (or else, avoid using it in
+your programs).
 
 Do not try to build stage 2 for a cross-compiler.  It doesn't work to
 rebuild GNU CC as a cross-compiler using the cross-compiler, because
