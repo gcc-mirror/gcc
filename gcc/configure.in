@@ -552,6 +552,29 @@ changequote([,])dnl
 	a29k-*-*)			# Default a29k environment.
 		use_collect2=yes
 		;;
+	alpha-*-interix)
+		tm_file="${tm_file} alpha/alpha32.h interix.h alpha/alpha-interix.h"
+
+		# GAS + IEEE_CONFORMANT+IEEE (no inexact);
+		#  see alpha.h for bitmasks
+		#target_cpu_default=$((4+8+16))
+
+		# GAS + IEEE_CONFORMANT; see alpha.h for bitmasks
+		target_cpu_default=$((4+8))
+
+		xm_file="alpha/xm-alpha-interix.h xm-interix.h"
+		xmake_file="x-interix alpha/t-pe"
+		tmake_file="alpha/t-interix"
+		fixincludes=fixinc.interix
+ 		if test x$enable_threads = xyes ; then
+			thread_file='posix'
+		fi
+		if test x$stabs = xyes ; then
+			tm_file="${tm_file} dbxcoff.h"
+		fi
+		#prefix='$$INTERIX_ROOT'/usr/contrib
+		#local_prefix='$$INTERIX_ROOT'/usr/contrib
+		;;
 	alpha*-*-linux-gnuecoff*)
 		tm_file="${tm_file} alpha/linux-ecoff.h alpha/linux.h"
 		target_cpu_default="MASK_GAS"
@@ -640,7 +663,7 @@ changequote([,])dnl
 		thread_file='vxworks'
 		;;
 	alpha*-*-winnt*)
-		tm_file="${tm_file} alpha/win-nt.h"
+	 	tm_file="${tm_file} alpha/alpha32.h alpha/win-nt.h winnt/win-nt.h"
 		xm_file="${xm_file} config/winnt/xm-winnt.h alpha/xm-winnt.h"
 		tmake_file=t-libc-ok
 		xmake_file=winnt/x-winnt
@@ -1513,17 +1536,17 @@ changequote([,])dnl
 changequote(,)dnl
 	i[34567]86-*-interix*)
 changequote([,])dnl
-		tm_file=i386/i386-interix.h
+		tm_file="i386/i386-interix.h interix.h"
 		xm_file="i386/xm-i386-interix.h xm-interix.h"
 		xm_defines="USG NO_SYS_SIGLIST"
 		tmake_file="i386/t-interix"
 		extra_objs=interix.o
 		xmake_file=x-interix
 		fixincludes=fixinc.interix
- 		if [[ x$enable_threads = xyes ]]; then
+ 		if test x$enable_threads = xyes ; then
 			thread_file='posix'
 		fi
- 		if [[ x$stabs = xyes ]]; then
+ 		if test x$stabs = xyes ; then
 			tm_file="${tm_file} dbxcoff.h"
 		fi
 		;;

@@ -84,3 +84,24 @@ for windows/multi thread */
 #undef STDC_VALUE
 #define STDC_VALUE 0
 
+#define HANDLE_SYSV_PRAGMA
+#undef HANDLE_PRAGMA_WEAK  /* until the link format can handle it */
+
+/* Names to predefine in the preprocessor for this target machine.  */
+
+#define DBX_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+
+/* TARGET_DEFAULT from configure */
+
+#undef WCHAR_TYPE
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_UNSIGNED 1
+#define WCHAR_TYPE "short unsigned int"
+#define WCHAR_TYPE_SIZE 16
+
+/* For the sake of libgcc2.c, indicate target supports atexit.  */
+#define HAVE_ATEXIT
