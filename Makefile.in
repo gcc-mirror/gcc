@@ -516,15 +516,15 @@ EXTRA_GCC_FLAGS = \
 	'BUILD_PREFIX_1=$(BUILD_PREFIX_1)' \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
-	"`echo 'LANGUAGES=$(LANGUAGES)' | sed -e s/.*=$$/XFOO=/`" \
-	"`echo 'STMP_FIXPROTO=$(STMP_FIXPROTO)' | sed -e s/.*=$$/XFOO=/`" \
-	"`echo 'LIMITS_H_TEST=$(LIMITS_H_TEST)' | sed -e s/.*=$$/XFOO=/`" \
-	"`echo 'LIBGCC2_CFLAGS=$(LIBGCC2_CFLAGS)' | sed -e s/.*=$$/XFOO=/`" \
-	"`echo 'LIBGCC2_DEBUG_CFLAGS=$(LIBGCC2_DEBUG_CFLAGS)' | sed -e s/.*=$$/XFOO=/`" \
-	"`echo 'LIBGCC2_INCLUDES=$(LIBGCC2_INCLUDES)' | sed -e s/.*=$$/XFOO=/`" \
-	"`echo 'STAGE1_CFLAGS=$(STAGE1_CFLAGS)' | sed -e s/.*=$$/XFOO=/`" \
-	"`echo 'BOOT_CFLAGS=$(BOOT_CFLAGS)' | sed -e s/.*=$$/XFOO=/`" \
-	"`echo 'BOOT_ADAFLAGS=$(BOOT_ADAFLAGS)' | sed -e s/.*=$$/XFOO=/`"
+	"`echo 'LANGUAGES=$(LANGUAGES)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
+	"`echo 'STMP_FIXPROTO=$(STMP_FIXPROTO)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
+	"`echo 'LIMITS_H_TEST=$(LIMITS_H_TEST)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
+	"`echo 'LIBGCC2_CFLAGS=$(LIBGCC2_CFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
+	"`echo 'LIBGCC2_DEBUG_CFLAGS=$(LIBGCC2_DEBUG_CFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
+	"`echo 'LIBGCC2_INCLUDES=$(LIBGCC2_INCLUDES)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
+	"`echo 'STAGE1_CFLAGS=$(STAGE1_CFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
+	"`echo 'BOOT_CFLAGS=$(BOOT_CFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`" \
+	"`echo 'BOOT_ADAFLAGS=$(BOOT_ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
 
 GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(EXTRA_GCC_FLAGS)
 
@@ -23481,6 +23481,7 @@ configure-target-libada: $(TARGET_SUBDIR)/libada/multilib.out
 	AS="$(AS_FOR_TARGET)"; export AS; \
 	CC="$(CC_FOR_TARGET)"; export CC; \
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXX="$(CXX_FOR_TARGET)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
@@ -23502,30 +23503,8 @@ configure-target-libada: $(TARGET_SUBDIR)/libada/multilib.out
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/libada "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
 	  srcdiroption="--srcdir=$${topdir}/libada"; \
 	  libsrcdir="$$s/libada"; \
-	fi; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
