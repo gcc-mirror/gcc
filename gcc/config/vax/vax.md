@@ -1253,6 +1253,26 @@
   ""
   "ashq %2,%1,%0")
 
+;; We used to have expand_shift handle logical right shifts by using extzv,
+;; but this make it very difficult to do lshrdi3.  Since the VAX is the
+;; only machine with this kludge, it's better to just do this with a
+;; define_expand and remove that case from expand_shift.
+
+(define_expand "lshrsi3"
+  [(set (match_dup 3)
+	(minus:QI (const_int 32)
+		  (match_dup 4)))
+   (set (match_operand:SI 0 "general_operand" "=g")
+	(zero_extract:SI (match_operand:SI 1 "nonmemory_operand" "r")
+			 (match_dup 3)
+			 (match_operand:SI 2 "register_operand" "g")))]
+  ""
+  "
+{
+  operands[3] = gen_reg_rtx (QImode);
+  operands[4] = gen_lowpart (QImode, operands[2]);
+}")
+
 ;; Rotate right on the vax works by negating the shift count.
 (define_expand "rotrsi3"
   [(set (match_operand:SI 0 "general_operand" "=g")
