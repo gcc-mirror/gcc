@@ -1,3 +1,7 @@
+2000-07-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cpplex.c (T, I, S, C, N): Avoid non-constant initializers.
+
 2000-07-11  Neil Booth  <NeilB@earthling.net>
 
 	* cpp.texi: Update.
