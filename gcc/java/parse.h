@@ -673,7 +673,7 @@ typedef struct _jdeplist {
   {									    \
     (WHERE) = 								    \
       build (CALL_EXPR, void_type_node,					    \
-	     build_address_of (throw_node[exceptions_via_longjmp ? 1 : 0]), \
+	     build_address_of (throw_node[USING_SJLJ_EXCEPTIONS ? 1 : 0]), \
 	     build_tree_list (NULL_TREE, (WHAT)), NULL_TREE);		    \
     TREE_SIDE_EFFECTS ((WHERE)) = 1;					    \
   }
