@@ -2148,7 +2148,7 @@ build_shared_structure_initializer (isa, super, name, size, status,
   initlist = tree_cons (NULLT, build_int_2 (0, 0), initlist);
 
   /* info = */
-  initlist = tree_cons (NULLT, build_int_2 (status), initlist);
+  initlist = tree_cons (NULLT, build_int_2 (status, 0), initlist);
 
   /* instance_size = */
   initlist = tree_cons (NULLT, size, initlist);
