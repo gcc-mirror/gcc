@@ -52,11 +52,7 @@
 #ifndef ELIDE_CODE
 
 
-#if defined (__STDC__) && __STDC__
 #define POINTER void *
-#else
-#define POINTER char *
-#endif
 
 /* Determine default alignment.  */
 struct fooalign {char x; double d;};
@@ -81,13 +77,8 @@ union fooround {long x; double d;};
    jump to the handler pointed to by `obstack_alloc_failed_handler'.
    This variable by default points to the internal function
    `print_and_abort'.  */
-#if defined (__STDC__) && __STDC__
 static void print_and_abort (void);
 void (*obstack_alloc_failed_handler) (void) = print_and_abort;
-#else
-static void print_and_abort ();
-void (*obstack_alloc_failed_handler) () = print_and_abort;
-#endif
 
 /* Exit value used when `print_and_abort' is used.  */
 #if defined __GNU_LIBRARY__ || defined HAVE_STDLIB_H
@@ -148,17 +139,8 @@ struct obstack *_obstack;
    free up some memory, then call this again.  */
 
 int
-_obstack_begin (h, size, alignment, chunkfun, freefun)
-     struct obstack *h;
-     int size;
-     int alignment;
-#if defined (__STDC__) && __STDC__
-     POINTER (*chunkfun) (long);
-     void (*freefun) (void *);
-#else
-     POINTER (*chunkfun) ();
-     void (*freefun) ();
-#endif
+_obstack_begin (struct obstack *h, int size, int alignment,
+                POINTER (*chunkfun) (long), void (*freefun) (void *))
 {
   register struct _obstack_chunk *chunk; /* points to new chunk */
 
@@ -181,13 +163,8 @@ _obstack_begin (h, size, alignment, chunkfun, freefun)
       size = 4096 - extra;
     }
 
-#if defined (__STDC__) && __STDC__
   h->chunkfun = (struct _obstack_chunk * (*)(void *, long)) chunkfun;
   h->freefun = (void (*) (void *, struct _obstack_chunk *)) freefun;
-#else
-  h->chunkfun = (struct _obstack_chunk * (*)()) chunkfun;
-  h->freefun = freefun;
-#endif
   h->chunk_size = size;
   h->alignment_mask = alignment - 1;
   h->use_extra_arg = 0;
@@ -206,18 +183,9 @@ _obstack_begin (h, size, alignment, chunkfun, freefun)
 }
 
 int
-_obstack_begin_1 (h, size, alignment, chunkfun, freefun, arg)
-     struct obstack *h;
-     int size;
-     int alignment;
-#if defined (__STDC__) && __STDC__
-     POINTER (*chunkfun) (POINTER, long);
-     void (*freefun) (POINTER, POINTER);
-#else
-     POINTER (*chunkfun) ();
-     void (*freefun) ();
-#endif
-     POINTER arg;
+_obstack_begin_1 (struct obstack *h, int size, int alignment,
+                  POINTER (*chunkfun) (POINTER, long),
+                  void (*freefun) (POINTER, POINTER), POINTER arg)
 {
   register struct _obstack_chunk *chunk; /* points to new chunk */
 
@@ -240,13 +208,8 @@ _obstack_begin_1 (h, size, alignment, chunkfun, freefun, arg)
       size = 4096 - extra;
     }
 
-#if defined(__STDC__) && __STDC__
   h->chunkfun = (struct _obstack_chunk * (*)(void *,long)) chunkfun;
   h->freefun = (void (*) (void *, struct _obstack_chunk *)) freefun;
-#else
-  h->chunkfun = (struct _obstack_chunk * (*)()) chunkfun;
-  h->freefun = freefun;
-#endif
   h->chunk_size = size;
   h->alignment_mask = alignment - 1;
   h->extra_arg = arg;
@@ -272,9 +235,7 @@ _obstack_begin_1 (h, size, alignment, chunkfun, freefun, arg)
    to the beginning of the new one.  */
 
 void
-_obstack_newchunk (h, length)
-     struct obstack *h;
-     int length;
+_obstack_newchunk (struct obstack *h, int length)
 {
   register struct _obstack_chunk *old_chunk = h->chunk;
   register struct _obstack_chunk *new_chunk;
@@ -335,16 +296,12 @@ _obstack_newchunk (h, length)
    This is here for debugging.
    If you use it in a program, you are probably losing.  */
 
-#if defined (__STDC__) && __STDC__
 /* Suppress -Wmissing-prototypes warning.  We don't want to declare this in
    obstack.h because it is just for debugging.  */
 int _obstack_allocated_p (struct obstack *h, POINTER obj);
-#endif
 
 int
-_obstack_allocated_p (h, obj)
-     struct obstack *h;
-     POINTER obj;
+_obstack_allocated_p (struct obstack *h, POINTER obj)
 {
   register struct _obstack_chunk *lp;	/* below addr of any objects in this chunk */
   register struct _obstack_chunk *plp;	/* point to previous chunk if any */
@@ -370,9 +327,7 @@ _obstack_allocated_p (h, obj)
    This is the first one, called from non-ANSI code.  */
 
 void
-_obstack_free (h, obj)
-     struct obstack *h;
-     POINTER obj;
+_obstack_free (struct obstack *h, POINTER obj)
 {
   register struct _obstack_chunk *lp;	/* below addr of any objects in this chunk */
   register struct _obstack_chunk *plp;	/* point to previous chunk if any */
@@ -404,9 +359,7 @@ _obstack_free (h, obj)
 /* This function is used from ANSI code.  */
 
 void
-obstack_free (h, obj)
-     struct obstack *h;
-     POINTER obj;
+obstack_free (struct obstack *h, POINTER obj)
 {
   register struct _obstack_chunk *lp;	/* below addr of any objects in this chunk */
   register struct _obstack_chunk *plp;	/* point to previous chunk if any */
@@ -436,8 +389,7 @@ obstack_free (h, obj)
 }
 
 int
-_obstack_memory_used (h)
-     struct obstack *h;
+_obstack_memory_used (struct obstack *h)
 {
   register struct _obstack_chunk* lp;
   register int nbytes = 0;
@@ -462,7 +414,7 @@ _obstack_memory_used (h)
 #endif
 
 static void
-print_and_abort ()
+print_and_abort (void)
 {
   fputs (_("memory exhausted\n"), stderr);
   exit (obstack_exit_failure);
@@ -475,118 +427,83 @@ print_and_abort ()
 /* Now define the functional versions of the obstack macros.
    Define them to simply use the corresponding macros to do the job.  */
 
-#if defined (__STDC__) && __STDC__
-/* These function definitions do not work with non-ANSI preprocessors;
-   they won't pass through the macro names in parentheses.  */
-
 /* The function names appear in parentheses in order to prevent
    the macro-definitions of the names from being expanded there.  */
 
-POINTER (obstack_base) (obstack)
-     struct obstack *obstack;
+POINTER (obstack_base) (struct obstack *obstack)
 {
   return obstack_base (obstack);
 }
 
-POINTER (obstack_next_free) (obstack)
-     struct obstack *obstack;
+POINTER (obstack_next_free) (struct obstack *obstack)
 {
   return obstack_next_free (obstack);
 }
 
-int (obstack_object_size) (obstack)
-     struct obstack *obstack;
+int (obstack_object_size) (struct obstack *obstack)
 {
   return obstack_object_size (obstack);
 }
 
-int (obstack_room) (obstack)
-     struct obstack *obstack;
+int (obstack_room) (struct obstack *obstack)
 {
   return obstack_room (obstack);
 }
 
-int (obstack_make_room) (obstack, length)
-     struct obstack *obstack;
-     int length;
+int (obstack_make_room) (struct obstack *obstack, int length)
 {
   return obstack_make_room (obstack, length);
 }
 
-void (obstack_grow) (obstack, pointer, length)
-     struct obstack *obstack;
-     POINTER pointer;
-     int length;
+void (obstack_grow) (struct obstack *obstack, POINTER pointer, int length)
 {
   obstack_grow (obstack, pointer, length);
 }
 
-void (obstack_grow0) (obstack, pointer, length)
-     struct obstack *obstack;
-     POINTER pointer;
-     int length;
+void (obstack_grow0) (struct obstack *obstack, POINTER pointer, int length)
 {
   obstack_grow0 (obstack, pointer, length);
 }
 
-void (obstack_1grow) (obstack, character)
-     struct obstack *obstack;
-     int character;
+void (obstack_1grow) (struct obstack *obstack, int character)
 {
   obstack_1grow (obstack, character);
 }
 
-void (obstack_blank) (obstack, length)
-     struct obstack *obstack;
-     int length;
+void (obstack_blank) (struct obstack *obstack, int length)
 {
   obstack_blank (obstack, length);
 }
 
-void (obstack_1grow_fast) (obstack, character)
-     struct obstack *obstack;
-     int character;
+void (obstack_1grow_fast) (struct obstack *obstack, int character)
 {
   obstack_1grow_fast (obstack, character);
 }
 
-void (obstack_blank_fast) (obstack, length)
-     struct obstack *obstack;
-     int length;
+void (obstack_blank_fast) (struct obstack *obstack, int length)
 {
   obstack_blank_fast (obstack, length);
 }
 
-POINTER (obstack_finish) (obstack)
-     struct obstack *obstack;
+POINTER (obstack_finish) (struct obstack *obstack)
 {
   return obstack_finish (obstack);
 }
 
-POINTER (obstack_alloc) (obstack, length)
-     struct obstack *obstack;
-     int length;
+POINTER (obstack_alloc) (struct obstack *obstack, int length)
 {
   return obstack_alloc (obstack, length);
 }
 
-POINTER (obstack_copy) (obstack, pointer, length)
-     struct obstack *obstack;
-     POINTER pointer;
-     int length;
+POINTER (obstack_copy) (struct obstack *obstack, POINTER pointer, int length)
 {
   return obstack_copy (obstack, pointer, length);
 }
 
-POINTER (obstack_copy0) (obstack, pointer, length)
-     struct obstack *obstack;
-     POINTER pointer;
-     int length;
+POINTER (obstack_copy0) (struct obstack *obstack, POINTER pointer, int length)
 {
   return obstack_copy0 (obstack, pointer, length);
 }
-
-#endif /* __STDC__ */
 
 #endif /* 0 */
 

@@ -1,7 +1,7 @@
 /* Utilities to execute a program in a subprocess (possibly linked by pipes
    with other subprocesses), and wait for it.  Generic Unix version
    (also used for UWIN and VMS).
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
@@ -80,14 +80,9 @@ extern int errno;
    exactly once and is not an argument, or is marked volatile.  */
 
 int
-pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg,
-	  flagsarg)
-     const char *program;
-     char * const *argv;
-     const char *this_pname;
-     const char *temp_base ATTRIBUTE_UNUSED;
-     char **errmsg_fmt, **errmsg_arg;
-     int flagsarg;
+pexecute (const char *program, char * const *argv, const char *this_pname,
+          const char *temp_base ATTRIBUTE_UNUSED,
+          char **errmsg_fmt, char **errmsg_arg, int flagsarg)
 {
   int pid;
   int pdes[2];
@@ -203,10 +198,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg,
 }
 
 int
-pwait (pid, status, flags)
-     int pid;
-     int *status;
-     int flags ATTRIBUTE_UNUSED;
+pwait (int pid, int *status, int flags ATTRIBUTE_UNUSED)
 {
   /* ??? Here's an opportunity to canonicalize the values in STATUS.
      Needed?  */

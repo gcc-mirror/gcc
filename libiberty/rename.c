@@ -22,9 +22,7 @@ exists, it is removed.
 #endif
 
 int
-rename (zfrom, zto)
-     const char *zfrom;
-     const char *zto;
+rename (const char *zfrom, const char *zto)
 {
   if (link (zfrom, zto) < 0)
     {

@@ -30,19 +30,13 @@ Copies the string @var{src} into @var{dst}.  Returns a pointer to
 */
 
 #include <ansidecl.h>
-#ifdef ANSI_PROTOTYPES
 #include <stddef.h>
-#else
-#define size_t unsigned long
-#endif
 
-extern size_t strlen PARAMS ((const char *));
-extern PTR memcpy PARAMS ((PTR, const PTR, size_t));
+extern size_t strlen (const char *);
+extern PTR memcpy (PTR, const PTR, size_t);
 
 char *
-stpcpy (dst, src)
-     char *dst;
-     const char *src;
+stpcpy (char *dst, const char *src)
 {
   const size_t len = strlen (src);
   return (char *) memcpy (dst, src, len + 1) + len;

@@ -21,12 +21,11 @@ be the value @code{1}).
 #include <sys/types.h>
 #include <signal.h>
 
-extern void abort PARAMS ((void)) ATTRIBUTE_NORETURN;
+extern void abort (void) ATTRIBUTE_NORETURN;
 
 #ifdef SIG_SETMASK
 int
-sigsetmask (set)
-      int set;
+sigsetmask (int set)
 {
     sigset_t new;
     sigset_t old;

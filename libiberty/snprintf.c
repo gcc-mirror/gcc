@@ -41,18 +41,13 @@ this function is used.
 
 #include "ansidecl.h"
 
-#ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
 #include <stddef.h>
-#else
-#include <varargs.h>
-#define size_t unsigned long
-#endif
 
-int vsnprintf PARAMS ((char *, size_t, const char *, va_list));
+int vsnprintf (char *, size_t, const char *, va_list);
 
 int
-snprintf VPARAMS ((char *s, size_t n, const char *format, ...))
+snprintf (char *s, size_t n, const char *format, ...)
 {
   int result;
   VA_OPEN (ap, format);

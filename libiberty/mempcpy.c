@@ -1,5 +1,5 @@
 /* Implement the mempcpy function.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
    Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu>.
 
 This file is part of the libiberty library.
@@ -30,19 +30,12 @@ Copies @var{length} bytes from memory region @var{in} to region
 */
 
 #include <ansidecl.h>
-#ifdef ANSI_PROTOTYPES
 #include <stddef.h>
-#else
-#define size_t unsigned long
-#endif
 
-extern PTR memcpy PARAMS ((PTR, const PTR, size_t));
+extern PTR memcpy (PTR, const PTR, size_t);
 
 PTR
-mempcpy (dst, src, len)
-     PTR dst;
-     const PTR src;
-     size_t len;
+mempcpy (PTR dst, const PTR src, size_t len)
 {
   return (char *) memcpy (dst, src, len) + len;
 }

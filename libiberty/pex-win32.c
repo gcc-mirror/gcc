@@ -1,6 +1,6 @@
 /* Utilities to execute a program in a subprocess (possibly linked by pipes
    with other subprocesses), and wait for it.  Generic Win32 specialization.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
@@ -53,8 +53,7 @@ Boston, MA 02111-1307, USA.  */
    to remove the outermost set of double quotes from all arguments.  */
 
 static const char * const *
-fix_argv (argvec)
-     char **argvec;
+fix_argv (char **argvec)
 {
   int i;
   char * command0 = argvec[0];
@@ -138,13 +137,10 @@ fix_argv (argvec)
 
 /* Win32 supports pipes */
 int
-pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
-     const char *program;
-     char * const *argv;
-     const char *this_pname ATTRIBUTE_UNUSED;
-     const char *temp_base ATTRIBUTE_UNUSED;
-     char **errmsg_fmt, **errmsg_arg;
-     int flags;
+pexecute (const char *program, char * const *argv,
+          const char *this_pname ATTRIBUTE_UNUSED,
+          const char *temp_base ATTRIBUTE_UNUSED,
+          char **errmsg_fmt, char **errmsg_arg, int flags)
 {
   int pid;
   int pdes[2];
@@ -230,10 +226,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
    macros. Note that WIFSIGNALED will never be true under CRTDLL. */
 
 int
-pwait (pid, status, flags)
-     int pid;
-     int *status;
-     int flags ATTRIBUTE_UNUSED;
+pwait (int pid, int *status, int flags ATTRIBUTE_UNUSED)
 {
   int termstat;
 
