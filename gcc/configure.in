@@ -264,7 +264,6 @@ if test x$enable_c_cpplib != xno; then
   AC_DEFINE(USE_CPPLIB, 1,
   [Define if you want the preprocessor merged into the C and C++ compilers.
    This mode is not ready for production use.])
-
 fi)
 
 # Enable Multibyte Characters for C/C++
