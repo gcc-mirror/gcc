@@ -9349,7 +9349,6 @@ static struct builtin_description bdesc_2arg[] =
   { CODE_FOR_mqsubhss, "__MQSUBHSS", FRV_BUILTIN_MQSUBHSS, 0, 0 },
   { CODE_FOR_mqsubhus, "__MQSUBHUS", FRV_BUILTIN_MQSUBHUS, 0, 0 },
   { CODE_FOR_mpackh, "__MPACKH", FRV_BUILTIN_MPACKH, 0, 0 },
-  { CODE_FOR_mdpackh, "__MDPACKH", FRV_BUILTIN_MDPACKH, 0, 0 },
   { CODE_FOR_mcop1, "__Mcop1", FRV_BUILTIN_MCOP1, 0, 0 },
   { CODE_FOR_mcop2, "__Mcop2", FRV_BUILTIN_MCOP2, 0, 0 },
   { CODE_FOR_mwcut, "__MWCUT", FRV_BUILTIN_MWCUT, 0, 0 },
@@ -9494,6 +9493,12 @@ frv_init_builtins (void)
 			    tree_cons (NULL_TREE, T2, \
 			    tree_cons (NULL_TREE, T3, endlink))))
 
+#define QUAD(RET, T1, T2, T3, T4) \
+  build_function_type (RET, tree_cons (NULL_TREE, T1, \
+			    tree_cons (NULL_TREE, T2, \
+			    tree_cons (NULL_TREE, T3, \
+			    tree_cons (NULL_TREE, T4, endlink)))))
+
   tree void_ftype_void = build_function_type (voidt, endlink);
 
   tree void_ftype_acc = UNARY (voidt, accumulator);
@@ -9527,6 +9532,7 @@ frv_init_builtins (void)
   tree uw2_ftype_uw2_uw2 = BINARY (uword2, uword2, uword2);
   tree uw2_ftype_uw2_int = BINARY (uword2, uword2, integer);
   tree uw2_ftype_acc_int = BINARY (uword2, accumulator, integer);
+  tree uw2_ftype_uh_uh_uh_uh = QUAD (uword2, uhalf, uhalf, uhalf, uhalf);
 
   tree sw2_ftype_sw2_sw2 = BINARY (sword2, sword2, sword2);
   tree sw2_ftype_sw2_int   = BINARY (sword2, sword2, integer);
@@ -9589,7 +9595,7 @@ frv_init_builtins (void)
   def_builtin ("__MEXPDHD", uw2_ftype_uw1_int, FRV_BUILTIN_MEXPDHD);
   def_builtin ("__MPACKH", uw1_ftype_uh_uh, FRV_BUILTIN_MPACKH);
   def_builtin ("__MUNPACKH", uw2_ftype_uw1, FRV_BUILTIN_MUNPACKH);
-  def_builtin ("__MDPACKH", uw2_ftype_uw2_uw2, FRV_BUILTIN_MDPACKH);
+  def_builtin ("__MDPACKH", uw2_ftype_uh_uh_uh_uh, FRV_BUILTIN_MDPACKH);
   def_builtin ("__MDUNPACKH", void_ftype_uw4_uw2, FRV_BUILTIN_MDUNPACKH);
   def_builtin ("__MBTOH", uw2_ftype_uw1, FRV_BUILTIN_MBTOH);
   def_builtin ("__MHTOB", uw1_ftype_uw2, FRV_BUILTIN_MHTOB);
@@ -9648,6 +9654,7 @@ frv_init_builtins (void)
 #undef UNARY
 #undef BINARY
 #undef TRINARY
+#undef QUAD
 }
 
 /* Set the names for various arithmetic operations according to the
@@ -10116,6 +10123,44 @@ frv_expand_voidaccop_builtin (enum insn_code icode, tree arglist)
   return NULL_RTX;
 }
 
+/* Expand the MDPACKH builtin.  It takes four unsigned short arguments and
+   each argument forms one word of the two double-word input registers.
+   ARGLIST is a TREE_LIST of the arguments and TARGET, if nonnull,
+   suggests a good place to put the return value.  */
+
+static rtx
+frv_expand_mdpackh_builtin (tree arglist, rtx target)
+{
+  enum insn_code icode = CODE_FOR_mdpackh;
+  rtx pat, op0, op1;
+  rtx arg1 = frv_read_argument (&arglist);
+  rtx arg2 = frv_read_argument (&arglist);
+  rtx arg3 = frv_read_argument (&arglist);
+  rtx arg4 = frv_read_argument (&arglist);
+
+  target = frv_legitimize_target (icode, target);
+  op0 = gen_reg_rtx (DImode);
+  op1 = gen_reg_rtx (DImode);
+
+  /* The high half of each word is not explicitly initialised, so indicate
+     that the input operands are not live before this point.  */
+  emit_insn (gen_rtx_CLOBBER (DImode, op0));
+  emit_insn (gen_rtx_CLOBBER (DImode, op1));
+
+  /* Move each argument into the low half of its associated input word.  */
+  emit_move_insn (simplify_gen_subreg (HImode, op0, DImode, 2), arg1);
+  emit_move_insn (simplify_gen_subreg (HImode, op0, DImode, 6), arg2);
+  emit_move_insn (simplify_gen_subreg (HImode, op1, DImode, 2), arg3);
+  emit_move_insn (simplify_gen_subreg (HImode, op1, DImode, 6), arg4);
+
+  pat = GEN_FCN (icode) (target, op0, op1);
+  if (! pat)
+    return NULL_RTX;
+
+  emit_insn (pat);
+  return target;
+}
+
 /* Expand the MCLRACC builtin.  This builtin takes a single accumulator
    number as argument.  */
 
@@ -10342,6 +10387,9 @@ frv_expand_builtin (tree exp,
 
     case FRV_BUILTIN_MWTACCG:
       return frv_expand_mwtacc_builtin (CODE_FOR_mwtaccg, arglist);
+
+    case FRV_BUILTIN_MDPACKH:
+      return frv_expand_mdpackh_builtin (arglist, target);
 
     case FRV_BUILTIN_IACCreadll:
       {

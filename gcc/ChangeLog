@@ -1,3 +1,12 @@
+2005-01-28  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/frv/frv.c (bdesc_2arg): Remove __MDPACKH.
+	(frv_init_builtins): Change its prototype to take 4 uhalf arguments.
+	(frv_expand_mdpackh_builtin): New function.
+	(frv_expand_builtin): Use it to expand __MDPACKH.
+	* config/frv/media.h (__MDPACKH): Update prototype.
+	* doc/extend.texi (__MDPACKH): Update documentation.
+
 2005-01-28  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.c (ix86_expand_fp_absneg_operator): Use
