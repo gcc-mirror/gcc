@@ -1,3 +1,8 @@
+2002-10-03  Michael Koch  <konqueror@gmx.de>
+
+	* gcj.texi (Standard properties):
+	Change default of java.awt.toolkit to gnu.awt.gtk.GtkToolkit.
+
 2002-10-02  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/6627
