@@ -1140,6 +1140,96 @@ gfc_trans_dt_end (gfc_code * code)
   return gfc_finish_block (&block);
 }
 
+static void
+transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr);
+
+/* Given an array field in a derived type variable, generate the code
+   for the loop that iterates over array elements, and the code that
+   accesses those array elements.  Use transfer_expr to generate code
+   for transferring that element.  Because elements may also be
+   derived types, transfer_expr and transfer_array_component are mutually
+   recursive.  */
+
+static tree
+transfer_array_component (tree expr, gfc_component * cm)
+{
+  tree tmp;
+  stmtblock_t body;
+  stmtblock_t block;
+  gfc_loopinfo loop;
+  int n;
+  gfc_ss *ss;
+  gfc_se se;
+
+  gfc_start_block (&block);
+  gfc_init_se (&se, NULL);
+
+  /* Create and initialize Scalarization Status.  Unlike in
+     gfc_trans_transfer, we can't simply use gfc_walk_expr to take
+     care of this task, because we don't have a gfc_expr at hand.
+     Build one manually, as in gfc_trans_subarray_assign.  */
+
+  ss = gfc_get_ss ();
+  ss->type = GFC_SS_COMPONENT;
+  ss->expr = NULL;
+  ss->shape = gfc_get_shape (cm->as->rank);
+  ss->next = gfc_ss_terminator;
+  ss->data.info.dimen = cm->as->rank;
+  ss->data.info.descriptor = expr;
+  ss->data.info.data = gfc_conv_array_data (expr);
+  ss->data.info.offset = gfc_conv_array_offset (expr);
+  for (n = 0; n < cm->as->rank; n++)
+    {
+      ss->data.info.dim[n] = n;
+      ss->data.info.start[n] = gfc_conv_array_lbound (expr, n);
+      ss->data.info.stride[n] = gfc_index_one_node;
+
+      mpz_init (ss->shape[n]);
+      mpz_sub (ss->shape[n], cm->as->upper[n]->value.integer,
+               cm->as->lower[n]->value.integer);
+      mpz_add_ui (ss->shape[n], ss->shape[n], 1);
+    }
+
+  /* Once we got ss, we use scalarizer to create the loop. */
+
+  gfc_init_loopinfo (&loop);
+  gfc_add_ss_to_loop (&loop, ss);
+  gfc_conv_ss_startstride (&loop);
+  gfc_conv_loop_setup (&loop);
+  gfc_mark_ss_chain_used (ss, 1);
+  gfc_start_scalarized_body (&loop, &body);
+
+  gfc_copy_loopinfo_to_se (&se, &loop);
+  se.ss = ss;
+
+  /* gfc_conv_tmp_array_ref assumes that se.expr contains the array.  */
+  se.expr = expr;
+  gfc_conv_tmp_array_ref (&se);
+
+  /* Now se.expr contains an element of the array.  Take the address and pass
+     it to the IO routines.  */
+  tmp = gfc_build_addr_expr (NULL, se.expr);
+  transfer_expr (&se, &cm->ts, tmp);
+
+  /* We are done now with the loop body.  Wrap up the scalarizer and
+     return. */
+
+  gfc_add_block_to_block (&body, &se.pre);
+  gfc_add_block_to_block (&body, &se.post);
+
+  gfc_trans_scalarizing_loops (&loop, &body);
+
+  gfc_add_block_to_block (&block, &loop.pre);
+  gfc_add_block_to_block (&block, &loop.post);
+
+  gfc_cleanup_loop (&loop);
+
+  for (n = 0; n < cm->as->rank; n++)
+    mpz_clear (ss->shape[n]);
+  gfc_free (ss->shape);
+
+  return gfc_finish_block (&block);
+}
 
 /* Generate the call for a scalar transfer node.  */
 
@@ -1177,11 +1267,19 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
       break;
 
     case BT_CHARACTER:
-      arg2 = se->string_length;
+      if (se->string_length)
+	arg2 = se->string_length;
+      else
+	{
+	  tmp = gfc_build_indirect_ref (addr_expr);
+	  gcc_assert (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE);
+	  arg2 = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (tmp)));
+	}
       function = iocall_x_character;
       break;
 
     case BT_DERIVED:
+      /* Recurse into the elements of the derived type.  */
       expr = gfc_evaluate_now (addr_expr, &se->pre);
       expr = gfc_build_indirect_ref (expr);
 
@@ -1193,17 +1291,17 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
 	  tmp = build3 (COMPONENT_REF, TREE_TYPE (field), expr, field,
 			NULL_TREE);
 
-	  if (c->ts.type == BT_CHARACTER)
-	    {
-	      gcc_assert (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE);
-	      se->string_length =
-		TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (tmp)));
-	    }
-	  if (c->dimension)
-	    gfc_todo_error ("IO of arrays in derived types");
-	  if (!c->pointer)
-	    tmp = gfc_build_addr_expr (NULL, tmp);
-	  transfer_expr (se, &c->ts, tmp);
+          if (c->dimension)
+            {
+              tmp = transfer_array_component (tmp, c);
+              gfc_add_expr_to_block (&se->pre, tmp);
+            }
+          else
+            {
+              if (!c->pointer)
+                tmp = gfc_build_addr_expr (NULL, tmp);
+              transfer_expr (se, &c->ts, tmp);
+            }
 	}
       return;
 
@@ -1281,7 +1379,7 @@ gfc_trans_transfer (gfc_code * code)
 
   gfc_add_expr_to_block (&block, tmp);
 
-  return gfc_finish_block (&block);;
+  return gfc_finish_block (&block);
 }
 
 #include "gt-fortran-trans-io.h"
