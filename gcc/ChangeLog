@@ -1,3 +1,8 @@
+2004-10-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.c (store_expr): Remove code that is run when
+	want_value & 1 is nonzero.
+
 2004-10-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* gthr-posix.h (__gthread_active_p): Use __extension__ around cast
