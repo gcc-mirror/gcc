@@ -11046,6 +11046,10 @@ cp_parser_function_definition (cp_parser* parser, bool* friend_p)
       DECL_PENDING_INLINE_INFO (fn) = cache;
       DECL_PENDING_INLINE_P (fn) = 1;
 
+      /* We need to know that this was defined in the class, so that
+	 friend templates are handled correctly.  */
+      DECL_INITIALIZED_IN_CLASS_P (fn) = 1;
+
       /* We're done with the inline definition.  */
       finish_method (fn);
 

@@ -1987,7 +1987,8 @@ struct lang_decl GTY(())
    (TREE_LANG_FLAG_1 (VAR_DECL_CHECK (NODE)))
 
 /* Nonzero if the DECL was initialized in the class definition itself,
-   rather than outside the class.  */
+   rather than outside the class.  This is used for both static member
+   VAR_DECLS, and FUNTION_DECLS that are defined in the class. */
 #define DECL_INITIALIZED_IN_CLASS_P(DECL) \
  (DECL_LANG_SPECIFIC (DECL)->decl_flags.initialized_in_class)
 
