@@ -1088,13 +1088,21 @@ __enable_execute_stack (addr)						\
   if (mprotect (page, end - page, 7) < 0)				\
     perror ("mprotect of trampoline code");				\
 }
-
-#define RETURN_ADDR_RTX(count, frame)					\
-((count == 0 && alpha_sa_size () == 0 && 0 /* not right. */)		\
+
+/* A C expression whose value is RTL representing the value of the return
+   address for the frame COUNT steps up from the current frame.
+   FRAMEADDR is the frame pointer of the COUNT frame, or the frame pointer of
+   the COUNT-1 frame if RETURN_ADDR_IN_PREVIOUS_FRAME} is defined.
+
+   This definition for Alpha is broken, but is put in at the request of
+   Mike Stump.  */
+
+#define RETURN_ADDR_RTX(COUNT, FRAME)					\
+((COUNT == 0 && alpha_sa_size () == 0 && 0 /* not right. */)		\
  ? gen_rtx (REG, Pmode, 26)						\
  : gen_rtx (MEM, Pmode,							\
-	          memory_address (Pmode, frame)))
-  /* Addressing modes, and classification of registers for them.  */
+	    memory_address (Pmode, FRAME)))
+
 /* Addressing modes, and classification of registers for them.  */
 
 /* #define HAVE_POST_INCREMENT */
