@@ -1,3 +1,8 @@
+2002-05-24  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* tree.c (decl_type_context): Return NULL_TREE if decl's context is a
+	namespace.
+
 2002-05-24  Andreas Jaeger  <aj@suse.de>
 
 	* ggc-page.c (alloc_page): Cast variables of type size_t to
