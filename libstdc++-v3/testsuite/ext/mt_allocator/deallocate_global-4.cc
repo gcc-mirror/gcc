@@ -67,13 +67,13 @@ void operator delete(void* p) throw()
 }
 
 typedef std::string value_t;
-typedef __gnu_cxx::__per_type_pool_policy<value_t, false> policy_t;
-typedef __gnu_cxx::__mt_alloc<value_t, policy_t> allocator_t;
-typedef std::char_traits<value_t> traits_t;
-typedef std::list<value_t, allocator_t> list_t;
+typedef __gnu_cxx::__per_type_pool_policy<value_t, false> policy_type;
+typedef __gnu_cxx::__mt_alloc<value_t, policy_type> allocator_type;
+typedef std::char_traits<value_t> traits_type;
+typedef std::list<value_t, allocator_type> list_type;
 
 // Second.
-list_t l;
+list_type l;
 
 int main()
 {

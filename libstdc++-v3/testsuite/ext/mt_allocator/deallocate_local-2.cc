@@ -64,17 +64,17 @@ void operator delete(void* p) throw()
   free(p);
 }
 
-typedef char value_t;
-typedef std::char_traits<value_t> traits_t;
-typedef __gnu_cxx::__common_pool_policy<false> policy_t;
-typedef __gnu_cxx::__mt_alloc<value_t, policy_t> allocator_t;
-typedef std::basic_string<value_t, traits_t, allocator_t> string_t;
+typedef char value_type;
+typedef std::char_traits<value_type> traits_type;
+typedef __gnu_cxx::__common_pool_policy<false> policy_type;
+typedef __gnu_cxx::__mt_alloc<value_type, policy_type> allocator_type;
+typedef std::basic_string<value_type, traits_type, allocator_type> string_type;
 
 int main()
 {
   bool test __attribute__((unused)) = true;
   {
-    string_t s;
+    string_type s;
     s += "bayou bend";
   }
   return 0;

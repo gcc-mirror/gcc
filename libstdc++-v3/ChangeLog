@@ -1,3 +1,17 @@
+2004-10-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* testsuite/ext/mt_allocator/deallocate_global-2.c:
+	s/value_t/value_type/. s/traits_t/traits_type/.
+	s/policy_t/policy_type/. s/allocator_t/allocator_type/.
+	s/string_t/string_type/. s/list_t/list_type/.
+	* testsuite/ext/mt_allocator/deallocate_global-4.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-1.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-3.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_local-2.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_local-4.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-1.cc: Likewise.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-3.cc: Likewise.
+
 2004-10-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/tr1/array (array): Make safe for zero-sized arrays.
