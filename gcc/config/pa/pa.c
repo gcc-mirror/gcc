@@ -161,7 +161,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 void
 override_options ()
 {
-  /* Default to 7100LC scheduling.  */
+  /* Default to 8000 scheduling.  */
   if (pa_cpu_string && ! strcmp (pa_cpu_string, "7100"))
     {
       pa_cpu_string = "7100";
@@ -172,8 +172,7 @@ override_options ()
       pa_cpu_string = "700";
       pa_cpu = PROCESSOR_700;
     }
-  else if (pa_cpu_string == NULL
-         || ! strcmp (pa_cpu_string, "7100LC"))
+  else if (pa_cpu_string && ! strcmp (pa_cpu_string, "7100LC"))
     {
       pa_cpu_string = "7100LC";
       pa_cpu = PROCESSOR_7100LC;
@@ -188,7 +187,8 @@ override_options ()
       pa_cpu_string = "7300";
       pa_cpu = PROCESSOR_7300;
     }
-  else if (pa_cpu_string && ! strcmp (pa_cpu_string, "8000"))
+  else if (pa_cpu_string == NULL
+	   || ! strcmp (pa_cpu_string, "8000"))
     {
       pa_cpu_string = "8000";
       pa_cpu = PROCESSOR_8000;
