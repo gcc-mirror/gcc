@@ -8442,7 +8442,7 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
 		  (gen_rtx_MEM (Pmode,
 				plus_constant (buf_addr,
 					       GET_MODE_SIZE (Pmode)))),
-		  gen_rtx_LABEL_REF (Pmode, lab1));
+		  force_reg (Pmode, gen_rtx_LABEL_REF (Pmode, lab1)));
 
   stack_save = gen_rtx_MEM (sa_mode,
 			    plus_constant (buf_addr,
@@ -8461,8 +8461,13 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
   emit_barrier ();
   emit_label (lab1);
 
-  /* Tell flow about the strange goings on.  */
+  /* Tell flow about the strange goings on.  Putting `lab1' on
+     `nonlocal_goto_handler_labels' to indicates that function
+     calls may traverse the arc back to this label.  */
+
   current_function_has_nonlocal_label = 1;
+  nonlocal_goto_handler_labels =
+    gen_rtx_EXPR_LIST (VOIDmode, lab1, nonlocal_goto_handler_labels);
 
   /* Clobber the FP when we get here, so we have to make sure it's
      marked as used by this function.  */
