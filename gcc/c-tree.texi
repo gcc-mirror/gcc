@@ -1373,6 +1373,7 @@ This predicate holds if the function an overloaded
 @findex TRY_HANDLERS
 @findex HANDLER_PARMS
 @findex HANDLER_BODY
+@findex USING_STMT
 @tindex WHILE_STMT
 @findex WHILE_BODY
 @findex WHILE_COND
@@ -1687,6 +1688,12 @@ be an expression that should be executed if an exception is thrown in
 the try block.  It must rethrow the exception after executing that code.
 And, if an exception is thrown while the expression is executing,
 @code{terminate} must be called.
+
+@item USING_STMT
+Used to represent a @code{using} directive. The namespace is given by
+@code{USING_STMT_NAMESPACE}, which will be a NAMESPACE_DECL. This node
+is needed inside template functions, to implement using directives
+during instantiation.
 
 @item WHILE_STMT
 
