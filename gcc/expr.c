@@ -4761,16 +4761,16 @@ expand_expr (exp, target, tmode, modifier)
 	   (which we know to be the width of a basic mode), then
 	   storing into memory, and changing the mode to BLKmode.  */
 	if (mode1 == VOIDmode
-	    || (mode1 != BLKmode && ! direct_load[(int) mode1]
-		&& modifier != EXPAND_CONST_ADDRESS
-		&& modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 	    || GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
-	    /* If the field isn't aligned enough to fetch as a memref,
-	       fetch it as a bit field.  */
-	    || (SLOW_UNALIGNED_ACCESS
-		&& TYPE_ALIGN (TREE_TYPE (tem)) < GET_MODE_ALIGNMENT (mode))
-	    || (SLOW_UNALIGNED_ACCESS
-		&& bitpos % GET_MODE_ALIGNMENT (mode) != 0))
+	    || (modifier != EXPAND_CONST_ADDRESS
+		&& modifier != EXPAND_SUM
+		&& modifier != EXPAND_INITIALIZER
+		&& ((mode1 != BLKmode && ! direct_load[(int) mode1])
+		    /* If the field isn't aligned enough to fetch as a memref,
+		       fetch it as a bit field.  */
+		    || (SLOW_UNALIGNED_ACCESS
+			&& ((TYPE_ALIGN (TREE_TYPE (tem)) < GET_MODE_ALIGNMENT (mode))
+			    || (bitpos % GET_MODE_ALIGNMENT (mode) != 0))))))
 	  {
 	    enum machine_mode ext_mode = mode;
 
