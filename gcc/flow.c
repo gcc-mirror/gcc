@@ -1377,7 +1377,7 @@ initialize_uninitialized_subregs ()
 	     Its preferable to have an instance of the register's rtl since
 	     there may be various flags set which we need to duplicate.  
 	     If we can't find it, its probably an automatic whose initial
-	     value doesn't matter, or hopefully something we don't care about. */
+	     value doesn't matter, or hopefully something we don't care about.  */
 	  for (i = get_insns (); i && INSN_UID (i) != uid; i = NEXT_INSN (i))
 	    ;
 	  if (i != NULL_RTX)

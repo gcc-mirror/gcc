@@ -386,7 +386,7 @@ estimate_probability (loops_info)
 	  /* ??? Postdominator claims each noreturn block to be postdominated
 	     by each, so we need to run only once.  This needs to be changed
 	     once postdominace algorithm is updated to say something more
-	     sane. */
+	     sane.  */
 	  found_noreturn = 1;
 	  for (y = 0; y < n_basic_blocks; y++)
 	    if (!TEST_BIT (post_dominators[y], i))

@@ -776,7 +776,7 @@ expand_start_all_catch ()
 /* Begin a catch clause.  TYPE is the type caught, a list of such types, or
    null if this is a catch-all clause. Providing a type list enables to
    associate the catch region with potentially several exception types, which
-   is useful e.g. for Ada. */
+   is useful e.g. for Ada.  */
 
 void
 expand_start_catch (type_or_list)
