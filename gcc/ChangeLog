@@ -1,3 +1,10 @@
+2004-10-27  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/18163
+	* expr.c (emit_group_load): Don't go force temporary for memory
+	or concat source.
+	(emit_group_store): Similarly.
+
 2004-10-27  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR other/18186
