@@ -289,7 +289,7 @@ dw_fde_node;
 static GTY((length ("fde_table_allocated"))) dw_fde_ref fde_table;
 
 /* Number of elements currently allocated for fde_table.  */
-static unsigned fde_table_allocated;
+static GTY(()) unsigned fde_table_allocated;
 
 /* Number of elements in fde_table currently in use.  */
 static GTY(()) unsigned fde_table_in_use;
@@ -3485,12 +3485,10 @@ static GTY(()) size_t file_table_last_lookup_index;
 static GTY((length ("decl_die_table_allocated"))) dw_die_ref *decl_die_table;
 
 /* Number of elements currently allocated for the decl_die_table.  */
-static unsigned decl_die_table_allocated;
+static GTY(()) unsigned decl_die_table_allocated;
 
-#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in decl_die_table currently in use.  */
-static unsigned decl_die_table_in_use;
-#endif
+static GTY(()) unsigned decl_die_table_in_use;
 
 /* Size (in elements) of increments by which we may expand the
    decl_die_table.  */
@@ -3503,12 +3501,10 @@ static GTY((length ("abbrev_die_table_allocated")))
   dw_die_ref *abbrev_die_table;
 
 /* Number of elements currently allocated for abbrev_die_table.  */
-static unsigned abbrev_die_table_allocated;
+static GTY(()) unsigned abbrev_die_table_allocated;
 
-#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in type_die_table currently in use.  */
-static unsigned abbrev_die_table_in_use;
-#endif
+static GTY(()) unsigned abbrev_die_table_in_use;
 
 /* Size (in elements) of increments by which we may expand the
    abbrev_die_table.  */
@@ -3520,12 +3516,10 @@ static GTY((length ("line_info_table_allocated")))
      dw_line_info_ref line_info_table;
 
 /* Number of elements currently allocated for line_info_table.  */
-static unsigned line_info_table_allocated;
+static GTY(()) unsigned line_info_table_allocated;
 
-#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in line_info_table currently in use.  */
-static unsigned line_info_table_in_use;
-#endif
+static GTY(()) unsigned line_info_table_in_use;
 
 /* A pointer to the base of a table that contains line information
    for each source code line outside of .text in the compilation unit.  */
@@ -3533,12 +3527,10 @@ static GTY ((length ("separate_line_info_table_allocated")))
      dw_separate_line_info_ref separate_line_info_table;
 
 /* Number of elements currently allocated for separate_line_info_table.  */
-static unsigned separate_line_info_table_allocated;
+static GTY(()) unsigned separate_line_info_table_allocated;
 
-#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in separate_line_info_table currently in use.  */
-static unsigned separate_line_info_table_in_use;
-#endif
+static GTY(()) unsigned separate_line_info_table_in_use;
 
 /* Size (in elements) of increments by which we may expand the
    line_info_table.  */
@@ -3549,12 +3541,10 @@ static unsigned separate_line_info_table_in_use;
 static GTY ((length ("pubname_table_allocated"))) pubname_ref pubname_table;
 
 /* Number of elements currently allocated for pubname_table.  */
-static unsigned pubname_table_allocated;
+static GTY(()) unsigned pubname_table_allocated;
 
-#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in pubname_table currently in use.  */
-static unsigned pubname_table_in_use;
-#endif
+static GTY(()) unsigned pubname_table_in_use;
 
 /* Size (in elements) of increments by which we may expand the
    pubname_table.  */
@@ -3564,12 +3554,10 @@ static unsigned pubname_table_in_use;
 static GTY((length ("arange_table_allocated"))) dw_die_ref *arange_table;
 
 /* Number of elements currently allocated for arange_table.  */
-static unsigned arange_table_allocated;
+static GTY(()) unsigned arange_table_allocated;
 
-#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in arange_table currently in use.  */
-static unsigned arange_table_in_use;
-#endif
+static GTY(()) unsigned arange_table_in_use;
 
 /* Size (in elements) of increments by which we may expand the
    arange_table.  */
@@ -3579,25 +3567,31 @@ static unsigned arange_table_in_use;
 static GTY ((length ("ranges_table_allocated"))) dw_ranges_ref ranges_table;
 
 /* Number of elements currently allocated for ranges_table.  */
-static unsigned ranges_table_allocated;
+static GTY(()) unsigned ranges_table_allocated;
 
-#ifdef DWARF2_DEBUGGING_INFO
 /* Number of elements in ranges_table currently in use.  */
-static unsigned ranges_table_in_use;
+static GTY(()) unsigned ranges_table_in_use;
 
 /* Size (in elements) of increments by which we may expand the
    ranges_table.  */
 #define RANGES_TABLE_INCREMENT 64
 
 /* Whether we have location lists that need outputting */
-static unsigned have_location_lists;
+static GTY(()) unsigned have_location_lists;
 
+#ifdef DWARF2_DEBUGGING_INFO
 /* Record whether the function being analyzed contains inlined functions.  */
 static int current_function_has_inlines;
 #endif
 #if 0 && defined (MIPS_DEBUGGING_INFO)
 static int comp_unit_has_inlines;
 #endif
+
+/* Number of file tables emited in maybe_emit_file(). */
+static GTY(()) int emitcount = 0;
+
+/* Number of internal labels generated by gen_internal_sym(). */
+static GTY(()) int label_num;
 
 #ifdef DWARF2_DEBUGGING_INFO
 
@@ -6000,7 +5994,6 @@ gen_internal_sym (prefix)
      const char *prefix;
 {
   char buf[256];
-  static int label_num;
 
   ASM_GENERATE_INTERNAL_LABEL (buf, prefix, label_num++);
   return xstrdup (buf);
@@ -12559,7 +12552,6 @@ static int
 maybe_emit_file (fileno)
      int fileno;
 {
-  static int emitcount = 0;  
   if (DWARF2_ASM_LINE_DEBUG_INFO && fileno > 0)
     {
       if (!VARRAY_UINT (file_table_emitted, fileno))
