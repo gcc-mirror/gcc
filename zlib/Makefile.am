@@ -10,15 +10,6 @@ MULTISUBDIR =
 MULTIDO = true
 MULTICLEAN = true
 
-## Install a library built with a cross compiler in tooldir, not
-## libdir.
-if USE_LIBDIR
-toolexeclibdir = $(libdir)$(MULTISUBDIR)
-else
-toolexecdir = $(exec_prefix)/$(target_alias)
-toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
-endif
-
 ZLIB_SOURCES = adler32.c compress.c crc32.c deflate.c deflate.h \
 gzio.c infblock.c infblock.h infcodes.c infcodes.h inffast.c inffast.h \
 inffixed.h inflate.c inftrees.c inftrees.h infutil.c infutil.h trees.c \
