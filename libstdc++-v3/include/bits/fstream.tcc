@@ -258,6 +258,8 @@ namespace std
 		      streamsize __elen = _M_file.xsgetn(_M_ext_end, __rlen);
 		      if (__elen == 0)
 			__got_eof = true;
+		      else if (__elen == -1)
+			break;
 		      _M_ext_end += __elen;
 		    }
 
@@ -306,9 +308,12 @@ namespace std
 		__throw_ios_failure("basic_filebuf::underflow "
 				    "incomplete character in file");
 	    }
-	  else
+	  else if (__r == codecvt_base::error)
 	    __throw_ios_failure("basic_filebuf::underflow "
 				"invalid byte sequence in file");
+	  else
+	    __throw_ios_failure("basic_filebuf::underflow "
+				"error reading the file");	    
 	}
       return __ret;
     }
