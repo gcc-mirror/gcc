@@ -5199,7 +5199,8 @@ jdep_resolve_class (dep)
   if (!decl)
     complete_class_report_errors (dep);
 
-  check_inner_class_access (decl, JDEP_ENCLOSING (dep), JDEP_WFL (dep));
+  if (PURE_INNER_CLASS_DECL_P (decl))
+    check_inner_class_access (decl, JDEP_ENCLOSING (dep), JDEP_WFL (dep));
   return decl;
 }
 
@@ -6781,24 +6782,37 @@ lookup_package_type (name, from)
 }
 
 static void
-check_inner_class_access (decl, enclosing_type, cl)
-     tree decl, enclosing_type, cl;
+check_inner_class_access (decl, enclosing_decl, cl)
+     tree decl, enclosing_decl, cl;
 {
-  if (!decl)
-    return;
+  int access = 0;
+
   /* We don't issue an error message when CL is null. CL can be null
-     as a result of processing a JDEP crafted by
-     source_start_java_method for the purpose of patching its parm
-     decl. But the error would have been already trapped when fixing
-     the method's signature. */
-  if (!(cl && PURE_INNER_CLASS_DECL_P (decl) && CLASS_PRIVATE (decl))
-      || (PURE_INNER_CLASS_DECL_P (enclosing_type)
-	  && common_enclosing_context_p (TREE_TYPE (enclosing_type), 
-					  TREE_TYPE (decl)))
-      || enclosing_context_p (TREE_TYPE (enclosing_type), TREE_TYPE (decl)))
+     as a result of processing a JDEP crafted by source_start_java_method
+     for the purpose of patching its parm decl. But the error would
+     have been already trapped when fixing the method's signature.
+     DECL can also be NULL in case of earlier errors. */
+  if (!decl || !cl)
     return;
 
-  parse_error_context (cl, "Can't access nested %s %s. Only public classes and interfaces in other packages can be accessed",
+  /* We grant access to private and protected inner classes if the
+     location from where we're trying to access DECL is an enclosing
+     context for DECL or if both have a common enclosing context. */
+  if (CLASS_PRIVATE (decl))
+    access = 1;
+  if (CLASS_PROTECTED (decl))
+    access = 2;
+  if (!access)
+    return;
+      
+  if (common_enclosing_context_p (TREE_TYPE (enclosing_decl),
+				  TREE_TYPE (decl))
+      || enclosing_context_p (TREE_TYPE (enclosing_decl),
+			      TREE_TYPE (decl)))
+    return;
+
+  parse_error_context (cl, "Can't access %s nested %s %s. Only public classes and interfaces in other packages can be accessed",
+		       (access == 1 ? "private" : "protected"),
 		       (CLASS_INTERFACE (decl) ? "interface" : "class"),
 		       lang_printable_name (decl, 0));
 }
@@ -9001,9 +9015,19 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      *where_found = decl = current_this;
 	      *type_found = type = QUAL_DECL_TYPE (decl);
 	    }
-	  /* We're trying to access the this from somewhere else... */
+	  /* We're trying to access the this from somewhere else. Make sure
+	     it's allowed before doing so. */
 	  else
 	    {
+	      if (!enclosing_context_p (type, current_class))
+		{
+		  char *p  = xstrdup (lang_printable_name (type, 0));
+		  parse_error_context (qual_wfl, "Can't use variable `%s.this': type `%s' isn't an outer type of type `%s'", 
+				       p, p, 
+				       lang_printable_name (current_class, 0));
+		  free (p);
+		  return 1;
+		}
 	      *where_found = decl = build_current_thisn (type);
 	      from_qualified_this = 1;
 	    }
@@ -9169,6 +9193,24 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      
 	      field_decl = lookup_field_wrapper (type,
 						 EXPR_WFL_NODE (qual_wfl));
+
+	      /* Maybe what we're trying to access an inner class. */
+	      if (!field_decl)
+		{
+		  tree ptr, inner_decl;
+
+		  BUILD_PTR_FROM_NAME (ptr, EXPR_WFL_NODE (qual_wfl));
+		  inner_decl = resolve_class (decl, ptr, NULL_TREE, qual_wfl);
+		  if (inner_decl)
+		    {
+		      check_inner_class_access (inner_decl, decl, qual_wfl); 
+		      type = TREE_TYPE (inner_decl);
+		      decl = inner_decl;
+		      from_type = 1;
+		      continue;
+		    }
+		}
+
 	      if (field_decl == NULL_TREE)
 		{
 		  parse_error_context 
@@ -9283,7 +9325,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 }
 
 /* 6.6 Qualified name and access control. Returns 1 if MEMBER (a decl)
-   can't be accessed from REFERENCE (a record type). */
+   can't be accessed from REFERENCE (a record type). This should be
+   used when decl is a field or a method.*/
 
 static int
 not_accessible_p (reference, member, from_super)
@@ -9291,6 +9334,10 @@ not_accessible_p (reference, member, from_super)
      int from_super;
 {
   int access_flag = get_access_flags_from_decl (member);
+
+  /* Inner classes are processed by check_inner_class_access */
+  if (INNER_CLASS_TYPE_P (reference))
+    return 0;
 
   /* Access always granted for members declared public */
   if (access_flag & ACC_PUBLIC)
@@ -9310,7 +9357,17 @@ not_accessible_p (reference, member, from_super)
 	return 0;
 
       /* Otherwise, access is granted if occuring from the class where
-	 member is declared or a subclass of it */
+	 member is declared or a subclass of it. Find the right
+	 context to perform the check */
+      if (PURE_INNER_CLASS_TYPE_P (reference))
+        {
+          while (INNER_CLASS_TYPE_P (reference))
+            {
+              if (inherits_from_p (reference, DECL_CONTEXT (member)))
+                return 0;
+              reference = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (reference)));
+            }
+        }
       if (inherits_from_p (reference, DECL_CONTEXT (member)))
 	return 0;
       return 1;
@@ -9318,8 +9375,7 @@ not_accessible_p (reference, member, from_super)
 
   /* Check access on private members. Access is granted only if it
      occurs from within the class in which it is declared. Exceptions
-     are accesses from inner-classes. This section is probably not
-     complete. FIXME */
+     are accesses from inner-classes. */
   if (access_flag & ACC_PRIVATE)
     return (current_class == DECL_CONTEXT (member) ? 0 : 
 	    (INNER_CLASS_TYPE_P (current_class) ? 0 : 1));
@@ -9643,7 +9699,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	     
 	     maybe_use_access_method returns a non zero value if the
 	     this_arg has to be moved into the (then generated) stub
-	     argument list. In the mean time, the selected function
+	     argument list. In the meantime, the selected function
 	     might have be replaced by a generated stub. */
 	  if (maybe_use_access_method (is_super_init, &list, &this_arg))
 	    args = tree_cons (NULL_TREE, this_arg, args);
@@ -9811,7 +9867,7 @@ maybe_use_access_method (is_super_init, mdecl, this_arg)
   if (non_static_context)
     {
       ctx = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (current_class)));
-      if (ctx == DECL_CONTEXT (md))
+      if (inherits_from_p (ctx, DECL_CONTEXT (md)))
 	{
 	  ta = build_current_thisn (current_class);
 	  ta = build_wfl_node (ta);
@@ -9822,7 +9878,7 @@ maybe_use_access_method (is_super_init, mdecl, this_arg)
 	  while (type)
 	    {
 	      maybe_build_thisn_access_method (type);
-	      if (type == DECL_CONTEXT (md))
+	      if (inherits_from_p (type, DECL_CONTEXT (md)))
 		{
 		  ta = build_access_to_thisn (ctx, type, 0);
 		  break;
