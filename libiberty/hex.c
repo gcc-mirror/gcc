@@ -20,6 +20,12 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>  /* for EOF */
 #include "libiberty.h"
 
+/* Provided for ABI compatibility.  */
+void
+hex_init ()
+{
+}
+
 /* Are we ASCII? */
 #if '\n' == 0x0A && ' ' == 0x20 && '0' == 0x30 \
   && 'A' == 0x41 && 'a' == 0x61 && '!' == 0x21 \

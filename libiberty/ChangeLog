@@ -1,5 +1,7 @@
 2001-10-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* hex.c (hex_init): Provide empty stub.
+
 	* hex.c (hex_init): Delete.
 	(_hex_value): Const-ify and initialize at compile-time.
 

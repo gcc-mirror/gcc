@@ -1,5 +1,7 @@
 2001-10-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* libiberty.h (hex_init): Revert delete.
+
 	* libiberty.h (_hex_value): Const-ify.
 	(hex_init): Delete.
 
