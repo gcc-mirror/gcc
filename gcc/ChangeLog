@@ -1,3 +1,8 @@
+Wed Mar 27 22:54:14 CET 2002  Zdenek Dvorak <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgrtl.c (merge_blocks_nomove): Use set_block_for_insn instead of
+	assigning to BLOCK_FOR_INSN directly.
+
 Wed Mar 27 22:33:05 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_output_addr_diff_elt): Remove binutils bug workaround.
