@@ -1,3 +1,9 @@
+2003-09-07  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11852
+	* varasm.c (initializer_constant_valid_p): Correct logic for
+	CONSTRUCTORs.
+
 2003-09-07  Roger Sayle  <roger@eyesopen.com>
 
 	* expr.c (expand_operands): New function to expand an operand pair.
