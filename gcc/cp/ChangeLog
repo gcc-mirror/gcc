@@ -1,5 +1,7 @@
 Mon May 18 03:00:57 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* call.c (build_over_call): Tweak empty class handling.
+
 	* decl.c (make_typename_type): Use currently_open_class.
 
 	* class.c (instantiate_type): Don't abort on TREE_NONLOCAL_FLAG.
