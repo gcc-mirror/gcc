@@ -1,3 +1,9 @@
+2005-01-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (HARD_REGNO_NREGS): Fix computation for
+	access registers.
+	(CLASS_MAX_NREGS): Likewise.
+
 2005-01-21  Daniel Berlin  <dberlin@dberlin.org>
 
 	* doc/tree-ssa.texi (Statement Operands): Add example for new
