@@ -1,5 +1,10 @@
 2002-09-15  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* config/netbsd.h (LIB_SPEC): Include the appropriate pthread
+	library if -pthread is specified.
+
+2002-09-15  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* config.gcc (*-*-netbsd*): Set thread_file to 'posix'
 	for --enable-threads=yes and --enable-threads=posix.
 
