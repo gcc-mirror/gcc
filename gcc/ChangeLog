@@ -1,3 +1,8 @@
+2003-03-24  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/sysv4.h (ASM_OUTPUT_ALIGNED_BSS): Remove unnecessary
+	globalize_label.
+
 2003-03-23  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/10178
@@ -62,8 +67,8 @@
 
 2003-03-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.md ("movti", "*movdi_31", "*movdf_31"): Use 'o' instead
-	of 'm' constraint in forced-split alternatives.
+	* config/s390/s390.md ("movti", "*movdi_31", "*movdf_31"): Use 'o'
+	instead of 'm' constraint in forced-split alternatives.
 	("*adddi3_31", "*subdi3_31"): Likewise.  Also, pass 0 instead of 1 as
 	VALIDATE_ADDRESS parameter to operand_subword.
 
