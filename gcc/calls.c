@@ -697,7 +697,7 @@ expand_call (exp, target, ignore)
 		  adjust += reg_parm_stack_space;
 #endif
 		  start_sequence ();
-		  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
+		  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
 		  allocate_dynamic_stack_space (GEN_INT (adjust),
 						NULL_RTX, BITS_PER_UNIT);
 		  seq = get_insns ();
@@ -2778,8 +2778,9 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 
       /* This isn't already where we want it on the stack, so put it there.
 	 This can either be done with push or copy insns.  */
-      emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), 0, 0, partial,
-		      reg, used - size, argblock, ARGS_SIZE_RTX (arg->offset));
+      emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), NULL_RTX,
+		      0, partial, reg, used - size,
+		      argblock, ARGS_SIZE_RTX (arg->offset));
     }
   else
     {
