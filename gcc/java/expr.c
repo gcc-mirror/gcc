@@ -1750,6 +1750,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 {
   tree current;
   int has_finally_p;
+  rtx op0;
 
   switch (TREE_CODE (exp))
     {
@@ -1873,13 +1874,12 @@ java_lang_expand_expr (exp, target, tmode, modifier)
       return const0_rtx;
 
     case TRY_EXPR:
-      /* We expand a try[-catch][-finally] block */
+      /* We expand a try[-catch] block */
 
       /* Expand the try block */
       expand_eh_region_start ();
       expand_expr_stmt (TREE_OPERAND (exp, 0));
       expand_start_all_catch ();
-      has_finally_p = (TREE_OPERAND (exp, 2) ? 1 : 0);
 
       /* Expand all catch clauses (EH handlers) */
       for (current = TREE_OPERAND (exp, 1); current; 
@@ -1887,30 +1887,14 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	{
 	  extern rtx return_label;
 	  tree type;
-	  /* If we have a finally, the last exception handler is the
-	     one that is supposed to catch everything. */
-	  if (has_finally_p && !TREE_CHAIN (current))
-	    type = NULL_TREE;
-	  else
-	    {
-	      tree catch = java_get_catch_block (current, has_finally_p);
-	      tree decl = BLOCK_EXPR_DECLS (catch);
-	      type = (decl ? TREE_TYPE (TREE_TYPE (decl)) : NULL_TREE);
-	    }
+	  tree catch = TREE_OPERAND (current, 0);
+	  tree decl = BLOCK_EXPR_DECLS (catch);
+	  type = (decl ? TREE_TYPE (TREE_TYPE (decl)) : NULL_TREE);
 	  start_catch_handler (prepare_eh_table_type (type));
 	  expand_expr_stmt (TREE_OPERAND (current, 0));
 
 	  expand_resume_after_catch ();
 	  end_catch_handler ();
-	}
-
-      /* Expand the finally block, if any */
-      if (has_finally_p)
-	{
-	  tree finally = TREE_OPERAND (exp, 2);
-	  if (FINALLY_EXPR_LABEL (finally))
-	    emit_label (label_rtx (FINALLY_EXPR_LABEL (finally)));
-	  expand_expr_stmt (FINALLY_EXPR_BLOCK (finally));
 	}
       expand_end_all_catch ();
       break;
