@@ -1,3 +1,16 @@
+1999-11-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* except.h (eh_status): Adjust documentation for x_protect_list.
+	(begin_protect_partials): New function.
+	* except.c (enqueue_eh_entry): Fix formatting.
+	(get_first_handler): Add consistency check.
+	(add_partial_entry): Adjust usage of protect_list.
+	(emit_cleanup_handler): Save and restore ehqueue.
+	(expand_start_all_catch): Add comment.
+	(begin_protect_partials): New function.
+	(end_protect_partials): Adjust usage of protect_list.
+	(init_eh_for_function): Use xcalloc.
+	
 1999-11-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (check_format_info): Don't call a variadic function
