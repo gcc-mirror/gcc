@@ -27,6 +27,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "objc/Protocol.h"
 #include "objc/objc-api.h"
 
+@class FREED;
+
 #include "gstdarg.h"
 extern void (*_objc_error)(id object, const char *format, va_list);
 
@@ -58,6 +60,10 @@ extern int errno;
 
 - free
 {
+  static Class* freedClass = 0;
+  if (!freedClass)
+    freedClass = [FREED class];
+  isa = freedClass;
   return object_dispose(self);
 }
 
@@ -291,6 +297,11 @@ extern int errno;
 {
   return [self error:"%s does not recognize %s",
                      object_get_class_name(self), sel_get_name(aSel)];
+}
+
+- shouldNotImplement
+{
+  return [self error:"should not implement %s", sel_get_name(aSel)];
 }
 
 - error:(const char *)aString, ...
