@@ -1,3 +1,7 @@
+2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
+
+	Make-lang.in (po-generated):  Delete.
+
 2004-01-30  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (doc/gcj.dvi): Use $(abs_docdir). 

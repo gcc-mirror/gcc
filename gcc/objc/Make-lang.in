@@ -72,8 +72,6 @@ objc/objc-act.o : objc/objc-act.c \
    objc/objc-act.h input.h function.h output.h debug.h langhooks.h \
    $(LANGHOOKS_DEF_H) gt-objc-objc-act.h gtype-objc.h
 
-po-generated: objc/objc-parse.c
-
 objc.srcextra: objc/objc-parse.c objc/objc-parse.y
 	-cp -p $^ $(srcdir)/objc
  

@@ -1,3 +1,14 @@
+2004-02-05  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR/13485
+	Makefile.in (srcextra):  Add a level of indirection to ...
+	(gcc.srcextra): ... here.
+	(po-generated): Delete.
+	(po/$(PACKAGE).pot: Use srcextra instead of po-generated.  Depend on
+	options.c.
+	(start.encap): Remove superfluous lang.srcextra dependency.
+	objc/Make-lang.in (po-generated):  Delete.
+
 2004-02-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/iris5gas.h (PREFERRED_DEBUGGING_TYPE): Define.

@@ -1060,7 +1060,7 @@ all.cross: native gcc-cross cpp$(exeext) specs \
 	$(LIBGCC) $(EXTRA_PARTS) lang.all.cross doc
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc$(exeext) cpp$(exeext) specs \
-	xlimits.h lang.start.encap @GENINSRC@ srcextra lang.srcextra
+	xlimits.h lang.start.encap @GENINSRC@ srcextra
 # These can't be made until after GCC can run.
 rest.encap: $(STMP_FIXPROTO) $(LIBGCC) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
@@ -1276,7 +1276,9 @@ c-parse.o : c-parse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(GGC_H) intl.h $(C_TREE_H) input.h flags.h toplev.h output.h $(CPPLIB_H) \
     varray.h gt-c-parse.h
 
-srcextra: c-parse.y c-parse.c gengtype-lex.c gengtype-yacc.c gengtype-yacc.h
+srcextra: gcc.srcextra lang.srcextra
+
+gcc.srcextra: c-parse.y c-parse.c gengtype-lex.c gengtype-yacc.c gengtype-yacc.h
 	-cp -p $^ $(srcdir)
 
 c-parse.c: c-parse.y
@@ -2308,10 +2310,6 @@ intl.o: intl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DLOCALEDIR=\"$(localedir)\" \
 	  -c $(srcdir)/intl.c $(OUTPUT_OPTION)
-
-# Make-lang.in should add dependencies of po-generated on any generated
-# files which need to be scanned by gettext (usually Yacc-generated parsers).
-po-generated: c-parse.c options.c
 
 #
 # Remake cpp and protoize.
@@ -3851,8 +3849,8 @@ install-po:
 # fairly modern (POSIX-compliant) awk.
 # The .pot file is left in the build directory.
 $(PACKAGE).pot: po/$(PACKAGE).pot
-po/$(PACKAGE).pot: force
+po/$(PACKAGE).pot: force options.c
 	-test -d po || mkdir po
-	$(MAKE) po-generated
+	$(MAKE) srcextra
 	AWK=$(AWK) $(SHELL) $(srcdir)/po/exgettext \
 		$(XGETTEXT) $(PACKAGE) $(srcdir)
