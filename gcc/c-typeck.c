@@ -6551,6 +6551,14 @@ c_finish_case (void)
 {
   struct c_switch *cs = switch_stack;
 
+  /* If we've not seen any case labels (or a default), we may still
+     need to chain any statements that were seen as the SWITCH_BODY.  */
+  if (SWITCH_BODY (cs->switch_stmt) == NULL)
+    {
+      SWITCH_BODY (cs->switch_stmt) = TREE_CHAIN (cs->switch_stmt);
+      TREE_CHAIN (cs->switch_stmt) = NULL_TREE;
+    }
+
   /* Rechain the next statements to the SWITCH_STMT.  */
   last_tree = cs->switch_stmt;
 

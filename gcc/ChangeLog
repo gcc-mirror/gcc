@@ -1,3 +1,9 @@
+2004-12-16  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/18493
+	* c-typeck.c (c_finish_case): Rechain statements if we didn't
+	encounter any case labels or a default.
+
 2004-12-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/18882
