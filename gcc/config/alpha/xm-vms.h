@@ -53,9 +53,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define a local equivalent (sort of) for unlink */
 #define unlink remove
+
 #define NEED_ATEXIT
 #define HAVE_VPRINTF
 #define HAVE_PUTENV
+#define HAVE_STRERROR
 
 #define NO_SYS_PARAMS_H		/* Don't have <sys/params.h> */
 #define NO_STAB_H		/* Don't have <stab.h> */
@@ -65,6 +67,9 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_STDLIB_H 1
 #define HAVE_UNISTD_H 1
 #define HAVE_STRING_H 1
+#define HAVE_LIMITS_H 1
+#define HAVE_STDDEF_H 1
+#define HAVE_TIME_H 1
 #define STDC_HEADERS 1
 
 #if __STDC__
