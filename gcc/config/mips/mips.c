@@ -3160,6 +3160,15 @@ override_options ()
       mips_isa = 1;
     }
 
+#ifdef MIPS_CPU_STRING_DEFAULT
+  /* ??? There is a minor inconsistency here.  If the user specifies an ISA
+     greater than that supported by the default processor, then the user gets
+     an error.  Normally, the compiler will just default to the base level cpu
+     for the indicated isa.  */
+  if (mips_cpu_string == (char *)0)
+    mips_cpu_string = MIPS_CPU_STRING_DEFAULT;
+#endif
+
   /* Identify the processor type */
   if (mips_cpu_string == (char *)0
       || !strcmp (mips_cpu_string, "default")
@@ -3184,14 +3193,6 @@ override_options ()
 	  mips_cpu = PROCESSOR_R8000;
 	  break;
 	}
-
-#ifdef MIPS_CPU_DEFAULT
-      if (mips_isa_string == (char *)0)
-	{
-	  mips_cpu_string = MIPS_CPU_STRING_DEFAULT;
-	  mips_cpu = MIPS_CPU_DEFAULT;
-	}
-#endif
     }
 
   else
