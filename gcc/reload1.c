@@ -4382,13 +4382,20 @@ choose_reload_regs (insn, avoid_return_reg)
 	  if (inheritance)
 	    {
 	      register int regno = -1;
+	      enum machine_mode mode;
 
 	      if (reload_in[r] == 0)
 		;
 	      else if (GET_CODE (reload_in[r]) == REG)
-		regno = REGNO (reload_in[r]);
+		{
+		  regno = REGNO (reload_in[r]);
+		  mode = GET_MODE (reload_in[r]);
+		}
 	      else if (GET_CODE (reload_in_reg[r]) == REG)
-		regno = REGNO (reload_in_reg[r]);
+		{
+		  regno = REGNO (reload_in_reg[r]);
+		  mode = GET_MODE (reload_in_reg[r]);
+		}
 #if 0
 	      /* This won't work, since REGNO can be a pseudo reg number.
 		 Also, it takes much more hair to keep track of all the things
@@ -4403,6 +4410,8 @@ choose_reload_regs (insn, avoid_return_reg)
 		  i = spill_reg_order[REGNO (reg_last_reload_reg[regno])];
 
 		  if (reg_reloaded_contents[i] == regno
+		      && (GET_MODE_SIZE (GET_MODE (reg_last_reload_reg[regno]))
+			  >= GET_MODE_SIZE (mode))
 		      && HARD_REGNO_MODE_OK (spill_regs[i], reload_mode[r])
 		      && TEST_HARD_REG_BIT (reg_class_contents[(int) reload_reg_class[r]],
 					    spill_regs[i])
