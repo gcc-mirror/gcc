@@ -34,7 +34,6 @@ extern int alpha_using_fp (void);
 extern void alpha_expand_prologue (void);
 extern void alpha_expand_epilogue (void);
 extern void alpha_output_filename (FILE *, const char *);
-extern void alpha_output_lineno (FILE *, int);
 
 extern bool alpha_const_ok_for_letter_p (HOST_WIDE_INT, int);
 extern bool alpha_const_double_ok_for_letter_p (rtx, int);

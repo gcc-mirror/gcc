@@ -34,17 +34,14 @@ Boston, MA 02111-1307, USA.  */
    way, gdb expects it, and it reduces the number of relocation
    entries...  */
 
-#undef  DBX_BLOCKS_FUNCTION_RELATIVE
 #define DBX_BLOCKS_FUNCTION_RELATIVE 1
 
 /* ... but, to make this work, functions must appear prior to line info.  */
 
-#undef  DBX_FUNCTION_FIRST
 #define DBX_FUNCTION_FIRST
 
 /* When generating stabs debugging, use N_BINCL entries.  */
 
-#undef  DBX_USE_BINCL
 #define DBX_USE_BINCL
 
 /* There is no limit to the length of stabs strings.  */
@@ -56,29 +53,12 @@ Boston, MA 02111-1307, USA.  */
 /* Like block addresses, stabs line numbers are relative to the
    current function.  */
 
-#undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(FILE, LINE, COUNTER)			\
-do									\
-  {									\
-    char temp[256];							\
-    ASM_GENERATE_INTERNAL_LABEL (temp, "LM", COUNTER);			\
-    fprintf (FILE, "\t.stabn 68,0,%d,", LINE);				\
-    assemble_name (FILE, temp);						\
-    putc ('-', FILE);							\
-    assemble_name (FILE,						\
-		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));\
-    putc ('\n', FILE);							\
-    (*targetm.asm_out.internal_label) (FILE, "LM", COUNTER);		\
-  }									\
-while (0)
+#define DBX_LINES_FUNCTION_RELATIVE 1
 
 /* Generate a blank trailing N_SO to mark the end of the .o file, since
    we can't depend upon the linker to mark .o file boundaries with
    embedded stabs.  */
 
-#undef  DBX_OUTPUT_MAIN_SOURCE_FILE_END
-#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
-  asm_fprintf (FILE,							\
-	       "\t.text\n\t.stabs \"\",%d,0,0,%LLetext\n%LLetext:\n", N_SO)
+#define DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
 
 #endif /* ! GCC_DBX_ELF_H */

@@ -6259,17 +6259,6 @@ the assembler source.  So you can use it to canonicalize the format
 of the filename using this macro.
 @end defmac
 
-@defmac ASM_OUTPUT_SOURCE_LINE (@var{stream}, @var{line}, @var{counter})
-A C statement to output DBX or SDB debugging information before code
-for line number @var{line} of the current source file to the
-stdio stream @var{stream}. @var{counter} is the number of time the
-macro was invoked, including the current invocation; it is intended
-to generate unique labels in the assembly output.
-
-This macro need not be defined if the standard form of debugging
-information for the debugger in use is appropriate.
-@end defmac
-
 @defmac ASM_OUTPUT_IDENT (@var{stream}, @var{string})
 A C statement to output something to the assembler file to handle a
 @samp{#ident} directive containing the text @var{string}.  If this
@@ -7990,9 +7979,16 @@ code.
 @end defmac
 
 @defmac DBX_BLOCKS_FUNCTION_RELATIVE
-Define this macro if the value of a symbol describing the scope of a
-block (@code{N_LBRAC} or @code{N_RBRAC}) should be relative to the start
-of the enclosing function.  Normally, GCC uses an absolute address.
+Define this macro, with value 1, if the value of a symbol describing
+the scope of a block (@code{N_LBRAC} or @code{N_RBRAC}) should be
+relative to the start of the enclosing function.  Normally, GCC uses
+an absolute address.
+@end defmac
+
+@defmac DBX_LINES_FUNCTION_RELATIVE
+Define this macro, with value 1, if the value of a symbol indicating
+the current line number (@code{N_SLINE}) should be relative to the
+start of the enclosing function.  Normally, GCC uses an absolute address.
 @end defmac
 
 @defmac DBX_USE_BINCL
@@ -8024,6 +8020,17 @@ Like @code{DBX_OUTPUT_LBRAC}, but for the end of a scope level.
 @defmac DBX_OUTPUT_NFUN (@var{stream}, @var{lscope_label}, @var{decl})
 Define this macro if the target machine requires special handling to
 output an @code{N_FUN} entry for the function @var{decl}.
+@end defmac
+
+@defmac DBX_OUTPUT_SOURCE_LINE (@var{stream}, @var{line}, @var{counter})
+A C statement to output DBX debugging information before code for line
+number @var{line} of the current source file to the stdio stream
+@var{stream}. @var{counter} is the number of time the macro was
+invoked, including the current invocation; it is intended to generate
+unique labels in the assembly output.
+
+This macro should not be defined if the default output is correct, or
+if it can be made correct by defining @code{DBX_LINES_FUNCTION_RELATIVE}.
 @end defmac
 
 @defmac DBX_OUTPUT_FUNCTION_END (@var{stream}, @var{function})
@@ -8078,6 +8085,13 @@ compilation of the main source file @var{name}.
 
 If you don't define this macro, nothing special is output at the end
 of compilation, which is correct for most machines.
+@end defmac
+
+@defmac DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
+Define this macro @emph{instead of} defining
+@code{DBX_OUTPUT_MAIN_SOURCE_FILE_END}, if what needs to be output at
+the end of compilation is a @code{N_SO} stab with an empty string,
+whose value is the highest absolute text address in the file.
 @end defmac
 
 @need 2000
@@ -8170,6 +8184,12 @@ it.
 Define this macro to allow references to structure, union, or
 enumeration tags that have not yet been seen to be handled.  Some
 assemblers choke if forward tags are used, while some require it.
+@end defmac
+
+@defmac SDB_OUTPUT_SOURCE_LINE (@var{stream}, @var{line})
+A C statement to output SDB debugging information before code for line
+number @var{line} of the current source file to the stdio stream
+@var{stream}.  The default is to emit an @code{.ln} directive.
 @end defmac
 
 @need 2000

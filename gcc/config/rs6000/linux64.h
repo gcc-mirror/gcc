@@ -482,10 +482,9 @@ extern int dot_symbols;
 		   && GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT	\
 		   && BITS_PER_WORD == HOST_BITS_PER_INT)))))
 
-/* This is the same as the dbxelf.h version, except that we need to
+/* This ABI cannot use DBX_LINES_FUNCTION_RELATIVE, because we must
    use the function code label, not the function descriptor.  */
-#undef	ASM_OUTPUT_SOURCE_LINE
-#define	ASM_OUTPUT_SOURCE_LINE(FILE, LINE, COUNTER)			\
+#define	DBX_OUTPUT_SOURCE_LINE(FILE, LINE, COUNTER)			\
 do									\
   {									\
     char temp[256];							\
@@ -509,15 +508,8 @@ while (0)
       fprintf (FILE, "%s%d,0,0,", ASM_STABN_OP, BRAC);			\
       assemble_name (FILE, NAME);					\
       putc ('-', FILE);							\
-      if (current_function_func_begin_label != NULL)			\
-	{								\
-	  assemble_name (FILE, current_function_func_begin_label);	\
-	}								\
-      else								\
-	{								\
-	  s = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);	\
-	  rs6000_output_function_entry (FILE, s);			\
-	}								\
+      s = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);		\
+      rs6000_output_function_entry (FILE, s);				\
       putc ('\n', FILE);						\
     }									\
   while (0)

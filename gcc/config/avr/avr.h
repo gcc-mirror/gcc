@@ -557,9 +557,6 @@ progmem_section (void)							      \
 
 #define ASM_APP_OFF "/* #NOAPP */\n"
 
-#define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER) \
-  fprintf (STREAM,"/* line: %d */\n",LINE)
-
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION default_elf_asm_named_section
 

@@ -27,33 +27,11 @@ Boston, MA 02111-1307, USA.  */
    from other embedded stabs implementations.  */
 #undef DBX_USE_BINCL
 
-/* We make the first line stab special to avoid adding several
-   gross hacks to GAS.  */
-#undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(file, line, counter)		\
-  { static tree last_function_decl = NULL;			\
-    if (current_function_decl == last_function_decl)		\
-      {								\
-	rtx func = DECL_RTL (current_function_decl);		\
-	const char *name = XSTR (XEXP (func, 0), 0);		\
-	fprintf (file, "\t.stabn 68,0,%d,L$M%d-%s\nL$M%d:\n",	\
-		 line, counter,					\
-		 (* targetm.strip_name_encoding) (name),	\
-		 counter);					\
-      }								\
-    else							\
-      fprintf (file, "\t.stabn 68,0,%d,0\n", line);		\
-    last_function_decl = current_function_decl;			\
-  }
+#define DBX_LINES_FUNCTION_RELATIVE 1
 
 /* gdb needs a null N_SO at the end of each file for scattered loading.  */
 
-#undef	DBX_OUTPUT_MAIN_SOURCE_FILE_END
-#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME) \
-  text_section (); \
-  fputs ("\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
-  fprintf (FILE,							\
-	   "\t.stabs \"\",%d,0,0,L$text_end0000\nL$text_end0000:\n", N_SO)
+#define DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
 
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is

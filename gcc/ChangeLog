@@ -1,3 +1,68 @@
+2004-10-20  Zack Weinberg  <zack@codesourcery.com>
+
+	* dbxout.c (asmfile): Delete.  All uses changed to asm_out_file.
+	(DBX_BLOCKS_FUNCTION_RELATIVE, DBX_LINES_FUNCTION_RELATIVE):
+	Default to 0.
+	(dbxout_source_line): Use DBX_OUTPUT_SOURCE_LINE when defined.
+	When it is not, but DBX_LINES_FUNCTION_RELATIVE is true, emit
+	an internal label and an N_SLINE .stabn whose value is the
+	difference between that label and the function entry label.
+	(dbxout_finish): If DBX_OUTPUT_MAIN_SOURCE_FILE_END is not defined,
+	but DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END is, emit a
+	label and an N_SO stab with an empty string referring to it.
+	(dbx_output_lbrac, dbx_output_rbrac): Use if statement instead
+	of #ifdef directive to test DBX_BLOCKS_FUNCTION_RELATIVE.
+	(dbxout_type_methods, dbxout_symbol): Remove #if 0 block.
+	(dbxout_prepare_symbol): Remove #ifdef WINNING_GDB block, this
+	macro is never defined.
+	* sdbout.c (sdbout_source_line_counter): Delete.
+	(PUT_SDB_SRC_FILE): Delete.  Uses replaced with sole definition.
+	(sdbout_source_line): Use SDB_OUTPUT_SOURCE_LINE, which takes
+	only two arguments.
+	* xcoffout.c (ASM_OUTPUT_SOURCE_LINE): Rename ASM_OUTPUT_LINE.
+
+	* config/dbxcoff.h, config/dbxelf.h: Remove unncessary #undefs.
+	* config/c4x/c4x.h, config/pa/pa.h: Remove unnecessary macro
+	definitions (identical to default).
+	* config/darwin.h, config/dbxcoff.h, config/dbxelf.h, config/ptx4.h
+	* config/h8300/coff.h, config/pa/som.h, config/sh/elf.h:
+	Define DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END, not
+	DBX_OUTPUT_MAIN_SOURCE_FILE_END.
+	* config/dbxcoff.h, config/dbxelf.h, config/ptx4.h
+	* config/mcore/mcore-pe.h, config/pa/som.h, config/sh/elf.h:
+	Define DBX_LINES_FUNCTION_RELATIVE, not ASM_OUTPUT_SOURCE_LINE.
+	* config/alpha/alpha-protos.h: Don't prototype alpha_output_lineno.
+	* config/alpha/alpha.c: Move declaration of num_source_filenames up.
+	(alpha_start_function): Use SDB_OUTPUT_SOURCE_LINE.
+	(sym_lineno): Delete.
+	(alpha_output_filename): Do not emit N_SOL stabs here.  Remove
+	now-unused variable.
+	(alpha_output_lineno): Delete.
+	* config/mips/mips-protos.h: Don't prototype mips_output_lineno.
+	* config/mips/mips.c (mips_output_filename): Don't use
+	ASM_OUTPUT_FILENAME. Don't emit N_SOL stabs here.
+	(mips_output_lineno): Delete.
+	(mips_output_function_prologue: Use SDB_OUTPUT_SOURCE_LINE.
+	* config/alpha/alpha.h: Define DBX_OUTPUT_SOURCE_LINE and
+	SDB_OUTPUT_SOURCE_LINE, not ASM_OUTPUT_SOURCE_LINE.
+	* config/mips/mips.h: Likewise.  Don't define ASM_OUTPUT_FILENAME.
+	* config/mips/sdb.h: Use SDB_OUTPUT_SOURCE_LINE.
+	* config/avr/avr.h: Don't define ASM_OUTPUT_SOURCE_LINE.
+	* config/mmix/mmix.h: Likewise.
+	* config/mmix/mmix.c (mmix_asm_output_source_line): Delete.
+	* config/mmix/mmix-protos.h: Don't prototype it.
+	* config/alpha/unicosmk.h: Also #undef PREFERRED_DEBUGGING_TYPE;
+	no need to #undef ASM_OUTPUT_SOURCE_LINE.
+	* config/arm/aout.h: Remove RISCiX-specific definition of
+	DBX_OUTPUT_MAIN_SOURCE_FILENAME.
+	* config/m32r/m32r.h: Define DBX_OUTPUT_SOURCE_LINE, not
+	ASM_OUTPUT_SOURCE_LINE.
+	* config/rs6000/rs6000.h: (ASM_OUTPUT_SOURCE_LINE): Rename
+	DBX_OUTPUT_SOURCE_LINE.  Don't use current_function_func_begin_label.
+	* config/vax/elf.h: No need to define DBX_OUTPUT_FUNCTION_END.
+
+	* doc/tm.texi: Update.
+
 2004-10-20  Richard Henderson  <rth@redhat.com>
 
 	* tree-sra.c (instantiate_element): Copy DECL_IGNORED_P also.
@@ -141,7 +206,7 @@
 	* c-parse.in (reservedwords): Add OBJC_TYPE_QUAL as alternative.
 
 2004-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Roger Sayle  <roger@eyesopen.com>
+	    Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/17813
 	* dojump.c (discard_pending_stack_adjust): New function.
@@ -154,7 +219,7 @@
 
 2004-10-18  Richard Henderson  <rth@redhat.com>
 
-	* c-common.c (handle_mode_attribute): Allow scalar->vector 
+	* c-common.c (handle_mode_attribute): Allow scalar->vector
 	type changes yet.
 
 2004-10-18  Kazu Hirata  <kazu@cs.umass.edu>
@@ -303,7 +368,7 @@
 	* params.def: Add parameter to restrict the number of expansions.
 	* params.h: (MAX_VARIABLE_EXPANSIONS): New define to restrict
 	the number of expansions.
-	* common.opt: (fvariable-expansion-in-unroller): New flag. 
+	* common.opt: (fvariable-expansion-in-unroller): New flag.
 	* doc/invoke.texi: (fvariable-expansion-in-unroller): Document.
 
 2004-10-18  Danny Smith  <dannysmith@users.sourceforge.net>
@@ -333,9 +398,9 @@
 	Revert:
 	2004-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
-        * c-typeck.c (default_function_array_conversion): Always create
-        &a[0] for array types.
-        (build_unary_op): Do not fold &a[x] into a + x.
+	* c-typeck.c (default_function_array_conversion): Always create
+	&a[0] for array types.
+	(build_unary_op): Do not fold &a[x] into a + x.
 
 2004-10-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -534,7 +599,7 @@
 	* tree.h (struct pointer_set_t): Declare as opaque type.
 	(tree_walk): Last argument is pointer_set_t* now.
 	* tree-inline.c (WALK_SUBTREE): Convert from htab to pset.
-	(walk_type_fields): 
+	(walk_type_fields):
 	(walk_tree): Convert from htab_t to pointer_set_t for keeping
 	track of which nodes have already been visited.
 	(walk_tree_without_duplicates): Convert from htab_t to pointer_set_t.
@@ -550,7 +615,7 @@
 	(tree-inline.o): Depends on pointer-set.h
 	(tree-dfa.o): Likewise
 	(cgraphunit.o): Likewise
-	
+
 2004-10-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/darwin.h (ASM_SPEC): Delete.
@@ -601,7 +666,7 @@
 	PR 17635
 	* tree-if-conv.c (process_phi_nodes): Process latch block.
 	(combine_blocks): Process latch block and update loop structure.
-	
+
 2004-10-14  Olga Golovanevsky  <olga@il.ibm.com>
 
 	* tree-vectorizer.c (vect_generate_tmps_on_preheader):
@@ -621,7 +686,7 @@
 	(tree_duplicate_loop_to_edge_cfg):
 	(add_loop_guard):
 	(vect_analyze_loop_with_symbolic_num_of_iters):
-	(verify_loop_for_duplication): 
+	(verify_loop_for_duplication):
 	(vect_gen_niters_for_prolog_loop):
 	(vect_update_niters_after_peeling):
 	(vect_update_inits_of_dr):
@@ -629,7 +694,7 @@
 	(vect_build_loop_niters):
 	(vect_do_peeling_for_alignment): New functions.
 	(vect_transform_loop): Add unknown and known but indivisible loop
-	bound support; add peeling for unalignment support. 
+	bound support; add peeling for unalignment support.
 	(vect_analyze_loop_form): Support symbolic number of iterations.
 	(vect_transform_loop_bound): New input parameter.
 	(vect_get_loop_niters): Change input parameter type.
@@ -638,7 +703,7 @@
 	(vectorize_loops): Add rewrite_into_loop_closed_ssa.
 	(vect_analyze_data_refs_alignment): Allowed one unaligned
 	store.
-	* tree-vectorizer.h (LOOP_VINFO_NITERS_KNOWN_P): Redefined 
+	* tree-vectorizer.h (LOOP_VINFO_NITERS_KNOWN_P): Redefined
 	to use tree.
 	(LOOP_VINFO_INT_NITERS): New macro.
 	(MAX_NUMBER_OF_UNALIGNED_DATA_REFS): New define.
@@ -738,18 +803,18 @@
 
 2004-10-13  Richard Henderson  <rth@redhat.com>
 
-        PR c/17384
-        * c-common.c (handle_mode_attribute): Disallow mode changes that
-        alter the CODE of the top-level type.
- 
-        * crtstuff.c (__FRAME_END__): Remove mode attribute.  Find 32-bit
-        integer from internal limits macros.
-        * config/i386/mm3dnow.h (__v2sf): Fix base type.
+	PR c/17384
+	* c-common.c (handle_mode_attribute): Disallow mode changes that
+	alter the CODE of the top-level type.
+
+	* crtstuff.c (__FRAME_END__): Remove mode attribute.  Find 32-bit
+	integer from internal limits macros.
+	* config/i386/mm3dnow.h (__v2sf): Fix base type.
 
 2004-10-13  Richard Henderson  <rth@redhat.com>
- 
-        PR debug/13841
-        * function.c (instantiate_decl): Recurse for CONCAT.
+
+	PR debug/13841
+	* function.c (instantiate_decl): Recurse for CONCAT.
 
 2004-10-13  David Edelsohn  <edelsohn@gnu.org>
 
@@ -848,56 +913,56 @@
 
 	* Makefile.in (tree-ssa-loop-niter.o): Depends on tree-data-ref.h.
 	* cfgloop.c (initialize_loops_parallel_p): New.
-	(flow_loops_find): Initialize the parallel_p field to true for all 
+	(flow_loops_find): Initialize the parallel_p field to true for all
 	the loops.
 	* tree-ssa-loop-niter.c: Include "tree-data-ref.h".
-	(estimate_numbers_of_iterations_loop): Infers the loop bounds from 
+	(estimate_numbers_of_iterations_loop): Infers the loop bounds from
 	the size of the data accessed in the loop.
-	(struct nb_iter_bound): Moved... 
+	(struct nb_iter_bound): Moved...
 	* cfgloop.h (struct nb_iter_bound): ... here.
 	(estimated_nb_iterations, parallel_p): New fields in struct loop.
 	(record_estimate): Declare extern here.
 	* tree-chrec.c: Fix comments.
 	(nb_vars_in_chrec): New function.
 	* tree-chrec.h (nb_vars_in_chrec): Declared here.
-	* tree-data-ref.c: Don't include lambda.h, that is already included 
+	* tree-data-ref.c: Don't include lambda.h, that is already included
 	in tree-data-ref.h.
 	(tree_fold_divides_p): Don't check for integer_onep.
 	(tree_fold_bezout): Removed.
 	(gcd): New static duplicated function.
 	(int_divides_p, dump_subscript): New.
 	(dump_data_dependence_relation): Use dump_subscript.
-	(dump_dist_dir_vectors, dump_ddrs, compute_estimated_nb_iterations, 
+	(dump_dist_dir_vectors, dump_ddrs, compute_estimated_nb_iterations,
 	estimate_niter_from_size_of_data): New.
-	(analyze_array_indexes, analyze_array): Call 
-	estimate_niter_from_size_of_data during	the detection of array 
-	references.  Pass in a pointer to the statement that contains the 
+	(analyze_array_indexes, analyze_array): Call
+	estimate_niter_from_size_of_data during	the detection of array
+	references.  Pass in a pointer to the statement that contains the
 	array reference.
 	(all_chrecs_equal_p): New.
 	(compute_distance_vector): Renamed compute_subscript_distance.
 	Deal with multivariate conflict functions.
-	(initialize_data_dependence_relation): Initialize DDR_AFFINE_P, 
+	(initialize_data_dependence_relation): Initialize DDR_AFFINE_P,
 	DDR_SIZE_VECT, DDR_DIST_VECT, and DDR_DIR_VECT.
 	(non_affine_dependence_relation): New.
-	(analyze_ziv_subscript, analyze_siv_subscript_cst_affine, 
-	analyze_siv_subscript, analyze_miv_subscript, 
-	analyze_overlapping_iterations, subscript_dependence_tester): 
+	(analyze_ziv_subscript, analyze_siv_subscript_cst_affine,
+	analyze_siv_subscript, analyze_miv_subscript,
+	analyze_overlapping_iterations, subscript_dependence_tester):
 	Initialize and return last_conflicts function.
 	(initialize_matrix_A, FLOOR, compute_overlap_steps_for_affine_univar,
 	compute_overlap_steps_for_affine_1_2): New.
 	(analyze_siv_subscript_affine_cst): Removed.
-	(analyze_subscript_affine_affine): Disprove dependences based on the 
-	iteration domains.  Solve the univariate dependence case as before, 
+	(analyze_subscript_affine_affine): Disprove dependences based on the
+	iteration domains.  Solve the univariate dependence case as before,
 	but use lambda_matrix_right_hermite instead of tree_fold_bezout.
 	Implement the multivariate case of 2 versus 1 variables.
-	(build_classic_dist_vector, build_classic_dir_vector): Implement some 
+	(build_classic_dist_vector, build_classic_dir_vector): Implement some
 	unhandled cases.
-	(find_data_references_in_loop): Compute and initialize 
+	(find_data_references_in_loop): Compute and initialize
 	loop->estimated_nb_iterations and loop->parallel_p.
 	(analyze_all_data_dependences): Modify the debug dump order.
 	* tree-data-ref.h (SUB_LAST_CONFLICT_IN_A, SUB_LAST_CONFLICT_IN_B,
 	subscript->last_conflict_in_a, subscript->last_conflict_in_b): Removed.
-	(SUB_LAST_CONFLICT, subscript->last_conflict, 
+	(SUB_LAST_CONFLICT, subscript->last_conflict,
 	data_dependence_relation->affine_p, data_dependence_relation->size_vect,
 	DDR_AFFINE_P, DDR_SIZE_VECT): New.
 	(find_data_references_in_loop, initialize_data_dependence_relation,
@@ -912,7 +977,7 @@
 	PR 17892
 	* tree-ssa-dom.c (unsafe_associative_fp_binop): New function.
 	(simplify_rhs_and_lookup_avail_expr): Disallow associativity
-	and constant folding of floating point MULT_EXPR/PLUS_EXPR 
+	and constant folding of floating point MULT_EXPR/PLUS_EXPR
 	expressions.
 
 2004-10-12  Ulrich Weigand  <uweigand@de.ibm.com>
@@ -1054,7 +1119,7 @@
 	PR middle-end/17657
 	* stmt.c (add_case_node): Add additional type argument.  Declare
 	as static to match prototype.  Convert the upper and lower bounds
-	to the specified index type.  Optimize away case ranges/values 
+	to the specified index type.  Optimize away case ranges/values
 	that are outside the index type's bounds.  Truncate case ranges
 	that span the index type's bounds.
 	(expand_case): Avoid unnessary computation and memory allocation

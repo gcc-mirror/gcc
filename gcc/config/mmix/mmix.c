@@ -1236,16 +1236,6 @@ mmix_output_quoted_string (FILE *stream, const char *string, int length)
     }
 }
 
-/* ASM_OUTPUT_SOURCE_LINE.  */
-
-void
-mmix_asm_output_source_line  (FILE *stream, int lineno)
-{
-  fprintf (stream, "# %d ", lineno);
-  OUTPUT_QUOTED_STRING (stream, main_input_filename);
-  fprintf (stream, "\n");
-}
-
 /* Target hook for assembling integer objects.  Use mmix_print_operand
    for WYDE and TETRA.  Use mmix_output_octa to output 8-byte
    CONST_DOUBLEs.  */
