@@ -1,5 +1,8 @@
 Wed May  6 15:51:39 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* mips/mips.c (save_restore_insns): Change FRAME_POINTER_REGNUM to
+	HARD_FRAME_POINTER_REGNUM.
+
 	* expr.c (target_temp_slot_level): Delete duplicate definition.
 
 Wed May  6 16:46:01 1998  Jeffrey A Law  (law@cygnus.com)

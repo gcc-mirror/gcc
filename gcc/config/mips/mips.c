@@ -5632,7 +5632,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
   rtx insn;
 
   if (frame_pointer_needed
-      && ! BITSET_P (mask, FRAME_POINTER_REGNUM - GP_REG_FIRST))
+      && ! BITSET_P (mask, HARD_FRAME_POINTER_REGNUM - GP_REG_FIRST))
     abort ();
 
   if (mask == 0 && fmask == 0)
