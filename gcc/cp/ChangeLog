@@ -1,3 +1,8 @@
+2003-09-04  Mark Mitchell  <mark@codesourcery.com>
+
+	Revert this patch:
+	* class.c (include_empty_classes): Correct logic for ABI version 1.
+
 2003-09-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12053

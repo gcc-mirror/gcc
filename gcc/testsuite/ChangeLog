@@ -1,3 +1,8 @@
+2003-09-04  Mark Mitchell  <mark@codesourcery.com>
+
+	Revert this patch:
+	* g++.dg/abi/layout4.C: New test.
+	
 2003-09-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12053
