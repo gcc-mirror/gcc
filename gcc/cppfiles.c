@@ -1027,6 +1027,12 @@ remove_component_p (path)
   result = stat (path, &s);
 #endif
 
+  /* There's no guarantee that errno will be unchanged, even on
+     success.  Cygwin's lstat(), for example, will often set errno to
+     ENOSYS.  In case of success, reset errno to zero.  */
+  if (result == 0)
+    errno = 0;
+
   return result == 0 && S_ISDIR (s.st_mode);
 }
 
