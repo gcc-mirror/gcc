@@ -44,7 +44,7 @@ Currently only Linux uses this. */
   %{!shared:							\
     %{!static:							\
       %{rdynamic:-export-dynamic}				\
-      %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}	\
+      %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}}	\
     %{static:-static}}"
 
 /* Output at beginning of assembler file.  */
