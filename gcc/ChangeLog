@@ -1,5 +1,10 @@
 2000-11-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/sparc/sparc.h (ASM_OUTPUT_MI_THUNK): On sparc64 we need to
+	adjust %o1, not %o0 if the return type is large structure.
+
+2000-11-06  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/sparc/sparc.md (smulsi3_highpart_v8plus, ashldi3_v8plus+1,
 	update_return, flush, flushdi, ffssi2, ffsdi2): Fix output formatting.
 
