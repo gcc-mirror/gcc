@@ -2102,7 +2102,8 @@ DEFUN(process_file, (jcf, out),
 #define LONG_OPT(Num)  ((Num) + 128)
 
 #define OPT_classpath     LONG_OPT (0)
-#define OPT_CLASSPATH     LONG_OPT (1)
+#define OPT_CLASSPATH     OPT_classpath
+#define OPT_bootclasspath LONG_OPT (1)
 #define OPT_HELP          LONG_OPT (2)
 #define OPT_TEMP          LONG_OPT (3)
 #define OPT_VERSION       LONG_OPT (4)
@@ -2119,6 +2120,7 @@ DEFUN(process_file, (jcf, out),
 static const struct option options[] =
 {
   { "classpath",     required_argument, NULL, OPT_classpath },
+  { "bootclasspath", required_argument, NULL, OPT_bootclasspath },
   { "CLASSPATH",     required_argument, NULL, OPT_CLASSPATH },
   { "help",          no_argument,       NULL, OPT_HELP },
   { "stubs",         no_argument,       &stubs, 1 },
@@ -2158,10 +2160,9 @@ help ()
   printf ("  -friend TEXT            Insert TEXT as `friend' declaration\n");
   printf ("  -prepend TEXT           Insert TEXT before start of class\n");
   printf ("\n");
-  printf ("  --CLASSPATH PATH        Set path to find .class files, overriding\n\
-                          built-in class path\n");
   printf ("  --classpath PATH        Set path to find .class files\n");
   printf ("  -IDIR                   Append directory to class path\n");
+  printf ("  --bootclasspath PATH    Override built-in class path\n");
   printf ("  -d DIRECTORY            Set output directory name\n");
   printf ("  -o FILE                 Set output file name\n");
   printf ("  -td DIRECTORY           Set temporary directory name\n");
@@ -2241,8 +2242,8 @@ DEFUN(main, (argc, argv),
 	  jcf_path_classpath_arg (optarg);
 	  break;
 
-	case OPT_CLASSPATH:
-	  jcf_path_CLASSPATH_arg (optarg);
+	case OPT_bootclasspath:
+	  jcf_path_bootclasspath_arg (optarg);
 	  break;
 
 	case OPT_HELP:
