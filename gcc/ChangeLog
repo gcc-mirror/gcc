@@ -1,3 +1,9 @@
+Sun Nov 14 18:49:37 1999  David O'Brien  <obrien@FreeBSD.org>
+
+	* configure.in: Handle libgcc2 threads support on FreeBSD platforms.
+	* configure: Rebuilt.
+	* config/t-freebsd-thread: New file.
+
 Sun Nov 14 23:11:05 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* i386.c (ix86_decompose_address): Verify the base is a REG

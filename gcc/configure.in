@@ -1282,7 +1282,7 @@ changequote([,])dnl
 		case x${enable_threads} in
 		xyes | xpthreads | xposix)
 			thread_file='posix'
-			tmake_file="${tmake_file} t-openbsd-thread"
+			tmake_file="${tmake_file} t-freebsd-thread"
 			;;
 		esac
 		;;
