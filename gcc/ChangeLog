@@ -1,5 +1,15 @@
 2004-01-13  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300-protos.h: Replace do_movsi with
+	h8300_expand_movsi.
+	* config/h8300/h8300.c (do_movsi): Change to
+	h8300_expand_movsi.
+	* config/h8300/h8300.md (movsi): Replace do_movsi with
+	h8300_expand_movsi.
+	(movsf): Likewise.
+
+2004-01-13  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (dosize): Change to
 	h8300_emit_stack_adjustment.  Update callers.
 
