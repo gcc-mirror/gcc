@@ -1,3 +1,10 @@
+2003-07-05  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_complex.h: Fully qualify standard
+	functions with std::, thus avoiding Koenig lookup.
+	* include/std/std_memory.h: Likewise.
+	* include/std/std_valarray.h: Likewise.
+
 2003-07-05  Gawain Bolton  <gp.bolton@computer.org>
 
 	* include/bits/stl_tree.h: _Rb_tree_rebalance():  Add local

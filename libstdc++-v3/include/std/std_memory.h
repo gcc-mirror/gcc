@@ -103,7 +103,7 @@ namespace std
   template<typename _Tp>
     inline pair<_Tp*,ptrdiff_t>
     get_temporary_buffer(ptrdiff_t __len)
-    { return __get_temporary_buffer(__len, (_Tp*) 0); }
+    { return std::__get_temporary_buffer(__len, (_Tp*) 0); }
 
   /**
    *  @brief The companion to get_temporary_buffer().
