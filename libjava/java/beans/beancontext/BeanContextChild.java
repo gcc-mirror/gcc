@@ -43,7 +43,8 @@ import java.beans.VetoableChangeListener;
 import java.beans.PropertyVetoException;
 
 /**
- * Beans implement this to get information about the execution environment and its services and to be placed in the hierarchy.
+ * Beans implement this to get information about the execution environment and
+ * its services and to be placed in the hierarchy.
  * <P>
  *
  * The difference between a <code>BeanContext</code> and a

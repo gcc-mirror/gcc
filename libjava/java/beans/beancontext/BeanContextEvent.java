@@ -47,7 +47,8 @@ import java.util.EventObject;
  * @since JDK1.2
  */
 
-public abstract class BeanContextEvent extends EventObject {
+public abstract class BeanContextEvent extends EventObject
+{
 	/**
 	 * The <code>BeanContext</code> that most recently passed this
 	 * event on.

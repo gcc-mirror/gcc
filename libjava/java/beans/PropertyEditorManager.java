@@ -39,6 +39,18 @@ exception statement from your version. */
 package java.beans;
 
 import gnu.java.lang.ClassHelper;
+import gnu.java.beans.editors.ColorEditor;
+import gnu.java.beans.editors.FontEditor;
+import gnu.java.beans.editors.NativeBooleanEditor;
+import gnu.java.beans.editors.NativeByteEditor;
+import gnu.java.beans.editors.NativeDoubleEditor;
+import gnu.java.beans.editors.NativeFloatEditor;
+import gnu.java.beans.editors.NativeIntEditor;
+import gnu.java.beans.editors.NativeLongEditor;
+import gnu.java.beans.editors.NativeShortEditor;
+import gnu.java.beans.editors.StringEditor;
+import java.awt.Color;
+import java.awt.Font;
 
 /**
  * PropertyEditorManager is used to find property editors
@@ -70,20 +82,21 @@ import gnu.java.lang.ClassHelper;
 public class PropertyEditorManager
 {
   static java.util.Hashtable editors = new java.util.Hashtable();
-  static String[] editorSearchPath = {"gnu.java.beans.editors","sun.beans.editors"};
+  static String[] editorSearchPath = { "gnu.java.beans.editors",
+                                       "sun.beans.editors" };
 
   static
     {
-      registerEditor(java.lang.Boolean.TYPE, gnu.java.beans.editors.NativeBooleanEditor.class);
-      registerEditor(java.lang.Byte.TYPE,    gnu.java.beans.editors.NativeByteEditor.class);
-      registerEditor(java.lang.Short.TYPE,   gnu.java.beans.editors.NativeShortEditor.class);
-      registerEditor(java.lang.Integer.TYPE, gnu.java.beans.editors.NativeIntEditor.class);
-      registerEditor(java.lang.Long.TYPE,    gnu.java.beans.editors.NativeLongEditor.class);
-      registerEditor(java.lang.Float.TYPE,   gnu.java.beans.editors.NativeFloatEditor.class);
-      registerEditor(java.lang.Double.TYPE,  gnu.java.beans.editors.NativeDoubleEditor.class);
-      registerEditor(java.lang.String.class, gnu.java.beans.editors.StringEditor.class);
-      registerEditor(java.awt.Color.class,   gnu.java.beans.editors.ColorEditor.class);
-      registerEditor(java.awt.Font.class,    gnu.java.beans.editors.FontEditor.class);
+      registerEditor(Boolean.TYPE, NativeBooleanEditor.class);
+      registerEditor(Byte.TYPE,    NativeByteEditor.class);
+      registerEditor(Short.TYPE,   NativeShortEditor.class);
+      registerEditor(Integer.TYPE, NativeIntEditor.class);
+      registerEditor(Long.TYPE,    NativeLongEditor.class);
+      registerEditor(Float.TYPE,   NativeFloatEditor.class);
+      registerEditor(Double.TYPE,  NativeDoubleEditor.class);
+      registerEditor(String.class, StringEditor.class);
+      registerEditor(Color.class,  ColorEditor.class);
+      registerEditor(Font.class,   FontEditor.class);
     }
 
   /**

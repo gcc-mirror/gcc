@@ -1,5 +1,22 @@
 2003-03-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/beans/Beans.java:
+	Explicitely import classes not packages.
+	* java/beans/FeatureDescriptor.java
+	(preferred): New member variable.
+	(isPreferred): New method.
+	(setPreferred): New method.
+	* java/beans/PropertyEditorManager.java:
+	Explicitely import used classes.
+	* java/beans/beancontext/BeanContextChild.java:
+	Added line wrapping.
+	* java/beans/beancontext/BeanContextChildSupport.java:
+	Reindented.
+	* java/beans/beancontext/BeanContextEvent.java:
+	Reindented.
+
+2003-03-17  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/Dialog.java
 	(Dialog): New constructor, changed implementations, added
 	documentation.
