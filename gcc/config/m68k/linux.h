@@ -302,35 +302,55 @@ do {									\
 #undef PCC_STATIC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-/* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.  */
-
-/* On m68k svr4, the trampoline is different from the generic version
-   in that we use a1 as the static call chain.  */
-
-#undef TRAMPOLINE_TEMPLATE
-#define TRAMPOLINE_TEMPLATE(FILE)					\
-{									\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x227a));	\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x2f3a));	\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
-  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x4e75));	\
-  ASM_OUTPUT_INT (FILE, const0_rtx);					\
-  ASM_OUTPUT_INT (FILE, const0_rtx);					\
-}
-
-/* Redefine since we are using a different trampoline */
-#undef TRAMPOLINE_SIZE
-#define TRAMPOLINE_SIZE 18
-
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
+/* This is different from the generic version in that we use a1 as the
+   static call chain.  */
+
 #undef INITIALIZE_TRAMPOLINE
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)                       \
-{                                                                       \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 10)), CXT); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 14)), FNADDR); \
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
+{									\
+  emit_move_insn (gen_rtx (MEM, HImode, TRAMP), GEN_INT (0x227C));	\
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 2)), CXT); \
+  emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 6)),	\
+		  GEN_INT (0x4EF9));					\
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 8)), FNADDR); \
+  FINALIZE_TRAMPOLINE (TRAMP);						\
+}
+
+/* Finalize the trampoline by flushing the insn cache.  */
+
+#undef FINALIZE_TRAMPOLINE
+#define FINALIZE_TRAMPOLINE(TRAMP)					\
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__clear_cache"),	\
+		     0, VOIDmode, 2, TRAMP, Pmode,			\
+		     plus_constant (TRAMP, TRAMPOLINE_SIZE), Pmode);
+
+/* Clear the instruction cache from `beg' to `end'.  This makes an
+   inline system call to SYS_cacheflush.  The arguments are as
+   follows:
+
+	cacheflush (addr, scope, cache, len)
+
+   addr	  - the start address for the flush
+   scope  - the scope of the flush (see the cpush insn)
+   cache  - which cache to flush (see the cpush insn)
+   len    - a factor relating to the number of flushes to perform:
+   	    len/16 lines, or len/4096 pages.  */
+
+#define CLEAR_INSN_CACHE(BEG, END)					\
+{									\
+  register unsigned long _beg __asm ("%d1") = (unsigned long) (BEG);	\
+  unsigned long _end = (unsigned long) (END);				\
+  register unsigned long _len __asm ("%d4") = (_end - _beg + 32);	\
+  __asm __volatile							\
+    ("move%.l %#123, %/d0\n\t"	/* system call nr */			\
+     "move%.l %#1, %/d2\n\t"	/* clear lines */			\
+     "move%.l %#3, %/d3\n\t"	/* insn+data caches */			\
+     "trap %#0"								\
+     : /* no outputs */							\
+     : "d" (_beg), "d" (_len)						\
+     : "%d0", "%d2", "%d3");						\
 }
