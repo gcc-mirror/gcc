@@ -5,7 +5,7 @@
    non-overloadable operators (like the `?:' ternary operator).  
    Writtey by Mark Mitchell <mark@codesourcery.com>
 
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
      assignment operators, the same tree-codes are reused; i.e.,
      `operator +' will also have PLUS_EXPR as its CODE.
 
-   NEW_MANGLING
+   MANGLING
 
      The mangling prefix for the operator, as a C string, and as
      mangled under the new ABI.  For `operator +', for example, this
@@ -127,7 +127,7 @@ DEF_SIMPLE_OPERATOR ("->", COMPONENT_REF, "pt", 2)
 DEF_SIMPLE_OPERATOR ("[]", ARRAY_REF, "ix", 2)
 DEF_SIMPLE_OPERATOR ("++", POSTINCREMENT_EXPR, "pp", 2)
 DEF_SIMPLE_OPERATOR ("--", POSTDECREMENT_EXPR, "mm", 2)
-/* These are extensions.  */
+/* These operators are GNU extensions.  */
 DEF_SIMPLE_OPERATOR ("<?", MIN_EXPR, "v23min", 2)
 DEF_SIMPLE_OPERATOR (">?", MAX_EXPR, "v23max", 2)
 /* This one is needed for mangling.  */
@@ -145,6 +145,9 @@ DEF_ASSN_OPERATOR ("|=", BIT_IOR_EXPR, "oR", 2)
 DEF_ASSN_OPERATOR ("^=", BIT_XOR_EXPR, "eO", 2)
 DEF_ASSN_OPERATOR ("<<=", LSHIFT_EXPR, "lS", 2)
 DEF_ASSN_OPERATOR (">>=", RSHIFT_EXPR, "rS", 2)
+/* These operators are GNU extensions.  */
+DEF_ASSN_OPERATOR ("<?=", MIN_EXPR, "v23miN", 2);
+DEF_ASSN_OPERATOR (">?=", MAX_EXPR, "v23maX", 2);
 
 /* Ternary operators.  */
 DEF_SIMPLE_OPERATOR ("?:", COND_EXPR, "qu", 3)

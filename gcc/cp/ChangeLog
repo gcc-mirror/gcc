@@ -1,3 +1,7 @@
+2003-02-03  Mark Mitchell  <mark@codesourcery.com>
+	
+	* operators.def: Add <?= and >?=.
+	
 2003-01-28  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Make-lang.in (c++.install-common, c++.install-man)
