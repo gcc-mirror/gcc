@@ -1189,7 +1189,10 @@ emit_block_move (x, y, size, align)
 	  enum insn_code code = movstr_optab[(int) mode];
 
 	  if (code != CODE_FOR_nothing
-	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	      /* We don't need MODE to be narrower than BITS_PER_HOST_WIDE_INT
+		 here because if SIZE is less than the mode mask, as it is
+		 returned by the macro, it will definately be less than the
+		 actual mode mask.  */
 	      && (unsigned) INTVAL (size) <= GET_MODE_MASK (mode)
 	      && (insn_operand_predicate[(int) code][0] == 0
 		  || (*insn_operand_predicate[(int) code][0]) (x, BLKmode))
@@ -1887,7 +1890,7 @@ emit_library_call (va_alist)
 	 Pass it as a double instead.  */
 #ifdef LIBGCC_NEEDS_DOUBLE
       if (LIBGCC_NEEDS_DOUBLE && mode == SFmode)
-	val = convert_to_mode (DFmode, val), mode = DFmode;
+	val = convert_to_mode (DFmode, val, 0), mode = DFmode;
 #endif
 
       /* There's no need to call protect_from_queue, because
