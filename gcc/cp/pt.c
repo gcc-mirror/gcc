@@ -99,12 +99,24 @@ finish_member_template_decl (template_parameters, decl)
   tree decl;
 {
   if (template_parameters)
-    end_template_decl();
+    end_template_decl ();
   else
-    end_specialization();
+    end_specialization ();
 
-  if (decl && DECL_TEMPLATE_INFO (decl) &&
-      !DECL_TEMPLATE_SPECIALIZATION (decl))
+  if (decl == NULL_TREE || decl == void_type_node)
+    return NULL_TREE;
+  else if (TREE_CODE (decl) == TREE_LIST)
+    {
+      decl = TREE_VALUE (decl);
+      if (IS_AGGR_TYPE (decl) && CLASSTYPE_TEMPLATE_INFO (decl))
+	{
+	  tree tmpl = CLASSTYPE_TI_TEMPLATE (decl);
+	  check_member_template (tmpl);
+	  return tmpl;
+	}
+    }
+  else if (DECL_TEMPLATE_INFO (decl) &&
+	   !DECL_TEMPLATE_SPECIALIZATION (decl))
     {
       check_member_template (DECL_TI_TEMPLATE (decl));
       return DECL_TI_TEMPLATE (decl);
@@ -130,14 +142,14 @@ int
 template_class_depth (type)
      tree type;
 {
-  int depth = 0;
+  int depth;
 
-  /* Note: this implementation will be broken when we have nested
-     template classes.  Presumably we will have to wrap this if
-     statement a loop.  */
-  if (CLASSTYPE_TEMPLATE_INFO (type)
-      && uses_template_parms (CLASSTYPE_TI_ARGS (type)))
-    ++depth;
+  for (depth = 0; type && TREE_CODE (type) != FUNCTION_DECL;
+       type = TYPE_CONTEXT (type))
+    if (CLASSTYPE_TEMPLATE_INFO (type)
+	&& PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type))
+	&& uses_template_parms (CLASSTYPE_TI_ARGS (type)))
+      ++depth;
 
   return depth;
 }
@@ -1047,18 +1059,19 @@ build_template_parm_index (index, level, orig_level, decl, type)
 
 
 /* Return a TEMPLATE_PARM_INDEX, similar to INDEX, but whose
-   TEMPLATE_PARM_LEVEL has been decreased by one.  If such a
+   TEMPLATE_PARM_LEVEL has been decreased by LEVELS.  If such a
    TEMPLATE_PARM_INDEX already exists, it is returned; otherwise, a
    new one is created.  */
 
 static tree 
-reduce_template_parm_level (index, type)
+reduce_template_parm_level (index, type, levels)
      tree index;
      tree type;
+     int levels;
 {
   if (TEMPLATE_PARM_DESCENDANTS (index) == NULL_TREE
       || (TEMPLATE_PARM_LEVEL (TEMPLATE_PARM_DESCENDANTS (index))
-	  != TEMPLATE_PARM_LEVEL (index) - 1))
+	  != TEMPLATE_PARM_LEVEL (index) - levels))
     {
       tree decl 
 	= build_decl (TREE_CODE (TEMPLATE_PARM_DECL (index)),
@@ -1066,7 +1079,7 @@ reduce_template_parm_level (index, type)
 		      type);
       tree t
 	= build_template_parm_index (TEMPLATE_PARM_IDX (index),
-				     TEMPLATE_PARM_LEVEL (index) - 1,
+				     TEMPLATE_PARM_LEVEL (index) - levels,
 				     TEMPLATE_PARM_ORIG_LEVEL (index),
 				     decl, type);
       TEMPLATE_PARM_DESCENDANTS (index) = t;
@@ -1313,16 +1326,19 @@ push_template_decl (decl)
        is assumed to be a member of the class.  */
     ctx = current_class_type;
 
-  if ((! ctx
-       || (TREE_CODE_CLASS (TREE_CODE (ctx)) == 't'
-	   && template_class_depth (ctx) == 0))
-      /* At this point, we know that the DECL is not a member of some
-	 template class.  However, a friend function declared in a
-	 template class is still not primary, since, in general it can
-	 depend on the template parameters of the enclosing class.  */
-      && !(is_friend
-	   && DECL_CLASS_CONTEXT (decl)
-	   && template_class_depth (DECL_CLASS_CONTEXT (decl)) > 0))
+  /* For determining whether this is a primary template or not, we're really
+     interested in the lexical context, not the true context.  */
+  if (is_friend)
+    info = DECL_CLASS_CONTEXT (decl);
+  else
+    info = ctx;
+
+  if (info && TREE_CODE (info) == FUNCTION_DECL)
+    primary = 0;
+  else if (! info
+	   || (TYPE_BEING_DEFINED (info) && template_header_count
+	       && ! processing_specialization)
+	   || (template_header_count > template_class_depth (info)))
     primary = 1;
   else
     primary = 0;
@@ -2376,6 +2392,13 @@ lookup_template_class (d1, arglist, in_decl, context)
       template = CLASSTYPE_TI_TEMPLATE (d1);
       d1 = DECL_NAME (template);
     }
+  else if (TREE_CODE (d1) == TEMPLATE_DECL
+	   && TREE_CODE (DECL_RESULT (d1)) == TYPE_DECL)
+    {
+      template = d1;
+      d1 = DECL_NAME (template);
+      context = DECL_CONTEXT (template);
+    }
   else
     my_friendly_abort (272);
 
@@ -2928,6 +2951,13 @@ instantiate_class_template (type)
   my_friendly_assert (TREE_CODE (template) == TEMPLATE_DECL, 279);
   args = TI_ARGS (template_info);
 
+  if (DECL_TEMPLATE_INFO (template))
+    {
+      args = add_to_template_args (DECL_TI_ARGS (template), args);
+      while (DECL_TEMPLATE_INFO (template))
+	template = DECL_TI_TEMPLATE (template);
+    }
+
   t = most_specialized_class
     (DECL_TEMPLATE_SPECIALIZATIONS (template), args);
 
@@ -3391,6 +3421,7 @@ tsubst (t, args, in_decl)
       {
 	int idx;
 	int level;
+	int levels;
 	tree r = NULL_TREE;
 
 	if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
@@ -3411,12 +3442,17 @@ tsubst (t, args, in_decl)
 
 	    if (TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
 	      {
-		if (TREE_VEC_LENGTH (args) >= level - 1)
+		levels = TREE_VEC_LENGTH (args);
+		if (level <= levels)
 		  arg = TREE_VEC_ELT
 		    (TREE_VEC_ELT (args, level - 1), idx);
 	      }
-	    else if (level == 1)
-	      arg = TREE_VEC_ELT (args, idx);
+	    else
+	      {
+		levels = 1;
+		if (level == 1)
+		  arg = TREE_VEC_ELT (args, idx);
+	      }
 
 	    if (arg != NULL_TREE)
 	      {
@@ -3470,14 +3506,14 @@ tsubst (t, args, in_decl)
 	    r = copy_node (t);
 	    TEMPLATE_TYPE_PARM_INDEX (r)
 	      = reduce_template_parm_level (TEMPLATE_TYPE_PARM_INDEX (t),
-					    r);
+					    r, levels);
 	    TYPE_STUB_DECL (r) = TYPE_NAME (r) = TEMPLATE_TYPE_DECL (r);
 	    TYPE_MAIN_VARIANT (r) = r;
 	    TYPE_POINTER_TO (r) = NULL_TREE;
 	    break;
 
 	  case TEMPLATE_PARM_INDEX:
-	    r = reduce_template_parm_level (t, TREE_TYPE (t));
+	    r = reduce_template_parm_level (t, TREE_TYPE (t), levels);
 	    break;
 	   
 	  default:
@@ -3493,23 +3529,15 @@ tsubst (t, args, in_decl)
 	   of a template class.  */
 	tree tmpl;
 	tree decl = DECL_TEMPLATE_RESULT (t);
-	tree new_decl;
 	tree parms;
 	tree* new_parms;
 	tree spec;
 
-	if (TREE_CODE (decl) == TYPE_DECL)
-	  {
-	    if (TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
-	      /* There is no tsubst'ing to be done in a template template
-		 parameter.  */
-	      return t;
-
-	    /* This must be a member template class.  We don't handle
-	       this case yet.  */
-	    sorry ("member template classes");
-	    return t;
-	  }
+	if (TREE_CODE (decl) == TYPE_DECL
+	    && TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
+	  /* There is no tsubst'ing to be done in a template template
+	     parameter.  */
+	  return t;
 
 	/* We might already have an instance of this template. */
 	spec = retrieve_specialization (t, args);
@@ -3531,10 +3559,22 @@ tsubst (t, args, in_decl)
 	DECL_CLASS_CONTEXT (tmpl) = tsubst (DECL_CLASS_CONTEXT (t),
 					    args, in_decl);
 	DECL_TEMPLATE_INFO (tmpl) = build_tree_list (t, args);
-	new_decl = tsubst (decl, args, in_decl);
-	DECL_RESULT (tmpl) = new_decl;
-	DECL_TI_TEMPLATE (new_decl) = tmpl;
-	TREE_TYPE (tmpl) = TREE_TYPE (new_decl);
+
+	if (TREE_CODE (decl) == TYPE_DECL)
+	  {
+	    tree new_type = tsubst (TREE_TYPE (t), args, in_decl);
+	    TREE_TYPE (tmpl) = new_type;
+	    CLASSTYPE_TI_TEMPLATE (new_type) = tmpl;
+	    DECL_RESULT (tmpl) = TYPE_MAIN_DECL (new_type);
+	  }
+	else
+	  {
+	    tree new_decl = tsubst (decl, args, in_decl);
+	    DECL_RESULT (tmpl) = new_decl;
+	    DECL_TI_TEMPLATE (new_decl) = tmpl;
+	    TREE_TYPE (tmpl) = TREE_TYPE (new_decl);
+	  }
+
 	DECL_TEMPLATE_INSTANTIATIONS (tmpl) = NULL_TREE;
 	SET_DECL_IMPLICIT_INSTANTIATION (tmpl);
 
@@ -3571,6 +3611,12 @@ tsubst (t, args, in_decl)
 			 new_vec,
 			 NULL_TREE);
 	  }
+
+	if (PRIMARY_TEMPLATE_P (t))
+	  TREE_TYPE (DECL_INNERMOST_TEMPLATE_PARMS (tmpl)) = tmpl;
+
+	if (TREE_CODE (decl) == TYPE_DECL)
+	  return tmpl;
 
 	/* What should we do with the specializations of this member
 	   template?  Are they specializations of this new template,

@@ -313,6 +313,7 @@ yylex ()
 	    case TYPENAME:
 	    case SELFNAME:
 	    case NSNAME:
+	    case PTYPENAME:
 	      lastiddecl = trrr;
 	      if (got_scope)
 		tmp_token.yylval.ttype = trrr;
@@ -320,7 +321,6 @@ yylex ()
 
 	    case PFUNCNAME:
 	    case IDENTIFIER:
-	    case PTYPENAME:
 	      lastiddecl = trrr;
 	      break;
 

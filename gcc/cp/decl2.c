@@ -1395,9 +1395,6 @@ check_member_template (tmpl)
 	   A local class shall not have member templates.  */
 	cp_error ("declaration of of member template `%#D' in local class",
 		  decl);
-
-      /* We don't handle member template classes yet. */
-      sorry ("member templates classes");
     }
   else
     cp_error ("template declaration of `%#D'", decl);

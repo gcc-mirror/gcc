@@ -6304,8 +6304,16 @@ get_delta_difference (from, to, force)
 	  return delta;
 	}
       binfo = get_binfo (to, from, 1);
-      if (binfo == 0 || binfo == error_mark_node || TREE_VIA_VIRTUAL (binfo))
+      if (binfo == 0 || binfo == error_mark_node)
 	return delta;
+      if (TREE_VIA_VIRTUAL (binfo))
+	{
+	  binfo = binfo_member (BINFO_TYPE (binfo),
+				CLASSTYPE_VBASECLASSES (from));
+	  cp_warning ("pointer to member cast to virtual base `%T'",
+		      BINFO_TYPE (binfo));
+	  warning ("  will only work if you are very careful");
+	}
       delta = BINFO_OFFSET (binfo);
       delta = cp_convert (ptrdiff_type_node, delta);
       
@@ -6325,7 +6333,6 @@ get_delta_difference (from, to, force)
       else
 	cp_error ("pointer to member conversion from virtual base `%T'",
 		  BINFO_TYPE (binfo));
-      return delta;
     }
 
   return BINFO_OFFSET (binfo);
