@@ -1,3 +1,7 @@
+Tue Aug 25 19:42:13 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/980825-1.c: New test.
+
 Mon Aug 24 16:38:52 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/930326-1.x: Fix typo.
