@@ -1,3 +1,10 @@
+2002-02-26  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (gen_const_vector_0): Remove TYPE argument.
+	(init_emit_once): Update calls.
+	* fixinc/gnu-regex.c (_GNU_SOURCE): Remove.
+	(init_syntax_once): Prototype.
+
 2002-02-26  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa-linux.h (LIB_SPEC): Update definition.
@@ -52,7 +59,7 @@
 
 2002-02-25  Aldy Hernandez  <aldyh@redhat.com>
 
-        * c-typeck.c (push_init_level): Handle vectors.
+	* c-typeck.c (push_init_level): Handle vectors.
 
 2002-02-25  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -70,11 +77,11 @@
 
 2002-02-25  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md ("get_vrsave_internal"): New.
-        ("*set_vrsave_internal"): use mfspr for Darwin.
+	* config/rs6000/rs6000.md ("get_vrsave_internal"): New.
+	("*set_vrsave_internal"): use mfspr for Darwin.
 
-        * config/rs6000/rs6000.c (rs6000_emit_prologue): Call
-        gen_get_vrsave_internal.
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Call
+	gen_get_vrsave_internal.
 
 Sun Feb 24 16:38:56 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -168,7 +175,7 @@ Sat Feb 23 08:42:47 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-02-23  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h: Add extra level of parentheses on casts.
+	* config/rs6000/altivec.h: Add extra level of parentheses on casts.
 
 2002-02-22  David Edelsohn  <edelsohn@gnu.org>
 
@@ -318,7 +325,7 @@ Thu Feb 21 21:17:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
 2002-02-20  Torbjorn Granlund  <tege@swox.com>
 
 	* config/avr/avr.md: Add more patterns for mized-mode add and subtract
-        (addsi3_zero_extend, subhi3_zero_extend1, subsi3_zero_extend).
+	(addsi3_zero_extend, subhi3_zero_extend1, subsi3_zero_extend).
 
 Thu Feb 21 16:20:46 2002  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -990,20 +997,20 @@ Sat Feb 16 13:39:09 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-02-14  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/darwin.h (ROUND_TYPE_ALIGN): Adjust for vectors.
+	* config/rs6000/darwin.h (ROUND_TYPE_ALIGN): Adjust for vectors.
 
-        * config/rs6000/sysv4.h (ROUND_TYPE_ALIGN): Add MAX.
+	* config/rs6000/sysv4.h (ROUND_TYPE_ALIGN): Add MAX.
 
 2002-02-14  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md ("*movv4si_internal"): Add m<-r and r<-r
-        alternatives.
-        ("*movv8hi_internal1"): Same.
-        ("*movv16qi_internal1"): Same.
-        ("*movv4sf_internal1"): Same.
+	* config/rs6000/rs6000.md ("*movv4si_internal"): Add m<-r and r<-r
+	alternatives.
+	("*movv8hi_internal1"): Same.
+	("*movv16qi_internal1"): Same.
+	("*movv4sf_internal1"): Same.
 
-        * config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Do
-        not push_reload for altivec modes.
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Do
+	not push_reload for altivec modes.
 
 2002-02-13  Joel Sherrill  <joel@OARcorp.com>
 
@@ -1116,17 +1123,17 @@ Wed Feb 13 10:35:56 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-02-12  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md: Use predicate altivec_register_operand
-        for altivec_lvx* and altivec_stvx*.
-        ("*movv4si_internal"): Add constraint for loading from GPRs.
-        ("*movv8hi_internal1"): Same.
-        ("*movv16qi_internal1"): Same.
-        ("*movv4sf_internal1"): Same.
+	* config/rs6000/rs6000.md: Use predicate altivec_register_operand
+	for altivec_lvx* and altivec_stvx*.
+	("*movv4si_internal"): Add constraint for loading from GPRs.
+	("*movv8hi_internal1"): Same.
+	("*movv16qi_internal1"): Same.
+	("*movv4sf_internal1"): Same.
 
-        * config/rs6000/rs6000.c (altivec_register_operand): New.
+	* config/rs6000/rs6000.c (altivec_register_operand): New.
 
-        * config/rs6000/rs6000.h (PREDICATE_CODES): Add
-        altivec_register_operand.
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Add
+	altivec_register_operand.
 
 2002-02-13  Hans-Peter Nilsson  <hp@bitrange.com>
 
@@ -1135,15 +1142,15 @@ Wed Feb 13 10:35:56 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-02-13  Stan Shebs  <shebs@apple.com>
 
-        * c-typeck.c (digest_init): Handle vectors.
-        (really_start_incremental_init): Same.
-        (pop_init_level): Same.
-        (process_init_element): Same.
+	* c-typeck.c (digest_init): Handle vectors.
+	(really_start_incremental_init): Same.
+	(pop_init_level): Same.
+	(process_init_element): Same.
 
-        * varasm.c (output_constant): Same.
+	* varasm.c (output_constant): Same.
 
-        * expr.c (clear_storage): Same.
-        (store_constructor): Same.
+	* expr.c (clear_storage): Same.
+	(store_constructor): Same.
 
 2002-02-12  Eric Christopher  <echristo@redhat.com>
 
@@ -2212,9 +2219,9 @@ Sat Feb  9 18:28:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-02-08  Chris Demetriou  <cgd@broadcom.com>
 
-        * config/mips/mips.md (casesi_internal, casesi_internal_di):
-        Protect jump delay slot instructions with .set noreorder and
-        .set nomacro.
+	* config/mips/mips.md (casesi_internal, casesi_internal_di):
+	Protect jump delay slot instructions with .set noreorder and
+	.set nomacro.
 
 2002-02-08  Chris Demetriou  <cgd@broadcom.com>
 
@@ -2450,7 +2457,7 @@ Thu Feb  7 12:14:17 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-02-06  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h: Change elem to _S_elem.
+	* config/rs6000/altivec.h: Change elem to _S_elem.
 
 2002-02-05  Jason Thorpe  <thorpej@wasabisystems.com>
 
@@ -2600,10 +2607,10 @@ Mon Feb	 4 19:23:19 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/arm/arm.h (machine_function): Add uses_anonymous_args
 	field.
-        (SETUP_INCOMING_VARARGS): Set uses_anonymous_args.
+	(SETUP_INCOMING_VARARGS): Set uses_anonymous_args.
 	* config/arm/arm.c (current_function_anonymous_args): Delete,
-        replace uses with cfun->machine->uses_anonymous_args.
-        (arm_reorg): Do not reset uses_anonymous_args.
+	replace uses with cfun->machine->uses_anonymous_args.
+	(arm_reorg): Do not reset uses_anonymous_args.
 
 	* config/arm/arm.c (arm_hard_regno_mode_ok): Allow any value in
 	any geenral register.
@@ -2710,8 +2717,8 @@ Mon Feb  4 09:05:58 2002  Jeffrey A Law  (law@redhat.com)
 
 2002-02-04  Hartmut Penner  <hpenner@de.ibm.com>
 
-        * varasm.c (decode_rtx_const): Allow unspec (symbol_ref) in
-        constant pool to be identical by string address and index.
+	* varasm.c (decode_rtx_const): Allow unspec (symbol_ref) in
+	constant pool to be identical by string address and index.
 
 2002-02-04  Anthony Green  <green@redhat.com>
 
@@ -2866,18 +2873,18 @@ doc:
 
 2002-01-30  Andrew Haley  <aph@cambridge.redhat.com>
 
-        * config/stormy16/stormy16.md (pushqi): New.
-        (popqi): New.
-        (pushhi): New.
-        (pophi): New.
-        (movhi): Remove stack operands.
-        (movqi): Likewise.
-        * config/stormy16/stormy16.h (PREDICATE_CODES): Add
-        nonimmediate_nonstack_operand.
-        * config/stormy16/stormy16.c (nonimmediate_nonstack_operand):
-        New.
-        * config/stormy16/stormy16-protos.h (nonimmediate_nonstack_operand)
-        New.
+	* config/stormy16/stormy16.md (pushqi): New.
+	(popqi): New.
+	(pushhi): New.
+	(pophi): New.
+	(movhi): Remove stack operands.
+	(movqi): Likewise.
+	* config/stormy16/stormy16.h (PREDICATE_CODES): Add
+	nonimmediate_nonstack_operand.
+	* config/stormy16/stormy16.c (nonimmediate_nonstack_operand):
+	New.
+	* config/stormy16/stormy16-protos.h (nonimmediate_nonstack_operand)
+	New.
 
 2002-01-31  Jason Merrill  <jason@redhat.com>
 
