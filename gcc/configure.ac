@@ -274,14 +274,6 @@ AC_SUBST(OUTPUT_OPTION)
 # Check C compiler features
 # -------------------------
 
-AC_CACHE_CHECK(whether ${CC-cc} accepts -Wno-long-long,
-ac_cv_prog_cc_no_long_long,
-[save_CFLAGS="$CFLAGS"
-CFLAGS="-Wno-long-long"
-AC_TRY_COMPILE(,,ac_cv_prog_cc_no_long_long=yes,
-	       ac_cv_prog_cc_no_long_long=no)
-CFLAGS="$save_CFLAGS"])
-
 AC_PROG_CPP
 AC_C_INLINE
 
@@ -304,9 +296,38 @@ fi
 # Warnings and checking
 # ---------------------
 
+# Check $CC warning features (if it's GCC).
+# We want to use -pedantic, but we don't want warnings about
+# * 'long long'
+# * variadic macros
+# So, we only use -pedantic if we can disable those warnings.
+
+AC_CACHE_CHECK(
+  [whether ${CC} accepts -Wno-long-long],
+  [ac_cv_prog_cc_w_no_long_long],
+  [save_CFLAGS="$CFLAGS"
+  CFLAGS="-Wno-long-long"
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[]])],
+                    [ac_cv_prog_cc_w_no_long_long=yes],
+                    [ac_cv_prog_cc_w_no_long_long=no])
+  CFLAGS="$save_CFLAGS"
+  ])
+
+AC_CACHE_CHECK(
+  [whether ${CC} accepts -Wno-variadic-macros],
+  [ac_cv_prog_cc_w_no_variadic_macros],
+  [save_CFLAGS="$CFLAGS"
+  CFLAGS="-Wno-variadic-macros"
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[]])],
+                    [ac_cv_prog_cc_w_no_variadic_macros=yes],
+                    [ac_cv_prog_cc_w_no_variadic_macros=no])
+  CFLAGS="$save_CFLAGS"
+  ])
+
 strict1_warn=
-if test $ac_cv_prog_cc_no_long_long = yes ; then
-  strict1_warn="-pedantic -Wno-long-long"
+if test $ac_cv_prog_cc_w_no_long_long = yes \
+   && test $ac_cv_prog_cc_w_no_variadic_macros = yes ; then
+  strict1_warn="-pedantic -Wno-long-long -Wno-variadic-macros"
 fi
 AC_SUBST(strict1_warn)
 
