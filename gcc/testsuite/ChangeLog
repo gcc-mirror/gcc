@@ -1,3 +1,8 @@
+2003-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/13239
+	* g++.dg/opt/expect1.C: New test.
+
 2003-12-19  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* gcc.dg/altivec-varargs-1.c: Enable testcase on ppc linux.

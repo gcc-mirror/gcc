@@ -1,3 +1,10 @@
+2003-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/13239
+	* builtins.c (expand_builtin_expect_jump): Update
+	TREE_VALUE (arglist) if unsave_expr_now langhook
+	created a new tree.
+
 2003-12-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (thumb_base_register_rtx_p): Use regno in comparison against

@@ -4460,6 +4460,14 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
       ret = get_insns ();
       end_sequence ();
 
+      /* For mildly unsafe builtin jump's, if unsave_expr_now
+	 creates a new tree instead of changing the old one
+	 TREE_VALUE (arglist) needs to be updated.  */
+      if (arg0 != TREE_VALUE (arglist)
+	  && TREE_CODE (arg0) == UNSAVE_EXPR
+	  && TREE_OPERAND (arg0, 0) != TREE_VALUE (arglist))
+	TREE_VALUE (arglist) = TREE_OPERAND (arg0, 0);
+
       /* Now that the __builtin_expect has been validated, go through and add
 	 the expect's to each of the conditional jumps.  If we run into an
 	 error, just give up and generate the 'safe' code of doing a SCC
