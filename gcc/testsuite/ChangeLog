@@ -1,3 +1,8 @@
+2004-07-09   David Billinghurst (David.Billinghurst@riotinto.com)
+
+ 	* lib/gfortran-dg.exp: New file (adapted from lib/g77-dg.exp)
+ 	* gfortran.dg/dg.exp: New file (adapted from g77.dg/dg.exp)
+
 2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/920428-2.x: Delete.
