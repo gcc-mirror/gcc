@@ -1,3 +1,8 @@
+2003-08-26  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/data/cin_unget-1.txt: New.
+	* testsuite/27_io/objects/char/12048.cc: New.
+
 2003-08-25  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/os/hpux/os_defines.h: Unconditionally define
