@@ -1,3 +1,9 @@
+2005-01-11  Alan Modra  <amodra@bigpond.net.au>
+
+	* g++.dg/ext/altivec-3.C (baz, baz2): Check one component of structs
+	at a time.
+	* g++.dg/ext/altivec_check.h: Support compiling as C.
+
 2005-01-10  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/19355

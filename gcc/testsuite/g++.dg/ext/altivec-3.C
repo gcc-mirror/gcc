@@ -75,11 +75,15 @@ void baz (int i, ... )
       
     CHECK_INVARIANT (vec_all_eq (v_i, v_g));
     CHECK_INVARIANT (j == i_1);
-    CHECK_INVARIANT (vx.x == vx_g.x && vec_all_eq(vx.v, vx_g.v) && vx.y == vx_g.y);
+    CHECK_INVARIANT (vx.x == vx_g.x);
+    CHECK_INVARIANT (vec_all_eq (vx.v, vx_g.v));
+    CHECK_INVARIANT (vx.y == vx_g.y);
     CHECK_INVARIANT (k == i_1);
     CHECK_INVARIANT (vec_all_eq (v2_i, v2_g));
     CHECK_INVARIANT (l == i_1);
-    CHECK_INVARIANT (vx2.x == vx2_g.x && vec_all_eq(vx2.v, vx2_g.v) && vx2.y == vx2_g.y);
+    CHECK_INVARIANT (vx2.x == vx2_g.x);
+    CHECK_INVARIANT (vec_all_eq (vx2.v, vx2_g.v));
+    CHECK_INVARIANT (vx2.y == vx2_g.y);
 }
 
 void quux (int i, ... )
@@ -110,7 +114,9 @@ void baz2 (int i, ... )
     va_end(ap);
     vxi.v = vx.v;
 
-    CHECK_INVARIANT (vx.x == vx_g.x && vec_all_eq(vx.v, vx_g.v) && vx.y == vx_g.y);
+    CHECK_INVARIANT (vx.x == vx_g.x);
+    CHECK_INVARIANT (vec_all_eq (vx.v, vx_g.v));
+    CHECK_INVARIANT (vx.y == vx_g.y);
     CHECK_INVARIANT (vec_all_eq (vxi.v, vx_g.v));
 }
 
