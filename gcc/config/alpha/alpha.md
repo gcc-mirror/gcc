@@ -5348,7 +5348,7 @@
 
 (define_split
   [(match_operand 0 "some_small_symbolic_operand" "")]
-  "TARGET_EXPLICIT_RELOCS && reload_completed"
+  ""
   [(match_dup 0)]
   "operands[0] = split_small_symbolic_operand (operands[0]);")
 

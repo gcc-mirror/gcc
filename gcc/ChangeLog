@@ -1,3 +1,12 @@
+2004-09-20  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (some_small_symbolic_operand_int): Rename
+	from some_small_symbolic_operand_1; export.
+	(some_small_symbolic_operand): Remove.
+	* config/alpha/alpha.md (some_small_symbolic_operand splitter): Remove
+	extra C check.
+	* config/alpha/predicates.md (some_small_symbolic_operand): New.
+
 2004-09-20  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (return_prediction): New function.

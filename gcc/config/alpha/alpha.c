@@ -1208,17 +1208,8 @@ alpha_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
   return decl_has_samegp (decl);
 }
 
-/* For TARGET_EXPLICIT_RELOCS, we don't obfuscate a SYMBOL_REF to a
-   small symbolic operand until after reload.  At which point we need
-   to replace (mem (symbol_ref)) with (mem (lo_sum $29 symbol_ref))
-   so that sched2 has the proper dependency information.  */
-/*
-  {"some_small_symbolic_operand", {SET, PARALLEL, PREFETCH, UNSPEC,	\
-				   UNSPEC_VOLATILE}},
-*/
-
-static int
-some_small_symbolic_operand_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
+int
+some_small_symbolic_operand_int (rtx *px, void *data ATTRIBUTE_UNUSED)
 {
   rtx x = *px;
 
@@ -1227,12 +1218,6 @@ some_small_symbolic_operand_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
     return -1;
 
   return small_symbolic_operand (x, Pmode) != 0;
-}
-
-int
-some_small_symbolic_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return for_each_rtx (&x, some_small_symbolic_operand_1, NULL);
 }
 
 static int
