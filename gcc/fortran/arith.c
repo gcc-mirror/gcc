@@ -373,20 +373,15 @@ gfc_check_real_range (mpfr_t p, int kind)
   mpfr_init (q);
   mpfr_abs (q, p, GFC_RND_MODE);
 
-  retval = ARITH_OK;
   if (mpfr_sgn (q) == 0)
-    goto done;
-
-  if (mpfr_cmp (q, gfc_real_kinds[i].huge) > 0)
-    {
+    retval = ARITH_OK;
+  else if (mpfr_cmp (q, gfc_real_kinds[i].huge) > 0)
       retval = ARITH_OVERFLOW;
-      goto done;
-    }
-
-  if (mpfr_cmp (q, gfc_real_kinds[i].tiny) < 0)
+  else if (mpfr_cmp (q, gfc_real_kinds[i].tiny) < 0)
     retval = ARITH_UNDERFLOW;
+  else
+    retval = ARITH_OK;
 
-done:
   mpfr_clear (q);
 
   return retval;
@@ -554,6 +549,30 @@ gfc_range_check (gfc_expr * e)
 }
 
 
+/* Several of the following routines use the same set of statements to
+   check the validity of the result.  Encapsulate the checking here.  */
+
+static arith
+check_result (arith rc, gfc_expr * x, gfc_expr * r, gfc_expr ** rp)
+{
+  if (rc != ARITH_OK)
+    gfc_free_expr (r);
+  else
+    {
+      if (rc == ARITH_UNDERFLOW && gfc_option.warn_underflow)
+        gfc_warning ("%s at %L", gfc_arith_error (rc), &x->where);
+
+      if (rc == ARITH_ASYMMETRIC)
+	gfc_warning ("%s at %L", gfc_arith_error (rc), &x->where);
+
+      rc = ARITH_OK;
+      *rp = r;
+    }
+
+  return rc;
+}
+
+
 /* It may seem silly to have a subroutine that actually computes the
    unary plus of a constant, but it prevents us from making exceptions
    in the code elsewhere.  */
@@ -595,25 +614,7 @@ gfc_arith_uminus (gfc_expr * op1, gfc_expr ** resultp)
 
   rc = gfc_range_check (result);
 
-  if (rc == ARITH_UNDERFLOW)
-    {
-      if (gfc_option.warn_underflow)
-        gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
-      rc = ARITH_OK;
-      *resultp = result;
-    }
-  else if (rc == ARITH_ASYMMETRIC)
-    {
-      gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
-      rc = ARITH_OK;
-      *resultp = result;
-    }
-  else if (rc != ARITH_OK)
-    gfc_free_expr (result);
-  else
-    *resultp = result;
-
-  return rc;
+  return check_result (rc, op1, result, resultp);
 }
 
 
@@ -650,25 +651,7 @@ gfc_arith_plus (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
 
   rc = gfc_range_check (result);
 
-  if (rc == ARITH_UNDERFLOW)
-    {
-      if (gfc_option.warn_underflow)
-        gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
-      rc = ARITH_OK;
-      *resultp = result;
-    }
-  else if (rc == ARITH_ASYMMETRIC)
-    {
-      gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
-      rc = ARITH_OK;
-      *resultp = result;
-    }
-  else if (rc != ARITH_OK)
-    gfc_free_expr (result);
-  else
-    *resultp = result;
-
-  return rc;
+  return check_result (rc, op1, result, resultp);
 }
 
 
@@ -705,25 +688,7 @@ gfc_arith_minus (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
 
   rc = gfc_range_check (result);
 
-  if (rc == ARITH_UNDERFLOW)
-    {
-      if (gfc_option.warn_underflow)
-        gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
-      rc = ARITH_OK;
-      *resultp = result;
-    }
-  else if (rc == ARITH_ASYMMETRIC)
-    {
-      gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
-      rc = ARITH_OK;
-      *resultp = result;
-    }
-  else if (rc != ARITH_OK)
-    gfc_free_expr (result);
-  else
-    *resultp = result;
-
-  return rc;
+  return check_result (rc, op1, result, resultp);
 }
 
 
@@ -774,25 +739,7 @@ gfc_arith_times (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
 
   rc = gfc_range_check (result);
 
-  if (rc == ARITH_UNDERFLOW)
-    {
-      if (gfc_option.warn_underflow)
-        gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
-      rc = ARITH_OK;
-      *resultp = result;
-    }
-  else if (rc == ARITH_ASYMMETRIC)
-    {
-      gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
-      rc = ARITH_OK;
-      *resultp = result;
-    }
-  else if (rc != ARITH_OK)
-    gfc_free_expr (result);
-  else
-    *resultp = result;
-
-  return rc;
+  return check_result (rc, op1, result, resultp);
 }
 
 
@@ -876,25 +823,7 @@ gfc_arith_divide (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
   if (rc == ARITH_OK)
     rc = gfc_range_check (result);
 
-  if (rc == ARITH_UNDERFLOW)
-    {
-      if (gfc_option.warn_underflow)
-        gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
-      rc = ARITH_OK;
-      *resultp = result;
-    }
-  else if (rc == ARITH_ASYMMETRIC)
-    {
-      gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
-      rc = ARITH_OK;
-      *resultp = result;
-    }
-  else if (rc != ARITH_OK)
-    gfc_free_expr (result);
-  else
-    *resultp = result;
-
-  return rc;
+  return check_result (rc, op1, result, resultp);
 }
 
 
@@ -1072,25 +1001,7 @@ gfc_arith_power (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
   if (rc == ARITH_OK)
     rc = gfc_range_check (result);
 
-  if (rc == ARITH_UNDERFLOW)
-    {
-      if (gfc_option.warn_underflow)
-        gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
-      rc = ARITH_OK;
-      *resultp = result;
-    }
-  else if (rc == ARITH_ASYMMETRIC)
-    {
-      gfc_warning ("%s at %L", gfc_arith_error (rc), &op1->where);
-      rc = ARITH_OK;
-      *resultp = result;
-    }
-  else if (rc != ARITH_OK)
-    gfc_free_expr (result);
-  else
-    *resultp = result;
-
-  return rc;
+  return check_result (rc, op1, result, resultp);
 }
 
 
