@@ -67,6 +67,10 @@ case "${host}" in
 	libgcj_flags="${libgcj_flags} -mieee"
 	libgcj_interpreter=yes
 	;;
+  powerpc*-*)
+	libgcj_interpreter=yes
+	libgcj_sjlj=yes
+	;;
   sparc-*)
         ;;
   ia64-*)
