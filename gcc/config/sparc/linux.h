@@ -261,11 +261,6 @@ do {									\
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
 
-#ifdef IN_LIBGCC2
-#include <signal.h>
-#include <sys/ucontext.h>
-#endif
-
 #define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
   do {									\
     unsigned int *pc_ = (CONTEXT)->ra;					\

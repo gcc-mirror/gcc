@@ -381,11 +381,6 @@ do {									\
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
 
-#ifdef IN_LIBGCC2
-#include <signal.h>
-#include <sys/ucontext.h>
-#endif
-
 /* Handle multilib correctly.  */
 #if defined(__arch64__)
 /* 64-bit Sparc version */
@@ -403,14 +398,13 @@ do {									\
     fpu_save_off_ = regs_off_ + (16 * 8) + (3 * 8) + (2 * 4);		\
     this_cfa_ = (long) (CONTEXT)->cfa;					\
     new_cfa_ = *(long *)(((CONTEXT)->cfa) + (regs_off_ + (14 * 8)));	\
+    new_cfa_ += 2047; /* Stack bias */					\
     fpu_save_ = *(long *)((this_cfa_) + (fpu_save_off_));		\
     (FS)->cfa_how = CFA_REG_OFFSET;					\
     (FS)->cfa_reg = 14;							\
     (FS)->cfa_offset = new_cfa_ - (long) (CONTEXT)->cfa;		\
     for (i_ = 1; i_ < 16; ++i_)						\
       {									\
-        if (i_ == 14)							\
-          continue;							\
 	(FS)->regs.reg[i_].how = REG_SAVED_OFFSET;			\
 	(FS)->regs.reg[i_].loc.offset =					\
 	  this_cfa_ + (regs_off_ + (i_ * 8)) - new_cfa_;		\
