@@ -1592,6 +1592,16 @@ operands_match_p (x, y)
       else
 	j = REGNO (y);
 
+      /* On a WORDS_BIG_ENDIAN machine, point to the last register of a
+	 multiple hard register group, so that for example (reg:DI 0) and
+	 (reg:SI 1) will be considered the same register.  */
+      if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
+	  && i < FIRST_PSEUDO_REGISTER)
+	i += (GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD) - 1;
+      if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (y)) > UNITS_PER_WORD
+	  && j < FIRST_PSEUDO_REGISTER)
+	j += (GET_MODE_SIZE (GET_MODE (y)) / UNITS_PER_WORD) - 1;
+
       return i == j;
     }
   /* If two operands must match, because they are really a single
@@ -4348,7 +4358,7 @@ subst_reloads ()
 	  /* Encapsulate RELOADREG so its machine mode matches what
 	     used to be there.  */
 	  if (GET_MODE (reloadreg) != r->mode && r->mode != VOIDmode)
-	    reloadreg = gen_rtx (REG, r->mode, REGNO (reloadreg));
+	    reloadreg = gen_lowpart_common (r->mode, reloadreg);
 
 	  /* If we are putting this into a SUBREG and RELOADREG is a
 	     SUBREG, we would be making nested SUBREGs, so we have to fix
