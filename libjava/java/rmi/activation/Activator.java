@@ -42,8 +42,8 @@ import java.rmi.RemoteException;
 import java.rmi.MarshalledObject;
 
 public interface Activator
-	extends Remote {
-
-public MarshalledObject activate(ActivationID id, boolean force) throws ActivationException, UnknownObjectException, RemoteException;
-
+  extends Remote
+{
+  public MarshalledObject activate(ActivationID id, boolean force)
+    throws ActivationException, UnknownObjectException, RemoteException;
 }
