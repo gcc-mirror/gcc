@@ -1,3 +1,12 @@
+2001-03-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* g++.old-deja/g++.other/crash31.C: XFAIL.
+	* g77.f-torture/execute/20010116.x: Conditional XFAIL.
+	* g77.f-torture/execute/short.x: XFAIL -Os on x86.
+	* gcc.c-torture/execute/20010123-1.x: XFAIL.
+	* gcc.c-torture/execute/20010124-1.x: XFAIL.
+	* gcc.dg/sequence-pt-1.c: XFAIL one test.
+
 2001-03-06  Zack Weinberg  <zackw@stanford.edu>
 
 	* gcc.dg/20000724-1.c: Don't use multiline strings.
