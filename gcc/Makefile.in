@@ -594,13 +594,13 @@ all.indirect: $(ALL)
 # IN_GCC distinguishes between code compiled into GCC itself and other
 # programs built during a bootstrap.
 # autoconf inserts -DCROSS_COMPILE if we are building a cross compiler.
-INTERNAL_CFLAGS = -DIN_GCC @CROSS@ $(COVERAGE_FLAGS)
+INTERNAL_CFLAGS = -DIN_GCC @CROSS@
 
 # This is the variable actually used when we compile.
 # If you change this line, you probably also need to change the definition
 # of HOST_CFLAGS in build-make to match.
 ALL_CFLAGS = $(X_CFLAGS) $(T_CFLAGS) \
-  $(CFLAGS) $(INTERNAL_CFLAGS) $(WARN_CFLAGS) $(XCFLAGS) @DEFS@
+  $(CFLAGS) $(INTERNAL_CFLAGS) $(COVERAGE_FLAGS) $(WARN_CFLAGS) $(XCFLAGS) @DEFS@
 
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)

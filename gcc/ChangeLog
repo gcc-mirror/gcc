@@ -1,3 +1,11 @@
+2002-08-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* libgcc2.c (L_bb): Remove unneeded #includes.
+	(__global_counters, __gthreads_active): Remove unused globals.
+	(__bb_exit_func): Merge counts into files rather than appending.
+	* Makefile.in (INTERNAL_CFLAGS): Move COVERAGE_FLAGS from here ...
+	(ALL_CFLAGS): ... to here.
+
 2002-08-13  Denis Chertykov  <denisc@overta.ru>
 
 	* config/ip2k/ip2k.c (commands_in_file): Variable removed.
