@@ -1,6 +1,6 @@
 // Locale support (codecvt) -*- C++ -*-
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -417,7 +417,7 @@
 	  if (__int_bom)
 	    {	  
 	      size_t __size = __from_end - __from;
-	      intern_type __cfixed[__size + 1];
+	      __extension__ intern_type __cfixed[__size + 1];
 	      __cfixed[0] = static_cast<intern_type>(__int_bom);
 	      char_traits<intern_type>::copy(__cfixed + 1, __from, __size);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
@@ -522,7 +522,7 @@
 	  if (__ext_bom)
 	    {	  
 	      size_t __size = __from_end - __from;
-	      extern_type __cfixed[__size + 1];
+	      __extension__ extern_type __cfixed[__size + 1];
 	      __cfixed[0] = static_cast<extern_type>(__ext_bom);
 	      char_traits<extern_type>::copy(__cfixed + 1, __from, __size);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
