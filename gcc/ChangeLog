@@ -1,3 +1,8 @@
+Tue Nov 16 14:37:52 1999  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.c (first_reg_to_save): Save
+	PIC_OFFSET_TABLE_REGNUM when -fpic even though it is fixed.
+
 1999-11-15  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (scope_die_for): Don't rely on the decl_scope_table
