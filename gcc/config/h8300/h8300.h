@@ -836,6 +836,13 @@ struct cum_arg
   (GET_CODE (OP) == CONST_INT			\
    && (INTVAL (OP) == -1 || INTVAL (OP) == -2))
 
+/* Nonzero if X is a constant address suitable as an 8-bit absolute on
+   the H8/300H, which is a special case of the 'R' operand.  */
+
+#define EIGHTBIT_CONSTANT_ADDRESS_P(X)			\
+  (GET_CODE (X) == CONST_INT && TARGET_H8300H		\
+   && 0xffff00 <= INTVAL (X) && INTVAL (X) <= 0xffffff)
+
 /* 'U' if valid for a bset destination;
    i.e. a register, register indirect, or the eightbit memory region
    (a SYMBOL_REF with an SYMBOL_REF_FLAG set).
@@ -851,7 +858,11 @@ struct cum_arg
         && GET_CODE (XEXP (XEXP (OP, 0), 0)) == PLUS \
         && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == SYMBOL_REF \
         && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT) \
-        && (TARGET_H8300S || SYMBOL_REF_FLAG (XEXP (XEXP (OP, 0), 0)))))
+        && (TARGET_H8300S || SYMBOL_REF_FLAG (XEXP (XEXP (OP, 0), 0)))) \
+   || (GET_CODE (OP) == MEM						\
+       && EIGHTBIT_CONSTANT_ADDRESS_P (XEXP (OP, 0))))
+
+
 
 #define EXTRA_CONSTRAINT(OP, C)			\
   ((C) == 'T' ? OK_FOR_T (OP) :			\
