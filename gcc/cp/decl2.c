@@ -1998,6 +1998,7 @@ get_guard (tree decl)
         DECL_WEAK (guard) = DECL_WEAK (decl);
       
       DECL_ARTIFICIAL (guard) = 1;
+      DECL_IGNORED_P (guard) = 1;
       TREE_USED (guard) = 1;
       pushdecl_top_level_and_finish (guard, NULL_TREE);
     }

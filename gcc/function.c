@@ -1922,8 +1922,9 @@ use_register_for_decl (tree decl)
   if (flag_float_store && FLOAT_TYPE_P (TREE_TYPE (decl)))
     return false;
 
-  /* Compiler-generated temporaries can always go in registers.  */
-  if (DECL_ARTIFICIAL (decl))
+  /* If we're not interested in tracking debugging information for
+     this decl, then we can certainly put it in a register.  */
+  if (DECL_IGNORED_P (decl))
     return true;
 
   return (optimize || DECL_REGISTER (decl));
@@ -2105,6 +2106,7 @@ assign_parms_augmented_arg_list (struct assign_parm_data_all *all)
       decl = build_decl (PARM_DECL, NULL_TREE, type);
       DECL_ARG_TYPE (decl) = type;
       DECL_ARTIFICIAL (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
 
       TREE_CHAIN (decl) = fnargs;
       fnargs = decl;
