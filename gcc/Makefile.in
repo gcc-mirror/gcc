@@ -1012,6 +1012,7 @@ stmp-multilib-sub:
 	if [ -d $(dir) ]; then \
 	  cd $(dir); \
 	  rm -f libgcc.a $(EXTRA_MULTILIB_PARTS); \
+	else true; \
 	fi
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	  AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" CFLAGS="$(CFLAGS)" \
@@ -1047,6 +1048,7 @@ stmp-multilib-sub:
 	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
 	    MULTILIB_CFLAGS="$(MULTILIB_CFLAGS)" T="t" t$${f}; \
 	  mv t$${f} $(dir)/$${f}; \
+	else true; \
 	fi; done
 
 objc-runtime: libobjc.a
