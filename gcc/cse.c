@@ -3646,7 +3646,7 @@ fold_rtx (x, insn)
 	if (fmt[i] == 'E')
 	  /* Don't try to fold inside of a vector of expressions.
 	     Doing nothing is harmless.  */
-	  ;
+	  {;}
       }
 
   /* If a commutative operation, place a constant integer as the second

@@ -255,6 +255,7 @@ static void check_enabling(void)					\
     need_enable_exec_stack = 1;						\
 }									\
 									\
+extern void __enable_execute_stack (void *);				\
 void									\
 __enable_execute_stack (addr)						\
      void *addr;							\
