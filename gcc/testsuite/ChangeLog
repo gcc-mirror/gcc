@@ -1,5 +1,9 @@
 1999-03-08  Craig Burley  <craig@jcb-sc.com>
 
+	* g77.f-torture/execute/19981119-0.f: Improve testiness.
+
+1999-03-08  Craig Burley  <craig@jcb-sc.com>
+
 	* g77.f-torture/compile/19990305-0.f: New test.
 	* g77.f-torture/execute/19981119-0.f: New test.
 
