@@ -31,6 +31,11 @@ typedef struct {
       (pvar).__stack = (char *) &__va_stack)
 #define va_end(pvar)
 
+/* Avoid errors if compiling GCC v2 with GCC v1.  */
+#if __GNUC__ == 1
+#define __extension__
+#endif
+
 #define va_arg(pvar,type)  \
 __extension__ \
     ({  type __va_result; \
