@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 2000-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -383,6 +383,8 @@ package body GNAT.AWK is
         (A       : Simple_Action;
          Session : Session_Type)
       is
+         pragma Warnings (Off, Session);
+
       begin
          A.Proc.all;
       end Call;
@@ -446,6 +448,8 @@ package body GNAT.AWK is
          Session : Session_Type)
          return    Boolean
       is
+         pragma Warnings (Off, Session);
+
       begin
          return P.Pattern.all;
       end Match;
@@ -455,6 +459,8 @@ package body GNAT.AWK is
       -------------
 
       procedure Release (P : in out Pattern) is
+         pragma Warnings (Off, P);
+
       begin
          null;
       end Release;
@@ -907,14 +913,20 @@ package body GNAT.AWK is
          Read_Line (Session);
          Split_Line (Session);
 
-         if Callbacks in Only .. Pass_Through then
-            Filter_Active := Apply_Filters (Session);
-         end if;
+         case Callbacks is
 
-         exit when Callbacks = None
-           or else Callbacks = Pass_Through
-           or else (Callbacks = Only and then not Filter_Active);
+            when None =>
+               exit;
 
+            when Only =>
+               Filter_Active := Apply_Filters (Session);
+               exit when not Filter_Active;
+
+            when Pass_Through =>
+               Filter_Active := Apply_Filters (Session);
+               exit;
+
+         end case;
       end loop;
    end Get_Line;
 

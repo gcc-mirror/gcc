@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,7 @@ with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Urealp;   use Urealp;
@@ -197,7 +198,9 @@ package body Checks is
 
          else
             Append_To
-              (Stmts, Make_Raise_Constraint_Error (Internal_Static_Sloc));
+              (Stmts,
+                Make_Raise_Constraint_Error (Internal_Static_Sloc,
+                  Reason => CE_Range_Check_Failed));
          end if;
       end loop;
    end Append_Range_Checks;
@@ -272,7 +275,8 @@ package body Checks is
              Condition =>
                Make_Op_Gt (Loc,
                  Left_Opnd  => Param_Level,
-                 Right_Opnd => Type_Level)));
+                 Right_Opnd => Type_Level),
+             Reason => PE_Accessibility_Check_Failed));
 
          Analyze_And_Resolve (N);
       end if;
@@ -315,11 +319,12 @@ package body Checks is
         and then Known_Alignment (E)
       then
          if Expr_Value (Expr) mod Alignment (E) /= 0 then
-               Insert_Action (N,
-                  Make_Raise_Program_Error (Loc));
-               Error_Msg_NE
-                 ("?specified address for& not " &
-                  "consistent with alignment", Expr, E);
+            Insert_Action (N,
+               Make_Raise_Program_Error (Loc,
+                 Reason => PE_Misaligned_Address_Value));
+            Error_Msg_NE
+              ("?specified address for& not " &
+               "consistent with alignment", Expr, E);
          end if;
 
       --  Here we do not know if the value is acceptable, generate
@@ -343,7 +348,8 @@ package body Checks is
                           Make_Attribute_Reference (Loc,
                             Prefix => New_Occurrence_Of (E, Loc),
                             Attribute_Name => Name_Alignment)),
-                    Right_Opnd => Make_Integer_Literal (Loc, Uint_0))),
+                    Right_Opnd => Make_Integer_Literal (Loc, Uint_0)),
+                Reason => PE_Misaligned_Address_Value),
               Suppress => All_Checks);
          end if;
       end if;
@@ -377,9 +383,9 @@ package body Checks is
       OK    : Boolean;
 
    begin
-      if not Software_Overflow_Checking
-        or else not Do_Overflow_Check (N)
-        or else not Expander_Active
+      if Backend_Overflow_Checks_On_Target
+        or not Do_Overflow_Check (N)
+        or not Expander_Active
       then
          return;
       end if;
@@ -682,7 +688,8 @@ package body Checks is
 
       if Static and then Siz >= Check_Siz then
          Insert_Action (N,
-           Make_Raise_Storage_Error (Loc));
+           Make_Raise_Storage_Error (Loc,
+             Reason => SE_Object_Too_Large));
          Warn_On_Instance := True;
          Error_Msg_N ("?Storage_Error will be raised at run-time", N);
          Warn_On_Instance := False;
@@ -739,11 +746,11 @@ package body Checks is
             Make_Op_Ge (Loc,
               Left_Opnd  => Sizx,
               Right_Opnd =>
-                Make_Integer_Literal (Loc, Check_Siz)));
+                Make_Integer_Literal (Loc, Check_Siz)),
+            Reason => SE_Object_Too_Large);
 
       Set_Size_Check_Code (Defining_Identifier (N), Code);
       Insert_Action (N, Code);
-
    end Apply_Array_Size_Check;
 
    ----------------------------
@@ -1026,7 +1033,8 @@ package body Checks is
                      exit;
                   else
                      Apply_Compile_Time_Constraint_Error
-                       (N, "incorrect value for discriminant&?", Ent => Discr);
+                       (N, "incorrect value for discriminant&?",
+                        CE_Discriminant_Check_Failed, Ent => Discr);
                      return;
                   end if;
                end if;
@@ -1070,7 +1078,9 @@ package body Checks is
       end if;
 
       Insert_Action (N,
-        Make_Raise_Constraint_Error (Loc, Condition => Cond));
+        Make_Raise_Constraint_Error (Loc,
+          Condition => Cond,
+          Reason    => CE_Discriminant_Check_Failed));
 
    end Apply_Discriminant_Check;
 
@@ -1094,7 +1104,7 @@ package body Checks is
 
    begin
       if Expander_Active
-        and then Software_Overflow_Checking
+        and not Backend_Divide_Checks_On_Target
       then
          Determine_Range (Right, ROK, Rlo, Rhi);
 
@@ -1109,7 +1119,8 @@ package body Checks is
                    Condition =>
                      Make_Op_Eq (Loc,
                        Left_Opnd => Duplicate_Subexpr (Right),
-                       Right_Opnd => Make_Integer_Literal (Loc, 0))));
+                       Right_Opnd => Make_Integer_Literal (Loc, 0)),
+                   Reason => CE_Divide_By_Zero));
             end if;
          end if;
 
@@ -1139,7 +1150,8 @@ package body Checks is
                            Make_Op_Eq (Loc,
                              Left_Opnd => Duplicate_Subexpr (Right),
                              Right_Opnd =>
-                               Make_Integer_Literal (Loc, -1)))));
+                               Make_Integer_Literal (Loc, -1))),
+                      Reason => CE_Overflow_Check_Failed));
                end if;
             end if;
          end if;
@@ -1211,7 +1223,7 @@ package body Checks is
       procedure Bad_Value is
       begin
          Apply_Compile_Time_Constraint_Error
-           (Expr, "value not in range of}?",
+           (Expr, "value not in range of}?", CE_Range_Check_Failed,
             Ent => Target_Typ,
             Typ => Target_Typ);
       end Bad_Value;
@@ -1439,7 +1451,7 @@ package body Checks is
                       (not Length_Checks_Suppressed (Target_Typ));
 
    begin
-      if not Expander_Active or else not Checks_On then
+      if not Expander_Active then
          return;
       end if;
 
@@ -1478,13 +1490,14 @@ package body Checks is
          then
             Cond := Condition (R_Cno);
 
-            if not Has_Dynamic_Length_Check (Ck_Node) then
+            if not Has_Dynamic_Length_Check (Ck_Node)
+              and then Checks_On
+            then
                Insert_Action (Ck_Node, R_Cno);
 
                if not Do_Static then
                   Set_Has_Dynamic_Length_Check (Ck_Node);
                end if;
-
             end if;
 
             --  Output a warning if the condition is known to be True
@@ -1494,6 +1507,7 @@ package body Checks is
             then
                Apply_Compile_Time_Constraint_Error
                  (Ck_Node, "wrong length for array of}?",
+                  CE_Length_Check_Failed,
                   Ent => Target_Typ,
                   Typ => Target_Typ);
 
@@ -1576,6 +1590,7 @@ package body Checks is
                if Nkind (Ck_Node) = N_Range then
                   Apply_Compile_Time_Constraint_Error
                     (Low_Bound (Ck_Node), "static range out of bounds of}?",
+                     CE_Range_Check_Failed,
                      Ent => Target_Typ,
                      Typ => Target_Typ);
 
@@ -1584,6 +1599,7 @@ package body Checks is
                else
                   Apply_Compile_Time_Constraint_Error
                     (Ck_Node, "static value out of range of}?",
+                     CE_Range_Check_Failed,
                      Ent => Target_Typ,
                      Typ => Target_Typ);
                end if;
@@ -1661,10 +1677,10 @@ package body Checks is
       if Inside_A_Generic then
          return;
 
-      --  Skip these checks if errors detected, there are some nasty
+      --  Skip these checks if serious errors detected, there are some nasty
       --  situations of incomplete trees that blow things up.
 
-      elsif Errors_Detected > 0 then
+      elsif Serious_Errors_Detected > 0 then
          return;
 
       --  Scalar type conversions of the form Target_Type (Expr) require
@@ -1778,7 +1794,9 @@ package body Checks is
             Set_Discriminant_Constraint (Expr_Type, Old_Constraints);
 
             Insert_Action (N,
-              Make_Raise_Constraint_Error (Loc, Condition => Cond));
+              Make_Raise_Constraint_Error (Loc,
+                Condition => Cond,
+                Reason    => CE_Discriminant_Check_Failed));
          end;
 
       --  should there be other checks here for array types ???
@@ -2774,7 +2792,8 @@ package body Checks is
 
          else
             Check_Node :=
-              Make_Raise_Constraint_Error (Internal_Static_Sloc);
+              Make_Raise_Constraint_Error (Internal_Static_Sloc,
+                Reason => CE_Range_Check_Failed);
             Mark_Rewrite_Insertion (Check_Node);
 
             if Do_Before then
@@ -2812,7 +2831,7 @@ package body Checks is
          Exp := Expression (Exp);
       end loop;
 
-      --  insert the validity check. Note that we do this with validity
+      --  Insert the validity check. Note that we do this with validity
       --  checks turned off, to avoid recursion, we do not want validity
       --  checks on the validity checking code itself!
 
@@ -2826,7 +2845,8 @@ package body Checks is
                  Make_Attribute_Reference (Loc,
                    Prefix =>
                      Duplicate_Subexpr (Exp, Name_Req => True),
-                   Attribute_Name => Name_Valid))),
+                   Attribute_Name => Name_Valid)),
+           Reason => CE_Invalid_Data),
          Suppress => All_Checks);
       Validity_Checks_On := True;
    end Insert_Valid_Check;
@@ -2840,7 +2860,9 @@ package body Checks is
       Typ  : constant Entity_Id := Etype (R_Cno);
 
    begin
-      Rewrite (R_Cno, Make_Raise_Constraint_Error (Loc));
+      Rewrite (R_Cno,
+        Make_Raise_Constraint_Error (Loc,
+          Reason => CE_Range_Check_Failed));
       Set_Analyzed (R_Cno);
       Set_Etype (R_Cno, Typ);
       Set_Raises_Constraint_Error (R_Cno);
@@ -3274,7 +3296,8 @@ package body Checks is
 
                   for Indx in 1 .. Ndims loop
                      if not (Nkind (L_Index) = N_Raise_Constraint_Error
-                       or else Nkind (R_Index) = N_Raise_Constraint_Error)
+                               or else
+                             Nkind (R_Index) = N_Raise_Constraint_Error)
                      then
                         Get_Index_Bounds (L_Index, L_Low, L_High);
                         Get_Index_Bounds (R_Index, R_Low, R_High);
@@ -3351,7 +3374,7 @@ package body Checks is
 
             else
                declare
-                  Ndims   : Nat := Number_Dimensions (T_Typ);
+                  Ndims : Nat := Number_Dimensions (T_Typ);
 
                begin
                   --  Build the condition for the explicit dereference case
@@ -3372,11 +3395,13 @@ package body Checks is
             Cond := Guard_Access (Cond, Loc, Ck_Node);
          end if;
 
-         Add_Check (Make_Raise_Constraint_Error (Loc, Condition => Cond));
+         Add_Check
+           (Make_Raise_Constraint_Error (Loc,
+              Condition => Cond,
+              Reason => CE_Length_Check_Failed));
       end if;
 
       return Ret_Result;
-
    end Selected_Length_Checks;
 
    ---------------------------
@@ -4074,7 +4099,8 @@ package body Checks is
 
                   for Indx in 1 .. Ndims loop
                      if not (Nkind (L_Index) = N_Raise_Constraint_Error
-                       or else Nkind (R_Index) = N_Raise_Constraint_Error)
+                               or else
+                             Nkind (R_Index) = N_Raise_Constraint_Error)
                      then
                         Get_Index_Bounds (L_Index, L_Low, L_High);
                         Get_Index_Bounds (R_Index, R_Low, R_High);
@@ -4193,11 +4219,13 @@ package body Checks is
             Cond := Guard_Access (Cond, Loc, Ck_Node);
          end if;
 
-         Add_Check (Make_Raise_Constraint_Error (Loc, Condition => Cond));
+         Add_Check
+           (Make_Raise_Constraint_Error (Loc,
+              Condition => Cond,
+              Reason    => CE_Range_Check_Failed));
       end if;
 
       return Ret_Result;
-
    end Selected_Range_Checks;
 
    -------------------------------

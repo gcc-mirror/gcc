@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.13 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,9 +71,6 @@ package body Tree_IO is
 
    Max_Count : constant := 63;
    --  Maximum data length for one compression sequence
-
-   Max_Comp : constant := Max_Count + 1;
-   --  Maximum length of one compression sequence
 
    --  The above compression scheme applies only to data written with the
    --  Tree_Write routine and read with Tree_Read. Data written using the

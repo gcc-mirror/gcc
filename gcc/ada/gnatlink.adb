@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,12 +28,17 @@
 
 --  Gnatlink usage: please consult the gnat documentation
 
+with Ada.Exceptions; use Ada.Exceptions;
+with ALI;      use ALI;
 with Gnatvsn;  use Gnatvsn;
 with Hostparm;
+with Namet;    use Namet;
 with Osint;    use Osint;
 with Output;   use Output;
+with Switch;   use Switch;
 with System;   use System;
 with Table;
+with Types;
 
 with Ada.Command_Line;     use Ada.Command_Line;
 with GNAT.OS_Lib;          use GNAT.OS_Lib;
@@ -97,6 +102,16 @@ procedure Gnatlink is
    --  file. Only application objects are collected there (see details in
    --  Linker_Objects table comments)
 
+   package Binder_Options_From_ALI is new Table.Table (
+     Table_Component_Type => String_Access,
+     Table_Index_Type     => Integer,
+     Table_Low_Bound      => 1, -- equals low bound of Argument_List for Spawn
+     Table_Initial        => 20,
+     Table_Increment      => 100,
+     Table_Name           => "Gnatlink.Binder_Options_From_ALI");
+   --  This table collects the switches from the ALI file of the main
+   --  subprogram.
+
    package Binder_Options is new Table.Table (
      Table_Component_Type => String_Access,
      Table_Index_Type     => Integer,
@@ -138,6 +153,8 @@ procedure Gnatlink is
 
    Ada_Bind_File : Boolean := True;
    --  Set to True if bind file is generated in Ada
+
+   Standard_Gcc  : Boolean := True;
 
    Compile_Bind_File : Boolean := True;
    --  Set to False if bind file is not to be compiled
@@ -250,30 +267,6 @@ procedure Gnatlink is
       Next_Arg : Integer;
 
    begin
-      Binder_Options.Increment_Last;
-      Binder_Options.Table (Binder_Options.Last) := new String'("-c");
-
-      --  If the main program is in Ada it is compiled with the following
-      --  switches:
-
-      --    -gnatA   stops reading gnat.adc, since we don't know what
-      --             pagmas would work, and we do not need it anyway.
-
-      --    -gnatWb  allows brackets coding for wide characters
-
-      --    -gnatiw  allows wide characters in identifiers. This is needed
-      --             because bindgen uses brackets encoding for all upper
-      --             half and wide characters in identifier names.
-
-      if Ada_Bind_File then
-         Binder_Options.Increment_Last;
-         Binder_Options.Table (Binder_Options.Last) := new String'("-gnatA");
-         Binder_Options.Increment_Last;
-         Binder_Options.Table (Binder_Options.Last) := new String'("-gnatWb");
-         Binder_Options.Increment_Last;
-         Binder_Options.Table (Binder_Options.Last) := new String'("-gnatiw");
-      end if;
-
       --  Loop through arguments of gnatlink command
 
       Next_Arg := 1;
@@ -288,9 +281,7 @@ procedure Gnatlink is
 
             --  We definitely need section by section comments here ???
 
-            if Arg'Length /= 0
-              and then (Arg (1) = Switch_Character or else Arg (1) = '-')
-            then
+            if Arg'Length /= 0 and then Arg (1) = '-' then
                if Arg'Length > 4
                  and then Arg (2 .. 5) =  "gnat"
                then
@@ -440,6 +431,7 @@ procedure Gnatlink is
 
                   begin
                      Gcc := new String'(Program_Args.all (1).all);
+                     Standard_Gcc := False;
 
                      --  Set appropriate flags for switches passed
 
@@ -449,10 +441,7 @@ procedure Gnatlink is
                            AF  : Integer := Arg'First;
 
                         begin
-                           if Arg'Length /= 0
-                             and then (Arg (AF) = Switch_Character
-                                        or else Arg (AF) = '-')
-                           then
+                           if Arg'Length /= 0 and then Arg (AF) = '-' then
                               if Arg (AF + 1) = 'g'
                                 and then (Arg'Length = 2
                                   or else Arg (AF + 2) in '0' .. '3'
@@ -765,131 +754,116 @@ procedure Gnatlink is
 
       if Next_Line (Nfirst .. Nlast) /= End_Info then
          loop
+            if Next_Line (Nfirst .. Nlast) = "-static" then
+               GNAT_Static := True;
+
+            elsif Next_Line (Nfirst .. Nlast) = "-shared" then
+               GNAT_Shared := True;
+
             --  Add binder options only if not already set on the command
             --  line. This rule is a way to control the linker options order.
 
-            if not Is_Option_Present
-              (Next_Line (Nfirst .. Nlast))
-            then
-               if Next_Line (Nfirst .. Nlast) = "-static" then
-                  GNAT_Static := True;
+            elsif not Is_Option_Present (Next_Line (Nfirst .. Nlast)) then
+               if Nlast > Nfirst + 2 and then
+                 Next_Line (Nfirst .. Nfirst + 1) = "-L"
+               then
+                  --  Construct a library search path for use later
+                  --  to locate static gnatlib libraries.
 
-               elsif Next_Line (Nfirst .. Nlast) = "-shared" then
-                  GNAT_Shared := True;
+                  if Libpath.Last > 1 then
+                     Libpath.Increment_Last;
+                     Libpath.Table (Libpath.Last) := Path_Separator;
+                  end if;
 
-               else
-                  if Nlast > Nfirst + 2 and then
-                    Next_Line (Nfirst .. Nfirst + 1) = "-L"
-                  then
-                     --  Construct a library search path for use later
-                     --  to locate static gnatlib libraries.
+                  for I in Nfirst + 2 .. Nlast loop
+                     Libpath.Increment_Last;
+                     Libpath.Table (Libpath.Last) := Next_Line (I);
+                  end loop;
 
-                     if Libpath.Last > 1 then
-                        Libpath.Increment_Last;
-                        Libpath.Table (Libpath.Last) := Path_Separator;
-                     end if;
+                  Linker_Options.Increment_Last;
 
-                     for I in Nfirst + 2 .. Nlast loop
-                        Libpath.Increment_Last;
-                        Libpath.Table (Libpath.Last) := Next_Line (I);
-                     end loop;
+                  Linker_Options.Table (Linker_Options.Last) :=
+                    new String'(Next_Line (Nfirst .. Nlast));
 
-                     Linker_Options.Increment_Last;
+               elsif Next_Line (Nfirst .. Nlast) = "-ldecgnat"
+                 or else Next_Line (Nfirst .. Nlast) = "-lgnarl"
+                 or else Next_Line (Nfirst .. Nlast) = "-lgnat"
+               then
+                  --  Given a Gnat standard library, search the
+                  --  library path to find the library location
 
-                     Linker_Options.Table (Linker_Options.Last) :=
-                      new String'(Next_Line (Nfirst .. Nlast));
+                  declare
+                     File_Path : String_Access;
+                     Object_Lib_Extension : constant String :=
+                       Value (Object_Library_Ext_Ptr);
 
-                  elsif Next_Line (Nfirst .. Nlast) = "-ldecgnat"
-                    or else Next_Line (Nfirst .. Nlast) = "-lgnarl"
-                    or else Next_Line (Nfirst .. Nlast) = "-lgnat"
-                  then
-                     --  Given a Gnat standard library, search the
-                     --  library path to find the library location
-                     declare
-                        File_Path : String_Access;
+                     File_Name : String := "lib" &
+                       Next_Line (Nfirst + 2 .. Nlast) & Object_Lib_Extension;
 
-                        Object_Lib_Extension : constant String :=
-                                                 Value
-                                                   (Object_Library_Ext_Ptr);
+                  begin
+                     File_Path :=
+                       Locate_Regular_File (File_Name,
+                         String (Libpath.Table (1 .. Libpath.Last)));
 
-                        File_Name : String :=
-                                      "lib" &
-                                        Next_Line (Nfirst + 2 .. Nlast) &
-                                        Object_Lib_Extension;
+                     if File_Path /= null then
+                        if GNAT_Static then
 
-                     begin
-                        File_Path :=
-                          Locate_Regular_File
-                           (File_Name,
-                            String (Libpath.Table (1 .. Libpath.Last)));
-
-                        if File_Path /= null then
-                           if GNAT_Static then
-
-                              --  If static gnatlib found, explicitly
-                              --  specify to overcome possible linker
-                              --  default usage of shared version.
-
-                              Linker_Options.Increment_Last;
-
-                              Linker_Options.Table (Linker_Options.Last) :=
-                               new String'(File_Path.all);
-
-                           elsif GNAT_Shared then
-
-                              --  If shared gnatlib desired, add the
-                              --  appropriate system specific switch
-                              --  so that it can be located at runtime.
-
-                              declare
-                                 Run_Path_Opt : constant String :=
-                                                  Value
-                                                    (Run_Path_Option_Ptr);
-
-                              begin
-                                 if Run_Path_Opt'Length /= 0 then
-
-                                    --  Output the system specific linker
-                                    --  command that allows the image
-                                    --  activator to find the shared library
-                                    --  at runtime.
-
-                                    Linker_Options.Increment_Last;
-
-                                    Linker_Options.Table
-                                     (Linker_Options.Last) :=
-                                       new String'(Run_Path_Opt
-                                          & File_Path
-                                            (1 .. File_Path'Length
-                                                   - File_Name'Length));
-                                 end if;
-
-                                 Linker_Options.Increment_Last;
-
-                                 Linker_Options.Table
-                                  (Linker_Options.Last) :=
-                                   new String'(Next_Line
-                                                (Nfirst .. Nlast));
-
-                              end;
-                           end if;
-
-                        else
-                           --  If gnatlib library not found, then
-                           --  add it anyway in case some other
-                           --  mechanimsm may find it.
+                           --  If static gnatlib found, explicitly
+                           --  specify to overcome possible linker
+                           --  default usage of shared version.
 
                            Linker_Options.Increment_Last;
 
                            Linker_Options.Table (Linker_Options.Last) :=
-                             new String'(Next_Line (Nfirst .. Nlast));
+                             new String'(File_Path.all);
+
+                        elsif GNAT_Shared then
+
+                           --  If shared gnatlib desired, add the
+                           --  appropriate system specific switch
+                           --  so that it can be located at runtime.
+
+                           declare
+                              Run_Path_Opt : constant String :=
+                                Value (Run_Path_Option_Ptr);
+
+                           begin
+                              if Run_Path_Opt'Length /= 0 then
+
+                                 --  Output the system specific linker
+                                 --  command that allows the image
+                                 --  activator to find the shared library
+                                 --  at runtime.
+
+                                 Linker_Options.Increment_Last;
+
+                                 Linker_Options.Table (Linker_Options.Last)
+                                      := new String'(Run_Path_Opt
+                                           & File_Path
+                                              (1 .. File_Path'Length
+                                                     - File_Name'Length));
+                              end if;
+
+                              Linker_Options.Increment_Last;
+                              Linker_Options.Table (Linker_Options.Last)
+                                := new String'(Next_Line (Nfirst .. Nlast));
+                           end;
                         end if;
-                     end;
-                  else
-                     Linker_Options.Increment_Last;
-                     Linker_Options.Table (Linker_Options.Last) :=
-                      new String'(Next_Line (Nfirst .. Nlast));
-                  end if;
+
+                     else
+                        --  If gnatlib library not found, then
+                        --  add it anyway in case some other
+                        --  mechanimsm may find it.
+
+                        Linker_Options.Increment_Last;
+                        Linker_Options.Table (Linker_Options.Last)
+                          := new String'(Next_Line (Nfirst .. Nlast));
+                     end if;
+                  end;
+               else
+                  Linker_Options.Increment_Last;
+                  Linker_Options.Table (Linker_Options.Last)
+                    := new String'(Next_Line (Nfirst .. Nlast));
                end if;
             end if;
 
@@ -897,8 +871,8 @@ procedure Gnatlink is
             exit when Next_Line (Nfirst .. Nlast) = End_Info;
 
             if Ada_Bind_File then
-               Next_Line (Nfirst .. Nlast - 8) :=
-                 Next_Line (Nfirst + 8 .. Nlast);
+               Next_Line (Nfirst .. Nlast - 8)
+                 := Next_Line (Nfirst + 8 .. Nlast);
                Nlast := Nlast - 8;
             end if;
          end loop;
@@ -966,7 +940,6 @@ procedure Gnatlink is
 --  Start of processing for Gnatlink
 
 begin
-
    if Argument_Count = 0 then
       Write_Usage;
       Exit_Program (E_Fatal);
@@ -980,6 +953,36 @@ begin
    end if;
 
    Process_Args;
+
+   --  We always compile with -c
+
+   Binder_Options_From_ALI.Increment_Last;
+   Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
+     new String'("-c");
+
+   --  If the main program is in Ada it is compiled with the following
+   --  switches:
+
+   --    -gnatA   stops reading gnat.adc, since we don't know what
+   --             pagmas would work, and we do not need it anyway.
+
+   --    -gnatWb  allows brackets coding for wide characters
+
+   --    -gnatiw  allows wide characters in identifiers. This is needed
+   --             because bindgen uses brackets encoding for all upper
+   --             half and wide characters in identifier names.
+
+   if Ada_Bind_File then
+      Binder_Options_From_ALI.Increment_Last;
+      Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
+        new String'("-gnatA");
+      Binder_Options_From_ALI.Increment_Last;
+      Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
+        new String'("-gnatWb");
+      Binder_Options_From_ALI.Increment_Last;
+      Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last) :=
+        new String'("-gnatiw");
+   end if;
 
    --  Locate all the necessary programs and verify required files are present
 
@@ -999,13 +1002,61 @@ begin
 
    if not Is_Regular_File (Ali_File_Name.all) then
       Exit_With_Error (Ali_File_Name.all & " not found.");
+
+   --  Read the ALI file of the main subprogram if the binder generated
+   --  file is in Ada, it need to be compiled and no --GCC= switch has
+   --  been specified. Fetch the back end switches from this ALI file and use
+   --  these switches to compile the binder generated file
+
+   elsif Ada_Bind_File
+     and then Compile_Bind_File
+     and then Standard_Gcc
+   then
+      --  Do some initializations
+
+      Initialize_ALI;
+      Namet.Initialize;
+      Name_Len := Ali_File_Name'Length;
+      Name_Buffer (1 .. Name_Len) := Ali_File_Name.all;
+
+      declare
+         use Types;
+         F : constant File_Name_Type := Name_Find;
+         T : Text_Buffer_Ptr;
+         A : ALI_Id;
+
+      begin
+         --  Osint.Add_Default_Search_Dirs;
+         --  Load the ALI file
+
+         T := Read_Library_Info (F, True);
+
+         --  Read it
+
+         A := Scan_ALI (F, T, False, False, False);
+
+         if A /= No_ALI_Id then
+            for
+              Index in Units.Table (ALIs.Table (A).First_Unit).First_Arg
+              .. Units.Table (ALIs.Table (A).First_Unit).Last_Arg
+            loop
+               --  Do not compile with the front end switches
+
+               if not Is_Front_End_Switch (Args.Table (Index).all) then
+                  Binder_Options_From_ALI.Increment_Last;
+                  Binder_Options_From_ALI.Table (Binder_Options_From_ALI.Last)
+                    := String_Access (Args.Table (Index));
+               end if;
+            end loop;
+         end if;
+      end;
    end if;
 
    if Verbose_Mode then
       Write_Eol;
       Write_Str ("GNATLINK ");
       Write_Str (Gnat_Version_String);
-      Write_Str (" Copyright 1996-2001 Free Software Foundation, Inc.");
+      Write_Str (" Copyright 1996-2002 Free Software Foundation, Inc.");
       Write_Eol;
    end if;
 
@@ -1129,11 +1180,17 @@ begin
    if Compile_Bind_File then
       Bind_Step : declare
          Success : Boolean;
-         Args    : Argument_List (1 .. Binder_Options.Last + 1);
+         Args    : Argument_List
+           (1 .. Binder_Options_From_ALI.Last + Binder_Options.Last + 1);
 
       begin
-         for J in Binder_Options.First .. Binder_Options.Last loop
-            Args (J) := Binder_Options.Table (J);
+         for J in 1 .. Binder_Options_From_ALI.Last loop
+            Args (J) := Binder_Options_From_ALI.Table (J);
+         end loop;
+
+         for J in 1 .. Binder_Options.Last loop
+            Args (Binder_Options_From_ALI.Last + J) :=
+              Binder_Options.Table (J);
          end loop;
 
          Args (Args'Last) := Binder_Body_Src_File;
@@ -1346,6 +1403,7 @@ begin
    Exit_Program (E_Success);
 
 exception
-   when others =>
+   when X : others =>
+      Write_Line (Exception_Information (X));
       Exit_With_Error ("INTERNAL ERROR. Please report.");
 end Gnatlink;

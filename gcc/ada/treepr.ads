@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.14 $                             --
+--                            $Revision$                             --
 --                                                                          --
---     Copyright (C) 1992,1993,1994,1995 Free Software Foundation, Inc.     --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,19 +60,23 @@ package Treepr is
    --  Prints the subtree consisting of the given element list and all its
    --  referenced descendants.
 
-   procedure PE (E : Elist_Id);
+   procedure pe (E : Elist_Id);
+   pragma Export (Ada, pe);
    --  Debugging procedure (to be called within gdb)
    --  same as Print_Tree_Elist
 
-   procedure PL (L : List_Id);
+   procedure pl (L : List_Id);
+   pragma Export (Ada, pl);
    --  Debugging procedure (to be called within gdb)
    --  same as Print_Tree_List
 
-   procedure PN (N : Node_Id);
+   procedure pn (N : Node_Id);
+   pragma Export (Ada, pn);
    --  Debugging procedure (to be called within gdb)
    --  same as Print_Tree_Node with Label = ""
 
-   procedure PT (N : Node_Id);
+   procedure pt (N : Node_Id);
+   pragma Export (Ada, pt);
    --  Debugging procedure (to be called within gdb)
    --  same as Print_Node_Subtree
 

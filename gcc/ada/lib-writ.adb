@@ -40,13 +40,13 @@ with Nlists;   use Nlists;
 with Gnatvsn;  use Gnatvsn;
 with Opt;      use Opt;
 with Osint;    use Osint;
+with Osint.C;  use Osint.C;
 with Par;
 with Restrict; use Restrict;
 with Scn;      use Scn;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Uname;    use Uname;
 
 with System.WCh_Con; use System.WCh_Con;
@@ -483,6 +483,51 @@ package body Lib.Writ is
          end if;
 
          Write_With_Lines;
+
+         --  Output linker option lines
+
+         for J in 1 .. Linker_Option_Lines.Last loop
+            declare
+               S : constant Linker_Option_Entry :=
+                     Linker_Option_Lines.Table (J);
+               C : Character;
+
+            begin
+               if S.Unit = Unit_Num then
+                  Write_Info_Initiate ('L');
+                  Write_Info_Str (" """);
+
+                  for J in 1 .. String_Length (S.Option) loop
+                     C := Get_Character (Get_String_Char (S.Option, J));
+
+                     if C in Character'Val (16#20#) .. Character'Val (16#7E#)
+                       and then C /= '{'
+                     then
+                        Write_Info_Char (C);
+
+                        if C = '"' then
+                           Write_Info_Char (C);
+                        end if;
+
+                     else
+                        declare
+                           Hex : array (0 .. 15) of Character :=
+                                   "0123456789ABCDEF";
+
+                        begin
+                           Write_Info_Char ('{');
+                           Write_Info_Char (Hex (Character'Pos (C) / 16));
+                           Write_Info_Char (Hex (Character'Pos (C) mod 16));
+                           Write_Info_Char ('}');
+                        end;
+                     end if;
+                  end loop;
+
+                  Write_Info_Char ('"');
+                  Write_Info_EOL;
+               end if;
+            end;
+         end loop;
       end Write_Unit_Information;
 
       ----------------------
@@ -773,7 +818,7 @@ package body Lib.Writ is
          Write_Info_Str (" UA");
       end if;
 
-      if ZCX_By_Default_On_Target then
+      if Exception_Mechanism /= Setjmp_Longjmp then
          if Unit_Exception_Table_Present then
             Write_Info_Str (" UX");
          end if;
@@ -788,7 +833,7 @@ package body Lib.Writ is
       Write_Info_Initiate ('R');
       Write_Info_Char (' ');
 
-      for J in Partition_Restrictions loop
+      for J in All_Restrictions loop
          if Main_Restrictions (J) then
             Write_Info_Char ('r');
          elsif Violations (J) then
@@ -813,47 +858,6 @@ package body Lib.Writ is
       end loop;
 
       Write_Info_EOL; -- blank line
-
-      --  Output linker option lines
-
-      for J in 1 .. Linker_Option_Lines.Last loop
-         declare
-            S : constant String_Id := Linker_Option_Lines.Table (J);
-            C : Character;
-
-         begin
-            Write_Info_Initiate ('L');
-            Write_Info_Str (" """);
-
-            for J in 1 .. String_Length (S) loop
-               C := Get_Character (Get_String_Char (S, J));
-
-               if C in Character'Val (16#20#) .. Character'Val (16#7E#)
-                 and then C /= '{'
-               then
-                  Write_Info_Char (C);
-
-                  if C = '"' then
-                     Write_Info_Char (C);
-                  end if;
-
-               else
-                  declare
-                     Hex : array (0 .. 15) of Character := "0123456789ABCDEF";
-
-                  begin
-                     Write_Info_Char ('{');
-                     Write_Info_Char (Hex (Character'Pos (C) / 16));
-                     Write_Info_Char (Hex (Character'Pos (C) mod 16));
-                     Write_Info_Char ('}');
-                  end;
-               end if;
-            end loop;
-
-            Write_Info_Char ('"');
-            Write_Info_EOL;
-         end;
-      end loop;
 
       --  Output external version reference lines
 

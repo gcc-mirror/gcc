@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.33 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -145,6 +145,7 @@ package body Eval_Fat is
    ---------------
 
    function Copy_Sign (RT : R; Value, Sign : T) return T is
+      pragma Warnings (Off, RT);
       Result : T;
 
    begin
@@ -838,6 +839,8 @@ package body Eval_Fat is
    -------------
 
    function Scaling (RT : R; X : T; Adjustment : UI) return T is
+      pragma Warnings (Off, RT);
+
    begin
       if Rbase (X) = Radix then
          return UR_From_Components
@@ -894,6 +897,8 @@ package body Eval_Fat is
    ----------------
 
    function Truncation (RT : R; X : T) return T is
+      pragma Warnings (Off, RT);
+
    begin
       return UR_From_Uint (UR_Trunc (X));
    end Truncation;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.13 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -35,6 +35,7 @@ with Sinfo;   use Sinfo;
 with Snames;  use Snames;
 with Stand;   use Stand;
 with Stringt; use Stringt;
+with Uintp;   use Uintp;
 
 with GNAT.HTable; use GNAT.HTable;
 package body Sem_Elim is
@@ -82,6 +83,9 @@ package body Sem_Elim is
 
       Result_Type : Name_Id;
       --  Result type name if Result_Types parameter present, No_Name if not
+
+      Homonym_Number : Uint;
+      --  Homonyn number if Homonym_Number parameter present, No_Uint if not.
 
       Hash_Link : Access_Elim_Data;
       --  Link for hash table use
@@ -197,6 +201,8 @@ package body Sem_Elim is
       Elmt : Access_Elim_Data;
       Scop : Entity_Id;
       Form : Entity_Id;
+      Ctr  : Nat;
+      Ent  : Entity_Id;
 
    begin
       if No_Elimination then
@@ -280,28 +286,42 @@ package body Sem_Elim is
          elsif Ekind (E) = E_Function
            or else Ekind (E) = E_Procedure
          then
-            --  Two parameter case always matches
+            --  If Homonym_Number present, then see if it matches
 
-            if Elmt.Result_Type = No_Name
-              and then Elmt.Parameter_Types = null
-            then
-               Set_Is_Eliminated (E);
-               return;
+            if Elmt.Homonym_Number /= No_Uint then
+               Ctr := 1;
 
-            --  Here we have a profile, so see if it matches
+               Ent := E;
+               while Present (Homonym (Ent))
+                 and then Scope (Ent) = Scope (Homonym (Ent))
+               loop
+                  Ctr := Ctr + 1;
+                  Ent := Homonym (Ent);
+               end loop;
 
-            else
-               if Ekind (E) = E_Function then
-                  if Chars (Etype (E)) /= Elmt.Result_Type then
-                     goto Continue;
-                  end if;
+               if Ctr /= Elmt.Homonym_Number then
+                  goto Continue;
                end if;
+            end if;
 
+            --  If we have a Result_Type, then we must have a function
+            --  with the proper result type
+
+            if Elmt.Result_Type /= No_Name then
+               if Ekind (E) /= E_Function
+                 or else Chars (Etype (E)) /= Elmt.Result_Type
+               then
+                  goto Continue;
+               end if;
+            end if;
+
+            --  If we have Parameter_Types, they must match
+
+            if Elmt.Parameter_Types /= null then
                Form := First_Formal (E);
 
                if No (Form) and then Elmt.Parameter_Types = null then
-                  Set_Is_Eliminated (E);
-                  return;
+                  null;
 
                elsif Elmt.Parameter_Types = null then
                   goto Continue;
@@ -319,12 +339,14 @@ package body Sem_Elim is
 
                   if Present (Form) then
                      goto Continue;
-                  else
-                     Set_Is_Eliminated (E);
-                     return;
                   end if;
                end if;
             end if;
+
+            --  If we fall through, this is match
+
+            Set_Is_Eliminated (E);
+            return;
          end if;
 
          <<Continue>> Elmt := Elmt.Homonym;
@@ -351,13 +373,9 @@ package body Sem_Elim is
      (Arg_Unit_Name       : Node_Id;
       Arg_Entity          : Node_Id;
       Arg_Parameter_Types : Node_Id;
-      Arg_Result_Type     : Node_Id)
+      Arg_Result_Type     : Node_Id;
+      Arg_Homonym_Number  : Node_Id)
    is
-      Argx_Unit_Name       : Node_Id;
-      Argx_Entity          : Node_Id;
-      Argx_Parameter_Types : Node_Id;
-      Argx_Result_Type     : Node_Id;
-
       Data : constant Access_Elim_Data := new Elim_Data;
       --  Build result data here
 
@@ -366,7 +384,9 @@ package body Sem_Elim is
       Num_Names : Nat := 0;
       --  Number of names in unit name
 
-      Lit : Node_Id;
+      Lit       : Node_Id;
+      Arg_Ent   : Entity_Id;
+      Arg_Uname : Node_Id;
 
       function OK_Selected_Component (N : Node_Id) return Boolean;
       --  Test if N is a selected component with all identifiers, or a
@@ -402,64 +422,61 @@ package body Sem_Elim is
 
       --  Process Unit_Name argument
 
-      Argx_Unit_Name := Expression (Arg_Unit_Name);
-
-      if Nkind (Argx_Unit_Name) = N_Identifier then
-         Data.Unit_Name := new Names'(1 => Chars (Argx_Unit_Name));
+      if Nkind (Arg_Unit_Name) = N_Identifier then
+         Data.Unit_Name := new Names'(1 => Chars (Arg_Unit_Name));
          Num_Names := 1;
 
-      elsif OK_Selected_Component (Argx_Unit_Name) then
+      elsif OK_Selected_Component (Arg_Unit_Name) then
          Data.Unit_Name := new Names (1 .. Num_Names);
 
+         Arg_Uname := Arg_Unit_Name;
          for J in reverse 2 .. Num_Names loop
-            Data.Unit_Name (J) := Chars (Selector_Name (Argx_Unit_Name));
-            Argx_Unit_Name := Prefix (Argx_Unit_Name);
+            Data.Unit_Name (J) := Chars (Selector_Name (Arg_Uname));
+            Arg_Uname := Prefix (Arg_Uname);
          end loop;
 
-         Data.Unit_Name (1) := Chars (Argx_Unit_Name);
+         Data.Unit_Name (1) := Chars (Arg_Uname);
 
       else
          Error_Msg_N
-           ("wrong form for Unit_Name parameter of pragma%",
-            Argx_Unit_Name);
+           ("wrong form for Unit_Name parameter of pragma%", Arg_Unit_Name);
          return;
       end if;
 
       --  Process Entity argument
 
       if Present (Arg_Entity) then
-         Argx_Entity := Expression (Arg_Entity);
          Num_Names := 0;
 
-         if Nkind (Argx_Entity) = N_Identifier
-           or else Nkind (Argx_Entity) = N_Operator_Symbol
+         if Nkind (Arg_Entity) = N_Identifier
+           or else Nkind (Arg_Entity) = N_Operator_Symbol
          then
-            Data.Entity_Name  := Chars (Argx_Entity);
-            Data.Entity_Node  := Argx_Entity;
+            Data.Entity_Name  := Chars (Arg_Entity);
+            Data.Entity_Node  := Arg_Entity;
             Data.Entity_Scope := null;
 
-         elsif OK_Selected_Component (Argx_Entity) then
+         elsif OK_Selected_Component (Arg_Entity) then
             Data.Entity_Scope := new Names (1 .. Num_Names - 1);
-            Data.Entity_Name  := Chars (Selector_Name (Argx_Entity));
-            Data.Entity_Node  := Argx_Entity;
+            Data.Entity_Name  := Chars (Selector_Name (Arg_Entity));
+            Data.Entity_Node  := Arg_Entity;
 
-            Argx_Entity := Prefix (Argx_Entity);
+            Arg_Ent := Prefix (Arg_Entity);
             for J in reverse 2 .. Num_Names - 1 loop
-               Data.Entity_Scope (J) := Chars (Selector_Name (Argx_Entity));
-               Argx_Entity := Prefix (Argx_Entity);
+               Data.Entity_Scope (J) := Chars (Selector_Name (Arg_Ent));
+               Arg_Ent := Prefix (Arg_Ent);
             end loop;
 
-            Data.Entity_Scope (1) := Chars (Argx_Entity);
+            Data.Entity_Scope (1) := Chars (Arg_Ent);
 
-         elsif Nkind (Argx_Entity) = N_String_Literal then
-            String_To_Name_Buffer (Strval (Argx_Entity));
+         elsif Nkind (Arg_Entity) = N_String_Literal then
+            String_To_Name_Buffer (Strval (Arg_Entity));
             Data.Entity_Name := Name_Find;
-            Data.Entity_Node := Argx_Entity;
+            Data.Entity_Node := Arg_Entity;
 
          else
             Error_Msg_N
               ("wrong form for Entity_Argument parameter of pragma%",
-              Argx_Unit_Name);
+               Arg_Unit_Name);
             return;
          end if;
       else
@@ -470,26 +487,25 @@ package body Sem_Elim is
       --  Process Parameter_Types argument
 
       if Present (Arg_Parameter_Types) then
-         Argx_Parameter_Types := Expression (Arg_Parameter_Types);
 
          --  Case of one name, which looks like a parenthesized literal
          --  rather than an aggregate.
 
-         if Nkind (Argx_Parameter_Types) = N_String_Literal
-           and then Paren_Count (Argx_Parameter_Types) = 1
+         if Nkind (Arg_Parameter_Types) = N_String_Literal
+           and then Paren_Count (Arg_Parameter_Types) = 1
          then
-            String_To_Name_Buffer (Strval (Argx_Parameter_Types));
+            String_To_Name_Buffer (Strval (Arg_Parameter_Types));
             Data.Parameter_Types := new Names'(1 => Name_Find);
 
          --  Otherwise must be an aggregate
 
-         elsif Nkind (Argx_Parameter_Types) /= N_Aggregate
-           or else Present (Component_Associations (Argx_Parameter_Types))
-           or else No (Expressions (Argx_Parameter_Types))
+         elsif Nkind (Arg_Parameter_Types) /= N_Aggregate
+           or else Present (Component_Associations (Arg_Parameter_Types))
+           or else No (Expressions (Arg_Parameter_Types))
          then
             Error_Msg_N
               ("Parameter_Types for pragma% must be list of string literals",
-               Argx_Parameter_Types);
+               Arg_Parameter_Types);
             return;
 
          --  Here for aggregate case
@@ -497,9 +513,9 @@ package body Sem_Elim is
          else
             Data.Parameter_Types :=
               new Names
-                (1 .. List_Length (Expressions (Argx_Parameter_Types)));
+                (1 .. List_Length (Expressions (Arg_Parameter_Types)));
 
-            Lit := First (Expressions (Argx_Parameter_Types));
+            Lit := First (Expressions (Arg_Parameter_Types));
             for J in Data.Parameter_Types'Range loop
                if Nkind (Lit) /= N_String_Literal then
                   Error_Msg_N
@@ -518,20 +534,36 @@ package body Sem_Elim is
       --  Process Result_Types argument
 
       if Present (Arg_Result_Type) then
-         Argx_Result_Type := Expression (Arg_Result_Type);
 
-         if Nkind (Argx_Result_Type) /= N_String_Literal then
+         if Nkind (Arg_Result_Type) /= N_String_Literal then
             Error_Msg_N
               ("Result_Type argument for pragma% must be string literal",
-               Argx_Result_Type);
+               Arg_Result_Type);
             return;
          end if;
 
-         String_To_Name_Buffer (Strval (Argx_Result_Type));
+         String_To_Name_Buffer (Strval (Arg_Result_Type));
          Data.Result_Type := Name_Find;
 
       else
          Data.Result_Type := No_Name;
+      end if;
+
+      --  Process Homonym_Number argument
+
+      if Present (Arg_Homonym_Number) then
+
+         if Nkind (Arg_Homonym_Number) /= N_Integer_Literal then
+            Error_Msg_N
+              ("Homonym_Number argument for pragma% must be integer literal",
+               Arg_Homonym_Number);
+            return;
+         end if;
+
+         Data.Homonym_Number := Intval (Arg_Homonym_Number);
+
+      else
+         Data.Homonym_Number := No_Uint;
       end if;
 
       --  Now link this new entry into the hash table

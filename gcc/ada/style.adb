@@ -136,6 +136,8 @@ package body Style is
    --  lower case, except after an underline character.
 
    procedure Check_Attribute_Name (Reserved : Boolean) is
+      pragma Warnings (Off, Reserved);
+
    begin
       if Style_Check_Attribute_Casing then
          if Determine_Token_Casing /= Mixed_Case then

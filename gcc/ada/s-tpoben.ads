@@ -1,13 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--               GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
---     S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .    --
---                               E N T R I E S                              --
+--                 SYSTEM.TASKING.PROTECTED_OBJECTS.ENTRIES                 --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.12 $
+--                             $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -311,12 +311,6 @@ package body Exp_Ch5 is
       --  Note: overlap is never possible if there is a change of
       --  representation, so we can exclude this case
 
-      --  In the case of compiling for the Java Virtual Machine,
-      --  slices are always passed by making a copy, so we don't
-      --  have to worry about overlap. We also want to prevent
-      --  generation of "<" comparisons for array addresses,
-      --  since that's a meaningless operation on the JVM.
-
       if Ndim = 1
         and then not Crep
         and then
@@ -325,6 +319,13 @@ package body Exp_Ch5 is
             (Lhs_Formal and Rhs_Non_Local_Var)
               or else
             (Rhs_Formal and Lhs_Non_Local_Var))
+
+         --  In the case of compiling for the Java Virtual Machine,
+         --  slices are always passed by making a copy, so we don't
+         --  have to worry about overlap. We also want to prevent
+         --  generation of "<" comparisons for array addresses,
+         --  since that's a meaningless operation on the JVM.
+
         and then not Java_VM
       then
          Set_Forwards_OK  (N, False);
@@ -352,15 +353,24 @@ package body Exp_Ch5 is
       elsif Has_Controlled_Component (L_Type) then
          Loop_Required := True;
 
-      --  The only remaining cases involve slice assignments. If no slices
-      --  are involved, then the assignment can definitely be handled by gigi.
-      --  unless we have the parameter case mentioned above.
+      --  Case where no slice is involved
 
       elsif not L_Slice and not R_Slice then
 
-         --  The following is temporary code??? It is not clear why it is
-         --  necessary. For further investigation, look at the following
-         --  short program which fails:
+         --  The following code deals with the case of unconstrained bit
+         --  packed arrays. The problem is that the template for such
+         --  arrays contains the bounds of the actual source level array,
+
+         --  But the copy of an entire array requires the bounds of the
+         --  underlying array. It would be nice if the back end could take
+         --  care of this, but right now it does not know how, so if we
+         --  have such a type, then we expand out into a loop, which is
+         --  inefficient but works correctly. If we don't do this, we
+         --  get the wrong length computed for the array to be moved.
+         --  The two cases we need to worry about are:
+
+         --  Explicit deference of an unconstrained packed array type as
+         --  in the following example:
 
          --    procedure C52 is
          --       type BITS is array(INTEGER range <>) of BOOLEAN;
@@ -373,22 +383,45 @@ package body Exp_Ch5 is
          --       P2.ALL := P1.ALL;
          --    end C52;
 
-         --  To deal with the above, we expand out if either of the operands
-         --  is an explicit dereference to an unconstrained bit packed array.
+         --  A formal parameter reference with an unconstrained bit
+         --  array type is the other case we need to worry about (here
+         --  we assume the same BITS type declared above:
 
-         Temporary_Code : declare
-            function Is_Deref_Of_UBP (Opnd : Node_Id) return Boolean;
-            --  Function to perform required test for special case above
+         --    procedure Write_All (File : out BITS; Contents : in  BITS);
+         --    begin
+         --       File.Storage := Contents;
+         --    end Write_All;
 
-            function Is_Deref_Of_UBP (Opnd : Node_Id) return Boolean is
+         --  We expand to a loop in either of these two cases.
+
+         --  Question for future thought. Another potentially more efficient
+         --  approach would be to create the actual subtype, and then do an
+         --  unchecked conversion to this actual subtype ???
+
+         Check_Unconstrained_Bit_Packed_Array : declare
+
+            function Is_UBPA_Reference (Opnd : Node_Id) return Boolean;
+            --  Function to perform required test for the first case,
+            --  above (dereference of an unconstrained bit packed array)
+
+            -----------------------
+            -- Is_UBPA_Reference --
+            -----------------------
+
+            function Is_UBPA_Reference (Opnd : Node_Id) return Boolean is
+               Typ      : constant Entity_Id := Underlying_Type (Etype (Opnd));
                P_Type   : Entity_Id;
                Des_Type : Entity_Id;
 
             begin
-               if Nkind (Opnd) /= N_Explicit_Dereference then
-                  return False;
-               else
-                  P_Type := Etype (Prefix (Opnd));
+               if Present (Packed_Array_Type (Typ))
+                 and then Is_Array_Type (Packed_Array_Type (Typ))
+                 and then not Is_Constrained (Packed_Array_Type (Typ))
+               then
+                  return True;
+
+               elsif Nkind (Opnd) = N_Explicit_Dereference then
+                  P_Type := Underlying_Type (Etype (Prefix (Opnd)));
 
                   if not Is_Access_Type (P_Type) then
                      return False;
@@ -399,24 +432,32 @@ package body Exp_Ch5 is
                        Is_Bit_Packed_Array (Des_Type)
                          and then not Is_Constrained (Des_Type);
                   end if;
-               end if;
-            end Is_Deref_Of_UBP;
 
-         --  Start of processing for temporary code
+               else
+                  return False;
+               end if;
+            end Is_UBPA_Reference;
+
+         --  Start of processing for Check_Unconstrained_Bit_Packed_Array
 
          begin
-            if Is_Deref_Of_UBP (Lhs)
+            if Is_UBPA_Reference (Lhs)
                  or else
-               Is_Deref_Of_UBP (Rhs)
+               Is_UBPA_Reference (Rhs)
             then
                Loop_Required := True;
 
-            --  Normal case (will be only case when above temp code removed ???
+            --  Here if we do not have the case of a reference to a bit
+            --  packed unconstrained array case. In this case gigi can
+            --  most certainly handle the assignment if a forwards move
+            --  is allowed.
+
+            --  (could it handle the backwards case also???)
 
             elsif Forwards_OK (N) then
                return;
             end if;
-         end Temporary_Code;
+         end Check_Unconstrained_Bit_Packed_Array;
 
       --  Gigi can always handle the assignment if the right side is a string
       --  literal (note that overlap is definitely impossible in this case).
@@ -1498,7 +1539,10 @@ package body Exp_Ch5 is
                               Exception_Choices =>
                                 New_List (Make_Others_Choice (Loc)),
                               Statements        => New_List (
-                                Make_Raise_Program_Error (Loc)))))));
+                                Make_Raise_Program_Error (Loc,
+                                  Reason =>
+                                    PE_Finalize_Raised_Exception)
+                              ))))));
                end if;
             end if;
 
@@ -2378,7 +2422,8 @@ package body Exp_Ch5 is
                     Right_Opnd =>
                       Unchecked_Convert_To (RTE (RE_Tag),
                         New_Reference_To
-                          (Access_Disp_Table (Base_Type (Utyp)), Loc)))));
+                          (Access_Disp_Table (Base_Type (Utyp)), Loc))),
+                Reason => CE_Tag_Check_Failed));
 
          --  If the result type is a specific nonlimited tagged type,
          --  then we have to ensure that the tag of the result is that
@@ -2716,13 +2761,6 @@ package body Exp_Ch5 is
         and then No_Initialization (Parent (Entity (Expression (L))))
       then
          null;
-
-      elsif Nkind (L) = N_Indexed_Component
-        and then Is_Entity_Name (Original_Node (Prefix (L)))
-        and then Is_Entry_Formal (Entity (Original_Node (Prefix (L))))
-      then
-         null;
-
       else
          Append_List_To (Res,
            Make_Final_Call (

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 1998-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -48,6 +48,12 @@ procedure Gnatchop is
 
    Config_File_Name : constant String_Access := new String'("gnat.adc");
    --  The name of the file holding the GNAT configuration pragmas
+
+   Gcc : String_Access := new String'("gcc");
+   --  May be modified by switch --GCC=
+
+   Gcc_Set : Boolean := False;
+   --  True if a switch --GCC= is used
 
    Gnat_Cmd : String_Access;
    --  Command to execute the GNAT compiler
@@ -223,9 +229,12 @@ procedure Gnatchop is
                                        Integer'Image
                                          (Maximum_File_Name_Length);
 
-   function Locate_Executable (Program_Name : String) return String_Access;
+   function Locate_Executable
+     (Program_Name    : String;
+      Look_For_Prefix : Boolean := True)
+     return             String_Access;
    --  Locate executable for given program name. This takes into account
-   --  the target-prefix of the current command.
+   --  the target-prefix of the current command, if Look_For_Prefix is True.
 
    subtype EOL_Length is Natural range 0 .. 2;
    --  Possible lengths of end of line sequence
@@ -492,35 +501,42 @@ procedure Gnatchop is
    -- Locate_Executable --
    -----------------------
 
-   function Locate_Executable (Program_Name : String) return String_Access is
+   function Locate_Executable
+     (Program_Name    : String;
+      Look_For_Prefix : Boolean := True)
+     return             String_Access
+   is
       Current_Command : constant String := Command_Name;
-      End_Of_Prefix   : Natural;
+      End_Of_Prefix   : Natural  := Current_Command'First - 1;
       Start_Of_Prefix : Positive := Current_Command'First;
       Result          : String_Access;
 
    begin
-      --  Find Start_Of_Prefix
 
-      for J in reverse Current_Command'Range loop
-         if Current_Command (J) = '/' or
-            Current_Command (J) = Directory_Separator or
-            Current_Command (J) = ':'
-         then
-            Start_Of_Prefix := J + 1;
-            exit;
-         end if;
-      end loop;
+      if Look_For_Prefix then
+         --  Find Start_Of_Prefix
 
-      --  Find End_Of_Prefix
+         for J in reverse Current_Command'Range loop
+            if Current_Command (J) = '/' or
+              Current_Command (J) = Directory_Separator or
+              Current_Command (J) = ':'
+            then
+               Start_Of_Prefix := J + 1;
+               exit;
+            end if;
+         end loop;
 
-      End_Of_Prefix := Start_Of_Prefix - 1;
+         --  Find End_Of_Prefix
 
-      for J in reverse Start_Of_Prefix .. Current_Command'Last loop
-         if Current_Command (J) = '-' then
-            End_Of_Prefix := J;
-            exit;
-         end if;
-      end loop;
+         End_Of_Prefix := Start_Of_Prefix - 1;
+
+         for J in reverse Start_Of_Prefix .. Current_Command'Last loop
+            if Current_Command (J) = '-' then
+               End_Of_Prefix := J;
+               exit;
+            end if;
+         end loop;
+      end if;
 
       declare
          Command : constant String :=
@@ -1058,9 +1074,13 @@ procedure Gnatchop is
       --  Scan options first
 
       loop
-         case Getopt ("c gnat? h k? p q r v w x") is
+         case Getopt ("c gnat? h k? p q r v w x -GCC=!") is
             when ASCII.NUL =>
                exit;
+
+            when '-' =>
+               Gcc     := new String'(Parameter);
+               Gcc_Set := True;
 
             when 'c' =>
                Compilation_Mode := True;
@@ -1300,7 +1320,7 @@ procedure Gnatchop is
    begin
       Put_Line
         ("Usage: gnatchop [-c] [-h] [-k#] " &
-         "[-r] [-p] [-q] [-v] [-w] [-x] file [file ...] [dir]");
+         "[-r] [-p] [-q] [-v] [-w] [-x] [--GCC=xx] file [file ...] [dir]");
 
       New_Line;
       Put_Line
@@ -1342,6 +1362,9 @@ procedure Gnatchop is
 
       Put_Line
         ("  -x       exit on error");
+
+      Put_Line
+        ("  --GCC=xx specify the path of the gnat parser to be used");
 
       New_Line;
       Put_Line
@@ -1638,19 +1661,19 @@ procedure Gnatchop is
 --  Start of processing for gnatchop
 
 begin
-   --  Check presence of required executables
-
-   Gnat_Cmd := Locate_Executable ("gcc");
-
-   if Gnat_Cmd = null then
-      goto No_Files_Written;
-   end if;
-
    --  Process command line options and initialize global variables
 
    if not Scan_Arguments then
       Set_Exit_Status (Failure);
       return;
+   end if;
+
+   --  Check presence of required executables
+
+   Gnat_Cmd := Locate_Executable (Gcc.all, not Gcc_Set);
+
+   if Gnat_Cmd = null then
+      goto No_Files_Written;
    end if;
 
    --  First parse all files and read offset information

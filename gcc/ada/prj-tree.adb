@@ -44,7 +44,9 @@ package body Prj.Tree is
       pragma Assert
         (Node /= Empty_Node
           and then
-            (Project_Nodes.Table (Node).Kind = N_Attribute_Declaration));
+            (Project_Nodes.Table (Node).Kind = N_Attribute_Declaration
+               or else
+             Project_Nodes.Table (Node).Kind = N_Attribute_Reference));
       return Project_Nodes.Table (Node).Value;
    end Associative_Array_Index_Of;
 
@@ -57,7 +59,9 @@ package body Prj.Tree is
       pragma Assert
         (Node /= Empty_Node
           and then
-            (Project_Nodes.Table (Node).Kind = N_Attribute_Declaration));
+            (Project_Nodes.Table (Node).Kind = N_Attribute_Declaration
+               or else
+             Project_Nodes.Table (Node).Kind = N_Attribute_Reference));
       return Project_Nodes.Table (Node).Case_Insensitive;
    end Case_Insensitive;
 
@@ -733,7 +737,9 @@ package body Prj.Tree is
       pragma Assert
         (Node /= Empty_Node
           and then
-            Project_Nodes.Table (Node).Kind = N_Attribute_Declaration);
+            (Project_Nodes.Table (Node).Kind = N_Attribute_Declaration
+               or else
+             Project_Nodes.Table (Node).Kind = N_Attribute_Reference));
       Project_Nodes.Table (Node).Value := To;
    end Set_Associative_Array_Index_Of;
 
@@ -749,7 +755,9 @@ package body Prj.Tree is
       pragma Assert
         (Node /= Empty_Node
           and then
-            Project_Nodes.Table (Node).Kind = N_Attribute_Declaration);
+           (Project_Nodes.Table (Node).Kind = N_Attribute_Declaration
+               or else
+            Project_Nodes.Table (Node).Kind = N_Attribute_Reference));
       Project_Nodes.Table (Node).Case_Insensitive := To;
    end Set_Case_Insensitive;
 

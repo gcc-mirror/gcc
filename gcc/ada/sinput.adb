@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.99 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -43,6 +43,8 @@ with Output;  use Output;
 with Tree_IO; use Tree_IO;
 with System;  use System;
 
+with System.Memory;
+
 with Unchecked_Conversion;
 with Unchecked_Deallocation;
 
@@ -52,6 +54,21 @@ package body Sinput is
    --  Make control characters visible
 
    First_Time_Around : Boolean := True;
+
+   --  Routines to support conversion between types Lines_Table_Ptr,
+   --  Logical_Lines_Table_Ptr and System.Address.
+
+   function To_Address is
+     new Unchecked_Conversion (Lines_Table_Ptr, Address);
+
+   function To_Address is
+     new Unchecked_Conversion (Logical_Lines_Table_Ptr, Address);
+
+   function To_Pointer is
+     new Unchecked_Conversion (Address, Lines_Table_Ptr);
+
+   function To_Pointer is
+     new Unchecked_Conversion (Address, Logical_Lines_Table_Ptr);
 
    ---------------------------
    -- Add_Line_Tables_Entry --
@@ -111,27 +128,7 @@ package body Sinput is
      (S       : in out Source_File_Record;
       New_Max : Nat)
    is
-      function realloc
-        (memblock : Lines_Table_Ptr;
-         size     : size_t)
-         return     Lines_Table_Ptr;
-      pragma Import (C, realloc, "realloc");
-
-      function reallocl
-        (memblock : Logical_Lines_Table_Ptr;
-         size     : size_t)
-         return     Logical_Lines_Table_Ptr;
-      pragma Import (C, reallocl, "realloc");
-
-      function malloc
-        (size   : size_t)
-         return Lines_Table_Ptr;
-      pragma Import (C, malloc, "malloc");
-
-      function mallocl
-        (size   : size_t)
-         return Logical_Lines_Table_Ptr;
-      pragma Import (C, mallocl, "malloc");
+      subtype size_t is Memory.size_t;
 
       New_Table : Lines_Table_Ptr;
 
@@ -143,11 +140,11 @@ package body Sinput is
 
    begin
       if S.Lines_Table = null then
-         New_Table := malloc (New_Size);
+         New_Table := To_Pointer (Memory.Alloc (New_Size));
 
       else
          New_Table :=
-           realloc (memblock => S.Lines_Table, size => New_Size);
+           To_Pointer (Memory.Realloc (To_Address (S.Lines_Table), New_Size));
       end if;
 
       if New_Table = null then
@@ -159,10 +156,10 @@ package body Sinput is
 
       if S.Num_SRef_Pragmas /= 0 then
          if S.Logical_Lines_Table = null then
-            New_Logical_Table := mallocl (New_Size);
+            New_Logical_Table := To_Pointer (Memory.Alloc (New_Size));
          else
-            New_Logical_Table :=
-              reallocl (memblock => S.Logical_Lines_Table, size => New_Size);
+            New_Logical_Table := To_Pointer
+              (Memory.Realloc (To_Address (S.Logical_Lines_Table), New_Size));
          end if;
 
          if New_Logical_Table = null then
@@ -570,12 +567,9 @@ package body Sinput is
       Mapped_Line        : Nat;
       Line_After_Pragma  : Physical_Line_Number)
    is
-      SFR : Source_File_Record renames Source_File.Table (Current_Source_File);
+      subtype size_t is Memory.size_t;
 
-      function malloc
-        (size     : size_t)
-         return     Logical_Lines_Table_Ptr;
-      pragma Import (C, malloc);
+      SFR : Source_File_Record renames Source_File.Table (Current_Source_File);
 
       ML : Logical_Line_Number;
 
@@ -596,11 +590,11 @@ package body Sinput is
       end if;
 
       if SFR.Logical_Lines_Table = null then
-         SFR.Logical_Lines_Table :=
-           malloc
+         SFR.Logical_Lines_Table := To_Pointer
+           (Memory.Alloc
              (size_t (SFR.Lines_Table_Max *
                         Logical_Lines_Table_Type'Component_Size /
-                                                        Storage_Unit));
+                                                        Storage_Unit)));
       end if;
 
       SFR.Logical_Lines_Table (Line_After_Pragma - 1) := No_Line_Number;
@@ -738,16 +732,6 @@ package body Sinput is
                procedure Free_Ptr is new Unchecked_Deallocation
                  (Big_Source_Buffer, Source_Buffer_Ptr);
 
-               --  Note: we are using free here, because we used malloc
-               --  or realloc directly to allocate the tables. That is
-               --  because we were playing the big array trick.
-
-               procedure free (X : Lines_Table_Ptr);
-               pragma Import (C, free, "free");
-
-               procedure freel (X : Logical_Lines_Table_Ptr);
-               pragma Import (C, freel, "free");
-
                function To_Source_Buffer_Ptr is new
                  Unchecked_Conversion (Address, Source_Buffer_Ptr);
 
@@ -766,13 +750,17 @@ package body Sinput is
                       (S.Source_Text (S.Source_First)'Address);
                   Free_Ptr (Tmp1);
 
+                  --  Note: we are using free here, because we used malloc
+                  --  or realloc directly to allocate the tables. That is
+                  --  because we were playing the big array trick.
+
                   if S.Lines_Table /= null then
-                     free (S.Lines_Table);
+                     Memory.Free (To_Address (S.Lines_Table));
                      S.Lines_Table := null;
                   end if;
 
                   if S.Logical_Lines_Table /= null then
-                     freel (S.Logical_Lines_Table);
+                     Memory.Free (To_Address (S.Logical_Lines_Table));
                      S.Logical_Lines_Table := null;
                   end if;
                end if;
@@ -1118,6 +1106,24 @@ package body Sinput is
    begin
       Source_File.Table (S).License := L;
    end Set_License;
+
+   ----------------------
+   -- Trim_Lines_Table --
+   ----------------------
+
+   procedure Trim_Lines_Table (S : Source_File_Index) is
+      Max : constant Nat := Nat (Source_File.Table (S).Last_Source_Line);
+
+   begin
+      --  Release allocated storage that is no longer needed
+
+      Source_File.Table (S).Lines_Table := To_Pointer
+        (Memory.Realloc
+          (To_Address (Source_File.Table (S).Lines_Table),
+           Memory.size_t
+            (Max * (Lines_Table_Type'Component_Size / System.Storage_Unit))));
+      Source_File.Table (S).Lines_Table_Max := Physical_Line_Number (Max);
+   end Trim_Lines_Table;
 
    --------
    -- wl --

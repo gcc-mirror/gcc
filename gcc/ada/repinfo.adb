@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -139,6 +139,14 @@ package body Repinfo is
    function Rep_Not_Constant (Val : Node_Ref_Or_Val) return Boolean;
    --  Returns True if Val represents a variable value, and False if it
    --  represents a value that is fixed at compile time.
+
+   procedure Write_Info_Line (S : String);
+   --  Routine to write a line to Repinfo output file. This routine is
+   --  passed as a special output procedure to Output.Set_Special_Output.
+   --  Note that Write_Info_Line is called with an EOL character at the
+   --  end of each line, as per the Output spec, but the internal call
+   --  to the appropriate routine in Osint requires that the end of line
+   --  sequence be stripped off.
 
    procedure Write_Val (Val : Node_Ref_Or_Val; Paren : Boolean := False);
    --  Given a representation value, write it out. No_Uint values or values
@@ -286,8 +294,14 @@ package body Repinfo is
       if Present (Ent) then
          E := First_Entity (Ent);
          while Present (E) loop
-            if Comes_From_Source (E) or else Debug_Flag_AA then
 
+            --  We list entities that come from source (excluding private
+            --  types, where we will list the info for the full view). If
+            --  debug flag A is set, all entities are listed
+
+            if (Comes_From_Source (E) and then not Is_Private_Type (E))
+              or else Debug_Flag_AA
+            then
                if Is_Record_Type (E) then
                   List_Record_Info (E);
 
@@ -295,7 +309,6 @@ package body Repinfo is
                   List_Array_Info (E);
 
                elsif List_Representation_Info >= 2 then
-
                   if Is_Type (E) then
                      List_Type_Info (E);
 
@@ -311,15 +324,19 @@ package body Repinfo is
                   end if;
                end if;
 
-               --  Recurse over nested package, but not if they are
+               --  Recurse into nested package, but not if they are
                --  package renamings (in particular renamings of the
                --  enclosing package, as for some Java bindings and
                --  for generic instances).
 
-               if (Ekind (E) = E_Package
-                         and then No (Renamed_Object (E)))
-                       or else
-                     Ekind (E) = E_Protected_Type
+               if Ekind (E) = E_Package then
+                  if No (Renamed_Object (E)) then
+                     List_Entities (E);
+                  end if;
+
+               --  Recurse into bodies
+
+               elsif Ekind (E) = E_Protected_Type
                        or else
                      Ekind (E) = E_Task_Type
                        or else
@@ -331,6 +348,11 @@ package body Repinfo is
                        or else
                      Ekind (E) = E_Protected_Body
                then
+                  List_Entities (E);
+
+               --  Recurse into blocks
+
+               elsif Ekind (E) = E_Block then
                   List_Entities (E);
                end if;
             end if;
@@ -477,7 +499,7 @@ package body Repinfo is
 
    begin
       if U = No_Uint then
-         Write_Line ("??");
+         Write_Str ("??");
       else
          P (U);
       end if;
@@ -507,21 +529,17 @@ package body Repinfo is
    begin
       Write_Eol;
 
-      if Known_Esize (Ent) then
-         Write_Str ("for ");
-         List_Name (Ent);
-         Write_Str ("'Size use ");
-         Write_Val (Esize (Ent));
-         Write_Line (";");
-      end if;
+      Write_Str ("for ");
+      List_Name (Ent);
+      Write_Str ("'Size use ");
+      Write_Val (Esize (Ent));
+      Write_Line (";");
 
-      if Known_Alignment (Ent) then
-         Write_Str ("for ");
-         List_Name (Ent);
-         Write_Str ("'Alignment use ");
-         Write_Val (Alignment (Ent));
-         Write_Line (";");
-      end if;
+      Write_Str ("for ");
+      List_Name (Ent);
+      Write_Str ("'Alignment use ");
+      Write_Val (Alignment (Ent));
+      Write_Line (";");
    end List_Object_Info;
 
    ----------------------
@@ -574,7 +592,13 @@ package body Repinfo is
                UI_Image (Sunit);
             end if;
 
-            if Unknown_Normalized_First_Bit (Comp) then
+            --  If the record is not packed, then we know that all
+            --  fields whose position is not specified have a starting
+            --  normalized bit position of zero
+
+            if Unknown_Normalized_First_Bit (Comp)
+              and then not Is_Packed (Ent)
+            then
                Set_Normalized_First_Bit (Comp, Uint_0);
             end if;
 
@@ -620,8 +644,12 @@ package body Repinfo is
                  and then List_Representation_Info = 3
                then
                   Spaces (Max_Suni_Length - 2);
+                  Write_Str ("bit offset");
                   Write_Val (Bofs, Paren => True);
-                  Write_Str (" / 8");
+                  Write_Str (" size in bits = ");
+                  Write_Val (Esiz, Paren => True);
+                  Write_Eol;
+                  goto Continue;
 
                elsif Known_Normalized_Position (Comp)
                  and then List_Representation_Info = 3
@@ -630,14 +658,33 @@ package body Repinfo is
                   Write_Val (Npos);
 
                else
-                  Write_Str ("??");
+                  --  For the packed case, we don't know the bit positions
+                  --  if we don't know the starting position!
+
+                  if Is_Packed (Ent) then
+                     Write_Line ("?? range  ? .. ??;");
+                     goto Continue;
+
+                  --  Otherwise we can continue
+
+                  else
+                     Write_Str ("??");
+                  end if;
                end if;
 
                Write_Str (" range  ");
                UI_Write (Fbit);
                Write_Str (" .. ");
 
-               if not Is_Dynamic_SO_Ref (Esize (Comp)) then
+               --  Allowing Uint_0 here is a kludge, really this should be
+               --  a fine Esize value but currently it means unknown, except
+               --  that we know after gigi has back annotated that a size of
+               --  zero is real, since otherwise gigi back annotates using
+               --  No_Uint as the value to indicate unknown).
+
+               if (Esize (Comp) = Uint_0 or else Known_Static_Esize (Comp))
+                 and then Known_Static_Normalized_First_Bit (Comp)
+               then
                   Lbit := Fbit + Esiz - 1;
 
                   if Lbit < 10 then
@@ -646,10 +693,17 @@ package body Repinfo is
 
                   UI_Write (Lbit);
 
-               elsif List_Representation_Info < 3 then
+               --  The test for Esize (Comp) not being Uint_0 here is a kludge.
+               --  Officially a value of zero for Esize means unknown, but here
+               --  we use the fact that we know that gigi annotates Esize with
+               --  No_Uint, not Uint_0. Really everyone should use No_Uint???
+
+               elsif List_Representation_Info < 3
+                 or else (Esize (Comp) /= Uint_0 and then Unknown_Esize (Comp))
+               then
                   Write_Str ("??");
 
-               else -- List_Representation >= 3
+               else -- List_Representation >= 3 and Known_Esize (Comp)
 
                   Write_Val (Esiz, Paren => True);
 
@@ -679,6 +733,7 @@ package body Repinfo is
             end;
          end if;
 
+      <<Continue>>
          Comp := Next_Entity (Comp);
       end loop;
 
@@ -695,22 +750,45 @@ package body Repinfo is
    begin
       for U in Main_Unit .. Last_Unit loop
          if In_Extended_Main_Source_Unit (Cunit_Entity (U)) then
-            Unit_Casing := Identifier_Casing (Source_Index (U));
-            Write_Eol;
-            Write_Str ("Representation information for unit ");
-            Write_Unit_Name (Unit_Name (U));
-            Col := Column;
-            Write_Eol;
 
-            for J in 1 .. Col - 1 loop
-               Write_Char ('-');
-            end loop;
+            --  Normal case, list to standard output
 
-            Write_Eol;
-            List_Entities (Cunit_Entity (U));
+            if not List_Representation_Info_To_File then
+               Unit_Casing := Identifier_Casing (Source_Index (U));
+               Write_Eol;
+               Write_Str ("Representation information for unit ");
+               Write_Unit_Name (Unit_Name (U));
+               Col := Column;
+               Write_Eol;
+
+               for J in 1 .. Col - 1 loop
+                  Write_Char ('-');
+               end loop;
+
+               Write_Eol;
+               List_Entities (Cunit_Entity (U));
+
+            --  List representation information to file
+
+            else
+               Creat_Repinfo_File_Access.all (File_Name (Source_Index (U)));
+               Set_Special_Output (Write_Info_Line'Access);
+               List_Entities (Cunit_Entity (U));
+               Set_Special_Output (null);
+               Close_Repinfo_File_Access.all;
+            end if;
          end if;
       end loop;
    end List_Rep_Info;
+
+   ---------------------
+   -- Write_Info_Line --
+   ---------------------
+
+   procedure Write_Info_Line (S : String) is
+   begin
+      Write_Repinfo_Line_Access.all (S (S'First .. S'Last - 1));
+   end Write_Info_Line;
 
    --------------------
    -- List_Type_Info --
@@ -720,46 +798,45 @@ package body Repinfo is
    begin
       Write_Eol;
 
-      --  If Esize and RM_Size are the same and known, list as Size. This
-      --  is a common case, which we may as well list in simple form.
+      --  Do not list size info for unconstrained arrays, not meaningful
 
-      if Esize (Ent) = RM_Size (Ent) then
-         if Known_Esize (Ent) then
-            Write_Str ("for ");
-            List_Name (Ent);
-            Write_Str ("'Size use ");
-            Write_Val (Esize (Ent));
-            Write_Line (";");
-         end if;
-
-      --  For now, temporary case, to be removed when gigi properly back
-      --  annotates RM_Size, if RM_Size is not set, then list Esize as
-      --  Size. This avoids odd Object_Size output till we fix things???
-
-      elsif Unknown_RM_Size (Ent) then
-         if Known_Esize (Ent) then
-            Write_Str ("for ");
-            List_Name (Ent);
-            Write_Str ("'Size use ");
-            Write_Val (Esize (Ent));
-            Write_Line (";");
-         end if;
-
-      --  Otherwise list size values separately if they are set
+      if Is_Array_Type (Ent) and then not Is_Constrained (Ent) then
+         null;
 
       else
-         if Known_Esize (Ent) then
+         --  If Esize and RM_Size are the same and known, list as Size. This
+         --  is a common case, which we may as well list in simple form.
+
+         if Esize (Ent) = RM_Size (Ent) then
+            Write_Str ("for ");
+            List_Name (Ent);
+            Write_Str ("'Size use ");
+            Write_Val (Esize (Ent));
+            Write_Line (";");
+
+         --  For now, temporary case, to be removed when gigi properly back
+         --  annotates RM_Size, if RM_Size is not set, then list Esize as
+         --  Size. This avoids odd Object_Size output till we fix things???
+
+         elsif Unknown_RM_Size (Ent) then
+            Write_Str ("for ");
+            List_Name (Ent);
+            Write_Str ("'Size use ");
+            Write_Val (Esize (Ent));
+            Write_Line (";");
+
+         --  Otherwise list size values separately if they are set
+
+         else
             Write_Str ("for ");
             List_Name (Ent);
             Write_Str ("'Object_Size use ");
             Write_Val (Esize (Ent));
             Write_Line (";");
-         end if;
 
-         --  Note on following check: The RM_Size of a discrete type can
-         --  legitimately be set to zero, so a special check is needed.
+            --  Note on following check: The RM_Size of a discrete type can
+            --  legitimately be set to zero, so a special check is needed.
 
-         if Known_RM_Size (Ent) or else Is_Discrete_Type (Ent) then
             Write_Str ("for ");
             List_Name (Ent);
             Write_Str ("'Value_Size use ");
@@ -768,13 +845,11 @@ package body Repinfo is
          end if;
       end if;
 
-      if Known_Alignment (Ent) then
-         Write_Str ("for ");
-         List_Name (Ent);
-         Write_Str ("'Alignment use ");
-         Write_Val (Alignment (Ent));
-         Write_Line (";");
-      end if;
+      Write_Str ("for ");
+      List_Name (Ent);
+      Write_Str ("'Alignment use ");
+      Write_Val (Alignment (Ent));
+      Write_Line (";");
    end List_Type_Info;
 
    ----------------------
@@ -1004,15 +1079,31 @@ package body Repinfo is
    procedure Write_Val (Val : Node_Ref_Or_Val; Paren : Boolean := False) is
    begin
       if Rep_Not_Constant (Val) then
-         if List_Representation_Info < 3 then
+         if List_Representation_Info < 3 or else Val = No_Uint then
             Write_Str ("??");
+
          else
             if Back_End_Layout then
                Write_Char (' ');
-               List_GCC_Expression (Val);
+
+               if Paren then
+                  Write_Char ('(');
+                  List_GCC_Expression (Val);
+                  Write_Char (')');
+               else
+                  List_GCC_Expression (Val);
+               end if;
+
                Write_Char (' ');
+
             else
-               Write_Name_Decoded (Chars (Get_Dynamic_SO_Entity (Val)));
+               if Paren then
+                  Write_Char ('(');
+                  Write_Name_Decoded (Chars (Get_Dynamic_SO_Entity (Val)));
+                  Write_Char (')');
+               else
+                  Write_Name_Decoded (Chars (Get_Dynamic_SO_Entity (Val)));
+               end if;
             end if;
          end if;
 

@@ -53,7 +53,7 @@ package Prj.Tree is
    Empty_Node : constant Project_Node_Id := Project_Node_Low_Bound;
    --  Designates no node in table Project_Nodes
 
-   First_Node_Id : constant Project_Node_Id := Project_Node_Low_Bound;
+   First_Node_Id : constant Project_Node_Id := Project_Node_Low_Bound + 1;
 
    subtype Variable_Node_Id is Project_Node_Id;
    --  Used to designate a node whose expected kind is one of
@@ -233,7 +233,7 @@ package Prj.Tree is
    function Associative_Array_Index_Of
      (Node  : Project_Node_Id)
       return  String_Id;
-   --  Only valid for N_Attribute_Declaration.
+   --  Only valid for N_Attribute_Declaration and N_Attribute_Reference.
    --  Returns No_String for non associative array attributes.
 
    function Next_Variable
@@ -311,7 +311,7 @@ package Prj.Tree is
    --  Only valid for N_Case_Item nodes
 
    function Case_Insensitive (Node : Project_Node_Id) return Boolean;
-   --  Only valid for N_Attribute_Declaration nodes
+   --  Only valid for N_Attribute_Declaration and N_Attribute_Reference nodes
 
    --------------------
    -- Set Procedures --
@@ -547,9 +547,9 @@ package Prj.Tree is
          --  See below the meaning for each Project_Node_Kind
 
          Case_Insensitive : Boolean := False;
-         --  Significant only for N_Attribute_Declaration
-         --  Indicates, for an associative array attribute, that the
-         --  index is case insensitive.
+         --  This flag is significant only for N_Attribute_Declaration and
+         --  N_Atribute_Reference. It indicates for an associative array
+         --  attribute, that the index is case insensitive.
 
       end record;
 
@@ -705,7 +705,8 @@ package Prj.Tree is
       --    --  Field1:    project
       --    --  Field2:    package (if attribute of a package)
       --    --  Field3:    not used
-      --    --  Value:     not used
+      --    --  Value:     associative array index
+      --    --             (if an associative array element)
 
       --    N_Case_Construction,
       --    --  Name:      not used

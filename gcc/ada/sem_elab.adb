@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -179,7 +179,7 @@ package body Sem_Elab is
    --  Outer_Scope is the outer level scope for the original call.
    --  Inter_Unit_Only is set if the call is only to be checked in the
    --  case where it is to another unit (and skipped if within a unit).
-   --  Generate_Warnings is set to True to suppress warning messages
+   --  Generate_Warnings is set to False to suppress warning messages
    --  about missing pragma Elaborate_All's. These messages are not
    --  wanted for inner calls in the dynamic model.
 
@@ -278,6 +278,12 @@ package body Sem_Elab is
    function Within (E1, E2 : Entity_Id) return Boolean;
    --  Given two scopes E1 and E2, returns True if E1 is equal to E2, or
    --  is one of its contained scopes, False otherwise.
+
+   function Within_Elaborate_All (E : Entity_Id) return Boolean;
+   --  Before emitting a warning on a scope E for a missing elaborate_all,
+   --  check whether E may be in the context of a directly visible unit
+   --  U to which the pragma applies. This prevents spurious warnings when
+   --  the called entity is renamed within U.
 
    ------------------
    -- Check_A_Call --
@@ -521,7 +527,6 @@ package body Sem_Elab is
 
          if Unit_Caller /= No_Unit
            and then Unit_Callee /= Unit_Caller
-           and then Unit_Callee /= No_Unit
            and then not Dynamic_Elaboration_Checks
          then
             E_Scope := Spec_Entity (Cunit_Entity (Unit_Caller));
@@ -539,7 +544,7 @@ package body Sem_Elab is
                E_Scope := Scope (E_Scope);
             end loop;
 
-         --  For the case of not in an instance, or call within instance
+         --  For the case N is not an instance, or a call within instance
          --  We recompute E_Scope for the error message, since we
          --  do NOT want to go to the unit which has the ultimate
          --  declaration in the case of renaming and derivation and
@@ -573,6 +578,10 @@ package body Sem_Elab is
             end loop;
          end if;
 
+         if Within_Elaborate_All (E_Scope) then
+            return;
+         end if;
+
          if not Suppress_Elaboration_Warnings (Ent)
            and then not Suppress_Elaboration_Warnings (E_Scope)
            and then Elab_Warnings
@@ -586,6 +595,20 @@ package body Sem_Elab is
             else
                Error_Msg_NE
                  ("call to & may raise Program_Error?", N, Ent);
+
+               if Unit_Callee = No_Unit
+                 and then E_Scope = Current_Scope
+               then
+                  --  The missing pragma cannot be on the current unit, so
+                  --  place it on the compilation unit that contains the
+                  --  called entity, which is more likely to be right.
+
+                  E_Scope := Ent;
+
+                  while not Is_Compilation_Unit (E_Scope) loop
+                     E_Scope := Scope (E_Scope);
+                  end loop;
+               end if;
             end if;
 
             Error_Msg_Qual_Level := Nat'Last;
@@ -663,9 +686,9 @@ package body Sem_Elab is
       if Nkind (N) not in N_Generic_Instantiation then
          return;
 
-      --  Nothing to do if errors already detected (avoid cascaded errors)
+      --  Nothing to do if serious errors detected (avoid cascaded errors)
 
-      elsif Errors_Detected /= 0 then
+      elsif Serious_Errors_Detected /= 0 then
          return;
 
       --  Nothing to do if not in full analysis mode
@@ -693,7 +716,7 @@ package body Sem_Elab is
       end if;
 
       Nam := Name (N);
-      Ent := Entity (Nam);
+      Ent := Get_Generic_Entity (N);
 
       --  The case we are interested in is when the generic spec is in the
       --  current declarative part
@@ -861,6 +884,7 @@ package body Sem_Elab is
 
             if Comes_From_Source (N)
               and then In_Preelaborated_Unit
+              and then not In_Inlined_Body
             then
                Error_Msg_N
                  ("non-static call not allowed in preelaborated unit", N);
@@ -1070,7 +1094,7 @@ package body Sem_Elab is
 
       --  Skip delayed calls if we had any errors
 
-      if Errors_Detected = 0 then
+      if Serious_Errors_Detected = 0 then
          Delaying_Elab_Checks := False;
          Expander_Mode_Save_And_Set (True);
 
@@ -1129,7 +1153,7 @@ package body Sem_Elab is
       end if;
 
       Nam := Name (N);
-      Ent := Entity (Nam);
+      Ent := Get_Generic_Entity (N);
       From_Elab_Code := not In_Subprogram_Or_Concurrent_Unit;
 
       --  See if we need to analyze this instantiation. We analyze it if
@@ -1214,7 +1238,7 @@ package body Sem_Elab is
 
       --  Nothing to do if errors already detected (avoid cascaded errors)
 
-      elsif Errors_Detected /= 0 then
+      elsif Serious_Errors_Detected /= 0 then
          return;
 
       --  Nothing to do if not in full analysis mode
@@ -1584,6 +1608,13 @@ package body Sem_Elab is
          --  will have been elaborated already. We keep separate lists for
          --  each kind of task.
 
+         --  Skip this test if errors have occurred, since in this case
+         --  we can get false indications.
+
+         if Total_Errors_Detected /= 0 then
+            return;
+         end if;
+
          if Present (Proc) then
             if Outer_Unit (Scope (Proc)) = Enclosing then
 
@@ -1768,7 +1799,7 @@ package body Sem_Elab is
    ----------------------
 
    function Has_Generic_Body (N : Node_Id) return Boolean is
-      Ent  : constant Entity_Id := Entity (Name (N));
+      Ent  : constant Entity_Id := Get_Generic_Entity (N);
       Decl : constant Node_Id   := Unit_Declaration_Node (Ent);
       Scop : Entity_Id;
 
@@ -2025,9 +2056,14 @@ package body Sem_Elab is
 
          begin
             if No (C) then
-               R :=  Make_Raise_Program_Error (Loc);
+               R :=
+                 Make_Raise_Program_Error (Loc,
+                   Reason => PE_Access_Before_Elaboration);
             else
-               R := Make_Raise_Program_Error (Loc, Make_Op_Not (Loc, C));
+               R :=
+                 Make_Raise_Program_Error (Loc,
+                   Condition => Make_Op_Not (Loc, C),
+                   Reason    => PE_Access_Before_Elaboration);
             end if;
 
             if No (Declarations (ADN)) then
@@ -2056,8 +2092,11 @@ package body Sem_Elab is
          then
             declare
                Typ : constant Entity_Id := Etype (N);
-               R   : constant Node_Id   := Make_Raise_Program_Error (Loc);
                Chk : constant Boolean   := Do_Range_Check (N);
+
+               R   : constant Node_Id :=
+                       Make_Raise_Program_Error (Loc,
+                         Reason => PE_Access_Before_Elaboration);
 
             begin
                Set_Etype (R, Typ);
@@ -2086,13 +2125,15 @@ package body Sem_Elab is
          else
             if No (C) then
                Insert_Action (Nod,
-                  Make_Raise_Program_Error (Loc));
+                  Make_Raise_Program_Error (Loc,
+                    Reason => PE_Access_Before_Elaboration));
             else
                Insert_Action (Nod,
                   Make_Raise_Program_Error (Loc,
                     Condition =>
                       Make_Op_Not (Loc,
-                        Right_Opnd => C)));
+                        Right_Opnd => C),
+                    Reason => PE_Access_Before_Elaboration));
             end if;
          end if;
       end if;
@@ -2283,5 +2324,45 @@ package body Sem_Elab is
 
       raise Program_Error;
    end Within;
+
+   --------------------------
+   -- Within_Elaborate_All --
+   --------------------------
+
+   function Within_Elaborate_All (E : Entity_Id) return Boolean is
+      Item    : Node_Id;
+      Item2   : Node_Id;
+      Elab_Id : Entity_Id;
+      Par     : Node_Id;
+
+   begin
+      Item := First (Context_Items (Cunit (Current_Sem_Unit)));
+
+      while Present (Item) loop
+         if Nkind (Item) = N_Pragma
+           and then Get_Pragma_Id (Chars (Item)) = Pragma_Elaborate_All
+         then
+            Elab_Id :=
+              Entity (
+                Expression (First (Pragma_Argument_Associations (Item))));
+            Par   := Parent (Unit_Declaration_Node (Elab_Id));
+            Item2 := First (Context_Items (Par));
+
+            while Present (Item2) loop
+               if Nkind (Item2) = N_With_Clause
+                 and then Entity (Name (Item2)) = E
+               then
+                  return True;
+               end if;
+
+               Next (Item2);
+            end loop;
+         end if;
+
+         Next (Item);
+      end loop;
+
+      return False;
+   end Within_Elaborate_All;
 
 end Sem_Elab;

@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,10 +34,10 @@ with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Lib;      use Lib;
 with Namet;    use Namet;
-with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Stand;    use Stand;
 with Targparm; use Targparm;
+with Tbuild;   use Tbuild;
 with Uname;    use Uname;
 
 package body Restrict is
@@ -125,7 +125,7 @@ package body Restrict is
                            Error_Msg_Unit_1 := U;
 
                            Error_Msg_N
-                             ("dependence on $ not allowed,", N);
+                             ("|dependence on $ not allowed,", N);
 
                            Name_Buffer (1 .. S'Last) := S;
                            Name_Len := S'Length;
@@ -134,7 +134,7 @@ package body Restrict is
                            Error_Msg_Sloc := Restrictions_Loc (R_Id);
 
                            Error_Msg_N
-                             ("\violates pragma Restriction (%) #", N);
+                             ("\|violates pragma Restriction (%) #", N);
                            return;
                         end;
                      end if;
@@ -167,7 +167,7 @@ package body Restrict is
             Set_Casing (All_Lower_Case);
             Error_Msg_Name_1 := Name_Enter;
             Error_Msg_Sloc := Restrictions_Loc (R);
-            Error_Msg_N ("violation of restriction %#", N);
+            Error_Msg_N ("|violation of restriction %#", N);
          end;
       end if;
    end Check_Restriction;
@@ -198,7 +198,8 @@ package body Restrict is
             Error_Msg_N ("violation of restriction %?#!", N);
 
             Insert_Action (N,
-              Make_Raise_Storage_Error (Loc));
+              Make_Raise_Storage_Error (Loc,
+                Reason => SE_Restriction_Violation));
          end;
       end if;
    end Check_Restriction;
@@ -224,7 +225,7 @@ package body Restrict is
             Set_Casing (All_Lower_Case);
             Error_Msg_Name_1 := Name_Enter;
             Error_Msg_Sloc := Restriction_Parameters_Loc (R);
-            Error_Msg_N ("maximum value exceeded for restriction %#", N);
+            Error_Msg_N ("|maximum value exceeded for restriction %#", N);
          end;
       end if;
    end Check_Restriction;
@@ -269,10 +270,10 @@ package body Restrict is
       if No_Run_Time then
          if High_Integrity_Mode_On_Target then
             Error_Msg_N
-              ("this construct not allowed in high integrity mode", Enode);
+              ("|this construct not allowed in high integrity mode", Enode);
          else
             Error_Msg_N
-              ("this construct not allowed in No_Run_Time mode", Enode);
+              ("|this construct not allowed in No_Run_Time mode", Enode);
          end if;
       end if;
    end Disallow_In_No_Run_Time_Mode;
@@ -378,6 +379,7 @@ package body Restrict is
    begin
       No_Run_Time := True;
       Restrictions (No_Exception_Handlers) := True;
+      Restrictions (No_Implicit_Dynamic_Code) := True;
       Opt.Global_Discard_Names := True;
    end Set_No_Run_Time_Mode;
 
@@ -434,7 +436,7 @@ package body Restrict is
 
    function Suppress_Restriction_Message (N : Node_Id) return Boolean is
    begin
-      --  If main unit is library unit, then we will output message
+      --  We only output messages for the extended main source unit
 
       if In_Extended_Main_Source_Unit (N) then
          return False;
@@ -447,8 +449,7 @@ package body Restrict is
       --  Otherwise suppress message if internal file
 
       else
-         return
-           Is_Internal_File_Name (Unit_File_Name (Get_Source_Unit (N)));
+         return Is_Internal_File_Name (Unit_File_Name (Get_Source_Unit (N)));
       end if;
    end Suppress_Restriction_Message;
 
@@ -458,8 +459,7 @@ package body Restrict is
 
    function Tasking_Allowed return Boolean is
    begin
-      return
-        Restriction_Parameters (Max_Tasks) /= 0;
+      return Restriction_Parameters (Max_Tasks) /= 0;
    end Tasking_Allowed;
 
 end Restrict;

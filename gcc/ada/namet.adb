@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.86 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -78,7 +78,7 @@ package body Namet is
    pragma Inline (Hash);
    --  Compute hash code for name stored in Name_Buffer (length in Name_Len)
 
-   procedure Strip_Qualification_And_Package_Body_Suffix;
+   procedure Strip_Qualification_And_Suffixes;
    --  Given an encoded entity name in Name_Buffer, remove package body
    --  suffix as described for Strip_Package_Body_Suffix, and also remove
    --  all qualification, i.e. names followed by two underscores. The
@@ -589,7 +589,7 @@ package body Namet is
    procedure Get_Unqualified_Decoded_Name_String (Id : Name_Id) is
    begin
       Get_Decoded_Name_String (Id);
-      Strip_Qualification_And_Package_Body_Suffix;
+      Strip_Qualification_And_Suffixes;
    end Get_Unqualified_Decoded_Name_String;
 
    ---------------------------------
@@ -599,7 +599,7 @@ package body Namet is
    procedure Get_Unqualified_Name_String (Id : Name_Id) is
    begin
       Get_Name_String (Id);
-      Strip_Qualification_And_Package_Body_Suffix;
+      Strip_Qualification_And_Suffixes;
    end Get_Unqualified_Name_String;
 
    ----------
@@ -1105,11 +1105,13 @@ package body Namet is
 
    end Store_Encoded_Character;
 
-   -------------------------------------------------
-   -- Strip_Qualification_And_Package_Body_Suffix --
-   -------------------------------------------------
+   --------------------------------------
+   -- Strip_Qualification_And_Suffixes --
+   --------------------------------------
 
-   procedure Strip_Qualification_And_Package_Body_Suffix is
+   procedure Strip_Qualification_And_Suffixes is
+      J : Integer;
+
    begin
       --  Strip package body qualification string off end
 
@@ -1124,18 +1126,43 @@ package body Namet is
            and then Name_Buffer (J) /= 'p';
       end loop;
 
-      --  Find rightmost __ separator if one exists and strip it
-      --  and everything that precedes it from the name.
+      --  Find rightmost __ or $ separator if one exists
 
-      for J in reverse 2 .. Name_Len - 2 loop
-         if Name_Buffer (J) = '_' and then Name_Buffer (J + 1) = '_' then
-            Name_Buffer (1 .. Name_Len - J - 1) :=
-              Name_Buffer (J + 2 .. Name_Len);
-            Name_Len := Name_Len - J - 1;
-            exit;
+      J := Name_Len - 1;
+      while J > 1 loop
+
+         --  If $ separator, homonym separator, so strip it and keep looking
+
+         if Name_Buffer (J) = '$' then
+            Name_Len := J - 1;
+            J := Name_Len - 1;
+
+         --  Else check for __ found
+
+         elsif Name_Buffer (J) = '_' and then Name_Buffer (J + 1) = '_' then
+
+            --  Found __ so see if digit follows, and if so, this is a
+            --  homonym separator, so strip it and keep looking.
+
+            if Name_Buffer (J + 2) in '0' .. '9' then
+               Name_Len := J - 1;
+               J := Name_Len - 1;
+
+            --  If not a homonym separator, then we simply strip the
+            --  separator and everything that precedes it, and we are done
+
+            else
+               Name_Buffer (1 .. Name_Len - J - 1) :=
+                 Name_Buffer (J + 2 .. Name_Len);
+               Name_Len := Name_Len - J - 1;
+               exit;
+            end if;
+
+         else
+            J := J - 1;
          end if;
       end loop;
-   end Strip_Qualification_And_Package_Body_Suffix;
+   end Strip_Qualification_And_Suffixes;
 
    ---------------
    -- Tree_Read --

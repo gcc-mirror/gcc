@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -415,6 +415,13 @@ package body Ch3 is
 
             when Tok_Left_Paren =>
                Typedef_Node := P_Enumeration_Type_Definition;
+
+               End_Labl :=
+                 Make_Identifier (Token_Ptr,
+                   Chars => Chars (Ident_Node));
+               Set_Comes_From_Source (End_Labl, False);
+
+               Set_End_Label (Typedef_Node, End_Labl);
                TF_Semicolon;
                exit;
 
@@ -473,6 +480,13 @@ package body Ch3 is
                      Typedef_Node := P_Record_Definition;
                      Set_Tagged_Present (Typedef_Node, True);
                      Set_Limited_Present (Typedef_Node, True);
+
+                     End_Labl :=
+                       Make_Identifier (Token_Ptr,
+                         Chars => Chars (Ident_Node));
+                     Set_Comes_From_Source (End_Labl, False);
+
+                     Set_End_Label (Typedef_Node, End_Labl);
                   end if;
 
                else
@@ -489,6 +503,13 @@ package body Ch3 is
                   else
                      Typedef_Node := P_Record_Definition;
                      Set_Tagged_Present (Typedef_Node, True);
+
+                     End_Labl :=
+                       Make_Identifier (Token_Ptr,
+                         Chars => Chars (Ident_Node));
+                     Set_Comes_From_Source (End_Labl, False);
+
+                     Set_End_Label (Typedef_Node, End_Labl);
                   end if;
                end if;
 
@@ -2976,7 +2997,7 @@ package body Ch3 is
          end if;
 
          if Token = Tok_Comma then
-            Error_Msg_SC (""","" should be ""|""");
+            Error_Msg_SC (""","" should be ""'|""");
          else
             exit when Token /= Tok_Vertical_Bar;
          end if;

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,31 @@
 with Types; use Types;
 
 package Tbuild is
+
+   function Checks_Off (N : Node_Id) return Node_Id;
+   pragma Inline (Checks_Off);
+   --  Returns an N_Unchecked_Expression node whose expression is the given
+   --  argument. The results is a subexpression identical to the argument,
+   --  except that it will be analyzed and resolved with checks off.
+
+   function Convert_To (Typ : Entity_Id; Expr : Node_Id) return Node_Id;
+   --  Returns an expression that represents the result of a checked convert
+   --  of expression Exp to type T. If the base type of Exp is T, then no
+   --  conversion is required, and Exp is returned unchanged. Otherwise an
+   --  N_Type_Conversion node is constructed to convert the expression.
+   --  If an N_Type_Conversion node is required, Relocate_Node is used on
+   --  Exp. This means that it is safe to replace a node by a Convert_To
+   --  of itself to some other type.
+
+   function Make_Byte_Aligned_Attribute_Reference
+     (Sloc           : Source_Ptr;
+      Prefix         : Node_Id;
+      Attribute_Name : Name_Id)
+      return           Node_Id;
+   pragma Inline (Make_Byte_Aligned_Attribute_Reference);
+   --  Like the standard Make_Attribute_Reference but the special flag
+   --  Must_Be_Byte_Aligned is set in the attribute reference node. The
+   --  Attribute_Name must be Name_Address or Name_Unrestricted_Access.
 
    function Make_DT_Component
      (Loc  : Source_Ptr;
@@ -100,6 +125,33 @@ package Tbuild is
       return   Node_Id;
    pragma Inline (Make_Integer_Literal);
    --  A convenient form of Make_Integer_Literal taking Int instead of Uint
+
+   function Make_Raise_Constraint_Error
+     (Sloc      : Source_Ptr;
+      Condition : Node_Id := Empty;
+      Reason    : RT_Exception_Code)
+      return      Node_Id;
+   pragma Inline (Make_Raise_Constraint_Error);
+   --  A convenient form of Make_Raise_Constraint_Error where the Reason
+   --  is given simply as an enumeration value, rather than a Uint code.
+
+   function Make_Raise_Program_Error
+     (Sloc      : Source_Ptr;
+      Condition : Node_Id := Empty;
+      Reason    : RT_Exception_Code)
+      return      Node_Id;
+   pragma Inline (Make_Raise_Program_Error);
+   --  A convenient form of Make_Raise_Program_Error where the Reason
+   --  is given simply as an enumeration value, rather than a Uint code.
+
+   function Make_Raise_Storage_Error
+     (Sloc      : Source_Ptr;
+      Condition : Node_Id := Empty;
+      Reason    : RT_Exception_Code)
+      return      Node_Id;
+   pragma Inline (Make_Raise_Storage_Error);
+   --  A convenient form of Make_Raise_Storage_Error where the Reason
+   --  is given simply as an enumeration value, rather than a Uint code.
 
    function Make_Unsuppress_Block
      (Loc   : Source_Ptr;
@@ -183,16 +235,6 @@ package Tbuild is
    --  of sources, the numbers will be consistent. This means that it is fine
    --  to use these as public symbols.
 
-   function New_Suffixed_Name
-     (Related_Id : Name_Id;
-      Suffix     : String)
-      return       Name_Id;
-   --  This function is used to create special suffixed names used by the
-   --  debugger. Suffix is a string of upper case letters, used to construct
-   --  the required name. For instance, the special type used to record the
-   --  fixed-point small is called typ_SMALL where typ is the name of the
-   --  fixed-point type (as passed in Related_Id), and Suffix is "SMALL".
-
    function New_Occurrence_Of
      (Def_Id : Entity_Id;
       Loc    : Source_Ptr)
@@ -212,20 +254,15 @@ package Tbuild is
    --  It is used from the expander, where Etype fields are generally not set,
    --  since they are set when the expanded tree is reanalyzed.
 
-   function Checks_Off (N : Node_Id) return Node_Id;
-   pragma Inline (Checks_Off);
-   --  Returns an N_Unchecked_Expression node whose expression is the given
-   --  argument. The results is a subexpression identical to the argument,
-   --  except that it will be analyzed and resolved with checks off.
-
-   function Convert_To (Typ : Entity_Id; Expr : Node_Id) return Node_Id;
-   --  Returns an expression that represents the result of a checked convert
-   --  of expression Exp to type T. If the base type of Exp is T, then no
-   --  conversion is required, and Exp is returned unchanged. Otherwise an
-   --  N_Type_Conversion node is constructed to convert the expression.
-   --  If an N_Type_Conversion node is required, Relocate_Node is used on
-   --  Exp. This means that it is safe to replace a node by a Convert_To
-   --  of itself to some other type.
+   function New_Suffixed_Name
+     (Related_Id : Name_Id;
+      Suffix     : String)
+      return       Name_Id;
+   --  This function is used to create special suffixed names used by the
+   --  debugger. Suffix is a string of upper case letters, used to construct
+   --  the required name. For instance, the special type used to record the
+   --  fixed-point small is called typ_SMALL where typ is the name of the
+   --  fixed-point type (as passed in Related_Id), and Suffix is "SMALL".
 
    function OK_Convert_To (Typ : Entity_Id; Expr : Node_Id) return Node_Id;
    --  Like Convert_To, except that a conversion node is always generated,

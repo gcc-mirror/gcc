@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.21 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,11 +59,14 @@ package body Interfaces.C.Strings is
    function Position_Of_Nul (Into : char_array) return size_t;
    --  Returns position of the first Nul in Into or Into'Last + 1 if none
 
-   function C_Malloc (Size : size_t) return chars_ptr;
-   pragma Import (C, C_Malloc, "__gnat_malloc");
+   --  We can't use directly System.Memory because the categorization is not
+   --  compatible, so we directly import here the malloc and free routines.
 
-   procedure C_Free (Address : chars_ptr);
-   pragma Import (C, C_Free, "__gnat_free");
+   function Memory_Alloc (Size : size_t) return chars_ptr;
+   pragma Import (C, Memory_Alloc, "__gnat_malloc");
+
+   procedure Memory_Free (Address : chars_ptr);
+   pragma Import (C, Memory_Free, "__gnat_free");
 
    ---------
    -- "+" --
@@ -84,7 +87,7 @@ package body Interfaces.C.Strings is
          return;
       end if;
 
-      C_Free (Item);
+      Memory_Free (Item);
       Item := Null_Ptr;
    end Free;
 
@@ -101,7 +104,7 @@ package body Interfaces.C.Strings is
       --  nul is absent and must be added explicitly.
 
       Index := Position_Of_Nul (Into => Chars);
-      Pointer := C_Malloc ((Index - Chars'First + 1));
+      Pointer := Memory_Alloc ((Index - Chars'First + 1));
 
       --  If nul is present, transfer string up to and including it.
 

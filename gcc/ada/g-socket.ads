@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---              Copyright (C) 2001 Ada Core Technologies, Inc.              --
+--              Copyright (C) 2001-2002 Ada Core Technologies, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,9 @@
 
 --  This package provides an interface to the sockets communication facility
 --  provided on many operating systems. Currently this is implemented on all
---  native GNAT ports except for VMS. It is not yet implemented for any of
---  the cross-ports (e.g. it is not available for VxWorks or LynxOS).
+--  native GNAT ports except for VMS. It is not yet implemented on the Lynx
+--  cross-ports.
+
 --  Another restriction is that there is no multicast support under Windows
 --  or under any system on which the multicast support is not available or
 --  installed.
@@ -45,11 +46,12 @@ with Ada.Streams;
 
 package GNAT.Sockets is
 
-   --  Sockets are designed to provide a consistent communication
-   --  facility between applications. This package provides an
-   --  Ada-like interface similar to the one proposed as part of the
-   --  BSD socket layer. This is a system independent thick binding.
-   --  Here is a typical example of what you can do.
+   --  Sockets are designed to provide a consistent communication facility
+   --  between applications. This package provides an Ada-like intrerface
+   --  similar to that proposed as part of the BSD socket layer. This is a
+   --  system independent thick binding.
+
+   --  Here is a typical example of what you can do:
 
    --  with GNAT.Sockets; use GNAT.Sockets;
    --
@@ -75,19 +77,19 @@ package GNAT.Sockets is
    --     begin
    --        accept Start;
    --
-   --        --  Get an Internet address of a host (here "localhost").
+   --        --  Get an Internet address of a host (here the local host name).
    --        --  Note that a host can have several addresses. Here we get
    --        --  the first one which is supposed to be the official one.
    --
-   --        Address.Addr := Addresses (Get_Host_By_Name ("localhost"), 1);
+   --        Address.Addr := Addresses (Get_Host_By_Name (Host_Name), 1);
    --
    --        --  Get a socket address that is an Internet address and a port
    --
    --        Address.Port := 5432;
    --
    --        --  The first step is to create a socket. Once created, this
-   --        --  socket must be associated to with an address. Usually only a
-   --        --  server (Pong here) needs to bind an address explicitly.
+   --        --  socket must be associated to with an address. Usually only
+   --        --  a server (Pong here) needs to bind an address explicitly.
    --        --  Most of the time clients can skip this step because the
    --        --  socket routines will bind an arbitrary address to an unbound
    --        --  socket.
@@ -234,7 +236,7 @@ package GNAT.Sockets is
    --
    --        --  See comments in Ping section for the first steps.
    --
-   --        Address.Addr := Addresses (Get_Host_By_Name ("localhost"), 1);
+   --        Address.Addr := Addresses (Get_Host_By_Name (Host_Name), 1);
    --        Address.Port := 5432;
    --        Create_Socket (Socket);
    --
@@ -481,8 +483,9 @@ package GNAT.Sockets is
    --  Errors are described by an enumeration type. There is only one
    --  exception Socket_Error in this package to deal with an error
    --  during a socket routine. Once raised, its message contains the
-   --  error code between brackets and a string describing the error
-   --  code.
+   --  error code between brackets and a string describing the error code.
+
+   --  The name of the enumeration constant documents the error condition.
 
    type Error_Type is
      (Permission_Denied,
@@ -813,7 +816,7 @@ package GNAT.Sockets is
    --  data. In these cases Status is set to Completed and sockets
    --  that are ready are set in R_Socket_Set or W_Socket_Set. Status
    --  is set to Expired if no socket was ready after a Timeout
-   --  expiration. Status is set to Aborted if an abort signal as been
+   --  expiration. Status is set to Aborted if an abort signal has been
    --  received while checking socket status. As this procedure
    --  returns when Timeout occurs, it is a design choice to keep this
    --  procedure process blocking. Note that a Timeout of 0.0 returns

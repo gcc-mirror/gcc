@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
---           Copyright (C) 1992-2001 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2002 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,21 +30,15 @@ with ALI;         use ALI;
 with ALI.Util;    use ALI.Util;
 with Binderr;     use Binderr;
 with Butil;       use Butil;
-with Csets;
 with Fname;       use Fname;
 with Gnatvsn;     use Gnatvsn;
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 with Namet;       use Namet;
 with Opt;         use Opt;
 with Osint;       use Osint;
+with Osint.L;     use Osint.L;
 with Output;      use Output;
-with Prj;         use Prj;
-with Prj.Pars;    use Prj.Pars;
-with Prj.Env;
-with Prj.Ext;     use Prj.Ext;
-with Prj.Util;    use Prj.Util;
-with Snames;      use Snames;
-with Stringt;     use Stringt;
+with Targparm;    use Targparm;
 with Types;       use Types;
 
 procedure Gnatls is
@@ -66,6 +60,7 @@ procedure Gnatls is
       Value : String_Access;
       Next  : Dir_Ref;
    end record;
+   --  ??? comment needed
 
    First_Source_Dir : Dir_Ref;
    Last_Source_Dir  : Dir_Ref;
@@ -90,10 +85,6 @@ procedure Gnatls is
    Too_Long : Boolean := False;
    --  When True, lines are too long for multi-column output and each
    --  item of information is on a different line.
-
-   Project_File      : String_Access;
-   Project           : Prj.Project_Id;
-   Current_Verbosity : Prj.Verbosity := Prj.Default;
 
    Selective_Output : Boolean := False;
    Print_Usage      : Boolean := False;
@@ -143,10 +134,6 @@ procedure Gnatls is
 
    function Corresponding_Sdep_Entry (A : ALI_Id; U : Unit_Id) return Sdep_Id;
    --  Give the Sdep entry corresponding to the unit U in ali record A.
-
-   function Index (Char : Character; Str : String) return Natural;
-   --  Returns the first occurrence of Char in Str.
-   --  Returns 0 if Char is not in Str.
 
    procedure Output_Object (O : File_Name_Type);
    --  Print out the name of the object when requested
@@ -246,10 +233,6 @@ procedure Gnatls is
       Write_Eol;
       Error_Msg ("wrong ALI format, can't find dependency line for & in %");
       Exit_Program (E_Fatal);
-
-      --  Not needed since we exit the program but avoids compiler warning
-
-      raise Program_Error;
    end Corresponding_Sdep_Entry;
 
    -------------------------
@@ -319,10 +302,12 @@ procedure Gnatls is
       end if;
 
       Source_Start := Unit_End + 1;
+
       if Source_Start > Spaces'Last then
          Source_Start := Spaces'Last;
       end if;
-      Source_End   := Source_Start - 1;
+
+      Source_End := Source_Start - 1;
 
       if Print_Source then
          Source_End   := Source_Start + Max_Src_Length;
@@ -370,32 +355,19 @@ procedure Gnatls is
       end if;
    end Find_Status;
 
-   -----------
-   -- Index --
-   -----------
-
-   function Index (Char : Character; Str : String) return Natural is
-   begin
-      for Index in Str'Range loop
-         if Str (Index) = Char then
-            return Index;
-         end if;
-      end loop;
-
-      return 0;
-   end Index;
-
    -------------------
    -- Output_Object --
    -------------------
 
    procedure Output_Object (O : File_Name_Type) is
       Object_Name : String_Access;
+
    begin
       if Print_Object then
          Get_Name_String (O);
          Object_Name := To_Host_File_Spec (Name_Buffer (1 .. Name_Len));
          Write_Str (Object_Name.all);
+
          if Print_Source or else Print_Unit then
             if Too_Long then
                Write_Eol;
@@ -611,104 +583,119 @@ procedure Gnatls is
          return;
       end if;
 
-      if Argv (1) = Switch_Character or else Argv (1) = '-' then
+      if Argv (1) = '-' then
 
          if Argv'Length = 1 then
             Fail ("switch character cannot be followed by a blank");
 
-         --  -I-
+         --  Processing for -I-
 
          elsif Argv (2 .. Argv'Last) = "I-" then
             Opt.Look_In_Primary_Dir := False;
 
-         --  Forbid  -?-  or  -??-  where ? is any character
+         --  Forbid -?- or -??- where ? is any character
 
          elsif (Argv'Length = 3 and then Argv (3) = '-')
            or else (Argv'Length = 4 and then Argv (4) = '-')
          then
             Fail ("Trailing ""-"" at the end of ", Argv, " forbidden.");
 
-         --  -Idir
+         --  Processing for -Idir
 
          elsif Argv (2) = 'I' then
             Add_Source_Dir (Argv (3 .. Argv'Last), And_Save);
             Add_Lib_Dir (Argv (3 .. Argv'Last), And_Save);
 
-         --  -aIdir (to gcc this is like a -I switch)
+         --  Processing for -aIdir (to gcc this is like a -I switch)
 
          elsif Argv'Length >= 3 and then Argv (2 .. 3) = "aI" then
             Add_Source_Dir (Argv (4 .. Argv'Last), And_Save);
 
-         --  -aOdir
+         --  Processing for -aOdir
 
          elsif Argv'Length >= 3 and then Argv (2 .. 3) = "aO" then
             Add_Lib_Dir (Argv (4 .. Argv'Last), And_Save);
 
-         --  -aLdir (to gnatbind this is like a -aO switch)
+         --  Processing for -aLdir (to gnatbind this is like a -aO switch)
 
          elsif Argv'Length >= 3 and then Argv (2 .. 3) = "aL" then
             Add_Lib_Dir (Argv (4 .. Argv'Last), And_Save);
 
-         --  -vPx
-
-         elsif Argv'Length = 4 and then Argv (2 .. 3) = "vP" then
-            case Argv (4) is
-               when '0' =>
-                  Current_Verbosity := Prj.Default;
-               when '1' =>
-                  Current_Verbosity := Prj.Medium;
-               when '2' =>
-                  Current_Verbosity := Prj.High;
-               when others =>
-                  null;
-            end case;
-
-         --  -Pproject_file
-
-         elsif Argv'Length >= 3 and then Argv (2) = 'P' then
-            if Project_File /= null then
-               Fail (Argv & ": second project file forbidden (first is """ &
-                     Project_File.all & """)");
-            else
-               Project_File := new String'(Argv (3 .. Argv'Last));
-            end if;
-
-         --  -Xexternal=value
-
-         elsif Argv'Length >= 5 and then Argv (2) = 'X' then
-            declare
-               Equal_Pos : constant Natural :=
-                 Index ('=', Argv (3 .. Argv'Last));
-            begin
-               if Equal_Pos >= 4 and then
-                  Equal_Pos /= Argv'Last then
-                  Add (External_Name => Argv (3 .. Equal_Pos - 1),
-                       Value => Argv (Equal_Pos + 1 .. Argv'Last));
-               else
-                  Fail (Argv & " is not a valid external assignment.");
-               end if;
-            end;
+         --  Processing for -nostdinc
 
          elsif Argv (2 .. Argv'Last) = "nostdinc" then
             Opt.No_Stdinc := True;
 
+         --  Processing for one character switches
+
          elsif Argv'Length = 2 then
             case Argv (2) is
-               when 'a' => Also_Predef := True;
-               when 'h' => Print_Usage := True;
+               when 'a' => Also_Predef               := True;
+               when 'h' => Print_Usage               := True;
                when 'u' => Reset_Print; Print_Unit   := True;
                when 's' => Reset_Print; Print_Source := True;
                when 'o' => Reset_Print; Print_Object := True;
-               when 'v' => Verbose_Mode := True;
-               when 'd' => Dependable   := True;
+               when 'v' => Verbose_Mode              := True;
+               when 'd' => Dependable                := True;
+
                when others => null;
             end case;
+
+         --  Processing for --RTS=path
+
+         elsif Argv (1 .. 5) = "--RTS" then
+
+            if Argv (6) /= '=' or else
+              (Argv (6) = '='
+               and then Argv'Length = 6)
+            then
+               Osint.Fail ("missing path for --RTS");
+
+            else
+               --  Valid --RTS switch
+
+               Opt.No_Stdinc := True;
+               Opt.RTS_Switch := True;
+
+               declare
+                  Src_Path_Name : String_Ptr :=
+                                    String_Ptr
+                                      (Get_RTS_Search_Dir
+                                        (Argv (7 .. Argv'Last), Include));
+                  Lib_Path_Name : String_Ptr :=
+                                    String_Ptr
+                                      (Get_RTS_Search_Dir
+                                        (Argv (7 .. Argv'Last), Objects));
+
+               begin
+                  if Src_Path_Name /= null
+                    and then Lib_Path_Name /= null
+                  then
+                     Add_Search_Dirs (Src_Path_Name, Include);
+                     Add_Search_Dirs (Lib_Path_Name, Objects);
+
+                  elsif Src_Path_Name = null
+                    and then Lib_Path_Name = null
+                  then
+                     Osint.Fail ("RTS path not valid: missing " &
+                                 "adainclude and adalib directories");
+
+                  elsif Src_Path_Name = null then
+                     Osint.Fail ("RTS path not valid: missing " &
+                                 "adainclude directory");
+
+                  elsif Lib_Path_Name = null then
+                     Osint.Fail ("RTS path not valid: missing " &
+                                 "adalib directory");
+                  end if;
+               end;
+            end if;
          end if;
 
-      --  If not a switch it must be a file name
+      --  If not a switch, it must be a file name
 
       else
-         Set_Main_File_Name (Argv);
+         Add_File (Argv);
       end if;
    end Scan_Ls_Arg;
 
@@ -717,14 +704,6 @@ procedure Gnatls is
    -----------
 
    procedure Usage is
-      procedure Write_Switch_Char;
-      --  Write two spaces followed by appropriate switch character
-
-      procedure Write_Switch_Char is
-      begin
-         Write_Str ("  ");
-         Write_Char (Switch_Character);
-      end Write_Switch_Char;
 
    --  Start of processing for Usage
 
@@ -744,95 +723,71 @@ procedure Gnatls is
 
       --  Line for -a
 
-      Write_Switch_Char;
-      Write_Str ("a        also output relevant predefined units");
+      Write_Str ("  -a        also output relevant predefined units");
       Write_Eol;
 
       --  Line for -u
 
-      Write_Switch_Char;
-      Write_Str ("u        output only relevant unit names");
+      Write_Str ("  -u        output only relevant unit names");
       Write_Eol;
 
       --  Line for -h
 
-      Write_Switch_Char;
-      Write_Str ("h        output this help message");
+      Write_Str ("  -h        output this help message");
       Write_Eol;
 
       --  Line for -s
 
-      Write_Switch_Char;
-      Write_Str ("s        output only relevant source names");
+      Write_Str ("  -s        output only relevant source names");
       Write_Eol;
 
       --  Line for -o
 
-      Write_Switch_Char;
-      Write_Str ("o        output only relevant object names");
+      Write_Str ("  -o        output only relevant object names");
       Write_Eol;
 
       --  Line for -d
 
-      Write_Switch_Char;
-      Write_Str ("d        output sources on which specified units depend");
+      Write_Str ("  -d        output sources on which specified units depend");
       Write_Eol;
 
       --  Line for -v
 
-      Write_Switch_Char;
-      Write_Str ("v        verbose output, full path and unit information");
+      Write_Str ("  -v        verbose output, full path and unit information");
       Write_Eol;
       Write_Eol;
 
       --  Line for -aI switch
 
-      Write_Switch_Char;
-      Write_Str ("aIdir    specify source files search path");
+      Write_Str ("  -aIdir    specify source files search path");
       Write_Eol;
 
       --  Line for -aO switch
 
-      Write_Switch_Char;
-      Write_Str ("aOdir    specify object files search path");
+      Write_Str ("  -aOdir    specify object files search path");
       Write_Eol;
 
       --  Line for -I switch
 
-      Write_Switch_Char;
-      Write_Str ("Idir     like -aIdir -aOdir");
+      Write_Str ("  -Idir     like -aIdir -aOdir");
       Write_Eol;
 
       --  Line for -I- switch
 
-      Write_Switch_Char;
-      Write_Str ("I-       do not look for sources & object files");
+      Write_Str ("  -I-       do not look for sources & object files");
       Write_Str (" in the default directory");
-      Write_Eol;
-
-      --  Line for -vPx
-
-      Write_Switch_Char;
-      Write_Str ("vPx      verbosity for project file (0, 1 or 2)");
-      Write_Eol;
-
-      --  Line for -Pproject_file
-
-      Write_Switch_Char;
-      Write_Str ("Pprj     use a project file prj");
-      Write_Eol;
-
-      --  Line for -Xexternal=value
-
-      Write_Switch_Char;
-      Write_Str ("Xext=val specify an external value.");
       Write_Eol;
 
       --  Line for -nostdinc
 
-      Write_Switch_Char;
-      Write_Str ("nostdinc do not look for source files");
+      Write_Str ("  -nostdinc do not look for source files");
       Write_Str (" in the system default directory");
+      Write_Eol;
+
+      --  Line for --RTS
+
+      Write_Str ("  --RTS=dir specify the default source and object search"
+                 & " path");
       Write_Eol;
 
       --  File Status explanation
@@ -854,14 +809,6 @@ procedure Gnatls is
    --   Start of processing for Gnatls
 
 begin
-   Osint.Initialize (Binder);
-
-   Namet.Initialize;
-   Csets.Initialize;
-
-   Snames.Initialize;
-
-   Prj.Initialize;
 
    --  Use low level argument routines to avoid dragging in the secondary stack
 
@@ -879,88 +826,6 @@ begin
       Next_Arg := Next_Arg + 1;
    end loop Scan_Args;
 
-   --  If a switch -P is used, parse the project file
-
-   if Project_File /= null then
-
-      Prj.Pars.Set_Verbosity (To => Current_Verbosity);
-
-      Prj.Pars.Parse
-        (Project           => Project,
-         Project_File_Name => Project_File.all);
-
-      if Project = Prj.No_Project then
-         Fail ("""" & Project_File.all & """ processing failed");
-      end if;
-
-      --  Add the source directories and the object directories
-      --  to the searched directories.
-
-      declare
-         procedure Register_Source_Dirs is new
-           Prj.Env.For_All_Source_Dirs (Add_Src_Search_Dir);
-
-         procedure Register_Object_Dirs is new
-           Prj.Env.For_All_Object_Dirs (Add_Lib_Search_Dir);
-
-      begin
-         Register_Source_Dirs (Project);
-         Register_Object_Dirs (Project);
-      end;
-
-      --  Check if a package gnatls is in the project file and if there is
-      --  there is one, get the switches, if any, and scan them.
-
-      declare
-         Data       : Prj.Project_Data := Prj.Projects.Table (Project);
-         Pkg        : Prj.Package_Id :=
-                        Prj.Util.Value_Of
-                          (Name        => Name_Gnatls,
-                           In_Packages => Data.Decl.Packages);
-         Element    : Package_Element;
-         Switches   : Prj.Variable_Value;
-         Current    : Prj.String_List_Id;
-         The_String : String_Element;
-
-      begin
-         if Pkg /= No_Package then
-            Element := Packages.Table (Pkg);
-            Switches :=
-              Prj.Util.Value_Of
-                (Variable_Name => Name_Switches,
-                 In_Variables => Element.Decl.Attributes);
-
-            case Switches.Kind is
-               when Prj.Undefined =>
-                  null;
-
-               when Prj.Single =>
-                  if String_Length (Switches.Value) > 0 then
-                     String_To_Name_Buffer (Switches.Value);
-                     Scan_Ls_Arg
-                       (Name_Buffer (1 .. Name_Len),
-                        And_Save => False);
-                  end if;
-
-               when Prj.List =>
-                  Current := Switches.Values;
-                  while Current /= Prj.Nil_String loop
-                     The_String := String_Elements.Table (Current);
-
-                     if String_Length (The_String.Value) > 0 then
-                        String_To_Name_Buffer (The_String.Value);
-                        Scan_Ls_Arg
-                          (Name_Buffer (1 .. Name_Len),
-                           And_Save => False);
-                     end if;
-
-                     Current := The_String.Next;
-                  end loop;
-            end case;
-         end if;
-      end;
-   end if;
-
    --  Add the source and object directories specified on the
    --  command line, if any, to the searched directories.
 
@@ -974,11 +839,13 @@ begin
       First_Lib_Dir := First_Lib_Dir.Next;
    end loop;
 
-   --  Finally, add the default directories.
+   --  Finally, add the default directories and obtain target parameters
 
    Osint.Add_Default_Search_Dirs;
 
    if Verbose_Mode then
+      Namet.Initialize;
+      Targparm.Get_Target_Parameters;
 
       --  WARNING: the output of gnatls -v is used during the compilation
       --  and installation of GLADE to recreate sdefault.adb and locate
@@ -987,8 +854,13 @@ begin
 
       Write_Eol;
       Write_Str ("GNATLS ");
+
+      if Targparm.High_Integrity_Mode_On_Target then
+         Write_Str ("Pro High Integrity ");
+      end if;
+
       Write_Str (Gnat_Version_String);
-      Write_Str (" Copyright 1997-2001 Free Software Foundation, Inc.");
+      Write_Str (" Copyright 1997-2002 Free Software Foundation, Inc.");
       Write_Eol;
       Write_Eol;
       Write_Str ("Source Search Path:");
@@ -1042,6 +914,7 @@ begin
       Exit_Program (E_Fatal);
    end if;
 
+   Namet.Initialize;
    Initialize_ALI;
    Initialize_ALI_Source;
 
@@ -1131,10 +1004,12 @@ begin
                      if Verbose_Mode then
                         Write_Str ("   ");
                         Output_Source (D);
+
                      elsif Too_Long then
                         Write_Str ("   ");
                         Output_Source (D);
                         Write_Eol;
+
                      else
                         Write_Str (Spaces (1 .. Source_Start - 2));
                         Output_Source (D);

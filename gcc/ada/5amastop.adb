@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for Alpha/Dec Unix)                     --
 --                                                                          --
---                            $Revision: 1.5 $
+--                            $Revision$
 --                                                                          --
 --           Copyright (C) 1999-2001 Ada Core Technologies, Inc.            --
 --                                                                          --
@@ -87,11 +87,8 @@ package body System.Machine_State_Operations is
    ------------------------
 
    procedure Free_Machine_State (M : in out Machine_State) is
-      procedure Gnat_Free (M : in Machine_State);
-      pragma Import (C, Gnat_Free, "__gnat_free");
-
    begin
-      Gnat_Free (M);
+      Memory.Free (Address (M));
       M := Machine_State (Null_Address);
    end Free_Machine_State;
 

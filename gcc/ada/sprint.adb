@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@
 
 with Atree;    use Atree;
 with Casing;   use Casing;
+with Csets;    use Csets;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Lib;      use Lib;
@@ -38,7 +39,7 @@ with Output;   use Output;
 with Rtsfind;  use Rtsfind;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
-with Sinput.L; use Sinput.L;
+with Sinput.D; use Sinput.D;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -81,6 +82,55 @@ package body Sprint is
    --  Keep track of freeze indent level (controls blank lines before
    --  procedures within expression freeze actions)
 
+   -------------------------------
+   -- Operator Precedence Table --
+   -------------------------------
+
+   --  This table is used to decide whether a subexpression needs to be
+   --  parenthesized. The rule is that if an operand of an operator (which
+   --  for this purpose includes AND THEN and OR ELSE) is itself an operator
+   --  with a lower precedence than the operator (or equal precedence if
+   --  appearing as the right operand), then parentheses are required.
+
+   Op_Prec : array (N_Subexpr) of Short_Short_Integer :=
+               (N_Op_And          => 1,
+                N_Op_Or           => 1,
+                N_Op_Xor          => 1,
+                N_And_Then        => 1,
+                N_Or_Else         => 1,
+
+                N_In              => 2,
+                N_Not_In          => 2,
+                N_Op_Eq           => 2,
+                N_Op_Ge           => 2,
+                N_Op_Gt           => 2,
+                N_Op_Le           => 2,
+                N_Op_Lt           => 2,
+                N_Op_Ne           => 2,
+
+                N_Op_Add          => 3,
+                N_Op_Concat       => 3,
+                N_Op_Subtract     => 3,
+                N_Op_Plus         => 3,
+                N_Op_Minus        => 3,
+
+                N_Op_Divide       => 4,
+                N_Op_Mod          => 4,
+                N_Op_Rem          => 4,
+                N_Op_Multiply     => 4,
+
+                N_Op_Expon        => 5,
+                N_Op_Abs          => 5,
+                N_Op_Not          => 5,
+
+                others            => 6);
+
+   procedure Sprint_Left_Opnd (N : Node_Id);
+   --  Print left operand of operator, parenthesizing if necessary
+
+   procedure Sprint_Right_Opnd (N : Node_Id);
+   --  Print right operand of operator, parenthesizing if necessary
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -102,8 +152,9 @@ package body Sprint is
    procedure Indent_End;
    --  Decrease indentation level
 
-   procedure Print_Eol;
-   --  Terminate current line in line buffer
+   procedure Print_Debug_Line (S : String);
+   --  Used to print output lines in Debug_Generated_Code mode (this is used
+   --  as the argument for a call to Set_Special_Output in package Output).
 
    procedure Process_TFAI_RR_Flags (Nod : Node_Id);
    --  Given a divide, multiplication or division node, check the flags
@@ -132,6 +183,9 @@ package body Sprint is
    procedure Write_Char_Sloc (C : Character);
    --  Like Write_Char, except that if C is non-blank, Set_Debug_Sloc is
    --  called to ensure that the current node has a proper Sloc set.
+
+   procedure Write_Condition_And_Reason (Node : Node_Id);
+   --  Write Condition and Reason codes of Raise_xxx_Error node
 
    procedure Write_Discr_Specs (N : Node_Id);
    --  Output discriminant specification for node, which is any of the type
@@ -269,50 +323,37 @@ package body Sprint is
    end Indent_End;
 
    --------
-   -- PG --
+   -- pg --
    --------
 
-   procedure PG (Node : Node_Id) is
+   procedure pg (Node : Node_Id) is
    begin
       Dump_Generated_Only := True;
       Dump_Original_Only := False;
       Sprint_Node (Node);
-      Print_Eol;
-   end PG;
+      Write_Eol;
+   end pg;
 
    --------
-   -- PO --
+   -- po --
    --------
 
-   procedure PO (Node : Node_Id) is
+   procedure po (Node : Node_Id) is
    begin
       Dump_Generated_Only := False;
       Dump_Original_Only := True;
       Sprint_Node (Node);
-      Print_Eol;
-   end PO;
+      Write_Eol;
+   end po;
 
-   ---------------
-   -- Print_Eol --
-   ---------------
+   ----------------------
+   -- Print_Debug_Line --
+   ----------------------
 
-   procedure Print_Eol is
+   procedure Print_Debug_Line (S : String) is
    begin
-      --  If we are writing a debug source file, then grab it from the
-      --  Output buffer, and reset the column counter (the routines in
-      --  Output never actually write any output for us in this mode,
-      --  they just build line images in Buffer).
-
-      if Debug_Generated_Code then
-         Write_Debug_Line (Buffer (1 .. Natural (Column) - 1), Debug_Sloc);
-         Column := 1;
-
-      --  In normal mode, we call Write_Eol to write the line normally
-
-      else
-         Write_Eol;
-      end if;
-   end Print_Eol;
+      Write_Debug_Line (S, Debug_Sloc);
+   end Print_Debug_Line;
 
    ---------------------------
    -- Process_TFAI_RR_Flags --
@@ -330,16 +371,16 @@ package body Sprint is
    end Process_TFAI_RR_Flags;
 
    --------
-   -- PS --
+   -- ps --
    --------
 
-   procedure PS (Node : Node_Id) is
+   procedure ps (Node : Node_Id) is
    begin
       Dump_Generated_Only := False;
       Dump_Original_Only := False;
       Sprint_Node (Node);
-      Print_Eol;
-   end PS;
+      Write_Eol;
+   end ps;
 
    --------------------
    -- Set_Debug_Sloc --
@@ -366,13 +407,13 @@ package body Sprint is
          Col : constant Int := Column;
 
       begin
-         Print_Eol;
+         Write_Eol;
 
          while Col > Column loop
             Write_Char ('-');
          end loop;
 
-         Print_Eol;
+         Write_Eol;
       end Underline;
 
    --  Start of processing for Tree_Dump.
@@ -391,13 +432,13 @@ package body Sprint is
 
       if Debug_Flag_Z then
          Debug_Flag_Z := False;
-         Print_Eol;
-         Print_Eol;
+         Write_Eol;
+         Write_Eol;
          Write_Str ("Source recreated from tree of Standard (spec)");
          Underline;
          Sprint_Node (Standard_Package_Node);
-         Print_Eol;
-         Print_Eol;
+         Write_Eol;
+         Write_Eol;
       end if;
 
       if Debug_Flag_S or Dump_Generated_Only or Dump_Original_Only then
@@ -418,10 +459,12 @@ package body Sprint is
                --  If we are generating debug files, setup to write them
 
                if Debug_Generated_Code then
+                  Set_Special_Output (Print_Debug_Line'Access);
                   Create_Debug_Source (Source_Index (U), Debug_Sloc);
                   Sprint_Node (Cunit (U));
-                  Print_Eol;
+                  Write_Eol;
                   Close_Debug_Source;
+                  Set_Special_Output (null);
 
                --  Normal output to standard output file
 
@@ -494,6 +537,26 @@ package body Sprint is
       Sprint_Node_List (List);
       Indent_End;
    end Sprint_Indented_List;
+
+   ---------------------
+   -- Sprint_Left_Opnd --
+   ---------------------
+
+   procedure Sprint_Left_Opnd (N : Node_Id) is
+      Opnd : constant Node_Id := Left_Opnd (N);
+
+   begin
+      if Paren_Count (Opnd) /= 0
+        or else Op_Prec (Nkind (Opnd)) >= Op_Prec (Nkind (N))
+      then
+         Sprint_Node (Opnd);
+
+      else
+         Write_Char ('(');
+         Sprint_Node (Opnd);
+         Write_Char (')');
+      end if;
+   end Sprint_Left_Opnd;
 
    -----------------
    -- Sprint_Node --
@@ -722,9 +785,9 @@ package body Sprint is
             end if;
 
          when N_And_Then =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Str_Sloc (" and then ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_At_Clause =>
             Write_Indent_Str_Sloc ("for ");
@@ -1466,9 +1529,9 @@ package body Sprint is
             end if;
 
          when N_In =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Str_Sloc (" in ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Incomplete_Type_Declaration =>
             Write_Indent_Str_Sloc ("type ");
@@ -1565,9 +1628,9 @@ package body Sprint is
             Sprint_Node (Expression (Node));
 
          when N_Not_In =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Str_Sloc (" not in ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Null =>
             Write_Str_With_Col_Check_Sloc ("null");
@@ -1648,108 +1711,108 @@ package body Sprint is
 
          when N_Op_Abs =>
             Write_Operator (Node, "abs ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Add =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " + ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_And =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " and ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Concat =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " & ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Divide =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Char (' ');
             Process_TFAI_RR_Flags (Node);
             Write_Operator (Node, "/ ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Eq =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " = ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Expon =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " ** ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Ge =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " >= ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Gt =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " > ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Le =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " <= ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Lt =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " < ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Minus =>
             Write_Operator (Node, "-");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Mod =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
 
             if Treat_Fixed_As_Integer (Node) then
                Write_Str (" #");
             end if;
 
             Write_Operator (Node, " mod ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Multiply =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Char (' ');
             Process_TFAI_RR_Flags (Node);
             Write_Operator (Node, "* ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Ne =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " /= ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Not =>
             Write_Operator (Node, "not ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Or =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " or ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Plus =>
             Write_Operator (Node, "+");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Rem =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
 
             if Treat_Fixed_As_Integer (Node) then
                Write_Str (" #");
             end if;
 
             Write_Operator (Node, " rem ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Shift =>
             Set_Debug_Sloc;
@@ -1762,14 +1825,14 @@ package body Sprint is
             Write_Char (')');
 
          when N_Op_Subtract =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " - ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Op_Xor =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Operator (Node, " xor ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Operator_Symbol =>
             Write_Name_With_Col_Check_Sloc (Chars (Node));
@@ -1780,9 +1843,9 @@ package body Sprint is
             Sprint_Opt_Node (Real_Range_Specification (Node));
 
          when N_Or_Else =>
-            Sprint_Node (Left_Opnd (Node));
+            Sprint_Left_Opnd (Node);
             Write_Str_Sloc (" or else ");
-            Sprint_Node (Right_Opnd (Node));
+            Sprint_Right_Opnd (Node);
 
          when N_Others_Choice =>
             if All_Others (Node) then
@@ -1991,7 +2054,20 @@ package body Sprint is
          when N_Qualified_Expression =>
             Sprint_Node (Subtype_Mark (Node));
             Write_Char_Sloc (''');
-            Sprint_Node (Expression (Node));
+
+            --  Print expression, make sure we have at least one level of
+            --  parentheses around the expression. For cases of qualified
+            --  expressions in the source, this is always the case, but
+            --  for generated qualifications, there may be no explicit
+            --  parentheses present.
+
+            if Paren_Count (Expression (Node)) /= 0 then
+               Sprint_Node (Expression (Node));
+            else
+               Write_Char ('(');
+               Sprint_Node (Expression (Node));
+               Write_Char (')');
+            end if;
 
          when N_Raise_Constraint_Error =>
 
@@ -2006,35 +2082,37 @@ package body Sprint is
             end if;
 
             Write_Str_With_Col_Check_Sloc ("[constraint_error");
-
-            if Present (Condition (Node)) then
-               Write_Str_With_Col_Check (" when ");
-               Sprint_Node (Condition (Node));
-            end if;
-
-            Write_Char (']');
+            Write_Condition_And_Reason (Node);
 
          when N_Raise_Program_Error =>
-            Write_Indent;
-            Write_Str_With_Col_Check_Sloc ("[program_error");
 
-            if Present (Condition (Node)) then
-               Write_Str_With_Col_Check (" when ");
-               Sprint_Node (Condition (Node));
+            --  This node can be used either as a subexpression or as a
+            --  statement form. The following test is a reasonably reliable
+            --  way to distinguish the two cases.
+
+            if Is_List_Member (Node)
+              and then Nkind (Parent (Node)) not in N_Subexpr
+            then
+               Write_Indent;
             end if;
 
-            Write_Char (']');
+            Write_Str_With_Col_Check_Sloc ("[program_error");
+            Write_Condition_And_Reason (Node);
 
          when N_Raise_Storage_Error =>
-            Write_Indent;
-            Write_Str_With_Col_Check_Sloc ("[storage_error");
 
-            if Present (Condition (Node)) then
-               Write_Str_With_Col_Check (" when ");
-               Sprint_Node (Condition (Node));
+            --  This node can be used either as a subexpression or as a
+            --  statement form. The following test is a reasonably reliable
+            --  way to distinguish the two cases.
+
+            if Is_List_Member (Node)
+              and then Nkind (Parent (Node)) not in N_Subexpr
+            then
+               Write_Indent;
             end if;
 
-            Write_Char (']');
+            Write_Str_With_Col_Check_Sloc ("[storage_error");
+            Write_Condition_And_Reason (Node);
 
          when N_Raise_Statement =>
             Write_Indent_Str_Sloc ("raise ");
@@ -2248,7 +2326,7 @@ package body Sprint is
             Write_Indent_Str_Sloc ("separate (");
             Sprint_Node (Name (Node));
             Write_Char (')');
-            Print_Eol;
+            Write_Eol;
             Sprint_Node (Proper_Body (Node));
 
          when N_Task_Body =>
@@ -2381,7 +2459,7 @@ package body Sprint is
 
          when N_Unused_At_Start | N_Unused_At_End =>
             Write_Indent_Str ("***** Error, unused node encountered *****");
-            Print_Eol;
+            Write_Eol;
 
          when N_Use_Package_Clause =>
             Write_Indent_Str_Sloc ("use ");
@@ -2573,6 +2651,26 @@ package body Sprint is
       end if;
    end Sprint_Paren_Comma_List;
 
+   ----------------------
+   -- Sprint_Right_Opnd --
+   ----------------------
+
+   procedure Sprint_Right_Opnd (N : Node_Id) is
+      Opnd : constant Node_Id := Right_Opnd (N);
+
+   begin
+      if Paren_Count (Opnd) /= 0
+        or else Op_Prec (Nkind (Opnd)) > Op_Prec (Nkind (N))
+      then
+         Sprint_Node (Opnd);
+
+      else
+         Write_Char ('(');
+         Sprint_Node (Opnd);
+         Write_Char (')');
+      end if;
+   end Sprint_Right_Opnd;
+
    ---------------------
    -- Write_Char_Sloc --
    ---------------------
@@ -2585,6 +2683,34 @@ package body Sprint is
 
       Write_Char (C);
    end Write_Char_Sloc;
+
+   --------------------------------
+   -- Write_Condition_And_Reason --
+   --------------------------------
+
+   procedure Write_Condition_And_Reason (Node : Node_Id) is
+      Image : constant String := RT_Exception_Code'Image
+                                   (RT_Exception_Code'Val
+                                     (UI_To_Int (Reason (Node))));
+
+   begin
+      if Present (Condition (Node)) then
+         Write_Str_With_Col_Check (" when ");
+         Sprint_Node (Condition (Node));
+      end if;
+
+      Write_Str (" """);
+
+      for J in 4 .. Image'Last loop
+         if Image (J) = '_' then
+            Write_Char (' ');
+         else
+            Write_Char (Fold_Lower (Image (J)));
+         end if;
+      end loop;
+
+      Write_Str ("""]");
+   end Write_Condition_And_Reason;
 
    ------------------------
    --  Write_Discr_Specs --
@@ -2756,7 +2882,8 @@ package body Sprint is
       if Indent_Annull_Flag then
          Indent_Annull_Flag := False;
       else
-         Print_Eol;
+         Write_Eol;
+
          for J in 1 .. Indent loop
             Write_Char (' ');
          end loop;
@@ -2909,25 +3036,31 @@ package body Sprint is
       T : Natural := S'Last;
 
    begin
-      if S (F) = ' ' then
-         Write_Char (' ');
-         F := F + 1;
-      end if;
+      --  If no overflow check, just write string out, and we are done
 
-      if S (T) = ' ' then
-         T := T - 1;
-      end if;
+      if not Do_Overflow_Check (N) then
+         Write_Str_Sloc (S);
 
-      if Do_Overflow_Check (N) then
+      --  If overflow check, we want to surround the operator with curly
+      --  brackets, but not include spaces within the brackets.
+
+      else
+         if S (F) = ' ' then
+            Write_Char (' ');
+            F := F + 1;
+         end if;
+
+         if S (T) = ' ' then
+            T := T - 1;
+         end if;
+
          Write_Char ('{');
          Write_Str_Sloc (S (F .. T));
          Write_Char ('}');
-      else
-         Write_Str_Sloc (S);
-      end if;
 
-      if S (S'Last) = ' ' then
-         Write_Char (' ');
+         if S (S'Last) = ' ' then
+            Write_Char (' ');
+         end if;
       end if;
    end Write_Operator;
 

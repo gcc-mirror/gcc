@@ -2,14 +2,13 @@
 --                                                                          --
 --                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
 --                                                                          --
---    S Y S T E M . T A S K _ P R I M I T I V E S . O P E R A T I O N S     --
---                                 . D E C                                  --
+--                   SYSTEM.TASK_PRIMITIVES.OPERATIONS.DEC                  --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.1 $                             --
+--                             $Revision$
 --                                                                          --
---              Copyright (C) 2000 Free Software Foundation, Inc.           --
+--           Copyright (C) 2000-2001 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,11 +33,13 @@
 -- State University (http://www.gnat.com).                                  --
 --                                                                          --
 ------------------------------------------------------------------------------
+
 --   This package is for OpenVMS/Alpha
---
+
 with System.OS_Interface;
 with System.Tasking;
 with Unchecked_Conversion;
+
 package body System.Task_Primitives.Operations.DEC is
 
    use System.OS_Interface;
@@ -46,16 +47,15 @@ package body System.Task_Primitives.Operations.DEC is
    use System.Aux_DEC;
    use type Interfaces.C.int;
 
-   --  The FAB_RAB_Type specifieds where the context field (the calling
+   --  The FAB_RAB_Type specifies where the context field (the calling
    --  task) is stored.  Other fields defined for FAB_RAB aren't need and
    --  so are ignored.
-   type FAB_RAB_Type is
-   record
+
+   type FAB_RAB_Type is record
       CTX : Unsigned_Longword;
    end record;
 
-   for FAB_RAB_Type use
-   record
+   for FAB_RAB_Type use record
       CTX at 24 range 0 .. 31;
    end record;
 
@@ -81,8 +81,9 @@ package body System.Task_Primitives.Operations.DEC is
    ---------------------------
 
    procedure Interrupt_AST_Handler (ID : Address) is
-      Result     : Interfaces.C.int;
-      AST_Self_ID    : Task_ID := To_Task_Id (ID);
+      Result      : Interfaces.C.int;
+      AST_Self_ID : Task_ID := To_Task_Id (ID);
+
    begin
       Result := pthread_cond_signal_int_np (AST_Self_ID.Common.LL.CV'Access);
       pragma Assert (Result = 0);
@@ -93,8 +94,9 @@ package body System.Task_Primitives.Operations.DEC is
    ---------------------
 
    procedure RMS_AST_Handler (ID : Address) is
-      AST_Self_ID    : Task_ID := To_Task_Id (To_FAB_RAB (ID).CTX);
-      Result     : Interfaces.C.int;
+      AST_Self_ID : Task_ID := To_Task_Id (To_FAB_RAB (ID).CTX);
+      Result      : Interfaces.C.int;
+
    begin
       AST_Self_ID.Common.LL.AST_Pending := False;
       Result := pthread_cond_signal_int_np (AST_Self_ID.Common.LL.CV'Access);
@@ -107,6 +109,7 @@ package body System.Task_Primitives.Operations.DEC is
 
    function Self return Unsigned_Longword is
       Self_ID : Task_ID := Self;
+
    begin
       Self_ID.Common.LL.AST_Pending := True;
       return To_Unsigned_Longword (Self);
@@ -117,8 +120,9 @@ package body System.Task_Primitives.Operations.DEC is
    -------------------------
 
    procedure Starlet_AST_Handler (ID : Address) is
-      Result     : Interfaces.C.int;
-      AST_Self_ID    : Task_ID := To_Task_Id (ID);
+      Result      : Interfaces.C.int;
+      AST_Self_ID : Task_ID := To_Task_Id (ID);
+
    begin
       AST_Self_ID.Common.LL.AST_Pending := False;
       Result := pthread_cond_signal_int_np (AST_Self_ID.Common.LL.CV'Access);
@@ -131,12 +135,15 @@ package body System.Task_Primitives.Operations.DEC is
 
    procedure Task_Synch is
       Synch_Self_ID : Task_ID := Self;
+
    begin
       Write_Lock (Synch_Self_ID);
       Synch_Self_ID.Common.State := AST_Server_Sleep;
+
       while Synch_Self_ID.Common.LL.AST_Pending loop
          Sleep (Synch_Self_ID, AST_Server_Sleep);
       end loop;
+
       Synch_Self_ID.Common.State := Runnable;
       Unlock (Synch_Self_ID);
    end Task_Synch;

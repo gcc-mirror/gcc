@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.6 $                             --
+--                             $Revision$                             --
 --                                                                          --
---           Copyright (C) 1991-2000, Florida State University              --
+--           Copyright (C) 1991-2001, Florida State University              --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,8 +49,6 @@ package body System.Interrupt_Management is
 
    use System.OS_Interface;
    use type unsigned_long;
-
-   type Interrupt_List is array (Interrupt_ID range <>) of Interrupt_ID;
 
    ---------------------------
    -- Initialize_Interrupts --

@@ -1,4 +1,4 @@
-------------------------------------------------------------------------------
+---------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,7 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with Tbuild;   use Tbuild;
 
 package body Sem_Eval is
 
@@ -96,17 +97,44 @@ package body Sem_Eval is
    type Bits is array (Nat range <>) of Boolean;
    --  Used to convert unsigned (modular) values for folding logical ops
 
+   --  The following definitions are used to maintain a cache of nodes that
+   --  have compile time known values. The cache is maintained only for
+   --  discrete types (the most common case), and is populated by calls to
+   --  Compile_Time_Known_Value and Expr_Value, but only used by Expr_Value
+   --  since it is possible for the status to change (in particular it is
+   --  possible for a node to get replaced by a constraint error node).
+
+   CV_Bits : constant := 5;
+   --  Number of low order bits of Node_Id value used to reference entries
+   --  in the cache table.
+
+   CV_Cache_Size : constant Nat := 2 ** CV_Bits;
+   --  Size of cache for compile time values
+
+   subtype CV_Range is Nat range 0 .. CV_Cache_Size;
+
+   type CV_Entry is record
+      N : Node_Id;
+      V : Uint;
+   end record;
+
+   type CV_Cache_Array is array (CV_Range) of CV_Entry;
+
+   CV_Cache : CV_Cache_Array := (others => (Node_High_Bound, Uint_0));
+   --  This is the actual cache, with entries consisting of node/value pairs,
+   --  and the impossible value Node_High_Bound used for unset entries.
+
    -----------------------
    -- Local Subprograms --
    -----------------------
 
-   function OK_Bits (N : Node_Id; Bits : Uint) return Boolean;
-   --  Bits represents the number of bits in an integer value to be computed
-   --  (but the value has not been computed yet). If this value in Bits is
-   --  reasonable, a result of True is returned, with the implication that
-   --  the caller should go ahead and complete the calculation. If the value
-   --  in Bits is unreasonably large, then an error is posted on node N, and
-   --  False is returned (and the caller skips the proposed calculation).
+   function Constant_Array_Ref (Op : Node_Id) return Node_Id;
+   --  The caller has checked that Op is an array reference (i.e. that its
+   --  node kind is N_Indexed_Component). If the array reference is constant
+   --  at compile time, and yields a constant value of a discrete type, then
+   --  the expression node for the constant value is returned. otherwise Empty
+   --  is returned. This is used by Compile_Time_Known_Value, as well as by
+   --  Expr_Value and Expr_Rep_Value.
 
    function From_Bits (B : Bits; T : Entity_Id) return Uint;
    --  Converts a bit string of length B'Length to a Uint value to be used
@@ -120,6 +148,14 @@ package body Sem_Eval is
    --  the corresponding string literal or character literal (one of the
    --  two must be available, or the operand would not have been marked
    --  as foldable in the earlier analysis of the operation).
+
+   function OK_Bits (N : Node_Id; Bits : Uint) return Boolean;
+   --  Bits represents the number of bits in an integer value to be computed
+   --  (but the value has not been computed yet). If this value in Bits is
+   --  reasonable, a result of True is returned, with the implication that
+   --  the caller should go ahead and complete the calculation. If the value
+   --  in Bits is unreasonably large, then an error is posted on node N, and
+   --  False is returned (and the caller skips the proposed calculation).
 
    procedure Out_Of_Range (N : Node_Id);
    --  This procedure is called if it is determined that node N, which
@@ -218,11 +254,6 @@ package body Sem_Eval is
         and then not Is_Machine_Number (N)
         and then not Is_Generic_Type (Etype (N))
         and then Etype (N) /= Universal_Real
-        and then not Debug_Flag_S
-        and then (not Debug_Flag_T
-                    or else
-                      (Nkind (Parent (N)) = N_Object_Declaration
-                        and then Constant_Present (Parent (N))))
       then
          --  Check that value is in bounds before converting to machine
          --  number, so as not to lose case where value overflows in the
@@ -282,7 +313,8 @@ package body Sem_Eval is
            Intval (N) > Expr_Value (Type_High_Bound (Universal_Integer)))
       then
          Apply_Compile_Time_Constraint_Error
-           (N, "non-static universal integer value out of range?");
+           (N, "non-static universal integer value out of range?",
+            CE_Range_Check_Failed);
 
       --  Check out of range of base type
 
@@ -302,7 +334,7 @@ package body Sem_Eval is
 
          elsif Is_Out_Of_Range (N, T) then
             Apply_Compile_Time_Constraint_Error
-              (N, "value not in range of}?");
+              (N, "value not in range of}?", CE_Range_Check_Failed);
 
          elsif Checks_On then
             Enable_Range_Check (N);
@@ -327,6 +359,7 @@ package body Sem_Eval is
          then
             Apply_Compile_Time_Constraint_Error
               (N, "string length wrong for}?",
+               CE_Length_Check_Failed,
                Ent => Ttype,
                Typ => Ttype);
          end if;
@@ -541,6 +574,18 @@ package body Sem_Eval is
    --  Start of processing for Compile_Time_Compare
 
    begin
+      --  If either operand could raise constraint error, then we cannot
+      --  know the result at compile time (since CE may be raised!)
+
+      if not (Cannot_Raise_Constraint_Error (L)
+                and then
+              Cannot_Raise_Constraint_Error (R))
+      then
+         return Unknown;
+      end if;
+
+      --  Identical operands are most certainly equal
+
       if L = R then
          return EQ;
 
@@ -684,7 +729,9 @@ package body Sem_Eval is
    ------------------------------
 
    function Compile_Time_Known_Value (Op : Node_Id) return Boolean is
-      K : constant Node_Kind := Nkind (Op);
+      K      : constant Node_Kind := Nkind (Op);
+      CV_Ent : CV_Entry renames CV_Cache (Nat (Op) mod CV_Cache_Size);
+      Val    : Node_Id;
 
    begin
       --  Never known at compile time if bad type or raises constraint error
@@ -719,10 +766,7 @@ package body Sem_Eval is
             if Ekind (E) = E_Enumeration_Literal then
                return True;
 
-            elsif Ekind (E) /= E_Constant then
-               return False;
-
-            else
+            elsif Ekind (E) = E_Constant then
                V := Constant_Value (E);
                return Present (V) and then Compile_Time_Known_Value (V);
             end if;
@@ -731,10 +775,16 @@ package body Sem_Eval is
       --  We have a value, see if it is compile time known
 
       else
-         --  Literals and NULL are known at compile time
+         --  Integer literals are worth storing in the cache
 
-         if K = N_Integer_Literal
-              or else
+         if K = N_Integer_Literal then
+            CV_Ent.N := Op;
+            CV_Ent.V := Intval (Op);
+            return True;
+
+         --  Other literals and NULL are known at compile time
+
+         elsif
             K = N_Character_Literal
               or else
             K = N_Real_Literal
@@ -752,13 +802,29 @@ package body Sem_Eval is
          elsif K = N_Attribute_Reference then
             return Attribute_Name (Op) = Name_Null_Parameter;
 
-         --  All other types of values are not known at compile time
+         --  A reference to an element of a constant array may be constant.
 
-         else
-            return False;
+         elsif K = N_Indexed_Component then
+            Val := Constant_Array_Ref (Op);
+
+            if Present (Val) then
+               CV_Ent.N := Op;
+               CV_Ent.V := Expr_Value (Val);
+               return True;
+            end if;
          end if;
-
       end if;
+
+      --  If we fall through, not known at compile time
+
+      return False;
+
+   --  If we get an exception while trying to do this test, then some error
+   --  has occurred, and we simply say that the value is not known after all
+
+   exception
+      when others =>
+         return False;
    end Compile_Time_Known_Value;
 
    --------------------------------------
@@ -842,6 +908,50 @@ package body Sem_Eval is
 
       end if;
    end Compile_Time_Known_Value_Or_Aggr;
+
+   ------------------------
+   -- Constant_Array_Ref --
+   ------------------------
+
+   function Constant_Array_Ref (Op : Node_Id) return Node_Id is
+   begin
+      if List_Length (Expressions (Op)) = 1
+        and then Is_Entity_Name (Prefix (Op))
+        and then Ekind (Entity (Prefix (Op))) = E_Constant
+      then
+         declare
+            Arr : constant Node_Id := Constant_Value (Entity (Prefix (Op)));
+            Sub : constant Node_Id := First (Expressions (Op));
+            Ind : constant Node_Id := First_Index (Etype (Arr));
+            Lbd : constant Node_Id := Type_Low_Bound (Etype (Ind));
+
+            Lin : Nat;
+            --  Linear one's origin subscript value for array reference
+
+            Elm : Node_Id;
+            --  Value from constant array
+
+         begin
+            if Compile_Time_Known_Value (Sub)
+              and then Nkind (Arr) = N_Aggregate
+              and then Compile_Time_Known_Value (Lbd)
+              and then Is_Discrete_Type (Component_Type (Etype (Arr)))
+            then
+               Lin := UI_To_Int (Expr_Value (Sub) - Expr_Value (Lbd)) + 1;
+
+               if List_Length (Expressions (Arr)) >= Lin then
+                  Elm := Pick (Expressions (Arr), Lin);
+
+                  if Compile_Time_Known_Value (Elm) then
+                     return Elm;
+                  end if;
+               end if;
+            end if;
+         end;
+      end if;
+
+      return Empty;
+   end Constant_Array_Ref;
 
    -----------------
    -- Eval_Actual --
@@ -931,7 +1041,7 @@ package body Sem_Eval is
 
                   if Right_Int = 0 then
                      Apply_Compile_Time_Constraint_Error
-                       (N, "division by zero");
+                       (N, "division by zero", CE_Divide_By_Zero);
                      return;
                   else
                      Result := Left_Int / Right_Int;
@@ -944,7 +1054,7 @@ package body Sem_Eval is
 
                   if Right_Int = 0 then
                      Apply_Compile_Time_Constraint_Error
-                       (N, "mod with zero divisor");
+                       (N, "mod with zero divisor", CE_Divide_By_Zero);
                      return;
                   else
                      Result := Left_Int mod Right_Int;
@@ -957,7 +1067,7 @@ package body Sem_Eval is
 
                   if Right_Int = 0 then
                      Apply_Compile_Time_Constraint_Error
-                       (N, "rem with zero divisor");
+                       (N, "rem with zero divisor", CE_Divide_By_Zero);
                      return;
                   else
                      Result := Left_Int rem Right_Int;
@@ -1011,7 +1121,7 @@ package body Sem_Eval is
             else pragma Assert (Nkind (N) = N_Op_Divide);
                if UR_Is_Zero (Right_Real) then
                   Apply_Compile_Time_Constraint_Error
-                    (N, "division by zero");
+                    (N, "division by zero", CE_Divide_By_Zero);
                   return;
                end if;
 
@@ -1033,6 +1143,8 @@ package body Sem_Eval is
    --  Nothing to be done!
 
    procedure Eval_Character_Literal (N : Node_Id) is
+      pragma Warnings (Off, N);
+
    begin
       null;
    end Eval_Character_Literal;
@@ -1552,7 +1664,7 @@ package body Sem_Eval is
 
                if Right_Int < 0 then
                   Apply_Compile_Time_Constraint_Error
-                    (N, "integer exponent negative");
+                    (N, "integer exponent negative", CE_Range_Check_Failed);
                   return;
 
                else
@@ -1583,7 +1695,7 @@ package body Sem_Eval is
 
                   if Right_Int < 0 then
                      Apply_Compile_Time_Constraint_Error
-                       (N, "zero ** negative integer");
+                       (N, "zero ** negative integer", CE_Range_Check_Failed);
                      return;
                   else
                      Fold_Ureal (N, Ureal_0);
@@ -1655,8 +1767,9 @@ package body Sem_Eval is
       Operand     : constant Node_Id   := Expression (N);
       Target_Type : constant Entity_Id := Entity (Subtype_Mark (N));
 
-      Stat  : Boolean;
-      Fold  : Boolean;
+      Stat : Boolean;
+      Fold : Boolean;
+      Hex  : Boolean;
 
    begin
       --  Can only fold if target is string or scalar and subtype is static
@@ -1687,11 +1800,22 @@ package body Sem_Eval is
          return;
       end if;
 
+      --  Here we will fold, save Print_In_Hex indication
+
+      Hex := Nkind (Operand) = N_Integer_Literal
+               and then Print_In_Hex (Operand);
+
       --  Fold the result of qualification
 
       if Is_Discrete_Type (Target_Type) then
          Fold_Uint (N, Expr_Value (Operand));
          Set_Is_Static_Expression (N, Stat);
+
+         --  Preserve Print_In_Hex indication
+
+         if Hex and then Nkind (N) = N_Integer_Literal then
+            Set_Print_In_Hex (N);
+         end if;
 
       elsif Is_Real_Type (Target_Type) then
          Fold_Ureal (N, Expr_Value_R (Operand));
@@ -2072,7 +2196,7 @@ package body Sem_Eval is
 
          if String_Literal_Length (T) > String_Type_Len (B) then
             Apply_Compile_Time_Constraint_Error
-              (N, "string literal too long for}",
+              (N, "string literal too long for}", CE_Length_Check_Failed,
                Ent => B,
                Typ => First_Subtype (B));
 
@@ -2083,6 +2207,7 @@ package body Sem_Eval is
          then
             Apply_Compile_Time_Constraint_Error
               (N, "null string literal not allowed for}",
+               CE_Length_Check_Failed,
                Ent => B,
                Typ => First_Subtype (B));
          end if;
@@ -2331,8 +2456,9 @@ package body Sem_Eval is
    --------------------
 
    function Expr_Rep_Value (N : Node_Id) return Uint is
-      Kind   : constant Node_Kind := Nkind (N);
-      Ent    : Entity_Id;
+      Kind : constant Node_Kind := Nkind (N);
+      Ent  : Entity_Id;
+      Vexp : Node_Id;
 
    begin
       if Is_Entity_Name (N) then
@@ -2363,14 +2489,24 @@ package body Sem_Eval is
       --  obtain the desired value from Corresponding_Integer_Value.
 
       elsif Kind = N_Real_Literal then
-
-         --  Apply the assertion to the Underlying_Type of the literal for
-         --  the benefit of calls to this function in the JGNAT back end,
-         --  where literal types can reflect private views.
-
          pragma Assert (Is_Fixed_Point_Type (Underlying_Type (Etype (N))));
          return Corresponding_Integer_Value (N);
 
+      --  Peculiar VMS case, if we have xxx'Null_Parameter, return zero
+
+      elsif Kind = N_Attribute_Reference
+        and then Attribute_Name (N) = Name_Null_Parameter
+      then
+         return Uint_0;
+
+      --  Array reference case
+
+      elsif Kind = N_Indexed_Component then
+         Vexp := Constant_Array_Ref (N);
+         pragma Assert (Present (Vexp));
+         return Expr_Rep_Value (Vexp);
+
+      --  Otherwise must be character literal
       else
          pragma Assert (Kind = N_Character_Literal);
          Ent := Entity (N);
@@ -2394,10 +2530,23 @@ package body Sem_Eval is
    ----------------
 
    function Expr_Value (N : Node_Id) return Uint is
-      Kind : constant Node_Kind := Nkind (N);
-      Ent  : Entity_Id;
+      Kind   : constant Node_Kind := Nkind (N);
+      CV_Ent : CV_Entry renames CV_Cache (Nat (N) mod CV_Cache_Size);
+      Ent    : Entity_Id;
+      Val    : Uint;
+      Vexp   : Node_Id;
 
    begin
+      --  If already in cache, then we know it's compile time known and
+      --  we can return the value that was previously stored in the cache
+      --  since compile time known values cannot change :-)
+
+      if CV_Ent.N = N then
+         return CV_Ent.V;
+      end if;
+
+      --  Otherwise proceed to test value
+
       if Is_Entity_Name (N) then
          Ent := Entity (N);
 
@@ -2405,20 +2554,20 @@ package body Sem_Eval is
          --  created as a result of static evaluation.
 
          if Ekind (Ent) = E_Enumeration_Literal then
-            return Enumeration_Pos (Ent);
+            Val := Enumeration_Pos (Ent);
 
          --  A user defined static constant
 
          else
             pragma Assert (Ekind (Ent) = E_Constant);
-            return Expr_Value (Constant_Value (Ent));
+            Val := Expr_Value (Constant_Value (Ent));
          end if;
 
       --  An integer literal that was either in the source or created
       --  as a result of static evaluation.
 
       elsif Kind = N_Integer_Literal then
-         return Intval (N);
+         Val := Intval (N);
 
       --  A real literal for a fixed-point type. This must be the fixed-point
       --  case, either the literal is of a fixed-point type, or it is a bound
@@ -2427,19 +2576,22 @@ package body Sem_Eval is
 
       elsif Kind = N_Real_Literal then
 
-         --  Apply the assertion to the Underlying_Type of the literal for
-         --  the benefit of calls to this function in the JGNAT back end,
-         --  where literal types can reflect private views.
-
          pragma Assert (Is_Fixed_Point_Type (Underlying_Type (Etype (N))));
-         return Corresponding_Integer_Value (N);
+         Val := Corresponding_Integer_Value (N);
 
       --  Peculiar VMS case, if we have xxx'Null_Parameter, return zero
 
       elsif Kind = N_Attribute_Reference
         and then Attribute_Name (N) = Name_Null_Parameter
       then
-         return Uint_0;
+         Val := Uint_0;
+
+      --  Array reference case
+
+      elsif Kind = N_Indexed_Component then
+         Vexp := Constant_Array_Ref (N);
+         pragma Assert (Present (Vexp));
+         Val := Expr_Value (Vexp);
 
       --  Otherwise must be character literal
 
@@ -2454,12 +2606,17 @@ package body Sem_Eval is
          --  their Pos value as usual.
 
          if No (Ent) then
-            return UI_From_Int (Int (Char_Literal_Value (N)));
+            Val := UI_From_Int (Int (Char_Literal_Value (N)));
          else
-            return Enumeration_Pos (Ent);
+            Val := Enumeration_Pos (Ent);
          end if;
       end if;
 
+      --  Come here with Val set to value to be returned, set cache
+
+      CV_Ent.N := N;
+      CV_Ent.V := Val;
+      return Val;
    end Expr_Value;
 
    ------------------
@@ -3161,7 +3318,7 @@ package body Sem_Eval is
 
          else
             Apply_Compile_Time_Constraint_Error
-              (N, "value not in range of}");
+              (N, "value not in range of}", CE_Range_Check_Failed);
          end if;
 
       --  Here we generate a warning for the Ada 83 case, or when we are
@@ -3170,7 +3327,7 @@ package body Sem_Eval is
       else
          Warn_On_Instance := True;
          Apply_Compile_Time_Constraint_Error
-           (N, "value not in range of}?");
+           (N, "value not in range of}?", CE_Range_Check_Failed);
          Warn_On_Instance := False;
       end if;
    end Out_Of_Range;
@@ -3201,7 +3358,9 @@ package body Sem_Eval is
       --  We have to build an explicit raise_ce node
 
       else
-         Rewrite (N, Make_Raise_Constraint_Error (Sloc (Exp)));
+         Rewrite (N,
+           Make_Raise_Constraint_Error (Sloc (Exp),
+             Reason => CE_Range_Check_Failed));
          Set_Raises_Constraint_Error (N);
          Set_Etype (N, Typ);
       end if;

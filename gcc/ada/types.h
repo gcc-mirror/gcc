@@ -6,9 +6,9 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                             $Revision: 1.1 $
+ *                             $Revision$
  *                                                                          *
- *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2002, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -333,3 +333,36 @@ typedef Int Mechanism_Type;
 #define By_Descriptor_SB   (-8)
 #define By_Descriptor_A    (-9)
 #define By_Descriptor_NCA  (-10)
+
+/* Definitions of Reason codes for Raise_xxx_Error nodes */
+#define CE_Access_Check_Failed              0
+#define CE_Access_Parameter_Is_Null         1
+#define CE_Discriminant_Check_Failed        2
+#define CE_Divide_By_Zero                   3
+#define CE_Explicit_Raise                   4
+#define CE_Index_Check_Failed               5
+#define CE_Invalid_Data                     6
+#define CE_Length_Check_Failed              7
+#define CE_Overflow_Check_Failed            8
+#define CE_Partition_Check_Failed           9
+#define CE_Range_Check_Failed              10
+#define CE_Tag_Check_Failed                11
+#define PE_Access_Before_Elaboration       12
+#define PE_Accessibility_Check_Failed      13
+#define PE_All_Guards_Closed               14
+#define PE_Duplicated_Entry_Address        15
+#define PE_Explicit_Raise                  16
+#define PE_Finalize_Raised_Exception       17
+#define PE_Invalid_Data                    18
+#define PE_Misaligned_Address_Value        19
+#define PE_Missing_Return                  20
+#define PE_Potentially_Blocking_Operation  21
+#define PE_Stubbed_Subprogram_Called       22
+#define PE_Unchecked_Union_Restriction     23
+#define SE_Empty_Storage_Pool              24
+#define SE_Explicit_Raise                  25
+#define SE_Infinite_Recursion              26
+#define SE_Object_Too_Large                27
+#define SE_Restriction_Violation           28
+
+#define LAST_REASON_CODE                   28

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.14 $                             --
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -128,7 +128,10 @@ package Ada.Streams.Stream_IO is
 
    procedure Set_Mode (File : in out File_Type; Mode : in File_Mode);
 
-   procedure Flush (File : in out File_Type);
+   --  Note: The parameter file is IN OUT in the RM, but this is clearly
+   --  an oversight, and was intended to be IN, see AI95-00057.
+
+   procedure Flush (File : File_Type);
 
    ----------------
    -- Exceptions --

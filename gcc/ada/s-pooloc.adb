@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.11 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -68,8 +68,11 @@ package body System.Pool_Local is
       Storage_Size : SSE.Storage_Count;
       Alignment    : SSE.Storage_Count)
    is
+      pragma Warnings (Off, Alignment);
+
       Allocated : constant System.Address :=
-        Memory.Alloc (Memory.size_t (Storage_Size + Pointers_Size));
+                    Memory.Alloc
+                      (Memory.size_t (Storage_Size + Pointers_Size));
 
    begin
       --  The call to Alloc returns an address whose alignment is compatible
@@ -101,7 +104,11 @@ package body System.Pool_Local is
       Storage_Size : SSE.Storage_Count;
       Alignment    : SSE.Storage_Count)
    is
+      pragma Warnings (Off, Storage_Size);
+      pragma Warnings (Off, Alignment);
+
       Allocated : constant System.Address := Address - Pointers_Size;
+
    begin
       if Prev (Allocated).all = Null_Address then
          Pool.First := Next (Allocated).all;

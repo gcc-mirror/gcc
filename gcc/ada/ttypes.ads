@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                             $Revision: 1.25 $
+--                             $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -143,7 +143,7 @@ package Ttypes is
 
    Standard_Character_Size             : constant Pos := Get_Char_Size;
 
-   Standard_Wide_Character_Size        : constant Pos := 2 * Get_Char_Size;
+   Standard_Wide_Character_Size        : constant Pos := 16;
    --  The Standard.Wide_Character type is special in the sense that
    --  it is not defined in terms of its corresponding C type (wchar_t).
    --  Unfortunately this makes the representation of Wide_Character

@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -168,9 +168,9 @@ package body Csets is
    X_FE : constant Character := Character'Val (16#FE#);
    X_FF : constant Character := Character'Val (16#FF#);
 
-   -----------------------------
-   -- Definitions for Latin-1 --
-   -----------------------------
+   ------------------------------------------
+   -- Definitions for Latin-1 (ISO 8859-1) --
+   ------------------------------------------
 
    Fold_Latin_1 : Translate_Table := Translate_Table'(
 
@@ -243,9 +243,9 @@ package body Csets is
 
       others => ' ');
 
-   -----------------------------
-   -- Definitions for Latin-2 --
-   -----------------------------
+   ------------------------------------------
+   -- Definitions for Latin-2 (ISO 8859-2) --
+   ------------------------------------------
 
    Fold_Latin_2 : Translate_Table := Translate_Table'(
 
@@ -318,9 +318,9 @@ package body Csets is
 
       others => ' ');
 
-   -----------------------------
-   -- Definitions for Latin-3 --
-   -----------------------------
+   ------------------------------------------
+   -- Definitions for Latin-3 (ISO 8859-3) --
+   ------------------------------------------
 
    Fold_Latin_3 : Translate_Table := Translate_Table'(
 
@@ -393,9 +393,9 @@ package body Csets is
 
       others => ' ');
 
-   -----------------------------
-   -- Definitions for Latin-4 --
-   -----------------------------
+   ------------------------------------------
+   -- Definitions for Latin-4 (ISO 8859-4) --
+   ------------------------------------------
 
    Fold_Latin_4 : Translate_Table := Translate_Table'(
 
@@ -520,6 +520,81 @@ package body Csets is
       'Q' => 'Q',
       'R' => 'R',
       'S' => 'S',
+      'T' => 'T',
+      'U' => 'U',
+      'V' => 'V',
+      'W' => 'W',
+      'X' => 'X',
+      'Y' => 'Y',
+      'Z' => 'Z',
+
+      '0' => '0',
+      '1' => '1',
+      '2' => '2',
+      '3' => '3',
+      '4' => '4',
+      '5' => '5',
+      '6' => '6',
+      '7' => '7',
+      '8' => '8',
+      '9' => '9',
+
+      '_' => '_',
+
+      others => ' ');
+
+   ------------------------------------------
+   -- Definitions for Latin-9 (ISO 8859-9) --
+   ------------------------------------------
+
+   Fold_Latin_9 : Translate_Table := Translate_Table'(
+
+      'a' => 'A',  X_E0 => X_C0,  X_F0 => X_D0,
+      'b' => 'B',  X_E1 => X_C1,  X_F1 => X_D1,
+      'c' => 'C',  X_E2 => X_C2,  X_F2 => X_D2,
+      'd' => 'D',  X_E3 => X_C3,  X_F3 => X_D3,
+      'e' => 'E',  X_E4 => X_C4,  X_F4 => X_D4,
+      'f' => 'F',  X_E5 => X_C5,  X_F5 => X_D5,
+      'g' => 'G',  X_E6 => X_C6,  X_F6 => X_D6,
+      'h' => 'H',  X_E7 => X_C7,
+      'i' => 'I',  X_E8 => X_C8,  X_F8 => X_D8,
+      'j' => 'J',  X_E9 => X_C9,  X_F9 => X_D9,
+      'k' => 'K',  X_EA => X_CA,  X_FA => X_DA,
+      'l' => 'L',  X_EB => X_CB,  X_FB => X_DB,
+      'm' => 'M',  X_EC => X_CC,  X_FC => X_DC,
+      'n' => 'N',  X_ED => X_CD,  X_FD => X_DD,
+      'o' => 'O',  X_EE => X_CE,  X_FE => X_DE,
+      'p' => 'P',  X_EF => X_CF,
+      'q' => 'Q',  X_A8 => X_A6,
+      'r' => 'R',  X_B8 => X_B4,
+      's' => 'S',  X_BD => X_BC,
+      't' => 'T',  X_BE => X_FF,
+      'u' => 'U',
+      'v' => 'V',
+      'w' => 'W',
+      'x' => 'X',
+      'y' => 'Y',
+      'z' => 'Z',
+
+      'A' => 'A',  X_C0 => X_C0,  X_D0 => X_D0,
+      'B' => 'B',  X_C1 => X_C1,  X_D1 => X_D1,
+      'C' => 'C',  X_C2 => X_C2,  X_D2 => X_D2,
+      'D' => 'D',  X_C3 => X_C3,  X_D3 => X_D3,
+      'E' => 'E',  X_C4 => X_C4,  X_D4 => X_D4,
+      'F' => 'F',  X_C5 => X_C5,  X_D5 => X_D5,
+      'G' => 'G',  X_C6 => X_C6,  X_D6 => X_D6,
+      'H' => 'H',  X_C7 => X_C7,
+      'I' => 'I',  X_C8 => X_C8,  X_D8 => X_D8,
+      'J' => 'J',  X_C9 => X_C9,  X_D9 => X_D9,
+      'K' => 'K',  X_CA => X_CA,  X_DA => X_DA,
+      'L' => 'L',  X_CB => X_CB,  X_DB => X_DB,
+      'M' => 'M',  X_CC => X_CC,  X_DC => X_DC,
+      'N' => 'N',  X_CD => X_CD,  X_DD => X_DD,
+      'O' => 'O',  X_CE => X_CE,  X_DE => X_DE,
+      'P' => 'P',  X_CF => X_CF,  X_DF => X_DF,  X_FF => X_FF,
+      'Q' => 'Q',  X_A6 => X_A6,
+      'R' => 'R',  X_B4 => X_B4,
+      'S' => 'S',  X_BC => X_BC,
       'T' => 'T',
       'U' => 'U',
       'V' => 'V',
@@ -1024,7 +1099,6 @@ package body Csets is
 
    procedure Initialize is
    begin
-
       --  Set Fold_Upper table from source code indication
 
       if Identifier_Character_Set = '1'
@@ -1049,6 +1123,9 @@ package body Csets is
 
       elsif Identifier_Character_Set = '8' then
          Fold_Upper := Fold_IBM_PC_850;
+
+      elsif Identifier_Character_Set = '9' then
+         Fold_Upper := Fold_Latin_9;
 
       elsif Identifier_Character_Set = 'f' then
          Fold_Upper := Fold_Full_Upper_Half;

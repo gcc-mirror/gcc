@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -898,6 +898,7 @@ package body Sinfo is
       (N : Node_Id) return Node_Id is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Enumeration_Type_Definition
         or else NT (N).Nkind = N_Handled_Sequence_Of_Statements
         or else NT (N).Nkind = N_Loop_Statement
         or else NT (N).Nkind = N_Package_Specification
@@ -1619,6 +1620,14 @@ package body Sinfo is
       return Flag5 (N);
    end More_Ids;
 
+   function Must_Be_Byte_Aligned
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Reference);
+      return Flag14 (N);
+   end Must_Be_Byte_Aligned;
+
    function Must_Not_Freeze
       (N : Node_Id) return Boolean is
    begin
@@ -2031,6 +2040,16 @@ package body Sinfo is
         or else NT (N).Nkind = N_Real_Literal);
       return Ureal3 (N);
    end Realval;
+
+   function Reason
+      (N : Node_Id) return Uint is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Raise_Constraint_Error
+        or else NT (N).Nkind = N_Raise_Program_Error
+        or else NT (N).Nkind = N_Raise_Storage_Error);
+      return Uint3 (N);
+   end Reason;
 
    function Record_Extension_Part
       (N : Node_Id) return Node_Id is
@@ -3253,6 +3272,7 @@ package body Sinfo is
       (N : Node_Id; Val : Node_Id) is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Enumeration_Type_Definition
         or else NT (N).Nkind = N_Handled_Sequence_Of_Statements
         or else NT (N).Nkind = N_Loop_Statement
         or else NT (N).Nkind = N_Package_Specification
@@ -3974,6 +3994,14 @@ package body Sinfo is
       Set_Flag5 (N, Val);
    end Set_More_Ids;
 
+   procedure Set_Must_Be_Byte_Aligned
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Reference);
+      Set_Flag14 (N, Val);
+   end Set_Must_Be_Byte_Aligned;
+
    procedure Set_Must_Not_Freeze
       (N : Node_Id; Val : Boolean := True) is
    begin
@@ -4386,6 +4414,16 @@ package body Sinfo is
         or else NT (N).Nkind = N_Real_Literal);
       Set_Ureal3 (N, Val);
    end Set_Realval;
+
+   procedure Set_Reason
+      (N : Node_Id; Val : Uint) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Raise_Constraint_Error
+        or else NT (N).Nkind = N_Raise_Program_Error
+        or else NT (N).Nkind = N_Raise_Storage_Error);
+      Set_Uint3 (N, Val);
+   end Set_Reason;
 
    procedure Set_Record_Extension_Part
       (N : Node_Id; Val : Node_Id) is

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,7 @@ with Inline;   use Inline;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Restrict; use Restrict;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Cat;  use Sem_Cat;
@@ -54,10 +55,12 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
+with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Sinfo.CN; use Sinfo.CN;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
@@ -1298,11 +1301,11 @@ package body Exp_Ch4 is
                end if;
 
             --  If we have anything other than Standard_Character or
-            --  Standard_String, then we must have had an error earlier.
-            --  So we just abandon the attempt at expansion.
+            --  Standard_String, then we must have had a serious error
+            --  earlier, so we just abandon the attempt at expansion.
 
             else
-               pragma Assert (Errors_Detected > 0);
+               pragma Assert (Serious_Errors_Detected > 0);
                return;
             end if;
 
@@ -1649,10 +1652,9 @@ package body Exp_Ch4 is
 
                if Nkind (Expression (Exp)) = N_Raise_Constraint_Error then
 
-                  --  Propagate constraint_error to enclosing allocator.
+                  --  Propagate constraint_error to enclosing allocator
 
-                  Rewrite
-                    (Exp, New_Copy (Expression (Exp)));
+                  Rewrite (Exp, New_Copy (Expression (Exp)));
                end if;
             else
                --  First check against the type of the qualified expression
@@ -2572,7 +2574,7 @@ package body Exp_Ch4 is
 
       --  Deal with software overflow checking
 
-      if Software_Overflow_Checking
+      if not Backend_Overflow_Checks_On_Target
          and then Is_Signed_Integer_Type (Etype (N))
          and then Do_Overflow_Check (N)
       then
@@ -3069,6 +3071,7 @@ package body Exp_Ch4 is
       Typ    : constant Entity_Id  := Etype (N);
       Rtyp   : constant Entity_Id  := Root_Type (Typ);
       Base   : constant Node_Id    := Relocate_Node (Left_Opnd (N));
+      Bastyp : constant Node_Id    := Etype (Base);
       Exp    : constant Node_Id    := Relocate_Node (Right_Opnd (N));
       Exptyp : constant Entity_Id  := Etype (Exp);
       Ovflo  : constant Boolean    := Do_Overflow_Check (N);
@@ -3080,6 +3083,36 @@ package body Exp_Ch4 is
 
    begin
       Binary_Op_Validity_Checks (N);
+
+      --  If either operand is of a private type, then we have the use of
+      --  an intrinsic operator, and we get rid of the privateness, by using
+      --  root types of underlying types for the actual operation. Otherwise
+      --  the private types will cause trouble if we expand multiplications
+      --  or shifts etc. We also do this transformation if the result type
+      --  is different from the base type.
+
+      if Is_Private_Type (Etype (Base))
+           or else
+         Is_Private_Type (Typ)
+           or else
+         Is_Private_Type (Exptyp)
+           or else
+         Rtyp /= Root_Type (Bastyp)
+      then
+         declare
+            Bt : constant Entity_Id := Root_Type (Underlying_Type (Bastyp));
+            Et : constant Entity_Id := Root_Type (Underlying_Type (Exptyp));
+
+         begin
+            Rewrite (N,
+              Unchecked_Convert_To (Typ,
+                Make_Op_Expon (Loc,
+                  Left_Opnd  => Unchecked_Convert_To (Bt, Base),
+                  Right_Opnd => Unchecked_Convert_To (Et, Exp))));
+            Analyze_And_Resolve (N, Typ);
+            return;
+         end;
+      end if;
 
       --  At this point the exponentiation must be dynamic since the static
       --  case has already been folded after Resolve by Eval_Op_Expon.
@@ -3201,9 +3234,14 @@ package body Exp_Ch4 is
          end;
       end if;
 
-      --  Fall through if exponentiation must be done using a runtime routine.
+      --  Fall through if exponentiation must be done using a runtime routine
 
-      --  First deal with modular case.
+      if No_Run_Time then
+         Disallow_In_No_Run_Time_Mode (N);
+         return;
+      end if;
+
+      --  First deal with modular case
 
       if Is_Modular_Integer_Type (Rtyp) then
 
@@ -3496,7 +3534,7 @@ package body Exp_Ch4 is
    begin
       Unary_Op_Validity_Checks (N);
 
-      if Software_Overflow_Checking
+      if not Backend_Overflow_Checks_On_Target
          and then Is_Signed_Integer_Type (Etype (N))
          and then Do_Overflow_Check (N)
       then
@@ -4738,25 +4776,26 @@ package body Exp_Ch4 is
              Expression => Conv),
 
            Make_Raise_Constraint_Error (Loc,
-            Condition =>
-             Make_Or_Else (Loc,
-               Left_Opnd =>
-                 Make_Op_Lt (Loc,
-                   Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
-                   Right_Opnd =>
-                     Make_Attribute_Reference (Loc,
-                       Attribute_Name => Name_First,
-                       Prefix =>
-                         New_Occurrence_Of (Target_Type, Loc))),
+             Condition =>
+              Make_Or_Else (Loc,
+                Left_Opnd =>
+                  Make_Op_Lt (Loc,
+                    Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
+                    Right_Opnd =>
+                      Make_Attribute_Reference (Loc,
+                        Attribute_Name => Name_First,
+                        Prefix =>
+                          New_Occurrence_Of (Target_Type, Loc))),
 
-               Right_Opnd =>
-                 Make_Op_Gt (Loc,
-                   Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
-                   Right_Opnd =>
-                     Make_Attribute_Reference (Loc,
-                       Attribute_Name => Name_Last,
-                       Prefix =>
-                         New_Occurrence_Of (Target_Type, Loc)))))));
+                Right_Opnd =>
+                  Make_Op_Gt (Loc,
+                    Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
+                    Right_Opnd =>
+                      Make_Attribute_Reference (Loc,
+                        Attribute_Name => Name_Last,
+                        Prefix =>
+                          New_Occurrence_Of (Target_Type, Loc)))),
+             Reason => CE_Range_Check_Failed)));
 
          Rewrite (N, New_Occurrence_Of (Tnn, Loc));
          Analyze_And_Resolve (N, Btyp);
@@ -4826,10 +4865,12 @@ package body Exp_Ch4 is
          --  cases.
 
          elsif In_Instance_Body
-           and then Type_Access_Level (Operand_Type)
-                  > Type_Access_Level (Target_Type)
+           and then Type_Access_Level (Operand_Type) >
+                    Type_Access_Level (Target_Type)
          then
-            Rewrite (N, Make_Raise_Program_Error (Sloc (N)));
+            Rewrite (N,
+              Make_Raise_Program_Error (Sloc (N),
+                Reason => PE_Accessibility_Check_Failed));
             Set_Etype (N, Target_Type);
 
          --  When the operand is a selected access discriminant
@@ -4845,7 +4886,9 @@ package body Exp_Ch4 is
            and then Object_Access_Level (Operand) >
                       Type_Access_Level (Target_Type)
          then
-            Rewrite (N, Make_Raise_Program_Error (Sloc (N)));
+            Rewrite (N,
+              Make_Raise_Program_Error (Sloc (N),
+                Reason => PE_Accessibility_Check_Failed));
             Set_Etype (N, Target_Type);
          end if;
       end if;
@@ -4936,7 +4979,8 @@ package body Exp_Ch4 is
 
                Insert_Action (N,
                  Make_Raise_Constraint_Error (Loc,
-                   Condition => Cond));
+                   Condition => Cond,
+                   Reason    => CE_Tag_Check_Failed));
 
                Change_Conversion_To_Unchecked (N);
                Analyze_And_Resolve (N, Target_Type);
@@ -5310,13 +5354,16 @@ package body Exp_Ch4 is
          --  statement directly.
 
          if No (Parent (Lhs)) then
-            Result := Make_Raise_Program_Error (Loc);
+            Result :=
+              Make_Raise_Program_Error (Loc,
+                Reason => PE_Unchecked_Union_Restriction);
             Set_Etype (Result, Standard_Boolean);
             return Result;
 
          else
             Insert_Action (Lhs,
-              Make_Raise_Program_Error (Loc));
+              Make_Raise_Program_Error (Loc,
+                Reason => PE_Unchecked_Union_Restriction));
             return New_Occurrence_Of (Standard_True, Loc);
          end if;
       end if;
@@ -5919,11 +5966,13 @@ package body Exp_Ch4 is
          Rewrite (N,
            Convert_To (Typ, New_Occurrence_Of (Standard_True, Sloc (N))));
          Analyze_And_Resolve (N, Typ);
+         Warn_On_Known_Condition (N);
 
       elsif False_Result then
          Rewrite (N,
            Convert_To (Typ, New_Occurrence_Of (Standard_False, Sloc (N))));
          Analyze_And_Resolve (N, Typ);
+         Warn_On_Known_Condition (N);
       end if;
    end Rewrite_Comparison;
 

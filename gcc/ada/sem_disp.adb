@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.114 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,13 +31,18 @@ with Debug;    use Debug;
 with Elists;   use Elists;
 with Einfo;    use Einfo;
 with Exp_Disp; use Exp_Disp;
+with Exp_Ch7;  use Exp_Ch7;
+with Exp_Tss;  use Exp_Tss;
 with Errout;   use Errout;
 with Hostparm; use Hostparm;
 with Nlists;   use Nlists;
+with Opt;      use Opt;
 with Output;   use Output;
+with Sem;      use Sem;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;
+with Snames;   use Snames;
 with Sinfo;    use Sinfo;
 with Uintp;    use Uintp;
 
@@ -267,29 +272,42 @@ package body Sem_Disp is
          if Is_Abstract (Func)
            and then No (Controlling_Argument (N))
          then
-            Par := Parent (N);
+            if Present (Alias (Func))
+              and then not Is_Abstract (Alias (Func))
+              and then No (DTC_Entity (Func))
+            then
+               --  private overriding of inherited abstract operation,
+               --  call is legal
 
-            while Present (Par) loop
+               Set_Entity (Name (N), Alias (Func));
+               return;
 
-               if Nkind (Par) = N_Function_Call            or else
-                  Nkind (Par) = N_Procedure_Call_Statement or else
-                  Nkind (Par) = N_Assignment_Statement     or else
-                  Nkind (Par) = N_Op_Eq                    or else
-                  Nkind (Par) = N_Op_Ne
-               then
-                  return;
+            else
+               Par := Parent (N);
 
-               elsif Nkind (Par) = N_Qualified_Expression
-                 or else Nkind (Par) = N_Unchecked_Type_Conversion
-               then
-                  Par := Parent (Par);
+               while Present (Par) loop
 
-               else
-                  Error_Msg_N
-                    ("call to abstract function must be dispatching", N);
-                  return;
-               end if;
-            end loop;
+                  if (Nkind (Par) = N_Function_Call            or else
+                      Nkind (Par) = N_Procedure_Call_Statement or else
+                      Nkind (Par) = N_Assignment_Statement     or else
+                      Nkind (Par) = N_Op_Eq                    or else
+                      Nkind (Par) = N_Op_Ne)
+                    and then Is_Tagged_Type (Etype (Func))
+                  then
+                     return;
+
+                  elsif Nkind (Par) = N_Qualified_Expression
+                    or else Nkind (Par) = N_Unchecked_Type_Conversion
+                  then
+                     Par := Parent (Par);
+
+                  else
+                     Error_Msg_N
+                       ("call to abstract function must be dispatching", N);
+                     return;
+                  end if;
+               end loop;
+            end if;
          end if;
       end Check_Dispatching_Context;
 
@@ -403,7 +421,7 @@ package body Sem_Disp is
    ---------------------------------
 
    procedure Check_Dispatching_Operation (Subp, Old_Subp : Entity_Id) is
-      Tagged_Seen            : Entity_Id;
+      Tagged_Type            : Entity_Id;
       Has_Dispatching_Parent : Boolean := False;
       Body_Is_Last_Primitive : Boolean := False;
 
@@ -413,7 +431,7 @@ package body Sem_Disp is
       end if;
 
       Set_Is_Dispatching_Operation (Subp, False);
-      Tagged_Seen := Find_Dispatching_Type (Subp);
+      Tagged_Type := Find_Dispatching_Type (Subp);
 
       --  If Subp is derived from a dispatching operation then it should
       --  always be treated as dispatching. In this case various checks
@@ -424,13 +442,13 @@ package body Sem_Disp is
       Has_Dispatching_Parent := Present (Alias (Subp))
         and then Is_Dispatching_Operation (Alias (Subp));
 
-      if No (Tagged_Seen) then
+      if No (Tagged_Type) then
          return;
 
       --  The subprograms build internally after the freezing point (such as
       --  the Init procedure) are not primitives
 
-      elsif Is_Frozen (Tagged_Seen)
+      elsif Is_Frozen (Tagged_Type)
         and then not Comes_From_Source (Subp)
         and then not Has_Dispatching_Parent
       then
@@ -451,7 +469,7 @@ package body Sem_Disp is
         and then not Has_Dispatching_Parent
       then
          if not Comes_From_Source (Subp)
-           or else (Present (Old_Subp) and then not Is_Frozen (Tagged_Seen))
+           or else (Present (Old_Subp) and then not Is_Frozen (Tagged_Type))
          then
             null;
 
@@ -471,7 +489,7 @@ package body Sem_Disp is
             then
                declare
                   Subp_Body : constant Node_Id := Unit_Declaration_Node (Subp);
-                  Decl_Item : Node_Id := Next (Parent (Tagged_Seen));
+                  Decl_Item : Node_Id := Next (Parent (Tagged_Type));
 
                begin
                   --  ??? The checks here for whether the type has been
@@ -548,7 +566,7 @@ package body Sem_Disp is
          --  case it looks suspiciously like an attempt to define a primitive
          --  operation.
 
-         elsif not Is_Frozen (Tagged_Seen) then
+         elsif not Is_Frozen (Tagged_Type) then
             Error_Msg_N
               ("?not dispatching (must be defined in a package spec)", Subp);
             return;
@@ -563,33 +581,105 @@ package body Sem_Disp is
       --  Now, we are sure that the scope is a package spec. If the subprogram
       --  is declared after the freezing point ot the type that's an error
 
-      elsif Is_Frozen (Tagged_Seen) and then not Has_Dispatching_Parent then
+      elsif Is_Frozen (Tagged_Type) and then not Has_Dispatching_Parent then
          Error_Msg_N ("this primitive operation is declared too late", Subp);
          Error_Msg_NE
            ("?no primitive operations for& after this line",
-            Freeze_Node (Tagged_Seen),
-            Tagged_Seen);
+            Freeze_Node (Tagged_Type),
+            Tagged_Type);
          return;
       end if;
 
-      Check_Controlling_Formals (Tagged_Seen, Subp);
+      Check_Controlling_Formals (Tagged_Type, Subp);
 
       --  Now it should be a correct primitive operation, put it in the list
 
       if Present (Old_Subp) then
          Check_Subtype_Conformant (Subp, Old_Subp);
-         Override_Dispatching_Operation (Tagged_Seen, Old_Subp, Subp);
+         Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);
 
       else
-         Add_Dispatching_Operation (Tagged_Seen, Subp);
+         Add_Dispatching_Operation (Tagged_Type, Subp);
       end if;
 
       Set_Is_Dispatching_Operation (Subp, True);
 
       if not Body_Is_Last_Primitive then
          Set_DT_Position (Subp, No_Uint);
-      end if;
 
+      elsif Has_Controlled_Component (Tagged_Type)
+        and then
+         (Chars (Subp) = Name_Initialize
+           or else Chars (Subp) = Name_Adjust
+           or else Chars (Subp) = Name_Finalize)
+      then
+         declare
+            F_Node   : Node_Id := Freeze_Node (Tagged_Type);
+            Decl     : Node_Id;
+            Old_P    : Entity_Id;
+            Old_Bod  : Node_Id;
+            Old_Spec : Entity_Id;
+
+            C_Names : constant array (1 .. 3) of Name_Id :=
+                        (Name_Initialize,
+                         Name_Adjust,
+                         Name_Finalize);
+
+            D_Names : constant array (1 .. 3) of Name_Id :=
+                        (Name_uDeep_Initialize,
+                         Name_uDeep_Adjust,
+                         Name_uDeep_Finalize);
+
+         begin
+            --  Remove previous controlled function, which was constructed
+            --  and analyzed when the type was frozen. This requires
+            --  removing the body of the redefined primitive, as well as its
+            --  specification if needed (there is no spec created for
+            --  Deep_Initialize, see exp_ch3.adb). We must also dismantle
+            --  the exception information that may have been generated for it
+            --  when zero-cost is enabled.
+
+            for J in D_Names'Range loop
+               Old_P := TSS (Tagged_Type, D_Names (J));
+
+               if Present (Old_P)
+                and then Chars (Subp) = C_Names (J)
+               then
+                  Old_Bod := Unit_Declaration_Node (Old_P);
+                  Remove (Old_Bod);
+                  Set_Is_Eliminated (Old_P);
+                  Set_Scope (Old_P,  Scope (Current_Scope));
+
+                  if Nkind (Old_Bod) = N_Subprogram_Body
+                    and then Present (Corresponding_Spec (Old_Bod))
+                  then
+                     Old_Spec := Corresponding_Spec (Old_Bod);
+                     Set_Has_Completion             (Old_Spec, False);
+
+                     if Exception_Mechanism = Front_End_ZCX then
+                        Set_Has_Subprogram_Descriptor (Old_Spec, False);
+                        Set_Handler_Records           (Old_Spec, No_List);
+                        Set_Is_Eliminated             (Old_Spec);
+                     end if;
+                  end if;
+
+               end if;
+            end loop;
+
+            Build_Late_Proc (Tagged_Type, Chars (Subp));
+
+            --  The new operation is added to the actions of the freeze
+            --  node for the type, but this node has already been analyzed,
+            --  so we must retrieve and analyze explicitly the one new body,
+
+            if Present (F_Node)
+              and then Present (Actions (F_Node))
+            then
+               Decl := Last (Actions (F_Node));
+               Analyze (Decl);
+            end if;
+         end;
+      end if;
    end Check_Dispatching_Operation;
 
    ------------------------------------------
@@ -777,6 +867,16 @@ package body Sem_Disp is
 
             if Nkind (N) = N_Attribute_Reference then
                Typ := Etype (Prefix (N));
+
+            --  An allocator is dispatching if the type of qualified
+            --  expression is class_wide, in which case this is the
+            --  controlling type.
+
+            elsif Nkind (Orig_Node) = N_Allocator
+               and then Nkind (Expression (Orig_Node)) = N_Qualified_Expression
+            then
+               Typ := Etype (Expression (Orig_Node));
+
             else
                Typ := Designated_Type (Typ);
             end if;

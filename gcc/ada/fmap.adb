@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 2001, Free Software Foundation, Inc.            --
 --                                                                          --
@@ -26,9 +26,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Namet;  use Namet;
-with Osint;  use Osint;
-with Output; use Output;
+with GNAT.OS_Lib; use GNAT.OS_Lib;
+with Namet;       use Namet;
+with Opt;         use Opt;
+with Osint;       use Osint;
+with Output;      use Output;
 with Table;
 
 with Unchecked_Conversion;
@@ -43,8 +45,13 @@ package body Fmap is
    function To_Big_String_Ptr is new Unchecked_Conversion
      (Source_Buffer_Ptr, Big_String_Ptr);
 
+   type Mapping is record
+      Uname : Unit_Name_Type;
+      Fname : File_Name_Type;
+   end record;
+
    package File_Mapping is new Table.Table (
-     Table_Component_Type => File_Name_Type,
+     Table_Component_Type => Mapping,
      Table_Index_Type     => Int,
      Table_Low_Bound      => 0,
      Table_Initial        => 1_000,
@@ -53,7 +60,7 @@ package body Fmap is
    --  Mapping table to map unit names to file names.
 
    package Path_Mapping is new Table.Table (
-     Table_Component_Type => File_Name_Type,
+     Table_Component_Type => Mapping,
      Table_Index_Type     => Int,
      Table_Low_Bound      => 0,
      Table_Initial        => 1_000,
@@ -89,6 +96,8 @@ package body Fmap is
    --  Hash table to map file names to path names. Used in conjunction with
    --  table Path_Mapping above.
 
+   Last_In_Table : Int := 0;
+
    ---------------------
    -- Add_To_File_Map --
    ---------------------
@@ -101,10 +110,12 @@ package body Fmap is
    begin
       File_Mapping.Increment_Last;
       Unit_Hash_Table.Set (Unit_Name, File_Mapping.Last);
-      File_Mapping.Table (File_Mapping.Last) := File_Name;
+      File_Mapping.Table (File_Mapping.Last) :=
+        (Uname => Unit_Name, Fname => File_Name);
       Path_Mapping.Increment_Last;
       File_Hash_Table.Set (File_Name, Path_Mapping.Last);
-      Path_Mapping.Table (Path_Mapping.Last) := Path_Name;
+      Path_Mapping.Table (Path_Mapping.Last) :=
+        (Uname => Unit_Name, Fname => Path_Name);
    end Add_To_File_Map;
 
    ----------
@@ -126,12 +137,14 @@ package body Fmap is
       BS  : Big_String_Ptr;
       SP  : String_Ptr;
 
-      Deb : Positive := 1;
-      Fin : Natural  := 0;
+      First : Positive := 1;
+      Last  : Natural  := 0;
 
       Uname : Unit_Name_Type;
       Fname : Name_Id;
       Pname : Name_Id;
+
+      The_Mapping : Mapping;
 
       procedure Empty_Tables;
       --  Remove all entries in case of incorrect mapping file
@@ -153,6 +166,7 @@ package body Fmap is
          File_Hash_Table.Reset;
          Path_Mapping.Set_Last (0);
          File_Mapping.Set_Last (0);
+         Last_In_Table := 0;
       end Empty_Tables;
 
       --------------
@@ -163,29 +177,29 @@ package body Fmap is
          use ASCII;
 
       begin
-         Deb := Fin + 1;
+         First := Last + 1;
 
          --  If not at the end of file, skip the end of line
 
-         while Deb < SP'Last
-           and then (SP (Deb) = CR
-                     or else SP (Deb) = LF
-                     or else SP (Deb) = EOF)
+         while First < SP'Last
+           and then (SP (First) = CR
+                     or else SP (First) = LF
+                     or else SP (First) = EOF)
          loop
-            Deb := Deb + 1;
+            First := First + 1;
          end loop;
 
-         --  If not at the end of line, find the end of this new line
+         --  If not at the end of file, find the end of this new line
 
-         if Deb < SP'Last and then SP (Deb) /= EOF then
-            Fin := Deb;
+         if First < SP'Last and then SP (First) /= EOF then
+            Last := First;
 
-            while Fin < SP'Last
-              and then SP (Fin + 1) /= CR
-              and then SP (Fin + 1) /= LF
-              and then SP (Fin + 1) /= EOF
+            while Last < SP'Last
+              and then SP (Last + 1) /= CR
+              and then SP (Last + 1) /= LF
+              and then SP (Last + 1) /= EOF
             loop
-               Fin := Fin + 1;
+               Last := Last + 1;
             end loop;
 
          end if;
@@ -197,22 +211,27 @@ package body Fmap is
 
       procedure Report_Truncated is
       begin
-         Write_Str ("warning: mapping file """);
-         Write_Str (File_Name);
-         Write_Line (""" is truncated");
+         if not Quiet_Output then
+            Write_Str ("warning: mapping file """);
+            Write_Str (File_Name);
+            Write_Line (""" is truncated");
+         end if;
       end Report_Truncated;
 
    --  Start of procedure Initialize
 
    begin
+      Empty_Tables;
       Name_Len := File_Name'Length;
       Name_Buffer (1 .. Name_Len) := File_Name;
       Read_Source_File (Name_Enter, 0, Hi, Src, Config);
 
       if Src = null then
-         Write_Str ("warning: could not read mapping file """);
-         Write_Str (File_Name);
-         Write_Line ("""");
+         if not Quiet_Output then
+            Write_Str ("warning: could not read mapping file """);
+            Write_Str (File_Name);
+            Write_Line ("""");
+         end if;
 
       else
          BS := To_Big_String_Ptr (Src);
@@ -225,14 +244,14 @@ package body Fmap is
 
             --  Exit if end of file has been reached
 
-            exit when Deb > Fin;
+            exit when First > Last;
 
-            pragma Assert (Fin >= Deb + 2);
-            pragma Assert (SP (Fin - 1) = '%');
-            pragma Assert (SP (Fin) = 's' or else SP (Fin) = 'b');
+            pragma Assert (Last >= First + 2);
+            pragma Assert (SP (Last - 1) = '%');
+            pragma Assert (SP (Last) = 's' or else SP (Last) = 'b');
 
-            Name_Len := Fin - Deb + 1;
-            Name_Buffer (1 .. Name_Len) := SP (Deb .. Fin);
+            Name_Len := Last - First + 1;
+            Name_Buffer (1 .. Name_Len) := SP (First .. Last);
             Uname := Name_Find;
 
             --  Get the file name
@@ -241,14 +260,14 @@ package body Fmap is
 
             --  If end of line has been reached, file is truncated
 
-            if Deb > Fin then
+            if First > Last then
                Report_Truncated;
                Empty_Tables;
                return;
             end if;
 
-            Name_Len := Fin - Deb + 1;
-            Name_Buffer (1 .. Name_Len) := SP (Deb .. Fin);
+            Name_Len := Last - First + 1;
+            Name_Buffer (1 .. Name_Len) := SP (First .. Last);
             Fname := Name_Find;
 
             --  Get the path name
@@ -257,34 +276,48 @@ package body Fmap is
 
             --  If end of line has been reached, file is truncated
 
-            if Deb > Fin then
+            if First > Last then
                Report_Truncated;
                Empty_Tables;
                return;
             end if;
 
-            Name_Len := Fin - Deb + 1;
-            Name_Buffer (1 .. Name_Len) := SP (Deb .. Fin);
+            Name_Len := Last - First + 1;
+            Name_Buffer (1 .. Name_Len) := SP (First .. Last);
             Pname := Name_Find;
 
             --  Check for duplicate entries
 
             if Unit_Hash_Table.Get (Uname) /= No_Entry then
-               Write_Str ("warning: duplicate entry """);
-               Write_Str (Get_Name_String (Uname));
-               Write_Str (""" in mapping file """);
-               Write_Str (File_Name);
-               Write_Line ("""");
+               if not Quiet_Output then
+                  Write_Str ("warning: duplicate entry """);
+                  Write_Str (Get_Name_String (Uname));
+                  Write_Str (""" in mapping file """);
+                  Write_Str (File_Name);
+                  Write_Line ("""");
+                  The_Mapping :=
+                    File_Mapping.Table (Unit_Hash_Table.Get (Uname));
+                  Write_Line (Get_Name_String (The_Mapping.Uname));
+                  Write_Line (Get_Name_String (The_Mapping.Fname));
+               end if;
+
                Empty_Tables;
                return;
             end if;
 
             if File_Hash_Table.Get (Fname) /= No_Entry then
-               Write_Str ("warning: duplicate entry """);
-               Write_Str (Get_Name_String (Fname));
-               Write_Str (""" in mapping file """);
-               Write_Str (File_Name);
-               Write_Line ("""");
+               if not Quiet_Output then
+                  Write_Str ("warning: duplicate entry """);
+                  Write_Str (Get_Name_String (Fname));
+                  Write_Str (""" in mapping file """);
+                  Write_Str (File_Name);
+                  Write_Line ("""");
+                  The_Mapping :=
+                    Path_Mapping.Table (File_Hash_Table.Get (Fname));
+                  Write_Line (Get_Name_String (The_Mapping.Uname));
+                  Write_Line (Get_Name_String (The_Mapping.Fname));
+               end if;
+
                Empty_Tables;
                return;
             end if;
@@ -294,6 +327,11 @@ package body Fmap is
             Add_To_File_Map (Uname, Fname, Pname);
          end loop;
       end if;
+
+      --  Record the length of the two mapping tables
+
+      Last_In_Table := File_Mapping.Last;
+
    end Initialize;
 
    ----------------------
@@ -307,7 +345,7 @@ package body Fmap is
       if The_Index = No_Entry then
          return No_File;
       else
-         return File_Mapping.Table (The_Index);
+         return File_Mapping.Table (The_Index).Fname;
       end if;
    end Mapped_File_Name;
 
@@ -324,8 +362,83 @@ package body Fmap is
       if Index = No_Entry then
          return No_File;
       else
-         return Path_Mapping.Table (Index);
+         return Path_Mapping.Table (Index).Fname;
       end if;
    end Mapped_Path_Name;
+
+   -------------------------
+   -- Update_Mapping_File --
+   -------------------------
+
+   procedure Update_Mapping_File (File_Name : String) is
+      File : File_Descriptor;
+
+      procedure Put_Line (Name : Name_Id);
+      --  Put Name as a line in the Mapping File
+
+      --------------
+      -- Put_Line --
+      --------------
+
+      procedure Put_Line (Name : Name_Id) is
+         N_Bytes : Integer;
+      begin
+         Get_Name_String (Name);
+         Name_Len := Name_Len + 1;
+         Name_Buffer (Name_Len) := ASCII.LF;
+         N_Bytes := Write (File, Name_Buffer (1)'Address, Name_Len);
+
+         if N_Bytes < Name_Len then
+            Fail ("disk full");
+         end if;
+
+      end Put_Line;
+
+   --  Start of Update_Mapping_File
+
+   begin
+
+      --  Only Update if there are new entries in the mappings
+
+      if Last_In_Table < File_Mapping.Last then
+
+         --  If the tables have been emptied, recreate the file.
+         --  Otherwise, append to it.
+
+         if Last_In_Table = 0 then
+            declare
+               Discard : Boolean;
+
+            begin
+               Delete_File (File_Name, Discard);
+            end;
+
+            File := Create_File (File_Name, Binary);
+
+         else
+            File := Open_Read_Write (Name => File_Name, Fmode => Binary);
+         end if;
+
+         if File /= Invalid_FD then
+            if Last_In_Table > 0 then
+               Lseek (File, 0, Seek_End);
+            end if;
+
+            for Unit in Last_In_Table + 1 .. File_Mapping.Last loop
+               Put_Line (File_Mapping.Table (Unit).Uname);
+               Put_Line (File_Mapping.Table (Unit).Fname);
+               Put_Line (Path_Mapping.Table (Unit).Fname);
+            end loop;
+
+            Close (File);
+
+         elsif not Quiet_Output then
+            Write_Str ("warning: could not open mapping file """);
+            Write_Str (File_Name);
+            Write_Line (""" for update");
+         end if;
+
+      end if;
+   end Update_Mapping_File;
 
 end Fmap;

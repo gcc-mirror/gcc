@@ -177,7 +177,7 @@ package body Lib is
 
    procedure Set_Fatal_Error (U : Unit_Number_Type; B : Boolean := True) is
    begin
-      Units.Table (U).Fatal_Error := True;
+      Units.Table (U).Fatal_Error := B;
    end Set_Fatal_Error;
 
    procedure Set_Generate_Code (U : Unit_Number_Type; B : Boolean := True) is
@@ -397,6 +397,15 @@ package body Lib is
 
    end Check_Same_Extended_Unit;
 
+   -------------------------------
+   -- Compilation_Switches_Last --
+   -------------------------------
+
+   function Compilation_Switches_Last return Nat is
+   begin
+      return Compilation_Switches.Last;
+   end Compilation_Switches_Last;
+
    ------------------------------
    -- Earlier_In_Extended_Unit --
    ------------------------------
@@ -474,7 +483,7 @@ package body Lib is
       return Main_Unit;
    end Get_Code_Unit;
 
-   function Get_Code_Unit (N : Node_Id) return Unit_Number_Type is
+   function Get_Code_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type is
    begin
       return Get_Code_Unit (Sloc (N));
    end Get_Code_Unit;
@@ -485,7 +494,7 @@ package body Lib is
 
    function Get_Compilation_Switch (N : Pos) return String_Ptr is
    begin
-      if N >= Compilation_Switches.Last then
+      if N <= Compilation_Switches.Last then
          return Compilation_Switches.Table (N);
 
       else
@@ -558,7 +567,7 @@ package body Lib is
       return Main_Unit;
    end Get_Source_Unit;
 
-   function Get_Source_Unit (N : Node_Id) return Unit_Number_Type is
+   function Get_Source_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type is
    begin
       return Get_Source_Unit (Sloc (N));
    end Get_Source_Unit;
@@ -567,7 +576,10 @@ package body Lib is
    -- In_Extended_Main_Code_Unit --
    --------------------------------
 
-   function In_Extended_Main_Code_Unit (N : Node_Id) return Boolean is
+   function In_Extended_Main_Code_Unit
+     (N    : Node_Or_Entity_Id)
+      return Boolean
+   is
    begin
       if Sloc (N) = Standard_Location then
          return True;
@@ -599,7 +611,10 @@ package body Lib is
    -- In_Extended_Main_Source_Unit --
    ----------------------------------
 
-   function In_Extended_Main_Source_Unit (N : Node_Id) return Boolean is
+   function In_Extended_Main_Source_Unit
+     (N    : Node_Or_Entity_Id)
+      return Boolean
+   is
    begin
       if Sloc (N) = Standard_Location then
          return True;
@@ -767,10 +782,10 @@ package body Lib is
    begin
       if Match_String'Length > 0 then
          for J in 1 .. Linker_Option_Lines.Last loop
-            String_To_Name_Buffer (Linker_Option_Lines.Table (J));
+            String_To_Name_Buffer (Linker_Option_Lines.Table (J).Option);
 
             if Match_String = Name_Buffer (1 .. Match_String'Length) then
-               Linker_Option_Lines.Table (J) := S;
+               Linker_Option_Lines.Table (J).Option := S;
                return;
             end if;
          end loop;
@@ -803,7 +818,8 @@ package body Lib is
    procedure Store_Linker_Option_String (S : String_Id) is
    begin
       Linker_Option_Lines.Increment_Last;
-      Linker_Option_Lines.Table (Linker_Option_Lines.Last) := S;
+      Linker_Option_Lines.Table (Linker_Option_Lines.Last) :=
+        (Option => S, Unit => Current_Sem_Unit);
    end Store_Linker_Option_String;
 
    ---------------

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,26 +46,27 @@ package Sem_Util is
    --  entity is not yet known to the compiler.
 
    procedure Apply_Compile_Time_Constraint_Error
-     (N   : Node_Id;
-      Msg : String;
-      Ent : Entity_Id  := Empty;
-      Typ : Entity_Id  := Empty;
-      Loc : Source_Ptr := No_Location;
-      Rep : Boolean    := True);
+     (N      : Node_Id;
+      Msg    : String;
+      Reason : RT_Exception_Code;
+      Ent    : Entity_Id  := Empty;
+      Typ    : Entity_Id  := Empty;
+      Loc    : Source_Ptr := No_Location;
+      Rep    : Boolean    := True);
    --  N is a subexpression which will raise constraint error when evaluated
    --  at runtime. Msg is a message that explains the reason for raising the
-   --  exception. The last character is ? if the message is always a
-   --  warning, even in Ada 95, and is not a ? if the message represents an
-   --  illegality (because of violation of static expression rules) in Ada 95
-   --  (but not in Ada 83). Typically this routine posts all messages at
-   --  the Sloc of node N. However, if Loc /= No_Location, Loc is the Sloc
-   --  used to output the message. After posting the appropriate message,
-   --  and if the flag Rep is set, this routine replaces the expression
-   --  with an N_Raise_Constraint_Error node. This node is then marked as
-   --  being static if the original node is static, but sets the flag
-   --  Raises_Constraint_Error, preventing further evaluation.
-   --  The error message may contain a } or & insertion character.
-   --  This normally references Etype (N), unless the Ent argument is given
+   --  exception. The last character is ? if the message is always a warning,
+   --  even in Ada 95, and is not a ? if the message represents an illegality
+   --  (because of violation of static expression rules) in Ada 95 (but not
+   --  in Ada 83). Typically this routine posts all messages at the Sloc of
+   --  node N. However, if Loc /= No_Location, Loc is the Sloc used to output
+   --  the message. After posting the appropriate message, and if the flag
+   --  Rep is set, this routine replaces the expression with an appropriate
+   --  N_Raise_Constraint_Error node using the given Reason code. This node
+   --  is then marked as being static if the original node is static, but
+   --  sets the flag Raises_Constraint_Error, preventing further evaluation.
+   --  The error message may contain a } or & insertion character. This
+   --  normally references Etype (N), unless the Ent argument is given
    --  explicitly, in which case it is used instead. The type of the raise
    --  node that is built is normally Etype (N), but if the Typ parameter
    --  is present, this is used instead.
@@ -96,6 +97,12 @@ package Sem_Util is
    --  Given a compilation unit node N, allocate an elaboration boolean for
    --  the compilation unit, and install it in the Elaboration_Entity field
    --  of Spec_Id, the entity for the compilation unit.
+
+   function Cannot_Raise_Constraint_Error (Expr : Node_Id) return Boolean;
+   --  Returns True if the expression cannot possibly raise Constraint_Error.
+   --  The response is conservative in the sense that a result of False does
+   --  not necessarily mean that CE could be raised, but a response of True
+   --  means that for sure CE cannot be raised.
 
    procedure Check_Fully_Declared (T : Entity_Id; N : Node_Id);
    --  Verify that the full declaration of type T has been seen. If not,
@@ -293,6 +300,11 @@ package Sem_Util is
    --  an identifier provided as the external name. Letters in the name are
    --  according to the setting of Opt.External_Name_Default_Casing.
 
+   function Get_Generic_Entity (N : Node_Id) return Entity_Id;
+   --  Returns the true generic entity in an instantiation. If the name in
+   --  the instantiation is a renaming, the function returns the renamed
+   --  generic.
+
    procedure Get_Index_Bounds (N : Node_Id; L, H : out Node_Id);
    --  This procedure assigns to L and H respectively the values of the
    --  low and high bounds of node N, which must be a range, subtype
@@ -439,6 +451,13 @@ package Sem_Util is
    --  is a variable (in the Is_Variable sense) with a non-tagged type
    --  target are considered view conversions and hence variables.
 
+   function Is_Partially_Initialized_Type (Typ : Entity_Id) return Boolean;
+   --  Typ is a type entity. This function returns true if this type is
+   --  partly initialized, meaning that an object of the type is at least
+   --  partly initialized (in particular in the record case, that at least
+   --  one field has an initialization expression). Note that initialization
+   --  resulting from the use of pragma Normalized_Scalars does not count.
+
    function Is_RCI_Pkg_Spec_Or_Body (Cunit : Node_Id) return Boolean;
    --  Return True if a compilation unit is the specification or the
    --  body of a remote call interface package.
@@ -563,12 +582,17 @@ package Sem_Util is
    --  record type there may be several such components, we just return
    --  the first one.
 
-   procedure Process_End_Label (N : Node_Id; Typ : Character);
+   procedure Process_End_Label
+     (N   : Node_Id;
+      Typ : Character;
+      Ent  : Entity_Id);
    --  N is a node whose End_Label is to be processed, generating all
    --  appropriate cross-reference entries, and performing style checks
    --  for any identifier references in the end label. Typ is either
    --  'e' or 't indicating the type of the cross-reference entity
-   --  (e for spec, t for body, see Lib.Xref spec for details).
+   --  (e for spec, t for body, see Lib.Xref spec for details). The
+   --  parameter Ent gives the entity to which the End_Label refers,
+   --  and to which cross-references are to be generated.
 
    function Real_Convert (S : String) return Node_Id;
    --  S is a possibly signed syntactically valid real literal. The result

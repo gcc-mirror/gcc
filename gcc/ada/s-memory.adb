@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--          Copyright (C) 2001-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -51,6 +51,7 @@
 
 with Ada.Exceptions;
 with System.Soft_Links;
+with System.Parameters;
 
 package body System.Memory is
 
@@ -89,9 +90,13 @@ package body System.Memory is
          Actual_Size := 1;
       end if;
 
-      Abort_Defer.all;
-      Result := c_malloc (Actual_Size);
-      Abort_Undefer.all;
+      if Parameters.No_Abort then
+         Result := c_malloc (Actual_Size);
+      else
+         Abort_Defer.all;
+         Result := c_malloc (Actual_Size);
+         Abort_Undefer.all;
+      end if;
 
       if Result = System.Null_Address then
          Raise_Exception (Storage_Error'Identity, "heap exhausted");
@@ -106,9 +111,13 @@ package body System.Memory is
 
    procedure Free (Ptr : System.Address) is
    begin
-      Abort_Defer.all;
-      c_free (Ptr);
-      Abort_Undefer.all;
+      if Parameters.No_Abort then
+         c_free (Ptr);
+      else
+         Abort_Defer.all;
+         c_free (Ptr);
+         Abort_Undefer.all;
+      end if;
    end Free;
 
    -------------
@@ -128,9 +137,13 @@ package body System.Memory is
          Raise_Exception (Storage_Error'Identity, "object too large");
       end if;
 
-      Abort_Defer.all;
-      Result := c_realloc (Ptr, Actual_Size);
-      Abort_Undefer.all;
+      if Parameters.No_Abort then
+         Result := c_realloc (Ptr, Actual_Size);
+      else
+         Abort_Defer.all;
+         Result := c_realloc (Ptr, Actual_Size);
+         Abort_Undefer.all;
+      end if;
 
       if Result = System.Null_Address then
          Raise_Exception (Storage_Error'Identity, "heap exhausted");

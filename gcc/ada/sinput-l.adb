@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.40 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,33 +27,28 @@
 ------------------------------------------------------------------------------
 
 with Alloc;
-with Atree;  use Atree;
-with Debug;  use Debug;
-with Einfo;  use Einfo;
-with Namet;  use Namet;
+with Atree;   use Atree;
+with Debug;   use Debug;
+with Einfo;   use Einfo;
+with Namet;   use Namet;
 with Opt;
-with Osint;  use Osint;
-with Output; use Output;
-with Scans;  use Scans;
-with Scn;    use Scn;
-with Sinfo;  use Sinfo;
-with System; use System;
+with Osint;   use Osint;
+with Output;  use Output;
+with Scans;   use Scans;
+with Scn;     use Scn;
+with Sinfo;   use Sinfo;
+with System;  use System;
 
 with Unchecked_Conversion;
 
 package body Sinput.L is
 
-   Dfile : Source_File_Index;
-   --  Index of currently active debug source file
+   --  Routines to support conversion between types Lines_Table_Ptr
+   --  and System.Address.
 
    -----------------
    -- Subprograms --
    -----------------
-
-   procedure Trim_Lines_Table (S : Source_File_Index);
-   --  Set lines table size for entry S in the source file table to
-   --  correspond to the current value of Num_Source_Lines, releasing
-   --  any unused storage.
 
    function Load_File
      (N    : File_Name_Type;
@@ -79,26 +74,6 @@ package body Sinput.L is
       end if;
    end Adjust_Instantiation_Sloc;
 
-   ------------------------
-   -- Close_Debug_Source --
-   ------------------------
-
-   procedure Close_Debug_Source is
-      S    : Source_File_Record renames Source_File.Table (Dfile);
-      Src  : Source_Buffer_Ptr;
-
-   begin
-      Trim_Lines_Table (Dfile);
-      Close_Debug_File;
-
-      --  Now we need to read the file that we wrote and store it
-      --  in memory for subsequent access.
-
-      Read_Source_File
-        (S.Debug_Source_Name, S.Source_First, S.Source_Last, Src);
-      S.Source_Text := Src;
-   end Close_Debug_Source;
-
    --------------------------------
    -- Complete_Source_File_Entry --
    --------------------------------
@@ -110,49 +85,6 @@ package body Sinput.L is
       Trim_Lines_Table (CSF);
       Source_File.Table (CSF).Source_Checksum := Checksum;
    end Complete_Source_File_Entry;
-
-   -------------------------
-   -- Create_Debug_Source --
-   -------------------------
-
-   procedure Create_Debug_Source
-     (Source : Source_File_Index;
-      Loc    : out Source_Ptr)
-   is
-   begin
-      Loc := Source_File.Table (Source_File.Last).Source_Last + 1;
-      Source_File.Increment_Last;
-      Dfile := Source_File.Last;
-
-      declare
-         S : Source_File_Record renames Source_File.Table (Dfile);
-
-      begin
-         S := Source_File.Table (Source);
-         S.Debug_Source_Name := Create_Debug_File (S.File_Name);
-         S.Source_First      := Loc;
-         S.Source_Last       := Loc;
-         S.Lines_Table       := null;
-         S.Last_Source_Line  := 1;
-
-         --  Allocate lines table, guess that it needs to be three times
-         --  bigger than the original source (in number of lines).
-
-         Alloc_Line_Tables
-           (S, Int (Source_File.Table (Source).Last_Source_Line * 3));
-         S.Lines_Table (1) := Loc;
-      end;
-
-      if Debug_Flag_GG then
-         Write_Str ("---> Create_Debug_Source (Source => ");
-         Write_Int (Int (Source));
-         Write_Str (", Loc => ");
-         Write_Int (Int (Loc));
-         Write_Str (");");
-         Write_Eol;
-      end if;
-
-   end Create_Debug_Source;
 
    ---------------------------------
    -- Create_Instantiation_Source --
@@ -467,67 +399,5 @@ package body Sinput.L is
 
       return Token = Tok_Separate;
    end Source_File_Is_Subunit;
-
-   ----------------------
-   -- Trim_Lines_Table --
-   ----------------------
-
-   procedure Trim_Lines_Table (S : Source_File_Index) is
-
-      function realloc
-        (P        : Lines_Table_Ptr;
-         New_Size : Int)
-         return     Lines_Table_Ptr;
-      pragma Import (C, realloc);
-
-      Max : constant Nat := Nat (Source_File.Table (S).Last_Source_Line);
-
-   begin
-      --  Release allocated storage that is no longer needed
-
-      Source_File.Table (S).Lines_Table :=
-        realloc
-          (Source_File.Table (S).Lines_Table,
-           Max * (Lines_Table_Type'Component_Size / System.Storage_Unit));
-      Source_File.Table (S).Lines_Table_Max := Physical_Line_Number (Max);
-   end Trim_Lines_Table;
-
-   ----------------------
-   -- Write_Debug_Line --
-   ----------------------
-
-   procedure Write_Debug_Line (Str : String; Loc : in out Source_Ptr) is
-      S : Source_File_Record renames Source_File.Table (Dfile);
-
-   begin
-      --  Ignore write request if null line at start of file
-
-      if Str'Length = 0 and then Loc = S.Source_First then
-         return;
-
-      --  Here we write the line, and update the source record entry
-
-      else
-         Write_Debug_Info (Str);
-         Add_Line_Tables_Entry (S, Loc);
-         Loc := Loc + Source_Ptr (Str'Length + Debug_File_Eol_Length);
-         S.Source_Last := Loc;
-
-         if Debug_Flag_GG then
-            declare
-               Lin : constant String := Str;
-
-            begin
-               Column := 1;
-               Write_Str ("---> Write_Debug_Line (Str => """);
-               Write_Str (Lin);
-               Write_Str (""", Loc => ");
-               Write_Int (Int (Loc));
-               Write_Str (");");
-               Write_Eol;
-            end;
-         end if;
-      end if;
-   end Write_Debug_Line;
 
 end Sinput.L;

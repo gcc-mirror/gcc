@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.89 $
+--                             $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -53,7 +52,6 @@ with System.Soft_Links;
 
 with System.Task_Primitives;
 --  used for Private_Data
---           Lock (in System.Tasking.Protected_Objects)
 
 with Unchecked_Conversion;
 
@@ -83,15 +81,13 @@ package System.Tasking is
    --         Unlock (Y);
    --
    --  Locks with lower (smaller) level number cannot be locked
-   --  while holding a lock with a higher level number.  (The level
+   --  while holding a lock with a higher level number. (The level
    --  number is the number at the left.)
    --
    --  1. System.Tasking.PO_Simple.Protection.L (any PO lock)
    --  2. System.Tasking.Initialization.Global_Task_Lock (in body)
-   --  3. System.Tasking.Task_Attributes.All_Attrs_L
-   --  4. System.Task_Primitives.Operations.All_Tasks_L
-   --  5. System.Interrupts.L (in body)
-   --  6. System.Tasking.Ada_Task_Control_Block.LL.L (any TCB lock)
+   --  3. System.Task_Primitives.Operations.Single_RTS_Lock
+   --  4. System.Tasking.Ada_Task_Control_Block.LL.L (any TCB lock)
    --
    --  Clearly, there can be no circular chain of hold-and-wait
    --  relationships involving locks in different ordering levels.
@@ -100,7 +96,7 @@ package System.Tasking is
    --  clearly wrong since there can be calls to "new" inside protected
    --  operations. The new ordering prevents these failures.
    --
-   --  Sometime we need to hold two ATCB locks at the same time.  To allow
+   --  Sometimes we need to hold two ATCB locks at the same time. To allow
    --  us to order the locking, each ATCB is given a unique serial
    --  number. If one needs to hold locks on several ATCBs at once,
    --  the locks with lower serial numbers must be locked first.
@@ -113,9 +109,6 @@ package System.Tasking is
    --  . The environment task has a lower serial number than any other task.
    --  . If the activator of a task is different from the task's parent,
    --    the parent always has a lower serial number than the activator.
-   --
-   --  For interrupt-handler state, we have a special locking rule.
-   --  See System.Interrupts (spec) for explanation.
 
    ---------------------------------
    -- Task_ID related definitions --
@@ -469,7 +462,7 @@ package System.Tasking is
 
       All_Tasks_Link : Task_ID;
       --  Used to link this task to the list of all tasks in the system.
-      --  Protection: All_Tasks.L.
+      --  Protection: RTS_Lock.
 
       Activation_Link : Task_ID;
       --  Used to link this task to a list of tasks to be activated.
@@ -934,11 +927,13 @@ package System.Tasking is
       --  is, in user terms
 
       Direct_Attributes : Direct_Attribute_Array;
-      --  for task attributes that have same size as Address
+      --  For task attributes that have same size as Address
+
       Is_Defined : Direct_Index_Vector := 0;
-      --  bit I is 1 iff Direct_Attributes (I) is defined
+      --  Bit I is 1 iff Direct_Attributes (I) is defined
+
       Indirect_Attributes : Access_Address;
-      --  a pointer to chain of records for other attributes that
+      --  A pointer to chain of records for other attributes that
       --  are not address-sized, including all tagged types.
 
       Entry_Queues : Task_Entry_Queue_Array (1 .. Entry_Num);
@@ -964,7 +959,7 @@ package System.Tasking is
       T                : in out Task_ID;
       Success          : out Boolean);
    --  Initialize fields of a TCB and link into global TCB structures
-   --  Call this only with abort deferred and holding All_Tasks_L.
+   --  Call this only with abort deferred and holding RTS_Lock.
 
 private
 

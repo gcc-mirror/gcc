@@ -7,9 +7,9 @@
 --                                 S p e c                                  --
 --                           (DEC Unix Version)                             --
 --                                                                          --
---                            $Revision: 1.20 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -60,16 +60,16 @@ pragma Pure (System);
    Max_Mantissa          : constant := 63;
    Fine_Delta            : constant := 2.0 ** (-Max_Mantissa);
 
-   Tick                  : constant := Standard'Tick;
+   Tick                  : constant := 1.0;
 
    --  Storage-related Declarations
 
    type Address is private;
    Null_Address : constant Address;
 
-   Storage_Unit : constant := Standard'Storage_Unit;
-   Word_Size    : constant := Standard'Word_Size;
-   Memory_Size  : constant := 2 ** Standard'Address_Size;
+   Storage_Unit : constant := 8;
+   Word_Size    : constant := 64;
+   Memory_Size  : constant := 2 ** 64;
 
    --  Address comparison
 
@@ -92,27 +92,14 @@ pragma Pure (System);
 
    --  Priority-related Declarations (RM D.1)
 
-   Max_Priority : constant Positive := 30;
+   Max_Priority           : constant Positive := 60;
+   Max_Interrupt_Priority : constant Positive := 63;
 
-   Max_Interrupt_Priority : constant Positive := 31;
+   subtype Any_Priority       is Integer      range  0 .. 63;
+   subtype Priority           is Any_Priority range  0 .. 60;
+   subtype Interrupt_Priority is Any_Priority range 61 .. 63;
 
-   subtype Any_Priority is Integer
-     range 0 .. Standard'Max_Interrupt_Priority;
-
-   subtype Priority is Any_Priority
-     range 0 .. Standard'Max_Priority;
-
-   --  Functional notation is needed in the following to avoid visibility
-   --  problems when this package is compiled through rtsfind in the middle
-   --  of another compilation.
-
-   subtype Interrupt_Priority is Any_Priority
-     range
-       Standard."+" (Standard'Max_Priority,  1) ..
-         Standard'Max_Interrupt_Priority;
-
-   Default_Priority : constant Priority :=
-     Standard."/" (Standard."+" (Priority'First, Priority'Last), 2);
+   Default_Priority : constant Priority := 30;
 
 private
 
@@ -130,10 +117,13 @@ private
    --  of the individual switch values.
 
    AAMP                      : constant Boolean := False;
+   Backend_Divide_Checks     : constant Boolean := False;
+   Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := True;
    Denorm                    : constant Boolean := False;
+   Fractional_Fixed_Ops      : constant Boolean := False;
    Frontend_Layout           : constant Boolean := False;
-   Functions_Return_By_DSP   : constant Boolean := True;
+   Functions_Return_By_DSP   : constant Boolean := False;
    Long_Shifts_Inlined       : constant Boolean := True;
    High_Integrity_Mode       : constant Boolean := False;
    Machine_Overflows         : constant Boolean := False;
@@ -143,9 +133,9 @@ private
    Stack_Check_Default       : constant Boolean := True;
    Stack_Check_Probes        : constant Boolean := True;
    Use_Ada_Main_Program_Name : constant Boolean := False;
-   ZCX_By_Default            : constant Boolean := True;
+   ZCX_By_Default            : constant Boolean := False;
    GCC_ZCX_Support           : constant Boolean := False;
-   Front_End_ZCX_Support     : constant Boolean := True;
+   Front_End_ZCX_Support     : constant Boolean := False;
 
    --  Note: Denorm is False because denormals are only handled properly
    --  if the -mieee switch is set, and we do not require this usage.
@@ -193,37 +183,29 @@ private
    --  Suppress initialization in case gnat.adc specifies Normalize_Scalars
 
    Underlying_Priorities : constant Priorities_Mapping :=
-     (Priority'First     => 16,
-      1  => 17,
-      2  => 18,
-      3  => 18,
-      4  => 18,
-      5  => 18,
-      6  => 19,
-      7  => 19,
-      8  => 19,
-      9  => 20,
-      10 => 20,
-      11 => 21,
-      12 => 21,
-      13 => 22,
-      14 => 23,
-      Default_Priority   => 24,
-      16 => 25,
-      17 => 25,
-      18 => 25,
-      19 => 26,
-      20 => 26,
-      21 => 26,
-      22 => 27,
-      23 => 27,
-      24 => 27,
-      25 => 28,
-      26 => 28,
-      27 => 29,
-      28 => 29,
-      29 => 30,
-      Priority'Last      => 30,
-      Interrupt_Priority => 31);
+
+     (Priority'First => 0,
+
+       1 =>  1,  2 =>  2,  3 =>  3,  4 =>  4,  5 =>  5,
+       6 =>  6,  7 =>  7,  8 =>  8,  9 =>  9, 10 => 10,
+      11 => 11, 12 => 12, 13 => 13, 14 => 14, 15 => 15,
+      16 => 16, 17 => 17, 18 => 18, 19 => 19, 20 => 20,
+      21 => 21, 22 => 22, 23 => 23, 24 => 24, 25 => 25,
+      26 => 26, 27 => 27, 28 => 28, 29 => 29,
+
+      Default_Priority => 30,
+
+      31 => 31, 32 => 32, 33 => 33, 34 => 34, 35 => 35,
+      36 => 36, 37 => 37, 38 => 38, 39 => 39, 40 => 40,
+      41 => 41, 42 => 42, 43 => 43, 44 => 44, 45 => 45,
+      46 => 46, 47 => 47, 48 => 48, 49 => 49, 50 => 50,
+      51 => 51, 52 => 52, 53 => 53, 54 => 54, 55 => 55,
+      56 => 56, 57 => 57, 58 => 58, 59 => 59,
+
+      Priority'Last => 60,
+
+      61 => 61, 62 => 62,
+
+      Interrupt_Priority'Last => 63);
 
 end System;

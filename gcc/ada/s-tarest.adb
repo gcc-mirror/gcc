@@ -8,7 +8,7 @@
 --                                                                          --
 --                             $Revision$
 --                                                                          --
---              Copyright (C) 1999-2001 Ada Core Technologies               --
+--         Copyright (C) 1999-2001, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -50,6 +49,7 @@ pragma Polling (Off);
 
 with System.Parameters;
 --  used for Size_Type
+--           Single_Lock
 
 with System.Task_Info;
 --  used for Task_Info_Type
@@ -83,9 +83,9 @@ package body System.Tasking.Restricted.Stages is
    package SSE  renames System.Storage_Elements;
    package SST  renames System.Secondary_Stack;
 
-   use System.Task_Primitives;
-   use System.Task_Primitives.Operations;
-   use System.Task_Info;
+   use Parameters;
+   use Task_Primitives.Operations;
+   use Task_Info;
 
    Global_Task_Lock : aliased System.Task_Primitives.RTS_Lock;
    --  This is a global lock; it is used to execute in mutual exclusion
@@ -147,7 +147,7 @@ package body System.Tasking.Restricted.Stages is
 
    procedure Task_Lock is
    begin
-      STPO.Write_Lock (Global_Task_Lock'Access);
+      STPO.Write_Lock (Global_Task_Lock'Access, Global_Lock => True);
    end Task_Lock;
 
    -----------------
@@ -156,7 +156,7 @@ package body System.Tasking.Restricted.Stages is
 
    procedure Task_Unlock is
    begin
-      STPO.Unlock (Global_Task_Lock'Access);
+      STPO.Unlock (Global_Task_Lock'Access, Global_Lock => True);
    end Task_Unlock;
 
    ----------------------
@@ -294,6 +294,10 @@ package body System.Tasking.Restricted.Stages is
       pragma Assert (Self_ID = Environment_Task);
       pragma Assert (Self_ID.Common.Wait_Count = 0);
 
+      if Single_Lock then
+         Lock_RTS;
+      end if;
+
       --  Lock self, to prevent activated tasks
       --  from racing ahead before we finish activating the chain.
 
@@ -351,6 +355,10 @@ package body System.Tasking.Restricted.Stages is
       Self_ID.Common.State := Runnable;
       Unlock (Self_ID);
 
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
+
       --  Remove the tasks from the chain.
 
       Chain_Access.T_ID := null;
@@ -370,6 +378,10 @@ package body System.Tasking.Restricted.Stages is
       Activator : constant Task_ID := Self_ID.Common.Activator;
 
    begin
+      if Single_Lock then
+         Lock_RTS;
+      end if;
+
       Write_Lock (Activator);
       Write_Lock (Self_ID);
 
@@ -392,6 +404,10 @@ package body System.Tasking.Restricted.Stages is
 
       Unlock (Self_ID);
       Unlock (Activator);
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
 
       --  After the activation, active priority should be the same
       --  as base priority. We must unlock the Activator first,
@@ -439,6 +455,11 @@ package body System.Tasking.Restricted.Stages is
       end if;
 
       T := New_ATCB (0);
+
+      if Single_Lock then
+         Lock_RTS;
+      end if;
+
       Write_Lock (Self_ID);
 
       --  With no task hierarchy, the parent of all non-Environment tasks that
@@ -454,12 +475,21 @@ package body System.Tasking.Restricted.Stages is
 
       if not Success then
          Unlock (Self_ID);
+
+         if Single_Lock then
+            Unlock_RTS;
+         end if;
+
          raise Program_Error;
       end if;
 
       T.Entry_Calls (1).Self := T;
       T.Common.Task_Image    := Task_Image;
       Unlock (Self_ID);
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
 
       --  Create TSD as early as possible in the creation of a task, since it
       --  may be used by the operation of Ada code within the task.
@@ -483,9 +513,17 @@ package body System.Tasking.Restricted.Stages is
    begin
       pragma Assert (Self_ID = STPO.Environment_Task);
 
+      if Single_Lock then
+         Lock_RTS;
+      end if;
+
       Write_Lock (Self_ID);
       Sleep (Self_ID, Master_Completion_Sleep);
       Unlock (Self_ID);
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
 
       --  Should never return from Master Completion Sleep
 

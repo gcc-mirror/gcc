@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1061,7 +1061,7 @@ package body Scn is
             --  Special check for || to give nice message
 
             if Source (Scan_Ptr + 1) = '|' then
-               Error_Msg_S ("""||"" should be `OR ELSE`");
+               Error_Msg_S ("""'|'|"" should be `OR ELSE`");
                Scan_Ptr := Scan_Ptr + 2;
                Token := Tok_Or;
                return;
@@ -1163,8 +1163,8 @@ package body Scn is
 
             else
                --  Upper half characters may possibly be identifier letters
-               --  but can never be digits, so Identifier_Character can be
-               --  used to test for a valid start of identifier character.
+               --  but can never be digits, so Identifier_Char can be used
+               --  to test for a valid start of identifier character.
 
                if Identifier_Char (Source (Scan_Ptr)) then
                   Name_Len := 0;
@@ -1357,30 +1357,44 @@ package body Scn is
                   Sptr : constant Source_Ptr := Scan_Ptr;
                   Code : Char_Code;
                   Err  : Boolean;
+                  Chr  : Character;
 
                begin
                   Scan_Wide (Source, Scan_Ptr, Code, Err);
-                  Accumulate_Checksum (Code);
+
+                  --  If error, signal error
 
                   if Err then
                      Error_Illegal_Wide_Character;
-                  else
-                     Store_Encoded_Character (Code);
-                  end if;
 
-                  --  Make sure we are allowing wide characters in identifiers.
-                  --  Note that we allow wide character notation for an OK
-                  --  identifier character. This in particular allows bracket
-                  --  or other notation to be used for upper half letters.
+                  --  If the character scanned is a normal identifier
+                  --  character, then we treat it that way.
 
-                  if Identifier_Character_Set /= 'w'
-                    and then
-                      (not In_Character_Range (Code)
-                         or else
-                       not Identifier_Char (Get_Character (Code)))
+                  elsif In_Character_Range (Code)
+                    and then Identifier_Char (Get_Character (Code))
                   then
-                     Error_Msg
-                       ("wide character not allowed in identifier", Sptr);
+                     Chr := Get_Character (Code);
+                     Accumulate_Checksum (Chr);
+                     Store_Encoded_Character
+                       (Get_Char_Code (Fold_Lower (Chr)));
+
+                  --  Character is not normal identifier character, store
+                  --  it in encoded form.
+
+                  else
+                     Accumulate_Checksum (Code);
+                     Store_Encoded_Character (Code);
+
+                     --  Make sure we are allowing wide characters in
+                     --  identifiers. Note that we allow wide character
+                     --  notation for an OK identifier character. This
+                     --  in particular allows bracket or other notation
+                     --  to be used for upper half letters.
+
+                     if Identifier_Character_Set /= 'w' then
+                        Error_Msg
+                          ("wide character not allowed in identifier", Sptr);
+                     end if;
                   end if;
                end;
 

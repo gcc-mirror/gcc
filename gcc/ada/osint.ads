@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -28,21 +28,15 @@
 
 --  This package contains the low level, operating system routines used in
 --  the GNAT compiler and binder for command line processing and file input
---  output. The specification is suitable for use with MS-DOS, Unix, and
---  similar systems. Note that for input source and library information
---  files, the line terminator may be either CR/LF or LF alone, and the
---  DOS-style EOF (16#1A#) character marking the end of the text in a
---  file may be used in all systems including Unix. This allows for more
---  convenient processing of DOS files in a Unix environment.
+--  output.
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 with System;      use System;
 with Types;       use Types;
 
-package Osint is
+pragma Elaborate (GNAT.OS_Lib);
 
-   procedure Set_Main_File_Name (Name : String);
-   --  Set the main file name for Gnatmake.
+package Osint is
 
    function Normalize_Directory_Name (Directory : String) return String_Ptr;
    --  Verify and normalize a directory name. If directory name is invalid,
@@ -55,29 +49,24 @@ package Osint is
      (N :    File_Name_Type;
       T :    File_Type)
       return File_Name_Type;
-   --  Finds a source or library file depending on the value of T following
-   --  the directory search order rules unless N is the name of the file
-   --  just read with Next_Main_File and already contains directiory
-   --  information, in which case just look in the Primary_Directory.
-   --  Returns File_Name_Type of the full file name if found, No_File if
-   --  file not found. Note that for the special case of gnat.adc, only the
-   --  compilation environment directory is searched, i.e. the directory
-   --  where the ali and object files are written. Another special case is
-   --  when Debug_Generated_Code is set and the file name ends on ".dg",
-   --  in which case we look for the generated file only in the current
-   --  directory, since that is where it is always built.
-
-   function Get_Switch_Character return Character;
-   pragma Import (C, Get_Switch_Character, "__gnat_get_switch_character");
-   Switch_Character : constant Character := Get_Switch_Character;
-   --  Set to the default switch character (note that minus is always an
-   --  acceptable alternative switch character)
+   --  Finds a source, library or config file depending on the value
+   --  of T following the directory search order rules unless N is the
+   --  name of the file just read with Next_Main_File and already
+   --  contains directiory information, in which case just look in the
+   --  Primary_Directory.  Returns File_Name_Type of the full file name
+   --  if found, No_File if file not found. Note that for the special
+   --  case of gnat.adc, only the compilation environment directory is
+   --  searched, i.e. the directory where the ali and object files are
+   --  written. Another special case is when Debug_Generated_Code is
+   --  set and the file name ends on ".dg", in which case we look for
+   --  the generated file only in the current directory, since that is
+   --  where it is always built.
 
    function Get_File_Names_Case_Sensitive return Int;
    pragma Import (C, Get_File_Names_Case_Sensitive,
-                    "__gnat_get_file_names_case_sensitive");
+                  "__gnat_get_file_names_case_sensitive");
    File_Names_Case_Sensitive : constant Boolean :=
-                               Get_File_Names_Case_Sensitive /= 0;
+                                 Get_File_Names_Case_Sensitive /= 0;
    --  Set to indicate whether the operating system convention is for file
    --  names to be case sensitive (e.g., in Unix, set True), or non case
    --  sensitive (e.g., in OS/2, set False).
@@ -97,29 +86,6 @@ package Osint is
    --  Called by the subprogram processing the command line for each
    --  file name found.
 
-   procedure Set_Output_Object_File_Name (Name : String);
-   --  Called by the subprogram processing the command line when an
-   --  output object file name is found.
-
-   type Program_Type is (Compiler, Binder, Make);
-   Program : Program_Type;
-   --  Program currently running (set by Initialize below)
-
-   procedure Initialize (P : Program_Type);
-   --  This routine scans parameters and initializes for the first call to
-   --  Next_Main_Source (Compiler or Make) or Next_Main_Lib_File (Binder).
-   --  It also resets any of the variables in package Opt in response to
-   --  command switch settings.
-   --
-   --  Initialize may terminate execution if the parameters are invalid or some
-   --  other fatal error is encountered. The interface is set up to
-   --  accommodate scanning a series of files (e.g. as the result of
-   --  wild card references in DOS, or an expanded list of source files
-   --  in Unix). Of course it is perfectly possible to ignore this in
-   --  the implementation and provide for opening only one file.
-   --  The parameter P is the program (Compiler, Binder or Make) that is
-   --  actually running.
-
    procedure Find_Program_Name;
    --  Put simple name of current program being run (excluding the directory
    --  path) in Name_Buffer, with the length in Name_Len.
@@ -133,29 +99,32 @@ package Osint is
    --  Name_Buffer and Name_Len.
 
    procedure Write_Program_Name;
-   --  Writes name of program as invoked to standard output
+   --  Writes name of program as invoked to the current output
+   --  (normally standard output).
 
    procedure Fail (S1 : String; S2 : String := ""; S3 : String := "");
+   pragma No_Return (Fail);
    --  Outputs error messages S1 & S2 & S3 preceded by the name of the
-   --  executing program and exits with E_Fatal.
+   --  executing program and exits with E_Fatal. The output goes to
+   --  standard error, except if special output is in effect (see Output).
 
    function Is_Directory_Separator (C : Character) return Boolean;
    --  Returns True if C is a directory separator
 
    function Get_Directory (Name : File_Name_Type) return File_Name_Type;
    --  Get the prefix directory name (if any) from Name. The last separator
-   --  is preserved. Return No_File if there is no directory part in the
-   --  name.
+   --  is preserved. Return the normalized current directory if there is no
+   --  directory part in the name.
 
    function Is_Readonly_Library (File : File_Name_Type) return Boolean;
    --  Check if this library file is a read-only file.
 
    function Strip_Directory (Name : File_Name_Type) return File_Name_Type;
    --  Strips the prefix directory name (if any) from Name. Returns the
-   --  stripped name.
+   --  stripped name. Name cannot end with a directory separator.
 
    function Strip_Suffix (Name : File_Name_Type) return File_Name_Type;
-   --  Strips the suffix (the '.' and whatever comes after it) from Name.
+   --  Strips the suffix (the last '.' and whatever comes after it) from Name.
    --  Returns the stripped name.
 
    function Executable_Name (Name : File_Name_Type) return File_Name_Type;
@@ -170,33 +139,18 @@ package Osint is
    --  opened, or Name = No_File, and all blank time stamp is returned (this is
    --  not an error situation).
 
-   procedure Record_Time_From_Last_Bind;
-   --  Trigger the computing of the time from the last bind of the same
-   --  program.
-
-   function Time_From_Last_Bind return Nat;
-   --  This function give an approximate number of minute from the last bind.
-   --  It bases its computation on file stamp and therefore does gibe not
-   --  any meaningful result before the new output binder file is written.
-   --  So it returns Nat'last if
-   --   - it is the first bind of this  specific program
-   --   - Record_Time_From_Last_Bind was not Called first
-   --   - Close_Binder_Output was not called first
-   --  otherwise returns the number of minutes
-   --  till the last bind. The computation does not try to be completely
-   --  accurate and in particular does not take leap years into account.
-
    type String_Access_List is array (Positive range <>) of String_Access;
    --  Deferenced type used to return a list of file specs in
    --  To_Canonical_File_List.
 
    type String_Access_List_Access is access all String_Access_List;
-   --  Type used to return a String_Access_List  without dragging in secondary
+   --  Type used to return a String_Access_List without dragging in secondary
    --  stack.
 
    function To_Canonical_File_List
-     (Wildcard_Host_File : String; Only_Dirs : Boolean)
-   return String_Access_List_Access;
+     (Wildcard_Host_File : String;
+      Only_Dirs          : Boolean)
+      return               String_Access_List_Access;
    --  Expand a wildcard host syntax file or directory specification (e.g. on
    --  a VMS host, any file or directory spec that contains:
    --  "*", or "%", or "...")
@@ -206,7 +160,7 @@ package Osint is
    function To_Canonical_Dir_Spec
      (Host_Dir     : String;
       Prefix_Style : Boolean)
-      return String_Access;
+      return         String_Access;
    --  Convert a host syntax directory specification (e.g. on a VMS host:
    --  "SYS$DEVICE:[DIR]") to canonical (Unix) syntax (e.g. "/sys$device/dir").
    --  If Prefix_Style then make it a valid file specification prefix.
@@ -217,14 +171,14 @@ package Osint is
 
    function To_Canonical_File_Spec
      (Host_File : String)
-      return String_Access;
+      return      String_Access;
    --  Convert a host syntax file specification (e.g. on a VMS host:
    --  "SYS$DEVICE:[DIR]FILE.EXT;69 to canonical (Unix) syntax (e.g.
    --  "/sys$device/dir/file.ext.69").
 
    function To_Canonical_Path_Spec
      (Host_Path : String)
-      return String_Access;
+      return      String_Access;
    --  Convert a host syntax Path specification (e.g. on a VMS host:
    --  "SYS$DEVICE:[BAR],DISK$USER:[FOO] to canonical (Unix) syntax (e.g.
    --  "/sys$device/foo:disk$user/foo").
@@ -232,14 +186,14 @@ package Osint is
    function To_Host_Dir_Spec
      (Canonical_Dir : String;
       Prefix_Style  : Boolean)
-      return String_Access;
+      return          String_Access;
    --  Convert a canonical syntax directory specification to host syntax.
    --  The Prefix_Style flag is currently ignored but should be set to
    --  False.
 
    function To_Host_File_Spec
      (Canonical_File : String)
-      return String_Access;
+      return           String_Access;
    --  Convert a canonical syntax file specification to host syntax.
 
    -------------------------
@@ -267,9 +221,17 @@ package Osint is
    --  name, and calls to the function return successive directory names,
    --  with a null pointer marking the end of the list.
 
+   type Search_File_Type is (Include, Objects);
+
+   procedure Add_Search_Dirs
+     (Search_Path : String_Ptr;
+      Path_Type   : Search_File_Type);
+   --  These procedure adds all the search directories that are in Search_Path
+   --  in the proper file search path (library or source)
+
    function Get_Primary_Src_Search_Directory return String_Ptr;
    --  Retrieved the primary directory (directory containing the main source
-   --   file for Gnatmake.
+   --  file for Gnatmake.
 
    function Nb_Dir_In_Src_Search_Path return Natural;
    function Dir_In_Src_Search_Path (Position : Natural) return String_Ptr;
@@ -279,22 +241,43 @@ package Osint is
    function Dir_In_Obj_Search_Path (Position : Natural) return String_Ptr;
    --  Functions to access the directory names in the Object search path
 
-   Include_Search_File : constant String_Access
-     := new String'("ada_source_path");
-   Objects_Search_File : constant String_Access
-     := new String'("ada_object_path");
-
-   --  Files containg the default include or objects search directories.
+   Include_Search_File : constant String_Access :=
+                           new String'("ada_source_path");
+   Objects_Search_File : constant String_Access :=
+                           new String'("ada_object_path");
+   --  Names of the files containg the default include or objects search
+   --  directories. These files, located in Sdefault.Search_Dir_Prefix, do
+   --  not necessarily exist.
 
    function Read_Default_Search_Dirs
-     (Search_Dir_Prefix : String_Access;
-      Search_File : String_Access;
+     (Search_Dir_Prefix       : String_Access;
+      Search_File             : String_Access;
       Search_Dir_Default_Name : String_Access)
-     return String_Access;
+      return                    String_Access;
    --  Read and return the default search directories from the file located
    --  in Search_Dir_Prefix (as modified by update_path) and named Search_File.
    --  If no such file exists or an error occurs then instead return the
    --  Search_Dir_Default_Name (as modified by update_path).
+
+   function Get_RTS_Search_Dir
+     (Search_Dir : String;
+      File_Type  : Search_File_Type)
+      return       String_Ptr;
+   --  This function retrieves the paths to the search (resp. lib) dirs and
+   --  return them. The search dir can be absolute or relative. If the search
+   --  dir contains Include_Search_File (resp. Object_Search_File), then this
+   --  function reads and returns the default search directories from the file.
+   --  Otherwise, if the directory is absolute, it will try to find 'adalib'
+   --  (resp. 'adainclude'). If found, null is returned. If the directory is
+   --  relative, the following directories for the directories 'adalib' and
+   --  'adainclude' will be scanned:
+   --
+   --   - current directory (from which the tool has been spawned)
+   --   - $GNAT_ROOT/gcc/gcc-lib/$targ/$vers/
+   --   - $GNAT_ROOT/gcc/gcc-lib/$targ/$vers/rts-
+   --
+   --  The scan will stop as soon as the directory being searched for (adalib
+   --  or adainclude) is found. If the scan fails, null is returned.
 
    -----------------------
    -- Source File Input --
@@ -303,18 +286,6 @@ package Osint is
    --  Source file input routines are used by the compiler to read the main
    --  source files and the subsidiary source files (e.g. with'ed units), and
    --  also by the binder to check presence/time stamps of sources.
-
-   function More_Source_Files return Boolean;
-   --  Indicates whether more source file remain to be processed. Returns
-   --  False right away if no source files, or if all source files have
-   --  been processed.
-
-   function Next_Main_Source return File_Name_Type;
-   --  This function returns the name of the next main source file specified
-   --  on the command line. It is an error to call Next_Main_Source if no more
-   --  source files exist (i.e. Next_Main_Source may be called only if a
-   --  previous call to More_Source_Files returned True). This name is the
-   --  simple file name (without any directory information).
 
    procedure Read_Source_File
      (N   : File_Name_Type;
@@ -436,18 +407,6 @@ package Osint is
    --  These subprograms are used by the binder to read library information
    --  files, see section above for representation of these files.
 
-   function More_Lib_Files return Boolean;
-   --  Indicates whether more library information files remain to be processed.
-   --  Returns False right away if no source files, or if all source files
-   --  have been processed.
-
-   function Next_Main_Lib_File return File_Name_Type;
-   --  This function returns the name of the next library info file specified
-   --  on the command line. It is an error to call Next_Main_Lib_File if no
-   --  more library information files exist (i.e. Next_Main_Lib_File may be
-   --  called only if a previous call to More_Lib_Files returned True). This
-   --  name is the simple name, excluding any directory information.
-
    function Read_Library_Info
      (Lib_File  : File_Name_Type;
       Fatal_Err : Boolean := False)
@@ -477,15 +436,6 @@ package Osint is
    --  behaves as if it did not find Lib_File (namely if Fatal_Err is
    --  False, null is returned).
 
-   procedure Read_Library_Info
-     (Name : out File_Name_Type;
-      Text : out Text_Buffer_Ptr);
-   --  The procedure version of Read_Library_Info is used from the compiler
-   --  to read an existing ali file associated with the main unit. If the
-   --  ALI file exists, then its file name is returned in Name, and its
-   --  text is returned in Text. If the file does not exist, then Text is
-   --  set to null.
-
    function Full_Library_Info_Name return File_Name_Type;
    function Full_Object_File_Name return File_Name_Type;
    --  Returns the full name of the library/object file most recently read
@@ -511,39 +461,6 @@ package Osint is
    --  file directory lookup penalty is incurred every single time this
    --  routine is called.
 
-   function Object_File_Name (N : File_Name_Type) return File_Name_Type;
-   --  Constructs the name of the object file corresponding to library
-   --  file N. If N is a full file name than the returned file name will
-   --  also be a full file name. Note that no lookup in the library file
-   --  directories is done for this file. This routine merely constructs
-   --  the name.
-
-   --------------------------------
-   -- Library Information Output --
-   --------------------------------
-
-   --  These routines are used by the compiler to generate the library
-   --  information file for the main source file being compiled. See section
-   --  above for a discussion of how library information files are stored.
-
-   procedure Create_Output_Library_Info;
-   --  Creates the output library information file for the source file which
-   --  is currently being compiled (i.e. the file which was most recently
-   --  returned by Next_Main_Source).
-
-   procedure Write_Library_Info (Info : String);
-   --  Writes the contents of the referenced string to the library information
-   --  file for the main source file currently being compiled (i.e. the file
-   --  which was most recently opened with a call to Read_Next_File). Info
-   --  represents a single line in the file, but does not contain any line
-   --  termination characters. The implementation of Write_Library_Info is
-   --  responsible for adding necessary end of line and end of file control
-   --  characters to the generated file.
-
-   procedure Close_Output_Library_Info;
-   --  Closes the file created by Create_Output_Library_Info, flushing any
-   --  buffers etc from writes by Write_Library_Info.
-
    function Lib_File_Name (Source_File : File_Name_Type) return File_Name_Type;
    --  Given the name of a source file, returns the name of the corresponding
    --  library information file. This may be the name of the object file, or
@@ -552,83 +469,6 @@ package Osint is
    --  Note: this subprogram is in this section because it is used by the
    --  compiler to determine the proper library information names to be placed
    --  in the generated library information file.
-
-   ------------------------------
-   -- Debug Source File Output --
-   ------------------------------
-
-   --  These routines are used by the compiler to generate the debug source
-   --  file for the Debug_Generated_Code (-gnatD switch) option. Note that
-   --  debug source file writing occurs at a completely different point in
-   --  the processing from library information output, so the code in the
-   --  body can assume these functions are never used at the same time.
-
-   function Create_Debug_File (Src : File_Name_Type) return File_Name_Type;
-   --  Given the simple name of a source file, this routine creates the
-   --  corresponding debug file, and returns its full name.
-
-   procedure Write_Debug_Info (Info : String);
-   --  Writes contents of given string as next line of the current debug
-   --  source file created by the most recent call to Get_Debug_Name. Info
-   --  does not contain any end of line or other formatting characters.
-
-   procedure Close_Debug_File;
-   --  Close current debug file created by the most recent call to
-   --  Get_Debug_Name.
-
-   function Debug_File_Eol_Length return Nat;
-   --  Returns the number of characters (1 for NL, 2 for CR/LF) written
-   --  at the end of each line by Write_Debug_Info.
-
-   --------------------------------
-   -- Semantic Tree Input-Output --
-   --------------------------------
-
-   procedure Tree_Create;
-   --  Creates the tree output file for the source file which is currently
-   --  being compiled (i.e. the file which was most recently returned by
-   --  Next_Main_Source), and initializes Tree_IO.Tree_Write for output.
-
-   procedure Tree_Close;
-   --  Closes the file previously opened by Tree_Create
-
-   -------------------
-   -- Binder Output --
-   -------------------
-
-   --  These routines are used by the binder to generate the C source file
-   --  containing the binder output. The format of this file is described
-   --  in the package Bindfmt.
-
-   procedure Create_Binder_Output
-     (Output_File_Name : String;
-      Typ              : Character;
-      Bfile            : out Name_Id);
-   --  Creates the binder output file. Typ is one of
-   --
-   --    'c'   create output file for case of generating C
-   --    'b'   create body file for case of generating Ada
-   --    's'   create spec file for case of generating Ada
-   --
-   --  If Output_File_Name is null, then a default name is used based on
-   --  the name of the most recently accessed main source file name. If
-   --  Output_File_Name is non-null then it is the full path name of the
-   --  file to be output (in the case of Ada, it must have an extension
-   --  of adb, and the spec file is created by changing the last character
-   --  from b to s. On return, Bfile also contains the Name_Id for the
-   --  generated file name.
-
-   procedure Write_Binder_Info (Info : String);
-   --  Writes the contents of the referenced string to the binder output file
-   --  created by a previous call to Create_Binder_Output. Info represents a
-   --  single line in the file, but does not contain any line termination
-   --  characters. The implementation of Write_Binder_Info is responsible
-   --  for adding necessary end of line and end of file control characters
-   --  as required by the operating system.
-
-   procedure Close_Binder_Output;
-   --  Closes the file created by Create_Binder_Output, flushing any
-   --  buffers etc from writes by Write_Binder_Info.
 
    -----------------
    -- Termination --
@@ -644,6 +484,7 @@ package Osint is
       E_Abort);     -- Internally detected compiler error
 
    procedure Exit_Program (Exit_Code : Exit_Code_Type);
+   pragma No_Return (Exit_Program);
    --  A call to Exit_Program terminates execution with the given status.
    --  A status of zero indicates normal completion, a non-zero status
    --  indicates abnormal termination.
@@ -667,5 +508,76 @@ package Osint is
    function Len_Arg (Arg_Num : Integer) return Integer;
    pragma Import (C, Len_Arg, "__gnat_len_arg");
    --  Get length of argument
+
+private
+
+   ALI_Suffix : constant String_Ptr := new String'("ali");
+   --  The suffix used for the library files (also known as ALI files).
+
+   Current_Main : File_Name_Type := No_File;
+   --  Used to save a simple file name between calls to Next_Main_Source and
+   --  Read_Source_File. If the file name argument to Read_Source_File is
+   --  No_File, that indicates that the file whose name was returned by the
+   --  last call to Next_Main_Source (and stored here) is to be read.
+
+   Object_Suffix : constant String := Get_Object_Suffix.all;
+   --  The suffix used for the object files.
+
+   Output_FD : File_Descriptor;
+   --  The file descriptor for the current library info, tree or binder output
+
+   Output_File_Name : File_Name_Type;
+   --  File_Name_Type for name of open file whose FD is in Output_FD, the name
+   --  stored does not include the trailing NUL character.
+
+   Argument_Count : constant Integer := Arg_Count - 1;
+   --  Number of arguments (excluding program name)
+
+   type File_Name_Array is array (Int range <>) of String_Ptr;
+   type File_Name_Array_Ptr is access File_Name_Array;
+   File_Names : File_Name_Array_Ptr :=
+                  new File_Name_Array (1 .. Int (Argument_Count) + 2);
+   --  As arguments are scanned in Initialize, file names are stored
+   --  in this array. The string does not contain a terminating NUL.
+   --  The array is "extensible" because when using project files,
+   --  there may be more file names than argument on the command line.
+
+   Current_File_Name_Index : Int := 0;
+   --  The index in File_Names of the last file opened by Next_Main_Source
+   --  or Next_Main_Lib_File. The value 0 indicates that no files have been
+   --  opened yet.
+
+   procedure Create_File_And_Check
+     (Fdesc : out File_Descriptor;
+      Fmode : Mode);
+   --  Create file whose name (NUL terminated) is in Name_Buffer (with the
+   --  length in Name_Len), and place the resulting descriptor in Fdesc.
+   --  Issue message and exit with fatal error if file cannot be created.
+   --  The Fmode parameter is set to either Text or Binary (see description
+   --  of GNAT.OS_Lib.Create_File).
+
+   type Program_Type is (Compiler, Binder, Make, Gnatls, Unspecified);
+   --  Program currently running
+   procedure Set_Program (P : Program_Type);
+   --  Indicates to the body of Osint the program currently running.
+   --  This procedure is called by the child packages of Osint.
+   --  A check is made that this procedure is not called several times.
+
+   function More_Files return Boolean;
+   --  Implements More_Source_Files and More_Lib_Files.
+
+   function Next_Main_File return File_Name_Type;
+   --  Implements Next_Main_Source and Next_Main_Lib_File.
+
+   function Object_File_Name (N : File_Name_Type) return File_Name_Type;
+   --  Constructs the name of the object file corresponding to library
+   --  file N. If N is a full file name than the returned file name will
+   --  also be a full file name. Note that no lookup in the library file
+   --  directories is done for this file. This routine merely constructs
+   --  the name.
+
+   procedure Write_Info (Info : String);
+   --  Implementation of Write_Binder_Info, Write_Debug_Info and
+   --  Write_Library_Info (identical)
 
 end Osint;

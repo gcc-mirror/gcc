@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@ with Atree;    use Atree;
 with Casing;   use Casing;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Errout;   use Errout;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Util; use Exp_Util;
 with Hostparm; use Hostparm;
@@ -657,18 +658,32 @@ package body Exp_Ch11 is
       --  Routine to prepend a call to the procedure referenced by Proc at
       --  the start of the handler code for the current Handler.
 
+      -----------------------------
+      -- Prepend_Call_To_Handler --
+      -----------------------------
+
       procedure Prepend_Call_To_Handler
         (Proc : RE_Id;
          Args : List_Id := No_List)
       is
-         Call : constant Node_Id :=
-                 Make_Procedure_Call_Statement (Loc,
-                   Name => New_Occurrence_Of (RTE (Proc), Loc),
-                   Parameter_Associations => Args);
+         Ent : constant Entity_Id := RTE (Proc);
 
       begin
-         Prepend_To (Statements (Handler), Call);
-         Analyze (Call, Suppress => All_Checks);
+         --  If we have no Entity, then we are probably in no run time mode
+         --  or some weird error has occured. In either case do do nothing!
+
+         if Present (Ent) then
+            declare
+               Call : constant Node_Id :=
+                        Make_Procedure_Call_Statement (Loc,
+                          Name => New_Occurrence_Of (RTE (Proc), Loc),
+                          Parameter_Associations => Args);
+
+            begin
+               Prepend_To (Statements (Handler), Call);
+               Analyze (Call, Suppress => All_Checks);
+            end;
+         end if;
       end Prepend_Call_To_Handler;
 
    --  Start of processing for Expand_Exception_Handlers
@@ -934,7 +949,9 @@ package body Exp_Ch11 is
 
    procedure Expand_N_Handled_Sequence_Of_Statements (N : Node_Id) is
    begin
-      if Present (Exception_Handlers (N)) then
+      if Present (Exception_Handlers (N))
+        and then not Restrictions (No_Exception_Handlers)
+      then
          Expand_Exception_Handlers (N);
       end if;
 
@@ -1007,18 +1024,24 @@ package body Exp_Ch11 is
       --  but this is also faster in all modes).
 
       if Present (Name (N)) and then Nkind (Name (N)) = N_Identifier then
-         if Entity (Name (N)) = Standard_Program_Error then
-            Rewrite (N, Make_Raise_Program_Error (Loc));
+         if Entity (Name (N)) = Standard_Constraint_Error then
+            Rewrite (N,
+              Make_Raise_Constraint_Error (Loc,
+                Reason => CE_Explicit_Raise));
             Analyze (N);
             return;
 
-         elsif Entity (Name (N)) = Standard_Constraint_Error then
-            Rewrite (N, Make_Raise_Constraint_Error (Loc));
+         elsif Entity (Name (N)) = Standard_Program_Error then
+            Rewrite (N,
+              Make_Raise_Program_Error (Loc,
+                Reason => PE_Explicit_Raise));
             Analyze (N);
             return;
 
          elsif Entity (Name (N)) = Standard_Storage_Error then
-            Rewrite (N, Make_Raise_Storage_Error (Loc));
+            Rewrite (N,
+              Make_Raise_Storage_Error (Loc,
+                Reason => SE_Explicit_Raise));
             Analyze (N);
             return;
          end if;
@@ -1036,6 +1059,13 @@ package body Exp_Ch11 is
 
          begin
             Build_Location_String (Loc);
+
+            --  If the exception is a renaming, use the exception that it
+            --  renames (which might be a predefined exception, e.g.).
+
+            if Present (Renamed_Object (Id)) then
+               Id := Renamed_Object (Id);
+            end if;
 
             --  Build a C compatible string in case of no exception handlers,
             --  since this is what the last chance handler is expecting.
@@ -1231,6 +1261,10 @@ package body Exp_Ch11 is
 
    begin
       if Exception_Mechanism /= Front_End_ZCX then
+         return;
+      end if;
+
+      if Restrictions (No_Exception_Handlers) then
          return;
       end if;
 
@@ -1583,6 +1617,20 @@ package body Exp_Ch11 is
       Adecl : Node_Id;
 
    begin
+      --  If N is empty with prior errors, ignore
+
+      if Total_Errors_Detected /= 0 and then No (N) then
+         return;
+      end if;
+
+      --  Do not generate if no exceptions
+
+      if Restrictions (No_Exception_Handlers) then
+         return;
+      end if;
+
+      --  Otherwise generate descriptor
+
       Adecl := Aux_Decls_Node (Parent (N));
 
       if No (Actions (Adecl)) then
@@ -1600,16 +1648,34 @@ package body Exp_Ch11 is
      (N    : Node_Id;
       Spec : Entity_Id)
    is
-      HSS : constant Node_Id := Handled_Statement_Sequence (N);
-
    begin
-      if No (Exception_Handlers (HSS)) then
-         Generate_Subprogram_Descriptor
-           (N, Sloc (N), Spec, Statements (HSS));
-      else
-         Generate_Subprogram_Descriptor
-           (N, Sloc (N), Spec, Statements (Last (Exception_Handlers (HSS))));
+      --  If we have no subprogram body and prior errors, ignore
+
+      if Total_Errors_Detected /= 0 and then No (N) then
+         return;
       end if;
+
+      --  Do not generate if no exceptions
+
+      if Restrictions (No_Exception_Handlers) then
+         return;
+      end if;
+
+      --  Else generate descriptor
+
+      declare
+         HSS : constant Node_Id := Handled_Statement_Sequence (N);
+
+      begin
+         if No (Exception_Handlers (HSS)) then
+            Generate_Subprogram_Descriptor
+              (N, Sloc (N), Spec, Statements (HSS));
+         else
+            Generate_Subprogram_Descriptor
+              (N, Sloc (N),
+               Spec, Statements (Last (Exception_Handlers (HSS))));
+         end if;
+      end;
    end Generate_Subprogram_Descriptor_For_Subprogram;
 
    -----------------------------------
@@ -1632,6 +1698,12 @@ package body Exp_Ch11 is
       --  Nothing to be done if zero length exceptions not active
 
       if Exception_Mechanism /= Front_End_ZCX then
+         return;
+      end if;
+
+      --  Nothing to do if no exceptions
+
+      if Restrictions (No_Exception_Handlers) then
          return;
       end if;
 

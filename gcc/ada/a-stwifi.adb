@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.17 $                             --
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,6 @@
 -- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
 --                                                                          --
 ------------------------------------------------------------------------------
-
 
 with Ada.Strings.Wide_Maps; use Ada.Strings.Wide_Maps;
 with Ada.Strings.Wide_Search;
@@ -158,9 +157,11 @@ package body Ada.Strings.Wide_Fixed is
 
       else
          declare
-            Result : constant Wide_String :=
-                       Source (Source'First .. From - 1) &
-                       Source (Through + 1 .. Source'Last);
+            Len    : constant Integer := Source'Length - (Through - From + 1);
+            Result : constant
+                       Wide_String (Source'First .. Source'First + Len - 1) :=
+                         Source (Source'First .. From - 1) &
+                         Source (Through + 1 .. Source'Last);
          begin
             return Result;
          end;
@@ -381,13 +382,15 @@ package body Ada.Strings.Wide_Fixed is
       else
          declare
             Result_Length : Natural :=
-                Natural'Max (Source'Length,
-                             Position - Source'First + New_Item'Length);
+                              Natural'Max
+                                (Source'Length,
+                                 Position - Source'First + New_Item'Length);
+
             Result : Wide_String (1 .. Result_Length);
 
          begin
             Result := Source (Source'First .. Position - 1) & New_Item &
-                     Source (Position + New_Item'Length .. Source'Last);
+                        Source (Position + New_Item'Length .. Source'Last);
             return Result;
          end;
       end if;

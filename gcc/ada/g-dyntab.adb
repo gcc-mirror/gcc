@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.4 $
+--                            $Revision$
 --                                                                          --
 --           Copyright (C) 2000-2001 Ada Core Technologies, Inc.            --
 --                                                                          --
@@ -32,14 +32,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System; use System;
+with System;        use System;
+with System.Memory; use System.Memory;
+with System.Address_To_Access_Conversions;
 
 package body GNAT.Dynamic_Tables is
 
    Min : constant Integer := Integer (Table_Low_Bound);
    --  Subscript of the minimum entry in the currently allocated table
-
-   type size_t is new Integer;
 
    -----------------------
    -- Local Subprograms --
@@ -49,6 +49,18 @@ package body GNAT.Dynamic_Tables is
    --  Reallocate the existing table according to the current value stored
    --  in Max. Works correctly to do an initial allocation if the table
    --  is currently null.
+
+   package Table_Conversions is
+      new System.Address_To_Access_Conversions (Big_Table_Type);
+   --  Address and Access conversions for a Table object.
+
+   function To_Address (Table : Table_Ptr) return Address;
+   pragma Inline (To_Address);
+   --  Returns the Address for the Table object.
+
+   function To_Pointer (Table : Address) return Table_Ptr;
+   pragma Inline (To_Pointer);
+   --  Returns the Access pointer for the Table object.
 
    --------------
    -- Allocate --
@@ -90,11 +102,8 @@ package body GNAT.Dynamic_Tables is
    ----------
 
    procedure Free (T : in out Instance) is
-      procedure free (T : Table_Ptr);
-      pragma Import (C, free);
-
    begin
-      free (T.Table);
+      Free (To_Address (T.Table));
       T.Table := null;
       T.P.Length := 0;
    end Free;
@@ -155,18 +164,6 @@ package body GNAT.Dynamic_Tables is
    ----------------
 
    procedure Reallocate (T : in out Instance) is
-
-      function realloc
-        (memblock : Table_Ptr;
-         size     : size_t)
-         return     Table_Ptr;
-      pragma Import (C, realloc);
-
-      function malloc
-        (size     : size_t)
-         return     Table_Ptr;
-      pragma Import (C, malloc);
-
       New_Size : size_t;
 
    begin
@@ -182,13 +179,12 @@ package body GNAT.Dynamic_Tables is
                 (Table_Type'Component_Size / Storage_Unit));
 
       if T.Table = null then
-         T.Table := malloc (New_Size);
+         T.Table := To_Pointer (Alloc (New_Size));
 
       elsif New_Size > 0 then
          T.Table :=
-           realloc
-             (memblock => T.Table,
-              size     => New_Size);
+           To_Pointer (Realloc (Ptr  => To_Address (T.Table),
+                                Size => New_Size));
       end if;
 
       if T.P.Length /= 0 and then T.Table = null then
@@ -242,5 +238,24 @@ package body GNAT.Dynamic_Tables is
          end if;
       end if;
    end Set_Last;
+
+   ----------------
+   -- To_Address --
+   ----------------
+
+   function To_Address (Table : Table_Ptr) return Address is
+   begin
+      return Table_Conversions.To_Address
+        (Table_Conversions.Object_Pointer (Table));
+   end To_Address;
+
+   ----------------
+   -- To_Pointer --
+   ----------------
+
+   function To_Pointer (Table : Address) return Table_Ptr is
+   begin
+      return Table_Ptr (Table_Conversions.To_Pointer (Table));
+   end To_Pointer;
 
 end GNAT.Dynamic_Tables;

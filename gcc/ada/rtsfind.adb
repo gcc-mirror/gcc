@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -577,12 +577,22 @@ package body Rtsfind is
       U_Id : constant RTU_Id := RE_Unit_Table (E);
       U    : RT_Unit_Table_Record renames RT_Unit_Table (U_Id);
 
-      Ent      : Entity_Id;
       Lib_Unit : Node_Id;
       Pkg_Ent  : Entity_Id;
       Ename    : Name_Id;
 
       Ravenscar : constant Boolean := Restricted_Profile;
+
+      --  The following flag is used to disable front-end inlining when RTE
+      --  is invoked. This prevents the analysis of other runtime bodies when
+      --  a particular spec is loaded through Rtsfind. This is both efficient,
+      --  and it prevents spurious visibility conflicts between use-visible
+      --  user entities, and entities in run-time packages.
+
+      --  In No_Run_Time mode, subprograms marked Inlined_Always must be
+      --  inlined, so in the case we retain the Front_End_Inlining mode.
+
+      Save_Front_End_Inlining : Boolean;
 
       procedure Check_RPC;
       --  Reject programs that make use of distribution features not supported
@@ -714,6 +724,7 @@ package body Rtsfind is
    --  Start of processing for RTE
 
    begin
+
       --  Check violation of no run time and ravenscar mode
 
       if No_Run_Time
@@ -744,6 +755,9 @@ package body Rtsfind is
       then
          return Find_Local_Entity (E);
       end if;
+
+      Save_Front_End_Inlining := Front_End_Inlining;
+      Front_End_Inlining := No_Run_Time;
 
       --  Load unit if unit not previously loaded
 
@@ -790,6 +804,7 @@ package body Rtsfind is
             if No_Run_Time
               and then not OK_To_Use_In_No_Run_Time_Mode (U_Id)
             then
+               Front_End_Inlining := Save_Front_End_Inlining;
                return Empty;
 
             else
@@ -832,29 +847,8 @@ package body Rtsfind is
          end;
       end if;
 
-      --  We can now obtain the entity. Check that the no run time condition
-      --  is not violated. Note that we do not signal the error if we detect
-      --  it in a runtime unit. This can only arise if the user explicitly
-      --  with'ed the runtime unit (or another runtime unit that uses it
-      --  transitively), or if some acceptable (e.g. inlined) entity is
-      --  fetched from a unit, some of whose other routines or entities
-      --  violate the conditions. In the latter case, it does not matter,
-      --  since we won't be using those entities.
-
-      Ent := RE_Table (E);
-
-      if Is_Subprogram (Ent)
-        and then not Is_Inlined (Ent)
-        and then Sloc (Current_Error_Node) /= Standard_Location
-        and then not
-          Is_Predefined_File_Name
-            (Unit_File_Name (Get_Source_Unit (Current_Error_Node)))
-        and then not Ravenscar
-      then
-         Disallow_In_No_Run_Time_Mode (Current_Error_Node);
-      end if;
-
-      return Ent;
+      Front_End_Inlining := Save_Front_End_Inlining;
+      return RE_Table (E);
    end RTE;
 
    --------------------

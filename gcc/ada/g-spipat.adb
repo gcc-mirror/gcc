@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---           Copyright (C) 1998-2001, Ada Core Technologies, Inc.           --
+--           Copyright (C) 1998-2002, Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,7 +77,6 @@ package body GNAT.Spitbol.Patterns is
    subtype String_Ptr is Ada.Strings.Unbounded.String_Access;
    subtype File_Ptr   is Ada.Text_IO.File_Access;
 
-   function To_PE_Ptr  is new Unchecked_Conversion (Address, PE_Ptr);
    function To_Address is new Unchecked_Conversion (PE_Ptr, Address);
    --  Used only for debugging output purposes
 
@@ -86,7 +85,6 @@ package body GNAT.Spitbol.Patterns is
    N : constant PE_Ptr := null;
    --  Shorthand used to initialize Copy fields to null
 
-   type Character_Ptr is access all Character;
    type Natural_Ptr   is access all Natural;
    type Pattern_Ptr   is access all Pattern;
 
@@ -1229,10 +1227,6 @@ package body GNAT.Spitbol.Patterns is
    --  in the left operand, it represents the additional stack space
    --  required by the right operand.
 
-   function "&" (L, R : PE_Ptr) return PE_Ptr;
-   pragma Inline ("&");
-   --  Equivalent to Concat (L, R, 0)
-
    function C_To_PE (C : PChar) return PE_Ptr;
    --  Given a character, constructs a pattern element that matches
    --  the single character.
@@ -1345,11 +1339,6 @@ package body GNAT.Spitbol.Patterns is
    function "&" (L : Pattern; R : Pattern) return Pattern is
    begin
       return (AFC with L.Stk + R.Stk, Concat (Copy (L.P), Copy (R.P), R.Stk));
-   end "&";
-
-   function "&" (L, R : PE_Ptr) return PE_Ptr is
-   begin
-      return Concat (L, R, 0);
    end "&";
 
    ---------

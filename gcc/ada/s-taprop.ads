@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -138,9 +137,7 @@ package System.Task_Primitives.Operations is
    type Lock_Level is
      (PO_Level,
       Global_Task_Level,
-      All_Attrs_Level,
-      All_Tasks_Level,
-      Interrupts_Level,
+      RTS_Lock_Level,
       ATCB_Level);
    --  Type used to describe kind of lock for second form of Initialize_Lock
    --  call specified below.
@@ -176,7 +173,7 @@ package System.Task_Primitives.Operations is
    --  corresponding Initialize_Lock operation.
 
    procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean);
-   procedure Write_Lock (L : access RTS_Lock);
+   procedure Write_Lock (L : access RTS_Lock; Global_Lock : Boolean := False);
    procedure Write_Lock (T : ST.Task_ID);
    pragma Inline (Write_Lock);
    --  Lock a lock object for write access. After this operation returns,
@@ -189,6 +186,9 @@ package System.Task_Primitives.Operations is
    --  For the operation on Lock, Ceiling_Violation is set to true iff the
    --  operation failed, which will happen if there is a priority ceiling
    --  violation.
+   --
+   --  For the operation on RTS_Lock, Global_Lock should be set to True
+   --  if L is a global lock (Single_RTS_Lock, Global_Task_Lock).
    --
    --  For the operation on ST.Task_ID, the lock is the special lock object
    --  associated with that task's ATCB. This lock has effective ceiling
@@ -221,7 +221,7 @@ package System.Task_Primitives.Operations is
    --  locking that make a reader-writer distinction have higher overhead.
 
    procedure Unlock (L : access Lock);
-   procedure Unlock (L : access RTS_Lock);
+   procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False);
    procedure Unlock (T : ST.Task_ID);
    pragma Inline (Unlock);
    --  Unlock a locked lock object.
@@ -232,9 +232,12 @@ package System.Task_Primitives.Operations is
    --  read or write permission. (That is, matching pairs of Lock and Unlock
    --  operations on each lock object must be properly nested.)
 
+   --  For the operation on RTS_Lock, Global_Lock should be set to True
+   --  if L is a global lock (Single_RTS_Lock, Global_Task_Lock).
+   --
    --  Note that Write_Lock for RTS_Lock does not have an out-parameter.
    --  RTS_Locks are used in situations where we have not made provision
-   --  for recovery from ceiling violations.  We do not expect them to
+   --  for recovery from ceiling violations. We do not expect them to
    --  occur inside the runtime system, because all RTS locks have ceiling
    --  Priority'Last.
 
@@ -243,7 +246,7 @@ package System.Task_Primitives.Operations is
    --  executing in the Interrupt_Priority range.
 
    --  It is not clear what to do about ceiling violations due
-   --  to RTS calls done at interrupt priority.  In general, it
+   --  to RTS calls done at interrupt priority. In general, it
    --  is not acceptable to give all RTS locks interrupt priority,
    --  since that whould give terrible performance on systems where
    --  this has the effect of masking hardware interrupts, though we
@@ -255,7 +258,7 @@ package System.Task_Primitives.Operations is
    --  penalties.
 
    --  For POSIX systems, we considered just skipping setting a
-   --  priority ceiling on RTS locks.  This would mean there is no
+   --  priority ceiling on RTS locks. This would mean there is no
    --  ceiling violation, but we would end up with priority inversions
    --  inside the runtime system, resulting in failure to satisfy the
    --  Ada priority rules, and possible missed validation tests.
@@ -267,9 +270,9 @@ package System.Task_Primitives.Operations is
 
    --  This issue should be reconsidered whenever we get around to
    --  checking for calls to potentially blocking operations from
-   --  within protected operations.  If we check for such calls and
+   --  within protected operations. If we check for such calls and
    --  catch them on entry to the OS, it may be that we can eliminate
-   --  the possibility of ceiling violations inside the RTS.  For this
+   --  the possibility of ceiling violations inside the RTS. For this
    --  to work, we would have to forbid explicitly setting the priority
    --  of a task to anything in the Interrupt_Priority range, at least.
    --  We would also have to check that there are no RTS-lock operations
@@ -278,7 +281,7 @@ package System.Task_Primitives.Operations is
 
    --  The latter approach seems to be the best, i.e. to check on entry
    --  to RTS calls that may need to use locks that the priority is not
-   --  in the interrupt range.  If there are RTS operations that NEED to
+   --  in the interrupt range. If there are RTS operations that NEED to
    --  be called from interrupt handlers, those few RTS locks should then
    --  be converted to PO-type locks, with ceiling Interrupt_Priority'Last.
 
@@ -325,9 +328,9 @@ package System.Task_Primitives.Operations is
    --  Returns the resolution of the underlying clock used to implement
    --  RT_Clock.
 
-   ------------------
-   --  Extensions  --
-   ------------------
+   ----------------
+   -- Extensions --
+   ----------------
 
    --  Whoever calls either of the Sleep routines is responsible
    --  for checking for pending aborts before the call.
@@ -388,6 +391,26 @@ package System.Task_Primitives.Operations is
 
    function Get_Thread_Id (T : ST.Task_ID) return OSI.Thread_Id;
    --  returns the thread id of the specified task.
+
+   -----------------------
+   -- RTS Entrance/Exit --
+   -----------------------
+
+   --  Following two routines are used for possible operations needed
+   --  to be setup/cleared upon entrance/exit of RTS while maintaining
+   --  a single thread of control in the RTS. Since we intend these
+   --  routines to be used for implementing the Single_Lock RTS,
+   --  Lock_RTS should follow the first Defer_Abortion operation
+   --  entering RTS. In the same fashion Unlock_RTS should preceed
+   --  the last Undefer_Abortion exiting RTS.
+   --
+   --  These routines also replace the functions Lock/Unlock_All_Tasks_List
+
+   procedure Lock_RTS;
+   --  Take the global RTS lock.
+
+   procedure Unlock_RTS;
+   --  Release the global RTS lock.
 
    --------------------
    -- Stack Checking --
@@ -464,13 +487,5 @@ package System.Task_Primitives.Operations is
    --  such functionality, unless the thread associated with T is Thread_Self.
    --  Such functionality is needed by gdb on some targets (e.g VxWorks)
    --  Return True is the operation is successful
-
-   procedure Lock_All_Tasks_List;
-   procedure Unlock_All_Tasks_List;
-   --  Lock/Unlock the All_Tasks_L lock which protects
-   --  System.Initialization.All_Tasks_List and Known_Tasks
-   --  ??? These routines were previousely in System.Tasking.Initialization
-   --  but were moved here to avoid dependency problems. That would be
-   --  nice to look at it some day and put it back in Initialization.
 
 end System.Task_Primitives.Operations;

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                            $Revision: 1.1 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -51,9 +51,7 @@ struct Elmt_Item
 /* The element list headers and element descriptors themselves are stored in
    two arrays. The pointers to these arrays are passed as a parameter to the
    tree transformer procedure and stored in the global variables Elists_Ptr
-   and Elmts_Ptr after adjusting them by subtracting Elist_First_Entry and
-   Elmt_First_Entry, so that Elist_Id and Elmt_Id values can be used as
-   subscripts into these arrays */
+   and Elmts_Ptr.  */
 
 extern struct Elist_Header *Elists_Ptr;
 extern struct Elmt_Item *Elmts_Ptr;
@@ -70,28 +68,28 @@ INLINE Node_Id
 Node (Elmt)
      Elmt_Id Elmt;
 {
-  return Elmts_Ptr [Elmt].node;
+  return Elmts_Ptr[Elmt - First_Elmt_Id].node;
 }
 
 INLINE Elmt_Id
 First_Elmt (List)
      Elist_Id List;
 {
-  return Elists_Ptr [List].first;
+  return Elists_Ptr[List - First_Elist_Id].first;
 }
 
 INLINE Elmt_Id
 Last_Elmt (List)
      Elist_Id List;
 {
-  return Elists_Ptr [List].last;
+  return Elists_Ptr[List - First_Elist_Id].last;
 }
 
 INLINE Elmt_Id
 Next_Elmt (Node)
      Elmt_Id Node;
 {
-  Int N = Elmts_Ptr [Node].next;
+  Int N = Elmts_Ptr[Node - First_Elmt_Id].next;
 
   if (IN (N, Elist_Range))
     return No_Elmt;
@@ -103,5 +101,5 @@ INLINE Boolean
 Is_Empty_Elmt_List (Id)
      Elist_Id Id;
 {
-  return Elists_Ptr [Id].first == No_Elmt;
+  return Elists_Ptr[Id - First_Elist_Id].first == No_Elmt;
 }

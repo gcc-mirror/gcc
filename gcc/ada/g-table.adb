@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.8 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 1998-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -32,7 +32,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System; use System;
+with System;        use System;
+with System.Memory; use System.Memory;
+with System.Address_To_Access_Conversions;
 
 package body GNAT.Table is
 
@@ -49,8 +51,6 @@ package body GNAT.Table is
    Last_Val : Integer;
    --  Current value of Last.
 
-   type size_t is new Integer;
-
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -59,6 +59,18 @@ package body GNAT.Table is
    --  Reallocate the existing table according to the current value stored
    --  in Max. Works correctly to do an initial allocation if the table
    --  is currently null.
+
+   package Table_Conversions is
+      new System.Address_To_Access_Conversions (Big_Table_Type);
+   --  Address and Access conversions for a Table object.
+
+   function To_Address (Table : Table_Ptr) return Address;
+   pragma Inline (To_Address);
+   --  Returns the Address for the Table object.
+
+   function To_Pointer (Table : Address) return Table_Ptr;
+   pragma Inline (To_Pointer);
+   --  Returns the Access pointer for the Table object.
 
    --------------
    -- Allocate --
@@ -101,11 +113,8 @@ package body GNAT.Table is
    ----------
 
    procedure Free is
-      procedure free (T : Table_Ptr);
-      pragma Import (C, free);
-
    begin
-      free (Table);
+      Free (To_Address (Table));
       Table := null;
       Length := 0;
    end Free;
@@ -166,18 +175,6 @@ package body GNAT.Table is
    ----------------
 
    procedure Reallocate is
-
-      function realloc
-        (memblock : Table_Ptr;
-         size     : size_t)
-         return     Table_Ptr;
-      pragma Import (C, realloc);
-
-      function malloc
-        (size     : size_t)
-         return     Table_Ptr;
-      pragma Import (C, malloc);
-
       New_Size : size_t;
 
    begin
@@ -202,13 +199,12 @@ package body GNAT.Table is
                 (Table_Type'Component_Size / Storage_Unit));
 
       if Table = null then
-         Table := malloc (New_Size);
+         Table := To_Pointer (Alloc (New_Size));
 
       elsif New_Size > 0 then
          Table :=
-           realloc
-             (memblock => Table,
-              size     => New_Size);
+           To_Pointer (Realloc (Ptr  => To_Address (Table),
+                                Size => New_Size));
       end if;
 
       if Length /= 0 and then Table = null then
@@ -260,6 +256,25 @@ package body GNAT.Table is
          end if;
       end if;
    end Set_Last;
+
+   ----------------
+   -- To_Address --
+   ----------------
+
+   function To_Address (Table : Table_Ptr) return Address is
+   begin
+      return Table_Conversions.To_Address
+        (Table_Conversions.Object_Pointer (Table));
+   end To_Address;
+
+   ----------------
+   -- To_Pointer --
+   ----------------
+
+   function To_Pointer (Table : Address) return Table_Ptr is
+   begin
+      return Table_Ptr (Table_Conversions.To_Pointer (Table));
+   end To_Pointer;
 
 begin
    Init;

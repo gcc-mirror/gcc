@@ -1,4 +1,4 @@
------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,12 +106,13 @@ package body Sem_Util is
    -----------------------------------------
 
    procedure Apply_Compile_Time_Constraint_Error
-     (N   : Node_Id;
-      Msg : String;
-      Ent : Entity_Id  := Empty;
-      Typ : Entity_Id  := Empty;
-      Loc : Source_Ptr := No_Location;
-      Rep : Boolean    := True)
+     (N      : Node_Id;
+      Msg    : String;
+      Reason : RT_Exception_Code;
+      Ent    : Entity_Id  := Empty;
+      Typ    : Entity_Id  := Empty;
+      Loc    : Source_Ptr := No_Location;
+      Rep    : Boolean    := True)
    is
       Stat : constant Boolean := Is_Static_Expression (N);
       Rtyp : Entity_Id;
@@ -132,7 +133,9 @@ package body Sem_Util is
       --  Now we replace the node by an N_Raise_Constraint_Error node
       --  This does not need reanalyzing, so set it as analyzed now.
 
-      Rewrite (N, Make_Raise_Constraint_Error (Sloc (N)));
+      Rewrite (N,
+        Make_Raise_Constraint_Error (Sloc (N),
+          Reason => Reason));
       Set_Analyzed (N, True);
       Set_Etype (N, Rtyp);
       Set_Raises_Constraint_Error (N);
@@ -677,6 +680,130 @@ package body Sem_Util is
       Set_Has_Fully_Qualified_Name (Elab_Ent);
    end Build_Elaboration_Entity;
 
+   -----------------------------------
+   -- Cannot_Raise_Constraint_Error --
+   -----------------------------------
+
+   function Cannot_Raise_Constraint_Error (Expr : Node_Id) return Boolean is
+   begin
+      if Compile_Time_Known_Value (Expr) then
+         return True;
+
+      elsif Do_Range_Check (Expr) then
+         return False;
+
+      elsif Raises_Constraint_Error (Expr) then
+         return False;
+
+      else
+         case Nkind (Expr) is
+            when N_Identifier =>
+               return True;
+
+            when N_Expanded_Name =>
+               return True;
+
+            when N_Selected_Component =>
+               return not Do_Discriminant_Check (Expr);
+
+            when N_Attribute_Reference =>
+               if Do_Overflow_Check (Expr)
+                 or else Do_Access_Check (Expr)
+               then
+                  return False;
+
+               elsif No (Expressions (Expr)) then
+                  return True;
+
+               else
+                  declare
+                     N : Node_Id := First (Expressions (Expr));
+
+                  begin
+                     while Present (N) loop
+                        if Cannot_Raise_Constraint_Error (N) then
+                           Next (N);
+                        else
+                           return False;
+                        end if;
+                     end loop;
+
+                     return True;
+                  end;
+               end if;
+
+            when N_Type_Conversion =>
+               if Do_Overflow_Check (Expr)
+                 or else Do_Length_Check (Expr)
+                 or else Do_Tag_Check (Expr)
+               then
+                  return False;
+               else
+                  return
+                    Cannot_Raise_Constraint_Error (Expression (Expr));
+               end if;
+
+            when N_Unchecked_Type_Conversion =>
+               return Cannot_Raise_Constraint_Error (Expression (Expr));
+
+            when N_Unary_Op =>
+               if Do_Overflow_Check (Expr) then
+                  return False;
+               else
+                  return
+                    Cannot_Raise_Constraint_Error (Right_Opnd (Expr));
+               end if;
+
+            when N_Op_Divide |
+                 N_Op_Mod    |
+                 N_Op_Rem
+            =>
+               if Do_Division_Check (Expr)
+                 or else Do_Overflow_Check (Expr)
+               then
+                  return False;
+               else
+                  return
+                    Cannot_Raise_Constraint_Error (Left_Opnd (Expr))
+                      and then
+                    Cannot_Raise_Constraint_Error (Right_Opnd (Expr));
+               end if;
+
+            when N_Op_Add                    |
+                 N_Op_And                    |
+                 N_Op_Concat                 |
+                 N_Op_Eq                     |
+                 N_Op_Expon                  |
+                 N_Op_Ge                     |
+                 N_Op_Gt                     |
+                 N_Op_Le                     |
+                 N_Op_Lt                     |
+                 N_Op_Multiply               |
+                 N_Op_Ne                     |
+                 N_Op_Or                     |
+                 N_Op_Rotate_Left            |
+                 N_Op_Rotate_Right           |
+                 N_Op_Shift_Left             |
+                 N_Op_Shift_Right            |
+                 N_Op_Shift_Right_Arithmetic |
+                 N_Op_Subtract               |
+                 N_Op_Xor
+            =>
+               if Do_Overflow_Check (Expr) then
+                  return False;
+               else
+                  return
+                    Cannot_Raise_Constraint_Error (Left_Opnd (Expr))
+                      and then
+                    Cannot_Raise_Constraint_Error (Right_Opnd (Expr));
+               end if;
+
+            when others =>
+               return False;
+         end case;
+      end if;
+   end Cannot_Raise_Constraint_Error;
+
    --------------------------
    -- Check_Fully_Declared --
    --------------------------
@@ -720,7 +847,8 @@ package body Sem_Util is
          if Is_Protected_Type (S) then
             if Restricted_Profile then
                Insert_Before (N,
-                  Make_Raise_Program_Error (Loc));
+                  Make_Raise_Program_Error (Loc,
+                    Reason => PE_Potentially_Blocking_Operation));
                Error_Msg_N ("potentially blocking operation, " &
                  " Program Error will be raised at run time?", N);
 
@@ -901,6 +1029,7 @@ package body Sem_Util is
       Warn : Boolean;
       P    : Node_Id;
       Msgs : Boolean;
+      Eloc : Source_Ptr;
 
    begin
       --  A static constraint error in an instance body is not a fatal error.
@@ -911,6 +1040,11 @@ package body Sem_Util is
       --  No messages are generated if we already posted an error on this node
 
       if not Error_Posted (N) then
+         if Loc /= No_Location then
+            Eloc := Loc;
+         else
+            Eloc := Sloc (N);
+         end if;
 
          --  Make all such messages unconditional
 
@@ -978,25 +1112,25 @@ package body Sem_Util is
 
          if Msgs then
             if Present (Ent) then
-               Error_Msg_NE (Msgc (1 .. Msgl), N, Ent);
+               Error_Msg_NEL (Msgc (1 .. Msgl), N, Ent, Eloc);
             else
-               Error_Msg_NE (Msgc (1 .. Msgl), N, Etype (N));
+               Error_Msg_NEL (Msgc (1 .. Msgl), N, Etype (N), Eloc);
             end if;
 
             if Warn then
                if Inside_Init_Proc then
-                  Error_Msg_NE
+                  Error_Msg_NEL
                     ("\& will be raised for objects of this type!?",
-                     N, Standard_Constraint_Error);
+                     N, Standard_Constraint_Error, Eloc);
                else
-                  Error_Msg_NE
+                  Error_Msg_NEL
                     ("\& will be raised at run time!?",
-                     N, Standard_Constraint_Error);
+                     N, Standard_Constraint_Error, Eloc);
                end if;
             else
-               Error_Msg_NE
+               Error_Msg_NEL
                  ("\static expression raises&!",
-                  N, Standard_Constraint_Error);
+                  N, Standard_Constraint_Error, Eloc);
             end if;
          end if;
       end if;
@@ -2188,6 +2322,21 @@ package body Sem_Util is
       end if;
    end Get_Enum_Lit_From_Pos;
 
+   ------------------------
+   -- Get_Generic_Entity --
+   ------------------------
+
+   function Get_Generic_Entity (N : Node_Id) return Entity_Id is
+      Ent : constant Entity_Id := Entity (Name (N));
+
+   begin
+      if Present (Renamed_Object (Ent)) then
+         return Renamed_Object (Ent);
+      else
+         return Ent;
+      end if;
+   end Get_Generic_Entity;
+
    ----------------------
    -- Get_Index_Bounds --
    ----------------------
@@ -2827,8 +2976,16 @@ package body Sem_Util is
             Comp :=
               Original_Record_Component (Entity (Selector_Name (Object)));
 
+            --  As per AI-0017, the renaming is illegal in a generic body,
+            --  even if the subtype is indefinite.
+
             if not Is_Constrained (Prefix_Type)
-              and then not Is_Indefinite_Subtype (Prefix_Type)
+              and then (not Is_Indefinite_Subtype (Prefix_Type)
+                         or else
+                          (Is_Generic_Type (Prefix_Type)
+                            and then Ekind (Current_Scope) = E_Generic_Package
+                            and then In_Package_Body (Current_Scope)))
+
               and then (Is_Declared_Within_Variant (Comp)
                           or else Has_Dependent_Constraint (Comp))
               and then not P_Aliased
@@ -2944,6 +3101,8 @@ package body Sem_Util is
             end;
          end if;
 
+         --  If no null indexes, then type is not fully initialized
+
          return False;
 
       elsif Is_Record_Type (Typ) then
@@ -2965,6 +3124,9 @@ package body Sem_Util is
                Next_Entity (Ent);
             end loop;
          end;
+
+         --  No uninitialized components, so type is fully initialized.
+         --  Note that this catches the case of no components as well.
 
          return True;
 
@@ -3059,6 +3221,11 @@ package body Sem_Util is
 
             when N_Function_Call =>
                return True;
+
+            --  A reference to the stream attribute Input is a function call.
+
+            when N_Attribute_Reference =>
+               return Attribute_Name (N) = Name_Input;
 
             when N_Selected_Component =>
                return Is_Object_Reference (Selector_Name (N));
@@ -3158,6 +3325,126 @@ package body Sem_Util is
          return False;
       end if;
    end Is_OK_Variable_For_Out_Formal;
+
+   -----------------------------------
+   -- Is_Partially_Initialized_Type --
+   -----------------------------------
+
+   function Is_Partially_Initialized_Type (Typ : Entity_Id) return Boolean is
+   begin
+      if Is_Scalar_Type (Typ) then
+         return False;
+
+      elsif Is_Access_Type (Typ) then
+         return True;
+
+      elsif Is_Array_Type (Typ) then
+
+         --  If component type is partially initialized, so is array type
+
+         if Is_Partially_Initialized_Type (Component_Type (Typ)) then
+            return True;
+
+         --  Otherwise we are only partially initialized if we are fully
+         --  initialized (this is the empty array case, no point in us
+         --  duplicating that code here).
+
+         else
+            return Is_Fully_Initialized_Type (Typ);
+         end if;
+
+      elsif Is_Record_Type (Typ) then
+
+         --  A discriminated type is always partially initialized
+
+         if Has_Discriminants (Typ) then
+            return True;
+
+         --  A tagged type is always partially initialized
+
+         elsif Is_Tagged_Type (Typ) then
+            return True;
+
+         --  Case of non-discriminated record
+
+         else
+            declare
+               Ent : Entity_Id;
+
+               Component_Present : Boolean := False;
+               --  Set True if at least one component is present. If no
+               --  components are present, then record type is fully
+               --  initialized (another odd case, like the null array).
+
+            begin
+               --  Loop through components
+
+               Ent := First_Entity (Typ);
+               while Present (Ent) loop
+                  if Ekind (Ent) = E_Component then
+                     Component_Present := True;
+
+                     --  If a component has an initialization expression then
+                     --  the enclosing record type is partially initialized
+
+                     if Present (Parent (Ent))
+                       and then Present (Expression (Parent (Ent)))
+                     then
+                        return True;
+
+                     --  If a component is of a type which is itself partially
+                     --  initialized, then the enclosing record type is also.
+
+                     elsif Is_Partially_Initialized_Type (Etype (Ent)) then
+                        return True;
+                     end if;
+                  end if;
+
+                  Next_Entity (Ent);
+               end loop;
+
+               --  No initialized components found. If we found any components
+               --  they were all uninitialized so the result is false.
+
+               if Component_Present then
+                  return False;
+
+               --  But if we found no components, then all the components are
+               --  initialized so we consider the type to be initialized.
+
+               else
+                  return True;
+               end if;
+            end;
+         end if;
+
+      --  Concurrent types are always fully initialized
+
+      elsif Is_Concurrent_Type (Typ) then
+         return True;
+
+      --  For a private type, go to underlying type. If there is no underlying
+      --  type then just assume this partially initialized. Not clear if this
+      --  can happen in a non-error case, but no harm in testing for this.
+
+      elsif Is_Private_Type (Typ) then
+         declare
+            U : constant Entity_Id := Underlying_Type (Typ);
+
+         begin
+            if No (U) then
+               return True;
+            else
+               return Is_Partially_Initialized_Type (U);
+            end if;
+         end;
+
+      --  For any other type (are there any?) assume partially initialized
+
+      else
+         return True;
+      end if;
+   end Is_Partially_Initialized_Type;
 
    -----------------------------
    -- Is_RCI_Pkg_Spec_Or_Body --
@@ -4225,10 +4512,13 @@ package body Sem_Util is
    -- Process_End_Label --
    -----------------------
 
-   procedure Process_End_Label (N : Node_Id; Typ  : Character) is
+   procedure Process_End_Label
+     (N   : Node_Id;
+      Typ : Character;
+      Ent  : Entity_Id)
+   is
       Loc  : Source_Ptr;
       Nam  : Node_Id;
-      Ctyp : Entity_Id;
 
       Label_Ref : Boolean;
       --  Set True if reference to end label itself is required
@@ -4238,13 +4528,14 @@ package body Sem_Util is
       --  the entity Ent. For the child unit case, this is the identifier
       --  from the designator. For other cases, this is simply Endl.
 
-      Ent : Entity_Id;
-      --  This is the entity for the construct to which the End_Label applies
-
       procedure Generate_Parent_Ref (N : Node_Id);
       --  N is an identifier node that appears as a parent unit reference
       --  in the case where Ent is a child unit. This procedure generates
       --  an appropriate cross-reference entry.
+
+      -------------------------
+      -- Generate_Parent_Ref --
+      -------------------------
 
       procedure Generate_Parent_Ref (N : Node_Id) is
          Parent_Ent : Entity_Id;
@@ -4353,41 +4644,13 @@ package body Sem_Util is
          end if;
       end if;
 
-      --  Locate the entity to which the end label applies. Most of the
-      --  time this is simply the current scope containing the construct.
+      --  If the end label is not for the given entity, then either we have
+      --  some previous error, or this is a generic instantiation for which
+      --  we do not need to make a cross-reference in this case anyway. In
+      --  either case we simply ignore the call.
 
-      Ent := Current_Scope;
-
-      if Chars (Ent) = Chars (Endl) then
-         null;
-
-      --  But in the case of single tasks and single protected objects,
-      --  the current scope is the anonymous task or protected type and
-      --  what we want is the object. There is no direct link so what we
-      --  do is search ahead in the entity chain for the object with the
-      --  matching type and name. In practice it is almost certain to be
-      --  the very next entity on the chain, so this is not inefficient.
-
-      else
-         Ctyp := Etype (Ent);
-         loop
-            Next_Entity (Ent);
-
-            --  If we don't find the entry we are looking for, that's
-            --  odd, perhaps results from some error condition? Anyway
-            --  the appropriate thing is just to abandon the attempt.
-
-            if No (Ent) then
-               return;
-
-            --  Exit if we find the entity we are looking for
-
-            elsif Etype (Ent) = Ctyp
-              and then Chars (Ent) = Chars (Endl)
-            then
-               exit;
-            end if;
-         end loop;
+      if Chars (Ent) /= Chars (Endl) then
+         return;
       end if;
 
       --  If label was really there, then generate a normal reference
@@ -4399,11 +4662,11 @@ package body Sem_Util is
       if Comes_From_Source (Endl) then
 
          --  If a label reference is required, then do the style check
-         --  and generate a normal cross-reference entry for the label
+         --  and generate an l-type cross-reference entry for the label
 
          if Label_Ref then
             Style.Check_Identifier (Endl, Ent);
-            Generate_Reference (Ent, Endl, 'r', Set_Ref => False);
+            Generate_Reference (Ent, Endl, 'l', Set_Ref => False);
          end if;
 
          --  Set the location to point past the label (normally this will

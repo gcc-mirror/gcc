@@ -6,9 +6,9 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---                             $Revision: 1.1 $
+--                             $Revision$
 --                                                                          --
---            Copyright (C) 1998-2001 Free Software Foundation              --
+--            Copyright (C) 1998-2001 Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -43,61 +42,18 @@ package System.VxWorks is
 
    package IC renames Interfaces.C;
 
-   --  Define enough of a Wind Task Control Block in order to
-   --  obtain the inherited priority.  When porting this to
-   --  different versions of VxWorks (this is based on 5.3[.1]),
-   --  be sure to look at the definition for WIND_TCB located
-   --  in $WIND_BASE/target/h/taskLib.h
-
-   type Wind_Fill_1 is array (0 .. 16#3F#) of IC.unsigned_char;
-   type Wind_Fill_2 is array (16#48# .. 16#107#) of IC.unsigned_char;
-
-   type Wind_TCB is record
-      Fill_1          : Wind_Fill_1; -- 0x00 - 0x3f
-      Priority        : IC.int;  -- 0x40 - 0x43, current (inherited) priority
-      Normal_Priority : IC.int;  -- 0x44 - 0x47, base priority
-      Fill_2          : Wind_Fill_2; -- 0x48 - 0x107
-      spare1          : Address;  -- 0x108 - 0x10b
-      spare2          : Address;  -- 0x10c - 0x10f
-      spare3          : Address;  -- 0x110 - 0x113
-      spare4          : Address;  -- 0x114 - 0x117
-   end record;
-   type Wind_TCB_Ptr is access Wind_TCB;
-
-   --  Floating point context record.  MIPS version
+   --  Floating point context record. MIPS version
 
    FP_NUM_DREGS : constant := 16;
    type Fpx_Array is array (1 .. FP_NUM_DREGS) of IC.double;
 
    type FP_CONTEXT is record
-      fpx :   Fpx_Array;
+      fpx   : Fpx_Array;
       fpcsr : IC.int;
    end record;
    pragma Convention (C, FP_CONTEXT);
 
-   --  Number of entries in hardware interrupt vector table.  Value of
-   --  0 disables hardware interrupt handling until it can be tested
-   Num_HW_Interrupts : constant := 0;
-
-   --  VxWorks 5.3 and 5.4 version
-   type TASK_DESC is record
-      td_id           : IC.int;   --  task id
-      td_name         : Address;  --  name of task
-      td_priority     : IC.int;   --  task priority
-      td_status       : IC.int;   --  task status
-      td_options      : IC.int;   --  task option bits (see below)
-      td_entry        : Address;  --  original entry point of task
-      td_sp           : Address;  --  saved stack pointer
-      td_pStackBase   : Address;  --  the bottom of the stack
-      td_pStackLimit  : Address;  --  the effective end of the stack
-      td_pStackEnd    : Address;  --  the actual end of the stack
-      td_stackSize    : IC.int;   --  size of stack in bytes
-      td_stackCurrent : IC.int;   --  current stack usage in bytes
-      td_stackHigh    : IC.int;   --  maximum stack usage in bytes
-      td_stackMargin  : IC.int;   --  current stack margin in bytes
-      td_errorStatus  : IC.int;   --  most recent task error status
-      td_delay        : IC.int;   --  delay/timeout ticks
-   end record;
-   pragma Convention (C, TASK_DESC);
+   Num_HW_Interrupts : constant := 256;
+   --  Number of entries in hardware interrupt vector table.
 
 end System.VxWorks;

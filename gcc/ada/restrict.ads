@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.27 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,15 @@ package Restrict is
    type Restriction_Id is new Rident.Restriction_Id;
    --  The type Restriction_Id defines the set of restriction identifiers,
    --  which take no parameter (i.e. they are either present or not present).
-   --  The actual definition is in the separate package Rident, so that it
-   --  can easily be accessed by the binder without dragging in lots of stuff.
+   --  The actual definition is in the separate package Rident, so that
+   --  it can easily be accessed by the binder without dragging in lots of
+   --  stuff.
+
+   subtype All_Restrictions is
+     Restriction_Id range
+       Restriction_Id (Rident.All_Restrictions'First) ..
+       Restriction_Id (Rident.All_Restrictions'Last);
+   --  All restriction identifiers
 
    subtype Partition_Restrictions is
      Restriction_Id range
@@ -69,7 +76,7 @@ package Restrict is
    --  be consistent at link time, and we might as well find the error
    --  at compile time. Clients must NOT use this array for checking to
    --  see if a restriction is violated, instead it is required that the
-   --  Check_Restrictions subprograms be used for this purpose. The only
+   --  Check_Restriction subprograms be used for this purpose. The only
    --  legitimate direct use of this array is when the code is modified
    --  as a result of the restriction in some way.
 
@@ -139,6 +146,40 @@ package Restrict is
    type Save_Compilation_Unit_Restrictions is private;
    --  Type used for saving and restoring compilation unit restrictions.
    --  See Compilation_Unit_Restrictions_[Save|Restore] subprograms.
+
+   --  The following map has True for all GNAT pragmas. It is used to
+   --  implement pragma Restrictions (No_Implementation_Restrictions)
+   --  (which is why this restriction itself is excluded from the list).
+
+   Implementation_Restriction : Restrictions_Flags :=
+     (Boolean_Entry_Barriers             => True,
+      No_Calendar                        => True,
+      No_Dynamic_Interrupts              => True,
+      No_Enumeration_Maps                => True,
+      No_Entry_Calls_In_Elaboration_Code => True,
+      No_Entry_Queue                     => True,
+      No_Exception_Handlers              => True,
+      No_Implicit_Conditionals           => True,
+      No_Implicit_Dynamic_Code           => True,
+      No_Implicit_Loops                  => True,
+      No_Local_Protected_Objects         => True,
+      No_Protected_Type_Allocators       => True,
+      No_Relative_Delay                  => True,
+      No_Requeue                         => True,
+      No_Secondary_Stack                 => True,
+      No_Select_Statements               => True,
+      No_Standard_Storage_Pools          => True,
+      No_Streams                         => True,
+      No_Task_Attributes                 => True,
+      No_Task_Termination                => True,
+      No_Tasking                         => True,
+      No_Wide_Characters                 => True,
+      Static_Priorities                  => True,
+      Static_Storage_Size                => True,
+      No_Implementation_Attributes       => True,
+      No_Implementation_Pragmas          => True,
+      No_Elaboration_Code                => True,
+      others                             => False);
 
    -----------------
    -- Subprograms --

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                             $Revision: 1.65 $
+ *                             $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -89,7 +89,7 @@ addarg (str)
 	= (char **) xcalloc (link_arg_max + 1000, sizeof (char *));
 
       for (i = 0; i <= link_arg_max; i++)
-	new_link_args [i] = link_args [i];
+	new_link_args[i] = link_args[i];
 
       if (link_args)
 	free (link_args);
@@ -98,7 +98,7 @@ addarg (str)
       link_args = new_link_args;
     }
 
-  link_args [link_arg_index] = str;
+  link_args[link_arg_index] = str;
 }
 
 static void
@@ -124,24 +124,24 @@ process_args (p_argc, argv)
 	}
 
       /* -B is passed on to gcc */
-      if (! strncmp (argv [i], "-B", 2))
+      if (! strncmp (argv[i], "-B", 2))
 	gcc_B_arg = argv[i];
 
       /* -v turns on verbose option here and is passed on to gcc */
 
-      if (! strcmp (argv [i], "-v"))
+      if (! strcmp (argv[i], "-v"))
 	verbose = 1;
 
-      if (! strcmp (argv [i], "-o"))
+      if (! strcmp (argv[i], "-o"))
 	{
 	  o_present = 1;
-	  exec_file_name = argv [i + 1];
+	  exec_file_name = argv[i + 1];
 	}
 
-      if (! strcmp (argv [i], "-g"))
+      if (! strcmp (argv[i], "-g"))
 	g_present = 1;
 
-      if (! strcmp (argv [i], "-gnatbind"))
+      if (! strcmp (argv[i], "-gnatbind"))
 	{
 	  /* Explicit naming of binder.  Grab the value then remove the
 	     two arguments from the argument list. */
@@ -151,52 +151,52 @@ process_args (p_argc, argv)
 	      exit (1);
 	    }
 
-	  binder_path = __gnat_locate_exec (argv [i + 1], (char *) ".");
+	  binder_path = __gnat_locate_exec (argv[i + 1], (char *) ".");
 	  if (!binder_path)
 	    {
-	      fprintf (stderr, "Could not locate binder: %s\n", argv [i + 1]);
+	      fprintf (stderr, "Could not locate binder: %s\n", argv[i + 1]);
 	      exit (1);
 	    }
 
 	  for (j = i + 2; j < *p_argc; j++)
-	    argv [j - 2] = argv [j];
+	    argv[j - 2] = argv[j];
 
 	  (*p_argc) -= 2;
 	  i--;
 	}
 
-    else if (! strcmp (argv [i], "-linkonly"))
+    else if (! strcmp (argv[i], "-linkonly"))
       {
 	/* Don't call the binder. Set the flag and then remove the
 	   argument from the argument list. */
 	linkonly = 1;
 	for (j = i + 1; j < *p_argc; j++)
-	  argv [j - 1] = argv [j];
+	  argv[j - 1] = argv[j];
 
-	(*p_argc) -= 1;
+	*p_argc -= 1;
 	i--;
       }
 
-    else if (! strcmp (argv [i], "-gnatlink"))
+    else if (! strcmp (argv[i], "-gnatlink"))
       {
 	/* Explicit naming of binder.  Grab the value then remove the
 	   two arguments from the argument list. */
 	if (i + 1 >= *p_argc)
-	{
-	  fprintf (stderr, "Missing argument for -gnatlink\n");
-	  exit (1);
-	}
+	  {
+	    fprintf (stderr, "Missing argument for -gnatlink\n");
+	    exit (1);
+	  }
 
-	linker_path = __gnat_locate_exec (argv [i + 1], (char *) ".");
+	linker_path = __gnat_locate_exec (argv[i + 1], (char *) ".");
 	if (!linker_path)
 	  {
-	    fprintf (stderr, "Could not locate linker: %s\n", argv [i + 1]);
+	    fprintf (stderr, "Could not locate linker: %s\n", argv[i + 1]);
 	    exit (1);
 	  }
 
 	for (j = i + 2; j < *p_argc; j++)
-	  argv [j - 2] = argv [j];
-	(*p_argc) -= 2;
+	  argv[j - 2] = argv[j];
+	*p_argc -= 2;
 	i--;
       }
     }
@@ -214,11 +214,11 @@ main (argc, argv)
 #ifdef VMS
   /* Warning: getenv only retrieves the first directory in VAXC$PATH */
   char *pathval =
-    strdup (__gnat_to_canonical_dir_spec (getenv ("VAXC$PATH"), 0));
+    xstrdup (__gnat_to_canonical_dir_spec (getenv ("VAXC$PATH"), 0));
 #else
   char *pathval = getenv ("PATH");
 #endif
-  char *spawn_args [5];
+  char *spawn_args[5];
   int  spawn_index = 0;
 
 #if defined (__EMX__) || defined(MSDOS)
@@ -290,9 +290,9 @@ main (argc, argv)
 
   for (i = 1; i < argc; i++)
     {
-      int arg_len = strlen (argv [i]);
+      int arg_len = strlen (argv[i]);
 
-      if (arg_len > 4 && ! strcmp (&argv [i][arg_len - 4], ".ali"))
+      if (arg_len > 4 && ! strcmp (&argv[i][arg_len - 4], ".ali"))
 	{
 	  if (done_an_ali)
 	    {
@@ -303,24 +303,24 @@ main (argc, argv)
 
 	  done_an_ali = 1;
 
-	  if (__gnat_is_regular_file (argv [i]))
+	  if (__gnat_is_regular_file (argv[i]))
 	    {
 	      ali_file_name = argv[i];
 	      if (!linkonly)
 		{
 		  /* Run gnatbind */
 		  spawn_index = 0;
-		  spawn_args [spawn_index++] = binder_path;
-		  spawn_args [spawn_index++] = ali_file_name;
+		  spawn_args[spawn_index++] = binder_path;
+		  spawn_args[spawn_index++] = ali_file_name;
 		  for (j = 0 ; j <= bind_arg_index ; j++ )
-		    spawn_args [spawn_index++] = bind_args [j];
-		  spawn_args [spawn_index] = 0;
+		    spawn_args[spawn_index++] = bind_args[j];
+		  spawn_args[spawn_index] = 0;
 
 		  if (verbose)
 		    {
 		      int i;
 		      for (i = 0; i < 2; i++)
-			printf ("%s ", spawn_args [i]);
+			printf ("%s ", spawn_args[i]);
 
 		      putchar ('\n');
 		    }
@@ -331,19 +331,19 @@ main (argc, argv)
 		}
 	    }
 	  else 
-	    addarg (argv [i]);
+	    addarg (argv[i]);
 	}
 #ifdef MSDOS
-      else if (!strcmp (argv [i], "-o"))
+      else if (!strcmp (argv[i], "-o"))
 	{
-	  addarg (argv [i]);
+	  addarg (argv[i]);
 	  if (i < argc)
 	    i++;
 
 	  {
 	    char *ptr = strstr (argv[i], ".exe");
 
-	    arg_len = strlen (argv [i]);
+	    arg_len = strlen (argv[i]);
 	    coff2exe_args[1] = malloc (arg_len + 1);
 	    strcpy (coff2exe_args[1], argv[i]);
 	    if (ptr != NULL && strlen (ptr) == 4)
@@ -354,7 +354,7 @@ main (argc, argv)
 	}
 #endif
       else
-	addarg (argv [i]);
+	addarg (argv[i]);
     }
 
   if (! done_an_ali)
@@ -371,7 +371,7 @@ main (argc, argv)
       int i;
 
       for (i = 0; i < link_arg_index; i++)
-	printf ("%s ", link_args [i]);
+	printf ("%s ", link_args[i]);
 
       putchar ('\n');
     }

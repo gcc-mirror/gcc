@@ -9,7 +9,7 @@
 --                            $Revision$
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---           Copyright (C) 1996-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1996-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -253,8 +253,6 @@ package body GNAT.Regpat is
    -- Local Subprograms --
    -----------------------
 
-   function "+" (Left : Opcode;    Right : Integer) return Opcode;
-   function "-" (Left : Opcode;    Right : Opcode) return Integer;
    function "=" (Left : Character; Right : Opcode) return Boolean;
 
    function Is_Alnum (C : Character) return Boolean;
@@ -307,8 +305,6 @@ package body GNAT.Regpat is
 
    --  All of the subprograms above are tiny and should be inlined
 
-   pragma Inline ("+");
-   pragma Inline ("-");
    pragma Inline ("=");
    pragma Inline (Is_Alnum);
    pragma Inline (Is_Space);
@@ -327,24 +323,6 @@ package body GNAT.Regpat is
 
    Worst_Expression : constant Expression_Flags := (others => False);
    --  Worst case
-
-   ---------
-   -- "+" --
-   ---------
-
-   function "+" (Left : Opcode; Right : Integer) return Opcode is
-   begin
-      return Opcode'Val (Opcode'Pos (Left) + Right);
-   end "+";
-
-   ---------
-   -- "-" --
-   ---------
-
-   function "-" (Left : Opcode; Right : Opcode) return Integer is
-   begin
-      return Opcode'Pos (Left) - Opcode'Pos (Right);
-   end "-";
 
    ---------
    -- "=" --
@@ -482,6 +460,7 @@ package body GNAT.Regpat is
       --  Dig the "next" pointer out of a node
 
       procedure Fail (M : in String);
+      pragma No_Return (Fail);
       --  Fail with a diagnostic message, if possible
 
       function Is_Curly_Operator (IP : Natural) return Boolean;
@@ -612,6 +591,8 @@ package body GNAT.Regpat is
          Max    : out Natural;
          Greedy : out Boolean)
       is
+         pragma Warnings (Off, IP);
+
          Save_Pos : Natural := Parse_Pos + 1;
 
       begin
@@ -896,6 +877,7 @@ package body GNAT.Regpat is
 
          else
             IP := 0;
+            Par_No := 0;
          end if;
 
          --  Pick up the branches, linking them together
@@ -1030,6 +1012,7 @@ package body GNAT.Regpat is
                else
                   IP := Emit_Node (ANY);
                end if;
+
                Expr_Flags.Has_Width := True;
                Expr_Flags.Simple := True;
 
@@ -1133,7 +1116,8 @@ package body GNAT.Regpat is
                      Parse_Literal (Expr_Flags, IP);
                end case;
 
-            when others => Parse_Literal (Expr_Flags, IP);
+            when others =>
+               Parse_Literal (Expr_Flags, IP);
          end case;
       end Parse_Atom;
 
@@ -2936,9 +2920,12 @@ package body GNAT.Regpat is
       --  parent's current state that we can try again after backing off.
 
       function Match_Whilem (IP : Pointer) return Boolean is
+         pragma Warnings (Off, IP);
+
          Cc : Current_Curly_Access := Current_Curly;
-         N  : Natural := Cc.Cur + 1;
-         Ln : Natural;
+         N  : Natural              := Cc.Cur + 1;
+         Ln : Natural              := 0;
+
          Lastloc : Natural := Cc.Lastloc;
          --  Detection of 0-len.
 

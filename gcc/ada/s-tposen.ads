@@ -1,15 +1,14 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--               GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
---     S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .    --
---                          S I N G L E _ E N T R Y                         --
+--              SYSTEM.TASKING.PROTECTED_OBJECTS.SINGLE_ENTRY               --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.3 $
+--                             $Revision$
 --                                                                          --
---             Copyright (C) 1991-1999 Florida State University             --
+--             Copyright (C) 1991-2001 Florida State University             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -264,7 +263,7 @@ package System.Tasking.Protected_Objects.Single_Entry is
    procedure Exceptional_Complete_Single_Entry_Body
      (Object : Protection_Entry_Access;
       Ex     : Ada.Exceptions.Exception_Id);
-   --  Perform all of the functions of Complete_Entry_Body.  In addition,
+   --  Perform all of the functions of Complete_Entry_Body. In addition,
    --  report in Ex the exception whose propagation terminated the entry
    --  body to the runtime system.
 

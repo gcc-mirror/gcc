@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.11 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -326,6 +326,8 @@ package body System.Aux_DEC is
       Retry_Count  : in Natural;
       Success_Flag : out Boolean)
    is
+      pragma Warnings (Off, Retry_Count);
+
    begin
       SSL.Lock_Task.all;
       Old_Value := Bit;
@@ -355,6 +357,8 @@ package body System.Aux_DEC is
       Retry_Count  : in Natural;
       Success_Flag : out Boolean)
    is
+      pragma Warnings (Off, Retry_Count);
+
    begin
       SSL.Lock_Task.all;
       Old_Value := Bit;
@@ -408,6 +412,8 @@ package body System.Aux_DEC is
       Old_Value    : out Integer;
       Success_Flag : out Boolean)
    is
+      pragma Warnings (Off, Retry_Count);
+
    begin
       SSL.Lock_Task.all;
       Old_Value := To.Value;
@@ -433,6 +439,8 @@ package body System.Aux_DEC is
       Old_Value    : out Long_Integer;
       Success_Flag : out Boolean)
    is
+      pragma Warnings (Off, Retry_Count);
+
    begin
       SSL.Lock_Task.all;
       Old_Value := To.Value;
@@ -471,6 +479,8 @@ package body System.Aux_DEC is
       Old_Value    : out Integer;
       Success_Flag : out Boolean)
    is
+      pragma Warnings (Off, Retry_Count);
+
    begin
       SSL.Lock_Task.all;
       Old_Value := To.Value;
@@ -496,6 +506,8 @@ package body System.Aux_DEC is
       Old_Value    : out Long_Integer;
       Success_Flag : out Boolean)
    is
+      pragma Warnings (Off, Retry_Count);
+
    begin
       SSL.Lock_Task.all;
       Old_Value := To.Value;
@@ -525,6 +537,8 @@ package body System.Aux_DEC is
       Old_Value    : out Integer;
       Success_Flag : out Boolean)
    is
+      pragma Warnings (Off, Retry_Count);
+
    begin
       SSL.Lock_Task.all;
       Old_Value := To.Value;
@@ -550,6 +564,8 @@ package body System.Aux_DEC is
       Old_Value    : out Long_Integer;
       Success_Flag : out Boolean)
    is
+      pragma Warnings (Off, Retry_Count);
+
    begin
       SSL.Lock_Task.all;
       Old_Value := To.Value;

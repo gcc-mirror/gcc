@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@ with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch7;  use Exp_Ch7;
@@ -118,6 +119,11 @@ package body Exp_Ch3 is
    --  Create An Equality function for the non-tagged variant record 'Typ'
    --  and attach it to the TSS list
 
+   procedure Check_Stream_Attributes (Typ : Entity_Id);
+   --  Check that if a limited extension has a parent with user-defined
+   --  stream attributes, any limited component of the extension also has
+   --  the corresponding user-defined stream attributes.
+
    procedure Expand_Tagged_Root (T : Entity_Id);
    --  Add a field _Tag at the beginning of the record. This field carries
    --  the value of the access to the Dispatch table. This procedure is only
@@ -146,6 +152,10 @@ package body Exp_Ch3 is
    --  needed. The argument N is the N_Freeze_Entity node. This processing
    --  applies only to E_Record_Type entities, not to class wide types,
    --  record subtypes, or private types.
+
+   procedure Freeze_Stream_Operations (N : Node_Id; Typ : Entity_Id);
+   --  Treat user-defined stream operations as renaming_as_body if the
+   --  subprogram they rename is not frozen when the type is frozen.
 
    function Init_Formals (Typ : Entity_Id) return List_Id;
    --  This function builds the list of formals for an initialization routine.
@@ -561,12 +571,22 @@ package body Exp_Ch3 is
 
          Set_Ekind          (Proc_Id, E_Procedure);
          Set_Is_Public      (Proc_Id, Is_Public (A_Type));
-         Set_Is_Inlined     (Proc_Id);
          Set_Is_Internal    (Proc_Id);
          Set_Has_Completion (Proc_Id);
 
          if not Debug_Generated_Code then
             Set_Debug_Info_Off (Proc_Id);
+         end if;
+
+         --  Set inlined unless controlled stuff or tasks around, in which
+         --  case we do not want to inline, because nested stuff may cause
+         --  difficulties in interunit inlining, and furthermore there is
+         --  in any case no point in inlining such complex init procs.
+
+         if not Has_Task (Proc_Id)
+           and then not Controlled_Type (Proc_Id)
+         then
+            Set_Is_Inlined (Proc_Id);
          end if;
 
          --  Associate Init_Proc with type, and determine if the procedure
@@ -1325,14 +1345,10 @@ package body Exp_Ch3 is
       --  of the initialization procedure (by calling all the preceding
       --  auxiliary routines), and install it as the _init TSS.
 
-      procedure Build_Record_Checks
-        (S           : Node_Id;
-         Related_Nod : Node_Id;
-         Check_List  : List_Id);
+      procedure Build_Record_Checks (S : Node_Id; Check_List : List_Id);
       --  Add range checks to components of disciminated records. S is a
-      --  subtype indication of a record component. Related_Nod is passed
-      --  for compatibility with Process_Range_Expr_In_Decl. Check_List is
-      --  a list to which the check actions are appended.
+      --  subtype indication of a record component. Check_List is a list
+      --  to which the check actions are appended.
 
       function Component_Needs_Simple_Initialization
         (T    : Entity_Id)
@@ -1345,20 +1361,17 @@ package body Exp_Ch3 is
       --  initialized by other means.
 
       procedure Constrain_Array
-        (SI          : Node_Id;
-         Related_Nod : Node_Id;
-         Check_List  : List_Id);
+        (SI         : Node_Id;
+         Check_List : List_Id);
       --  Called from Build_Record_Checks.
       --  Apply a list of index constraints to an unconstrained array type.
       --  The first parameter is the entity for the resulting subtype.
-      --  Related_Nod is passed for compatibility with Process_Range_Expr_In_
-      --  Decl. Check_List is a list to which the check actions are appended.
+      --  Check_List is a list to which the check actions are appended.
 
       procedure Constrain_Index
-        (Index        : Node_Id;
-         S            : Node_Id;
-         Related_Nod  : Node_Id;
-         Check_List   : List_Id);
+        (Index      : Node_Id;
+         S          : Node_Id;
+         Check_List : List_Id);
       --  Called from Build_Record_Checks.
       --  Process an index constraint in a constrained array declaration.
       --  The constraint can be a subtype name, or a range with or without
@@ -1864,10 +1877,7 @@ package body Exp_Ch3 is
          Decl := First_Non_Pragma (Component_Items (Comp_List));
          while Present (Decl) loop
             Loc := Sloc (Decl);
-            Build_Record_Checks
-             (Subtype_Indication (Decl),
-              Decl,
-              Check_List);
+            Build_Record_Checks (Subtype_Indication (Decl), Check_List);
 
             Id := Defining_Identifier (Decl);
             Typ := Etype (Id);
@@ -2065,15 +2075,11 @@ package body Exp_Ch3 is
       -- Build_Record_Checks --
       -------------------------
 
-      procedure Build_Record_Checks
-        (S           : Node_Id;
-         Related_Nod : Node_Id;
-         Check_List  : List_Id)
-      is
+      procedure Build_Record_Checks (S : Node_Id; Check_List : List_Id) is
          P               : Node_Id;
          Subtype_Mark_Id : Entity_Id;
-      begin
 
+      begin
          if Nkind (S) = N_Subtype_Indication then
             Find_Type (Subtype_Mark (S));
             P := Parent (S);
@@ -2084,13 +2090,12 @@ package body Exp_Ch3 is
             case Ekind (Subtype_Mark_Id) is
 
                when Array_Kind =>
-                  Constrain_Array (S, Related_Nod, Check_List);
+                  Constrain_Array (S, Check_List);
 
                when others =>
                   null;
             end case;
          end if;
-
       end Build_Record_Checks;
 
       -------------------------------------------
@@ -2114,7 +2119,6 @@ package body Exp_Ch3 is
 
       procedure Constrain_Array
         (SI          : Node_Id;
-         Related_Nod : Node_Id;
          Check_List  : List_Id)
       is
          C                     : constant Node_Id := Constraint (SI);
@@ -2148,7 +2152,7 @@ package body Exp_Ch3 is
          --  Apply constraints to each index type
 
          for J in 1 .. Number_Of_Constraints loop
-            Constrain_Index (Index, S, Related_Nod, Check_List);
+            Constrain_Index (Index, S, Check_List);
             Next (Index);
             Next (S);
          end loop;
@@ -2162,14 +2166,13 @@ package body Exp_Ch3 is
       procedure Constrain_Index
         (Index        : Node_Id;
          S            : Node_Id;
-         Related_Nod  : Node_Id;
          Check_List   : List_Id)
       is
          T : constant Entity_Id := Etype (Index);
 
       begin
          if Nkind (S) = N_Range then
-            Process_Range_Expr_In_Decl (S, T, Related_Nod, Check_List);
+            Process_Range_Expr_In_Decl (S, T, Check_List);
          end if;
       end Constrain_Index;
 
@@ -2376,8 +2379,10 @@ package body Exp_Ch3 is
          --  yet. The initialization of controlled records contains a nested
          --  clean-up procedure that makes it impractical to inline as well,
          --  and leads to undefined symbols if inlined in a different unit.
+         --  Similar considerations apply to task types.
 
-         if not Is_Protected_Record_Type (Rec_Type)
+         if not Is_Concurrent_Type (Rec_Type)
+           and then not Has_Task (Rec_Type)
            and then not Controlled_Type (Rec_Type)
          then
             Set_Is_Inlined  (Proc_Id);
@@ -2482,8 +2487,8 @@ package body Exp_Ch3 is
 
       if Has_Unchecked_Union (Typ) then
          Append_To (Stmts,
-           Make_Raise_Program_Error (Loc));
-
+           Make_Raise_Program_Error (Loc,
+             Reason => PE_Unchecked_Union_Restriction));
       else
          Append_To (Stmts,
            Make_Eq_If (Typ,
@@ -2503,6 +2508,41 @@ package body Exp_Ch3 is
          Set_Debug_Info_Off (F);
       end if;
    end Build_Variant_Record_Equality;
+
+   -----------------------------
+   -- Check_Stream_Attributes --
+   -----------------------------
+
+   procedure Check_Stream_Attributes (Typ : Entity_Id) is
+      Comp : Entity_Id;
+      Par  : constant Entity_Id := Root_Type (Base_Type (Typ));
+      Par_Read  : Boolean := Present (TSS (Par, Name_uRead));
+      Par_Write : Boolean := Present (TSS (Par, Name_uWrite));
+
+   begin
+      if Par_Read or else Par_Write then
+         Comp := First_Component (Typ);
+         while Present (Comp) loop
+            if Comes_From_Source (Comp)
+              and then  Original_Record_Component (Comp) = Comp
+              and then Is_Limited_Type (Etype (Comp))
+            then
+               if (Par_Read and then
+                     No (TSS (Base_Type (Etype (Comp)), Name_uRead)))
+                 or else
+                  (Par_Write and then
+                     No (TSS (Base_Type (Etype (Comp)), Name_uWrite)))
+               then
+                  Error_Msg_N
+                    ("|component must have Stream attribute",
+                       Parent (Comp));
+               end if;
+            end if;
+
+            Next_Component (Comp);
+         end loop;
+      end if;
+   end Check_Stream_Attributes;
 
    ---------------------------
    -- Expand_Derived_Record --
@@ -2679,7 +2719,7 @@ package body Exp_Ch3 is
          end if;
 
       elsif Has_Task (Def_Id) then
-         Expand_Previous_Access_Type (N, Def_Id);
+         Expand_Previous_Access_Type (Def_Id);
       end if;
 
       Par_Id := Etype (B_Id);
@@ -2757,10 +2797,19 @@ package body Exp_Ch3 is
       Expr_Q  : Node_Id;
 
    begin
+      --  If we have a task type in no run time mode, then complain and ignore
+
+      if No_Run_Time
+        and then not Restricted_Profile
+        and then Is_Task_Type (Typ)
+      then
+         Disallow_In_No_Run_Time_Mode (N);
+         return;
+
       --  Don't do anything for deferred constants. All proper actions will
       --  be expanded during the redeclaration.
 
-      if No (Expr) and Constant_Present (N) then
+      elsif No (Expr) and Constant_Present (N) then
          return;
       end if;
 
@@ -2869,6 +2918,14 @@ package body Exp_Ch3 is
 
             Insert_Actions_After (N,
               Build_Initialization_Call (Loc, Id_Ref, Typ));
+
+            --  The initialization call may well set Not_Source_Assigned
+            --  to False, because it looks like an modification, but the
+            --  proper criterion is whether or not the type is at least
+            --  partially initialized, so reset the flag appropriately.
+
+            Set_Not_Source_Assigned
+              (Def_Id, not Is_Partially_Initialized_Type (Typ));
 
          --  If simple initialization is required, then set an appropriate
          --  simple initialization expression in place. This special
@@ -3076,7 +3133,7 @@ package body Exp_Ch3 is
    -- Expand_Previous_Access_Type --
    ---------------------------------
 
-   procedure Expand_Previous_Access_Type (N : Node_Id; Def_Id : Entity_Id) is
+   procedure Expand_Previous_Access_Type (Def_Id : Entity_Id) is
       T : Entity_Id := First_Entity (Current_Scope);
 
    begin
@@ -3456,7 +3513,8 @@ package body Exp_Ch3 is
              Discrete_Choices => New_List (Make_Others_Choice (Loc)),
              Statements => New_List (
                Make_Raise_Program_Error (Loc,
-                 Condition => Make_Identifier (Loc, Name_uF)),
+                 Condition => Make_Identifier (Loc, Name_uF),
+                 Reason    => PE_Invalid_Data),
                Make_Return_Statement (Loc,
                  Expression =>
                    Make_Integer_Literal (Loc, -1)))));
@@ -3566,6 +3624,13 @@ package body Exp_Ch3 is
                Next_Component (Comp);
             end loop;
          end;
+      end if;
+
+      if Is_Derived_Type (Def_Id)
+        and then Is_Limited_Type (Def_Id)
+        and then Is_Tagged_Type (Def_Id)
+      then
+         Check_Stream_Attributes (Def_Id);
       end if;
 
       --  Update task and controlled component flags, because some of the
@@ -3759,6 +3824,40 @@ package body Exp_Ch3 is
       end if;
 
    end Freeze_Record_Type;
+
+   ------------------------------
+   -- Freeze_Stream_Operations --
+   ------------------------------
+
+   procedure Freeze_Stream_Operations (N : Node_Id; Typ : Entity_Id) is
+      Names     : constant array (1 .. 4) of Name_Id :=
+                    (Name_uInput, Name_uOutput, Name_uRead, Name_uWrite);
+      Stream_Op : Entity_Id;
+
+   begin
+      --  Primitive operations of tagged types are frozen when the dispatch
+      --  table is constructed.
+
+      if not Comes_From_Source (Typ)
+        or else Is_Tagged_Type (Typ)
+      then
+         return;
+      end if;
+
+      for J in Names'Range loop
+         Stream_Op := TSS (Typ, Names (J));
+
+         if Present (Stream_Op)
+           and then Is_Subprogram (Stream_Op)
+           and then Nkind (Unit_Declaration_Node (Stream_Op)) =
+                      N_Subprogram_Declaration
+           and then not Is_Frozen (Stream_Op)
+         then
+            Append_Freeze_Actions
+               (Typ, Freeze_Entity (Stream_Op, Sloc (N)));
+         end if;
+      end loop;
+   end Freeze_Stream_Operations;
 
    -----------------
    -- Freeze_Type --
@@ -3974,7 +4073,6 @@ package body Exp_Ch3 is
                               --  Third discriminant is the alignment
 
                                 DT_Align)))));
-
                end;
 
                Set_Associated_Storage_Pool (Def_Id, Pool_Object);
@@ -3990,7 +4088,6 @@ package body Exp_Ch3 is
                --  when analyzing the rep. clause
 
                null;
-
             end if;
 
             --  For access-to-controlled types (including class-wide types
@@ -4078,6 +4175,8 @@ package body Exp_Ch3 is
       --  the freeze nodes are there for use by Gigi.
 
       end if;
+
+      Freeze_Stream_Operations (N, Def_Id);
    end Freeze_Type;
 
    -------------------------
@@ -4095,9 +4194,34 @@ package body Exp_Ch3 is
       Val_RE : RE_Id;
 
    begin
+      --  For a private type, we should always have an underlying type
+      --  (because this was already checked in Needs_Simple_Initialization).
+      --  What we do is to get the value for the underlying type and then
+      --  do an Unchecked_Convert to the private type.
+
+      if Is_Private_Type (T) then
+         Val := Get_Simple_Init_Val (Underlying_Type (T), Loc);
+
+         --  A special case, if the underlying value is null, then qualify
+         --  it with the underlying type, so that the null is properly typed
+         --  Similarly, if it is an aggregate it must be qualified, because
+         --  an unchecked conversion does not provide a context for it.
+
+         if Nkind (Val) = N_Null
+           or else Nkind (Val) = N_Aggregate
+         then
+            Val :=
+              Make_Qualified_Expression (Loc,
+                Subtype_Mark =>
+                  New_Occurrence_Of (Underlying_Type (T), Loc),
+                Expression => Val);
+         end if;
+
+         return Unchecked_Convert_To (T, Val);
+
       --  For scalars, we must have normalize/initialize scalars case
 
-      if Is_Scalar_Type (T) then
+      elsif Is_Scalar_Type (T) then
          pragma Assert (Init_Or_Norm_Scalars);
 
          --  Processing for Normalize_Scalars case
@@ -4248,33 +4372,12 @@ package body Exp_Ch3 is
             return Nod;
          end;
 
-      --  Otherwise we have a case of a private type whose underlying type
-      --  needs simple initialization. In this case, we get the value for
-      --  the underlying type, then unchecked convert to the private type.
+      --  No other possibilities should arise, since we should only be
+      --  calling Get_Simple_Init_Val if Needs_Simple_Initialization
+      --  returned True, indicating one of the above cases held.
 
       else
-         pragma Assert
-           (Is_Private_Type (T)
-             and then Present (Underlying_Type (T)));
-
-         Val := Get_Simple_Init_Val (Underlying_Type (T), Loc);
-
-         --  A special case, if the underlying value is null, then qualify
-         --  it with the underlying type, so that the null is properly typed
-         --  Similarly, if it is an aggregate it must be qualified, because
-         --  an unchecked conversion does not provide a context for it.
-
-         if Nkind (Val) = N_Null
-           or else Nkind (Val) = N_Aggregate
-         then
-            Val :=
-              Make_Qualified_Expression (Loc,
-                Subtype_Mark =>
-                  New_Occurrence_Of (Underlying_Type (T), Loc),
-                Expression => Val);
-         end if;
-
-         return Unchecked_Convert_To (T, Val);
+         raise Program_Error;
       end if;
    end Get_Simple_Init_Val;
 
@@ -4718,11 +4821,26 @@ package body Exp_Ch3 is
 
    function Needs_Simple_Initialization (T : Entity_Id) return Boolean is
    begin
+      --  Check for private type, in which case test applies to the
+      --  underlying type of the private type.
+
+      if Is_Private_Type (T) then
+         declare
+            RT : constant Entity_Id := Underlying_Type (T);
+
+         begin
+            if Present (RT) then
+               return Needs_Simple_Initialization (RT);
+            else
+               return False;
+            end if;
+         end;
+
       --  Cases needing simple initialization are access types, and, if pragma
       --  Normalize_Scalars or Initialize_Scalars is in effect, then all scalar
       --  types.
 
-      if Is_Access_Type (T)
+      elsif Is_Access_Type (T)
         or else (Init_Or_Norm_Scalars and then (Is_Scalar_Type (T)))
 
         or else (Is_Bit_Packed_Array (T)
@@ -4744,21 +4862,6 @@ package body Exp_Ch3 is
             or else Nkind (Associated_Node_For_Itype (T)) /= N_Aggregate)
       then
          return True;
-
-      --  Check for private type, in which case test applies to the
-      --  underlying type of the private type.
-
-      elsif Is_Private_Type (T) then
-         declare
-            RT : constant Entity_Id := Underlying_Type (T);
-
-         begin
-            if Present (RT) then
-               return Needs_Simple_Initialization (RT);
-            else
-               return False;
-            end if;
-         end;
 
       else
          return False;

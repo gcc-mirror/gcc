@@ -7,9 +7,9 @@
 --                                 S p e c                                  --
 --                            (Compiler Version)                             --
 --                                                                          --
---                            $Revision: 1.48 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -38,6 +38,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This version of System is a generic version that is used in building
+--  the compiler. Right now, we have a host/target problem if we try to
+--  use the "proper" System, and since the compiler itself does not care
+--  about most System parameters, this generic version works fine.
+
 package System is
 pragma Pure (System);
 --  Note that we take advantage of the implementation permission to
@@ -60,7 +65,7 @@ pragma Pure (System);
    Max_Mantissa          : constant := 63;
    Fine_Delta            : constant := 2.0 ** (-Max_Mantissa);
 
-   Tick                  : constant := Standard'Tick;
+   Tick                  : constant := 1.0;
 
    --  Storage-related Declarations
 
@@ -93,27 +98,14 @@ pragma Pure (System);
 
    --  Priority-related Declarations (RM D.1)
 
-   Max_Priority : constant Positive := 30;
-
+   Max_Priority           : constant Positive := 30;
    Max_Interrupt_Priority : constant Positive := 31;
 
-   subtype Any_Priority is Integer
-     range 0 .. Standard'Max_Interrupt_Priority;
+   subtype Any_Priority       is Integer      range  0 .. 31;
+   subtype Priority           is Any_Priority range  0 .. 30;
+   subtype Interrupt_Priority is Any_Priority range 31 .. 31;
 
-   subtype Priority is Any_Priority
-     range 0 .. Standard'Max_Priority;
-
-   --  Functional notation is needed in the following to avoid visibility
-   --  problems when this package is compiled through rtsfind in the middle
-   --  of another compilation.
-
-   subtype Interrupt_Priority is Any_Priority
-     range
-       Standard."+" (Standard'Max_Priority,  1) ..
-         Standard'Max_Interrupt_Priority;
-
-   Default_Priority : constant Priority :=
-     Standard."/" (Standard."+" (Priority'First, Priority'Last), 2);
+   Default_Priority : constant Priority := 15;
 
 private
 
@@ -138,8 +130,11 @@ private
    --  do not use floating-point anyway in the compiler).
 
    AAMP                      : constant Boolean := False;
+   Backend_Divide_Checks     : constant Boolean := False;
+   Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := True;
    Denorm                    : constant Boolean := True;
+   Fractional_Fixed_Ops      : constant Boolean := False;
    Frontend_Layout           : constant Boolean := False;
    Functions_Return_By_DSP   : constant Boolean := False;
    Long_Shifts_Inlined       : constant Boolean := True;

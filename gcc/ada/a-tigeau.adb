@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.17 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,8 +48,7 @@ package body Ada.Text_IO.Generic_Aux is
    ------------------------
 
    procedure Check_End_Of_Field
-     (File  : File_Type;
-      Buf   : String;
+     (Buf   : String;
       Stop  : Integer;
       Ptr   : Integer;
       Width : Field)

@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -341,7 +341,7 @@ package body Sem_Ch4 is
 
    procedure Analyze_Allocator (N : Node_Id) is
       Loc      : constant Source_Ptr := Sloc (N);
-      Sav_Errs : constant Nat        := Errors_Detected;
+      Sav_Errs : constant Nat        := Serious_Errors_Detected;
       E        : Node_Id             := Expression (N);
       Acc_Type : Entity_Id;
       Type_Id  : Entity_Id;
@@ -441,7 +441,7 @@ package body Sem_Ch4 is
                       Defining_Identifier => Def_Id,
                       Subtype_Indication  => Relocate_Node (E)));
 
-                  if Sav_Errs /= Errors_Detected
+                  if Sav_Errs /= Serious_Errors_Detected
                     and then Nkind (Constraint (E))
                       = N_Index_Or_Discriminant_Constraint
                   then
@@ -467,7 +467,7 @@ package body Sem_Ch4 is
             --  are probably cascaded errors
 
             if Is_Indefinite_Subtype (Type_Id)
-              and then Errors_Detected = Sav_Errs
+              and then Serious_Errors_Detected = Sav_Errs
             then
                if Is_Class_Wide_Type (Type_Id) then
                   Error_Msg_N
@@ -494,7 +494,7 @@ package body Sem_Ch4 is
          Check_Restriction (No_Local_Allocators, N);
       end if;
 
-      if Errors_Detected > Sav_Errs then
+      if Serious_Errors_Detected > Sav_Errs then
          Set_Error_Posted (N);
          Set_Etype (N, Any_Type);
       end if;
@@ -1335,6 +1335,10 @@ package body Sem_Ch4 is
 
             if Is_Access_Type (Array_Type) then
                Array_Type := Designated_Type (Array_Type);
+
+               if Warn_On_Dereference then
+                  Error_Msg_N ("?implicit dereference", N);
+               end if;
             end if;
 
             if Is_Array_Type (Array_Type) then
@@ -1498,6 +1502,10 @@ package body Sem_Ch4 is
 
             if Is_Access_Type (Typ) then
                Typ := Designated_Type (Typ);
+
+               if Warn_On_Dereference then
+                  Error_Msg_N ("?implicit dereference", N);
+               end if;
             end if;
 
             if Is_Array_Type (Typ) then
@@ -2169,6 +2177,11 @@ package body Sem_Ch4 is
       while Present (It.Typ) loop
          if Is_Access_Type (It.Typ) then
             T := Designated_Type (It.Typ);
+
+            if Warn_On_Dereference then
+               Error_Msg_N ("?implicit dereference", N);
+            end if;
+
          else
             T := It.Typ;
          end if;
@@ -2219,6 +2232,10 @@ package body Sem_Ch4 is
 
                   if Is_Access_Type (Etype (Nam)) then
                      Insert_Explicit_Dereference (Nam);
+
+                     if Warn_On_Dereference then
+                        Error_Msg_N ("?implicit dereference", N);
+                     end if;
                   end if;
                end if;
 
@@ -2226,7 +2243,6 @@ package body Sem_Ch4 is
             end loop;
 
             Set_Is_Overloaded (N, Is_Overloaded (Sel));
-
          end if;
 
          Get_Next_Interp (I, It);
@@ -2414,18 +2430,27 @@ package body Sem_Ch4 is
       end if;
 
       if Is_Access_Type (Prefix_Type) then
+
+         --  A RACW object can never be used as prefix of a selected
+         --  component since that means it is dereferenced without
+         --  being a controlling operand of a dispatching operation
+         --  (RM E.2.2(15)).
+
          if Is_Remote_Access_To_Class_Wide_Type (Prefix_Type)
            and then Comes_From_Source (N)
          then
-            --  A RACW object can never be used as prefix of a selected
-            --  component since that means it is dereferenced without
-            --  being a controlling operand of a dispatching operation
-            --  (RM E.2.2(15)).
-
             Error_Msg_N
               ("invalid dereference of a remote access to class-wide value",
                N);
+
+         --  Normal case of selected component applied to access type
+
+         else
+            if Warn_On_Dereference then
+               Error_Msg_N ("?implicit dereference", N);
+            end if;
          end if;
+
          Prefix_Type := Designated_Type (Prefix_Type);
       end if;
 
@@ -2466,6 +2491,10 @@ package body Sem_Ch4 is
 
          if Is_Access_Type (Etype (Name)) then
             Insert_Explicit_Dereference (Name);
+
+            if Warn_On_Dereference then
+               Error_Msg_N ("?implicit dereference", N);
+            end if;
          end if;
 
       elsif Is_Record_Type (Prefix_Type) then
@@ -2656,6 +2685,10 @@ package body Sem_Ch4 is
 
                if Is_Access_Type (Etype (Name)) then
                   Insert_Explicit_Dereference (Name);
+
+                  if Warn_On_Dereference then
+                     Error_Msg_N ("?implicit dereference", N);
+                  end if;
                end if;
             end if;
 
@@ -2693,6 +2726,7 @@ package body Sem_Ch4 is
 
          elsif Is_Generic_Type (Prefix_Type)
            and then Ekind (Prefix_Type) = E_Record_Type_With_Private
+           and then Prefix_Type /= Etype (Prefix_Type)
            and then Is_Record_Type (Etype (Prefix_Type))
          then
             --  If this is a derived formal type, the parent may have a
@@ -2730,6 +2764,7 @@ package body Sem_Ch4 is
 
                      Apply_Compile_Time_Constraint_Error
                        (N, "component not present in }?",
+                        CE_Discriminant_Check_Failed,
                         Ent => Prefix_Type, Rep => False);
                      Set_Raises_Constraint_Error (N);
                      return;
@@ -2831,6 +2866,10 @@ package body Sem_Ch4 is
 
             if Is_Access_Type (Typ) then
                Typ := Designated_Type (Typ);
+
+               if Warn_On_Dereference then
+                  Error_Msg_N ("?implicit dereference", N);
+               end if;
             end if;
 
             if Is_Array_Type (Typ)
@@ -2868,6 +2907,10 @@ package body Sem_Ch4 is
 
          if Is_Access_Type (Array_Type) then
             Array_Type := Designated_Type (Array_Type);
+
+            if Warn_On_Dereference then
+               Error_Msg_N ("?implicit dereference", N);
+            end if;
          end if;
 
          if not Is_Array_Type (Array_Type) then

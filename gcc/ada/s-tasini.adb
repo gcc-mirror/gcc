@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.63 $
+--                             $Revision$
 --                                                                          --
---            Copyright (C) 1991-2001, Florida State University             --
+--         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -42,11 +41,6 @@ pragma Polling (Off);
 --  Turn polling off for this package. We don't need polling during any
 --  of the routines in this package, and more to the point, if we try
 --  to poll it can cause infinite loops.
-
---  This package provides overall initialization of the tasking portion
---  of the RTS.  This package must be elaborated before any tasking
---  features are used.  It also contains initialization for
---  Ada Task Control Block (ATCB) records.
 
 with Ada.Exceptions;
 --  used for Exception_Occurrence_Access.
@@ -71,10 +65,10 @@ with System.Soft_Links;
 with System.Tasking.Debug;
 --  used for Trace
 
-with System.Tasking.Task_Attributes;
---  used for All_Attrs_L
-
 with System.Stack_Checking;
+
+with System.Parameters;
+--  used for Single_Lock
 
 package body System.Tasking.Initialization is
 
@@ -82,11 +76,12 @@ package body System.Tasking.Initialization is
    package SSL  renames System.Soft_Links;
    package AE   renames Ada.Exceptions;
 
-   use System.Task_Primitives.Operations;
+   use Parameters;
+   use Task_Primitives.Operations;
 
    Global_Task_Lock : aliased System.Task_Primitives.RTS_Lock;
    --  This is a global lock; it is used to execute in mutual exclusion
-   --  from all other tasks.  It is only used by Task_Lock,
+   --  from all other tasks. It is only used by Task_Lock,
    --  Task_Unlock, and Final_Task_Unlock.
 
    function Current_Target_Exception return AE.Exception_Occurrence;
@@ -143,6 +138,9 @@ package body System.Tasking.Initialization is
      (X : AE.Exception_Occurrence := Current_Target_Exception);
    --  Handle exception setting and check for pending actions
 
+   function Task_Name return String;
+   --  Returns current task's name
+
    ------------------------
    --  Local Subprograms --
    ------------------------
@@ -181,8 +179,7 @@ package body System.Tasking.Initialization is
    ------------------------
 
    function Check_Abort_Status return Integer is
-      Self_ID : Task_ID := Self;
-
+      Self_ID : constant Task_ID := Self;
    begin
       if Self_ID /= null and then Self_ID.Deferral_Level = 0
         and then Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level
@@ -199,36 +196,37 @@ package body System.Tasking.Initialization is
 
    procedure Defer_Abort (Self_ID : Task_ID) is
    begin
+      if No_Abort and then not Dynamic_Priority_Support then
+         return;
+      end if;
 
       pragma Assert (Self_ID.Deferral_Level = 0);
 
---        pragma Assert
---          (Self_ID.Pending_ATC_Level >= Self_ID.ATC_Nesting_Level);
+      --  pragma Assert
+      --    (Self_ID.Pending_ATC_Level >= Self_ID.ATC_Nesting_Level);
 
-      --  The above check has been useful in detecting mismatched
-      --  defer/undefer pairs. You may uncomment it when testing on
-      --  systems that support preemptive abort.
+      --  The above check has been useful in detecting mismatched defer/undefer
+      --  pairs. You may uncomment it when testing on systems that support
+      --  preemptive abort.
 
-      --  If the OS supports preemptive abort (e.g. pthread_kill),
-      --  it should have happened already. A problem is with systems
-      --  that do not support preemptive abort, and so rely on polling.
-      --  On such systems we may get false failures of the assertion,
-      --  since polling for pending abort does no occur until the abort
-      --  undefer operation.
+      --  If the OS supports preemptive abort (e.g. pthread_kill), it should
+      --  have happened already. A problem is with systems that do not support
+      --  preemptive abort, and so rely on polling. On such systems we may get
+      --  false failures of the assertion, since polling for pending abort does
+      --  no occur until the abort undefer operation.
 
-      --  Even on systems that only poll for abort, the assertion may
-      --  be useful for catching missed abort completion polling points.
-      --  The operations that undefer abort poll for pending aborts.
-      --  This covers most of the places where the core Ada semantics
-      --  require abort to be caught, without any special attention.
-      --  However, this generally happens on exit from runtime system
-      --  call, which means a pending abort will not be noticed on the
-      --  way into the runtime system.  We considered adding a check
-      --  for pending aborts at this point, but chose not to, because
-      --  of the overhead.  Instead, we searched for RTS calls that
-      --  where abort completion is required and a task could go
-      --  farther than Ada allows  before undeferring abort; we then
-      --  modified the code to ensure the abort would be detected.
+      --  Even on systems that only poll for abort, the assertion may be useful
+      --  for catching missed abort completion polling points. The operations
+      --  that undefer abort poll for pending aborts. This covers most of the
+      --  places where the core Ada semantics require abort to be caught,
+      --  without any special attention. However, this generally happens on
+      --  exit from runtime system call, which means a pending abort will not
+      --  be noticed on the way into the runtime system. We considered adding a
+      --  check for pending aborts at this point, but chose not to, because of
+      --  the overhead. Instead, we searched for RTS calls where abort
+      --  completion is required and a task could go farther than Ada allows
+      --  before undeferring abort; we then modified the code to ensure the
+      --  abort would be detected.
 
       Self_ID.Deferral_Level := Self_ID.Deferral_Level + 1;
    end Defer_Abort;
@@ -239,13 +237,16 @@ package body System.Tasking.Initialization is
 
    procedure Defer_Abort_Nestable (Self_ID : Task_ID) is
    begin
+      if No_Abort and then not Dynamic_Priority_Support then
+         return;
+      end if;
 
---        pragma Assert
---          ((Self_ID.Pending_ATC_Level >= Self_ID.ATC_Nesting_Level or else
---            Self_ID.Deferral_Level > 0));
+      --  pragma Assert
+      --    ((Self_ID.Pending_ATC_Level >= Self_ID.ATC_Nesting_Level or else
+      --      Self_ID.Deferral_Level > 0));
 
-      --  See comment in Defer_Abort on the situations in which it may
-      --  be useful to uncomment the above assertion.
+      --  See comment in Defer_Abort on the situations in which it may be
+      --  useful to uncomment the above assertion.
 
       Self_ID.Deferral_Level := Self_ID.Deferral_Level + 1;
    end Defer_Abort_Nestable;
@@ -254,14 +255,15 @@ package body System.Tasking.Initialization is
    -- Defer_Abortion --
    --------------------
 
-   --  ??????
-   --  Phase out Defer_Abortion without Self_ID
-   --  to reduce overhead due to multiple calls to Self
-
    procedure Defer_Abortion is
-      Self_ID : constant Task_ID := STPO.Self;
+      Self_ID : Task_ID;
 
    begin
+      if No_Abort and then not Dynamic_Priority_Support then
+         return;
+      end if;
+
+      Self_ID := STPO.Self;
       Self_ID.Deferral_Level := Self_ID.Deferral_Level + 1;
    end Defer_Abortion;
 
@@ -285,10 +287,18 @@ package body System.Tasking.Initialization is
 
          Self_ID.Deferral_Level := Self_ID.Deferral_Level + 1;
 
+         if Single_Lock then
+            Lock_RTS;
+         end if;
+
          Write_Lock (Self_ID);
          Self_ID.Pending_Action := False;
          Poll_Base_Priority_Change (Self_ID);
          Unlock (Self_ID);
+
+         if Single_Lock then
+            Unlock_RTS;
+         end if;
 
          --  Restore the original Deferral value.
 
@@ -341,7 +351,7 @@ package body System.Tasking.Initialization is
    procedure Final_Task_Unlock (Self_ID : Task_ID) is
    begin
       pragma Assert (Self_ID.Global_Task_Lock_Nesting = 1);
-      Unlock (Global_Task_Lock'Access);
+      Unlock (Global_Task_Lock'Access, Global_Lock => True);
    end Final_Task_Unlock;
 
    --------------
@@ -350,6 +360,7 @@ package body System.Tasking.Initialization is
 
    procedure Init_RTS is
       Self_Id : Task_ID;
+
    begin
       --  Terminate run time (regular vs restricted) specific initialization
       --  of the environment task.
@@ -380,17 +391,14 @@ package body System.Tasking.Initialization is
 
       Initialize_Lock (Global_Task_Lock'Access, STPO.Global_Task_Level);
 
-      --  Initialize lock used to implement mutual exclusion in the package
-      --  System.Task_Attributes.
-
-      Initialize_Lock (System.Tasking.Task_Attributes.All_Attrs_L'Access,
-        All_Attrs_Level);
-
       --  Notify that the tasking run time has been elaborated so that
       --  the tasking version of the soft links can be used.
 
-      SSL.Abort_Defer            := Defer_Abortion'Access;
-      SSL.Abort_Undefer          := Undefer_Abortion'Access;
+      if not No_Abort or else Dynamic_Priority_Support then
+         SSL.Abort_Defer   := Defer_Abortion'Access;
+         SSL.Abort_Undefer := Undefer_Abortion'Access;
+      end if;
+
       SSL.Update_Exception       := Update_Exception'Access;
       SSL.Lock_Task              := Task_Lock'Access;
       SSL.Unlock_Task            := Task_Unlock'Access;
@@ -406,6 +414,7 @@ package body System.Tasking.Initialization is
       SSL.Timed_Delay            := Timed_Delay_T'Access;
       SSL.Check_Abort_Status     := Check_Abort_Status'Access;
       SSL.Get_Stack_Info         := Get_Stack_Info'Access;
+      SSL.Task_Name              := Task_Name'Access;
 
       --  No need to create a new Secondary Stack, since we will use the
       --  default one created in s-secsta.adb
@@ -574,17 +583,21 @@ package body System.Tasking.Initialization is
 
    procedure Poll_Base_Priority_Change (Self_ID : Task_ID) is
    begin
-      if Dynamic_Priority_Support
-        and then Self_ID.Pending_Priority_Change
-      then
+      if Dynamic_Priority_Support and then Self_ID.Pending_Priority_Change then
          --  Check for ceiling violations ???
 
          Self_ID.Pending_Priority_Change := False;
 
          if Self_ID.Common.Base_Priority = Self_ID.New_Base_Priority then
-            Unlock (Self_ID);
-            Yield;
-            Write_Lock (Self_ID);
+            if Single_Lock then
+               Unlock_RTS;
+               Yield;
+               Lock_RTS;
+            else
+               Unlock (Self_ID);
+               Yield;
+               Write_Lock (Self_ID);
+            end if;
 
          elsif Self_ID.Common.Base_Priority < Self_ID.New_Base_Priority then
             Self_ID.Common.Base_Priority := Self_ID.New_Base_Priority;
@@ -595,9 +608,16 @@ package body System.Tasking.Initialization is
 
             Self_ID.Common.Base_Priority := Self_ID.New_Base_Priority;
             Set_Priority (Self_ID, Self_ID.Common.Base_Priority);
-            Unlock (Self_ID);
-            Yield;
-            Write_Lock (Self_ID);
+
+            if Single_Lock then
+               Unlock_RTS;
+               Yield;
+               Lock_RTS;
+            else
+               Unlock (Self_ID);
+               Yield;
+               Write_Lock (Self_ID);
+            end if;
          end if;
       end if;
    end Poll_Base_Priority_Change;
@@ -614,10 +634,9 @@ package body System.Tasking.Initialization is
       pragma Debug
         (Debug.Trace ("Remove_From_All_Tasks_List", 'C'));
 
-      Lock_All_Tasks_List;
-
       Previous := Null_Task;
       C := All_Tasks_List;
+
       while C /= Null_Task loop
          if C = T then
             if Previous = Null_Task then
@@ -627,7 +646,6 @@ package body System.Tasking.Initialization is
                Previous.Common.All_Tasks_Link := C.Common.All_Tasks_Link;
             end if;
 
-            Unlock_All_Tasks_List;
             return;
          end if;
 
@@ -642,54 +660,54 @@ package body System.Tasking.Initialization is
    -- Task_Lock --
    ---------------
 
-   procedure Task_Lock is
-      T : Task_ID := STPO.Self;
-
-   begin
-      T.Global_Task_Lock_Nesting := T.Global_Task_Lock_Nesting + 1;
-
-      if T.Global_Task_Lock_Nesting = 1 then
-         Defer_Abort_Nestable (T);
-         Write_Lock (Global_Task_Lock'Access);
-      end if;
-   end Task_Lock;
-
    procedure Task_Lock (Self_ID : Task_ID) is
    begin
       Self_ID.Global_Task_Lock_Nesting := Self_ID.Global_Task_Lock_Nesting + 1;
 
       if Self_ID.Global_Task_Lock_Nesting = 1 then
          Defer_Abort_Nestable (Self_ID);
-         Write_Lock (Global_Task_Lock'Access);
+         Write_Lock (Global_Task_Lock'Access, Global_Lock => True);
       end if;
    end Task_Lock;
+
+   procedure Task_Lock is
+   begin
+      Task_Lock (STPO.Self);
+   end Task_Lock;
+
+   ---------------
+   -- Task_Name --
+   ---------------
+
+   function Task_Name return String is
+      use System.Task_Info;
+
+   begin
+      if STPO.Self.Common.Task_Image /= null  then
+         return STPO.Self.Common.Task_Image.all;
+      else
+         return "";
+      end if;
+   end Task_Name;
 
    -----------------
    -- Task_Unlock --
    -----------------
 
-   procedure Task_Unlock is
-      T : Task_ID := STPO.Self;
-
-   begin
-      pragma Assert (T.Global_Task_Lock_Nesting > 0);
-
-      T.Global_Task_Lock_Nesting := T.Global_Task_Lock_Nesting - 1;
-
-      if T.Global_Task_Lock_Nesting = 0 then
-         Unlock (Global_Task_Lock'Access);
-         Undefer_Abort_Nestable (T);
-      end if;
-   end Task_Unlock;
-
    procedure Task_Unlock (Self_ID : Task_ID) is
    begin
+      pragma Assert (Self_ID.Global_Task_Lock_Nesting > 0);
       Self_ID.Global_Task_Lock_Nesting := Self_ID.Global_Task_Lock_Nesting - 1;
 
       if Self_ID.Global_Task_Lock_Nesting = 0 then
-         Unlock (Global_Task_Lock'Access);
+         Unlock (Global_Task_Lock'Access, Global_Lock => True);
          Undefer_Abort_Nestable (Self_ID);
       end if;
+   end Task_Unlock;
+
+   procedure Task_Unlock is
+   begin
+      Task_Unlock (STPO.Self);
    end Task_Unlock;
 
    -------------------
@@ -700,14 +718,17 @@ package body System.Tasking.Initialization is
 
    --  Undefer_Abort is called on any abortion completion point (aka.
    --  synchronization point). It performs the following actions if they
-   --  are pending: (1) change the base priority, (2) abort the task,
-   --  (3) raise a pending exception.
+   --  are pending: (1) change the base priority, (2) abort the task.
 
    --  The priority change has to occur before abortion. Otherwise, it would
    --  take effect no earlier than the next abortion completion point.
 
    procedure Undefer_Abort (Self_ID : Task_ID) is
    begin
+      if No_Abort and then not Dynamic_Priority_Support then
+         return;
+      end if;
+
       pragma Assert (Self_ID.Deferral_Level = 1);
 
       Self_ID.Deferral_Level := Self_ID.Deferral_Level - 1;
@@ -725,23 +746,25 @@ package body System.Tasking.Initialization is
    -- Undefer_Abort_Nestable --
    ----------------------------
 
-   --  An earlier version  would re-defer abort if an abort is
-   --  in progress.  Then, we modified the effect of the raise
-   --  statement so that it defers abort until control reaches a
-   --  handler.  That was done to prevent "skipping over" a
-   --  handler if another asynchronous abort occurs during the
-   --  propagation of the abort to the handler.
+   --  An earlier version would re-defer abort if an abort is in progress.
+   --  Then, we modified the effect of the raise statement so that it defers
+   --  abort until control reaches a handler. That was done to prevent
+   --  "skipping over" a handler if another asynchronous abort occurs during
+   --  the propagation of the abort to the handler.
 
-   --  There has been talk of reversing that decision, based on
-   --  a newer implementation of exception propagation.  Care must
-   --  be taken to evaluate how such a change would interact with
-   --  the above code and all the places where abort-deferral is
-   --  used to bridge over critical transitions, such as entry to
-   --  the scope of a region with a finalizer and entry into the
+   --  There has been talk of reversing that decision, based on a newer
+   --  implementation of exception propagation. Care must be taken to evaluate
+   --  how such a change would interact with the above code and all the places
+   --  where abort-deferral is used to bridge over critical transitions, such
+   --  as entry to the scope of a region with a finalizer and entry into the
    --  body of an accept-procedure.
 
    procedure Undefer_Abort_Nestable (Self_ID : Task_ID) is
    begin
+      if No_Abort and then not Dynamic_Priority_Support then
+         return;
+      end if;
+
       pragma Assert (Self_ID.Deferral_Level > 0);
 
       Self_ID.Deferral_Level := Self_ID.Deferral_Level - 1;
@@ -764,9 +787,13 @@ package body System.Tasking.Initialization is
    --  to reduce overhead due to multiple calls to Self.
 
    procedure Undefer_Abortion is
-      Self_ID : constant Task_ID := STPO.Self;
-
+      Self_ID : Task_ID;
    begin
+      if No_Abort and then not Dynamic_Priority_Support then
+         return;
+      end if;
+
+      Self_ID := STPO.Self;
       pragma Assert (Self_ID.Deferral_Level > 0);
 
       Self_ID.Deferral_Level := Self_ID.Deferral_Level - 1;
@@ -799,10 +826,20 @@ package body System.Tasking.Initialization is
          if Self_Id.Pending_Action then
             Self_Id.Pending_Action := False;
             Self_Id.Deferral_Level := Self_Id.Deferral_Level + 1;
+
+            if Single_Lock then
+               Lock_RTS;
+            end if;
+
             Write_Lock (Self_Id);
             Self_Id.Pending_Action := False;
             Poll_Base_Priority_Change (Self_Id);
             Unlock (Self_Id);
+
+            if Single_Lock then
+               Unlock_RTS;
+            end if;
+
             Self_Id.Deferral_Level := Self_Id.Deferral_Level - 1;
 
             if Self_Id.Pending_ATC_Level < Self_Id.ATC_Nesting_Level then
@@ -846,7 +883,6 @@ package body System.Tasking.Initialization is
       New_State  : Entry_Call_State)
    is
       Caller : constant Task_ID := Entry_Call.Self;
-
    begin
       pragma Debug (Debug.Trace
         (Self_ID, "Wakeup_Entry_Caller", Caller, 'E'));
@@ -878,49 +914,42 @@ package body System.Tasking.Initialization is
 
    function Get_Current_Excep return SSL.EOA is
       Me : constant Task_ID := STPO.Self;
-
    begin
       return Me.Common.Compiler_Data.Current_Excep'Access;
    end Get_Current_Excep;
 
    function Get_Exc_Stack_Addr return Address is
       Me : constant Task_ID := STPO.Self;
-
    begin
       return Me.Common.Compiler_Data.Exc_Stack_Addr;
    end Get_Exc_Stack_Addr;
 
    function Get_Jmpbuf_Address return  Address is
       Me : constant Task_ID := STPO.Self;
-
    begin
       return Me.Common.Compiler_Data.Jmpbuf_Address;
    end Get_Jmpbuf_Address;
 
    function Get_Machine_State_Addr return Address is
       Me : constant Task_ID := STPO.Self;
-
    begin
       return Me.Common.Compiler_Data.Machine_State_Addr;
    end Get_Machine_State_Addr;
 
    function Get_Sec_Stack_Addr return  Address is
       Me : constant Task_ID := STPO.Self;
-
    begin
       return Me.Common.Compiler_Data.Sec_Stack_Addr;
    end Get_Sec_Stack_Addr;
 
    function Get_Stack_Info return Stack_Checking.Stack_Access is
       Me : constant Task_ID := STPO.Self;
-
    begin
       return Me.Common.Compiler_Data.Pri_Stack_Info'Access;
    end Get_Stack_Info;
 
    procedure Set_Exc_Stack_Addr (Self_ID : Address; Addr : Address) is
       Me : Task_ID := To_Task_Id (Self_ID);
-
    begin
       if Me = Null_Task then
          Me := STPO.Self;
@@ -931,47 +960,44 @@ package body System.Tasking.Initialization is
 
    procedure Set_Jmpbuf_Address (Addr : Address) is
       Me : Task_ID := STPO.Self;
-
    begin
       Me.Common.Compiler_Data.Jmpbuf_Address := Addr;
    end Set_Jmpbuf_Address;
 
    procedure Set_Machine_State_Addr (Addr : Address) is
       Me : Task_ID := STPO.Self;
-
    begin
       Me.Common.Compiler_Data.Machine_State_Addr := Addr;
    end Set_Machine_State_Addr;
 
    procedure Set_Sec_Stack_Addr (Addr : Address) is
       Me : Task_ID := STPO.Self;
-
    begin
       Me.Common.Compiler_Data.Sec_Stack_Addr := Addr;
    end Set_Sec_Stack_Addr;
 
    procedure Timed_Delay_T (Time : Duration; Mode : Integer) is
-      Self_ID : constant Task_ID := Self;
-
    begin
-      STPO.Timed_Delay (Self_ID, Time, Mode);
+      STPO.Timed_Delay (STPO.Self, Time, Mode);
    end Timed_Delay_T;
 
-   ------------------------
-   -- Soft-Link Dummies  --
-   ------------------------
+   -----------------------
+   -- Soft-Link Dummies --
+   -----------------------
 
    --  These are dummies for subprograms that are only needed by certain
-   --  optional run-time system packages.  If they are needed, the soft
+   --  optional run-time system packages. If they are needed, the soft
    --  links will be redirected to the real subprogram by elaboration of
    --  the subprogram body where the real subprogram is declared.
 
    procedure Finalize_Attributes (T : Task_ID) is
+      pragma Warnings (Off, T);
    begin
       null;
    end Finalize_Attributes;
 
    procedure Initialize_Attributes (T : Task_ID) is
+      pragma Warnings (Off, T);
    begin
       null;
    end Initialize_Attributes;

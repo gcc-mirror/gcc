@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.37 $
+--                             $Revision$
 --                                                                          --
 --             Copyright (C) 1991-2001 Florida State University             --
 --                                                                          --
@@ -41,12 +41,20 @@ with System.OS_Primitives;
 with System.Soft_Links;
 --  Used for Timed_Delay
 
+with System.Traces;
+--  Used for Send_Trace_Info
+
+with System.Parameters;
+--  used for Runtime_Traces
+
 package body Ada.Calendar.Delays is
 
    package OSP renames System.OS_Primitives;
    package SSL renames System.Soft_Links;
 
    use type SSL.Timed_Delay_Call;
+
+   use System.Traces;
 
    --  Earlier, the following operations were implemented using
    --  System.Time_Operations.  The idea was to avoid sucking in the tasking
@@ -68,8 +76,16 @@ package body Ada.Calendar.Delays is
 
    procedure Delay_For (D : Duration) is
    begin
+      if System.Parameters.Runtime_Traces then
+         Send_Trace_Info (W_Delay, D);
+      end if;
+
       SSL.Timed_Delay.all (Duration'Min (D, OSP.Max_Sensible_Delay),
-        OSP.Relative);
+                           OSP.Relative);
+
+      if System.Parameters.Runtime_Traces then
+         Send_Trace_Info (M_Delay, D);
+      end if;
    end Delay_For;
 
    -----------------
@@ -77,8 +93,18 @@ package body Ada.Calendar.Delays is
    -----------------
 
    procedure Delay_Until (T : Time) is
+      D : constant Duration := To_Duration (T);
+
    begin
-      SSL.Timed_Delay.all (To_Duration (T), OSP.Absolute_Calendar);
+      if System.Parameters.Runtime_Traces then
+         Send_Trace_Info (WU_Delay, D);
+      end if;
+
+      SSL.Timed_Delay.all (D, OSP.Absolute_Calendar);
+
+      if System.Parameters.Runtime_Traces then
+         Send_Trace_Info (M_Delay, D);
+      end if;
    end Delay_Until;
 
    --------------------

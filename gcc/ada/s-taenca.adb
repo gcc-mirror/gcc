@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.36 $
+--                             $Revision$
 --                                                                          --
---            Copyright (C) 1991-2001, Florida State University             --
+--         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,16 +29,9 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
-
---  This package provides internal RTS calls implementing operations
---  that apply to general entry calls, that is, calls to either
---  protected or task entries.
-
---  These declarations are not part of the GNARL interface
 
 with System.Task_Primitives.Operations;
 --  used for STPO.Write_Lock
@@ -67,17 +60,26 @@ with System.Tasking.Queuing;
 with System.Tasking.Utilities;
 --  used for Exit_One_ATC_Level
 
+with System.Parameters;
+--  used for Single_Lock
+--           Runtime_Traces
+
+with System.Traces;
+--  used for Send_Trace_Info
+
 package body System.Tasking.Entry_Calls is
 
    package STPO renames System.Task_Primitives.Operations;
 
-   use System.Task_Primitives;
-   use System.Tasking.Protected_Objects.Entries;
-   use System.Tasking.Protected_Objects.Operations;
+   use Parameters;
+   use Task_Primitives;
+   use Protected_Objects.Entries;
+   use Protected_Objects.Operations;
+   use System.Traces;
 
    --  DO NOT use Protected_Objects.Lock or Protected_Objects.Unlock
    --  internally. Those operations will raise Program_Error, which
-   --  we do are not prepared to handle inside the RTS. Instead, use
+   --  we are not prepared to handle inside the RTS. Instead, use
    --  System.Task_Primitives lock operations directly on Protection.L.
 
    -----------------------
@@ -101,23 +103,28 @@ package body System.Tasking.Entry_Calls is
    --  hold an ATCB lock, something which is not permitted. Since
    --  the server cannot be obtained reliably, it must be obtained unreliably
    --  and then checked again once it has been locked.
+   --
+   --  If Single_Lock and server is a PO, release RTS_Lock.
 
    procedure Unlock_Server (Entry_Call : Entry_Call_Link);
    --  STPO.Unlock the server targeted by Entry_Call. The server must
    --  be locked before calling this.
+   --
+   --  If Single_Lock and server is a PO, take RTS_Lock on exit.
 
    procedure Unlock_And_Update_Server
      (Self_ID    : Task_ID;
       Entry_Call : Entry_Call_Link);
    --  Similar to Unlock_Server, but services entry calls if the
    --  server is a protected object.
+   --
+   --  If Single_Lock and server is a PO, take RTS_Lock on exit.
 
    procedure Check_Pending_Actions_For_Entry_Call
      (Self_ID    : Task_ID;
       Entry_Call : Entry_Call_Link);
-   pragma Inline (Check_Pending_Actions_For_Entry_Call);
    --  This procedure performs priority change of a queued call and
-   --  dequeuing of an entry call when an the call is cancelled.
+   --  dequeuing of an entry call when the call is cancelled.
    --  If the call is dequeued the state should be set to Cancelled.
 
    procedure Poll_Base_Priority_Change_At_Entry_Call
@@ -147,6 +154,8 @@ package body System.Tasking.Entry_Calls is
      (Self_ID    : Task_ID;
       Entry_Call : Entry_Call_Link)
    is
+      pragma Warnings (Off, Self_ID);
+
       use type Ada.Exceptions.Exception_Id;
 
       procedure Internal_Raise (X : Ada.Exceptions.Exception_Id);
@@ -177,8 +186,7 @@ package body System.Tasking.Entry_Calls is
 
    procedure Check_Pending_Actions_For_Entry_Call
      (Self_ID    : Task_ID;
-      Entry_Call : Entry_Call_Link)
-   is
+      Entry_Call : Entry_Call_Link) is
    begin
       pragma Assert (Self_ID = Entry_Call.Self);
 
@@ -240,9 +248,19 @@ package body System.Tasking.Entry_Calls is
                --  We had very bad luck, interleaving with TWO different
                --  requeue operations. Go around the loop and try again.
 
-               STPO.Yield;
+               if Single_Lock then
+                  STPO.Unlock_RTS;
+                  STPO.Yield;
+                  STPO.Lock_RTS;
+               else
+                  STPO.Yield;
+               end if;
 
             else
+               if Single_Lock then
+                  STPO.Unlock_RTS;
+               end if;
+
                Lock_Entries (Test_PO, Ceiling_Violation);
 
                --  ????
@@ -250,7 +268,7 @@ package body System.Tasking.Entry_Calls is
                --  when cancelling a call, to allow for the possibility
                --  that the priority of the caller has been raised
                --  beyond that of the protected entry call by
-               --  Ada.Dynamic_Priorities.STPO.Set_Priority.
+               --  Ada.Dynamic_Priorities.Set_Priority.
 
                --  If the current task has a higher priority than the ceiling
                --  of the protected object, temporarily lower it. It will
@@ -262,12 +280,20 @@ package body System.Tasking.Entry_Calls is
                      Old_Base_Priority : System.Any_Priority;
 
                   begin
+                     if Single_Lock then
+                        STPO.Lock_RTS;
+                     end if;
+
                      STPO.Write_Lock (Current_Task);
                      Old_Base_Priority := Current_Task.Common.Base_Priority;
                      Current_Task.New_Base_Priority := Test_PO.Ceiling;
                      System.Tasking.Initialization.Change_Base_Priority
                        (Current_Task);
                      STPO.Unlock (Current_Task);
+
+                     if Single_Lock then
+                        STPO.Unlock_RTS;
+                     end if;
 
                      --  Following lock should not fail
 
@@ -280,6 +306,10 @@ package body System.Tasking.Entry_Calls is
 
                exit when To_Address (Test_PO) = Entry_Call.Called_PO;
                Unlock_Entries (Test_PO);
+
+               if Single_Lock then
+                  STPO.Lock_RTS;
+               end if;
             end if;
 
          else
@@ -303,24 +333,26 @@ package body System.Tasking.Entry_Calls is
 
    procedure Poll_Base_Priority_Change_At_Entry_Call
      (Self_ID    : Task_ID;
-      Entry_Call : Entry_Call_Link)
-   is
+      Entry_Call : Entry_Call_Link) is
    begin
-      if Initialization.Dynamic_Priority_Support
-        and then Self_ID.Pending_Priority_Change
-      then
+      if Dynamic_Priority_Support and then Self_ID.Pending_Priority_Change then
          --  Check for ceiling violations ???
 
          Self_ID.Pending_Priority_Change := False;
 
          if Self_ID.Common.Base_Priority = Self_ID.New_Base_Priority then
-            STPO.Unlock (Self_ID);
-            STPO.Yield;
-            STPO.Write_Lock (Self_ID);
+            if Single_Lock then
+               STPO.Unlock_RTS;
+               STPO.Yield;
+               STPO.Lock_RTS;
+            else
+               STPO.Unlock (Self_ID);
+               STPO.Yield;
+               STPO.Write_Lock (Self_ID);
+            end if;
 
          else
             if Self_ID.Common.Base_Priority < Self_ID.New_Base_Priority then
-
                --  Raising priority
 
                Self_ID.Common.Base_Priority := Self_ID.New_Base_Priority;
@@ -331,9 +363,16 @@ package body System.Tasking.Entry_Calls is
 
                Self_ID.Common.Base_Priority := Self_ID.New_Base_Priority;
                STPO.Set_Priority (Self_ID, Self_ID.Common.Base_Priority);
-               STPO.Unlock (Self_ID);
-               STPO.Yield;
-               STPO.Write_Lock (Self_ID);
+
+               if Single_Lock then
+                  STPO.Unlock_RTS;
+                  STPO.Yield;
+                  STPO.Lock_RTS;
+               else
+                  STPO.Unlock (Self_ID);
+                  STPO.Yield;
+                  STPO.Write_Lock (Self_ID);
+               end if;
             end if;
          end if;
 
@@ -354,35 +393,24 @@ package body System.Tasking.Entry_Calls is
    -- Reset_Priority --
    --------------------
 
-   --  Reset the priority of a task completing an accept statement to
-   --  the value it had before the call.
-
    procedure Reset_Priority
-     (Acceptor_Prev_Priority : Rendezvous_Priority;
-      Acceptor               : Task_ID) is
+     (Acceptor               : Task_ID;
+      Acceptor_Prev_Priority : Rendezvous_Priority) is
    begin
+      pragma Assert (Acceptor = STPO.Self);
+
+      --  Since we limit this kind of "active" priority change to be done
+      --  by the task for itself, we don't need to lock Acceptor.
+
       if Acceptor_Prev_Priority /= Priority_Not_Boosted then
          STPO.Set_Priority (Acceptor, Acceptor_Prev_Priority,
            Loss_Of_Inheritance => True);
       end if;
    end Reset_Priority;
 
-   --  ???
-   --  Check why we don't need any kind of lock to do this.
-   --  Do we limit this kind of "active" priority change to be done
-   --  by the task for itself only?
-
    ------------------------------
    -- Try_To_Cancel_Entry_Call --
    ------------------------------
-
-   --  This is used to implement the Cancel_Task_Entry_Call and
-   --  Cancel_Protected_Entry_Call.
-   --  Try to cancel async. entry call.
-   --  Effect includes Abort_To_Level and Wait_For_Completion.
-   --  Cancelled = True iff the cancelation was successful, i.e.,
-   --  the call was not Done before this call.
-   --  On return, the call is off-queue and the ATC level is reduced by one.
 
    procedure Try_To_Cancel_Entry_Call (Succeeded : out Boolean) is
       Entry_Call : Entry_Call_Link;
@@ -394,13 +422,16 @@ package body System.Tasking.Entry_Calls is
       Entry_Call := Self_ID.Entry_Calls (Self_ID.ATC_Nesting_Level)'Access;
 
       --  Experimentation has shown that abort is sometimes (but not
-      --  always) already deferred when Cancel_X_Entry_Call is called.
+      --  always) already deferred when Cancel_xxx_Entry_Call is called.
       --  That may indicate an error. Find out what is going on. ???
 
       pragma Assert (Entry_Call.Mode = Asynchronous_Call);
-      pragma Assert (Self_ID = Self);
-
       Initialization.Defer_Abort_Nestable (Self_ID);
+
+      if Single_Lock then
+         STPO.Lock_RTS;
+      end if;
+
       STPO.Write_Lock (Self_ID);
       Entry_Call.Cancellation_Attempted := True;
 
@@ -408,14 +439,19 @@ package body System.Tasking.Entry_Calls is
          Self_ID.Pending_ATC_Level := Entry_Call.Level - 1;
       end if;
 
-      Entry_Calls.Wait_For_Completion (Self_ID, Entry_Call);
+      Entry_Calls.Wait_For_Completion (Entry_Call);
       STPO.Unlock (Self_ID);
+
+      if Single_Lock then
+         STPO.Unlock_RTS;
+      end if;
+
       Succeeded := Entry_Call.State = Cancelled;
 
       if Succeeded then
          Initialization.Undefer_Abort_Nestable (Self_ID);
       else
-         --  ????
+         --  ???
 
          Initialization.Undefer_Abort_Nestable (Self_ID);
 
@@ -456,13 +492,26 @@ package body System.Tasking.Entry_Calls is
          if Called_PO.Pending_Action then
             Called_PO.Pending_Action := False;
             Caller := STPO.Self;
+
+            if Single_Lock then
+               STPO.Lock_RTS;
+            end if;
+
             STPO.Write_Lock (Caller);
             Caller.New_Base_Priority := Called_PO.Old_Base_Priority;
             Initialization.Change_Base_Priority (Caller);
             STPO.Unlock (Caller);
+
+            if Single_Lock then
+               STPO.Unlock_RTS;
+            end if;
          end if;
 
          Unlock_Entries (Called_PO);
+
+         if Single_Lock then
+            STPO.Lock_RTS;
+         end if;
       end if;
    end Unlock_And_Update_Server;
 
@@ -483,106 +532,101 @@ package body System.Tasking.Entry_Calls is
          if Called_PO.Pending_Action then
             Called_PO.Pending_Action := False;
             Caller := STPO.Self;
+
+            if Single_Lock then
+               STPO.Lock_RTS;
+            end if;
+
             STPO.Write_Lock (Caller);
             Caller.New_Base_Priority := Called_PO.Old_Base_Priority;
             Initialization.Change_Base_Priority (Caller);
             STPO.Unlock (Caller);
+
+            if Single_Lock then
+               STPO.Unlock_RTS;
+            end if;
          end if;
 
          Unlock_Entries (Called_PO);
+
+         if Single_Lock then
+            STPO.Lock_RTS;
+         end if;
       end if;
    end Unlock_Server;
 
    -------------------------
-   -- Wait_For_Completion--
+   -- Wait_For_Completion --
    -------------------------
 
-   --  Call this only when holding Self_ID locked
-
-   --  If this is a conditional call, it should be cancelled when it
-   --  becomes abortable. This is checked in the loop below.
-
-   --  We do the same thing for Asynchronous_Call. Executing the following
-   --  loop will clear the Pending_Action field if there is no
-   --  Pending_Action. We want the call made from Cancel_Task_Entry_Call
-   --  to check the abortion level so that we make sure that the Cancelled
-   --  field reflect the status of an Asynchronous_Call properly.
-   --  This problem came up when the triggered statement and the abortable
-   --  part depend on entries of the same task. When a cancellation is
-   --  delivered, Undefer_Abort in the call made from abortable part
-   --  sets the Pending_Action bit to false. However, the call is actually
-   --  made to cancel the Asynchronous Call so that we need to check its
-   --  status here again. Otherwise we may end up waiting for a cancelled
-   --  call forever.
-
-   --  ????? .........
-   --  Recheck the logic of the above old comment.  It may be stale.
-
-   procedure Wait_For_Completion
-     (Self_ID    : Task_ID;
-      Entry_Call : Entry_Call_Link)
-   is
+   procedure Wait_For_Completion (Entry_Call : Entry_Call_Link) is
+      Self_Id : constant Task_ID := Entry_Call.Self;
    begin
-      pragma Assert (Self_ID = Entry_Call.Self);
-      Self_ID.Common.State := Entry_Caller_Sleep;
+      --  If this is a conditional call, it should be cancelled when it
+      --  becomes abortable. This is checked in the loop below.
+
+      if Parameters.Runtime_Traces then
+         Send_Trace_Info (W_Completion);
+      end if;
+
+      Self_Id.Common.State := Entry_Caller_Sleep;
 
       loop
-         Check_Pending_Actions_For_Entry_Call (Self_ID, Entry_Call);
+         Check_Pending_Actions_For_Entry_Call (Self_Id, Entry_Call);
          exit when Entry_Call.State >= Done;
-         STPO.Sleep (Self_ID, Entry_Caller_Sleep);
+         STPO.Sleep (Self_Id, Entry_Caller_Sleep);
       end loop;
 
-      Self_ID.Common.State := Runnable;
-      Utilities.Exit_One_ATC_Level (Self_ID);
+      Self_Id.Common.State := Runnable;
+      Utilities.Exit_One_ATC_Level (Self_Id);
+
+      if Parameters.Runtime_Traces then
+         Send_Trace_Info (M_Call_Complete);
+      end if;
    end Wait_For_Completion;
 
    --------------------------------------
    -- Wait_For_Completion_With_Timeout --
    --------------------------------------
 
-   --  This routine will lock Self_ID.
-
-   --  This procedure waits for the entry call to
-   --  be served, with a timeout.  It tries to cancel the
-   --  call if the timeout expires before the call is served.
-
-   --  If we wake up from the timed sleep operation here,
-   --  it may be for several possible reasons:
-
-   --  1) The entry call is done being served.
-   --  2) There is an abort or priority change to be served.
-   --  3) The timeout has expired (Timedout = True)
-   --  4) There has been a spurious wakeup.
-
-   --  Once the timeout has expired we may need to continue to wait if
-   --  the call is already being serviced. In that case, we want to go
-   --  back to sleep, but without any timeout. The variable Timedout is
-   --  used to control this. If the Timedout flag is set, we do not need
-   --  to STPO.Sleep with a timeout. We just sleep until we get a wakeup for
-   --  some status change.
-
-   --  The original call may have become abortable after waking up.
-   --  We want to check Check_Pending_Actions_For_Entry_Call again
-   --  in any case.
-
    procedure Wait_For_Completion_With_Timeout
-     (Self_ID     : Task_ID;
-      Entry_Call  : Entry_Call_Link;
+     (Entry_Call  : Entry_Call_Link;
       Wakeup_Time : Duration;
-      Mode        : Delay_Modes)
+      Mode        : Delay_Modes;
+      Yielded     : out Boolean)
    is
+      Self_Id  : constant Task_ID := Entry_Call.Self;
       Timedout : Boolean := False;
-      Yielded  : Boolean := False;
 
       use type Ada.Exceptions.Exception_Id;
 
    begin
-      Initialization.Defer_Abort_Nestable (Self_ID);
-      STPO.Write_Lock (Self_ID);
+      --  This procedure waits for the entry call to be served, with a timeout.
+      --  It tries to cancel the call if the timeout expires before the call is
+      --  served.
 
-      pragma Assert (Entry_Call.Self = Self_ID);
+      --  If we wake up from the timed sleep operation here, it may be for
+      --  several possible reasons:
+
+      --  1) The entry call is done being served.
+      --  2) There is an abort or priority change to be served.
+      --  3) The timeout has expired (Timedout = True)
+      --  4) There has been a spurious wakeup.
+
+      --  Once the timeout has expired we may need to continue to wait if the
+      --  call is already being serviced. In that case, we want to go back to
+      --  sleep, but without any timeout. The variable Timedout is used to
+      --  control this. If the Timedout flag is set, we do not need to
+      --  STPO.Sleep with a timeout. We just sleep until we get a wakeup for
+      --  some status change.
+
+      --  The original call may have become abortable after waking up. We want
+      --  to check Check_Pending_Actions_For_Entry_Call again in any case.
+
       pragma Assert (Entry_Call.Mode = Timed_Call);
-      Self_ID.Common.State := Entry_Caller_Sleep;
+
+      Yielded := False;
+      Self_Id.Common.State := Entry_Caller_Sleep;
 
       --  Looping is necessary in case the task wakes up early from the
       --  timed sleep, due to a "spurious wakeup". Spurious wakeups are
@@ -591,22 +635,29 @@ package body System.Tasking.Entry_Calls is
       --  when the condition is signaled. See the same loop in the
       --  ordinary Wait_For_Completion, above.
 
+      if Parameters.Runtime_Traces then
+         Send_Trace_Info (WT_Completion, Wakeup_Time);
+      end if;
+
       loop
-         Check_Pending_Actions_For_Entry_Call (Self_ID, Entry_Call);
+         Check_Pending_Actions_For_Entry_Call (Self_Id, Entry_Call);
          exit when Entry_Call.State >= Done;
 
-         STPO.Timed_Sleep (Self_ID, Wakeup_Time, Mode,
+         STPO.Timed_Sleep (Self_Id, Wakeup_Time, Mode,
            Entry_Caller_Sleep, Timedout, Yielded);
 
          if Timedout then
+            if Parameters.Runtime_Traces then
+               Send_Trace_Info (E_Timeout);
+            end if;
 
             --  Try to cancel the call (see Try_To_Cancel_Entry_Call for
             --  corresponding code in the ATC case).
 
             Entry_Call.Cancellation_Attempted := True;
 
-            if Self_ID.Pending_ATC_Level >= Entry_Call.Level then
-               Self_ID.Pending_ATC_Level := Entry_Call.Level - 1;
+            if Self_Id.Pending_ATC_Level >= Entry_Call.Level then
+               Self_Id.Pending_ATC_Level := Entry_Call.Level - 1;
             end if;
 
             --  The following loop is the same as the loop and exit code
@@ -615,39 +666,13 @@ package body System.Tasking.Entry_Calls is
             --  has actually completed or been cancelled successfully.
 
             loop
-               Check_Pending_Actions_For_Entry_Call (Self_ID, Entry_Call);
+               Check_Pending_Actions_For_Entry_Call (Self_Id, Entry_Call);
                exit when Entry_Call.State >= Done;
-               STPO.Sleep (Self_ID, Entry_Caller_Sleep);
+               STPO.Sleep (Self_Id, Entry_Caller_Sleep);
             end loop;
 
-            Self_ID.Common.State := Runnable;
-            Utilities.Exit_One_ATC_Level (Self_ID);
-
-            STPO.Unlock (Self_ID);
-
-            if Entry_Call.State = Cancelled then
-               Initialization.Undefer_Abort_Nestable (Self_ID);
-            else
-               --  ????
-
-               Initialization.Undefer_Abort_Nestable (Self_ID);
-
-               --  Ideally, abort should no longer be deferred at this
-               --  point, so we should be able to call Check_Exception.
-               --  The loop below should be considered temporary,
-               --  to work around the possiblility that abort may be
-               --  deferred more than one level deep.
-
-               if Entry_Call.Exception_To_Raise /=
-                 Ada.Exceptions.Null_Id then
-
-                  while Self_ID.Deferral_Level > 0 loop
-                     Initialization.Undefer_Abort_Nestable (Self_ID);
-                  end loop;
-
-                  Entry_Calls.Check_Exception (Self_ID, Entry_Call);
-               end if;
-            end if;
+            Self_Id.Common.State := Runnable;
+            Utilities.Exit_One_ATC_Level (Self_Id);
 
             return;
          end if;
@@ -656,31 +681,28 @@ package body System.Tasking.Entry_Calls is
       --  This last part is the same as ordinary Wait_For_Completion,
       --  and is only executed if the call completed without timing out.
 
-      Self_ID.Common.State := Runnable;
-      Utilities.Exit_One_ATC_Level (Self_ID);
-      STPO.Unlock (Self_ID);
-
-      Initialization.Undefer_Abort_Nestable (Self_ID);
-
-      if not Yielded then
-         STPO.Yield;
+      if Parameters.Runtime_Traces then
+         Send_Trace_Info (M_Call_Complete);
       end if;
+
+      Self_Id.Common.State := Runnable;
+      Utilities.Exit_One_ATC_Level (Self_Id);
    end Wait_For_Completion_With_Timeout;
 
    --------------------------
    -- Wait_Until_Abortable --
    --------------------------
 
-   --  Wait to start the abortable part of an async. select statement
-   --  until the trigger entry call becomes abortable.
-
    procedure Wait_Until_Abortable
-     (Self_ID   : Task_ID;
-      Call      : Entry_Call_Link)
-   is
+     (Self_ID : Task_ID;
+      Call    : Entry_Call_Link) is
    begin
       pragma Assert (Self_ID.ATC_Nesting_Level > 0);
       pragma Assert (Call.Mode = Asynchronous_Call);
+
+      if Parameters.Runtime_Traces then
+         Send_Trace_Info (W_Completion);
+      end if;
 
       STPO.Write_Lock (Self_ID);
       Self_ID.Common.State := Entry_Caller_Sleep;
@@ -693,21 +715,10 @@ package body System.Tasking.Entry_Calls is
 
       Self_ID.Common.State := Runnable;
       STPO.Unlock (Self_ID);
+
+      if Parameters.Runtime_Traces then
+         Send_Trace_Info (M_Call_Complete);
+      end if;
    end Wait_Until_Abortable;
-
-   --  It might seem that we should be holding the server's lock when
-   --  we test Call.State above.
-
-   --  In an earlier version, the code above temporarily unlocked the
-   --  caller and locked the server just for checking Call.State.
-   --  The unlocking of the caller risked missing a wakeup
-   --  (an error) and locking the server had no apparent value.
-   --  We should not need the server's lock, since once Call.State
-   --  is set to Was_Abortable or beyond, it never goes back below
-   --  Was_Abortable until this task starts another entry call.
-
-   --  ????
-   --  It seems that other calls to Lock_Server may also risk missing
-   --  wakeups.  We need to check that they do not have this problem.
 
 end System.Tasking.Entry_Calls;

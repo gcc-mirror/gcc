@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -1032,6 +1032,60 @@ package body Sem_Ch8 is
       Inst_Node   : Node_Id := Empty;
       Save_83     : Boolean := Ada_83;
 
+      function Original_Subprogram (Subp : Entity_Id) return Entity_Id;
+      --  Find renamed entity when the declaration is a renaming_as_body
+      --  and the renamed entity may itself be a renaming_as_body. Used to
+      --  enforce rule that a renaming_as_body is illegal if the declaration
+      --  occurs before the subprogram it completes is frozen, and renaming
+      --  indirectly renames the subprogram itself.(Defect Report 8652/0027).
+
+      -------------------------
+      -- Original_Subprogram --
+      -------------------------
+
+      function Original_Subprogram (Subp : Entity_Id) return Entity_Id is
+         Orig_Decl : Node_Id;
+         Orig_Subp : Entity_Id;
+
+      begin
+         --  First case: renamed entity is itself a renaming
+
+         if Present (Alias (Subp)) then
+            return Alias (Subp);
+
+         elsif
+           Nkind (Unit_Declaration_Node (Subp)) = N_Subprogram_Declaration
+             and then Present
+              (Corresponding_Body (Unit_Declaration_Node (Subp)))
+         then
+            --  Check if renamed entity is a renaming_as_body
+
+            Orig_Decl :=
+              Unit_Declaration_Node
+                (Corresponding_Body (Unit_Declaration_Node (Subp)));
+
+            if Nkind (Orig_Decl) = N_Subprogram_Renaming_Declaration then
+               Orig_Subp := Entity (Name (Orig_Decl));
+
+               if Orig_Subp = Rename_Spec then
+
+                  --  Circularity detected.
+
+                  return Orig_Subp;
+
+               else
+                  return (Original_Subprogram (Orig_Subp));
+               end if;
+            else
+               return Subp;
+            end if;
+         else
+            return Subp;
+         end if;
+      end Original_Subprogram;
+
+   --  Start of procesing for Analyze_Subprogram_Renaming
+
    begin
       --  We must test for the attribute renaming case before the Analyze
       --  call because otherwise Sem_Attr will complain that the attribute
@@ -1225,14 +1279,23 @@ package body Sem_Ch8 is
             Generate_Reference (Rename_Spec, Defining_Entity (Spec), 'b');
             Style.Check_Identifier (Defining_Entity (Spec), Rename_Spec);
 
-            if not Is_Frozen (Rename_Spec)
-              and then not Has_Convention_Pragma (Rename_Spec)
-            then
-               Set_Convention (New_S, Convention (Old_S));
+            if not Is_Frozen (Rename_Spec) then
+               if not Has_Convention_Pragma (Rename_Spec) then
+                  Set_Convention (New_S, Convention (Old_S));
+               end if;
+
+               if Ekind (Old_S) /= E_Operator then
+                  Check_Mode_Conformant (New_S, Old_S, Spec);
+               end if;
+
+               if Original_Subprogram (Old_S) = Rename_Spec then
+                  Error_Msg_N ("unfrozen subprogram cannot rename itself ", N);
+               end if;
+            else
+               Check_Subtype_Conformant (New_S, Old_S, Spec);
             end if;
 
             Check_Frozen_Renaming (N, Rename_Spec);
-            Check_Subtype_Conformant (New_S, Old_S, Spec);
 
          elsif Ekind (Old_S) /= E_Operator then
             Check_Mode_Conformant (New_S, Old_S);
@@ -1382,7 +1445,7 @@ package body Sem_Ch8 is
       Pack_Name : Node_Id;
       Pack      : Entity_Id;
 
-      function In_Previous_With_Clause (P : Entity_Id) return Boolean;
+      function In_Previous_With_Clause return Boolean;
       --  For use clauses in a context clause, the indicated package may
       --  be visible and yet illegal, if it did not appear in a previous
       --  with clause.
@@ -1391,7 +1454,7 @@ package body Sem_Ch8 is
       -- In_Previous_With_Clause --
       -----------------------------
 
-      function In_Previous_With_Clause (P : Entity_Id) return Boolean is
+      function In_Previous_With_Clause return Boolean is
          Item : Node_Id;
 
       begin
@@ -1488,7 +1551,7 @@ package body Sem_Ch8 is
 
             elsif Nkind (Parent (N)) = N_Compilation_Unit
               and then Nkind (Pack_Name) /= N_Expanded_Name
-              and then not In_Previous_With_Clause (Pack)
+              and then not In_Previous_With_Clause
             then
                Error_Msg_N ("package is not directly visible", Pack_Name);
 
@@ -1524,7 +1587,7 @@ package body Sem_Ch8 is
          Find_Type (Id);
 
          if Entity (Id) /= Any_Type then
-            Use_One_Type (Id, N);
+            Use_One_Type (Id);
          end if;
 
          Next (Id);
@@ -2356,6 +2419,15 @@ package body Sem_Ch8 is
                   else
                      Error_Msg_N ("non-visible declaration#!", N);
                   end if;
+
+                  --  Set entity and its containing package as referenced. We
+                  --  can't be sure of this, but this seems a better choice
+                  --  to avoid unused entity messages.
+
+                  if Comes_From_Source (Ent) then
+                     Set_Referenced (Ent);
+                     Set_Referenced (Cunit_Entity (Get_Source_Unit (Ent)));
+                  end if;
                end if;
 
                <<Continue>>
@@ -2883,8 +2955,8 @@ package body Sem_Ch8 is
    --  the scope of its declaration.
 
    procedure Find_Expanded_Name (N : Node_Id) is
-      Candidate : Entity_Id := Empty;
-      Selector  : constant Node_Id    := Selector_Name (N);
+      Selector  : constant Node_Id := Selector_Name (N);
+      Candidate : Entity_Id        := Empty;
       P_Name    : Entity_Id;
       O_Name    : Entity_Id;
       Id        : Entity_Id;
@@ -3158,8 +3230,17 @@ package body Sem_Ch8 is
       end if;
 
       Change_Selected_Component_To_Expanded_Name (N);
-      Set_Entity_With_Style_Check (N, Id);
-      Generate_Reference (Id, N);
+
+      --  Do style check and generate reference, but skip both steps if this
+      --  entity has homonyms, since we may not have the right homonym set
+      --  yet. The proper homonym will be set during the resolve phase.
+
+      if Has_Homonym (Id) then
+         Set_Entity (N, Id);
+      else
+         Set_Entity_With_Style_Check (N, Id);
+         Generate_Reference (Id, N);
+      end if;
 
       if Is_Type (Id) then
          Set_Etype (N, Id);
@@ -3952,7 +4033,7 @@ package body Sem_Ch8 is
          end if;
       end if;
 
-      if Present (Etype (N)) then
+      if Present (Etype (N)) and then Comes_From_Source (N) then
          if Is_Fixed_Point_Type (Etype (N)) then
             Check_Restriction (No_Fixed_Point, N);
          elsif Is_Floating_Point_Type (Etype (N)) then
@@ -4340,7 +4421,7 @@ package body Sem_Ch8 is
             while Present (P) loop
 
                if Entity (P) /= Any_Type then
-                  Use_One_Type (P, U);
+                  Use_One_Type (P);
                end if;
 
                Next (P);
@@ -4962,7 +5043,7 @@ package body Sem_Ch8 is
 
                while Present (Id) loop
                   if Entity (Id) /= Any_Type then
-                     Use_One_Type (Id, Decl);
+                     Use_One_Type (Id);
                   end if;
 
                   Next (Id);
@@ -5137,7 +5218,7 @@ package body Sem_Ch8 is
    -- Use_One_Type --
    ------------------
 
-   procedure Use_One_Type (Id : Node_Id; N : Node_Id) is
+   procedure Use_One_Type (Id : Node_Id) is
       T       : Entity_Id;
       Op_List : Elist_Id;
       Elmt    : Elmt_Id;
@@ -5173,7 +5254,6 @@ package body Sem_Ch8 is
             Next_Elmt (Elmt);
          end loop;
       end if;
-
    end Use_One_Type;
 
    ----------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.43 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -40,6 +40,33 @@ package body Output is
    Current_FD : File_Descriptor := Standout;
    --  File descriptor for current output
 
+   Special_Output_Proc : Output_Proc := null;
+   --  Record argument to last call to Set_Special_Output. If this is
+   --  non-null, then we are in special output mode.
+
+   -------------------------
+   -- Line Buffer Control --
+   -------------------------
+
+   --  Note: the following buffer and column position are maintained by
+   --  the subprograms defined in this package, and are not normally
+   --  directly modified or accessed by a client. However, a client is
+   --  permitted to modify these values, using the knowledge that only
+   --  Write_Eol actually generates any output.
+
+   Buffer_Max : constant := 8192;
+   Buffer     : String (1 .. Buffer_Max + 1);
+   --  Buffer used to build output line. We do line buffering because it
+   --  is needed for the support of the debug-generated-code option (-gnatD).
+   --  Historically it was first added because on VMS, line buffering is
+   --  needed with certain file formats. So in any case line buffering must
+   --  be retained for this purpose, even if other reasons disappear. Note
+   --  any attempt to write more output to a line than can fit in the buffer
+   --  will be silently ignored.
+
+   Next_Column : Pos range 1 .. Buffer'Length + 1 := 1;
+   --  Column about to be written.
+
    -----------------------
    -- Local_Subprograms --
    -----------------------
@@ -47,24 +74,74 @@ package body Output is
    procedure Flush_Buffer;
    --  Flush buffer if non-empty and reset column counter
 
+   ---------------------------
+   -- Cancel_Special_Output --
+   ---------------------------
+
+   procedure Cancel_Special_Output is
+   begin
+      Special_Output_Proc := null;
+   end Cancel_Special_Output;
+
    ------------------
    -- Flush_Buffer --
    ------------------
 
    procedure Flush_Buffer is
-      Len : constant Natural := Natural (Column - 1);
+      Len : constant Natural := Natural (Next_Column - 1);
 
    begin
       if Len /= 0 then
-         if Len /= Write (Current_FD, Buffer'Address, Len) then
-            Set_Standard_Error;
-            Write_Line ("fatal error: disk full");
-            OS_Exit (2);
+
+         --  If Special_Output_Proc has been set, then use it
+
+         if Special_Output_Proc /= null then
+            Special_Output_Proc.all (Buffer (1 .. Len));
+
+         --  If output is not set, then output to either standard output
+         --  or standard error.
+
+         elsif Len /= Write (Current_FD, Buffer'Address, Len) then
+
+            --  If there are errors with standard error, just quit
+
+            if Current_FD = Standerr then
+               OS_Exit (2);
+
+            --  Otherwise, set the output to standard error before
+            --  reporting a failure and quitting.
+
+            else
+               Current_FD := Standerr;
+               Next_Column := 1;
+               Write_Line ("fatal error: disk full");
+               OS_Exit (2);
+            end if;
          end if;
 
-         Column := 1;
+         --  Buffer is now empty
+
+         Next_Column := 1;
       end if;
    end Flush_Buffer;
+
+   ------------
+   -- Column --
+   ------------
+
+   function Column return Nat is
+   begin
+      return Next_Column;
+   end Column;
+
+   ------------------------
+   -- Set_Special_Output --
+   ------------------------
+
+   procedure Set_Special_Output (P : Output_Proc) is
+   begin
+      Special_Output_Proc := P;
+   end Set_Special_Output;
 
    ------------------------
    -- Set_Standard_Error --
@@ -72,9 +149,12 @@ package body Output is
 
    procedure Set_Standard_Error is
    begin
-      Flush_Buffer;
+      if Special_Output_Proc = null then
+         Flush_Buffer;
+         Next_Column := 1;
+      end if;
+
       Current_FD := Standerr;
-      Column := 1;
    end Set_Standard_Error;
 
    -------------------------
@@ -83,9 +163,12 @@ package body Output is
 
    procedure Set_Standard_Output is
    begin
-      Flush_Buffer;
+      if Special_Output_Proc = null then
+         Flush_Buffer;
+         Next_Column := 1;
+      end if;
+
       Current_FD := Standout;
-      Column := 1;
    end Set_Standard_Output;
 
    -------
@@ -155,9 +238,9 @@ package body Output is
 
    procedure Write_Char (C : Character) is
    begin
-      if Column < Buffer'Length then
-         Buffer (Natural (Column)) := C;
-         Column := Column + 1;
+      if Next_Column < Buffer'Length then
+         Buffer (Natural (Next_Column)) := C;
+         Next_Column := Next_Column + 1;
       end if;
    end Write_Char;
 
@@ -167,8 +250,8 @@ package body Output is
 
    procedure Write_Eol is
    begin
-      Buffer (Natural (Column)) := ASCII.LF;
-      Column := Column + 1;
+      Buffer (Natural (Next_Column)) := ASCII.LF;
+      Next_Column := Next_Column + 1;
       Flush_Buffer;
    end Write_Eol;
 

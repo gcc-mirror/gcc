@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.128 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -214,31 +214,31 @@ package body Treepr is
    --  printed lines.
 
    --------
-   -- PE --
+   -- pe --
    --------
 
-   procedure PE (E : Elist_Id) is
+   procedure pe (E : Elist_Id) is
    begin
       Print_Tree_Elist (E);
-   end PE;
+   end pe;
 
    --------
-   -- PL --
+   -- pl --
    --------
 
-   procedure PL (L : List_Id) is
+   procedure pl (L : List_Id) is
    begin
       Print_Tree_List (L);
-   end PL;
+   end pl;
 
    --------
-   -- PN --
+   -- pn --
    --------
 
-   procedure PN (N : Node_Id) is
+   procedure pn (N : Node_Id) is
    begin
       Print_Tree_Node (N);
-   end PN;
+   end pn;
 
    ----------------
    -- Print_Char --
@@ -1342,13 +1342,13 @@ package body Treepr is
    end Print_Tree_Node;
 
    --------
-   -- PT --
+   -- pt --
    --------
 
-   procedure PT (N : Node_Id) is
+   procedure pt (N : Node_Id) is
    begin
       Print_Node_Subtree (N);
-   end PT;
+   end pt;
 
    -------------------
    -- Serial_Number --

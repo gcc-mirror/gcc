@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.3 $                              --
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -82,7 +82,7 @@ package body Ada.Wide_Text_IO.Modular_Aux is
       end if;
 
       Item := Scan_Long_Long_Unsigned (Buf, Ptr'Access, Stop);
-      Check_End_Of_Field (File, Buf, Stop, Ptr, Width);
+      Check_End_Of_Field (Buf, Stop, Ptr, Width);
    end Get_LLU;
 
    -------------
@@ -107,7 +107,7 @@ package body Ada.Wide_Text_IO.Modular_Aux is
       end if;
 
       Item := Scan_Unsigned (Buf, Ptr'Access, Stop);
-      Check_End_Of_Field (File, Buf, Stop, Ptr, Width);
+      Check_End_Of_Field (Buf, Stop, Ptr, Width);
    end Get_Uns;
 
    --------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 2001, Free Software Foundation, Inc.            --
 --                                                                          --
@@ -37,6 +37,8 @@ package Fmap is
    --  Initialize the mappings from the mapping file File_Name.
    --  If the mapping file is incorrect (non existent file, truncated file,
    --  duplicate entries), output a warning and do not initialize the mappings.
+   --  Record the state of the mapping tables in case Update is called
+   --  later on.
 
    function Mapped_Path_Name (File : File_Name_Type) return File_Name_Type;
    --  Return the path name mapped to the file name File.
@@ -51,5 +53,11 @@ package Fmap is
       File_Name : File_Name_Type;
       Path_Name : File_Name_Type);
    --  Add mapping of Unit_Name to File_Name and of File_Name to Path_Name
+
+   procedure Update_Mapping_File (File_Name : String);
+   --  If Add_To_File_Map has been called (after Initialize or any time
+   --  if Initialize has not been called), append the new entries to the
+   --  to the mapping file.
+   --  What is the significance of the parameter File_Name ???
 
 end Fmap;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -35,9 +35,12 @@
 
 with Debug;   use Debug;
 with Opt;
-with Output;  use Output;
-with System;  use System;
-with Tree_IO; use Tree_IO;
+with Output;        use Output;
+pragma Elaborate_All (Output);
+with System;        use System;
+with Tree_IO;       use Tree_IO;
+with System.Memory; use System.Memory;
+with System.Address_To_Access_Conversions;
 
 package body Table is
    package body Table is
@@ -48,9 +51,6 @@ package body Table is
       Length : Int := 0;
       --  Number of entries in currently allocated table. The value of zero
       --  ensures that we initially allocate the table.
-
-      procedure free (T : Table_Ptr);
-      pragma Import (C, free);
 
       -----------------------
       -- Local Subprograms --
@@ -64,6 +64,18 @@ package body Table is
       function Tree_Get_Table_Address return Address;
       --  Return Null_Address if the table length is zero,
       --  Table (First)'Address if not.
+
+      package Table_Conversions is
+         new System.Address_To_Access_Conversions (Big_Table_Type);
+      --  Address and Access conversions for a Table object.
+
+      function To_Address (Table : Table_Ptr) return Address;
+      pragma Inline (To_Address);
+      --  Returns the Address for the Table object.
+
+      function To_Pointer (Table : Address) return Table_Ptr;
+      pragma Inline (To_Pointer);
+      --  Returns the Access pointer for the Table object.
 
       ------------
       -- Append --
@@ -90,7 +102,7 @@ package body Table is
 
       procedure Free is
       begin
-         free (Table);
+         Free (To_Address (Table));
          Table := null;
          Length := 0;
       end Free;
@@ -151,19 +163,7 @@ package body Table is
       ----------------
 
       procedure Reallocate is
-
-         function realloc
-           (memblock : Table_Ptr;
-            size     : size_t)
-            return     Table_Ptr;
-         pragma Import (C, realloc);
-
-         function malloc
-           (size     : size_t)
-            return     Table_Ptr;
-         pragma Import (C, malloc);
-
-         New_Size : size_t;
+         New_Size : Memory.size_t;
 
       begin
          if Max < Last_Val then
@@ -191,17 +191,16 @@ package body Table is
          end if;
 
          New_Size :=
-           size_t ((Max - Min + 1) *
-                   (Table_Type'Component_Size / Storage_Unit));
+           Memory.size_t ((Max - Min + 1) *
+                          (Table_Type'Component_Size / Storage_Unit));
 
          if Table = null then
-            Table := malloc (New_Size);
+            Table := To_Pointer (Alloc (New_Size));
 
          elsif New_Size > 0 then
             Table :=
-              realloc
-                (memblock => Table,
-                 size     => New_Size);
+              To_Pointer (Realloc (Ptr  => To_Address (Table),
+                                   Size => New_Size));
          end if;
 
          if Length /= 0 and then Table = null then
@@ -231,7 +230,7 @@ package body Table is
 
       procedure Restore (T : Saved_Table) is
       begin
-         free (Table);
+         Free (To_Address (Table));
          Last_Val := T.Last_Val;
          Max      := T.Max;
          Table    := T.Table;
@@ -288,6 +287,25 @@ package body Table is
             end if;
          end if;
       end Set_Last;
+
+      ----------------
+      -- To_Address --
+      ----------------
+
+      function To_Address (Table : Table_Ptr) return Address is
+      begin
+         return Table_Conversions.To_Address
+           (Table_Conversions.Object_Pointer (Table));
+      end To_Address;
+
+      ----------------
+      -- To_Pointer --
+      ----------------
+
+      function To_Pointer (Table : Address) return Table_Ptr is
+      begin
+         return Table_Ptr (Table_Conversions.To_Pointer (Table));
+      end To_Pointer;
 
       ----------------------------
       -- Tree_Get_Table_Address --

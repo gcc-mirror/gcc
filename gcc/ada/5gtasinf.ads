@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.4 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,7 @@
 
 with System.OS_Interface;
 with Unchecked_Deallocation;
+
 package System.Task_Info is
 pragma Elaborate_Body;
 --  To ensure that a body is allowed
@@ -49,10 +50,10 @@ pragma Elaborate_Body;
    ---------------------------------------------------------
 
    --  The SGI implementation of the GNU Low-Level Interface (GNULLI)
-   --  implements each Ada task as a Posix thread (Pthread).  The SGI
+   --  implements each Ada task as a Posix thread (Pthread). The SGI
    --  Pthread library distributes threads across one or more processes
-   --  that are members of a common share group.  Irix distributes
-   --  processes across the available CPUs on a given machine.  The
+   --  that are members of a common share group. Irix distributes
+   --  processes across the available CPUs on a given machine. The
    --  pragma Task_Info provides the mechanism to control the distribution
    --  of tasks to sprocs, and sprocs to processors.
 
@@ -103,19 +104,37 @@ pragma Elaborate_Body;
    NO_RESOURCES : constant Resource_Vector_T := (others => False);
 
    generic
-      type Resource_T is (<>); -- Discrete type up to 32 entries
+      type Resource_T is (<>);
+      --  Discrete type up to 32 entries
+
    package Resource_Vector_Functions is
-      function "+"(R : Resource_T)
+      function "+"
+        (R    : Resource_T)
          return Resource_Vector_T;
-      function "+"(R1, R2 : Resource_T)
+
+      function "+"
+        (R1   : Resource_T;
+         R2   : Resource_T)
          return Resource_Vector_T;
-      function "+"(R : Resource_T; S : Resource_Vector_T)
+
+      function "+"
+        (R    : Resource_T;
+         S    : Resource_Vector_T)
          return Resource_Vector_T;
-      function "+"(S : Resource_Vector_T; R : Resource_T)
+
+      function "+"
+        (S    : Resource_Vector_T;
+         R    : Resource_T)
          return Resource_Vector_T;
-      function "+"(S1, S2 : Resource_Vector_T)
+
+      function "+"
+        (S1   : Resource_Vector_T;
+         S2   : Resource_Vector_T)
          return Resource_Vector_T;
-      function "-"(S : Resource_Vector_T; R : Resource_T)
+
+      function "-"
+        (S    : Resource_Vector_T;
+         R    : Resource_T)
          return Resource_Vector_T;
    end Resource_Vector_Functions;
 
@@ -129,7 +148,7 @@ pragma Elaborate_Body;
 
    ANY_CPU : constant CPU_Number := CPU_Number'First;
 
-   --
+   type Non_Degrading_Priority is range 0 .. 255;
    --  Specification of IRIX Non Degrading Priorities.
    --
    --  WARNING: IRIX priorities have the reverse meaning of Ada priorities.
@@ -138,24 +157,22 @@ pragma Elaborate_Body;
    --
    --  See the schedctl(2) man page for a complete discussion of non-degrading
    --  priorities.
-   --
-   type Non_Degrading_Priority is range 0 .. 255;
 
-   --  these priorities are higher than ALL normal user process priorities
-   NDPHIMAX   : constant Non_Degrading_Priority := 30;
-   NDPHIMIN   : constant Non_Degrading_Priority := 39;
+   NDPHIMAX : constant Non_Degrading_Priority := 30;
+   NDPHIMIN : constant Non_Degrading_Priority := 39;
+   --  These priorities are higher than ALL normal user process priorities
 
    subtype NDP_High is Non_Degrading_Priority range NDPHIMAX .. NDPHIMIN;
 
-   --  these priorities overlap normal user process priorities
    NDPNORMMAX : constant Non_Degrading_Priority := 40;
    NDPNORMMIN : constant Non_Degrading_Priority := 127;
+   --  These priorities overlap normal user process priorities
 
    subtype NDP_Norm is Non_Degrading_Priority range NDPNORMMAX .. NDPNORMMIN;
 
-   --  these priorities are below ALL normal user process priorities
-   NDPLOMAX   : constant Non_Degrading_Priority := 128;
-   NDPLOMIN   : constant Non_Degrading_Priority := 254;
+   NDPLOMAX : constant Non_Degrading_Priority := 128;
+   NDPLOMIN : constant Non_Degrading_Priority := 254;
+   --  These priorities are below ALL normal user process priorities
 
    NDP_NONE   : constant Non_Degrading_Priority := 255;
 
@@ -168,17 +185,16 @@ pragma Elaborate_Body;
        DATLOCK     --  Lock data segment into memory (data lock)
       );
 
-   type Sproc_Attributes is
-      record
-         Sproc_Resources : Resource_Vector_T      := NO_RESOURCES;
-         CPU             : CPU_Number             := ANY_CPU;
-         Resident        : Page_Locking           := NOLOCK;
-         NDPRI           : Non_Degrading_Priority := NDP_NONE;
+   type Sproc_Attributes is record
+      Sproc_Resources : Resource_Vector_T      := NO_RESOURCES;
+      CPU             : CPU_Number             := ANY_CPU;
+      Resident        : Page_Locking           := NOLOCK;
+      NDPRI           : Non_Degrading_Priority := NDP_NONE;
+--  ??? why is that commented out, should it be removed ?
 --       Sproc_Slice     : Duration               := 0.0;
 --       Deadline_Period : Duration               := 0.0;
 --       Deadline_Alloc  : Duration               := 0.0;
-
-      end record;
+   end record;
 
    Default_Sproc_Attributes : constant Sproc_Attributes :=
       (NO_RESOURCES, ANY_CPU, NOLOCK, NDP_NONE);
@@ -190,10 +206,8 @@ pragma Elaborate_Body;
       Resident        : Page_Locking           := NOLOCK;
       NDPRI           : Non_Degrading_Priority := NDP_NONE)
       return            sproc_t;
-   --
-   --  Allocates a sproc_t controll structure and creates the
+   --  Allocates a sproc_t control structure and creates the
    --  corresponding sproc.
-   --
 
    Invalid_CPU_Number : exception;
    Permission_Error   : exception;
@@ -203,17 +217,18 @@ pragma Elaborate_Body;
    -- Thread Attributes --
    -----------------------
 
-   type Thread_Attributes (Bound_To_Sproc : Boolean) is
-      record
-         Thread_Resources : Resource_Vector_T := NO_RESOURCES;
-         Thread_Timeslice : Duration          := 0.0;
-         case Bound_To_Sproc is
-            when False =>
-               null;
-            when True   =>
-               Sproc : sproc_t;
-         end case;
-      end record;
+   type Thread_Attributes (Bound_To_Sproc : Boolean) is record
+      Thread_Resources : Resource_Vector_T := NO_RESOURCES;
+
+      Thread_Timeslice : Duration          := 0.0;
+
+      case Bound_To_Sproc is
+         when False =>
+            null;
+         when True   =>
+            Sproc : sproc_t;
+      end case;
+   end record;
 
    Default_Thread_Attributes : constant Thread_Attributes :=
      (False, NO_RESOURCES, 0.0);

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.50 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -85,7 +85,7 @@ package Ada.Exceptions is
    --    PID=nnnn
    --    0xyyyyyyyy 0xyyyyyyyy ...
    --
-   --  The lines are separated by an ASCII.CR/ASCII.LF sequence.
+   --  The lines are separated by a ASCII.LF character
    --  The nnnn is the partition Id given as decimal digits.
    --  The 0x... line represents traceback program counter locations,
    --  in order with the first one being the exception location.
@@ -100,7 +100,7 @@ package Ada.Exceptions is
 
    function Save_Occurrence
      (Source : Exception_Occurrence)
-      return Exception_Occurrence_Access;
+      return   Exception_Occurrence_Access;
 
 private
    package SSL renames System.Standard_Library;

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.56 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -289,10 +289,7 @@ package Exp_Ch9 is
    --  Given a protected operation node (a subprogram or entry body),
    --  find the following node in the declarations list.
 
-   procedure Set_Discriminals
-     (Dec : Node_Id;
-      Op  : Node_Id;
-      Loc : Source_Ptr);
+   procedure Set_Discriminals (Dec : Node_Id);
    --  Replace discriminals in a protected type for use by the
    --  next protected operation on the type. Each operation needs a
    --  new set of discirminals, since it needs a unique renaming of

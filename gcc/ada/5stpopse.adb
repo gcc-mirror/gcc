@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.2 $                             --
+--                             $Revision$
 --                                                                          --
---            Copyright (C) 1991-1998, Florida State University             --
+--            Copyright (C) 1992-2002, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -139,6 +139,17 @@ separate (System.Task_Primitives.Operations)
 --  been elaborated.
 
 function Self return Task_ID is
+   ATCB_Magic_Code : constant := 16#ADAADAAD#;
+   --  This is used to allow us to catch attempts to call Self
+   --  from outside an Ada task, with high probability.
+   --  For an Ada task, Task_Wrapper.Magic_Number = ATCB_Magic_Code.
+
+   type Iptr is access Interfaces.C.unsigned;
+   function To_Iptr is new Unchecked_Conversion (Interfaces.C.unsigned, Iptr);
+
+   type Ptr is access Task_ID;
+   function To_Ptr is new Unchecked_Conversion (Interfaces.C.unsigned, Ptr);
+
    X      : Ptr;
    Result : Interfaces.C.int;
 

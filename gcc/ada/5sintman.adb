@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.21 $                            --
+--                             $Revision$                            --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -173,13 +173,6 @@ begin
       act.sa_mask := mask;
 
       Keep_Unmasked (Abort_Task_Interrupt) := True;
-      Keep_Unmasked (SIGXCPU) := True;
-      Keep_Unmasked (SIGFPE) := True;
-      Result :=
-        sigaction
-        (Signal (SIGFPE), act'Unchecked_Access,
-         old_act'Unchecked_Access);
-      pragma Assert (Result = 0);
 
       --  By keeping SIGINT unmasked, allow the user to do a Ctrl-C, but in the
       --  same time, disable the ability of handling this signal
@@ -191,17 +184,13 @@ begin
          Keep_Unmasked (SIGINT) := True;
       end if;
 
-      for J in
-        Exception_Interrupts'First + 1 .. Exception_Interrupts'Last loop
+      for J in Exception_Interrupts'Range loop
          Keep_Unmasked (Exception_Interrupts (J)) := True;
-
-         if Unreserve_All_Interrupts = 0 then
-            Result :=
-              sigaction
-              (Signal (Exception_Interrupts (J)), act'Unchecked_Access,
-               old_act'Unchecked_Access);
-            pragma Assert (Result = 0);
-         end if;
+         Result :=
+           sigaction
+           (Signal (Exception_Interrupts (J)), act'Unchecked_Access,
+            old_act'Unchecked_Access);
+         pragma Assert (Result = 0);
       end loop;
 
       for J in Unmasked'Range loop

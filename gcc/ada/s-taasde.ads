@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.1 $
+--                             $Revision$
 --                                                                          --
---           Copyright (C) 1998-1999 Ada Core Technologies, Inc.            --
+--          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the procedures to implements timeouts (delays) on
---  asynchronous select statements.
+--  This package contains the procedures to implements timeouts (delays)
+--  for asynchronous select statements.
 
 --  Note: the compiler generates direct calls to this interface, via Rtsfind.
 --  Any changes to this interface may require corresponding compiler changes.

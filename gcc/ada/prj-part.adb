@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--          Copyright (C) 2001-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,8 +51,6 @@ package body Prj.Part is
 
    Dir_Sep  : Character renames GNAT.OS_Lib.Directory_Separator;
 
-   Project_File_Extension : String := ".gpr";
-
    Project_Path : String_Access;
    --  The project path; initialized during package elaboration.
 
@@ -87,13 +85,6 @@ package body Prj.Part is
    --  Parse a project file.
    --  Recursive procedure: it calls itself for imported and
    --  modified projects.
-
-   function Path_Name_Of
-     (File_Name : String;
-      Directory : String)
-      return      String;
-   --  Returns the path name of a (non project) file.
-   --  Returns an empty string if file cannot be found.
 
    function Project_Path_Name_Of
      (Project_File_Name : String;
@@ -166,18 +157,13 @@ package body Prj.Part is
 
       declare
          Path_Name : constant String :=
-           Project_Path_Name_Of (Project_File_Name,
-                                 Directory   => Current_Directory);
+                       Project_Path_Name_Of (Project_File_Name,
+                                             Directory   => Current_Directory);
 
       begin
-         --  Initialize the tables
-
-         Tree_Private_Part.Project_Nodes.Set_Last (Empty_Node);
-         Tree_Private_Part.Projects_Htable.Reset;
-
          Errout.Initialize;
 
-         --  And parse the main project file
+         --  Parse the main project file
 
          if Path_Name = "" then
             Fail ("project file """ & Project_File_Name & """ not found");
@@ -188,7 +174,10 @@ package body Prj.Part is
             Path_Name       => Path_Name,
             Modified        => False);
 
-         if Errout.Errors_Detected > 0 then
+         --  If there were any kind of error during the parsing, serious
+         --  or not, then the parsing fails.
+
+         if Errout.Total_Errors_Detected > 0 then
             Project := Empty_Node;
          end if;
 
@@ -242,26 +231,7 @@ package body Prj.Part is
                return;
             end if;
 
-            --  New with clause
-
-            if Current_With_Clause = Empty_Node then
-
-               --  First with clause of the context clause
-
-               Current_With_Clause := Default_Project_Node
-                 (Of_Kind => N_With_Clause);
-               Context_Clause := Current_With_Clause;
-
-            else
-               Next_With_Clause := Default_Project_Node
-                 (Of_Kind => N_With_Clause);
-               Set_Next_With_Clause_Of (Current_With_Clause, Next_With_Clause);
-               Current_With_Clause := Next_With_Clause;
-            end if;
-
-            Set_String_Value_Of (Current_With_Clause, Strval (Token_Node));
-            Set_Location_Of     (Current_With_Clause, Token_Ptr);
-            String_To_Name_Buffer (String_Value_Of (Current_With_Clause));
+            String_To_Name_Buffer (Strval (Token_Node));
 
             declare
                Original_Path : constant String :=
@@ -285,7 +255,41 @@ package body Prj.Part is
 
                   Error_Msg ("unknown project file: {", Token_Ptr);
 
+                  --  If this is not imported by the main project file,
+                  --  display the import path.
+
+                  if Project_Stack.Last > 1 then
+                     for Index in reverse 1 .. Project_Stack.Last loop
+                        Error_Msg_Name_1 := Project_Stack.Table (Index);
+                        Error_Msg ("\imported by {", Token_Ptr);
+                     end loop;
+                  end if;
+
                else
+                  --  New with clause
+
+                  if Current_With_Clause = Empty_Node then
+
+                     --  First with clause of the context clause
+
+                     Current_With_Clause := Default_Project_Node
+                       (Of_Kind => N_With_Clause);
+                     Context_Clause := Current_With_Clause;
+
+                  else
+                     Next_With_Clause := Default_Project_Node
+                       (Of_Kind => N_With_Clause);
+                     Set_Next_With_Clause_Of
+                       (Current_With_Clause, Next_With_Clause);
+                     Current_With_Clause := Next_With_Clause;
+                  end if;
+
+                  Set_String_Value_Of
+                    (Current_With_Clause, Strval (Token_Node));
+                  Set_Location_Of (Current_With_Clause, Token_Ptr);
+                  String_To_Name_Buffer
+                    (String_Value_Of (Current_With_Clause));
+
                   --  Parse the imported project
 
                   Parse_Single_Project
@@ -563,6 +567,20 @@ package body Prj.Part is
 
                   Error_Msg ("unknown project file: {", Token_Ptr);
 
+                  --  If we are not in the main project file, display the
+                  --  import path.
+
+                  if Project_Stack.Last > 1 then
+                     Error_Msg_Name_1 :=
+                       Project_Stack.Table (Project_Stack.Last);
+                     Error_Msg ("\extended by {", Token_Ptr);
+
+                     for Index in reverse 1 .. Project_Stack.Last - 1 loop
+                        Error_Msg_Name_1 := Project_Stack.Table (Index);
+                        Error_Msg ("\imported by {", Token_Ptr);
+                     end loop;
+                  end if;
+
                else
                   Parse_Single_Project
                     (Project   => Modified_Project,
@@ -625,30 +643,6 @@ package body Prj.Part is
 
       Project_Stack.Decrement_Last;
    end Parse_Single_Project;
-
-   ------------------
-   -- Path_Name_Of --
-   ------------------
-
-   function Path_Name_Of
-     (File_Name : String;
-      Directory : String)
-      return      String
-   is
-      Result : String_Access;
-
-   begin
-      Result := Locate_Regular_File (File_Name => File_Name,
-                                     Path      => Directory);
-
-      if Result = null then
-         return "";
-
-      else
-         Canonical_Case_File_Name (Result.all);
-         return Result.all;
-      end if;
-   end Path_Name_Of;
 
    -----------------------
    -- Project_Name_From --
@@ -850,8 +844,6 @@ package body Prj.Part is
    end Simple_File_Name_Of;
 
 begin
-   Canonical_Case_File_Name (Project_File_Extension);
-
    if Prj_Path.all = "" then
       Project_Path := new String'(".");
 

@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---            Copyright (C) 1999-2001 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1999-2002 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,19 +36,19 @@
 
 --  This package provides an interface to Ada.Command_Line, to do the
 --  parsing of command line arguments. Here is a small usage example:
---
+
 --  begin
 --     loop
 --        case Getopt ("a b: ad") is  -- Accepts '-a', '-ad', or '-b argument'
 --           when ASCII.NUL => exit;
---
+
 --           when 'a' =>
 --                 if Full_Switch = "a" then
 --                    Put_Line ("Got a");
 --                 else
 --                    Put_Line ("Got ad");
 --                 end if;
---
+
 --           when 'b' =>
 --              Put_Line ("Got b + " & Parameter);
 --
@@ -56,11 +56,10 @@
 --              raise Program_Error;         -- cannot occur!
 --        end case;
 --     end loop;
---
+
 --     loop
 --        declare
 --           S : constant String := Get_Argument (Do_Expansion => True);
-
 --        begin
 --           exit when S'Length = 0;
 --           Put_Line ("Got " & S);
@@ -71,27 +70,27 @@
 --     when Invalid_Switch    => Put_Line ("Invalid Switch " & Full_Switch);
 --     when Invalid_Parameter => Put_Line ("No parameter for " & Full_Switch);
 --  end;
---
+
 --  A more complicated example would involve the use of sections for the
 --  switches, as for instance in gnatmake. These sections are separated by
 --  special switches, chosen by the programer. Each section act as a
 --  command line of its own.
---
+
 --  begin
 --     Initialize_Option_Scan ('-', False, "largs bargs cargs");
 --     loop
---        --  same loop as above to get switches and arguments
+--        --  Same loop as above to get switches and arguments
 --     end loop;
---
+
 --     Goto_Section ("bargs");
 --     loop
---        --  same loop as above to get switches and arguments
+--        --  Same loop as above to get switches and arguments
 --        --  The supports switches in Get_Opt might be different
 --     end loop;
---
+
 --     Goto_Section ("cargs");
 --     loop
---        --  same loop as above to get switches and arguments
+--        --  Same loop as above to get switches and arguments
 --        --  The supports switches in Get_Opt might be different
 --     end loop;
 --  end;
@@ -161,6 +160,8 @@ package GNAT.Command_Line is
    --
    --   ':'  The switch requires a parameter. There can optionally be a space
    --        on the command line between the switch and its parameter
+   --   '='  The switch requires a parameter. There can either be a '=' or a
+   --        space on the command line between the switch and its parameter
    --   '!'  The switch requires a parameter, but there can be no space on the
    --        command line between the switch and its parameter
    --   '?'  The switch may have an optional parameter. There can no space
@@ -238,16 +239,27 @@ package GNAT.Command_Line is
       Pattern      : String;
       Directory    : String := "";
       Basic_Regexp : Boolean := True);
-   --  Initialize an wild card expansion. The next calls to Expansion will
+   --  Initialize a wild card expansion. The next calls to Expansion will
    --  return the next file name in Directory which match Pattern (Pattern
    --  is a regular expression, using only the Unix shell and DOS syntax if
-   --  Basic_Regexp is True. When Directory is an empty string, the current
+   --  Basic_Regexp is True). When Directory is an empty string, the current
    --  directory is searched.
+   --
+   --  Pattern may contains directory separators (as in "src/*/*.ada").
+   --  Subdirectories of Directory will also be searched, up to one
+   --  hundred levels deep.
+   --
+   --  When Start_Expansion has been called, function Expansion should be
+   --  called repetitively until it returns an empty string, before
+   --  Start_Expansion can be called again with the same Expansion_Iterator
+   --  variable.
 
    function Expansion (Iterator : Expansion_Iterator) return String;
    --  Return the next file in the directory matching the parameters given
    --  to Start_Expansion and updates Iterator to point to the next entry.
-   --  Returns an empty string when there are no more files in the directory.
+   --  Returns an empty string when there are no more files in the directory
+   --  and its subdirectories.
+   --
    --  If Expansion is called again after an empty string has been returned,
    --  then the exception GNAT.Directory_Operations.Directory_Error is raised.
 
@@ -263,9 +275,39 @@ package GNAT.Command_Line is
 
 private
 
+   Max_Depth : constant := 100;
+   --  Maximum depth of subdirectories
+
+   Max_Path_Length : constant := 1024;
+   --  Maximum length of relative path
+
+   type Depth is range 1 .. Max_Depth;
+
+   type Level is record
+      Name_Last : Natural := 0;
+      Dir       : GNAT.Directory_Operations.Dir_Type;
+   end record;
+
+   type Level_Array is array (Depth) of Level;
+
    type Expansion_Iterator is limited record
-      Dir    : GNAT.Directory_Operations.Dir_Type;
+      Start : Positive := 1;
+      --  Position of the first character of the relative path to check
+      --  against the pattern.
+
+      Dir_Name : String (1 .. Max_Path_Length);
+
+      Current_Depth : Depth := 1;
+
+      Levels : Level_Array;
+
       Regexp : GNAT.Regexp.Regexp;
+      --  Regular expression built with the pattern
+
+      Maximum_Depth : Depth := 1;
+      --  The maximum depth of directories, reflecting the number of
+      --  directory separators in the pattern.
+
    end record;
 
 end GNAT.Command_Line;

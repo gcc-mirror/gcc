@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.33 $
+--                             $Revision$
 --                                                                          --
---             Copyright (C) 1991-2001, Florida State University            --
+--         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -59,9 +58,9 @@ package body System.Task_Primitives.Operations is
    use System.Parameters;
    use System.OS_Primitives;
 
-   -------------------
-   --  Stack_Guard  --
-   -------------------
+   -----------------
+   -- Stack_Guard --
+   -----------------
 
    procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
    begin
@@ -92,8 +91,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Initialize_Lock
      (Prio : System.Any_Priority;
-      L    : access Lock)
-   is
+      L    : access Lock) is
    begin
       null;
    end Initialize_Lock;
@@ -126,7 +124,9 @@ package body System.Task_Primitives.Operations is
       Ceiling_Violation := False;
    end Write_Lock;
 
-   procedure Write_Lock (L : access RTS_Lock) is
+   procedure Write_Lock
+     (L : access RTS_Lock; Global_Lock : Boolean := False)
+   is
    begin
       null;
    end Write_Lock;
@@ -154,7 +154,7 @@ package body System.Task_Primitives.Operations is
       null;
    end Unlock;
 
-   procedure Unlock (L : access RTS_Lock) is
+   procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
    begin
       null;
    end Unlock;
@@ -164,12 +164,11 @@ package body System.Task_Primitives.Operations is
       null;
    end Unlock;
 
-   -------------
-   --  Sleep  --
-   -------------
+   -----------
+   -- Sleep --
+   -----------
 
-   procedure Sleep (Self_ID : Task_ID;
-                    Reason  : System.Tasking.Task_States) is
+   procedure Sleep (Self_ID : Task_ID; Reason  : System.Tasking.Task_States) is
    begin
       null;
    end Sleep;
@@ -195,25 +194,11 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    procedure Timed_Delay
-     (Self_ID  : Task_ID;
-      Time     : Duration;
-      Mode     : ST.Delay_Modes)
-   is
-      Rel_Time : Duration;
-
-      procedure sleep (How_Long : Natural);
-      pragma Import (C, sleep, "sleep");
-
+     (Self_ID : Task_ID;
+      Time    : Duration;
+      Mode    : ST.Delay_Modes) is
    begin
-      if Mode = Relative then
-         Rel_Time := Time;
-      else
-         Rel_Time := Time - Monotonic_Clock;
-      end if;
-
-      if Rel_Time > 0.0 then
-         sleep (Natural (Rel_Time));
-      end if;
+      null;
    end Timed_Delay;
 
    ---------------------
@@ -248,8 +233,8 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    procedure Set_Priority
-     (T : Task_ID;
-      Prio : System.Any_Priority;
+     (T                   : Task_ID;
+      Prio                : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False) is
    begin
       null;
@@ -300,8 +285,7 @@ package body System.Task_Primitives.Operations is
       Wrapper    : System.Address;
       Stack_Size : System.Parameters.Size_Type;
       Priority   : System.Any_Priority;
-      Succeeded  : out Boolean)
-   is
+      Succeeded  : out Boolean) is
    begin
       Succeeded := False;
    end Create_Task;
@@ -372,23 +356,23 @@ package body System.Task_Primitives.Operations is
       return null;
    end Environment_Task;
 
-   -------------------------
-   -- Lock_All_Tasks_List --
-   -------------------------
+   --------------
+   -- Lock_RTS --
+   --------------
 
-   procedure Lock_All_Tasks_List is
+   procedure Lock_RTS is
    begin
       null;
-   end Lock_All_Tasks_List;
+   end Lock_RTS;
 
-   ---------------------------
-   -- Unlock_All_Tasks_List --
-   ---------------------------
+   ----------------
+   -- Unlock_RTS --
+   ----------------
 
-   procedure Unlock_All_Tasks_List is
+   procedure Unlock_RTS is
    begin
       null;
-   end Unlock_All_Tasks_List;
+   end Unlock_RTS;
 
    ------------------
    -- Suspend_Task --
@@ -424,7 +408,6 @@ package body System.Task_Primitives.Operations is
    No_Tasking : Boolean;
 
 begin
-
    --  Can't raise an exception because target independent packages try to
    --  do an Abort_Defer, which gets a memory fault.
 

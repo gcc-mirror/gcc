@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--          Copyright (C) 2001-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,6 @@ with Table;
 package body Prj.Env is
 
    type Naming_Id is new Nat;
-   No_Naming : constant Naming_Id := 0;
 
    Ada_Path_Buffer : String_Access := new String (1 .. 1_000);
    --  A buffer where values for ADA_INCLUDE_PATH
@@ -62,6 +61,8 @@ package body Prj.Env is
    Global_Configuration_Pragmas : Name_Id;
    Local_Configuration_Pragmas  : Name_Id;
 
+   Fill_Mapping_File : Boolean := True;
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -74,6 +75,10 @@ package body Prj.Env is
    --  Returns the path name of the spec of a unit.
    --  Compute it first, if necessary.
 
+   procedure Add_To_Path (Source_Dirs : String_List_Id);
+   --  Add to Ada_Path_Buffer all the source directories in string list
+   --  Source_Dirs, if any. Increment Ada_Path_Length.
+
    procedure Add_To_Path (Path : String);
    --  Add Path to global variable Ada_Path_Buffer
    --  Increment Ada_Path_Length
@@ -85,12 +90,10 @@ package body Prj.Env is
    function Ada_Include_Path (Project : Project_Id) return String_Access is
 
       procedure Add (Project : Project_Id);
-      --  Add all the source directories of a project to the path,
-      --  only if this project has not been visited.
-      --  Call itself recursively for projects being modified,
-      --  and imported projects.
-      --  Add the project to the list Seen if this is the first time
-      --  we call Add for this project.
+      --  Add all the source directories of a project to the path only if
+      --  this project has not been visited. Calls itself recursively for
+      --  projects being modified, and imported projects. Adds the project
+      --  to the list Seen if this is the call to Add for this project.
 
       ---------
       -- Add --
@@ -98,8 +101,7 @@ package body Prj.Env is
 
       procedure Add (Project : Project_Id) is
       begin
-         --  If Seen is empty, then the project cannot have been
-         --  visited.
+         --  If Seen is empty, then the project cannot have been visited
 
          if not Projects.Table (Project).Seen then
             Projects.Table (Project).Seen := True;
@@ -108,29 +110,10 @@ package body Prj.Env is
                Data : Project_Data := Projects.Table (Project);
                List : Project_List := Data.Imported_Projects;
 
-               Current : String_List_Id := Data.Source_Dirs;
-               Source_Dir : String_Element;
-
             begin
                --  Add to path all source directories of this project
 
-               while Current /= Nil_String loop
-                  if Ada_Path_Length > 0 then
-                     Add_To_Path (Path => (1 => Path_Separator));
-                  end if;
-
-                  Source_Dir := String_Elements.Table (Current);
-                  String_To_Name_Buffer (Source_Dir.Value);
-
-                  declare
-                     New_Path : constant String :=
-                       Name_Buffer (1 .. Name_Len);
-                  begin
-                     Add_To_Path (New_Path);
-                  end;
-
-                  Current := Source_Dir.Next;
-               end loop;
+               Add_To_Path (Data.Source_Dirs);
 
                --  Call Add to the project being modified, if any
 
@@ -146,7 +129,6 @@ package body Prj.Env is
                end loop;
             end;
          end if;
-
       end Add;
 
    --  Start of processing for Ada_Include_Path
@@ -170,6 +152,21 @@ package body Prj.Env is
       return Projects.Table (Project).Include_Path;
    end Ada_Include_Path;
 
+   function Ada_Include_Path
+     (Project   : Project_Id;
+      Recursive : Boolean)
+      return      String
+   is
+   begin
+      if Recursive then
+         return Ada_Include_Path (Project).all;
+      else
+         Ada_Path_Length := 0;
+         Add_To_Path (Projects.Table (Project).Source_Dirs);
+         return Ada_Path_Buffer (1 .. Ada_Path_Length);
+      end if;
+   end Ada_Include_Path;
+
    ----------------------
    -- Ada_Objects_Path --
    ----------------------
@@ -177,15 +174,13 @@ package body Prj.Env is
    function Ada_Objects_Path
      (Project             : Project_Id;
       Including_Libraries : Boolean := True)
-     return String_Access is
-
+      return                String_Access
+   is
       procedure Add (Project : Project_Id);
-      --  Add all the object directory of a project to the path,
-      --  only if this project has not been visited.
-      --  Call itself recursively for projects being modified,
-      --  and imported projects.
-      --  Add the project to the list Seen if this is the first time
-      --  we call Add for this project.
+      --  Add all the object directories of a project to the path only if
+      --  this project has not been visited. Calls itself recursively for
+      --  projects being modified, and imported projects. Adds the project
+      --  to the list Seen if this is the first call to Add for this project.
 
       ---------
       -- Add --
@@ -193,7 +188,6 @@ package body Prj.Env is
 
       procedure Add (Project : Project_Id) is
       begin
-
          --  If this project has not been seen yet
 
          if not Projects.Table (Project).Seen then
@@ -280,6 +274,30 @@ package body Prj.Env is
    -----------------
    -- Add_To_Path --
    -----------------
+
+   procedure Add_To_Path (Source_Dirs : String_List_Id) is
+      Current    : String_List_Id := Source_Dirs;
+      Source_Dir : String_Element;
+
+   begin
+      while Current /= Nil_String loop
+         if Ada_Path_Length > 0 then
+            Add_To_Path (Path => (1 => Path_Separator));
+         end if;
+
+         Source_Dir := String_Elements.Table (Current);
+         String_To_Name_Buffer (Source_Dir.Value);
+
+         declare
+            New_Path : constant String :=
+              Name_Buffer (1 .. Name_Len);
+         begin
+            Add_To_Path (New_Path);
+         end;
+
+         Current := Source_Dir.Next;
+      end loop;
+   end Add_To_Path;
 
    procedure Add_To_Path (Path : String) is
    begin
@@ -654,13 +672,11 @@ package body Prj.Env is
          Last : Natural;
 
       begin
-         --  Add an ASCII.LF to the string. As this gnat.adc
-         --  is supposed to be used only by the compiler, we don't
-         --  care about the characters for the end of line.
-         --  The truth is we could have put a space, but it is
-         --  more convenient to be able to read gnat.adc during
-         --  development. And the development was done under UNIX.
-         --  Hence the ASCII.LF.
+         --  Add an ASCII.LF to the string. As this gnat.adc is supposed to
+         --  be used only by the compiler, we don't care about the characters
+         --  for the end of line. In fact we could have put a space, but
+         --  it is more convenient to be able to read gnat.adc during
+         --  development, for which the ASCII.LF is fine.
 
          S0 (1 .. S'Length) := S;
          S0 (S0'Last) := ASCII.LF;
@@ -678,7 +694,6 @@ package body Prj.Env is
    --  Start of processing for Create_Config_Pragmas_File
 
    begin
-
       if not Projects.Table (For_Project).Config_Checked then
 
          --  Remove any memory of processed naming schemes, if any
@@ -744,11 +759,11 @@ package body Prj.Env is
          end if;
 
          if Global_Attribute_Present then
-
             if File /= Invalid_FD
               or else Local_Attribute_Present
             then
                Copy_File (Global_Attribute.Value);
+
             else
                String_To_Name_Buffer (Global_Attribute.Value);
                Projects.Table (For_Project).Config_File_Name := Name_Find;
@@ -756,7 +771,6 @@ package body Prj.Env is
          end if;
 
          if Local_Attribute_Present then
-
             if File /= Invalid_FD then
                Copy_File (Local_Attribute.Value);
 
@@ -764,7 +778,6 @@ package body Prj.Env is
                String_To_Name_Buffer (Local_Attribute.Value);
                Projects.Table (For_Project).Config_File_Name := Name_Find;
             end if;
-
          end if;
 
          if File /= Invalid_FD then
@@ -783,9 +796,7 @@ package body Prj.Env is
          end if;
 
          Projects.Table (For_Project).Config_Checked := True;
-
       end if;
-
    end Create_Config_Pragmas_File;
 
    -------------------------
@@ -797,8 +808,8 @@ package body Prj.Env is
       The_Unit_Data : Unit_Data;
       Data          : File_Name_Data;
 
-      procedure Put (S : String);
-      --  Put a line in the mapping file
+      procedure Put_Name_Buffer;
+      --  Put the line contained in the Name_Buffer in the mapping file
 
       procedure Put_Data (Spec : Boolean);
       --  Put the mapping of the spec or body contained in Data in the file
@@ -808,16 +819,18 @@ package body Prj.Env is
       -- Put --
       ---------
 
-      procedure Put (S : String) is
+      procedure Put_Name_Buffer is
          Last : Natural;
 
       begin
-         Last := Write (File, S'Address, S'Length);
+         Name_Len := Name_Len + 1;
+         Name_Buffer (Name_Len) := ASCII.LF;
+         Last := Write (File, Name_Buffer (1)'Address, Name_Len);
 
-         if Last /= S'Length then
+         if Last /= Name_Len then
             Osint.Fail ("Disk full");
          end if;
-      end Put;
+      end Put_Name_Buffer;
 
       --------------
       -- Put_Data --
@@ -825,19 +838,31 @@ package body Prj.Env is
 
       procedure Put_Data (Spec : Boolean) is
       begin
-         Put (Get_Name_String (The_Unit_Data.Name));
+         --  Line with the unit name
+
+         Get_Name_String (The_Unit_Data.Name);
+         Name_Len := Name_Len + 1;
+         Name_Buffer (Name_Len) := '%';
+         Name_Len := Name_Len + 1;
 
          if Spec then
-            Put ("%s");
+            Name_Buffer (Name_Len) := 's';
          else
-            Put ("%b");
+            Name_Buffer (Name_Len) := 'b';
          end if;
 
-         Put (S => (1 => ASCII.LF));
-         Put (Get_Name_String (Data.Name));
-         Put (S => (1 => ASCII.LF));
-         Put (Get_Name_String (Data.Path));
-         Put (S => (1 => ASCII.LF));
+         Put_Name_Buffer;
+
+         --  Line with the file nale
+
+         Get_Name_String (Data.Name);
+         Put_Name_Buffer;
+
+         --  Line with the path name
+
+         Get_Name_String (Data.Path);
+         Put_Name_Buffer;
+
       end Put_Data;
 
    --  Start of processing for Create_Mapping_File
@@ -855,32 +880,34 @@ package body Prj.Env is
          Write_Line ("""");
       end if;
 
-      --  For all units in table Units
+      if Fill_Mapping_File then
+         --  For all units in table Units
 
-      for Unit in 1 .. Units.Last loop
-         The_Unit_Data := Units.Table (Unit);
+         for Unit in 1 .. Units.Last loop
+            The_Unit_Data := Units.Table (Unit);
 
-         --  If the unit has a valid name
+            --  If the unit has a valid name
 
-         if The_Unit_Data.Name /= No_Name then
-            Data := The_Unit_Data.File_Names (Specification);
+            if The_Unit_Data.Name /= No_Name then
+               Data := The_Unit_Data.File_Names (Specification);
 
-            --  If there is a spec, put it mapping in the file
+               --  If there is a spec, put it mapping in the file
 
-            if Data.Name /= No_Name then
-               Put_Data (Spec => True);
+               if Data.Name /= No_Name then
+                  Put_Data (Spec => True);
+               end if;
+
+               Data := The_Unit_Data.File_Names (Body_Part);
+
+               --  If there is a body (or subunit) put its mapping in the file
+
+               if Data.Name /= No_Name then
+                  Put_Data (Spec => False);
+               end if;
+
             end if;
-
-            Data := The_Unit_Data.File_Names (Body_Part);
-
-            --  If there is a body (or subunit) put its mapping in the file
-
-            if Data.Name /= No_Name then
-               Put_Data (Spec => False);
-            end if;
-
-         end if;
-      end loop;
+         end loop;
+      end if;
 
       GNAT.OS_Lib.Close (File);
 
@@ -1045,7 +1072,6 @@ package body Prj.Env is
                end if;
             end;
          end if;
-
       end loop;
 
       --  We don't know this file name, return an empty string
@@ -1324,6 +1350,7 @@ package body Prj.Env is
    procedure Initialize is
       Global : constant String := "global_configuration_pragmas";
       Local  : constant String :=  "local_configuration_pragmas";
+
    begin
       --  Put the standard GNAT naming scheme in the Namings table
 
@@ -1522,6 +1549,15 @@ package body Prj.Env is
 
       Write_Line ("end of List of Sources.");
    end Print_Sources;
+
+   ---------------------------------------------
+   -- Set_Mapping_File_Initial_State_To_Empty --
+   ---------------------------------------------
+
+   procedure Set_Mapping_File_Initial_State_To_Empty is
+   begin
+      Fill_Mapping_File := False;
+   end Set_Mapping_File_Initial_State_To_Empty;
 
    -----------------------
    -- Spec_Path_Name_Of --

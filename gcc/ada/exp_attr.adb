@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,6 @@ with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -452,7 +451,7 @@ package body Exp_Attr is
             declare
                Agg     : Node_Id;
                Sub     : Entity_Id;
-               E_T     : constant Entity_Id := Equivalent_Type (Typ);
+               E_T     : constant Entity_Id := Equivalent_Type (Btyp);
                Acc     : constant Entity_Id :=
                            Etype (Next_Component (First_Component (E_T)));
                Obj_Ref : Node_Id;
@@ -511,7 +510,7 @@ package body Exp_Attr is
 
                Rewrite (N, Agg);
 
-               Analyze_And_Resolve (N, Equivalent_Type (Typ));
+               Analyze_And_Resolve (N, E_T);
 
                --  For subsequent analysis,  the node must retain its type.
                --  The backend will replace it with the equivalent type where
@@ -3761,8 +3760,6 @@ package body Exp_Attr is
            Attribute_Machine_Overflows            |
            Attribute_Machine_Radix                |
            Attribute_Machine_Rounds               |
-           Attribute_Max_Interrupt_Priority       |
-           Attribute_Max_Priority                 |
            Attribute_Maximum_Alignment            |
            Attribute_Model_Emin                   |
            Attribute_Model_Epsilon                |
@@ -3780,7 +3777,6 @@ package body Exp_Attr is
            Attribute_Signed_Zeros                 |
            Attribute_Small                        |
            Attribute_Storage_Unit                 |
-           Attribute_Tick                         |
            Attribute_Type_Class                   |
            Attribute_Universal_Literal_String     |
            Attribute_Wchar_T_Size                 |
@@ -3836,7 +3832,8 @@ package body Exp_Attr is
                 Make_Attribute_Reference (Loc,
                   Prefix =>
                     New_Reference_To (Base_Type (Etype (Prefix (N))), Loc),
-                  Attribute_Name => Cnam))));
+                  Attribute_Name => Cnam)),
+          Reason => CE_Overflow_Check_Failed));
 
    end Expand_Pred_Succ;
 
@@ -3862,18 +3859,23 @@ package body Exp_Attr is
 
       --  If Typ is a derived type, it may inherit attributes from some
       --  ancestor which is not the ultimate underlying one.
+      --  If Typ is a derived tagged type, the corresponding primitive
+      --  operation has been created explicitly.
 
       if Is_Derived_Type (P_Type) then
+         if Is_Tagged_Type (P_Type) then
+            return Find_Prim_Op (P_Type, Nam);
+         else
+            while Is_Derived_Type (P_Type) loop
+               Proc :=  TSS (Base_Type (Etype (Typ)), Nam);
 
-         while Is_Derived_Type (P_Type) loop
-            Proc :=  TSS (Base_Type (Etype (Typ)), Nam);
-
-            if Present (Proc) then
-               return Proc;
-            else
-               P_Type := Base_Type (Etype (P_Type));
-            end if;
-         end loop;
+               if Present (Proc) then
+                  return Proc;
+               else
+                  P_Type := Base_Type (Etype (P_Type));
+               end if;
+            end loop;
+         end if;
       end if;
 
       --  If nothing else, use the TSS of the root type.

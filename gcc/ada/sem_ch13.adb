@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,9 +44,9 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
+with Snames; use Snames;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
-with Snames;   use Snames;
 with Table;
 with Ttypes;   use Ttypes;
 with Tbuild;   use Tbuild;
@@ -96,6 +96,12 @@ package body Sem_Ch13 is
    --  than just semantics, but the presence of user-defined stream functions
    --  for limited types is a legality check, which is why this takes place
    --  here rather than in exp_ch13, where it was previously.
+
+   --  To avoid elaboration anomalies with freeze nodes, for untagged types
+   --  we generate both a subprogram declaration and a subprogram renaming
+   --  declaration, so that the attribute specification is handled as a
+   --  renaming_as_body. For tagged types, the specification is one of the
+   --  primitive specs.
 
    procedure New_Stream_Procedure
      (N     : Node_Id;
@@ -249,6 +255,9 @@ package body Sem_Ch13 is
          Error_Msg_N ("entity must be declared in this scope", Nam);
          return;
 
+      elsif No (U_Ent) then
+         U_Ent := Ent;
+
       elsif Is_Type (U_Ent)
         and then not Is_First_Subtype (U_Ent)
         and then Id /= Attribute_Object_Size
@@ -307,6 +316,15 @@ package body Sem_Ch13 is
                --  For entries, we require a constant address
 
                Check_Constant_Address_Clause (Expr, U_Ent);
+
+               if Is_Task_Type (Scope (U_Ent))
+                 and then Comes_From_Source (Scope (U_Ent))
+               then
+                  Error_Msg_N
+                    ("?entry address declared for entry in task type", N);
+                  Error_Msg_N
+                    ("\?only one task can be declared of this type", N);
+               end if;
 
             --  Case of address clause for an object
 
@@ -966,11 +984,12 @@ package body Sem_Ch13 is
                   Set_RM_Size (U_Ent, Size);
 
                   --  For scalar types, increase Object_Size to power of 2,
-                  --  but not less than 8 in any case, i.e. byte addressable.
+                  --  but not less than a storage unit in any case (i.e.,
+                  --  normally this means it will be byte addressable).
 
                   if Is_Scalar_Type (U_Ent) then
-                     if Size <= 8 then
-                        Init_Esize (U_Ent, 8);
+                     if Size <= System_Storage_Unit then
+                        Init_Esize (U_Ent, System_Storage_Unit);
                      elsif Size <= 16 then
                         Init_Esize (U_Ent, 16);
                      elsif Size <= 32 then
@@ -1886,10 +1905,7 @@ package body Sem_Ch13 is
          Ccount := Ccount + 1;
       end if;
 
-      Set_Has_Record_Rep_Clause (Rectype);
-      Set_Has_Specified_Layout  (Rectype);
-
-      --  A representation like this applies to the base type as well
+      --  A representation like this applies to the base type
 
       Set_Has_Record_Rep_Clause (Base_Type (Rectype));
       Set_Has_Non_Standard_Rep  (Base_Type (Rectype));
@@ -2750,76 +2766,6 @@ package body Sem_Ch13 is
       end if;
    end Get_Alignment_Value;
 
-   -------------------------------------
-   -- Get_Attribute_Definition_Clause --
-   -------------------------------------
-
-   function Get_Attribute_Definition_Clause
-     (E    : Entity_Id;
-      Id   : Attribute_Id)
-      return Node_Id
-   is
-      N : Node_Id;
-
-   begin
-      N := First_Rep_Item (E);
-      while Present (N) loop
-         if Nkind (N) = N_Attribute_Definition_Clause
-           and then Get_Attribute_Id (Chars (N)) = Id
-         then
-            return N;
-         else
-            Next_Rep_Item (N);
-         end if;
-      end loop;
-
-      return Empty;
-   end Get_Attribute_Definition_Clause;
-
-   --------------------
-   -- Get_Rep_Pragma --
-   --------------------
-
-   function Get_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Node_Id is
-      N   : Node_Id;
-      Typ : Entity_Id;
-
-   begin
-      N := First_Rep_Item (E);
-
-      while Present (N) loop
-         if Nkind (N) = N_Pragma and then Chars (N) = Nam then
-
-            if Nam = Name_Stream_Convert then
-
-               --  For tagged types this pragma is not inherited, so we
-               --  must verify that it is defined for the given type and
-               --  not an ancestor.
-
-               Typ := Entity (Expression
-                       (First (Pragma_Argument_Associations (N))));
-
-               if not Is_Tagged_Type (E)
-                 or else E = Typ
-                 or else (Is_Private_Type (Typ)
-                           and then E = Full_View (Typ))
-               then
-                  return N;
-               else
-                  Next_Rep_Item (N);
-               end if;
-
-            else
-               return N;
-            end if;
-         else
-            Next_Rep_Item (N);
-         end if;
-      end loop;
-
-      return Empty;
-   end Get_Rep_Pragma;
-
    ----------------
    -- Initialize --
    ----------------
@@ -2845,7 +2791,8 @@ package body Sem_Ch13 is
             return Id = Attribute_Input
               or else Id = Attribute_Output
               or else Id = Attribute_Read
-              or else Id = Attribute_Write;
+              or else Id = Attribute_Write
+              or else Id = Attribute_External_Tag;
          end;
       end if;
    end Is_Operational_Item;
@@ -2868,6 +2815,7 @@ package body Sem_Ch13 is
       B      : Uint;
       S      : Nat;
       Ancest : Entity_Id;
+      R_Typ  : constant Entity_Id := Root_Type (T);
 
    begin
       --  If bad type, return 0
@@ -2879,7 +2827,9 @@ package body Sem_Ch13 is
       --  need to know such a size, but this routine may be called with a
       --  generic type as part of normal processing.
 
-      elsif Is_Generic_Type (Root_Type (T)) then
+      elsif Is_Generic_Type (R_Typ)
+        or else R_Typ = Any_Type
+      then
          return 0;
 
       --  Access types
@@ -2890,7 +2840,7 @@ package body Sem_Ch13 is
       --  Floating-point types
 
       elsif Is_Floating_Point_Type (T) then
-         return UI_To_Int (Esize (Root_Type (T)));
+         return UI_To_Int (Esize (R_Typ));
 
       --  Discrete types
 
@@ -3057,36 +3007,58 @@ package body Sem_Ch13 is
       Nam  : Name_Id)
    is
       Loc       : constant Source_Ptr := Sloc (N);
-      Subp_Id   : Entity_Id := Make_Defining_Identifier (Loc, Nam);
+      Subp_Id   : Entity_Id;
       Subp_Decl : Node_Id;
       F         : Entity_Id;
       Etyp      : Entity_Id;
 
+      function Build_Spec return Node_Id;
+      --  Used for declaration and renaming declaration, so that this is
+      --  treated as a renaming_as_body.
+
+      ----------------
+      -- Build_Spec --
+      ----------------
+
+      function  Build_Spec return Node_Id is
+      begin
+         Subp_Id := Make_Defining_Identifier (Loc, Nam);
+
+         return
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name => Subp_Id,
+             Parameter_Specifications =>
+               New_List (
+                 Make_Parameter_Specification (Loc,
+                   Defining_Identifier =>
+                     Make_Defining_Identifier (Loc, Name_S),
+                   Parameter_Type =>
+                     Make_Access_Definition (Loc,
+                       Subtype_Mark =>
+                         New_Reference_To (
+                           Designated_Type (Etype (F)), Loc)))),
+
+             Subtype_Mark =>
+               New_Reference_To (Etyp, Loc));
+      end Build_Spec;
+
+   --  Start of processing for New_Stream_Function
+
    begin
-      F        := First_Formal (Subp);
-      Etyp     := Etype (Subp);
+      F    := First_Formal (Subp);
+      Etyp := Etype (Subp);
+
+      if not Is_Tagged_Type (Ent) then
+         Subp_Decl :=
+           Make_Subprogram_Declaration (Loc,
+             Specification => Build_Spec);
+         Insert_Action (N, Subp_Decl);
+      end if;
 
       Subp_Decl :=
         Make_Subprogram_Renaming_Declaration (Loc,
-          Specification =>
-
-            Make_Function_Specification (Loc,
-              Defining_Unit_Name => Subp_Id,
-              Parameter_Specifications =>
-                New_List (
-                  Make_Parameter_Specification (Loc,
-                    Defining_Identifier =>
-                      Make_Defining_Identifier (Loc, Name_S),
-                    Parameter_Type =>
-                      Make_Access_Definition (Loc,
-                        Subtype_Mark =>
-                          New_Reference_To (
-                            Designated_Type (Etype (F)), Loc)))),
-
-              Subtype_Mark =>
-                New_Reference_To (Etyp, Loc)),
-
-        Name => New_Reference_To (Subp, Loc));
+          Specification => Build_Spec,
+          Name => New_Reference_To (Subp, Loc));
 
       if Is_Tagged_Type (Ent) and then not Is_Limited_Type (Ent) then
          Set_TSS (Base_Type (Ent), Subp_Id);
@@ -3109,39 +3081,58 @@ package body Sem_Ch13 is
       Out_P : Boolean := False)
    is
       Loc       : constant Source_Ptr := Sloc (N);
-      Subp_Id   : Entity_Id := Make_Defining_Identifier (Loc, Nam);
+      Subp_Id   : Entity_Id;
       Subp_Decl : Node_Id;
       F         : Entity_Id;
       Etyp      : Entity_Id;
+
+      function Build_Spec return Node_Id;
+      --  Used for declaration and renaming declaration, so that this is
+      --  treated as a renaming_as_body.
+
+      function  Build_Spec return Node_Id is
+      begin
+         Subp_Id := Make_Defining_Identifier (Loc, Nam);
+
+         return
+           Make_Procedure_Specification (Loc,
+             Defining_Unit_Name => Subp_Id,
+             Parameter_Specifications =>
+               New_List (
+                 Make_Parameter_Specification (Loc,
+                   Defining_Identifier =>
+                     Make_Defining_Identifier (Loc, Name_S),
+                   Parameter_Type =>
+                     Make_Access_Definition (Loc,
+                       Subtype_Mark =>
+                         New_Reference_To (
+                           Designated_Type (Etype (F)), Loc))),
+
+                 Make_Parameter_Specification (Loc,
+                   Defining_Identifier =>
+                     Make_Defining_Identifier (Loc, Name_V),
+                   Out_Present => Out_P,
+                   Parameter_Type =>
+                     New_Reference_To (Etyp, Loc))));
+      end Build_Spec;
+
+      --  Start of processing for New_Stream_Function
 
    begin
       F        := First_Formal (Subp);
       Etyp     := Etype (Next_Formal (F));
 
+      if not Is_Tagged_Type (Ent) then
+         Subp_Decl :=
+           Make_Subprogram_Declaration (Loc,
+             Specification => Build_Spec);
+         Insert_Action (N, Subp_Decl);
+      end if;
+
       Subp_Decl :=
         Make_Subprogram_Renaming_Declaration (Loc,
-          Specification =>
-
-            Make_Procedure_Specification (Loc,
-              Defining_Unit_Name => Subp_Id,
-              Parameter_Specifications =>
-                New_List (
-                  Make_Parameter_Specification (Loc,
-                    Defining_Identifier =>
-                      Make_Defining_Identifier (Loc, Name_S),
-                    Parameter_Type =>
-                      Make_Access_Definition (Loc,
-                        Subtype_Mark =>
-                          New_Reference_To (
-                            Designated_Type (Etype (F)), Loc))),
-
-                  Make_Parameter_Specification (Loc,
-                    Defining_Identifier =>
-                      Make_Defining_Identifier (Loc, Name_V),
-                    Out_Present => Out_P,
-                    Parameter_Type =>
-                      New_Reference_To (Etyp, Loc)))),
-        Name => New_Reference_To (Subp, Loc));
+          Specification => Build_Spec,
+          Name => New_Reference_To (Subp, Loc));
 
       if Is_Tagged_Type (Ent) and then not Is_Limited_Type (Ent) then
          Set_TSS (Base_Type (Ent), Subp_Id);
@@ -3172,9 +3163,13 @@ package body Sem_Ch13 is
       return  Boolean
    is
    begin
-      --  Cannot apply rep items to generic types
+      --  Cannot apply rep items that are not operational items
+      --  to generic types
 
-      if Is_Type (T)
+      if Is_Operational_Item (N) then
+         return False;
+
+      elsif Is_Type (T)
         and then Is_Generic_Type (Root_Type (T))
       then
          Error_Msg_N
@@ -3195,7 +3190,7 @@ package body Sem_Ch13 is
       --  illegal but stream attributes and Convention pragmas are correct.
 
       elsif Has_Private_Component (T) then
-         if (Nkind (N) = N_Pragma or else Is_Operational_Item (N)) then
+         if Nkind (N) = N_Pragma then
             return False;
          else
             Error_Msg_N
@@ -3490,7 +3485,7 @@ package body Sem_Ch13 is
 
       if Lo < 0 then
          if Lo >= -Uint_2**07 and then Hi < Uint_2**07 then
-            Sz := 8;
+            Sz := Standard_Character_Size;  -- May be > 8 on some targets
 
          elsif Lo >= -Uint_2**15 and then Hi < Uint_2**15 then
             Sz := 16;
@@ -3504,7 +3499,7 @@ package body Sem_Ch13 is
 
       else
          if Hi < Uint_2**08 then
-            Sz := 8;
+            Sz := Standard_Character_Size;  -- May be > 8 on some targets
 
          elsif Hi < Uint_2**16 then
             Sz := 16;
@@ -3635,7 +3630,7 @@ package body Sem_Ch13 is
             --  use the official RM size instead of Esize. See description
             --  in Einfo "Handling of Type'Size Values" for details.
 
-            if Errors_Detected = 0
+            if Serious_Errors_Detected = 0
               and then Known_Static_RM_Size (Source)
               and then Known_Static_RM_Size (Target)
             then
@@ -3712,7 +3707,7 @@ package body Sem_Ch13 is
             --  If both types are access types, we need to check the alignment.
             --  If the alignment of both is specified, we can do it here.
 
-            if Errors_Detected = 0
+            if Serious_Errors_Detected = 0
               and then Ekind (Source) in Access_Kind
               and then Ekind (Target) in Access_Kind
               and then Target_Strict_Alignment

@@ -42,9 +42,16 @@ with System.Task_Primitives.Operations;
 --  used for Write_Lock
 --           Unlock
 
+with System.Parameters;
+--  used for Runtime_Traces
+
+with System.Traces;
+--  used for Send_Trace_Info
+
 package body System.Tasking.Protected_Objects is
 
    use System.Task_Primitives.Operations;
+   use System.Traces;
 
    -------------------------
    -- Finalize_Protection --
@@ -92,6 +99,10 @@ package body System.Tasking.Protected_Objects is
 
       Write_Lock (Object.L'Access, Ceiling_Violation);
 
+      if Parameters.Runtime_Traces then
+         Send_Trace_Info (PO_Lock);
+      end if;
+
       if Ceiling_Violation then
          raise Program_Error;
       end if;
@@ -106,6 +117,10 @@ package body System.Tasking.Protected_Objects is
    begin
       Read_Lock (Object.L'Access, Ceiling_Violation);
 
+      if Parameters.Runtime_Traces then
+         Send_Trace_Info (PO_Lock);
+      end if;
+
       if Ceiling_Violation then
          raise Program_Error;
       end if;
@@ -118,6 +133,10 @@ package body System.Tasking.Protected_Objects is
    procedure Unlock (Object : Protection_Access) is
    begin
       Unlock (Object.L'Access);
+
+      if Parameters.Runtime_Traces then
+         Send_Trace_Info (PO_Unlock);
+      end if;
    end Unlock;
 
 end System.Tasking.Protected_Objects;

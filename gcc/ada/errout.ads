@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.70 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -37,8 +37,15 @@ with Uintp; use Uintp;
 
 package Errout is
 
-   Errors_Detected : Nat;
-   --  Number of errors detected so far
+   Serious_Errors_Detected : Nat;
+   --  This is a count of errors that are serious enough to stop expansion,
+   --  and hence to prevent generation of an object file even if the
+   --  switch -gnatQ is set.
+
+   Total_Errors_Detected : Nat;
+   --  Number of errors detected so far. Includes count of serious errors
+   --  and non-serious errors, so this value is always greater than or
+   --  equal to the Serious_Errors_Detected value.
 
    Warnings_Detected : Nat;
    --  Number of warnings detected
@@ -241,6 +248,14 @@ package Errout is
    --      previously posted. This is used to ensure that such groups
    --      of messages are treated as a unit. The \ character must be
    --      the first character of the message text.
+
+   --    Insertion character | (vertical bar, non-serious error)
+   --      By default, error messages (other than warning messages) are
+   --      considered to be fatal error messages which prevent expansion
+   --      or generation of code in the presence of the -gnatQ switch.
+   --      If the insertion character | appears, the message is considered
+   --      to be non-serious, and does not cause Serious_Errors_Detected
+   --      to be incremented (so expansion is not prevented by such a msg).
 
    -----------------------------------------------------
    -- Global Values Used for Error Message Insertions --
@@ -462,16 +477,27 @@ package Errout is
    --  from the latter is much more common (and is the most usual way of
    --  generating error messages from the analyzer). The message text may
    --  contain a single & insertion, which will reference the given node.
+   --  The message is suppressed if the node N already has a message posted,
+   --  or if it is a warning and warnings and N is an entity node for which
+   --  warnings are suppressed.
 
    procedure Error_Msg_NE
      (Msg : String;
       N   : Node_Or_Entity_Id;
       E   : Node_Or_Entity_Id);
-   --  Output a message at the Sloc of the given node, with an insertion of
-   --  the name from the given entity node. This is used by the semantic
+   --  Output a message at the Sloc of the given node N, with an insertion of
+   --  the name from the given entity node E. This is used by the semantic
    --  routines, where this is a common error message situation. The Msg
    --  text will contain a & or } as usual to mark the insertion point.
    --  This routine can be called from the parser or the analyzer.
+
+   procedure Error_Msg_NEL
+     (Msg           : String;
+      N             : Node_Or_Entity_Id;
+      E             : Node_Or_Entity_Id;
+      Flag_Location : Source_Ptr);
+   --  Exactly the same as Error_Msg_NE, except that the flag is placed at
+   --  the specified Flag_Location instead of at Sloc (N).
 
    procedure Change_Error_Text (Error_Id : Error_Msg_Id; New_Msg : String);
    --  The error message text of the message identified by Id is replaced by

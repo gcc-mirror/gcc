@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -422,13 +422,13 @@ package body Sem_Aggr is
       then
          if Is_Out_Of_Range (Exp, Base_Type (Check_Typ)) then
             Apply_Compile_Time_Constraint_Error
-              (Exp, "value not in range of}?",
+              (Exp, "value not in range of}?", CE_Range_Check_Failed,
                Ent => Base_Type (Check_Typ),
                Typ => Base_Type (Check_Typ));
 
          elsif Is_Out_Of_Range (Exp, Check_Typ) then
             Apply_Compile_Time_Constraint_Error
-              (Exp, "value not in range of}?",
+              (Exp, "value not in range of}?", CE_Range_Check_Failed,
                Ent => Check_Typ,
                Typ => Check_Typ);
 
@@ -630,7 +630,6 @@ package body Sem_Aggr is
       Itype := Create_Itype (E_Array_Subtype, N);
 
       Set_First_Rep_Item         (Itype, First_Rep_Item         (Typ));
-      Set_Component_Type         (Itype, Component_Type         (Typ));
       Set_Convention             (Itype, Convention             (Typ));
       Set_Depends_On_Private     (Itype, Has_Private_Component  (Typ));
       Set_Etype                  (Itype, Base_Type              (Typ));
@@ -745,7 +744,7 @@ package body Sem_Aggr is
       Ind  : Entity_Id;
 
    begin
-      if Has_Record_Rep_Clause (Base_Type (T)) then
+      if Has_Record_Rep_Clause (T) then
          return;
 
       elsif Present (Next_Discriminant (Disc)) then
@@ -821,7 +820,6 @@ package body Sem_Aggr is
 
          C_Node :=  Make_Character_Literal (P, Name_Find, C);
          Set_Etype (C_Node, Any_Character);
-         Set_Analyzed (C_Node);
          Append_To (Exprs, C_Node);
 
          P := P + 1;
@@ -995,7 +993,9 @@ package body Sem_Aggr is
 
       if Raises_Constraint_Error (N) then
          Aggr_Subtyp := Etype (N);
-         Rewrite (N, Make_Raise_Constraint_Error (Sloc (N)));
+         Rewrite (N,
+           Make_Raise_Constraint_Error (Sloc (N),
+             Reason => CE_Range_Check_Failed));
          Set_Raises_Constraint_Error (N);
          Set_Etype (N, Aggr_Subtyp);
          Set_Analyzed (N);
@@ -1473,6 +1473,12 @@ package body Sem_Aggr is
          Error_Msg_N
            ("OTHERS choice not allowed here",
             First (Choices (First (Component_Associations (N)))));
+         return Failure;
+      end if;
+
+      --  Protect against cascaded errors
+
+      if Etype (Index_Typ) = Any_Type then
          return Failure;
       end if;
 
@@ -2588,7 +2594,7 @@ package body Sem_Aggr is
             --  If this is an extension aggregate, the component list must
             --  include all components that are not in the given ancestor
             --  type. Otherwise, the component list must include components
-            --  of all ancestors.
+            --  of all ancestors, starting with the root.
 
             if Nkind (N) = N_Extension_Aggregate then
                Root_Typ := Base_Type (Etype (Ancestor_Part (N)));
@@ -2609,10 +2615,14 @@ package body Sem_Aggr is
 
                --  If we don't get a full declaration, then we have some
                --  error which will get signalled later so skip this part.
+               --  Otherwise, gather components of root that apply to the
+               --  aggregate type. We use the base type in case there is an
+               --  applicable girder constraint that renames the discriminants
+               --  of the root.
 
                if Nkind (Dnode) = N_Full_Type_Declaration then
                   Record_Def := Type_Definition (Dnode);
-                  Gather_Components (Typ,
+                  Gather_Components (Base_Type (Typ),
                     Component_List (Record_Def),
                     Governed_By   => New_Assoc_List,
                     Into          => Components,
@@ -2668,7 +2678,7 @@ package body Sem_Aggr is
             if Null_Present (Record_Def) then
                null;
             else
-               Gather_Components (Typ,
+               Gather_Components (Base_Type (Typ),
                  Component_List (Record_Def),
                  Governed_By   => New_Assoc_List,
                  Into          => Components,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -406,6 +406,16 @@ package Exp_Util is
    --  procedures, since the setting of the flag in this case is generated
    --  in the binder. We do that so that we can detect cases where this is
    --  the only elaboration action that is required.
+
+   function Target_Has_Fixed_Ops
+     (Left_Typ   : Entity_Id;
+      Right_Typ  : Entity_Id;
+      Result_Typ : Entity_Id)
+      return       Boolean;
+   --  Returns True if and only if the target machine has direct support
+   --  for fixed-by-fixed multiplications and divisions for the given
+   --  operand and result types. This is called in package Exp_Fixd to
+   --  determine whether to expand such operations.
 
    procedure Wrap_Cleanup_Procedure (N : Node_Id);
    --  Given an N_Subprogram_Body node, this procedure adds an Abort_Defer

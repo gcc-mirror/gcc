@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.26 $
+--                            $Revision$
 --                                                                          --
---         Copyright (C) 1998-2001 Free Software Foundation, Inc.           --
+--         Copyright (C) 1998-2002 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,13 +25,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Xr_Tabls;
-with Xref_Lib; use Xref_Lib;
-with Ada.Text_IO;
-with GNAT.Command_Line;
+with Xr_Tabls;     use Xr_Tabls;
+with Xref_Lib;     use Xref_Lib;
+with Osint;        use Osint;
+with Types;        use Types;
+
 with Gnatvsn;
-with Osint;
+with Opt;
+
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Text_IO;       use Ada.Text_IO;
+with GNAT.Command_Line; use GNAT.Command_Line;
 
 ---------------
 --  Gnatfind --
@@ -71,15 +75,20 @@ procedure Gnatfind is
    procedure Parse_Cmd_Line is
    begin
       loop
-         case GNAT.Command_Line.Getopt ("a aI: aO: d e f g h I: p: r s t") is
+         case
+           GNAT.Command_Line.Getopt
+             ("a aI: aO: d e f g h I: nostdinc nostdlib p: r s t -RTS=")
+         is
             when ASCII.NUL =>
                exit;
 
             when 'a'    =>
                if GNAT.Command_Line.Full_Switch = "a" then
                   Read_Only := True;
+
                elsif GNAT.Command_Line.Full_Switch = "aI" then
                   Osint.Add_Src_Search_Dir (GNAT.Command_Line.Parameter);
+
                else
                   Osint.Add_Lib_Search_Dir (GNAT.Command_Line.Parameter);
                end if;
@@ -103,9 +112,18 @@ procedure Gnatfind is
                Osint.Add_Src_Search_Dir (GNAT.Command_Line.Parameter);
                Osint.Add_Lib_Search_Dir (GNAT.Command_Line.Parameter);
 
+            when 'n'    =>
+               if GNAT.Command_Line.Full_Switch = "nostdinc" then
+                  Opt.No_Stdinc := True;
+
+               elsif GNAT.Command_Line.Full_Switch = "nostlib" then
+                  Opt.No_Stdlib := True;
+               end if;
+
             when 'p'    =>
                declare
                   S : constant String := GNAT.Command_Line.Parameter;
+
                begin
                   Prj_File_Length := S'Length;
                   Prj_File (1 .. Prj_File_Length) := S;
@@ -120,6 +138,39 @@ procedure Gnatfind is
             when 't' =>
                Type_Tree := True;
 
+            --  Only switch starting with -- recognized is --RTS
+
+            when '-'    =>
+               Opt.No_Stdinc := True;
+               Opt.RTS_Switch := True;
+
+               declare
+                  Src_Path_Name : String_Ptr :=
+                                    Get_RTS_Search_Dir
+                                      (GNAT.Command_Line.Parameter, Include);
+                  Lib_Path_Name : String_Ptr :=
+                                    Get_RTS_Search_Dir
+                                      (GNAT.Command_Line.Parameter, Objects);
+
+               begin
+                  if Src_Path_Name /= null and then Lib_Path_Name /= null then
+                     Add_Search_Dirs (Src_Path_Name, Include);
+                     Add_Search_Dirs (Lib_Path_Name, Objects);
+
+                  elsif Src_Path_Name = null and then Lib_Path_Name = null then
+                     Osint.Fail ("RTS path not valid: missing " &
+                                 "adainclude and adalib directories");
+
+                  elsif Src_Path_Name = null then
+                     Osint.Fail ("RTS path not valid: missing " &
+                                 "adainclude directory");
+
+                  elsif Lib_Path_Name = null then
+                     Osint.Fail ("RTS path not valid: missing " &
+                                 "adalib directory");
+                  end if;
+               end;
+
             when others =>
                Write_Usage;
          end case;
@@ -130,6 +181,7 @@ procedure Gnatfind is
       loop
          declare
             S : constant String := GNAT.Command_Line.Get_Argument;
+
          begin
             exit when S'Length = 0;
 
@@ -147,7 +199,7 @@ procedure Gnatfind is
 
             --  Next arguments are the files to search
             else
-               Add_File (S);
+               Add_Xref_File (S);
                Wide_Search := False;
                Nb_File := Nb_File + 1;
             end if;
@@ -162,7 +214,7 @@ procedure Gnatfind is
 
       when GNAT.Command_Line.Invalid_Parameter =>
          Ada.Text_IO.Put_Line ("Parameter missing for : "
-                               & GNAT.Command_Line.Parameter);
+                               & GNAT.Command_Line.Full_Switch);
          Write_Usage;
 
       when Xref_Lib.Invalid_Argument =>
@@ -175,11 +227,9 @@ procedure Gnatfind is
    -----------------
 
    procedure Write_Usage is
-      use Ada.Text_IO;
-
    begin
       Put_Line ("GNATFIND " & Gnatvsn.Gnat_Version_String
-                & " Copyright 1998-2001, Ada Core Technologies Inc.");
+                & " Copyright 1998-2002, Ada Core Technologies Inc.");
       Put_Line ("Usage: gnatfind pattern[:sourcefile[:line[:column]]] "
                 & "[file1 file2 ...]");
       New_Line;
@@ -195,28 +245,35 @@ procedure Gnatfind is
                 & "references. This parameters are optional");
       New_Line;
       Put_Line ("gnatfind switches:");
-      Put_Line ("   -a      Consider all files, even when the ali file is "
+      Put_Line ("   -a        Consider all files, even when the ali file is "
                 & "readonly");
-      Put_Line ("   -aIdir  Specify source files search path");
-      Put_Line ("   -aOdir  Specify library/object files search path");
-      Put_Line ("   -d      Output derived type information");
-      Put_Line ("   -e      Use the full regular expression set for pattern");
-      Put_Line ("   -f      Output full path name");
-      Put_Line ("   -g      Output information only for global symbols");
-      Put_Line ("   -Idir   Like -aIdir -aOdir");
-      Put_Line ("   -p file Use file as the default project file");
-      Put_Line ("   -r      Find all references (default to find declaration"
+      Put_Line ("   -aIdir    Specify source files search path");
+      Put_Line ("   -aOdir    Specify library/object files search path");
+      Put_Line ("   -d        Output derived type information");
+      Put_Line ("   -e        Use the full regular expression set for "
+                & "pattern");
+      Put_Line ("   -f        Output full path name");
+      Put_Line ("   -g        Output information only for global symbols");
+      Put_Line ("   -Idir     Like -aIdir -aOdir");
+      Put_Line ("   -nostdinc Don't look for sources in the system default"
+                & " directory");
+      Put_Line ("   -nostdlib Don't look for library files in the system"
+                & " default directory");
+      Put_Line ("   --RTS=dir specify the default source and object search"
+                & " path");
+      Put_Line ("   -p file   Use file as the default project file");
+      Put_Line ("   -r        Find all references (default to find declaration"
                 & " only)");
-      Put_Line ("   -s      Print source line");
-      Put_Line ("   -t      Print type hierarchy");
+      Put_Line ("   -s        Print source line");
+      Put_Line ("   -t        Print type hierarchy");
       New_Line;
 
       raise Usage_Error;
    end Write_Usage;
 
-begin
-   Osint.Initialize (Osint.Compiler);
+--  Start of processing for Gnatfind
 
+begin
    Parse_Cmd_Line;
 
    if not Have_Entity then

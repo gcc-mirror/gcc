@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.39 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -108,10 +108,14 @@ package Stringt is
    --  Determines if two string literals represent the same string
 
    procedure String_To_Name_Buffer (S : String_Id);
-   --  Place characters of given string in Name_Buffer, setting Name_Len
+   --  Place characters of given string in Name_Buffer, setting Name_Len.
+   --  Error if any characters are out of Character range. Does not attempt
+   --  to do any encoding of any characters.
 
    procedure Add_String_To_Name_Buffer (S : String_Id);
-   --  Append characters of given string to Name_Buffer, updating Name_Len
+   --  Append characters of given string to Name_Buffer, updating Name_Len.
+   --  Error if any characters are out of Character range. Does not attempt
+   --  to do any encoding of any characters.
 
    function String_Chars_Address return System.Address;
    --  Return address of String_Chars table (used by Back_End call to Gigi)
@@ -140,18 +144,18 @@ package Stringt is
    --  the code is output as ["hh"] where hh is the two digit hex value for
    --  the code. Codes greater than 16#FF# are output as ["hhhh"] where hhhh
    --  is the four digit hex representation of the code value (high order
-   --  byte first). Hex letters are always in upper case.
+   --  byte first). Hex letters are always in lower case.
 
    procedure Write_String_Table_Entry (Id : String_Id);
    --  Writes a string value with enclosing quotes to the current file using
    --  routines in package Output. Does not write an end of line character.
    --  This procedure is used for debug output purposes, and also for output
    --  of strings specified by pragma Linker Option to the ali file. 7-bit
-   --  ASCII graphics (except for double quote and left brace) are output
-   --  literally. The double quote appears as two successive double quotes.
+   --  ASCII graphics (except for double quote) are output literally.
+   --  The double quote appears as two successive double quotes.
    --  All other codes, are output as described for Write_Char_Code. For
    --  example, the string created by folding "A" & ASCII.LF & "Hello" will
-   --  print as "A{0A}Hello". A No_String value prints simply as "no string"
+   --  print as "A["0a"]Hello". A No_String value prints simply as "no string"
    --  without surrounding quote marks.
 
 private

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---            Copyright (C) 1991-2001 Florida State University              --
+--         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -50,6 +49,8 @@ with System.Address_Image;
 
 with System.Parameters;
 --  used for Size_Type
+--           Single_Lock
+--           Runtime_Traces
 
 with System.Task_Info;
 --  used for Task_Info_Type
@@ -63,7 +64,7 @@ with System.Task_Primitives.Operations;
 --           Sleep
 --           Wakeup
 --           Get_Priority
---           Lock/Unlock_All_Tasks_List
+--           Lock/Unlock_RTS
 --           New_ATCB
 
 with System.Soft_Links;
@@ -112,6 +113,9 @@ with System.Storage_Elements;
 with System.Standard_Library;
 --  used for Exception_Trace
 
+with System.Traces.Tasking;
+--  used for Send_Trace_Info
+
 package body System.Tasking.Stages is
 
    package STPO renames System.Task_Primitives.Operations;
@@ -121,23 +125,13 @@ package body System.Tasking.Stages is
 
    use Ada.Exceptions;
 
-   use System.Task_Primitives;
-   use System.Task_Primitives.Operations;
-   use System.Task_Info;
+   use Parameters;
+   use Task_Primitives;
+   use Task_Primitives.Operations;
+   use Task_Info;
 
-   procedure Wakeup_Entry_Caller
-     (Self_ID    : Task_ID;
-      Entry_Call : Entry_Call_Link;
-      New_State  : Entry_Call_State)
-   renames Initialization.Wakeup_Entry_Caller;
-
-   procedure Cancel_Queued_Entry_Calls (T : Task_ID)
-   renames Utilities.Cancel_Queued_Entry_Calls;
-
-   procedure Abort_One_Task
-     (Self_ID : Task_ID;
-      T       : Task_ID)
-   renames Utilities.Abort_One_Task;
+   use System.Traces;
+   use System.Traces.Tasking;
 
    -----------------------
    -- Local Subprograms --
@@ -171,11 +165,12 @@ package body System.Tasking.Stages is
    --  Signal to Self_ID's activator that Self_ID has
    --  completed activation.
    --
-   --  Does not defer abortion (unlike Complete_Activation).
+   --  Call this procedure with abort deferred.
 
    procedure Abort_Dependents (Self_ID : Task_ID);
-   --  Abort all the dependents of Self at our current master
-   --  nesting level.
+   --  Abort all the direct dependents of Self at its current master
+   --  nesting level, plus all of their dependents, transitively.
+   --  RTS_Lock should be locked by the caller.
 
    procedure Vulnerable_Free_Task (T : Task_ID);
    --  Recover all runtime system storage associated with the task T.
@@ -199,29 +194,24 @@ package body System.Tasking.Stages is
    -- Abort_Dependents --
    ----------------------
 
-   --  Abort all the direct dependents of Self at its current master
-   --  nesting level, plus all of their dependents, transitively.
-   --  No locks should be held when this routine is called.
-
    procedure Abort_Dependents (Self_ID : Task_ID) is
       C : Task_ID;
       P : Task_ID;
 
    begin
-      Lock_All_Tasks_List;
-
       C := All_Tasks_List;
+
       while C /= null loop
          P := C.Common.Parent;
+
          while P /= null loop
             if P = Self_ID then
-
                --  ??? C is supposed to take care of its own dependents, so
-               --  there should be no need to take worry about them. Need to
-               --  double check this.
+               --  there should be no need to worry about them. Need to double
+               --  check this.
 
                if C.Master_of_Task = Self_ID.Master_Within then
-                  Abort_One_Task (Self_ID, C);
+                  Utilities.Abort_One_Task (Self_ID, C);
                   C.Dependents_Aborted := True;
                end if;
 
@@ -235,7 +225,6 @@ package body System.Tasking.Stages is
       end loop;
 
       Self_ID.Dependents_Aborted := True;
-      Unlock_All_Tasks_List;
    end Abort_Dependents;
 
    -----------------
@@ -258,7 +247,7 @@ package body System.Tasking.Stages is
    --  task. That satisfies our in-order-of-creation ATCB locking policy.
 
    --  At one point, we may also lock the parent, if the parent is
-   --  different from the activator.  That is also consistent with the
+   --  different from the activator. That is also consistent with the
    --  lock ordering policy, since the activator cannot be created
    --  before the parent.
 
@@ -268,15 +257,13 @@ package body System.Tasking.Stages is
    --  the counts until we see that the thread creation is successful.
 
    --  If the thread creation fails, we do need to close the entries
-   --  of the task.  The first phase, of dequeuing calls, only requires
+   --  of the task. The first phase, of dequeuing calls, only requires
    --  locking the acceptor's ATCB, but the waking up of the callers
-   --  requires locking the caller's ATCB.  We cannot safely do this
-   --  while we are holding other locks.  Therefore, the queue-clearing
+   --  requires locking the caller's ATCB. We cannot safely do this
+   --  while we are holding other locks. Therefore, the queue-clearing
    --  operation is done in a separate pass over the activation chain.
 
-   procedure Activate_Tasks
-     (Chain_Access : Activation_Chain_Access)
-   is
+   procedure Activate_Tasks (Chain_Access : Activation_Chain_Access) is
       Self_ID        : constant Task_ID := STPO.Self;
       P              : Task_ID;
       C              : Task_ID;
@@ -293,21 +280,16 @@ package body System.Tasking.Stages is
 
       pragma Assert (Self_ID.Common.Wait_Count = 0);
 
-      --  Lock All_Tasks_L, to prevent activated tasks
+      --  Lock RTS_Lock, to prevent activated tasks
       --  from racing ahead before we finish activating the chain.
 
-      --  ?????
-      --  Is there some less heavy-handed way?
-      --  In an earlier version, we used the activator's lock here,
-      --  but that violated the locking order rule when we had
-      --  to lock the parent later.
-
-      Lock_All_Tasks_List;
+      Lock_RTS;
 
       --  Check that all task bodies have been elaborated.
 
       C := Chain_Access.T_ID;
       Last_C := null;
+
       while C /= null loop
          if C.Common.Elaborated /= null
            and then not C.Common.Elaborated.all
@@ -327,7 +309,7 @@ package body System.Tasking.Stages is
       Chain_Access.T_ID := Last_C;
 
       if not All_Elaborated then
-         Unlock_All_Tasks_List;
+         Unlock_RTS;
          Initialization.Undefer_Abort_Nestable (Self_ID);
          Raise_Exception
            (Program_Error'Identity, "Some tasks have not been elaborated");
@@ -338,6 +320,7 @@ package body System.Tasking.Stages is
       --  activation. So create it now.
 
       C := Chain_Access.T_ID;
+
       while C /= null loop
          if C.Common.State /= Terminated then
             pragma Assert (C.Common.State = Unactivated);
@@ -360,7 +343,7 @@ package body System.Tasking.Stages is
 
             --  There would be a race between the created task and
             --  the creator to do the following initialization,
-            --  if we did not have a Lock/Unlock_All_Tasks_List pair
+            --  if we did not have a Lock/Unlock_RTS pair
             --  in the task wrapper, to prevent it from racing ahead.
 
             if Success then
@@ -393,7 +376,9 @@ package body System.Tasking.Stages is
          C := C.Common.Activation_Link;
       end loop;
 
-      Unlock_All_Tasks_List;
+      if not Single_Lock then
+         Unlock_RTS;
+      end if;
 
       --  Close the entries of any tasks that failed thread creation,
       --  and count those that have not finished activation.
@@ -409,7 +394,7 @@ package body System.Tasking.Stages is
             C.Common.Activator := null;
             C.Common.State := Terminated;
             C.Callable := False;
-            Cancel_Queued_Entry_Calls (C);
+            Utilities.Cancel_Queued_Entry_Calls (C);
 
          elsif C.Common.Activator /= null then
             Self_ID.Common.Wait_Count := Self_ID.Common.Wait_Count + 1;
@@ -434,6 +419,10 @@ package body System.Tasking.Stages is
       Self_ID.Common.State := Runnable;
       Unlock (Self_ID);
 
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
+
       --  Remove the tasks from the chain.
 
       Chain_Access.T_ID := null;
@@ -452,15 +441,27 @@ package body System.Tasking.Stages is
 
    procedure Complete_Activation is
       Self_ID : constant Task_ID := STPO.Self;
-
    begin
       Initialization.Defer_Abort_Nestable (Self_ID);
+
+      if Single_Lock then
+         Lock_RTS;
+      end if;
+
       Vulnerable_Complete_Activation (Self_ID);
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
+
       Initialization.Undefer_Abort_Nestable (Self_ID);
 
-      --  ?????
+      --  ???
       --  Why do we need to allow for nested deferral here?
 
+      if Runtime_Traces then
+         Send_Trace_Info (T_Activate);
+      end if;
    end Complete_Activation;
 
    ---------------------
@@ -484,7 +485,6 @@ package body System.Tasking.Stages is
 
    procedure Complete_Task is
       Self_ID  : constant Task_ID := STPO.Self;
-
    begin
       pragma Assert (Self_ID.Deferral_Level > 0);
 
@@ -492,7 +492,6 @@ package body System.Tasking.Stages is
 
       --  All of our dependents have terminated.
       --  Never undefer abort again!
-
    end Complete_Task;
 
    -----------------
@@ -552,11 +551,11 @@ package body System.Tasking.Stages is
             Raise_Exception (Storage_Error'Identity, "Cannot allocate task");
       end;
 
-      --  All_Tasks_L is used by Abort_Dependents and Abort_Tasks.
+      --  RTS_Lock is used by Abort_Dependents and Abort_Tasks.
       --  Up to this point, it is possible that we may be part of
       --  a family of tasks that is being aborted.
 
-      Lock_All_Tasks_List;
+      Lock_RTS;
       Write_Lock (Self_ID);
 
       --  Now, we must check that we have not been aborted.
@@ -570,7 +569,7 @@ package body System.Tasking.Stages is
              or else Chain.T_ID.Common.State = Unactivated);
 
          Unlock (Self_ID);
-         Unlock_All_Tasks_List;
+         Unlock_RTS;
          Initialization.Undefer_Abort_Nestable (Self_ID);
 
          --  ??? Should never get here
@@ -584,7 +583,7 @@ package body System.Tasking.Stages is
 
       if not Success then
          Unlock (Self_ID);
-         Unlock_All_Tasks_List;
+         Unlock_RTS;
          Initialization.Undefer_Abort_Nestable (Self_ID);
          Raise_Exception
            (Storage_Error'Identity, "Failed to initialize task");
@@ -600,7 +599,7 @@ package body System.Tasking.Stages is
 
       T.Common.Task_Image := Task_Image;
       Unlock (Self_ID);
-      Unlock_All_Tasks_List;
+      Unlock_RTS;
 
       --  Create TSD as early as possible in the creation of a task, since it
       --  may be used by the operation of Ada code within the task.
@@ -611,6 +610,10 @@ package body System.Tasking.Stages is
       Initialization.Initialize_Attributes_Link.all (T);
       Created_Task := T;
       Initialization.Undefer_Abort_Nestable (Self_ID);
+
+      if Runtime_Traces then
+         Send_Trace_Info (T_Create, T);
+      end if;
    end Create_Task;
 
    --------------------
@@ -618,10 +621,8 @@ package body System.Tasking.Stages is
    --------------------
 
    function Current_Master return Master_Level is
-      Self_ID : constant Task_ID := STPO.Self;
-
    begin
-      return Self_ID.Master_Within;
+      return STPO.Self.Master_Within;
    end Current_Master;
 
    ------------------
@@ -653,10 +654,10 @@ package body System.Tasking.Stages is
 
       Initialization.Defer_Abort_Nestable (Self_ID);
 
-      --  ????
+      --  ???
       --  Experimentation has shown that abort is sometimes (but not
       --  always) already deferred when this is called.
-      --  That may indicate an error.  Find out what is going on.
+      --  That may indicate an error. Find out what is going on.
 
       C := Chain.T_ID;
 
@@ -666,6 +667,7 @@ package body System.Tasking.Stages is
          Temp := C.Common.Activation_Link;
 
          if C.Common.State = Unactivated then
+            Lock_RTS;
             Write_Lock (C);
 
             for J in 1 .. C.Entry_Num loop
@@ -674,7 +676,10 @@ package body System.Tasking.Stages is
             end loop;
 
             Unlock (C);
+
             Initialization.Remove_From_All_Tasks_List (C);
+            Unlock_RTS;
+
             Vulnerable_Free_Task (C);
             C := Temp;
          end if;
@@ -688,7 +693,7 @@ package body System.Tasking.Stages is
    -- Finalize_Global_Tasks --
    ---------------------------
 
-   --  ????
+   --  ???
    --  We have a potential problem here if finalization of global
    --  objects does anything with signals or the timer server, since
    --  by that time those servers have terminated.
@@ -699,13 +704,12 @@ package body System.Tasking.Stages is
    --  using the global finalization chain.
 
    procedure Finalize_Global_Tasks is
-      Self_ID          : constant Task_ID := STPO.Self;
-      Zero_Independent : Boolean;
+      Self_ID : constant Task_ID := STPO.Self;
+      Ignore  : Boolean;
 
    begin
       if Self_ID.Deferral_Level = 0 then
-
-         --  ??????
+         --  ???
          --  In principle, we should be able to predict whether
          --  abort is already deferred here (and it should not be deferred
          --  yet but in practice it seems Finalize_Global_Tasks is being
@@ -715,7 +719,6 @@ package body System.Tasking.Stages is
          Initialization.Defer_Abort_Nestable (Self_ID);
 
          --  Never undefer again!!!
-
       end if;
 
       --  This code is only executed by the environment task
@@ -733,30 +736,45 @@ package body System.Tasking.Stages is
 
       --  Force termination of "independent" library-level server tasks.
 
+      Lock_RTS;
+
       Abort_Dependents (Self_ID);
+
+      if not Single_Lock then
+         Unlock_RTS;
+      end if;
 
       --  We need to explicitly wait for the task to be
       --  terminated here because on true concurrent system, we
       --  may end this procedure before the tasks are really
       --  terminated.
 
+      Write_Lock (Self_ID);
+
       loop
-         Write_Lock (Self_ID);
-         Zero_Independent := Utilities.Independent_Task_Count = 0;
-         Unlock (Self_ID);
+         exit when Utilities.Independent_Task_Count = 0;
 
          --  We used to yield here, but this did not take into account
          --  low priority tasks that would cause dead lock in some cases.
          --  See 8126-020.
 
-         Timed_Delay (Self_ID, 0.01, System.OS_Primitives.Relative);
-         exit when Zero_Independent;
+         Timed_Sleep
+           (Self_ID, 0.01, System.OS_Primitives.Relative,
+            Self_ID.Common.State, Ignore, Ignore);
       end loop;
 
       --  ??? On multi-processor environments, it seems that the above loop
       --  isn't sufficient, so we need to add an additional delay.
 
-      Timed_Delay (Self_ID, 0.1, System.OS_Primitives.Relative);
+      Timed_Sleep
+        (Self_ID, 0.01, System.OS_Primitives.Relative,
+         Self_ID.Common.State, Ignore, Ignore);
+
+      Unlock (Self_ID);
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
 
       --  Complete the environment task.
 
@@ -778,7 +796,8 @@ package body System.Tasking.Stages is
       SSL.Get_Stack_Info     := SSL.Get_Stack_Info_NT'Access;
 
       --  Don't bother trying to finalize Initialization.Global_Task_Lock
-      --  and System.Task_Primitives.All_Tasks_L.
+      --  and System.Task_Primitives.RTS_Lock.
+
    end Finalize_Global_Tasks;
 
    ---------------
@@ -790,7 +809,6 @@ package body System.Tasking.Stages is
 
    begin
       if T.Common.State = Terminated then
-
          --  It is not safe to call Abort_Defer or Write_Lock at this stage
 
          Initialization.Task_Lock (Self_Id);
@@ -799,7 +817,10 @@ package body System.Tasking.Stages is
             Free_Task_Image (T.Common.Task_Image);
          end if;
 
+         Lock_RTS;
          Initialization.Remove_From_All_Tasks_List (T);
+         Unlock_RTS;
+
          Initialization.Task_Unlock (Self_Id);
 
          System.Task_Primitives.Operations.Finalize_TCB (T);
@@ -914,14 +935,14 @@ package body System.Tasking.Stages is
 
       Enter_Task (Self_ID);
 
-      --  We lock All_Tasks_L to wait for activator to finish activating
+      --  We lock RTS_Lock to wait for activator to finish activating
       --  the rest of the chain, so that everyone in the chain comes out
       --  in priority order.
       --  This also protects the value of
       --   Self_ID.Common.Activator.Common.Wait_Count.
 
-      Lock_All_Tasks_List;
-      Unlock_All_Tasks_List;
+      Lock_RTS;
+      Unlock_RTS;
 
       begin
          --  We are separating the following portion of the code in order to
@@ -939,7 +960,6 @@ package body System.Tasking.Stages is
          --  allowed.
 
          Self_ID.Common.Task_Entry_Point (Self_ID.Common.Task_Arg);
-
          Terminate_Task (Self_ID);
 
       exception
@@ -983,16 +1003,18 @@ package body System.Tasking.Stages is
    --  calls to Task_Lock and Task_Unlock. That was not really a solution,
    --  since the operation Task_Unlock continued to access the ATCB after
    --  unlocking, after which the parent was observed to race ahead,
-   --  deallocate the ATCB, and then reallocate it to another task.  The
+   --  deallocate the ATCB, and then reallocate it to another task. The
    --  call to Undefer_Abortion in Task_Unlock by the "terminated" task was
-   --  overwriting the data of the new task that reused the ATCB!  To solve
+   --  overwriting the data of the new task that reused the ATCB! To solve
    --  this problem, we introduced the new operation Final_Task_Unlock.
 
    procedure Terminate_Task (Self_ID : Task_ID) is
       Environment_Task : constant Task_ID := STPO.Environment_Task;
 
    begin
-      pragma Assert (Self_ID.Common.Activator = null);
+      if Runtime_Traces then
+         Send_Trace_Info (T_Terminate);
+      end if;
 
       --  Since GCC cannot allocate stack chunks efficiently without reordering
       --  some of the allocations, we have to handle this unexpected situation
@@ -1003,22 +1025,37 @@ package body System.Tasking.Stages is
          Vulnerable_Complete_Task (Self_ID);
       end if;
 
+      Initialization.Task_Lock (Self_ID);
+
+      if Single_Lock then
+         Lock_RTS;
+      end if;
+
       --  Check if the current task is an independent task
       --  If so, decrement the Independent_Task_Count value.
 
       if Self_ID.Master_of_Task = 2 then
-         Write_Lock (Environment_Task);
-         Utilities.Independent_Task_Count :=
-           Utilities.Independent_Task_Count - 1;
-         Unlock (Environment_Task);
+         if Single_Lock then
+            Utilities.Independent_Task_Count :=
+              Utilities.Independent_Task_Count - 1;
+
+         else
+            Write_Lock (Environment_Task);
+            Utilities.Independent_Task_Count :=
+              Utilities.Independent_Task_Count - 1;
+            Unlock (Environment_Task);
+         end if;
       end if;
 
       --  Unprotect the guard page if needed.
 
       Stack_Guard (Self_ID, False);
 
-      Initialization.Task_Lock (Self_ID);
       Utilities.Make_Passive (Self_ID, Task_Completed => True);
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
 
       pragma Assert (Check_Exit (Self_ID));
 
@@ -1042,9 +1079,19 @@ package body System.Tasking.Stages is
 
    begin
       Initialization.Defer_Abort_Nestable (Self_ID);
+
+      if Single_Lock then
+         Lock_RTS;
+      end if;
+
       Write_Lock (T);
       Result := T.Common.State = Terminated;
       Unlock (T);
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
+
       Initialization.Undefer_Abort_Nestable (Self_ID);
       return Result;
    end Terminated;
@@ -1053,19 +1100,16 @@ package body System.Tasking.Stages is
    -- Vulnerable_Complete_Activation --
    ------------------------------------
 
-   --  Only call this procedure with abortion deferred.
-
    --  As in several other places, the locks of the activator and activated
-   --  task are both locked here.  This follows our deadlock prevention lock
+   --  task are both locked here. This follows our deadlock prevention lock
    --  ordering policy, since the activated task must be created after the
    --  activator.
 
    procedure Vulnerable_Complete_Activation (Self_ID : Task_ID) is
-      Activator : Task_ID := Self_ID.Common.Activator;
+      Activator : constant Task_ID := Self_ID.Common.Activator;
 
    begin
-      pragma Debug
-        (Debug.Trace (Self_ID, "V_Complete_Activation", 'C'));
+      pragma Debug (Debug.Trace (Self_ID, "V_Complete_Activation", 'C'));
 
       Write_Lock (Activator);
       Write_Lock (Self_ID);
@@ -1102,7 +1146,7 @@ package body System.Tasking.Stages is
       Unlock (Activator);
 
       --  After the activation, active priority should be the same
-      --  as base priority.   We must unlock the Activator first,
+      --  as base priority. We must unlock the Activator first,
       --  though, since it should not wait if we have lower priority.
 
       if Get_Priority (Self_ID) /= Self_ID.Common.Base_Priority then
@@ -1124,7 +1168,7 @@ package body System.Tasking.Stages is
 
       To_Be_Freed : Task_ID;
       --  This is a list of ATCBs to be freed, after we have released
-      --  all RTS locks.  This is necessary because of the locking order
+      --  all RTS locks. This is necessary because of the locking order
       --  rules, since the storage manager uses Global_Task_Lock.
 
       pragma Warnings (Off);
@@ -1133,9 +1177,16 @@ package body System.Tasking.Stages is
       --  Temporary error-checking code below. This is part of the checks
       --  added in the new run time. Call it only inside a pragma Assert.
 
+      -----------------------------
+      -- Check_Unactivated_Tasks --
+      -----------------------------
+
       function Check_Unactivated_Tasks return Boolean is
       begin
-         Lock_All_Tasks_List;
+         if not Single_Lock then
+            Lock_RTS;
+         end if;
+
          Write_Lock (Self_ID);
          C := All_Tasks_List;
 
@@ -1158,14 +1209,17 @@ package body System.Tasking.Stages is
          end loop;
 
          Unlock (Self_ID);
-         Unlock_All_Tasks_List;
+
+         if not Single_Lock then
+            Unlock_RTS;
+         end if;
+
          return True;
       end Check_Unactivated_Tasks;
 
    --  Start of processing for Vulnerable_Complete_Master
 
    begin
-
       pragma Debug
         (Debug.Trace (Self_ID, "V_Complete_Master", 'C'));
 
@@ -1179,7 +1233,7 @@ package body System.Tasking.Stages is
       --  zero for new tasks, and the task should not exit the
       --  sleep-loops that use this count until the count reaches zero.
 
-      Lock_All_Tasks_List;
+      Lock_RTS;
       Write_Lock (Self_ID);
       C := All_Tasks_List;
 
@@ -1191,7 +1245,7 @@ package body System.Tasking.Stages is
             C.Common.Activator := null;
             C.Common.State := Terminated;
             C.Callable := False;
-            Cancel_Queued_Entry_Calls (C);
+            Utilities.Cancel_Queued_Entry_Calls (C);
             Unlock (C);
          end if;
 
@@ -1210,7 +1264,10 @@ package body System.Tasking.Stages is
 
       Self_ID.Common.State := Master_Completion_Sleep;
       Unlock (Self_ID);
-      Unlock_All_Tasks_List;
+
+      if not Single_Lock then
+         Unlock_RTS;
+      end if;
 
       --  Wait until dependent tasks are all terminated or ready to terminate.
       --  While waiting, the task may be awakened if the task's priority needs
@@ -1219,6 +1276,7 @@ package body System.Tasking.Stages is
       --  to zero.
 
       Write_Lock (Self_ID);
+
       loop
          Initialization.Poll_Base_Priority_Change (Self_ID);
          exit when Self_ID.Common.Wait_Count = 0;
@@ -1228,10 +1286,15 @@ package body System.Tasking.Stages is
          if Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level
            and then not Self_ID.Dependents_Aborted
          then
-            Unlock (Self_ID);
-            Abort_Dependents (Self_ID);
-            Write_Lock (Self_ID);
-
+            if Single_Lock then
+               Abort_Dependents (Self_ID);
+            else
+               Unlock (Self_ID);
+               Lock_RTS;
+               Abort_Dependents (Self_ID);
+               Unlock_RTS;
+               Write_Lock (Self_ID);
+            end if;
          else
             Sleep (Self_ID, Master_Completion_Sleep);
          end if;
@@ -1247,41 +1310,42 @@ package body System.Tasking.Stages is
       pragma Assert (Check_Unactivated_Tasks);
 
       if Self_ID.Alive_Count > 1 then
-
-         --  ?????
-         --  Consider finding a way to skip the following extra steps if
-         --  there are no dependents with terminate alternatives.  This
-         --  could be done by adding another count to the ATCB, similar to
-         --  Awake_Count, but keeping track of count of tasks that are on
-         --  terminate alternatives.
+         --  ???
+         --  Consider finding a way to skip the following extra steps if there
+         --  are no dependents with terminate alternatives. This could be done
+         --  by adding another count to the ATCB, similar to Awake_Count, but
+         --  keeping track of tasks that are on terminate alternatives.
 
          pragma Assert (Self_ID.Common.Wait_Count = 0);
 
          --  Force any remaining dependents to terminate, by aborting them.
+
+         if not Single_Lock then
+            Lock_RTS;
+         end if;
 
          Abort_Dependents (Self_ID);
 
          --  Above, when we "abort" the dependents we are simply using this
          --  operation for convenience. We are not required to support the full
          --  abort-statement semantics; in particular, we are not required to
-         --  immediately cancel any queued or in-service entry calls.  That is
+         --  immediately cancel any queued or in-service entry calls. That is
          --  good, because if we tried to cancel a call we would need to lock
-         --  the caller, in order to wake the caller up.  Our anti-deadlock
+         --  the caller, in order to wake the caller up. Our anti-deadlock
          --  rules prevent us from doing that without releasing the locks on C
-         --  and Self_ID.  Releasing and retaking those locks would be
-         --  wasteful, at best, and should not be considered further without
-         --  more detailed analysis of potential concurrent accesses to the
+         --  and Self_ID. Releasing and retaking those locks would be wasteful
+         --  at best, and should not be considered further without more
+         --  detailed analysis of potential concurrent accesses to the
          --  ATCBs of C and Self_ID.
 
          --  Count how many "alive" dependent tasks this master currently
-         --  has, and record this in Wait_Count.
-         --  This count should start at zero, since it is initialized to
-         --  zero for new tasks, and the task should not exit the
-         --  sleep-loops that use this count until the count reaches zero.
+         --  has, and record this in Wait_Count. This count should start at
+         --  zero, since it is initialized to zero for new tasks, and the
+         --  task should not exit the sleep-loops that use this count until
+         --  the count reaches zero.
 
          pragma Assert (Self_ID.Common.Wait_Count = 0);
 
-         Lock_All_Tasks_List;
          Write_Lock (Self_ID);
          C := All_Tasks_List;
 
@@ -1304,7 +1368,10 @@ package body System.Tasking.Stages is
 
          Self_ID.Common.State := Master_Phase_2_Sleep;
          Unlock (Self_ID);
-         Unlock_All_Tasks_List;
+
+         if not Single_Lock then
+            Unlock_RTS;
+         end if;
 
          --  Wait for all counted tasks to finish terminating themselves.
 
@@ -1322,9 +1389,6 @@ package body System.Tasking.Stages is
 
       --  We don't wake up for abortion here. We are already terminating
       --  just as fast as we can, so there is no point.
-      --  ????
-      --  Consider whether we want to bother checking for priority
-      --  changes in the loop above, though.
 
       --  Remove terminated tasks from the list of Self_ID's dependents, but
       --  don't free their ATCBs yet, because of lock order restrictions,
@@ -1332,7 +1396,10 @@ package body System.Tasking.Stages is
       --  other locks. Instead, we put those ATCBs to be freed onto a
       --  temporary list, called To_Be_Freed.
 
-      Lock_All_Tasks_List;
+      if not Single_Lock then
+         Lock_RTS;
+      end if;
+
       C := All_Tasks_List;
       P := null;
 
@@ -1355,7 +1422,7 @@ package body System.Tasking.Stages is
          end if;
       end loop;
 
-      Unlock_All_Tasks_List;
+      Unlock_RTS;
 
       --  Free all the ATCBs on the list To_Be_Freed.
 
@@ -1377,7 +1444,7 @@ package body System.Tasking.Stages is
       --  otherwise occur during finalization of library-level objects.
       --  A better solution might be to hook task objects into the
       --  finalization chain and deallocate the ATCB when the task
-      --  object is deallocated.  However, this change is not likely
+      --  object is deallocated. However, this change is not likely
       --  to gain anything significant, since all this storage should
       --  be recovered en-masse when the process exits.
 
@@ -1390,14 +1457,16 @@ package body System.Tasking.Stages is
 
          if T.Interrupt_Entry and Interrupt_Manager_ID /= null then
             declare
-               Detach_Interrupt_Entries_Index : Task_Entry_Index := 6;
+               Detach_Interrupt_Entries_Index : Task_Entry_Index := 1;
                --  Corresponds to the entry index of System.Interrupts.
                --  Interrupt_Manager.Detach_Interrupt_Entries.
                --  Be sure to update this value when changing
                --  Interrupt_Manager specs.
 
                type Param_Type is access all Task_ID;
+
                Param : aliased Param_Type := T'Access;
+
             begin
                System.Tasking.Rendezvous.Call_Simple
                  (Interrupt_Manager_ID, Detach_Interrupt_Entries_Index,
@@ -1423,25 +1492,22 @@ package body System.Tasking.Stages is
          end if;
       end loop;
 
-      --  It might seem nice to let the terminated task deallocate
-      --  its own ATCB.  That would not cover the case of unactivated
-      --  tasks.  It also would force us to keep the underlying thread
-      --  around past termination, since references to the ATCB are
-      --  possible past termination.  Currently, we get rid of the
-      --  thread as soon as the task terminates, and let the parent
-      --  recover the ATCB later.
+      --  It might seem nice to let the terminated task deallocate its own
+      --  ATCB. That would not cover the case of unactivated tasks. It also
+      --  would force us to keep the underlying thread around past termination,
+      --  since references to the ATCB are possible past termination.
+      --  Currently, we get rid of the thread as soon as the task terminates,
+      --  and let the parent recover the ATCB later.
 
-      --  ????
       --  Some day, if we want to recover the ATCB earlier, at task
-      --  termination, we could consider using "fat task IDs", that
-      --  include the serial number with the ATCB pointer, to catch
-      --  references to tasks that no longer have ATCBs.  It is not
-      --  clear how much this would gain, since the user-level task
-      --  object would still be occupying storage.
+      --  termination, we could consider using "fat task IDs", that include the
+      --  serial number with the ATCB pointer, to catch references to tasks
+      --  that no longer have ATCBs. It is not clear how much this would gain,
+      --  since the user-level task object would still be occupying storage.
 
       --  Make next master level up active.
-      --  We don't need to lock the ATCB, since the value is only
-      --  updated by each task for itself.
+      --  We don't need to lock the ATCB, since the value is only updated by
+      --  each task for itself.
 
       Self_ID.Master_Within := CM - 1;
    end Vulnerable_Complete_Master;
@@ -1450,11 +1516,11 @@ package body System.Tasking.Stages is
    -- Vulnerable_Complete_Task --
    ------------------------------
 
-   --  Complete the calling task.
+   --  Complete the calling task
 
    --  This procedure must be called with abort deferred. (That's why the
    --  name has "Vulnerable" in it.) It should only be called by Complete_Task
-   --  and Finalizate_Global_Tasks (for the environment task).
+   --  and Finalize_Global_Tasks (for the environment task).
 
    --  The effect is similar to that of Complete_Master. Differences include
    --  the closing of entries here, and computation of the number of active
@@ -1476,22 +1542,29 @@ package body System.Tasking.Stages is
       pragma Assert (Self_ID.Open_Accepts = null);
       pragma Assert (Self_ID.ATC_Nesting_Level = 1);
 
-      pragma Debug
-        (Debug.Trace (Self_ID, "V_Complete_Task", 'C'));
+      pragma Debug (Debug.Trace (Self_ID, "V_Complete_Task", 'C'));
+
+      if Single_Lock then
+         Lock_RTS;
+      end if;
 
       Write_Lock (Self_ID);
       Self_ID.Callable := False;
 
-      --  In theory, Self should have no pending entry calls
-      --  left on its call-stack.  Each async. select statement should
-      --  clean its own call, and blocking entry calls should
-      --  defer abort until the calls are cancelled, then clean up.
+      --  In theory, Self should have no pending entry calls left on its
+      --  call-stack. Each async. select statement should clean its own call,
+      --  and blocking entry calls should defer abort until the calls are
+      --  cancelled, then clean up.
 
-      Cancel_Queued_Entry_Calls (Self_ID);
+      Utilities.Cancel_Queued_Entry_Calls (Self_ID);
       Unlock (Self_ID);
 
       if Self_ID.Common.Activator /= null then
          Vulnerable_Complete_Activation (Self_ID);
+      end if;
+
+      if Single_Lock then
+         Unlock_RTS;
       end if;
 
       --  If Self_ID.Master_Within = Self_ID.Master_of_Task + 2
@@ -1501,7 +1574,6 @@ package body System.Tasking.Stages is
       if Self_ID.Master_Within = Self_ID.Master_of_Task + 2 then
          Vulnerable_Complete_Master (Self_ID);
       end if;
-
    end Vulnerable_Complete_Task;
 
    --------------------------
@@ -1511,8 +1583,10 @@ package body System.Tasking.Stages is
    --  Recover all runtime system storage associated with the task T.
    --  This should only be called after T has terminated and will no
    --  longer be referenced.
+
    --  For tasks created by an allocator that fails, due to an exception,
    --  it is called from Expunge_Unactivated_Tasks.
+
    --  For tasks created by elaboration of task object declarations it
    --  is called from the finalization code of the Task_Wrapper procedure.
    --  It is also called from Unchecked_Deallocation, for objects that
@@ -1523,12 +1597,22 @@ package body System.Tasking.Stages is
       pragma Debug
         (Debug.Trace ("Vulnerable_Free_Task", T, 'C'));
 
+      if Single_Lock then
+         Lock_RTS;
+      end if;
+
       Write_Lock (T);
       Initialization.Finalize_Attributes_Link.all (T);
       Unlock (T);
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
+
       if T.Common.Task_Image /= null then
          Free_Task_Image (T.Common.Task_Image);
       end if;
+
       System.Task_Primitives.Operations.Finalize_TCB (T);
    end Vulnerable_Free_Task;
 

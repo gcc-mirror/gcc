@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$                            --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,8 +34,24 @@
 ------------------------------------------------------------------------------
 
 with Namet; use Namet;
+with Table;
 
 package body Snames is
+
+   --  Table used to record convention identifiers
+
+   type Convention_Id_Entry is record
+      Name       : Name_Id;
+      Convention : Convention_Id;
+   end record;
+
+   package Convention_Identifiers is new Table.Table (
+     Table_Component_Type => Convention_Id_Entry,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 50,
+     Table_Increment      => 200,
+     Table_Name           => "Name_Convention_Identifiers");
 
    --  Table of names to be set by Initialize. Each name is terminated by a
    --  single #, and the end of the list is marked by a null entry, i.e. by
@@ -149,6 +165,7 @@ package body Snames is
      "ada_95#" &
      "c_pass_by_copy#" &
      "component_alignment#" &
+     "convention_identifier#" &
      "discard_names#" &
      "elaboration_checks#" &
      "eliminate#" &
@@ -261,21 +278,25 @@ package body Snames is
      "title#" &
      "unchecked_union#" &
      "unimplemented_unit#" &
+     "universal_data#" &
+     "unreferenced#" &
      "unreserve_all_interrupts#" &
      "volatile#" &
      "volatile_components#" &
      "weak_external#" &
      "ada#" &
-     "asm#" &
      "assembler#" &
      "cobol#" &
      "cpp#" &
-     "dll#" &
      "fortran#" &
      "intrinsic#" &
      "java#" &
      "stdcall#" &
      "stubbed#" &
+     "asm#" &
+     "assembly#" &
+     "default#" &
+     "dll#" &
      "win32#" &
      "as_is#" &
      "body_file_name#" &
@@ -286,7 +307,6 @@ package body Snames is
      "copy#" &
      "d_float#" &
      "descriptor#" &
-     "default#" &
      "dot_replacement#" &
      "dynamic#" &
      "entity#" &
@@ -298,6 +318,7 @@ package body Snames is
      "gnat#" &
      "gpl#" &
      "ieee_float#" &
+     "homonym_number#" &
      "internal#" &
      "link_name#" &
      "lowercase#" &
@@ -387,8 +408,6 @@ package body Snames is
      "machine_rounds#" &
      "machine_size#" &
      "mantissa#" &
-     "max_interrupt_priority#" &
-     "max_priority#" &
      "max_size_in_storage_elements#" &
      "maximum_alignment#" &
      "mechanism_code#" &
@@ -420,7 +439,6 @@ package body Snames is
      "storage_unit#" &
      "tag#" &
      "terminated#" &
-     "tick#" &
      "to_address#" &
      "type_class#" &
      "uet_address#" &
@@ -641,7 +659,7 @@ package body Snames is
 
    --    TxxxT   type of literal table for enumeration type xxx     (Sem_Ch3)
 
-   --  (list not yet complete ???)
+   --  (Note: this list is not complete or accurate ???)
 
    ----------------------
    -- Get_Attribute_Id --
@@ -669,19 +687,23 @@ package body Snames is
    begin
       case N is
          when Name_Ada        => return Convention_Ada;
-         when Name_Asm        => return Convention_Assembler;
          when Name_Assembler  => return Convention_Assembler;
          when Name_C          => return Convention_C;
          when Name_COBOL      => return Convention_COBOL;
          when Name_CPP        => return Convention_CPP;
-         when Name_DLL        => return Convention_Stdcall;
          when Name_Fortran    => return Convention_Fortran;
          when Name_Intrinsic  => return Convention_Intrinsic;
          when Name_Java       => return Convention_Java;
          when Name_Stdcall    => return Convention_Stdcall;
          when Name_Stubbed    => return Convention_Stubbed;
-         when Name_Win32      => return Convention_Stdcall;
+
          when others          =>
+            for J in 1 .. Convention_Identifiers.Last loop
+               if N = Convention_Identifiers.Table (J).Name then
+                  return Convention_Identifiers.Table (J).Convention;
+               end if;
+            end loop;
+
             raise Program_Error;
       end case;
    end Get_Convention_Id;
@@ -767,6 +789,20 @@ package body Snames is
       --  properly matching version of the body.
 
       pragma Assert (Discard_Name = Last_Predefined_Name);
+
+      --  Initialize the convention identifiers table with the standard
+      --  set of synonyms that we recognize for conventions.
+
+      Convention_Identifiers.Init;
+
+      Convention_Identifiers.Append ((Name_Asm,      Convention_Assembler));
+      Convention_Identifiers.Append ((Name_Assembly, Convention_Assembler));
+
+      Convention_Identifiers.Append ((Name_Default,  Convention_C));
+      Convention_Identifiers.Append ((Name_External, Convention_C));
+
+      Convention_Identifiers.Append ((Name_DLL,      Convention_Stdcall));
+      Convention_Identifiers.Append ((Name_Win32,    Convention_Stdcall));
    end Initialize;
 
    -----------------------
@@ -793,8 +829,20 @@ package body Snames is
 
    function Is_Convention_Name (N : Name_Id) return Boolean is
    begin
-      return N in First_Convention_Name .. Last_Convention_Name
-        or else N = Name_C;
+      if N in First_Convention_Name .. Last_Convention_Name
+        or else N = Name_C
+      then
+         return True;
+
+      else
+         for J in 1 .. Convention_Identifiers.Last loop
+            if N = Convention_Identifiers.Table (J).Name then
+               return True;
+            end if;
+         end loop;
+
+         return False;
+      end if;
    end Is_Convention_Name;
 
    ------------------------------
@@ -883,5 +931,17 @@ package body Snames is
    begin
       return N in First_Type_Attribute_Name .. Last_Type_Attribute_Name;
    end Is_Type_Attribute_Name;
+
+   ----------------------------------
+   -- Record_Convention_Identifier --
+   ----------------------------------
+
+   procedure Record_Convention_Identifier
+     (Id         : Name_Id;
+      Convention : Convention_Id)
+   is
+   begin
+      Convention_Identifiers.Append ((Id, Convention));
+   end Record_Convention_Identifier;
 
 end Snames;

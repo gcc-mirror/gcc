@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $                              --
+--                            $Revision$
 --                                                                          --
---             Copyright (C) 1997 Free Software Foundation, Inc.            --
+--          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,13 +39,15 @@ package Sem_Elim is
      (Arg_Unit_Name       : Node_Id;
       Arg_Entity          : Node_Id;
       Arg_Parameter_Types : Node_Id;
-      Arg_Result_Type     : Node_Id);
+      Arg_Result_Type     : Node_Id;
+      Arg_Homonym_Number  : Node_Id);
    --  Process eliminate pragma. The number of arguments has been checked,
    --  as well as possible optional identifiers, but no other checks have
    --  been made. This subprogram completes the checking, and then if the
    --  pragma is well formed, makes appropriate entries in the internal
-   --  tables used to keep track of Eliminate pragmas. The four arguments
-   --  are the possible pragma arguments (set to Empty if not present).
+   --  tables used to keep track of Eliminate pragmas. The five arguments
+   --  are expressions (not pragma argument associations) for the possible
+   --  pragma arguments. A parameter that is not present is set to Empty.
 
    procedure Check_Eliminated (E : Entity_Id);
    --  Checks if entity E is eliminated, and if so sets the Is_Eliminated

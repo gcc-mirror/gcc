@@ -7,9 +7,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.1 $
+--                             $Revision$
 --                                                                          --
---            Copyright (C) 1991-2001, Florida State University             --
+--         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,15 +30,17 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 --  This is a POSIX version of this package where foreign threads are
 --  recognized.
---  Currently, DEC Unix, SCO UnixWare, Solaris pthread, HPUX pthread and RTEMS
---  use this version.
+--  Currently, DEC Unix, SCO UnixWare, Solaris pthread, HPUX pthread,
+--  GNU/Linux threads and RTEMS use this version.
+
+with System.Task_Info;
+--  Use for Unspecified_Task_Info
 
 with System.Soft_Links;
 --  used to initialize TSD for a C thread, in function Self
@@ -71,7 +73,7 @@ package body Specific is
 
    Fake_ATCB_List : Fake_ATCB_Ptr;
    --  A linear linked list.
-   --  The list is protected by All_Tasks_L;
+   --  The list is protected by Single_RTS_Lock;
    --  Nodes are added to this list from the front.
    --  Once a node is added to this list, it is never removed.
 
@@ -109,7 +111,7 @@ package body Specific is
       --  We dare not call anything that might require an ATCB, until
       --  we have the new ATCB in place.
 
-      Write_Lock (All_Tasks_L'Access);
+      Lock_RTS;
       Q := null;
       P := Fake_ATCB_List;
 
@@ -195,7 +197,7 @@ package body Specific is
 
       --  Must not unlock until Next_ATCB is again allocated.
 
-      Unlock (All_Tasks_L'Access);
+      Unlock_RTS;
       return Self_ID;
    end New_Fake_ATCB;
 
@@ -205,7 +207,6 @@ package body Specific is
 
    procedure Initialize (Environment_Task : Task_ID) is
       Result : Interfaces.C.int;
-
    begin
       Result := pthread_key_create (ATCB_Key'Access, null);
       pragma Assert (Result = 0);
@@ -223,7 +224,6 @@ package body Specific is
 
    procedure Set (Self_Id : Task_ID) is
       Result  : Interfaces.C.int;
-
    begin
       Result := pthread_setspecific (ATCB_Key, To_Address (Self_Id));
       pragma Assert (Result = 0);
@@ -233,37 +233,21 @@ package body Specific is
    -- Self --
    ----------
 
-   --  To make Ada tasks and C threads interoperate better, we have
-   --  added some functionality to Self.  Suppose a C main program
-   --  (with threads) calls an Ada procedure and the Ada procedure
-   --  calls the tasking runtime system.  Eventually, a call will be
-   --  made to self.  Since the call is not coming from an Ada task,
-   --  there will be no corresponding ATCB.
+   --  To make Ada tasks and C threads interoperate better, we have added some
+   --  functionality to Self. Suppose a C main program (with threads) calls an
+   --  Ada procedure and the Ada procedure calls the tasking runtime system.
+   --  Eventually, a call will be made to self. Since the call is not coming
+   --  from an Ada task, there will be no corresponding ATCB.
 
-   --  (The entire Ada run-time system may not have been elaborated,
-   --  either, but that is a different problem, that we will need to
-   --  solve another way.)
+   --  What we do in Self is to catch references that do not come from
+   --  recognized Ada tasks, and create an ATCB for the calling thread.
 
-   --  What we do in Self is to catch references that do not come
-   --  from recognized Ada tasks, and create an ATCB for the calling
-   --  thread.
-
-   --  The new ATCB will be "detached" from the normal Ada task
-   --  master hierarchy, much like the existing implicitly created
-   --  signal-server tasks.
-
-   --  We will also use such points to poll for disappearance of the
-   --  threads associated with any implicit ATCBs that we created
-   --  earlier, and take the opportunity to recover them.
-
-   --  A nasty problem here is the limitations of the compilation
-   --  order dependency, and in particular the GNARL/GNULLI layering.
-   --  To initialize an ATCB we need to assume System.Tasking has
-   --  been elaborated.
+   --  The new ATCB will be "detached" from the normal Ada task master
+   --  hierarchy, much like the existing implicitly created signal-server
+   --  tasks.
 
    function Self return Task_ID is
       Result : System.Address;
-
    begin
       Result := pthread_getspecific (ATCB_Key);
 

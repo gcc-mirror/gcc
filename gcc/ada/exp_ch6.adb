@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -464,7 +464,8 @@ package body Exp_Ch6 is
            Make_If_Statement (Loc,
              Condition       => Test,
              Then_Statements => New_List (
-               Make_Raise_Storage_Error (Loc)),
+               Make_Raise_Storage_Error (Loc,
+                 Reason => SE_Infinite_Recursion)),
 
              Else_Statements => New_List (
                Relocate_Node (Node (Call)))));
@@ -1208,6 +1209,12 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_Call
 
    begin
+      --  Ignore if previous error
+
+      if Nkind (N) in N_Has_Etype and then Etype (N) = Any_Type then
+         return;
+      end if;
+
       --  Call using access to subprogram with explicit dereference
 
       if Nkind (Name (N)) = N_Explicit_Dereference then
@@ -1474,7 +1481,10 @@ package body Exp_Ch6 is
               Make_Op_Eq (Loc,
                 Left_Opnd => Duplicate_Subexpr (Prev),
                 Right_Opnd => Make_Null (Loc));
-            Insert_Action (Prev, Make_Raise_Constraint_Error (Loc, Cond));
+            Insert_Action (Prev,
+              Make_Raise_Constraint_Error (Loc,
+                Condition => Cond,
+                Reason    => CE_Access_Parameter_Is_Null));
          end if;
 
          --  Perform appropriate validity checks on parameters
@@ -1678,6 +1688,7 @@ package body Exp_Ch6 is
                if Etype (Formal) /= Etype (Parent_Formal)
                  and then Is_Scalar_Type (Etype (Formal))
                  and then Ekind (Formal) = E_In_Parameter
+                 and then not Raises_Constraint_Error (Actual)
                then
                   Rewrite (Actual,
                     OK_Convert_To (Etype (Parent_Formal),
@@ -2169,7 +2180,9 @@ package body Exp_Ch6 is
                --  use a qualified expression, because an aggregate is not a
                --  legal argument of a conversion.
 
-               if Nkind (Expression (N)) = N_Aggregate then
+               if Nkind (Expression (N)) = N_Aggregate
+                 or else Nkind (Expression (N)) = N_Null
+               then
                   Ret :=
                     Make_Qualified_Expression (Sloc (N),
                        Subtype_Mark => New_Occurrence_Of (Ret_Type, Sloc (N)),
@@ -2876,7 +2889,8 @@ package body Exp_Ch6 is
                      Make_Block_Statement (Hloc,
                        Handled_Statement_Sequence => H);
             Rais : constant Node_Id    :=
-                     Make_Raise_Program_Error (Hloc);
+                     Make_Raise_Program_Error (Hloc,
+                       Reason => PE_Missing_Return);
 
          begin
             Set_Handled_Statement_Sequence (N,
@@ -2912,7 +2926,7 @@ package body Exp_Ch6 is
          if Present (Next_Op) then
             Dec := Parent (Base_Type (Scop));
             Set_Privals (Dec, Next_Op, Loc);
-            Set_Discriminals (Dec, Next_Op, Loc);
+            Set_Discriminals (Dec);
          end if;
       end if;
 

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                            $Revision: 1.1 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -48,7 +48,7 @@ struct Exception_Occurrence
   int Max_Length;
   Exception_Id Id;
   int Msg_Length;
-  char Msg [0];
+  char Msg[0];
 };
 
 typedef struct Exception_Occurrence *Exception_Occurrence_Access;
@@ -60,12 +60,11 @@ extern void __gnat_free			PARAMS ((void *));
 extern void *__gnat_realloc		PARAMS ((void *, __SIZE_TYPE__));
 extern void __gnat_finalize		PARAMS ((void));
 extern void set_gnat_exit_status	PARAMS ((int));
-extern void __gnat_set_globals		PARAMS ((int, int, int, int, int, int,
-						 void (*) PARAMS ((void)),
-						 int, int));
+extern void __gnat_set_globals		PARAMS ((int, int, 
+						 char, char, char, char,
+						 char *, int, int, int));
 extern void __gnat_initialize		PARAMS ((void));
 extern void __gnat_init_float		PARAMS ((void));
 extern void __gnat_install_handler	PARAMS ((void));
 
 extern int gnat_exit_status;
-

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.1 $
+--                             $Revision$
 --                                                                          --
---         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -91,7 +90,10 @@ package body System.Task_Primitives.Operations is
    use System.Parameters;
    use System.OS_Primitives;
 
-   pragma Linker_Options ("-Xlinker --stack=0x800000,0x1000");
+   pragma Link_With ("-Xlinker --stack=0x800000,0x1000");
+   --  Change the stack size (8 MB) for tasking programs on Windows. This
+   --  permit to have more than 30 tasks running at the same time. Note that
+   --  we set the stack size for non tasking programs on System unit.
 
    package SSL renames System.Soft_Links;
 
@@ -102,8 +104,10 @@ package body System.Task_Primitives.Operations is
    Environment_Task_ID : Task_ID;
    --  A variable to hold Task_ID for the environment task.
 
-   All_Tasks_L : aliased System.Task_Primitives.RTS_Lock;
-   --  See comments on locking rules in System.Tasking (spec).
+   Single_RTS_Lock : aliased RTS_Lock;
+   --  This is a lock to allow only one thread of control in the RTS at
+   --  a time; it is used to execute in mutual exclusion from all other tasks.
+   --  Used mainly in Single_Lock mode, but also to protect All_Tasks_List
 
    Time_Slice_Val : Integer;
    pragma Import (C, Time_Slice_Val, "__gl_time_slice_val");
@@ -133,7 +137,7 @@ package body System.Task_Primitives.Operations is
 
    Fake_ATCB_List : Fake_ATCB_Ptr;
    --  A linear linked list.
-   --  The list is protected by All_Tasks_L;
+   --  The list is protected by Single_RTS_Lock;
    --  Nodes are added to this list from the front.
    --  Once a node is added to this list, it is never removed.
 
@@ -184,7 +188,7 @@ package body System.Task_Primitives.Operations is
       --  We dare not call anything that might require an ATCB, until
       --  we have the new ATCB in place.
 
-      Write_Lock (All_Tasks_L'Access);
+      Lock_RTS;
       Q := null;
       P := Fake_ATCB_List;
 
@@ -263,7 +267,7 @@ package body System.Task_Primitives.Operations is
 
       --  Must not unlock until Next_ATCB is again allocated.
 
-      Unlock (All_Tasks_L'Access);
+      Unlock_RTS;
       return Self_ID;
    end New_Fake_ATCB;
 
@@ -475,7 +479,7 @@ package body System.Task_Primitives.Operations is
 
    --  Note: mutexes and cond_variables needed per-task basis are
    --  initialized in Initialize_TCB and the Storage_Error is handled.
-   --  Other mutexes (such as All_Tasks_Lock, Memory_Lock...) used in
+   --  Other mutexes (such as RTS_Lock, Memory_Lock...) used in
    --  the RTS is initialized before any status change of RTS.
    --  Therefore raising Storage_Error in the following routines
    --  should be able to be handled safely.
@@ -526,15 +530,20 @@ package body System.Task_Primitives.Operations is
       Ceiling_Violation := False;
    end Write_Lock;
 
-   procedure Write_Lock (L : access RTS_Lock) is
+   procedure Write_Lock
+     (L : access RTS_Lock; Global_Lock : Boolean := False) is
    begin
-      EnterCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);
+      if not Single_Lock or else Global_Lock then
+         EnterCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);
+      end if;
    end Write_Lock;
 
    procedure Write_Lock (T : Task_ID) is
    begin
-      EnterCriticalSection
-        (CRITICAL_SECTION (T.Common.LL.L)'Unrestricted_Access);
+      if not Single_Lock then
+         EnterCriticalSection
+           (CRITICAL_SECTION (T.Common.LL.L)'Unrestricted_Access);
+      end if;
    end Write_Lock;
 
    ---------------
@@ -555,15 +564,19 @@ package body System.Task_Primitives.Operations is
       LeaveCriticalSection (L.Mutex'Access);
    end Unlock;
 
-   procedure Unlock (L : access RTS_Lock) is
+   procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
    begin
-      LeaveCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);
+      if not Single_Lock or else Global_Lock then
+         LeaveCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);
+      end if;
    end Unlock;
 
    procedure Unlock (T : Task_ID) is
    begin
-      LeaveCriticalSection
-        (CRITICAL_SECTION (T.Common.LL.L)'Unrestricted_Access);
+      if not Single_Lock then
+         LeaveCriticalSection
+           (CRITICAL_SECTION (T.Common.LL.L)'Unrestricted_Access);
+      end if;
    end Unlock;
 
    -----------
@@ -576,7 +589,11 @@ package body System.Task_Primitives.Operations is
    begin
       pragma Assert (Self_ID = Self);
 
-      Cond_Wait (Self_ID.Common.LL.CV'Access, Self_ID.Common.LL.L'Access);
+      if Single_Lock then
+         Cond_Wait (Self_ID.Common.LL.CV'Access, Single_RTS_Lock'Access);
+      else
+         Cond_Wait (Self_ID.Common.LL.CV'Access, Self_ID.Common.LL.L'Access);
+      end if;
 
       if Self_ID.Deferral_Level = 0
         and then Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level
@@ -611,7 +628,7 @@ package body System.Task_Primitives.Operations is
 
    begin
       Timedout := True;
-      Yielded := False;
+      Yielded  := False;
 
       if Mode = Relative then
          Rel_Time := Time;
@@ -626,8 +643,13 @@ package body System.Task_Primitives.Operations is
             exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level
               or else Self_ID.Pending_Priority_Change;
 
-            Cond_Timed_Wait (Self_ID.Common.LL.CV'Access,
-              Self_ID.Common.LL.L'Access, Rel_Time, Local_Timedout, Result);
+            if Single_Lock then
+               Cond_Timed_Wait (Self_ID.Common.LL.CV'Access,
+                 Single_RTS_Lock'Access, Rel_Time, Local_Timedout, Result);
+            else
+               Cond_Timed_Wait (Self_ID.Common.LL.CV'Access,
+                 Self_ID.Common.LL.L'Access, Rel_Time, Local_Timedout, Result);
+            end if;
 
             exit when Abs_Time <= Monotonic_Clock;
 
@@ -660,9 +682,14 @@ package body System.Task_Primitives.Operations is
    begin
       --  Only the little window between deferring abort and
       --  locking Self_ID is the reason we need to
-      --  check for pending abort and priority change below! :(
+      --  check for pending abort and priority change below!
 
       SSL.Abort_Defer.all;
+
+      if Single_Lock then
+         Lock_RTS;
+      end if;
+
       Write_Lock (Self_ID);
 
       if Mode = Relative then
@@ -685,8 +712,13 @@ package body System.Task_Primitives.Operations is
 
             exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
 
-            Cond_Timed_Wait (Self_ID.Common.LL.CV'Access,
-              Self_ID.Common.LL.L'Access, Rel_Time, Timedout, Result);
+            if Single_Lock then
+               Cond_Timed_Wait (Self_ID.Common.LL.CV'Access,
+                 Single_RTS_Lock'Access, Rel_Time, Timedout, Result);
+            else
+               Cond_Timed_Wait (Self_ID.Common.LL.CV'Access,
+                 Self_ID.Common.LL.L'Access, Rel_Time, Timedout, Result);
+            end if;
 
             exit when Abs_Time <= Monotonic_Clock;
 
@@ -697,6 +729,11 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Unlock (Self_ID);
+
+      if Single_Lock then
+         Unlock_RTS;
+      end if;
+
       Yield;
       SSL.Abort_Undefer.all;
    end Timed_Delay;
@@ -834,7 +871,7 @@ package body System.Task_Primitives.Operations is
 
       Self_ID.Common.LL.Thread_Id := GetCurrentThreadId;
 
-      Lock_All_Tasks_List;
+      Lock_RTS;
 
       for J in Known_Tasks'Range loop
          if Known_Tasks (J) = null then
@@ -844,7 +881,7 @@ package body System.Task_Primitives.Operations is
          end if;
       end loop;
 
-      Unlock_All_Tasks_List;
+      Unlock_RTS;
    end Enter_Task;
 
    --------------
@@ -856,14 +893,18 @@ package body System.Task_Primitives.Operations is
       return new Ada_Task_Control_Block (Entry_Num);
    end New_ATCB;
 
-   ----------------------
-   --  Initialize_TCB  --
-   ----------------------
+   --------------------
+   -- Initialize_TCB --
+   --------------------
 
    procedure Initialize_TCB (Self_ID : Task_ID; Succeeded : out Boolean) is
    begin
       Initialize_Cond (Self_ID.Common.LL.CV'Access);
-      Initialize_Lock (Self_ID.Common.LL.L'Access, ATCB_Level);
+
+      if not Single_Lock then
+         Initialize_Lock (Self_ID.Common.LL.L'Access, ATCB_Level);
+      end if;
+
       Succeeded := True;
    end Initialize_TCB;
 
@@ -880,12 +921,6 @@ package body System.Task_Primitives.Operations is
    is
       hTask          : HANDLE;
       TaskId         : aliased DWORD;
-
-      --  ??? The fact that we can't use PVOID because the compiler
-      --  gives a "PVOID is not visible" error is a GNAT bug.
-      --  The strange thing is that the file compiles fine during a regular
-      --  build.
-
       pTaskParameter : System.OS_Interface.PVOID;
       dwStackSize    : DWORD;
       Result         : DWORD;
@@ -952,7 +987,10 @@ package body System.Task_Primitives.Operations is
         Unchecked_Deallocation (Ada_Task_Control_Block, Task_ID);
 
    begin
-      Finalize_Lock (T.Common.LL.L'Access);
+      if not Single_Lock then
+         Finalize_Lock (T.Common.LL.L'Access);
+      end if;
+
       Finalize_Cond (T.Common.LL.CV'Access);
 
       if T.Known_Tasks_Index /= -1 then
@@ -997,23 +1035,23 @@ package body System.Task_Primitives.Operations is
       return Environment_Task_ID;
    end Environment_Task;
 
-   -------------------------
-   -- Lock_All_Tasks_List --
-   -------------------------
+   --------------
+   -- Lock_RTS --
+   --------------
 
-   procedure Lock_All_Tasks_List is
+   procedure Lock_RTS is
    begin
-      Write_Lock (All_Tasks_L'Access);
-   end Lock_All_Tasks_List;
+      Write_Lock (Single_RTS_Lock'Access, Global_Lock => True);
+   end Lock_RTS;
 
-   ---------------------------
-   -- Unlock_All_Tasks_List --
-   ---------------------------
+   ----------------
+   -- Unlock_RTS --
+   ----------------
 
-   procedure Unlock_All_Tasks_List is
+   procedure Unlock_RTS is
    begin
-      Unlock (All_Tasks_L'Access);
-   end Unlock_All_Tasks_List;
+      Unlock (Single_RTS_Lock'Access, Global_Lock => True);
+   end Unlock_RTS;
 
    ----------------
    -- Initialize --
@@ -1033,7 +1071,7 @@ package body System.Task_Primitives.Operations is
 
       --  Initialize the lock used to synchronize chain of all ATCBs.
 
-      Initialize_Lock (All_Tasks_L'Access, All_Tasks_Level);
+      Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
 
       Environment_Task.Common.LL.Thread := GetCurrentThread;
       Enter_Task (Environment_Task);

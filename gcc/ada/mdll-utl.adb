@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,11 +30,10 @@
 
 with Ada.Text_IO;
 with Ada.Exceptions;
-with Ada.Unchecked_Deallocation;
 
 with Sdefault;
 
-package body MDLL.Tools is
+package body MDLL.Utl is
 
    use Ada;
    use GNAT;
@@ -51,20 +50,19 @@ package body MDLL.Tools is
    Gnatlink_Name : constant String := "gnatlink";
    Gnatlink_Exec : OS_Lib.String_Access;
 
-   procedure Free is
-     new Ada.Unchecked_Deallocation (OS_Lib.Argument_List,
-                                     OS_Lib.Argument_List_Access);
-
-   procedure Print_Command (Tool_Name : in String;
-                            Arguments : in OS_Lib.Argument_List);
+   procedure Print_Command
+     (Tool_Name : String;
+      Arguments : OS_Lib.Argument_List);
    --  display the command runned when in Verbose mode
 
    -------------------
    -- Print_Command --
    -------------------
 
-   procedure Print_Command (Tool_Name : in String;
-                            Arguments : in OS_Lib.Argument_List) is
+   procedure Print_Command
+     (Tool_Name : String;
+      Arguments : OS_Lib.Argument_List)
+   is
    begin
       if Verbose then
          Text_IO.Put (Tool_Name);
@@ -75,29 +73,18 @@ package body MDLL.Tools is
       end if;
    end Print_Command;
 
-   -----------------
-   -- Delete_File --
-   -----------------
-
-   procedure Delete_File (Filename : in String) is
-      File   : constant String := Filename & ASCII.Nul;
-      Success : Boolean;
-   begin
-      OS_Lib.Delete_File (File'Address, Success);
-   end Delete_File;
-
    -------------
    -- Dlltool --
    -------------
 
-   procedure Dlltool (Def_Filename : in String;
-                      DLL_Name     : in String;
-                      Library      : in String;
-                      Exp_Table    : in String := "";
-                      Base_File    : in String := "";
-                      Build_Import : in Boolean)
+   procedure Dlltool
+     (Def_Filename : String;
+      DLL_Name     : String;
+      Library      : String;
+      Exp_Table    : String := "";
+      Base_File    : String := "";
+      Build_Import : Boolean)
    is
-
       Arguments  : OS_Lib.Argument_List (1 .. 11);
       A          : Positive;
 
@@ -162,11 +149,12 @@ package body MDLL.Tools is
    -- Gcc --
    ---------
 
-   procedure Gcc (Output_File : in String;
-                  Files       : in Argument_List;
-                  Options     : in Argument_List;
-                  Base_File   : in String := "";
-                  Build_Lib   : in Boolean := False)
+   procedure Gcc
+     (Output_File : String;
+      Files       : Argument_List;
+      Options     : Argument_List;
+      Base_File   : String := "";
+      Build_Lib   : Boolean := False)
    is
       use Sdefault;
 
@@ -240,8 +228,9 @@ package body MDLL.Tools is
    -- Gnatbind --
    --------------
 
-   procedure Gnatbind (Alis : in Argument_List;
-                       Args : in Argument_List := Null_Argument_List)
+   procedure Gnatbind
+     (Alis : Argument_List;
+      Args : Argument_List := Null_Argument_List)
    is
       Arguments   : OS_Lib.Argument_List (1 .. 1 + Alis'Length + Args'Length);
       Success     : Boolean;
@@ -267,8 +256,9 @@ package body MDLL.Tools is
    -- Gnatlink --
    --------------
 
-   procedure Gnatlink (Ali  : in String;
-                       Args : in Argument_List := Null_Argument_List)
+   procedure Gnatlink
+     (Ali  : String;
+      Args : Argument_List := Null_Argument_List)
    is
       Arguments : OS_Lib.Argument_List (1 .. 1 + Args'Length);
       Success   : Boolean;
@@ -343,4 +333,4 @@ package body MDLL.Tools is
 
    end Locate;
 
-end MDLL.Tools;
+end MDLL.Utl;

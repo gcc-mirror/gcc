@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.14 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -696,7 +696,6 @@ package body Interfaces.COBOL is
             if Format = Packed_Unsigned then
                return Item (Item'Last) = 16#F#;
 
-
             --  For signed, accept all standard and non-standard signs
 
             else
@@ -718,6 +717,8 @@ package body Interfaces.COBOL is
       --  Note that the tests here are all compile time tests
 
       function Length (Format : Binary_Format) return Natural is
+         pragma Warnings (Off, Format);
+
       begin
          if Num'Digits <= 2 then
             return 1;
@@ -756,6 +757,8 @@ package body Interfaces.COBOL is
         (Format : Packed_Format)
          return   Natural
       is
+         pragma Warnings (Off, Format);
+
       begin
          case Packed_Representation is
             when IBM =>

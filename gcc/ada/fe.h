@@ -6,9 +6,9 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                             $Revision: 1.1 $
+ *                             $Revision$
  *                                                                          *
- *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2002 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -81,6 +81,14 @@ extern void Set_RM_Size			PARAMS ((Entity_Id, Uint));
 extern void Set_Component_Bit_Offset	PARAMS ((Entity_Id, Uint));
 extern void Set_Present_Expr		PARAMS ((Node_Id, Uint));
 
+/* Test if the node N is the name of an entity (i.e. is an identifier,
+   expanded name, or an attribute reference that returns an entity).  */
+#define Is_Entity_Name einfo__is_entity_name
+extern Boolean Is_Entity_Name		PARAMS ((Node_Id));
+
+#define Get_Attribute_Definition_Clause einfo__get_attribute_definition_clause
+extern Node_Id Get_Attribute_Definition_Clause PARAMS ((Entity_Id, char));
+
 /* errout: */
 
 #define Error_Msg_N	errout__error_msg_n
@@ -144,7 +152,12 @@ extern Boolean In_Extended_Main_Code_Unit	PARAMS ((Entity_Id));
 /* opt: */
 
 #define Global_Discard_Names opt__global_discard_names
+#define Exception_Mechanism  opt__exception_mechanism
+
+typedef enum {Setjmp_Longjmp, Front_End_ZCX, GCC_ZCX} Exception_Mechanism_Type;
+
 extern Boolean Global_Discard_Names;
+extern Exception_Mechanism_Type Exception_Mechanism;
 
 /* restrict: */
 
@@ -153,12 +166,6 @@ extern Boolean Global_Discard_Names;
 
 extern void Check_Elaboration_Code_Allowed	PARAMS ((Node_Id));
 extern Boolean No_Exception_Handlers_Set	PARAMS ((void));
-
-/* sem_ch13: */
-
-#define Get_Attribute_Definition_Clause \
-	sem_ch13__get_attribute_definition_clause
-extern Node_Id Get_Attribute_Definition_Clause PARAMS ((Entity_Id, char));
 
 /* sem_eval: */
 
@@ -194,4 +201,3 @@ extern void Set_Has_No_Elaboration_Code	PARAMS ((Node_Id, Boolean));
 #define Stack_Check_Probes_On_Target targparm__stack_check_probes_on_target
 
 extern Boolean Stack_Check_Probes_On_Target;
-

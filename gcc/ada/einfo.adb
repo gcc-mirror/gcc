@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.642 $
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,6 @@ with Atree;  use Atree;
 with Namet;  use Namet;
 with Nlists; use Nlists;
 with Sinfo;  use Sinfo;
-with Snames; use Snames;
 with Stand;  use Stand;
 with Output; use Output;
 
@@ -181,8 +180,9 @@ package body Einfo is
    --    Accept_Address                  Elist21
    --    Default_Expr_Function           Node21
    --    Discriminant_Constraint         Elist21
-   --    Small_Value                     Ureal21
    --    Interface_Name                  Node21
+   --    Original_Array_Type             Node21
+   --    Small_Value                     Ureal21
 
    --    Associated_Storage_Pool         Node22
    --    Component_Size                  Uint22
@@ -395,8 +395,8 @@ package body Einfo is
    --    Size_Depends_On_Discriminant   Flag177
    --    Is_Null_Init_Proc              Flag178
    --    Has_Pragma_Pure_Function       Flag179
+   --    Has_Pragma_Unreferenced        Flag180
 
-   --    (unused)                       Flag180
    --    (unused)                       Flag181
    --    (unused)                       Flag182
    --    (unused)                       Flag183
@@ -413,7 +413,7 @@ package body Einfo is
    function Access_Disp_Table (Id : E) return E is
    begin
       pragma Assert (Is_Tagged_Type (Id));
-      return Node16 (Base_Type (Underlying_Type (Base_Type (Id))));
+      return Node16 (Implementation_Base_Type (Id));
    end Access_Disp_Table;
 
    function Actual_Subtype (Id : E) return E is
@@ -463,7 +463,7 @@ package body Einfo is
    function Associated_Storage_Pool (Id : E) return E is
    begin
       pragma Assert (Is_Access_Type (Id));
-      return Node22 (Id);
+      return Node22 (Root_Type (Id));
    end Associated_Storage_Pool;
 
    function Barrier_Function (Id : E) return N is
@@ -1090,6 +1090,11 @@ package body Einfo is
       return Flag179 (Id);
    end Has_Pragma_Pure_Function;
 
+   function Has_Pragma_Unreferenced (Id : E) return B is
+   begin
+      return Flag180 (Id);
+   end Has_Pragma_Unreferenced;
+
    function Has_Primitive_Operations (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
@@ -1109,7 +1114,7 @@ package body Einfo is
    function Has_Record_Rep_Clause (Id : E) return B is
    begin
       pragma Assert (Is_Record_Type (Id));
-      return Flag65 (Id);
+      return Flag65 (Implementation_Base_Type (Id));
    end Has_Record_Rep_Clause;
 
    function Has_Recursive_Call (Id : E) return B is
@@ -1131,7 +1136,7 @@ package body Einfo is
    function Has_Specified_Layout (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
-      return Flag100 (Id);
+      return Flag100 (Implementation_Base_Type (Id));
    end Has_Specified_Layout;
 
    function Has_Storage_Size_Clause (Id : E) return B is
@@ -1721,6 +1726,12 @@ package body Einfo is
       return Node17 (Id);
    end Object_Ref;
 
+   function Original_Array_Type (Id : E) return E is
+   begin
+      pragma Assert (Is_Array_Type (Id) or else Is_Modular_Integer_Type (Id));
+      return Node21 (Id);
+   end Original_Array_Type;
+
    function Original_Record_Component (Id : E) return E is
    begin
       return Node22 (Id);
@@ -2241,8 +2252,8 @@ package body Einfo is
 
    procedure Set_Access_Disp_Table (Id : E; V : E) is
    begin
-      pragma Assert (Is_Tagged_Type (Id));
-      Set_Node16 (Base_Type (Id), V);
+      pragma Assert (Is_Tagged_Type (Id) and then Id = Base_Type (Id));
+      Set_Node16 (Id, V);
    end Set_Access_Disp_Table;
 
    procedure Set_Associated_Final_Chain (Id : E; V : E) is
@@ -2263,7 +2274,7 @@ package body Einfo is
 
    procedure Set_Associated_Storage_Pool (Id : E; V : E) is
    begin
-      pragma Assert (Is_Access_Type (Id));
+      pragma Assert (Is_Access_Type (Id) and then Id = Base_Type (Id));
       Set_Node22 (Id, V);
    end Set_Associated_Storage_Pool;
 
@@ -2349,12 +2360,13 @@ package body Einfo is
 
    procedure Set_Component_Size (Id : E; V : U) is
    begin
-      pragma Assert (Is_Array_Type (Id));
-      Set_Uint22 (Base_Type (Id), V);
+      pragma Assert (Is_Array_Type (Id) and then Id = Base_Type (Id));
+      Set_Uint22 (Id, V);
    end Set_Component_Size;
 
    procedure Set_Component_Type (Id : E; V : E) is
    begin
+      pragma Assert (Is_Array_Type (Id) and then Id = Base_Type (Id));
       Set_Node20 (Id, V);
    end Set_Component_Type;
 
@@ -2669,8 +2681,8 @@ package body Einfo is
 
    procedure Set_Finalize_Storage_Only (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Type (Id));
-      Set_Flag158 (Base_Type (Id), V);
+      pragma Assert (Is_Type (Id) and then Id = Base_Type (Id));
+      Set_Flag158 (Id, V);
    end Set_Finalize_Storage_Only;
 
    procedure Set_First_Entity (Id : E; V : E) is
@@ -2790,14 +2802,14 @@ package body Einfo is
 
    procedure Set_Has_Complex_Representation (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Record_Type (Id));
-      Set_Flag140 (Implementation_Base_Type (Id), V);
+      pragma Assert (Ekind (Id) = E_Record_Type);
+      Set_Flag140 (Id, V);
    end Set_Has_Complex_Representation;
 
    procedure Set_Has_Component_Size_Clause (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Array_Type (Id));
-      Set_Flag68 (Implementation_Base_Type (Id), V);
+      pragma Assert (Ekind (Id) = E_Array_Type);
+      Set_Flag68 (Id, V);
    end Set_Has_Component_Size_Clause;
 
    procedure Set_Has_Controlled_Component (Id : E; V : B := True) is
@@ -2924,7 +2936,8 @@ package body Einfo is
    procedure Set_Has_Pragma_Pack (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Array_Type (Id) or else Is_Record_Type (Id));
-      Set_Flag121 (Implementation_Base_Type (Id), V);
+      pragma Assert (Id = Base_Type (Id));
+      Set_Flag121 (Id, V);
    end Set_Has_Pragma_Pack;
 
    procedure Set_Has_Pragma_Pure_Function (Id : E; V : B := True) is
@@ -2933,10 +2946,15 @@ package body Einfo is
       Set_Flag179 (Id, V);
    end Set_Has_Pragma_Pure_Function;
 
+   procedure Set_Has_Pragma_Unreferenced (Id : E; V : B := True) is
+   begin
+      Set_Flag180 (Id, V);
+   end Set_Has_Pragma_Unreferenced;
+
    procedure Set_Has_Primitive_Operations (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Type (Id));
-      Set_Flag120 (Base_Type (Id), V);
+      pragma Assert (Id = Base_Type (Id));
+      Set_Flag120 (Id, V);
    end Set_Has_Primitive_Operations;
 
    procedure Set_Has_Private_Declaration (Id : E; V : B := True) is
@@ -2951,7 +2969,7 @@ package body Einfo is
 
    procedure Set_Has_Record_Rep_Clause (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Record_Type (Id));
+      pragma Assert (Id = Base_Type (Id));
       Set_Flag65 (Id, V);
    end Set_Has_Record_Rep_Clause;
 
@@ -2973,7 +2991,7 @@ package body Einfo is
 
    procedure Set_Has_Specified_Layout (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Type (Id));
+      pragma Assert (Id = Base_Type (Id));
       Set_Flag100 (Id, V);
    end Set_Has_Specified_Layout;
 
@@ -3087,7 +3105,10 @@ package body Einfo is
 
    procedure Set_Is_Bit_Packed_Array (Id : E; V : B := True) is
    begin
-      Set_Flag122 (Implementation_Base_Type (Id), V);
+      pragma Assert ((not V)
+        or else (Is_Array_Type (Id) and then Id = Base_Type (Id)));
+
+      Set_Flag122 (Id, V);
    end Set_Is_Bit_Packed_Array;
 
    procedure Set_Is_Called (Id : E; V : B := True) is
@@ -3536,7 +3557,7 @@ package body Einfo is
 
    procedure Set_No_Pool_Assigned (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Access_Type (Id) and then Root_Type (Id) = Id);
+      pragma Assert (Is_Access_Type (Id) and then Base_Type (Id) = Id);
       Set_Flag131 (Id, V);
    end Set_No_Pool_Assigned;
 
@@ -3592,6 +3613,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Protected_Body);
       Set_Node17 (Id, V);
    end Set_Object_Ref;
+
+   procedure Set_Original_Array_Type (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Array_Type (Id) or else Is_Modular_Integer_Type (Id));
+      Set_Node21 (Id, V);
+   end Set_Original_Array_Type;
 
    procedure Set_Original_Record_Component (Id : E; V : E) is
    begin
@@ -3861,6 +3888,7 @@ package body Einfo is
 
    procedure Set_Suppress_Init_Proc (Id : E; V : B := True) is
    begin
+      pragma Assert (Id = Base_Type (Id));
       Set_Flag105 (Id, V);
    end Set_Suppress_Init_Proc;
 
@@ -4055,7 +4083,8 @@ package body Einfo is
 
    function Known_Alignment                       (E : Entity_Id) return B is
    begin
-      return Uint14 (E) /= Uint_0;
+      return Uint14 (E) /= Uint_0
+        and then Uint14 (E) /= No_Uint;
    end Known_Alignment;
 
    function Known_Component_Bit_Offset            (E : Entity_Id) return B is
@@ -4065,12 +4094,14 @@ package body Einfo is
 
    function Known_Component_Size                  (E : Entity_Id) return B is
    begin
-      return Uint22 (Base_Type (E)) /= Uint_0;
+      return Uint22 (Base_Type (E)) /= Uint_0
+        and then Uint22 (Base_Type (E)) /= No_Uint;
    end Known_Component_Size;
 
    function Known_Esize                           (E : Entity_Id) return B is
    begin
-      return Uint12 (E) /= Uint_0;
+      return Uint12 (E) /= Uint_0
+        and then Uint12 (E) /= No_Uint;
    end Known_Esize;
 
    function Known_Normalized_First_Bit            (E : Entity_Id) return B is
@@ -4090,8 +4121,9 @@ package body Einfo is
 
    function Known_RM_Size                         (E : Entity_Id) return B is
    begin
-      return Uint13 (E) /= Uint_0
-        or else Is_Discrete_Type (E);
+      return Uint13 (E) /= No_Uint
+        and then (Uint13 (E) /= Uint_0
+                    or else Is_Discrete_Type (E));
    end Known_RM_Size;
 
    function Known_Static_Component_Bit_Offset     (E : Entity_Id) return B is
@@ -4109,6 +4141,12 @@ package body Einfo is
    begin
       return Uint12 (E) > Uint_0;
    end Known_Static_Esize;
+
+   function Known_Static_Normalized_First_Bit     (E : Entity_Id) return B is
+   begin
+      return Uint8 (E) /= No_Uint
+        and then Uint8 (E) >= Uint_0;
+   end Known_Static_Normalized_First_Bit;
 
    function Known_Static_Normalized_Position      (E : Entity_Id) return B is
    begin
@@ -4130,7 +4168,8 @@ package body Einfo is
 
    function Unknown_Alignment                     (E : Entity_Id) return B is
    begin
-      return Uint14 (E) = Uint_0;
+      return Uint14 (E) = Uint_0
+        or else Uint14 (E) = No_Uint;
    end Unknown_Alignment;
 
    function Unknown_Component_Bit_Offset          (E : Entity_Id) return B is
@@ -4140,12 +4179,16 @@ package body Einfo is
 
    function Unknown_Component_Size                (E : Entity_Id) return B is
    begin
-      return Uint22 (Base_Type (E)) = Uint_0;
+      return Uint22 (Base_Type (E)) = Uint_0
+               or else
+             Uint22 (Base_Type (E)) = No_Uint;
    end Unknown_Component_Size;
 
    function Unknown_Esize                         (E : Entity_Id) return B is
    begin
-      return Uint12 (E) = Uint_0;
+      return Uint12 (E) = No_Uint
+               or else
+             Uint12 (E) = Uint_0;
    end Unknown_Esize;
 
    function Unknown_Normalized_First_Bit          (E : Entity_Id) return B is
@@ -4165,8 +4208,9 @@ package body Einfo is
 
    function Unknown_RM_Size                       (E : Entity_Id) return B is
    begin
-      return Uint13 (E) = Uint_0
-        and then not Is_Discrete_Type (E);
+      return (Uint13 (E) = Uint_0
+                and then not Is_Discrete_Type (E))
+        or else Uint13 (E) = No_Uint;
    end Unknown_RM_Size;
 
    --------------------
@@ -4686,6 +4730,76 @@ package body Einfo is
       end if;
    end First_Subtype;
 
+   -------------------------------------
+   -- Get_Attribute_Definition_Clause --
+   -------------------------------------
+
+   function Get_Attribute_Definition_Clause
+     (E    : Entity_Id;
+      Id   : Attribute_Id)
+      return Node_Id
+   is
+      N : Node_Id;
+
+   begin
+      N := First_Rep_Item (E);
+      while Present (N) loop
+         if Nkind (N) = N_Attribute_Definition_Clause
+           and then Get_Attribute_Id (Chars (N)) = Id
+         then
+            return N;
+         else
+            Next_Rep_Item (N);
+         end if;
+      end loop;
+
+      return Empty;
+   end Get_Attribute_Definition_Clause;
+
+   --------------------
+   -- Get_Rep_Pragma --
+   --------------------
+
+   function Get_Rep_Pragma (E : Entity_Id; Nam : Name_Id) return Node_Id is
+      N   : Node_Id;
+      Typ : Entity_Id;
+
+   begin
+      N := First_Rep_Item (E);
+
+      while Present (N) loop
+         if Nkind (N) = N_Pragma and then Chars (N) = Nam then
+
+            if Nam = Name_Stream_Convert then
+
+               --  For tagged types this pragma is not inherited, so we
+               --  must verify that it is defined for the given type and
+               --  not an ancestor.
+
+               Typ := Entity (Expression
+                       (First (Pragma_Argument_Associations (N))));
+
+               if not Is_Tagged_Type (E)
+                 or else E = Typ
+                 or else (Is_Private_Type (Typ)
+                           and then E = Full_View (Typ))
+               then
+                  return N;
+               else
+                  Next_Rep_Item (N);
+               end if;
+
+            else
+               return N;
+            end if;
+         else
+            Next_Rep_Item (N);
+         end if;
+      end loop;
+
+      return Empty;
+   end Get_Rep_Pragma;
+
    ------------------------
    -- Has_Attach_Handler --
    ------------------------
@@ -4808,7 +4922,7 @@ package body Einfo is
          --  happen in error situations and should avoid some error bombs.
 
          if Present (Imptyp) then
-            return Imptyp;
+            return Base_Type (Imptyp);
          else
             return Bastyp;
          end if;
@@ -5845,6 +5959,7 @@ package body Einfo is
       W ("Has_Pragma_Inline",             Flag157 (Id));
       W ("Has_Pragma_Pack",               Flag121 (Id));
       W ("Has_Pragma_Pure_Function",      Flag179 (Id));
+      W ("Has_Pragma_Unreferenced",       Flag180 (Id));
       W ("Has_Primitive_Operations",      Flag120 (Id));
       W ("Has_Private_Declaration",       Flag155 (Id));
       W ("Has_Qualified_Name",            Flag161 (Id));
@@ -6099,6 +6214,8 @@ package body Einfo is
    -----------------------
 
    procedure Write_Field6_Name (Id : Entity_Id) is
+      pragma Warnings (Off, Id);
+
    begin
       Write_Str ("First_Rep_Item");
    end Write_Field6_Name;
@@ -6108,6 +6225,8 @@ package body Einfo is
    -----------------------
 
    procedure Write_Field7_Name (Id : Entity_Id) is
+      pragma Warnings (Off, Id);
+
    begin
       Write_Str ("Freeze_Node");
    end Write_Field7_Name;
@@ -6124,7 +6243,8 @@ package body Einfo is
             Write_Str ("Normalized_First_Bit");
 
          when Formal_Kind                                |
-              E_Function                                 =>
+              E_Function                                 |
+              E_Subprogram_Body                          =>
             Write_Str ("Mechanism");
 
          when Type_Kind                                  =>
@@ -6685,6 +6805,10 @@ package body Einfo is
 
          when E_In_Parameter                             =>
             Write_Str ("Default_Expr_Function");
+
+         when Array_Kind                                 |
+              Modular_Integer_Kind                       =>
+            Write_Str ("Original_Array_Type");
 
          when others                                     =>
             Write_Str ("Field21??");

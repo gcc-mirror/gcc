@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.100 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -425,7 +425,7 @@ package Lib is
    --  within generic instantiations return True if the instantiation is
    --  itself "in the main unit" by this definition. Otherwise False.
 
-   function Get_Source_Unit (N : Node_Id) return Unit_Number_Type;
+   function Get_Source_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type;
    pragma Inline (Get_Source_Unit);
    function Get_Source_Unit (S : Source_Ptr) return Unit_Number_Type;
    --  Return unit number of file identified by given source pointer value.
@@ -436,7 +436,7 @@ package Lib is
    --  corresponding to the given Source_Ptr value. The version taking
    --  a Node_Id argument, N, simply applies the function to Sloc (N).
 
-   function Get_Code_Unit (N : Node_Id) return Unit_Number_Type;
+   function Get_Code_Unit (N : Node_Or_Entity_Id) return Unit_Number_Type;
    pragma Inline (Get_Code_Unit);
    function Get_Code_Unit (S : Source_Ptr) return Unit_Number_Type;
    --  This is like Get_Source_Unit, except that in the instantiation case,
@@ -463,7 +463,9 @@ package Lib is
    --  included). Returns true if S1 and S2 are in the same extended unit
    --  and False otherwise.
 
-   function In_Extended_Main_Code_Unit (N : Node_Id) return Boolean;
+   function In_Extended_Main_Code_Unit
+     (N    : Node_Or_Entity_Id)
+      return Boolean;
    --  Return True if the node is in the generated code of the extended main
    --  unit, defined as the main unit, its specification (if any), and all
    --  its subunits (considered recursively). Units for which this enquiry
@@ -472,7 +474,9 @@ package Lib is
    --  If the main unit is itself a subunit, then the extended main unit
    --  includes its parent unit, and the parent unit spec if it is separate.
 
-   function In_Extended_Main_Source_Unit (N : Node_Id) return Boolean;
+   function In_Extended_Main_Source_Unit
+     (N    : Node_Or_Entity_Id)
+      return Boolean;
    --  Return True if the node is in the source text of the extended main
    --  unit, defined as the main unit, its specification (if any), and all
    --  its subunits (considered recursively). Units for which this enquiry
@@ -488,9 +492,12 @@ package Lib is
    --  S2, and False otherwise. The result is undefined if S1 and S2 are
    --  not in the same extended unit.
 
+   function Compilation_Switches_Last return Nat;
+   --  Return the count of stored compilation switches
+
    function Get_Compilation_Switch (N : Pos) return String_Ptr;
    --  Return the Nth stored compilation switch, or null if less than N
-   --  switches have been stored. Used by ASIS.
+   --  switches have been stored. Used by ASIS and back ends written in Ada.
 
    function Get_Cunit_Unit_Number (N : Node_Id) return Unit_Number_Type;
    --  Return unit number of the unit whose N_Compilation_Unit node is the
@@ -600,7 +607,7 @@ private
       Expected_Unit    : Unit_Name_Type;
       Source_Index     : Source_File_Index;
       Cunit            : Node_Id;
-      Cunit_Entity     : Node_Id;
+      Cunit_Entity     : Entity_Id;
       Dependency_Num   : Int;
       Dependent_Unit   : Boolean;
       Fatal_Error      : Boolean;
@@ -625,8 +632,16 @@ private
 
    --  The following table stores strings from pragma Linker_Option lines
 
+   type Linker_Option_Entry is record
+      Option : String_Id;
+      --  The string for the linker option line
+
+      Unit : Unit_Number_Type;
+      --  The unit from which the linker option comes
+   end record;
+
    package Linker_Option_Lines is new Table.Table (
-     Table_Component_Type => String_Id,
+     Table_Component_Type => Linker_Option_Entry,
      Table_Index_Type     => Integer,
      Table_Low_Bound      => 1,
      Table_Initial        => Alloc.Linker_Option_Lines_Initial,

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
---             Copyright (C) 1991-2000 Florida State University             --
+--             Copyright (C) 1991-2002 Florida State University             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -182,8 +181,7 @@
 --  The latter initialization requires a list of all the instantiation
 --  descriptors. Updates to this list, as well as the bit-vector that
 --  is used to reserve slots for attributes in the TCB, require mutual
---  exclusion. That is provided by the lock
---  System.Tasking.Task_Attributes.All_Attrs_L.
+--  exclusion. That is provided by the Lock/Unlock_RTS.
 
 --  One special problem that added complexity to the design is that
 --  the per-task list of indirect attributes contains objects of
@@ -243,7 +241,7 @@ with System.Storage_Elements;
 with System.Task_Primitives.Operations;
 --  used for Write_Lock
 --           Unlock
---           Lock/Unlock_All_Tasks_List
+--           Lock/Unlock_RTS
 
 with System.Tasking;
 --  used for Access_Address
@@ -301,6 +299,14 @@ package body Ada.Task_Attributes is
    type Wrapper;
    type Access_Wrapper is access all Wrapper;
 
+   pragma Warnings (Off);
+   --  We turn warnings off for the following declarations of the
+   --  To_Attribute_Handle conversions, since these are used only
+   --  for small attributes where we know that there are no problems
+   --  with alignment, but the compiler will generate warnings for
+   --  the occurrences in the large attribute case, even though
+   --  they will not actually be used.
+
    function To_Attribute_Handle is new Unchecked_Conversion
      (Access_Address, Attribute_Handle);
    --  For reference to directly addressed task attributes
@@ -312,6 +318,10 @@ package body Ada.Task_Attributes is
      (Access_Integer_Address, Attribute_Handle);
    --  For reference to directly addressed task attributes
 
+   pragma Warnings (On);
+   --  End of warnings off region for directly addressed
+   --  attribute conversion functions.
+
    function To_Access_Address is new Unchecked_Conversion
      (Access_Node, Access_Address);
    --  To store pointer to list of indirect attributes
@@ -320,9 +330,15 @@ package body Ada.Task_Attributes is
      (Access_Address, Access_Node);
    --  To fetch pointer to list of indirect attributes
 
+   pragma Warnings (Off);
    function To_Access_Wrapper is new Unchecked_Conversion
      (Access_Dummy_Wrapper, Access_Wrapper);
-   --  To fetch pointer to actual wrapper of attribute node
+   pragma Warnings (On);
+   --  To fetch pointer to actual wrapper of attribute node. We turn off
+   --  warnings since this may generate an alignment warning. The warning
+   --  can be ignored since Dummy_Wrapper is only a non-generic standin
+   --  for the real wrapper type (we never actually allocate objects of
+   --  type Dummy_Wrapper).
 
    function To_Access_Dummy_Wrapper is new Unchecked_Conversion
      (Access_Wrapper, Access_Dummy_Wrapper);
@@ -388,7 +404,7 @@ package body Ada.Task_Attributes is
      (T    : Task_Identification.Task_Id := Task_Identification.Current_Task)
       return Attribute_Handle
    is
-      TT          : Task_ID := To_Task_ID (T);
+      TT            : Task_ID := To_Task_ID (T);
       Error_Message : constant String := "Trying to get the reference of a";
 
    begin
@@ -404,13 +420,24 @@ package body Ada.Task_Attributes is
 
       begin
          Defer_Abortion;
-         POP.Write_Lock (All_Attrs_L'Access);
+         POP.Lock_RTS;
+
+         --  Directly addressed case
 
          if Local.Index /= 0 then
-            POP.Unlock (All_Attrs_L'Access);
+            POP.Unlock_RTS;
             Undefer_Abortion;
+
+            --  Return the attribute handle. Warnings off because this return
+            --  statement generates alignment warnings for large attributes
+            --  (but will never be executed in this case anyway).
+
+            pragma Warnings (Off);
             return
               To_Attribute_Handle (TT.Direct_Attributes (Local.Index)'Access);
+            pragma Warnings (On);
+
+         --  Not directly addressed
 
          else
             declare
@@ -420,7 +447,7 @@ package body Ada.Task_Attributes is
             begin
                while P /= null loop
                   if P.Instance = Access_Instance'(Local'Unchecked_Access) then
-                     POP.Unlock (All_Attrs_L'Access);
+                     POP.Unlock_RTS;
                      Undefer_Abortion;
                      return To_Access_Wrapper (P.Wrapper).Value'Access;
                   end if;
@@ -428,20 +455,20 @@ package body Ada.Task_Attributes is
                   P := P.Next;
                end loop;
 
-               --  Unlock All_Attrs_L here to follow the lock ordering rule
+               --  Unlock the RTS here to follow the lock ordering rule
                --  that prevent us from using new (i.e the Global_Lock) while
                --  holding any other lock.
 
-               POP.Unlock (All_Attrs_L'Access);
+               POP.Unlock_RTS;
                W := new Wrapper'
                      ((null, Local'Unchecked_Access, null), Initial_Value);
-               POP.Write_Lock (All_Attrs_L'Access);
+               POP.Lock_RTS;
 
                P := W.Noed'Unchecked_Access;
                P.Wrapper := To_Access_Dummy_Wrapper (W);
                P.Next := To_Access_Node (TT.Indirect_Attributes);
                TT.Indirect_Attributes := To_Access_Address (P);
-               POP.Unlock (All_Attrs_L'Access);
+               POP.Unlock_RTS;
                Undefer_Abortion;
                return W.Value'Access;
             end;
@@ -452,7 +479,7 @@ package body Ada.Task_Attributes is
 
       exception
          when others =>
-            POP.Unlock (All_Attrs_L'Access);
+            POP.Unlock_RTS;
             Undefer_Abortion;
             raise;
       end;
@@ -493,9 +520,9 @@ package body Ada.Task_Attributes is
 
          begin
             Defer_Abortion;
-            POP.Write_Lock (All_Attrs_L'Access);
-
+            POP.Lock_RTS;
             Q := To_Access_Node (TT.Indirect_Attributes);
+
             while Q /= null loop
                if Q.Instance = Access_Instance'(Local'Unchecked_Access) then
                   if P = null then
@@ -506,7 +533,7 @@ package body Ada.Task_Attributes is
 
                   W := To_Access_Wrapper (Q.Wrapper);
                   Free (W);
-                  POP.Unlock (All_Attrs_L'Access);
+                  POP.Unlock_RTS;
                   Undefer_Abortion;
                   return;
                end if;
@@ -515,12 +542,12 @@ package body Ada.Task_Attributes is
                Q := Q.Next;
             end loop;
 
-            POP.Unlock (All_Attrs_L'Access);
+            POP.Unlock_RTS;
             Undefer_Abortion;
 
          exception
             when others =>
-               POP.Unlock (All_Attrs_L'Access);
+               POP.Unlock_RTS;
                Undefer_Abortion;
          end;
 
@@ -560,14 +587,26 @@ package body Ada.Task_Attributes is
 
       begin
          Defer_Abortion;
-         POP.Write_Lock (All_Attrs_L'Access);
+         POP.Lock_RTS;
+
+         --  Directly addressed case
 
          if Local.Index /= 0 then
+
+            --  Set attribute handle, warnings off, because this code can
+            --  generate alignment warnings with large attributes (but of
+            --  course wil not be executed in this case, since we never
+            --  have direct addressing in such cases).
+
+            pragma Warnings (Off);
             To_Attribute_Handle
                (TT.Direct_Attributes (Local.Index)'Access).all := Val;
-            POP.Unlock (All_Attrs_L'Access);
+            pragma Warnings (On);
+            POP.Unlock_RTS;
             Undefer_Abortion;
             return;
+
+         --  Not directly addressed
 
          else
             declare
@@ -579,7 +618,7 @@ package body Ada.Task_Attributes is
 
                   if P.Instance = Access_Instance'(Local'Unchecked_Access) then
                      To_Access_Wrapper (P.Wrapper).Value := Val;
-                     POP.Unlock (All_Attrs_L'Access);
+                     POP.Unlock_RTS;
                      Undefer_Abortion;
                      return;
                   end if;
@@ -587,15 +626,14 @@ package body Ada.Task_Attributes is
                   P := P.Next;
                end loop;
 
-               --  Unlock TT here to follow the lock ordering rule that
+               --  Unlock RTS here to follow the lock ordering rule that
                --  prevent us from using new (i.e the Global_Lock) while
                --  holding any other lock.
 
-               POP.Unlock (All_Attrs_L'Access);
+               POP.Unlock_RTS;
                W := new Wrapper'
                      ((null, Local'Unchecked_Access, null), Val);
-               POP.Write_Lock (All_Attrs_L'Access);
-
+               POP.Lock_RTS;
                P := W.Noed'Unchecked_Access;
                P.Wrapper := To_Access_Dummy_Wrapper (W);
                P.Next := To_Access_Node (TT.Indirect_Attributes);
@@ -603,12 +641,12 @@ package body Ada.Task_Attributes is
             end;
          end if;
 
-         POP.Unlock (All_Attrs_L'Access);
+         POP.Unlock_RTS;
          Undefer_Abortion;
 
       exception
          when others =>
-            POP.Unlock (All_Attrs_L'Access);
+            POP.Unlock_RTS;
             Undefer_Abortion;
             raise;
       end;
@@ -648,10 +686,22 @@ package body Ada.Task_Attributes is
       end if;
 
       begin
+         --  Directly addressed case
+
          if Local.Index /= 0 then
+
+            --  Get value of attribute. Warnings off, because for large
+            --  attributes, this code can generate alignment warnings.
+            --  But of course large attributes are never directly addressed
+            --  so in fact we will never execute the code in this case.
+
+            pragma Warnings (Off);
             Result :=
               To_Attribute_Handle
                 (TT.Direct_Attributes (Local.Index)'Access).all;
+            pragma Warnings (On);
+
+         --  Not directly addressed
 
          else
             declare
@@ -659,12 +709,12 @@ package body Ada.Task_Attributes is
 
             begin
                Defer_Abortion;
-               POP.Write_Lock (All_Attrs_L'Access);
-
+               POP.Lock_RTS;
                P := To_Access_Node (TT.Indirect_Attributes);
+
                while P /= null loop
                   if P.Instance = Access_Instance'(Local'Unchecked_Access) then
-                     POP.Unlock (All_Attrs_L'Access);
+                     POP.Unlock_RTS;
                      Undefer_Abortion;
                      return To_Access_Wrapper (P.Wrapper).Value;
                   end if;
@@ -673,12 +723,12 @@ package body Ada.Task_Attributes is
                end loop;
 
                Result := Initial_Value;
-               POP.Unlock (All_Attrs_L'Access);
+               POP.Unlock_RTS;
                Undefer_Abortion;
 
             exception
                when others =>
-                  POP.Unlock (All_Attrs_L'Access);
+                  POP.Unlock_RTS;
                   Undefer_Abortion;
                   raise;
             end;
@@ -707,11 +757,15 @@ begin
    pragma Warnings (On);
 
    declare
-      Two_To_J    : Direct_Index_Vector;
-
+      Two_To_J : Direct_Index_Vector;
    begin
       Defer_Abortion;
-      POP.Write_Lock (All_Attrs_L'Access);
+
+      --  Need protection for updating links to per-task initialization and
+      --  finalization routines, in case some task is being created or
+      --  terminated concurrently.
+
+      POP.Lock_RTS;
 
       --  Add this instantiation to the list of all instantiations.
 
@@ -749,12 +803,6 @@ begin
          end loop;
       end if;
 
-      --  Need protection of All_Tasks_L for updating links to
-      --  per-task initialization and finalization routines,
-      --  in case some task is being created or terminated concurrently.
-
-      POP.Lock_All_Tasks_List;
-
       --  Attribute goes directly in the TCB
 
       if Local.Index /= 0 then
@@ -791,8 +839,7 @@ begin
 
       end if;
 
-      POP.Unlock_All_Tasks_List;
-      POP.Unlock (All_Attrs_L'Access);
+      POP.Unlock_RTS;
       Undefer_Abortion;
 
    exception
@@ -804,5 +851,4 @@ begin
          --  any initializations that succeeded up to this point, or we will
          --  risk a dangling reference when the task terminates.
    end;
-
 end Ada.Task_Attributes;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.81 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -58,6 +58,8 @@ package body Ada.Text_IO is
    -------------------
 
    function AFCB_Allocate (Control_Block : Text_AFCB) return FCB.AFCB_Ptr is
+      pragma Warnings (Off, Control_Block);
+
    begin
       return new Text_AFCB;
    end AFCB_Allocate;

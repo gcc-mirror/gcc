@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.9 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -51,7 +51,11 @@ package body System.Pool_Global is
       Storage_Size : SSE.Storage_Count;
       Alignment    : SSE.Storage_Count)
    is
+      pragma Warnings (Off, Pool);
+      pragma Warnings (Off, Alignment);
+
       Allocated : System.Address;
+
    begin
       Allocated := Memory.Alloc (Memory.size_t (Storage_Size));
 
@@ -74,7 +78,12 @@ package body System.Pool_Global is
      (Pool         : in out Unbounded_No_Reclaim_Pool;
       Address      : System.Address;
       Storage_Size : SSE.Storage_Count;
-      Alignment    : SSE.Storage_Count) is
+      Alignment    : SSE.Storage_Count)
+   is
+      pragma Warnings (Off, Pool);
+      pragma Warnings (Off, Storage_Size);
+      pragma Warnings (Off, Alignment);
+
    begin
       Memory.Free (Address);
    end Deallocate;
@@ -87,6 +96,8 @@ package body System.Pool_Global is
      (Pool  : Unbounded_No_Reclaim_Pool)
       return  SSE.Storage_Count
    is
+      pragma Warnings (Off, Pool);
+
    begin
       --  Intuitively, should return System.Memory_Size. But on Sun/Alsys,
       --  System.Memory_Size > System.Max_Int, which means all you can do with

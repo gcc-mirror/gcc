@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.26 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-1999, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,7 +209,6 @@ package Sem_Attr is
       --  value indicating whether or not the body of the designated library
       --  unit has been elaborated yet.
 
-
       --------------
       -- Enum_Rep --
       --------------
@@ -304,29 +303,6 @@ package Sem_Attr is
       --
       --  This attribute is identical to the Object_Size attribute. It is
       --  provided for compatibility with the DEC attribute of this name.
-
-      ----------------------------
-      -- Max_Interrupt_Priority --
-      ----------------------------
-
-      Attribute_Max_Interrupt_Priority => True,
-      --
-      --  Standard'Max_Interrupt_Priority (Standard is the only permissible
-      --  prefix), provides the value System.Max_Interrupt_Priority, and is
-      --  intended primarily for constructing this definition in package
-      --  System (see note above in Default_Bit_Order description}. This
-      --  is a static attribute.
-
-      ------------------
-      -- Max_Priority --
-      ------------------
-
-      Attribute_Max_Priority => True,
-      --
-      --  Standard'Max_Priority (Standard is the only permissible prefix)
-      --  provides the value System.Max_Priority, and is intended primarily
-      --  for constructing this definition in package System (see note above
-      --  in Default_Bit_Order description). This is a static attribute.
 
       -----------------------
       -- Maximum_Alignment --
@@ -430,17 +406,6 @@ package Sem_Attr is
       --  provides the value System.Storage_Unit, and is intended primarily
       --  for constructing this definition in package System (see note above
       --  in Default_Bit_Order description). The is a static attribute.
-
-      ----------
-      -- Tick --
-      ----------
-
-      Attribute_Tick => True,
-      --
-      --  Standard'Tick (Standard is the only permissible prefix) provides
-      --  the value System.Tick, and is intended primarily for constructing
-      --  this definition in package System (see note above in description
-      --  of Default_Bit_Order). This is a static attribute.
 
       ----------------
       -- To_Address --

@@ -6,9 +6,9 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.1 $
+ *                            $Revision$
  *                                                                          *
- *              Copyright (C) 2001 Ada Core Technologies, Inc.              *
+ *           Copyright (C) 2001-2002 Ada Core Technologies, Inc.            *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -74,11 +74,12 @@ __gnat_expect_fork ()
 }
 
 void
-__gnat_expect_portable_execvp (cmd, argv)
+__gnat_expect_portable_execvp (pid, cmd, argv)
+     int *pid;
      char *cmd;
      char *argv[];
 {
-  (void) spawnve (_P_NOWAIT, cmd, argv, NULL);
+  *pid = (int) spawnve (_P_NOWAIT, cmd, argv, NULL);
 }
 
 int
@@ -108,15 +109,15 @@ __gnat_expect_poll (fd, num_fd, timeout, is_set)
     is_set[i] = 0;
 
   for (i = 0; i < num_fd; i++)
-    handles[i] = (HANDLE) _get_osfhandle (fd [i]);
+    handles[i] = (HANDLE) _get_osfhandle (fd[i]);
 
-  num = timeout / 10;
+  num = timeout / 50;
 
   while (1)
     {
       for (i = 0; i < num_fd; i++)
 	{
-	  if (!PeekNamedPipe (handles [i], NULL, 0, NULL, &avail, NULL))
+	  if (!PeekNamedPipe (handles[i], NULL, 0, NULL, &avail, NULL))
 	    return -1;
 
 	  if (avail > 0)
@@ -129,9 +130,128 @@ __gnat_expect_poll (fd, num_fd, timeout, is_set)
       if (timeout >= 0 && num == 0)
 	return 0;
 
-      Sleep (10);
+      Sleep (50);
       num--;
     }
+}
+
+#elif defined (VMS)
+#include <unistd.h>
+#include <stdio.h>
+#include <unixio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <descrip.h>
+#include <stdio.h>
+#include <stsdef.h>
+#include <iodef.h>
+
+int
+__gnat_pipe (fd)
+     int *fd;
+{
+  return pipe (fd);
+}
+
+int
+__gnat_expect_fork ()
+{
+  return -1;
+}
+
+void
+__gnat_expect_portable_execvp (pid, cmd, argv) 
+     int *pid;
+     char *cmd;
+     char *argv[];
+{
+  *pid = (int) getpid();
+  /* Since cmd is fully qualified, it is incorrect to to call execvp */
+  execv (cmd, argv);
+}
+
+int
+__gnat_expect_poll (fd, num_fd, timeout, is_set)
+     int *fd;
+     int num_fd;
+     int timeout;
+     int *is_set;
+{
+  int i, num, ready = 0;
+  unsigned int status;
+  int mbxchans [num_fd];
+  struct dsc$descriptor_s mbxname;
+  struct io_status_block {
+    short int condition;
+    short int count;
+    int dev;
+  } iosb;
+  char buf [256];
+
+  for (i = 0; i < num_fd; i++)
+    is_set[i] = 0;
+
+  for (i = 0; i < num_fd; i++)
+    {
+
+      /* Get name of the mailbox used in the pipe */
+      getname (fd [i], buf);
+
+      /* Assign a channel to the mailbox */
+      if (strlen (buf) > 0)
+	{
+	  mbxname.dsc$w_length = strlen (buf);
+	  mbxname.dsc$b_dtype = DSC$K_DTYPE_T;
+	  mbxname.dsc$b_class = DSC$K_CLASS_S;
+	  mbxname.dsc$a_pointer = buf;
+
+	  status = SYS$ASSIGN (&mbxname, &mbxchans[i], 0, 0, 0);
+	}
+    }
+
+  num = timeout / 100;
+
+  while (1)
+    {
+      for (i = 0; i < num_fd; i++)
+	{
+	  if (mbxchans[i] > 0)
+	    {
+
+	      /* Peek in the mailbox to see if there's data */
+	      status = SYS$QIOW
+		(0, mbxchans[i], IO$_SENSEMODE|IO$M_READERCHECK,
+		 &iosb, 0, 0, 0, 0, 0, 0, 0, 0);
+
+	      if (iosb.count > 0)
+		{
+		  is_set[i] = 1;
+		  ready = 1;
+		  goto deassign;
+		}
+	    }
+	}
+
+      if (timeout >= 0 && num == 0)
+	{
+	  ready = 0;
+	  goto deassign;
+	}
+
+      usleep (100000);
+      num--;
+    }
+
+ deassign:
+
+  /* Deassign channels assigned above */
+  for (i = 0; i < num_fd; i++)
+    {
+      if (mbxchans[i] > 0)
+	status = SYS$DASSGN (mbxchans[i]);
+    }
+
+  return ready;
 }
 
 #elif defined (unix)
@@ -165,10 +285,12 @@ __gnat_expect_fork ()
 }
 
 void
-__gnat_expect_portable_execvp (cmd, argv) 
+__gnat_expect_portable_execvp (pid, cmd, argv) 
+     int *pid;
      char *cmd;
      char *argv[];
 {
+  *pid = (int) getpid();
   execvp (cmd, argv);
 }
 
@@ -189,9 +311,9 @@ __gnat_expect_poll (fd, num_fd, timeout, is_set)
 
   for (i = 0; i < num_fd; i++)
     {
-      FD_SET (fd [i], &rset);
-      if (fd [i] > max_fd)
-	max_fd = fd [i];
+      FD_SET (fd[i], &rset);
+      if (fd[i] > max_fd)
+	max_fd = fd[i];
     }
 
   tv.tv_sec  = timeout / 1000;
@@ -201,7 +323,7 @@ __gnat_expect_poll (fd, num_fd, timeout, is_set)
 
   if (ready > 0)
     for (i = 0; i < num_fd; i++)
-      is_set [i] = (FD_ISSET (fd [i], &rset)  ? 1 : 0);
+      is_set[i] = (FD_ISSET (fd[i], &rset)  ? 1 : 0);
 
   return ready;
 }
@@ -222,10 +344,12 @@ __gnat_expect_fork ()
 }
 
 void
-__gnat_expect_portable_execvp (cmd, argv)
+__gnat_expect_portable_execvp (pid, cmd, argv)
+     int *pid;
      char *cmd;
      char *argv[];
 {
+  *pid = 0;
 }
 
 int

@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,7 +57,7 @@ package body Debug is
    --  dn   Generate messages for node/list allocation
    --  do   Print source from tree (original code only)
    --  dp   Generate messages for parser scope stack push/pops
-   --  dq
+   --  dq   No auto-alignment of small records
    --  dr   Generate parser resynchronization messages
    --  ds   Print source from tree (including original and generated stuff)
    --  dt   Print full tree
@@ -74,13 +74,13 @@ package body Debug is
    --  dD   Delete elaboration checks in inner level routines
    --  dE   Apply elaboration checks to predefined units
    --  dF   Front end data layout enabled.
-   --  dG   Generate input showing file creating info for debug file
+   --  dG
    --  dH   Hold (kill) call to gigi
    --  dI   Inhibit internal name numbering in gnatG listing
    --  dJ   Output debugging trace info for JGNAT (Java VM version of GNAT)
    --  dK   Kill all error messages
    --  dL   Output trace information on elaboration checking
-   --  dM   Modified ali file output
+   --  dM
    --  dN   Do not generate file/line exception messages
    --  dO   Output immediate error messages
    --  dP   Do not check for controlled objects in preelaborable packages
@@ -124,7 +124,7 @@ package body Debug is
    --  do
    --  dp
    --  dq
-   --  dr  List additional restrictions that may be specified
+   --  dr
    --  ds
    --  dt
    --  du  List units as they are acquired
@@ -166,7 +166,7 @@ package body Debug is
    --  dr
    --  ds
    --  dt
-   --  du
+   --  du  List units as their ali files are acquired
    --  dv
    --  dw  Prints the list of units withed by the unit currently explored
    --  dx
@@ -191,6 +191,10 @@ package body Debug is
    --       is output showing each node as it gets analyzed, expanded,
    --       resolved, or evaluated. This option is useful for finding out
    --       exactly where a bomb during semantic analysis is occurring.
+
+   --  dA   Normally the output from -gnatR excludes private types and all
+   --       internal entities. This debug flag causes representation info
+   --       for these entities to be output as well.
 
    --  db   In Exp_Dbug, certain type names are encoded to include debugging
    --       information. This debug switch causes lines to be output showing
@@ -238,9 +242,6 @@ package body Debug is
    --       non-source generated null statements, and freeze nodes, which
    --       are normally omitted in -gnatG mode.
 
-   --  dG   Print trace information showing calls to Create_Debug_Source and
-   --       Write_Debug_Line. Used for debugging -gnatD operation problems.
-
    --  dh   Generates a table at the end of a compilation showing how the hash
    --       table chains built by the Namet package are loaded. This is useful
    --       in ensuring that the hashing algorithm (in Namet.Hash) is working
@@ -284,11 +285,6 @@ package body Debug is
    --       attempting to generate code with this flag set may blow up.
    --       The flag also forces the use of 64-bits for Long_Integer.
 
-   --  dM   Generate modified ALI output. Several ALI extensions are being
-   --       developed for version 3.15w, and this switch is used to enable
-   --       these extensions. This switch will disappear when this work is
-   --       completed.
-
    --  dn   Generate messages for node/list allocation. Each time a node or
    --       list header is allocated, a line of output is generated. Certain
    --       other basic tree operations also cause a line of output to be
@@ -307,6 +303,12 @@ package body Debug is
    --       output by the parser each time the parser scope stack is either
    --       pushed or popped. Useful in debugging situations where the
    --       parser scope stack ends up incorrectly synchronized
+
+   --  dq   In layout version 1.38, 2002/01/12, a circuit was implemented
+   --       to give decent default alignment to short records that had no
+   --       specific alignment set. This debug option restores the previous
+   --       behavior of giving such records poor alignments, typically 1.
+   --       This may be useful in dealing with transition.
 
    --  dr   Generate parser resynchronization messages. Normally the parser
    --       resynchronizes quietly. With this debug option, two messages
@@ -462,9 +464,6 @@ package body Debug is
    --  dn  List details of manipulation of Num_Pred values during execution of
    --      the algorithm used to determine a correct order of elaboration. This
    --      is useful in diagnosing any problems in its behavior.
-
-   --  dr  List restrictions which have not been specified, but could have
-   --      been without causing bind errors.
 
    --  du  List unit name and file name for each unit as it is read in
 

@@ -6,9 +6,9 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.4 $
+ *                            $Revision$
  *                                                                          *
- *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2002 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -36,6 +36,8 @@
    GNAT Run Time Library */
 
 #ifdef __vxworks
+#include "ioLib.h"
+#include "selectLib.h"
 #include "vxWorks.h"
 #endif
 #ifdef IN_RTS
@@ -142,18 +144,18 @@
 */
 
 #if defined(WINNT) || defined (MSDOS) || defined (__EMX__)
-const char *mode_read_text = "rt";
-const char *mode_write_text = "wt";
-const char *mode_append_text = "at";
-const char *mode_read_binary = "rb";
-const char *mode_write_binary = "wb";
-const char *mode_append_binary = "ab";
-const char *mode_read_text_plus = "r+t";
-const char *mode_write_text_plus = "w+t";
-const char *mode_append_text_plus = "a+t";
-const char *mode_read_binary_plus = "r+b";
-const char *mode_write_binary_plus = "w+b";
-const char *mode_append_binary_plus = "a+b";
+static const char *mode_read_text = "rt";
+static const char *mode_write_text = "wt";
+static const char *mode_append_text = "at";
+static const char *mode_read_binary = "rb";
+static const char *mode_write_binary = "wb";
+static const char *mode_append_binary = "ab";
+static const char *mode_read_text_plus = "r+t";
+static const char *mode_write_text_plus = "w+t";
+static const char *mode_append_text_plus = "a+t";
+static const char *mode_read_binary_plus = "r+b";
+static const char *mode_write_binary_plus = "w+b";
+static const char *mode_append_binary_plus = "a+b";
 const char __gnat_text_translation_required = 1;
 
 void
@@ -247,18 +249,18 @@ static void winflush_nt ()
 
 #else
 
-const char *mode_read_text = "r";
-const char *mode_write_text = "w";
-const char *mode_append_text = "a";
-const char *mode_read_binary = "r";
-const char *mode_write_binary = "w";
-const char *mode_append_binary = "a";
-const char *mode_read_text_plus = "r+";
-const char *mode_write_text_plus = "w+";
-const char *mode_append_text_plus = "a+";
-const char *mode_read_binary_plus = "r+";
-const char *mode_write_binary_plus = "w+";
-const char *mode_append_binary_plus = "a+";
+static const char *mode_read_text = "r";
+static const char *mode_write_text = "w";
+static const char *mode_append_text = "a";
+static const char *mode_read_binary = "r";
+static const char *mode_write_binary = "w";
+static const char *mode_append_binary = "a";
+static const char *mode_read_text_plus = "r+";
+static const char *mode_write_text_plus = "w+";
+static const char *mode_append_text_plus = "a+";
+static const char *mode_read_binary_plus = "r+";
+static const char *mode_write_binary_plus = "w+";
+static const char *mode_append_binary_plus = "a+";
 const char __gnat_text_translation_required = 0;
 
 /* These functions do nothing in non-DOS systems. */
@@ -292,7 +294,8 @@ __gnat_ttyname (filedes)
 
 #if defined (linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
   || (defined (__osf__) && ! defined (__alpha_vxworks)) || defined (WINNT) \
-  || defined (__MACHTEN__)
+  || defined (__MACHTEN__) || defined (hpux) || defined (_AIX) \
+  || (defined (__svr4__) && defined (i386)) || defined (__Lynx__)
 #include <termios.h>
 
 #else
@@ -347,7 +350,9 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
 {
 #if defined (linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
     || (defined (__osf__) && ! defined (__alpha_vxworks)) \
-    || defined (__CYGWIN32__) || defined (__MACHTEN__)
+    || defined (__CYGWIN32__) || defined (__MACHTEN__) || defined (hpux) \
+    || defined (_AIX) || (defined (__svr4__) && defined (i386)) \
+    || defined (__Lynx__)
   char c;
   int nread;
   int good_one = 0;
@@ -359,34 +364,37 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
     {
       tcgetattr (fd, &termios_rec);
       memcpy (&otermios_rec, &termios_rec, sizeof (struct termios));
+
+      /* Set RAW mode, with no echo */
+      termios_rec.c_lflag = termios_rec.c_lflag & ~ICANON & ~ECHO;
+
+#if defined(linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
+    || defined (__osf__) || defined (__MACHTEN__) || defined (hpux) \
+    || defined (_AIX) || (defined (__svr4__) && defined (i386)) \
+    || defined (__Lynx__)
+      eof_ch = termios_rec.c_cc[VEOF];
+
+      /* If waiting (i.e. Get_Immediate (Char)), set MIN = 1 and wait for
+         a character forever. This doesn't seem to effect Ctrl-Z or
+         Ctrl-C processing except on OS/2 where Ctrl-C won't work right
+         unless we do a read loop. Luckily we can delay a bit between
+         iterations. If not waiting (i.e. Get_Immediate (Char, Available)),
+         don't wait for anything but timeout immediately. */
+#ifdef __EMX__
+      termios_rec.c_cc[VMIN] = 0;
+      termios_rec.c_cc[VTIME] = waiting;
+#else
+      termios_rec.c_cc[VMIN] = waiting;
+      termios_rec.c_cc[VTIME] = 0;
+#endif
+#endif
+      tcsetattr (fd, TCSANOW, &termios_rec);
+
       while (! good_one)
         {
-          /* Set RAW mode */
-          termios_rec.c_lflag = termios_rec.c_lflag & ~ICANON;
-#if defined(sgi) || defined (sun) || defined (__EMX__) || defined (__osf__) \
-      || defined (linux) || defined (__MACHTEN__)
-          eof_ch = termios_rec.c_cc[VEOF];
-
-          /* If waiting (i.e. Get_Immediate (Char)), set MIN = 1 and wait for
-             a character forever. This doesn't seem to effect Ctrl-Z or
-             Ctrl-C processing except on OS/2 where Ctrl-C won't work right
-             unless we do a read loop. Luckily we can delay a bit between
-             iterations. If not waiting (i.e. Get_Immediate (Char, Available)),
-             don't wait for anything but timeout immediately. */
-#ifdef __EMX__
-          termios_rec.c_cc[VMIN] = 0;
-          termios_rec.c_cc[VTIME] = waiting;
-#else
-          termios_rec.c_cc[VMIN] = waiting;
-          termios_rec.c_cc[VTIME] = 0;
-#endif
-#endif
-          tcsetattr (fd, TCSANOW, &termios_rec);
-
-          /* Read() is used here instead of fread(), because fread() doesn't
+          /* Read is used here instead of fread, because fread doesn't
              work on Solaris5 and Sunos4 in this situation.  Maybe because we
              are mixing calls that use file descriptors and streams. */
-
           nread = read (fd, &c, 1);
           if (nread > 0)
             {
@@ -414,9 +422,7 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
               good_one = 1;
             }
           else
-            {
-              good_one = 0;
-            }
+	    good_one = 0;
         }
 
       tcsetattr (fd, TCSANOW, &otermios_rec);
@@ -424,8 +430,7 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
     }
 
   else
-#else
-#if defined (VMS)
+#elif defined (VMS)
   int fd = fileno (stream);
 
   if (isatty (fd))
@@ -435,6 +440,7 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
 	  decc$bsd_initscr ();
 	  initted = 1;
 	}
+
       decc$bsd_cbreak ();
       *ch = decc$bsd_wgetch (decc$ga_stdscr);
 
@@ -447,8 +453,7 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
       decc$bsd_nocbreak ();
     }
   else
-#else
-#if defined (__MINGW32__)
+#elif defined (__MINGW32__)
   int fd = fileno (stream);
   int char_waiting;
   int eot_ch = 4; /* Ctrl-D */
@@ -457,8 +462,8 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
     {
       if (waiting)
 	{
-	  *ch = getch();
-	  (*winflush_function)();
+	  *ch = getch ();
+	  (*winflush_function) ();
 
 	  if (*ch == eot_ch)
 	    *end_of_file = 1;
@@ -474,8 +479,8 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
 	  if (char_waiting == 1)
 	    {
 	      *avail = 1;
-	      *ch = getch();
-	      (*winflush_function)();
+	      *ch = getch ();
+	      (*winflush_function) ();
 
 	      if (*ch == eot_ch)
 		*end_of_file = 1;
@@ -490,13 +495,94 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
 	}
     }
   else
-#endif
-#endif
+#elif defined (__vxworks)
+  /* Bit masks of file descriptors to read from.  */
+  struct fd_set readFds;
+  /* Timeout before select returns if nothing can be read.  */ 
+  struct timeval timeOut;
+  char c;
+  int fd = fileno (stream);
+  int nread;
+  int option;
+  int readable;
+  int status;
+  int width;
+
+  if (isatty (fd)) 
+    {
+      /* If we do not want to wait, we have to set up fd in RAW mode. This
+	 should be done outside this function as setting fd in RAW mode under
+	 vxWorks flushes the buffer of fd. If the RAW mode was set here, the
+	 buffer would be empty and we would always return that no character
+	 is available */
+      if (! waiting) 
+	{
+	  /* Initialization of timeOut for its use with select.  */
+	  timeOut.tv_sec  = 0;
+	  timeOut.tv_usec = 0;
+
+	  /* Initialization of readFds for its use with select;
+	     FD is the only file descriptor to be monitored */
+	  FD_ZERO (&readFds);
+	  FD_SET (fd, &readFds);
+	  width = 2;
+
+	  /* We do all this processing to emulate a non blocking read.  */
+	  readable = select (width, &readFds, NULL, NULL, &timeOut);
+	  if (readable == ERROR)
+	    *avail = -1, *end_of_file = -1;
+	  /* No character available in input.  */
+	  else if (readable == 0)
+	    *avail = 0, *end_of_file = 0;
+	  else
+	    {
+	      nread = read (fd, &c, 1);
+	      if (nread > 0) 
+		*avail = 1, *end_of_file = 0;
+	      /* End Of File. */
+	      else if (nread == 0) 
+		*avail = 0, *end_of_file = 1;
+	      /* Error.  */
+	      else 
+		*avail = -1, *end_of_file = -1;
+	    }   
+	}
+
+      /* We have to wait until we get a character */
+      else 
+	{
+	  *avail = -1;
+	  *end_of_file = -1;
+
+	  /* Save the current mode of FD.  */
+	  option = ioctl (fd, FIOGETOPTIONS, 0);
+
+	  /* Set FD in RAW mode.  */
+	  status = ioctl (fd, FIOSETOPTIONS, OPT_RAW);
+	  if (status != -1) 
+	    {
+	      nread = read (fd, &c, 1);
+	      if (nread > 0) 
+		*avail = 1, *end_of_file = 0;
+	      /* End of file.  */
+	      else if (nread == 0) 
+		*avail = 0, *end_of_file = 1;
+	      /* Else there is an ERROR.  */
+	    }
+
+	  /* Revert FD to its previous mode. */
+	  status = ioctl (fd, FIOSETOPTIONS, option);
+	}
+
+      *ch = c;
+    }
+  else
 #endif
     {
       /* If we're not on a terminal, then we don't need any fancy processing.
 	 Also this is the only thing that's left if we're not on one of the
-	 supported systems. */
+	 supported systems; which means that for non supported systems,
+         get_immediate may wait for a carriage return on terminals. */
       *ch = fgetc (stream);
       if (feof (stream))
         {
@@ -584,7 +670,7 @@ extern void (*Unlock_Task) PARAMS ((void));
    provide localtime_r, but in the library libc_r which doesn't get included
    systematically, so we can't use it. */
 
-exrern void struct tm *__gnat_localtime_r PARAMS ((const time_t *,
+extern void struct tm *__gnat_localtime_r PARAMS ((const time_t *,
 						   struct tm *));
 
 struct tm *

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.29 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -207,7 +207,7 @@ procedure XNmake is
 begin
    --  Capture our revision (following line updated by RCS)
 
-   Match ("$Revision$", "$Rev" & "ision: " & Break (' ') * XNmake_Rev);
+   Match ("$Revision: 1.29 $", "$Rev" & "ision: " & Break (' ') * XNmake_Rev);
 
    Lineno := 0;
    NWidth := 28;

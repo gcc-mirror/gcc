@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,11 +120,11 @@ package body Sem_Warn is
      Table_Increment      => Alloc.Conditional_Stack_Increment,
      Table_Name           => "Conditional_Stack");
 
-   Current_Entity_List : Elist_Id := No_Elist;
-   --  This is a copy of the Defs list of the current branch of the current
-   --  conditional. It could be accessed by taking the top element of the
-   --  Conditional_Stack, and going to te Current_Branch entry of this
-   --  conditional, but we keep it precomputed for rapid access.
+   function Operand_Has_Warnings_Suppressed (N : Node_Id) return Boolean;
+   --  This function traverses the expression tree represented by the node
+   --  N and determines if any sub-operand is a reference to an entity for
+   --  which the Warnings_Off flag is set. True is returned if such an
+   --  entity is encountered, and False otherwise.
 
    ----------------------
    -- Check_References --
@@ -142,8 +142,7 @@ package body Sem_Warn is
       function Publicly_Referenceable (Ent : Entity_Id) return Boolean;
       --  This is true if the entity in question is potentially referenceable
       --  from another unit. This is true for entities in packages that are
-      --  at the library level, or for entities in tasks or protected objects
-      --  that are themselves publicly visible.
+      --  at the library level.
 
       ----------------------------
       -- Output_Reference_Error --
@@ -192,32 +191,47 @@ package body Sem_Warn is
       ----------------------------
 
       function Publicly_Referenceable (Ent : Entity_Id) return Boolean is
-         S : Entity_Id;
+         P : Node_Id;
 
       begin
-         --  Any entity in a generic package is considered to be publicly
-         --  referenceable, since it could be referenced in an instantiation
+         --  Examine parents to look for a library level package spec
+         --  But if we find a body or block or other similar construct
+         --  along the way, we cannot be referenced.
 
-         if Ekind (E) = E_Generic_Package then
-            return True;
-         end if;
-
-         --  Otherwise look up the scope stack
-
-         S := Scope (Ent);
+         P := Parent (Ent);
          loop
-            if Is_Package (S) then
-               return Is_Library_Level_Entity (S);
+            case Nkind (P) is
 
-            elsif Ekind (S) = E_Task_Type
-              or else Ekind (S) = E_Protected_Type
-              or else Ekind (S) = E_Entry
-            then
-               S := Scope (S);
+               --  If we get to top of tree, then publicly referencable
 
-            else
-               return False;
-            end if;
+               when N_Empty =>
+                  return True;
+
+               --  If we reach a generic package declaration, then always
+               --  consider this referenceable, since any instantiation will
+               --  have access to the entities in the generic package. Note
+               --  that the package itself may not be instantiated, but then
+               --  we will get a warning for the package entity
+
+               when N_Generic_Package_Declaration =>
+                  return True;
+
+               --  If we reach any body, then definitely not referenceable
+
+               when N_Package_Body    |
+                    N_Subprogram_Body |
+                    N_Task_Body       |
+                    N_Entry_Body      |
+                    N_Protected_Body  |
+                    N_Block_Statement |
+                    N_Subunit         =>
+                  return False;
+
+               --  For all other cases, keep looking up tree
+
+               when others =>
+                  P := Parent (P);
+            end case;
          end loop;
       end Publicly_Referenceable;
 
@@ -233,7 +247,7 @@ package body Sem_Warn is
       --  necessary to suppress the warnings in this case).
 
       if Warning_Mode = Suppress
-        or else Errors_Detected /= 0
+        or else Serious_Errors_Detected /= 0
         or else Unloaded_Subunits
       then
          return;
@@ -340,13 +354,13 @@ package body Sem_Warn is
 
             --  Then check for unreferenced variables
 
-            if Check_Unreferenced
+            if not Referenced (E1)
 
-               --  Check entity is flagged as not referenced and that
-               --  warnings are not suppressed for this entity
+               --  Check that warnings on unreferenced entities are enabled
 
-               and then not Referenced (E1)
-               and then not Warnings_Off (E1)
+              and then ((Check_Unreferenced and then not Is_Formal (E1))
+                           or else
+                        (Check_Unreferenced_Formals and then Is_Formal (E1)))
 
                --  Warnings are placed on objects, types, subprograms,
                --  labels, and enumeration literals.
@@ -363,7 +377,7 @@ package body Sem_Warn is
                            or else
                          Is_Overloadable (E1))
 
-               --  We only place warnings for the main unit
+               --  We only place warnings for the extended main unit
 
                and then In_Extended_Main_Source_Unit (E1)
 
@@ -372,16 +386,19 @@ package body Sem_Warn is
 
                and then Instantiation_Location (Sloc (E1)) = No_Location
 
-               --  Exclude formal parameters from bodies (in the case
-               --  where there is a separate spec, it is the spec formals
-               --  that are of interest).
+               --  Exclude formal parameters from bodies if the corresponding
+               --  spec entity has been referenced in the case where there is
+               --  a separate spec.
 
-               and then (not Is_Formal (E1)
-                           or else
-                         Ekind (Scope (E1)) /= E_Subprogram_Body)
+               and then not (Is_Formal (E1)
+                               and then
+                             Ekind (Scope (E1)) = E_Subprogram_Body
+                               and then
+                             Present (Spec_Entity (E1))
+                               and then
+                             Referenced (Spec_Entity (E1)))
 
-               --  Consider private type referenced if full view is
-               --  referenced.
+               --  Consider private type referenced if full view is referenced
 
                and then not (Is_Private_Type (E1)
                                and then
@@ -417,6 +434,13 @@ package body Sem_Warn is
                              and then Ekind (E1) /= E_Constant
                              and then Ekind (E1) /= E_Component)
                            or else not Is_Task_Type (Etype (E1)))
+
+               --  For subunits, only place warnings on the main unit
+               --  itself, since parent units are not completely compiled
+
+               and then (Nkind (Unit (Cunit (Main_Unit))) /= N_Subunit
+                           or else
+                         Get_Source_Unit (E1) = Main_Unit)
             then
                --  Suppress warnings in internal units if not in -gnatg
                --  mode (these would be junk warnings for an applications
@@ -891,6 +915,53 @@ package body Sem_Warn is
       end if;
    end Check_Unused_Withs;
 
+   -------------------------------------
+   -- Operand_Has_Warnings_Suppressed --
+   -------------------------------------
+
+   function Operand_Has_Warnings_Suppressed (N : Node_Id) return Boolean is
+
+      function Check_For_Warnings (N : Node_Id) return Traverse_Result;
+      --  Function used to check one node to see if it is or was originally
+      --  a reference to an entity for which Warnings are off. If so, Abandon
+      --  is returned, otherwise OK_Orig is returned to continue the traversal
+      --  of the original expression.
+
+      function Traverse is new Traverse_Func (Check_For_Warnings);
+      --  Function used to traverse tree looking for warnings
+
+      ------------------------
+      -- Check_For_Warnings --
+      ------------------------
+
+      function Check_For_Warnings (N : Node_Id) return Traverse_Result is
+         R : constant Node_Id := Original_Node (N);
+
+      begin
+         if Nkind (R) in N_Has_Entity
+           and then Present (Entity (R))
+           and then Warnings_Off (Entity (R))
+         then
+            return Abandon;
+         else
+            return OK_Orig;
+         end if;
+      end Check_For_Warnings;
+
+   --  Start of processing for Operand_Has_Warnings_Suppressed
+
+   begin
+      return Traverse (N) = Abandon;
+
+   --  If any exception occurs, then something has gone wrong, and this is
+   --  only a minor aesthetic issue anyway, so just say we did not find what
+   --  we are looking for, rather than blow up.
+
+   exception
+      when others =>
+         return False;
+   end Operand_Has_Warnings_Suppressed;
+
    ----------------------------------
    -- Output_Unreferenced_Messages --
    ----------------------------------
@@ -1017,10 +1088,15 @@ package body Sem_Warn is
             P := Parent (P);
          end loop;
 
-         if Entity (C) = Standard_True then
-            Error_Msg_N ("condition is always True?", C);
-         else
-            Error_Msg_N ("condition is always False?", C);
+         --  Here we issue the warning unless some sub-operand has warnings
+         --  set off, in which case we suppress the warning for the node.
+
+         if not Operand_Has_Warnings_Suppressed (C) then
+            if Entity (C) = Standard_True then
+               Error_Msg_N ("condition is always True?", C);
+            else
+               Error_Msg_N ("condition is always False?", C);
+            end if;
          end if;
       end if;
    end Warn_On_Known_Condition;

@@ -1,15 +1,14 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--               GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
---     S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .    --
---                          S I N G L E _ E N T R Y                         --
+--              SYSTEM.TASKING.PROTECTED_OBJECTS.SINGLE_ENTRY               --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
 --                             $Revision$
 --                                                                          --
---              Copyright (C) 1998-2001 Ada Core Technologies               --
+--         Copyright (C) 1998-2002, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -73,14 +71,14 @@ with System.Task_Primitives.Operations;
 with Ada.Exceptions;
 --  used for Exception_Id;
 
-with Unchecked_Conversion;
+with System.Parameters;
+--  used for Single_Lock
 
 package body System.Tasking.Protected_Objects.Single_Entry is
 
    package STPO renames System.Task_Primitives.Operations;
 
-   function To_Address is new
-     Unchecked_Conversion (Protection_Entry_Access, System.Address);
+   use Parameters;
 
    -----------------------
    -- Local Subprograms --
@@ -110,9 +108,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    --    The caller is waiting on Entry_Caller_Sleep, in
    --    Wait_For_Completion, or Wait_For_Completion_With_Timeout.
 
-   procedure Wait_For_Completion
-     (Self_ID    : Task_ID;
-      Entry_Call : Entry_Call_Link);
+   procedure Wait_For_Completion (Entry_Call : Entry_Call_Link);
    pragma Inline (Wait_For_Completion);
    --  This procedure suspends the calling task until the specified entry call
    --  has either been completed or cancelled. On exit, the call will not be
@@ -120,13 +116,11 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    --  Call this only when holding Self_ID locked.
 
    procedure Wait_For_Completion_With_Timeout
-     (Self_ID     : Task_ID;
-      Entry_Call  : Entry_Call_Link;
+     (Entry_Call  : Entry_Call_Link;
       Wakeup_Time : Duration;
       Mode        : Delay_Modes);
    --  Same as Wait_For_Completion but it waits for a timeout with the value
    --  specified in Wakeup_Time as well.
-   --  Self_ID will be locked by this procedure.
 
    procedure Check_Exception
      (Self_ID : Task_ID;
@@ -153,6 +147,8 @@ package body System.Tasking.Protected_Objects.Single_Entry is
      (Self_ID    : Task_ID;
       Entry_Call : Entry_Call_Link)
    is
+      pragma Warnings (Off, Self_ID);
+
       procedure Internal_Raise (X : Ada.Exceptions.Exception_Id);
       pragma Import (C, Internal_Raise, "__gnat_raise_with_msg");
 
@@ -178,72 +174,70 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Caller : constant Task_ID := Entry_Call.Self;
    begin
       Entry_Call.Exception_To_Raise := Program_Error'Identity;
+
+      if Single_Lock then
+         STPO.Lock_RTS;
+      end if;
+
       STPO.Write_Lock (Caller);
       Wakeup_Entry_Caller (Self_Id, Entry_Call, Done);
       STPO.Unlock (Caller);
+
+      if Single_Lock then
+         STPO.Unlock_RTS;
+      end if;
    end Send_Program_Error;
 
    -------------------------
    -- Wait_For_Completion --
    -------------------------
 
-   --  Call this only when holding Self_ID locked
-
-   procedure Wait_For_Completion
-     (Self_ID    : Task_ID;
-      Entry_Call : Entry_Call_Link) is
+   procedure Wait_For_Completion (Entry_Call : Entry_Call_Link) is
+      Self_Id : constant Task_ID := Entry_Call.Self;
    begin
-      pragma Assert (Self_ID = Entry_Call.Self);
-      Self_ID.Common.State := Entry_Caller_Sleep;
-
-      STPO.Sleep (Self_ID, Entry_Caller_Sleep);
-
-      Self_ID.Common.State := Runnable;
+      Self_Id.Common.State := Entry_Caller_Sleep;
+      STPO.Sleep (Self_Id, Entry_Caller_Sleep);
+      Self_Id.Common.State := Runnable;
    end Wait_For_Completion;
 
    --------------------------------------
    -- Wait_For_Completion_With_Timeout --
    --------------------------------------
 
-   --  This routine will lock Self_ID.
-
-   --  This procedure waits for the entry call to
-   --  be served, with a timeout.  It tries to cancel the
-   --  call if the timeout expires before the call is served.
-
-   --  If we wake up from the timed sleep operation here,
-   --  it may be for the following possible reasons:
-
-   --  1) The entry call is done being served.
-   --  2) The timeout has expired (Timedout = True)
-
-   --  Once the timeout has expired we may need to continue to wait if
-   --  the call is already being serviced. In that case, we want to go
-   --  back to sleep, but without any timeout. The variable Timedout is
-   --  used to control this. If the Timedout flag is set, we do not need
-   --  to Sleep with a timeout. We just sleep until we get a wakeup for
-   --  some status change.
-
    procedure Wait_For_Completion_With_Timeout
-     (Self_ID     : Task_ID;
-      Entry_Call  : Entry_Call_Link;
+     (Entry_Call  : Entry_Call_Link;
       Wakeup_Time : Duration;
       Mode        : Delay_Modes)
    is
+      Self_Id  : constant Task_ID := Entry_Call.Self;
       Timedout : Boolean;
       Yielded  : Boolean;
 
       use type Ada.Exceptions.Exception_Id;
 
    begin
-      STPO.Write_Lock (Self_ID);
+      --  This procedure waits for the entry call to be served, with a timeout.
+      --  It tries to cancel the call if the timeout expires before the call is
+      --  served.
 
-      pragma Assert (Entry_Call.Self = Self_ID);
+      --  If we wake up from the timed sleep operation here, it may be for the
+      --  following possible reasons:
+
+      --  1) The entry call is done being served.
+      --  2) The timeout has expired (Timedout = True)
+
+      --  Once the timeout has expired we may need to continue to wait if the
+      --  call is already being serviced. In that case, we want to go back to
+      --  sleep, but without any timeout. The variable Timedout is used to
+      --  control this. If the Timedout flag is set, we do not need to Sleep
+      --  with a timeout. We just sleep until we get a wakeup for some status
+      --  change.
+
       pragma Assert (Entry_Call.Mode = Timed_Call);
-      Self_ID.Common.State := Entry_Caller_Sleep;
+      Self_Id.Common.State := Entry_Caller_Sleep;
 
       STPO.Timed_Sleep
-        (Self_ID, Wakeup_Time, Mode, Entry_Caller_Sleep, Timedout, Yielded);
+        (Self_Id, Wakeup_Time, Mode, Entry_Caller_Sleep, Timedout, Yielded);
 
       if Timedout then
          Entry_Call.State := Cancelled;
@@ -251,8 +245,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
          Entry_Call.State := Done;
       end if;
 
-      Self_ID.Common.State := Runnable;
-      STPO.Unlock (Self_ID);
+      Self_Id.Common.State := Runnable;
    end Wait_For_Completion_With_Timeout;
 
    -------------------------
@@ -280,7 +273,10 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Entry_Call : Entry_Call_Link;
       New_State  : Entry_Call_State)
    is
+      pragma Warnings (Off, Self_ID);
+
       Caller : constant Task_ID := Entry_Call.Self;
+
    begin
       pragma Assert (New_State = Done or else New_State = Cancelled);
       pragma Assert
@@ -300,10 +296,12 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    --------------------------------
 
    procedure Complete_Single_Entry_Body (Object : Protection_Entry_Access) is
+      pragma Warnings (Off, Object);
+
    begin
-      --  Nothing needs to be done since
-      --  Object.Call_In_Progress.Exception_To_Raise has already been set to
-      --  Null_Id
+      --  Nothing needs to do (Object.Call_In_Progress.Exception_To_Raise
+      --  has already been set to Null_Id).
+
       null;
    end Complete_Single_Entry_Body;
 
@@ -328,8 +326,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       Compiler_Info     : System.Address;
       Entry_Body        : Entry_Body_Access)
    is
-      Init_Priority  : Integer := Ceiling_Priority;
-
+      Init_Priority : Integer := Ceiling_Priority;
    begin
       if Init_Priority = Unspecified_Priority then
          Init_Priority := System.Priority'Last;
@@ -406,16 +403,35 @@ package body System.Tasking.Protected_Objects.Single_Entry is
          Object.Entry_Body.Action
            (Object.Compiler_Info, Entry_Call.Uninterpreted_Data, 1);
          Object.Call_In_Progress := null;
+
+         if Single_Lock then
+            STPO.Lock_RTS;
+         end if;
+
+         STPO.Write_Lock (Entry_Call.Self);
          Wakeup_Entry_Caller (Self_Id, Entry_Call, Done);
+         STPO.Unlock (Entry_Call.Self);
+
+         if Single_Lock then
+            STPO.Unlock_RTS;
+         end if;
 
       elsif Entry_Call.Mode /= Conditional_Call then
          Object.Entry_Queue := Entry_Call;
       else
          --  Conditional_Call
 
+         if Single_Lock then
+            STPO.Lock_RTS;
+         end if;
+
          STPO.Write_Lock (Entry_Call.Self);
          Wakeup_Entry_Caller (Self_Id, Entry_Call, Cancelled);
          STPO.Unlock (Entry_Call.Self);
+
+         if Single_Lock then
+            STPO.Unlock_RTS;
+         end if;
       end if;
 
    exception
@@ -471,9 +487,17 @@ package body System.Tasking.Protected_Objects.Single_Entry is
       pragma Assert (Entry_Call.State /= Cancelled);
 
       if Entry_Call.State /= Done then
+         if Single_Lock then
+            STPO.Lock_RTS;
+         end if;
+
          STPO.Write_Lock (Self_Id);
-         Wait_For_Completion (Self_Id, Entry_Call'Access);
+         Wait_For_Completion (Entry_Call'Access);
          STPO.Unlock (Self_Id);
+
+         if Single_Lock then
+            STPO.Unlock_RTS;
+         end if;
       end if;
 
       Check_Exception (Self_Id, Entry_Call'Access);
@@ -517,9 +541,18 @@ package body System.Tasking.Protected_Objects.Single_Entry is
               (Object.Compiler_Info, Entry_Call.Uninterpreted_Data, 1);
             Object.Call_In_Progress := null;
             Caller := Entry_Call.Self;
+
+            if Single_Lock then
+               STPO.Lock_RTS;
+            end if;
+
             STPO.Write_Lock (Caller);
             Wakeup_Entry_Caller (Self_Id, Entry_Call, Done);
             STPO.Unlock (Caller);
+
+            if Single_Lock then
+               STPO.Unlock_RTS;
+            end if;
          end if;
       end if;
 
@@ -572,8 +605,19 @@ package body System.Tasking.Protected_Objects.Single_Entry is
          return;
       end if;
 
-      Wait_For_Completion_With_Timeout
-        (Self_Id, Entry_Call'Access, Timeout, Mode);
+      if Single_Lock then
+         STPO.Lock_RTS;
+      else
+         STPO.Write_Lock (Self_Id);
+      end if;
+
+      Wait_For_Completion_With_Timeout (Entry_Call'Access, Timeout, Mode);
+
+      if Single_Lock then
+         STPO.Unlock_RTS;
+      else
+         STPO.Unlock (Self_Id);
+      end if;
 
       pragma Assert (Entry_Call.State >= Done);
 

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.15 $                            --
+--                             $Revision$                            --
 --                                                                          --
---             Copyright (C) 1991-2001 Florida State University             --
+--             Copyright (C) 1991-2002 Florida State University             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -208,28 +208,18 @@ begin
       for J in Exception_Interrupts'Range loop
          Keep_Unmasked (Exception_Interrupts (J)) := True;
 
-         if Unreserve_All_Interrupts = 0 then
-            Result :=
-              sigaction
-              (Signal (Exception_Interrupts (J)),
-               act'Unchecked_Access,
-               old_act'Unchecked_Access);
-            pragma Assert (Result = 0);
-         end if;
+         Result :=
+           sigaction
+           (Signal (Exception_Interrupts (J)),
+            act'Unchecked_Access,
+            old_act'Unchecked_Access);
+         pragma Assert (Result = 0);
       end loop;
 
       Keep_Unmasked (Abort_Task_Interrupt) := True;
-      Keep_Unmasked (SIGBUS)  := True;
-      Keep_Unmasked (SIGFPE) := True;
-      Result :=
-        sigaction
-        (Signal (SIGFPE), act'Unchecked_Access,
-         old_act'Unchecked_Access);
-
       Keep_Unmasked (SIGALRM) := True;
       Keep_Unmasked (SIGSTOP) := True;
       Keep_Unmasked (SIGKILL) := True;
-      Keep_Unmasked (SIGXCPU) := True;
 
       --  By keeping SIGINT unmasked, allow the user to do a Ctrl-C, but at
       --  the same time, disable the ability of handling this signal using

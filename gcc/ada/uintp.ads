@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.58 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,7 @@
 
 with Alloc;
 with Table;
+pragma Elaborate_All (Table);
 with Types; use Types;
 
 package Uintp is
@@ -265,10 +266,12 @@ package Uintp is
    --  will be more convenient to read.
 
    procedure pid (Input : Uint);
+   pragma Export (Ada, pid);
    --  Writes representation of Uint in decimal with a terminating line
    --  return. This is intended for use from the debugger.
 
    procedure pih (Input : Uint);
+   pragma Export (Ada, pih);
    --  Writes representation of Uint in hex with a terminating line return.
    --  This is intended for use from the debugger.
 

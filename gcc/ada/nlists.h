@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                            $Revision: 1.1 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -45,16 +45,13 @@ struct List_Header
 
 /* The list headers are stored in an array.  The pointer to this array is
    passed as a parameter to gigi and stored in the global variable
-   List_Headers_Ptr after adjusting it by subtracting List_First_Entry,
-   so that List_Id values can be used as subscripts.	*/
+   List_Headers_Ptr.  */
 
 extern struct List_Header *List_Headers_Ptr;
 
-/* The previous and next links for lists are held in two arrays, Next_Node
-   and Prev_Node.  The pointers to these arrays are passed as parameters
-   to gigi and stored in the global variables Prev_Node_Ptr and Next_Node_Ptr
-   after adjusting them by subtracting First_Node_Id so that Node_Id values
-   can be used as subscripts.  */
+/* The previous and next links for lists are held in two arrays, Next_Node and
+   Prev_Node.  The pointers to these arrays are passed as parameters to gigi
+   and stored in the global variables Prev_Node_Ptr and Next_Node_Ptr.  */
 
 extern Node_Id *Next_Node_Ptr;
 extern Node_Id *Prev_Node_Ptr;
@@ -67,11 +64,11 @@ INLINE Node_Id
 First (List)
      List_Id List;
 {
-  return List_Headers_Ptr [List].first;
+  return List_Headers_Ptr[List - First_List_Id].first;
 }
 
 #define First_Non_Pragma nlists__first_non_pragma
-extern Node_Id First_Non_Pragma PARAMS((Node_Id));
+extern Node_Id First_Non_Pragma PARAMS ((Node_Id));
 
 static Node_Id Last PARAMS ((List_Id));
 
@@ -79,11 +76,11 @@ INLINE Node_Id
 Last (List)
      List_Id List;
 {
-  return List_Headers_Ptr [List].last;
+  return List_Headers_Ptr[List - First_List_Id].last;
 }
 
 #define First_Non_Pragma nlists__first_non_pragma
-extern Node_Id First_Non_Pragma PARAMS((List_Id));
+extern Node_Id First_Non_Pragma PARAMS ((List_Id));
 
 static Node_Id Next PARAMS ((Node_Id));
 
@@ -91,11 +88,11 @@ INLINE Node_Id
 Next (Node)
      Node_Id Node;
 {
-  return Next_Node_Ptr [Node];
+  return Next_Node_Ptr[Node - First_Node_Id];
 }
 
 #define Next_Non_Pragma nlists__next_non_pragma
-extern Node_Id Next_Non_Pragma PARAMS((List_Id));
+extern Node_Id Next_Non_Pragma PARAMS ((List_Id));
 
 static Node_Id Prev PARAMS ((Node_Id));
 
@@ -103,12 +100,12 @@ INLINE Node_Id
 Prev (Node)
      Node_Id Node;
 {
-  return Prev_Node_Ptr [Node];
+  return Prev_Node_Ptr[Node - First_Node_Id];
 }
 
 
 #define Prev_Non_Pragma nlists__prev_non_pragma
-extern Node_Id Prev_Non_Pragma PARAMS((Node_Id));
+extern Node_Id Prev_Non_Pragma		PARAMS ((Node_Id));
 
 static Boolean Is_Empty_List		PARAMS ((List_Id));
 static Boolean Is_Non_Empty_List	PARAMS ((List_Id));
@@ -133,12 +130,12 @@ INLINE Boolean
 Is_List_Member (Node)
      Node_Id Node;
 {
-  return Nodes_Ptr [Node].U.K.in_list;
+  return Nodes_Ptr[Node - First_Node_Id].U.K.in_list;
 }
 
 INLINE List_Id
 List_Containing (Node)
      Node_Id Node;
 {
-  return Nodes_Ptr [Node].V.NX.link;
+  return Nodes_Ptr[Node - First_Node_Id].V.NX.link;
 }

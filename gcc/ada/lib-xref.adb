@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1998-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,12 +28,13 @@
 
 with Atree;    use Atree;
 with Csets;    use Csets;
-with Debug;    use Debug;
+with Errout;   use Errout;
 with Lib.Util; use Lib.Util;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
+with Stand;    use Stand;
 with Table;    use Table;
 with Widechar; use Widechar;
 
@@ -79,7 +80,7 @@ package body Lib.Xref is
 
    package Xrefs is new Table.Table (
      Table_Component_Type => Xref_Entry,
-     Table_Index_Type     => Int,
+     Table_Index_Type     => Xref_Entry_Number,
      Table_Low_Bound      => 1,
      Table_Initial        => Alloc.Xrefs_Initial,
      Table_Increment      => Alloc.Xrefs_Increment,
@@ -201,10 +202,19 @@ package body Lib.Xref is
       --  we omit this test if Typ is 'e', since these entries are
       --  really structural, and it is useful to have them in units
       --  that reference packages as well as units that define packages.
+      --  We also omit the test for the case of 'p' since we want to
+      --  include inherited primitive operations from other packages.
 
       if not In_Extended_Main_Source_Unit (N)
         and then Typ /= 'e'
+        and then Typ /= 'p'
       then
+         return;
+      end if;
+
+      --  For reference type p, then entity must be in main source unit
+
+      if Typ = 'p' and then not In_Extended_Main_Source_Unit (E) then
          return;
       end if;
 
@@ -226,6 +236,26 @@ package body Lib.Xref is
 
       if Set_Ref then
          Set_Referenced (E);
+
+         --  Check for pragma unreferenced given
+
+         if Has_Pragma_Unreferenced (E) then
+
+            --  A reference as a named parameter in a call does not count
+            --  as a violation of pragma Unreferenced for this purpose.
+
+            if Nkind (N) = N_Identifier
+              and then Nkind (Parent (N)) = N_Parameter_Association
+              and then Selector_Name (Parent (N)) = N
+            then
+               null;
+
+            --  Here we issue the warning, since this is a real reference
+
+            else
+               Error_Msg_NE ("?pragma Unreferenced given for&", N, E);
+            end if;
+         end if;
 
          --  If this is a subprogram instance, mark as well the internal
          --  subprogram in the wrapper package, which may be a visible
@@ -523,12 +553,6 @@ package body Lib.Xref is
                      return;
                   end if;
 
-                  --  For now, nothing to do unless special debug flag set
-
-                  if not Debug_Flag_MM then
-                     return;
-                  end if;
-
                   --  Output instantiation reference
 
                   Write_Info_Char ('[');
@@ -768,7 +792,7 @@ package body Lib.Xref is
 
                      --  Write out renaming reference if we have one
 
-                     if Debug_Flag_MM and then Present (Rref) then
+                     if Present (Rref) then
                         Write_Info_Char ('=');
                         Write_Info_Nat
                           (Int (Get_Logical_Line_Number (Sloc (Rref))));
@@ -850,20 +874,20 @@ package body Lib.Xref is
                         end if;
 
                         --  Exit if no type reference, or we are stuck in
-                        --  some loop trying to find the type reference.
+                        --  some loop trying to find the type reference, or
+                        --  if the type is standard void type (the latter is
+                        --  an implementation artifact that should not show
+                        --  up in the generated cross-references).
 
-                        exit when No (Tref) or else Tref = Sav;
+                        exit when No (Tref)
+                          or else Tref = Sav
+                          or else Tref = Standard_Void_Type;
 
                         --  Here we have a type reference to output
 
                         --  Case of standard entity, output name
 
                         if Sloc (Tref) = Standard_Location then
-
-                           --  For now, output only if special -gnatdM flag set
-
-                           exit when not Debug_Flag_MM;
-
                            Write_Info_Char (Left);
                            Write_Info_Name (Chars (Tref));
                            Write_Info_Char (Right);
@@ -872,11 +896,6 @@ package body Lib.Xref is
                         --  Case of source entity, output location
 
                         elsif Comes_From_Source (Tref) then
-
-                           --  For now, output only derived type entries
-                           --  unless we have special debug flag -gnatdM
-
-                           exit when not (Debug_Flag_MM or else Left = '<');
 
                            --  Do not output type reference if referenced
                            --  entity is not in the main unit and is itself
@@ -898,8 +917,26 @@ package body Lib.Xref is
 
                            Write_Info_Nat
                              (Int (Get_Logical_Line_Number (Sloc (Tref))));
-                           Write_Info_Char
-                             (Xref_Entity_Letters (Ekind (Tref)));
+
+                           declare
+                              Ent  : Entity_Id := Tref;
+                              Kind : constant Entity_Kind := Ekind (Ent);
+                              Ctyp : Character := Xref_Entity_Letters (Kind);
+
+                           begin
+                              if Ctyp = '+'
+                                and then Present (Full_View (Ent))
+                              then
+                                 Ent := Underlying_Type (Ent);
+
+                                 if Present (Ent) then
+                                    Ctyp := Xref_Entity_Letters (Ekind (Ent));
+                                 end if;
+                              end if;
+
+                              Write_Info_Char (Ctyp);
+                           end;
+
                            Write_Info_Nat
                              (Int (Get_Column_Number (Sloc (Tref))));
                            Write_Info_Char (Right);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.64 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.
 --                                                                          --
@@ -360,6 +360,8 @@ package body Util is
    -----------------------
 
    procedure Discard_Junk_List (L : List_Id) is
+      pragma Warnings (Off, L);
+
    begin
       null;
    end Discard_Junk_List;
@@ -369,6 +371,8 @@ package body Util is
    -----------------------
 
    procedure Discard_Junk_Node (N : Node_Id) is
+      pragma Warnings (Off, N);
+
    begin
       null;
    end Discard_Junk_Node;

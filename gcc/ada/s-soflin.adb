@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.15 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -112,8 +112,8 @@ package body System.Soft_Links is
 
       SS_Ratio_Dynamic : constant Boolean :=
                            Parameters.Sec_Stack_Ratio = Parameters.Dynamic;
-   begin
 
+   begin
       if SS_Ratio_Dynamic then
          SST.SS_Init
            (New_TSD.Sec_Stack_Addr, SST.Default_Secondary_Stack_Size);
@@ -266,6 +266,8 @@ package body System.Soft_Links is
    ---------------------------
 
    procedure Set_Exc_Stack_Addr_NT (Self_ID : Address; Addr : Address) is
+      pragma Warnings (Off, Self_ID);
+
    begin
       NT_TSD.Exc_Stack_Addr := Addr;
    end Set_Exc_Stack_Addr_NT;
@@ -355,6 +357,15 @@ package body System.Soft_Links is
    begin
       Ada.Exceptions.Save_Occurrence (NT_TSD.Current_Excep, X);
    end Update_Exception_NT;
+
+   ------------------
+   -- Task_Name_NT --
+   -------------------
+
+   function Task_Name_NT return String is
+   begin
+      return "main_task";
+   end Task_Name_NT;
 
    -------------------------
    -- Package Elaboration --

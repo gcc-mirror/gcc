@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.59 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,6 +79,7 @@ package body System.File_IO is
    --  This is the finalize operation that is used to do the cleanup.
 
    File_IO_Clean_Up_Object : File_IO_Clean_Up_Type;
+   pragma Warnings (Off, File_IO_Clean_Up_Object);
    --  This is the single object of the type that triggers the finalization
    --  call. Since it is at the library level, this happens just before the
    --  environment task is finalized.
@@ -331,6 +332,8 @@ package body System.File_IO is
    --  task just before terminating execution.
 
    procedure Finalize (V : in out File_IO_Clean_Up_Type) is
+      pragma Warnings (Off, V);
+
       Discard : int;
       Fptr1   : AFCB_Ptr;
       Fptr2   : AFCB_Ptr;
@@ -795,11 +798,11 @@ package body System.File_IO is
             raise Use_Error;
          end if;
 
-         for J in Fullname'Range loop
-            if Fullname (J) = ASCII.NUL then
-               Full_Name_Len := J;
-               exit;
-            end if;
+         Full_Name_Len := 1;
+         while Full_Name_Len < Fullname'Last
+           and then Fullname (Full_Name_Len) /= ASCII.NUL
+         loop
+            Full_Name_Len := Full_Name_Len + 1;
          end loop;
 
          --  If Shared=None or Shared=Yes, then check for the existence

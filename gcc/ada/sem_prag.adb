@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -76,6 +76,8 @@ with Ttypes;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
 with Validsw;  use Validsw;
+
+with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
 
 package body Sem_Prag is
 
@@ -337,10 +339,6 @@ package body Sem_Prag is
       --  If any argument has an identifier, then an error message is issued,
       --  and Pragma_Exit is raised.
 
-      procedure Check_Non_Overloaded_Function (Arg : Node_Id);
-      --  Check that the given argument is the name of a local function of
-      --  one argument that is not overloaded in the current local scope.
-
       procedure Check_Optional_Identifier (Arg : Node_Id; Id : Name_Id);
       --  Checks if the given argument has an identifier, and if so, requires
       --  it to match the given identifier name. If there is a non-matching
@@ -576,8 +574,6 @@ package body Sem_Prag is
 
       procedure Check_Ada_83_Warning is
       begin
-         GNAT_Pragma;
-
          if Ada_83 and then Comes_From_Source (N) then
             Error_Msg_N ("(Ada 83) pragma& is non-standard?", N);
          end if;
@@ -1049,33 +1045,6 @@ package body Sem_Prag is
          end if;
       end Check_No_Identifiers;
 
-      -----------------------------------
-      -- Check_Non_Overloaded_Function --
-      -----------------------------------
-
-      procedure Check_Non_Overloaded_Function (Arg : Node_Id) is
-         Ent : Entity_Id;
-
-      begin
-         Check_Arg_Is_Local_Name (Arg);
-         Ent := Entity (Expression (Arg));
-
-         if Present (Homonym (Ent))
-           and then Scope (Homonym (Ent)) = Current_Scope
-         then
-            Error_Pragma_Arg
-              ("argument for pragma% may not be overloaded", Arg);
-         end if;
-
-         if Ekind (Ent) /= E_Function
-           or else No (First_Formal (Ent))
-           or else Present (Next_Formal (First_Formal (Ent)))
-         then
-            Error_Pragma_Arg
-              ("argument for pragma% must be function of one argument", Arg);
-         end if;
-      end Check_Non_Overloaded_Function;
-
       -------------------------------
       -- Check_Optional_Identifier --
       -------------------------------
@@ -1481,8 +1450,23 @@ package body Sem_Prag is
                   end if;
 
                   if Index = Names'Last then
-                     Error_Pragma_Arg_Ident
-                       ("pragma% does not allow & argument", Arg);
+                     Error_Msg_Name_1 := Chars (N);
+                     Error_Msg_N ("pragma% does not allow & argument", Arg);
+
+                     --  Check for possible misspelling
+
+                     for Index1 in Names'Range loop
+                        if Is_Bad_Spelling_Of
+                             (Get_Name_String (Chars (Arg)),
+                              Get_Name_String (Names (Index1)))
+                        then
+                           Error_Msg_Name_1 := Names (Index1);
+                           Error_Msg_N ("\possible misspelling of%", Arg);
+                           exit;
+                        end if;
+                     end loop;
+
+                     raise Pragma_Exit;
                   end if;
                end loop;
             end if;
@@ -1603,9 +1587,9 @@ package body Sem_Prag is
          E    : Entity_Id;
          D    : Node_Id;
          K    : Node_Kind;
+         Utyp : Entity_Id;
 
       begin
-         GNAT_Pragma;
          Check_Ada_83_Warning;
          Check_No_Identifiers;
          Check_Arg_Count (1);
@@ -1648,6 +1632,25 @@ package body Sem_Prag is
 
             if Prag_Id /= Pragma_Volatile then
                Set_Is_Atomic (E);
+
+               --  An interesting improvement here. If an object of type X
+               --  is declared atomic, and the type X is not atomic, that's
+               --  a pity, since it may not have appropraite alignment etc.
+               --  We can rescue this in the special case where the object
+               --  and type are in the same unit by just setting the type
+               --  as atomic, so that the back end will process it as atomic.
+
+               Utyp := Underlying_Type (Etype (E));
+
+               if Present (Utyp)
+                 and then Sloc (E) > No_Location
+                 and then Sloc (Utyp) > No_Location
+                 and then
+                   Get_Source_File_Index (Sloc (E)) =
+                   Get_Source_File_Index (Sloc (Underlying_Type (Etype (E))))
+               then
+                  Set_Is_Atomic (Underlying_Type (Etype (E)));
+               end if;
             end if;
 
             Set_Is_Volatile (E);
@@ -1923,6 +1926,7 @@ package body Sem_Prag is
          Code_Val : Uint;
 
       begin
+         GNAT_Pragma;
          Process_Extended_Import_Export_Internal_Arg (Arg_Internal);
          Def_Id := Entity (Arg_Internal);
 
@@ -2506,7 +2510,6 @@ package body Sem_Prag is
                Next_Formal (Formal);
             end loop;
          end if;
-
       end Process_Extended_Import_Export_Subprogram_Pragma;
 
       --------------------------
@@ -3941,7 +3944,6 @@ package body Sem_Prag is
             K    : Node_Kind;
 
          begin
-            GNAT_Pragma;
             Check_Ada_83_Warning;
             Check_No_Identifiers;
             Check_Arg_Count (1);
@@ -4212,7 +4214,6 @@ package body Sem_Prag is
                   Set_Component_Alignment (Base_Type (Typ), Atype);
                end if;
             end if;
-
          end Component_AlignmentP;
 
          ----------------
@@ -4255,6 +4256,36 @@ package body Sem_Prag is
             Check_Arg_Count (2);
             Process_Convention (C, E);
          end Convention;
+
+         ---------------------------
+         -- Convention_Identifier --
+         ---------------------------
+
+         --  pragma Convention_Identifier ([Name =>] IDENTIFIER,
+         --    [Convention =>] convention_IDENTIFIER);
+
+         when Pragma_Convention_Identifier => Convention_Identifier : declare
+            Idnam : Name_Id;
+            Cname : Name_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (2);
+            Check_Optional_Identifier (Arg1, Name_Name);
+            Check_Optional_Identifier (Arg2, Name_Convention);
+            Check_Arg_Is_Identifier (Arg1);
+            Check_Arg_Is_Identifier (Arg1);
+            Idnam := Chars (Expression (Arg1));
+            Cname := Chars (Expression (Arg2));
+
+            if Is_Convention_Name (Cname) then
+               Record_Convention_Identifier
+                 (Idnam, Get_Convention_Id (Cname));
+            else
+               Error_Pragma_Arg
+                 ("second arg for % pragma must be convention", Arg2);
+            end if;
+         end Convention_Identifier;
 
          ---------------
          -- CPP_Class --
@@ -4683,7 +4714,6 @@ package body Sem_Prag is
             E    : Entity_Id;
 
          begin
-            GNAT_Pragma;
             Check_Ada_83_Warning;
 
             --  Deal with configuration pragma case
@@ -4973,33 +5003,52 @@ package body Sem_Prag is
          --                            SELECTED_COMPONENT |
          --                            STRING_LITERAL]
          --    [,[Parameter_Types =>]  PARAMETER_TYPES]
-         --    [,[Result_Type     =>]  result_SUBTYPE_MARK]);
+         --    [,[Result_Type     =>]  result_SUBTYPE_NAME]
+         --    [,[Homonym_Number  =>]  INTEGER_LITERAL]);
 
-         --  PARAMETER_TYPES ::=
-         --    null
-         --    (SUBTYPE_MARK, SUBTYPE_MARK, ...)
+         --  PARAMETER_TYPES ::= (SUBTYPE_NAME {, SUBTYPE_NAME})
+         --  SUBTYPE_NAME    ::= STRING_LITERAL
 
-         when Pragma_Eliminate => Eliminate : begin
+         when Pragma_Eliminate => Eliminate : declare
+            Args  : Args_List (1 .. 5);
+            Names : Name_List (1 .. 5) := (
+                      Name_Unit_Name,
+                      Name_Entity,
+                      Name_Parameter_Types,
+                      Name_Result_Type,
+                      Name_Homonym_Number);
+
+            Unit_Name       : Node_Id renames Args (1);
+            Entity          : Node_Id renames Args (2);
+            Parameter_Types : Node_Id renames Args (3);
+            Result_Type     : Node_Id renames Args (4);
+            Homonym_Number  : Node_Id renames Args (5);
+
+         begin
             GNAT_Pragma;
-            Check_Ada_83_Warning;
             Check_Valid_Configuration_Pragma;
-            Check_At_Least_N_Arguments (1);
-            Check_At_Most_N_Arguments (4);
+            Gather_Associations (Names, Args);
 
-            if Arg_Count = 3
-              and then Chars (Arg3) = Name_Result_Type
-            then
-               Arg4 := Arg3;
-               Arg3 := Empty;
-
-            else
-               Check_Optional_Identifier (Arg1, "unit_name");
-               Check_Optional_Identifier (Arg2, Name_Entity);
-               Check_Optional_Identifier (Arg3, Name_Parameter_Types);
-               Check_Optional_Identifier (Arg4, Name_Result_Type);
+            if No (Unit_Name) then
+               Error_Pragma ("missing Unit_Name argument for pragma%");
             end if;
 
-            Process_Eliminate_Pragma (Arg1, Arg2, Arg3, Arg4);
+            if No (Entity)
+              and then (Present (Parameter_Types)
+                          or else
+                        Present (Result_Type)
+                          or else
+                        Present (Homonym_Number))
+            then
+               Error_Pragma ("missing Entity argument for pragma%");
+            end if;
+
+            Process_Eliminate_Pragma
+              (Unit_Name,
+               Entity,
+               Parameter_Types,
+               Result_Type,
+               Homonym_Number);
          end Eliminate;
 
          ------------
@@ -5054,8 +5103,6 @@ package body Sem_Prag is
             Code     : Node_Id renames Args (4);
 
          begin
-            GNAT_Pragma;
-
             if Inside_A_Generic then
                Error_Pragma ("pragma% cannot be used for generic entities");
             end if;
@@ -5333,7 +5380,6 @@ package body Sem_Prag is
                when others =>
                   null;
             end case;
-
          end External_Name_Casing;
 
          ---------------------------
@@ -5373,7 +5419,7 @@ package body Sem_Prag is
                Error_Pragma ("duplicate pragma%, only one allowed");
 
             elsif not Rep_Item_Too_Late (Typ, N) then
-               Set_Finalize_Storage_Only (Typ, True);
+               Set_Finalize_Storage_Only (Base_Type (Typ), True);
             end if;
          end Finalize_Storage;
 
@@ -5476,7 +5522,6 @@ package body Sem_Prag is
                   end case;
                end if;
             end if;
-
          end Float_Representation;
 
          -----------
@@ -5637,7 +5682,6 @@ package body Sem_Prag is
             Code     : Node_Id renames Args (4);
 
          begin
-            GNAT_Pragma;
             Gather_Associations (Names, Args);
 
             if Present (External) and then Present (Code) then
@@ -5654,7 +5698,6 @@ package body Sem_Prag is
             if not Is_VMS_Exception (Entity (Internal)) then
                Set_Imported (Entity (Internal));
             end if;
-
          end Import_Exception;
 
          ---------------------
@@ -6237,9 +6280,10 @@ package body Sem_Prag is
                while Present (Arg) loop
                   Check_Arg_Is_Static_Expression (Arg, Standard_String);
 
-                  --  Store argument, converting sequences of spaces to
-                  --  a single null character (this is the difference in
-                  --  processing between Link_With, and Linker_Options).
+                  --  Store argument, converting sequences of spaces
+                  --  to a single null character (this is one of the
+                  --  differences in processing between Link_With
+                  --  and Linker_Options).
 
                   declare
                      C : constant Char_Code := Get_Char_Code (' ');
@@ -6323,19 +6367,18 @@ package body Sem_Prag is
 
          --  pragma Linker_Options (string_EXPRESSION {, string_EXPRESSION});
 
-         --  Note: the use of multiple arguments is a GNAT extension
-
          when Pragma_Linker_Options => Linker_Options : declare
             Arg : Node_Id;
 
          begin
+            Check_Ada_83_Warning;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+            Check_Is_In_Decl_Part_Or_Package_Spec;
+
             if Operating_Mode = Generate_Code
               and then In_Extended_Main_Source_Unit (N)
             then
-               Check_Ada_83_Warning;
-               Check_At_Least_N_Arguments (1);
-               Check_No_Identifiers;
-               Check_Is_In_Decl_Part_Or_Package_Spec;
                Check_Arg_Is_Static_Expression (Arg1, Standard_String);
                Start_String (Strval (Expr_Value_S (Expression (Arg1))));
 
@@ -6598,7 +6641,6 @@ package body Sem_Prag is
 
                Next (Nod);
             end loop;
-
          end Main_Storage;
 
          -----------------
@@ -6946,7 +6988,6 @@ package body Sem_Prag is
                   --  exp_ch9 should use this ???
                end if;
             end if;
-
          end Priority;
 
          --------------------------
@@ -6996,6 +7037,10 @@ package body Sem_Prag is
             --  Posts message if the argument is an identifier with more
             --  than 31 characters, or a string literal with more than
             --  31 characters, and we are operating under VMS
+
+            --------------------
+            -- Check_Too_Long --
+            --------------------
 
             procedure Check_Too_Long (Arg : Node_Id) is
                X : Node_Id := Original_Node (Arg);
@@ -7207,7 +7252,6 @@ package body Sem_Prag is
                             (Sloc => Sloc (R_External),
                              Strval => Str))));
             Analyze (MA);
-
          end Psect_Object;
 
          ----------
@@ -7438,6 +7482,11 @@ package body Sem_Prag is
                      --  Restriction is active
 
                      else
+                        if Implementation_Restriction (R_Id) then
+                           Check_Restriction
+                             (No_Implementation_Restrictions, Arg);
+                        end if;
+
                         Restrictions (R_Id) := True;
                         Restrictions_Loc (R_Id) := Sloc (N);
 
@@ -7530,6 +7579,7 @@ package body Sem_Prag is
          --  pragma Shared (LOCAL_NAME);
 
          when Pragma_Shared =>
+            GNAT_Pragma;
             Process_Atomic_Shared_Volatile;
 
          --------------------
@@ -7666,15 +7716,51 @@ package body Sem_Prag is
          --    [Read   =>] function_NAME,
          --    [Write  =>] function NAME);
 
-         when Pragma_Stream_Convert => Stream_Convert : begin
+         when Pragma_Stream_Convert => Stream_Convert : declare
+
+            procedure Check_OK_Stream_Convert_Function (Arg : Node_Id);
+            --  Check that the given argument is the name of a local
+            --  function of one argument that is not overloaded earlier
+            --  in the current local scope. A check is also made that the
+            --  argument is a function with one parameter.
+
+            --------------------------------------
+            -- Check_OK_Stream_Convert_Function --
+            --------------------------------------
+
+            procedure Check_OK_Stream_Convert_Function (Arg : Node_Id) is
+               Ent : Entity_Id;
+
+            begin
+               Check_Arg_Is_Local_Name (Arg);
+               Ent := Entity (Expression (Arg));
+
+               if Has_Homonym (Ent) then
+                  Error_Pragma_Arg
+                    ("argument for pragma% may not be overloaded", Arg);
+               end if;
+
+               if Ekind (Ent) /= E_Function
+                 or else No (First_Formal (Ent))
+                 or else Present (Next_Formal (First_Formal (Ent)))
+               then
+                  Error_Pragma_Arg
+                    ("argument for pragma% must be" &
+                     " function of one argument", Arg);
+               end if;
+            end Check_OK_Stream_Convert_Function;
+
+         --  Start of procecessing for Stream_Convert
+
+         begin
             GNAT_Pragma;
             Check_Arg_Count (3);
             Check_Optional_Identifier (Arg1, Name_Entity);
             Check_Optional_Identifier (Arg2, Name_Read);
             Check_Optional_Identifier (Arg3, Name_Write);
             Check_Arg_Is_Local_Name (Arg1);
-            Check_Non_Overloaded_Function (Arg2);
-            Check_Non_Overloaded_Function (Arg3);
+            Check_OK_Stream_Convert_Function (Arg2);
+            Check_OK_Stream_Convert_Function (Arg3);
 
             declare
                Typ   : constant Entity_Id :=
@@ -7993,7 +8079,6 @@ package body Sem_Prag is
             else
                Set_Has_Task_Info_Pragma (P, True);
             end if;
-
          end Task_Info;
 
          ---------------
@@ -8025,7 +8110,6 @@ package body Sem_Prag is
                Set_Has_Task_Name_Pragma (P, True);
                Record_Rep_Item (Defining_Identifier (Parent (P)), N);
             end if;
-
          end Task_Name;
 
          ------------------
@@ -8071,7 +8155,6 @@ package body Sem_Prag is
             if Rep_Item_Too_Late (Ent, N) then
                raise Pragma_Exit;
             end if;
-
          end Task_Storage;
 
          ----------------
@@ -8338,6 +8421,59 @@ package body Sem_Prag is
                raise Unrecoverable_Error;
             end if;
          end Unimplemented_Unit;
+
+         --------------------
+         -- Universal_Data --
+         --------------------
+
+         --  pragma Universal_Data;
+
+         when Pragma_Universal_Data =>
+            GNAT_Pragma;
+            Check_Arg_Count (0);
+            Check_Valid_Library_Unit_Pragma;
+
+            if not AAMP_On_Target then
+               Error_Pragma ("?pragma% ignored (applies only to AAMP)");
+            end if;
+
+         ------------------
+         -- Unreferenced --
+         ------------------
+
+         --  pragma Unreferenced (local_Name {, local_Name});
+
+         when Pragma_Unreferenced => Unreferenced : declare
+            Arg_Node : Node_Id;
+            Arg_Expr : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+
+            Arg_Node := Arg1;
+
+            while Present (Arg_Node) loop
+               Check_No_Identifier (Arg_Node);
+
+               --  Note that the analyze call done by Check_Arg_Is_Local_Name
+               --  will in fact generate a reference, so that the entity will
+               --  have a reference, which will inhibit any warnings about it
+               --  not being referenced, and also properly show up in the ali
+               --  file as a reference. But this reference is recorded before
+               --  the Has_Pragma_Unreferenced flag is set, so that no warning
+               --  is generated for this reference.
+
+               Check_Arg_Is_Local_Name (Arg_Node);
+               Arg_Expr := Get_Pragma_Arg (Arg_Node);
+
+               if Is_Entity_Name (Arg_Expr) then
+                  Set_Has_Pragma_Unreferenced (Entity (Arg_Expr));
+               end if;
+
+               Next (Arg_Node);
+            end loop;
+         end Unreferenced;
 
          ------------------------------
          -- Unreserve_All_Interrupts --
@@ -8648,7 +8784,6 @@ package body Sem_Prag is
       else
          return False;
       end if;
-
    end Is_Pragma_String_Literal;
 
    --------------------------------------

@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +54,6 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    function Arg1 return Node_Id;
    function Arg2 return Node_Id;
    function Arg3 return Node_Id;
-   function Arg4 return Node_Id;
    --  Obtain specified Pragma_Argument_Association. It is allowable to call
    --  the routine for the argument one past the last present argument, but
    --  that is the only case in which a non-present argument can be referenced.
@@ -112,15 +111,6 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    begin
       return Next (Arg2);
    end Arg3;
-
-   ----------
-   -- Arg4 --
-   ----------
-
-   function Arg4 return Node_Id is
-   begin
-      return Next (Arg3);
-   end Arg4;
 
    ---------------------
    -- Check_Arg_Count --
@@ -214,6 +204,14 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
 
 begin
    Error_Msg_Name_1 := Pragma_Name;
+
+   --  Ignore unrecognized pragma. We let Sem post the warning for this, since
+   --  it is a semantic error, not a syntactic one (we have already checked
+   --  the syntax for the unrecognized pragma as required by (RM 2.8(11)).
+
+   if not Is_Pragma_Name (Chars (Pragma_Node)) then
+      return Pragma_Node;
+   end if;
 
    --  Count number of arguments. This loop also checks if any of the arguments
    --  are Error, indicating a syntax error as they were parsed. If so, we
@@ -527,6 +525,14 @@ begin
                and then
               Nkind (Selector_Name (Expr1)) = N_Identifier)
          then
+            if Nkind (Expr1) = N_Identifier
+              and then Chars (Expr1) = Name_System
+            then
+               Error_Msg_N
+                 ("pragma Source_File_Name may not be used for System", Arg1);
+               return Error;
+            end if;
+
             Check_Arg_Count (2);
 
             Check_Optional_Identifier (Arg1, Name_Unit_Name);
@@ -830,6 +836,7 @@ begin
            Pragma_Atomic                   |
            Pragma_Atomic_Components        |
            Pragma_Attach_Handler           |
+           Pragma_Convention_Identifier    |
            Pragma_CPP_Class                |
            Pragma_CPP_Constructor          |
            Pragma_CPP_Virtual              |
@@ -927,6 +934,8 @@ begin
            Pragma_Title                    |
            Pragma_Unchecked_Union          |
            Pragma_Unimplemented_Unit       |
+           Pragma_Universal_Data           |
+           Pragma_Unreferenced             |
            Pragma_Unreserve_All_Interrupts |
            Pragma_Unsuppress               |
            Pragma_Use_VADS_Size            |

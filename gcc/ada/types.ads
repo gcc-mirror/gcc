@@ -8,7 +8,7 @@
 --                                                                          --
 --                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -380,6 +380,9 @@ pragma Preelaborate (Types);
    --  indicate that some kind of error was encountered in scanning out
    --  the relevant name, so it does not have a representable label.
 
+   subtype Error_Name_Or_No_Name is Name_Id range No_Name .. Error_Name;
+   --  Used to test for either error name or no name
+
    First_Name_Id : constant Name_Id := Names_Low_Bound + 2;
    --  Subscript of first entry in names table
 
@@ -720,5 +723,81 @@ pragma Preelaborate (Types);
    --  Type used to represent a mechanism value. This is a subtype rather
    --  than a type to avoid some annoying processing problems with certain
    --  routines in Einfo (processing them to create the corresponding C).
+
+   ------------------------------
+   -- Run-Time Exception Codes --
+   ------------------------------
+
+   --  When the code generator generates a run-time exception, it provides
+   --  a reason code which is one of the following. This reason code is used
+   --  to select the appropriate run-time routine to be called, determining
+   --  both the exception to be raised, and the message text to be added.
+
+   --  The prefix CE/PE/SE indicates the exception to be raised
+   --    CE = Constraint_Error
+   --    PE = Program_Error
+   --    SE = Storage_Error
+
+   --  The remaining part of the name indicates the message text to be added,
+   --  where all letters are lower case, and underscores are converted to
+   --  spaces (for example CE_Invalid_Data adds the text "invalid data").
+
+   --  To add a new code, you need to do the following:
+
+   --    1. Modify the type and subtype declarations below appropriately,
+   --       keeping things in alphabetical order.
+
+   --    2. Modify the corresponding definitions in a-types.h, including
+   --       the definition of last_reason_code.
+
+   --    3. Add a new routine in Ada.Exceptions with the appropriate call
+   --       and static string constant
+
+   --    4. Initialize the new entry in raise_decls
+
+   type RT_Exception_Code is (
+     CE_Access_Check_Failed,
+     CE_Access_Parameter_Is_Null,
+     CE_Discriminant_Check_Failed,
+     CE_Divide_By_Zero,
+     CE_Explicit_Raise,
+     CE_Index_Check_Failed,
+     CE_Invalid_Data,
+     CE_Length_Check_Failed,
+     CE_Overflow_Check_Failed,
+     CE_Partition_Check_Failed,
+     CE_Range_Check_Failed,
+     CE_Tag_Check_Failed,
+
+     PE_Access_Before_Elaboration,
+     PE_Accessibility_Check_Failed,
+     PE_All_Guards_Closed,
+     PE_Duplicated_Entry_Address,
+     PE_Explicit_Raise,
+     PE_Finalize_Raised_Exception,
+     PE_Invalid_Data,
+     PE_Misaligned_Address_Value,
+     PE_Missing_Return,
+     PE_Potentially_Blocking_Operation,
+     PE_Stubbed_Subprogram_Called,
+     PE_Unchecked_Union_Restriction,
+
+     SE_Empty_Storage_Pool,
+     SE_Explicit_Raise,
+     SE_Infinite_Recursion,
+     SE_Object_Too_Large,
+     SE_Restriction_Violation);
+
+   subtype RT_CE_Exceptions is RT_Exception_Code range
+     CE_Access_Check_Failed ..
+     CE_Tag_Check_Failed;
+
+   subtype RT_PE_Exceptions is RT_Exception_Code range
+     PE_Access_Before_Elaboration ..
+     PE_Unchecked_Union_Restriction;
+
+   subtype RT_SE_Exceptions is RT_Exception_Code range
+     SE_Empty_Storage_Pool ..
+     SE_Restriction_Violation;
 
 end Types;

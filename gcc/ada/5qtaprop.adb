@@ -8,7 +8,7 @@
 --                                                                          --
 --                             $Revision$
 --                                                                          --
---             Copyright (C) 1991-2001, Florida State University            --
+--         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -185,8 +184,10 @@ package body System.Task_Primitives.Operations is
    --  In the current implementation, this is the task assigned permanently
    --  as the regular GNU/Linux kernel.
 
-   All_Tasks_L : aliased RTS_Lock;
-   --  See comments on locking rules in System.Tasking (spec).
+   Single_RTS_Lock : aliased RTS_Lock;
+   --  This is a lock to allow only one thread of control in the RTS at
+   --  a time; it is used to execute in mutual exclusion from all other tasks.
+   --  Used mainly in Single_Lock mode, but also to protect All_Tasks_List
 
    --  The followings are internal configuration constants needed.
    Next_Serial_Number : Task_Serial_Number := 100;
@@ -722,12 +723,10 @@ package body System.Task_Primitives.Operations is
    -- Write_Lock --
    ----------------
 
-   procedure Write_Lock
-     (L : access Lock;
-      Ceiling_Violation : out Boolean)
-   is
+   procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
       Prio : constant System.Any_Priority :=
         Current_Task.Common.LL.Active_Priority;
+
    begin
       pragma Debug (Printk ("procedure Write_Lock called" & LF));
 
@@ -756,7 +755,9 @@ package body System.Task_Primitives.Operations is
       end if;
    end Write_Lock;
 
-   procedure Write_Lock (L : access RTS_Lock) is
+   procedure Write_Lock
+     (L : access RTS_Lock; Global_Lock : Boolean := False)
+   is
       Prio : constant System.Any_Priority :=
         Current_Task.Common.LL.Active_Priority;
 
@@ -872,7 +873,7 @@ package body System.Task_Primitives.Operations is
       end if;
    end Unlock;
 
-   procedure Unlock (L : access RTS_Lock) is
+   procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
       Flags : Integer;
    begin
       pragma Debug (Printk ("procedure Unlock (RTS_Lock) called" & LF));
@@ -1607,27 +1608,23 @@ package body System.Task_Primitives.Operations is
       return Environment_Task_ID;
    end Environment_Task;
 
-   -------------------------
-   -- Lock_All_Tasks_List --
-   -------------------------
+   --------------
+   -- Lock_RTS --
+   --------------
 
-   procedure Lock_All_Tasks_List is
+   procedure Lock_RTS is
    begin
-      pragma Debug (Printk ("procedure Lock_All_Tasks_List called" & LF));
+      Write_Lock (Single_RTS_Lock'Access, Global_Lock => True);
+   end Lock_RTS;
 
-      Write_Lock (All_Tasks_L'Access);
-   end Lock_All_Tasks_List;
+   ----------------
+   -- Unlock_RTS --
+   ----------------
 
-   ---------------------------
-   -- Unlock_All_Tasks_List --
-   ---------------------------
-
-   procedure Unlock_All_Tasks_List is
+   procedure Unlock_RTS is
    begin
-      pragma Debug (Printk ("procedure Unlock_All_Tasks_List called" & LF));
-
-      Unlock (All_Tasks_L'Access);
-   end Unlock_All_Tasks_List;
+      Unlock (Single_RTS_Lock'Access, Global_Lock => True);
+   end Unlock_RTS;
 
    -----------------
    -- Stack_Guard --
@@ -1770,7 +1767,10 @@ package body System.Task_Primitives.Operations is
 
       --  Initialize the lock used to synchronize chain of all ATCBs.
 
-      Initialize_Lock (All_Tasks_L'Access, All_Tasks_Level);
+      Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
+
+      --  Single_Lock isn't supported in this configuration
+      pragma Assert (not Single_Lock);
 
       Enter_Task (Environment_Task);
    end Initialize;

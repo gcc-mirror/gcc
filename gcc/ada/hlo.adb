@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $                              --
+--                            $Revision$
 --                                                                          --
---             Copyright (C) 1998 Free Software Foundation, Inc.            --
+--          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,8 @@ package body HLO is
    -------------------------
 
    procedure High_Level_Optimize (N : Node_Id) is
+      pragma Warnings (Off, N);
+
    begin
       Write_Str ("High level optimizer activated");
       Write_Eol;

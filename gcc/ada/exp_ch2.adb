@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -29,6 +29,7 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Errout;   use Errout;
 with Exp_Smem; use Exp_Smem;
 with Exp_Util; use Exp_Util;
 with Exp_VFpt; use Exp_VFpt;
@@ -210,6 +211,12 @@ package body Exp_Ch2 is
       E : constant Entity_Id := Entity (N);
 
    begin
+      --  Defend against errors
+
+      if No (E) and then Total_Errors_Detected /= 0 then
+         return;
+      end if;
+
       if Ekind (E) = E_Discriminant then
          Expand_Discriminant (N);
 

@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.10 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1997-2000, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,14 +32,8 @@ with Opt;      use Opt;
 with Stand;    use Stand;
 with Targparm; use Targparm;
 with Ttypef;   use Ttypef;
-with Uintp;    use Uintp;
-
-pragma Elaborate_All (Uintp);
 
 package body Sem_VFpt is
-
-   T_Digits : constant Uint := UI_From_Int (IEEEL_Digits);
-   --  Digits for IEEE formats
 
    -----------------
    -- Set_D_Float --
