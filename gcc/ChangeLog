@@ -24,6 +24,14 @@
 	* cpphash.h:  Update function declarations.
 	* cpplib.h:  Update function declarations.
 
+	* c-opts.c (c_common_post_options):  Don't call cpp_find_main_file yet.
+	(c_common_parse_file):  No longer need to call cpp_read_main_file
+	when file_index > 0 (as in multi-file or server compiation).
+	(finish_options):  Change to <built-in> is an LC_ENTER, not LC_RENAME
+	as this now happens before cpp_push_main_file.
+	(push_command_line_include):  When done with options, pass LC_LEAVE
+	instead of LC_RENAME to cpp_change_file and finally cpp_push_main_file.
+	(fe_file_change):  Handle NULL new_map, and simplify.
 	* cpplex.c (_cpp_get_fresh_line):  Revert my no-longer-needed
 	08-28 change, since we're never called with a NULL buffer.
 	(_cpp_lex_direct):  Likewise.
