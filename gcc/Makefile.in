@@ -2041,7 +2041,7 @@ mostlyclean: bytecode.mostlyclean lang.mostlyclean
 	-rm -f tmp-fixtmp.c xsys-protos.hT
 # Delete the stamp files.
 	-rm -f s-* tmp-*
-	-rm -f */s-* */tmp-*
+	-rm -f */stamp-* */tmp-*
 # Delete debugging dump files.
 	-rm -f *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop
 	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack *.addressof
