@@ -1,3 +1,9 @@
+2001-02-28  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* objc/execute/bycopy-3.m: Added new test from Nicola Pero.
+
+	* objc/execute/protocol.m (main): Added patch from Nicola Pero.
+
 2001-02-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.ext/realpt1.C: Remove.
