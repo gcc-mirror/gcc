@@ -1,3 +1,11 @@
+2003-08-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (pushclass): Remove unneeded parameter.
+	* class.c (pushclass): Remove unneeded MODIFY parm. Adjust.
+	(push_nested_class): Adjust pushclass call.
+	* pt.c (instantiate_class_template): Likewise.
+	* semantics.c (begin_class_definition): Likewise.
+
 2003-08-01  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* typeck2.c (add_exception_specifier): Use 'bool' where appropriate.
