@@ -29,7 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Define different binder options for MACH.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
- "-T0x10000000 -D0x20000000 -K %{!nostdlib:%{!r*:%{!e*:-e __start}}} \
+ "-T0x10000000 -D0x20000000 -K %{!nostartfiles:%{!r*:%{!e*:-e __start}}} \
   -bnoso -berrmsg -btextro -bhalt:4 -bnodelcsect"
 
 /* MACH doesn't have atexit.  */
