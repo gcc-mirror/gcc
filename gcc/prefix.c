@@ -1,5 +1,6 @@
 /* Utility to update paths from internal to external forms.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -251,7 +252,7 @@ update_path (path, key)
   const char *path;
   const char *key;
 {
-  char *result;
+  char *result, *p;
 
   if (! strncmp (path, std_prefix, strlen (std_prefix)) && key != 0)
     {
@@ -271,9 +272,70 @@ update_path (path, key)
   else
     result = xstrdup (path);
 
+#ifndef ALWAYS_STRIP_DOTDOT
+#define ALWAYS_STRIP_DOTDOT 0
+#endif
+
+  p = result;
+  while (1)
+    {
+      char *src, *dest;
+
+      p = strchr (p, '.');
+      if (p == NULL)
+	break;
+      /* Get rid of a leading `./' and replace `/./' with `/'.  */
+      if (IS_DIR_SEPARATOR (p[1])
+	  && (p == result || IS_DIR_SEPARATOR (p[-1])))
+	{
+	  src = p + 2;
+	  /* Be careful about .//foo  */
+	  while (IS_DIR_SEPARATOR (*src))
+	    ++src;
+	  dest = p;
+	  while ((*dest++ = *src++) != 0)
+	    ;
+	}
+      /* Look for `/../'  */
+      else if (p[1] == '.'
+	       && IS_DIR_SEPARATOR (p[2])
+	       && (p != result && IS_DIR_SEPARATOR (p[-1])))
+	{
+	  *p = 0;
+	  if (!ALWAYS_STRIP_DOTDOT && access (result, X_OK) == 0)
+	    {
+	      *p = '.';
+	      p += 3;
+	    }
+	  else
+	    {
+	      /* We can't access the dir, so we won't be able to
+		 access dir/.. either.  Strip out dir/..  We know dir
+		 isn't `.' because we've rid ourselves of `.' path
+		 components above.  */
+	      dest = p - 1;
+	      while (dest != result && IS_DIR_SEPARATOR (*dest))
+		--dest;
+	      while (dest != result && IS_DIR_SEPARATOR (dest[-1]))
+		--dest;
+	      /* Don't strip leading `/'.  */
+	      while (IS_DIR_SEPARATOR (*dest))
+		++dest;
+	      src = p + 3;
+	      while (IS_DIR_SEPARATOR (*src))
+		++src;
+	      p = dest;
+	      while ((*dest++ = *src++) != 0)
+		;
+	    }
+	}
+      else
+	++p;
+    }
+
 #ifdef UPDATE_PATH_HOST_CANONICALIZE
   /* Perform host dependent canonicalization when needed.  */
-  UPDATE_PATH_HOST_CANONICALIZE (path);
+  UPDATE_PATH_HOST_CANONICALIZE (result);
 #endif
 
 #ifdef DIR_SEPARATOR_2

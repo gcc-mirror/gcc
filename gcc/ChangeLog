@@ -1,5 +1,8 @@
 2002-07-18  Alan Modra  <amodra@bigpond.net.au>
 
+	* prefix.c: (update_path): Strip ".." components when prior dir
+	doesn't exist.  Pass correct var to UPDATE_PATH_HOST_CANONICALIZE.
+
 	* config/rs6000/sysv4.h (ASM_OUTPUT_REG_PUSH): Remove 64-bit support.
 	(ASM_OUTPUT_REG_POP): Likewise.
 
