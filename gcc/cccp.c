@@ -5368,9 +5368,31 @@ create_definition (buf, limit, op)
   } else {
     /* Simple expansion or empty definition.  */
 
-    /* Skip spaces and tabs if any.  */
-    while (bp < limit && (*bp == ' ' || *bp == '\t'))
-      ++bp;
+    if (bp < limit)
+      {
+	switch (*bp)
+	  {
+	    case '\t': case ' ':
+	      /* Skip spaces and tabs.  */
+	      while (++bp < limit && (*bp == ' ' || *bp == '\t'))
+		continue;
+	      break;
+
+	    case '!':  case '"':  case '#':  case '%':  case '&':  case '\'':
+	    case ')':  case '*':  case '+':  case ',':  case '-':  case '.':
+	    case '/':  case ':':  case ';':  case '<':  case '=':  case '>':
+	    case '?':  case '[':  case '\\': case ']':  case '^':  case '{':
+	    case '|':  case '}':  case '~':
+	      warning ("missing white space after `#define %.*s'",
+		       sym_length, symname);
+	      break;
+
+	    default:
+	      pedwarn ("missing white space after `#define %.*s'",
+		       sym_length, symname);
+	      break;
+	  }
+      }
     /* Now everything from bp before limit is the definition. */
     defn = collect_expansion (bp, limit, -1, NULL_PTR);
     defn->args.argnames = (U_CHAR *) "";
