@@ -1,3 +1,10 @@
+2004-12-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/17564
+	* dojump.c (do_compare_and_jump): Only canonicalize function pointers
+	in a comparison if both sides are function pointers.
+
 2004-12-12  Richard Henderson  <rth@redhat.com>
 
 	PR target/18932

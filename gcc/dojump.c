@@ -904,24 +904,23 @@ do_compare_and_jump (tree exp, enum rtx_code signed_code,
 
 #ifdef HAVE_canonicalize_funcptr_for_compare
   /* If function pointers need to be "canonicalized" before they can
-     be reliably compared, then canonicalize them.  */
+     be reliably compared, then canonicalize them.
+     Only do this if *both* sides of the comparison are function pointers.
+     If one side isn't, we want a noncanonicalized comparison.  See PR
+     middle-end/17564. */
   if (HAVE_canonicalize_funcptr_for_compare
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
-      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))
-          == FUNCTION_TYPE))
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+          == FUNCTION_TYPE
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 1))) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 1))))
+          == FUNCTION_TYPE)
     {
       rtx new_op0 = gen_reg_rtx (mode);
+      rtx new_op1 = gen_reg_rtx (mode);
 
       emit_insn (gen_canonicalize_funcptr_for_compare (new_op0, op0));
       op0 = new_op0;
-    }
-
-  if (HAVE_canonicalize_funcptr_for_compare
-      && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 1))) == POINTER_TYPE
-      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 1))))
-          == FUNCTION_TYPE))
-    {
-      rtx new_op1 = gen_reg_rtx (mode);
 
       emit_insn (gen_canonicalize_funcptr_for_compare (new_op1, op1));
       op1 = new_op1;
