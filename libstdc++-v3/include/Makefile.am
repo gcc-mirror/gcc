@@ -201,6 +201,7 @@ ext_srcdir = ${glibcxx_srcdir}/include/ext
 ext_builddir = ./ext
 ext_headers = \
 	${ext_srcdir}/algorithm \
+	${ext_srcdir}/array_allocator.h \
 	${ext_srcdir}/bitmap_allocator.h \
 	${ext_srcdir}/debug_allocator.h \
 	${ext_srcdir}/enc_filebuf.h \
@@ -223,6 +224,11 @@ ext_headers = \
 	${ext_srcdir}/slist \
 	${ext_srcdir}/hash_fun.h \
 	${ext_srcdir}/hashtable.h
+
+tr1_srcdir = ${glibcxx_srcdir}/include/tr1
+tr1_builddir = ./tr1
+tr1_headers = \
+	${tr1_srcdir}/array
 
 # This is the common subset of files that all three "C" header models use.
 c_base_srcdir = $(C_INCLUDE_DIR)
@@ -380,7 +386,7 @@ endif
 # CLEANFILES and all-local are kept up-to-date.
 allstamped = \
 	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
-	stamp-backward stamp-ext stamp-debug stamp-host
+	stamp-backward stamp-ext stamp-tr1 stamp-debug stamp-host
 
 # List of all files that are created by explicit building, editing, or
 # catenation.
@@ -458,6 +464,16 @@ stamp-ext: ${ext_headers}
 	  (cd ${ext_builddir} && $(LN_S) $? . || true) ;\
 	fi ;\
 	$(STAMP) stamp-ext
+
+
+stamp-tr1: ${tr1_headers}
+	@if [ ! -d "${tr1_builddir}" ]; then \
+	    mkdir -p ${tr1_builddir} ;\
+	fi ;\
+	if [ ! -f stamp-tr1 ]; then \
+	  (cd ${tr1_builddir} && $(LN_S) $? . || true) ;\
+	fi ;\
+	$(STAMP) stamp-tr1
 
 stamp-debug: ${debug_headers}
 	@if [ ! -d "${debug_builddir}" ]; then \
@@ -596,6 +612,9 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${ext_builddir}
 	for file in ${ext_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${ext_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${tr1_builddir}
+	for file in ${tr1_headers}; do \
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${tr1_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${c_base_builddir}
 	for file in ${c_base_headers_rename}; do \
 	  $(INSTALL_DATA) ${c_base_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${c_base_builddir}; done
