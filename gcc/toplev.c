@@ -2862,6 +2862,7 @@ compile_file (name)
   init_decl_processing ();
   init_optabs ();
   init_stmt ();
+  init_eh ();
   init_loop ();
   init_reload ();
   init_alias_once ();
@@ -4425,6 +4426,8 @@ rest_of_compilation (decl)
 
 	      /* Show no temporary slots allocated.  */
 	      init_temp_slots ();
+
+	      free_basic_block_vars (0);
 	   });
 
   /* Make sure volatile mem refs aren't considered valid operands for
@@ -4439,8 +4442,9 @@ rest_of_compilation (decl)
   init_recog_no_volatile ();
 
   /* We're done with this function.  Free up memory if we can.  */
-  free_after_compilation (current_function);
-
+  free_after_parsing (current_function);
+  if (! DECL_DEFER_OUTPUT (decl))
+    free_after_compilation (current_function);
   current_function = 0;
 
   if (ggc_p)
@@ -4450,9 +4454,6 @@ rest_of_compilation (decl)
      *except* what is spent in this function.  */
 
   parse_time -= get_run_time () - start_time;
-
-  /* Reset global variables.  */
-  free_basic_block_vars (0);
 }
 
 static void

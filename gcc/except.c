@@ -2405,9 +2405,12 @@ mark_tree_label_node (node)
 /* Mark EH for GC.  */
 
 void
-mark_eh_state (eh)
+mark_eh_status (eh)
      struct eh_status *eh;
 {
+  if (eh == 0)
+    return;
+
   mark_eh_stack (&eh->x_ehstack);
   mark_eh_stack (&eh->x_catchstack);
   mark_eh_queue (&eh->x_ehqueue);
@@ -2479,7 +2482,8 @@ init_eh ()
 void
 init_eh_for_function ()
 {
-  current_function->eh = (struct eh_status *) xmalloc (sizeof (struct eh_status));
+  current_function->eh
+    = (struct eh_status *) xmalloc (sizeof (struct eh_status));
 
   ehstack.top = 0;
   catchstack.top = 0;
@@ -2493,6 +2497,14 @@ init_eh_for_function ()
   eh_return_stack_adjust = NULL_RTX;
   eh_return_handler = NULL_RTX;
   eh_return_stub_label = NULL_RTX;
+}
+
+void
+free_eh_status (f)
+     struct function *f;
+{
+  free (f->eh);
+  f->eh = NULL;
 }
 
 /* This section is for the exception handling specific optimization

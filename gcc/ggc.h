@@ -33,6 +33,7 @@ extern int ggc_p;
    just forward-declare them here.  */
 struct eh_status;
 struct emit_status;
+struct expr_status;
 struct hash_table;
 struct label_node;
 struct rtvec_def;
@@ -121,8 +122,9 @@ void lang_mark_false_label_stack PROTO ((struct label_node *));
 
 /* Mark functions for various structs scattered about.  */
 
-void mark_eh_state PROTO ((struct eh_status *));
-void mark_stmt_state PROTO ((struct stmt_status *));
-void mark_emit_state PROTO ((struct emit_status *));
-void mark_varasm_state PROTO ((struct varasm_status *));
+void mark_eh_status PROTO ((struct eh_status *));
+void mark_emit_status PROTO ((struct emit_status *));
+void mark_expr_status PROTO ((struct expr_status *));
+void mark_stmt_status PROTO ((struct stmt_status *));
+void mark_varasm_status PROTO ((struct varasm_status *));
 void mark_optab PROTO ((void *));
