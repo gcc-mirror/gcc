@@ -532,14 +532,7 @@ int ix86_branch_cost;
 const char *ix86_branch_cost_string;
 
 /* Power of two alignment for functions.  */
-int ix86_align_funcs;
 const char *ix86_align_funcs_string;
-
-/* Power of two alignment for loops.  */
-int ix86_align_loops;
-
-/* Power of two alignment for non-loop jumps.  */
-int ix86_align_jumps;
 
 static void output_pic_addr_const PARAMS ((FILE *, rtx, int));
 static void put_condition_code PARAMS ((enum rtx_code, enum machine_mode,
@@ -751,39 +744,56 @@ override_options ()
    if (TARGET_64BIT)
      ix86_regparm = REGPARM_MAX;
 
-  /* Validate -malign-loops= value, or provide default.  */
-  ix86_align_loops = processor_target_table[ix86_cpu].align_loop;
+  /* If the user has provided any of the -malign-* options,
+     warn and use that value only if -falign-* is not set.  
+     Remove this code in GCC 3.2 or later.  */
   if (ix86_align_loops_string)
     {
-      i = atoi (ix86_align_loops_string);
-      if (i < 0 || i > MAX_CODE_ALIGN)
-	error ("-malign-loops=%d is not between 0 and %d", i, MAX_CODE_ALIGN);
-      else
-	ix86_align_loops = i;
+      warning ("-malign-loops is obsolete, use -falign-loops");
+      if (align_loops == 0)
+	{
+	  i = atoi (ix86_align_loops_string);
+	  if (i < 0 || i > MAX_CODE_ALIGN)
+	    error ("-malign-loops=%d is not between 0 and %d", i, MAX_CODE_ALIGN);
+	  else
+	    align_loops = 1 << i;
+	}
     }
 
-  /* Validate -malign-jumps= value, or provide default.  */
-  ix86_align_jumps = processor_target_table[ix86_cpu].align_jump;
   if (ix86_align_jumps_string)
     {
-      i = atoi (ix86_align_jumps_string);
-      if (i < 0 || i > MAX_CODE_ALIGN)
-	error ("-malign-jumps=%d is not between 0 and %d", i, MAX_CODE_ALIGN);
-      else
-	ix86_align_jumps = i;
+      warning ("-malign-jumps is obsolete, use -falign-jumps");
+      if (align_jumps == 0)
+	{
+	  i = atoi (ix86_align_jumps_string);
+	  if (i < 0 || i > MAX_CODE_ALIGN)
+	    error ("-malign-loops=%d is not between 0 and %d", i, MAX_CODE_ALIGN);
+	  else
+	    align_jumps = 1 << i;
+	}
     }
 
-  /* Validate -malign-functions= value, or provide default.  */
-  ix86_align_funcs = processor_target_table[ix86_cpu].align_func;
   if (ix86_align_funcs_string)
     {
-      i = atoi (ix86_align_funcs_string);
-      if (i < 0 || i > MAX_CODE_ALIGN)
-	error ("-malign-functions=%d is not between 0 and %d",
-	       i, MAX_CODE_ALIGN);
-      else
-	ix86_align_funcs = i;
+      warning ("-malign-functions is obsolete, use -falign-functions");
+      if (align_functions == 0)
+	{
+	  i = atoi (ix86_align_funcs_string);
+	  if (i < 0 || i > MAX_CODE_ALIGN)
+	    error ("-malign-loops=%d is not between 0 and %d", i, MAX_CODE_ALIGN);
+	  else
+	    align_functions = 1 << i;
+	}
     }
+
+  /* Default align_* from the processor table.  */
+#define abs(n) (n < 0 ? -n : n)
+  if (align_loops == 0)
+    align_loops = 1 << abs (processor_target_table[ix86_cpu].align_loop);
+  if (align_jumps == 0)
+    align_jumps = 1 << abs (processor_target_table[ix86_cpu].align_jump);
+  if (align_functions == 0)
+    align_functions = 1 << abs (processor_target_table[ix86_cpu].align_func);
 
   /* Validate -mpreferred-stack-boundary= value, or provide default.
      The default of 128 bits is for Pentium III's SSE __m128.  */

@@ -1,3 +1,20 @@
+2001-05-03  Geoff Keating  <geoffk@redhat.com>
+
+	* invoke.texi (i386 Options): Delete references to -malign-jumps,
+	-malign-loops, -malign-functions.
+	* i386.c (ix86_align_funcs): Delete.
+	(ix86_align_loops): Delete.
+	(ix86_align_jumps): Delete.
+	(override_options): Mark -malign-* as obsolete.  Emulate their
+	behaviour with the -falign-* options.  Default -falign-* from
+	the processor table.
+	* i386.h (FUNCTION_BOUNDARY): Define to 16; revert Richard Kenner's
+	patch of Wed May 2 13:09:36 2001.
+	(LOOP_ALIGN): Delete.
+	(LOOP_ALIGN_MAX_SKIP): Delete.
+	(LABEL_ALIGN_AFTER_BARRIER): Delete.
+	(LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP): Delete.
+
 2001-05-04  Andreas Jaeger  <aj@suse.de>
 
 	* except.h: Add prototype declaration for

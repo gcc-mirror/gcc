@@ -470,8 +470,7 @@ in the following sections.
 -mintel-syntax -mieee-fp  -mno-fancy-math-387 @gol
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
--malign-jumps=@var{num}  -malign-loops=@var{num} @gol
--malign-functions=@var{num} -mpreferred-stack-boundary=@var{num} @gol
+-mpreferred-stack-boundary=@var{num} @gol
 -mthreads -mno-align-stringops -minline-all-stringops @gol
 -mpush-args -maccumulate-outgoing-args -m128bit-long-double @gol
 -m96bit-long-double -mregparm=@var{num}}
@@ -6864,26 +6863,6 @@ function by using the function attribute @samp{regparm}.
 @var{num} is nonzero, then you must build all modules with the same
 value, including any libraries.  This includes the system libraries and
 startup modules.
-
-@item -malign-loops=@var{num}
-Align loops to a 2 raised to a @var{num} byte boundary.  If
-@samp{-malign-loops} is not specified, the default is 2 unless
-gas 2.8 (or later) is being used in which case the default is
-to align the loop on a 16 byte boundary if it is less than 8
-bytes away.
-
-@item -malign-jumps=@var{num}
-Align instructions that are only jumped to to a 2 raised to a @var{num}
-byte boundary.  If @samp{-malign-jumps} is not specified, the default is
-2 if optimizing for a 386, and 4 if optimizing for a 486 unless
-gas 2.8 (or later) is being used in which case the default is
-to align the instruction on a 16 byte boundary if it is less
-than 8 bytes away.
-
-@item -malign-functions=@var{num}
-Align the start of functions to a 2 raised to @var{num} byte boundary.
-If @samp{-malign-functions} is not specified, the default is 2 if optimizing
-for a 386, and 4 if optimizing for a 486.
 
 @item -mpreferred-stack-boundary=@var{num}
 Attempt to keep the stack boundary aligned to a 2 raised to @var{num}
