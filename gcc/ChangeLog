@@ -1,3 +1,10 @@
+2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/implement-c.texi: New file.
+	* doc/extend.texi (C Implementation): Move to there.
+	* doc/gcc.texi: Include implement-c.texi.
+	* Makefile.in (TEXI_GCC_FILES): Add implement-c.texi.
+
 2004-07-22  Jason Merrill  <jason@redhat.com>
 
 	* integrate.c (copy_decl_for_inlining): Remove invisible reference

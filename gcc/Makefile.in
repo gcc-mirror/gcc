@@ -2911,7 +2911,8 @@ TEXI_CPP_FILES = cpp.texi fdl.texi cppenv.texi cppopts.texi
 TEXI_GCC_FILES = gcc.texi gcc-common.texi frontends.texi standards.texi \
 	 invoke.texi extend.texi md.texi objc.texi gcov.texi trouble.texi \
 	 bugreport.texi service.texi contribute.texi compat.texi funding.texi \
-	 gnu.texi gpl.texi fdl.texi contrib.texi cppenv.texi cppopts.texi
+	 gnu.texi gpl.texi fdl.texi contrib.texi cppenv.texi cppopts.texi \
+	 implement-c.texi
 
 TEXI_GCCINT_FILES = gccint.texi gcc-common.texi contribute.texi makefile.texi \
 	 configterms.texi portability.texi interface.texi passes.texi \
