@@ -78,14 +78,13 @@ static void set_block_abstract_flags PROTO((tree, int));
 void set_decl_abstract_flags	PROTO((tree, int));
 
 /* Returns the Ith entry in the label_map contained in MAP.  If the
-   Ith entry has not yet been set, it is assumed to be a fresh label.
-   Essentially, we use this function to perform a lazy initialization
-   of label_map, thereby avoiding huge memory explosions when the
-   label_map gets very large.  */
+   Ith entry has not yet been set, return a fresh label.  This function
+   performs a lazy initialization of label_map, thereby avoiding huge memory
+   explosions when the label_map gets very large.  */
 
 rtx
 get_label_from_map (map, i)
-     struct inline_remap* map;
+     struct inline_remap *map;
      int i;
 {
   rtx x = map->label_map[i];
@@ -95,7 +94,6 @@ get_label_from_map (map, i)
 
   return x;
 }
-
 
 /* Zero if the current function (whose FUNCTION_DECL is FNDECL)
    is safe and reasonable to integrate into other functions.
@@ -1774,9 +1772,10 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   pushlevel (0);
   expand_start_bindings (0);
 
-  /* Make new label equivalences for the labels in the called function.  */
-  for (i = min_labelno; i < max_labelno; i++)
-    map->label_map[i] = NULL_RTX;
+  /* Initialize label_map.  get_label_from_map will actually make
+     the labels.  */
+  bzero ((char *) &map->label_map [min_labelno],
+	 max_labelno - min_labelno * sizeof (rtx));
 
   /* Perform postincrements before actually calling the function.  */
   emit_queue ();
