@@ -66,6 +66,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=401: -D_ARCH_PPC} \
 %{mcpu=403: -D_ARCH_PPC} \
+%{mcpu=405: -D_ARCH_PPC} \
 %{mcpu=505: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
 %{mcpu=602: -D_ARCH_PPC} \
@@ -105,6 +106,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc1: -mpwr} \
 %{mcpu=401: -mppc} \
 %{mcpu=403: -mppc} \
+%{mcpu=405: -mppc} \
 %{mcpu=505: -mppc} \
 %{mcpu=601: -m601} \
 %{mcpu=602: -mppc} \
@@ -1787,7 +1789,7 @@ typedef struct rs6000_args
  ((DEFAULT_ABI == ABI_AIX						\
    || DEFAULT_ABI == ABI_DARWIN						\
    || DEFAULT_ABI == ABI_AIX_NODESC)	? (TARGET_32BIT ? 8 : 16) :	\
-  (DEFAULT_ABI == ABI_V4)		? (TARGET_32BIT ? 4 : 8) :	\
+  (DEFAULT_ABI == ABI_V4)		? 4 :				\
   (internal_error ("RETURN_ADDRESS_OFFSET not supported"), 0))
 
 /* The current return address is in link register (65).  The return address

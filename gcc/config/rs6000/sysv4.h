@@ -1015,6 +1015,7 @@ do {						\
 %{!msoft-float: %{!mhard-float: \
     %{mcpu=401: -D_SOFT_FLOAT} \
     %{mcpu=403: -D_SOFT_FLOAT} \
+    %{mcpu=405: -D_SOFT_FLOAT} \
     %{mcpu=ec603e: -D_SOFT_FLOAT} \
     %{mcpu=801: -D_SOFT_FLOAT} \
     %{mcpu=821: -D_SOFT_FLOAT} \
@@ -1260,6 +1261,7 @@ ncrtn.o%s"
 %{mcpu=powerpc: -DCPU=PPC603} \
 %{mcpu=401: -DCPU=PPC403} \
 %{mcpu=403: -DCPU=PPC403} \
+%{mcpu=405: -DCPU=PPC405} \
 %{mcpu=601: -DCPU=PPC601} \
 %{mcpu=602: -DCPU=PPC603} \
 %{mcpu=603: -DCPU=PPC603} \

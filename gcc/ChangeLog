@@ -1,3 +1,8 @@
+2001-12-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.h (ASM_CPU_SPEC, CPP_CPU_SPEC): Add mcpu=405.
+	* sysv4.h (CPP_SYSV_SPEC, CPP_OS_VXWORKS_SPEC): Add mcpu=405.
+
 2001-12-26  DJ Delorie  <dj@redhat.com>
 
 	* function.c (expand_main_function): Make sure stack adjustments
