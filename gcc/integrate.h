@@ -1,4 +1,4 @@
-/* Function integration definitions for GNU C-Compiler
+/* Function integration definitions for GCC
    Copyright (C) 1990, 1995, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GCC.

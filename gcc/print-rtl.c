@@ -1,4 +1,4 @@
-/* Print RTL for GNU C Compiler.
+/* Print RTL for GCC.
    Copyright (C) 1987, 1988, 1992, 1997, 1998, 1999, 2000, 2002, 2003
    Free Software Foundation, Inc.
 

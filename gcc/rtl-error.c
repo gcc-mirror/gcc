@@ -1,4 +1,4 @@
-/* RTL specific diagnostic subroutines for the GNU C compiler
+/* RTL specific diagnostic subroutines for GCC
    Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 

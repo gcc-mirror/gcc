@@ -1,4 +1,4 @@
-/* RTL reader for GNU C Compiler.
+/* RTL reader for GCC.
    Copyright (C) 1987, 1988, 1991, 1994, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
 

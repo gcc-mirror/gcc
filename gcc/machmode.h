@@ -1,4 +1,4 @@
-/* Machine mode definitions for GNU C-Compiler; included by rtl.h and tree.h.
+/* Machine mode definitions for GCC; included by rtl.h and tree.h.
    Copyright (C) 1991, 1993, 1994, 1996, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 

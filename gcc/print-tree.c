@@ -1,4 +1,4 @@
-/* Prints out tree in human readable form - GNU C-compiler
+/* Prints out tree in human readable form - GCC
    Copyright (C) 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
    2001, 2002, 2003 Free Software Foundation, Inc.
 
