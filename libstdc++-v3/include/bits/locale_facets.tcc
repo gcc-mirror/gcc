@@ -2000,21 +2000,20 @@ namespace std
   template<typename _CharT, typename _OutIter>
     _OutIter
     time_put<_CharT, _OutIter>::
-    put(iter_type __s, ios_base& __io, char_type, const tm* __tm, 
+    put(iter_type __s, ios_base& __io, char_type __fill, const tm* __tm, 
 	const _CharT* __beg, const _CharT* __end) const
     {
       locale __loc = __io.getloc();
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       while (__beg != __end)
 	{
-	  char __c = __ctype.narrow(*__beg, 0);
+	  const _CharT* __tmp = __beg;
 	  ++__beg;
-	  if (__c == '%')
+	  if (__ctype.narrow(*__tmp, 0) == '%' && __beg != __end)
 	    {
 	      char __format;
 	      char __mod = 0;
-	      size_t __len = 1; 
-	      __c = __ctype.narrow(*__beg, 0);
+	      const char __c = __ctype.narrow(*__beg, 0);
 	      ++__beg;
 	      if (__c == 'E' || __c == 'O')
 		{
@@ -2024,13 +2023,10 @@ namespace std
 		}
 	      else
 		__format = __c;
-	      __s = this->do_put(__s, __io, _CharT(), __tm, __format, __mod);
+	      __s = this->do_put(__s, __io, __fill, __tm, __format, __mod);
 	    }
 	  else
-	    {
-	      *__s = __c;
-	      ++__s;
-	    }
+	    *__s++ = *__tmp;
 	}
       return __s;
     }
