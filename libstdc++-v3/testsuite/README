@@ -1,12 +1,94 @@
-We're in the process of converting the existing testsuite machinery to
+  We're in the process of converting the existing testsuite machinery to 
 use the new style DejaGnu framework.  Eventually, we'll abandon
-../mkcheck.in in favor of this new testsuite framework.  
+../mkcheck.in in favor of this new testsuite framework. 
 
-  Basically, a testcase contains dg-keywords (see dg.exp) indicating
+Basically, a testcase contains dg-keywords (see dg.exp) indicating
 what to do and what kinds of behaviour are to be expected.  New
-testcases should be written with the new style DejaGnu framework in mind.
+testcases should be written with the new style DejaGnu framework in
+mind.
 
-  The V3 testing framework supports additional keywords for the purpose
+To ease transition, here is the list of dg-keyword documentation
+lifted from dg.exp -- eventuaklly we should improve DejaGnu
+documentation, but getting checkin account currently demands Pyrrhic
+effort. 
+
+# The currently supported options are:
+#
+# dg-prms-id N
+#	set prms_id to N
+#
+# dg-options "options ..." [{ target selector }]
+#	specify special options to pass to the tool (eg: compiler)
+#
+# dg-do do-what-keyword [{ target/xfail selector }]
+#	`do-what-keyword' is tool specific and is passed unchanged to
+#	${tool}-dg-test.  An example is gcc where `keyword' can be any of:
+#	preprocess|compile|assemble|link|run
+#	and will do one of: produce a .i, produce a .s, produce a .o,
+#	produce an a.out, or produce an a.out and run it (the default is
+#	compile).
+#
+# dg-error regexp comment [{ target/xfail selector } [{.|0|linenum}]]
+#	indicate an error message <regexp> is expected on this line
+#	(the test fails if it doesn't occur)
+#	Linenum=0 for general tool messages (eg: -V arg missing).
+#	"." means the current line.
+#
+# dg-warning regexp comment [{ target/xfail selector } [{.|0|linenum}]]
+#	indicate a warning message <regexp> is expected on this line
+#	(the test fails if it doesn't occur)
+#
+# dg-bogus regexp comment [{ target/xfail selector } [{.|0|linenum}]]
+#	indicate a bogus error message <regexp> use to occur here
+#	(the test fails if it does occur)
+#
+# dg-build regexp comment [{ target/xfail selector }]
+#	indicate the build use to fail for some reason
+#	(errors covered here include bad assembler generated, tool crashes,
+#	and link failures)
+#	(the test fails if it does occur)
+#
+# dg-excess-errors comment [{ target/xfail selector }]
+#	indicate excess errors are expected (any line)
+#	(this should only be used sparingly and temporarily)
+#
+# dg-output regexp [{ target selector }]
+#	indicate the expected output of the program is <regexp>
+#	(there may be multiple occurrences of this, they are concatenated)
+#
+# dg-final { tcl code }
+#	add some tcl code to be run at the end
+#	(there may be multiple occurrences of this, they are concatenated)
+#	(unbalanced braces must be \-escaped)
+#
+# "{ target selector }" is a list of expressions that determine whether the
+# test succeeds or fails for a particular target, or in some cases whether the
+# option applies for a particular target.  If the case of `dg-do' it specifies
+# whether the testcase is even attempted on the specified target.
+#
+# The target selector is always optional.  The format is one of:
+#
+# { xfail *-*-* ... } - the test is expected to fail for the given targets
+# { target *-*-* ... } - the option only applies to the given targets
+#
+# At least one target must be specified, use *-*-* for "all targets".
+# At present it is not possible to specify both `xfail' and `target'.
+# "native" may be used in place of "*-*-*".
+#
+# Example:
+#
+#       [ ... some complicated code ... ]
+#	return a; /* { dg-build "fatal" "ran out of spill regs" { xfail i386-*-* } } */
+#
+# In this example, the compiler use to crash on the "return a;" for some
+# target and that it still does crash on i386-*-*.  Admittedly, this is a
+# contrived example.
+#
+# ??? It might be possible to add additional optional arguments by having
+# something like: { dg-error ".*syntax.*" "syntax error" { { foo 1 } ... } }
+
+
+The V3 testing framework supports additional keywords for the purpose
 of easing the job of writing testcases.  All V3-keywords are of the
 form @xxx@.  Currently supported keywords include:
 
