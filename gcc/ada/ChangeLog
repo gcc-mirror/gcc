@@ -1,3 +1,9 @@
+2001-10-10  Ed Schonberg <schonber@gnat.com>
+
+	* sem_prag.adb: (Analyze_Pragma, case External): If entity is a 
+	constant, do not indicate possible modification, so that gigi can 
+	treat it as a bona fide constant.
+
 2001-10-10  Robert Dewar <dewar@gnat.com>
 
 	* sem_prag.adb: Add processing for pragma External.
