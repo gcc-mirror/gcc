@@ -21,6 +21,10 @@
 	(get_last_value_validate) : Same.
 	(get_last_value) : Same.
 
+	Fri Mar  3 12:49:28 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+        * reload1.c (reload_combine_note_use): Handle return register USEs.
+	REG case: Handle multi-hard-register hard regs.
+
 2001-03-30  Bernd Schmidt  <bernds@redhat.com>
 
 	* jump.c (delete_barrier_successors): Fix error in last change.
