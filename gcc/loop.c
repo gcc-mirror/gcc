@@ -4136,7 +4136,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       for (bl = loop_iv_list; bl; bl = bl->next)
 	{
 	  struct induction **vp, *v, *next;
-    
+	  int biv_dead_after_loop = 0;
+
 	  /* The biv increments lists are in reverse order.  Fix this first.  */
 	  for (v = bl->biv, bl->biv = 0; v; v = next)
 	    {
@@ -4144,19 +4145,46 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	      v->next_iv = bl->biv;
 	      bl->biv = v;
 	    }
-    
+
+	  /* We must guard against the case that an early exit between v->insn
+	     and next->insn leaves the biv live after the loop, since that
+	     would mean that we'd be missing an increment for the final
+	     value.  The following test to set biv_dead_after_loop is like
+	     the first part of the test to set bl->eliminable.
+	     We don't check here if we can calculate the final value, since
+	     this can't succeed if we already know that there is a jump
+	     between v->insn and next->insn, yet next->always_executed is
+	     set and next->maybe_multiple is cleared.  Such a combination
+	     implies that the jump destination is outseide the loop.
+	     If we want to make this check more sophisticated, we should
+	     check each branch between v->insn and next->insn individually
+	     to see if it the biv is dead at its destination.  */
+
+	  if (uid_luid[REGNO_LAST_UID (bl->regno)] < INSN_LUID (loop_end)
+	      && bl->init_insn
+	      && INSN_UID (bl->init_insn) < max_uid_for_loop
+	      && (uid_luid[REGNO_FIRST_UID (bl->regno)]
+		  >= INSN_LUID (bl->init_insn))
+#ifdef HAVE_decrement_and_branch_until_zero
+	      && ! bl->nonneg
+#endif
+	      && ! reg_mentioned_p (bl->biv->dest_reg, SET_SRC (bl->init_set)))
+	    biv_dead_after_loop = 1;
+
 	  for (vp = &bl->biv, next = *vp; v = next, next = v->next_iv;)
 	    {
 	      HOST_WIDE_INT offset;
 	      rtx set, add_val, old_reg, dest_reg, last_use_insn;
 	      int old_regno, new_regno;
-    
+
 	      if (! v->always_executed
 		  || v->maybe_multiple
 		  || GET_CODE (v->add_val) != CONST_INT
 		  || ! next->always_executed
 		  || next->maybe_multiple
-		  || ! CONSTANT_P (next->add_val))
+		  || ! CONSTANT_P (next->add_val)
+		  || ! (biv_dead_after_loop
+			|| no_jumps_between_p (v->insn, next->insn)))
 		{
 		  vp = &v->next_iv;
 		  continue;
