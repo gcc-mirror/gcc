@@ -520,7 +520,10 @@ namespace std
 				     - (__size + __malloc_header_size)
 				     % __pagesize);
 	  __capacity += __extra / sizeof(_CharT);
-	  __size += __extra;
+	  // Never allocate a string bigger than _S_max_size.
+	  if (__capacity > _S_max_size)
+	    __capacity = _S_max_size;
+	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
 	}
       else if (__size > __subpagesize)
 	{
@@ -528,7 +531,7 @@ namespace std
 				     - (__size + __malloc_header_size)
 				     % __subpagesize);
 	  __capacity += __extra / sizeof(_CharT);
-	  __size += __extra;
+	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
 	}
 
       // NB: Might throw, but no worries about a leak, mate: _Rep()

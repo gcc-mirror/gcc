@@ -1,5 +1,12 @@
 2004-01-30  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.tcc (_Rep::_S_create):
+	Never allocate a string bigger than max_size(); always keep
+	__capacity and __size in sync to avoid memory leaks at
+	deallocation time.
+
+2004-01-30  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.tcc (_S_construct(_InIterator,
 	_InIterator, const _Alloc&, input_iterator_tag)): Simplify
 	the double loop, streamline.
