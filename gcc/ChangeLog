@@ -1,5 +1,9 @@
 2000-10-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* toplev.c, flags.h, fold-const.c, real.c, rtl.c,
+	fixinc/inclhack.def: Change comments mentioning C9X to refer to
+	C99 instead.
+
 	* invoke.texi: Document that -V will only work for very similar
 	versions of driver and compiler.
 

@@ -876,7 +876,7 @@ fix = {
 
 /*
  *  Remove `extern double cabs' declarations from math.h.
- *  This conflicts with C9x.  Discovered on AIX.
+ *  This conflicts with C99.  Discovered on AIX.
  *  SunOS4 has its cabs() declaration followed by a comment which
  *  terminates on the following line.
  */

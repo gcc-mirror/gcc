@@ -1093,7 +1093,7 @@ read_rtx (infile)
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
 	tmp_wide = atol (tmp_char);
 #else
-	/* Prefer atoll over atoq, since the former is in the ISO C9X draft.
+	/* Prefer atoll over atoq, since the former is in the ISO C99 standard.
 	   But prefer not to use our hand-rolled function above either.  */
 #if defined(HAVE_ATOLL) || !defined(HAVE_ATOQ)
 	tmp_wide = atoll (tmp_char);

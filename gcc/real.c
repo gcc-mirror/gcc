@@ -5122,7 +5122,7 @@ asctoe (s, y)
 }
 
 /* Convert ASCII string SS to e type Y, with a specified rounding precision
-   of OPREC bits.  BASE is 16 for C9X hexadecimal floating constants.  */
+   of OPREC bits.  BASE is 16 for C99 hexadecimal floating constants.  */
 
 static void
 asctoeg (ss, y, oprec)

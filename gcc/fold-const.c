@@ -1042,7 +1042,7 @@ fail:
   return 1;
 }
 
-/* Convert C9X hexadecimal floating point string constant S.  Return
+/* Convert C99 hexadecimal floating point string constant S.  Return
    real value type in mode MODE.  This function uses the host computer's
    floating point arithmetic when there is no REAL_ARITHMETIC.  */
 
