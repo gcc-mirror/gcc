@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "rtl.h"
 #include "tree.h"
+#include "regs.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "insn-flags.h"
@@ -107,14 +108,6 @@ function_cannot_inline_p (fndecl)
     return "function too large to be inline";
 
 #if 0
-  /* Large stacks are OK now that inlined functions can share them.  */
-  /* Don't inline functions with large stack usage,
-     since they can make other recursive functions burn up stack.  */
-  if (!DECL_INLINE (fndecl) && get_frame_size () > 100)
-    return "function stack frame for inlining";
-#endif
-
-#if 0
   /* Don't inline functions which do not specify a function prototype and
      have BLKmode argument or take the address of a parameter.  */
   for (parms = DECL_ARGUMENTS (fndecl); parms; parms = TREE_CHAIN (parms))
@@ -152,12 +145,11 @@ function_cannot_inline_p (fndecl)
 
   if (!DECL_INLINE (fndecl) && get_max_uid () > max_insns)
     {
-      for (ninsns = 0, insn = get_first_nonparm_insn (); insn && ninsns < max_insns;
+      for (ninsns = 0, insn = get_first_nonparm_insn ();
+	   insn && ninsns < max_insns;
 	   insn = NEXT_INSN (insn))
-	{
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	    ninsns++;
-	}
+	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	  ninsns++;
 
       if (ninsns >= max_insns)
 	return "function too large to be inline";
@@ -319,7 +311,8 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
      some flags that are used to restore compiler globals,
      the value of current_function_outgoing_args_size,
      the original argument vector,
-     and the original DECL_INITIAL.  */
+     the original DECL_INITIAL,
+     and pointers to the table of psuedo regs, pointer flags, and alignment. */
 
   return gen_inline_header_rtx (NULL_RTX, NULL_RTX, min_labelno, max_labelno,
 				max_parm_reg, max_reg,
@@ -327,7 +320,9 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
 				current_function_pops_args,
 				stack_slot_list, forced_labels, function_flags,
 				current_function_outgoing_args_size,
-				arg_vector, (rtx) DECL_INITIAL (fndecl));
+				arg_vector, (rtx) DECL_INITIAL (fndecl),
+				(rtvec) regno_reg_rtx, regno_pointer_flag,
+				regno_pointer_align);
 }
 
 /* Subroutine for `save_for_inline{copying,nocopy}'.  Finishes up the
@@ -395,6 +390,8 @@ save_for_inline_copying (fndecl)
   int max_reg;
   int max_uid;
   rtx first_nonparm_insn;
+  char *new, *new1;
+  rtx *new2;
 
   /* Make and emit a return-label if we have not already done so. 
      Do this before recording the bounds on label numbers. */
@@ -608,6 +605,19 @@ save_for_inline_copying (fndecl)
   NEXT_INSN (last_insn) = NULL;
 
   finish_inline (fndecl, head);
+
+  /* Make new versions of the register tables.  */
+  new = (char *) savealloc (regno_pointer_flag_length);
+  bcopy (regno_pointer_flag, new, regno_pointer_flag_length);
+  new1 = (char *) savealloc (regno_pointer_flag_length);
+  bcopy (regno_pointer_align, new1, regno_pointer_flag_length);
+  new2 = (rtx *) savealloc (regno_pointer_flag_length * sizeof (rtx));
+  bcopy ((char *) regno_reg_rtx, (char *) new2,
+	 regno_pointer_flag_length * sizeof (rtx));
+
+  regno_pointer_flag = new;
+  regno_pointer_align = new1;
+  regno_reg_rtx = new2;
 
   set_new_first_and_last_insn (first_insn, last_insn);
 }
@@ -1151,7 +1161,8 @@ int global_const_equiv_map_size;
    else an rtx for where the value is stored.  */
 
 rtx
-expand_inline_function (fndecl, parms, target, ignore, type, structure_value_addr)
+expand_inline_function (fndecl, parms, target, ignore, type,
+			structure_value_addr)
      tree fndecl, parms;
      rtx target;
      int ignore;
@@ -1190,11 +1201,9 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
      passed.  Since the appropriate conversions or default promotions have
      already been applied, the machine modes should match exactly.  */
 
-  for (formal = DECL_ARGUMENTS (fndecl),
-       actual = parms;
+  for (formal = DECL_ARGUMENTS (fndecl), actual = parms;
        formal;
-       formal = TREE_CHAIN (formal),
-       actual = TREE_CHAIN (actual))
+       formal = TREE_CHAIN (formal), actual = TREE_CHAIN (actual))
     {
       tree arg;
       enum machine_mode mode;
@@ -1203,7 +1212,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	return (rtx) (HOST_WIDE_INT) -1;
 
       arg = TREE_VALUE (actual);
-      mode= TYPE_MODE (DECL_ARG_TYPE (formal));
+      mode = TYPE_MODE (DECL_ARG_TYPE (formal));
 
       if (mode != TYPE_MODE (TREE_TYPE (arg))
 	  /* If they are block mode, the types should match exactly.
@@ -1303,6 +1312,12 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 		 handle SUBREGs in addresses.  */
 	      || (GET_CODE (arg_vals[i]) == SUBREG)))
 	arg_vals[i] = copy_to_mode_reg (GET_MODE (loc), arg_vals[i]);
+
+      if (arg_vals[i] != 0 && GET_CODE (arg_vals[i]) == REG
+	  && TREE_CODE (TREE_TYPE (formal)) == POINTER_TYPE)
+	mark_reg_pointer (arg_vals[i],
+			  (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (formal)))
+			   / BITS_PER_UNIT));
     }
 	
   /* Allocate the structures we use to remap things.  */
@@ -1352,6 +1367,9 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   /* Record the current insn in case we have to set up pointers to frame
      and argument memory blocks.  */
   map->insns_at_start = get_last_insn ();
+
+  map->regno_pointer_flag = INLINE_REGNO_POINTER_FLAG (header);
+  map->regno_pointer_align = INLINE_REGNO_POINTER_ALIGN (header);
 
   /* Update the outgoing argument size to allow for those in the inlined
      function.  */
@@ -2086,6 +2104,11 @@ copy_rtx_and_substitute (orig, map)
 	      map->reg_map[regno] = temp
 		= force_reg (Pmode, force_operand (loc, NULL_RTX));
 
+#ifdef STACK_BOUNDARY
+	      mark_reg_pointer (map->reg_map[regno],
+				STACK_BOUNDARY / BITS_PER_UNIT);
+#endif
+
 	      if (REGNO (temp) < map->const_equiv_map_size)
 		{
 		  map->const_equiv_map[REGNO (temp)] = loc;
@@ -2115,6 +2138,11 @@ copy_rtx_and_substitute (orig, map)
 #endif
 	      map->reg_map[regno] = temp
 		= force_reg (Pmode, force_operand (loc, NULL_RTX));
+
+#ifdef STACK_BOUNDARY
+	      mark_reg_pointer (map->reg_map[regno],
+				STACK_BOUNDARY / BITS_PER_UNIT);
+#endif
 
 	      if (REGNO (temp) < map->const_equiv_map_size)
 		{
@@ -2150,6 +2178,10 @@ copy_rtx_and_substitute (orig, map)
 	  REG_LOOP_TEST_P (map->reg_map[regno]) = REG_LOOP_TEST_P (orig);
 	  RTX_UNCHANGING_P (map->reg_map[regno]) = RTX_UNCHANGING_P (orig);
 	  /* A reg with REG_FUNCTION_VALUE_P true will never reach here.  */
+
+	  if (map->regno_pointer_flag[regno])
+	    mark_reg_pointer (map->reg_map[regno],
+			      map->regno_pointer_align[regno]);
 	}
       return map->reg_map[regno];
 
@@ -2596,8 +2628,6 @@ subst_constants (loc, insn, map)
 	src = SET_SRC (x);
 
 	while (GET_CODE (*dest_loc) == ZERO_EXTRACT
-	       /* By convention, we always use ZERO_EXTRACT in the dest.  */
-/*	       || GET_CODE (*dest_loc) == SIGN_EXTRACT */
 	       || GET_CODE (*dest_loc) == SUBREG
 	       || GET_CODE (*dest_loc) == STRICT_LOW_PART)
 	  {
@@ -2932,25 +2962,20 @@ set_block_abstract_flags (stmt, setting)
      register tree stmt;
      register int setting;
 {
+  register tree local_decl;
+  register tree subblock;
+
   BLOCK_ABSTRACT (stmt) = setting;
 
-  {
-    register tree local_decl;
+  for (local_decl = BLOCK_VARS (stmt);
+       local_decl != NULL_TREE;
+       local_decl = TREE_CHAIN (local_decl))
+    set_decl_abstract_flags (local_decl, setting);
 
-    for (local_decl = BLOCK_VARS (stmt);
-	 local_decl != NULL_TREE;
-	 local_decl = TREE_CHAIN (local_decl))
-      set_decl_abstract_flags (local_decl, setting);
-  }
-
-  {
-    register tree subblock;
-
-    for (subblock = BLOCK_SUBBLOCKS (stmt);
-	 subblock != NULL_TREE;
-	 subblock = BLOCK_CHAIN (subblock))
-      set_block_abstract_flags (subblock, setting);
-  }
+  for (subblock = BLOCK_SUBBLOCKS (stmt);
+       subblock != NULL_TREE;
+       subblock = BLOCK_CHAIN (subblock))
+    set_block_abstract_flags (subblock, setting);
 }
 
 /* Given a pointer to some ..._DECL node, and a boolean value to set the
@@ -3012,8 +3037,13 @@ output_inline_function (fndecl)
   /* Set stack frame size.  */
   assign_stack_local (BLKmode, DECL_FRAME_SIZE (fndecl), 0);
 
-  restore_reg_data (FIRST_PARM_INSN (head));
-
+  /* The first is a bit of a lie (the array may be larger), but doesn't
+     matter too much and it isn't worth saving the actual bound.  */
+  reg_rtx_no = regno_pointer_flag_length = MAX_REGNUM (head);
+  regno_reg_rtx = (rtx *) INLINE_REGNO_REG_RTX (head);
+  regno_pointer_flag = INLINE_REGNO_POINTER_FLAG (head);
+  regno_pointer_align = INLINE_REGNO_POINTER_ALIGN (head);
+  
   stack_slot_list = STACK_SLOT_LIST (head);
   forced_labels = FORCED_LABELS (head);
 
