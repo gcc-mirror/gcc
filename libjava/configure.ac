@@ -1389,6 +1389,9 @@ gnu/classpath/Configuration.java
 gcj/Makefile
 include/Makefile
 testsuite/Makefile
+external/Makefile
+external/sax/Makefile
+external/w3c_dom/Makefile
 ])
 
 AC_CONFIG_COMMANDS([default],
