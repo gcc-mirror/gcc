@@ -1683,6 +1683,16 @@ extern tree null_node;
 
 /* in pt.c  */
 
+/* These values are used for the `STRICT' parameter to type_unfication and
+   fn_type_unification.  Their meanings are described with the
+   documentation for fn_type_unification.  */
+
+typedef enum unification_kind_t {
+  DEDUCE_CALL,
+  DEDUCE_CONV,
+  DEDUCE_EXACT
+} unification_kind_t;
+
 extern tree current_template_parms;
 extern HOST_WIDE_INT processing_template_decl;
 extern tree last_tree;
@@ -2504,8 +2514,8 @@ extern int uses_template_parms			PROTO((tree));
 extern tree instantiate_class_template		PROTO((tree));
 extern tree instantiate_template		PROTO((tree, tree));
 extern void overload_template_name		PROTO((tree));
-extern int fn_type_unification                  PROTO((tree, tree, tree, tree, tree, int, tree));
-extern int type_unification			PROTO((tree, tree, tree, tree, tree, int, int));
+extern int fn_type_unification                  PROTO((tree, tree, tree, tree, tree, unification_kind_t, tree));
+extern int type_unification			PROTO((tree, tree, tree, tree, tree, unification_kind_t, int));
 struct tinst_level *tinst_for_decl		PROTO((void));
 extern void mark_decl_instantiated		PROTO((tree, int));
 extern int more_specialized			PROTO((tree, tree, tree));

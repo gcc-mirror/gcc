@@ -5151,7 +5151,7 @@ instantiate_type (lhstype, rhs, complain)
 		i = type_unification
 		  (DECL_INNERMOST_TEMPLATE_PARMS (elem), t,
 		   TYPE_ARG_TYPES (TREE_TYPE (elem)),
-		   TYPE_ARG_TYPES (lhstype), explicit_targs, 1, 1);
+		   TYPE_ARG_TYPES (lhstype), explicit_targs, DEDUCE_EXACT, 1);
 		if (i == 0)
 		  {
 		    if (save_elem)

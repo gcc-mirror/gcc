@@ -61,9 +61,11 @@ static tree build_this PROTO((tree));
 static struct z_candidate * splice_viable PROTO((struct z_candidate *));
 static int any_viable PROTO((struct z_candidate *));
 static struct z_candidate * add_template_candidate
-	PROTO((struct z_candidate *, tree, tree, tree, tree, int));
+	PROTO((struct z_candidate *, tree, tree, tree, tree, int,
+	       unification_kind_t));
 static struct z_candidate * add_template_candidate_real
-	PROTO((struct z_candidate *, tree, tree, tree, tree, int, tree));
+	PROTO((struct z_candidate *, tree, tree, tree, tree, int,
+	       tree, unification_kind_t));
 static struct z_candidate * add_template_conv_candidate 
         PROTO((struct z_candidate *, tree, tree, tree, tree));
 static struct z_candidate * add_builtin_candidates
@@ -1865,11 +1867,12 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
 static struct z_candidate*
 add_template_candidate_real (candidates, tmpl, explicit_targs,
 			     arglist, return_type, flags,
-			     obj)
+			     obj, strict)
      struct z_candidate *candidates;
      tree tmpl, explicit_targs, arglist, return_type;
      int flags;
      tree obj;
+     unification_kind_t strict;
 {
   int ntparms = DECL_NTPARMS (tmpl);
   tree targs = make_scratch_vec (ntparms);
@@ -1878,7 +1881,7 @@ add_template_candidate_real (candidates, tmpl, explicit_targs,
   tree fn;
 
   i = fn_type_unification (tmpl, explicit_targs, targs, arglist,
-			   return_type, 0, NULL_TREE); 
+			   return_type, strict, NULL_TREE);
 
   if (i != 0)
     return candidates;
@@ -1920,14 +1923,16 @@ add_template_candidate_real (candidates, tmpl, explicit_targs,
 
 static struct z_candidate *
 add_template_candidate (candidates, tmpl, explicit_targs, 
-			arglist, return_type, flags)
+			arglist, return_type, flags, strict)
      struct z_candidate *candidates;
      tree tmpl, explicit_targs, arglist, return_type;
      int flags;
+     unification_kind_t strict;
 {
   return 
     add_template_candidate_real (candidates, tmpl, explicit_targs,
-				 arglist, return_type, flags, NULL_TREE);
+				 arglist, return_type, flags,
+				 NULL_TREE, strict);
 }
 
 
@@ -1938,7 +1943,7 @@ add_template_conv_candidate (candidates, tmpl, obj, arglist, return_type)
 {
   return 
     add_template_candidate_real (candidates, tmpl, NULL_TREE, arglist,
-				 return_type, 0, obj);
+				 return_type, 0, obj, DEDUCE_CONV);
 }
 
 
@@ -2058,7 +2063,8 @@ build_user_type_conversion_1 (totype, expr, flags)
 	  templates = scratch_tree_cons (NULL_TREE, ctor, templates);
 	  candidates = 
 	    add_template_candidate (candidates, ctor,
-				    NULL_TREE, args, NULL_TREE, flags);
+				    NULL_TREE, args, NULL_TREE, flags,
+				    DEDUCE_CALL);
 	} 
       else 
 	candidates = add_function_candidate (candidates, ctor,
@@ -2107,7 +2113,8 @@ build_user_type_conversion_1 (totype, expr, flags)
 		templates = scratch_tree_cons (NULL_TREE, fn, templates);
 		candidates = 
 		  add_template_candidate (candidates, fn, NULL_TREE,
-					  args, totype, flags);
+					  args, totype, flags,
+					  DEDUCE_CONV);
 	      } 
 	    else 
 	      candidates = add_function_candidate (candidates, fn,
@@ -2261,7 +2268,7 @@ build_new_function_call (fn, args)
 	      templates = scratch_tree_cons (NULL_TREE, t, templates);
 	      candidates = add_template_candidate
 		(candidates, t, explicit_targs, args, NULL_TREE,
-		 LOOKUP_NORMAL);  
+		 LOOKUP_NORMAL, DEDUCE_CALL);  
 	    }
 	  else if (! template_only)
 	    candidates = add_function_candidate
@@ -2346,7 +2353,7 @@ build_object_call (obj, args)
 	      candidates 
 		= add_template_candidate (candidates, fn, NULL_TREE,
 					  mem_args, NULL_TREE, 
-					  LOOKUP_NORMAL);
+					  LOOKUP_NORMAL, DEDUCE_CALL);
 	    }
 	  else
 	    candidates = add_function_candidate
@@ -2603,7 +2610,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	  candidates 
 	    = add_template_candidate (candidates, fn, NULL_TREE,
 				      arglist, TREE_TYPE (fnname),
-				      flags); 
+				      flags, DEDUCE_CALL); 
 	}
       else
 	candidates = add_function_candidate (candidates, fn, arglist, flags);
@@ -2639,7 +2646,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	      candidates 
 		= add_template_candidate (candidates, fn, NULL_TREE,
 					  this_arglist,  TREE_TYPE (fnname),
-					  flags); 
+					  flags, DEDUCE_CALL); 
 	    }
 	  else
 	    candidates = add_function_candidate
@@ -3591,7 +3598,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	      candidates = 
 		add_template_candidate (candidates, t, explicit_targs,
 					this_arglist,
-					TREE_TYPE (name), flags); 
+					TREE_TYPE (name), flags, DEDUCE_CALL); 
 	    }
 	  else if (! template_only)
 	    candidates = add_function_candidate (candidates, t,
