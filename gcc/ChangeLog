@@ -1,3 +1,20 @@
+Mon Mar 16 15:50:20 EST 1998 Andrew MacLeod <amacleod@torpedo.to.cygnus.com>
+
+	* except.h (in_same_eh_region): New prototype.
+	(free_insn_eh_region, init_insn_eh_region): New prototypes.
+	* except.c (insn_eh_region, maximum_uid): New static variables.
+	(set_insn_eh_region): New static function to set region numbers.
+	(free_insn_eh_region): New function to free EH region table.
+	(init_insn_eh_region): New function to initialize EH region table.
+	(in_same_eh_region): New function used to determine if two rtl
+	instructions are in the same exception region or not.
+	* final.c (final): Initialize the table indicating which instructions
+	belong in which exception region.
+	* genpeep.c (main): Add "except.h" to include file list in generated
+	file insn-peep.c. 
+	* config/sparc/sparc.md: Add calls to 'in_same_eh_region' in 4 
+	peepholes involving calls and unconditional branches. 
+
 Mon Mar 16 12:12:36 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* reload.h (MEMORY_MOVE_COST): Define here if not already defined;
