@@ -157,11 +157,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define MASK_BUILD_CONSTANTS 128
 #define TARGET_BUILD_CONSTANTS (target_flags & MASK_BUILD_CONSTANTS)
 
-/* This means that the processor has byte and half word loads and stores.  */
-
-#define MASK_BYTE_OPS 256
-#define TARGET_BYTE_OPS	(target_flags & MASK_BYTE_OPS)
-
 /* This means we are compiling for openVMS.  */
 
 #define MASK_OPEN_VMS	256
@@ -172,6 +167,11 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 
 #define MASK_FLOAT_VAX 512
 #define TARGET_FLOAT_VAX (target_flags & MASK_FLOAT_VAX)
+
+/* This means that the processor has byte and half word loads and stores.  */
+
+#define MASK_BYTE_OPS 1024
+#define TARGET_BYTE_OPS	(target_flags & MASK_BYTE_OPS)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
