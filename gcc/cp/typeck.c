@@ -1600,15 +1600,7 @@ expr_sizeof (e)
   if (TREE_CODE (e) == COMPONENT_REF
       && DECL_C_BIT_FIELD (TREE_OPERAND (e, 1)))
     error ("sizeof applied to a bit-field");
-  /* ANSI says arrays and functions are converted inside comma.
-     But we can't really convert them in build_compound_expr
-     because that would break commas in lvalues.
-     So do the conversion here if operand was a comma.  */
-  if (TREE_CODE (e) == COMPOUND_EXPR
-      && (TREE_CODE (TREE_TYPE (e)) == ARRAY_TYPE
-	  || TREE_CODE (TREE_TYPE (e)) == FUNCTION_TYPE))
-    e = default_conversion (e);
-  else if (is_overloaded_fn (e))
+  if (is_overloaded_fn (e))
     {
       pedwarn ("ANSI C++ forbids taking the sizeof a function type");
       return size_int (1);
@@ -1618,10 +1610,6 @@ expr_sizeof (e)
       incomplete_type_error (e, TREE_TYPE (e));
       return size_int (1);
     }
-  /* It's illegal to say `sizeof (X::i)' for `i' a non-static data
-     member unless you're in a non-static member of X.  But, we used
-     to support this usage, so we still permit it unless we're being
-     pedantic.  */
   else if (TREE_CODE (e) == OFFSET_REF)
     e = resolve_offset_ref (e);
 
@@ -5106,12 +5094,8 @@ build_compound_expr (list)
       if (TREE_CODE (list) == NOP_EXPR
 	  && TREE_TYPE (list) == TREE_TYPE (TREE_OPERAND (list, 0)))
 	list = TREE_OPERAND (list, 0);
-
-      /* Convert arrays to pointers.  */
-      if (TREE_CODE (TREE_TYPE (TREE_VALUE (list))) == ARRAY_TYPE)
-	return default_conversion (TREE_VALUE (list));
-      else
-	return TREE_VALUE (list);
+	
+      return TREE_VALUE (list);
     }
 
   first = TREE_VALUE (list);

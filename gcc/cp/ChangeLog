@@ -1,3 +1,9 @@
+1999-09-13  Nathan Sidwell  <nathan@acm.org>
+
+	* typeck.c (expr_sizeof): Don't decay arrays and functions.
+	Remove misleading comment.
+	(build_compound_expr): Don't decay arrays.
+
 1999-09-13  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_conditional_expr): Always use a TARGET_EXPR for
