@@ -4945,8 +4945,9 @@ c_common_init (filename)
   options->stdc_0_in_system_headers = STDC_0_IN_SYSTEM_HEADERS;
 
   /* We want -Wno-long-long to override -pedantic -std=non-c99
-     whatever the ordering.  */
-  options->warn_long_long = warn_long_long && !flag_isoc99 && pedantic;
+     and/or -Wtraditional, whatever the ordering.  */
+  options->warn_long_long
+    = warn_long_long && ((!flag_isoc99 && pedantic) || warn_traditional);
 
   /* Register preprocessor built-ins before calls to
      cpp_main_file.  */

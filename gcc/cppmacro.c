@@ -207,17 +207,37 @@ _cpp_builtin_macro_text (pfile, node)
 	     storage.  We only do this once, and don't generate them
 	     at init time, because time() and localtime() are very
 	     slow on some systems.  */
-	  time_t tt = time (NULL);
-	  struct tm *tb = localtime (&tt);
+	  time_t tt;
+	  struct tm *tb = NULL;
 
-	  pfile->date = _cpp_unaligned_alloc (pfile,
-					      sizeof ("\"Oct 11 1347\""));
-	  sprintf ((char *) pfile->date, "\"%s %2d %4d\"",
-		   monthnames[tb->tm_mon], tb->tm_mday, tb->tm_year + 1900);
+	  /* (time_t) -1 is a legitimate value for "number of seconds
+	     since the Epoch", so we have to do a little dance to
+	     distinguish that from a genuine error.  */
+	  errno = 0;
+	  tt = time(NULL);
+	  if (tt != (time_t)-1 || errno == 0)
+	    tb = localtime (&tt);
 
-	  pfile->time = _cpp_unaligned_alloc (pfile, sizeof ("\"12:34:56\""));
-	  sprintf ((char *) pfile->time, "\"%02d:%02d:%02d\"",
-		   tb->tm_hour, tb->tm_min, tb->tm_sec);
+	  if (tb)
+	    {
+	      pfile->date = _cpp_unaligned_alloc (pfile,
+						  sizeof ("\"Oct 11 1347\""));
+	      sprintf ((char *) pfile->date, "\"%s %2d %4d\"",
+		       monthnames[tb->tm_mon], tb->tm_mday, tb->tm_year + 1900);
+
+	      pfile->time = _cpp_unaligned_alloc (pfile,
+						  sizeof ("\"12:34:56\""));
+	      sprintf ((char *) pfile->time, "\"%02d:%02d:%02d\"",
+		       tb->tm_hour, tb->tm_min, tb->tm_sec);
+	    }
+	  else
+	    {
+	      cpp_errno (pfile, DL_WARNING,
+			 "could not determine date and time");
+		
+	      pfile->date = U"\"??? ?? ????\"";
+	      pfile->time = U"\"??:??:??\"";
+	    }
 	}
 
       if (node->value.builtin == BT_DATE)

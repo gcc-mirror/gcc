@@ -366,7 +366,9 @@ directive (6.10.6).}
 @cite{The definitions for @code{__DATE__} and @code{__TIME__} when
 respectively, the date and time of translation are not available (6.10.8).}
 
-GCC assumes that the date and time is always available.
+If the date and time are not available, @code{__DATE__} expands to
+@code{@w{"??? ?? ????"}} and @code{__TIME__} expands to
+@code{"??:??:??"}.
 
 @end itemize
 
