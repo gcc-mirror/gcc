@@ -3551,45 +3551,73 @@ ia64_print_operand (file, x, code)
 }
 
 /* Calulate the cost of moving data from a register in class FROM to
-   one in class TO.  */
+   one in class TO, using MODE.  */
 
 int
-ia64_register_move_cost (from, to)
+ia64_register_move_cost (mode, from, to)
+     enum machine_mode mode;
      enum reg_class from, to;
 {
-  int from_hard, to_hard;
-  int from_gr, to_gr;
-  int from_fr, to_fr;
-  int from_pr, to_pr;
+  /* ADDL_REGS is the same as GR_REGS for movement purposes.  */
+  if (to == ADDL_REGS)
+    to = GR_REGS;
+  if (from == ADDL_REGS)
+    from = GR_REGS;
 
-  from_hard = (from == BR_REGS || from == AR_M_REGS || from == AR_I_REGS);
-  to_hard = (to == BR_REGS || to == AR_M_REGS || to == AR_I_REGS);
-  from_gr = (from == GENERAL_REGS);
-  to_gr = (to == GENERAL_REGS);
-  from_fr = (from == FR_REGS);
-  to_fr = (to == FR_REGS);
-  from_pr = (from == PR_REGS);
-  to_pr = (to == PR_REGS);
+  /* All costs are symmetric, so reduce cases by putting the
+     lower number class as the destination.  */
+  if (from < to)
+    {
+      enum reg_class tmp = to;
+      to = from, from = tmp;
+    }
 
-  if (from_hard && to_hard)
-    return 8;
-  else if ((from_hard && !to_gr) || (!from_gr && to_hard))
-    return 6;
+  /* Moving from FR<->GR in TFmode must be more expensive than 2,
+     so that we get secondary memory reloads.  Between FR_REGS,
+     we have to make this at least as expensive as MEMORY_MOVE_COST
+     to avoid spectacularly poor register class preferencing.  */
+  if (mode == TFmode)
+    {
+      if (to != GR_REGS || from != GR_REGS)
+        return MEMORY_MOVE_COST (mode, to, 0);
+      else
+	return 3;
+    }
 
-  /* Moving between PR registers takes two insns.  */
-  else if (from_pr && to_pr)
-    return 3;
-  /* Moving between PR and anything but GR is impossible.  */
-  else if ((from_pr && !to_gr) || (!from_gr && to_pr))
-    return 6;
+  switch (to)
+    {
+    case PR_REGS:
+      /* Moving between PR registers takes two insns.  */
+      if (from == PR_REGS)
+	return 3;
+      /* Moving between PR and anything but GR is impossible.  */
+      if (from != GR_REGS)
+	return MEMORY_MOVE_COST (mode, to, 0);
+      break;
 
-  /* ??? Moving from FR<->GR must be more expensive than 2, so that we get
-     secondary memory reloads for TFmode moves.  Unfortunately, we don't
-     have the mode here, so we can't check that.  */
-  /* Moreover, we have to make this at least as high as MEMORY_MOVE_COST
-     to avoid spectacularly poor register class preferencing for TFmode.  */
-  else if (from_fr != to_fr)
-    return 5;
+    case BR_REGS:
+      /* Moving between BR and anything but GR is impossible.  */
+      if (from != GR_REGS && from != GR_AND_BR_REGS)
+	return MEMORY_MOVE_COST (mode, to, 0);
+      break;
+
+    case AR_I_REGS:
+    case AR_M_REGS:
+      /* Moving between AR and anything but GR is impossible.  */
+      if (from != GR_REGS)
+	return MEMORY_MOVE_COST (mode, to, 0);
+      break;
+
+    case GR_REGS:
+    case FR_REGS:
+    case GR_AND_FR_REGS:
+    case GR_AND_BR_REGS:
+    case ALL_REGS:
+      break;
+
+    default:
+      abort ();
+    }
 
   return 2;
 }
@@ -3613,17 +3641,21 @@ ia64_secondary_reload_class (class, mode, x)
   switch (class)
     {
     case BR_REGS:
-      /* ??? This is required because of a bad gcse/cse/global interaction.
-	 We end up with two pseudos with overlapping lifetimes both of which
-	 are equiv to the same constant, and both which need to be in BR_REGS.
-	 This results in a BR_REGS to BR_REGS copy which doesn't exist.  To
-	 reproduce, return NO_REGS here, and compile divdi3 in libgcc2.c.
-	 This seems to be a cse bug.  cse_basic_block_end changes depending
-	 on the path length, which means the qty_first_reg check in
-	 make_regs_eqv can give different answers at different times.  */
-      /* ??? At some point I'll probably need a reload_indi pattern to handle
-	 this.  */
-      if (BR_REGNO_P (regno))
+    case AR_M_REGS:
+    case AR_I_REGS:
+      /* ??? BR<->BR register copies can happen due to a bad gcse/cse/global
+	 interaction.  We end up with two pseudos with overlapping lifetimes
+	 both of which are equiv to the same constant, and both which need
+	 to be in BR_REGS.  This seems to be a cse bug.  cse_basic_block_end
+	 changes depending on the path length, which means the qty_first_reg
+	 check in make_regs_eqv can give different answers at different times.
+	 At some point I'll probably need a reload_indi pattern to handle
+	 this.
+
+	 We can also get GR_AND_FR_REGS to BR_REGS/AR_REGS copies, where we
+	 wound up with a FP register from GR_AND_FR_REGS.  Extend that to all
+	 non-general registers for good measure.  */
+      if (regno >= 0 && ! GENERAL_REGNO_P (regno))
 	return GR_REGS;
 
       /* This is needed if a pseudo used as a call_operand gets spilled to a
@@ -3633,6 +3665,10 @@ ia64_secondary_reload_class (class, mode, x)
       break;
 
     case FR_REGS:
+      /* Need to go through general regsters to get to other class regs.  */
+      if (regno >= 0 && ! (FR_REGNO_P (regno) || GENERAL_REGNO_P (regno)))
+	return GR_REGS;
+ 
       /* This can happen when a paradoxical subreg is an operand to the
 	 muldi3 pattern.  */
       /* ??? This shouldn't be necessary after instruction scheduling is

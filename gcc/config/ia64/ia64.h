@@ -907,12 +907,13 @@ enum reg_class
   NO_REGS,
   PR_REGS,
   BR_REGS,
+  AR_M_REGS,
+  AR_I_REGS,
   ADDL_REGS,
   GR_REGS,
   FR_REGS,
+  GR_AND_BR_REGS,
   GR_AND_FR_REGS,
-  AR_M_REGS,
-  AR_I_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
 };
@@ -925,8 +926,9 @@ enum reg_class
 /* An initializer containing the names of the register classes as C string
    constants.  These names are used in writing some of the debugging dumps.  */
 #define REG_CLASS_NAMES \
-{ "NO_REGS", "PR_REGS", "BR_REGS", "ADDL_REGS", "GR_REGS", "FR_REGS", \
-  "GR_AND_FR_REGS", "AR_M_REGS", "AR_I_REGS", "ALL_REGS" }
+{ "NO_REGS", "PR_REGS", "BR_REGS", "AR_M_REGS", "AR_I_REGS", \
+  "ADDL_REGS", "GR_REGS", "FR_REGS", \
+  "GR_AND_BR_REGS", "GR_AND_FR_REGS", "ALL_REGS" }
 
 /* An initializer containing the contents of the register classes, as integers
    which are bit masks.  The Nth integer specifies the contents of class N.
@@ -946,6 +948,14 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x00FF },			\
+  /* AR_M_REGS.  */					\
+  { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
+    0x00000000, 0x00000000, 0x0C00 },			\
+  /* AR_I_REGS.  */					\
+  { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
+    0x00000000, 0x00000000, 0x7000 },			\
   /* ADDL_REGS.  */					\
   { 0x0000000F, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
@@ -958,18 +968,14 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0x00000000, 0x00000000, 0x0000 },			\
+  /* GR_AND_BR_REGS.  */				\
+  { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
+    0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
+    0x00000000, 0x00000000, 0x03FF },			\
   /* GR_AND_FR_REGS.  */				\
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0x00000000, 0x00000000, 0x0300 },			\
-  /* AR_M_REGS.  */					\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x0C00 },			\
-  /* AR_I_REGS.  */					\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x7000 },			\
   /* ALL_REGS.  */					\
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
@@ -1044,7 +1050,8 @@ enum reg_class
 #define PREFERRED_RELOAD_CLASS(X, CLASS) \
   (CLASS == FR_REGS && GET_CODE (X) == MEM && MEM_VOLATILE_P (X) ? NO_REGS   \
    : CLASS == FR_REGS && GET_CODE (X) == CONST_DOUBLE ? NO_REGS		     \
-   : GET_RTX_CLASS (GET_CODE (X)) != 'o' && CLASS > GR_AND_FR_REGS ? NO_REGS \
+   : GET_RTX_CLASS (GET_CODE (X)) != 'o'				     \
+     && (CLASS == AR_M_REGS || CLASS == AR_I_REGS) ? NO_REGS		     \
    : CLASS)
 
 /* You should define this macro to indicate to the reload phase that it may
@@ -1882,15 +1889,15 @@ do {									\
 #define ADDRESS_COST(ADDRESS) 0
 
 /* A C expression for the cost of moving data from a register in class FROM to
-   one in class TO.  */
+   one in class TO, using MODE.  */
 
-#define REGISTER_MOVE_COST(MODE, FROM, TO) \
-  ia64_register_move_cost((FROM), (TO))
+#define REGISTER_MOVE_COST  ia64_register_move_cost
 
 /* A C expression for the cost of moving data of mode M between a
    register and memory.  */
 #define MEMORY_MOVE_COST(MODE,CLASS,IN) \
-  ((CLASS) == GENERAL_REGS || (CLASS) == FR_REGS ? 4 : 10)
+  ((CLASS) == GENERAL_REGS || (CLASS) == FR_REGS \
+   || (CLASS) == GR_AND_FR_REGS ? 4 : 10)
 
 /* A C expression for the cost of a branch instruction.  A value of 1 is the
    default; other values are interpreted relative to that.  Used by the 
