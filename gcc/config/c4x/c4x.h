@@ -1674,10 +1674,22 @@ extern void c4x_encode_section_info ();
 
 
 #define RTX_COSTS(RTX, CODE, OUTER_CODE)				\
+    case PLUS:								\
+    case MINUS:								\
+    case AND:								\
+    case IOR:								\
+    case XOR:								\
+    case ASHIFT:							\
+    case ASHIFTRT:							\
+    case LSHIFTRT:							\
+    return COSTS_N_INSNS (1);						\
     case MULT:								\
     return COSTS_N_INSNS (GET_MODE_CLASS (GET_MODE (RTX)) == MODE_FLOAT \
 			  || TARGET_MPYI ? 1 : 14);			\
-    case DIV:  case UDIV: case MOD: case UMOD: 				\
+    case DIV:								\
+    case UDIV:								\
+    case MOD: 								\
+    case UMOD:								\
     return COSTS_N_INSNS (GET_MODE_CLASS (GET_MODE (RTX)) == MODE_FLOAT	\
 			  ? 15 : 50);
 

@@ -1,3 +1,7 @@
+Sun Jan 31 15:33:09 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (RTX_COSTS): Explicitly define c4x costs.
+	
 Sat Jan 30 08:27:23 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* combine.c (distribute_notes): Handle REG_EH_REGION notes.
