@@ -7323,6 +7323,9 @@ cse_insn (insn, libcall_insn)
 	{
 	  tem = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 	  
+	  /* Make sure that the rtx is not shared with any other insn.  */
+	  src_const = copy_rtx (src_const);
+
 	  /* Record the actual constant value in a REG_EQUAL note, making
 	     a new one if one does not already exist.  */
 	  if (tem)
