@@ -24,7 +24,31 @@
 #include <iterator>
 #include <debug_assert.h>
 
-bool test01(void)
+void test01()
+{
+  using namespace std;
+
+  // Check for required base class.
+  typedef ostreambuf_iterator<char> test_iterator;
+  typedef iterator<output_iterator_tag, void, void, void, void> base_iterator;
+  ostringstream osstream("this tag");
+  test_iterator  r_it(osstream);
+  base_iterator* base = &r_it;
+
+  // Check for required typedefs
+  typedef test_iterator::value_type value_type;
+  typedef test_iterator::difference_type difference_type;
+  typedef test_iterator::pointer pointer;
+  typedef test_iterator::reference reference;
+  typedef test_iterator::iterator_category iteratory_category;
+
+  typedef test_iterator::char_type char_type;
+  typedef test_iterator::traits_type traits_type;
+  typedef test_iterator::ostream_type ostream_type;
+  typedef test_iterator::streambuf_type streambuf_type;
+}
+
+bool test02(void)
 {
   typedef std::ostreambuf_iterator<char> costreambuf_iter;
   typedef costreambuf_iter::streambuf_type cstreambuf_type;
@@ -93,6 +117,7 @@ bool test01(void)
 int main()
 {
   test01();
+  test02();
 
   return 0;
 }

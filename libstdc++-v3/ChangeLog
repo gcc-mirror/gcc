@@ -1,3 +1,22 @@
+2001-06-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/std_iterator.h: Include sbuf_iter.h via std_ios.h.
+
+	* include/bits/stl_iterator.h (istream_iterator): Inherit from
+	iterator.
+	(ostream_iterator): Same.
+	* testsuite/24_iterators/istream_iterator.cc: New file.
+	* testsuite/24_iterators/ostream_iterator.cc: New file.
+	
+	* include/bits/sbuf_iter.h: Remove self typedef.
+	* testsuite/24_iterators/ostreambuf_iterator.cc: Add test.
+	* testsuite/24_iterators/istreambuf_iterator.cc: Add test.
+	
+	* include/bits/stl_iterator.h (reverse_iterator): Remove
+	extraneous typedefs. Add typename.
+	(__normal_iterator): Remove typedefs referring to self. Add typename.
+	(reverse_bidiretional_iterator): Remove, not longer required.
+
 2001-06-26  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/stl_iterator.h (__normal_iterator<>): Qualify
