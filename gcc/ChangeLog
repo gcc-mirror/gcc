@@ -1,4 +1,7 @@
-2000-05-13  Geoffrey Keating  <geoffk@cygnus.com>
+2000-05-14  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* optabs.c (expand_float): Don't allow mode widening that causes
+	double rounding.
 
 	* invoke.texi (RS/6000 and PowerPC Options): Update -m64/-m32
 	flags to their current names -maix64 and -maix32.
