@@ -114,15 +114,24 @@ void output_byte_asm ();
 void text_section ();
 void readonly_data_section ();
 void data_section ();
+void named_section ();
 static void bc_assemble_integer ();
 
 #ifdef EXTRA_SECTIONS
-static enum in_section {no_section, in_text, in_data, EXTRA_SECTIONS} in_section
+static enum in_section {no_section, in_text, in_data, in_named, EXTRA_SECTIONS} in_section
   = no_section;
 #else
-static enum in_section {no_section, in_text, in_data} in_section
+static enum in_section {no_section, in_text, in_data, in_named} in_section
   = no_section;
 #endif
+
+/* Return a non-zero value if DECL has a section attribute.  */
+#define IN_NAMED_SECTION(DECL) \
+  ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
+   && DECL_SECTION_NAME (DECL) != NULL_TREE)
+
+/* Text of section name when in_section == in_named.  */
+static char *in_named_name;
 
 /* Define functions like text_section for any extra sections.  */
 #ifdef EXTRA_SECTION_FUNCTIONS
@@ -192,6 +201,28 @@ in_text_section ()
 {
   return in_section == in_text;
 }
+
+/* Tell assembler to change to named section.  */
+
+void
+named_section (name)
+     char *name;
+{
+  if (in_section != in_named || strcmp (name, in_named_name))
+    {
+      in_named_name = name;
+      in_section = in_named;
+    
+#ifdef ASM_OUTPUT_SECTION_NAME
+      ASM_OUTPUT_SECTION_NAME (asm_out_file, name);
+#else
+      /* Section attributes are not supported if this macro isn't provided -
+	 some host formats don't support them at all.  The front-end should
+	 already have flagged this as an error.  */
+      abort ();
+#endif
+    }
+}
 
 /* Create the rtl to represent a function, for a function definition.
    DECL is a FUNCTION_DECL node which describes which function.
@@ -234,9 +265,7 @@ make_function_rtl (decl)
 
       /* Optionally set flags or add text to the name to record information
 	 such as that it is a function name.  If the name is changed, the macro
-	 ASM_OUTPUT_LABELREF will have to know how to strip this information.
-	 And if it finds a * at the beginning after doing so, it must handle
-	 that too.  */
+	 ASM_OUTPUT_LABELREF will have to know how to strip this information.  */
 #ifdef ENCODE_SECTION_INFO
       ENCODE_SECTION_INFO (decl);
 #endif
@@ -462,6 +491,19 @@ make_decl_rtl (decl, asmspec, top_level)
 		globalize_reg (reg_number + --nregs);
 	    }
 	}
+      /* Specifying a section attribute on an uninitialized variable does not
+	 (and cannot) cause it to be put in the given section.  The linker
+	 can only put initialized objects in specific sections, everything
+	 else goes in bss for the linker to sort out later (otherwise the
+	 linker would give a duplicate definition error for each compilation
+	 unit that behaved thusly).  So warn the user.  */
+      else if (TREE_CODE (decl) == VAR_DECL
+	       && DECL_SECTION_NAME (decl) != NULL_TREE
+	       && DECL_INITIAL (decl) == NULL_TREE)
+	{
+	  warning_with_decl (decl,
+			     "section attribute ignored for uninitialized variable `%s'");
+	}
 
       /* Now handle ordinary static variables and functions (in memory).
 	 Also handle vars declared register invalidly.  */
@@ -503,9 +545,7 @@ make_decl_rtl (decl, asmspec, top_level)
 	  /* Optionally set flags or add text to the name to record information
 	     such as that it is a function name.
 	     If the name is changed, the macro ASM_OUTPUT_LABELREF
-	     will have to know how to strip this information.
-	     And if it finds a * at the beginning after doing so,
-	     it must handle that too.  */
+	     will have to know how to strip this information.  */
 #ifdef ENCODE_SECTION_INFO
 	  ENCODE_SECTION_INFO (decl);
 #endif
@@ -668,8 +708,10 @@ assemble_start_function (decl, fnname)
 
   output_constant_pool (fnname, decl);
 
-  text_section ();
-
+  if (IN_NAMED_SECTION (decl))
+    named_section (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)));
+  else
+    text_section ();
 
   /* Tell assembler to move to target machine's alignment for functions.  */
   align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
@@ -1093,16 +1135,21 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     reloc = output_addressed_constants (DECL_INITIAL (decl));
 
   /* Switch to the proper section for this data.  */
-#ifdef SELECT_SECTION
-  SELECT_SECTION (decl, reloc);
-#else
-  if (TREE_READONLY (decl)
-      && ! TREE_THIS_VOLATILE (decl)
-      && ! (flag_pic && reloc))
-    readonly_data_section ();
+  if (IN_NAMED_SECTION (decl))
+    named_section (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)));
   else
-    data_section ();
+    {
+#ifdef SELECT_SECTION
+      SELECT_SECTION (decl, reloc);
+#else
+      if (TREE_READONLY (decl)
+	  && ! TREE_THIS_VOLATILE (decl)
+	  && ! (flag_pic && reloc))
+	readonly_data_section ();
+      else
+	data_section ();
 #endif
+    }
 
   /* dbxout.c needs to know this.  */
   if (in_text_section ())
@@ -2545,9 +2592,7 @@ output_constant_def (exp)
 
   /* Optionally set flags or add text to the name to record information
      such as that it is a function name.  If the name is changed, the macro
-     ASM_OUTPUT_LABELREF will have to know how to strip this information.
-     And if it finds a * at the beginning after doing so, it must handle
-     that too.  */
+     ASM_OUTPUT_LABELREF will have to know how to strip this information.  */
 #ifdef ENCODE_SECTION_INFO
   ENCODE_SECTION_INFO (exp);
 #endif
@@ -2588,16 +2633,21 @@ output_constant_def_contents (exp, reloc, labelno)
 {
   int align;
 
-  /* First switch to text section, except for writable strings.  */
-#ifdef SELECT_SECTION
-  SELECT_SECTION (exp, reloc);
-#else
-  if (((TREE_CODE (exp) == STRING_CST) && flag_writable_strings)
-      || (flag_pic && reloc))
-    data_section ();
+  if (IN_NAMED_SECTION (exp))
+    named_section (TREE_STRING_POINTER (DECL_SECTION_NAME (exp)));
   else
-    readonly_data_section ();
+    {
+      /* First switch to text section, except for writable strings.  */
+#ifdef SELECT_SECTION
+      SELECT_SECTION (exp, reloc);
+#else
+      if (((TREE_CODE (exp) == STRING_CST) && flag_writable_strings)
+	  || (flag_pic && reloc))
+	data_section ();
+      else
+	readonly_data_section ();
 #endif
+    }
 
   /* Align the location counter as required by EXP's data type.  */
   align = TYPE_ALIGN (TREE_TYPE (exp));
