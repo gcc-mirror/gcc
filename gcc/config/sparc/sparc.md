@@ -851,9 +851,9 @@
 
       operands[0] = operand_subword (op0, 0, 0, DImode);
       if (INTVAL (op1) < 0)
-	output_asm_insn (\"mov -1,%0\", operands);
+	return \"mov -1,%0\";
       else
-	output_asm_insn (\"mov 0,%0\", operands);
+	return \"mov 0,%0\";
     }
   else if (GET_CODE (op1) == CONST_DOUBLE)
     {
@@ -863,7 +863,7 @@
 
       operands[0] = operand_subword (op0, 0, 0, DImode);
       operands[1] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_HIGH (op1));
-      output_asm_insn (singlemove_string (operands), operands);
+      return singlemove_string (operands);
     }
   else
     abort ();
