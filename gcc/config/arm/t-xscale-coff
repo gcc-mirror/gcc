@@ -20,19 +20,19 @@ dp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#endif' >> dp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
 
-MULTILIB_OPTIONS     = mlittle-endian/mbig-endian
-MULTILIB_DIRNAMES    = le be
+MULTILIB_OPTIONS     = mbig-endian
+MULTILIB_DIRNAMES    = be
 MULTILIB_EXCEPTIONS  = 
 MULTILIB_MATCHES     = mbig-endian=mbe mlittle-endian=mle
 
 # Note XScale does not support 26 bit APCS.
 # Note XScale does not support hard FP
 
-MULTILIB_OPTIONS    += mno-thumb-interwork/mthumb-interwork
-MULTILIB_DIRNAMES   += normal interwork
+MULTILIB_OPTIONS    += mthumb-interwork
+MULTILIB_DIRNAMES   += interwork
 
-MULTILIB_OPTIONS    += marm/mthumb
-MULTILIB_DIRNAMES   += arm thumb
+MULTILIB_OPTIONS    += mthumb
+MULTILIB_DIRNAMES   += thumb
 MULTILIB_EXCEPTIONS += *mhard-float/*mthumb*
 
 MULTILIB_REDUNDANT_DIRS = interwork/thumb=thumb
