@@ -1,5 +1,5 @@
 /* Subroutines for code generation on Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
@@ -386,8 +386,6 @@ m68hc11_conditional_register_usage (void)
 
 
 /* Reload and register operations.  */
-
-static const char *const reg_class_names[] = REG_CLASS_NAMES;
 
 
 void

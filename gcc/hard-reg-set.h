@@ -1,5 +1,5 @@
 /* Sets (bit vectors) of hard registers, and operations on them.
-   Copyright (C) 1987, 1992, 1994, 2000, 2003, 2004
+   Copyright (C) 1987, 1992, 1994, 2000, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC
@@ -489,6 +489,10 @@ extern int n_non_fixed_regs;
 /* Vector indexed by hardware reg giving its name.  */
 
 extern const char * reg_names[FIRST_PSEUDO_REGISTER];
+
+/* Vector indexed by reg class giving its name.  */
+
+extern const char * reg_class_names[];
 
 /* Given a hard REGN a FROM mode and a TO mode, return nonzero if
    REGN cannot change modes between the specified modes.  */

@@ -1861,7 +1861,6 @@ delete_caller_save_insns (void)
 static void
 spill_failure (rtx insn, enum reg_class class)
 {
-  static const char *const reg_class_names[] = REG_CLASS_NAMES;
   if (asm_noperands (PATTERN (insn)) >= 0)
     error_for_asm (insn, "can't find a register in class %qs while "
 		   "reloading %<asm%>",
