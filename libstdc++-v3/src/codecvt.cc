@@ -46,7 +46,7 @@ namespace std
   
   codecvt_base::result
   codecvt<char, char, mbstate_t>::
-  do_out(state_type& /*__state*/, const intern_type* __from, 
+  do_out(state_type&, const intern_type* __from, 
 	 const intern_type* __from_end, const intern_type*& __from_next,
 	 extern_type* __to, extern_type* __to_end, 
 	 extern_type*& __to_next) const
@@ -60,8 +60,8 @@ namespace std
   
   codecvt_base::result
   codecvt<char, char, mbstate_t>::
-  do_unshift(state_type& /*__state*/, extern_type* __to,
-             extern_type* /*__to_end*/, extern_type*& __to_next) const
+  do_unshift(state_type&, extern_type* __to,
+             extern_type*, extern_type*& __to_next) const
   { 
     __to_next = __to; 
     return noconv; 
@@ -69,7 +69,7 @@ namespace std
   
   codecvt_base::result
   codecvt<char, char, mbstate_t>::
-  do_in(state_type& /*__state*/, const extern_type* __from, 
+  do_in(state_type&, const extern_type* __from, 
 	const extern_type* __from_end, const extern_type*& __from_next,
 	intern_type* __to, intern_type* __to_end, 
 	intern_type*& __to_next) const
@@ -93,7 +93,7 @@ namespace std
   
   int 
   codecvt<char, char, mbstate_t>::
-  do_length (const state_type& /*__state*/, const extern_type* __from,
+  do_length (const state_type&, const extern_type* __from,
 	     const extern_type* __end, size_t __max) const
   { return min(__max, static_cast<size_t>(__end - __from)); }
   
@@ -142,8 +142,8 @@ namespace std
   
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::
-  do_unshift(state_type& /*__state*/, extern_type* __to,
-	     extern_type* /*__to_end*/, extern_type*& __to_next) const
+  do_unshift(state_type&, extern_type* __to,
+	     extern_type*, extern_type*& __to_next) const
   {
     __to_next = __to;
     return noconv;
@@ -190,7 +190,7 @@ namespace std
   
   int 
   codecvt<wchar_t, char, mbstate_t>::
-  do_length(const state_type& /*__state*/, const extern_type* __from,
+  do_length(const state_type&, const extern_type* __from,
 	    const extern_type* __end, size_t __max) const
   { return min(__max, static_cast<size_t>(__end - __from)); }
 
@@ -200,5 +200,3 @@ namespace std
   { return 1; }
 #endif //  _GLIBCPP_USE_WCHAR_T
 } // namespace std
-
-
