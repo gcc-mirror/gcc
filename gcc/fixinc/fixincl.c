@@ -279,13 +279,6 @@ main (argc, argv)
  /*#*/ error "NON-BOGUS LIMITS NOT SUPPORTED?!?!"
 #endif
 
-  /*
-     Here we are the child of the grandparent process.  The parent
-     of all the little fixup processes.  We ignore the deaths of
-     our children.  */
-
-  signal (SIGCLD,  SIG_IGN);
-
   /*  For every file specified in stdandard in
       (except as throttled for bogus reasons)...
       */
