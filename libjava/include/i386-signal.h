@@ -40,7 +40,7 @@ while (0)
 do									\
 {									\
   void **_p = (void **)&_dummy;						\
-  struct sigcontext_struct *_regs = (struct sigcontext_struct *)++_p;	\
+  volatile struct sigcontext_struct *_regs = (struct sigcontext_struct *)++_p;\
 									\
   register unsigned char *_eip = (unsigned char *)_regs->eip;		\
 									\
