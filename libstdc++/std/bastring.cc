@@ -1,5 +1,5 @@
 // Member templates for the -*- C++ -*- string classes.
-// Copyright (C) 1994, 1999 Free Software Foundation
+// Copyright (C) 1994, 1999, 2000 Free Software Foundation
 
 // This file is part of the GNU ANSI C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -423,6 +423,8 @@ compare (const charT* s, size_type pos, size_type n) const
   int r = traits::compare (data () + pos, s, rlen);
   if (r != 0)
     return r;
+  if (rlen == n)   
+    return 0;
   return (length () - pos) - n;
 }
 

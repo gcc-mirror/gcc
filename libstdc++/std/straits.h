@@ -1,5 +1,5 @@
 // Character traits template for the -*- C++ -*- string classes.
-// Copyright (C) 1994 Free Software Foundation
+// Copyright (C) 1994, 2000 Free Software Foundation
 
 // This file is part of the GNU ANSI C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -117,7 +117,7 @@ struct string_char_traits <char> {
   static bool lt (const char_type& c1, const char_type& c2)
     { return (c1 < c2); }
   static char_type eos () { return 0; }
-  static bool is_del(char_type a) { return isspace(a); }
+  static bool is_del(char_type a) { return !!isspace(a); }
 
   static int compare (const char_type* s1, const char_type* s2, size_t n)
     { return memcmp (s1, s2, n); }
@@ -145,7 +145,7 @@ struct string_char_traits <wchar_t> {
   static bool lt (const char_type& c1, const char_type& c2)
     { return (c1 < c2); }
   static char_type eos () { return 0; }
-  static bool is_del(char_type a) { return iswspace(a); }
+  static bool is_del(char_type a) { return !!iswspace(a); }
 
   static int compare (const char_type* s1, const char_type* s2, size_t n)
     { return wmemcmp (s1, s2, n); }

@@ -1,3 +1,12 @@
+2000-08-11  Jason Merrill  <jason@redhat.com>
+
+	* std/straits.h (is_del): Boolify with !!.
+
+2000-08-11  "Axel Habermann" <Axel.Habermann@xtradyne.de>
+
+	* std/bastring.cc (compare to charT*): Add rlen==n check.
+	* std/bastring.h (Rep::grab): Add x86 atomic version.
+
 2000-8-4  David E O'Brien  <obrien@FreeBSD.org>
 
 	* std/mask_array.h (mask_array): Rename template type
