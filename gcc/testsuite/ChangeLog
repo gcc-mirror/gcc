@@ -1,3 +1,8 @@
+2000-09-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/explicit82.C: New test.
+	* g++.old-deja/g++.pt/explicit83.C: New test.
+
 2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/asm-names.c: New test.
