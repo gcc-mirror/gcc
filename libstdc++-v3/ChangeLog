@@ -1,3 +1,10 @@
+2004-08-27  Matthias Klose  <doko@debian.org>
+
+	* config/abi/arm-linux-gnu/baseline_symbols.txt: New.
+	* config/abi/mips-linux-gnu/baseline_symbols.txt: Update to 3.4.0.
+	* configure.host: Set abi_baseline_pair for arm*-*-linux* and
+	mips*-*-linux*.
+
 2004-08-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/manipulators/adjustfield/wchar_t/1.cc: New.
