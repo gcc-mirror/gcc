@@ -1,3 +1,11 @@
+2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (pushqi_h8300): Don't push the stack
+	pointer.
+	(pushqi_h8300hs): Likewise.
+	(pushhi_h8300): Likewise.
+	(pushhi_h8300hs): Likewise.
+
 Thu Dec 19 23:44:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sched-rgn.c (init_regions): Update comment.
