@@ -69,16 +69,6 @@ Boston, MA 02111-1307, USA.  */
 /* and define a local equivalent (sort of) for unlink */
 #define unlink remove
 
-/* Specify the list of include file directories.  */
-#define INCLUDE_DEFAULTS \
-{									\
-  { "GNU_GXX_INCLUDE:", 1, 1 },						\
-  { "GNU_CC_INCLUDE:", 0, 0 },	/* GNU includes */			\
-  { "SYS$SYSROOT:[SYSLIB.]", 0, 0 }, /* VAX-11 "C" includes */		\
-  { ".", 0, 1 },		/* Make normal VMS filespecs work.  */	\
-  { 0, 0, 0 }								\
-}
-
 /* Used by the preprocessor to limit size of disk I/O chunks.
    64K - 1 is the maximum supported by VAXCRTL.  Amounts in excess
    of 35 blocks will bypass the VMS V6.x VIOC [Virtual I/O Cache],
