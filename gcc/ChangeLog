@@ -1,3 +1,14 @@
+2002-04-07  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/rs6000/rs6000.h (RS6000_PIC_OFFSET_TABLE_REGNUM): New.
+	(PIC_OFFSET_TABLE_REGNUM): Use it and return INVALID_REGNUM if
+	!flag_pic.
+	(CONDITIONAL_REGISTER_USAGE): Adjust accordingly.
+	* config/rs6000/rs6000.h: Use RS6000_PIC_OFFSET_TABLE_REGNUM instead
+	of PIC_OFFSET_TABLE_REGNUM thruout.
+	* config/rs6000/rs6000.md: Likewise.
+	* config/rs6000/darwin.h: Likewise.
+
 2002-04-06  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* reorg.c (dbr_schedule): Don't reposition prologue and epilogue notes.
