@@ -652,6 +652,9 @@ begin_for_stmt (void)
   if (flag_new_for_scope > 0)
     TREE_CHAIN (r) = do_pushlevel (sk_for);
 
+  if (processing_template_decl)
+    FOR_INIT_STMT (r) = push_stmt_list ();
+
   return r;
 }
 
@@ -661,6 +664,8 @@ begin_for_stmt (void)
 void
 finish_for_init_stmt (tree for_stmt)
 {
+  if (processing_template_decl)
+    FOR_INIT_STMT (for_stmt) = pop_stmt_list (FOR_INIT_STMT (for_stmt));
   add_stmt (for_stmt);
   FOR_BODY (for_stmt) = do_pushlevel (sk_block);
   FOR_COND (for_stmt) = push_stmt_list ();

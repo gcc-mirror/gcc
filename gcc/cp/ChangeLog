@@ -1,3 +1,9 @@
+2004-06-16  Richard Henderson  <rth@redhat.com>
+
+	PR c++/16012
+	* semantics.c (begin_for_stmt, begin_for_stmt): Do put the init
+	statement in FOR_INIT_STMT for templates.
+
 2004-06-15  Richard Henderson  <rth@redhat.com>
 
 	* call.c (initialize_reference): Don't build CLEANUP_STMT here.
