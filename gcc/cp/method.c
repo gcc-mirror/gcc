@@ -344,6 +344,8 @@ make_thunk (tree function, bool this_adjusting,
   DECL_NO_STATIC_CHAIN (thunk) = 1;
   /* The THUNK is not a pending inline, even if the FUNCTION is.  */
   DECL_PENDING_INLINE_P (thunk) = 0;
+  DECL_INLINE (thunk) = 0;
+  DECL_DECLARED_INLINE_P (thunk) = 0;
   /* Nor has it been deferred.  */
   DECL_DEFERRED_FN (thunk) = 0;
   /* Add it to the list of thunks associated with FUNCTION.  */

@@ -13,7 +13,7 @@ class foo_b {
         foo_b();
         ~foo_b();
         foo_b(const foo_b&);
-        inline double& operator()(int);
+        double& operator()(int);
         foo_b& operator=(foo_b&);
         void bar_a(int);
 };
