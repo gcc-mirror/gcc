@@ -46,7 +46,7 @@
 
 #ifndef SUBTARGET_ASM_FLOAT_SPEC
 #define SUBTARGET_ASM_FLOAT_SPEC "\
-%{mapcs-float:-mfloat} %{msoft-float:-mno-fpu}"
+%{mapcs-float:-mfloat} %{msoft-float:-mfpu=softfpa}"
 #endif
 
 #ifndef ASM_SPEC

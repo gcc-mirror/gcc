@@ -1918,13 +1918,19 @@ configuration.
 @end html
 @heading @anchor{arm-*-elf}arm-*-elf
 This configuration is intended for embedded systems.
+We require GNU binutils 2.13 or newer.
 
 @html
 <hr />
 @end html
 @heading @anchor{arm*-*-linux-gnu}arm*-*-linux-gnu
+We require GNU binutils 2.13 or newer.
 
-We require GNU binutils 2.10 or newer.
+@html
+<hr />
+@end html
+@heading @anchor{xscale-*-elf}xscale-*-elf
+We require GNU binutils 2.13 or newer.
 
 @html
 <hr />

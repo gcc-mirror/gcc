@@ -1,3 +1,14 @@
+2003-04-09  Nick Clifton  <nickc@redhat.com>
+
+	* doc/install.texi: Note that ARM toolchains need binutils 2.13 or
+	newer.
+	* config/arm/elf.h (SUBTARGET_ASM_FLOAT_SPEC): Pass -mfpu=softfpa
+	instead of -mno-fpu.
+	* config/arm/semi.h (ASM_SPEC): Likewise.
+	* config/arm/xscale-elf.h (SUBTARGET_EXTRA_ASM_SPEC): Likewise,
+	but only if -msoft-float is specified pass.  Otherwise pass
+	-mfpu=softvfp.
+	
 2003-04-09  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* function.c (purge_addressof): Use free_INSN_LIST_node instead of
