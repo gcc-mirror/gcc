@@ -202,6 +202,7 @@ extern bool rs6000_tls_referenced_p (rtx);
 extern int rs6000_tls_symbol_ref (rtx, enum machine_mode);
 extern void rs6000_output_dwarf_dtprel (FILE*, int, rtx);
 extern int rs6000_hard_regno_nregs (int, enum machine_mode);
+extern void rs6000_conditional_register_usage (void);
 
 /* Declare functions in rs6000-c.c */
 

@@ -1,3 +1,13 @@
+2004-05-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000-protos.h
+	(rs6000_conditional_register_usage): Protoize.
+
+	* config/rs6000/rs6000.c (rs6000_conditional_register_usage): New.
+
+	* config/rs6000/rs6000.h (CONDITIONAL_REGISTER_USAGE): Call
+	function.
+
 2004-05-08  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_div_compare): New function to optimize X/C1 op C2
