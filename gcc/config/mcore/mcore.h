@@ -178,9 +178,10 @@ extern const char * mcore_stack_increment_string;
      N_("Maximum amount for a single stack increment operation")}	\
 }
 
-/* The MCore ABI says that bitfields are unsigned by default. */
-/* The EPOC C++ environment does not support exceptions.  */
-#define CC1_SPEC "-funsigned-bitfields %{!DIN_GCC:-fno-rtti} %{!DIN_GCC:-fno-exceptions}"
+#ifndef CC1_SPEC
+/* The MCore ABI says that bitfields are unsigned by default.  */
+#define CC1_SPEC "-funsigned-bitfields"
+#endif
 
 /* What options are we going to default to specific settings when
    -O* happens; the user can subsequently override these settings.

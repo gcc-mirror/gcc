@@ -1,3 +1,9 @@
+2002-03-24  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	Fix for: PR bootstrap/3591, target/5676
+	* configure.in (mcore-pe): Disable the configuration of
+	libstdc++-v3 since exceptions are not supported.
+
 2002-03-20  Anthony Green  <green@redhat.com>
 
 	* configure.in: Enable libgcj for xscale-elf target.
