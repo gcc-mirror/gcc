@@ -151,23 +151,6 @@ if test x$local_prefix = x; then
 	local_prefix=/usr/local
 fi
 
-# Build a new-libstdc++ system (ie libstdc++-v3)
-AC_MSG_CHECKING([for libstdc++ to install])
-AC_ARG_ENABLE(libstdcxx-v3,
-[  --enable-libstdcxx-v3 
-			  enable libstdc++-v3 for building and installation],
-  [enable_libstdcxx_v3="$enableval"], [enable_libstdcxx_v3=yes])
-
-if test x$enable_libstdcxx_v3 = xyes; then
-  AC_MSG_RESULT(v3)
-  HAVE_LIBSTDCXX_V3=1
-  ac_esn=1
-else
-  AC_MSG_RESULT(v2)
-  HAVE_LIBSTDCXX_V3=0
-  ac_esn=0
-fi
-
 # Don't set gcc_gxx_include_dir to gxx_include_dir since that's only
 # passed in by the toplevel make and thus we'd get different behavior
 # depending on where we built the sources.
@@ -1599,9 +1582,8 @@ else
 fi
 AC_SUBST(GXX_ABI_FLAG)
 
-AC_DEFINE_UNQUOTED(ENABLE_STD_NAMESPACE, $ac_esn,
+AC_DEFINE_UNQUOTED(ENABLE_STD_NAMESPACE, 1,
   [Define to 1 if you want to enable namespaces (-fhonor-std) by default.])
-AC_SUBST(HAVE_LIBSTDCXX_V3)
 
 dnl Very limited version of automake's enable-maintainer-mode
 
