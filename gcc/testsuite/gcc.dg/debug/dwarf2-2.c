@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-O -g" } */
 
 /* Copyright (C) 2000  Free Software Foundation  */
 /* Contributed by Alexandre Oliva <aoliva@redhat.com> */

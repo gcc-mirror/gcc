@@ -1,7 +1,6 @@
 /* This testcase failed, because scope containing baz was not emitted
    (doesn't contain any instructions) and DWARF-2 couldn't find baz origin.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -g" } */
 
 struct A { char *a, *b, *c, *d; };
 

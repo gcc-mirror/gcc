@@ -1,3 +1,32 @@
+2002-01-25  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.dg/debug/debug.exp: New file.
+	* gcc.dg/debug/trivial.c: New file.
+	* gcc.dg/debug/20000503-1.c: Moved from gcc.dg/.
+	* gcc.dg/debug/20010207-1.c: Moved from gcc.dg/.
+	* gcc.dg/debug/20011223-1.c: Moved from gcc.dg/.
+	* gcc.dg/debug/20020104-2.c: Moved from gcc.dg/.
+	* gcc.dg/debug/debug-1.c: Moved from gcc.dg/.
+	* gcc.dg/debug/debug-2.c: Moved from gcc.dg/.
+	* gcc.dg/debug/debug-3.c: Moved from gcc.dg/.
+	* gcc.dg/debug/debug-4.c: Moved from gcc.dg/.
+	* gcc.dg/debug/debug-5.c: Moved from gcc.dg/.
+	* gcc.dg/debug/debug-6.c: Moved from gcc.dg/.
+	* gcc.dg/debug/dwarf2-1.c: Moved from gcc.dg/.
+	* gcc.dg/debug/dwarf2-2.c: Moved from gcc.dg/.
+	* gcc.dg/20000503-1.c: Removed.
+	* gcc.dg/20010207-1.c: Removed.
+	* gcc.dg/20011223-1.c: Removed.
+	* gcc.dg/20020104-2.c: Removed.
+	* gcc.dg/debug-1.c: Removed.
+	* gcc.dg/debug-2.c: Removed.
+	* gcc.dg/debug-3.c: Removed.
+	* gcc.dg/debug-4.c: Removed.
+	* gcc.dg/debug-5.c: Removed.
+	* gcc.dg/debug-6.c: Removed.
+	* gcc.dg/dwarf2-1.c: Removed.
+	* gcc.dg/dwarf2-2.c: Removed.
+
 2002-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.other/eh5.C: New test.

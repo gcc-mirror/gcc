@@ -439,7 +439,9 @@ dbxout_init (input_file_name)
 #else /* no DBX_OUTPUT_MAIN_SOURCE_DIRECTORY */
 	  fprintf (asmfile, "%s", ASM_STABS_OP);
 	  output_quoted_string (asmfile, cwd);
-	  fprintf (asmfile, ",%d,0,0,%s\n", N_SO, &ltext_label_name[1]);
+	  fprintf (asmfile, ",%d,0,0,", N_SO);
+	  assemble_name (asmfile, ltext_label_name);
+	  fputc ('\n', asmfile);
 #endif /* no DBX_OUTPUT_MAIN_SOURCE_DIRECTORY */
 	}
     }
@@ -454,8 +456,9 @@ dbxout_init (input_file_name)
   /* Used to put `Ltext:' before the reference, but that loses on sun 4.  */
   fprintf (asmfile, "%s", ASM_STABS_OP);
   output_quoted_string (asmfile, input_file_name);
-  fprintf (asmfile, ",%d,0,0,%s\n", 
-	   N_SO, &ltext_label_name[1]);
+  fprintf (asmfile, ",%d,0,0,", N_SO);
+  assemble_name (asmfile, ltext_label_name);
+  fputc ('\n', asmfile);
   text_section ();
   ASM_OUTPUT_INTERNAL_LABEL (asmfile, "Ltext", 0);
 #endif /* no DBX_OUTPUT_MAIN_SOURCE_FILENAME */
@@ -577,7 +580,9 @@ dbxout_source_file (file, filename)
 				   source_label_number);
       fprintf (file, "%s", ASM_STABS_OP);
       output_quoted_string (file, filename);
-      fprintf (file, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
+      fprintf (asmfile, ",%d,0,0,", N_SOL);
+      assemble_name (asmfile, ltext_label_name);
+      fputc ('\n', asmfile);
       if (current_function_decl != NULL_TREE
 	  && DECL_SECTION_NAME (current_function_decl) != NULL_TREE)
 	; /* Don't change section amid function.  */
