@@ -1,3 +1,9 @@
+2003-03-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp/decl2.c (arg_assoc_class): Correct check for namespace-scope
+	friends.
+	* cp/pt.c (instantiate_class_template): Fix formatting.
+
 2003-03-14  Matt Austern  <austern@apple.com>
 
 	* cp-tree.h (unemitted_tinfo_decls): Declaration of a new varray.

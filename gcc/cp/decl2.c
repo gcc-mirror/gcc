@@ -3963,7 +3963,7 @@ arg_assoc_class (struct arg_lookup *k, tree type)
 	   friends = TREE_CHAIN (friends))
 	/* Only interested in global functions with potentially hidden
            (i.e. unqualified) declarations.  */
-	if (decl_namespace (TREE_VALUE (friends)) == context)
+	if (CP_DECL_CONTEXT (TREE_VALUE (friends)) == context)
 	  if (add_function (k, TREE_VALUE (friends)))
 	    return true;
 
