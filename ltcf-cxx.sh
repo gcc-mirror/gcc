@@ -165,8 +165,10 @@ case $host_os in
       # On IA64, the linker does run time linking by default, so we don't
       # have to do anything special.
       aix_use_runtimelinking=no
-      exp_sym_flag='-Bexport'
-      no_entry_flag=""
+      if test $with_gnu_ld = no; then
+        exp_sym_flag='-Bexport'
+        no_entry_flag=""
+      fi
     else
       # Test if we are trying to use run time linking, or normal AIX style linking.
       # If -brtl is somewhere in LDFLAGS, we need to do run time linking.
@@ -189,9 +191,11 @@ case $host_os in
       archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs $compiler_flags ${allow_undefined_flag} '"\${wl}$no_entry_flag \${wl}-brtl \${wl}$exp_sym_flag:\$export_symbols"
      else
       if test "$host_cpu" = ia64; then
-        hardcode_libdir_flag_spec='${wl}-R $libdir:/usr/lib:/lib'
-        allow_undefined_flag="-z nodefs"
-        archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs $compiler_flags ${wl}${allow_undefined_flag} '"\${wl}$no_entry_flag \${wl}$exp_sym_flag:\$export_symbols"
+        if test $with_gnu_ld = no; then
+          hardcode_libdir_flag_spec='${wl}-R $libdir:/usr/lib:/lib'
+          allow_undefined_flag="-z nodefs"
+          archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs $compiler_flags ${wl}${allow_undefined_flag} '"\${wl}$no_entry_flag \${wl}$exp_sym_flag:\$export_symbols"
+        fi
       else
         hardcode_libdir_flag_spec='${wl}-blibpath:$libdir:/usr/lib:/lib'
         # Warning - without using the other run time loading flags, -berok will
@@ -241,6 +245,8 @@ case $host_os in
     # FreeBSD 3 and later use GNU C++ and GNU ld with standard ELF
     # conventions
     ld_shlibs=yes
+    ;;
+  gnu*)
     ;;
   hpux*)
     if test $with_gnu_ld = no; then
@@ -739,6 +745,8 @@ else
       ;;
     freebsd*)
       # FreeBSD uses GNU C++
+      ;;
+    gnu*)
       ;;
     hpux9* | hpux10* | hpux11*)
       case $cc_basename in
