@@ -2553,7 +2553,7 @@ while (0)
 /* Returns a mode from class `MODE_CC' to be used when comparison
    operation code OP is applied to rtx X.  */
 
-#define SELECT_CC_MODE(OP, X)						\
+#define SELECT_CC_MODE(OP, X, Y)					\
   (GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT				\
 	? SImode							\
 	: ((OP == NE) ? CC_REV_FPmode : CC_FPmode))
