@@ -1293,19 +1293,19 @@ bi-parser.o:	$(srcdir)/bi-parser.c $(srcdir)/bi-defs.h
 bi-lexer.c:	$(srcdir)/bi-lexer.l $(srcdir)/bi-parser.h
 
 bi-lexer.o:	bi-lexer.c bi-parser.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $9srcdir)/bi-lexer.c
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/bi-lexer.c
 
 bc-arity.h:	$(srcdir)/bytecode.def bi-arity
 	-rm -f bc-arity.h
-	bi-arity < $(srcdir)/bytecode.def > bc-arity.h
+	./bi-arity < $(srcdir)/bytecode.def > bc-arity.h
 
 bc-opcode.h:	$(srcdir)/bytecode.def bi-opcode
-	-rm -f bc-arity.h
-	bi-opcode < $(srcdir)/bytecode.def > bc-arity.h
+	-rm -f bc-opcode.h
+	./bi-opcode < $(srcdir)/bytecode.def > bc-opcode.h
 
 bc-opname.h:	 $(srcdir)/bytecode.def bi-opname
-	-rm -f bc-arity.h
-	bi-opname < $(srcdir)/bytecode.def > bc-arity.h
+	-rm -f bc-opname.h
+	./bi-opname < $(srcdir)/bytecode.def > bc-opname.h
 
 bytecode.mostlyclean:
 	-rm -f bc-arity.h bc-opcode.h bc-opname.h
