@@ -15,9 +15,9 @@ xfgnulib.c: $(srcdir)/config/m68k/fpgnulib.c
 	echo '#define EXTFLOAT' > xfgnulib.c
 	cat $(srcdir)/config/m68k/fpgnulib.c >> xfgnulib.c
 
-MULTILIB_OPTIONS=m68000/m68020 m68881/msoft-float
-MULTILIB_DIRNAMES=
-MULTILIB_MATCHES=m68020=m68040 m68000=mc68000 m68020=mc68020
+MULTILIB_OPTIONS = m68000/m68020 m68881/msoft-float
+MULTILIB_DIRNAMES =
+MULTILIB_MATCHES = m68000=mc68000 m68000=m68302 m68000=m68332 m68020=mc68020 m68020=m68040
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
