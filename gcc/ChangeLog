@@ -1,3 +1,8 @@
+Tue Dec 14 13:51:38 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* regclass.c (scan_one_insn): Set loop_cost to 1 when
+	optimizing for size.
+
 1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* reload1.c (reload): Can't avoid select_reload_regs/finish_spills
