@@ -630,7 +630,6 @@ INCLUDES = -I. -I$(srcdir) -I$(srcdir)/config -I$(srcdir)/../include
 LANG_MAKEFILES = @all_lang_makefiles@
 LANG_STAGESTUFF = @all_stagestuff@
 LANG_DIFF_EXCLUDES = @all_diff_excludes@
-LANG_LIB2FUNCS = @all_lib2funcs@
 LANG_EXTRA_HEADERS = @all_headers@
 
 # Flags to pass to recursive makes.
@@ -755,7 +754,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
     _fixtfdi _fixunstfdi _floatditf \
     __gcc_bcmp _varargs __dummy _eprintf \
     _bb _shtab _clear_cache _trampoline __main _exit \
-    _ctors _pure
+    _ctors
 
 LIB2FUNCS_EH = _eh
 
@@ -961,7 +960,7 @@ xlimits.h: glimits.h limitx.h limity.h
 #
 # Build libgcc.a.
 
-LIB2ADD = $(LIB2ADDEH) $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
+LIB2ADD = $(LIB2ADDEH) $(LIB2FUNCS_EXTRA)
 
 libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 	objext='$(objext)' \
@@ -2788,7 +2787,7 @@ VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) $(LIBCPP_OBJS) *.c *.h gen*`
 # we can guarantee will build with the native compiler, and also it is the
 # only thing useful for building stage2.
 stage_a: 
-	+$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" LANG_LIB2FUNCS=
+	+$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)"
 	touch stage_a
 
 stage_b: stage_a

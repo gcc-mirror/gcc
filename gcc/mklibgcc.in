@@ -225,44 +225,18 @@ for file in $LIB2ADD; do
   name=`echo $file | sed -e 's/[.][cSo]$//' -e 's/[.]asm$//' -e 's/[.]txt$//'`
   oname=`echo $name | sed -e 's,.*/,,'`
 
-  if [ ${name}.txt = ${file} ]; then
-    fprime=`cat $file`
-    for f in $fprime; do
+  for ml in $MULTILIBS; do
+    dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+    flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
+    out="libgcc/${dir}/${oname}${objext}"
+    if [ ${name}.asm = ${file} ]; then
+      flags="$flags -xassembler-with-cpp"
+    fi
 
-      lastout="stmp-dirs $file"
-      for ml in $MULTILIBS; do
-        dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
-        flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
-        out="libgcc/${dir}/${f}"
-
-	# Depend on previous out to serialize all sub-makes of this
-	# target file.  This because ./$f is used as a temporary in
-	# each case before being moved to libgcc/$dir/.
-	echo $out: $lastout
-	echo "	$make_compile" \\
-	echo '	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)' $flags '" ' \\
-	echo '	  MULTILIB_CFLAGS="'$flags'"' $f
-	echo "	mv $f $out"
-
-	lastout="$out"
-      done
-
-      libgcc2_objs="$libgcc2_objs $f"
-    done
-  else
-    for ml in $MULTILIBS; do
-      dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
-      flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
-      out="libgcc/${dir}/${oname}${objext}"
-      if [ ${name}.asm = ${file} ]; then
-	flags="$flags -xassembler-with-cpp"
-      fi
-
-      echo $out: stmp-dirs $file
-      echo "	$gcc_compile" $flags -c $file -o $out
-    done
-    libgcc2_objs="$libgcc2_objs ${oname}${objext}"
-  fi
+    echo $out: stmp-dirs $file
+    echo "	$gcc_compile" $flags -c $file -o $out
+  done
+  libgcc2_objs="$libgcc2_objs ${oname}${objext}"
 done
 
 # SHLIB_MKMAP

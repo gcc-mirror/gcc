@@ -2990,7 +2990,7 @@ __default_terminate (void)
 void (*__terminate_func)(void) __attribute__ ((__noreturn__)) =
   __default_terminate;
 
-void
+void __attribute__((__noreturn__))
 __terminate (void)
 {
   (*__terminate_func)();
@@ -4181,28 +4181,3 @@ __throw ()
 #endif /* IA64_UNWIND_INFO  */
 
 #endif /* L_eh */
-
-#ifdef L_pure
-#ifndef inhibit_libc
-/* This gets us __GNU_LIBRARY__.  */
-#undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
-#include <stdio.h>
-
-#ifdef __GNU_LIBRARY__
-  /* Avoid forcing the library's meaning of `write' on the user program
-     by using the "internal" name (for use within the library)  */
-#define write(fd, buf, n)	__write((fd), (buf), (n))
-#endif
-#endif /* inhibit_libc */
-
-#define MESSAGE "pure virtual method called\n"
-
-void
-__pure_virtual (void)
-{
-#ifndef inhibit_libc
-  write (2, MESSAGE, sizeof (MESSAGE) - 1);
-#endif
-  __terminate ();
-}
-#endif
