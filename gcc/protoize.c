@@ -140,11 +140,11 @@ static const char * const aux_info_suffix = AUX_INFO_SUFFIX;
 
 static const char * const save_suffix = SAVE_SUFFIX;
 
+#ifndef UNPROTOIZE
+
 /* String to attach to C filenames renamed to C++.  */
 
 static const char * const cplus_suffix = CPLUS_FILE_SUFFIX;
-
-#ifndef UNPROTOIZE
 
 /* File name of the file which contains descriptions of standard system
    routines.  Note that we never actually do anything with this file per se,
