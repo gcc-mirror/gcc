@@ -1,3 +1,8 @@
+2005-02-23  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.am: Added new file gnu/java/nio/ChannelReader.java.
+	* Makefile.in: Regenerated.
+
 2005-02-23  Robert Schuster  <thebohemian@gmx.net>
 
 	* gnu/java/nio/ChannelReader: Fixed comments.

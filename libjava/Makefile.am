@@ -3130,6 +3130,7 @@ gnu/java/net/protocol/jar/Connection.java \
 gnu/java/net/protocol/jar/Handler.java \
 gnu/java/nio/ChannelInputStream.java \
 gnu/java/nio/ChannelOutputStream.java \
+gnu/java/nio/ChannelReader.java \
 gnu/java/nio/DatagramChannelImpl.java \
 gnu/java/nio/DatagramChannelSelectionKey.java \
 gnu/java/nio/FileLockImpl.java \
