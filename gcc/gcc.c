@@ -131,9 +131,13 @@ static int verbose_flag;
 
 static int save_temps_flag;
 
-/* The compiler version specified with -V */
+/* The compiler version.  */
 
-static char *spec_version;
+static char *compiler_version;
+
+/* The target version specified with -V */
+
+static char *spec_version = DEFAULT_TARGET_VERSION;
 
 /* The target machine specified with -b.  */
 
@@ -2114,10 +2118,17 @@ process_command (argc, argv)
   n_switches = 0;
   n_infiles = 0;
 
-  /* Default for -V is our version number, ending at first space.  */
-  spec_version = save_string (version_string, strlen (version_string));
-  for (temp = spec_version; *temp && *temp != ' '; temp++);
-  if (*temp) *temp = '\0';
+  /* Figure compiler version from version string.  */
+
+  compiler_version = save_string (version_string, strlen (version_string));
+  for (temp = compiler_version; *temp; ++temp)
+    {
+      if (*temp == ' ')
+	{
+	  *temp = '\0';
+	  break;
+	}
+    }
 
   /* Set up the default search paths.  */
 
@@ -2394,6 +2405,7 @@ process_command (argc, argv)
 		spec_version = argv[++i];
 	      else
 		spec_version = p + 1;
+	      compiler_version = spec_version;
 	      break;
 
 	    case 's':
@@ -3357,20 +3369,29 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'v':
 	    {
 	      int c1 = *p++;  /* Select first or second version number.  */
-	      char *p = spec_version;
+	      char *v = compiler_version;
 	      char *q, *copy;
 	      /* If desired, advance to second version number.  */
 	      if (c1 == '2')
 		{
 		  /* Set P after the first period.  */
-		  while (*p != '.') p++;
-		  p++;
+		  while (*v != 0 && *v != ' ' && *v != '.')
+		    v++;
+		  if (*v == '.')
+		    v++;
 		}
 	      /* Set Q at the next period or at the end.  */
-	      q = p;
-	      while (*q != '.' && *q != 0) q++;
+	      q = v;
+	      while (*q != 0 && *q != ' ' && *q != '.')
+		q++;
+	      /* Empty string means zero.  */
+	      if (p == q)
+		{
+		  v = "0";
+		  q = v + 1;
+		}
 	      /* Put that part into the command.  */
-	      obstack_grow (&obstack, p, q - p);
+	      obstack_grow (&obstack, v, q - v);
 	      arg_going = 1;
 	    }
 	    break;
