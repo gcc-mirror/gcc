@@ -2975,7 +2975,7 @@ rest_of_handle_loop_optimize (tree decl, rtx insns)
   free_bb_for_insn ();
 
   if (flag_unroll_loops)
-    do_unroll = 0;		/* Having two unrollers is useless.  */
+    do_unroll = LOOP_AUTO_UNROLL;	/* Having two unrollers is useless.  */
   else
     do_unroll = flag_old_unroll_loops ? LOOP_UNROLL : LOOP_AUTO_UNROLL;
   do_prefetch = flag_prefetch_loop_arrays ? LOOP_PREFETCH : 0;
