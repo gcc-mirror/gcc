@@ -1,3 +1,7 @@
+Wed Aug 20 14:57:11 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.h (ISSUE_RATE): Define instead of MACHINE_issue_rate.
+
 Tue Aug 19 17:10:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cplus-dem.c: Add 'extern' to prepends_underscore.

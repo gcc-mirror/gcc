@@ -3065,7 +3065,7 @@ do {									\
 
 /* indicate that issue rate is defined for this machine
    (no need to use the default) */
-#define MACHINE_issue_rate
+#define ISSUE_RATE get_issue_rate ()
 
 /* General flags.  */
 extern int flag_pic;
