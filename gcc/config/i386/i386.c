@@ -4367,7 +4367,8 @@ ix86_save_reg (regno, maybe_eh_return)
       && regno == REAL_PIC_OFFSET_TABLE_REGNUM
       && (regs_ever_live[REAL_PIC_OFFSET_TABLE_REGNUM]
 	  || current_function_profile
-	  || current_function_calls_eh_return))
+	  || current_function_calls_eh_return
+	  || current_function_uses_const_pool))
     {
       if (ix86_select_alt_pic_regnum () != INVALID_REGNUM)
 	return 0;
