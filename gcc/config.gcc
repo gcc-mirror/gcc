@@ -327,84 +327,17 @@ esac
 
 # Common parts for widely ported systems.
 case ${target} in
-*-*-linux*libc1* | *-*-linux*aout*)
-  # Avoid the generic linux case.
-  ;;
-*-*-linux*)
-  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-  gas=yes
-  gnu_ld=yes
+*-*-darwin*)
+  tm_file="${tm_file} darwin.h"
+  tm_p_file="${tm_p_file} darwin-protos.h"
+  tmake_file="t-darwin"
+  target_gtfiles="\$(srcdir)/config/darwin.c"
+  c_target_objs="darwin-c.o"
+  cxx_target_objs="darwin-c.o"
+  extra_parts="crt2.o"
+  extra_objs="darwin.o"
   case ${enable_threads} in
     "" | yes | posix) thread_file='posix' ;;
-  esac
-  ;;
-*-*-gnu*)
-  # On the Hurd, the setup is just about the same on
-  # each different CPU.  The specific machines that we
-  # support are matched above and just set $cpu_type.
-  tm_file="${cpu_type}/gnu.h"
-  extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
-  # GNU tools are the only tools.
-  gas=yes
-  gnu_ld=yes
-  # These details are the same as for Linux.
-  # But here we need a little extra magic.
-  tmake_file="t-slibgcc-elf-ver t-linux t-gnu"
-  case ${target} in
-    alpha*)
-      tm_file="${cpu_type}/${cpu_type}.h alpha/elf.h alpha/linux.h alpha/linux-elf.h gnu.h ${tm_file}"
-      ;;
-    i[34567]86-*-*)
-      tm_file="${cpu_type}/${cpu_type}.h i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h gnu.h ${tm_file}"
-      ;;
-  esac
-  ;;
-*-*-openbsd*)
-  tmake_file="t-libc-ok t-openbsd t-libgcc-pic"
-  case ${enable_threads} in
-    yes)
-      thread_file='posix'
-      tmake_file="${tmake_file} t-openbsd-thread"
-      ;;
-  esac
-  ;;
-*-*-netbsd*)
-  tmake_file="t-slibgcc-elf-ver t-libc-ok t-netbsd t-libgcc-pic"
-  gas=yes
-  gnu_ld=yes
-
-  # NetBSD 2.0 and later get POSIX threads enabled by default.
-  # Allow them to be explicitly enabled on any other version.
-  case ${enable_threads} in
-    "")
-      case ${target} in
-        *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
-          thread_file='posix'
-          tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
-          ;;
-      esac
-      ;;
-    yes | posix)
-      thread_file='posix'
-      tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
-      ;;
-  esac
-
-  # NetBSD 1.7 and later are set up to use GCC's crtstuff for
-  # ELF configurations.  We will clear extra_parts in the
-  # a.out configurations.
-  case ${target} in
-    *-*-netbsd*1.[7-9]* | *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
-      extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
-      ;;
-  esac
-
-  # NetBSD 2.0 and later provide __cxa_atexit(), which we use by
-  # default (unless overridden by --disable-__cxa_atexit).
-  case ${target} in
-    *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
-      default_use_cxa_atexit=yes
-      ;;
   esac
   ;;
 *-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
@@ -465,17 +398,85 @@ case ${target} in
   esac
   fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h"
   ;;
-*-*-darwin*)
-  tm_file="${tm_file} darwin.h"
-  tm_p_file="${tm_p_file} darwin-protos.h"
-  tmake_file="t-darwin"
-  target_gtfiles="\$(srcdir)/config/darwin.c"
-  c_target_objs="darwin-c.o"
-  cxx_target_objs="darwin-c.o"
-  extra_parts="crt2.o"
-  extra_objs="darwin.o"
+*-*-linux*libc1* | *-*-linux*aout*)
+  # Avoid the generic linux case.
+  ;;
+*-*-linux*)
+  # Must come before *-*-gnu* (because of *-*-linux-gnu* systems).
+  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+  gas=yes
+  gnu_ld=yes
   case ${enable_threads} in
     "" | yes | posix) thread_file='posix' ;;
+  esac
+  ;;
+*-*-gnu*)
+  # On the Hurd, the setup is just about the same on
+  # each different CPU.  The specific machines that we
+  # support are matched above and just set $cpu_type.
+  tm_file="${cpu_type}/gnu.h"
+  extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
+  # GNU tools are the only tools.
+  gas=yes
+  gnu_ld=yes
+  # These details are the same as for Linux.
+  # But here we need a little extra magic.
+  tmake_file="t-slibgcc-elf-ver t-linux t-gnu"
+  case ${target} in
+    alpha*)
+      tm_file="${cpu_type}/${cpu_type}.h alpha/elf.h alpha/linux.h alpha/linux-elf.h gnu.h ${tm_file}"
+      ;;
+    i[34567]86-*-*)
+      tm_file="${cpu_type}/${cpu_type}.h i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h gnu.h ${tm_file}"
+      ;;
+  esac
+  ;;
+*-*-netbsd*)
+  tmake_file="t-slibgcc-elf-ver t-libc-ok t-netbsd t-libgcc-pic"
+  gas=yes
+  gnu_ld=yes
+
+  # NetBSD 2.0 and later get POSIX threads enabled by default.
+  # Allow them to be explicitly enabled on any other version.
+  case ${enable_threads} in
+    "")
+      case ${target} in
+        *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
+          thread_file='posix'
+          tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
+          ;;
+      esac
+      ;;
+    yes | posix)
+      thread_file='posix'
+      tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
+      ;;
+  esac
+
+  # NetBSD 1.7 and later are set up to use GCC's crtstuff for
+  # ELF configurations.  We will clear extra_parts in the
+  # a.out configurations.
+  case ${target} in
+    *-*-netbsd*1.[7-9]* | *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
+      extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
+      ;;
+  esac
+
+  # NetBSD 2.0 and later provide __cxa_atexit(), which we use by
+  # default (unless overridden by --disable-__cxa_atexit).
+  case ${target} in
+    *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
+      default_use_cxa_atexit=yes
+      ;;
+  esac
+  ;;
+*-*-openbsd*)
+  tmake_file="t-libc-ok t-openbsd t-libgcc-pic"
+  case ${enable_threads} in
+    yes)
+      thread_file='posix'
+      tmake_file="${tmake_file} t-openbsd-thread"
+      ;;
   esac
   ;;
 *-*-vxworks*)
