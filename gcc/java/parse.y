@@ -12171,7 +12171,7 @@ check_static_final_variable_assignment_flag (class)
 	&& !DECL_FIELD_FINAL_IUD (field) && !DECL_FIELD_FINAL_LIIC (field))
       parse_error_context
 	(DECL_FIELD_FINAL_WFL (field),
-	 "Blank static final variable `%s' may not have be initialized",
+	 "Blank static final variable `%s' may not have been initialized",
 	 IDENTIFIER_POINTER (DECL_NAME (field)));
 }
 

@@ -1,3 +1,7 @@
+2000-12-13  Mike Stump  <mrs@wrs.com>
+
+	* parse.y (check_static_final_variable_assignment_flag): Fix spelling.
+
 2000-11-07  Tom Tromey  <tromey@cygnus.com>
 
 	* Make-lang.in (JAVA_LEX_C): Added chartables.h.
