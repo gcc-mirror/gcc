@@ -1,3 +1,17 @@
+2001-04-20  Per Bothner  <per@bothner.com>
+
+	Fixes to compile multiple .class files at once.
+	* decl.c (init_decl_processing):  Don't set CLASS_LOADED_P.
+	* java-tree.h (CLASS_PARSED_P):  New macro.
+	(CLASS_LOADED_P):  Re-define to use TYPE_SIZE and CLASS_PARSED_P.
+	* jcf-parse.c (jcf_parse_source):  Inline into read_class.
+	(read_class):  Avoid some code duplication.
+	Don't call JCF_FINISH for a .class file - might be needed later.
+	(jcf_parse):  Don't call layout_class here.  Check/set CLASS_PARSED_P
+	rather than CLASS_LOADED_P, since latter implies class laid out.
+	(yyparse):  Do layout_class and JCF_FINISh here instead, in pass 2.
+	* parse.y:  Don't need to set CLASS_LOADED_P for array types.
+
 2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (java/boehm.o): Depend on toplev.h.

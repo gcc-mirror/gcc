@@ -667,7 +667,6 @@ init_decl_processing ()
   PUSH_FIELD (field_type_node, field, "bsize", unsigned_short_type_node);
   PUSH_FIELD (field_type_node, field, "info", field_info_union_node);
   FINISH_RECORD (field_type_node);
-  CLASS_LOADED_P (field_type_node) = 1;
   build_decl (TYPE_DECL, get_identifier ("Field"), field_type_node);
 
   one_elt_array_domain_type = build_index_type (integer_one_node);
@@ -709,7 +708,6 @@ init_decl_processing ()
   PUSH_FIELD (method_type_node, field, "accflags", access_flags_type_node);
   PUSH_FIELD (method_type_node, field, "ncode", nativecode_ptr_type_node);
   FINISH_RECORD (method_type_node);
-  CLASS_LOADED_P (method_type_node) = 1;
   build_decl (TYPE_DECL, get_identifier ("Method"), method_type_node);
 
   endlink = end_params_node = tree_cons (NULL_TREE, void_type_node, NULL_TREE);

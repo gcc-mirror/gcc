@@ -93,7 +93,6 @@ static void parse_zip_file_entries PARAMS ((void));
 static void process_zip_dir PARAMS ((FILE *));
 static void parse_source_file_1 PARAMS ((tree, FILE *));
 static void parse_source_file_2 PARAMS ((void));
-static void jcf_parse_source PARAMS ((void));
 static void parse_class_file PARAMS ((void));
 static void set_source_filename PARAMS ((JCF *, int));
 static int predefined_filename_p PARAMS ((tree));
@@ -559,6 +558,7 @@ read_class (name)
   tree save_current_class = current_class;
   const char *save_input_filename = input_filename;
   JCF *save_current_jcf = current_jcf;
+  int generate;
 
   if ((icv = IDENTIFIER_CLASS_VALUE (name)) != NULL_TREE)
     {
@@ -579,23 +579,50 @@ read_class (name)
 
   current_jcf = jcf;
 
+  java_parser_context_save_global ();
+  java_push_parser_context ();
   if (current_jcf->java_source)
-    jcf_parse_source ();
-  else {
-    java_parser_context_save_global ();
-    java_push_parser_context ();
-    input_filename = current_jcf->filename;
-    current_class = class;
-    if (JCF_SEEN_IN_ZIP (current_jcf))
-      read_zip_member(current_jcf, current_jcf->zipd, current_jcf->zipd->zipf);
-    jcf_parse (current_jcf);
-    load_inner_classes (current_class);
-    java_pop_parser_context (0);
-    java_parser_context_restore_global ();
-  }
+    {
+      const char *filename = current_jcf->filename;
+      tree file;
+      FILE *finput;
 
-  if (! JCF_SEEN_IN_ZIP (current_jcf))
-    JCF_FINISH (current_jcf);
+      BUILD_FILENAME_IDENTIFIER_NODE (file, filename);
+      generate = IS_A_COMMAND_LINE_FILENAME_P (file);
+      if (wfl_operator == NULL_TREE)
+	wfl_operator = build_expr_wfl (NULL_TREE, NULL, 0, 0);
+      EXPR_WFL_FILENAME_NODE (wfl_operator) = file;
+      input_filename = ggc_strdup (filename);
+      current_class = NULL_TREE;
+      current_function_decl = NULL_TREE;
+      if (!HAS_BEEN_ALREADY_PARSED_P (file))
+	{
+	  if (!(finput = fopen (input_filename, "r")))
+	    fatal_io_error ("can't reopen %s", input_filename);
+	  parse_source_file_1 (file, finput);
+	  parse_source_file_2 ();
+	  if (fclose (finput))
+	    fatal_io_error ("can't close %s", input_filename);
+	}
+      JCF_FINISH (current_jcf);
+    }
+  else
+    {
+      input_filename = current_jcf->filename;
+      current_class = class;
+      if (class == NULL_TREE || ! CLASS_PARSED_P (class))
+	{
+	  if (JCF_SEEN_IN_ZIP (current_jcf))
+	    read_zip_member(current_jcf,
+			    current_jcf->zipd, current_jcf->zipd->zipf);
+	  jcf_parse (current_jcf);
+	}
+      layout_class (current_class);
+      load_inner_classes (current_class);
+      generate = 0;
+    }
+  java_pop_parser_context (generate);
+  java_parser_context_restore_global ();
 
   current_class = save_current_class;
   input_filename = save_input_filename;
@@ -632,36 +659,6 @@ load_class (class_or_name, verbose)
     error ("Cannot find file for class %s.", IDENTIFIER_POINTER (name));
 }
 
-/* Parse a source file when JCF refers to a source file.  */
-
-static void
-jcf_parse_source ()
-{
-  tree file;
-  FILE *finput;
-
-  java_parser_context_save_global ();
-  java_push_parser_context ();
-  BUILD_FILENAME_IDENTIFIER_NODE (file, current_jcf->filename);
-  if (wfl_operator == NULL_TREE)
-    wfl_operator = build_expr_wfl (NULL_TREE, NULL, 0, 0);
-  EXPR_WFL_FILENAME_NODE (wfl_operator) = file;
-  input_filename = ggc_strdup (current_jcf->filename);
-  current_class = NULL_TREE;
-  current_function_decl = NULL_TREE;
-  if (!HAS_BEEN_ALREADY_PARSED_P (file))
-    {
-      if (!(finput = fopen (input_filename, "r")))
-	fatal_io_error ("can't reopen %s", input_filename);
-      parse_source_file_1 (file, finput);
-      parse_source_file_2 ();
-      if (fclose (finput))
-	fatal_io_error ("can't close %s", input_filename);
-    }
-  java_pop_parser_context (IS_A_COMMAND_LINE_FILENAME_P (file));
-  java_parser_context_restore_global ();
-}
-
 /* Parse the .class file JCF. */
 
 void
@@ -686,9 +683,14 @@ jcf_parse (jcf)
     fprintf (stderr, " %s %s",
 	     (jcf->access_flags & ACC_INTERFACE) ? "interface" : "class", 
 	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))));
-  if (CLASS_LOADED_P (current_class))
-    return;
-  CLASS_LOADED_P (current_class) = 1;
+  if (CLASS_PARSED_P (current_class))
+    {
+      /* FIXME - where was first time */
+      fatal_error ("reading class %s for the second time from %s",
+		   IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))),
+		   jcf->filename);
+    }
+  CLASS_PARSED_P (current_class) = 1;
 
   for (i = 1; i < JPOOL_SIZE(jcf); i++)
     {
@@ -714,7 +716,6 @@ jcf_parse (jcf)
   if (current_class != class_type_node && current_class != object_type_node)
     TYPE_FIELDS (current_class) = nreverse (TYPE_FIELDS (current_class));
 
-  layout_class (current_class);
   if (current_class == object_type_node)
     {
       layout_class_methods (object_type_node);
@@ -1123,8 +1124,10 @@ yyparse ()
 	{
 	  current_class = TREE_PURPOSE (node);
 	  current_jcf = TYPE_JCF (current_class);
+	  layout_class (current_class);
 	  load_inner_classes (current_class);
 	  parse_class_file ();
+	  JCF_FINISH (current_jcf);
 	}
     }
   input_filename = main_input_filename;
@@ -1157,8 +1160,12 @@ parse_zip_file_entries (void)
 
       if ( !CLASS_LOADED_P (class))
 	{
-	  read_zip_member(current_jcf, zdir, localToFile);
-	  jcf_parse (current_jcf);
+	  if (! CLASS_PARSED_P (class))
+	    {
+	      read_zip_member(current_jcf, zdir, localToFile);
+	      jcf_parse (current_jcf);
+	    }
+	  layout_class (current_class);
 	  load_inner_classes (current_class);
 	}
 
