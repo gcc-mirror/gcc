@@ -1,3 +1,9 @@
+2000-10-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-printf-1.c, gcc.dg/c90-scanf-1.c: Add tests for
+	writing through null pointers; remove comment about testing
+	unterminated strings.
+
 2000-10-17  Matthew Hiller  <hiller@redhat.com>
 
 	* gcc.c-torture/execute/20001017-2.c: New test.

@@ -122,4 +122,5 @@ foo (int *ip, unsigned int *uip, short int *hp, unsigned short int *uhp,
   scanf ("%d\0%d", ip, ip); /* { dg-warning "embedded|too many" "warning for embedded NUL" } */
   scanf (NULL); /* { dg-warning "null" "null format string warning" } */
   scanf ("%"); /* { dg-warning "trailing" "trailing % warning" } */
+  scanf ("%d", (int *)0); /* { dg-warning "null" "writing into NULL" } */
 }
