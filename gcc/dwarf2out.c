@@ -7636,9 +7636,6 @@ gen_subprogram_die (decl, context_die)
 	}
       else if (DECL_INLINE (decl))
 	add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_inlined);
-      else if (declaration)
-	/* Block extern declaration in an inline function.  */
-	add_AT_flag (subr_die, DW_AT_declaration, 1);
       else
 	abort ();
 
