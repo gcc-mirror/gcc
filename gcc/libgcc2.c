@@ -46,6 +46,13 @@ Boston, MA 02111-1307, USA.  */
 #define WEAK_ALIAS
 #endif
 
+/* In a cross-compilation situation, default to inhibiting compilation
+   of routines that use libc.  */
+
+#ifdef CROSS_COMPILE
+#define inhibit_libc
+#endif
+
 /* Permit the tm.h file to select the endianness to use just for this
    file.  This is used when the endianness is determined when the
    compiler is run.  */
