@@ -18530,6 +18530,7 @@ ffeexpr_token_arguments_ (ffelexToken ft, ffebld expr, ffelexToken t)
 	     only if next token isn't the close-paren for REAL(me).  */
 
 	  if ((ffeexpr_stack_->previous != NULL)
+	      && (ffeexpr_stack_->previous->exprstack != NULL)
 	      && (ffeexpr_stack_->previous->exprstack->type == FFEEXPR_exprtypeOPERAND_)
 	      && ((reduced = ffeexpr_stack_->previous->exprstack->u.operand) != NULL)
 	      && (ffebld_op (reduced) == FFEBLD_opSYMTER)

@@ -1,3 +1,8 @@
+Fri Feb 20 12:45:53 1998  Craig Burley  <burley@gnu.org>
+
+	* expr.c (ffeexpr_token_arguments_): Make sure
+	outer exprstack isn't null.
+
 Fri Oct 10 13:00:48 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	* ste.c (ffeste_begin_iterdo_): Fix loop setup so iteration

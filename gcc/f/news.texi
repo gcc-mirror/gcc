@@ -27,6 +27,11 @@ involve a combination of these elements.
 @heading In 0.5.22:
 @itemize @bullet
 @item
+Fix a compiler crash on statements such as
+@samp{PRINT *, (REAL(Z(I)),I=1,2)}, where
+@samp{Z} is @code{DOUBLE COMPLEX}.
+
+@item
 Fix @code{g77} version of @code{libf2c} so it no longer
 produces a spurious @samp{I/O recursion} diagnostic at run time
 when an I/O operation (such as @samp{READ *,I}) is interrupted
