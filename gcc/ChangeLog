@@ -1,3 +1,9 @@
+2004-05-10  Ziemowit Laski  <zlaski@apple.com>
+
+	* config/rs6000/altivec.h (vec_sld): Add overloads for
+	argument/return types of 'vector bool int', 'vector bool short'
+	and 'vector bool char'.
+
 2004-05-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (store_parm_decls_newstyle): Correct test for a
