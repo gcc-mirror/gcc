@@ -1,3 +1,8 @@
+2000-05-16  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* sysv4.h (CPP_OS_LINUX_SPEC): Define __unix and __linux according
+	to given options.
+
 Tue May 16 12:17:31 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10200.h (PREFERRED_RELOAD_CLASS): Do not prefer DATA_REGS

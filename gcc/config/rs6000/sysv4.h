@@ -1306,12 +1306,18 @@ do {									\
   %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
 
 #ifdef USE_GNULIBC_1
-#define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__ \
-%{!undef:%{!ansi:%{!std=*:-Dunix -Dlinux}%{std=gnu*:-Dunix -Dlinux}}} \
+#define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__		\
+%{!undef:							\
+  %{!ansi:							\
+    %{!std=*:-Dunix -D__unix -Dlinux -D__linux}			\
+    %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		\
 -Asystem(unix) -Asystem(posix)"
 #else
-#define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__ \
-%{!undef:%{!ansi:%{!std=*:-Dunix -Dlinux}%{std=gnu*:-Dunix -Dlinux}}} \
+#define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__		\
+%{!undef:							\
+  %{!ansi:							\
+    %{!std=*:-Dunix -D__unix -Dlinux -D__linux}			\
+    %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		\
 -Asystem(unix) -Asystem(posix) %{pthread:-D_REENTRANT}"
 #endif
 
