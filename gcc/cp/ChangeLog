@@ -1,3 +1,7 @@
+Wed Dec 10 11:04:45 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_decl): Defer all templates but inline functions.
+
 Mon Dec  8 23:17:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* init.c (expand_vec_init): Don't fold a list of parameters.
