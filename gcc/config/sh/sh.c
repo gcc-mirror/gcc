@@ -4848,7 +4848,7 @@ calc_live_regs (live_regs_mask)
      the initial value can become the PR_MEDIA_REG hard register, as seen for
      execute/20010122-1.c:test9.  */
   if (TARGET_SHMEDIA)
-    pr_live = regs_ever_live[PR_MEDIA_REG];
+    pr_live = sh_pr_n_sets ();
   else
     {
       rtx pr_initial = has_hard_reg_initial_val (Pmode, PR_REG);
@@ -4867,7 +4867,7 @@ calc_live_regs (live_regs_mask)
   has_call = TARGET_SHMEDIA ? ! leaf_function_p () : pr_live;
   for (count = 0, reg = FIRST_PSEUDO_REGISTER - 1; reg >= 0; reg--)
     {
-      if ((! TARGET_SHMEDIA && reg == PR_REG)
+      if (reg == (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG)
 	  ? pr_live
 	  : (interrupt_handler && ! pragma_trapa)
 	  ? (/* Need to save all the regs ever live.  */
