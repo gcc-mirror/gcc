@@ -26,23 +26,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 -Asystem(unix) -Asystem(bsd) -Acpu(mips) -Amachine(mips)"
 #endif
 
-#ifndef ASM_SPEC
-#define ASM_SPEC "\
-%{!mgas: \
-	%{!mrnames: %{!.s:-nocpp} %{.s: %{cpp} %{nocpp}}} \
-	%{pipe:%e:-pipe not supported} \
-	%{EL} %{!EL:-EL} \
-	%{EB: %e-EB not supported} \
-	%{mips1} %{mips2} %{mips3} \
-	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
-	%{g} %{g0} %{g1} %{g2} %{g3} %{v} %{K} \
-	%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
-	%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
-	%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
-	%{gcoff:-g} %{gstabs0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}} \
-%{G*}"
-#endif
-
 #ifndef CPP_SPEC
 #define CPP_SPEC "\
 %{.S:	-D__LANGUAGE_ASSEMBLY__ -D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
@@ -52,16 +35,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS__ -D__LANGUAGE_C_PLUS_PLUS} \
 %{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
 %{!.S:%{!.s:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}"
-#endif
-
-#ifndef LINK_SPEC
-#define LINK_SPEC "\
-%{G*} \
-%{!mgas: \
-	%{EL} %{!EL: -EL} \
-	%{EB: %e-EB not supported} \
-	%{mips1} %{mips2} %{mips3} \
-	%{bestGnum}}"
 #endif
 
 #ifndef LIB_SPEC

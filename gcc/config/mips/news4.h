@@ -24,21 +24,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 -Dsony_news -Dsony -Dunix -Dmips -Dhost_mips \
 -Asystem(unix) -Asystem(bsd) -Acpu(mips) -Amachine(mips)"
 
-#define ASM_SPEC "\
-%{!mgas: \
-	%{!mrnames: %{!.s:-nocpp} %{.s: %{cpp} %{nocpp}}} \
-	%{pipe:%e:-pipe not supported} \
-	%{EB} %{!EB:-EB} \
-	%{EL: %e-EL not supported} \
-	%{mips1} %{mips2} %{mips3} \
-	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
-	%{g} %{g1} %{g2} %{g3} %{g0} %{v} %{K} \
-	%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
-	%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
-	%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
-	%{gcoff:-g} %{gstabs0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}} \
-%{G*}"
-
 #define SYSTEM_INCLUDE_DIR "/usr/include2.0"
 
 #define CPP_SPEC "\
@@ -49,14 +34,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.S:	-D__LANGUAGE_ASSEMBLY -D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
 %{.s:	-D__LANGUAGE_ASSEMBLY -D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
 %{!.S:%{!.s:	-D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}"
-
-#define LINK_SPEC "\
-%{G*} \
-%{!mgas: \
-	%{EB} %{!EB:-EB} \
-	%{EL: %e-EL not supported} \
-	%{mips1} %{mips2} %{mips3} \
-	%{bestGnum}}"
 
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc"
 
