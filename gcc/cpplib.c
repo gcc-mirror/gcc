@@ -263,32 +263,26 @@ void cpp_print_containing_files PARAMS ((cpp_reader *));
 
 static void add_import ();
 static void append_include_chain ();
-static void make_undef ();
 static void make_assertion ();
 static void path_include ();
 static void initialize_builtins ();
 static void initialize_char_syntax ();
-static void dump_arg_n ();
-static void dump_defn_1 ();
 extern void delete_macro ();
+#if 0
 static void trigraph_pcp ();
+#endif
 static int finclude ();
 static void validate_else ();
 static int comp_def_part ();
 #ifdef abort
 extern void fancy_abort ();
 #endif
-static void pipe_closed ();
-static void print_containing_files ();
 static int lookup_import ();
 static int redundant_include_p ();
 static is_system_include ();
 static struct file_name_map *read_name_map ();
 static char *read_filename_string ();
 static int open_include_file ();
-static int check_preconditions ();
-static void pcfinclude ();
-static void pcstring_used ();
 static int check_macro_name ();
 static int compare_defs ();
 static int compare_token_lists ();
@@ -527,7 +521,7 @@ quote_string (pfile, src)
 	  CPP_PUTC_Q (pfile, c);
 	else
 	  {
-	    sprintf (CPP_PWRITTEN (pfile), "\\%03o", c);
+	    sprintf ((char *)CPP_PWRITTEN (pfile), "\\%03o", c);
 	    CPP_ADJUST_WRITTEN (pfile, 4);
 	  }
 	break;
@@ -2150,7 +2144,7 @@ output_line_command (pfile, conditional, file_change)
     CPP_PUTS_Q (pfile, sharp_line, sizeof(sharp_line)-1);
   }
 
-  sprintf (CPP_PWRITTEN (pfile), "%ld ", line);
+  sprintf ((char *) CPP_PWRITTEN (pfile), "%ld ", line);
   CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
 
   quote_string (pfile, ip->nominal_fname); 
@@ -2826,7 +2820,7 @@ macroexpand (pfile, hp)
 		      else
 			{
 			  CPP_RESERVE (pfile, 4);
-			  sprintf (CPP_PWRITTEN (pfile), "\\%03o",
+			  sprintf ((char *)CPP_PWRITTEN (pfile), "\\%03o",
 				   (unsigned int) c);
 			  CPP_ADJUST_WRITTEN (pfile, 4);
 			}
@@ -3745,7 +3739,7 @@ do_line (pfile, keyword)
   /* The Newline at the end of this line remains to be processed.
      To put the next line at the specified line number,
      we must store a line number now that is one less.  */
-  new_lineno = atoi (pfile->token_buffer + old_written) - 1;
+  new_lineno = atoi ((char *)(pfile->token_buffer + old_written)) - 1;
   CPP_SET_WRITTEN (pfile, old_written);
 
   /* NEW_LINENO is one less than the actual line number here.  */
