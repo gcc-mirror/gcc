@@ -1,3 +1,9 @@
+Mon Mar 29 08:24:43 1999  Bruce Korb <korb@datadesign.com>
+
+	* fixinc/mkfixinc.sh:  Heredoc portability problem
+
+	* fixinc/README:  Updated for release announcement
+
 Sun Mar 28 20:26:55 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* recog.h (insn_outfun, insn_operand_predicate): Add prototype
