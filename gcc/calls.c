@@ -3279,6 +3279,12 @@ expand_call (exp, target, ignore)
 	     If they refer to the same register, this move will be a no-op,
 	     except when function inlining is being done.  */
 	  emit_move_insn (target, valreg);
+
+	  /* If we are setting a MEM, this code must be executed.  Since it is
+	     emitted after the call insn, sibcall optimization cannot be
+	     performed in that case.  */
+	  if (GET_CODE (target) == MEM)
+	    sibcall_failure = 1;
 	}
       else if (TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
 	{
