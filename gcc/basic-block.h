@@ -250,3 +250,13 @@ extern void compute_dominators		PROTO ((sbitmap *, sbitmap *,
 						int_list_ptr *,
 						int_list_ptr *));
 extern void compute_immediate_dominators	PROTO ((int *, sbitmap *));
+
+/* In lcm.c */
+extern void pre_lcm 			PROTO ((int, int, int_list_ptr *,
+						int_list_ptr *,
+						sbitmap *, sbitmap *,
+						sbitmap *, sbitmap *));
+extern void pre_rev_lcm 		PROTO ((int, int, int_list_ptr *,
+						int_list_ptr *,
+						sbitmap *, sbitmap *,
+						sbitmap *, sbitmap *));

@@ -1,5 +1,7 @@
 Sun Mar 21 17:33:48 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* basic-block.h (pre_lcm, pre_rev_lcm): Declare.
+
 	* toplev.c (main): A debug option without a level defaults to
 	level 2.
 
