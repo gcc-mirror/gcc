@@ -1,5 +1,10 @@
 2001-03-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* typeck.c (build_static_cast): Allow enum to enum conversions
+	as per DR 128.
+
+2001-03-02  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* class.c (check_field_decls): Pointers to member do not a
 	non-pod struct make, as per DR 148.
 
