@@ -411,7 +411,8 @@ output_float (fnode *f, double value, int len)
     case FMT_EN:
       /* The exponent must be a multiple of three, with 1-3 digits before
 	 the decimal point.  */
-      e--;
+      if (value != 0.0)
+        e--;
       if (e >= 0)
 	nbefore = e % 3;
       else
@@ -428,7 +429,8 @@ output_float (fnode *f, double value, int len)
       break;
 
     case FMT_ES:
-      e--;
+      if (value != 0.0)
+        e--;
       nbefore = 1;
       nzero = 0;
       nafter = d;
