@@ -403,9 +403,7 @@ static enum rtx_code simplify_comparison  PROTO((enum rtx_code, rtx *, rtx *));
 static int reversible_comparison_p  PROTO((rtx));
 static void update_table_tick	PROTO((rtx));
 static void record_value_for_reg  PROTO((rtx, rtx, rtx));
-#ifdef PROMOTE_FUNCTION_RETURN
 static void check_promoted_subreg PROTO((rtx, rtx));
-#endif
 static void record_dead_and_set_regs_1  PROTO((rtx, rtx, void *));
 static void record_dead_and_set_regs  PROTO((rtx));
 static int get_last_value_validate  PROTO((rtx *, rtx, int, int));
@@ -611,11 +609,9 @@ combine_instructions (f, nregs)
 
       else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
-#ifdef PROMOTE_FUNCTION_RETURN
 	  /* See if we know about function return values before this
 	     insn based upon SUBREG flags.  */
 	  check_promoted_subreg (insn, PATTERN (insn));
-#endif
 
 	  /* Try this insn with each insn it links back to.  */
 
@@ -11059,7 +11055,6 @@ record_dead_and_set_regs (insn)
   note_stores (PATTERN (insn), record_dead_and_set_regs_1, insn);
 }
 
-#ifdef PROMOTE_FUNCTION_RETURN
 /* If a SUBREG has the promoted bit set, it is in fact a property of the
    register present in the SUBREG, so for each such SUBREG go back and
    adjust nonzero and sign bit information of the registers that are
@@ -11141,7 +11136,6 @@ check_promoted_subreg (insn, x)
 	  }
     }
 }
-#endif
 
 /* Utility routine for the following function.  Verify that all the registers
    mentioned in *LOC are valid when *LOC was part of a value set when
