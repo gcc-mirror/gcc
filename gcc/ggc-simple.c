@@ -413,7 +413,7 @@ debug_ggc_tree (p, indent)
 
   for (i = 0; i < indent; ++i)
     putc (' ', stderr);
-  fprintf (stderr, "%lx %p\n", (unsigned long)PTR_KEY (p), p);
+  fprintf (stderr, "%lx %p\n", (unsigned long)PTR_KEY (p), (PTR) p);
 
   if (p->sub[1])
     debug_ggc_tree (p->sub[1], indent + 1);

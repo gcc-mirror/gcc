@@ -1,3 +1,7 @@
+2002-01-25  Kelley Cook <kelleycook@comcast.net>
+
+	* ggc-simple.c (debug_ggc_tree): Add PTR cast.
+
 2003-01-25  Segher Boessenkool  <segher@koffie.nl>
 
 	* bitmap.h (BITMAP_WORD): New typedef: fundamental storage
