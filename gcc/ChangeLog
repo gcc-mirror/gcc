@@ -17,6 +17,8 @@ Wed Feb 10 09:57:08 1999  Mark Mitchell  <mark@markmitchell.com>
 
 Wed Feb 10 10:09:41 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10200.md (bset, bclr): Operand 0 is a read/write operand.
+
 	* reload1.c (reload_combine_note_store): Second argument is no
 	longer unused/ignored.  Handle multi-register hard regs.
 	(move2add_note_store): Simplify.
