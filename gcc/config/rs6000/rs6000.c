@@ -231,7 +231,7 @@ static const char alt_reg_names[][8] =
    for non-ELF systems.  */
 #ifndef OBJECT_FORMAT_ELF
 #ifdef OBJECT_FORMAT_COFF
-/* For ECOFF.  rs6000_assemble_integer will handle unaligned DIs on
+/* For XCOFF.  rs6000_assemble_integer will handle unaligned DIs on
    64-bit targets.  */
 #undef TARGET_ASM_UNALIGNED_HI_OP
 #define TARGET_ASM_UNALIGNED_HI_OP "\t.vbyte\t2,"
@@ -565,7 +565,7 @@ rs6000_override_options (default_cpu)
 
   /* We can only guarantee the availability of DI pseudo-ops when
      assembling for 64-bit targets.  */
-  if (!TARGET_POWERPC64)
+  if (!TARGET_64BIT)
     {
       targetm.asm_out.aligned_op.di = NULL;
       targetm.asm_out.unaligned_op.di = NULL;

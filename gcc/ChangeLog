@@ -1,3 +1,8 @@
+2001-12-18  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (rs6000_override_options): Only use DI ops when
+	TARGET_64BIT.  Fix typo.
+
 Tue Dec 18 16:39:46 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* att.h (ASM_FILE_START): Use asm_dialect.
