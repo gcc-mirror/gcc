@@ -193,7 +193,6 @@ cpp_push_buffer (pfile, buffer, length)
 
   new = (cpp_buffer *) xcalloc (1, sizeof (cpp_buffer));
 
-  new->if_stack = pfile->if_stack;
   new->buf = new->cur = buffer;
   new->rlimit = buffer + length;
   new->prev = buf;
@@ -221,7 +220,7 @@ cpp_pop_buffer (pfile)
 	pfile->system_include_depth--;
       if (pfile->potential_control_macro)
 	{
-	  buf->ihash->control_macro = pfile->potential_control_macro;
+	  buf->ihash->cmacro = pfile->potential_control_macro;
 	  pfile->potential_control_macro = 0;
 	}
       pfile->input_stack_listing_current = 0;
@@ -1743,6 +1742,7 @@ cpp_get_token (pfile)
 {
   enum cpp_ttype token;
   long written = CPP_WRITTEN (pfile);
+  int macro_buffer;
 
  get_next:
   token = _cpp_lex_token (pfile);
@@ -1750,24 +1750,26 @@ cpp_get_token (pfile)
   switch (token)
     {
     default:
+      if (pfile->skipping)
+	break;
       pfile->potential_control_macro = 0;
       pfile->only_seen_white = 0;
-      return token;
+      break;
+
+    case CPP_HSPACE:
+    case CPP_COMMENT:
+      break;
 
     case CPP_VSPACE:
       if (pfile->only_seen_white == 0)
 	pfile->only_seen_white = 1;
       CPP_BUMP_LINE (pfile);
-      return token;
-
-    case CPP_HSPACE:
-    case CPP_COMMENT:
-      return token;
+      break;
 
     case CPP_HASH:
       pfile->potential_control_macro = 0;
       if (!pfile->only_seen_white)
-	return CPP_HASH;
+	break;
       /* XXX shouldn't have to do this - remove the hash or %: from
 	 the token buffer.  */
       if (CPP_PWRITTEN (pfile)[-1] == '#')
@@ -1776,30 +1778,43 @@ cpp_get_token (pfile)
 	CPP_ADJUST_WRITTEN (pfile, -2);
 
       if (_cpp_handle_directive (pfile))
-	return CPP_DIRECTIVE; 
+	{
+	  token = CPP_DIRECTIVE;
+	  break;
+	}
       pfile->only_seen_white = 0;
       CPP_PUTC (pfile, '#');
-      return CPP_HASH;
+      break;
 
     case CPP_MACRO:
+      if (pfile->skipping)
+	break;
       pfile->potential_control_macro = 0;
       pfile->only_seen_white = 0;
       if (! pfile->no_macro_expand
 	  && maybe_macroexpand (pfile, written))
 	goto get_next;
-      return CPP_NAME;
+      token = CPP_NAME;
+      break;
 
+      /* Do not run this case through the 'skipping' logic.  */
     case CPP_EOF:
       if (CPP_BUFFER (pfile) == NULL)
 	return CPP_EOF;
-      if (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
-	{
-	  cpp_pop_buffer (pfile);
-	  goto get_next;
-	}
+      macro_buffer = CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile));
+
       cpp_pop_buffer (pfile);
+      if (macro_buffer)
+	goto get_next;
       return CPP_EOF;
     }
+  
+  if (pfile->skipping)
+    {
+      CPP_SET_WRITTEN (pfile, written);
+      goto get_next;
+    }
+  return token;
 }
 
 /* Like cpp_get_token, but skip spaces and comments.  */

@@ -39,8 +39,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #  define MMAP_THRESHOLD 0
 #endif
 
-static IHASH *redundant_include_p PARAMS ((cpp_reader *, IHASH *,
-					   struct file_name_list *));
+static IHASH *redundant_include_p PARAMS ((IHASH *, struct file_name_list *));
 static IHASH *make_IHASH	PARAMS ((const char *, const char *,
 					 struct file_name_list *,
 					 unsigned int, IHASH **));
@@ -124,8 +123,7 @@ _cpp_init_include_hash (pfile)
    the directories are in fact the same.  */
 
 static IHASH *
-redundant_include_p (pfile, ihash, ilist)
-     cpp_reader *pfile;
+redundant_include_p (ihash, ilist)
      IHASH *ihash;
      struct file_name_list *ilist;
 {
@@ -138,14 +136,14 @@ redundant_include_p (pfile, ihash, ilist)
   for (i = ihash; i; i = i->next_this_file)
     for (l = ilist; l; l = l->next)
        if (i->foundhere == l)
-	 /* The control_macro works like this: If it's NULL, the file
-	    is to be included again.  If it's "", the file is never to
-	    be included again.  If it's a string, the file is not to be
-	    included again if the string is the name of a defined macro. */
-	 return (i->control_macro
-		 && (i->control_macro[0] == '\0'
-		     || cpp_defined (pfile, i->control_macro, 
-				     ustrlen (i->control_macro))))
+	 /* The cmacro works like this: If it's NULL, the file is to
+	    be included again.  If it's NEVER_REINCLUDE, the file is
+	    never to be included again.  Otherwise it is a macro
+	    hashnode, and the file is to be included again if the
+	    macro is not defined.  */
+	 return (i->cmacro
+		 && (i->cmacro == NEVER_REINCLUDE
+		     || i->cmacro->type != T_VOID))
 	     ? (IHASH *)-1 : i;
 
   return 0;
@@ -199,7 +197,7 @@ make_IHASH (name, fname, path, hash, slot)
     }
   strcpy ((char *)ih->name, name);
   ih->foundhere = path;
-  ih->control_macro = NULL;
+  ih->cmacro = NULL;
   ih->hash = hash;
   ih->next_this_file = *slot;
   *slot = ih;
@@ -256,7 +254,7 @@ find_include_file (pfile, fname, search_start, ihash, before)
 					      (const void *) &dummy,
 					      dummy.hash, INSERT);
 
-  if (*slot && (ih = redundant_include_p (pfile, *slot, path)))
+  if (*slot && (ih = redundant_include_p (*slot, path)))
     {
       if (ih == (IHASH *)-1)
 	return -2;
@@ -629,7 +627,7 @@ _cpp_execute_include (pfile, f, len, no_reinclude, search_start)
 
   /* Actually process the file.  */
   if (no_reinclude)
-    ihash->control_macro = U"";
+    ihash->cmacro = NEVER_REINCLUDE;
   
   if (read_include_file (pfile, fd, ihash))
     {
@@ -662,7 +660,7 @@ cpp_read_file (pfile, fname)
   slot = (IHASH **) htab_find_slot_with_hash (pfile->all_include_files,
 					      (const void *) &dummy,
 					      dummy.hash, INSERT);
-  if (*slot && (ih = redundant_include_p (pfile, *slot, ABSOLUTE_PATH)))
+  if (*slot && (ih = redundant_include_p (*slot, ABSOLUTE_PATH)))
     {
       if (ih == (IHASH *) -1)
 	return 1;  /* Already included.  */
@@ -759,7 +757,7 @@ read_include_file (pfile, fd, ihash)
   fp->nominal_fname = ihash->name;
   
   if (length == 0)
-    ihash->control_macro = U"";  /* never re-include */
+    ihash->cmacro = NEVER_REINCLUDE;
   else
     /* Temporary - I hope.  */
     length = _cpp_prescan (pfile, fp, length);

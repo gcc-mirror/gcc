@@ -69,10 +69,11 @@ struct ihash
   unsigned int hash;		/* save hash value for future reference */
   const char *nshort;		/* name of file as referenced in #include;
 				   points into name[]  */
-  const U_CHAR *control_macro;	/* macro, if any, preventing reinclusion.  */
+  const cpp_hashnode *cmacro;	/* macro, if any, preventing reinclusion.  */
   const char name[1];		/* (partial) pathname of file */
 };
 typedef struct ihash IHASH;
+#define NEVER_REINCLUDE ((const cpp_hashnode *)-1)
 
 /* Character classes.
    If the definition of `numchar' looks odd to you, please look up the

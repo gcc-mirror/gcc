@@ -4,6 +4,9 @@
 
 // execution test - XFAIL *-*-*
 
+extern "C" void abort (void);
+extern "C" void exit (int);
+
 int i, j;
 
 const int &f(const int& I, const int& J) {
