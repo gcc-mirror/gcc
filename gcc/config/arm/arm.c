@@ -3023,7 +3023,8 @@ thumb_find_work_register (int live_regs_mask)
   if (!regs_ever_live[LAST_ARG_REGNUM])
     return LAST_ARG_REGNUM;
 
-  /* Look for a pushed register.  */
+  /* Look for a pushed register.  This is used before the frame pointer is
+     setup, so r7 is a candidate.  */
   for (reg = LAST_LO_REGNUM; reg >=0; reg--)
     if (live_regs_mask & (1 << reg))
       return reg;
@@ -3033,10 +3034,11 @@ thumb_find_work_register (int live_regs_mask)
 }
 
 
-/* Generate code to load the PIC register.  */
+/* Generate code to load the PIC register.  In thumb mode SCRATCH is a
+   low register.  */
 
 void
-arm_load_pic_register (void)
+arm_load_pic_register (unsigned int scratch)
 {
 #ifndef AOF_ASSEMBLER
   rtx l1, pic_tmp, pic_tmp2, pic_rtx;
@@ -3071,12 +3073,9 @@ arm_load_pic_register (void)
     {
       if (REGNO (pic_offset_table_rtx) > LAST_LO_REGNUM)
 	{
-	  int reg;
-
 	  /* We will have pushed the pic register, so should always be
 	     able to find a work register.  */
-	  reg = thumb_find_work_register (thumb_compute_save_reg_mask ());
-	  pic_tmp = gen_rtx_REG (SImode, reg);
+	  pic_tmp = gen_rtx_REG (SImode, scratch);
 	  emit_insn (gen_pic_load_addr_thumb (pic_tmp, pic_rtx));
 	  emit_insn (gen_movsi (pic_offset_table_rtx, pic_tmp));
 	}
@@ -10237,7 +10236,7 @@ arm_expand_prologue (void)
 
 
   if (flag_pic)
-    arm_load_pic_register ();
+    arm_load_pic_register (INVALID_REGNUM);
 
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  Similarly if the user has requested no
@@ -12964,10 +12963,11 @@ thumb_expand_prologue (void)
       return;
     }
 
+  live_regs_mask = thumb_compute_save_reg_mask ();
   /* Load the pic register before setting the frame pointer, so we can use r7
      as a temporary work register.  */
   if (flag_pic)
-    arm_load_pic_register ();
+    arm_load_pic_register (thumb_find_work_register (live_regs_mask));
 
   offsets = arm_get_frame_offsets ();
 
@@ -12978,7 +12978,6 @@ thumb_expand_prologue (void)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  live_regs_mask = thumb_compute_save_reg_mask ();
   amount = offsets->outgoing_args - offsets->saved_regs;
   if (amount)
     {

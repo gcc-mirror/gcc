@@ -1,3 +1,11 @@
+2004-10-13  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm-protos.h (arm_load_pic_register): Update prototype.
+	* config/arm/arm.c (thumb_find_work_register): Update comments.
+	(arm_load_pic_register): Add argument for scratch register.
+	(arm_expand_prologue, thumb_expand_prologue): Pass extra argument.
+	* config/arm/arm.md (builtin_setjmp_receiver): Ditto.
+
 2004-10-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-data-ref.c: Fix comment typos.
@@ -30,7 +38,7 @@
 	* gcse.c (remove_reachable_equiv_notes): Use ei_container().
 
 2004-10-11  Sebastian Pop  <pop@cri.ensmp.fr>
- 
+
 	* Makefile.in (tree-ssa-loop-niter.o): Depends on tree-data-ref.h.
 	* cfgloop.c (initialize_loops_parallel_p): New.
 	(flow_loops_find): Initialize the parallel_p field to true for all 
