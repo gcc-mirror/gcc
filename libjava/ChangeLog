@@ -1,3 +1,9 @@
+2003-10-01  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	Fix PR libgcj/12475
+	* gnu/gcj/runtime/StackTrace.java (finalize): Declare.
+	* gnu/gcj/runtime/natStackTrace.cc (finalize): New. Free "addrs".
+
 2003-10-01  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/runtime/FirstThread.java (getMain): Fixed indentation.

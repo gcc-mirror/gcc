@@ -157,6 +157,7 @@ public final class StackTrace
   }
   
   private native void fillInStackTrace(int n, int offset);
+  protected native void finalize();
 
   private static native MethodRef getCompiledMethodRef(RawData addr);
   private static IdentityHashMap map = new IdentityHashMap();
