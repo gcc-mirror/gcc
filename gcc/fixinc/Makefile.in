@@ -29,7 +29,7 @@ SHELL=@SHELL@
 # in the kernel.  So, we use `echo' instead. 
 STAMP = echo timestamp >
 
-FL_LIST = $(CFLAGS) $(CPPFLAGS) $(WARN_CFLAGS)
+FL_LIST = $(CFLAGS) $(CPPFLAGS) $(WARN_CFLAGS) $($@-warn)
 FIXINC_DEFS = -DIN_GCC -DHAVE_CONFIG_H $(FL_LIST) $(INCLUDES)
 
 # Directory where sources are, from where we are.
@@ -93,6 +93,11 @@ test-stamp : $(TESTOBJ) $(LIBERTY)
 
 $(AF): $(FIXOBJ) $(LIBERTY)
 	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(FIXOBJ) $(LIBERTY)
+
+# String length warnings
+fixincl.o-warn = -Wno-error
+# Signed/Unsigned warnings, but in code pulled from upstream.
+gnu-regex.o-warn = -Wno-error
 
 $(ALLOBJ)   : $(HDR)
 fixincl.o   : fixincl.c  $(srcdir)/fixincl.x

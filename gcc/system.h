@@ -99,6 +99,11 @@ extern int fprintf_unlocked PARAMS ((FILE *, const char *, ...));
 
 #endif
 
+/* ??? Glibc's fwrite/fread_unlocked macros cause 
+   "warning: signed and unsigned type in conditional expression".  */
+#undef fread_unlocked
+#undef fwrite_unlocked
+
 /* There are an extraordinary number of issues with <ctype.h>.
    The last straw is that it varies with the locale.  Use libiberty's
    replacement instead.  */
