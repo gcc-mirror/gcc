@@ -1,3 +1,7 @@
+2000-06-25  John David Anglin  <dave.anglin@nrc.ca>
+
+        * config/vax/vax.h (TARGET_SWITCHES): Provide descriptions.
+
 2000-06-25 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* mklibgcc.in: Prefer LIB1ASMFUNCS over LIB2FUNCS when generating
