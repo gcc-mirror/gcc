@@ -1,3 +1,11 @@
+Tue Jun 18 20:00:37 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh-protos.h (sh_pr_interrupt): Declare.
+	* sh.c (sh_pr_interrupt): New function.
+	(print_operand, calc_live_regs, sh_expand_prologue): Use it.
+	(sh_hard_regno_rename_ok): Likewise.
+	* sh.h (NORMAL_MODE): FP_MODE_NONE for interupt handlers.
+
 2002-06-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* rtl.def (DEFINE_AUTOMATON): Add description of new options

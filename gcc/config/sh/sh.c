@@ -341,25 +341,13 @@ print_operand (stream, x, code)
       fprintf (stream, "%s", LOCAL_LABEL_PREFIX);
       break;
     case '@':
-      {
-	int interrupt_handler;
-
-	if ((lookup_attribute
-	     ("interrupt_handler",
-	      DECL_ATTRIBUTES (current_function_decl)))
-	    != NULL_TREE)
-	  interrupt_handler = 1;
-	else
-	  interrupt_handler = 0;
-	
       if (trap_exit)
 	fprintf (stream, "trapa #%d", trap_exit);
-      else if (interrupt_handler)
+      else if (sh_cfun_interrupt_handler_p ())
 	fprintf (stream, "rte");
       else
 	fprintf (stream, "rts");
       break;
-      }
     case '#':
       /* Output a nop if there's nothing in the delay slot.  */
       if (dbr_sequence_length () == 0)
@@ -4364,13 +4352,7 @@ calc_live_regs (count_ptr, live_regs_mask)
   int interrupt_handler;
   int pr_live;
 
-  if ((lookup_attribute
-       ("interrupt_handler",
-	DECL_ATTRIBUTES (current_function_decl)))
-      != NULL_TREE)
-    interrupt_handler = 1;
-  else
-    interrupt_handler = 0;
+  interrupt_handler = sh_cfun_interrupt_handler_p ();
 
   for (count = 0; 32 * count < FIRST_PSEUDO_REGISTER; count++)
     live_regs_mask[count] = 0;
@@ -4489,10 +4471,7 @@ sh_expand_prologue ()
   int d_rounding = 0;
   int save_flags = target_flags;
 
-  current_function_interrupt
-    = lookup_attribute ("interrupt_handler",
-			DECL_ATTRIBUTES (current_function_decl))
-    != NULL_TREE;
+  current_function_interrupt = sh_cfun_interrupt_handler_p ();
 
   /* We have pretend args if we had an object sent partially in registers
      and partially on the stack, e.g. a large structure.  */
@@ -5747,6 +5726,13 @@ sh_handle_trap_exit_attribute (node, name, args, flags, no_add_attrs)
   return NULL_TREE;
 }
 
+int
+sh_cfun_interrupt_handler_p (void)
+{
+  return (lookup_attribute ("interrupt_handler",
+			    DECL_ATTRIBUTES (current_function_decl))
+	  != NULL_TREE);
+}
 
 /* Predicates used by the templates.  */
 
@@ -6712,10 +6698,7 @@ sh_hard_regno_rename_ok (old_reg, new_reg)
    saved by the prologue, even if they would normally be
    call-clobbered.  */
 
-   if ((lookup_attribute ("interrupt_handler",
-			  DECL_ATTRIBUTES (current_function_decl))
-	!= NULL_TREE)
-       && !regs_ever_live[new_reg])
+  if (sh_cfun_interrupt_handler_p () && !regs_ever_live[new_reg])
      return 0;
 
    return 1;
