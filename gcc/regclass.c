@@ -1539,6 +1539,32 @@ record_address_regs (x, class, scale)
 	else if (code1 == SYMBOL_REF || code1 == CONST || code1 == LABEL_REF)
 	  record_address_regs (arg0, INDEX_REG_CLASS, scale);
 
+	/* Look for the sum of two registers where the first is definitely
+	   a base register or the second is definitely an index register. */
+
+	else if (code0 == REG && code1 == REG
+		 && ((REGNO (arg0) < FIRST_PSEUDO_REGISTER 
+		      && REG_OK_FOR_BASE_P (arg0))
+		     || ((REGNO (arg1) < FIRST_PSEUDO_REGISTER 
+			  && REG_OK_FOR_INDEX_P (arg1)))))
+	  {
+	    record_address_regs (arg0, BASE_REG_CLASS, scale);
+	    record_address_regs (arg1, INDEX_REG_CLASS, scale);
+	  }
+
+	/* Look for the sum of two registers where the first is definitely
+	   an index register or the second is definitely a base register. */
+
+	else if (code0 == REG && code1 == REG
+		 && ((REGNO (arg1) < FIRST_PSEUDO_REGISTER 
+		      && REG_OK_FOR_BASE_P (arg1))
+		     || ((REGNO (arg0) < FIRST_PSEUDO_REGISTER 
+			  && REG_OK_FOR_INDEX_P (arg0)))))
+	  {
+	    record_address_regs (arg0, INDEX_REG_CLASS, scale);
+	    record_address_regs (arg1, BASE_REG_CLASS, scale);
+	  }
+
 	/* If this the sum of two registers where the first is known to be a 
 	   pointer, it must be a base register with the second an index.  */
 
