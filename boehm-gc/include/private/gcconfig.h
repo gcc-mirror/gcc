@@ -38,6 +38,11 @@
 #    define OPENBSD
 # endif
 
+/* And one for FreeBSD: */
+# if defined(__FreeBSD__)
+#    define FREEBSD
+# endif
+
 /* Determine the machine type: */
 # if defined(__XSCALE__)
 #    define ARM32
@@ -214,7 +219,7 @@
 # endif
 # if defined(__alpha) || defined(__alpha__)
 #   define ALPHA
-#   if !defined(LINUX) && !defined(NETBSD) && !defined(OPENBSD)
+#   if !defined(LINUX) && !defined(NETBSD) && !defined(OPENBSD) && !defined(FREEBSD)
 #     define OSF1	/* a.k.a Digital Unix */
 #   endif
 #   define mach_type_known
@@ -262,9 +267,8 @@
 #   define OPENBSD
 #   define mach_type_known
 # endif
-# if defined(__FreeBSD__) && (defined(i386) || defined(__i386__))
+# if defined(FREEBSD) && (defined(i386) || defined(__i386__))
 #   define I386
-#   define FREEBSD
 #   define mach_type_known
 # endif
 # if defined(__NetBSD__) && (defined(i386) || defined(__i386__))
@@ -1329,6 +1333,26 @@
 #       else		/* ECOFF, until OpenBSD/Alpha 2.7 */
 #   	   define DATASTART ((ptr_t) 0x140000000)
 #   	endif
+#   endif
+#   ifdef FREEBSD
+#	define OS_TYPE "FREEBSD"
+/* MPROTECT_VDB is not yet supported at all on FreeBSD/alpha. */
+#	define SIG_SUSPEND SIGUSR1
+#	define SIG_THR_RESTART SIGUSR2
+#	define FREEBSD_STACKBOTTOM
+#	ifdef __ELF__
+#	    define DYNAMIC_LOADING
+#	endif
+/* Handle unmapped hole alpha*-*-freebsd[45]* puts between etext and edata. */
+	extern char etext;
+	extern char edata;
+	extern char end;
+#	define NEED_FIND_LIMIT
+#	define DATASTART ((ptr_t)(&etext))
+#	define DATAEND (GC_find_limit (DATASTART, TRUE))
+#	define DATASTART2 ((ptr_t)(&edata))
+#	define DATAEND2 ((ptr_t)(&end))
+#	define CPP_WORDSZ 64
 #   endif
 #   ifdef OSF1
 #	define OS_TYPE "OSF1"
