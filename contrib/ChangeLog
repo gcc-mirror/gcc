@@ -1,3 +1,7 @@
+Fri Oct 16 07:35:00 1998  Bruce Korb <korb@datadesign.com>
+
+	* egcs_update:  Added gcc/fixinc/* generated files to touch list.
+
 Tue Oct 13 23:28:33 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* egcs_update: Remove gcc/java/parse.c from list of files to
