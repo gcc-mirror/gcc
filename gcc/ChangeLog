@@ -1,3 +1,8 @@
+2002-09-11  Alexander Kabaev  <kan@FreeBSD.ORG>
+
+	Wed Apr 24 13:48:25 CEST 2002  Jan Hubicka  <jh@suse.cz>
+	* loop.c (canonicalize_condition): Use gen_int_mode.
+
 2002-09-08  Alan Modra  <amodra@bigpond.net.au>
 
 	* reload.c (find_reloads <p constraint>): Pass operand_mode to
