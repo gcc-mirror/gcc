@@ -111,6 +111,10 @@ Boston, MA 02111-1307, USA.  */
 #undef HARD_FRAME_POINTER_REGNUM
 #define HARD_FRAME_POINTER_REGNUM 29
 
+/* Define registers used by the epilogue and return instruction.  */
+#undef EPILOGUE_USES
+#define EPILOGUE_USES(REGNO)    ((REGNO) == 26 || (REGNO) == 29)
+
 #undef CAN_ELIMINATE
 #define CAN_ELIMINATE(FROM, TO)  \
 ((TO) != STACK_POINTER_REGNUM || ! alpha_using_fp ())
