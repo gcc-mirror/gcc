@@ -1,13 +1,4 @@
-#ifdef DBG
-#include <stdio.h>
-#define DEBUG_FPUTS(x) fputs (x, stdout)
-#define DEBUG_DOT putc ('.', stdout)
-#define DEBUG_NL putc ('\n', stdout)
-#else
-#define DEBUG_FPUTS(x)
-#define DEBUG_DOT
-#define DEBUG_NL
-#endif
+#include "compat-common.h"
 
 #define T(NAME, TYPE, INITVAL) 					\
 TYPE g01##NAME, g02##NAME, g03##NAME, g04##NAME;		\
@@ -28,10 +19,7 @@ void								\
 check##NAME (TYPE x, TYPE v)					\
 {								\
   if (x != v + INITVAL)						\
-    {								\
-      DEBUG_NL;							\
-      abort ();							\
-    }								\
+    DEBUG_CHECK							\
 }								\
 								\
 void								\
@@ -48,6 +36,7 @@ void								\
 testit##NAME (void)						\
 {								\
   DEBUG_FPUTS (#NAME);						\
+  DEBUG_FPUTS (" init: ");					\
   init##NAME (&g01##NAME,  1);					\
   init##NAME (&g02##NAME,  2);					\
   init##NAME (&g03##NAME,  3);					\
@@ -65,75 +54,95 @@ testit##NAME (void)						\
   init##NAME (&g15##NAME, 15);					\
   init##NAME (&g16##NAME, 16);					\
   checkg##NAME ();						\
-  DEBUG_FPUTS (" test");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME);						\
+  DEBUG_FPUTS (" test: ");					\
   test##NAME (g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 	      g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
 	      g09##NAME, g10##NAME, g11##NAME, g12##NAME,	\
 	      g13##NAME, g14##NAME, g15##NAME, g16##NAME);	\
-  DEBUG_FPUTS (" testva");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME);						\
+  DEBUG_FPUTS (" testva:");					\
+  DEBUG_NL;							\
   testva##NAME (1,						\
 		g01##NAME);					\
+  DEBUG_NL;							\
   testva##NAME (2,						\
 		g01##NAME, g02##NAME);				\
+  DEBUG_NL;							\
   testva##NAME (3,						\
 		g01##NAME, g02##NAME, g03##NAME);		\
+  DEBUG_NL;							\
   testva##NAME (4,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME);	\
+  DEBUG_NL;							\
   testva##NAME (5,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 		g05##NAME);					\
+  DEBUG_NL;							\
   testva##NAME (6,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 		g05##NAME, g06##NAME);				\
+  DEBUG_NL;							\
   testva##NAME (7,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 		g05##NAME, g06##NAME, g07##NAME);		\
+  DEBUG_NL;							\
   testva##NAME (8,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 		g05##NAME, g06##NAME, g07##NAME, g08##NAME);	\
+  DEBUG_NL;							\
   testva##NAME (9,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
 		g09##NAME);					\
+  DEBUG_NL;							\
   testva##NAME (10,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
 		g09##NAME, g10##NAME);				\
+  DEBUG_NL;							\
   testva##NAME (11,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
 		g09##NAME, g10##NAME, g11##NAME);		\
+  DEBUG_NL;							\
   testva##NAME (12,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
 		g09##NAME, g10##NAME, g11##NAME, g12##NAME);	\
+  DEBUG_NL;							\
   testva##NAME (13,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
 		g09##NAME, g10##NAME, g11##NAME, g12##NAME,	\
 		g13##NAME);					\
+  DEBUG_NL;							\
   testva##NAME (14,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
 		g09##NAME, g10##NAME, g11##NAME, g12##NAME,	\
 		g13##NAME, g14##NAME);				\
+  DEBUG_NL;							\
   testva##NAME (15,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
 		g09##NAME, g10##NAME, g11##NAME, g12##NAME,	\
 		g13##NAME, g14##NAME, g15##NAME);		\
+  DEBUG_NL;							\
   testva##NAME (16,						\
 		g01##NAME, g02##NAME, g03##NAME, g04##NAME,	\
 		g05##NAME, g06##NAME, g07##NAME, g08##NAME,	\
 		g09##NAME, g10##NAME, g11##NAME, g12##NAME,	\
 		g13##NAME, g14##NAME, g15##NAME, g16##NAME);	\
-  DEBUG_FPUTS (" test2");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME);						\
+  DEBUG_FPUTS (" test2: ");					\
   test2_##NAME (g01##NAME, g03##NAME, g05##NAME, g07##NAME,	\
 		g09##NAME, g11##NAME, g13##NAME, g15##NAME);	\
   DEBUG_NL;							\
 }
-
-extern void abort (void);
 
 T(ui, unsigned int, 51)
 T(si, int, (-55))
@@ -159,6 +168,9 @@ T(ull)
 T(sll)
 T(d)
 T(ld)
+
+if (fails != 0)
+  abort ();
 
 #undef T
 }

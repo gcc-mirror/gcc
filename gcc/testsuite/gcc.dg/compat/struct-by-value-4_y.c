@@ -1,15 +1,6 @@
 #include <stdarg.h>
 
-#ifdef DBG
-#include <stdio.h>
-#define DEBUG_FPUTS(x) fputs (x, stdout)
-#define DEBUG_DOT putc ('.', stdout)
-#define DEBUG_NL putc ('\n', stdout)
-#else
-#define DEBUG_FPUTS(x)
-#define DEBUG_DOT
-#define DEBUG_NL
-#endif
+#include "compat-common.h"
 
 /* Turn off checking for variable arguments with -DSKIPVA.  */
 #ifdef SKIPVA
@@ -81,37 +72,21 @@ test##TYPE##N (struct S##TYPE##N s1, struct S##TYPE##N s2,	\
 	       struct S##TYPE##N s13, struct S##TYPE##N s14,	\
 	       struct S##TYPE##N s15, struct S##TYPE##N s16)	\
 {								\
-  DEBUG_DOT;							\
   check##TYPE##N (&s1, 1*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s2, 2*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s3, 3*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s4, 4*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s5, 5*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s6, 6*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s7, 7*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s8, 8*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s9, 9*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s10, 10*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s11, 11*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s12, 12*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s13, 13*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s14, 14*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s15, 15*16);					\
-  DEBUG_DOT;							\
   check##TYPE##N (&s16, 16*16);					\
 }								\
 								\
@@ -126,7 +101,6 @@ testva##TYPE##N (int n, ...)					\
       for (i = 0; i < n; i++)					\
 	{							\
 	  struct S##TYPE##N t = va_arg (ap, struct S##TYPE##N);	\
-	  DEBUG_DOT;						\
 	  check##TYPE##N (&t, (i+1)*16);			\
 	}							\
       va_end (ap);						\

@@ -1,12 +1,10 @@
-#ifdef DBG
-#include <stdio.h>
-#define DEBUG_FPUTS(x) fputs (x, stdout)
-#define DEBUG_DOT putc ('.', stdout)
-#define DEBUG_NL putc ('\n', stdout)
+#include "compat-common.h"
+
+/* Turn off checking for variable arguments with -DSKIPVA.  */
+#ifdef SKIPVA
+const int test_va = 0;
 #else
-#define DEBUG_FPUTS(x)
-#define DEBUG_DOT
-#define DEBUG_NL
+const int test_va = 1;
 #endif
 
 #define T(TYPE)							\
@@ -26,6 +24,7 @@ testit##TYPE (void)						\
 {								\
   TYPE rslt;							\
   DEBUG_FPUTS (#TYPE);						\
+  DEBUG_FPUTS (" init: ");					\
   init##TYPE  (&g01##TYPE,  1);					\
   init##TYPE  (&g02##TYPE,  2);					\
   init##TYPE  (&g03##TYPE,  3);					\
@@ -43,38 +42,45 @@ testit##TYPE (void)						\
   init##TYPE  (&g15##TYPE, 15);					\
   init##TYPE  (&g16##TYPE, 16);					\
   checkg##TYPE ();						\
-  DEBUG_FPUTS (" test0");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#TYPE);						\
+  DEBUG_FPUTS (" test0: ");					\
   rslt = test0##TYPE ();					\
   check##TYPE (rslt, 1);					\
-  DEBUG_FPUTS (" test1");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#TYPE);						\
+  DEBUG_FPUTS (" test1: ");					\
   rslt = test1##TYPE (g01##TYPE);				\
   check##TYPE (rslt, 1);					\
-  DEBUG_FPUTS (" testva");					\
-  rslt = testva##TYPE (1, g01##TYPE);				\
-  check##TYPE (rslt, 1);					\
-  rslt = testva##TYPE (5, g01##TYPE, g02##TYPE,			\
-			  g03##TYPE, g04##TYPE,			\
-			  g05##TYPE);				\
-  check##TYPE (rslt, 5);					\
-  rslt = testva##TYPE (9, g01##TYPE, g02##TYPE,			\
-			  g03##TYPE, g04##TYPE,			\
-			  g05##TYPE, g06##TYPE,			\
-			  g07##TYPE, g08##TYPE,			\
-			  g09##TYPE);				\
-  check##TYPE (rslt, 9);					\
-  rslt = testva##TYPE (16, g01##TYPE, g02##TYPE,		\
-			  g03##TYPE, g04##TYPE,			\
-			  g05##TYPE, g06##TYPE,			\
-			  g07##TYPE, g08##TYPE,			\
-			  g09##TYPE, g10##TYPE,			\
-			  g11##TYPE, g12##TYPE,			\
-			  g13##TYPE, g14##TYPE,			\
-			  g15##TYPE, g16##TYPE);		\
-  check##TYPE (rslt, 16);					\
+  if (test_va)							\
+    {								\
+      DEBUG_NL;							\
+      DEBUG_FPUTS (#TYPE);					\
+      DEBUG_FPUTS (" testva: ");				\
+      rslt = testva##TYPE (1, g01##TYPE);			\
+      check##TYPE (rslt, 1);					\
+      rslt = testva##TYPE (5, g01##TYPE, g02##TYPE,		\
+			   g03##TYPE, g04##TYPE,		\
+			   g05##TYPE);				\
+      check##TYPE (rslt, 5);					\
+      rslt = testva##TYPE (9, g01##TYPE, g02##TYPE,		\
+			   g03##TYPE, g04##TYPE,		\
+			   g05##TYPE, g06##TYPE,		\
+			   g07##TYPE, g08##TYPE,		\
+			   g09##TYPE);				\
+      check##TYPE (rslt, 9);					\
+      rslt = testva##TYPE (16, g01##TYPE, g02##TYPE,		\
+			   g03##TYPE, g04##TYPE,		\
+			   g05##TYPE, g06##TYPE,		\
+			   g07##TYPE, g08##TYPE,		\
+			   g09##TYPE, g10##TYPE,		\
+			   g11##TYPE, g12##TYPE,		\
+			   g13##TYPE, g14##TYPE,		\
+			   g15##TYPE, g16##TYPE);		\
+      check##TYPE (rslt, 16);					\
+    }								\
   DEBUG_NL;							\
 }
-
-extern void abort (void);
 
 #include "small-struct-defs.h"
 #include "small-struct-check.h"
@@ -117,6 +123,9 @@ T(Ssci)
 T(Ssic)
 T(Sisc)
 T(Sics)
+
+if (fails != 0)
+  abort ();
 
 #undef T
 }

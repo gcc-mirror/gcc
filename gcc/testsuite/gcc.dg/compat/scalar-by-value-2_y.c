@@ -1,15 +1,6 @@
 #include <stdarg.h>
 
-#ifndef DBG
-#include <stdio.h>
-#define DEBUG_FPUTS(x) fputs (x, stdout)
-#define DEBUG_DOT putc ('.', stdout)
-#define DEBUG_NL putc ('\n', stdout)
-#else
-#define DEBUG_FPUTS(x)
-#define DEBUG_DOT
-#define DEBUG_NL
-#endif
+#include "compat-common.h"
 
 #define T(NAME, TYPE, INITVAL)					\
 extern TYPE g01##NAME, g02##NAME, g03##NAME, g04##NAME;		\

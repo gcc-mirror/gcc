@@ -1,13 +1,4 @@
-#ifdef DBG
-#include <stdio.h>
-#define DEBUG_FPUTS(x) fputs (x, stdout)
-#define DEBUG_DOT putc ('.', stdout)
-#define DEBUG_NL putc ('\n', stdout)
-#else
-#define DEBUG_FPUTS(x)
-#define DEBUG_DOT
-#define DEBUG_NL
-#endif
+#include "compat-common.h"
 
 #define T(N, NAME, TYPE)					\
 struct S##NAME##N { TYPE i[N]; };				\
@@ -44,10 +35,7 @@ check##NAME##N (struct S##NAME##N *p, int i)			\
   int j;							\
   for (j = 0; j < N; j++)					\
     if (p->i[j] != (TYPE) (i + j))				\
-      {								\
-	DEBUG_NL;						\
-	abort ();						\
-      }								\
+      DEBUG_CHECK						\
 }								\
 								\
 void								\
@@ -66,6 +54,7 @@ void								\
 testit##NAME##N (void)						\
 {								\
   DEBUG_FPUTS (#NAME "[" #N "]");				\
+  DEBUG_FPUTS (" init: ");					\
   init##NAME##N  ( &g1s##NAME##N,  1*16);			\
   init##NAME##N  ( &g2s##NAME##N,  2*16);			\
   init##NAME##N  ( &g3s##NAME##N,  3*16);			\
@@ -83,7 +72,9 @@ testit##NAME##N (void)						\
   init##NAME##N  (&g15s##NAME##N, 15*16);			\
   init##NAME##N  (&g16s##NAME##N, 16*16);			\
   checkg##NAME##N ();						\
-  DEBUG_FPUTS (" test");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME "[" #N "]");				\
+  DEBUG_FPUTS (" test: ");					\
   test##NAME##N (g1s##NAME##N, g2s##NAME##N,			\
 		 g3s##NAME##N, g4s##NAME##N,			\
 		 g5s##NAME##N, g6s##NAME##N,			\
@@ -92,7 +83,9 @@ testit##NAME##N (void)						\
 		 g11s##NAME##N, g12s##NAME##N,			\
 		 g13s##NAME##N, g14s##NAME##N,			\
 		 g15s##NAME##N, g16s##NAME##N);			\
-  DEBUG_FPUTS (" testva");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME "[" #N "]");				\
+  DEBUG_FPUTS (" testva:");					\
   testva##NAME##N (16,						\
 		   g1s##NAME##N, g2s##NAME##N,			\
 		   g3s##NAME##N, g4s##NAME##N,			\
@@ -102,15 +95,15 @@ testit##NAME##N (void)						\
 		   g11s##NAME##N, g12s##NAME##N,		\
 		   g13s##NAME##N, g14s##NAME##N,		\
 		   g15s##NAME##N, g16s##NAME##N);		\
-  DEBUG_FPUTS (" test2");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME "[" #N "]");				\
+  DEBUG_FPUTS (" test2: ");					\
   test2_##NAME##N (g1s##NAME##N, g3s##NAME##N,			\
 		   g5s##NAME##N, g7s##NAME##N,			\
 		   g9s##NAME##N, g11s##NAME##N,			\
 		   g13s##NAME##N, g15s##NAME##N);		\
   DEBUG_NL;							\
 }
-
-extern void abort (void);
 
 T(0, uc, unsigned char)
 T(1, uc, unsigned char)
@@ -216,6 +209,9 @@ T(12, ui, unsigned int)
 T(13, ui, unsigned int)
 T(14, ui, unsigned int)
 T(15, ui, unsigned int)
+
+if (fails != 0)
+  abort ();
 
 #undef T
 }

@@ -1,12 +1,10 @@
-#ifdef DBG
-#include <stdio.h>
-#define DEBUG_FPUTS(x) fputs (x, stdout)
-#define DEBUG_DOT putc ('.', stdout)
-#define DEBUG_NL putc ('\n', stdout)
+#include "compat-common.h"
+
+/* Turn off checking for variable arguments with -DSKIPVA.  */
+#ifdef SKIPVA
+const int test_va = 0;
 #else
-#define DEBUG_FPUTS(x)
-#define DEBUG_DOT
-#define DEBUG_NL
+const int test_va = 1;
 #endif
 
 #define T(NAME, TYPE, INITVAL) 					\
@@ -25,10 +23,7 @@ void								\
 check##NAME (TYPE x, TYPE v)					\
 {								\
   if (x != v)							\
-    {								\
-      DEBUG_NL;							\
-      abort ();							\
-    }								\
+    DEBUG_CHECK							\
 }								\
 								\
 void								\
@@ -36,6 +31,7 @@ testit##NAME (void)						\
 {								\
   TYPE rslt;							\
   DEBUG_FPUTS (#NAME);						\
+  DEBUG_FPUTS (" init: ");					\
   init##NAME (&g01##NAME,  1);					\
   init##NAME (&g02##NAME,  2);					\
   init##NAME (&g03##NAME,  3);					\
@@ -53,33 +49,40 @@ testit##NAME (void)						\
   init##NAME (&g15##NAME, 15);					\
   init##NAME (&g16##NAME, 16);					\
   checkg##NAME ();						\
-  DEBUG_FPUTS (" test0");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME);						\
+  DEBUG_FPUTS (" test0: ");					\
   rslt = test0##NAME ();					\
   check##NAME (rslt, g01##NAME);				\
-  DEBUG_FPUTS (" test1");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME);						\
+  DEBUG_FPUTS (" test1: ");					\
   rslt = test1##NAME (g01##NAME);				\
   check##NAME (rslt, g01##NAME);				\
-  DEBUG_FPUTS (" testva");					\
-  rslt = testva##NAME (1, g01##NAME);				\
-  check##NAME (rslt, g01##NAME);				\
-  rslt = testva##NAME (5, g01##NAME, g02##NAME, g03##NAME,	\
-		       g04##NAME, g05##NAME);			\
-  check##NAME (rslt, g05##NAME);				\
-  rslt = testva##NAME (9, g01##NAME, g02##NAME, g03##NAME,	\
-		       g04##NAME, g05##NAME, g06##NAME,		\
-		       g07##NAME, g08##NAME, g09##NAME);	\
-  check##NAME (rslt, g09##NAME);				\
-  rslt = testva##NAME (16, g01##NAME, g02##NAME, g03##NAME,	\
-		       g04##NAME, g05##NAME, g06##NAME,		\
-		       g07##NAME, g08##NAME, g09##NAME,		\
-		       g10##NAME, g11##NAME, g12##NAME,		\
-		       g13##NAME, g14##NAME, g15##NAME,		\
-		       g16##NAME);				\
-  check##NAME (rslt, g16##NAME);				\
+  if (test_va)							\
+    {								\
+      DEBUG_NL;							\
+      DEBUG_FPUTS (#NAME);					\
+      DEBUG_FPUTS (" testva:");					\
+      rslt = testva##NAME (1, g01##NAME);			\
+      check##NAME (rslt, g01##NAME);				\
+      rslt = testva##NAME (5, g01##NAME, g02##NAME, g03##NAME,	\
+			   g04##NAME, g05##NAME);		\
+      check##NAME (rslt, g05##NAME);				\
+      rslt = testva##NAME (9, g01##NAME, g02##NAME, g03##NAME,	\
+			   g04##NAME, g05##NAME, g06##NAME,	\
+			   g07##NAME, g08##NAME, g09##NAME);	\
+      check##NAME (rslt, g09##NAME);				\
+      rslt = testva##NAME (16, g01##NAME, g02##NAME, g03##NAME,	\
+			   g04##NAME, g05##NAME, g06##NAME,	\
+			   g07##NAME, g08##NAME, g09##NAME,	\
+			   g10##NAME, g11##NAME, g12##NAME,	\
+			   g13##NAME, g14##NAME, g15##NAME,	\
+			   g16##NAME);				\
+      check##NAME (rslt, g16##NAME);				\
+    }								\
   DEBUG_NL;							\
 }
-
-extern void abort (void);
 
 T(ui, unsigned int, 51)
 T(si, int, (-55))
@@ -105,6 +108,9 @@ T(ull)
 T(sll)
 T(d)
 T(ld)
+
+if (fails != 0)
+  abort ();
 
 #undef T
 }

@@ -1,13 +1,4 @@
-#ifdef DBG
-#include <stdio.h>
-#define DEBUG_FPUTS(x) fputs (x, stdout)
-#define DEBUG_DOT putc ('.', stdout)
-#define DEBUG_NL putc ('\n', stdout)
-#else
-#define DEBUG_FPUTS(x)
-#define DEBUG_DOT
-#define DEBUG_NL
-#endif
+#include "compat-common.h"
 
 #define T(NAME, TYPE, INITVAL) 					\
 TYPE g01##NAME, g02##NAME, g03##NAME, g04##NAME;		\
@@ -24,10 +15,7 @@ void								\
 check##NAME (TYPE x, TYPE v)					\
 {								\
   if (x != v)							\
-    {								\
-      DEBUG_NL;							\
-      abort ();							\
-    }								\
+    DEBUG_CHECK							\
 }								\
 								\
 void								\
@@ -35,6 +23,7 @@ testit##NAME (void)						\
 {								\
   TYPE rslt;							\
   DEBUG_FPUTS (#NAME);						\
+  DEBUG_FPUTS (" init: ");					\
   init##NAME (&g01##NAME,  1);					\
   init##NAME (&g02##NAME,  2);					\
   init##NAME (&g03##NAME,  3);					\
@@ -52,16 +41,18 @@ testit##NAME (void)						\
   init##NAME (&g15##NAME, 15);					\
   init##NAME (&g16##NAME, 16);					\
   checkg##NAME ();						\
-  DEBUG_FPUTS (" test0");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME);						\
+  DEBUG_FPUTS (" test0: ");					\
   rslt = test0##NAME ();					\
   check##NAME (rslt, g01##NAME);				\
-  DEBUG_FPUTS (" test1");					\
+  DEBUG_NL;							\
+  DEBUG_FPUTS (#NAME);						\
+  DEBUG_FPUTS (" test1: ");					\
   rslt = test1##NAME (g01##NAME);				\
   check##NAME (rslt, g01##NAME);				\
   DEBUG_NL;							\
 }
-
-extern void abort (void);
 
 T(c, char, 21)
 T(uc, unsigned char, 22)
@@ -83,6 +74,9 @@ T(sc)
 T(us)
 T(ss)
 T(f)
+
+if (fails != 0)
+  abort ();
 
 #undef T
 }
