@@ -55,7 +55,7 @@ modename="$progname"
 PROGRAM=ltmain.sh
 PACKAGE=libtool
 VERSION=1.4a
-TIMESTAMP=" (1.641.2.111 2000/09/05 10:29:18)"
+TIMESTAMP=" (1.641.2.122 2000/09/30 05:27:52)"
 
 default_mode=
 help="Try \`$progname --help' for more information."
@@ -545,7 +545,7 @@ if test -z "$show_help"; then
 
     # On Cygwin there's no "real" PIC flag so we must build both object types
     case "$host_os" in
-    cygwin* | mingw* | os2*)
+    cygwin* | mingw* | pw32* | os2*)
       pic_mode=default
       ;;
     esac
@@ -557,7 +557,7 @@ if test -z "$show_help"; then
     # Calculate the filename of the output object if compiler does
     # not support -o with -c
     if test "$compiler_c_o" = no; then
-      output_obj=`$echo "X$srcfile" | $Xsed -e 's%^.*/%%' -e 's%\..*$%%'`.${objext}
+      output_obj=`$echo "X$srcfile" | $Xsed -e 's%^.*/%%' -e 's%\.[^.]*$%%'`.${objext}
       lockfile="$output_obj.lock"
       removelist="$removelist $output_obj $lockfile"
       trap "$run $rm $removelist; exit 1" 1 2 15
@@ -778,7 +778,7 @@ EOF
   link | relink)
     modename="$modename: link"
     case "$host" in
-    *-*-cygwin* | *-*-mingw* | *-*-os2*)
+    *-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2*)
       # It is impossible to link a dll without this setting, and
       # we shouldn't force the makefile maintainer to figure out
       # which system we are compiling for in order to pass an extra
@@ -1080,7 +1080,7 @@ EOF
 	  ;;
 	esac
 	case "$host" in
-	*-*-cygwin* | *-*-mingw* | *-*-os2*)
+	*-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2*)
 	  case ":$dllsearchpath:" in
 	  *":$dir:"*) ;;
 	  *) dllsearchpath="$dllsearchpath:$dir";;
@@ -1093,14 +1093,14 @@ EOF
       -l*)
 	if test "$arg" = "-lc"; then
 	  case "$host" in
-	  *-*-cygwin* | *-*-mingw* | *-*-os2* | *-*-beos*)
+	  *-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2* | *-*-beos*)
 	    # These systems don't actually have c library (as such)
 	    continue
 	    ;;
 	  esac
 	elif test "$arg" = "-lm"; then
 	  case "$host" in
-	  *-*-cygwin* | *-*-beos*)
+	  *-*-cygwin* | *-*-pw32* | *-*-beos*)
 	    # These systems don't actually have math library (as such)
 	    continue
 	    ;;
@@ -1122,7 +1122,7 @@ EOF
 
       -no-install)
 	case "$host" in
-	*-*-cygwin* | *-*-mingw* | *-*-os2*)
+	*-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2*)
 	  # The PATH hackery in wrapper scripts is required on Windows
 	  # in order for the loader to find any dlls it needs.
 	  $echo "$modename: warning: \`-no-install' is ignored for $host" 1>&2
@@ -2481,10 +2481,10 @@ EOF
 	  ;;
 
 	windows)
-	  # Like Linux, but with '-' rather than '.', since we only
-	  # want one extension on Windows 95.
+	  # Use '-' rather than '.', since we only want one
+	  # extension on DOS 8.3 filesystems.
 	  major=`expr $current - $age`
-	  versuffix="-$major-$age-$revision"
+	  versuffix="-$major"
 	  ;;
 
 	*)
@@ -2599,7 +2599,7 @@ EOF
       if test "$build_libtool_libs" = yes; then
 	if test -n "$rpath"; then
 	  case "$host" in
-	  *-*-cygwin* | *-*-mingw* | *-*-os2* | *-*-beos*)
+	  *-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2* | *-*-beos*)
 	    # these systems don't actually have a c library (as such)!
 	    ;;
 	  *)
@@ -3251,7 +3251,7 @@ EOF
 	  esac
 	fi
 	case "$host" in
-	*-*-cygwin* | *-*-mingw* | *-*-os2*)
+	*-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2*)
 	  case ":$dllsearchpath:" in
 	  *":$libdir:"*) ;;
 	  *) dllsearchpath="$dllsearchpath:$libdir";;
@@ -3785,7 +3785,7 @@ else
 	case $host in
 	# win32 systems need to use the prog path for dll
 	# lookup to work
-	*-*-cygwin*)
+	*-*-cygwin* | *-*-pw32*)
 	  $echo >> $output "\
       exec \$progdir/\$program \${1+\"\$@\"}
 "
