@@ -1,3 +1,8 @@
+Fri Apr 21 18:30:00 2000  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.h (REGISTER_MOVE_COST): Provide more
+	accurate data about SP moves.
+
 Fri Apr 21 18:28:28 2000  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.h (ADDITIONAL_REGISTER_NAMES): Added

@@ -816,7 +816,15 @@ struct cum_arg {int nbytes; };
 
 #define REGISTER_MOVE_COST(CLASS1, CLASS2) \
   ((CLASS1 == CLASS2 && (CLASS1 == ADDRESS_REGS || CLASS1 == DATA_REGS)) ? 2 :\
-   CLASS1 == CLASS2 && CLASS1 == EXTENDED_REGS ? 6 : 4)
+   ((CLASS1 == ADDRESS_REGS || CLASS1 == DATA_REGS) && \
+    (CLASS2 == ADDRESS_REGS || CLASS2 == DATA_REGS)) ? 4 : \
+   (CLASS1 == SP_REGS && CLASS2 == ADDRESS_REGS) ? 2 : \
+   (CLASS1 == ADDRESS_REGS && CLASS2 == SP_REGS) ? 4 : \
+   ! TARGET_AM33 ? 6 : \
+   (CLASS1 == SP_REGS || CLASS2 == SP_REGS) ? 6 : \
+   (CLASS1 == CLASS2 && CLASS1 == EXTENDED_REGS) ? 6 : \
+   (CLASS1 == EXTENDED_REGS || CLASS2 == EXTENDED_REGS) ? 4 : \
+   4)
 
 #define ADDRESS_COST(X) mn10300_address_cost((X), 0)
 
