@@ -1504,7 +1504,7 @@ definition of this macro is
 @smallexample
 #define HARD_REGNO_NREGS(REGNO, MODE)            \
    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)  \
-    / UNITS_PER_WORD))
+    / UNITS_PER_WORD)
 @end smallexample
 
 @findex ALTER_HARD_SUBREG
