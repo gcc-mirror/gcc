@@ -190,7 +190,7 @@ install_to_tooldir: all
 
 stamp-needed: stamp-picdir $(NEEDED_LIST)
 	cp $(NEEDED_LIST) needed-tmp
-	$(SHELL) $(srcdir)/../move-if-change needed-tmp needed-list
+	$(SHELL) $(srcdir)/$(MULTISRCTOP)../move-if-change needed-tmp needed-list
 	touch stamp-needed
 
 needed-list: stamp-needed ; @true
@@ -220,7 +220,7 @@ needed.awk: $(srcdir)/functions.def Makefile
 
 stamp-config: $(CONFIG_H)
 	cp $(CONFIG_H) config.tmp
-	$(SHELL) $(srcdir)/../move-if-change config.tmp config.h
+	$(SHELL) $(srcdir)/$(MULTISRCTOP)../move-if-change config.tmp config.h
 	touch stamp-config
 
 config.h: stamp-config ; @true
