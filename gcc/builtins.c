@@ -785,7 +785,8 @@ expand_builtin_prefetch (arglist)
   if (HAVE_prefetch)
     {
       if (! (*insn_data[(int)CODE_FOR_prefetch].operand[0].predicate)
-	    (op0, Pmode))
+	    (op0,
+	     insn_data[(int)CODE_FOR_prefetch].operand[0].mode))
         op0 = force_reg (Pmode, op0);
       emit_insn (gen_prefetch (op0, op1, op2));
     }
