@@ -82,10 +82,8 @@ template <class _Tp> inline void copy(_Tp* __source,_Tp* __destination,int __n) 
 }
 */
 
-
-template <bool _Truth> struct _Bool {};
-typedef _Bool<true>  __true_type;
-typedef _Bool<false> __false_type;
+struct __true_type {};
+struct __false_type {};
 
 template <class _Tp>
 struct __type_traits { 
