@@ -1,7 +1,7 @@
 // Build don't link:
 // GROUPS passed membertemplates
 template <class T>
-class S
+struct S
 {
   S(const S<T>& x)  {}
 

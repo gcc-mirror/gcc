@@ -2,7 +2,7 @@
 // Build don't link:
 
 template <class T>
-class A
+struct A
 {
   typedef enum
   {

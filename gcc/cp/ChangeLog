@@ -1,3 +1,16 @@
+1998-09-15  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h: Revert previous change.
+	(finish_struct_methods): Remove declaration.
+	* class.c: Revert previous change.
+	(maybe_warn_about_overly_private_class): New function.
+	(finish_struct_methods): Declare here, and make static.  Remove
+	unnecessary parameters.  Tidy slightly.  Use
+	maybe_warn_about_overly_private_class. 
+	(finish_struct_1): Adjust.  Remove check for private constructors,
+	now done elsewhere.
+	(finish_struct): Adjust.
+	
 1998-09-15  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.c (expand_start_catch_block): No need to check for new
@@ -15,6 +28,14 @@
 
 1998-09-14  Mark Mitchell  <mark@markmitchell.com>
 
+	* cp-tree.h (lang_type): Add has_non_private_static_mem_fn.
+	(CLASSTYPE_HAS_NON_PRIVATE_STATIC_MEM_FN): New macro, to access it.
+	* class.c (maybe_class_too_private_p): New function.
+	(finish_struct_methods): Use it.
+	(finish_struct_1): Likewise.
+	(finish_struct): Set CLASSTYPE_HAS_NON_PRIVATE_STATIC_MEM_FN if
+	appropriate.
+	
 	* pt.c (check_specialization_scope): Fix spelling error.
 	(check_explicit_specialization): Remove code to handle explicit
 	specializations in class scope; they are now correctly diagnosed

@@ -80,7 +80,7 @@ public:
 
 // 04
 // local names (14.6.1 p 4)
-template <class T10, int i> class Xfour {// ERROR - .*
+template <class T10, int i> struct Xfour {// ERROR - .*
   int T10; // ERROR - .*
   void f(){
     char T10; // ERROR - .*
@@ -90,7 +90,7 @@ template <class T10, int i> class Xfour {// ERROR - .*
 
 // 05
 // using different tempate-parms for out-of-line defs
-template <class T12, int i> class Xfive {
+template <class T12, int i> struct Xfive {
   void f();
 };
 
@@ -189,7 +189,7 @@ public:
 // 13
 // member templates, non-type parameters
 template <long l>// ERROR - .*
-class Xthirteen {
+struct Xthirteen {
   template <long l> long comp_ge(long test) {// ERROR - .
     long local_value;
     if (local_value > value) 
