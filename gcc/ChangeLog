@@ -1,5 +1,16 @@
 2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* ip2k.c (mdr_resequence_xy_yx, mdr_propagate_reg_equivs,
+	mdr_try_move_dp_reload, ip2k_check_can_adjust_stack_ref,
+	ip2k_adjust_stack_ref, mdr_try_move_pushes, mdr_try_propagate_clr,
+	ip2k_xexp_not_uses_reg_for_mem, mdr_try_propagate_move,
+	mdr_try_remove_redundant_insns, track_w_reload,
+	mdr_try_wreg_elim): Make function static to match prototype.
+	* mmix.c (mmix_target_asm_function_epilogue): Likewise.  Mark
+	parameter with ATTRIBUTE_UNUSED.
+
+2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* arc.c (arc_init): Don't use ISO C style function definitions.
 	* arm.c (count_insns_for_constant, thumb_far_jump_used_p,
 	arm_get_strip_length, arm_strip_name_encoding): Likewise.
