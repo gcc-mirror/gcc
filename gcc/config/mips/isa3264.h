@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "mips/elf.h"
 
 /* This must be done after including mips.h so that the
-   ABI_{EABI,O64,O32,...} are #defined. */
+   ABI_{EABI,O64,O32,...} are #defined.  */
 
 #if MIPS_ABI_DEFAULT == ABI_EABI
 #undef  SUBTARGET_CPP_SIZE_SPEC
@@ -110,7 +110,7 @@ Boston, MA 02111-1307, USA.  */
 
    For MEABI the size of longs is always 32bits.  If long64 is specified then
    we honor that.  The errors for long64 & long32 is because while CC1 can
-   handle overriding mlong32 with mlong64 and vise-versa, the specs cannot. */
+   handle overriding mlong32 with mlong64 and vise-versa, the specs cannot.  */
 
 #if MIPS_ISA_DEFAULT == 3 || MIPS_ISA_DEFAULT == 4 || MIPS_ISA_DEFAULT == 5 || MIPS_ISA_DEFAULT == 64
 #undef  SUBTARGET_CPP_SIZE_SPEC

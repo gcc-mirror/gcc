@@ -2617,7 +2617,7 @@
       have_dep_anti = 1;
   if (! have_dep_anti)
     {
-      /* No branch delay slots on mips16. */
+      /* No branch delay slots on mips16.  */
       if (which_alternative == 1)
         return \"%(bnez\\t%0,1f\\n\\tbreak\\t%2\\n%~1:%)\";
       else

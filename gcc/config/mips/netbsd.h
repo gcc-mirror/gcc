@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_MEM_FUNCTIONS
 
-/* Define mips-specific netbsd predefines... */
+/* Define mips-specific netbsd predefines...  */
 #ifndef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__ANSI_COMPAT \
 -DMIPSEL -DR3000 -DSYSTYPE_BSD -D_SYSTYPE_BSD -D__NetBSD__ -Dmips \

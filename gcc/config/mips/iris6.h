@@ -131,7 +131,7 @@ Boston, MA 02111-1307, USA.  */
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* Force the generation of dwarf .debug_frame sections even if not
-   compiling -g.  This guarantees that we can unwind the stack. */
+   compiling -g.  This guarantees that we can unwind the stack.  */
 #define DWARF2_FRAME_INFO 1
 
 /* The size in bytes of a DWARF field indicating an offset or length
@@ -228,7 +228,7 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_ASM_SPEC "%{!mabi*:-n32} %{!mips*: %{!mabi*:-mips3} %{mabi=n32:-mips3} %{mabi=64:-mips4}}"
 
 /* Must pass -g0 to the assembler, otherwise it may overwrite our
-   debug info with its own debug info. */
+   debug info with its own debug info.  */
 /* Must pass -show instead of -v.  */
 /* Must pass -G 0 to the assembler, otherwise we may get warnings about
    GOT overflow.  */
