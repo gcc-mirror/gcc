@@ -152,6 +152,9 @@ private static void startScavenger(){
             if (debug) System.out.println("************* exit scavenger.");
         }
     });
+    // As it is used for client connection, we may put this thread
+    // in daemon state to prevent the VM from blocking when exiting.
+    scavenger.setDaemon(true);
     scavenger.start();
 }
 

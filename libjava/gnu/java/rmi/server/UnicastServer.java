@@ -144,7 +144,7 @@ private static void incomingMessageCall(UnicastConnection conn) throws IOExcepti
 	(new UID()).write(out);
 	if(returnval != null && returncls != null)
 	    ((RMIObjectOutputStream)out).writeValue(returnval, returncls);
-	else
+	else if (!(returnval instanceof RMIVoidValue))
 	    out.writeObject(returnval);
 
 	out.flush();
