@@ -1,3 +1,7 @@
+2004-10-27  Nicolas Pitre <nico@cam.org>
+
+	* config/arm/ieee754-df.S (floatdidf): Fix regression with big values.
+
 2004-10-27  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/18048
