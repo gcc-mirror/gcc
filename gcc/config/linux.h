@@ -110,3 +110,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define this so we can compile MS code for use with WINE.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
+
+
+/* Determine whether the the entire c99 runtime
+   is present in the runtime library.  */
+#ifndef USE_GNULIBC_1
+#define TARGET_C99_FUNCTIONS 1
+#endif
