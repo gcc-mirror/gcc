@@ -3696,6 +3696,12 @@ verify_stmts (void)
 	{
 	  int phi_num_args = PHI_NUM_ARGS (phi);
 
+	  if (bb_for_stmt (phi) != bb)
+	    {
+	      error ("bb_for_stmt (phi) is set to a wrong basic block\n");
+	      err |= true;
+	    }
+
 	  for (i = 0; i < phi_num_args; i++)
 	    {
 	      tree t = PHI_ARG_DEF (phi, i);
@@ -3734,6 +3740,13 @@ verify_stmts (void)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); )
 	{
 	  tree stmt = bsi_stmt (bsi);
+
+	  if (bb_for_stmt (stmt) != bb)
+	    {
+	      error ("bb_for_stmt (stmt) is set to a wrong basic block\n");
+	      err |= true;
+	    }
+
 	  bsi_next (&bsi);
 	  err |= verify_stmt (stmt, bsi_end_p (bsi));
 	  addr = walk_tree (&stmt, verify_node_sharing, htab, NULL);
