@@ -1,3 +1,10 @@
+1999-05-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (lookup_namespace_name): Handle getting a
+	TEMPLATE_ID_EXPR.
+	(expand_static_init): Don't call pushdecl for implicitly declared
+	`atexit' used to register destructors.
+
 1999-05-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (finish_vtbls): Copy BINFO_VIRTUALs before using it to
