@@ -54,6 +54,7 @@ if [ $WHICH -eq 1 ]; then
 fi
 
 # INC_PATH == include path to new headers for use on gcc command-line
+top_srcdir=@top_srcdir@
 C_DIR="`basename @C_INCLUDE_DIR@`"
 if [ $WHICH != "1" ]; then
   INC_PATH="@CSHADOW_FLAGS@ -I$BUILD_DIR -I$BUILD_DIR/libio \
@@ -65,7 +66,7 @@ elif [ $WHICH -eq 1 ]; then
 fi
 
 if [ $WHICH -eq 2 ]; then
-  echo $INC_PATH -I$SRC_DIR/backward -I$SRC_DIR/ext
+  echo $INC_PATH -I$SRC_DIR/include/backward -I$SRC_DIR/include/ext
   exit 0;
 fi
 

@@ -223,7 +223,9 @@ AC_OUTPUT(mkcheck Makefile src/Makefile libmath/Makefile libio/Makefile libsupc+
 [if test -n "$CONFIG_FILES"; then
   ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
   grep '^MULTISUBDIR =' Makefile >> src/Makefile
-fi],
+fi
+chmod +x mkcheck
+],
 srcdir=${srcdir}
 host=${host}
 target=${target}

@@ -1575,7 +1575,7 @@ esac
 
 
 # Find some useful tools
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -9522,9 +9522,11 @@ fi
 
 if test x$enable_libstdcxx_v3 = xyes; then
   echo "$ac_t""v3" 1>&6
+  HAVE_LIBSTDCXX_V3=1
   ac_esn=1
 else
   echo "$ac_t""v2" 1>&6
+  HAVE_LIBSTDCXX_V3=0
   ac_esn=0
 fi
 cat >> confdefs.h <<EOF
@@ -9533,8 +9535,9 @@ EOF
 
 
 
+
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:9538: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:9541: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
@@ -10033,6 +10036,7 @@ s%@GGC@%$GGC%g
 s%@zlibdir@%$zlibdir%g
 s%@zlibinc@%$zlibinc%g
 s%@GXX_ABI_FLAG@%$GXX_ABI_FLAG%g
+s%@HAVE_LIBSTDCXX_V3@%$HAVE_LIBSTDCXX_V3%g
 s%@MAINT@%$MAINT%g
 s%@build_canonical@%$build_canonical%g
 s%@host_canonical@%$host_canonical%g

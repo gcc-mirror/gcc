@@ -1,3 +1,9 @@
+2000-10-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (site.exp): Define HAVE_LIBSTDCXX_V3.
+	* configure.in (enable-libstdcxx-v3): Arrange to have
+	HAVE_LIBSTDCXX_V3 substituted into the output files.
+
 2000-10-25  Richard Henderson  <rth@redhat.com>
 
 	* recog.c (constrain_operands): Initialize which_alternative

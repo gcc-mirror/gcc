@@ -4907,13 +4907,16 @@ AC_ARG_ENABLE(libstdcxx-v3,
 
 if test x$enable_libstdcxx_v3 = xyes; then
   AC_MSG_RESULT(v3)
+  HAVE_LIBSTDCXX_V3=1
   ac_esn=1
 else
   AC_MSG_RESULT(v2)
+  HAVE_LIBSTDCXX_V3=0
   ac_esn=0
 fi
 AC_DEFINE_UNQUOTED(ENABLE_STD_NAMESPACE, $ac_esn,
   [Define to 1 if you want to enable namespaces (-fhonor-std) by default.])
+AC_SUBST(HAVE_LIBSTDCXX_V3)
 
 dnl Very limited version of automake's enable-maintainer-mode
 
