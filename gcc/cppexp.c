@@ -1551,7 +1551,7 @@ num_div_op (pfile, lhs, rhs, op)
       return lhs;
     }
 
-  /* First non-zero bit of RHS is bit I.  Do naive division by
+  /* First nonzero bit of RHS is bit I.  Do naive division by
      shifting the RHS fully left, and subtracting from LHS if LHS is
      at least as big, and then repeating but with one less shift.
      This is not very efficient, but is easy to understand.  */

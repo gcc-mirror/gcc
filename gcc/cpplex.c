@@ -252,7 +252,7 @@ get_effective_char (pfile)
 
 /* Skip a C-style block comment.  We find the end of the comment by
    seeing if an asterisk is before every '/' we encounter.  Returns
-   non-zero if comment terminated by EOF, zero otherwise.  */
+   nonzero if comment terminated by EOF, zero otherwise.  */
 static int
 skip_block_comment (pfile)
      cpp_reader *pfile;
@@ -297,7 +297,7 @@ skip_block_comment (pfile)
 }
 
 /* Skip a C++ line comment, leaving buffer->cur pointing to the
-   terminating newline.  Handles escaped newlines.  Returns non-zero
+   terminating newline.  Handles escaped newlines.  Returns nonzero
    if a multiline comment.  */
 static int
 skip_line_comment (pfile)
@@ -561,7 +561,7 @@ parse_slow (pfile, cur, number_p, plen)
 }
 
 /* Parse a number, beginning with character C, skipping embedded
-   backslash-newlines.  LEADING_PERIOD is non-zero if there was a "."
+   backslash-newlines.  LEADING_PERIOD is nonzero if there was a "."
    before C.  Place the result in NUMBER.  */
 static void
 parse_number (pfile, number, leading_period)

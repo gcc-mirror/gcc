@@ -97,7 +97,7 @@ can_fallthru (src, target)
 }
 
 /* Mark the back edges in DFS traversal.
-   Return non-zero if a loop (natural or otherwise) is present.
+   Return nonzero if a loop (natural or otherwise) is present.
    Inspired by Depth_First_Search_PP described in:
 
      Advanced Compiler Design and Implementation
@@ -370,7 +370,7 @@ flow_call_edges_add (blocks)
 }
 
 /* Find unreachable blocks.  An unreachable block will have 0 in
-   the reachable bit in block->flags.  A non-zero value indicates the
+   the reachable bit in block->flags.  A nonzero value indicates the
    block is reachable.  */
 
 void
@@ -781,8 +781,8 @@ flow_reverse_top_sort_order_compute (rts_order)
 }
 
 /* Compute the depth first search order and store in the array
-  DFS_ORDER if non-zero, marking the nodes visited in VISITED.  If
-  RC_ORDER is non-zero, return the reverse completion number for each
+  DFS_ORDER if nonzero, marking the nodes visited in VISITED.  If
+  RC_ORDER is nonzero, return the reverse completion number for each
   node.  Returns the number of nodes visited.  A depth first search
   tries to get as far away from the starting point as quickly as
   possible.  */
@@ -1027,7 +1027,7 @@ flow_preorder_transversal_compute (pot_order)
 /* Initialize the data structures used for depth-first search on the
    reverse graph.  If INITIALIZE_STACK is nonzero, the exit block is
    added to the basic block stack.  DATA is the current depth-first
-   search context.  If INITIALIZE_STACK is non-zero, there is an
+   search context.  If INITIALIZE_STACK is nonzero, there is an
    element on the stack.  */
 
 static void

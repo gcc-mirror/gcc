@@ -253,12 +253,12 @@ struct stmt_tree_s GTY(()) {
   tree x_last_expr_type;
   /* The last filename we recorded.  */
   const char *x_last_expr_filename;
-  /* In C++, Non-zero if we should treat statements as full
+  /* In C++, Nonzero if we should treat statements as full
      expressions.  In particular, this variable is no-zero if at the
      end of a statement we should destroy any temporaries created
      during that statement.  Similarly, if, at the end of a block, we
      should destroy any local variables in this block.  Normally, this
-     variable is non-zero, since those are the normal semantics of
+     variable is nonzero, since those are the normal semantics of
      C++.
 
      However, in order to represent aggregate initialization code as
@@ -751,26 +751,26 @@ extern int warn_implicit;
 
 extern int warn_ctor_dtor_privacy;
 
-/* Non-zero means warn in function declared in derived class has the
+/* Nonzero means warn in function declared in derived class has the
    same name as a virtual in the base class, but fails to match the
    type signature of any virtual function in the base class.  */
 
 extern int warn_overloaded_virtual;
 
-/* Non-zero means warn when declaring a class that has a non virtual
+/* Nonzero means warn when declaring a class that has a non virtual
    destructor, when it really ought to have a virtual one.  */
 
 extern int warn_nonvdtor;
 
-/* Non-zero means warn when the compiler will reorder code.  */
+/* Nonzero means warn when the compiler will reorder code.  */
 
 extern int warn_reorder;
 
-/* Non-zero means warn when synthesis behavior differs from Cfront's.  */
+/* Nonzero means warn when synthesis behavior differs from Cfront's.  */
 
 extern int warn_synth;
 
-/* Non-zero means warn when we convert a pointer to member function
+/* Nonzero means warn when we convert a pointer to member function
    into a pointer to (void or function).  */
 
 extern int warn_pmf2ptr;
@@ -1088,7 +1088,7 @@ extern tree strip_array_types                   PARAMS ((tree));
 #define STMT_LINENO(NODE)			\
   (TREE_COMPLEXITY ((NODE)))
 
-/* If non-zero, the STMT_LINENO for NODE is the line at which the
+/* If nonzero, the STMT_LINENO for NODE is the line at which the
    function ended.  */
 #define STMT_LINENO_FOR_FN_P(NODE)		\
   (TREE_LANG_FLAG_2 ((NODE)))

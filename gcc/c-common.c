@@ -581,26 +581,26 @@ int warn_implicit = 1;
 
 int warn_ctor_dtor_privacy = 1;
 
-/* Non-zero means warn in function declared in derived class has the
+/* Nonzero means warn in function declared in derived class has the
    same name as a virtual in the base class, but fails to match the
    type signature of any virtual function in the base class.  */
 
 int warn_overloaded_virtual;
 
-/* Non-zero means warn when declaring a class that has a non virtual
+/* Nonzero means warn when declaring a class that has a non virtual
    destructor, when it really ought to have a virtual one.  */
 
 int warn_nonvdtor;
 
-/* Non-zero means warn when the compiler will reorder code.  */
+/* Nonzero means warn when the compiler will reorder code.  */
 
 int warn_reorder;
 
-/* Non-zero means warn when synthesis behavior differs from Cfront's.  */
+/* Nonzero means warn when synthesis behavior differs from Cfront's.  */
 
 int warn_synth;
 
-/* Non-zero means warn when we convert a pointer to member function
+/* Nonzero means warn when we convert a pointer to member function
    into a pointer to (void or function).  */
 
 int warn_pmf2ptr = 1;
@@ -2780,12 +2780,12 @@ c_common_truthvalue_conversion (expr)
     case ABS_EXPR:
     case FLOAT_EXPR:
     case FFS_EXPR:
-      /* These don't change whether an object is non-zero or zero.  */
+      /* These don't change whether an object is nonzero or zero.  */
       return c_common_truthvalue_conversion (TREE_OPERAND (expr, 0));
 
     case LROTATE_EXPR:
     case RROTATE_EXPR:
-      /* These don't change whether an object is zero or non-zero, but
+      /* These don't change whether an object is zero or nonzero, but
 	 we can't ignore them if their second arg has side-effects.  */
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1)))
 	return build (COMPOUND_EXPR, boolean_type_node, TREE_OPERAND (expr, 1),
@@ -3868,7 +3868,7 @@ expand_tree_builtin (function, params, coerced_params)
   return NULL_TREE;
 }
 
-/* Returns non-zero if CODE is the code for a statement.  */
+/* Returns nonzero if CODE is the code for a statement.  */
 
 int
 statement_code_p (code)

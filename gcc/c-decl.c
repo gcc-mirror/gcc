@@ -2691,8 +2691,8 @@ shadow_tag_warned (declspecs, warned)
 /* Construct an array declarator.  EXPR is the expression inside [], or
    NULL_TREE.  QUALS are the type qualifiers inside the [] (to be applied
    to the pointer to which a parameter array is converted).  STATIC_P is
-   non-zero if "static" is inside the [], zero otherwise.  VLA_UNSPEC_P
-   is non-zero is the array is [*], a VLA of unspecified length which is
+   nonzero if "static" is inside the [], zero otherwise.  VLA_UNSPEC_P
+   is nonzero is the array is [*], a VLA of unspecified length which is
    nevertheless a complete type (not currently implemented by GCC),
    zero otherwise.  The declarator is constructed as an ARRAY_REF
    (to be decoded by grokdeclarator), whose operand 0 is what's on the
@@ -2725,7 +2725,7 @@ build_array_declarator (expr, quals, static_p, vla_unspec_p)
 
 /* Set the type of an array declarator.  DECL is the declarator, as
    constructed by build_array_declarator; TYPE is what appears on the left
-   of the [] and goes in operand 0.  ABSTRACT_P is non-zero if it is an
+   of the [] and goes in operand 0.  ABSTRACT_P is nonzero if it is an
    abstract declarator, zero otherwise; this is used to reject static and
    type qualifiers in abstract declarators, where they are not in the
    C99 grammar.  */
@@ -6426,7 +6426,7 @@ c_expand_deferred_function (fndecl)
     }
 }
 
-/* Generate the RTL for the body of FNDECL.  If NESTED_P is non-zero,
+/* Generate the RTL for the body of FNDECL.  If NESTED_P is nonzero,
    then we are already in the process of generating RTL for another
    function.  If can_defer_p is zero, we won't attempt to defer the
    generation of RTL.  */
@@ -6769,7 +6769,7 @@ c_dup_lang_specific_decl (decl)
    functions are not called from anywhere in the C front end, but as
    these changes continue, that will change.  */
 
-/* Returns non-zero if the current statement is a full expression,
+/* Returns nonzero if the current statement is a full expression,
    i.e. temporaries created during that statement should be destroyed
    at the end of the statement.  */
 

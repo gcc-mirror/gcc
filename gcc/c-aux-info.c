@@ -188,7 +188,7 @@ gen_formal_list_for_type (fntype, style)
 /* For the generation of an ANSI prototype for a function definition, we have
    to look at the formal parameter list of the function's own "type" to
    determine if the function's formal parameter list should end with an
-   ellipsis.  Given a tree node, the following function will return non-zero
+   ellipsis.  Given a tree node, the following function will return nonzero
    if the "function type" parameter list should end with an ellipsis.  */
 
 static int
@@ -471,7 +471,7 @@ gen_type (ret_val, t, style)
 
    The given entity may be either a variable or a function.
 
-   If the "is_func_definition" parameter is non-zero, assume that the thing
+   If the "is_func_definition" parameter is nonzero, assume that the thing
    we are generating a declaration for is a FUNCTION_DECL node which is
    associated with a function definition.  In this case, we can assume that
    an attached list of DECL nodes for function formal arguments is present.  */

@@ -1,3 +1,40 @@
+2002-09-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* ChangeLog.0: Likewise.
+	* ChangeLog.1: Likewise.
+	* ChangeLog.2: Likewise.
+	* ChangeLog.3: Likewise.
+	* ChangeLog.4: Likewise.
+	* ChangeLog.5: Likewise.
+	* ChangeLog.6: Likewise.
+	* FSFChangeLog.10: Likewise.
+	* FSFChangeLog.11: Likewise.
+	* alias.c: Likewise.
+	* basic-block.h: Likewise.
+	* c-aux-info.c: Likewise.
+	* c-common.c: Likewise.
+	* c-common.h: Likewise.
+	* c-decl.c: Likewise.
+	* c-format.c: Likewise.
+	* c-semantics.c: Likewise.
+	* c-typeck.c: Likewise.
+	* calls.c: Likewise.
+	* cfganal.c: Likewise.
+	* cfgloop.c: Likewise.
+	* collect2.c: Likewise.
+	* combine.c: Likewise.
+	* conflict.c: Likewise.
+	* cppexp.c: Likewise.
+	* cppfiles.c: Likewise.
+	* cpphash.h: Likewise.
+	* cppinit.c: Likewise.
+	* cpplex.c: Likewise.
+	* cpplib.c: Likewise.
+	* cpplib.h: Likewise.
+	* cppmacro.c: Likewise.
+	* cse.c: Likewise.
+
 2002-09-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* netbsd-aout.h (NETBSD_LINK_SPEC_AOUT): New, takes old definition of
@@ -6080,7 +6117,7 @@ Wed Jul 17 17:08:06 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	Add DF_HI_REGS.
 	(CLASS_CANNOT_CHANGE_MODE, CLASS_CANNOT_CHANGE_MODE_P): Allow
 	lowpart fp regs - only for big endian for now.
-	(LEGITIMATE_CONSTANT_P): Don't allow non-zero float vectors
+	(LEGITIMATE_CONSTANT_P): Don't allow nonzero float vectors
 	when FPU is in use.
 	(EXTRA_CONTRAINT_U): Check against CONST0_RTX.
 	(LOAD_EXTEND_OP): NIL for SImode.
@@ -11123,7 +11160,7 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* gengtype.c (get_output_file): Include headers in gtype-desc.c
 	explicitly rather than deducing them from file names.
 	(write_gc_structure_fields): Handle arrays of structures.
-	(main): Return non-zero exit code if errors occur during output.
+	(main): Return nonzero exit code if errors occur during output.
 	* emit-rtl.c (mem_attrs_mark): Delete.
 	(init_emit_once): Use canonical name for mem_attrs marker procedure.
 	* Makefile.in (gtype-desc.o): Explicitly name dependencies.
@@ -16778,7 +16815,7 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@redhat.com)
 	2001-10-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* haifa-sched.c (max_issue): Remove last_p argument.  Only return
-	non-zero if the highest-priority instruction could be scheduled.
+	nonzero if the highest-priority instruction could be scheduled.
 	(choose_ready): Remove last argument from max_issue call.
 
 	2001-09-28  David S. Miller  <davem@redhat.com>
@@ -22348,7 +22385,7 @@ Tue Mar  5 18:31:27 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(LINK_SPEC): Don't defsym __.MMIX.start..text if linking
 	relocatably.  Always produce ELF, not mmo if linking relocatably.
 	* config/mmix/mmix.c (mmix_encode_section_info): If new parameter
-	first is non-zero, don't add symbol prefix.
+	first is nonzero, don't add symbol prefix.
 	* config/mmix/mmix-protos.h (mmix_encode_section_info): Tweak
 	prototype accordingly.
 
@@ -23408,7 +23445,7 @@ Thu Feb 21 15:35:46 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	PR c/4389
 	* tree.c (host_integerp): Ensure that the constant integer is
 	representable in a HOST_WIDE_INT or an unsigned HOST_WIDE_INT
-	when pos is zero or non-zero respectively.  Clarify comment.
+	when pos is zero or nonzero respectively.  Clarify comment.
 	* c-format.c (check_format_info_recurse): Fix host_integerp
 	usage; the pos argument should be zero when assigning to a
 	signed HOST_WIDE_INT.
@@ -27558,7 +27595,7 @@ Fri Jan 11 09:25:05 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	* config/alpha/alpha.md (call_osf_1_er, call_value_osf_1_er): Take a
 	new operand with the sequence number for the lituse.  When splitting
 	the insns, use gen_movdi_er_high_g and generate a sequence number.
-	(gen_movdi_er_high_g): Print the sequence number if non-zero.
+	(gen_movdi_er_high_g): Print the sequence number if nonzero.
 
 2002-01-10  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -27727,7 +27764,7 @@ Thu Jan 10 22:35:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* alias.c (find_base_value): Add cases for HIGH, PRE_INC, PRE_DEC,
 	POST_INC, POST_DEC, PRE_MODIFY, and POST_MODIFY.
 	(find_base_term): Add cases for TRUNCATE, PRE_MODIFY, and POST_MODIFY.
-	Recurse for any operand of AND as long as constant is non-zero.
+	Recurse for any operand of AND as long as constant is nonzero.
 
 2002-01-10  Kazu Hirata  <kazu@hxi.com>
 

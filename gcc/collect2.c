@@ -1491,7 +1491,7 @@ main (argc, argv)
 }
 
 
-/* Wait for a process to finish, and exit if a non-zero status is found.  */
+/* Wait for a process to finish, and exit if a nonzero status is found.  */
 
 int
 collect_wait (prog)

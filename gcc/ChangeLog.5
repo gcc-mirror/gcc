@@ -2903,7 +2903,7 @@ Thu May 24 15:56:48 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* config/ia64/ia64.md (nonlocal_goto): Reverse label and frame pointer
 	parameters to __ia64_nonlocal_goto. Flag as NO_RETURN.
 	* config/ia64/ia64.c (ia64_expand_epilogue): Make sure we are issuing
-	"r2" to the assembly file. Only issue allocs with non-zero parameters.
+	"r2" to the assembly file. Only issue allocs with nonzero parameters.
 
 2001-05-22  Loren J. Rittle  <ljrittle@acm.org>
 	    David O'Brien  <obrien@freebsd.org>
@@ -5194,7 +5194,7 @@ Wed Apr 25 17:09:50 2001  J"orn Rennecke <amylaar@redhat.com>
 2001-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* emit-rtl.c (subreg_hard_regno): Only do HARD_REGNO_MODE_OK check
-	if check_mode is non-zero.
+	if check_mode is nonzero.
 
 2001-04-25  Jakub Jelinek  <jakub@redhat.com>
 
@@ -11558,7 +11558,7 @@ Mon Jan 29 20:38:19 2001  Christopher Faylor <cgf@cygnus.com>
 	(really_start_incremental_init): Clear it.
 	(push_init_level): Save constructor_range_stack and clear it if
 	pushing explicit braces.
-	(pop_init_level): abort if constructor_range_stack is non-zero at
+	(pop_init_level): abort if constructor_range_stack is nonzero at
 	explicit closing brace.  Restore saved constructor_range_stack if
 	not implicit.
 
@@ -12652,7 +12652,7 @@ Sat Jan 13 09:53:32 MET 2001  Jan Hubicka  <jh@suse.cz>
 	(pending_init_member): Rename to...
 	(find_init_member): ...this function.  Call set_nonincremental_init
 	if necessary.  Compare values of purpose index trees, not the trees
-	themselves.  Return the actual value, not just non-zero if something
+	themselves.  Return the actual value, not just nonzero if something
 	is found.
 	(output_init_element): Remove checks for duplicates.
 	If field has zero size, only check the initializer for correctness.

@@ -300,7 +300,7 @@ prepare_directive_trad (pfile)
   pfile->state.prevent_expansion++;
 }
 
-/* Output diagnostics for a directive DIR.  INDENTED is non-zero if
+/* Output diagnostics for a directive DIR.  INDENTED is nonzero if
    the '#' was indented.  */
 static void
 directive_diagnostics (pfile, dir, indented)
@@ -336,10 +336,10 @@ directive_diagnostics (pfile, dir, indented)
     }
 }
 
-/* Check if we have a known directive.  INDENTED is non-zero if the
+/* Check if we have a known directive.  INDENTED is nonzero if the
    '#' of the directive was indented.  This function is in this file
    to save unnecessarily exporting dtable etc. to cpplex.c.  Returns
-   non-zero if the line of tokens has been handled, zero if we should
+   nonzero if the line of tokens has been handled, zero if we should
    continue processing the line.  */
 int
 _cpp_handle_directive (pfile, indented)
@@ -1686,7 +1686,7 @@ find_answer (node, candidate)
 }
 
 /* Test an assertion within a preprocessor conditional.  Returns
-   non-zero on failure, zero on success.  On success, the result of
+   nonzero on failure, zero on success.  On success, the result of
    the test is written into VALUE.  */
 int
 _cpp_test_assertion (pfile, value)

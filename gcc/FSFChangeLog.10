@@ -5704,7 +5704,7 @@ Sun Aug 13 14:50:58 1995  Jim Wilson  <wilson@chestnut.cygnus.com>
 	* Makefile.in (gfloat.h): Add a - before the rm command.
 
 	* loop.c (find_and_verify_loops): Set dest_loop only if
-	JUMP_LABEL (insn) is non-zero.
+	JUMP_LABEL (insn) is nonzero.
 
 Mon Jul 31 14:31:53 1995  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -8841,7 +8841,7 @@ Sat Apr 15 13:26:34 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 Sat Apr 15 12:11:46 1995  Brendan Kehoe  <brendan@cygnus.com>
 
 	* alpha/alpha.c (output_epilog): Initialize fp_offset to 0, and
-	make sure it's non-zero before we try to use it to restore the
+	make sure it's nonzero before we try to use it to restore the
 	frame pointer.
 
 Fri Apr 14 19:45:05 1995  Jason Merrill  <jason@phydeaux.cygnus.com>

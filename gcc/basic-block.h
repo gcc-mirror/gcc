@@ -435,7 +435,7 @@ struct loop
   /* Link to the next (sibling) loop.  */
   struct loop *next;
 
-  /* Non-zero if the loop is invalid (e.g., contains setjmp.).  */
+  /* Nonzero if the loop is invalid (e.g., contains setjmp.).  */
   int invalid;
 
   /* Auxiliary info specific to a pass.  */
@@ -444,10 +444,10 @@ struct loop
   /* The following are currently used by loop.c but they are likely to
      disappear as loop.c is converted to use the CFG.  */
 
-  /* Non-zero if the loop has a NOTE_INSN_LOOP_VTOP.  */
+  /* Nonzero if the loop has a NOTE_INSN_LOOP_VTOP.  */
   rtx vtop;
 
-  /* Non-zero if the loop has a NOTE_INSN_LOOP_CONT.
+  /* Nonzero if the loop has a NOTE_INSN_LOOP_CONT.
      A continue statement will generate a branch to NEXT_INSN (cont).  */
   rtx cont;
 
@@ -770,7 +770,7 @@ typedef struct conflict_graph_def *conflict_graph;
 
 /* Callback function when enumerating conflicts.  The arguments are
    the smaller and larger regno in the conflict.  Returns zero if
-   enumeration is to continue, non-zero to halt enumeration.  */
+   enumeration is to continue, nonzero to halt enumeration.  */
 typedef int (*conflict_graph_enum_fn) PARAMS ((int, int, void *));
 
 

@@ -3114,7 +3114,7 @@ Wed Aug 27 20:15:53 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(braf_branch_p, align_length, fixup_addr_diff_vecs): Likewise.
 	(addr_diff_vec_adjust, get_dest_uid, gen_far_branch): Likewise.
 	(split_branches, regs_used, gen_block_redirect): Likewise.
-	(from_compare): Can't compare non-zero DImode constant directly.
+	(from_compare): Can't compare nonzero DImode constant directly.
 	Emit special code for TARGET_SH3E floating point with code == GE.
 	Force 0.0 into a register for SH3E.
 	(print_operand): Add ','.
@@ -3935,7 +3935,7 @@ Mon Aug  4 08:06:48 1997  Bernd Schmidt  <crux@pool.informatik.rwth-aachen.de>
 	integer argument of push_reload.
 
 	* rtlanal.c (may_trap_p): Fix unintended fall-through so divisions by
-	non-zero constants are handled properly.  Return 1 for FP divisions.
+	nonzero constants are handled properly.  Return 1 for FP divisions.
 
 Mon Aug  4 06:52:20 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
@@ -5105,7 +5105,7 @@ Thu Jun 19 21:18:20 1997  Jim Wilson  <wilson@cygnus.com>
 
 Thu Jun 19 14:55:49 1997  Brendan Kehoe  <brendan@cygnus.com>
 
-	* toplev.c (xmalloc): Only give the fatal msg if SIZE is non-zero.
+	* toplev.c (xmalloc): Only give the fatal msg if SIZE is nonzero.
 
 Sun Apr 27 23:19:13 1997  Ulrich Drepper  <drepper@cygnus.com>
 
@@ -9711,7 +9711,7 @@ Sun Oct 20 20:01:09 1996  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 Fri Oct 18 13:32:13 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 
 	* rs6000.md (float conversion insns): Generate correct code
-	if the bit 15 of rs6000_fpmem_offset is non-zero.
+	if the bit 15 of rs6000_fpmem_offset is nonzero.
 
 Thu Oct 17 23:22:03 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
@@ -14430,7 +14430,7 @@ Thu Apr  4 11:40:55 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 
 Wed Apr  3 14:10:16 1996  Jim Wilson  <wilson@chestnut.cygnus.com>
 
-	* expr.c (emit_push_insn): Clobber register only if it is non-zero.
+	* expr.c (emit_push_insn): Clobber register only if it is nonzero.
 
 Wed Apr  3 11:31:55 1996  Jeffrey A. Law  <law@cygnus.com>
 
