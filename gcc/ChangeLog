@@ -1,3 +1,9 @@
+2002-02-26  Daniel Egger  <degger@fhm.edu>
+
+        * config/rs6000/rs6000.md: Swap define_insn attributes to
+        fix incorrect generation of merge high instructions instead
+        of merge low.
+
 2002-02-26  Aldy Hernandez  <aldyh@redhat.com>
 
         * c-typeck.c (really_start_incremental_init): Use
