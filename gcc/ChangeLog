@@ -1,3 +1,7 @@
+2001-12-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lex.c, c-parse.in, c-typeck.c: Revert concatenation changes.
+
 Mon Dec 10 09:19:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/i386/i386.md (leave, leave_rex64): Adjust pattern to match
