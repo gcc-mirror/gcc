@@ -1,5 +1,5 @@
 /* Language-specific hook definitions for C front end.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -143,7 +143,7 @@ finish_file ()
       start_function (void_list_node,
 		      build_parse_node (CALL_EXPR, fnname, void_list_node,
 					NULL_TREE),
-		      0);
+		      NULL_TREE, 0);
       fnname = DECL_ASSEMBLER_NAME (current_function_decl);
       store_parm_decls ();
 
@@ -163,7 +163,7 @@ finish_file ()
       start_function (void_list_node,
 		      build_parse_node (CALL_EXPR, fnname, void_list_node,
 					NULL_TREE),
-		      0);
+		      NULL_TREE, 0);
       fnname = DECL_ASSEMBLER_NAME (current_function_decl);
       store_parm_decls ();
 
