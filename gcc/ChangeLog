@@ -1,3 +1,12 @@
+2005-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* flow.c (propagate_one_insn): Formatting.
+
+	PR middle-end/19551
+	* flow.c (libcall_dead_p): Be more conservative if unsure.
+	If there are any instructions between insn and call, see if they are
+	all dead before saying the libcall is dead.
+
 2005-01-22  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	PR target/19548
