@@ -591,8 +591,11 @@ INTEGER {
   struct prod_token_parm_item *tok = $2;
   struct prod_token_parm_item *op1 = $1;
   struct prod_token_parm_item *op2 = $3;
+  int type_code = NUMERIC_TYPE (op1);
+  if (!type_code)
+    YYERROR;
   $$ = make_plus_expression
-     (tok, op1, op2, SIGNED_INT, EXP_EQUALS);
+     (tok, op1, op2, type_code, EXP_EQUALS);
 }
 |variable_ref ASSIGN expression {
   struct prod_token_parm_item *tok = $2;
