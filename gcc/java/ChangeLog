@@ -1,3 +1,7 @@
+2002-03-29  Martin Kahlert  <martin.kahlert@infineon.com>
+
+	* lex.c (java_new_lexer): Alias "646" to DEFAULT_ENCODING.
+
 2002-03-28  Tom Tromey  <tromey@redhat.com>
 
 	* except.c (expand_end_java_handler): If the handler type is NULL,
