@@ -2169,7 +2169,7 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 	       if (! (TREE_CODE (decl) == VAR_DECL
 		      && DECL_EXTERNAL (decl) && TREE_READONLY (decl)
 		      && DECL_INITIAL (decl) != 0
-		      && DECL_INITIAL (decl) != error_mark_node)
+		      && DECL_INITIAL (decl) != error_mark_node))
 		 /* Don't output anything
 		    when a tentative file-scope definition is seen.
 		    But at end of compilation, do output code for them.  */
