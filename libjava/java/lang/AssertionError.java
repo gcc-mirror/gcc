@@ -42,7 +42,7 @@ package java.lang;
  * An assertion error normally occurs as a result of the <code>assert</code>
  * statement added in JDK 1.4, to indicate that an assertion failed. There
  * are enough constructors to ensure that
- * <code>new AssertionError(<em>expression</em)</code> will work for all
+ * <code>new AssertionError(<em>expression</em>)</code> will work for all
  * espressions, regardless of type, as if the error message were given by
  * the string <code>"" + <em>expression</em></code>. This extends Error,
  * because you usually do not want to inadvertently trap an assertion failure.

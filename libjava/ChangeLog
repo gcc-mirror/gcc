@@ -1,3 +1,21 @@
+2002-09-16  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/AssertionError.java:
+	Merge with classpath, fixes HTML.
+	* java/rmi/server/LogStream.java:
+	Merge with classpath, fixes some constants.
+	* java/net/server/RemoteServer.java:
+	Merge with classpath, adds serialVersionUID.
+	* javax/naming/BinaryRefAddr.java:
+	Merge with classpath, s/equal/equals/.
+	* javax/naming/NamingException.java:
+	Merge with classpath, fixed typo.
+	* javax/naming/RefAddr.java:
+	Merge with classpath, s/equal/equals/.
+	* java/awt/Toolkit.java:
+	s/gnu.java.awt.peer.gtk.GtkToolkit/gnu.awt.gtk.GtkToolkit/
+	and typo fixed.
+
 2002-09-15  Adam Megacz <adam@xwt.org>
 	
 	* java/net/natPlainSocketImpl.cc: #ifdef-shielded socket timeouts,
@@ -15,8 +33,8 @@
 	* java/net/DatagramPacket.java (DatagramPacket):
 	Added linebreak for 80 chars per line.
 	* java/net/JarURLConection.java
-	(getInputStream, getJarEntry): Likewise.
-	* java/net/SocketPermission.java
+	(getInputStreami, getJarEntry): Likewise.
+	* java/net/SocketPErmission.java
 	(SocketPermission class docu, implies): Likewise.
 	* java/net/URLClassLoader.java (findResources): Likewise.
 	* java/net/URLConnection.java: Reindendet remark for 80 chars per line
