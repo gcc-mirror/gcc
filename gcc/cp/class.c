@@ -2494,6 +2494,7 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
   tree delta;
   tree virtual_base;
   tree first_defn;
+  bool lost = false;
 
   /* Find the nearest primary base (possibly binfo itself) which defines
      this function; this is the class the caller will convert to when
@@ -2502,6 +2503,10 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
     {
       if (look_for_overrides_here (BINFO_TYPE (b), fn))
 	break;
+
+      /* The nearest definition is from a lost primary.  */
+      if (BINFO_LOST_PRIMARY_P (b))
+	lost = true;
     }
   first_defn = b;
 
@@ -2514,9 +2519,9 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
      the final overrider, and not to an intermediate virtual base.  */
   virtual_base = NULL_TREE;
 
-  /* We will convert to an intermediate virtual base first, and then
+  /* See if we can convert to an intermediate virtual base first, and then
      use the vcall offset located there to finish the conversion.  */
-  while (b)
+  for (; b; b = BINFO_INHERITANCE_CHAIN (b))
     {
       /* If we find the final overrider, then we can stop
 	 walking.  */
@@ -2529,8 +2534,6 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
 	 declaring base (first_defn) and the final overrider.  */
       if (!virtual_base && TREE_VIA_VIRTUAL (b))
 	virtual_base = b;
-
-      b = BINFO_INHERITANCE_CHAIN (b);
     }
 
   /* Compute the constant adjustment to the `this' pointer.  The
@@ -2542,6 +2545,12 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
        the nearest virtual base.  */
     delta = size_diffop (BINFO_OFFSET (virtual_base),
 			 BINFO_OFFSET (first_defn));
+  else if (lost)
+    /* If the nearest definition is in a lost primary, we don't need an
+       entry in our vtable.  Except possibly in a constructor vtable,
+       if we happen to get our primary back.  In that case, the offset
+       will be zero, as it will be a primary base.  */
+    delta = size_zero_node;
   else
     {
       /* The `this' pointer needs to be adjusted from pointing to
@@ -7502,62 +7511,66 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
       tree vcall_index;
       tree fn;
       tree pfn;
-      tree init;
+      tree init = NULL_TREE;
       
-      /* Pull the offset for `this', and the function to call, out of
-	 the list.  */
-      delta = BV_DELTA (v);
-
-      if (BV_USE_VCALL_INDEX_P (v))
-	{
-	  vcall_index = BV_VCALL_INDEX (v);
-	  my_friendly_assert (vcall_index != NULL_TREE, 20000621);
-	}
-      else
-        vcall_index = NULL_TREE;
-
       fn = BV_FN (v);
-      my_friendly_assert (TREE_CODE (delta) == INTEGER_CST, 19990727);
-      my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 19990727);
-
-      /* You can't call an abstract virtual function; it's abstract.
-	 So, we replace these functions with __pure_virtual.  */
-      if (DECL_PURE_VIRTUAL_P (fn))
-	fn = abort_fndecl;
-
-      /* Take the address of the function, considering it to be of an
-	 appropriate generic type.  */
-      pfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fn);
-      /* The address of a function can't change.  */
-      TREE_CONSTANT (pfn) = 1;
-
-      /* Enter it in the vtable.  */
-      init = build_vtable_entry (delta, vcall_index, pfn);
 
       /* If the only definition of this function signature along our
 	 primary base chain is from a lost primary, this vtable slot will
 	 never be used, so just zero it out.  This is important to avoid
 	 requiring extra thunks which cannot be generated with the function.
 
-	 We could also handle this in update_vtable_entry_for_fn; doing it
-	 here means we zero out unused slots in ctor vtables as well,
-	 rather than filling them with erroneous values (though harmless,
-	 apart from relocation costs).  */
-      if (fn != abort_fndecl)
-	for (b = binfo; ; b = get_primary_binfo (b))
-	  {
-	    /* We found a defn before a lost primary; go ahead as normal.  */
-	    if (look_for_overrides_here (BINFO_TYPE (b), fn))
-	      break;
+	 We first check this in update_vtable_entry_for_fn, so we handle
+	 restored primary bases properly; we also need to do it here so we
+	 zero out unused slots in ctor vtables, rather than filling themff
+	 with erroneous values (though harmless, apart from relocation
+	 costs).  */
+      for (b = binfo; ; b = get_primary_binfo (b))
+	{
+	  /* We found a defn before a lost primary; go ahead as normal.  */
+	  if (look_for_overrides_here (BINFO_TYPE (b), fn))
+	    break;
 
-	    /* The nearest definition is from a lost primary; clear the
-	       slot.  */
-	    if (BINFO_LOST_PRIMARY_P (b))
-	      {
-		init = size_zero_node;
-		break;
-	      }
-	  }
+	  /* The nearest definition is from a lost primary; clear the
+	     slot.  */
+	  if (BINFO_LOST_PRIMARY_P (b))
+	    {
+	      init = size_zero_node;
+	      break;
+	    }
+	}
+
+      if (! init)
+	{
+	  /* Pull the offset for `this', and the function to call, out of
+	     the list.  */
+	  delta = BV_DELTA (v);
+
+	  if (BV_USE_VCALL_INDEX_P (v))
+	    {
+	      vcall_index = BV_VCALL_INDEX (v);
+	      my_friendly_assert (vcall_index != NULL_TREE, 20000621);
+	    }
+	  else
+	    vcall_index = NULL_TREE;
+
+	  my_friendly_assert (TREE_CODE (delta) == INTEGER_CST, 19990727);
+	  my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 19990727);
+
+	  /* You can't call an abstract virtual function; it's abstract.
+	     So, we replace these functions with __pure_virtual.  */
+	  if (DECL_PURE_VIRTUAL_P (fn))
+	    fn = abort_fndecl;
+
+	  /* Take the address of the function, considering it to be of an
+	     appropriate generic type.  */
+	  pfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, fn);
+	  /* The address of a function can't change.  */
+	  TREE_CONSTANT (pfn) = 1;
+
+	  /* Enter it in the vtable.  */
+	  init = build_vtable_entry (delta, vcall_index, pfn);
+	}
 
       /* And add it to the chain of initializers.  */
       if (TARGET_VTABLE_USES_DESCRIPTORS)
