@@ -1,5 +1,10 @@
 2001-10-11  Robert Dewar <dewar@gnat.com>
 
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Suppress warning on null 
+	loop in generic instance, since this is likely not very useful.
+
+2001-10-11  Robert Dewar <dewar@gnat.com>
+
 	* restrict.adb (Disallow in No_Run_Time_Mode): Properly specialize 
 	the error message for high integrity mode.
 	
