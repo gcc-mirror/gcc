@@ -259,6 +259,12 @@ typedef enum type_kind_t
 const struct demangler_engine libiberty_demanglers[] =
 {
   {
+    NO_DEMANGLING_STYLE_STRING,
+    no_demangling,
+    "Demangling disabled"
+  }
+  ,
+  {
     AUTO_DEMANGLING_STYLE_STRING,
       auto_demangling,
       "Automatic selection based on executable"
@@ -909,6 +915,10 @@ cplus_demangle (mangled, options)
 {
   char *ret;
   struct work_stuff work[1];
+
+  if (current_demangling_style == no_demangling)
+    return xstrdup (mangled);
+
   memset ((char *) work, 0, sizeof (work));
   work->options = options;
   if ((work->options & DMGL_STYLE_MASK) == 0)
