@@ -1,3 +1,7 @@
+2003-02-27  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md: Add TI constant splitter.
+
 2003-02-26  Jan Hubicka  <jh@suse.cz>
 
 	PR target/8343
