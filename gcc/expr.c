@@ -115,6 +115,9 @@ static rtx apply_args_value;
    infinite recursion.  */
 static int in_check_memory_usage;
 
+/* Chain of pending expressions for PLACEHOLDER_EXPR to replace.  */
+static tree placeholder_list = 0;
+
 /* This structure is used by move_by_pieces to describe the move to
    be performed.  */
 struct move_by_pieces
@@ -4953,9 +4956,6 @@ expand_expr (exp, target, tmode, modifier)
      enum machine_mode tmode;
      enum expand_modifier modifier;
 {
-  /* Chain of pending expressions for PLACEHOLDER_EXPR to replace.
-     This is static so it will be accessible to our recursive callees.  */
-  static tree placeholder_list = 0;
   register rtx op0, op1, temp;
   tree type = TREE_TYPE (exp);
   int unsignedp = TREE_UNSIGNED (type);
@@ -10435,6 +10435,15 @@ do_jump (exp, if_false_label, if_true_label)
     case RROTATE_EXPR:
       /* These cannot change zero->non-zero or vice versa.  */
       do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
+      break;
+
+    case WITH_RECORD_EXPR:
+      /* Put the object on the placeholder list, recurse through our first
+	 operand, and pop the list.  */
+      placeholder_list = tree_cons (TREE_OPERAND (exp, 1), NULL_TREE,
+				    placeholder_list);
+      do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
+      placeholder_list = TREE_CHAIN (placeholder_list);
       break;
 
 #if 0
