@@ -1,3 +1,9 @@
+2004-11-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/17344
+	* pt.c (coerce_template_parms): Only emit error message about
+	invalid template argument when TF_ERROR.
+
 2004-11-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/18389
