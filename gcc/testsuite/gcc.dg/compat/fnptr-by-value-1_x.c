@@ -23,6 +23,7 @@ extern void test2g (fpi, int, double, fpd);
 extern void test2h (double, fpd, fpi, int);
 extern void test2i (double, fpd, int, fpi);
 extern void test2j (int, double, fpi, fpd);
+extern void testva (int, ...);
 
 int f1_val;
 double f2_val;
