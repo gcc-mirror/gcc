@@ -51,9 +51,8 @@ done
 
 # If this is tm_p.h, include tm-preds.h unconditionally.
 # If this is tconfig.h or hconfig.h, include no more files.
-# Otherwise, include insn-constants.h, insn-flags.h, and insn-codes.h,
-# but only if GENERATOR_FILE is not defined. (The last of those is
-# slated to be removed.)
+# Otherwise, include insn-constants.h and insn-flags.h,
+# but only if GENERATOR_FILE is not defined.
 case $output in
     *tm_p.h)
 	echo "#include \"tm-preds.h\""
@@ -63,7 +62,6 @@ case $output in
     *)
 	echo "#ifndef GENERATOR_FILE"
 	echo "# include \"insn-constants.h\""
-	echo "# include \"insn-codes.h\""
 	echo "# include \"insn-flags.h\""
 	echo "#endif"
     ;;

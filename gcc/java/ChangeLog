@@ -1,3 +1,8 @@
+2001-08-13  Zack Weinberg  <zackw@panix.com>
+
+	* Make-lang.in (java/decl.o): Update dependencies.
+	* decl.c: Include libfuncs.h, don't include toplev.h.
+
 2001-08-12  David Edelsohn  <edelsohn@gnu.org>
 
 	Revert:

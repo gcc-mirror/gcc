@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "function.h"
 #include "expr.h"
+#include "libfuncs.h"
 #include "c-tree.h"
 #include "flags.h"
 #include "recog.h"

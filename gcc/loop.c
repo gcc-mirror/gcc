@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "function.h"
 #include "expr.h"
+#include "optabs.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "insn-config.h"

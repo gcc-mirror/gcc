@@ -54,6 +54,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
+#include "libfuncs.h"
 #include "insn-config.h"
 #include "except.h"
 #include "integrate.h"

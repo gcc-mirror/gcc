@@ -163,6 +163,7 @@ enum unroll_types
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
+#include "optabs.h"
 #include "loop.h"
 #include "toplev.h"
 #include "hard-reg-set.h"

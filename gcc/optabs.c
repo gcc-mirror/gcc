@@ -34,6 +34,8 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "except.h"
 #include "expr.h"
+#include "optabs.h"
+#include "libfuncs.h"
 #include "recog.h"
 #include "reload.h"
 #include "ggc.h"
@@ -3738,7 +3740,7 @@ can_conditionally_move_p (mode)
 
 #endif /* HAVE_conditional_move */
 
-/* These three functions generate an insn body and return it
+/* These functions generate an insn body and return it
    rather than emitting the insn.
 
    They do not protect from queued increments,
@@ -3762,6 +3764,26 @@ gen_add2_insn (x, y)
     abort ();
 
   return (GEN_FCN (icode) (x, x, y));
+}
+
+/* Generate and return an insn body to add r1 and c,
+   storing the result in r0.  */
+rtx
+gen_add3_insn (r0, r1, c)
+     rtx r0, r1, c;
+{
+  int icode = (int) add_optab->handlers[(int) GET_MODE (r0)].insn_code;
+
+    if (icode == CODE_FOR_nothing
+      || ! ((*insn_data[icode].operand[0].predicate)
+	    (r0, insn_data[icode].operand[0].mode))
+      || ! ((*insn_data[icode].operand[1].predicate)
+	    (r1, insn_data[icode].operand[1].mode))
+      || ! ((*insn_data[icode].operand[2].predicate)
+	    (c, insn_data[icode].operand[2].mode)))
+    return NULL_RTX;
+
+  return (GEN_FCN (icode) (r0, r1, c));
 }
 
 int

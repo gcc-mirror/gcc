@@ -55,7 +55,6 @@ static int perhaps_ends_bb_p	PARAMS ((rtx));
 static int optimize_reg_copy_1	PARAMS ((rtx, rtx, rtx));
 static void optimize_reg_copy_2	PARAMS ((rtx, rtx, rtx));
 static void optimize_reg_copy_3	PARAMS ((rtx, rtx, rtx));
-static rtx gen_add3_insn	PARAMS ((rtx, rtx, rtx));
 static void copy_src_to_dest	PARAMS ((rtx, rtx, rtx, int));
 static int *regmove_bb_head;
 
@@ -93,27 +92,6 @@ regclass_compatible_p (class0, class1)
 	  || (reg_class_subset_p (class1, class0)
 	      && ! CLASS_LIKELY_SPILLED_P (class1)));
 }
-
-/* Generate and return an insn body to add r1 and c,
-   storing the result in r0.  */
-static rtx
-gen_add3_insn (r0, r1, c)
-     rtx r0, r1, c;
-{
-  int icode = (int) add_optab->handlers[(int) GET_MODE (r0)].insn_code;
-
-    if (icode == CODE_FOR_nothing
-      || ! ((*insn_data[icode].operand[0].predicate)
-	    (r0, insn_data[icode].operand[0].mode))
-      || ! ((*insn_data[icode].operand[1].predicate)
-	    (r1, insn_data[icode].operand[1].mode))
-      || ! ((*insn_data[icode].operand[2].predicate)
-	    (c, insn_data[icode].operand[2].mode)))
-    return NULL_RTX;
-
-  return (GEN_FCN (icode) (r0, r1, c));
-}
-
 
 /* INC_INSN is an instruction that adds INCREMENT to REG.
    Try to fold INC_INSN as a post/pre in/decrement into INSN.

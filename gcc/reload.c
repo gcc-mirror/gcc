@@ -91,6 +91,8 @@ a register with any other reload.  */
 #include "rtl.h"
 #include "tm_p.h"
 #include "insn-config.h"
+#include "expr.h"
+#include "optabs.h"
 #include "recog.h"
 #include "reload.h"
 #include "regs.h"
@@ -99,7 +101,6 @@ a register with any other reload.  */
 #include "real.h"
 #include "output.h"
 #include "function.h"
-#include "expr.h"
 #include "toplev.h"
 
 #ifndef REGISTER_MOVE_COST

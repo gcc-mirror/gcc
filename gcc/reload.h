@@ -82,7 +82,7 @@ enum reload_type
   RELOAD_OTHER, RELOAD_FOR_OTHER_ADDRESS
 };
 
-#ifdef MAX_INSN_CODE
+#ifdef GCC_INSN_CODES_H
 /* Each reload is recorded with a structure like this.  */
 struct reload
 {
@@ -191,14 +191,6 @@ extern char indirect_symref_ok;
 extern char double_reg_address_ok;
 
 extern int num_not_at_initial_offset;
-
-#ifdef MAX_INSN_CODE
-/* These arrays record the insn_code of insns that may be needed to
-   perform input and output reloads of special objects.  They provide a
-   place to pass a scratch register.  */
-extern enum insn_code reload_in_optab[];
-extern enum insn_code reload_out_optab[];
-#endif
 
 struct needs
 {
