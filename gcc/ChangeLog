@@ -9,6 +9,8 @@
 
 	* reg-stack.c (convert_regs_2): Free stack.
 
+	* tree-ssa-dom.c (thread_across_edge): Fix a comment typo.
+
 2004-12-12  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-loop-ch.c (copy_loop_headers): Loop can be null.
