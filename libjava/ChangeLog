@@ -1,3 +1,21 @@
+2003-12-08  Michael Koch  <konqueror@gmx.de>
+
+	Fix for PR libgcj/13176.
+	* java/io/PrintStream.java: Partly revert my previous patches to get
+	(line_separator): New field.
+	(converter): New field.
+	(work): New field.
+	(work_bytes): New field.
+	(pw): Removed.
+	(closed): Removed.
+	(PrintStrean): Initialize converter and not pw.
+	(checkError): Flush always, pw doesn't exist anymore.
+	(close): Close underlying out stream.
+	(print): New method.
+	(writeChars): New method.
+	(print): Use new internal print method.
+	(println): Likewise.
+
 2002-12-08  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* java/util/Hashtable.java (Hashtable(Map)): Use putAll, not putAllInternal.
