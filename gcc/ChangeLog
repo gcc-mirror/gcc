@@ -1,3 +1,15 @@
+2002-07-27  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_traceback_name): New var.
+	(rs6000_traceback): New var.
+	(rs6000_override_options): Set rs6000_traceback.
+	(rs6000_output_function_epilogue): Implement traceback options.
+	* config/rs6000/rs6000.h (TARGET_OPTIONS): Add "traceback=".
+	(rs6000_traceback_name): Declare.
+
+	* config/rs6000/rs6000.c (output_profile_hook): Don't generate profile
+	label reference when NO_PROFILE_COUNTERS.
+
 2002-07-26  Jason Merrill  <jason@redhat.com>
 
 	* function.c (assign_parms): Handle frontend-directed pass by
