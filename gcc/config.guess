@@ -364,8 +364,40 @@ EOF
 	case "${UNAME_MACHINE}" in
 	    9000/31? )            HP_ARCH=m68000 ;;
 	    9000/[34]?? )         HP_ARCH=m68k ;;
-	    9000/7?? | 9000/8?[1679] ) HP_ARCH=hppa1.1 ;;
-	    9000/8?? )            HP_ARCH=hppa1.0 ;;
+	    9000/7?? | 9000/8?[1679] ) 
+              sed 's/^              //' << EOF >dummy.c
+              #include <stdlib.h>
+              #include <unistd.h>
+              
+              int main ()
+              {
+              #if defined(_SC_KERNEL_BITS)
+                  long bits = sysconf(_SC_KERNEL_BITS);
+              #endif 
+                  long cpu  = sysconf (_SC_CPU_VERSION);
+              
+                  switch (cpu) 
+              	{
+              	case CPU_PA_RISC1_0: puts ("hppa1.0"); break;
+              	case CPU_PA_RISC1_1: puts ("hppa1.1"); break;
+              	case CPU_PA_RISC2_0: 
+              #if defined(_SC_KERNEL_BITS)
+              	    switch (bits) 
+              		{
+              		case 64: puts ("hppa2.0w"); break;
+              		case 32: puts ("hppa2.0n"); break;
+              		default: puts ("hppa2.0"); break;
+              		} break;
+              #else  /* !defined(_SC_KERNEL_BITS) */
+              	    puts ("hppa2.0"); break;
+              #endif 
+              	default: puts ("hppa1.0"); break;
+              	}
+                  exit (0);
+              }
+EOF
+	${CC-cc} dummy.c -o dummy && HP_ARCH=`./dummy`
+	rm -f dummy.c dummy
 	esac
 	HPUX_REV=`echo ${UNAME_RELEASE}|sed -e 's/[^.]*.[0B]*//'`
 	echo ${HP_ARCH}-hp-hpux${HPUX_REV}
