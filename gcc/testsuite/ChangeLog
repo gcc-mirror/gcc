@@ -1,3 +1,7 @@
+2002-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/other/debug3.C: New test.
+
 2002-02-13  Richard Smith <richard@ex-parrot.com>
 
 	* g++.old-deja/g++.other/thunk1.C: New test.
