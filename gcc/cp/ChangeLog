@@ -1,3 +1,8 @@
+1998-08-03  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl2.c (grokfield): Don't mangle the name of a TYPE_DECL if it
+	uses template parameters.
+
 1998-08-02  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.def (LOOKUP_EXPR): Document.  Remove second argument.
