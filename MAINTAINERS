@@ -33,6 +33,7 @@ scheduler (+ haifa)	Jim Wilson		wilson@cygnus.com
 scheduler (+ haifa)	Michael Meissner	meissner@cygnus.com
 scheduler (+ haifa)	Jeff Law		law@cygnus.com
 reorg			Jeff Law		law@cygnus.com
+caller-sae.c		Jeff Law		law@cygnus.com
 debugging code		Jim Wilson		wilson@cygnus.com
 dwarf debugging code	Jason Merrill		jason@cygnus.com
 c++ runtime libs	Ulrich Drepper		drepper@cygnus.com
