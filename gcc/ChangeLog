@@ -1,3 +1,7 @@
+Wed Jul 28 11:28:04 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* builtins.c (expand_builtin): Typo in call to expand_builtin_ffs.
+
 Wed Jul 28 11:23:48 1999  Richard Henderson  <rth@cygnus.com>
 
 	* pa.c (hppa_builtin_saveregs):  Use get_varargs_alias_set
