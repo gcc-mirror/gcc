@@ -1,3 +1,22 @@
+2000-01-30  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* i386/386bsd.h, i386/beos-pe.h, i386/bsd386.h, i386/crtdll.h,
+	i386/cygwin.h, i386/dgux.h, i386/djgpp-rtems.h, i386/djgpp.h,
+	i386/freebsd.h, i386/gnu.h, i386/i386-aout.h, i386/i386-coff.h,
+	i386/i386-interix.h, i386/i386elf.h, i386/linux.h, i386/lynx-ng.h,
+	i386/lynx.h, i386/mach.h, i386/mingw32.h, i386/moss.h,
+	i386/netbsd.h, i386/next.h, i386/openbsd.h, i386/osf1elf.h,
+	i386/ptx4-i.h, i386/rtems.h, i386/rtemself.h, i386/sco.h,
+	i386/sequent.h, i386/sun.h, i386/sysv4.h, i386/uwin.h, i386/vsta.h,
+	i386/vxi386.h, i386/win-nt.h, i386/win32.h:
+	Remove -Di386 -Acpu(i386) -Amachine(i386) from CPP_PREDEFINES.
+	
+	* i386/osf1elf.h, i386/scodbx.h, i386/seq-sysv3.h, i386/sysv5.h:
+	Add %(cpp_cpu) to CPP_SPEC.
+
+	* i386/osf1elf.h, i386/osfelf.h, i386/osfrose.h:
+	Add %(cc1_cpu) to CC1_SPEC.
+
 2000-01-28  Ulrich Drepper  <drepper@redhat.com>
 
 	* c-decl.c (c_decode_option): Accept optional numeric argument to

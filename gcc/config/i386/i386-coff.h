@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Di386"
+#define CPP_PREDEFINES ""
 
 /* We want to be able to get DBX debugging information via -gstabs.  */
 

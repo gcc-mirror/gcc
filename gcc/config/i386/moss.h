@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "i386/linux.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Di386 -Dmoss -Asystem(posix) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-D__ELF__ -Dmoss -Asystem(posix)"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC  "crt0.o%s"

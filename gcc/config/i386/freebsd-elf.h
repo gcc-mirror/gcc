@@ -75,7 +75,8 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
     
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Di386 -Dunix -D__ELF__ -D__FreeBSD__ -Asystem(unix) -Asystem(FreeBSD) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-Dunix -D__ELF__ -D__FreeBSD__\
+ -Asystem(unix) -Asystem(bsd) -Asystem(FreeBSD)"
 
 /* Provide a STARTFILE_SPEC appropriate for FreeBSD.  Here we add
    the magical crtbegin.o file (see crtstuff.c) which provides part 

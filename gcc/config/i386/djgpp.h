@@ -56,11 +56,9 @@ Boston, MA 02111-1307, USA.  */
         (((NAME)[0] == '/') || ((NAME)[0] == '\\') || \
         (((NAME)[0] >= 'A') && ((NAME)[0] <= 'z') && ((NAME)[1] == ':')))
 
-#ifdef CPP_PREDEFINES
 #undef CPP_PREDEFINES
-#endif
-#define CPP_PREDEFINES "-Dunix -Di386 -DGO32 -DDJGPP=2 -DMSDOS \
-  -Asystem(unix) -Asystem(msdos) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-Dunix -DGO32 -DDJGPP=2 -DMSDOS \
+  -Asystem(unix) -Asystem(msdos)"
 
 /* We need to override link_command_spec in gcc.c so support -Tdjgpp.djl.
    This cannot be done in LINK_SPECS as that LINK_SPECS is processed

@@ -24,8 +24,7 @@ Boston, MA 02111-1307, USA.  */
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Di386 -Drtems -D__rtems__ \
-   -Asystem(rtems) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-Drtems -D__rtems__ -Asystem(rtems)"
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS

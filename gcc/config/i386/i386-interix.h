@@ -65,7 +65,7 @@ Boston, MA 02111-1307, USA.  */
   -D_M_IX86=300 -D_X86_=1 \
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
-  -Asystem(unix) -Asystem(interix) -Asystem(interix) -Acpu(i386) -Amachine(i386)"
+  -Asystem(unix) -Asystem(interix) -Asystem(interix)"
 
 #undef CPP_SPEC
 /* Write out the correct language type definition for the header files.  

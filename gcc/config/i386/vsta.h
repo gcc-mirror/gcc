@@ -26,8 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #ifdef CPP_PREDEFINES
 #undef CPP_PREDEFINES
 #endif
-#define CPP_PREDEFINES "-Dunix -Di386 -DVSTA \
-  -Asystem(unix) -Asystem(vsta) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-Dunix -DVSTA -Asystem(unix) -Asystem(vsta)"
 
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_ctor, in_dtor

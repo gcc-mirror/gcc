@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#define CPP_PREDEFINES "-Dunix -Di386 -Dsun386 -Dsun -Asystem(unix) -Asystem(bsd) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-Dunix -Dsun386 -Dsun -Asystem(unix) -Asystem(bsd)"
 
 /* Allow #sccs in preprocessor.  */
 

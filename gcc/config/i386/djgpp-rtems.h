@@ -28,9 +28,8 @@ Boston, MA 02111-1307, USA.  */
 #ifdef CPP_PREDEFINES
 #undef CPP_PREDEFINES
 #endif
-#define CPP_PREDEFINES "-Dunix -Di386 -DGO32 -DDJGPP=2 -DMSDOS \
-  -Asystem(unix) -Asystem(msdos) -Acpu(i386) -Amachine(i386) \
-  -Asystem(rtems)"
+#define CPP_PREDEFINES "-Dunix -DGO32 -DDJGPP=2 -DMSDOS \
+  -Asystem(unix) -Asystem(msdos) -Asystem(rtems)"
 
 /* Generate calls to memcpy, memcmp and memset.  */
 #ifndef TARGET_MEM_FUNCTIONS

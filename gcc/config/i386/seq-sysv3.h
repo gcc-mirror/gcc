@@ -19,7 +19,7 @@
  %{fshared-data:-lpps -lseq} -lc crtend.o%s"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} -D_SEQUENT_=1"
+#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} -D_SEQUENT_=1"
 
 /* Although the .init section is used, it is not automatically invoked.
    This because the _start() function in /lib/crt0.o never calls anything

@@ -34,18 +34,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define TARGET_DEFAULT (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS)
 
-/* The svr4 ABI for the i386 says that records and unions are returned
+/* The ELF ABI for the i386 says that records and unions are returned
    in memory.  */
 
 #undef RETURN_IN_MEMORY
 #define RETURN_IN_MEMORY(TYPE) \
   (TYPE_MODE (TYPE) == BLKmode)
 
-/* Define which macros to predefine.  __svr4__ is our extension.  */
 /* This used to define X86, but james@bigtex.cactus.org says that
    is supposed to be defined optionally by user programs--not by default.  */
-#define CPP_PREDEFINES \
-  "-D__i386__ -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES ""
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu)"

@@ -35,7 +35,8 @@ Boston, MA 02111-1307, USA.  */
   (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_NO_FANCY_MATH_387)
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Di386 -D__FreeBSD__ -Asystem(unix) -Asystem(FreeBSD) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-Dunix -D__FreeBSD__\
+ -Asystem(unix) -Asystem(bsd) -Asystem(FreeBSD)"
 
 /* Like the default, except no -lg.  */
 #define LIB_SPEC "%{!shared:%{!pg:-lc}%{pg:-lc_p}}"
