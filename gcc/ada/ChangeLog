@@ -1,3 +1,10 @@
+2004-01-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* Make-lang.in (utils.o): Depend on target.h.
+	* utils.c: Include target.h.
+	(process_attributes): Use targetm.have_named_sections instead
+	of ASM_OUTPUT_SECTION_NAME.
+
 2004-01-16  Andreas Jaeger  <aj@suse.de>
 
 	* Makefile.in: Add $(DESTDIR).

@@ -1213,7 +1213,7 @@ ada/utils.o : ada/utils.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) flags.h expr.h convert.h defaults.h ada/ada.h ada/types.h \
    ada/atree.h ada/nlists.h ada/elists.h ada/sinfo.h ada/einfo.h ada/namet.h \
    ada/stringt.h ada/uintp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h gt-ada-utils.h \
-   gtype-ada.h
+   gtype-ada.h target.h
 
 ada/utils2.o : ada/utils2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) flags.h ada/ada.h ada/types.h ada/atree.h ada/nlists.h \

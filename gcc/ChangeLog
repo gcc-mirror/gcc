@@ -1,3 +1,10 @@
+2004-01-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* system.h (ASM_OUTPUT_SECTION_NAME): Poison.
+	* config/alpha/unicosmk.h: Remove a commented-out definition
+	of ASM_OUTPUT_SECTION_NAME.
+	* config/stormy16/stormy16.h: Likewise.
+
 2004-01-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (alpha___extern_prefix): Renamed to ...
