@@ -1,3 +1,7 @@
+2003-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tls/opt-7.c: New test.
+
 2003-07-31  Andrew Pinski  <pinskia@physics.uc.edu>
 	
 	* g++.old-deja/g++.other/crash18.C: Remove.
