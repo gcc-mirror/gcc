@@ -1490,6 +1490,7 @@ chainon (op1, op2)
     {
       for (t = op1; TREE_CHAIN (t); t = TREE_CHAIN (t))
 	if (t == op2) abort ();	/* Circularity being created */
+      if (t == op2) abort ();	/* Circularity being created */
       TREE_CHAIN (t) = op2;
       return op1;
     }
