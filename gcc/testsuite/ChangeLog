@@ -1,3 +1,8 @@
+2005-01-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/15349
+	* gcc.dg/tree-ssa/pr15349.c: New.
+
 2005-01-20  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/tree-ssa/loop-1.c:  Fix target names on xfail.

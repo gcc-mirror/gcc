@@ -1,3 +1,17 @@
+2005-01-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/15349
+	* timevar.def (TV_TREE_MERGE_PHI): New.
+	* tree-cfg.c (tree_forwarder_block_p): Add a new argument
+	PHI_WANTED.
+	(remove_forwarder_block, cleanup_forwarder_blocks): Adjust the
+	calls to tree_forwarder_block_p.
+	(remove_forwarder_block_with_phi, merge_phi_nodes,
+	gate_merge_phi, pass_merge_phi): New.
+	* tree-optimize.c (init_tree_optimization_passes): Add
+	pass_merge_phi.
+	* tree-pass.h: Add an extern for pass_merge_phi;
+
 2005-01-20  Richard Henderson  <rth@redhat.com>
 
 	PR target/19418

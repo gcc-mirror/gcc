@@ -119,7 +119,7 @@ static void split_critical_edges (void);
 static inline bool stmt_starts_bb_p (tree, tree);
 static int tree_verify_flow_info (void);
 static void tree_make_forwarder_block (edge);
-static bool tree_forwarder_block_p (basic_block);
+static bool tree_forwarder_block_p (basic_block, bool);
 static void tree_cfg2vcg (FILE *);
 
 /* Flowgraph optimization and cleanup.  */
@@ -3889,16 +3889,15 @@ tree_make_forwarder_block (edge fallthru)
    ENTRY_BLOCK_PTR.  */
 
 static bool
-tree_forwarder_block_p (basic_block bb)
+tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 {
   block_stmt_iterator bsi;
 
   /* BB must have a single outgoing edge.  */
   if (EDGE_COUNT (bb->succs) != 1
-      /* BB can not have any PHI nodes.  This could potentially be
-	 relaxed early in compilation if we re-rewrote the variables
-	 appearing in any PHI nodes in forwarder blocks.  */
-      || phi_nodes (bb)
+      /* If PHI_WANTED is false, BB must not have any PHI nodes.
+	 Otherwise, BB must have PHI nodes.  */
+      || (phi_nodes (bb) != NULL_TREE) != phi_wanted
       /* BB may not be a predecessor of EXIT_BLOCK_PTR.  */
       || EDGE_SUCC (bb, 0)->dest == EXIT_BLOCK_PTR
       /* Nor should this be an infinite loop.  */
@@ -4040,7 +4039,7 @@ remove_forwarder_block (basic_block bb, basic_block **worklist)
 	     that it was not a forwarder before, since it used to have
 	     at least two outgoing edges, so we may just add it to
 	     worklist.  */
-	  if (tree_forwarder_block_p (s->src))
+	  if (tree_forwarder_block_p (s->src, false))
 	    *(*worklist)++ = s->src;
 	}
     }
@@ -4097,7 +4096,7 @@ cleanup_forwarder_blocks (void)
 
   FOR_EACH_BB (bb)
     {
-      if (tree_forwarder_block_p (bb))
+      if (tree_forwarder_block_p (bb, false))
 	*current++ = bb;
     }
 
@@ -4110,6 +4109,211 @@ cleanup_forwarder_blocks (void)
   free (worklist);
   return changed;
 }
+
+/* Merge the PHI nodes at BB into those at BB's sole successor.  */
+
+static void
+remove_forwarder_block_with_phi (basic_block bb)
+{
+  edge succ = EDGE_SUCC (bb, 0);
+  basic_block dest = succ->dest;
+  basic_block dombb, domdest, dom;
+  block_stmt_iterator bsi;
+
+  /* We check for infinite loops already in tree_forwarder_block_p.
+     However it may happen that the infinite loop is created
+     afterwards due to removal of forwarders.  */
+  if (dest == bb)
+    return;
+
+  /* If the destination block consists of a nonlocal label, do not
+     merge it.  */
+  for (bsi = bsi_start (dest); !bsi_end_p (bsi); bsi_next (&bsi))
+    {
+      tree stmt = bsi_stmt (bsi);
+
+      if (TREE_CODE (stmt) != LABEL_EXPR)
+	break;
+
+      if (DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)))
+	return;
+    }
+
+  /* Redirect each incoming edge to BB to DEST.  */
+  while (EDGE_COUNT (bb->preds) > 0)
+    {
+      edge e = EDGE_PRED (bb, 0), s;
+      tree phi;
+
+      s = find_edge (e->src, dest);
+      if (s)
+	{
+	  /* We already have an edge S from E->src to DEST.  If S and
+	     E->dest's sole successor edge have the same PHI arguments
+	     at DEST, redirect S to DEST.  */
+	  if (phi_alternatives_equal (dest, s, succ))
+	    {
+	      e = redirect_edge_and_branch (e, dest);
+	      PENDING_STMT (e) = NULL_TREE;
+	      continue;
+	    }
+
+	  /* PHI arguemnts are different.  Create a forwarder block by
+	     splitting E so that we can merge PHI arguments on E to
+	     DEST.  */
+	  e = EDGE_SUCC (split_edge (e), 0);
+	}
+
+      s = redirect_edge_and_branch (e, dest);
+
+      /* redirect_edge_and_branch must not create a new edge.  */
+      gcc_assert (s == e);
+
+      /* Add to the PHI nodes at DEST each PHI argument removed at the
+	 destination of E.  */
+      for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
+	{
+	  tree def = PHI_ARG_DEF (phi, succ->dest_idx);
+
+	  if (TREE_CODE (def) == SSA_NAME)
+	    {
+	      tree var;
+
+	      /* If DEF is one of the results of PHI nodes removed during
+		 redirection, replace it with the PHI argument that used
+		 to be on E.  */
+	      for (var = PENDING_STMT (e); var; var = TREE_CHAIN (var))
+		{
+		  tree old_arg = TREE_PURPOSE (var);
+		  tree new_arg = TREE_VALUE (var);
+
+		  if (def == old_arg)
+		    {
+		      def = new_arg;
+		      break;
+		    }
+		}
+	    }
+
+	  add_phi_arg (phi, def, s);
+	}
+
+      PENDING_STMT (e) = NULL;
+    }
+
+  /* Update the dominators.  */
+  dombb = get_immediate_dominator (CDI_DOMINATORS, bb);
+  domdest = get_immediate_dominator (CDI_DOMINATORS, dest);
+  if (domdest == bb)
+    {
+      /* Shortcut to avoid calling (relatively expensive)
+	 nearest_common_dominator unless necessary.  */
+      dom = dombb;
+    }
+  else
+    dom = nearest_common_dominator (CDI_DOMINATORS, domdest, dombb);
+
+  set_immediate_dominator (CDI_DOMINATORS, dest, dom);
+  
+  /* Remove BB since all of BB's incoming edges have been redirected
+     to DEST.  */
+  delete_basic_block (bb);
+}
+
+/* This pass performs merges PHI nodes if one feeds into another.  For
+   example, suppose we have the following:
+
+  goto <bb 9> (<L9>);
+
+<L8>:;
+  tem_17 = foo ();
+
+  # tem_6 = PHI <tem_17(8), tem_23(7)>;
+<L9>:;
+
+  # tem_3 = PHI <tem_6(9), tem_2(5)>;
+<L10>:;
+
+  Then we merge the first PHI node into the second one like so:
+
+  goto <bb 9> (<L10>);
+
+<L8>:;
+  tem_17 = foo ();
+
+  # tem_3 = PHI <tem_23(7), tem_2(5), tem_17(8)>;
+<L10>:;
+*/
+
+static void
+merge_phi_nodes (void)
+{
+  basic_block *worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
+  basic_block *current = worklist;
+  basic_block bb;
+
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* Find all PHI nodes that we may be able to merge.  */
+  FOR_EACH_BB (bb)
+    {
+      basic_block dest;
+
+      /* Look for a forwarder block with PHI nodes.  */
+      if (!tree_forwarder_block_p (bb, true))
+	continue;
+
+      dest = EDGE_SUCC (bb, 0)->dest;
+
+      /* We have to feed into another basic block with PHI
+	 nodes.  */
+      if (!phi_nodes (dest)
+	  /* We don't want to deal with a basic block with
+	     abnormal edges.  */
+	  || has_abnormal_incoming_edge_p (bb))
+	continue;
+
+      if (!dominated_by_p (CDI_DOMINATORS, dest, bb))
+	{
+	  /* If BB does not dominate DEST, then the PHI nodes at
+	     DEST must be the only users of the results of the PHI
+	     nodes at BB.  */
+	  *current++ = bb;
+	}
+    }
+
+  /* Now let's drain WORKLIST.  */
+  while (current != worklist)
+    {
+      bb = *--current;
+      remove_forwarder_block_with_phi (bb);
+    }
+
+  free (worklist);
+}
+
+static bool
+gate_merge_phi (void)
+{
+  return 1;
+}
+
+struct tree_opt_pass pass_merge_phi = {
+  "mergephi",			/* name */
+  gate_merge_phi,		/* gate */
+  merge_phi_nodes,		/* execute */
+  NULL,				/* sub */
+  NULL,				/* next */
+  0,				/* static_pass_number */
+  TV_TREE_MERGE_PHI,		/* tv_id */
+  PROP_cfg | PROP_ssa,		/* properties_required */
+  0,				/* properties_provided */
+  0,				/* properties_destroyed */
+  0,				/* todo_flags_start */
+  TODO_dump_func | TODO_ggc_collect	/* todo_flags_finish */
+  | TODO_verify_ssa,
+  0				/* letter */
+};
 
 /* Return a non-special label in the head of basic block BLOCK.
    Create one if it doesn't exist.  */
