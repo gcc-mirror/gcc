@@ -1,3 +1,8 @@
+Wed Oct 20 13:56:01 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386.c (ix86_expand_prologue): Properly wrap USE around
+	reg for CALL_INSN_FUNCTION_USAGE.
+
 Thu Oct 14 18:51:37 1999  Andrew Haley  <aph@cygnus.com>
 
 	* config/mips/mips.md (movdf_internal1a): Allow floating-point

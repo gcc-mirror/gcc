@@ -1560,7 +1560,8 @@ ix86_expand_prologue ()
       insn = emit_call_insn (gen_call (sym, const0_rtx));
 
       CALL_INSN_FUNCTION_USAGE (insn)
-	= gen_rtx_EXPR_LIST (VOIDmode, arg0, CALL_INSN_FUNCTION_USAGE (insn));
+	= gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_USE (VOIDmode, arg0),
+			     CALL_INSN_FUNCTION_USAGE (insn));
     }
 
   limit = (frame_pointer_needed ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM);
