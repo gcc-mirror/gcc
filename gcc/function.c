@@ -1028,7 +1028,7 @@ fixup_var_refs_insns (var, insn, toplevel)
 
 		      /* We can not separate USE insns from the CALL_INSN
 			 that they belong to.  If this is a CALL_INSN, insert
-			 the move insn before the USE insns preceeding it
+			 the move insn before the USE insns preceding it
 			 instead of immediately before the insn.  */
 		      if (GET_CODE (insn) == CALL_INSN)
 			{
@@ -1904,7 +1904,7 @@ instantiate_decls (fndecl, valid_only)
       if (DECL_RTL (decl) && GET_CODE (DECL_RTL (decl)) == MEM)
 	instantiate_virtual_regs_1 (&XEXP (DECL_RTL (decl), 0),
 				    valid_only ? DECL_RTL (decl) : 0, 0);
-#if 0 /* This is probably correct, but it seems to require fixes
+#if 1 /* This is probably correct, but it seems to require fixes
 	 elsewhere in order to work.  Let's fix them in 2.1.  */
       if (DECL_INCOMING_RTL (decl)
 	  && GET_CODE (DECL_INCOMING_RTL (decl)) == MEM)
@@ -2167,7 +2167,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
       /* Most cases of MEM that convert to valid addresses have already been
 	 handled by our scan of regno_reg_rtx.  The only special handling we
 	 need here is to make a copy of the rtx to ensure it isn't being
-	 shared if we have to change it to a psuedo. 
+	 shared if we have to change it to a pseudo. 
 
 	 If the rtx is a simple reference to an address via a virtual register,
 	 it can potentially be shared.  In such cases, first try to make it
@@ -2778,7 +2778,7 @@ assign_parms (fndecl, second_time)
 #if 0 /* This change was turned off because it makes compilation bigger.  */
 		  !optimize
 #else /* It's not clear why the following was replaced.  */
-		  /* Obsoleted by preceeding line. */
+		  /* Obsoleted by preceding line. */
 		  (obey_regdecls && ! TREE_REGDECL (parm)
 		   && ! TREE_INLINE (fndecl))
 #endif
@@ -3212,6 +3212,12 @@ setjmp_protect (block)
 	 || TREE_CODE (decl) == PARM_DECL)
 	&& DECL_RTL (decl) != 0
 	&& GET_CODE (DECL_RTL (decl)) == REG
+	/* If this variable came from an inline function, it must be
+	   that it's life doesn't overlap the setjmp.  If there was a
+	   setjmp in the function, it would already be in memory.  We
+	   must exclude such variable because their DECL_RTL might be
+	   set to strange things such as virtual_stack_vars_rtx.  */
+	&& ! DECL_FROM_INLINE (decl)
 	&& (
 #ifdef NON_SAVING_SETJMP
 	    /* If longjmp doesn't restore the registers,
@@ -3623,10 +3629,10 @@ mark_varargs ()
 void
 expand_main_function ()
 {
-#ifndef INIT_SECTION_ASM_OP
+#if !defined (INIT_SECTION_ASM_OP) || defined (INVOKE__main)
   emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__main"), 0,
 		     VOIDmode, 0);
-#endif /* not INIT_SECTION_ASM_OP */
+#endif /* not INIT_SECTION_ASM_OP or INVOKE__main */
 }
 
 /* Start the RTL for a new function, and set variables used for
