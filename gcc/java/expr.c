@@ -2480,11 +2480,11 @@ get_primitive_array_vtable (tree elt)
 }
 
 struct rtx_def *
-java_lang_expand_expr (exp, target, tmode, modifier)
+java_expand_expr (exp, target, tmode, modifier)
      register tree exp;
      rtx target;
      enum machine_mode tmode;
-     enum expand_modifier modifier;
+     int modifier; /* Actually an enum expand_modifier.  */
 {
   tree current;
 

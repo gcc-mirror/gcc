@@ -1,3 +1,11 @@
+2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* expr.c (java_lang_expand_expr): Rename java_expand_expr,
+	fix prototype.
+	* java-tree.h (java_lang_expand_expr): Similarly.
+	* lang.c (LANG_HOOKS_EXPAND_EXPR): Redefine.
+	(java_init): Don't set hook.
+
 2002-03-27  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	Fix for PR java/5850:

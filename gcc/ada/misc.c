@@ -108,6 +108,8 @@ static void gnat_mark_tree		PARAMS ((tree));
 #define LANG_HOOKS_HONOR_READONLY	1
 #undef LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
+#undef LANG_HOOKS_EXPAND_EXPR
+#define LANG_HOOKS_EXPAND_EXPR		gnat_expand_expr
 #undef LANG_HOOKS_PRINT_DECL
 #define LANG_HOOKS_PRINT_DECL		gnat_print_decl
 #undef LANG_HOOKS_PRINT_TYPE
@@ -163,7 +165,7 @@ extern char **gnat_argv;
 
 static void internal_error_function	PARAMS ((const char *, va_list *));
 static rtx gnat_expand_expr		PARAMS ((tree, rtx, enum machine_mode,
-						 enum expand_modifier));
+						 int));
 static void gnat_adjust_rli		PARAMS ((record_layout_info));
 
 /* Declare functions we use as part of startup.  */
@@ -358,8 +360,6 @@ gnat_init (filename)
      Define the additional tree codes here.  This isn't the best place to put
      it, but it's where g++ does it.  */
 
-  lang_expand_expr = gnat_expand_expr;
-
   gnat_init_decl_processing ();
 
   /* Add the input filename as the last argument.  */
@@ -503,7 +503,7 @@ gnat_expand_expr (exp, target, tmode, modifier)
      tree exp;
      rtx target;
      enum machine_mode tmode;
-     enum expand_modifier modifier;
+     int modifier;  /* Actually an enum expand_modifier.  */
 {
   tree type = TREE_TYPE (exp);
   tree new;

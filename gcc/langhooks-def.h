@@ -49,6 +49,7 @@ extern void lhd_clear_binding_stack PARAMS ((void));
 extern void lhd_print_tree_nothing PARAMS ((FILE *, tree, int));
 extern const char *lhd_decl_printable_name PARAMS ((tree, int));
 extern void lhd_set_yydebug PARAMS ((int));
+extern rtx lhd_expand_expr PARAMS ((tree, rtx, enum machine_mode, int));
 
 /* Declarations of default tree inlining hooks.  */
 tree lhd_tree_inlining_walk_subtrees		PARAMS ((tree *, int *,
@@ -78,6 +79,7 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_POST_OPTIONS		lhd_do_nothing
 #define LANG_HOOKS_GET_ALIAS_SET	lhd_get_alias_set
 #define LANG_HOOKS_EXPAND_CONSTANT	lhd_return_tree
+#define LANG_HOOKS_EXPAND_EXPR		lhd_expand_expr
 #define LANG_HOOKS_SAFE_FROM_P		lhd_safe_from_p
 #define LANG_HOOKS_STATICP		lhd_staticp
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL lhd_do_nothing_t
@@ -174,6 +176,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_CLEAR_BINDING_STACK, \
   LANG_HOOKS_GET_ALIAS_SET, \
   LANG_HOOKS_EXPAND_CONSTANT, \
+  LANG_HOOKS_EXPAND_EXPR, \
   LANG_HOOKS_SAFE_FROM_P, \
   LANG_HOOKS_STATICP, \
   LANG_HOOKS_DUP_LANG_SPECIFIC_DECL, \

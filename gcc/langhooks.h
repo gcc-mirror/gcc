@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_LANG_HOOKS_H
 #define GCC_LANG_HOOKS_H
 
+/* This file should be #include-d after tree.h.  */
+
 /* A print hook for print_tree ().  */
 typedef void (*lang_print_tree_hook) PARAMS ((FILE *, tree, int indent));
 
@@ -158,6 +160,10 @@ struct lang_hooks
      Returns either the same expression or a language-independent
      constant equivalent to its input.  */
   tree (*expand_constant) PARAMS ((tree));
+
+  /* Called by expand_expr for language-specific tree codes.
+     Fourth argument is actually an enum expand_modifier.  */
+  rtx (*expand_expr) PARAMS ((tree, rtx, enum machine_mode, int));
 
   /* Hook called by safe_from_p for language-specific tree codes.  It is
      up to the language front-end to install a hook if it has any such

@@ -143,6 +143,18 @@ hook_get_alias_set_0 (t)
   return 0;
 }
 
+/* This is the default expand_expr function.  */
+
+rtx
+lhd_expand_expr (t, r, mm, em)
+     tree t ATTRIBUTE_UNUSED;
+     rtx r ATTRIBUTE_UNUSED;
+     enum machine_mode mm ATTRIBUTE_UNUSED;
+     int em ATTRIBUTE_UNUSED;
+{
+  abort ();
+}
+
 /* This is the default decl_printable_name function.  */
 
 const char *

@@ -52,6 +52,8 @@ static void c_post_options PARAMS ((void));
 #define LANG_HOOKS_SAFE_FROM_P c_safe_from_p
 #undef LANG_HOOKS_MARK_TREE
 #define LANG_HOOKS_MARK_TREE c_mark_tree
+#undef LANG_HOOKS_EXPAND_EXPR
+#define LANG_HOOKS_EXPAND_EXPR c_expand_expr
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE c_common_parse_file
 #undef LANG_HOOKS_STATICP

@@ -1,3 +1,20 @@
+2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (c_expand_expr): Fix prototype.
+	* c-common.h (c_expand_expr): Always declare, update.
+	* c-lang.c (LANG_HOOKS_EXPAND_EXPR): Redefine.
+	* c-objc-common.c (c_objc_common_init): No global hook.
+	* expr.c (expand_expr): Use langhook.
+	* expr.h (enum expand_modifier): Conditionally declare.
+	* langhooks-def.h (lhd_expand_expr, LANG_HOOKS_EXPAND_EXPR): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.c (lhd_expand_expr): New.
+	* langhooks.h (struct lang_hooks): New hook.
+	* toplev.c (lang_expand_expr_t, lang_expand_expr): Delete.
+	(lang_independent_init): Don't default hook.
+objc:
+	* objc-lang.c (LANG_HOOKS_EXPAND_EXPR): Redefine.
+
 2002-03-27  Richard Henderson  <rth@redhat.com>
 
 	PR target/6054

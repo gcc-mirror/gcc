@@ -647,7 +647,6 @@ cxx_init (filename)
   init_reswords ();
   init_spew ();
   init_tree ();
-  init_cplus_expand ();
   init_cp_semantics ();
 
   lang_unsafe_for_reeval = c_unsafe_for_reeval;

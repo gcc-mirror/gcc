@@ -49,6 +49,8 @@ static bool ok_to_generate_alias_set_for_type PARAMS ((tree));
 #define LANG_HOOKS_GET_ALIAS_SET cxx_get_alias_set
 #undef LANG_HOOKS_EXPAND_CONSTANT
 #define LANG_HOOKS_EXPAND_CONSTANT cplus_expand_constant
+#undef LANG_HOOKS_EXPAND_EXPR
+#define LANG_HOOKS_EXPAND_EXPR cxx_expand_expr
 #undef LANG_HOOKS_SAFE_FROM_P
 #define LANG_HOOKS_SAFE_FROM_P c_safe_from_p
 #undef LANG_HOOKS_PARSE_FILE
