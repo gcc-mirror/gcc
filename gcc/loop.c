@@ -145,6 +145,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 ((REGNO_LAST_LUID (REGNO) > INSN_LUID ((LOOP)->end) \
  || REGNO_FIRST_LUID (REGNO) < INSN_LUID ((LOOP)->start)))
 
+#define LOOP_REGNO_NREGS(REGNO, SET_DEST) \
+((REGNO) < FIRST_PSEUDO_REGISTER \
+ ? HARD_REGNO_NREGS ((REGNO), GET_MODE (SET_DEST)) : 1)
+
 
 /* Vector mapping INSN_UIDs to luids.
    The luids are like uids but increase monotonically always.
@@ -893,7 +897,8 @@ scan_loop (loop, flags)
 				   SET_DEST (set), copy_rtx (SET_SRC (set)));
 
 		  delete_insn (p);
-		  regs->array[regno].set_in_loop = 0;
+		  for (i = 0; i < LOOP_REGNO_NREGS (regno, SET_DEST (set)); i++)
+		    regs->array[regno+i].set_in_loop = 0;
 		  continue;
 		}
 
@@ -923,7 +928,8 @@ scan_loop (loop, flags)
 	      m->savings = regs->array[regno].n_times_set;
 	      if (find_reg_note (p, REG_RETVAL, NULL_RTX))
 		m->savings += libcall_benefit (p);
-	      regs->array[regno].set_in_loop = move_insn ? -2 : -1;
+	      for (i = 0; i < LOOP_REGNO_NREGS (regno, SET_DEST (set)); i++)
+		regs->array[regno+i].set_in_loop = move_insn ? -2 : -1;
 	      /* Add M to the end of the chain MOVABLES.  */
 	      loop_movables_add (movables, m);
 
@@ -1024,7 +1030,8 @@ scan_loop (loop, flags)
 		  m->match = 0;
 		  m->lifetime = LOOP_REG_LIFETIME (loop, regno);
 		  m->savings = 1;
-		  regs->array[regno].set_in_loop = -1;
+		  for (i = 0; i < LOOP_REGNO_NREGS (regno, SET_DEST (set)); i++)
+		    regs->array[regno+i].set_in_loop = -1;
 		  /* Add M to the end of the chain MOVABLES.  */
 		  loop_movables_add (movables, m);
 		}
@@ -2145,7 +2152,11 @@ move_movables (loop, movables, threshold, insn_count)
 
 	      /* The reg set here is now invariant.  */
 	      if (! m->partial)
-		regs->array[regno].set_in_loop = 0;
+		{
+		  int i;
+		  for (i = 0; i < LOOP_REGNO_NREGS (regno, m->set_dest); i++)
+		    regs->array[regno+i].set_in_loop = 0;
+		}
 
 	      m->done = 1;
 
@@ -2205,7 +2216,13 @@ move_movables (loop, movables, threshold, insn_count)
 		      /* The reg merged here is now invariant,
 			 if the reg it matches is invariant.  */
 		      if (! m->partial)
-			regs->array[m1->regno].set_in_loop = 0;
+			{
+			  int i;
+			  for (i = 0;
+			       i < LOOP_REGNO_NREGS (regno, m1->set_dest);
+			       i++)
+			    regs->array[m1->regno+i].set_in_loop = 0;
+			}
 		    }
 	    }
 	  else if (loop_dump_stream)
@@ -3445,23 +3462,27 @@ count_one_set (regs, insn, x, last_set)
 	dest = XEXP (dest, 0);
       if (GET_CODE (dest) == REG)
 	{
+	  int i;
 	  int regno = REGNO (dest);
-	  /* If this is the first setting of this reg
-	     in current basic block, and it was set before,
-	     it must be set in two basic blocks, so it cannot
-	     be moved out of the loop.  */
-	  if (regs->array[regno].set_in_loop > 0
-	      && last_set == 0)
-	    regs->array[regno].may_not_optimize = 1;
-	  /* If this is not first setting in current basic block,
-	     see if reg was used in between previous one and this.
-	     If so, neither one can be moved.  */
-	  if (last_set[regno] != 0
-	      && reg_used_between_p (dest, last_set[regno], insn))
-	    regs->array[regno].may_not_optimize = 1;
-	  if (regs->array[regno].set_in_loop < 127)
-	    ++regs->array[regno].set_in_loop;
-	  last_set[regno] = insn;
+	  for (i = 0; i < LOOP_REGNO_NREGS (regno, dest); i++)
+	    {
+	      /* If this is the first setting of this reg
+		 in current basic block, and it was set before,
+		 it must be set in two basic blocks, so it cannot
+		 be moved out of the loop.  */
+	      if (regs->array[regno].set_in_loop > 0
+		  && last_set == 0)
+		regs->array[regno+i].may_not_optimize = 1;
+	      /* If this is not first setting in current basic block,
+		 see if reg was used in between previous one and this.
+		 If so, neither one can be moved.  */
+	      if (last_set[regno] != 0
+		  && reg_used_between_p (dest, last_set[regno], insn))
+		regs->array[regno+i].may_not_optimize = 1;
+	      if (regs->array[regno+i].set_in_loop < 127)
+		++regs->array[regno+i].set_in_loop;
+	      last_set[regno+i] = insn;
+	    }
 	}
     }
 }
