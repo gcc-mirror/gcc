@@ -4013,12 +4013,17 @@ update_headers __proto((void))
       symbolic_header.issMax += file_ptr->fdr.cbSs;
     }
 
+#ifndef ALIGN_SYMTABLE_OFFSET
+#define ALIGN_SYMTABLE_OFFSET(OFFSET) (OFFSET)
+#endif
 
+  file_offset = ALIGN_SYMTABLE_OFFSET (file_offset);
   i = WORD_ALIGN (symbolic_header.cbLine);	/* line numbers */
   if (i > 0)
     {
       symbolic_header.cbLineOffset = file_offset;
       file_offset += i;
+      file_offset = ALIGN_SYMTABLE_OFFSET (file_offset);
     }
 
   i = symbolic_header.ioptMax;			/* optimization symbols */
@@ -4026,6 +4031,7 @@ update_headers __proto((void))
     {
       symbolic_header.cbOptOffset = file_offset;
       file_offset += i * sizeof (OPTR);
+      file_offset = ALIGN_SYMTABLE_OFFSET (file_offset);
     }
 
   i = symbolic_header.idnMax;			/* dense numbers */
@@ -4033,6 +4039,7 @@ update_headers __proto((void))
     {
       symbolic_header.cbDnOffset = file_offset;
       file_offset += i * sizeof (DNR);
+      file_offset = ALIGN_SYMTABLE_OFFSET (file_offset);
     }
 
   i = symbolic_header.ipdMax;			/* procedure tables */
@@ -4040,6 +4047,7 @@ update_headers __proto((void))
     {
       symbolic_header.cbPdOffset = file_offset;
       file_offset += i * sizeof (PDR);
+      file_offset = ALIGN_SYMTABLE_OFFSET (file_offset);
     }
 
   i = symbolic_header.isymMax;			/* local symbols */
@@ -4047,6 +4055,7 @@ update_headers __proto((void))
     {
       symbolic_header.cbSymOffset = file_offset;
       file_offset += i * sizeof (SYMR);
+      file_offset = ALIGN_SYMTABLE_OFFSET (file_offset);
     }
 
   i = symbolic_header.iauxMax;			/* aux syms. */
@@ -4054,6 +4063,7 @@ update_headers __proto((void))
     {
       symbolic_header.cbAuxOffset = file_offset;
       file_offset += i * sizeof (TIR);
+      file_offset = ALIGN_SYMTABLE_OFFSET (file_offset);
     }
 
   i = WORD_ALIGN (symbolic_header.issMax);	/* local strings */
@@ -4061,6 +4071,7 @@ update_headers __proto((void))
     {
       symbolic_header.cbSsOffset = file_offset;
       file_offset += i;
+      file_offset = ALIGN_SYMTABLE_OFFSET (file_offset);
     }
 
   i = WORD_ALIGN (symbolic_header.issExtMax);	/* external strings */
@@ -4068,6 +4079,7 @@ update_headers __proto((void))
     {
       symbolic_header.cbSsExtOffset = file_offset;
       file_offset += i;
+      file_offset = ALIGN_SYMTABLE_OFFSET (file_offset);
     }
 
   i = symbolic_header.ifdMax;			/* file tables */
@@ -4075,6 +4087,7 @@ update_headers __proto((void))
     {
       symbolic_header.cbFdOffset = file_offset;
       file_offset += i * sizeof (FDR);
+      file_offset = ALIGN_SYMTABLE_OFFSET (file_offset);
     }
 
   i = symbolic_header.crfd;			/* relative file descriptors */
@@ -4082,6 +4095,7 @@ update_headers __proto((void))
     {
       symbolic_header.cbRfdOffset = file_offset;
       file_offset += i * sizeof (symint_t);
+      file_offset = ALIGN_SYMTABLE_OFFSET (file_offset);
     }
 
   i = symbolic_header.iextMax;			/* external symbols */
@@ -4089,6 +4103,7 @@ update_headers __proto((void))
     {
       symbolic_header.cbExtOffset = file_offset;
       file_offset += i * sizeof (EXTR);
+      file_offset = ALIGN_SYMTABLE_OFFSET (file_offset);
     }
 }
 
