@@ -1,3 +1,9 @@
+2005-03-16 Dale Johannesen  <dalej@apple.com>
+
+	* rtlanal.c (find_first_parameter_load):  Rewrite to
+	return actual first param load or the call if none,
+	instead of first in block, when not all loads exist.
+
 2005-03-16  Roger Sayle  <roger@eyesopen.com>
 
 	* optabs.c (expand_copysign_absneg): Make static.
