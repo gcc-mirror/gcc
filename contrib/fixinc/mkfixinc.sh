@@ -1,9 +1,15 @@
 #! /bin/sh
 
 machine=$1
-destdir=$2
+dest=$2
 
-#    *-*-linux-* | \
+if test -z "$dest"
+then
+     echo "No destination directory specified"
+     exit 1
+fi
+
+echo constructing $dest for $machine
 
 case $machine in
     alpha*-dec-vms* | \
@@ -34,9 +40,9 @@ case $machine in
     powerpcle-*-winnt*  | \
     powerpcle-*-pe | \
     powerpcle-*-cygwin32  | \
+    *-*-linux-* | \
     *-*-gnu*    )
-		echo fixinc for $machine disabled
-        fixincludes=
+        fixincludes=`basename $dest`
         ;;
 
     i[34567]86-dg-dgux* | \
@@ -71,7 +77,6 @@ case $machine in
         fixincludes=fixinc.winnt
         ;;
 
-    alpha*-*-linux-gnulibc1* | \
     alpha*-*-netbsd* | \
     arm-*-netbsd* | \
     i[34567]86-*-freebsdelf* | \
@@ -88,14 +93,13 @@ case $machine in
         ;;
 
     *)
-        fixincludes=generated
+        fixincludes=`basename $dest`
         ;;
 esac
 
 if test -z "$fixincludes"
 then
-	$MAKE install DESTDIR=$destdir
-    cat > $destdir/fixinc.sh  <<-	_EOF_
+    cat > $dest  <<-	_EOF_
 	#! /bin/sh
 	exit 0
 	_EOF_
@@ -104,10 +108,12 @@ fi
 
 if test -f "$fixincludes"
 then
-    cp $fixincludes $destdir/fixinc.sh
+    echo copying $fixincludes to $dest
+    cp $fixincludes $dest
     exit 0
 fi
 
-$MAKE install DESTDIR=$destdir
+echo $MAKE install DESTDIR=`dirname $dest`
+$MAKE install DESTDIR=`dirname $dest`
 
 exit 1

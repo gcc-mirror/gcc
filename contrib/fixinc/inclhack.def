@@ -171,11 +171,39 @@ fix = {
 fix = {
     hackname = badquote;
     files    = sundev/vuid_event.h;
-    /*
-     *  The following uglitude is to allow an apostrophe inside
-     *  of a single quote quoted string in a shell command line.
-     */
     sed      = "s/doesn't/does not/";
+};
+
+
+/*
+ *  Fix #defines under Alpha OSF/1:
+ *  The following files contain '#pragma extern_prefix "_FOO"' followed by
+ *  a '#define something(x,y,z) _FOOsomething(x,y,z)'.  The intent of these
+ *  statements is to reduce namespace pollution.  While these macros work
+ *  properly in most cases, they don't allow you to take a pointer to the
+ *  "something" being modified.  To get around this limitation, change these
+ *  statements to be of the form '#define something _FOOsomething'.
+ */
+fix = {
+    hackname = bad_lval;
+    select   = "^[ \t]*#[ \t]*pragma[ \t]extern_prefix";
+    files    = libgen.h;
+    files    = dirent.h;
+    files    = ftw.h;
+    files    = grp.h;
+    files    = ndbm.h;
+    files    = pthread.h;
+    files    = pwd.h;
+    files    = signal.h;
+    files    = standards.h;
+    files    = stdlib.h;
+    files    = string.h;
+    files    = stropts.h;
+    files    = time.h;
+    files    = unistd.h;
+    sed      =
+        "s/^[ \t]*#[ \t]*define[ \t]*\\([^(]*\\)\\(([^)]*)\\)[ \t]*"
+               "\\(_.\\)\\1\\2[ \t]*$/#define \\1 \\3\\1/";
 };
 
 
@@ -223,7 +251,7 @@ fix = {
 
 
 /*
- *  And also with the HP-UX 10 sys/pci.h file
+ *  And also with the HP-UX 10 and HP-UX 11 sys/pci.h file
  */
 fix = {
     hackname = cxx_cmnt_hpux;
@@ -312,8 +340,14 @@ fix = {
      *  and '0' lies the character '/'.  This will *NOT*
      *  match '#endif / * foo * /', but it also wont match
      *  '#endif / done' either.
+     *
+     *  We use the pattern [!-.0-z{|}~] instead of [^/ \t] to match a noncomment
+     *  following #else or #endif because some buggy egreps think [^/] matches
+     *  newline, and they thus think `#else ' matches
+     *  `#e[ndiflse]*[ \t]+[^/ \t]'.
+     *  [!-.0-~] does not work properly on AIX 4.1.
      */
-    select   = "^[ \t]*#[ \t]*endif[ \t]+[!-.0-~]";
+    select   = "^[ \t]*#[ \t]*endif[ \t]+[!-.0-z\{\|\}\~]";
 
     /*
      *  First, join the continued input lines.
@@ -362,12 +396,11 @@ fix = {
 
 
 /*
- *  assert.h and sys/mman.h on HP/UX are not C++ ready,
+ *  sys/mman.h on HP/UX is not C++ ready,
  *  even though NO_IMPLICIT_EXTERN_C is defined on HP/UX.
  */
 fix = {
     hackname = hpux_cxx_unready;
-    files    = assert.h;
     files    = sys/mman.h;
     bypass = '"C"|__BEGIN_DECLS';
 
@@ -561,6 +594,20 @@ fix = {
 
   
 /*
+ * Fix nested comments in Motorola's <limits.h> and <sys/limits.h>
+ */
+fix = {
+    hackname = motorola_nested;
+    files    = limits.h
+    files    = sys/limits.h;
+    sed = "s@^\\(#undef[ \t][ \t]*PIPE_BUF[ \t]*"
+                   "/\\* max # bytes atomic in write to a\\)$@\\1 */@";
+    sed = "s@\\(/\\*#define\tHUGE_VAL\t3.40282346638528860e+38 \\)"
+          "\\(/\\*error value returned by Math lib\\*/\\)$@\\1*/ \\2@";
+};
+
+  
+/*
  * Fixing nested comments in ISC <sys/limits.h>
  */
 fix = {
@@ -609,6 +656,7 @@ fix = {
  *  comment.  Fortunately, HP/UX already uses #ifndefs in limits.h; if
  *  we find a #ifndef FLT_MIN we assume that all the required #ifndefs
  *  are there, and we do not add them ourselves.
+ *  Also fix a nested comment problem in sys/limits.h on Motorola sysV68 R3V7.1
  */
 fix = {
     hackname = limits_ifndefs;
@@ -627,6 +675,7 @@ fix = {
     sed  = "/[ \t]DBL_MAX[ \t]/a\\\n#endif\n";
     sed  = "/[ \t]DBL_DIG[ \t]/i\\\n#ifndef DBL_DIG\n";
     sed  = "/[ \t]DBL_DIG[ \t]/a\\\n#endif\n";
+    sed  = "/^\\(\\/\\*#define\tHUGE_VAL\t3\\.[0-9e+]* *\\)\\/\\*/s//\\1/";
 };
 
 
@@ -896,7 +945,7 @@ fix = {
           '{' "\\\n"
           "\treturn fabs (hypot (x, y));\\\n"
           '}' "\\\n"
-          '#define hypot	fake_hypot' "\n";
+          "#define hypot\tfake_hypot\n";
 };
 
 
@@ -1814,6 +1863,7 @@ fix = {
     hackname = systypes_for_aix;
     files    = sys/types.h;
     select   = "typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t";
+    bypass   = "_GCC_SIZE_T";
 
     sed    = "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/i\\\n"
                  "#ifndef _GCC_SIZE_T\\\n"
@@ -1841,7 +1891,7 @@ fix = {
     sed = "s/^\\(\tstrncmp()\\),\\n\\(\tstrlen(),\\)$/\\1;\\\n"
           "extern unsigned int\\\n\\2/";
     sed = "/^extern int$/N";
-    sed = 's/^extern int\(\n	strlen(),\)/extern size_t\1/';
+    sed = "s/^extern int\\(\\n\tstrlen(),\\)/extern size_t\\1/";
 };
 
 
@@ -2189,6 +2239,61 @@ fix = {
     sed      = "s,^extern char \\*\tsprintf();$,#ifndef __STDC__\\\n"
                "extern char *\tsprintf();\\\n"
                "#endif /* !defined __STDC__ */,";
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = zzz_ki_iface;
+    files    = sys/ki_iface.h;
+    select   = 'These definitions are for HP Internal developers';
+    shell    = "cat > /dev/null ; rm -f $file";
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = zzz_ki;
+    files    = sys/ki.h;
+    select   = '11.00 HP-UX LP64';
+    shell    = "cat > /dev/null ; rm -f $file";
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = zzz_ki_calls;
+    files    = sys/ki_calls.h;
+    select   = 'KI_MAX_PROCS is an arbitrary number';
+    shell    = "cat > /dev/null ; rm -f $file";
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = zzz_ki_defs;
+    files    = sys/ki_defs.h;
+    select   = 'Kernel Instrumentation Definitions';
+    shell    = "cat > /dev/null ; rm -f $file";
+};
+
+
+/*
+ *  Purge some HP-UX 11 files that are only borken after they are "fixed".
+ */
+fix = {
+    hackname = zzz_time;
+    files    = sys/time.h;
+    select   = 'For CASPEC, look in';
+    shell    = "cat > /dev/null ; rm -f $file";
 };
 
 
