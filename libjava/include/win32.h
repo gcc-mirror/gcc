@@ -48,6 +48,7 @@ _Jv_platform_close_on_exec (jint)
   // Ignore.
 }
 
+#ifdef JV_HASH_SYNCHRONIZATION
 /* Suspends the execution of the current thread for the specified
    number of microseconds.  Tries to emulate the behaviour of usleep()
    on UNIX and provides a granularity of 1 millisecond.  */
@@ -60,6 +61,7 @@ _Jv_platform_usleep (unsigned long usecs)
       Sleep (millis);
     }
 }
+#endif /* JV_HASH_SYNCHRONIZATION */
 
 #ifndef DISABLE_JAVA_NET
 

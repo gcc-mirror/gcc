@@ -1,6 +1,6 @@
 // posix.h -- Helper functions for POSIX-flavored OSs.
 
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* Copyright (C) 2000, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -60,11 +60,13 @@ _Jv_platform_close_on_exec (jint fd)
   ::fcntl (fd, F_SETFD, FD_CLOEXEC);
 }
 
+#ifdef JV_HASH_SYNCHRONIZATION
 inline void
 _Jv_platform_usleep (unsigned long usecs)
 {
   usleep (usecs);
 }
+#endif /* JV_HASH_SYNCHRONIZATION */
 
 #ifndef DISABLE_JAVA_NET
 
