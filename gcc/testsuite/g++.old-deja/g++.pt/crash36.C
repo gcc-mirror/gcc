@@ -28,7 +28,7 @@ struct list {
   };
   
   reverse_iterator<list_iterator<T> > rbegin()
-    { return reverse_iterator<list_iterator<T> > // { dg-error "" } no type|instantiated here
+    { return reverse_iterator<list_iterator<T> >
 	(list_iterator<T>(Head->next())); } // { dg-error "" } not declared
 };
 

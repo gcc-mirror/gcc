@@ -10,5 +10,5 @@ namespace N
   class B { friend void operator>>(int, class B); };
   class N { friend void operator>>(int,class N); };
 } 
-void N::operator>>(int, N::B)  // { dg-error "N::N::B" }
-{ } // { dg-error "" "" }
+void N::operator>>(int, N::B)  // { dg-error "N::N::B|N::operator>>" }
+{ }

@@ -9,7 +9,7 @@ struct S
 
 
 template <class T> 
-template <> // { dg-error "" } enclosing classes not specialized
-void S<T>::f<int> () 
-{ // { dg-error "" } template does not match any declaration
+template <> // { dg-error "enclosing class templates|invalid explicit specialization" }
+void S<T>::f<int> ()  // { dg-error "does not match|invalid function declaration" }
+{
 }

@@ -11,22 +11,22 @@ public:
   int bar;
 };
 
-void func(Base&);		// { dg-error "" } 
+void func(Base&);			// { dg-error "passing argument 1" } 
 
 void func2(const Derived& d) {
-  func(d);			// { dg-error "" } this is bad
+  func(d);				// { dg-error "invalid initialization" }
 }
 
 void
-foo (int& a)
-{				// { dg-error "" } 
+foo (int& a)				// { dg-error "in passing argument 1" } 
+{
 }
 
 int main ()
 {
   int b;
   const int*const a = &b;
-  *a = 10;				// { dg-error "" } it's const
-  foo (*a);				// { dg-error "" } it's const
+  *a = 10;				// { dg-error "read-only location" }
+  foo (*a);				// { dg-error "invalid initialization" }
   return 0;
 }

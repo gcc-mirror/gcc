@@ -7,10 +7,10 @@ public:
   virtual ~X();
 }
 
-X::x()
-{				// { dg-error "" } 
+X::x()	// { dg-error "return type|member function" }
+{
 }
 
-X::~x()                         // { dg-error "" } 
+X::~x()	// { dg-error "expected class-name" }
 {				
 }

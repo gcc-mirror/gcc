@@ -6,8 +6,8 @@ class foo1
    enum foo1_enum
    {
       ENUM1,
-      ENUM2,
-   }; // { dg-error "" } comma
+      ENUM2, // { dg-error "comma at end" }
+   };
 };
 
    

@@ -5590,7 +5590,10 @@ grokfndecl (tree ctype,
 	error ("cannot declare `::main' to be static");
       if (!same_type_p (TREE_TYPE (TREE_TYPE (decl)),
 			integer_type_node))
-	error ("`main' must return `int'");
+	{
+	  error ("`::main' must return `int'");
+	  TREE_TYPE (TREE_TYPE (decl)) = integer_type_node;
+	}
       inlinep = 0;
       publicp = 1;
     }
@@ -6465,6 +6468,7 @@ grokdeclarator (const cp_declarator *declarator,
   cp_decl_spec ds;
   cp_storage_class storage_class;
   bool unsigned_p, signed_p, short_p, long_p, thread_p;
+  bool type_was_error_mark_node = false;
 
   signed_p = declspecs->specs[(int)ds_signed];
   unsigned_p = declspecs->specs[(int)ds_unsigned];
@@ -6665,7 +6669,10 @@ grokdeclarator (const cp_declarator *declarator,
   /* Extract the basic type from the decl-specifier-seq.  */
   type = declspecs->type;
   if (type == error_mark_node)
-    type = NULL_TREE;
+    {
+      type = NULL_TREE;
+      type_was_error_mark_node = true;
+    }
   /* If the entire declaration is itself tagged as deprecated then
      suppress reports of deprecated items.  */
   if (type && TREE_DEPRECATED (type)
@@ -6756,7 +6763,9 @@ grokdeclarator (const cp_declarator *declarator,
 		 && in_namespace == NULL_TREE
 		 && current_namespace == global_namespace);
 
-      if (in_system_header || flag_ms_extensions)
+      if (type_was_error_mark_node)
+	/* We've already issued an error, don't complain more.  */;
+      else if (in_system_header || flag_ms_extensions)
 	/* Allow it, sigh.  */;
       else if (pedantic || ! is_main)
 	pedwarn ("ISO C++ forbids declaration of `%s' with no type",
@@ -10101,16 +10110,10 @@ start_function (cp_decl_specifier_seq *declspecs,
     maybe_apply_pragma_weak (decl1);
 
   if (DECL_MAIN_P (decl1))
-    {
-      /* If this doesn't return integer_type, or a typedef to
-	 integer_type, complain.  */
-      if (!same_type_p (TREE_TYPE (TREE_TYPE (decl1)), integer_type_node))
-	{
-	  if (pedantic || warn_return_type)
-	    pedwarn ("return type for `main' changed to `int'");
-	  TREE_TYPE (decl1) = default_function_type;
-	}
-    }
+    /* main must return int.  grokfndecl should have corrected it
+       (and issued a diagnostic) if the user got it wrong.  */
+    gcc_assert (same_type_p (TREE_TYPE (TREE_TYPE (decl1)),
+			     integer_type_node));
 
   start_preparsed_function (decl1, attrs, /*flags=*/SF_DEFAULT);
 

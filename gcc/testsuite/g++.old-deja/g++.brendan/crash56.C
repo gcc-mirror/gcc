@@ -20,16 +20,16 @@ public:
     class Vix {
     public:
 	Vix();
-	friend int operator==(void *v, const Vix& x)
-	    { return v == x.item; }// { dg-error "" } list of candidates
-	friend int operator==(const Vix& x, void *v)
-	    { return v == x.item; }// { dg-error "" } candidate for call
+	friend int operator==(void *v, const Vix& x) // { dg-error "operator==" }
+	    { return v == x.item; }
+	friend int operator==(const Vix& x, void *v) // { dg-error "operator==" }
+	    { return v == x.item; }
 	friend int operator!=(void *v, const Vix& x)
 	    { return v != x.item; }
 	friend int operator!=(const Vix& x, void *v)
 	    { return v != x.item; }
-	friend int operator==(const Vix& x1, const Vix& x2)
-	    { return x1.owner == x2.owner && x1.item == x2.item; }// { dg-error "" } candidate for call
+	friend int operator==(const Vix& x1, const Vix& x2) // { dg-error "operator==" }
+	    { return x1.owner == x2.owner && x1.item == x2.item; }
 	friend int operator!=(const Vix& x1, const Vix& x2)
 	    { return x1.owner != x2.owner || x1.item != x2.item; }
 	bool first;		 
@@ -343,8 +343,8 @@ operator>=(const SetLD<T>& a, const SetLD<T>& b)
 class String { };
 class IcaseString: public String { };
 template <> class SetLD< IcaseString >: public SetLD<    String  > {	public:	 SetLD (): SetLD<    String  >() { };	 SetLD (const ListD<   IcaseString  >& other): SetLD<    String  >()	{ ListD<   IcaseString  >::Vix x;	for (other.first(x); 0 != x; other.next(x))	add(other(x)); };	 SetLD (const  SetLD & other): SetLD<    String  >(other) { };	const    IcaseString  & operator()(const Vix& x) const	{ return (   IcaseString  &) SetLD<    String  >::operator()(x); }	}; 	typedef SetLD<  String > SetLD_String_IcaseString_old_tmp99;	typedef SetLD< IcaseString > SetLD_String_IcaseString_new_tmp99;	
-inline int	 operator== (const SetLD_String_IcaseString_new_tmp99& a,	const SetLD_String_IcaseString_new_tmp99& b)
-{// { dg-error "" } candidate for call
+inline int	 operator== (const SetLD_String_IcaseString_new_tmp99& a,	const SetLD_String_IcaseString_new_tmp99& b) // { dg-error "operator==" }
+{
 const SetLD_String_IcaseString_old_tmp99& oa = a;
 const SetLD_String_IcaseString_old_tmp99& ob = b;
 return  operator== (oa, ob);	} 	

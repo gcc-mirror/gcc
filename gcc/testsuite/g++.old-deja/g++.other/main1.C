@@ -1,13 +1,12 @@
-// { dg-do assemble  }
-// Build don't linK:
+// { dg-do compile }
 
-int main()
-{ // { dg-error "" } invalid redeclaration of
+int main()  // { dg-error "previous declaration" }
+{
   return 0;
 }
 
 
-int main(int, const char**)
-{ // { dg-error "" } as
+int main(int, const char**) // { dg-error "conflicts" }
+{
   return 0;
 }

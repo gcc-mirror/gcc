@@ -14,8 +14,8 @@ public:
 };
 
 template <class _Tp>
-inline counted_ptr<_Tp>::counted_ptr(class auto_ptr& __a) // { dg-error "required" }
-{						// { dg-error "no type|not match|template" }
+inline counted_ptr<_Tp>::counted_ptr(class auto_ptr& __a) // { dg-error "required|not match|template" }
+{
 }
 
 template <class _Tp>

@@ -1,3 +1,58 @@
+2004-09-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* decl.c (grokfndecl): If ::main is found not to return int,
+	correct it after issuing a diagnostic.
+	(grokdeclarator): If the incoming type was error_mark_node, do
+	not complain about declaring something with no type.
+	(start_function): Change check for ::main not returning int to
+	an assertion, as grokfndecl now catches this when the user did it.
+	* init.c (perform_member_init, sort_mem_initializers)
+	(emit_mem_initializers): Make most diagnostics be issued on
+	the line of current_function_decl, not whatever the current
+	input line is.
+	* parser.c (cp_lexer_peek_token_emit_debug_info): Surround
+	definition and declaration with #ifdef ENABLE_CHECKING.
+	Avoid unnecessary use of fprintf.
+	(cp_lexer_print_token, cp_lexer_debug_stream): Adjust stub
+	definitions to avoid warnings.
+	(cp_lexer_new_main): Add assertion that first token is not a
+	padding token.
+	(cp_lexer_new_from_token_array): Fold into ...
+	(cp_lexer_new_from_tokens): ... here.  Add assertion that
+	first token is not a padding token.
+	(cp_lexer_set_source_position_from_token): Move nearer to callers.
+	Remove unused lexer argument.
+	(cp_lexer_peek_token): Just print debugging report (if enabled)
+	and return lexer->next_token.
+	(cp_lexer_skip_purged_tokens): Delete.
+	(cp_lexer_next_token_is, cp_lexer_next_token_is_not): Make
+	inline, simplify bodies.
+	(cp_lexer_peek_nth_token): Add debugging report a la
+	cp_lexer_peek_token.
+	(cp_lexer_consume_token): Correct commentary.  Advance over
+	purged tokens here.  Set current source position here, from
+	token to be returned.  Avoid unnecessary use of fprintf.
+	(cp_lexer_purge_token): Advance next_token pointer over this and
+	subsequent purged tokens.
+	(cp_parser_error): Adjust source position to that of the
+	peeked token.
+	(cp_parser_push_lexer_for_tokens, cp_parser_pop_lexer): New functions.
+	(cp_parser_string_literal): Remove some excessive cleverness.
+	(cp_parser_enum_specifier): Call start_enum before consuming
+	the opening brace.
+	(cp_parser_member_declaration): Make the "extra semicolon"
+	diagnostic consistently-worded with the other place this is
+	diagnosed.  Explicitly set the diagnostic location to the
+	location of the offending semicolon.
+	(cp_parser_enclosed_template_argument_list): Use %</%> quoting
+	in diagnostics.  Do not use cp_parser_require.  Set location
+	of diagnostics about improper use of '>>' to location of
+	offending token.
+	(cp_parser_late_parsing_for_member):
+	Use cp_parser_push_lexer_for_tokens and cp_parser_pop_lexer.
+	(cp_parser_late_parsing_default_args): Likewise.  Manually
+	move some logic outside the loop.
+
 2004-09-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/17618
@@ -68,7 +123,7 @@
 	class_hint_flags): Remove.
 	(get_pseudo_ti_init): Use CLASSTYPE_REPEATED_BASE_P and
 	CLASSTYPE_DIAMOND_SHAPED_P.
-	
+
 2004-09-21  Ziemowit Laski  <zlaski@apple.com>
 
 	* cp-lang.c (LANG_HOOKS_FOLD_OBJ_TYPE_REF): Moved here from

@@ -3,8 +3,8 @@ template <class T, class U>
 int func(U, T);			// { dg-error "" } ref below
 
 template <class T, class U>    
-int func(T, U)
-{				// { dg-error "" } ref below
+int func(T, U)			// { dg-error "" } ref below
+{
         return 2;
 }
 

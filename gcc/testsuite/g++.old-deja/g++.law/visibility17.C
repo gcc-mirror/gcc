@@ -31,24 +31,24 @@ private:
   int num_;
 };
 
-Base::Base()
-{ // { dg-error "" } private
+Base::Base() // { dg-error "is private" }
+{
   name_ = std::strcpy(new char[std::strlen(" ") + 1], " ");
 }
 
-Base::Base(char* str)
-{ // { dg-error "" } private
+Base::Base(char* str) // { dg-error "is private" }
+{
   if(str != NULL)
     name_ = std::strcpy(new char[std::strlen(str) + 1], str);
 }
 
-Derived::Derived(int n, char* str) : Base(str)
-{// { dg-error "" } .*
+Derived::Derived(int n, char* str) : Base(str) // { dg-error "within this context" }
+{
   num_ = n;
 }
 
-Derived::Derived(int n) : Base()
-{// { dg-error "" } .*
+Derived::Derived(int n) : Base() // { dg-error "within this context" }
+{
   num_ = n;
 }
 

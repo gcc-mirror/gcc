@@ -1,22 +1,22 @@
-// { dg-do assemble  }
+// { dg-do compile }
 // GROUPS passed old-abort
-class internal { // { dg-error "" } candidates are
+class internal { // { dg-error "internal::internal" }
 	int field;
 	int anotherfield;
 };
 
-class bug { // { dg-error "" } several errors
+class bug { // { dg-error "bug::bug" }
 	internal* numbers;
 	bug(int size);
 };
 
-bug::bug(int size)
-{ // { dg-error "" } candidates
-	numbers = new internal(size * size);// { dg-error "" }  no match.*
+bug::bug(int size) // { dg-error "bug::bug" }
+{
+  numbers = new internal(size * size);// { dg-error "no match" }
 }
 
 int
 main()
 {
-	bug test;// { dg-error "" }  no match
+  bug test; // { dg-error "no match" }
 }

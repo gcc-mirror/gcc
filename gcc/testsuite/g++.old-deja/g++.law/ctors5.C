@@ -5,7 +5,7 @@
 // Date: Tue, 1 Sep 92 10:38:44 EDT
 
 class X
-{ // { dg-error "" } candidate
+{ // { dg-error "X::X" } implicit constructor
   private:
     int x;
   public:
@@ -20,14 +20,14 @@ class Y
   public:
     Y();
 }
-X::X( int xi )
-{// { dg-error "" }  return.*
+X::X( int xi ) // { dg-error "return type|X::X" }
+{
     x = xi;
 }
 
 const X X::x0( 0 );
 
-Y::Y()
-{// { dg-error "" }  no mat
+Y::Y() // { dg-error "no match" }
+{
     xx = X::x0;
 }

@@ -13,6 +13,6 @@
 
 int i;
 
-;			// { dg-error "" } 
+;			// { dg-error "extra ';'" } 
 
 int main () { return 0; }

@@ -3,5 +3,5 @@
 struct X { 
   virtual void f(int, 
 		 itn,        // { dg-error "declared" }
-		 int);       // { dg-error "" }
+		 int);
 }; 

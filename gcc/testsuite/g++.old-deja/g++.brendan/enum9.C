@@ -2,8 +2,8 @@
 // GROUPS passed enums
 enum fig {
     figgy,
-    pudding,
-}; // { dg-error "" } comma
+    pudding,  // { dg-error "comma at end" }
+};
 
 class X {
 public:

@@ -11,8 +11,8 @@
 template <class T> struct inner {};
 
 template <class T> struct parent {
-  virtual void f()
-    { parent<inner<T> > p; };		// { dg-error "instantiation depth" }
+  virtual void f()			// { dg-error "instantiation depth" }
+    { parent<inner<T> > p; };
 };
 
 template struct parent<int>;
