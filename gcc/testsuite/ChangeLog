@@ -1,3 +1,8 @@
+2005-01-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/19462
+	* gcc.dg/torture/pr19462-1.c: New test.
+
 2005-01-15  Ziemowit Laski  <zlaski@apple.com>
 
 	PR objc/19321
