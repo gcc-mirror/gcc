@@ -32,6 +32,13 @@ proc gcc_target_object_format { } {
     } elseif { [string match "*-*-darwin*" $target_triplet] } {
 	# Darwin doesn't necessarily have objdump, so hand-code it.
 	set gcc_target_object_format_saved mach-o
+    } elseif { [string match "hppa*-*-hpux*" $target_triplet] } {
+	# HP-UX doesn't necessarily have objdump, so hand-code it.
+	if { [string match "hppa*64*-*-hpux*" $target_triplet] } {
+	  set gcc_target_object_format_saved elf
+	} else {
+	  set gcc_target_object_format_saved som
+	}
     } else {
         set objdump_name [find_binutils_prog objdump]
         set open_file [open objfmtst.c w]
@@ -66,6 +73,9 @@ proc gcc_target_object_format { } {
                 pe       {
                     set gcc_target_object_format_saved pe
                 }
+                som          {
+                    set gcc_target_object_format_saved som
+                } 
                 default      {
                     verbose "Unknown file format: $objformat" 3
                     set gcc_target_object_format_saved unknown

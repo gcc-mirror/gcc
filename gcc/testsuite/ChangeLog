@@ -1,3 +1,15 @@
+2005-03-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* lib/file-format.exp (gcc_target_object_format): Add check for som
+        format and hardcode object formats on hppa*-*-hpux*.
+	* lib/target-supports.exp (check_weak_available): Add check for som
+	object format.  Always return 0 on hppa*-*-hpux10*.
+
+	* gcc.dg/titype-1.c, gcc.dg/uninit-C.c: Don't use TImode if __hppa__
+	is defined.
+
+	* objc.dg/stabs-1.m: hppa*64*-*-* doesn't have stabs.
+
 2005-03-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/19311
