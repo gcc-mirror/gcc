@@ -90,7 +90,6 @@ proc test_libstdc++ { options srcfile compile_args inpfile resultfile exec_args 
     lappend args "libs=$wrapper_file";
     lappend args "libs=$libstdcpp";
     lappend args "additional_flags=[libio_include_flags]"
-    lappend args "additional_flags=[g++_link_flags]"
     lappend args debug
 
     regsub "^.*/(\[^/.\]+)\[.\]\[^/]*$" "$srcfile" "\\1" out

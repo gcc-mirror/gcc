@@ -1,3 +1,7 @@
+Wed Sep  3 09:39:36 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* lib/libstdc++.exp: Remove libg++_link_flags.
+
 Wed Aug  6 18:43:23 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lib/libstdc++.exp: Remove libio_link_flags.
