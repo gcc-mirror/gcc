@@ -11,7 +11,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002,2003
 
-@set last-update-news 2003-05-11
+@set last-update-news 2003-05-18
 
 @ifset DOC-NEWS
 @include root.texi
@@ -160,8 +160,6 @@ Problem Reports fixed (in chronological order of submission):
 @table @code
 @item 8485
 g77 doesn't accept INTEGER*8 constant in PARAMETER multiplication.
-@item 10726
-Documentation for function IDATE Intrinsic (UNIX) is wrong.
 @end table
 @item
 Roger Sayle (@email{roger@@eyesopen.com}) fixed the remaining
@@ -207,6 +205,8 @@ Double complex zero ** double precision number -> NaN instead of zero
 ICE caused by invalid PARAMETER in implied DO loop
 @item 10197
 Direct access files not unformatted by default
+@item 10726
+Documentation for function IDATE Intrinsic (UNIX) is wrong [fixed in 3.3.1].
 @end table
 @item
 Richard Henderson (@email{rth@@redhat.com}) analyzed and improved the handling
