@@ -958,16 +958,14 @@ reg_becomes_live (reg, setter, live)
 	 nregs--)
       SET_HARD_REG_BIT (* (HARD_REG_SET *) live, regno + nregs);
 }
-#endif
 
-/* Find all insns that need a particular mode
-   setting, and insert the necessary mode switches.  */
+/* Find all insns that need a particular mode setting, and insert the
+   necessary mode switches.  Return true if we did work.  */
 
-void
+int
 optimize_mode_switching (file)
-     FILE *file ATTRIBUTE_UNUSED;
+     FILE *file;
 {
-#ifdef OPTIMIZE_MODE_SWITCHING
   rtx insn;
   int bb, e;
   edge eg;
@@ -994,7 +992,7 @@ optimize_mode_switching (file)
       }
 
   if (! n_entities)
-    return;
+    return 0;
 
 #ifdef MODE_USES_IN_EXIT_BLOCK
   /* For some ABIs a particular mode setting is required at function exit.  */
@@ -1017,7 +1015,7 @@ optimize_mode_switching (file)
       else if (NEXT_INSN (use) == BLOCK_HEAD (bb))
 	BLOCK_HEAD (bb) = NEXT_INSN (insn);
     }
-#endif
+#endif /* MODE_USES_IN_EXIT_BLOCK */
 
   /* Create the bitmap vectors.  */
 
@@ -1034,7 +1032,7 @@ optimize_mode_switching (file)
       struct bb_info *info = bb_info[j];
 
       /* Determine what the first use (if any) need for a mode of entity E is.
-	 This will be th mode that is anticipatable for this block.
+	 This will be the mode that is anticipatable for this block.
 	 Also compute the initial transparency settings.  */
       for (bb = 0 ; bb < n_basic_blocks; bb++)
 	{
@@ -1253,5 +1251,18 @@ optimize_mode_switching (file)
 
   if (need_commit)
     commit_edge_insertions ();
-#endif /* OPTIMIZE_MODE_SWITCHING */
+
+  /* Ideally we'd figure out what blocks were affected and start from
+     there, but this is enormously complicated by commit_edge_insertions,
+     which would screw up any indicies we'd collected, and also need to
+     be involved in the update.  Bail and recompute global life info for
+     everything.  */
+
+  allocate_reg_life_data ();
+  update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
+		    (PROP_DEATH_NOTES | PROP_KILL_DEAD_CODE
+		     | PROP_SCAN_DEAD_CODE | PROP_REG_INFO));
+
+  return 1;
 }
+#endif /* OPTIMIZE_MODE_SWITCHING */

@@ -3234,12 +3234,22 @@ rest_of_compilation (decl)
 	ggc_collect ();
     }
 
-  if (optimize && n_basic_blocks)
+#ifdef OPTIMIZE_MODE_SWITCHING
+  if (optimize)
     {
       timevar_push (TV_GCSE);
-      optimize_mode_switching (NULL_PTR);
+
+      if (optimize_mode_switching (NULL_PTR))
+	{
+	  /* We did work, and so had to regenerate global life information.
+	     Take advantage of this and don't re-recompute register life
+	     information below.  */
+	  no_new_pseudos = 1;
+	}
+
       timevar_pop (TV_GCSE);
     }
+#endif
 
 #ifdef INSN_SCHEDULING
 
@@ -3280,9 +3290,7 @@ rest_of_compilation (decl)
      RUN_JUMP_AFTER_RELOAD records whether or not we need to rerun the
      jump optimizer after register allocation and reloading are finished.  */
 
-  /* We recomputed reg usage as part of updating the rest
-     of life info during sched.  */
-  if (! flag_schedule_insns)
+  if (! no_new_pseudos)
     {
       recompute_reg_usage (insns, ! optimize_size);
 
