@@ -66,6 +66,7 @@ static rtx copy_for_inline ();
 static void copy_decl_rtls ();
 
 static tree copy_decl_tree ();
+static tree copy_decl_list ();
 
 /* Return the constant equivalent of a given rtx, or 0 if none.  */
 static rtx const_equiv ();
@@ -479,10 +480,14 @@ save_for_inline_copying (fndecl)
      whose space has been freed.  */
 
   DECL_INITIAL (fndecl) = copy_decl_tree (DECL_INITIAL (fndecl));
+  DECL_ARGUMENTS (fndecl) = copy_decl_list (DECL_ARGUMENTS (fndecl));
 
   /* Now copy each DECL_RTL which is a MEM,
      so it is safe to modify their addresses.  */
   copy_decl_rtls (DECL_INITIAL (fndecl));
+
+  /* The fndecl node acts as its own progenitor, so mark it as such.  */
+  DECL_ABSTRACT_ORIGIN (fndecl) = fndecl;
 
   /* Now copy the chain of insns.  Do this twice.  The first copy the insn
      itself and its body.  The second time copy of REG_NOTES.  This is because
@@ -550,6 +555,40 @@ save_for_inline_copying (fndecl)
   set_new_first_and_last_insn (first_insn, last_insn);
 }
 
+/* Return a copy of a chain of nodes, chained through the TREE_CHAIN field.
+   For example, this can copy a list made of TREE_LIST nodes.  While copying,
+   for each node copied which doesn't already have is DECL_ABSTRACT_ORIGIN
+   set to some non-zero value, set the DECL_ABSTRACT_ORIGIN of the copy to
+   point to the corresponding (abstract) original node.  */
+
+static tree
+copy_decl_list (list)
+     tree list;
+{
+  tree head;
+  register tree prev, next;
+
+  if (list == 0)
+    return 0;
+
+  head = prev = copy_node (list);
+  if (DECL_ABSTRACT_ORIGIN (head) == NULL_TREE)
+    DECL_ABSTRACT_ORIGIN (head) = list;
+  next = TREE_CHAIN (list);
+  while (next)
+    {
+      register tree copy;
+
+      copy = copy_node (next);
+      if (DECL_ABSTRACT_ORIGIN (copy) == NULL_TREE)
+	DECL_ABSTRACT_ORIGIN (copy) = next;
+      TREE_CHAIN (prev) = copy;
+      prev = copy;
+      next = TREE_CHAIN (next);
+    }
+  return head;
+}
+
 /* Make a copy of the entire tree of blocks BLOCK, and return it.  */
 
 static tree
@@ -558,7 +597,7 @@ copy_decl_tree (block)
 {
   tree t, vars, subblocks;
 
-  vars = copy_list (BLOCK_VARS (block));
+  vars = copy_decl_list (BLOCK_VARS (block));
   subblocks = 0;
 
   /* Process all subblocks.  */
@@ -1655,7 +1694,7 @@ integrate_parm_decls (args, map, arg_vector)
       /* These args would always appear unused, if not for this.  */
       TREE_USED (decl) = 1;
       /* Prevent warning for shadowing with these.  */
-      DECL_FROM_INLINE (decl) = 1;
+      DECL_ABSTRACT_ORIGIN (decl) = tail;
       pushdecl (decl);
       /* Fully instantiate the address with the equivalent form so that the
 	 debugging information contains the actual register, instead of the
@@ -1715,7 +1754,7 @@ integrate_decl_tree (let, level, map)
       /* These args would always appear unused, if not for this.  */
       TREE_USED (d) = 1;
       /* Prevent warning for shadowing with these.  */
-      DECL_FROM_INLINE (d) = 1;
+      DECL_ABSTRACT_ORIGIN (d) = t;
       pushdecl (d);
     }
 

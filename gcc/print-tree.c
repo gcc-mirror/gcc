@@ -329,8 +329,6 @@ print_node (file, prefix, node, indent)
 	fputs (" bit-field", file);
       if (DECL_VIRTUAL_P (node))
 	fputs (" virtual", file);
-      if (DECL_FROM_INLINE (node))
-	fputs (" from_inline", file);
       if (DECL_IGNORED_P (node))
 	fputs (" ignored", file);
       if (DECL_IN_SYSTEM_HEADER (node))
@@ -368,6 +366,8 @@ print_node (file, prefix, node, indent)
       if (TREE_CODE (node) == FIELD_DECL)
 	print_node (file, "bitpos", DECL_FIELD_BITPOS (node), indent + 4);
       print_node_brief (file, "context", DECL_CONTEXT (node), indent + 4);
+      print_node_brief (file, "abstract_origin",
+			DECL_ABSTRACT_ORIGIN (node), indent + 4);
 
       print_node (file, "arguments", DECL_ARGUMENTS (node), indent + 4);
       print_node (file, "result", DECL_RESULT (node), indent + 4);
