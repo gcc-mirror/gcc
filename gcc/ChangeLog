@@ -1,3 +1,9 @@
+1998-07-28  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* cse.c (cse_insn): Enable subsitution inside libcall only for REG,
+	SUBREG, MEM.
+	* rtlanal.c (replace_rtx): Prohibit replaces in CONST_DOUBLE.
+
 Mon Jul 27 00:54:41 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (simple_cst_equal, case CONSTRUCTOR): OK if the elts are
