@@ -10452,13 +10452,10 @@ simplify_comparison (code, pop0, pop1)
 	  break;
 
 	case MINUS:
-	  /* (op (minus A B) 0) -> (op A B) */
-	  if (op1 == const0_rtx)
-	    {
-	      op1 = XEXP (op0, 1);
-	      op0 = XEXP (op0, 0);
-	      continue;
-	    }
+	  /* We used to optimize signed comparisons against zero, but that
+	     was incorrect.  Unsigned comparisons against zero (GTU, LEU)
+	     arrive here as equality comparisons, or (GEU, LTU) are
+	     optimized away.  No need to special-case them.  */
 
 	  /* (eq (minus A B) C) -> (eq A (plus B C)) or
 	     (eq B (minus A C)), whichever simplifies.  We can only do

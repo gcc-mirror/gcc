@@ -4,6 +4,11 @@ Wed Apr  5 12:35:18 2000  Hans-Peter Nilsson  <hp@axis.com>
 	from the insn where REG_RETVAL is added.
 	(emit_no_conflict_block): Ditto.
 
+	* md.texi (Standard Names): Clarify when movX is needed.
+
+	* combine.c (simplify_comparison) [MINUS]: Do not replace
+	all (op (minus A B) 0) with (op A B).
+
 Wed Apr  5 18:03:31 2000  Toshiyasu Morita  (toshi.morita@sega.com)
                           J"orn Rennecke <amylaar@cygnus.co.uk>
 
