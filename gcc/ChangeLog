@@ -1,3 +1,18 @@
+2002-05-05  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_adjust_cost): Remove everything but
+	memory latency adjustments.
+	(alpha_variable_issue): Remove.
+	(alpha_use_dfa_pipeline_interface): New.
+	(alpha_multipass_dfa_lookahead): New.
+	* config/alpha/alpha.md: Remove define_function_unit scheduling;
+	include new dfa scheduling.
+	(attr type): Add none.
+	(blockage): Use it.
+	* config/alpha/ev4.md: New.
+	* config/alpha/ev5.md: New.
+	* config/alpha/ev6.md: New.
+
 2002-05-05  David S. Miller  <davem@redhat.com>
 
 	* recog.c (store_data_bypass_p): Handle CLOBBER inside PARALLEL.
