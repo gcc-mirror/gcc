@@ -1,3 +1,7 @@
+2000-09-25  Kazu Hirata  <kazu@hxi.com>
+
+	* config/i386/i386.c: Fix formatting.
+
 2000-09-24  Alan Lehotsky  <alehotsky@cygnus.com>
 
 	* emit-rtl-c (gen_lowpart_common): Accept non-paradoxical SUBREG when
