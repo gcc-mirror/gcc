@@ -3,6 +3,15 @@ Thu Aug 13 00:13:55 1998  Jeffrey A Law  (law@cygnus.com)
 	* execute/ieee/ieee.exp: Pass -ffloat-store to compiler for
 	ieee tests.
 
+Mon Jul 27 11:05:07 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* execute/ieee/930529-1.c (main): Check to see if __thumb__ is
+	defined, and test for ARM style doubles if so.
+
+Fri Jul 24 11:02:43 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* execute/comp-goto-1.c (main): Make main() return an int.
+
 Thu Jun 18 15:12:30 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* execute/980618-{1,2}.c: New tests that showed up m32r bugs.
