@@ -1,3 +1,26 @@
+Sun Sep 12 15:53:20 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* reload.h (reload_in, reload_out, reload_in_reg, reload_out_reg,
+	reload_reg_class, reload_inmode, reload_outmode, reload_optional,
+	reload_nongroup, reload_inc, reload_opnum, reload_secondary_p,
+	reload_secondary_in_reload, reload_secondary_out_reload,
+	reload_secondary_in_icode, reload_secondary_out_icode,
+	reload_reg_rtx, reload_when_needed): Delete declarations.
+	(struct reload): New structure.
+	(rld): Declare new array.
+	* reload.c (reload_in, reload_out, reload_in_reg, reload_out_reg,
+	reload_reg_class, reload_inmode, reload_outmode, reload_optional,
+	reload_nongroup, reload_inc, reload_opnum, reload_secondary_p,
+	reload_secondary_in_reload, reload_secondary_out_reload,
+	reload_secondary_in_icode, reload_secondary_out_icode,
+	reload_reg_rtx, reload_when_needed): Delete definitions.
+	(rld): New array.
+	(whole file): Replace uses of the deleted arrays with uses of rld.
+	* reload1.c (whole file): Replace uses of the deleted arrays with
+	uses of rld.
+	(choose_reload_regs): Copy in/out of save_reload_reg_rtx with
+	explicit loops, not with bcopy.
+
 Sun Sep 12 05:00:24 1999  Richard Henderson  <rth@cygnus.com>
 
 	* recog.h (insn_template, insn_outfun, insn_n_operands, insn_n_dups,

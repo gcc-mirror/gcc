@@ -45,32 +45,8 @@ Boston, MA 02111-1307, USA.  */
 #endif
 extern int memory_move_secondary_cost PROTO ((enum machine_mode, enum reg_class, int));
 
-/* See reload.c and reload1.c for comments on these variables.  */
-
 /* Maximum number of reloads we can need.  */
 #define MAX_RELOADS (2 * MAX_RECOG_OPERANDS * (MAX_REGS_PER_ADDRESS + 1))
-
-extern rtx reload_in[MAX_RELOADS];
-extern rtx reload_out[MAX_RELOADS];
-extern rtx reload_in_reg[MAX_RELOADS];
-extern rtx reload_out_reg[MAX_RELOADS];
-extern enum reg_class reload_reg_class[MAX_RELOADS];
-extern enum machine_mode reload_inmode[MAX_RELOADS];
-extern enum machine_mode reload_outmode[MAX_RELOADS];
-extern char reload_optional[MAX_RELOADS];
-extern char reload_nongroup[MAX_RELOADS];
-extern int reload_inc[MAX_RELOADS];
-extern int reload_opnum[MAX_RELOADS];
-extern int reload_secondary_p[MAX_RELOADS];
-extern int reload_secondary_in_reload[MAX_RELOADS];
-extern int reload_secondary_out_reload[MAX_RELOADS];
-#ifdef MAX_INSN_CODE
-extern enum insn_code reload_secondary_in_icode[MAX_RELOADS];
-extern enum insn_code reload_secondary_out_icode[MAX_RELOADS];
-#endif
-extern int n_reloads;
-
-extern rtx reload_reg_rtx[MAX_RELOADS];
 
 /* Encode the usage of a reload.  The following codes are supported:
 
@@ -105,7 +81,81 @@ enum reload_type
   RELOAD_OTHER, RELOAD_FOR_OTHER_ADDRESS
 };
 
-extern enum reload_type reload_when_needed[MAX_RELOADS];
+#ifdef MAX_INSN_CODE
+/* Each reload is recorded with a structure like this.  */
+struct reload
+{
+  /* The value to reload from */
+  rtx in;
+  /* Where to store reload-reg afterward if nec (often the same as
+     reload_in)  */
+  rtx out;
+
+  /* The class of registers to reload into.  */
+  enum reg_class class;
+
+  /* The mode this operand should have when reloaded, on input.  */
+  enum machine_mode inmode;
+  /* The mode this operand should have when reloaded, on output.  */
+  enum machine_mode outmode;
+
+  /* Positive amount to increment or decrement by if
+     reload_in is a PRE_DEC, PRE_INC, POST_DEC, POST_INC.
+     Ignored otherwise (don't assume it is zero).  */
+  int inc;
+  /* A reg for which reload_in is the equivalent.
+     If reload_in is a symbol_ref which came from
+     reg_equiv_constant, then this is the pseudo
+     which has that symbol_ref as equivalent.  */
+  rtx in_reg;
+  rtx out_reg;
+
+  /* Used in find_reload_regs to record the allocated register.  */
+  int regno;
+  /* This is the register to reload into.  If it is zero when `find_reloads'
+     returns, you must find a suitable register in the class specified by
+     reload_reg_class, and store here an rtx for that register with mode from
+     reload_inmode or reload_outmode.  */
+  rtx reg_rtx;
+  /* The operand number being reloaded.  This is used to group related reloads
+     and need not always be equal to the actual operand number in the insn,
+     though it current will be; for in-out operands, it is one of the two
+     operand numbers.  */
+  int opnum;
+
+  /* Gives the reload number of a secondary input reload, when needed;
+     otherwise -1.  */
+  int secondary_in_reload;
+  /* Gives the reload number of a secondary output reload, when needed;
+     otherwise -1.  */
+  int secondary_out_reload;
+  /* If a secondary input reload is required, gives the INSN_CODE that uses the
+     secondary reload as a scratch register, or CODE_FOR_nothing if the
+     secondary reload register is to be an intermediate register.  */
+  enum insn_code secondary_in_icode;
+  /* Likewise, for a secondary output reload.  */
+  enum insn_code secondary_out_icode;
+
+  /* Classifies reload as needed either for addressing an input reload,
+     addressing an output, for addressing a non-reloaded mem ref, or for
+     unspecified purposes (i.e., more than one of the above).  */
+  enum reload_type when_needed;
+  
+  /* Nonzero for an optional reload.  Optional reloads are ignored unless the
+     value is already sitting in a register.  */
+  unsigned int optional:1;
+  /* nonzero if this reload shouldn't be combined with another reload.  */
+  unsigned int nocombine:1;
+  /* Nonzero if this is a secondary register for one or more reloads.  */
+  unsigned int secondary_p:1;
+  /* Nonzero if this reload must use a register not already allocated to a
+     group.  */
+  unsigned int nongroup:1;
+};
+
+extern struct reload rld[MAX_RELOADS];
+extern int n_reloads;
+#endif
 
 extern rtx *reg_equiv_constant;
 extern rtx *reg_equiv_memory_loc;
