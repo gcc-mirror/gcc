@@ -122,9 +122,9 @@ proc objc_target_compile { source dest type options } {
     set ld_library_path "."
     lappend options "libs=-lobjc"
 
-    # On Solaris 2.8, we need to include libposix4 inorder to get
+    # On Solaris 2.8, we need to include libposix4 in order to get
     # sched_get_priority_max and such.
-    if [ishost "sparc-sun-solaris2.8"] {
+    if [istarget {sparc-sun-solaris2.[678]} ] {
 	lappend options "libs=-lposix4"
     }
 
