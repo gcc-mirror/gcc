@@ -1032,18 +1032,6 @@ static int errors = 0;			/* Error counter for exit code */
 /* Name of output file, for error messages.  */
 static char *out_fname;
 
-/* Zero means dollar signs are punctuation.
-   -$ stores 0; -traditional may store 1.  Default is 1 for VMS, 0 otherwise.
-   This must be 0 for correct processing of this ANSI C program:
-	#define foo(a) #a
-	#define lose(b) foo (b)
-	#define test$
-	lose (test)	*/
-static int dollars_in_ident;
-#ifndef DOLLARS_IN_IDENTIFIERS
-#define DOLLARS_IN_IDENTIFIERS 1
-#endif
-
 
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
@@ -1354,10 +1342,8 @@ main (argc, argv)
   in_fname = NULL;
   out_fname = NULL;
 
-  /* Initialize is_idchar to allow $.  */
-  dollars_in_ident = 1;
+  /* Initialize is_idchar.  */
   initialize_char_syntax ();
-  dollars_in_ident = DOLLARS_IN_IDENTIFIERS > 0;
 
   no_line_directives = 0;
   no_trigraphs = 1;
@@ -1512,8 +1498,6 @@ main (argc, argv)
 	if (!strcmp (argv[i], "-traditional")) {
 	  traditional = 1;
 	  cplusplus_comments = 0;
-	  if (dollars_in_ident > 0)
-	    dollars_in_ident = 1;
 	} else if (!strcmp (argv[i], "-trigraphs")) {
 	  no_trigraphs = 0;
 	}
@@ -1715,7 +1699,7 @@ main (argc, argv)
 	break;
 
       case '$':			/* Don't include $ in identifiers.  */
-	dollars_in_ident = 0;
+	is_idchar['$'] = is_idstart['$'] = 0;
 	break;
 
       case 'I':			/* Add directory to path for includes.  */
@@ -1777,9 +1761,6 @@ main (argc, argv)
   cp = getenv ("CPATH");
   if (cp && ! no_standard_includes)
     path_include (cp);
-
-  /* Now that dollars_in_ident is known, initialize is_idchar.  */
-  initialize_char_syntax ();
 
   /* Initialize output buffer */
 
@@ -3053,8 +3034,10 @@ do { ip = &instack[indepth];		\
       break;
 
     case '$':
-      if (!dollars_in_ident)
+      if (! is_idchar['$'])
 	goto randomchar;
+      if (pedantic)
+	pedwarn ("`$' in identifier");
       goto letter;
 
     case '0': case '1': case '2': case '3': case '4':
@@ -9445,8 +9428,8 @@ initialize_char_syntax ()
     is_idchar[i] = 1;
   is_idchar['_'] = 1;
   is_idstart['_'] = 1;
-  is_idchar['$'] = dollars_in_ident;
-  is_idstart['$'] = dollars_in_ident;
+  is_idchar['$'] = 1;
+  is_idstart['$'] = 1;
 
   /* horizontal space table */
   is_hor_space[' '] = 1;
