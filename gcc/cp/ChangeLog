@@ -1,3 +1,10 @@
+2002-04-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* call.c (convert_type_from_ellipsis): Rename, update.
+	* cp-lang.c (LANG_HOOKS_TYPE_PROMOTES_TO): Redefine.
+	* cp-tree.h (convert_type_from_ellipsis): Rename.
+	* decl.c (cxx_init_decl_processing): Don't set hook.
+
 2002-04-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* call.c (build_new_method_call): Update.

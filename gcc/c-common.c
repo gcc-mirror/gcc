@@ -2928,10 +2928,6 @@ c_common_nodes_and_builtins ()
 		      0, NOT_BUILT_IN, 0, 0, 1);
 
   main_identifier_node = get_identifier ("main");
-
-  /* ??? Perhaps there's a better place to do this.  But it is related
-     to __builtin_va_arg, so it isn't that off-the-wall.  */
-  lang_type_promotes_to = simple_type_promotes_to;
 }
 
 tree
@@ -3073,32 +3069,6 @@ c_promoting_integer_type_p (t)
     default:
       return 0;
     }
-}
-
-/* Given a type, apply default promotions wrt unnamed function arguments
-   and return the new type.  Return NULL_TREE if no change.  */
-/* ??? There is a function of the same name in the C++ front end that
-   does something similar, but is more thorough and does not return NULL
-   if no change.  We could perhaps share code, but it would make the
-   self_promoting_type property harder to identify.  */
-
-tree
-simple_type_promotes_to (type)
-     tree type;
-{
-  if (TYPE_MAIN_VARIANT (type) == float_type_node)
-    return double_type_node;
-
-  if (c_promoting_integer_type_p (type))
-    {
-      /* Preserve unsignedness if not really getting any wider.  */
-      if (TREE_UNSIGNED (type)
-          && (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)))
-        return unsigned_type_node;
-      return integer_type_node;
-    }
-
-  return NULL_TREE;
 }
 
 /* Return 1 if PARMS specifies a fixed number of parameters

@@ -1,3 +1,26 @@
+2002-04-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* builtins.c: Include langhooks.h.
+	(lang_type_promotes_to): Remove.
+	(expand_builtin_va_arg): Use new hook.
+	* c-common.c (c_common_nodes_and_builtins): Don't set hook.
+	(simple_type_promotes_to): Move to c-typeck.c.
+	* c-common.h (simple_type_promotes_to): Remove.
+	* c-decl.c (duplicate_decls, grokdeclarator): Update.
+	* c-format.c: Include langhooks.h.
+	(check_format_types): Update.
+	* c-tree.h (c_type_promotes_to): New.
+	* c-typeck.c (c_type_promotes_to): Move from c-common.c.
+	(type_lists_compatible_p): Update.
+	* langhooks-def.h (lhd_type_promotes_to): New.
+	(LANG_HOOKS_TYPE_PROMOTES_TO): New.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Update.
+	* langhooks.c (lhd_type_promotes_to): New.
+	* langhooks.h (struct lang_hooks_for_types): New hook.
+	* tree.h (lang_type_promotes_to): Remove.
+objc:
+	* objc-lang.c (LANG_HOOKS_TYPE_PROMOTES_TO): Redefine.
+
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
 	* function.c: Revert patch for c/6358.

@@ -2799,11 +2799,6 @@ extern void rrotate_double	PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 extern int operand_equal_p	PARAMS ((tree, tree, int));
 extern tree invert_truthvalue	PARAMS ((tree));
 
-/* In builtins.c.  Given a type, apply default promotions wrt unnamed
-   function arguments and return the new type.  Return NULL_TREE if no
-   change.  Required by any language that supports variadic arguments.  */
-
-extern tree (*lang_type_promotes_to)	PARAMS ((tree));
 extern tree fold_builtin		PARAMS ((tree));
 
 extern tree build_range_type PARAMS ((tree, tree, tree));
