@@ -1,5 +1,5 @@
 /* Output xcoff-format symbol table information from GNU compiler.
-   Copyright (C) 1992, 1994, 1995, 1997, 1998, 1999, 2000
+   Copyright (C) 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2002
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -75,11 +75,13 @@ const char *xcoff_lastfile;
 ((xcoff_inlining) ? (LINENO) : (LINENO) - xcoff_begin_function_line)
 
 /* Output source line numbers via ".line" rather than ".stabd".  */
-#define ASM_OUTPUT_SOURCE_LINE(FILE,LINENUM) \
-  do {						\
-    if (xcoff_begin_function_line >= 0)		\
-      fprintf (FILE, "\t.line\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM)); \
-  } while (0)
+#define ASM_OUTPUT_SOURCE_LINE(FILE,LINENUM) 				   \
+  do									   \
+    {									   \
+      if (xcoff_begin_function_line >= 0)				   \
+	fprintf (FILE, "\t.line\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM)); \
+    }									   \
+  while (0)
 
 #define ASM_OUTPUT_LFB(FILE,LINENUM) \
 {						\
@@ -93,11 +95,13 @@ const char *xcoff_lastfile;
        ? xcoff_current_include_file : main_input_filename); \
 }
 
-#define ASM_OUTPUT_LFE(FILE,LINENUM) \
-  do {						\
-    fprintf (FILE, "\t.ef\t%d\n", (LINENUM));	\
-    xcoff_begin_function_line = -1;		\
-  } while (0)
+#define ASM_OUTPUT_LFE(FILE,LINENUM) 		\
+  do						\
+    {						\
+      fprintf (FILE, "\t.ef\t%d\n", (LINENUM));	\
+      xcoff_begin_function_line = -1;		\
+    }						\
+  while (0)
 
 #define ASM_OUTPUT_LBB(FILE,LINENUM,BLOCKNUM) \
   fprintf (FILE, "\t.bb\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM))

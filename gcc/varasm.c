@@ -2425,7 +2425,7 @@ static struct constant_descriptor *const_hash_table[MAX_HASH_TABLE];
    they are actually used.  This will be if something takes its address or if
    there is a usage of the string in the RTL of a function.  */
 
-#define STRHASH(x) ((hashval_t)((long)(x) >> 3))
+#define STRHASH(x) ((hashval_t) ((long) (x) >> 3))
 
 struct deferred_string
 {
@@ -2590,7 +2590,7 @@ const_hash (exp)
 	else if (GET_CODE (value.base) == LABEL_REF)
 	  hi = value.offset + CODE_LABEL_NUMBER (XEXP (value.base, 0)) * 13;
 	else
-	  abort();
+	  abort ();
 
 	hi &= (1 << HASHBITS) - 1;
 	hi %= MAX_HASH_TABLE;

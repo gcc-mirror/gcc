@@ -1,3 +1,10 @@
+2002-01-10  Kazu Hirata  <kazu@hxi.com>
+
+	* varasm.c: Fix formatting.
+	* varray.c: Likewise.
+	* vmsdbgout.c: Likewise.
+	* xcoffout.c: Likewise.
+
 Thu Jan 10 17:19:12 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_forward_edges): Properly initialize nthreaded_edges;
