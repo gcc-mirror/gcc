@@ -1,3 +1,9 @@
+2002-03-18  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* include/i386-signal.h (old_i386_kernel_sigaction): New.
+	INIT_SEGV: Use old_i386_kernel_sigaction.
+	INIT_FP: Likewise.
+
 2002-03-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/lang/natSystem.cc (init_properties): Update VM version
