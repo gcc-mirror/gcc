@@ -69,7 +69,6 @@ integer G77_lstat_0 (const char *name, integer statb[13], const ftnlen Lname)
   statb[8] = buf.st_atime;
   statb[9] = buf.st_mtime;
   statb[10] = buf.st_ctime;
-  statb[6] = 0;
 #if HAVE_ST_BLKSIZE
   statb[11] = buf.st_blksize;
 #else
