@@ -1,5 +1,17 @@
 2004-10-18  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/BufferedInputStream.java: Fixed @author tag.
+	(read): Simplified expression.
+	(read): Merged javadoc a bit more.
+	(read): Renamed 'remain' to 'totalBytesRead'.
+	* java/io/DataInputStream.java,
+	java/io/DataOutputStream.java,
+	java/io/ObjectInputStream.java,
+	java/io/ObjectOutputStream.java:
+	Reworked modifier order.
+
+2004-10-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/Inet4Address.java: Merged file header and javadocs.
 	* java/net/Inet6Address.java: Likewise.
 	* java/net/InetAddress.java
