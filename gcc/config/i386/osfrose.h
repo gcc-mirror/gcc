@@ -43,6 +43,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      { "no-half-pic",	-MASK_HALF_PIC},				\
      { "debugb",	 MASK_HALF_PIC_DEBUG},
 
+/* Undefine this now, because bsd386.h tests it.  */
+#undef NO_UNDERSCORES
+
 /* Prefix that appears before all global/static identifiers, except for
    temporary labels.  */
 
