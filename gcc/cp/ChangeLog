@@ -1,5 +1,19 @@
 1999-04-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* gxx.gperf (RETURN): Rename to RETURN_KEYWORD to avoid clashes
+	with the RTL code RETURN.
+	* hash.h: Regenerated.
+	* lex.c (reinit_parse_for_block): Use RETURN_KEYWORD.
+	* parse.y: Replace RETURN with RETURN_KEYWORD throughout.
+	* parse.c: Regenerated.
+	* pt.c: Include varray.h.  Include rtl.h since varray.h requires
+	it.
+	(inline_parm_levels): New variable.
+	(inline_parm_levels_used): Likewise.
+	(maybe_begin_member_template_processing): Update them.
+	(maybe_end_member_template_processing): Use them, rather than
+	guessing how many levels to pop.
+	
 	* decl.c (make_typename_type): Tighten error-checking.
 
 1999-04-20  Mark Mitchell  <mark@codesourcery.com>

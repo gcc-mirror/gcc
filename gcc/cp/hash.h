@@ -1,5 +1,5 @@
 /* C code produced by gperf version 2.7.1 (19981006 egcs) */
-/* Command-line: gperf -L C -F , 0, 0 -p -j1 -g -o -t -N is_reserved_word -k1,4,7,$ ./gxx.gperf  */
+/* Command-line: gperf -L C -F , 0, 0 -p -j1 -g -o -t -N is_reserved_word -k1,4,7,$ ../../../gcc/cp/gxx.gperf  */
 /* Command-line: gperf -L KR-C -F ', 0, 0' -p -j1 -g -o -t -N is_reserved_word -k1,4,$,7 gplus.gperf  */
 struct resword { const char *name; short token; enum rid rid;};
 
@@ -191,7 +191,7 @@ is_reserved_word (str, len)
       {"reinterpret_cast", REINTERPRET_CAST, NORID,},
       {"mutable", SCSPEC, RID_MUTABLE,},
       {"__alignof", ALIGNOF, NORID},
-      {"return", RETURN, NORID,},
+      {"return", RETURN_KEYWORD, NORID,},
       {"", 0, 0}, {"", 0, 0}, {"", 0, 0}, {"", 0, 0}, {"", 0, 0}, {"", 0, 0}, {"", 0, 0}, {"", 0, 0}, {"", 0, 0},
       {"", 0, 0},
       {"float", TYPESPEC, RID_FLOAT,},

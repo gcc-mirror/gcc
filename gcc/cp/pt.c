@@ -39,6 +39,8 @@ Boston, MA 02111-1307, USA.  */
 #include "defaults.h"
 #include "except.h"
 #include "toplev.h"
+#include "rtl.h"
+#include "varray.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -67,6 +69,8 @@ int processing_template_parmlist;
 static int template_header_count;
 
 static tree saved_trees;
+static varray_type inline_parm_levels;
+static size_t inline_parm_levels_used;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -399,22 +403,30 @@ maybe_begin_member_template_processing (decl)
      tree decl;
 {
   tree parms;
-  int levels;
+  int levels = 0;
 
-  if (! inline_needs_template_parms (decl))
-    return;
-
-  parms = DECL_TEMPLATE_PARMS (most_general_template (decl));
-
-  levels = TMPL_PARMS_DEPTH (parms) - processing_template_decl;
-
-  if (DECL_TEMPLATE_SPECIALIZATION (decl))
+  if (inline_needs_template_parms (decl))
     {
-      --levels;
-      parms = TREE_CHAIN (parms);
+      parms = DECL_TEMPLATE_PARMS (most_general_template (decl));
+      levels = TMPL_PARMS_DEPTH (parms) - processing_template_decl;
+
+      if (DECL_TEMPLATE_SPECIALIZATION (decl))
+	{
+	  --levels;
+	  parms = TREE_CHAIN (parms);
+	}
+
+      push_inline_template_parms_recursive (parms, levels);
     }
 
-  push_inline_template_parms_recursive (parms, levels);
+  /* Remember how many levels of template parameters we pushed so that
+     we can pop them later.  */
+  if (!inline_parm_levels)
+    VARRAY_INT_INIT (inline_parm_levels, 4, "inline_parm_levels");
+  if (inline_parm_levels_used == inline_parm_levels->num_elements)
+    VARRAY_GROW (inline_parm_levels, 2 * inline_parm_levels_used);
+  VARRAY_INT (inline_parm_levels, inline_parm_levels_used) = levels;
+  ++inline_parm_levels_used;
 }
 
 /* Undo the effects of begin_member_template_processing. */
@@ -422,11 +434,15 @@ maybe_begin_member_template_processing (decl)
 void 
 maybe_end_member_template_processing ()
 {
-  if (! processing_template_decl)
+  int i;
+
+  if (!inline_parm_levels_used)
     return;
 
-  while (current_template_parms
-	 && TEMPLATE_PARMS_FOR_INLINE (current_template_parms))
+  --inline_parm_levels_used;
+  for (i = 0; 
+       i < VARRAY_INT (inline_parm_levels, inline_parm_levels_used);
+       ++i) 
     {
       --processing_template_decl;
       current_template_parms = TREE_CHAIN (current_template_parms);

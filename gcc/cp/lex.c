@@ -1496,7 +1496,7 @@ reinit_parse_for_block (pyychar, obstackp)
       look_for_lbrac = 1;
       blev = 0;
     }
-  else if (pyychar == RETURN)
+  else if (pyychar == RETURN_KEYWORD)
     {
       obstack_grow (obstackp, "return", 6);
       look_for_lbrac = 1;

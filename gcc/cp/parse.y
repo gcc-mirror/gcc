@@ -131,7 +131,7 @@ empty_parms ()
 /* the reserved words */
 /* SCO include files test "ASM", so use something else.  */
 %token SIZEOF ENUM /* STRUCT UNION */ IF ELSE WHILE DO FOR SWITCH CASE DEFAULT
-%token BREAK CONTINUE RETURN GOTO ASM_KEYWORD TYPEOF ALIGNOF
+%token BREAK CONTINUE RETURN_KEYWORD GOTO ASM_KEYWORD TYPEOF ALIGNOF
 %token SIGOF
 %token ATTRIBUTE EXTENSION LABEL
 %token REALPART IMAGPART
@@ -756,7 +756,7 @@ fn.def2:
 	;
 
 return_id:
-	  RETURN IDENTIFIER
+	  RETURN_KEYWORD IDENTIFIER
 		{
 		  if (! current_function_parms_stored)
 		    store_parm_decls ();
@@ -2475,7 +2475,7 @@ component_decl:
 		{ $$ = finish_method ($$); }
 	| fn.def2 TRY /* base_init compstmt */
 		{ $$ = finish_method ($$); }
-	| fn.def2 RETURN /* base_init compstmt */
+	| fn.def2 RETURN_KEYWORD /* base_init compstmt */
 		{ $$ = finish_method ($$); }
 	| fn.def2 '{' /* nodecls compstmt */
 		{ $$ = finish_method ($$); }
@@ -3335,9 +3335,9 @@ simple_stmt:
                 { finish_break_stmt (); }
 	| CONTINUE ';'
                 { finish_continue_stmt (); }
-	| RETURN ';'
+	| RETURN_KEYWORD ';'
                 { finish_return_stmt (NULL_TREE); }
-	| RETURN expr ';'
+	| RETURN_KEYWORD expr ';'
                 { finish_return_stmt ($2); }
 	| asm_keyword maybe_cv_qualifier '(' string ')' ';'
 		{ 
