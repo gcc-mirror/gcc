@@ -266,7 +266,6 @@ static void record_biv ();
 static void check_final_value ();
 static void record_giv ();
 static void update_giv_derive ();
-static void delete_insn_forces ();
 static int basic_induction_var ();
 static rtx simplify_giv_expr ();
 static int general_induction_var ();

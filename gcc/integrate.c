@@ -68,14 +68,10 @@ static void copy_decl_rtls ();
 static tree copy_decl_tree ();
 static tree copy_decl_list ();
 
-/* Return the constant equivalent of a given rtx, or 0 if none.  */
-static rtx const_equiv ();
-
 static void integrate_parm_decls ();
 static void integrate_decl_tree ();
 
 static void subst_constants ();
-static rtx fold_out_const_cc0 ();
 
 /* Zero if the current function (whose FUNCTION_DECL is FNDECL)
    is safe and reasonable to integrate into other functions.
