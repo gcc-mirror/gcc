@@ -5981,11 +5981,13 @@ If you do not define this macro, the default is that only
 the character @samp{;} is treated as a logical line separator.
 @end table
 
-@deftypevar {Target Hook} {const char *} TARGET_ASM_OPEN_PAREN
-@deftypevar {Target Hook} {const char *} TARGET_ASM_CLOSE_PAREN
+@deftypevr {Target Hook} {const char *} TARGET_ASM_OPEN_PAREN
+@end deftypevr
+@deftypevr {Target Hook} {const char *} TARGET_ASM_CLOSE_PAREN
 These target hooks are C string constants, describing the syntax in the
 assembler for grouping arithmetic expressions.  If not overridden, they
 default to normal parentheses, which is correct for most assemblers.
+@end deftypevr
 
   These macros are provided by @file{real.h} for writing the definitions
 of @code{ASM_OUTPUT_DOUBLE} and the like:
