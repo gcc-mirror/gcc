@@ -3905,6 +3905,7 @@ extern void do_using_directive			PARAMS ((tree));
 extern void check_default_args			PARAMS ((tree));
 extern void mark_used				PARAMS ((tree));
 extern tree handle_class_head			(enum tag_types, tree, tree, tree, int, int *);
+extern tree handle_class_head_apparent_template	(tree, int *);
 extern tree lookup_arg_dependent                PARAMS ((tree, tree, tree));
 extern void finish_static_data_member_decl      PARAMS ((tree, tree, tree, int));
 extern tree cp_build_parm_decl                  PARAMS ((tree, tree));

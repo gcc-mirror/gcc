@@ -5030,4 +5030,51 @@ handle_class_head (tag_kind, scope, id, attributes, defn_p, new_type_p)
   return decl;
 }
 
+/* Like handle_class_head but for a definition of a class specialization.
+   DECL is a TYPE_DECL node representing the class.  NEW_TYPE_P is set to
+   nonzero, if we push into the scope containing the to be defined
+   aggregate.
+
+   Return a TYPE_DECL for the type declared by ID in SCOPE.  */
+
+tree
+handle_class_head_apparent_template (decl, new_type_p)
+    tree decl;
+    int *new_type_p;
+{
+  tree context;
+  tree current;
+
+  if (decl == error_mark_node)
+    return decl;
+
+  current = current_scope ();
+  if (current == NULL_TREE)
+    current = current_namespace;
+
+  *new_type_p = 0;
+  
+  /* For a definition, we want to enter the containing scope
+     before looking up any base classes etc. Only do so, if this
+     is different to the current scope.  */
+  context = CP_DECL_CONTEXT (decl);
+
+  if (IMPLICIT_TYPENAME_P (context))
+    context = TREE_TYPE (context);
+
+  *new_type_p = (current != context
+		 && TREE_CODE (context) != TEMPLATE_TYPE_PARM
+	         && TREE_CODE (context) != BOUND_TEMPLATE_TEMPLATE_PARM);
+  if (*new_type_p)
+    push_scope (context);
+
+  if (TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE)
+    /* We might be specializing a template with a different
+       class-key.  */
+    CLASSTYPE_DECLARED_CLASS (TREE_TYPE (decl))
+      = (current_aggr == class_type_node);
+
+  return decl;
+}
+
 #include "gt-cp-decl2.h"

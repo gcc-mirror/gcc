@@ -1,3 +1,11 @@
+2003-07-10  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10849
+	* decl2.c (handle_class_head_apparent_template): New function.
+	* cp-tree.h (handle_class_head_apparent_template): Add declaration.
+	* parse.y (class_head_defn): Use it.
+	* search.c (type_access_control): Revert my 2003-05-25 change.
+
 2003-07-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11345
