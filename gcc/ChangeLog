@@ -1,3 +1,8 @@
+Sat Aug 23 14:36:27 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* m68k/next.h (GO_IF_INDEXABLE_BASE): Fix typo in undef.
+	* m68k/m68kemb.h (LIB_SPEC): Add missing comment end before it.
+
 Sat Aug 23 00:18:22 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (pa_reorg): Always put begin_brtab and end_brtab insns
