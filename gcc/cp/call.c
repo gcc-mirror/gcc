@@ -2288,7 +2288,9 @@ build_object_call (obj, args)
       return error_mark_node;
     }
 
-  fns = lookup_fnfields (TYPE_BINFO (type), ansi_opname [CALL_EXPR], 0);
+  fns = lookup_fnfields (TYPE_BINFO (type), ansi_opname [CALL_EXPR], 1);
+  if (fns == error_mark_node)
+    return error_mark_node;
 
   args = resolve_args (args);
 
@@ -2568,7 +2570,11 @@ build_new_op (code, flags, arg1, arg2, arg3)
     }
 
   if (IS_AGGR_TYPE (TREE_TYPE (arg1)))
-    fns = lookup_fnfields (TYPE_BINFO (TREE_TYPE (arg1)), fnname, 0);
+    {
+      fns = lookup_fnfields (TYPE_BINFO (TREE_TYPE (arg1)), fnname, 1);
+      if (fns == error_mark_node)
+	return fns;
+    }
   else
     fns = NULL_TREE;
 
@@ -2862,7 +2868,18 @@ build_op_delete_call (code, addr, size, flags)
   fnname = ansi_opname[code];
 
   if (IS_AGGR_TYPE (type) && ! (flags & LOOKUP_GLOBAL))
-    fns = lookup_fnfields (TYPE_BINFO (type), fnname, 0);
+    /* In [class.free]
+
+       If the result of the lookup is ambiguous or inaccessible, or if
+       the lookup selects a placement deallocation function, the
+       program is ill-formed.
+  
+       Therefore, we ask lookup_fnfields to complain ambout ambiguity.  */
+    {
+      fns = lookup_fnfields (TYPE_BINFO (type), fnname, 1);
+      if (fns == error_mark_node)
+	return error_mark_node;
+    }
   else
     fns = NULL_TREE;
 
