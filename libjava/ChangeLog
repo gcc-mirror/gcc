@@ -1,3 +1,8 @@
+2002-09-07  Adam Megacz <adam@xwt.org>
+
+	* java/net/natPlainDatagramSocket.cc: include ws2tcpip.h for
+	definition of IP_TOS.
+
 2002-09-04  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramSocket.java

@@ -13,6 +13,7 @@ details.  */
 #ifdef WIN32
 #include <errno.h>
 #include <string.h>
+#include <ws2tcpip.h>
 #ifndef ENOPROTOOPT
 #define ENOPROTOOPT 109
 #endif
