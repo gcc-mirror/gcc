@@ -117,7 +117,7 @@ extern GTY(()) int mn10300_unspec_int_label_counter;
    would improve performance.  */
 #define FUNCTION_BOUNDARY 8
 
-/* No data type wants to be aligned rounder than this.   */
+/* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT	32
 
 /* Alignment of field after `int : 0' in a structure.  */
@@ -281,7 +281,7 @@ enum reg_class {
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES \
 { "NO_REGS", "DATA_REGS", "ADDRESS_REGS", \
@@ -605,7 +605,7 @@ struct cum_arg {int nbytes; };
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.   */
+   otherwise, FUNC is 0.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
   gen_rtx_REG (TYPE_MODE (VALTYPE), POINTER_TYPE_P (VALTYPE) \
@@ -823,7 +823,7 @@ struct cum_arg {int nbytes; };
    GO_IF_LEGITIMATE_ADDRESS.
 
    It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output.   */
+   opportunities to optimize the output.  */
 
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)  \
 { rtx orig_x = (X);				\

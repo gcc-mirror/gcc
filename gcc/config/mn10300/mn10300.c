@@ -490,7 +490,7 @@ fp_regs_to_save (void)
    Register K is saved if bit K of MASK is set.  The data and address
    registers can be stored individually, but the extended registers cannot.
    We assume that the mask alread takes that into account.  For instance,
-   bits 14 to 17 must have the same value. */
+   bits 14 to 17 must have the same value.  */
 
 void
 mn10300_print_reg_list (FILE *file, int mask)
@@ -548,7 +548,7 @@ can_use_return_insn (void)
 
 /* Returns the set of live, callee-saved registers as a bitmask.  The
    callee-saved extended registers cannot be stored individually, so
-   all of them will be included in the mask if any one of them is used. */
+   all of them will be included in the mask if any one of them is used.  */
 
 int
 mn10300_get_live_callee_saved_regs (void)
@@ -595,17 +595,17 @@ mn10300_gen_multiple_store (int mask)
       rtx par;
       int pari;
 
-      /* Count how many registers need to be saved. */
+      /* Count how many registers need to be saved.  */
       count = 0;
       for (i = 0; i <= LAST_EXTENDED_REGNUM; i++)
 	if ((mask & (1 << i)) != 0)
 	  count += 1;
 
       /* We need one PARALLEL element to update the stack pointer and
-	 an additional element for each register that is stored. */
+	 an additional element for each register that is stored.  */
       par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count + 1));
 
-      /* Create the instruction that updates the stack pointer. */
+      /* Create the instruction that updates the stack pointer.  */
       XVECEXP (par, 0, 0)
 	= gen_rtx_SET (SImode,
 		       stack_pointer_rtx,
@@ -613,7 +613,7 @@ mn10300_gen_multiple_store (int mask)
 				     stack_pointer_rtx,
 				     GEN_INT (-count * 4)));
 
-      /* Create each store. */
+      /* Create each store.  */
       pari = 1;
       for (i = LAST_EXTENDED_REGNUM; i >= 0; i--)
 	if ((mask & (1 << i)) != 0)
@@ -642,7 +642,7 @@ expand_prologue (void)
   size = get_frame_size () + current_function_outgoing_args_size;
   size += (current_function_outgoing_args_size ? 4 : 0);
 
-  /* If we use any of the callee-saved registers, save them now. */
+  /* If we use any of the callee-saved registers, save them now.  */
   mn10300_gen_multiple_store (mn10300_get_live_callee_saved_regs ());
 
   if (TARGET_AM33_2 && fp_regs_to_save ())
@@ -768,7 +768,7 @@ expand_prologue (void)
 	}
 
       /* Consider alternative save_a0_no_merge if the user hasn't
-	 changed the calling conventions of a0. */
+	 changed the calling conventions of a0.  */
       if (call_used_regs[FIRST_ADDRESS_REGNUM]
 	  && ! fixed_regs[FIRST_ADDRESS_REGNUM])
 	{
@@ -816,10 +816,10 @@ expand_prologue (void)
 				 stack_pointer_rtx,
 				 GEN_INT (-(size + 4 * num_regs_to_save))));
 	  /* We'll have to adjust FP register saves according to the
-	     frame size. */
+	     frame size.  */
 	  xsize = size;
 	  /* Since we've already created the stack frame, don't do it
-	     again at the end of the function. */
+	     again at the end of the function.  */
 	  size = 0;
 	  break;
 
@@ -969,7 +969,7 @@ expand_epilogue (void)
 	  /* Insn: fmov (##,sp),fs#, for each fs# to be restored.  */
 	  this_strategy_size += SIZE_FMOV_SP (0, num_regs_to_save);
 	  /* We're going to use ret to release the FP registers
-		 save area, so, no savings. */
+		 save area, so, no savings.  */
 
 	  if (this_strategy_size < strategy_size)
 	    {
@@ -992,7 +992,7 @@ expand_epilogue (void)
 						  - 4 * num_regs_to_save,
 						  num_regs_to_save);
 	      /* We're going to use ret to release the FP registers
-		 save area, so, no savings. */
+		 save area, so, no savings.  */
 
 	      if (this_strategy_size < strategy_size)
 		{
@@ -1080,7 +1080,7 @@ expand_epilogue (void)
 	    else if (size)
 	      {
 		/* If we aren't using a post-increment register, use an
-		   SP offset. */
+		   SP offset.  */
 		addr = gen_rtx_PLUS (SImode,
 				     stack_pointer_rtx,
 				     GEN_INT (size));
@@ -1233,7 +1233,7 @@ store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   /* Check that A is the stack pointer and B is the expected stack size.
      For OP to match, each subsequent instruction should push a word onto
      the stack.  We therefore expect the first instruction to create
-     COUNT-1 stack slots. */
+     COUNT-1 stack slots.  */
   elt = SET_SRC (elt);
   if (GET_CODE (XEXP (elt, 0)) != REG
       || REGNO (XEXP (elt, 0)) != STACK_POINTER_REGNUM
@@ -1247,12 +1247,12 @@ store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
      store a lower-numbered register to the slot below.
 
      LAST keeps track of the smallest-numbered register stored so far.
-     MASK is the set of stored registers. */
+     MASK is the set of stored registers.  */
   last = LAST_EXTENDED_REGNUM + 1;
   mask = 0;
   for (i = 1; i < count; i++)
     {
-      /* Check that element i is a (set (mem M) R) and that R is valid. */
+      /* Check that element i is a (set (mem M) R) and that R is valid.  */
       elt = XVECEXP (op, 0, i);
       if (GET_CODE (elt) != SET
 	  || GET_CODE (SET_DEST (elt)) != MEM
@@ -1261,7 +1261,7 @@ store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 	return 0;
 
       /* R was OK, so provisionally add it to MASK.  We return 0 in any
-	 case if the rest of the instruction has a flaw. */
+	 case if the rest of the instruction has a flaw.  */
       last = REGNO (SET_SRC (elt));
       mask |= (1 << last);
 
@@ -1275,7 +1275,7 @@ store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 	return 0;
     }
 
-  /* All or none of the callee-saved extended registers must be in the set. */
+  /* All or none of the callee-saved extended registers must be in the set.  */
   if ((mask & 0x3c000) != 0
       && (mask & 0x3c000) != 0x3c000)
     return 0;
@@ -1601,7 +1601,7 @@ output_tst (rtx operand, rtx insn)
 	  continue;
 	}
 
-      /* It must be an insn, see if it is a simple set. */
+      /* It must be an insn, see if it is a simple set.  */
       set = single_set (temp);
       if (!set)
 	{
@@ -1786,7 +1786,7 @@ legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 }
 
 /* Convert a non-PIC address in `orig' to a PIC address using @GOT or
-   @GOTOFF in `reg'. */
+   @GOTOFF in `reg'.  */
 rtx
 legitimize_pic_address (rtx orig, rtx reg)
 {
