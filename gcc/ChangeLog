@@ -1,3 +1,9 @@
+2002-03-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* calls.c (precompute_arguments): Do not assume that temporaries 
+	can be destroyed after expanding the argument.
+	(expand_call): Likewise.
+
 2002-03-15  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.md (movdf_internal2): Add two new move constraints.
