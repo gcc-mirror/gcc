@@ -34,6 +34,12 @@
 	PR c++/13710
 	* pt.c (tsubst): Use finish_typeof.
 
+2004-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/11725
+	* except.c (build_throw): In a template, set
+	current_function_returns_abnormally.
+
 2004-01-17  Fred Fish  <fnf@intrinsity.com>
 
 	PR c++/11895

@@ -621,7 +621,10 @@ build_throw (tree exp)
     return exp;
 
   if (processing_template_decl)
-    return build_min (THROW_EXPR, void_type_node, exp);
+    {
+      current_function_returns_abnormally = 1;
+      return build_min (THROW_EXPR, void_type_node, exp);
+    }
 
   if (exp == null_node)
     warning ("throwing NULL, which has integral, not pointer type");
