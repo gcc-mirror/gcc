@@ -864,10 +864,12 @@ init_cse_reg_info (unsigned int nregs)
 	}
 
       /* Reallocate the table with NEW_SIZE entries.  */
-      cse_reg_info_table = xrealloc (cse_reg_info_table,
-				     (sizeof (struct cse_reg_info)
-				      * new_size));
+      if (cse_reg_info_table)
+	free (cse_reg_info_table);
+      cse_reg_info_table = xmalloc (sizeof (struct cse_reg_info)
+				     * new_size);
       cse_reg_info_table_size = new_size;
+      cse_reg_info_table_first_uninitialized = 0;
     }
 
   /* Do we have all of the first NREGS entries initialized?  */

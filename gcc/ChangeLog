@@ -2,6 +2,8 @@
 
 	* gcse.c: Remove an obsolete comment.
 
+	* cse.c (init_cse_reg_info): Use xmalloc instead of xrealloc.
+
 2005-02-20  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/extend.texi (Function Attributes) <Attribute const>: The
