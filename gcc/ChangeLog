@@ -1,5 +1,30 @@
 2002-03-31  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* c-common.c (c_unsafe_for_reeval): Rename.
+	* c-common.h (c_unsafe_for_reeval): Rename.
+	* c-decl.c (finish_incomplete_decl): Rename.
+	(c_init_decl_processing): Don't set langhook.
+	* c-lang.c (LANG_HOOKS_FINISH_INCOMPLETE_DECL,
+	LANG_HOOKS_UNSAFE_FOR_REEVAL): Redefine.
+	* c-objc-common.c (c_objc_common_init): Don't set langhook.
+	* c-tree.h (finish_incomplete_decl): Rename.
+	* langhooks-def.h (lhd_unsafe_for_reeval): New.
+	(LANG_HOOKS_FINISH_INCOMPLETE_DECL, LANG_HOOKS_UNSAFE_FOR_REEVAL): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.c (lhd_unsafe_For_reeval): New.
+	* langhooks.h (struct langhooks): New hooks.
+	* toplev.c (incomplete_decl_finalize_hook): Remove.
+	(wrapup_global_declarations): Update.
+	* tree.c (lang_unsafe_for_reeval): Remove.
+	(unsafe_for_reeval): Update.
+	* tree.h (lang_unsafe_for_reeval, incomplete_decl_finalize_hook):
+	Remove.
+objc:
+	* objc-lang.c (LANG_HOOKS_FINISH_INCOMPLETE_DECL,
+	LANG_HOOKS_UNSAFE_FOR_REEVAL): Redefine.
+
+2002-03-31  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* diagnostic.c (print_error_function): Remove.
 	(default_print_error_function): Rename.
 	(report_error_function): Update.

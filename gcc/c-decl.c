@@ -734,7 +734,7 @@ c_print_identifier (file, node, indent)
    for a top-level tentative array defn that wasn't complete before.  */
 
 void
-finish_incomplete_decl (decl)
+c_finish_incomplete_decl (decl)
      tree decl;
 {
   if (TREE_CODE (decl) == VAR_DECL)
@@ -2984,8 +2984,6 @@ c_init_decl_processing ()
 
   make_fname_decl = c_make_fname_decl;
   start_fname_decls ();
-
-  incomplete_decl_finalize_hook = finish_incomplete_decl;
 
   /* Record our roots.  */
 

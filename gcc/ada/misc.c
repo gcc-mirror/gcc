@@ -108,6 +108,8 @@ static rtx gnat_expand_expr		PARAMS ((tree, rtx, enum machine_mode,
 #define LANG_HOOKS_MARK_TREE		gnat_mark_tree
 #undef LANG_HOOKS_HONOR_READONLY
 #define LANG_HOOKS_HONOR_READONLY	1
+#undef LANG_HOOKS_FINISH_INCOMPLETE_DECL
+#define LANG_HOOKS_FINISH_INCOMPLETE_DECL gnat_finish_incomplete_decl
 #undef LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
 #undef LANG_HOOKS_EXPAND_EXPR

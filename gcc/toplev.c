@@ -349,11 +349,6 @@ tree current_function_decl;
    if none.  */
 tree current_function_func_begin_label;
 
-/* Pointer to function to finish handling an incomplete decl at the
-   end of compilation.  */
-
-void (*incomplete_decl_finalize_hook) PARAMS ((tree)) = 0;
-
 /* Nonzero if doing dwarf2 duplicate elimination.  */
 
 int flag_eliminate_dwarf2_dups = 0;
@@ -1822,9 +1817,8 @@ wrapup_global_declarations (vec, len)
       /* We're not deferring this any longer.  */
       DECL_DEFER_OUTPUT (decl) = 0;
 
-      if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0
-	  && incomplete_decl_finalize_hook != 0)
-	(*incomplete_decl_finalize_hook) (decl);
+      if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0)
+	(*lang_hooks.finish_incomplete_decl) (decl);
     }
 
   /* Now emit any global variables or functions that we have been

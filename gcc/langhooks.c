@@ -95,6 +95,15 @@ lhd_safe_from_p (x, exp)
   return 1;
 }
 
+/* Called from unsafe_for_reeval.  */
+
+int
+lhd_unsafe_for_reeval (t)
+     tree t ATTRIBUTE_UNUSED;
+{
+  return -1;
+}
+
 /* Called from staticp.  */
 
 int

@@ -448,7 +448,7 @@ extern void incomplete_type_error	PARAMS ((tree, tree));
    compile_file in toplev.c makes an indirect call through the function pointer
    incomplete_decl_finalize_hook which is initialized to this routine in
    init_decl_processing.  */
-extern void finish_incomplete_decl	PARAMS ((tree));
+extern void gnat_finish_incomplete_decl	PARAMS ((tree));
 
 /* Create an expression whose value is that of EXPR,
    converted to type TYPE.  The TREE_TYPE of the value

@@ -220,8 +220,6 @@ c_objc_common_init (filename)
   if (filename == NULL)
     return NULL;
 
-  lang_unsafe_for_reeval = c_unsafe_for_reeval;
-
   save_lang_status = &push_c_function_context;
   restore_lang_status = &pop_c_function_context;
   mark_lang_status = &mark_c_function_context;

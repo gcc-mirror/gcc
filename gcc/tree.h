@@ -2553,10 +2553,6 @@ extern void unsave_expr_1               PARAMS ((tree));
    return 2 if it is completely unsafe.  */
 extern int unsafe_for_reeval		PARAMS ((tree));
 
-/* If non-null, these are language-specific helper functions for
-   unsafe_for_reeval.  Return negative to not handle some tree.  */
-extern int (*lang_unsafe_for_reeval)	PARAMS ((tree));
-
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
    or offset that depends on a field within a record.
 
@@ -2690,11 +2686,6 @@ extern tree current_function_func_begin_label;
 /* Nonzero means all ..._TYPE nodes should be allocated permanently.  */
 
 extern int all_types_permanent;
-
-/* Pointer to function to finish handling an incomplete decl at the
-   end of compilation.  */
-
-extern void (*incomplete_decl_finalize_hook)	PARAMS ((tree));
 
 /* Declare a predefined function.  Return the declaration.  This function is
    provided by each language frontend.  */

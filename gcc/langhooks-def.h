@@ -47,6 +47,7 @@ extern tree lhd_return_tree PARAMS ((tree));
 extern tree lhd_return_null_tree PARAMS ((tree));
 extern int lhd_safe_from_p PARAMS ((rtx, tree));
 extern int lhd_staticp PARAMS ((tree));
+extern int lhd_unsafe_for_reeval PARAMS ((tree));
 extern void lhd_clear_binding_stack PARAMS ((void));
 extern void lhd_print_tree_nothing PARAMS ((FILE *, tree, int));
 extern const char *lhd_decl_printable_name PARAMS ((tree, int));
@@ -85,6 +86,8 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_EXPAND_CONSTANT	lhd_return_tree
 #define LANG_HOOKS_EXPAND_EXPR		lhd_expand_expr
 #define LANG_HOOKS_SAFE_FROM_P		lhd_safe_from_p
+#define LANG_HOOKS_FINISH_INCOMPLETE_DECL lhd_do_nothing_t
+#define LANG_HOOKS_UNSAFE_FOR_REEVAL	lhd_unsafe_for_reeval
 #define LANG_HOOKS_STATICP		lhd_staticp
 #define LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES lhd_do_nothing_t
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL lhd_do_nothing_t
@@ -150,8 +153,8 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN \
 }
 
-/* Types hooks.  No default for LANG_HOOKS_TYPE_FOR_MODE or
-   LANG_HOOKS_TYPE_FOR_SIZE.  */
+/* Types hooks.  There are no reasonable defaults for most of them,
+   so we create a compile-time error instead.  */
 #define LANG_HOOKS_MAKE_TYPE make_node
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
@@ -195,6 +198,8 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_EXPAND_EXPR, \
   LANG_HOOKS_INSERT_DEFAULT_ATTRIBUTES, \
   LANG_HOOKS_SAFE_FROM_P, \
+  LANG_HOOKS_FINISH_INCOMPLETE_DECL, \
+  LANG_HOOKS_UNSAFE_FOR_REEVAL, \
   LANG_HOOKS_STATICP, \
   LANG_HOOKS_DUP_LANG_SPECIFIC_DECL, \
   LANG_HOOKS_UNSAVE_EXPR_NOW, \

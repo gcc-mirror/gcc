@@ -1,5 +1,10 @@
 2002-03-31  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* cp-lang.c (LANG_HOOKS_UNSAFE_FOR_REEVAL): Redefine.
+	* lex.c (cxx_init): Don't set hook.
+
+2002-03-31  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* Make-lang.in (error.o): Update.
 	* cp-lang.c (LANG_HOOKS_PRINT_ERROR_FUNCTION): Redefine.
 	* cp-tree.h (struct diagnostic_context): Predeclare.
