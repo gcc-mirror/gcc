@@ -1236,20 +1236,6 @@ fatal_error VPARAMS ((const char *msgid, ...))
   exit (FATAL_EXIT_CODE);
 }
 
-/* Report a compiler error at the current line number.  Allow a front end to
-   intercept the message.  */
-
-static void (*internal_error_function) PARAMS ((const char *, va_list *));
-
-/* Set the function to call when a compiler error occurs.  */
-
-void
-set_internal_error_function (f)
-     void (*f) PARAMS ((const char *, va_list *));
-{
-  internal_error_function = f;
-}
-
 void
 internal_error VPARAMS ((const char *msgid, ...))
 {
@@ -1270,8 +1256,8 @@ internal_error VPARAMS ((const char *msgid, ...))
     }
 #endif
 
-  if (internal_error_function != 0)
-    (*internal_error_function) (_(msgid), &ap);
+  if (global_dc->internal_error != 0)
+    (*global_dc->internal_error) (_(msgid), &ap);
 
   set_diagnostic_context
     (&dc, msgid, &ap, input_filename, lineno, /* warn = */0);

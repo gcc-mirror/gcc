@@ -384,7 +384,7 @@ gnat_init (filename)
   gnat_argc++;
   gnat_argv[gnat_argc] = 0;
 
-  set_internal_error_function (internal_error_function);
+  global_dc->internal_error = &internal_error_function;
 
   /* Show that REFERENCE_TYPEs are internal and should be Pmode.  */
   internal_reference_types ();

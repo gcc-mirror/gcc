@@ -1,3 +1,11 @@
+2002-06-02  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.h (struct diagnostic_context):  Add new member
+	internal_error. 
+	(internal_error_function): Remove declaration.
+	* diagnostic.c (internal_error_function): Remove definition..
+	(internal_error): Adjust use.
+
 2002-06-02  Richard Henderson  <rth@redhat.com>
 
 	* rtl.h (CC0_P): New.

@@ -203,6 +203,9 @@ struct diagnostic_context
   /* This function is called after the diagnostic message is printed.  */
   void (*end_diagnostic) PARAMS ((output_buffer *, diagnostic_context *));
 
+  /* Client hook to report an internal error.  */
+  void (*internal_error) PARAMS ((const char *, va_list *));
+
   /* Hook for front-end extensions.  */
   void *x_data;
 };
@@ -275,9 +278,6 @@ extern diagnostic_context *global_dc;
 extern void set_diagnostic_context	PARAMS ((diagnostic_context *,
 						 const char *, va_list *,
 						 const char *, int, int));
-extern void set_internal_error_function	PARAMS ((void (*)
-						 PARAMS ((const char *,
-							  va_list *))));
 extern void report_diagnostic		PARAMS ((diagnostic_context *));
 extern void diagnostic_initialize	PARAMS ((diagnostic_context *));
 extern void init_output_buffer		PARAMS ((output_buffer *,
