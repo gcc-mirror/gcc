@@ -5876,8 +5876,7 @@ resolve_address_of_overloaded_function (target_type,
 
   /* Check that the TARGET_TYPE is reasonable.  */
   if (TYPE_PTRFN_P (target_type))
-    /* This is OK.  */
-    ;
+    /* This is OK.  */;
   else if (TYPE_PTRMEMFUNC_P (target_type))
     /* This is OK, too.  */
     is_ptrmem = 1;
@@ -5891,8 +5890,9 @@ resolve_address_of_overloaded_function (target_type,
   else 
     {
       if (complain)
-	cp_error("cannot resolve overloaded function `%D' based on conversion to type `%T'", 
-		 DECL_NAME (OVL_FUNCTION (overload)), target_type);
+	cp_error ("\
+cannot resolve overloaded function `%D' based on conversion to type `%T'", 
+		  DECL_NAME (OVL_FUNCTION (overload)), target_type);
       return error_mark_node;
     }
   
