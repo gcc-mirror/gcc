@@ -241,3 +241,8 @@
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION ;
+
+/* No version of AIX fully supports AltiVec or 64-bit instructions in
+   32-bit mode.  */
+#define OS_MISSING_POWERPC64 1
+#define OS_MISSING_ALTIVEC 1

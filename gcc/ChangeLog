@@ -1,5 +1,15 @@
 2003-12-18  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/aix.h (OS_MISSING_POWERPC64): Define.
+	(OS_MISSING_ALTIVEC): Define.
+	* config/rs6000/darwin.h (ASM_SPEC): Be generous about supplying
+	-force_cpusubtype_ALL.
+	* config/rs6000/rs6000.c (rs6000_override_options): Rearrange
+	CPU information table; now always set all CPU-specific values.
+	Also, use Altivec and powerpc64 when chip and OS supports them.
+
+2003-12-18  Geoffrey Keating  <geoffk@apple.com>
+
 	* fixinc/inclhack.def (darwin_macho_dyldh): New.
 	* fixinc/fixincl.x: Regenerate.
 

@@ -7239,13 +7239,15 @@ should normally not specify either @option{-mnew-mnemonics} or
 @opindex mcpu
 Set architecture type, register usage, choice of mnemonics, and
 instruction scheduling parameters for machine type @var{cpu_type}.
-Supported values for @var{cpu_type} are @samp{rios}, @samp{rios1},
-@samp{rsc}, @samp{rios2}, @samp{rs64a}, @samp{601}, @samp{602},
-@samp{603}, @samp{603e}, @samp{604}, @samp{604e}, @samp{620},
-@samp{630}, @samp{740}, @samp{7400}, @samp{7450}, @samp{G4}, 
-@samp{750}, @samp{G3},  @samp{power}, @samp{power2}, @samp{powerpc}, 
-@samp{403}, @samp{505}, @samp{801}, @samp{821}, @samp{823}, @samp{860},
-@samp{970}, @samp{G5} and @samp{common}.
+Supported values for @var{cpu_type} are @samp{401}, @samp{403},
+@samp{405}, @samp{405fp}, @samp{440}, @samp{440fp}, @samp{505},
+@samp{601}, @samp{602}, @samp{603}, @samp{603e}, @samp{604},
+@samp{604e}, @samp{620}, @samp{630}, @samp{740}, @samp{7400},
+@samp{7450}, @samp{750}, @samp{801}, @samp{821}, @samp{823},
+@samp{860}, @samp{970}, @samp{common}, @samp{ec603e}, @samp{G3},
+@samp{G4}, @samp{G5}, @samp{power}, @samp{power2}, @samp{power3},
+@samp{power4}, @samp{powerpc}, @samp{powerpc64}, @samp{rios},
+@samp{rios1}, @samp{rios2}, @samp{rsc}, and @samp{rs64a}.
 
 @option{-mcpu=common} selects a completely generic processor.  Code
 generated under this option will run on any POWER or PowerPC processor.
@@ -7263,47 +7265,23 @@ The other options specify a specific processor.  Code generated under
 those options will run best on that processor, and may not run at all on
 others.
 
-The @option{-mcpu} options automatically enable or disable other
-@option{-m} options as follows:
+The @option{-mcpu} options automatically enable or disable the
+following options: @option{-maltivec}, @option{-mhard-float},
+@option{-mmfcrf}, @option{-mmultiple}, @option{-mnew-mnemonics},
+@option{-mpower}, @option{-mpower2}, @option{-mpowerpc64},
+@option{-mpowerpc-gpopt}, @option{-mpowerpc-gfxopt},
+@option{-mstring}.  The particular options set for any particular CPU
+will vary between compiler versions, depending on what setting seems
+to produce optimal code for that CPU; it doesn't necessarily reflect
+the actual hardware's capabilities.  If you wish to set an individual
+option to a particular value, you may specify it after the
+@option{-mcpu} option, like @samp{-mcpu=970 -mno-altivec}.
 
-@table @samp
-@item common
-@option{-mno-power}, @option{-mno-powerpc}
-
-@item power
-@itemx power2
-@itemx rios1
-@itemx rios2
-@itemx rsc
-@option{-mpower}, @option{-mno-powerpc}, @option{-mno-new-mnemonics}
-
-@item powerpc
-@itemx rs64a
-@itemx 602
-@itemx 603
-@itemx 603e
-@itemx 604
-@itemx 620
-@itemx 630
-@itemx 740
-@itemx 7400
-@itemx 7450
-@itemx G4
-@itemx 750
-@itemx G3
-@itemx 505
-@itemx 970
-@itemx G5
-@option{-mno-power}, @option{-mpowerpc}, @option{-mnew-mnemonics}
-
-@item 601
-@option{-mpower}, @option{-mpowerpc}, @option{-mnew-mnemonics}
-
-@item 403
-@itemx 821
-@itemx 860
-@option{-mno-power}, @option{-mpowerpc}, @option{-mnew-mnemonics}, @option{-msoft-float}
-@end table
+On AIX, the @option{-maltivec} and @option{-mpowerpc64} options are
+not enabled or disabled by the @option{-mcpu} option at present, since
+AIX does not have full support for these options.  You may still
+enable or disable them individually if you're sure it'll work in your
+environment.
 
 @item -mtune=@var{cpu_type}
 @opindex mtune
