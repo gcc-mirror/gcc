@@ -1,10 +1,10 @@
 2000-10-17  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* function.c (locate_and_pad_parm): Don't align stack unconditionally.
-	Fixes execute/20001017-1.c on pwerpc-linux-gnu.
+	Fixes execute/20001017-1.c on powerpc-linux-gnu.
 
 	* expr.c (store_constructor): Apply MEM_ALIAS_SET to MEMs only.
-	* rs6000/rs6000.c (rs6000_hash_constant): use X0INT to access a
+	* rs6000/rs6000.c (rs6000_hash_constant): Use X0INT to access a
 	LABEL_REF.
 
 	* rs6000/rs6000.h (NO_DOLLAR_IN_LABEL, DOLLARS_IN_IDENTIFIERS,
@@ -102,7 +102,6 @@
 	to be used along with -shared, and document the subtle failure that
 	may occur otherwise.
 
->>>>>>> 1.7984
 2000-10-16  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (return_internal): Move `use' after `return'.
