@@ -1,3 +1,8 @@
+2003-09-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in (gcc_cv_as_hidden): Disable unless using GNU ld.
+	* configure: Regenerate.
+
 2003-09-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* mklibgcc.in (libcc.a): Depend on stmp-dirs.
