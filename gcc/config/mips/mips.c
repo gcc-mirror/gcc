@@ -3606,7 +3606,7 @@ print_operand (file, op, letter)
       case LEU: fputs ("leu", file); break;
 
       default:
-	abort_with_insn (op, "PRINT_OPERAND, illegal insn for %%C");
+	abort_with_insn (op, "PRINT_OPERAND, invalid insn for %%C");
       }
 
   else if (letter == 'N')
@@ -3624,7 +3624,7 @@ print_operand (file, op, letter)
       case LEU: fputs ("gtu", file); break;
 
       default:
-	abort_with_insn (op, "PRINT_OPERAND, illegal insn for %%N");
+	abort_with_insn (op, "PRINT_OPERAND, invalid insn for %%N");
       }
 
   else if (letter == 'S')
@@ -3704,7 +3704,7 @@ print_operand_address (file, addr)
     switch (GET_CODE (addr))
       {
       default:
-	abort_with_insn (addr, "PRINT_OPERAND_ADDRESS, illegal insn #1");
+	abort_with_insn (addr, "PRINT_OPERAND_ADDRESS, invalid insn #1");
 	break;
 
       case REG:
@@ -3742,7 +3742,7 @@ print_operand_address (file, addr)
 	    abort_with_insn (addr, "PRINT_OPERAND_ADDRESS, no regs");
 
 	  if (!CONSTANT_P (offset))
-	    abort_with_insn (addr, "PRINT_OPERAND_ADDRESS, illegal insn #2");
+	    abort_with_insn (addr, "PRINT_OPERAND_ADDRESS, invalid insn #2");
 
 	if (REGNO (reg) == ARG_POINTER_REGNUM)
 	  abort_with_insn (addr, "Arg pointer not eliminated.");
