@@ -21,6 +21,11 @@ import java.io.IOException;
 
 // This is entirely internal to our implementation.
 
+// NOTE: when this is implemented, we'll need to add
+// HANDLE_FLAG_INHERIT in FileDescriptor and other places, to make
+// sure that file descriptors aren't inherited by the child process.
+// See _Jv_platform_close_on_exec.
+
 // This file is copied to `ConcreteProcess.java' before compilation.
 // Hence the class name apparently does not match the file name.
 final class ConcreteProcess extends Process

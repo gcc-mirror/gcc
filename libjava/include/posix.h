@@ -28,13 +28,17 @@ details.  */
 #include <unistd.h>
 #endif
 
+#include <fcntl.h>
+
 #include <gcj/cni.h>
 
 extern int _Jv_select (int n, fd_set *, fd_set *, fd_set *, struct timeval *);
 extern jlong _Jv_platform_gettimeofday ();
 extern void _Jv_platform_initialize (void);
 
-
-
-
-
+inline void
+_Jv_platform_close_on_exec (jint fd)
+{
+  // Ignore errors.
+  fcntl (fd, F_SETFD, FD_CLOEXEC);
+}

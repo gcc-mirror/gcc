@@ -21,4 +21,9 @@ details.  */
 extern void _Jv_platform_initialize (void);
 extern jlong _Jv_platform_gettimeofday ();
 
+void _Jv_platform_close_on_exec (jint)
+{
+  // Ignore.
+}
+
 #endif /* __JV_WIN32_H__ */
