@@ -183,7 +183,7 @@ static hashval_t const_str_htab_hash	PARAMS ((const void *x));
 static int const_str_htab_eq		PARAMS ((const void *x, const void *y));
 static void const_str_htab_del		PARAMS ((void *));
 static void asm_emit_uninitialised	PARAMS ((tree, const char*, int, int));
-static void resolve_unique_section	PARAMS ((tree, int));
+static void resolve_unique_section	PARAMS ((tree, int, int));
 static void mark_weak                   PARAMS ((tree));
 
 static enum in_section { no_section, in_text, in_data, in_named
@@ -459,12 +459,13 @@ named_section (decl, name, reloc)
 /* If required, set DECL_SECTION_NAME to a unique name.  */
 
 static void
-resolve_unique_section (decl, reloc)
+resolve_unique_section (decl, reloc, flag_function_or_data_sections)
      tree decl;
      int reloc ATTRIBUTE_UNUSED;
+     int flag_function_or_data_sections;
 {
   if (DECL_SECTION_NAME (decl) == NULL_TREE
-      && (flag_function_sections
+      && (flag_function_or_data_sections
 	  || (targetm.have_named_sections
 	      && DECL_ONE_ONLY (decl))))
     UNIQUE_SECTION (decl, reloc);
@@ -1183,7 +1184,7 @@ assemble_start_function (decl, fnname)
   if (CONSTANT_POOL_BEFORE_FUNCTION)
     output_constant_pool (fnname, decl);
 
-  resolve_unique_section (decl, 0);
+  resolve_unique_section (decl, 0, flag_function_sections);
   function_section (decl);
 
   /* Tell assembler to move to target machine's alignment for functions.  */
@@ -1394,7 +1395,7 @@ asm_emit_uninitialised (decl, name, size, rounded)
 
   if (destination == asm_dest_bss)
     globalize_decl (decl);
-  resolve_unique_section (decl, 0);
+  resolve_unique_section (decl, 0, flag_data_sections);
 
   if (flag_shared_data)
     {
@@ -1595,7 +1596,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
   else if (DECL_INITIAL (decl))
     reloc = output_addressed_constants (DECL_INITIAL (decl));
-  resolve_unique_section (decl, reloc);
+  resolve_unique_section (decl, reloc, flag_data_section);
 
   /* Handle uninitialized definitions.  */
 
