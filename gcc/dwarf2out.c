@@ -4985,7 +4985,9 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 	{
 	  mod_type_die = new_die (DW_TAG_pointer_type, context_die);
 	  add_AT_unsigned (mod_type_die, DW_AT_byte_size, PTR_SIZE);
+#if 0
 	  add_AT_unsigned (mod_type_die, DW_AT_address_class, 0);
+#endif
 	  item_type = TREE_TYPE (type);
 	  sub_die = modified_type_die (item_type,
 				       TYPE_READONLY (item_type),
@@ -4996,7 +4998,9 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 	{
 	  mod_type_die = new_die (DW_TAG_reference_type, context_die);
 	  add_AT_unsigned (mod_type_die, DW_AT_byte_size, PTR_SIZE);
+#if 0
 	  add_AT_unsigned (mod_type_die, DW_AT_address_class, 0);
+#endif 
 	  item_type = TREE_TYPE (type);
 	  sub_die = modified_type_die (item_type,
 				       TYPE_READONLY (item_type),
@@ -5479,9 +5483,14 @@ add_data_member_location_attribute (die, decl)
      register dw_die_ref die;
      register tree decl;
 {
-  register unsigned long offset = field_byte_offset (decl);
+  register unsigned long offset;
   register dw_loc_descr_ref loc_descr;
   register enum dwarf_location_atom op;
+
+  if (TREE_CODE (decl) == TREE_VEC)
+    offset = TREE_INT_CST_LOW (BINFO_OFFSET (decl));
+  else
+    offset = field_byte_offset (decl);
 
   /* The DWARF2 standard says that we should assume that the structure address
      is already on the stack, so we can specify a structure field address
@@ -5687,12 +5696,11 @@ add_location_or_const_value_attribute (die, decl)
 		    }
 		}
 	    }
-	  if (rtl == NULL_RTX)
-	    {
-	      return;
-	    }
 	}
     }
+  if (rtl == NULL_RTX)
+    return;
+
   switch (GET_CODE (rtl))
     {
     case CONST_INT:
@@ -6025,6 +6033,8 @@ add_pure_or_virtual_attribute (die, func_decl)
   if (DECL_VIRTUAL_P (func_decl))
     {
       add_AT_unsigned (die, DW_AT_virtuality, DW_VIRTUALITY_virtual);
+      add_AT_loc (die, DW_AT_vtable_elem_location, new_loc_descr
+		  (DW_OP_constu, TREE_INT_CST_LOW (DECL_VINDEX (func_decl))));
     }
 }
 
@@ -6037,8 +6047,13 @@ add_name_and_src_coords_attributes (die, decl)
      register dw_die_ref die;
      register tree decl;
 {
-  register tree decl_name = DECL_ASSEMBLER_NAME (decl);
+  register tree decl_name;
   register unsigned file_index;
+  if (staticp (decl))
+    decl_name = DECL_ASSEMBLER_NAME (decl);
+  else
+    decl_name = DECL_NAME (decl); 
+
   if (decl_name && IDENTIFIER_POINTER (decl_name))
     {
       add_name_attribute (die, IDENTIFIER_POINTER (decl_name));
@@ -6590,10 +6605,6 @@ gen_subprogram_die (decl, context_die)
 	  add_AT_flag (subr_die, DW_AT_external, 1);
 	}
       add_name_and_src_coords_attributes (subr_die, decl);
-      if (DECL_INLINE (decl))
-	{
-	  add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_inlined);
-	}
       type = TREE_TYPE (decl);
       add_prototyped_attribute (subr_die, type);
       add_type_attribute (subr_die, TREE_TYPE (type), 0, 0, context_die);
@@ -6606,10 +6617,25 @@ gen_subprogram_die (decl, context_die)
       if (! DECL_INITIAL (decl))
 	add_AT_flag (subr_die, DW_AT_declaration, 1);
     }
-  if (DECL_ABSTRACT (decl) || ! DECL_INITIAL (decl))
+  if (DECL_ABSTRACT (decl))
     {
+      if (DECL_DEFER_OUTPUT (decl))
+	{
+	  if (DECL_INLINE (decl))
+	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_declared_inlined);
+	  else
+	    add_AT_unsigned (subr_die, DW_AT_inline,
+			     DW_INL_declared_not_inlined);
+	}
+      else if (DECL_INLINE (decl))
+	add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_inlined);
+      else
+	abort ();
+
       equate_decl_number_to_die (decl, subr_die);
     }
+  else if (!DECL_INITIAL (decl))
+    equate_decl_number_to_die (decl, subr_die);
   else if (!DECL_EXTERNAL (decl))
     {
       if (origin == NULL)
@@ -7044,15 +7070,30 @@ gen_string_type_die (type, context_die)
 			      bound_representation (upper_bound, 0, 'u'); */
 }
 
+/* Generate the DIE for a base class.  */
+static void
+gen_inheritance_die (binfo, context_die)
+     register tree binfo;
+     register dw_die_ref context_die;
+{
+  dw_die_ref die = new_die (DW_TAG_inheritance, context_die);
+  add_type_attribute (die, BINFO_TYPE (binfo), 0, 0, context_die);
+  add_data_member_location_attribute (die, binfo);
+  if (TREE_VIA_VIRTUAL (binfo))
+    add_AT_unsigned (die, DW_AT_virtuality, DW_VIRTUALITY_virtual);
+  if (TREE_VIA_PUBLIC (binfo))
+    add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_public);
+  else if (TREE_VIA_PROTECTED (binfo))
+    add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_protected);
+}
+
 /* Genearate a DIE for a class member.  */
 static void
 gen_member_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
-  register tree normal_member;
-  register tree first_func_member;
-  register tree func_member;
+  register tree member;
   /* If this is not an incomplete type, output descriptions of each of its
      members. Note that as we output the DIEs necessary to represent the
      members of this record or union type, we will also be trying to output
@@ -7066,21 +7107,24 @@ gen_member_die (type, context_die)
      to point to the TREE node representing the appropriate (containing)
      type.  */
 
-  /* First output info about the data members and type members.  */
-  for (normal_member = TYPE_FIELDS (type);
-       normal_member;
-       normal_member = TREE_CHAIN (normal_member))
+  /* First output info about the base classes.  */
+  if (TYPE_BINFO (type) && TYPE_BINFO_BASETYPES (type))
     {
-      gen_decl_die (normal_member, context_die);
+      register tree bases = TYPE_BINFO_BASETYPES (type);
+      register int n_bases = TREE_VEC_LENGTH (bases);
+      register int i;
+
+      for (i = 0; i < n_bases; i++)
+	gen_inheritance_die (TREE_VEC_ELT (bases, i), context_die);
     }
 
+  /* Now output info about the data members and type members.  */
+  for (member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
+    gen_decl_die (member, context_die);
+
   /* Now output info about the function members (if any).  */
-  for (func_member = TYPE_METHODS (type);
-       func_member;
-       func_member = TREE_CHAIN (func_member))
-    {
-      gen_decl_die (func_member, context_die);
-    }
+  for (member = TYPE_METHODS (type); member; member = TREE_CHAIN (member))
+    gen_decl_die (member, context_die);
 }
 
 /* Generate a DIE for a structure or union type.  */
