@@ -1,6 +1,6 @@
 // prims.cc - Code for core of runtime environment.
 
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1998, 1999, 2000  Cygnus Solutions
 
    This file is part of libgcj.
 
@@ -558,7 +558,7 @@ public:
       interfaces = NULL;
       loader = NULL;
       interface_count = 0;
-      state = 0;		// FIXME.
+      state = JV_STATE_NOTHING;
       thread = NULL;
     }
 };

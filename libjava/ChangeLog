@@ -1,3 +1,7 @@
+2000-01-15  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (_Jv_PrimClass): Use `JV_STATE_NOTHING', not `0'.
+
 2000-01-14  Andrew Haley  <aph@cygnus.com>
 
 	* java/lang/natThrowable.cc: New file.
@@ -27,7 +31,7 @@
 
 	* name-finder.cc: New file.
 	* include/name-finder.h: New file.
-	
+
 2000-01-16  Anthony Green  <green@cygnus.com>
 
 	* java/lang/StringBuffer.java (StringBuffer): Don't special case
