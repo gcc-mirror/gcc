@@ -35,6 +35,27 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(WORDS_TO_LONG): Likewise.
 	(WORDS_TO_DOUBLE): Likewise.
 
+Tue Sep 14 16:24:19 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-write.c: (RELOCATION_VALUE_0): New macro.
+	(RELOCATION_VALUE_1): Likewise.
+	(emit_iinc, emit_reloc, push_constant1, push_constant2,
+ 	push_in_const, push_long_const): Prototyped.
+	(push_constant1): Argument `index' is of type HOST_WIDE_INT.
+	(push_constant2): Likewise.
+	(push_int_const): Cast find_constant1's integer arguments to `jword'.
+	(find_constant_wide): Cast find_constant2's integer arguments to
+ 	`jword'.
+	(find_constant_index): Cast find_constant2's and find_constant2's
+ 	integer arguments to `jword'.
+	(emit_pop): Argument `value' is of type HOST_WIDE_INT.
+	(emit_switch_reloc): Use RELOCATION_VALUE_0.
+	(emit_if): Use RELOCATION_VALUE_1.
+	(emit_goto): Likewise.
+	(emit_jsr): Likewise.
+	(generate_bytecode_insns): Use RELOCATION_VALUE_0. Cast second
+ 	argument to push_long_const to HOST_WIDE_INT.
+
 1999-09-15  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (parse.o): Depend on $(JAVA_TREE_H).

@@ -186,6 +186,9 @@ struct jcf_relocation
   struct jcf_block *label;
 };
 
+#define RELOCATION_VALUE_0 ((HOST_WIDE_INT)0)
+#define RELOCATION_VALUE_1 ((HOST_WIDE_INT)0)
+
 /* State for single catch clause. */
 
 struct jcf_handler
@@ -302,11 +305,16 @@ static struct chunk * generate_classfile PROTO ((tree, struct jcf_partial *));
 static struct jcf_handler *alloc_handler PROTO ((struct jcf_block *,
 						 struct jcf_block *,
 						 struct jcf_partial *));
-static void push_constant1 PROTO ((int, struct jcf_partial *));
-static void push_constant2 PROTO ((int, struct jcf_partial *));
+static void emit_iinc PROTO ((tree, HOST_WIDE_INT, struct jcf_partial *));
+static void emit_reloc PROTO ((HOST_WIDE_INT, int, struct jcf_block *, 
+			       struct jcf_partial *));
+static void push_constant1 PROTO ((HOST_WIDE_INT, struct jcf_partial *));
+static void push_constant2 PROTO ((HOST_WIDE_INT, struct jcf_partial *));
 static void push_int_const PROTO ((HOST_WIDE_INT, struct jcf_partial *));
 static int find_constant_wide PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
 				      struct jcf_partial *));
+static void push_long_const PROTO ((HOST_WIDE_INT, HOST_WIDE_INT, 
+				    struct jcf_partial *));
 static int find_constant_index PROTO ((tree, struct jcf_partial *));
 static void push_long_const PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
 				    struct jcf_partial *));
@@ -704,7 +712,7 @@ write_chunks (stream, chunks)
 
 static void
 push_constant1 (index, state)
-     int index;
+     HOST_WIDE_INT index;
      struct jcf_partial *state;
 {
   RESERVE (3);
@@ -725,7 +733,7 @@ push_constant1 (index, state)
 
 static void
 push_constant2 (index, state)
-     int index;
+     HOST_WIDE_INT index;
      struct jcf_partial *state;
 {
   RESERVE (3);
@@ -756,7 +764,8 @@ push_int_const (i, state)
     }
   else
     {
-      i = find_constant1 (&state->cpool, CONSTANT_Integer, i & 0xFFFFFFFF);
+      i = find_constant1 (&state->cpool, CONSTANT_Integer, 
+			  (jword)(i & 0xFFFFFFFF));
       push_constant1 (i, state);
     }
 }
@@ -769,7 +778,7 @@ find_constant_wide (lo, hi, state)
   HOST_WIDE_INT w1, w2;
   lshift_double (lo, hi, -32, 64, &w1, &w2, 1);
   return find_constant2 (&state->cpool, CONSTANT_Long,
-			 w1 & 0xFFFFFFFF, lo & 0xFFFFFFFF);
+			 (jword)(w1 & 0xFFFFFFFF), (jword)(lo & 0xFFFFFFFF));
 }
 
 /* Find or allocate a constant pool entry for the given VALUE.
@@ -784,7 +793,7 @@ find_constant_index (value, state)
     {
       if (TYPE_PRECISION (TREE_TYPE (value)) <= 32)
 	return find_constant1 (&state->cpool, CONSTANT_Integer,
-			       TREE_INT_CST_LOW (value) & 0xFFFFFFFF);
+			       (jword)(TREE_INT_CST_LOW (value) & 0xFFFFFFFF));
       else
 	return find_constant_wide (TREE_INT_CST_LOW (value),
 				   TREE_INT_CST_HIGH (value), state);
@@ -795,14 +804,17 @@ find_constant_index (value, state)
       if (TYPE_PRECISION (TREE_TYPE (value)) == 32)
 	{
 	  words[0] = etarsingle (TREE_REAL_CST (value)) & 0xFFFFFFFF;
-	  return find_constant1 (&state->cpool, CONSTANT_Float, words[0]);
+	  return find_constant1 (&state->cpool, CONSTANT_Float, 
+				 (jword)words[0]);
 	}
       else
 	{
 	  etardouble (TREE_REAL_CST (value), words);
 	  return find_constant2 (&state->cpool, CONSTANT_Double,
-				 words[1-FLOAT_WORDS_BIG_ENDIAN] & 0xFFFFFFFF,
-				 words[FLOAT_WORDS_BIG_ENDIAN] & 0xFFFFFFFF);
+				 (jword)(words[1-FLOAT_WORDS_BIG_ENDIAN] & 
+					 0xFFFFFFFF),
+				 (jword)(words[FLOAT_WORDS_BIG_ENDIAN] & 
+					 0xFFFFFFFF));
 	}
     }
   else if (TREE_CODE (value) == STRING_CST)
@@ -945,7 +957,7 @@ emit_pop (size, state)
 static void
 emit_iinc (var, value, state)
      tree var;
-     int value;
+     HOST_WIDE_INT value;
      struct jcf_partial *state;
 {
   int slot = DECL_LOCAL_INDEX (var);
@@ -1051,7 +1063,7 @@ emit_switch_reloc (label, state)
      struct jcf_block *label;
      struct jcf_partial *state;
 {
-  emit_reloc (0, BLOCK_START_RELOC, label, state);
+  emit_reloc (RELOCATION_VALUE_0, BLOCK_START_RELOC, label, state);
 }
 
 /* Similar to emit_switch_reloc,
@@ -1081,7 +1093,7 @@ emit_if (target, opcode, inv_opcode, state)
 {
   OP1 (opcode);
   /* value is 1 byte from reloc back to start of instruction.  */
-  emit_reloc (1, - inv_opcode, target, state);
+  emit_reloc (RELOCATION_VALUE_1, - inv_opcode, target, state);
 }
 
 static void
@@ -1091,7 +1103,7 @@ emit_goto (target, state)
 {
   OP1 (OPCODE_goto);
   /* Value is 1 byte from reloc back to start of instruction.  */
-  emit_reloc (1, OPCODE_goto_w, target, state);
+  emit_reloc (RELOCATION_VALUE_1, OPCODE_goto_w, target, state);
 }
 
 static void
@@ -1101,7 +1113,7 @@ emit_jsr (target, state)
 {
   OP1 (OPCODE_jsr);
   /* Value is 1 byte from reloc back to start of instruction.  */
-  emit_reloc (1, OPCODE_jsr_w, target, state);
+  emit_reloc (RELOCATION_VALUE_1, OPCODE_jsr_w, target, state);
 }
 
 /* Generate code to evaluate EXP.  If the result is true,
@@ -1729,7 +1741,8 @@ generate_bytecode_insns (exp, target, state)
 		int index = 0;
 		RESERVE (13 + 4 * (sw_state.max_case - sw_state.min_case + 1));
 		OP1 (OPCODE_tableswitch);
-		emit_reloc (0, SWITCH_ALIGN_RELOC, NULL, state);
+		emit_reloc (RELOCATION_VALUE_0, 
+			    SWITCH_ALIGN_RELOC, NULL, state);
 		emit_switch_reloc (sw_state.default_label, state);
 		OP4 (sw_state.min_case);
 		OP4 (sw_state.max_case);
@@ -1752,7 +1765,8 @@ generate_bytecode_insns (exp, target, state)
 	      { /* Use lookupswitch. */
 		RESERVE(9 + 8 * sw_state.num_cases);
 		OP1 (OPCODE_lookupswitch);
-		emit_reloc (0, SWITCH_ALIGN_RELOC, NULL, state);
+		emit_reloc (RELOCATION_VALUE_0,
+			    SWITCH_ALIGN_RELOC, NULL, state);
 		emit_switch_reloc (sw_state.default_label, state);
 		OP4 (sw_state.num_cases);
 		for (i = 0;  i < sw_state.num_cases;  i++)
@@ -1925,7 +1939,7 @@ generate_bytecode_insns (exp, target, state)
       if (size == 1)
 	push_int_const (value, state);
       else
-	push_long_const (value, value >= 0 ? 0 : -1, state);
+	push_long_const (value, (HOST_WIDE_INT)(value >= 0 ? 0 : -1), state);
       NOTE_PUSH (size);
       emit_binop (OPCODE_iadd + adjust_typed_op (type, 3), type, state);
       if (target != IGNORE_TARGET && ! post_op)
