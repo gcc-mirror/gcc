@@ -323,6 +323,7 @@ read_zip_archive (zipf)
       long uncompressed_size = makelong (&dir_ptr[4+C_UNCOMPRESSED_SIZE]);
       long filename_length = makeword (&dir_ptr[4+C_FILENAME_LENGTH]);
       long extra_field_length = makeword (&dir_ptr[4+C_EXTRA_FIELD_LENGTH]);
+      long file_offset = makelong (&dir_ptr[4+C_RELATIVE_OFFSET_LOCAL_HEADER]);
       int unpadded_direntry_length;
       if ((dir_ptr-zipf->central_directory)+filename_length+CREC_SIZE+4>zipf->dir_size)
 	return -1;
@@ -337,8 +338,7 @@ read_zip_archive (zipf)
 #else
 #define DIR_ALIGN sizeof(long)
 #endif
-      zipd->filestart = find_zip_file_start (zipf->fd, 
-					     makelong (&dir_ptr[4+C_RELATIVE_OFFSET_LOCAL_HEADER]));
+      zipd->filestart = find_zip_file_start (zipf->fd, file_offset);
       zipd->filename_offset = CREC_SIZE+4 - dir_last_pad;
       unpadded_direntry_length 
 	  = zipd->filename_offset + zipd->filename_length + extra_field_length;
