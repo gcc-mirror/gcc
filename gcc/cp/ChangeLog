@@ -1,3 +1,8 @@
+2001-12-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* decl.c (xref_basetypes): Don't use C99 construct in tag_code
+	declaration and initialization.
+
 2001-12-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* typeck2.c: Remove leading capital from diagnostic messages, as
