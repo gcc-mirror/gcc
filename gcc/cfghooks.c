@@ -373,6 +373,7 @@ split_edge (edge e)
   basic_block ret;
   gcov_type count = e->count;
   int freq = EDGE_FREQUENCY (e);
+  edge f;
 
   if (!cfg_hooks->split_edge)
     internal_error ("%s does not support split_edge.", cfg_hooks->name);
@@ -387,9 +388,33 @@ split_edge (edge e)
     set_immediate_dominator (CDI_DOMINATORS, ret, ret->pred->src);
 
   if (dom_computed[CDI_DOMINATORS] >= DOM_NO_FAST_QUERY)
-    set_immediate_dominator (CDI_DOMINATORS, ret->succ->dest,
-			     recount_dominator (CDI_DOMINATORS,
-						ret->succ->dest));
+    {
+      /* There are two cases:
+
+	 If the immediate dominator of e->dest is not e->src, it
+	 remains unchanged.
+
+	 If immediate dominator of e->dest is e->src, it may become
+	 ret, provided that all other predecessors of e->dest are
+	 dominated by e->dest.  */
+
+      if (get_immediate_dominator (CDI_DOMINATORS, ret->succ->dest)
+	  == ret->pred->src)
+	{
+	  for (f = ret->succ->dest->pred; f; f = f->pred_next)
+	    {
+	      if (f == ret->succ)
+		continue;
+
+	      if (!dominated_by_p (CDI_DOMINATORS, f->src,
+				   ret->succ->dest))
+		break;
+	    }
+
+	  if (!f)
+	    set_immediate_dominator (CDI_DOMINATORS, ret->succ->dest, ret);
+	}
+    };
 
   return ret;
 }
