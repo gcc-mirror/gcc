@@ -1,3 +1,8 @@
+2003-09-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/12316
+	* g++.dg/other/gc2.C: New test.
+
 2003-09-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11991
