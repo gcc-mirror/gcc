@@ -744,6 +744,28 @@ flags_from_decl_or_type (tree exp)
   return flags;
 }
 
+/* Detect flags from a CALL_EXPR.  */
+
+int
+call_expr_flags (tree t)
+{
+  int flags;
+  tree decl = get_callee_fndecl (t);
+
+  if (decl)
+    flags = flags_from_decl_or_type (decl);
+  else
+    {
+      t = TREE_TYPE (TREE_OPERAND (t, 0));
+      if (t && TREE_CODE (t) == POINTER_TYPE)
+	flags = flags_from_decl_or_type (TREE_TYPE (t));
+      else
+	flags = 0;
+    }
+
+  return flags;
+}
+
 /* Precompute all register parameters as described by ARGS, storing values
    into fields within the ARGS array.
 

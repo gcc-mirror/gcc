@@ -2294,6 +2294,7 @@ build (enum tree_code code, tree tt, ...)
   int fro;
   int constant;
   va_list p;
+  tree node;
 
   va_start (p, tt);
 
@@ -2380,10 +2381,17 @@ build (enum tree_code code, tree tt, ...)
     {
       /* Calls have side-effects, except those to const or
 	 pure functions.  */
-      tree fn = get_callee_fndecl (t);
-
-      if (!fn || (!DECL_IS_PURE (fn) && !TREE_READONLY (fn)))
+      i = call_expr_flags (t);
+      if (!(i & (ECF_CONST | ECF_PURE)))
 	TREE_SIDE_EFFECTS (t) = 1;
+
+      /* And even those have side-effects if their arguments do.  */
+      else for (node = TREE_OPERAND (t, 1); node; node = TREE_CHAIN (node))
+	if (TREE_SIDE_EFFECTS (TREE_VALUE (node)))
+	  {
+	    TREE_SIDE_EFFECTS (t) = 1;
+	    break;
+	  }
     }
 
   return t;
