@@ -3183,7 +3183,7 @@ while (0)
    between pointers and any other objects of this machine mode.  */
 
 #ifndef Pmode
-#define Pmode (TARGET_LONG64 ? DImode : SImode)
+#define Pmode ((enum machine_mode)(TARGET_LONG64 ? DImode : SImode))
 #endif
 
 /* A function address in a call instruction

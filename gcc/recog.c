@@ -1011,7 +1011,7 @@ immediate_operand (op, mode)
 int
 const_int_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return GET_CODE (op) == CONST_INT;
 }

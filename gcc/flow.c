@@ -1347,7 +1347,6 @@ life_analysis_1 (f, nregs)
      possibly excluding those that are used after they are set.  */
   regset *basic_block_significant;
   register int i;
-  rtx insn;
 
   struct obstack flow_obstack;
 

@@ -1,3 +1,164 @@
+Wed Oct 14 11:14:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (sched.o): Depend on recog.h.
+
+	* alias.c (REG_BASE_VALUE): Cast the result of REGNO() macro to
+	(unsigned) when comparing against one.
+	(find_base_value): Likewise.
+	(record_base_value): Cast variable `regno' to (unsigned) when
+	comparing against one.  Cast the result of REGNO() macro to
+	(unsigned) when comparing against one.
+	(memrefs_conflict_p): Change type of variables `r_x' and `r_y'  to
+	unsigned.
+	(init_alias_analysis): Add unsigned variable `ui'.  Use it as loop
+	variable where an unsigned index is needed.
+
+	* caller-save.c (init_caller_save): Cast `-1' to (enum insn_code)
+	before comparing against one.
+
+	* collect2.c: Add prototypes for functions `error', `fatal' and
+	`fatal_perror'.  Make these functions take variable arguments
+	instead of faking it with a fixed number of args.
+	(write_c_file_stat): Cast the argument of ctype macro to (unsigned
+	char).
+
+	* combine.c (can_combine_p): Mark parameter `pred' with
+	ATTRIBUTE_UNUSED.
+	(find_split_point): Cast variable `src' to (unsigned
+	HOST_WIDE_INT) when comparing against one.
+	(simplify_rtx): Cast 1 to (unsigned HOST_WIDE_INT) in shift.
+	(simplify_logical): Likewise.
+	(force_to_mode): Cast result of INTVAL() macro to (unsigned
+	HOST_WIDE_INT) when comparing against one.  Cast 1 to (unsigned
+	HOST_WIDE_INT) in shift.
+	(simplify_and_const_int): Cast result of INTVAL() macro to
+	`unsigned HOST_WIDE_INT' when comparing against one.
+	(merge_outer_ops): Cast variable const0 to `unsigned
+	HOST_WIDE_INT' when comparing against the result of
+	GET_MODE_MASK() macro.
+	(simplify_comparison): Likewise for variable `c0'.  Cast variable
+	`const_op' to `unsigned HOST_WIDE_INT' when comparing against
+	one.  Cast `1' to `unsigned HOST_WIDE_INT' in shift.  Cast the
+	result of `GET_MODE_MASK()/2' to `HOST_WIDE_INT' when comparing
+	against one.  Cast `1' to `unsigned HOST_WIDE_INT' in shift.  Cast
+	result of INTVAL() macro to `unsigned HOST_WIDE_INT' when
+	comparing against one.
+	(distribute_notes): Wrap variable `cc0_setter' in macro `HAVE_cc0'.
+
+	config/mips/mips.c (gen_int_relational): Cast result of INTVAL()
+	macro to `unsigned HOST_WIDE_INT' when comparing against one.
+	(output_block_move): Cast `sizeof' expression to (int) when
+	comparing against one.
+	(function_arg): Cast BITS_PER_WORD to `unsigned' when comparing
+	against one.
+	(save_restore_insns): Cast `base_offset' to `long' to match format
+	specifier in fprintf.
+
+	* config/mips/mips.h (Pmode): Cast the result of `Pmode' macro
+	to `enum machine_mode'.
+
+	* flow.c (life_analysis_1): Remove unused variable `insn'.
+
+	* gcc.c (translate_options): Move variables `j' and `k' into the
+	scope in which they are used.  Change their types to `size_t'.
+	(set_spec): Cast the argument of ctype macro to `unsigned char'.
+	(read_specs): Likewise.
+	(process_command): Cast `sizeof' to (int) when comparing against one.
+	(do_spec_1): Cast the argument of ctype macro to `unsigned char'.
+	(handle_braces): Cast both sides of `==' expression to `long' to
+	ensure sign matching.
+	(main): Cast variable `i' to `int' when comparing against one.
+
+	* gcov-io.h (__fetch_long): Change type of parameter `bytes' from
+	int to size_t.  Cast variable `i' to size_t when comparing against
+	one.
+
+	* genattrtab.c (convert_set_attr_alternative): Remove unused
+	parameter `insn_code'.  All callers changed.
+	(convert_set_attr): Likewise.
+
+	* genrecog.c (add_to_sequence): Cast result of XVECLEN() macro to
+	size_t when comparing against one.  Likewise for variable `len'.
+
+	* global.c (global_alloc): Cast variable `max_regno' to size_t
+	when comparing against one.  Likewise for variable `max_allocno'.
+
+	* jump.c (sets_cc0_p): Mark parameter `x' with ATTRIBUTE_UNUSED.
+
+	* local-alloc.c (validate_equiv_mem_from_store): Mark parameter
+	`set' with ATTRIBUTE_UNUSED.
+	(find_free_reg): Cast `sizeof' expression to (int) when comparing
+	against one.
+
+	* loop.c (count_loop_regs_set): Remove unused variable `dest'.
+	(strength_reduce): Mark parameter `bct_p' with ATTRIBUTE_UNUSED.
+	(get_condition): Cast variable `const_val' to `unsigned
+	HOST_WIDE_INT' when comparing against one.  Cast unsigned
+	expression to HOST_WIDE_INT when comparing against one.
+	(insert_loop_mem): Mark parameter `data' with ATTRIBUTE_UNUSED.
+	(load_mems_and_recount_loop_regs_set): Cast variable `nregs' to
+	`unsigned' when comparing against one.
+
+	* protoize.c (is_id_char): Change type of parameter `ch' to
+	unsigned char.
+	(munge_compile_params): Cast argument of ctype macro to (const
+	unsigned char).
+	(process_aux_info_file): Cast variable `aux_info_size' to int when
+	comparing against one.
+	(forward_to_next_token_char): Cast argument of ctype macro to
+	`const unsigned char'.
+	(edit_formals_lists): Likewise.
+	(find_rightmost_formals_list): Likewise.
+	(add_local_decl): Likewise.
+	(add_global_decls): Likewise.
+	(edit_fn_definition): Likewise.
+	(do_cleaning): Likewise.
+	(scan_for_missed_items): Likewise.
+	(edit_file): Cast variable `orig_size' to (int) when comparing
+	against one.
+	(main): Cast argument of ctype macro to `const unsigned char'.
+
+	* recog.c (const_int_operand): Mark parameter `mode' with
+	ATTRIBUTE_UNUSED.
+
+	* regclass.c (record_reg_classes): Change type of variable `c' to
+	`unsigned char'.  Cast `char' array index to `unsigned char'.
+
+	* reload.c (push_secondary_reload): Cast argument to
+	REG_CLASS_FROM_LETTER() macro to `unsigned char'.
+
+	* reload1.c (calculate_needs): Cast `char' array index to
+	`unsigned char'.
+	(set_label_offsets): Change type of variable `i' to unsigned int.
+	Cast result of XVECLEN() macro to unsigned when comparing against
+	one.
+	(mark_not_eliminable): Change type of variable `i' to unsigned.
+	(order_regs_for_reload): Likewise.  Cast `max_regno' to unsigned
+	when comparing against one.
+	(reload_as_needed): Cast macro NUM_ELIMINABLE_REGS to (int) when
+	comparing against one.
+	(choose_reload_regs): Hide unused label `fail'.
+	(reload_cse_simplify_operands): Cast `char' array index to
+	`unsigned char'.
+	(reload_combine_note_store): Mark parameter `set' with
+	ATTRIBUTE_UNUSED.  Cast UNITS_PER_WORD to unsigned when comparing
+	against one.
+	(reload_cse_move2add): Remove unused variable `src2'.
+
+	* sched.c: Include recog.h.
+	(sched_note_set): Remove unused parameter `b'.  All callers
+	changed.
+	(split_hard_reg_notes): Likewise for parameter `orig_insn'.
+	(blockage_range): Cast result of UNIT_BLOCKED() macro to (int)
+	when comparing against one.
+
+	* stupid.c (stupid_find_reg): Mark parameter `changes_size' with
+	ATTRIBUTE_UNUSED.  Cast `sizeof' expression to (int) when
+	comparing against one.
+
+	* unroll.c (precondition_loop_p): Remove unused parameter
+	`loop_end'.  All callers changed.
+
 Tue Oct 13 22:12:11 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* reload1.c (maybe_fix_stack_asms): New static function.

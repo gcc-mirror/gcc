@@ -1134,7 +1134,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	  enum machine_mode mode = modes[i];
 	  int allows_mem = 0;
 	  int win = 0;
-	  char c;
+	  unsigned char c;
 
 	  /* If this operand has no constraints at all, we can conclude 
 	     nothing about it since anything is valid.  */
@@ -1394,7 +1394,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 
 		  if (prefclass)
 		    alt_cost
-		      += may_move_cost[prefclass[REGNO (op)]][(int) classes[i]];
+		      += may_move_cost[(unsigned char)prefclass[REGNO (op)]][(int) classes[i]];
 		}
 	    }
 
@@ -1466,9 +1466,9 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	  int nr;
 
 	  if (regno >= FIRST_PSEUDO_REGISTER && prefclass != 0
-	      && (reg_class_size[prefclass[regno]]
+	      && (reg_class_size[(unsigned char)prefclass[regno]]
 		  == CLASS_MAX_NREGS (prefclass[regno], mode)))
-	    op_costs[i].cost[prefclass[regno]] = -1;
+	    op_costs[i].cost[(unsigned char)prefclass[regno]] = -1;
 	  else if (regno < FIRST_PSEUDO_REGISTER)
 	    for (class = 0; class < N_REG_CLASSES; class++)
 	      if (TEST_HARD_REG_BIT (reg_class_contents[class], regno)

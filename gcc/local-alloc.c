@@ -420,7 +420,7 @@ static int equiv_mem_modified;
 static void
 validate_equiv_mem_from_store (dest, set)
      rtx dest;
-     rtx set;
+     rtx set ATTRIBUTE_UNUSED;
 {
   if ((GET_CODE (dest) == REG
        && reg_overlap_mentioned_p (dest, equiv_mem))
@@ -1858,7 +1858,7 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
 
      This is true of any register that can be eliminated.  */
 #ifdef ELIMINABLE_REGS
-  for (i = 0; i < sizeof eliminables / sizeof eliminables[0]; i++)
+  for (i = 0; i < (int)(sizeof eliminables / sizeof eliminables[0]); i++)
     SET_HARD_REG_BIT (used, eliminables[i].from);
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
   /* If FRAME_POINTER_REGNUM is not a real register, then protect the one

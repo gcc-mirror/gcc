@@ -497,7 +497,7 @@ stupid_find_reg (call_preserved, class, mode,
      enum reg_class class;
      enum machine_mode mode;
      int born_insn, dead_insn;
-     int changes_size;
+     int changes_size ATTRIBUTE_UNUSED;
 {
   register int i, ins;
 #ifdef HARD_REG_SET
@@ -519,7 +519,7 @@ stupid_find_reg (call_preserved, class, mode,
 		     call_preserved ? call_used_reg_set : fixed_reg_set);
 
 #ifdef ELIMINABLE_REGS
-  for (i = 0; i < sizeof eliminables / sizeof eliminables[0]; i++)
+  for (i = 0; i < (int)(sizeof eliminables / sizeof eliminables[0]); i++)
     SET_HARD_REG_BIT (used, eliminables[i].from);
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
   SET_HARD_REG_BIT (used, HARD_FRAME_POINTER_REGNUM);

@@ -445,7 +445,7 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
       char insn_letter = insn_operand_constraint[(int) icode][!in_p][in_p];
       enum reg_class insn_class
 	= (insn_letter == 'r' ? GENERAL_REGS
-	   : REG_CLASS_FROM_LETTER (insn_letter));
+	   : REG_CLASS_FROM_LETTER ((unsigned char) insn_letter));
 
       if (insn_class == NO_REGS
 	  || (in_p && insn_operand_constraint[(int) icode][!in_p][0] != '=')
@@ -462,7 +462,7 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	  class = insn_class;
 	  t_mode = insn_operand_mode[(int) icode][2];
 	  t_class = (t_letter == 'r' ? GENERAL_REGS
-		     : REG_CLASS_FROM_LETTER (t_letter));
+		     : REG_CLASS_FROM_LETTER ((unsigned char) t_letter));
 	  t_icode = icode;
 	  icode = CODE_FOR_nothing;
 	}

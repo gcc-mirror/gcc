@@ -126,6 +126,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "insn-config.h"
 #include "insn-attr.h"
+#include "recog.h"
 
 #ifndef INSN_SCHEDULING
 void
@@ -325,7 +326,7 @@ static void sched_analyze_1		PROTO((rtx, rtx));
 static void sched_analyze_2		PROTO((rtx, rtx));
 static void sched_analyze_insn		PROTO((rtx, rtx, rtx));
 static int sched_analyze		PROTO((rtx, rtx));
-static void sched_note_set		PROTO((int, rtx, int));
+static void sched_note_set		PROTO((rtx, int));
 static int rank_for_schedule		PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static void swap_sort			PROTO((rtx *, int));
 static void queue_insn			PROTO((rtx, int));
@@ -342,7 +343,7 @@ static void finish_sometimes_live	PROTO((struct sometimes *, int));
 static rtx reemit_notes			PROTO((rtx, rtx));
 static void schedule_block		PROTO((int, FILE *));
 static rtx regno_use_in			PROTO((int, rtx));
-static void split_hard_reg_notes	PROTO((rtx, rtx, rtx, rtx));
+static void split_hard_reg_notes	PROTO((rtx, rtx, rtx));
 static void new_insn_dead_notes		PROTO((rtx, rtx, rtx, rtx));
 static void update_n_sets		PROTO((rtx, int));
 static void update_flow_info		PROTO((rtx, rtx, rtx, rtx));
@@ -606,7 +607,7 @@ blockage_range (unit, insn)
   unsigned int blockage = INSN_BLOCKAGE (insn);
   unsigned int range;
 
-  if (UNIT_BLOCKED (blockage) != unit + 1)
+  if ((int) UNIT_BLOCKED (blockage) != unit + 1)
     {
       range = function_units[unit].blockage_range_function (insn);
       /* We only cache the blockage range for one unit and then only if
@@ -1762,8 +1763,7 @@ sched_analyze (head, tail)
    are scanning forwards.  Mark that register as being born.  */
 
 static void
-sched_note_set (b, x, death)
-     int b;
+sched_note_set (x, death)
      rtx x;
      int death;
 {
@@ -2926,20 +2926,20 @@ schedule_block (b, file)
 		   a register must be marked as dead after this insn.  */
 		if (GET_CODE (PATTERN (insn)) == SET
 		    || GET_CODE (PATTERN (insn)) == CLOBBER)
-		  sched_note_set (b, PATTERN (insn), 0);
+		  sched_note_set (PATTERN (insn), 0);
 		else if (GET_CODE (PATTERN (insn)) == PARALLEL)
 		  {
 		    int j;
 		    for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
 		      if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == SET
 			  || GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == CLOBBER)
-			sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 0);
+			sched_note_set (XVECEXP (PATTERN (insn), 0, j), 0);
 
 		    /* ??? This code is obsolete and should be deleted.  It
 		       is harmless though, so we will leave it in for now.  */
 		    for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
 		      if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == USE)
-			sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 0);
+			sched_note_set (XVECEXP (PATTERN (insn), 0, j), 0);
 		  }
 
 		/* Each call clobbers (makes live) all call-clobbered regs
@@ -3036,20 +3036,20 @@ schedule_block (b, file)
 	     must be marked as dead after this insn.  */
 	  if (GET_CODE (PATTERN (insn)) == SET
 	      || GET_CODE (PATTERN (insn)) == CLOBBER)
-	    sched_note_set (b, PATTERN (insn), 0);
+	    sched_note_set (PATTERN (insn), 0);
 	  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
 	    {
 	      int j;
 	      for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
 		if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == SET
 		    || GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == CLOBBER)
-		  sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 0);
+		  sched_note_set (XVECEXP (PATTERN (insn), 0, j), 0);
 
 	      /* ??? This code is obsolete and should be deleted.  It
 		 is harmless though, so we will leave it in for now.  */
 	      for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
 		if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == USE)
-		  sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 0);
+		  sched_note_set (XVECEXP (PATTERN (insn), 0, j), 0);
 	    }
 
 	  /* Each call clobbers (makes live) all call-clobbered regs that are
@@ -3279,14 +3279,14 @@ schedule_block (b, file)
 	      /* See if this is the last notice we must take of a register.  */
 	      if (GET_CODE (PATTERN (insn)) == SET
 		  || GET_CODE (PATTERN (insn)) == CLOBBER)
-		sched_note_set (b, PATTERN (insn), 1);
+		sched_note_set (PATTERN (insn), 1);
 	      else if (GET_CODE (PATTERN (insn)) == PARALLEL)
 		{
 		  int j;
 		  for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
 		    if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == SET
 			|| GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == CLOBBER)
-		      sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 1);
+		      sched_note_set (XVECEXP (PATTERN (insn), 0, j), 1);
 		}
 	      
 	      /* This code keeps life analysis information up to date.  */
@@ -3593,8 +3593,8 @@ regno_use_in (regno, x)
    several smaller hard register references in the split insns.  */
 
 static void
-split_hard_reg_notes (note, first, last, orig_insn)
-     rtx note, first, last, orig_insn;
+split_hard_reg_notes (note, first, last)
+  rtx note, first, last;
 {
   rtx reg, temp, link;
   int n_regs, i, new_reg;
@@ -3823,7 +3823,7 @@ update_flow_info (notes, first, last, orig_insn)
 		      && GET_CODE (temp) == REG
 		      && REGNO (temp) < FIRST_PSEUDO_REGISTER
 		      && HARD_REGNO_NREGS (REGNO (temp), GET_MODE (temp)) > 1)
-		    split_hard_reg_notes (note, first, last, orig_insn);
+		    split_hard_reg_notes (note, first, last);
 		  else
 		    {
 		      XEXP (note, 1) = REG_NOTES (insn);

@@ -266,6 +266,11 @@ static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
 static char *libexts[3] = {"a", "so", NULL};  /* possible library extentions */
 #endif
 
+void error		PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
+void fatal		PVPROTO((const char *, ...)) 
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+void fatal_perror	PVPROTO((const char *, ...))
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 static char *my_strerror	PROTO((int));
 static const char *my_strsignal	PROTO((int));
 static void handler		PROTO((int));
@@ -409,38 +414,72 @@ collect_exit (status)
 /* Die when sys call fails.  */
 
 void
-fatal_perror (string, arg1, arg2, arg3)
-     char *string, *arg1, *arg2, *arg3;
+fatal_perror VPROTO((const char * string, ...))
 {
+#ifndef __STDC__
+  const char *string;
+#endif
   int e = errno;
+  va_list ap;
+
+  VA_START (ap, string);
+
+#ifndef __STDC__
+  string = va_arg (ap, const char *);
+#endif
 
   fprintf (stderr, "collect2: ");
-  fprintf (stderr, string, arg1, arg2, arg3);
+  vfprintf (stderr, string, ap);
   fprintf (stderr, ": %s\n", my_strerror (e));
+  va_end (ap);
+
   collect_exit (FATAL_EXIT_CODE);
 }
 
 /* Just die.  */
 
 void
-fatal (string, arg1, arg2, arg3)
-     char *string, *arg1, *arg2, *arg3;
+fatal VPROTO((const char * string, ...))
 {
+#ifndef __STDC__
+  const char *string;
+#endif
+  va_list ap;
+  
+  VA_START (ap, string);
+
+#ifndef __STDC__
+  string = va_arg (ap, const char *);
+#endif
+  
   fprintf (stderr, "collect2: ");
-  fprintf (stderr, string, arg1, arg2, arg3);
+  vfprintf (stderr, string, ap);
   fprintf (stderr, "\n");
+  va_end (ap);
+
   collect_exit (FATAL_EXIT_CODE);
 }
 
 /* Write error message.  */
 
 void
-error (string, arg1, arg2, arg3, arg4)
-     char *string, *arg1, *arg2, *arg3, *arg4;
+error VPROTO((const char * string, ...))
 {
+#ifndef __STDC__
+  const char * string;
+#endif
+  va_list ap;
+ 
+  VA_START (ap, string);
+  
+#ifndef __STDC__
+  string = va_arg (ap, const char *);
+#endif
+
   fprintf (stderr, "collect2: ");
-  fprintf (stderr, string, arg1, arg2, arg3, arg4);
+  vfprintf (stderr, string, ap);
   fprintf (stderr, "\n");
+  va_end(ap);
 }
 
 /* In case obstack is linked in, and abort is defined to fancy_abort,
@@ -1940,7 +1979,7 @@ write_c_file_stat (stream, name)
   strncpy (prefix, p, q - p);
   prefix[q - p] = 0;
   for (q = prefix; *q; q++)
-    if (!ISALNUM (*q))
+    if (!ISALNUM ((unsigned char)*q))
       *q = '_';
   if (debug)
     fprintf (stderr, "\nwrite_c_file - output name is %s, prefix is %s\n",

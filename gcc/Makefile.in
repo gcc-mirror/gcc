@@ -1511,8 +1511,8 @@ regmove.o : regmove.c $(CONFIG_H) system.h $(RTL_H) insn-config.h \
    $(RECOG_H) output.h reload.h $(REGS_H) hard-reg-set.h flags.h \
    $(EXPR_H) insn-flags.h $(BASIC_BLOCK_H) toplev.h
 $(SCHED_PREFIX)sched.o : $(SCHED_PREFIX)sched.c $(CONFIG_H) system.h $(RTL_H) \
-   $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h insn-attr.h \
-   toplev.h
+   $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h \
+   insn-attr.h toplev.h recog.h
 final.o : final.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h $(REGS_H) \
    $(RECOG_H) conditions.h insn-config.h insn-attr.h except.h real.h output.h \
    hard-reg-set.h insn-flags.h insn-codes.h gstab.h xcoffout.h defaults.h \

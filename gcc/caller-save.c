@@ -192,7 +192,8 @@ init_caller_save ()
 
 	  /* Now extract both insns and see if we can meet their
              constraints.  */
-	  ok = (reg_save_code[i][j] != -1 && reg_restore_code[i][j] != -1);
+	  ok = (reg_save_code[i][j] != (enum insn_code)-1
+		&& reg_restore_code[i][j] != (enum insn_code)-1);
 	  if (ok)
 	    {
 	      insn_extract (saveinsn);

@@ -416,7 +416,7 @@ add_to_sequence (pattern, last, position)
 
       if (code == MATCH_OPERATOR || code == MATCH_PARALLEL)
 	{
-	  for (i = 0; i < XVECLEN (pattern, 2); i++)
+	  for (i = 0; i < (size_t) XVECLEN (pattern, 2); i++)
 	    {
 	      newpos[depth] = i + (code == MATCH_OPERATOR ? '0': 'a');
 	      new = add_to_sequence (XVECEXP (pattern, 2, i),
@@ -431,7 +431,7 @@ add_to_sequence (pattern, last, position)
       new->dupno = XINT (pattern, 0);
       new->code = UNKNOWN;
       new->tests = 0;
-      for (i = 0; i < XVECLEN (pattern, 1); i++)
+      for (i = 0; i < (size_t) XVECLEN (pattern, 1); i++)
 	{
 	  newpos[depth] = i + '0';
 	  new = add_to_sequence (XVECEXP (pattern, 1, i),
@@ -528,7 +528,7 @@ add_to_sequence (pattern, last, position)
 
   fmt = GET_RTX_FORMAT (code);
   len = GET_RTX_LENGTH (code);
-  for (i = 0; i < len; i++)
+  for (i = 0; i < (size_t) len; i++)
     {
       newpos[depth] = '0' + i;
       if (fmt[i] == 'e' || fmt[i] == 'u')
