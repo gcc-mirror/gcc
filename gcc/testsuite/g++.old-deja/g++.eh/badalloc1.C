@@ -36,7 +36,7 @@ extern "C" void *malloc (size_t size)
     return 0;
 
   p->size = size;
-  size = (size + __alignof__(object) + 1) & - __alignof__(object);
+  size = (size + __alignof__(object) - 1) & - __alignof__(object);
   pos += size + sizeof(object);
 
   // Verify that we didn't run out of memory before getting initialized.
