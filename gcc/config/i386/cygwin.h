@@ -94,7 +94,7 @@ Boston, MA 02111-1307, USA. */
   -D__declspec(x)=__attribute__((x)) \
   -D__i386__ -D__i386 \
   %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__ -Dunix -D__unix -D__unix__} \
-  %{!mno-win32:-D_WIN32 -DWINNT -iwithprefixbefore /usr/include/w32api} \
+  %{!mno-win32:-D_WIN32 -DWINNT -isystem /usr/include/w32api} \
   %{mno-win32: %{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
   %{mno-cygwin:-DWIN32 -D__WIN32__ -D_WIN32 -D__MINGW32__=0.2 \
     %{mthreads:-D_MT} \
@@ -561,8 +561,11 @@ extern void i386_pe_record_exported_symbol PARAMS ((char *, int));
 #undef STANDARD_INCLUDE_DIR
 #define STANDARD_INCLUDE_DIR "/usr/include"
 
+#undef MD_STARTFILE_PREFIX
+#define MD_STARTFILE_PREFIX     "/usr/lib/"
+
 #undef STANDARD_STARTFILE_PREFIX
-#define STANDARD_STARTFILE_PREFIX     "/usr/lib/"
+#define STANDARD_STARTFILE_PREFIX     "/usr/lib/mingw/"
 
 #undef TREE
 
