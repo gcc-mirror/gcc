@@ -1,3 +1,10 @@
+2004-11-16  Nick Clifton  <nickc@redhat.com>
+
+	Revert patches accidentally commited during checkin of fixes for
+	xstormy16 tests:
+	gcc.c-torture/execute/simd-4.c: Revert
+	gcc.dg/20040910-1.c: Revert.
+
 2004-11-16  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/13010
