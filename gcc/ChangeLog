@@ -1,3 +1,10 @@
+2005-01-07  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/13674
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address):
+	Convert non-word aligned offset address using ld/std into
+	indirect address.
+
 2005-01-07  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (sse_loadhps splitter): Fix operand number typo.

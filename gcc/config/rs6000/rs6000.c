@@ -3809,6 +3809,26 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       return x;
     }
 #endif
+
+  /* Force ld/std non-word aligned offset into base register by wrapping
+     in offset 0.  */
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == REG
+      && REGNO (XEXP (x, 0)) < 32
+      && REG_MODE_OK_FOR_BASE_P (XEXP (x, 0), mode)
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && (INTVAL (XEXP (x, 1)) & 3) != 0
+      && GET_MODE_SIZE (mode) >= UNITS_PER_WORD
+      && TARGET_POWERPC64)
+    {
+      x = gen_rtx_PLUS (GET_MODE (x), x, GEN_INT (0));
+      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
+		   BASE_REG_CLASS, GET_MODE (x), VOIDmode, 0, 0,
+		   opnum, (enum reload_type) type);
+      *win = 1;
+      return x;
+    }
+
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == REG
       && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
@@ -3844,6 +3864,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       *win = 1;
       return x;
     }
+
 #if TARGET_MACHO
   if (GET_CODE (x) == SYMBOL_REF
       && DEFAULT_ABI == ABI_DARWIN
@@ -3874,6 +3895,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       return x;
     }
 #endif
+
   if (TARGET_TOC
       && constant_pool_expr_p (x)
       && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), mode))
