@@ -1,3 +1,7 @@
+2003-04-16  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/ext/sgiexts.html: Fix path to stylesheet.
+
 2003-04-15  Benjamin Kosnik  <bkoz at redhat dot com>
 	    Paolo Carlini  <pcarlini at unitus dot it>
 
