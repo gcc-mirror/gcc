@@ -3777,8 +3777,25 @@ finish_struct_1 (t, warn_anon)
 
   if (vfield == NULL_TREE && has_virtual)
     {
-      /* We build this decl with ptr_type_node, and
-	 change the type when we know what it should be.  */
+      /* We build this decl with vtbl_ptr_type_node, which is a
+	 `vtable_entry_type*'.  It might seem more precise to use
+	 `vtable_entry_type (*)[N]' where N is the number of firtual
+	 functions.  However, that would require the vtable pointer in
+	 base classes to have a different type than the vtable pointer
+	 in derived classes.  We could make that happen, but that
+	 still wouldn't solve all the problems.  In particular, the
+	 type-based alias analysis code would decide that assignments
+	 to the base class vtable pointer can't alias assignments to
+	 the derived class vtable pointer, since they have different
+	 types.  Thus, in an derived class destructor, where the base
+	 class constructor was inlined, we could generate bad code for
+	 setting up the vtable pointer.  
+
+         Therefore, we use one type for all vtable pointers.  We still
+	 use a type-correct type; it's just doesn't indicate the array
+	 bounds.  That's better than using `void*' or some such; it's
+	 cleaner, and it let's the alias analysis code know that these
+	 stores cannot alias stores to void*!  */
       vfield = build_lang_field_decl (FIELD_DECL, get_vfield_name (t),
 				      vtbl_ptr_type_node);
       /* If you change any of the below, take a look at all the
