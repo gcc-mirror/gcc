@@ -1,3 +1,33 @@
+2003-12-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/13186
+
+	Revert all of the following patch, except the addition of
+	hook_bool_machine_mode_true:
+
+	2003-11-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* Makefile.in (targhooks.o, reload.o): Update dependencies.
+	(GTFILES): Add targhooks.c.
+	(gt-targhooks.h): New rule; depend on s-gtype.
+	* target.h (direct_pool_load_p): New hook.
+	* target-def.h (TARGET_DIRECT_POOL_LOAD_P): New macro.
+	(TARGET_INITIALIZER): Include it.
+	* targhooks.h (default_direct_pool_load_p): Declare.
+	(hook_bool_machine_mode_true): Declare.
+	* targhooks.c: Include insn-config.h, recog.h, ggc.h and
+	gt-targhooks.h.
+	(pool_symbol): New variable.
+	(default_direct_pool_load_p): New function.
+	(hook_bool_machine_mode_true): New function.
+	* reload.c: Include target.h.
+	(find_reloads): If an alternative will force a constant into memory,
+	count an extra reload if constant pool symbols are not valid
+	addresses.  If an alternative uses memory to move values between
+	registers, count the move as two reloads rather than one.
+	* config/s390/s390.c (TARGET_DIRECT_POOL_LOAD_P): Define.
+	* doc/tm.texi (TARGET_DIRECT_POOL_LOAD_P): Document.
+
 2003-12-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/ia64/hpux.h (TARGET_HAVE_TLS): Define it to false.
