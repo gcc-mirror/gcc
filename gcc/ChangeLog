@@ -1,3 +1,7 @@
+2000-03-18  Richard Henderson  <rth@cygnus.com>
+
+	* expr.c (emit_move_insn_1): Clarify cannot_inline message.
+
 2000-03-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (tree_index): Remove enumerals for integer types.
