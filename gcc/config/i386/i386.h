@@ -1864,6 +1864,7 @@ while (0)
 
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
+    return (unsigned) INTVAL (RTX) < 256 ? 0 : 1;		\
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
