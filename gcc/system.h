@@ -234,6 +234,26 @@ extern int errno;
 # endif /* defined(HOST_BITS_PER_LONG) && defined(HOST_BITS_PER_LONGLONG) */
 #endif /* ! HOST_WIDEST_INT */
 
+/* Infrastructure for defining missing _MAX and _MIN macros.  Note that
+   macros defined with these cannot be used in #if.  */
+
+/* The extra casts work around common compiler bugs.  */
+#define INTTYPE_SIGNED(t) (! ((t) 0 < (t) -1))
+/* The outer cast is needed to work around a bug in Cray C 5.0.3.0.
+   It is necessary at least when t == time_t.  */
+#define INTTYPE_MINIMUM(t) ((t) (INTTYPE_SIGNED (t) \
+                             ? ~ (t) 0 << (sizeof(t) * CHAR_BIT - 1) : (t) 0))
+#define INTTYPE_MAXIMUM(t) ((t) (~ (t) 0 - INTTYPE_MINIMUM (t)))
+
+/* Use that infrastructure to provide a few constants.  */
+#ifndef UCHAR_MAX
+# define UCHAR_MAX INTTYPE_MAXIMUM (unsigned char)
+#endif
+
+#ifndef SSIZE_MAX
+# define SSIZE_MAX INTTYPE_MAXIMUM (ssize_t)
+#endif
+
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
