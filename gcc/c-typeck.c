@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 88, 91, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 92-5, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -945,7 +945,7 @@ c_alignof_expr (expr)
     return size_int (DECL_ALIGN (expr) / BITS_PER_UNIT);
  
   if (TREE_CODE (expr) == COMPONENT_REF
-      && DECL_BIT_FIELD (TREE_OPERAND (expr, 1)))
+      && DECL_C_BIT_FIELD (TREE_OPERAND (expr, 1)))
     {
       error ("`__alignof' applied to a bit-field");
       return size_int (1);
@@ -3075,7 +3075,7 @@ build_unary_op (code, xarg, noconvert)
 
 	    addr = build_unary_op (ADDR_EXPR, TREE_OPERAND (arg, 0), 0);
 
-	    if (DECL_BIT_FIELD (field))
+	    if (DECL_C_BIT_FIELD (field))
 	      {
 		error ("attempt to take address of bit-field structure member `%s'",
 		       IDENTIFIER_POINTER (DECL_NAME (field)));
@@ -5261,7 +5261,7 @@ really_start_incremental_init (type)
     {
       constructor_fields = TYPE_FIELDS (constructor_type);
       /* Skip any nameless bit fields at the beginning.  */
-      while (constructor_fields != 0 && DECL_BIT_FIELD (constructor_fields)
+      while (constructor_fields != 0 && DECL_C_BIT_FIELD (constructor_fields)
 	     && DECL_NAME (constructor_fields) == 0)
 	constructor_fields = TREE_CHAIN (constructor_fields);
       constructor_unfilled_fields = constructor_fields;
@@ -5433,7 +5433,7 @@ push_init_level (implicit)
     {
       constructor_fields = TYPE_FIELDS (constructor_type);
       /* Skip any nameless bit fields at the beginning.  */
-      while (constructor_fields != 0 && DECL_BIT_FIELD (constructor_fields)
+      while (constructor_fields != 0 && DECL_C_BIT_FIELD (constructor_fields)
 	     && DECL_NAME (constructor_fields) == 0)
 	constructor_fields = TREE_CHAIN (constructor_fields);
       constructor_unfilled_fields = constructor_fields;
@@ -5475,7 +5475,7 @@ check_init_type_bitfields (type)
       for (tail = TYPE_FIELDS (type); tail;
 	   tail = TREE_CHAIN (tail))
 	{
-	  if (DECL_BIT_FIELD (tail)
+	  if (DECL_C_BIT_FIELD (tail)
 	      /* This catches cases like `int foo : 8;'.  */
 	      || DECL_MODE (tail) != TYPE_MODE (TREE_TYPE (tail)))
 	    {
@@ -5827,7 +5827,8 @@ output_init_element (value, type, field, pending)
   else if (initializer_constant_valid_p (value, TREE_TYPE (value)) == 0
 	   || ((TREE_CODE (constructor_type) == RECORD_TYPE
 		|| TREE_CODE (constructor_type) == UNION_TYPE)
-	       && DECL_BIT_FIELD (field) && TREE_CODE (value) != INTEGER_CST))
+	       && DECL_C_BIT_FIELD (field)
+	       && TREE_CODE (value) != INTEGER_CST))
     constructor_simple = 0;
 
   if (require_constant_value && ! TREE_CONSTANT (value))
@@ -6251,7 +6252,8 @@ process_init_element (value)
 
 	  constructor_fields = TREE_CHAIN (constructor_fields);
 	  /* Skip any nameless bit fields at the beginning.  */
-	  while (constructor_fields != 0 && DECL_BIT_FIELD (constructor_fields)
+	  while (constructor_fields != 0
+		 && DECL_C_BIT_FIELD (constructor_fields)
 		 && DECL_NAME (constructor_fields) == 0)
 	    constructor_fields = TREE_CHAIN (constructor_fields);
 	  break;
