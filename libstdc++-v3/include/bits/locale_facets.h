@@ -1271,26 +1271,24 @@ namespace std
       iter_type 
       put(iter_type __s, bool __intl, ios_base& __f,
 	  char_type __fill, long double __units) const
-      { return do_put(__s, __intl, __f, __fill, __units); }
+      { return this->do_put(__s, __intl, __f, __fill, __units); }
 
       iter_type 
       put(iter_type __s, bool __intl, ios_base& __f,
 	  char_type __fill, const string_type& __digits) const
-      { return do_put(__s, __intl, __f, __fill, __digits); }
+      { return this->do_put(__s, __intl, __f, __fill, __digits); }
 
     protected:
       virtual 
       ~money_put() { }
 
       virtual iter_type
-      do_put(iter_type __s, bool, ios_base& /*__io*/, char_type /*__fill*/,
-	     long double /*__units*/) const
-      { return __s; }
+      do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
+	     long double __units) const;
 
       virtual iter_type
-      do_put(iter_type __s, bool, ios_base& /*__io*/, char_type /*__fill*/,
-	     const string_type& /*__digits*/) const
-      { return __s; }
+      do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
+	     const string_type& __digits) const;
     };
 
   template<typename _CharT, typename _OutIter>
@@ -1417,8 +1415,8 @@ namespace std
       { return _M_neg_format; }
 
       // For use at construction time only.
-      void 
-      _M_initialize_moneypunct(__c_locale __cloc = NULL);
+       void 
+       _M_initialize_moneypunct(__c_locale __cloc = NULL);
     };
 
   template<typename _CharT, bool _Intl>
@@ -1427,21 +1425,28 @@ namespace std
   template<typename _CharT, bool _Intl>
     const bool moneypunct<_CharT, _Intl>::intl;
 
+  // NB: Cannot be made generic. 
   template<typename _CharT, bool _Intl>
     void
-    moneypunct<_CharT, _Intl>::_M_initialize_moneypunct(__c_locale /*__cloc*/)
-    { 
-      // NB: Cannot be made generic. 
-    }
+    moneypunct<_CharT, _Intl>::_M_initialize_moneypunct(__c_locale)
+    { }
 
   template<> 
     void
-    moneypunct<char>::_M_initialize_moneypunct(__c_locale __cloc);
+    moneypunct<char, true>::_M_initialize_moneypunct(__c_locale __cloc);
+
+  template<> 
+    void
+    moneypunct<char, false>::_M_initialize_moneypunct(__c_locale __cloc);
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
     void
-    moneypunct<wchar_t>::_M_initialize_moneypunct(__c_locale __cloc);
+    moneypunct<wchar_t, true>::_M_initialize_moneypunct(__c_locale __cloc);
+
+  template<> 
+    void
+    moneypunct<wchar_t, false>::_M_initialize_moneypunct(__c_locale __cloc);
 #endif
 
   template<typename _CharT, bool _Intl>
@@ -1625,10 +1630,10 @@ namespace std
     };
 
 
-  // Subclause convenience interfaces, inlines 
-  // NB: these are inline
-  // because, when used in a loop, some compilers can hoist the body
-  // out of the loop; then it's just as fast as the C is*() function.
+  // Subclause convenience interfaces, inlines.
+  // NB: These are inline because, when used in a loop, some compilers
+  // can hoist the body out of the loop; then it's just as fast as the
+  // C is*() function.
   template<typename _CharT>
     inline bool 
     isspace(_CharT __c, const locale& __loc)
@@ -1694,8 +1699,4 @@ namespace std
     { return use_facet<ctype<_CharT> >(__loc).tolower(__c); }
 } // namespace std
 
-#endif	/* _CPP_BITS_LOCFACETS_H */
-
-// Local Variables:
-// mode:c++
-// End:
+#endif

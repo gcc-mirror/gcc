@@ -1,4 +1,4 @@
-// 2001-08-23 Benjamin Kosnik  <bkoz@redhat.com>
+// 2001-09-09 Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2001 Free Software Foundation
 //
@@ -26,6 +26,7 @@
 // XXX This test is not working for non-glibc locale models.
 // { dg-do run { xfail *-*-* } }
 
+#ifdef _GLIBCPP_USE_WCHAR_T
 void test01()
 {
   using namespace std;
@@ -56,8 +57,8 @@ void test01()
   VERIFY( loc_de != loc_fr );
 
   // cache the moneypunct facets
-  typedef moneypunct<char, true> __money_true;
-  typedef moneypunct<char, false> __money_false;
+  typedef moneypunct<wchar_t, true> __money_true;
+  typedef moneypunct<wchar_t, false> __money_false;
   const __money_true& monp_c_t = use_facet<__money_true>(loc_c); 
   const __money_true& monp_us_t = use_facet<__money_true>(loc_us); 
   const __money_true& monp_fr_t = use_facet<__money_true>(loc_fr); 
@@ -68,32 +69,32 @@ void test01()
   const __money_false& monp_de_f = use_facet<__money_false>(loc_de); 
 
   // quick sanity check for data.
-  char q1 = monp_c_t.decimal_point();
-  char q2 = monp_c_t.thousands_sep();
-  char q3 = monp_c_f.decimal_point();
-  char q4 = monp_c_f.thousands_sep();
-  VERIFY( q1 != char() );
-  VERIFY( q2 != char() );
-  VERIFY( q3 != char() );
-  VERIFY( q4 != char() );
+  wchar_t q1 = monp_c_t.decimal_point();
+  wchar_t q2 = monp_c_t.thousands_sep();
+  wchar_t q3 = monp_c_f.decimal_point();
+  wchar_t q4 = monp_c_f.thousands_sep();
+  VERIFY( q1 != wchar_t() );
+  VERIFY( q2 != wchar_t() );
+  VERIFY( q3 != wchar_t() );
+  VERIFY( q4 != wchar_t() );
 
   // sanity check the data is correct.
-  char dp1 = monp_c_t.decimal_point();
-  char th1 = monp_c_t.thousands_sep();
+  wchar_t dp1 = monp_c_t.decimal_point();
+  wchar_t th1 = monp_c_t.thousands_sep();
   string g1 = monp_c_t.grouping();
-  string cs1 = monp_c_t.curr_symbol();
-  string ps1 = monp_c_t.positive_sign();
-  string ns1 = monp_c_t.negative_sign();
+  wstring cs1 = monp_c_t.curr_symbol();
+  wstring ps1 = monp_c_t.positive_sign();
+  wstring ns1 = monp_c_t.negative_sign();
   int fd1 = monp_c_t.frac_digits();
   pattern pos1 = monp_c_t.pos_format();
   pattern neg1 = monp_c_t.neg_format();
 
-  char dp2 = monp_de_t.decimal_point();
-  char th2 = monp_de_t.thousands_sep();
+  wchar_t dp2 = monp_de_t.decimal_point();
+  wchar_t th2 = monp_de_t.thousands_sep();
   string g2 = monp_de_t.grouping();
-  string cs2 = monp_de_t.curr_symbol();
-  string ps2 = monp_de_t.positive_sign();
-  string ns2 = monp_de_t.negative_sign();
+  wstring cs2 = monp_de_t.curr_symbol();
+  wstring ps2 = monp_de_t.positive_sign();
+  wstring ns2 = monp_de_t.negative_sign();
   int fd2 = monp_de_t.frac_digits();
   pattern pos2 = monp_de_t.pos_format();
   pattern neg2 = monp_de_t.neg_format();
@@ -115,10 +116,12 @@ void test01()
   VERIFY(static_cast<part>(neg1.field[2]) != static_cast<part>(neg2.field[2]));
   VERIFY(static_cast<part>(neg1.field[3]) != static_cast<part>(neg2.field[3]));
 }
+#endif
 
 int main()
 {
+#ifdef _GLIBCPP_USE_WCHAR_T
   test01();
-
+#endif
   return 0;
 }

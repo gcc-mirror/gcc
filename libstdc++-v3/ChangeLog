@@ -1,3 +1,32 @@
+2001-09-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Implement std::money_put.
+	* include/bits/locale_facets.h
+	(moneypunct::_M_initialize_moneypunct): Split up specializations
+	to account for _Intl.  More grody hacking to get around the
+	ill-considered use of const bool as a template parameter.
+	* config/locale/moneypunct_members_gnu.cc: And here.
+	* config/locale/moneypunct_members_generic.cc: And here.	
+	* testsuite/22_locale/moneypunct_members_char.cc: Add tests.
+	* testsuite/22_locale/moneypunct.cc: Add tests.
+	* testsuite/22_locale/money_put_members_wchar_t.cc: New file.
+	* testsuite/22_locale/moneypunct_members_wchar_t.cc: New file.
+	
+	* src/locale.cc (money_base::_S_construct_pattern): Move into
+	gnu-specific file.
+	* config/locale/moneypunct_members_gnu.cc: Add here.
+	* config/locale/moneypunct_members_generic.cc: Add generic version
+	here.
+
+	* include/bits/locale_facets.tcc (money_put::do_put): Move member
+	function definitions here.
+	* include/bits/locale_facets.h (money_put): Implement.
+	* src/locale-inst.cc: Add use_facet instantiations for moneypunct.
+	Correct money_get, money_put instantiations.
+	* src/locale.cc (money_base::_S_construct_pattern): Handle case
+	where __posn == 0.
+	* testsuite/22_locale/money_put_members_char.cc: Add tests.
+	
 2001-09-05  Phil Edwards  <pme@sources.redhat.com>
 
 	* testsuite_flags.in:  No longer need to search testsuite builddir.

@@ -128,9 +128,4 @@ namespace std
 #endif
 } // namespace std
 
-#endif	// _CPP_IOSFWD
-
-
-
-
-
+#endif

@@ -21,11 +21,25 @@
 // 22.2.6.3  Template class moneypunct
 
 #include <locale>
+#include <testsuite_hooks.h>
 
 void test01()
 {
   // Check for required base class.
-  typedef std::moneypunct<char> test_type;
+  typedef std::moneypunct<char, true> test_type;
+  typedef std::locale::facet base_type;
+  const test_type& obj = std::use_facet<test_type>(std::locale()); 
+  const base_type* base = &obj;
+  
+  // Check for required typedefs
+  typedef test_type::char_type char_type;
+  typedef test_type::string_type string_type;
+}
+
+void test02()
+{
+  // Check for required base class.
+  typedef std::moneypunct<char, false> test_type;
   typedef std::locale::facet base_type;
   const test_type& obj = std::use_facet<test_type>(std::locale()); 
   const base_type* base = &obj;
@@ -36,17 +50,24 @@ void test01()
 }
 
 // Should be able to instantiate this for other types besides char, wchar_t
-class gnu_moneypunct: public std::moneypunct<unsigned char> 
+class gnu_moneypunct_t: public std::moneypunct<unsigned char, true> 
 { };
 
-void test02()
+class gnu_moneypunct_f: public std::moneypunct<unsigned char, false> 
+{ };
+
+void test03()
 { 
-  gnu_moneypunct facet01;
+  gnu_moneypunct_t facet01;
+  gnu_moneypunct_f facet02;
+  VERIFY (facet01.intl == true);
+  VERIFY (facet02.intl == false);
 }
 
 int main()
 {
   test01();
   test02();
+  test03();
   return 0;
 }
