@@ -26,6 +26,8 @@
 # SHLIB_LINK
 # SHLIB_LIBS
 # SHLIB_MULTILIB
+# SHLIB_MKMAP
+# SHLIB_MAPFILES
 
 # Make needs VPATH to be literal.
 echo 'srcdir = @srcdir@'
@@ -263,6 +265,8 @@ for file in $LIB2ADD; do
   fi
 done
 
+# SHLIB_MKMAP
+# SHLIB_MAPFILES
 for ml in $MULTILIBS; do
   dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
   flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
@@ -277,6 +281,22 @@ for ml in $MULTILIBS; do
   done
   for o in $libgcc2_objs; do
     libgcc_objs="$libgcc_objs libgcc/${dir}/$o"
+  done
+  shlib_deps="$libgcc_objs"
+
+  if [ "$SHLIB_LINK" -a "$SHLIB_MKMAP" -a -z "$mapfile" ]; then
+    mapfile="libgcc.map"
+    shlib_deps="$shlib_deps $mapfile"
+    echo ""
+    echo "${mapfile}: $SHLIB_MKMAP $SHLIB_MAPFILES $libgcc_objs"
+    echo '	{ $(NM_FOR_TARGET) -pg'" $libgcc_objs; echo %%; cat $SHLIB_MAPFILES; } | "'$(AWK)'" -f $SHLIB_MKMAP > "'tmp-$@'
+    echo '	mv tmp-$@ $@'
+  fi
+
+  # Depend on EXTRA_MULTILIB_PARTS, since that's where crtbegin/end
+  # usually are put in a true multilib situation.
+  for f in $EXTRA_MULTILIB_PARTS; do
+    shlib_deps="$shlib_deps $dir/$f"
   done
 
   echo ""
@@ -295,12 +315,12 @@ for ml in $MULTILIBS; do
 	shlib_base_name=libgcc_s_`echo $dir | sed s,/,_,g`
       fi
       echo ""
-      echo "${dir}/${shlib_base_name}.so: $libgcc_objs"
+      echo "${dir}/${shlib_base_name}.so: $shlib_deps"
       echo "	$SHLIB_LINK $flags -o ${shlib_base_name}.so $libgcc_objs $SHLIB_LIBS" | sed "s/@shlib_base_name@/$shlib_base_name/g"
     elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
       shlib_base_name="libgcc_s";
       echo ""
-      echo "${shlib_base_name}.so: $libgcc_objs"
+      echo "${shlib_base_name}.so: $shlib_deps"
       echo "	$SHLIB_LINK $flags -o ${shlib_base_name}.so $libgcc_objs $SHLIB_LIBS" | sed "s/@shlib_base_name@/$shlib_base_name/g"
     fi
   fi

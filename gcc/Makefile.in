@@ -221,6 +221,16 @@ RANLIB_TEST_FOR_TARGET = \
   [ -f $(RANLIB_FOR_TARGET) ] \
   || ( [ "$(host_canonical)" = "$(target)" ] \
        && [ -f /usr/bin/ranlib -o -f /bin/ranlib ] )
+NM_FOR_TARGET = ` \
+  if [ -f $(objdir)/../binutils/nm ] ; then \
+    echo $(objdir)/../binutils/nm ; \
+  else \
+    if [ "$(host_canonical)" = "$(target)" ] ; then \
+      echo nm; \
+    else \
+       t='$(program_transform_cross_name)'; echo nm | sed -e $$t ; \
+    fi; \
+  fi`
 
 # Dir to search for system headers.  Overridden by cross-make.
 SYSTEM_HEADER_DIR = /usr/include
@@ -972,6 +982,8 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) xgcc$(exeext)
 	SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_LIBS='$(SHLIB_LIBS)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)' \
+	SHLIB_MKMAP='$(SHLIB_MKMAP)' \
+	SHLIB_MAPFILES='$(SHLIB_MAPFILES)' \
 	  $(SHELL) mklibgcc > tmp-libgcc.mk
 	mv tmp-libgcc.mk libgcc.mk
 
@@ -991,6 +1003,7 @@ libgcc.a: $(LIBGCC_DEPS)
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
 	  RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
 	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
+	  NM_FOR_TARGET="$(NM_FOR_TARGET)" AWK="$(AWK)" \
 	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
 	  INCLUDES="$(INCLUDES)" MAYBE_USE_COLLECT2="$(MAYBE_USE_COLLECT2)" \
 	  CONFIG_H="$(CONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
@@ -1023,6 +1036,7 @@ stmp-multilib: $(LIBGCC_DEPS)
 	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
 	  RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
 	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
+	  NM_FOR_TARGET="$(NM_FOR_TARGET)" AWK="$(AWK)" \
 	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
 	  INCLUDES="$(INCLUDES)" MAYBE_USE_COLLECT2="$(MAYBE_USE_COLLECT2)" \
 	  CONFIG_H="$(CONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \

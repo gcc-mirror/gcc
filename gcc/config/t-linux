@@ -10,14 +10,14 @@ CRTSTUFF_T_CFLAGS_S = -fPIC
 TARGET_LIBGCC2_CFLAGS = -fPIC
 # Build a shared libgcc library.
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
-	-Wl,--soname=@shlib_base_name@.so.0
-# ??? Do versioning later -- need to figure out how to post-process
-# the script and allow for target-specific additions.
-# -Wl,--version-script=$(srcdir)/config/ver-glibc.map
+	-Wl,--soname=@shlib_base_name@.so.0 \
+	-Wl,--version-script=libgcc.map
 SHLIB_LIBS = -lc
+SHLIB_MKMAP = $(srcdir)/mkmap-symver.awk
+SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver $(srcdir)/config/libgcc-glibc.ver
 
 # Do not build libgcc1. Let gcc generate those functions. The GNU/Linux
 # C library can handle them.
-LIBGCC1 = 
+LIBGCC1 =
 CROSS_LIBGCC1 =
 LIBGCC1_TEST =

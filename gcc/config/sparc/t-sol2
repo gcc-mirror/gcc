@@ -31,5 +31,8 @@ TARGET_LIBGCC2_CFLAGS = -fPIC
 
 # Build a shared libgcc library.
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
-	-Wl,-h,@shlib_base_name@.so.0 -Wl,-z,text -Wl,-z,defs
+	-Wl,-h,@shlib_base_name@.so.0 -Wl,-z,text -Wl,-z,defs \
+	-Wl,-M,libgcc.map
 SHLIB_LIBS = -lc
+SHLIB_MKMAP = $(srcdir)/mkmap-symver.awk
+SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver
