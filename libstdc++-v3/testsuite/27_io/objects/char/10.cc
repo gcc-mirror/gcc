@@ -50,7 +50,7 @@ void test10()
   streamoff n = p2 - p1;
   VERIFY( n > 0 );
 	
-  for (streamoff i = 0; i < n; ++i)
+  for (int i = 0; i < n; ++i)
     {
       streampos p3 = cin.tellg();
       VERIFY( streamoff(p3) == i );

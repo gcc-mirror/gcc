@@ -261,9 +261,7 @@ GLIBCXX_CONFIGURE_TESTSUITE
 # uses it, and it only gets used in this file.)
 ATOMICITY_INC_SRCDIR=config/${atomicity_include_dir}
 OS_INC_SRCDIR=config/${os_include_dir}
-FPOS_INC_SRCDIR=config/${fpos_include_dir}
 AC_SUBST(ATOMICITY_INC_SRCDIR)
-AC_SUBST(FPOS_INC_SRCDIR)
 AC_SUBST(OS_INC_SRCDIR)
 
 # Determine cross-compile flags and AM_CONDITIONALs.

@@ -1,6 +1,5 @@
-// 2003-04-22 pme
-
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,28 +17,27 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.6.1.3 unformatted input functions
-// DR 60 -- seekg does not effect calls to gcount
+// 27.4.3 fpos
 
-#include <istream>
-#include <sstream>
+#include <typeinfo>
+#include <ios>
 #include <testsuite_hooks.h>
 
+// libstdc++/12065
 void test01()
 {
-  using namespace std;
   bool test __attribute__((unused)) = true;
 
-  istringstream ist("the lamb lies down on broadway");
-  ios::pos_type pos = ist.tellg();
-  ist.ignore(4);
-  int count1 = ist.gcount();
-  ist.seekg(pos);
-  int count2 = ist.gcount();
-  VERIFY( count1 == count2 );
-  ist.seekg(ios::off_type(pos), ios::beg);
-  count2 = ist.gcount();
-  VERIFY( count1 == count2 );
+  std::streampos p(0);
+  const std::streampos q(0);
+  std::streamoff o(0);
+
+  VERIFY( typeid(p + o) == typeid(std::streampos) );
+  VERIFY( typeid(q + o) == typeid(std::streampos) );
+  VERIFY( typeid(p - o) == typeid(std::streampos) );
+  VERIFY( typeid(q - o) == typeid(std::streampos) );
+  VERIFY( typeid(p - q) == typeid(std::streamoff) );
+  VERIFY( typeid(q - p) == typeid(std::streamoff) );
 }
 
 int main()

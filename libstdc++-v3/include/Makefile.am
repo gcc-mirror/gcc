@@ -118,6 +118,7 @@ bits_headers = \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
 	${bits_srcdir}/ostream.tcc \
+	${bits_srcdir}/postypes.h \
 	${bits_srcdir}/stream_iterator.h \
 	${bits_srcdir}/streambuf_iterator.h \
 	${bits_srcdir}/slice_array.h \
@@ -311,8 +312,7 @@ host_headers = \
 	${host_srcdir}/ctype_inline.h \
 	${host_srcdir}/ctype_noninline.h \
 	${host_srcdir}/os_defines.h \
-	${glibcxx_srcdir}/$(ATOMICITY_INC_SRCDIR)/atomicity.h \
-	${glibcxx_srcdir}/$(FPOS_INC_SRCDIR)/fpos.h
+	${glibcxx_srcdir}/$(ATOMICITY_INC_SRCDIR)/atomicity.h 
 
 # Non-installed host_header files.
 host_headers_noinst = \

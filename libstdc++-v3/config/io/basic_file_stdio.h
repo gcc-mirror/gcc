@@ -97,11 +97,8 @@ namespace std
       streamsize 
       xsgetn(char* __s, streamsize __n);
 
-      streampos
+      streamoff
       seekoff(streamoff __off, ios_base::seekdir __way);
-
-      streampos
-      seekpos(streampos __pos);
 
       int 
       sync();

@@ -41,9 +41,8 @@ void test03()
   std::streamoff off01;
   
   // casts to const streamoff
-  // (yes, I know this is weak code)
   const std::streampos pos01 = 0;
-  off01 = pos01;
+  off01 = std::streamoff(pos01);
 
   // equality/inequality with const args
   const std::streampos pos02(54);

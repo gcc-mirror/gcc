@@ -1,6 +1,5 @@
-// 2003-04-22 pme
-
-// Copyright (C) 2003 Free Software Foundation
+// Copyright (C) 2003
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,28 +17,23 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.6.1.3 unformatted input functions
-// DR 60 -- seekg does not effect calls to gcount
+// 27.4.3 fpos
 
-#include <istream>
-#include <sstream>
+#include <ios>
 #include <testsuite_hooks.h>
 
+// libstdc++/11450
 void test01()
 {
-  using namespace std;
-  bool test __attribute__((unused)) = true;
+  bool test __attribute__((unused)) = true;  
 
-  istringstream ist("the lamb lies down on broadway");
-  ios::pos_type pos = ist.tellg();
-  ist.ignore(4);
-  int count1 = ist.gcount();
-  ist.seekg(pos);
-  int count2 = ist.gcount();
-  VERIFY( count1 == count2 );
-  ist.seekg(ios::off_type(pos), ios::beg);
-  count2 = ist.gcount();
-  VERIFY( count1 == count2 );
+  std::fpos<int> p;
+  VERIFY( p.state() == 0 );
+  p.state(42);
+  VERIFY( p.state() == 42 );
+
+  std::fpos<int> q = p + static_cast<std::streamoff>(1);
+  VERIFY( q.state() == 42 );
 }
 
 int main()

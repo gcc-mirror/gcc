@@ -106,7 +106,8 @@ namespace std
 
 	      // 27.8.1.3,4
 	      if ((__mode & ios_base::ate) 
-		  && this->seekoff(0, ios_base::end, __mode) < 0)
+		  && this->seekoff(0, ios_base::end, __mode)
+		  == pos_type(off_type(-1)))
 		this->close();
 	      else
 		__ret = this;
@@ -333,7 +334,7 @@ namespace std
 	      this->gbump(-1);
 	      __tmp = traits_type::to_int_type(*this->gptr());
 	    }
-	  else if (this->seekoff(-1, ios_base::cur) >= 0)
+	  else if (this->seekoff(-1, ios_base::cur) != pos_type(off_type(-1)))
 	    {
 	      __tmp = this->underflow();
 	      if (traits_type::eq_int_type(__tmp, __ret))
@@ -653,7 +654,7 @@ namespace std
 	}
 	  
       // Returns pos_type(off_type(-1)) in case of failure.
-      pos_type __ret = _M_file.seekoff(__off, __way);
+      pos_type __ret (_M_file.seekoff(__off, __way));
 	  
       _M_reading = false;
       _M_writing = false;
@@ -673,24 +674,35 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     imbue(const locale& __loc)
     {
-      const bool __testbeg = !this->seekoff(0, ios_base::cur, this->_M_mode);
-      const bool __teststate = __check_facet(_M_codecvt).encoding() == -1;
-
-      if (this->_M_buf_locale != __loc 
-	  && (!this->is_open() || (__testbeg && !__teststate)))
+      if (this->_M_buf_locale != __loc)
 	{
-	  this->_M_buf_locale = __loc;
-	  if (__builtin_expect(has_facet<__codecvt_type>(__loc), true))
-	    _M_codecvt = &use_facet<__codecvt_type>(__loc);
-	  else
-	    _M_codecvt = 0;
+	  bool __testfail = false;
+	  if (this->is_open())
+	    {
+	      const bool __testbeg =
+		this->seekoff(0, ios_base::cur, this->_M_mode) ==
+		pos_type(off_type(0));
+	      const bool __teststate =
+		__check_facet(_M_codecvt).encoding() == -1;
 
-	  // NB This may require the reconversion of previously
-	  // converted chars. This in turn may cause the
-	  // reconstruction of the original file. YIKES!!  This
-	  // implementation interprets this requirement as requiring
-	  // the file position be at the beginning, and a stateless
-	  // encoding, or that the filebuf be closed. Opinions may differ.
+	      __testfail = !__testbeg || __teststate;
+	    }
+
+	  if (!__testfail)
+	    {
+	      this->_M_buf_locale = __loc;
+	      if (__builtin_expect(has_facet<__codecvt_type>(__loc), true))
+		_M_codecvt = &use_facet<__codecvt_type>(__loc);
+	      else
+		_M_codecvt = 0;
+
+	      // NB This may require the reconversion of previously
+	      // converted chars. This in turn may cause the
+	      // reconstruction of the original file. YIKES!!  This
+	      // implementation interprets this requirement as requiring
+	      // the file position be at the beginning, and a stateless
+	      // encoding, or that the filebuf be closed. Opinions may differ.
+	    }
 	}
       _M_last_overflowed = false;	
     }

@@ -44,7 +44,7 @@
 
 #include <cstring>            // For memmove, memset, memchr
 #include <bits/stl_algobase.h>// For copy, lexicographical_compare, fill_n
-#include <bits/fpos.h>        // For streampos
+#include <bits/postypes.h>    // For streampos
 
 namespace __gnu_cxx
 {

@@ -63,7 +63,7 @@ void test04()
   //IN|OUT
   //beg
   pt_1 = strb_01.pubseekoff(2, std::ios_base::beg);
-  off_1 = pt_1;
+  off_1 = off_type(pt_1);
   VERIFY( off_1 >= 0 );
   c1 = strb_01.snextc(); //current in pointer +1
   VERIFY( c1 == 'o' );
@@ -72,12 +72,12 @@ void test04()
   VERIFY( strb_01.str() == str_tmp );
   //cur
   pt_1 = strb_01.pubseekoff(2, std::ios_base::cur);
-  off_1 = pt_1;
+  off_1 = off_type(pt_1);
   VERIFY( off_1 == -1 ); // can't seekoff for in and out + cur in sstreams
   pt_1 = strb_01.pubseekoff(2, std::ios_base::cur, std::ios_base::in);
-  off_1 = pt_1;
+  off_1 = off_type(pt_1);
   pt_2 = strb_01.pubseekoff(2, std::ios_base::cur, std::ios_base::in);
-  off_2 = pt_2;
+  off_2 = off_type(pt_2);
   VERIFY( off_2 == off_1 + 2 );
   c1 = strb_01.snextc(); //current in pointer + 1
   VERIFY( c1 == ' ' );
@@ -86,7 +86,7 @@ void test04()
   VERIFY( strb_01.str() == str_tmp );
   //end
   pt_2 = strb_01.pubseekoff(2, std::ios_base::end);
-  off_1 = pt_2;
+  off_1 = off_type(pt_2);
   VERIFY( off_1 == -1 ); // not a valid position
   VERIFY( strb_01.str() == str_tmp );
   // end part two (from the filebuf tests)
