@@ -80,7 +80,7 @@ output_file_directive ((FILE), main_input_filename)
 /* ihnp4!lmayk!lgm@eddie.mit.edu says mc68000 and m68k should not be here.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmc68k -Dunix -Dunixpc"
+#define CPP_PREDEFINES "-Dmc68k -Dunix -Dunixpc -D__motorola__"
 
 #undef REGISTER_NAMES
 #define REGISTER_NAMES \

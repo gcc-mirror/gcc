@@ -123,7 +123,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* These are the ones defined by HPUX cc, plus mc68000 for uniformity with
    GCC on other 68000 systems.  */
 
-#define CPP_PREDEFINES "-Dhp9000s200 -Dhp9000s300 -DPWB -Dhpux -Dunix -D__hp9000s300 -D__hp9000s200 -D__PWB -D__hpux -D__unix"
+#define CPP_PREDEFINES "-Dhp9000s200 -Dhp9000s300 -DPWB -Dhpux -Dunix -D__hp9000s300 -D__hp9000s200 -D__PWB -D__hpux -D__unix -D__motorola__"
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 

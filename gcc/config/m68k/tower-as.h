@@ -38,7 +38,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_600"
+#define CPP_PREDEFINES "-Dunix -Dtower32 -Dtower32_600 -D__motorola__"
 
 /* Define __HAVE_68881 in preprocessor only if -m68881 is specified.
    This will control the use of inline 68881 insns in certain macros.

@@ -218,7 +218,7 @@ output_file_directive ((FILE), main_input_filename)
    on the other hand I don't care what he says.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dm68k -Dunix -DsysV68"
+#define CPP_PREDEFINES "-Dm68k -Dunix -DsysV68 -D__motorola__"
 
 /* Specify how to pad function arguments.
    Value should be `upward', `downward' or `none'.
