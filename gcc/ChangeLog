@@ -1,3 +1,10 @@
+2003-07-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/11198
+	* alias.c (objects_must_conflict_p): Return 1 if the types have
+	the same alias set, not if the alias sets only conflict.
+
 2003-07-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* cppcharset.c (ICONV_CONST): Define iff !HAVE_ICONV.

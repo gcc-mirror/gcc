@@ -1,3 +1,8 @@
+2003-07-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/opt/stack1.C: New test.
+
 2003-07-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.jason/typeid1.C: Make it a compile test, not a
