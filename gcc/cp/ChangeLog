@@ -1,4 +1,6 @@
-2000-11-09  Jason Merrill  <jason@redhat.com>
+2000-11-11  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (mark_addressable): Don't call put_var_into_stack.
 
 	* decl.c (maybe_commonize_var): Set DECL_UNINLINABLE for statics
 	in inlines.

@@ -4610,8 +4610,6 @@ assign_parms (fndecl)
       else if (! ((! optimize
 		   && ! DECL_REGISTER (parm)
 		   && ! DECL_INLINE (fndecl))
-		  /* layout_decl may set this.  */
-		  || TREE_ADDRESSABLE (parm)
 		  || TREE_SIDE_EFFECTS (parm)
 		  /* If -ffloat-store specified, don't put explicit
 		     float variables into registers.  */
@@ -4695,8 +4693,6 @@ assign_parms (fndecl)
 	      && ! ((! optimize
 		     && ! DECL_REGISTER (parm)
 		     && ! DECL_INLINE (fndecl))
-		    /* layout_decl may set this.  */
-		    || TREE_ADDRESSABLE (parm)
 		    || TREE_SIDE_EFFECTS (parm)
 		    /* If -ffloat-store specified, don't put explicit
 		       float variables into registers.  */
@@ -4865,6 +4861,9 @@ assign_parms (fndecl)
 	    mark_reg_pointer (parmreg,
 			      TYPE_ALIGN (TREE_TYPE (TREE_TYPE (parm))));
 
+	  /* If something wants our address, try to use ADDRESSOF.  */
+	  if (TREE_ADDRESSABLE (parm))
+	    put_var_into_stack (parm);
 	}
       else
 	{

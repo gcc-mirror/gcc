@@ -4904,7 +4904,6 @@ mark_addressable (exp)
 	    if (! flag_this_is_variable)
 	      error ("cannot take the address of `this', which is an ravlue expression");
 	    TREE_ADDRESSABLE (x) = 1; /* so compiler doesn't die later */
-	    put_var_into_stack (x);
 	    return 1;
 	  }
       case VAR_DECL:
@@ -6797,7 +6796,7 @@ check_return_expr (retval)
 
       /* First convert the value to the function's return type, then
 	 to the type of return value's location to handle the
-         case that functype is thiner than the valtype. */
+         case that functype is smaller than the valtype. */
       retval = convert_for_initialization
 	(NULL_TREE, functype, retval, LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
 	 "return", NULL_TREE, 0);
