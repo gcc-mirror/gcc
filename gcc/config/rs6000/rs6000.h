@@ -1406,7 +1406,7 @@ enum reg_class
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)			\
   (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)				\
    ? reg_classes_intersect_p (FLOAT_REGS, CLASS)			\
-   : (SPE_VECTOR_MODE (FROM) + SPE_VECTOR_MODE (TO)) == 1		\
+   : (TARGET_SPE && (SPE_VECTOR_MODE (FROM) + SPE_VECTOR_MODE (TO)) == 1) \
    ? reg_classes_intersect_p (GENERAL_REGS, CLASS) 			\
    : 0)
 
