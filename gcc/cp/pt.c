@@ -5251,7 +5251,7 @@ instantiate_class_template (type)
 	    tree rtype = TREE_TYPE (r);
 	    if (!can_complete_type_without_circularity (rtype))
 	      {
-		incomplete_type_error (r, rtype);
+		cxx_incomplete_type_error (r, rtype);
 		r = error_mark_node;
 	      }
 	  }
