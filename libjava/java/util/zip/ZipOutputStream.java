@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -104,8 +104,8 @@ public class ZipOutputStream extends DeflaterOutputStream
 
     boolean crc_after = false;
     if (is_local
-	&& (current.getCrc() == -1 || current.getCompressedSize() == -1
-	    || current.getSize() == -1))
+	&& (entry.getCrc() == -1 || entry.getCompressedSize() == -1
+	    || entry.getSize() == -1))
       crc_after = true;
     // For the bits field we always indicate `normal' compression,
     // even if that isn't true.
