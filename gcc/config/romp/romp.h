@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ROMP chip.
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -1192,6 +1192,33 @@ struct rt_cargs {int gregs, fregs; };
 
 /* This is BSD, so it wants DBX format.  */
 #define DBX_DEBUGGING_INFO
+
+/* Define the letter code used in a stabs entry for parameters passed
+   with the register attribute.
+
+   GCC's default value, 'P', is used by dbx to refers to an external
+   procedure. The section 5 manual page for dbx implies that 'R' would be the
+   right letter, but dbx 1.5 has a bug in it that precludes its use.
+   Probably that is why neither hc or pcc use this. pcc puts in two
+   stabs entries: one for the parameter location and one for the register
+   location. The letter `r' (register)
+   would be okay, but it loses parameter attribute of the stabs entry.  */
+#define DBX_REGPARM_STABS_LETTER 'R'
+
+/* A C expression for the integer offset value of an automatic variable
+   (N_LSYM) having address X (an RTX). This gets used in .stabs entries
+   for the local variables. Compare with the default definition.  */
+extern int romp_debugger_auto_correction();
+#define DEBUGGER_AUTO_OFFSET(X)                        \
+  (GET_CODE (X) == PLUS                                \
+   ? romp_debugger_auto_correction (INTVAL (XEXP (X, 1)) ) \
+   : 0 )
+
+/* A C expression for the integer offset value of an argument (N_PSYM)
+   having address X (an RTX).  The nominal offset is OFFSET.  */
+extern int romp_debugger_arg_correction();
+#define DEBUGGER_ARG_OFFSET(OFFSET, X)             \
+  romp_debugger_arg_correction (OFFSET);
 
 /* We don't have GAS for the RT yet, so don't write out special
    .stabs in cc1plus.  */
