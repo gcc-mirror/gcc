@@ -412,6 +412,9 @@
 /* Define if your assembler supports .hidden. */
 #undef HAVE_GAS_HIDDEN
 
+/* Define if your assembler supports .uleb128. */
+#undef HAVE_AS_LEB128
+
 /* Define if your assembler supports .register. */
 #undef HAVE_AS_REGISTER_PSEUDO_OP
 

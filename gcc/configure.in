@@ -1314,6 +1314,33 @@ if test x"$gcc_cv_as_hidden" = xyes; then
 fi
 AC_MSG_RESULT($gcc_cv_as_hidden)
 
+AC_MSG_CHECKING(assembler leb128 support)
+gcc_cv_as_hidden=no
+if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
+  if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 10 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
+    gcc_cv_as_leb128="yes"
+  fi
+elif test x$gcc_cv_as != x; then
+	# Check if we have .[us]leb128, and support symbol arithmetic with it.
+	cat > conftest.s <<EOF
+	.data
+	.uleb128 L2 - L1
+L1:
+	.uleb128 1280
+	.sleb128 -1010
+L2:
+EOF
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		gcc_cv_as_leb128="yes"
+	fi
+	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+fi
+if test x"$gcc_cv_as_leb128" = xyes; then
+	AC_DEFINE(HAVE_AS_LEB128, 1,
+		[Define if your assembler supports .uleb128.])
+fi
+AC_MSG_RESULT($gcc_cv_as_leb128)
+
 case "$target" in 
   sparc*-*-*)
     AC_CACHE_CHECK([assembler .register pseudo-op support],
