@@ -8,12 +8,12 @@ Godmar Back for his improvements and encouragement.
 Scott Bambrough for help porting the compiler.
 Jon Beniston for his Win32 port.
 Geoff Berry for his object serialization work and various patches.
-Eric Blake for helping to make gcj and libgcj conform to the specifications
+Eric Blake for helping to make gcj and libgcj conform to the specifications.
 Hans-J. Boehm for his garbage collector, IA-64 libffi port, and other work.
 Per Bothner for dreaming up, designing and implementing much of gcj.
 Joerg Brunsmann for compiler hacking and help with the FAQ.
-Glenn Chambers for help with the FAQ.
 Steve Chamberlain for config fixes and the picoJava port.
+Glenn Chambers for help with the FAQ.
 John-Marc Chandonia for various library patches.
 Eric Christopher for his porting help and clean-ups.
 The GNU Classpath project for all of their merged runtime code.
@@ -25,16 +25,15 @@ Anthony Green for various contributions.
 Stu Grossman for gdb hacking, allowing us to debug our code.
 Andrew Haley for his amazing compiler and library efforts.
 Jakub Jelinek for improving the build system.
+Warren Levy for his tremendous library work.
 Oskar Liljeblad for hacking on AWT and his many bug reports and patches.
+All of the Mauve project contributors, for test code.
 Bryce McKinlay for numerous gcj and libgcj fixes and improvements.
-Adam Megacz for his work on the Win32 port
+Adam Megacz for his work on the Win32 port.
 Jason Molenda for establishing the project infrastructure 
 	on sources.redhat.com.
 Mike Moreton for his various patches.
 Alexandre Oliva for all of this porting and testing efforts.
-Kresten Krab Thorup for his fantastic bytecode interpreter.
-Warren Levy for his tremendous library work.
-All of the Mauve project contributors, for test code.
 Rainer Orth for configuration clean-ups and porting help.
 Alexandre Petit-Bianco for implementing much of the compiler, 
 	and continued maintainership.
@@ -43,11 +42,12 @@ Bradley Schatz for his work on the FAQ.
 Jason Schroeder for jcf-dump patches.
 John Stracke for his HTTP protocol fixes.
 Jeff Sturm for porting help, bug fixes, and encouragement.
-Andreas Tobler for his work porting libgcj to Darwin
+Kresten Krab Thorup for his fantastic bytecode interpreter.
+Andreas Tobler for his work porting libgcj to Darwin.
 Tom Tromey for his many contributions and libgcj maintainership.
 Matt Welsh for help with Linux Threads.
 Urban Widmark for help fixing java.io.
-Mark Wielaard for new library code and his work integrating with Classpath
+Mark Wielaard for new library code and his work integrating with Classpath.
 Gilles Zunino for help porting to Irix.
 
 
@@ -74,11 +74,11 @@ Charles-Antoine Gauthier
 Simon Gornall
 Fred Gray
 John Griffin
+Patrik Hagglund
 Phil Hargett
+Amancio Hasty 
 Bryan W. Headley
 Kevin B. Hendricks
-Patrik Hagglund
-Amancio Hasty 
 Joep Jansen
 David Kidd
 Tobias Kuipers
@@ -101,7 +101,6 @@ Tim Souder
 Adam Sulmicki 
 Frederik Warg 
 Gregory Warnes
-Mark Wielaard
 David E. Young
 
 Thank you all!
