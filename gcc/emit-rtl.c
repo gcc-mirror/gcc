@@ -1713,7 +1713,7 @@ set_mem_attributes (ref, t, objectp)
 	 (TYPE_SIZE_UNIT (TREE_TYPE (t))
 	  && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (t)), 1))
 	 ? GEN_INT (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (t)), 1))
-	 : 0, DECL_ALIGN (t) / BITS_PER_UNIT);
+	 : 0, DECL_ALIGN (t));
 
   /* If this is an INDIRECT_REF, we know its alignment.  */
   if (TREE_CODE (t) == INDIRECT_REF)
