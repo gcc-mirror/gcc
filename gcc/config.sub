@@ -473,7 +473,8 @@ case $os in
 	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos* | -hpux* \
 	      | -unos* | -osf* | -luna* | -dgux* | -solari* | -sym* \
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
-	      | -nindy* | -vxworks* | -ebmon* | -hds* | -m88kbcs* | -riscos*)
+	      | -nindy* | -vxworks* | -ebmon* | -hds* | -m88kbcs* \
+	      | -riscos* | -linux* )
 		;;
 	-osfrose*)
 		os=-osfrose
