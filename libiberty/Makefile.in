@@ -451,7 +451,7 @@ hashtab.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/hashtab.h \
 hex.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/safe-ctype.h
 lbasename.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
-	$(INCDIR)/safe-ctype.h
+	$(INCDIR)/safe-ctype.h $(INCDIR)/filenames.h
 lrealpath.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 make-relative-prefix.o: config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/libiberty.h
