@@ -1,3 +1,8 @@
+Fri Oct 30 13:23:20 1998  Richard Henderson  <rth@cygnus.com>
+
+	* i386.c (i386_comp_type_attributes): Compare whether the 
+	attributes are defined, not their tree nodes.
+
 Fri Oct 30 11:39:47 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* configure.in (gxx_include_dir): bitten by autoconf quoting

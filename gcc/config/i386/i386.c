@@ -632,8 +632,8 @@ i386_comp_type_attributes (type1, type2)
     return 1;
 
   /* Check for mismatched return types (cdecl vs stdcall).  */
-  if (lookup_attribute (rtdstr, TYPE_ATTRIBUTES (type1))
-      != lookup_attribute (rtdstr, TYPE_ATTRIBUTES (type2)))
+  if (!lookup_attribute (rtdstr, TYPE_ATTRIBUTES (type1))
+      != !lookup_attribute (rtdstr, TYPE_ATTRIBUTES (type2)))
     return 0;
   return 1;
 }
