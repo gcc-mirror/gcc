@@ -154,6 +154,12 @@ do { ASM_OUTPUT_ALIGN ((FILE), 2);					\
 #define CTORS_SECTION_ASM_OP    ".section\t\".ctors\",#alloc"
 #define DTORS_SECTION_ASM_OP    ".section\t\".dtors\",#alloc"
 
+/* Assemble generic sections.
+   This is currently only used to support section attributes.  */
+
+#define ASM_OUTPUT_SECTION_NAME(FILE, NAME) \
+   fprintf (FILE, ".section\t\"%s\"\n", NAME)
+
 /* If the host and target formats match, output the floats as hex.  */
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
 #if defined (HOST_WORDS_BIG_ENDIAN) == WORDS_BIG_ENDIAN
