@@ -1,3 +1,8 @@
+2002-05-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa/pa-64.h (MAX_WCHAR_TYPE_SIZE): Delete.
+	* pa/pa.h (MAX_WCHAR_TYPE_SIZE): Delete.
+
 2002-05-08  Bernd Schmidt  <bernds@redhat.com>
 
 	* config/i386/i386.h (CPP_CPUCOMMON_SPEC): Tweak previous change to
