@@ -463,7 +463,7 @@ jint
 gnu::java::net::PlainSocketImpl::available(void)
 {
 #if defined(FIONREAD) || defined(HAVE_SELECT)
-  long num = 0;
+  int num = 0;
   int r = 0;
   bool num_set = false;
 
