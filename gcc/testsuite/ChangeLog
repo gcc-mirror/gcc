@@ -1,5 +1,9 @@
 2000-10-16  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.dg/format-branch-1.c: New test.
+
+2000-10-16  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* README, lib/file-format.exp: Remove EGCS references.
 
 2000-10-16  Jakub Jelinek  <jakub@redhat.com>

@@ -1726,14 +1726,47 @@ typedef struct international_format_info
 
 static international_format_info *international_format_list = NULL;
 
+/* Structure detailing the results of checking a format function call
+   where the format expression may be a conditional expression with
+   many leaves resulting from nested conditional expressions.  */
+typedef struct
+{
+  /* Number of leaves of the format argument that could not be checked
+     as they were not string literals.  */
+  int number_non_literal;
+  /* Number of leaves of the format argument that were null pointers or
+     string literals, but had extra format arguments.  */
+  int number_extra_args;
+  /* Number of leaves of the format argument that were null pointers or
+     string literals, but had extra format arguments and used $ operand
+     numbers.  */
+  int number_dollar_extra_args;
+  /* Number of leaves of the format argument that were wide string
+     literals.  */
+  int number_wide;
+  /* Number of leaves of the format argument that were empty strings.  */
+  int number_empty;
+  /* Number of leaves of the format argument that were unterminated
+     strings.  */
+  int number_unterminated;
+  /* Number of leaves of the format argument that were not counted above.  */
+  int number_other;
+} format_check_results;
+
 static void check_format_info	PARAMS ((int *, function_format_info *, tree));
+static void check_format_info_recurse PARAMS ((int *, format_check_results *,
+					       function_format_info *, tree,
+					       tree, int));
+static void check_format_info_main PARAMS ((int *, format_check_results *,
+					    function_format_info *,
+					    const char *, int, tree, int));
 static void status_warning PARAMS ((int *, const char *, ...))
      ATTRIBUTE_PRINTF_2;
 
 static void init_dollar_format_checking		PARAMS ((int, tree));
 static int maybe_read_dollar_number		PARAMS ((int *, const char **, int,
 							 tree, tree *));
-static void finish_dollar_format_checking	PARAMS ((int *));
+static void finish_dollar_format_checking	PARAMS ((int *, format_check_results *));
 
 static const format_flag_spec *get_flag_spec	PARAMS ((const format_flag_spec *,
 							 int, const char *));
@@ -2102,8 +2135,9 @@ maybe_read_dollar_number (status, format, dollar_needed, params, param_ptr)
    here.  */
 
 static void
-finish_dollar_format_checking (status)
+finish_dollar_format_checking (status, res)
      int *status;
+     format_check_results *res;
 {
   int i;
   for (i = 0; i < dollar_max_arg_used; i++)
@@ -2113,7 +2147,10 @@ finish_dollar_format_checking (status)
 		 i + 1, dollar_max_arg_used);
     }
   if (dollar_first_arg_num && dollar_max_arg_used < dollar_arguments_count)
-    status_warning (status, "unused arguments in $-style format");
+    {
+      res->number_other--;
+      res->number_dollar_extra_args++;
+    }
 }
 
 
@@ -2162,38 +2199,9 @@ check_format_info (status, info, params)
      function_format_info *info;
      tree params;
 {
-  int i;
   int arg_num;
-  int suppressed;
-  const char *length_chars = NULL;
-  enum format_lengths length_chars_val = FMT_LEN_none;
-  enum format_std_version length_chars_std = STD_C89;
-  int format_char;
-  int format_length;
   tree format_tree;
-  tree cur_param;
-  tree wanted_type;
-  int main_arg_num;
-  tree main_arg_params;
-  enum format_std_version wanted_type_std;
-  const char *wanted_type_name;
-  format_wanted_type width_wanted_type;
-  format_wanted_type precision_wanted_type;
-  format_wanted_type main_wanted_type;
-  format_wanted_type *first_wanted_type;
-  format_wanted_type *last_wanted_type;
-  tree first_fillin_param;
-  const char *format_chars;
-  const format_kind_info *fki = NULL;
-  const format_flag_spec *flag_specs = NULL;
-  const format_flag_pair *bad_flag_pairs = NULL;
-  const format_length_info *fli = NULL;
-  const format_char_info *fci = NULL;
-  char flag_chars[256];
-  /* -1 if no conversions taking an operand have been found; 0 if one has
-     and it didn't use $; 1 if $ formats are in use.  */
-  int has_operand_number = -1;
-
+  format_check_results res;
   /* Skip to format argument.  If the argument isn't available, there's
      no work for us to do; prototype checking will catch the problem.  */
   for (arg_num = 1; ; ++arg_num)
@@ -2209,9 +2217,75 @@ check_format_info (status, info, params)
   if (format_tree == 0)
     return;
 
-  /* We can only check the format if it's a string constant.  */
-  while (TREE_CODE (format_tree) == NOP_EXPR)
-    format_tree = TREE_OPERAND (format_tree, 0); /* strip coercion */
+  res.number_non_literal = 0;
+  res.number_extra_args = 0;
+  res.number_dollar_extra_args = 0;
+  res.number_wide = 0;
+  res.number_empty = 0;
+  res.number_unterminated = 0;
+  res.number_other = 0;
+
+  check_format_info_recurse (status, &res, info, format_tree, params, arg_num);
+
+  if (res.number_non_literal > 0)
+    {
+      /* Functions taking a va_list normally pass a non-literal format
+	 string.  These functions typically are declared with
+	 first_arg_num == 0, so avoid warning in those cases.  */
+      if (info->first_arg_num != 0 && warn_format > 1)
+	status_warning (status, "format not a string literal, argument types not checked");
+    }
+
+  /* If there were extra arguments to the format, normally warn.  However,
+     the standard does say extra arguments are ignored, so in the specific
+     case where we have multiple leaves (conditional expressions or
+     ngettext) allow extra arguments if at least one leaf didn't have extra
+     arguments, but was otherwise OK (either non-literal or checked OK).
+     If the format is an empty string, this should be counted similarly to the
+     case of extra format arguments.  */
+  if (res.number_extra_args > 0 && res.number_non_literal == 0
+      && res.number_other == 0)
+    status_warning (status, "too many arguments for format");
+  if (res.number_dollar_extra_args > 0 && res.number_non_literal == 0
+      && res.number_other == 0)
+    status_warning (status, "unused arguments in $-style format");
+  if (res.number_empty > 0 && res.number_non_literal == 0
+      && res.number_other == 0)
+    status_warning (status, "zero-length format string");
+
+  if (res.number_wide > 0)
+    status_warning (status, "format is a wide character string");
+
+  if (res.number_unterminated > 0)
+    status_warning (status, "unterminated format string");
+}
+
+
+/* Recursively check a call to a format function.  FORMAT_TREE is the
+   format parameter, which may be a conditional expression in which
+   both halves should be checked.  ARG_NUM is the number of the
+   format argument; PARAMS points just after it in the argument list.  */
+
+static void
+check_format_info_recurse (status, res, info, format_tree, params, arg_num)
+     int *status;
+     format_check_results *res;
+     function_format_info *info;
+     tree format_tree;
+     tree params;
+     int arg_num;
+{
+  int format_length;
+  const char *format_chars;
+
+  if (TREE_CODE (format_tree) == NOP_EXPR)
+    {
+      /* Strip coercion.  */
+      check_format_info_recurse (status, res, info,
+				 TREE_OPERAND (format_tree, 0), params,
+				 arg_num);
+      return;
+    }
 
   if (TREE_CODE (format_tree) == CALL_EXPR
       && TREE_CODE (TREE_OPERAND (format_tree, 0)) == ADDR_EXPR
@@ -2222,12 +2296,12 @@ check_format_info (status, info, params)
 
       /* See if this is a call to a known internationalization function
 	 that modifies the format arg.  */
-      international_format_info *info;
+      international_format_info *iinfo;
 
-      for (info = international_format_list; info; info = info->next)
-	if (info->assembler_name
-	    ? (info->assembler_name == DECL_ASSEMBLER_NAME (function))
-	    : (info->name == DECL_NAME (function)))
+      for (iinfo = international_format_list; iinfo; iinfo = iinfo->next)
+	if (iinfo->assembler_name
+	    ? (iinfo->assembler_name == DECL_ASSEMBLER_NAME (function))
+	    : (iinfo->name == DECL_NAME (function)))
 	  {
 	    tree inner_args;
 	    int i;
@@ -2235,58 +2309,94 @@ check_format_info (status, info, params)
 	    for (inner_args = TREE_OPERAND (format_tree, 1), i = 1;
 		 inner_args != 0;
 		 inner_args = TREE_CHAIN (inner_args), i++)
-	      if (i == info->format_num)
+	      if (i == iinfo->format_num)
 		{
-		  format_tree = TREE_VALUE (inner_args);
-
-		  while (TREE_CODE (format_tree) == NOP_EXPR)
-		    format_tree = TREE_OPERAND (format_tree, 0);
+		  /* FIXME: with Marc Espie's __attribute__((nonnull))
+		     patch in GCC, we will have chained attributes,
+		     and be able to handle functions like ngettext
+		     with multiple format_arg attributes properly.  */
+		  check_format_info_recurse (status, res, info,
+					     TREE_VALUE (inner_args), params,
+					     arg_num);
+		  return;
 		}
 	  }
     }
 
-  if (integer_zerop (format_tree))
+  if (TREE_CODE (format_tree) == COND_EXPR)
     {
-      status_warning (status, "null format string");
+      /* Check both halves of the conditional expression.  */
+      check_format_info_recurse (status, res, info,
+				 TREE_OPERAND (format_tree, 1), params,
+				 arg_num);
+      check_format_info_recurse (status, res, info,
+				 TREE_OPERAND (format_tree, 2), params,
+				 arg_num);
       return;
     }
+
+  if (integer_zerop (format_tree))
+    {
+      /* FIXME: this warning should go away once Marc Espie's
+	 __attribute__((nonnull)) patch is in.  Instead, checking for
+	 nonnull attributes should probably change this function to act
+	 specially if info == NULL and add a res->number_null entry for
+	 that case, or maybe add a function pointer to be called at
+	 the end instead of hardcoding check_format_info_main.  */
+      status_warning (status, "null format string");
+
+      /* Skip to first argument to check, so we can see if this format
+	 has any arguments (it shouldn't).  */
+      while (arg_num + 1 < info->first_arg_num)
+	{
+	  if (params == 0)
+	    return;
+	  params = TREE_CHAIN (params);
+	  ++arg_num;
+	}
+
+      if (params == 0)
+	res->number_other++;
+      else
+	res->number_extra_args++;
+
+      return;
+    }
+
   if (TREE_CODE (format_tree) != ADDR_EXPR)
     {
-      /* The user may get multiple warnings if the supplied argument
-	 isn't even a string pointer.  */
-      /* Functions taking a va_list normally pass a non-literal format
-	 string.  These functions typically are declared with
-	 first_arg_num == 0, so avoid warning in those cases.  */
-      if (info->first_arg_num != 0 && warn_format > 1)
-	status_warning (status, "format not a string literal, argument types not checked");
+      res->number_non_literal++;
       return;
     }
   format_tree = TREE_OPERAND (format_tree, 0);
   if (TREE_CODE (format_tree) != STRING_CST)
     {
-      /* The user may get multiple warnings if the supplied argument
-	 isn't even a string pointer.  */
-      /* Functions taking a va_list normally pass a non-literal format
-	 string.  These functions typically are declared with
-	 first_arg_num == 0, so avoid warning in those cases.  */
-      if (info->first_arg_num != 0 && warn_format > 1)
-	status_warning (status, "format not a string literal, argument types not checked");
+      res->number_non_literal++;
       return;
     }
   if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (format_tree))) != char_type_node)
     {
-      status_warning (status, "format is a wide character string");
+      res->number_wide++;
       return;
     }
   format_chars = TREE_STRING_POINTER (format_tree);
   format_length = TREE_STRING_LENGTH (format_tree);
-  if (format_length <= 1)
-    status_warning (status, "zero-length format string");
-  if (format_chars[--format_length] != 0)
+  if (format_length < 1)
     {
-      status_warning (status, "unterminated format string");
+      res->number_unterminated++;
       return;
     }
+  if (format_length == 1)
+    {
+      res->number_empty++;
+      return;
+    }
+  if (format_chars[--format_length] != 0)
+    {
+      res->number_unterminated++;
+      return;
+    }
+
   /* Skip to first argument to check.  */
   while (arg_num + 1 < info->first_arg_num)
     {
@@ -2295,6 +2405,61 @@ check_format_info (status, info, params)
       params = TREE_CHAIN (params);
       ++arg_num;
     }
+  /* Provisionally increment res->number_other; check_format_info_main
+     will decrement it if it finds there are extra arguments, but this way
+     need not adjust it for every return.  */
+  res->number_other++;
+  check_format_info_main (status, res, info, format_chars, format_length,
+			  params, arg_num);
+}
+
+
+/* Do the main part of checking a call to a format function.  FORMAT_CHARS
+   is the NUL-terminated format string (which at this point may contain
+   internal NUL characters); FORMAT_LENGTH is its length (excluding the
+   terminating NUL character).  ARG_NUM is one less than the number of
+   the first format argument to check; PARAMS points to that format
+   argument in the list of arguments.  */
+
+static void
+check_format_info_main (status, res, info, format_chars, format_length,
+			params, arg_num)
+     int *status;
+     format_check_results *res;
+     function_format_info *info;
+     const char *format_chars;
+     int format_length;
+     tree params;
+     int arg_num;
+{
+  int i;
+  int suppressed;
+  const char *length_chars = NULL;
+  enum format_lengths length_chars_val = FMT_LEN_none;
+  enum format_std_version length_chars_std = STD_C89;
+  int format_char;
+  const char *orig_format_chars = format_chars;
+  tree cur_param;
+  tree wanted_type;
+  int main_arg_num;
+  tree main_arg_params;
+  enum format_std_version wanted_type_std;
+  const char *wanted_type_name;
+  format_wanted_type width_wanted_type;
+  format_wanted_type precision_wanted_type;
+  format_wanted_type main_wanted_type;
+  format_wanted_type *first_wanted_type;
+  format_wanted_type *last_wanted_type;
+  tree first_fillin_param;
+  const format_kind_info *fki = NULL;
+  const format_flag_spec *flag_specs = NULL;
+  const format_flag_pair *bad_flag_pairs = NULL;
+  const format_length_info *fli = NULL;
+  const format_char_info *fci = NULL;
+  char flag_chars[256];
+  /* -1 if no conversions taking an operand have been found; 0 if one has
+     and it didn't use $; 1 if $ formats are in use.  */
+  int has_operand_number = -1;
 
   first_fillin_param = params;
   init_dollar_format_checking (info->first_arg_num, first_fillin_param);
@@ -2308,13 +2473,16 @@ check_format_info (status, info, params)
       last_wanted_type = NULL;
       if (*format_chars == 0)
 	{
-	  if (format_chars - TREE_STRING_POINTER (format_tree) != format_length)
+	  if (format_chars - orig_format_chars != format_length)
 	    status_warning (status, "embedded `\\0' in format");
 	  if (info->first_arg_num != 0 && params != 0
 	      && has_operand_number <= 0)
-	    status_warning (status, "too many arguments for format");
+	    {
+	      res->number_other--;
+	      res->number_extra_args++;
+	    }
 	  if (has_operand_number > 0)
-	    finish_dollar_format_checking (status);
+	    finish_dollar_format_checking (status, res);
 	  return;
 	}
       if (*format_chars++ != '%')

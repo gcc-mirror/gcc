@@ -1,3 +1,17 @@
+2000-10-16  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (format_check_results): New structure.
+	(finish_dollar_format_checking): Adjust to take a
+	format_check_results * parameter.
+	(check_format_info, check_format_info_recurse,
+	check_format_info_main): Split check_format_info into three
+	functions, the main checking going in check_format_info_main.
+	Recurse when any reduction of the format string argument towards a
+	string literal is done; go down both branches of a conditional
+	expression.  Don't warn for extra format arguments or empty format
+	strings if they only occur in some branches of a conditional
+	expression.
+
 2000-10-16  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c: Remove obstack.
