@@ -44,7 +44,7 @@
 #include "tsystem.h"
 #include <fcntl.h>
 #include <sys/stat.h>
-#include "time.h"
+#include <time.h>
 #ifdef VMS
 #include <unixio.h>
 #endif

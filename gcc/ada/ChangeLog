@@ -1,5 +1,10 @@
 2003-11-12  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* adadecode.c: Use <> form of include for ctype.h.
+	* sysdep.c [IN_RTS]: Use <> form of include for time.h.
+
+2003-11-12  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* 5gsystem.ads (Functions_Return_By_DSP): Set to False.
 	Works around PR middle-end/6552.
 
