@@ -7153,10 +7153,9 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
 #endif
 
-	    /* A constant address in OP0 can have VOIDmode, we must not try
-	       to call force_reg for that case.  Avoid that case.  */
-	    if (GET_CODE (op0) == MEM
-		&& GET_MODE (op0) == BLKmode
+	    if (GET_MODE (op0) == BLKmode
+		/* A constant address in OP0 can have VOIDmode, we must
+		   not try to call force_reg in that case.  */
 		&& GET_MODE (XEXP (op0, 0)) != VOIDmode
 		&& bitsize != 0
 		&& (bitpos % bitsize) == 0
@@ -7213,7 +7212,10 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	       fetch it as a bit field.  */
 	    || (mode1 != BLKmode
 		&& (((TYPE_ALIGN (TREE_TYPE (tem)) < GET_MODE_ALIGNMENT (mode)
-		      || (bitpos % GET_MODE_ALIGNMENT (mode) != 0))
+		      || (bitpos % GET_MODE_ALIGNMENT (mode) != 0)
+		      || (GET_CODE (op0) == MEM
+			  && (MEM_ALIGN (op0) < GET_MODE_ALIGNMENT (mode1)
+			      || (bitpos % GET_MODE_ALIGNMENT (mode1) != 0))))
 		     && ((modifier == EXPAND_CONST_ADDRESS
 			  || modifier == EXPAND_INITIALIZER)
 			 ? STRICT_ALIGNMENT

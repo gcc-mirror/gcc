@@ -1,3 +1,11 @@
+2003-12-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/7847
+	* expr.c (expand_expr) [normal_inner_ref]: When 'offset' is non-zero,
+	do not recheck that 'op0' is a MEM.  Move comment.  When testing for
+	unaligned objects, take also into account the alignment of 'op0' and
+	'mode1' if 'op0' is a MEM.
+
 2003-12-01 Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* doc/c-tree.texi (Function Bodies): Update HANDLER documentation.
