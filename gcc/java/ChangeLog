@@ -1,3 +1,9 @@
+Sun Nov 15 17:14:17 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jvgenmain.c:  Need to #include "gansidecl.h" (to get PROTO).
+
+	* jcf-write.c (perform_relocations):  Move check out one loop.
+
 Sun Nov 15 15:09:56 1998  Anthony Green  <green@hoser.cygnus.com>
 
 	* Make-lang.in: Fix reference to srcdir.
