@@ -1289,6 +1289,8 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   map->min_insnno = 0;
   map->max_insnno = INSN_UID (header);
 
+  map->integrating = 1;
+
   /* const_equiv_map maps pseudos in our routine to constants, so it needs to
      be large enough for all our pseudos.  This is the number we are currently
      using plus the number in the called routine, plus 15 for each arg,
@@ -2157,7 +2159,15 @@ copy_rtx_and_substitute (orig, map)
       XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (orig, 0), map);
       MEM_IN_STRUCT_P (copy) = MEM_IN_STRUCT_P (orig);
       MEM_VOLATILE_P (copy) = MEM_VOLATILE_P (orig);
-      RTX_UNCHANGING_P (copy) = RTX_UNCHANGING_P (orig);
+
+      /* If doing function inlining, this MEM might not be const in the
+	 function that it is being inlined into, and thus may not be
+	 unchanging after function inlining.  Constant pool references are
+	 handled elsewhere, so this doesn't lose RTX_UNCHANGING_P bits
+	 for them.  */
+      if (! map->integrating)
+	RTX_UNCHANGING_P (copy) = RTX_UNCHANGING_P (orig);
+
       return copy;
     }
 
