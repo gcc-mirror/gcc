@@ -12,7 +12,7 @@
    get the behaviour GLIBC desires by removing the space before
    GCLIB_2.0 in this line.  */
 const char a[] = str(symbol_version(getrlimit,GLIBC_2.0));
-/* { dg-warning "valid preprocessing token" "" { target *-*-* } 11 } */
+/* { dg-warning "valid preprocessing token" "" { target *-*-* } 14 } */
 const char b[] = str(getrlimit@GLIBC_2.0);
 const char c[] = "getrlimit@GLIBC_2.0";
 
