@@ -739,8 +739,8 @@ struct rtx_def *function_arg();
        /* We handle signed and unsigned offsets here.  */	\
        && INTVAL (X) > (TARGET_H8300 ? -0x10000 : -0x1000000)	\
        && INTVAL (X) < (TARGET_H8300 ? 0x10000 : 0x1000000))	\
-   || GET_CODE (X) == CONST					\
-   || GET_CODE (X) == HIGH)
+   || ((GET_CODE (X) == HIGH || GET_CODE (X) == CONST		\
+       && TARGET_H8300)))
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
