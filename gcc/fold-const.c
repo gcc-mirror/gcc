@@ -124,6 +124,9 @@ force_fit_type (t)
 {
   register int prec = TYPE_PRECISION (TREE_TYPE (t));
 
+  if (TREE_CODE (t) != INTEGER_CST)
+    abort ();
+
   if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
     prec = POINTER_SIZE;
 
