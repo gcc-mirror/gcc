@@ -7718,7 +7718,8 @@ fold (tree expr)
 	  && (optimize || TREE_CODE (arg1) == INTEGER_CST))
 	{
 	  t1 = optimize_bit_field_compare (code, type, arg0, arg1);
-	  return t1 ? t1 : t;
+	  if (t1)
+	    return t1;
 	}
 
       /* If this is a comparison of complex values and either or both sides
