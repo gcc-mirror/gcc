@@ -728,17 +728,17 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
     int copy_start_luid = INSN_LUID (copy_start);
     int copy_end_luid = INSN_LUID (copy_end);
 
-    for (j = FIRST_PSEUDO_REGISTER; j < maxregnum; ++j)
-      {
-	int first_uid = regno_first_uid[j];
-	int last_uid = regno_last_uid[j];
+    /* If a register is used in the jump insn, we must not duplicate it
+       since it will also be used outside the loop.  */
+    if (GET_CODE (copy_end) == JUMP_INSN)
+      copy_end_luid--;
 
-	if (first_uid > 0 && first_uid <= max_uid_for_loop
-	    && uid_luid[first_uid] >= copy_start_luid
-	    && last_uid > 0 && last_uid <= max_uid_for_loop
-	    && uid_luid[last_uid] <= copy_end_luid)
-	  local_regno[j] = 1;
-      }
+    for (j = FIRST_PSEUDO_REGISTER; j < maxregnum; ++j)
+      if (regno_first_uid[j] > 0 && regno_first_uid[j] <= max_uid_for_loop
+	  && uid_luid[regno_first_uid[j]] >= copy_start_luid
+	  && regno_last_uid[j] > 0 && regno_last_uid[j] <= max_uid_for_loop
+	  && uid_luid[regno_last_uid[j]] <= copy_end_luid)
+	local_regno[j] = 1;
   }
 
   /* If this loop requires exit tests when unrolled, check to see if we
