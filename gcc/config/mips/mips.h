@@ -904,7 +904,7 @@ while (0)
 #define MIPS_DEBUGGING_INFO		/* MIPS specific debugging info */
 
 #ifndef PREFERRED_DEBUGGING_TYPE	/* assume SDB_DEBUGGING_INFO */
-#define PREFERRED_DEBUGGING_TYPE ((!strncmp (str, "ggdb", 4)) ? DBX_DEBUG : SDB_DEBUG)
+#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
 #endif
 
 /* By default, turn on GDB extensions.  */

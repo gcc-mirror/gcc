@@ -72,8 +72,10 @@ Boston, MA 02111-1307, USA.  */
 /* Act the same as the UTek complier: -g for dbx, -go for sdb.
  * This is used in toplev.c.
  */
-#define PREFERRED_DEBUGGING_TYPE \
-	((len > 1 && !strncmp(str, "go", len)) ? SDB_DEBUG : DBX_DEBUG )
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+#define CC1_SPEC "{go:-gcoff}"
+#define CC1PLUS_SPEC "{go:-gcoff}"
 
 /* Sequent has some changes in the format of DBX symbols.  */
 #define DBX_NO_XREFS 1
