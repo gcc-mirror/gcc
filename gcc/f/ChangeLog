@@ -1,3 +1,8 @@
+2000-08-21  Nix  <nix@esperi.demon.co.uk>
+        
+        * lang-specs.h: Do not process -o or run the assembler if
+        -fsyntax-only.  Use %j instead of /dev/null.
+
 2000-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang-specs.h: Pass -I* options to f771.
