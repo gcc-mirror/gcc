@@ -1,3 +1,14 @@
+2002-03-05  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.h (ENCODE_SECTION_INFO): Pass on new second
+	parameter to mmix_encode_section_info.
+	(LINK_SPEC): Don't defsym __.MMIX.start..text if linking
+	relocatably.  Always produce ELF, not mmo if linking relocatably.
+	* config/mmix/mmix.c (mmix_encode_section_info): If new parameter
+	first is non-zero, don't add symbol prefix.
+	* config/mmix/mmix-protos.h (mmix_encode_section_info): Tweak
+	prototype accordingly.
+
 2002-03-04  Krister Walfridsson  <cato@df.lth.se>
 
 	* config.gcc (*-*-netbsd*): Add t-slibgcc-elf-ver to tmake_file.
