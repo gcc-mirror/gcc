@@ -1,3 +1,8 @@
+Mon May 31 11:48:07 1999  Mark Mitchell  <mark@codesourcery.com>
+
+        * cccp.c (handle_directive): Handle backslash-newlines in quoted
+        strings correctly.
+
 Mon May 31 09:36:11 1999  Cort Dougan  <cort@cs.nmt.edu>
 
 	* rs6000/linux.h (LINK_SPEC): Use emulation elf32ppclinux.

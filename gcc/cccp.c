@@ -3981,11 +3981,33 @@ handle_directive (ip, op)
 	  case '\'':
 	  case '\"':
 	    {
+	      int backslash_newlines_p;
+
 	      register U_CHAR *bp1
 		= skip_quoted_string (xp - 1, bp, ip->lineno,
-				      NULL_PTR, NULL_PTR, NULL_PTR);
-	      while (xp != bp1)
-		*cp++ = *xp++;
+				      NULL_PTR, &backslash_newlines_p, 
+				      NULL_PTR);
+	      if (backslash_newlines_p)
+		while (xp != bp1)
+		  {
+		    /* With something like:
+
+			 #define X "a\
+			 b"
+
+		       we should still remove the backslash-newline
+		       pair as part of phase two.  */
+		    if (xp[0] == '\\' && xp[1] == '\n')
+		      xp += 2;
+		    else
+		      *cp++ = *xp++;
+		  }
+	      else
+		/* This is the same as the loop above, but taking
+		   advantage of the fact that we know there are no
+		   backslash-newline pairs.  */
+		while (xp != bp1)
+		  *cp++ = *xp++;
 	    }
 	    break;
 
