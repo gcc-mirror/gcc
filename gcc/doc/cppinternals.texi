@@ -72,7 +72,7 @@ into another language, under the above conditions for modified versions.
 The GNU C preprocessor in GCC 3.0 has been completely rewritten.  It is
 now implemented as a library, cpplib, so it can be easily shared between
 a stand-alone preprocessor, and a preprocessor integrated with the C,
-C++ and Objective C front ends.  It is also available for use by other
+C++ and Objective-C front ends.  It is also available for use by other
 programs, though this is not recommended as its exposed interface has
 not yet reached a point of reasonable stability.
 
@@ -90,7 +90,7 @@ Identifiers, macro expansion, hash nodes, lexing.
 
 @menu
 * Conventions::	    Conventions used in the code.
-* Lexer::	    The combined C, C++ and Objective C Lexer.
+* Lexer::	    The combined C, C++ and Objective-C Lexer.
 * Whitespace::      Input and output newlines and whitespace.
 * Hash Nodes::      All identifiers are hashed.
 * Macro Expansion:: Macro expansion algorithm.
@@ -191,7 +191,7 @@ we don't allow the terminators of header names to be escaped; the first
 @samp{"} or @samp{>} terminates the header name.
 
 Interpretation of some character sequences depends upon whether we are
-lexing C, C++ or Objective C, and on the revision of the standard in
+lexing C, C++ or Objective-C, and on the revision of the standard in
 force.  For example, @samp{::} is a single token in C++, but two
 separate @samp{:} tokens, and almost certainly a syntax error, in C@.
 Such cases are handled in the main function @samp{_cpp_lex_token}, based
@@ -392,7 +392,7 @@ macro is defined when we leave the header file for the first time.  If
 the host supports it, we try to map suitably large files into memory,
 rather than reading them in directly.
 
-The include paths are intenally stored on a null-terminated
+The include paths are internally stored on a null-terminated
 singly-linked list, starting with the @code{"header.h"} directory search
 chain, which then links into the @code{<header.h>} directory chain.
 
