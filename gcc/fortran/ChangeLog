@@ -3,6 +3,9 @@
 	* expr.c (gfc_check_pointer_assign): Verify that rank of the LHS
 	and RHS match. Return early if the RHS is NULL().
 
+	PR fortran/16336
+	* match.c (match_common): Fix error reporting for used common.
+
 2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-common.c: Fix whitespace issues, make variable names
