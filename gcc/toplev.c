@@ -1886,6 +1886,7 @@ compile_file (name)
 	    && ! TREE_PUBLIC (decl)
 	    && ! TREE_USED (decl)
 	    && ! DECL_INLINE (decl)
+	    && ! DECL_REGISTER (decl)
 	    /* The TREE_USED bit for file-scope decls
 	       is kept in the identifier, to handle multiple
 	       external decls in different scopes.  */
