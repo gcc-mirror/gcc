@@ -1,3 +1,9 @@
+Thu Jan 22 14:47:31 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* reload.c (push_reload): In WORD_REGISTER_OPERATIONS code, add test
+	to require the SUBREG mode to be smaller than the SUBREG_REG mode.
+	* reload1.c (eliminate_regs): Likewise.
+
 Thu Jan 22 14:49:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* regmove.c (find_matches): Initialize matches->earlyclobber too.
