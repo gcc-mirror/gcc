@@ -2909,6 +2909,9 @@ build_unary_op (code, xarg, noconvert)
 	{
 	  tree real, imag;
 
+	  if (pedantic)
+	    pedwarn ("ISO C does not support `++' and `--' on complex types");
+
 	  arg = stabilize_reference (arg);
 	  real = build_unary_op (REALPART_EXPR, arg, 1);
 	  imag = build_unary_op (IMAGPART_EXPR, arg, 1);

@@ -1,3 +1,8 @@
+2000-10-31  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-typeck.c (build_unary_op): If pedantic, pedwarn for increment
+	and decrement of complex types.
+
 2000-10-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_fputs): When deleting NOP calls to
