@@ -588,7 +588,9 @@ extern int ix86_arch;
 
 /* Allocation boundary for the code of a function. */
 #define FUNCTION_BOUNDARY \
-   (1 << ((ix86_align_funcs >= 0 ? ix86_align_funcs : -ix86_align_funcs) + 3))
+   ((unsigned int) 1 << ((ix86_align_funcs >= 0				\
+			  ? ix86_align_funcs : -ix86_align_funcs)	\
+			 + 3))
 
 /* Alignment of field after `int : 0' in a structure. */
 
