@@ -1144,7 +1144,8 @@ ia64_expand_call (retval, addr, nextarg, sibcall_p)
      rtx nextarg;
      int sibcall_p;
 {
-  rtx insn, b0, pfs, gp_save, narg_rtx;
+  rtx insn, b0, pfs, gp_save, narg_rtx, dest;
+  bool indirect_p;
   int narg;
 
   addr = XEXP (addr, 0);
@@ -1171,61 +1172,36 @@ ia64_expand_call (retval, addr, nextarg, sibcall_p)
       return;
     }
 
-  if (sibcall_p)
+  indirect_p = ! symbolic_operand (addr, VOIDmode);
+
+  if (sibcall_p || (TARGET_CONST_GP && !indirect_p))
     gp_save = NULL_RTX;
   else
     gp_save = ia64_gp_save_reg (setjmp_operand (addr, VOIDmode));
 
+  if (gp_save)
+    emit_move_insn (gp_save, pic_offset_table_rtx);
+
   /* If this is an indirect call, then we have the address of a descriptor.  */
-  if (! symbolic_operand (addr, VOIDmode))
+  if (indirect_p)
     {
-      rtx dest;
-
-      if (! sibcall_p)
-	emit_move_insn (gp_save, pic_offset_table_rtx);
-
       dest = force_reg (DImode, gen_rtx_MEM (DImode, addr));
       emit_move_insn (pic_offset_table_rtx,
 		      gen_rtx_MEM (DImode, plus_constant (addr, 8)));
-
-      if (sibcall_p)
-	insn = gen_sibcall_pic (dest, narg_rtx, b0, pfs);
-      else if (! retval)
-	insn = gen_call_pic (dest, narg_rtx, b0);
-      else
-	insn = gen_call_value_pic (retval, dest, narg_rtx, b0);
-      emit_call_insn (insn);
-
-      if (! sibcall_p)
-	emit_move_insn (pic_offset_table_rtx, gp_save);
-    }
-  else if (TARGET_CONST_GP)
-    {
-      if (sibcall_p)
-	insn = gen_sibcall_nopic (addr, narg_rtx, b0, pfs);
-      else if (! retval)
-	insn = gen_call_nopic (addr, narg_rtx, b0);
-      else
-	insn = gen_call_value_nopic (retval, addr, narg_rtx, b0);
-      emit_call_insn (insn);
     }
   else
-    {
-      if (sibcall_p)
-	emit_call_insn (gen_sibcall_pic (addr, narg_rtx, b0, pfs));
-      else
-	{
-	  emit_move_insn (gp_save, pic_offset_table_rtx);
+    dest = addr;
 
-	  if (! retval)
-	    insn = gen_call_pic (addr, narg_rtx, b0);
-	  else
-	    insn = gen_call_value_pic (retval, addr, narg_rtx, b0);
-	  emit_call_insn (insn);
+  if (sibcall_p)
+    insn = gen_sibcall_pic (dest, narg_rtx, b0, pfs);
+  else if (! retval)
+    insn = gen_call_pic (dest, narg_rtx, b0);
+  else
+    insn = gen_call_value_pic (retval, dest, narg_rtx, b0);
+  emit_call_insn (insn);
 
-	  emit_move_insn (pic_offset_table_rtx, gp_save);
-	}
-    }
+  if (gp_save)
+    emit_move_insn (pic_offset_table_rtx, gp_save);
 }
 
 /* Begin the assembly file.  */

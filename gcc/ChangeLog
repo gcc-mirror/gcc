@@ -1,3 +1,9 @@
+2002-03-27  Richard Henderson  <rth@redhat.com>
+
+	PR target/6054
+	* config/ia64/ia64.c (ia64_expand_call): Use pic patterns for
+	TARGET_CONST_GP.  Simplify conditions.
+
 2002-03-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* pa/pa-pro-end.h (CPP_PREDEFINES): Add -D__pro__.
