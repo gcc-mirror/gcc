@@ -186,7 +186,7 @@ yes)	AC_DEFINE(ENABLE_CHECKING)
 	AC_DEFINE(ENABLE_TREE_CHECKING)
 	AC_DEFINE(ENABLE_RTL_CHECKING)	;;
 no)	;;
-*)	ac_save_IFS="$IFS" IFS="$IFS,"
+*)	IFS="${IFS= 	}"; ac_save_IFS="$IFS" IFS="$IFS,"
 	set fnord $enableval; shift
 	IFS="$ac_save_IFS"
 	for check

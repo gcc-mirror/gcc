@@ -1,3 +1,9 @@
+2000-03-20  Geoff Keating  <geoffk@cygnus.com>
+
+	* configure.in: Set $IFS to a value if it doesn't already have one
+	in the --enable-checking handling.
+	* configure: Regenerate.
+
 2000-03-20  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* c-parse.in (SAVE_WARN_FLAGS): Use size_int.
