@@ -366,10 +366,8 @@ expand_builtin_dwarf_fp_regnum ()
 
 /* The target debug structure.  */
 
-struct gcc_debug_hooks dwarf2_debug_hooks =
-{
-  dwarf2out_init,
-  dwarf2out_finish
+struct gcc_debug_hooks dwarf2_debug_hooks
+  = {dwarf2out_init, dwarf2out_finish
 };
 
 /* Return a pointer to a copy of the section string name S with all
@@ -11589,4 +11587,22 @@ dwarf2out_finish (asm_out_file, input_filename)
     }
   
 }
+#else /* DWARF2_DEBUGGING_INFO
+
+/* Use dummy versions of init and finish routines.  */
+
+static void
+dwarf2out_init (asm_out_file, main_input_filename)
+     register FILE *asm_out_file ATTRIBUTE_UNUSED;
+     register const char *main_input_filename ATTRIBUTE_UNUSED;
+{
+}
+
+static void
+dwarf2out_finish (asm_out_file, input_filename)
+     register FILE *asm_out_file ATTRIBUTE_UNUSED;
+     register const char *input_filename ATTRIBUTE_UNUSED;
+{
+}
+
 #endif /* DWARF2_DEBUGGING_INFO */
