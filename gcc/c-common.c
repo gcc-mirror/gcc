@@ -604,7 +604,10 @@ decl_attributes (node, attributes, prefix_attributes)
 
 	case A_UNUSED:
 	  if (is_type)
-	    TREE_USED (type) = 1;
+	    if (decl)
+	      TREE_USED (decl) = 1;
+	    else
+	      TREE_USED (type) = 1;
 	  else if (TREE_CODE (decl) == PARM_DECL
 		   || TREE_CODE (decl) == VAR_DECL
 		   || TREE_CODE (decl) == FUNCTION_DECL
