@@ -1010,4 +1010,7 @@ if $LINKS; then
   done
 fi
 
+# Prevent premature exit when subsequently processing OTHER_FIXINCLUDES_DIRS.
+rm ${LIB}/DONE
+
 exit 0
