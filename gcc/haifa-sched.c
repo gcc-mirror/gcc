@@ -6923,7 +6923,7 @@ schedule_insns (dump_file)
 	}
     }
 
-  deaths_in_region = (int *) xmalloc (sizeof(int) * nr_regions);
+  deaths_in_region = (int *) xmalloc (sizeof (int) * nr_regions);
 
   init_alias_analysis ();
 
