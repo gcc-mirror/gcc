@@ -64,10 +64,7 @@ extern struct eh_range whole_range;
 
 extern struct eh_range * find_handler (int);
 extern void method_init_exceptions (void);
-extern void emit_handlers (void);
 extern void maybe_start_try (int, int);
-extern void maybe_end_try (int, int);
 extern void add_handler (int, int, tree, tree);
 extern void handle_nested_ranges (void);
-extern void expand_resume_after_catch (void);
 extern void expand_end_java_handler (struct eh_range *);
