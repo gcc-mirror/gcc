@@ -9810,7 +9810,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  break;
 
 	case GEU:
-	  /* >= C is equivalent to < (C - 1).  */
+	  /* >= C is equivalent to > (C - 1).  */
 	  if (const_op > 1)
 	    {
 	      const_op -= 1;
