@@ -596,56 +596,6 @@ since they usually run faster than the ones compiled with some other
 compiler.)
 
 @item
-@cindex C++ runtime library
-@cindex @code{libstdc++}
-If you're going to use C++, you need to install the C++ runtime library.
-This includes all I/O functionality, special class libraries, etc.
-
-The standard C++ runtime library for GNU CC is called @samp{libstdc++}.
-An obsolescent library @samp{libg++} may also be available, but it's
-necessary only for older software that hasn't been converted yet; if
-you don't know whether you need @samp{libg++} then you probably don't
-need it.
-
-Here's one way to build and install @samp{libstdc++} for GNU CC:
-
-@itemize @bullet
-@item
-Build and install GNU CC, so that invoking @samp{gcc} obtains the GNU CC
-that was just built.
-
-@item
-Obtain a copy of a compatible @samp{libstdc++} distribution.  For
-example, the @samp{libstdc++-2.8.0.tar.gz} distribution should be
-compatible with GCC 2.8.0.  GCC distributors normally distribute
-@samp{libstdc++} as well.
-
-@item
-Set the @samp{CXX} environment variable to @samp{gcc} while running the
-@samp{libstdc++} distribution's @file{configure} command.  Use the same
-@file{configure} options that you used when you invoked GCC's
-@file{configure} command.
-
-@item
-Invoke @samp{make} to build the C++ runtime.
-
-@item
-Invoke @samp{make install} to install the C++ runtime.
-
-@end itemize
-
-To summarize, after building and installing GNU CC, invoke the following
-shell commands in the topmost directory of the C++ library distribution.
-For @var{configure-options}, use the same options that
-you used to configure GNU CC.
-
-@example
-$ CXX=gcc ./configure @var{configure-options}
-$ make
-$ make install
-@end example
-
-@item
 GNU CC includes a runtime library for Objective-C because it is an
 integral part of the language.  You can find the files associated with
 the library in the subdirectory @file{objc}.  The GNU Objective-C
