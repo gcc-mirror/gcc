@@ -64,21 +64,22 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 /* We don't declare the union member `d' to have type TYPE
    because that would lose in C++ if TYPE has a constructor.  */
 /* We cast to void * and then to TYPE * because this avoids
-   a warning about increasing the alignment requirement.  */
+   a warning about increasing the alignment requirement.
+   The casts to char * avoid warnings about invalid pointer arithmetic.  */
 #define va_arg(pvar,TYPE)					\
 __extension__							\
 ({ TYPE __va_temp;						\
    ((__builtin_classify_type (__va_temp) >= 12)			\
-    ? ((pvar) += __va_rounded_size (TYPE *),			\
-       **(TYPE **) (void *) ((pvar) - __va_rounded_size (TYPE *))) \
+    ? ((pvar) = (char *)(pvar) + __va_rounded_size (TYPE *),	\
+       **(TYPE **) (void *) ((char *)(pvar) - __va_rounded_size (TYPE *))) \
     : __va_rounded_size (TYPE) == 8				\
     ? ({ union {char __d[sizeof (TYPE)]; int __i[2];} __u;	\
 	 __u.__i[0] = ((int *) (void *) (pvar))[0];		\
 	 __u.__i[1] = ((int *) (void *) (pvar))[1];		\
-	 (pvar) += 8;						\
+	 (pvar) = (char *)(pvar) + 8;				\
 	 *(TYPE *) (void *) __u.__d; })				\
-    : ((pvar) += __va_rounded_size (TYPE),			\
-       *((TYPE *) (void *) ((pvar) - __va_rounded_size (TYPE)))));})
+    : ((pvar) = (char *)(pvar) + __va_rounded_size (TYPE),	\
+       *((TYPE *) (void *) ((char *)(pvar) - __va_rounded_size (TYPE)))));})
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
 
