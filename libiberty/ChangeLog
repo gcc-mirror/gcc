@@ -1,3 +1,8 @@
+2003-09-15  Daniel Jacobowitz  <drow@mvista.com>
+
+	* floatformat.c (floatformat_is_valid): New function.
+	(get_field, put_field): Correct comments.
+
 2003-09-06  Josef Zlomek  <zlomekj@suse.cz>
 
 	* fibheap.c (fibheap_replace_key_data): Change type of OKEY to
