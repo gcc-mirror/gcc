@@ -55,6 +55,7 @@ details.  */
 #include <java/lang/StringBuffer.h>
 #include <java/util/Properties.h>
 #include <java/util/TimeZone.h>
+#include <java/io/File.h>
 #include <java/io/PrintStream.h>
 #include <java/io/InputStream.h>
 
@@ -323,20 +324,19 @@ java::lang::System::init_properties (void)
   
   SET ("file.encoding", default_file_encoding);
 
+  JvInitClass (&java::io::File::class$);  
+  newprops->put (JvNewStringLatin1 ("file.separator"), 
+		 java::io::File::separator);
+  newprops->put (JvNewStringLatin1 ("path.separator"),
+		 java::io::File::pathSeparator);
+  newprops->put (JvNewStringLatin1 ("java.io.tmpdir"), 
+		 java::io::File::tmpdir);
+
 #ifdef WIN32
-  SET ("file.separator", "\\");
-  SET ("path.separator", ";");
   SET ("line.separator", "\r\n");
-  SET ("java.io.tmpdir", "C:\\temp");
 #else
   // Unix.
-  SET ("file.separator", "/");
-  SET ("path.separator", ":");
   SET ("line.separator", "\n");
-  char *tmpdir = ::getenv("TMPDIR");
-  if (! tmpdir)
-    tmpdir = "/tmp";
-  SET ("java.io.tmpdir", tmpdir);
 #endif
 
 #ifdef HAVE_UNAME
