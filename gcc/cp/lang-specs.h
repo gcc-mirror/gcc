@@ -22,84 +22,34 @@ Boston, MA 02111-1307, USA.  */
 /* This is the contribution to the `default_compilers' array in gcc.c for
    g++.  */
 
-  {".cc", {"@c++"}},
-  {".cp", {"@c++"}},
-  {".cxx", {"@c++"}},
-  {".cpp", {"@c++"}},
-  {".c++", {"@c++"}},
-  {".C", {"@c++"}},
+  {".cc",  "@c++"},
+  {".cp",  "@c++"},
+  {".cxx", "@c++"},
+  {".cpp", "@c++"},
+  {".c++", "@c++"},
+  {".C",   "@c++"},
   {"@c++",
 #if USE_CPPLIB
-   {
-     "%{E|M|MM:cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
-	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
-	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-	%{!no-gcc:-D__GNUC__=%v1 -D__GNUG__=%v1 -D__GNUC_MINOR__=%v2\
-	-D__GNUC_PATCHLEVEL__=%v3} -D__cplusplus\
-	%{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
-	%{!fno-exceptions:-D__EXCEPTIONS}\
-        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} %{trigraphs}\
-	%{ffast-math:-D__FAST_MATH__}\
-	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n}\
-      %{!E:%{!M:%{!MM:cc1plus %i %1 %2\
-                            -lang-c++ %{nostdinc*} %{C} %{A*} %{I*} %{P} %{$} %I\
-                            %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-                            %{!no-gcc:-D__GNUC__=%v1 -D__GNUG__=%v1\
-                            -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
-                            -D__cplusplus\
-                            %{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
-                            %{!fno-exceptions:-D__EXCEPTIONS}\
-			    %{fnew-abi:-D__GXX_ABI_VERSION=100}\
-                            %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
-			    %{ffast-math:-D__FAST_MATH__}\
-			    %{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-                            %{trigraphs}\
-			    %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
-			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
-                            %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-			    %{v:-version} %{pg:-p} %{p}\
-			    %{f*} %{+e*} %{aux-info*} %{Qn:-fno-ident}\
-			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}}|\n\
-              %{!S:%{!fsyntax-only:as %a %Y\
-		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}}}}"}},
+    "%{E|M|MM:cpp -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
+       %{fnew-abi:-D__GXX_ABI_VERSION=100}\
+       %{ansi:-trigraphs -$ -D__STRICT_ANSI__} %(cpp_options)}\
+     %{!E:%{!M:%{!MM:cc1plus -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
+       %{fnew-abi:-D__GXX_ABI_VERSION=100}\
+       %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
+       %(cpp_options) %(cc1_options) %{+e*}\
+       %{!S:-o %{|!pipe:%g.s} |\n\
+     as %(asm_options) %{!pipe:%g.s} %A }}}}"
 #else /* ! USE_CPPLIB */
-   {"cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
-	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
-	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-	%{!no-gcc:-D__GNUC__=%v1 -D__GNUG__=%v1 -D__GNUC_MINOR__=%v2\
-	-D__GNUC_PATCHLEVEL__=%v3} -D__cplusplus\
-	%{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
-	%{!fno-exceptions:-D__EXCEPTIONS}\
-	%{fnew-abi:-D__GXX_ABI_VERSION=100}\
-        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} %{trigraphs}\
-	%{ffast-math:-D__FAST_MATH__}\
-	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
-	%{fshow-column} %{fno-show-column}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.ii}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-    "%{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.ii} %1 %2\
-			    %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
-			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
-			    %{v:-version} %{pg:-p} %{p}\
-			    %{f*} %{+e*} %{aux-info*} %{Qn:-fno-ident}\
-			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}}|\n\
-              %{!S:%{!fsyntax-only:as %a %Y\
-		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}}}}"}},
+    "cpp -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
+       %{fnew-abi:-D__GXX_ABI_VERSION=100}\
+       %{ansi:-trigraphs -$ -D__STRICT_ANSI__} %(cpp_options)\
+       %{!M:%{!MM:%{!E:%{!pipe:%g.ii} |\n\
+     cc1plus %{!pipe:%g.ii} %(cc1_options) %{+e*} %{!S:-o %{|!pipe:%g.s} |\n\
+     as %(asm_options) %{!pipe:%g.s} %A }}}}\n"
 #endif /* ! USE_CPPLIB */
-  {".ii", {"@c++-cpp-output"}},
+  },
+  {".ii", "@c++-cpp-output"},
   {"@c++-cpp-output",
-   {"%{!M:%{!MM:%{!E:cc1plus %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
-			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
-			    %{v:-version} %{pg:-p} %{p} -fpreprocessed\
-			    %{f*} %{+e*} %{aux-info*} %{Qn:-fno-ident}\
-			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-	            %{!S:as %a %Y\
-			    %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-			    %{!pipe:%g.s} %A\n }}}}"}},
+   "%{!M:%{!MM:%{!E:\
+    cc1plus -fpreprocessed %{!pipe:%g.ii} %(cc1_options) %{+e*}\
+    %{!S:-o %{|!pipe:%g.s} |\n as %(asm_options) %{!pipe:%g.s} %A }}}}"},

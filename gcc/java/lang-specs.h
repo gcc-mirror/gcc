@@ -25,20 +25,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* This is the contribution to the `default_compilers' array in gcc.c for
    Java.  */
 
-  {".java",   {"@java"} },
-  {".class",  {"@java"} },
-  {".zip",    {"@java"} },
-  {".jar",    {"@java"} },
+  {".java",   "@java" },
+  {".class",  "@java" },
+  {".zip",    "@java" },
+  {".jar",    "@java" },
   {"@java",
-   {"%{!E:jc1 %i %1 %(jc1) %{!Q:-quiet} %{d*} %{m*} %{a}\
-		    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
-		    %{traditional} %{v:-version} %{pg:-p} %{p}\
-		    %{f*} %{+e*} %{aux-info*} %{Qn:-fno-ident}\
-                    %{I*}\
-		    %{MD} %{MMD} %{M} %{MM}\
-                    %{fjni:%{femit-class-file:%e-fjni and -femit-class-file are incompatible}}\
-		    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-            %{!S:as %a %Y\
-		    %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-		    %{!pipe:%g.s} %A\n }}"}},
+   "%{fjni:%{femit-class-file:%e-fjni and -femit-class-file are incompatible}}\
+    %{!E:jc1 %i %(cc1_options) %{+e*} %{MD} %{MMD} %{M} %{MM}\
+             %{!S:-o %{|!pipe:%g.s} |\n\
+    as %(asm_options) %{!pipe:%g.s} %A }}"},

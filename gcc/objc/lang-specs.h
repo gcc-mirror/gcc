@@ -21,79 +21,23 @@ Boston, MA 02111-1307, USA.  */
 /* This is the contribution to the `default_compilers' array in gcc.c for
    objc.  */
 
-  {".m", {"@objective-c"}},
+  {".m", "@objective-c"},
   {"@objective-c",
 #if USE_CPPLIB
-   {"%{E|M|MM:cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
-	%{C:%{!E:%eGNU C does not support -C without using -E}}\
-	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
-	-D__GNUC_PATCHLEVEL__=%v3} %{ansi:-trigraphs -D__STRICT_ANSI__}\
-	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
-        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
-	%{ffast-math:-D__FAST_MATH__}\
-        %{traditional} %{ftraditional:-traditional}\
-        %{traditional-cpp:-traditional}\
-	%{fleading-underscore} %{fno-leading-underscore}\
-	%{fshow-column} %{fno-show-column}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n}",
-    "%{!M:%{!MM:%{!E:cc1obj %i %1 \
-		   %{nostdinc*} %{A*} %{I*} %{P} %I\
-                   %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-		   -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
-		   -D__GNUC_PATCHLEVEL__=%v3}\
-		   %{!undef:%{!ansi:%p} %P} %{trigraphs}\
-		   %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
-		   %{ffast-math:-D__FAST_MATH__}\
-		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a*}\
-		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
-		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
-    		   -lang-objc %{gen-decls} \
-		   %{aux-info*} %{Qn:-fno-ident}\
-		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-     %{!S:as %a %Y\
-	%{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-        %{!pipe:%g.s} %A\n }}}}"}
+     "%{E|M|MM:cpp -lang-objc %{ansi:-std=c89} %(cpp_options)}\
+      %{!E:%{!M:%{!MM:cc1obj -lang-objc %(cpp_options) %(cc1_options)\
+			     %{gen-decls} %{!S:-o %{|!pipe:%g.s} |\n\
+      as %(asm_options) %{!pipe:%g.s} %A }}}}"
 #else /* ! USE_CPPLIB */
-   {"%{traditional|ftraditional|traditional-cpp:trad}cpp -lang-objc \
-	%{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
-	%{C:%{!E:%eGNU C does not support -C without using -E}}\
-	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 \
-        -D__GNUC_PATCHLEVEL__=%v3}\
-	%{ansi:-trigraphs -D__STRICT_ANSI__}\
-	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
-        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
-	%{ffast-math:-D__FAST_MATH__}\
-	%{fleading-underscore} %{fno-leading-underscore}\
-	%{fshow-column} %{fno-show-column}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.mi}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-    "%{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.mi} %1 \
-		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a*}\
-		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
-		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
-    		   -lang-objc %{gen-decls} \
-		   %{aux-info*} %{Qn:-fno-ident}\
-		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %a %Y\
-		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}}}"}
+     "%(trad_capable_cpp) -lang-objc %{ansi:-std=c89} %(cpp_options)\
+			  %{!M:%{!MM:%{!E:%{!pipe:%g.mi} |\n\
+      cc1obj -lang-objc %{!pipe:%g.mi} %(cc1_options) %{gen-decls}\
+	     %{!S:-o %{|!pipe:%g.s} |\n\
+      as %(asm_options) %{!pipe:%g.s} %A }}}}\n"
 #endif /* ! USE_CPPLIB */
-  },
-  {".mi", {"@objc-cpp-output"}},
+    },
+  {".mi", "@objc-cpp-output"},
   {"@objc-cpp-output",
-   {"%{!M:%{!MM:%{!E:cc1obj %i %1 \
-		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a*}\
-		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
-		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
-    		   -lang-objc %{gen-decls} \
-		   %{aux-info*} %{Qn:-fno-ident}\
-		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n",
-    "%{!S:as %a %Y\
-	%{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-        %{!pipe:%g.s} %A\n }}}}"}},
+     "%{!M:%{!MM:%{!E:cc1obj -lang-objc %i %(cc1_options) %{gen-decls}\
+			     %{!S:-o %{|!pipe:%g.s} |\n\
+      as %(asm_options) %{!pipe:%g.s} %A }}}}"},
