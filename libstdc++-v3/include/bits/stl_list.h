@@ -1,6 +1,6 @@
 // List implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -75,6 +75,16 @@ namespace __gnu_norm
   {
     _List_node_base* _M_next;   ///< Self-explanatory
     _List_node_base* _M_prev;   ///< Self-explanatory
+
+    static void swap(_List_node_base& __x,
+                     _List_node_base& __y);
+
+    void transfer(_List_node_base * const __first,
+                  _List_node_base * const __last);
+
+    void reverse();
+    void hook(_List_node_base * const __position);
+    void unhook();
   };
   
   /// @if maint An actual node in the %list.  @endif
@@ -86,77 +96,29 @@ namespace __gnu_norm
   
   
   /**
-   *  @if maint
-   *  @brief Common part of a list::iterator.
-   *
-   *  A simple type to walk a doubly-linked list.  All operations here
-   *  should be self-explanatory after taking any decent introductory
-   *  data structures course.
-   *  @endif
-  */
-  struct _List_iterator_base
-  {
-    typedef size_t                        size_type;
-    typedef ptrdiff_t                     difference_type;
-    typedef bidirectional_iterator_tag    iterator_category;
-  
-    /// The only member points to the %list element.
-    _List_node_base* _M_node;
-  
-    _List_iterator_base(_List_node_base* __x)
-    : _M_node(__x) { }
-  
-    _List_iterator_base() { }
-  
-    /// Walk the %list forward.
-    void
-    _M_incr()
-    { _M_node = _M_node->_M_next; }
-  
-    /// Walk the %list backward.
-    void
-    _M_decr()
-    { _M_node = _M_node->_M_prev; }
-  
-    bool
-    operator==(const _List_iterator_base& __x) const
-    { return _M_node == __x._M_node; }
-  
-    bool
-    operator!=(const _List_iterator_base& __x) const
-    { return _M_node != __x._M_node; }
-  };
-  
-  /**
    *  @brief A list::iterator.
-   *
-   *  In addition to being used externally, a list holds one of these
-   *  internally, pointing to the sequence of data.
    *
    *  @if maint
    *  All the functions are op overloads.
    *  @endif
   */
-  template<typename _Tp, typename _Ref, typename _Ptr>
-    struct _List_iterator : public _List_iterator_base
+  template<typename _Tp>
+    struct _List_iterator
     {
-      typedef _List_iterator<_Tp,_Tp&,_Tp*>             iterator;
-      typedef _List_iterator<_Tp,const _Tp&,const _Tp*> const_iterator;
-      typedef _List_iterator<_Tp,_Ref,_Ptr>             _Self;
+      typedef _List_iterator<_Tp>           _Self;
+      typedef _List_node<_Tp>               _Node;
       
-      typedef _Tp                                       value_type;
-      typedef _Ptr                                      pointer;
-      typedef _Ref                                      reference;
-      typedef _List_node<_Tp>                           _Node;
+      typedef ptrdiff_t                     difference_type;
+      typedef bidirectional_iterator_tag    iterator_category;
+      typedef _Tp                           value_type;
+      typedef _Tp*                          pointer;
+      typedef _Tp&                          reference;
       
-      _List_iterator(_Node* __x)
-      : _List_iterator_base(__x) { }
-  
       _List_iterator() { }
-      
-      _List_iterator(const iterator& __x)
-      : _List_iterator_base(__x._M_node) { }
-  
+
+      _List_iterator(_List_node_base* __x)
+      : _M_node(__x) { }
+
       // Must downcast from List_node_base to _List_node to get to _M_data.
       reference
       operator*() const
@@ -164,12 +126,92 @@ namespace __gnu_norm
 
       pointer
       operator->() const
-      { return &(operator*()); }
+      { return &static_cast<_Node*>(_M_node)->_M_data; }
       
       _Self&
       operator++()
       {
-	this->_M_incr();
+	_M_node = _M_node->_M_next;
+	return *this;
+      }
+  
+      _Self
+      operator++(int)
+      {
+	_Self __tmp = *this;
+	_M_node = _M_node->_M_next;
+	return __tmp;
+      }
+      
+      _Self&
+      operator--()
+      {
+	_M_node = _M_node->_M_prev;
+	return *this;
+      }
+  
+      _Self
+      operator--(int)
+      {
+	_Self __tmp = *this;
+	_M_node = _M_node->_M_prev;
+	return __tmp;
+      }
+      
+      bool
+      operator==(const _Self& __x) const
+      { return _M_node == __x._M_node; }
+
+      bool
+      operator!=(const _Self& __x) const
+      { return _M_node != __x._M_node; }
+      
+      // The only member points to the %list element.
+      _List_node_base* _M_node;
+    };
+  
+  /**
+   *  @brief A list::const_iterator.
+   *
+   *  @if maint
+   *  All the functions are op overloads.
+   *  @endif
+  */
+  template<typename _Tp>
+    struct _List_const_iterator
+    {
+      typedef _List_const_iterator<_Tp>     _Self;
+      typedef const _List_node<_Tp>         _Node;
+      typedef _List_iterator<_Tp>           iterator;
+      
+      typedef ptrdiff_t                     difference_type;
+      typedef bidirectional_iterator_tag    iterator_category;
+      typedef _Tp                           value_type;
+      typedef const _Tp*                    pointer;
+      typedef const _Tp&                    reference;
+      
+      _List_const_iterator() { }
+
+      _List_const_iterator(const _List_node_base* __x)
+      : _M_node(__x) { }
+
+      _List_const_iterator(const iterator& __x)
+      : _M_node(__x._M_node) { }
+
+      // Must downcast from List_node_base to _List_node to get to
+      // _M_data.
+      reference
+      operator*() const
+      { return static_cast<_Node*>(_M_node)->_M_data; }
+
+      pointer
+      operator->() const
+      { return &static_cast<_Node*>(_M_node)->_M_data; }
+      
+      _Self&
+      operator++()
+      {
+	_M_node = _M_node->_M_next;
 	return *this;
       }
       
@@ -177,25 +219,49 @@ namespace __gnu_norm
       operator++(int)
       {
 	_Self __tmp = *this;
-	this->_M_incr();
+	_M_node = _M_node->_M_next;
 	return __tmp;
       }
       
       _Self&
       operator--()
       {
-	this->_M_decr();
+	_M_node = _M_node->_M_prev;
 	return *this;
       }
-      
+  
       _Self
       operator--(int)
       {
 	_Self __tmp = *this;
-	this->_M_decr();
-      return __tmp;
+	_M_node = _M_node->_M_prev;
+	return __tmp;
       }
+      
+      bool
+      operator==(const _Self& __x) const
+      { return _M_node == __x._M_node; }
+      
+      bool
+      operator!=(const _Self& __x) const
+      { return _M_node != __x._M_node; }
+      
+      // The only member points to the %list element.
+      const _List_node_base* _M_node;
     };
+  
+  template<typename _Val>
+    inline bool 
+    operator==(const _List_iterator<_Val>& __x, 
+	       const _List_const_iterator<_Val>& __y) 
+    { return __x._M_node == __y._M_node; }
+
+  template<typename _Val>
+    inline bool 
+    operator!=(const _List_iterator<_Val>& __x,
+               const _List_const_iterator<_Val>& __y) 
+    { return __x._M_node != __y._M_node; }
+
   
   /**
    *  @if maint
@@ -242,10 +308,7 @@ namespace __gnu_norm
 
       _List_base(const allocator_type& __a)
       : _Node_Alloc_type(__a)
-      {
-	this->_M_node._M_next = &this->_M_node;
-	this->_M_node._M_prev = &this->_M_node;
-      }
+      { _M_init(); }
   
       // This is what actually destroys the list.
       ~_List_base()
@@ -253,6 +316,13 @@ namespace __gnu_norm
       
       void
       _M_clear();
+
+      void
+      _M_init()
+      {
+        this->_M_node._M_next = &this->_M_node;
+        this->_M_node._M_prev = &this->_M_node;
+      }
     };
   
   
@@ -313,8 +383,8 @@ namespace __gnu_norm
       typedef _Tp                                       value_type;
       typedef value_type*                               pointer;
       typedef const value_type*                         const_pointer;
-      typedef _List_iterator<_Tp,_Tp&,_Tp*>             iterator;
-      typedef _List_iterator<_Tp,const _Tp&,const _Tp*> const_iterator;
+      typedef _List_iterator<_Tp>                       iterator;
+      typedef _List_const_iterator<_Tp>                 const_iterator;
       typedef std::reverse_iterator<const_iterator>     const_reverse_iterator;
       typedef std::reverse_iterator<iterator>           reverse_iterator;
       typedef value_type&                               reference;
@@ -511,7 +581,7 @@ namespace __gnu_norm
        *  %list.  Iteration is done in ordinary element order.
        */
       iterator
-      begin() { return static_cast<_Node*>(this->_M_node._M_next); }
+      begin() { return this->_M_node._M_next; }
       
       /**
        *  Returns a read-only (constant) iterator that points to the
@@ -519,7 +589,7 @@ namespace __gnu_norm
        *  element order.
        */
       const_iterator
-      begin() const { return static_cast<_Node*>(this->_M_node._M_next); }
+      begin() const { return this->_M_node._M_next; }
       
       /**
        *  Returns a read/write iterator that points one past the last
@@ -527,7 +597,7 @@ namespace __gnu_norm
        *  order.
        */
       iterator
-      end() { return static_cast<_Node*>(&this->_M_node); }
+      end() { return &this->_M_node; }
       
       /**
        *  Returns a read-only (constant) iterator that points one past
@@ -535,8 +605,7 @@ namespace __gnu_norm
        *  element order.
        */
       const_iterator
-      end() const 
-      { return const_cast<_Node*>(static_cast<const _Node*>(&this->_M_node)); }
+      end() const { return &this->_M_node; }
       
       /**
        *  Returns a read/write reverse iterator that points to the last
@@ -653,7 +722,7 @@ namespace __gnu_norm
        *  references.
        */
       void
-      push_front(const value_type& __x) { this->insert(begin(), __x); }
+      push_front(const value_type& __x) { this->_M_insert(begin(), __x); }
   
       /**
        *  @brief  Removes first element.
@@ -668,7 +737,7 @@ namespace __gnu_norm
        *  called.
        */
       void
-      pop_front() { this->erase(begin()); }
+      pop_front() { this->_M_erase(begin()); }
       
       /**
        *  @brief  Add data to the end of the %list.
@@ -681,7 +750,7 @@ namespace __gnu_norm
        *  references.
        */
       void
-      push_back(const value_type& __x) { this->insert(end(), __x); }
+      push_back(const value_type& __x) { this->_M_insert(end(), __x); }
       
       /**
        *  @brief  Removes last element.
@@ -695,11 +764,7 @@ namespace __gnu_norm
        *  is needed, it should be retrieved before pop_back() is called.
        */
       void
-      pop_back()
-      {
-	iterator __tmp = end();
-	this->erase(--__tmp);
-      }
+      pop_back() { this->_M_erase(this->_M_node._M_prev); }
       
       /**
        *  @brief  Inserts given value into %list before specified iterator.
@@ -797,7 +862,7 @@ namespace __gnu_norm
       erase(iterator __first, iterator __last)
       {
 	while (__first != __last)
-	  erase(__first++);
+	  __first = erase(__first);
 	return __last;
       }
   
@@ -811,7 +876,7 @@ namespace __gnu_norm
        *  function.
        */
       void
-      swap(list& __x);
+      swap(list& __x) { _List_node_base::swap(this->_M_node,__x._M_node); }
   
       /**
        *  Erases all the elements.  Note that this function only erases
@@ -820,7 +885,11 @@ namespace __gnu_norm
        *  Managing the pointer is the user's responsibilty.
        */
       void
-      clear() { _Base::_M_clear(); }
+      clear()
+      {
+        _Base::_M_clear();
+        _Base::_M_init();
+      }
   
       // [23.2.2.4] list operations
       /**
@@ -968,7 +1037,7 @@ namespace __gnu_norm
        *  Reverse the order of elements in the list in linear time.
        */
       void
-      reverse() { __List_base_reverse(&this->_M_node); }
+      reverse() { this->_M_node.reverse(); }
   
       /**
        *  @brief  Sort the elements.
@@ -1033,7 +1102,7 @@ namespace __gnu_norm
 			   __false_type)
         {
 	  for ( ; __first != __last; ++__first)
-	    insert(__pos, *__first);
+	    _M_insert(__pos, *__first);
 	}
       
       // Called by insert(p,n,x), and the range insert when it turns out
@@ -1042,7 +1111,7 @@ namespace __gnu_norm
       _M_fill_insert(iterator __pos, size_type __n, const value_type& __x)
       {
 	for ( ; __n > 0; --__n)
-	  insert(__pos, __x);
+	  _M_insert(__pos, __x);
       }
       
       
@@ -1050,19 +1119,26 @@ namespace __gnu_norm
       void
       _M_transfer(iterator __position, iterator __first, iterator __last)
       {
-	if (__position != __last) 
-	  {
-	    // Remove [first, last) from its old position.
-	    __last._M_node->_M_prev->_M_next     = __position._M_node;
-	    __first._M_node->_M_prev->_M_next    = __last._M_node;
-	    __position._M_node->_M_prev->_M_next = __first._M_node;
-	    
-	    // Splice [first, last) into its new position.
-	    _List_node_base* __tmp      = __position._M_node->_M_prev;
-	    __position._M_node->_M_prev = __last._M_node->_M_prev;
-	    __last._M_node->_M_prev     = __first._M_node->_M_prev;
-	    __first._M_node->_M_prev    = __tmp;
-	  }
+        __position._M_node->transfer(__first._M_node,__last._M_node);
+      }
+
+      // Inserts new element at position given and with value given.
+      void
+      _M_insert(iterator __position, const value_type& __x)
+      {
+        _Node* __tmp = _M_create_node(__x);
+
+        __tmp->hook(__position._M_node);
+      }
+
+      // Erases element at position given.
+      void
+      _M_erase(iterator __position)
+      {
+        __position._M_node->unhook();
+        _Node* __n = static_cast<_Node*>(__position._M_node);
+        std::_Destroy(&__n->_M_data);
+        _M_put_node(__n);
       }
     };
   
@@ -1146,3 +1222,4 @@ namespace __gnu_norm
 } // namespace __gnu_norm
 
 #endif /* _LIST_H */
+

@@ -1,3 +1,43 @@
+2004-01-07  Gawain Bolton  <gp.bolton@computer.org>
+
+	* include/bits/stl_list.h:
+	* include/bits/list.tc:
+	* src/list.cc:
+        Performance enhancements for destructor, push_front(),
+        push_back(), pop_front(), pop_back(), sort()
+        Eliminated static_casts where possible.
+        Moved code out of header files into new src/list.cc
+        implementation file for library where possible.
+        Remove inheritance from iterator class and create separate
+        classes for non-constant and constant iterators.
+	* include/bits/stl_tree.h (_Rb_tree class):
+	* src/tree.cc: 
+        Only erase contents in destructor.
+        Eliminate unnecessary initialization in assignment operator.
+        Optimize for the nominal case by not checking whether
+        container is empty in clear().
+        Re-order test in _M_insert() to improve performance.
+        Move initialization of new node's left & right pointers to
+        src/tree.cc to where new node's colour is initialized
+        and to reduce the amount of inline code.
+        Use  _M_leftmost() and _M_end() to improve readability where
+        appropriate.
+        Create separate classes for non-constant and constant
+        iterators to clarify code, avoid extra template parameters and 
+        casting away constness.		
+	
+2004-01-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am (sources): Add list.cc, tree.cc.
+	* src/stl_tree.cc: Move to...
+	* src/tree.cc: ...here.
+	* src/list.cc: Add.
+	* config/linker-map.gnu: Tweaks.
+	* testsuite/23_containers/map/operators/1_neg.cc: Add excess errors.
+	* testsuite/23_containers/set/operators/1_neg.cc: Add excess errors.
+
+	* bits/stl_vector.h: Column wrap comments.
+	
 2004-01-07  Loren J. Rittle  <ljrittle@acm.org>
 
 	(re-open) PR libstdc++/12658

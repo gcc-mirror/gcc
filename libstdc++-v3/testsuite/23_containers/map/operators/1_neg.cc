@@ -1,6 +1,6 @@
-// 2000-09-07 bgarcia@laurelnetworks.com
+// { dg-do compile }
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +19,10 @@
 // USA.
 
 // 23.3.4 template class multiset negative tests
+// 2000-09-07 bgarcia@laurelnetworks.com
 
 #include <map>
 #include <string>
-
-// { dg-do compile }
 
 // libstdc++/86: map & set iterator comparisons are not type-safe
 void test01()
@@ -42,8 +41,5 @@ void test01()
   test &= itr == mapByName.end(); // { dg-error "no" } 
 }
  
-int main()
-{
-  test01();
-  return 0;
-}
+// { dg-error "candidates are" "" { target *-*-* } 212 } 
+// { dg-error "candidates are" "" { target *-*-* } 216 }
