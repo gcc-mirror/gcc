@@ -14,7 +14,7 @@
 @c %**start of header 
 @setfilename g77.info
 
-@set last-up-date 1998-08-23
+@set last-up-date 1998-09-01
 @set version-g77 0.5.24
 @set email-general egcs@@cygnus.com
 @set email-bugs egcs-bugs@@cygnus.com
@@ -3310,7 +3310,71 @@ or, if you cannot do that, email
 @email{fortran@@gnu.org} asking for a recent copy of the
 GNU Fortran @file{.plan} file.
 
-@heading In @code{egcs} 1.1:
+@heading In @code{egcs} 1.1 (versus 0.5.24):
+@itemize @bullet
+@cindex alignment
+@cindex double-precision performance
+@cindex -malign-double
+@item
+Align static double-precision variables and arrays
+on Intel x86 targets
+regardless of whether @samp{-malign-double} is specified.
+
+Generally, this affects only local variables and arrays
+having the @code{SAVE} attribute
+or given initial values via @code{DATA}.
+@end itemize
+
+@heading In @code{egcs} 1.1 (versus @code{egcs} 1.0.3):
+@itemize @bullet
+@item
+Support @samp{FORMAT(I<@var{expr}>)} when @var{expr} is a
+compile-time constant @code{INTEGER} expression.
+
+@item
+Fix @code{g77} @samp{-g} option so procedures that
+use @samp{ENTRY} can be stepped through, line by line,
+in @code{gdb}.
+
+@item
+Allow any @code{REAL} argument to intrinsics
+@code{Second} and @code{CPU_Time}.
+
+@item
+Use @code{tempnam}, if available, to open scratch files
+(as in @samp{OPEN(STATUS='SCRATCH')})
+so that the @code{TMPDIR} environment variable,
+if present, is used.
+
+@item
+@code{g77}'s version of @code{libf2c} separates out
+the setting of global state
+(such as command-line arguments and signal handling)
+from @file{main.o} into distinct, new library
+archive members.
+
+This should make it easier to write portable applications
+that have their own (non-Fortran) @code{main()} routine
+properly set up the @code{libf2c} environment, even
+when @code{libf2c} (now @code{libg2c}) is a shared library.
+
+@item
+The @code{g77} command now expects the run-time library
+to be named @code{libg2c.a} instead of @code{libf2c.a},
+to ensure that a version other than the one built and
+installed as part of the same @code{g77} version is picked up.
+
+@item
+Some diagnostics have been changed from warnings to errors,
+to prevent inadvertent use of the resulting, probably buggy,
+programs.
+These mostly include diagnostics about use of unsupported features
+in the @code{OPEN}, @code{INQUIRE}, @code{READ}, and
+@code{WRITE} statements,
+and about truncations of various sorts of constants.
+@end itemize
+
+@heading In 0.5.24 and @code{egcs} 1.1 (versus 0.5.23):
 @itemize @bullet
 @item
 @code{g77} now treats @samp{%LOC(@var{expr})} and
@@ -3335,16 +3399,27 @@ when the generated code wants to link to the one
 in @code{libf2c} (@code{libg2c}).
 
 @item
-The F90 @samp{DATE_AND_TIME} intrinsic now is
+@code{g77} emits more debugging information when
+@samp{-g} is used.
+
+This new information allows, for example,
+@kbd{which __g77_length_a} to be used in @code{gdb}
+to determine the type of the phantom length argument
+supplied with @samp{CHARACTER} variables.
+
+This information pertains to internally-generated
+type, variable, and other information,
+not to the longstanding deficiencies vis-a-vis
+@samp{COMMON} and @samp{EQUIVALENCE}.
+
+@item
+The F90 @samp{Date_and_Time} intrinsic now is
 supported.
 
 @item
-The F90 @samp{SYSTEM_CLOCK} intrinsic allows
+The F90 @samp{System_Clock} intrinsic allows
 the optional arguments (except for the @samp{Count}
 argument) to be omitted.
-
-@item
-Upgrade to @code{libf2c} as of 1998-06-18.
 @end itemize
 
 @heading In 0.5.23:
@@ -3373,7 +3448,7 @@ the options @samp{-fargument-alias}, @samp{-fargument-noalias},
 and @samp{-fargument-noalias-global},
 and the corresponding alias-analysis code.
 
-(Version 1.0.1 of @code{egcs} has the alias-analysis
+(@code{egcs} has the alias-analysis
 code, but not the @code{__restrict__} keyword.
 @code{egcs} @code{g77} users benefit from the alias-analysis
 code despite the lack of the @code{__restrict__} keyword,
@@ -3385,7 +3460,7 @@ Support for the GNU compiler options
 @samp{-freduce-all-givs},
 and @samp{-frerun-loop-opt}.
 
-(Version 1.0.1 of @code{egcs} supports these options.
+(@code{egcs} supports these options.
 @code{g77} users of @code{egcs} benefit from them even if
 they are not explicitly specified,
 because the defaults are optimized for @code{g77} users.)
@@ -3443,7 +3518,7 @@ and about truncations of various sorts of constants.
 @heading In 0.5.22:
 @itemize @bullet
 @item
-Fix @code{SIGNAL} intrinsic so it offers portable
+Fix @code{Signal} intrinsic so it offers portable
 support for 64-bit systems (such as Digital Alphas
 running GNU/Linux).
 
@@ -3466,7 +3541,7 @@ Allow any numeric argument to intrinsics
 
 @item
 Use @code{tempnam}, if available, to open scratch files
-(as in @samp{OPEN(STATUS='SCRATCH')}
+(as in @samp{OPEN(STATUS='SCRATCH')})
 so that the @code{TMPDIR} environment variable,
 if present, is used.
 
@@ -3486,6 +3561,61 @@ arguments to intrinsics, as in @samp{I=MAX(3,4,,)}.
 @item
 Fix compiler so it accepts @samp{-fgnu-intrinsics-*} and
 @samp{-fbadu77-intrinsics-*} options.
+@end itemize
+
+@heading In @code{egcs} 1.0.2 (versus @code{egcs} 1.0.1):
+@itemize @bullet
+@item
+Fix compiler so it accepts @samp{-fgnu-intrinsics-*} and
+@samp{-fbadu77-intrinsics-*} options.
+@end itemize
+
+@heading In @code{egcs} 1.0 (versus 0.5.21):
+@itemize @bullet
+@item
+Version 1.0 of @code{egcs}
+contains several regressions against
+version 0.5.21 of @code{g77},
+due to using the
+``vanilla'' @code{gcc} back end instead of patching
+it to fix a few bugs and improve performance in a
+few cases.
+
+@xref{Actual Bugs,,Actual Bugs We Haven't Fixed Yet},
+available in plain-text format in @code{gcc/f/BUGS},
+for information on the known bugs in this version,
+including the regressions.
+
+Features that have been dropped from this version
+of @code{g77} due to their being implemented
+via @code{g77}-specific patches to the @code{gcc}
+back end in previous releases include:
+
+@itemize --
+@item
+Support for the C-language @code{restrict} keyword.
+
+@item
+Support for the @samp{-W} option warning about
+integer division by zero.
+
+@item
+The Intel x86-specific option @samp{-malign-double}
+applying to stack-allocated data
+as well as statically-allocate data.
+@end itemize
+
+@cindex -@w{}-driver option
+@cindex g77 options, -@w{}-driver
+@cindex options, -@w{}-driver
+@item
+Remove support for the @samp{--driver} option,
+as @code{g77} now does all the driving,
+just like @code{gcc}.
+
+@item
+Allow any numeric argument to intrinsics
+@code{Int2} and @code{Int8}.
 @end itemize
 
 @heading In 0.5.21:
@@ -3525,9 +3655,16 @@ to avoid compiler crashes resulting from coding errors
 that these diagnostics normally would identify.
 
 @item
-Fix @code{libU77} routines that accept file names
-to strip trailing spaces from them, for consistency
+Fix @code{libU77} routines that accept file and other names
+to strip trailing blanks from them, for consistency
 with other implementations.
+Blanks may be forcibly appended to such names by
+appending a single null character (@samp{CHAR(0)})
+to the significant trailing blanks.
+
+@item
+Fix @code{CHMOD} intrinsic to work with file names
+that have embedded blanks, commas, and so on.
 
 @item
 Fix @code{SIGNAL} intrinsic so it accepts an
@@ -3556,8 +3693,20 @@ Add @code{INT2} and @code{INT8} intrinsics.
 Add @code{CPU_TIME} intrinsic.
 
 @item
+Add @code{ALARM} intrinsic.
+
+@item
 @code{CTIME} intrinsic now accepts any @code{INTEGER}
 argument, not just @code{INTEGER(KIND=2)}.
+
+@item
+@code{g77} driver now prints version information (such as produced
+by @kbd{g77 -v}) to @code{stderr} instead of @code{stdout}.
+
+@item
+The @samp{.r} suffix now designates a Ratfor source file,
+to be preprocessed via the @code{ratfor} command, available
+separately.
 @end itemize
 
 @heading In 0.5.20:
@@ -3606,7 +3755,7 @@ building it from this and future versions of @code{g77}.
 @item
 Dave Love's implementation of @code{libU77} has been
 added to the version of @code{libf2c} distributed with
-and built by @code{g77}.
+and built as part of @code{g77}.
 @code{g77} now knows about the routines in this library
 as intrinsics.
 
@@ -3654,8 +3803,8 @@ This type is wide enough
 (holds the same number of bits)
 as the character-pointer type on the machine.
 
-On most systems, this won't make a noticeable difference,
-whereas on Alphas and other systems with 64-bit pointers,
+On most machines, this won't make a difference,
+whereas, on Alphas and other systems with 64-bit pointers,
 the @code{INTEGER(KIND=0)} type is equivalent to @code{INTEGER(KIND=2)}
 (often referred to as @code{INTEGER*8})
 instead of the more common @code{INTEGER(KIND=1)}
@@ -3731,6 +3880,15 @@ A new group of intrinsics, @samp{gnu}, has been added
 to contain the new @code{REALPART}, @code{IMAGPART},
 and @code{COMPLEX} intrinsics.
 An old group, @samp{dcp}, has been removed.
+
+@item
+Complain about industry-wide ambiguous references
+@samp{REAL(@var{expr})} and @samp{AIMAG(@var{expr})},
+where @var{expr} is @code{DOUBLE COMPLEX} (or any
+complex type other than @code{COMPLEX}), unless
+@samp{-ff90} option specifies Fortran 90 interpretation
+or new @samp{-fugly-complex} option, in conjunction with
+@samp{-fnot-f90}, specifies @code{f2c} interpretation.
 @end itemize
 
 @heading In 0.5.19:

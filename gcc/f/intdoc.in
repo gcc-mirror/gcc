@@ -2058,9 +2058,10 @@ Fills @var{@1@} with the system's host name returned by
 @code{gethostname(2)}, returning 0 on success or a non-zero error code
 (@code{ENOSYS} if the system does not provide @code{gethostname(2)}).
 
-On some systems (specifically SCO) it might be necessary to link the
-``socket'' library if you call this routine, i.e.@: append
-@samp{-lg2c -lsocket -lm} to the @code{g77} arguments.
+On some systems (specifically SCO) it may be necessary to link the
+``socket'' library if you call this routine.
+Typically this means adding @samp{-lg2c -lsocket -lm}
+to the @code{g77} command line when linking the program.
 ")
 
 DEFDOC (HOSTNM_subr, "Get host name.", "\
@@ -2074,9 +2075,10 @@ Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
 (optional) @var{@2@} argument.
 
-On some systems (specifically SCO) it might be necessary to link the
-``socket'' library if you call this routine, i.e.@: append
-@samp{-lg2c -lsocket -lm} to the @code{g77} arguments.
+On some systems (specifically SCO) it may be necessary to link the
+``socket'' library if you call this routine.
+Typically this means adding @samp{-lg2c -lsocket -lm}
+to the @code{g77} command line when linking the program.
 ")
 
 DEFDOC (FLUSH, "Flush buffered output.", "\
@@ -2162,10 +2164,10 @@ Returns in
 
 DEFDOC (FSEEK, "Position file (low-level).", "\
 Attempts to move Fortran unit @var{@1@} to the specified
-@var{Offset}: absolute offset if @var{@2@}=0; relative to the
-current offset if @var{@2@}=1; relative to the end of the file if
-@var{@2@}=2.
-It branches to label @var{@3@} if @var{@1@} is
+@var{@2@}: absolute offset if @var{@3@}=0; relative to the
+current offset if @var{@3@}=1; relative to the end of the file if
+@var{@3@}=2.
+It branches to label @var{@4@} if @var{@1@} is
 not open or if the call otherwise fails.
 ")
 
