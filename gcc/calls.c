@@ -3086,7 +3086,7 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
 
       /* Handle calls that pass values in multiple non-contiguous
 	 locations.  The PA64 has examples of this for library calls.  */
-      if (GET_CODE (reg) == PARALLEL)
+      if (reg != 0 && GET_CODE (reg) == PARALLEL)
 	emit_group_load (reg, val,
 			 GET_MODE_SIZE (GET_MODE (val)),
 			 GET_MODE_ALIGNMENT (GET_MODE (val)));
@@ -3103,10 +3103,11 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
   /* Any regs containing parms remain in use through the call.  */
   for (count = 0; count < nargs; count++)
     {
-      if (GET_CODE (argvec[count].reg) == PARALLEL)
-	use_group_regs (&call_fusage, argvec[count].reg);
-      else if (argvec[count].reg != 0)
-	use_reg (&call_fusage, argvec[count].reg);
+      rtx reg = argvec[count].reg;
+      if (reg != 0 && GET_CODE (argvec[count].reg) == PARALLEL)
+	use_group_regs (&call_fusage, reg);
+      else if (reg != 0)
+	use_reg (&call_fusage, reg);
     }
 
   /* Don't allow popping to be deferred, since then
@@ -3673,7 +3674,7 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
 
       /* Handle calls that pass values in multiple non-contiguous
 	 locations.  The PA64 has examples of this for library calls.  */
-      if (GET_CODE (reg) == PARALLEL)
+      if (reg != 0 && GET_CODE (reg) == PARALLEL)
 	emit_group_load (reg, val,
 			 GET_MODE_SIZE (GET_MODE (val)),
 			 GET_MODE_ALIGNMENT (GET_MODE (val)));
@@ -3692,10 +3693,11 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
   /* Any regs containing parms remain in use through the call.  */
   for (count = 0; count < nargs; count++)
     {
-      if (GET_CODE (argvec[count].reg) == PARALLEL)
-	use_group_regs (&call_fusage, argvec[count].reg);
-      else if (argvec[count].reg != 0)
-	use_reg (&call_fusage, argvec[count].reg);
+      rtx reg = argvec[count].reg;
+      if (reg != 0 && GET_CODE (reg) == PARALLEL)
+	use_group_regs (&call_fusage, reg);
+      else if (reg != 0)
+	use_reg (&call_fusage, reg);
     }
 
   /* Pass the function the address in which to return a structure value.  */
