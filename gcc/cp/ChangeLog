@@ -1,3 +1,9 @@
+Sat Apr 18 15:25:21 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* g++spec.c (lang_specific_driver): New argument in_added_libraries.
+	New local added_libraries.  Increment count when add library to
+	arglist.
+
 Fri Apr 17 21:25:00 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* cp-tree.h (type_as_string_real): New function.
