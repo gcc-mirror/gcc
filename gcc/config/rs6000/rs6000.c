@@ -186,7 +186,9 @@ static void toc_hash_mark_table PARAMS ((void *));
 static int constant_pool_expr_1 PARAMS ((rtx, int *, int *));
 static struct machine_function * rs6000_init_machine_status PARAMS ((void));
 static bool rs6000_assemble_integer PARAMS ((rtx, unsigned int, int));
+#ifdef HAVE_GAS_HIDDEN
 static void rs6000_assemble_visibility PARAMS ((tree, const char *));
+#endif
 static int rs6000_ra_ever_killed PARAMS ((void));
 static tree rs6000_handle_longcall_attribute PARAMS ((tree *, tree, tree, int, bool *));
 const struct attribute_spec rs6000_attribute_table[];
@@ -219,6 +221,7 @@ static void rs6000_xcoff_unique_section PARAMS ((tree, int));
 static void rs6000_xcoff_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						     unsigned HOST_WIDE_INT));
 static const char * rs6000_xcoff_strip_name_encoding PARAMS ((const char *));
+static unsigned int rs6000_xcoff_section_type_flags PARAMS ((tree, const char *, int));
 #endif
 static void rs6000_xcoff_encode_section_info PARAMS ((tree, int))
      ATTRIBUTE_UNUSED;
@@ -354,11 +357,6 @@ static const char alt_reg_names[][8] =
 #define TARGET_ASM_FUNCTION_PROLOGUE rs6000_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE rs6000_output_function_epilogue
-
-#if TARGET_ELF
-#undef TARGET_SECTION_TYPE_FLAGS
-#define TARGET_SECTION_TYPE_FLAGS  rs6000_elf_section_type_flags
-#endif
 
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE rs6000_issue_rate
@@ -8163,7 +8161,7 @@ rs6000_assemble_integer (x, size, aligned_p)
 /* Emit an assembler directive to set symbol visibility for DECL to
    VISIBILITY_TYPE.  */
 
-void
+static void
 rs6000_assemble_visibility (decl, visibility_type)
      tree decl;
      const char *visibility_type;
@@ -12992,7 +12990,9 @@ rs6000_elf_section_type_flags (decl, name, reloc)
      const char *name;
      int reloc;
 {
-  unsigned int flags = default_section_type_flags (decl, name, reloc);
+  unsigned int flags
+    = default_section_type_flags_1 (decl, name, reloc,
+				    flag_pic || DEFAULT_ABI == ABI_AIX);
 
   if (TARGET_RELOCATABLE)
     flags |= SECTION_WRITE;
@@ -13107,25 +13107,7 @@ rs6000_xcoff_select_section (decl, reloc, align)
      int reloc;
      unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
 {
-  bool readonly = false;
-
-  if (TREE_CODE (decl) == STRING_CST)
-    readonly = !flag_writable_strings;
-  else if (TREE_CODE (decl) == VAR_DECL)
-    readonly = (!reloc
-		&& TREE_READONLY (decl)
-		&& !TREE_SIDE_EFFECTS (decl)
-		&& DECL_INITIAL (decl)
-		&& DECL_INITIAL (decl) != error_mark_node
-		&& TREE_CONSTANT (DECL_INITIAL (decl)));
-  else if (TREE_CODE (decl) == CONSTRUCTOR)
-    readonly = (!reloc
-		&& !TREE_SIDE_EFFECTS (decl)
-		&& TREE_CONSTANT (decl));
-  else
-    readonly = !reloc;
-
-  if (readonly)
+  if (decl_readonly_section_1 (decl, reloc, 1))
     {
       if (TREE_PUBLIC (decl))
         read_only_data_section ();
@@ -13195,6 +13177,17 @@ rs6000_xcoff_strip_name_encoding (name)
     return name;
 }
 
+/* Section attributes.  AIX is always PIC.  */
+
+static unsigned int
+rs6000_xcoff_section_type_flags (decl, name, reloc)
+     tree decl;
+     const char *name;
+     int reloc;
+{
+  return default_section_type_flags_1 (decl, name, reloc, 1);
+}
+
 #endif /* TARGET_XCOFF */
 
 /* Note that this is also used for PPC64 Linux.  */
@@ -13217,9 +13210,6 @@ static bool
 rs6000_binds_local_p (decl)
      tree decl;
 {
-  if (DEFAULT_ABI == ABI_AIX)
-    return default_binds_local_p_1 (decl, rs6000_flag_pic);
-  else
-    return default_binds_local_p_1 (decl, flag_pic);
+  return default_binds_local_p_1 (decl, flag_pic || rs6000_flag_pic);
 }
 
