@@ -1,3 +1,10 @@
+2002-03-28  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	Fix for PR java/4715:
+	* jcf-parse.c (parse_source_file_3): New function.
+	(read_class): Call it.
+	(java_parse_file): Likewise.
+
 Thu Mar 28 13:22:22 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* java/lang.c (java_init_options): Set flag_trapping_math to 0.

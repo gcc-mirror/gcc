@@ -96,6 +96,7 @@ static void parse_zip_file_entries PARAMS ((void));
 static void process_zip_dir PARAMS ((FILE *));
 static void parse_source_file_1 PARAMS ((tree, FILE *));
 static void parse_source_file_2 PARAMS ((void));
+static void parse_source_file_3 PARAMS ((void));
 static void parse_class_file PARAMS ((void));
 static void set_source_filename PARAMS ((JCF *, int));
 static void ggc_mark_jcf PARAMS ((void**));
@@ -550,6 +551,7 @@ read_class (name)
 	    fatal_io_error ("can't reopen %s", input_filename);
 	  parse_source_file_1 (file, finput);
 	  parse_source_file_2 ();
+	  parse_source_file_3 ();
 	  if (fclose (finput))
 	    fatal_io_error ("can't close %s", input_filename);
 	}
@@ -883,6 +885,12 @@ parse_source_file_2 ()
   int save_error_count = java_error_count;
   java_complete_class ();	    /* Parse unsatisfied class decl. */
   java_parse_abort_on_error ();
+}
+
+static void
+parse_source_file_3 ()
+{
+  int save_error_count = java_error_count;
   java_check_circular_reference (); /* Check on circular references */
   java_parse_abort_on_error ();
   java_fix_constructors ();	    /* Fix the constructors */
@@ -1132,6 +1140,13 @@ java_parse_file ()
       input_filename = ctxp->filename;
       parse_source_file_2 ();
     }
+
+  for (ctxp = ctxp_for_generation; ctxp; ctxp = ctxp->next)
+    {
+      input_filename = ctxp->filename;
+      parse_source_file_3 ();
+    }
+
   for (node = current_file_list; node; node = TREE_CHAIN (node))
     {
       input_filename = IDENTIFIER_POINTER (TREE_VALUE (node));
