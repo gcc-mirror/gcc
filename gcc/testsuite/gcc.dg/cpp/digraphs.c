@@ -8,6 +8,7 @@
 
 extern int strcmp (const char *, const char *);
 extern void abort (void);
+extern int puts (const char *);
 #define err(str) do { puts(str); abort(); } while (0)
 
 %:define glue(x, y) x %:%: y	/* #define glue(x, y) x ## y. */

@@ -3973,7 +3973,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  /* Issue a warning if this is an ISO C 99 program or if -Wreturn-type
 	     and this is a function, or if -Wimplicit; prefer the former
 	     warning since it is more explicit.  */
-	  if ((warn_implicit_int || warn_return_type) && funcdef_flag)
+	  if ((warn_implicit_int || warn_return_type || flag_isoc99)
+	      && funcdef_flag)
 	    warn_about_return_type = 1;
 	  else if (warn_implicit_int || flag_isoc99)
 	    pedwarn_c99 ("type defaults to `int' in declaration of `%s'",
