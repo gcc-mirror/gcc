@@ -1,3 +1,7 @@
+2000-12-06  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (end_artificial_method_body): Fixed typo.
+
 2000-12-04  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (patch_method_invocation): Pick the correct enclosing
