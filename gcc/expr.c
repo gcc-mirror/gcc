@@ -3578,8 +3578,7 @@ store_expr (exp, target, want_value)
        Don't do this if TARGET is volatile because we are supposed
        to write it and then read it.  */
     {
-      temp = expand_expr (exp, cse_not_expected ? NULL_RTX : target,
-			  GET_MODE (target), 0);
+      temp = expand_expr (exp, target, GET_MODE (target), 0);
       if (GET_MODE (temp) != BLKmode && GET_MODE (temp) != VOIDmode)
 	temp = copy_to_reg (temp);
       dont_return_target = 1;
