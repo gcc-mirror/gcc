@@ -1656,7 +1656,7 @@ extern int leaf_function;
     assemble_name (FILE, buf);					\
     fputs ("),%o0\n", FILE);					\
     if (TARGET_MEDANY)						\
-      fprintf (FILE, "\tadd %o0,%s,%o0\n", MEDANY_BASE_REG);	\
+      fprintf (FILE, "\tadd %%o0,%s,%%o0\n", MEDANY_BASE_REG);	\
     fputs ("\tcall mcount\n\tadd %o0,%lo(", FILE);		\
     assemble_name (FILE, buf);					\
     fputs ("),%o0\n", FILE);					\
