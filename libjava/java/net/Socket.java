@@ -80,6 +80,9 @@ public class Socket
    */
   SocketImpl impl;
 
+  private boolean inputShutdown;
+  private boolean outputShutdown;
+
   SocketChannel ch; // this field must have been set if created by SocketChannel
 
   // Constructors
@@ -97,6 +100,9 @@ public class Socket
       impl = factory.createSocketImpl();
     else
       impl = new PlainSocketImpl();
+
+    inputShutdown = false;
+    outputShutdown = false;
   }
 
   /**
@@ -118,6 +124,8 @@ public class Socket
   protected Socket (SocketImpl impl) throws SocketException
   {
     this.impl = impl;
+    this.inputShutdown = false;
+    this.outputShutdown = false;
   }
 
   /**
@@ -264,6 +272,9 @@ public class Socket
                  boolean stream) throws IOException
   {
     this();
+    this.inputShutdown = false;
+    this.outputShutdown = false;
+
     if (impl == null)
       throw new IOException("Cannot initialize Socket implementation");
 
@@ -457,6 +468,9 @@ public class Socket
    */
   public SocketAddress getRemoteSocketAddress()
   {
+    if (!isConnected ())
+      return null;
+
     return new InetSocketAddress (impl.getInetAddress (), impl.getPort ());
   }
 
@@ -886,10 +900,12 @@ public class Socket
    *
    * @exception IOException If an error occurs.
    */
-  public void shutdownInput() throws IOException 
+  public void shutdownInput() throws IOException
   {
     if (impl != null)
       impl.shutdownInput();
+
+    inputShutdown = true;
   }
 
   /**
@@ -901,6 +917,8 @@ public class Socket
   {
     if (impl != null)
       impl.shutdownOutput();
+    
+    outputShutdown = true;
   }
 
   /**
@@ -994,10 +1012,43 @@ public class Socket
   }
 
   /**
+   * Checks if the socket is connected
+   */
+  public boolean isConnected ()
+  {
+    return impl.getInetAddress () != null;
+  }
+
+  /**
    * Checks if the socket is already bound.
    */
   public boolean isBound ()
   {
     return getLocalAddress () != null;
+  }
+
+  /**
+   * Checks if the socket is closed.
+   */
+  public boolean isClosed ()
+  {
+    // FIXME: implement this.
+    return false;
+  }
+
+  /**
+   * Checks if the socket's input stream is shutdown
+   */
+  public boolean isInputShutdown ()
+  {
+    return inputShutdown;
+  }
+
+  /**
+   * Checks if the socket's output stream is shutdown
+   */
+  public boolean isOutputShutdown ()
+  {
+    return outputShutdown;
   }
 }

@@ -290,20 +290,26 @@ public class DatagramSocket
    * exception will be thrown
    * @exception IllegalBlockingModeException If this socket has an associated
    * channel, and the channel is in non-blocking mode
+   * @exception SecurityException If a security manager exists and its
+   * checkAccept ethod doesn't allow the receive
    */
   public synchronized void receive(DatagramPacket p) throws IOException
   {
-    SecurityManager s = System.getSecurityManager();
-    if (s != null)
-      s.checkAccept (p.getAddress().getHostName (), p.getPort ());
-		 
     if (impl == null)
       throw new IOException ("Cannot initialize Socket implementation");
+
+    if (remoteAddress != null && remoteAddress.isMulticastAddress ())
+      throw new IOException (
+        "Socket connected to a multicast address my not receive");
 
     if (ch != null && !ch.isBlocking ())
       throw new IllegalBlockingModeException ();
 
     impl.receive(p);
+
+    SecurityManager s = System.getSecurityManager();
+    if (s != null && isConnected ())
+      s.checkAccept (p.getAddress().getHostName (), p.getPort ());
   }
 
   /**
@@ -324,13 +330,21 @@ public class DatagramSocket
   {
     // JDK1.2: Don't do security checks if socket is connected; see jdk1.2 api.
     SecurityManager s = System.getSecurityManager();
-    if (s != null)
+    if (s != null && !isConnected ())
       {
         InetAddress addr = p.getAddress();
         if (addr.isMulticastAddress())
           s.checkMulticast(addr);
         else
           s.checkConnect(addr.getHostAddress(), p.getPort());
+      }
+
+    if (isConnected ())
+      {
+        if (p.getAddress () != null && (remoteAddress != p.getAddress () ||
+                                        remotePort != p.getPort ()))
+          throw new IllegalArgumentException (
+            "DatagramPacket address does not match remote address" );
       }
 	    
     // FIXME: if this is a subclass of MulticastSocket,
@@ -376,7 +390,20 @@ public class DatagramSocket
   public void connect(InetAddress address, int port)
     throws SocketException
   {
-    //impl.connect(address, port);
+    if (address == null)
+      throw new IllegalArgumentException ("Address may not be null");
+
+    if (port < 1 || port > 65535)
+      throw new IllegalArgumentException ("Port number is illegal");
+
+    SecurityManager s = System.getSecurityManager();
+    if (s != null)
+      s.checkAccept(address.getHostName (), port);
+
+    impl.connect (address, port);
+
+    remoteAddress = address;
+    remotePort = port;
   }
 
   /**

@@ -47,119 +47,154 @@ package java.net;
 
 public class InetSocketAddress extends SocketAddress
 {
-    InetAddress addr;
-    int port;
+  String hostname;
+  InetAddress addr;
+  int port;
     
-    /**
-     * Constructs an InetSocketAddress instance.
-     * 
-     * @param addr Address of the socket
-     * @param port Port if the socket
-     *
-     * @exception IllegalArgumentException If the port number is illegel
-     */
-    public InetSocketAddress(InetAddress addr, int port)
-	throws IllegalArgumentException
-    {
-	if (port < 0 || port > 65535)
-          throw new IllegalArgumentException();
+  /**
+   * Constructs an InetSocketAddress instance.
+   * 
+   * @param addr Address of the socket
+   * @param port Port if the socket
+   *
+   * @exception IllegalArgumentException If the port number is illegal
+   */
+  public InetSocketAddress(InetAddress addr, int port)
+    throws IllegalArgumentException
+  {
+    if (port < 0 || port > 65535)
+      throw new IllegalArgumentException();
   
-	this.addr = addr;
-	this.port = port;
-    }
+    this.addr = addr;
+    this.port = port;
 
-    /**
-     * Constructs an InetSocketAddress instance.
-     * 
-     * @param port Port if the socket
-     *
-     * @exception IllegalArgumentException If the port number is illegal
-     */
-    public InetSocketAddress(int port)
-	throws IllegalArgumentException
-    {
-	if (port < 0 || port > 65535)
-          throw new IllegalArgumentException();
+    try
+      {
+        this.hostname = addr.getHostName ();
+      }
+    catch (UnknownHostException e)
+      {
+        this.hostname = "";
+      }
+  }
 
-	this.port = port;
-	try {
-	    this.addr = InetAddress.getLocalHost();
-	} catch (Exception e) {
-	}
-    }
+  /**
+   * Constructs an InetSocketAddress instance.
+   * 
+   * @param port Port if the socket
+   *
+   * @exception IllegalArgumentException If the port number is illegal
+   */
+  public InetSocketAddress(int port)
+    throws IllegalArgumentException
+  {
+    if (port < 0 || port > 65535)
+      throw new IllegalArgumentException();
+
+    this.port = port;
+    
+    try
+      {
+	byte[] any = { 0, 0, 0, 0 };
+	this.addr = InetAddress.getByAddress (any);
+	this.hostname = "0.0.0.0";
+      }
+    catch (UnknownHostException e)
+      {
+        this.addr = null;
+	this.hostname = "";
+      }
+  }
 
 
-    /**
-     * Constructs an InetSocketAddress instance.
-     *
-     * @param addr Address of the socket
-     * @param port Port if the socket
-     *
-     * @exception IllegalArgumentException If the port number is illegal
-     */
-    public InetSocketAddress(String hostname, int port)
-	throws IllegalArgumentException
-    {
-	if (port < 0 || port > 65535)
-          throw new IllegalArgumentException();
+  /**
+   * Constructs an InetSocketAddress instance.
+   *
+   * @param addr Address of the socket
+   * @param port Port if the socket
+   *
+   * @exception IllegalArgumentException If the port number is illegal
+   */
+  public InetSocketAddress(String hostname, int port)
+    throws IllegalArgumentException
+  {
+    if (port < 0 || port > 65535)
+      throw new IllegalArgumentException();
 
-	this.port = port;
-	try {
-	    this.addr = InetAddress.getByName(hostname);
-	} catch (Exception e) {
-	}
-    }
+    this.port = port;
+    this.hostname = hostname;
+
+    try
+      {
+        this.addr = InetAddress.getByName(hostname);
+      }
+    catch (Exception e) // UnknownHostException, SecurityException
+      {
+        this.addr = null;
+      }
+  }
  
-    /** 
-     * Test if obj is a InetSocketAddress and
-     * has the same address & port
-     */
-    public final boolean equals(Object obj)
-    {
-	if (obj instanceof InetSocketAddress)
-	    {
-		InetSocketAddress a = (InetSocketAddress) obj;
-		return addr.equals(a.addr) && a.port == port;
-	    }
-	return false;
-    }
-
-    public final InetAddress getAddress()
-    {
-	return addr;
-    }
-
-    public final String getHostName()
-    {
-	return addr.getHostName();
-    }
-
-    public final int getPort()
-    {
-	return port;
-    }
+  /** 
+   * Test if obj is a <code>InetSocketAddress</code> and
+   * has the same address and port
+   */
+  public final boolean equals (Object obj)
+  {
+    if (obj instanceof InetSocketAddress)
+      {
+        InetSocketAddress a = (InetSocketAddress) obj;
+        return addr.equals(a.addr) && a.port == port;
+      }
     
-    /**
-     * TODO: see what sun does here.
-     */
-    public final int hashCode()
-    {
-	return port + addr.hashCode();
-    }
+    return false;
+  }
 
-    /**
-     * TODO: see what sun does here.
-     */
-    public final boolean isUnresolved()
-    {
-	return addr == null;
-    }
+  /**
+   * Returns the <code>InetAddress</code> or
+   * <code>null</code> if its unresolved
+   */
+  public final InetAddress getAddress()
+  {
+    return addr;
+  }
+
+  /**
+   * Returns <code>hostname</code>
+   */
+  public final String getHostName()
+  {
+    return hostname;
+  }
+
+  /**
+   * Returns the <code>port</code>
+   */
+  public final int getPort()
+  {
+    return port;
+  }
     
-    /**
-     * TODO: see what sun does here.
-     */
-    public String toString()
-    {
-	return "SA:"+addr+":"+port;
-    }
+  /**
+   * Returns the hashcode of the <code>InetSocketAddress</code>
+   */
+  public final int hashCode()
+  {
+    return port + addr.hashCode();
+  }
+
+  /**
+   * Checks wether the address has been resolved or not
+   */
+  public final boolean isUnresolved()
+  {
+    return addr == null;
+  }
+    
+  /**
+   * Returns the <code>InetSocketAddress</code> as string
+   */
+  public String toString()
+  {
+    return addr + ":" + port;
+  }
 }

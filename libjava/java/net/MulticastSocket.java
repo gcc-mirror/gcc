@@ -252,7 +252,8 @@ public class MulticastSocket extends DatagramSocket
    * @param addr The address of the group to join
    * 
    * @exception IOException If an error occurs
-   * @exception SecurityException FIXME
+   * @exception SecurityException If a security manager exists and its
+   * checkMulticast method doesn't allow the operation
    */
   public void joinGroup(InetAddress mcastaddr) throws IOException
   {
@@ -272,7 +273,8 @@ public class MulticastSocket extends DatagramSocket
    * @param addr The address of the group to leave
    *
    * @exception IOException If an error occurs
-   * @exception SecurityException FIXME
+   * @exception SecurityException If a security manager exists and its
+   * checkMulticast method doesn't allow the operation
    */
   public void leaveGroup(InetAddress mcastaddr) throws IOException
   {
@@ -296,7 +298,8 @@ public class MulticastSocket extends DatagramSocket
    * 
    * @exception IOException If an error occurs
    * @exception IllegalArgumentException If address type is not supported
-   * @exception SecurityException FIXME
+   * @exception SecurityException If a security manager exists and its
+   * checkMulticast method doesn't allow the operation
    *
    * @see MulticastSocket:setInterface
    * @see MulticastSocket:setNetworkInterface
@@ -314,7 +317,6 @@ public class MulticastSocket extends DatagramSocket
     if (! tmp.getAddress ().isMulticastAddress ())
       throw new IOException ("Not a Multicast address");
 
-    // FIXME: check if this check is sufficient. Do we need to check the port ?
     SecurityManager s = System.getSecurityManager ();
     if (s != null)
       s.checkMulticast (tmp.getAddress ());
@@ -331,7 +333,8 @@ public class MulticastSocket extends DatagramSocket
    *
    * @exception IOException If an error occurs
    * @exception IllegalArgumentException If address type is not supported
-   * @exception SecurityException FIXME
+   * @exception SecurityException If a security manager exists and its
+   * checkMulticast method doesn't allow the operation
    *
    * @see MulticastSocket:setInterface
    * @see MulticastSocket:setNetworkInterface
@@ -346,7 +349,6 @@ public class MulticastSocket extends DatagramSocket
     if (! tmp.getAddress ().isMulticastAddress ())
       throw new IOException ("Not a Multicast address");
 
-    // FIXME: do we need to check the port too, or is this sufficient ?
     SecurityManager s = System.getSecurityManager ();
     if (s != null)
       s.checkMulticast (tmp.getAddress ());
@@ -363,7 +365,8 @@ public class MulticastSocket extends DatagramSocket
    * @param ttl The TTL for this packet
    *
    * @exception IOException If an error occurs
-   * @exception SecurityException FIXME
+   * @exception SecurityException If a security manager exists and its
+   * checkConnect or checkMulticast method doesn't allow the operation
    */
   public synchronized void send(DatagramPacket p, byte ttl) throws IOException
   {
