@@ -1,3 +1,11 @@
+Sat Feb  6 10:18:01 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cppfiles.c (read_and_prescan): Cast the result of `xrealloc' to
+ 	U_CHAR* when assigning to one.  Ensure the values of a ?: operator
+ 	have the same type.
+
+	* cppinit.c (initialize_char_syntax): Use K&R function definition.
+
 Sat Feb  6 11:17:03 1999  Richard Earnshaw <rearnsha@arm.com>
 
 	Support for ARM9
