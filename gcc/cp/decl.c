@@ -14510,6 +14510,18 @@ finish_function (flags)
 	note_debug_info_needed (ctype);
 #endif
 
+      /* If this function is marked with the constructor attribute,
+	 add it to the list of functions to be called along with
+	 constructors from static duration objects.  */
+      if (DECL_STATIC_CONSTRUCTOR (fndecl))
+	static_ctors = tree_cons (NULL_TREE, fndecl, static_ctors);
+
+      /* If this function is marked with the destructor attribute,
+	 add it to the list of functions to be called along with
+	 destructors from static duration objects.  */
+      if (DECL_STATIC_DESTRUCTOR (fndecl))
+	static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
+
       if (DECL_NAME (DECL_RESULT (fndecl)))
 	returns_value |= can_reach_end;
       else
@@ -14564,11 +14576,6 @@ finish_function (flags)
       for (t = DECL_ARGUMENTS (fndecl); t; t = TREE_CHAIN (t))
 	DECL_RTL (t) = DECL_INCOMING_RTL (t) = NULL_RTX;
     }
-
-  if (DECL_STATIC_CONSTRUCTOR (fndecl))
-    static_ctors = tree_cons (NULL_TREE, fndecl, static_ctors);
-  if (DECL_STATIC_DESTRUCTOR (fndecl))
-    static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
 
   /* Clean up.  */
   if (! nested)
