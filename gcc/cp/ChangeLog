@@ -1,3 +1,7 @@
+1998-10-16  Dave Brolley  <brolley@cygnus.com>
+
+        * lex.c (real_yylex): Fix unaligned access of wchar_t.
+
 1998-10-16  Mark Mitchell  <mark@markmitchell.com>
 
 	* class.c (add_method): Fix documentation to reflect previous
