@@ -1,3 +1,7 @@
+2002-05-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rtl.h (ENABLE_RTL_FLAG_CHECKING): Also check for gcc >= 2.7.
+
 2002-05-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in: Update.
