@@ -3697,7 +3697,7 @@ static dw_die_ref base_type_die (tree);
 static tree root_type (tree);
 static int is_base_type (tree);
 static bool is_ada_subrange_type (tree);
-static dw_die_ref subrange_type_die (tree);
+static dw_die_ref subrange_type_die (tree, dw_die_ref);
 static dw_die_ref modified_type_die (tree, int, int, dw_die_ref);
 static int type_is_enum (tree);
 static unsigned int reg_number (rtx);
@@ -7819,18 +7819,21 @@ is_ada_subrange_type (tree type)
     to a DIE that describes the given type.  */
 
 static dw_die_ref
-subrange_type_die (tree type)
+subrange_type_die (tree type, dw_die_ref context_die)
 {
   dw_die_ref subtype_die;
   dw_die_ref subrange_die;
   tree name = TYPE_NAME (type);
+
+  if (context_die == NULL)
+    context_die = comp_unit_die;
 
   subtype_die = base_type_die (TREE_TYPE (type));
 
   if (TREE_CODE (name) == TYPE_DECL)
     name = DECL_NAME (name);
 
-  subrange_die = new_die (DW_TAG_subrange_type, comp_unit_die, type);
+  subrange_die = new_die (DW_TAG_subrange_type, context_die, type);
   add_name_attribute (subrange_die, IDENTIFIER_POINTER (name));
   if (TYPE_MIN_VALUE (type) != NULL)
     add_bound_info (subrange_die, DW_AT_lower_bound,
@@ -7935,7 +7938,7 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
 	  item_type = TREE_TYPE (type);
 	}
       else if (is_ada_subrange_type (type))
-        mod_type_die = subrange_type_die (type);
+        mod_type_die = subrange_type_die (type, context_die);
       else if (is_base_type (type))
 	mod_type_die = base_type_die (type);
       else

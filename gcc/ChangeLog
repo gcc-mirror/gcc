@@ -1,4 +1,10 @@
-2004-01-07  Zack Weinberg  <zack@codesourcery.com>
+2004-01-08  J. Brobecker  <brobecker@gnat.com>
+
+	* dwarf2out.c (subrange_type_die): Add context_die parameter.
+	Create the subrange_type DIE using the given context DIE.
+	(modified_type_die): Update call to subrange_type_die.
+
+2004-01-08  Zack Weinberg  <zack@codesourcery.com>
 
 	* dwarf2.h, unwind-dw2-fde.h, unwind-pe.h, unwind.h:
 	Add multiple-include guard.
