@@ -10,42 +10,155 @@
 // because the abstract semantics seem to require the evaluation of such
 // values whether they are volatile or not.
 
+// [expr.static.cast/4, stmt.expr/1, expr.comma/1] show that expressions do
+// not under go lvalue to rvalue decay, unless the value is actually used.
+// This can be surprising when the object is volatile. We interpret a
+// dereference of pointer to volatile to be a read.
+
 // keywords: incomplete types, evaluation, volatile qualifier
 // Build don't link: 
 
-int i;
+int *ip_fn ();
+int &ir_fn ();
+volatile int *vip_fn ();
+volatile int &vir_fn ();
 
-void *pv;
-volatile void *pvv;
-struct s;               // ERROR - forward declaration
-extern struct s es, *ps;  // ERROR - defined here
-extern volatile struct s evs, *pvs; // ERROR - defined here
-
-void pv_test ()
+void int_test (int i, int *p, volatile int *vp, int &r, volatile int &vr)
 {
-  *pv;			// ERROR - invalid void
-  (i ? *pv : *pv);	// ERROR - invalid void
-  *pv, *pv;		// ERROR - invalid void
+  int j;
+  volatile int vj;
+  
+  *p;				// ok, no warning
+  (void)*p;			// ok, no warning
+  (void)(i ? j : *p);	        // ok, no warning
+  (void)(i ? *p : j);	        // ok, no warning
+  (void)((void)1, *p);	        // ok, no warning
 
-  *pvv;			// ERROR - invalid void
-  (i ? *pvv : *pvv);	// ERROR - invalid void
-  *pvv, *pvv;		// ERROR - invalid void
+  *vp;				// ok, no warning
+  (void)*vp;			// ok, no warning
+  (void)(i ? vj : *vp);	        // ok, no warning
+  (void)(i ? *vp : vj);	        // ok, no warning
+  (void)((void)1, *vp);         // ok, no warning
 
-  es;			// ERROR - incomplete
-  (i ? es : es);	// ERROR - undefined type
-  es, es;		// ERROR - incomplete
+  r;				// ok, no warning
+  (void)r;			// ok, no warning
+  (void)(i ? j : r);	        // ok, no warning
+  (void)(i ? r : j);	        // ok, no warning
+  (void)((void)1, r);	        // ok, no warning
 
-  evs;			// ERROR - incomplete
-  (i ? evs : evs);	// ERROR - undefined type
-  evs, evs;		// ERROR - incomplete
-
-  *ps;			// ERROR - undefined type
-  (i ? *ps : *ps);	// ERROR - undefined type
-  *ps, *ps;		// ERROR - undefined type
-
-  *pvs;			// ERROR - undefined type
-  (i ? *pvs : *pvs);	// ERROR - undefined type
-  *pvs, *pvs;		// ERROR - undefined type
+  vr;				// WARNING - reference not accessed
+  (void)vr;			// WARNING - reference not accessed
+  (void)(i ? vj : vr);	        // WARNING - reference not accessed
+  (void)(i ? vr : vj);	        // WARNING - reference not accessed
+  (void)((void)1, vr);          // WARNING - reference not accessed
+  
+  *ip_fn ();			// ok, no warning
+  *vip_fn ();			// ok, no warning
+  ir_fn ();			// ok, no warning
+  vir_fn ();			// WARNING - reference not accessed
 }
 
-int main () { return 0; }
+struct S;
+S *sp_fn ();
+S &sr_fn ();
+volatile S *vsp_fn ();
+volatile S &vsr_fn ();
+
+void incomplete_test (int i, S *p, volatile S *vp, S &r, volatile S &vr)
+{
+  extern S j;
+  extern volatile S vj;
+  
+  *p;				// ok, no warning
+  (void)*p;			// ok, no warning
+  (void)(i ? j : *p);	        // ok, no warning
+  (void)(i ? *p : j);	        // ok, no warning
+  (void)((void)1, *p);	        // ok, no warning
+
+  *vp;				// WARNING - incomplete not accessed
+  (void)*vp;			// WARNING - incomplete not accessed
+  (void)(i ? vj : *vp);	        // WARNING - incomplete not accessed
+  (void)(i ? *vp : vj);	        // WARNING - incomplete not accessed
+  (void)((void)1, *vp);         // WARNING - incomplete not accessed
+
+  r;				// ok, no warning
+  (void)r;			// ok, no warning
+  (void)(i ? j : r);	        // ok, no warning
+  (void)(i ? r : j);	        // ok, no warning
+  (void)((void)1, r);	        // ok, no warning
+
+  vr;				// WARNING - reference not accessed
+  (void)vr;			// WARNING - reference not accessed
+  (void)(i ? vj : vr);	        // WARNING - reference not accessed
+  (void)(i ? vr : vj);	        // WARNING - reference not accessed
+  (void)((void)1, vr);          // WARNING - reference not accessed
+  
+  *sp_fn ();			// ok, no warning
+  *vsp_fn ();			// WARNING - incomplete not accessed
+  sr_fn ();			// ok, no warning
+  vsr_fn ();			// WARNING - reference not accessed
+}
+
+struct T {int m;};
+T *tp_fn ();
+T &tr_fn ();
+volatile T *vtp_fn ();
+volatile T &vtr_fn ();
+
+void complete_test (int i, T *p, volatile T *vp, T &r, volatile T &vr)
+{
+  T j;
+  volatile T vj;
+  
+  *p;				// ok, no warning
+  (void)*p;			// ok, no warning
+  (void)(i ? j : *p);	        // ok, no warning
+  (void)(i ? *p : j);	        // ok, no warning
+  (void)((void)1, *p);	        // ok, no warning
+
+  *vp;				// ok, no warning
+  (void)*vp;			// ok, no warning
+  (void)(i ? vj : *vp);	        // ok, no warning
+  (void)(i ? *vp : vj);	        // ok, no warning
+  (void)((void)1, *vp);         // ok, no warning
+
+  r;				// ok, no warning
+  (void)r;			// ok, no warning
+  (void)(i ? j : r);	        // ok, no warning
+  (void)(i ? r : j);	        // ok, no warning
+  (void)((void)1, r);	        // ok, no warning
+
+  vr;				// WARNING - reference not accessed
+  (void)vr;			// WARNING - reference not accessed
+  (void)(i ? vj : vr);	        // WARNING - reference not accessed
+  (void)(i ? vr : vj);	        // WARNING - reference not accessed
+  (void)((void)1, vr);          // WARNING - reference not accessed
+  
+  *tp_fn ();			// ok, no warning
+  *vtp_fn ();			// ok, no warning
+  tr_fn ();			// ok, no warning
+  vtr_fn ();			// ok, no warningWARNING - reference not accessed
+}
+
+void extern_test ()
+{
+  extern S es;
+  extern volatile S ves;
+  extern T et;
+  extern volatile T vet;
+  
+  extern S &esr;
+  extern volatile S &vesr;
+  extern T &etr;
+  extern volatile T &vetr;
+  
+  es;				// ok, no warning
+  ves;				// WARNING - incomplete not accessed
+  et;				// ok, no warning
+  vet;				// ok, no warning
+  
+  esr;				// ok, no warning
+  vesr;				// WARNING - incomplete not accessed
+  etr;				// ok, no warning
+  vetr;				// WARNING - reference not accessed
+}
