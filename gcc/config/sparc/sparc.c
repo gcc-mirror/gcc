@@ -62,18 +62,6 @@ char leaf_reg_remap[] =
   48, 49, 50, 51, 52, 53, 54, 55,
   56, 57, 58, 59, 60, 61, 62, 63};
 
-#if 0 /* not used anymore */
-char leaf_reg_backmap[] =
-{ 0, 1, 2, 3, 4, 5, 6, 7,
-  24, 25, 26, 27, 28, 29, 14, 31,
-  -1, -1, -1, -1, -1, -1, -1, -1,
-  -1, -1, -1, -1, -1, -1, -1, -1,
-
-  32, 33, 34, 35, 36, 37, 38, 39,
-  40, 41, 42, 43, 44, 45, 46, 47,
-  48, 49, 50, 51, 52, 53, 54, 55,
-  56, 57, 58, 59, 60, 61, 62, 63};
-#endif
 #endif
 
 /* Global variables set by FUNCTION_PROLOGUE.  */
@@ -2107,7 +2095,9 @@ output_function_prologue (file, size, leaf_function)
      space for our callee (and our own register save area).  */
   actual_fsize = compute_frame_size (size, leaf_function);
 
+  /* This is only for the human reader.  */
   fprintf (file, "\t!#PROLOGUE# 0\n");
+
   if (actual_fsize == 0)
     /* do nothing.  */ ;
   else if (actual_fsize <= 4096)
@@ -3055,7 +3045,7 @@ sparc_type_code (type)
 				    SP->|			|
 					+-----------------------+  */
 
-/* Structure to be filled in by sparc_frw_compute_frame_size with register
+/* Structure to be filled in by sparc_flat_compute_frame_size with register
    save masks, and offsets for the current function.  */
 
 struct sparc_frame_info
@@ -3073,7 +3063,7 @@ struct sparc_frame_info
   int		initialized;	/* Nonzero if frame size already calculated.  */
 };
 
-/* Current frame information calculated by sparc_frw_compute_frame_size.  */
+/* Current frame information calculated by sparc_flat_compute_frame_size.  */
 struct sparc_frame_info current_frame_info;
 
 /* Zero structure to initialize current_frame_info.  */
@@ -3090,7 +3080,7 @@ struct sparc_frame_info zero_frame_info;
    stack pointer.  */
 
 unsigned long
-sparc_frw_compute_frame_size (size)
+sparc_flat_compute_frame_size (size)
      int size;			/* # of var. bytes allocated.  */
 {
   int regno;
@@ -3191,7 +3181,7 @@ sparc_frw_compute_frame_size (size)
 /* Common code to save/restore registers.  */
 
 void
-sparc_frw_save_restore (file, word_op, doubleword_op)
+sparc_flat_save_restore (file, word_op, doubleword_op)
      FILE *file;		/* Stream to write to.  */
      char *word_op;		/* Operation to do for one word.  */
      char *doubleword_op;	/* Operation to do for doubleword.  */
@@ -3291,24 +3281,19 @@ sparc_frw_save_restore (file, word_op, doubleword_op)
 /* Set up the stack and frame (if desired) for the function.  */
 
 void
-sparc_frw_output_function_prologue (file, size, ignored)
+sparc_flat_output_function_prologue (file, size)
      FILE *file;
      int size;
 {
-  extern char call_used_regs[];
   int tsize;
   char *sp_str = reg_names[STACK_POINTER_REGNUM];
 
-  /* ??? This should be %sp+actual_fsize for a leaf function.  I think it
-     works only because it is never used.  */
-  frame_base_name
-    = (!frame_pointer_needed) ? "%sp+80" : reg_names[FRAME_POINTER_REGNUM];
-
+  /* This is only for the human reader.  */
   fprintf (file, "\t!#PROLOGUE# 0\n");
 
   size = SPARC_STACK_ALIGN (size);
   tsize = (! current_frame_info.initialized
-	   ? sparc_frw_compute_frame_size (size)
+	   ? sparc_flat_compute_frame_size (size)
 	   : current_frame_info.total_size);
 
   if (tsize > 0)
@@ -3332,35 +3317,39 @@ sparc_frw_output_function_prologue (file, size, ignored)
 		 current_frame_info.extra_size);
     }
 
-  sparc_frw_save_restore (file, "st", "std");
+  sparc_flat_save_restore (file, "st", "std");
 
   if (frame_pointer_needed)
     {
+      char *fp_str = reg_names[FRAME_POINTER_REGNUM];
+
       if (tsize <= 4095)
 	fprintf (file, "\tadd %s,%d,%s\t!# set up frame pointer\n", sp_str,
-		 tsize, frame_base_name);
+		 tsize, fp_str);
       else
 	fprintf (file, "\tadd %s,%s,%s\t!# set up frame pointer\n", sp_str,
-		 "%g1", frame_base_name);
+		 "%g1", fp_str);
     }
+
+  fprintf (file, "\t!#PROLOGUE# 1\n");
 }
 
 /* Do any necessary cleanup after a function to restore stack, frame,
    and regs. */
 
 void
-sparc_frw_output_function_epilogue (file, size, ignored1, ignored2)
+sparc_flat_output_function_epilogue (file, size)
      FILE *file;
      int size;
 {
-  extern FILE *asm_out_data_file, *asm_out_file;
-  extern char call_used_regs[];
-  extern int frame_pointer_needed;
   int tsize;
   char *sp_str = reg_names[STACK_POINTER_REGNUM];
   char *t1_str = "%g1";
   rtx epilogue_delay = current_function_epilogue_delay_list;
   int noepilogue = FALSE;
+
+  /* This is only for the human reader.  */
+  fprintf (file, "\t!#EPILOGUE#\n");
 
   /* The epilogue does not depend on any registers, but the stack
      registers, so we assume that if we have 1 pending nop, it can be
@@ -3369,7 +3358,7 @@ sparc_frw_output_function_epilogue (file, size, ignored1, ignored2)
 
   size = SPARC_STACK_ALIGN (size);
   tsize = (!current_frame_info.initialized
-	   ? sparc_frw_compute_frame_size (size)
+	   ? sparc_flat_compute_frame_size (size)
 	   : current_frame_info.total_size);
 
   if (tsize == 0 && epilogue_delay == 0)
@@ -3404,7 +3393,7 @@ sparc_frw_output_function_epilogue (file, size, ignored1, ignored2)
 		     fp_str, tsize, sp_str);
 	}
 
-      sparc_frw_save_restore (file, "ld", "ldd");
+      sparc_flat_save_restore (file, "ld", "ldd");
 
       if (current_function_returns_struct)
 	fprintf (file, "\tjmp %%o7+12\n");
@@ -3443,10 +3432,10 @@ sparc_frw_output_function_epilogue (file, size, ignored1, ignored2)
    or the only register saved is the return register.  */
 
 int
-sparc_frw_epilogue_delay_slots ()
+sparc_flat_epilogue_delay_slots ()
 {
   if (!current_frame_info.initialized)
-    (void) sparc_frw_compute_frame_size (get_frame_size ());
+    (void) sparc_flat_compute_frame_size (get_frame_size ());
 
   if (current_frame_info.total_size == 0)
     return 1;
@@ -3459,7 +3448,7 @@ sparc_frw_epilogue_delay_slots ()
    pointer is OK.  */
 
 int
-sparc_frw_eligible_for_epilogue_delay (trial, slot)
+sparc_flat_eligible_for_epilogue_delay (trial, slot)
      rtx trial;
      int slot;
 {
