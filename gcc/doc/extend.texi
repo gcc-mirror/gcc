@@ -2394,7 +2394,7 @@ attributes are currently defined for variables: @code{aligned},
 @code{transparent_union}, @code{unused}, and @code{weak}.  Some other
 attributes are defined for variables on particular target systems.  Other
 attributes are available for functions (@pxref{Function Attributes}) and
-for types (@pxref{Type Attributes}).  Other front-ends might define more
+for types (@pxref{Type Attributes}).  Other front ends might define more
 attributes (@pxref{C++ Extensions,,Extensions to the C++ Language}).
 
 You may also specify attributes with @samp{__} preceding and following

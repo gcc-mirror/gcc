@@ -42,12 +42,12 @@
 @c anything else?                       --mew 10feb93
 
 @c For consistency, use the following:
+@c - "back end" as a noun, "back-end" as an adjective.
 @c - "bit-field" not "bitfield" or "bit field" (following the C and C++
 @c   standards).
 @c - "built-in" as an adjective ("built-in function"), or sometimes
 @c   "built in", not "builtin" (which isn't a word).
-@c - "front end" as a noun, "front-end" as an adjective (not yet
-@c   consistently followed).
+@c - "front end" as a noun, "front-end" as an adjective.
 
 @macro gcctabopt{body}
 @code{\body\}
@@ -263,7 +263,7 @@ bugs.  It corresponds to GCC version 3.1.
 * Portability::     Goals of GCC's portability features.
 * Interface::       Function-call interface of GCC output.
 * Passes::          Order of passes, what they do, and what each file is for.
-* Trees::           The source representation used by the C and C++ front-ends.
+* Trees::           The source representation used by the C and C++ front ends.
 * RTL::             The intermediate representation that most passes work on.
 * Machine Desc::    How to write machine description instruction patterns.
 * Target Macros::   How to write the machine description C macros.
@@ -316,7 +316,7 @@ compiler.  For example, we refer to the optimization options as
 affecting the behavior of ``GCC'' or sometimes just ``the compiler''.
 
 Front ends for other languages, such as Ada 95 and Pascal exist but
-have not yet been integrated into GCC. These front-ends, like that for C++,
+have not yet been integrated into GCC. These front ends, like that for C++,
 are built in subdirectories of GCC and link to it.  The result is an
 integrated compiler that can compile programs written in C, C++,
 Objective C, or any of the languages for which you have installed front

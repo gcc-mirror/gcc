@@ -1,3 +1,10 @@
+2001-06-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/c-tree.texi, doc/contrib.texi, doc/extend.texi,
+	doc/gcc.texi, doc/install-old.texi, doc/install.texi,
+	doc/invoke.texi, doc/rtl.texi: Consistently use "front end" and
+	"back end" as nouns and "front-end" and "back-end" as adjectives.
+
 Wed Jun 20 21:53:35 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (estimate_probability): Fix loop bounds.
