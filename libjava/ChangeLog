@@ -1,3 +1,9 @@
+2004-08-18  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR libgcj/17079
+	* java/util/logging/Handler.java (isLoggable): Accept record if its
+	log level equals the threshold level. From Robin Green.
+
 2004-08-18  David Daney  <ddaney@avtrex.com>
 
 	* java/lang/natPosixProcess.cc (waitForSignal): Use sigsuspend 
