@@ -99,7 +99,7 @@ sbitmap_copy (dst, src)
   memcpy (dst->elms, src->elms, sizeof (SBITMAP_ELT_TYPE) * dst->size);
 }
 
-/* Determine if a == b. */
+/* Determine if a == b.  */
 int
 sbitmap_equal (a, b)
      sbitmap a, b;
@@ -238,7 +238,7 @@ sbitmap_a_and_b (dst, a, b)
 }
 
 /* Set DST to be (A xor B)).
-   Return non-zero if any change is made. */
+   Return non-zero if any change is made.  */
 
 int
 sbitmap_a_xor_b (dst, a, b)

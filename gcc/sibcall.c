@@ -408,7 +408,7 @@ uses_addressof (x)
   if (code == MEM)
     return 0;
 
-  /* Scan all subexpressions. */
+  /* Scan all subexpressions.  */
   fmt = GET_RTX_FORMAT (code);
   for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
     {
@@ -518,7 +518,7 @@ purge_mem_unchanging_flag (x)
       return;
     }
 
-  /* Scan all subexpressions. */
+  /* Scan all subexpressions.  */
   fmt = GET_RTX_FORMAT (code);
   for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
     {
@@ -553,7 +553,7 @@ replace_call_placeholder (insn, use)
   if (XEXP (PATTERN (insn), 3))
     LABEL_PRESERVE_P (XEXP (PATTERN (insn), 3)) = 0;
   
-  /* "Delete" the placeholder insn. */
+  /* "Delete" the placeholder insn.  */
   PUT_CODE (insn, NOTE);
   NOTE_SOURCE_FILE (insn) = 0;
   NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
@@ -703,7 +703,7 @@ optimize_sibling_and_tail_recursive_calls ()
 	      || (call_block->succ->dest != EXIT_BLOCK_PTR
 		  && call_block->succ->dest != alternate_exit)
 	      /* If this call doesn't end the block, there are operations at
-		 the end of the block which we must execute after returning. */
+		 the end of the block which we must execute after returning.  */
 	      || ! call_ends_block_p (insn, call_block->end))
 	    sibcall = 0, tailrecursion = 0;
 

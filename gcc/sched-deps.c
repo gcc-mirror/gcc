@@ -63,7 +63,7 @@ static int reg_pending_sets_all;
    Each insn has associated bitmaps for its dependencies.  Each bitmap
    has enough entries to represent a dependency on any other insn in
    the insn chain.  All bitmap for true dependencies cache is
-   allocated then the rest two ones are also allocated. */
+   allocated then the rest two ones are also allocated.  */
 static sbitmap *true_dependency_cache;
 static sbitmap *anti_dependency_cache;
 static sbitmap *output_dependency_cache;
@@ -71,7 +71,7 @@ static sbitmap *output_dependency_cache;
 /* To speed up checking consistency of formed forward insn
    dependencies we use the following cache.  Another possible solution
    could be switching off checking duplication of insns in forward
-   dependencies. */
+   dependencies.  */
 #ifdef ENABLE_CHECKING
 static sbitmap *forward_dependency_cache;
 #endif
@@ -299,7 +299,7 @@ add_dependence (insn, elem, dep_type)
 	{
 #ifdef INSN_SCHEDULING
 	  /* Clear corresponding cache entry because type of the link
-             may be changed. */
+             may be changed.  */
 	  if (true_dependency_cache != NULL)
 	    {
 	      if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
@@ -321,7 +321,7 @@ add_dependence (insn, elem, dep_type)
 	  
 #ifdef INSN_SCHEDULING
 	  /* If we are adding a dependency to INSN's LOG_LINKs, then
-	     note that in the bitmap caches of dependency information. */
+	     note that in the bitmap caches of dependency information.  */
 	  if (true_dependency_cache != NULL)
 	    {
 	      if ((int)REG_NOTE_KIND (link) == 0)
@@ -347,7 +347,7 @@ add_dependence (insn, elem, dep_type)
 
 #ifdef INSN_SCHEDULING
   /* If we are adding a dependency to INSN's LOG_LINKs, then note that
-     in the bitmap caches of dependency information. */
+     in the bitmap caches of dependency information.  */
   if (true_dependency_cache != NULL)
     {
       if ((int)dep_type == 0)

@@ -673,7 +673,7 @@ examine_flow_edges (void)
 	  /* If we haven't looked at the next block, and it has a
 	     single successor, add it onto the worklist.  This is because
 	     if we only have one successor, we know it gets executed,
-	     so we don't have to wait for cprop to tell us. */
+	     so we don't have to wait for cprop to tell us.  */
 	  if (succ_edge != NULL
 	      && succ_edge->succ_next == NULL
 	      && !TEST_BIT (executable_edges,
