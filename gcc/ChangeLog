@@ -1,3 +1,9 @@
+2000-11-16  DJ Delorie  <dj@redhat.com>
+
+	* rtl.c (read_rtx): Provide suitable names for unnamed
+	define_insn and define_insn_and_split patterns, based on file
+	and line numbers.
+
 2000-11-15  Neil Booth  <neilb@earthling.net>
 
         * cpplib.c (start_directive, end_directive): New functions.
