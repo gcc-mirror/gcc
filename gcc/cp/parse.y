@@ -167,7 +167,7 @@ empty_parms ()
 %nonassoc IF
 %nonassoc ELSE
 
-%left IDENTIFIER TYPENAME PTYPENAME SCSPEC TYPESPEC TYPE_QUAL ENUM AGGR ELLIPSIS TYPEOF SIGOF OPERATOR NSNAME
+%left IDENTIFIER TYPENAME PTYPENAME SCSPEC TYPESPEC TYPE_QUAL ENUM AGGR ELLIPSIS TYPEOF SIGOF OPERATOR NSNAME TYPENAME_KEYWORD
 
 %left '{' ',' ';'
 
@@ -2185,7 +2185,8 @@ structsp:
 		{ $$ = xref_tag (enum_type_node, $2, NULL_TREE, 1); }
 	| ENUM complex_type_name
 		{ $$ = xref_tag (enum_type_node, $2, NULL_TREE, 1); }
-
+	| TYPENAME_KEYWORD complex_type_name
+		{ $$ = $2; }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
 	| class_head left_curly opt.component_decl_list '}'
 		{

@@ -1,3 +1,37 @@
+Mon Apr  3 16:55:08 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* repo.c (get_base_filename): Take filename parm, fix logic bug.
+
+	* typeck.c (build_compound_expr): Do not warn about a compound expr
+	in which the first expression has no side effects.
+	(build_x_compound_expr): Warn here instead.
+	(build_conditional_expr): Don't warn about a conditional expression
+	between an enum and the type it promotes to.
+
+	* init.c (build_new): Handle initialization of arrays of builtins
+	properly.
+
+Mon Apr  3 15:08:04 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* repo.c: Include config.h to get definitions of bcopy and rindex
+	on systems that don't have them (e.g., SVR4).
+
+Mon Apr  3 14:41:55 1995  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (finish_table): Pass NULL_TREE instead of init to
+	finish_decl so that it won't try and do error checking on the
+	initializer.
+
+Mon Apr  3 10:45:50 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* repo.c (get_base_filename): Analyze COLLECT_GCC_OPTIONS to
+	determine whether this compile used -c -o.
+	(open_repo_file): Use get_base_filename.  Remove the extension.
+	(finish_repo): Spit out the values of main_input_filename,
+	COLLECT_GCC and COLLECT_GCC_OPTIONS.
+
+	* parse.y (structsp): Add TYPENAME_KEYWORD complex_type_name.
+
 Sun Apr  2 23:43:51 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* search.c (compute_access): Don't try to do access control on
