@@ -61,7 +61,6 @@ static tree expand_throw PARAMS ((tree));
 static int decl_is_java_type PARAMS ((tree decl, int err));
 
 #include "decl.h"
-#include "insn-flags.h"
 #include "obstack.h"
 
 /* In a given translation unit we are constrained to catch only C++

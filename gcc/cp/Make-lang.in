@@ -284,7 +284,7 @@ cp/tree.o: cp/tree.c $(CXX_TREE_H) flags.h toplev.h $(GGC_H) $(RTL_H) \
 cp/ptree.o: cp/ptree.c $(CXX_TREE_H) system.h
 cp/rtti.o: cp/rtti.c $(CXX_TREE_H) flags.h toplev.h
 cp/except.o: cp/except.c $(CXX_TREE_H) flags.h $(RTL_H) except.h toplev.h \
-  cp/cfns.h $(EXPR_H) insn-flags.h cp/decl.h $(OBSTACK_H)
+  cp/cfns.h $(EXPR_H) cp/decl.h $(OBSTACK_H)
 cp/expr.o: cp/expr.c $(CXX_TREE_H) $(RTL_H) flags.h $(EXPR_H) toplev.h \
   except.h $(TM_P_H)
 cp/xref.o: cp/xref.c $(CXX_TREE_H) input.h toplev.h
