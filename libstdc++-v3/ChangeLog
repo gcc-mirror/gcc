@@ -1,3 +1,10 @@
+2003-02-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* hppa/atomicity.h (__Atomicity_lock<__inst>::_S_atomicity_lock):
+	Correct alignment.
+	(__exchange_and_add, __atomic_add): Use PA 2.0 ordered store to reset
+	lock.
+
 2003-02-07  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/filebuf_virtuals.cc (test08): Fix for
