@@ -5648,6 +5648,10 @@ start_function (declspecs, declarator, nested)
 
   announce_function (decl1);
 
+  if (TREE_THIS_VOLATILE (decl)
+      && TREE_TYPE (decl) != void_type_node)
+    warning ("volatile function returns non-void value");
+
   if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (decl1))) == 0)
     {
       error ("return-type is an incomplete type");
