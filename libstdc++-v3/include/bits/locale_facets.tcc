@@ -662,9 +662,25 @@ namespace std
               __first = __fmt->_M_falsename.data();
               __last = __first + __fmt->_M_falsename.size();
             }
-          copy(__first, __last, __s);
-        }
-      return __s;
+        streamsize __width = __io.width(0);
+        if (__last - __first >= __width)
+          return copy(__first, __last, __s);
+        else
+          {
+            int __padding = __width - (__last - __first);
+            ios_base::fmtflags __aflags = __flags & ios_base::adjustfield;
+            if (__aflags != ios_base::left)
+              {
+                __pad(__s, __fill, __padding);
+                return copy(__first, __last, __s);
+              }
+            else
+              {
+                copy(__first, __last, __s);
+                return __pad(__s, __fill, __padding);
+              }
+          }
+      }
     }
 
   template<typename _CharT, typename _OutIter, typename _ValueT>

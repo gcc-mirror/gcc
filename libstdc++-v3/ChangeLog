@@ -1,3 +1,10 @@
+2001-11-01  Paolo Carlini  <pcarlini@unitus.it>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* testsuite/27_io/ios_manip_fmtflags.cc: Fix for non-interactive
+	output.
+	* include/bits/locale_facets.tcc (num_put::do_put(bool)): Fix.
+	
 2001-11-01  Egor Duda  <deo@logos-m.ru>
 
 	* config/os/newlib/bits/ctype_noninline.h

@@ -1,6 +1,6 @@
 // 981027 ncm work with libstdc++v3
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <iostream>
 #include <sstream>
 #include <locale>
 #include <iomanip>
@@ -39,41 +38,52 @@ struct MyNP : std::numpunct<char>
   std::string do_falsename() const;
 };
 
-std::string MyNP::do_truename()  const { static std::string s("yea"); return s; }
-std::string MyNP::do_falsename() const { static std::string s("nay"); return s; }
-
-int
-test01()
-{
-  std::cout << true << " " << false << std::endl;
-  std::cout << std::boolalpha;
-  std::cout << true << " " << false << std::endl;
-
-  std::cout << ":" << std::setw(6) << std::internal << true << ":" << std::endl;
-  std::cout << ":" << std::setw(6) << std::left << true << ":" << std::endl;
-  std::cout << ":" << std::setw(6) << std::right << false << ":" << std::endl;
-  std::cout << std::noboolalpha;
-  std::cout << ":" << std::setw(3) << std::internal << true << ":" << std::endl;
-  std::cout << ":" << std::setw(3) << std::left << true << ":" << std::endl;
-  std::cout << ":" << std::setw(3) << std::right << false << ":" << std::endl;
-
-  std::locale loc = std::locale (std::locale(), new MyNP);
-  std::cout.imbue(loc);
-
-  std::cout << std::boolalpha;
-  std::cout << true << " " << false << std::endl;
-
-  std::cout << ":" << std::setw(6) << std::internal << true << ":" << std::endl;
-  std::cout << ":" << std::setw(6) << std::left << true << ":" << std::endl;
-  std::cout << ":" << std::setw(6) << std::right << false << ":" << std::endl;
-
-#ifdef DEBUG_ASSERT
-  assert (std::cout.good());
-#endif
-  return 0;
+std::string MyNP::do_truename()  const 
+{ 
+  static std::string s("yea"); 
+  return s; 
 }
 
-int
+std::string MyNP::do_falsename() const 
+{ 
+  static std::string s("nay"); 
+  return s; 
+}
+
+void
+test01()
+{
+  bool test = true;
+  const char lit[] = "1 0\ntrue false\n:  true:\n:true  :\n: false:\n:  1:"
+    		     "\n:1  :\n:  0:\nyea nay\n:   yea:\n:yea   :\n:   nay:\n";
+  std::ostringstream oss;
+  oss << true << " " << false << std::endl;
+  oss << std::boolalpha;
+  oss << true << " " << false << std::endl;
+
+  oss << ":" << std::setw(6) << std::internal << true << ":" << std::endl;
+  oss << ":" << std::setw(6) << std::left << true << ":" << std::endl;
+  oss << ":" << std::setw(6) << std::right << false << ":" << std::endl;
+  oss << std::noboolalpha;
+  oss << ":" << std::setw(3) << std::internal << true << ":" << std::endl;
+  oss << ":" << std::setw(3) << std::left << true << ":" << std::endl;
+  oss << ":" << std::setw(3) << std::right << false << ":" << std::endl;
+
+  std::locale loc = std::locale (std::locale(), new MyNP);
+  oss.imbue(loc);
+
+  oss << std::boolalpha;
+  oss << true << " " << false << std::endl;
+
+  oss << ":" << std::setw(6) << std::internal << true << ":" << std::endl;
+  oss << ":" << std::setw(6) << std::left << true << ":" << std::endl;
+  oss << ":" << std::setw(6) << std::right << false << ":" << std::endl;
+
+  VERIFY( oss.good() );
+  VERIFY( oss.str() == lit );
+}
+
+void
 test02()
 {
   bool test = true;
@@ -96,14 +106,12 @@ test02()
   str02 = ostr01.str();
   VERIFY( str02 == sfalse );
 
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-  return 0;
+  VERIFY( test );
 }
 
 int 
-main() {
+main() 
+{
   test01();
   test02();
   return 0;
