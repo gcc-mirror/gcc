@@ -25,7 +25,6 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "hash.h"
 #include "demangle.h"
-#include "toplev.h"
 #include "collect2.h"
 
 #define MAX_ITERATIONS 17
@@ -33,14 +32,6 @@ Boston, MA 02111-1307, USA.  */
 /* Obstack allocation and deallocation routines.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-/* Defined in collect2.c.  */
-extern int vflag, debug;
-extern char *ldout;
-extern char *c_file_name;
-extern struct obstack temporary_obstack;
-extern struct obstack permanent_obstack;
-extern char * temporary_firstobj;
 
 /* Defined in the automatically-generated underscore.c.  */
 extern int prepends_underscore;
@@ -95,8 +86,8 @@ static symbol * symbol_pop PARAMS ((void));
 static void file_push PARAMS ((file *));
 static file * file_pop PARAMS ((void));
 static void tlink_init PARAMS ((void));
-static int tlink_execute PARAMS ((char *, char **, char *));
-static char * frob_extension PARAMS ((char *, const char *));
+static int tlink_execute PARAMS ((const char *, char **, const char *));
+static char * frob_extension PARAMS ((const char *, const char *));
 static char * obstack_fgets PARAMS ((FILE *, struct obstack *));
 static char * tfgets PARAMS ((FILE *));
 static char * pfgets PARAMS ((FILE *));
@@ -115,7 +106,7 @@ static struct hash_entry *
 symbol_hash_newfunc (entry, table, string)
      struct hash_entry *entry;
      struct hash_table *table;
-     hash_table_key string;
+     hash_table_key string ATTRIBUTE_UNUSED;
 {
   struct symbol_hash_entry *ret = (struct symbol_hash_entry *) entry;
   if (ret == NULL)
@@ -140,7 +131,7 @@ symbol_hash_lookup (string, create)
      boolean create;
 {
   return ((struct symbol_hash_entry *)
-	  hash_lookup (&symbol_table, (hash_table_key) string, 
+	  hash_lookup (&symbol_table, (const hash_table_key) string, 
 		       create, string_copy));
 }
 
@@ -153,7 +144,7 @@ static struct hash_entry *
 file_hash_newfunc (entry, table, string)
      struct hash_entry *entry;
      struct hash_table *table;
-     hash_table_key string;
+     hash_table_key string ATTRIBUTE_UNUSED;
 {
    struct file_hash_entry *ret = (struct file_hash_entry *) entry;
   if (ret == NULL)
@@ -177,7 +168,7 @@ file_hash_lookup (string)
      const char *string;
 {
   return ((struct file_hash_entry *)
-	  hash_lookup (&file_table, (hash_table_key) string, true, 
+	  hash_lookup (&file_table, (const hash_table_key) string, true, 
 		       string_copy));
 }
 
@@ -190,7 +181,7 @@ static struct hash_entry *
 demangled_hash_newfunc (entry, table, string)
      struct hash_entry *entry;
      struct hash_table *table;
-     hash_table_key string;
+     hash_table_key string ATTRIBUTE_UNUSED;
 {
   struct demangled_hash_entry *ret = (struct demangled_hash_entry *) entry;
   if (ret == NULL)
@@ -212,7 +203,7 @@ demangled_hash_lookup (string, create)
      boolean create;
 {
   return ((struct demangled_hash_entry *)
-	  hash_lookup (&demangled_table, (hash_table_key) string, 
+	  hash_lookup (&demangled_table, (const hash_table_key) string, 
 		       create, string_copy));
 }
 
@@ -296,7 +287,7 @@ file_pop ()
 static void
 tlink_init ()
 {
-  char *p;
+  const char *p;
 
   hash_table_init (&symbol_table, symbol_hash_newfunc, string_hash,
 		   string_compare);
@@ -322,9 +313,9 @@ tlink_init ()
 
 static int
 tlink_execute (prog, argv, redir)
-     char *prog;
+     const char *prog;
      char **argv;
-     char *redir;
+     const char *redir;
 {
   collect_execute (prog, argv, redir);
   return collect_wait (prog);
@@ -332,10 +323,10 @@ tlink_execute (prog, argv, redir)
 
 static char *
 frob_extension (s, ext)
-     char *s;
+     const char *s;
      const char *ext;
 {
-  char *p = rindex (s, '/');
+  const char *p = rindex (s, '/');
   if (! p)
     p = s;
   p = rindex (p, '.');
@@ -391,7 +382,7 @@ freadsym (stream, f, chosen)
   symbol *sym;
 
   {
-    char *name = tfgets (stream);
+    const char *name = tfgets (stream);
     sym = symbol_hash_lookup (name, true);
   }
 
@@ -507,7 +498,7 @@ recompile_files ()
     {
       char *line, *command;
       FILE *stream = fopen ((char*) f->root.key, "r");
-      char *outname = frob_extension ((char*) f->root.key, ".rnw");
+      const char *outname = frob_extension ((char*) f->root.key, ".rnw");
       FILE *output = fopen (outname, "w");
 
       while ((line = tfgets (stream)) != NULL)
@@ -559,7 +550,7 @@ read_repo_files (object_lst)
 
   for (; *object; object++)
     {
-      char *p = frob_extension (*object, ".rpo");
+      const char *p = frob_extension (*object, ".rpo");
       file *f;
 
       if (! file_exists (p))
@@ -586,7 +577,7 @@ demangle_new_symbols ()
   while ((sym = symbol_pop ()) != NULL)
     {
       demangled *dem;
-      char *p = cplus_demangle ((char*) sym->root.key, 
+      const char *p = cplus_demangle ((char*) sym->root.key, 
 				DMGL_PARAMS | DMGL_ANSI);
 
       if (! p)
@@ -635,7 +626,7 @@ scan_linker_output (fname)
       if (! sym && ! end)
 	/* Try a mangled name in quotes.  */
 	{
-	  char *oldq = q+1;
+	  const char *oldq = q+1;
 	  demangled *dem = 0;
 	  q = 0;
 
@@ -694,7 +685,7 @@ scan_linker_output (fname)
 
 void
 do_tlink (ld_argv, object_lst)
-     char **ld_argv, **object_lst;
+     char **ld_argv, **object_lst ATTRIBUTE_UNUSED;
 {
   int exit = tlink_execute ("ld", ld_argv, ldout);
 

@@ -1356,7 +1356,7 @@ collect2.o : collect2.c $(CONFIG_H) system.h gstab.h intl.h \
 	-DTARGET_MACHINE=\"$(target_alias)\" $(MAYBE_USE_COLLECT2) \
 	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
 
-tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) system.h toplev.h collect2.h
+tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) system.h collect2.h
 hash.o: hash.c hash.h system.h toplev.h
 
 vfprintf.o: $(srcdir)/../libiberty/vfprintf.c $(CONFIG_H) system.h
