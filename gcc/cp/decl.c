@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "target.h"
 #include "c-common.h"
+#include "c-pragma.h"
 #include "diagnostic.h"
 
 extern const struct attribute_spec *lang_attribute_table;
@@ -7256,6 +7257,10 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   cplus_decl_attributes (&decl, attributes, 0);
 
+  /* If #pragma weak was used, mark the decl weak now.  */
+  if (current_binding_level == global_binding_level)
+    maybe_apply_pragma_weak (decl);
+
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
@@ -13475,6 +13480,10 @@ start_function (declspecs, declarator, attrs, flags)
 	return 0;
 
       cplus_decl_attributes (&decl1, attrs, 0);
+
+      /* If #pragma weak was used, mark the decl weak now.  */
+      if (current_binding_level == global_binding_level)
+	maybe_apply_pragma_weak (decl1);
 
       fntype = TREE_TYPE (decl1);
 

@@ -1,3 +1,9 @@
+2002-03-14  Richard Henderson  <rth@redhat.com>
+
+	* decl.c: Include c-pragma.h.
+	(start_decl, start_function): Invoke maybe_apply_pragma_weak.
+	* Make-lang.in: Update dependencies.
+
 2002-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/5908
