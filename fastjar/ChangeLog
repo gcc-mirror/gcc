@@ -1,3 +1,11 @@
+2004-06-25  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR other/15194
+	* configure.ac: Add check for long long.
+	* jartool.h: Check for long long before using it.
+	* configure: Regenerate
+	* config.h.in: Regenerate.
+
 2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* acinclude.m4: Quote first argument of AC_DEFUNs.
