@@ -1,3 +1,16 @@
+2000-11-17  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_ATOMICITY):  Move switch statement
+	  contents to...
+	* configure.target:  ...here.  Enable generic atomic ops, and warn.
+	* aclocal.m4:  Regenerated.
+	* configure:  Ditto.
+	* Makefile.in:  Ditto.
+	* libio/Makefile.in:  Ditto.
+	* libmath/Makefile.in:  Ditto.
+	* libsupc++/Makefile.in:  Ditto.
+	* src/Makefile.in:  Ditto.
+
 2000-11-16  Loren J. Rittle  <ljrittle@acm.org>
 
         * include/bits/locale_facets.tcc (num_get<_CharT,

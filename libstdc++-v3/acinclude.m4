@@ -1401,18 +1401,10 @@ dnl Enable atomic locking
 dnl GLIBCPP_ENABLE_ATOMICITY
 AC_DEFUN(GLIBCPP_ENABLE_ATOMICITY, [
     AC_MSG_CHECKING([for atomicity.h])
-    case "$target" in
-      *-*-linux* | sparc*-*-* | *-*-freebsd*)
-        ATOMICITYH=$cpu_include_dir
-        ;;    
-      *-*-aix* | *-*-irix*)
-        ATOMICITYH=$os_include_dir
-        ;;
-      *)
-        # bit of overkill on this text...
-        AC_MSG_ERROR([Atomic locking requested, but $enable_threads is an unknown thread package and atomic operations are not present in the CPU])
-        ;;
-    esac
+    # We have ATOMICITY already from GLIBCPP_CONFIGURE
+    if test "$ATOMICITYH" = "config/cpu/generic"; then
+      AC_MSG_WARN([No ATOMICITY settings found, using generic atomic ops.])
+    fi
     AC_MSG_RESULT($ATOMICITYH/bits/atomicity.h)
     AC_LINK_FILES($ATOMICITYH/bits/atomicity.h, include/bits/atomicity.h)
 ])
