@@ -42,7 +42,9 @@ typedef void * __gnuc_va_list;
  (__builtin_saveregs (), (AP) = ((char *) &__builtin_va_alist))
 #endif
 
+#ifndef va_end
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
+#endif
 #define va_end(pvar)
 
 #define __va_rounded_size(TYPE)  \
