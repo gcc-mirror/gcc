@@ -35,3 +35,6 @@ stagestuff=
 diff_excludes="-x lex.c -x parse.c -x parse.h"
 headers=
 build_by_default="no"
+
+gtfiles="\$(srcdir)/treelang/tree1.c \$(srcdir)/treelang/treelang.h"
+

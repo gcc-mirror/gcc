@@ -70,21 +70,21 @@
 
 /* GCC headers.  */
 
-#include "ansidecl.h"
 #include "config.h"
+#include "ansidecl.h"
 #include "system.h"
 #include "tree.h"
 #include "flags.h"
 #include "output.h"
 #include "c-tree.h"
 #include "rtl.h"
-#include "tm_p.h"
 #include "ggc.h"
 #include "toplev.h"
 #include "varray.h"
 #include "langhooks-def.h"
 #include "langhooks.h"
 
+#include "treelang.h"
 #include "treetree.h"
 
 extern int option_main;
@@ -163,14 +163,6 @@ const char *const tree_code_name[] = {
 unsigned int tree_code_int_size = 0;
 unsigned int tree_code_char_size = 0;
 
-/* In this case there is very little to keep between functions - we
-   keep the symbol table only and the things that hang off that - see
-   tree1.c.  Garbage collection is only invoked when we call
-   rest_of_compilation at the end of a function. */
-
-#define ADDROOT(where) ggc_add_root (&where, 1, /* Unused size.  */ sizeof (void*), \
- tree_ggc_storage_always_used);
-
 /* Return the tree stuff for this type TYPE_NUM.  */
 
 tree 
@@ -242,13 +234,13 @@ tree
 tree_code_create_function_prototype (unsigned char* chars,
                                     unsigned int storage_class,
                                     unsigned int ret_type,
-                                    struct tree_parameter_list* parms,
+                                    struct prod_token_parm_item* parms,
                                     unsigned char* filename,
                                     int lineno)
 {
 
   tree id;
-  struct tree_parameter_list* parm;
+  struct prod_token_parm_item* parm;
   tree type_list = NULL_TREE;
   tree type_node;
   tree fn_type;
@@ -256,7 +248,7 @@ tree_code_create_function_prototype (unsigned char* chars,
 
   /* Build the type.  */
   id = get_identifier ((const char*)chars);
-  for (parm = parms; parm; parm = parm->next)
+  for (parm = parms; parm; parm = parm->tp.par.next)
     {
       type_node = get_type_for_numeric_type (parm->type);
       type_list = tree_cons (NULL_TREE, type_node, type_list);
@@ -328,7 +320,7 @@ void
 tree_code_create_function_initial (tree prev_saved, 
                                   unsigned char* filename,
                                   int lineno,
-                                  struct tree_parameter_list* parms)
+                                  struct prod_token_parm_item* parms)
 {
   tree fn_decl;
   tree param_decl;
@@ -337,8 +329,8 @@ tree_code_create_function_initial (tree prev_saved,
   tree parm_decl;
   tree parm_list;
   tree resultdecl;
-  struct tree_parameter_list* this_parm; 
-  struct tree_parameter_list* parm;
+  struct prod_token_parm_item* this_parm; 
+  struct prod_token_parm_item* parm;
 
   fn_decl = prev_saved;
   if (!fn_decl)
@@ -368,10 +360,11 @@ tree_code_create_function_initial (tree prev_saved,
 
   /* Make the argument variable decls.  */
   parm_list = NULL_TREE;
-  for (parm = parms; parm; parm = parm->next)
+  for (parm = parms; parm; parm = parm->tp.par.next)
     {
-      parm_decl = build_decl (PARM_DECL, get_identifier ((const char*) (parm->variable_name)), 
-                           get_type_for_numeric_type (parm->type));
+      parm_decl = build_decl (PARM_DECL, get_identifier 
+                              ((const char*) (parm->tp.par.variable_name)), 
+                              get_type_for_numeric_type (parm->type));
       
       /* Some languages have different nominal and real types.  */
       DECL_ARG_TYPE (parm_decl) = TREE_TYPE (parm_decl);
@@ -395,11 +388,11 @@ tree_code_create_function_initial (tree prev_saved,
          this_parm = parms;
        param_decl;
        param_decl = TREE_CHAIN (param_decl),
-         this_parm = this_parm->next)
+         this_parm = this_parm->tp.par.next)
     {
       if (!this_parm)
         abort (); /* Too few.  */
-      *this_parm->where_to_put_var_tree = param_decl;
+      *this_parm->tp.par.where_to_put_var_tree = param_decl;
     }
   if (this_parm)
     abort (); /* Too many.  */
@@ -1032,8 +1025,16 @@ handle_format_arg_attribute (tree *node ATTRIBUTE_UNUSED,
 int
 cpp_handle_option (cpp_reader *pfile ATTRIBUTE_UNUSED,
      int argc ATTRIBUTE_UNUSED,
-     char **argv ATTRIBUTE_UNUSED,
-     int ignore ATTRIBUTE_UNUSED)
+     char **argv ATTRIBUTE_UNUSED)
+{
+  abort ();
+}
+
+/* Should not be called for treelang.   */
+
+void 
+cpp_assert (cpp_reader * cr ATTRIBUTE_UNUSED, 
+            const char *s ATTRIBUTE_UNUSED)
 {
   abort ();
 }

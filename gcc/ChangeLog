@@ -1,3 +1,11 @@
+2002-06-10  Tim Josling  <tej@melbpc.org.au>
+
+	* gengtype.c (unnamed enum containing BASE_FILE_*): Add languages
+	TREELANG and COBOL.
+	(lang_names): Add treelang and cobol.
+	(get_file_basename): Add code to support treelang and cobol as
+	4th and 5th users of c-common.c.
+
 2002-06-09  Geoffrey Keating  <geoffk@redhat.com>
 
 	* Makefile.in (install-driver): Install driver as

@@ -1,3 +1,59 @@
+2002-06-10  Tim Josling  <tej@melbpc.org.au>
+
+        Cleanup 
+
+	* Make-lang.in (check-treelang). Add. Remove direct dependency of
+	'check' on 'treelang.check' as redundant.
+	
+	PCH Garbage collection regime (gengtypes.c) phase 1.
+	
+	* Make-lang.in (treelang/tree1.o). Depend on gt-treelang-tree1.h
+	gt-treelang-treelang.h gtype-treelang.h.
+	(gt-treelang-tree1.h) Depend on s-gtype.
+	(gt-treelang-treelang.h) Depend on s-gtype.
+	(gtype-treelang.h) Depend on s-gtype.
+
+	* config-lang.in (gtfiles): Define. 
+
+	* lex.l (main): Remove '#if 0' dead code.
+	(main): Move undef of IN_GCC so define of tree typedef works.
+	(all): Replace token and production by prod_token_parm_item.
+	
+	* parse.y
+	(all): Replace token and production by prod_token_parm_item.
+
+	* tree1.c (main): Remove include of "output.h".
+	(symbol_table): Add GTY details.
+	(symbol_table_ggc): Remove.
+	(treelang_init): Remove root definitions for garage collection.
+	(mark_production_used): Remove.
+	(mark_token_used): Remove.
+	(main, at end): include generated garage collection routines.
+
+	* treelang.h (category_enum ): Add parameter_category.
+	(all): Replace token and production and parameters by union
+	prod_token_parm_item containing production_part, token_part,
+	parameter_part.
+	(STATIC_STORAGE AUTOMATIC_STORAGE EXTERNAL_REFERENCE_STORAGE
+	EXTERNAL_DEFINITION_STORAGE SIGNED_CHAR UNSIGNED_CHAR SIGNED_INT
+	UNSIGNED_INT VOID_TYPE EXP_PLUS EXP_REFERENCE EXP_ASSIGN
+	EXP_FUNCTION_INVOCATION EXP_MINUS EXP_EQUALS): Move here from
+	treetree.h.
+
+	* treetree.c
+	(tm_p.h): Do not include.
+	(ansidecl.h): Move include after config.h.
+	(treelang.h): Include it.
+	(ADDROOT): Remove.
+	(all): Replace token, production and parameter by prod_token_parm_item.
+	(tree_parameter_list): Move to treelang.h as part of
+	prod_token_parm_item.
+	(STATIC_STORAGE AUTOMATIC_STORAGE EXTERNAL_REFERENCE_STORAGE
+	EXTERNAL_DEFINITION_STORAGE SIGNED_CHAR UNSIGNED_CHAR SIGNED_INT
+	UNSIGNED_INT VOID_TYPE EXP_PLUS EXP_REFERENCE EXP_ASSIGN
+	EXP_FUNCTION_INVOCATION EXP_MINUS EXP_EQUALS): Move from here to
+	treelang.h.
+
 2002-05-19  Tim Josling  <tej@melbpc.org.au>
 
 	* treetree.c (warn_format_zero_length): Add. 
