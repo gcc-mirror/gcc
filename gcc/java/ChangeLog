@@ -1,3 +1,8 @@
+2000-10-15  Anthony Green  <green@redhat.com>
+
+	* decl.c (init_decl_processing): Call init_class_processing before
+	anything else.
+
 2000-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (parse.c, parse-scan.c): Create atomically.
