@@ -198,6 +198,7 @@ USER_H = $(srcdir)/ginclude/float.h \
 	 $(srcdir)/ginclude/stdbool.h \
 	 $(srcdir)/ginclude/stddef.h \
 	 $(srcdir)/ginclude/varargs.h \
+	 $(srcdir)/unwind.h \
 	 $(EXTRA_HEADERS)
 
 # The GCC to use for compiling libgcc.a and crt*.o.
