@@ -641,7 +641,7 @@ Fri Apr 28 16:30:33 2000  Marc Espie <espie@cvs.openbsd.org>
 
 2000-04-27  Mark Mitchell  <mark@codesourcery.com>
 
-	* c-commom.c (c_apply_type_quals_to_decl): REFERENCE_TYPES are
+	* c-common.c (c_apply_type_quals_to_decl): REFERENCE_TYPES are
 	always TREE_READONLY.
 
 2000-04-27  Ulrich Drepper  <drepper@cygnus.com>
