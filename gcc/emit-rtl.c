@@ -1805,7 +1805,17 @@ set_mem_attributes (ref, t, objectp)
 	    }
 	  while (TREE_CODE (t) == ARRAY_REF);
 
-	  if (TREE_CODE (t) == COMPONENT_REF)
+	  if (DECL_P (t))
+	    {
+	      expr = t;
+	      if (host_integerp (off_tree, 1))
+		offset = GEN_INT (tree_low_cst (off_tree, 1));
+	      size = (DECL_SIZE_UNIT (t)
+		      && host_integerp (DECL_SIZE_UNIT (t), 1)
+		      ? GEN_INT (tree_low_cst (DECL_SIZE_UNIT (t), 1)) : 0);
+	      align = DECL_ALIGN (t);
+	    }
+	  else if (TREE_CODE (t) == COMPONENT_REF)
 	    {
 	      expr = component_ref_for_mem_expr (t);
 	      if (host_integerp (off_tree, 1))
@@ -1813,6 +1823,23 @@ set_mem_attributes (ref, t, objectp)
 	      /* ??? Any reason the field size would be different than
 		 the size we got from the type?  */
 	    }
+	  else if (flag_argument_noalias > 1
+		   && TREE_CODE (t) == INDIRECT_REF
+		   && TREE_CODE (TREE_OPERAND (t, 0)) == PARM_DECL)
+	    {
+	      expr = t;
+	      offset = NULL;
+	    }
+	}
+
+      /* If this is a Fortran indirect argument reference, record the
+	 parameter decl.  */
+      else if (flag_argument_noalias > 1
+	       && TREE_CODE (t) == INDIRECT_REF
+	       && TREE_CODE (TREE_OPERAND (t, 0)) == PARM_DECL)
+	{
+	  expr = t;
+	  offset = NULL;
 	}
     }
 
