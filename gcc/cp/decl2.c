@@ -402,7 +402,7 @@ int flag_use_cxa_atexit;
 
 /* Nonzero to not ignore namespace std. */
 
-int flag_honor_std = ENABLE_STD_NAMESPACE;
+int flag_honor_std = 1;
 
 /* Nonzero if we should expand functions calls inline at the tree
    level, rather than at the RTL level.  */

@@ -488,9 +488,6 @@
    and preserves file table indicies exactly as given. */
 #undef HAVE_AS_DWARF2_DEBUG_LINE
 
-/* Define to 1 if you want to enable namespaces (-fhonor-std) by default. */
-#undef ENABLE_STD_NAMESPACE
-
 /* Define 0/1 to force the choice for exception handling model. */
 #undef CONFIG_SJLJ_EXCEPTIONS
 
