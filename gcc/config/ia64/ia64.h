@@ -1694,18 +1694,6 @@ do {									\
    for lib1funcs.asm modules, e.g. __divdi3 vs _divdi3.  Since lib1funcs.asm
    goes into libgcc.a first, the linker will find it first.  */
 
-/* Define this macro as a C statement that declares additional library routines
-   renames existing ones.  */
-
-/* ??? Disable the SImode divide routines for now.  */
-#define INIT_TARGET_OPTABS \
-do {									\
-  sdiv_optab->handlers[(int) SImode].libfunc = 0;			\
-  udiv_optab->handlers[(int) SImode].libfunc = 0;			\
-  smod_optab->handlers[(int) SImode].libfunc = 0;			\
-  umod_optab->handlers[(int) SImode].libfunc = 0;			\
-} while (0)
-
 /* Define this macro if GNU CC should generate calls to the System V (and ANSI
    C) library functions `memcpy' and `memset' rather than the BSD functions
    `bcopy' and `bzero'.  */
