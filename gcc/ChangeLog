@@ -1,3 +1,9 @@
+2004-06-24  Revital Eres  <eres@il.ibm.com>
+
+	* loop-iv.c (iv_analyze, simple_set_p): Support for identifying
+	shifts of induction variable.
+	(iv_shift): New function.
+
 2004-06-24  Richard Henderson  <rth@redhat.com>
 
 	* gimplify.c (gimplify_body): Watch for body vanishing.
