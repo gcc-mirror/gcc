@@ -1005,12 +1005,19 @@ convert_move (to, from, unsignedp)
       else
 	{
 #ifdef HAVE_extendpsisi2
-	  if (HAVE_extendpsisi2)
+	  if (! unsignedp && HAVE_extendpsisi2)
 	    {
 	      emit_unop_insn (CODE_FOR_extendpsisi2, to, from, UNKNOWN);
 	      return;
 	    }
 #endif /* HAVE_extendpsisi2 */
+#ifdef HAVE_zero_extendpsisi2
+	  if (unsignedp && HAVE_zero_extendpsisi2)
+	    {
+	      emit_unop_insn (CODE_FOR_zero_extendpsisi2, to, from, UNKNOWN);
+	      return;
+	    }
+#endif /* HAVE_zero_extendpsisi2 */
 	  abort ();
 	}
     }
