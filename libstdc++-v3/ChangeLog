@@ -1,6 +1,6 @@
 2002-10-08  Jonathan Lennox  <lennox@cs.columbia.edu>
 
-	PR libstdc++/8071, libstdc++/8127, c++/6745
+	PR libstdc++/8071, libstdc++/8127, libstdc++/6745
 	* streambuf.tcc (__copy_streambufs): Handle cases where
 	__sbin->in_avail() returns 0, or where __sbin doesn't set gptr().
 	* testsuite/27_io/ostream_inserter_other.cc (test05): Add.
