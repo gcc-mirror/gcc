@@ -1884,8 +1884,14 @@ changequote(,)dnl
 changequote([,])dnl
     fi
   else
-    # non-GNU linkers don't seem to support .hidden yet
-    gcc_cv_ld_hidden=no
+    case "${target}" in
+      hppa64*-*-hpux*)
+	gcc_cv_ld_hidden=yes
+	;;
+      *)
+	gcc_cv_ld_hidden=no
+	;;
+    esac
   fi
 fi])
 libgcc_visibility=no

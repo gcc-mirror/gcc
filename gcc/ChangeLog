@@ -1,3 +1,10 @@
+2003-12-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR bootstrap/13386
+	* configure.in (gcc_cv_ld_hidden): Set to yes on hppa64*-*-hpux* when
+	using HP native linker.
+	* configure: Rebuilt.
+
 2003-12-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13275
