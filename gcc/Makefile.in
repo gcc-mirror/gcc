@@ -1909,6 +1909,10 @@ stmp-headers: stmp-int-hdrs gfloat.h
 	else :; fi
 	touch stmp-headers
 
+fixinc.sh :
+	cd ../contrib/fixinc ; CC=$(CC) MAKE=$(MAKE) CFLAGS=$(CFLAGS) \
+		$(SHELL) mkfixinc.sh $(target) $(srcdir)
+
 # Build fixed copies of system files.
 stmp-fixinc: $(FIXINCLUDES) gsyslimits.h
 	rm -rf include
