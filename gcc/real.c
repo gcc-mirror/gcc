@@ -1,6 +1,6 @@
 /* real.c - software floating point emulation.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2002, 2003, 2004 Free Software Foundation, Inc.
+   2000, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Stephen L. Moshier (moshier@world.std.com).
    Re-written by Richard Henderson <rth@redhat.com>
 
@@ -4625,6 +4625,8 @@ real_floor (REAL_VALUE_TYPE *r, enum machine_mode mode,
     do_add (&t, &t, &dconstm1, 0);
   if (mode != VOIDmode)
     real_convert (r, mode, &t);
+  else
+    *r = t;
 }
 
 /* Round X to the smallest integer not less then argument, i.e. round
@@ -4641,6 +4643,8 @@ real_ceil (REAL_VALUE_TYPE *r, enum machine_mode mode,
     do_add (&t, &t, &dconst1, 0);
   if (mode != VOIDmode)
     real_convert (r, mode, &t);
+  else
+    *r = t;
 }
 
 /* Round X to the nearest integer, but round halfway cases away from
