@@ -537,7 +537,7 @@ stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
   if (CPP_OPTION (pfile, deps.style) > !!sysp && !file->stack_count)
     {
       if (!file->main_file || !CPP_OPTION (pfile, deps.ignore_main_file))
-	deps_add_dep (pfile->deps, file->name);
+	deps_add_dep (pfile->deps, file->path);
     }
 
   if (!read_file (pfile, file))
@@ -731,7 +731,7 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file)
 
   errno = file->err_no;
   if (print_dep && CPP_OPTION (pfile, deps.missing_files) && errno == ENOENT)
-    deps_add_dep (pfile->deps, file->name);
+    deps_add_dep (pfile->deps, file->path);
   else
     {
       /* If we are outputting dependencies but not for this file then
