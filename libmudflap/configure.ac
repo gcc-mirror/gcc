@@ -8,10 +8,6 @@ AC_CANONICAL_SYSTEM
 
 AM_INIT_AUTOMAKE
 
-# For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=1:0:0
-AC_SUBST(libtool_VERSION)
-
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE(version-specific-runtime-libs,
 [  --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory ],

@@ -195,7 +195,6 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
-libtool_VERSION = @libtool_VERSION@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
@@ -229,6 +228,7 @@ libmudflap_la_SOURCES = \
 
 libmudflap_la_LIBADD = 
 libmudflap_la_DEPENDENCIES = $(libmudflap_la_LIBADD)
+libmudflap_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libmudflapth_la_SOURCES = 
 libmudflapth_la_LIBADD = \
 	pth/mf-runtime.lo \
@@ -238,6 +238,7 @@ libmudflapth_la_LIBADD = \
 	pth/mf-hooks3.lo
 
 libmudflapth_la_DEPENDENCIES = $(libmudflapth_la_LIBADD)
+libmudflapth_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 # XXX hack alert
 # From libffi/Makefile.am
