@@ -1432,9 +1432,8 @@ extern char *current_function_name;
    switch on CODE.  */
    
 #define RTX_COSTS(X,CODE,OUTER_CODE)			\
-  case PLUS:						\
-  case MINUS:						\
-    if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)	\
+  case PLUS:  case MINUS:				\
+    if (FLOAT_MODE_P (GET_MODE (X)))			\
       return COSTS_N_INSNS (6);				\
     else if (GET_CODE (XEXP (X, 0)) == MULT		\
 	     && const48_operand (XEXP (XEXP (X, 0), 1), VOIDmode)) \
@@ -1442,7 +1441,7 @@ extern char *current_function_name;
 	      + rtx_cost (XEXP (X, 1), OUTER_CODE));	\
     break;						\
   case MULT:						\
-    if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)	\
+    if (FLOAT_MODE_P (GET_MODE (X)))			\
       return COSTS_N_INSNS (6);				\
     return COSTS_N_INSNS (23);				\
   case ASHIFT:						\
@@ -1452,10 +1451,7 @@ extern char *current_function_name;
     /* ... fall through ... */				\
   case ASHIFTRT:  case LSHIFTRT:  case IF_THEN_ELSE:	\
     return COSTS_N_INSNS (2);				\
-  case DIV:						\
-  case UDIV:						\
-  case MOD:						\
-  case UMOD:						\
+  case DIV:  case UDIV:  case MOD:  case UMOD:		\
     if (GET_MODE (X) == SFmode)				\
       return COSTS_N_INSNS (34);			\
     else if (GET_MODE (X) == DFmode)			\
@@ -1463,7 +1459,14 @@ extern char *current_function_name;
     else						\
       return COSTS_N_INSNS (70);			\
   case MEM:						\
-    return COSTS_N_INSNS (3);
+    return COSTS_N_INSNS (3);				\
+  case FLOAT:  case UNSIGNED_FLOAT:  case FIX:  case UNSIGNED_FIX: \
+  case FLOAT_EXTEND:  case FLOAT_TRUNCATE:		\
+    return COSTS_N_INSNS (6);				\
+  case NEG:  case ABS:					\
+    if (FLOAT_MODE_P (GET_MODE (X)))			\
+      return COSTS_N_INSNS (6);				\
+    break;
 
 /* Control the assembler format that we output.  */
 
