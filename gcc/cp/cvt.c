@@ -484,20 +484,16 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 
   if (TREE_CODE (type) == FUNCTION_TYPE 
       && TREE_TYPE (expr) == unknown_type_node)
-    {
-      expr = instantiate_type (type, expr, 
-			       (flags & LOOKUP_COMPLAIN)
-	                       ? tf_error | tf_warning : tf_none);
-      if (expr == error_mark_node)
-	return error_mark_node;
-
-      intype = TREE_TYPE (expr);
-    }
+    expr = instantiate_type (type, expr, 
+			     (flags & LOOKUP_COMPLAIN)
+			     ? tf_error | tf_warning : tf_none);
   else
-    {
-      expr = convert_from_reference (expr);
-      intype = TREE_TYPE (expr);
-    }
+    expr = convert_from_reference (expr);
+
+  if (expr == error_mark_node)
+    return error_mark_node;
+
+  intype = TREE_TYPE (expr);
 
   my_friendly_assert (TREE_CODE (intype) != REFERENCE_TYPE, 364);
 

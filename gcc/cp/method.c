@@ -145,43 +145,8 @@ hack_identifier (tree value, tree name)
 
   type = TREE_TYPE (value);
   if (TREE_CODE (value) == FIELD_DECL)
-    {
-      if (current_class_ptr == NULL_TREE)
-	{
-	  if (current_function_decl 
-	      && DECL_STATIC_FUNCTION_P (current_function_decl))
-	    error ("invalid use of member `%D' in static member function",
-		      value);
-	  else
-	    /* We can get here when processing a bad default
-	       argument, like:
-	         struct S { int a; void f(int i = a); }  */
-	    error ("invalid use of member `%D'", value);
-
-	  return error_mark_node;
-	}
-      TREE_USED (current_class_ptr) = 1;
-      if (processing_template_decl)
-	value = build_min_nt (COMPONENT_REF, current_class_ref, name);
-      else
-	{
-	  tree access_type = current_class_type;
-	  
-	  while (!DERIVED_FROM_P (context_for_name_lookup (value), 
-				  access_type))
-	    {
-	      access_type = TYPE_CONTEXT (access_type);
-	      while (DECL_P (access_type))
-		access_type = DECL_CONTEXT (access_type);
-	    }
-
-	  enforce_access (access_type, value);
-	  value 
-	    = build_class_member_access_expr (current_class_ref, value,
-					      /*access_path=*/NULL_TREE,
-					      /*preserve_reference=*/false);
-	}
-    }
+    value = finish_non_static_data_member (value, 
+					   /*qualifying_scope=*/NULL_TREE);
   else if ((TREE_CODE (value) == FUNCTION_DECL
 	    && DECL_FUNCTION_MEMBER_P (value))
 	   || (TREE_CODE (value) == OVERLOAD
@@ -1013,7 +978,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   tree raises = empty_except_spec;
   bool retref = false;
   bool has_parm = false;
-  tree name = constructor_name (TYPE_IDENTIFIER (type));
+  tree name = constructor_name (type);
 
   switch (kind)
     {

@@ -110,14 +110,17 @@ static int doing_runtime = 0;
 void
 init_rtti_processing ()
 {
+  tree const_type_info_type;
+
   push_namespace (std_identifier);
   type_info_type_node 
     = xref_tag (class_type, get_identifier ("type_info"),
 		/*attributes=*/NULL_TREE, 1);
   pop_namespace ();
-  type_info_ptr_type = 
-    build_pointer_type
-     (build_qualified_type (type_info_type_node, TYPE_QUAL_CONST));
+  const_type_info_type = build_qualified_type (type_info_type_node, 
+					       TYPE_QUAL_CONST);
+  type_info_ptr_type = build_pointer_type (const_type_info_type);
+  type_info_ref_type = build_reference_type (const_type_info_type);
 
   create_tinfo_types ();
 }
@@ -263,7 +266,7 @@ build_typeid (exp)
     return error_mark_node;
 
   if (processing_template_decl)
-    return build_min_nt (TYPEID_EXPR, exp);
+    return build_min (TYPEID_EXPR, type_info_ref_type, exp);
 
   if (TREE_CODE (exp) == INDIRECT_REF
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
@@ -394,7 +397,7 @@ get_typeid (type)
     return error_mark_node;
   
   if (processing_template_decl)
-    return build_min_nt (TYPEID_EXPR, type);
+    return build_min (TYPEID_EXPR, type_info_ref_type, type);
 
   /* If the type of the type-id is a reference type, the result of the
      typeid expression refers to a type_info object representing the

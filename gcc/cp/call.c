@@ -102,6 +102,7 @@ static tree convert_class_to_reference (tree, tree, tree);
 static tree direct_reference_binding (tree, tree);
 static bool promoted_arithmetic_type_p (tree);
 static tree conditional_conversion (tree, tree);
+static char *name_as_c_string (tree, tree, bool *);
 static tree call_builtin_trap (void);
 
 tree
@@ -221,13 +222,6 @@ build_scoped_method_call (tree exp, tree basetype, tree name, tree parms)
 
   if (processing_template_decl)
     {
-      if (TREE_CODE (name) == BIT_NOT_EXPR
-	  && TREE_CODE (TREE_OPERAND (name, 0)) == IDENTIFIER_NODE)
-	{
-	  tree type = get_aggr_from_typedef (TREE_OPERAND (name, 0), 0);
-	  if (type)
-	    name = build_min_nt (BIT_NOT_EXPR, type);
-	}
       name = build_min_nt (SCOPE_REF, basetype, name);
       return build_min_nt (METHOD_CALL_EXPR, name, exp, parms, NULL_TREE);
     }
@@ -477,24 +471,7 @@ build_method_call (tree instance, tree name, tree parms,
     return error_mark_node;
 
   if (processing_template_decl)
-    {
-      /* We need to process template parm names here so that tsubst catches
-	 them properly.  Other type names can wait.  */
-      if (TREE_CODE (name) == BIT_NOT_EXPR)
-	{
-	  tree type = NULL_TREE;
-
-	  if (TREE_CODE (TREE_OPERAND (name, 0)) == IDENTIFIER_NODE)
-	    type = get_aggr_from_typedef (TREE_OPERAND (name, 0), 0);
-	  else if (TREE_CODE (TREE_OPERAND (name, 0)) == TYPE_DECL)
-	    type = TREE_TYPE (TREE_OPERAND (name, 0));
-
-	  if (type && TREE_CODE (type) == TEMPLATE_TYPE_PARM)
-	    name = build_min_nt (BIT_NOT_EXPR, type);
-	}
-
-      return build_min_nt (METHOD_CALL_EXPR, name, instance, parms, NULL_TREE);
-    }
+    return build_min_nt (METHOD_CALL_EXPR, name, instance, parms, NULL_TREE);
 
   if (TREE_CODE (instance) == OFFSET_REF)
     instance = resolve_offset_ref (instance);
@@ -2685,8 +2662,8 @@ resolve_args (tree args)
   return args;
 }
 
-/* Return an expression for a call to FN (a namespace-scope function)
-   with the ARGS.  */
+/* Return an expression for a call to FN (a namespace-scope function,
+   or a static member function) with the ARGS.  */
       
 tree
 build_new_function_call (tree fn, tree args)
@@ -2726,18 +2703,21 @@ build_new_function_call (tree fn, tree args)
 	{
 	  tree t = OVL_CURRENT (t1);
 
+	  my_friendly_assert (!DECL_FUNCTION_MEMBER_P (t), 20020913);
+
 	  if (TREE_CODE (t) == TEMPLATE_DECL)
 	    {
 	      templates = tree_cons (NULL_TREE, t, templates);
 	      candidates = add_template_candidate
 		(candidates, t, NULL_TREE, explicit_targs, args, 
-		 NULL_TREE,
-		 /*access_path=*/NULL_TREE, /*conversion_path=*/NULL_TREE,
+		 NULL_TREE, /*access_path=*/NULL_TREE, 
+		 /*conversion_path=*/NULL_TREE,
 		 LOOKUP_NORMAL, DEDUCE_CALL);  
 	    }
 	  else if (! template_only)
 	    candidates = add_function_candidate
-	      (candidates, t, NULL_TREE, args, /*access_path=*/NULL_TREE, 
+	      (candidates, t, NULL_TREE, args, 
+	       /*access_path=*/NULL_TREE,
 	       /*conversion_path=*/NULL_TREE, LOOKUP_NORMAL);
 	}
 
@@ -3318,9 +3298,9 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
   tree conv;
   bool viable_candidates;
 
-  if (arg1 == error_mark_node
-      || arg2 == error_mark_node
-      || arg3 == error_mark_node)
+  if (error_operand_p (arg1) 
+      || error_operand_p (arg2) 
+      || error_operand_p (arg3))
     return error_mark_node;
 
   /* This can happen if a template takes all non-type parameters, e.g.
@@ -4186,24 +4166,14 @@ cxx_type_promotes_to (tree type)
 tree
 convert_default_arg (tree type, tree arg, tree fn, int parmnum)
 {
+  /* If the ARG is an unparsed default argument expression, the
+     conversion cannot be performed.  */
   if (TREE_CODE (arg) == DEFAULT_ARG)
     {
-      /* When processing the default args for a class, we can find that
-         there is an ordering constraint, and we call a function who's
-         default args have not yet been converted. For instance,
-          class A {
-              A (int = 0);
-              void Foo (A const & = A ());
-          };
-         We must process A::A before A::Foo's default arg can be converted.
-         Remember the dependent function, so do_pending_defargs can retry,
-         and check loops.  */
-      unprocessed_defarg_fn (fn);
-      
-      /* Don't return error_mark node, as we won't be able to distinguish
-         genuine errors from this case, and that would lead to repeated
-         diagnostics.  Just make something of the right type.  */
-      return build1 (NOP_EXPR, type, integer_zero_node);
+      error ("the default argument for parameter %d of `%D' has "
+	     "not yet been parsed",
+	     parmnum, fn);
+      return error_mark_node;
     }
 
   if (fn && DECL_TEMPLATE_INFO (fn))
@@ -4685,6 +4655,42 @@ build_special_member_call (tree instance, tree name, tree args,
   return build_new_method_call (instance, fns, args, binfo, flags);
 }
 
+/* Return the NAME, as a C string.  The NAME indicates a function that
+   is a member of TYPE.  *FREE_P is set to true if the caller must
+   free the memory returned.  
+
+   Rather than go through all of this, we should simply set the names
+   of constructors and destructors appropriately, and dispense with
+   ctor_identifier, dtor_identifier, etc.  */
+
+static char *
+name_as_c_string (tree name, tree type, bool *free_p)
+{
+  char *pretty_name;
+
+  /* Assume that we will not allocate memory.  */
+  *free_p = false;
+  /* Constructors and destructors are special.  */
+  if (IDENTIFIER_CTOR_OR_DTOR_P (name))
+    {
+      pretty_name 
+	= (char *) IDENTIFIER_POINTER (constructor_name (type));
+      /* For a destructor, add the '~'.  */
+      if (name == complete_dtor_identifier
+	  || name == base_dtor_identifier
+	  || name == deleting_dtor_identifier)
+	{
+	  pretty_name = concat ("~", pretty_name, NULL);
+	  /* Remember that we need to free the memory allocated.  */
+	  *free_p = true;
+	}
+    }
+  else
+    pretty_name = (char *) IDENTIFIER_POINTER (name);
+
+  return pretty_name;
+}
+
 /* Build a call to "INSTANCE.FN (ARGS)".  */
 
 tree
@@ -4697,15 +4703,18 @@ build_new_method_call (tree instance, tree fns, tree args,
   tree access_binfo;
   tree optype;
   tree mem_args = NULL_TREE, instance_ptr;
-  tree name, pretty_name;
+  tree name;
   tree user_args;
   tree templates = NULL_TREE;
   tree call;
+  tree fn;
+  tree class_type;
   int template_only = 0;
 
   my_friendly_assert (instance != NULL_TREE, 20020729);
 
-  if (instance == error_mark_node || fns == error_mark_node 
+  if (error_operand_p (instance) 
+      || error_operand_p (fns)
       || args == error_mark_node)
     return error_mark_node;
 
@@ -4759,7 +4768,8 @@ build_new_method_call (tree instance, tree fns, tree args,
       return error_mark_node;
     }
 
-  name = DECL_NAME (get_first_fn (fns));
+  fn = get_first_fn (fns);
+  name = DECL_NAME (fn);
 
   if (IDENTIFIER_CTOR_OR_DTOR_P (name))
     {
@@ -4768,61 +4778,56 @@ build_new_method_call (tree instance, tree fns, tree args,
       my_friendly_assert (name != ctor_identifier, 20000408);
       /* Similarly for destructors.  */
       my_friendly_assert (name != dtor_identifier, 20000408);
-      
-      if (name == complete_ctor_identifier
-	  || name == base_ctor_identifier)
-	pretty_name = constructor_name (basetype);
-      else
-	pretty_name = dtor_identifier;
     }
-  else
-    pretty_name = name;
 
-  if (fns)
+  /* It's OK to call destructors on cv-qualified objects.  Therefore,
+     convert the INSTANCE_PTR to the unqualified type, if necessary.  */
+  if (DECL_DESTRUCTOR_P (fn))
     {
-      tree fn;
-      tree class_type = (conversion_path 
-			 ? BINFO_TYPE (conversion_path)
-			 : NULL_TREE);
+      tree type = build_pointer_type (basetype);
+      if (!same_type_p (type, TREE_TYPE (instance_ptr)))
+	instance_ptr = build1 (NOP_EXPR, type, instance_ptr);
+    }
 
-      mem_args = tree_cons (NULL_TREE, instance_ptr, args);
-      for (fn = fns; fn; fn = OVL_NEXT (fn))
+  class_type = (conversion_path ? BINFO_TYPE (conversion_path) : NULL_TREE);
+  mem_args = tree_cons (NULL_TREE, instance_ptr, args);
+
+  for (fn = fns; fn; fn = OVL_NEXT (fn))
+    {
+      tree t = OVL_CURRENT (fn);
+      tree this_arglist;
+
+      /* We can end up here for copy-init of same or base class.  */
+      if ((flags & LOOKUP_ONLYCONVERTING)
+	  && DECL_NONCONVERTING_P (t))
+	continue;
+
+      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (t))
+	this_arglist = mem_args;
+      else
+	this_arglist = args;
+
+      if (TREE_CODE (t) == TEMPLATE_DECL)
 	{
-	  tree t = OVL_CURRENT (fn);
-	  tree this_arglist;
-
-	  /* We can end up here for copy-init of same or base class.  */
-	  if ((flags & LOOKUP_ONLYCONVERTING)
-	      && DECL_NONCONVERTING_P (t))
-	    continue;
-
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (t))
-	    this_arglist = mem_args;
-	  else
-	    this_arglist = args;
-
-	  if (TREE_CODE (t) == TEMPLATE_DECL)
-	    {
-	      /* A member template.  */
-	      templates = tree_cons (NULL_TREE, t, templates);
-	      candidates = 
-		add_template_candidate (candidates, t, 
-					class_type,
-					explicit_targs,
-					this_arglist, optype,
-					access_binfo, 
-					conversion_path,
-					flags,
-					DEDUCE_CALL);
-	    }
-	  else if (! template_only)
-	    candidates = add_function_candidate (candidates, t, 
-						 class_type,
-						 this_arglist,
-						 access_binfo,
-						 conversion_path,
-						 flags);
+	  /* A member template.  */
+	  templates = tree_cons (NULL_TREE, t, templates);
+	  candidates = 
+	    add_template_candidate (candidates, t, 
+				    class_type,
+				    explicit_targs,
+				    this_arglist, optype,
+				    access_binfo, 
+				    conversion_path,
+				    flags,
+				    DEDUCE_CALL);
 	}
+      else if (! template_only)
+	candidates = add_function_candidate (candidates, t, 
+					     class_type,
+					     this_arglist,
+					     access_binfo,
+					     conversion_path,
+					     flags);
     }
 
   if (! any_viable (candidates))
@@ -4833,9 +4838,17 @@ build_new_method_call (tree instance, tree fns, tree args,
       if (!COMPLETE_TYPE_P (basetype))
 	cxx_incomplete_type_error (instance_ptr, basetype);
       else
-	error ("no matching function for call to `%T::%D(%A)%#V'",
-	       basetype, pretty_name, user_args,
-	       TREE_TYPE (TREE_TYPE (instance_ptr)));
+	{
+	  char *pretty_name;
+	  bool free_p;
+
+	  pretty_name = name_as_c_string (name, basetype, &free_p);
+	  error ("no matching function for call to `%T::%s(%A)%#V'",
+		 basetype, pretty_name, user_args,
+		 TREE_TYPE (TREE_TYPE (instance_ptr)));
+	  if (free_p)
+	    free (pretty_name);
+	}
       print_z_candidates (candidates);
       return error_mark_node;
     }
@@ -4844,9 +4857,15 @@ build_new_method_call (tree instance, tree fns, tree args,
 
   if (cand == 0)
     {
+      char *pretty_name;
+      bool free_p;
+
+      pretty_name = name_as_c_string (name, basetype, &free_p);
       error ("call of overloaded `%D(%A)' is ambiguous", pretty_name,
-		user_args);
+	     user_args);
       print_z_candidates (candidates);
+      if (free_p)
+	free (pretty_name);
       return error_mark_node;
     }
 
@@ -5745,7 +5764,7 @@ perform_implicit_conversion (tree type, tree expr)
 {
   tree conv;
   
-  if (expr == error_mark_node)
+  if (error_operand_p (expr))
     return error_mark_node;
   conv = implicit_conversion (type, TREE_TYPE (expr), expr,
 			      LOOKUP_NORMAL);
