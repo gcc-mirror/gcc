@@ -1,3 +1,11 @@
+2005-03-08  Earl Chew <earl_chew@agilent.com>
+	    David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* config/i386/host-cygwin.c: New file to support precompiled
+	headers on cygwin
+	* config/i386/x-cygwin: Use host-cygwin.c on cygwin host
+	* config.host: Use above files for cygwin host.
+
 2005-03-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR rtl-optimization/19683
