@@ -3357,7 +3357,6 @@ sched_analyze_1 (x, insn)
 
 	      for (u = reg_last_uses[regno + i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	      reg_last_uses[regno + i] = 0;
 
 	      for (u = reg_last_sets[regno + i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
@@ -3366,6 +3365,7 @@ sched_analyze_1 (x, insn)
 		 but sets must be ordered with respect to a pending clobber. */
 	      if (code == SET)
 		{
+	          reg_last_uses[regno + i] = 0;
 	          for (u = reg_last_clobbers[regno + i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 	          SET_REGNO_REG_SET (reg_pending_sets, regno + i);
@@ -3386,13 +3386,13 @@ sched_analyze_1 (x, insn)
 
 	  for (u = reg_last_uses[regno]; u; u = XEXP (u, 1))
 	    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	  reg_last_uses[regno] = 0;
 
 	  for (u = reg_last_sets[regno]; u; u = XEXP (u, 1))
 	    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 
 	  if (code == SET)
 	    {
+	      reg_last_uses[regno] = 0;
 	      for (u = reg_last_clobbers[regno]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 	      SET_REGNO_REG_SET (reg_pending_sets, regno);
