@@ -164,11 +164,13 @@ static const struct default_include include_defaults_array[]
    for -include, one for -imacros.  `undef' is set for -U, clear for
    -D, ignored for the others.
    (Future: add an equivalent of -U for -A) */
+
+typedef void (* cl_directive_handler) (cpp_reader *, const char *);
 struct pending_option
 {
   struct pending_option *next;
   const char *arg;
-  int undef;
+  cl_directive_handler handler;
 };
 
 /* The `pending' structure accumulates all the options that are not
@@ -177,8 +179,7 @@ struct pending_option
    tail pointers for quick insertion. */
 struct cpp_pending
 {
-  struct pending_option *define_head, *define_tail;
-  struct pending_option *assert_head, *assert_tail;
+  struct pending_option *directive_head, *directive_tail;
 
   struct file_name_list *quote_head, *quote_tail;
   struct file_name_list *brack_head, *brack_tail;
@@ -216,8 +217,9 @@ static void merge_include_chains	PARAMS ((struct cpp_options *));
 static void dump_special_to_buffer	PARAMS ((cpp_reader *, const char *));
 static void initialize_dependency_output PARAMS ((cpp_reader *));
 static void initialize_standard_includes PARAMS ((cpp_reader *));
-static void new_pending_define		PARAMS ((struct cpp_options *,
-						 const char *));
+static void new_pending_directive		PARAMS ((struct cpp_options *,
+						 const char *,
+						 cl_directive_handler));
 #ifdef HOST_EBCDIC
 static int opt_comp			PARAMS ((const void *, const void *));
 #endif
@@ -919,32 +921,15 @@ cpp_start_read (pfile, fname)
   initialize_builtins (pfile);
 
   /* Do -U's, -D's and -A's in the order they were seen.  */
-  p = opts->pending->define_head;
+  p = opts->pending->directive_head;
   while (p)
     {
-      if (p->undef)
-	cpp_undef (pfile, p->arg);
-      else
-	cpp_define (pfile, p->arg);
-
+      p->handler (pfile, p->arg);
       q = p->next;
       free (p);
       p = q;
     }
 
-  p = opts->pending->assert_head;
-  while (p)
-    {
-      if (p->undef)
-	cpp_unassert (pfile, p->arg);
-      else
-	cpp_assert (pfile, p->arg);
-
-      q = p->next;
-      free (p);
-      p = q;
-    }
-  
   opts->done_initializing = 1;
   CPP_BUFFER (pfile)->lineno = 1;
 
@@ -1047,17 +1032,18 @@ cpp_finish (pfile)
 }
 
 static void
-new_pending_define (opts, text)
+new_pending_directive (opts, text, handler)
      struct cpp_options *opts;
      const char *text;
+     cl_directive_handler handler;
 {
   struct pending_option *o = (struct pending_option *)
     xmalloc (sizeof (struct pending_option));
 
   o->arg = text;
   o->next = NULL;
-  o->undef = 0;
-  APPEND (opts->pending, define, o);
+  o->handler = handler;
+  APPEND (opts->pending, directive, o);
 }
 
 enum opt_code
@@ -1339,7 +1325,7 @@ handle_option (pfile, argc, argv)
 	  opts->print_include_names = 1;
 	  break;
 	case OPT_D:
-	  new_pending_define (opts, arg);
+	  new_pending_directive (opts, arg, cpp_define);
 	  break;
 	case OPT_pedantic_errors:
 	  opts->pedantic_errors = 1;
@@ -1375,7 +1361,7 @@ handle_option (pfile, argc, argv)
 	  opts->cplusplus = 0, opts->cplusplus_comments = 0;
 	  opts->c89 = 1, opts->c99 = 0, opts->objc = 0;
 	  opts->trigraphs = 1;
-	  new_pending_define (opts, "__STRICT_ANSI__");
+	  new_pending_directive (opts, "__STRICT_ANSI__", cpp_define);
 	  break;
 	case OPT_lang_cplusplus:
 	  opts->cplusplus = 1, opts->cplusplus_comments = 1;
@@ -1414,17 +1400,17 @@ handle_option (pfile, argc, argv)
 	case OPT_std_gnu99:
 	  opts->cplusplus = 0, opts->cplusplus_comments = 1;
 	  opts->c89 = 0, opts->c99 = 1, opts->objc = 0;
-	  new_pending_define (opts, "__STDC_VERSION__=199901L");
+	  new_pending_directive (opts, "__STDC_VERSION__=199901L", cpp_define);
 	  break;
 	case OPT_std_iso9899_199409:
-	  new_pending_define (opts, "__STDC_VERSION__=199409L");
+	  new_pending_directive (opts, "__STDC_VERSION__=199409L", cpp_define);
 	  /* Fall through */
 	case OPT_std_iso9899_1990:
 	case OPT_std_c89:
 	  opts->cplusplus = 0, opts->cplusplus_comments = 0;
 	  opts->c89 = 1, opts->c99 = 0, opts->objc = 0;
 	  opts->trigraphs = 1;
-	  new_pending_define (opts, "__STRICT_ANSI__");
+	  new_pending_directive (opts, "__STRICT_ANSI__", cpp_define);
 	  break;
 	case OPT_std_iso9899_199x:
 	case OPT_std_iso9899_1999:
@@ -1433,8 +1419,8 @@ handle_option (pfile, argc, argv)
 	  opts->cplusplus = 0, opts->cplusplus_comments = 1;
 	  opts->c89 = 0, opts->c99 = 1, opts->objc = 0;
 	  opts->trigraphs = 1;
-	  new_pending_define (opts, "__STRICT_ANSI__");
-	  new_pending_define (opts, "__STDC_VERSION__=199901L");
+	  new_pending_directive (opts, "__STRICT_ANSI__", cpp_define);
+	  new_pending_directive (opts, "__STDC_VERSION__=199901L", cpp_define);
 	  break;
 	case OPT_o:
 	  if (opts->out_fname != NULL)
@@ -1521,15 +1507,7 @@ handle_option (pfile, argc, argv)
 	  break;
 	case OPT_A:
 	  if (strcmp (arg, "-"))
- 	    {
- 	      struct pending_option *o = (struct pending_option *)
- 		xmalloc (sizeof (struct pending_option));
- 
-	      o->arg = arg;
- 	      o->next = NULL;
- 	      o->undef = 0;
- 	      APPEND (opts->pending, assert, o);
-	    }
+	    new_pending_directive (opts, arg, cpp_assert);
 	  else
 	    {
 	      /* -A- eliminates all predefined macros and assertions.
@@ -1538,36 +1516,19 @@ handle_option (pfile, argc, argv)
 		 that were passed automatically in from GCC.  */
 	      struct pending_option *o1, *o2;
 
-	      o1 = opts->pending->define_head;
+	      o1 = opts->pending->directive_head;
 	      while (o1)
 		{
 		  o2 = o1->next;
 		  free (o1);
 		  o1 = o2;
 		}
-	      o1 = opts->pending->assert_head;
-	      while (o1)
-		{
-		  o2 = o1->next;
-		  free (o1);
-		  o1 = o2;
-		}
-	      opts->pending->assert_head = NULL;
-	      opts->pending->assert_tail = NULL;
-	      opts->pending->define_head = NULL;
-	      opts->pending->define_tail = NULL;
+	      opts->pending->directive_head = NULL;
+	      opts->pending->directive_tail = NULL;
 	    }
 	  break;
 	case OPT_U:
-	  {
-	    struct pending_option *o = (struct pending_option *)
-	      xmalloc (sizeof (struct pending_option));
- 	  
-	    o->arg = arg;
-	    o->next = NULL;
-	    o->undef = 1;
-	    APPEND (opts->pending, define, o);
-	  }
+	  new_pending_directive (opts, arg, cpp_undef);
 	  break;
 	case OPT_I:           /* Add directory to path for includes.  */
 	  if (!strcmp (arg, "-"))

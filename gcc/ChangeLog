@@ -1,5 +1,15 @@
 2000-03-11  Neil Booth  <NeilB@earthling.net>
 
+	* cppinit.c (struct pending option): Replace undef with a 
+	pointer to a directive handling routine.
+	(struct cpp_pending): Replace separate assert_ and define_ 
+	lists with one directive_ list.
+	(new_pending_define): Rename new_pending_directive. Extra
+	argument is the directive's handling routine.
+	(handle_option): Update to use new_pending_directive.
+
+2000-03-11  Neil Booth  <NeilB@earthling.net>
+
 	* cppfiles.c (file_cleanup, _cpp_find_include_file,
 	remap_filename, _cpp_read_include_file, actual_directory,
 	hack_vms_include_specification): Replace bcopy(), index() etc
