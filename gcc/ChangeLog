@@ -1,3 +1,7 @@
+2003-07-10  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* tm.texi (RETURN_ADDR_OFFSET): Document.
+
 2003-07-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov-io.h: Update documentation.
