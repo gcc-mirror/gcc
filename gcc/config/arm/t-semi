@@ -1,6 +1,6 @@
 # Just for these, we omit the frame pointer since it makes such a big
 # difference.  It is then pointless adding debugging.
-LIBGCC2_CFLAGS=-O2 -fomit-frame-pointer $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) -g0 
+LIBGCC2_CFLAGS=-O2 -fomit-frame-pointer $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) -g0
 
 # Don't build enquire
 ENQUIRE=
