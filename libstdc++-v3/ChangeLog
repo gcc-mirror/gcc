@@ -1,3 +1,9 @@
+2000-12-14  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
+
+	* configure.in (CXX): Exit out if mknumeric_limits fails.
+	* mknumeric_limits (CXX): Use BUILD_DIR/g++, not g++ in
+	path. Consistency with tests_flags.in.
+
 2000-12-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c/bits/*.h: Remove include_next, replace with include,
