@@ -1,3 +1,14 @@
+Wed May  3 21:01:46 2000  Jason Eckhardt  <jle@cygnus.com>
+
+        * bb-reorder.c (struct reorder_block_def): Member succ removed.
+        (REORDER_BLOCK_SUCC): Removed.
+        (enum reorder_skip_type): Removed.
+        (skip_insns_between_block): Renamed to skip_insns_after_block.
+        Removed second argument. Removed dead code and cleaned up.
+        (make_reorder_chain): Removed use of REORDER_BLOCK_SUCC.
+        (reorder_basic_blocks): Remove use of REORDER_SKIP_AFTER. Removed
+        second parameter to skip_insns_after_block.
+
 Wed May  3 13:29:54 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.c (staticp, case LABEL_DECL): New case.
