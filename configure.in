@@ -212,6 +212,9 @@ case "${host}" in
   *-*-lynxos*)
     host_makefile_frag="${host_makefile_frag} config/mh-lynxos"
     ;;
+  *-*-aix4.[3456789]* | *-*-aix[56789].*)
+    host_makefile_frag="${host_makefile_frag} config/mh-aix43"
+    ;;
   *-*-sysv4*)
     host_makefile_frag="${host_makefile_frag} config/mh-sysv4"
     ;;
