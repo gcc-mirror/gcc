@@ -517,6 +517,8 @@ alloc_page (order)
   bitmap_size = BITMAP_SIZE (num_objects + 1);
   page_entry_size = sizeof (page_entry) - sizeof (long) + bitmap_size;
   entry_size = num_objects * OBJECT_SIZE (order);
+  if (entry_size < G.pagesize)
+    entry_size = G.pagesize;
 
   entry = NULL;
   page = NULL;
@@ -549,14 +551,15 @@ alloc_page (order)
       struct page_entry *e, *f = G.free_pages;
       int i;
 
-      page = alloc_anon (NULL, entry_size * GGC_QUIRE_SIZE);
+      page = alloc_anon (NULL, G.pagesize * GGC_QUIRE_SIZE);
       /* This loop counts down so that the chain will be in ascending
 	 memory order.  */
       for (i = GGC_QUIRE_SIZE - 1; i >= 1; i--)
 	{
-	  e = (struct page_entry *) xcalloc (1, sizeof (struct page_entry));
-	  e->bytes = entry_size;
-	  e->page = page + i*entry_size;
+	  e = (struct page_entry *) xcalloc (1, page_entry_size);
+	  e->order = order;
+	  e->bytes = G.pagesize;
+	  e->page = page + (i << G.lg_pagesize);
 	  e->next = f;
 	  f = e;
 	}
