@@ -3298,8 +3298,13 @@ c_get_alias_set (t)
      unsigned variants of the same type.  We treat the signed
      variant as canonical.  */
   if (TREE_CODE (t) == INTEGER_TYPE && TREE_UNSIGNED (t))
-    return get_alias_set (signed_type (t));
+    {
+      tree t1 = signed_type (t);
 
+      /* t1 == t can happen for boolean nodes which are always unsigned.  */
+      if (t1 != t)
+	return get_alias_set (t1);
+    }
   else if (POINTER_TYPE_P (t))
     {
       tree t1;

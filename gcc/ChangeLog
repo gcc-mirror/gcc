@@ -1,3 +1,8 @@
+2000-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (c_get_alias_set): Check whether signed_type did not
+	return its argument before calling get_alias_set on the result.
+
 2000-06-02  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* expr.c (emit_group_load): Fix typo, GET_MODE not GET_CODE.
