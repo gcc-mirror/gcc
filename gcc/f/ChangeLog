@@ -1,3 +1,10 @@
+Sat May 23 06:32:52 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_finish_symbol_transform_): Don't transform
+	statement (nested) functions, to avoid gcc compiling them
+	and thus producing linker errors if they refer to undefined
+	exteral functions.  But warn if they're unused and -Wunused.
+
 Tue May 19 14:52:41 1998  Craig Burley  <burley@gnu.org>
 
 	* bad.def (FFEBAD_OPEN_UNSUPPORTED, FFEBAD_INQUIRE_UNSUPPORTED,
