@@ -1992,13 +1992,14 @@ resolve_asm_operand_names (tree string, tree outputs, tree inputs)
 {
   char *buffer;
   char *p;
+  const char *c;
   tree t;
 
   /* Substitute [<name>] in input constraint strings.  There should be no
      named operands in output constraints.  */
   for (t = inputs; t ; t = TREE_CHAIN (t))
     {
-      const char *c = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
+      c = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
       if (strchr (c, '[') != NULL)
 	{
 	  p = buffer = xstrdup (c);
@@ -2010,31 +2011,48 @@ resolve_asm_operand_names (tree string, tree outputs, tree inputs)
 	}
     }
 
-  if (strchr (TREE_STRING_POINTER (string), '[') == NULL)
-    return string;
-
-  /* Assume that we will not need extra space to perform the substitution.
-     This because we get to remove '[' and ']', which means we cannot have
-     a problem until we have more than 999 operands.  */
-
-  p = buffer = xstrdup (TREE_STRING_POINTER (string));
-  while ((p = strchr (p, '%')) != NULL)
+  /* Now check for any needed substitutions in the template.  */
+  c = TREE_STRING_POINTER (string);
+  while ((c = strchr (c, '%')) != NULL)
     {
-      if (p[1] == '[')
-	p += 1;
-      else if (ISALPHA (p[1]) && p[2] == '[')
-	p += 2;
+      if (c[1] == '[')
+	break;
+      else if (ISALPHA (c[1]) && c[2] == '[')
+	break;
       else
 	{
-	  p += 1;
+	  c += 1;
 	  continue;
 	}
-
-      p = resolve_operand_name_1 (p, outputs, inputs);
     }
 
-  string = build_string (strlen (buffer), buffer);
-  free (buffer);
+  if (c)
+    {
+      /* OK, we need to make a copy so we can perform the substitutions.
+	 Assume that we will not need extra space--we get to remove '['
+	 and ']', which means we cannot have a problem until we have more
+	 than 999 operands.  */
+      buffer = xstrdup (TREE_STRING_POINTER (string));
+      p = buffer + (c - TREE_STRING_POINTER (string));
+      
+      while ((p = strchr (p, '%')) != NULL)
+	{
+	  if (p[1] == '[')
+	    p += 1;
+	  else if (ISALPHA (p[1]) && p[2] == '[')
+	    p += 2;
+	  else
+	    {
+	      p += 1;
+	      continue;
+	    }
+
+	  p = resolve_operand_name_1 (p, outputs, inputs);
+	}
+
+      string = build_string (strlen (buffer), buffer);
+      free (buffer);
+    }
 
   return string;
 }

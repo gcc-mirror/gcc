@@ -1,3 +1,13 @@
+2003-07-31  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (bubblestrap): Don't require a previous full
+	bootstrap.
+
+	* expr.c (mostly_zeros_p): No longer static.
+	* tree.h: Declare it.
+	* stmt.c (resolve_asm_operand_names): Don't copy the pattern
+	unless we need to do substitutions.
+
 2003-07-31  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold <MULT_EXPR>): Optimize both x*pow(x,c) and
