@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler for m68k targets using
    assemblers derived from AT&T "SGS" releases.
 
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
 
    Written by Fred Fish (fnf@cygnus.com)
 
@@ -119,23 +119,31 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   output_addr_const ((FILE), (VALUE)),			\
   fprintf ((FILE), "\n"))
 
+#undef ASM_OUTPUT_LONG_DOUBLE
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  			\
+do { long l[3];							\
+     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);		\
+     fprintf ((FILE), "\t%s 0x%x,0x%x,0x%x\n", LONG_ASM_OP,	\
+	     l[0], l[1], l[2]);					\
+   } while (0)
+
 /* This is how to output an assembler line defining a `double' constant.  */
 
 #undef ASM_OUTPUT_DOUBLE
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
-do { union { double d; long l[2]; } tem;		\
-     tem.d = (VALUE);					\
-     fprintf((FILE), "\t%s 0x%x,0x%x\n", LONG_ASM_OP,	\
-	     tem.l[0], tem.l[1]);			\
+do { long l[2];						\
+     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
+     fprintf ((FILE), "\t%s 0x%x,0x%x\n", LONG_ASM_OP,	\
+	      l[0], l[1]);				\
    } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
 #undef ASM_OUTPUT_FLOAT
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
-do { union { float f; long l;} tem;			\
-     tem.f = (VALUE);					\
-     fprintf ((FILE), "\t%s 0x%x\n", LONG_ASM_OP, tem.l); \
+do { long l;						\
+     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
+     fprintf ((FILE), "\t%s 0x%x\n", LONG_ASM_OP, l);	\
    } while (0)
 
 /* This is how to output an assembler line that says to advance the
@@ -209,15 +217,19 @@ do { union { float f; long l;} tem;			\
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
   asm_fprintf (FILE, "\t%Omove.l (%Rsp)+,%s\n", reg_names[REGNO])
 
-#undef PRINT_OPERAND_PRINT_FLOAT
-#define PRINT_OPERAND_PRINT_FLOAT(CODE,FILE)			\
-	asm_fprintf ((FILE), "%I0x%x", u1.i);
-
+#undef ASM_OUTPUT_FLOAT_OPERAND
+#define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)	\
+  do { long l;						\
+       REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
+       asm_fprintf ((FILE), "%I0x%x", l);		\
+     } while (0)
+  
 #undef ASM_OUTPUT_DOUBLE_OPERAND
-#define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)			\
-  do {  union real_extract u;					\
-	u.d = (VALUE);						\
-	asm_fprintf ((FILE),"%I0x%x%08x", u.i[0], u.i[1]); } while (0)
+#define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)		\
+  do { long l[2];					\
+       REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
+       asm_fprintf ((FILE), "%I0x%x%08x", l[0], l[1]);	\
+     } while (0)
 
 /* How to output a block of SIZE zero bytes.  Note that the `space' pseudo,
    when used in the text segment, causes SGS assemblers to output nop insns
