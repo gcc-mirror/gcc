@@ -2,8 +2,7 @@ gcc-ss-@DATE@ is now available on
   ftp://gcc.gnu.org/pub/gcc/snapshots/@LONG_DATE@
 and on various mirrors, see http://gcc.gnu.org/mirrors.html for details.
 
-This snapshot has been generated from the current development mainline
-which is going to become GCC 3.1.
+This snapshot has been generated from the GCC 3.1 branch.
 
 You'll find:
 
@@ -12,17 +11,13 @@ You'll find:
 
   gcc-core-@DATE@.tar.gz             Just the C front end and core compiler.
 
-  gcc-tests-@DATE@.tar.gz            The GCC testsuite.
+  gcc-testsuite-@DATE@.tar.gz        The GCC testsuite.
 
   gcc-ada-@DATE@.tar.gz              The Ada language and runtime.
 
   gcc-g++-@DATE@.tar.gz              The g++ language and runtime.
 
-  gcc-g++-tests-@DATE@.tar.gz	       The testsuite for G++.
-
   gcc-g77-@DATE@.tar.gz              The g77 language and runtime.
-   
-  gcc-g77-testsuite-@DATE@.tar.gz    The testsuite for G77.
 
   gcc-objc-@DATE@.tar.gz             The Objective-C front end and runtime.
 
