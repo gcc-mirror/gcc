@@ -32,7 +32,10 @@
 #include <locale>
 #include <testsuite_hooks.h>
 
-typedef char char_type;
+// XXX This test is not working for non-glibc locale models.
+// { dg-do run { xfail *-*-* } }
+
+typedef wchar_t char_type;
 typedef std::char_traits<char_type> traits_type;
 class gnu_ctype: public std::ctype<char_type> { };
 
@@ -47,22 +50,23 @@ class gnu_ctype: public std::ctype<char_type> { };
   VERIFY(gctype.scan_not((MASK), (STRING), \
 			 (STRING) + traits_type::length(STRING)) == (EXPECTED))
 
+#ifdef _GLIBCPP_USE_WCHAR_T
 // Sanity check scan_is() and scan_not().
 void test01()
 {
   bool test = true;
 
-  const char_type *const ca = "aaaaa";
-  const char_type *const cz = "zzzzz";
-  const char_type *const cA = "AAAAA";
-  const char_type *const cZ = "ZZZZZ";
-  const char_type *const c0 = "00000";
-  const char_type *const c9 = "99999";
-  const char_type *const cs = "     ";
-  const char_type *const xf = "fffff";
-  const char_type *const xF = "FFFFF";
-  const char_type *const p1 = "!!!!!";
-  const char_type *const p2 = "/////";
+  const char_type *const ca = L"aaaaa";
+  const char_type *const cz = L"zzzzz";
+  const char_type *const cA = L"AAAAA";
+  const char_type *const cZ = L"ZZZZZ";
+  const char_type *const c0 = L"00000";
+  const char_type *const c9 = L"99999";
+  const char_type *const cs = L"     ";
+  const char_type *const xf = L"fffff";
+  const char_type *const xF = L"FFFFF";
+  const char_type *const p1 = L"!!!!!";
+  const char_type *const p2 = L"/////";
   
   gnu_ctype gctype;
 
@@ -340,9 +344,12 @@ void test01()
   VERIFY_SCAN_NOT (std::ctype_base::upper, p2, p2);
   VERIFY_SCAN_NOT (std::ctype_base::xdigit, p2, p2);
 }
+#endif
 
 int main() 
 {
+#ifdef _GLIBCPP_USE_WCHAR_T
   test01();
+#endif
   return 0;
 }

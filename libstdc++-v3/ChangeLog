@@ -1,5 +1,12 @@
 2002-05-13  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/22_locale/ctype_scan_char.cc: Tweak.
+	* testsuite/22_locale/ctype_scan_wchar_t.cc: New.	
+
+	* docs/html/install.html: Fix.
+	
+2002-05-13  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/bits/fstream.tcc
 	(basic_filebuf::_M_allocate_internal_buffer): Remove extraneous
 	try/catch blocks.
