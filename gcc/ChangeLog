@@ -1,3 +1,8 @@
+2004-02-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_legitimate_index_p): For QImode the range of an offset
+	is -4095...+4095 inclusive.
+
 2004-02-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2* specific notes): Document

@@ -2864,8 +2864,10 @@ arm_legitimate_index_p (enum machine_mode mode, rtx index, int strict_p)
      load, but that has a restricted addressing range and we are unable
      to tell here whether that is the case.  To be safe we restrict all
      loads to that range.  */
-  range = ((mode) == HImode || (mode) == QImode)
-    ? (arm_arch4 ? 256 : 4095) : 4096;
+  if (arm_arch4)
+    range = (mode == HImode || mode == QImode) ? 256 : 4096;
+  else
+    range = (mode == HImode) ? 4095 : 4096;
 
   return (code == CONST_INT
 	  && INTVAL (index) < range
