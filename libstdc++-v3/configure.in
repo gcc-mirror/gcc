@@ -124,6 +124,23 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
       AC_DEFINE(HAVE_SINCOS)
       AC_DEFINE(HAVE_SINCOSF)
       ;;
+    *-netbsd*)
+      # Check for available headers.
+      AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
+	machine/endian.h machine/param.h sys/machine.h sys/types.h \
+	fp.h locale.h float.h inttypes.h])
+      SECTION_FLAGS='-ffunction-sections -fdata-sections'
+      AC_SUBST(SECTION_FLAGS) 
+      GLIBCPP_CHECK_LINKER_FEATURES
+      GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
+      GLIBCPP_CHECK_WCHAR_T_SUPPORT
+      os_include_dir="config/os/bsd/netbsd"
+      AC_DEFINE(HAVE_COPYSIGN)
+      AC_DEFINE(HAVE_COPYSIGNF)
+      AC_DEFINE(HAVE_FINITEF)
+      AC_DEFINE(HAVE_FREXPF)
+      AC_DEFINE(HAVE_HYPOTF)
+      ;;
     *)
       os_include_dir="config/os/newlib"
       AC_DEFINE(HAVE_HYPOT)
