@@ -5495,22 +5495,22 @@ round_trampoline_addr (tramp)
 
 /* Insert the BLOCK in the block-tree, knowing that the previous
    block-note is for OLD_BLOCK.  BEGIN_P is non-zero if the previous
-   block-note was the for the beginning of a BLOCK.  FN is the
-   FUNCTION_DECL into which the BLOCK is being inserted.  */
+   block-note was the for the beginning of a BLOCK.  */
 
 void 
-insert_block_after_note (block, old_block, begin_p, fn)
+insert_block_after_note (block, old_block, begin_p)
      tree block;
      tree old_block;
      int begin_p;
-     tree fn;
 {
   if (begin_p)
     {
-      /* If there was no previous block, use the top-level block for
-	 the function.  */
+      /* If there was no previous block, something's gone terribly
+         wrong.  We used to try to use DECL_INITIAL for the current
+         function, but that will never be correct, and completely
+         hoses the block structure.  */
       if (!old_block)
-	old_block = DECL_INITIAL (fn);
+	abort ();
 
       BLOCK_SUPERCONTEXT (block) = old_block;
       BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (old_block);
@@ -5545,12 +5545,12 @@ retrofit_block (block, last_insn)
 	    || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
       break;
 
+  if (insn == NULL_RTX)
+    abort ();
+
   insert_block_after_note (block, 
-			   insn ? NOTE_BLOCK (insn) : NULL_TREE,
-			   insn 
-			   ? (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
-			   : 1,
-			   current_function_decl);
+			   NOTE_BLOCK (insn),
+			   NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG);
 }
 
 /* The functions identify_blocks and reorder_blocks provide a way to

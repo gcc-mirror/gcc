@@ -1623,21 +1623,19 @@ walk_tree (tp, func, data)
       || TREE_CODE_CLASS (code) == 'r'
       || TREE_CODE_CLASS (code) == 's')
     {
-      int i;
+      int i, len;
 
       /* Walk over all the sub-trees of this operand.  */
-      i = first_rtl_op (code) - 1;
+      len = first_rtl_op (code);
       /* TARGET_EXPRs are peculiar: operands 1 and 3 can be the same.
 	 But, we only want to walk once.  */
       if (code == TARGET_EXPR
 	  && TREE_OPERAND (*tp, 3) == TREE_OPERAND (*tp, 1))
-	--i;
-      /* Go through the subtrees.  */
-      while (i >= 0)
-	{
-	  WALK_SUBTREE (TREE_OPERAND (*tp, i));
-	  --i;
-	}
+	--len;
+      /* Go through the subtrees.  We need to do this in forward order so
+         that the scope of a FOR_EXPR is handled properly.  */
+      for (i = 0; i < len; ++i)
+	WALK_SUBTREE (TREE_OPERAND (*tp, i));
 
       /* For statements, we also walk the chain so that we cover the
 	 entire statement tree.  */

@@ -176,13 +176,9 @@ remap_block (scope_stmt, decls, id)
       /* We put the BLOCK_VARS in reverse order; fix that now.  */
       BLOCK_VARS (new_block) = nreverse (BLOCK_VARS (new_block));
       /* Graft the new block into the tree.  */
-      insert_block_after_note (new_block, 
-			       (id->scope_stmt 
-				? SCOPE_STMT_BLOCK (id->scope_stmt)
-				: NULL_TREE),
-			       (id->scope_stmt
-				? SCOPE_BEGIN_P (id->scope_stmt) : 1),
-			       VARRAY_TREE (id->fns, 0));
+      insert_block_after_note (new_block,
+			       SCOPE_STMT_BLOCK (id->scope_stmt),
+			       SCOPE_BEGIN_P (id->scope_stmt));
       /* Remember that this is now the last scope statement with
 	 an associated block.  */
       id->scope_stmt = scope_stmt;
@@ -536,7 +532,7 @@ expand_call_inline (tp, walk_subtrees, data)
      inside the body of a TARGET_EXPR.  */
   if (TREE_CODE (*tp) == TARGET_EXPR)
     {
-      int i;
+      int i, len = first_rtl_op (TARGET_EXPR);
 
       /* We're walking our own subtrees.  */
       *walk_subtrees = 0;
@@ -544,7 +540,7 @@ expand_call_inline (tp, walk_subtrees, data)
       /* Actually walk over them.  This loop is the body of
 	 walk_trees, omitting the case where the TARGET_EXPR
 	 itself is handled.  */
-      for (i = first_rtl_op (TARGET_EXPR) - 1; i >= 0; --i)
+      for (i = 0; i < len; ++i)
 	{
 	  if (i == 2)
 	    ++id->in_target_cleanup_p;
@@ -615,7 +611,8 @@ expand_call_inline (tp, walk_subtrees, data)
   id->scope_stmt = scope_stmt;
 
   /* Tell the debugging backends that this block represents the
-     outermost scope of the inlined function.  */
+     outermost scope of the inlined function.  FIXME what to do for
+     inlines in cleanups?  */
   if (SCOPE_STMT_BLOCK (scope_stmt))
     BLOCK_ABSTRACT_ORIGIN (SCOPE_STMT_BLOCK (scope_stmt)) = DECL_ORIGIN (fn);
 
@@ -725,6 +722,13 @@ optimize_function (fn)
 	    VARRAY_PUSH_TREE (id.fns, s->function_decl);
 	    prev_fn = s->function_decl;
 	  }
+
+      /* Initialize id->scope_stmt with a fake SCOPE_STMT for the outermost
+	 block of the function (i.e. the BLOCK with __FUNCTION__ et al).  */
+      id.scope_stmt = build_min_nt (SCOPE_STMT,
+				    BLOCK_SUBBLOCKS (DECL_INITIAL (fn)));
+      SCOPE_BEGIN_P (id.scope_stmt) = 1;
+
       /* Replace all calls to inline functions with the bodies of those
 	 functions.  */
       expand_calls_inline (&DECL_SAVED_TREE (fn), &id);
