@@ -1,3 +1,8 @@
+Wed Jul  4 09:07:44 2001  Jan van Male  <jan.vanmale@fenk.wau.nl>
+
+	* i386.c (ix86_expand_builtin, case IX86_BUILTIN_SETPS):
+	Fix typo in last change to use adjust_address.
+
 2001-07-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific): Update information for *-*-solaris*.
