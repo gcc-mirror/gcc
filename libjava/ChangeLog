@@ -1,3 +1,8 @@
+2002-07-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/natFileDescriptorPosix.cc: Don't include sys/socket.h or
+	fcntl.h.
+
 2002-07-24  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Runtime.java (loadLibrary): Pass `true' as search
