@@ -1,3 +1,14 @@
+2003-12-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.c (flag_external_templates): Remove.
+	(flag_alt_external_templates): Likewise.
+	* c-common.h (flag_external_templates): Remove.
+	(flag_alt_external_templates): Likewise.
+	* c-opts.c (c_common_handle_option): Unsupport
+	-falt-external-templates and -ftemplates.
+	* doc/invoke.texi: Remove mention of -fexternal-templates and
+	-falt-external-templates.
+	
 2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/13466

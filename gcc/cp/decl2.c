@@ -167,23 +167,8 @@ warn_if_unknown_interface (tree decl)
   if (already_warned++)
     return;
 
-  if (flag_alt_external_templates)
-    {
-      tree til = tinst_for_decl ();
-      location_t saved_loc = input_location;
-
-      if (til)
-	{
-	  input_line = TINST_LINE (til);
-	  input_filename = TINST_FILE (til);
-	}
-      warning ("template `%#D' instantiated in file without #pragma interface",
-		  decl);
-      input_location = saved_loc;
-    }
-  else
-    cp_warning_at ("template `%#D' defined in file without #pragma interface",
-		   decl);
+  cp_warning_at ("template `%#D' defined in file without #pragma interface",
+		 decl);
 }
 
 /* A subroutine of the parser, to handle a component list.  */

@@ -672,7 +672,9 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       /* Fall through.  */
 
     case OPT_fall_virtual:
+    case OPT_falt_external_templates:
     case OPT_fenum_int_equiv:
+    case OPT_fexternal_templates:
     case OPT_fguiding_decls:
     case OPT_fhonor_std:
     case OPT_fhuge_objects:
@@ -695,15 +697,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_faccess_control:
       flag_access_control = value;
-      break;
-
-    case OPT_falt_external_templates:
-      flag_alt_external_templates = value;
-      if (value)
-	flag_external_templates = true;
-    cp_deprecated:
-      warning ("switch \"%s\" is deprecated, please see documentation "
-	       "for details", option->opt_text);
       break;
 
     case OPT_fasm:
@@ -798,10 +791,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_fenforce_eh_specs:
       flag_enforce_eh_specs = value;
       break;
-
-    case OPT_fexternal_templates:
-      flag_external_templates = value;
-      goto cp_deprecated;
 
     case OPT_ffixed_form:
     case OPT_ffixed_line_length_:

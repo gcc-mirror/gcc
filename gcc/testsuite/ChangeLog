@@ -1,5 +1,11 @@
 2003-12-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.old-deja/g++.jason/template18.C: Remove.
+	* g++.old-deja/g++.jason/template37.C: Likewise.
+
+	PR c++/12862
+	* g++.dg/lookup/ns1.C: New test.
+
 	PR c++/12397
 	* g++.dg/template/lookup3.C: New test.
 

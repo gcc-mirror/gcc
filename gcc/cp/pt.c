@@ -4485,19 +4485,7 @@ lookup_template_class (tree d1,
 	 is set up.  */
       if (TREE_CODE (t) != ENUMERAL_TYPE)
 	DECL_NAME (type_decl) = classtype_mangled_name (t);
-      if (!is_partial_instantiation)
-	{
-	  /* For backwards compatibility; code that uses
-	     -fexternal-templates expects looking up a template to
-	     instantiate it.  I think DDD still relies on this.
-	     (jason 8/20/1998) */
-	  if (TREE_CODE (t) != ENUMERAL_TYPE
-	      && flag_external_templates
-	      && CLASSTYPE_INTERFACE_KNOWN (TREE_TYPE (template))
-	      && ! CLASSTYPE_INTERFACE_ONLY (TREE_TYPE (template)))
-	    add_pending_template (t);
-	}
-      else
+      if (is_partial_instantiation)
 	/* If the type makes use of template parameters, the
 	   code that generates debugging information will crash.  */
 	DECL_IGNORED_P (TYPE_STUB_DECL (t)) = 1;
@@ -5279,24 +5267,7 @@ instantiate_class_template (tree type)
 	args = inner_args;
     }
 
-  if (flag_external_templates)
-    {
-      if (flag_alt_external_templates)
-	{
-	  CLASSTYPE_INTERFACE_ONLY (type) = interface_only;
-	  SET_CLASSTYPE_INTERFACE_UNKNOWN_X (type, interface_unknown);
-	}
-      else
-	{
-	  CLASSTYPE_INTERFACE_ONLY (type) = CLASSTYPE_INTERFACE_ONLY (pattern);
-	  SET_CLASSTYPE_INTERFACE_UNKNOWN_X
-	    (type, CLASSTYPE_INTERFACE_UNKNOWN (pattern));
-	}
-    }
-  else
-    {
-      SET_CLASSTYPE_INTERFACE_UNKNOWN (type);
-    }
+  SET_CLASSTYPE_INTERFACE_UNKNOWN (type);
 
   /* Set the input location to the template definition. This is needed
      if tsubsting causes an error.  */
@@ -8642,9 +8613,6 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
      template, not the most general template.  */
   DECL_TI_TEMPLATE (fndecl) = tmpl;
 
-  if (flag_external_templates)
-    add_pending_template (fndecl);
-
   /* If we've just instantiated the main entry point for a function,
      instantiate all the alternate entry points as well.  We do this
      by cloning the instantiation of the main entry point, not by
@@ -10529,9 +10497,6 @@ do_decl_instantiation (tree decl, tree storage)
       return;
     }
 
-  if (flag_external_templates)
-    return;
-
   if (storage == NULL_TREE)
     ;
   else if (storage == ridpointers[(int) RID_EXTERN])
@@ -10599,11 +10564,6 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
     }
 
   complete_type (t);
-
-  /* With -fexternal-templates, explicit instantiations are treated the same
-     as implicit ones.  */
-  if (flag_external_templates)
-    return;
 
   if (!COMPLETE_TYPE_P (t))
     {
@@ -10986,22 +10946,6 @@ instantiate_decl (tree d, int defer_ok)
 	}
       else
 	repo_template_used (d);
-
-      if (flag_external_templates && ! DECL_INTERFACE_KNOWN (d))
-	{
-	  if (flag_alt_external_templates)
-	    {
-	      if (interface_unknown)
-		warn_if_unknown_interface (d);
-	    }
-	  else if (DECL_INTERFACE_KNOWN (code_pattern))
-	    {
-	      DECL_INTERFACE_KNOWN (d) = 1;
-	      DECL_NOT_REALLY_EXTERN (d) = ! DECL_EXTERNAL (code_pattern);
-	    }
-	  else
-	    warn_if_unknown_interface (code_pattern);
-	}
 
       if (at_eof)
 	import_export_decl (d);
