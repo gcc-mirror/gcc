@@ -112,6 +112,13 @@ touch_files () {
     done
 }
 
+# Whenever we update the tree or install a patch, we may be modifying
+# this script.  By re-execing it, we ensure that the appropriate
+# dependencies and rules will be used.
+touch_files_reexec () {
+    echo "Adjusting file timestamps"
+    exec ${CONFIG_SHELL-/bin/sh} $0 --touch
+}    
 
 # This functions applies a patch to an existing tree.
 apply_patch () {
@@ -126,8 +133,7 @@ apply_patch () {
 	    cat $1 | patch -p1 ;;
 	esac
     fi
-    echo "Adjusting file timestamps"
-    touch_files
+    touch_files_reexec
 }
 
 # Check whether this indeed looks like a local tree.
@@ -197,5 +203,4 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Adjusting file timestamps"
-touch_files
+touch_files_reexec

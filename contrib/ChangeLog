@@ -1,3 +1,8 @@
+2000-05-12  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* gcc_update (touch_files_reexec): New function, run after the
+	tree is modified.
+
 2000-05-08  Richard Hendeson  <rth@cygnus.com>
 
 	* gcc_update: Remove references to inclhack.tpl.
