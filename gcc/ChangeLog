@@ -1,3 +1,8 @@
+Tue Jul 27 17:49:42 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* config/arm/coff.h (ASM_FILE_START): If generating SDB output, call
+	output_file_directive.
+
 Tue Jul 27 03:15:33 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* expr.c (expand_expr, case PLUS_EXPR): Get the mode from the 
