@@ -1,3 +1,8 @@
+Sun Nov  7 19:41:17 1999  Catherine Moore  <clm@cygnus.com>
+
+        * config/elfos.h (ASM_DECLARE_FUNCTION_NAME): Conditionally define.
+        (ASM_DECLARE_FUNCTION_SIZE): Conditionally define.
+
 Sun Nov  7 10:23:28 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* integrate.c (save_for_inline_nocopy): Clear in_nonparm_insns.
