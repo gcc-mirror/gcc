@@ -35,7 +35,11 @@ extern FILE *finput;
 /* A Unicode character, as read from the input file  */
 typedef unsigned short unicode_t;
 
-#if defined HAVE_ICONV_H && defined HAVE_ICONV
+#ifndef HAVE_ICONV_H
+#undef HAVE_ICONV
+#endif
+
+#if defined HAVE_ICONV
 #include <iconv.h>
 #endif /* HAVE_ICONV */
 
