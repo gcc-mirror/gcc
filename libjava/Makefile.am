@@ -233,11 +233,9 @@ gnu/java/awt/peer/gtk/GtkTextFieldPeer.java \
 gnu/java/awt/peer/gtk/GtkToolkit.java \
 gnu/java/awt/peer/gtk/GtkWindowPeer.java
 
-## FIXME: GNU make.
 gtk_c_headers = $(patsubst %.java,jniinclude/%.h,$(subst /,_,$(gtk_awt_peer_sources)))
 
 $(gtk_c_headers): $(gtk_awt_peer_sources)
-## FIXME: GNU make.
 	@input=`echo $@ | sed -e 's,jniinclude/,,' -e 's,_,.,g' -e 's,.h$$,,'`; \
 	echo "$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input"; \
 	$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input
@@ -362,28 +360,27 @@ SUFFIXES = .class .java .h
 .java.lo:
 	$(GCJCOMPILE) -o $@ $<
 
-## This is GNU make specific.  For the .o files in subdirs, use a
-## special rule.  The standard automake rule can't be overridden (this
-## is a bug in automake), and it also won't put the .o files into
-## subdirs.  FIXME.
+## FIXME: For the .o files in subdirs, use a special rule.  The
+## standard automake rule can't be overridden (this is a bug in
+## automake), and it also won't put the .o files into subdirs.
 $(nat_files) $(x_nat_files): %.lo: %.cc
 	@echo '$(LTCXXCOMPILE) -MD -MT $@ -MF $(@:.lo=.pp) -c -o $@ $<'; \
 	$(LTCXXCOMPILE) -MD -MT $@ -MF $(@:.lo=.pp) -c -o $@ $<
 	@-mv $(@:.lo=.pp) $(@:.lo=.d)
 
-## FIXME: GNU make.
+## FIXME: see above
 $(c_files): %.lo: %.c
 	$(LTCOMPILE) -c -o $@ $<
 
 $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
-## FIXME: GNU make.
+## FIXME: see above
 $(gtk_c_files): %.lo: %.c
 	$(LTCOMPILE) -c -Ijniinclude -I$(srcdir)/jni/classpath -I$(srcdir)/jni/gtk-peer $(GTK_CFLAGS) $(LIBART_CFLAGS) -o $@ $<
 
 $(gtk_c_files): $(gtk_c_headers)
 
-## FIXME: GNU make.
+## FIXME: see above.
 $(javao_files) $(x_javao_files) $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
 
@@ -410,7 +407,6 @@ lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPEND
 ##
 
 .class.h:
-## FIXME: GNU make specific.
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) $(basename $<)
 
 ## Header files used when compiling some of the nat* files.
@@ -2721,7 +2717,6 @@ texinfo: TexinfoDoclet.class
 ## Dependency tracking madness.
 ##
 
-## FIXME: depends on GNU make.
 -include deps.mk
 
 ## This is an evil hack to work around an automake limitation.  We

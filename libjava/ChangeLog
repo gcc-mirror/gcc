@@ -1,5 +1,8 @@
 2003-08-26  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am: Removed all GNU-make-specific FIXME comments.
+
 	* java/lang/ref/Reference.java (get): Indentation fix.
 	(clear): Comment fix.
 	(enqueue): Likewise.
