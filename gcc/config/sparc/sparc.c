@@ -3020,6 +3020,11 @@ sparc_type_code (type)
 	  abort ();
   
 	case COMPLEX_TYPE:	/* GNU Fortran COMPLEX type.  */
+	  /* ??? We need to dinguish between double and float complex types,
+	     but I don't know how yet because I can't reach this code from
+	     existing front-ends.  */
+	  return (qualifiers | 7);	/* Who knows? */
+
 	case CHAR_TYPE:		/* GNU Pascal CHAR type.  Not used in C.  */
 	case BOOLEAN_TYPE:	/* GNU Fortran BOOLEAN type.  */
 	case FILE_TYPE:		/* GNU Pascal FILE type.  */
