@@ -3133,6 +3133,7 @@ finish_struct_1 (t, warn_anon)
   int aggregate = 1;
   int empty = 1;
   int has_pointers = 0;
+  tree inline_friends;
 
   if (warn_anon && code != UNION_TYPE && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
     pedwarn ("anonymous class type not used to declare any objects");
@@ -3740,6 +3741,13 @@ finish_struct_1 (t, warn_anon)
 	if (DECL_SIZE (x) != integer_zero_node)
 	  empty = 0;
     }
+
+  /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
+     we have to save this before we start modifying
+     TYPE_NONCOPIED_PARTS.  */
+  inline_friends = CLASSTYPE_INLINE_FRIENDS (t);
+  CLASSTYPE_INLINE_FRIENDS (t) = NULL_TREE;
+
   if (empty)
     {
       /* C++: do not let empty structures exist.  */
@@ -3747,7 +3755,11 @@ finish_struct_1 (t, warn_anon)
 	(FIELD_DECL, NULL_TREE, char_type_node);
       TREE_CHAIN (decl) = fields;
       TYPE_FIELDS (t) = decl;
+      TYPE_NONCOPIED_PARTS (t) 
+	= tree_cons (NULL_TREE, decl, TYPE_NONCOPIED_PARTS (t));
+      TREE_STATIC (TYPE_NONCOPIED_PARTS (t)) = 1;
     }
+
   if (n_baseclasses)
     TYPE_FIELDS (t) = chainon (last_x, TYPE_FIELDS (t));
 
@@ -4021,8 +4033,7 @@ finish_struct_1 (t, warn_anon)
     }
 
   /* Write out inline function definitions.  */
-  do_inline_function_hair (t, CLASSTYPE_INLINE_FRIENDS (t));
-  CLASSTYPE_INLINE_FRIENDS (t) = 0;
+  do_inline_function_hair (t, inline_friends);
 
   if (CLASSTYPE_VSIZE (t) != 0)
     {
@@ -4049,7 +4060,9 @@ finish_struct_1 (t, warn_anon)
       /* In addition to this one, all the other vfields should be listed.  */
       /* Before that can be done, we have to have FIELD_DECLs for them, and
 	 a place to find them.  */
-      TYPE_NONCOPIED_PARTS (t) = build_tree_list (default_conversion (TYPE_BINFO_VTABLE (t)), vfield);
+      TYPE_NONCOPIED_PARTS (t) 
+	= tree_cons (default_conversion (TYPE_BINFO_VTABLE (t)),
+		     vfield, TYPE_NONCOPIED_PARTS (t));
 
       if (warn_nonvdtor && TYPE_HAS_DESTRUCTOR (t)
 	  && DECL_VINDEX (TREE_VEC_ELT (method_vec, 1)) == NULL_TREE)
