@@ -6861,7 +6861,9 @@ expand_expr (exp, target, tmode, modifier)
 
 	if (TREE_CODE (lhs) != VAR_DECL
 	    && TREE_CODE (lhs) != RESULT_DECL
-	    && TREE_CODE (lhs) != PARM_DECL)
+	    && TREE_CODE (lhs) != PARM_DECL
+	    && ! (TREE_CODE (lhs) == INDIRECT_REF
+		  && TYPE_READONLY (TREE_TYPE (TREE_OPERAND (lhs, 0)))))
 	  preexpand_calls (exp);
 
 	/* Check for |= or &= of a bitfield of size one into another bitfield
