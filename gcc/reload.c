@@ -2753,10 +2753,20 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		     register access.  If the data is, in fact, in memory we
 		     must always load using the size assumed to be in the
 		     register and let the insn do the different-sized 
-		     accesses.  */
+		     accesses.
+
+		     This is doubly true if WORD_REGISTER_OPERATIONS.  In 
+		     this case eliminate_regs has left non-paradoxical
+		     subregs for push_reloads to see.  Make sure it does
+		     by forcing the reload.
+
+		     ??? When is it right at this stage to have a subreg
+		     of a mem that is _not_ to be handled specialy?  IMO
+		     those should have been reduced to just a mem.  */
 		  || ((GET_CODE (operand) == MEM
 		       || (GET_CODE (operand)== REG
 			   && REGNO (operand) >= FIRST_PSEUDO_REGISTER))
+#ifndef WORD_REGISTER_OPERATIONS
 		      && (((GET_MODE_BITSIZE (GET_MODE (operand))
 			    < BIGGEST_ALIGNMENT)
 			   && (GET_MODE_SIZE (operand_mode[i])
@@ -2771,7 +2781,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			      && INTEGRAL_MODE_P (GET_MODE (operand))
 			      && LOAD_EXTEND_OP (GET_MODE (operand)) != NIL)
 #endif
-			  ))
+			  )
+#endif
+		      )
 		  /* Subreg of a hard reg which can't handle the subreg's mode
 		     or which would handle that mode in the wrong number of
 		     registers for subregging to work.  */
