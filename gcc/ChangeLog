@@ -1,3 +1,7 @@
+Wed May 19 00:50:24 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump version to gcc-2.95 prerelease.
+
 Tue May 18 03:53:37 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Improve open-coding of complex divide:
