@@ -1,3 +1,9 @@
+2004-03-19  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+	PR libstdc++/14647
+	* include/backward/bvector.h (bit_vector): Allocator is in std
+	namespace.
+
 2004-03-19  Phil Edwards  <phil@codesourcery.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_WCHAR_T_SUPPORT):  Set LIBICONV,
