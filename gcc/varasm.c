@@ -2166,6 +2166,7 @@ decode_rtx_const (mode, x, value)
 
     case SYMBOL_REF:
     case LABEL_REF:
+    case PC:
       value->un.addr.base = x;
       break;
 
