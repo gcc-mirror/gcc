@@ -1,4 +1,5 @@
-/* EmbeddedWindowSupport.java --
+/* EmbeddedWindowPeer.java -- Interface for window peers that may be
+   embedded into other applications
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,30 +37,10 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package gnu.java.awt;
+package gnu.java.awt.peer;
 
-import gnu.java.awt.peer.EmbeddedWindowPeer;
+import java.awt.peer.FramePeer;
 
-/**
- * Declares a method for creating native embedded window peers.
- *
- * All classes inherited from java.awt.Toolkit that implement this
- * interface are assumed to support the creation of embedded window
- * peers. To create an embedded window, use
- * gnu.java.awt.EmbeddedWindow.
- *
- * @see gnu.java.awt.EmbeddedWindow
- * @see java.awt.Toolkit
- *
- * @author Michael Koch <konqueror@gmx.de>
- */
-public interface EmbeddedWindowSupport
+public interface EmbeddedWindowPeer extends FramePeer
 {
-  /**
-   * Creates an embedded window peer, and associates it with an
-   * EmbeddedWindow object.
-   *
-   * @param w The embedded window with which to associate a peer.
-   */
-  public EmbeddedWindowPeer createEmbeddedWindow (EmbeddedWindow w);
 }

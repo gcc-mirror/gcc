@@ -38,25 +38,59 @@ exception statement from your version. */
 
 package gnu.java.awt;
 
-import java.awt.Window;
+import gnu.java.awt.peer.EmbeddedWindowPeer;
+import java.awt.Frame;
+import java.awt.Toolkit;
 
 /**
- * This class represents an AWT window embedded into another graphical
- * toolkit or anther application.
+ * Represents an AWT window that can be embedded into another
+ * application.
  * 
  * @author Michael Koch <konqueror@gmx.de>
  */
-public class EmbeddedWindow extends Window
+public class EmbeddedWindow extends Frame
 {
+  private int window_id;
+  
   /**
-   * Creates an window embedded into another application of graphical toolkit.
+   * Creates an window to be embedded into another application.
    *
    * @param window_id The native handle to the screen area where the AWT window
    * should be embedded.
-   * @param width The width of the screen area.
-   * @param height The height of the screen area.
    */
+  public EmbeddedWindow (int window_id)
+  {
+    super();
+    this.window_id = window_id;
+  }
+  
+  /**
+   * Creates the native peer for this embedded window.
+   */
+  public void addNotify()
+  {
+    Toolkit tk = getToolkit();
+
+    if (! (tk instanceof EmbeddedWindowSupport))
+      throw new UnsupportedOperationException
+        ("Embedded windows are not supported by the current peers: " + tk.getClass());
+
+    setWindowPeer (((EmbeddedWindowSupport) tk).createEmbeddedWindow (this));
+    super.addNotify();
+  }
+
   // This method is only made native to circumvent the package-privateness of
-  // an internal java.awt.Window constructor.
-  public static native Window create (int window_id, int width, int height);
+  // an AWT internal java.awt.Component.peer member variable.
+  native void setWindowPeer (EmbeddedWindowPeer peer);
+
+  /**
+   * Gets the native handle of the screen area where the window will
+   * be embedded.
+   *
+   * @return The native handle that was passed to the constructor.
+   */
+  public int getHandle()
+  {
+    return window_id;
+  }
 }

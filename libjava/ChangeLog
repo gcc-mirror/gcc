@@ -1,3 +1,37 @@
+2003-07-27  Thomas Fitzsimmons <fitzsim@redhat.com.h> 
+	    Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/EmbeddedWindow.java
+	(EmbeddedWindow): Extends Frame instead of Window.
+	(window_id): New member variable to store the native window handle.
+	(create): Removed.
+	(EmbeddedWindow): New constructor.
+	(addNotify): New method.
+	(getHandler): Likewise.
+	(setWindowPeer): New native method.
+	* gnu/java/awt/EmbeddedWindowSupport.java
+	(EmbeddedWindowSupport): Fixed documentation.
+	(createEmbeddedWindow): Return EmbeddedWindowPeer instead of
+	WindowPeer, give it an EmbeddedWindow instance instead of the raw
+	window data.
+	* gnu/java/awt/natEmbeddedWindow.cc
+	(create): Removed.
+	(setWindowPeer): New method.
+	* gnu/java/awt/peer/EmbeddedWindowPeer.java,
+	gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c:
+	New files
+	* gnu/java/awt/peer/gtk/GtkToolkit.java
+	(GtkToolkit): Implements EmbeddedWindowSupport.
+	(createEmbeddedWindow): New method.
+	* java/awt/Window.java
+	(Window): Removed.
+	* Makefile.am
+	(java_source_files): Added EmbeddedWindowPeer.java.
+	(gtk_awt_peer_sources): Added GtkEmbeddedWindowPeer.java.
+	(gtk_c_source_files): Added gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c.
+	* Makefile.in: Regenerated.
+
 2003-07-26  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* java/lang/Win32Process.java (ConcreteProcess): Surround

@@ -166,6 +166,7 @@ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.c \
@@ -206,6 +207,7 @@ gnu/java/awt/peer/gtk/GtkClipboard.java	\
 gnu/java/awt/peer/gtk/GtkComponentPeer.java \
 gnu/java/awt/peer/gtk/GtkContainerPeer.java \
 gnu/java/awt/peer/gtk/GtkDialogPeer.java \
+gnu/java/awt/peer/gtk/GtkEmbeddedWindowPeer.java \
 gnu/java/awt/peer/gtk/GtkFileDialogPeer.java \
 gnu/java/awt/peer/gtk/GtkFontPeer.java \
 gnu/java/awt/peer/gtk/GtkFramePeer.java	\
@@ -758,6 +760,7 @@ gnu/java/awt/EventModifier.java \
 gnu/java/awt/GLightweightPeer.java \
 gnu/java/awt/image/ImageDecoder.java \
 gnu/java/awt/image/XBMDecoder.java \
+gnu/java/awt/peer/EmbeddedWindowPeer.java \
 gnu/java/beans/editors/ColorEditor.java	\
 gnu/java/beans/editors/FontEditor.java \
 gnu/java/beans/editors/NativeBooleanEditor.java	\
