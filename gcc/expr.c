@@ -2163,19 +2163,20 @@ copy_blkmode_from_reg (tgtblk, srcreg, type)
       preserve_temp_slots (tgtblk);
     }
 
-  /* This code assumes srcreg is at least a full word.  If it isn't,
-     copy it into a new pseudo which is a full word.  */
+  /* This code assumes srcreg is at least a full word.  If it isn't, copy it
+     into a new pseudo which is a full word.
 
-  /* If FUNCTION_ARG_REG_LITTLE_ENDIAN is set and convert_to_mode does
-     a copy, the wrong part of the register gets copied so we fake
-     a type conversion in place.  */
-     
+     If FUNCTION_ARG_REG_LITTLE_ENDIAN is set and convert_to_mode does a copy,
+     the wrong part of the register gets copied so we fake a type conversion
+     in place.  */
   if (GET_MODE (srcreg) != BLKmode
       && GET_MODE_SIZE (GET_MODE (srcreg)) < UNITS_PER_WORD)
-    if (FUNCTION_ARG_REG_LITTLE_ENDIAN)
-       srcreg = simplify_gen_subreg (word_mode, srcreg, GET_MODE (srcreg), 0);
-    else
-       srcreg = convert_to_mode (word_mode, srcreg, TREE_UNSIGNED (type));
+    {
+      if (FUNCTION_ARG_REG_LITTLE_ENDIAN)
+	srcreg = simplify_gen_subreg (word_mode, srcreg, GET_MODE (srcreg), 0);
+      else
+	srcreg = convert_to_mode (word_mode, srcreg, TREE_UNSIGNED (type));
+    }
 
   /* Structures whose size is not a multiple of a word are aligned
      to the least significant byte (to the right).  On a BYTES_BIG_ENDIAN
@@ -3645,8 +3646,8 @@ expand_assignment (to, from, want_value, suggest_reg)
       if (mode1 == VOIDmode && want_value)
 	tem = stabilize_reference (tem);
 
-      orig_to_rtx = to_rtx = expand_expr (tem, NULL_RTX, VOIDmode,
-					  EXPAND_WRITE);
+      orig_to_rtx = to_rtx = expand_expr (tem, NULL_RTX, VOIDmode, 0);
+
       if (offset != 0)
 	{
 	  rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
@@ -5794,8 +5795,12 @@ highest_pow2_factor (exp)
       /* If the integer is expressable in a HOST_WIDE_INT, we can find the
 	 lowest bit that's a one.  If the result is zero, pessimize by
 	 returning 1.  This is overly-conservative, but such things should not
-	 happen in the offset expressions that we are called with.  */
-      if (host_integerp (exp, 0))
+	 happen in the offset expressions that we are called with.  If
+	 the constant overlows, we some erroneous program, so return
+	 BIGGEST_ALIGNMENT to avoid any later ICE.  */
+      if (TREE_CONSTANT_OVERFLOW (exp))
+	return BIGGEST_ALIGNMENT;
+      else if (host_integerp (exp, 0))
 	{
 	  c0 = tree_low_cst (exp, 0);
 	  c0 = c0 < 0 ? - c0 : c0;
