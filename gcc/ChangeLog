@@ -1,5 +1,9 @@
 2000-01-08  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
+	* config/c4x/c4x.md (*subqf3_set): Fix typo.
+
+2000-01-08  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+	
 	* config/c4x/c4x.h (CALLER_SAVE_PROFITABLE): Define as 0.
 
 2000-01-07  David Edelsohn  <edelsohn@gnu.org>
