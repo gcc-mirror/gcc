@@ -8294,10 +8294,12 @@ do_jump (exp, if_false_label, if_true_label)
     case EQ_EXPR:
       if (integer_zerop (TREE_OPERAND (exp, 1)))
 	do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label);
-      else if ((GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
-		== MODE_INT)
-	       && 
-	       !can_compare_p (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+      else if (((GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+		 == MODE_INT)
+		&& 
+		!can_compare_p (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+	       || GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))) == MODE_COMPLEX_FLOAT
+	       || GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))) == MODE_COMPLEX_INT)
 	do_jump_by_parts_equality (exp, if_false_label, if_true_label);
       else
 	comparison = compare (exp, EQ, EQ);
@@ -8306,10 +8308,12 @@ do_jump (exp, if_false_label, if_true_label)
     case NE_EXPR:
       if (integer_zerop (TREE_OPERAND (exp, 1)))
 	do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
-      else if ((GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
-		== MODE_INT)
-	       && 
-	       !can_compare_p (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+      else if (((GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+		 == MODE_INT)
+		&& 
+		!can_compare_p (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+	       || GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))) == MODE_COMPLEX_FLOAT
+	       || GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))) == MODE_COMPLEX_INT)
 	do_jump_by_parts_equality (exp, if_true_label, if_false_label);
       else
 	comparison = compare (exp, NE, NE);
