@@ -1,3 +1,14 @@
+Thu Mar 21 01:55:06 EST 2002  John Wehle  (john@feith.com)
+
+	* alias.c: (nonlocal_mentioned_p): Use for_each_rtx.
+	(nonlocal_mentioned_p_1): New function.
+	(nonlocal_referenced_p, nonlocal_referenced_p_1): Likewise.
+	(nonlocal_set_p, nonlocal_set_p_1): Likewise.
+	(mark_constant_function): Recognize pure functions.
+	* rtl.h (global_reg_mentioned_p): New prototype.
+	* rtlanal.c (global_reg_mentioned_p,
+	global_reg_mentioned_p_1): New function.
+
 2002-03-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (alpha_assert): Fix assert macro in Tru64
