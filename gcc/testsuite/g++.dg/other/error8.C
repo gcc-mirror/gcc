@@ -5,7 +5,7 @@
 
 void foo(void)
 {
-  union { int alpha; int beta; }; // { dg-error "previous declaration of `int alpha'" }
+  union { int alpha; int beta; }; // { dg-error "previous declaration of 'int alpha'" }
   double alpha;  // { dg-error "redeclared" }
 }
 
