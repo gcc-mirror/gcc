@@ -575,7 +575,7 @@ i960_address_cost (x)
 
    Return 1 if we have written out everything that needs to be done to
    do the move.  Otherwise, return 0 and the caller will emit the move
-   normally.  */
+   normally. */
 
 int
 emit_move_sequence (operands, mode)
@@ -583,8 +583,12 @@ emit_move_sequence (operands, mode)
      enum machine_mode mode;
 {
   /* We can only store registers to memory.  */
-
-  if (GET_CODE (operands[0]) == MEM && GET_CODE (operands[1]) != REG)
+  
+  if (GET_CODE (operands[0]) == MEM && GET_CODE (operands[1]) != REG
+      && (operands[1] != const0_rtx || current_function_args_size
+	  || current_function_varargs || current_function_stdarg
+	  || rtx_equal_function_value_matters))
+    /* Here we use the same test as movsi+1 pattern -- see i960.md. */
     operands[1] = force_reg (mode, operands[1]);
 
   /* Storing multi-word values in unaligned hard registers to memory may
@@ -673,13 +677,34 @@ i960_output_move_double (dst, src)
     {
       if (REGNO (src) & 1)
 	{
-	  /* This is handled by emit_move_sequence so we shouldn't get here.  */
-	  abort ();
+	  operands[0] = dst;
+	  operands[1] = adj_offsettable_operand (dst, UNITS_PER_WORD);
+	  if (! memory_address_p (word_mode, XEXP (operands[1], 0)))
+	    abort ();
+	  operands[2] = src;
+	  output_asm_insn ("st	%2,%0\n\tst	%D2,%1", operands);
+	  return "";
 	}
       return "stl	%1,%0";
     }
   else
     abort ();
+}
+
+/* Output assembler to move a double word zero.  */
+
+char *
+i960_output_move_double_zero (dst)
+     rtx dst;
+{
+  rtx operands[2];
+
+  operands[0] = dst;
+    {
+      operands[1] = adj_offsettable_operand (dst, 4);
+      output_asm_insn ("st	g14,%0\n\tst	g14,%1", operands);
+    }
+  return "";
 }
 
 /* Output assembler to move a quad word value.  */
@@ -744,14 +769,40 @@ i960_output_move_quad (dst, src)
     {
       if (REGNO (src) & 3)
 	{
-	  /* This is handled by emit_move_sequence so we shouldn't get here.  */
-	  abort ();
+	  operands[0] = dst;
+	  operands[1] = adj_offsettable_operand (dst, UNITS_PER_WORD);
+	  operands[2] = adj_offsettable_operand (dst, 2*UNITS_PER_WORD);
+	  operands[3] = adj_offsettable_operand (dst, 3*UNITS_PER_WORD);
+	  if (! memory_address_p (word_mode, XEXP (operands[3], 0)))
+	    abort ();
+	  operands[4] = src;
+	  output_asm_insn ("st	%4,%0\n\tst	%D4,%1\n\tst	%E4,%2\n\tst	%F4,%3", operands);
+	  return "";
 	}
       return "stq	%1,%0";
     }
   else
     abort ();
 }
+
+/* Output assembler to move a quad word zero.  */
+
+char *
+i960_output_move_quad_zero (dst)
+     rtx dst;
+{
+  rtx operands[4];
+
+  operands[0] = dst;
+    {
+      operands[1] = adj_offsettable_operand (dst, 4);
+      operands[2] = adj_offsettable_operand (dst, 8);
+      operands[3] = adj_offsettable_operand (dst, 12);
+      output_asm_insn ("st	g14,%0\n\tst	g14,%1\n\tst	g14,%2\n\tst	g14,%3", operands);
+    }
+  return "";
+}
+
 
 /* Emit insns to load a constant to non-floating point registers.
    Uses several strategies to try to use as few insns as possible.  */

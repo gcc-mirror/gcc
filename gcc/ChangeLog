@@ -1,3 +1,15 @@
+1999-01-14  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* config/i960/i960.c (i960_output_move_double_zero,
+	i960_output_move_quad_zero): New functions for moving zeros.
+	(i960_output_move_double, i960_output_move_quad): Additional code
+	for situation when moving unaligned register group.
+	
+        * config/i960/i960.h (i960_output_move_double_zero,
+	i960_output_move_quad_zero): The function definitions.
+
+	* config/i960/i960.md (movdi+1, movti+1): Usage of the functions.
+
 1999-01-13  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
 	* config/i960/i960.c (i960_function_prologue): New code (optimal

@@ -1564,7 +1564,9 @@ extern char *i960_output_ldconst ();
 extern char *i960_output_call_insn ();
 extern char *i960_output_ret_insn ();
 extern char *i960_output_move_double ();
+extern char *i960_output_move_double_zero ();
 extern char *i960_output_move_quad ();
+extern char *i960_output_move_quad_zero ();
 
 /* Defined in reload.c, and used in insn-recog.c.  */
 
