@@ -1,3 +1,7 @@
+2000-10-30  Phil Edwards  <pme@sources.redhat.com>
+
+	* gcc.texi:  The C++ standard isn't "draft" anymore.
+
 2000-10-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* cppmacro.c (builtin_macro): Use NT_VOID, not T_VOID.

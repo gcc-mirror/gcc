@@ -1683,7 +1683,7 @@ class Foo
 This declaration only establishes that the class @code{Foo} has an
 @code{int} named @code{Foo::bar}, and a member function named
 @code{Foo::method}.  But you still need to define @emph{both}
-@code{method} and @code{bar} elsewhere.  According to the draft ANSI
+@code{method} and @code{bar} elsewhere.  According to the ISO
 standard, you must supply an initializer in one (and only one) source
 file, such as:
 
