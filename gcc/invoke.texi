@@ -4684,9 +4684,11 @@ up, rather than put the references in the text section.
 
 @item -membedded-pic
 @itemx -mno-embedded-pic
-Generate PIC code suitable for some embedded systems.  All calls are made
-using PC relative address, and all data is addressed using the $gp register.
-This requires GNU as and GNU ld which do most of the work.
+Generate PIC code suitable for some embedded systems.  All calls are
+made using PC relative address, and all data is addressed using the $gp
+register.  No more than 65536 bytes of global data may be used.  This
+requires GNU as and GNU ld which do most of the work.  This currently
+only works on targets which use ECOFF; it does not work with ELF.
 
 @item -membedded-data
 @itemx -mno-embedded-data
