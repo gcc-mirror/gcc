@@ -142,7 +142,7 @@ operator=( const Vector &A )
 double Vector::
 operator()( int row ) const
 {
-	assert( r );
+	assert(r != 0);
 
 	return *r->vec;
 }
@@ -150,7 +150,7 @@ operator()( int row ) const
 VecElem Vector::
 operator()( int r )
 {
-	assert(r);
+	assert(r != 0);
 
 	return VecElem( *this, r );
 }
@@ -159,7 +159,7 @@ operator()( int r )
 double Vector::
 assign( int rownum, double d )
 {
-	assert(r);
+	assert(r != 0);
 
 	if( rownum > row() || rownum <= 0 ) {
 	  std::cerr << "Warning: trying to assign out of bounds" << std::endl;
@@ -246,7 +246,7 @@ VecElem( const VecElem &elem )
 VecElem::
 operator double()
 {
-	assert( v.r->vec );
+	assert( v.r->vec != 0 );
 	return *v.r->vec;
 };
 
