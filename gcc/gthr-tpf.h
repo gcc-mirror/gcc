@@ -51,6 +51,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 typedef pthread_key_t __gthread_key_t;
 typedef pthread_once_t __gthread_once_t;
 typedef pthread_mutex_t __gthread_mutex_t;
+typedef pthread_mutex_t __gthread_recursive_mutex_t;
+
+#if defined(PTHREAD_RECURSIVE_MUTEX_INITIALIZER)
+#define __GTHREAD_RECURSIVE_MUTEX_INIT PTHREAD_RECURSIVE_MUTEX_INITIALIZER
+#elif defined(PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP)
+#define __GTHREAD_RECURSIVE_MUTEX_INIT PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
+#endif
 
 #define __GTHREAD_MUTEX_INIT PTHREAD_MUTEX_INITIALIZER
 #define __GTHREAD_ONCE_INIT PTHREAD_ONCE_INIT
@@ -150,6 +157,33 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
 {
   if (__tpf_pthread_active ())
     return pthread_mutex_unlock (mutex);
+  else
+    return 0;
+}
+
+static inline int
+__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
+{
+  if (__tpf_pthread_active ())
+    return __gthread_mutex_lock (mutex);
+  else
+    return 0;
+}
+
+static inline int
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
+{
+  if (__tpf_pthread_active ())
+    return __gthread_mutex_trylock (mutex);
+  else
+    return 0;
+}
+
+static inline int
+__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
+{
+  if (__tpf_pthread_active ())
+    return __gthread_mutex_unlock (mutex);
   else
     return 0;
 }
