@@ -1,3 +1,9 @@
+1999-03-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (build_member_call): Handle template-id expressions
+	correctly.
+	* typeck.c (build_x_function_call): Likewise.
+
 1999-03-19  Chip Salzenberg  <chip@perlsupport.com>
 
 	* friend.c (make_friend_class): Avoid core dump when

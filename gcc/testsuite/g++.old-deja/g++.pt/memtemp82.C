@@ -1,5 +1,5 @@
 // Build don't link:
-// excess errors test - XFAIL *-*-*
+// excess errors test
 
 struct foo {
        template<typename T> T bar() { return staticbar<T>( this ); }
