@@ -433,6 +433,9 @@ handler (signo)
   if (ldout != 0 && ldout[0])
     maybe_unlink (ldout);
 
+  if (export_file != 0 && export_file[0])
+    maybe_unlink (export_file);
+
   signal (signo, SIG_DFL);
   kill (getpid (), signo);
 }
