@@ -1,3 +1,8 @@
+2004-07-04  Roger Sayle  <roger@eyesopen.com>
+
+	* ifcvt.c (noce_try_sign_mask): Call emit_store_flag to generate
+	a "sign mask" instead of using ashr_optab directly.
+
 2004-07-04  Neil Booth  <neil@duron.akihabara.co.uk>
 
 	* doc/cpp.texi: Don't document what we do for ill-formed expressions.
