@@ -1,3 +1,7 @@
+Thu Sep 18 17:31:38 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* com.c (lang_printable_name): Use verbosity argument.
+
 Thu Sep 18 16:08:40 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Make-lang.in: Fix merge problems.
