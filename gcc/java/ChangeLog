@@ -1,3 +1,10 @@
+2002-03-11  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* parse.y (patch_assignment): Wrap the right-hand-side with a save_expr
+	to prevent it getting evaluated twice in the store checking case.
+	* expr.c (build_java_arraystore_check): Unwrap SAVE_EXPR's when
+	examining OBJECT.
+
 2002-03-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* decl.c (java_init_decl_processing): Make sure class_type_node
