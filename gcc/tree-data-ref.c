@@ -1816,12 +1816,12 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
 	  struct loop *loop_b = current_loops->parray[loop_nb_b];
 	  struct loop *loop_first = current_loops->parray[first_loop];
 
-	  /* If the loops for both variables are at a lower depth than 
-	     the first_loop's depth, then they can't possibly have a
+	  /* If the loop for either variable is at a lower depth than 
+	     the first_loop's depth, then we can't possibly have a
 	     dependency at this level of the loop.  */
 	     
 	  if (loop_a->depth < loop_first->depth
-	      && loop_b->depth < loop_first->depth)
+	      || loop_b->depth < loop_first->depth)
 	    return false;
 
 	  if (loop_nb_a != loop_nb_b
@@ -1992,11 +1992,12 @@ build_classic_dir_vector (struct data_dependence_relation *ddr,
 	  struct loop *loop_b = current_loops->parray[loop_nb_b];
 	  struct loop *loop_first = current_loops->parray[first_loop];
  
-	  /* If the loops for both variables are at a lower depth than 
-	     the first_loop's depth, then they can't possibly matter */
+	  /* If the loop for either variable is at a lower depth than 
+	     the first_loop's depth, then we can't possibly have a
+	     dependency at this level of the loop.  */
 	     
 	  if (loop_a->depth < loop_first->depth
-	      && loop_b->depth < loop_first->depth)
+	      || loop_b->depth < loop_first->depth)
 	    return false;
 
 	  if (loop_nb_a != loop_nb_b
