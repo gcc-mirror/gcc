@@ -231,6 +231,9 @@ print_rtx (in_rtx)
       case 'w':
 	fprintf (outfile, " ");
 	fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, XWINT (in_rtx, i));
+	fprintf (outfile, " [");
+	fprintf (outfile, HOST_WIDE_INT_PRINT_HEX, XWINT (in_rtx, i));
+	fprintf (outfile, "]");
 	break;
 
       case 'i':
