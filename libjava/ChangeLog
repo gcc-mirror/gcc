@@ -1,5 +1,14 @@
 2003-05-20  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/DataInputStream.java:
+	Reformatted, Replaced < and & with html entitites in documentation.
+	* java/io/File.java:
+	Reformatted.
+	* java/io/PrintWriter.java:
+	Moved class documentation.
+
+2003-05-20  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/ByteBufferImpl.java,
 	gnu/java/nio/CharBufferImpl.java,
 	gnu/java/nio/CharViewBufferImpl.java,

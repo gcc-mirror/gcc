@@ -51,7 +51,7 @@ package java.io;
  * @see DataInput
  *
  * @author Warren Levy <warrenl@cygnus.com>
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
  * @date October 20, 1998.  
  */
 public class DataInputStream extends FilterInputStream implements DataInput
@@ -62,7 +62,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
   boolean ignoreInitialNewline = false;
 
   // Byte buffer, used to make primitive read calls more efficient.
-  byte[] buf = new byte[8];
+  byte[] buf = new byte [8];
   
   /**
    * This constructor initializes a new <code>DataInputStream</code>
@@ -70,9 +70,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @param in The subordinate <code>InputStream</code> to read from
    */
-  public DataInputStream(InputStream in)
+  public DataInputStream (InputStream in)
   {
-    super(in);
+    super (in);
   }
 
   /**
@@ -88,9 +88,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @exception IOException If an error occurs.
    */
-  public final int read(byte[] b) throws IOException
+  public final int read (byte[] b) throws IOException
   {
-    return in.read(b, 0, b.length);
+    return in.read (b, 0, b.length);
   }
 
   /**
@@ -109,9 +109,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @exception IOException If an error occurs.
    */
-  public final int read(byte[] b, int off, int len) throws IOException
+  public final int read (byte[] b, int off, int len) throws IOException
   {
-    return in.read(b, off, len);
+    return in.read (b, off, len);
   }
 
   /**
@@ -132,9 +132,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @see DataOutput#writeBoolean
    */
-  public final boolean readBoolean() throws IOException
+  public final boolean readBoolean () throws IOException
   {
-    return convertToBoolean(in.read());
+    return convertToBoolean (in.read ());
   }
 
   /**
@@ -152,9 +152,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @see DataOutput#writeByte
    */
-  public final byte readByte() throws IOException
+  public final byte readByte () throws IOException
   {
-    return convertToByte(in.read());
+    return convertToByte (in.read ());
   }
 
   /**
@@ -169,7 +169,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * respectively, they will be transformed to a <code>char</code> in
    * the following manner: 
    * <p>
-   * <code>(char)(((byte1 & 0xFF) << 8) | (byte2 & 0xFF)</code>
+   * <code>(char)(((byte1 &amp; 0xFF) &lt;&lt; 8) | (byte2 &amp; 0xFF)</code>
    * <p>
    * This method can read a <code>char</code> written by an object
    * implementing the <code>writeChar()</code> method in the
@@ -182,10 +182,10 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @see DataOutput#writeChar
    */
-  public final char readChar() throws IOException
+  public final char readChar () throws IOException
   {
     readFully (buf, 0, 2);
-    return convertToChar(buf);
+    return convertToChar (buf);
   }
 
   /**
@@ -209,9 +209,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * @see DataOutput#writeDouble
    * @see java.lang.Double#longBitsToDouble
    */
-  public final double readDouble() throws IOException
+  public final double readDouble () throws IOException
   {
-    return Double.longBitsToDouble(readLong());
+    return Double.longBitsToDouble (readLong ());
   }
 
   /**
@@ -234,9 +234,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * @see DataOutput#writeFloat 
    * @see java.lang.Float#intBitsToFloat
    */
-  public final float readFloat() throws IOException
+  public final float readFloat () throws IOException
   {
-    return Float.intBitsToFloat(readInt());
+    return Float.intBitsToFloat (readInt ());
   }
 
   /**
@@ -253,9 +253,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * buffer
    * @exception IOException If any other error occurs
    */
-  public final void readFully(byte[] b) throws IOException
+  public final void readFully (byte[] b) throws IOException
   {
-    readFully(b, 0, b.length);
+    readFully (b, 0, b.length);
   }
 
   /**
@@ -277,14 +277,14 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * buffer
    * @exception IOException If any other error occurs
    */
-  public final void readFully(byte[] b, int off, int len) throws IOException
+  public final void readFully (byte[] b, int off, int len) throws IOException
   {
     while (len > 0)
       {
 	// in.read will block until some data is available.
-	int numread = in.read(b, off, len);
+	int numread = in.read (b, off, len);
 	if (numread < 0)
-	  throw new EOFException();
+	  throw new EOFException ();
 	len -= numread;
 	off += numread;
       }
@@ -301,8 +301,8 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * the first four bytes read from the stream, they will be
    * transformed to an <code>int</code> in the following manner:
    * <p>
-   * <code>(int)(((byte1 & 0xFF) << 24) + ((byte2 & 0xFF) << 16) +
-   * ((byte3 & 0xFF)<< 8) + (byte4 & 0xFF)))</code>
+   * <code>(int)(((byte1 &amp; 0xFF) &lt;&lt; 24) + ((byte2 &amp; 0xFF) &lt;&lt; 16) +
+   * ((byte3 &amp; 0xFF)&lt;&lt; 8) + (byte4 &amp; 0xFF)))</code>
    * <p>
    * The value returned is in the range of -2147483648 to 2147483647.
    * <p>
@@ -317,10 +317,10 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @see DataOutput#writeInt
    */
-  public final int readInt() throws IOException
+  public final int readInt () throws IOException
   {
     readFully (buf, 0, 4);
-    return convertToInt(buf);
+    return convertToInt (buf);
   }
 
   /**
@@ -349,9 +349,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @deprecated
    */
-  public final String readLine() throws IOException
+  public final String readLine () throws IOException
   {
-    StringBuffer strb = new StringBuffer();
+    StringBuffer strb = new StringBuffer ();
 
     readloop: while (true)
       {
@@ -363,7 +363,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
 	    getnext = false;
 	    c = in.read();
 	    if (c < 0)	// got an EOF
-	      return strb.length() > 0 ? strb.toString() : null;
+	      return strb.length () > 0 ? strb.toString () : null;
 	    ch = (char) c;
 	    if ((ch &= 0xFF) == '\n')
 	      // hack to correctly handle '\r\n' sequences
@@ -447,10 +447,10 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * the first eight bytes read from the stream, they will be
    * transformed to an <code>long</code> in the following manner:
    * <p>
-   * <code>(long)(((byte1 & 0xFF) << 56) + ((byte2 & 0xFF) << 48) +
-   * ((byte3 & 0xFF) << 40) + ((byte4 & 0xFF) << 32) +
-   * ((byte5 & 0xFF) << 24) + ((byte6 & 0xFF) << 16) +
-   * ((byte7 & 0xFF) << 8) + (byte8 & 0xFF)))
+   * <code>(long)(((byte1 &amp; 0xFF) &lt;&lt; 56) + ((byte2 &amp; 0xFF) &lt;&lt; 48) +
+   * ((byte3 &amp; 0xFF) &lt;&lt; 40) + ((byte4 &amp; 0xFF) &lt;&lt; 32) +
+   * ((byte5 &amp; 0xFF) &lt;&lt; 24) + ((byte6 &amp; 0xFF) &lt;&lt; 16) +
+   * ((byte7 &amp; 0xFF) &lt;&lt; 8) + (byte8 &amp; 0xFF)))
    * </code>
    * <p>
    * The value returned is in the range of -9223372036854775808 to
@@ -467,10 +467,10 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @see DataOutput#writeLong
    */
-  public final long readLong() throws IOException
+  public final long readLong () throws IOException
   {
     readFully (buf, 0, 8);
-    return convertToLong(buf);
+    return convertToLong (buf);
   }
 
   /**
@@ -485,7 +485,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * respectively, they will be transformed to a <code>short</code>. in
    * the following manner:
    * <p>
-   * <code>(short)(((byte1 & 0xFF) << 8) | (byte2 & 0xFF))</code>
+   * <code>(short)(((byte1 &amp; 0xFF) &lt;&lt; 8) | (byte2 &amp; 0xFF))</code>
    * <p>
    * The value returned is in the range of -32768 to 32767.
    * <p>
@@ -500,10 +500,10 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @see DataOutput#writeShort
    */
-  public final short readShort() throws IOException
+  public final short readShort () throws IOException
   {
     readFully (buf, 0, 2);
-    return convertToShort(buf);
+    return convertToShort (buf);
   }
   
   /**
@@ -522,9 +522,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @see DataOutput#writeByte
    */
-  public final int readUnsignedByte() throws IOException
+  public final int readUnsignedByte () throws IOException
   {
-    return convertToUnsignedByte(in.read());
+    return convertToUnsignedByte (in.read ());
   }
 
   /**
@@ -539,7 +539,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * respectively, they will be transformed to an <code>int</code> in
    * the following manner:
    * <p>
-   * <code>(int)(((byte1 & 0xFF) << 8) + (byte2 & 0xFF))</code>
+   * <code>(int)(((byte1 &amp; 0xFF) &lt;&lt; 8) + (byte2 &amp; 0xFF))</code>
    * <p>
    * The value returned is in the range of 0 to 65535.
    * <p>
@@ -554,10 +554,10 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @see DataOutput#writeShort
    */
-  public final int readUnsignedShort() throws IOException
+  public final int readUnsignedShort () throws IOException
   {
     readFully (buf, 0, 2);
-    return convertToUnsignedShort(buf);
+    return convertToUnsignedShort (buf);
   }
 
   /**
@@ -631,9 +631,9 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @see DataOutput#writeUTF
    */
-  public final String readUTF() throws IOException
+  public final String readUTF () throws IOException
   {
-    return readUTF(this);
+    return readUTF (this);
   }
 
   /**
@@ -648,18 +648,18 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *
    * @see DataInput#readUTF
    */
-  public final static String readUTF(DataInput in) throws IOException
+  public final static String readUTF (DataInput in) throws IOException
   {
-    final int UTFlen = in.readUnsignedShort();
-    byte[] buf = new byte[UTFlen];
+    final int UTFlen = in.readUnsignedShort ();
+    byte[] buf = new byte [UTFlen];
 
     // This blocks until the entire string is available rather than
     // doing partial processing on the bytes that are available and then
     // blocking.  An advantage of the latter is that Exceptions
     // could be thrown earlier.  The former is a bit cleaner.
-    in.readFully(buf, 0, UTFlen);
+    in.readFully (buf, 0, UTFlen);
 
-    return convertFromUTF(buf);
+    return convertFromUTF (buf);
   }
 
   /**
@@ -678,13 +678,13 @@ public class DataInputStream extends FilterInputStream implements DataInput
    *  EOFException. Neither of these appear to be true in the JDK 1.3's
    *  implementation. This tries to implement the actual JDK behaviour.
    */
-  public final int skipBytes(int n) throws IOException
+  public final int skipBytes (int n) throws IOException
   {
     if (n <= 0)
       return 0;    
     try
       {
-        return (int) in.skip(n);
+        return (int) in.skip (n);
       }
     catch (EOFException x)
       {
@@ -693,94 +693,104 @@ public class DataInputStream extends FilterInputStream implements DataInput
     return n;
   }
   
-  static boolean convertToBoolean(int b) throws EOFException
+  static boolean convertToBoolean (int b) throws EOFException
   {
     if (b < 0)
-      throw new EOFException();    
+      throw new EOFException ();
+    
     return (b != 0);
   }
 
-  static byte convertToByte(int i) throws EOFException
+  static byte convertToByte (int i) throws EOFException
   {
     if (i < 0)
-      throw new EOFException();
+      throw new EOFException ();
+    
     return (byte) i;
   }
 
-  static int convertToUnsignedByte(int i) throws EOFException
+  static int convertToUnsignedByte (int i) throws EOFException
   {
     if (i < 0)
-      throw new EOFException();
+      throw new EOFException ();
+    
     return (i & 0xFF);
   }
 
-  static char convertToChar(byte[] buf)
+  static char convertToChar (byte[] buf)
   {
-    return (char) ((buf[0] << 8) | (buf[1] & 0xff));  
+    return (char) ((buf [0] << 8)
+		    | (buf [1] & 0xff));  
   }  
 
-  static short convertToShort(byte[] buf)
+  static short convertToShort (byte[] buf)
   {
-    return (short) ((buf[0] << 8) | (buf[1] & 0xff));  
+    return (short) ((buf [0] << 8)
+		    | (buf [1] & 0xff));  
   }  
 
-  static int convertToUnsignedShort(byte[] buf)
+  static int convertToUnsignedShort (byte[] buf)
   {
-    return (((buf[0] & 0xff) << 8) | (buf[1] & 0xff));  
+    return (((buf [0] & 0xff) << 8)
+	    | (buf [1] & 0xff));  
   }
 
-  static int convertToInt(byte[] buf)
+  static int convertToInt (byte[] buf)
   {
-    return (((buf[0] & 0xff) << 24) | ((buf[1] & 0xff) << 16) |
-	    ((buf[2] & 0xff) << 8) | (buf[3] & 0xff));  
+    return (((buf [0] & 0xff) << 24)
+	    | ((buf [1] & 0xff) << 16)
+	    | ((buf [2] & 0xff) << 8)
+	    | (buf [3] & 0xff));  
   }
 
-  static long convertToLong(byte[] buf)
+  static long convertToLong (byte[] buf)
   {
-    return (((long)(buf[0] & 0xff) << 56) |
-	    ((long)(buf[1] & 0xff) << 48) |
-	    ((long)(buf[2] & 0xff) << 40) |
-	    ((long)(buf[3] & 0xff) << 32) |
-	    ((long)(buf[4] & 0xff) << 24) |
-	    ((long)(buf[5] & 0xff) << 16) |
-	    ((long)(buf[6] & 0xff) <<  8) |
-	    ((long)(buf[7] & 0xff)));  
+    return (((long)(buf [0] & 0xff) << 56) |
+	    ((long)(buf [1] & 0xff) << 48) |
+	    ((long)(buf [2] & 0xff) << 40) |
+	    ((long)(buf [3] & 0xff) << 32) |
+	    ((long)(buf [4] & 0xff) << 24) |
+	    ((long)(buf [5] & 0xff) << 16) |
+	    ((long)(buf [6] & 0xff) <<  8) |
+	    ((long)(buf [7] & 0xff)));  
   }
 
-  static String convertFromUTF(byte[] buf) 
+  static String convertFromUTF (byte[] buf) 
     throws EOFException, UTFDataFormatException
   {
     // Give StringBuffer an initial estimated size to avoid 
     // enlarge buffer frequently
-    StringBuffer strbuf = new StringBuffer(buf.length/2 + 2);
+    StringBuffer strbuf = new StringBuffer (buf.length / 2 + 2);
 
     for (int i = 0; i < buf.length; )
       {
-	if ((buf[i] & 0x80) == 0)		// bit pattern 0xxxxxxx
-	  strbuf.append((char) (buf[i++] & 0xFF));
-	else if ((buf[i] & 0xE0) == 0xC0)	// bit pattern 110xxxxx
+	if ((buf [i] & 0x80) == 0)		// bit pattern 0xxxxxxx
+	  strbuf.append ((char) (buf [i++] & 0xFF));
+	else if ((buf [i] & 0xE0) == 0xC0)	// bit pattern 110xxxxx
 	  {
-	    if (i + 1 >= buf.length || (buf[i+1] & 0xC0) != 0x80)
-	      throw new UTFDataFormatException();
+	    if (i + 1 >= buf.length
+		|| (buf [i + 1] & 0xC0) != 0x80)
+	      throw new UTFDataFormatException ();
 
-	    strbuf.append((char) (((buf[i++] & 0x1F) << 6) |
-				  (buf[i++] & 0x3F)));
+	    strbuf.append((char) (((buf [i++] & 0x1F) << 6)
+				  | (buf [i++] & 0x3F)));
 	  }
-	else if ((buf[i] & 0xF0) == 0xE0)	// bit pattern 1110xxxx
+	else if ((buf [i] & 0xF0) == 0xE0)	// bit pattern 1110xxxx
 	  {
-	    if (i + 2 >= buf.length ||
-		(buf[i+1] & 0xC0) != 0x80 || (buf[i+2] & 0xC0) != 0x80)
-	      throw new UTFDataFormatException();
+	    if (i + 2 >= buf.length
+		|| (buf [i + 1] & 0xC0) != 0x80
+		|| (buf [i + 2] & 0xC0) != 0x80)
+	      throw new UTFDataFormatException ();
 
-	    strbuf.append((char) (((buf[i++] & 0x0F) << 12) |
-				  ((buf[i++] & 0x3F) << 6) |
-				  (buf[i++] & 0x3F)));
+	    strbuf.append ((char) (((buf [i++] & 0x0F) << 12)
+				   | ((buf [i++] & 0x3F) << 6)
+				   | (buf [i++] & 0x3F)));
 	  }
-	else // must be ((buf[i] & 0xF0) == 0xF0 || (buf[i] & 0xC0) == 0x80)
-	  throw new UTFDataFormatException();	// bit patterns 1111xxxx or
+	else // must be ((buf [i] & 0xF0) == 0xF0 || (buf [i] & 0xC0) == 0x80)
+	  throw new UTFDataFormatException ();	// bit patterns 1111xxxx or
 						// 		10xxxxxx
       }
 
-    return strbuf.toString();
+    return strbuf.toString ();
   }
 }

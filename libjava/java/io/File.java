@@ -151,7 +151,7 @@ public class File implements Serializable, Comparable
    */
   public boolean canRead ()
   {
-    checkRead();
+    checkRead ();
     return _access (READ);
   }
 
@@ -171,7 +171,7 @@ public class File implements Serializable, Comparable
    */
   public boolean canWrite ()
   {
-    checkWrite();
+    checkWrite ();
     return _access (WRITE);
   }
   
@@ -196,7 +196,7 @@ public class File implements Serializable, Comparable
    */
   public boolean createNewFile() throws IOException
   {
-    checkWrite();
+    checkWrite ();
     return performCreate();
   }
  
@@ -261,7 +261,7 @@ public class File implements Serializable, Comparable
    */
   public boolean exists ()
   {
-    checkRead();
+    checkRead ();
     return _access (EXISTS);
   }
 
@@ -637,7 +637,7 @@ public class File implements Serializable, Comparable
    */
   public boolean isDirectory ()
   {
-    checkRead();
+    checkRead ();
     return _stat (DIRECTORY);
   }
 
@@ -653,7 +653,7 @@ public class File implements Serializable, Comparable
    */
   public boolean isFile ()
   {
-    checkRead();
+    checkRead ();
     return _stat (ISFILE);
   }
 
@@ -670,7 +670,7 @@ public class File implements Serializable, Comparable
    */
   public boolean isHidden ()
   {
-    checkRead();
+    checkRead ();
     return _stat (ISHIDDEN);
   }
 
@@ -689,7 +689,7 @@ public class File implements Serializable, Comparable
    */
   public long lastModified ()
   {
-    checkRead();
+    checkRead ();
     return attr (MODIFIED);
   }
 
@@ -703,7 +703,7 @@ public class File implements Serializable, Comparable
    */
   public long length ()
   {
-    checkRead();
+    checkRead ();
     return attr (LENGTH);
   }
 
@@ -745,7 +745,7 @@ public class File implements Serializable, Comparable
    */
   public String[] list (FilenameFilter filter)
   {
-    checkRead();
+    checkRead ();
     return (String[]) performList (filter, null, String.class);
   }
 
@@ -769,7 +769,7 @@ public class File implements Serializable, Comparable
    */
   public String[] list ()
   {
-    checkRead();
+    checkRead ();
     return (String[]) performList (null, null, String.class);
   }
 
@@ -793,7 +793,7 @@ public class File implements Serializable, Comparable
    */
   public File[] listFiles ()
   {
-    checkRead();
+    checkRead ();
     return (File[]) performList (null, null, File.class);
   }
   
@@ -823,7 +823,7 @@ public class File implements Serializable, Comparable
    */
   public File[] listFiles (FilenameFilter filter)
   {
-    checkRead();
+    checkRead ();
     return (File[]) performList (filter, null, File.class);
   }
 
@@ -853,7 +853,7 @@ public class File implements Serializable, Comparable
    */
   public File[] listFiles (FileFilter filter)
   {
-    checkRead();
+    checkRead ();
     return (File[]) performList (null, filter, File.class);
   }
 
@@ -905,7 +905,7 @@ public class File implements Serializable, Comparable
    */
   public boolean mkdir ()
   {
-    checkWrite();
+    checkWrite ();
     return performMkdir ();
   }
 
@@ -936,7 +936,7 @@ public class File implements Serializable, Comparable
    */
   public boolean mkdirs ()
   {
-    checkWrite();
+    checkWrite ();
     if (isDirectory ())
       return false;
     return mkdirs (new File (path));
@@ -987,20 +987,21 @@ public class File implements Serializable, Comparable
 	String dirname = tmpdir;
 	if (dirname == null)
 	  throw 
-	    new IOException("Cannot determine system temporary directory"); 
+	    new IOException ("Cannot determine system temporary directory"); 
 	
-	directory = new File(dirname);
-	if (!directory.exists())
-	  throw new IOException("System temporary directory " 
-				+ directory.getName() + " does not exist.");
+	directory = new File (dirname);
+	if (!directory.exists ())
+	  throw new IOException ("System temporary directory " 
+				 + directory.getName() + " does not exist.");
 	if (!directory.isDirectory())
-	  throw new IOException("System temporary directory " 
-				+ directory.getName() 
-				+ " is not really a directory.");
+	  throw new IOException ("System temporary directory " 
+				 + directory.getName() 
+				 + " is not really a directory.");
       }
 
     if (prefix.length () < 3)
       throw new IllegalArgumentException ("Prefix too short: " + prefix);
+
     if (suffix == null)
       suffix = ".tmp";
 
@@ -1059,7 +1060,7 @@ public class File implements Serializable, Comparable
    */
   public boolean setReadOnly ()
   {
-    checkWrite();
+    checkWrite ();
     return performSetReadOnly();
   }
 
@@ -1089,7 +1090,7 @@ public class File implements Serializable, Comparable
 	  {
 	    try
 	      {
-        	s.checkRead(roots[i].path);		
+        	s.checkRead (roots[i].path);		
 	      }
 	    catch (SecurityException sx)
 	      {
@@ -1220,8 +1221,8 @@ public class File implements Serializable, Comparable
     String dname = dest.getName();
     if (s != null)
       {
-	s.checkWrite(sname);
-	s.checkWrite(dname);
+	s.checkWrite (sname);
+	s.checkWrite (dname);
       }
     return performRenameTo (dest);
   }
@@ -1249,7 +1250,7 @@ public class File implements Serializable, Comparable
    */
   public boolean setLastModified (long time) 
   {
-    checkWrite();
+    checkWrite ();
     return performSetLastModified(time);
   }
 
@@ -1272,11 +1273,11 @@ public class File implements Serializable, Comparable
   }
 
   /** 
-    * Add this File to the set of files to be deleted upon normal
-    * termination.
-    *
-    * @since 1.2 
-    */
+   * Add this File to the set of files to be deleted upon normal
+   * termination.
+   *
+   * @since 1.2 
+   */
   // FIXME: This should use the ShutdownHook API once we implement that.
   public void deleteOnExit ()
   {
