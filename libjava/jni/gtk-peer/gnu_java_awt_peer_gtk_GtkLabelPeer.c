@@ -41,15 +41,68 @@ exception statement from your version. */
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkLabelPeer_create
-  (JNIEnv *env, jobject obj)
+  (JNIEnv *env, jobject obj, jstring text, jfloat xalign)
 {
   GtkWidget *label;
+  GtkWidget *ebox;
+  GtkContainer *ebox_container;
+  const char *str;
+
+  str = (*env)->GetStringUTFChars (env, text, 0);
 
   gdk_threads_enter ();
 
-  label = gtk_label_new (NULL);
+  ebox = gtk_event_box_new ();
+  ebox_container = GTK_CONTAINER (ebox);
+  label = gtk_label_new (str);
+  gtk_misc_set_alignment (GTK_MISC (label), xalign, 0.5);
+  gtk_container_add (ebox_container, label);
+  gtk_widget_show (label);
 
   gdk_threads_leave ();
 
-  NSA_SET_PTR (env, obj, label);
+  (*env)->ReleaseStringUTFChars (env, text, str);
+
+  NSA_SET_PTR (env, obj, ebox);
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setText
+  (JNIEnv *env, jobject obj, jstring text)
+{
+  const char *str;
+  void *ptr;
+  GtkWidget *label;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  str = (*env)->GetStringUTFChars (env, text, 0);
+
+  gdk_threads_enter ();
+
+  label = gtk_bin_get_child (GTK_BIN(ptr));
+
+  gtk_label_set_label (GTK_LABEL (label), str);
+
+  gdk_threads_leave ();
+
+  (*env)->ReleaseStringUTFChars (env, text, str);
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setAlignment
+  (JNIEnv *env, jobject obj, jfloat xalign)
+{
+  void *ptr;
+  GtkWidget *label;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  label = gtk_bin_get_child (GTK_BIN(ptr));
+
+  gtk_misc_set_alignment (GTK_MISC (label), xalign, 0.5);
+
+  gdk_threads_leave ();
 }
