@@ -1,3 +1,8 @@
+2000-07-17  Neil Booth  <neilb@earthling.net>
+
+	* gcc.dg/cpp/cmdlne-dM.c: New test.
+	* gcc.dg/cpp/cmdlne-dD.c: New test.
+
 Mon Jul 17 03:13:12 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000717-3.c: New test.
