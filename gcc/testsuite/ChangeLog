@@ -1,3 +1,7 @@
+2000-12-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.old-deja/g++.pt/spec33.C: New test.
+
 2000-12-14  Catherine Moore  <clm@redhat.com>
 
 	* gcc.c-torture/execute/920501-7.c: Check for NO_TRAMPOLINES.
