@@ -1,3 +1,8 @@
+2001-12-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* rtl.c (rtx_equal_p): Check for null pointers when comparing rtx
+	strings.
+
 2001-12-07  Richard Henderson  <rth@redhat.com>
 
 	* doc/extend.texi: Fix typo last change.
