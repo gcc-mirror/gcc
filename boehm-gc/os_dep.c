@@ -2236,7 +2236,10 @@ word len;
 	    result = readv(fd, &iov, 1);
 	}
 #   else
-    	result = syscall(SYS_read, fd, buf, nbyte);
+	/* The two zero args at the end of this list are because one
+	   IA-64 syscall() implementation actually requires six args
+	   to be passed, even though they aren't always used. */
+    	result = syscall(SYS_read, fd, buf, nbyte, 0, 0);
 #   endif
     GC_end_syscall();
     return(result);

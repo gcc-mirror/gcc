@@ -1,3 +1,7 @@
+2000-06-19  Andrew Haley  <aph@cygnus.com>
+
+        * os_dep.c (read): Pass two dummy args to syscall().
+
 2000-05-11  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Imported 5.0 release version.
