@@ -1578,7 +1578,8 @@ integrate.o : integrate.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $
    $(PARAMS_H) $(TM_P_H) $(TARGET_H) langhooks.h gt-integrate.h
 jump.o : jump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h \
    hard-reg-set.h $(REGS_H) insn-config.h $(RECOG_H) $(EXPR_H) real.h except.h function.h \
-   toplev.h $(INSN_ATTR_H) $(TM_P_H) reload.h $(PREDICT_H) $(TIMEVAR_H)
+   toplev.h $(INSN_ATTR_H) $(TM_P_H) reload.h $(PREDICT_H) $(TIMEVAR_H) \
+   diagnostic.h
 
 simplify-rtx.o : simplify-rtx.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(REGS_H) hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \

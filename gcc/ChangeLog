@@ -1,3 +1,14 @@
+2003-05-09  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* c-parse.in (if_stmt_locus): New object.
+	(if_prefix rule): Use it.  Don't use warning_with_file_and_line.
+	(select_or_iter_stmt rule): Likewise.
+	(if_stmt_file): Remove.
+	(if_stmt_line): Likewise.
+	* jump.c: include "diagnostic.h"
+	(never_reached_warning): Don't use warning_with_file_and_line. 
+	* Makefile.in (jump.o): Add dependce on diagnostic.h
+
 2003-05-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* expr.c (move_block_from_reg): Remove "size" parm.  Localize vars.
