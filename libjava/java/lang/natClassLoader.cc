@@ -170,6 +170,9 @@ _Jv_PrepareCompiledClass (jclass klass)
     }
 #endif /* INTERPRETER */
 
+  if (klass->isInterface ())
+    _Jv_LayoutInterfaceMethods (klass);
+
   klass->notifyAll ();
 
   _Jv_PushClass (klass);
