@@ -37,6 +37,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "cp-tree.h"
 #include "decl.h"
 #include "parse.h"
+#include "lex.h"
 
 extern struct obstack permanent_obstack;
 extern tree grokdeclarator ();
@@ -195,6 +196,7 @@ end_template_decl (d1, d2, is_class, defn)
   if (is_class)
     {
       decl = build_lang_decl (TEMPLATE_DECL, d2, NULL_TREE);
+      GNU_xref_decl (current_function_decl, decl);
     }
   else
     {
@@ -243,12 +245,11 @@ end_template_decl (d1, d2, is_class, defn)
 	}
 
       /* If this is for a method, there's an extra binding level here.	*/
-      if (! DECL_TEMPLATE_IS_CLASS (decl)
-	  && DECL_CONTEXT (DECL_TEMPLATE_RESULT (decl)) != NULL_TREE)
+      if (DECL_CONTEXT (DECL_TEMPLATE_RESULT (decl)) != NULL_TREE)
 	{
 	  /* @@ Find out where this should be getting set!  */
 	  tree r = DECL_TEMPLATE_RESULT (decl);
-	  if (DECL_CLASS_CONTEXT (r) == NULL_TREE)
+	  if (DECL_LANG_SPECIFIC (r) && DECL_CLASS_CONTEXT (r) == NULL_TREE)
 	    DECL_CLASS_CONTEXT (r) = DECL_CONTEXT (r);
 	}
     }
@@ -261,8 +262,7 @@ end_template_decl (d1, d2, is_class, defn)
   
   /* If context of decl is non-null (i.e., method template), add it
      to the appropriate class template, and pop the binding levels.  */
-  if (! DECL_TEMPLATE_IS_CLASS (decl)
-      && DECL_CONTEXT (DECL_TEMPLATE_RESULT (decl)) != NULL_TREE)
+  if (! is_class && DECL_CONTEXT (DECL_TEMPLATE_RESULT (decl)) != NULL_TREE)
     {
       tree ctx = DECL_CONTEXT (DECL_TEMPLATE_RESULT (decl));
       tree tmpl, t;
@@ -1284,6 +1284,13 @@ tsubst (t, args, nargs, in_decl)
 		    fprintf (stderr, "\tfound %s\n\n",
 			     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (method)));
 #endif
+		    if (DECL_ARTIFICIAL (method))
+		      {
+			cp_error ("template for method `%D' which has default implementation in class `%T'", name, ctx);
+			if (in_decl)
+			  cp_error_at ("in attempt to instantiate `%D' declared at this point in file", in_decl);
+			return error_mark_node;
+		      }
 
 		    if (DECL_ARGUMENTS (method)
 			&& ! TREE_PERMANENT (DECL_ARGUMENTS (method)))
@@ -1614,9 +1621,7 @@ instantiate_template (tmpl, targ_ptr)
 
       /* Here, we have a match.  */
       fndecl = TREE_VALUE (fndecl);
-      function_maybepermanent_obstack = old_fmp_obstack;
-      pop_obstacks ();
-      return fndecl;
+      goto exit;
 
     no_match:
       ;
@@ -1631,10 +1636,12 @@ instantiate_template (tmpl, targ_ptr)
   fndecl = tsubst (DECL_RESULT (tmpl), targ_ptr,
 		   TREE_VEC_LENGTH (targs), tmpl);
 
+  if (fndecl == error_mark_node)
+    goto exit;
+
   /* If it's a static member fn in the template, we need to change it
      into a FUNCTION_TYPE and chop off its this pointer.  */
   if (TREE_CODE (TREE_TYPE (DECL_RESULT (tmpl))) == METHOD_TYPE
-      && fndecl != error_mark_node
       && DECL_STATIC_FUNCTION_P (fndecl))
     {
       tree olddecl = DECL_RESULT (tmpl);
@@ -1693,10 +1700,7 @@ instantiate_template (tmpl, targ_ptr)
   DECL_TEMPLATE_INSTANTIATIONS (tmpl) =
     tree_cons (targs, fndecl, DECL_TEMPLATE_INSTANTIATIONS (tmpl));
 
-  function_maybepermanent_obstack = old_fmp_obstack;
-  pop_obstacks ();
-
-  if (fndecl == error_mark_node || p == (struct pending_inline *)0)
+  if (p == (struct pending_inline *)0)
     {
       /* do nothing */
     }
@@ -1711,6 +1715,10 @@ instantiate_template (tmpl, targ_ptr)
       p->next = pending_template_expansions;
       pending_template_expansions = p;
     }
+ exit:
+  function_maybepermanent_obstack = old_fmp_obstack;
+  pop_obstacks ();
+
   return fndecl;
 }
 
@@ -2235,7 +2243,7 @@ do_pending_expansions ()
 	DECIDE (0);
 
       if (DECL_EXPLICIT_INSTANTIATION (t))
-	DECIDE (1);
+	DECIDE (! DECL_EXTERNAL (t));
       else if (! flag_implicit_templates)
 	DECIDE (0);
 
@@ -2335,8 +2343,8 @@ add_pending_template (pt)
 
 /* called from the parser.  */
 void
-do_function_instantiation (declspecs, declarator)
-     tree declspecs, declarator;
+do_function_instantiation (declspecs, declarator, storage)
+     tree declspecs, declarator, storage;
 {
   tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0, 0);
   tree name = DECL_NAME (decl);
@@ -2371,22 +2379,54 @@ do_function_instantiation (declspecs, declarator)
 
   SET_DECL_EXPLICIT_INSTANTIATION (result);
   TREE_PUBLIC (result) = 1;
-  DECL_EXTERNAL (result) = DECL_INLINE (result) && ! flag_implement_inlines;
+
+  if (storage == NULL_TREE)
+    DECL_EXTERNAL (result) = DECL_INLINE (result) && ! flag_implement_inlines;
+  else if (storage == ridpointers[(int) RID_EXTERN])
+    DECL_EXTERNAL (result) = 1;
+  else
+    cp_error ("storage class `%D' applied to template instantiation",
+	      storage);
 }
 
 void
-do_type_instantiation (name)
-     tree name;
+do_type_instantiation (name, storage)
+     tree name, storage;
 {
   tree t = TREE_TYPE (name);
+  int extern_p;
 
   if (flag_external_templates)
     return;
 
+  if (TYPE_SIZE (t) == NULL_TREE)
+    {
+      cp_error ("explicit instantiation of `%#T' before definition of template",
+		t);
+      return;
+    }
+
+  if (storage == NULL_TREE)
+    extern_p = 0;
+  else if (storage == ridpointers[(int) RID_EXTERN])
+    extern_p = 1;
+  else
+    {
+      cp_error ("storage class `%D' applied to template instantiation",
+		storage);
+      extern_p = 0;
+    }
+
   SET_CLASSTYPE_EXPLICIT_INSTANTIATION (t);
-  CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
+  CLASSTYPE_VTABLE_NEEDS_WRITING (t) = ! extern_p;
   SET_CLASSTYPE_INTERFACE_KNOWN (t);
-  CLASSTYPE_INTERFACE_ONLY (t) = 0;
+  CLASSTYPE_INTERFACE_ONLY (t) = extern_p;
+  if (! extern_p)
+    {
+      CLASSTYPE_DEBUG_REQUESTED (t) = 1;
+      TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 0;
+      rest_of_type_compilation (t, 1);
+    }
 
   /* this should really be done by instantiate_member_templates */
   {
@@ -2395,8 +2435,8 @@ do_type_instantiation (name)
       {
 	SET_DECL_EXPLICIT_INSTANTIATION (method);
 	TREE_PUBLIC (method) = 1;
-	DECL_EXTERNAL (method) = (DECL_INLINE (method)
-				  && ! flag_implement_inlines);
+	DECL_EXTERNAL (method)
+	  = (extern_p || (DECL_INLINE (method) && ! flag_implement_inlines));
       }
   }
 

@@ -397,6 +397,18 @@ GNU_xref_decl (fndecl,decl)
       decl = TYPE_NAME (decl);
       uselin = TRUE;
     }
+  else if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      if (DECL_TEMPLATE_IS_CLASS (decl))
+	cls = "CLASSTEMP";
+      else if (TREE_CODE (DECL_RESULT (decl)) == FUNCTION_DECL)
+	cls = "FUNCTEMP";
+      else if (TREE_CODE (DECL_RESULT (decl)) == VAR_DECL)
+	cls = "VARTEMP";
+      else
+	my_friendly_abort (358);
+      uselin = TRUE;
+    }
   else cls = "UNKNOWN";
 
   if (decl == NULL || DECL_NAME (decl) == NULL) return;

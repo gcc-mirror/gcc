@@ -1667,6 +1667,21 @@ grokoptypename (declspecs, declarator)
 
 */
 
+int
+copy_assignment_arg_p (parmtype, virtualp)
+     tree parmtype;
+     int virtualp;
+{
+  if (TREE_CODE (parmtype) == REFERENCE_TYPE)
+    parmtype = TREE_TYPE (parmtype);
+
+  if ((TYPE_MAIN_VARIANT (parmtype) == current_class_type)
+      || (virtualp && DERIVED_FROM_P (parmtype, current_class_type)))
+    return 1;
+
+  return 0;
+}
+
 static void
 grok_function_init (decl, init)
      tree decl;
@@ -1696,6 +1711,14 @@ grok_function_init (decl, init)
 	}
 #endif
       DECL_ABSTRACT_VIRTUAL_P (decl) = 1;
+      if (DECL_NAME (decl) == ansi_opname [(int) MODIFY_EXPR])
+	{
+	  tree parmtype
+	    = TREE_VALUE (TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (decl))));
+
+	  if (copy_assignment_arg_p (parmtype, 1))
+	    TYPE_HAS_ABSTRACT_ASSIGN_REF (current_class_type) = 1;
+	}
     }
   else if (TREE_CODE (init) == OFFSET_REF
 	   && TREE_OPERAND (init, 0) == NULL_TREE
@@ -2311,8 +2334,18 @@ static void
 import_export_vtable (decl, type)
   tree decl, type;
 {
-  if (write_virtuals >= 2)
+  if (write_virtuals >= 2
+      || CLASSTYPE_TEMPLATE_INSTANTIATION (type))
     {
+      if (CLASSTYPE_IMPLICIT_INSTANTIATION (type)
+	  && ! flag_implicit_templates
+	  && CLASSTYPE_INTERFACE_UNKNOWN (type))
+	{
+	  SET_CLASSTYPE_INTERFACE_KNOWN (type);
+	  CLASSTYPE_INTERFACE_ONLY (type) = 1;
+	  CLASSTYPE_VTABLE_NEEDS_WRITING (type) = 0;
+	}
+
       if (CLASSTYPE_INTERFACE_KNOWN (type))
 	{
 	  TREE_PUBLIC (decl) = 1;
@@ -2745,7 +2778,8 @@ finish_file ()
 		   || (DECL_INLINE (decl) && ! flag_implement_inlines));
 	    }
 	}
-      if (TREE_PUBLIC (decl) || TREE_ADDRESSABLE (decl))
+      if (TREE_PUBLIC (decl) || TREE_ADDRESSABLE (decl)
+	  || flag_keep_inline_functions)
 	{
 	  if (DECL_EXTERNAL (decl)
 	      || (DECL_IMPLICIT_INSTANTIATION (decl)

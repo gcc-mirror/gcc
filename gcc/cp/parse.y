@@ -171,7 +171,7 @@ empty_parms ()
 %left '{' ',' ';'
 
 %right <code> ASSIGN '='
-%right <code> '?' ':' RANGE
+%right <code> '?' ':'
 %left <code> OROR
 %left <code> ANDAND
 %left <code> '|'
@@ -765,9 +765,13 @@ identifier_defn:
 
 explicit_instantiation:
 	  TEMPLATE specialization template_instantiation
-		{ do_type_instantiation ($3 ? $3 : $2); }
+		{ do_type_instantiation ($3 ? $3 : $2, NULL_TREE); }
 	| TEMPLATE typed_declspecs declarator
-		{ do_function_instantiation ($2, $3); }
+		{ do_function_instantiation ($2, $3, NULL_TREE); }
+	| SCSPEC TEMPLATE specialization template_instantiation
+		{ do_type_instantiation ($4 ? $4 : $3, $1); }
+	| SCSPEC TEMPLATE typed_declspecs declarator
+		{ do_function_instantiation ($3, $4, $1); }
 	;
 
 template_type:
@@ -3205,7 +3209,7 @@ simple_stmt:
 		  define_case_label (label);
 		}
 	  stmt
-	| CASE expr_no_commas RANGE expr_no_commas ':'
+	| CASE expr_no_commas ELLIPSIS expr_no_commas ':'
 		{ register tree value1 = check_cp_case_value ($2);
 		  register tree value2 = check_cp_case_value ($4);
 		  register tree label

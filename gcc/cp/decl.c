@@ -2175,7 +2175,19 @@ duplicate_decls (newdecl, olddecl)
   else if (!types_match)
     {
       if (TREE_CODE (newdecl) == TEMPLATE_DECL)
-	return 0;
+	{
+	  /* The name of a class template may not be declared to refer to
+	     any other template, class, function, object, namespace, value,
+	     or type in the same scope. */
+	  if (DECL_TEMPLATE_IS_CLASS (olddecl)
+	      || DECL_TEMPLATE_IS_CLASS (newdecl))
+	    {
+	      cp_error ("declaration of template `%#D'", newdecl);
+	      cp_error_at ("conflicts with previous declaration `%#D'",
+			   olddecl);
+	    }
+	  return 0;
+	}
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	{
 	  if (DECL_LANGUAGE (newdecl) == lang_c
@@ -5408,8 +5420,10 @@ start_decl (declarator, declspecs, initialized, raises)
 	      return NULL_TREE;
 	    }
 
-          if (/* TREE_CODE (result) == VAR_DECL */ 1)
-            {
+	  if (TREE_CODE (result) == FUNCTION_DECL)
+	    return tem;
+	  else if (TREE_CODE (result) == VAR_DECL)
+	    {
 #if 0
               tree tmpl = UPT_TEMPLATE (type);
 	      
@@ -5420,15 +5434,24 @@ start_decl (declarator, declspecs, initialized, raises)
               DECL_TEMPLATE_MEMBERS (tmpl)
                 = perm_tree_cons (DECL_NAME (tem), tem,
 				  DECL_TEMPLATE_MEMBERS (tmpl));
-#endif
 	      return tem;
+#else
+	      sorry ("static data member templates");
+	      return NULL_TREE;
+#endif
 	    }
-          my_friendly_abort (13);
+	  else
+	    my_friendly_abort (13);
         }
       else if (TREE_CODE (result) == FUNCTION_DECL)
         /*tem = push_overloaded_decl (tem, 0)*/;
-      else if (TREE_CODE (result) == VAR_DECL
-	       || TREE_CODE (result) == TYPE_DECL)
+      else if (TREE_CODE (result) == VAR_DECL)
+	{
+	  cp_error ("data template `%#D' must be member of a class template",
+		    result);
+	  return NULL_TREE;
+	}
+      else if (TREE_CODE (result) == TYPE_DECL)
 	{
 	  cp_error ("invalid template `%#D'", result);
 	  return NULL_TREE;
@@ -6450,7 +6473,8 @@ expand_static_init (decl, init)
       if (TREE_PURPOSE (oldstatic) && init != NULL_TREE)
 	cp_error ("multiple initializations given for `%D'", decl);
     }
-  else if (current_binding_level != global_binding_level)
+  else if (current_binding_level != global_binding_level
+	   && current_binding_level->pseudo_global == 0)
     {
       /* Emit code to perform this initialization but once.  */
       tree temp;
@@ -8859,6 +8883,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    decl = grokfndecl (ctype, type, declarator,
 			       virtualp, flags, quals,
 			       raises, friendp ? -1 : 0, publicp);
+	    if (decl == NULL_TREE)
+	      return NULL_TREE;
+
 	    DECL_INLINE (decl) = inlinep;
 	  }
 	else if (TREE_CODE (type) == METHOD_TYPE)
@@ -8868,6 +8895,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    decl = grokfndecl (ctype, type, declarator,
 			       virtualp, flags, quals,
 			       raises, friendp ? -1 : 0, 1);
+	    if (decl == NULL_TREE)
+	      return NULL_TREE;
+
 	    DECL_INLINE (decl) = inlinep;
 	  }
 	else if (TREE_CODE (type) == RECORD_TYPE
@@ -9056,6 +9086,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 			   raises,
 			   processing_template_decl ? 0 : friendp ? 2 : 1,
 			   publicp);
+	if (decl == NULL_TREE)
+	  return NULL_TREE;
 
 	if (ctype == NULL_TREE && DECL_LANGUAGE (decl) != lang_c)
 	  DECL_ASSEMBLER_NAME (decl) = declarator;
@@ -9126,6 +9158,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
 	if (ctype)
 	  {
+	    DECL_CONTEXT (decl) = ctype;
 	    if (staticp == 1)
 	      {
 	        cp_error ("static member `%D' re-declared as static",
@@ -9725,14 +9758,17 @@ grok_op_properties (decl, virtualp, friendp)
 	    }
 	  parmtype = TREE_VALUE (TREE_CHAIN (argtypes));
 
-	  if (TREE_CODE (parmtype) == REFERENCE_TYPE
-	      && (TYPE_MAIN_VARIANT (TREE_TYPE (parmtype))
-		  == current_class_type)
+	  if (copy_assignment_arg_p (parmtype, virtualp)
 	      && ! friendp)
 	    {
 	      TYPE_HAS_ASSIGN_REF (current_class_type) = 1;
-	      if (TYPE_READONLY (TREE_TYPE (parmtype)))
+	      if (TREE_CODE (parmtype) != REFERENCE_TYPE
+		  || TYPE_READONLY (TREE_TYPE (parmtype)))
 		TYPE_HAS_CONST_ASSIGN_REF (current_class_type) = 1;
+#if 0 /* Too soon; done in grok_function_init */
+	      if (DECL_ABSTRACT_VIRTUAL_P (decl))
+		TYPE_HAS_ABSTRACT_ASSIGN_REF (current_class_type) = 1;
+#endif
 	    }
 	}
       else if (name == ansi_opname[(int) COND_EXPR])
@@ -10748,11 +10784,7 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	   || (DECL_INLINE (decl1) && ! flag_implement_inlines));
     }
   else if (DECL_EXPLICIT_INSTANTIATION (decl1))
-    {
-      TREE_PUBLIC (decl1) = 1;
-      DECL_EXTERNAL (decl1) = (DECL_INLINE (decl1)
-			       && ! flag_implement_inlines);
-    }
+    /* PUBLIC and EXTERNAL set by do_*_instantiation */;
   else
     {
       /* This is a definition, not a reference.

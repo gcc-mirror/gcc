@@ -329,7 +329,7 @@ ack (s, v, v2)
    silly.  So instead, we just do the equivalent of a call to fatal in the
    same situation (call exit).  */
 
-/* First used: 0 (reserved), Last used: 357.  Free:  */
+/* First used: 0 (reserved), Last used: 358.  Free:  */
 
 static int abortcount = 0;
 
@@ -1496,6 +1496,7 @@ enum_name_string (value, type)
   return IDENTIFIER_POINTER (TREE_PURPOSE (values));
 }
 
+#if 0
 /* Print out a language-specific error message for
    (Pascal) case or (C) switch statements.
    CODE tells what sort of message to print. 
@@ -1598,3 +1599,4 @@ report_case_error (code, type, new_value, old_value)
 	error ("range values reversed");
     }
 }
+#endif

@@ -594,7 +594,7 @@ get_base_distance (parent, binfo, protect, path_ptr)
 
   if (TREE_CODE (binfo) == TREE_VEC)
     type = BINFO_TYPE (binfo);
-  else if (TREE_CODE (binfo) == RECORD_TYPE)
+  else if (IS_AGGR_TYPE_CODE (TREE_CODE (binfo)))
     {
       type = binfo;
       binfo = TYPE_BINFO (type);
@@ -2366,10 +2366,8 @@ dfs_debug_mark (binfo)
     }
   /* We cannot rely on some alien method to solve our problems,
      so we must write out the debug info ourselves.  */
-  if (write_symbols != DWARF_DEBUG)
-    TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 0;
-  if (! TREE_ASM_WRITTEN (TYPE_NAME (t)))
-    rest_of_type_compilation (t, global_bindings_p ());
+  TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 0;
+  rest_of_type_compilation (t, global_bindings_p ());
 }
 
 /*  Attach to the type of the virtual base class, the pointer to the

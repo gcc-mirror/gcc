@@ -3571,10 +3571,7 @@ real_yylex ()
 		value = ELLIPSIS;
 		goto done;
 	      }
-	    nextchar = c1;
-	    token_buffer[2] = '\0';
-	    value = RANGE;
-	    goto done;
+	    error ("parse error at `..'");
 	  }
 	if (isdigit (c1))
 	  {
@@ -3689,10 +3686,7 @@ real_yylex ()
 			    value = ELLIPSIS;
 			    goto done;
 			  }
-			nextchar = c;
-			token_buffer[2] = '\0';
-			value = RANGE;
-			goto done;
+			error ("parse error at `..'");
 		      }
 		    nextchar = c;
 		    token_buffer[1] = '\0';

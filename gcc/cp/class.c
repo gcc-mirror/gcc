@@ -1390,6 +1390,7 @@ finish_base_struct (t, b, t_binfo)
 	  && !TYPE_HAS_CONST_ASSIGN_REF (basetype))
 	b->no_const_asn_ref = 1;
       if (! TYPE_HAS_ASSIGN_REF (basetype)
+	  || TYPE_HAS_ABSTRACT_ASSIGN_REF (basetype)
 	  || (TYPE_HAS_NONPUBLIC_ASSIGN_REF (basetype) == 2
 	      && ! is_friend_type (t, basetype)))
 	b->cant_synth_asn_ref = 1;
