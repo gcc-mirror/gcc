@@ -20,7 +20,6 @@ provided for historical reference only.
 * Configurations::    Configurations Supported by GNU CC.
 * Other Dir::     Compiling in a separate directory (not where the source is).
 * Cross-Compiler::   Building and installing a cross-compiler.
-* Sun Install::   See below for installation on the Sun.
 * VMS Install::   See below for installation on VMS.
 * Collect2::	  How @code{collect2} works; how it finds @code{ld}.
 * Header Dirs::   Understanding the standard header file directories.
@@ -112,9 +111,7 @@ can figure out which dashes serve which purpose.)  For example,
 
 You can also replace parts of the configuration by nicknames or aliases.
 For example, @samp{sun3} stands for @samp{m68k-sun}, so
-@samp{sun3-sunos4.1} is another way to specify a Sun 3.  You can also
-use simply @samp{sun3-sunos}, since the version of SunOS is assumed by
-default to be version 4.
+@samp{sun3-sunos4.1} is another way to specify a Sun 3.
 
 You can specify a version number after any of the system types, and some
 of the CPU types.  In most cases, the version is irrelevant, and will be
@@ -538,13 +535,6 @@ search paths.  It also copies @file{gcc.1} into
 On some systems, this command causes recompilation of some files.  This
 is usually due to bugs in @code{make}.  You should either ignore this
 problem, or use GNU Make.
-
-@cindex @code{alloca} and SunOS
-@strong{Warning: there is a bug in @code{alloca} in the Sun library.  To
-avoid this bug, be sure to install the executables of GNU CC that were
-compiled by GNU CC.  (That is, the executables from stage 2 or 3, not
-stage 1.)  They use @code{alloca} as a built-in function and never the
-one in the library.}
 
 (It is usually better to install GNU CC executables from stage 2 or 3,
 since they usually run faster than the ones compiled with some other
@@ -1017,30 +1007,6 @@ Go to the Berkeley universe before compiling.
 @itemx i386-sequent-ptx2*
 You must install GNU @file{sed} before running @file{configure}.
 
-@item i386-sun-sunos4
-You may find that you need another version of GNU CC to begin
-bootstrapping with, since the current version when built with the
-system's own compiler seems to get an infinite loop compiling part of
-@file{libgcc2.c}.  GNU CC version 2 compiled with GNU CC (any version)
-seems not to have this problem.
-
-See @ref{Sun Install}, for information on installing GNU CC on Sun
-systems.
-
-@item i860-intel-osf1
-This is the Paragon.
-@ifset INSTALLONLY
-If you have version 1.0 of the operating system, you need to take
-special steps to build GNU CC due to peculiarities of the system.  Newer
-system versions have no problem.  See the section `Installation Problems'
-in the GNU CC Manual.
-@end ifset
-@ifclear INSTALLONLY
-If you have version 1.0 of the operating system,
-see @ref{Installation Problems}, for special things you need to do to
-compensate for peculiarities in the system.
-@end ifclear
-
 @item *-lynx-lynxos
 LynxOS 2.2 and earlier comes with GNU CC 1.x already installed as
 @file{/bin/gcc}.  You should compile with this instead of @file{/bin/cc}.
@@ -1144,9 +1110,6 @@ you must use gas if you wish to use gdb.
 Sun 3.  We do not provide a configuration file to use the Sun FPA by
 default, because programs that establish signal handlers for floating
 point traps inherently cannot work with the FPA.
-
-See @ref{Sun Install}, for information on installing GNU CC on Sun
-systems.
 
 @item m6811-elf
 Motorola 68HC11 family micro controllers.  These are used in embedded
@@ -1415,15 +1378,6 @@ PowerPC system in little endian mode, running System V.4.
 You can specify a default version for the @samp{-mcpu=}@var{cpu_type}
 switch by using the configure option @samp{--with-cpu-}@var{cpu_type}.
 
-@item powerpcle-*-solaris2*
-PowerPC system in little endian mode, running Solaris 2.5.1 or higher.
-
-You can specify a default version for the @samp{-mcpu=}@var{cpu_type}
-switch by using the configure option @samp{--with-cpu-}@var{cpu_type}.
-Beta versions of the Sun 4.0 compiler do not seem to be able to build
-GNU CC correctly.  There are also problems with the host assembler and
-linker that are fixed by using the GNU versions of these tools.
-
 @item powerpcle-*-eabisim
 Embedded PowerPC system in little endian mode for use in running under
 the PSIM simulator.
@@ -1449,10 +1403,6 @@ Meanwhile, compiling @file{cp/parse.c} with pcc does not work because of
 an internal table size limitation in that compiler.  To avoid this
 problem, compile just the GNU C compiler first, and use it to recompile
 building all the languages that you want to run.
-
-@item sparc-sun-*
-See @ref{Sun Install}, for information on installing GNU CC on Sun
-systems.
 
 @item vax-dec-vms
 See @ref{VMS Install}, for details on how to install GNU CC on VMS.
@@ -1891,45 +1841,6 @@ whether you compile it on a 68030 or with a cross-compiler on a 386, you
 must specify a 68030 as the host when you configure it.
 
 To install the cross-compiler, use @samp{make install}, as usual.
-
-@node Sun Install
-@section Installing GNU CC on the Sun
-@cindex Sun installation
-@cindex installing GNU CC on the Sun
-
-On Solaris, do not use the linker or other tools in
-@file{/usr/ucb} to build GNU CC.  Use @code{/usr/ccs/bin}.
-
-If the assembler reports @samp{Error: misaligned data} when bootstrapping,
-you are probably using an obsolete version of the GNU assembler.  Upgrade
-to the latest version of GNU @code{binutils}, or use the Solaris assembler.
-
-Make sure the environment variable @code{FLOAT_OPTION} is not set when
-you compile @file{libgcc.a}.  If this option were set to @code{f68881}
-when @file{libgcc.a} is compiled, the resulting code would demand to be
-linked with a special startup file and would not link properly without
-special pains.
-
-@cindex @code{alloca}, for SunOS
-There is a bug in @code{alloca} in certain versions of the Sun library.
-To avoid this bug, install the binaries of GNU CC that were compiled by
-GNU CC.  They use @code{alloca} as a built-in function and never the one
-in the library.
-
-Some versions of the Sun compiler crash when compiling GNU CC.  The
-problem is a segmentation fault in cpp.  This problem seems to be due to
-the bulk of data in the environment variables.  You may be able to avoid
-it by using the following command to compile GNU CC with Sun CC:
-
-@example
-make CC="TERMCAP=x OBJS=x LIBFUNCS=x STAGESTUFF=x cc"
-@end example
-
-SunOS 4.1.3 and 4.1.3_U1 have bugs that can cause intermittent core
-dumps when compiling GNU CC.  A common symptom is an
-internal compiler error which does not recur if you run it again.
-To fix the problem, install Sun recommended patch 100726 (for SunOS 4.1.3)
-or 101508 (for SunOS 4.1.3_U1), or upgrade to a later SunOS release.
 
 @node VMS Install
 @section Installing GNU CC on VMS
