@@ -1,5 +1,7 @@
 2000-12-15  Tom Tromey  <tromey@redhat.com>
 
+	* libjava.lang/Thread_1.out: Expect `0' active count.
+
 	* libjava.lang/stub.xfail: New file.
 	* libjava.lang/pr83.xfail: New file.
 	* libjava.lang/err8.xfail: New file.
