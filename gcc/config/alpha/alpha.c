@@ -309,11 +309,11 @@ override_options ()
 	{
 	  { 3, 30, -1 },	/* ev4 -- Bcache is a guess */
 	  { 2, 12, 38 },	/* ev5 -- Bcache from PC164 LMbench numbers */
-	  { 3, 13, -1 },	/* ev6 -- Ho hum, doesn't exist yet */
+	  { 3, 12, 30 },	/* ev6 -- Bcache from DS20 LMbench. */
 	};
 
 	lat = alpha_mlat_string[1] - '0';
-	if (lat < 0 || lat > 3 || cache_latency[alpha_cpu][lat-1] == -1)
+	if (lat <= 0 || lat > 3 || cache_latency[alpha_cpu][lat-1] == -1)
 	  {
 	    warning ("L%d cache latency unknown for %s",
 		     lat, alpha_cpu_name[alpha_cpu]);

@@ -1,5 +1,8 @@
 2000-09-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/alpha/alpha.c (override_options): ev6 cache latencies
+	from Richard Henderson.  Don't allow -mmemory-latency=L0.
+
 	* config/alpha/alpha.h (TARGET_CPU_EV5, TARGET_CPU_EV6): Define.
 	(TARGET_OPTIONS): Add tune=.
 	(alpha_tune_string): Declare.
