@@ -1,6 +1,6 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1724,6 +1724,73 @@ subst_stack_regs_pat (insn, regstack, pat)
 		  }
 
 		replace_reg (src1, FIRST_STACK_REG);
+		break;
+
+	      case UNSPEC_FPATAN:
+		/* These insns operate on the top two stack slots.  */
+
+		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
+		src2 = get_true_reg (&XVECEXP (pat_src, 0, 1));
+
+		src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
+		src2_note = find_regno_note (insn, REG_DEAD, REGNO (*src2));
+
+		{
+		  struct stack_def temp_stack;
+		  int regno, j, k, temp;
+
+ 		  temp_stack = *regstack;
+
+		  /* Place operand 1 at the top of stack.  */
+		  regno = get_hard_regnum (&temp_stack, *src1);
+		  if (regno < 0)
+		    abort ();
+		  if (regno != FIRST_STACK_REG)
+		    {
+		      k = temp_stack.top - (regno - FIRST_STACK_REG);
+		      j = temp_stack.top;
+
+		      temp = temp_stack.reg[k];
+		      temp_stack.reg[k] = temp_stack.reg[j];
+		      temp_stack.reg[j] = temp;
+		    }
+
+		  /* Place operand 2 next on the stack.  */
+		  regno = get_hard_regnum (&temp_stack, *src2);
+		  if (regno < 0)
+		    abort ();
+		  if (regno != FIRST_STACK_REG + 1)
+		    {
+		      k = temp_stack.top - (regno - FIRST_STACK_REG);
+		      j = temp_stack.top - 1;
+
+		      temp = temp_stack.reg[k];
+		      temp_stack.reg[k] = temp_stack.reg[j];
+		      temp_stack.reg[j] = temp;
+		    }
+
+		  change_stack (insn, regstack, &temp_stack, EMIT_BEFORE);
+		}
+
+		replace_reg (src1, FIRST_STACK_REG);
+		replace_reg (src2, FIRST_STACK_REG + 1);
+
+		if (src1_note)
+		  replace_reg (&XEXP (src1_note, 0), FIRST_STACK_REG);
+		if (src2_note)
+		  replace_reg (&XEXP (src2_note, 0), FIRST_STACK_REG + 1);
+
+		/* Pop both input operands from the stack.  */
+		CLEAR_HARD_REG_BIT (regstack->reg_set,
+				    regstack->reg[regstack->top]);
+		CLEAR_HARD_REG_BIT (regstack->reg_set,
+				    regstack->reg[regstack->top - 1]);
+		regstack->top -= 2;
+
+		/* Push the result back onto the stack.  */
+		regstack->reg[++regstack->top] = REGNO (*dest);
+		SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
+		replace_reg (dest, FIRST_STACK_REG);
 		break;
 
 	      case UNSPEC_SAHF:

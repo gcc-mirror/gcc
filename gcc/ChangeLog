@@ -1,3 +1,11 @@
+2003-02-12  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.md (UNSPEC_FPATAN): New UNSPEC constant.
+	(atan2sf3, atan2df3, atan2xf3, atan2tf3): New patterns.
+
+	* reg-stack.c (subst_stack_regs_pat): Add support for binary
+	UNSPEC instructions (e.g. "fpatan").
+
 2003-02-12  Mike Stump  <mrs@apple.com>
 
 	* varray.c (element_size): Remove.
