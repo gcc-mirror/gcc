@@ -1124,10 +1124,9 @@ create_pseudo_type_info (const char *real_name, int ident, ...)
   tree fields;
   tree field_decl;
   tree result;
+  va_list ap;
 
-  VA_OPEN (ap, ident);
-  VA_FIXEDARG (ap, const char *, real_name);
-  VA_FIXEDARG (ap, int, ident);
+  va_start (ap, ident);
 
   /* Generate the pseudo type name.  */
   pseudo_name = (char *)alloca (strlen (real_name) + 30);
@@ -1156,7 +1155,7 @@ create_pseudo_type_info (const char *real_name, int ident, ...)
   TINFO_PSEUDO_TYPE (result) =
     cp_build_qualified_type (pseudo_type, TYPE_QUAL_CONST);
   
-  VA_CLOSE (ap);
+  va_end (ap);
   return result;
 }
 

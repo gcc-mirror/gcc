@@ -6514,40 +6514,41 @@ fancy_abort ()
 /* Output an error message and exit */
 
 void
-fatal VPARAMS ((const char *msgid, ...))
+fatal (const char *msgid, ...)
 {
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
+  
+  va_start (ap, msgid);
 
   fprintf (stderr, "%s: ", programname);
   vfprintf (stderr, _(msgid), ap);
-  VA_CLOSE (ap);
+  va_end (ap);
   fprintf (stderr, "\n");
   delete_temp_files ();
   exit (1);
 }
 
 void
-error VPARAMS ((const char *msgid, ...))
+error (const char *msgid, ...)
 {
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_list ap;
+  
+  va_start (ap, msgid);
   fprintf (stderr, "%s: ", programname);
   vfprintf (stderr, _(msgid), ap);
-  VA_CLOSE (ap);
+  va_end (ap);
 
   fprintf (stderr, "\n");
 }
 
 static void
-notice VPARAMS ((const char *msgid, ...))
+notice (const char *msgid, ...)
 {
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_list ap;
+  
+  va_start (ap, msgid);
   vfprintf (stderr, _(msgid), ap);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 static inline void

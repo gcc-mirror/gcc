@@ -719,14 +719,14 @@ attr_rtx_1 (code, p)
 }
 
 static rtx
-attr_rtx VPARAMS ((enum rtx_code code, ...))
+attr_rtx (enum rtx_code code, ...)
 {
   rtx result;
+  va_list p;
   
-  VA_OPEN (p, code);
-  VA_FIXEDARG (p, enum rtx_code, code);
+  va_start (p, code);
   result = attr_rtx_1 (code, p);
-  VA_CLOSE (p);
+  va_end (p);
   return result;
 }
 
@@ -736,19 +736,18 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
    rtx attr_printf (len, format, [arg1, ..., argn])  */
 
 char *
-attr_printf VPARAMS ((unsigned int len, const char *fmt, ...))
+attr_printf (unsigned int len, const char *fmt, ...)
 {
   char str[256];
-
-  VA_OPEN (p, fmt);
-  VA_FIXEDARG (p, unsigned int, len);
-  VA_FIXEDARG (p, const char *, fmt);
+  va_list p;
+  
+  va_start (p, fmt);
   
   if (len > sizeof str - 1) /* Leave room for \0.  */
     abort ();
 
   vsprintf (str, fmt, p);
-  VA_CLOSE (p);
+  va_end (p);
 
   return attr_string (str, strlen (str));
 }

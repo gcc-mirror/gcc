@@ -2835,13 +2835,14 @@ alter_cond (cond)
    In an `asm', it's the user's fault; otherwise, the compiler's fault.  */
 
 void
-output_operand_lossage VPARAMS ((const char *msgid, ...))
+output_operand_lossage (const char *msgid, ...)
 {
   char *fmt_string;
   char *new_message;
   const char *pfx_str;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
+  
+  va_start (ap, msgid);
 
   pfx_str = this_is_asm_operands ? _("invalid `asm': ") : "output_operand: ";
   asprintf (&fmt_string, "%s%s", pfx_str, _(msgid));
@@ -2854,7 +2855,7 @@ output_operand_lossage VPARAMS ((const char *msgid, ...))
 
   free (fmt_string);
   free (new_message);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* Output of assembler code from a template, and its subroutines.  */
@@ -3376,14 +3377,13 @@ output_addr_const (file, x)
    We handle alternate assembler dialects here, just like output_asm_insn.  */
 
 void
-asm_fprintf VPARAMS ((FILE *file, const char *p, ...))
+asm_fprintf (FILE *file, const char *p, ...)
 {
   char buf[10];
   char *q, c;
-
-  VA_OPEN (argptr, p);
-  VA_FIXEDARG (argptr, FILE *, file);
-  VA_FIXEDARG (argptr, const char *, p);
+  va_list argptr;
+  
+  va_start (argptr, p);
 
   buf[0] = '%';
 
@@ -3531,7 +3531,7 @@ asm_fprintf VPARAMS ((FILE *file, const char *p, ...))
       default:
 	fputc (c, file);
       }
-  VA_CLOSE (argptr);
+  va_end (argptr);
 }
 
 /* Split up a CONST_DOUBLE or integer constant rtx

@@ -636,16 +636,14 @@ output_format (buffer, text)
 /* Return a malloc'd string containing MSG formatted a la printf.  The
    caller is responsible for freeing the memory.  */
 static char *
-build_message_string VPARAMS ((const char *msg, ...))
+build_message_string (const char *msg, ...)
 {
   char *str;
+  va_list ap;
 
-  VA_OPEN (ap, msg);
-  VA_FIXEDARG (ap, const char *, msg);
-
+  va_start (ap, msg);
   vasprintf (&str, msg, ap);
-
-  VA_CLOSE (ap);
+  va_end (ap);
 
   return str;
 }
@@ -660,18 +658,17 @@ file_name_as_prefix (f)
 
 /* Format a message into BUFFER a la printf.  */
 void
-output_printf VPARAMS ((struct output_buffer *buffer, const char *msgid, ...))
+output_printf (struct output_buffer *buffer, const char *msgid, ...)
 {
   text_info text;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, output_buffer *, buffer);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
 
+  va_start (ap, msgid);
   text.err_no = errno;
   text.args_ptr = &ap;
   text.format_spec = _(msgid);
   output_format (buffer, &text);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* Print a message relevant to the given DECL.  */
@@ -756,18 +753,17 @@ output_do_verbatim (buffer, text)
 
 /* Output MESSAGE verbatim into BUFFER.  */
 void
-output_verbatim VPARAMS ((output_buffer *buffer, const char *msgid, ...))
+output_verbatim (output_buffer *buffer, const char *msgid, ...)
 {
   text_info text;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, output_buffer *, buffer);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
 
+  va_start (ap, msgid);
   text.err_no = errno;
   text.args_ptr = &ap;
   text.format_spec = _(msgid);
   output_do_verbatim (buffer, &text);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 
@@ -1184,50 +1180,48 @@ trim_filename (name)
 /* Text to be emitted verbatim to the error message stream; this
    produces no prefix and disables line-wrapping.  Use rarely.  */
 void
-verbatim VPARAMS ((const char *msgid, ...))
+verbatim (const char *msgid, ...)
 {
   text_info text;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
 
+  va_start (ap, msgid);
   text.err_no = errno;
   text.args_ptr = &ap;
   text.format_spec = _(msgid);
   output_do_verbatim (&global_dc->buffer, &text);
   output_buffer_to_stream (&global_dc->buffer);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* An informative note.  Use this for additional details on an error
    message.  */
 void
-inform VPARAMS ((const char *msgid, ...))
+inform (const char *msgid, ...)
 {
   diagnostic_info diagnostic;
+  va_list ap;
 
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        DK_NOTE);
   report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* A warning.  Use this for code which is correct according to the
    relevant language specification but is likely to be buggy anyway.  */
 void
-warning VPARAMS ((const char *msgid, ...))
+warning (const char *msgid, ...)
 {
   diagnostic_info diagnostic;
+  va_list ap;
 
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        DK_WARNING);
   report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* A "pedantic" warning: issues a warning unless -pedantic-errors was
@@ -1239,66 +1233,63 @@ warning VPARAMS ((const char *msgid, ...))
    of the -pedantic command-line switch.  To get a warning enabled
    only with that switch, write "if (pedantic) pedwarn (...);"  */
 void
-pedwarn VPARAMS ((const char *msgid, ...))
+pedwarn (const char *msgid, ...)
 {
   diagnostic_info diagnostic;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
 
+  va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        pedantic_error_kind ());
   report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* A hard error: the code is definitely ill-formed, and an object file
    will not be produced.  */
 void
-error VPARAMS ((const char *msgid, ...))
+error (const char *msgid, ...)
 {
   diagnostic_info diagnostic;
+  va_list ap;
 
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        DK_ERROR);
   report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* "Sorry, not implemented."  Use for a language feature which is
    required by the relevant specification but not implemented by GCC.
    An object file will not be produced.  */
 void
-sorry VPARAMS ((const char *msgid, ...))
+sorry (const char *msgid, ...)
 {
   diagnostic_info diagnostic;
+  va_list ap;
 
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
 		       DK_SORRY);
   report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* An error which is severe enough that we make no attempt to
    continue.  Do not use this for internal consistency checks; that's
    internal_error.  Use of this function should be rare.  */
 void
-fatal_error VPARAMS ((const char *msgid, ...))
+fatal_error (const char *msgid, ...)
 {
   diagnostic_info diagnostic;
+  va_list ap;
 
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        DK_FATAL);
   report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
+  va_end (ap);
 
   /* NOTREACHED */
   real_abort ();
@@ -1309,17 +1300,16 @@ fatal_error VPARAMS ((const char *msgid, ...))
    a more specific message, or some other good reason, you should use
    abort () instead of calling this function directly.  */
 void
-internal_error VPARAMS ((const char *msgid, ...))
+internal_error (const char *msgid, ...)
 {
   diagnostic_info diagnostic;
+  va_list ap;
 
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, msgid);
-
+  va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
                        DK_ICE);
   report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
+  va_end (ap);
 
   /* NOTREACHED */
   real_abort ();
@@ -1329,12 +1319,12 @@ internal_error VPARAMS ((const char *msgid, ...))
    DECL node.  These are deprecated.  */
 
 void
-warning_with_decl VPARAMS ((tree decl, const char *msgid, ...))
+warning_with_decl (tree decl, const char *msgid, ...)
 {
   diagnostic_info diagnostic;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, tree, decl);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
+
+  va_start (ap, msgid);
 
   /* Do not issue a warning about a decl which came from a system header,
      unless -Wsystem-headers.  */
@@ -1345,16 +1335,16 @@ warning_with_decl VPARAMS ((tree decl, const char *msgid, ...))
                        DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
                        DK_WARNING);
   diagnostic_for_decl (global_dc, &diagnostic, decl);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 void
-pedwarn_with_decl VPARAMS ((tree decl, const char *msgid, ...))
+pedwarn_with_decl (tree decl, const char *msgid, ...)
 {
   diagnostic_info diagnostic;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, tree, decl);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
+
+  va_start (ap, msgid);
 
   /* Do not issue a warning about a decl which came from a system header,
      unless -Wsystem-headers.  */
@@ -1366,22 +1356,21 @@ pedwarn_with_decl VPARAMS ((tree decl, const char *msgid, ...))
                        pedantic_error_kind ());
   diagnostic_for_decl (global_dc, &diagnostic, decl);
 
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 void
-error_with_decl VPARAMS ((tree decl, const char *msgid, ...))
+error_with_decl (tree decl, const char *msgid, ...)
 {
   diagnostic_info diagnostic;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, tree, decl);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
 
+  va_start (ap, msgid);
   diagnostic_set_info (&diagnostic, msgid, &ap,
                        DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl),
                        DK_ERROR);
   diagnostic_for_decl (global_dc, &diagnostic, decl);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* Special case error functions.  Most are implemented in terms of the
@@ -1390,14 +1379,13 @@ error_with_decl VPARAMS ((tree decl, const char *msgid, ...))
 /* Print a diagnostic MSGID on FILE.  This is just fprintf, except it
    runs its second argument through gettext.  */
 void
-fnotice VPARAMS ((FILE *file, const char *msgid, ...))
+fnotice (FILE *file, const char *msgid, ...)
 {
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, FILE *, file);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
 
+  va_start (ap, msgid);
   vfprintf (file, _(msgid), ap);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* Warn about a use of an identifier which was marked deprecated.  */

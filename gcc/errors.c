@@ -39,14 +39,14 @@ int have_error = 0;
 /* Print a warning message - output produced, but there may be problems.  */
 
 void
-warning VPARAMS ((const char *format, ...))
+warning (const char *format, ...)
 {
-  VA_OPEN (ap, format);
-  VA_FIXEDARG (ap, const char *, format);
-
+  va_list ap;
+  
+  va_start (ap, format);
   fprintf (stderr, "%s: warning: ", progname);
   vfprintf (stderr, format, ap);
-  VA_CLOSE (ap);
+  va_end (ap);
   fputc('\n', stderr);
 }
 
@@ -54,14 +54,14 @@ warning VPARAMS ((const char *format, ...))
 /* Print an error message - we keep going but the output is unusable.  */
 
 void
-error VPARAMS ((const char *format, ...))
+error (const char *format, ...)
 {
-  VA_OPEN (ap, format);
-  VA_FIXEDARG (ap, const char *, format);
-
+  va_list ap;
+  
+  va_start (ap, format);
   fprintf (stderr, "%s: ", progname);
   vfprintf (stderr, format, ap);
-  VA_CLOSE (ap);
+  va_end (ap);
   fputc('\n', stderr);
 
   have_error = 1;
@@ -71,14 +71,14 @@ error VPARAMS ((const char *format, ...))
 /* Fatal error - terminate execution immediately.  Does not return.  */
 
 void
-fatal VPARAMS ((const char *format, ...))
+fatal (const char *format, ...)
 {
-  VA_OPEN (ap, format);
-  VA_FIXEDARG (ap, const char *, format);
-
+  va_list ap;
+  
+  va_start (ap, format);
   fprintf (stderr, "%s: ", progname);
   vfprintf (stderr, format, ap);
-  VA_CLOSE (ap);
+  va_end (ap);
   fputc('\n', stderr);
   exit (FATAL_EXIT_CODE);
 }
@@ -86,14 +86,14 @@ fatal VPARAMS ((const char *format, ...))
 /* Similar, but say we got an internal error.  */
 
 void
-internal_error VPARAMS ((const char *format, ...))
+internal_error (const char *format, ...)
 {
-  VA_OPEN (ap, format);
-  VA_FIXEDARG (ap, const char *, format);
-
+  va_list ap;
+  
+  va_start (ap, format);
   fprintf (stderr, "%s: Internal error: ", progname);
   vfprintf (stderr, format, ap);
-  VA_CLOSE (ap);
+  va_end (ap);
   fputc ('\n', stderr);
   exit (FATAL_EXIT_CODE);
 }

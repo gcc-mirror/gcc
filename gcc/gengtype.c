@@ -40,18 +40,18 @@ static void close_output_files PARAMS ((void));
 /* Report an error at POS, printing MSG.  */
 
 void
-error_at_line VPARAMS ((struct fileloc *pos, const char *msg, ...))
+error_at_line (struct fileloc *pos, const char *msg, ...)
 {
-  VA_OPEN (ap, msg);
-  VA_FIXEDARG (ap, struct fileloc *, pos);
-  VA_FIXEDARG (ap, const char *, msg);
+  va_list ap;
+  
+  va_start (ap, msg);
 
   fprintf (stderr, "%s:%d: ", pos->file, pos->line);
   vfprintf (stderr, msg, ap);
   fputc ('\n', stderr);
   hit_error = 1;
 
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* vasprintf, but produces fatal message on out-of-memory.  */
@@ -72,13 +72,14 @@ xvasprintf (result, format, args)
 
 /* Wrapper for xvasprintf.  */
 char *
-xasprintf VPARAMS ((const char *format, ...))
+xasprintf (const char *format, ...)
 {
   char *result;
-  VA_OPEN (ap, format);
-  VA_FIXEDARG (ap, const char *, format);
+  va_list ap;
+  
+  va_start (ap, format);
   xvasprintf (&result, format, ap);
-  VA_CLOSE (ap);
+  va_end (ap);
   return result;
 }
 
@@ -1088,14 +1089,13 @@ create_file (name, oname)
 
 /* Print, like fprintf, to O.  */
 void 
-oprintf VPARAMS ((outf_p o, const char *format, ...))
+oprintf (outf_p o, const char *format, ...)
 {
   char *s;
   size_t slength;
+  va_list ap;
   
-  VA_OPEN (ap, format);
-  VA_FIXEDARG (ap, outf_p, o);
-  VA_FIXEDARG (ap, const char *, format);
+  va_start (ap, format);
   slength = xvasprintf (&s, format, ap);
 
   if (o->bufused + slength > o->buflength)
@@ -1112,7 +1112,7 @@ oprintf VPARAMS ((outf_p o, const char *format, ...))
   memcpy (o->buf + o->bufused, s, slength);
   o->bufused += slength;
   free (s);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* Open the global header file and the language-specific header files.  */

@@ -996,13 +996,12 @@ check_function_format (status, attrs, params)
    it warns as usual by replicating the innards of the warning
    function from diagnostic.c.  */
 static void
-status_warning VPARAMS ((int *status, const char *msgid, ...))
+status_warning (int *status, const char *msgid, ...)
 {
   diagnostic_info diagnostic ;
-
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, int *, status);
-  VA_FIXEDARG (ap, const char *, msgid);
+  va_list ap;
+  
+  va_start (ap, msgid);
 
   if (status)
     *status = 1;
@@ -1014,7 +1013,7 @@ status_warning VPARAMS ((int *status, const char *msgid, ...))
       report_diagnostic (&diagnostic);
     }
 
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 /* Variables used by the checking of $ operand number formats.  */

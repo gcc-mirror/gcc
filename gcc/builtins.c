@@ -5368,13 +5368,13 @@ build_function_call_expr (fn, arglist)
    ellipses, otherwise the last specifier must be a VOID_TYPE.  */
 
 static int
-validate_arglist VPARAMS ((tree arglist, ...))
+validate_arglist (tree arglist, ...)
 {
   enum tree_code code;
   int res = 0;
-
-  VA_OPEN (ap, arglist);
-  VA_FIXEDARG (ap, tree, arglist);
+  va_list ap;
+  
+  va_start (ap, arglist);
 
   do
     {
@@ -5406,7 +5406,7 @@ validate_arglist VPARAMS ((tree arglist, ...))
   /* We need gotos here since we can only have one VA_CLOSE in a
      function.  */
  end: ;
-  VA_CLOSE (ap);
+  va_end (ap);
 
   return res;
 }

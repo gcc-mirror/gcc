@@ -48,14 +48,14 @@ static const char *const reg_class_names[] = REG_CLASS_NAMES;
    have any bits in common.  */
 
 void
-ra_debug_msg VPARAMS ((unsigned int level, const char *format, ...))
+ra_debug_msg (unsigned int level, const char *format, ...)
 {
-  VA_OPEN (ap, format);
-  VA_FIXEDARG (ap, unsigned int, level);
-  VA_FIXEDARG (ap, const char *, format);
+  va_list ap;
+  
+  va_start (ap, format);
   if ((debug_new_regalloc & level) != 0 && rtl_dump_file != NULL)
     vfprintf (rtl_dump_file, format, ap);
-  VA_CLOSE (ap);
+  va_end (ap);
 }
 
 
