@@ -1,3 +1,7 @@
+2001-08-13  Jason Merrill  <jason_merrill@redhat.com>
+
+	* lib/scanasm.exp (scan-assembler*): Use expr instead of concat.
+
 2001-08-11  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.dg/template/unify1.C: New test.
