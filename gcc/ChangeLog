@@ -1,3 +1,9 @@
+2003-12-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11773
+	* doc/gcov.texi (Gcov and Optimization): Document inline function
+	behaviour. Fix some file suffixes.
+
 2003-12-14  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/i386/i386.h (__amd64, __amd64__): Remove duplicates.
