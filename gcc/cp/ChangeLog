@@ -1,3 +1,9 @@
+2003-06-30  Giovanni Bajo <giovannibajo@libero.it>
+
+        PR c++/11106
+        * error.c (dump_decl): Call dump_decl to dump the DECL_NAME for a
+        USING_DECL, instead of print_tree_identifier.
+
 2003-06-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h (language_to_string): Adjust declaration.
