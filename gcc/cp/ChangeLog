@@ -1,5 +1,7 @@
 Thu Nov 27 09:39:31 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* except.c: Call terminate without caching so many bits.
+
 	* class.c: Remove static pending_hard_virtuals.
 	(add_virtual_function): Take pointers to pending_virtuals
 	and pending_hard_virtuals.
