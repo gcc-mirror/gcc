@@ -276,10 +276,6 @@ create_phi_node (tree var, basic_block bb)
 
   phi = make_phi_node (var, EDGE_COUNT (bb->preds));
 
-  /* This is a new phi node, so note that is has not yet been
-     rewritten.  */
-  PHI_REWRITTEN (phi) = 0;
-
   /* Add the new PHI node to the list of PHI nodes for block BB.  */
   PHI_CHAIN (phi) = phi_nodes (bb);
   bb_ann (bb)->phi_nodes = phi;
