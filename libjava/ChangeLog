@@ -1,3 +1,10 @@
+2003-01-10  Andrew Haley  <aph@redhat.com>
+
+        * include/dwarf2-signal.h: Remove x86_64.
+        * configure.host (x86_64 DIVIDESPEC): Remove.
+        * include/x86_64-signal.h: New file.
+        * configure.in: Regenerate.
+
 2003-01-10  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramSocket.java

@@ -101,7 +101,6 @@ case "${host}" in
 	libgcj_interpreter=no
 	libgcj_cxxflags="-D__NO_MATH_INLINES"
 	libgcj_cflags="-D__NO_MATH_INLINES"
-	DIVIDESPEC=-fno-use-divide-subroutine
 	enable_hash_synchronization_default=yes
 	slow_pthread_self=yes
 	;;
