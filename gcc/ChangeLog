@@ -1,3 +1,9 @@
+2003-10-20  Zack Weinberg  <zack@codesourcery.com>
+
+	* fixinc/inclhack.def (hpux11_snprintf): New edit.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/stdio.h: Add test for hpux11_snprintf.
+
 2003-10-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (install-info): Simplify.
