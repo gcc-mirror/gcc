@@ -3887,7 +3887,14 @@ create_class (flags, id, super, interfaces)
   else
     super_decl_type = NULL_TREE;
 
-  /* Set super info and mark the class a complete */
+  /* A class nested in an interface is implicitly static. */
+  if (INNER_CLASS_DECL_P (decl)
+      && CLASS_INTERFACE (TYPE_NAME (TREE_TYPE (DECL_CONTEXT (decl)))))
+    {
+      flags |= ACC_STATIC;
+    }
+
+  /* Set super info and mark the class as complete. */
   set_super_info (flags, TREE_TYPE (decl), super_decl_type, 
 		  ctxp->interface_number);
   ctxp->interface_number = 0;
