@@ -1,3 +1,9 @@
+2002-05-24  Jim Blandy  <jimb@redhat.com>
+
+	* dwarf2out.c (dwarf2out_finish): Don't forget to emit a final
+	entry with a type code of zero, marking the end of the compilation
+	unit's macro info.
+
 2002-05-24  Richard Henderson  <rth@redhat.com>
 
         * varasm.c (asm_output_bss): Always output one byte.
