@@ -1825,7 +1825,11 @@ try_combine (i3, i2, i1)
      we have a PARALLEL with both loads from the same memory location.
      We can split this into a load from memory followed by a register-register
      copy.  This saves at least one insn, more if register allocation can
-     eliminate the copy.  */
+     eliminate the copy.
+
+     We cannot do this if the destination of the second assignment is
+     a register that we have already assumed is zero-extended.  Similarly
+     for a SUBREG of such a register.  */
 
   else if (i1 && insn_code_number < 0 && asm_noperands (newpat) < 0
 	   && GET_CODE (newpat) == PARALLEL
@@ -1839,6 +1843,21 @@ try_combine (i3, i2, i1)
 				   INSN_CUID (i2))
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != ZERO_EXTRACT
 	   && GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) != STRICT_LOW_PART
+	   && ! (temp = SET_DEST (XVECEXP (newpat, 0, 1)),
+		 (GET_CODE (temp) == REG
+		  && reg_nonzero_bits[REGNO (temp)] != 0
+		  && GET_MODE_BITSIZE (GET_MODE (temp)) < BITS_PER_WORD
+		  && GET_MODE_BITSIZE (GET_MODE (temp)) < HOST_BITS_PER_INT
+		  && (reg_nonzero_bits[REGNO (temp)]
+		      != GET_MODE_MASK (word_mode))))
+	   && ! (GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) == SUBREG
+		 && (temp = SUBREG_REG (SET_DEST (XVECEXP (newpat, 0, 1))),
+		     (GET_CODE (temp) == REG
+		      && reg_nonzero_bits[REGNO (temp)] != 0
+		      && GET_MODE_BITSIZE (GET_MODE (temp)) < BITS_PER_WORD
+		      && GET_MODE_BITSIZE (GET_MODE (temp)) < HOST_BITS_PER_INT
+		      && (reg_nonzero_bits[REGNO (temp)]
+			  != GET_MODE_MASK (word_mode)))))
 	   && ! reg_overlap_mentioned_p (SET_DEST (XVECEXP (newpat, 0, 1)),
 					 SET_SRC (XVECEXP (newpat, 0, 1)))
 	   && ! find_reg_note (i3, REG_UNUSED,
