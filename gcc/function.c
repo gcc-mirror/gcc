@@ -2767,6 +2767,7 @@ instantiate_virtual_regs (fndecl, insns)
      rtx insns;
 {
   rtx insn;
+  int i;
 
   /* Compute the offsets to use for this function.  */
   in_arg_offset = FIRST_PARM_OFFSET (fndecl);
@@ -2779,6 +2780,12 @@ instantiate_virtual_regs (fndecl, insns)
      address.  If not, we do it later.  That will handle most uses of virtual
      regs on many machines.  */
   instantiate_decls (fndecl, 1);
+
+  /* Instantiate the stack slots for the parm registers, for later use in
+     addressof elimination.  */
+  for (i = 0; i < max_parm_reg; ++i)
+    if (parm_reg_stack_loc[i])
+      instantiate_virtual_regs_1 (parm_reg_stack_loc[i], NULL_RTX, 0);
 
   /* Initialize recognition, indicating that volatile is OK.  */
   init_recog ();
