@@ -523,13 +523,7 @@ lookup_field_1 (type, name)
 	   from TYPE_FIELDS anyhow; see handle_using_decl.  */
 	;
       else if (DECL_NAME (field) == name)
-	{
-	  if (TREE_CODE(field) == VAR_DECL 
-	      && (TREE_STATIC (field) || DECL_EXTERNAL (field)))
-	    GNU_xref_ref(current_function_decl,
-			 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (field)));
-	  return field;
-	}
+	return field;
       field = TREE_CHAIN (field);
     }
   /* Not found.  */
