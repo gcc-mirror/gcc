@@ -32,11 +32,13 @@ public class OutputStreamWriter extends Writer
 
   private OutputStreamWriter(OutputStream out, UnicodeToBytes encoder)
   {
-    super((this.out = (out instanceof BufferedOutputStream
-		       ? (BufferedOutputStream) out
-		       : new BufferedOutputStream(out, 250))));
+    this.out = out instanceof BufferedOutputStream 
+	       ? (BufferedOutputStream) out
+	       : new BufferedOutputStream(out, 250);
+    /* Don't need to call super(out) here as long as the lock gets set. */
+    this.lock = out;
     this.converter = encoder;
-  } 
+  }
 
   public OutputStreamWriter(OutputStream out, String enc)
    throws UnsupportedEncodingException
