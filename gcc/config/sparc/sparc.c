@@ -967,11 +967,11 @@ gen_compare_reg (code, x, y)
    This function is needed to turn
 
 	   (set (reg:SI 110)
-	       (gt (reg:CCX 0 %g0)
+	       (gt (reg:CCX 100 %icc)
 	           (const_int 0)))
    into
 	   (set (reg:SI 110)
-	       (gt:DI (reg:CCX 0 %g0)
+	       (gt:DI (reg:CCX 100 %icc)
 	           (const_int 0)))
 
    IE: The instruction recognizer needs to see the mode of the comparison to
@@ -979,65 +979,64 @@ gen_compare_reg (code, x, y)
    define_expand, but leaving it out allows us to handle DI, SI, etc.
 
    We refer to the global sparc compare operands sparc_compare_op0 and
-   sparc_compare_op1.  
-
-   ??? Some of this is outdated as the scc insns set the mode of the
-   comparison now.
-
-   ??? We optimize for the case where op1 is 0 and the comparison allows us to
-   use the "movrCC" insns. This reduces the generated code from three to two
-   insns.  This way seems too brute force though.  Is there a more elegant way
-   to achieve the same effect?
-*/
+   sparc_compare_op1.  */
 
 int
 gen_v9_scc (compare_code, operands)
      enum rtx_code compare_code;
      register rtx *operands;
 {
-  rtx temp;
+  rtx temp, op0, op1;
 
-  /* It might be that we'll never be called if this is true,
-     but keep this here for documentation at least.  */
   if (! TARGET_ARCH64
       && (GET_MODE (sparc_compare_op0) == DImode
 	  || GET_MODE (operands[0]) == DImode))
     return 0;
 
+  /* Handle the case where operands[0] == sparc_compare_op0.
+     We "early clobber" the result.  */
+  if (REGNO (operands[0]) == REGNO (sparc_compare_op0))
+    {
+      op0 = gen_reg_rtx (GET_MODE (sparc_compare_op0));
+      emit_move_insn (op0, sparc_compare_op0);
+    }
+  else
+    op0 = sparc_compare_op0;
+  /* For consistency in the following.  */
+  op1 = sparc_compare_op1;
+
   /* Try to use the movrCC insns.  */
   if (TARGET_ARCH64
-      && GET_MODE_CLASS (GET_MODE (sparc_compare_op0)) == MODE_INT
-      && sparc_compare_op1 == const0_rtx
+      && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
+      && op1 == const0_rtx
       && v9_regcmp_p (compare_code))
     {
       /* Special case for op0 != 0.  This can be done with one instruction if
-	 op0 can be clobbered.  We store to a temp, and then clobber the temp,
-	 but the combiner will remove the first insn.  */
+	 operands[0] == sparc_compare_op0.  We don't assume they are equal
+	 now though.  */
 
       if (compare_code == NE
 	  && GET_MODE (operands[0]) == DImode
-	  && GET_MODE (sparc_compare_op0) == DImode)
+	  && GET_MODE (op0) == DImode)
 	{
-	  emit_insn (gen_rtx (SET, VOIDmode, operands[0], sparc_compare_op0));
+	  emit_insn (gen_rtx (SET, VOIDmode, operands[0], op0));
 	  emit_insn (gen_rtx (SET, VOIDmode, operands[0],
 			      gen_rtx (IF_THEN_ELSE, DImode,
 				       gen_rtx (compare_code, DImode,
-						sparc_compare_op0, const0_rtx),
+						op0, const0_rtx),
 				       const1_rtx,
 				       operands[0])));
 	  return 1;
 	}
 
       emit_insn (gen_rtx (SET, VOIDmode, operands[0], const0_rtx));
-      if (GET_MODE (sparc_compare_op0) != DImode)
+      if (GET_MODE (op0) != DImode)
 	{
 	  temp = gen_reg_rtx (DImode);
-	  convert_move (temp, sparc_compare_op0, 0);
+	  convert_move (temp, op0, 0);
 	}
       else
-	{
-	  temp = sparc_compare_op0;
-	}
+	temp = op0;
       emit_insn (gen_rtx (SET, VOIDmode, operands[0],
 			  gen_rtx (IF_THEN_ELSE, GET_MODE (operands[0]),
 				   gen_rtx (compare_code, DImode,
@@ -1048,8 +1047,7 @@ gen_v9_scc (compare_code, operands)
     }
   else
     {
-      operands[1] = gen_compare_reg (compare_code,
-				     sparc_compare_op0, sparc_compare_op1);
+      operands[1] = gen_compare_reg (compare_code, op0, op1);
 
       switch (GET_MODE (operands[1]))
 	{
