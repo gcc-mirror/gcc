@@ -1,3 +1,7 @@
+2004-05-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c: Add a prototype for fold_builtin_strchr().
+
 2004-05-31  Paolo Bonzini  <bonzini@gnu.org>
 
 	Revert this patch:
