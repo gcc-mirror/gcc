@@ -40,7 +40,6 @@
 // Get rid of those macros defined in <ctype.h> in lieu of real functions.
 #undef isalnum
 #undef isalpha
-#undef isblank
 #undef iscntrl
 #undef isdigit
 #undef isgraph
@@ -57,7 +56,6 @@ namespace std
 {
   using ::isalnum;
   using ::isalpha;
-  using ::isblank;
   using ::iscntrl;
   using ::isdigit;
   using ::isgraph;
