@@ -65,23 +65,23 @@ namespace _GLIBCXX_STD
 {
   template<typename _Tp, typename _Alloc>
     void
-    _List_base<_Tp,_Alloc>::
+    _List_base<_Tp, _Alloc>::
     _M_clear()
     {
       typedef _List_node<_Tp>  _Node;
       _Node* __cur = static_cast<_Node*>(this->_M_impl._M_node._M_next);
       while (__cur != &this->_M_impl._M_node)
-      {
-        _Node* __tmp = __cur;
-        __cur = static_cast<_Node*>(__cur->_M_next);
-        this->get_allocator().destroy(&__tmp->_M_data);
-        _M_put_node(__tmp);
-      }
+	{
+	  _Node* __tmp = __cur;
+	  __cur = static_cast<_Node*>(__cur->_M_next);
+	  this->get_allocator().destroy(&__tmp->_M_data);
+	  _M_put_node(__tmp);
+	}
     }
 
   template<typename _Tp, typename _Alloc>
-    typename list<_Tp,_Alloc>::iterator
-    list<_Tp,_Alloc>::
+    typename list<_Tp, _Alloc>::iterator
+    list<_Tp, _Alloc>::
     insert(iterator __position, const value_type& __x)
     {
       _Node* __tmp = _M_create_node(__x);
@@ -90,8 +90,8 @@ namespace _GLIBCXX_STD
     }
 
   template<typename _Tp, typename _Alloc>
-    typename list<_Tp,_Alloc>::iterator
-    list<_Tp,_Alloc>::
+    typename list<_Tp, _Alloc>::iterator
+    list<_Tp, _Alloc>::
     erase(iterator __position)
     {
       iterator __ret = __position._M_node->_M_next;
@@ -101,12 +101,12 @@ namespace _GLIBCXX_STD
 
   template<typename _Tp, typename _Alloc>
     void
-    list<_Tp,_Alloc>::
+    list<_Tp, _Alloc>::
     resize(size_type __new_size, const value_type& __x)
     {
       iterator __i = begin();
       size_type __len = 0;
-      for ( ; __i != end() && __len < __new_size; ++__i, ++__len)
+      for (; __i != end() && __len < __new_size; ++__i, ++__len)
         ;
       if (__len == __new_size)
         erase(__i, end());
@@ -115,8 +115,8 @@ namespace _GLIBCXX_STD
     }
 
   template<typename _Tp, typename _Alloc>
-    list<_Tp,_Alloc>&
-    list<_Tp,_Alloc>::
+    list<_Tp, _Alloc>&
+    list<_Tp, _Alloc>::
     operator=(const list& __x)
     {
       if (this != &__x)
@@ -137,11 +137,11 @@ namespace _GLIBCXX_STD
 
   template<typename _Tp, typename _Alloc>
     void
-    list<_Tp,_Alloc>::
+    list<_Tp, _Alloc>::
     _M_fill_assign(size_type __n, const value_type& __val)
     {
       iterator __i = begin();
-      for ( ; __i != end() && __n > 0; ++__i, --__n)
+      for (; __i != end() && __n > 0; ++__i, --__n)
         *__i = __val;
       if (__n > 0)
         insert(end(), __n, __val);
@@ -152,7 +152,7 @@ namespace _GLIBCXX_STD
   template<typename _Tp, typename _Alloc>
     template <typename _InputIterator>
       void
-      list<_Tp,_Alloc>::
+      list<_Tp, _Alloc>::
       _M_assign_dispatch(_InputIterator __first2, _InputIterator __last2,
 			 __false_type)
       {
@@ -169,24 +169,24 @@ namespace _GLIBCXX_STD
 
   template<typename _Tp, typename _Alloc>
     void
-    list<_Tp,_Alloc>::
+    list<_Tp, _Alloc>::
     remove(const value_type& __value)
     {
       iterator __first = begin();
       iterator __last = end();
       while (__first != __last)
-      {
-        iterator __next = __first;
-        ++__next;
-        if (*__first == __value)
-          _M_erase(__first);
-        __first = __next;
-      }
+	{
+	  iterator __next = __first;
+	  ++__next;
+	  if (*__first == __value)
+	    _M_erase(__first);
+	  __first = __next;
+	}
     }
 
   template<typename _Tp, typename _Alloc>
     void
-    list<_Tp,_Alloc>::
+    list<_Tp, _Alloc>::
     unique()
     {
       iterator __first = begin();
@@ -195,18 +195,18 @@ namespace _GLIBCXX_STD
 	return;
       iterator __next = __first;
       while (++__next != __last)
-      {
-        if (*__first == *__next)
-          _M_erase(__next);
-        else
-          __first = __next;
-        __next = __first;
-      }
+	{
+	  if (*__first == *__next)
+	    _M_erase(__next);
+	  else
+	    __first = __next;
+	  __next = __first;
+	}
     }
 
   template<typename _Tp, typename _Alloc>
     void
-    list<_Tp,_Alloc>::
+    list<_Tp, _Alloc>::
     merge(list& __x)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -233,7 +233,7 @@ namespace _GLIBCXX_STD
 
   template<typename _Tp, typename _Alloc>
     void
-    list<_Tp,_Alloc>::
+    list<_Tp, _Alloc>::
     sort()
     {
       // Do nothing if the list has length 0 or 1.
@@ -250,7 +250,7 @@ namespace _GLIBCXX_STD
 	    __carry.splice(__carry.begin(), *this, begin());
 
 	    for(__counter = &__tmp[0];
-		(__counter != __fill) && !__counter->empty();
+		__counter != __fill && !__counter->empty();
 		++__counter)
 	      {
 		__counter->merge(__carry);
@@ -262,54 +262,55 @@ namespace _GLIBCXX_STD
 	  }
 	while ( !empty() );
 
-        for (__counter =  &__tmp[1]; __counter != __fill; ++__counter)
-          __counter->merge( *(__counter-1) );
-        swap( *(__fill-1) );
+        for (__counter = &__tmp[1]; __counter != __fill; ++__counter)
+          __counter->merge(*(__counter - 1));
+        swap( *(__fill - 1) );
       }
     }
 
   template<typename _Tp, typename _Alloc>
     template <typename _Predicate>
       void
-      list<_Tp,_Alloc>::
+      list<_Tp, _Alloc>::
       remove_if(_Predicate __pred)
       {
         iterator __first = begin();
         iterator __last = end();
         while (__first != __last)
-        {
-          iterator __next = __first;
-          ++__next;
-          if (__pred(*__first))
-	    _M_erase(__first);
-          __first = __next;
-        }
+	  {
+	    iterator __next = __first;
+	    ++__next;
+	    if (__pred(*__first))
+	      _M_erase(__first);
+	    __first = __next;
+	  }
       }
 
   template<typename _Tp, typename _Alloc>
     template <typename _BinaryPredicate>
       void
-      list<_Tp,_Alloc>::
+      list<_Tp, _Alloc>::
       unique(_BinaryPredicate __binary_pred)
       {
         iterator __first = begin();
         iterator __last = end();
-        if (__first == __last) return;
+        if (__first == __last)
+	  return;
         iterator __next = __first;
         while (++__next != __last)
-        {
-          if (__binary_pred(*__first, *__next))
-            _M_erase(__next);
-          else
-            __first = __next;
-          __next = __first;
-        }
+	  {
+	    if (__binary_pred(*__first, *__next))
+	      _M_erase(__next);
+	    else
+	      __first = __next;
+	    __next = __first;
+	  }
       }
 
   template<typename _Tp, typename _Alloc>
     template <typename _StrictWeakOrdering>
       void
-      list<_Tp,_Alloc>::
+      list<_Tp, _Alloc>::
       merge(list& __x, _StrictWeakOrdering __comp)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -337,7 +338,7 @@ namespace _GLIBCXX_STD
   template<typename _Tp, typename _Alloc>
     template <typename _StrictWeakOrdering>
       void
-      list<_Tp,_Alloc>::
+      list<_Tp, _Alloc>::
       sort(_StrictWeakOrdering __comp)
       {
 	// Do nothing if the list has length 0 or 1.
@@ -354,7 +355,7 @@ namespace _GLIBCXX_STD
 		__carry.splice(__carry.begin(), *this, begin());
 
 		for(__counter = &__tmp[0];
-		    (__counter != __fill) && !__counter->empty();
+		    __counter != __fill && !__counter->empty();
 		    ++__counter)
 		  {
 		    __counter->merge(__carry, __comp);
@@ -366,9 +367,9 @@ namespace _GLIBCXX_STD
 	      }
 	    while ( !empty() );
 
-	    for (__counter =  &__tmp[1]; __counter != __fill; ++__counter)
-	      __counter->merge( *(__counter-1), __comp );
-	    swap( *(__fill-1) );
+	    for (__counter = &__tmp[1]; __counter != __fill; ++__counter)
+	      __counter->merge(*(__counter - 1), __comp);
+	    swap(*(__fill - 1));
 	  }
       }
 } // namespace std
