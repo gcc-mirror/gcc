@@ -6772,16 +6772,19 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	  int inside_int = INTEGRAL_TYPE_P (inside_type);
 	  int inside_ptr = POINTER_TYPE_P (inside_type);
 	  int inside_float = FLOAT_TYPE_P (inside_type);
+	  int inside_vec = TREE_CODE (inside_type) == VECTOR_TYPE;
 	  unsigned int inside_prec = TYPE_PRECISION (inside_type);
 	  int inside_unsignedp = TYPE_UNSIGNED (inside_type);
 	  int inter_int = INTEGRAL_TYPE_P (inter_type);
 	  int inter_ptr = POINTER_TYPE_P (inter_type);
 	  int inter_float = FLOAT_TYPE_P (inter_type);
+	  int inter_vec = TREE_CODE (inter_type) == VECTOR_TYPE;
 	  unsigned int inter_prec = TYPE_PRECISION (inter_type);
 	  int inter_unsignedp = TYPE_UNSIGNED (inter_type);
 	  int final_int = INTEGRAL_TYPE_P (type);
 	  int final_ptr = POINTER_TYPE_P (type);
 	  int final_float = FLOAT_TYPE_P (type);
+	  int final_vec = TREE_CODE (type) == VECTOR_TYPE;
 	  unsigned int final_prec = TYPE_PRECISION (type);
 	  int final_unsignedp = TYPE_UNSIGNED (type);
 
@@ -6801,12 +6804,15 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	     since then we sometimes need the inner conversion.  Likewise if
 	     the outer has a precision not equal to the size of its mode.  */
 	  if ((((inter_int || inter_ptr) && (inside_int || inside_ptr))
-	       || (inter_float && inside_float))
+	       || (inter_float && inside_float)
+	       || (inter_vec && inside_vec))
 	      && inter_prec >= inside_prec
-	      && (inter_float || inter_unsignedp == inside_unsignedp)
+	      && (inter_float || inter_vec
+		  || inter_unsignedp == inside_unsignedp)
 	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
 		    && TYPE_MODE (type) == TYPE_MODE (inter_type))
-	      && ! final_ptr)
+	      && ! final_ptr
+	      && (! final_vec || inter_prec == inside_prec))
 	    return fold_build1 (code, type, TREE_OPERAND (op0, 0));
 
 	  /* If we have a sign-extension of a zero-extended value, we can
@@ -6818,6 +6824,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 
 	  /* Two conversions in a row are not needed unless:
 	     - some conversion is floating-point (overstrict for now), or
+	     - some conversion is a vector (overstrict for now), or
 	     - the intermediate type is narrower than both initial and
 	       final, or
 	     - the intermediate type and innermost type differ in signedness,
@@ -6827,6 +6834,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	     - the final type is a pointer type and the precisions of the
 	       initial and intermediate types differ.  */
 	  if (! inside_float && ! inter_float && ! final_float
+	      && ! inside_vec && ! inter_vec && ! final_vec
 	      && (inter_prec > inside_prec || inter_prec > final_prec)
 	      && ! (inside_int && inter_int
 		    && inter_unsignedp != inside_unsignedp
