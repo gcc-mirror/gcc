@@ -1,30 +1,46 @@
-# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+# Copyright (C) 1992-1998, 1999, 2000 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Please email any bugs, comments, and/or additions to this file to:
-# bug-dejagnu.prep.ai.mit.edu
+# bug-dejagnu@gnu.org.
 
 # This file was written by Rob Savoye. (rob@cygnus.com)
+
+load_lib file-format.exp
 
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
 
 if ![info exists TORTURE_OPTIONS] {
-    # FIXME: We should test -g at least once.
-    set TORTURE_OPTIONS [list { -O }]
+    # It is theoretically beneficial to group all of the O2/O3 options together,
+    # as in many cases the compiler will generate identical executables for
+    # all of them--and the objc-torture testsuite will skip testing identical
+    # executables multiple times.
+    # Also note that -finline-functions is explicitly included in one of the
+    # items below, even though -O3 is also specified, because some ports may
+    # choose to disable inlining functions by default, even when optimizing.
+    set TORTURE_OPTIONS [list \
+	{ -O0 } \
+	{ -O1 } \
+	{ -O2 } \
+	{ -O3 -fomit-frame-pointer } \
+	{ -O3 -fomit-frame-pointer -funroll-loops } \
+	{ -O3 -fomit-frame-pointer -funroll-all-loops -finline-functions } \
+	{ -O3 -g } \
+	{ -Os } ]
 }
 
 
@@ -40,7 +56,7 @@ foreach option $TORTURE_OPTIONS {
 }
 
 #
-# objc-torture-compile -- runs the Tege C-torture test
+# objc-torture-compile -- runs the Tege OBJC-torture test
 #
 # SRC is the full pathname of the testcase.
 # OPTION is the specific compiler flag we're testing (eg: -O2).
@@ -65,53 +81,10 @@ proc objc-torture-compile { src option } {
 
     # Run the compiler and analyze the results.
     set options ""
-    lappend options "additional_flags=-w $option"
+    lappend options "additional_flags=-w $option -I${srcdir}/../../libobjc"
 
     set comp_output [objc_target_compile "$src" "$output" object $options];
-    
-    # Set a few common compiler messages.
-    set fatal_signal "*Obj-C*: Internal compiler error: program*got fatal signal"
- 
-    if [string match "$fatal_signal 6" $comp_output] then {
-	objc_fail $testcase "Got Signal 6, $option"
-	remote_file build delete $output
-	return
-    }
-
-    if [string match "$fatal_signal 11" $comp_output] then {
-	objc_fail $testcase "Got Signal 11, $option"
-	remote_file build delete $output
-	return
-    }
-
-    # We shouldn't get these because of -w, but just in case.
-    if [string match "*Obj-C*:*warning:*" $comp_output] then {
-	warning "$testcase: (with warnings) $option"
-	send_log "$comp_output\n"
-	unresolved "$testcase, $option"
-	remote_file build delete $output
-	return
-    }
-
-    set comp_output [prune_warnings $comp_output]
-
-    set unsupported_message [objc_check_unsupported_p $comp_output]
-    if { $unsupported_message != "" } {
-	unsupported "$testcase: $unsupported_message"
-	remote_file build delete $output
-	return
-    }
-
-    # remove any leftover LF/CR to make sure any output is legit
-    regsub -all -- "\[\r\n\]*" $comp_output "" comp_output
-    # If any message remains, we fail.
-    if ![string match "" $comp_output] then {
-	objc_fail $testcase $option
-	remote_file build delete $output
-	return
-    }
-
-    objc_pass $testcase $option
+    objc_check_compile $testcase $option $output $comp_output
     remote_file build delete $output
 }
 
@@ -120,29 +93,32 @@ proc objc-torture-compile { src option } {
 #
 # SRC is the full pathname of the testcase.
 #
-# If the testcase has an associated .cexp file, we source that to run the
-# test instead.  We use .cexp instead of .exp so that the testcase is still
-# controlled by the main .exp driver (this is useful when one wants to only
-# run the compile.exp tests for example - one need only pass compile.exp to
-# dejagnu, and not compile.exp, foo1.exp, foo2.exp, etc.).
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
 #
-proc objc-torture-execute { src } {
-    global tmpdir tool srcdir output 
+proc objc-torture-execute { src args } {
+    global tmpdir tool srcdir output compiler_conditional_xfail_data
 
+    if { [llength $args] > 0 } {
+	set additional_flags [lindex $args 0];
+    } else {
+	set additional_flags "";
+    }
     # Check for alternate driver.
-    if [file exists [file rootname $src].cexp] {
-	verbose "Using alternate driver [file rootname [file tail $src]].cexp" 2
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
 	set done_p 0
-	catch "set done_p \[source [file rootname $src].cexp\]"
+	catch "set done_p \[source [file rootname $src].x\]"
 	if { $done_p } {
 	    return
 	}
     }
-   
+
     # Look for a loop within the source code - if we don't find one,
     # don't pass -funroll[-all]-loops.
     global torture_with_loops torture_without_loops
-    if [expr [search_for $src "do *\[0-9\]"]+[search_for $src "end *do"]] then {
+    if [expr [search_for $src "for*("]+[search_for $src "while*("]] then {
 	set option_list $torture_with_loops
     } else {
 	set option_list $torture_without_loops
@@ -159,70 +135,48 @@ proc objc-torture-execute { src } {
 	set testcase "[file tail [file dirname $src]]/[file tail $src]"
     }
 
+    set count 0;
+    set oldstatus "foo";
     foreach option $option_list {
-	# torture_{compile,execute}_xfail are set by the .cexp script
+	if { $count > 0 } {
+	    set oldexec $execname;
+	}
+	set execname "${executable}${count}";
+	incr count;
+
+	# torture_{compile,execute}_xfail are set by the .x script
 	# (if present)
 	if [info exists torture_compile_xfail] {
 	    setup_xfail $torture_compile_xfail
 	}
-	remote_file build delete $executable
+
+	# torture_execute_before_{compile,execute} can be set by the .x script
+	# (if present)
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
+	}
+
+	remote_file build delete $execname;
 	verbose "Testing $testcase, $option" 1
 
 	set options ""
 	lappend options "additional_flags=-w $option -I${srcdir}/../../libobjc"
-	set comp_output [objc_target_compile "$src" "$executable" executable $options];
+	if { $additional_flags != "" } {
+	    lappend options "additional_flags=$additional_flags";
+	}
+	set comp_output [objc_target_compile "$src" "${execname}" executable $options];
 
-	# Set a few common compiler messages.
-	set fatal_signal "*Obj-C*: Internal compiler error: program*got fatal signal"
-	
-	if [string match "$fatal_signal 6" $comp_output] then {
-	    objc_fail $testcase "Got Signal 6, $option"
-	    remote_file build delete $executable
+	if ![objc_check_compile "$testcase compilation" $option $execname $comp_output] {
+	    unresolved "$testcase execution, $option"
+	    remote_file build delete $execname
 	    continue
-	}
-	
-	if [string match "$fatal_signal 11" $comp_output] then {
-	    objc_fail $testcase "Got Signal 11, $option"
-	    remote_file build delete $executable
-	    continue
-	}
-	
-	# We shouldn't get these because of -w, but just in case.
-	if [string match "*Obj-C*:*warning:*" $comp_output] then {
-	    warning "$testcase: (with warnings) $option"
-	    send_log "$comp_output\n"
-	    unresolved "$testcase, $option"
-	    remote_file build delete $executable
-	    continue
-	}
-	
-	set comp_output [prune_warnings $comp_output]
-	
-	set unsupported_message [objc_check_unsupported_p $comp_output]
-
-	if { $unsupported_message != "" } {
-	    unsupported "$testcase: $unsupported_message"
-	    continue
-	} elseif ![file exists $executable] {
-	    if ![is3way] {
-		fail "$testcase compilation, $option"
-		untested "$testcase execution, $option"
-		continue
-	    } else {
-		# FIXME: since we can't test for the existance of a remote
-		# file without short of doing an remote file list, we assume
-		# that since we got no output, it must have compiled.
-		pass "$testcase compilation, $option"		
-	    }
-	} else {
-	    pass "$testcase compilation, $option"
 	}
 
 	# See if this source file uses "long long" types, if it does, and
 	# no_long_long is set, skip execution of the test.
 	if [target_info exists no_long_long] then {
-	    if [expr [search_for $src "integer\*8"]] then {
-		untested "$testcase execution, $option"
+	    if [expr [search_for $src "long long"]] then {
+		unsupported "$testcase execution, $option"
 		continue
 	    }
 	}
@@ -230,14 +184,46 @@ proc objc-torture-execute { src } {
 	if [info exists torture_execute_xfail] {
 	    setup_xfail $torture_execute_xfail
 	}
-	
-	set result [objc_load "$executable" "" ""]
-	set status [lindex $result 0];
-	set output [lindex $result 1];
-        if { $status == "pass" } {
-	    remote_file build delete $executable
+
+	if [info exists torture_eval_before_execute] {
+            set ignore_me [eval $torture_eval_before_execute]
+	}
+
+
+	# Sometimes we end up creating identical executables for two
+	# consecutive sets of different of compiler options.
+	#
+	# In such cases we know the result of this test will be identical
+	# to the result of the last test.
+	#
+	# So in cases where the time to load and run/simulate the test
+	# is relatively high, compare the two binaries and avoid rerunning
+	# tests if the executables are identical.
+	#
+	# Do not do this for native testing since the cost to load/execute
+	# the test is fairly small and the comparison step actually slows
+	# the entire process down because it usually does not "hit".
+	set skip 0;
+	if { ![isnative] && [info exists oldexec] } {
+	    if { [remote_file build cmp $oldexec $execname] == 0 } {
+		set skip 1;
+	    }
+	}
+	if { $skip == 0 } {
+	    set result [objc_load "$execname" "" ""]
+	    set status [lindex $result 0];
+	    set output [lindex $result 1];
+	}
+        if { $oldstatus == "pass" } {
+	    remote_file build delete $oldexec;
         }
 	$status "$testcase execution, $option"
+	set oldstatus $status;
+    }
+    if [info exists status] {
+	if { $status == "pass" } {
+	    remote_file build delete $execname;
+	}
     }
 }
 
@@ -247,8 +233,7 @@ proc objc-torture-execute { src } {
 proc search_for { file pattern } {
     set fd [open $file r]
     while { [gets $fd cur_line]>=0 } {
-	set lower [string tolower $cur_line]
-	if [regexp "$pattern" $lower] then {
+	if [string match "*$pattern*" $cur_line] then {
 	    close $fd
 	    return 1
 	}
@@ -264,14 +249,12 @@ proc search_for { file pattern } {
 # SRC is the full pathname of the testcase, or just a file name in which case
 # we prepend $srcdir/$subdir.
 #
-# If the testcase has an associated .cexp file, we source that to run the
-# test instead.  We use .cexp instead of .exp so that the testcase is still
-# controlled by the main .exp driver (this is useful when one wants to only
-# run the compile.exp tests for example - one need only pass compile.exp to
-# dejagnu, and not compile.exp, foo1.exp, foo2.exp, etc.).
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
 #
 proc objc-torture { args } {
-    global srcdir subdir
+    global srcdir subdir compiler_conditional_xfail_data
 
     set src [lindex $args 0];
     if { [llength $args] > 1 } {
@@ -286,19 +269,19 @@ proc objc-torture { args } {
     }
 
     # Check for alternate driver.
-    if [file exists [file rootname $src].cexp] {
-	verbose "Using alternate driver [file rootname [file tail $src]].cexp" 2
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
 	set done_p 0
-	catch "set done_p \[source [file rootname $src].cexp\]"
+	catch "set done_p \[source [file rootname $src].x\]"
 	if { $done_p } {
 	    return
 	}
     }
-   
+
     # Look for a loop within the source code - if we don't find one,
     # don't pass -funroll[-all]-loops.
     global torture_with_loops torture_without_loops
-    if [expr [search_for $src "do *\[0-9\]"]+[search_for $src "end *do"]] then {
+    if [expr [search_for $src "for*("]+[search_for $src "while*("]] then {
 	set option_list $torture_with_loops
     } else {
 	set option_list $torture_without_loops
@@ -306,9 +289,14 @@ proc objc-torture { args } {
 
     # loop through all the options
     foreach option $option_list {
-	# torture_compile_xfail is set by the .cexp script (if present)
+	# torture_compile_xfail is set by the .x script (if present)
 	if [info exists torture_compile_xfail] {
 	    setup_xfail $torture_compile_xfail
+	}
+
+	# torture_execute_before_compile is set by the .x script (if present)
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
 	}
 
 	objc-torture-compile $src "$option $options"
