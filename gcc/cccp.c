@@ -3642,7 +3642,7 @@ do_include (buf, limit, op, keyword)
 
   struct file_name_list *search_start = include; /* Chain of dirs to search */
   struct file_name_list dsp[1];	/* First in chain, if #include "..." */
-  struct file_name_list *searchptr;
+  struct file_name_list *searchptr = 0;
   int flen;
 
   int f;			/* file number */
