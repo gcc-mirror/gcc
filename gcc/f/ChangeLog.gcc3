@@ -1,5 +1,14 @@
 Sun Aug 17 08:35:11 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* INSTALL: Rebuilt.
+	* install.texi: Remove "Object File Differences" section.  Remove
+	all references to zzz.o failing comparison tests.
+	* version.c, version.h: Renamed from zzz.c and zzz.h.  Remove
+	date and time stamps so a 3 stage build reports no differences.
+	* Make-lang.in: Corresponding changes.
+	* Makefile.in: Likewise.
+	* g77.c, parse.c: Likewise.
+
 	* intdoc.texi: Remove generated file from distribution.
 
 Fri Aug 15 13:44:14 1997  Jeffrey A Law  (law@cygnus.com)

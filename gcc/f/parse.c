@@ -25,7 +25,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "top.h"
 #include "com.h"
 #include "where.h"
-#include "zzz.h"
+#include "version.h"
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 #include "flags.j"
 #endif
@@ -47,10 +47,7 @@ yyparse ()
   ffewhereFile wf;
 
   if (ffe_is_version ())
-    fprintf (stderr, "GNU Fortran Front End version %s compiled: %s %s\n",
-	     ffezzz_version_string,
-	     ffezzz_date,
-	     ffezzz_time);
+    fprintf (stderr, "GNU Fortran Front End version %s\n", ffe_version_string);
 
 #if FFECOM_targetCURRENT == FFECOM_targetFFE
   ffe_init_0 ();

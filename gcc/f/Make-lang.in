@@ -108,21 +108,21 @@ F77 f77: f771 f77-runtime
   f77.stage4 f77.distdir f77.rebuilt
 
 # Create the compiler driver for g77 (only if `f77' is in LANGUAGES).
-g77: $(srcdir)/f/g77.c $(srcdir)/f/zzz.c $(CONFIG_H) $(LIBDEPS)
+g77: $(srcdir)/f/g77.c $(srcdir)/f/version.c $(CONFIG_H) $(LIBDEPS)
 	case '$(LANGUAGES)' in \
 	*f77*) \
 	  $(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) \
-	    -o $@ $(srcdir)/f/g77.c $(srcdir)/f/zzz.c $(LIBS) ;; \
+	    -o $@ $(srcdir)/f/g77.c $(srcdir)/f/version.c $(LIBS) ;; \
 	esac
 
 # Create a version of the g77 driver which calls the cross-compiler
 # (only if `f77' is in LANGUAGES).
-g77-cross: $(srcdir)/f/g77.c $(srcdir)/f/zzz.c version.o $(LIBDEPS)
+g77-cross: $(srcdir)/f/g77.c $(srcdir)/f/version.c version.o $(LIBDEPS)
 	case '$(LANGUAGES)' in \
 	*f77*) \
 	  $(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) \
 	    -DGCC_NAME=\"$(GCC_CROSS_NAME)\" \
-	    -o $@ $(srcdir)/f/g77.c $(srcdir)/f/zzz.c $(LIBS) ;; \
+	    -o $@ $(srcdir)/f/g77.c $(srcdir)/f/version.c $(LIBS) ;; \
 	esac
 
 F77_SRCS = \
@@ -226,8 +226,8 @@ F77_SRCS = \
  $(srcdir)/f/type.h \
  $(srcdir)/f/where.c \
  $(srcdir)/f/where.h \
- $(srcdir)/f/zzz.c \
- $(srcdir)/f/zzz.h
+ $(srcdir)/f/version.c \
+ $(srcdir)/f/version.h
 
 f771: $(P) $(F77_SRCS) $(LIBDEPS) stamp-objlist f/Makefile
 	$(MAKE) -f f/Makefile $(FLAGS_TO_PASS) VPATH=$(srcdir) srcdir=$(srcdir) f771
