@@ -1,3 +1,14 @@
+2003-08-17  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (associative_constant_p): New function to test
+	whether an RTX expression is an immediate constant.
+	(simplify_associative_operation): New function to perform some
+	reassociation optimizations of associative binary expressions.
+	(simplify_binary_operation): Use simplify_associative_operation
+	to simplify PLUS, MULT, AND, IOR, XOR, SMIN, SMAX, UMIN and UMAX.
+	Floating point expressions are only reassociated when unsafe
+	math optimizations are permitted.
+
 2003-08-17  Andreas Jaeger  <aj@suse.de>
 
 	* config/alpha/alpha.md: Remove usage of PARAMS.
