@@ -98,13 +98,13 @@ case $os in
 		os=
 		basic_machine=$1
 		;;
-	-sim | -cisco | -oki | -wec | -winbond )	# EGCS LOCAL
+	-sim | -cisco | -oki | -wec | -winbond)
 		os=
 		basic_machine=$1
 		;;
-	-scout)						# EGCS LOCAL
+	-scout)
 		;;
-	-wrs)						# EGCS LOCAL
+	-wrs)
 		os=vxworks
 		basic_machine=$1
 		;;
@@ -163,38 +163,22 @@ case $basic_machine in
 	# Recognize the basic CPU types without company name.
 	# Some are omitted here because they have special meanings below.
 	tahoe | i860 | m32r | m68k | m68000 | m88k | ns32k | arc | arm \
-		| arme[lb] | pyramid | mn10200 | mn10300 \
-		| tron | a29k | 580 | i960 | h8300 \
+		| arme[lb] | pyramid | mn10200 | mn10300 | tron | a29k \
+		| 580 | i960 | h8300 \
 		| hppa | hppa1.0 | hppa1.1 | hppa2.0 | hppa2.0w | hppa2.0n \
-		| alpha | alphaev5 | alphaev56 | alphapca56 | alphaev6 \
+		| alpha | alphaev[4-7] | alphaev56 | alphapca5[67] \
 		| we32k | ns16k | clipper | i370 | sh | powerpc | powerpcle \
-		| 1750a | dsp16xx | pdp11 \
-		| mips64 | mipsel | mips64el | mips64orion | mips64orionel \
-		| mipstx39 | mipstx39el \
-		| sparc | sparclet | sparclite | sparc64 | sparcv9 | v850 | c4x)
+		| 1750a | dsp16xx | pdp11 | mips16 | mips64 | mipsel | mips64el \
+		| mips64orion | mips64orionel | mipstx39 | mipstx39el \
+		| mips64vr4300 | mips64vr4300el | mips64vr4100 | mips64vr4100el \
+		| mips64vr5000 | miprs64vr5000el \
+		| sparc | sparclet | sparclite | sparc64 | sparcv9 | v850 | c4x \
+		| thumb | d10v)
 		basic_machine=$basic_machine-unknown
 		;;
-	m88110 | m680[012346]0 | m683?2 | m68360 | m5200 | z8k | v70 \
-	        | h8500 | w65) # EGCS LOCAL
+	m88110 | m680[12346]0 | m683?2 | m68360 | m5200 | z8k | v70 | h8500 | w65)
 		;;
-	thumb)
-		basic_machine=$basic_machine-unknown
-		;;
-	mips64vr4300 | mips64vr4300el) # EGCS LOCAL jsmith/vr4300
-		basic_machine=$basic_machine-unknown
-		;;
-	mips64vr4100 | mips64vr4100el) # EGCS LOCAL jsmith/vr4100
-		basic_machine=$basic_machine-unknown
-		;;
-	mips64vr5000 | mips64vr5000el) # EGCS LOCAL ian/vr5000
-		basic_machine=$basic_machine-unknown
-		;;
-	mips16)
-		basic_machine=$basic_machine-unknown
-		;;
-	d10v)
-		basic_machine=$basic_machine-unknown
-		;;
+
 	# We use `pc' rather than `unknown'
 	# because (1) that's what they normally are, and
 	# (2) the word "unknown" tends to confuse beginning users.
@@ -210,41 +194,24 @@ case $basic_machine in
 	vax-* | tahoe-* | i[34567]86-* | i860-* | m32r-* | m68k-* | m68000-* \
 	      | m88k-* | sparc-* | ns32k-* | fx80-* | arc-* | arm-* | c[123]* \
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
-	      | power-* | none-* | 580-* | cray2-* | h8300-* | i960-* \
+	      | power-* | none-* | 580-* | cray2-* | h8300-* | h8500-* | i960-* \
 	      | xmp-* | ymp-* \
-	      | hppa-* | hppa1.0-* | hppa1.1-* \
-	      | hppa2.0-* | hppa2.0w-* | hppa2.0n-* \
-	      | alpha-* | alphaev5-* | alphaev56-* | alphapca56-* \
-	      | alphaev6-* | we32k-* | cydra-* | ns16k-* | pn-* | np1-* \
-	      | xps100-* | clipper-* | orion-* \
+	      | hppa-* | hppa1.0-* | hppa1.1-* | hppa2.0-* | hppa2.0w-* | hppa2.0n-* \
+	      | alpha-* | alphaev[4-7]-* | alphaev56-* | alphapca5[67]-* \
+	      | we32k-* | cydra-* | ns16k-* | pn-* | np1-* | xps100-* \
+	      | clipper-* | orion-* \
 	      | sparclite-* | pdp11-* | sh-* | powerpc-* | powerpcle-* \
-	      | sparc64-* | sparcv9-* | sparc86x-* | mips64-* | mipsel-* \
-	      | mips64el-* | mips64orion-* | mips64orionel-*  \
+	      | sparc64-* | sparcv9-* | sparc86x-* | mips16-* | mips64-* | mipsel-* \
+	      | mips64el-* | mips64orion-* | mips64orionel-* \
+	      | mips64vr4100-* | mips64vr4100el-* | mips64vr4300-* | mips64vr4300el-* \
 	      | mipstx39-* | mipstx39el-* \
-	      | f301-* | arm*-*)
-		;;
-	m88110-* | m680[01234]0-* | m683?2-* | m68360-* | z8k-* | h8500-* | d10v-*) # EGCS LOCAL
-		;;
-	thumb-*) # EGCS LOCAL angela/thumb
-		;;
-	v850-*) # EGCS LOCAL
-	        ;;
-	d30v-*) # EGCS LOCAL
-	        ;;
-	mips64vr4300-* | mips64vr4300el-*) # EGCS LOCAL jsmith/vr4300
-		;;
-	mips64vr4100-* | mips64vr4100el-*) # EGCS LOCAL jsmith/vr4100
-		;;
-	mips16-*) # EGCS LOCAL krk/mips16
-		;;
-	tic30-*) # EGCS LOCAL ian/tic30
-		;;
-	c30-*) # EGCS LOCAL ian/tic30
-		basic_machine=tic30-unknown
+	      | f301-* | armv*-* | t3e-* \
+	      | m88110-* | m680[01234]0-* | m683?2-* | m68360-* | z8k-* | d10v-* \
+	      | thumb-* | v850-* | d30v-* | tic30-* | c30-* )
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
-	386bsd)						# EGCS LOCAL
+	386bsd)
 		basic_machine=i386-unknown
 		os=-bsd
 		;;
@@ -254,11 +221,11 @@ case $basic_machine in
 	3b*)
 		basic_machine=we32k-att
 		;;
-	a29khif)					# EGCS LOCAL
+	a29khif)
 		basic_machine=a29k-amd
 		os=-udi
 		;;
-	adobe68k)					# EGCS LOCAL
+	adobe68k)
 		basic_machine=m68010-adobe
 		os=-scout
 		;;
@@ -291,7 +258,7 @@ case $basic_machine in
 		basic_machine=m68k-apollo
 		os=-sysv
 		;;
-	apollo68bsd)					# EGCS LOCAL
+	apollo68bsd)
 		basic_machine=m68k-apollo
 		os=-bsd
 		;;
@@ -371,7 +338,7 @@ case $basic_machine in
 	encore | umax | mmax)
 		basic_machine=ns32k-encore
 		;;
-	es1800 | OSE68k | ose68k | ose | OSE)		# EGCS LOCAL
+	es1800 | OSE68k | ose68k | ose | OSE)
 		basic_machine=m68k-ericsson
 		os=-ose
 		;;
@@ -393,11 +360,11 @@ case $basic_machine in
 		basic_machine=h8300-hitachi
 		os=-hms
 		;;
-	h8300xray)					# EGCS LOCAL
+	h8300xray)
 		basic_machine=h8300-hitachi
 		os=-xray
 		;;
-	h8500hms)					# EGCS LOCAL
+	h8500hms)
 		basic_machine=h8500-hitachi
 		os=-hms
 		;;
@@ -416,22 +383,6 @@ case $basic_machine in
 		basic_machine=m68k-hp
 		os=-hpux
 		;;
-        w89k-*)						# EGCS LOCAL
-                basic_machine=hppa1.1-winbond
-                os=-proelf
-                ;;
-        op50n-*)					# EGCS LOCAL
-                basic_machine=hppa1.1-oki
-                os=-proelf
-                ;;
-        op60c-*)					# EGCS LOCAL
-                basic_machine=hppa1.1-oki
-                os=-proelf
-                ;;
-        hppro)						# EGCS LOCAL
-                basic_machine=hppa1.1-hp
-                os=-proelf
-                ;;
 	hp3k9[0-9][0-9] | hp9[0-9][0-9])
 		basic_machine=hppa1.0-hp
 		;;
@@ -441,22 +392,21 @@ case $basic_machine in
 	hp9k3[2-9][0-9])
 		basic_machine=m68k-hp
 		;;
-	hp9k6[0-9][0-9] | hp6[0-9][0-9] )
+	hp9k6[0-9][0-9] | hp6[0-9][0-9])
 		basic_machine=hppa1.0-hp
 		;;
-	hp9k7[0-79][0-9] | hp7[0-79][0-9] )
+	hp9k7[0-79][0-9] | hp7[0-79][0-9])
 		basic_machine=hppa1.1-hp
 		;;
-	hp9k78[0-9] | hp78[0-9] )
+	hp9k78[0-9] | hp78[0-9])
 		# FIXME: really hppa2.0-hp
 		basic_machine=hppa1.1-hp
 		;;
-	hp9k8[67]1 | hp8[67]1 | hp9k80[24] | hp80[24] | \
-	hp9k8[78]9 | hp8[78]9 | hp9k893 | hp893 )
+	hp9k8[67]1 | hp8[67]1 | hp9k80[24] | hp80[24] | hp9k8[78]9 | hp8[78]9 | hp9k893 | hp893)
 		# FIXME: really hppa2.0-hp
 		basic_machine=hppa1.1-hp
 		;;
-	hp9k8[0-9][13679] | hp8[0-9][13679] )
+	hp9k8[0-9][13679] | hp8[0-9][13679])
 		basic_machine=hppa1.1-hp
 		;;
 	hp9k8[0-9][0-9] | hp8[0-9][0-9])
@@ -465,9 +415,13 @@ case $basic_machine in
 	hppa-next)
 		os=-nextstep3
 		;;
-	hppaosf)					# EGCS LOCAL
+	hppaosf)
 		basic_machine=hppa1.1-hp
 		os=-osf
+		;;
+	hppro)
+		basic_machine=hppa1.1-hp
+		os=-proelf
 		;;
 	i370-ibm* | ibm*)
 		basic_machine=i370-ibm
@@ -490,15 +444,15 @@ case $basic_machine in
 		basic_machine=`echo $1 | sed -e 's/86.*/86-pc/'`
 		os=-solaris2
 		;;
-	i386mach)					# EGCS LOCAL
+	i386mach)
 		basic_machine=i386-mach
 		os=-mach
 		;;
-	i386-vsta | vsta)				# EGCS LOCAL
+	i386-vsta | vsta)
 		basic_machine=i386-unknown
 		os=-vsta
 		;;
-	i386-go32 | go32)				# EGCS LOCAL
+	i386-go32 | go32)
 		basic_machine=i386-unknown
 		os=-go32
 		;;
@@ -534,6 +488,10 @@ case $basic_machine in
 	miniframe)
 		basic_machine=m68000-convergent
 		;;
+	*mint | *MiNT)
+		basic_machine=m68k-atari
+		os=-mint
+		;;
 	mipsel*-linux*)
 		basic_machine=mipsel-unknown
 		os=-linux-gnu
@@ -548,12 +506,12 @@ case $basic_machine in
 	mips3*)
 		basic_machine=`echo $basic_machine | sed -e 's/mips3/mips64/'`-unknown
 		;;
-	monitor)					# EGCS LOCAL
+	monitor)
 		basic_machine=m68k-rom68k
 		os=-coff
 		;;
-	msdos)						# EGCS LOCAL
-		basic_machine=i386-unknown	
+	msdos)
+		basic_machine=i386-unknown
 		os=-msdos
 		;;
 	ncr3000)
@@ -561,7 +519,7 @@ case $basic_machine in
 		os=-sysv4
 		;;
 	netbsd386)
-		basic_machine=i386-unknown		# EGCS LOCAL
+		basic_machine=i386-unknown
 		os=-netbsd
 		;;
 	netwinder)
@@ -580,7 +538,7 @@ case $basic_machine in
 		basic_machine=mips-sony
 		os=-newsos
 		;;
-	necv70)						# EGCS LOCAL
+	necv70)
 		basic_machine=v70-nec
 		os=-sysv
 		;;
@@ -609,18 +567,22 @@ case $basic_machine in
 		basic_machine=i960-intel
 		os=-nindy
 		;;
-	mon960)						# EGCS LOCAL
+	mon960)
 		basic_machine=i960-intel
 		os=-mon960
 		;;
 	np1)
 		basic_machine=np1-gould
 		;;
-	OSE68000 | ose68000)				# EGCS LOCAL
+	op50n-* | op60c-*)
+		basic_machine=hppa1.1-oki
+		os=-proelf
+		;;
+	OSE68000 | ose68000)
 		basic_machine=m68000-ericsson
 		os=-ose
 		;;
-	os68k)						# EGCS LOCAL
+	os68k)
 		basic_machine=m68k-none
 		os=-os68k
 		;;
@@ -677,7 +639,7 @@ case $basic_machine in
 	ps2)
 		basic_machine=i386-ibm
 		;;
-	rom68k)						# EGCS LOCAL
+	rom68k)
 		basic_machine=m68k-rom68k
 		os=-coff
 		;;
@@ -687,7 +649,7 @@ case $basic_machine in
 	rtpc | rtpc-*)
 		basic_machine=romp-ibm
 		;;
-	sa29200)					# EGCS LOCAL
+	sa29200)
 		basic_machine=a29k-amd
 		os=-udi
 		;;
@@ -698,7 +660,7 @@ case $basic_machine in
 		basic_machine=sh-hitachi
 		os=-hms
 		;;
-	sparclite-wrs)					# EGCS LOCAL
+	sparclite-wrs)
 		basic_machine=sparclite-wrs
 		os=-vxworks
 		;;
@@ -709,10 +671,10 @@ case $basic_machine in
 	spur)
 		basic_machine=spur-unknown
 		;;
-	st2000)						# EGCS LOCAL
+	st2000)
 		basic_machine=m68k-tandem
 		;;
-	stratus)					# EGCS LOCAL
+	stratus)
 		basic_machine=i860-stratus
 		os=-sysv4
 		;;
@@ -760,6 +722,10 @@ case $basic_machine in
 		basic_machine=i386-sequent
 		os=-dynix
 		;;
+	t3e)
+		basic_machine=t3e-cray
+		os=-unicos
+		;;
 	tx39)
 		basic_machine=mipstx39-unknown
 		;;
@@ -777,7 +743,7 @@ case $basic_machine in
 		basic_machine=a29k-nyu
 		os=-sym1
 		;;
-	v810 | necv810)					# EGCS LOCAL
+	v810 | necv810)
 		basic_machine=v810-nec
 		os=-none
 		;;
@@ -804,9 +770,13 @@ case $basic_machine in
 		basic_machine=a29k-wrs
 		os=-vxworks
 		;;
-	w65*)						# EGCS LOCAL
- 		basic_machine=w65-wdc
- 		os=-none
+	w65*)
+		basic_machine=w65-wdc
+		os=-none
+		;;
+	w89k-*)
+		basic_machine=hppa1.1-winbond
+		os=-proelf
 		;;
 	xmp)
 		basic_machine=xmp-cray
@@ -815,7 +785,7 @@ case $basic_machine in
         xps | xps100)
 		basic_machine=xps100-honeywell
 		;;
-	z8k-*-coff)					# EGCS LOCAL
+	z8k-*-coff)
 		basic_machine=z8k-unknown
 		os=-sim
 		;;
@@ -826,13 +796,13 @@ case $basic_machine in
 
 # Here we handle the default manufacturer of certain CPU types.  It is in
 # some cases the only manufacturer, in others, it is the most popular.
-	w89k)						# EGCS LOCAL
+	w89k)
 		basic_machine=hppa1.1-winbond
 		;;
-	op50n)						# EGCS LOCAL
+	op50n)
 		basic_machine=hppa1.1-oki
 		;;
-	op60c)						# EGCS LOCAL
+	op60c)
 		basic_machine=hppa1.1-oki
 		;;
 	mips)
@@ -869,16 +839,16 @@ case $basic_machine in
 	orion105)
 		basic_machine=clipper-highlevel
 		;;
-	mac | mpw | mac-mpw)				# EGCS LOCAL
+	mac | mpw | mac-mpw)
 		basic_machine=m68k-apple
 		;;
-	pmac | pmac-mpw)				# EGCS LOCAL
+	pmac | pmac-mpw)
 		basic_machine=powerpc-apple
 		;;
- 	c4x*)
- 		basic_machine=c4x-none
- 		os=-coff
-  		;;
+	c4x*)
+		basic_machine=c4x-none
+		os=-coff
+		;;
 	*)
 		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
 		exit 1
@@ -937,18 +907,16 @@ case $os in
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
 	      | -cygwin* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
 	      | -mingw32* | -linux-gnu* | -uxpv* | -beos* | -mpeix* | -udk* \
-	      | -interix* | -uwin* )
+	      | -interix* | -uwin* | -rhapsody* | -openstep* | -oskit*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
-	# EGCS LOCAL
 	-sim | -es1800* | -hms* | -xray | -os68k* | -none* | -v88r* \
-	      | -windows* | -osx | -abug |  -netware* | -os9* | -beos* \
-	      | -macos* | -mpw* | -magic* | -mon960* | -lnews* )
+	      | -windows* | -osx | -abug | -netware* | -os9* | -beos* \
+	      | -macos* | -mpw* | -magic* | -mon960* | -lnews*)
 		;;
 	-mac*)
 		os=`echo $os | sed -e 's|mac|macos|'`
 		;;
-	# END EGCS LOCAL
 	-linux*)
 		os=`echo $os | sed -e 's|linux|linux-gnu|'`
 		;;
@@ -973,7 +941,7 @@ case $os in
 	-acis*)
 		os=-aos
 		;;
-	-386bsd)					# EGCS LOCAL
+	-386bsd)
 		os=-bsd
 		;;
 	-ctix* | -uts*)
@@ -1007,14 +975,17 @@ case $os in
 	# This must come after -sysvr4.
 	-sysv*)
 		;;
-	-ose*)						# EGCS LOCAL
+	-ose*)
 		os=-ose
 		;;
-	-es1800*)					# EGCS LOCAL
+	-es1800*)
 		os=-ose
 		;;
 	-xenix)
 		os=-xenix
+		;;
+        -*mint | -*MiNT)
+	        os=-mint
 		;;
 	-none)
 		;;
@@ -1065,15 +1036,15 @@ case $basic_machine in
 		# default.
 		# os=-sunos4
 		;;
-	m68*-cisco)					# EGCS LOCAL
+	m68*-cisco)
 		os=-aout
 		;;
-	mips*-cisco)					# EGCS LOCAL
+	mips*-cisco)
 		os=-elf
 		;;
-        mips*-*)                                        # EGCS LOCAL
-                os=-elf
-                ;;
+	mips*-*)
+		os=-elf
+		;;
 	*-tti)	# must be before sparc entry or we get the wrong os.
 		os=-sysv3
 		;;
@@ -1086,13 +1057,13 @@ case $basic_machine in
 	*-ibm)
 		os=-aix
 		;;
-	*-wec)						# EGCS LOCAL
+	*-wec)
 		os=-proelf
 		;;
-	*-winbond)					# EGCS LOCAL
+	*-winbond)
 		os=-proelf
 		;;
-	*-oki)						# EGCS LOCAL
+	*-oki)
 		os=-proelf
 		;;
 	*-hp)
@@ -1158,14 +1129,17 @@ case $basic_machine in
 	f301-fujitsu)
 		os=-uxpv
 		;;
-	*-rom68k)					# EGCS LOCAL
+	*-rom68k)
 		os=-coff
 		;;
-	*-*bug)						# EGCS LOCAL
+	*-*bug)
 		os=-coff
 		;;
-	*-apple)					# EGCS LOCAL
+	*-apple)
 		os=-macos
+		;;
+	*-atari*)
+		os=-mint
 		;;
 	*)
 		os=-none
@@ -1224,11 +1198,14 @@ case $basic_machine in
 			-aux*)
 				vendor=apple
 				;;
-			-hms*)				# EGCS LOCAL
+			-hms*)
 				vendor=hitachi
 				;;
-			-mpw* | -macos*)		# EGCS LOCAL
+			-mpw* | -macos*)
 				vendor=apple
+				;;
+			-*mint | -*MiNT)
+				vendor=atari
 				;;
 		esac
 		basic_machine=`echo $basic_machine | sed "s/unknown/$vendor/"`
