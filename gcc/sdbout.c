@@ -1186,7 +1186,7 @@ sdbout_one_type (tree type)
 
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  {
-	    for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
+	    for (tem = TYPE_VALUES (type); tem; tem = TREE_CHAIN (tem))
 	      if (host_integerp (TREE_VALUE (tem), 0))
 		{
 		  PUT_SDB_DEF (IDENTIFIER_POINTER (TREE_PURPOSE (tem)));
@@ -1479,8 +1479,6 @@ sdbout_finish (const char *main_filename ATTRIBUTE_UNUSED)
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_global_decls); i++)
     sdbout_symbol (VARRAY_TREE (deferred_global_decls, i), 0);
-
-  VARRAY_FREE (deferred_global_decls);
 }
 
 /* Describe the beginning of an internal block within a function.

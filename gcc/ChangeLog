@@ -1,3 +1,9 @@
+2004-04-16  DJ Delorie  <dj@redhat.com>
+
+	* sdbout.c (sdbout_one_type): Use TYPE_VALUES for enums, not
+	TYPE_FIELDS.
+	(sdbout_finish): Don't free deferred_global_decls; it's GC'd.
+
 2004-04-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md: Remove unnecessary declarations for asm_out_file.
