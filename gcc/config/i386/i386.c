@@ -1127,6 +1127,101 @@ function_arg (cum, mode, type, named)
 }
 
 
+/* Return nonzero if OP is general operand representable on x86_64.  */
+
+int
+x86_64_general_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (!TARGET_64BIT)
+    return general_operand (op, mode);
+  if (nonimmediate_operand (op, mode))
+    return 1;
+  return x86_64_sign_extended_value (op);
+}
+
+/* Return nonzero if OP is general operand representable on x86_64
+   as eighter sign extended or zero extended constant.  */
+
+int
+x86_64_szext_general_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (!TARGET_64BIT)
+    return general_operand (op, mode);
+  if (nonimmediate_operand (op, mode))
+    return 1;
+  return x86_64_sign_extended_value (op) || x86_64_zero_extended_value (op);
+}
+
+/* Return nonzero if OP is nonmemory operand representable on x86_64.  */
+
+int
+x86_64_nonmemory_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (!TARGET_64BIT)
+    return nonmemory_operand (op, mode);
+  if (register_operand (op, mode))
+    return 1;
+  return x86_64_sign_extended_value (op);
+}
+
+/* Return nonzero if OP is nonmemory operand acceptable by movabs patterns.  */
+
+int
+x86_64_movabs_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (!TARGET_64BIT || !flag_pic)
+    return nonmemory_operand (op, mode);
+  if (register_operand (op, mode) || x86_64_sign_extended_value (op))
+    return 1;
+  if (CONSTANT_P (op) && !symbolic_reference_mentioned_p (op))
+    return 1;
+  return 0;
+}
+
+/* Return nonzero if OP is nonmemory operand representable on x86_64.  */
+
+int
+x86_64_szext_nonmemory_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (!TARGET_64BIT)
+    return nonmemory_operand (op, mode);
+  if (register_operand (op, mode))
+    return 1;
+  return x86_64_sign_extended_value (op) || x86_64_zero_extended_value (op);
+}
+
+/* Return nonzero if OP is immediate operand representable on x86_64.  */
+
+int
+x86_64_immediate_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (!TARGET_64BIT)
+    return immediate_operand (op, mode);
+  return x86_64_sign_extended_value (op);
+}
+
+/* Return nonzero if OP is immediate operand representable on x86_64.  */
+
+int
+x86_64_zext_immediate_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return x86_64_zero_extended_value (op);
+}
+
 /* Return nonzero if OP is (const_int 1), else return zero.  */
 
 int

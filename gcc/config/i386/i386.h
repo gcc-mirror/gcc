@@ -3022,6 +3022,20 @@ do { long l;						\
 /* Define the codes that are matched by predicates in i386.c.  */
 
 #define PREDICATE_CODES							\
+  {"x86_64_immediate_operand", {CONST_INT, SUBREG, REG,			\
+				SYMBOL_REF, LABEL_REF, CONST}},		\
+  {"x86_64_nonmemory_operand", {CONST_INT, SUBREG, REG,			\
+				SYMBOL_REF, LABEL_REF, CONST}},		\
+  {"x86_64_movabs_operand", {CONST_INT, SUBREG, REG,			\
+				SYMBOL_REF, LABEL_REF, CONST}},		\
+  {"x86_64_szext_nonmemory_operand", {CONST_INT, SUBREG, REG,		\
+				     SYMBOL_REF, LABEL_REF, CONST}},	\
+  {"x86_64_general_operand", {CONST_INT, SUBREG, REG, MEM,		\
+			      SYMBOL_REF, LABEL_REF, CONST}},		\
+  {"x86_64_szext_general_operand", {CONST_INT, SUBREG, REG, MEM,	\
+				   SYMBOL_REF, LABEL_REF, CONST}},	\
+  {"x86_64_zext_immediate_operand", {CONST_INT, CONST_DOUBLE, CONST,	\
+				       SYMBOL_REF, LABEL_REF}},		\
   {"const_int_1_operand", {CONST_INT}},					\
   {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
   {"aligned_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\

@@ -1,4 +1,17 @@
-Wed Mar 21 10:25:13 CET 2001  Jan Hubicka  <jh@use.cz>
+Wed Mar 21 10:53:57 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (pushqi1): New.
+	* i386-protos.h (x86_64_general_operand, x86_64_szext_general_operand,
+	x86_64_nonmemory_operand, x86_64_szext_nonmemory_operand,
+	x86_64_immediate_operand, x86_64_immediate_operand,
+	x86_64_zext_immediate_operand): Declare.
+	* i386.c (x86_64_general_operand, x86_64_szext_general_operand,
+	x86_64_nonmemory_operand, x86_64_szext_nonmemory_operand,
+	x86_64_immediate_operand, x86_64_immediate_operand,
+	x86_64_zext_immediate_operand): define.
+	* i386.h (PREDICATE_CODES): Add new predicates.
+
+Wed Mar 21 10:25:13 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (pophi1, popqi1, pushqi1): Remove.
 

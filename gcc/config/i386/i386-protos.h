@@ -43,6 +43,12 @@ extern int standard_80387_constant_p PARAMS ((rtx));
 extern int standard_sse_constant_p PARAMS ((rtx));
 extern int symbolic_reference_mentioned_p PARAMS ((rtx));
 
+extern int x86_64_general_operand PARAMS ((rtx, enum machine_mode));
+extern int x86_64_szext_general_operand PARAMS ((rtx, enum machine_mode));
+extern int x86_64_nonmemory_operand PARAMS ((rtx, enum machine_mode));
+extern int x86_64_szext_nonmemory_operand PARAMS ((rtx, enum machine_mode));
+extern int x86_64_immediate_operand PARAMS ((rtx, enum machine_mode));
+extern int x86_64_zext_immediate_operand PARAMS ((rtx, enum machine_mode));
 extern int const_int_1_operand PARAMS ((rtx, enum machine_mode));
 extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int pic_symbolic_operand PARAMS ((rtx, enum machine_mode));
