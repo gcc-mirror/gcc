@@ -1,3 +1,12 @@
+2004-02-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13932
+	* call.c (convert_like_real): Use "converting" rather than
+	"argument" as the descriptive keyword to
+	dubious_conversion_warnings.
+	* typeck.c (convert_for_assignment): Do not call
+	dubious_conversion_warnings.
+
 2004-02-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13086
