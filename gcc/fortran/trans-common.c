@@ -685,7 +685,7 @@ find_equivalence (segment_info *f)
 	      add_condition (f, eq, other);
 	      eq->used = 1;
 	      found = TRUE;
-	      /* If this symbol is the fist in the chain we may find other
+	      /* If this symbol is the first in the chain we may find other
 		 matches. Otherwise we can skip to the next equivalence.  */
 	      if (eq == l) 
 		break;
