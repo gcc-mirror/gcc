@@ -2887,20 +2887,6 @@ analysis program @code{gprof}.  You must use this option when compiling
 the source files you want data about, and you must also use it when
 linking.
 
-@cindex @code{tcov}
-@item -a
-@opindex a
-Generate extra code to write profile information for basic blocks, which will
-record the number of times each basic block is executed, the basic block start
-address, and the function name containing the basic block.  If @option{-g} is
-used, the line number and filename of the start of the basic block will also be
-recorded.  If not overridden by the machine description, the default action is
-to append to the text file @file{bb.out}.
-
-This data could be analyzed by a program like @code{tcov}.  Note,
-however, that the format of the data is not what @code{tcov} expects.
-Eventually GNU @code{gprof} should be extended to process this data.
-
 @item -Q
 @opindex Q
 Makes the compiler print out each function name as it is compiled, and

@@ -1,3 +1,7 @@
+2002-12-05  Matthias Klose  <doko@debian.org>
+
+	* doc/invoke.texi: Remove last reference to -a.
+
 2002-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/7622
