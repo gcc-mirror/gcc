@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "toplev.h"
 #include "langhooks.h"
+#include "langhooks-def.h"
 
 static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
 

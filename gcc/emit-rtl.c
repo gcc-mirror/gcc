@@ -55,6 +55,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "basic-block.h"
 #include "ggc.h"
 #include "debug.h"
+#include "langhooks.h"
 
 /* Commonly used modes.  */
 

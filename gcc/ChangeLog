@@ -1,3 +1,20 @@
+2001-11-06  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* alias.c:: Include langhooks.h.
+	* emit-rtl.c: Similarly.
+	* toplev.c: Similarly.
+	* tree-inline.c: Similarly.
+	* langhooks-def.h: New, the old langhooks.h.  Give the default
+	hooks a common prefix.
+	* langhooks.h: Contents extracted from toplev.h.
+	* toplev.h: Move langhook stuff to langhooks.h.
+	* langhooks.c: Give default hooks a common prefix.
+
+	* c-lang.c: Include langhooks-def.h.
+	* objc/objc-act.c: Similarly.
+	* Makefile.in: Update.
+	* objc/Make-lang.in: Update.
+
 2001-11-06  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install.texi: Document that configure options not listed in

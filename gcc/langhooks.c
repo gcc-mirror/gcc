@@ -28,18 +28,19 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "integrate.h"
 #include "langhooks.h"
+#include "langhooks-def.h"
 
 /* Do nothing; in many cases the default hook.  */
 
 void
-lang_hook_default_do_nothing ()
+lhd_do_nothing ()
 {
 }
 
 /* Do nothing; the default hook to decode an option.  */
 
 int
-lang_hook_default_decode_option (argc, argv)
+lhd_decode_option (argc, argv)
      int argc ATTRIBUTE_UNUSED;
      char **argv ATTRIBUTE_UNUSED;
 {
@@ -49,7 +50,7 @@ lang_hook_default_decode_option (argc, argv)
 /* Provide a default routine to clear the binding stack.  This is used
    by languages that don't need to do anything special.  */
 void
-lang_hook_default_clear_binding_stack ()
+lhd_clear_binding_stack ()
 {
   while (! global_bindings_p ())
     poplevel (0, 0, 0);
@@ -59,7 +60,7 @@ lang_hook_default_clear_binding_stack ()
    is used by languages that don't need to do anything special.  */
 
 HOST_WIDE_INT
-lang_hook_default_get_alias_set (t)
+lhd_get_alias_set (t)
      tree t ATTRIBUTE_UNUSED;
 {
   return -1;
@@ -87,7 +88,7 @@ hook_get_alias_set_0 (t)
    when the function is called.  */
 
 tree
-tree_inlining_default_hook_walk_subtrees (tp,subtrees,func,data,htab)
+lhd_tree_inlining_walk_subtrees (tp,subtrees,func,data,htab)
      tree *tp ATTRIBUTE_UNUSED;
      int *subtrees ATTRIBUTE_UNUSED;
      walk_tree_fn func ATTRIBUTE_UNUSED;
@@ -102,7 +103,7 @@ tree_inlining_default_hook_walk_subtrees (tp,subtrees,func,data,htab)
    inlining a given function.  */
 
 int
-tree_inlining_default_hook_cannot_inline_tree_fn (fnp)
+lhd_tree_inlining_cannot_inline_tree_fn (fnp)
      tree *fnp ATTRIBUTE_UNUSED;
 {
   return 0;
@@ -113,7 +114,7 @@ tree_inlining_default_hook_cannot_inline_tree_fn (fnp)
    if it would exceed inlining limits.  */
 
 int
-tree_inlining_default_hook_disregard_inline_limits (fn)
+lhd_tree_inlining_disregard_inline_limits (fn)
      tree fn ATTRIBUTE_UNUSED;
 {
   return 0;
@@ -127,7 +128,7 @@ tree_inlining_default_hook_disregard_inline_limits (fn)
    returned.  */
 
 tree
-tree_inlining_default_hook_add_pending_fn_decls (vafnp, pfn)
+lhd_tree_inlining_add_pending_fn_decls (vafnp, pfn)
      void *vafnp ATTRIBUTE_UNUSED;
      tree pfn;
 {
@@ -139,7 +140,7 @@ tree_inlining_default_hook_add_pending_fn_decls (vafnp, pfn)
    whether it should be walked, copied and preserved across copies.  */
 
 int
-tree_inlining_default_hook_tree_chain_matters_p (t)
+lhd_tree_inlining_tree_chain_matters_p (t)
      tree t ATTRIBUTE_UNUSED;
 {
   return 0;
@@ -149,7 +150,7 @@ tree_inlining_default_hook_tree_chain_matters_p (t)
    whether VT is an automatic variable defined in function FT.  */
 
 int
-tree_inlining_default_hook_auto_var_in_fn_p (var, fn)
+lhd_tree_inlining_auto_var_in_fn_p (var, fn)
      tree var, fn;
 {
   return (DECL_P (var) && DECL_CONTEXT (var) == fn
@@ -169,8 +170,8 @@ tree_inlining_default_hook_auto_var_in_fn_p (var, fn)
    match RES.  */
 
 tree
-tree_inlining_default_hook_copy_res_decl_for_inlining (res, fn, caller,
-						       dm, ndp, texps)
+lhd_tree_inlining_copy_res_decl_for_inlining (res, fn, caller,
+					      dm, ndp, texps)
      tree res, fn, caller;
      void *dm ATTRIBUTE_UNUSED;
      int *ndp ATTRIBUTE_UNUSED;
@@ -184,7 +185,7 @@ tree_inlining_default_hook_copy_res_decl_for_inlining (res, fn, caller,
    i.e., one whose members are in the same scope as the union itself.  */
 
 int
-tree_inlining_default_hook_anon_aggr_type_p (t)
+lhd_tree_inlining_anon_aggr_type_p (t)
      tree t ATTRIBUTE_UNUSED;
 {
   return 0;

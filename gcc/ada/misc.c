@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision$
+ *                             $Revision: 1.8 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -53,6 +53,7 @@
 #include "except.h"
 #include "tm_p.h"
 #include "langhooks.h"
+#include "langhooks-def.h"
 
 #include "ada.h"
 #include "types.h"

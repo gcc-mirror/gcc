@@ -1,3 +1,8 @@
+2001-11-06  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* misc.c: Include langhooks-def.h.
+	* Makefile.in: Update.
+
 2001-10-30  Robert Dewar <dewar@gnat.com>
 
 	* style.adb:

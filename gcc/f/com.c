@@ -90,6 +90,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "diagnostic.h"
 #include "langhooks.h"
+#include "langhooks-def.h"
 
 /* VMS-specific definitions */
 #ifdef VMS
