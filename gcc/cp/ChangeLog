@@ -1,3 +1,13 @@
+2004-05-03  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14389
+	* decl2.c (check_classfn): For member templates, compare also the
+	template parameters to match the declaration.
+	* cp-tree.h: Adjust declaration of check_classfn.
+	* decl.c (start_decl, grokfndecl): Adjust callers of check_classfn.
+	* friend.c (do_friend): Likewise.
+	* pt.c (tsubst_friend_function): Likewise.
+
 2004-05-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* decl.c (reshape_init): Do not apply TYPE_DOMAIN to a VECTOR_TYPE.
