@@ -365,6 +365,7 @@ main(int argc, char** argv)
     {
       vector<string> compatible_versions;
       compatible_versions.push_back("GLIBCPP_3.2.1");
+      compatible_versions.push_back("GLIBCPP_3.2.2");
       compatible_versions.push_back("CXXABI_1.2.1");
 
       symbol_info test = test_symbols[added_names[i]];
