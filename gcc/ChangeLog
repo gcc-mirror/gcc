@@ -1,3 +1,8 @@
+2001-05-21  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (current_funcdef_number): Move outside dwarf2
+	conditional ifdef.
+
 2001-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-decl.c (finish_decl): Don't set DECL_C_HARD_REGISTER for

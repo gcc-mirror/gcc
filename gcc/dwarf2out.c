@@ -92,6 +92,13 @@ dwarf2out_do_frame ()
 	  );
 }
 
+/* The number of the current function definition for which debugging
+   information is being generated.  These numbers range from 1 up to the
+   maximum number of function definitions contained within the current
+   compilation unit.  These numbers are used to create unique label id's
+   unique to each function definition.  */
+unsigned current_funcdef_number = 0;
+
 #if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 
 /* How to start an assembler comment.  */
@@ -214,13 +221,6 @@ static unsigned fde_table_in_use;
 
 /* A list of call frame insns for the CIE.  */
 static dw_cfi_ref cie_cfi_head;
-
-/* The number of the current function definition for which debugging
-   information is being generated.  These numbers range from 1 up to the
-   maximum number of function definitions contained within the current
-   compilation unit.  These numbers are used to create unique label id's
-   unique to each function definition.  */
-unsigned current_funcdef_number = 0;
 
 /* Some DWARF extensions (e.g., MIPS/SGI) implement a subprogram
    attribute that accelerates the lookup of the FDE associated
