@@ -30,6 +30,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "c-tree.h"
 #include "flags.h"
 #include "c-parse.h"
+#include "c-pragma.h"
 
 #include <ctype.h>
 

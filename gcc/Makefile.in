@@ -1022,10 +1022,10 @@ c-decl.o : c-decl.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h output.h
 c-typeck.o : c-typeck.c $(CONFIG_H) $(TREE_H) c-tree.h flags.h output.h
 c-lang.o : c-lang.c $(CONFIG_H) $(TREE_H)
 c-lex.o : c-lex.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h $(srcdir)/c-parse.h \
-    input.h flags.h $(srcdir)/c-gperf.h
+    input.h flags.h $(srcdir)/c-gperf.h c-pragma.h
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-convert.o : c-convert.c $(CONFIG_H) $(TREE_H) flags.h
-c-pragma.o: c-pragma.c $(CONFIG_H) $(TREE_H)
+c-pragma.o: c-pragma.c $(CONFIG_H) $(TREE_H) c-pragma.h
 c-iterate.o: c-iterate.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h flags.h
 
 # To make a configuration always use collect2, set USE_COLLECT2 to ld.
@@ -1101,7 +1101,7 @@ rtlanal.o : rtlanal.c $(CONFIG_H) $(RTL_H)
 toplev.o: bytecode.h bc-emit.h
 varasm.o : varasm.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h function.h \
    defaults.h insn-codes.h expr.h hard-reg-set.h regs.h xcoffout.h \
-   output.h bytecode.h 
+   output.h bytecode.h c-pragma.h
 function.o : function.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h insn-config.h \
    recog.h output.h bytecode.h

@@ -36,6 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "cp-tree.h"
 #include "flags.h"
 #include "obstack.h"
+#include "c-pragma.h"
 
 #ifdef MULTIBYTE_CHARS
 #include <stdlib.h>
@@ -4953,10 +4954,10 @@ handle_sysv_pragma ()
 	  handle_pragma_token (token_buffer, yylval.ttype);
 	  break;
 	case END_OF_LINE:
-	  handle_pragma_token (0, 0);
+	  handle_pragma_token (NULL_PTR, NULL_TREE);
 	  return;
 	default:
-	  handle_pragma_token (token_buffer, 0);
+	  handle_pragma_token (token_buffer, NULL_TREE);
 	}
     }
 }

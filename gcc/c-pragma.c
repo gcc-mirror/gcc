@@ -22,30 +22,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "function.h"
 #include "defaults.h"
+#include "c-pragma.h"
 
 #ifdef HANDLE_SYSV_PRAGMA
-
-/* Support #pragma weak by default if WEAK_ASM_OP and ASM_OUTPUT_DEF
-   are defined.  */
-#if !defined (HANDLE_PRAGMA_WEAK) && defined (WEAK_ASM_OP) && defined (ASM_OUTPUT_DEF)
-#define HANDLE_PRAGMA_WEAK 1
-#endif
-
-/* See varasm.c for an identical definition.  */
-enum pragma_state
-{
-  ps_start,
-  ps_done,
-  ps_bad,
-  ps_weak,
-  ps_name,
-  ps_equals,
-  ps_value,
-  ps_pack,
-  ps_left,
-  ps_align,
-  ps_right
-};
 
 /* When structure field packing is in effect, this variable is the
    number of bits to use as the maximum alignment.  When packing is not
@@ -82,7 +61,7 @@ handle_pragma_token (string, token)
 	{
 #ifdef HANDLE_PRAGMA_WEAK
 	  if (HANDLE_PRAGMA_WEAK)
-	    handle_pragma_weak (state, asm_out_file, name, value);
+	    handle_pragma_weak (state, name, value);
 
 #endif /* HANDLE_PRAMA_WEAK */
 	}

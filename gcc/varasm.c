@@ -42,6 +42,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "bytecode.h"
 
 #include "obstack.h"
+#include "c-pragma.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -97,7 +98,7 @@ int size_directive_output;
 tree last_assemble_variable_decl;
 
 
-#if defined (HANDLE_PRAGMA_WEAK) || (defined (WEAK_ASM_OP) && defined (ASM_OUTPUT_DEF))
+#ifdef HANDLE_PRAGMA_WEAK
 /* Any weak symbol declarations waiting to be emitted.  */
 
 struct weak_syms
@@ -3926,35 +3927,12 @@ output_constructor (exp, size)
     assemble_zeros (size - total_bytes);
 }
 
-/* Support #pragma weak by default if WEAK_ASM_OP and ASM_OUTPUT_DEF
-   are defined.  */
-#if !defined (HANDLE_PRAGMA_WEAK) && defined (WEAK_ASM_OP) && defined (ASM_OUTPUT_DEF)
-#define HANDLE_PRAGMA_WEAK 1
-#endif
-
 #if defined (HANDLE_SYSV_PRAGMA) && defined (HANDLE_PRAGMA_WEAK)
-
-/* See c-pragma.c for an identical definition.  */
-enum pragma_state
-{
-  ps_start,
-  ps_done,
-  ps_bad,
-  ps_weak,
-  ps_name,
-  ps_equals,
-  ps_value,
-  ps_pack,
-  ps_left,
-  ps_align,
-  ps_right
-};
 
 /* Output asm to handle ``#pragma weak'' */
 void
-handle_pragma_weak (what, out_file, name, value)
+handle_pragma_weak (what, name, value)
      enum pragma_state what;
-     FILE *out_file;
      char *name, *value;
 {
   if (what == ps_name || what == ps_value)
@@ -3988,12 +3966,17 @@ void
 declare_weak (decl)
      tree decl;
 {
+#ifdef HANDLE_PRAGMA_WEAK
   if (! TREE_PUBLIC (decl))
     error_with_decl (decl, "weak declaration of `%s' must be public");
   else
-    handle_pragma_weak (ps_name, asm_out_file,
+    handle_pragma_weak (ps_name,
 			IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
 			NULL_PTR);
+
+#else
+  error ("weak declarations are not supported in this configuration");
+#endif
 }
 
 /* Emit any pending weak declarations.  */
