@@ -500,6 +500,8 @@ public class ThreadGroup
       parent.uncaughtException (thread, t);
     else if (! (t instanceof ThreadDeath))
       {
+        if (thread != null)
+          System.out.print("Exception in thread \"" + thread.getName() + "\" ");
 	t.printStackTrace();
 	had_uncaught_exception = true;
       }
