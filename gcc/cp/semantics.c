@@ -1979,6 +1979,8 @@ finish_class_definition (t, attributes, semi, pop_scope_p)
      int semi;
      int pop_scope_p;
 {
+  tree variant;
+
   /* finish_struct nukes this anyway; if finish_exception does too,
      then it can go.  */
   if (semi)
@@ -1987,7 +1989,10 @@ finish_class_definition (t, attributes, semi, pop_scope_p)
   /* If we got any attributes in class_head, xref_tag will stick them in
      TREE_TYPE of the type.  Grab them now.  */
   attributes = chainon (TREE_TYPE (t), attributes);
-  TREE_TYPE (t) = NULL_TREE;
+
+  /* And then clear it out.  */
+  for (variant = t; variant; variant = TYPE_NEXT_VARIANT (variant))
+    TREE_TYPE (variant) = NULL_TREE;
 
   if (TREE_CODE (t) == ENUMERAL_TYPE)
     ;
