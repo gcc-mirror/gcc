@@ -2961,15 +2961,17 @@ c_make_fname_decl (id, type_dep)
    See tree.h for its possible values.
 
    If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
-   the name to be called if we can't opencode the function.  */
+   the name to be called if we can't opencode the function.  If
+   ATTRS is nonzero, use that for the function's attribute list.  */
 
 tree
-builtin_function (name, type, function_code, class, library_name)
+builtin_function (name, type, function_code, class, library_name, attrs)
      const char *name;
      tree type;
      int function_code;
      enum built_in_class class;
      const char *library_name;
+     tree attrs;
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;
@@ -2991,7 +2993,10 @@ builtin_function (name, type, function_code, class, library_name)
     C_DECL_ANTICIPATED (decl) = 1;
 
   /* Possibly apply some default attributes to this built-in function.  */
-  decl_attributes (&decl, NULL_TREE, 0);
+  if (attrs)
+    decl_attributes (&decl, attrs, ATTR_FLAG_BUILT_IN);
+  else
+    decl_attributes (&decl, NULL_TREE, 0);
 
   return decl;
 }

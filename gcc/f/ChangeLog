@@ -1,3 +1,9 @@
+2002-07-01  Roger Sayle  <roger@eyesopen.com>
+
+	* f/com.c (builtin_function): Accept additional parameter.
+	(ffe_com_init_0): Pass an additional NULL_TREE argument to
+	builtin_function.
+
 2002-06-28  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* news.texi: Mention 2 Gbyte limit on 32-bit targets

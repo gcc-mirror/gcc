@@ -11667,23 +11667,23 @@ ffecom_init_0 ()
     = build_function_type (void_type_node, NULL_TREE);
 
   builtin_function ("__builtin_sqrtf", float_ftype_float,
-		    BUILT_IN_SQRTF, BUILT_IN_NORMAL, "sqrtf");
+		    BUILT_IN_SQRTF, BUILT_IN_NORMAL, "sqrtf", NULL_TREE);
   builtin_function ("__builtin_sqrt", double_ftype_double,
-		    BUILT_IN_SQRT, BUILT_IN_NORMAL, "sqrt");
+		    BUILT_IN_SQRT, BUILT_IN_NORMAL, "sqrt", NULL_TREE);
   builtin_function ("__builtin_sqrtl", ldouble_ftype_ldouble,
-		    BUILT_IN_SQRTL, BUILT_IN_NORMAL, "sqrtl");
+		    BUILT_IN_SQRTL, BUILT_IN_NORMAL, "sqrtl", NULL_TREE);
   builtin_function ("__builtin_sinf", float_ftype_float,
-		    BUILT_IN_SINF, BUILT_IN_NORMAL, "sinf");
+		    BUILT_IN_SINF, BUILT_IN_NORMAL, "sinf", NULL_TREE);
   builtin_function ("__builtin_sin", double_ftype_double,
-		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sin");
+		    BUILT_IN_SIN, BUILT_IN_NORMAL, "sin", NULL_TREE);
   builtin_function ("__builtin_sinl", ldouble_ftype_ldouble,
-		    BUILT_IN_SINL, BUILT_IN_NORMAL, "sinl");
+		    BUILT_IN_SINL, BUILT_IN_NORMAL, "sinl", NULL_TREE);
   builtin_function ("__builtin_cosf", float_ftype_float,
-		    BUILT_IN_COSF, BUILT_IN_NORMAL, "cosf");
+		    BUILT_IN_COSF, BUILT_IN_NORMAL, "cosf", NULL_TREE);
   builtin_function ("__builtin_cos", double_ftype_double,
-		    BUILT_IN_COS, BUILT_IN_NORMAL, "cos");
+		    BUILT_IN_COS, BUILT_IN_NORMAL, "cos", NULL_TREE);
   builtin_function ("__builtin_cosl", ldouble_ftype_ldouble,
-		    BUILT_IN_COSL, BUILT_IN_NORMAL, "cosl");
+		    BUILT_IN_COSL, BUILT_IN_NORMAL, "cosl", NULL_TREE);
 
   pedantic_lvalues = FALSE;
 
@@ -13072,12 +13072,14 @@ bison_rule_compstmt_ ()
    See tree.h for its possible values.
 
    If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
-   the name to be called if we can't opencode the function.  */
+   the name to be called if we can't opencode the function.  If
+   ATTRS is nonzero, use that for the function's attribute list.  */
 
 tree
 builtin_function (const char *name, tree type, int function_code,
 		  enum built_in_class class,
-		  const char *library_name)
+		  const char *library_name,
+		  tree attrs ATTRIBUTE_UNUSED)
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;

@@ -11463,10 +11463,11 @@ x86_initialize_trampoline (tramp, fnaddr, cxt)
     }
 }
 
-#define def_builtin(MASK, NAME, TYPE, CODE)				\
-do {									\
-  if ((MASK) & target_flags)						\
-    builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL);	\
+#define def_builtin(MASK, NAME, TYPE, CODE)			\
+do {								\
+  if ((MASK) & target_flags)					\
+    builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD,	\
+		      NULL, NULL_TREE);				\
 } while (0)
 
 struct builtin_description

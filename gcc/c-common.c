@@ -3055,7 +3055,7 @@ c_common_nodes_and_builtins ()
 				 CLASS,					\
 				 (FALLBACK_P				\
 				  ? (NAME + strlen ("__builtin_"))	\
-				  : NULL));				\
+				  : NULL), NULL_TREE);			\
       else								\
 	decl = builtin_function_2 (NAME,				\
 				   NAME + strlen ("__builtin_"),	\
@@ -3185,7 +3185,8 @@ builtin_function_2 (builtin_name, name, builtin_type, type, function_code,
   if (builtin_name != 0)
     {
       bdecl = builtin_function (builtin_name, builtin_type, function_code,
-				class, library_name_p ? name : NULL);
+				class, library_name_p ? name : NULL,
+				NULL_TREE);
       if (noreturn_p)
 	{
 	  TREE_THIS_VOLATILE (bdecl) = 1;
@@ -3195,7 +3196,8 @@ builtin_function_2 (builtin_name, name, builtin_type, type, function_code,
   if (name != 0 && !flag_no_builtin && !builtin_function_disabled_p (name)
       && !(nonansi_p && flag_no_nonansi_builtin))
     {
-      decl = builtin_function (name, type, function_code, class, NULL);
+      decl = builtin_function (name, type, function_code, class, NULL,
+			       NULL_TREE);
       if (nonansi_p)
 	DECL_BUILT_IN_NONANSI (decl) = 1;
       if (noreturn_p)

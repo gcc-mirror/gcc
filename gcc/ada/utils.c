@@ -1871,15 +1871,17 @@ end_subprog_body ()
    See tree.h for its possible values.
 
    If LIBRARY_NAME is nonzero, use that for DECL_ASSEMBLER_NAME,
-   the name to be called if we can't opencode the function.  */
+   the name to be called if we can't opencode the function.  If
+   ATTRS is nonzero, use that for the function attribute list.  */
 
 tree
-builtin_function (name, type, function_code, class, library_name)
+builtin_function (name, type, function_code, class, library_name, attrs)
      const char *name;
      tree type;
      int function_code;
      enum built_in_class class;
      const char *library_name;
+     tree attrs;
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
 
@@ -1891,6 +1893,8 @@ builtin_function (name, type, function_code, class, library_name)
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = function_code;
+  if (attrs)
+      decl_attributes (&decl, attrs, ATTR_FLAG_BUILT_IN);
   return decl;
 }
 

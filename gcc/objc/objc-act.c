@@ -1093,7 +1093,8 @@ synth_module_prologue ()
       pushdecl (umsg_decl);
     }
   else
-    umsg_decl = builtin_function (TAG_MSGSEND, temp_type, 0, NOT_BUILT_IN, 0);
+    umsg_decl = builtin_function (TAG_MSGSEND, temp_type, 0, NOT_BUILT_IN,
+				  NULL, NULL_TREE);
 
   /* id objc_msgSendSuper (struct objc_super *, SEL, ...); */
 
@@ -1104,7 +1105,8 @@ synth_module_prologue ()
 						 NULL_TREE)));
 
   umsg_super_decl = builtin_function (TAG_MSGSENDSUPER,
-				     temp_type, 0, NOT_BUILT_IN, 0);
+				      temp_type, 0, NOT_BUILT_IN,
+				      NULL, NULL_TREE);
 
   /* id objc_getClass (const char *); */
 
@@ -1115,12 +1117,14 @@ synth_module_prologue ()
 					      NULL_TREE)));
 
   objc_get_class_decl
-    = builtin_function (TAG_GETCLASS, temp_type, 0, NOT_BUILT_IN, 0);
+    = builtin_function (TAG_GETCLASS, temp_type, 0, NOT_BUILT_IN,
+			NULL, NULL_TREE);
 
   /* id objc_getMetaClass (const char *); */
 
   objc_get_meta_class_decl
-    = builtin_function (TAG_GETMETACLASS, temp_type, 0, NOT_BUILT_IN, 0);
+    = builtin_function (TAG_GETMETACLASS, temp_type, 0, NOT_BUILT_IN,
+			NULL, NULL_TREE);
 
   /* static SEL _OBJC_SELECTOR_TABLE[]; */
 
