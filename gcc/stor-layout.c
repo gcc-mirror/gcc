@@ -806,6 +806,8 @@ update_alignment_for_field (rli, field, known_align)
 
   TYPE_USER_ALIGN (rli->t) |= user_align;
 
+  DECL_ALIGN (field) = desired_align;
+
   return desired_align;
 }
 
