@@ -1,5 +1,12 @@
 2003-05-10  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/CharBuffer.java
+	(put): Fixed precondtion check.
+	(toString): Make it work without backing array.
+	(put): Skip one level of method calling.
+
+2003-05-10  Michael Koch  <konqueror@gmx.de>
+
 	* java/security/Identity.java,
 	java/security/IdentityScope.java,
 	java/security/Key.java,
