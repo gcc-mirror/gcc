@@ -154,7 +154,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Borrowed from sparc/linux.h */
 #undef LINK_SPEC
-#define LINK_SPEC "%{shared:-shared} \
+#define LINK_SPEC \
+ "%(endian_spec) \
+  %{shared:-shared} \
   %{!shared: \
     %{!ibcs: \
       %{!static: \

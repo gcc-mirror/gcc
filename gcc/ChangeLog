@@ -1,3 +1,13 @@
+2000-08-18  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
+
+	* mips/linux.h (LINK_SPEC): Use %(endian_spec).
+
+	* mips/mips.h: Change LINKER_ENDIAN_SPEC to ENDIAN_SPEC
+	and linker_endian_spec to endian_spec. 
+	(ENDIAN_SPEC): Add %{EB} and %{EL}.
+	(LINK_SPEC): Remove %{EB} and %{EL}.
+	(ASM_SPEC): Likewise.  Use %(endian_spec). 
+
 2000-08-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-tree.h (flag_hosted): Move declaration from here...

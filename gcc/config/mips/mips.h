@@ -524,11 +524,11 @@ extern void		sbss_section PARAMS ((void));
    linker will default to using big-endian output files.  The OUTPUT_FORMAT
    line must be in the linker script, otherwise -EB/-EL will not work.  */
 
-#ifndef LINKER_ENDIAN_SPEC
+#ifndef ENDIAN_SPEC
 #if TARGET_ENDIAN_DEFAULT == 0
-#define LINKER_ENDIAN_SPEC "%{!EB:%{!meb:-EL}}"
+#define ENDIAN_SPEC "%{!EB:%{!meb:-EL}} %{EL} %{EB}"
 #else
-#define LINKER_ENDIAN_SPEC "%{!EL:%{!mel:-EB}}"
+#define ENDIAN_SPEC "%{!EL:%{!mel:-EB}} %{EB} %{EL}"
 #endif
 #endif
 
@@ -826,7 +826,7 @@ while (0)
 /* ASM_SPEC is the set of arguments to pass to the assembler.  */
 
 #define ASM_SPEC "\
-%{!membedded-pic:%{G*}} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
+%{!membedded-pic:%{G*}} %(endian_spec) %{mips1} %{mips2} %{mips3} %{mips4} \
 %{mips16:%{!mno-mips16:-mips16}} %{mno-mips16:-no-mips16} \
 %(subtarget_asm_optimizing_spec) \
 %(subtarget_asm_debugging_spec) \
@@ -881,9 +881,9 @@ while (0)
 
 #ifndef LINK_SPEC
 #define LINK_SPEC "\
-%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
-%{bestGnum} %{shared} %{non_shared} \
-%(linker_endian_spec)"
+%(endian_spec) \
+%{G*} %{mips1} %{mips2} %{mips3} %{mips4} \
+%{bestGnum} %{shared} %{non_shared}"
 #endif	/* LINK_SPEC defined */
 
 /* Specs for the compiler proper */
@@ -991,7 +991,7 @@ while (0)
   { "subtarget_asm_optimizing_spec", SUBTARGET_ASM_OPTIMIZING_SPEC },	\
   { "subtarget_asm_debugging_spec", SUBTARGET_ASM_DEBUGGING_SPEC },	\
   { "subtarget_asm_spec", SUBTARGET_ASM_SPEC },				\
-  { "linker_endian_spec", LINKER_ENDIAN_SPEC },				\
+  { "endian_spec", ENDIAN_SPEC },					\
   SUBTARGET_EXTRA_SPECS
 
 #ifndef SUBTARGET_EXTRA_SPECS
