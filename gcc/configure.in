@@ -2848,11 +2848,6 @@ do
 	done
 done
 
-# Truncate the target if necessary
-if [[ x$host_truncate_target != x ]]; then
-	target=`echo $target | sed -e 's/\(..............\).*/\1/'`
-fi
-
 # Get the version number from the toplevel
 version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${srcdir}/version.c`
 
@@ -3213,6 +3208,11 @@ echo "Links are now set up to build a ${str1}compiler for ${target}$str4" 1>&2
 if [[ "x$str2" != x ]] || [[ "x$str3" != x ]]
 then
 	echo " ${str2}${str3}." 1>&2
+fi
+
+# Truncate the target if necessary
+if [[ x$host_truncate_target != x ]]; then
+	target=`echo $target | sed -e 's/\(..............\).*/\1/'`
 fi
 
 # Configure the subdirectories
