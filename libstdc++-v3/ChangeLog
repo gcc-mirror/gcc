@@ -1,3 +1,10 @@
+2000-07-21  H.J. Lu  (hjl@gnu.org)
+
+	        * acinclude.m4: Include <features.h> for glibc testing.
+	        * aclocal.m4: Likewise.
+
+	        * configure: Rebuild.
+	
 2000-07-20  H.J. Lu  (hjl@gnu.org)
 
         * acinclude.m4: Change "#pragma system_header" to

@@ -1198,6 +1198,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
           *-*-linux*)
   	    AC_MSG_CHECKING([for glibc version >= 2.2])
   	    AC_EGREP_CPP([ok], [
+	    #include <features.h>
   	    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2) 
     		ok
   	    #endif
@@ -1526,7 +1527,7 @@ dnl Then, if any (well almost any) other make is called, and GNU make also
 dnl exists, then the other make wraps the GNU make.
 dnl
 dnl @author John Darrington <j.darrington@elvis.murdoch.edu.au>
-dnl @version $Id: acinclude.m4,v 1.43 2000/07/19 00:57:37 bkoz Exp $
+dnl @version $Id: aclocal.m4,v 1.45 2000/07/21 01:02:31 bkoz Exp $
 dnl
 dnl #### Changes for libstdc++-v3:  reformatting and linewrapping; prepending
 dnl #### GLIBCPP_ to the macro name; adding the :-make fallback in the
