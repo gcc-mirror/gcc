@@ -1288,7 +1288,7 @@ DEFDOC (SECOND_subr, "Get CPU time for process@99@in seconds.", "\
 Returns the process's runtime in seconds in @var{@1@}---the same value
 as the UNIX function @code{etime} returns.
 
-This routine is known from Cray Fortran.  @xref{CPU_Time Intrinsic}
+This routine is known from Cray Fortran.  @xref{CPU_Time Intrinsic},
 for a standard equivalent.
 ")
 
@@ -2429,7 +2429,7 @@ If the absolute value of the shift count is greater than
 Bits shifted out from the left end or the right end are lost.
 Zeros are shifted in from the opposite end.
 
-@xref{IShftC Intrinsic} for the circular-shift equivalent.
+@xref{IShftC Intrinsic}, for the circular-shift equivalent.
 ")
 
 DEFDOC (ISHFTC, "Circular bit shift.", "\
@@ -2445,7 +2445,7 @@ must be less than or equal to @var{@3@}.
 The value of @var{@3@} must be greater than or equal to one and less than 
 or equal to @samp{BIT_SIZE(@var{@1@})}.
 
-@xref{IShft Intrinsic} for the logical shift equivalent.
+@xref{IShft Intrinsic}, for the logical shift equivalent.
 ")
 
 DEFDOC (MVBITS, "Moving a bit field.", "\
