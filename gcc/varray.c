@@ -118,15 +118,22 @@ varray_clear (varray_type va)
 
 #if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
 
-extern void error (const char *, ...)	ATTRIBUTE_PRINTF_1;
-
 void
 varray_check_failed (varray_type va, size_t n, const char *file, int line,
 		     const char *function)
 {
-  internal_error ("virtual array %s[%lu]: element %lu out of bounds in %s, at %s:%d",
+  internal_error ("virtual array %s[%lu]: element %lu out of bounds "
+		  "in %s, at %s:%d",
 		  va->name, (unsigned long) va->num_elements, (unsigned long) n,
 		  function, trim_filename (file), line);
+}
+
+void
+varray_underflow (varray_type va, const char *file, int line,
+		  const char *function)
+{
+  internal_error ("underflowed virtual array %s in %s, at %s:%d",
+		  va->name, function, trim_filename (file), line);
 }
 
 #endif

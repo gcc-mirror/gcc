@@ -1,3 +1,11 @@
+2004-01-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* varray.h (VARRAY_POP): Add checking variant, aborts on underflow.
+	(VARRAY_TOP): Use VARRAY_CHECK so the access is bounds-checked.
+	* varray.c: No need to prototype error.
+	(varray_check_failed): Wrap long string onto two lines.
+	(varray_underflow): New function.
+
 2004-01-13  Steven Bosscher  <stevenb@suse.de>
 
 	PR c++/13376
@@ -146,12 +154,12 @@
 	contraint.
 	(EXTRA_MEMORY_CONSTRAINT): Tell reload which constraint
 	are memory contraints.
-	* gcc/config/rs6000/rs6000-protos.h (word_offset_memref_operand): 
+	* gcc/config/rs6000/rs6000-protos.h (word_offset_memref_operand):
 	New prototype.
-	* gcc/config/rs6000/rs6000.md (*movdf_hardfloat64): 
+	* gcc/config/rs6000/rs6000.md (*movdf_hardfloat64):
 	Change 'o' to 'Y' constraint.
 	(*movdf_softfloat64): Ditto.
-	
+
 2004-01-12  Bernardo Innocenti  <bernie@develer.com>
 
 	* gcc/config/m68k/m68k.md: Switch from the "*..." syntax to the
