@@ -1198,9 +1198,6 @@ check_bases (tree t,
   n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
   seen_non_virtual_nearly_empty_base_p = 0;
 
-  /* An aggregate cannot have baseclasses.  */
-  CLASSTYPE_NON_AGGREGATE (t) |= (n_baseclasses != 0);
-
   for (i = 0; i < n_baseclasses; ++i) 
     {
       tree base_binfo;
@@ -1210,24 +1207,8 @@ check_bases (tree t,
       base_binfo = TREE_VEC_ELT (binfos, i);
       basetype = TREE_TYPE (base_binfo);
 
-      /* If the type of basetype is incomplete, then we already
-	 complained about that fact (and we should have fixed it up as
-	 well).  */
-      if (!COMPLETE_TYPE_P (basetype))
-	{
-	  int j;
-	  /* The base type is of incomplete type.  It is
-	     probably best to pretend that it does not
-	     exist.  */
-	  if (i == n_baseclasses-1)
-	    TREE_VEC_ELT (binfos, i) = NULL_TREE;
-	  TREE_VEC_LENGTH (binfos) -= 1;
-	  n_baseclasses -= 1;
-	  for (j = i; j+1 < n_baseclasses; j++)
-	    TREE_VEC_ELT (binfos, j) = TREE_VEC_ELT (binfos, j+1);
-	  continue;
-	}
-
+      my_friendly_assert (COMPLETE_TYPE_P (basetype), 20040714);
+      
       /* Effective C++ rule 14.  We only need to check TYPE_POLYMORPHIC_P
 	 here because the case of virtual functions but non-virtual
 	 dtor is handled in finish_struct_1.  */
@@ -6260,14 +6241,20 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 static tree
 get_vfield_name (tree type)
 {
-  tree binfo = TYPE_BINFO (type);
+  tree binfo, base_binfo;
   char *buf;
 
-  while (BINFO_BASE_BINFOS (binfo)
-	 && TYPE_CONTAINS_VPTR_P (BINFO_TYPE (BINFO_BASE_BINFO (binfo, 0)))
-	 && ! BINFO_VIRTUAL_P (BINFO_BASE_BINFO (binfo, 0)))
-    binfo = BINFO_BASE_BINFO (binfo, 0);
+  for (binfo = TYPE_BINFO (type);
+       BINFO_BASE_BINFOS (binfo);
+       binfo = base_binfo)
+    {
+      base_binfo = BINFO_BASE_BINFO (binfo, 0);
 
+      if (BINFO_VIRTUAL_P (base_binfo)
+	  || !TYPE_CONTAINS_VPTR_P (BINFO_TYPE (base_binfo)))
+	break;
+    }
+  
   type = BINFO_TYPE (binfo);
   buf = alloca (sizeof (VFIELD_NAME_FORMAT) + TYPE_NAME_LENGTH (type) + 2);
   sprintf (buf, VFIELD_NAME_FORMAT,
