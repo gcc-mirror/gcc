@@ -1,3 +1,12 @@
+2004-07-06  Richard Henderson  <rth@redhat.com>
+
+	* tree-sra.c (struct sra_walk_fns): Revert 2004-07-05 change.
+	(sra_walk_modify_expr, scan_init): Likewise.
+	(generate_element_zero): Check visited before scanning children.
+	(generate_element_init): Set visited on error.
+	(scalarize_init): Handle generate_element_init failure similar
+	to use_block_copy.
+
 2004-07-06  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* toplev.h (NO_FRONT_END_DIAG, ATTRIBUTE_GCC_FE_DIAG): Define.
