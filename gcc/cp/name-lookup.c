@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -2214,16 +2214,14 @@ is_ancestor (tree root, tree child)
     }
 }
 
-/* Enter the class or namespace scope indicated by T suitable for
-   name lookup.  T can be arbitrary scope, not necessary nested inside
-   the current scope.  Returns TRUE iff pop_scope should be called
-   later to exit this scope.  */
+/* Enter the class or namespace scope indicated by T suitable for name
+   lookup.  T can be arbitrary scope, not necessary nested inside the
+   current scope.  Returns a non-null scope to pop iff pop_scope
+   should be called later to exit this scope.  */
 
-bool
+tree
 push_scope (tree t)
 {
-  bool pop = true;
-
   if (TREE_CODE (t) == NAMESPACE_DECL)
     push_decl_namespace (t);
   else if (CLASS_TYPE_P (t))
@@ -2236,10 +2234,10 @@ push_scope (tree t)
 	   need to re-enter the scope.  Since we are not actually
 	   pushing a new scope, our caller should not call
 	   pop_scope.  */
-	pop = false;
+	t = NULL_TREE;
     }
 
-  return pop;
+  return t;
 }
 
 /* Leave scope pushed by push_scope.  */

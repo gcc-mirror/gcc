@@ -1,3 +1,21 @@
+2005-01-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/19030
+	* cp-tree.h (start_decl): Take pointer to pushed scope, not bool.
+	* name-lookup.h (push_scope): Return pushed scope, not flag.
+	* name-lookup.c (push_scope): Return scope that should be popped,
+	not a flag.
+	* decl.c (start_decl): Adjust.
+	(grokfndecl): Adjust scope push and pop.
+	* decl2.c (check_classfn): Likewise.
+	* parser.c (cp_parser_condition, cp_parser_conversion_function_id,
+	cp_parser_init_declarator, cp_parser_direct_declarator,
+	cp_parser_class_specifier, cp_parser_class_head,
+	cp_parser_lookup_name,
+	cp_parser_constructor_declarator_p): Likewise.
+	* pt.c (instantiate_class_template,
+	resolve_typename_type): Likewise.
+
 2005-01-03  Volker Reichelt  <reichelt@igpm.rwth-aaachen.de>
 
 	PR c++/14136

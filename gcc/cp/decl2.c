@@ -1,6 +1,6 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -627,10 +627,10 @@ check_classfn (tree ctype, tree function, tree template_parms)
       VEC(tree) *methods = CLASSTYPE_METHOD_VEC (ctype);
       tree fndecls, fndecl = 0;
       bool is_conv_op;
-      bool pop_p;
+      tree pushed_scope;
       const char *format = NULL;
       
-      pop_p = push_scope (ctype);
+      pushed_scope = push_scope (ctype);
       for (fndecls = VEC_index (tree, methods, ix);
 	   fndecls; fndecls = OVL_NEXT (fndecls))
 	{
@@ -669,8 +669,8 @@ check_classfn (tree ctype, tree function, tree template_parms)
 		      == DECL_TI_TEMPLATE (fndecl))))
 	    break;
 	}
-      if (pop_p)
-	pop_scope (ctype);
+      if (pushed_scope)
+	pop_scope (pushed_scope);
       if (fndecls)
 	return OVL_CURRENT (fndecls);
       error ("prototype for %q#D does not match any in class %qT",
