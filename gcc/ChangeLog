@@ -1,3 +1,7 @@
+2004-09-30  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/qrnnd.asm: Mark for noexecstack.
+
 2004-09-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* protoize.c, tree-cfg.c: Fix comment typos.
