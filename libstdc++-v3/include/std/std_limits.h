@@ -92,23 +92,11 @@
 // These values can be overridden in the target configuration file.
 // The default values are appropriate for many 32-bit targets.
 
-#ifndef __glibcpp_char_traps
-#  define __glibcpp_char_traps true
-#endif
-#ifndef __glibcpp_short_traps
-#  define __glibcpp_short_traps true
-#endif
-#ifndef __glibcpp_int_traps
-#  define __glibcpp_int_traps true
-#endif
-#ifndef __glibcpp_long_traps
-#  define __glibcpp_long_traps true
-#endif
-#ifndef __glibcpp_wchar_t_traps
-#  define __glibcpp_wchar_t_traps true
-#endif
-#ifndef __glibcpp_long_long_traps
-#  define __glibcpp_long_long_traps true
+// GCC only intrinsicly supports modulo integral types.  The only remaining
+// integral exceptional values is division by zero.  Only targets that do not
+// signal division by zero in some "hard to ignore" way should use false.
+#ifndef __glibcpp_integral_traps
+# define __glibcpp_integral_traps true
 #endif
 
 // You should not need to define any macros below this point, unless
@@ -151,7 +139,7 @@
 #define __glibcpp_u64_digits10 19
 
 // bool-specific hooks:
-//     __glibcpp_bool_digits  __glibcpp_int_traps __glibcpp_long_traps
+//     __glibcpp_bool_digits
 
 #ifndef __glibcpp_bool_digits
 #  define __glibcpp_bool_digits 1
@@ -159,15 +147,6 @@
 
 // char.
 
-#define __glibcpp_plain_char_traps true
-#define __glibcpp_signed_char_traps true
-#define __glibcpp_unsigned_char_traps true
-#ifndef __glibcpp_char_is_modulo
-#  define __glibcpp_char_is_modulo true
-#endif
-#ifndef __glibcpp_signed_char_is_modulo
-#  define __glibcpp_signed_char_is_modulo true
-#endif
 #if __CHAR_BIT__ == 8
 #  define __glibcpp_signed_char_min __glibcpp_s8_min
 #  define __glibcpp_signed_char_max __glibcpp_s8_max
@@ -222,11 +201,6 @@
 
 // short
 
-#define __glibcpp_signed_short_traps true
-#define __glibcpp_unsigned_short_traps true
-#ifndef __glibcpp_signed_short_is_modulo
-#  define __glibcpp_signed_short_is_modulo true
-#endif
 #if __SHRT_BIT__ == 8
 #  define __glibcpp_signed_short_min __glibcpp_s8_min
 #  define __glibcpp_signed_short_max __glibcpp_s8_max
@@ -269,11 +243,6 @@
 
 // int
 
-#define __glibcpp_signed_int_traps true
-#define __glibcpp_unsigned_int_traps true
-#ifndef __glibcpp_signed_int_is_modulo
-#  define __glibcpp_signed_int_is_modulo true
-#endif
 #if __INT_BIT__ == 8
 #  define __glibcpp_signed_int_min __glibcpp_s8_min
 #  define __glibcpp_signed_int_max __glibcpp_s8_max
@@ -316,11 +285,6 @@
 
 // long
 
-#define __glibcpp_signed_long_traps true
-#define __glibcpp_unsigned_long_traps true
-#ifndef __glibcpp_signed_long_is_modulo
-#  define __glibcpp_signed_long_is_modulo true
-#endif
 #if __LONG_BIT__ == 8
 #  define __glibcpp_signed_long_min __glibcpp_s8_min
 #  define __glibcpp_signed_long_max __glibcpp_s8_max
@@ -363,11 +327,6 @@
 
 // long long
 
-#define __glibcpp_signed_long_long_traps true
-#define __glibcpp_signed_long_long_traps true
-#ifndef __glibcpp_signed_long_long_is_modulo
-#  define __glibcpp_signed_long_long_is_modulo true
-#endif
 #if __LONG_LONG_BIT__ == 8
 #  define __glibcpp_signed_long_long_min __glibcpp_s8_min
 #  define __glibcpp_signed_long_long_max __glibcpp_s8_max
@@ -400,22 +359,16 @@
 #  define __glibcpp_signed_long_long_max __glibcpp_s64_max
 #  define __glibcpp_signed_long_long_digits __glibcpp_s64_digits
 #  define __glibcpp_signed_long_long_digits10 __glibcpp_s64_digits10
-#  define __glibcpp_signed_long_long_traps true
 #  define __glibcpp_unsigned_long_long_min __glibcpp_u64_min
 #  define __glibcpp_unsigned_long_long_max __glibcpp_u64_max
 #  define __glibcpp_unsigned_long_long_digits __glibcpp_u64_digits
 #  define __glibcpp_unsigned_long_long_digits10 __glibcpp_u64_digits10
-#  define __glibcpp_unsigned_long_long_traps true
 #else
 // You must define these macros in the configuration file.
 #endif
 
 // wchar_t
 
-#define __glibcpp_wchar_t_traps true
-#ifndef __glibcpp_wchar_t_is_modulo
-#  define __glibcpp_wchar_t_is_modulo true
-#endif
 #if __glibcpp_wchar_t_is_signed
 #  if __WCHAR_BIT__ == 8
 #    define __glibcpp_wchar_t_min __glibcpp_s8_min
@@ -475,10 +428,6 @@
 #  define __glibcpp_float_has_denorm_loss false
 #endif
 
-#ifndef __glibcpp_float_is_bounded
-#  define __glibcpp_float_is_bounded true
-#endif
-
 #ifndef __glibcpp_float_is_modulo
 #  define __glibcpp_float_is_modulo false
 #endif
@@ -499,10 +448,6 @@
 #  define __glibcpp_double_has_denorm_loss false
 #endif
 
-#ifndef __glibcpp_double_is_bounded
-#  define __glibcpp_double_is_bounded true
-#endif
-
 #ifndef __glibcpp_double_is_modulo
 #  define __glibcpp_double_is_modulo false
 #endif
@@ -521,10 +466,6 @@
 
 #ifndef __glibcpp_long_double_has_denorm_loss
 #  define __glibcpp_long_double_has_denorm_loss false
-#endif
-
-#ifndef __glibcpp_long_double_is_bounded
-#  define __glibcpp_long_double_is_bounded true
 #endif
 
 #ifndef __glibcpp_long_double_is_modulo
@@ -698,8 +639,7 @@ namespace std
       // It is not clear what it means for a boolean type to trap.
       // This is a DR on the LWG issue list.  Here, I use integer
       // promotion semantics.
-      static const bool traps = __glibcpp_signed_int_traps
-               || __glibcpp_signed_long_traps;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -749,9 +689,9 @@ namespace std
 
       static const bool is_iec559 = false;
       static const bool is_bounded = true;
-      static const bool is_modulo = __glibcpp_char_is_modulo;
+      static const bool is_modulo = true;
 
-      static const bool traps = __glibcpp_char_traps;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -761,8 +701,6 @@ namespace std
 #undef __glibcpp_char_digits
 #undef __glibcpp_char_digits10
 #undef __glibcpp_char_is_signed
-#undef __glibcpp_char_is_modulo
-#undef __glibcpp_char_traps
 
 
 
@@ -809,9 +747,9 @@ namespace std
 
       static const bool is_iec559 = false;
       static const bool is_bounded = true;
-      static const bool is_modulo = __glibcpp_signed_char_is_modulo;
+      static const bool is_modulo = true;
 
-      static const bool traps = __glibcpp_signed_char_traps;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -820,8 +758,6 @@ namespace std
 #undef __glibcpp_signed_char_max
 #undef __glibcpp_signed_char_digits
 #undef __glibcpp_signed_char_digits10
-#undef __glibcpp_signed_char_is_modulo  
-#undef __glibcpp_signed_char_traps  
 
   template<>
     struct numeric_limits<unsigned char>
@@ -868,7 +804,7 @@ namespace std
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
-      static const bool traps = __glibcpp_unsigned_char_traps;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -876,7 +812,6 @@ namespace std
 #undef __glibcpp_unsigned_char_max
 #undef __glibcpp_unsigned_char_digits
 #undef __glibcpp_unsigned_char_digits10
-#undef __glibcpp_unsigned_char_traps  
 
   template<>
     struct numeric_limits<wchar_t>
@@ -921,9 +856,9 @@ namespace std
 
       static const bool is_iec559 = false;
       static const bool is_bounded = true;
-      static const bool is_modulo = __glibcpp_wchar_t_is_modulo;
+      static const bool is_modulo = true;
 
-      static const bool traps = __glibcpp_wchar_t_traps;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -933,8 +868,6 @@ namespace std
 #undef __glibcpp_wchar_t_digits
 #undef __glibcpp_wchar_t_digits10  
 #undef __glibcpp_wchar_t_is_signed
-#undef __glibcpp_wchar_t_is_modulo
-#undef __glibcpp_wchar_t_traps  
   
   template<>
     struct numeric_limits<short>
@@ -979,9 +912,9 @@ namespace std
 
       static const bool is_iec559 = true;
       static const bool is_bounded = true;
-      static const bool is_modulo = __glibcpp_signed_short_is_modulo;
+      static const bool is_modulo = true;
 
-      static const bool traps = __glibcpp_signed_short_traps;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -990,8 +923,6 @@ namespace std
 #undef __glibcpp_signed_short_max
 #undef __glibcpp_signed_short_digits
 #undef __glibcpp_signed_short_digits10
-#undef __glibcpp_signed_short_is_modulo
-#undef __glibcpp_signed_short_traps  
   
   template<>
     struct numeric_limits<unsigned short>
@@ -1038,7 +969,7 @@ namespace std
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
-      static const bool traps = __glibcpp_unsigned_short_traps;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -1046,7 +977,6 @@ namespace std
 #undef __glibcpp_unsigned_short_max
 #undef __glibcpp_unsigned_short_digits
 #undef __glibcpp_unsigned_short_digits10
-#undef __glibcpp_unsigned_short_traps  
   
   template<>
     struct numeric_limits<int>
@@ -1091,9 +1021,9 @@ namespace std
 
       static const bool is_iec559 = true;
       static const bool is_bounded = true;
-      static const bool is_modulo = __glibcpp_signed_int_is_modulo;
+      static const bool is_modulo = true;
 
-      static const bool traps = __glibcpp_signed_int_traps;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -1102,8 +1032,6 @@ namespace std
 #undef __glibcpp_signed_int_max
 #undef __glibcpp_signed_int_digits
 #undef __glibcpp_signed_int_digits10
-#undef __glibcpp_signed_int_is_modulo
-#undef __glibcpp_signed_int_traps  
   
   template<>
     struct numeric_limits<unsigned int>
@@ -1150,7 +1078,7 @@ namespace std
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
-      static const bool traps = __glibcpp_unsigned_int_traps;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -1158,7 +1086,6 @@ namespace std
 #undef __glibcpp_unsigned_int_max
 #undef __glibcpp_unsigned_int_digits
 #undef __glibcpp_unsigned_int_digits10
-#undef __glibcpp_unsigned_int_traps  
 
   template<>
     struct numeric_limits<long>
@@ -1203,9 +1130,9 @@ namespace std
 
       static const bool is_iec559 = true;
       static const bool is_bounded = true;
-      static const bool is_modulo = __glibcpp_signed_long_is_modulo;
+      static const bool is_modulo = true;
 
-      static const bool traps = __glibcpp_signed_long_traps;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -1214,8 +1141,6 @@ namespace std
 #undef __glibcpp_signed_long_max
 #undef __glibcpp_signed_long_digits
 #undef __glibcpp_signed_long_digits10
-#undef __glibcpp_signed_long_is_modulo
-#undef __glibcpp_signed_long_traps  
   
   template<>
     struct numeric_limits<unsigned long>
@@ -1262,7 +1187,7 @@ namespace std
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
-      static const bool traps = __glibcpp_unsigned_long_traps;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -1270,7 +1195,6 @@ namespace std
 #undef __glibcpp_unsigned_long_max
 #undef __glibcpp_unsigned_long_digits
 #undef __glibcpp_unsigned_long_digits10
-#undef __glibcpp_unsigned_long_traps  
 
   template<>
     struct numeric_limits<long long>
@@ -1315,9 +1239,9 @@ namespace std
       
       static const bool is_iec559 = true;
       static const bool is_bounded = true;
-      static const bool is_modulo = __glibcpp_signed_long_long_is_modulo;
+      static const bool is_modulo = true;
 
-      static const bool traps = __glibcpp_signed_long_long_traps;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -1326,8 +1250,6 @@ namespace std
 #undef __glibcpp_signed_long_long_max
 #undef __glibcpp_signed_long_long_digits
 #undef __glibcpp_signed_long_long_digits10
-#undef __glibcpp_signed_long_long_is_modulo
-#undef __glibcpp_signed_long_long_traps  
   
   template<>
     struct numeric_limits<unsigned long long>
@@ -1374,7 +1296,7 @@ namespace std
       static const bool is_bounded = true;
       static const bool is_modulo = true;
 
-      static const bool traps = true;
+      static const bool traps = __glibcpp_integral_traps;
       static const bool tinyness_before = false;
       static const float_round_style round_style = round_toward_zero;
     };
@@ -1382,7 +1304,6 @@ namespace std
 #undef __glibcpp_unsigned_long_long_max
 #undef __glibcpp_unsigned_long_long_digits
 #undef __glibcpp_unsigned_long_long_digits10
-#undef __glibcpp_unsigned_long_long_traps  
 
   template<>
     struct numeric_limits<float>
@@ -1429,7 +1350,7 @@ namespace std
       { return __FLT_DENORM_MIN__; }
 
       static const bool is_iec559 = has_infinity && has_quiet_NaN;
-      static const bool is_bounded = __glibcpp_float_is_bounded;
+      static const bool is_bounded = true;
       static const bool is_modulo = __glibcpp_float_is_modulo;
 
       static const bool traps = __glibcpp_float_traps;
@@ -1438,7 +1359,6 @@ namespace std
     };
 
 #undef __glibcpp_float_has_denorm_loss
-#undef __glibcpp_float_is_bounded
 #undef __glibcpp_float_is_modulo
 #undef __glibcpp_float_traps
 #undef __glibcpp_float_tinyness_before
@@ -1488,7 +1408,7 @@ namespace std
       { return __DBL_DENORM_MIN__; }
 
       static const bool is_iec559 = has_infinity && has_quiet_NaN;
-      static const bool is_bounded = __glibcpp_double_is_bounded;
+      static const bool is_bounded = true;
       static const bool is_modulo = __glibcpp_double_is_modulo;
 
       static const bool traps = __glibcpp_double_traps;
@@ -1497,7 +1417,6 @@ namespace std
     };
 
 #undef __glibcpp_double_has_denorm_loss
-#undef __glibcpp_double_is_bounded
 #undef __glibcpp_double_is_modulo
 #undef __glibcpp_double_traps
 #undef __glibcpp_double_tinyness_before
@@ -1549,7 +1468,7 @@ namespace std
       { return __LDBL_DENORM_MIN__; }
 
       static const bool is_iec559 = has_infinity && has_quiet_NaN;
-      static const bool is_bounded = __glibcpp_long_double_is_bounded;
+      static const bool is_bounded = true;
       static const bool is_modulo = __glibcpp_long_double_is_modulo;
 
       static const bool traps = __glibcpp_long_double_traps; 
@@ -1558,7 +1477,6 @@ namespace std
     };
 
 #undef __glibcpp_long_double_has_denorm_loss
-#undef __glibcpp_long_double_is_bounded
 #undef __glibcpp_long_double_is_modulo
 #undef __glibcpp_long_double_traps
 #undef __glibcpp_long_double_tinyness_before
