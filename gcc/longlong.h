@@ -442,13 +442,13 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "=d" ((USItype) (w1))					\
 	   : "%0" ((USItype) (u)),					\
 	     "rm" ((USItype) (v)))
-#define udiv_qrnnd(q, r, n1, n0, d) \
+#define udiv_qrnnd(q, r, n1, n0, dv) \
   __asm__ ("divl %4"							\
 	   : "=a" ((USItype) (q)),					\
 	     "=d" ((USItype) (r))					\
 	   : "0" ((USItype) (n0)),					\
 	     "1" ((USItype) (n1)),					\
-	     "rm" ((USItype) (d)))
+	     "rm" ((USItype) (dv)))
 #define count_leading_zeros(count, x) \
   do {									\
     USItype __cbtmp;							\

@@ -1,3 +1,8 @@
+2000-01-13  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* longlong.h [i386] (udiv_qrnnd): Rename 'd' argument to 'dv'
+	to avoid -Wtraditional warning.
+
 2000-01-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* 1750a-protos.h: New file.
