@@ -55,8 +55,9 @@ static pthread_cond_t daemon_cond;
 static int non_daemon_count;
 
 // The signal to use when interrupting a thread.
-#ifdef LINUX_THREADS
+#if defined(LINUX_THREADS) || defined(FREEBSD_THREADS)
   // LinuxThreads (prior to glibc 2.1) usurps both SIGUSR1 and SIGUSR2.
+  // GC on FreeBSD uses both SIGUSR1 and SIGUSR2.
 #  define INTR SIGHUP
 #else /* LINUX_THREADS */
 #  define INTR SIGUSR2
