@@ -1,3 +1,8 @@
+2004-02-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR c++/12007
+	* g++.dg/other/vthunk1.C: New test.
+
 2004-02-20  Falk Hueffner  <falk@debian.org>
 
 	PR target/14201
