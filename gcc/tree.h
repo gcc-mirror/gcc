@@ -510,6 +510,8 @@ struct tree_common
 struct tree_int_cst
 {
   char common[sizeof (struct tree_common)];
+  struct rtx_def *rtl;	/* acts as link to register transfer language
+			   (rtl) info */
   HOST_WIDE_INT int_cst_low;
   HOST_WIDE_INT int_cst_high;
 };
