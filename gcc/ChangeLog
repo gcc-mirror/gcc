@@ -1,3 +1,9 @@
+2001-01-10  Nick Clifton  <nickc@redhat.com>
+
+	* config/d30v/d30v.c (d30v_init_machine_status): Initialise
+	machine_function structure to zero.
+	Add prototypes for machine_status functions.
+
 2001-01-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.h (CTI_VOID_LIST): Remove.
