@@ -1,3 +1,12 @@
+2003-03-24  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/Date.java:
+	Fixed documentation starting tag to make javadoc happy.
+	* java/util/regex/Pattern.java
+	(Pattern): Implements Serializable.
+	* java/util/PatternSyntaxException.java
+	(serialVersionUID): New member variable.
+
 2003-03-24  Michael Koch  <koqnueror@gmx.de>
 
 	* java/awt/ContainerOrderFocusTraversalPolicy.java

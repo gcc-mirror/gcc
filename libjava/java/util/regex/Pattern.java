@@ -38,7 +38,9 @@ exception statement from your version. */
 // Stub class until java.util.regex is implemented.
 package java.util.regex;
 
-public class Pattern
+import java.io.Serializable;
+
+public class Pattern implements Serializable
 {
   public static Pattern compile(String regex)
   {

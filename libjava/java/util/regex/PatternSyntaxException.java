@@ -44,6 +44,7 @@ package java.util.regex;
  */
 public class PatternSyntaxException extends IllegalArgumentException
 {
+  private static final long serialVersionUID = -3864639126226059218L;
 
   /**
    * Human readable escription of the syntax error.

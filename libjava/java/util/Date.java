@@ -108,7 +108,7 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 			    min).getTimeInMillis();
   }
 
-  /*
+  /**
    * Creates a new Date Object representing the given time.
    * @deprecated use <code>new GregorianCalendar(year+1900, month,
    * day)</code> instead.  
