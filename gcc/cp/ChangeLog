@@ -1,3 +1,9 @@
+1998-07-12  Klaus Kaempf (kkaempf@progis.de)
+
+ 	* repo.c (get_base_filename): Use file_name_nondirectory ().
+ 	(open_repo_file): Ditto.
+	* cp-tree.h (file_name_nondirectory): Add prototype.
+
 1998-07-12  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* friend.c (do_friend): Pull the identifier out of declarator.

@@ -2574,6 +2574,7 @@ extern tree build_vec_delete			PROTO((tree, tree, tree, tree, int));
 /* in input.c */
 
 /* in lex.c */
+extern char *file_name_nondirectory		PROTO((char *));
 extern tree make_pointer_declarator		PROTO((tree, tree));
 extern tree make_reference_declarator		PROTO((tree, tree));
 extern tree make_call_declarator		PROTO((tree, tree, tree, tree));

@@ -259,11 +259,7 @@ get_base_filename (filename)
       return NULL;
     }
 
-  p = rindex (filename, '/');
-  if (p)
-    return p+1;
-  else
-    return filename;
+  return file_name_nondirectory (filename);
 }        
 
 static void
@@ -276,9 +272,7 @@ open_repo_file (filename)
   if (s == NULL)
     return;
 
-  p = rindex (s, '/');
-  if (! p)
-    p = s;
+  p = file_name_nondirectory (s);
   p = rindex (p, '.');
   if (! p)
     p = s + strlen (s);
