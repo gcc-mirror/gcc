@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -380,8 +380,7 @@ namespace std
        // Todo: optimized in-place replace.
        else
 	 return _M_replace(_M_ibegin() + __pos, _M_ibegin() + __pos + __foldn1,
-			   __s, __s + __n2,
-			   typename iterator_traits<const _CharT*>::iterator_category());
+			   __s, __s + __n2);
      }
   
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -642,23 +641,22 @@ namespace std
       const size_type __n1 = __i2 - __i1;
       const size_type __off1 = __i1 - _M_ibegin();
       if (max_size() - (this->size() - __n1) <= __n2)
-	__throw_length_error("basic_string::replace");
-      _M_mutate (__off1, __n1, __n2);
+	__throw_length_error("basic_string::_M_replace_aux");
+      _M_mutate(__off1, __n1, __n2);
       // Invalidated __i1, __i2
       if (__n2)
 	traits_type::assign(_M_data() + __off1, __n2, __c);
       return *this;
     }
 
-  // This is the general replace helper, which currently gets instantiated both
-  // for input iterators and reverse iterators. It buffers internally and then
-  // calls _M_replace_safe.
+  // This is the general replace helper. It buffers internally and then calls
+  // _M_replace_safe.
   template<typename _CharT, typename _Traits, typename _Alloc>
     template<typename _InputIterator>
       basic_string<_CharT, _Traits, _Alloc>&
       basic_string<_CharT, _Traits, _Alloc>::
       _M_replace(iterator __i1, iterator __i2, _InputIterator __k1, 
-		 _InputIterator __k2, input_iterator_tag)
+		 _InputIterator __k2)
       {
 	// Save concerned source string data in a temporary.
 	const basic_string __s(__k1, __k2);
@@ -680,7 +678,7 @@ namespace std
 	const size_type __dmax = this->max_size();
 
 	if (__dmax <= __dnew)
-	  __throw_length_error("basic_string::_M_replace");
+	  __throw_length_error("basic_string::_M_replace_safe");
 	const size_type __off = __i1 - _M_ibegin();
 	_M_mutate(__off, __dold, __dnew);
 
@@ -748,17 +746,6 @@ namespace std
       if (__len > this->capacity())
 	this->reserve(__len);
       return _M_replace_safe(_M_iend(), _M_iend(), __s, __s + __n);
-    }
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>&
-    basic_string<_CharT, _Traits, _Alloc>::
-    append(size_type __n, _CharT __c)
-    {
-      const size_type __len = __n + this->size();
-      if (__len > this->capacity())
-	this->reserve(__len);
-       return this->replace(_M_iend(), _M_iend(), __n, __c);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>

@@ -65,8 +65,7 @@ namespace std
 
   template
     S&
-    S::_M_replace(S::iterator, S::iterator, const C*, const C*, 
-		  input_iterator_tag);  
+    S::_M_replace(S::iterator, S::iterator, const C*, const C*);  
 
   template 
     S& 
