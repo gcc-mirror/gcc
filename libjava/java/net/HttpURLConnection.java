@@ -320,7 +320,7 @@ public abstract class HttpURLConnection extends URLConnection
   protected boolean instanceFollowRedirects = followRedirects;
 
   /**
-   * Whether we alreadt got a valid response code for this connection.
+   * Whether we already got a valid response code for this connection.
    * Used by <code>getResponseCode()</code> and
    * <code>getResponseMessage()</code>.
    */
