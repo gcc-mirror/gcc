@@ -1,3 +1,8 @@
+Thu Nov 27 12:20:19 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* unroll.c (find_splittable_givs): Don't split givs with a dest_reg
+	that was created by loop.
+
 Wed Nov 26 15:47:30 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.c (SMALL_DATA_REG): Register to use for small data relocs.
