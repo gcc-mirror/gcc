@@ -3676,10 +3676,21 @@ store_expr (exp, target, want_value)
 
   /* If value was not generated in the target, store it there.
      Convert the value to TARGET's type first if nec.  */
+  /* If TEMP and TARGET compare equal according to rtx_equal_p, but
+     one or both of them are volatile memory refs, we have to distinguish
+     two cases:
+     - expand_expr has used TARGET.  In this case, we must not generate
+       another copy.  This can be detected by TARGET being equal according
+       to == .
+     - expand_expr has not used TARGET - that means that the source just
+       happens to have the same RTX form.  Since temp will have been created
+       by expand_expr, it will compare unequal according to == .
+       We must generate a copy in this case, to reach the correct number
+       of volatile memory references.  */
 
   if ((! rtx_equal_p (temp, target)
-       || side_effects_p (temp)
-       || side_effects_p (target))
+       || (temp != target && (side_effects_p (temp)
+			      || side_effects_p (target))))
       && TREE_CODE (exp) != ERROR_MARK)
     {
       target = protect_from_queue (target, 1);

@@ -1,3 +1,8 @@
+Wed Nov 18 22:13:00 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* expr.c (store_expr): Don't generate load-store pair
+	if TEMP is identical (according to ==) with TARGET.
+
 Tue Nov 17 22:25:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_for_value_p): When considered reload
