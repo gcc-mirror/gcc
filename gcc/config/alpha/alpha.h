@@ -1213,9 +1213,6 @@ extern struct alpha_compare alpha_compare;
 
 struct machine_function
 {
-  /* An offset to apply to the stack pointer when unwinding from EH.  */
-  struct rtx_def *eh_epilogue_sp_ofs;
-
   /* If non-null, this rtx holds the return address for the function.  */
   struct rtx_def *ra_rtx;
 };
@@ -1342,6 +1339,13 @@ do {						\
 /* Before the prologue, RA lives in $26. */
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (Pmode, 26)
 #define DWARF_FRAME_RETURN_COLUMN DWARF_FRAME_REGNUM (26)
+
+/* Describe how we implement __builtin_eh_return.  */
+#define EH_RETURN_DATA_REGNO(N)	((N) < 4 ? (N) + 16 : INVALID_REGNUM)
+#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, 28)
+#define EH_RETURN_HANDLER_RTX \
+  gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, \
+				     current_function_outgoing_args_size))
 
 /* Addressing modes, and classification of registers for them.  */
 
