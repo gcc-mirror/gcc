@@ -22,7 +22,7 @@
 # The makefile built from this file lives in the fixinc subdirectory.
 # Its purpose is to build the any-platforms fixinc.sh script.
 
-SHELL=/bin/sh
+SHELL=@SHELL@
 
 # Some versions of `touch' (such as the version on Solaris 2.8) 
 # do not correctly set the timestamp due to buggy versions of `utime'

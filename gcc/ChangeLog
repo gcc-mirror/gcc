@@ -1,5 +1,8 @@
 2002-06-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (SHELL): Set to @SHELL@.
+	* fixinc/Makefile.in (SHELL): Likewise.
+
 	* mips.md (fixuns_truncdfsi2, fixuns_truncdfdi2,
 	fixuns_truncsfsi2, fixuns_truncsfdi2): Avoid automatic aggregate
 	initialization.
