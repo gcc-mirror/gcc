@@ -1,3 +1,8 @@
+2004-09-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-live.c (calculate_live_on_entry): Fix warnings
+	with --disable-checking.
+
 2004-09-28  Devang Patel  <dpatel@apple.com>
 
 	* tree-pretty-print.c (dump_generic_node): Print vector types.

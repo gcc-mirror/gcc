@@ -570,8 +570,8 @@ calculate_live_on_entry (var_map map)
   bitmap_iterator bi;
 #ifdef ENABLE_CHECKING
   int num;
-#endif
   edge_iterator ei;
+#endif
 
   saw_def = BITMAP_XMALLOC ();
 
