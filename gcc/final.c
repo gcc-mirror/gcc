@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2258,6 +2258,9 @@ output_source_line (file, insn)
 	  && last_linenum > sdb_begin_function_line)
 	{
 #ifdef ASM_OUTPUT_SOURCE_LINE
+#if defined (MIPS_DEBUGGING_INFO) && defined (ASM_OUTPUT_SOURCE_FILENAME)
+	  ASM_OUTPUT_SOURCE_FILENAME (file, filename);
+#endif
 	  ASM_OUTPUT_SOURCE_LINE (file, last_linenum);
 #else
 	  fprintf (file, "\t.ln\t%d\n",
@@ -2267,12 +2270,12 @@ output_source_line (file, insn)
 	}
 #endif
 
-#if defined (DBX_DEBUGGING_INFO)
+#ifdef DBX_DEBUGGING_INFO
       if (write_symbols == DBX_DEBUG)
 	dbxout_source_line (file, filename, NOTE_LINE_NUMBER (insn));
 #endif
 
-#if defined (XCOFF_DEBUGGING_INFO)
+#ifdef XCOFF_DEBUGGING_INFO
       if (write_symbols == XCOFF_DEBUG)
 	xcoffout_source_line (file, filename, insn);
 #endif
