@@ -685,6 +685,44 @@ not_both_true (d1, d2, toplevel)
      int toplevel;
 {
   struct decision *p1, *p2;
+  int cmp;
+
+  /* Don't compare strings on the different positions in insn.  Doing so
+     is incorrect and results in false matches from constructs like
+
+	[(set (subreg:HI (match_operand:SI "register_operand" "r") 0)
+	      (subreg:HI (match_operand:SI "register_operand" "r") 0))]
+     vs
+	[(set (match_operand:HI "register_operand" "r")
+	      (match_operand:HI "register_operand" "r"))]
+
+     If we are presented with such, we are recursing through the remainder
+     of a node's success nodes (from the loop at the end of this function).
+     Skip forward until we come to a position that matches.
+
+     Due to the way position strings are constructed, we know that iterating
+     forward from the lexically lower position (e.g. "00") will run into
+     the lexically higher position (e.g. "1") and not the other way around.
+     This saves a bit of effort.  */
+
+  cmp = strcmp (d1->position, d2->position);
+  if (cmp != 0)
+    {
+      if (toplevel)
+	abort();
+
+      /* If the d2->position was lexically lower, swap.  */
+      if (cmp > 0)
+	p1 = d1; d1 = d2; d2 = p1;
+
+      if (d1->success.first == 0)
+	return 0;
+      for (p1 = d1->success.first; p1; p1 = p1->next)
+	if (! not_both_true (p1, d2, 0))
+	  return 0;
+
+      return 1;
+    }
 
   /* If they are both to test modes and the modes are different, they aren't
      both true.  Similarly for codes, integer elements, and vector lengths.  */
