@@ -7488,7 +7488,22 @@ arm_print_operand (stream, x, code)
 
     case '?':
       if (arm_ccfsm_state == 3 || arm_ccfsm_state == 4)
-	fputs (arm_condition_codes[arm_current_cc], stream);
+	{
+	  if (TARGET_THUMB || current_insn_predicate != NULL)
+	    abort ();
+
+	  fputs (arm_condition_codes[arm_current_cc], stream);
+	}
+      else if (current_insn_predicate)
+	{
+	  enum arm_cond_code code;
+
+	  if (TARGET_THUMB)
+	    abort ();
+
+	  code = get_arm_condition_code (current_insn_predicate);
+	  fputs (arm_condition_codes[code], stream);
+	}
       return;
 
     case 'N':
