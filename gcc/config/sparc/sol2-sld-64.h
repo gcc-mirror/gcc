@@ -2,7 +2,7 @@
    running Solaris 2 using the system linker.  */
 
 #ifdef AS_SPARC64_FLAG
-#include "sparc/sparc_bi.h"
+#include "sparc/biarch64.h"
 #endif
 
 #include "sparc/sparc.h"

@@ -1,3 +1,8 @@
+2002-02-01  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/sparc/sol2-sld-64.h: Include sparc/biarch64.h rather than
+	sparc/sparc_bi.h.
+
 2002-02-01  Janis Johnson  <janis187@us.ibm.com>
 
 	* cfganal.c (keep_with_call_p): New function.
