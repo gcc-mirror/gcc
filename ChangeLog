@@ -1,3 +1,10 @@
+2004-07-08 John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/16344
+	* Makefile.tpl (profiledbootstrap): Build runtime libraries with
+	feedback based compiler.
+	* Makefile.in: Rebuilt.
+
 2004-07-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.def (host_modules): Set bootstrap=true for flex.
