@@ -1,3 +1,8 @@
+Thu Oct 14 18:51:37 1999  Andrew Haley  <aph@cygnus.com>
+
+	* config/mips/mips.md (movdf_internal1a): Allow floating-point
+	move between GP_REGs.
+
 Wed Oct 20 15:36:11 1999  Andrew Haley  <aph@cygnus.com>
 
 	* config/arm/thumb.h (GO_IF_LEGITIMATE_ADDRESS): Take account of
