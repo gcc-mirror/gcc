@@ -4617,7 +4617,7 @@ push_nested_class (type, modify)
   
   context = DECL_CONTEXT (TYPE_MAIN_DECL (type));
 
-  if (context && TREE_CODE (context) == RECORD_TYPE)
+  if (context && CLASS_TYPE_P (context))
     push_nested_class (context, 2);
   pushclass (type, modify);
 }
@@ -4630,7 +4630,7 @@ pop_nested_class ()
   tree context = DECL_CONTEXT (TYPE_MAIN_DECL (current_class_type));
 
   popclass ();
-  if (context && TREE_CODE (context) == RECORD_TYPE)
+  if (context && CLASS_TYPE_P (context))
     pop_nested_class ();
 }
 

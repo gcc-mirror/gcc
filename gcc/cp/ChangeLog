@@ -1,5 +1,13 @@
 1999-04-15  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (lookup_nested_field): Remove.
+	* class.c (push_nested_class): Handle UNION_TYPEs.
+	(pop_nested_class): Likewise.
+	* decl.c (lookup_name_real): Don't call lookup_nested_field.
+	(start_decl): Use push_nested_class, not just pushclass.
+	(cp_finish_decl): Use pop_nested_class, not just popclass.
+	* search.c (lookup_nested_field): Remove.
+	
 	* cp-tree.h (lang_type): Add documentation.
 	* decl2.c (handle_class_head): Create template declarations here,
 	as appropriate.
