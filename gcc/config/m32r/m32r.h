@@ -1721,7 +1721,6 @@ extern char m32r_punct_chars[256];
 
 /* Generate DBX and DWARF debugging information.  */
 #define DBX_DEBUGGING_INFO 1
-#define DWARF_DEBUGGING_INFO 1
 #define DWARF2_DEBUGGING_INFO 1
 
 /* Prefer STABS (for now).  */

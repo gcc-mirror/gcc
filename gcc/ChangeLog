@@ -21,6 +21,35 @@
 
 2003-12-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* Makefile.in (OBJS-common): Remove dwarfout.o.
+	(dwarfout.o): Remove.
+	* common.opt: Remove -gdwarf, -gdwarf+.
+	* defaults.h (PREFERRED_DEBUGGING_TYPE): Do not check for
+	DWARF_DEBUGGING_INFO.
+	* dwarf2out.c: Fix typo in comment.
+	* dwarfout.c: Remove.
+	* opts.c (common_handle_option): Remove OPT_gdwarf, OPT_gdwarf_.
+	* toplev.c (process_options): Remove check for
+	DWARF_DEBUGGING_INFO.
+	* config/elfos.h (DWARF_DEBUGGING_INFO): Do not #define it or
+	#undef it.
+	* config/netware.h (DWARF_DEBUGGING_INFO): Likewise.
+	* config/ptx4.h (DWARF_DEBUGGING_INFO): Likewise.
+	* config/vxworks.h (DWARF_DEBUGGING_INFO): Likewise.
+	* config/alpha/unicosmk.h (DWARF_DEBUGGING_INFO): Likewise.
+	* config/arc/arc.h (DWARF_DEBUGGING_INFO): Likewise.
+	* config/i386/sco5.h (DWARF_DEBUGGING_INFO): Likewise.
+	* config/i386/x86-64.h (DWARF_DEBUGGING_INFO): Likewise.
+	* config/m32r/m32r.h (DWARF_DEBUGGING_INFO): Likewise.
+	* config/mcore/mcore-elf.h (DWARF_DEBUGGING_INFO): Likewise.
+	* config/sparc/linux64.h (DWARF_DEBUGGING_INFO): Likewise.
+	* config/sparc/liteelf.h (DWARF_DEBUGGING_INFO): Likewise.
+	* config/sparc/sol26-sld.h (DWARF_DEBUGGING_INFO): Likewise.
+	* config/sparc/sp86x-elf.h (DWARF_DEBUGGING_INFO): Likewise.
+	* doc/invoke.texi: Do not mention -gdwarf, -gdwarf-1, -gdwarf-1+,
+	or -gdwarf+.
+	* doc/tm.texi: Likewise.
+
 	* c-common.c (flag_abi_version): Default to 2.
 	* c-cppbuiltin.c (c_cpp_builtins): Define __GXX_ABI_VERSION
 	uniformly for versions above 2.

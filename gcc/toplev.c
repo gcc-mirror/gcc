@@ -4352,10 +4352,6 @@ process_options (void)
   else if (write_symbols == SDB_DEBUG)
     debug_hooks = &sdb_debug_hooks;
 #endif
-#ifdef DWARF_DEBUGGING_INFO
-  else if (write_symbols == DWARF_DEBUG)
-    debug_hooks = &dwarf_debug_hooks;
-#endif
 #ifdef DWARF2_DEBUGGING_INFO
   else if (write_symbols == DWARF2_DEBUG)
     debug_hooks = &dwarf2_debug_hooks;

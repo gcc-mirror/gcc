@@ -7693,8 +7693,7 @@ defined, GCC uses @code{DBX_DEBUG}.
 
 The value of this macro only affects the default debugging output; the
 user can always get a specific type of output by using @option{-gstabs},
-@option{-gcoff}, @option{-gdwarf-1}, @option{-gdwarf-2}, @option{-gxcoff},
-or @option{-gvms}.
+@option{-gcoff}, @option{-gdwarf-2}, @option{-gxcoff}, or @option{-gvms}.
 @end defmac
 
 @node DBX Options
@@ -7968,11 +7967,6 @@ Here are macros for SDB and DWARF output.
 @defmac SDB_DEBUGGING_INFO
 Define this macro if GCC should produce COFF-style debugging output
 for SDB in response to the @option{-g} option.
-@end defmac
-
-@defmac DWARF_DEBUGGING_INFO
-Define this macro if GCC should produce dwarf format debugging output
-in response to the @option{-g} option.
 @end defmac
 
 @defmac DWARF2_DEBUGGING_INFO

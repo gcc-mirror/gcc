@@ -3872,7 +3872,7 @@ static int maybe_emit_file (int);
 
 /* Definitions of defaults for formats and names of various special
    (artificial) labels which may be generated within this file (when the -g
-   options is used and DWARF_DEBUGGING_INFO is in effect.
+   options is used and DWARF2_DEBUGGING_INFO is in effect.
    If necessary, these may be overridden from within the tm.h file, but
    typically, overriding these defaults is unnecessary.  */
 

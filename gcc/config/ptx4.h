@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-#undef DWARF_DEBUGGING_INFO
 #define DWARF2_DEBUGGING_INFO 1
 
 /* Cpp, assembler, linker, library, and startfile spec's.  */

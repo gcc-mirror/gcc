@@ -62,4 +62,3 @@ Boston, MA 02111-1307, USA.  */
 
 /* Only supported debug format is Dwarf2.  */
 #undef DBX_DEBUGGING_INFO
-#undef DWARF_DEBUGGING_INFO
