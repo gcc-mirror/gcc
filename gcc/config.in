@@ -495,6 +495,9 @@
 /* Define if your assembler supports the --gdwarf2 option. */
 #undef HAVE_AS_GDWARF2_DEBUG_FLAG
 
+/* Define if your assembler supports the --gstabs option. */
+#undef HAVE_AS_GSTABS_DEBUG_FLAG
+
 /* Define if your linker links a mix of read-only
    and read-write sections into a read-write section. */
 #undef HAVE_LD_RO_RW_SECTION_MIXING
