@@ -1,3 +1,7 @@
+2002-11-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gthr-vxworks.h: Fix formatting.
+
 2002-11-13  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (Testing): Document extra Java testing.
