@@ -1673,11 +1673,12 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
 	  else
 	    {
 	      rtx mem;
-	      
+
 	      gcc_assert (!bytepos);
 	      mem = assign_stack_temp (GET_MODE (src), slen, 0);
 	      emit_move_insn (mem, src);
-	      tmps[i] = adjust_address (mem, mode, 0);
+	      tmps[i] = extract_bit_field (mem, bytelen * BITS_PER_UNIT,
+					   0, 1, NULL_RTX, mode, mode);
 	    }
 	}
       /* FIXME: A SIMD parallel will eventually lead to a subreg of a
