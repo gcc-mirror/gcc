@@ -1,4 +1,4 @@
 #include "ansidecl.h"
 #include "version.h"
 
-const char *const version_string = "3.1 20020428 (prerelease)";
+const char *const version_string = "3.1 20020429 (prerelease)";
