@@ -1,3 +1,8 @@
+2000-08-04  Mark Elbrecht  <snowball3@bigfoot.com>
+
+	* mh-djgpp: Conditionally set 'target_alias' to djgpp. Conditionally
+	modify 'gcc_version'.
+
 2000-07-21  Andrew Haley  <aph@cygnus.com>
 
 	* mh-ia64pic: New file.
