@@ -1,3 +1,7 @@
+2003-10-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (define_asm_attributes): New.
+
 2003-10-09  Roger Sayle  <roger@eyesopen.com>
 
 	* optabs.c (prepare_float_lib_cmp): Always attach a REG_EQUAL note
