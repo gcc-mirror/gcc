@@ -3961,11 +3961,8 @@ extern void finish_repo				PROTO((void));
 
 /* in rtti.c */
 extern void init_rtti_processing		PROTO((void));
-extern tree get_tinfo_fn_dynamic		PROTO((tree));
 extern tree build_typeid			PROTO((tree));
-extern tree build_x_typeid			PROTO((tree));
-extern tree get_tinfo_fn			PROTO((tree));
-extern tree get_tinfo_fn_unused			PROTO((tree));
+extern tree get_tinfo_decl                      PROTO((tree));
 extern tree get_typeid				PROTO((tree));
 extern tree get_typeid_1			PROTO((tree));
 extern tree build_dynamic_cast			PROTO((tree, tree));

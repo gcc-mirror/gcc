@@ -343,7 +343,7 @@ build_eh_type_type (type)
   return build1 (ADDR_EXPR, ptr_type_node, get_typeid_1 (type));
 }
 
-/* Build the address of a typeinfo function for use in the runtime
+/* Build the address of a typeinfo decl for use in the runtime
    matching field of the new exception model */
 
 static tree
@@ -362,7 +362,8 @@ build_eh_type_type_ref (type)
   /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
 
-  exp = get_tinfo_fn (type);
+  exp = get_tinfo_decl (type);
+  mark_used (exp);
   exp = build1 (ADDR_EXPR, ptr_type_node, exp);
 
   return (exp);

@@ -3999,7 +3999,7 @@ build_expr_from_tree (t)
     case TYPEID_EXPR:
       if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, 0))) == 't')
 	return get_typeid (TREE_OPERAND (t, 0));
-      return build_x_typeid (build_expr_from_tree (TREE_OPERAND (t, 0)));
+      return build_typeid (build_expr_from_tree (TREE_OPERAND (t, 0)));
 
     case VAR_DECL:
       return convert_from_reference (t);
