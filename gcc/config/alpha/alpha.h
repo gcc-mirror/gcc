@@ -1187,8 +1187,7 @@ extern int alpha_memory_latency;
 #define FUNCTION_OK_FOR_SIBCALL(DECL)			\
   (DECL							\
    && ((TREE_ASM_WRITTEN (DECL) && !flag_pic)		\
-       || ! TREE_PUBLIC (DECL)				\
-       || (0 && TREE_THIS_VOLATILE (DECL))))
+       || ! TREE_PUBLIC (DECL)))
 
 /* Try to output insns to set TARGET equal to the constant C if it can be
    done in less than N insns.  Do all computations in MODE.  Returns the place
