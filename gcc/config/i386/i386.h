@@ -90,6 +90,10 @@ extern int target_flags;
    the 387 to be used, which is compatible with most calling conventions. */
 #define TARGET_FLOAT_RETURNS_IN_80387 (target_flags & 0200)
 
+/* Disable generation of FP sin, cos and sqrt operations for 387.
+   This is because FreeBSD lacks these in the math-emulator-code */
+#define TARGET_NO_FANCY_MATH_387 (target_flags & 0400)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -114,6 +118,8 @@ extern int target_flags;
     { "no-ieee-fp", -0100},			\
     { "fp-ret-in-387", 0200},			\
     { "no-fp-ret-in-387", -0200},		\
+    { "no-fancy-math-387", 0400},		\
+    { "fancy-math-387", -0400},			\
     SUBTARGET_SWITCHES                          \
     { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
 
