@@ -3264,8 +3264,7 @@ package body Exp_Util is
                  N_In        |
                  N_Not_In    |
                  N_And_Then  |
-                 N_Or_Else
-            =>
+                 N_Or_Else   =>
                return Side_Effect_Free (Left_Opnd  (N))
                  and then Side_Effect_Free (Right_Opnd (N));
 

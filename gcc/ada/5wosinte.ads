@@ -6,7 +6,8 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---         Copyright (C) 1997-2003, Free Software Foundation, Inc.          --
+--             Copyright (C) 1991-1994, Florida State University            --
+--             Copyright (C) 1995-2004, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,17 +32,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a NT (native) version of this package.
+--  This is a NT (native) version of this package
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
 
---  PLEASE DO NOT add any with-clauses to this package
---  or remove the pragma Elaborate_Body.
---  It is designed to be a bottom-level (leaf) package.
+--  PLEASE DO NOT add any with-clauses to this package or remove the pragma
+--  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
 with Interfaces.C.Strings;
+with Unchecked_Conversion;
 
 package System.OS_Interface is
 pragma Preelaborate;
@@ -68,7 +69,8 @@ pragma Preelaborate;
    subtype PSZ   is Interfaces.C.Strings.chars_ptr;
    subtype PCHAR is Interfaces.C.Strings.chars_ptr;
    subtype PVOID is System.Address;
-   Null_Void   : constant PVOID := System.Null_Address;
+
+   Null_Void : constant PVOID := System.Null_Address;
 
    type PLONG  is access all Interfaces.C.long;
    type PDWORD is access all DWORD;
@@ -185,6 +187,9 @@ pragma Preelaborate;
    type Thread_Body is access
      function (arg : System.Address) return System.Address;
 
+   function Thread_Body_Access is new
+     Unchecked_Conversion (System.Address, Thread_Body);
+
    procedure SwitchToThread;
    pragma Import (Stdcall, SwitchToThread, "SwitchToThread");
 
@@ -215,6 +220,9 @@ pragma Preelaborate;
    type PTHREAD_START_ROUTINE is access function
      (pThreadParameter : PVOID) return DWORD;
    pragma Convention (Stdcall, PTHREAD_START_ROUTINE);
+
+   function To_PTHREAD_START_ROUTINE is new
+     Unchecked_Conversion (System.Address, PTHREAD_START_ROUTINE);
 
    type SECURITY_ATTRIBUTES is record
       nLength              : DWORD;

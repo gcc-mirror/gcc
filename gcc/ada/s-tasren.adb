@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,7 +71,6 @@ with System.Tasking.Protected_Objects.Operations;
 --  used for PO_Do_Or_Queue
 --           PO_Service_Entries
 --           Lock_Entries
---           Unlock_Entries
 
 with System.Tasking.Debug;
 --  used for Trace
@@ -678,7 +677,6 @@ package body System.Tasking.Rendezvous is
                     (Self_Id, Called_PO, Entry_Call,
                      Entry_Call.Requeue_With_Abort);
                   POO.PO_Service_Entries (Self_Id, Called_PO);
-                  STPE.Unlock_Entries (Called_PO);
                end if;
             end if;
 

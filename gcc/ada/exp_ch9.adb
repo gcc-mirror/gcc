@@ -1553,10 +1553,7 @@ package body Exp_Ch9 is
       Sub_Body     : Node_Id;
       Lock_Name    : Node_Id;
       Lock_Stmt    : Node_Id;
-      Unlock_Name  : Node_Id;
-      Unlock_Stmt  : Node_Id;
       Service_Name : Node_Id;
-      Service_Stmt : Node_Id;
       R            : Node_Id;
       Return_Stmt  : Node_Id := Empty;    -- init to avoid gcc 3 warning
       Pre_Stmts    : List_Id := No_List;  -- init to avoid gcc 3 warning
@@ -1740,19 +1737,16 @@ package body Exp_Ch9 is
            or else Number_Entries (Pid) > 1
          then
             Lock_Name := New_Reference_To (RTE (RE_Lock_Entries), Loc);
-            Unlock_Name := New_Reference_To (RTE (RE_Unlock_Entries), Loc);
             Service_Name := New_Reference_To (RTE (RE_Service_Entries), Loc);
 
          else
             Lock_Name := New_Reference_To (RTE (RE_Lock_Entry), Loc);
-            Unlock_Name := New_Reference_To (RTE (RE_Unlock_Entry), Loc);
             Service_Name := New_Reference_To (RTE (RE_Service_Entry), Loc);
          end if;
 
       else
          Lock_Name := New_Reference_To (RTE (RE_Lock), Loc);
-         Unlock_Name := New_Reference_To (RTE (RE_Unlock), Loc);
-         Service_Name := Empty;
+         Service_Name := New_Reference_To (RTE (RE_Unlock), Loc);
       end if;
 
       Object_Parm :=
@@ -1790,20 +1784,12 @@ package body Exp_Ch9 is
             Append (Unprot_Call, Stmts);
          end if;
 
-         if Service_Name /= Empty then
-            Service_Stmt := Make_Procedure_Call_Statement (Loc,
-              Name => Service_Name,
-              Parameter_Associations =>
-                New_List (New_Copy_Tree (Object_Parm)));
-            Append (Service_Stmt, Stmts);
-         end if;
-
-         Unlock_Stmt :=
+         Append (
            Make_Procedure_Call_Statement (Loc,
-             Name => Unlock_Name,
-             Parameter_Associations => New_List (
-               New_Copy_Tree (Object_Parm)));
-         Append (Unlock_Stmt, Stmts);
+             Name => Service_Name,
+             Parameter_Associations =>
+               New_List (New_Copy_Tree (Object_Parm))),
+           Stmts);
 
          if Abort_Allowed then
             Append (
@@ -2040,9 +2026,12 @@ package body Exp_Ch9 is
          if Is_Protected_Type (Conctyp)
            and then Is_Subprogram (Entity (Ename))
          then
-            Build_Protected_Subprogram_Call
-              (N, Ename, Convert_Concurrent (Concval, Conctyp));
-            Analyze (N);
+            if not Is_Eliminated (Entity (Ename)) then
+               Build_Protected_Subprogram_Call
+                 (N, Ename, Convert_Concurrent (Concval, Conctyp));
+               Analyze (N);
+            end if;
+
             return;
          end if;
 

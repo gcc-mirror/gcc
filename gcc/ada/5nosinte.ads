@@ -6,7 +6,8 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--             Copyright (C) 1991-1994, Florida State University            --
+--             Copyright (C) 1995-2004, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +33,9 @@
 ------------------------------------------------------------------------------
 
 --  This is the no tasking version
+
+--  PLEASE DO NOT add any with-clauses to this package or remove the pragma
+--  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 package System.OS_Interface is
    pragma Preelaborate;

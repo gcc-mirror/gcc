@@ -1,3 +1,56 @@
+2004-02-25  Robert Dewar  <dewar@gnat.com>
+
+	* 51osinte.ads, 52osinte.ads, 53osinte.ads, 54osinte.ads,
+	55osinte.ads, 56osinte.ads, 5aosinte.ads, 5bosinte.ads,
+	5cosinte.ads, 5fosinte.ads, 5gosinte.ads, 5hosinte.ads,
+	5iosinte.ads, 5losinte.ads, 5nosinte.ads, 5oosinte.ads,
+	5posinte.ads, 5sosinte.ads, 5tosinte.ads, 5vosinte.ads,
+	5wosinte.ads, 5zosinte.ads: Move instances of Unchecked_Conversion to
+	the defining instance of the type to avoid aliasing problems.
+	Fix copyright header.  Fix bad comments in package header.
+
+	* exp_util.adb, prj-part.adb, prj-part.adb: Minor reformatting
+
+2004-02-25  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch2.adb (Param_Entity): Handle properly formals that have been
+	rewritten as references when aliased through an address clause.
+
+	* sem_ch4.adb (Try_Indirect_Call): Normalize actuals before checking
+	whether call can be interpreted as an indirect call to the result of a
+	parameterless function call returning an access subprogram.
+
+2004-02-25  Arnaud Charlet  <charlet@act-europe.fr>
+
+	Code clean up:
+	* exp_ch7.adb (Make_Clean): Remove generation of calls to
+	Unlock[_Entries], since this is now done by Service_Entries directly.
+
+	* exp_ch9.adb (Build_Protected_Subprogram_Body): ditto.
+
+	* s-tpobop.ads, s-tpobop.adb (PO_Service_Entries): New nested procedure
+	Requeue_Call for better code readability. Change spec and update calls:
+	PO_Service_Entries now unlock the PO on exit.
+	(Protected_Entry_Call, Timed_Protected_Entry_Call): Update calls to
+	PO_Service_Entries.
+
+	* s-tposen.ads, s-tposen.adb (Service_Entry): Now unlock the PO on exit.
+
+	* s-taenca.adb, s-tasren.adb: Update calls to PO_Service_Entries.
+
+2004-02-25  Sergey Rybin  <rybin@act-europe.fr>
+
+	* exp_ch9.adb (Build_Simple_Entry_Call): Prevent expanding the
+	protected subprogram call and analyzing the result of such expanding
+	in case when the called protected subprogram is eliminated.
+
+	* sem_elim.adb (Check_Eliminated): Skip blocks when comparing scope
+	names.
+
+2004-02-25  Jerome Guitton  <guitton@act-europe.fr>
+
+	* Makefile.in: Clean ups.
+
 2004-02-23  Ed Schonberg  <schonberg@gnat.com>
 
 	* exp_ch6.adb (Expand_N_Subprogram_Declaration): Do not create
