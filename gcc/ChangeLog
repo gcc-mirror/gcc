@@ -1,3 +1,14 @@
+2003-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
+	* config/alpha/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
+	* config/arm/linux-elf.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
+	* config/rs6000/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
+	* config/rs6000/linux64.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
+	* config/sh/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
+	* config/sparc/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
+	* config/sparc/linux64.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
+
 2003-09-16  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Alpha Linux-based GNU systems.
-   Copyright (C) 1996, 1997, 1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Richard Henderson.
 
 This file is part of GNU CC.
@@ -64,6 +64,9 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_C99_FUNCTIONS 1
 
 #define TARGET_HAS_F_SETLKW
+
+#define LINK_GCC_C_SEQUENCE_SPEC \
+  "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
 
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */

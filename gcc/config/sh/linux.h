@@ -105,6 +105,9 @@ do { \
 #define ENDFILE_SPEC \
   "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
+#define LINK_GCC_C_SEQUENCE_SPEC \
+  "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
+
 /* Output assembler code to STREAM to call the profiler.  */
 
 #undef FUNCTION_PROFILER
