@@ -754,7 +754,7 @@ update_equiv_regs ()
 	 calculate_needs, but we traditionally work around this problem
 	 here by rejecting equivalences when the destination is in a register
 	 that's likely spilled.  This is fragile, of course, since the
-	 preferred class of a pseudo depends on all intructions that set
+	 preferred class of a pseudo depends on all instructions that set
 	 or use it.  */
 
       if (GET_CODE (dest) != REG
