@@ -90,10 +90,13 @@ gnu::gcj::convert::Input_iconv::read (jcharArray outbuffer,
 
   if (r == (size_t) -1)
     {
-      // Incomplete character.
-      if (errno == EINVAL || errno == E2BIG)
-	return 0;
-      throw new java::io::CharConversionException ();
+      // If we see EINVAL then there is an incomplete sequence at the
+      // end of the input buffer.  If we see E2BIG then we ran out of
+      // space in the output buffer.  However, in both these cases
+      // some conversion might have taken place.  So we fall through
+      // to the normal case.
+      if (errno != EINVAL && errno != E2BIG)
+	throw new java::io::CharConversionException ();
     }
 
   if (iconv_byte_swap)
