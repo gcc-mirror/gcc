@@ -148,19 +148,21 @@ namespace __gnu_cxx
 	// Set to true forces all allocations to use new().
 	bool 	_M_force_new; 
      
-	explicit _Tune()
+	explicit
+	_Tune()
 	: _M_max_bytes(128), _M_min_bin(8),
 	  _M_chunk_size(4096 - 4 * sizeof(void*)), 
 	  _M_max_threads(4096), _M_freelist_headroom(10), 
-	  _M_force_new(getenv("GLIBCXX_FORCE_NEW") ? true : false) 
-	{ }      
+	  _M_force_new(getenv("GLIBCXX_FORCE_NEW") ? true : false)
+	{ }
 
-	explicit _Tune(size_t __maxb, size_t __minbin, size_t __chunk,
-		       size_t __maxthreads, size_t __headroom, bool __force) 
+	explicit
+	_Tune(size_t __maxb, size_t __minbin, size_t __chunk,
+	      size_t __maxthreads, size_t __headroom, bool __force) 
 	: _M_max_bytes(__maxb), _M_min_bin(__minbin), _M_chunk_size(__chunk), 
 	  _M_max_threads(__maxthreads), _M_freelist_headroom(__headroom), 
 	  _M_force_new(__force)
-	{ }      
+	{ }
       };
 
     private:
@@ -330,34 +332,33 @@ namespace __gnu_cxx
 		  
 		  void* __v = ::operator new(_S_options._M_chunk_size);
 		  __bin._M_first[__thread_id] = static_cast<_Block_record*>(__v);
-		  __bin._M_free[__thread_id] = __block_count;		  
+		  __bin._M_free[__thread_id] = __block_count;
 
 		  --__block_count;
 		  __block = __bin._M_first[__thread_id];
-		  while (__block_count > 0)
+		  while (__block_count-- > 0)
 		    {
 		      char* __c = reinterpret_cast<char*>(__block) + __bin_size;
 		      __block->_M_next = reinterpret_cast<_Block_record*>(__c);
 		      __block = __block->_M_next;
-		      --__block_count;
 		    }
-		  __block->_M_next = NULL;
 		}
 	      else
 		{
-		  while (__bin._M_first[0] != NULL && __block_count > 0)
-		    {
-		      _Block_record* __tmp = __bin._M_first[0]->_M_next;
-		      __block = __bin._M_first[0];
-
-		      __block->_M_next = __bin._M_first[__thread_id];
-		      __bin._M_first[__thread_id] = __block;		      
-		      
-		      ++__bin._M_free[__thread_id];
-		      __bin._M_first[0] = __tmp;
-		      --__block_count;
-		    }
+		  if (__block_count > __bin._M_free[0])
+		    __block_count = __bin._M_free[0];
+		  const size_t __added = __block_count;
+		  _Block_record* __first = __bin._M_first[0];
+		  __block = __first;
+		  --__block_count;
+		  while (__block_count-- > 0)
+		    __block = __block->_M_next;
+		  __bin._M_first[0] = __block->_M_next;
+		  __bin._M_free[0] -= __added;
 		  __gthread_mutex_unlock(__bin._M_mutex);
+
+		  __bin._M_first[__thread_id] = __first;
+		  __bin._M_free[__thread_id] += __added;
 		}
 	    }
 	  else
@@ -368,15 +369,15 @@ namespace __gnu_cxx
 	      
 	      --__block_count;
 	      __block = __bin._M_first[0];
-	      while (__block_count > 0)
+	      while (__block_count-- > 0)
 		{
 		  char* __c = reinterpret_cast<char*>(__block) + __bin_size;
 		  __block->_M_next = reinterpret_cast<_Block_record*>(__c);
 		  __block = __block->_M_next;
-		  --__block_count;
 		}
-	      __block->_M_next = NULL;
 	    }
+
+	  __block->_M_next = NULL;
 	}
 
       __block = __bin._M_first[__thread_id];
@@ -434,7 +435,8 @@ namespace __gnu_cxx
 	      _Block_record* __first = __tmp;
 	      __remove /= _S_options._M_freelist_headroom;
 	      const long __removed = __remove;
-	      while (__remove-- > 1)
+	      --__remove;
+	      while (__remove-- > 0)
 		__tmp = __tmp->_M_next;
 	      __bin._M_first[__thread_id] = __tmp->_M_next;
 	      __bin._M_free[__thread_id] -= __removed;
@@ -442,6 +444,7 @@ namespace __gnu_cxx
 	      __gthread_mutex_lock(__bin._M_mutex);
 	      __tmp->_M_next = __bin._M_first[0];
 	      __bin._M_first[0] = __first;
+	      __bin._M_free[0] += __removed;
 	      __gthread_mutex_unlock(__bin._M_mutex);
 	    }
 	  
