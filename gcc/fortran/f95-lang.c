@@ -49,7 +49,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "trans-types.h"
 #include "trans-const.h"
 
-#include <assert.h>
 #include <stdio.h>
 
 /* Language-dependent contents of an identifier.  */

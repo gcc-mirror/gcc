@@ -1,3 +1,25 @@
+2004-09-08  Paul Brook  <paul@codesourcery.com>
+
+	* array.c: Don't include assert.h.
+	* data.c: Don't include assert.h.  Replace assert and abort with
+	gcc_assert and gcc_unreachable.
+	* dependency.c: Ditto.
+	* f95-lang.c: Ditto.
+	* iresolve.c: Ditto.
+	* resolve.c: Ditto.
+	* simplify.c: Ditto.
+	* symbol.c: Ditto.
+	* trans-array.c: Ditto.
+	* trans-common.c: Ditto.
+	* trans-const.c: Ditto.
+	* trans-decl.c: Ditto.
+	* trans-expr.c: Ditto.
+	* trans-intrinsic.c: Ditto.
+	* trans-io.c: Ditto.
+	* trans-stmt.c: Ditto.
+	* trans-types.c: Ditto.
+	* trans.c: Ditto.
+
 2004-09-07  Per Bothner  <per@bothner.com>
 	Paul Brook  <paul@codesourcery.com>
 

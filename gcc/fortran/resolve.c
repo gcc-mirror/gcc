@@ -22,7 +22,6 @@ Software Foundation, 59 Temple Place - Suite 330,Boston, MA
 #include "config.h"
 #include "gfortran.h"
 #include "arith.h"  /* For gfc_compare_expr().  */
-#include <assert.h>
 #include <string.h>
 
 /* Stack to push the current if we descend into a block during
@@ -345,7 +344,7 @@ resolve_entries (gfc_namespace * ns)
     return;
 
   /* If this isn't a procedure something has gone horribly wrong.   */
-  assert (ns->proc_name->attr.flavor == FL_PROCEDURE);
+  gcc_assert (ns->proc_name->attr.flavor == FL_PROCEDURE);
   
   /* Remember the current namespace.  */
   old_ns = gfc_current_ns;
@@ -375,7 +374,7 @@ resolve_entries (gfc_namespace * ns)
 	    master_count++, ns->proc_name->name);
   name[GFC_MAX_SYMBOL_LEN] = '\0';
   gfc_get_ha_symbol (name, &proc);
-  assert (proc != NULL);
+  gcc_assert (proc != NULL);
 
   gfc_add_procedure (&proc->attr, PROC_INTERNAL, NULL);
   if (ns->proc_name->attr.subroutine)
@@ -3224,7 +3223,7 @@ gfc_find_forall_index (gfc_expr *expr, gfc_symbol *symbol)
   switch (expr->expr_type)
     {
     case EXPR_VARIABLE:
-      assert (expr->symtree->n.sym);
+      gcc_assert (expr->symtree->n.sym);
 
       /* A scalar assignment  */
       if (!expr->ref)
@@ -3296,7 +3295,7 @@ gfc_find_forall_index (gfc_expr *expr, gfc_symbol *symbol)
       if (expr->ref)
         {
           tmp = expr->ref;
-          assert(expr->ref->type == REF_SUBSTRING);
+          gcc_assert (expr->ref->type == REF_SUBSTRING);
           if (gfc_find_forall_index (tmp->u.ss.start, symbol) == SUCCESS)
             return SUCCESS;
           if (gfc_find_forall_index (tmp->u.ss.end, symbol) == SUCCESS)
@@ -3791,7 +3790,7 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 	  break;
 
 	case EXEC_IOLENGTH:
-	  assert(code->ext.inquire != NULL);
+	  gcc_assert (code->ext.inquire != NULL);
 	  if (gfc_resolve_inquire (code->ext.inquire) == FAILURE)
 	    break;
 
@@ -4159,7 +4158,7 @@ check_data_variable (gfc_data_variable * var, locus * where)
 	    continue;
 	  break;
 	}
-      assert (ref);
+      gcc_assert (ref);
 
       /* Set marks asscording to the reference pattern.  */
       switch (ref->u.ar.type)
@@ -4176,7 +4175,7 @@ check_data_variable (gfc_data_variable * var, locus * where)
 	  break;
 
 	default:
-	  abort();
+	  gcc_unreachable ();
 	}
 
       if (gfc_array_size (e, &size) == FAILURE)

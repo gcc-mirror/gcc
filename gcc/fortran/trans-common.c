@@ -103,7 +103,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "trans.h"
 #include "trans-types.h"
 #include "trans-const.h"
-#include <assert.h>
 
 
 /* Holds a single variable in a equivalence set.  */
@@ -414,7 +413,7 @@ create_common (gfc_common_head *com)
               offset = s->offset + s->length;
             }
         }
-      assert (list);
+      gcc_assert (list);
       ctor = build1 (CONSTRUCTOR, union_type, nreverse(list));
       TREE_CONSTANT (ctor) = 1;
       TREE_INVARIANT (ctor) = 1;
@@ -423,7 +422,7 @@ create_common (gfc_common_head *com)
 
 #ifdef ENABLE_CHECKING
       for (tmp = CONSTRUCTOR_ELTS (ctor); tmp; tmp = TREE_CHAIN (tmp))
-	assert (TREE_CODE (TREE_PURPOSE (tmp)) == FIELD_DECL);
+	gcc_assert (TREE_CODE (TREE_PURPOSE (tmp)) == FIELD_DECL);
 #endif
     }
 

@@ -30,7 +30,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "toplev.h"
 #include "real.h"
-#include <assert.h>
 #include <gmp.h>
 #include "gfortran.h"
 #include "trans.h"
@@ -199,7 +198,7 @@ gfc_trans_call (gfc_code * code)
   gfc_init_se (&se, NULL);
   gfc_start_block (&se.pre);
 
-  assert (code->resolved_sym);
+  gcc_assert (code->resolved_sym);
   has_alternate_specifier = 0;
 
   /* Translate the call.  */
@@ -214,7 +213,7 @@ gfc_trans_call (gfc_code * code)
       gfc_code *select_code;
       gfc_symbol *sym;
       select_code = code->next;
-      assert(select_code->op == EXEC_SELECT);
+      gcc_assert(select_code->op == EXEC_SELECT);
       sym = select_code->expr->symtree->n.sym;
       se.expr = convert (gfc_typenode_for_spec (&sym->ts), se.expr);
       gfc_add_modify_expr (&se.pre, sym->backend_decl, se.expr);
@@ -1169,7 +1168,7 @@ gfc_trans_character_select (gfc_code *code)
 tree
 gfc_trans_select (gfc_code * code)
 {
-  assert (code && code->expr);
+  gcc_assert (code && code->expr);
 
   /* Empty SELECT constructs are legal.  */
   if (code->block == NULL)
@@ -1367,7 +1366,7 @@ gfc_do_allocate (tree bytesize, tree size, tree * pdata, stmtblock_t * pblock,
   type = build_array_type (elem_type, type);
   if (gfc_can_put_var_on_stack (bytesize))
     {
-      assert (INTEGER_CST_P (size));
+      gcc_assert (INTEGER_CST_P (size));
       tmpvar = gfc_create_var (type, "temp");
       *pdata = NULL_TREE;
     }
@@ -1382,7 +1381,7 @@ gfc_do_allocate (tree bytesize, tree size, tree * pdata, stmtblock_t * pblock,
       else if (gfc_index_integer_kind == 8)
 	tmp = gfor_fndecl_internal_malloc64;
       else
-	abort ();
+	gcc_unreachable ();
       tmp = gfc_build_function_call (tmp, args);
       tmp = convert (TREE_TYPE (tmpvar), tmp);
       gfc_add_modify_expr (pblock, tmpvar, tmp);
@@ -2389,8 +2388,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
           break;
 
 	default:
-	  abort ();
-	  break;
+	  gcc_unreachable ();
 	}
 
       c = c->next;
@@ -2614,7 +2612,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2, tree mask,
 
   /* In each where-assign-stmt, the mask-expr and the variable being
      defined shall be arrays of the same shape.  */
-  assert (lss != gfc_ss_terminator);
+  gcc_assert (lss != gfc_ss_terminator);
 
   /* The assignment needs scalarization.  */
   lss_section = lss;
@@ -2624,7 +2622,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2, tree mask,
          && lss_section->type != GFC_SS_SECTION)
     lss_section = lss_section->next;
 
-  assert (lss_section != gfc_ss_terminator);
+  gcc_assert (lss_section != gfc_ss_terminator);
 
   /* Initialize the scalarizer.  */
   gfc_init_loopinfo (&loop);
@@ -2717,10 +2715,8 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2, tree mask,
     }
   else
     {
-      if (lse.ss != gfc_ss_terminator)
-        abort ();
-      if (rse.ss != gfc_ss_terminator)
-        abort ();
+      gcc_assert (lse.ss == gfc_ss_terminator
+		  && rse.ss == gfc_ss_terminator);
 
       if (loop.temp_ss != NULL)
         {
@@ -2744,11 +2740,8 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2, tree mask,
           gfc_advance_se_ss_chain (&rse);
           gfc_conv_expr (&lse, expr1);
 
-          if (lse.ss != gfc_ss_terminator)
-            abort ();
-
-          if (rse.ss != gfc_ss_terminator)
-            abort ();
+          gcc_assert (lse.ss == gfc_ss_terminator
+		      && rse.ss == gfc_ss_terminator);
 
           /* Form the mask expression according to the mask tree list.  */
           index = count2;
@@ -2923,7 +2916,7 @@ gfc_trans_where_2 (gfc_code * code, tree mask, tree pmask,
               break;
 
             default:
-              abort ();
+              gcc_unreachable ();
             }
 
          /* The next statement within the same where-body-construct.  */
@@ -3051,7 +3044,7 @@ gfc_trans_allocate (gfc_code * code)
       /* Find the last reference in the chain.  */
       while (ref && ref->next != NULL)
 	{
-	  assert (ref->type != REF_ARRAY || ref->u.ar.type == AR_ELEMENT);
+	  gcc_assert (ref->type != REF_ARRAY || ref->u.ar.type == AR_ELEMENT);
 	  ref = ref->next;
 	}
 
@@ -3122,7 +3115,7 @@ gfc_trans_deallocate (gfc_code * code)
   for (al = code->ext.alloc_list; al != NULL; al = al->next)
     {
       expr = al->expr;
-      assert (expr->expr_type == EXPR_VARIABLE);
+      gcc_assert (expr->expr_type == EXPR_VARIABLE);
 
       gfc_init_se (&se, NULL);
       gfc_start_block (&se.pre);

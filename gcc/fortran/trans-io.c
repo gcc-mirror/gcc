@@ -29,7 +29,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "toplev.h"
 #include "real.h"
-#include <assert.h>
 #include <gmp.h>
 #include "gfortran.h"
 #include "trans.h"
@@ -867,7 +866,7 @@ transfer_namelist_element (stmtblock_t * block, gfc_typespec * ts, tree addr_exp
   tree tmp, args, arg2;
   tree expr;
 
-  assert (POINTER_TYPE_P (TREE_TYPE (addr_expr)));
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (addr_expr)));
 
   if (ts->type == BT_DERIVED)
     {
@@ -877,7 +876,7 @@ transfer_namelist_element (stmtblock_t * block, gfc_typespec * ts, tree addr_exp
       for (c = ts->derived->components; c; c = c->next)
         {
           tree field = c->backend_decl;
-          assert (field && TREE_CODE (field) == FIELD_DECL);
+          gcc_assert (field && TREE_CODE (field) == FIELD_DECL);
           tmp = build3 (COMPONENT_REF, TREE_TYPE (field), 
 			expr, field, NULL_TREE);
 
@@ -913,7 +912,7 @@ transfer_namelist_element (stmtblock_t * block, gfc_typespec * ts, tree addr_exp
 
     case BT_CHARACTER:
       expr = gfc_build_indirect_ref (addr_expr);
-      assert (TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE);
+      gcc_assert (TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE);
       args = gfc_chainon_list (args,
                                TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (expr))));
       tmp = gfc_build_function_call (iocall_set_nml_val_char, args);
@@ -958,7 +957,7 @@ build_dt (tree * function, gfc_code * code)
   set_error_locus (&block, &code->loc);
   dt = code->ext.dt;
 
-  assert (dt != NULL);
+  gcc_assert (dt != NULL);
 
   if (dt->io_unit)
     {
@@ -1061,8 +1060,8 @@ gfc_trans_iolength (gfc_code * code)
   inq = code->ext.inquire;
 
   /* First check that preconditions are met.  */
-  assert(inq != NULL);
-  assert(inq->iolength != NULL);
+  gcc_assert (inq != NULL);
+  gcc_assert (inq->iolength != NULL);
 
   /* Connect to the iolength variable.  */
   if (inq->iolength)
@@ -1125,7 +1124,7 @@ gfc_trans_dt_end (gfc_code * code)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   tmp = gfc_build_function_call (function, NULL);
@@ -1133,7 +1132,7 @@ gfc_trans_dt_end (gfc_code * code)
 
   if (last_dt != IOLENGTH)
     {
-      assert(code->ext.dt != NULL);
+      gcc_assert (code->ext.dt != NULL);
       io_result (&block, code->ext.dt->err,
 		 code->ext.dt->end, code->ext.dt->eor);
     }
@@ -1189,14 +1188,14 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
       for (c = ts->derived->components; c; c = c->next)
 	{
 	  field = c->backend_decl;
-	  assert (field && TREE_CODE (field) == FIELD_DECL);
+	  gcc_assert (field && TREE_CODE (field) == FIELD_DECL);
 
 	  tmp = build3 (COMPONENT_REF, TREE_TYPE (field), expr, field,
 			NULL_TREE);
 
 	  if (c->ts.type == BT_CHARACTER)
 	    {
-	      assert (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE);
+	      gcc_assert (TREE_CODE (TREE_TYPE (tmp)) == ARRAY_TYPE);
 	      se->string_length =
 		TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (tmp)));
 	    }
@@ -1272,7 +1271,7 @@ gfc_trans_transfer (gfc_code * code)
     tmp = gfc_finish_block (&body);
   else
     {
-      assert (se.ss == gfc_ss_terminator);
+      gcc_assert (se.ss == gfc_ss_terminator);
       gfc_trans_scalarizing_loops (&loop, &body);
 
       gfc_add_block_to_block (&loop.pre, &loop.post);

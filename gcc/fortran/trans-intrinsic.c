@@ -33,7 +33,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "real.h"
 #include "tree-gimple.h"
 #include "flags.h"
-#include <assert.h>
 #include "gfortran.h"
 #include "arith.h"
 #include "intrinsic.h"
@@ -197,7 +196,7 @@ gfc_conv_intrinsic_conversion (gfc_se * se, gfc_expr * expr)
 
   /* Evaluate the argument.  */
   type = gfc_typenode_for_spec (&expr->ts);
-  assert (expr->value.function.actual->expr);
+  gcc_assert (expr->value.function.actual->expr);
   arg = gfc_conv_intrinsic_function_args (se, expr);
   arg = TREE_VALUE (arg);
 
@@ -354,7 +353,7 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, int op)
     }
 
   /* Evaluate the argument.  */
-  assert (expr->value.function.actual->expr);
+  gcc_assert (expr->value.function.actual->expr);
   arg = gfc_conv_intrinsic_function_args (se, expr);
 
   /* Use a builtin function if one exists.  */
@@ -402,7 +401,7 @@ gfc_conv_intrinsic_int (gfc_se * se, gfc_expr * expr, int op)
 
   /* Evaluate the argument.  */
   type = gfc_typenode_for_spec (&expr->ts);
-  assert (expr->value.function.actual->expr);
+  gcc_assert (expr->value.function.actual->expr);
   arg = gfc_conv_intrinsic_function_args (se, expr);
   arg = TREE_VALUE (arg);
 
@@ -499,13 +498,12 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
 	  pdecl = &m->real8_decl;
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   else if (ts->type == BT_COMPLEX)
     {
-      if (!m->complex_available)
-	abort ();
+      gcc_assert (m->complex_available);
 
       switch (ts->kind)
 	{
@@ -516,19 +514,18 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
 	  pdecl = &m->complex8_decl;
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   else
-    abort ();
+    gcc_unreachable ();
 
   if (*pdecl)
     return *pdecl;
 
   if (m->libm_name)
     {
-      if (ts->kind != 4 && ts->kind != 8)
-	abort ();
+      gcc_assert (ts->kind == 4 || ts->kind == 8);
       snprintf (name, sizeof (name), "%s%s%s", 
 		ts->type == BT_COMPLEX ? "c" : "",
 		m->name,
@@ -615,7 +612,7 @@ gfc_conv_intrinsic_exponent (gfc_se * se, gfc_expr * expr)
       fndecl = gfor_fndecl_math_exponent8;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   se->expr = gfc_build_function_call (fndecl, args);
@@ -645,9 +642,9 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
   if (se->ss)
     {
       /* Create an implicit second parameter from the loop variable.  */
-      assert (!arg2->expr);
-      assert (se->loop->dimen == 1);
-      assert (se->ss->expr == expr);
+      gcc_assert (!arg2->expr);
+      gcc_assert (se->loop->dimen == 1);
+      gcc_assert (se->ss->expr == expr);
       gfc_advance_se_ss_chain (se);
       bound = se->loop->loopvar[0];
       bound = fold (build2 (MINUS_EXPR, gfc_array_index_type, bound,
@@ -656,7 +653,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
   else
     {
       /* use the passed argument.  */
-      assert (arg->next->expr);
+      gcc_assert (arg->next->expr);
       gfc_init_se (&argse, NULL);
       gfc_conv_expr_type (&argse, arg->next->expr, gfc_array_index_type);
       gfc_add_block_to_block (&se->pre, &argse.pre);
@@ -669,7 +666,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
   /* TODO: don't re-evaluate the descriptor on each iteration.  */
   /* Get a descriptor for the first parameter.  */
   ss = gfc_walk_expr (arg->expr);
-  assert (ss != gfc_ss_terminator);
+  gcc_assert (ss != gfc_ss_terminator);
   argse.want_pointer = 0;
   gfc_conv_expr_descriptor (&argse, arg->expr, ss);
   gfc_add_block_to_block (&se->pre, &argse.pre);
@@ -679,9 +676,9 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 
   if (INTEGER_CST_P (bound))
     {
-      assert (TREE_INT_CST_HIGH (bound) == 0);
+      gcc_assert (TREE_INT_CST_HIGH (bound) == 0);
       i = TREE_INT_CST_LOW (bound);
-      assert (i >= 0 && i < GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc)));
+      gcc_assert (i >= 0 && i < GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc)));
     }
   else
     {
@@ -716,7 +713,7 @@ gfc_conv_intrinsic_abs (gfc_se * se, gfc_expr * expr)
   int n;
 
   args = gfc_conv_intrinsic_function_args (se, expr);
-  assert (args && TREE_CHAIN (args) == NULL_TREE);
+  gcc_assert (args && TREE_CHAIN (args) == NULL_TREE);
   val = TREE_VALUE (args);
 
   switch (expr->value.function.actual->expr->ts.type)
@@ -736,13 +733,13 @@ gfc_conv_intrinsic_abs (gfc_se * se, gfc_expr * expr)
 	  n = BUILT_IN_CABS;
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       se->expr = fold (gfc_build_function_call (built_in_decls[n], args));
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -833,7 +830,7 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (modulo)
@@ -909,7 +906,7 @@ gfc_conv_intrinsic_sign (gfc_se * se, gfc_expr * expr)
 	  tmp = built_in_decls[BUILT_IN_COPYSIGN];
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       se->expr = fold (gfc_build_function_call (tmp, arg));
       return;
@@ -936,7 +933,7 @@ gfc_conv_intrinsic_present (gfc_se * se, gfc_expr * expr)
   gfc_expr *arg;
 
   arg = expr->value.function.actual->expr;
-  assert (arg->expr_type == EXPR_VARIABLE);
+  gcc_assert (arg->expr_type == EXPR_VARIABLE);
   se->expr = gfc_conv_expr_present (arg->symtree->n.sym);
   se->expr = convert (gfc_typenode_for_spec (&expr->ts), se->expr);
 }
@@ -976,7 +973,7 @@ gfc_conv_intrinsic_char (gfc_se * se, gfc_expr * expr)
   arg = TREE_VALUE (arg);
 
   /* We currently don't support character types != 1.  */
-  assert (expr->ts.kind == 1);
+  gcc_assert (expr->ts.kind == 1);
   type = gfc_character1_type_node;
   var = gfc_create_var (type, "char");
 
@@ -1058,7 +1055,7 @@ gfc_get_symbol_for_expr (gfc_expr * expr)
   gfc_symbol *sym;
 
   /* TODO: Add symbols for intrinsic function to the global namespace.  */
-  assert (strlen (expr->value.function.name) <= GFC_MAX_SYMBOL_LEN - 5);
+  gcc_assert (strlen (expr->value.function.name) <= GFC_MAX_SYMBOL_LEN - 5);
   sym = gfc_new_symbol (expr->value.function.name, NULL);
 
   sym->ts = expr->ts;
@@ -1086,12 +1083,12 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 {
   gfc_symbol *sym;
 
-  assert (!se->ss || se->ss->expr == expr);
+  gcc_assert (!se->ss || se->ss->expr == expr);
 
   if (se->ss)
-    assert (expr->rank > 0);
+    gcc_assert (expr->rank > 0);
   else
-    assert (expr->rank == 0);
+    gcc_assert (expr->rank == 0);
 
   sym = gfc_get_symbol_for_expr (expr);
   gfc_conv_function_call (se, sym, expr->value.function.actual);
@@ -1150,7 +1147,7 @@ gfc_conv_intrinsic_anyall (gfc_se * se, gfc_expr * expr, int op)
 
   /* Walk the arguments.  */
   arrayss = gfc_walk_expr (actual->expr);
-  assert (arrayss != gfc_ss_terminator);
+  gcc_assert (arrayss != gfc_ss_terminator);
 
   /* Initialize the scalarizer.  */
   gfc_init_loopinfo (&loop);
@@ -1235,7 +1232,7 @@ gfc_conv_intrinsic_count (gfc_se * se, gfc_expr * expr)
 
   /* Walk the arguments.  */
   arrayss = gfc_walk_expr (actual->expr);
-  assert (arrayss != gfc_ss_terminator);
+  gcc_assert (arrayss != gfc_ss_terminator);
 
   /* Initialize the scalarizer.  */
   gfc_init_loopinfo (&loop);
@@ -1310,15 +1307,15 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, int op)
   actual = expr->value.function.actual;
   arrayexpr = actual->expr;
   arrayss = gfc_walk_expr (arrayexpr);
-  assert (arrayss != gfc_ss_terminator);
+  gcc_assert (arrayss != gfc_ss_terminator);
 
   actual = actual->next->next;
-  assert (actual);
+  gcc_assert (actual);
   maskexpr = actual->expr;
   if (maskexpr)
     {
       maskss = gfc_walk_expr (maskexpr);
-      assert (maskss != gfc_ss_terminator);
+      gcc_assert (maskss != gfc_ss_terminator);
     }
   else
     maskss = NULL;
@@ -1419,15 +1416,15 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
   actual = expr->value.function.actual;
   arrayexpr = actual->expr;
   arrayss = gfc_walk_expr (arrayexpr);
-  assert (arrayss != gfc_ss_terminator);
+  gcc_assert (arrayss != gfc_ss_terminator);
 
   actual = actual->next->next;
-  assert (actual);
+  gcc_assert (actual);
   maskexpr = actual->expr;
   if (maskexpr)
     {
       maskss = gfc_walk_expr (maskexpr);
-      assert (maskss != gfc_ss_terminator);
+      gcc_assert (maskss != gfc_ss_terminator);
     }
   else
     maskss = NULL;
@@ -1446,7 +1443,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Most negative(+HUGE) for maxval, most negative (-HUGE) for minval.  */
@@ -1464,7 +1461,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
   gfc_conv_ss_startstride (&loop);
   gfc_conv_loop_setup (&loop);
 
-  assert (loop.dimen == 1);
+  gcc_assert (loop.dimen == 1);
 
   /* Initialize the position to the first element.  If the array has zero
      size we need to return zero.  Otherwise use the first element of the
@@ -1586,7 +1583,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, int op)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Most negative(-HUGE) for maxval, most positive (-HUGE) for minval.  */
@@ -1598,15 +1595,15 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, int op)
   actual = expr->value.function.actual;
   arrayexpr = actual->expr;
   arrayss = gfc_walk_expr (arrayexpr);
-  assert (arrayss != gfc_ss_terminator);
+  gcc_assert (arrayss != gfc_ss_terminator);
 
   actual = actual->next->next;
-  assert (actual);
+  gcc_assert (actual);
   maskexpr = actual->expr;
   if (maskexpr)
     {
       maskss = gfc_walk_expr (maskexpr);
-      assert (maskss != gfc_ss_terminator);
+      gcc_assert (maskss != gfc_ss_terminator);
     }
   else
     maskss = NULL;
@@ -1847,7 +1844,7 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
 	  tmp = gfor_fndecl_math_ishftc8;
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
       se->expr = gfc_build_function_call (tmp, arg);
       return;
@@ -1884,7 +1881,7 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
   gfc_se argse;
   gfc_expr *arg;
 
-  assert (!se->ss);
+  gcc_assert (!se->ss);
 
   arg = expr->value.function.actual->expr;
 
@@ -1910,7 +1907,7 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
 	      decl = gfc_get_fake_result_decl (sym);
 
 	    len = sym->ts.cl->backend_decl;
-	    assert (len);
+	    gcc_assert (len);
 	  }
 	else
 	  {
@@ -1979,7 +1976,7 @@ gfc_conv_intrinsic_ichar (gfc_se * se, gfc_expr * expr)
 
   arg = gfc_conv_intrinsic_function_args (se, expr);
   arg = TREE_VALUE (TREE_CHAIN (arg));
-  assert (POINTER_TYPE_P (TREE_TYPE (arg)));
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (arg)));
   arg = build1 (NOP_EXPR, pchar_type_node, arg);
   type = gfc_typenode_for_spec (&expr->ts);
 
@@ -2041,7 +2038,7 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
   actual = expr->value.function.actual;
 
   ss = gfc_walk_expr (actual->expr);
-  assert (ss != gfc_ss_terminator);
+  gcc_assert (ss != gfc_ss_terminator);
   argse.want_pointer = 1;
   gfc_conv_expr_descriptor (&argse, actual->expr, ss);
   gfc_add_block_to_block (&se->pre, &argse.pre);
@@ -2119,7 +2116,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
   tree ptr;
   gfc_ss *ss;
 
-  assert (!se->ss);
+  gcc_assert (!se->ss);
 
   /* Get a pointer to the source.  */
   arg = expr->value.function.actual;
@@ -2228,7 +2225,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
       if (ss1 == gfc_ss_terminator)
         {
           /* A pointer to a scalar.  */
-          assert (ss2 == gfc_ss_terminator);
+          gcc_assert (ss2 == gfc_ss_terminator);
           arg1se.want_pointer = 1;
           gfc_conv_expr (&arg1se, arg1->expr);
           arg2se.want_pointer = 1;
@@ -2239,7 +2236,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
       else
         {
           /* A pointer to an array, call library function _gfor_associated.  */
-          assert (ss2 != gfc_ss_terminator);
+          gcc_assert (ss2 != gfc_ss_terminator);
           args = NULL_TREE;
           arg1se.want_pointer = 1;
           gfc_conv_expr_descriptor (&arg1se, arg1->expr, ss1);
@@ -2339,7 +2336,7 @@ void prepare_arg_info (gfc_se * se, gfc_expr * expr,
    if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT)
      gfc_todo_error ("Non-IEEE floating format");
     
-   assert (expr->expr_type == EXPR_FUNCTION);
+   gcc_assert (expr->expr_type == EXPR_FUNCTION);
 
    arg = gfc_conv_intrinsic_function_args (se, expr);
    arg = TREE_VALUE (arg);
@@ -2404,7 +2401,7 @@ call_builtin_clz (tree result_type, tree op0)
   else if (op0_mode == TYPE_MODE (long_long_integer_type_node))
     fn = built_in_decls[BUILT_IN_CLZLL];
   else
-    abort ();
+    gcc_unreachable ();
 
   parms = tree_cons (NULL, op0, NULL);
   call = gfc_build_function_call (fn, parms);
@@ -2671,7 +2668,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
   switch (expr->value.function.isym->generic_id)
     {
     case GFC_ISYM_NONE:
-      abort ();
+      gcc_unreachable ();
 
     case GFC_ISYM_REPEAT:
       gfc_conv_intrinsic_repeat (se, expr);
@@ -2981,8 +2978,7 @@ gfc_add_intrinsic_ss_code (gfc_loopinfo * loop ATTRIBUTE_UNUSED, gfc_ss * ss)
       break;
 
     default:
-      abort ();
-      break;
+      gcc_unreachable ();
     }
 }
 
@@ -3015,7 +3011,7 @@ gfc_walk_intrinsic_libfunc (gfc_ss * ss, gfc_expr * expr)
 {
   gfc_ss *newss;
 
-  assert (expr->rank > 0);
+  gcc_assert (expr->rank > 0);
 
   newss = gfc_get_ss ();
   newss->type = GFC_SS_FUNCTION;
@@ -3034,8 +3030,8 @@ gfc_walk_intrinsic_libfunc (gfc_ss * ss, gfc_expr * expr)
 int
 gfc_is_intrinsic_libcall (gfc_expr * expr)
 {
-  assert (expr->expr_type == EXPR_FUNCTION && expr->value.function.isym);
-  assert (expr->rank > 0);
+  gcc_assert (expr->expr_type == EXPR_FUNCTION && expr->value.function.isym);
+  gcc_assert (expr->rank > 0);
 
   switch (expr->value.function.isym->generic_id)
     {
@@ -3073,7 +3069,7 @@ gfc_ss *
 gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
 			     gfc_intrinsic_sym * isym)
 {
-  assert (isym);
+  gcc_assert (isym);
 
   if (isym->elemental)
     return gfc_walk_elemental_function_args (ss, expr, GFC_SS_SCALAR);

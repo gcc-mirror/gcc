@@ -24,7 +24,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "match.h"
 
 #include <string.h>
-#include <assert.h>
 
 /* This parameter is the size of the largest array constructor that we
    will expand to an array constructor without iterators.

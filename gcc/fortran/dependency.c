@@ -28,7 +28,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #include "gfortran.h"
 #include "dependency.h"
-#include <assert.h>
 
 /* static declarations */
 /* Enums  */
@@ -55,7 +54,7 @@ gfc_dependency;
 int
 gfc_expr_is_one (gfc_expr * expr, int def)
 {
-  assert (expr != NULL);
+  gcc_assert (expr != NULL);
 
   if (expr->expr_type != EXPR_CONSTANT)
     return def;
@@ -115,9 +114,9 @@ gfc_is_same_range (gfc_array_ref * ar1, gfc_array_ref * ar2, int n, int def)
   int i;
 
   /* TODO: More sophisticated range comparison.  */
-  assert (ar1 && ar2);
+  gcc_assert (ar1 && ar2);
 
-  assert (ar1->dimen_type[n] == ar2->dimen_type[n]);
+  gcc_assert (ar1->dimen_type[n] == ar2->dimen_type[n]);
 
   e1 = ar1->stride[n];
   e2 = ar2->stride[n];
@@ -190,9 +189,9 @@ gfc_check_fncall_dependency (gfc_expr * dest, gfc_expr * fncall)
   gfc_expr *expr;
   int n;
 
-  assert (dest->expr_type == EXPR_VARIABLE
+  gcc_assert (dest->expr_type == EXPR_VARIABLE
 	  && fncall->expr_type == EXPR_FUNCTION);
-  assert (fncall->rank > 0);
+  gcc_assert (fncall->rank > 0);
 
   for (actual = fncall->value.function.actual; actual; actual = actual->next)
     {
@@ -214,7 +213,7 @@ gfc_check_fncall_dependency (gfc_expr * dest, gfc_expr * fncall)
 		  if (ref->type == REF_ARRAY && ref->u.ar.type != AR_ELEMENT)
 		    break;
 		}
-	      assert (ref);
+	      gcc_assert (ref);
 	      /* AR_FULL can't contain vector subscripts.  */
 	      if (ref->u.ar.type == AR_SECTION)
 		{
@@ -264,7 +263,7 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, gfc_expr ** vars,
   int n;
   gfc_actual_arglist *actual;
 
-  assert (expr1->expr_type == EXPR_VARIABLE);
+  gcc_assert (expr1->expr_type == EXPR_VARIABLE);
 
   /* TODO: -fassume-no-pointer-aliasing */
   if (expr1->symtree->n.sym->attr.pointer)
@@ -604,7 +603,7 @@ gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
       /* We're resolving from the same base symbol, so both refs should be
          the same type.  We traverse the reference chain intil we find ranges
 	 that are not equal.  */
-      assert (lref->type == rref->type);
+      gcc_assert (lref->type == rref->type);
       switch (lref->type)
 	{
 	case REF_COMPONENT:
@@ -638,7 +637,7 @@ gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
 		this_dep = gfc_check_element_vs_section (rref, lref, n);
 	      else 
 		{
-		  assert (rref->u.ar.dimen_type[n] == DIMEN_ELEMENT
+		  gcc_assert (rref->u.ar.dimen_type[n] == DIMEN_ELEMENT
 		          && lref->u.ar.dimen_type[n] == DIMEN_ELEMENT);
 		  this_dep = gfc_check_element_vs_element (rref, lref, n);
 		}
@@ -662,14 +661,14 @@ gfc_dep_resolver (gfc_ref * lref, gfc_ref * rref)
 	  break;
 
 	default:
-	  abort();
+	  gcc_unreachable ();
 	}
       lref = lref->next;
       rref = rref->next;
     }
 
   /* If we haven't seen any array refs then something went wrong.  */
-  assert (fin_dep != GFC_DEP_ERROR);
+  gcc_assert (fin_dep != GFC_DEP_ERROR);
 
   if (fin_dep < GFC_DEP_OVERLAP)
     return 0;

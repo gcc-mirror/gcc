@@ -35,7 +35,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "errors.h"
 #include "flags.h"
 #include "cgraph.h"
-#include <assert.h>
 #include "gfortran.h"
 #include "trans.h"
 #include "trans-types.h"
@@ -131,7 +130,7 @@ tree gfor_fndecl_sr_kind;
 static void
 gfc_add_decl_to_parent_function (tree decl)
 {
-  assert (decl);
+  gcc_assert (decl);
   DECL_CONTEXT (decl) = DECL_CONTEXT (current_function_decl);
   DECL_NONLOCAL (decl) = 1;
   TREE_CHAIN (decl) = saved_parent_function_decls;
@@ -141,7 +140,7 @@ gfc_add_decl_to_parent_function (tree decl)
 void
 gfc_add_decl_to_function (tree decl)
 {
-  assert (decl);
+  gcc_assert (decl);
   TREE_USED (decl) = 1;
   DECL_CONTEXT (decl) = current_function_decl;
   TREE_CHAIN (decl) = saved_function_decls;
@@ -242,7 +241,7 @@ gfc_get_label_decl (gfc_st_label * lp)
       tree label_decl;
 
       /* Validate the label declaration from the front end.  */
-      assert (lp != NULL && lp->value <= MAX_LABEL_VALUE);
+      gcc_assert (lp != NULL && lp->value <= MAX_LABEL_VALUE);
 
       /* Build a mangled name for the label.  */
       sprintf (label_name, "__label_%.6d", lp->value);
@@ -330,13 +329,13 @@ static void
 gfc_finish_decl (tree decl, tree init)
 {
   if (TREE_CODE (decl) == PARM_DECL)
-    assert (init == NULL_TREE);
+    gcc_assert (init == NULL_TREE);
   /* Remember that PARM_DECL doesn't have a DECL_INITIAL field per se
      -- it overlaps DECL_ARG_TYPE.  */
   else if (init == NULL_TREE)
-    assert (DECL_INITIAL (decl) == NULL_TREE);
+    gcc_assert (DECL_INITIAL (decl) == NULL_TREE);
   else
-    assert (DECL_INITIAL (decl) == error_mark_node);
+    gcc_assert (DECL_INITIAL (decl) == error_mark_node);
 
   if (init != NULL_TREE)
     {
@@ -414,7 +413,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   else if (sym->module[0] && !sym->attr.result)
     {
       /* TODO: Don't set sym->module for result variables.  */
-      assert (current_function_decl == NULL_TREE);
+      gcc_assert (current_function_decl == NULL_TREE);
       /* This is the declaration of a module variable.  */
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
@@ -510,7 +509,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
   if (GFC_DESCRIPTOR_TYPE_P (type))
     return;
 
-  assert (GFC_ARRAY_TYPE_P (type));
+  gcc_assert (GFC_ARRAY_TYPE_P (type));
   nest = (sym->ns->proc_name->backend_decl != current_function_decl)
 	 && !sym->attr.contained;
 
@@ -562,7 +561,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
     gfc_defer_symbol_init (sym);
 
   type = TREE_TYPE (dummy);
-  assert (TREE_CODE (dummy) == PARM_DECL
+  gcc_assert (TREE_CODE (dummy) == PARM_DECL
 	  && POINTER_TYPE_P (type));
 
   /* Do we know the element size?  */
@@ -573,7 +572,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
     {
       /* For descriptorless arrays with known element size the actual
          argument is sufficient.  */
-      assert (GFC_ARRAY_TYPE_P (type));
+      gcc_assert (GFC_ARRAY_TYPE_P (type));
       gfc_build_qualified_array (dummy, sym);
       return dummy;
     }
@@ -630,7 +629,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
 
   /* We should never get deferred shape arrays here.  We used to because of
      frontend bugs.  */
-  assert (sym->as->type != AS_DEFERRED);
+  gcc_assert (sym->as->type != AS_DEFERRED);
 
   switch (packed)
     {
@@ -670,7 +669,7 @@ gfc_create_string_length (gfc_symbol * sym)
 {
   tree length;
 
-  assert (sym->ts.cl);
+  gcc_assert (sym->ts.cl);
   gfc_conv_const_charlen (sym->ts.cl);
   
   if (sym->ts.cl->backend_decl == NULL_TREE)
@@ -702,7 +701,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   tree length = NULL_TREE;
   int byref;
 
-  assert (sym->attr.referenced);
+  gcc_assert (sym->attr.referenced);
 
   if (sym->ns && sym->ns->proc_name->attr.function)
     byref = gfc_return_by_reference (sym->ns->proc_name);
@@ -720,7 +719,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	}
 
       /* Dummy variables should already have been created.  */
-      assert (sym->backend_decl);
+      gcc_assert (sym->backend_decl);
 
       /* Create a character length variable.  */
       if (sym->ts.type == BT_CHARACTER)
@@ -825,7 +824,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (name));
 	    }
 	  gfc_finish_var_decl (length, sym);
-	  assert (!sym->value);
+	  gcc_assert (!sym->value);
 	}
     }
   sym->backend_decl = decl;
@@ -888,7 +887,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   /* We should never be creating external decls for alternate entry points.
      The procedure may be an alternate entry point, but we don't want/need
      to know that.  */
-  assert (!(sym->attr.entry || sym->attr.entry_master));
+  gcc_assert (!(sym->attr.entry || sym->attr.entry_master));
 
   if (sym->attr.intrinsic)
     {
@@ -897,13 +896,13 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 	 at the first argument.  We pass NULL for the second argument
 	 otherwise things like AINT get confused.  */
       isym = gfc_find_function (sym->name);
-      assert (isym->resolve.f0 != NULL);
+      gcc_assert (isym->resolve.f0 != NULL);
 
       memset (&e, 0, sizeof (e));
       e.expr_type = EXPR_FUNCTION;
 
       memset (&argexpr, 0, sizeof (argexpr));
-      assert (isym->formal);
+      gcc_assert (isym->formal);
       argexpr.ts = isym->formal->ts;
 
       if (isym->formal->next == NULL)
@@ -911,7 +910,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
       else
 	{
 	  /* All specific intrinsics take one or two arguments.  */
-	  assert (isym->formal->next->next == NULL);
+	  gcc_assert (isym->formal->next->next == NULL);
 	  isym->resolve.f2 (&e, &argexpr, NULL);
 	}
       sprintf (s, "specific%s", e.value.function.name);
@@ -988,15 +987,15 @@ build_function_decl (gfc_symbol * sym)
   tree result_decl;
   gfc_formal_arglist *f;
 
-  assert (!sym->backend_decl);
-  assert (!sym->attr.external);
+  gcc_assert (!sym->backend_decl);
+  gcc_assert (!sym->attr.external);
 
   /* Set the line and filename.  sym->declared_at seems to point to the
      last statement for subroutines, but it'll do for now.  */
   gfc_set_backend_locus (&sym->declared_at);
 
   /* Allow only one nesting level.  Allow public declarations.  */
-  assert (current_function_decl == NULL_TREE
+  gcc_assert (current_function_decl == NULL_TREE
 	  || DECL_CONTEXT (current_function_decl) == NULL_TREE);
 
   type = gfc_get_function_type (sym);
@@ -1147,7 +1146,7 @@ create_function_arglist (gfc_symbol * sym)
 
 	  /* Length of character result.  */
 	  type = TREE_VALUE (typelist);
-	  assert (type == gfc_charlen_type_node);
+	  gcc_assert (type == gfc_charlen_type_node);
 
 	  length = build_decl (PARM_DECL,
 			       get_identifier (".__result"),
@@ -1157,7 +1156,7 @@ create_function_arglist (gfc_symbol * sym)
 	      sym->ts.cl->backend_decl = length;
 	      TREE_USED (length) = 1;
 	    }
-	  assert (TREE_CODE (length) == PARM_DECL);
+	  gcc_assert (TREE_CODE (length) == PARM_DECL);
 	  arglist = chainon (arglist, length);
 	  typelist = TREE_CHAIN (typelist);
 	  DECL_CONTEXT (length) = fndecl;
@@ -1209,7 +1208,7 @@ create_function_arglist (gfc_symbol * sym)
 
       parm = f->sym->backend_decl;
       type = TREE_VALUE (typelist);
-      assert (type == gfc_charlen_type_node);
+      gcc_assert (type == gfc_charlen_type_node);
 
       strcpy (&name[1], f->sym->name);
       name[0] = '_';
@@ -1252,7 +1251,7 @@ create_function_arglist (gfc_symbol * sym)
       typelist = TREE_CHAIN (typelist);
     }
 
-  assert (TREE_VALUE (typelist) == void_type_node);
+  gcc_assert (TREE_VALUE (typelist) == void_type_node);
   DECL_ARGUMENTS (fndecl) = arglist;
 }
 
@@ -1344,7 +1343,7 @@ build_entry_thunks (gfc_namespace * ns)
   locus old_loc;
 
   /* This should always be a toplevel function.  */
-  assert (current_function_decl == NULL_TREE);
+  gcc_assert (current_function_decl == NULL_TREE);
 
   gfc_get_backend_locus (&old_loc);
   for (el = ns->entries; el; el = el->next)
@@ -1538,7 +1537,7 @@ gfc_build_library_function_decl (tree name, tree rettype, int nargs, ...)
   int n;
 
   /* Library functions must be declared with global scope.  */
-  assert (current_function_decl == NULL_TREE);
+  gcc_assert (current_function_decl == NULL_TREE);
 
   va_start (p, nargs);
 
@@ -1873,8 +1872,8 @@ gfc_trans_auto_character_variable (gfc_symbol * sym, tree fnbody)
   tree decl;
   tree tmp;
 
-  assert (sym->backend_decl);
-  assert (sym->ts.cl && sym->ts.cl->length);
+  gcc_assert (sym->backend_decl);
+  gcc_assert (sym->ts.cl && sym->ts.cl->length);
 
   gfc_start_block (&body);
 
@@ -1959,7 +1958,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 
 	    case AS_ASSUMED_SIZE:
 	      /* Must be a dummy parameter.  */
-	      assert (sym->attr.dummy);
+	      gcc_assert (sym->attr.dummy);
 
 	      /* We should always pass assumed size arrays the g77 way.  */
 	      fnbody = gfc_trans_g77_array (sym, fnbody);
@@ -1967,7 +1966,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 
 	    case AS_ASSUMED_SHAPE:
 	      /* Must be a dummy parameter.  */
-	      assert (sym->attr.dummy);
+	      gcc_assert (sym->attr.dummy);
 
 	      fnbody = gfc_trans_dummy_array_bias (sym, sym->backend_decl,
 						   fnbody);
@@ -1978,7 +1977,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	      break;
 
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	}
       else if (sym->ts.type == BT_CHARACTER)
@@ -1992,7 +1991,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	  gfc_set_backend_locus (&loc);
 	}
       else
-	abort ();
+	gcc_unreachable ();
     }
 
   return fnbody;
@@ -2059,7 +2058,7 @@ gfc_generate_module_vars (gfc_namespace * ns)
   module_namespace = ns;
 
   /* Check if the frontend left the namespace in a reasonable state.  */
-  assert (ns->proc_name && !ns->proc_name->tlink);
+  gcc_assert (ns->proc_name && !ns->proc_name->tlink);
 
   /* Generate COMMON blocks.  */
   gfc_trans_common (ns);
@@ -2181,7 +2180,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   sym = ns->proc_name;
 
   /* Check that the frontend isn't still using this.  */
-  assert (sym->tlink == NULL);
+  gcc_assert (sym->tlink == NULL);
   sym->tlink = sym;
 
   /* Create the declaration for functions with global scope.  */
@@ -2322,8 +2321,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 void
 gfc_generate_constructors (void)
 {
-  if (gfc_static_ctors != NULL_TREE)
-    abort ();
+  gcc_assert (gfc_static_ctors == NULL_TREE);
 #if 0
   tree fnname;
   tree type;
