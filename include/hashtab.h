@@ -166,6 +166,7 @@ extern PTR     *htab_find_slot_with_hash  PARAMS ((htab_t, const void *,
 						   enum insert_option));
 extern void	htab_clear_slot	PARAMS ((htab_t, void **));
 extern void	htab_remove_elt	PARAMS ((htab_t, void *));
+extern void	htab_remove_elt_with_hash PARAMS ((htab_t, void *, hashval_t));
 
 extern void	htab_traverse	PARAMS ((htab_t, htab_trav, void *));
 extern void	htab_traverse_noresize	PARAMS ((htab_t, htab_trav, void *));

@@ -1,3 +1,8 @@
+2004-04-13  Jeff Law  <law@redhat.com>
+
+	* hashtab.c (htab_remove_elt_with_hash): New function.
+	(htab_remove_elt): Implement in terms of htab_remove_elt_with_hash.
+
 2004-03-31  Richard Henderson  <rth@redhat.com>
 
 	* hashtab.c (htab_size): Move to top of file; mark inline.
