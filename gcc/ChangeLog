@@ -1,3 +1,7 @@
+Wed Mar 11 06:58:13 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* m68k.h (CONST_OK_FOR_LETTER_P, case 'M'): Correct range check.
+
 Wed Mar 11 06:15:52 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (extraclean): Don't delete install1.texi.
