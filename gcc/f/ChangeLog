@@ -1,3 +1,13 @@
+2001-06-03  Toon Moene  <toon@moene.indiv.nluug.nl>
+	    Jan van Male  <jan.vanmale@fenk.wau.nl>
+
+	* root.texi: Define `help' and `patches' mailing list
+	addresses.
+	* news.texi: Remove `prerelease' from 0.5.26
+	* g77.texi: Use two spaces between command options, eliminate
+	some 'overfull hboxes'.  Use help and patches mailing list
+	addresses where appropriate.
+
 2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g77.texi: Move contents to just after title page.
