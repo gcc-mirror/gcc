@@ -168,7 +168,7 @@ proc g77_init { args } {
     }
 
     if { [target_info needs_status_wrapper] != "" } {
-	set gluefile ${tmpdir}/testglue.o;
+	set gluefile ${tmpdir}/g77-testglue.o;
 	set result [build_wrapper $gluefile];
 	if { $result != "" } {
 	    set gluefile [lindex $result 0];
