@@ -1,3 +1,12 @@
+2003-12-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10771
+	* parser.c (cp_parser_check_for_invalid_template_id): New
+	function.
+	(cp_parser_simple_type_specifier): Use it.
+	(cp_parser_elaborated_type_specifier): Likewise.
+	(cp_parser_class_head): Likewise.
+
 2003-12-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/10126
