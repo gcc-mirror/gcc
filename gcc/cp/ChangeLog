@@ -1,3 +1,7 @@
+2003-08-01  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* typeck2.c (add_exception_specifier): Use 'bool' where appropriate.
+
 2003-08-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11697
