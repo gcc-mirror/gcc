@@ -123,6 +123,8 @@ apply_patch () {
 	case "$1" in
 	*gz)
 	    gzip -d -c $1 | patch -p1 ;;
+	*bz2)
+	    bzip2 -d -c $1 | patch -p1 ;;
 	*)
 	    cat $1 | patch -p1 ;;
 	esac
