@@ -1052,8 +1052,6 @@ read_real (int length)
 	  goto got_repeat;
 
 	CASE_SEPARATORS:
-          if (c != '\n' &&  c != ',')
-            unget_char (c);    /* Real number that is just a digit-string.  */
 	  goto done;
 
 	default:
@@ -1164,8 +1162,6 @@ read_real (int length)
 	  break;
 
 	CASE_SEPARATORS:
-	  unget_char (c);
-	  eat_separator ();
 	  goto done;
 
 	default:
@@ -1174,6 +1170,8 @@ read_real (int length)
     }
 
  done:
+  unget_char (c);
+  eat_separator ();
   push_char ('\0');
   if (convert_real (value, saved_string, length))
     return;
