@@ -1,3 +1,7 @@
+2001-05-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* calls.c (store_one_arg): Don't divide align by BITS_PER_UNIT.
+
 2001-05-04  Lars Brinkhoff  <lars@nocrew.org>
 
 	* simplify-rtx.c (simplify_binary_operation): Simplify ~a + 1
