@@ -1,4 +1,8 @@
-2004-06-22  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* module.c (mio_gmp_real): Correct writing of negative numbers.
+
+2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15963
 	* expr.c (check_intrinsic_op): Allow comparison of characters.
