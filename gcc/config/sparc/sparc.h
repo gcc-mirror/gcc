@@ -2112,7 +2112,6 @@ extern struct rtx_def *legitimize_pic_address ();
    for calls to the builtin function sqrt, but this fails.  */
 #define INIT_TARGET_OPTABS						\
   do {									\
-    INIT_SUBTARGET_OPTABS;						\
     add_optab->handlers[(int) TFmode].libfunc				\
       = gen_rtx (SYMBOL_REF, Pmode, ADDTF3_LIBCALL);			\
     sub_optab->handlers[(int) TFmode].libfunc				\
@@ -2140,6 +2139,7 @@ extern struct rtx_def *legitimize_pic_address ();
     if (TARGET_FPU)							\
       sqrt_optab->handlers[(int) TFmode].libfunc			\
 	= gen_rtx (SYMBOL_REF, Pmode, "_Q_sqrt");			\
+    INIT_SUBTARGET_OPTABS;						\
   } while (0)
 
 /* This is meant to be redefined in the host dependent files */
