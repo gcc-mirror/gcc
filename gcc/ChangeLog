@@ -1,3 +1,8 @@
+2003-12-13  Jan Hubicka  <jh@suse.cz>
+
+	* coverage.c (get_coverage_counts):  Use inform instead of warning
+	about missing profile.
+
 2003-12-12  Steven Bosscher  <stevenb@suse.de>
 
 	* Makefile.in (opts.o, explow.o): Depend on langhooks.h
