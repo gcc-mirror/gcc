@@ -1,3 +1,9 @@
+2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Richard Henderson  <rth@redhat.com>
+
+	PR target/10114 and PR target/10084
+	* dwarf2out.c (mem_loc_descriptor): Handle LO_SUM.
+
 2003-03-27  Janis Johnson  <janis187@us.ibm.com>
 
 	PR sw-bug/10234

@@ -7792,6 +7792,11 @@ mem_loc_descriptor (rtl, mode)
 	add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_deref, 0, 0));
       break;
 
+    case LO_SUM:
+	 rtl = XEXP (rtl, 1);
+
+      /* ... fall through ...  */
+
     case LABEL_REF:
       /* Some ports can transform a symbol ref into a label ref, because
  	 the symbol ref is too far away and has to be dumped into a constant
