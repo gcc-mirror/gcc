@@ -3324,8 +3324,76 @@ debug_stack_info (info)
 
   fprintf (stderr, "\n");
 }
-
 
+/* Write out an instruction to load the TOC_TABLE address into register 30.
+   This is only needed when TARGET_TOC, TARGET_MINIMAL_TOC, and there is
+   a constant pool.  */
+
+void
+rs6000_output_load_toc_table (file)
+     FILE *file;
+{
+  char buf[256];
+
+#ifdef USING_SVR4_H
+  if (TARGET_RELOCATABLE)
+    {
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
+      fprintf (file, "\tbl ");
+      assemble_name (file, buf);
+      fprintf (file, "\n");
+
+      ASM_OUTPUT_INTERNAL_LABEL (file, "LCF", rs6000_pic_labelno);
+      fprintf (file, "\tmflr %s\n", reg_names[30]);
+
+      if (TARGET_POWERPC64)
+	fprintf (file, "\tld");
+      else if (TARGET_NEW_MNEMONICS)
+	fprintf (file, "\tlwz");
+      else
+	fprintf (file, "\tl");
+
+      fprintf (file, " %s,(", reg_names[0]);
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
+      assemble_name (file, buf);
+      fprintf (file, "-");
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
+      assemble_name (file, buf);
+      fprintf (file, ")(%s)\n", reg_names[30]);
+      asm_fprintf (file, "\t{cax|add} %s,%s,%s\n",
+		   reg_names[30], reg_names[0], reg_names[30]);
+      rs6000_pic_labelno++;
+    }
+  else if (!TARGET_64BIT)
+    {
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
+      asm_fprintf (file, "\t{cau|addis} %s,%s,", reg_names[30], reg_names[0]);
+      assemble_name (file, buf);
+      asm_fprintf (file, "@ha\n");
+      if (TARGET_NEW_MNEMONICS)
+	{
+	  asm_fprintf (file, "\taddi %s,%s,", reg_names[30], reg_names[30]);
+	  assemble_name (file, buf);
+	  asm_fprintf (file, "@l\n");
+	}
+      else
+	{
+	  asm_fprintf (file, "\tcal %s,", reg_names[30]);
+	  assemble_name (file, buf);
+	  asm_fprintf (file, "@l(%s)\n", reg_names[30]);
+	}
+    }
+  else
+    abort ();
+
+#else	/* !USING_SVR4_H */
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 0);
+  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[30]);
+  assemble_name (file, buf);
+  asm_fprintf (file, "(%s)\n", reg_names[2]);
+#endif /* USING_SVR4_H */
+}
+
 /* Write function prologue.  */
 void
 output_prolog (file, size)
@@ -3595,73 +3663,7 @@ output_prolog (file, size)
   /* If TARGET_MINIMAL_TOC, and the constant pool is needed, then load the
      TOC_TABLE address into register 30.  */
   if (TARGET_TOC && TARGET_MINIMAL_TOC && get_pool_size () != 0)
-    {
-      char buf[256];
-
-#ifdef TARGET_RELOCATABLE
-      if (TARGET_RELOCATABLE)
-	{
-	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
-	  fputs ("\tbl ", file);
-	  assemble_name (file, buf);
-	  putc ('\n', file);
-
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCF", rs6000_pic_labelno);
-	  fprintf (file, "\tmflr %s\n", reg_names[30]);
-
-	  asm_fprintf (file, (TARGET_32BIT) ? "\t{l|lwz}" : "\tld");
-	  fprintf (file, " %s,(", reg_names[0]);
-	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
-	  assemble_name (file, buf);
-	  putc ('-', file);
-	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);
-	  assemble_name (file, buf);
-	  fprintf (file, ")(%s)\n", reg_names[30]);
-	  asm_fprintf (file, "\t{cax|add} %s,%s,%s\n",
-		       reg_names[30], reg_names[0], reg_names[30]);
-	  rs6000_pic_labelno++;
-	}
-      else
-#endif
-
-	switch (DEFAULT_ABI)
-	  {
-	  case ABI_V4:
-	  case ABI_SOLARIS:
-	  case ABI_AIX_NODESC:
-	    if (TARGET_32BIT)
-	      {
-		ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
-		asm_fprintf (file, "\t{cau|addis} %s,%s,", reg_names[30], reg_names[0]);
-		assemble_name (file, buf);
-		asm_fprintf (file, "@ha\n");
-		if (TARGET_NEW_MNEMONICS)
-		  {
-		    asm_fprintf (file, "\taddi %s,%s,", reg_names[30], reg_names[30]);
-		    assemble_name (file, buf);
-		    asm_fprintf (file, "@l\n");
-		  }
-		else
-		  {
-		    asm_fprintf (file, "\tcal %s,", reg_names[30]);
-		    assemble_name (file, buf);
-		    asm_fprintf (file, "@l(%s)\n", reg_names[30]);
-		  }
-	      }
-	    else
-	      abort ();
-
-	  break;
-
-	case ABI_NT:
-	case ABI_AIX:
-	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 0);
-	  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[30]);
-	  assemble_name (file, buf);
-	  asm_fprintf (file, "(%s)\n", reg_names[2]);
-	  break;
-	}
-    }
+    rs6000_output_load_toc_table (file);
 
   if (DEFAULT_ABI == ABI_NT)
     {
