@@ -1,3 +1,11 @@
+2004-09-14 Jeff Law  <law@redhat.com>
+
+	* tree-dfa.c (free_df_for_stmt): No longer static.
+	(free_df): Update comments.
+	* tree-flow.h (free_df_for_stmt): Prototype.
+	* tree-ssa-dse.c (dse_optimize_stmt): Call free_df_for_stmt.  Also
+	call release_defs.
+
 2004-09-14  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/17252
