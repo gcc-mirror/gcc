@@ -122,16 +122,17 @@ typedef void *__gnuc_va_list;
 #undef _VA_LIST
 #endif
 
-#ifdef __SVR4_2__
-
+#ifdef __svr4__
 /* SVR4.2 uses _VA_LIST for an internal alias for va_list,
-   so we must avoid testing it and setting it here.  */
+   so we must avoid testing it and setting it here.
+   SVR4 uses _VA_LIST as a flag in stdarg.h, but we should
+   have no conflict with that.  */
 #ifndef _VA_LIST_
 #define _VA_LIST_
 typedef __gnuc_va_list va_list;
 #endif /* _VA_LIST_ */
 
-#else /* not __SVR4_2__ */
+#else /* not __svr4__ */
 
 /* The macro _VA_LIST_ is the same thing used by this file in Ultrix.
    But on BSD NET2 we must not test or define or undef it.
@@ -152,7 +153,7 @@ typedef __gnuc_va_list va_list;
 #endif /* not _VA_LIST */
 #endif /* not _VA_LIST_ */
 
-#endif /* not __SVR4_2__ */
+#endif /* not __svr4__ */
 
 /* The next BSD release (if there is one) wants this symbol to be
    undefined instead of _VA_LIST_.  */
