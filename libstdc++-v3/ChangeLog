@@ -1,3 +1,39 @@
+2004-08-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.am (hosted_source): Add libmath and testsuite.
+	(SUBDIRS): Remove them.
+	* acinclude.m4: (GLIBCXX_ENABLED_HOSTED): Default to freestanding
+	on arm*-*-symbianelf*.
+	* crossconfig.m4: Add arm*-*-symbianelf* support.
+	* include/c_std/std/std_cstdlib.h (stdlib.h): Do not include it
+	when freestanding.  Do not bring names into std:: namespace with
+	"using" when freestanding.  Declare required functions and macros
+	when freestanding. 
+	* libsupc++/Makefile.am (c_sources): Do not include cp-demangle.c
+	when freestanding.
+	* libsupc++/del_op.cc: Declare "free" only when freestanding.
+	* libsupc++/eh_alloc.cc (cstring): Include it only when hosted.
+	(malloc): Declare when freestanding.
+	(free): Likewise.
+	(memset): Likewise.
+	(__cxa_allocate_exception): Call malloc, not std::malloc.  Likewise
+	for memset.
+	(__cxa_free_exception): Likewise for free.
+	* libsupc++/new_op.cc: Declare "malloc" when freestanding.
+	* libsupc++/pure.cc (writestr): Define to nothing when
+	freestanding.
+	* libsupc++/vterminate.cc: Do not define anything when
+	freestanding.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* include/Makefile.in: Likewise.
+	* libmath/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	
 2004-08-01  Matt Austern  <austern@apple.com>
 
 	PR libstdc++/16844

@@ -1383,7 +1383,14 @@ AC_DEFUN([GLIBCXX_ENABLE_HOSTED], [
   AC_ARG_ENABLE([hosted-libstdcxx],
     AC_HELP_STRING([--disable-hosted-libstdcxx],
                    [only build freestanding C++ runtime support]),,
-    [enable_hosted_libstdcxx=yes])
+    [case "$host" in
+	arm*-*-symbianelf*) 
+	    enable_hosted_libstdcxx=no
+	    ;;
+        *) 
+	    enable_hosted_libstdcxx=yes
+	    ;;
+     esac])
   if test "$enable_hosted_libstdcxx" = no; then
     AC_MSG_NOTICE([Only freestanding libraries will be built])
     is_hosted=no

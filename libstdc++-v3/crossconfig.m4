@@ -4,6 +4,10 @@ dnl
 
 # Base decisions on target environment.
 case "${host}" in
+  arm*-*-symbianelf*)
+    # This is a freestanding configuration; there is nothing to do here.
+    ;;
+
   *-darwin*)
     # Darwin versions vary, but the linker should work in a cross environment,
     # so we just check for all the features here.

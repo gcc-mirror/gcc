@@ -49,7 +49,13 @@
 #include <bits/c++config.h>
 #include <cstddef>
 
+#if _GLIBCXX_HOSTED
+/* The C standard does not require a freestanding implementation to
+   provide <stdlib.h>.  However, the C++ standard does still require
+   <cstdlib> -- but only the functionality mentioned in
+   [lib.support.start.term].  */
 #include <stdlib.h>
+#endif
 
 // Get rid of those macros defined in <stdlib.h> in lieu of real functions.
 #undef abort
@@ -83,6 +89,7 @@
 
 namespace std
 {
+#if _GLIBCXX_HOSTED
   using ::div_t;
   using ::ldiv_t;
 
@@ -124,6 +131,15 @@ namespace std
 
   inline ldiv_t
   div(long __i, long __j) { return ldiv(__i, __j); }
+#else
+  /* Provide the minimal set of definitions required of a freestanding
+     implementation.  */
+  #define EXIT_SUCCESS 0
+  #define EXIT_FAILURE 1
+  extern "C" void abort(void);
+  extern "C" int atexit(void (*)());
+  extern "C" void exit(int);
+#endif
 }
 
 #if _GLIBCXX_USE_C99
