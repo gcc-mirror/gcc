@@ -4106,7 +4106,7 @@ thread_jumps (void)
 {
   basic_block bb;
   bool retval = false;
-  basic_block *worklist = xmalloc (sizeof (basic_block) * last_basic_block);
+  basic_block *worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
   basic_block *current = worklist;
 
   FOR_EACH_BB (bb)

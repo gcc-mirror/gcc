@@ -6,6 +6,8 @@
 	* tree-cfg.c (phi_alternatives_equal): Check that PHI_ARG_DEF
 	is not null.
 
+	* tree-cfg.c (thread_jumps): Reduce the size of WORKLIST.
+
 2004-12-02  Jeff Law  <law@redhat.com>
 
 	* tree-eh.c: Revert yesterday's change.
