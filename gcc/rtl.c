@@ -282,6 +282,10 @@ copy_rtx (orig)
 	    XEXP (copy, i) = copy_rtx (XEXP (orig, i));
 	  break;
 
+	case 'u':
+	  XEXP (copy, i) = XEXP (orig, i);
+	  break;
+
 	case 'E':
 	case 'V':
 	  XVEC (copy, i) = XVEC (orig, i);
@@ -349,6 +353,10 @@ copy_most_rtx (orig, may_share)
 	  XEXP (copy, i) = XEXP (orig, i);
 	  if (XEXP (orig, i) != NULL && XEXP (orig, i) != may_share)
 	    XEXP (copy, i) = copy_most_rtx (XEXP (orig, i), may_share);
+	  break;
+
+	case 'u':
+	  XEXP (copy, i) = XEXP (orig, i);
 	  break;
 
 	case 'E':
