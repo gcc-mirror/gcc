@@ -45,17 +45,18 @@ import java.util.Vector;
  * <code>UndoableEdits</code>.
  *
  * <p>The use of a <code>CompoundEdit</code> is divided in two separate
- * phases.
+ * phases.</p>
  *
- * <ol><li>In the first phase, the <code>CompoundEdit</code> is
- * initialized.  After a new instance of <code>CompoundEdit</code> has
- * been created, {@link #addEdit(UndoableEdit)} is called for each
- * element of the compound.  To terminate the initialization phase,
- * call {@link #end()}.</li>
- *
+ * <ol>
+ * <li>In the first phase, the <code>CompoundEdit</code> is
+ *     initialized.  After a new instance of <code>CompoundEdit</code> has
+ *     been created, {@link #addEdit(UndoableEdit)} is called for each
+ *     element of the compound.  To terminate the initialization phase,
+ *     call {@link #end()}.</li>
  * <li>In the second phase, the the <code>CompoundEdit</code> can be
- * used, typically by invoking {@link #undo()} and {@link
- * #redo()}.</li></ol>
+ *     used, typically by invoking {@link #undo()} and
+ *     {@link #redo()}.</li>
+ * </ol>
  *
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
