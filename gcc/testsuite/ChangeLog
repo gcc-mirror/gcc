@@ -1,3 +1,7 @@
+2002-04-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.misc-tests/linkage.exp: Special case 64-bit solaris2.
+
 2002-04-01  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* g++.dg/ext/instantiate1.C, g++.dg/ext/instantiate2.C,
