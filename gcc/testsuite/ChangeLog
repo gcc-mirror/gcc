@@ -1,3 +1,9 @@
+2004-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/14755
+	* gcc.c-torture/execute/20040331-1.c: New test.
+	* gcc.dg/20040331-1.c: New test.
+
 2004-04-01  Paul Brook  <paul@codesourcery.com>
 
 	* gcc.dg/arm-mmx-1.c: Add -mabi=iwmmxt to dg-options.
