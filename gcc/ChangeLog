@@ -1,4 +1,4 @@
-2000-04-12  Dave Pitts  <dpitts@cozx.com>
+2000-04-16  Dave Pitts  <dpitts@cozx.com>
 
 	* Makefile.in ($(srcdir)/c-parse.y: c-parse.in): Enclose the whole
 	message in quotes. Otherwise, IBM's make program treats the '#' as the
