@@ -1,3 +1,7 @@
+2001-12-07  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (c_language): Remove duplicate.
+
 2001-12-07  Dale Johannesen  <dalej@apple.com>
 
         * config/rs6000/darwin.h: Set MAX_LONG_TYPE_SIZE to 32.
