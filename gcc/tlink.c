@@ -47,7 +47,8 @@ extern int prepends_underscore;
 
 static int tlink_verbose;
 
-/* Hash table code.  */
+/* Hash table boilerplate for working with hash.[ch].  We have hash tables
+   for symbol names, file names, and demangled symbols.  */
 
 typedef struct symbol_hash_entry
 {
@@ -75,6 +76,9 @@ typedef struct demangled_hash_entry
 
 static struct hash_table symbol_table;
 
+/* Create a new entry for the symbol hash table.
+   Passed to hash_table_init.  */
+
 static struct hash_entry *
 symbol_hash_newfunc (entry, table, string)
      struct hash_entry *entry;
@@ -99,6 +103,8 @@ symbol_hash_newfunc (entry, table, string)
   return (struct hash_entry *) ret;
 }
 
+/* Look up an entry in the symbol hash table.  */
+
 static struct symbol_hash_entry *
 symbol_hash_lookup (string, create)
      const char *string;
@@ -110,6 +116,9 @@ symbol_hash_lookup (string, create)
 }
 
 static struct hash_table file_table;
+
+/* Create a new entry for the file hash table.
+   Passed to hash_table_init.  */
 
 static struct hash_entry *
 file_hash_newfunc (entry, table, string)
@@ -135,6 +144,8 @@ file_hash_newfunc (entry, table, string)
   return (struct hash_entry *) ret;
 }
 
+/* Look up an entry in the file hash table.  */
+
 static struct file_hash_entry *
 file_hash_lookup (string)
      const char *string;
@@ -145,6 +156,9 @@ file_hash_lookup (string)
 }
 
 static struct hash_table demangled_table;
+
+/* Create a new entry for the demangled name hash table.
+   Passed to hash_table_init.  */
 
 static struct hash_entry *
 demangled_hash_newfunc (entry, table, string)
@@ -166,6 +180,8 @@ demangled_hash_newfunc (entry, table, string)
   ret->mangled = NULL;
   return (struct hash_entry *) ret;
 }
+
+/* Look up an entry in the demangled name hash table.  */
 
 static struct demangled_hash_entry *
 demangled_hash_lookup (string, create)
@@ -252,6 +268,8 @@ file_pop ()
 
 /* Other machinery.  */
 
+/* Initialize the tlink machinery.  Called from do_tlink.  */
+
 static void
 tlink_init ()
 {
@@ -334,6 +352,12 @@ pfgets (stream)
 
 /* Real tlink code.  */
 
+/* Subroutine of read_repo_file.  We are reading the repo file for file F,
+   which is coming in on STREAM, and the symbol that comes next in STREAM
+   is offerred, chosen or provided if CHOSEN is 0, 1 or 2, respectively.
+
+   XXX "provided" is unimplemented, both here and in the compiler.  */
+
 static void
 freadsym (stream, f, chosen)
      FILE *stream;
@@ -349,12 +373,16 @@ freadsym (stream, f, chosen)
 
   if (sym->file == NULL)
     {
+      /* We didn't have this symbol already, so we choose this file.  */
+
       symbol_push (sym);
       sym->file = f;
       sym->chosen = chosen;
     }
   else if (chosen)
     {
+      /* We want this file; cast aside any pretender.  */
+
       if (sym->chosen && sym->file != f)
 	{
 	  if (sym->chosen == 1)
@@ -370,6 +398,8 @@ freadsym (stream, f, chosen)
       sym->chosen = chosen;
     }
 }
+
+/* Read in the repo file denoted by F, and record all its information.  */
 
 static void
 read_repo_file (f)
@@ -414,6 +444,11 @@ read_repo_file (f)
     f->dir = ".";
 }
 
+/* We might want to modify LINE, which is a symbol line from file F.  We do
+   this if either we saw an error message referring to the symbol in
+   question, or we have already allocated the symbol to another file and
+   this one wants to emit it as well.  */
+
 static void
 maybe_tweak (line, f)
      char *line;
@@ -433,6 +468,11 @@ maybe_tweak (line, f)
 	line[0] = 'O';
     }
 }
+
+/* Update the repo files for each of the object files we have adjusted and
+   recompile.
+
+   XXX Should this use collect_execute instead of system?  */
 
 static int
 recompile_files ()
@@ -484,6 +524,9 @@ recompile_files ()
   return 1;
 }
 
+/* The first phase of processing: determine which object files have
+   .rpo files associated with them, and read in the information.  */
+
 static int
 read_repo_files (object_lst)
      char **object_lst;
@@ -509,6 +552,8 @@ read_repo_files (object_lst)
   return (symbol_stack != NULL);
 }
 
+/* Add the demangled forms of any new symbols to the hash table.  */
+
 static void
 demangle_new_symbols ()
 {
@@ -527,6 +572,9 @@ demangle_new_symbols ()
       dem->mangled = (char*) sym->root.key;
     }
 }
+
+/* Step through the output of the linker, in the file named FNAME, and
+   adjust the settings for each symbol encountered.  */
 
 static int
 scan_linker_output (fname)
@@ -606,6 +654,15 @@ scan_linker_output (fname)
   fclose (stream);
   return (file_stack != NULL);
 }
+
+/* Entry point for tlink.  Called from main in collect2.c.
+
+   Iteratively try to provide definitions for all the unresolved symbols
+   mentioned in the linker error messages.
+
+   LD_ARGV is an array of arguments for the linker.
+   OBJECT_LST is an array of object files that we may be able to recompile
+     to provide missing definitions.  Currently ignored.  */
 
 void
 do_tlink (ld_argv, object_lst)
