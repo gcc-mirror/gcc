@@ -1758,7 +1758,7 @@ expand_call (exp, target, ignore)
   if (STRICT_ALIGNMENT)
     for (i = 0; i < num_actuals; i++)
       if (args[i].reg != 0 && ! args[i].pass_on_stack
-	&& args[i].mode == BLKmode
+	  && args[i].mode == BLKmode
 	  && (TYPE_ALIGN (TREE_TYPE (args[i].tree_value))
 	      < MIN (BIGGEST_ALIGNMENT, BITS_PER_WORD)))
 	{
