@@ -1,3 +1,9 @@
+2002-05-20  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/faq/index.html (5.4):  Recommend against -I options for
+	finding the ext headers.
+	* docs/html/faq/index.txt:  Regenerate.
+
 2002-05-19  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/23_containers/deque_operators.cc (test01):
