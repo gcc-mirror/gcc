@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.54 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -2082,12 +2082,41 @@ package body Exp_Fixd is
       Left  : constant Node_Id := Left_Opnd (N);
       Right : constant Node_Id := Right_Opnd (N);
 
+      procedure Rewrite_Non_Static_Universal (Opnd : Node_Id);
+      --  The operand may be a non-static universal value, such an
+      --  exponentiation with a non-static exponent. In that case, treat
+      --  as a fixed * fixed multiplication, and convert the argument to
+      --  the target fixed type.
+
+      procedure Rewrite_Non_Static_Universal (Opnd : Node_Id) is
+         Loc   : constant Source_Ptr := Sloc (N);
+
+      begin
+         Rewrite (Opnd,
+           Make_Type_Conversion (Loc,
+             Subtype_Mark => New_Occurrence_Of (Etype (N), Loc),
+             Expression   => Expression (Opnd)));
+         Analyze_And_Resolve (Opnd, Etype (N));
+      end Rewrite_Non_Static_Universal;
+
    begin
       if Etype (Left) = Universal_Real then
-         Do_Multiply_Fixed_Universal (N, Right, Left);
+         if Nkind (Left) = N_Real_Literal then
+            Do_Multiply_Fixed_Universal (N, Right, Left);
+
+         elsif Nkind (Left) = N_Type_Conversion then
+            Rewrite_Non_Static_Universal (Left);
+            Do_Multiply_Fixed_Fixed (N);
+         end if;
 
       elsif Etype (Right) = Universal_Real then
-         Do_Multiply_Fixed_Universal (N, Left, Right);
+         if Nkind (Right) = N_Real_Literal then
+            Do_Multiply_Fixed_Universal (N, Left, Right);
+
+         elsif Nkind (Right) = N_Type_Conversion then
+            Rewrite_Non_Static_Universal (Right);
+            Do_Multiply_Fixed_Fixed (N);
+         end if;
 
       else
          Do_Multiply_Fixed_Fixed (N);
