@@ -3985,7 +3985,7 @@ finish_struct_1 (t, warn_anon)
   if (n_baseclasses)
     /* layout_basetypes will remove the base subobject fields.  */
     max_has_virtual = layout_basetypes (t, max_has_virtual);
-  else if (empty)
+  if (empty)
     TYPE_FIELDS (t) = fields;
 
   my_friendly_assert (TYPE_FIELDS (t) == fields, 981117);
