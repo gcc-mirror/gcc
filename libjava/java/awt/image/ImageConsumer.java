@@ -7,6 +7,8 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 package java.awt.image;
+import java.util.Hashtable;
+import java.awt.ColorModel;
 
 public interface ImageConsumer
 {
