@@ -1,3 +1,10 @@
+2003-08-20  Geoffrey Keating  <geoffk@apple.com>
+
+	* configure.in (TOPLEVEL_CONFIGURE_ARGUMENTS): Quote properly for
+	make, shell, etc.
+	(baseargs): Likewise.
+	* configure: Regenerate.
+
 2003-08-20  Bernardo Innocenti  <bernie@develer.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
