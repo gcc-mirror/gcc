@@ -41,7 +41,6 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 
 extern char *xmalloc (), *xrealloc ();
-extern void free ();
 
 extern struct obstack *rtl_obstack;
 
