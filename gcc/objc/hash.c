@@ -16,10 +16,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.5 1991/11/20 23:29:20 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.6 1991/11/21 22:27:06 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/20 23:29:20 $
+  $Date: 1991/11/21 22:27:06 $
   $Log: hash.c,v $
+ * Revision 0.6  1991/11/21  22:27:06  dennisg
+ * changed hash value calculation.
+ * func name changed from hashValue() to hashIndex().  the
+ * func really calculated a index anyway.
+ * changed hash func impl.  essentially it was calculating a hash value
+ * from a hash value.  this is a implementation thing.
+ *
  * Revision 0.5  1991/11/20  23:29:20  dennisg
  * converted hashIndex() to a inline.
  *
@@ -43,6 +50,7 @@
  
 
 #include  <hash.h>
+#include	<hash-inline.h>
 #include  <ObjC.h>
 #include	<ObjC-private.h>
 
@@ -61,15 +69,6 @@
 	((((cache)->sizeOfHash * 75	) / 100 ) <= (cache)->entriesInHash)
 #define	EXPANSION(cache) \
 	(((cache)->sizeOfHash * 175 ) / 100 )
-
-
-static inline u_int hashIndex( Cache_t theCache, void* aKey ) {
-
-
-	assert (sizeof (u_int) == sizeof (void*));
-	
-	return ((u_int)aKey) % theCache->sizeOfHash ;
-}
 
 
 Cache_t hash_new( u_int sizeOfHash ) {
@@ -118,7 +117,7 @@ void hash_delete( Cache_t theCache ) {
 
 void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
 
-  u_int       indx = hashIndex( *theCache, aKey );
+  u_short     indx = hashIndex( *theCache, aKey );
   CacheNode_t aCacheNode = calloc( 1, sizeof( CacheNode ));
 
 
@@ -190,7 +189,7 @@ void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
 
 void hash_remove( Cache_t theCache, void* aKey ) {
 
-  u_int       indx = hashIndex( theCache, aKey );
+  u_short     indx = hashIndex( theCache, aKey );
   CacheNode_t aCacheNode = ( *theCache->theNodeTable )[ indx ];
   
   
@@ -225,28 +224,6 @@ void hash_remove( Cache_t theCache, void* aKey ) {
 																								/* Decrement the number of
 																									entries in the hash table. */
 	--theCache->entriesInHash;
-}
-
-
-void* hash_value_for_key( Cache_t theCache, void* aKey ) {
-
-  u_int       indx = hashIndex( theCache, aKey );
-  CacheNode_t aCacheNode = ( *theCache->theNodeTable )[ indx ];
-  void*       retVal = NULL;
-  
-
-  if( aCacheNode ) {
-    BOOL  found = NO;
-  
-    do {
-      if( aCacheNode->theKey == aKey )
-        retVal = aCacheNode->theValue, found = YES;
-      else
-        aCacheNode = aCacheNode->nextNode;
-    } while( !found && aCacheNode );
-  }
-  
-  return retVal;
 }
 
 
