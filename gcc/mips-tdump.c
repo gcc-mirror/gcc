@@ -291,7 +291,7 @@ read_seek (ptr, size, offset, context)
   if (size == 0)		/* nothing to read */
     return ptr;
 
-  if ((ptr == (PTR_T) 0 && (ptr = malloc (size)) == (PTR_T) 0)
+  if ((ptr == (PTR_T) 0 && (ptr = xmalloc (size)) == (PTR_T) 0)
       || (tfile_offset != offset && lseek (tfile_fd, offset, 0) == -1)
       || (read_size = read (tfile_fd, ptr, size)) < 0)
     {

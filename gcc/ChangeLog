@@ -1,3 +1,8 @@
+Sat Mar 10 10:36:45 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* mips-tdump.c (read_seek): Call xmalloc, not malloc.
+	* mips-tfile.c: Don't #undef rindex; not used.
+
 Sat Mar 10 14:34:59 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (DBX_REGISTER_NUMBER): Return proper values for 64bits.
