@@ -1,3 +1,34 @@
+1999-09-21  Nathan Sidwell  <nathan@acm.org>
+
+	Reimplement dynamic cast and catch matching.
+	* cp-tree.h (get_dynamic_cast_base_type): Prototype new function
+	* search.c (dynamic_cast_base_recurse): New function.
+	(get_dynamic_cast_base_type): New function for dynamic cast.
+	* rtti.c (build_dynamic_cast_1): Determine source and target
+	class relationship. Call __dynamic_cast_2.
+	* tinfo.h (__user_type_info::upcast): New catch dispatcher.
+	(__user_type_info::dyncast): New dynamic cast dispatcher.
+	(__user_type_info::sub_kind): New nested enumeration.
+	(__user_type_info::contained_p): sub_kind predicate.
+	(__user_type_info::contained_public_p): Likewise.
+	(__user_type_info::contained_nonpublic_p): Likewise.
+	(__user_type_info::contained_nonvirtual_p: Likewise.
+	(__user_type_info::upcast_result): New nested struct.
+	(__user_type_info::dyncast_result): New nested struct.
+	(*::do_upcast): New catch function.
+	(*::do_dyncast): New dynamic cast function.
+	(__user_type_info::find_public_subobj): New dynamic cast
+	helper dispatcher.
+	(*::do_find_public_subobj): New dynamic cast helper function.
+	* tinfo.cc (__user_type_info::upcast): Define catch dispatcher.
+	(__user_type_info::dyncast): Define dynamic cast dispatcher.
+	(*::do_upcast): Define catch function.
+	(*::do_dyncast): Define dynamic cast function.
+	(*::do_find_public_subobj): Define dynamic cast helper function.
+	* tinfo2.cc (__throw_type_match_rtti_2): Use upcast.
+	(__dynamic_cast): Backwards compatibility wrapper. Use dyncast.
+	(__dynamic_cast_2): New dynamic cast runtime.
+
 1999-09-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (finish_stmt_expr): Change prototype.

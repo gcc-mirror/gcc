@@ -588,6 +588,7 @@ build_dynamic_cast_1 (type, expr)
 	{
 	  tree retval;
           tree result, td1, td2, td3, elems, expr2;
+          tree static_type, target_type, boff;
 
  	  /* If we got here, we can't convert statically.  Therefore,
 	     dynamic_cast<D&>(b) (b an object) cannot succeed.  */
@@ -632,20 +633,23 @@ build_dynamic_cast_1 (type, expr)
 	    td1 = get_tinfo_fn_dynamic (expr);
 	  td1 = decay_conversion (td1);
 	  
-	  td2 = decay_conversion
-	    (get_tinfo_fn (TYPE_MAIN_VARIANT (TREE_TYPE (type))));
-	  td3 = decay_conversion
-	    (get_tinfo_fn (TYPE_MAIN_VARIANT (TREE_TYPE (exprtype))));
+	  target_type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+	  static_type = TYPE_MAIN_VARIANT (TREE_TYPE (exprtype));
+	  td2 = decay_conversion (get_tinfo_fn (target_type));
+	  td3 = decay_conversion (get_tinfo_fn (static_type));
+
+          /* Determine how T and V are related.  */
+          boff = get_dynamic_cast_base_type (static_type, target_type);
 
           elems = tree_cons
 	    (NULL_TREE, td1, tree_cons
 	     (NULL_TREE, td2, tree_cons
-	      (NULL_TREE, build_int_2 (1, 0), tree_cons
+	      (NULL_TREE, boff, tree_cons
 	       (NULL_TREE, expr2, tree_cons
-		(NULL_TREE, td3, tree_cons
+	        (NULL_TREE, td3, tree_cons
 		 (NULL_TREE, expr1, NULL_TREE))))));
 
-	  dcast_fn = get_identifier ("__dynamic_cast");
+	  dcast_fn = get_identifier ("__dynamic_cast_2");
 	  if (IDENTIFIER_GLOBAL_VALUE (dcast_fn))
 	    dcast_fn = IDENTIFIER_GLOBAL_VALUE (dcast_fn);
 	  else
@@ -656,7 +660,7 @@ build_dynamic_cast_1 (type, expr)
 	      tmp = tree_cons
 		(NULL_TREE, TREE_TYPE (td1), tree_cons
 		 (NULL_TREE, TREE_TYPE (td1), tree_cons
-		  (NULL_TREE, integer_type_node, tree_cons
+	          (NULL_TREE, integer_type_node, tree_cons
 		   (NULL_TREE, ptr_type_node, tree_cons
 		    (NULL_TREE, TREE_TYPE (td1), tree_cons
 		     (NULL_TREE, ptr_type_node, void_list_node))))));

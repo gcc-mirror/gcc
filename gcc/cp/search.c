@@ -90,6 +90,7 @@ static tree dfs_no_overlap_yet PROTO((tree, void *));
 static int get_base_distance_recursive
 	PROTO((tree, int, int, int, int *, tree *, tree,
 	       int, int *, int, int));
+static int dynamic_cast_base_recurse PROTO((tree, tree, int, tree *));
 static void expand_upcast_fixups 
 	PROTO((tree, tree, tree, tree, tree, tree, tree *));
 static void fixup_virtual_upcast_offsets
@@ -492,6 +493,77 @@ get_base_distance (parent, binfo, protect, path_ptr)
   if (path_ptr)
     *path_ptr = new_binfo;
   return rval;
+}
+
+/* Worker function for get_dynamic_cast_base_type.  */
+
+static int
+dynamic_cast_base_recurse (subtype, binfo, via_virtual, offset_ptr)
+     tree subtype;
+     tree binfo;
+     int via_virtual;
+     tree *offset_ptr;
+{
+  tree binfos;
+  int i, n_baselinks;
+  int worst = -3;
+  
+  if (BINFO_TYPE (binfo) == subtype)
+    {
+      if (via_virtual)
+        return -2;
+      else
+        {
+          *offset_ptr = BINFO_OFFSET (binfo);
+          return 0;
+        }
+    }
+  
+  binfos = BINFO_BASETYPES (binfo);
+  n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      int rval;
+      
+      if (!TREE_VIA_PUBLIC (base_binfo))
+        continue;
+      rval = dynamic_cast_base_recurse
+             (subtype, base_binfo,
+              via_virtual || TREE_VIA_VIRTUAL (base_binfo), offset_ptr);
+      if (worst == -3)
+        worst = rval;
+      else if (rval >= 0)
+        worst = worst >= 0 ? -1 : worst;
+      else if (rval > -3)
+        worst = worst < rval ? worst : rval;
+    }
+  return worst;
+}
+
+/* The dynamic cast runtime needs a hint about how the static SUBTYPE type started
+   from is related to the required TARGET type, in order to optimize the
+   inheritance graph search. This information is independant of the
+   current context, and ignores private paths, hence get_base_distance is
+   inappropriate. Return a TREE specifying the base offset, BOFF.
+   BOFF >= 0, there is only one public non-virtual SUBTYPE base at offset BOFF,
+      and there are no public virtual SUBTYPE bases.
+   BOFF == -1, SUBTYPE occurs as multiple public non-virtual bases.
+   BOFF == -2, SUBTYPE occurs as multiple public virtual or non-virtual bases.
+   BOFF == -3, SUBTYPE is not a public base.  */
+
+tree
+get_dynamic_cast_base_type (subtype, target)
+     tree subtype;
+     tree target;
+{
+  tree offset = NULL_TREE;
+  int boff = dynamic_cast_base_recurse (subtype, TYPE_BINFO (target),
+                                        0, &offset);
+  
+  if (!boff)
+    return offset;
+  return build_int_2 (boff, -1);
 }
 
 /* Search for a member with name NAME in a multiple inheritance lattice
