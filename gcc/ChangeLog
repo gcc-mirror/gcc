@@ -1,3 +1,7 @@
+Mon Jun  8 15:26:49 1998  Juha Sarlin <juha@c3l.tyreso.se>
+
+	* h8300.c (get_shift_alg): Add special cases for shifts of 8 and 24.
+
 Mon Jun  8 14:40:02 1998  John Wehle  (john@feith.com)
 
 	* i386.md (movsf_push, movsf_mem): Remove.
