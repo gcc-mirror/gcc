@@ -285,6 +285,7 @@ gnu/gcj/protocol/file/Handler.java \
 gnu/gcj/protocol/http/Connection.java \
 gnu/gcj/protocol/http/Handler.java \
 gnu/gcj/RawData.java \
+gnu/gcj/util/EnumerationChain.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
 java/io/BufferedReader.java \
@@ -480,6 +481,7 @@ java/util/NoSuchElementException.java \
 java/util/Observable.java \
 java/util/Observer.java	\
 java/util/Properties.java \
+java/util/PropertyResourceBundle.java \
 java/util/Random.java \
 java/util/ResourceBundle.java \
 java/util/SimpleTimeZone.java \
@@ -671,6 +673,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/text/LocaleData_en_US.P \
 .deps/gnu/gcj/text/SentenceBreakIterator.P \
 .deps/gnu/gcj/text/WordBreakIterator.P \
+.deps/gnu/gcj/util/EnumerationChain.P \
 .deps/java/io/BufferedInputStream.P \
 .deps/java/io/BufferedOutputStream.P .deps/java/io/BufferedReader.P \
 .deps/java/io/BufferedWriter.P .deps/java/io/ByteArrayInputStream.P \
@@ -809,12 +812,13 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/MissingResourceException.P \
 .deps/java/util/NoSuchElementException.P .deps/java/util/Observable.P \
 .deps/java/util/Observer.P .deps/java/util/Properties.P \
-.deps/java/util/Random.P .deps/java/util/ResourceBundle.P \
-.deps/java/util/SimpleTimeZone.P .deps/java/util/Stack.P \
-.deps/java/util/StringTokenizer.P .deps/java/util/TimeZone.P \
-.deps/java/util/TooManyListenersException.P .deps/java/util/Vector.P \
-.deps/java/util/zip/Adler32.P .deps/java/util/zip/CRC32.P \
-.deps/java/util/zip/Checksum.P .deps/java/util/zip/Deflater.P \
+.deps/java/util/PropertyResourceBundle.P .deps/java/util/Random.P \
+.deps/java/util/ResourceBundle.P .deps/java/util/SimpleTimeZone.P \
+.deps/java/util/Stack.P .deps/java/util/StringTokenizer.P \
+.deps/java/util/TimeZone.P .deps/java/util/TooManyListenersException.P \
+.deps/java/util/Vector.P .deps/java/util/zip/Adler32.P \
+.deps/java/util/zip/CRC32.P .deps/java/util/zip/Checksum.P \
+.deps/java/util/zip/Deflater.P \
 .deps/java/util/zip/DeflaterOutputStream.P \
 .deps/java/util/zip/InflaterInputStream.P \
 .deps/java/util/zip/ZipConstants.P .deps/java/util/zip/ZipEntry.P \

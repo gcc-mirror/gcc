@@ -1,3 +1,16 @@
+1999-05-9  Anthony Green  <green@cygnus.com>
+
+	* java/text/DateFormat.java (computeInstance): Separate time
+	and date styles.
+	(getDateTimeInstance): Ditto.
+	(getDateTimeInstance(int,int)): New method.
+
+        * Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Add new classes.
+
+	* java/util/PropertyResourceBundle.java: New file.
+	* gnu/gcj/util/EnumerationChain.java: New file.
+
 1999-05-07  Tom Tromey  <tromey@cygnus.com>
 
 	* acconfig.h (GCJVERSION): New undef.
