@@ -127,31 +127,53 @@ format_write (format, text, av)
      tCC* text;
      regmatch_t av[];
 {
-    tCC *p, *str;
     int c;
-    size_t len;
 
-    for (p = 0; *p; p++) {
-       c = *p;
-       if (c != '%') {
-           putchar(c);
-           continue;
-       }
+    while ((c = (unsigned)*(format++)) != NUL) {
 
-       c = *++p;
-       if (c == '%') {
-           putchar(c);
-           continue;
-       } else if (c < '0' || c > '9') {
-           abort();
-       }
+        if (c != '%') {
+            putchar(c);
+            continue;
+        }
 
-       c -= '0';
-       str = text + av[c].rm_so;
-       len = av[c].rm_eo - av[c].rm_so;
-       fwrite(str, len, 1, stdout);
+        c = (unsigned)*(format++);
+
+        /*
+         *  IF the character following a '%' is not a digit,
+         *  THEN we will always emit a '%' and we may or may
+         *  not emit the following character.  We will end on
+         *  a NUL and we will emit only one of a pair of '%'.
+         */
+        if (! isdigit( c )) {
+            putchar( '%' );
+            switch (c) {
+            case NUL:
+                return;
+            case '%':
+                break;
+            default:
+                putchar(c);
+            }
+        }
+
+        /*
+         *  Emit the matched subexpression numbered 'c'.
+         *  IF, of course, there was such a match...
+         */
+        else {
+            regmatch_t*  pRM = av + (c - (unsigned)'0');
+            size_t len;
+
+            if (pRM->rm_so < 0)
+                continue;
+
+            len = pRM->rm_eo - pRM->rm_so;
+            if (len > 0)
+                fwrite(text + pRM->rm_so, len, 1, stdout);
+        }
     }
 }
+
 
 FIX_PROC_HEAD( format_fix )
 {

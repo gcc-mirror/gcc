@@ -41,6 +41,10 @@
 	(LABEL_NUSES, LABEL_REFS): Likewise.
 	* unroll.c (copy_loop_body): Don't copy NOTE_INSN_DELETED_LABEL.
 
+2000-05-12  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixfixes.c(format_write): buglet & relaxed rules
+
 2000-05-12  Zack Weinberg <zack@wolery.cumb.org>
 
         * fixinc/fixfixes.c (IO_use_fix, IO_defn_fix, CTRL_use_fix,
