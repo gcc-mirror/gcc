@@ -56,7 +56,7 @@ FileStream *Stderr = nil;
     Stderr = [[FileStream new] initWithFd:2];
 @}
 
-/* Other methods here */
+/* @r{Other methods here} */
 @@end
 
 @end smallexample
@@ -84,7 +84,7 @@ method instead of @code{+initialize}:
     Stderr = [[FileStream new] initWithFd:2];
 @}
 
-/* Other methods here */
+/* @r{Other methods here} */
 @@end
 
 @end smallexample

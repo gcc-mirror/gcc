@@ -789,8 +789,8 @@ lexed on if, for example, there are intervening escaped newlines or
 C-style comments.  For example:
 
 @smallexample
-foo /* A long
-comment */ bar \
+foo /* @r{A long
+comment} */ bar \
 baz
 @result{}
 foo bar baz

@@ -2575,7 +2575,7 @@ int isroot P((uid_t));
 
 /* @r{Old-style function definition.}  */
 int
-isroot (x)   /* ??? lossage here ??? */
+isroot (x)   /* @r{??? lossage here ???} */
      uid_t x;
 @{
   return x == 0;
@@ -2854,13 +2854,13 @@ int init_data __attribute__ ((section ("INITDATA"))) = 0;
 
 main()
 @{
-  /* Initialize stack pointer */
+  /* @r{Initialize stack pointer} */
   init_sp (stack + sizeof (stack));
 
-  /* Initialize initialized data */
+  /* @r{Initialize initialized data} */
   memcpy (&init_data, &data, &edata - &data);
 
-  /* Turn on the serial ports */
+  /* @r{Turn on the serial ports} */
   init_duart (&a);
   init_duart (&b);
 @}
@@ -2899,8 +2899,8 @@ int foo __attribute__((section ("shared"), shared)) = 0;
 int
 main()
 @{
-  /* Read and write foo.  All running
-     copies see the same value.  */
+  /* @r{Read and write foo.  All running
+     copies see the same value.}  */
   return 0;
 @}
 @end smallexample
@@ -3464,7 +3464,7 @@ GCC does not inline any functions when not optimizing unless you specify
 the @samp{always_inline} attribute for the function, like this:
 
 @smallexample
-/* Prototype.  */
+/* @r{Prototype.}  */
 inline void foo (const char) __attribute__((always_inline));
 @end smallexample
 
@@ -3634,7 +3634,7 @@ example for the VAX:
 
 @smallexample
 asm volatile ("movc3 %0,%1,%2"
-              : /* no outputs */
+              : /* @r{no outputs} */
               : "g" (from), "g" (to), "g" (count)
               : "r0", "r1", "r2", "r3", "r4", "r5");
 @end smallexample

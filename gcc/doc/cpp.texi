@@ -1318,7 +1318,7 @@ name, and you wish to use the function sometimes.
 
 @smallexample
 extern void foo(void);
-#define foo() /* optimized inline version */
+#define foo() /* @r{optimized inline version} */
 @dots{}
   foo();
   funcptr = foo;
@@ -2211,7 +2211,7 @@ These definitions are effectively the same:
 @smallexample
 #define FOUR (2 + 2)
 #define FOUR         (2    +    2)
-#define FOUR (2 /* two */ + 2)
+#define FOUR (2 /* @r{two} */ + 2)
 @end smallexample
 @noindent
 but these are not:
@@ -3538,8 +3538,8 @@ require matching quotes.  For example:
 @smallexample
 #define m This macro's fine and has an unmatched quote
 "/* This is not a comment.  */
-/* This is a comment.  The following #include directive
-   is ill-formed.  */
+/* @r{This is a comment.  The following #include directive
+   is ill-formed.}  */
 #include <stdio.h
 @end smallexample
 
@@ -3626,7 +3626,7 @@ example
 
 @smallexample
 #define str(x) "x"
-str(/* A comment */some text )
+str(/* @r{A comment} */some text )
      @expansion{} "some text "
 @end smallexample
 
