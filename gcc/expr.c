@@ -6957,8 +6957,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 #endif
       }
 
-      /* Return the address of the first anonymous stack arg.
-	 This should only be used for stdarg functions.  */
+      /* Return the address of the first anonymous stack arg.  */
     case BUILT_IN_NEXT_ARG:
       {
 	tree fntype = TREE_TYPE (current_function_decl);
@@ -6967,7 +6966,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
 	if (TYPE_ARG_TYPES (fntype) == 0
 	    || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		== void_type_node))
+		== void_type_node)
+	    || current_function_varargs)
 	  {
 	    error ("`va_start' used in function with fixed args");
 	    return const0_rtx;
