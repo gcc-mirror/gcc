@@ -951,14 +951,14 @@ enum reg_class
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-   gen_rtx (REG, TYPE_MODE (VALTYPE), \
+   gen_rtx_REG (TYPE_MODE (VALTYPE), \
 	    VALUE_REGNO (TYPE_MODE (VALTYPE)))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE) \
-  gen_rtx (REG, MODE, VALUE_REGNO (MODE))
+  gen_rtx_REG (MODE, VALUE_REGNO (MODE))
 
 /* Define the size of the result block used for communication between
    untyped_call and untyped_return.  The block contains a DImode value
@@ -1151,9 +1151,9 @@ do									\
 									\
     ASM_GENERATE_INTERNAL_LABEL (block_table, "LPBX", 0);		\
 									\
-    xops[1] = gen_rtx (SYMBOL_REF, VOIDmode, block_table);		\
+    xops[1] = gen_rtx_SYMBOL_REF (VOIDmode, block_table);		\
     xops[5] = stack_pointer_rtx;					\
-    xops[7] = gen_rtx (REG, Pmode, 0);	/* eax */			\
+    xops[7] = gen_rtx_REG (Pmode, 0);	/* eax */			\
 									\
     CONSTANT_POOL_ADDRESS_P (xops[1]) = TRUE;				\
 									\
@@ -1163,7 +1163,7 @@ do									\
       case 2:								\
 									\
         xops[2] = GEN_INT ((BLOCK_OR_LABEL));				\
-        xops[3] = gen_rtx (MEM, Pmode, gen_rtx (SYMBOL_REF, VOIDmode, "__bb_init_trace_func")); \
+        xops[3] = gen_rtx_MEM (Pmode, gen_rtx_SYMBOL_REF (VOIDmode, "__bb_init_trace_func")); \
         xops[6] = GEN_INT (8);						\
     									\
         output_asm_insn (AS1(push%L2,%2), xops);			\
@@ -1185,9 +1185,9 @@ do									\
         ASM_GENERATE_INTERNAL_LABEL (false_label, "LPBZ", num_func);	\
     									\
         xops[0] = const0_rtx;						\
-        xops[2] = gen_rtx (MEM, Pmode, gen_rtx (SYMBOL_REF, VOIDmode, false_label)); \
-        xops[3] = gen_rtx (MEM, Pmode, gen_rtx (SYMBOL_REF, VOIDmode, "__bb_init_func")); \
-        xops[4] = gen_rtx (MEM, Pmode, xops[1]);			\
+        xops[2] = gen_rtx_MEM (Pmode, gen_rtx_SYMBOL_REF (VOIDmode, false_label)); \
+        xops[3] = gen_rtx_MEM (Pmode, gen_rtx_SYMBOL_REF (VOIDmode, "__bb_init_func")); \
+        xops[4] = gen_rtx_MEM (Pmode, xops[1]);			\
         xops[6] = GEN_INT (4);						\
     									\
         CONSTANT_POOL_ADDRESS_P (xops[2]) = TRUE;			\
@@ -1293,13 +1293,13 @@ do									\
 									\
         ASM_GENERATE_INTERNAL_LABEL (block_table, "LPBX", 0);		\
 									\
-	xops[1] = gen_rtx (SYMBOL_REF, VOIDmode, block_table);		\
+	xops[1] = gen_rtx_SYMBOL_REF (VOIDmode, block_table);		\
         xops[2] = GEN_INT ((BLOCKNO));					\
-        xops[3] = gen_rtx (MEM, Pmode, gen_rtx (SYMBOL_REF, VOIDmode, "__bb_trace_func")); \
-        xops[4] = gen_rtx (SYMBOL_REF, VOIDmode, "__bb");		\
+        xops[3] = gen_rtx_MEM (Pmode, gen_rtx_SYMBOL_REF (VOIDmode, "__bb_trace_func")); \
+        xops[4] = gen_rtx_SYMBOL_REF (VOIDmode, "__bb");		\
 	xops[5] = plus_constant (xops[4], 4);				\
-	xops[0] = gen_rtx (MEM, SImode, xops[4]);			\
-	xops[6] = gen_rtx (MEM, SImode, xops[5]);			\
+	xops[0] = gen_rtx_MEM (SImode, xops[4]);			\
+	xops[6] = gen_rtx_MEM (SImode, xops[5]);			\
 									\
 	CONSTANT_POOL_ADDRESS_P (xops[1]) = TRUE;			\
 									\
@@ -1307,7 +1307,7 @@ do									\
         output_asm_insn (AS2(mov%L0,%2,%0), xops);			\
 	if (flag_pic)							\
 	  {								\
-            xops[7] = gen_rtx (REG, Pmode, 0);	/* eax */		\
+            xops[7] = gen_rtx_REG (Pmode, 0);	/* eax */		\
             output_asm_insn (AS1(push%L7,%7), xops);			\
             output_asm_insn (AS2(lea%L7,%a1,%7), xops);			\
             output_asm_insn (AS2(mov%L6,%7,%6), xops);			\
@@ -1323,16 +1323,16 @@ do									\
       default:								\
 									\
         ASM_GENERATE_INTERNAL_LABEL (counts, "LPBX", 2);		\
-        cnt_rtx = gen_rtx (SYMBOL_REF, VOIDmode, counts);		\
+        cnt_rtx = gen_rtx_SYMBOL_REF (VOIDmode, counts);		\
         SYMBOL_REF_FLAG (cnt_rtx) = TRUE;				\
 									\
         if (BLOCKNO)							\
           cnt_rtx = plus_constant (cnt_rtx, (BLOCKNO)*4);		\
 									\
         if (flag_pic)							\
-          cnt_rtx = gen_rtx (PLUS, Pmode, pic_offset_table_rtx, cnt_rtx);	\
+          cnt_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, cnt_rtx);	\
 									\
-        xops[0] = gen_rtx (MEM, SImode, cnt_rtx);			\
+        xops[0] = gen_rtx_MEM (SImode, cnt_rtx);			\
         output_asm_insn (AS1(inc%L0,%0), xops);				\
 									\
         break;								\
@@ -1368,7 +1368,7 @@ do									\
   {									\
     rtx xops[1];							\
 									\
-    xops[0] = gen_rtx (MEM, Pmode, gen_rtx (SYMBOL_REF, VOIDmode, "__bb_trace_ret")); \
+    xops[0] = gen_rtx_MEM (Pmode, gen_rtx_SYMBOL_REF (VOIDmode, "__bb_trace_ret")); \
 									\
     output_asm_insn (AS1(call,%P0), xops);				\
 									\
@@ -1476,8 +1476,8 @@ do {						\
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 1)), CXT); \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 6)), FNADDR); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 1)), CXT); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 6)), FNADDR); \
 }
 
 /* Definitions for register eliminations.
@@ -2372,13 +2372,13 @@ number as al, and ax.
 
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
-  gen_rtx (MEM, VOIDmode, gen_rtx (REG, VOIDmode, STACK_POINTER_REGNUM))
+  gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
 
 /* After the prologue, RA is at -4(AP) in the current frame.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME)					\
   ((COUNT) == 0								\
-   ? gen_rtx (MEM, Pmode, gen_rtx (PLUS, Pmode, arg_pointer_rtx, GEN_INT(-4)))\
-   : gen_rtx (MEM, Pmode, gen_rtx (PLUS, Pmode, (FRAME), GEN_INT(4))))
+   ? gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, arg_pointer_rtx, GEN_INT(-4)))\
+   : gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, (FRAME), GEN_INT(4))))
 
 /* PC is dbx register 8; let's use that column for RA. */
 #define DWARF_FRAME_RETURN_COLUMN 	8
@@ -2397,10 +2397,7 @@ number as al, and ax.
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
 do { long l[2];								\
      REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
-     if (sizeof (int) == sizeof (long))					\
-       fprintf (FILE, "%s 0x%x,0x%x\n", ASM_LONG, l[0], l[1]);		\
-     else								\
-       fprintf (FILE, "%s 0x%lx,0x%lx\n", ASM_LONG, l[0], l[1]);	\
+     fprintf (FILE, "%s 0x%lx,0x%lx\n", ASM_LONG, l[0], l[1]);		\
    } while (0)
 
 /* This is how to output a `long double' extended real constant. */
@@ -2409,10 +2406,7 @@ do { long l[2];								\
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  		\
 do { long l[3];						\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);	\
-     if (sizeof (int) == sizeof (long))			\
-       fprintf (FILE, "%s 0x%x,0x%x,0x%x\n", ASM_LONG, l[0], l[1], l[2]); \
-     else						\
-       fprintf (FILE, "%s 0x%lx,0x%lx,0x%lx\n", ASM_LONG, l[0], l[1], l[2]); \
+     fprintf (FILE, "%s 0x%lx,0x%lx,0x%lx\n", ASM_LONG, l[0], l[1], l[2]); \
    } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
@@ -2420,10 +2414,7 @@ do { long l[3];						\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
 do { long l;						\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-     if (sizeof (int) == sizeof (long))			\
-       fprintf ((FILE), "%s 0x%x\n", ASM_LONG, l);	\
-     else						\
-       fprintf ((FILE), "%s 0x%lx\n", ASM_LONG, l);	\
+     fprintf ((FILE), "%s 0x%lx\n", ASM_LONG, l);	\
    } while (0)
 
 /* Store in OUTPUT a string (made with alloca) containing
@@ -2631,7 +2622,7 @@ extern char *qi_high_reg_name[];
 
 #define ASM_OPERAND_LETTER '#'
 #define RET return ""
-#define AT_SP(mode) (gen_rtx (MEM, (mode), stack_pointer_rtx))
+#define AT_SP(mode) (gen_rtx_MEM ((mode), stack_pointer_rtx))
 
 /* Helper macros to expand a binary/unary operator if needed */
 #define IX86_EXPAND_BINARY_OPERATOR(OP, MODE, OPERANDS)			\

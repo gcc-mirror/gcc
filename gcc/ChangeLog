@@ -1,3 +1,9 @@
+Wed Feb 11 01:23:03 1998  John F. Carr  <jfc@mit.edu>
+
+	* i386.c, i386.h, i386.md: Change gen_rtx (X, ...) to gen_rtx_X (...).
+	Use GEN_INT instead of gen_rtx (CONST_INT). Make printf arguments
+	and format string match.
+
 Wed Feb 11 01:17:39 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (life_analysis): Do not conside the stack pointer live at
