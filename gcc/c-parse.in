@@ -1445,7 +1445,7 @@ initelt:
 	  designator_list '=' initval
 		{ if (pedantic && !flag_isoc99)
 		    pedwarn ("ISO C90 forbids specifying subobject to initialize"); }
-	| designator initval
+	| array_designator initval
 		{ if (pedantic)
 		    pedwarn ("obsolete use of designated initializer without %<=%>"); }
 	| identifier ':'
@@ -1475,7 +1475,10 @@ designator_list:
 designator:
 	  '.' identifier
 		{ set_init_label ($2); }
-	| '[' expr_no_commas ELLIPSIS expr_no_commas ']'
+	| array_designator
+
+array_designator:
+	  '[' expr_no_commas ELLIPSIS expr_no_commas ']'
 		{ set_init_index ($2.value, $4.value);
 		  if (pedantic)
 		    pedwarn ("ISO C forbids specifying range of elements to initialize"); }
