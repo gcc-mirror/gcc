@@ -949,8 +949,10 @@ aix4*)
   # collect2, so additional links can be useful in future.
   # We preserve .a as extension for shared libraries though AIX4.2
   # and later linker supports .so
-  library_names_spec='${libname}${release}.so$versuffix ${libname}${release}.so$major $libname.a'
+  library_names_spec='${libname}${release}.a $libname.a'
   shlibpath_var=LIBPATH
+  soname_spec='${libname}${release}.so$major.o'
+  export_symbols_cmds='$NM -BCpg $libobjs $convenience | awk '\''{ if (((\$2 == "T") || (\$2 == "D") || (\$2 == "B")) && (substr(\$3,1,1) != ".")) { print \$3 } }'\'' | sort -u > $export_symbols'
   ;;
 
 amigaos*)

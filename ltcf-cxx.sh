@@ -135,8 +135,12 @@ case "$host_os" in
     ld_shlibs=no
     ;;
   aix4*)
-    # FIXME: insert proper C++ library support
-    ld_shlibs=no
+    archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs $compiler_flags ${wl}-bE:$export_symbols ${wl}-bnoentry${allow_undefined_flag}~$AR $AR_FLAGS $output_objdir/$libname$release.a $output_objdir/$soname'
+    # -bexpall does not export symbols beginning with underscore (_)
+    always_export_symbols=yes
+    # Exported symbols can be pulled into shared objects from archives
+    whole_archive_flag_spec=' '
+    build_libtool_need_lc=yes
     ;;
   chorus*)
     case "$cc_basename" in
