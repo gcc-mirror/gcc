@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2959,6 +2959,9 @@ emit_float_lib_cmp (x, y, comparison)
       case LE:
 	libfunc = lehf2_libfunc;
 	break;
+
+      default:
+	break;
       }
   else if (mode == SFmode)
     switch (comparison)
@@ -2985,6 +2988,9 @@ emit_float_lib_cmp (x, y, comparison)
 
       case LE:
 	libfunc = lesf2_libfunc;
+	break;
+
+      default:
 	break;
       }
   else if (mode == DFmode)
@@ -3013,6 +3019,9 @@ emit_float_lib_cmp (x, y, comparison)
       case LE:
 	libfunc = ledf2_libfunc;
 	break;
+
+      default:
+	break;
       }
   else if (mode == XFmode)
     switch (comparison)
@@ -3040,6 +3049,9 @@ emit_float_lib_cmp (x, y, comparison)
       case LE:
 	libfunc = lexf2_libfunc;
 	break;
+
+      default:
+	break;
       }
   else if (mode == TFmode)
     switch (comparison)
@@ -3066,6 +3078,9 @@ emit_float_lib_cmp (x, y, comparison)
 
       case LE:
 	libfunc = letf2_libfunc;
+	break;
+
+      default:
 	break;
       }
   else
