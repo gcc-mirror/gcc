@@ -42,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "target.h"
 #include "target-def.h"
-
+#include "debug.h"
 
 
 
