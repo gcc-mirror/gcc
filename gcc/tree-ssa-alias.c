@@ -977,7 +977,6 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	{
 	  struct alias_map_d *p_map2 = ai->pointers[j];
 	  tree tag2 = var_ann (p_map2->var)->type_mem_tag;
-	  var_ann_t tag2_ann = var_ann (tag2);
 	  sbitmap may_aliases2 = p_map2->may_aliases;
 
 	  /* If the pointers may not point to each other, do nothing.  */
@@ -999,8 +998,6 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	      EXECUTE_IF_SET_IN_SBITMAP (may_aliases2, 0, k,
 		  add_may_alias (tag1, referenced_var (k)));
 	      sbitmap_a_or_b (may_aliases1, may_aliases1, may_aliases2);
-	      sbitmap_zero (may_aliases2);
-	      tag2_ann->may_aliases = NULL;
 	    }
 	  else
 	    {
