@@ -1,5 +1,8 @@
 Wed Apr  7 16:30:04 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* regclass.c (record_reg_classes): Properly handle register move
+	directions.
+
 	* explow.c (probe_stack_range, [HAVE_check_stack]): Fix typo.
 
 Mon Apr  5 16:57:10 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
