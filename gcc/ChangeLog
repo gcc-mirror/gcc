@@ -1,3 +1,14 @@
+2004-04-16  Kazuhiro Inaoka <inaoka dot kazuhiro at renesas dot com>
+
+	* config/m32r/m32r.h (BIG_ENDIAN_BIT): Deleted to fix endian
+	bug.
+	(TARGET_LITTLE_ENDIAN, TARGET_BIG_ENDIAN,
+	TARGET_DEFAULT): Changed. Ditto.
+	(LITTLE_ENDIAN_BIT, TARGET_CPU_DEFAULT,
+	TARGET_ENDIAN_DEFAULT): Added. Ditto.
+	* config/m32r/little.h (TARGET_LITTLE_ENDIAN): Deleted.
+	(TARGET_ENDIAN_DEFAULT): Added.
+
 2004-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.def (BUILT_IN_ISDIGIT, BUILT_IN_ISXDIGIT): Mark with

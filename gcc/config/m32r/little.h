@@ -1,5 +1,5 @@
 /* Definitions for Renesas little endian M32R cpu.
-   Copyright (C) 2003
+   Copyright (C) 2003, 2004
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -19,7 +19,7 @@
    Free Software Foundation, 59 Temple Place - Suite 330, Boston,
    MA 02111-1307, USA.  */
 
-#define TARGET_LITTLE_ENDIAN (!TARGET_BIG_ENDIAN)
+#define TARGET_ENDIAN_DEFAULT	LITTLE_ENDIAN_BIT
 
 #define CPP_ENDIAN_SPEC \
   " %{mbe:-D__BIG_ENDIAN__} %{mbig-endian:-D__BIG_ENDIAN__}" \
