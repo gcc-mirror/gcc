@@ -28,6 +28,12 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file new
+ *  This header defines several functions to manage dynamic memory and
+ *  handling memory allocation errors; see
+ *  http://gcc.gnu.org/onlinedocs/libstdc++/18_support/howto.html#4 for more.
+ */
+
 #ifndef __NEW__
 #define __NEW__
 
@@ -38,6 +44,8 @@ extern "C++" {
 
 namespace std 
 {
+  /** @c bad_alloc (or classes derived from it) is used to report allocation
+   *  errors from the throwing forms of @c new.  */
   class bad_alloc : public exception 
   {
   public:
@@ -47,11 +55,24 @@ namespace std
 
   struct nothrow_t { };
   extern const nothrow_t nothrow;
+  /** If you write your own error handler to be called by @c new, it must
+   *  be of this type.  */
   typedef void (*new_handler)();
+  /// Takes a replacement handler as the argument, returns the previous handler.
   new_handler set_new_handler(new_handler);
 } // namespace std
 
-// Replaceable signatures.
+//@{
+/** These are replaceable signatures:
+ *  - normal single new and delete (no arguments, throw @c bad_alloc on error)
+ *  - normal array new and delete (same)
+ *  - @c nothrow single new and delete (take a @c nothrow argument, return
+ *    @c NULL on error)
+ *  - @c nothrow array new and delete (same)
+ *
+ *  Placement new and delete signatures (take a memory address argument,
+ *  does nothing) may not be replaced by a user's program.
+*/
 void *operator new(std::size_t) throw (std::bad_alloc);
 void *operator new[](std::size_t) throw (std::bad_alloc);
 void operator delete(void *) throw();
@@ -64,6 +85,7 @@ void operator delete[](void *, const std::nothrow_t&) throw();
 // Default placement versions of operator new.
 inline void *operator new(std::size_t, void *place) throw() { return place; }
 inline void *operator new[](std::size_t, void *place) throw() { return place; }
+//@}
 } // extern "C++"
 
 #endif

@@ -109,4 +109,8 @@
 // should be cleaned up.
 # define __stl_assert(expr)
 
+/** @namespace std
+ *  @brief Everything defined by the ISO C++ Standard is within namespace std.
+ */
+
 // End of prewritten config; the discovered settings follow.

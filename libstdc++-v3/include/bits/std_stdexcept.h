@@ -31,6 +31,13 @@
 // ISO C++ 19.1  Exception classes
 //
 
+/** @file std_stdexcept.h
+ *  The Standard C++ library provides classes to be used to report certain
+ *  errors (17.4.4.8) in C++ programs.  In the error model reflected in these
+ *  classes, errors are divided into two broad categories: logic errors and
+ *  runtime errors.
+ */
+
 #ifndef _CPP_STDEXCEPT
 #define _CPP_STDEXCEPT 	  1
 
@@ -41,72 +48,98 @@
 
 namespace std 
 {
+  /** Logic errors represent problems in the internal logic of a program;
+   *  in theory, these are preventable, and even detectable before the
+   *  program runs (e.g., violations of class invariants).
+   *  @brief One of two subclasses of exception.
+   */
   class logic_error : public exception 
   {
     string _M_msg;
 
   public:
+    /** Takes a character string describing the error.  */
     explicit 
     logic_error(const string&  __arg);
 
     virtual 
     ~logic_error() throw();
 
+    /** Returns a C-style character string describing the general cause of
+     *  the current error (the same string passed to the ctor).  */
     virtual const char* 
     what() const throw();
   };
 
+  /** Thrown by the library, or by you, to report domain errors (domain in
+   *  the mathmatical sense).  */
   class domain_error : public logic_error 
   {
   public:
     explicit domain_error(const string&  __arg);
   };
 
+  /** Thrown to report invalid arguments to functions.  */
   class invalid_argument : public logic_error 
   {
   public:
     explicit invalid_argument(const string&  __arg);
   };
 
+  /** Thrown when an object is constructed that would exceed its maximum
+   *  permitted size (e.g., a basic_string instance).  */
   class length_error : public logic_error 
   {
   public:
     explicit length_error(const string&  __arg);
   };
 
+  /** This represents an argument whose value is not within the expected
+   *  range (e.g., boundary checks in basic_string).  */
   class out_of_range : public logic_error 
   {
   public:
     explicit out_of_range(const string&  __arg);
   };
 
+  /** Runtime errors represent problems outside the scope of a program;
+   *  they cannot be easily predicted and can generally only be caught as
+   *  the program executes.
+   *  @brief One of two subclasses of exception.
+   */
   class runtime_error : public exception 
   {
     string _M_msg;
 
   public:
+    /** Takes a character string describing the error.  */
     explicit 
     runtime_error(const string&  __arg);
 
     virtual 
     ~runtime_error() throw();
 
+    /** Returns a C-style character string describing the general cause of
+     *  the current error (the same string passed to the ctor).  */
     virtual const char* 
     what() const throw();
   };
 
+  /** Thrown to indicate range errors in internal computations.  */
   class range_error : public runtime_error 
   {
   public:
     explicit range_error(const string&  __arg);
   };
 
+  /** Thrown to indicate arithmetic overflow.  */
   class overflow_error : public runtime_error 
   {
   public:
     explicit overflow_error(const string&  __arg);
   };
 
+  /** Thrown to indicate arithmetic underflow.  */
   class underflow_error : public runtime_error 
   {
   public:
