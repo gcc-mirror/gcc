@@ -1517,16 +1517,6 @@ lookup_field (typep, name)
 	if (DECL_NAME (field) == name)
 	  return field;
 
-      /* If *typep is an innerclass, lookup the field in its enclosing
-         contexts */
-      if (INNER_CLASS_TYPE_P (*typep))
-	{
-	  tree outer_type = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (*typep)));
-
-	  if ((field = lookup_field (&outer_type, name)))
-	    return field;
-	}
-
       /* Process implemented interfaces. */
       basetype_vec = TYPE_BINFO_BASETYPES (*typep);
       n = TREE_VEC_LENGTH (basetype_vec);
