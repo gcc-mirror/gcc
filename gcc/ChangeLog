@@ -1,3 +1,9 @@
+2004-04-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* Makefile.in ($(DESTDIR)$(infodir)/%.info): Don't condition
+	calling install-info on $(DESTDIR)$(infodir)/dir already being
+	present.
+
 2004-04-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/15084
