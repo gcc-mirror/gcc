@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.50 2000/11/22 17:55:06 bkoz Exp $
+## $Id: Makefile.am,v 1.51 2000/11/23 06:46:31 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -69,7 +69,7 @@ LIBIO_INCLUDES = @LIBIO_INCLUDES@
 CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 
 INCLUDES = \
-	-D_GNU_SOURCE -D_ISOC99_SOURCE -nostdinc++ \
+	-nostdinc++ \
 	$(CSHADOW_INCLUDES) $(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDE_DIR) \
 	$(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) -I$(top_builddir)/include \
 	$(TOPLEVEL_INCLUDES)	

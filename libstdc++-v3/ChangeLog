@@ -1,3 +1,10 @@
+2000-11-25  Benjamin Kosnik  <bkoz@redhat.com>
+            Richard Earnshaw  <rearnsha@arm.com> 
+
+	* src/Makefile.am (INCLUDES): Remove unconditional use of
+	_GNU_SOURCE and _ISOC99_SOURCE macros.
+	* src/Makefile.in: Regenerate.
+	
 2000-11-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* testsuite/22_locale/codecvt_wchar_t_char.cc (main): Add
