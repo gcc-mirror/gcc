@@ -967,7 +967,7 @@ build_utf8_ref (name)
   char buf[60];
   tree ctype, field = NULL_TREE, str_type, cinit, string;
   static int utf8_count = 0;
-  int name_hash, decl_size;
+  int name_hash;
   tree ref = IDENTIFIER_UTF8_REF (name);
   tree decl;
   if (ref != NULL_TREE)
@@ -1001,18 +1001,21 @@ build_utf8_ref (name)
   TREE_THIS_VOLATILE (decl) = 0;
   DECL_INITIAL (decl) = cinit;
 #ifdef HAVE_GAS_SHF_MERGE
-  /* Ensure decl_size is a multiple of utf8const_type's alignment. */
-  decl_size = (name_len + 5 + TYPE_ALIGN_UNIT (utf8const_type) - 1)
-	       & ~(TYPE_ALIGN_UNIT (utf8const_type) - 1);
-  if (flag_merge_constants && decl_size < 256)
-    {
-      char buf[32];
-      int flags = (SECTION_OVERRIDE
-		   | SECTION_MERGE | (SECTION_ENTSIZE & decl_size));
-      sprintf (buf, ".rodata.jutf8.%d", decl_size);
-      named_section_flags (buf, flags);
-      DECL_SECTION_NAME (decl) = build_string (strlen (buf), buf);
-    }
+  {
+    int decl_size;
+    /* Ensure decl_size is a multiple of utf8const_type's alignment. */
+    decl_size = (name_len + 5 + TYPE_ALIGN_UNIT (utf8const_type) - 1)
+	         & ~(TYPE_ALIGN_UNIT (utf8const_type) - 1);
+    if (flag_merge_constants && decl_size < 256)
+      {
+        char buf[32];
+        int flags = (SECTION_OVERRIDE
+        	   | SECTION_MERGE | (SECTION_ENTSIZE & decl_size));
+        sprintf (buf, ".rodata.jutf8.%d", decl_size);
+        named_section_flags (buf, flags);
+        DECL_SECTION_NAME (decl) = build_string (strlen (buf), buf);
+      }
+  }
 #endif
   TREE_CHAIN (decl) = utf8_decl_list;
   layout_decl (decl, 0);
