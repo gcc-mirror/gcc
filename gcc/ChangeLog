@@ -27,6 +27,8 @@ Thu Feb 26 07:05:14 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
 
 Thu Feb 26 06:45:23 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* Makefile.in (distdir-start): Don't copy CVS subdirectory of config.
+
 	* varasm.c ({compare,record}_constant_1, case CONSTRUCTOR):
 	Handle the case when we have TREE_PURPOSE values.
 
