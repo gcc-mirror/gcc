@@ -7,11 +7,11 @@
 	
 	* testsuite/testsuite_hooks.h
 	(__gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher):
-	Change to run_named_locale_test.
+	Change to try_named_locale.
 	* testsuite/testsuite_hooks.cc (__gnu_cxx_test): Same.
 
 	* testsuite/22_locale/codecvt/always_noconv/wchar_t/2.cc: Use
-	run_test_named_locale.
+	try_named_locale.
 	* testsuite/22_locale/codecvt/always_noconv/wchar_t/3.cc: Same.
 	* testsuite/22_locale/codecvt/always_noconv/wchar_t/4.cc: Same.
 	* testsuite/22_locale/codecvt/encoding/wchar_t/2.cc: Same.
