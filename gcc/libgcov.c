@@ -174,7 +174,7 @@ gcov_exit (void)
 	  if (!((1 << t_ix) & gi_ptr->ctr_mask))
 	    continue;
 
-	  cs_ptr = &this_program.ctrs[t_ix];
+	  cs_ptr = &this_object.ctrs[t_ix];
 	  cs_ptr->num += ci_ptr->num;
 	  for (c_num = 0; c_num < ci_ptr->num; c_num++)
 	    {
@@ -324,7 +324,7 @@ gcov_exit (void)
 	  cs_obj = &object.ctrs[t_ix];
 	  cs_tobj = &this_object.ctrs[t_ix];
 	  cs_prg = &program.ctrs[t_ix];
-	  cs_tprg = &program.ctrs[t_ix];
+	  cs_tprg = &this_program.ctrs[t_ix];
 	  cs_all = &all.ctrs[t_ix];
 
 	  if ((1 << t_ix) & gi_ptr->ctr_mask)
