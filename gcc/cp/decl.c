@@ -108,8 +108,8 @@ static void signal_catch PARAMS ((int)) ATTRIBUTE_NORETURN;
 static int decl_jump_unsafe PARAMS ((tree));
 static void storedecls PARAMS ((tree));
 static void require_complete_types_for_parms PARAMS ((tree));
-static int ambi_op_p PARAMS ((tree));
-static int unary_op_p PARAMS ((tree));
+static int ambi_op_p PARAMS ((enum tree_code));
+static int unary_op_p PARAMS ((enum tree_code));
 static tree store_bindings PARAMS ((tree, tree));
 static tree lookup_tag_reverse PARAMS ((tree, tree));
 static tree obscure_complex_init PARAMS ((tree, tree));
@@ -126,7 +126,7 @@ static void set_identifier_type_value_with_scope
 	PARAMS ((tree, tree, struct binding_level *));
 static void record_builtin_type PARAMS ((enum rid, const char *, tree));
 static void record_unknown_type PARAMS ((tree, const char *));
-static tree build_library_fn_1			PARAMS ((tree, tree));
+static tree build_library_fn_1 PARAMS ((tree, enum tree_code, tree));
 static int member_function_or_else PARAMS ((tree, tree, enum overload_flags));
 static void bad_specifiers PARAMS ((tree, const char *, int, int, int, int,
 				  int));
@@ -186,6 +186,8 @@ static tree cp_make_fname_decl PARAMS ((tree, const char *, int));
 static void initialize_predefined_identifiers PARAMS ((void));
 static tree check_special_function_return_type 
   PARAMS ((special_function_kind, tree, tree, tree));
+static tree push_cp_library_fn PARAMS ((enum tree_code, tree));
+static tree build_cp_library_fn PARAMS ((tree, enum tree_code, tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PARAMS ((void));
@@ -3425,7 +3427,7 @@ duplicate_decls (newdecl, olddecl)
       DECL_VIRTUAL_P (newdecl) |= DECL_VIRTUAL_P (olddecl);
       DECL_NEEDS_FINAL_OVERRIDER_P (newdecl) |= DECL_NEEDS_FINAL_OVERRIDER_P (olddecl);
       DECL_THIS_STATIC (newdecl) |= DECL_THIS_STATIC (olddecl);
-      DECL_VTT_PARM (newdecl) = DECL_VTT_PARM (olddecl);
+      DECL_LANG_SPECIFIC (newdecl)->u2 = DECL_LANG_SPECIFIC (olddecl)->u2;
       new_defines_function = DECL_INITIAL (newdecl) != NULL_TREE;
 
       /* Optionally warn about more than one declaration for the same
@@ -6596,11 +6598,10 @@ init_decl_processing ()
     newtype = build_exception_variant
       (ptr_ftype_sizetype, add_exception_specifier (NULL_TREE, bad_alloc_type_node, -1));
     deltype = build_exception_variant (void_ftype_ptr, empty_except_spec);
-    push_cp_library_fn (ansi_opname[(int) NEW_EXPR], newtype);
-    push_cp_library_fn (ansi_opname[(int) VEC_NEW_EXPR], newtype);
-    global_delete_fndecl = push_cp_library_fn (ansi_opname[(int) DELETE_EXPR],
-					       deltype);
-    push_cp_library_fn (ansi_opname[(int) VEC_DELETE_EXPR], deltype);
+    push_cp_library_fn (NEW_EXPR, newtype);
+    push_cp_library_fn (VEC_NEW_EXPR, newtype);
+    global_delete_fndecl = push_cp_library_fn (DELETE_EXPR, deltype);
+    push_cp_library_fn (VEC_DELETE_EXPR, deltype);
   }
 
   abort_fndecl
@@ -6756,7 +6757,7 @@ builtin_function (name, type, code, class, libname)
      enum built_in_class class;
      const char *libname;
 {
-  tree decl = build_library_fn_1 (get_identifier (name), type);
+  tree decl = build_library_fn_1 (get_identifier (name), ERROR_MARK, type);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = code;
 
@@ -6776,8 +6777,9 @@ builtin_function (name, type, code, class, libname)
    function.  Not called directly.  */
 
 static tree
-build_library_fn_1 (name, type)
+build_library_fn_1 (name, operator_code, type)
      tree name;
+     enum tree_code operator_code;
      tree type;
 {
   tree fn = build_lang_decl (FUNCTION_DECL, name, type);
@@ -6785,6 +6787,7 @@ build_library_fn_1 (name, type)
   TREE_PUBLIC (fn) = 1;
   DECL_ARTIFICIAL (fn) = 1;
   TREE_NOTHROW (fn) = 1;
+  SET_OVERLOADED_OPERATOR_CODE (fn, operator_code);
   return fn;
 }
 
@@ -6797,19 +6800,20 @@ build_library_fn (name, type)
      tree name;
      tree type;
 {
-  tree fn = build_library_fn_1 (name, type);
+  tree fn = build_library_fn_1 (name, ERROR_MARK, type);
   make_function_rtl (fn);
   return fn;
 }
 
 /* Returns the _DECL for a library function with C++ linkage.  */
 
-tree
-build_cp_library_fn (name, type)
+static tree
+build_cp_library_fn (name, operator_code, type)
      tree name;
+     enum tree_code operator_code;
      tree type;
 {
-  tree fn = build_library_fn_1 (name, type);
+  tree fn = build_library_fn_1 (name, operator_code, type);
   TREE_NOTHROW (fn) = TYPE_NOTHROW_P (type);
   set_mangled_name_for_decl (fn);
   make_function_rtl (fn);
@@ -6835,7 +6839,7 @@ build_cp_library_fn_ptr (name, type)
      const char *name;
      tree type;
 {
-  return build_cp_library_fn (get_identifier (name), type);
+  return build_cp_library_fn (get_identifier (name), ERROR_MARK, type);
 }
 
 /* Like build_library_fn, but also pushes the function so that we will
@@ -6853,12 +6857,14 @@ push_library_fn (name, type)
 /* Like build_cp_library_fn, but also pushes the function so that it
    will be found by normal lookup.  */
 
-tree
-push_cp_library_fn (name, type)
-     tree name;
+static tree
+push_cp_library_fn (operator_code, type)
+     enum tree_code operator_code;
      tree type;
 {
-  tree fn = build_cp_library_fn (name, type);
+  tree fn = build_cp_library_fn (ansi_opname (operator_code), 
+				 operator_code,
+				 type);
   pushdecl (fn);
   return fn;
 }
@@ -8892,7 +8898,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       quals = NULL_TREE;
     }
 
-  if (DECL_OVERLOADED_OPERATOR_P (decl))
+  if (IDENTIFIER_OPNAME_P (DECL_NAME (decl)))
     grok_op_properties (decl, virtualp, check < 0);
 
   if (ctype && decl_function_context (decl))
@@ -9794,18 +9800,20 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			  dname);
 		name = IDENTIFIER_POINTER (dname);
 	      }
-	    else if (!IDENTIFIER_OPNAME_P (dname))
+	    else if (!IDENTIFIER_TYPENAME_P (dname))
 	      name = IDENTIFIER_POINTER (dname);
 	    else
 	      {
-		if (IDENTIFIER_TYPENAME_P (dname))
-		  {
-		    my_friendly_assert (flags == NO_SPECIAL, 154);
-		    flags = TYPENAME_FLAG;
-		    ctor_return_type = TREE_TYPE (dname);
-		    sfk = sfk_conversion;
-		  }
-		name = operator_name_string (dname);
+		my_friendly_assert (flags == NO_SPECIAL, 154);
+		flags = TYPENAME_FLAG;
+		ctor_return_type = TREE_TYPE (dname);
+		sfk = sfk_conversion;
+		if (IDENTIFIER_GLOBAL_VALUE (dname)
+		    && (TREE_CODE (IDENTIFIER_GLOBAL_VALUE (dname)) 
+			== TYPE_DECL))
+		  name = IDENTIFIER_POINTER (dname);
+		else
+		  name = "<invalid operator>";
 	      }
 	    break;
 
@@ -10369,10 +10377,19 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  else
 		    tmp = TREE_OPERAND (declarator, 0);
 		  op = IDENTIFIER_OPNAME_P (tmp);
+		  if (IDENTIFIER_TYPENAME_P (tmp))
+		    {
+		      if (IDENTIFIER_GLOBAL_VALUE (tmp)
+			  && (TREE_CODE (IDENTIFIER_GLOBAL_VALUE (tmp)) 
+			      == TYPE_DECL))
+			name = IDENTIFIER_POINTER (tmp);
+		      else
+			name = "<invalid operator>";
+		    }
 		}
 	      error ("storage class specified for %s `%s'",
 		     op ? "member operator" : "field",
-		     op ? operator_name_string (tmp) : name);
+		     name);
 	    }
 	  else
 	    {
@@ -11356,10 +11373,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    return void_type_node;
 		  }
 
-		if (declarator == ansi_opname[(int) NEW_EXPR]
-		    || declarator == ansi_opname[(int) VEC_NEW_EXPR]
-		    || declarator == ansi_opname[(int) DELETE_EXPR]
-		    || declarator == ansi_opname[(int) VEC_DELETE_EXPR])
+		if (declarator == ansi_opname (NEW_EXPR)
+		    || declarator == ansi_opname (VEC_NEW_EXPR)
+		    || declarator == ansi_opname (DELETE_EXPR)
+		    || declarator == ansi_opname (VEC_DELETE_EXPR))
 		  {
 		    if (virtualp)
 		      {
@@ -12225,30 +12242,30 @@ grok_ctor_properties (ctype, decl)
   return 1;
 }
 
-/* An operator with this name can be either unary or binary.  */
+/* An operator with this code is unary, but can also be binary.  */
 
 static int
-ambi_op_p (name)
-     tree name;
+ambi_op_p (code)
+     enum tree_code code;
 {
-  return (name == ansi_opname [(int) INDIRECT_REF]
-	  || name == ansi_opname [(int) ADDR_EXPR]
-	  || name == ansi_opname [(int) NEGATE_EXPR]
-	  || name == ansi_opname[(int) POSTINCREMENT_EXPR]
-	  || name == ansi_opname[(int) POSTDECREMENT_EXPR]
-	  || name == ansi_opname [(int) CONVERT_EXPR]);
+  return (code == INDIRECT_REF
+	  || code == ADDR_EXPR
+	  || code == CONVERT_EXPR
+	  || code == NEGATE_EXPR
+	  || code == PREINCREMENT_EXPR
+	  || code == PREDECREMENT_EXPR);
 }
 
 /* An operator with this name can only be unary.  */
 
 static int
-unary_op_p (name)
-     tree name;
+unary_op_p (code)
+     enum tree_code code;
 {
-  return (name == ansi_opname [(int) TRUTH_NOT_EXPR]
-	  || name == ansi_opname [(int) BIT_NOT_EXPR]
-	  || name == ansi_opname [(int) COMPONENT_REF]
-	  || IDENTIFIER_TYPENAME_P (name));
+  return (code == TRUTH_NOT_EXPR
+	  || code == BIT_NOT_EXPR
+	  || code == COMPONENT_REF
+	  || code == TYPE_EXPR);
 }
 
 /* Do a little sanity-checking on how they declared their operator.  */
@@ -12259,43 +12276,87 @@ grok_op_properties (decl, virtualp, friendp)
      int virtualp, friendp;
 {
   tree argtypes = TYPE_ARG_TYPES (TREE_TYPE (decl));
+  tree argtype;
   int methodp = (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE);
   tree name = DECL_NAME (decl);
+  enum tree_code operator_code;
+  int arity;
+
+  /* Count the number of arguments.  */
+  for (argtype = argtypes, arity = 0;
+       argtype && argtype != void_list_node;
+       argtype = TREE_CHAIN (argtype))
+    ++arity;
 
   if (current_class_type == NULL_TREE)
     friendp = 1;
 
+  if (DECL_CONV_FN_P (decl))
+    operator_code = TYPE_EXPR;
+  else
+    do
+      {
+#define DEF_OPERATOR(NAME, CODE, NEW_MANGLING, OLD_MANGING, ARITY, ASSN_P)  \
+	if (ansi_opname (CODE) == name)					    \
+	  {								    \
+	    operator_code = CODE;					    \
+	    break;							    \
+	  }								    \
+	else if (ansi_assopname (CODE) == name)				    \
+	  {								    \
+	    operator_code = CODE;					    \
+	    DECL_ASSIGNMENT_OPERATOR_P (decl) = 1;			    \
+	    break;							    \
+	  }
+
+#include "operators.def"
+#undef DEF_OPERATOR
+
+	my_friendly_abort (20000527);
+      }
+    while (0);
+  my_friendly_assert (operator_code != LAST_CPLUS_TREE_CODE, 20000526);
+  SET_OVERLOADED_OPERATOR_CODE (decl, operator_code);
+
   if (! friendp)
     {
-      /* [class.copy]
+      switch (operator_code)
+	{
+	case CALL_EXPR:
+	  TYPE_OVERLOADS_CALL_EXPR (current_class_type) = 1;
+	  break;
+	  
+	case ARRAY_REF:
+	  TYPE_OVERLOADS_ARRAY_REF (current_class_type) = 1;
+	  break;
 
-	 A user-declared copy assignment operator X::operator= is a
-	 non-static non-template member function of class X with
-	 exactly one parameter of type X, X&, const X&, volatile X& or
-	 const volatile X&.  */
-      if (name == ansi_opname[(int) MODIFY_EXPR]
-	  && !(DECL_TEMPLATE_INSTANTIATION (decl)
-	       && is_member_template (DECL_TI_TEMPLATE (decl))))
-	;
-      else if (name == ansi_opname[(int) CALL_EXPR])
-	TYPE_OVERLOADS_CALL_EXPR (current_class_type) = 1;
-      else if (name == ansi_opname[(int) ARRAY_REF])
-	TYPE_OVERLOADS_ARRAY_REF (current_class_type) = 1;
-      else if (name == ansi_opname[(int) COMPONENT_REF]
-	       || name == ansi_opname[(int) MEMBER_REF])
-	TYPE_OVERLOADS_ARROW (current_class_type) = 1;
-      else if (name == ansi_opname[(int) NEW_EXPR])
-	TYPE_HAS_NEW_OPERATOR (current_class_type) = 1;
-      else if (name == ansi_opname[(int) DELETE_EXPR])
-	TYPE_GETS_DELETE (current_class_type) |= 1;
-      else if (name == ansi_opname[(int) VEC_NEW_EXPR])
-	TYPE_HAS_ARRAY_NEW_OPERATOR (current_class_type) = 1;
-      else if (name == ansi_opname[(int) VEC_DELETE_EXPR])
-	TYPE_GETS_DELETE (current_class_type) |= 2;
+	case COMPONENT_REF:
+	case MEMBER_REF:
+	  TYPE_OVERLOADS_ARROW (current_class_type) = 1;
+	  break;
+	  
+	case NEW_EXPR:
+	  TYPE_HAS_NEW_OPERATOR (current_class_type) = 1;
+	  break;
+	  
+	case DELETE_EXPR:
+	  TYPE_GETS_DELETE (current_class_type) |= 1;
+	  break;
+	  
+	case VEC_NEW_EXPR:
+	  TYPE_HAS_ARRAY_NEW_OPERATOR (current_class_type) = 1;
+	  break;
+	  
+	case VEC_DELETE_EXPR:
+	  TYPE_GETS_DELETE (current_class_type) |= 2;
+	  break;
+
+	default:
+	  break;
+	}
     }
 
-  if (name == ansi_opname[(int) NEW_EXPR]
-      || name == ansi_opname[(int) VEC_NEW_EXPR])
+  if (operator_code == NEW_EXPR || operator_code == VEC_NEW_EXPR)
     {
       /* When the compiler encounters the definition of A::operator new, it
 	 doesn't look at the class declaration to find out if it's static.  */
@@ -12311,8 +12372,7 @@ grok_op_properties (decl, virtualp, friendp)
       else
 	TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl));
     }
-  else if (name == ansi_opname[(int) DELETE_EXPR]
-	   || name == ansi_opname[(int) VEC_DELETE_EXPR])
+  else if (operator_code == DELETE_EXPR || operator_code == VEC_DELETE_EXPR)
     {
       if (methodp)
 	revert_static_member_fn (decl);
@@ -12332,11 +12392,11 @@ grok_op_properties (decl, virtualp, friendp)
 	 an enumeration, or a reference to an enumeration.  13.4.0.6 */
       if (! methodp || DECL_STATIC_FUNCTION_P (decl))
 	{
-	  if (DECL_CONV_FN_P (decl)
-	      || name == ansi_opname[(int) CALL_EXPR]
-	      || name == ansi_opname[(int) MODIFY_EXPR]
-	      || name == ansi_opname[(int) COMPONENT_REF]
-	      || name == ansi_opname[(int) ARRAY_REF])
+	  if (operator_code == TYPE_EXPR
+	      || operator_code == CALL_EXPR
+	      || operator_code == COMPONENT_REF
+	      || operator_code == ARRAY_REF
+	      || operator_code == NOP_EXPR)
 	    cp_error ("`%D' must be a nonstatic member function", decl);
 	  else
 	    {
@@ -12367,7 +12427,7 @@ grok_op_properties (decl, virtualp, friendp)
 	    }
 	}
 
-      if (name == ansi_opname[(int) CALL_EXPR])
+      if (operator_code == CALL_EXPR)
 	return;			/* No restrictions on args. */
 
       if (IDENTIFIER_TYPENAME_P (name) && ! DECL_TEMPLATE_INFO (decl))
@@ -12397,18 +12457,27 @@ grok_op_properties (decl, virtualp, friendp)
 	    }
 	}
 
-      if (name == ansi_opname[(int) MODIFY_EXPR])
+      if (DECL_ASSIGNMENT_OPERATOR_P (decl) 
+	  && operator_code == NOP_EXPR)
 	{
 	  tree parmtype;
 
-	  if (list_length (argtypes) != 3 && methodp)
+	  if (arity != 2 && methodp)
 	    {
 	      cp_error ("`%D' must take exactly one argument", decl);
 	      return;
 	    }
 	  parmtype = TREE_VALUE (TREE_CHAIN (argtypes));
 
+	  /* [class.copy]
+
+	     A user-declared copy assignment operator X::operator= is
+	     a non-static non-template member function of class X with
+	     exactly one parameter of type X, X&, const X&, volatile
+	     X& or const volatile X&.  */
 	  if (copy_assignment_arg_p (parmtype, virtualp)
+	      && !(DECL_TEMPLATE_INSTANTIATION (decl)
+		   && is_member_template (DECL_TI_TEMPLATE (decl)))
 	      && ! friendp)
 	    {
 	      TYPE_HAS_ASSIGN_REF (current_class_type) = 1;
@@ -12417,19 +12486,55 @@ grok_op_properties (decl, virtualp, friendp)
 		TYPE_HAS_CONST_ASSIGN_REF (current_class_type) = 1;
 	    }
 	}
-      else if (name == ansi_opname[(int) COND_EXPR])
+      else if (operator_code == COND_EXPR)
 	{
 	  /* 13.4.0.3 */
 	  cp_error ("ISO C++ prohibits overloading operator ?:");
 	}
-      else if (ambi_op_p (name))
+      else if (ambi_op_p (operator_code))
 	{
-	  if (list_length (argtypes) == 2)
-	    /* prefix */;
-	  else if (list_length (argtypes) == 3)
+	  if (arity == 1)
+	    /* We pick the one-argument operator codes by default, so
+	       we don't have to change anything.  */
+	    ;
+	  else if (arity == 2)
 	    {
-	      if ((name == ansi_opname[(int) POSTINCREMENT_EXPR]
-		   || name == ansi_opname[(int) POSTDECREMENT_EXPR])
+	      /* If we thought this was a unary operator, we now know
+		 it to be a binary operator.  */
+	      switch (operator_code)
+		{
+		case INDIRECT_REF:
+		  operator_code = MULT_EXPR;
+		  break;
+
+		case ADDR_EXPR:
+		  operator_code = BIT_AND_EXPR;
+		  break;
+
+		case CONVERT_EXPR:
+		  operator_code = PLUS_EXPR;
+		  break;
+
+		case NEGATE_EXPR:
+		  operator_code = MINUS_EXPR;
+		  break;
+
+		case PREINCREMENT_EXPR:
+		  operator_code = POSTINCREMENT_EXPR;
+		  break;
+
+		case PREDECREMENT_EXPR:
+		  operator_code = PREDECREMENT_EXPR;
+		  break;
+
+		default:
+		  my_friendly_abort (20000527);
+		}
+
+	      SET_OVERLOADED_OPERATOR_CODE (decl, operator_code);
+
+	      if ((operator_code == POSTINCREMENT_EXPR
+		   || operator_code == POSTDECREMENT_EXPR)
 		  && ! processing_template_decl
 		  && ! same_type_p (TREE_VALUE (TREE_CHAIN (argtypes)), integer_type_node))
 		{
@@ -12452,15 +12557,18 @@ grok_op_properties (decl, virtualp, friendp)
 
 	  /* More Effective C++ rule 6.  */
 	  if (warn_ecpp
-	      && (name == ansi_opname[(int) POSTINCREMENT_EXPR]
-		  || name == ansi_opname[(int) POSTDECREMENT_EXPR]))
+	      && (operator_code == POSTINCREMENT_EXPR
+		  || operator_code == POSTDECREMENT_EXPR
+		  || operator_code == PREINCREMENT_EXPR
+		  || operator_code == PREDECREMENT_EXPR))
 	    {
 	      tree arg = TREE_VALUE (argtypes);
 	      tree ret = TREE_TYPE (TREE_TYPE (decl));
 	      if (methodp || TREE_CODE (arg) == REFERENCE_TYPE)
 		arg = TREE_TYPE (arg);
 	      arg = TYPE_MAIN_VARIANT (arg);
-	      if (list_length (argtypes) == 2)
+	      if (operator_code == PREINCREMENT_EXPR
+		  || operator_code == PREDECREMENT_EXPR)
 		{
 		  if (TREE_CODE (ret) != REFERENCE_TYPE
 		      || !same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (ret)),
@@ -12475,9 +12583,9 @@ grok_op_properties (decl, virtualp, friendp)
 		}
 	    }
 	}
-      else if (unary_op_p (name))
+      else if (unary_op_p (operator_code))
 	{
-	  if (list_length (argtypes) != 2)
+	  if (arity != 1)
 	    {
 	      if (methodp)
 		cp_error ("`%D' must take `void'", decl);
@@ -12485,9 +12593,9 @@ grok_op_properties (decl, virtualp, friendp)
 		cp_error ("`%D' must take exactly one argument", decl);
 	    }
 	}
-      else /* if (binary_op_p (name)) */
+      else /* if (binary_op_p (operator_code)) */
 	{
-	  if (list_length (argtypes) != 3)
+	  if (arity != 2)
 	    {
 	      if (methodp)
 		cp_error ("`%D' must take exactly one argument", decl);
@@ -12497,20 +12605,20 @@ grok_op_properties (decl, virtualp, friendp)
 
 	  /* More Effective C++ rule 7.  */
 	  if (warn_ecpp
-	      && (name == ansi_opname [TRUTH_ANDIF_EXPR]
-		  || name == ansi_opname [TRUTH_ORIF_EXPR]
-		  || name == ansi_opname [COMPOUND_EXPR]))
+	      && (operator_code == TRUTH_ANDIF_EXPR
+		  || operator_code == TRUTH_ORIF_EXPR
+		  || operator_code == COMPOUND_EXPR))
 	    cp_warning ("user-defined `%D' always evaluates both arguments",
 			decl);
 	}
 
       /* Effective C++ rule 23.  */
       if (warn_ecpp
-	  && list_length (argtypes) == 3
-	  && (name == ansi_opname [PLUS_EXPR]
-	      || name == ansi_opname [MINUS_EXPR]
-	      || name == ansi_opname [TRUNC_DIV_EXPR]
-	      || name == ansi_opname [MULT_EXPR])
+	  && arity == 2
+	  && (operator_code == PLUS_EXPR
+	      || operator_code == MINUS_EXPR
+	      || operator_code == TRUNC_DIV_EXPR
+	      || operator_code == MULT_EXPR)
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == REFERENCE_TYPE)
 	cp_warning ("`%D' should return by value", decl);
 
@@ -12520,8 +12628,8 @@ grok_op_properties (decl, virtualp, friendp)
         if (TREE_PURPOSE (argtypes))
           {
             TREE_PURPOSE (argtypes) = NULL_TREE;
-            if (name == ansi_opname[(int) POSTINCREMENT_EXPR] 
-                || name == ansi_opname[(int) POSTDECREMENT_EXPR])   
+            if (operator_code == POSTINCREMENT_EXPR
+		|| operator_code == POSTDECREMENT_EXPR)
               {
                 if (pedantic)
                   cp_pedwarn ("`%D' cannot have default arguments", decl);
@@ -13464,7 +13572,7 @@ start_function (declspecs, declarator, attrs, flags)
 
   /* Effective C++ rule 15.  See also c_expand_return.  */
   if (warn_ecpp
-      && DECL_NAME (decl1) == ansi_opname[(int) MODIFY_EXPR]
+      && DECL_OVERLOADED_OPERATOR_P (decl1) == NOP_EXPR
       && TREE_CODE (TREE_TYPE (fntype)) == VOID_TYPE)
     cp_warning ("`operator=' should return a reference to `*this'");
 
@@ -14896,7 +15004,8 @@ lang_mark_tree (t)
 	      ggc_mark_tree (ld->befriending_classes);
 	      ggc_mark_tree (ld->saved_tree);
 	      ggc_mark_tree (ld->cloned_function);
-	      ggc_mark_tree (ld->vtt_parm);
+	      if (!DECL_OVERLOADED_OPERATOR_P (t))
+		ggc_mark_tree (ld->u2.vtt_parm);
 	      if (TREE_CODE (t) == TYPE_DECL)
 		ggc_mark_tree (ld->u.sorted_fields);
 	      else if (TREE_CODE (t) == FUNCTION_DECL

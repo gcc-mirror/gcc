@@ -8090,135 +8090,135 @@ case 843:
     break;}
 case 844:
 #line 3674 "parse.y"
-{ yyval.ttype = ansi_opname[MULT_EXPR]; ;
+{ yyval.ttype = ansi_opname (MULT_EXPR); ;
     break;}
 case 845:
 #line 3676 "parse.y"
-{ yyval.ttype = ansi_opname[TRUNC_DIV_EXPR]; ;
+{ yyval.ttype = ansi_opname (TRUNC_DIV_EXPR); ;
     break;}
 case 846:
 #line 3678 "parse.y"
-{ yyval.ttype = ansi_opname[TRUNC_MOD_EXPR]; ;
+{ yyval.ttype = ansi_opname (TRUNC_MOD_EXPR); ;
     break;}
 case 847:
 #line 3680 "parse.y"
-{ yyval.ttype = ansi_opname[PLUS_EXPR]; ;
+{ yyval.ttype = ansi_opname (PLUS_EXPR); ;
     break;}
 case 848:
 #line 3682 "parse.y"
-{ yyval.ttype = ansi_opname[MINUS_EXPR]; ;
+{ yyval.ttype = ansi_opname (MINUS_EXPR); ;
     break;}
 case 849:
 #line 3684 "parse.y"
-{ yyval.ttype = ansi_opname[BIT_AND_EXPR]; ;
+{ yyval.ttype = ansi_opname (BIT_AND_EXPR); ;
     break;}
 case 850:
 #line 3686 "parse.y"
-{ yyval.ttype = ansi_opname[BIT_IOR_EXPR]; ;
+{ yyval.ttype = ansi_opname (BIT_IOR_EXPR); ;
     break;}
 case 851:
 #line 3688 "parse.y"
-{ yyval.ttype = ansi_opname[BIT_XOR_EXPR]; ;
+{ yyval.ttype = ansi_opname (BIT_XOR_EXPR); ;
     break;}
 case 852:
 #line 3690 "parse.y"
-{ yyval.ttype = ansi_opname[BIT_NOT_EXPR]; ;
+{ yyval.ttype = ansi_opname (BIT_NOT_EXPR); ;
     break;}
 case 853:
 #line 3692 "parse.y"
-{ yyval.ttype = ansi_opname[COMPOUND_EXPR]; ;
+{ yyval.ttype = ansi_opname (COMPOUND_EXPR); ;
     break;}
 case 854:
 #line 3694 "parse.y"
-{ yyval.ttype = ansi_opname[yyvsp[0].code]; ;
+{ yyval.ttype = ansi_opname (yyvsp[0].code); ;
     break;}
 case 855:
 #line 3696 "parse.y"
-{ yyval.ttype = ansi_opname[LT_EXPR]; ;
+{ yyval.ttype = ansi_opname (LT_EXPR); ;
     break;}
 case 856:
 #line 3698 "parse.y"
-{ yyval.ttype = ansi_opname[GT_EXPR]; ;
+{ yyval.ttype = ansi_opname (GT_EXPR); ;
     break;}
 case 857:
 #line 3700 "parse.y"
-{ yyval.ttype = ansi_opname[yyvsp[0].code]; ;
+{ yyval.ttype = ansi_opname (yyvsp[0].code); ;
     break;}
 case 858:
 #line 3702 "parse.y"
-{ yyval.ttype = ansi_assopname[yyvsp[0].code]; ;
+{ yyval.ttype = ansi_assopname (yyvsp[0].code); ;
     break;}
 case 859:
 #line 3704 "parse.y"
-{ yyval.ttype = ansi_opname [MODIFY_EXPR]; ;
+{ yyval.ttype = ansi_assopname (NOP_EXPR); ;
     break;}
 case 860:
 #line 3706 "parse.y"
-{ yyval.ttype = ansi_opname[yyvsp[0].code]; ;
+{ yyval.ttype = ansi_opname (yyvsp[0].code); ;
     break;}
 case 861:
 #line 3708 "parse.y"
-{ yyval.ttype = ansi_opname[yyvsp[0].code]; ;
+{ yyval.ttype = ansi_opname (yyvsp[0].code); ;
     break;}
 case 862:
 #line 3710 "parse.y"
-{ yyval.ttype = ansi_opname[POSTINCREMENT_EXPR]; ;
+{ yyval.ttype = ansi_opname (POSTINCREMENT_EXPR); ;
     break;}
 case 863:
 #line 3712 "parse.y"
-{ yyval.ttype = ansi_opname[PREDECREMENT_EXPR]; ;
+{ yyval.ttype = ansi_opname (PREDECREMENT_EXPR); ;
     break;}
 case 864:
 #line 3714 "parse.y"
-{ yyval.ttype = ansi_opname[TRUTH_ANDIF_EXPR]; ;
+{ yyval.ttype = ansi_opname (TRUTH_ANDIF_EXPR); ;
     break;}
 case 865:
 #line 3716 "parse.y"
-{ yyval.ttype = ansi_opname[TRUTH_ORIF_EXPR]; ;
+{ yyval.ttype = ansi_opname (TRUTH_ORIF_EXPR); ;
     break;}
 case 866:
 #line 3718 "parse.y"
-{ yyval.ttype = ansi_opname[TRUTH_NOT_EXPR]; ;
+{ yyval.ttype = ansi_opname (TRUTH_NOT_EXPR); ;
     break;}
 case 867:
 #line 3720 "parse.y"
-{ yyval.ttype = ansi_opname[COND_EXPR]; ;
+{ yyval.ttype = ansi_opname (COND_EXPR); ;
     break;}
 case 868:
 #line 3722 "parse.y"
-{ yyval.ttype = ansi_opname[yyvsp[0].code]; ;
+{ yyval.ttype = ansi_opname (yyvsp[0].code); ;
     break;}
 case 869:
 #line 3724 "parse.y"
-{ yyval.ttype = ansi_opname[COMPONENT_REF]; ;
+{ yyval.ttype = ansi_opname (COMPONENT_REF); ;
     break;}
 case 870:
 #line 3726 "parse.y"
-{ yyval.ttype = ansi_opname[MEMBER_REF]; ;
+{ yyval.ttype = ansi_opname (MEMBER_REF); ;
     break;}
 case 871:
 #line 3728 "parse.y"
-{ yyval.ttype = ansi_opname[CALL_EXPR]; ;
+{ yyval.ttype = ansi_opname (CALL_EXPR); ;
     break;}
 case 872:
 #line 3730 "parse.y"
-{ yyval.ttype = ansi_opname[ARRAY_REF]; ;
+{ yyval.ttype = ansi_opname (ARRAY_REF); ;
     break;}
 case 873:
 #line 3732 "parse.y"
-{ yyval.ttype = ansi_opname[NEW_EXPR]; ;
+{ yyval.ttype = ansi_opname (NEW_EXPR); ;
     break;}
 case 874:
 #line 3734 "parse.y"
-{ yyval.ttype = ansi_opname[DELETE_EXPR]; ;
+{ yyval.ttype = ansi_opname (DELETE_EXPR); ;
     break;}
 case 875:
 #line 3736 "parse.y"
-{ yyval.ttype = ansi_opname[VEC_NEW_EXPR]; ;
+{ yyval.ttype = ansi_opname (VEC_NEW_EXPR); ;
     break;}
 case 876:
 #line 3738 "parse.y"
-{ yyval.ttype = ansi_opname[VEC_DELETE_EXPR]; ;
+{ yyval.ttype = ansi_opname (VEC_DELETE_EXPR); ;
     break;}
 case 877:
 #line 3741 "parse.y"
@@ -8226,7 +8226,7 @@ case 877:
     break;}
 case 878:
 #line 3743 "parse.y"
-{ yyval.ttype = ansi_opname[ERROR_MARK]; ;
+{ yyval.ttype = ansi_opname (ERROR_MARK); ;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */

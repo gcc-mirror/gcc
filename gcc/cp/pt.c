@@ -5790,7 +5790,7 @@ tsubst_decl (t, args, type, in_decl)
 	    if (DECL_CONSTRUCTOR_P (r))
 	      grok_ctor_properties (ctx, r);
 	  }
-	else if (DECL_OVERLOADED_OPERATOR_P (r))
+	else if (IDENTIFIER_OPNAME_P (DECL_NAME (r)))
 	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
       }
       break;
@@ -9869,7 +9869,6 @@ static void
 set_mangled_name_for_template_decl (decl)
      tree decl;
 {
-  tree saved_namespace;
   tree context = NULL_TREE;
   tree fn_type;
   tree ret_type;
@@ -9985,21 +9984,10 @@ set_mangled_name_for_template_decl (decl)
   my_friendly_assert (TREE_VEC_LENGTH (tparms) == TREE_VEC_LENGTH (targs),
 		      0);
 
-  /* If the template is in a namespace, we need to put that into the
-     mangled name. Unfortunately, build_decl_overload_real does not
-     get the decl to mangle, so it relies on the current
-     namespace. Therefore, we set that here temporarily. */
-  my_friendly_assert (DECL_P (decl), 980702);
-  saved_namespace = current_namespace;
-  current_namespace = CP_DECL_CONTEXT (decl);  
-
   /* Actually set the DCL_ASSEMBLER_NAME.  */
   DECL_ASSEMBLER_NAME (decl)
-    = build_decl_overload_real (DECL_NAME (decl), parm_types, ret_type,
+    = build_decl_overload_real (decl, parm_types, ret_type,
 				tparms, targs, 
 				DECL_FUNCTION_MEMBER_P (decl) 
 				+ DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl));
-
-  /* Restore the previously active namespace.  */
-  current_namespace = saved_namespace;
 }

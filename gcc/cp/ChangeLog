@@ -1,3 +1,87 @@
+2000-05-27  Alex Samuel    <samuel@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (ansi_opname): Make it a macro.
+	(ansi_assopname): Likewise.
+	(struct lang_decl_flags): Add assignment_operator_p.
+	(struct lang_decl): Add operator_code.
+	(DECL_VTT_PARM): Adjust.
+	(DECL_OVERLOADED_OPERATOR_P): Return the operator_code for an
+	overloaded operator.
+	(SET_OVERLOADED_OPERATOR_CODE): New macro.
+	(DECL_ASSIGNMENT_OPERATOR_P): New macro.
+	(DECL_ARRAY_DELETE_OPERATOR_P): Adjust.
+	(opname_tab): Remove.
+	(assignop_tab): Likewise.
+	(operator_name_info_t): New type.
+	(operator_name_info): New variable.
+	(assignment_operator_name_info): Likewise.
+	(build_cp_library_fn): Remove declaration.
+	(push_cp_library_fn): Likewise.
+	(operator_name_string): Likewise.
+	(build_decl_overload): Likewise.
+	* call.c (print_z_candidates): Simplify.
+	(build_object_call): Adjust usage of ansi_opname.  Use
+	DECL_OVERLOADED_OPERATOR_P.
+	(op_error): Adjust operator name lookup.
+	(build_conditional_expr): Adjust usage of ansi_opname.
+	(build_new_op): Likewise.
+	(build_op_delete_call): Likewise.
+	(build_over_call): Likewise.
+	(joust): Use DECL_OVERLOADED_OPERATOR_P.
+	* decl.c (duplicate_decls): Copy operator_code.
+	(init_decl_processing): Adjust parameters to push_cp_library_fn.
+	(builtin_function): Adjust parameters to build_library_fn_1.
+	(build_library_fn_1): Accept an overloaded operator code.
+	(build_library_fn): Pass ERROR_MARK.
+	(build_cp_library_fn): Accept an overloaded operator code.
+	(push_cp_library_fn): Likewise.
+	(grokfndecl): Tweak.
+	(grokdeclarator): Simplify code to compute names of overloaded
+	operators.  Adjust use of ansi_opname.
+	(ambi_op_p): Work on tree_codes, not identifiers.
+	(unary_op_p): Likewise.
+	(grok_op_properties): Likewise.
+	(start_function): Use DECL_OVERLOADED_OPERATOR_P.
+	(lang_mark_tree): Don't try to mark the operator_code.
+	* decl2.c (grok_function_init): Use DECL_OVERLOADED_OPERATOR_P.
+	* error.c (dump_decl): Remove special handling for operator
+	names.
+	(dump_function_name): Likewise.
+	(dump_expr): Adjust name lookup of operators.
+	(op_to_string): Simplify.
+	(assop_to_string): Likewise.
+	* init.c (build_new_1): Adjust use of ansi_opname.
+	* lex.c (opname_tab): Remove.
+	(assignop_tab): Likewise.
+	(ansi_opname): Likewise.
+	(ansi_assopname): Likewise.
+	(operator_name_string): Likewise.
+	(reinit_lang_specific): Likewise.
+	(operator_name_info): New variable.
+	(assignment_operator_name_info): Likewise.
+	(init_operators): New function.
+	(init_parse): Use it.
+	(do_identifier): Adjust use of ansi_opname.
+	* method.c (mangle_expression): Don't use ansi_opname for
+	mangling.
+	(build_decl_overload_real): Use DECL_OVERLOADED_OPERATOR_P.
+	(build_decl_overload): Remove.
+	(build_typename_overload): Use OPERATOR_TYPENAME_FORMAT directly.
+	(do_build_assign_ref): Adjust use of ansi_opname.
+	(synthesize_method): Likewise.
+	(implicitly_declare_fn): Likewise.
+	* operators.def: New file.
+	* parse.y (operator): Adjust use of ansi_opname.
+	* pt.c (tsubst_decl): Use IDENTIFIER_OPNAME_P.
+	(set_mangled_name_for_template_decl): Don't play games with
+	current_namespace.
+	(special_function_p): Adjust use of ansi_opname.
+	* typeck.c (check_return_expr): Likewise.
+	* Make-lang.in (cc1plus): Depend on operators.def.
+	* Makefile.in (lex.o): Likewise.
+	(decl.o): Likewise.
+
 2000-05-27  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Make-lang.in (cplib2.ready): Eradicate.

@@ -254,11 +254,11 @@ lex.o : lex.c $(CXX_TREE_H) \
   $(PARSE_H) input.c $(srcdir)/../flags.h hash.h lex.h \
   $(srcdir)/../c-pragma.h $(srcdir)/../toplev.h \
   $(srcdir)/../output.h $(srcdir)/../mbchar.h $(GGC_H) \
-  $(srcdir)/../input.h
+  $(srcdir)/../input.h operators.def
 decl.o : decl.c $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(srcdir)/../stack.h $(srcdir)/../output.h  \
   $(srcdir)/../except.h $(srcdir)/../toplev.h \
-  $(srcdir)/../hash.h $(GGC_H) $(RTL_H)
+  $(srcdir)/../hash.h $(GGC_H) $(RTL_H) operators.def
 decl2.o : decl2.c $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(EXPR_H) $(srcdir)/../output.h $(srcdir)/../except.h \
   $(srcdir)/../toplev.h $(srcdir)/../dwarf2out.h $(srcdir)/../dwarfout.h \

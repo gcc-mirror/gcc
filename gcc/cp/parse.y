@@ -3671,76 +3671,76 @@ operator:
 
 operator_name:
 	  operator '*'
-		{ $$ = ansi_opname[MULT_EXPR]; }
+		{ $$ = ansi_opname (MULT_EXPR); }
 	| operator '/'
-		{ $$ = ansi_opname[TRUNC_DIV_EXPR]; }
+		{ $$ = ansi_opname (TRUNC_DIV_EXPR); }
 	| operator '%'
-		{ $$ = ansi_opname[TRUNC_MOD_EXPR]; }
+		{ $$ = ansi_opname (TRUNC_MOD_EXPR); }
 	| operator '+'
-		{ $$ = ansi_opname[PLUS_EXPR]; }
+		{ $$ = ansi_opname (PLUS_EXPR); }
 	| operator '-'
-		{ $$ = ansi_opname[MINUS_EXPR]; }
+		{ $$ = ansi_opname (MINUS_EXPR); }
 	| operator '&'
-		{ $$ = ansi_opname[BIT_AND_EXPR]; }
+		{ $$ = ansi_opname (BIT_AND_EXPR); }
 	| operator '|'
-		{ $$ = ansi_opname[BIT_IOR_EXPR]; }
+		{ $$ = ansi_opname (BIT_IOR_EXPR); }
 	| operator '^'
-		{ $$ = ansi_opname[BIT_XOR_EXPR]; }
+		{ $$ = ansi_opname (BIT_XOR_EXPR); }
 	| operator '~'
-		{ $$ = ansi_opname[BIT_NOT_EXPR]; }
+		{ $$ = ansi_opname (BIT_NOT_EXPR); }
 	| operator ','
-		{ $$ = ansi_opname[COMPOUND_EXPR]; }
+		{ $$ = ansi_opname (COMPOUND_EXPR); }
 	| operator ARITHCOMPARE
-		{ $$ = ansi_opname[$2]; }
+		{ $$ = ansi_opname ($2); }
 	| operator '<'
-		{ $$ = ansi_opname[LT_EXPR]; }
+		{ $$ = ansi_opname (LT_EXPR); }
 	| operator '>'
-		{ $$ = ansi_opname[GT_EXPR]; }
+		{ $$ = ansi_opname (GT_EXPR); }
 	| operator EQCOMPARE
-		{ $$ = ansi_opname[$2]; }
+		{ $$ = ansi_opname ($2); }
 	| operator ASSIGN
-		{ $$ = ansi_assopname[$2]; }
+		{ $$ = ansi_assopname ($2); }
 	| operator '='
-		{ $$ = ansi_opname [MODIFY_EXPR]; }
+		{ $$ = ansi_assopname (NOP_EXPR); }
 	| operator LSHIFT
-		{ $$ = ansi_opname[$2]; }
+		{ $$ = ansi_opname ($2); }
 	| operator RSHIFT
-		{ $$ = ansi_opname[$2]; }
+		{ $$ = ansi_opname ($2); }
 	| operator PLUSPLUS
-		{ $$ = ansi_opname[POSTINCREMENT_EXPR]; }
+		{ $$ = ansi_opname (POSTINCREMENT_EXPR); }
 	| operator MINUSMINUS
-		{ $$ = ansi_opname[PREDECREMENT_EXPR]; }
+		{ $$ = ansi_opname (PREDECREMENT_EXPR); }
 	| operator ANDAND
-		{ $$ = ansi_opname[TRUTH_ANDIF_EXPR]; }
+		{ $$ = ansi_opname (TRUTH_ANDIF_EXPR); }
 	| operator OROR
-		{ $$ = ansi_opname[TRUTH_ORIF_EXPR]; }
+		{ $$ = ansi_opname (TRUTH_ORIF_EXPR); }
 	| operator '!'
-		{ $$ = ansi_opname[TRUTH_NOT_EXPR]; }
+		{ $$ = ansi_opname (TRUTH_NOT_EXPR); }
 	| operator '?' ':'
-		{ $$ = ansi_opname[COND_EXPR]; }
+		{ $$ = ansi_opname (COND_EXPR); }
 	| operator MIN_MAX
-		{ $$ = ansi_opname[$2]; }
+		{ $$ = ansi_opname ($2); }
 	| operator POINTSAT  %prec EMPTY
-		{ $$ = ansi_opname[COMPONENT_REF]; }
+		{ $$ = ansi_opname (COMPONENT_REF); }
 	| operator POINTSAT_STAR  %prec EMPTY
-		{ $$ = ansi_opname[MEMBER_REF]; }
+		{ $$ = ansi_opname (MEMBER_REF); }
 	| operator LEFT_RIGHT
-		{ $$ = ansi_opname[CALL_EXPR]; }
+		{ $$ = ansi_opname (CALL_EXPR); }
 	| operator '[' ']'
-		{ $$ = ansi_opname[ARRAY_REF]; }
+		{ $$ = ansi_opname (ARRAY_REF); }
 	| operator NEW  %prec EMPTY
-		{ $$ = ansi_opname[NEW_EXPR]; }
+		{ $$ = ansi_opname (NEW_EXPR); }
 	| operator DELETE  %prec EMPTY
-		{ $$ = ansi_opname[DELETE_EXPR]; }
+		{ $$ = ansi_opname (DELETE_EXPR); }
 	| operator NEW '[' ']'
-		{ $$ = ansi_opname[VEC_NEW_EXPR]; }
+		{ $$ = ansi_opname (VEC_NEW_EXPR); }
 	| operator DELETE '[' ']'
-		{ $$ = ansi_opname[VEC_DELETE_EXPR]; }
+		{ $$ = ansi_opname (VEC_DELETE_EXPR); }
 	/* Names here should be looked up in class scope ALSO.  */
 	| operator type_specifier_seq conversion_declarator
 		{ $$ = grokoptypename ($2.t, $3); }
 	| operator error
-		{ $$ = ansi_opname[ERROR_MARK]; }
+		{ $$ = ansi_opname (ERROR_MARK); }
 	;
 
 %%

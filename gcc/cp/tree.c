@@ -2429,7 +2429,7 @@ special_function_p (decl)
     return sfk_copy_constructor;
   if (DECL_CONSTRUCTOR_P (decl))
     return sfk_constructor;
-  if (DECL_NAME (decl) == ansi_opname[(int) MODIFY_EXPR])
+  if (DECL_OVERLOADED_OPERATOR_P (decl) == NOP_EXPR)
     return sfk_assignment_operator;
   if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
     return sfk_destructor;

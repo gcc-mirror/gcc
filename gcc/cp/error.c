@@ -945,14 +945,6 @@ dump_decl (t, flags)
 	    dump_type (TREE_TYPE (t), flags);
 	    break;
 	  }
-	else if (IDENTIFIER_OPNAME_P (t))
-	  {
-	    const char *name_string = operator_name_string (t);
-	    OB_PUTS ("operator");
-	    if (ISALPHA (name_string[0]))
-	      OB_PUTC (' ');
-	    OB_PUTCP (name_string);
-	  }
 	else
 	  OB_PUTID (t);
       }
@@ -1278,13 +1270,7 @@ dump_function_name (t, flags)
       dump_type (TREE_TYPE (TREE_TYPE (t)), flags);
     }
   else if (IDENTIFIER_OPNAME_P (name))
-    {
-      const char *name_string = operator_name_string (name);
-      OB_PUTS ("operator");
-      if (ISALPHA (name_string[0]))
-	OB_PUTC (' ');
-      OB_PUTCP (name_string);
-    }
+    OB_PUTID (name);
   else
     dump_decl (name, flags);
 
@@ -1694,7 +1680,7 @@ dump_expr (t, flags)
     case EQ_EXPR:
     case NE_EXPR:
     case EXACT_DIV_EXPR:
-      dump_binary_op (opname_tab[(int) TREE_CODE (t)], t, flags);
+      dump_binary_op (operator_name_info[(int) TREE_CODE (t)].name, t, flags);
       break;
 
     case CEIL_DIV_EXPR:
@@ -1782,14 +1768,14 @@ dump_expr (t, flags)
     case TRUTH_NOT_EXPR:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
-      dump_unary_op (opname_tab [(int)TREE_CODE (t)], t, flags);
+      dump_unary_op (operator_name_info [(int)TREE_CODE (t)].name, t, flags);
       break;
 
     case POSTDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
       OB_PUTC ('(');
       dump_expr (TREE_OPERAND (t, 0), flags | TS_EXPR_PARENS);
-      OB_PUTCP (opname_tab[(int)TREE_CODE (t)]);
+      OB_PUTCP (operator_name_info[(int)TREE_CODE (t)].name);
       OB_PUTC (')');
       break;
 
@@ -2307,13 +2293,10 @@ op_to_string (p, v)
      enum tree_code p;
      int v ATTRIBUTE_UNUSED;
 {
-  static char buf[] = "operator                ";
+  tree id;
 
-  if (p == 0)
-    return "{unknown}";
-  
-  strcpy (buf + 8, opname_tab [p]);
-  return buf;
+  id = operator_name_info[(int) p].identifier;
+  return id ? IDENTIFIER_POINTER (id) : "{unknown}";
 }
 
 static const char *
@@ -2342,13 +2325,10 @@ assop_to_string (p, v)
      enum tree_code p;
      int v ATTRIBUTE_UNUSED;
 {
-  static char buf[] = "operator                ";
+  tree id;
 
-  if (p == 0)
-    return "{unknown}";
-  
-  strcpy (buf + 9, assignop_tab [p]);
-  return buf;
+  id = assignment_operator_name_info[(int) p].identifier;
+  return id ? IDENTIFIER_POINTER (id) : "{unknown}";
 }
 
 static const char *
