@@ -12,17 +12,194 @@
 // Define if code specialized for wchar_t should be used.
 #undef _GLIBCPP_USE_WCHAR_T
 
-// Define if the compiler/host combination has __builtin_sinf defined.
-#undef _GLIBCPP_HAS_BUILTIN_SINF
+// Define if the compiler/host combination has __builtin_acos
+#undef HAVE_BUILTIN_ACOS
 
-// Define if the compiler/host combination has __builtin_cosf defined.
-#undef _GLIBCPP_HAS_BUILTIN_COSF
+// Define if the compiler/host combination has __builtin_acosf
+#undef HAVE_BUILTIN_ACOSF
 
-// Define if the compiler/host combination has __builtin_fabsf defined.
-#undef _GLIBCPP_HAS_BUILTIN_FABSF
+// Define if the compiler/host combination has __builtin_acosl
+#undef HAVE_BUILTIN_ACOSL
 
-// Define if the compiler/host combination has __builtin_fabsf defined.
-#undef _GLIBCPP_HAS_BUILTIN_SQRTF
+// Define if the compiler/host combination has __builtin_asin
+#undef HAVE_BUILTIN_ASIN
+
+// Define if the compiler/host combination has __builtin_asinf
+#undef HAVE_BUILTIN_ASINF
+
+// Define if the compiler/host combination has __builtin_asinl
+#undef HAVE_BUILTIN_ASINL
+
+// Define if the compiler/host combination has __builtin_atan
+#undef HAVE_BUILTIN_ATAN
+
+// Define if the compiler/host combination has __builtin_atanf
+#undef HAVE_BUILTIN_ATANF
+
+// Define if the compiler/host combination has __builtin_atanl
+#undef HAVE_BUILTIN_ATANL
+
+// Define if the compiler/host combination has __builtin_atan2
+#undef HAVE_BUILTIN_ATAN2
+
+// Define if the compiler/host combination has __builtin_atan2f
+#undef HAVE_BUILTIN_ATAN2F
+
+// Define if the compiler/host combination has __builtin_atan2l
+#undef HAVE_BUILTIN_ATAN2L
+
+// Define if the compiler/host combination has __builtin_ceil
+#undef HAVE_BUILTIN_CEIL
+
+// Define if the compiler/host combination has __builtin_ceilf
+#undef HAVE_BUILTIN_CEILF
+
+// Define if the compiler/host combination has __builtin_ceill
+#undef HAVE_BUILTIN_CEILL
+
+// Define if the compiler/host combination has __builtin_cos
+#undef HAVE_BUILTIN_COS
+
+// Define if the compiler/host combination has __builtin_cosf
+#undef HAVE_BUILTIN_COSF
+
+// Define if the compiler/host combination has __builtin_cosl
+#undef HAVE_BUILTIN_COSL
+
+// Define if the compiler/host combination has __builtin_cosh
+#undef HAVE_BUILTIN_COSH
+
+// Define if the compiler/host combination has __builtin_coshf
+#undef HAVE_BUILTIN_COSHF
+
+// Define if the compiler/host combination has __builtin_coshl
+#undef HAVE_BUILTIN_COSHL
+
+// Define if the compiler/host combination has __builtin_exp
+#undef HAVE_BUILTIN_EXP
+
+// Define if the compiler/host combination has __builtin_expf
+#undef HAVE_BUILTIN_EXPF
+
+// Define if the compiler/host combination has __builtin_expl
+#undef HAVE_BUILTIN_EXPL
+
+// Define if the compiler/host combination has __builtin_fabs
+#undef HAVE_BUILTIN_FABS
+
+// Define if the compiler/host combination has __builtin_fabsf
+#undef HAVE_BUILTIN_FABSF
+
+// Define if the compiler/host combination has __builtin_fabsl
+#undef HAVE_BUILTIN_FABSL
+
+// Define if the compiler/host combination has __builtin_floor
+#undef HAVE_BUILTIN_FLOOR
+
+// Define if the compiler/host combination has __builtin_floorf
+#undef HAVE_BUILTIN_FLOORF
+
+// Define if the compiler/host combination has __builtin_floorl
+#undef HAVE_BUILTIN_FLOORL
+
+// Define if the compiler/host combination has __builtin_frexp
+#undef HAVE_BUILTIN_FREXP
+
+// Define if the compiler/host combination has __builtin_frexpf
+#undef HAVE_BUILTIN_FREXPF
+
+// Define if the compiler/host combination has __builtin_frexpl
+#undef HAVE_BUILTIN_FREXPL
+
+// Define if the compiler/host combination has __builtin_ldexp
+#undef HAVE_BUILTIN_LDEXP
+
+// Define if the compiler/host combination has __builtin_ldexpf
+#undef HAVE_BUILTIN_LDEXPF
+
+// Define if the compiler/host combination has __builtin_ldexpl
+#undef HAVE_BUILTIN_LDEXPL
+
+// Define if the compiler/host combination has __builtin_log
+#undef HAVE_BUILTIN_LOG
+
+// Define if the compiler/host combination has __builtin_logf
+#undef HAVE_BUILTIN_LOGF
+
+// Define if the compiler/host combination has __builtin_logl
+#undef HAVE_BUILTIN_LOGL
+
+// Define if the compiler/host combination has __builtin_log10
+#undef HAVE_BUILTIN_LOG10
+
+// Define if the compiler/host combination has __builtin_log10f
+#undef HAVE_BUILTIN_LOG10F
+
+// Define if the compiler/host combination has __builtin_log10l
+#undef HAVE_BUILTIN_LOG10L
+
+// Define if the compiler/host combination has __builtin_modf
+#undef HAVE_BUILTIN_MODF
+
+// Define if the compiler/host combination has __builtin_modff
+#undef HAVE_BUILTIN_MODFF
+
+// Define if the compiler/host combination has __builtin_modfl
+#undef HAVE_BUILTIN_MODFL
+
+// Define if the compiler/host combination has __builtin_pow
+#undef HAVE_BUILTIN_POW
+
+// Define if the compiler/host combination has __builtin_powf
+#undef HAVE_BUILTIN_POWF
+
+// Define if the compiler/host combination has __builtin_powl
+#undef HAVE_BUILTIN_POWL
+
+// Define if the compiler/host combination has __builtin_sin
+#undef HAVE_BUILTIN_SIN
+
+// Define if the compiler/host combination has __builtin_sinf
+#undef HAVE_BUILTIN_SINF
+
+// Define if the compiler/host combination has __builtin_sinl
+#undef HAVE_BUILTIN_SINL
+
+// Define if the compiler/host combination has __builtin_sinh
+#undef HAVE_BUILTIN_SINH
+
+// Define if the compiler/host combination has __builtin_sinhf
+#undef HAVE_BUILTIN_SINHF
+
+// Define if the compiler/host combination has __builtin_sinhl
+#undef HAVE_BUILTIN_SINHL
+
+// Define if the compiler/host combination has __builtin_sqrt
+#undef HAVE_BUILTIN_SQRT
+
+// Define if the compiler/host combination has __builtin_sqrtf
+#undef HAVE_BUILTIN_SQRTF
+
+// Define if the compiler/host combination has __builtin_sqrtl
+#undef HAVE_BUILTIN_SQRTL
+
+// Define if the compiler/host combination has __builtin_tan
+#undef HAVE_BUILTIN_TAN
+
+// Define if the compiler/host combination has __builtin_tanf
+#undef HAVE_BUILTIN_TANF
+
+// Define if the compiler/host combination has __builtin_tanl
+#undef HAVE_BUILTIN_TANL
+
+// Define if the compiler/host combination has __builtin_tanh
+#undef HAVE_BUILTIN_TANH
+
+// Define if the compiler/host combination has __builtin_tanhf
+#undef HAVE_BUILTIN_TANHF
+
+// Define if the compiler/host combination has __builtin_tanhl
+#undef HAVE_BUILTIN_TANHL
 
 // Define if GCC support for __complex__ float is buggy.
 #undef _GLIBCPP_BUGGY_FLOAT_COMPLEX
@@ -90,9 +267,54 @@
 # define cosf _cosf
 #endif
 
+#if defined (HAVE__ACOSF) && ! defined (HAVE_ACOSF)
+# define HAVE_ACOSF 1
+# define acosf _acosf
+#endif
+
+#if defined (HAVE__ACOSL) && ! defined (HAVE_ACOSL)
+# define HAVE_ACOSL 1
+# define acosl _acosl
+#endif
+
+#if defined (HAVE__ASINF) && ! defined (HAVE_ASINF)
+# define HAVE_ASINF 1
+# define asinf _asinf
+#endif
+
+#if defined (HAVE__ASINL) && ! defined (HAVE_ASINL)
+# define HAVE_ASINL 1
+# define asinl _asinl
+#endif
+
+#if defined (HAVE__ATANF) && ! defined (HAVE_ATANF)
+# define HAVE_ATANF 1
+# define atanf _atanf
+#endif
+
+#if defined (HAVE__ATANL) && ! defined (HAVE_ATANL)
+# define HAVE_ATANL 1
+# define atanl _atanl
+#endif
+
+#if defined (HAVE__CEILF) && ! defined (HAVE_CEILF)
+# define HAVE_CEILF 1
+# define aceil _ceilf
+#endif
+
+#if defined (HAVE__CEILL) && ! defined (HAVE_CEILL)
+# define HAVE_CEILL 1
+# define aceil _ceill
+#endif
+
 #if defined (HAVE__COSHF) && ! defined (HAVE_COSHF)
 # define HAVE_COSHF 1
 # define coshf _coshf
+#endif
+
+#if defined (HAVE__COSL) && ! defined (HAVE_COSL)
+# define HAVE_COSL 1
+# define cosl _cosl
 #endif
 
 #if defined (HAVE__LOGF) && ! defined (HAVE_LOGF)
@@ -100,9 +322,79 @@
 # define logf _logf
 #endif
 
+#if defined (HAVE__COSHL) && ! defined (HAVE_COSHL)
+# define HAVE_COSHL 1
+# define coshl _coshl
+#endif
+
+#if defined (HAVE__EXPF) && ! defined (HAVE_EXPF)
+# define HAVE_EXPF 1
+# define expf _expf
+#endif
+
+#if defined (HAVE__EXPL) && ! defined (HAVE_EXPL)
+# define HAVE_EXPL 1
+# define expl _expl
+#endif
+
+#if defined (HAVE__FABSF) && ! defined (HAVE_FABSF)
+# define HAVE_FABSF 1
+# define fabsf _fabsf
+#endif
+
+#if defined (HAVE__FABSL) && ! defined (HAVE_FABSL)
+# define HAVE_FABSL 1
+# define fabsl _fabsl
+#endif
+
+#if defined (HAVE__FLOORF) && ! defined (HAVE_FLOORF)
+# define HAVE_FLOORF 1
+# define floorf _floorf
+#endif
+
+#if defined (HAVE__FLOORL) && ! defined (HAVE_FLOORL)
+# define HAVE_FLOORL 1
+# define floorl _floorl
+#endif
+
+#if defined (HAVE__FMODF) && ! defined (HAVE_FMODF)
+# define HAVE_FMODF 1
+# define fmodf _fmodf
+#endif
+
+#if defined (HAVE__FMODL) && ! defined (HAVE_FMODL)
+# define HAVE_FMODL 1
+# define fmodl _fmodl
+#endif
+
+#if defined (HAVE__FREXPF) && ! defined (HAVE_FREXPF)
+# define HAVE_FREXPF 1
+# define frexpf _frexpf
+#endif
+
+#if defined (HAVE__FREXPL) && ! defined (HAVE_FREXPL)
+# define HAVE_FREXPL 1
+# define frexpl _frexpl
+#endif
+
+#if defined (HAVE__LDEXPF) && ! defined (HAVE_LDEXPF)
+# define HAVE_LDEXPF 1
+# define ldexpf _ldexpf
+#endif
+
+#if defined (HAVE__LDEXPL) && ! defined (HAVE_LDEXPL)
+# define HAVE_LDEXPL 1
+# define ldexpl _ldexpl
+#endif
+
 #if defined (HAVE__LOG10F) && ! defined (HAVE_LOG10F)
 # define HAVE_LOG10F 1
 # define log10f _log10f
+#endif
+
+#if defined (HAVE__LOGL) && ! defined (HAVE_LOGL)
+# define HAVE_LOGL 1
+# define logl _logl
 #endif
 
 #if defined (HAVE__POWF) && ! defined (HAVE_POWF)
@@ -110,9 +402,29 @@
 # define powf _powf
 #endif
 
+#if defined (HAVE__LOG10L) && ! defined (HAVE_LOG10L)
+# define HAVE_LOG10L 1
+# define log10l _log10l
+#endif
+
+#if defined (HAVE__MODF) && ! defined (HAVE_MODF)
+# define HAVE_MODF 1
+# define modf _modf
+#endif
+
+#if defined (HAVE__MODL) && ! defined (HAVE_MODL)
+# define HAVE_MODL 1
+# define modl _modl
+#endif
+
 #if defined (HAVE__SINF) && ! defined (HAVE_SINF)
 # define HAVE_SINF 1
 # define sinf _sinf
+#endif
+
+#if defined (HAVE__POWL) && ! defined (HAVE_POWL)
+# define HAVE_POWL 1
+# define powl _powl
 #endif
 
 #if defined (HAVE__SINHF) && ! defined (HAVE_SINHF)
@@ -120,9 +432,19 @@
 # define sinhf _sinhf
 #endif
 
+#if defined (HAVE__SINL) && ! defined (HAVE_SINL)
+# define HAVE_SINL 1
+# define sinl _sinl
+#endif
+
 #if defined (HAVE__SQRTF) && ! defined (HAVE_SQRTF)
 # define HAVE_SQRTF 1
 # define sqrtf _sqrtf
+#endif
+
+#if defined (HAVE__SINHL) && ! defined (HAVE_SINHL)
+# define HAVE_SINHL 1
+# define sinhl _sinhl
 #endif
 
 #if defined (HAVE__TANF) && ! defined (HAVE_TANF)
@@ -130,9 +452,19 @@
 # define tanf _tanf
 #endif
 
+#if defined (HAVE__SQRTL) && ! defined (HAVE_SQRTL)
+# define HAVE_SQRTL 1
+# define sqrtl _sqrtl
+#endif
+
 #if defined (HAVE__TANHF) && ! defined (HAVE_TANHF)
 # define HAVE_TANHF 1
 # define tanhf _tanhf
+#endif
+
+#if defined (HAVE__TANL) && ! defined (HAVE_TANL)
+# define HAVE_TANF 1
+# define tanf _tanf
 #endif
 
 #if defined (HAVE__STRTOF) && ! defined (HAVE_STRTOF)
@@ -140,14 +472,14 @@
 # define strtof _strtof
 #endif
 
+#if defined (HAVE__TANHL) && ! defined (HAVE_TANHL)
+# define HAVE_TANHL 1
+# define tanhl _tanhl
+#endif
+
 #if defined (HAVE__STRTOLD) && ! defined (HAVE_STRTOLD)
 # define HAVE_STRTOLD 1
 # define strtold _strtold
-#endif
-
-#if defined (HAVE__FABSF) && ! defined (HAVE_FABSF)
-# define HAVE_FABSF 1
-# define fabsf _fabsf
 #endif
 
 #if defined (HAVE__SINCOS) && ! defined (HAVE_SINCOS)
@@ -168,6 +500,16 @@
 #if defined (HAVE__FINITE) && ! defined (HAVE_FINITE)
 # define HAVE_FINITE 1
 # define finite _finite
+#endif
+
+#if defined (HAVE__FINITEF) && ! defined (HAVE_FINITEF)
+# define HAVE_FINITEF 1
+# define finitef _finitef
+#endif
+
+#if defined (HAVE__FINITEL) && ! defined (HAVE_FINITEL)
+# define HAVE_FINITEL 1
+# define finitel _finitel
 #endif
 
 #if defined (HAVE__QFINITE) && ! defined (HAVE_QFINITE)
