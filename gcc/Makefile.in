@@ -1587,6 +1587,8 @@ stamp-output : $(md_file) genoutput $(srcdir)/move-if-change
 
 genrtl.o : genrtl.c $(CONFIG_H) $(RTL_H)
 genrtl.c genrtl.h : stamp-genrtl
+	@true	# force gnu make to recheck modification times.
+
 stamp-genrtl: gengenrtl $(srcdir)/move-if-change $(RTL_BASE_H)
 	./gengenrtl tmp-genrtl.h tmp-genrtl.c
 	$(srcdir)/move-if-change tmp-genrtl.h genrtl.h
