@@ -74,8 +74,6 @@ static char dir_separator_str[] = {DIR_SEPARATOR, 0};
 #define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
 #endif
 
-extern char *my_strerror PROTO((int));
-
 #ifndef HAVE_KILL
 #define kill(p,s) raise(s)
 #endif
@@ -1032,7 +1030,7 @@ translate_options (argcp, argvp)
 }
 
 char *
-my_strerror(e)
+xstrerror(e)
      int e;
 {
 #ifdef HAVE_STRERROR
@@ -5247,14 +5245,14 @@ static void
 pfatal_with_name (name)
      char *name;
 {
-  fatal ("%s: %s", name, my_strerror (errno));
+  fatal ("%s: %s", name, xstrerror (errno));
 }
 
 static void
 perror_with_name (name)
      char *name;
 {
-  error ("%s: %s", name, my_strerror (errno));
+  error ("%s: %s", name, xstrerror (errno));
 }
 
 static void
@@ -5272,7 +5270,7 @@ pfatal_pexecute (errmsg_fmt, errmsg_arg)
       errmsg_fmt = msg;
     }
 
-  fatal ("%s: %s", errmsg_fmt, my_strerror (save_errno));
+  fatal ("%s: %s", errmsg_fmt, xstrerror (save_errno));
 }
 
 /* More 'friendly' abort that prints the line and file.
