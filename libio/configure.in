@@ -16,6 +16,10 @@ frags=
 
 case "${target}" in
   *-hpux*)       frags=hpux.mt ;;
+  alpha*-*-linux-gnulibc1)
+		 frags="linux.mt linuxaxp1.mt mtsafe.mt" ;;
+  powerpc*-*-linux-gnulibc1)
+		 frags="linux.mt linuxaxp1.mt mtsafe.mt" ;;
   *-linux-gnulibc1)
 		 frags=linuxlibc1.mt ;;
   *-linux-gnu)   frags="linux.mt mtsafe.mt" ;;
@@ -36,34 +40,29 @@ if [ "${shared}" = "yes" ]; then
   case "${target}" in
     hppa*-*)	 frags="${frags} ../../config/mh-papic" ;;
     i[3456]86-*) frags="${frags} ../../config/mh-x86pic" ;;
-    alpha-*-linux*)
+    alpha*-*-linux*)
 		 frags="${frags} ../../config/mh-elfalphapic" ;;
     *)	         frags="${frags} ../../config/mh-${target_cpu}pic" ;;
   esac
 fi
 
-# Make a link for the correct stdio-lock.h file.
+# Take care of header file lossage.
 case "${target}" in
-  *-linux-gnu)
-    # We have a correct file in glibc but the libioP.h file is written
-    # with glibc 2.1 in mind which has the internals headers in special
-    # directory while glibc 2.0 has them in /usr/include.  Create a wrapper
-    # if necessary.
-    (echo "#include <bits/libc-lock.h>" | ${CC-cc} -E -) >/dev/null 2>&1 ||
-      {
-	rm -fr bits
-        mkdir bits
-        echo "#include <libc-lock.h>" > bits/libc-lock.h
-	echo 'asm (".weak _pthread_cleanup_pop_restore");' >> bits/libc-lock.h
-	echo 'asm (".weak _pthread_cleanup_push_defer");' >> bits/libc-lock.h
-
-        echo "#include <stdio-lock.h>" > bits/stdio-lock.h
-      }
+  alpha*-*-linux-gnulibc1)
+    # For some reason stdio-lock.h is not installed on Red Hat systems.
+    # Further, libc-lock.h needs to define the pthreads stuff weak, and
+    # fails to do this for other than _LIBC.  Install our own versions
+    # of these files.
+    cp ${srcdir}/config/linuxaxp1-libc-lock.h libc-lock.h
+    cp ${srcdir}/config/linuxaxp1-stdio-lock.h stdio-lock.h
     ;;
-  *)
-    rm -fr bits
-    mkdir bits
-    ln -s ${srcdir}/include/empty.h bits/stdio-lock.h
+  powerpc*-*-linux-gnulibc1)
+    # For some reason stdio-lock.h is not installed on Red Hat systems.
+    # Further, libc-lock.h needs to define the pthreads stuff weak, and
+    # fails to do this for other than _LIBC.  Install our own versions
+    # of these files.
+    cp ${srcdir}/config/linuxaxp1-libc-lock.h libc-lock.h
+    cp ${srcdir}/config/linuxaxp1-stdio-lock.h stdio-lock.h
     ;;
 esac
 
