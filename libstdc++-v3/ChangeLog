@@ -1,3 +1,7 @@
+2001-02-21  Phil Edwards  <pme@sources.redhat.com>
+
+	* tests_flags.in:  Remove -n flag from call to echo.
+
 2001-02-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/c_locale_gnu.h: Add clocale include.
