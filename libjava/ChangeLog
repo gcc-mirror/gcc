@@ -1,3 +1,8 @@
+2005-01-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natRuntime.cc (insertSystemProperties): Set
+	java.ext.dirs earlier.
+
 2005-01-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* java/lang/natObject.cc (_Jv_ObjectCheckMonitor): Initialize the

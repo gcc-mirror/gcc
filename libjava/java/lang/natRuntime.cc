@@ -537,8 +537,13 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
       SET ("user.region", "US");
     }  
 
+  // The java extensions directory.
+  SET ("java.ext.dirs", JAVA_EXT_DIRS);
+
   // Set some properties according to whatever was compiled in with
-  // `-D'.
+  // `-D'.  Important: after this point, the only properties that
+  // should be set are those which either the user cannot meaningfully
+  // override, or which augment whatever value the user has provided.
   for (int i = 0; _Jv_Compiler_Properties[i]; ++i)
     {
       const char *s, *p;
@@ -594,9 +599,6 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
 
   // The name used to invoke this process (argv[0] in C).
   SET ("gnu.gcj.progname", _Jv_GetSafeArg (0));
-
-  // The java extensions directory.
-  SET ("java.ext.dirs", JAVA_EXT_DIRS);
 
   // Allow platform specific settings and overrides.
   _Jv_platform_initProperties (newprops);
