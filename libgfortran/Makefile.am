@@ -59,7 +59,8 @@ intrinsics/rand.c \
 intrinsics/random.c \
 intrinsics/reshape_generic.c \
 intrinsics/reshape_packed.c \
-intrinsics/selected_kind.f90 \
+intrinsics/selected_int_kind.f90 \
+intrinsics/selected_real_kind.f90 \
 intrinsics/system_clock.c \
 intrinsics/transpose_generic.c \
 intrinsics/unpack_generic.c \
@@ -264,7 +265,8 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_matmul_c) $(i_matmull_c) $(i_transpose_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
-    $(i_pow_c)
+    $(i_pow_c) \
+    selected_int_kind.inc selected_real_kind.inc
 
 # We only use these if libm doesn't contain complex math functions.
 
@@ -382,6 +384,12 @@ libgfortran_la_DEPENDENCIES = @MATH_OBJ@
 I_M4_DEPS=m4/iparm.m4
 I_M4_DEPS0=$(I_M4_DEPS) m4/iforeach.m4
 I_M4_DEPS1=$(I_M4_DEPS) m4/ifunction.m4
+
+selected_int_kind.inc: $(srcdir)/mk-sik-inc.sh
+	$(SHELL) $(srcdir)/mk-sik-inc.sh '$(F77COMPILE)' > $@
+
+selected_real_kind.inc: $(srcdir)/mk-srk-inc.sh
+	$(SHELL) $(srcdir)/mk-srk-inc.sh '$(F77COMPILE)' > $@
 
 ## A 'normal' build shouldn't need to regenerate these
 ## so we only include them in maintainer mode
