@@ -106,7 +106,9 @@ public class SimpleFormatter
 
     buf.append(dateFormat.format(new Date(record.getMillis())));
     buf.append(' ');
-    buf.append(record.getLoggerName());
+    buf.append(record.getSourceClassName());
+    buf.append(' ');
+    buf.append(record.getSourceMethodName());
     buf.append(lineSep);
 
     buf.append(record.getLevel());
