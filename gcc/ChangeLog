@@ -1,3 +1,9 @@
+Wed Apr 29 15:34:40 1998  John Carr  <jfc@mit.edu>
+
+	* calls.c (expand_call): Fix recognition of C++ operator new.
+
+	* alias.c (mode_alias_check): Disable type based alias detection.
+
 Wed Apr 29 15:06:42 1998  Gavin Koch  <gavin@cygnus.com>
 
 	* config/mips/elf.h (ASM_OUTPUT_DEF,ASM_WEAKEN_LABEL,
