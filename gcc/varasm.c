@@ -3210,13 +3210,22 @@ mark_varasm_state (p)
   ggc_mark_rtx (p->x_const_double_chain);
 }
 
-/* Clear out all parts of our state in F that can safely be discarded
-   after the function has been compiled.  */
+/* Clear out all parts of the state in F that can safely be discarded
+   after the function has been compiled, to let garbage collection
+   reclaim the memory.  D is the declaration for the function just
+   compiled.  Its output may have been deferred.  */
+
 void
-free_varasm_status (f)
+free_varasm_status (f, d)
      struct function *f;
+     tree d;
 {
-  struct varasm_status *p = f->varasm;
+  struct varasm_status *p;
+
+  if (DECL_DEFER_OUTPUT (d))
+    return;
+
+  p = f->varasm;
   free (p->x_const_rtx_hash_table);
   free (p->x_const_rtx_sym_hash_table);
 

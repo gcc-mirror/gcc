@@ -550,6 +550,22 @@ mark_goto_fixup (g)
     }
 }
 
+/* Clear out all parts of the state in F that can safely be discarded
+   after the function has been compiled, to let garbage collection
+   reclaim the memory.  D is the declaration for the function just
+   compiled.  Its output may have been deferred.  */
+
+void
+free_stmt_status (f, d)
+     struct function *f;
+     tree d ATTRIBUTE_UNUSED;
+{
+  /* We're about to free the function obstack.  If we hold pointers to
+     things allocated there, then we'll try to mark them when we do
+     GC.  So, we clear them out here explicitly.  */
+  f->stmt->x_goto_fixup_chain = 0;
+}
+
 /* Mark P for GC.  */
 
 void
@@ -602,6 +618,7 @@ init_stmt_for_function ()
   /* We are not processing a ({...}) grouping.  */
   expr_stmts_for_value = 0;
   last_expr_type = 0;
+  last_expr_value = NULL_RTX;
 
   init_eh_for_function ();
 }

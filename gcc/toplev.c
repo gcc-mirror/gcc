@@ -4466,13 +4466,13 @@ rest_of_compilation (decl)
 
   init_recog_no_volatile ();
 
-  /* We're done with this function.  */
-  if (! DECL_DEFER_OUTPUT (decl))
-    free_after_compilation (current_function);
+  /* We're done with this function.  Free up memory if we can.  */
+  free_after_compilation (current_function, decl);
 
   current_function = 0;
 
-  ggc_collect ();
+  if (ggc_p)
+    ggc_collect ();
 
   /* The parsing time is all the time spent in yyparse
      *except* what is spent in this function.  */
@@ -4793,6 +4793,9 @@ main (argc, argv)
   flag_short_enums = DEFAULT_SHORT_ENUMS;
 #endif
 
+  /* Initialize the garbage-collector.  */
+  if (ggc_p)
+    init_ggc ();
   ggc_add_root (&input_file_stack, 1, sizeof input_file_stack,
 		&mark_file_stack);
 

@@ -476,9 +476,6 @@ push_obstacks (current, saveable)
 {
   struct obstack_stack *p;
 
-  if (ggc_p)
-    return;
-
   p = (struct obstack_stack *) obstack_alloc (&obstack_stack_obstack,
 					      (sizeof (struct obstack_stack)));
 
@@ -501,9 +498,6 @@ push_obstacks_nochange ()
 {
   struct obstack_stack *p;
   
-  if (ggc_p)
-    return;
-
   p = (struct obstack_stack *) obstack_alloc (&obstack_stack_obstack,
 					      (sizeof (struct obstack_stack)));
 
@@ -521,9 +515,6 @@ void
 pop_obstacks ()
 {
   struct obstack_stack *p;
-
-  if (ggc_p)
-    return;
 
   p = obstack_stack;
   obstack_stack = p->next;

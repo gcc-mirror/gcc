@@ -270,7 +270,8 @@ print_node (file, prefix, node, indent)
       if (TREE_TYPE (node))
 	indent_to (file, indent + 3);
 
-      print_obstack_name ((char *) node, file, "");
+      if (!ggc_p)
+	print_obstack_name ((char *) node, file, "");
       indent_to (file, indent + 3);
     }
 

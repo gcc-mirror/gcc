@@ -1,3 +1,48 @@
+Tue Sep  7 00:47:52 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* emit-rtl.c (free_emit_status): Take decl as a parameter.
+	(init_emit_once): Add more GC roots.
+	* except.c (mark_func_eh_entry): New function.
+	(mark_eh_node): Mark false_label and rethrow_label.
+	(init_eh): Add more GC roots.
+	* function.c (free_after_compilation): Take decl as a paramter.
+	Call free_stmt_status.
+	(mark_function_state): Don't assume x_parm_reg_stack_loc is
+	non-NULL.
+	* function.h (free_after_compilation): Change prototype.
+	(free_varasm_status): Likewise.
+	(free_emit_status): Likewise.
+	(free_stmt_status): New function.
+	* ggc-simple.c (rtx, vecs, trees, strings, bytes_alloced_since_gc): 
+	Remove, replacing with ...
+	(ggc_status): New structure.
+	(ggc_chain): New variable.
+	(init_gcc): Define.
+	(ggc_push_context): New function.
+	(ggc_pop_context): Likewise.
+	(ggc_alloc_rtx): Adjust for use of ggc_chain.
+	(ggc_alloc_rtvec): Likewise.
+	(ggc_alloc_tree): Likewise.
+	(ggc_alloc_string): Likewise.
+	(ggc_mark_rtx): Mark NOTE_SOURCE_FILE and NOTE_RANGE_INFO.
+	(ggc_mark_tree): Give language-dependent code a chance to mark
+	`x' nodes.
+	(ggc_mark_tree_varray): Handle empty arrays.
+	(ggc_collect): Adjust for use of ggc_chain.  Clear
+	bytes_alloced_since_last_gc.
+	* ggc.h (ggc_pop_context): New function.
+	(ggc_push_context): Likewise.
+	* print-tree.c (print_node): Don't print obstacks when GC'ing.
+	* stmt.c (free_stmt_status): New function.
+	(init_stmt_for_function): Clear last_expr_value.
+	* toplev.c (rest_of_compilation): Always call free_after_compilation.
+	Conditionalize call to ggc_collect.
+	(main): Call init_ggc.
+	* tree.c (push_obstacks): Do the push, even when GC'ing.
+	(push_obstacks_nochange): Likewise.
+	(pop_obstacks): Liekwise.
+	* varasm.c (free_varasm_status): Take decl as a parameter.
+	
 Tue Sep  7 08:15:49 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.h (MULTILIB_ENDIAN_DEFAULT) : New macro.
@@ -155,7 +200,6 @@ Mon Sep  6 14:30:13 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(ix86_mark_machine_status): New function.
 	(override_options): Set mark_machine_status.
 
->>>>>>> 1.4290
 Mon Sep  6 15:26:23 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* tree.c (copy_node): Copy node contents also if doing GC.
@@ -166,7 +210,6 @@ Mon Sep  6 08:42:06 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 Mon Sep  6 02:42:36 1999  Jeffrey A Law  (law@cygnus.com)
 
->>>>>>> 1.4287
 	* collect2.c (scan_libraries): Fix thinko.
 
 	* cse.c (delete_trivially_dead_insns): Do not skip the last
