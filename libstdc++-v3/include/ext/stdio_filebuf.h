@@ -1,6 +1,6 @@
 // File descriptor layer for filebuf -*- C++ -*-
 
-// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,6 +63,11 @@ namespace __gnu_cxx
 
     public:
       /**
+       * deferred initialization
+      */
+      stdio_filebuf() : std::basic_filebuf<_CharT, _Traits>() {}
+
+      /**
        *  @param  fd  An open file descriptor.
        *  @param  mode  Same meaning as in a standard filebuf.
        *  @param  size  Optimal or preferred size of internal buffer, in chars.
@@ -103,8 +108,17 @@ namespace __gnu_cxx
        *  descriptor, so be careful.
       */
       int
-      fd()
-      { return this->_M_file.fd(); }
+      fd() { return this->_M_file.fd(); }
+
+      /**
+       *  @return  The underlying FILE*.
+       *
+       *  This function can be used to access the underlying "C" file pointer.
+       *  Note that there is no way for the library to track what you do
+       *  with the file, so be careful.
+       */
+      std::__c_file*
+      file() { return this->_M_file.file(); }
     };
 
   template<typename _CharT, typename _Traits>

@@ -1,3 +1,12 @@
+2004-05-29  Richard B. Kreckel  <Richard.Kreckel@Framatome-ANP.com>
+            Benjamin Kosnik  <bkoz@redhat.com>
+	
+	PR libstdc++/14600
+	* include/ext/stdio_sync_filebuf.h (stdio_sync_filebuf::file): New.
+	* include/ext/stdio_filebuf.h (stdio_filebuf::file): New.
+	* config/io/basic_file_stdio.cc (__basic_file::file): New.
+	* config/io/basic_file_stdio.h: Define.
+
 2004-05-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/15675

@@ -81,6 +81,9 @@ namespace std
       int 
       fd();
 
+      __c_file*
+      file();
+
       ~__basic_file();
 
       streamsize 
