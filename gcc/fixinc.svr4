@@ -60,6 +60,10 @@ cd $LIB; LIB=`pwd`
 # unrecognizable.
 TERM=dumb
 export TERM
+# This prevents /bin/ex from failing if the EXINIT environment variable
+# was set to something invalid.
+EXINIT=""
+export EXINIT
 
 echo 'Building fixincludes in ' ${LIB}
 
