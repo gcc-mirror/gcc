@@ -27,6 +27,7 @@ _T
 
 BSD adds:
 __used
+__unused
 __inline
 _Complex
 __istype
