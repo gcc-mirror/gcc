@@ -250,11 +250,17 @@ case $host_os in
     ;;
   hpux*)
     if test $with_gnu_ld = no; then
-      hardcode_libdir_flag_spec='${wl}+b ${wl}$libdir'
+      case "$host_cpu" in
+	ia64*)
+	  hardcode_libdir_flag_spec='-L$libdir'
+	  hardcode_shlibpath_var=no ;;
+	*)
+	  hardcode_libdir_flag_spec='${wl}+b ${wl}$libdir' ;;
+      esac
+      hardcode_direct=yes
       hardcode_libdir_separator=:
       export_dynamic_flag_spec='${wl}-E'
     fi
-    hardcode_direct=yes
     hardcode_minus_L=yes # Not in the search PATH, but as the default
 			 # location of the library.
 
@@ -283,7 +289,14 @@ case $host_os in
 	  if test $with_gnu_ld = no; then
 	    case "$host_os" in
 	    hpux9*) archive_cmds='$rm $output_objdir/$soname~$CC -shared -nostdlib -fPIC ${wl}+b ${wl}$install_libdir -o $output_objdir/$soname $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags~test $output_objdir/$soname = $lib || mv $output_objdir/$soname $lib' ;;
-	    *) archive_cmds='$CC -shared -nostdlib -fPIC ${wl}+h ${wl}$soname ${wl}+b ${wl}$install_libdir -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags' ;;
+	    *)
+	      case "$host_cpu" in
+		ia64*)
+		  archive_cmds='$LD -b +h $soname -o $lib $predep_objects $libobjs $deplibs $postdep_objects $linker_flags' ;;
+		*)
+		  archive_cmds='$CC -shared -nostdlib -fPIC ${wl}+h ${wl}$soname ${wl}+b ${wl}$install_libdir -o $lib $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags' ;;
+	      esac
+	      ;;
 	    esac
 	  fi
 	else
