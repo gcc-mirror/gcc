@@ -159,14 +159,9 @@ static varray_type may_not_optimize;
 
 static char *moved_once;
 
-/* Array of MEMs that are stored in this loop. If there are too many to fit
-   here, we just turn on unknown_address_altered.  */
+/* List of MEMs that are stored in this loop.  */
 
-#define NUM_STORES 30
-static rtx loop_store_mems[NUM_STORES];
-
-/* Index of first available slot in above array.  */
-static int loop_store_mems_idx;
+static rtx loop_store_mems;
 
 typedef struct loop_mem_info {
   rtx mem;      /* The MEM itself.  */
@@ -2356,7 +2351,7 @@ constant_high_bytes (p, loop_start)
 /* Scan a loop setting the variables `unknown_address_altered',
    `num_mem_sets', `loop_continue', `loops_enclosed', `loop_has_call',
    `loop_has_volatile', and `loop_has_tablejump'.
-   Also, fill in the arrays `loop_mems' and `loop_store_mems'.  */
+   Also, fill in the array `loop_mems' and the list `loop_store_mems'.  */
 
 static void
 prescan_loop (start, end)
@@ -2377,7 +2372,7 @@ prescan_loop (start, end)
   loop_has_call = 0;
   loop_has_volatile = 0;
   loop_has_tablejump = 0;
-  loop_store_mems_idx = 0;
+  loop_store_mems = NULL_RTX;
   loop_mems_idx = 0;
 
   num_mem_sets = 0;
@@ -2981,8 +2976,6 @@ note_addr_stored (x, y)
      rtx x;
      rtx y ATTRIBUTE_UNUSED;
 {
-  register int i;
-
   if (x == 0 || GET_CODE (x) != MEM)
     return;
 
@@ -2997,22 +2990,7 @@ note_addr_stored (x, y)
   if (unknown_address_altered)
     return;
 
-  for (i = 0; i < loop_store_mems_idx; i++)
-    if (rtx_equal_p (XEXP (loop_store_mems[i], 0), XEXP (x, 0)))
-      {
-	/* We are storing at the same address as previously noted.  Save the
-	   wider reference.  */
-	if (GET_MODE_SIZE (GET_MODE (x))
-	    > GET_MODE_SIZE (GET_MODE (loop_store_mems[i])))
-	  loop_store_mems[i] = x;
-	break;
-      }
-
-  if (i == NUM_STORES)
-    unknown_address_altered = 1;
-
-  else if (i == loop_store_mems_idx)
-    loop_store_mems[loop_store_mems_idx++] = x;
+  loop_store_mems = gen_rtx_EXPR_LIST (VOIDmode, x, loop_store_mems);
 }
 
 /* Return nonzero if the rtx X is invariant over the current loop.
@@ -3031,6 +3009,7 @@ invariant_p (x)
   register enum rtx_code code;
   register char *fmt;
   int conditional = 0;
+  rtx mem_list_entry;
 
   if (x == 0)
     return 1;
@@ -3093,15 +3072,20 @@ invariant_p (x)
       if (RTX_UNCHANGING_P (x))
 	break;
 
-      /* If we filled the table (or had a subroutine call), any location
-	 in memory could have been clobbered.  */
+      /* If we had a subroutine call, any location in memory could have been
+	 clobbered.  */
       if (unknown_address_altered)
 	return 0;
 
       /* See if there is any dependence between a store and this load.  */
-      for (i = loop_store_mems_idx - 1; i >= 0; i--)
-	if (true_dependence (loop_store_mems[i], VOIDmode, x, rtx_varies_p))
-	  return 0;
+      mem_list_entry = loop_store_mems;
+      while (mem_list_entry)
+	{
+	  if (true_dependence (XEXP (mem_list_entry, 0), VOIDmode,
+			       x, rtx_varies_p))
+	    return 0;
+	  mem_list_entry = XEXP (mem_list_entry, 1);
+	}
 
       /* It's not invalidated by a store in memory
 	 but we must still verify the address is invariant.  */
@@ -6804,7 +6788,7 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 	  if (num_mem_sets == 1)
 	    reversible_mem_store
 	      = (! unknown_address_altered
-		 && ! invariant_p (XEXP (loop_store_mems[0], 0)));
+		 && ! invariant_p (XEXP (loop_store_mems, 0)));
 	}
       else
 	return 0;
@@ -8427,10 +8411,10 @@ load_mems (scan_start, end, loop_top, start)
       /* Actually move the MEMs.  */
       for (i = 0; i < loop_mems_idx; ++i) 
 	{
-	  int j;
 	  int written = 0;
 	  rtx reg;
 	  rtx mem = loop_mems[i].mem;
+	  rtx mem_list_entry;
 
 	  if (MEM_VOLATILE_P (mem) 
 	      || invariant_p (XEXP (mem, 0)) != 1)
@@ -8439,17 +8423,19 @@ load_mems (scan_start, end, loop_top, start)
 
 	  /* Go through the MEMs written to in the loop to see if this
 	     one is aliased by one of them.  */
-	  for (j = 0; j < loop_store_mems_idx; ++j) 
+	  mem_list_entry = loop_store_mems;
+	  while (mem_list_entry)
 	    {
-	      if (rtx_equal_p (mem, loop_store_mems[j]))
+	      if (rtx_equal_p (mem, XEXP (mem_list_entry, 0)))
 		written = 1;
-	      else if (true_dependence (loop_store_mems[j], VOIDmode,
+	      else if (true_dependence (XEXP (mem_list_entry, 0), VOIDmode,
 					mem, rtx_varies_p))
 		{
 		  /* MEM is indeed aliased by this store.  */
 		  loop_mems[i].optimize = 0;
 		  break;
 		}
+	      mem_list_entry = XEXP (mem_list_entry, 1);
 	    }
 	  
 	  /* If this MEM is written to, we must be sure that there
