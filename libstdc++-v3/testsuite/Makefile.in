@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -136,30 +136,22 @@ AUTOMAKE_OPTIONS = foreign dejagnu
 
 DEJATOOL = libstdc++-v3
 
-EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then \
-            echo @glibcpp_builddir@/../../expect/expect ; \
-          else echo expect ; fi`
+EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then             echo @glibcpp_builddir@/../../expect/expect ;           else echo expect ; fi`
 
 
-RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
-	       echo @glibcpp_srcdir@/../dejagnu/runtest ; \
-	    else echo runtest; fi`
+RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then 	       echo @glibcpp_srcdir@/../dejagnu/runtest ; 	    else echo runtest; fi`
 
 
 RUNTESTFLAGS = 
 
 CXX_fake = @glibcpp_CXX@ 
 CXX = `echo $(CXX_fake) | sed 's/xgcc/g++/g'`
-CXXLINK = \
-	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
-	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK =  	LD_RUN_PATH=${LD_RUN_PATH:+$LD_RUN_PATH:}${glibcpp_builddir}/src/.libs 	$(LIBTOOL) --tag=CXX --mode=link $(CXX) 	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 
 
-INCLUDES = \
-	-nostdinc++ \
-	@GLIBCPP_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
+INCLUDES =  	-nostdinc++ 	@GLIBCPP_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
 
-@GLIBCPP_BUILD_ABI_CHECK_TRUE@noinst_PROGRAMS = @GLIBCPP_BUILD_ABI_CHECK_TRUE@abi_check
+@GLIBCPP_BUILD_ABI_CHECK_TRUE@noinst_PROGRAMS = abi_check
 @GLIBCPP_BUILD_ABI_CHECK_FALSE@noinst_PROGRAMS = 
 abi_check_SOURCES = abi_check.cc
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
@@ -186,8 +178,9 @@ DIST_COMMON =  README Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
+DEP_FILES =  .deps/abi_check.P
 SOURCES = $(abi_check_SOURCES)
 OBJECTS = $(abi_check_OBJECTS)
 
@@ -195,9 +188,9 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .cc .lo .o .obj .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --cygnus testsuite/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign testsuite/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -210,9 +203,6 @@ clean-noinstPROGRAMS:
 distclean-noinstPROGRAMS:
 
 maintainer-clean-noinstPROGRAMS:
-
-.c.o:
-	$(COMPILE) -c $<
 
 # FIXME: We should only use cygpath when building on Windows,
 # and only if it is available.
@@ -235,9 +225,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 maintainer-clean-compile:
-
-.c.lo:
-	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
 
 .s.lo:
 	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
@@ -283,7 +270,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags  $$unique $(LISP))
 
 mostlyclean-tags:
 
@@ -299,8 +286,13 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = testsuite
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --foreign testsuite/Makefile
 	@for file in $(DISTFILES); do \
-	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
 	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
@@ -310,15 +302,62 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+
+%.o: %.cc
+	@echo '$(CXXCOMPILE) -c $<'; \
+	$(CXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.cc
+	@echo '$(LTCXXCOMPILE) -c $<'; \
+	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+
 RUNTESTDEFAULTFLAGS = --tool $(DEJATOOL) --srcdir $$srcdir
 
 check-DEJAGNU: site.exp
 	srcdir=`cd $(srcdir) && pwd`; export srcdir; \
 	EXPECT=$(EXPECT); export EXPECT; \
-	if [ -f $(top_builddir)/../expect/expect ]; then \
-	  TCL_LIBRARY=`cd $(top_srcdir)/../tcl/library && pwd`; \
-	  export TCL_LIBRARY; \
-	fi; \
 	runtest=$(RUNTEST); \
 	if $(SHELL) -c "$$runtest --version" > /dev/null 2>&1; then \
 	  $$runtest $(RUNTESTDEFAULTFLAGS) $(RUNTESTFLAGS); \
@@ -340,20 +379,18 @@ site.exp: Makefile
 	@echo 'set build_alias $(build_alias)' >> $@-t
 	@echo 'set build_triplet $(build_triplet)' >> $@-t
 	@echo '## All variables above are generated by configure. Do Not Edit ##' >> $@-t
-	@test ! -f site.exp || sed '1,/^## All variables above are.*##/ d' site.exp >> $@-t
+	@test ! -f $(srcdir)/site.exp || sed '1,/^## All variables above are.*##/ d' $(srcdir)/site.exp >> $@-t
 	@test ! -f site.exp || mv site.exp site.bak
 	@mv $@-t site.exp
 info-am:
 info: info-am
 dvi-am:
 dvi: dvi-am
-check-am:
+check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) check-DEJAGNU
 check: check-am
 installcheck-am:
 installcheck: installcheck-am
-install-info-am: 
-install-info: install-info-am
 install-exec-am:
 install-exec: install-exec-am
 
@@ -382,27 +419,27 @@ distclean-generic:
 
 maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-noinstPROGRAMS mostlyclean-compile \
-		mostlyclean-libtool mostlyclean-tags \
+		mostlyclean-libtool mostlyclean-tags mostlyclean-depend \
 		mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
 clean-am:  clean-noinstPROGRAMS clean-compile clean-libtool clean-tags \
-		clean-generic mostlyclean-am
+		clean-depend clean-generic mostlyclean-am
 
 clean: clean-am
 
 distclean-am:  distclean-noinstPROGRAMS distclean-compile \
-		distclean-libtool distclean-tags distclean-generic \
-		clean-am
+		distclean-libtool distclean-tags distclean-depend \
+		distclean-generic clean-am
 	-rm -f libtool
 
 distclean: distclean-am
 
 maintainer-clean-am:  maintainer-clean-noinstPROGRAMS \
 		maintainer-clean-compile maintainer-clean-libtool \
-		maintainer-clean-tags maintainer-clean-generic \
-		distclean-am
+		maintainer-clean-tags maintainer-clean-depend \
+		maintainer-clean-generic distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -413,9 +450,10 @@ clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
 clean-libtool maintainer-clean-libtool tags mostlyclean-tags \
-distclean-tags clean-tags maintainer-clean-tags distdir check-DEJAGNU \
-info-am info dvi-am dvi check check-am installcheck-am installcheck \
-install-info-am install-info install-exec-am install-exec \
+distclean-tags clean-tags maintainer-clean-tags distdir \
+mostlyclean-depend distclean-depend clean-depend \
+maintainer-clean-depend check-DEJAGNU info-am info dvi-am dvi check \
+check-am installcheck-am installcheck install-exec-am install-exec \
 install-data-am install-data install-am install uninstall-am uninstall \
 all-redirect all-am all installdirs mostlyclean-generic \
 distclean-generic clean-generic maintainer-clean-generic clean \

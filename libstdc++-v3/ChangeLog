@@ -1,3 +1,11 @@
+2002-09-05  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/Makefile.am:  Use LD_RUN_PATH when linking abi_check.
+	Fix spelling in comment.
+	* testsuite/Makefile.in:  Regenerate.
+	* testsuite/abi_check.cc:  Use string literals to build 'cmd' rather
+	than 'quote' and 'bslash'.
+
 2002-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/locale/gnu/ctype_members.cc (ctype<wchar_t>::do_widen(char)):
