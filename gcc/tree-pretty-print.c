@@ -331,7 +331,13 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 			 && DECL_NAME (TYPE_NAME (node)))
 		  dump_decl_name (buffer, TYPE_NAME (node), flags);
 		else
-                  pp_string (buffer, "<unnamed type>");
+		  pp_string (buffer, "<unnamed type>");
+	      }
+	    else if (TREE_CODE (node) == VECTOR_TYPE)
+	      {
+		pp_string (buffer, "vector ");
+		dump_generic_node (buffer, TREE_TYPE (node), 
+				   spc, flags, false);
 	      }
 	    else
               pp_string (buffer, "<unnamed type>");
