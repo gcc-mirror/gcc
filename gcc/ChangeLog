@@ -1,3 +1,89 @@
+Tue Apr 11 09:55:59 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* pa/long-double.h (FIX_TRUNCTFSI2_LIBCALL): Tweak for PA64.
+	* pa/pa-protos.h (output_call): Add additional argument indicating
+	if the call is a sibling/tail call.
+	(compute_zdepdi_operands, output_64bit_and): Prototype new functions.
+	(compute_64bit_ior, cmpib_comparison_operator): Likewise.
+	(function_arg, function_arg_partial_nregs): Likewise
+	* pa/pa.c (override_options): Always set flag_pic for TARGET_64BIT.
+	(emit_move_sequence): Zero extend certain constants as needed
+	for TARGET_64BIT.
+	(compute_zdepdi_operands, output_64bit_and): New functions.
+	(output_64bit_ior, function_arg): Likewise.
+	(cmpib_comparison_operator, function_arg_partial_nregs): Likewise.
+	(compute_frame_size, hppa_expand_prologue): Handle TARGET_64BIT.
+	(hppa_expand_epilogue, return_addr_rtx, hppa_va_arg): Likewise.
+	(hppa_builtin_saveregs, output_cbranch, output_bb): Likewise.
+	(output_bvb): Likewise.
+	(output_millicode_call): Return pointer is in %r2 for TARGET_64BIT.
+	(output_call): New argument 'sibcall'.  Generate sibcall sequences
+	as needed.
+	(print_operand); Handle cases 'Q', 'p', and 'z' for TARGET_64BIT.  For
+	(ouput_arg_descriptor): Do not emit argument descriptors for
+	TARGET_64BIT.
+	* pa/pa.h (TARGET_PA_11, TARGET_PA_20): Only define if not already
+	defined.
+	(TARGET_64BIT, PROMOTE_FUNCTION_RETURN): Define.
+	(FUNCTION_OK_FOR_SIBALL): Define.
+	(CPP_PA10_SPEC, CPP_PA11_SPEC, CPP_PA20_SPEC): Define.
+	(CPP_CPU_DEFAULT_SPEC, SUBTARGET_EXTRA_SPECS, EXTRA_SPECS): Likewise.
+	(CPP_SPEC): Use new spec infrastructure.
+	(BITS_PER_WORD, UNITS_PER_WORD): Handle TARGET_64BIT.
+	(STACK_BOUNDARY, FUNCTION_BOUNDARY, PIC_OFFSET_TABLE_REGNUM): Likewise.
+	(RETURN_IN_MEMORY, EXTRA_CONSTRAINT, FIRST_PARM_OFFSET): Likewise.
+	(REG_PARM_STACK_SPACE, STACK_POINTER_OFFSET): Likewise.
+	(STACK_DYNAMIC_OFFSET, FUNCTION_VALUE): Likewise.
+	(FUNCTION_ARG_PASS_BY_REFERENCE, FUNCTION_ARG_CALLEE_COPIES): Likewise.
+	(TRAMPOLINE_TEMPLATE, TRAMPOLINE_SIZE): Likewise.
+	(INITIALIZE_TRAMPOLINE, LEGITIMATE_CONSTANT_P): Likewise.
+	(CONST_OK_FOR_LETTER_P, MOVE_RATIO): Likewise.
+	(FUNCTION_ARG); Call out to C code.
+	(FUNCTION_ARG_PARTIAL_NREGS): Likewise.
+	(MAX_BITS_PER_WORD, MAX_LONG_TYPE_SIZE, MAX_WCHAR_TYPE_SIZE): Define.
+	(MIN_UNITS_PER_WORD): Likewise.
+	* pa/pa.md (cmpdi): New expander.
+	(scc patterns, movstrsi): Not available for TARGET_64BIT.
+	(64bit conditional arithmetic): New patterns.
+	(absdi2, smindi3, umindi3, smaxdi3, umaxdi3): New patterns.
+	(movsicc): Not available if modes on all the operands to not match.	
+	(movdicc): New expander and associated patterns.
+	(64bit branches): New patterns.
+	(pre_load, post_store): Generate appropriate code for TARGET_64BIT.
+	(pre_ldd, post_std): New patterns.
+	(64bit addil, load low part): New patterns.
+	(special movsf constant): Not available for TARGET_64BIT.
+	(movsf, movdf expanders): Force constants into memory.
+	(32bit movdf/movdi patterns): Disable for TARGET_64BIT.
+	(64bit movdf/movdi patterns): New patterns.
+	(zero_extendqidi2, zero_extendhidi2, zero_extendsidi2): New patterns
+	for TARGET_64BIT.
+	(extendqidi2, extendhidi2, extendsidi2): Similarly.
+	(adddi3 expander): Allow "arith_operand" for second input.
+	(32bit adddi3, subdi3, uaddcm): Disable for TARGET_64BIT.
+	(64bit adddi3, subsi3, uaddcm): New patterns for TARGET_64BIT.
+	(mulsi3 expander): Revamp slightly so it supports TARGET_64BIT too.
+	(muldi3): New expander for TARGET_64BIT.
+	(divsi3, udivsi3, modsi3, umodsi3): Fourth operand must be (reg:SI 2)
+	for TARGET_64BIT.
+	(32bit anddi3, iordi3, xordi3, andcm, negdi2, uaddcm): Disable
+	patterns for TARGET_64BIT.
+	(64bit anddi3, iordi3, xordi3, andcm, negdi2, uaddcm, shadd): New
+	patterns for TARGET_64BIT.
+	(64bit bit insertion/extractions): New patterns for TARGET_64BIT.
+	(64bit shifts/rotates): New patterns/expanders for TARGET_64BIT.
+	(sibcall_epilogue): New expander.
+	(casesi): Tweak for TARGET_64BIT.
+	(call expanders): Set & use the outgoing argument pointer.  Use the
+	64bit call patterns as needed. Add additional arg to output_call.
+	(call_internal_reg_64bit, call_value_internal_reg_64bit): New pattern.
+	(sibcall, sibcall_internal_symref): New expanders.
+	(sibcall_value, sibcall_value_internal_symref
+	(interspace_jump): Turn into an expander + matching patterns.
+	(canonicalize_funcptr_for_compare): Not needed for TARGET_64BIT.
+	* pa/pa64-regs.h: Eliminate trigraph sequences.
+	* pa/pa64-start.h (TARGET_PA_20): Fix typo.
+
 2000-04-11  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppexp.c, cpphash.c, cpphash.h, cpplex.c, cpplib.c,

@@ -189,6 +189,10 @@ override_options ()
       write_symbols = NO_DEBUG;
     }
 
+  /* We always generate PIC code when in 64bit mode.  */
+  if (TARGET_64BIT)
+    flag_pic = 2;
+
   /* Register global variables with the garbage collector.  */
   pa_add_gc_roots ();
 }
@@ -1562,6 +1566,25 @@ emit_move_sequence (operands, mode, scratch_reg)
 	       || ! cint_ok_for_move (INTVAL (operand1)))
 	{
 	  rtx temp;
+	  int need_zero_extend = 0;
+
+	  if (TARGET_64BIT && GET_CODE (operand1) == CONST_INT
+	      && GET_MODE_BITSIZE (GET_MODE (operand0)) > 32)
+	    {
+	      HOST_WIDE_INT val = INTVAL (operand1);
+	      HOST_WIDE_INT nval = INTVAL (operand1);
+
+	      /* If the value is the same after a 32->64bit sign
+		 extension, then we can use it as-is.  Else we will
+		 need to sign extend the constant from 32->64bits
+		 then zero extend the result from 32->64bits.  */
+	      nval = ((val & 0xffffffff) ^ (~0x7fffffff)) + 0x80000000;
+	      if (val != nval)
+		{
+		  need_zero_extend = 1;
+		  operand1 = GEN_INT (nval);
+		}
+	    }
 
 	  if (reload_in_progress || reload_completed)
 	    temp = operand0;
@@ -1571,6 +1594,17 @@ emit_move_sequence (operands, mode, scratch_reg)
 	  emit_insn (gen_rtx_SET (VOIDmode, temp,
 				  gen_rtx_HIGH (mode, operand1)));
 	  operands[1] = gen_rtx_LO_SUM (mode, temp, operand1);
+	  emit_move_insn (operands[0], operands[1]);
+
+	  if (need_zero_extend)
+	    {
+	      emit_insn (gen_zero_extendsidi2 (operands[0],
+					       gen_rtx_SUBREG (SImode,
+							       operands[0],
+							       0)));
+	    }
+	
+	  return 1;
 	}
     }
   /* Now have insn-emit do whatever it normally does.  */
@@ -1726,6 +1760,46 @@ compute_zdepwi_operands (imm, op)
 
   op[0] = imm;
   op[1] = 31 - lsb;
+  op[2] = len;
+}
+
+/* Compute position (in OP[1]) and width (in OP[2])
+   useful for copying IMM to a register using the depdi,z
+   instructions.  Store the immediate value to insert in OP[0].  */
+void
+compute_zdepdi_operands (imm, op)
+     unsigned HOST_WIDE_INT imm;
+     unsigned *op;
+{
+  HOST_WIDE_INT lsb, len;
+
+  /* Find the least significant set bit in IMM.  */
+  for (lsb = 0; lsb < HOST_BITS_PER_WIDE_INT; lsb++)
+    {
+      if ((imm & 1) != 0)
+        break;
+      imm >>= 1;
+    }
+
+  /* Choose variants based on *sign* of the 5-bit field.  */
+  if ((imm & 0x10) == 0)
+    len = ((lsb <= HOST_BITS_PER_WIDE_INT - 4)
+	   ? 4 : HOST_BITS_PER_WIDE_INT - lsb);
+  else
+    {
+      /* Find the width of the bitstring in IMM.  */
+      for (len = 5; len < HOST_BITS_PER_WIDE_INT; len++)
+	{
+	  if ((imm & ((unsigned HOST_WIDE_INT)1 << len)) == 0)
+	    break;
+	}
+
+      /* Sign extend IMM as a 5-bit value.  */
+      imm = (imm & 0xf) - 0x10;
+    }
+
+  op[0] = imm;
+  op[1] = 63 - lsb;
   op[2] = len;
 }
 
@@ -2264,6 +2338,59 @@ output_and (operands)
     return "and %1,%2,%0";
 }
 
+/* Return a string to perform a bitwise-and of operands[1] with operands[2]
+   storing the result in operands[0].  */
+char *
+output_64bit_and (operands)
+     rtx *operands;
+{
+  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) != 0)
+    {
+      unsigned HOST_WIDE_INT mask = INTVAL (operands[2]);
+      unsigned HOST_WIDE_INT ls0, ls1, ms0, p, len;
+
+      for (ls0 = 0; ls0 < HOST_BITS_PER_WIDE_INT; ls0++)
+	if ((mask & ((unsigned HOST_WIDE_INT)1 << ls0)) == 0)
+	  break;
+
+      for (ls1 = ls0; ls1 < HOST_BITS_PER_WIDE_INT; ls1++)
+	if ((mask & ((unsigned HOST_WIDE_INT)1 << ls1)) != 0)
+	  break;
+
+      for (ms0 = ls1; ms0 < HOST_BITS_PER_WIDE_INT; ms0++)
+	if ((mask & ((unsigned HOST_WIDE_INT)1 << ms0)) == 0)
+	  break;
+
+      if (ms0 != HOST_BITS_PER_WIDE_INT)
+	abort();
+
+      if (ls1 == HOST_BITS_PER_WIDE_INT)
+	{
+	  len = ls0;
+
+	  if (len == 0)
+	    abort ();
+
+	  operands[2] = GEN_INT (len);
+	  return "extrd,u %1,63,%2,%0";
+	}
+      else
+	{
+	  /* We could use this `depi' for the case above as well, but `depi'
+	     requires one more register file access than an `extru'.  */
+
+	  p = 63 - ls0;
+	  len = ls1 - ls0;
+
+	  operands[2] = GEN_INT (p);
+	  operands[3] = GEN_INT (len);
+	  return "depdi 0,%2,%3,%0";
+	}
+    }
+  else
+    return "and %1,%2,%0";
+}
+
 const char *
 output_ior (operands)
      rtx *operands;
@@ -2291,6 +2418,38 @@ output_ior (operands)
   operands[2] = GEN_INT (p);
   operands[3] = GEN_INT (len);
   return "{depi|depwi} -1,%2,%3,%0";
+}
+
+/* Return a string to perform a bitwise-and of operands[1] with operands[2]
+   storing the result in operands[0].  */
+char *
+output_64bit_ior (operands)
+     rtx *operands;
+{
+  unsigned HOST_WIDE_INT mask = INTVAL (operands[2]);
+  unsigned HOST_WIDE_INT bs0, bs1, p, len;
+
+  if (INTVAL (operands[2]) == 0)
+    return "copy %1,%0";
+
+  for (bs0 = 0; bs0 < HOST_BITS_PER_WIDE_INT; bs0++)
+    if ((mask & ((unsigned HOST_WIDE_INT)1 << bs0)) != 0)
+      break;
+
+  for (bs1 = bs0; bs1 < HOST_BITS_PER_WIDE_INT; bs1++)
+    if ((mask & ((unsigned HOST_WIDE_INT)1 << bs1)) == 0)
+      break;
+
+  if (bs1 != HOST_BITS_PER_WIDE_INT
+      && ((unsigned HOST_WIDE_INT) 1 << bs1) <= mask)
+    abort();
+
+  p = 63 - bs0;
+  len = bs1 - bs0;
+
+  operands[2] = GEN_INT (p);
+  operands[3] = GEN_INT (len);
+  return "depdi -1,%2,%3,%0";
 }
 
 /* Output an ascii string.  */
@@ -2676,7 +2835,8 @@ compute_frame_size (size, fregs_live)
 
   /* Account for space used by the callee floating point register saves.  */
   for (i = FP_SAVED_REG_LAST; i >= FP_SAVED_REG_FIRST; i -= FP_REG_STEP)
-    if (regs_ever_live[i] || regs_ever_live[i + 1])
+    if (regs_ever_live[i]
+	|| (! TARGET_64BIT && regs_ever_live[i + 1]))
       {
 	if (fregs_live)
 	  *fregs_live = 1;
@@ -2693,8 +2853,9 @@ compute_frame_size (size, fregs_live)
   /* Allocate space for the fixed frame marker.  This space must be
      allocated for any function that makes calls or otherwise allocates
      stack space.  */
-  if (! leaf_function_p () || fsize)
+  if (!current_function_is_leaf || fsize)
     fsize += 32;
+
   return (fsize + STACK_BOUNDARY - 1) & ~(STACK_BOUNDARY - 1);
 }
 
@@ -2796,8 +2957,12 @@ hppa_expand_prologue()
   size_rtx = GEN_INT (actual_fsize);
 
   /* Save RP first.  The calling conventions manual states RP will
-     always be stored into the caller's frame at sp-20.  */
-  if (regs_ever_live[2] || profile_flag)
+     always be stored into the caller's frame at sp-20 or sp - 16
+     depending on which ABI is in use.  */
+  if ((regs_ever_live[2] || profile_flag) && TARGET_64BIT)
+    store_reg (2, -16, STACK_POINTER_REGNUM);
+
+  if ((regs_ever_live[2] || profile_flag) && ! TARGET_64BIT)
     store_reg (2, -20, STACK_POINTER_REGNUM);
 
   /* Allocate the local frame and set up the frame pointer if needed.  */
@@ -2856,7 +3021,7 @@ hppa_expand_prologue()
      for functions which make no calls and allocate no frame?  Do
      we need to allocate a frame, or can we just omit the save?   For
      now we'll just omit the save.  */
-  if (actual_fsize != 0 && flag_pic)
+  if (actual_fsize != 0 && flag_pic && !TARGET_64BIT)
     store_reg (PIC_OFFSET_TABLE_REGNUM, -32, STACK_POINTER_REGNUM);
 
   /* Profiling code.
@@ -2982,7 +3147,8 @@ hppa_expand_prologue()
       /* Now actually save the FP registers.  */
       for (i = FP_SAVED_REG_LAST; i >= FP_SAVED_REG_FIRST; i -= FP_REG_STEP)
 	{
-	  if (regs_ever_live[i] || regs_ever_live[i + 1])
+	  if (regs_ever_live[i]
+	      || (! TARGET_64BIT && regs_ever_live[i + 1]))
 	    {
 	      emit_move_insn (gen_rtx_MEM (DFmode,
 				           gen_rtx_POST_INC (DFmode, tmpreg)),
@@ -3066,9 +3232,17 @@ hppa_expand_epilogue ()
      RP gets used in the return (bv) instruction.  This appears to still
      be necessary even when we schedule the prologue and epilogue. */
   if (frame_pointer_needed
+      && !TARGET_64BIT
       && (regs_ever_live [2] || profile_flag))
     load_reg (2, -20, FRAME_POINTER_REGNUM);
-
+  else if (TARGET_64BIT && frame_pointer_needed
+	   && (regs_ever_live[2] || profile_flag))
+    load_reg (2, -16, FRAME_POINTER_REGNUM);
+  else if (TARGET_64BIT
+	   && ! frame_pointer_needed
+	   && (regs_ever_live[2] || profile_flag)
+	   && VAL_14_BITS_P (actual_fsize + 20))
+    load_reg (2, - (actual_fsize + 16), STACK_POINTER_REGNUM);
   /* No frame pointer, and stack is smaller than 8k.  */
   else if (! frame_pointer_needed
 	   && VAL_14_BITS_P (actual_fsize + 20)
@@ -3120,7 +3294,8 @@ hppa_expand_epilogue ()
       /* Actually do the restores now.  */
       for (i = FP_SAVED_REG_LAST; i >= FP_SAVED_REG_FIRST; i -= FP_REG_STEP)
 	{
-	  if (regs_ever_live[i] || regs_ever_live[i + 1])
+	  if (regs_ever_live[i]
+	      || (! TARGET_64BIT && regs_ever_live[i + 1]))
 	    {
 	      emit_move_insn (gen_rtx_REG (DFmode, i),
 			      gen_rtx_MEM (DFmode,
@@ -3140,6 +3315,7 @@ hppa_expand_epilogue ()
      as possible.)  */
   if (! frame_pointer_needed
       && ! VAL_14_BITS_P (actual_fsize + 20)
+      && ! TARGET_64BIT
       && (regs_ever_live[2] || profile_flag))
     {
       set_reg_plus_d (STACK_POINTER_REGNUM,
@@ -3153,6 +3329,23 @@ hppa_expand_epilogue ()
 	 That won't work since if the stack is exactly 8k set_reg_plus_d
 	 doesn't set %r1, just %r30.  */
       load_reg (2, - 20, STACK_POINTER_REGNUM);
+    }
+  else if (! frame_pointer_needed
+	   && ! VAL_14_BITS_P (actual_fsize + 20)
+	   && TARGET_64BIT
+	   && (regs_ever_live[2] || profile_flag))
+    {
+      set_reg_plus_d (STACK_POINTER_REGNUM,
+		      STACK_POINTER_REGNUM,
+		      - actual_fsize);
+
+      /* This used to try and be clever by not depending on the value in
+	 %r30 and instead use the value held in %r1 (so that the 2nd insn
+	 which sets %r30 could be put in the delay slot of the return insn).
+	
+	 That won't work since if the stack is exactly 8k set_reg_plus_d
+	 doesn't set %r1, just %r30.  */
+      load_reg (2, - 16, STACK_POINTER_REGNUM);
     }
 
   /* Reset stack pointer (and possibly frame pointer).  The stack 
@@ -3216,7 +3409,10 @@ return_addr_rtx (count, frameaddr)
   /* First, we start off with the normal return address pointer from
      -20[frameaddr].  */
 
-  emit_move_insn (saved_rp, plus_constant (frameaddr, -5 * UNITS_PER_WORD));
+  if (TARGET_64BIT)
+    return gen_rtx_MEM (Pmode, plus_constant (frameaddr, -16));
+  else
+    emit_move_insn (saved_rp, plus_constant (frameaddr, -5 * UNITS_PER_WORD));
 
   /* Get pointer to the instruction stream.  We have to mask out the
      privilege level from the two low order bits of the return address
@@ -3824,6 +4020,13 @@ print_operand (file, x, code)
 	  return;
 	}
       abort();
+    case 'Q':
+      if (GET_CODE (x) == CONST_INT)
+	{
+	  fprintf (file, "%d", 64 - (INTVAL (x) & 63));
+	  return;
+	}
+      abort();
     case 'L':
       if (GET_CODE (x) == CONST_INT)
 	{
@@ -3835,6 +4038,13 @@ print_operand (file, x, code)
       if (GET_CODE (x) == CONST_INT && exact_log2 (INTVAL (x)) >= 0)
 	{
 	  fprintf (file, "%d", exact_log2 (INTVAL (x)));
+	  return;
+	}
+      abort();
+    case 'p':
+      if (GET_CODE (x) == CONST_INT)
+	{
+	  fprintf (file, "%d", 63 - (INTVAL (x) & 63));
 	  return;
 	}
       abort();
@@ -3900,13 +4110,27 @@ print_operand (file, x, code)
 	fprintf (file, "%d,%d,%d", op[0], op[1], op[2]);
 	return;
       }
+    case 'z':
+      {
+	unsigned op[3];
+	compute_zdepdi_operands (INTVAL (x), op);
+	fprintf (file, "%d,%d,%d", op[0], op[1], op[2]);
+	return;
+      }
     default:
       abort ();
     }
   if (GET_CODE (x) == REG)
     {
       fputs (reg_names [REGNO (x)], file);
-      if (FP_REG_P (x) && GET_MODE_SIZE (GET_MODE (x)) <= 4 && (REGNO (x) & 1) == 0)
+      if (TARGET_64BIT && FP_REG_P (x) && GET_MODE_SIZE (GET_MODE (x)) <= 4)
+	{
+	  fputs ("R", file);
+	  return;
+	}
+      if (FP_REG_P (x)
+	  && GET_MODE_SIZE (GET_MODE (x)) <= 4
+	  && (REGNO (x) & 1) == 0)
 	fputs ("L", file);
     }
   else if (GET_CODE (x) == MEM)
@@ -3917,12 +4141,12 @@ print_operand (file, x, code)
 	{
 	case PRE_DEC:
 	case POST_DEC:
-	  base = XEXP (XEXP (x, 0), 0);
+          base = XEXP (XEXP (x, 0), 0);
 	  fprintf (file, "-%d(%s)", size, reg_names [REGNO (base)]);
 	  break;
 	case PRE_INC:
 	case POST_INC:
-	  base = XEXP (XEXP (x, 0), 0);
+          base = XEXP (XEXP (x, 0), 0);
 	  fprintf (file, "%d(%s)", size, reg_names [REGNO (base)]);
 	  break;
 	default:
@@ -4221,6 +4445,11 @@ output_arg_descriptor (call_insn)
   int i, output_flag = 0;
   int regno;
 
+  /* We neither need nor want argument location descriptors for the
+     64bit runtime environment.  */
+  if (TARGET_64BIT)
+    return;
+
   for (i = 0; i < 4; i++)
     arg_regs[i] = 0;
 
@@ -4420,6 +4649,36 @@ hppa_builtin_saveregs ()
   else
     offset = current_function_arg_offset_rtx;
 
+  if (TARGET_64BIT)
+    {
+      int i, off;
+      
+      /* Adjust for varargs/stdarg differences.  */
+      if (argadj)
+	offset = plus_constant (current_function_arg_offset_rtx, -argadj);
+      else
+	offset = current_function_arg_offset_rtx;
+
+      /* We need to save %r26 .. %r19 inclusive starting at offset -64
+	 from the incoming arg pointer and growing to larger addresses.  */
+      for (i = 26, off = -64; i >= 19; i--, off += 8)
+	emit_move_insn (gen_rtx_MEM (word_mode,
+				     plus_constant (arg_pointer_rtx, off)),
+			gen_rtx_REG (word_mode, i));
+
+      /* The incoming args pointer points just beyond the flushback area;
+	 normally this is not a serious concern.  Howver, when we are doing
+	 varargs/stdargs we want to make the arg pointer point to the start
+	 of the incoming argument area.  */
+      emit_move_insn (virtual_incoming_args_rtx,
+		      plus_constant (arg_pointer_rtx, -64));
+
+      /* Now return a pointer to the first anonymous argument.  */
+      return copy_to_reg (expand_binop (Pmode, add_optab,
+					virtual_incoming_args_rtx,
+					offset, 0, 0, OPTAB_LIB_WIDEN));
+    }
+
   /* Store general registers on the stack. */
   dest = gen_rtx_MEM (BLKmode,
 		      plus_constant (current_function_internal_arg_pointer,
@@ -4466,6 +4725,25 @@ hppa_va_arg (valist, type)
 {
   HOST_WIDE_INT align, size, ofs;
   tree t, ptr, pptr;
+
+  if (TARGET_64BIT)
+    {
+      /* Every argument in PA64 is passed by value (including large structs).
+         Arguments with size greater than 8 must be aligned 0 MOD 16. */
+
+      size = int_size_in_bytes (type);
+      if (size > UNITS_PER_WORD)
+        {
+          t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
+                     build_int_2 (2 * UNITS_PER_WORD - 1, 0));
+          t = build (BIT_AND_EXPR, TREE_TYPE (t), t, 
+                     build_int_2 (-2 * UNITS_PER_WORD, -1));
+          t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
+          TREE_SIDE_EFFECTS (t) = 1;
+          expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+        }
+      return std_expand_builtin_va_arg (valist, type);
+    }
 
   /* Compute the rounded size of the type.  */
   align = PARM_BOUNDARY / BITS_PER_UNIT;
@@ -4570,6 +4848,8 @@ output_cbranch (operands, nullify, length, negated, insn)
 	  strcpy (buf, "{com%I2clr,|cmp%I2clr,}");
 	else
 	  strcpy (buf, "{com%I2b,|cmp%I2b,}");
+	if (GET_MODE (operands[1]) == DImode)
+	  strcat (buf, "*");
 	if (negated)
 	  strcat (buf, "%B3");
 	else
@@ -4593,6 +4873,8 @@ output_cbranch (operands, nullify, length, negated, insn)
 	    && nullify)
 	  {
 	    strcpy (buf, "{com%I2b,|cmp%I2b,}");
+	    if (GET_MODE (operands[1]) == DImode)
+	      strcat (buf, "*");
 	    if (negated)
 	      strcat (buf, "%S3");
 	    else
@@ -4609,6 +4891,8 @@ output_cbranch (operands, nullify, length, negated, insn)
 				    - insn_addresses[INSN_UID (insn)] - 8))
 	  {
 	    strcpy (buf, "{com%I2b,|cmp%I2b,}");
+	    if (GET_MODE (operands[1]) == DImode)
+	      strcat (buf, "*");
 	    if (negated)
 	      strcat (buf, "%B3 %2,%r1,%0%#");
 	    else
@@ -4617,6 +4901,8 @@ output_cbranch (operands, nullify, length, negated, insn)
 	else
 	  {
 	    strcpy (buf, "{com%I2clr,|cmp%I2clr,}");
+	    if (GET_MODE (operands[1]) == DImode)
+	      strcat (buf, "*");
 	    if (negated)
 	      strcat (buf, "%S3");
 	    else
@@ -4640,6 +4926,15 @@ output_cbranch (operands, nullify, length, negated, insn)
 	  strcpy (buf, "{com%I2b,%S3,n %2,%r1,.+20|cmp%I2b,%S3,n %2,%r1,.+20}");
 	else
 	  strcpy (buf, "{com%I2b,%B3,n %2,%r1,.+20|cmp%I2b,%B3,n %2,%r1,.+20}");
+	if (GET_MODE (operands[1]) == DImode)
+	  {
+	    if (negated)
+	      strcpy (buf,
+		      "{com%I2b,*%S3,n %2,%r1,.+20|cmp%I2b,*%S3,n %2,%r1,.+20}");
+	    else
+	      strcpy (buf,
+		      "{com%I2b,*%B3,n %2,%r1,.+20|cmp%I2b,*%B3,n %2,%r1,.+20}");
+	  }
 	output_asm_insn (buf, operands);
 
 	/* Output an insn to save %r1.  */
@@ -4665,6 +4960,13 @@ output_cbranch (operands, nullify, length, negated, insn)
 	  strcpy (buf, "{com%I2b,%S3,n %2,%r1,.+28|cmp%I2b,%S3,n %2,%r1,.+28}");
 	else
 	  strcpy (buf, "{com%I2b,%B3,n %2,%r1,.+28|cmp%I2b,%B3,n %2,%r1,.+28}");
+	if (GET_MODE (operands[1]) == DImode)
+	  {
+	    if (negated)
+	      strcpy (buf, "{com%I2b,*%S3,n %2,%r1,.+28|cmp%I2b,*%S3,n %2,%r1,.+28}");
+	    else
+	      strcpy (buf, "{com%I2b,*%B3,n %2,%r1,.+28|cmp%I2b,*%B3,n %2,%r1,.+28}");
+	  }
 	output_asm_insn (buf, operands);
 
 	/* Output an insn to save %r1.  */
@@ -4752,6 +5054,10 @@ output_bb (operands, nullify, length, negated, insn, which)
 	  strcpy (buf, "{extrs,|extrw,s,}");
 	else
 	  strcpy (buf, "bb,");
+	if (useskip && GET_MODE (operands[0]) == DImode)
+	  strcpy (buf, "extrd,s,*");
+	else if (GET_MODE (operands[0]) == DImode)
+	  strcpy (buf, "bb,*");
 	if ((which == 0 && negated)
 	     || (which == 1 && ! negated))
 	  strcat (buf, ">=");
@@ -4780,6 +5086,8 @@ output_bb (operands, nullify, length, negated, insn, which)
 	    && nullify)
 	  {
 	    strcpy (buf, "bb,");
+	    if (GET_MODE (operands[0]) == DImode)
+	      strcat (buf, "*");
 	    if ((which == 0 && negated)
 		|| (which == 1 && ! negated))
 	      strcat (buf, "<");
@@ -4800,6 +5108,8 @@ output_bb (operands, nullify, length, negated, insn, which)
 				    - insn_addresses[INSN_UID (insn)] - 8))
 	  {
 	    strcpy (buf, "bb,");
+	    if (GET_MODE (operands[0]) == DImode)
+	      strcat (buf, "*");
 	    if ((which == 0 && negated)
 		|| (which == 1 && ! negated))
 	      strcat (buf, ">=");
@@ -4813,6 +5123,8 @@ output_bb (operands, nullify, length, negated, insn, which)
 	else
 	  {
 	    strcpy (buf, "{extrs,|extrw,s,}");
+	    if (GET_MODE (operands[0]) == DImode)
+	      strcpy (buf, "extrd,s,*");
 	    if ((which == 0 && negated)
 		|| (which == 1 && ! negated))
 	      strcat (buf, "<");
@@ -4890,6 +5202,10 @@ output_bvb (operands, nullify, length, negated, insn, which)
 	  strcpy (buf, "{vextrs,|extrw,s,}");
 	else
 	  strcpy (buf, "{bvb,|bb,}");
+	if (useskip && GET_MODE (operands[0]) == DImode)
+	  strcpy (buf, "extrd,s,*}");
+	else if (GET_MODE (operands[0]) == DImode)
+	  strcpy (buf, "bb,*");
 	if ((which == 0 && negated)
 	     || (which == 1 && ! negated))
 	  strcat (buf, ">=");
@@ -4918,6 +5234,8 @@ output_bvb (operands, nullify, length, negated, insn, which)
 	    && nullify)
 	  {
 	    strcpy (buf, "{bvb,|bb,}");
+	    if (GET_MODE (operands[0]) == DImode)
+	      strcat (buf, "*");
 	    if ((which == 0 && negated)
 		|| (which == 1 && ! negated))
 	      strcat (buf, "<");
@@ -4938,6 +5256,8 @@ output_bvb (operands, nullify, length, negated, insn, which)
 				    - insn_addresses[INSN_UID (insn)] - 8))
 	  {
 	    strcpy (buf, "{bvb,|bb,}");
+	    if (GET_MODE (operands[0]) == DImode)
+	      strcat (buf, "*");
 	    if ((which == 0 && negated)
 		|| (which == 1 && ! negated))
 	      strcat (buf, ">=");
@@ -4951,6 +5271,8 @@ output_bvb (operands, nullify, length, negated, insn, which)
 	else
 	  {
 	    strcpy (buf, "{vextrs,|extrw,s,}");
+	    if (GET_MODE (operands[0]) == DImode)
+	      strcpy (buf, "extrd,s,*");
 	    if ((which == 0 && negated)
 		|| (which == 1 && ! negated))
 	      strcat (buf, "<");
@@ -5206,6 +5528,10 @@ output_millicode_call (insn, call_dest)
   rtx xoperands[4];
   rtx seq_insn;
 
+  xoperands[3] = gen_rtx_REG (SImode, 31);
+  if (TARGET_64BIT)
+    xoperands[3] = gen_rtx_REG (SImode, 2);
+
   /* Handle common case -- empty delay slot or no jump in the delay slot,
      and we're sure that the branch will reach the beginning of the $CODE$
      subspace.  */
@@ -5216,7 +5542,7 @@ output_millicode_call (insn, call_dest)
 	  && get_attr_length (insn) == 4))
     {
       xoperands[0] = call_dest;
-      output_asm_insn ("{bl|b,l} %0,%%r31%#", xoperands);
+      output_asm_insn ("{bl|b,l} %0,%3%#", xoperands);
       return "";
     }
 
@@ -5224,7 +5550,6 @@ output_millicode_call (insn, call_dest)
   if (get_attr_length (insn) > 4)
     {
       int delay_insn_deleted = 0;
-      rtx xoperands[2];
 
       /* We need to emit an inline long-call branch.  */
       if (dbr_sequence_length () != 0
@@ -5247,8 +5572,8 @@ output_millicode_call (insn, call_dest)
 	  || ! (flag_pic  || TARGET_PORTABLE_RUNTIME))
 	{
 	  xoperands[0] = call_dest;
-	  output_asm_insn ("ldil L%%%0,%%r31", xoperands);
-	  output_asm_insn ("{ble|be,l} R%%%0(%%sr4,%%r31)", xoperands);
+	  output_asm_insn ("ldil L%%%0,%3", xoperands);
+	  output_asm_insn ("{ble|be,l} R%%%0(%%sr4,%3)", xoperands);
 	  output_asm_insn ("nop", xoperands);
 	}
       /* Pure portable runtime doesn't allow be/ble; we also don't have
@@ -5261,7 +5586,7 @@ output_millicode_call (insn, call_dest)
 	  output_asm_insn ("ldo R%%%0(%%r29),%%r29", xoperands);
 
 	  /* Get our return address into %r31.  */
-	  output_asm_insn ("blr %%r0,%%r31", xoperands);
+	  output_asm_insn ("blr %%r0,%3", xoperands);
 
 	  /* Jump to our target address in %r29.  */
 	  output_asm_insn ("bv,n %%r0(%%r29)", xoperands);
@@ -5286,7 +5611,7 @@ output_millicode_call (insn, call_dest)
 	  output_asm_insn ("ldo R%%%0-%1(%%r1),%%r1", xoperands);
 
 	  /* Get the return address into %r31.  */
-	  output_asm_insn ("blr 0,%%r31", xoperands);
+	  output_asm_insn ("blr 0,%3", xoperands);
 
 	  /* Branch to our target which is in %r1.  */
 	  output_asm_insn ("bv,n %%r0(%%r1)", xoperands);
@@ -5330,11 +5655,11 @@ output_millicode_call (insn, call_dest)
   xoperands[0] = call_dest;
   xoperands[1] = XEXP (PATTERN (NEXT_INSN (insn)), 1);
   if (! VAL_14_BITS_P (distance))
-    output_asm_insn ("{bl|b,l} %0,%%r31\n\tnop\n\tb,n %1", xoperands);
+    output_asm_insn ("{bl|b,l} %0,%3\n\tnop\n\tb,n %1", xoperands);
   else
     {
       xoperands[2] = gen_label_rtx ();
-      output_asm_insn ("\n\t{bl|b,l} %0,%%r31\n\tldo %1-%2(%%r31),%%r31",
+      output_asm_insn ("\n\t{bl|b,l} %0,%3\n\tldo %1-%2(%3),%3",
 		       xoperands);
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
 				 CODE_LABEL_NUMBER (xoperands[2]));
@@ -5358,9 +5683,10 @@ extern struct obstack *current_obstack;
    CALL_DEST is the routine we are calling.  */
 
 const char *
-output_call (insn, call_dest)
+output_call (insn, call_dest, sibcall)
   rtx insn;
   rtx call_dest;
+  int sibcall;
 {
   int distance;
   rtx xoperands[4];
@@ -5376,7 +5702,8 @@ output_call (insn, call_dest)
 	  && get_attr_length (insn) == 4))
     {
       xoperands[0] = call_dest;
-      output_asm_insn ("{bl|b,l} %0,%%r2%#", xoperands);
+      xoperands[1] = gen_rtx_REG (word_mode, sibcall ? 0 : 2);
+      output_asm_insn ("{bl|b,l} %0,%1%#", xoperands);
       return "";
     }
 
@@ -5527,8 +5854,17 @@ output_call (insn, call_dest)
 	      /* Branch to our target which is in %r1.  */
 	      output_asm_insn ("bv %%r0(%%r1)", xoperands);
 
-	      /* Copy the return address into %r2 also.  */
-	      output_asm_insn ("copy %%r31,%%r2", xoperands);
+	      if (sibcall)
+		{
+		  /* This call never returns, so we do not need to fix the
+		     return pointer.  */
+		  output_asm_insn ("nop", xoperands);
+		}
+	      else
+		{
+		  /* Copy the return address into %r2 also.  */
+		  output_asm_insn ("copy %%r31,%%r2", xoperands);
+		}
 	    }
 	  else
 	    {
@@ -5544,8 +5880,17 @@ output_call (insn, call_dest)
 	      output_asm_insn ("{ble|be,l}  R%%$$dyncall(%%sr4,%%r2)",
 			       xoperands);
 
-	      /* Copy the return pointer into both %r31 and %r2.  */
-	      output_asm_insn ("copy %%r31,%%r2", xoperands);
+	      if (sibcall)
+		{
+		  /* This call never returns, so we do not need to fix the
+		     return pointer.  */
+		  output_asm_insn ("nop", xoperands);
+		}
+	      else
+		{
+		  /* Copy the return address into %r2 also.  */
+		  output_asm_insn ("copy %%r31,%%r2", xoperands);
+		}
 	    }
 	}
 
@@ -6591,6 +6936,245 @@ insn_refs_are_delayed (insn)
 	   && GET_CODE (PATTERN (insn)) != USE
 	   && GET_CODE (PATTERN (insn)) != CLOBBER
 	   && get_attr_type (insn) == TYPE_MILLI));
+}
+
+/* Return the location of a parameter that is passed in a register or NULL
+   if the parameter has any component that is passed in memory.
+
+   This is new code and will be pushed to into the net sources after
+   further testing. 
+
+   ??? We might want to restructure this so that it looks more like other
+   ports.  */
+rtx
+function_arg (cum, mode, type, named, incoming)
+     CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+     int incoming;
+{
+  int max_arg_words = (TARGET_64BIT ? 8 : 4);
+  int fpr_reg_base;
+  int gpr_reg_base;
+  rtx retval;
+
+  if (! TARGET_64BIT)
+    {
+      /* If this arg would be passed partially or totally on the stack, then
+         this routine should return zero.  FUNCTION_ARG_PARTIAL_NREGS will
+         handle arguments which are split between regs and stack slots if
+         the ABI mandates split arguments.  */
+      if (cum->words + FUNCTION_ARG_SIZE (mode, type) > max_arg_words
+          || mode == VOIDmode)
+	return NULL_RTX;
+    }
+  else
+    {
+      int offset = 0;
+      if (FUNCTION_ARG_SIZE (mode, type) > 1 && (cum->words & 1))
+	offset = 1;
+      if (cum->words + offset >= max_arg_words
+	  || mode == VOIDmode)
+	return NULL_RTX;
+    }
+
+  /* The 32bit ABIs and the 64bit ABIs are rather different,
+     particularly in their handling of FP registers.  We might
+     be able to cleverly share code between them, but I'm not
+     going to bother in the hope that spltting them up results
+     in code that is more easily understood. 
+
+     The 64bit code probably is very wrong for structure passing.  */
+  if (TARGET_64BIT)
+    {
+      /* Advance the base registers to their current locations.
+
+         Remember, gprs grow towards smaller register numbers while
+	 fprs grow to higher register numbers.  Also remember FP regs
+	 are always 4 bytes wide, while the size of an integer register
+	 varies based on the size of the target word.  */
+      gpr_reg_base = 26 - cum->words;
+      fpr_reg_base = 32 + cum->words;
+	  
+      /* If the argument is more than a word long, then we need to align
+	 the base registers.  Same caveats as above.  */
+      if (FUNCTION_ARG_SIZE (mode, type) > 1)
+	{
+	  if (mode != BLKmode)
+	    {
+	      /* First deal with alignment of the doubleword.  */
+	      gpr_reg_base -= (cum->words & 1);
+
+	      /* This seems backwards, but it is what HP specifies.  We need
+	         gpr_reg_base to point to the smaller numbered register of
+	         the integer register pair.  So if we have an even register
+	          number, then decrement the gpr base.  */
+	      gpr_reg_base -= ((gpr_reg_base % 2) == 0);
+
+	      /* FP values behave sanely, except that each FP reg is only
+	         half of word.  */
+	      fpr_reg_base += ((fpr_reg_base % 2) == 0);
+            }
+	  else
+	    {
+	      rtx loc[8];
+	      int i, offset = 0, ub;
+              ub = FUNCTION_ARG_SIZE (mode, type); 
+	      ub = MIN(ub,
+                       MAX(0, max_arg_words - cum->words - (cum->words & 1)));
+	      gpr_reg_base -= (cum->words & 1);
+	      for (i = 0; i < ub; i++)
+		{
+		  loc[i] = gen_rtx_EXPR_LIST (VOIDmode,
+					      gen_rtx_REG (DImode,
+							   gpr_reg_base),
+					      GEN_INT(offset));
+		  gpr_reg_base -= 1;
+		  offset += 8;
+		}
+	      if (ub == 0)
+		return NULL_RTX;
+	      else if (ub == 1)
+		return XEXP (loc[0], 0);
+	      else
+		return gen_rtx_PARALLEL(mode, gen_rtvec_v(ub, loc));
+	    }
+	}
+    }
+  else
+    {
+      /* If the argument is larger than a word, then we know precisely
+	 which registers we must use.  */
+      if (FUNCTION_ARG_SIZE (mode, type) > 1)
+	{
+	  if (cum->words)
+	    {
+	      gpr_reg_base = 23;
+	      fpr_reg_base = 38;
+	    }
+	  else
+	    {
+	      gpr_reg_base = 25;
+	      fpr_reg_base = 34;
+	    }
+	}
+      else
+        {
+	   /* We have a single word (32 bits).  A simple computation
+	      will get us the register #s we need.  */
+	   gpr_reg_base = 26 - cum->words;
+	   fpr_reg_base = 32 + 2 * cum->words;
+	}
+    }
+
+  if (TARGET_64BIT && mode == TFmode)
+    {
+      return
+	gen_rtx_PARALLEL
+	  (mode,
+	   gen_rtvec (2,
+		      gen_rtx_EXPR_LIST (VOIDmode,
+					 gen_rtx_REG (DImode, gpr_reg_base + 1),
+					 const0_rtx),
+		      gen_rtx_EXPR_LIST (VOIDmode,
+					 gen_rtx_REG (DImode, gpr_reg_base),
+					 GEN_INT (8))));
+    }
+  /* Determine if the register needs to be passed in both general and
+     floating point registers.  */
+  if ((TARGET_PORTABLE_RUNTIME || TARGET_64BIT)
+      /* If we are doing soft-float with portable runtime, then there
+	 is no need to worry about FP regs.  */
+      && ! TARGET_SOFT_FLOAT
+      /* The parameter must be some kind of float, else we can just
+	 pass it in integer registers.  */
+      && FLOAT_MODE_P (mode)
+      /* The target function must not have a prototype.  */
+      && cum->nargs_prototype <= 0
+      /* libcalls do not need to pass items in both FP and general
+	 registers.  */
+      && type != NULL_TREE
+      /* All this hair applies to outgoing args only.  */
+      && !incoming)
+    {
+      retval
+	= gen_rtx_PARALLEL
+	    (mode,
+	     gen_rtvec (2,
+			gen_rtx_EXPR_LIST (VOIDmode,
+					   gen_rtx_REG (mode, fpr_reg_base),
+					   const0_rtx),
+			gen_rtx_EXPR_LIST (VOIDmode,
+					   gen_rtx_REG (mode, gpr_reg_base),
+					   const0_rtx)));
+    }
+  else
+    {
+      /* See if we should pass this parameter in a general register.  */
+      if (TARGET_SOFT_FLOAT
+	  /* Indirect calls in the normal 32bit ABI require all arguments
+	     to be passed in general registers.  */
+	  || (!TARGET_PORTABLE_RUNTIME
+	      && !TARGET_64BIT
+	      && cum->indirect)
+	  /* If the parameter is not a floating point parameter, then
+	     it belongs in GPRs.  */
+	  || !FLOAT_MODE_P (mode))
+	retval = gen_rtx_REG (mode, gpr_reg_base);
+      else
+	retval = gen_rtx_REG (mode, fpr_reg_base);
+    }
+  return retval;
+}
+
+
+/* If this arg would be passed totally in registers or totally on the stack,
+   then this routine should return zero. It is currently called only for
+   the 64-bit target. */
+int
+function_arg_partial_nregs (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+  int max_arg_words = 8;
+  int offset = 0;
+
+  if (FUNCTION_ARG_SIZE(mode, type) > 1 && (cum->words & 1))
+    offset = 1;
+
+  if (cum->words + offset + FUNCTION_ARG_SIZE(mode, type) <= max_arg_words)
+    /* Arg fits fully into registers. */
+    return 0;
+  else if (cum->words + offset >= max_arg_words) 
+    /* Arg fully on the stack. */
+    return 0;
+  else
+    /* Arg is split. */
+    return max_arg_words - cum->words - offset;
+
+}
+
+
+/* Return 1 if this is a comparison operator.  This allows the use of
+   MATCH_OPERATOR to recognize all the branch insns.  */
+
+int
+cmpib_comparison_operator (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+  return ((mode == VOIDmode || GET_MODE (op) == mode)
+          && (GET_CODE (op) == EQ
+	      || GET_CODE (op) == NE
+	      || GET_CODE (op) == GT
+	      || GET_CODE (op) == GE
+	      || GET_CODE (op) == GTU
+	      || GET_CODE (op) == LT
+	      || GET_CODE (op) == LE
+	      || GET_CODE (op) == LEU));
 }
 
 /* Mark ARG (which is really a struct deferred_plabel **) for GC.  */

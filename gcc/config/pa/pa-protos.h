@@ -50,7 +50,7 @@ extern const char *output_dbra PARAMS ((rtx *, rtx, int));
 extern const char *output_movb PARAMS ((rtx *, rtx, int, int));
 extern const char *output_parallel_movb PARAMS ((rtx *, int));
 extern const char *output_parallel_addb PARAMS ((rtx *, int));
-extern const char *output_call PARAMS ((rtx, rtx));
+extern const char *output_call PARAMS ((rtx, rtx, int));
 extern const char *output_millicode_call PARAMS ((rtx, rtx));
 extern const char *output_mul_insn PARAMS ((int, rtx));
 extern const char *output_div_insn PARAMS ((rtx *, int, rtx));
@@ -141,7 +141,23 @@ extern void hppa_expand_prologue PARAMS ((void));
 extern void hppa_expand_epilogue PARAMS ((void));
 extern int hppa_can_use_return_insn_p PARAMS ((void));
 extern int ior_mask_p PARAMS ((unsigned HOST_WIDE_INT));
+extern void compute_zdepdi_operands PARAMS ((unsigned HOST_WIDE_INT,
+					     unsigned *));
+#ifdef RTX_CODE
+extern char * output_64bit_and PARAMS ((rtx *));
+extern char * output_64bit_ior PARAMS ((rtx *));
+extern int cmpib_comparison_operator PARAMS ((rtx, enum machine_mode));
+#endif
+
+
 
 #ifdef TREE_CODE
 extern int reloc_needed PARAMS ((tree));
+#ifdef RTX_CODE
+extern rtx function_arg PARAMS ((CUMULATIVE_ARGS *, enum machine_mode,
+				 tree, int, int));
+#endif
+extern int function_arg_partial_nregs PARAMS ((CUMULATIVE_ARGS *,
+					       enum machine_mode,
+					       tree, int));
 #endif /* TREE_CODE */

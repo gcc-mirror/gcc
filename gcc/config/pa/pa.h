@@ -85,7 +85,10 @@ extern int target_flags;
 /* compile code for HP-PA 1.1 ("Snake") */
 
 #define MASK_PA_11 1
+
+#ifndef TARGET_PA_11
 #define TARGET_PA_11 (target_flags & MASK_PA_11)
+#endif
 
 /* Disable all FP registers (they all become fixed).  This may be necessary
    for compiling kernels which perform lazy context switching of FP regs.
@@ -150,7 +153,14 @@ extern int target_flags;
 /* Generate code for the HPPA 2.0 architecture.  TARGET_PA_11 should also be
    true when this is true.  */
 #define MASK_PA_20 4096
+#ifndef TARGET_PA_20
 #define TARGET_PA_20 (target_flags & MASK_PA_20)
+#endif
+
+/* Generate code for the HPPA 2.0 architecture in 64bit mode.  */
+#ifndef TARGET_64BIT
+#define TARGET_64BIT 0
+#endif
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -248,16 +258,62 @@ extern int target_flags;
   ((GET_CODE (X) == PLUS ? OFFSET : 0) \
     + (frame_pointer_needed ? 0 : compute_frame_size (get_frame_size (), 0)))
 
+#define CPP_PA10_SPEC ""
+#define CPP_PA11_SPEC "-D_PA_RISC1_1 -D__hp9000s700"
+#define CPP_PA20_SPEC "-D_PA_RISC2_0 -D__hp9000s800"
+#define CPP_64BIT_SPEC "-D__LP64__ -D__LONG_MAX__=9223372036854775807L"
+
 #if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_11) == 0
-#define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
- %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}\
- %{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE -D__STDC_EXT__}\
- %{threads:-D_REENTRANT -D_DCE_THREADS}"
-#else
-#define CPP_SPEC "%{!mpa-risc-1-0:%{!mnosnake:%{!msoft-float:-D__hp9000s700 -D_PA_RISC1_1}}} \
- %{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE -D__STDC_EXT__}\
- %{threads:-D_REENTRANT -D_DCE_THREADS}"
+#define CPP_CPU_DEFAULT_SPEC "%(cpp_pa10)"
 #endif
+
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_11) != 0
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_20) != 0
+#define CPP_CPU_DEFAULT_SPEC "%(cpp_pa11) %(cpp_pa20)"
+#else
+#define CPP_CPU_DEFAULT_SPEC "%(cpp_pa11)"
+#endif
+#endif
+
+#if TARGET_64BIT
+#define CPP_64BIT_DEFAULT_SPEC "%(cpp_64bit)"
+#else
+#define CPP_64BIT_DEFAULT_SPEC ""
+#endif
+
+/* This macro defines names of additional specifications to put in the
+   specs that can be used in various specifications like CC1_SPEC.  Its
+   definition is an initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   specification name, and a string constant that used by the GNU CC driver
+   program.
+
+   Do not define this macro if it does not need to do anything.  */
+
+#ifndef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS
+#endif
+
+#define EXTRA_SPECS							\
+  { "cpp_pa10", CPP_PA10_SPEC},						\
+  { "cpp_pa11", CPP_PA11_SPEC},						\
+  { "cpp_pa20", CPP_PA20_SPEC},						\
+  { "cpp_64bit", CPP_64BIT_SPEC},					\
+  { "cpp_cpu_default",	CPP_CPU_DEFAULT_SPEC },				\
+  { "cpp_64bit_default", CPP_64BIT_DEFAULT_SPEC },			\
+  SUBTARGET_EXTRA_SPECS
+
+#define CPP_SPEC "\
+%{mpa-risc-1-0:%(cpp_pa10)} \
+%{mpa-risc-1-1:%(cpp_pa11)} \
+%{msnake:%(cpp_pa11)} \
+%{mpa-risc-2-0:%(cpp_pa20)} \
+%{!mpa-risc-1-0:%{!mpa-risc-1-1:%{!mpa-risc-2-0:%{!msnake:%(cpp_cpu_default)}}}} \
+%{m64bit:%(cpp_64bit)} \
+%{!m64bit:%(cpp_64bit_default)} \
+%{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE -D__STDC_EXT__}\
+%{threads:-D_REENTRANT -D_DCE_THREADS}"
 
 /* Defines for a K&R CC */
 
@@ -323,10 +379,14 @@ extern int target_flags;
    Note that this is not necessarily the width of data type `int';
    if using 16-bit ints on a 68000, this would still be 32.
    But on a machine with 16-bit registers, this would be 16.  */
-#define BITS_PER_WORD 32
+#define BITS_PER_WORD (TARGET_64BIT ? 64 : 32)
+#define MAX_BITS_PER_WORD 64
+#define MAX_LONG_TYPE_SIZE 64
+#define MAX_WCHAR_TYPE_SIZE 32
 
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD 4
+#define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
+#define MIN_UNITS_PER_WORD 4
 
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
@@ -344,10 +404,10 @@ extern int target_flags;
 
    GCC for the PA always rounds its stacks to a 512bit boundary,
    but that happens late in the compilation process.  */
-#define STACK_BOUNDARY 64
+#define STACK_BOUNDARY (TARGET_64BIT ? 128 : 64)
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY 32
+#define FUNCTION_BOUNDARY (TARGET_64BIT ? 64 : 32)
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
@@ -420,17 +480,19 @@ extern int target_flags;
 /* Register which holds offset table for position-independent
    data references.  */
 
-#define PIC_OFFSET_TABLE_REGNUM 19
+#define PIC_OFFSET_TABLE_REGNUM (TARGET_64BIT ? 27 : 19)
 #define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED 1
 
 /* Register into which we save the PIC_OFFEST_TABLE_REGNUM so that it
    can be restore across function calls.  */
 #define PIC_OFFSET_TABLE_REGNUM_SAVED 4
 
-/* SOM ABI says that objects larger than 64 bits are returned in memory.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* SOM ABI says that objects larger than 64 bits are returned in memory.
+   PA64 ABI says that objects larger than 128 bits are returned in memory. */
 #define RETURN_IN_MEMORY(TYPE)	\
-  (int_size_in_bytes (TYPE) > 8)
+  (TARGET_64BIT ? int_size_in_bytes (TYPE) > 16 : int_size_in_bytes (TYPE) > 8)
 
 /* Register in which address to store a structure value
    is passed to a function.  */
@@ -447,7 +509,9 @@ extern int target_flags;
    `K' is used for values that can be moved with a zdepi insn.
    `L' is used for the 5 bit constants.
    `M' is used for 0.
-   `N' is used for values with the least significant 11 bits equal to zero.
+   `N' is used for values with the least significant 11 bits equal to zero
+	                  and when sign extended from 32 to 64 bits the
+			  value does not change.
    `O' is used for numbers n such that n+1 is a power of 2.
    */
 
@@ -457,8 +521,10 @@ extern int target_flags;
    : (C) == 'K' ? zdepi_cint_p (VALUE)				\
    : (C) == 'L' ? VAL_5_BITS_P (VALUE)				\
    : (C) == 'M' ? (VALUE) == 0					\
-   : (C) == 'N' ? ((VALUE) & 0x7ff) == 0			\
-   : (C) == 'O' ? (((VALUE) & ((VALUE) + 1)) == 0)		\
+   : (C) == 'N' ? (((VALUE) & (unsigned long)0x7ff) == 0	\
+		   && (VALUE) == ((((VALUE) & 0xffffffff) ^ (~0x7fffffff)) \
+				  + 0x80000000))		\
+   : (C) == 'O' ? (((VALUE) & ((VALUE) + (long)1)) == 0)	\
    : (C) == 'P' ? and_mask_p (VALUE)				\
    : 0)
 
@@ -542,11 +608,11 @@ extern int target_flags;
    argument, not it's beginning.  To get the real offset of the first
    argument, the size of the argument must be added.  */
 
-#define FIRST_PARM_OFFSET(FNDECL) -32
+#define FIRST_PARM_OFFSET(FNDECL) (TARGET_64BIT ? -64 : -32)
 
 /* When a parameter is passed in a register, stack space is still
    allocated for it.  */
-#define REG_PARM_STACK_SPACE(DECL) 16
+#define REG_PARM_STACK_SPACE(DECL) (TARGET_64BIT ? 64 : 16)
 
 /* Define this if the above stack space is to be considered part of the
    space allocated by the caller.  */
@@ -562,10 +628,13 @@ extern int target_flags;
    the stack: 16 bytes for register saves, and 32 bytes for magic.
    This is the difference between the logical top of stack and the
    actual sp. */
-#define STACK_POINTER_OFFSET -32
+#define STACK_POINTER_OFFSET \
+  (TARGET_64BIT ? -(current_function_outgoing_args_size + 16): -32)
 
 #define STACK_DYNAMIC_OFFSET(FNDECL)	\
-  ((STACK_POINTER_OFFSET) - current_function_outgoing_args_size)
+  (TARGET_64BIT				\
+   ? (STACK_POINTER_OFFSET)		\
+   : ((STACK_POINTER_OFFSET) - current_function_outgoing_args_size))
 
 /* Value is 1 if returning from a function call automatically
    pops the arguments described by the number-of-args field in the call.
@@ -583,11 +652,14 @@ extern int target_flags;
 /* On the HP-PA the value is found in register(s) 28(-29), unless
    the mode is SF or DF. Then the value is returned in fr4 (32, ) */
 
-#define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx_REG (TYPE_MODE (VALTYPE), ((! TARGET_SOFT_FLOAT		     \
-				      && (TYPE_MODE (VALTYPE) == SFmode ||  \
-					  TYPE_MODE (VALTYPE) == DFmode)) ? \
-				     32 : 28))
+/* This must perform the same promotions as PROMOTE_MODE, else
+   PROMOTE_FUNCTION_RETURN will not work correctly.  */
+#define FUNCTION_VALUE(VALTYPE, FUNC)				\
+  gen_rtx_REG (((INTEGRAL_TYPE_P (VALTYPE)			\
+		 && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
+		|| POINTER_TYPE_P (VALTYPE))			\
+	       ? word_mode : TYPE_MODE (VALTYPE),		\
+	       TREE_CODE (VALTYPE) == REAL_TYPE && !TARGET_SOFT_FLOAT ? 32 : 28)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
@@ -712,54 +784,20 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 /* Do not expect to understand this without reading it several times.  I'm
    tempted to try and simply it, but I worry about breaking something.  */
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)		      		\
-  (4 >= ((CUM).words + FUNCTION_ARG_SIZE ((MODE), (TYPE)))		\
-   ? (!TARGET_PORTABLE_RUNTIME || (TYPE) == 0				\
-      || !FLOAT_MODE_P (MODE) || TARGET_SOFT_FLOAT			\
-      || (CUM).nargs_prototype > 0)					\
-      ? gen_rtx_REG ((MODE),						\
-		     (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
-		      ? (((!(CUM).indirect 				\
-			   || TARGET_PORTABLE_RUNTIME)			\
-			  && (MODE) == DFmode				\
-			  && ! TARGET_SOFT_FLOAT)			\
-			 ? ((CUM).words ? 38 : 34)			\
-			 : ((CUM).words ? 23 : 25))			\
-		      : (((!(CUM).indirect				\
-			   || TARGET_PORTABLE_RUNTIME)			\
-			  && (MODE) == SFmode				\
-			  && ! TARGET_SOFT_FLOAT)			\
-			 ? (32 + 2 * (CUM).words)			\
-			 : (27 - (CUM).words - FUNCTION_ARG_SIZE ((MODE),\
-								  (TYPE))))))\
-   /* We are calling a non-prototyped function with floating point	\
-      arguments using the portable conventions.  */			\
-   : (gen_rtx_PARALLEL							\
-      ((MODE),								\
-       gen_rtvec							\
-       (2,								\
-	gen_rtx_EXPR_LIST						\
-	(VOIDmode,							\
-	 gen_rtx_REG ((MODE),						\
-		      (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1 		\
-		       ? ((CUM).words ? 38 : 34) : (32 + 2 * (CUM).words))), \
-	 const0_rtx),							\
-	gen_rtx_EXPR_LIST						\
-	(VOIDmode,							\
-	 gen_rtx_REG ((MODE),						\
-		      (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
-		       ? ((CUM).words ? 23 : 25)			\
-		       : (27 - (CUM).words -				\
-			  FUNCTION_ARG_SIZE ((MODE), (TYPE))))),	\
-	 const0_rtx))))							\
-      /* Pass this parameter in the stack.  */				\
-      : 0)
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
+  function_arg (&CUM, MODE, TYPE, NAMED, 0)
+
+#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED) \
+  function_arg (&CUM, MODE, TYPE, NAMED, 1)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.  */
 
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
+/* For PA32 there are never split arguments. PA64, on the other hand, can
+   pass arguments partially in registers and partially in memory. */
+#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
+  (TARGET_64BIT ? function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED) : 0)
 
 /* If defined, a C expression that gives the alignment boundary, in
    bits, of an argument with the specified mode and type.  If it is
@@ -777,13 +815,21 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 
 /* Arguments larger than eight bytes are passed by invisible reference */
 
+/* PA64 does not pass anything by invisible reference. */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
-  (((TYPE) && int_size_in_bytes (TYPE) > 8)				\
-   || ((MODE) && GET_MODE_SIZE (MODE) > 8))
+  (TARGET_64BIT								\
+   ? 0									\
+   : (((TYPE) && int_size_in_bytes (TYPE) > 8)				\
+      || ((MODE) && GET_MODE_SIZE (MODE) > 8)))
  
+/* PA64 does not pass anything by invisible reference.
+   This should be undef'ed for 64bit, but we'll see if this works. The
+   problem is that we can't test TARGET_64BIT from the preprocessor. */
 #define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) \
-  (((TYPE) && int_size_in_bytes (TYPE) > 8)		   \
-   || ((MODE) && GET_MODE_SIZE (MODE) > 8))
+  (TARGET_64BIT							\
+   ? 0								\
+   : (((TYPE) && int_size_in_bytes (TYPE) > 8)			\
+      || ((MODE) && GET_MODE_SIZE (MODE) > 8)))
 
 
 extern struct rtx_def *hppa_compare_op0, *hppa_compare_op1;
@@ -869,22 +915,40 @@ extern int may_call_alloca;
    It is best to keep this as small as possible to avoid having to
    flush multiple lines in the cache.  */
 
-#define TRAMPOLINE_TEMPLATE(FILE) \
-  {							\
-    fputs ("\tldw	36(%r22),%r21\n", FILE);	\
-    fputs ("\tbb,>=,n	%r21,30,.+16\n", FILE);	\
-    if (ASSEMBLER_DIALECT == 0)				\
-      fputs ("\tdepi	0,31,2,%r21\n", FILE);		\
-    else						\
-      fputs ("\tdepwi	0,31,2,%r21\n", FILE);		\
-    fputs ("\tldw	4(%r21),%r19\n", FILE);	\
-    fputs ("\tldw	0(%r21),%r21\n", FILE);	\
-    fputs ("\tldsid	(%r21),%r1\n", FILE);	\
-    fputs ("\tmtsp	%r1,%sr0\n", FILE);		\
-    fputs ("\tbe	0(%sr0,%r21)\n", FILE);	\
-    fputs ("\tldw	40(%r22),%r29\n", FILE);	\
-    fputs ("\t.word	0\n", FILE);			\
-    fputs ("\t.word	0\n", FILE);			\
+#define TRAMPOLINE_TEMPLATE(FILE) 					\
+  {									\
+    if (! TARGET_64BIT)							\
+      {									\
+	fputs ("\tldw	36(%r22),%r21\n", FILE);			\
+	fputs ("\tbb,>=,n	%r21,30,.+16\n", FILE);			\
+	if (ASSEMBLER_DIALECT == 0)					\
+	  fputs ("\tdepi	0,31,2,%r21\n", FILE);			\
+	else								\
+	  fputs ("\tdepwi	0,31,2,%r21\n", FILE);			\
+	fputs ("\tldw	4(%r21),%r19\n", FILE);				\
+	fputs ("\tldw	0(%r21),%r21\n", FILE);				\
+	fputs ("\tldsid	(%r21),%r1\n", FILE);				\
+	fputs ("\tmtsp	%r1,%sr0\n", FILE);				\
+	fputs ("\tbe	0(%sr0,%r21)\n", FILE);				\
+	fputs ("\tldw	40(%r22),%r29\n", FILE);			\
+	fputs ("\t.word	0\n", FILE);					\
+	fputs ("\t.word	0\n", FILE);					\
+      }									\
+    else								\
+      {									\
+	fputs ("\t.dword 0\n", FILE);					\
+	fputs ("\t.dword 0\n", FILE);					\
+	fputs ("\t.dword 0\n", FILE);					\
+	fputs ("\t.dword 0\n", FILE);					\
+	fputs ("\tmfia	%r31\n", FILE);					\
+	fputs ("\tldd	24(%r31),%r1\n", FILE);				\
+	fputs ("\tldd	24(%r1),%r27\n", FILE);				\
+	fputs ("\tldd	16(%r1),%r1\n", FILE);				\
+	fputs ("\tbve	(%r1)\n", FILE);				\
+	fputs ("\tldd	32(%r31),%r31\n", FILE);			\
+	fputs ("\t.dword 0  ; fptr\n", FILE);				\
+	fputs ("\t.dword 0  ; static link\n", FILE);			\
+      }									\
   }
 
 /* Length in units of the trampoline for entering a nested function.
@@ -896,7 +960,7 @@ extern int may_call_alloca;
    If the code part of the trampoline ever grows to > 32 bytes, then it
    will become necessary to hack on the cacheflush pattern in pa.md.  */
 
-#define TRAMPOLINE_SIZE (11 * 4)
+#define TRAMPOLINE_SIZE (TARGET_64BIT ? 72 : 11 * 4)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
@@ -905,22 +969,49 @@ extern int may_call_alloca;
    Move the function address to the trampoline template at offset 12.
    Move the static chain value to trampoline template at offset 16.  */
 
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) 			\
 {									\
-  rtx start_addr, end_addr;						\
+  if (! TARGET_64BIT)							\
+    {									\
+      rtx start_addr, end_addr;						\
 									\
-  start_addr = memory_address (Pmode, plus_constant ((TRAMP), 36));	\
-  emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (FNADDR));		\
-  start_addr = memory_address (Pmode, plus_constant ((TRAMP), 40));	\
-  emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (CXT));		\
-  /* fdc and fic only use registers for the address to flush,		\
-     they do not accept integer displacements.  */ 			\
-  start_addr = force_reg (Pmode, (TRAMP));				\
-  end_addr = force_reg (Pmode, plus_constant ((TRAMP), 32));		\
-  emit_insn (gen_dcacheflush (start_addr, end_addr));			\
-  end_addr = force_reg (Pmode, plus_constant (start_addr, 32));	\
-  emit_insn (gen_icacheflush (start_addr, end_addr, start_addr,		\
-			      gen_reg_rtx (Pmode), gen_reg_rtx (Pmode)));\
+      start_addr = memory_address (Pmode, plus_constant ((TRAMP), 36));	\
+      emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (FNADDR));	\
+      start_addr = memory_address (Pmode, plus_constant ((TRAMP), 40));	\
+      emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (CXT));		\
+      /* fdc and fic only use registers for the address to flush,	\
+	 they do not accept integer displacements.  */ 			\
+      start_addr = force_reg (Pmode, (TRAMP));				\
+      end_addr = force_reg (Pmode, plus_constant ((TRAMP), 32));	\
+      emit_insn (gen_dcacheflush (start_addr, end_addr));		\
+      end_addr = force_reg (Pmode, plus_constant (start_addr, 32));	\
+      emit_insn (gen_icacheflush (start_addr, end_addr, start_addr,	\
+				  gen_reg_rtx (Pmode), gen_reg_rtx (Pmode)));\
+    }									\
+  else									\
+    {									\
+      rtx start_addr, end_addr;						\
+									\
+      start_addr = memory_address (Pmode, plus_constant ((TRAMP), 56));	\
+      emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (FNADDR));	\
+      start_addr = memory_address (Pmode, plus_constant ((TRAMP), 64));	\
+      emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (CXT));		\
+      /* Create a fat pointer for the trampoline. */			\
+      end_addr = force_reg (Pmode, plus_constant ((TRAMP), 32));	\
+      start_addr = memory_address (Pmode, plus_constant ((TRAMP), 16));	\
+      emit_move_insn (gen_rtx_MEM (Pmode, start_addr), end_addr);	\
+      end_addr = gen_rtx_REG (Pmode, 27);				\
+      start_addr = memory_address (Pmode, plus_constant ((TRAMP), 24));	\
+      emit_move_insn (gen_rtx_MEM (Pmode, start_addr), end_addr);	\
+      /* fdc and fic only use registers for the address to flush,	\
+	 they do not accept integer displacements.  */ 			\
+      start_addr = force_reg (Pmode, (TRAMP));				\
+      end_addr = force_reg (Pmode, plus_constant ((TRAMP), 32));	\
+      emit_insn (gen_dcacheflush (start_addr, end_addr));		\
+      end_addr = force_reg (Pmode, plus_constant (start_addr, 32));	\
+      emit_insn (gen_icacheflush (start_addr, end_addr, start_addr,	\
+				  gen_reg_rtx (Pmode), gen_reg_rtx (Pmode)));\
+    }									\
 }
 
 /* Emit code for a call to builtin_saveregs.  We must emit USE insns which
@@ -995,17 +1086,30 @@ extern int may_call_alloca;
 /* Include all constant integers and constant doubles, but not
    floating-point, except for floating-point zero.
 
-   Reject LABEL_REFs if we're not using gas or the new HP assembler.  */
+   Reject LABEL_REFs if we're not using gas or the new HP assembler. 
+
+   ?!? For now also reject CONST_DOUBLES in 64bit mode.  This will need
+   further work.  */
 #ifdef NEW_HP_ASSEMBLER
 #define LEGITIMATE_CONSTANT_P(X)  		\
   ((GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
     || (X) == CONST0_RTX (GET_MODE (X)))	\
+   && !(TARGET_64BIT && GET_CODE (X) == CONST_DOUBLE) \
+   && !(TARGET_64BIT && GET_CODE (X) == CONST_INT \
+	&& !(cint_ok_for_move (INTVAL (X))	\
+	     || ((INTVAL (X) & 0xffffffff80000000L) == 0xffffffff80000000L) \
+	     || ((INTVAL (X) & 0xffffffff00000000L) == 0x0000000000000000L))) \
    && !function_label_operand (X, VOIDmode))
 #else
 #define LEGITIMATE_CONSTANT_P(X)  		\
   ((GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
     || (X) == CONST0_RTX (GET_MODE (X)))	\
    && (GET_CODE (X) != LABEL_REF || TARGET_GAS)\
+   && !(TARGET_64BIT && GET_CODE (X) == CONST_DOUBLE) \
+   && !(TARGET_64BIT && GET_CODE (X) == CONST_INT \
+	&& !(cint_ok_for_move (INTVAL (X))	\
+	     || ((INTVAL (X) & 0xffffffff80000000L) == 0xffffffff80000000L) \
+	     || ((INTVAL (X) & 0xffffffff00000000L) == 0x0000000000000000L))) \
    && !function_label_operand (X, VOIDmode))
 #endif
 
@@ -1064,8 +1168,11 @@ extern int may_call_alloca;
        && !(GET_CODE (XEXP (OP, 0)) == PLUS		\
 	    && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT\
 		|| GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT)))\
+   : ((C) == 'U' ?					\
+      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 63)	\
    : ((C) == 'S' ?					\
-      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 31) : 0))))
+      (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 31) : 0)))))
+	
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -1115,16 +1222,16 @@ extern int may_call_alloca;
    doing so avoids losing for loading/storing a FP register at an address
    which will not fit in 5 bits.  */
 
-#define VAL_5_BITS_P(X) ((unsigned)(X) + 0x10 < 0x20)
+#define VAL_5_BITS_P(X) ((unsigned HOST_WIDE_INT)(X) + 0x10 < 0x20)
 #define INT_5_BITS(X) VAL_5_BITS_P (INTVAL (X))
 
-#define VAL_U5_BITS_P(X) ((unsigned)(X) < 0x20)
+#define VAL_U5_BITS_P(X) ((unsigned HOST_WIDE_INT)(X) < 0x20)
 #define INT_U5_BITS(X) VAL_U5_BITS_P (INTVAL (X))
 
-#define VAL_11_BITS_P(X) ((unsigned)(X) + 0x400 < 0x800)
+#define VAL_11_BITS_P(X) ((unsigned HOST_WIDE_INT)(X) + 0x400 < 0x800)
 #define INT_11_BITS(X) VAL_11_BITS_P (INTVAL (X))
 
-#define VAL_14_BITS_P(X) ((unsigned)(X) + 0x2000 < 0x4000)
+#define VAL_14_BITS_P(X) ((unsigned HOST_WIDE_INT)(X) + 0x2000 < 0x4000)
 #define INT_14_BITS(X) VAL_14_BITS_P (INTVAL (X))
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)  \
@@ -1414,8 +1521,13 @@ while (0)
 
 /* Higher than the default as we prefer to use simple move insns
    (better scheduling and delay slot filling) and because our
-   built-in block move is really a 2X unrolled loop.  */
-#define MOVE_RATIO 4
+   built-in block move is really a 2X unrolled loop. 
+
+   Believe it or not, this has to be big enough to allow for copying all
+   arguments passed in registers to avoid infinite recursion during argument
+   setup for a function call.  Why?  Consider how we copy the stack slots
+   reserved for parameters when they may be trashed by a call.  */
+#define MOVE_RATIO (TARGET_64BIT ? 8 : 4)
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
@@ -1441,6 +1553,7 @@ while (0)
 
 /* When a prototype says `char' or `short', really pass an `int'.  */
 #define PROMOTE_PROTOTYPES 1
+#define PROMOTE_FUNCTION_RETURN 1
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
@@ -1866,6 +1979,35 @@ while (0)
 
 /* The number of Pmode words for the setjmp buffer.  */
 #define JMP_BUF_SIZE 50
+
+/* Only direct calls to static functions are allowed to be sibling (tail)
+   call optimized.
+
+   This restriction is necessary because some linker generated stubs will
+   store return pointers into rp' in some cases which might clobber a
+   live value already in rp'.
+
+   In a sibcall the current function and the target function share stack
+   space.  Thus if the path to the current function and the path to the
+   target function save a value in rp', they save the value into the
+   same stack slot, which has undesirable consequences.
+
+   Because of the deferred binding nature of shared libraries any function
+   with external scope could be in a different load module and thus require
+   rp' to be saved when calling that function.  So sibcall optimizations
+   can only be safe for static function.
+
+   Note that GCC never needs return value relocations, so we don't have to
+   worry about static calls with return value relocations (which require
+   saving rp').
+
+   It is safe to perform a sibcall optimization when the target function
+   will never return.  */
+#define FUNCTION_OK_FOR_SIBCALL(DECL) \
+  (DECL \
+   && ! TARGET_64BIT \
+   && (! TREE_PUBLIC (DECL) \
+       || TREE_THIS_VOLATILE (DECL)))
 
 #define PREDICATE_CODES							\
   {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
