@@ -8784,7 +8784,13 @@ count_reg_usage (x, counts, dest, incr)
     case CONST_DOUBLE:
     case SYMBOL_REF:
     case LABEL_REF:
-    case CLOBBER:
+      return;
+
+    case CLOBBER:                                                        
+      /* If we are clobbering a MEM, mark any registers inside the address
+         as being used.  */
+      if (GET_CODE (XEXP (x, 0)) == MEM)
+	count_reg_usage (XEXP (XEXP (x, 0), 0), counts, NULL_RTX, incr);
       return;
 
     case SET:
