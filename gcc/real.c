@@ -1,8 +1,8 @@
 /* real.c - implementation of REAL_ARITHMETIC, REAL_VALUE_ATOF,
-and support for XFmode IEEE extended real floating point arithmetic.
-Contributed by Stephen L. Moshier (moshier@world.std.com).
+   and support for XFmode IEEE extended real floating point arithmetic.
+   Contributed by Stephen L. Moshier (moshier@world.std.com).
 
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -322,7 +322,7 @@ do { EMUSHORT w[4];		\
 void warning ();
 extern int extra_warnings;
 int ecmp (), enormlz (), eshift ();
-int eisneg (), eisinf (), eisnan (), eiisinf (), eiisnan ();
+int eisneg (), eisinf (), eisnan (), eiisinf (), eiisnan (), eiisneg ();
 void eadd (), esub (), emul (), ediv ();
 void eshup1 (), eshup8 (), eshup6 (), eshdn1 (), eshdn8 (), eshdn6 ();
 void eabs (), eneg (), emov (), eclear (), einfin (), efloor ();
@@ -490,7 +490,7 @@ earith (value, icode, r1, r2)
       if (ecmp (d2, ezero) == 0)
 	{
 #ifdef NANS
-	enan (v);
+	enan (v, eisneg (d1) ^ eisneg (d2));
 	break;
 #else
 	abort ();
@@ -616,10 +616,6 @@ ereal_negate (x)
   REAL_VALUE_TYPE r;
 
   GET_REAL (&x, e);
-#ifdef NANS
-  if (eisnan (e))
-    return (x);
-#endif
   eneg (e);
   PUT_REAL (e, &r);
   return (r);
@@ -1096,6 +1092,7 @@ ereal_isneg (x)
  *	esubm (ai, bi)		subtract significands, bi = bi - ai
  *      eiisinf (ai)            1 if infinite
  *      eiisnan (ai)            1 if a NaN
+ *	eiisneg (ai)		1 if sign bit of ai != 0, else 0
  *      einan (ai)              set ai = NaN
  *      eiinfin (ai)            set ai = infinity
  *
@@ -1349,27 +1346,19 @@ eneg (x)
      unsigned EMUSHORT x[];
 {
 
-#ifdef NANS
-  if (eisnan (x))
-    return;
-#endif
   x[NE - 1] ^= 0x8000;		/* Toggle the sign bit */
 }
 
 
 
-/* Return 1 if external format number is negative,
- * else return zero, including when it is a NaN.
+/* Return 1 if sign bit of external format number is nonzero,
+ * else return zero.
  */
 int 
 eisneg (x)
      unsigned EMUSHORT x[];
 {
 
-#ifdef NANS
-  if (eisnan (x))
-    return (0);
-#endif
   if (x[NE - 1] & 0x8000)
     return (1);
   else
@@ -1468,15 +1457,16 @@ einfin (x)
    The exponent is 7fff, the leading mantissa word is c000.  */
 
 void 
-enan (x)
+enan (x, sign)
      register unsigned EMUSHORT *x;
+     int sign;
 {
   register int i;
 
   for (i = 0; i < NE - 2; i++)
     *x++ = 0;
   *x++ = 0xc000;
-  *x = 0x7fff;
+  *x = (sign << 15) | 0x7fff;
 }
 
 
@@ -1552,7 +1542,7 @@ emovo (a, b)
 #ifdef NANS
       if (eiisnan (a))
 	{
-	  enan (b);
+	  enan (b, eiisneg (a));
 	  return;
 	}
 #endif
@@ -1644,6 +1634,16 @@ eiisnan (x)
 	}
     }
   return (0);
+}
+
+/* Return nonzero if sign of internal format number is nonzero.  */
+
+int 
+eiisneg (x)
+     unsigned EMUSHORT x[];
+{
+
+  return x[0] != 0;
 }
 
 /* Fill internal format number with infinity pattern.
@@ -2484,7 +2484,7 @@ esub (a, b, c)
       && ((eisneg (a) ^ eisneg (b)) == 0))
     {
       mtherr ("esub", INVALID);
-      enan (c);
+      enan (c, 0);
       return;
     }
 #endif
@@ -2522,7 +2522,7 @@ eadd (a, b, c)
       && ((eisneg (a) ^ eisneg (b)) != 0))
     {
       mtherr ("esub", INVALID);
-      enan (c);
+      enan (c, 0);
       return;
     }
 #endif
@@ -2665,7 +2665,7 @@ ediv (a, b, c)
       || (eisinf (a) && eisinf (b)))
     {
     mtherr ("ediv", INVALID);
-    enan (c);
+    enan (c, eisneg (a) ^ eisneg (b));
     return;
     }
 #endif
@@ -2773,7 +2773,7 @@ emul (a, b, c)
       || (eisinf (b) && (ecmp (a, ezero) == 0)))
     {
     mtherr ("emul", INVALID);
-    enan (c);
+    enan (c, eisneg (a) ^ eisneg (b));
     return;
     }
 #endif
@@ -2884,14 +2884,14 @@ e53toe (pe, y)
       if (((pe[3] & 0xf) != 0) || (pe[2] != 0)
 	  || (pe[1] != 0) || (pe[0] != 0))
 	{
-	  enan (y);
+	  enan (y, yy[0] != 0);
 	  return;
 	}
 #else
       if (((pe[0] & 0xf) != 0) || (pe[1] != 0)
 	  || (pe[2] != 0) || (pe[3] != 0))
 	{
-	  enan (y);
+	  enan (y, yy[0] != 0);
 	  return;
 	}
 #endif
@@ -2984,7 +2984,7 @@ e64toe (pe, y)
 	{
 	  if (pe[i] != 0)
 	    {
-	      enan (y);
+	      enan (y, (*p & 0x8000) != 0);
 	      return;
 	    }
 	}
@@ -2993,7 +2993,7 @@ e64toe (pe, y)
 	{
 	  if (pe[i] != 0)
 	    {
-	      enan (y);
+	      enan (y, (*p & 0x8000) != 0);
 	      return;
 	    }
 	}
@@ -3040,7 +3040,7 @@ e113toe (pe, y)
 	{
 	  if (pe[i] != 0)
 	    {
-	      enan (y);
+	      enan (y, yy[0] != 0);
 	      return;
 	    }
 	}
@@ -3049,7 +3049,7 @@ e113toe (pe, y)
 	{
 	  if (pe[i] != 0)
 	    {
-	      enan (y);
+	      enan (y, yy[0] != 0);
 	      return;
 	    }
 	}
@@ -3129,13 +3129,13 @@ e24toe (pe, y)
 #ifdef MIEEE
       if (((pe[0] & 0x7f) != 0) || (pe[1] != 0))
 	{
-	  enan (y);
+	  enan (y, yy[0] != 0);
 	  return;
 	}
 #else
       if (((pe[1] & 0x7f) != 0) || (pe[0] != 0))
 	{
-	  enan (y);
+	  enan (y, yy[0] != 0);
 	  return;
 	}
 #endif
@@ -3192,7 +3192,7 @@ etoe113 (x, e)
 #ifdef NANS
   if (eisnan (x))
     {
-      make_nan (e, TFmode);
+      make_nan (e, eisneg (x), TFmode);
       return;
     }
 #endif
@@ -3222,7 +3222,7 @@ toe113 (a, b)
 #ifdef NANS
   if (eiisnan (a))
     {
-      make_nan (b, TFmode);
+      make_nan (b, eiisneg (a), TFmode);
       return;
     }
 #endif
@@ -3274,7 +3274,7 @@ etoe64 (x, e)
 #ifdef NANS
   if (eisnan (x))
     {
-      make_nan (e, XFmode);
+      make_nan (e, eisneg (x), XFmode);
       return;
     }
 #endif
@@ -3305,7 +3305,7 @@ toe64 (a, b)
 #ifdef NANS
   if (eiisnan (a))
     {
-      make_nan (b, XFmode);
+      make_nan (b, eiisneg (a), XFmode);
       return;
     }
 #endif
@@ -3400,7 +3400,7 @@ etoe53 (x, e)
 #ifdef NANS
   if (eisnan (x))
     {
-      make_nan (e, DFmode);
+      make_nan (e, eisneg (x), DFmode);
       return;
     }
 #endif
@@ -3431,7 +3431,7 @@ toe53 (x, y)
 #ifdef NANS
   if (eiisnan (x))
     {
-      make_nan (y, DFmode);
+      make_nan (y, eiisneg (x), DFmode);
       return;
     }
 #endif
@@ -3539,7 +3539,7 @@ etoe24 (x, e)
 #ifdef NANS
   if (eisnan (x))
     {
-      make_nan (e, SFmode);
+      make_nan (e, eisneg (x), SFmode);
       return;
     }
 #endif
@@ -3569,7 +3569,7 @@ toe24 (x, y)
 #ifdef NANS
   if (eiisnan (x))
     {
-      make_nan (y, SFmode);
+      make_nan (y, eiisneg (x), SFmode);
       return;
     }
 #endif
@@ -5117,7 +5117,7 @@ eremain (a, b, c)
       || eisnan (a)
       || eisnan (b))
     {
-      enan (c);
+      enan (c, 0);
       return;
     }
 #endif
@@ -5582,14 +5582,14 @@ unsigned EMUSHORT SFnan[2] = {0, 0xffc0};
 
 
 void
-make_nan (nan, mode)
+make_nan (nan, sign, mode)
 unsigned EMUSHORT *nan;
+int sign;
 enum machine_mode mode;
 {
-  int i, n;
+  int n;
   unsigned EMUSHORT *p;
 
-  n = 0;
   switch (mode)
     {
 /* Possibly the `reserved operand' patterns on a VAX can be
@@ -5615,8 +5615,14 @@ enum machine_mode mode;
     default:
       abort ();
     }
-  for (i=0; i < n; i++)
+#ifdef MIEEE
+  *nan++ = (sign << 15) | *p++;
+#endif
+  while (--n != 0)
     *nan++ = *p++;
+#ifndef MIEEE
+  *nan = (sign << 15) | *p;
+#endif
 }
 
 /* Convert an SFmode target `float' value to a REAL_VALUE_TYPE.
@@ -5961,16 +5967,13 @@ esqrt (x, y)
   i = ecmp (x, ezero);
   if (i <= 0)
     {
-#ifdef NANS
-      if (i == -2)
+      if (i == -1)
 	{
-	  enan (y);
-	  return;
+	  mtherr ("esqrt", DOMAIN);
+	  eclear (y);
 	}
-#endif
-      eclear (y);
-      if (i < 0)
-	mtherr ("esqrt", DOMAIN);
+      else
+	emov (x, y);
       return;
     }
 
