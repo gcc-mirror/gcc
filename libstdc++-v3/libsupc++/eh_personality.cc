@@ -399,8 +399,11 @@ PERSONALITY_FUNCTION (int version,
 }
 
 extern "C" void
-__cxa_call_unexpected (_Unwind_Exception *exc_obj)
+__cxa_call_unexpected (void *exc_obj_in)
 {
+  _Unwind_Exception *exc_obj
+    = reinterpret_cast <_Unwind_Exception *>(exc_obj_in);
+
   __cxa_begin_catch (exc_obj);
 
   // This function is a handler for our exception argument.  If we exit

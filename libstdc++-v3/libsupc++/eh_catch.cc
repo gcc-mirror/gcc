@@ -35,8 +35,11 @@ using namespace __cxxabiv1;
 
 
 extern "C" void *
-__cxa_begin_catch (_Unwind_Exception *exceptionObject)
+__cxa_begin_catch (void *exc_obj_in)
 {
+  _Unwind_Exception *exceptionObject
+    = reinterpret_cast <_Unwind_Exception *>(exc_obj_in);
+
   // ??? Foreign exceptions can't be stacked here, and there doesn't
   // appear to be any place to store for __cxa_end_catch to destroy.
 
