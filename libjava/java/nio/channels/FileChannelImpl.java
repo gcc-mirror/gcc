@@ -146,6 +146,7 @@ public class FileChannelImpl extends FileChannel
     long oldPosition;
 
     oldPosition = implPosition ();
+    position (position);
     result = implRead (dst);
     implPosition (oldPosition);
     
@@ -208,6 +209,7 @@ public class FileChannelImpl extends FileChannel
     long oldPosition;
 
     oldPosition = implPosition ();
+    position (position);
     result = implWrite (src);
     implPosition (oldPosition);
     
@@ -298,6 +300,7 @@ public class FileChannelImpl extends FileChannel
     // XXX: count needs to be casted from long to int. Dataloss ?
     ByteBuffer buffer = ByteBuffer.allocate ((int) count);
     read (buffer, position);
+    buffer.flip();
     return target.write (buffer);
   }
 
@@ -317,6 +320,7 @@ public class FileChannelImpl extends FileChannel
     // XXX: count needs to be casted from long to int. Dataloss ?
     ByteBuffer buffer = ByteBuffer.allocate ((int) count);
     src.read (buffer);
+    buffer.flip();
     return write (buffer, position);
   }
 

@@ -1,5 +1,54 @@
 2003-08-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/ByteBufferImpl.java
+	(getChar): Check remaining bytes, fixed comment about endianess.
+	(putChar): Likewise.
+	(getShort): Likewise.
+	(putShort): Likewise.
+	(getInt): Check remaining bytes, fixed conversion, fixed comment about
+	endianess.
+	(putInt): Likewise.
+	(getLong): Likewise.
+	(putLong): Likewise.
+	(getFloat): Likewise.
+	(putFloat): Likewise.
+	(getDouble): Likewise.
+	(putDouble): Likewise.
+	* java/nio/DirectByteBufferImpl.java
+	(getChar): Wrapped code, fixed comment about endianess.
+	(putchar): Likewise.
+	(getShort): Likewise.
+	(putShort): Likewise.
+	(getInt): Fixed conversion, fixed comment about endianess.
+	(putInt): Likewise.
+	(getLong): Likewise.
+	(putLong): Likewise.
+	(getFloat): Likewise.
+	(putFloat): Likewise.
+	(getDouble): Likewise.
+	(putDouble): Likewise.
+	* java/nio/MappedByteBufferImpl.java
+	(compact): Implemented.
+	(getChar): Implemented.
+	(putChar): Implemented.
+	(getDouble): Implemented.
+	(putdouble): Implemented.
+	(getFloat): Implemented.
+	(putFloat): Implemented.
+	(getInt): Implemented.
+	(putInt): Implemented.
+	(getLong): Implemented.
+	(putLong): Implemented.
+	(getShort): Implemented.
+	(putShort): Implemented.
+	* java/nio/channels/FileChannelImpl.java
+	(read): Set position where to access file.
+	(write): Likewise.
+	(transferTo): Flip buffer after read and before write.
+	(transferFrom): Likewise.
+
+2003-08-02  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/lang/ArrayHelper.java
 	(equalsArray): Reformated, added method documentation.
 
