@@ -56,10 +56,6 @@ o Correct pastability test for CPP_NAME and CPP_NUMBER.
 #include "cpphash.h"
 #include "symcat.h"
 
-#ifdef HAVE_MMAP_FILE
-# include <sys/mman.h>
-#endif
-
 #define auto_expand_name_space(list) \
     _cpp_expand_name_space ((list), 1 + (list)->name_cap / 2)
 static void safe_fwrite		PARAMS ((cpp_reader *, const U_CHAR *,
@@ -225,78 +221,6 @@ _cpp_grow_token_buffer (pfile, n)
   pfile->token_buffer = (U_CHAR *)
     xrealloc(pfile->token_buffer, pfile->token_buffer_size);
   CPP_SET_WRITTEN (pfile, old_written);
-}
-
-/* Allocate a new cpp_buffer for PFILE, and push it on the input buffer stack.
-   If BUFFER != NULL, then use the LENGTH characters in BUFFER
-   as the new input buffer.
-   Return the new buffer, or NULL on failure.  */
-
-cpp_buffer *
-cpp_push_buffer (pfile, buffer, length)
-     cpp_reader *pfile;
-     const U_CHAR *buffer;
-     long length;
-{
-  cpp_buffer *buf = CPP_BUFFER (pfile);
-  cpp_buffer *new;
-  if (++pfile->buffer_stack_depth == CPP_STACK_MAX)
-    {
-      cpp_fatal (pfile, "macro or #include recursion too deep");
-      return NULL;
-    }
-
-  new = (cpp_buffer *) xcalloc (1, sizeof (cpp_buffer));
-
-  new->buf = new->cur = buffer;
-  new->rlimit = buffer + length;
-  new->prev = buf;
-  new->line_base = NULL;
-
-  CPP_BUFFER (pfile) = new;
-  return new;
-}
-
-cpp_buffer *
-cpp_pop_buffer (pfile)
-     cpp_reader *pfile;
-{
-  cpp_buffer *buf = CPP_BUFFER (pfile);
-
-  if (buf->inc)
-    {
-      _cpp_unwind_if_stack (pfile, buf);
-      if (buf->buf)
-	{
-#ifdef HAVE_MMAP_FILE
-	  if (buf->mapped)
-	    munmap ((caddr_t) buf->buf, buf->rlimit - buf->buf);
-	  else
-#endif
-	    free ((PTR) buf->buf);
-	}
-      if (pfile->system_include_depth)
-	pfile->system_include_depth--;
-      if (pfile->include_depth)
-	pfile->include_depth--;
-      if (pfile->potential_control_macro)
-	{
-	  if (buf->inc->cmacro != NEVER_REREAD)
-	    buf->inc->cmacro = pfile->potential_control_macro;
-	  pfile->potential_control_macro = 0;
-	}
-      pfile->input_stack_listing_current = 0;
-      /* If the file will not be included again, then close it.  */
-      if (DO_NOT_REREAD (buf->inc))
-	{
-	  close (buf->inc->fd);
-	  buf->inc->fd = -1;
-	}
-    }
-  CPP_BUFFER (pfile) = CPP_PREV_BUFFER (buf);
-  free (buf);
-  pfile->buffer_stack_depth--;
-  return CPP_BUFFER (pfile);
 }
 
 /* Deal with the annoying semantics of fwrite.  */

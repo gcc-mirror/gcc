@@ -188,7 +188,8 @@ extern unsigned int _cpp_calc_hash	PARAMS ((const U_CHAR *, size_t));
 extern void _cpp_free_definition	PARAMS ((cpp_hashnode *));
 extern int _cpp_create_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
 extern void _cpp_dump_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
-extern void _cpp_init_macro_hash	PARAMS ((cpp_reader *));
+extern void _cpp_init_macros		PARAMS ((cpp_reader *));
+extern void _cpp_cleanup_macros		PARAMS ((cpp_reader *));
 extern void _cpp_dump_macro_hash	PARAMS ((cpp_reader *));
 
 /* In cppfiles.c */
@@ -199,7 +200,9 @@ extern void _cpp_execute_include	PARAMS ((cpp_reader *, const U_CHAR *,
 						 int));
 extern int _cpp_compare_file_date       PARAMS ((cpp_reader *, const U_CHAR *,
                                                  unsigned int, int));
-extern void _cpp_init_include_table	PARAMS ((cpp_reader *));
+extern void _cpp_report_missing_guards	PARAMS ((cpp_reader *));
+extern void _cpp_init_includes		PARAMS ((cpp_reader *));
+extern void _cpp_cleanup_includes	PARAMS ((cpp_reader *));
 extern const char *_cpp_fake_include	PARAMS ((cpp_reader *, const char *));
 
 /* In cppexp.c */
@@ -241,15 +244,17 @@ extern const struct directive *_cpp_check_directive
 			PARAMS ((cpp_reader *, const cpp_token *, int));
 extern const struct directive *_cpp_check_linemarker
 			PARAMS ((cpp_reader *, const cpp_token *, int));
-extern void _cpp_unwind_if_stack	PARAMS ((cpp_reader *, cpp_buffer *));
-extern cpp_hashnode * _cpp_parse_assertion PARAMS ((cpp_reader *,
+extern cpp_hashnode *_cpp_parse_assertion PARAMS ((cpp_reader *,
 						    struct answer **));
-extern struct answer** find_answer	PARAMS ((cpp_hashnode *,
+extern struct answer **_cpp_find_answer	PARAMS ((cpp_hashnode *,
 						 const cpp_toklist *));
+extern void _cpp_init_stacks	PARAMS ((cpp_reader *));
+extern void _cpp_cleanup_stacks	PARAMS ((cpp_reader *));
 
 /* Utility routines and macros.  */
 #define xnew(T)		(T *) xmalloc (sizeof(T))
 #define xnewvec(T, N)	(T *) xmalloc (sizeof(T) * (N))
+#define xobnew(O, T)	(T *) obstack_alloc (O, sizeof(T))
 
 /* These are inline functions instead of macros so we can get type
    checking.  */

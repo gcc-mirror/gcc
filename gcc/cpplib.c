@@ -25,7 +25,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 #include "intl.h"
+#include "obstack.h"
 #include "symcat.h"
+
+#ifdef HAVE_MMAP_FILE
+# include <sys/mman.h>
+#endif
 
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
@@ -43,21 +48,24 @@ struct if_stack
 /* Forward declarations.  */
 
 static void validate_else	PARAMS ((cpp_reader *, const U_CHAR *));
-static int parse_include	PARAMS ((cpp_reader *, const U_CHAR *, int,
+static int  parse_include	PARAMS ((cpp_reader *, const U_CHAR *, int,
 					 const U_CHAR **, unsigned int *,
 					 int *));
 static void push_conditional	PARAMS ((cpp_reader *, int, int,
 					 const cpp_hashnode *));
 static void pass_thru_directive	PARAMS ((cpp_reader *));
-static int read_line_number	PARAMS ((cpp_reader *, int *));
-static int strtoul_for_line	PARAMS ((const U_CHAR *, unsigned int,
+static int  read_line_number	PARAMS ((cpp_reader *, int *));
+static int  strtoul_for_line	PARAMS ((const U_CHAR *, unsigned int,
 					 unsigned long *));
 
-static const cpp_hashnode *parse_ifdef	PARAMS ((cpp_reader *, const U_CHAR *));
-static const cpp_hashnode *detect_if_not_defined
-					PARAMS ((cpp_reader *));
-static cpp_hashnode *get_define_node	PARAMS ((cpp_reader *));
-static void dump_macro_name PARAMS ((cpp_reader *, cpp_hashnode *));
+static const cpp_hashnode *
+	    parse_ifdef		PARAMS ((cpp_reader *, const U_CHAR *));
+static const cpp_hashnode *
+	    detect_if_not_defined PARAMS ((cpp_reader *));
+static cpp_hashnode *
+	    get_define_node	PARAMS ((cpp_reader *));
+static void dump_macro_name 	PARAMS ((cpp_reader *, cpp_hashnode *));
+static void unwind_if_stack	PARAMS ((cpp_reader *, cpp_buffer *));
 
 /* Utility.  */
 #define str_match(sym, len, str) \
@@ -644,7 +652,7 @@ do_ident (pfile)
   /* Next token should be a string constant.  */
   if (cpp_get_token (pfile)->type == CPP_STRING)
     /* And then a newline.  */
-    if (cpp_get_token (pfile)->type == CPP_VSPACE)
+    if (cpp_get_token (pfile)->type == CPP_EOF)
       {
 	/* Good - ship it.  */
 	pass_thru_directive (pfile);
@@ -1150,7 +1158,7 @@ do_endif (pfile)
       CPP_BUFFER (pfile)->if_stack = ifs->next;
       pfile->skipping = ifs->was_skipping;
       pfile->potential_control_macro = ifs->cmacro;
-      free (ifs);
+      obstack_free (pfile->buffer_ob, ifs);
     }
   return 0;
 }
@@ -1169,7 +1177,7 @@ push_conditional (pfile, skip, type, cmacro)
 {
   struct if_stack *ifs;
 
-  ifs = (struct if_stack *) xmalloc (sizeof (struct if_stack));
+  ifs = xobnew (pfile->buffer_ob, struct if_stack);
   ifs->lineno = _cpp_get_line (pfile, &ifs->colno);
   ifs->next = CPP_BUFFER (pfile)->if_stack;
   ifs->cmacro = cmacro;
@@ -1197,8 +1205,8 @@ validate_else (pfile, directive)
 /* Called when we reach the end of a file.  Walk back up the
    conditional stack till we reach its level at entry to this file,
    issuing error messages.  Then force skipping off.  */
-void
-_cpp_unwind_if_stack (pfile, pbuf)
+static void
+unwind_if_stack (pfile, pbuf)
      cpp_reader *pfile;
      cpp_buffer *pbuf;
 {
@@ -1209,7 +1217,7 @@ _cpp_unwind_if_stack (pfile, pbuf)
       cpp_error_with_line (pfile, ifs->lineno, ifs->colno, "unterminated #%s",
 			   dtable[ifs->type].name);
       nifs = ifs->next;
-      free (ifs);
+      /* No need to free - they'll all go away with the buffer.  */
     }
   pfile->skipping = 0;
 }
@@ -1330,7 +1338,7 @@ _cpp_parse_assertion (pfile, answerp)
 /* Returns a pointer to the pointer to the answer in the answer chain,
    or a pointer to NULL if the answer is not in the chain.  */
 struct answer **
-find_answer (node, candidate)
+_cpp_find_answer (node, candidate)
      cpp_hashnode *node;
      const cpp_toklist *candidate;
 {
@@ -1362,7 +1370,7 @@ do_assert (pfile)
 
       if (node->type == T_ASSERTION)
 	{
-	  if (*find_answer (node, &new_answer->list))
+	  if (*_cpp_find_answer (node, &new_answer->list))
 	    goto err;
 	  new_answer->next = node->value.answers;
 	}
@@ -1393,7 +1401,7 @@ do_unassert (pfile)
 	{
 	  if (answer)
 	    {
-	      struct answer **p = find_answer (node, &answer->list);
+	      struct answer **p = _cpp_find_answer (node, &answer->list);
 
 	      temp = *p;
 	      if (temp)
@@ -1502,4 +1510,94 @@ cpp_defined (pfile, id, len)
       return 0;
     }
   return (hp->type != T_VOID);
+}
+
+/* Allocate a new cpp_buffer for PFILE, and push it on the input buffer stack.
+   If BUFFER != NULL, then use the LENGTH characters in BUFFER
+   as the new input buffer.
+   Return the new buffer, or NULL on failure.  */
+
+cpp_buffer *
+cpp_push_buffer (pfile, buffer, length)
+     cpp_reader *pfile;
+     const U_CHAR *buffer;
+     long length;
+{
+  cpp_buffer *buf = CPP_BUFFER (pfile);
+  cpp_buffer *new;
+  if (++pfile->buffer_stack_depth == CPP_STACK_MAX)
+    {
+      cpp_fatal (pfile, "#include recursion too deep");
+      return NULL;
+    }
+
+  new = xobnew (pfile->buffer_ob, cpp_buffer);
+  memset (new, 0, sizeof (cpp_buffer));
+
+  new->buf = new->cur = buffer;
+  new->rlimit = buffer + length;
+  new->prev = buf;
+
+  CPP_BUFFER (pfile) = new;
+  return new;
+}
+
+cpp_buffer *
+cpp_pop_buffer (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *buf = CPP_BUFFER (pfile);
+
+  unwind_if_stack (pfile, buf);
+#ifdef HAVE_MMAP_FILE
+  if (buf->mapped)
+    munmap ((caddr_t) buf->buf, buf->rlimit - buf->buf);
+  else
+#endif
+    if (buf->inc)
+      free ((PTR) buf->buf);
+
+  if (buf->inc)
+    {
+      if (pfile->system_include_depth)
+	pfile->system_include_depth--;
+      if (pfile->include_depth)
+	pfile->include_depth--;
+      if (pfile->potential_control_macro)
+	{
+	  if (buf->inc->cmacro != NEVER_REREAD)
+	    buf->inc->cmacro = pfile->potential_control_macro;
+	  pfile->potential_control_macro = 0;
+	}
+      pfile->input_stack_listing_current = 0;
+      /* If the file will not be included again, then close it.  */
+      if (DO_NOT_REREAD (buf->inc))
+	{
+	  close (buf->inc->fd);
+	  buf->inc->fd = -1;
+	}
+    }
+
+  CPP_BUFFER (pfile) = CPP_PREV_BUFFER (buf);
+  obstack_free (pfile->buffer_ob, buf);
+  pfile->buffer_stack_depth--;
+  return CPP_BUFFER (pfile);
+}
+
+#define obstack_chunk_alloc xmalloc
+#define obstack_chunk_free free
+void
+_cpp_init_stacks (pfile)
+     cpp_reader *pfile;
+{
+  pfile->buffer_ob = xnew (struct obstack);
+  obstack_init (pfile->buffer_ob);
+}
+
+void
+_cpp_cleanup_stacks (pfile)
+     cpp_reader *pfile;
+{
+  obstack_free (pfile->buffer_ob, 0);
+  free (pfile->buffer_ob);
 }

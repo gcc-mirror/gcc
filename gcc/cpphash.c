@@ -26,10 +26,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
-#include "hashtab.h"
 #include "cpphash.h"
+#include "hashtab.h"
+#include "obstack.h"
 
-#undef abort
+#define obstack_chunk_alloc xmalloc
+#define obstack_chunk_free free
 
 /* This is the second argument to eq_HASHNODE.  */
 struct hashdummy
@@ -43,9 +45,6 @@ struct hashdummy
 
 static unsigned int hash_HASHNODE PARAMS ((const void *));
 static int eq_HASHNODE		  PARAMS ((const void *, const void *));
-static void del_HASHNODE	  PARAMS ((void *));
-static cpp_hashnode *make_HASHNODE	  PARAMS ((const U_CHAR *, size_t,
-					   enum node_type, unsigned int));
 static int dump_hash_helper	  PARAMS ((void **, void *));
 
 static void dump_funlike_macro	PARAMS ((cpp_reader *, cpp_hashnode *));
@@ -105,41 +104,6 @@ eq_HASHNODE (x, y)
 	  && !ustrncmp (a->name, b->name, a->length));
 }
 
-/* Destroy a cpp_hashnode.  */
-static void
-del_HASHNODE (x)
-     void *x;
-{
-  cpp_hashnode *h = (cpp_hashnode *)x;
-
-  _cpp_free_definition (h);
-  free (h);
-}
-
-/* Allocate and initialize a cpp_hashnode structure.
-   Caller must fill in the value field.  */
-
-static cpp_hashnode *
-make_HASHNODE (name, len, type, hash)
-     const U_CHAR *name;
-     size_t len;
-     enum node_type type;
-     unsigned int hash;
-{
-  cpp_hashnode *hp = (cpp_hashnode *) xmalloc (sizeof (cpp_hashnode) + len);
-  U_CHAR *p = (U_CHAR *)hp + offsetof (cpp_hashnode, name);
-
-  hp->type = type;
-  hp->length = len;
-  hp->hash = hash;
-  hp->disabled = 0;
-
-  memcpy (p, name, len);
-  p[len] = 0;
-
-  return hp;
-}
-
 /* Find the hash node for name "name", of length LEN.  */
 
 cpp_hashnode *
@@ -151,6 +115,7 @@ cpp_lookup (pfile, name, len)
   struct hashdummy dummy;
   cpp_hashnode *new, **slot;
   unsigned int hash;
+  U_CHAR *p;
 
   dummy.name = name;
   dummy.length = len;
@@ -161,20 +126,42 @@ cpp_lookup (pfile, name, len)
   if (*slot)
     return *slot;
 
-  new = make_HASHNODE (name, len, T_VOID, hash);
+  /* Create a new hash node.  */
+  p = obstack_alloc (pfile->hash_ob, sizeof (cpp_hashnode) + len);
+  new = (cpp_hashnode *)p;
+  p += offsetof (cpp_hashnode, name);
+  
+  new->type = T_VOID;
+  new->length = len;
+  new->hash = hash;
+  new->fe_value = 0;
   new->value.expansion = NULL;
+
+  memcpy (p, name, len);
+  p[len] = 0;
 
   *slot = new;
   return new;
 }
 
-/* Init the hash table.  In here so it can see the hash and eq functions.  */
+/* Set up and tear down internal structures for macro expansion.  */
 void
-_cpp_init_macro_hash (pfile)
+_cpp_init_macros (pfile)
      cpp_reader *pfile;
 {
   pfile->hashtab = htab_create (HASHSIZE, hash_HASHNODE,
-				eq_HASHNODE, del_HASHNODE);
+				eq_HASHNODE, (htab_del) _cpp_free_definition);
+  pfile->hash_ob = xnew (struct obstack);
+  obstack_init (pfile->hash_ob);
+}
+
+void
+_cpp_cleanup_macros (pfile)
+     cpp_reader *pfile;
+{
+  htab_delete (pfile->hashtab);
+  obstack_free (pfile->hash_ob, 0);
+  free (pfile->hash_ob);
 }
 
 /* Free the definition of macro H.  */
