@@ -3166,8 +3166,9 @@ build_unary_op (code, xarg, noconvert)
 	  addr = build1 (code, argtype, arg);
 
 	/* Address of a static or external variable or
-	   function counts as a constant */
-	TREE_CONSTANT (addr) = staticp (arg);
+	   function counts as a constant.  */
+	if (staticp (arg))
+	  TREE_CONSTANT (addr) = 1;
 	return addr;
       }
     }
