@@ -2280,7 +2280,7 @@ simplify_subreg (outermode, op, innermode, byte)
   if (GET_CODE (op) == CONST_VECTOR)
     {
       int elt_size = GET_MODE_SIZE (GET_MODE_INNER (innermode));
-      int offset = byte / elt_size;
+      const unsigned int offset = byte / elt_size;
       rtx elt;
 
       if (GET_MODE_INNER (innermode) == outermode)

@@ -1,3 +1,10 @@
+2002-08-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* df.c (df_insn_table_realloc): Change parameter to unsigned.
+	* optabs.c (expand_binop): Make variable unsigned.
+	* simplify-rtx.c (simplify_subreg): Likewise.
+	* unroll.c (unroll_loop): Cast to avoid signed/unsigned warnings.
+
 2002-08-01  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* c-common.c (cb_register_builtins): Always define __GXX_ABI_VERSION.
