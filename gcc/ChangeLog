@@ -1,3 +1,8 @@
+Mon Jan 18 11:35:49 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* Makefile.in (TCL_LIBRARY): Use 'cd' to find the library
+	directory logically rather than physically. 
+
 Mon Jan 18 09:05:37 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* loop.c (insert_bct): Hide the definition of variables
