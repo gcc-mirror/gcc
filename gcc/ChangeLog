@@ -16,8 +16,6 @@
 	* config/rs6000/rs6000.h: Split XCOFF specific stuff into
 	xcoff.h. 
 	Move AIX specific stuff into aix.h.
-	(ASM_LONG): Use DOUBLE_INT_ASM_OP if we are on a 64 bit target.
-	(ASM_OUTPUT_DOUBLE_INT): Ditto.
 	(TARGET_AIX): Renamed to TARGET_XCOFF, since the AIX ABI is used
 	with more than just XCOFF now.
 	(SET_ASM_OP): Remove, now defined where needed.
@@ -26,28 +24,40 @@
 	(CONST_OK_FOR_LETTER_P): Change N to require that value is
 	positive, too.
 	(ASM_OPEN_PAREN, ASM_CLOSE_PAREN): New macro definition.
-	(PREDICATE_CODES): Added exact_log2_cint_operand,
-	reg_or_add_cint64_operand, reg_or_sub_cint64_operand.
 
-	* config/rs6000/rs6000.c: #ifdef XCOFF debugging info stuff on
-	XCOFF_DEBUGGING_INFO.
-	Use DOUBLE_INT_ASM_OP where approriate.
-	(rs6000_emit_set_long_const): New function.
-	(rs6000_emit_set_const): New function.
-	(reg_or_sub_cint64_operand): New function.
-	(reg_or_add_cint64_operand): New function.
-	(exact_log2_cint_operand): New function.
-
-	* config/rs6000/rs6000.md: Fix emitting of constants.
-	Fix patterns that were AIX ABI specific, but depended on
-	!TARGET_ELF (instead of DEFAULT_ABI == ABI_AIX).	
-	
 	* config/rs6000/xcoff.h: New file.
 
 	* config/rs6000/linux64.h: New file.
 
 	* config/rs6000/darwin.h: Copy needed AIX alignment definitions.
-	
+
+2001-07-31  Alan Modra  <amodra@bigpond.net.au>
+
+	* rs6000.c (print_operand_address): Handle ELF syntax.
+	(output_toc): Simplify.  Use DOUBLE_INT_ASM_OP.
+	* rs6000.md (load_toc_aix_di): Handle ELF syntax.
+	* rs6000.h (ASM_OUTPUT_DOUBLE_INT, ASM_LONG): Use DOUBLE_INT_ASM_OP.
+
+2001-07-31  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (rs6000_override_options): Only disable
+	flag_function_sections for XCOFF.
+	(exact_log2_cint_operand): New predicate.
+	(reg_or_{add,sub}_cint64_operand): New predicates.
+	(add_operand): Compare CONST_INT with fewer function calls.
+	(rs6000_emit_set_const, rs6000_emit_set_long_const): New functions.
+	(print_operand, case 'p'): Ensure positive operand.
+	(rs6000_emit_load_toc_table): No load_toc_v4_pic_di.
+	* rs6000.h (CONST_OK_FOR_LETTER_P, case 'N'): Ensure positive value.
+	(PREDICATE_CODES): Add new predicates.
+	* rs6000.md (addsi3): Split 32-bit constants more correctly.
+	(divsi3, modsi3): Ensure positive power-of-2.
+	(adddi3): Use new predicate.  Split 32-bit constants more
+	correctly.  Re-arrange splitter to handle any constant.
+	(subdi3): Use new predicate.
+	(divdi3, moddi3): Ensure positive power-of-2.
+	(movdi): Use rs6000_emit_set_const.
+	(load_toc_v4_pic_di): Delete.
 
 2001-07-31  Graham Stott <grahams@redhat.com>
 
