@@ -172,18 +172,49 @@ order_regs_for_local_alloc ()
     }
 
   /* If users did not specify a register allocation order, favor eax
-     normally except if cse is following jumps, then favor edx so
-     that function returns are cse'ed */
+     normally except if DImode variables are used, in which case
+     favor edx before eax, which seems to cause less spill register
+     not found messages.  */
   else
     {
+      rtx insn;
+
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	reg_alloc_order[i] = i;
 
-      if (optimize && flag_cse_follow_jumps && !leaf_function_p ())
+      if (optimize)
 	{
-	  reg_alloc_order[0] = 1;	/* edx */
-	  reg_alloc_order[1] = 2;	/* ecx */
-	  reg_alloc_order[2] = 0;	/* eax */
+	  int use_dca = FALSE;
+
+	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	    {
+	      if (GET_CODE (insn) == INSN)
+		{
+		  rtx set = NULL_RTX;
+		  rtx pattern = PATTERN (insn);
+
+		  if (GET_CODE (pattern) == SET)
+		    set = pattern;
+
+		  else if ((GET_CODE (pattern) == PARALLEL
+			    || GET_CODE (pattern) == SEQUENCE)
+			   && GET_CODE (XVECEXP (pattern, 0, 0)) == SET)
+		    set = XVECEXP (pattern, 0, 0);
+
+		  if (set && GET_MODE (SET_SRC (set)) == DImode)
+		    {
+		      use_dca = TRUE;
+		      break;
+		    }
+		}
+	    }
+
+	  if (use_dca)
+	    {
+	      reg_alloc_order[0] = 1;	/* edx */
+	      reg_alloc_order[1] = 2;	/* ecx */
+	      reg_alloc_order[2] = 0;	/* eax */
+	    }
 	}
     }
 }
