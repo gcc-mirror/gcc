@@ -9024,6 +9024,20 @@ move2add_note_store (dst, set, data)
       dst = SUBREG_REG (dst);
     }
 
+  /* Some targets do argument pushes without adding REG_INC notes.  */
+
+  if (GET_CODE (dst) == MEM)
+    {
+      dst = XEXP (dst, 0);
+      if (GET_CODE (dst) == PRE_INC || GET_CODE (dst) == POST_DEC
+	  || GET_CODE (dst) == PRE_DEC || GET_CODE (dst) == POST_DEC)
+	{
+	  regno = REGNO (XEXP (dst, 0));
+	  reg_set_luid[regno] = move2add_luid;
+	  reg_offset[regno] = dst;
+	}
+      return;
+    } 
   if (GET_CODE (dst) != REG)
     return;
 

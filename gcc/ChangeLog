@@ -1,3 +1,8 @@
+2000-10-17  Joern Rennecke <amylaar@redhat.co.uk>
+
+	* reload1.c (move2add_note_store): Check for simple
+	auto-inc in destination.
+
 2000-10-17  Michael Chastain  <chastain@redhat.com>
 
 	* config/i386/i386-aout.h: define INT_ASM_OP.
