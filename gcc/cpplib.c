@@ -1577,6 +1577,81 @@ do_sccs (pfile, keyword)
 }
 #endif
 
+
+/* We've found an `#if' directive.  If the only thing before it in
+   this file is white space, and if it is of the form
+   `#if ! defined SYMBOL', then SYMBOL is a possible controlling macro
+   for inclusion of this file.  (See redundant_include_p in cppfiles.c
+   for an explanation of controlling macros.)  If so, return a
+   malloc'd copy of SYMBOL.  Otherwise, return NULL.  */
+
+static U_CHAR *
+detect_if_not_defined (pfile)
+     cpp_reader *pfile;
+{
+  U_CHAR *control_macro = 0;
+
+  if (pfile->only_seen_white == 2)
+    {
+      char *ident;
+      enum cpp_token token;
+      int base_offset;
+      int token_offset;
+      int need_rparen = 0;
+
+      /* Save state required for restore.  */
+      pfile->no_macro_expand++;
+      parse_set_mark (pfile);
+      base_offset = CPP_WRITTEN (pfile);
+
+      /* Look for `!', */
+      if (get_directive_token (pfile) != CPP_OTHER
+	  || CPP_WRITTEN (pfile) != (size_t) base_offset + 1
+	  || CPP_PWRITTEN (pfile)[-1] != '!')
+	goto restore;
+
+      /* ...then `defined', */
+      token_offset = CPP_WRITTEN (pfile);
+      token = get_directive_token (pfile);
+      if (token != CPP_NAME)
+	goto restore;
+      ident = pfile->token_buffer + token_offset;
+      CPP_NUL_TERMINATE (pfile);
+      if (strcmp (ident, "defined"))
+	goto restore;
+
+      /* ...then an optional '(' and the name, */
+      token_offset = CPP_WRITTEN (pfile);
+      token = get_directive_token (pfile);
+      if (token == CPP_LPAREN)
+	{
+	  token_offset = CPP_WRITTEN (pfile);
+	  token = get_directive_token (pfile);
+	  if (token != CPP_NAME)
+	    goto restore;
+	  need_rparen = 1;
+	}
+      else if (token != CPP_NAME)
+	goto restore;
+
+      ident = pfile->token_buffer + token_offset;
+      CPP_NUL_TERMINATE (pfile);
+
+      /* ...then the ')', if necessary, */
+      if ((!need_rparen || get_directive_token (pfile) == CPP_RPAREN)
+	  /* ...and make sure there's nothing else on the line.  */
+	  && get_directive_token (pfile) == CPP_VSPACE)
+	control_macro = xstrdup (ident);
+
+    restore:
+      CPP_SET_WRITTEN (pfile, base_offset);
+      pfile->no_macro_expand--;
+      parse_goto_mark (pfile);
+    }
+
+  return control_macro;
+}
+
 /*
  * handle #if command by
  *   1) inserting special `defined' keyword into the hash table
@@ -1595,8 +1670,9 @@ do_if (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
 {
+  U_CHAR *control_macro = detect_if_not_defined (pfile);
   HOST_WIDEST_INT value = eval_if_expression (pfile);
-  conditional_skip (pfile, value == 0, T_IF, NULL_PTR);
+  conditional_skip (pfile, value == 0, T_IF, control_macro);
   return 0;
 }
 

@@ -1,3 +1,8 @@
+1999-08-25 13:51 -0700  Jim Meyering  <meyering@ascend.com>
+
+	* cpplib.c (detect_if_not_defined): New function.
+	(do_if): Use it to detect potential once-only headers.
+
 Wed Aug 25 14:00:18 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* c-common.c (combine_strings): Always set TREE_CONSTANT.
@@ -659,7 +664,7 @@ Fri Aug 20 22:32:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	* gencheck.c: Do not define any *_CHECK1 macros.
 
 Thu Aug 19 14:42:38 1999  Mike Stump <mrs@wrs.com>
-	                  Mark Mitchell <mark@codesourcery.com>
+		          Mark Mitchell <mark@codesourcery.com>
 
 	* c-common.c (c_get_alias_set): Fix support for poitners and
 	references.
@@ -2147,8 +2152,8 @@ Thu Jul 29 09:21:42 1999  Nick Clifton  <nickc@cygnus.com>
 
 Wed Jul 28 12:50:48 1999  Geoff Keating  <geoffk@cygnus.com>
 
-        * config/mips/mips.c: system.h handles MIN and MAX, don't undefine
-        them here.
+	* config/mips/mips.c: system.h handles MIN and MAX, don't undefine
+	them here.
 
 Wed Jul 28 13:18:35 1999  Jeffrey A Law  (law@cygnus.com)
 
@@ -2156,8 +2161,8 @@ Wed Jul 28 13:18:35 1999  Jeffrey A Law  (law@cygnus.com)
 	proper mode in the condition string.
 	(icacheflush, dcacheflush): Remove modes from match_operands.
 
-        * pa.c (emit_move_sequence): Always convert scratch_reg to the
-        proper mode before using it.
+	* pa.c (emit_move_sequence): Always convert scratch_reg to the
+	proper mode before using it.
 
 	* pa.md (adddi3, subdi3): Turn into a define_expand/define_insn
 	pair.
@@ -2174,7 +2179,7 @@ Wed Jul 28 13:18:35 1999  Jeffrey A Law  (law@cygnus.com)
 	* pa.md (call, call_value): Use "word_mode" instead of "SImode" as
 	needed.
 
-        * README: Update.
+	* README: Update.
 
 Wed Jul 28 11:28:04 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
@@ -2772,7 +2777,7 @@ Mon Jul 19 09:36:27 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	dialects.
 
 1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
-        
+	
 	* gcc.texi: Update e-mail addresses and URLs to gcc.gnu.org.
 	Removed paragraph about compression of files and size limitation,
 	duplicated in the FAQ.  Use gcc-patches for posting patches.
@@ -2782,8 +2787,8 @@ Mon Jul 19 09:36:27 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 1999-07-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-        * Makefile.in (stmp-multilib-sub): Make the files extracted
-        from $(LIBGCC1) writable.
+	* Makefile.in (stmp-multilib-sub): Make the files extracted
+	from $(LIBGCC1) writable.
 
 Sat Jul 17 14:25:46 1999  Nick Clifton  <nickc@cygnus.com>
 
@@ -3126,7 +3131,7 @@ Fri Jul  2 01:36:36 1999  Robert Lipe  <robertlipe@usa.net>
 	ntohs.
 
 Fri Jul  2 00:46:47 1999  Richard Henderson  <rth@cygnus.com>
-                          Jeff Law <law@cygnus.com>
+	                  Jeff Law <law@cygnus.com>
 
 	* ginclude/varargs.h (va_dcl): Use word_mode for type of
 	__builtin_va_list.
@@ -3549,7 +3554,7 @@ Fri Jun 18 07:02 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 Thu Jun 17 15:06:10 PDT 1999 Don Lindsay  <dlindsay@cygnus.com>
 
-        * added support for -mpcrel (PC relative addressing for m68k) 
+	* added support for -mpcrel (PC relative addressing for m68k) 
 	based on code done by Michael Tiemann  <tiemann@axon.cygnus.com>.
 	* invoke.texi (m68000 options): Add documentation for -mpcrel flag.
 	* m68k.c (print_operand_address): Handle 32-bit PIC case.
@@ -3697,8 +3702,8 @@ Mon Jun 14 17:26:40 1999  David Edelsohn  <edelsohn@gnu.org>
 
 Mon Jun 14 12:57:38 1999  David Mosberger  <davidm@hpl.hp.com>
 
-        * combine.c (simplify_logical, case AND): Only call
-        simplify_and_const_int if the mode is no wider than HOST_WIDE_INT
+	* combine.c (simplify_logical, case AND): Only call
+	simplify_and_const_int if the mode is no wider than HOST_WIDE_INT
 	or the constant is positive.
 
 Mon Jun 14 11:43:41 1999  Nick Clifton  <nickc@cygnus.com>
@@ -3885,7 +3890,7 @@ Mon Jun  7 22:05:03 1999  Mark Kettenis  <kettenis@gnu.org>
 	* fixinc/fixincl.x, fixinc/fixincl.sh: Rebuilt.
 
 Mon Jun  7 20:34:20 1999  Robert Lipe <robertlipe@usa.net>
-                          Jeffrey A Law  (law@cygnus.com)
+	                  Jeffrey A Law  (law@cygnus.com)
 
 	* varasm.c (assemble_start_function): Remove the function
 	from the pending weak decls list when we define a function.
@@ -4017,8 +4022,8 @@ Thu Jun  3 01:19:03 1999  Jeffrey A Law  (law@cygnus.com)
 
 Wed Jun  2 15:44:15 1999  Mark Mitchell <mark@codesourcery.com>
 
-        Revert this change:
-        * fold-const.c (fold): STRIP_NOPS when deciding whether or not
+	Revert this change:
+	* fold-const.c (fold): STRIP_NOPS when deciding whether or not
 	something is a candidate for optimize_bit_field_compare.
 
 Wed Jun  2 21:53:05 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
@@ -4094,8 +4099,8 @@ Mon May 31 15:23:23 1999  Richard Henderson  <rth@cygnus.com>
 
 Mon May 31 11:48:07 1999  Mark Mitchell  <mark@codesourcery.com>
 
-        * cccp.c (handle_directive): Handle backslash-newlines in quoted
-        strings correctly.
+	* cccp.c (handle_directive): Handle backslash-newlines in quoted
+	strings correctly.
 
 Mon May 31 09:36:11 1999  Cort Dougan  <cort@cs.nmt.edu>
 
@@ -4118,7 +4123,7 @@ Mon May 31 00:46:17 1999  Jeffrey A Law  (law@cygnus.com)
 	* configure.in (native gas tests): Search for an assembler in the
 	same manner that the installed compiler will.
 	* configure: Rebuilt.
-        * tm.texi (MD_EXEC_PREFIX): Note need to update configure.in too.
+	* tm.texi (MD_EXEC_PREFIX): Note need to update configure.in too.
 
 	* alias.c (find_base_term): Improve handling of addresses
 	constructed from binary operations.
@@ -4158,12 +4163,12 @@ Fri May 28 03:47:03 1999  Eric Raskin (ehr@listworks.com)
 
 Fri May 28 03:41:02 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
-        * rs6000/sysv4.h (CC1_SPEC): Add support for -profile
-        (LIB_LINUX_SPEC): Likewise.
-        (LIB_LINUX_SPEC): Add support for -pthread
-        (CPP_OS_LINUX_SPEC): Likewise.
-        (CPP_SYSV_SPEC): Avoid redefinitions if both -fpic and -fPIC are
-        specified.
+	* rs6000/sysv4.h (CC1_SPEC): Add support for -profile
+	(LIB_LINUX_SPEC): Likewise.
+	(LIB_LINUX_SPEC): Add support for -pthread
+	(CPP_OS_LINUX_SPEC): Likewise.
+	(CPP_SYSV_SPEC): Avoid redefinitions if both -fpic and -fPIC are
+	specified.
 
 Thu May 27 13:04:52 1999  H.J. Lu  (hjl@gnu.org)
 
@@ -4210,7 +4215,7 @@ Wed May 26 14:18:05 1999  Richard Henderson  <rth@cygnus.com>
 
 Wed May 26 09:53:05 1999  Mark Mitchell  <mark@codesourcery.com>
 
-        * fold-const.c (fold): STRIP_NOPS when deciding whether or not
+	* fold-const.c (fold): STRIP_NOPS when deciding whether or not
 	something is a candidate for optimize_bit_field_compare.
 
 Wed May 26 09:40:02 1999  Mark Mitchell  <mark@codesourcery.com>
@@ -4279,7 +4284,7 @@ Mon May 24 01:02:12 1999  Mark Mitchell  <mark@codesourcery.com>
 
 Sun May 23 20:31:16 1999  Jeffrey A Law  (law@cygnus.com)
 
-        * loop.c (strength_reduce): Grow reg_single_usage as needed.
+	* loop.c (strength_reduce): Grow reg_single_usage as needed.
 
 Sun May 23 10:13:20 1999  David O'Brien <obrien@FreeBSD.org>
 
