@@ -949,9 +949,14 @@ struct tree_block
    its size.  */
 #define TYPE_NO_FORCE_BLK(NODE) (TYPE_CHECK (NODE)->type.no_force_blk_flag)
 
-/* In an INTEGER_TYPE, it means the type represents a size.  We use this
-   both for validity checking and to permit optimziations that are unsafe
-   for other types.  */
+/* In an INTEGER_TYPE, it means the type represents a size.  We use
+   this both for validity checking and to permit optimizations that
+   are unsafe for other types.  Note that the C `size_t' type should
+   *not* have this flag set.  The `size_t' type is simply a typedef
+   for an ordinary integer type that happens to be the type of an
+   expression returned by `sizeof'; `size_t' has no special
+   properties.  Expressions whose type have TYPE_IS_SIZETYPE set are
+   always actual sizes.  */
 #define TYPE_IS_SIZETYPE(NODE) \
   (INTEGER_TYPE_CHECK (NODE)->type.no_force_blk_flag)
 

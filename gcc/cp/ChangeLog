@@ -1,3 +1,9 @@
+2000-10-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* typeck.c (c_sizeof): Return an expression of `size_t' type, 
+	not one with TYPE_IS_SIZETYPE set.
+	(dubious_conversion_warnings): Remove special-case code.
+
 2000-10-21  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* decl2.c (arg_assoc_type): Handle VECTOR_TYPE.

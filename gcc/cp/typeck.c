@@ -1548,6 +1548,7 @@ c_sizeof (type)
      tree type;
 {
   enum tree_code code = TREE_CODE (type);
+  tree size;
 
   if (processing_template_decl)
     return build_min (SIZEOF_EXPR, sizetype, type);
@@ -1591,10 +1592,19 @@ c_sizeof (type)
     }
 
   /* Convert in case a char is more than one unit.  */
-  return size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
+  size = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
 		     size_int (TYPE_PRECISION (char_type_node)
 			       / BITS_PER_UNIT));
+  /* SIZE will have an integer type with TYPE_IS_SIZETYPE set.
+     TYPE_IS_SIZETYPE means that certain things (like overflow) will
+     never happen.  However, this node should really have type
+     `size_t', which is just a typedef for an ordinary integer type.  */
+  size = fold (build1 (NOP_EXPR, c_size_type_node, size));
+  my_friendly_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (size)), 
+		      20001021);
+  return size;
 }
+
 
 tree
 expr_sizeof (e)
@@ -6354,14 +6364,7 @@ dubious_conversion_warnings (type, expr, errtype, fndecl, parmnum)
 			errtype, expr, type);
 	}
 
-      /* Suppress warning for a sizetype since we never used to issue it.
-	 ??? This needs to be looked at more carefully someday.  */
-      if (TREE_CODE (expr) == INTEGER_CST
-	  && TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
-	  && TYPE_IS_SIZETYPE (TREE_TYPE (expr)))
-	TREE_OVERFLOW (expr) = TREE_CONSTANT_OVERFLOW (expr) = 0;
-      else
-	overflow_warning (expr);
+      overflow_warning (expr);
 
       if (TREE_CONSTANT (expr))
 	expr = fold (expr);
