@@ -1606,7 +1606,8 @@ is_aggr_typedef (name, or_else)
     }
 
   if (! IS_AGGR_TYPE (type)
-      && TREE_CODE (type) != TEMPLATE_TYPE_PARM)
+      && TREE_CODE (type) != TEMPLATE_TYPE_PARM
+      && TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM)
     {
       if (or_else)
 	cp_error ("`%T' is not an aggregate type", type);
@@ -1627,7 +1628,8 @@ is_aggr_type (type, or_else)
     return 0;
 
   if (! IS_AGGR_TYPE (type)
-      && TREE_CODE (type) != TEMPLATE_TYPE_PARM)
+      && TREE_CODE (type) != TEMPLATE_TYPE_PARM
+      && TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM)
     {
       if (or_else)
 	cp_error ("`%T' is not an aggregate type", type);
@@ -1658,7 +1660,8 @@ get_aggr_from_typedef (name, or_else)
     }
 
   if (! IS_AGGR_TYPE (type)
-      && TREE_CODE (type) != TEMPLATE_TYPE_PARM)
+      && TREE_CODE (type) != TEMPLATE_TYPE_PARM
+      && TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM)
     {
       if (or_else)
 	cp_error ("type `%T' is of non-aggregate type", type);

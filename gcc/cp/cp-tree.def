@@ -91,6 +91,12 @@ DEFTREECODE (TEMPLATE_DECL, "template_decl", 'd', 0)
    Use TYPE_FIELDS to find parmlist and index.  */
 DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", 't', 0)
 
+/* Index into a template parameter list.  This parameter must be a type.
+   If it is used in signature of a template, TEMPLATE_INFO is NULL_TREE.
+   Otherwise it is used to declare a type like TT<int>.
+   Use TYPE_FIELDS to find parmlist and index.  */
+DEFTREECODE (TEMPLATE_TEMPLATE_PARM, "template_template_parm", 't', 0)
+
 /* A type designated by 'typename T::t'. */
 DEFTREECODE (TYPENAME_TYPE, "typename_type", 't', 0)
 

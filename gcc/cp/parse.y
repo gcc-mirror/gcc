@@ -71,6 +71,12 @@ extern tree strip_attrs		PROTO((tree));
    error message if the user supplies an empty conditional expression.  */
 static char *cond_stmt_keyword;
 
+/* If nonzero, we try to treat TEMPLATE_DECL as argument in template
+   template parameter. */
+static int processing_template_arg;
+
+extern int arg_looking_for_template;
+
 static tree empty_parms PROTO((void));
 static tree finish_member_template_decl PROTO((tree, tree));
 
@@ -222,7 +228,7 @@ finish_member_template_decl (template_arguments, decl)
 %type <code> unop
 
 %type <ttype> identifier IDENTIFIER TYPENAME CONSTANT expr nonnull_exprlist
-%type <ttype> PFUNCNAME
+%type <ttype> PFUNCNAME maybe_identifier
 %type <ttype> paren_expr_or_null nontrivial_exprlist SELFNAME
 %type <ttype> expr_no_commas cast_expr unary_expr primary string STRING
 %type <ttype> reserved_declspecs boolean.literal
@@ -284,9 +290,10 @@ finish_member_template_decl (template_arguments, decl)
 %type <ttype> nonmomentary_expr maybe_parmlist
 %type <itype> initdcl0 notype_initdcl0 member_init_list
 %type <ttype> template_header template_parm_list template_parm
-%type <ttype> template_type_parm
+%type <ttype> template_type_parm template_template_parm
 %type <code>  template_close_bracket
-%type <ttype> template_type template_arg_list template_arg_list_opt template_arg
+%type <ttype> template_type template_arg_list template_arg_list_opt
+%type <ttype> template_arg template_arg1
 %type <ttype> condition xcond paren_cond_or_null
 %type <ttype> type_name nested_name_specifier nested_type ptr_to_mem
 %type <ttype> complete_type_name notype_identifier nonnested_type
@@ -473,11 +480,16 @@ template_parm_list:
 		{ $$ = process_template_parm ($1, $3); }
 	;
 
+maybe_identifier:
+	  identifier
+	  	{ $$ = $1; }
+	|	/* empty */
+		{ $$ = NULL_TREE; }
+
 template_type_parm:
-	  aggr
+	  aggr maybe_identifier
 		{ 
-		  $$ = build_tree_list ($1, NULL_TREE);
-		 ttpa:
+		  $$ = build_tree_list ($1, $2);
 		  if (TREE_PURPOSE ($$) == signature_type_node)
 		    sorry ("signature as template type parameter");
 		  else if (TREE_PURPOSE ($$) != class_type_node)
@@ -486,12 +498,26 @@ template_type_parm:
 		      TREE_PURPOSE ($$) = class_type_node;
 		    }
 		}
-	| aggr identifier
-		{ $$ = build_tree_list ($1, $2); goto ttpa; }
-	| TYPENAME_KEYWORD
-		{ $$ = build_tree_list (class_type_node, NULL_TREE); }
-	| TYPENAME_KEYWORD identifier
+	| TYPENAME_KEYWORD maybe_identifier
 		{ $$ = build_tree_list (class_type_node, $2); }
+	;
+
+template_template_parm:
+	  template_header aggr maybe_identifier
+		{
+		  tree decl = build_decl (TYPE_DECL, $3, NULL_TREE);
+		  tree tmpl = build_lang_decl (TEMPLATE_DECL, $3, NULL_TREE);
+		  DECL_TEMPLATE_PARMS (tmpl) = current_template_parms;
+		  DECL_TEMPLATE_RESULT (tmpl) = decl;
+		  SET_DECL_ARTIFICIAL (decl);
+		  end_template_decl ();
+
+		  if ($2 == signature_type_node)
+		    sorry ("signature as template template parameter");
+		  else if ($2 != class_type_node)
+		    pedwarn ("template template parameters must use the keyword `class'");
+		  $$ = build_tree_list (class_type_node, tmpl);
+		}
 	;
 
 template_parm:
@@ -510,6 +536,21 @@ template_parm:
 		{ $$ = build_tree_list (NULL_TREE, $1.t); }
 	| parm '=' expr_no_commas  %prec ARITHCOMPARE
 		{ $$ = build_tree_list ($3, $1.t); }
+	| template_template_parm
+		{ $$ = build_tree_list (NULL_TREE, $1); }
+	| template_template_parm '=' PTYPENAME
+	  	{
+		  tree defarg;
+	  	  arg_looking_for_template = 1;
+	  	  defarg = lookup_name ($3, 0);
+	  	  arg_looking_for_template = 0;
+			
+		  if (!defarg || defarg == error_mark_node
+		      || (TREE_CODE (defarg) != TEMPLATE_DECL
+			  && TREE_CODE (defarg) != TEMPLATE_TEMPLATE_PARM))
+		    defarg = do_identifier ($3, 1);
+		  $$ = build_tree_list (defarg, $1);
+	  	}
 	;
 
 template_def:
@@ -945,6 +986,12 @@ template_arg_list:
 	;
 
 template_arg:
+		{ processing_template_arg = 1; }
+	  template_arg1
+		{ $$ = $2;
+		  processing_template_arg = 0; }
+
+template_arg1:
 	  type_id
 		{ $$ = groktypename ($1.t); }
 	| expr_no_commas  %prec ARITHCOMPARE
@@ -1360,7 +1407,21 @@ primary:
 		  if (TREE_CODE ($$) == BIT_NOT_EXPR)
 		    $$ = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND ($$, 0));
 		  else if (TREE_CODE ($$) != TEMPLATE_ID_EXPR)
-		    $$ = do_identifier ($$, 1);
+		    if (processing_template_arg)
+		      {
+			tree id;
+			arg_looking_for_template = processing_template_arg;
+			id = lookup_name ($$, 0);
+			arg_looking_for_template = 0;
+			
+			if (!id || id == error_mark_node
+			    || (TREE_CODE (id) != TEMPLATE_DECL
+				&& TREE_CODE (id) != TEMPLATE_TEMPLATE_PARM))
+			  id = do_identifier ($$, 1);
+			$$ = id;
+		      } 
+		    else
+		      $$ = do_identifier ($$, 1);
 		}		
 	| CONSTANT
 	| boolean.literal
@@ -3014,7 +3075,10 @@ nonnested_type:
 		{
 		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
 		    {
+		      arg_looking_for_template = processing_template_arg;
 		      $$ = lookup_name ($1, 1);
+		      arg_looking_for_template = 0;
+
 		      if (current_class_type
 			  && TYPE_BEING_DEFINED (current_class_type)
 			  && ! IDENTIFIER_CLASS_VALUE ($1))
@@ -4247,7 +4311,8 @@ bad_parm:
 		{
 		  error ("type specifier omitted for parameter");
 		  if (TREE_CODE ($$) == SCOPE_REF
-		      && TREE_CODE (TREE_OPERAND ($$, 0)) == TEMPLATE_TYPE_PARM)
+		      && (TREE_CODE (TREE_OPERAND ($$, 0)) == TEMPLATE_TYPE_PARM
+			  || TREE_CODE (TREE_OPERAND ($$, 0)) == TEMPLATE_TEMPLATE_PARM))
 		    cp_error ("  perhaps you want `typename %E' to make it a type", $$);
 		  $$ = build_tree_list (integer_type_node, $$);
 		}

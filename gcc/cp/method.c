@@ -73,6 +73,7 @@ static void do_build_copy_constructor PROTO((tree));
 static tree largest_union_member PROTO((tree));
 static tree build_decl_overload_real PROTO((tree, tree, tree, tree,
 					    tree, int)); 
+static void build_template_template_parm_names PROTO((tree));
 static void build_template_parm_names PROTO((tree, tree));
 static void build_underscore_int PROTO((int));
 
@@ -388,8 +389,11 @@ build_overload_nested_name (decl)
     {
       tree context = DECL_CONTEXT (decl);
       /* For a template type parameter, we want to output an 'Xn'
-	 rather than 'T' or some such. */
-      if (TREE_CODE (context) == TEMPLATE_TYPE_PARM)
+	 rather than 'T' or some such.  For a template template 
+	 parameter, we also want an extra prefix 'z' and the
+	 parameter list.  */
+      if (TREE_CODE (context) == TEMPLATE_TYPE_PARM 
+	  || TREE_CODE (context) == TEMPLATE_TEMPLATE_PARM)
 	build_overload_name (context, 0, 0);
       else
 	{
@@ -661,6 +665,41 @@ build_overload_value (type, value, in_template)
 }
 
 
+/* Add encodings for the declaration of template template parameters.
+   PARMLIST must be a TREE_VEC */
+
+static void
+build_template_template_parm_names (parmlist)
+     tree parmlist;
+{
+  int i, nparms;
+
+  my_friendly_assert (TREE_CODE (parmlist) == TREE_VEC, 246.5);
+  nparms = TREE_VEC_LENGTH (parmlist);
+  icat (nparms);
+  for (i = 0; i < nparms; i++)
+    {
+      tree parm = TREE_VALUE (TREE_VEC_ELT (parmlist, i));
+      if (TREE_CODE (parm) == TYPE_DECL)
+	{
+	  /* This parameter is a type.  */
+	  OB_PUTC ('Z');
+	}
+      else if (TREE_CODE (parm) == TEMPLATE_DECL)
+	{
+	  /* This parameter is a template. */
+	  OB_PUTC ('z');
+	  build_template_template_parm_names (DECL_INNERMOST_TEMPLATE_PARMS (parm));
+	}
+      else
+	{
+	  /* It's a PARM_DECL.  */
+	  build_overload_name (TREE_TYPE (parm), 0, 0);
+	}
+    }
+}
+
+
 /* Add encodings for the vector of template parameters in PARMLIST,
    given the vector of arguments to be substituted in ARGLIST.  */
 
@@ -682,6 +721,23 @@ build_template_parm_names (parmlist, arglist)
 	  /* This parameter is a type.  */
 	  OB_PUTC ('Z');
 	  build_overload_name (arg, 0, 0);
+	}
+      else if (TREE_CODE (parm) == TEMPLATE_DECL)
+	{
+	  /* This parameter is a template. */
+	  if (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
+	    /* Output parameter declaration, argument index and level */
+	    build_overload_name (arg, 0, 0);
+	  else
+	    {
+	      /* A TEMPLATE_DECL node, output the parameter declaration 
+		 and template name */
+
+	      OB_PUTC ('z');
+	      build_template_template_parm_names (DECL_INNERMOST_TEMPLATE_PARMS (parm));
+	      icat (IDENTIFIER_LENGTH (DECL_NAME (arg)));
+	      OB_PUTID (DECL_NAME (arg));
+	    }
 	}
       else
 	{
@@ -1051,6 +1107,34 @@ build_overload_name (parmtypes, begin, end)
 	     type}*), which it is if -ansi is not used.  Treat this
 	     like 'void*'.  */
 	  OB_PUTC ('v');
+	  break;
+
+	case TEMPLATE_TEMPLATE_PARM:
+	  /* Find and output the original template parameter 
+	     declaration. */
+	  if (CLASSTYPE_TEMPLATE_INFO (parmtype))
+	    {
+	      OB_PUTC ('t');
+	      OB_PUTC ('z');
+	      OB_PUTC ('X');
+	      build_underscore_int (TEMPLATE_TYPE_IDX (parmtype));
+	      build_underscore_int (TEMPLATE_TYPE_LEVEL (parmtype));
+
+	      build_template_parm_names (
+		DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (parmtype)),
+		CLASSTYPE_TI_ARGS (parmtype));
+	    }
+	  else
+	    {
+	      OB_PUTC ('Z');
+	      OB_PUTC ('z');
+	      OB_PUTC ('X');
+	      build_underscore_int (TEMPLATE_TYPE_IDX (parmtype));
+	      build_underscore_int (TEMPLATE_TYPE_LEVEL (parmtype));
+
+	      build_template_template_parm_names (
+		DECL_INNERMOST_TEMPLATE_PARMS (TYPE_STUB_DECL (parmtype)));
+	    }
 	  break;
 
 	case TEMPLATE_TYPE_PARM:

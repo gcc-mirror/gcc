@@ -1,3 +1,62 @@
+Wed Jan 21 10:29:57 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
+
+	* pt.c (coerce_template_parms): Don't access elements of ARGLIST
+	that is not really present.  Substitute default arguments in 
+	template template arguments.  Correctly convert TEMPLATE_DECL to 
+	TEMPLATE_TEMPLATE_PARM.
+	(comp_template_args): TEMPLATE_DECL and TEMPLATE_TEMPLATE_PARM 
+	are no longer treated specially here.
+	* parse.y (template_template_parm): Fix copy error.
+	* decl.c (grokdeclarator): Warn about missing `typename' for nested
+	type created from template template parameters.
+	* parse.y (bad_parm): Likewise
+
+	* class.c (finish_struct): Handle TEMPLATE_TEMPLATE_PARM.
+	(push_nested_class): Likewise.
+	* cp-tree.def (TEMPLATE_TEMPLATE_PARM): New tree code.
+	* cp-tree.h (DECL_TEMPLATE_TEMPLATE_PARM_P): New macro.
+	(copy_template_template_parm): Declare.
+	* decl.c (arg_looking_for_template): New variable.
+	(lookup_name_real): Handle TEMPLATE_TEMPLATE_PARM.
+	Try to return TEMPLATE_DECL or TEMPLATE_TEMPLATE_PARM
+	node if arg_looking_for_template is nonzero.
+	(pushdecl): Handle TEMPLATE_TEMPLATE_PARM.
+	(grok_op_properties, xref_tag, xref_basetypes): Likewise.
+	(grokdeclarator): Handle TEMPLATE_DECL.
+	* decl2.c (constructor_name_full): Handle TEMPLATE_TEMPLATE_PARM.
+	* error.c (dump_type): Add TEMPLATE_DECL and TEMPLATE_TEMPLATE_PARM.
+	(dump_type_prefix, dump_type_suffix) Handle TEMPLATE_TEMPLATE_PARM.
+	(dump_decl): Handle unnamed template type parameters.
+	Handle template template parameters.
+	(dump_function_name): Handle template template parameters.
+	* init.c (is_aggr_typedef, is_aggr_type, get_aggr_from_typedef): 
+	Handle TEMPLATE_TEMPLATE_PARM.
+	* method.c (build_template_template_parm_names): New function.
+	(build_template_parm_names): Handle TEMPLATE_DECL.
+	(build_overload_nested_name, build_overload_name): 
+	Handle TEMPLATE_TEMPLATE_PARM.
+	* parse.y (maybe_identifier): New nonterminal.
+	(template_type_parm): Use it.
+	(template_template_parm, template_arg1): New nonterminal.
+	(template_parm): Add template_template_parm rules.
+	(template_arg): Set processing_template_arg.
+	(template_arg1): Rules moved from template_arg.
+	(primary, nonnested_type): Set arg_looking_for_template if we are
+	processing template arguments.
+	* pt.c (begin_member_template_processing): Handle TEMPLATE_DECL.
+	(process_template_parm): Handle template template parameters.
+	(coerce_template_parms, comp_template_args): Likewise.
+	(mangle_class_name_for_template, lookup_template_class): Likewise.
+	(uses_template_parms): Handle TEMPLATE_DECL and 
+	TEMPLATE_TEMPLATE_PARM.
+	(current_template_args): Handle TEMPLATE_DECL.
+	(tsubst, tsubst_copy, unify): Handle TEMPLATE_TEMPLATE_PARM.
+	* search.c (dfs_walk, dfs_record_inheritance): 
+	Handle TEMPLATE_TEMPLATE_PARM.
+	* tree.c (copy_template_template_parm): New function.
+	(mapcar): Handle TEMPLATE_TEMPLATE_PARM.
+	* typeck.c (comptypes): Handle TEMPLATE_TEMPLATE_PARM.
+
 Mon Jan 19 22:40:03 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* decl.c (start_decl): Don't allow duplicate definitions of static

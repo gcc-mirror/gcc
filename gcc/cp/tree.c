@@ -1438,6 +1438,27 @@ build_exception_variant (type, raises)
   return v;
 }
 
+/* Given a TEMPLATE_TEMPLATE_PARM node T, create a new one together with its 
+   lang_specific field and its corresponding TEMPLATE_DECL node */
+
+tree
+copy_template_template_parm (t)
+     tree t;
+{
+  tree template = TYPE_NAME (t);
+  tree t2 = make_lang_type (TEMPLATE_TEMPLATE_PARM);
+  template = copy_node (template);
+  copy_lang_decl (template);
+  TREE_TYPE (template) = t2;
+  TYPE_NAME (t2) = template;
+  TYPE_STUB_DECL (t2) = template;
+
+  /* No need to copy these */
+  TYPE_FIELDS (t2) = TYPE_FIELDS (t);
+  CLASSTYPE_TEMPLATE_INFO (t2) = CLASSTYPE_TEMPLATE_INFO (t);
+  return t2;
+}
+
 /* Subroutine of copy_to_permanent
 
    Assuming T is a node build bottom-up, make it all exist on
@@ -1628,6 +1649,9 @@ mapcar (t, func)
       t = copy_node (t);
       CONSTRUCTOR_ELTS (t) = mapcar (CONSTRUCTOR_ELTS (t), func);
       return t;
+
+    case TEMPLATE_TEMPLATE_PARM:
+      return copy_template_template_parm (t);
 
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))

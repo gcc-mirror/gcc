@@ -4479,7 +4479,8 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
              parms, we've seen all the injected decls.  */
 	  if ((TREE_CODE (d) == TYPE_DECL
 	       && (TREE_TYPE (d) == t
-		   || TREE_CODE (TREE_TYPE (d)) == TEMPLATE_TYPE_PARM))
+		   || TREE_CODE (TREE_TYPE (d)) == TEMPLATE_TYPE_PARM
+		   || TREE_CODE (TREE_TYPE (d)) == TEMPLATE_TEMPLATE_PARM))
 	      || TREE_CODE (d) == CONST_DECL)
 	    break;
 	  /* Don't inject cache decls.  */
@@ -4883,7 +4884,8 @@ push_nested_class (type, modify)
   tree context;
 
   if (type == NULL_TREE || type == error_mark_node || ! IS_AGGR_TYPE (type)
-      || TREE_CODE (type) == TEMPLATE_TYPE_PARM)
+      || TREE_CODE (type) == TEMPLATE_TYPE_PARM
+      || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
     return;
   
   context = DECL_CONTEXT (TYPE_MAIN_DECL (type));
