@@ -1,3 +1,7 @@
+2003-03-25  Loren James Rittle  <ljrittle@acm.org>
+
+	* doc/install.texi (*-*-freebsd*): Update with known status.
+
 2003-03-21  Jason Merrill  <jason@redhat.com>
 
 	PR optimization/10171
