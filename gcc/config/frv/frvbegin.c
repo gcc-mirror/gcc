@@ -1,5 +1,5 @@
 /* Frv initialization file linked before all user modules
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2003 Free Software Foundation, Inc.
     Contributed by Red Hat, Inc.
   
    This file is part of GNU CC.
@@ -21,6 +21,13 @@
 
    This file was originally taken from the file crtstuff.c in the
    main compiler directory, and simplified. */
+
+/* As a special exception, if you link this library with other files,
+   some of which are compiled with GCC, to produce an executable,
+   this library does not by itself cause the resulting executable
+   to be covered by the GNU General Public License.
+   This exception does not however invalidate any other reasons why
+   the executable file might be covered by the GNU General Public License.  */
 
 #include "defaults.h"
 #include <stddef.h>

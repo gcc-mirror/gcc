@@ -1,5 +1,5 @@
 /* Library functions.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
   
    This file is part of GNU CC.
@@ -18,6 +18,13 @@
    along with GNU CC; see the file COPYING.  If not, write to
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
+
+/* As a special exception, if you link this library with other files,
+   some of which are compiled with GCC, to produce an executable,
+   this library does not by itself cause the resulting executable
+   to be covered by the GNU General Public License.
+   This exception does not however invalidate any other reasons why
+   the executable file might be covered by the GNU General Public License.  */
 
 #include <frv-asm.h>
 
