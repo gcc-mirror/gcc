@@ -6744,22 +6744,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
       {
 	tree array = TREE_OPERAND (exp, 0);
-	tree low_bound = array_ref_low_bound (exp);
-	tree index = convert (sizetype, TREE_OPERAND (exp, 1));
-	HOST_WIDE_INT i;
-
-	gcc_assert (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE);
-
-	/* Optimize the special-case of a zero lower bound.
-
-	   We convert the low_bound to sizetype to avoid some problems
-	   with constant folding.  (E.g. suppose the lower bound is 1,
-	   and its mode is QI.  Without the conversion,  (ARRAY
-	   +(INDEX-(unsigned char)1)) becomes ((ARRAY+(-(unsigned char)1))
-	   +INDEX), which becomes (ARRAY+255+INDEX).  Oops!)  */
-
-	if (! integer_zerop (low_bound))
-	  index = size_diffop (index, convert (sizetype, low_bound));
+	tree index = TREE_OPERAND (exp, 1);
 
 	/* Fold an expression like: "foo"[2].
 	   This is not done in fold so it won't happen inside &.
@@ -6786,19 +6771,16 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    && modifier != EXPAND_MEMORY
 	    && TREE_CODE (array) == CONSTRUCTOR
 	    && ! TREE_SIDE_EFFECTS (array)
-	    && TREE_CODE (index) == INTEGER_CST
-	    && 0 > compare_tree_int (index,
-				     list_length (CONSTRUCTOR_ELTS
-						  (TREE_OPERAND (exp, 0)))))
+	    && TREE_CODE (index) == INTEGER_CST)
 	  {
 	    tree elem;
 
-	    for (elem = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0)),
-		 i = TREE_INT_CST_LOW (index);
-		 elem != 0 && i != 0; i--, elem = TREE_CHAIN (elem))
+	    for (elem = CONSTRUCTOR_ELTS (array);
+		 (elem && !tree_int_cst_equal (TREE_PURPOSE (elem), index));
+		 elem = TREE_CHAIN (elem))
 	      ;
 
-	    if (elem)
+	    if (elem && !TREE_SIDE_EFFECTS (TREE_VALUE (elem)))
 	      return expand_expr (fold (TREE_VALUE (elem)), target, tmode,
 				  modifier);
 	  }
