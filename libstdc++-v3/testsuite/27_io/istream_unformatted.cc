@@ -142,11 +142,13 @@ test02()
   typedef std::char_traits<char>	traits_type;
 
   bool test = true;
-  // { dg-warning "string literals" "" { xfail *-*-* } 146 }
-  const char str_lit01[] = "			    sun*ra 
-                            and his myth science arkestra present
-                            angles and demons @ play
-                            the nubians of plutonia";
+  const char str_lit01[] = "\t\t\t    sun*ra \n"
+  "                            "
+  "and his myth science arkestra present\n"
+  "                            "
+  "angles and demons @ play\n"
+  "                            "
+  "the nubians of plutonia";
   std::string str01(str_lit01);
   std::string strtmp;
 
@@ -201,8 +203,9 @@ test02()
   VERIFY( is_04.gcount() == 64 );
   VERIFY( state1 != state2 );
   VERIFY( state2 == statefail );
-  // { dg-warning "string literals" "" { xfail *-*-* } 205 }
-  VERIFY( !traits_type::compare("                            and his myth science arkestra presen", carray1, 65) );
+  VERIFY( !traits_type::compare(
+  "                            and his myth science arkestra presen",
+                               carray1, 65) );
 
   is_04.clear();
   state1 = is_04.rdstate();
@@ -234,10 +237,11 @@ test03()
   typedef std::char_traits<char>	traits_type;
 
   bool test = true;
-  // { dg-warning "string literals" "" { xfail *-*-* } 238 }
-  const char str_lit01[] = "   sun*ra 
-			   & his arkestra, featuring john gilmore: 
-                         jazz in silhouette: images and forecasts of tomorrow";
+  const char str_lit01[] = 
+  "   sun*ra \n\t\t\t   & his arkestra, featuring john gilmore: \n"
+  "                         "
+    "jazz in silhouette: images and forecasts of tomorrow";
+
   std::string str01(str_lit01);
   std::string strtmp;
 
@@ -360,23 +364,21 @@ test04()
 int
 test05()
 {
-  // { dg-warning "string literals" "" { xfail *-*-* } 364 }
-  const char* charray = "
-a
-aa
-aaa
-aaaa
-aaaaa
-aaaaaa
-aaaaaaa
-aaaaaaaa
-aaaaaaaaa
-aaaaaaaaaa
-aaaaaaaaaaa
-aaaaaaaaaaaa
-aaaaaaaaaaaaa
-aaaaaaaaaaaaaa
-";
+  const char* charray = "\n"
+"a\n"
+"aa\n"
+"aaa\n"
+"aaaa\n"
+"aaaaa\n"
+"aaaaaa\n"
+"aaaaaaa\n"
+"aaaaaaaa\n"
+"aaaaaaaaa\n"
+"aaaaaaaaaa\n"
+"aaaaaaaaaaa\n"
+"aaaaaaaaaaaa\n"
+"aaaaaaaaaaaaa\n"
+"aaaaaaaaaaaaaa\n";
 
   bool test = true;
   const std::streamsize it = 5;

@@ -41,9 +41,8 @@ bool test01(void)
   csize_type npos = std::string::npos;
   csize_type csz01, csz02;
 
-  // { dg-warning "string literals" "" { xfail *-*-* } 45 }
-  const std::string str01("sailing grand traverse bay
-			    from Elk Rapids to the point reminds me of miles");
+  const std::string str01("sailing grand traverse bay\n"
+	       "\t\t\t    from Elk Rapids to the point reminds me of miles");
   const std::string str02("sailing");
   const std::string str03("grand");
   const std::string str04("traverse");
