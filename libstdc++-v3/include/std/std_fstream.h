@@ -397,21 +397,9 @@ namespace std
       virtual streamsize
       xsputn(const char_type* __s, streamsize __n)
       {
-	streamsize __ret = 0;
- 
-	const bool __testout = this->_M_mode & ios_base::out;
-	if (__testout && !_M_reading && this->_M_buf_size == 1
-	    && __check_facet(_M_codecvt).always_noconv())
-	  {
-	    __ret = _M_file.xsputn(reinterpret_cast<const char*>(__s), __n);
-	    if (__ret == __n)
-	      _M_writing = true;
-	  }
-	else
-	  __ret = __streambuf_type::xsputn(__s, __n);
-      
-	return __ret;
-      }          
+	_M_destroy_pback();
+	return __streambuf_type::xsputn(__s, __n);
+      }
 
       /**
        *  @if maint

@@ -1,5 +1,9 @@
 2003-07-04  Paolo Carlini  <pcarlini@unitus.it>
 
+	Revert the fix for libstdc++/11378.
+
+2003-07-04  Paolo Carlini  <pcarlini@unitus.it>
+
 	PR libstdc++/11378
 	* include/std/std_fstream.h (xsputn): In the unbuffered case,
 	provided always_noconv(), issue directly _M_file.xsputn.
