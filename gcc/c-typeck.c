@@ -1952,7 +1952,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		 undefined if the quotient can't be represented in the
 		 computation mode.  We shorten only if unsigned or if
 		 dividing by something we know != -1.  */
-	      shorten = (TREE_UNSIGNED (orig_op0)
+	      shorten = (TREE_UNSIGNED (TREE_TYPE (orig_op0))
 			 || (TREE_CODE (op1) == INTEGER_CST
 			     && (TREE_INT_CST_LOW (op1) != -1
 				 || TREE_INT_CST_HIGH (op1) != -1)));
@@ -2000,7 +2000,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	     on some targets, since the modulo instruction is undefined if the
 	     quotient can't be represented in the computation mode.  We shorten
 	     only if unsigned or if dividing by something we know != -1.  */
-	  shorten = (TREE_UNSIGNED (orig_op0)
+	  shorten = (TREE_UNSIGNED (TREE_TYPE (orig_op0))
 		     || (TREE_CODE (op1) == INTEGER_CST
 			 && (TREE_INT_CST_LOW (op1) != -1
 			     || TREE_INT_CST_HIGH (op1) != -1)));
