@@ -1,3 +1,16 @@
+2005-02-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Add the trivial is_union and is_class;
+	add the __is_union_or_class extension.
+	(is_enum, is_empty): Use the latter.
+	* include/tr1/type_traits_fwd.h: Add __is_union_or_class.
+	* testsuite/testsuite_tr1.h: Add UnionType; trivial formatting
+	fixes.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_union_or_class/is_union_or_class.cc: New.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_union_or_class/typedefs.cc: Likewise.
+
 2005-02-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/tr1/6_containers/unordered/instantiate/hash.cc: Guard

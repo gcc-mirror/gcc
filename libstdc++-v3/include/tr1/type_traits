@@ -166,47 +166,22 @@ namespace tr1
   _DEFINE_SPEC(2, is_member_function_pointer, _Tp _Cp::*,
 	       is_function<_Tp>::value)
 
-  template<typename _Tp, bool = (is_fundamental<_Tp>::value
-				 || is_array<_Tp>::value
-				 || is_pointer<_Tp>::value
-				 || is_reference<_Tp>::value
-				 || is_member_pointer<_Tp>::value
-				 || is_function<_Tp>::value)>
-    struct __is_enum_helper
-    : public __sfinae_types
-    {
-    private:
-      static __one __test(bool);
-      static __one __test(char);
-      static __one __test(signed char);
-      static __one __test(unsigned char);
-#ifdef _GLIBCXX_USE_WCHAR_T
-      static __one __test(wchar_t);
-#endif
-      static __one __test(short);
-      static __one __test(unsigned short);
-      static __one __test(int);
-      static __one __test(unsigned int);
-      static __one __test(long);
-      static __one __test(unsigned long);
-      static __one __test(long long);
-      static __one __test(unsigned long long);
-      static __two __test(...);
-
-      struct __convert
-      { operator _Tp() const; };
-
-    public:
-      static const bool __value = sizeof(__test(__convert())) == 1;
-    };
-
-  template<typename _Tp>
-    struct __is_enum_helper<_Tp, true>
-    { static const bool __value = false; };
-
   template<typename _Tp>
     struct is_enum
-    : public integral_constant<bool, __is_enum_helper<_Tp>::__value> { };
+    : public integral_constant<bool, !(is_fundamental<_Tp>::value
+				       || is_array<_Tp>::value
+				       || is_pointer<_Tp>::value
+				       || is_reference<_Tp>::value
+				       || is_member_pointer<_Tp>::value
+				       || is_function<_Tp>::value
+				       || __is_union_or_class<_Tp>::value)>
+    { };
+
+  template<typename>
+    struct is_union { };
+
+  template<typename>
+    struct is_class { };
 
   template<typename _Tp, bool = (is_void<_Tp>::value
 				 || is_reference<_Tp>::value)>
@@ -264,6 +239,26 @@ namespace tr1
 			       (is_member_object_pointer<_Tp>::value
 				|| is_member_function_pointer<_Tp>::value)>
     { };
+
+  template<typename _Tp>
+    struct __is_union_or_class_helper
+    : public __sfinae_types
+    {
+    private:
+      template<typename _Up>
+        static __one __test(int _Up::*);
+      template<typename>
+        static __two __test(...);
+    
+    public:
+      static const bool __value = sizeof(__test<_Tp>(0)) == 1;
+    };
+
+  // Extension.
+  template<typename _Tp>
+    struct __is_union_or_class
+    : public integral_constant<bool, __is_union_or_class_helper<_Tp>::__value>
+    { };
   
   /// @brief  type properties [4.5.3].
   template<typename>
@@ -289,26 +284,21 @@ namespace tr1
 				      remove_all_extents<_Tp>::type>::value)>
     { };
 
-  template<typename>
-    struct __is_empty_helper_1
-    { };
-
-  template<typename _Tp>
-    struct __is_empty_helper_2
-    : public _Tp { };
-
-  // Unfortunately, without compiler support we cannot tell union from
-  // class types, and is_empty doesn't work at all with the former. 
-  template<typename _Tp, bool = (is_fundamental<_Tp>::value
-				 || is_array<_Tp>::value
-				 || is_pointer<_Tp>::value
-				 || is_reference<_Tp>::value
-				 || is_member_pointer<_Tp>::value
-				 || is_enum<_Tp>::value
-				 || is_function<_Tp>::value)>
+  // N.B. Without compiler support we cannot tell union from class types,
+  // and is_empty doesn't work at all with the former. 
+  template<typename _Tp, bool = !__is_union_or_class<_Tp>::value>
     struct __is_empty_helper
-    { static const bool __value = (sizeof(__is_empty_helper_1<_Tp>)
-				   == sizeof(__is_empty_helper_2<_Tp>)); };
+    { 
+    private:
+      template<typename>
+        struct __ebo_1 { };
+      template<typename _Up>
+        struct __ebo_2
+        : public _Up { };
+           
+    public:
+      static const bool __value = sizeof(__ebo_1<_Tp>) == sizeof(__ebo_2<_Tp>);
+    };
 
   template<typename _Tp>
     struct __is_empty_helper<_Tp, true>
