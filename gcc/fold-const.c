@@ -5386,9 +5386,9 @@ tree
 fold (tree expr)
 {
   const tree t = expr;
+  const tree type = TREE_TYPE (expr);
   tree t1 = NULL_TREE;
   tree tem;
-  tree type = TREE_TYPE (expr);
   tree arg0 = NULL_TREE, arg1 = NULL_TREE;
   enum tree_code code = TREE_CODE (t);
   int kind = TREE_CODE_CLASS (code);
@@ -5637,7 +5637,7 @@ fold (tree expr)
     case FIX_TRUNC_EXPR:
     case FIX_CEIL_EXPR:
     case FIX_FLOOR_EXPR:
-      if (TREE_TYPE (TREE_OPERAND (t, 0)) == TREE_TYPE (t))
+      if (TREE_TYPE (TREE_OPERAND (t, 0)) == type)
 	return TREE_OPERAND (t, 0);
 
       /* Handle cases of two conversions in a row.  */
@@ -5646,7 +5646,7 @@ fold (tree expr)
 	{
 	  tree inside_type = TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0));
 	  tree inter_type = TREE_TYPE (TREE_OPERAND (t, 0));
-	  tree final_type = TREE_TYPE (t);
+	  tree final_type = type;
 	  int inside_int = INTEGRAL_TYPE_P (inside_type);
 	  int inside_ptr = POINTER_TYPE_P (inside_type);
 	  int inside_float = FLOAT_TYPE_P (inside_type);
@@ -5744,8 +5744,8 @@ fold (tree expr)
       /* Convert (T)(x & c) into (T)x & (T)c, if c is an integer
 	 constants (if x has signed type, the sign bit cannot be set
 	 in c).  This folds extension into the BIT_AND_EXPR.  */
-      if (INTEGRAL_TYPE_P (TREE_TYPE (t))
-	  && TREE_CODE (TREE_TYPE (t)) != BOOLEAN_TYPE
+      if (INTEGRAL_TYPE_P (type)
+	  && TREE_CODE (type) != BOOLEAN_TYPE
 	  && TREE_CODE (TREE_OPERAND (t, 0)) == BIT_AND_EXPR
 	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 1)) == INTEGER_CST)
 	{
@@ -5754,7 +5754,7 @@ fold (tree expr)
 	  int change = 0;
 
 	  if (TREE_UNSIGNED (TREE_TYPE (and))
-	      || (TYPE_PRECISION (TREE_TYPE (t))
+	      || (TYPE_PRECISION (type)
 		  <= TYPE_PRECISION (TREE_TYPE (and))))
 	    change = 1;
 	  else if (TYPE_PRECISION (TREE_TYPE (and1))
@@ -5779,12 +5779,12 @@ fold (tree expr)
 #endif
 	    }
 	  if (change)
-	    return fold (build (BIT_AND_EXPR, TREE_TYPE (t),
-				fold_convert (TREE_TYPE (t), and0),
-				fold_convert (TREE_TYPE (t), and1)));
+	    return fold (build (BIT_AND_EXPR, type,
+				fold_convert (type, and0),
+				fold_convert (type, and1)));
 	}
 
-      tem = fold_convert_const (code, TREE_TYPE (t), arg0);
+      tem = fold_convert_const (code, type, arg0);
       return tem ? tem : t;
 
     case VIEW_CONVERT_EXPR:
@@ -6223,8 +6223,8 @@ fold (tree expr)
 	{
 	  /* The return value should always have
 	     the same type as the original expression.  */
-	  if (TREE_TYPE (t1) != TREE_TYPE (t))
-	    t1 = fold_convert (TREE_TYPE (t), t1);
+	  if (TREE_TYPE (t1) != type)
+	    t1 = fold_convert (type, t1);
 
 	  return t1;
 	}
@@ -7931,7 +7931,7 @@ fold (tree expr)
 	     has the same type as the COND_EXPR.  This avoids optimizing
 	     away "c ? x : throw", where the throw has a void type.  */
 	  if (! VOID_TYPE_P (TREE_TYPE (tem))
-	      || VOID_TYPE_P (TREE_TYPE (t)))
+	      || VOID_TYPE_P (type))
 	    return pedantic_non_lvalue (tem);
 	  return t;
 	}
