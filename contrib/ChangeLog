@@ -1,5 +1,9 @@
 2001-07-23  Andreas Jaeger  <aj@suse.de>
 
+	* analyze_brprob: Fix more typos.
+
+2001-07-23  Andreas Jaeger  <aj@suse.de>
+
 	* analyze_brprob: Fix typos.
 
 2001-07-03  Joseph S. Myers  <jsm28@cam.ac.uk>

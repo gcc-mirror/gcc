@@ -1,6 +1,6 @@
 #!/usr/bin/awk -f
 # Script to analyze experimental results of our branch prediction heuristics
-# Contributed by Jan Hubicka, SuSE inc.
+# Contributed by Jan Hubicka, SuSE Inc.
 # Copyright (C) 2001 Free Software Foundation, Inc.
 #
 # This file is part of GNU CC.
@@ -22,28 +22,28 @@
 #
 #
 # This script is used to calculate two basic properties of the branch prediction
-# heuristics - coverage and hitrate.  Coverage is number of executions of given
+# heuristics - coverage and hitrate.  Coverage is number of execution of a given
 # branch matched by the heuristics and hitrate is probability that once branch is
 # predicted as taken it is really taken.
 #
-# These values are usefull to determine quality of given heuristics and hitrate
+# These values are useful to determine the quality of given heuristics.  Hitrate
 # may be directly used in predict.c.
 #
 # Usage:
-#  step 1: compile and profile your program.  You need to use -fprofile-arcs
+#  Step 1: compile and profile your program.  You need to use -fprofile-arcs
 #    flag to get the profiles
-#  step 2: Generate log files.  The information about given heuristics are
-#    saved into *.life dumps.  You need to pass -df swtich to compiler as well
-#    as -fbranch-probabilities to get results of profiling noted in the dumps.
-#    Ensure that there is no "Arc profiling: some edge counts were bad." warnings.
+#  Step 2: Generate log files.  The information about given heuristics are
+#    saved into *.life dumps.  You need to pass the -df switch to the compiler as well
+#    as -fbranch-probabilities to get the results of profiling noted in the dumps.
+#    Ensure that there are no "Arc profiling: some edge counts were bad." warnings.
 #    Keep the -fprofile-arcs switch to ensure that CFGs match.
-#  step 3: Run this script to concatetation of all *.life files:
+#  Step 3: Run this script to concatenate all *.life files:
 #    analyze_brprob `find . -name *.life`
 #    the information is collected and print once all files are parsed.  This
 #    may take a while.
-#    Note that script does use bc to perform long arithmetic.
-#  step 4: Read the results.  Basically following table is printed:
-#  (this is just example from very early stages of branch prediction pass
+#    Note that the script does use bc to perform long arithmetic.
+#  Step 4: Read the results.  Basically the following table is printed:
+#  (this is just an example from a very early stage of branch prediction pass
 #   development, so please don't take these numbers seriously)
 #
 #HEURISTICS                  BRANCHES  (REL)  HITRATE             COVERAGE  (REL)
@@ -57,15 +57,15 @@
 #loop branch                       51   1.5%  99.26%/ 99.27%        26854   0.3%
 #noreturn call                    951  27.6% 100.00%/100.00%      1759809  17.6%
 #
-#  The heuristics called "first match" is heuristics used by gcc branch
+#  The heuristic called "first match" is a heuristic used by GCC branch
 #  prediction pass and it predicts 89.92% branches correctly.
 #
 #  The quality of heuristics can be rated using both, coverage and hitrate
 #  parameters.  For example "loop branch" heuristics (predicting loopback edge
-#  as taken) have both very high hitrate and coverage, so it is very usefull.
+#  as taken) have both very high hitrate and coverage, so it is very useful.
 #  On the other hand, "exit block" heuristics (predicting exit edges as not
-#  taken) have good hitrate, but poor coverage, so only 3 branches has been
-#  predicted.  The "loop header" heuristics have problem, since it tends to
+#  taken) have good hitrate, but poor coverage, so only 3 branches have been
+#  predicted.  The "loop header" heuristic has problems, since it tends to
 #  misspredict.
 #
 #  The implementation of this script is somewhat brute force.  My awk skills
@@ -133,7 +133,7 @@ END {
   # Heuristics called combined predicts just everything.
   maxcounts = longeval (counts["first match"])
   maxbranches = branches["first match"]
-  max = names["firat match"]
+  max = names["first match"]
   printf("HEURISTICS                  BRANCHES  (REL)  HITRATE             COVERAGE  (REL)\n")
   for (i = 0; i < nnames ; i++)
    {
