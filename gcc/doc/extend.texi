@@ -4443,9 +4443,6 @@ A floating point value, as wide as a SI mode integer, usually 32 bits.
 A floating point value, as wide as a DI mode integer, usually 64 bits.
 @end table
 
-There are no @code{V1xx} vector modes - they would be identical to the
-corresponding base mode.
-
 Specifying a combination that is not valid for the current architecture
 will cause gcc to synthesize the instructions using a narrower mode.
 For example, if you specify a variable of type @code{V4SI} and your
