@@ -1,3 +1,37 @@
+2004-01-07  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_istream/extractors_other/char/9318-in.cc:
+	Remove redundant #include.
+	* testsuite/27_io/basic_ostream/endl/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/ends/char/1.cc: Likewise,
+	re-enable normal testing.
+	* testsuite/27_io/basic_ostream/ends/char/2.cc: Remove redundant
+	#include.
+	* testsuite/27_io/basic_ostream/flush/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/3.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/5.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/6.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/8.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/7.cc:
+	More properly, #include <locale>.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/8.cc:
+	Remove redundant #include.
+	* testsuite/27_io/basic_ostream/inserters_other/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/3.cc: Remove
+	redundant DejaGnu directive.
+	* testsuite/27_io/basic_ostream/inserters_other/char/4.cc: Remove
+	redundant #include.
+
 2004-01-06  Benjamin Kosnik  <bkoz@redhat.com>
             Stefan Olsson  <stefan@snon.net>
 

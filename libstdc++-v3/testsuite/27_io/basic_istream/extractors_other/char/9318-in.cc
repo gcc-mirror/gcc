@@ -29,10 +29,8 @@
 
 // 27.5.2 template class basic_streambuf
 
-#include <cstring> // for memset, memcmp
-#include <streambuf>
 #include <sstream>
-#include <ostream>
+#include <istream>
 #include <testsuite_hooks.h>
 
 // libstdc++/9318

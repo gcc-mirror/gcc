@@ -24,7 +24,6 @@
 // @diff@ %-*.tst %-*.txt
 
 #include <ostream>
-#include <sstream>
 #include <fstream>
 #include <testsuite_hooks.h>
 

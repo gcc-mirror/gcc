@@ -20,12 +20,9 @@
 // USA.
 
 // 27.6.2.5.4 basic_ostream character inserters
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
 
 #include <ostream>
 #include <sstream>
-#include <fstream>
 #include <testsuite_hooks.h>
 
 class test_buffer_1 : public std::streambuf 

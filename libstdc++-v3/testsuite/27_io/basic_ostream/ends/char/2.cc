@@ -22,7 +22,6 @@
 
 #include <ostream>
 #include <sstream>
-#include <stdexcept>
 #include <testsuite_hooks.h>
 
 // based vaguely on this:

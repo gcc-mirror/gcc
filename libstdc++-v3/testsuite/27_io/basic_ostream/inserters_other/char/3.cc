@@ -20,8 +20,6 @@
 // USA.
 
 // 27.6.2.5.4 basic_ostream character inserters
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
 
 #include <ostream>
 #include <sstream>
