@@ -65,14 +65,25 @@ void
 java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
 {
   union SockAddr u;
-  jbyteArray haddress = host->address;
-  jbyte *bytes = elements (haddress);
-  int len = haddress->length;
   struct sockaddr *ptr = (struct sockaddr *) &u.address;
+  jbyte *bytes = NULL;
+  // FIXME: Use getaddrinfo() to get actual protocol instead of assuming ipv4.
+  int len = 4;	// Initialize for INADDR_ANY in case host is NULL.
+
+  if (host != NULL)
+    {
+      jbyteArray haddress = host->address;
+      bytes = elements (haddress);
+      len = haddress->length;
+    }
+  
   if (len == 4)
     {
       u.address.sin_family = AF_INET;
-      memcpy (&u.address.sin_addr, bytes, len);
+      if (host != NULL)
+        memcpy (&u.address.sin_addr, bytes, len);
+      else
+	u.address.sin_addr.s_addr = htonl (INADDR_ANY);        
       len = sizeof (struct sockaddr_in);
       u.address.sin_port = htons (lport);
     }
@@ -183,7 +194,8 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
       if ((retval = select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
 	goto error;
       else if (retval == 0)
-	JvThrow (new java::io::InterruptedIOException ());
+	JvThrow (new java::io::InterruptedIOException (
+	         JvNewStringUTF("Accept timed out")));
     }
 
   new_socket = ::accept (fnum, (sockaddr*) &u, &addrlen);
@@ -365,25 +377,29 @@ java::net::PlainSocketImpl::getOption (jint optID)
 #endif    
 	break;
       case _Jv_SO_BINDADDR_:
-	// FIXME: Should cache the laddr as an optimization.
-	jbyteArray laddr;
-	if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
-	  goto error;
-	if (u.address.sin_family == AF_INET)
+	// cache the local address 
+	if (localAddress == NULL)
 	  {
-	    laddr = JvNewByteArray (4);
-	    memcpy (elements (laddr), &u.address.sin_addr, 4);
-	  }
+	    jbyteArray laddr;
+	    if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
+	      goto error;
+	    if (u.address.sin_family == AF_INET)
+	      {
+		laddr = JvNewByteArray (4);
+		memcpy (elements (laddr), &u.address.sin_addr, 4);
+	      }
 #ifdef HAVE_INET6
-        else if (u.address.sin_family == AF_INET6)
-	  {
-	    laddr = JvNewByteArray (16);
-	    memcpy (elements (laddr), &u.address6.sin6_addr, 16);
-	  }
+            else if (u.address.sin_family == AF_INET6)
+	      {
+		laddr = JvNewByteArray (16);
+		memcpy (elements (laddr), &u.address6.sin6_addr, 16);
+	      }
 #endif
-	else
-	  goto error;
-	return new java::net::InetAddress (laddr, NULL);
+	    else
+	      goto error;
+	    localAddress = new java::net::InetAddress (laddr, NULL);
+	  }
+	return localAddress;
 	break;
       case _Jv_IP_MULTICAST_IF_ :
 	JvThrow (new java::net::SocketException (

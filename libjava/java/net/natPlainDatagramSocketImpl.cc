@@ -111,8 +111,6 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
     goto error;
   if (::bind (fnum, ptr, len) == 0)
     {
-      // FIXME: Is address really necessary to set?
-      address = host;
       socklen_t addrlen = sizeof(u);
       if (lport != 0)
         localport = lport;
@@ -270,6 +268,7 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
 void
 java::net::PlainDatagramSocketImpl::setTimeToLive (jint ttl)
 {
+  this->ttl = ttl;
   // throws IOException;
   // FIXME: TODO - PlainDatagramSocketImpl::setTimeToLive
 }
@@ -279,7 +278,7 @@ java::net::PlainDatagramSocketImpl::getTimeToLive ()
 {
   // throws IOException;
   // FIXME: TODO - PlainDatagramSocketImpl::getTimeToLive
-  return 0;
+  return ttl;
 }
 
 void
@@ -438,25 +437,29 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
 #endif    
 	break;
       case _Jv_SO_BINDADDR_:
-	// FIXME: Should cache the laddr as an optimization.
-	jbyteArray laddr;
-	if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
-	  goto error;
-	if (u.address.sin_family == AF_INET)
-	  {
-	    laddr = JvNewByteArray (4);
-	    memcpy (elements (laddr), &u.address.sin_addr, 4);
-	  }
+	// cache the local address
+	if (localAddress == NULL)
+	  {	
+	    jbyteArray laddr;
+	    if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
+	      goto error;
+	    if (u.address.sin_family == AF_INET)
+	      {
+		laddr = JvNewByteArray (4);
+		memcpy (elements (laddr), &u.address.sin_addr, 4);
+	      }
 #ifdef HAVE_INET6
-        else if (u.address.sin_family == AF_INET6)
-	  {
-	    laddr = JvNewByteArray (16);
-	    memcpy (elements (laddr), &u.address6.sin6_addr, 16);
-	  }
+            else if (u.address.sin_family == AF_INET6)
+	      {
+		laddr = JvNewByteArray (16);
+		memcpy (elements (laddr), &u.address6.sin6_addr, 16);
+	      }
 #endif
-	else
-	  goto error;
-	return new java::net::InetAddress (laddr, NULL);
+	    else
+	      goto error;
+	    localAddress = new java::net::InetAddress (laddr, NULL);
+	  }
+	return localAddress;  
 	break;
       case _Jv_SO_REUSEADDR_ :
 #if defined(SO_REUSEADDR)

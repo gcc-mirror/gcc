@@ -28,15 +28,13 @@ public class ServerSocket
   public ServerSocket (int port)
     throws java.io.IOException
   {
-    // FIXME: JCL p. 1526 says backlog defaults to 50; is 5 to save space
-    // or a typo?
-    this(port, 5);
+    this(port, 50);
   }
 
   public ServerSocket (int port, int backlog)
     throws java.io.IOException
   {
-    this(port, backlog, InetAddress.getLocalHost());
+    this(port, backlog, null);
   }
 
   public ServerSocket (int port, int backlog, InetAddress bindAddr)
