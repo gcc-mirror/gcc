@@ -1,3 +1,20 @@
+Thu Mar 25 14:04:54 EST 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* rtl.texi (RTX_FRAME_RELATED_P): Add documentation.
+	* rtl.h (struct rtx_def): Update comment for frame_related field.
+	(set_unique_reg_note): Declare prototype.
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Split out from
+	'dwarf2out_frame_debug' to handle only expressions, and process
+	component parts of a PARALLEL expression.
+	(dwarf2out_frame_debug): Process insns only, and call
+	new function 'dwarf2out_frame_debug_expr' for patterns.
+	* emit-rtl.c (set_unique_reg_note): New function to add a reg note,
+	but if there is an existingone, deletes it first.
+	* expmed.c (expand_mult, expand_divmod): Use set_unique_reg_note.
+	* optabs.c (add_equal_note, expand_binop): Use set_unique_reg_note.
+	(emit_no_conflict_block, emit_libcall_block): Use set_unique_reg_note.
+	(expand_fix):  Use set_unique_reg_note.
+
 Thu Mar 25 11:47:49 1999  Art Haas <ahaas@neosoft.com>
 
 	* tlink.c (symbol_hash_newfunc): Remove redundant call to
