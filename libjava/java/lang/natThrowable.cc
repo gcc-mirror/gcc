@@ -65,7 +65,7 @@ java::lang::Throwable::fillInStackTrace (void)
 
   if (n > 0)
     {
-      // ???  Might this cause a problem if the byte array isn't aligned?
+      // We copy the array below to deal with alignment issues.
       stackTrace = JvNewByteArray (n * sizeof p[0]);
       memcpy (elements (stackTrace), p+1, (n * sizeof p[0]));
     }
@@ -83,8 +83,9 @@ java::lang::Throwable::printRawStackTrace (java::io::PrintWriter *wr)
   if (!stackTrace)
     return;
 
-  void **p = (void **)elements (stackTrace);
-  int depth = stackTrace->length / sizeof p[0];
+  int depth = stackTrace->length / sizeof (void *);
+  void *p[depth];
+  memcpy (p, elements (stackTrace), sizeof p);
 
   _Jv_name_finder finder (_Jv_ThisExecutable ());
 
