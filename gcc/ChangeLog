@@ -1,3 +1,18 @@
+2001-10-01  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.h (enum processor_type): Add support
+	for 7400 (G4) and 7450.
+	(RTX_COSTS): Ditto.
+	* config/rs6000/rs6000.c (rs6000_override_options): Ditto.
+	(rs6000_issue_rate): Ditto.
+	(rs6000_adjust_cost): Fix cycle counts for compares.
+	(debug_stack_info):  Fix an obvious typo.
+	* config/rs6000/rs6000.md: Add functional units for 7400 and 7450.
+	* doc/invoke.texi: Document.
+	* config/rs6000/darwin.h (TARGET_DEFAULT): Set to be reasonable
+	for Darwin.
+	(PROCESSOR_DEFAULT): Ditto.
+
 2001-10-01  Loren J. Rittle  <ljrittle@acm.org>
 
 	* Makefile.in (STAGE2_FLAGS_TO_PASS): Propagate HOST_CC.

@@ -358,7 +358,9 @@ enum processor_type
    PROCESSOR_PPC604e,
    PROCESSOR_PPC620,
    PROCESSOR_PPC630,
-   PROCESSOR_PPC750
+   PROCESSOR_PPC750,
+   PROCESSOR_PPC7400,
+   PROCESSOR_PPC7450
 };
 
 extern enum processor_type rs6000_cpu;
@@ -2116,6 +2118,8 @@ do {									     \
         return COSTS_N_INSNS (2);					\
       case PROCESSOR_PPC601:						\
         return COSTS_N_INSNS (5);					\
+      case PROCESSOR_PPC7400:                                         \
+      case PROCESSOR_PPC7450:                                         \
       case PROCESSOR_PPC603:						\
       case PROCESSOR_PPC750:						\
         return (GET_CODE (XEXP (X, 1)) != CONST_INT			\
@@ -2168,7 +2172,10 @@ do {									     \
 		? COSTS_N_INSNS (21)					\
 		: COSTS_N_INSNS (37));					\
       case PROCESSOR_PPC750:						\
+      case PROCESSOR_PPC7400:						\
         return COSTS_N_INSNS (19);					\
+      case PROCESSOR_PPC7450:						\
+        return COSTS_N_INSNS (23);					\
       }									\
   case FFS:								\
     return COSTS_N_INSNS (4);						\
