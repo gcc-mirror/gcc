@@ -69,10 +69,12 @@ use @option{-o} to specify the output file.
 
 @item -Wall
 @opindex Wall
-Turns on all optional warnings which are desirable for normal code.  At
-present this is @option{-Wcomment} and @option{-Wtrigraphs}.  Note that
-many of the preprocessor's warnings are on by default and have no
-options to control them.
+Turns on all optional warnings which are desirable for normal code.
+At present this is @option{-Wcomment}, @option{-Wtrigraphs},
+@option{-Wmultichar} and a warning about integer promotion causing a
+change of sign in @code{#if} expressions.  Note that many of the
+preprocessor's warnings are on by default and have no options to
+control them.
 
 @item -Wcomment
 @itemx -Wcomments
@@ -84,10 +86,13 @@ comment, or whenever a backslash-newline appears in a @samp{//} comment.
 
 @item -Wtrigraphs
 @opindex Wtrigraphs
-Warn if any trigraphs are encountered.  This option used to take effect
-only if @option{-trigraphs} was also specified, but now works
-independently.  Warnings are not given for trigraphs within comments, as
-they do not affect the meaning of the program.
+@anchor{Wtrigraphs}
+Warn if any trigraphs that may change the meaning of a program are
+encountered.  This option is in effect unless trigraphs are turned on,
+and is implied by @option{-Wall}.  With the exception of a trigraph
+that would form an escaped newline, warnings are not given for
+trigraphs within comments as they do not affect the meaning of the
+program.
 
 @item -Wtraditional
 @opindex Wtraditional
