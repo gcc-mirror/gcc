@@ -95,7 +95,7 @@ extern const char * out_movsi_mr_r  PARAMS ((rtx insn, rtx op[], int *l));
 extern const char * output_movsisf  PARAMS ((rtx insn, rtx operands[], int *l));
 extern const char * out_tstsi       PARAMS ((rtx insn, int *l));
 extern const char * out_tsthi       PARAMS ((rtx insn, int *l));
-extern const char * ret_cond_branch PARAMS ((RTX_CODE cond, int len));
+extern const char * ret_cond_branch PARAMS ((rtx x, int len, int reverse));
 
 extern const char * ashlqi3_out PARAMS ((rtx insn, rtx operands[], int *len));
 extern const char * ashlhi3_out PARAMS ((rtx insn, rtx operands[], int *len));
