@@ -1,3 +1,13 @@
+1999-04-06 12:56 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cppexp.c (parse_charconst): Initialize c.
+	(cpp_parse_expr): Initialize rprio.
+	* cppfiles.c (merge_include_chains): Initialize prev.
+	(finclude) Set fp->line_base to fp->buf before returning.
+	* cpphash.c (macroexpand): Initialize token.
+	* cppspec.c (lang_specific_driver): Change suff to 
+	const char *const *.
+
 1999-04-06 12:51 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cppinit.c (install_predefs): Delete function.

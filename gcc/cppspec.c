@@ -146,7 +146,7 @@ lang_specific_driver (errfn, in_argc, in_argv, in_added_libraries)
 	{
 	  int l = strlen (argv[i]);
 	  int known = 0;
-	  const char **suff;
+	  const char *const *suff;
 	  
 	  read_stdin = 0;
 	  for (suff = known_suffixes; *suff; suff++)

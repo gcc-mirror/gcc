@@ -1081,7 +1081,7 @@ macroexpand (pfile, hp)
 
   if (nargs >= 0)
     {
-      enum cpp_token token;
+      enum cpp_token token = CPP_EOF;
 
       args = (struct argdata *) alloca ((nargs + 1) * sizeof (struct argdata));
 
