@@ -4392,8 +4392,8 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 
 
 
-#ifndef RANGE_TEST_NON_SHORT_CIRCUIT
-#define RANGE_TEST_NON_SHORT_CIRCUIT (BRANCH_COST >= 2)
+#ifndef LOGICAL_OP_NON_SHORT_CIRCUIT
+#define LOGICAL_OP_NON_SHORT_CIRCUIT (BRANCH_COST >= 2)
 #endif
 
 /* EXP is some logical combination of boolean tests.  See if we can
@@ -4431,7 +4431,7 @@ fold_range_test (tree exp)
   /* On machines where the branch cost is expensive, if this is a
      short-circuited branch and the underlying object on both sides
      is the same, make a non-short-circuit operation.  */
-  else if (RANGE_TEST_NON_SHORT_CIRCUIT
+  else if (LOGICAL_OP_NON_SHORT_CIRCUIT
 	   && lhs != 0 && rhs != 0
 	   && (TREE_CODE (exp) == TRUTH_ANDIF_EXPR
 	       || TREE_CODE (exp) == TRUTH_ORIF_EXPR)
@@ -4653,7 +4653,8 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
 			       ll_arg, rl_arg),
 		       fold_convert (TREE_TYPE (ll_arg), integer_zero_node));
 
-      return build2 (code, truth_type, lhs, rhs);
+      if (LOGICAL_OP_NON_SHORT_CIRCUIT)
+	return build2 (code, truth_type, lhs, rhs);
     }
 
   /* See if the comparisons can be merged.  Then get all the parameters for

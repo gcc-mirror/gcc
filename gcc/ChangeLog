@@ -1,3 +1,13 @@
+2004-11-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR target/17107
+	* fold-const.c (RANGE_TEST_NON_SHORT_CIRCUIT): Rename to ...
+	(LOGICAL_OP_NON_SHORT_CIRCUIT): ... here.
+	(fold_range_test): Adjust.
+	(fold_truthop): Use it.
+	* config/rs6000/rs6000.h (RANGE_TEST_NON_SHORT_CIRCUIT): Rename to ...
+	(LOGICAL_OP_NON_SHORT_CIRCUIT): ... here.
+
 2004-11-18  Uros Bizjak  <uros@kss-loka.si>
 
         * configure/i386/i386.md (*fix_trunch_1): Add "&& 1" to

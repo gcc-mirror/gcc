@@ -1096,9 +1096,9 @@ extern const char *rs6000_warn_altivec_long_switch;
 #define BRANCH_COST 3
 
 /* Override BRANCH_COST heuristic which empirically produces worse
-   performance for fold_range_test().  */
+   performance for removing short circuiting from the logical ops.  */
 
-#define RANGE_TEST_NON_SHORT_CIRCUIT 0
+#define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
 /* A fixed register used at prologue and epilogue generation to fix
    addressing modes.  The SPE needs heavy addressing fixes at the last
