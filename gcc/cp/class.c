@@ -4270,6 +4270,9 @@ fixed_type_or_null (instance, nonnull)
      tree instance;
      int *nonnull;
 {
+  if (nonnull)
+    *nonnull = 0;
+
   switch (TREE_CODE (instance))
     {
     case INDIRECT_REF:
