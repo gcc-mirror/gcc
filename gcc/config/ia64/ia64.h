@@ -1108,11 +1108,17 @@ enum reg_class
    letters (`Q', `R', `S', `T', `U') that can be used to segregate specific
    types of operands, usually memory references, for the target machine.  */
 
+/* Non-volatile memory for FP_REG loads/stores.  */
 #define CONSTRAINT_OK_FOR_Q(VALUE) \
   (memory_operand((VALUE), VOIDmode) && ! MEM_VOLATILE_P (VALUE))
+/* 1..4 for shladd arguments.  */
+#define CONSTRAINT_OK_FOR_R(VALUE) \
+  (GET_CODE (VALUE) == CONST_INT && INTVAL (VALUE) >= 1 && INTVAL (VALUE) <= 4)
 
 #define EXTRA_CONSTRAINT(VALUE, C) \
-  ((C) == 'Q' ? CONSTRAINT_OK_FOR_Q (VALUE) : 0)
+  ((C) == 'Q' ? CONSTRAINT_OK_FOR_Q (VALUE)	\
+   : (C) == 'R' ? CONSTRAINT_OK_FOR_R (VALUE)	\
+   : 0)
 
 /* Basic Stack Layout */
 
@@ -2639,6 +2645,7 @@ do {									\
 { "move_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
 		     CONSTANT_P_RTX, SYMBOL_REF, CONST, LABEL_REF}},	\
 { "reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
+{ "reg_or_5bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
 { "reg_or_6bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
 { "reg_or_8bit_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
 { "reg_or_8bit_adjusted_operand", {SUBREG, REG, CONST_INT,		\

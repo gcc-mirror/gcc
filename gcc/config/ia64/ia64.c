@@ -316,6 +316,18 @@ reg_or_0_operand (op, mode)
   return (op == const0_rtx || register_operand (op, mode));
 }
 
+/* Return 1 if OP is a register operand, or a 5 bit immediate operand.  */
+
+int
+reg_or_5bit_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return ((GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) < 32)
+	  || GET_CODE (op) == CONSTANT_P_RTX
+	  || register_operand (op, mode));
+}
+
 /* Return 1 if OP is a register operand, or a 6 bit immediate operand.  */
 
 int
@@ -633,6 +645,23 @@ ia64_move_ok (dst, src)
     return src == const0_rtx;
   else
     return GET_CODE (src) == CONST_DOUBLE && CONST_DOUBLE_OK_FOR_G (src);
+}
+
+/* Check if OP is a mask suitible for use with SHIFT in a dep.z instruction.
+   Return the length of the field, or <= 0 on failure.  */
+
+int
+ia64_depz_field_mask (rop, rshift)
+     rtx rop, rshift;
+{
+  unsigned HOST_WIDE_INT op = INTVAL (rop);
+  unsigned HOST_WIDE_INT shift = INTVAL (rshift);
+
+  /* Get rid of the zero bits we're shifting in.  */
+  op >>= shift;
+
+  /* We must now have a solid block of 1's at bit 0.  */
+  return exact_log2 (op + 1);
 }
 
 /* Expand a symbolic constant load.  */
