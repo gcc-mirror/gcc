@@ -95,7 +95,7 @@ GCC_UNWIND_INCLUDE = @GCC_UNWIND_INCLUDE@
 WARNINGS = -W -Wall
 ## We need _GNU_SOURCE defined for some Linux builds.  It doesn't hurt
 ## to always define it.
-AM_CXXFLAGS = -fno-rtti -fnon-call-exceptions \
+AM_CXXFLAGS = -fno-rtti -fnon-call-exceptions $(THREADCXXFLAGS) \
 ## Some systems don't allow `$' in identifiers by default, so we force it.
 	-fdollars-in-identifiers \
 ## Detect bugs in the verifier implementation, and maybe other places.
