@@ -380,7 +380,7 @@ int flag_eliminate_dwarf2_dups = 0;
 
 /* Nonzero if doing unused type elimination.  */
 
-int flag_eliminate_unused_debug_types = 0;
+int flag_eliminate_unused_debug_types = 1;
 
 /* Nonzero if generating code to do profiling.  */
 
