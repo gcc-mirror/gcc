@@ -372,9 +372,6 @@ local_alloc ()
   reg_offset = (char *) xmalloc (max_regno * sizeof (char));
   reg_next_in_qty = (int *) xmalloc (max_regno * sizeof (int));
 
-  /* Allocate the reg_renumber array.  */
-  allocate_reg_info (max_regno, FALSE, TRUE);
-
   /* Determine which pseudo-registers can be allocated by local-alloc.
      In general, these are the registers used only in a single block and
      which only die once.

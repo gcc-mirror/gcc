@@ -733,7 +733,6 @@ reload (first, global)
      be substituted eventually by altering the REG-rtx's.  */
 
   reg_equiv_constant = (rtx *) xcalloc (max_regno, sizeof (rtx));
-  reg_equiv_memory_loc = (rtx *) xcalloc (max_regno, sizeof (rtx));
   reg_equiv_mem = (rtx *) xcalloc (max_regno, sizeof (rtx));
   reg_equiv_init = (rtx *) xcalloc (max_regno, sizeof (rtx));
   reg_equiv_address = (rtx *) xcalloc (max_regno, sizeof (rtx));

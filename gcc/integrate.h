@@ -144,6 +144,7 @@ extern rtx has_hard_reg_initial_val		PARAMS ((enum machine_mode, int));
 extern void mark_hard_reg_initial_vals		PARAMS ((struct function *));
 /* Called from rest_of_compilation.  */
 extern void emit_initial_value_sets		PARAMS ((void));
+extern void allocate_initial_values		PARAMS ((rtx *));
 
 /* Copy a declaration when one function is substituted inline into
    another.  */

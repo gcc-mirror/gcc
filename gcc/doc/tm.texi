@@ -8760,4 +8760,24 @@ On some targets, branches may have a limited range.  Optimizing the
 filling of delay slots can result in branches being redirected, and this
 may in turn cause a branch offset to overflow.
 
+@findex ALLOCATE_INITIAL_VALUE
+@item ALLOCATE_INITIAL_VALUE(@var{hard_reg})
+
+When the initial value of a hard register has been copied in a pseudo
+register, it is often not necessary to actually allocate a another register
+to this pseudo register, because the original hard register or a stack slot
+it has been saved into can be used.  @code{ALLOCATE_INITIAL_VALUE}, if
+defined, is called at the start of register allocation once for each
+hard register that had its initial value copied by using
+@code{get_func_hard_reg_initial_val} or @code{get_hard_reg_initial_val}.
+Possible values are @code{NULL_RTX}, if you don't want
+to do any special allocation, a @code{REG} rtx---that would typically be
+the hard register itself, if it is known not to be clobbered---or a
+@code{MEM}.
+If you are returning a @code{MEM}, this is only a hint for the allocator;
+it might decide to use another register anyways.
+You may use @code{current_function_leaf_function} in the definition of the
+macro, functions that use @code{REG_N_SETS}, to determine if the hard
+register in question will not be clobbered.
+
 @end table

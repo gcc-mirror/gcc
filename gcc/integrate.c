@@ -3037,3 +3037,37 @@ emit_initial_value_sets ()
 
   emit_insns_after (seq, get_insns ());
 }
+
+/* If the backend knows where to allocate pseudos for hard
+   register initial values, register these allocations now.  */
+void
+allocate_initial_values (reg_equiv_memory_loc)
+     rtx *reg_equiv_memory_loc;
+{
+#ifdef ALLOCATE_INITIAL_VALUE
+  struct initial_value_struct *ivs = cfun->hard_reg_initial_vals;
+  int i;
+
+  if (ivs == 0)
+    return;
+
+  for (i = 0; i < ivs->num_entries; i++)
+    {
+      int regno = REGNO (ivs->entries[i].pseudo);
+      rtx x = ALLOCATE_INITIAL_VALUE (ivs->entries[i].hard_reg);
+
+      if (x == NULL_RTX || REG_N_SETS (REGNO (ivs->entries[i].pseudo)) > 1)
+	; /* Do nothing.  */
+      else if (GET_CODE (x) == MEM)
+	reg_equiv_memory_loc[regno] = x;
+      else if (GET_CODE (x) == REG)
+	{
+	  reg_renumber[regno] = REGNO (x);
+	  /* Poke the regno right into regno_reg_rtx
+	     so that even fixed regs are accepted.  */
+	  REGNO (ivs->entries[i].pseudo) = REGNO (x);
+	}
+      else abort ();
+    }
+#endif
+}
