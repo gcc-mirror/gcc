@@ -1,6 +1,6 @@
 /* Output variables, constants and external declarations, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4607,16 +4607,19 @@ output_constructor (exp, size)
 	  /* Determine size this element should occupy.  */
 	  if (field)
 	    {
-	      if (DECL_SIZE_UNIT (field))
+	      if (DECL_SIZE_UNIT (field)
+		  && ! integer_zerop (DECL_SIZE_UNIT (field)))
 		fieldsize = tree_low_cst (DECL_SIZE_UNIT (field), 1);
-	      else
+	      else if (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE)
 		{
-		  /* If DECL_SIZE is not set, then this must be an array
-		     of unspecified length.  The initialized value must
-		     be a CONSTRUCTOR, and we take the length from the
+		  /* If DECL_SIZE is not set or is zero, then this must be
+		     an array of unspecified length.  The initialized value
+		     must be a CONSTRUCTOR, and we take the length from the
 		     last initialized element.  */
 		  fieldsize = array_size_for_constructor (val);
 		}
+	      else
+		fieldsize = 0;
 	    }
 	  else
 	    fieldsize = int_size_in_bytes (TREE_TYPE (type));

@@ -4518,14 +4518,17 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  if (type_quals)
 	    type = c_build_qualified_type (type, type_quals);
 
-#if 0
-	  /* Don't clear these; leave them set so that the array type
-	     or the variable is itself const or volatile.  */
-	  type_quals = TYPE_UNQUALIFIED;
-#endif
-
 	  if (size_varies)
 	    C_TYPE_VARIABLE_SIZE (type) = 1;
+
+	  /* The GCC extension for zero-length arrays differs from
+	     ISO flexible array members in that sizeof yields zero.  */
+	  if (size && integer_zerop (size))
+	    {
+	      layout_type (type);
+	      TYPE_SIZE (type) = bitsize_zero_node;
+	      TYPE_SIZE_UNIT (type) = size_zero_node;
+	    }
 	}
       else if (TREE_CODE (declarator) == CALL_EXPR)
 	{

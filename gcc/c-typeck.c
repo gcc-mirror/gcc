@@ -1,6 +1,6 @@
 /* Build expressions with type checking for C compiler.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -5289,20 +5289,9 @@ push_init_level (implicit)
 	{
 	  constructor_max_index
 	    = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
-
-	  if (constructor_max_index == NULL_TREE)
-	    {
-	      /* This is a zero-length array or flexible array member.  */
-	      if (pedantic)
-		pedwarn_init ("ISO C does not support initialization of flexible array members");
-	      if (constructor_depth != 2)
-		error_init ("initialization of zero-length array inside a nested structure");
-	    }
-
 	  constructor_index
 	    = convert (bitsizetype, 
-				  TYPE_MIN_VALUE
-				  (TYPE_DOMAIN (constructor_type)));
+		       TYPE_MIN_VALUE (TYPE_DOMAIN (constructor_type)));
 	}
       else
 	constructor_index = bitsize_zero_node;
@@ -5346,6 +5335,24 @@ pop_init_level (implicit)
   if (constructor_type != 0)
     size = int_size_in_bytes (constructor_type);
 
+  /* Error for initializing a flexible array member, or a zero-length
+     array member in an inappropriate context.  */
+  if (constructor_type
+      && TREE_CODE (constructor_type) == ARRAY_TYPE
+      && TYPE_DOMAIN (constructor_type)
+      && ! TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type)))
+    {
+      if (! TYPE_SIZE (constructor_type))
+	error_init ("initialization of a flexible array member");
+      /* Silently discard empty initializations of zero-length arrays.  */
+      else if (integer_zerop (constructor_unfilled_index))
+	constructor_type = 0;
+      /* Otherwise we must be initializing a member of a top-level
+	 structure.  */
+      else if (constructor_depth != 2)
+	error_init ("initialization of zero-length array inside a nested structure");
+    }
+
   /* Warn when some struct elements are implicitly initialized to zero.  */
   if (extra_warnings
       && constructor_type
@@ -5360,17 +5367,7 @@ pop_init_level (implicit)
   /* Now output all pending elements.  */
   output_pending_init_elements (1);
 
-#if 0 /* c-parse.in warns about {}.  */
-  /* In ANSI, each brace level must have at least one element.  */
-  if (! implicit && pedantic
-      && (TREE_CODE (constructor_type) == ARRAY_TYPE
-	  ? integer_zerop (constructor_unfilled_index)
-	  : constructor_unfilled_fields == TYPE_FIELDS (constructor_type)))
-    pedwarn_init ("empty braces in initializer");
-#endif
-
   /* Pad out the end of the structure.  */
-  
   if (p->replacement_value)
     /* If this closes a superfluous brace pair,
        just pass out the element between them.  */
