@@ -3432,7 +3432,11 @@ finish_file ()
 	 not defined when they really are.  This keeps these functions
 	 from being put out unnecessarily.  But, we must stop lying
 	 when the functions are referenced, or if they are not comdat
-	 since they need to be put out now.  */
+	 since they need to be put out now.
+	 This is done in a separate for cycle, because if some deferred
+	 function is contained in another deferred function later in
+	 deferred_fns varray, rest_of_compilation would skip this
+	 function and we really cannot expand the same function twice. */
       for (i = 0; i < deferred_fns_used; ++i)
 	{
 	  tree decl = VARRAY_TREE (deferred_fns, i);
@@ -3441,6 +3445,11 @@ finish_file ()
 	      && DECL_INITIAL (decl)
 	      && DECL_NEEDED_P (decl))
 	    DECL_EXTERNAL (decl) = 0;
+	}
+
+      for (i = 0; i < deferred_fns_used; ++i)
+	{
+	  tree decl = VARRAY_TREE (deferred_fns, i);
 
 	  /* If we're going to need to write this function out, and
 	     there's already a body for it, create RTL for it now.

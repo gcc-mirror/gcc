@@ -1,3 +1,9 @@
+2002-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/6316
+	* decl2.c (finish_file): Clear DECL_EXTERNAL in a separate loop
+	before expanding.
+
 2002-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* init.c (begin_init_stmts): Remove commented out code.

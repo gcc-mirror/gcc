@@ -2,6 +2,8 @@
 
 	* gcc.dg/20020416-1.c: New test.
 
+	* g++.dg/opt/inline1.C: New test.
+
 2002-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/altivec-5.c: New test.
