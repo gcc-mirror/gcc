@@ -1,3 +1,16 @@
+2001-07-04  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific): Markup, spelling and typo fixes.
+	Fixed sorting.
+	Consistently require binutils 2.11.2, not prereleases.
+	(Specific, decstation-*): Canonicalize as mips-dec-*.
+	(Specific, i?86-*-sco3.2v5*): Remove make bootstrap requirement,
+	always necessary.
+	(Specific, m68k-altos): Removed reference to README.altos, deleted.
+	(Specific, mips-*): Reword MIPS C compiler requirements.
+	(Specific, powerpc*-*-*): New, mention --with-cpu once.
+	(Specific, sunv5): Removed, obsolete.
+
 2001-07-04  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (get_shift_alg): Remove an extra operand
