@@ -4,7 +4,10 @@
 	of VOIDmode for comparison code mode.
 	* config/mips/mips.md: For conditional move patterns, use mode of
 	first compare operand for comparison mode, instead of VOIDmode.
-	
+
+	* config/mips/mips.md: Add canonical nmadd and nmsub patterns for both
+	normal and -ffast-math code.
+
 2004-08-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15871
