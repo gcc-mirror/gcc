@@ -303,7 +303,7 @@ namespace std
       void 
       _M_in_cur_move(off_type __n) // argument needs to be +-
       {
-	bool __testout = _M_out_cur;
+	const bool __testout = _M_out_cur;
 	_M_in_cur += __n;
 	if (__testout && _M_buf_unified)
 	  _M_out_cur += __n;
@@ -320,7 +320,7 @@ namespace std
       void 
       _M_out_cur_move(off_type __n) // argument needs to be +-
       {
-	bool __testin = _M_in_cur;
+	const bool __testin = _M_in_cur;
 
 	_M_out_cur += __n;
 	if (__testin && _M_buf_unified)
@@ -453,7 +453,7 @@ namespace std
       sgetc()
       {
 	int_type __ret;
-	if (_M_in_cur && _M_in_cur < _M_in_end)
+	if (_M_in_cur < _M_in_end)
 	  __ret = traits_type::to_int_type(*(this->gptr()));
 	else 
 	  __ret = this->underflow();
@@ -787,8 +787,9 @@ namespace std
       uflow() 
       {
 	int_type __ret = traits_type::eof();
-	bool __testeof = traits_type::eq_int_type(this->underflow(), __ret);
-	bool __testpending = _M_in_cur && _M_in_cur < _M_in_end;
+	const bool __testeof =
+	  traits_type::eq_int_type(this->underflow(), __ret);
+	const bool __testpending = _M_in_cur < _M_in_end;
 	if (!__testeof && __testpending)
 	  {
 	    __ret = traits_type::to_int_type(*_M_in_cur);

@@ -49,7 +49,7 @@ namespace std
     sbumpc()
     {
       int_type __ret;
-      if (_M_in_cur && _M_in_cur < _M_in_end)
+      if (_M_in_cur < _M_in_end)
 	{
 	  char_type __c = *(this->gptr());
 	  _M_in_cur_move(1);
@@ -66,7 +66,7 @@ namespace std
     sputbackc(char_type __c) 
     {
       int_type __ret;
-      bool __testpos = _M_in_cur && _M_in_beg < _M_in_cur;
+      const bool __testpos = _M_in_beg < _M_in_cur;
       if (!__testpos || !traits_type::eq(__c, this->gptr()[-1]))
 	__ret = this->pbackfail(traits_type::to_int_type(__c));
       else 
@@ -83,7 +83,7 @@ namespace std
     sungetc()
     {
       int_type __ret;
-      if (_M_in_cur && _M_in_beg < _M_in_cur)
+      if (_M_in_beg < _M_in_cur)
 	{
 	  _M_in_cur_move(-1);
 	  __ret = traits_type::to_int_type(*_M_in_cur);
@@ -99,7 +99,7 @@ namespace std
     sputc(char_type __c)
     {
       int_type __ret;
-      if (_M_out_cur && _M_out_cur < _M_out_end)
+      if (_M_out_cur < _M_out_end)
 	{
 	  *_M_out_cur = __c;
 	  _M_out_cur_move(1);

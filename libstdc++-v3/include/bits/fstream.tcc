@@ -116,8 +116,8 @@ namespace std
 	{
 	  bool __testfail = false;
 	  const int_type __eof = traits_type::eof();
-	  bool __testput = this->_M_out_cur
-	                   && this->_M_out_beg < this->_M_out_lim;
+	  const bool __testput = this->_M_out_beg < this->_M_out_lim;
+
 	  if (__testput 
 	      && traits_type::eq_int_type(_M_really_overflow(__eof), __eof))
 	    __testfail = true;
@@ -152,11 +152,11 @@ namespace std
     showmanyc()
     {
       streamsize __ret = -1;
-      bool __testin = this->_M_mode & ios_base::in;
+      const bool __testin = this->_M_mode & ios_base::in;
       const locale __loc = this->getloc();
       const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
       // Sync with stdio.
-      bool __sync = this->_M_buf_size <= 1;
+      const bool __sync = this->_M_buf_size <= 1;
 
       if (__testin && this->is_open())
 	{
@@ -178,18 +178,18 @@ namespace std
     pbackfail(int_type __i)
     {
       int_type __ret = traits_type::eof();
-      bool __testin = this->_M_mode & ios_base::in;
+      const bool __testin = this->_M_mode & ios_base::in;
 
       if (__testin)
 	{
-	  bool __testpb = this->_M_in_beg < this->_M_in_cur;
+	  const bool __testpb = this->_M_in_beg < this->_M_in_cur;
 	  char_type __c = traits_type::to_char_type(__i);
-	  bool __testeof = traits_type::eq_int_type(__i, __ret);
+	  const bool __testeof = traits_type::eq_int_type(__i, __ret);
 
 	  if (__testpb)
 	    {
-	      bool __testout = this->_M_mode & ios_base::out;
-	      bool __testeq = traits_type::eq(__c, this->gptr()[-1]);
+	      const bool __testout = this->_M_mode & ios_base::out;
+	      const bool __testeq = traits_type::eq(__c, this->gptr()[-1]);
 
 	      // Try to put back __c into input sequence in one of three ways.
 	      // Order these tests done in is unspecified by the standard.
@@ -251,9 +251,8 @@ namespace std
     overflow(int_type __c)
     {
       int_type __ret = traits_type::eof();
-      bool __testput =
-	this->_M_out_cur && this->_M_out_cur < this->_M_out_end;
-      bool __testout = this->_M_mode & ios_base::out;
+      const bool __testput = this->_M_out_cur < this->_M_out_end;
+      const bool __testout = this->_M_mode & ios_base::out;
       
       if (__testout)
 	{
@@ -282,7 +281,7 @@ namespace std
       const locale __loc = this->getloc();
       const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
       // Sync with stdio.
-      bool __sync = this->_M_buf_size <= 1;
+      const bool __sync = this->_M_buf_size <= 1;
 
       if (__cvt.always_noconv() && __ilen)
 	{
@@ -352,10 +351,10 @@ namespace std
     _M_really_overflow(int_type __c)
     {
       int_type __ret = traits_type::eof();
-      bool __testput = this->_M_out_cur && this->_M_out_beg < this->_M_out_lim;
-      bool __testunbuffered = _M_file.is_open() && !this->_M_buf_size;
+      const bool __testput = this->_M_out_beg < this->_M_out_lim;
+      const bool __testunbuffered = _M_file.is_open() && !this->_M_buf_size;
       // Sync with stdio.
-      bool __sync = this->_M_buf_size <= 1;
+      const bool __sync = this->_M_buf_size <= 1;
 
       if (__testput || __testunbuffered)
 	{
@@ -440,16 +439,16 @@ namespace std
     seekoff(off_type __off, ios_base::seekdir __way, ios_base::openmode __mode)
     {
       pos_type __ret =  pos_type(off_type(-1)); 
-      bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
-      bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
+      const bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
+      const bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
       // Sync with stdio.
-      bool __sync = this->_M_buf_size <= 1;
+      const bool __sync = this->_M_buf_size <= 1;
       
       // Should probably do has_facet checks here.
       int __width = use_facet<__codecvt_type>(this->_M_buf_locale).encoding();
       if (__width < 0)
 	__width = 0;
-      bool __testfail = __off != 0 && __width <= 0;
+      const bool __testfail = __off != 0 && __width <= 0;
       
       if (this->is_open() && !__testfail && (__testin || __testout)) 
 	{
@@ -460,10 +459,8 @@ namespace std
 	    { 
 	      off_type __computed_off = __width * __off;
 	      
-	      bool __testget = this->_M_in_cur
-		&& this->_M_in_beg < this->_M_in_end;
-	      bool __testput = this->_M_out_cur
-		&& this->_M_out_beg < this->_M_out_lim;
+	      const bool __testget = this->_M_in_beg < this->_M_in_end;
+	      const bool __testput = this->_M_out_beg < this->_M_out_lim;
 	      // Sync the internal and external streams.
 	      // out
 	      if (__testput || _M_last_overflowed)
@@ -523,7 +520,7 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     imbue(const locale& __loc)
     {
-      bool __testbeg = gptr() == eback() && pptr() == pbase();
+      const bool __testbeg = gptr() == eback() && pptr() == pbase();
 
       if (__testbeg && this->_M_buf_locale != __loc)
 	this->_M_buf_locale = __loc;
