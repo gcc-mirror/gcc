@@ -6975,7 +6975,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	   The deduction may fail for any of the following reasons: 
 
 	   -- Attempting to create an array with an element type that
-	      is void, a function type, or a reference type.  */
+	      is void, a function type, or a reference type, or [DR337] 
+	      an abstract class type.  */
 	if (TREE_CODE (type) == VOID_TYPE 
 	    || TREE_CODE (type) == FUNCTION_TYPE
 	    || TREE_CODE (type) == REFERENCE_TYPE)
@@ -6983,6 +6984,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    if (complain & tf_error)
 	      error ("creating array of `%T'", type);
 	    return error_mark_node;
+	  }
+	if (CLASS_TYPE_P (type) && CLASSTYPE_PURE_VIRTUALS (type))
+	  {
+	    if (complain & tf_error)
+	      error ("creating array of `%T', which is an abstract class type", 
+		     type);
+	    return error_mark_node;	    
 	  }
 
 	r = build_cplus_array_type (type, domain);

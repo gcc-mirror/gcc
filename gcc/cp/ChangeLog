@@ -1,3 +1,12 @@
+2004-01-10  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	DR 337
+	PR c++/9256
+	* pt.c (tsubst): Substitution must fail if we are attempting to 
+	create an array with element type that is an abstract class type.
+	* decl.c (cp_finish_decl): Strip pointers and array types recursively
+	before calling abstract_virtuals_error.
+
 2004-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* name-lookup.c (qualified_lookup_using_namespace): Consider
