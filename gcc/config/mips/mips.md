@@ -4882,7 +4882,7 @@ move\\t%0,%z4\\n\\
 
   if ((INTVAL (offset) & 7) == 0
       && (mem_addr == stack_pointer_rtx || mem_addr == frame_pointer_rtx))
-    return \"sd\\t%1,%0\";
+    return \"sd\\t%z1,%0\";
 
   return \"usd\\t%z1,%0\";
 }"
