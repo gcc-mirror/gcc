@@ -2938,7 +2938,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  if (GET_MODE (offset_rtx) != ptr_mode)
 	    {
 #ifdef POINTERS_EXTEND_UNSIGNED
-	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 1);
+	      offset_rtx = convert_memory_address (ptr_mode, offset_rtx);
 #else
 	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
 #endif
@@ -3737,7 +3737,7 @@ store_constructor (exp, target, cleared)
               if (GET_MODE (offset_rtx) != ptr_mode)
                 {
 #ifdef POINTERS_EXTEND_UNSIGNED
-                  offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 1);
+                  offset_rtx = convert_memory_address (ptr_mode, offset_rtx);
 #else
                   offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
 #endif
@@ -5974,7 +5974,7 @@ expand_expr (exp, target, tmode, modifier)
 	    if (GET_MODE (offset_rtx) != ptr_mode)
 	      {
 #ifdef POINTERS_EXTEND_UNSIGNED
-		offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 1);
+		offset_rtx = convert_memory_address (ptr_mode, offset_rtx);
 #else
 		offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
 #endif
