@@ -86,14 +86,19 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    definitions (each would be accessed through a pointer).
 
    We use the flags in an RTX as follows:
-   `unchanging' (RTX_UNCHANGING_P): This rtx is fully simplified
+   `unchanging' (ATTR_IND_SIMPLIFIED_P): This rtx is fully simplified
       independent of the insn code.
-   `in_struct' (MEM_IN_STRUCT_P): This rtx is fully simplified
+   `in_struct' (ATTR_CURR_SIMPLIFIED_P): This rtx is fully simplified
       for the insn code currently being processed (see optimize_attrs).
-   `integrated' (RTX_INTEGRATED_P): This rtx is permanent and unique
+   `integrated' (ATTR_PERMANENT_P): This rtx is permanent and unique
       (see attr_rtx).
-   `volatil' (MEM_VOLATILE_P): During simplify_by_exploding the value of an
+   `volatil' (ATTR_EQ_ATTR_P): During simplify_by_exploding the value of an
       EQ_ATTR rtx is true if !volatil and false if volatil.  */
+
+#define ATTR_IND_SIMPLIFIED_P(RTX) (RTX_FLAG((RTX), unchanging))
+#define ATTR_CURR_SIMPLIFIED_P(RTX) (RTX_FLAG((RTX), in_struct))
+#define ATTR_PERMANENT_P(RTX) (RTX_FLAG((RTX), integrated))
+#define ATTR_EQ_ATTR_P(RTX) (RTX_FLAG((RTX), volatil))
 
 #include "hconfig.h"
 #include "system.h"
@@ -262,7 +267,7 @@ static struct function_unit *units;
 
    The algorithm relies on sharing EQ_ATTR nodes: if two nodes in an
    expression are the same, the will also have the same address.  We find
-   all the EQ_ATTR nodes by marking them MEM_VOLATILE_P.  This bit later
+   all the EQ_ATTR nodes by marking them ATTR_EQ_ATTR_P.  This bit later
    represents the value of an EQ_ATTR node, so once all nodes are marked,
    they are also given an initial value of FALSE.
 
@@ -344,7 +349,7 @@ int optimize = 0;
 /* Simplify an expression.  Only call the routine if there is something to
    simplify.  */
 #define SIMPLIFY_TEST_EXP(EXP,INSN_CODE,INSN_INDEX)	\
-  (RTX_UNCHANGING_P (EXP) || MEM_IN_STRUCT_P (EXP) ? (EXP)	\
+  (ATTR_IND_SIMPLIFIED_P (EXP) || ATTR_CURR_SIMPLIFIED_P (EXP) ? (EXP)	\
    : simplify_test_exp (EXP, INSN_CODE, INSN_INDEX))
 
 /* Simplify (eq_attr ("alternative") ...)
@@ -532,10 +537,10 @@ attr_hash_add_string (hashcode, str)
 }
 
 /* Generate an RTL expression, but avoid duplicates.
-   Set the RTX_INTEGRATED_P flag for these permanent objects.
+   Set the ATTR_PERMANENT_P flag for these permanent objects.
 
    In some cases we cannot uniquify; then we return an ordinary
-   impermanent rtx with RTX_INTEGRATED_P clear.
+   impermanent rtx with ATTR_PERMANENT_P clear.
 
    Args are like gen_rtx, but without the mode:
 
@@ -560,7 +565,7 @@ attr_rtx_1 (code, p)
       rtx arg0 = va_arg (p, rtx);
 
       /* A permanent object cannot point to impermanent ones.  */
-      if (! RTX_INTEGRATED_P (arg0))
+      if (! ATTR_PERMANENT_P (arg0))
 	{
 	  rt_val = rtx_alloc (code);
 	  XEXP (rt_val, 0) = arg0;
@@ -589,7 +594,7 @@ attr_rtx_1 (code, p)
       rtx arg1 = va_arg (p, rtx);
 
       /* A permanent object cannot point to impermanent ones.  */
-      if (! RTX_INTEGRATED_P (arg0) || ! RTX_INTEGRATED_P (arg1))
+      if (! ATTR_PERMANENT_P (arg0) || ! ATTR_PERMANENT_P (arg1))
 	{
 	  rt_val = rtx_alloc (code);
 	  XEXP (rt_val, 0) = arg0;
@@ -713,7 +718,7 @@ attr_rtx_1 (code, p)
 
   rtl_obstack = old_obstack;
   attr_hash_add_rtx (hashcode, rt_val);
-  RTX_INTEGRATED_P (rt_val) = 1;
+  ATTR_PERMANENT_P (rt_val) = 1;
   return rt_val;
 }
 
@@ -810,7 +815,7 @@ static int
 attr_equal_p (x, y)
      rtx x, y;
 {
-  return (x == y || (! (RTX_INTEGRATED_P (x) && RTX_INTEGRATED_P (y))
+  return (x == y || (! (ATTR_PERMANENT_P (x) && ATTR_PERMANENT_P (y))
 		     && rtx_equal_p (x, y)));
 }
 
@@ -828,7 +833,7 @@ attr_copy_rtx (orig)
   const char *format_ptr;
 
   /* No need to copy a permanent object.  */
-  if (RTX_INTEGRATED_P (orig))
+  if (ATTR_PERMANENT_P (orig))
     return orig;
 
   code = GET_CODE (orig);
@@ -852,10 +857,10 @@ attr_copy_rtx (orig)
 
   copy = rtx_alloc (code);
   PUT_MODE (copy, GET_MODE (orig));
-  copy->in_struct = orig->in_struct;
-  copy->volatil = orig->volatil;
-  copy->unchanging = orig->unchanging;
-  copy->integrated = orig->integrated;
+  ATTR_IND_SIMPLIFIED_P (copy) = ATTR_IND_SIMPLIFIED_P (orig);
+  ATTR_CURR_SIMPLIFIED_P (copy) = ATTR_CURR_SIMPLIFIED_P (orig);
+  ATTR_PERMANENT_P (copy) = ATTR_PERMANENT_P (orig);
+  ATTR_EQ_ATTR_P (copy) = ATTR_EQ_ATTR_P (orig);
 
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
 
@@ -945,7 +950,7 @@ check_attr_test (exp, is_const, lineno)
 		{
 		  XSTR (exp, 0) = alternative_name;
 		  /* This can't be simplified any further.  */
-		  RTX_UNCHANGING_P (exp) = 1;
+		  ATTR_IND_SIMPLIFIED_P (exp) = 1;
 		  return exp;
 		}
 	      else
@@ -964,7 +969,7 @@ check_attr_test (exp, is_const, lineno)
 	     constant attribute, so don't expand this until it's time to
 	     write the test expression.  */
 	  if (attr->is_const)
-	    RTX_UNCHANGING_P (exp) = 1;
+	    ATTR_IND_SIMPLIFIED_P (exp) = 1;
 
 	  if (attr->is_numeric)
 	    {
@@ -1026,7 +1031,7 @@ check_attr_test (exp, is_const, lineno)
 	fatal ("RTL operator \"%s\" not valid in constant attribute test",
 	       GET_RTX_NAME (GET_CODE (exp)));
       /* These cases can't be simplified.  */
-      RTX_UNCHANGING_P (exp) = 1;
+      ATTR_IND_SIMPLIFIED_P (exp) = 1;
       break;
 
     case LE:  case LT:  case GT:  case GE:
@@ -1038,7 +1043,7 @@ check_attr_test (exp, is_const, lineno)
 			attr_rtx (SYMBOL_REF, XSTR (XEXP (exp, 0), 0)),
 			attr_rtx (SYMBOL_REF, XSTR (XEXP (exp, 1), 0)));
       /* These cases can't be simplified.  */
-      RTX_UNCHANGING_P (exp) = 1;
+      ATTR_IND_SIMPLIFIED_P (exp) = 1;
       break;
 
     case SYMBOL_REF:
@@ -1047,7 +1052,7 @@ check_attr_test (exp, is_const, lineno)
 	  /* These cases are valid for constant attributes, but can't be
 	     simplified.  */
 	  exp = attr_rtx (SYMBOL_REF, XSTR (exp, 0));
-	  RTX_UNCHANGING_P (exp) = 1;
+	  ATTR_IND_SIMPLIFIED_P (exp) = 1;
 	  break;
 	}
     default:
@@ -1405,7 +1410,7 @@ convert_const_symbol_ref (exp, attr)
 	*p = TOUPPER (*p);
 
       value = attr_rtx (SYMBOL_REF, string);
-      RTX_UNCHANGING_P (value) = 1;
+      ATTR_IND_SIMPLIFIED_P (value) = 1;
 
       XVECEXP (condexp, 0, 2 * i) = attr_rtx (EQ, exp, value);
 
@@ -1446,18 +1451,18 @@ make_canonical (attr, exp)
       break;
 
     case SYMBOL_REF:
-      if (!attr->is_const || RTX_UNCHANGING_P (exp))
+      if (!attr->is_const || ATTR_IND_SIMPLIFIED_P (exp))
 	break;
       /* The SYMBOL_REF is constant for a given run, so mark it as unchanging.
 	 This makes the COND something that won't be considered an arbitrary
 	 expression by walk_attr_value.  */
-      RTX_UNCHANGING_P (exp) = 1;
+      ATTR_IND_SIMPLIFIED_P (exp) = 1;
 #if 0
       /* ??? Why do we do this?  With attribute values { A B C D E }, this
          tends to generate (!(x==A) && !(x==B) && !(x==C) && !(x==D)) rather
 	 than (x==E).  */
       exp = convert_const_symbol_ref (exp, attr);
-      RTX_UNCHANGING_P (exp) = 1;
+      ATTR_IND_SIMPLIFIED_P (exp) = 1;
       exp = check_attr_value (exp, attr);
       /* Goto COND case since this is now a COND.  Note that while the
          new expression is rescanned, all symbol_ref notes are marked as
@@ -2824,7 +2829,7 @@ make_alternative_compare (mask)
     ;
 
   newexp = attr_rtx (EQ_ATTR, alternative_name, attr_numeral (i));
-  RTX_UNCHANGING_P (newexp) = 1;
+  ATTR_IND_SIMPLIFIED_P (newexp) = 1;
 
   return newexp;
 }
@@ -2932,7 +2937,7 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
     abort ();
 
   /* If uses an address, must return original expression.  But set the
-     RTX_UNCHANGING_P bit so we don't try to simplify it again.  */
+     ATTR_IND_SIMPLIFIED_P bit so we don't try to simplify it again.  */
 
   address_used = 0;
   walk_attr_value (newexp);
@@ -2940,7 +2945,7 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
   if (address_used)
     {
       /* This had `&& current_alternative_string', which seems to be wrong.  */
-      if (! RTX_UNCHANGING_P (exp))
+      if (! ATTR_IND_SIMPLIFIED_P (exp))
 	return copy_rtx_unchanging (exp);
       return exp;
     }
@@ -3198,7 +3203,7 @@ attr_rtx_cost (x)
 
 
 /* Simplify test expression and use temporary obstack in order to avoid
-   memory bloat.  Use RTX_UNCHANGING_P to avoid unnecesary simplifications
+   memory bloat.  Use ATTR_IND_SIMPLIFIED to avoid unnecesary simplifications
    and avoid unnecesary copying if possible.  */
 
 static rtx
@@ -3208,7 +3213,7 @@ simplify_test_exp_in_temp (exp, insn_code, insn_index)
 {
   rtx x;
   struct obstack *old;
-  if (RTX_UNCHANGING_P (exp))
+  if (ATTR_IND_SIMPLIFIED_P (exp))
     return exp;
   old = rtl_obstack;
   rtl_obstack = temp_obstack;
@@ -3241,7 +3246,7 @@ simplify_test_exp (exp, insn_code, insn_index)
   rtx newexp = exp;
 
   /* Don't re-simplify something we already simplified.  */
-  if (RTX_UNCHANGING_P (exp) || MEM_IN_STRUCT_P (exp))
+  if (ATTR_IND_SIMPLIFIED_P (exp) || ATTR_CURR_SIMPLIFIED_P (exp))
     return exp;
 
   switch (GET_CODE (exp))
@@ -3491,7 +3496,7 @@ simplify_test_exp (exp, insn_code, insn_index)
      won't buy anything unless we weren't given a valid insn code
      to process (i.e., we are canonicalizing something.).  */
   if (insn_code != -2 /* Seems wrong: && current_alternative_string.  */
-      && ! RTX_UNCHANGING_P (newexp))
+      && ! ATTR_IND_SIMPLIFIED_P (newexp))
     return copy_rtx_unchanging (newexp);
 
   return newexp;
@@ -3559,7 +3564,7 @@ optimize_attrs ()
   /* Process one insn code at a time.  */
   for (i = -2; i < insn_code_number; i++)
     {
-      /* Clear the MEM_IN_STRUCT_P flag everywhere relevant.
+      /* Clear the ATTR_CURR_SIMPLIFIED_P flag everywhere relevant.
 	 We use it to mean "already simplified for this insn".  */
       for (iv = insn_code_values[i]; iv; iv = iv->next)
 	clear_struct_flag (iv->av->value);
@@ -3747,13 +3752,13 @@ simplify_by_exploding (exp)
   most_tests = -1;
   for (i = num_marks = 0; i < total; i++)
     if (GET_CODE (condval[i]) == CONST_STRING
-	&& ! MEM_VOLATILE_P (condval[i]))
+	&& ! ATTR_EQ_ATTR_P (condval[i]))
       {
 	/* Mark the unmarked constant value and count how many are marked.  */
-	MEM_VOLATILE_P (condval[i]) = 1;
+	ATTR_EQ_ATTR_P (condval[i]) = 1;
 	for (j = new_marks = 0; j < total; j++)
 	  if (GET_CODE (condval[j]) == CONST_STRING
-	      && MEM_VOLATILE_P (condval[j]))
+	      && ATTR_EQ_ATTR_P (condval[j]))
 	    new_marks++;
 	if (new_marks - num_marks > most_tests)
 	  {
@@ -3764,7 +3769,7 @@ simplify_by_exploding (exp)
       }
   /* Clear all the marks.  */
   for (i = 0; i < total; i++)
-    MEM_VOLATILE_P (condval[i]) = 0;
+    ATTR_EQ_ATTR_P (condval[i]) = 0;
 
   /* Give up if nothing is constant.  */
   if (num_marks == 0)
@@ -3796,7 +3801,7 @@ simplify_by_exploding (exp)
   return ret;
 }
 
-/* Set the MEM_VOLATILE_P flag for all EQ_ATTR expressions in EXP and
+/* Set the ATTR_EQ_ATTR_P flag for all EQ_ATTR expressions in EXP and
    verify that EXP can be simplified to a constant term if all the EQ_ATTR
    tests have known value.  */
 
@@ -3810,14 +3815,14 @@ find_and_mark_used_attributes (exp, terms, nterms)
   switch (GET_CODE (exp))
     {
     case EQ_ATTR:
-      if (! MEM_VOLATILE_P (exp))
+      if (! ATTR_EQ_ATTR_P (exp))
 	{
 	  rtx link = rtx_alloc (EXPR_LIST);
 	  XEXP (link, 0) = exp;
 	  XEXP (link, 1) = *terms;
 	  *terms = link;
 	  *nterms += 1;
-	  MEM_VOLATILE_P (exp) = 1;
+	  ATTR_EQ_ATTR_P (exp) = 1;
 	}
       return 1;
 
@@ -3850,7 +3855,7 @@ find_and_mark_used_attributes (exp, terms, nterms)
     }
 }
 
-/* Clear the MEM_VOLATILE_P flag in all EQ_ATTR expressions on LIST and
+/* Clear the ATTR_EQ_ATTR_P flag in all EQ_ATTR expressions on LIST and
    in the values of the NDIM-dimensional attribute space SPACE.  */
 
 static void
@@ -3869,7 +3874,7 @@ unmark_used_attributes (list, space, ndim)
     {
       exp = XEXP (link, 0);
       if (GET_CODE (exp) == EQ_ATTR)
-	MEM_VOLATILE_P (exp) = 0;
+	ATTR_EQ_ATTR_P (exp) = 0;
     }
 }
 
@@ -3905,7 +3910,7 @@ add_values_to_cover (dim)
 	if (GET_CODE (av->value) == CONST_STRING)
 	  {
 	    exp = attr_eq (dim->attr->name, XSTR (av->value, 0));
-	    if (MEM_VOLATILE_P (exp))
+	    if (ATTR_EQ_ATTR_P (exp))
 	      continue;
 
 	    link = rtx_alloc (EXPR_LIST);
@@ -3995,7 +4000,7 @@ simplify_with_current_value (exp, space, ndim)
     {
       x = XEXP (space[i].current_value, 0);
       if (GET_CODE (x) == EQ_ATTR)
-	MEM_VOLATILE_P (x) = 0;
+	ATTR_EQ_ATTR_P (x) = 0;
     }
 
   exp = simplify_with_current_value_aux (exp);
@@ -4005,13 +4010,13 @@ simplify_with_current_value (exp, space, ndim)
     {
       x = XEXP (space[i].current_value, 0);
       if (GET_CODE (x) == EQ_ATTR)
-	MEM_VOLATILE_P (x) = 1;
+	ATTR_EQ_ATTR_P (x) = 1;
     }
 
   return exp;
 }
 
-/* Reduce the expression EXP based on the MEM_VOLATILE_P settings of
+/* Reduce the expression EXP based on the ATTR_EQ_ATTR_P settings of
    all EQ_ATTR expressions.  */
 
 static rtx
@@ -4024,7 +4029,7 @@ simplify_with_current_value_aux (exp)
   switch (GET_CODE (exp))
     {
     case EQ_ATTR:
-      if (MEM_VOLATILE_P (exp))
+      if (ATTR_EQ_ATTR_P (exp))
 	return false_rtx;
       else
 	return true_rtx;
@@ -4091,7 +4096,7 @@ simplify_with_current_value_aux (exp)
     }
 }
 
-/* Clear the MEM_IN_STRUCT_P flag in EXP and its subexpressions.  */
+/* Clear the ATTR_CURR_SIMPLIFIED_P flag in EXP and its subexpressions.  */
 
 static void
 clear_struct_flag (x)
@@ -4102,8 +4107,8 @@ clear_struct_flag (x)
   enum rtx_code code;
   const char *fmt;
 
-  MEM_IN_STRUCT_P (x) = 0;
-  if (RTX_UNCHANGING_P (x))
+  ATTR_CURR_SIMPLIFIED_P (x) = 0;
+  if (ATTR_IND_SIMPLIFIED_P (x))
     return;
 
   code = GET_CODE (x);
@@ -4914,7 +4919,7 @@ walk_attr_value (exp)
   switch (code)
     {
     case SYMBOL_REF:
-      if (! RTX_UNCHANGING_P (exp))
+      if (! ATTR_IND_SIMPLIFIED_P (exp))
 	/* Since this is an arbitrary expression, it can look at anything.
 	   However, constant expressions do not depend on any particular
 	   insn.  */
@@ -5986,10 +5991,10 @@ copy_rtx_unchanging (orig)
   RTX_CODE code;
 #endif
 
-  if (RTX_UNCHANGING_P (orig) || MEM_IN_STRUCT_P (orig))
+  if (ATTR_IND_SIMPLIFIED_P (orig) || ATTR_CURR_SIMPLIFIED_P (orig))
     return orig;
 
-  MEM_IN_STRUCT_P (orig) = 1;
+  ATTR_CURR_SIMPLIFIED_P (orig) = 1;
   return orig;
 
 #if 0
@@ -6008,7 +6013,7 @@ copy_rtx_unchanging (orig)
 
   copy = rtx_alloc (code);
   PUT_MODE (copy, GET_MODE (orig));
-  RTX_UNCHANGING_P (copy) = 1;
+  ATTR_IND_SIMPLIFIED_P (copy) = 1;
 
   memcpy (&XEXP (copy, 0), &XEXP (orig, 0),
 	  GET_RTX_LENGTH (GET_CODE (copy)) * sizeof (rtx));
@@ -6082,8 +6087,8 @@ main (argc, argv)
   XWINT (true_rtx, 0) = 1;
   false_rtx = rtx_alloc (CONST_INT);
   XWINT (false_rtx, 0) = 0;
-  RTX_UNCHANGING_P (true_rtx) = RTX_UNCHANGING_P (false_rtx) = 1;
-  RTX_INTEGRATED_P (true_rtx) = RTX_INTEGRATED_P (false_rtx) = 1;
+  ATTR_IND_SIMPLIFIED_P (true_rtx) = ATTR_IND_SIMPLIFIED_P (false_rtx) = 1;
+  ATTR_PERMANENT_P (true_rtx) = ATTR_PERMANENT_P (false_rtx) = 1;
 
   alternative_name = attr_string ("alternative", strlen ("alternative"));
 

@@ -2286,11 +2286,11 @@ copy_most_rtx (orig, may_share)
 
   copy = rtx_alloc (code);
   PUT_MODE (copy, GET_MODE (orig));
-  copy->in_struct = orig->in_struct;
-  copy->volatil = orig->volatil;
-  copy->unchanging = orig->unchanging;
-  copy->integrated = orig->integrated;
-  copy->frame_related = orig->frame_related;
+  RTX_FLAG (copy, in_struct) = RTX_FLAG (orig, in_struct);
+  RTX_FLAG (copy, volatil) = RTX_FLAG (orig, volatil);
+  RTX_FLAG (copy, unchanging) = RTX_FLAG (orig, unchanging);
+  RTX_FLAG (copy, integrated) = RTX_FLAG (orig, integrated);
+  RTX_FLAG (copy, frame_related) = RTX_FLAG (orig, frame_related);
 
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
 
@@ -2423,7 +2423,7 @@ copy_rtx_if_shared (orig)
   /* This rtx may not be shared.  If it has already been seen,
      replace it with a copy of itself.  */
 
-  if (x->used)
+  if (RTX_FLAG (x, used))
     {
       rtx copy;
 
@@ -2434,7 +2434,7 @@ copy_rtx_if_shared (orig)
       x = copy;
       copied = 1;
     }
-  x->used = 1;
+  RTX_FLAG (x, used) = 1;
 
   /* Now scan the subexpressions recursively.
      We can store any replaced subexpressions directly into X
@@ -2513,7 +2513,7 @@ reset_used_flags (x)
       break;
     }
 
-  x->used = 0;
+  RTX_FLAG (x, used) = 0;
 
   format_ptr = GET_RTX_FORMAT (code);
   for (i = 0; i < GET_RTX_LENGTH (code); i++)
@@ -4467,8 +4467,8 @@ gen_sequence ()
      We only return the pattern of an insn if its code is INSN and it
      has no notes.  This ensures that no information gets lost.  */
   if (len == 1
-      && ! RTX_FRAME_RELATED_P (first_insn)
       && GET_CODE (first_insn) == INSN
+      && ! RTX_FRAME_RELATED_P (first_insn)
       /* Don't throw away any reg notes.  */
       && REG_NOTES (first_insn) == 0)
     return PATTERN (first_insn);
@@ -4592,14 +4592,14 @@ copy_insn_1 (orig)
 
   /* We do not copy the USED flag, which is used as a mark bit during
      walks over the RTL.  */
-  copy->used = 0;
+  RTX_FLAG (copy, used) = 0;
 
   /* We do not copy JUMP, CALL, or FRAME_RELATED for INSNs.  */
   if (GET_RTX_CLASS (code) == 'i')
     {
-      copy->jump = 0;
-      copy->call = 0;
-      copy->frame_related = 0;
+      RTX_FLAG (copy, jump) = 0;
+      RTX_FLAG (copy, call) = 0;
+      RTX_FLAG (copy, frame_related) = 0;
     }
 
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));

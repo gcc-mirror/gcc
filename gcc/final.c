@@ -2761,7 +2761,7 @@ alter_subreg (xp)
 	  ORIGINAL_REGNO (x) = ORIGINAL_REGNO (y);
 	  /* This field has a different meaning for REGs and SUBREGs.  Make
 	     sure to clear it!  */
-	  x->used = 0;
+	  RTX_FLAG (x, used) = 0;
 	}
       else
 	abort ();

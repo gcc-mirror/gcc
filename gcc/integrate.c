@@ -2209,7 +2209,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
       if (map->orig_asm_operands_vector == ASM_OPERANDS_INPUT_VEC (orig))
 	{
 	  copy = rtx_alloc (ASM_OPERANDS);
-	  copy->volatil = orig->volatil;
+	  RTX_FLAG (copy, volatil) = RTX_FLAG (orig, volatil);
 	  PUT_MODE (copy, GET_MODE (orig));
 	  ASM_OPERANDS_TEMPLATE (copy) = ASM_OPERANDS_TEMPLATE (orig);
 	  ASM_OPERANDS_OUTPUT_CONSTRAINT (copy)
@@ -2328,9 +2328,9 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 
   copy = rtx_alloc (code);
   PUT_MODE (copy, mode);
-  copy->in_struct = orig->in_struct;
-  copy->volatil = orig->volatil;
-  copy->unchanging = orig->unchanging;
+  RTX_FLAG (copy, in_struct) = RTX_FLAG (orig, in_struct);
+  RTX_FLAG (copy, volatil) = RTX_FLAG (orig, volatil);
+  RTX_FLAG (copy, unchanging) = RTX_FLAG (orig, unchanging);
 
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
 
