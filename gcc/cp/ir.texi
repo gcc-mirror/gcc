@@ -1624,7 +1624,7 @@ These nodes represent @code{throw} expressions.  The single operand is
 an expression for the code that should be executed to throw the
 exception.  However, there is one implicit action not represented in
 that expression; namely the call to @code{__throw}.  This function takes
-no arguments.  If @code{setjmp}/@code{longjmp} exceptiosn are used, the
+no arguments.  If @code{setjmp}/@code{longjmp} exceptions are used, the
 function @code{__sjthrow} is called instead.  The normal G++ back-end
 uses the function @code{emit_throw} to generate this code; you can
 examine this function to see what needs to be done.
@@ -1811,17 +1811,23 @@ is a @code{VAR_DECL} for the temporary variable.  The second operand is
 the initializer for the temporary.  The initializer is evaluated, and
 copied (bitwise) into the temporary.
 
+Often, a @code{TARGET_EXPR} occurs on the right-hand side of an
+assignment, or as the second operand to a comma-expression which is
+itself the right-hand side of an assignment, etc.  In this case, we say
+that the @code{TARGET_EXPR} is ``normal''; otherwise, we say it is
+``orphaned''.  For a normal @code{TARGET_EXPR} the temporary variable
+should be treated as an alias for the left-hand side of the assignment,
+rather than as a new temporary variable.
+
 The third operand to the @code{TARGET_EXPR}, if present, is a
 cleanup-expression (i.e., destructor call) for the temporary.  If this
-expression is not copied into some other location (i.e., if it is not
-the right-hand side of an assignment, or the second operand to a
-comma-expression which is itself the right-hand side of an assignment,
-etc.), then this expression must be executed when the statement
-containing this expression is complete.  These cleanups must always be
-executed in the order opposite to that in which they were encountered.
-Note that if a temporary is created on one branch of a conditional
-operator (i.e., in the second or third operand to a @code{COND_EXPR}),
-the cleanup must be run only if that branch is actually executed.
+expression is orphaned, then this expression must be executed when the
+statement containing this expression is complete.  These cleanups must
+always be executed in the order opposite to that in which they were
+encountered.  Note that if a temporary is created on one branch of a
+conditional operator (i.e., in the second or third operand to a
+@code{COND_EXPR}), the cleanup must be run only if that branch is
+actually executed.
 
 See @code{STMT_IS_FULL_EXPR_P} for more information about running these
 cleanups.
