@@ -1,3 +1,7 @@
+2000-04-03  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/linux-elf.h (SUBTARGET_EXTRA_LINK_SPEC): Fix typos.
+
 2000-04-03  Felix Lee  <flee@cygnus.com>
 
 	* fixinc/server.c (find_shell): New function.  Avoid $SHELL.
