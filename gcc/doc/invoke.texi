@@ -1797,14 +1797,14 @@ used.
 Assume that all Objective-C message dispatches (e.g., 
 @code{[receiver message:arg]}) in this translation unit ensure that the receiver 
 is not @code{nil}.  This allows for more efficient entry points in the runtime to be 
-used.  Currently, this option is only available in conjunciton with 
+used.  Currently, this option is only available in conjunction with 
 the NeXT runtime on Mac OS X 10.3 and later.
 
 @item -fobjc-exceptions
 @opindex -fobjc-exceptions
 Enable syntactic support for structured exception handling in Objective-C, 
 similar to what is offered by C++ and Java.  Currently, this option is only 
-available in conjunciton with the NeXT runtime on Mac OS X 10.3 and later. 
+available in conjunction with the NeXT runtime on Mac OS X 10.3 and later. 
 
 @smallexample
   @@try @{
@@ -4757,7 +4757,7 @@ The default value is 10.
 @item large-function-insns
 The limit specifying really large functions.  For functions greater than this
 limit inlining is constrained by @option{--param large-function-growth}.
-This parameter is usefull primarily to avoid extreme compilation time caused by non-linear
+This parameter is useful primarily to avoid extreme compilation time caused by non-linear
 algorithms used by the backend.
 This parameter is ignored when @option{-funit-at-a-time} is not used.
 The default value is 30000.
