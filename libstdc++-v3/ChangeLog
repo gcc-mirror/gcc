@@ -1,5 +1,10 @@
 2004-08-20  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/c_std/cmath.tcc (__cmath_power): Suppress assignment
+	used as truth value warning.
+
+2004-08-20  Paolo Carlini  <pcarlini@suse.de>
+
 	* config/abi/x86_64-linux-gnu/32/baseline_symbols.txt: Add 32 bit
 	baseline.
 
