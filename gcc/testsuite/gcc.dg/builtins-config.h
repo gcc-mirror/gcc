@@ -23,13 +23,14 @@
 /* Newlib has the "f" variants of the math functions, but not the "l"
    variants.  TARGET_C99_FUNCTIONS is only defined if all C99
    functions are present.  Therefore, on systems using newlib, tests
-   of builtins will fail for both the "f" and the "l" variants, and we
-   should therefore not define HAVE_C99_RUNTIME.  Including <limits.h>
-   gives us a way of seeing if _NEWLIB_VERSION is defined.  Include
-   <math.h> would work too, but the GLIBC math inlines cause us to
-   generate inferior code, which causes the test to fail, so it is
-   not safe to include <math.h>.  */
-#include <limits.h>
+   of builtins will fail the "l" variants, and we should therefore not
+   define HAVE_C99_RUNTIME.  Including <sys/types.h> gives us a way of
+   seeing if _NEWLIB_VERSION is defined.  Including <math.h> would work
+   too, but the GLIBC math inlines cause us to generate inferior code,
+   which causes the test to fail, so it is not safe.  Including <limits.h>
+   also fails because the include search paths are ordered such that GCC's
+   version will be found before the newlib version.  */
+#include <sys/types.h>
 #ifdef _NEWLIB_VERSION
 #else
 #define HAVE_C99_RUNTIME
