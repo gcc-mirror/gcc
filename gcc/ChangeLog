@@ -1,3 +1,14 @@
+2002-12-09  Steve Ellcey  <sje@cup.hp.com>
+
+	* doc/tm.texi (FUNCTION_ARG_REG_LITTLE_ENDIAN): Remove definition.
+	* defaults.h (FUNCTION_ARG_REG_LITTLE_ENDIAN): Remove definition.
+	* calls.c (store_unaligned_arguments_into_pseudos) Remove
+	FUNCTION_ARG_REG_LITTLE_ENDIAN.
+	* stmt.c (expand_return): Ditto.
+	* expr.c (move_block_from_reg): Ditto.
+	(copy_blkmode_from_reg): Ditto.
+	* expmed.c (store_bit_field): Ditto. 
+
 2002-12-09  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
 	* config.gcc: Added tic4x-* target as an alias to c4x-*

@@ -513,16 +513,6 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define PREFERRED_DEBUGGING_TYPE NO_DEBUG
 #endif
 
-/* This is set to 1 if BYTES_BIG_ENDIAN is defined but the target uses a
-   little-endian method of passing and returning structures in registers.
-   On the HP-UX IA64 and PA64 platforms structures are aligned differently
-   then integral values and setting this value to 1 will allow for the
-   special handling of structure arguments and return values in regs.  */
-
-#ifndef FUNCTION_ARG_REG_LITTLE_ENDIAN
-#define FUNCTION_ARG_REG_LITTLE_ENDIAN 0
-#endif
-
 /* Define codes for all the float formats that we know of.  */
 #define UNKNOWN_FLOAT_FORMAT 0
 #define IEEE_FLOAT_FORMAT 1

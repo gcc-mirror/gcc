@@ -3584,14 +3584,6 @@ nonzero, the caller does not make a copy.  Instead, it passes a pointer to the
 determined that the value won't be modified, it need not make a copy;
 otherwise a copy must be made.
 
-@findex FUNCTION_ARG_REG_LITTLE_ENDIAN
-@item FUNCTION_ARG_REG_LITTLE_ENDIAN
-If defined TRUE on a big-endian system then structure arguments passed
-(and returned) in registers are passed in a little-endian manner instead of
-the big-endian manner.  On the HP-UX IA64 and PA64 platforms structures are
-aligned differently then integral values and setting this value to true will
-allow for the special handling of structure arguments and return values.
-
 @findex CUMULATIVE_ARGS
 @item CUMULATIVE_ARGS
 A C type for declaring a variable that is used as the first argument of
