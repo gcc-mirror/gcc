@@ -291,7 +291,7 @@ AC_DEFUN([GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1], [
     AC_MSG_RESULT($glibcxx_cv_func_$1_link)
     if test x$glibcxx_cv_func_$1_link = x"yes"; then
       ac_tr_func=HAVE_`echo $1 | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-      AC_DEFINE(${ac_tr_func}, 1, [Defined if $1 exists.])
+      AC_DEFINE_UNQUOTED(${ac_tr_func}, 1, [Defined if $1 exists.])
     fi
   fi
 ])
