@@ -1,3 +1,13 @@
+2003-07-14  Douglas Rupp  <rupp@gnat.com>
+
+	* fixinc/server.c (server_setup): Don't use non-POSIX NULL first
+	argument to getcwd; use fixed buffer instead.
+
+2003-07-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/mkfixinc.sh: Treat OpenBSD normally.
+	* fixinc/fixinc.wrap: Delete.
+
 2003-07-14  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* ggc-page.c (extra_order_size_table): Insns have 9 slots. Regs
