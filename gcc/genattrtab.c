@@ -1026,7 +1026,6 @@ check_attr_test (rtx exp, int is_const, int lineno)
       XEXP (exp, 0) = check_attr_test (XEXP (exp, 0), is_const, lineno);
       break;
 
-    case MATCH_INSN:
     case MATCH_OPERAND:
       if (is_const)
 	fatal ("RTL operator \"%s\" not valid in constant attribute test",
@@ -4793,10 +4792,6 @@ write_test_expr (rtx exp, int flags)
       else
 	printf ("%s (operands[%d], %smode)",
 		XSTR (exp, 1), XINT (exp, 0), GET_MODE_NAME (GET_MODE (exp)));
-      break;
-
-    case MATCH_INSN:
-      printf ("%s (insn)", XSTR (exp, 0));
       break;
 
     /* Constant integer.  */

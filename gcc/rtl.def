@@ -168,11 +168,6 @@ DEF_RTL_EXPR(MATCH_OP_DUP, "match_op_dup", "iE", 'm')
 DEF_RTL_EXPR(MATCH_PAR_DUP, "match_par_dup", "iE", 'm')
 
 /* Appears only in machine descriptions.
-   Operand 0 is the operand number, as in match_operand.
-   Operand 1 is the predicate to apply to the insn.  */
-DEF_RTL_EXPR(MATCH_INSN, "match_insn", "is", 'm')
-
-/* Appears only in machine descriptions.
    Defines the pattern for one kind of instruction.
    Operand:
    0: names this instruction.

@@ -1,3 +1,11 @@
+2004-03-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* genattrtab.c: Don't handle MATCH_INSN.
+	* genrecog.c: Likewise.
+	* gensupport.c: Likewise.
+	* rtl.def (match_insn): Remove.
+	* doc/md.texi (match_insn, match_insn2): Remove.
+
 2004-03-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/c-tree.texi (DECL_ASSEMBLER_NAME): Mention that using this

@@ -489,25 +489,6 @@ An insn that matches this pattern might look like:
 Like @code{match_op_dup}, but for @code{match_parallel} instead of
 @code{match_operator}.
 
-@findex match_insn
-@item (match_insn @var{predicate})
-Match a complete insn.  Unlike the other @code{match_*} recognizers,
-@code{match_insn} does not take an operand number.
-
-The machine mode @var{m} of @code{match_insn} works like that of
-@code{match_operand}: it is passed as the second argument to the
-predicate function, and that function is solely responsible for
-deciding whether the expression to be matched ``has'' that mode.
-
-@findex match_insn2
-@item (match_insn2 @var{n} @var{predicate})
-Match a complete insn.
-
-The machine mode @var{m} of @code{match_insn2} works like that of
-@code{match_operand}: it is passed as the second argument to the
-predicate function, and that function is solely responsible for
-deciding whether the expression to be matched ``has'' that mode.
-
 @end table
 
 @node Output Template

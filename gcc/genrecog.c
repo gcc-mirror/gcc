@@ -361,7 +361,6 @@ find_operand (rtx pattern, int n, rtx stop)
 
   code = GET_CODE (pattern);
   if ((code == MATCH_SCRATCH
-       || code == MATCH_INSN
        || code == MATCH_OPERAND
        || code == MATCH_OPERATOR
        || code == MATCH_PARALLEL)
@@ -482,7 +481,6 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
           error_count++;
 	}
       break;
-    case MATCH_INSN:
     case MATCH_OPERAND:
     case MATCH_OPERATOR:
       {
@@ -832,7 +830,6 @@ add_to_sequence (rtx pattern, struct decision_head *last, const char *position,
     case MATCH_OPERAND:
     case MATCH_SCRATCH:
     case MATCH_OPERATOR:
-    case MATCH_INSN:
       {
 	const char *pred_name;
 	RTX_CODE was_code = code;
