@@ -646,8 +646,6 @@ int maximum_int() {
 
 int main(argc, argv) int argc; char *argv[]; {
 	int dprec, fprec, lprec;
-	unsigned int size;
-	long total;
 	int i; char *s; int bad;
 
 #ifdef SIGFPE
@@ -749,6 +747,8 @@ int main(argc, argv) int argc; char *argv[]; {
 	}
 #ifndef NO_MEM
 	if (V) {
+		unsigned int size;
+		long total;
 		/* An extra goody: the approximate amount of data-space */
 		/* Allocate store until no more available */
 		/* Different implementations have a different argument type
@@ -1062,8 +1062,8 @@ Procedure ftyperr(name, esize, size) char *name; int esize, size; {
 	       name, ftype_of(esize), ftype_of(size));
 }
 
-promotions() {
-	int si; long sl;
+int promotions() {
+	int si = 0; long sl = 0;
 	unsigned int ui; unsigned long ul;
 	short ss; unsigned short us;
 
@@ -1086,6 +1086,7 @@ promotions() {
 
 	showtype("unsigned short promotes to", Promoted((unsigned short)0));
 	showtype("long+unsigned gives", sl+ui);
+	return 0;
 }
 
 #define checktype(x, n, s, t) if((sgn(x)!=s)||(sizeof(x)!=sizeof(t))) typerr(n, s, sizeof(t), sign_of(x), sizeof(x));
