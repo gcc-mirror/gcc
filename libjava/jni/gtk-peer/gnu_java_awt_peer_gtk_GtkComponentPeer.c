@@ -40,6 +40,9 @@ exception statement from your version. */
 #include "gnu_java_awt_peer_gtk_GtkComponentPeer.h"
 #include <gtk/gtkprivate.h>
 
+static GtkWidget *find_fg_color_widget (GtkWidget *widget);
+static GtkWidget *find_bg_color_widget (GtkWidget *widget);
+
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose
   (JNIEnv *env, jobject obj)
 {
@@ -299,7 +302,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetBackground
 
   gdk_threads_enter ();
 
-  widget = GTK_WIDGET (ptr);
+  widget = find_bg_color_widget (GTK_WIDGET (ptr));
 
   gtk_widget_modify_bg (widget, GTK_STATE_NORMAL, &normal_color);
   gtk_widget_modify_bg (widget, GTK_STATE_ACTIVE, &active_color);
@@ -324,9 +327,11 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetForeground
 
   gdk_threads_enter ();
 
-  widget = GTK_WIDGET (ptr);
+  widget = find_fg_color_widget (GTK_WIDGET (ptr));
 
   gtk_widget_modify_fg (widget, GTK_STATE_NORMAL, &color);
+  gtk_widget_modify_fg (widget, GTK_STATE_ACTIVE, &color);
+  gtk_widget_modify_fg (widget, GTK_STATE_PRELIGHT, &color);
 
   gdk_threads_leave ();
 }
@@ -542,3 +547,39 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks
     connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
   gdk_threads_leave ();
 }
+
+static GtkWidget *
+find_fg_color_widget (GtkWidget *widget)
+{
+  GtkWidget *fg_color_widget;
+
+  if (GTK_IS_EVENT_BOX (widget))
+    fg_color_widget = gtk_bin_get_child (GTK_BIN(widget));
+  else
+    fg_color_widget = widget;
+
+  return fg_color_widget;
+}
+
+static GtkWidget *
+find_bg_color_widget (GtkWidget *widget)
+{
+  GtkWidget *bg_color_widget;
+
+  if (GTK_IS_WINDOW (widget))
+    {
+      GtkWidget *vbox;
+      GList* children;
+
+      children = gtk_container_get_children(GTK_CONTAINER(widget));
+      vbox = children->data;
+
+      children = gtk_container_get_children(GTK_CONTAINER(vbox));
+      bg_color_widget = children->data;
+    }
+  else
+    bg_color_widget = widget;
+
+  return bg_color_widget;
+}
+

@@ -1,3 +1,20 @@
+2003-11-11  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkLabelPeer.java (create()): Call new create.
+	(create(String, float)): New method.
+	(setText): Make native.
+	(nativeSetAlignment): New method.
+	(setAlignment): Call nativeSetAlignment.
+	(getArgs): Remove method.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(find_fg_color_widget, find_bg_color_widget): New functions.
+	(gtkWidgetSetForeground): Call find_fg_color_widget.
+	(gtkWidgetSetBackground): Call find_bg_color_widget.  Modify active and
+	prelight colors.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c (create): Wrap label
+	widget in event box.
+	(setText, setAlignment): Implement new native methods.
+
 2003-11-11  Michael Koch  <konqueror@gmx.de>
 
 	* java/awt/Font.java,
