@@ -1,5 +1,7 @@
 1998-11-23  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* parse.y (named_class_head): Update CLASSTYPE_DECLARED_CLASS.
+
 	* class.c (finish_struct_1): Set things up for 0-width bitfields
 	like we do for others.
 

@@ -2242,12 +2242,17 @@ named_class_head:
 		{ 
                   pop_scope (CP_DECL_CONTEXT ($1));
 		  $$ = TREE_TYPE ($1);
-		  if (TREE_INT_CST_LOW (current_aggr) == union_type 
+		  if (current_aggr == union_type_node
 		      && TREE_CODE ($$) != UNION_TYPE)
 		    cp_pedwarn ("`union' tag used in declaring `%#T'", $$);
 		  else if (TREE_CODE ($$) == UNION_TYPE
-			   && TREE_INT_CST_LOW (current_aggr) != union_type)
+			   && current_aggr != union_type_node)
 		    cp_pedwarn ("non-`union' tag used in declaring `%#T'", $$);
+		  else if (TREE_CODE ($$) == RECORD_TYPE)
+		    /* We might be specializing a template with a different
+		       class-key; deal.  */
+		    CLASSTYPE_DECLARED_CLASS ($$) = (current_aggr
+						     == class_type_node);
 		  if ($3)
 		    {
 		      maybe_process_partial_specialization ($$);
