@@ -3558,6 +3558,10 @@ fold_range_test (exp)
   tree rhs = make_range (TREE_OPERAND (exp, 1), &in1_p, &low1, &high1);
   tree tem;
 
+  /* Fail if anything is volatile.  */
+  if (TREE_SIDE_EFFECTS (lhs) || TREE_SIDE_EFFECTS (rhs))
+    return 0;
+
   /* If this is an OR operation, invert both sides; we will invert
      again at the end.  */
   if (or_op)
