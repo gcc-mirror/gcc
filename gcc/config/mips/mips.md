@@ -10305,7 +10305,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 
   if (GET_CODE (operands[0]) != CONST_DOUBLE)
     abort ();
-  bcopy ((char *) &CONST_DOUBLE_LOW (operands[0]), (char *) &u, sizeof u);
+  memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
   assemble_real (u.d, SFmode);
   return \"\";
 }"
@@ -10322,7 +10322,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
 
   if (GET_CODE (operands[0]) != CONST_DOUBLE)
     abort ();
-  bcopy ((char *) &CONST_DOUBLE_LOW (operands[0]), (char *) &u, sizeof u);
+  memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
   assemble_real (u.d, DFmode);
   return \"\";
 }"

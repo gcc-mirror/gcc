@@ -669,7 +669,7 @@ reload (first, global)
   reg_equiv_address = (rtx *) xcalloc (max_regno, sizeof (rtx));
   reg_max_ref_width = (unsigned int *) xcalloc (max_regno, sizeof (int));
   reg_old_renumber = (short *) xcalloc (max_regno, sizeof (short));
-  bcopy ((PTR) reg_renumber, (PTR) reg_old_renumber, max_regno * sizeof (short));
+  memcpy (reg_old_renumber, reg_renumber, max_regno * sizeof (short));
   pseudo_forbidden_regs
     = (HARD_REG_SET *) xmalloc (max_regno * sizeof (HARD_REG_SET));
   pseudo_previous_regs
@@ -2530,9 +2530,9 @@ eliminate_regs (x, mem_mode, insn)
 	  if (new != XEXP (x, i) && ! copied)
 	    {
 	      rtx new_x = rtx_alloc (code);
-	      bcopy ((char *) x, (char *) new_x,
-		     (sizeof (*new_x) - sizeof (new_x->fld)
-		      + sizeof (new_x->fld[0]) * GET_RTX_LENGTH (code)));
+	      memcpy (new_x, x,
+		      (sizeof (*new_x) - sizeof (new_x->fld)
+		       + sizeof (new_x->fld[0]) * GET_RTX_LENGTH (code)));
 	      x = new_x;
 	      copied = 1;
 	    }
@@ -2551,10 +2551,10 @@ eliminate_regs (x, mem_mode, insn)
 		  if (! copied)
 		    {
 		      rtx new_x = rtx_alloc (code);
-		      bcopy ((char *) x, (char *) new_x,
-			     (sizeof (*new_x) - sizeof (new_x->fld)
-			      + (sizeof (new_x->fld[0])
-				 * GET_RTX_LENGTH (code))));
+		      memcpy (new_x, x,
+			      (sizeof (*new_x) - sizeof (new_x->fld)
+			       + (sizeof (new_x->fld[0])
+				  * GET_RTX_LENGTH (code))));
 		      x = new_x;
 		      copied = 1;
 		    }

@@ -1957,8 +1957,7 @@ output_fpops (file)
 		{
 		  union real_extract u;
 
-		  bcopy ((char *) &CONST_DOUBLE_LOW (immed[i]),
-			 (char *) &u, sizeof u);
+		  memcpy (&u, &CONST_DOUBLE_LOW (immed[i]), sizeof u);
 		  if (GET_MODE (immed[i]) == DFmode)
 		    ASM_OUTPUT_DOUBLE (file, u.d);
 		  else

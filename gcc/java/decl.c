@@ -1556,7 +1556,7 @@ copy_lang_decl (node)
     = TREE_CODE (node) == VAR_DECL ? sizeof (struct lang_decl_var)
     : sizeof (struct lang_decl);
   struct lang_decl *x = (struct lang_decl *) ggc_alloc (lang_decl_size);
-  bcopy ((PTR) DECL_LANG_SPECIFIC (node), (PTR) x, lang_decl_size);
+  memcpy (x, DECL_LANG_SPECIFIC (node), lang_decl_size);
   DECL_LANG_SPECIFIC (node) = x;
 }
 

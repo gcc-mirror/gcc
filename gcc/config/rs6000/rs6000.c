@@ -385,8 +385,7 @@ rs6000_override_options (default_cpu)
   /* If the user desires alternate register names, copy in the alternate names
      now.  */
   if (TARGET_REGNAMES)
-    bcopy ((char *)alt_reg_names, (char *)rs6000_reg_names,
-	   sizeof (rs6000_reg_names));
+    memcpy (rs6000_reg_names, alt_reg_names, sizeof (rs6000_reg_names));
 #endif
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS

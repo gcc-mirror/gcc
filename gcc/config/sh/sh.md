@@ -3877,7 +3877,7 @@
  "*
 {
   union real_extract u;
-  bcopy ((char *) &CONST_DOUBLE_LOW (operands[0]), (char *) &u, sizeof u);
+  memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
   assemble_real (u.d, SFmode);
   return \"\";
 }"
@@ -3892,7 +3892,7 @@
  "*
 {
   union real_extract u;
-  bcopy ((char *) &CONST_DOUBLE_LOW (operands[0]), (char *) &u, sizeof u);
+  memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
   assemble_real (u.d, DFmode);
   return \"\";
 }"

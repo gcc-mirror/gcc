@@ -632,7 +632,7 @@ check_float_value (mode, d, overflow)
   if ((mode) == SFmode)
     {
       REAL_VALUE_TYPE r;
-      bcopy ((char *) d, (char *) &r, sizeof (REAL_VALUE_TYPE));
+      memcpy (&r, d, sizeof (REAL_VALUE_TYPE));
       if (REAL_VALUES_LESS (float_values[0], r))
 	{
 	  bcopy ((char *) &float_values[0], (char *) d,

@@ -6068,7 +6068,7 @@ check_float_value (mode, d, overflow)
       else
 	fvptr = &float_values[4];
 
-      bcopy ((char *) d, (char *) &r, sizeof (REAL_VALUE_TYPE));
+      memcpy (&r, d, sizeof (REAL_VALUE_TYPE));
       if (REAL_VALUES_LESS (fvptr[0], r))
 	{
 	  bcopy ((char *) &fvptr[0], (char *) d,

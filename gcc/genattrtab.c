@@ -808,7 +808,7 @@ attr_string (str, len)
 
   /* Not found; create a permanent copy and add it to the hash table.  */
   new_str = (char *) obstack_alloc (hash_obstack, len + 1);
-  bcopy (str, new_str, len);
+  memcpy (new_str, str, len);
   new_str[len] = '\0';
   attr_hash_add_string (hashcode, new_str);
 
@@ -2577,7 +2577,7 @@ simplify_cond (exp, insn_code, insn_index)
   /* This lets us free all storage allocated below, if appropriate.  */
   first_spacer = (char *) obstack_finish (rtl_obstack);
 
-  bcopy ((char *) XVEC (exp, 0)->elem, (char *) tests, len * sizeof (rtx));
+  memcpy (tests, XVEC (exp, 0)->elem, len * sizeof (rtx));
 
   /* See if default value needs simplification.  */
   if (GET_CODE (defval) == COND)
@@ -2665,8 +2665,7 @@ simplify_cond (exp, insn_code, insn_index)
       rtx newexp = rtx_alloc (COND);
 
       XVEC (newexp, 0) = rtvec_alloc (len);
-      bcopy ((char *) tests, (char *) XVEC (newexp, 0)->elem,
-	     len * sizeof (rtx));
+      memcpy (XVEC (newexp, 0)->elem, tests, len * sizeof (rtx));
       XEXP (newexp, 1) = new_defval;
       return newexp;
     }
@@ -5931,8 +5930,8 @@ copy_rtx_unchanging (orig)
   PUT_MODE (copy, GET_MODE (orig));
   RTX_UNCHANGING_P (copy) = 1;
 
-  bcopy ((char *) &XEXP (orig, 0), (char *) &XEXP (copy, 0),
-	 GET_RTX_LENGTH (GET_CODE (copy)) * sizeof (rtx));
+  memcpy (&XEXP (copy, 0), &XEXP (orig, 0),
+	  GET_RTX_LENGTH (GET_CODE (copy)) * sizeof (rtx));
   return copy;
 #endif
 }

@@ -5022,8 +5022,7 @@ override_options ()
      reg_names points into via the REGISTER_NAMES macro.  */
 
   if (TARGET_NAME_REGS)
-    bcopy ((char *) mips_sw_reg_names, (char *) mips_reg_names,
-	   sizeof (mips_reg_names));
+    memcpy (mips_reg_names, mips_sw_reg_names, sizeof (mips_reg_names));
 
   /* When compiling for the mips16, we can not use floating point.  We
      record the original hard float value in mips16_hard_float.  */

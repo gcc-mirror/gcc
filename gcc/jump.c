@@ -3748,8 +3748,7 @@ thread_jumps (f, max_reg, flag_before_loop)
 	  memset (modified_regs, 0, max_reg * sizeof (char));
 	  modified_mem = 0;
 
-	  bcopy ((char *) all_reset, (char *) same_regs,
-		 max_reg * sizeof (int));
+	  memcpy (same_regs, all_reset, max_reg * sizeof (int));
 	  num_same_regs = 0;
 
 	  label = JUMP_LABEL (b1);
