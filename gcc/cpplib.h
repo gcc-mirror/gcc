@@ -215,14 +215,21 @@ struct cpp_toklist
   unsigned short flags;
 };
 
+/* A standalone character.  We may want to make it unsigned for the
+   same reason we use unsigned char - to avoid signedness issues.  */
+typedef int cppchar_t;
+
 struct cpp_buffer
 {
   const unsigned char *cur;	 /* current position */
   const unsigned char *rlimit; /* end of valid data */
-  const unsigned char *buf;	 /* entire buffer */
   const unsigned char *line_base; /* start of current line */
+  cppchar_t read_ahead;		/* read ahead character */
 
+  struct cpp_reader *pfile;	/* Owns this buffer.  */
   struct cpp_buffer *prev;
+
+  const unsigned char *buf;	 /* entire buffer */
 
   /* Filename specified with #line command.  */
   const char *nominal_fname;
@@ -237,6 +244,9 @@ struct cpp_buffer
   /* Value of if_stack at start of this file.
      Used to prohibit unmatched #endif (etc) in an include file.  */
   struct if_stack *if_stack;
+
+  /* Token column position adjustment owing to tabs in whitespace.  */
+  unsigned int col_adjust;
 
   /* Line number at line_base (above). */
   unsigned int lineno;
@@ -431,6 +441,31 @@ struct cpp_options
   unsigned char show_column;
 };
 
+struct lexer_state
+{
+  /* Nonzero if first token on line is CPP_HASH.  */
+  unsigned char in_directive;
+
+  /* Nonzero if the directive's # was not in the first column.  Used
+     by -Wtraditional.  */
+  unsigned char indented;
+
+  /* Nonzero if in a directive that takes angle-bracketed headers.  */
+  unsigned char angled_headers;
+
+  /* Nonzero to save comments.  Turned off if discard_comments, and in
+     all directives apart from #define.  */
+  unsigned char save_comments;
+
+  /* Nonzero to get force the lexer to skip newlines.  */
+  unsigned char skip_newlines;
+
+  /* If we're in the subroutine lex_line.  */
+  unsigned char in_lex_line;
+};
+#define IN_DIRECTIVE(pfile) (pfile->state.in_directive)
+#define KNOWN_DIRECTIVE(list) (list->directive != 0)
+
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
    Applying cpp_get_token repeatedly yields a stream of pre-processor
    tokens.  Usually, there is only one cpp_reader object active. */
@@ -440,12 +475,16 @@ struct cpp_reader
   /* Top of buffer stack.  */
   cpp_buffer *buffer;
 
+  /* Lexer state.  */
+  struct lexer_state state;
+
   /* Error counter for exit code */
   unsigned int errors;
 
-  /* Line and column where a newline was first seen in a string constant.  */
-  unsigned int multiline_string_line;
-  unsigned int multiline_string_column;
+  /* Line and column where a newline was first seen in a string
+     constant (multi-line strings).  */
+  unsigned int mls_line;
+  unsigned int mls_column;
 
   /* Current depth in #include directives that use <...>.  */
   unsigned int system_include_depth;
@@ -474,9 +513,6 @@ struct cpp_reader
      live between the #endif and the end of file, and there can only
      be one at a time, so it is per-reader not per-buffer.  */
   const cpp_hashnode *potential_control_macro;
-
-  /* Token column position adjustment owing to tabs in whitespace.  */
-  unsigned int col_adjust;
 
   /* Token list used to store logical lines with new lexer.  */
   cpp_toklist token_list;
@@ -557,9 +593,6 @@ struct cpp_reader
      or we might need to write out definitions.  */
   unsigned char save_parameter_spellings;
 
-  /* If we're in lex_line.  */
-  unsigned char in_lex_line;
-
   /* True if output_line_command needs to output a newline.  */
   unsigned char need_newline;
 
@@ -586,7 +619,7 @@ struct cpp_printer
 #define CPP_OPTION(PFILE, OPTION) ((PFILE)->opts.OPTION)
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
 #define CPP_BUF_LINE(BUF) ((BUF)->lineno)
-#define CPP_BUF_COLUMN(BUF, CUR) ((CUR) - (BUF)->line_base + pfile->col_adjust)
+#define CPP_BUF_COLUMN(BUF, CUR) ((CUR) - (BUF)->line_base + (BUF)->col_adjust)
 #define CPP_BUF_COL(BUF) CPP_BUF_COLUMN(BUF, (BUF)->cur)
 
 /* Name under which this program was invoked.  */

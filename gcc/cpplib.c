@@ -133,64 +133,81 @@ DIRECTIVE_TABLE
 /* Check if a token's name matches that of a known directive.  Put in
    this file to save exporting dtable and other unneeded information.  */
 const struct directive *
-_cpp_check_directive (pfile, token, bol)
+_cpp_check_directive (pfile, token)
      cpp_reader *pfile;
      const cpp_token *token;
-     int bol;
 {
   unsigned int i;
 
+  if (token->type != CPP_NAME)
+    {
+      if (token->type == CPP_EOF && CPP_WTRADITIONAL (pfile)
+	  && pfile->state.indented)
+	cpp_warning (pfile, "traditional C ignores #\\n with the # indented");
+
+      return 0;
+    }
+
   for (i = 0; i < N_DIRECTIVES; i++)
     if (pfile->spec_nodes->dirs[i] == token->val.node)
-      {
-	/* If we are rescanning preprocessed input, only directives
-	   tagged with IN_I are to be honored, and the warnings below
-	   are suppressed.  */
-	if (CPP_OPTION (pfile, preprocessed))
-	  {
-	    if (dtable[i].flags & IN_I)
-	      return &dtable[i];
-	    return 0;
-	  }
+      break;
 
-	/* In -traditional mode, a directive is ignored unless its #
-	   is in column 1.  In code intended to work with K+R compilers,
-	   therefore, directives added by C89 must have their # indented,
-	   and directives present in traditional C must not.  This is true
-	   even of directives in skipped conditional blocks.  */
-	if (CPP_WTRADITIONAL (pfile))
-	  {
-	    if (!bol && dtable[i].origin == KANDR)
-	      cpp_warning (pfile,
-			   "traditional C ignores #%s with the # indented",
-			   dtable[i].name);
+  if (i == N_DIRECTIVES)
+    return 0;
 
-	    if (bol && dtable[i].origin != KANDR)
-	      cpp_warning (pfile,
-		    "suggest hiding #%s from traditional C with an indented #",
-			   dtable[i].name);
-	  }
+  /* We should lex headers correctly, regardless of whether we're
+     skipping or not.  */
+  pfile->state.angled_headers = dtable[i].flags & INCL;
 
-	/* If we are skipping a failed conditional group, all non-conditional
-	   directives are ignored.  */
-	if (pfile->skipping && !(dtable[i].flags & COND))
-	  return 0;
+  /* If we are rescanning preprocessed input, only directives tagged
+     with IN_I are honored, and the warnings below are suppressed.  */
+  if (CPP_OPTION (pfile, preprocessed))
+    {
+      if (!dtable[i].flags & IN_I)
+	return 0;
+    }
+  else
+    {
+      /* Traditionally, a directive is ignored unless its # is in
+	 column 1.  Therefore in code intended to work with K+R
+	 compilers, directives added by C89 must have their #
+	 indented, and directives present in traditional C must not.
+	 This is true even of directives in skipped conditional
+	 blocks.  */
+      if (CPP_WTRADITIONAL (pfile))
+	{
+	  if (pfile->state.indented && dtable[i].origin == KANDR)
+	    cpp_warning (pfile, 
+			 "traditional C ignores #%s with the # indented",
+			 dtable[i].name);
 
-	/* Issue -pedantic warnings for extended directives.   */
-	if (CPP_PEDANTIC (pfile) && dtable[i].origin == EXTENSION)
-	  cpp_pedwarn (pfile, "ISO C does not allow #%s", dtable[i].name);
+	  else if (!pfile->state.indented && dtable[i].origin != KANDR)
+	    cpp_warning (pfile,
+		 "suggest hiding #%s from traditional C with an indented #",
+			 dtable[i].name);
+	}
 
-	return &dtable[i];
-      }
+      /* If we are skipping a failed conditional group, all non-conditional
+	 directives are ignored.  */
+      if (pfile->skipping && !(dtable[i].flags & COND))
+	return 0;
 
-  return 0;
+      /* Issue -pedantic warnings for extended directives.   */
+      if (CPP_PEDANTIC (pfile) && dtable[i].origin == EXTENSION)
+	cpp_pedwarn (pfile, "ISO C does not allow #%s", dtable[i].name);
+    }
+
+  /* Only flag to save comments if we process the directive.  */
+  pfile->state.save_comments = (! CPP_OPTION (pfile, discard_comments)
+				&& (dtable[i].flags & COMMENTS));
+
+  return &dtable[i];
 }
 
 const struct directive *
-_cpp_check_linemarker (pfile, token, bol)
+_cpp_check_linemarker (pfile, token)
      cpp_reader *pfile;
      const cpp_token *token ATTRIBUTE_UNUSED;
-     int bol;
 {
   /* # followed by a number is equivalent to #line.  Do not recognize
      this form in assembly language source files or skipped
@@ -206,7 +223,7 @@ _cpp_check_linemarker (pfile, token, bol)
 
   /* In -traditional mode, a directive is ignored unless its #
      is in column 1.  */
-  if (!bol && CPP_WTRADITIONAL (pfile))
+  if (pfile->state.indented && CPP_WTRADITIONAL (pfile))
     cpp_warning (pfile, "traditional C ignores #%s with the # indented",
 		 dtable[T_LINE].name);
 
@@ -1319,7 +1336,6 @@ do_assert (pfile)
   if (node)
     {
       new_answer->next = 0;
-      new_answer->list.line = pfile->token_list.line;
       new_answer->list.file = pfile->token_list.file;
 
       if (node->type == T_ASSERTION)
@@ -1499,6 +1515,8 @@ cpp_push_buffer (pfile, buffer, length)
   new->line_base = new->buf = new->cur = buffer;
   new->rlimit = buffer + length;
   new->prev = buf;
+  new->pfile = pfile;
+  new->read_ahead = EOF;
 
   CPP_BUFFER (pfile) = new;
   return new;

@@ -211,7 +211,7 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 
 /* Hash step.  The hash calculation is duplicated in cpp_lookup and
    parse_name.  */
-#define HASHSTEP(r, str) ((r) * 67 + (*str - 113));
+#define HASHSTEP(r, c) ((r) * 67 + (c - 113));
 
 /* Flags for _cpp_init_toklist.  */
 #define DUMMY_TOKEN     0
@@ -280,9 +280,9 @@ extern const cpp_token *_cpp_glue_header_name PARAMS ((cpp_reader *));
 
 /* In cpplib.c */
 extern const struct directive *_cpp_check_directive
-			PARAMS ((cpp_reader *, const cpp_token *, int));
+			PARAMS ((cpp_reader *, const cpp_token *));
 extern const struct directive *_cpp_check_linemarker
-			PARAMS ((cpp_reader *, const cpp_token *, int));
+			PARAMS ((cpp_reader *, const cpp_token *));
 extern cpp_hashnode *_cpp_parse_assertion PARAMS ((cpp_reader *,
 						    struct answer **));
 extern struct answer **_cpp_find_answer	PARAMS ((cpp_hashnode *,

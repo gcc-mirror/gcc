@@ -1,3 +1,7 @@
+Mon 18-Sep-2000 19:23:11 BST  Neil Booth  <NeilB@earthling.net>
+
+	* gcc.dg/cpp/cmdlne-C.c: Remove bogus warning test.
+
 2000-09-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/format-ext-1.c: Add tests for mixing %m with $ formats.
