@@ -167,6 +167,7 @@ enum unroll_types
 #include "toplev.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
+#include "predict.h"
 
 /* This controls which loops are unrolled, and by how much we unroll
    them.  */
@@ -962,6 +963,7 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 	      emit_cmp_and_jump_insns (initial_value, final_value,
 				       neg_inc ? LE : GE,
 				       NULL_RTX, mode, 0, 0, labels[1]);
+	      predict_insn_def (get_last_insn (), PRED_LOOP_CONDITION, NOT_TAKEN);
 	      JUMP_LABEL (get_last_insn ()) = labels[1];
 	      LABEL_NUSES (labels[1])++;
 	    }
@@ -1007,6 +1009,8 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 				       labels[i]);
 	      JUMP_LABEL (get_last_insn ()) = labels[i];
 	      LABEL_NUSES (labels[i])++;
+	      predict_insn (get_last_insn (), PRED_LOOP_PRECONDITIONING,
+			    REG_BR_PROB_BASE / (unroll_number - i));
 	    }
 
 	  /* If the increment is greater than one, then we need another branch,

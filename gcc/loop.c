@@ -4505,7 +4505,7 @@ strength_reduce (loop, flags)
   if ((flags & LOOP_BCT)
       && loop_info->n_iterations / loop_info->unroll_number > 1)
     {
-      int n = loop_info->n_iterations / loop_info->unroll_number - 1;
+      int n = loop_info->n_iterations / loop_info->unroll_number;
       predict_insn (PREV_INSN (loop->end),
 		    PRED_LOOP_ITERATIONS,
 		    REG_BR_PROB_BASE - REG_BR_PROB_BASE / n);
