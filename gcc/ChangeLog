@@ -1,5 +1,9 @@
 2001-08-29  Kazu Hirata  <kazu@hxi.com>
 
+	* h8300.h (RETURN_ADDR_RTX): New.
+
+2001-08-29  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/lib1funcs.asm: Fix comment typos.
 
 2001-08-28  Richard Henderson  <rth@redhat.com>
