@@ -1,3 +1,7 @@
+2002-06-02  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/uninit-A.c: Remove xfail markers.
+
 2002-06-01  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/fnegate-1.c: New test case.
