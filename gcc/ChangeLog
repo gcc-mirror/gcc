@@ -22,6 +22,7 @@
 
 2004-02-11  Richard Henderson  <rth@redhat.com>
 
+	PR target/1532
 	* flow.c (insn_dead_p): A clobber of a dead hard register is a
 	dead insn after reload.
 
