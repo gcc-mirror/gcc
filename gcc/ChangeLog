@@ -1,3 +1,36 @@
+2000-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* loop.c (current_loop_info): Delete.
+	(consec_sets_invariant_p): Add loop argument, update callers.
+	(get_condition_for_loop): Likewise.
+	(count_nonfixed_reads, update_giv_derive): Likewise.
+	(simplify_giv_expr, general_induction_var): Likewise.
+	(consec_sets_giv, recombine_givs): Likewise.
+	(move_movables): Delete loop_start and loop_end arguments,
+	add loop argument, and update callers.
+	(find_mem_givs, check_final_value): Likewise.
+	(record_giv, maybe_eliminate_biv, maybe_eliminate_biv_1): Likewise.
+	(loop_invariant_p): Rename from invariant_p, add loop argument, and
+	update callers.
+	(basic_induction_var): Add loop argument, delete loop_level argument,
+	and update callers.
+	* unroll.c (iteration_info): Delete loop_start and loop_end arguments,
+	add loop argument, and update callers.
+	(find_splittable_regs, find_splittable_givs): Likewise.
+	(reg_dead_after_loop, loop_find_equiv_value): Likewise.
+	(final_biv_value, final_giv_value, back_branch_in_range_p): Likewise.
+	(biv_total_increment): Delete loop_start and loop_end arguments;
+	update callers.
+	(precondition_loop_p): Delete loop_start and loop_info arguments;
+	update callers.
+	* loop.h (get_condition_for_loop): Add loop argument.
+	(biv_total_increment): Delete loop_start and loop_end arguments.
+	(precondition_loop_p): Delete loop_start and loop_info arguments;
+	add loop argument.
+	(final_biv_value): Delete loop_start and loop_end arguments;
+	add loop argument.
+	(final_giv_value, back_branch_in_range_p): Likewise.
+
 2000-01-25  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.h (LEGITIMATE_CONSTANT_P): Fix for mips16.
