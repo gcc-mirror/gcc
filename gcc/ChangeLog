@@ -1,3 +1,13 @@
+2002-06-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (struct cpp_macro): Put comments on their own lines.
+	(_cpp_expansions_different_trad): New.
+	* cppmacro.c (warn_of_redefinition): Fix for traditional case.
+	* cpptrad.c (canonicalize_text): New.
+	(scan_out_logical_line): Handle no arguments correctly.
+	(save_replacement_text): Commit memory when finished.
+	(_cpp_expansions_different_trad): New.
+
 2002-06-10  Tim Josling  <tej@melbpc.org.au>
 
 	* gengtype.c (unnamed enum containing BASE_FILE_*): Add languages

@@ -69,18 +69,35 @@ struct dummy
    Variadic macros cannot occur with traditional cpp.  */
 struct cpp_macro
 {
-  cpp_hashnode **params;	/* Parameters, if any.  */
+  /* Parameters, if any.  */
+  cpp_hashnode **params;
+
+  /* Replacement tokens (ISO) or replacement text (traditional).  See
+     comment at top of cpptrad.c for how traditional function-like
+     macros are encoded.  */
   union
   {
-    cpp_token *tokens;	        /* Tokens of replacement list (ISO).  */
-    const uchar *text;		/* Expansion text (traditional).  */
+    cpp_token *tokens;
+    const uchar *text;
   } exp;
-  unsigned int line;		/* Starting line number.  */
-  unsigned int count;		/* Number of tokens / bytes in expansion.  */
-  unsigned short paramc;	/* Number of parameters.  */
-  unsigned int fun_like : 1;	/* If a function-like macro.  */
-  unsigned int variadic : 1;	/* If a variadic macro.  */
-  unsigned int syshdr   : 1;	/* If macro defined in system header.  */
+
+  /* Definition line number.  */
+  unsigned int line;
+
+  /* Number of tokens in expansion, or bytes for traditional macros.  */
+  unsigned int count;
+
+  /* Number of parameters.  */
+  unsigned short paramc;
+
+  /* If a function-like macro.  */
+  unsigned int fun_like : 1;
+
+  /* If a variadic macro.  */
+  unsigned int variadic : 1;
+
+  /* If macro defined in system header.  */
+  unsigned int syshdr   : 1;
 };
 
 /* A generic memory buffer, and operations on it.  */
@@ -499,6 +516,7 @@ extern void _cpp_overlay_buffer PARAMS ((cpp_reader *pfile, const uchar *,
 extern cpp_hashnode *_cpp_lex_identifier_trad PARAMS ((cpp_reader *));
 extern void _cpp_set_trad_context PARAMS ((cpp_reader *));
 extern bool _cpp_create_trad_definition PARAMS ((cpp_reader *, cpp_macro *));
+extern bool _cpp_expansions_different_trad PARAMS ((cpp_macro *, cpp_macro *));
 
 /* Utility routines and macros.  */
 #define DSC(str) (const uchar *)str, sizeof str - 1

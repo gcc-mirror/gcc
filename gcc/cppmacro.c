@@ -1176,9 +1176,9 @@ warn_of_redefinition (pfile, node, macro2)
      definitions are the same.  (6.10.3 paragraph 2).  */
   macro1 = node->value.macro;
 
-  /* The quick failures.  */
-  if (macro1->count != macro2->count
-      || macro1->paramc != macro2->paramc
+  /* Don't check count here as it can be different in valid
+     traditional redefinitions with just whitespace differences.  */
+  if (macro1->paramc != macro2->paramc
       || macro1->fun_like != macro2->fun_like
       || macro1->variadic != macro2->variadic)
     return true;
@@ -1190,11 +1190,12 @@ warn_of_redefinition (pfile, node, macro2)
 
   /* Check the replacement text or tokens.  */
   if (CPP_OPTION (pfile, traditional))
-    return memcmp (macro1->exp.text, macro2->exp.text, macro1->count);
+    return _cpp_expansions_different_trad (macro1, macro2);
 
-  for (i = 0; i < macro1->count; i++)
-    if (!_cpp_equiv_tokens (&macro1->exp.tokens[i], &macro2->exp.tokens[i]))
-      return true;
+  if (macro1->count == macro2->count)
+    for (i = 0; i < macro1->count; i++)
+      if (!_cpp_equiv_tokens (&macro1->exp.tokens[i], &macro2->exp.tokens[i]))
+	return true;
 
   return false;
 }
