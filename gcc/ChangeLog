@@ -1,5 +1,9 @@
 2003-06-23  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/invoke.texi: Document dump options, dT and dW.
+
+2003-06-23  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* genrecog.c (pred_table): Remove the entry for
 	mode_independent_operand.
 	* recog.c (next_insns_test_no_inequality): Remove.
