@@ -1,6 +1,6 @@
 /* Register Transfer Language (RTL) definitions for GNU C-Compiler
    Copyright (C) 1987, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2086,6 +2086,7 @@ extern rtx expand_mult_highpart		PARAMS ((enum machine_mode, rtx,
 /* In gcse.c */
 #ifdef BUFSIZ
 extern int gcse_main			PARAMS ((rtx, FILE *));
+extern int bypass_jumps			PARAMS ((FILE *));
 #endif
 
 /* In global.c */

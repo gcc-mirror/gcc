@@ -1,6 +1,6 @@
 /* Global common subexpression elimination/Partial redundancy elimination
    and global constant/copy propagation for GNU compiler.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -614,7 +614,7 @@ static int load_killed_in_block_p    PARAMS ((basic_block, int, rtx, int));
 static void canon_list_insert        PARAMS ((rtx, rtx, void *));
 static int cprop_insn		PARAMS ((rtx, int));
 static int cprop		PARAMS ((int));
-static int one_cprop_pass	PARAMS ((int, int));
+static int one_cprop_pass	PARAMS ((int, int, int));
 static bool constprop_register	PARAMS ((rtx, rtx, rtx, int));
 static struct expr *find_bypass_set PARAMS ((int, int));
 static int bypass_block		    PARAMS ((basic_block, rtx, rtx));
@@ -819,7 +819,7 @@ gcse_main (f, file)
 
       /* Don't allow constant propagation to modify jumps
 	 during this pass.  */
-      changed = one_cprop_pass (pass + 1, 0);
+      changed = one_cprop_pass (pass + 1, 0, 0);
 
       if (optimize_size)
 	changed |= one_classic_gcse_pass (pass + 1);
@@ -886,7 +886,7 @@ gcse_main (f, file)
   max_gcse_regno = max_reg_num ();
   alloc_gcse_mem (f);
   /* This time, go ahead and allow cprop to alter jumps.  */
-  one_cprop_pass (pass + 1, 1);
+  one_cprop_pass (pass + 1, 1, 0);
   free_gcse_mem ();
 
   if (file)
@@ -4463,20 +4463,22 @@ cprop (alter_jumps)
 }
 
 /* Perform one copy/constant propagation pass.
-   F is the first insn in the function.
-   PASS is the pass count.  */
+   PASS is the pass count.  If CPROP_JUMPS is true, perform constant
+   propagation into conditional jumps.  If BYPASS_JUMPS is true,
+   perform conditional jump bypassing optimizations.  */
 
 static int
-one_cprop_pass (pass, alter_jumps)
+one_cprop_pass (pass, cprop_jumps, bypass_jumps)
      int pass;
-     int alter_jumps;
+     int cprop_jumps;
+     int bypass_jumps;
 {
   int changed = 0;
 
   const_prop_count = 0;
   copy_prop_count = 0;
 
-  local_cprop_pass (alter_jumps);
+  local_cprop_pass (cprop_jumps);
 
   alloc_hash_table (max_cuid, &set_hash_table, 1);
   compute_hash_table (&set_hash_table);
@@ -4486,8 +4488,8 @@ one_cprop_pass (pass, alter_jumps)
     {
       alloc_cprop_mem (last_basic_block, set_hash_table.n_elems);
       compute_cprop_data ();
-      changed = cprop (alter_jumps);
-      if (alter_jumps)
+      changed = cprop (cprop_jumps);
+      if (bypass_jumps)
 	changed |= bypass_conditional_jumps ();
       free_cprop_mem ();
     }
@@ -7346,6 +7348,111 @@ store_motion ()
   free_edge_list (edge_list);
   remove_fake_edges ();
   end_alias_analysis ();
+}
+
+
+/* Entry point for jump bypassing optimization pass.  */
+
+int
+bypass_jumps (file)
+     FILE *file;
+{
+  int changed;
+
+  /* We do not construct an accurate cfg in functions which call
+     setjmp, so just punt to be safe.  */
+  if (current_function_calls_setjmp)
+    return 0;
+
+  /* For calling dump_foo fns from gdb.  */
+  debug_stderr = stderr;
+  gcse_file = file;
+
+  /* Identify the basic block information for this function, including
+     successors and predecessors.  */
+  max_gcse_regno = max_reg_num ();
+
+  if (file)
+    dump_flow_info (file);
+
+  /* Return if there's nothing to do.  */
+  if (n_basic_blocks <= 1)
+    return 0;
+
+  /* Trying to perform global optimizations on flow graphs which have
+     a high connectivity will take a long time and is unlikely to be
+     particularly useful.
+
+     In normal circumstances a cfg should have about twice as many edges
+     as blocks.  But we do not want to punish small functions which have
+     a couple switch statements.  So we require a relatively large number
+     of basic blocks and the ratio of edges to blocks to be high.  */
+  if (n_basic_blocks > 1000 && n_edges / n_basic_blocks >= 20)
+    {
+      if (warn_disabled_optimization)
+        warning ("BYPASS disabled: %d > 1000 basic blocks and %d >= 20 edges/basic block",
+                 n_basic_blocks, n_edges / n_basic_blocks);
+      return 0;
+    }
+
+  /* If allocating memory for the cprop bitmap would take up too much
+     storage it's better just to disable the optimization.  */
+  if ((n_basic_blocks
+       * SBITMAP_SET_SIZE (max_gcse_regno)
+       * sizeof (SBITMAP_ELT_TYPE)) > MAX_GCSE_MEMORY)
+    {
+      if (warn_disabled_optimization)
+        warning ("GCSE disabled: %d basic blocks and %d registers",
+                 n_basic_blocks, max_gcse_regno);
+
+      return 0;
+    }
+
+  /* See what modes support reg/reg copy operations.  */
+  if (! can_copy_init_p)
+    {
+      compute_can_copy ();
+      can_copy_init_p = 1;
+    }
+
+  gcc_obstack_init (&gcse_obstack);
+  bytes_used = 0;
+
+  /* We need alias.  */
+  init_alias_analysis ();
+
+  /* Record where pseudo-registers are set.  This data is kept accurate
+     during each pass.  ??? We could also record hard-reg information here
+     [since it's unchanging], however it is currently done during hash table
+     computation.
+
+     It may be tempting to compute MEM set information here too, but MEM sets
+     will be subject to code motion one day and thus we need to compute
+     information about memory sets when we build the hash tables.  */
+
+  alloc_reg_set_mem (max_gcse_regno);
+  compute_sets (get_insns ());
+
+  max_gcse_regno = max_reg_num ();
+  alloc_gcse_mem (get_insns ());
+  changed = one_cprop_pass (1, 1, 1);
+  free_gcse_mem ();
+
+  if (file)
+    {
+      fprintf (file, "BYPASS of %s: %d basic blocks, ",
+	       current_function_name, n_basic_blocks);
+      fprintf (file, "%d bytes\n\n", bytes_used);
+    }
+
+  obstack_free (&gcse_obstack, NULL);
+  free_reg_set_mem ();
+
+  /* We are finished with alias.  */
+  end_alias_analysis ();
+  allocate_reg_info (max_reg_num (), FALSE, FALSE);
+
+  return changed;
 }
 
 #include "gt-gcse.h"

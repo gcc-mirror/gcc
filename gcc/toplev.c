@@ -232,6 +232,7 @@ enum dump_file_index
   DFI_addressof,
   DFI_gcse,
   DFI_loop,
+  DFI_bypass,
   DFI_cfg,
   DFI_bp,
   DFI_ce1,
@@ -281,6 +282,7 @@ static struct dump_file_info dump_file[DFI_MAX] =
   { "addressof", 'F', 0, 0, 0 },
   { "gcse",	'G', 1, 0, 0 },
   { "loop",	'L', 1, 0, 0 },
+  { "bypass",   'G', 1, 0, 0 }, /* Yes, duplicate enable switch.  */
   { "cfg",	'f', 1, 0, 0 },
   { "bp",	'b', 1, 0, 0 },
   { "ce1",	'C', 1, 0, 0 },
@@ -2962,6 +2964,32 @@ rest_of_compilation (decl)
       find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 
       ggc_collect ();
+    }
+
+  /* Perform jump bypassing and control flow optimizations.  */
+  if (optimize > 0 && flag_gcse)
+    {
+      timevar_push (TV_BYPASS);
+      open_dump_file (DFI_bypass, decl);
+
+      cleanup_cfg (CLEANUP_EXPENSIVE);
+      tem = bypass_jumps (rtl_dump_file);
+
+      if (tem)
+        {
+          rebuild_jump_labels (insns);
+          cleanup_cfg (CLEANUP_EXPENSIVE);
+          delete_trivially_dead_insns (insns, max_reg_num ());
+        }
+
+      close_dump_file (DFI_bypass, print_rtl_with_bb, insns);
+      timevar_pop (TV_BYPASS);
+
+      ggc_collect ();
+
+#ifdef ENABLE_CHECKING
+      verify_flow_info ();
+#endif
     }
 
   /* Do control and data flow analysis; wrote some of the results to
