@@ -1,5 +1,8 @@
 2003-03-09  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9373
+	* g++.dg/opt/ptrmem2.C: New test.
+
 	PR c++/8534
 	* g++.dg/opt/ptrmem1.C: New test.
 
