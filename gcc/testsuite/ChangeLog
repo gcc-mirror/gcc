@@ -1,3 +1,8 @@
+2003-05-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10555, c++/10576
+	* g++.dg/template/memclass1.C: New test.
+
 2003-05-08  DJ Delorie  <dj@redhat.com>
 
 	* gcc.c-torture/execute/20020404-1.x: New, skip for 16-bit
