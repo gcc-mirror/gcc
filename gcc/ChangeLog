@@ -1,3 +1,9 @@
+Thu Apr 10 23:52:30 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR inline-asm/8803
+	* function.c (instantate_virtual_regs):  Verify that all ASM statements
+	match after the virutal regs instantiation.
+
 2003-04-10  Steve Ellcey  <sje@cup.hp.com>
 
 	* ia64-protos.h (addp4_optimize_ok): New.
