@@ -1,5 +1,7 @@
 2002-01-15  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/AWTPermission.java: Updated copyright.
+
 	* java/awt/LayoutManager2.java: Merged with Classpath.
 	* java/awt/LayoutManager.java: Merged with Classpath.
 	* java/awt/GridLayout.java: Updated copyright and javadoc.
