@@ -1483,7 +1483,7 @@ generate_bytecode_insns (exp, target, state)
 	    }
 	}
       break;
-      case COMPOUND_EXPR:	
+    case COMPOUND_EXPR:	
       generate_bytecode_insns (TREE_OPERAND (exp, 0), IGNORE_TARGET, state);
       generate_bytecode_insns (TREE_OPERAND (exp, 1), target, state);
       break;
@@ -1701,7 +1701,9 @@ generate_bytecode_insns (exp, target, state)
 	sw_state.default_label = NULL;
 	generate_bytecode_insns (TREE_OPERAND (exp, 0), STACK_TARGET, state);
 	expression_last = state->last_block;
-	body_block = get_jcf_label_here (state);  /* Force a new block here. */
+	/* Force a new block here.  */
+	body_block = gen_jcf_label (state);
+	define_jcf_label (body_block, state);
 	generate_bytecode_insns (TREE_OPERAND (exp, 1), IGNORE_TARGET, state);
 	body_last = state->last_block;
 
