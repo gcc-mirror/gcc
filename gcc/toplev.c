@@ -4184,16 +4184,17 @@ decode_f_option (arg)
     }
   else if ((option_value
             = skip_leading_substring (arg, "message-length=")))
-    diagnostic_message_length_per_line =
-      read_integral_parameter (option_value, arg - 2,
-			       diagnostic_message_length_per_line);
+    output_set_maximum_length
+      (&global_dc->buffer, read_integral_parameter
+       (option_value, arg - 2, diagnostic_line_cutoff (global_dc)));
   else if ((option_value
 	    = skip_leading_substring (arg, "diagnostics-show-location=")))
     {
       if (!strcmp (option_value, "once"))
-	set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_ONCE);
+        diagnostic_prefixing_rule (global_dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
       else if (!strcmp (option_value, "every-line"))
-	set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE);
+        diagnostic_prefixing_rule (global_dc)
+          = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
       else
 	error ("Unrecognized option `%s'", arg - 2);
     }
@@ -4705,7 +4706,7 @@ toplev_main (argc, argv)
   ggc_add_tree_root (&current_function_func_begin_label, 1);
 
   /* Initialize the diagnostics reporting machinery.  */
-  initialize_diagnostics ();
+  diagnostic_initialize (global_dc);
 
   /* Register the language-independent parameters.  */
   add_params (lang_independent_params, LAST_PARAM);
@@ -4887,9 +4888,6 @@ toplev_main (argc, argv)
 
   if (exit_after_options)
     exit (0);
-
-  /* Reflect any language-specific diagnostic option setting.  */
-  reshape_diagnostic_buffer ();
 
   /* Checker uses the frame pointer.  */
   if (flag_check_memory_usage)

@@ -269,10 +269,10 @@ cxx_init_options ()
   flag_bounds_check = -1;
   /* By default wrap lines at 80 characters.  Is getenv ("COLUMNS")
      preferable?  */
-  diagnostic_message_length_per_line = 80;
+  diagnostic_line_cutoff (global_dc) = 80;
   /* By default, emit location information once for every
      diagnostic message.  */
-  set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_ONCE);
+  diagnostic_prefixing_rule (global_dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
 }
 
 static void
