@@ -385,7 +385,7 @@ public class ServerSocket
   }
 
   /**
-   * Returns true then the socket is bound, otherwise false
+   * Returns true when the socket is bound, otherwise false
    * 
    * @since 1.4
    */

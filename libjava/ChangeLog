@@ -1,3 +1,7 @@
+2004-01-07  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/ServerSocket.java (isBound): Fixed documentation.
+
 2004-01-07  Sascha Brawer  <brawer@dandelis.ch>
 
 	* javax/swing/DefaultBoundedRangeModel.java: Documented API.
