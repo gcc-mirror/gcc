@@ -116,6 +116,21 @@ extern int target_flags;
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
 
+/* Sometimes certain combinations of command options do not make sense
+   on a particular target machine.  You can define a macro
+   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
+   defined, is executed once just after all the command options have
+   been parsed.
+
+   On the PA, it is used to explicitly warn the user that -fpic and -fPIC
+   do not work.  */
+
+#define OVERRIDE_OPTIONS \
+{								\
+  if (flag_pic != 0)						\
+    warning ("-fpic and -fPIC are not supported on the PA.");	\
+}
+
 /* Omit frame pointer at high optimization levels.  */
   
 #define OPTIMIZATION_OPTIONS(OPTIMIZE) \
