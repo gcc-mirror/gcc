@@ -2,6 +2,8 @@
 
 	* config/alpha/alpha.c (alpha_expand_mov): Do gen_movdi_er_maybe_g
 	always during initial code generation.
+	* config/alpha/alpha.md (movdi_er_maybe_g): Don't conditionalize 
+	on flag_inline_functions.
 
 2003-09-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
