@@ -1,5 +1,9 @@
 2000-11-12  Mark Mitchell  <mark@codesourcery.com>
 
+	* include/c/bits/std_cmath.h (abs): Change extern "C" declaration
+	of `abs (double)' to ...
+	(fabs): this.
+
 	* config/os/solaris/solaris2.7/bits/os_defines.h: Define
 	__EXTENSIONS__.
 
