@@ -528,8 +528,8 @@ BC_ALL = bc-arity.h bc-opcode.h bc-opname.h
 
 # Language-independent object files.
 OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
- function.o stmt.o expr.o calls.o expmed.o explow.o optabs.o varasm.o \
- rtl.o print-rtl.o rtlanal.o emit-rtl.o real.o \
+ function.o stmt.o except.o expr.o calls.o expmed.o explow.o optabs.o \
+ varasm.o rtl.o print-rtl.o rtlanal.o emit-rtl.o real.o \
  dbxout.o sdbout.o dwarfout.o dwarf2out.o xcoffout.o \
  integrate.o jump.o cse.o loop.o unroll.o flow.o stupid.o combine.o \
  regclass.o local-alloc.o global.o reload.o reload1.o caller-save.o \
@@ -1209,9 +1209,12 @@ function.o : function.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h insn-config.h \
    recog.h output.h bytecode.h bc-emit.h
 stmt.o : stmt.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
-   insn-flags.h insn-config.h insn-codes.h hard-reg-set.h expr.h loop.h \
-   recog.h bytecode.h bc-typecd.h bc-typecd.def bc-opcode.h bc-optab.h \
-   bc-emit.h
+   insn-flags.h insn-config.h insn-codes.h hard-reg-set.h expr.h except.h \
+   loop.h recog.h bytecode.h bc-typecd.h bc-typecd.def bc-opcode.h \
+   bc-optab.h bc-emit.h
+except.o : except.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
+   insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h insn-config.h \
+   recog.h output.h except.h
 expr.o : expr.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h regs.h \
    insn-flags.h insn-codes.h expr.h insn-config.h recog.h output.h \
    typeclass.h bytecode.h bc-opcode.h bc-typecd.h bc-typecd.def bc-optab.h \
@@ -1279,7 +1282,7 @@ reorg.o : reorg.c $(CONFIG_H) $(RTL_H) conditions.h hard-reg-set.h \
 sched.o : sched.c $(CONFIG_H) $(RTL_H) basic-block.h regs.h hard-reg-set.h \
    flags.h insn-config.h insn-attr.h
 final.o : final.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h regs.h \
-   recog.h conditions.h insn-config.h insn-attr.h real.h output.h \
+   recog.h conditions.h insn-config.h insn-attr.h except.h real.h output.h \
    hard-reg-set.h insn-flags.h insn-codes.h gstab.h xcoffout.h defaults.h
 recog.o : recog.c $(CONFIG_H) $(RTL_H)  \
    regs.h recog.h hard-reg-set.h flags.h insn-config.h insn-attr.h \

@@ -62,6 +62,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "bytecode.h"
 #include "bc-emit.h"
+#include "except.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -270,12 +271,6 @@ struct rtx_def *(*lang_expand_expr) ();
    end of compilation.  */
 
 void (*incomplete_decl_finalize_hook) () = 0;
-
-/* Pointer to function for interim exception handling implementation.
-   This interface will change, and it is only here until a better interface
-   replaces it.  */
-
-void (*interim_eh_hook)	PROTO((tree));
 
 /* Highest label number used at the end of reload.  */
 
@@ -492,8 +487,13 @@ int flag_short_temps;
 
 int flag_pic;
 
+/* Nonzero means generate extra code for exception handling and enable
+   exception handling.  */
+
+int flag_exceptions = 1;
+
 /* Nonzero means don't place uninitialized global data in common storage
-   by default. */
+   by default.  */
 
 int flag_no_common;
 
@@ -593,6 +593,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"schedule-insns2", &flag_schedule_insns_after_reload, 1},
   {"pic", &flag_pic, 1},
   {"PIC", &flag_pic, 2},
+  {"exceptions", &flag_exceptions, 1},
   {"fast-math", &flag_fast_math, 1},
   {"common", &flag_no_common, 0},
   {"inhibit-size-directive", &flag_inhibit_size_directive, 1},
@@ -996,15 +997,6 @@ decl_name (decl, kind)
      char **kind;
 {
   return IDENTIFIER_POINTER (DECL_NAME (decl));
-}
-
-/* This is the default interim_eh_hook function.  */
-
-void
-interim_eh (finalization)
-     tree finalization;
-{
-  /* Don't do anything by default.  */
 }
 
 static int need_error_newline;
@@ -2416,6 +2408,12 @@ compile_file (name)
 	  }
       }
 
+    /* Now that all possible functions have been output, we can dump
+       the exception table.  */
+
+    if (exception_table_p ())
+      output_exception_table ();
+
     for (i = 0; i < len; i++)
       {
 	decl = vec[i];
@@ -2894,6 +2892,9 @@ rest_of_compilation (decl)
     FINALIZE_PIC;
 #endif
 
+  /* Add an unwinder for exception handling, if needed.  */
+  emit_unwinder ();
+
   insns = get_insns ();
 
   /* Copy any shared structure that should not be shared.  */
@@ -2908,6 +2909,9 @@ rest_of_compilation (decl)
      If so, scan all the insns and create explicit address computation
      for all references to such slots.  */
 /*   fixup_stack_slots (); */
+
+  /* Find all the EH handlers.  */
+  find_exception_handler_labels ();
 
   /* Always do one jump optimization pass to ensure that JUMP_LABEL fields
      are initialized and to compute whether control can drop off the end
@@ -3430,7 +3434,6 @@ main (argc, argv, envp)
 
   decl_printable_name = decl_name;
   lang_expand_expr = (struct rtx_def *(*)()) do_abort;
-  interim_eh_hook = interim_eh;
 
   /* Initialize whether `char' is signed.  */
   flag_signed_char = DEFAULT_SIGNED_CHAR;
