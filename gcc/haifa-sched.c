@@ -3366,7 +3366,7 @@ sched_analyze_1 (x, insn)
 		 but sets must be ordered with respect to a pending clobber. */
 	      if (code == SET)
 		{
-	          reg_last_uses[regno + i] = 0;
+		  free_list (&reg_last_uses[regno + i], &unused_insn_list);
 	          for (u = reg_last_clobbers[regno + i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 	          SET_REGNO_REG_SET (reg_pending_sets, regno + i);
@@ -3393,7 +3393,7 @@ sched_analyze_1 (x, insn)
 
 	  if (code == SET)
 	    {
-	      reg_last_uses[regno] = 0;
+	      free_list (&reg_last_uses[regno], &unused_insn_list);
 	      for (u = reg_last_clobbers[regno]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 	      SET_REGNO_REG_SET (reg_pending_sets, regno);
@@ -3659,7 +3659,7 @@ sched_analyze_2 (x, insn)
 	      {
 		for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-		reg_last_uses[i] = 0;
+		free_list (&reg_last_uses[i], &unused_insn_list);
 
 		for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
@@ -3792,7 +3792,7 @@ sched_analyze_insn (x, insn, loop_notes)
 	      rtx u;
 	      for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	      reg_last_uses[i] = 0;
+	      free_list (&reg_last_uses[i], &unused_insn_list);
 
 	      for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), 0);
@@ -3924,8 +3924,7 @@ sched_analyze (head, tail)
 		{
 		  for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-
-		  reg_last_uses[i] = 0;
+		  free_list (&reg_last_uses[i], &unused_insn_list);
 
 		  for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), 0);
@@ -3952,7 +3951,6 @@ sched_analyze (head, tail)
 		  {
 		    for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-		    reg_last_uses[i] = 0;
 
 		    for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
