@@ -1350,6 +1350,26 @@ mostly_true_jump (jump_insn, condition)
   int rare_dest = rare_destination (target_label);
   int rare_fallthrough = rare_destination (NEXT_INSN (jump_insn));
 
+  /* If branch probabilities are available, then use that number since it
+     always gives a correct answer.  */
+  if (flag_branch_probabilities)
+    {
+      rtx note = find_reg_note (jump_insn, REG_BR_PROB, 0);;
+      if (note)
+	{
+	  int prob = XINT (note, 0);
+
+	  if (prob >= REG_BR_PROB_BASE * 9 / 10)
+	    return 2;
+	  else if (prob >= REG_BR_PROB_BASE / 2)
+	    return 1;
+	  else if (prob >= REG_BR_PROB_BASE / 10)
+	    return 0;
+	  else
+	    return -1;
+	}
+    }
+
   /* If this is a branch outside a loop, it is highly unlikely.  */
   if (GET_CODE (PATTERN (jump_insn)) == SET
       && GET_CODE (SET_SRC (PATTERN (jump_insn))) == IF_THEN_ELSE
