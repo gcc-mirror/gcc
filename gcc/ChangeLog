@@ -1,3 +1,7 @@
+2002-11-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.h (CAN_ELIMINATE): Simplify.
+
 2002-11-01  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
 
 	* config/h8300/h8300.h (OPTIMIZATION_OPTIONS): New.
