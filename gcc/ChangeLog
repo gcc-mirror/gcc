@@ -1,3 +1,18 @@
+2003-05-04  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (LIBGCOV): Add _gcov_merge_add.
+	* gcov-io.h: Make GCOV_LINKAGE extern in libgcov and prevent resulting
+	namespace clash.
+	(GCOV_MERGE_FUNCTIONS): New.
+	(gcov_merge_fn): Declare.
+	(struct gcov_ctr_info): New field "merge".
+	(__gcov_merge_add): Declare.
+	* coverage.c (ctr_merge_functions): New.
+	(build_ctr_info_type, build_ctr_info_value): Initialize merge field
+	of gcov_ctr_info type.
+	* libgcov.c (__gcov_merge_add): New.
+	(gcov_exit): Call a hook to merge values of counters.
+
 2003-05-04  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* toplev.h (pedwarn_with_file_and_line): Don't declare.

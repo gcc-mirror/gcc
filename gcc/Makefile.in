@@ -854,7 +854,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
 LIB2FUNCS_ST = _eprintf __gcc_bcmp
 
 # Defined in libgcov.c, included only in gcov library
-LIBGCOV = _gcov
+LIBGCOV = _gcov _gcov_merge_add
 
 FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
     _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \

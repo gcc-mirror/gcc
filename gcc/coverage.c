@@ -98,6 +98,9 @@ static htab_t counts_hash = NULL;
 /* The names of the counter tables.  */
 static GTY(()) rtx ctr_labels[GCOV_COUNTERS];
 
+/* The names of merge functions for counters.  */
+static const char *ctr_merge_functions[GCOV_COUNTERS] = GCOV_MERGE_FUNCTIONS;
+
 /* Forward declarations.  */
 static hashval_t htab_counts_entry_hash PARAMS ((const void *));
 static int htab_counts_entry_eq PARAMS ((const void *, const void *));
@@ -559,6 +562,7 @@ build_ctr_info_type ()
 {
   tree type = (*lang_hooks.types.make_type) (RECORD_TYPE);
   tree field, fields = NULL_TREE;
+  tree gcov_merge_fn_type;
   
   /* counters */
   field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
@@ -568,6 +572,18 @@ build_ctr_info_type ()
   /* values */
   field = build_decl (FIELD_DECL, NULL_TREE,
 		      build_pointer_type (make_signed_type (GCOV_TYPE_SIZE)));
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  /* merge */
+  gcov_merge_fn_type =
+	build_function_type_list (
+		void_type_node,
+		build_pointer_type (make_signed_type (GCOV_TYPE_SIZE)),
+		unsigned_type_node,
+		NULL_TREE);
+  field = build_decl (FIELD_DECL, NULL_TREE,
+		      build_pointer_type (gcov_merge_fn_type));
   TREE_CHAIN (field) = fields;
   fields = field;
 
@@ -587,6 +603,7 @@ build_ctr_info_value (counter, type)
 {
   tree value = NULL_TREE;
   tree fields = TYPE_FIELDS (type);
+  tree fn;
 
   /* counters */
   value = tree_cons (fields,
@@ -614,6 +631,20 @@ build_ctr_info_value (counter, type)
     }
   else
     value = tree_cons (fields, null_pointer_node, value);
+  fields = TREE_CHAIN (fields);
+
+  fn = build_decl (FUNCTION_DECL,
+		   get_identifier (ctr_merge_functions[counter]),
+		   TREE_TYPE (TREE_TYPE (fields)));
+  DECL_EXTERNAL (fn) = 1;
+  TREE_PUBLIC (fn) = 1;
+  DECL_ARTIFICIAL (fn) = 1;
+  TREE_NOTHROW (fn) = 1;
+  value = tree_cons (fields,
+		     build1 (ADDR_EXPR,
+			     TREE_TYPE (fields),
+			     fn),
+		     value);
 
   value = build_constructor (type, nreverse (value));
   

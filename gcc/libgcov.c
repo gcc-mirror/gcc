@@ -32,11 +32,19 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #if defined(inhibit_libc)
 /* If libc and its header files are not available, provide dummy functions.  */
 
+#ifdef L_gcov
 void __gcov_init (void *p);
 void __gcov_flush (void);
 
 void __gcov_init (void *p) { }
 void __gcov_flush (void) { }
+#endif
+
+#ifdef L_gcov_merge_add
+void __gcov_merge_add (gcov_type *, unsigned);
+
+void __gcov_merge_add (gcov_type *counters, unsigned n_counters) { }
+#endif
 
 #else
 
@@ -59,6 +67,8 @@ void __gcov_flush (void) { }
 #endif
 #define IN_LIBGCOV 1
 #include "gcov-io.h"
+
+#ifdef L_gcov
 #include "gcov-io.c"
 
 /* Chain of per-object gcov structures.  */
@@ -227,7 +237,7 @@ gcov_exit (void)
 		if ((1 << t_ix) & gi_ptr->ctr_mask)
 		  {
 		    unsigned n_counts;
-		    gcov_type *c_ptr;
+		    gcov_merge_fn merge;
 		    
 		    tag = gcov_read_unsigned ();
 		    length = gcov_read_unsigned ();
@@ -235,11 +245,10 @@ gcov_exit (void)
 		    if (tag != GCOV_TAG_FOR_COUNTER (t_ix)
 			|| fi_ptr->n_ctrs[c_ix] * 8 != length)
 		      goto read_mismatch;
-		    c_ptr = values[c_ix];
-		    for (n_counts = fi_ptr->n_ctrs[c_ix];
-			 n_counts--; c_ptr++)
-		      *c_ptr += gcov_read_counter ();
-		    values[c_ix] = c_ptr;
+		    n_counts = fi_ptr->n_ctrs[c_ix];
+		    merge = gi_ptr->counts[c_ix].merge;
+		    (*merge) (values[c_ix], n_counts);
+		    values[c_ix] += n_counts;
 		    c_ix++;
 		}
 	      if ((error = gcov_is_error ()))
@@ -449,5 +458,21 @@ __gcov_flush (void)
 	  }
     }
 }
+
+#endif /* L_gcov */
+
+#ifdef L_gcov_merge_add
+/* The profile merging function that just adds the counters.  It is given
+   an array COUNTERS of N_COUNTERS old counters and it reads the same number
+   of counters from the gcov file.  */
+void
+__gcov_merge_add (counters, n_counters)
+     gcov_type *counters;
+     unsigned n_counters;
+{
+  for (; n_counters; counters++, n_counters--)
+    *counters += gcov_read_counter ();
+}
+#endif /* L_gcov_merge_add */
 
 #endif /* inhibit_libc */
