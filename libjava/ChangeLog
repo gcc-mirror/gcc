@@ -1,3 +1,8 @@
+2001-08-09  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/image/SampleModel.java (getPixel): Set correct array
+	element.  From Chris Meyer.
+
 2001-08-10  Loren J. Rittle  <ljrittle@acm.org>
 
 	* java/lang/natObject.cc (is_mp): Protect use of _SC_NPROCESSORS_ONLN.

@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -179,7 +179,7 @@ public abstract class SampleModel
     
     for (int b=0; b<numBands; b++)
       {
-        fArray[0] = getSampleFloat(x, y, b, data);
+        fArray[b] = getSampleFloat(x, y, b, data);
       }
     return fArray;
   }
@@ -188,7 +188,7 @@ public abstract class SampleModel
     if (dArray == null) dArray = new double[numBands];
     for (int b=0; b<numBands; b++)
       {
-	dArray[0] = getSampleDouble(x, y, b, data);
+	dArray[b] = getSampleDouble(x, y, b, data);
       }
     return dArray;
   }
