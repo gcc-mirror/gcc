@@ -232,6 +232,9 @@ do { text_section ();							\
         || DECL_INITIAL (DECL))                                         \
       ENCODE_SECTION_INFO (DECL);					\
     ASM_OUTPUT_LABEL (FILE, xname);                                     \
+    /* Avoid generating stubs for functions we've just defined by	\
+       outputting any required stub name label now.  */			\
+    machopic_output_possible_stub_label (FILE, xname);			\
   } while (0)
 
 /* Wrap new method names in quotes so the assembler doesn't gag.

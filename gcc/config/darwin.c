@@ -118,6 +118,22 @@ machopic_classify_ident (ident)
   else if (name[1] == 'T')
     return MACHOPIC_DEFINED_FUNCTION;
 
+  /* It is possible that someone is holding a "stale" name, which has
+     since been defined.  See if there is a "defined" name (i.e,
+     different from NAME only in having a '!D_' or a '!T_' instead of
+     a '!d_' or '!t_' prefix) in the identifier hash tables.  If so, say
+     that this identifier is defined.  */
+  else if (name[1] == 'd' || name[1] == 't')
+    {
+      char *new_name;
+      new_name = (char *)alloca (strlen (name) + 1);
+      strcpy (new_name, name);
+      new_name[1] = (name[1] == 'd') ? 'D' : 'T';
+      if (maybe_get_identifier (new_name) != NULL)
+	return  (name[1] == 'd') ? MACHOPIC_DEFINED_DATA
+				 : MACHOPIC_DEFINED_FUNCTION;
+    }
+
   for (temp = machopic_defined_list; temp != NULL_TREE; temp = TREE_CHAIN (temp))
     {
       if (ident == TREE_VALUE (temp))
@@ -527,78 +543,6 @@ machopic_indirect_data_reference (orig, reg)
   return ptr_ref;
 }
 
-/* For MACHOPIC_INDIRECT_CALL_TARGET below, we need to beware of:
-
-	extern "C" { int f(); }
-	struct X { int f(); int g(); };
-	int X::f() { ::f(); }
-	int X::g() { ::f(); f();}
-
-  This is hairy.  Both calls to "::f()" need to be indirect (i.e., to
-  appropriate symbol stubs), but since MACHOPIC_NAME_DEFINED_P calls
-  GET_IDENTIFIER which treats "f" as "X::f", and "X::f" is indeed (being)
-  defined somewhere in "X"'s inheritance hierarchy, MACHOPIC_NAME_DEFINED_P
-  returns TRUE when called with "f", which means that
-  MACHOPIC_INDIRECT_CALL_TARGET uses an "internal" call instead of an
-  indirect one as it should.
-
-  Our quick-n-dirty solution to this is to call the following
-  FUNC_NAME_MAYBE_SCOPED routine which (only for C++) checks whether
-  FNAME -- the name of the function which we're calling -- is NOT a
-  mangled C++ name, AND if the current function being compiled is a
-  method, and if so, use an "external" or "indirect" call. 
-
-  Note that this function will be called ONLY when MACHOPIC_INDIRECT_TARGET_P
-  has already indicated that the target is NOT indirect.
-
-  This conservative solution will sometimes make indirect calls where
-  it might have been possible to make direct ones.
-
-  FUNC_NAME_MAYBE_SCOPED returns 1 to indicate a "C" name (not scoped),
-  which in turns means we should create a stub for an indirect call.
-  */
-
-static int is_cplusplus = -1;
-
-static int
-func_name_maybe_scoped (fname)
-     const char *fname;
-{
-
-  if (is_cplusplus < 0)
-    is_cplusplus = (strcmp (lang_hooks.name, "GNU C++") == 0);
-
-  if (is_cplusplus)
-    {
-      /* If we have a method, then check whether the function we're trying to
-         call is a "C" function.  If so, we should use an indirect call.
-
-         It turns out to be hard to tell whether "we have a method", since
-         static member functions have a TREE_CODE of FUNCTION_TYPE, as do
-         namespace-level non-member functions.  So here, we always look for
-         an extern-"C"-like name, and make stubs for them no matter the
-         calling context.  This is temporary, and leaves nagging suspicion
-	 that improvements should be possible here.  (I.e., I suspect that
-         it can still sometimes make stubs where it needn't.)  */
-
-      /* if (1 || TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE) */
-	{
-	  /* If fname is of the form "f__1X" or "f__Fv", it's C++.  */
-	  while (*fname == '_') ++fname;	/* skip leading underscores  */
-	  while (*fname != 0)
-	    {
-	      if (fname[0] == '_' && fname[1] == '_'
-		  && (fname[2] == 'F' || ISDIGIT (fname[2])))
-		return 0;
-	      ++fname;
-	    }
-	  /* Not a C++ mangled name: must be "C", in which case play safe.  */
-	  return 1;
-	}
-    }
-  return 0;
-}
-
 /* Transform TARGET (a MEM), which is a function call target, to the
    corresponding symbol_stub if necessary.  Return a new MEM.  */
 
@@ -614,7 +558,11 @@ machopic_indirect_call_target (target)
       enum machine_mode mode = GET_MODE (XEXP (target, 0));
       const char *name = XSTR (XEXP (target, 0), 0);
 
-      if (!machopic_name_defined_p (name) || func_name_maybe_scoped (name)) 
+      /* If the name is already defined, we need do nothing.  */
+      if (name[0] == '!' && name[1] == 'T')
+	return target;
+
+      if (!machopic_name_defined_p (name))
 	{
 	  const char *stub_name = machopic_stub_name (name);
 
@@ -894,6 +842,10 @@ machopic_finish (asm_out_file)
       if (! TREE_USED (temp))
 	continue;
 
+      /* If the symbol is actually defined, we don't need a stub.  */
+      if (sym_name[0] == '!' && sym_name[1] == 'T')
+	continue;
+
       STRIP_NAME_ENCODING (sym_name, sym_name);
 
       sym = alloca (strlen (sym_name) + 2);
@@ -1056,8 +1008,10 @@ darwin_encode_section_info (decl)
     }
   /* The non-lazy pointer list may have captured references to the
      old encoded name, change them.  */
-  update_non_lazy_ptrs (XSTR (sym_ref, 0));
-  update_stubs (XSTR (sym_ref, 0));
+  if (TREE_CODE (decl) == VAR_DECL)
+    update_non_lazy_ptrs (XSTR (sym_ref, 0));
+  else
+    update_stubs (XSTR (sym_ref, 0));
 }
 
 /* Scan the list of non-lazy pointers and update any recorded names whose
@@ -1090,6 +1044,37 @@ update_non_lazy_ptrs (name)
     }
 }
 
+/* Function NAME is being defined, and its label has just been output.
+   If there's already a reference to a stub for this function, we can
+   just emit the stub label now and we don't bother emitting the stub later. */
+
+void
+machopic_output_possible_stub_label (file, name)
+     FILE *file;
+     const char *name;
+{
+  tree temp;
+
+
+  /* Ensure we're looking at a section-encoded name.  */
+  if (name[0] != '!' || (name[1] != 't' && name[1] != 'T'))
+    return;
+
+  for (temp = machopic_stubs;
+       temp != NULL_TREE;
+       temp = TREE_CHAIN (temp))
+    {
+      const char *sym_name;
+
+      sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
+      if (sym_name[0] == '!' && sym_name[1] == 'T'
+	  && ! strcmp (name+2, sym_name+2))
+	{
+	  ASM_OUTPUT_LABEL (file, IDENTIFIER_POINTER (TREE_PURPOSE (temp)));
+	  break;
+	}
+    }
+}
 
 /* Scan the list of stubs and update any recorded names whose
    stripped name matches the argument.  */

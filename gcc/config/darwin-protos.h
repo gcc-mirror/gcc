@@ -64,6 +64,8 @@ extern void darwin_encode_section_info PARAMS ((tree));
 
 extern void machopic_finish PARAMS ((FILE *));
 
+extern void machopic_output_possible_stub_label PARAMS ((FILE *, const char*));
+
 extern void darwin_exception_section PARAMS ((void));
 extern void darwin_eh_frame_section PARAMS ((void));
 
