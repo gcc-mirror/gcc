@@ -1,6 +1,7 @@
 Fri May 18 07:26:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* dbxout.c (dbxout_type): Use host_integerp.
+	* dbxout.c (dbxout_type): Use host_integerp and fix typo in testing
+	for INTEGER_TYPE.
 	(dbxout_symbol, case TYPE_DECL): Don't generate tag for records of
 	variable size.
 
