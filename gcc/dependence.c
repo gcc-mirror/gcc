@@ -1,5 +1,3 @@
-/* CYGNUS LOCAL dependency analysis */
-
 /* Analyze loop dependencies
    Copyright (C) 2000 Free Software Foundation, Inc.
 
@@ -196,15 +194,19 @@ static int get_one_coefficient PARAMS ((tree, subscript*, def_use*, enum tree_co
 static void normalize_coefficients PARAMS ((subscript[], loop*, int));
 static void classify_dependence PARAMS ((subscript[], subscript[],
 				 enum complexity_type[], int*, int));
-static void ziv_test PARAMS ((subscript[], subscript[], enum direction_type[][],
-		      int[][], loop*, int));
-static void siv_test PARAMS ((subscript[], subscript[], enum direction_type[][],
-		      int[][], loop*, int));
+static void ziv_test PARAMS ((subscript[], subscript[],
+			      enum direction_type[][MAX_SUBSCRIPTS],
+			      int[][MAX_SUBSCRIPTS], loop*, int));
+static void siv_test PARAMS ((subscript[], subscript[],
+			      enum direction_type[][MAX_SUBSCRIPTS],
+			      int[][MAX_SUBSCRIPTS], loop*, int));
 static int check_subscript_induction PARAMS ((subscript*, subscript*, loop*));
-static void gcd_test PARAMS ((subscript[], subscript[], enum direction_type[][],
-		      int[][], loop*, int));
+static void gcd_test PARAMS ((subscript[], subscript[], enum
+			      direction_type[][MAX_SUBSCRIPTS],
+			      int[][MAX_SUBSCRIPTS], loop*, int));
 static int find_gcd PARAMS ((int, int));
-static void merge_dependencies PARAMS ((enum direction_type[][], int[][], int, int));
+static void merge_dependencies PARAMS ((enum direction_type[][MAX_SUBSCRIPTS],
+					int[][MAX_SUBSCRIPTS], int, int));
 static void dump_array_ref PARAMS ((tree));
 static void dump_one_node PARAMS ((def_use*, varray_type*));
 static void dump_node_dependence PARAMS ((void));
