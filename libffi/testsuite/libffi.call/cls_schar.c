@@ -35,7 +35,8 @@ int main (void)
 
   res = (*((cls_ret_schar)pcl))(127);
   /* { dg-output "127: 127" } */
-  CHECK(res == 127);
+  printf("res: %d\n", res);
+  /* { dg-output "\nres: 127" } */
 
   exit(0);
 }

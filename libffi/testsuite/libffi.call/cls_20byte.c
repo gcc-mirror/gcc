@@ -76,17 +76,15 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_20byte_fn), &res_dbl, args_dbl);
   /* { dg-output "1 2 3 4 5 7: 5 7 10" } */
-  CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
-  CHECK( res_dbl.b == (g_dbl.b + f_dbl.b));
-  CHECK( res_dbl.c == (g_dbl.c + f_dbl.c));
+  printf("res: %g %g %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
+  /* { dg-output "\nres: 5 7 10" } */
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_20byte_gn, NULL) == FFI_OK);
 
   res_dbl = ((cls_struct_20byte(*)(cls_struct_20byte, cls_struct_20byte))(pcl))(g_dbl, f_dbl);
   /* { dg-output "\n1 2 3 4 5 7: 5 7 10" } */
-  CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
-  CHECK( res_dbl.b == (g_dbl.b + f_dbl.b));
-  CHECK( res_dbl.c == (g_dbl.c + f_dbl.c));
+  printf("res: %g %g %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
+  /* { dg-output "\nres: 5 7 10" } */
 
   exit(0);
 }

@@ -103,31 +103,21 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_64byte_fn), &res_dbl, args_dbl);
   /* { dg-output "22 15 17 25 6 13 19 18" } */
-  CHECK( res_dbl.a == (e_dbl.a + f_dbl.a + g_dbl.a + h_dbl.a));
-  CHECK( res_dbl.b == (e_dbl.b + f_dbl.b + g_dbl.b + h_dbl.b));
-  CHECK( res_dbl.c == (e_dbl.c + f_dbl.c + g_dbl.c + h_dbl.c));
-  CHECK( res_dbl.d == (e_dbl.d + f_dbl.d + g_dbl.d + h_dbl.d));
-  CHECK( res_dbl.e == (e_dbl.e + f_dbl.e + g_dbl.e + h_dbl.e));
-  CHECK( res_dbl.f == (e_dbl.f + f_dbl.f + g_dbl.f + h_dbl.f));
-  CHECK( res_dbl.g == (e_dbl.g + f_dbl.g + g_dbl.g + h_dbl.g));
-  CHECK( res_dbl.h == (e_dbl.h + f_dbl.h + g_dbl.h + h_dbl.h));
+  printf("res: %g %g %g %g %g %g %g %g\n", res_dbl.a, res_dbl.b, res_dbl.c,
+	 res_dbl.d, res_dbl.e, res_dbl.f, res_dbl.g, res_dbl.h);
+  /* { dg-output "\nres: 22 15 17 25 6 13 19 18" } */
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_64byte_gn, NULL) == FFI_OK);
 
   res_dbl = ((cls_struct_64byte(*)(cls_struct_64byte,
-				     cls_struct_64byte,
-				     cls_struct_64byte,
-				     cls_struct_64byte))
+				   cls_struct_64byte,
+				   cls_struct_64byte,
+				   cls_struct_64byte))
 	     (pcl))(e_dbl, f_dbl, g_dbl, h_dbl);
   /* { dg-output "\n22 15 17 25 6 13 19 18" } */
-  CHECK( res_dbl.a == (e_dbl.a + f_dbl.a + g_dbl.a + h_dbl.a));
-  CHECK( res_dbl.b == (e_dbl.b + f_dbl.b + g_dbl.b + h_dbl.b));
-  CHECK( res_dbl.c == (e_dbl.c + f_dbl.c + g_dbl.c + h_dbl.c));
-  CHECK( res_dbl.d == (e_dbl.d + f_dbl.d + g_dbl.d + h_dbl.d));
-  CHECK( res_dbl.e == (e_dbl.e + f_dbl.e + g_dbl.e + h_dbl.e));
-  CHECK( res_dbl.f == (e_dbl.f + f_dbl.f + g_dbl.f + h_dbl.f));
-  CHECK( res_dbl.g == (e_dbl.g + f_dbl.g + g_dbl.g + h_dbl.g));
-  CHECK( res_dbl.h == (e_dbl.h + f_dbl.h + g_dbl.h + h_dbl.h));
+  printf("res: %g %g %g %g %g %g %g %g\n", res_dbl.a, res_dbl.b, res_dbl.c,
+	 res_dbl.d, res_dbl.e, res_dbl.f, res_dbl.g, res_dbl.h);
+  /* { dg-output "\nres: 22 15 17 25 6 13 19 18" } */
 
   exit(0);
 }

@@ -36,6 +36,8 @@ int main (void)
 
   res = (*((cls_ret_ushort)pcl))(65535);
   /* { dg-output "65535: 65535" } */
-  CHECK(res == 65535);
+  printf("res: %d\n",res);
+  /* { dg-output "\nres: 65535" } */
+
   exit(0);
 }

@@ -80,19 +80,15 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_3_1byte_fn), &res_dbl, args_dbl);
   /* { dg-output "12 13 14 178 179 180: 190 192 194" } */
-  CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
-  CHECK( res_dbl.b == (g_dbl.b + f_dbl.b));
-  CHECK( res_dbl.c == (g_dbl.c + f_dbl.c));
-
+  printf("res: %d %d %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
+  /* { dg-output "\nres: 190 192 194" } */
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_3_1byte_gn, NULL) == FFI_OK);
 
   res_dbl = ((cls_struct_3_1byte(*)(cls_struct_3_1byte, cls_struct_3_1byte))(pcl))(g_dbl, f_dbl);
   /* { dg-output "\n12 13 14 178 179 180: 190 192 194" } */
-  CHECK( res_dbl.a == (g_dbl.a + f_dbl.a));
-  CHECK( res_dbl.b == (g_dbl.b + f_dbl.b));
-  CHECK( res_dbl.c == (g_dbl.c + f_dbl.c));
-
+  printf("res: %d %d %d\n", res_dbl.a, res_dbl.b, res_dbl.c);
+  /* { dg-output "\nres: 190 192 194" } */
 
   exit(0);
 }

@@ -94,22 +94,19 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_24byte_fn), &res_dbl, args_dbl);
   /* { dg-output "9 2 6 5 1 2 3 7 4 5 7 9 8 6 1 9: 22 15 17 25" } */
-  CHECK( res_dbl.a == (e_dbl.a + f_dbl.a + g_dbl.a + h_dbl.a));
-  CHECK( res_dbl.b == (e_dbl.b + f_dbl.b + g_dbl.b + h_dbl.b));
-  CHECK( res_dbl.c == (e_dbl.c + f_dbl.c + g_dbl.c + h_dbl.c));
-  CHECK( res_dbl.d == (e_dbl.d + f_dbl.d + g_dbl.d + h_dbl.d));
+  printf("res: %g %g %d %g\n", res_dbl.a, res_dbl.b, res_dbl.c, res_dbl.d);
+  /* { dg-output "\nres: 22 15 17 25" } */
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_24byte_gn, NULL) == FFI_OK);
 
   res_dbl = ((cls_struct_24byte(*)(cls_struct_24byte,
-				     cls_struct_24byte,
-				     cls_struct_24byte,
-				     cls_struct_24byte))
+				   cls_struct_24byte,
+				   cls_struct_24byte,
+				   cls_struct_24byte))
 	     (pcl))(e_dbl, f_dbl, g_dbl, h_dbl);
   /* { dg-output "\n9 2 6 5 1 2 3 7 4 5 7 9 8 6 1 9: 22 15 17 25" } */
-  CHECK( res_dbl.a == (e_dbl.a + f_dbl.a + g_dbl.a + h_dbl.a));
-  CHECK( res_dbl.b == (e_dbl.b + f_dbl.b + g_dbl.b + h_dbl.b));
-  CHECK( res_dbl.c == (e_dbl.c + f_dbl.c + g_dbl.c + h_dbl.c));
-  CHECK( res_dbl.d == (e_dbl.d + f_dbl.d + g_dbl.d + h_dbl.d));
+  printf("res: %g %g %d %g\n", res_dbl.a, res_dbl.b, res_dbl.c, res_dbl.d);
+  /* { dg-output "\nres: 22 15 17 25" } */
+
   exit(0);
 }

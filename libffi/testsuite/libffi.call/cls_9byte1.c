@@ -76,15 +76,15 @@ int main (void)
 
   ffi_call(&cif, FFI_FN(cls_struct_9byte_fn), &res_dbl, args_dbl);
   /* { dg-output "7 8 1 9: 8 17" } */
-  CHECK( res_dbl.a == (h_dbl.a + j_dbl.a));
-  CHECK( res_dbl.b == (h_dbl.b + j_dbl.b));
+  printf("res: %d %g\n", res_dbl.a, res_dbl.b);
+  /* { dg-output "\nres: 8 17" } */
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_struct_9byte_gn, NULL) == FFI_OK);
 
   res_dbl = ((cls_struct_9byte(*)(cls_struct_9byte, cls_struct_9byte))(pcl))(h_dbl, j_dbl);
   /* { dg-output "\n7 8 1 9: 8 17" } */
-  CHECK( res_dbl.a == (h_dbl.a + j_dbl.a));
-  CHECK( res_dbl.b == (h_dbl.b + j_dbl.b));
+  printf("res: %d %g\n", res_dbl.a, res_dbl.b);
+  /* { dg-output "\nres: 8 17" } */
 
   exit(0);
 }

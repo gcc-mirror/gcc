@@ -45,6 +45,7 @@ int main (void)
   static ffi_closure cl;
   ffi_closure *pcl = &cl;
   ffi_type * cl_arg_types[17];
+  int res;
 
 
   cl_arg_types[0] = &ffi_type_float;
@@ -72,9 +73,11 @@ int main (void)
   CHECK(ffi_prep_closure(pcl, &cif, closure_test_fn3,
 			 (void *) 3 /* userdata */)  == FFI_OK);
 
-  (*((closure_test_type3)pcl))
-	(1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9, 10, 11.11, 12.0, 13,
-	 19.19, 21.21, 1);
+  res = (*((closure_test_type3)pcl))
+    (1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9, 10, 11.11, 12.0, 13,
+     19.19, 21.21, 1);
   /* { dg-output "1 2 3 4 5 6 7 8 9 10 11 12 13 19 21 1 3: 135" } */
+  printf("res: %d\n",res);
+  /* { dg-output "\nres: 135" } */
   exit(0);
 }
