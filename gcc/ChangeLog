@@ -1,3 +1,9 @@
+2000-09-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cppmacro.c (check_trad_stringification): New function.
+	(save_expansion): If -Wtraditional, warn about stringification of
+	macro arguments.
+
 2000-09-11  Michael Hayes  <mhayes@cygnus.com>
 
 	* loop.h (struct loop_mem_info): Move from loop.c

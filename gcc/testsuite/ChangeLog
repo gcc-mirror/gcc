@@ -1,3 +1,7 @@
+2000-09-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/cpp/tr-warn6.c: New test
+
 2000-09-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/format-ext-3.c: Test %#b and %#h as formats that should
