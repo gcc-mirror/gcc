@@ -153,7 +153,7 @@ dw2_asm_output_delta VPARAMS ((int size, const char *lab1, const char *lab2,
   fputc ('-', asm_out_file);
   assemble_name (asm_out_file, lab2);
 #else
-  assemble_integer (gen_rtx_MINUS (smallest_mode_for_size (size, MODE_INT, 0),
+  assemble_integer (gen_rtx_MINUS (smallest_mode_for_size (size, MODE_INT),
 				   gen_rtx_SYMBOL_REF (Pmode, lab1),
 				   gen_rtx_SYMBOL_REF (Pmode, lab2)),
 		    size, 1);
