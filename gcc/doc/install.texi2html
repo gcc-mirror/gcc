@@ -22,9 +22,9 @@ if [ ! -d $DESTDIR ]; then
 fi
 
 for x in index.html specific.html download.html configure.html \
-         build.html test.html finalinstall.html binaries.html
+         build.html test.html finalinstall.html binaries.html gfdl.html
 do
     define=`echo $x | sed -e 's/\.//g'`
     echo "define = $define"
-    $MAKEINFO $SOURCEDIR/install.texi --html --no-split -D$define -o$DESTDIR/$x
+    $MAKEINFO -I $SOURCEDIR/include $SOURCEDIR/install.texi --html --no-split -D$define -o$DESTDIR/$x
 done
