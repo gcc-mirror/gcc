@@ -70,7 +70,6 @@ Mon Aug 24 15:20:19 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 	(movdf_softfloat32, movdf_hardfloat64, movdf_softfloat64): Change
 	'o' to 'm' for GPR variant constraints.
 
->>>>>>> 1.1938
 Mon Aug 24 10:25:46 1998  Jeffrey A Law  (law@cygnus.com)
 
         * loop.c (scan_loop): Honor AVOID_CC_MODE_COPIES.
