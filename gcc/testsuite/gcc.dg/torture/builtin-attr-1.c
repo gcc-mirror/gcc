@@ -326,9 +326,27 @@ FPTEST2ARG1        (yn, int)
 
 /* Test the complex math builtins.  */
 /*CPTEST1 (cabs) See http://gcc.gnu.org/ml/gcc-patches/2003-09/msg00040.html */
+CPTEST1 (cacos)
+CPTEST1 (cacosh)
+CPTEST1 (carg)
+CPTEST1 (casin)
+CPTEST1 (casinh)
+CPTEST1 (catan)
+CPTEST1 (catanh)
+CPTEST1 (ccos)
+CPTEST1 (ccosh)
+CPTEST1 (cexp)
 CPTEST1 (cimag)
+/*CPTEST1 (clog)*/
 CPTEST1 (conj)
+CPTEST2 (cpow)
+CPTEST1 (cproj)
 CPTEST1 (creal)
+CPTEST1 (csin)
+CPTEST1 (csinh)
+CPTEST1 (csqrt)
+CPTEST1 (ctan)
+CPTEST1 (ctanh)
 
 /* Various other const builtins.  */
 TEST1         (abs, int)
