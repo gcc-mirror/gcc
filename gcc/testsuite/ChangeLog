@@ -1,3 +1,19 @@
+2004-06-07  David Ayers  <d.ayers@inode.at>
+	    Ziemowit Laski  <zlaski@apple.com>
+
+	* lib/objc.exp (objc_target_compile): Revert the '-framework
+	Foundation' flag fix, since bare Darwin does not ship
+	with the Foundation framework.
+	* objc/execute/next_mapping.h: Provide a local NSConstantString
+	@interface and @implementation.
+	(objc_string_init): A constructor function, used to initialize
+	the NSConstantString meta-class object.
+	* objc/execute/string1.m: Include "next_mapping.h" instead of
+	<Foundation/NSString.h>.
+	* objc/execute/string2.m: Likewise.
+	* objc/execute/string3.m: Likewise.
+	* objc/execute/string4.m: Likewise.
+
 2004-06-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.c-torture/execute/ieee/fp-cmp-4.c (FLOAT): New. Default

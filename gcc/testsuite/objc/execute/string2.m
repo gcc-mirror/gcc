@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #ifdef __NEXT_RUNTIME__
-#import <Foundation/NSString.h>
+#include "next_mapping.h"
 #else
 #include <objc/NXConstStr.h>
 #endif
