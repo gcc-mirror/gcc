@@ -1,3 +1,8 @@
+2005-01-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c/18809
+	* c-typeck.c (convert_arguments): Check for error_mark_node.
+
 2005-01-20  Ian Lance Taylor  <ian@airs.com>
 
 	PR tree-optimization/13000

@@ -2067,7 +2067,7 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
 	  /* Formal parm type is specified by a function prototype.  */
 	  tree parmval;
 
-	  if (!COMPLETE_TYPE_P (type))
+	  if (type == error_mark_node || !COMPLETE_TYPE_P (type))
 	    {
 	      error ("type of formal parameter %d is incomplete", parmnum + 1);
 	      parmval = val;
