@@ -121,6 +121,8 @@ extern rtx reload_earlyclobbers[MAX_RECOG_OPERANDS];
 /* Save the number of operands.  */
 extern int reload_n_operands;
 
+extern int last_output_reload_regno;
+
 /* First uid used by insns created by reload in this function.
    Used in find_equiv_reg.  */
 extern int reload_first_uid;
