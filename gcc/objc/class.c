@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime class related functions
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup and Dennis Glatting.
 
 This file is part of GNU CC.
@@ -27,16 +27,16 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "sarray.h"
 
 /* The table of classname->class.  Used for objc_lookup_class and friends */
-static cache_ptr __objc_class_hash = 0;
+static cache_ptr __objc_class_hash = 0;                 /* !T:MUTEX */
 
 /* This is a hook which is called by objc_get_class and 
    objc_lookup_class if the runtime is not able to find the class.
    This may e.g. try to load in the class using dynamic loading */
-Class (*_objc_lookup_class)(const char* name) = 0;
+Class (*_objc_lookup_class)(const char* name) = 0;      /* !T:SAFE */
 
 
 /* True when class links has been resolved */     
-BOOL __objc_class_links_resolved = NO;
+BOOL __objc_class_links_resolved = NO;                  /* !T:UNUSED */
 
 
 /* Initial number of buckets size of class hash table. */
@@ -49,10 +49,14 @@ void __objc_init_class_tables()
   if(__objc_class_hash)
     return;
 
+  objc_mutex_lock(__objc_runtime_mutex);
+
   __objc_class_hash
     =  hash_new (CLASS_HASH_SIZE,
 		 (hash_func_type) hash_string,
 		 (compare_func_type) compare_strings);
+
+  objc_mutex_unlock(__objc_runtime_mutex);
 }  
 
 /* This function adds a class to the class hash table, and assigns the 
@@ -61,6 +65,8 @@ void
 __objc_add_class_to_hash(Class class)
 {
   Class h_class;
+
+  objc_mutex_lock(__objc_runtime_mutex);
 
   /* make sure the table is there */
   assert(__objc_class_hash);
@@ -82,6 +88,8 @@ __objc_add_class_to_hash(Class class)
       ++class_number;
       hash_add (&__objc_class_hash, class->name, class);
     }
+
+  objc_mutex_unlock(__objc_runtime_mutex);
 }
 
 /* Get the class object for the class named NAME.  If NAME does not
@@ -91,10 +99,14 @@ Class objc_lookup_class (const char* name)
 {
   Class class;
 
+  objc_mutex_lock(__objc_runtime_mutex);
+
   /* Make sure the class hash table exists.  */
   assert (__objc_class_hash);
 
   class = hash_value_for_key (__objc_class_hash, name);
+
+  objc_mutex_unlock(__objc_runtime_mutex);
 
   if (class)
     return class;
@@ -113,10 +125,14 @@ objc_get_class (const char *name)
 {
   Class class;
 
+  objc_mutex_lock(__objc_runtime_mutex);
+
   /* Make sure the class hash table exists.  */
   assert (__objc_class_hash);
 
   class = hash_value_for_key (__objc_class_hash, name);
+
+  objc_mutex_unlock(__objc_runtime_mutex);
 
   if (class)
     return class;
@@ -149,11 +165,16 @@ objc_get_meta_class(const char *name)
 Class
 objc_next_class(void **enum_state)
 {
+  objc_mutex_lock(__objc_runtime_mutex);
+
   /* make sure the table is there */
   assert(__objc_class_hash);
 
   *(node_ptr*)enum_state = 
     hash_next(__objc_class_hash, *(node_ptr*)enum_state);
+
+  objc_mutex_unlock(__objc_runtime_mutex);
+
   if (*(node_ptr*)enum_state)
     return (*(node_ptr*)enum_state)->value;
   return (Class)0;
@@ -168,6 +189,8 @@ void __objc_resolve_class_links()
   Class object_class = objc_get_class ("Object");
 
   assert(object_class);
+
+  objc_mutex_lock(__objc_runtime_mutex);
 
   /* Assign subclass links */
   for (node = hash_next (__objc_class_hash, NULL); node;
@@ -234,6 +257,8 @@ void __objc_resolve_class_links()
             sub_class->class_pointer->super_class = class1->class_pointer;
         }
     }
+
+  objc_mutex_unlock(__objc_runtime_mutex);
 }
 
 
@@ -307,6 +332,8 @@ class_pose_as (Class impostor, Class super_class)
      what the keys of the hashtable is, change all values that are
      superclass into impostor. */
 
+  objc_mutex_lock(__objc_runtime_mutex);
+
   for (node = hash_next (__objc_class_hash, NULL); node;
        node = hash_next (__objc_class_hash, node))
     {
@@ -316,6 +343,8 @@ class_pose_as (Class impostor, Class super_class)
 	  node->value = impostor; /* change hash table value */
 	}
     }      
+
+  objc_mutex_unlock(__objc_runtime_mutex);
 
   /* next, we update the dispatch tables... */
   __objc_update_dispatch_table_for_class (CLASSOF (impostor));
