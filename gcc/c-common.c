@@ -4929,33 +4929,32 @@ handle_visibility_attribute (tree *node, tree name, tree args,
 			     bool *no_add_attrs)
 {
   tree decl = *node;
+  tree id = TREE_VALUE (args);
+
+  *no_add_attrs = true;
 
   if (decl_function_context (decl) != 0 || ! TREE_PUBLIC (decl))
     {
       warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
-      *no_add_attrs = true;
+      return NULL_TREE;
     }
-  else
-    {
-      tree id;
 
-      id = TREE_VALUE (args);
-      if (TREE_CODE (id) != STRING_CST)
-	{
-	  error ("visibility arg not a string");
-	  *no_add_attrs = true;
-	  return NULL_TREE;
-	}
-      if (strcmp (TREE_STRING_POINTER (id), "hidden")
-	  && strcmp (TREE_STRING_POINTER (id), "protected")
-	  && strcmp (TREE_STRING_POINTER (id), "internal")
-	  && strcmp (TREE_STRING_POINTER (id), "default"))
-	{
-	  error ("visibility arg must be one of \"default\", \"hidden\", \"protected\" or \"internal\"");
-	  *no_add_attrs = true;
-	  return NULL_TREE;
-	}
+  if (TREE_CODE (id) != STRING_CST)
+    {
+      error ("visibility arg not a string");
+      return NULL_TREE;
     }
+
+  if (strcmp (TREE_STRING_POINTER (id), "default") == 0)
+    DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
+  else if (strcmp (TREE_STRING_POINTER (id), "internal") == 0)
+    DECL_VISIBILITY (decl) = VISIBILITY_INTERNAL;
+  else if (strcmp (TREE_STRING_POINTER (id), "hidden") == 0)
+    DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;  
+  else if (strcmp (TREE_STRING_POINTER (id), "protected") == 0)
+    DECL_VISIBILITY (decl) = VISIBILITY_PROTECTED;
+  else
+    error ("visibility arg must be one of \"default\", \"hidden\", \"protected\" or \"internal\"");
 
   return NULL_TREE;
 }

@@ -383,6 +383,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   /* The linkage of the function may have changed.  FIXME in linkage
      rewrite.  */
   TREE_PUBLIC (thunk_fndecl) = TREE_PUBLIC (function);
+  DECL_VISIBILITY (thunk_fndecl) = DECL_VISIBILITY (function);
 
   if (flag_syntax_only)
     {

@@ -1491,6 +1491,9 @@ struct tree_type GTY(())
 #define DECL_DECLARED_INLINE_P(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->decl.declared_inline_flag)
 
+/* Value of the decls's visibility attribute */
+#define DECL_VISIBILITY(NODE) (DECL_CHECK (NODE)->decl.visibility)
+
 /* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
 #define DECL_UNINLINABLE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.uninlinable)
 
@@ -1631,6 +1634,16 @@ struct tree_type GTY(())
   (! DECL_CONTEXT (EXP)						\
    || TREE_CODE (DECL_CONTEXT (EXP)) == TRANSLATION_UNIT_DECL)
 
+/* Enumerate visibility settings.  */
+
+enum symbol_visibility
+{
+  VISIBILITY_DEFAULT,
+  VISIBILITY_INTERNAL,
+  VISIBILITY_HIDDEN,
+  VISIBILITY_PROTECTED
+};
+
 struct function;
 
 struct tree_decl GTY(())
@@ -1672,8 +1685,9 @@ struct tree_decl GTY(())
   unsigned uninlinable : 1;
   unsigned thread_local_flag : 1;
   unsigned declared_inline_flag : 1;
-  unsigned unused : 3;
-  /* three unused bits.  */
+  ENUM_BITFIELD(symbol_visibility) visibility : 2;
+  unsigned unused : 1;
+  /* one unused bit.  */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
@@ -2007,15 +2021,6 @@ enum tls_model {
 
 extern enum tls_model flag_tls_default;
 
-/* Enumerate visibility settings.  */
-
-enum symbol_visibility
-{
-  VISIBILITY_DEFAULT,
-  VISIBILITY_INTERNAL,
-  VISIBILITY_HIDDEN,
-  VISIBILITY_PROTECTED
-};
 
 /* A pointer-to-function member type looks like:
 
@@ -2969,7 +2974,6 @@ extern void make_decl_one_only (tree);
 extern int supports_one_only (void);
 extern void variable_section (tree, int);
 enum tls_model decl_tls_model (tree);
-enum symbol_visibility decl_visibility (tree);
 extern void resolve_unique_section (tree, int, int);
 extern void mark_referenced (tree);
 extern void notice_global_symbol (tree);
