@@ -645,6 +645,11 @@ build_throw (tree exp)
 	  tmp = build_function_type (ptr_type_node, tmp);
 	  fn = push_throw_library_fn (fn, tmp);
 	}
+      else if (really_overloaded_fn (fn))
+	{
+	  error ("`%D' should never be overloaded", fn);
+	  return error_mark_node;
+	}
       fn = OVL_CURRENT (fn);
       exp = build_function_call (fn, tree_cons (NULL_TREE, exp, NULL_TREE));
     }
