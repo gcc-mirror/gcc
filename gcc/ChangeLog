@@ -1,3 +1,12 @@
+2003-02-07  Roger Sayle  <roger@eyesopen.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* gcse.c (implicit_sets): New.
+	(compute_hash_table_work): Include them in hash table.
+	(find_implicit_sets, fis_get_condition): New.
+	(one_cprop_pass): Allocate and free implicit_sets; call
+	find_implicit_sets before building hash table.
+
 2003-02-07  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/t-netbsd (USER_H): Revert previous change.

@@ -479,6 +479,9 @@ struct ls_expr
   rtx reaching_reg;		/* Register to use when re-writing.  */
 };
 
+/* Array of implicit set patterns indexed by basic block index.  */
+static rtx *implicit_sets;
+
 /* Head of the list of load/store memory refs.  */
 static struct ls_expr * pre_ldst_mems = NULL;
 
@@ -614,6 +617,8 @@ static int load_killed_in_block_p    PARAMS ((basic_block, int, rtx, int));
 static void canon_list_insert        PARAMS ((rtx, rtx, void *));
 static int cprop_insn		PARAMS ((rtx, int));
 static int cprop		PARAMS ((int));
+static rtx fis_get_condition	PARAMS ((rtx));
+static void find_implicit_sets	PARAMS ((void));
 static int one_cprop_pass	PARAMS ((int, int, int));
 static bool constprop_register	PARAMS ((rtx, rtx, rtx, int));
 static struct expr *find_bypass_set PARAMS ((int, int));
@@ -2470,7 +2475,6 @@ record_last_set_info (dest, setter, data)
 
    Currently src must be a pseudo-reg or a const_int.
 
-   F is the first insn.
    TABLE is the table computed.  */
 
 static void
@@ -2531,6 +2535,12 @@ compute_hash_table_work (table)
 
 	  note_stores (PATTERN (insn), record_last_set_info, insn);
 	}
+
+      /* Insert implicit sets in the hash table.  */
+      if (table->set_p
+	  && implicit_sets[current_bb->index] != NULL_RTX)
+	hash_scan_set (implicit_sets[current_bb->index],
+		       current_bb->head, table);
 
       /* The next pass builds the hash table.  */
 
@@ -4478,6 +4488,117 @@ cprop (alter_jumps)
   return changed;
 }
 
+/* Similar to get_condition, only the resulting condition must be
+   valid at JUMP, instead of at EARLIEST.
+
+   This differs from noce_get_condition in ifcvt.c in that we prefer not to
+   settle for the condition variable in the jump instruction being integral.
+   We prefer to be able to record the value of a user variable, rather than
+   the value of a temporary used in a condition.  This could be solved by
+   recording the value of *every* register scaned by canonicalize_condition,
+   but this would require some code reorganization.  */
+
+static rtx
+fis_get_condition (jump)
+     rtx jump;
+{
+  rtx cond, set, tmp, insn, earliest;
+  bool reverse;
+
+  if (! any_condjump_p (jump))
+    return NULL_RTX;
+
+  set = pc_set (jump);
+  cond = XEXP (SET_SRC (set), 0);
+
+  /* If this branches to JUMP_LABEL when the condition is false,
+     reverse the condition.  */
+  reverse = (GET_CODE (XEXP (SET_SRC (set), 2)) == LABEL_REF
+	     && XEXP (XEXP (SET_SRC (set), 2), 0) == JUMP_LABEL (jump));
+
+  /* Use canonicalize_condition to do the dirty work of manipulating
+     MODE_CC values and COMPARE rtx codes.  */
+  tmp = canonicalize_condition (jump, cond, reverse, &earliest, NULL_RTX);
+  if (!tmp)
+    return NULL_RTX;
+
+  /* Verify that the given condition is valid at JUMP by virtue of not
+     having been modified since EARLIEST.  */
+  for (insn = earliest; insn != jump; insn = NEXT_INSN (insn))
+    if (INSN_P (insn) && modified_in_p (tmp, insn))
+      break;
+  if (insn == jump)
+    return tmp;
+
+  /* The condition was modified.  See if we can get a partial result
+     that doesn't follow all the reversals.  Perhaps combine can fold
+     them together later.  */
+  tmp = XEXP (tmp, 0);
+  if (!REG_P (tmp) || GET_MODE_CLASS (GET_MODE (tmp)) != MODE_INT)
+    return NULL_RTX;
+  tmp = canonicalize_condition (jump, cond, reverse, &earliest, tmp);
+  if (!tmp)
+    return NULL_RTX;
+
+  /* For sanity's sake, re-validate the new result.  */
+  for (insn = earliest; insn != jump; insn = NEXT_INSN (insn))
+    if (INSN_P (insn) && modified_in_p (tmp, insn))
+      return NULL_RTX;
+
+  return tmp;
+}
+
+/* Find the implicit sets of a function.  An "implicit set" is a constraint
+   on the value of a variable, implied by a conditional jump.  For example,
+   following "if (x == 2)", the then branch may be optimized as though the
+   conditional performed an "explicit set", in this example, "x = 2".  This
+   function records the set patterns that are implicit at the start of each
+   basic block.  */
+
+static void
+find_implicit_sets ()
+{
+  basic_block bb, dest;
+  unsigned int count;
+  rtx cond, new;
+
+  count = 0;
+  FOR_EACH_BB (bb)
+    /* Check for more than one sucessor.  */
+    if (bb->succ && bb->succ->succ_next)
+      {
+	cond = fis_get_condition (bb->end);
+
+	if (cond
+	    && (GET_CODE (cond) == EQ || GET_CODE (cond) == NE)
+	    && GET_CODE (XEXP (cond, 0)) == REG
+	    && REGNO (XEXP (cond, 0)) >= FIRST_PSEUDO_REGISTER
+	    && CONSTANT_P (XEXP (cond, 1)))
+	  {
+	    dest = GET_CODE (cond) == EQ ? BRANCH_EDGE (bb)->dest
+					 : FALLTHRU_EDGE (bb)->dest;
+
+	    if (dest && ! dest->pred->pred_next
+		&& dest != EXIT_BLOCK_PTR)
+	      {
+		new = gen_rtx_SET (VOIDmode, XEXP (cond, 0),
+					     XEXP (cond, 1));
+		implicit_sets[dest->index] = new;
+		if (gcse_file)
+		  {
+		    fprintf(gcse_file, "Implicit set of reg %d in ",
+			    REGNO (XEXP (cond, 0)));
+		    fprintf(gcse_file, "basic block %d\n", dest->index);
+		  }
+		count++;
+	      }
+	  }
+      }
+
+  if (gcse_file)
+    fprintf (gcse_file, "Found %d implicit sets\n", count);
+}
+
 /* Perform one copy/constant propagation pass.
    PASS is the pass count.  If CPROP_JUMPS is true, perform constant
    propagation into conditional jumps.  If BYPASS_JUMPS is true,
@@ -4496,8 +4617,17 @@ one_cprop_pass (pass, cprop_jumps, bypass_jumps)
 
   local_cprop_pass (cprop_jumps);
 
+  /* Determine implicit sets.  */
+  implicit_sets = (rtx *) xcalloc (last_basic_block, sizeof (rtx));
+  find_implicit_sets ();
+
   alloc_hash_table (max_cuid, &set_hash_table, 1);
   compute_hash_table (&set_hash_table);
+
+  /* Free implicit_sets before peak usage.  */
+  free (implicit_sets);
+  implicit_sets = NULL;
+
   if (gcse_file)
     dump_hash_table (gcse_file, "SET", &set_hash_table);
   if (set_hash_table.n_elems > 0)
