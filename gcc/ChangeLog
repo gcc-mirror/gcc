@@ -1,3 +1,8 @@
+Mon Mar  2 13:45:03 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/linux.h (CPP_PREDEFINES): Correct connecting whitespace 
+	to SUB_CPP_PREDEFINES.  Reported by asun@saul4.u.washington.edu.
+
 Mon Mar  2 19:51:27 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* final.c (insn_last_address, insn_current_align, uid_align):
