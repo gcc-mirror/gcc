@@ -1,6 +1,6 @@
 2003-10-08  Richard Sandiford  <rsandifo@redhat.com>
 
-	* testsuite/gcc.c-torture/compile/mipscop-[1-4].c: Disable for mips16.
+	* gcc.c-torture/compile/mipscop-[1-4].c: Disable for mips16.
 
 2003-10-08  Giovanni Bajo  <giovannibajo@libero.it>
 
