@@ -1,3 +1,16 @@
+2003-09-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/iris5.h (TARGET_OS_CPP_BUILTINS): Define _LONGLONG.
+	Define _ABIO32.
+	Use it for _MIPS_SIM.
+	* config/mips/iris6-o32.h (TARGET_OS_CPP_BUILTINS): Removed.
+
+	* config/mips/iris6-o32-as.h (SUBTARGET_ASM_OPTIMIZING_SPEC):
+	Moved ...
+	* config/mips/iris5.h (SUBTARGET_ASM_OPTIMIZING_SPEC): ... here,
+	updating comment.
+	Fixes PR target/10190.
+
 2003-09-17  Daniel Jacobowitz  <drow@mvista.com>
 
 	* config/rs6000/sysv4.h (LIB_LINUX_SPEC): Make -pthread apply
