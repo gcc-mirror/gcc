@@ -226,6 +226,9 @@ static struct globals
   /* Bytes currently allocated at the end of the last collection.  */
   size_t allocated_last_gc;
 
+  /* Total amount of memory mapped.  */
+  size_t bytes_mapped;
+
   /* The current depth in the context stack.  */
   unsigned char context_depth;
 
@@ -444,6 +447,9 @@ alloc_anon (pref, size)
 #endif /* HAVE_VALLOC */
 #endif /* HAVE_MMAP */
 
+  /* Remember that we allocated this memory.  */
+  G.bytes_mapped += size;
+
   return page;
 }
 
@@ -565,6 +571,7 @@ release_pages ()
       else
 	{
 	  munmap (start, len);
+	  G.bytes_mapped -= len;
 	  start = p->page;
 	  len = p->bytes;
 	}
@@ -573,6 +580,7 @@ release_pages ()
     }
 
   munmap (start, len);
+  G.bytes_mapped -= len;
 #else
 #ifdef HAVE_VALLOC
   page_entry *p, *next;
@@ -581,6 +589,7 @@ release_pages ()
     {
       next = p->next;
       free (p->page);
+      G.bytes_mapped -= p->bytes;
       free (p);
     }
 #endif /* HAVE_VALLOC */
@@ -777,6 +786,14 @@ ggc_mark_if_gcable (p)
 {
   if (p && ggc_allocated_p (p))
     ggc_set_mark (p);
+}
+
+size_t
+ggc_get_size (p)
+     void *p;
+{
+  page_entry *pe = lookup_page_table_entry (p);
+  return 1 << pe->order;
 }
 
 /* Initialize the ggc-mmap allocator.  */
@@ -1087,4 +1104,52 @@ ggc_collect ()
       fprintf (stderr, "%luk in %.3f}", 
 	       (unsigned long) G.allocated / 1024, time * 1e-6);
     }
+}
+
+/* Print allocation statistics.  */
+
+void
+ggc_page_print_statistics ()
+{
+  struct ggc_statistics stats;
+  int i;
+
+  /* Clear the statistics.  */
+  bzero (&stats, sizeof (stats));
+  
+  /* Make sure collection will really occur.  */
+  G.allocated_last_gc = 0;
+
+  /* Collect and print the statistics common across collectors.  */
+  ggc_print_statistics (stderr, &stats);
+
+  /* Collect some information about the various sizes of 
+     allocation.  */
+  fprintf (stderr, "\n%-4s%-16s%-16s\n", "Log", "Allocated", "Used");
+  for (i = 0; i < HOST_BITS_PER_PTR; ++i)
+    {
+      page_entry *p;
+      size_t allocated;
+      size_t in_use;
+
+      /* Skip empty entries.  */
+      if (!G.pages[i])
+	continue;
+
+      allocated = in_use = 0;
+
+      /* Figure out the total number of bytes allocated for objects of
+	 this size, and how many of them are actually in use.  */
+      for (p = G.pages[i]; p; p = p->next)
+	{
+	  allocated += p->bytes;
+	  in_use += 
+	    (OBJECTS_PER_PAGE (i) - p->num_free_objects) * (1 << i);
+	}
+      fprintf (stderr, "%-3d %-15u %-15u\n", i, allocated, in_use);
+    }
+
+  /* Print out some global information.  */
+  fprintf (stderr, "\nTotal bytes marked: %u\n", G.allocated);
+  fprintf (stderr, "Total bytes mapped: %u\n", G.bytes_mapped);
 }

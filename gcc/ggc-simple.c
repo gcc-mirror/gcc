@@ -253,6 +253,15 @@ ggc_mark_if_gcable (p)
   G.objects += 1;
 }
 
+size_t
+ggc_get_size (p)
+     void *p;
+{
+  struct ggc_mem *x 
+    = (struct ggc_mem *) ((char *)p - offsetof (struct ggc_mem, u));
+  return x->size;
+}
+
 static void
 clear_marks (x)
      struct ggc_mem *x;
