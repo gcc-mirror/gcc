@@ -4883,7 +4883,7 @@ simplify_set (x)
 
   if (GET_MODE_CLASS (mode) == MODE_INT)
     {
-      src = force_to_mode (src, mode, GET_MODE_MASK (mode), NULL_RTX, 0);
+      src = force_to_mode (src, mode, ~(HOST_WIDE_INT) 0, NULL_RTX, 0);
       SUBST (SET_SRC (x), src);
     }
 
@@ -5977,7 +5977,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
       else
 	new = force_to_mode (inner, tmode,
 			     len >= HOST_BITS_PER_WIDE_INT
-			     ? GET_MODE_MASK (tmode)
+			     ? ~(HOST_WIDE_INT) 0
 			     : ((unsigned HOST_WIDE_INT) 1 << len) - 1,
 			     NULL_RTX, 0);
 
@@ -6198,7 +6198,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
       inner = force_to_mode (inner, wanted_inner_mode,
 			     pos_rtx
 			     || len + orig_pos >= HOST_BITS_PER_WIDE_INT
-			     ? GET_MODE_MASK (wanted_inner_mode)
+			     ? ~(HOST_WIDE_INT) 0
 			     : ((((unsigned HOST_WIDE_INT) 1 << len) - 1)
 				<< orig_pos),
 			     NULL_RTX, 0);
@@ -6528,8 +6528,8 @@ make_compound_operation (x, in_code)
 	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (tem))
 	  && subreg_lowpart_p (x))
 	{
-	  rtx newer = force_to_mode (tem, mode,
-				     GET_MODE_MASK (mode), NULL_RTX, 0);
+	  rtx newer = force_to_mode (tem, mode, ~(HOST_WIDE_INT) 0,
+				     NULL_RTX, 0);
 
 	  /* If we have something other than a SUBREG, we might have
 	     done an expansion, so rerun outselves.  */
@@ -7647,7 +7647,7 @@ make_field_assignment (x)
 					     GET_MODE (src), other, pos),
 		       mode,
 		       GET_MODE_BITSIZE (mode) >= HOST_BITS_PER_WIDE_INT
-		       ? GET_MODE_MASK (mode)
+		       ? ~(HOST_WIDE_INT) 0
 		       : ((unsigned HOST_WIDE_INT) 1 << len) - 1,
 		       dest, 0);
 
