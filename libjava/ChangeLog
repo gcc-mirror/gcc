@@ -1,5 +1,8 @@
 2000-12-06  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/GridBagConstraints.java: Filled in values for static
+	final fields.
+
 	* java/util/BitSet.java: Updated copyright notice.
 
 	* Makefile.in: Rebuilt.

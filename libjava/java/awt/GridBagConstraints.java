@@ -17,37 +17,37 @@ import java.io.Serializable;
 public class GridBagConstraints implements Cloneable, Serializable
 {
   /** Fill in both directions.  */
-  public static final int BOTH;
+  public static final int BOTH = 1;
   /** Don't fill.  */
-  public static final int NONE;
+  public static final int NONE = 0;
   /** Fill horizontally.  */
-  public static final int HORIZONTAL;
+  public static final int HORIZONTAL = 2;
   /** Fill vertically.  */
-  public static final int VERTICAL;
+  public static final int VERTICAL = 3;
 
   /** Position in the center.  */
-  public static final int CENTER;
+  public static final int CENTER = 10;
   /** Position to the east.  */
-  public static final int EAST;
+  public static final int EAST = 13;
   /** Position to the north.  */
-  public static final int NORTH;
+  public static final int NORTH = 11;
   /** Position to the northeast.  */
-  public static final int NORTHEAST;
+  public static final int NORTHEAST = 12;
   /** Position to the northwest.  */
-  public static final int NORTHWEST;
+  public static final int NORTHWEST = 18;
   /** Position to the south.  */
-  public static final int SOUTH;
+  public static final int SOUTH = 15;
   /** Position to the southeast.  */
-  public static final int SOUTHEAST;
+  public static final int SOUTHEAST = 14;
   /** Position to the southwest.  */
-  public static final int SOUTHWEST;
+  public static final int SOUTHWEST = 16;
   /** Position to the west.  */
-  public static final int WEST;
+  public static final int WEST = 17;
 
   /** Occupy all remaining cells except last cell.  */
-  public static final int RELATIVE;
+  public static final int RELATIVE = -1;
   /** Occupy all remaining cells.  */
-  public static final int REMAINDER;
+  public static final int REMAINDER = 0;
 
   public int anchor;
   public int fill;
