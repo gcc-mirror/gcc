@@ -1,3 +1,8 @@
+Wed Dec  9 09:53:58 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* reload.c (find_reloads): Display the insn that cannot be
+	reloaded. 
+
 Wed Dec  9 12:15:26 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* cccp.c (create_definition): Fix end of bufer logic.

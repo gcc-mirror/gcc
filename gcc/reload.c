@@ -3493,7 +3493,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
     {
       /* No alternative works with reloads??  */
       if (insn_code_number >= 0)
-	abort ();
+	fatal_insn ("Unable to generate reloads for:", insn);
       error_for_asm (insn, "inconsistent operand constraints in an `asm'");
       /* Avoid further trouble with this insn.  */
       PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
