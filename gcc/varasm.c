@@ -348,9 +348,7 @@ bc_make_decl_rtl (decl, asmspec, top_level)
   if (DECL_RTL (decl) == 0)
     {
       /* Print an error message for register variables.  */
-      if (DECL_REGISTER (decl) && TREE_CODE (decl) == FUNCTION_DECL)
-	error ("function declared `register'");
-      else if (DECL_REGISTER (decl))
+      if (DECL_REGISTER (decl))
 	error ("global register variables not supported in the interpreter");
 
       /* Handle ordinary static variables and functions.  */
@@ -492,30 +490,34 @@ make_decl_rtl (decl, asmspec, top_level)
       DECL_RTL (decl) = 0;
 
       /* First detect errors in declaring global registers.  */
-      if (DECL_REGISTER (decl) && reg_number == -1)
+      if (TREE_CODE (decl) != FUNCTION_DECL
+	  && DECL_REGISTER (decl) && reg_number == -1)
 	error_with_decl (decl,
 			 "register name not specified for `%s'");
-      else if (DECL_REGISTER (decl) && reg_number < 0)
+      else if (TREE_CODE (decl) != FUNCTION_DECL
+	       && DECL_REGISTER (decl) && reg_number < 0)
 	error_with_decl (decl,
 			 "invalid register name for `%s'");
-      else if ((reg_number >= 0 || reg_number == -3) && ! DECL_REGISTER (decl))
+      else if ((reg_number >= 0 || reg_number == -3)
+	       && (TREE_CODE (decl) == FUNCTION_DECL
+		   && ! DECL_REGISTER (decl)))
 	error_with_decl (decl,
 			 "register name given for non-register variable `%s'");
-      else if (DECL_REGISTER (decl) && TREE_CODE (decl) == FUNCTION_DECL)
-	error ("function declared `register'");
-      else if (DECL_REGISTER (decl) && TYPE_MODE (TREE_TYPE (decl)) == BLKmode)
-	error_with_decl (decl, "data type of `%s' isn't suitable for a register");
-      else if (DECL_REGISTER (decl)
-	       && ! HARD_REGNO_MODE_OK (reg_number, TYPE_MODE (TREE_TYPE (decl))))
-	error_with_decl (decl, "register number for `%s' isn't suitable for the data type");
+      else if (TREE_CODE (decl) != FUNCTION_DECL
+	       && DECL_REGISTER (decl)
+	       && TYPE_MODE (TREE_TYPE (decl)) == BLKmode)
+	error_with_decl (decl,
+			 "data type of `%s' isn't suitable for a register");
+      else if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl)
+	       && ! HARD_REGNO_MODE_OK (reg_number,
+					TYPE_MODE (TREE_TYPE (decl))))
+	error_with_decl (decl,
+			 "register number for `%s' isn't suitable for data type");
       /* Now handle properly declared static register variables.  */
-      else if (DECL_REGISTER (decl))
+      else if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
 	{
 	  int nregs;
-#if 0 /* yylex should print the warning for this */
-	  if (pedantic)
-	    pedwarn ("ANSI C forbids global register variables");
-#endif
+
 	  if (DECL_INITIAL (decl) != 0 && top_level)
 	    {
 	      DECL_INITIAL (decl) = 0;
