@@ -1912,13 +1912,15 @@ never_reached_warning (avoided_insn, finish)
   /* Back up to the first of any NOTEs preceding avoided_insn; flow passes
      us the head of a block, a NOTE_INSN_BASIC_BLOCK, which often follows
      the line note.  */
-  for (insn = PREV_INSN (avoided_insn); ; insn = PREV_INSN (insn))
-    if (GET_CODE (insn) != NOTE
-	|| NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
-      {
-	insn = NEXT_INSN (insn);
+  insn = avoided_insn;
+  while (1)
+    {
+      rtx prev = PREV_INSN (insn);
+      if (prev == NULL_RTX
+	  || GET_CODE (prev) != NOTE)
 	break;
-      }
+      insn = prev;
+    }
 
   /* Scan forwards, looking at LINE_NUMBER notes, until we hit a LABEL
      in case FINISH is NULL, otherwise until we run out of insns.  */
