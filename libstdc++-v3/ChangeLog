@@ -1,3 +1,8 @@
+2002-02-27  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/27_io/ios_manip_basefield.cc (test01):
+	Fix for 64 bit machines.
+
 2002-02-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/basic_ios.tcc (basic_ios::init): Set _M_fill to zero.
