@@ -459,13 +459,20 @@ The option @option{-dS} causes a debugging dump of the RTL code after this
 pass is run for the first time.  The dump file's name is made by
 appending @samp{.sched} to the input file name.
 
+@cindex register allocation
+@item
+Register allocation.  These passes make sure that all occurences of pseudo
+registers are eliminated, either by allocating them to a hard register,
+replacing them by an equivalent expression (e.g.@: a constant) or by placing
+them on the stack.  This is done in several subpasses:
+
+@itemize @bullet
 @cindex register class preference pass
 @item
 Register class preferencing.  The RTL code is scanned to find out
 which register class is best for each pseudo register.  The source
 file is @file{regclass.c}.
 
-@cindex register allocation
 @cindex local register allocation
 @item
 Local register allocation (@file{local-alloc.c}).  This pass allocates
@@ -483,6 +490,17 @@ the input file name.
 Global register allocation (@file{global.c}).  This pass
 allocates hard registers for the remaining pseudo registers (those
 whose life spans are not contained in one basic block).
+
+@cindex graph coloring register allocation
+@opindex fnew-ra
+@opindex dl
+@item
+Graph coloring register allocator.  The files @file{ra.c}, @file{ra-build.c},
+@file{ra-colorize.c}, @file{ra-debug.c}, @file{ra-rewrite.c} together with
+the header @file{ra.h} contain another register allocator, which is used
+when the option @option{-fnew-ra} is given.  In that case it is run instead
+of the above mentioned local and global register allocation passes, and the
+option @option{-dl} causes a debugging dump of its work.
 
 @cindex reloading
 @item
@@ -505,6 +523,7 @@ Source files are @file{reload.c} and @file{reload1.c}, plus the header
 The option @option{-dg} causes a debugging dump of the RTL code after
 this pass.  This dump file's name is made by appending @samp{.greg} to
 the input file name.
+@end itemize
 
 @cindex instruction scheduling
 @cindex scheduling, instruction
