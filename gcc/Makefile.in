@@ -2751,7 +2751,7 @@ check-objc: testsuite/site.exp
 check-po:
 	if test -f cp/Makefile && test -f f/Makefile && \
 	   test -f java/Makefile && test -f objc/Makefile; then \
-	   make -C po check-po; \
+	   $(MAKE) -C po check-po; \
 	fi
 
 # These exist for maintenance purposes.
@@ -3031,16 +3031,16 @@ stage4: force stage4-start lang.stage4
 # and delete the object files.  Use this if you're just verifying a version
 # that is pretty sure to work, and you are short of disk space.
 risky-stage1: stage1
-	-make clean
+	-$(MAKE) clean
 
 risky-stage2: stage2
-	-make clean
+	-$(MAKE) clean
 
 risky-stage3: stage3
-	-make clean
+	-$(MAKE) clean
 
 risky-stage4: stage4
-	-make clean
+	-$(MAKE) clean
 
 #In GNU Make, ignore whether `stage*' exists.
 .PHONY: stage1 stage2 stage3 stage4 clean maintainer-clean TAGS bootstrap

@@ -1,3 +1,8 @@
+2000-12-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	* Makefile.in (check-po): Use $(MAKE).
+	(risky-stage1, risky-stage2, risky-stage3, risky-stage4): Likewise.
+
 2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppmain.c (check_multiline_token): New function.
