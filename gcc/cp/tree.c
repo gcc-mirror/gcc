@@ -2857,6 +2857,7 @@ mark_list_hash (arg)
 void
 init_tree ()
 {
+  make_lang_type_fn = cp_make_lang_type;
   lang_unsave_expr_now = cplus_unsave_expr_now;
   ggc_add_root (list_hash_table, 
 		sizeof (list_hash_table) / sizeof (struct list_hash *),
