@@ -2616,7 +2616,11 @@ extern void end_temporary_allocation PARAMS ((void));
 extern void pop_obstacks PARAMS ((void));
 
 /* In alias.c */
-void record_component_aliases		PARAMS ((tree));
+extern void record_component_aliases		PARAMS ((tree));
+extern HOST_WIDE_INT get_alias_set		PARAMS ((tree));
+
+/* In c-common.c */
+extern HOST_WIDE_INT lang_get_alias_set		PARAMS ((tree));
 
 /* In tree.c */
 extern int really_constant_p		PARAMS ((tree));

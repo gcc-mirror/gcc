@@ -1,3 +1,8 @@
+2000-07-27  RodneyBrown  <RodneyBrown@pmsc.com>
+
+	* expr.h (get_alias_set, lang_get_alias_set): Delete prototypes.
+	* tree.h (get_alias_set, lang_get_alias_set): Prototype.
+
 2000-07-27  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-decl.c (store_parm_decls): In C99 mode, pedwarn for function
