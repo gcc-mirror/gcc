@@ -961,13 +961,13 @@ __bb_init_func (blocks)
 typedef void (*vfp)(void);
 
 extern vfp __new_handler;
+extern void *malloc ();
 
 void *
 __builtin_new (sz)
-     long sz;
+     size_t sz;
 {
   void *p;
-  extern void *malloc ();
 
   p = malloc (sz);
   if (p == 0)
@@ -979,18 +979,20 @@ __builtin_new (sz)
 #ifdef L_builtin_New
 typedef void (*vfp)(void);
 
-extern void *__builtin_new ();
-static void default_new_handler ();
+extern void *__builtin_new (size_t);
+static void default_new_handler (void);
 
 vfp __new_handler = default_new_handler;
 
 void *
 __builtin_vec_new (p, maxindex, size, ctor)
      void *p;
-     int maxindex, size;
+     size_t maxindex;
+     size_t size;
      void (*ctor)(void *);
 {
-  int i, nelts = maxindex + 1;
+  size_t i;
+  size_t nelts = maxindex + 1;
   void *rval;
 
   if (p == 0)
@@ -1055,11 +1057,13 @@ __builtin_delete (ptr)
 void
 __builtin_vec_delete (ptr, maxindex, size, dtor, auto_delete_vec, auto_delete)
      void *ptr;
-     int maxindex, size;
-     void (*dtor)();
+     size_t maxindex;
+     size_t size;
+     void (*dtor)(void *, int);
      int auto_delete;
 {
-  int i, nelts = maxindex + 1;
+  size_t i;
+  size_t nelts = maxindex + 1;
   void *p = ptr;
 
   ptr += nelts * size;
@@ -1102,7 +1106,8 @@ __clear_cache (beg, end)
   static char array[INSN_CACHE_SIZE + INSN_CACHE_PLANE_SIZE + INSN_CACHE_LINE_WIDTH];
   static int initialized = 0;
   int offset;
-  unsigned int start_addr, end_addr;
+  void *start_addr
+  void *end_addr;
   typedef (*function_ptr) ();
 
 #if (INSN_CACHE_SIZE / INSN_CACHE_LINE_WIDTH) < 16
@@ -1273,8 +1278,8 @@ __do_global_dtors ()
 #ifdef DO_GLOBAL_DTORS_BODY
   DO_GLOBAL_DTORS_BODY;
 #else
-  int nptrs = *(int *)__DTOR_LIST__;
-  int i;
+  unsigned nptrs = (unsigned) __DTOR_LIST__[0];
+  unsigned i;
 
   /* Some systems place the number of pointers
      in the first word of the table.
@@ -1326,7 +1331,7 @@ void
 __main ()
 {
   /* Support recursive calls to `main': run initializers just once.  */
-  static initialized = 0;
+  static int initialized = 0;
   if (! initialized)
     {
       initialized = 1;
