@@ -1,3 +1,8 @@
+2004-01-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* MAINTAINERS: Move myself from 'Write After Approval' to
+	'CPU Port Maintainers' section as SPARC maintainer.
+
 2004-01-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Make GCC use a separate config.cache.
