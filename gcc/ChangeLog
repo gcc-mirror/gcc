@@ -1,3 +1,12 @@
+Thu Jan 21 20:24:02 1999  Richard Henderson  <rth@cygnus.com>
+
+	* rs6000.h (LEGITIMIZE_RELOAD_ADDRESS): Recognize and accept
+	transformations that we have performed earlier.
+	* alpha.h (LEGITIMIZE_RELOAD_ADDRESS): Likewise.
+
+	* alpha.md (prologue_stack_probe_loop): Don't do our own label
+	handling, call gen_label_rtx instead.
+
 Thu Jan 21 17:45:18 1999  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in ({rs6000|powerpc}-ibm-aix4.[12]*): Add missing `then'.
