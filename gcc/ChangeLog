@@ -1,3 +1,7 @@
+2000-02-15  Denis Chertykov  <denisc@overta.ru>
+
+	* configure.in: Add support for avr target.
+
 Wed Feb 16 03:21:43 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (OVERRIDE_OPTIONS): Don't set sh_addr_diff_vec_mode.
