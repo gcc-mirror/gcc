@@ -1062,21 +1062,27 @@ attribute_list
     ;
 
 attrib
-    : IDENTIFIER
+    : identifier
 	{ if (strcmp (IDENTIFIER_POINTER ($1), "packed")
 	      && strcmp (IDENTIFIER_POINTER ($1), "noreturn"))
 	    warning ("`%s' attribute directive ignored",
 		     IDENTIFIER_POINTER ($1));
 	  $$ = $1; }
     | TYPE_QUAL
-    | IDENTIFIER '(' IDENTIFIER ')'
-	{ /* If not "mode (m)" or "aligned", then issue warning. 
-	     If "aligned", this will later produce an error in decl_attributes
-	     since an identifier is not a valid constant, but we want to give
-	     an error instead of a warning when the attribute name is
-	     recognized but has an improper argument.  */
-	  if (strcmp (IDENTIFIER_POINTER ($1), "mode") != 0
-	      && strcmp (IDENTIFIER_POINTER ($1), "aligned") != 0)
+    | identifier '(' expr_no_commas ')'
+	{ /* If not aligned(n) or section(name), then issue warning */
+	  if (strcmp (IDENTIFIER_POINTER ($1), "section") == 0
+	      || strcmp (IDENTIFIER_POINTER ($1), "mode") == 0)
+	    {
+	      if (TREE_CODE ($3) != STRING_CST)
+		{
+		  error ("invalid argument in `%s' attribute",
+			 IDENTIFIER_POINTER ($1));
+		  $$ = $1;
+		}
+	      $$ = tree_cons ($1, $3, NULL_TREE);
+	    }
+	  else if (strcmp (IDENTIFIER_POINTER ($1), "aligned") != 0)
 	    {
 	      warning ("`%s' attribute directive ignored",
 		       IDENTIFIER_POINTER ($1));
@@ -1084,17 +1090,7 @@ attrib
 	    }
 	  else
 	    $$ = tree_cons ($1, $3, NULL_TREE); }
-    | IDENTIFIER '(' expr_no_commas ')'
-	{ /* if not "aligned(n)", then issue warning */
-	  if (strcmp (IDENTIFIER_POINTER ($1), "aligned") != 0)
-	    {
-	      warning ("`%s' attribute directive ignored",
-		       IDENTIFIER_POINTER ($1));
-	      $$ = $1;
-	    }
-	  else
-	    $$ = tree_cons ($1, $3, NULL_TREE); }
-    | IDENTIFIER '(' IDENTIFIER ',' expr_no_commas ',' expr_no_commas ')'
+    | identifier '(' IDENTIFIER ',' expr_no_commas ',' expr_no_commas ')'
 	{ /* if not "format(...)", then issue warning */
 	  if (strcmp (IDENTIFIER_POINTER ($1), "format") != 0)
 	    {
@@ -1108,16 +1104,6 @@ attrib
 				       tree_cons ($5, $7, NULL_TREE),
 				       NULL_TREE),
 			    NULL_TREE); }
-    | IDENTIFIER '(' STRING ')'
-	{ /* If not "section (name)", then issue warning.  */
-	  if (strcmp (IDENTIFIER_POINTER ($1), "section") != 0)
-	    {
-	      warning ("`%s' attribute directive ignored",
-		       IDENTIFIER_POINTER ($1));
-	      $$ = $1;
-	    }
-	  else
-	    $$ = tree_cons ($1, $3, NULL_TREE); }
     ;
 
 /* Initializers.  `init' is the entry point.  */
