@@ -414,6 +414,7 @@ _cpp_handle_directive (pfile, indented)
 	     skipping or not, we should lex angle-bracketed headers
 	     correctly, and maybe output some diagnostics.  */
 	  pfile->state.angled_headers = dir->flags & INCL;
+	  pfile->state.directive_wants_padding = dir->flags & INCL;
 	  if (! CPP_OPTION (pfile, preprocessed))
 	    directive_diagnostics (pfile, dir, indented);
 	  if (pfile->state.skipping && !(dir->flags & COND))
@@ -582,7 +583,7 @@ glue_header_name (pfile)
   buffer = (unsigned char *) xmalloc (capacity);
   for (;;)
     {
-      token = cpp_get_token (pfile);
+      token = get_token_no_padding (pfile);
 
       if (token->type == CPP_GREATER || token->type == CPP_EOF)
 	break;
@@ -634,7 +635,7 @@ parse_include (pfile)
     dir = pfile->directive->name;
 
   /* Allow macro expansion.  */
-  header = cpp_get_token (pfile);
+  header = get_token_no_padding (pfile);
   if (header->type != CPP_STRING && header->type != CPP_HEADER_NAME)
     {
       if (header->type != CPP_LESS)
