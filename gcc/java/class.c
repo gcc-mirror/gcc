@@ -985,9 +985,9 @@ build_static_field_ref (fdecl)
     {
       if (!DECL_RTL_SET_P (fdecl))
 	{
-	  make_decl_rtl (fdecl, NULL);
 	  if (is_compiled == 1)
 	    DECL_EXTERNAL (fdecl) = 1;
+	  make_decl_rtl (fdecl, NULL);
 	}
       return fdecl;
     }

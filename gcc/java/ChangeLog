@@ -1,3 +1,8 @@
+2001-03-19  Andrew Haley  <aph@cambridge.redhat.com>
+
+        * class.c (build_static_field_ref): Call make_decl_rtl() after
+        setting the DECL_EXTERNAL flag.
+
 2001-03-17  Per Bothner  <per@bothner.com>
 
 	* decl.c (clear_binding_level):  Fix initializer (broke 03-15).
