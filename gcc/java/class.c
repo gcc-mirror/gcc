@@ -594,9 +594,7 @@ enclosing_context_p (tree type1, tree type2)
 int
 common_enclosing_context_p (tree type1, tree type2)
 {
-  for (type1; type1; 
-       type1 = (INNER_CLASS_TYPE_P (type1) ?
-		TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type1))) : NULL_TREE))
+  while (type1)
     {
       tree current;
       for (current = type2; current;
@@ -605,6 +603,11 @@ common_enclosing_context_p (tree type1, tree type2)
 		      NULL_TREE))
 	if (type1 == current)
 	  return 1;
+
+      if (INNER_CLASS_TYPE_P (type1))
+        type1 = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type1)));
+      else
+        break;
     }
   return 0;
 }
