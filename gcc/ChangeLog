@@ -1,3 +1,16 @@
+2004-12-24  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR debug/14638
+
+	* tree.h (DECL_DEBUG_ALIAS_OF): New macro.
+	* var-tracking.c (track_expr_p): Don't disqualify tracking of variables
+	that are aliases of variables we want to track, unless the
+	original variable is also ignored for debugging purposes.
+	(VARIABLE_HASH_VAL): Use DECL_UID, so that this is deterministic.
+ 	* tree-outof-ssa.c (create_temp): Note who we are a debug alias of.
+	* dwarf2out.c (dwarf2out_var_location): Add us to the location of
+	the decl we are an alias of.
+
 2004-12-24  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/19142

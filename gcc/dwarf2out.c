@@ -13037,6 +13037,7 @@ dwarf2out_var_location (rtx loc_note)
   rtx prev_insn;
   static rtx last_insn;
   static const char *last_label;
+  tree decl;
 
   if (!DECL_P (NOTE_VAR_LOCATION_DECL (loc_note)))
     return;
@@ -13065,8 +13066,10 @@ dwarf2out_var_location (rtx loc_note)
 
   last_insn = loc_note;
   last_label = newloc->label;
-
-  add_var_loc_to_decl (NOTE_VAR_LOCATION_DECL (loc_note), newloc);
+  decl = NOTE_VAR_LOCATION_DECL (loc_note);
+  if (DECL_DEBUG_ALIAS_OF (decl))
+    decl = DECL_DEBUG_ALIAS_OF (decl); 
+  add_var_loc_to_decl (decl, newloc);
 }
 
 /* We need to reset the locations at the beginning of each

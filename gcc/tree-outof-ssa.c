@@ -156,6 +156,11 @@ create_temp (tree t)
   if (name == NULL)
     name = "temp";
   tmp = create_tmp_var (type, name);
+
+  if (DECL_DEBUG_ALIAS_OF (t))
+    DECL_DEBUG_ALIAS_OF (tmp) = DECL_DEBUG_ALIAS_OF (t);  
+  else if (!DECL_IGNORED_P (t))
+    DECL_DEBUG_ALIAS_OF (tmp) = t;
   DECL_ARTIFICIAL (tmp) = DECL_ARTIFICIAL (t);
   add_referenced_tmp_var (tmp);
 
