@@ -1,3 +1,8 @@
+2002-02-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-typeck.c (digest_init): Remove unused parameter; all
+	callers changed.
+
 2002-02-27  Geoffrey Keating  <geoffk@redhat.com>
 
 	* expmed.c (expand_shift): Correctly test for low part of a
