@@ -1,3 +1,7 @@
+2002-05-30	Marc Espie <espie@openbsd.org>
+	* configure.in:  Always check for sys/types.h
+	* configure:  Regenerate.
+
 2002-05-28  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init):
