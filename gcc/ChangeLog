@@ -1,3 +1,8 @@
+Thu May  6 20:02:33 1999  Fred Fish  <fnf@be.com>
+
+	* rs6000/xm-beos.h (HAVE_VPRINTF): Don't redefine if already defined.
+	(HAVE_PUTENV, HAVE_ATEXIT, HAVE_RENAME): Likewise.
+
 Wed May  5 20:28:32 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* install.texi (Header Dirs): s/GPLUS/GPLUSPLUS/.
