@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.23 $
+--                             $Revision$
 --                                                                          --
 --          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -499,12 +499,15 @@ package body System.Tasking.Debug is
       R : Boolean;
 
    begin
+      STPO.Lock_All_Tasks_List;
       C := All_Tasks_List;
 
       while C /= null loop
          R := STPO.Resume_Task (C, Thread_Self);
          C := C.Common.All_Tasks_Link;
       end loop;
+
+      STPO.Unlock_All_Tasks_List;
    end Resume_All_Tasks;
 
    ----------
@@ -577,12 +580,15 @@ package body System.Tasking.Debug is
       R : Boolean;
 
    begin
+      STPO.Lock_All_Tasks_List;
       C := All_Tasks_List;
 
       while C /= null loop
          R := STPO.Suspend_Task (C, Thread_Self);
          C := C.Common.All_Tasks_Link;
       end loop;
+
+      STPO.Unlock_All_Tasks_List;
    end Suspend_All_Tasks;
 
    ------------------------

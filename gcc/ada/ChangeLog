@@ -1,3 +1,18 @@
+2001-10-26  Joel Brobecker <brobecke@gnat.com>
+
+	* 5zosinte.ads (null_pthread): new constant.
+	
+	* 5ztaprop.adb:
+	(Initialize_TCB): Initialize thread ID to null, to be able to verify
+	 later that this field has been set.
+	(Finalize_TCB): ditto.
+	(Suspend_Task): Verify that the thread ID is not null before using it.
+	(Resume_Task): ditto.
+	
+	* s-tasdeb.adb:
+	(Resume_All_Tasks): Lock the tasks list before using it.
+	(Suspend_All_Tasks): ditto.
+
 2001-10-26  Richard Kenner <kenner@gnat.com>
 
 	* decl.c (gnat_to_gnu_entity, case E_General_Access_Type): 

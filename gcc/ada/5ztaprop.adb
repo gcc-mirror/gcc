@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.41 $
+--                             $Revision$
 --                                                                          --
 --             Copyright (C) 1991-2001 Florida State University             --
 --                                                                          --
@@ -728,6 +728,8 @@ package body System.Task_Primitives.Operations is
       Cond_Attr : aliased pthread_condattr_t;
 
    begin
+      Self_ID.Common.LL.Thread := null_pthread;
+
       Result := pthread_mutexattr_init (Mutex_Attr'Access);
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
@@ -898,6 +900,8 @@ package body System.Task_Primitives.Operations is
         Unchecked_Deallocation (Ada_Task_Control_Block, Task_ID);
 
    begin
+      T.Common.LL.Thread := null_pthread;
+
       Result := pthread_mutex_destroy (T.Common.LL.L'Access);
       pragma Assert (Result = 0);
 
@@ -989,7 +993,9 @@ package body System.Task_Primitives.Operations is
      (T           : ST.Task_ID;
       Thread_Self : Thread_Id) return Boolean is
    begin
-      if T.Common.LL.Thread /= Thread_Self then
+      if T.Common.LL.Thread /= null_pthread
+        and then T.Common.LL.Thread /= Thread_Self
+      then
          return taskSuspend (T.Common.LL.Thread) = 0;
       else
          return True;
@@ -1004,7 +1010,9 @@ package body System.Task_Primitives.Operations is
      (T           : ST.Task_ID;
       Thread_Self : Thread_Id) return Boolean is
    begin
-      if T.Common.LL.Thread /= Thread_Self then
+      if T.Common.LL.Thread /= null_pthread
+        and then T.Common.LL.Thread /= Thread_Self
+      then
          return taskResume (T.Common.LL.Thread) = 0;
       else
          return True;

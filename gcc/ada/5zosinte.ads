@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---                             $Revision: 1.16 $
+--                             $Revision$
 --                                                                          --
 --           Copyright (C) 1997-2001 Free Software Foundation, Inc.         --
 --                                                                          --
@@ -217,6 +217,8 @@ package System.OS_Interface is
 
    type pthread_t           is private;
    subtype Thread_Id        is pthread_t;
+
+   null_pthread : constant pthread_t;
 
    type pthread_mutex_t     is limited private;
    type pthread_cond_t      is limited private;
@@ -541,6 +543,8 @@ private
    end record;
 
    type pthread_t is new long;
+
+   null_pthread : constant pthread_t := 0;
 
    type pthread_key_t is new int;
 
