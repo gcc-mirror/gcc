@@ -3209,9 +3209,12 @@ convert_nontype_argument (tree type, tree expr)
 	tree type_referred_to = TREE_TYPE (type);
 
 	/* If this expression already has reference type, get the
-	   underling object.  */
+	   underlying object.  */
 	if (TREE_CODE (expr_type) == REFERENCE_TYPE) 
 	  {
+	    if (TREE_CODE (expr) == NOP_EXPR
+		&& TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR)
+	      STRIP_NOPS (expr);
 	    my_friendly_assert (TREE_CODE (expr) == ADDR_EXPR, 20000604);
 	    expr = TREE_OPERAND (expr, 0);
 	    expr_type = TREE_TYPE (expr);
@@ -3265,7 +3268,7 @@ convert_nontype_argument (tree type, tree expr)
 	  }
 
 	cxx_mark_addressable (expr);
-	return build1 (ADDR_EXPR, type, expr);
+	return build_nop (type, build_address (expr));
       }
       break;
 

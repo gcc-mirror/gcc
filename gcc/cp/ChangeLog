@@ -1,5 +1,9 @@
 2003-09-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11847
+	* pt.c (convert_nontype_argument): Correct representation of
+	REFERENCE_TYPE expressions.
+
 	PR c++/11808
 	* cp-tree.h (KOENIG_LOOKUP_P): New macro.
 	(finish_call_expr): Change prototype.
