@@ -1,3 +1,11 @@
+1998-07-20  Dave Brolley  <brolley@cygnus.com>
+
+	* lex.c (mbchar.h): #include it.
+	(GET_ENVIRONMENT): New macro.
+	(init_parse): Set character set based on LANG environment variable.
+	(real_yylex): Handle multibyte characters in character literals.
+	(real_yylex): Handle multibyte characters in string literals.
+
 1998-07-19  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lex.c (do_identifier): Look for class value even if we don't
