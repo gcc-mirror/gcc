@@ -1,3 +1,15 @@
+2002-12-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR 8553
+	* config/rs6000/altivec.md ("absv8hi2"): Add & to clobbered
+	registers.
+	("absv16qi2"): Same.
+	("absv4si2"): Same.
+	("absv4sf2"): Same.
+	("altivec_abss_v16qi"): Same.
+	("altivec_abss_v8hi"): Same.
+	("altivec_abss_v4si"): Same.
+
 2002-12-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("*tsthiCCT", "*tsthiCCT_cconly",

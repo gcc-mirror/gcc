@@ -1830,8 +1830,8 @@
 (define_insn "absv16qi2"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
 	(abs:V16QI (match_operand:V16QI 1 "register_operand" "v")))
-   (clobber (match_scratch:V16QI 2 "=v"))
-   (clobber (match_scratch:V16QI 3 "=v"))]
+   (clobber (match_scratch:V16QI 2 "=&v"))
+   (clobber (match_scratch:V16QI 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisb %2,0\;vsububm %3,%2,%1\;vmaxsb %0,%1,%3"
   [(set_attr "type" "altivec")
@@ -1840,8 +1840,8 @@
 (define_insn "absv8hi2"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (abs:V8HI (match_operand:V8HI 1 "register_operand" "v")))
-   (clobber (match_scratch:V8HI 2 "=v"))
-   (clobber (match_scratch:V8HI 3 "=v"))]
+   (clobber (match_scratch:V8HI 2 "=&v"))
+   (clobber (match_scratch:V8HI 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisb %2,0\;vsubuhm %3,%2,%1\;vmaxsh %0,%1,%3"
   [(set_attr "type" "altivec")
@@ -1850,8 +1850,8 @@
 (define_insn "absv4si2"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (abs:V4SI (match_operand:V4SI 1 "register_operand" "v")))
-   (clobber (match_scratch:V4SI 2 "=v"))
-   (clobber (match_scratch:V4SI 3 "=v"))]
+   (clobber (match_scratch:V4SI 2 "=&v"))
+   (clobber (match_scratch:V4SI 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisb %2,0\;vsubuwm %3,%2,%1\;vmaxsw %0,%1,%3"
   [(set_attr "type" "altivec")
@@ -1860,8 +1860,8 @@
 (define_insn "absv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
         (abs:V4SF (match_operand:V4SF 1 "register_operand" "v")))
-   (clobber (match_scratch:V4SF 2 "=v"))
-   (clobber (match_scratch:V4SF 3 "=v"))]
+   (clobber (match_scratch:V4SF 2 "=&v"))
+   (clobber (match_scratch:V4SF 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisw %2, -1\;vslw %3,%2,%2\;vandc %0,%1,%3"
   [(set_attr "type" "altivec")
@@ -1870,8 +1870,8 @@
 (define_insn "altivec_abss_v16qi"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
         (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")] 210))
-   (clobber (match_scratch:V16QI 2 "=v"))
-   (clobber (match_scratch:V16QI 3 "=v"))]
+   (clobber (match_scratch:V16QI 2 "=&v"))
+   (clobber (match_scratch:V16QI 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisb %2,0\;vsubsbs %3,%2,%1\;vmaxsb %0,%1,%3"
   [(set_attr "type" "altivec")
@@ -1880,8 +1880,8 @@
 (define_insn "altivec_abss_v8hi"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (unspec:V8HI [(match_operand:V8HI 1 "register_operand" "v")] 211))
-   (clobber (match_scratch:V8HI 2 "=v"))
-   (clobber (match_scratch:V8HI 3 "=v"))]
+   (clobber (match_scratch:V8HI 2 "=&v"))
+   (clobber (match_scratch:V8HI 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisb %2,0\;vsubshs %3,%2,%1\;vmaxsh %0,%1,%3"
   [(set_attr "type" "altivec")
@@ -1890,8 +1890,8 @@
 (define_insn "altivec_abss_v4si"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")] 212))
-   (clobber (match_scratch:V4SI 2 "=v"))
-   (clobber (match_scratch:V4SI 3 "=v"))]
+   (clobber (match_scratch:V4SI 2 "=&v"))
+   (clobber (match_scratch:V4SI 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisb %2,0\;vsubsws %3,%2,%1\;vmaxsw %0,%1,%3"
   [(set_attr "type" "altivec")
