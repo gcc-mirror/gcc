@@ -1,3 +1,8 @@
+Sat Feb 28 05:04:47 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
+
+	* enquire.c (cprop): Don't perform exhaustive search for char_min
+	and char_max when bits_per_byte > 16.
+
 Thu Feb 26 15:12:03 1998  Christopher Taylor <cit@ckshq.com>
 
 	* fixincludes: Avoid using '0-~' in egrep.
