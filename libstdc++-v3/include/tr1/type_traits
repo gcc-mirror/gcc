@@ -406,13 +406,22 @@ namespace tr1
     struct is_enum
     : public integral_constant<bool, __is_enum_helper<_Tp>::__value> { };
 
+  template<typename _Tp, bool = is_void<_Tp>::value>
+    struct __is_function_helper
+    {
+      static const bool __value = (__conv_helper<typename
+				   add_reference<_Tp>::type, typename
+				   add_pointer<_Tp>::type>::__value);
+    };
+
+  template<typename _Tp>
+    struct __is_function_helper<_Tp, true>
+    { static const bool __value = false; };
+
   template<typename _Tp>
     struct is_function
-    : public integral_constant<bool,
-			       (__conv_helper<typename add_reference<_Tp>::type,
-				typename add_pointer<_Tp>::type>::__value)>
+    : public integral_constant<bool, __is_function_helper<_Tp>::__value>
     { };
-  _DEFINE_SPEC(0, is_function, void, false)
 
   /// @brief  composite type traits [4.5.2].
   template<typename _Tp>
