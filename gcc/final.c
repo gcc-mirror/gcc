@@ -1296,10 +1296,10 @@ shorten_branches (first)
 	  insn_last_address = insn_addresses[uid];
 	  insn_addresses[uid] = insn_current_address;
 
+#ifdef CASE_VECTOR_SHORTEN_MODE
 	  if (optimize && GET_CODE (insn) == JUMP_INSN
 	      && GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
 	    {
-#ifdef CASE_VECTOR_SHORTEN_MODE
 	      rtx body = PATTERN (insn);
 	      int old_length = insn_lengths[uid];
 	      rtx rel_lab = XEXP (XEXP (body, 0), 0);
@@ -1397,9 +1397,10 @@ shorten_branches (first)
 		something_changed = 1;
 #endif
 	      continue;
-#endif /* CASE_VECTOR_SHORTEN_MODE */
 	    }
-	  else if (! (varying_length[uid]))
+#endif /* CASE_VECTOR_SHORTEN_MODE */
+
+	  if (! (varying_length[uid]))
 	    {
 	      insn_current_address += insn_lengths[uid];
 	      continue;
