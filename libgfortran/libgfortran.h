@@ -50,7 +50,7 @@ Boston, MA 02111-1307, USA.  */
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-typedef off_t offset_t;
+typedef off_t gfc_offset;
 
 #ifndef NULL
 #define NULL (void *) 0

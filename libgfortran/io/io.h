@@ -42,11 +42,11 @@ try;
 
 typedef struct stream
 {
-  char *(*alloc_w_at) (struct stream *, int *, offset_t);
-  char *(*alloc_r_at) (struct stream *, int *, offset_t);
+  char *(*alloc_w_at) (struct stream *, int *, gfc_offset);
+  char *(*alloc_r_at) (struct stream *, int *, gfc_offset);
     try (*sfree) (struct stream *);
     try (*close) (struct stream *);
-    try (*seek) (struct stream *, offset_t);
+    try (*seek) (struct stream *, gfc_offset);
     try (*truncate) (struct stream *);
 }
 stream;
@@ -269,7 +269,7 @@ typedef struct gfc_unit
   endfile;
 
   unit_flags flags;
-  offset_t recl, last_record, maxrec, bytes_left;
+  gfc_offset recl, last_record, maxrec, bytes_left;
 
   /* recl           -- Record length of the file.
      last_record    -- Last record number read or written
@@ -288,7 +288,7 @@ typedef struct
 {
   int in_library;       /* Nonzero if a library call is being processed.  */
   int size;	/* Bytes processed by the current data-transfer statement.  */
-  offset_t max_offset;	/* Maximum file offset.  */
+  gfc_offset max_offset;	/* Maximum file offset.  */
   int item_count;	/* Item number in a formatted data transfer.  */
   int reversion_flag;	/* Format reversion has occurred.  */
   int first_item;
@@ -445,10 +445,10 @@ const char *inquire_write (const char *, int);
 const char *inquire_readwrite (const char *, int);
 
 #define file_length prefix(file_length)
-offset_t file_length (stream *);
+gfc_offset file_length (stream *);
 
 #define file_position prefix(file_position)
-offset_t file_position (stream *);
+gfc_offset file_position (stream *);
 
 #define is_seekable prefix(is_seekable)
 int is_seekable (stream *);

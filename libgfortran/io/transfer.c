@@ -792,13 +792,13 @@ transfer_complex (void *p, int kind)
 static void
 us_read (void)
 {
-  offset_t *p;
+  gfc_offset *p;
   int n;
 
-  n = sizeof (offset_t);
-  p = (offset_t *) salloc_r (current_unit->s, &n);
+  n = sizeof (gfc_offset);
+  p = (gfc_offset *) salloc_r (current_unit->s, &n);
 
-  if (p == NULL || n != sizeof (offset_t))
+  if (p == NULL || n != sizeof (gfc_offset))
     {
       generate_error (ERROR_BAD_US, NULL);
       return;
@@ -815,11 +815,11 @@ us_read (void)
 static void
 us_write (void)
 {
-  offset_t *p;
+  gfc_offset *p;
   int length;
 
-  length = sizeof (offset_t);
-  p = (offset_t *) salloc_w (current_unit->s, &length);
+  length = sizeof (gfc_offset);
+  p = (gfc_offset *) salloc_w (current_unit->s, &length);
 
   if (p == NULL)
     {
@@ -1111,13 +1111,13 @@ static void
 next_record_r (int done)
 {
   int rlength, length;
-  offset_t new;
+  gfc_offset new;
   char *p;
 
   switch (current_mode ())
     {
     case UNFORMATTED_SEQUENTIAL:
-      current_unit->bytes_left += sizeof (offset_t);	/* Skip over tail */
+      current_unit->bytes_left += sizeof (gfc_offset);	/* Skip over tail */
 
       /* Fall through */
 
@@ -1198,7 +1198,7 @@ next_record_r (int done)
 static void
 next_record_w (int done)
 {
-  offset_t c, m;
+  gfc_offset c, m;
   int length;
   char *p;
 
@@ -1225,7 +1225,7 @@ next_record_w (int done)
       m = current_unit->recl - current_unit->bytes_left; /* Bytes written */
       c = file_position (current_unit->s);
 
-      length = sizeof (offset_t);
+      length = sizeof (gfc_offset);
 
       /* Write the length tail */
 
@@ -1233,7 +1233,7 @@ next_record_w (int done)
       if (p == NULL)
 	goto io_error;
 
-      *((offset_t *) p) = m;
+      *((gfc_offset *) p) = m;
       if (sfree (current_unit->s) == FAILURE)
 	goto io_error;
 
@@ -1243,13 +1243,13 @@ next_record_w (int done)
       if (p == NULL)
 	generate_error (ERROR_OS, NULL);
 
-      *((offset_t *) p) = m;
+      *((gfc_offset *) p) = m;
       if (sfree (current_unit->s) == FAILURE)
 	goto io_error;
 
       /* Seek past the end of the current record */
 
-      if (sseek (current_unit->s, c + sizeof (offset_t)) == FAILURE)
+      if (sseek (current_unit->s, c + sizeof (gfc_offset)) == FAILURE)
 	goto io_error;
 
       break;
