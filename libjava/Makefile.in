@@ -119,44 +119,30 @@ ZLIBTESTSPEC = @ZLIBTESTSPEC@
 here = @here@
 libgcj_basedir = @libgcj_basedir@
 
-AUTOMAKE_OPTIONS = foreign no-installinfo no-dependencies
-@TESTSUBDIR_TRUE@SUBDIRS = \
-@TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
-@TESTSUBDIR_FALSE@SUBDIRS = \
-@TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
-@USE_LIBDIR_TRUE@toolexeclibdir = \
-@USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = \
-@USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = \
-@USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
-@NO_X_TRUE@cond_x_ltlibrary = \
-@NO_X_FALSE@cond_x_ltlibrary = \
-@NO_X_FALSE@libgcjx.la
+AUTOMAKE_OPTIONS = foreign no-installinfo
+@TESTSUBDIR_TRUE@SUBDIRS = @TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
+@TESTSUBDIR_FALSE@SUBDIRS = @TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
+@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@NO_X_TRUE@cond_x_ltlibrary = 
+@NO_X_FALSE@cond_x_ltlibrary = @NO_X_FALSE@libgcjx.la
 
 toolexeclib_LTLIBRARIES = libgcj.la $(cond_x_ltlibrary)
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.jar
 
-@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = \
-@NEEDS_DATA_START_TRUE@libgcjdata.a
-@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = \
-@NEEDS_DATA_START_TRUE@libgcjdata.c
+@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = @NEEDS_DATA_START_TRUE@libgcjdata.a
+@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = @NEEDS_DATA_START_TRUE@libgcjdata.c
 
-@NATIVE_TRUE@bin_PROGRAMS = \
-@NATIVE_TRUE@jv-convert gij
+@NATIVE_TRUE@bin_PROGRAMS = @NATIVE_TRUE@jv-convert gij
 
 bin_SCRIPTS = addr2name.awk
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = \
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar$(EXEEXT)
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = \
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@fastjar
-@CANADIAN_FALSE@ZIP = \
-@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar$(EXEEXT)
-@CANADIAN_TRUE@GCJH = \
-@CANADIAN_TRUE@gcjh
-@CANADIAN_FALSE@GCJH = \
-@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_FALSE@fastjar
+@CANADIAN_FALSE@ZIP = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar$(EXEEXT)
+@CANADIAN_TRUE@GCJH = @CANADIAN_TRUE@gcjh
+@CANADIAN_FALSE@GCJH = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
 
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8
 
@@ -173,10 +159,8 @@ AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fasynchronous-exceptions \
 	-fdollars-in-identifiers \
 	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ @X_CFLAGS@ $(WARNINGS) -D_GNU_SOURCE
 
-@USING_GCC_TRUE@AM_CFLAGS = \
-@USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
-@USING_GCC_FALSE@AM_CFLAGS = \
-@USING_GCC_FALSE@@LIBGCJ_CFLAGS@
+@USING_GCC_TRUE@AM_CFLAGS = @USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
+@USING_GCC_FALSE@AM_CFLAGS = @USING_GCC_FALSE@@LIBGCJ_CFLAGS@
 
 JCFLAGS = -g
 JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
@@ -248,8 +232,7 @@ extra_headers = java/lang/Object.h java/lang/Class.h
 
 NM = nm
 
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = \
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
+@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
 
 CONVERT_DIR = gnu/gcj/convert
 
@@ -1217,6 +1200,530 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
+DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
+.deps/$(srcdir)/$(CONVERT_DIR)/make-trie.P .deps/boehm.P \
+.deps/defineclass.P .deps/exception.P .deps/gij.P \
+.deps/gnu/awt/LightweightRedirector.P \
+.deps/gnu/awt/j2d/AbstractGraphicsState.P \
+.deps/gnu/awt/j2d/DirectRasterGraphics.P \
+.deps/gnu/awt/j2d/Graphics2DImpl.P \
+.deps/gnu/awt/j2d/IntegerGraphicsState.P \
+.deps/gnu/awt/j2d/MappedRaster.P .deps/gnu/awt/xlib/XCanvasPeer.P \
+.deps/gnu/awt/xlib/XEventLoop.P .deps/gnu/awt/xlib/XEventQueue.P \
+.deps/gnu/awt/xlib/XFontMetrics.P .deps/gnu/awt/xlib/XFramePeer.P \
+.deps/gnu/awt/xlib/XGraphics.P \
+.deps/gnu/awt/xlib/XGraphicsConfiguration.P \
+.deps/gnu/awt/xlib/XPanelPeer.P .deps/gnu/awt/xlib/XToolkit.P \
+.deps/gnu/classpath/Configuration.P .deps/gnu/gcj/RawData.P \
+.deps/gnu/gcj/awt/BitMaskExtent.P .deps/gnu/gcj/awt/Buffers.P \
+.deps/gnu/gcj/awt/ComponentDataBlitOp.P \
+.deps/gnu/gcj/awt/GLightweightPeer.P \
+.deps/gnu/gcj/convert/BytesToUnicode.P .deps/gnu/gcj/convert/Convert.P \
+.deps/gnu/gcj/convert/IOConverter.P \
+.deps/gnu/gcj/convert/Input_8859_1.P \
+.deps/gnu/gcj/convert/Input_ASCII.P \
+.deps/gnu/gcj/convert/Input_EUCJIS.P \
+.deps/gnu/gcj/convert/Input_JavaSrc.P \
+.deps/gnu/gcj/convert/Input_SJIS.P .deps/gnu/gcj/convert/Input_UTF8.P \
+.deps/gnu/gcj/convert/Input_iconv.P \
+.deps/gnu/gcj/convert/JIS0208_to_Unicode.P \
+.deps/gnu/gcj/convert/JIS0212_to_Unicode.P \
+.deps/gnu/gcj/convert/Output_8859_1.P \
+.deps/gnu/gcj/convert/Output_ASCII.P \
+.deps/gnu/gcj/convert/Output_EUCJIS.P \
+.deps/gnu/gcj/convert/Output_JavaSrc.P \
+.deps/gnu/gcj/convert/Output_SJIS.P .deps/gnu/gcj/convert/Output_UTF8.P \
+.deps/gnu/gcj/convert/Output_iconv.P \
+.deps/gnu/gcj/convert/UnicodeToBytes.P \
+.deps/gnu/gcj/convert/Unicode_to_JIS.P .deps/gnu/gcj/convert/natIconv.P \
+.deps/gnu/gcj/convert/natInput_EUCJIS.P \
+.deps/gnu/gcj/convert/natInput_SJIS.P \
+.deps/gnu/gcj/convert/natOutput_EUCJIS.P \
+.deps/gnu/gcj/convert/natOutput_SJIS.P \
+.deps/gnu/gcj/io/DefaultMimeTypes.P .deps/gnu/gcj/io/MimeTypes.P \
+.deps/gnu/gcj/io/SimpleSHSStream.P \
+.deps/gnu/gcj/io/natSimpleSHSStream.P .deps/gnu/gcj/io/shs.P \
+.deps/gnu/gcj/jni/NativeThread.P .deps/gnu/gcj/jni/natNativeThread.P \
+.deps/gnu/gcj/math/MPN.P .deps/gnu/gcj/protocol/file/Connection.P \
+.deps/gnu/gcj/protocol/file/Handler.P \
+.deps/gnu/gcj/protocol/http/Connection.P \
+.deps/gnu/gcj/protocol/http/Handler.P \
+.deps/gnu/gcj/protocol/jar/Connection.P \
+.deps/gnu/gcj/protocol/jar/Handler.P \
+.deps/gnu/gcj/runtime/FileDeleter.P .deps/gnu/gcj/runtime/FirstThread.P \
+.deps/gnu/gcj/runtime/VMClassLoader.P \
+.deps/gnu/gcj/runtime/natFirstThread.P \
+.deps/gnu/gcj/text/BaseBreakIterator.P \
+.deps/gnu/gcj/text/CharacterBreakIterator.P \
+.deps/gnu/gcj/text/LineBreakIterator.P \
+.deps/gnu/gcj/text/LocaleData_en.P \
+.deps/gnu/gcj/text/LocaleData_en_US.P \
+.deps/gnu/gcj/text/SentenceBreakIterator.P \
+.deps/gnu/gcj/text/WordBreakIterator.P \
+.deps/gnu/gcj/util/EnumerationChain.P .deps/gnu/gcj/xlib/Clip.P \
+.deps/gnu/gcj/xlib/Colormap.P .deps/gnu/gcj/xlib/Display.P \
+.deps/gnu/gcj/xlib/Drawable.P .deps/gnu/gcj/xlib/Font.P \
+.deps/gnu/gcj/xlib/GC.P .deps/gnu/gcj/xlib/Pixmap.P \
+.deps/gnu/gcj/xlib/Screen.P .deps/gnu/gcj/xlib/Visual.P \
+.deps/gnu/gcj/xlib/WMSizeHints.P .deps/gnu/gcj/xlib/Window.P \
+.deps/gnu/gcj/xlib/WindowAttributes.P .deps/gnu/gcj/xlib/XAnyEvent.P \
+.deps/gnu/gcj/xlib/XButtonEvent.P .deps/gnu/gcj/xlib/XColor.P \
+.deps/gnu/gcj/xlib/XConfigureEvent.P \
+.deps/gnu/gcj/xlib/XConnectException.P .deps/gnu/gcj/xlib/XEvent.P \
+.deps/gnu/gcj/xlib/XException.P .deps/gnu/gcj/xlib/XExposeEvent.P \
+.deps/gnu/gcj/xlib/XID.P .deps/gnu/gcj/xlib/XImage.P \
+.deps/gnu/gcj/xlib/XUnmapEvent.P .deps/gnu/gcj/xlib/natClip.P \
+.deps/gnu/gcj/xlib/natColormap.P .deps/gnu/gcj/xlib/natDisplay.P \
+.deps/gnu/gcj/xlib/natDrawable.P .deps/gnu/gcj/xlib/natFont.P \
+.deps/gnu/gcj/xlib/natGC.P .deps/gnu/gcj/xlib/natPixmap.P \
+.deps/gnu/gcj/xlib/natScreen.P .deps/gnu/gcj/xlib/natVisual.P \
+.deps/gnu/gcj/xlib/natWMSizeHints.P .deps/gnu/gcj/xlib/natWindow.P \
+.deps/gnu/gcj/xlib/natWindowAttributes.P \
+.deps/gnu/gcj/xlib/natXAnyEvent.P .deps/gnu/gcj/xlib/natXButtonEvent.P \
+.deps/gnu/gcj/xlib/natXColor.P .deps/gnu/gcj/xlib/natXConfigureEvent.P \
+.deps/gnu/gcj/xlib/natXException.P .deps/gnu/gcj/xlib/natXExposeEvent.P \
+.deps/gnu/gcj/xlib/natXImage.P .deps/gnu/gcj/xlib/natXUnmapEvent.P \
+.deps/gnu/java/beans/BeanInfoEmbryo.P \
+.deps/gnu/java/beans/EmptyBeanInfo.P \
+.deps/gnu/java/beans/ExplicitBeanInfo.P \
+.deps/gnu/java/beans/IntrospectionIncubator.P \
+.deps/gnu/java/beans/editors/ColorEditor.P \
+.deps/gnu/java/beans/editors/FontEditor.P \
+.deps/gnu/java/beans/editors/NativeBooleanEditor.P \
+.deps/gnu/java/beans/editors/NativeByteEditor.P \
+.deps/gnu/java/beans/editors/NativeDoubleEditor.P \
+.deps/gnu/java/beans/editors/NativeFloatEditor.P \
+.deps/gnu/java/beans/editors/NativeIntEditor.P \
+.deps/gnu/java/beans/editors/NativeLongEditor.P \
+.deps/gnu/java/beans/editors/NativeShortEditor.P \
+.deps/gnu/java/beans/editors/StringEditor.P \
+.deps/gnu/java/beans/info/ComponentBeanInfo.P \
+.deps/gnu/java/io/ClassLoaderObjectInputStream.P \
+.deps/gnu/java/io/NullOutputStream.P \
+.deps/gnu/java/io/ObjectIdentityWrapper.P \
+.deps/gnu/java/lang/ArrayHelper.P .deps/gnu/java/lang/ClassHelper.P \
+.deps/gnu/java/lang/reflect/TypeSignature.P \
+.deps/gnu/java/locale/Calendar.P .deps/gnu/java/locale/Calendar_de.P \
+.deps/gnu/java/locale/Calendar_en.P .deps/gnu/java/locale/Calendar_nl.P \
+.deps/gnu/java/security/provider/Gnu.P \
+.deps/gnu/java/security/provider/SHA.P \
+.deps/gnu/java/security/provider/SHA1PRNG.P .deps/interpret.P \
+.deps/java/applet/Applet.P .deps/java/applet/AppletContext.P \
+.deps/java/applet/AppletStub.P .deps/java/applet/AudioClip.P \
+.deps/java/awt/AWTError.P .deps/java/awt/AWTEvent.P \
+.deps/java/awt/AWTEventMulticaster.P .deps/java/awt/AWTException.P \
+.deps/java/awt/AWTPermission.P .deps/java/awt/ActiveEvent.P \
+.deps/java/awt/Adjustable.P .deps/java/awt/BorderLayout.P \
+.deps/java/awt/Button.P .deps/java/awt/Canvas.P \
+.deps/java/awt/CardLayout.P .deps/java/awt/Checkbox.P \
+.deps/java/awt/CheckboxGroup.P .deps/java/awt/CheckboxMenuItem.P \
+.deps/java/awt/Choice.P .deps/java/awt/Color.P \
+.deps/java/awt/Component.P .deps/java/awt/ComponentOrientation.P \
+.deps/java/awt/Container.P .deps/java/awt/Cursor.P \
+.deps/java/awt/Dialog.P .deps/java/awt/Dimension.P \
+.deps/java/awt/Event.P .deps/java/awt/EventDispatchThread.P \
+.deps/java/awt/EventQueue.P .deps/java/awt/FileDialog.P \
+.deps/java/awt/FlowLayout.P .deps/java/awt/Font.P \
+.deps/java/awt/FontMetrics.P .deps/java/awt/Frame.P \
+.deps/java/awt/Graphics.P .deps/java/awt/Graphics2D.P \
+.deps/java/awt/GraphicsConfiguration.P \
+.deps/java/awt/GridBagConstraints.P .deps/java/awt/GridLayout.P \
+.deps/java/awt/IllegalComponentStateException.P .deps/java/awt/Image.P \
+.deps/java/awt/Insets.P .deps/java/awt/ItemSelectable.P \
+.deps/java/awt/Label.P .deps/java/awt/LayoutManager.P \
+.deps/java/awt/LayoutManager2.P .deps/java/awt/List.P \
+.deps/java/awt/Menu.P .deps/java/awt/MenuBar.P \
+.deps/java/awt/MenuComponent.P .deps/java/awt/MenuContainer.P \
+.deps/java/awt/MenuItem.P .deps/java/awt/MenuShortcut.P \
+.deps/java/awt/Paint.P .deps/java/awt/PaintContext.P \
+.deps/java/awt/Panel.P .deps/java/awt/Point.P \
+.deps/java/awt/PopupMenu.P .deps/java/awt/Rectangle.P \
+.deps/java/awt/RenderingHints.P .deps/java/awt/ScrollPane.P \
+.deps/java/awt/Scrollbar.P .deps/java/awt/Shape.P \
+.deps/java/awt/SystemColor.P .deps/java/awt/TextArea.P \
+.deps/java/awt/TextComponent.P .deps/java/awt/TextField.P \
+.deps/java/awt/Toolkit.P .deps/java/awt/Transparency.P \
+.deps/java/awt/Window.P .deps/java/awt/color/ColorSpace.P \
+.deps/java/awt/color/ICC_ColorSpace.P \
+.deps/java/awt/color/ICC_Profile.P \
+.deps/java/awt/datatransfer/Clipboard.P \
+.deps/java/awt/event/AWTEventListener.P \
+.deps/java/awt/event/ActionEvent.P \
+.deps/java/awt/event/ActionListener.P \
+.deps/java/awt/event/AdjustmentEvent.P \
+.deps/java/awt/event/AdjustmentListener.P \
+.deps/java/awt/event/ComponentAdapter.P \
+.deps/java/awt/event/ComponentEvent.P \
+.deps/java/awt/event/ComponentListener.P \
+.deps/java/awt/event/ContainerAdapter.P \
+.deps/java/awt/event/ContainerEvent.P \
+.deps/java/awt/event/ContainerListener.P \
+.deps/java/awt/event/FocusAdapter.P .deps/java/awt/event/FocusEvent.P \
+.deps/java/awt/event/FocusListener.P \
+.deps/java/awt/event/HierarchyBoundsAdapter.P \
+.deps/java/awt/event/HierarchyBoundsListener.P \
+.deps/java/awt/event/HierarchyEvent.P \
+.deps/java/awt/event/HierarchyListener.P \
+.deps/java/awt/event/InputEvent.P \
+.deps/java/awt/event/InputMethodEvent.P \
+.deps/java/awt/event/InputMethodListener.P \
+.deps/java/awt/event/InvocationEvent.P .deps/java/awt/event/ItemEvent.P \
+.deps/java/awt/event/ItemListener.P .deps/java/awt/event/KeyAdapter.P \
+.deps/java/awt/event/KeyEvent.P .deps/java/awt/event/KeyListener.P \
+.deps/java/awt/event/MouseAdapter.P .deps/java/awt/event/MouseEvent.P \
+.deps/java/awt/event/MouseListener.P \
+.deps/java/awt/event/MouseMotionAdapter.P \
+.deps/java/awt/event/MouseMotionListener.P \
+.deps/java/awt/event/PaintEvent.P .deps/java/awt/event/TextEvent.P \
+.deps/java/awt/event/TextListener.P \
+.deps/java/awt/event/WindowAdapter.P .deps/java/awt/event/WindowEvent.P \
+.deps/java/awt/event/WindowListener.P \
+.deps/java/awt/geom/AffineTransform.P .deps/java/awt/geom/Dimension2D.P \
+.deps/java/awt/geom/Ellipse2D.P \
+.deps/java/awt/geom/IllegalPathStateException.P \
+.deps/java/awt/geom/NoninvertibleTransformException.P \
+.deps/java/awt/geom/PathIterator.P .deps/java/awt/geom/Point2D.P \
+.deps/java/awt/geom/Rectangle2D.P \
+.deps/java/awt/geom/RectangularShape.P \
+.deps/java/awt/geom/RoundRectangle2D.P \
+.deps/java/awt/image/BufferedImage.P .deps/java/awt/image/ColorModel.P \
+.deps/java/awt/image/ComponentColorModel.P \
+.deps/java/awt/image/ComponentSampleModel.P \
+.deps/java/awt/image/DataBuffer.P .deps/java/awt/image/DataBufferByte.P \
+.deps/java/awt/image/DataBufferInt.P \
+.deps/java/awt/image/DataBufferUShort.P \
+.deps/java/awt/image/DirectColorModel.P \
+.deps/java/awt/image/ImageConsumer.P \
+.deps/java/awt/image/ImageObserver.P \
+.deps/java/awt/image/ImageProducer.P \
+.deps/java/awt/image/IndexColorModel.P \
+.deps/java/awt/image/PackedColorModel.P .deps/java/awt/image/Raster.P \
+.deps/java/awt/image/RasterOp.P .deps/java/awt/image/SampleModel.P \
+.deps/java/awt/image/SinglePixelPackedSampleModel.P \
+.deps/java/awt/image/WritableRaster.P .deps/java/awt/peer/ButtonPeer.P \
+.deps/java/awt/peer/CanvasPeer.P \
+.deps/java/awt/peer/CheckboxMenuItemPeer.P \
+.deps/java/awt/peer/CheckboxPeer.P .deps/java/awt/peer/ChoicePeer.P \
+.deps/java/awt/peer/ComponentPeer.P .deps/java/awt/peer/ContainerPeer.P \
+.deps/java/awt/peer/DialogPeer.P .deps/java/awt/peer/FileDialogPeer.P \
+.deps/java/awt/peer/FontPeer.P .deps/java/awt/peer/FramePeer.P \
+.deps/java/awt/peer/LabelPeer.P .deps/java/awt/peer/LightweightPeer.P \
+.deps/java/awt/peer/ListPeer.P .deps/java/awt/peer/MenuBarPeer.P \
+.deps/java/awt/peer/MenuComponentPeer.P \
+.deps/java/awt/peer/MenuItemPeer.P .deps/java/awt/peer/MenuPeer.P \
+.deps/java/awt/peer/PanelPeer.P .deps/java/awt/peer/PopupMenuPeer.P \
+.deps/java/awt/peer/ScrollPanePeer.P \
+.deps/java/awt/peer/ScrollbarPeer.P .deps/java/awt/peer/TextAreaPeer.P \
+.deps/java/awt/peer/TextComponentPeer.P \
+.deps/java/awt/peer/TextFieldPeer.P .deps/java/awt/peer/WindowPeer.P \
+.deps/java/beans/BeanDescriptor.P .deps/java/beans/BeanInfo.P \
+.deps/java/beans/Beans.P .deps/java/beans/Customizer.P \
+.deps/java/beans/DesignMode.P .deps/java/beans/EventSetDescriptor.P \
+.deps/java/beans/FeatureDescriptor.P \
+.deps/java/beans/IndexedPropertyDescriptor.P \
+.deps/java/beans/IntrospectionException.P \
+.deps/java/beans/Introspector.P .deps/java/beans/MethodDescriptor.P \
+.deps/java/beans/ParameterDescriptor.P \
+.deps/java/beans/PropertyChangeEvent.P \
+.deps/java/beans/PropertyChangeListener.P \
+.deps/java/beans/PropertyChangeSupport.P \
+.deps/java/beans/PropertyDescriptor.P .deps/java/beans/PropertyEditor.P \
+.deps/java/beans/PropertyEditorManager.P \
+.deps/java/beans/PropertyEditorSupport.P \
+.deps/java/beans/PropertyVetoException.P \
+.deps/java/beans/SimpleBeanInfo.P \
+.deps/java/beans/VetoableChangeListener.P \
+.deps/java/beans/VetoableChangeSupport.P .deps/java/beans/Visibility.P \
+.deps/java/beans/beancontext/BeanContext.P \
+.deps/java/beans/beancontext/BeanContextChild.P \
+.deps/java/beans/beancontext/BeanContextChildComponentProxy.P \
+.deps/java/beans/beancontext/BeanContextChildSupport.P \
+.deps/java/beans/beancontext/BeanContextContainerProxy.P \
+.deps/java/beans/beancontext/BeanContextEvent.P \
+.deps/java/beans/beancontext/BeanContextMembershipEvent.P \
+.deps/java/beans/beancontext/BeanContextMembershipListener.P \
+.deps/java/beans/beancontext/BeanContextProxy.P \
+.deps/java/beans/beancontext/BeanContextServiceAvailableEvent.P \
+.deps/java/beans/beancontext/BeanContextServiceProvider.P \
+.deps/java/beans/beancontext/BeanContextServiceProviderBeanInfo.P \
+.deps/java/beans/beancontext/BeanContextServiceRevokedEvent.P \
+.deps/java/beans/beancontext/BeanContextServiceRevokedListener.P \
+.deps/java/beans/beancontext/BeanContextServices.P \
+.deps/java/beans/beancontext/BeanContextServicesListener.P \
+.deps/java/io/BlockDataException.P .deps/java/io/BufferedInputStream.P \
+.deps/java/io/BufferedOutputStream.P .deps/java/io/BufferedReader.P \
+.deps/java/io/BufferedWriter.P .deps/java/io/ByteArrayInputStream.P \
+.deps/java/io/ByteArrayOutputStream.P .deps/java/io/CharArrayReader.P \
+.deps/java/io/CharArrayWriter.P .deps/java/io/CharConversionException.P \
+.deps/java/io/DataInput.P .deps/java/io/DataInputStream.P \
+.deps/java/io/DataOutput.P .deps/java/io/DataOutputStream.P \
+.deps/java/io/EOFException.P .deps/java/io/Externalizable.P \
+.deps/java/io/File.P .deps/java/io/FileDescriptor.P \
+.deps/java/io/FileFilter.P .deps/java/io/FileInputStream.P \
+.deps/java/io/FileNotFoundException.P .deps/java/io/FileOutputStream.P \
+.deps/java/io/FilePermission.P .deps/java/io/FileReader.P \
+.deps/java/io/FileWriter.P .deps/java/io/FilenameFilter.P \
+.deps/java/io/FilterInputStream.P .deps/java/io/FilterOutputStream.P \
+.deps/java/io/FilterReader.P .deps/java/io/FilterWriter.P \
+.deps/java/io/IOException.P .deps/java/io/InputStream.P \
+.deps/java/io/InputStreamReader.P \
+.deps/java/io/InterruptedIOException.P \
+.deps/java/io/InvalidClassException.P \
+.deps/java/io/InvalidObjectException.P \
+.deps/java/io/LineNumberInputStream.P .deps/java/io/LineNumberReader.P \
+.deps/java/io/NotActiveException.P \
+.deps/java/io/NotSerializableException.P .deps/java/io/ObjectInput.P \
+.deps/java/io/ObjectInputStream.P .deps/java/io/ObjectInputValidation.P \
+.deps/java/io/ObjectOutput.P .deps/java/io/ObjectOutputStream.P \
+.deps/java/io/ObjectStreamClass.P .deps/java/io/ObjectStreamConstants.P \
+.deps/java/io/ObjectStreamException.P .deps/java/io/ObjectStreamField.P \
+.deps/java/io/OptionalDataException.P .deps/java/io/OutputStream.P \
+.deps/java/io/OutputStreamWriter.P .deps/java/io/PipedInputStream.P \
+.deps/java/io/PipedOutputStream.P .deps/java/io/PipedReader.P \
+.deps/java/io/PipedWriter.P .deps/java/io/PrintStream.P \
+.deps/java/io/PrintWriter.P .deps/java/io/PushbackInputStream.P \
+.deps/java/io/PushbackReader.P .deps/java/io/RandomAccessFile.P \
+.deps/java/io/Reader.P .deps/java/io/SequenceInputStream.P \
+.deps/java/io/Serializable.P .deps/java/io/SerializablePermission.P \
+.deps/java/io/StreamCorruptedException.P \
+.deps/java/io/StreamTokenizer.P .deps/java/io/StringBufferInputStream.P \
+.deps/java/io/StringReader.P .deps/java/io/StringWriter.P \
+.deps/java/io/SyncFailedException.P \
+.deps/java/io/UTFDataFormatException.P \
+.deps/java/io/UnsupportedEncodingException.P \
+.deps/java/io/WriteAbortedException.P .deps/java/io/Writer.P \
+.deps/java/io/natFile.P .deps/java/io/natFileDescriptor.P \
+.deps/java/io/natObjectInputStream.P \
+.deps/java/io/natObjectOutputStream.P \
+.deps/java/lang/AbstractMethodError.P \
+.deps/java/lang/ArithmeticException.P \
+.deps/java/lang/ArrayIndexOutOfBoundsException.P \
+.deps/java/lang/ArrayStoreException.P .deps/java/lang/Boolean.P \
+.deps/java/lang/Byte.P .deps/java/lang/Character.P \
+.deps/java/lang/Class.P .deps/java/lang/ClassCastException.P \
+.deps/java/lang/ClassCircularityError.P \
+.deps/java/lang/ClassFormatError.P .deps/java/lang/ClassLoader.P \
+.deps/java/lang/ClassNotFoundException.P \
+.deps/java/lang/CloneNotSupportedException.P \
+.deps/java/lang/Cloneable.P .deps/java/lang/Comparable.P \
+.deps/java/lang/Compiler.P .deps/java/lang/ConcreteProcess.P \
+.deps/java/lang/Double.P .deps/java/lang/Error.P \
+.deps/java/lang/Exception.P \
+.deps/java/lang/ExceptionInInitializerError.P .deps/java/lang/Float.P \
+.deps/java/lang/IllegalAccessError.P \
+.deps/java/lang/IllegalAccessException.P \
+.deps/java/lang/IllegalArgumentException.P \
+.deps/java/lang/IllegalMonitorStateException.P \
+.deps/java/lang/IllegalStateException.P \
+.deps/java/lang/IllegalThreadStateException.P \
+.deps/java/lang/IncompatibleClassChangeError.P \
+.deps/java/lang/IndexOutOfBoundsException.P \
+.deps/java/lang/InstantiationError.P \
+.deps/java/lang/InstantiationException.P .deps/java/lang/Integer.P \
+.deps/java/lang/InternalError.P .deps/java/lang/InterruptedException.P \
+.deps/java/lang/LinkageError.P .deps/java/lang/Long.P \
+.deps/java/lang/Math.P .deps/java/lang/NegativeArraySizeException.P \
+.deps/java/lang/NoClassDefFoundError.P \
+.deps/java/lang/NoSuchFieldError.P \
+.deps/java/lang/NoSuchFieldException.P \
+.deps/java/lang/NoSuchMethodError.P \
+.deps/java/lang/NoSuchMethodException.P \
+.deps/java/lang/NullPointerException.P .deps/java/lang/Number.P \
+.deps/java/lang/NumberFormatException.P .deps/java/lang/Object.P \
+.deps/java/lang/OutOfMemoryError.P .deps/java/lang/Process.P \
+.deps/java/lang/Runnable.P .deps/java/lang/Runtime.P \
+.deps/java/lang/RuntimeException.P .deps/java/lang/RuntimePermission.P \
+.deps/java/lang/SecurityException.P .deps/java/lang/SecurityManager.P \
+.deps/java/lang/Short.P .deps/java/lang/StackOverflowError.P \
+.deps/java/lang/String.P .deps/java/lang/StringBuffer.P \
+.deps/java/lang/StringIndexOutOfBoundsException.P \
+.deps/java/lang/System.P .deps/java/lang/Thread.P \
+.deps/java/lang/ThreadDeath.P .deps/java/lang/ThreadGroup.P \
+.deps/java/lang/Throwable.P .deps/java/lang/UnknownError.P \
+.deps/java/lang/UnsatisfiedLinkError.P \
+.deps/java/lang/UnsupportedOperationException.P \
+.deps/java/lang/VerifyError.P .deps/java/lang/VirtualMachineError.P \
+.deps/java/lang/Void.P .deps/java/lang/dtoa.P .deps/java/lang/e_acos.P \
+.deps/java/lang/e_asin.P .deps/java/lang/e_atan2.P \
+.deps/java/lang/e_exp.P .deps/java/lang/e_fmod.P \
+.deps/java/lang/e_log.P .deps/java/lang/e_pow.P \
+.deps/java/lang/e_rem_pio2.P .deps/java/lang/e_remainder.P \
+.deps/java/lang/e_scalb.P .deps/java/lang/e_sqrt.P \
+.deps/java/lang/k_cos.P .deps/java/lang/k_rem_pio2.P \
+.deps/java/lang/k_sin.P .deps/java/lang/k_tan.P .deps/java/lang/mprec.P \
+.deps/java/lang/natCharacter.P .deps/java/lang/natClass.P \
+.deps/java/lang/natClassLoader.P .deps/java/lang/natConcreteProcess.P \
+.deps/java/lang/natDouble.P .deps/java/lang/natFloat.P \
+.deps/java/lang/natMath.P .deps/java/lang/natObject.P \
+.deps/java/lang/natRuntime.P .deps/java/lang/natString.P \
+.deps/java/lang/natSystem.P .deps/java/lang/natThread.P \
+.deps/java/lang/natThrowable.P .deps/java/lang/ref/PhantomReference.P \
+.deps/java/lang/ref/Reference.P .deps/java/lang/ref/ReferenceQueue.P \
+.deps/java/lang/ref/SoftReference.P .deps/java/lang/ref/WeakReference.P \
+.deps/java/lang/reflect/AccessibleObject.P \
+.deps/java/lang/reflect/Array.P .deps/java/lang/reflect/Constructor.P \
+.deps/java/lang/reflect/Field.P \
+.deps/java/lang/reflect/InvocationTargetException.P \
+.deps/java/lang/reflect/Member.P .deps/java/lang/reflect/Method.P \
+.deps/java/lang/reflect/Modifier.P \
+.deps/java/lang/reflect/ReflectPermission.P \
+.deps/java/lang/reflect/natArray.P \
+.deps/java/lang/reflect/natConstructor.P \
+.deps/java/lang/reflect/natField.P .deps/java/lang/reflect/natMethod.P \
+.deps/java/lang/s_atan.P .deps/java/lang/s_ceil.P \
+.deps/java/lang/s_copysign.P .deps/java/lang/s_cos.P \
+.deps/java/lang/s_fabs.P .deps/java/lang/s_floor.P \
+.deps/java/lang/s_rint.P .deps/java/lang/s_scalbn.P \
+.deps/java/lang/s_sin.P .deps/java/lang/s_tan.P \
+.deps/java/lang/sf_rint.P .deps/java/lang/strtod.P \
+.deps/java/lang/w_acos.P .deps/java/lang/w_asin.P \
+.deps/java/lang/w_atan2.P .deps/java/lang/w_exp.P \
+.deps/java/lang/w_fmod.P .deps/java/lang/w_log.P \
+.deps/java/lang/w_pow.P .deps/java/lang/w_remainder.P \
+.deps/java/lang/w_sqrt.P .deps/java/math/BigDecimal.P \
+.deps/java/math/BigInteger.P .deps/java/net/BindException.P \
+.deps/java/net/ConnectException.P .deps/java/net/ContentHandler.P \
+.deps/java/net/ContentHandlerFactory.P .deps/java/net/DatagramPacket.P \
+.deps/java/net/DatagramSocket.P .deps/java/net/DatagramSocketImpl.P \
+.deps/java/net/FileNameMap.P .deps/java/net/HttpURLConnection.P \
+.deps/java/net/InetAddress.P .deps/java/net/JarURLConnection.P \
+.deps/java/net/MalformedURLException.P .deps/java/net/MulticastSocket.P \
+.deps/java/net/NoRouteToHostException.P \
+.deps/java/net/PlainDatagramSocketImpl.P \
+.deps/java/net/PlainSocketImpl.P .deps/java/net/ProtocolException.P \
+.deps/java/net/ServerSocket.P .deps/java/net/Socket.P \
+.deps/java/net/SocketException.P .deps/java/net/SocketImpl.P \
+.deps/java/net/SocketImplFactory.P .deps/java/net/SocketOptions.P \
+.deps/java/net/URL.P .deps/java/net/URLClassLoader.P \
+.deps/java/net/URLConnection.P .deps/java/net/URLDecoder.P \
+.deps/java/net/URLEncoder.P .deps/java/net/URLStreamHandler.P \
+.deps/java/net/URLStreamHandlerFactory.P \
+.deps/java/net/UnknownHostException.P \
+.deps/java/net/UnknownServiceException.P \
+.deps/java/net/natInetAddress.P \
+.deps/java/net/natPlainDatagramSocketImpl.P \
+.deps/java/net/natPlainSocketImpl.P \
+.deps/java/security/AlgorithmParameterGeneratorSpi.P \
+.deps/java/security/BasicPermission.P \
+.deps/java/security/DigestException.P \
+.deps/java/security/DigestOutputStream.P \
+.deps/java/security/GeneralSecurityException.P \
+.deps/java/security/Guard.P \
+.deps/java/security/InvalidAlgorithmParameterException.P \
+.deps/java/security/InvalidKeyException.P \
+.deps/java/security/InvalidParameterException.P \
+.deps/java/security/Key.P .deps/java/security/KeyException.P \
+.deps/java/security/KeyPair.P .deps/java/security/KeyPairGenerator.P \
+.deps/java/security/KeyPairGeneratorSpi.P \
+.deps/java/security/MessageDigest.P \
+.deps/java/security/NoSuchAlgorithmException.P \
+.deps/java/security/NoSuchProviderException.P \
+.deps/java/security/Permission.P \
+.deps/java/security/PermissionCollection.P \
+.deps/java/security/Principal.P .deps/java/security/PrivateKey.P \
+.deps/java/security/Provider.P .deps/java/security/PublicKey.P \
+.deps/java/security/SecureClassLoader.P \
+.deps/java/security/SecureRandom.P .deps/java/security/Security.P \
+.deps/java/security/Signature.P \
+.deps/java/security/SignatureException.P .deps/java/security/cert/CRL.P \
+.deps/java/security/cert/CRLException.P \
+.deps/java/security/cert/Certificate.P \
+.deps/java/security/cert/CertificateEncodingException.P \
+.deps/java/security/cert/CertificateException.P \
+.deps/java/security/cert/CertificateExpiredException.P \
+.deps/java/security/cert/CertificateFactory.P \
+.deps/java/security/cert/CertificateFactorySpi.P \
+.deps/java/security/cert/CertificateNotYetValidException.P \
+.deps/java/security/cert/CertificateParsingException.P \
+.deps/java/security/cert/X509CRL.P \
+.deps/java/security/cert/X509CRLEntry.P \
+.deps/java/security/cert/X509Certificate.P \
+.deps/java/security/cert/X509Extension.P \
+.deps/java/security/interfaces/DSAKey.P \
+.deps/java/security/interfaces/DSAParams.P \
+.deps/java/security/interfaces/DSAPrivateKey.P \
+.deps/java/security/interfaces/DSAPublicKey.P \
+.deps/java/security/interfaces/RSAPrivateCrtKey.P \
+.deps/java/security/interfaces/RSAPrivateKey.P \
+.deps/java/security/interfaces/RSAPublicKey.P \
+.deps/java/security/spec/AlgorithmParameterSpec.P \
+.deps/java/security/spec/InvalidKeySpecException.P \
+.deps/java/security/spec/InvalidParameterSpecException.P \
+.deps/java/security/spec/KeySpec.P \
+.deps/java/security/spec/RSAPrivateCrtKeySpec.P \
+.deps/java/security/spec/RSAPrivateKeySpec.P \
+.deps/java/security/spec/RSAPublicKeySpec.P .deps/java/sql/Array.P \
+.deps/java/sql/BatchUpdateException.P .deps/java/sql/Blob.P \
+.deps/java/sql/CallableStatement.P .deps/java/sql/Clob.P \
+.deps/java/sql/Connection.P .deps/java/sql/DataTruncation.P \
+.deps/java/sql/DatabaseMetaData.P .deps/java/sql/Date.P \
+.deps/java/sql/Driver.P .deps/java/sql/DriverManager.P \
+.deps/java/sql/DriverPropertyInfo.P .deps/java/sql/PreparedStatement.P \
+.deps/java/sql/Ref.P .deps/java/sql/ResultSet.P \
+.deps/java/sql/ResultSetMetaData.P .deps/java/sql/SQLData.P \
+.deps/java/sql/SQLException.P .deps/java/sql/SQLInput.P \
+.deps/java/sql/SQLOutput.P .deps/java/sql/SQLWarning.P \
+.deps/java/sql/Statement.P .deps/java/sql/Struct.P \
+.deps/java/sql/Time.P .deps/java/sql/Timestamp.P .deps/java/sql/Types.P \
+.deps/java/text/BreakIterator.P .deps/java/text/CharacterIterator.P \
+.deps/java/text/ChoiceFormat.P \
+.deps/java/text/CollationElementIterator.P \
+.deps/java/text/CollationKey.P .deps/java/text/Collator.P \
+.deps/java/text/DateFormat.P .deps/java/text/DateFormatSymbols.P \
+.deps/java/text/DecimalFormat.P .deps/java/text/DecimalFormatSymbols.P \
+.deps/java/text/FieldPosition.P .deps/java/text/Format.P \
+.deps/java/text/MessageFormat.P .deps/java/text/NumberFormat.P \
+.deps/java/text/ParseException.P .deps/java/text/ParsePosition.P \
+.deps/java/text/RuleBasedCollator.P .deps/java/text/SimpleDateFormat.P \
+.deps/java/text/StringCharacterIterator.P .deps/java/text/natCollator.P \
+.deps/java/util/AbstractCollection.P .deps/java/util/AbstractList.P \
+.deps/java/util/AbstractMap.P .deps/java/util/AbstractSequentialList.P \
+.deps/java/util/AbstractSet.P .deps/java/util/ArrayList.P \
+.deps/java/util/Arrays.P .deps/java/util/BasicMapEntry.P \
+.deps/java/util/BitSet.P .deps/java/util/Calendar.P \
+.deps/java/util/Collection.P .deps/java/util/Collections.P \
+.deps/java/util/Comparator.P \
+.deps/java/util/ConcurrentModificationException.P \
+.deps/java/util/Date.P .deps/java/util/Dictionary.P \
+.deps/java/util/EmptyStackException.P .deps/java/util/Enumeration.P \
+.deps/java/util/EventListener.P .deps/java/util/EventObject.P \
+.deps/java/util/GregorianCalendar.P .deps/java/util/HashMap.P \
+.deps/java/util/HashSet.P .deps/java/util/Hashtable.P \
+.deps/java/util/Iterator.P .deps/java/util/LinkedList.P \
+.deps/java/util/List.P .deps/java/util/ListIterator.P \
+.deps/java/util/ListResourceBundle.P .deps/java/util/Locale.P \
+.deps/java/util/Map.P .deps/java/util/MissingResourceException.P \
+.deps/java/util/NoSuchElementException.P .deps/java/util/Observable.P \
+.deps/java/util/Observer.P .deps/java/util/Properties.P \
+.deps/java/util/PropertyPermission.P \
+.deps/java/util/PropertyResourceBundle.P .deps/java/util/Random.P \
+.deps/java/util/ResourceBundle.P .deps/java/util/Set.P \
+.deps/java/util/SimpleTimeZone.P .deps/java/util/SortedMap.P \
+.deps/java/util/SortedSet.P .deps/java/util/Stack.P \
+.deps/java/util/StringTokenizer.P .deps/java/util/TimeZone.P \
+.deps/java/util/Timer.P .deps/java/util/TimerTask.P \
+.deps/java/util/TooManyListenersException.P .deps/java/util/Vector.P \
+.deps/java/util/jar/Attributes.P .deps/java/util/jar/JarEntry.P \
+.deps/java/util/jar/JarException.P .deps/java/util/jar/JarFile.P \
+.deps/java/util/jar/JarInputStream.P \
+.deps/java/util/jar/JarOutputStream.P .deps/java/util/jar/Manifest.P \
+.deps/java/util/natGregorianCalendar.P .deps/java/util/zip/Adler32.P \
+.deps/java/util/zip/CRC32.P .deps/java/util/zip/CheckedInputStream.P \
+.deps/java/util/zip/CheckedOutputStream.P \
+.deps/java/util/zip/Checksum.P \
+.deps/java/util/zip/DataFormatException.P \
+.deps/java/util/zip/Deflater.P \
+.deps/java/util/zip/DeflaterOutputStream.P \
+.deps/java/util/zip/GZIPInputStream.P \
+.deps/java/util/zip/GZIPOutputStream.P .deps/java/util/zip/Inflater.P \
+.deps/java/util/zip/InflaterInputStream.P \
+.deps/java/util/zip/ZipConstants.P .deps/java/util/zip/ZipEntry.P \
+.deps/java/util/zip/ZipException.P .deps/java/util/zip/ZipFile.P \
+.deps/java/util/zip/ZipInputStream.P \
+.deps/java/util/zip/ZipOutputStream.P .deps/java/util/zip/natDeflater.P \
+.deps/java/util/zip/natInflater.P .deps/jni.P .deps/libgcjdata.P \
+.deps/name-finder.P .deps/no-threads.P .deps/nogc.P \
+.deps/posix-threads.P .deps/posix.P .deps/prims.P .deps/resolve.P
 SOURCES = $(libgcjdata_a_SOURCES) $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(libgcjx_la_SOURCES) $(EXTRA_libgcjx_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
 OBJECTS = $(libgcjdata_a_OBJECTS) $(libgcj_la_OBJECTS) $(libgcjx_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(gen_from_JIS_OBJECTS)
 
@@ -1226,7 +1733,7 @@ all: all-redirect
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -1274,9 +1781,6 @@ uninstall-toolexeclibLIBRARIES:
 	  rm -f $(DESTDIR)$(toolexeclibdir)/$$p; \
 	done
 
-.c.o:
-	$(COMPILE) -c $<
-
 # FIXME: We should only use cygpath when building on Windows,
 # and only if it is available.
 .c.obj:
@@ -1298,9 +1802,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 maintainer-clean-compile:
-
-.c.lo:
-	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
 
 .s.lo:
 	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
@@ -1590,10 +2091,15 @@ distdir: $(DISTFILES)
 	-rm -rf $(distdir)
 	mkdir $(distdir)
 	-chmod 777 $(distdir)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --foreign Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -1610,6 +2116,57 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
+
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
+
+%.o: %.cc
+	@echo '$(CXXCOMPILE) -c $<'; \
+	$(CXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.cc
+	@echo '$(LTCXXCOMPILE) -c $<'; \
+	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
 info-am:
 info: info-recursive
 dvi-am:
@@ -1665,21 +2222,22 @@ maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-toolexeclibLIBRARIES mostlyclean-compile \
 		mostlyclean-libtool mostlyclean-toolexeclibLTLIBRARIES \
 		mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
-		mostlyclean-tags mostlyclean-generic
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
 clean-am:  clean-toolexeclibLIBRARIES clean-compile clean-libtool \
 		clean-toolexeclibLTLIBRARIES clean-binPROGRAMS \
-		clean-noinstPROGRAMS clean-tags clean-generic \
-		mostlyclean-am clean-local
+		clean-noinstPROGRAMS clean-tags clean-depend \
+		clean-generic mostlyclean-am clean-local
 
 clean: clean-recursive
 
 distclean-am:  distclean-toolexeclibLIBRARIES distclean-compile \
 		distclean-libtool distclean-toolexeclibLTLIBRARIES \
 		distclean-binPROGRAMS distclean-noinstPROGRAMS \
-		distclean-tags distclean-generic clean-am
+		distclean-tags distclean-depend distclean-generic \
+		clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
@@ -1690,7 +2248,8 @@ maintainer-clean-am:  maintainer-clean-toolexeclibLIBRARIES \
 		maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-binPROGRAMS \
 		maintainer-clean-noinstPROGRAMS maintainer-clean-tags \
-		maintainer-clean-generic distclean-am
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -1717,11 +2276,13 @@ uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
 all-recursive check-recursive installcheck-recursive info-recursive \
 dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
 maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
-distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
-dvi-am dvi check check-am installcheck-am installcheck install-info-am \
-install-info install-exec-am install-exec install-data-local \
-install-data-am install-data install-am install uninstall-am uninstall \
-all-redirect all-am all installdirs-am installdirs mostlyclean-generic \
+distclean-tags clean-tags maintainer-clean-tags distdir \
+mostlyclean-depend distclean-depend clean-depend \
+maintainer-clean-depend info-am info dvi-am dvi check check-am \
+installcheck-am installcheck install-info-am install-info \
+install-exec-am install-exec install-data-local install-data-am \
+install-data install-am install uninstall-am uninstall all-redirect \
+all-am all installdirs-am installdirs mostlyclean-generic \
 distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
@@ -1772,7 +2333,7 @@ clean-local:
 
 $(nat_files) $(x_nat_files): %.lo: %.cc
 	@echo '$(LTCXXCOMPILE) -c -o $@ $<'; \
-	$(LTCXXCOMPILE) -M -MF .deps/$(*F).pp -c -o $@ $<
+	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c -o $@ $<
 	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
 	  < .deps/$(*F).pp > .deps/$(*F).P; \
 	tr ' ' '\012' < .deps/$(*F).pp \

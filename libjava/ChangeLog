@@ -1,3 +1,8 @@
+2001-01-11  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.am: Re-enable dependencies.
+	* Makefile.in: Rebuilt.
+
 2001-01-10  Warren Levy  <warrenl@redhat.com>
 
 	* java/math/BigDecimal.java (divide): Fixed comment.
