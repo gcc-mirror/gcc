@@ -1,5 +1,5 @@
 /* NetBSD/arm a.out version.
-   Copyright (C) 1993, 1994, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1997, 1998, 2003 Free Software Foundation, Inc.
    Contributed by Mark Brinicombe (amb@physig.ph.kcl.ac.uk)
 
 This file is part of GNU CC.
@@ -130,7 +130,7 @@ Boston, MA 02111-1307, USA.  */
    This has several side effects that should be considered.
    1. Structures will only be aligned to the size of the largest member.
       i.e. structures containing only bytes will be byte aligned.
-           structures containing shorts will be half word alinged.
+           structures containing shorts will be half word aligned.
            structures containing ints will be word aligned.
 
       This means structures should be padded to a word boundary if

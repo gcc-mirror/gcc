@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, NetBSD/arm ELF version.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
 This file is part of GNU CC.
@@ -127,7 +127,7 @@ Boston, MA 02111-1307, USA.  */
    This has several side effects that should be considered.
    1. Structures will only be aligned to the size of the largest member.
       i.e. structures containing only bytes will be byte aligned.
-           structures containing shorts will be half word alinged.          
+           structures containing shorts will be half word aligned.          
            structures containing ints will be word aligned.                 
   
       This means structures should be padded to a word boundary if

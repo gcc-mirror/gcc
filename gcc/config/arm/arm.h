@@ -707,7 +707,7 @@ extern int arm_structure_size_boundary;
 
 /* This is the value used to initialize arm_structure_size_boundary.  If a
    particular arm target wants to change the default value it should change
-   the definition of this macro, not STRUCTRUE_SIZE_BOUNDARY.  See netbsd.h
+   the definition of this macro, not STRUCTURE_SIZE_BOUNDARY.  See netbsd.h
    for an example of this.  */
 #ifndef DEFAULT_STRUCTURE_SIZE_BOUNDARY
 #define DEFAULT_STRUCTURE_SIZE_BOUNDARY 32
@@ -836,7 +836,7 @@ extern const char * structure_size_string;
   SUBTARGET_CONDITIONAL_REGISTER_USAGE				\
 }
     
-/* These are a couple of extensions to the formats accecpted
+/* These are a couple of extensions to the formats accepted
    by asm_fprintf:
      %@ prints out ASM_COMMENT_START
      %r prints out REGISTER_PREFIX reg_names[arg]  */
@@ -908,7 +908,7 @@ extern const char * structure_size_string;
    should point to a special register that we will make sure is eliminated.
 
    For the Thumb we have another problem.  The TPCS defines the frame pointer
-   as r11, and GCC belives that it is always possible to use the frame pointer
+   as r11, and GCC believes that it is always possible to use the frame pointer
    as base register for addressing purposes.  (See comments in
    find_reloads_address()).  But - the Thumb does not allow high registers,
    including r11, to be used as base address registers.  Hence our problem.
@@ -916,7 +916,7 @@ extern const char * structure_size_string;
    The solution used here, and in the old thumb port is to use r7 instead of
    r11 as the hard frame pointer and to have special code to generate
    backtrace structures on the stack (if required to do so via a command line
-   option) using r11.  This is the only 'user visable' use of r11 as a frame
+   option) using r11.  This is the only 'user visible' use of r11 as a frame
    pointer.  */
 #define ARM_HARD_FRAME_POINTER_REGNUM	11
 #define THUMB_HARD_FRAME_POINTER_REGNUM	 7
@@ -1061,7 +1061,7 @@ enum reg_class
 #define BASE_REG_CLASS   (TARGET_THUMB ? LO_REGS : GENERAL_REGS)
 
 /* For the Thumb the high registers cannot be used as base registers
-   when addressing quanitities in QI or HI mode; if we don't know the
+   when addressing quantities in QI or HI mode; if we don't know the
    mode, then we must be conservative.  After reload we must also be
    conservative, since we can't support SP+reg addressing, and we
    can't fix up any bad substitutions.  */
@@ -1416,7 +1416,7 @@ enum reg_class
    This is added to the cfun structure.  */
 typedef struct machine_function GTY(())
 {
-  /* Additionsl stack adjustment in __builtin_eh_throw.  */
+  /* Additional stack adjustment in __builtin_eh_throw.  */
   rtx eh_epilogue_sp_ofs;
   /* Records if LR has to be saved for far jumps.  */
   int far_jump_used;
@@ -1856,7 +1856,7 @@ typedef struct
 #define SUBTARGET_NAME_ENCODING_LENGTHS
 #endif
 
-/* This is a C fragement for the inside of a switch statement.
+/* This is a C fragment for the inside of a switch statement.
    Each case label should return the number of characters to
    be stripped from the start of a function's name, if that
    name starts with the indicated character.  */

@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM.
-   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
@@ -267,7 +267,7 @@ int    arm_structure_size_boundary = DEFAULT_STRUCTURE_SIZE_BOUNDARY;
 #define FL_THUMB      (1 << 6)        /* Thumb aware */
 #define FL_LDSCHED    (1 << 7)	      /* Load scheduling necessary */
 #define FL_STRONG     (1 << 8)	      /* StrongARM */
-#define FL_ARCH5E     (1 << 9)        /* DSP extenstions to v5 */
+#define FL_ARCH5E     (1 << 9)        /* DSP extensions to v5 */
 #define FL_XSCALE     (1 << 10)	      /* XScale */
 
 /* The bits in this mask specify which
@@ -1818,12 +1818,12 @@ arm_return_in_memory (type)
       return (size < 0 || size > UNITS_PER_WORD);
     }
   
-  /* For the arm-wince targets we choose to be compitable with Microsoft's
+  /* For the arm-wince targets we choose to be compatible with Microsoft's
      ARM and Thumb compilers, which always return aggregates in memory.  */
 #ifndef ARM_WINCE
   /* All structures/unions bigger than one word are returned in memory.
      Also catch the case where int_size_in_bytes returns -1.  In this case
-     the aggregate is either huge or of varaible size, and in either case
+     the aggregate is either huge or of variable size, and in either case
      we will want to return it via memory and not in a register.  */
   if (size < 0 || size > UNITS_PER_WORD)
     return 1;
@@ -2259,7 +2259,7 @@ arm_set_default_type_attributes (type)
 }
 
 /* Return 1 if the operand is a SYMBOL_REF for a function known to be
-   defined within the current compilation unit.  If this caanot be
+   defined within the current compilation unit.  If this cannot be
    determined, then 0 is returned.  */
 
 static int
@@ -3672,7 +3672,7 @@ arm_reload_memory_operand (op, mode)
    memory access (architecture V4).
    MODE is QImode if called when computing constraints, or VOIDmode when
    emitting patterns.  In this latter case we cannot use memory_operand()
-   because it will fail on badly formed MEMs, which is precisly what we are
+   because it will fail on badly formed MEMs, which is precisely what we are
    trying to catch.  */
 
 int
@@ -5214,7 +5214,7 @@ arm_gen_rotated_half_load (memref)
    COND_OR == 0 => (X && Y) 
    COND_OR == 1 => ((! X( || Y)
    COND_OR == 2 => (X || Y) 
-   If we are unable to support a dominance comparsison we return CC mode.  
+   If we are unable to support a dominance comparison we return CC mode.  
    This will then fail to match for the RTL expressions that generate this
    call.  */
 
@@ -6070,7 +6070,7 @@ add_minipool_forward_ref (fix)
      a new entry for it.  If MAX_MP is NULL, the entry will be put on
      the end of the list since the placement is less constrained than
      any existing entry.  Otherwise, we insert the new fix before
-     MAX_MP and, if neceesary, adjust the constraints on the other
+     MAX_MP and, if necessary, adjust the constraints on the other
      entries.  */
   mp = xmalloc (sizeof (* mp));
   mp->fix_size = fix->fix_size;
@@ -8340,7 +8340,7 @@ arm_output_epilogue (really_return)
 
     default:
       if (frame_pointer_needed)
-	/* If we used the frame pointer then the return adddress
+	/* If we used the frame pointer then the return address
 	   will have been loaded off the stack directly into the
 	   PC, so there is no need to issue a MOV instruction
 	   here.  */
@@ -10287,7 +10287,7 @@ thumb_exit (f, reg_containing_return_addr, eh_ofs)
 	number_of_first_bit_set (regs_available_for_popping);
 
       /* Remove this register for the mask of available registers, so that
-         the return address will not be corrupted by futher pops.  */
+         the return address will not be corrupted by further pops.  */
       regs_available_for_popping &= ~(1 << reg_containing_return_addr);
     }
 
@@ -10948,7 +10948,7 @@ thumb_expand_prologue ()
 	    {
 	      rtx spare = gen_rtx (REG, SImode, IP_REGNUM);
 
-	      /* Choose an arbitary, non-argument low register.  */
+	      /* Choose an arbitrary, non-argument low register.  */
 	      reg = gen_rtx (REG, SImode, LAST_LO_REGNUM);
 
 	      /* Save it by copying it into a high, scratch register.  */
