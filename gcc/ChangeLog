@@ -12,6 +12,11 @@ Wed Oct 28 00:10:35 1998  Jeffrey A Law  (law@cygnus.com)
 
 Tue Oct 27 23:32:34 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
+	* reload1.c (verify_initial_offsets): New function.
+	(reload): Call it after reload_as_needed.  Also verify that the frame
+	size stays constant during reload_as_needed.
+	* i386.h (CONST_DOUBLE_OK_FOR_LETTER_P): Undo Jul 26 change.
+
 	* reload.h (struct insn_chain): Add need_operand_change element.
 	* reload1.c (new_insn_chain): Clear it.
 	(calculate_needs_all_insns): Set it; don't overload need_reload.
