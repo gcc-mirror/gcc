@@ -46,12 +46,20 @@ extern const char * const *h8_reg_names;
 	  builtin_define ("__H8300H__");		\
 	  builtin_assert ("cpu=h8300h");		\
 	  builtin_assert ("machine=h8300h");		\
+	  if (TARGET_NORMAL_MODE)			\
+	    {						\
+	      builtin_define ("__NORMAL_MODE__");	\
+	    }						\
 	}						\
       else if (TARGET_H8300S)				\
         {						\
 	  builtin_define ("__H8300S__");		\
 	  builtin_assert ("cpu=h8300s");		\
 	  builtin_assert ("machine=h8300s");		\
+	  if (TARGET_NORMAL_MODE)			\
+	    {						\
+	      builtin_define ("__NORMAL_MODE__");	\
+	    }						\
 	}						\
       else						\
         {						\
@@ -91,6 +99,7 @@ extern int target_flags;
 #define MASK_ADDRESSES		0x00000040
 #define MASK_QUICKCALL		0x00000080
 #define MASK_SLOWBYTE		0x00000100
+#define MASK_NORMAL_MODE 	0x00000200
 #define MASK_RELAX		0x00000400
 #define MASK_RTL_DUMP		0x00000800
 #define MASK_H8300H		0x00001000
@@ -119,6 +128,7 @@ extern int target_flags;
 #define TARGET_H8300	(! TARGET_H8300H && ! TARGET_H8300S)
 #define TARGET_H8300H	(target_flags & MASK_H8300H)
 #define TARGET_H8300S	(target_flags & MASK_H8300S)
+#define TARGET_NORMAL_MODE (target_flags & MASK_NORMAL_MODE)
 
 /* mac register and relevant instructions are available.  */
 #define TARGET_MAC    (target_flags & MASK_MAC)
@@ -152,6 +162,7 @@ extern int target_flags;
   {"relax",		 MASK_RELAX, N_("Enable linker relaxing")},	    \
   {"rtl-dump",		 MASK_RTL_DUMP, NULL},				    \
   {"h",			 MASK_H8300H, N_("Generate H8/300H code")},	    \
+  {"n",                  MASK_NORMAL_MODE, N_("Enable the normal mode")},   \
   {"no-h",		-MASK_H8300H, N_("Do not generate H8/300H code")},  \
   {"align-300",		 MASK_ALIGN_300, N_("Use H8/300 alignment rules")}, \
   { "",			 TARGET_DEFAULT, NULL}}
@@ -159,6 +170,7 @@ extern int target_flags;
 #ifdef IN_LIBGCC2
 #undef TARGET_H8300H
 #undef TARGET_H8300S
+#undef TARGET_NORMAL_MODE
 /* If compiling libgcc2, make these compile time constants based on what
    flags are we actually compiling with.  */
 #ifdef __H8300H__
@@ -170,6 +182,11 @@ extern int target_flags;
 #define TARGET_H8300S	1
 #else
 #define TARGET_H8300S	0
+#endif
+#ifdef __NORMAL_MODE__
+#define TARGET_NORMAL_MODE 1
+#else
+#define TARGET_NORMAL_MODE 0
 #endif
 #endif /* !IN_LIBGCC2 */
 
@@ -974,13 +991,19 @@ struct cum_arg
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode (TARGET_H8300H || TARGET_H8300S ? SImode : HImode)
+#define Pmode								      \
+  ((TARGET_H8300H || TARGET_H8300S) && !TARGET_NORMAL_MODE ? SImode : HImode)
 
 /* ANSI C types.
    We use longs for the H8/300H and the H8S because ints can be 16 or 32.
    GCC requires SIZE_TYPE to be the same size as pointers.  */
-#define SIZE_TYPE (TARGET_H8300 ? "unsigned int" : "long unsigned int")
-#define PTRDIFF_TYPE (TARGET_H8300 ? "int" : "long int")
+#define SIZE_TYPE								\
+  (TARGET_H8300 || TARGET_NORMAL_MODE ? "unsigned int" : "long unsigned int")
+#define PTRDIFF_TYPE						\
+  (TARGET_H8300 || TARGET_NORMAL_MODE ? "int" : "long int")
+
+#define POINTER_SIZE							\
+  ((TARGET_H8300H || TARGET_H8300S) && !TARGET_NORMAL_MODE ? 32 : 16)
 
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
@@ -1068,7 +1091,8 @@ struct cum_arg
 #define IDENT_ASM_OP "\t.ident\n"
 
 /* The assembler op to get a word, 2 bytes for the H8/300, 4 for H8/300H.  */
-#define ASM_WORD_OP	(TARGET_H8300 ? "\t.word\t" : "\t.long\t")
+#define ASM_WORD_OP							\
+  (TARGET_H8300 || TARGET_NORMAL_MODE ? "\t.word\t" : "\t.long\t")
 
 #define TEXT_SECTION_ASM_OP "\t.section .text"
 #define DATA_SECTION_ASM_OP "\t.section .data"
