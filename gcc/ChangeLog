@@ -1,3 +1,29 @@
+2003-12-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/alpha/alpha-modes.def: Fix comment formatting.
+	* config/alpha/alpha.c: Likewise.
+	* config/alpha/alpha.h: Likewise.
+	* config/alpha/elf.h: Likewise.
+	* config/alpha/lib1funcs.asm: Likewise.
+	* config/alpha/openbsd.h: Likewise.
+	* config/alpha/vms-cc.c: Likewise.
+	* config/alpha/vms-crt0-64.c: Likewise.
+	* config/alpha/vms-crt0.c: Likewise.
+	* config/alpha/vms-ld.c: Likewise.
+	* config/alpha/vms-psxcrt0-64.c: Likewise.
+	* config/alpha/vms-psxcrt0.c: Likewise.
+	* config/alpha/vms.h: Likewise.
+	* config/arc/arc.c: Likewise.
+	* config/arm/aof.h: Likewise.
+	* config/arm/arm-modes.def: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/arm/arm.h: Likewise.
+	* config/arm/arm.md: Likewise.
+	* config/arm/linux-elf.h: Likewise.
+	* config/arm/vxworks.h: Likewise.
+	* config/avr/avr.c: Likewise.
+	* config/avr/avr.h: Likewise.
+
 2003-12-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/xtensa/elf.h: Fix comment formatting.

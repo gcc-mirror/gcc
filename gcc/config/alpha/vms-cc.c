@@ -49,22 +49,22 @@ static char *default_defines = (char *) "";
 static char *defines;
 
 /* Translate a Unix syntax directory specification into VMS syntax.
-   If indicators of VMS syntax found, return input string. */
+   If indicators of VMS syntax found, return input string.  */
 static char *to_host_dir_spec (char *);
 
 /* Translate a Unix syntax file specification into VMS syntax.
-   If indicators of VMS syntax found, return input string. */
+   If indicators of VMS syntax found, return input string.  */
 static char *to_host_file_spec (char *);
 
-/* Add a translated arg to the list to be passed to DEC CC */
+/* Add a translated arg to the list to be passed to DEC CC.  */
 static void addarg (const char *);
 
 /* Preprocess the number of args in P_ARGC and contained in ARGV.
-   Look for special flags, etc. that must be handled first. */
+   Look for special flags, etc. that must be handled first.  */
 static void preprocess_args (int *, char **);
 
 /* Process the number of args in P_ARGC and contained in ARGV. Look
-   for special flags, etc. that must be handled for the VMS compiler. */
+   for special flags, etc. that must be handled for the VMS compiler.  */
 static void process_args (int *, char **);
 
 /* Action routine called by decc$to_vms */

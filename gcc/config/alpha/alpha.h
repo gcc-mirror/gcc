@@ -818,7 +818,7 @@ enum reg_class {
 
    'U' is a symbolic operand.
 
-   'W' is a vector zero.   */
+   'W' is a vector zero.  */
 
 #define EXTRA_CONSTRAINT  alpha_extra_constraint
 

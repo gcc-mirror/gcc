@@ -33,7 +33,7 @@ You Lose! This file can only be compiled with DEC C.
 #else
 
 /* This file can only be compiled with DEC C, due to the call to
-   lib$establish. */
+   lib$establish.  */
 
 #include <stdlib.h>
 #include <string.h>

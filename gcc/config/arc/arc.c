@@ -1047,7 +1047,7 @@ arc_compute_function_type (tree decl)
    SIZE is the size needed for local variables.  */
 
 unsigned int
-arc_compute_frame_size (int size /* # of var. bytes allocated. */)
+arc_compute_frame_size (int size /* # of var. bytes allocated.  */)
 {
   int regno;
   unsigned int total_size, var_size, args_size, pretend_size, extra_size;

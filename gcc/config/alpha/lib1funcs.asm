@@ -307,7 +307,7 @@ $46:
    conventions.  */
 #if TYPE == UNSIGNED && SIZE == 32
 	/* This could be avoided by adding some CPP hair to the divide loop.
-	   It is probably not worth the added complexity.    */
+	   It is probably not worth the added complexity.  */
 	addl	RETREG,0,RETREG
 #endif
 

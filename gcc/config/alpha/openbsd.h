@@ -72,7 +72,7 @@ Boston, MA 02111-1307, USA.  */
 /* Assembler format: exception region output.  */
 
 /* All configurations that don't use elf must be explicit about not using
-   dwarf unwind information. */
+   dwarf unwind information.  */
 #ifdef INCOMING_RETURN_ADDR_RTX
 #undef DWARF2_UNWIND_INFO
 #define DWARF2_UNWIND_INFO 0
