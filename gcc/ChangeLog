@@ -1,5 +1,9 @@
 2000-10-23  Diego Novillo  <dnovillo@cygnus.com>
 
+	* config/i386/att.h (ASM_FILE_START): Define.
+
+2000-10-23  Diego Novillo  <dnovillo@cygnus.com>
+
 	* config/i386/linux.h (ASM_FILE_START): Define.
 
 Wed Oct 18 11:16:40 2000  Donald Lindsay  <dlindsay@cygnus.com>
