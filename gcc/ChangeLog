@@ -1,3 +1,7 @@
+2004-07-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* vec.h: Fix the example use.
+
 2004-07-06  Richard Henderson  <rth@redhat.com>
 
 	* langhooks-def.h (LANG_HOOKS_GIMPLE_BEFORE_INLINING): Remove.

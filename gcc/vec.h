@@ -85,9 +85,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    struct my_struct *s;
 
-   if (VEC_length(tree,s)) { we have some contents }
-   VEC_safe_push(tree,s,decl); // append some decl onto the end
-   for (ix = 0; (t = VEC_iterate(tree,s,ix)); ix++)
+   if (VEC_length(tree,s->v)) { we have some contents }
+   VEC_safe_push(tree,s->v,decl); // append some decl onto the end
+   for (ix = 0; (t = VEC_iterate(tree,s->v,ix)); ix++)
      { do something with t }
 
 */
