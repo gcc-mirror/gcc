@@ -1496,7 +1496,8 @@ invalidate (x)
 	remove_from_table (lookup_for_remove (x, hash, GET_MODE (x)), hash);
       else
 	{
-	  int in_table = TEST_HARD_REG_BIT (hard_regs_in_table, regno);
+	  HOST_WIDE_INT in_table
+	    = TEST_HARD_REG_BIT (hard_regs_in_table, regno);
 	  int endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
 	  int tregno, tendregno;
 	  register struct table_elt *p, *next;
