@@ -1,5 +1,18 @@
 1999-08-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (CAN_HAVE_FULL_LANG_DECL_P): New macro.
+	* class.c (build_vtable): Use build_lang_field_decl to build the
+	VAR_DECLs for vtables.
+	(prepare_fresh_vtable): Likewise.
+	* decl.c (duplicate_decls): Only copy DECL_SAVED_TREE if
+	CAN_HAVE_FULL_LANG_DECL_P.
+	(push_using_decl): Use build_lang_decl to build USING_DECLs.
+	(grokdeclarator): Use build_lang_decl to build TYPE_DECLs.
+	* lex.c (retrofit_lang_decl): Check CAN_HAVE_FULL_LANG_DECL_P.
+	(build_lang_field_decl): Likewise.
+	(copy_lang_decl): Use CAN_HAVE_FULLLANG_DECL_P to decide how much
+	to copy.
+	
 	* cp-tree.def (STMT_EXPR): New tree node.
 	* cp-tree.h (STMT_EXPR_STMT): New macro.
 	(store_return_init): Change prototype.

@@ -737,7 +737,8 @@ build_vtable (binfo, type)
       tree offset;
 
       virtuals = copy_list (BINFO_VIRTUALS (binfo));
-      decl = build_lang_decl (VAR_DECL, name, TREE_TYPE (BINFO_VTABLE (binfo)));
+      decl = build_lang_field_decl (VAR_DECL, name, 
+				    TREE_TYPE (BINFO_VTABLE (binfo)));
 
       /* Now do rtti stuff.  */
       offset = get_derived_offset (TYPE_BINFO (type), NULL_TREE);
@@ -747,7 +748,7 @@ build_vtable (binfo, type)
   else
     {
       virtuals = NULL_TREE;
-      decl = build_lang_decl (VAR_DECL, name, void_type_node);
+      decl = build_lang_field_decl (VAR_DECL, name, void_type_node);
     }
 
 #ifdef GATHER_STATISTICS
@@ -897,7 +898,7 @@ prepare_fresh_vtable (binfo, for_type)
       buf2 = new_buf2;
     }
 
-  new_decl = build_lang_decl (VAR_DECL, name, TREE_TYPE (orig_decl));
+  new_decl = build_lang_field_decl (VAR_DECL, name, TREE_TYPE (orig_decl));
   /* Remember which class this vtable is really for.  */
   DECL_CONTEXT (new_decl) = for_type;
 

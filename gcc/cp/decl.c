@@ -3523,7 +3523,8 @@ duplicate_decls (newdecl, olddecl)
 	  DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
 	  DECL_SOURCE_FILE (newdecl) = DECL_SOURCE_FILE (olddecl);
 	  DECL_SOURCE_LINE (newdecl) = DECL_SOURCE_LINE (olddecl);
-	  if (DECL_LANG_SPECIFIC (newdecl)
+	  if (CAN_HAVE_FULL_LANG_DECL_P (newdecl)
+	      && DECL_LANG_SPECIFIC (newdecl)
 	      && DECL_LANG_SPECIFIC (olddecl))
 	    DECL_SAVED_TREE (newdecl) = DECL_SAVED_TREE (olddecl);
 	}
@@ -4474,7 +4475,7 @@ push_using_decl (scope, name)
       break;
   if (decl)
     return NULL_TREE;
-  decl = build_lang_decl (USING_DECL, name, void_type_node);
+  decl = build_lang_field_decl (USING_DECL, name, void_type_node);
   DECL_INITIAL (decl) = scope;
   TREE_CHAIN (decl) = current_binding_level->usings;
   current_binding_level->usings = decl;
@@ -10553,7 +10554,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  if (type != error_mark_node)
 	    push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
 	  if (processing_template_decl)
-	    decl = build_lang_field_decl (TYPE_DECL, declarator, type);
+	    decl = build_lang_decl (TYPE_DECL, declarator, type);
 	  else
 	    decl = build_decl (TYPE_DECL, declarator, type);
 	  if (type != error_mark_node)
