@@ -420,10 +420,19 @@ next_fixed (void)
     }
 
   /* Since this line starts a statement, it cannot be a continuation
-     of a previous statement.  Hence we mostly ignore column 6.  */
+     of a previous statement.  If we see something here besides a
+     space or zero, it must be a bad continuation line.  */
 
-  if (gfc_next_char_literal (0) == '\n')
+  c = gfc_next_char_literal (0);
+  if (c == '\n')
     goto blank_line;
+
+  if (c != ' ' && c!= '0')
+    {
+      gfc_buffer_error (0);
+      gfc_error ("Bad continuation line at %C");
+      return ST_NONE;
+    }
 
   /* Now that we've taken care of the statement label columns, we have
      to make sure that the first nonblank character is not a '!'.  If

@@ -1,5 +1,10 @@
 2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* parse.c (gfc_statement_next_fixed): (Change from Andy's tree)
+	Detect bad continuation line in fixed form sources.
+
+2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	PR fortran/15205
 	* iresolve.c (gfc_resolve_nearest): Add new function.
 	* intrinsic.h: ... declare it here.
