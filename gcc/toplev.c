@@ -138,8 +138,13 @@ void fancy_abort ();
 void abort ();
 #endif
 void set_target_switch ();
-static void print_switch_values ();
 static char *decl_name ();
+
+void print_version ();
+int print_single_switch ();
+void print_switch_values ();
+/* Length of line when printing switch values.  */
+#define MAX_LINE 75
 
 #ifdef __alpha
 extern char *sbrk ();
@@ -515,9 +520,20 @@ int flag_inhibit_size_directive = 0;
 /* -fverbose-asm causes extra commentary information to be produced in
    the generated assembly code (to make it more readable).  This option
    is generally only of use to those who actually need to read the
-   generated assembly code (perhaps while debugging the compiler itself).  */
+   generated assembly code (perhaps while debugging the compiler itself).
+   -fverbose-asm is the default.  -fno-verbose-asm causes the extra information
+   to be omitted and is useful when comparing two assembler files.  */
 
-int flag_verbose_asm = 0;
+int flag_verbose_asm = 1;
+
+/* -dA causes debug commentary information to be produced in
+   the generated assembly code (to make it more readable).  This option
+   is generally only of use to those who actually need to read the
+   generated assembly code (perhaps while debugging the compiler itself).
+   Currently, this switch is only used by dwarfout.c; however, it is intended
+   to be a catchall for printing debug information in the assembler file.  */
+
+int flag_debug_asm = 0;
 
 /* -fgnu-linker specifies use of the GNU linker for initializations.
    (Or, more generally, a linker that handles initializations.)
@@ -2178,6 +2194,20 @@ compile_file (name)
   if (!output_bytecode)
     {
       ASM_FILE_START (asm_out_file);
+
+#ifdef ASM_COMMENT_START
+      if (flag_verbose_asm)
+	{
+	  /* Print the list of options in effect.  */
+	  /* ??? May want to only do this if -fverbose-asm or somesuch.  */
+	  print_version (asm_out_file, ASM_COMMENT_START);
+	  print_switch_values (asm_out_file, 0, MAX_LINE,
+			       ASM_COMMENT_START, " ", "\n");
+	  /* Add a blank line here so it appears in assembler output but not
+	     screen output.  */
+	  fprintf (asm_out_file, "\n");
+	}
+#endif
     }
 
   /* Output something to inform GDB that this compilation was by GCC.  Also
@@ -3571,9 +3601,11 @@ main (argc, argv, envp)
 		  case 'y':
 		    set_yydebug (1);
 		    break;
-
 		  case 'x':
 		    rtl_dump_and_exit = 1;
+		    break;
+		  case 'A':
+		    flag_debug_asm = 1;
 		    break;
 		  }
 	    }
@@ -3960,20 +3992,9 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
      option flags in use.  */
   if (version_flag)
     {
-      fprintf (stderr, "%s version %s", language_string, version_string);
-#ifdef TARGET_VERSION
-      TARGET_VERSION;
-#endif
-#ifdef __GNUC__
-#ifndef __VERSION__
-#define __VERSION__ "[unknown]"
-#endif
-      fprintf (stderr, " compiled by GNU C version %s.\n", __VERSION__);
-#else
-      fprintf (stderr, " compiled by CC.\n");
-#endif
+      print_version (stderr, "");
       if (! quiet_flag)
-	print_switch_values ();
+	print_switch_values (stderr, 0, MAX_LINE, "", " ", "\n");
     }
 
   compile_file (filename);
@@ -4057,51 +4078,122 @@ set_target_switch (name)
     error ("Invalid option `%s'", name);
 }
 
-/* Variable used for communication between the following two routines.  */
+/* Print version information to FILE.
+   Each line begins with INDENT (for the case where FILE is the
+   assembler output file).  */
 
-static int line_position;
-
-/* Print an option value and adjust the position in the line.  */
-
-static void
-print_single_switch (type, name)
-     char *type, *name;
+void
+print_version (file, indent)
+     FILE *file;
+     char *indent;
 {
-  fprintf (stderr, " %s%s", type, name);
+  fprintf (file, "%s%s%s version %s", indent, *indent != 0 ? " " : "",
+	   language_string, version_string);
+  fprintf (file, " (%s)", TARGET_NAME);
+#ifdef __GNUC__
+#ifndef __VERSION__
+#define __VERSION__ "[unknown]"
+#endif
+  fprintf (file, " compiled by GNU C version %s.\n", __VERSION__);
+#else
+  fprintf (file, " compiled by CC.\n");
+#endif
+}
 
-  line_position += strlen (type) + strlen (name) + 1;
+/* Print an option value and return the adjusted position in the line.
+   ??? We don't handle error returns from fprintf (disk full).  */
 
-  if (line_position > 65)
+int
+print_single_switch (file, pos, max, indent, sep, term, type, name)
+     FILE *file;
+     int pos, max;
+     char *indent, *sep, *term, *type, *name;
+{
+  if (pos != 0
+      && pos + strlen (sep) + strlen (type) + strlen (name) > max)
     {
-      fprintf (stderr, "\n\t");
-      line_position = 8;
+      fprintf (file, "%s", term);
+      pos = 0;
     }
+  if (pos == 0)
+    {
+      pos = fprintf (file, "%s", indent);
+    }
+  pos += fprintf (file, "%s%s%s", sep, type, name);
+  return pos;
 }
      
-/* Print default target switches for -version.  */
+/* Print active target switches to FILE.
+   POS is the current cursor position and MAX is the size of a "line".
+   Each line begins with INDENT and ends with TERM.
+   Each switch is separated from the next by SEP.  */
 
-static void
-print_switch_values ()
+void
+print_switch_values (file, pos, max, indent, sep, term)
+     FILE *file;
+     int pos, max;
+     char *indent, *sep, *term;
 {
-  register int j;
+  int j, flags;
+  char **p;
 
-  fprintf (stderr, "enabled:");
-  line_position = 8;
+  /* Print the options as passed.  */
+
+  pos = print_single_switch (file, pos, max, indent, *indent ? " " : "", term,
+			     "options passed: ", "");
+
+  for (p = &save_argv[1]; *p != (char *)0; p++)
+    if (**p == '-')
+      {
+	/* Ignore these.  */
+	if (strcmp (*p, "-quiet") == 0)
+	  continue;
+	if (strcmp (*p, "-version") == 0)
+	  continue;
+	if ((*p)[1] == 'd')
+	  continue;
+
+	pos = print_single_switch (file, pos, max, indent, sep, term, *p, "");
+      }
+  if (pos > 0)
+    fprintf (file, "%s", term);
+
+  /* Print the -f and -m options that have been enabled.
+     We don't handle language specific options but printing argv
+     should suffice.  */
+
+  pos = print_single_switch (file, 0, max, indent, *indent ? " " : "", term,
+			     "options enabled: ", "");
 
   for (j = 0; j < sizeof f_options / sizeof f_options[0]; j++)
     if (*f_options[j].variable == f_options[j].on_value)
-      print_single_switch ("-f", f_options[j].string);
+      pos = print_single_switch (file, pos, max, indent, sep, term,
+				 "-f", f_options[j].string);
 
-  for (j = 0; j < sizeof W_options / sizeof W_options[0]; j++)
-    if (*W_options[j].variable == W_options[j].on_value)
-      print_single_switch ("-W", W_options[j].string);
+  /* Print target specific options.  */
 
+  flags = target_flags;
   for (j = 0; j < sizeof target_switches / sizeof target_switches[0]; j++)
     if (target_switches[j].name[0] != '\0'
 	&& target_switches[j].value > 0
 	&& ((target_switches[j].value & target_flags)
 	    == target_switches[j].value))
-      print_single_switch ("-m", target_switches[j].name);
+      {
+	pos = print_single_switch (file, pos, max, indent, sep, term,
+				   "-m", target_switches[j].name);
+	flags &= ~ target_switches[j].value;
+      }
 
-  fprintf (stderr, "\n");
+#ifdef TARGET_OPTIONS
+  for (j = 0; j < sizeof target_options / sizeof target_options[0]; j++)
+    if (*target_options[j].variable != NULL)
+      {
+	char prefix[256];
+	sprintf (prefix, "-m%s", target_options[j].prefix);
+	pos = print_single_switch (file, pos, max, indent, sep, term,
+				   prefix, *target_options[j].variable);
+      }
+#endif
+
+  fprintf (file, "%s", term);
 }
