@@ -1300,7 +1300,6 @@ iq2000*-*-elf*)
         tm_file="iq2000/iq2000.h"
         tmake_file=iq2000/t-iq2000
         out_file=iq2000/iq2000.c
-        xm_file=iq2000/xm-iq2000.h
         md_file=iq2000/iq2000.md
         ;;
 m32r-*-elf*)
