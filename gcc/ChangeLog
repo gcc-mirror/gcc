@@ -1,3 +1,8 @@
+Thu Jul 27 09:25:17 2000  Akiko Matsushita  <matusita@sra.co.jp>
+
+	* pa/x-pa-hpux: Add -D_HIUX_SOURCE to FIXPROTO_DEFINES
+	for HI-UX/WE2 systems.
+	
 2000-07-24  Bruce Korb  <bkorb@gnu.org>
 
 	* fixincl/fixfixes.c(emit_gnu_type): rewrote to *rely* on GCC
