@@ -1,0 +1,62 @@
+/*! \mainpage
+
+<h2> documentation overview </h2>
+
+<p>
+There are two types of documentation for libstdc++-v3. One is the distribution documentation, which can be read
+<a href="http://gcc.gnu.org/onlinedocs/libstdc++/documentation.html">here</a>.
+</p>
+
+<p>
+The other is the source documentation, of which this is the first page.
+</p>
+
+<h2> generating this file </h2>
+<p>
+This page is automatically generated. The Makefile rule <tt>make
+doxygen</tt> in the libstdc++-v3 build directory generates these pages
+using a tool called, appropriately enough, doxygen. To learn more
+about doxygen, take a look at <a href="http://www.doxygen.org"> the
+doxygen webpage </a>.
+</p>
+
+<p>
+The libstdc++-v3 configuration files needed to generate doxygen output
+are located:
+<p> <tt> docs/doxygen/user.cfg.in</tt> </p>
+<p> <tt> docs/doxygen/maint.cfg.in</tt> </p>
+</p>
+
+<h2> libstdc++-v3 doxygen style guide </h2>
+<p>
+In general, libstdc++-v3 files should be formatted according to the
+GNU C++ Coding Standard rules found in the file <a
+href="http://gcc.gnu.org/onlinedocs/libstdc++/17_intro/C++STYLE">C++STYLE</a>.
+Before any doxygen-specific formatting tweaks are made, please try to
+make sure that the initial formatting is sound.
+</p>
+
+<p>
+The formatting guidelines for using libstdc++-v3 with doxygen are
+still incomplete. There seems to be a marginal preference for the use
+of Java-Doc style formatting, with the idea that the single-line style
+(triple-slash) is the least intrusive mechanism for getting
+libstdc++-v3 documented and cross-referenced while at the same time
+minimizing disruption to the current formatting.
+</p>
+
+<p>
+For the time being, please see <tt>include/bits/char_traits.h</tt>
+which is the test bed for a finished doxygen style guide.
+</p>
+
+*/
+
+
+
+
+
+
+
+
+

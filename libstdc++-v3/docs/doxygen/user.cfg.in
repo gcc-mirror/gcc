@@ -16,13 +16,13 @@
 # The PROJECT_NAME tag is a single word (or a sequence of words surrounded 
 # by quotes) that should identify the project. 
 
-PROJECT_NAME           = "libstdc++"
+PROJECT_NAME           = "libstdc++-v3"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. 
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = 3
+PROJECT_NUMBER         = 
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
@@ -52,7 +52,7 @@ EXTRACT_ALL            = YES
 # If the EXTRACT_PRIVATE tag is set to YES all private members of a class 
 # will be included in the documentation. 
 
-EXTRACT_PRIVATE        = NO
+EXTRACT_PRIVATE        = YES
 
 # If the EXTRACT_STATIC tag is set to YES all static members of a file 
 # will be included in the documentation. 
@@ -142,13 +142,13 @@ STRIP_CODE_COMMENTS    = YES
 # in case and if your file system supports case sensitive file names. Windows 
 # users are adviced to set this option to NO.
 
-CASE_SENSE_NAMES       = YES
+CASE_SENSE_NAMES       = NO
 
 # If the HIDE_SCOPE_NAMES tag is set to NO (the default) then Doxygen 
 # will show members with their full class and namespace scopes in the 
 # documentation. If set to YES the scope will be hidden. 
 
-HIDE_SCOPE_NAMES       = YES
+HIDE_SCOPE_NAMES       = NO
 
 # If the VERBATIM_HEADERS tag is set to YES (the default) then Doxygen 
 # will generate a verbatim copy of the header file for each class for 
@@ -160,7 +160,7 @@ VERBATIM_HEADERS       = NO
 # will put list of the files that are included by a file in the documentation 
 # of that file. 
 
-SHOW_INCLUDE_FILES     = NO
+SHOW_INCLUDE_FILES     = YES
 
 # If the JAVADOC_AUTOBRIEF tag is set to YES then Doxygen 
 # will interpret the first line (until the first dot) of a JavaDoc-style 
@@ -186,14 +186,14 @@ INLINE_INFO            = YES
 # alphabetically by member name. If set to NO the members will appear in 
 # declaration order. 
 
-SORT_MEMBER_DOCS       = NO
+SORT_MEMBER_DOCS       = YES
 
 # If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC 
 # tag is set to YES, then doxygen will reuse the documentation of the first 
 # member in the group (if any) for the other members of the group. By default 
 # all members of a group must be documented explicitly.
 
-#DISTRIBUTE_GROUP_DOC   = NO
+DISTRIBUTE_GROUP_DOC   = NO
 
 # The TAB_SIZE tag can be used to set the number of spaces in a tab. 
 # Doxygen uses this value to replace tabs by spaces in code fragments. 
@@ -270,14 +270,14 @@ WARN_FORMAT            = "$file:$line: $text"
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces. 
 
-INPUT                  = include src
+INPUT                  = docs/doxygen libsupc++ include src
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 
 # and *.h) to filter out the source-files in the directories. If left 
 # blank all files are included. 
 
-FILE_PATTERNS          = *.cc *.h c++config
+FILE_PATTERNS          = *.doxy *.cc *.tcc *.h c++config
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories 
 # should be searched for input files as well. Possible values are YES and NO. 
@@ -288,7 +288,7 @@ RECURSIVE              = YES
 # The EXCLUDE tag can be used to specify files and/or directories that should 
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag. 
-EXCLUDE                = 
+EXCLUDE                = include/c include/c_shadow
 
 # If the value of the INPUT tag contains directories, you can use the 
 # EXCLUDE_PATTERNS tag to specify one or more wildcard patterns to exclude 
@@ -417,7 +417,7 @@ DISABLE_INDEX          = NO
 # JavaScript and frames is required (for instance Netscape 4.0+ 
 # or Internet explorer 4.0+). 
 
-GENERATE_TREEVIEW      = YES
+GENERATE_TREEVIEW      = NO
 
 # If the treeview is enabled (see GENERATE_TREEVIEW) then this tag can be 
 # used to set the initial width (in pixels) of the frame in which the tree 
@@ -737,4 +737,6 @@ EXT_DOC_PATHS          =
 
 
 # End of file
+
+
 
