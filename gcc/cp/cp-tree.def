@@ -195,7 +195,9 @@ DEFTREECODE (UNBOUND_CLASS_TEMPLATE, "unbound_class_template", 't', 0)
 DEFTREECODE (TYPEOF_TYPE, "typeof_type", 't', 0)
 
 /* A using declaration.  DECL_INITIAL contains the specified scope.  
-   This is not an alias, but is later expanded into multiple aliases.  */
+   This is not an alias, but is later expanded into multiple aliases.
+   The decl will have a NULL_TYPE iff the scope is a dependent scope,
+   otherwise it will have a void type. */
 DEFTREECODE (USING_DECL, "using_decl", 'd', 0)
 
 /* A using directive. The operand is USING_STMT_NAMESPACE. */     

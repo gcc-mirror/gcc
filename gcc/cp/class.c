@@ -5457,7 +5457,21 @@ pushclass (tree type)
   pushlevel_class ();
 
   if (type != previous_class_type || current_class_depth > 1)
-    push_class_decls (type);
+    {
+      push_class_decls (type);
+      if (CLASSTYPE_IS_TEMPLATE (type))
+	{
+	  /* If we are entering the scope of a template (not a
+	     specialization), we need to push all the using decls with
+	     dependent scope too.  */
+	  tree fields;
+
+	  for (fields = TYPE_FIELDS (type);
+	       fields; fields = TREE_CHAIN (fields))
+	    if (TREE_CODE (fields) == USING_DECL && !TREE_TYPE (fields))
+	      pushdecl_class_level (fields);
+	}
+    }
   else
     {
       tree item;

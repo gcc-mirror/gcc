@@ -11632,7 +11632,8 @@ grokdeclarator (tree declarator,
 			    inlinep, friendp, raises != NULL_TREE);
 	  }
       }
-    else if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
+    else if (TREE_CODE (type) == FUNCTION_TYPE
+	     || TREE_CODE (type) == METHOD_TYPE)
       {
 	tree original_name;
 	int publicp = 0;

@@ -6093,6 +6093,8 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
     case USING_DECL:
       {
 	r = copy_node (t);
+	/* It is not a dependent using decl any more.  */
+	TREE_TYPE (r) = void_type_node;
 	DECL_INITIAL (r)
 	  = tsubst_copy (DECL_INITIAL (t), args, complain, in_decl);
 	TREE_CHAIN (r) = NULL_TREE;
@@ -6403,15 +6405,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   else
     type = TREE_TYPE (t);
 
-  my_friendly_assert (type != unknown_type_node
-		      || TREE_CODE (t) == USING_DECL, 20030716);
+  my_friendly_assert (type != unknown_type_node, 20030716);
 
   if (type && TREE_CODE (t) != FUNCTION_DECL
       && TREE_CODE (t) != TYPENAME_TYPE
       && TREE_CODE (t) != TEMPLATE_DECL
       && TREE_CODE (t) != IDENTIFIER_NODE
       && TREE_CODE (t) != FUNCTION_TYPE
-      && TREE_CODE (t) != USING_DECL
       && TREE_CODE (t) != METHOD_TYPE)
     type = tsubst (type, args, complain, in_decl);
   if (type == error_mark_node)
@@ -11623,8 +11623,6 @@ type_dependent_expression_p (tree expression)
 
   if (TREE_TYPE (expression) == unknown_type_node)
     {
-      if (TREE_CODE (expression) == USING_DECL)
-	return true;
       if (TREE_CODE (expression) == ADDR_EXPR)
 	return type_dependent_expression_p (TREE_OPERAND (expression, 0));
       if (TREE_CODE (expression) == BASELINK)

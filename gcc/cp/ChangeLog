@@ -1,5 +1,19 @@
 2003-08-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/9447
+	* cp-tree.def (USING_DECL): Document its type.
+	* class.c (pushclass): If we're entering a template, push any
+	dependent using decls it has.
+	* decl2.c (do_class_using_decl): Refactor. Type is NULL iff it is
+	a dependent scope.
+	* pt.c (tsubst_decl) <USING_DECL case>: Set type.
+	(tsubst): Remove USING_DECL checks.
+	(type_dependent_expression_p): Remove USING_DECL case.
+	* semantics.c (finish_member_declaration): A USING_DECL's type
+	indicates whether it is dependent.
+
+2003-08-02  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (pushclass): Remove unneeded parameter.
 	* class.c (pushclass): Remove unneeded MODIFY parm. Adjust.
 	(push_nested_class): Adjust pushclass call.

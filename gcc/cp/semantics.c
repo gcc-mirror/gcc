@@ -2099,8 +2099,7 @@ finish_member_declaration (tree decl)
 					  /*friend_p=*/0);
     }
   /* Enter the DECL into the scope of the class.  */
-  else if ((TREE_CODE (decl) == USING_DECL && !processing_template_decl
-	    && !dependent_type_p (DECL_INITIAL (decl)))
+  else if ((TREE_CODE (decl) == USING_DECL && TREE_TYPE (decl))
 	   || pushdecl_class_level (decl))
     {
       /* All TYPE_DECLs go at the end of TYPE_FIELDS.  Ordinary fields
