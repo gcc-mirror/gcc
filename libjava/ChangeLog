@@ -1,3 +1,10 @@
+2003-11-14  Tom Fitzsimmons  <fitzsim@redhat.com>
+
+	* java/awt/GridBagLayout.java (getLayoutDimensions): Return array of two
+	zero-length int arrays when layoutInfo is null.
+	(getLayoutWeights): Return array of two zero-length double arrays when
+	layoutInfo is null.
+
 2003-11-13  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc (_Jv_JNI_GetStringUTFChars): Pass length of string to
