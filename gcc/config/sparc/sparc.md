@@ -5429,6 +5429,7 @@
   emit_insn (gen_rtx (USE, VOIDmode, static_chain_rtx));
   /* Return, restoring reg window and jumping to goto handler.  */
   emit_insn (gen_goto_handler_and_restore ());
+  emit_barrier ();
   DONE;
 }")
 
@@ -5447,6 +5448,36 @@
   "jmp %%o0+0\;restore"
   [(set_attr "type" "misc")
    (set_attr "length" "2")])
+
+;; Pattern for use after a setjmp to store FP and the return register
+;; into the stack area.
+
+(define_expand "setjmp"
+  [(const_int 0)]
+  ""
+  "
+{
+  if (TARGET_ARCH64)
+    emit_insn (gen_setjmp_64 ());
+  else
+    emit_insn (gen_setjmp_32 ());
+
+  DONE;
+}")
+
+(define_expand "setjmp_32"
+  [(set (mem:SI (plus:SI (reg:SI 14) (const_int 56))) (match_dup 0))
+   (set (mem:SI (plus:SI (reg:SI 14) (const_int 60))) (reg:SI 31))]
+  ""
+  "
+{ operands[0] = frame_pointer_rtx; }")
+
+(define_expand "setjmp_64"
+  [(set (mem:DI (plus:DI (reg:DI 14) (const_int 112))) (match_dup 0))
+   (set (mem:DI (plus:DI (reg:DI 14) (const_int 120))) (reg:DI 31))]
+  ""
+  "
+{ operands[0] = frame_pointer_rtx; }")
 
 ;; Special pattern for the FLUSH instruction.
 
