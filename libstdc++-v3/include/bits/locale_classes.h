@@ -393,7 +393,7 @@ namespace std
 	}
       catch(...)
 	{
-	  delete _M_impl;
+	  _M_impl->_M_remove_reference();
 	  for (size_t __j = 0; __j < __i; ++__j)
 	    delete [] _M_tmp_names[__j];	  
 	  __throw_exception_again;

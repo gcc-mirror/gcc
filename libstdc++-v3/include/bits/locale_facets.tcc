@@ -51,7 +51,15 @@ namespace std
     locale::combine(const locale& __other) const
     {
       _Impl* __tmp = new _Impl(*_M_impl, 1);
-      __tmp->_M_replace_facet(__other._M_impl, &_Facet::id);
+      try
+	{
+	  __tmp->_M_replace_facet(__other._M_impl, &_Facet::id);
+	}
+      catch(...)
+	{
+	  __tmp->_M_remove_reference();
+	  __throw_exception_again;
+	}
       return locale(__tmp);
     }
 

@@ -1,5 +1,15 @@
 2003-09-30  Paolo Carlini  <pcarlini@unitus.it>
 
+	PR libstdc++/12438
+	* include/bits/locale_facets.tcc (locale::combine): Don't
+	leak memory if _M_replace_facet throws.
+	* testsuite/22_locale/locale/cons/12438.cc: New, from the PR.
+
+	* include/bits/locale_classes.h (locale::locale(const locale&,
+	_Facet*)): Tweak, use consistently _M_remove_reference.
+
+2003-09-30  Paolo Carlini  <pcarlini@unitus.it>
+
 	PR libstdc++/12352 (cont)
 	* src/localename.cc (locale::_Impl::_Impl(const char*, size_t)):
 	Don't leak __cloc; don't leak if any of the _M_init_facet(...)
