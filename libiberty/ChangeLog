@@ -1,3 +1,7 @@
+2001-06-18  Richard Henderson  <rth@redhat.com>
+
+	* concat.c: Include <sys/types.h>.
+
 2001-06-11  Loren J. Rittle  <ljrittle@acm.org>
 
 	bootstrap/3106
