@@ -12424,8 +12424,7 @@ rs6000_elf_encode_section_info (decl, first)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       rtx sym_ref = XEXP (DECL_RTL (decl), 0);
-      if ((TREE_ASM_WRITTEN (decl) || ! TREE_PUBLIC (decl))
-          && ! DECL_WEAK (decl))
+      if ((*targetm.binds_local_p) (decl))
 	SYMBOL_REF_FLAG (sym_ref) = 1;
 
       if (DEFAULT_ABI == ABI_AIX)
@@ -13121,8 +13120,7 @@ rs6000_xcoff_encode_section_info (decl, first)
      int first ATTRIBUTE_UNUSED;
 {
   if (TREE_CODE (decl) == FUNCTION_DECL
-      && (TREE_ASM_WRITTEN (decl) || ! TREE_PUBLIC (decl))
-      && ! DECL_WEAK (decl))
+      && (*targetm.binds_local_p) (decl))
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }
 

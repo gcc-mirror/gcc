@@ -1,3 +1,10 @@
+2002-09-14  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_elf_encode_section_info): Use
+	targetm.binds_local_p to set SYMBOL_REF_FLAG.
+	(rs6000_xcoff_encode_section_info): Likewise.
+	* config/rs6000/xcoff.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+
 2002-09-10  Theodore A. Roth  <troth@verinet.com>
 
 	* gcc/config/avr/avr.h: Set default options for C++ for avr.
