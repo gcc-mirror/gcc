@@ -11753,6 +11753,13 @@ ffecom_init_0 ()
   ffecom_tree_blockdata_type
     = build_function_type (void_type_node, NULL_TREE);
 
+  builtin_function ("__builtin_atanf", float_ftype_float,
+		    BUILT_IN_ATANF, BUILT_IN_NORMAL, "atanf", NULL_TREE);
+  builtin_function ("__builtin_atan", double_ftype_double,
+		    BUILT_IN_ATAN, BUILT_IN_NORMAL, "atan", NULL_TREE);
+  builtin_function ("__builtin_atanl", ldouble_ftype_ldouble,
+		    BUILT_IN_ATANL, BUILT_IN_NORMAL, "atanl", NULL_TREE);
+
   builtin_function ("__builtin_atan2f", float_ftype_float_float,
 		    BUILT_IN_ATAN2F, BUILT_IN_NORMAL, "atan2f", NULL_TREE);
   builtin_function ("__builtin_atan2", double_ftype_double_double,
@@ -11815,6 +11822,13 @@ ffecom_init_0 ()
 		    BUILT_IN_SQRT, BUILT_IN_NORMAL, "sqrt", NULL_TREE);
   builtin_function ("__builtin_sqrtl", ldouble_ftype_ldouble,
 		    BUILT_IN_SQRTL, BUILT_IN_NORMAL, "sqrtl", NULL_TREE);
+
+  builtin_function ("__builtin_tanf", float_ftype_float,
+		    BUILT_IN_TANF, BUILT_IN_NORMAL, "tanf", NULL_TREE);
+  builtin_function ("__builtin_tan", double_ftype_double,
+		    BUILT_IN_TAN, BUILT_IN_NORMAL, "tan", NULL_TREE);
+  builtin_function ("__builtin_tanl", ldouble_ftype_ldouble,
+		    BUILT_IN_TANL, BUILT_IN_NORMAL, "tanl", NULL_TREE);
 
   pedantic_lvalues = FALSE;
 
