@@ -163,4 +163,4 @@ the compiler is in the second pass, otherwise it is in the first.
 (This information might help you reduce a test case and/or work around
 a bug in g77 until a fix is available.)
 
-Any questions or comments on these topics, email fortran@gnu.ai.mit.edu.
+Any questions or comments on these topics, email egcs@cygnus.com

@@ -3,6 +3,9 @@ This file documents the installation of the GNU compiler.  Copyright
 may copy, distribute, and modify it freely as long as you preserve this
 copyright notice and permission notice.
 
+Note most of this information is out of date and superceded by the EGCS
+install procedures.  It is provided for historical reference only.
+
 Installing GNU CC
 *****************
 
