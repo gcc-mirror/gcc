@@ -727,8 +727,11 @@ read_include_file (pfile, fd, ihash)
 	 the max size of a file might be bigger than the address
 	 space.  We can't handle a file that large.  (Anyone with
 	 a single source file bigger than 2GB needs to rethink
-	 their coding style.)  */
-      if (st.st_size > SSIZE_MAX)
+	 their coding style.)  Some systems (e.g. AIX 4.1) define
+	 SSIZE_MAX to be much smaller than the actual range of the
+	 type.  Use INTTYPE_MAXIMUM unconditionally to ensure this
+	 does not bite us.  */
+      if (st.st_size > INTTYPE_MAXIMUM (ssize_t))
 	{
 	  cpp_error (pfile, "%s is too large", ihash->name);
 	  goto fail;

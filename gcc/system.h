@@ -250,10 +250,6 @@ extern int errno;
 # define UCHAR_MAX INTTYPE_MAXIMUM (unsigned char)
 #endif
 
-#ifndef SSIZE_MAX
-# define SSIZE_MAX INTTYPE_MAXIMUM (ssize_t)
-#endif
-
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
