@@ -1,3 +1,8 @@
+2001-07-23  Graham Stott  <grahams@redhat.com>
+
+	* cp/class.c (type_requires_array_cookie): Fix use of uninitialised
+	variable has_two_argument_delete_p.
+
 2001-07-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Remove flag_vtable_thunk. It is always on for the 3.0 ABI.
