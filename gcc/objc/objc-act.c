@@ -904,6 +904,11 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 	       && OBJC_TYPE_NAME (rhs) == objc_object_id))
     return 1;
 
+  /* `Class' != `<class> *' && `<class> *' != `Class'!  */
+  else if ((OBJC_TYPE_NAME (lhs) == objc_class_id && TYPED_OBJECT (rhs))
+	   || (OBJC_TYPE_NAME (rhs) == objc_class_id && TYPED_OBJECT (lhs)))
+    return 0;
+
   /* `<class> *' = `<class> *' */
 
   else if (TYPED_OBJECT (lhs) && TYPED_OBJECT (rhs))

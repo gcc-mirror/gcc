@@ -1,3 +1,8 @@
+2004-03-24  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc/objc-act.c (objc_comptypes): Treat comparisons
+	between 'Class' and '<class> *' as explicitly invalid.
+
 2004-03-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/invoke.texi (-frename-registers: Add enabled at -O3.
