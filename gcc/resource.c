@@ -422,6 +422,14 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
       rtx this_jump_insn = insn;
 
       next = NEXT_INSN (insn);
+
+      /* If this instruction can throw an exception, then we don't
+	 know where we might end up next.  That means that we have to
+	 assume that whatever we have already marked as live really is
+	 live.  */
+      if (can_throw (insn))
+	break;
+
       switch (GET_CODE (insn))
 	{
 	case CODE_LABEL:
