@@ -1,5 +1,5 @@
 // Functions for Exception Support for -*- C++ -*-
-// Copyright (C) 1994, 95-97, 1998, 1999 Free Software Foundation
+// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999 Free Software Foundation
 
 // This file is part of GNU CC.
 

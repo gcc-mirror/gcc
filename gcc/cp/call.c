@@ -1,5 +1,6 @@
 /* Functions related to invoking methods and overloaded functions.
-   Copyright (C) 1987, 92-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 

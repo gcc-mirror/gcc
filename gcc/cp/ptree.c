@@ -1,5 +1,6 @@
 /* Prints out trees in human readable form.
-   Copyright (C) 1992, 93-96, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1998,
+   1999 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.

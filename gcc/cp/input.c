@@ -1,5 +1,5 @@
 /* Input handling for G++.
-   Copyright (C) 1992, 93, 94, 95, 96, 97, 98, 99, 2000
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
    Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Enhanced by Michael Tiemann (tiemann@cygnus.com) to better support USE_CPPLIB

@@ -1,7 +1,8 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987,88,90,93,97-8,1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1990, 1993, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
