@@ -8653,7 +8653,7 @@ fold_builtin_fputs (tree arglist, bool ignore, bool unlocked, tree len)
   return build_function_call_expr (fn, arglist);
 }
 
-/* Fold the new_arg's agruments (ARGLIST). Returns true if there was an error
+/* Fold the new_arg's arguments (ARGLIST). Returns true if there was an error
    produced.  False otherwise.  This is done so that we don't output the error
    or warning twice or three times.  */
 bool
@@ -8684,9 +8684,11 @@ fold_builtin_next_arg (tree arglist)
 	arg = TREE_OPERAND (arg, 0);
       if (arg != last_parm)
         {
-	  /* FIXME: Sometimes with the tree optimizaters we can get the not the last argument
-	     even though the user used the last argument.  We just warn and set the arg to be
-	     the last argument so that we will get wrong-code because of it.  */
+	  /* FIXME: Sometimes with the tree optimizers we can get the
+	     not the last argument even though the user used the last
+	     argument.  We just warn and set the arg to be the last
+	     argument so that we will get wrong-code because of
+	     it.  */
 	  arg = last_parm;
 	  warning ("second parameter of %<va_start%> not last named argument");
 	}
