@@ -36,6 +36,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "splay-tree.h"
 #include "ggc.h"
 #include "langhooks.h"
+#include "target.h"
 
 /* The alias sets assigned to MEMs assist the back-end in determining
    which MEMs can alias which other MEMs.  In general, two MEMs in
@@ -2572,12 +2573,12 @@ mark_constant_function ()
   rtx insn;
   int nonlocal_memory_referenced;
 
-  if (TREE_PUBLIC (current_function_decl)
-      || TREE_READONLY (current_function_decl)
+  if (TREE_READONLY (current_function_decl)
       || DECL_IS_PURE (current_function_decl)
       || TREE_THIS_VOLATILE (current_function_decl)
       || TYPE_MODE (TREE_TYPE (current_function_decl)) == VOIDmode
-      || current_function_has_nonlocal_goto)
+      || current_function_has_nonlocal_goto
+      || !(*targetm.binds_local_p) (current_function_decl))
     return;
 
   /* A loop might not return which counts as a side effect.  */

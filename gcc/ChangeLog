@@ -1,3 +1,10 @@
+2002-06-02  Richard Henderson  <rth@redhat.com>
+
+	* alias.c: Include target.h.
+	(mark_constant_function): Use targetm.binds_local_p instead
+	of checking TREE_PUBLIC ourselves.
+	* Makefile.in (alias.o): Add TARGET_H.
+
 2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-lex.c: Update copyright and file description.
