@@ -95,6 +95,4 @@ int main (void)
   return main1 ();
 }
 
-/* These fail to vectorize on targets that don't have or model vector
-   bitwise operations.  */
-/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" {xfail i?86-*-* x86_64-*-* alpha*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { xfail vect_no_bitwise } } } */
