@@ -1,3 +1,8 @@
+2004-10-09  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/17844
+	* gcc.dg/pr17844-1.c: New test.
+
 2004-10-09  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/17906
