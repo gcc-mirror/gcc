@@ -1,3 +1,10 @@
+2002-03-14  Richard Earnshaw  <rearnsha@arm.com>
+	    Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
+
+	PR target/5828
+	* arm.c (arm_output_epilogue): Fix floating-point register save
+	adjustment when using a frame pointer.
+
 2002-03-13  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c: Improve comments.

@@ -7467,8 +7467,9 @@ arm_output_epilogue (really_return)
   int reg;
   unsigned long saved_regs_mask;
   unsigned long func_type;
-  /* If we need this, then it will always be at least this much.  */
-  int floats_offset = 12;
+  /* Floats_offset is the offset from the "virtual" frame.  In an APCS 
+     frame that is $fp + 4 for a non-variadic function.  */
+  int floats_offset = 0;
   rtx operands[3];
   int frame_size = get_frame_size ();
   FILE * f = asm_out_file;
@@ -7505,6 +7506,9 @@ arm_output_epilogue (really_return)
   
   saved_regs_mask = arm_compute_save_reg_mask ();
   
+  /* XXX We should adjust floats_offset for any anonymous args, and then
+     re-adjust vfp_offset below to compensate.  */
+
   /* Compute how far away the floats will be.  */
   for (reg = 0; reg <= LAST_ARM_REGNUM; reg ++)
     if (saved_regs_mask & (1 << reg))
@@ -7512,6 +7516,8 @@ arm_output_epilogue (really_return)
   
   if (frame_pointer_needed)
     {
+      int vfp_offset = 4;
+
       if (arm_fpu_arch == FP_SOFT2)
 	{
 	  for (reg = LAST_ARM_FP_REGNUM; reg >= FIRST_ARM_FP_REGNUM; reg--)
@@ -7519,7 +7525,7 @@ arm_output_epilogue (really_return)
 	      {
 		floats_offset += 12;
 		asm_fprintf (f, "\tldfe\t%r, [%r, #-%d]\n", 
-			     reg, FP_REGNUM, floats_offset);
+			     reg, FP_REGNUM, floats_offset - vfp_offset);
 	      }
 	}
       else
@@ -7536,7 +7542,7 @@ arm_output_epilogue (really_return)
 		  if (start_reg - reg == 3)
 		    {
 		      asm_fprintf (f, "\tlfm\t%r, 4, [%r, #-%d]\n",
-			           reg, FP_REGNUM, floats_offset);
+			           reg, FP_REGNUM, floats_offset - vfp_offset);
 		      start_reg = reg - 1;
 		    }
 		}
@@ -7545,7 +7551,7 @@ arm_output_epilogue (really_return)
 		  if (reg != start_reg)
 		    asm_fprintf (f, "\tlfm\t%r, %d, [%r, #-%d]\n",
 				 reg + 1, start_reg - reg,
-				 FP_REGNUM, floats_offset);
+				 FP_REGNUM, floats_offset - vfp_offset);
 		  start_reg = reg - 1;
 		}
 	    }
@@ -7554,7 +7560,7 @@ arm_output_epilogue (really_return)
 	  if (reg != start_reg)
 	    asm_fprintf (f, "\tlfm\t%r, %d, [%r, #-%d]\n",
 			 reg + 1, start_reg - reg,
-			 FP_REGNUM, floats_offset);
+			 FP_REGNUM, floats_offset - vfp_offset);
 	}
 
       /* saved_regs_mask should contain the IP, which at the time of stack
