@@ -1,3 +1,9 @@
+2004-06-22  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15963
+	* expr.c (check_intrinsic_op): Allow comparison of characters.
+	Make logic easier.
+
 2004-06-26  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	Andrew Vaught  <andyv@firstinter.net>
 
