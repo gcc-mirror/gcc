@@ -1,3 +1,8 @@
+2004-07-07  Richard Henderson  <rth@redhat.com>
+
+	* tree-ssa-dom.c (simplify_switch_and_lookup_avail_expr): Look
+	through any value-preserving cast.
+
 2004-07-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* function.c (assign_parm_find_data_types): Call

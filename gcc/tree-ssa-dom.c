@@ -2460,15 +2460,33 @@ simplify_switch_and_lookup_avail_expr (tree stmt,
 	  def = TREE_OPERAND (def, 1);
 	  if (TREE_CODE (def) == NOP_EXPR)
 	    {
+	      int need_precision;
+	      bool fail;
+
 	      def = TREE_OPERAND (def, 0);
+
+#ifdef ENABLE_CHECKING
+	      /* ??? Why was Jeff testing this?  We are gimple...  */
+	      if (!is_gimple_val (def))
+		abort ();
+#endif
+
 	      to = TREE_TYPE (cond);
 	      ti = TREE_TYPE (def);
 
-	      /* If we have an extension that preserves sign, then we
+	      /* If we have an extension that preserves value, then we
 		 can copy the source value into the switch.  */
-	      if (TYPE_UNSIGNED (to) == TYPE_UNSIGNED (ti)
-		  && TYPE_PRECISION (to) >= TYPE_PRECISION (ti)
-	          && is_gimple_val (def))
+
+	      need_precision = TYPE_PRECISION (ti);
+	      fail = false;
+	      if (TYPE_UNSIGNED (to) && !TYPE_UNSIGNED (ti))
+		fail = true;
+	      else if (!TYPE_UNSIGNED (to) && TYPE_UNSIGNED (ti))
+		need_precision += 1;
+	      if (TYPE_PRECISION (to) < need_precision)
+		fail = true;
+
+	      if (!fail)
 		{
 		  SWITCH_COND (stmt) = def;
 		  ann->modified = 1;
