@@ -686,12 +686,14 @@ eliminate_tail_call (struct tailcall *t)
   bsi_next (&bsi);
   while (!bsi_end_p (bsi))
     {
+      tree t = bsi_stmt (bsi);
       /* Do not remove the return statement, so that redirect_edge_and_branch
 	 sees how the block ends.  */
-      if (TREE_CODE (bsi_stmt (bsi)) == RETURN_EXPR)
+      if (TREE_CODE (t) == RETURN_EXPR)
 	break;
 
       bsi_remove (&bsi);
+      release_defs (t);
     }
 
   /* Replace the call by a jump to the start of function.  */
@@ -775,6 +777,7 @@ eliminate_tail_call (struct tailcall *t)
     }
 
   bsi_remove (&t->call_bsi);
+  release_defs (call);
 }
 
 /* Optimizes the tailcall described by T.  If OPT_TAILCALLS is true, also

@@ -1,5 +1,8 @@
 2004-09-15  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa.c (verify_flow_sensitive_alias_info): Do not walk dead nodes.
+	* tree-tailcall.c (eliminate_tail_call): Release SSA name.
+
 	* tree-cfg.c (remove_bb): Release SSA defs.
 
 2004-09-15  Kazu Hirata  <kazu@cs.umass.edu>
