@@ -1654,7 +1654,8 @@ web.o : web.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h $(BASIC_BLOCK_H) function.h output.h toplev.h df.h
 gcse.o : gcse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h real.h insn-config.h $(GGC_H) $(RECOG_H) $(EXPR_H) \
-   $(BASIC_BLOCK_H) function.h output.h toplev.h $(TM_P_H) $(PARAMS_H) except.h gt-gcse.h
+   $(BASIC_BLOCK_H) function.h output.h toplev.h $(TM_P_H) $(PARAMS_H) \
+   except.h gt-gcse.h $(TREE_H)
 sibcall.o : sibcall.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    function.h hard-reg-set.h flags.h insn-config.h $(RECOG_H) $(BASIC_BLOCK_H)
 resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h $(SYSTEM_H) coretypes.h \

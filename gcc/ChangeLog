@@ -1,3 +1,11 @@
+2003-12-17  James E Wilson  <wilson@specifixinc.com>
+	    Roger Sayle  <roger@eyesopen.com>
+	
+	* Makefile.in (gcse.o): Add $(TREE_H) to dependencies.
+	* gcse.c: Include tree.h.
+	(implicit_set_cond_p): New.
+	(find_implicit_sets): Call it.
+
 2003-12-17  Santiago Vila  <sanvila@unex.es>
 
 	* config/kfreebsdgnu.h (TARGET_OS_CPP_BUILTINS): Rename from
