@@ -1845,37 +1845,25 @@ write_class_enum_type (const tree type)
 static void
 write_template_args (tree args)
 {
+  int i;
+  int length = TREE_VEC_LENGTH (args);
+  
   MANGLE_TRACE_TREE ("template-args", args);
 
   write_char ('I');
 
-  if (TREE_CODE (args) == TREE_VEC)
+  my_friendly_assert (length > 0, 20000422);
+
+  if (TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
     {
-      int i;
-      int length = TREE_VEC_LENGTH (args);
-      my_friendly_assert (length > 0, 20000422);
-
-      if (TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
-	{
-	  /* We have nested template args.  We want the innermost template
-	     argument list.  */
-	  args = TREE_VEC_ELT (args, length - 1);
-	  length = TREE_VEC_LENGTH (args);
-	}
-      for (i = 0; i < length; ++i)
-	write_template_arg (TREE_VEC_ELT (args, i));
+      /* We have nested template args.  We want the innermost template
+	 argument list.  */
+      args = TREE_VEC_ELT (args, length - 1);
+      length = TREE_VEC_LENGTH (args);
     }
-  else 
-    {
-      my_friendly_assert (TREE_CODE (args) == TREE_LIST, 20021014);
-
-      while (args)
-	{
-	  write_template_arg (TREE_VALUE (args));
-	  args = TREE_CHAIN (args);
-	}
-    }
-
+  for (i = 0; i < length; ++i)
+    write_template_arg (TREE_VEC_ELT (args, i));
+  
   write_char ('E');
 }
 
@@ -2164,6 +2152,20 @@ write_template_arg (tree node)
 	  node = TREE_TYPE (node);
 	  code = TREE_CODE (node);
 	}
+    }
+  
+  if (TREE_CODE (node) == NOP_EXPR
+      && TREE_CODE (TREE_TYPE (node)) == REFERENCE_TYPE)
+    {
+      /* Template parameters can be of reference type. To maintain
+	 internal consistency, such arguments use a conversion from
+	 address of object to reference type.  */
+      my_friendly_assert (TREE_CODE (TREE_OPERAND (node, 0)) == ADDR_EXPR,
+			  20031215);
+      if (abi_version_at_least (2))
+	node = TREE_OPERAND (TREE_OPERAND (node, 0), 0);
+      else
+	G.need_abi_warning = 1;
     }
 
   if (TYPE_P (node))

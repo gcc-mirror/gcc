@@ -1,3 +1,10 @@
+2003-12-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/13242
+	C++ ABI change. Mangling template parameters of reference type
+	* mangle.c (write_template_args): Remove unreachable code.
+	(write_template_arg): Look through an argument of reference type.
+
 2003-12-16  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/2294
