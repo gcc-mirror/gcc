@@ -694,6 +694,7 @@ clean-target-libgcc:
 	(cd gcc/libgcc && find . -type d -print) | \
 	while read d; do rm -f gcc/$$d/libgcc.a || : ; done
 	-rm -rf gcc/libgcc
+	-rm -f gcc/stmp-dirs
 
 # Check target.
 
