@@ -26,3 +26,8 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 
+MULTILIB_OPTIONS=ml
+MULTILIB_DIRNAMES=ml
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib

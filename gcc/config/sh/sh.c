@@ -38,6 +38,10 @@
 #include "obstack.h"
 #include "expr.h"
 
+#define MSW (TARGET_LITTLE_ENDIAN ? 1 : 0)
+#define LSW (TARGET_LITTLE_ENDIAN ? 0 : 1)
+
+
 static rtx add_constant ();
 
 int pragma_interrupt;
@@ -51,6 +55,12 @@ extern int flag_traditional;
 static rtx shiftsyms[32];
 struct rtx_def *table_lab;
 enum attr_cpu sh_cpu;		/* target cpu */
+
+
+char *max_si;
+char *max_hi;
+int  max_count_si;
+int  max_count_hi;
 
 /* Global variables for machine-dependent things. */
 
@@ -338,8 +348,9 @@ print_operand_address (stream, x)
    '!'  dump the constant table
    '#'  output a nop if there is nothing to put in the delay slot
    '@'  print rte or rts depending upon pragma interruptness
-   'R'  print the next register or memory location along, ie the lsw in
-   a double word value
+   'R'  print the LSW of a dp value - changes if in little endian
+   'T'  print the next word of a dp value - same as 'R' in big endian mode.
+   'S'  print the MSW of a dp value - changes if in little endian
    'O'  print a constant without the #
    'M'  print a constant as its negative
    'N'  print insides of a @++ or @-- o */
@@ -385,14 +396,38 @@ print_operand (stream, x, code)
       fputs (reg_names[REGNO (XEXP (XEXP (x, 0), 0))], (stream));
       break;
     case 'R':
-      /* Next location along in memory or register */
+      /* LSW of a double */
+      switch (GET_CODE (x))
+	{
+	case REG:
+	  fputs (reg_names[REGNO (x) + LSW], (stream));
+	  break;
+	case MEM:
+	  print_operand_address (stream, XEXP (adj_offsettable_operand (x, LSW *4), 0));
+	  break;
+	}
+      break;
+    case 'T':
+      /* Next word of a double */
       switch (GET_CODE (x))
 	{
 	case REG:
 	  fputs (reg_names[REGNO (x) + 1], (stream));
 	  break;
 	case MEM:
-	  print_operand_address (stream, XEXP (adj_offsettable_operand (x, 4), 0));
+	  print_operand_address (stream, XEXP (adj_offsettable_operand (x,1 *4), 0));
+	  break;
+	}
+      break;
+    case 'S':
+      /* MSW of a double */
+      switch (GET_CODE (x))
+	{
+	case REG:
+	  fputs (reg_names[REGNO (x) + MSW], (stream));
+	  break;
+	case MEM:
+	  print_operand_address (stream, XEXP (adj_offsettable_operand (x, MSW *4), 0));
 	  break;
 	}
       break;
@@ -829,13 +864,13 @@ output_movedouble (insn, operands, mode)
       && GET_CODE (XEXP (dst, 0)) == POST_INC)
     {
       operands[0] = XEXP (XEXP (dst, 0), 0);
-      return "mov.l	%R1,@(4,%0)\n\tmov.l	%1,@%0\n\tadd	#8,%0";
+      return "mov.l	%T1,@(4,%0)\n\tmov.l	%1,@%0\n\tadd	#8,%0";
     }
   if (register_operand (dst, mode)
       && register_operand (src, mode))
     {
       if (REGNO (src) == MACH_REG)
-	return "sts	mach,%0\n\tsts	macl,%R0";
+	return "sts	mach,%S0\n\tsts	macl,%R0";
 
       /*
          when mov.d r1,r2 do r2->r3 then r1->r2
@@ -843,24 +878,26 @@ output_movedouble (insn, operands, mode)
        */
 
       if (REGNO (src) + 1 == REGNO (dst))
-	return "mov	%R1,%R0\n\tmov	%1,%0 ! cra";
+	return "mov	%T1,%T0\n\tmov	%1,%0 ! cra";
       else
-	return "mov	%1,%0\n\tmov	%R1,%R0 ! crb";
+	return "mov	%1,%0\n\tmov	%T1,%T0 ! crb";
     }
   else if (GET_CODE (src) == CONST_INT)
     {
       HOST_WIDE_INT val = INTVAL (src);
       int rn = REGNO (operands[0]);
+      int msw = rn + MSW;
+      int lsw = rn + LSW;
       if (val < 0)
 	{
-	  fprintf (asm_out_file, "\tmov	#-1,r%d\n", rn);
+	  fprintf (asm_out_file, "\tmov	#-1,r%d\n", msw);
 	}
       else
 	{
-	  fprintf (asm_out_file, "\tmov	#0,r%d\n", rn);
+	  fprintf (asm_out_file, "\tmov	#0,r%d\n", msw);
 	}
 
-      fprintf (asm_out_file, "\tmov	#%d,r%d\n", val, rn + 1);
+      fprintf (asm_out_file, "\tmov	#%d,r%d\n", val, lsw);
       return "";
     }
   else if (GET_CODE (src) == MEM)
@@ -885,11 +922,11 @@ output_movedouble (insn, operands, mode)
 	}
       else if (GET_CODE (inside) == LABEL_REF)
 	{
-	  return "mov.l	%1,%0\n\tmov.l	%1+4,%R0";
+	  return "mov.l	%1,%0\n\tmov.l	%1+4,%T0";
 	}
       else if (GET_CODE (inside) == POST_INC)
 	{
-	  return "mov.l	%1,%0\n\tmov.l	%1,%R0 !mdi\n";
+	  return "mov.l	%1,%0\n\tmov.l	%1,%T0 !mdi\n";
 	}
       else
 	abort ();
@@ -936,11 +973,11 @@ output_movedouble (insn, operands, mode)
       if (dreg == ptrreg1)
 	{
 	  /* Copy into the second half first */
-	  return "mov.l	%R1,%R0\n\tmov.l	%1,%0 ! cr";
+	  return "mov.l	%T1,%T0\n\tmov.l	%1,%0 ! cr";
 	}
     }
 
-  return "mov.l	%1,%0\n\tmov.l	%R1,%R0";
+  return "mov.l	%1,%0\n\tmov.l	%T1,%T0";
 }
 
 /* Emit assembly to shift reg by k bits */
@@ -1372,6 +1409,9 @@ output_options (file, f_options, f_len, W_options, W_len,
 
   fprintf (file, term);
   fprintf (file, "! %d %d\n", max_count_si, max_count_hi);
+
+  if (TARGET_LITTLE_ENDIAN)
+    fprintf (file, "\t.little\n");
 }
 
 void
@@ -1390,11 +1430,35 @@ output_file_start (file, f_options, f_len, W_options, W_len)
   data_section ();
 
 
-  pos = fprintf (file, "\n! Hitachi SH cc1 (%s) (release I-1) arguments:", version_string);
+  pos = fprintf (file, "\n! Hitachi SH cc1 (%s) arguments:", version_string);
   output_options (file, f_options, f_len, W_options, W_len,
 		  pos, 75, " ", "\n! ", "\n\n");
 }
 
+
+/* Actual number of instructions used to make a shift by N */
+char ashiftrt_insns[] = { 0,1,2,3,4,5,8,8,8,8,8,8,8,8,8,8,2,3,4,5,8,8,8,8,8,8,8,8,8,8,8,2};
+char lshiftrt_insns[] = { 0,1,1,2,2,3,3,4,1,2,2,3,3,4,4,5,1,2,2,3,3,4,4,5,2,3,3,4,4,5,5,6};
+char shift_insns[]    = { 0,1,1,2,2,3,3,4,1,2,2,3,3,4,4,5,1,2,2,3,3,4,4,5,2,3,3,4,4,5,5,6};
+
+int 
+shiftinsns (shift, n)
+enum rtx_code shift;
+int n;
+{
+  switch (shift) 
+    {
+    case ASHIFTRT:
+      return ashiftrt_insns[n];
+    case LSHIFTRT:
+      return lshiftrt_insns[n];
+    case ASHIFT:
+      return shift_insns[n];
+    default:
+      abort();
+    }
+}
+
 
 
 /* Return the cost of a shift */
@@ -1404,14 +1468,16 @@ shiftcosts (RTX)
      rtx RTX;
 {
   /* If shift by a non constant, then this will be expensive. */
-  if (GET_CODE (XEXP (RTX, 1)) != CONST_INT)
-    return 20;
+  if (GET_CODE (XEXP (RTX, 1)) != CONST_INT) 
+    {
+      return 20;
+    }
 
   /* otherwise, it will be very cheap if by one of the constants
      we can cope with. */
+
   if (CONST_OK_FOR_K (INTVAL (XEXP (RTX, 1))))
     return 1;
-
   /* otherwise it will be several insns, but we pretend that it will be more than
      just the components, so that combine doesn't glue together a load of shifts into
      one shift which has to be emitted as a bunch anyway - breaking scheduling */
@@ -1541,10 +1607,12 @@ gen_shifty_op (code, operands)
   rtx wrk = gen_reg_rtx (SImode);
   rtx t;
   char *func;
+
   if (GET_CODE (operands[2]) == CONST_INT)
     {
       int value = INTVAL (operands[2]);
     top:
+
       switch (code)
 	{
 	case ASHIFTRT:
@@ -1554,7 +1622,20 @@ gen_shifty_op (code, operands)
 	      value = -value;
 	      goto top;
 	    }
-
+	  if (value == 31)
+	    {
+	      emit_insn (gen_ashrsi2_31 (operands[0], operands[1]));
+	      return 1;
+	    }
+	  else if (value >= 16 && value <= 19) 
+	    {
+	      emit_insn (gen_ashrsi2_16 (wrk, operands[1]));
+	      value -= 16;
+	      while (value --)
+		gen_ashift (ASHIFTRT,1, wrk);
+	      emit_move_insn (operands[0], wrk);
+	      return 1;
+	    }	  
 	  /* Expand a short sequence inline, longer call a magic routine */
 	  if (value <= 5)
 	    {
@@ -1626,6 +1707,7 @@ gen_shifty_op (code, operands)
 
 	}
     }
+
   return 0;
 }
 
@@ -2413,6 +2495,17 @@ arith_operand (op, mode)
 }
 
 
+/* Returns 1 if OP is a valid count operand for a shift operation. */
+int 
+shiftby_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (immediate_operand (op, mode)) 
+    return 1;
+  return 0;
+}
+
 /* Returns 1 if OP is a valid source operand for a logical operation. */
 
 int
@@ -2515,6 +2608,8 @@ sh_function_arg_partial_nregs (CUM, MODE, TYPE, NAMED)
   return 0;
 }
 
+
+
 /* Turn this on to recognise shift insns which aren't supported in the
    hardware.  This will allow the combiner to notice more patterns,
    but the down side is that the asm outputter will have to emit
@@ -2525,3 +2620,4 @@ int fake_shift()
 {
   return 0;
 }
+

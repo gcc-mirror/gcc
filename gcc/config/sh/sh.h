@@ -41,7 +41,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define SDB_DELIM ";"
 
+#define CPP_SPEC "%{ml:-D__LITTLE_ENDIAN__}"
+
 #define CPP_PREDEFINES "-D__sh__ -Acpu(sh) -Amachine(sh)"
+
+#define ASM_SPEC  "%{ml:-little}"
+
+#define LINK_SPEC "%{ml:-m shl}"
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
@@ -93,6 +99,7 @@ extern int target_flags;
 #define BSR_BIT   	(1<<26)
 #define SHORTADDR_BIT   (1<<27)
 #define PACKSTRUCT_BIT  (1<<28)
+#define LITTLE_ENDIAN_BIT (1<<29)
 
 /* Nonzero if we should generate code using type 0 insns */
 #define TARGET_SH0 (target_flags & SH0_BIT)
@@ -160,39 +167,48 @@ extern int target_flags;
 /* Nonzero if packing structures as small as they'll go (incompatible with Hitachi's compiler) */
 #define TARGET_PACKSTRUCT       (target_flags & PACKSTRUCT_BIT)
 
-#define TARGET_SWITCHES  		\
-{ {"isize", 	( ISIZE_BIT) },		\
-  {"space", 	( SPACE_BIT) },		\
-  {"0",	        ( SH0_BIT) },		\
-  {"1",	        ( SH1_BIT) },		\
-  {"2",	        ( SH2_BIT) },		\
-  {"3",	        ( SH3_BIT) },		\
-  {"ac",  	( MAC_BIT) },		\
-  {"dalign",  	( DALIGN_BIT) },	\
-  {"c",  	( C_BIT) },		\
-  {"r",  	( RTL_BIT) },		\
-  {"bigtable", 	( BIGTABLE_BIT)},	\
-  {"try-r0", 	( TRYR0_BIT)},		\
-  {"R",  	( R_BIT) },		\
-  {"nosave",  	( NOSAVE_BIT) },	\
-  {"clen3",     ( CONSTLEN_3_BIT) },    \
-  {"clen0",     ( CONSTLEN_0_BIT) },    \
-  {"smallcall",	( SMALLCALL_BIT) },	\
-  {"hitachi",	( HITACHI_BIT) },	\
-  {"paranoid",	( PARANOID_BIT) },	\
-  {"r2",	( RETR2_BIT) },		\
-  {"shortaddr", ( SHORTADDR_BIT) },     \
-  {"bsr",       ( BSR_BIT) },    	\
-  {"packstruct",( PACKSTRUCT_BIT) },    \
-  {"",   	TARGET_DEFAULT} 	\
+
+#define TARGET_LITTLE_ENDIAN     (target_flags & LITTLE_ENDIAN_BIT)
+
+#define TARGET_SWITCHES  			\
+{ {"0",	        (SH0_BIT) },			\
+  {"1",	        (SH1_BIT) },			\
+  {"2",	        (SH2_BIT) },			\
+  {"3",	        (SH3_BIT) },			\
+  {"3l",        (SH3_BIT|LITTLE_ENDIAN_BIT)},	\
+  {"R",  	(R_BIT) },			\
+  {"ac",  	(MAC_BIT) },			\
+  {"b",		(-LITTLE_ENDIAN_BIT) },  	\
+  {"bigtable", 	(BIGTABLE_BIT)},		\
+  {"bsr",       (BSR_BIT) },    		\
+  {"c",  	(C_BIT) },			\
+  {"clen0",     (CONSTLEN_0_BIT) },    		\
+  {"clen3",     (CONSTLEN_3_BIT) },    		\
+  {"dalign",  	(DALIGN_BIT) },			\
+  {"hitachi",	(HITACHI_BIT) },		\
+  {"isize", 	(ISIZE_BIT) },			\
+  {"l",		(LITTLE_ENDIAN_BIT) },  	\
+  {"nosave",  	(NOSAVE_BIT) },			\
+  {"packstruct",(PACKSTRUCT_BIT) },    		\
+  {"paranoid",	(PARANOID_BIT) },		\
+  {"r",  	(RTL_BIT) },			\
+  {"r2",	(RETR2_BIT) },			\
+  {"shortaddr", (SHORTADDR_BIT) },	     	\
+  {"smallcall",	(SMALLCALL_BIT) },		\
+  {"space", 	(SPACE_BIT) },			\
+  {"try-r0", 	(TRYR0_BIT)},			\
+  {"",   	TARGET_DEFAULT} 		\
 }
 
+
 #define TARGET_DEFAULT  (FAST_BIT)
+
 
 /* Macro to define table for command options with values.  */
 #define TARGET_OPTIONS \
 	{ { "maxsi-", &max_si}, \
 	  { "maxhi-", &max_hi} }
+
 
 #define OVERRIDE_OPTIONS 					\
 do {								\
@@ -201,8 +217,8 @@ do {								\
     sh_cpu = CPU_SH1;						\
   if (TARGET_SH2)						\
     sh_cpu = CPU_SH2;						\
-  if (TARGET_SH3)						\
-    sh_cpu = CPU_SH3;						\
+ if (TARGET_SH3)						\
+    sh_cpu = CPU_SH3|CPU_SH2;					\
 								\
   /*  We *MUST* always define optimize since we *HAVE* to run   \
       shorten branches to get correct code. */                  \
@@ -234,14 +250,25 @@ do {								\
 
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
+
 #define BITS_BIG_ENDIAN  0
 
+
 /* Define this if most significant byte of a word is the lowest numbered.  */
-#define BYTES_BIG_ENDIAN 1
+#define BYTES_BIG_ENDIAN (TARGET_LITTLE_ENDIAN == 0)
 
 /* Define this if most significant word of a multiword number is the lowest
    numbered.  */
-#define WORDS_BIG_ENDIAN 1
+#define WORDS_BIG_ENDIAN (TARGET_LITTLE_ENDIAN == 0)
+
+
+/* Define this to set the endianness to use in libgcc2.c, which can
+   not depend on target_flags.  */
+#if defined(__LITTLE_ENDIAN__)
+#define LIBGCC2_WORDS_BIG_ENDIAN 0
+#else
+#define LIBGCC2_WORDS_BIG_ENDIAN 1
+#endif
 
 /* Number of bits in an addressable storage unit */
 #define BITS_PER_UNIT  8
@@ -1156,7 +1183,7 @@ extern int current_function_anonymous_args;
   case UDIV:						\
   case MOD:						\
   case UMOD:						\
-    return COSTS_N_INSNS (100);				\
+    return COSTS_N_INSNS (20);				\
   case FLOAT:						\
   case FIX:						\
     return 100;
@@ -1492,7 +1519,7 @@ extern char *output_far_jump();
 extern int pragma_interrupt;
 #define MOVE_RATIO (TARGET_SMALLCODE ? 4 : 16)
 
-char *max_si;
-char *max_hi;
-int max_count_si;
-int max_count_hi;
+extern char *max_si;
+extern char *max_hi;
+extern int max_count_si;
+extern int max_count_hi;
