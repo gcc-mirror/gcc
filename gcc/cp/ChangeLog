@@ -1,3 +1,7 @@
+1999-12-22  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* error.c (dump_decl): Support named return values.
+
 1999-12-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CLASSTYPE_VFIELD_PARENT): Update comments.
