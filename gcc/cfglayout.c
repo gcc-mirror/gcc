@@ -1133,11 +1133,15 @@ cfg_layout_duplicate_bb (basic_block bb)
   return new_bb;
 }
 
-/* Main entry point to this module - initialize the data structures for
-   CFG layout changes.  It keeps LOOPS up-to-date if not null.  */
+/* Main entry point to this module - initialize the datastructures for
+   CFG layout changes.  It keeps LOOPS up-to-date if not null.
+
+   FLAGS is a set of additional flags to pass to cleanup_cfg().  It should
+   include CLEANUP_UPDATE_LIFE if liveness information must be kept up
+   to date.  */
 
 void
-cfg_layout_initialize (void)
+cfg_layout_initialize (unsigned int flags)
 {
   basic_block bb;
 
@@ -1152,7 +1156,7 @@ cfg_layout_initialize (void)
 
   record_effective_endpoints ();
 
-  cleanup_cfg (CLEANUP_CFGLAYOUT);
+  cleanup_cfg (CLEANUP_CFGLAYOUT | flags);
 }
 
 /* Splits superblocks.  */

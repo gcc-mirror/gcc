@@ -25,7 +25,7 @@
 
 extern rtx cfg_layout_function_footer;
 
-extern void cfg_layout_initialize (void);
+extern void cfg_layout_initialize (unsigned int);
 extern void cfg_layout_finalize (void);
 extern void insn_locators_initialize (void);
 extern void reemit_insn_block_notes (void);

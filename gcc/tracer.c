@@ -354,17 +354,18 @@ layout_superblocks (void)
     }
 }
 
-/* Main entry point to this file.  */
+/* Main entry point to this file.  FLAGS is the set of flags to pass
+   to cfg_layout_initialize().  */
 
 void
-tracer (void)
+tracer (unsigned int flags)
 {
   if (n_basic_blocks <= 1)
     return;
 
   timevar_push (TV_TRACER);
 
-  cfg_layout_initialize ();
+  cfg_layout_initialize (flags);
   mark_dfs_back_edges ();
   if (dump_file)
     dump_flow_info (dump_file);

@@ -1,3 +1,7 @@
+2004-07-26  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/compile/20040726-1.c: New test.
+
 2004-07-26  Niall Douglas  <s_fsfeurope2@nedprod.com>
 	    Brian Ryner  <bryner@brianryner.com>
 

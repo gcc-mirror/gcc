@@ -2432,7 +2432,7 @@ extern void if_convert (int);
 extern void invert_br_probabilities (rtx);
 extern bool expensive_function_p (int);
 /* In tracer.c */
-extern void tracer (void);
+extern void tracer (unsigned int);
 
 /* In var-tracking.c */
 extern void variable_tracking_main (void);
