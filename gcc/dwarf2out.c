@@ -512,17 +512,19 @@ expand_builtin_dwarf_fp_regnum ()
 #endif
 
 /* Return a pointer to a copy of the section string name S with all
-   attributes stripped off.  */
+   attributes stripped off, and an asterisk prepended (for assemble_name).  */
 
 static inline char *
 stripattributes (s)
      char *s;
 {
-  char *stripped = xstrdup (s);
+  char *stripped = xmalloc (strlen (s) + 2);
   char *p = stripped;
 
-  while (*p && *p != ',')
-    p++;
+  *p++ = '*';
+
+  while (*s && *s != ',')
+    *p++ = *s++;
 
   *p = '\0';
   return stripped;
