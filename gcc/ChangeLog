@@ -1,3 +1,12 @@
+2004-09-13  Richard Henderson  <rth@redhat.com>
+
+	PR 17436
+	* tree.h (TYPE_CONTAINS_PLACEHOLDER_INTERNAL): New.
+	(tree_type): Replace spare with contains_placeholder_bits.
+	(type_contains_placeholder_1): Rename from type_contains_placeholder_p,
+	make static.  Remove seen_types list.
+	(type_contains_placeholder_p): New.
+
 2004-09-13  James E Wilson  <wilson@specifixinc.com>
 
 	* config/mips/mips.c (CODE_FOR_mips_sqrt_ps): New.

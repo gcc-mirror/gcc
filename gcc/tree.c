@@ -1704,12 +1704,12 @@ contains_placeholder_p (tree exp)
   return 0;
 }
 
-/* Return 1 if any part of the computation of TYPE involves a PLACEHOLDER_EXPR.
-   This includes size, bounds, qualifiers (for QUAL_UNION_TYPE) and field
-   positions.  */
+/* Return true if any part of the computation of TYPE involves a
+   PLACEHOLDER_EXPR.  This includes size, bounds, qualifiers
+   (for QUAL_UNION_TYPE) and field positions.  */
 
-bool
-type_contains_placeholder_p (tree type)
+static bool
+type_contains_placeholder_1 (tree type)
 {
   /* If the size contains a placeholder or the parent type (component type in
      the case of arrays) type involves a placeholder, this type does.  */
@@ -1717,7 +1717,7 @@ type_contains_placeholder_p (tree type)
       || CONTAINS_PLACEHOLDER_P (TYPE_SIZE_UNIT (type))
       || (TREE_TYPE (type) != 0
 	  && type_contains_placeholder_p (TREE_TYPE (type))))
-    return 1;
+    return true;
 
   /* Now do type-specific checks.  Note that the last part of the check above
      greatly limits what we have to do below.  */
@@ -1734,7 +1734,7 @@ type_contains_placeholder_p (tree type)
     case METHOD_TYPE:
     case FILE_TYPE:
     case FUNCTION_TYPE:
-      return 0;
+      return false;
 
     case INTEGER_TYPE:
     case REAL_TYPE:
@@ -1753,33 +1753,7 @@ type_contains_placeholder_p (tree type)
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
       {
-	static tree seen_types = 0;
 	tree field;
-	bool ret = 0;
-
-	/* We have to be careful here that we don't end up in infinite
-	   recursions due to a field of a type being a pointer to that type
-	   or to a mutually-recursive type.  So we store a list of record
-	   types that we've seen and see if this type is in them.  To save
-	   memory, we don't use a list for just one type.  Here we check
-	   whether we've seen this type before and store it if not.  */
-	if (seen_types == 0)
-	  seen_types = type;
-	else if (TREE_CODE (seen_types) != TREE_LIST)
-	  {
-	    if (seen_types == type)
-	      return 0;
-
-	    seen_types = tree_cons (NULL_TREE, type,
-				    build_tree_list (NULL_TREE, seen_types));
-	  }
-	else
-	  {
-	    if (value_member (type, seen_types) != 0)
-	      return 0;
-
-	    seen_types = tree_cons (NULL_TREE, type, seen_types);
-	  }
 
 	for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	  if (TREE_CODE (field) == FIELD_DECL
@@ -1787,23 +1761,37 @@ type_contains_placeholder_p (tree type)
 		  || (TREE_CODE (type) == QUAL_UNION_TYPE
 		      && CONTAINS_PLACEHOLDER_P (DECL_QUALIFIER (field)))
 		  || type_contains_placeholder_p (TREE_TYPE (field))))
-	    {
-	      ret = true;
-	      break;
-	    }
+	    return true;
 
-	/* Now remove us from seen_types and return the result.  */
-	if (seen_types == type)
-	  seen_types = 0;
-	else
-	  seen_types = TREE_CHAIN (seen_types);
-
-	return ret;
+	return false;
       }
 
     default:
       gcc_unreachable ();
     }
+}
+
+bool
+type_contains_placeholder_p (tree type)
+{
+  bool result;
+
+  /* If the contains_placeholder_bits field has been initialized,
+     then we know the answer.  */
+  if (TYPE_CONTAINS_PLACEHOLDER_INTERNAL (type) > 0)
+    return TYPE_CONTAINS_PLACEHOLDER_INTERNAL (type) - 1;
+
+  /* Indicate that we've seen this type node, and the answer is false.
+     This is what we want to return if we run into recursion via fields.  */
+  TYPE_CONTAINS_PLACEHOLDER_INTERNAL (type) = 1;
+
+  /* Compute the real value.  */
+  result = type_contains_placeholder_1 (type);
+
+  /* Store the real value.  */
+  TYPE_CONTAINS_PLACEHOLDER_INTERNAL (type) = result + 1;
+
+  return result;
 }
 
 /* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
