@@ -1,3 +1,9 @@
+Wed Apr 12 01:00:44 EDT 2000  John Wehle  (john@feith.com)
+
+	* cse.c (delete_trivially_dead_insns): Also delete insns
+	that copy a register to itself where the destination is
+	a strict_low_part.
+
 2000-04-11  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (struct propagate_block_info): Add new_dead, new_live.

@@ -7269,6 +7269,10 @@ delete_trivially_dead_insns (insns, nreg)
 	      && rtx_equal_p (SET_DEST (PATTERN (insn)),
 			      SET_SRC (PATTERN (insn))))
 	    ;
+	  else if (GET_CODE (SET_DEST (PATTERN (insn))) == STRICT_LOW_PART
+		   && rtx_equal_p (XEXP (SET_DEST (PATTERN (insn)), 0),
+				   SET_SRC (PATTERN (insn))))
+	    ;
 
 #ifdef HAVE_cc0
 	  else if (GET_CODE (SET_DEST (PATTERN (insn))) == CC0
