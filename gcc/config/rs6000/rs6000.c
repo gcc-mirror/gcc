@@ -2048,6 +2048,42 @@ ccr_bit (op, scc_p)
     }
 }
 
+/* By generating position-independent code, when two different
+   programs (A and B) share a common library (libC.a), the text of
+   the library can be shared whether or not the library is linked at
+   the same address for both programs.  In some of these
+   environments, position-independent code requires not only the use
+   of different addressing modes, but also special code to enable the
+   use of these addressing modes.
+
+   The `FINALIZE_PIC' macro serves as a hook to emit these special
+   codes once the function is being compiled into assembly code, but
+   not before.  (It is not done before, because in the case of
+   compiling an inline function, it would lead to multiple PIC
+   prologues being included in functions which used inline functions
+   and were compiled to assembly language.)  */
+
+void
+rs6000_finalize_pic ()
+{
+  if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+    {
+      /* If a PIC register has been created, insert the pic initialization
+	 at the function beginning.  */
+      if (pic_offset_table_rtx)
+	{
+	  rtx insn = get_insns ();
+	  rtx init = gen_init_v4_pic (pic_offset_table_rtx);
+
+	  if (GET_CODE (insn) == NOTE)
+	    insn = next_nonnote_insn (insn);
+
+	  emit_insn_before (init, insn);
+	}
+    }
+}
+
+
 /* Print an operand.  Recognize special options, documented below.  */
 
 #ifdef TARGET_SDATA

@@ -1934,7 +1934,7 @@ typedef struct rs6000_args
    prologues being included in functions which used inline functions
    and were compiled to assembly language.)  */
 
-/* #define FINALIZE_PIC */
+#define FINALIZE_PIC rs6000_finalize_pic ()
 
 /* A C expression that is nonzero if X is a legitimate immediate
    operand on the target machine when generating position independent
@@ -3070,13 +3070,13 @@ extern int registers_ok_for_quad_peep ();
 extern int addrs_ok_for_quad_peep ();
 extern enum reg_class secondary_reload_class ();
 extern int ccr_bit ();
+extern void rs6000_finalize_pic ();
 extern void print_operand ();
 extern void print_operand_address ();
 extern int first_reg_to_save ();
 extern int first_fp_reg_to_save ();
 extern int rs6000_makes_calls ();
 extern rs6000_stack_t *rs6000_stack_info ();
-extern void svr4_traceback ();
 extern void output_prolog ();
 extern void output_epilog ();
 extern void output_toc ();
