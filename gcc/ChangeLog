@@ -1,3 +1,8 @@
+2000-11-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.in: Make --enable-new-gxx-abi the default.
+	* configure: Likewise.
+
 2000-11-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (tradcpp.o, tradcif.o): Depend on tradcpp.h.
