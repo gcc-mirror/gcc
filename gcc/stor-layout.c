@@ -342,7 +342,8 @@ layout_record (rec)
 	  else
 	    {
 	      if (const_size > 0)
-		var_size = size_binop (PLUS_EXPR, var_size, const_size);
+		var_size = size_binop (PLUS_EXPR, var_size,
+				       size_int (const_size));
 	      const_size = 0;
 	      var_size = round_up (var_size, desired_align);
 	      var_align = MIN (var_align, desired_align);
