@@ -1,3 +1,19 @@
+2002-05-23  Alan Modra  <amodra@bigpond.net.au>
+
+	* configure.in (CROSS): Define NATIVE_CROSS.
+	* configure: Regenerate.
+	* gcc.c (STARTFILE_PREFIX_SPEC): Define.
+	(startfile_prefix_spec): New var.
+	(static_specs): Add startfile_prefix_spec.
+	(do_spec_2): Split out from..
+	(do_spec): ..here.
+	(main): Process startfile_prefix_spec.
+	* config/rs6000/linux64.h (LINK_OS_LINUX_SPEC) Change name of
+	dynamic linker.
+	(STARTFILE_PREFIX_SPEC): Define.
+	(STARTFILE_LINUX_SPEC, ENDFILE_LINUX_SPEC): Rewrite without
+        absolute paths.
+
 2002-05-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cpperror.c: Fix formatting.
