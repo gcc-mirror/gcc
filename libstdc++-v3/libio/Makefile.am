@@ -23,7 +23,11 @@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
 
+if GLIBCPP_BUILD_LIBIO
 noinst_LTLIBRARIES = libio.la
+else
+noinst_LTLIBRARIES =
+endif
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
 GLIBCPP_INCLUDE_DIR = @GLIBCPP_INCLUDE_DIR@

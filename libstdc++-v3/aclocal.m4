@@ -1356,6 +1356,8 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   AC_LINK_FILES($CCODECVT_C, libio/c_codecvt.c)
   # 2000-08-04 bkoz hack
 
+  AM_CONDITIONAL(GLIBCPP_BUILD_LIBIO,
+                 test "$need_libio" = yes || test "$need_wlibio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_LIBIO, test "$need_libio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_WLIBIO, test "$need_wlibio" = yes)
   if test "$need_libio" = yes || test "$need_wlibio" = yes; then

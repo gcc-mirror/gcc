@@ -279,41 +279,11 @@
 /* Define if you have the atanl function.  */
 #undef HAVE_ATANL
 
-/* Define if you have the ccos function.  */
-#undef HAVE_CCOS
-
-/* Define if you have the ccosf function.  */
-#undef HAVE_CCOSF
-
-/* Define if you have the ccosh function.  */
-#undef HAVE_CCOSH
-
-/* Define if you have the ccoshf function.  */
-#undef HAVE_CCOSHF
-
-/* Define if you have the ccoshl function.  */
-#undef HAVE_CCOSHL
-
-/* Define if you have the ccosl function.  */
-#undef HAVE_CCOSL
-
 /* Define if you have the ceilf function.  */
 #undef HAVE_CEILF
 
 /* Define if you have the ceill function.  */
 #undef HAVE_CEILL
-
-/* Define if you have the cexp function.  */
-#undef HAVE_CEXP
-
-/* Define if you have the cexpf function.  */
-#undef HAVE_CEXPF
-
-/* Define if you have the cexpl function.  */
-#undef HAVE_CEXPL
-
-/* Define if you have the clog10l function.  */
-#undef HAVE_CLOG10L
 
 /* Define if you have the copysign function.  */
 #undef HAVE_COPYSIGN
@@ -336,27 +306,6 @@
 /* Define if you have the cosl function.  */
 #undef HAVE_COSL
 
-/* Define if you have the cpowl function.  */
-#undef HAVE_CPOWL
-
-/* Define if you have the csin function.  */
-#undef HAVE_CSIN
-
-/* Define if you have the csinf function.  */
-#undef HAVE_CSINF
-
-/* Define if you have the csinh function.  */
-#undef HAVE_CSINH
-
-/* Define if you have the csinhf function.  */
-#undef HAVE_CSINHF
-
-/* Define if you have the csinhl function.  */
-#undef HAVE_CSINHL
-
-/* Define if you have the csinl function.  */
-#undef HAVE_CSINL
-
 /* Define if you have the csqrt function.  */
 #undef HAVE_CSQRT
 
@@ -365,24 +314,6 @@
 
 /* Define if you have the csqrtl function.  */
 #undef HAVE_CSQRTL
-
-/* Define if you have the ctan function.  */
-#undef HAVE_CTAN
-
-/* Define if you have the ctanf function.  */
-#undef HAVE_CTANF
-
-/* Define if you have the ctanh function.  */
-#undef HAVE_CTANH
-
-/* Define if you have the ctanhf function.  */
-#undef HAVE_CTANHF
-
-/* Define if you have the ctanhl function.  */
-#undef HAVE_CTANHL
-
-/* Define if you have the ctanl function.  */
-#undef HAVE_CTANL
 
 /* Define if you have the expf function.  */
 #undef HAVE_EXPF
