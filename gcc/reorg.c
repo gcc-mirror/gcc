@@ -2748,7 +2748,8 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	      && GET_CODE (PATTERN (next)) != USE
 	      && ! reg_set_p (SET_DEST (pat), next)
 	      && ! reg_set_p (SET_SRC (pat), next)
-	      && reg_referenced_p (SET_DEST (pat), PATTERN (next)))
+	      && reg_referenced_p (SET_DEST (pat), PATTERN (next))
+	      && ! modified_in_p (SET_DEST (pat), next))
 	    validate_replace_rtx (SET_DEST (pat), SET_SRC (pat), next);
 	}
     }

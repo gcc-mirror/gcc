@@ -1,3 +1,8 @@
+Wed Jan 12 03:24:41 2000  Toshiyasu Morita (toshi.morita@sega.com)
+
+	* reorg.c (fill_slots_from_thread): Check modified_in_p
+	before replacing.
+
 Wed Jan 12 03:20:31 2000  John Marshall <john_w_marshall@palm.com>
 
 	* gcc.texi (Funding, GNU/Linux, Copying, Contributors): Format
