@@ -2093,7 +2093,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	alg = alg2, variant = negate_variant;
 
       /* This proves very useful for division-by-constant.  */
-      synth_mult (&alg2, val - 1, (alg.cost < mult_cost ? alg.cost : mult_cost) - add_cost);
+      synth_mult (&alg2, val - 1,
+		  (alg.cost < mult_cost ? alg.cost : mult_cost) - add_cost);
       if (alg2.cost + add_cost < alg.cost)
 	alg = alg2, variant = add_variant;
 
@@ -2131,7 +2132,9 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	      int log = alg.log[opno];
 	      int preserve = preserve_subexpressions_p ();
 	      rtx shift_subtarget = preserve ? 0 : accum;
-	      rtx add_target = opno == alg.ops - 1 && target != 0 ? target : 0;
+	      rtx add_target
+		= (opno == alg.ops - 1 && target != 0 && variant != add_variant
+		  ? target : 0);
 	      rtx accum_target = preserve ? 0 : accum;
 	      
 	      switch (alg.op[opno])
