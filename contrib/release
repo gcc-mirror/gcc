@@ -4,26 +4,13 @@
 #
 # Originally written by Jeff Law <law@redhat.com>.
 
-PATH=/home/law/gcc:$PATH
-
-TMPDIR=/var/tmp
-STATEDIR=/home/law
-
-export TMPDIR STATEDIR
-
-# We run this on the cvs server itself so we can get at the cvs
-# files quickly.  It also assumes access to my home dir for some
-# programs.
-CVSROOT=/cvs/gcc
-export CVSROOT
-
-# Get somewhere useful with a lot of disk space.
-cd $TMPDIR
-
 # We need separate variables for the tag in the CVS sources and the
 # name of the release directory.  Consider if we have a packaging problem
 # and need to respin the release.  The sources do not change, but the release
 # name changes.
+#
+# [[ Not clear.  You  can purge the old tag and make a new one, too.
+#    That way they continue to match.  Maximize consistency. ]]
 #
 # We used to use a tag to get the previous release, but it is more reliable to
 # actually unpack the previous release from the ftp directory.  Consider files
@@ -56,7 +43,33 @@ case $last_release_name in
     echo "No testsuites in gcc-2.95*"
     ;;
 esac
-	
+
+STATEDIR=${STATEDIR-/home/law}
+GCCBASE=${GCCBASE-${STATEDIR}/gcc}
+TMPDIR=${TMPDIR-/var/tmp}
+export TMPDIR STATEDIR GCCBASE
+
+PATH=${GCCBASE}:$PATH
+
+[ -f ${GCCBASE}/gcc.pot ] || {
+  echo "'${GCCBASE}/gcc.pot' is missing"
+  exit 1
+}
+
+[ -f ${STATEDIR}/bin/brik ] || {
+  echo "'${STATEDIR}/bin/brik' is missing"
+  exit 1
+}
+
+# We run this on the cvs server itself so we can get at the cvs
+# files quickly.  It also assumes access to my home dir for some
+# programs.
+CVSROOT=/cvs/gcc
+export CVSROOT
+
+# Get somewhere useful with a lot of disk space.
+cd $TMPDIR
+
 # Get into a temporary directory so as not to be confused by
 # any existing CVS administration files.
 rm -rf $$
@@ -99,7 +112,7 @@ noncore_files="gcc/cp libio libstdc++ gcc/f libf2c gcc/objc libobjc gcc/ch libch
 cvs -Q export -ko -r$release_tag egcs
 cd egcs
 contrib/gcc_update --touch
-cp /home/law/gcc/gcc.pot gcc/po
+cp ${GCCBASE}/gcc.pot gcc/po
 cd ..
 cvs -Q export -ko -Dnow wwwdocs/htdocs/install
 cvs -Q export -ko -Dnow wwwdocs/htdocs/faq.html
@@ -110,7 +123,7 @@ release_docs $release_name $$
 # Build a list of files in this release.
 cd $release_name
 find . -type f -print | sort > ../files_$release_name
-/home/law/bin/brik -Gb -f ../files_$release_name > ../.brik_$release_name
+${STATEDIR}/bin/brik -Gb -f ../files_$release_name > ../.brik_$release_name
 cp ../.brik_$release_name ./.brik
 
 # Get back to the directory with the two releases in it.
@@ -153,7 +166,7 @@ fi
 cvs -Q export -ko -r$release_tag egcs
 cd egcs
 contrib/gcc_update --touch
-cp /home/law/gcc/gcc.pot gcc/po
+cp ${GCCBASE}/gcc.pot gcc/po
 cd ..
 cvs -Q export -ko -Dnow wwwdocs/htdocs/install
 cvs -Q export -ko -Dnow wwwdocs/htdocs/faq.html
