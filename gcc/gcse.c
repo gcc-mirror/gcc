@@ -6264,7 +6264,8 @@ compute_ld_motion_mems ()
 		    {
 		      ptr = ldst_entry (dest);
 		      
-		      if (GET_CODE (src) != MEM)
+		      if (GET_CODE (src) != MEM
+			  && GET_CODE (src) != ASM_OPERANDS)
 			ptr->stores = alloc_INSN_LIST (insn, ptr->stores);
 		      else
 			ptr->invalid = 1;
@@ -6521,7 +6522,8 @@ find_moveable_store (insn)
   struct ls_expr * ptr;
   rtx dest = PATTERN (insn);
 
-  if (GET_CODE (dest) != SET)
+  if (GET_CODE (dest) != SET
+      || GET_CODE (SET_SRC (dest)) == ASM_OPERANDS)
     return;
 
   dest = SET_DEST (dest);
