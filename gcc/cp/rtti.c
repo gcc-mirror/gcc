@@ -1752,7 +1752,7 @@ create_tinfo_types ()
   /* Pointer to member data type_info.  Add pointer to the class, pointer
      to the member's type info and qualifications flags.  */
   ptmd_desc_type_node = create_pseudo_type_info
-       ("__ptr_to_member_type_info", 0,
+       ("__pointer_to_member_type_info", 0,
         build_lang_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
         build_lang_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
         build_lang_decl (FIELD_DECL, NULL_TREE, integer_type_node),
