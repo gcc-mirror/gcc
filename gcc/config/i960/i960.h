@@ -335,44 +335,7 @@ extern int target_flags;
 /* Override conflicting target switch options.
    Doesn't actually detect if more than one -mARCH option is given, but
    does handle the case of two blatantly conflicting -mARCH options.  */
-#define OVERRIDE_OPTIONS					\
-{								\
-  if (TARGET_K_SERIES && TARGET_C_SERIES)			\
-    {								\
-      warning ("conflicting architectures defined - using C series"); \
-      target_flags &= ~TARGET_FLAG_K_SERIES;			\
-    }								\
-  if (TARGET_K_SERIES && TARGET_MC)				\
-    {								\
-      warning ("conflicting architectures defined - using K series"); \
-      target_flags &= ~TARGET_FLAG_MC;				\
-    }								\
-  if (TARGET_C_SERIES && TARGET_MC)				\
-    {								\
-      warning ("conflicting architectures defined - using C series");\
-      target_flags &= ~TARGET_FLAG_MC;				\
-    }								\
-  if (TARGET_IC_COMPAT3_0)					\
-    {								\
-      flag_short_enums = 1;					\
-      flag_signed_char = 1;					\
-      target_flags |= TARGET_FLAG_CLEAN_LINKAGE;		\
-      if (TARGET_IC_COMPAT2_0)					\
-	{							\
-	  warning ("iC2.0 and iC3.0 are incompatible - using iC3.0"); \
-	  target_flags &= ~TARGET_FLAG_IC_COMPAT2_0;		\
-	}							\
-    }								\
-  if (TARGET_IC_COMPAT2_0)					\
-    {								\
-      flag_signed_char = 1;					\
-      target_flags |= TARGET_FLAG_CLEAN_LINKAGE;		\
-    }								\
-  /* ??? See the LONG_DOUBLE_TYPE_SIZE definition below.  */	\
-  if (TARGET_LONG_DOUBLE_64)					\
-    warning ("the -mlong-double-64 option does not work yet");\
-  i960_initialize ();						\
-}
+#define OVERRIDE_OPTIONS  i960_initialize ()
 
 /* Don't enable anything by default.  The user is expected to supply a -mARCH
    option.  If none is given, then -mka is added by CC1_SPEC.  */
@@ -402,10 +365,7 @@ extern int target_flags;
 /* Width in bits of a long double.  Define to 96, and let
    ROUND_TYPE_ALIGN adjust the alignment for speed.  */
 #define	LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_64 ? 64 : 96)
-
-/* ??? This must be a constant, because real.c and real.h test it with #if.  */
-#undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE 96
+#define MAX_LONG_DOUBLE_TYPE_SIZE 96
 
 /* Define this to set long double type size to use in libgcc2.c, which can
    not depend on target_flags.  */

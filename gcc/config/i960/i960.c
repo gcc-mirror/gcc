@@ -100,11 +100,47 @@ static int ret_label = 0;
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Initialize variables before compiling any files.  */
+/* Override conflicting target switch options.
+   Doesn't actually detect if more than one -mARCH option is given, but
+   does handle the case of two blatantly conflicting -mARCH options.
+
+   Also initialize variables before compiling any files.  */
 
 void
 i960_initialize ()
 {
+  if (TARGET_K_SERIES && TARGET_C_SERIES)
+    {
+      warning ("conflicting architectures defined - using C series");
+      target_flags &= ~TARGET_FLAG_K_SERIES;
+    }
+  if (TARGET_K_SERIES && TARGET_MC)
+    {
+      warning ("conflicting architectures defined - using K series");
+      target_flags &= ~TARGET_FLAG_MC;
+    }
+  if (TARGET_C_SERIES && TARGET_MC)
+    {
+      warning ("conflicting architectures defined - using C series");
+      target_flags &= ~TARGET_FLAG_MC;
+    }
+  if (TARGET_IC_COMPAT3_0)
+    {
+      flag_short_enums = 1;
+      flag_signed_char = 1;
+      target_flags |= TARGET_FLAG_CLEAN_LINKAGE;
+      if (TARGET_IC_COMPAT2_0)
+	{
+	  warning ("iC2.0 and iC3.0 are incompatible - using iC3.0");
+	  target_flags &= ~TARGET_FLAG_IC_COMPAT2_0;
+	}
+    }
+  if (TARGET_IC_COMPAT2_0)
+    {
+      flag_signed_char = 1;
+      target_flags |= TARGET_FLAG_CLEAN_LINKAGE;
+    }
+
   if (TARGET_IC_COMPAT2_0)
     {
       i960_maxbitalignment = 8;
@@ -115,6 +151,9 @@ i960_initialize ()
       i960_maxbitalignment = 128;
       i960_last_maxbitalignment = 8;
     }
+
+  /* Tell the compiler which flavor of XFmode we're using.  */
+  real_format_for_mode[XFmode - QFmode] = &ieee_extended_intel_96_format;
 }
 
 /* Return true if OP can be used as the source of an fp move insn.  */

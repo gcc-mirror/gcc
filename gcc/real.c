@@ -70,42 +70,6 @@
  #error "Some constant folding done by hand to avoid shift count warnings"
 #endif
 
-/* Describes the properties of the specific target format in use.  */
-struct real_format
-{
-  /* Move to and from the target bytes.  */
-  void (*encode) (const struct real_format *, long *,
-		  const REAL_VALUE_TYPE *);
-  void (*decode) (const struct real_format *, REAL_VALUE_TYPE *,
-		  const long *);
-
-  /* The radix of the exponent and digits of the significand.  */
-  int b;
-
-  /* log2(b).  */
-  int log2_b;
-
-  /* Size of the significand in digits of radix B.  */
-  int p;
-
-  /* The minimum negative integer, x, such that b**(x-1) is normalized.  */
-  int emin;
-
-  /* The maximum integer, x, such that b**(x-1) is representable.  */
-  int emax;
-
-  /* Properties of the format.  */
-  bool has_nans;
-  bool has_inf;
-  bool has_denorm;
-  bool has_signed_zero;
-  bool qnan_msb_set;
-};
-
-
-static const struct real_format *fmt_for_mode[TFmode - QFmode + 1];
-
-
 static void get_zero PARAMS ((REAL_VALUE_TYPE *, int));
 static void get_canonical_qnan PARAMS ((REAL_VALUE_TYPE *, int));
 static void get_canonical_snan PARAMS ((REAL_VALUE_TYPE *, int));
@@ -1942,7 +1906,7 @@ real_nan (r, str, quiet, mode)
 {
   const struct real_format *fmt;
 
-  fmt = fmt_for_mode[mode - QFmode];
+  fmt = real_format_for_mode[mode - QFmode];
   if (fmt == NULL)
     abort ();
 
@@ -2211,7 +2175,7 @@ real_convert (r, mode, a)
 {
   const struct real_format *fmt;
 
-  fmt = fmt_for_mode[mode - QFmode];
+  fmt = real_format_for_mode[mode - QFmode];
   if (fmt == NULL)
     abort ();
 
@@ -2247,25 +2211,20 @@ exact_real_truncate (mode, a)
   return real_identical (&t, a);
 }
 
-/* Write R to the target format of MODE.  Place the words of the 
-   result in target word order in BUF.  There are always 32 bits
-   in each long, no matter the size of the host long.
+/* Write R to the given target format.  Place the words of the result
+   in target word order in BUF.  There are always 32 bits in each
+   long, no matter the size of the host long.
 
    Legacy: return word 0 for implementing REAL_VALUE_TO_TARGET_SINGLE.  */
 
 long
-real_to_target (buf, r_orig, mode)
+real_to_target_fmt (buf, r_orig, fmt)
      long *buf;
      const REAL_VALUE_TYPE *r_orig;
-     enum machine_mode mode;
+     const struct real_format *fmt;
 {
   REAL_VALUE_TYPE r;
-  const struct real_format *fmt;
   long buf1;
-
-  fmt = fmt_for_mode[mode - QFmode];
-  if (fmt == NULL)
-    abort ();
 
   r = *r_orig;
   round_for_format (fmt, &r);
@@ -2277,9 +2236,37 @@ real_to_target (buf, r_orig, mode)
   return *buf;
 }
 
-/* Read R from the target format of MODE.  Read the words of the
-   result in target word order in BUF.  There are always 32 bits
-   in each long, no matter the size of the host long.  */
+/* Similar, but look up the format from MODE.  */
+
+long
+real_to_target (buf, r, mode)
+     long *buf;
+     const REAL_VALUE_TYPE *r;
+     enum machine_mode mode;
+{
+  const struct real_format *fmt;
+
+  fmt = real_format_for_mode[mode - QFmode];
+  if (fmt == NULL)
+    abort ();
+
+  return real_to_target_fmt (buf, r, fmt);
+}
+
+/* Read R from the given target format.  Read the words of the result
+   in target word order in BUF.  There are always 32 bits in each
+   long, no matter the size of the host long.  */
+
+void
+real_from_target_fmt (r, buf, fmt)
+     REAL_VALUE_TYPE *r;
+     const long *buf;
+     const struct real_format *fmt;
+{
+  (*fmt->decode) (fmt, r, buf);
+}     
+
+/* Similar, but look up the format from MODE.  */
 
 void
 real_from_target (r, buf, mode)
@@ -2289,7 +2276,7 @@ real_from_target (r, buf, mode)
 {
   const struct real_format *fmt;
 
-  fmt = fmt_for_mode[mode - QFmode];
+  fmt = real_format_for_mode[mode - QFmode];
   if (fmt == NULL)
     abort ();
 
@@ -2305,7 +2292,7 @@ significand_size (mode)
 {
   const struct real_format *fmt;
 
-  fmt = fmt_for_mode[mode - QFmode];
+  fmt = real_format_for_mode[mode - QFmode];
   if (fmt == NULL)
     return 0;
 
@@ -2467,7 +2454,7 @@ decode_ieee_single (fmt, r, buf)
     }
 }
 
-const struct real_format ieee_single = 
+const struct real_format ieee_single_format = 
   {
     encode_ieee_single,
     decode_ieee_single,
@@ -2660,7 +2647,7 @@ decode_ieee_double (fmt, r, buf)
     }
 }
 
-const struct real_format ieee_double = 
+const struct real_format ieee_double_format = 
   {
     encode_ieee_double,
     decode_ieee_double,
@@ -2915,7 +2902,7 @@ decode_ieee_extended_128 (fmt, r, buf)
   decode_ieee_extended (fmt, r, buf+!!FLOAT_WORDS_BIG_ENDIAN);
 }
 
-const struct real_format ieee_extended_motorola = 
+const struct real_format ieee_extended_motorola_format = 
   {
     encode_ieee_extended,
     decode_ieee_extended,
@@ -2931,7 +2918,7 @@ const struct real_format ieee_extended_motorola =
     true
   };
 
-const struct real_format ieee_extended_intel_96 = 
+const struct real_format ieee_extended_intel_96_format = 
   {
     encode_ieee_extended,
     decode_ieee_extended,
@@ -2947,7 +2934,7 @@ const struct real_format ieee_extended_intel_96 =
     true
   };
 
-const struct real_format ieee_extended_intel_128 = 
+const struct real_format ieee_extended_intel_128_format = 
   {
     encode_ieee_extended_128,
     decode_ieee_extended_128,
@@ -3200,14 +3187,14 @@ decode_ieee_quad (fmt, r, buf)
     }
 }
 
-const struct real_format ieee_quad = 
+const struct real_format ieee_quad_format = 
   {
     encode_ieee_quad,
     decode_ieee_quad,
     2,
     1,
     113,
-    -16382,
+    -16381,
     16384,
     true,
     true,
@@ -3215,10 +3202,17 @@ const struct real_format ieee_quad =
     true,
     true
   };
-
 
-/* The VAX floating point formats.  */
+/* Descriptions of VAX floating point formats can be found beginning at
 
+   http://www.openvms.compaq.com:8000/73final/4515/4515pro_013.html#f_floating_point_format
+
+   The thing to remember is that they're almost IEEE, except for word
+   order, exponent bias, and the lack of infinities, nans, and denormals.
+
+   We don't implement the H_floating format here, simply because neither
+   the VAX or Alpha ports use it.  */
+   
 static void encode_vax_f PARAMS ((const struct real_format *fmt,
 				  long *, const REAL_VALUE_TYPE *));
 static void decode_vax_f PARAMS ((const struct real_format *,
@@ -3547,11 +3541,10 @@ const struct real_format vax_g_format =
     false,
     false
   };
-
 
-/* The IBM S/390 floating point formats.  A good reference for these can
-   be found in chapter 9 of "ESA/390 Principles of Operation", IBM document
-   number SA22-7201-01.  An on-line version can be found here:
+/* A good reference for these can be found in chapter 9 of
+   "ESA/390 Principles of Operation", IBM document number SA22-7201-01.
+   An on-line version can be found here:
 
    http://publibz.boulder.ibm.com/cgi-bin/bookmgr_OS390/BOOKS/DZ9AR001/9.1?DT=19930923083613
 */
@@ -3714,7 +3707,7 @@ decode_i370_double (fmt, r, buf)
     }
 }
 
-const struct real_format i370_single =
+const struct real_format i370_single_format =
   {
     encode_i370_single,
     decode_i370_single,
@@ -3730,7 +3723,7 @@ const struct real_format i370_single =
     false
   };
 
-const struct real_format i370_double =
+const struct real_format i370_double_format =
   {
     encode_i370_double,
     decode_i370_double,
@@ -3745,9 +3738,25 @@ const struct real_format i370_double =
     false, /* ??? The encoding does allow for "unnormals".  */
     false
   };
-
 
-/* TMS320C[34]x twos complement floating point format.  */
+/* The "twos-compliment" c4x format is officially defined as
+
+	x = s(~s).f * 2**e
+
+   This is rather misleading.  One must remember that F is signed.
+   A better description would be
+
+	x = -1**s * ((s + 1 + .f) * 2**e
+
+   So if we have a (4 bit) fraction of .1000 with a sign bit of 1,
+   that's -1 * (1+1+(-.5)) == -1.5.  I think.
+
+   The constructions here are taken from Tables 5-1 and 5-2 of the
+   TMS320C4x User's Guide wherein step-by-step instructions for
+   conversion from IEEE are presented.  That's close enough to our
+   internal representation so as to make things easy.
+
+   See http://www-s.ti.com/sc/psheets/spru063c/spru063c.pdf  */
 
 static void encode_c4x_single PARAMS ((const struct real_format *fmt,
 				       long *, const REAL_VALUE_TYPE *));
@@ -3928,7 +3937,7 @@ decode_c4x_extended (fmt, r, buf)
     }
 }
 
-const struct real_format c4x_single = 
+const struct real_format c4x_single_format = 
   {
     encode_c4x_single,
     decode_c4x_single,
@@ -3944,7 +3953,7 @@ const struct real_format c4x_single =
     false
   };
 
-const struct real_format c4x_extended = 
+const struct real_format c4x_extended_format = 
   {
     encode_c4x_extended,
     decode_c4x_extended,
@@ -3959,105 +3968,20 @@ const struct real_format c4x_extended =
     false,
     false
   };
-
 
-/* Initialize things at start of compilation.  */
+/* Set up default mode to format mapping for IEEE.  Everyone else has
+   to set these values in OVERRIDE_OPTIONS.  */
 
-static const struct real_format * format_for_size PARAMS ((int));
-
-static const struct real_format *
-format_for_size (size)
-     int size;
+const struct real_format *real_format_for_mode[TFmode - QFmode + 1] =
 {
-#ifndef TARGET_G_FORMAT
-#define TARGET_G_FORMAT 0
-#endif
+  NULL,				/* QFmode */
+  NULL,				/* HFmode */
+  NULL,				/* TQFmode */
+  &ieee_single_format,		/* SFmode */
+  &ieee_double_format,		/* DFmode */
 
-  switch (TARGET_FLOAT_FORMAT)
-    {
-    case IEEE_FLOAT_FORMAT:
-      switch (size)
-	{
-	case 32:
-	  return &ieee_single;
-
-	case 64:
-	  return &ieee_double;
-
-	case 96:
-	  if (!INTEL_EXTENDED_IEEE_FORMAT)
-	    return &ieee_extended_motorola;
-	  else
-	    return &ieee_extended_intel_96;
-
-	case 128:
-	  if (!INTEL_EXTENDED_IEEE_FORMAT)
-	    return &ieee_quad;
-	  else
-	    return &ieee_extended_intel_128;
-	}
-      break;
-
-    case VAX_FLOAT_FORMAT:
-      switch (size)
-	{
-	case 32:
-	  return &vax_f_format;
-
-	case 64:
-	  if (TARGET_G_FORMAT)
-	    return &vax_g_format;
-	  else
-	    return &vax_d_format;
-	}
-      break;
-
-    case IBM_FLOAT_FORMAT:
-      switch (size)
-	{
-	case 32:
-	  return &i370_single;
-	case 64:
-	  return &i370_double;
-	}
-      break;
-
-    case C4X_FLOAT_FORMAT:
-      switch (size)
-	{
-	case 32:
-	  return &c4x_single;
-	case 64:
-	  return &c4x_extended;
-	}
-      break;
-    }
-
-  abort ();
-}
-
-void
-init_real_once ()
-{
-  int i;
-
-  /* Set up the mode->format table.  */
-  for (i = 0; i < 3; ++i)
-    {
-      enum machine_mode mode;
-      int size;
-
-      if (i == 0)
-	size = FLOAT_TYPE_SIZE;
-      else if (i == 1)
-	size = DOUBLE_TYPE_SIZE;
-      else
-	size = LONG_DOUBLE_TYPE_SIZE;
-
-      mode = mode_for_size (size, MODE_FLOAT, 0);
-      if (mode == BLKmode)
-	abort ();
-
-      fmt_for_mode[mode - QFmode] = format_for_size (size);
-    }
-}
+  /* We explicitly don't handle XFmode.  There are two formats,
+     pretty much equally common.  Choose one in OVERRIDE_OPTIONS.  */
+  NULL,				/* XFmode */
+  &ieee_quad_format		/* TFmode */
+};

@@ -1530,13 +1530,6 @@ target machine.  If this is undefined, the default is
 the largest value that @code{LONG_DOUBLE_TYPE_SIZE} can have at run-time.
 This is used in @code{cpp}.
 
-@findex INTEL_EXTENDED_IEEE_FORMAT
-@item INTEL_EXTENDED_IEEE_FORMAT
-Define this macro to be 1 if the target machine uses 80-bit floating-point
-values with 128-bit size and alignment.  This is used in @file{real.c}.
-This also distinguishes the Intel 80-bit floating-point format from the
-Motorola 96-bit floating-point format.
-
 @findex TARGET_FLT_EVAL_METHOD
 @item TARGET_FLT_EVAL_METHOD
 A C expression for the value for @code{FLT_EVAL_METHOD} in @file{float.h},

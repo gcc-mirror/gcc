@@ -937,6 +937,11 @@ override_options ()
 
   int const pta_size = ARRAY_SIZE (processor_alias_table);
 
+  /* By default our XFmode is the 80-bit extended format.  If we have
+     use TFmode instead, it's also the 80-bit format, but with padding.  */
+  real_format_for_mode[XFmode - QFmode] = &ieee_extended_intel_96_format;
+  real_format_for_mode[TFmode - QFmode] = &ieee_extended_intel_128_format;
+
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif

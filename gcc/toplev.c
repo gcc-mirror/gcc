@@ -5322,11 +5322,6 @@ do_compile ()
   init_timevar ();
   timevar_start (TV_TOTAL);
 
-  /* We need to initialize real.c in order to define __FLT_MIN__ etc,
-     which must happen even with -E.  But with -E we'll suppress the
-     rest of backend_init.  */
-  init_real_once ();
-
   /* Set up the back-end if requested.  */
   if (!no_backend)
     backend_init ();

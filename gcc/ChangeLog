@@ -1,3 +1,59 @@
+2002-09-21  Richard Henderson  <rth@redhat.com>
+
+	* real.c (struct real_format): Move to real.h.
+	(real_format_for_mode): Rename from fmt_for_mode; update all users;
+	initialize with ieee defaults.
+	(real_to_target_fmt, real_from_target_fmt): New.
+	(ieee_single_format, ieee_double_format, ieee_extended_motorola_format,
+	ieee_extended_intel_96_format, ieee_extended_intel_128_format,
+	ieee_quad_format, i370_single_format, i370_double_format, 
+	c4x_single_format, c4x_extended_format): Rename from s/_format//.
+	(ieee_quad_format): Fix emin.
+	(format_for_size, init_real_once): Remove.
+	* real.h (struct real_format): Move from real.c.
+	(real_format_for_mode): Declare.
+	(real_to_target_fmt, real_from_target_fmt): Declare.
+	(ieee_single_format, ieee_double_format, ieee_extended_motorola_format,
+	ieee_extended_intel_96_format, ieee_extended_intel_128_format,
+	ieee_quad_format, vax_f_format, vax_d_format, vax_g_format,
+	i370_single_format, i370_double_format, c4x_single_format,
+	c4x_extended_format): Declare.
+	* toplev.c (do_compile): Don't call init_real_once.
+
+	* defaults.h (INTEL_EXTENDED_IEEE_FORMAT): Remove.
+	* doc/tm.texi (INTEL_EXTENDED_IEEE_FORMAT): Remove.
+
+	* config/alpha/alpha.h (TARGET_FLOAT_FORMAT): Define.
+	* config/alpha/osf5.h (LONG_DOUBLE_TYPE_SIZE): 64, if vax mode.
+	* config/alpha/alpha.c (override_options): Set real_format_for_mode
+	for VAX, if enabled.
+
+	* config/c4x/c4x.c (c4x_override_options): Set real_format_for_mode
+	for C4X.
+
+	* config/i370/i370.h (OVERRIDE_OPTIONS): New.
+	* config/i370/i370.c (override_options): New.
+	* config/i370/i370-protos.h: Update.
+
+	* config/i386/i386.c (override_options): Set real_format_for_mode
+	for Intel 80-bit extended.
+	* config/i386/i386.h (INTEL_EXTENDED_IEEE_FORMAT): Remove.
+
+	* config/i960/i960.h (LONG_DOUBLE_TYPE_SIZE): Mind -mlong-double-64.
+	(OVERRIDE_OPTIONS): Move code...
+	* config/i960/i960.c (i960_initialize): ... here.  Set
+	real_format_for_mode for Intel 80-bit extended.
+
+	* config/ia64/ia64.c (ia64_override_options): Set real_format_for_mode
+	for Intel 80-bit extended, if enabled.
+
+	* config/m68k/m68k.c (override_options): Set real_format_for_mode
+        for Motorola 96-bit extended.
+
+	* config/vax/vax.h (OVERRIDE_OPTIONS): New.
+	* config/vax/vax.c (override_options): New.
+	* config/vax/vax-protos.h: Update.
+
 2002-09-21  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.md (builtin_setjmp_receiver): Add

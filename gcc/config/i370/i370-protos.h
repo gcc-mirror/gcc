@@ -24,6 +24,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_I370_PROTOS_H
 #define GCC_I370_PROTOS_H
 
+extern void override_options PARAMS ((void));
+
 #ifdef RTX_CODE
 extern int i370_branch_dest PARAMS ((rtx));
 extern int i370_branch_length PARAMS ((rtx));
