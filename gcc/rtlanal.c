@@ -2851,12 +2851,16 @@ find_first_parameter_load (call_insn, boundary)
       if (GET_CODE (before) == CALL_INSN)
 	break;
 
-      /* Our caller needs eighter ensure, that we will find all sets
+      /* Our caller needs either ensure that we will find all sets
          (in case code has not been optimized yet), or take care
          for possible labels in a way by setting boundary to preceeding
          CODE_LABEL.  */
-      if (GET_CODE (before) == CODE_LABEL && before != boundary)
-	abort ();
+      if (GET_CODE (before) == CODE_LABEL)
+	{
+	  if (before != boundary)
+	    abort ();
+	  break;
+	}
 
       note_stores (PATTERN (before), parms_set, &parm);
     }
