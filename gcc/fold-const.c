@@ -4757,6 +4757,37 @@ fold (expr)
 	      goto bit_ior;
 	    }
 
+	  /* Reassociate (plus (plus (mult) (foo)) (mult)) as
+	     (plus (plus (mult) (mult)) (foo)) so that we can 
+	     take advantage of the factoring cases below.  */
+	  if ((TREE_CODE (arg0) == PLUS_EXPR
+	       && TREE_CODE (arg1) == MULT_EXPR)
+	      || (TREE_CODE (arg1) == PLUS_EXPR
+	          && TREE_CODE (arg0) == MULT_EXPR))
+	    {
+	      tree parg0, parg1, parg, marg;
+
+	      if (TREE_CODE (arg0) == PLUS_EXPR)
+		parg = arg0, marg = arg1;
+	      else
+		parg = arg1, marg = arg0;
+	      parg0 = TREE_OPERAND (parg, 0);
+	      parg1 = TREE_OPERAND (parg, 1);
+	      STRIP_NOPS (parg0);
+	      STRIP_NOPS (parg1);
+
+	      if (TREE_CODE (parg0) == MULT_EXPR
+		  && TREE_CODE (parg1) != MULT_EXPR)
+		return fold (build (PLUS_EXPR, type,
+				    fold (build (PLUS_EXPR, type, parg0, marg)),
+				    parg1));
+	      if (TREE_CODE (parg0) != MULT_EXPR
+		  && TREE_CODE (parg1) == MULT_EXPR)
+		return fold (build (PLUS_EXPR, type,
+				    fold (build (PLUS_EXPR, type, parg1, marg)),
+				    parg0));
+	    }
+
 	  if (TREE_CODE (arg0) == MULT_EXPR && TREE_CODE (arg1) == MULT_EXPR)
 	    {
 	      tree arg00, arg01, arg10, arg11;
@@ -4781,6 +4812,36 @@ fold (expr)
 		same = arg00, alt0 = arg01, alt1 = arg10;
 	      else if (operand_equal_p (arg01, arg10, 0))
 		same = arg01, alt0 = arg00, alt1 = arg11;
+
+	      /* No identical multiplicands; see if we can find a common
+		 power-of-two factor in non-power-of-two multiplies.  This
+		 can help in multi-dimensional array access.  */
+	      else if (TREE_CODE (arg01) == INTEGER_CST
+		       && TREE_CODE (arg11) == INTEGER_CST
+		       && TREE_INT_CST_HIGH (arg01) == 0
+		       && TREE_INT_CST_HIGH (arg11) == 0)
+		{
+		  HOST_WIDE_INT int01, int11, tmp;
+		  int01 = TREE_INT_CST_LOW (arg01);
+		  int11 = TREE_INT_CST_LOW (arg11);
+
+		  /* Move min of absolute values to int11.  */
+		  if ((int01 >= 0 ? int01 : -int01)
+		      < (int11 >= 0 ? int11 : -int11))
+		    {
+		      tmp = int01, int01 = int11, int11 = tmp;
+		      alt0 = arg00, arg00 = arg10, arg10 = alt0;
+		      alt0 = arg01, arg01 = arg11, arg11 = alt0;
+		    }
+
+		  if (exact_log2 (int11) > 0 && int01 % int11 == 0)
+		    {
+		      alt0 = fold (build (MULT_EXPR, type, arg00,
+					  build_int_2 (int01 / int11, 0)));
+		      alt1 = arg10;
+		      same = arg11;
+		    }
+		}
 
 	      if (same)
 	        return fold (build (MULT_EXPR, type,
