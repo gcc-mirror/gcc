@@ -4037,11 +4037,19 @@ sparc_nonflat_function_epilogue (file, size, leaf_function)
 	 of a function were call foo; dslot; this can make the return
 	 PC of foo (ie. address of call instruction plus 8) point to
 	 the first instruction in the next function.  */
-      rtx insn;
-
-      fputs("\tnop\n", file);
+      rtx insn, last_real_insn;
 
       insn = get_last_insn ();
+
+      last_real_insn = prev_real_insn (insn);
+      if (last_real_insn
+	  && GET_CODE (last_real_insn) == INSN
+	  && GET_CODE (PATTERN (last_real_insn)) == SEQUENCE)
+	last_real_insn = XVECEXP (PATTERN (last_real_insn), 0, 0);
+
+      if (last_real_insn && GET_CODE (last_real_insn) == CALL_INSN)
+	fputs("\tnop\n", file);
+
       if (GET_CODE (insn) == NOTE)
 	      insn = prev_nonnote_insn (insn);
       if (insn && GET_CODE (insn) == BARRIER)
