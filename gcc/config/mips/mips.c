@@ -4157,13 +4157,6 @@ override_options ()
       mips_cpu = PROCESSOR_DEFAULT;
       switch (*p)
 	{
-	/* start-sanitize-tx19 */
-	case '1':
-	  if (!strcmp (p, "1900"))
-	    mips_cpu = PROCESSOR_R3900;
-	  break;
-	/* end-sanitize-tx19 */
-
 	case '2':
 	  if (!strcmp (p, "2000") || !strcmp (p, "2k") || !strcmp (p, "2K"))
 	    mips_cpu = PROCESSOR_R3000;
