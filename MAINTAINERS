@@ -100,6 +100,7 @@ RTEMS Ports		Ralf Corsepius		ralf.corsepius@rtems.org
 VxWorks ports		Zack Weinberg		zack@codesourcery.com
 VxWorks ports		Nathan Sidwell		nathan@codesourcery.com
 windows, cygwin, mingw	Christopher Faylor	cgf@gcc.gnu.org
+windows, cygwin, mingw	Danny Smith		dannysmith@users.sourceforge.net
 
 			Language Front Ends Maintainers
 
@@ -294,7 +295,6 @@ Tobias Schlüter					tobias.schlueter@physik.uni-muenchen.de
 Andreas Schwab					schwab@suse.de
 Svein Seldal                                    svein.seldal@solidas.com
 Franz Sirl					franz.sirl-kernel@lauterbach.com
-Danny Smith					dannysmith@users.sourceforge.net
 Michael Sokolov					msokolov@ivan.Harhan.ORG
 Richard Stallman				rms@gnu.org
 Graham Stott					graham.stott@btinternet.com
