@@ -431,15 +431,34 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   if (unroll_type == UNROLL_COMPLETELY || unroll_type == UNROLL_MODULO)
     {
-      /* Loops of these types should never start with a jump down to
-	 the exit condition test.  For now, check for this case just to
-	 be sure.  UNROLL_NAIVE loops can be of this form, this case is
-	 handled below.  */
+      /* Loops of these types can start with jump down to the exit condition
+	 in rare circumstances.
+
+	 Consider a pair of nested loops where the inner loop is part
+	 of the exit code for the outer loop.
+
+	 In this case jump.c will not duplicate the exit test for the outer
+	 loop, so it will start with a jump to the exit code.
+
+	 Then consider if the inner loop turns out to iterate once and
+	 only once.  We will end up deleting the jumps associated with
+	 the inner loop.  However, the loop notes are not removed from
+	 the instruction stream.
+
+	 And finally assume that we can compute the number of iterations
+	 for the outer loop.
+
+	 In this case unroll may want to unroll the outer loop even though
+	 it starts with a jump to the outer loop's exit code.
+
+	 We could try to optimize this case, but it hardly seems worth it.
+	 Just return without unrolling the loop in such cases.  */
+
       insn = loop_start;
       while (GET_CODE (insn) != CODE_LABEL && GET_CODE (insn) != JUMP_INSN)
 	insn = NEXT_INSN (insn);
       if (GET_CODE (insn) == JUMP_INSN)
-	abort ();
+	return;
     }
 
   if (unroll_type == UNROLL_COMPLETELY)
