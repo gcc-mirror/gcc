@@ -1,3 +1,8 @@
+2002-04-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* PR6352
+	* g++.dg/opt/inline2.C: New test.
+
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
         * gcc.dg/20000906-1.c: Enable for all targets.
