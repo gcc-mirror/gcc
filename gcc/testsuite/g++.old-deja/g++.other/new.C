@@ -1,13 +1,16 @@
 // Build don't link:
 
-typedef __SIZE_TYPE__ size_t;
+#include <new>
+
 inline void *
 operator new(size_t alloc_sz, const char *fname, unsigned lineno)
 {
+  return ::operator new (alloc_sz);
 }
 inline void *
 operator new[](size_t alloc_sz, const char *fname, unsigned lineno) 
 {
+  return ::operator new[] (alloc_sz);
 }
 inline void
 operator delete(void *ptr, const char *fname, unsigned lineno) 

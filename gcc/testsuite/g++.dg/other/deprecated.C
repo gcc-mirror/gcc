@@ -13,10 +13,10 @@ INT1 should_be_unavailable; 		/* { dg-warning "`INT1' is deprecated" "" } */
 INT1a should_not_be_deprecated;
 
 INT1 f1(void) __attribute__ ((deprecated)); 
-INT1 f2(void) {}			/* { dg-warning "`INT1' is deprecated" "" } */
+INT1 f2(void) { return 0; }		/* { dg-warning "`INT1' is deprecated" "" } */
 
 INT2 f3(void) __attribute__ ((__deprecated__)); 
-INT2 f4(void) {}			/* { dg-warning "`INT2' is deprecated" "" } */
+INT2 f4(void) { return 0; }		/* { dg-warning "`INT2' is deprecated" "" } */
 int f5(INT2 x);				/* { dg-warning "`INT2' is deprecated" "" } */
 int f6(INT2 x) __attribute__ ((__deprecated__));
 

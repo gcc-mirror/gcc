@@ -8,4 +8,5 @@ struct X
 void (X::* fee ())()
 {
  lab: goto lab;
+ return 0;
 }

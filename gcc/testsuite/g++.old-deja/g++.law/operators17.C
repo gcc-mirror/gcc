@@ -7,6 +7,6 @@
 // Subject:  4 bugs in g++ 2.3.3
 // Message-ID: <9304291053.AA00090@mencon>
 
-        struct A {
-                A& operator = (const A& a) {}// ERROR - XFAIL
-        };
+struct A {
+        A& operator = (const A& a) {}// WARNING - 
+};

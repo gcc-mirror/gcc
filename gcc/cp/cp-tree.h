@@ -821,6 +821,7 @@ struct cp_language_function
 
   int returns_value;
   int returns_null;
+  int returns_abnormally;
   int in_function_try_handler;
   int x_expanding_p;
 
@@ -882,6 +883,12 @@ struct cp_language_function
    a return statement with no argument is seen.  */
 
 #define current_function_returns_null cp_function_chain->returns_null
+
+/* Set to 0 at beginning of a function definition, set to 1 if
+   a call to a noreturn function is seen.  */
+
+#define current_function_returns_abnormally \
+  cp_function_chain->returns_abnormally
 
 /* Non-zero if we should generate RTL for functions that we process.
    When this is zero, we just accumulate tree structure, without

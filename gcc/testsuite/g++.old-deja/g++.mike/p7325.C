@@ -23,6 +23,7 @@ struct A {
       if (match_arg != &o)
 	fail = 1;
     match_arg = &o;
+    return *this;
   }
 };
 

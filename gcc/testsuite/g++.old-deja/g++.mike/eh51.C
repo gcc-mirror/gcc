@@ -7,7 +7,7 @@ void my_unexpected() {
   throw 42;
 }
 
-template <class T> int foo(T) throw (T) { throw "Hi"; }
+template <class T> void foo(T) throw (T) { throw "Hi"; }
 
 main() {
   std::set_unexpected (my_unexpected);

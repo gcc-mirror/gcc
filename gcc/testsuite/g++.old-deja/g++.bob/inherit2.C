@@ -1,11 +1,13 @@
 // Build don't link:
+#include <stdlib.h>
+
 class A {
 public:
   void z();
   A(void) {}
 private:
   A(const A &) { abort(); } // ERROR - 
-  const A& operator =(const A &) { abort(); } // WARNING - no return stmt XFAIL *-*-*
+  const A& operator =(const A &) { abort(); }
 };
 
 class B : public A {

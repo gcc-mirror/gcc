@@ -11,7 +11,7 @@ struct S
 
 struct T
 {
-  static int f() {}
+  static int f() { return 0; }
 };
 
 static const S s = { &T::f };

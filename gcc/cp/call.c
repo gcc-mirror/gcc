@@ -408,6 +408,9 @@ build_call (function, parms)
   nothrow = ((decl && TREE_NOTHROW (decl))
 	     || TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (function))));
 
+  if (decl && TREE_THIS_VOLATILE (decl))
+    current_function_returns_abnormally = 1;
+
   if (decl && TREE_DEPRECATED (decl))
     warn_deprecated_use (decl);
 

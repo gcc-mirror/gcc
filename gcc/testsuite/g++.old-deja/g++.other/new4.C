@@ -6,5 +6,6 @@ struct S {
 
   virtual int f() {
     new S[+f()];
+    return 0;
   }
 };

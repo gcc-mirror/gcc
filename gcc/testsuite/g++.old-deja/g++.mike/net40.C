@@ -1,5 +1,5 @@
 #include <stddef.h>
-extern "C" void abort();
+#include <stdlib.h>
 
 class toto {
 public:

@@ -4,7 +4,7 @@
 
 class Foo {
 public:
-  int f(){}
+  int f(){ return 0; }
 };
 
 void foo() {

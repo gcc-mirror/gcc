@@ -7,6 +7,7 @@ struct S {
   int operator()(int)
     {
       i = 1;
+      return i;
     }
 
   typedef int I;
@@ -24,6 +25,7 @@ struct T {
   int operator()(int)
     {
       j = 1;
+      return j;
     }
 
   void f() {

@@ -12,8 +12,7 @@ struct myint {
   }
   myint(const myint& mi) {
   }
-  myint& operator=(const myint& mi) {
-  }
+  myint& operator=(const myint& mi) { return *this; }
 };
 
 extern pair<const myint, myint> a;

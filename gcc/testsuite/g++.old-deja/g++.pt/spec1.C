@@ -13,7 +13,7 @@ public:
 };
 
 struct Operation {
-  double eval(double) {}
+  double eval(double) { return 0; }
 };
 
 int main() {

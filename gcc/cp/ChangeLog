@@ -1,5 +1,12 @@
 2002-02-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/4872
+	* decl.c (finish_function): Warn about a non-void function with 
+	no return statement and no abnormal exit.
+	* cp-tree.h (struct cp_language_function): Add returns_abnormally.
+	(current_function_returns_abnormally): New macro.
+	* call.c (build_call): Set it.
+
 	* typeck.c (build_component_ref): Always complain about offsetof
 	constructs on non-PODs.  Only make it an error for members of
 	virtual bases.
