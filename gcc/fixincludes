@@ -18,9 +18,11 @@ INPUT=${2-${INPUT-/usr/include}}
 # unrecognizable.
 TERM=unknown
 export TERM
-# This prevents /bin/ex from failing if the EXINIT environment variable
-# was set to something invalid.
-EXINIT=""
+# This prevents two problems:
+# Either ex might find a .exrc file and get confused,
+# or ex might complain if the EXINIT variable is invalid. 
+# We know there is no .exrc in the GCC source.
+EXINIT=true
 export EXINIT
 
 # Directory in which to store the results.
