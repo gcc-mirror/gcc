@@ -580,7 +580,7 @@ void GC_init_inner()
  	GC_init_win32();
 #   endif
 #   if defined(SEARCH_FOR_DATA_START)
-	if (GC_REGISTER_MAIN_STATIC_DATA()) GC_init_linux_data_start();
+	GC_init_linux_data_start();
 #   endif
 #   if (defined(NETBSD) || defined(OPENBSD)) && defined(__ELF__)
 	GC_init_netbsd_elf();

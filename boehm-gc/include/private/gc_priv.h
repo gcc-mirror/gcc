@@ -44,10 +44,6 @@
 #   include "../gc_mark.h"
 # endif
 
-# ifndef GCCONFIG_H
-#   include "gcconfig.h"
-# endif
-
 typedef GC_word word;
 typedef GC_signed_word signed_word;
 
@@ -60,6 +56,10 @@ typedef char * ptr_t;	/* A generic pointer to which we can add	*/
 			/* Preferably identical to caddr_t, if it 	*/
 			/* exists.					*/
 			
+# ifndef GCCONFIG_H
+#   include "gcconfig.h"
+# endif
+
 # ifndef HEADERS_H
 #   include "gc_hdrs.h"
 # endif
