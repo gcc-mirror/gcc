@@ -1,5 +1,8 @@
 2002-10-14  Mark Mitchell  <mark@codesourcery.com>
 
+	PR optimization/6631
+	* g++.dg/opt/const2.C: New test.
+
 	PR c++/7176
 	* g++.dg/parse/friend1.C: New test.
 	* g++.old-deja/g++.pt/memtemp64.C: Adjust.
