@@ -215,6 +215,9 @@ const char *rs6000_debug_name;
 int rs6000_debug_stack;		/* debug stack applications */
 int rs6000_debug_arg;		/* debug argument handling */
 
+/* Value is TRUE if register/mode pair is accepatable.  */
+bool rs6000_hard_regno_mode_ok_p[NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
+
 /* Opaque types.  */
 static GTY(()) tree opaque_V2SI_type_node;
 static GTY(()) tree opaque_V2SF_type_node;
@@ -645,6 +648,58 @@ static const char alt_reg_names[][8] =
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+
+/* Value is 1 if hard register REGNO can hold a value of machine-mode
+   MODE.  */
+static int
+rs6000_hard_regno_mode_ok (int regno, enum machine_mode mode)
+{
+  /* The GPRs can hold any mode, but values bigger than one register
+     cannot go past R31.  */
+  if (INT_REGNO_P (regno))
+    return INT_REGNO_P (regno + HARD_REGNO_NREGS (regno, mode) - 1);
+
+  /* The float registers can only hold floating modes and DImode.  */
+  if (FP_REGNO_P (regno))
+    return
+      (GET_MODE_CLASS (mode) == MODE_FLOAT
+       && FP_REGNO_P (regno + HARD_REGNO_NREGS (regno, mode) - 1))
+      || (GET_MODE_CLASS (mode) == MODE_INT
+	  && GET_MODE_SIZE (mode) == UNITS_PER_FP_WORD);
+
+  /* The CR register can only hold CC modes.  */
+  if (CR_REGNO_P (regno))
+    return GET_MODE_CLASS (mode) == MODE_CC;
+
+  if (XER_REGNO_P (regno))
+    return mode == PSImode;
+
+  /* AltiVec only in AldyVec registers.  */
+  if (ALTIVEC_REGNO_P (regno))
+    return ALTIVEC_VECTOR_MODE (mode);
+
+  /* ...but GPRs can hold SIMD data on the SPE in one register.  */
+  if (SPE_SIMD_REGNO_P (regno) && TARGET_SPE && SPE_VECTOR_MODE (mode))
+    return 1;
+
+  /* We cannot put TImode anywhere except general register and it must be
+     able to fit within the register set.  */
+
+  return GET_MODE_SIZE (mode) <= UNITS_PER_WORD;
+}
+
+/* Initialize rs6000_hard_regno_mode_ok_p table.  */
+static void
+rs6000_init_hard_regno_mode_ok (void)
+{
+  int r, m;
+
+  for (r = 0; r < FIRST_PSEUDO_REGISTER; ++r)
+    for (m = 0; m < NUM_MACHINE_MODES; ++m)
+      if (rs6000_hard_regno_mode_ok (r, m))
+	rs6000_hard_regno_mode_ok_p[m][r] = true;
+}
+
 /* Override command line options.  Mostly we process the processor
    type and sometimes adjust other TARGET_ options.  */
 
@@ -747,6 +802,9 @@ rs6000_override_options (const char *default_cpu)
 		     | MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_ALTIVEC
 		     | MASK_MFCRF)
   };
+
+  rs6000_init_hard_regno_mode_ok ();
+
  set_masks = POWER_MASKS | POWERPC_MASKS | MASK_SOFT_FLOAT;
 #ifdef OS_MISSING_POWERPC64
   if (OS_MISSING_POWERPC64)
