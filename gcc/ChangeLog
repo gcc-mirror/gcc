@@ -1,3 +1,8 @@
+2002-08-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* ggc-page.c (compute_inverse): Short circuit calculation for
+	object sizes larger than half a page.
+
 2002-08-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_elf_select_section): Treat
