@@ -1,3 +1,7 @@
+2002-04-08  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/private/gcconfig.h (DATAEND): Clarify comment.
+
 2002-04-08  Hans Boehm  <Hans_Boehm@hp.com>
 	
 	* include/private/gc_priv.h (WARN macro): Add "GC warning:" prefix.

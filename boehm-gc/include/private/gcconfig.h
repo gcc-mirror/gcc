@@ -453,6 +453,9 @@
  * DATAEND, if not `end' where `end' is defined as ``extern int end[];''.
  * RTH suggests gaining access to linker script synth'd values with
  * this idiom instead of `&end' where `end' is defined as ``extern int end;'' .
+ * Otherwise, ``GCC will assume these are in .sdata/.sbss'' and it will
+ * cause failures on alpha*-*-* with ``-msmall-data or -fpic'' or mips-*-*
+ * or ia64-*-* without any special options.
  *
  * ALIGN_DOUBLE of GC_malloc should return blocks aligned to twice
  * the pointer size.
