@@ -1284,8 +1284,12 @@ reg_in_basic_block_p (insn, reg)
 	}
     }
 
-  /* The "last use" doesn't follow the "first use"??  */
-  abort ();
+  /* The "last use" that was recorded can't be found after the first
+     use.  This can happen when the last use was deleted while
+     processing an inner loop, this inner loop was then completely
+     unrolled, and the outer loop is always exited after the inner loop,
+     so that everything after the first use becomes a single basic block.  */
+  return 1;
 }
 
 /* Compute the benefit of eliminating the insns in the block whose
