@@ -1,3 +1,13 @@
+2004-02-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/ia64.c (ia64_function_arg): In big-endian mode,
+	when passing single SFmode quantities in general registers,
+	put them in the high half.
+	(struct extern_func_list, extern_func_head): Mark with GTY(()).
+	(ia64_hpux_add_extern_decl): Save the decl, not the name string.
+	Allocate memory with ggc_alloc.  No need to copy anything.
+	(ia64_hpux_file_end): Update to match.
+
 2004-02-19  David Daney <ddaney@avtrex.com>
 
 	PR preprocessor/14198
@@ -110,7 +120,7 @@
 
 2004-02-17  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* combine.c (simplify_if_then_else): Do not replace 
+	* combine.c (simplify_if_then_else): Do not replace
 	(if_then_else (ne reg 0) (0) (const_int)) by (reg) if the
 	modes differ.
 
@@ -120,32 +130,32 @@
 	* config/mips/t-irix-gld: ... this.
 	* config.gcc (mips-sgi-irix6*): Reflect this
 	(mips-sgi-irix5*): Use it with GNU ld.
-	
+
 	* config/mips/irix6-crti.asm, config/mips/irix6-crtn.asm: Renamed
 	to ...
 	* config/mips/irix-crti.asm, config/mips/irix-crtn.asm: ... this.
 	* config/mips/t-irix-gld: Reflect this.
 	* config/mips/iris6gld.h (STARTFILE_SPEC, ENDFILE_SPEC): Likewise.
-	
+
 	* config/mips/iris5gld.h: New file.
 	* config.gcc (mips-sgi-irix5*): Use it with GNU ld.
 	Only use collect2 without gas.
-	
+
 	* config/mips/iris6.h (IRIX6_STARTFILE_SPEC, IRIX6_ENDFILE_SPEC):
 	Renamed to IRIX_STARTFILE_SPEC, IRIX_ENDFILE_SPEC.
 	(STARTFILE_SPEC, ENDFILE_SPEC, SUBTARGET_EXTRA_SPECS): Reflect this.
 	* config/mips/iris6gld.h (STARTFILE_SPEC, ENDFILE_SPEC): Likewise.
-	
+
 	* config/mips/iris6.h (SUBTARGET_EXTRA_SPECS): Moved ...
 	* config/mips/iris5.h: ... here.
 
 	* config/mips/iris5.h (STARTFILE_SPEC, ENDFILE_SPEC): Renamed to
-	IRIX_STARTFILE_SPEC, IRIX_ENDFILE_SPEC. 
+	IRIX_STARTFILE_SPEC, IRIX_ENDFILE_SPEC.
 	(STARTFILE_SPEC, ENDFILE_SPEC): Define.
-	
+
 	* config/mips/iris5gas.h (STARTFILE_SPEC, ENDFILE_SPEC): Simplify
 	using irix_startfile_spec, irix_endfile_spec.
-	* patches.summary (http): 
+	* patches.summary (http):
 
 2004-02-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
@@ -159,12 +169,12 @@
 
 2004-02-16  Matthias Klose  <doko@debian.org>
 
-        * config/t-slibgcc-elf-ver: Define SHLIB_NAME and SHLIB_SONAME
-        in terms of SHLIB_SOVERSION.
-        * config/m68k/t-slibgcc-elf-ver: New file.
-        * config/pa/t-slibgcc-elf-ver: New file.
-        * config.gcc (m68k-linux, parisc-linux): Use them when not 
-        sjlj exceptions are not configured.
+	* config/t-slibgcc-elf-ver: Define SHLIB_NAME and SHLIB_SONAME
+	in terms of SHLIB_SOVERSION.
+	* config/m68k/t-slibgcc-elf-ver: New file.
+	* config/pa/t-slibgcc-elf-ver: New file.
+	* config.gcc (m68k-linux, parisc-linux): Use them when not
+	sjlj exceptions are not configured.
 
 2004-02-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -256,7 +266,7 @@
 
 	* configure.ac: Search for as, ld below libexec/gcc.
 	* configure: Regenerate.
-	
+
 2004-02-13  Jan Hubicka  <jh@suse.cz>
 
 	* combine.c (recog_for_combine): Avoid allocating unnecesary RTX.
@@ -363,7 +373,7 @@
 	* doc/tm.texi (Condition Code): Document new hooks.
 
 2004-02-12  Hartmut Penner  <hpenner@de.ibm.com>
-	
+
 	* config/rs6000/altivec.md (*movv4si_internal): At least one
 	operand must be register_operand.
 	(*movv8hi_internal1): Likewise.
@@ -386,7 +396,7 @@
 	Set AltiVec ABI and vrsave as default for ppc64 linux.
 	(init_cumulative_args): Post error, if try to return
 	value in AltiVec register without enable AltiVec.
-	(function_arg_advance): Ditto for passing arguments. 
+	(function_arg_advance): Ditto for passing arguments.
 
 2004-02-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
