@@ -88,6 +88,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hconfig.h"
 #include "system.h"
 #include "rtl.h"
+#include "errors.h"
 #include "gensupport.h"
 
 /* No instruction can have more operands than this.  Sorry for this
@@ -169,8 +170,6 @@ struct data
 /* This variable points to the first link in the insn chain.  */
 
 static struct data *idata, **idata_end = &idata;
-
-static int have_error;
 
 static void output_prologue PARAMS ((void));
 static void output_predicate_decls PARAMS ((void));
@@ -900,6 +899,8 @@ main (argc, argv)
      char **argv;
 {
   rtx desc;
+
+  progname = "genoutput";
 
   if (argc <= 1)
     fatal ("No input file name.");
