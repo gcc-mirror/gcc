@@ -122,7 +122,7 @@ struct file_name_map_list;
   OP(CPP_ATSIGN,	"@")  /* used in Objective C */ \
 \
   TK(CPP_NAME,		SPELL_IDENT)	/* word */			\
-  TK(CPP_NUMBER,	SPELL_STRING)	/* 34_be+ta  */			\
+  TK(CPP_NUMBER,	SPELL_NUMBER)	/* 34_be+ta  */			\
 \
   TK(CPP_CHAR,		SPELL_STRING)	/* 'char' */			\
   TK(CPP_WCHAR,		SPELL_STRING)	/* L'char' */			\
@@ -132,10 +132,11 @@ struct file_name_map_list;
   TK(CPP_WSTRING,	SPELL_STRING)	/* L"string" */			\
   TK(CPP_HEADER_NAME,	SPELL_STRING)	/* <stdio.h> in #include */	\
 \
-  TK(CPP_COMMENT,	SPELL_STRING)	/* Only if output comments.  */ \
+  TK(CPP_COMMENT,	SPELL_NUMBER)	/* Only if output comments.  */ \
+                                        /* SPELL_NUMBER happens to DTRT.  */ \
   TK(CPP_MACRO_ARG,	SPELL_NONE)	/* Macro argument.  */		\
-  OP(CPP_PADDING,	"")		/* Whitespace for cpp0.  */	\
-  OP(CPP_EOF,		"EOL")		/* End of line or file.  */
+  TK(CPP_PADDING,	SPELL_NONE)	/* Whitespace for cpp0.  */	\
+  TK(CPP_EOF,		SPELL_NONE)	/* End of line or file.  */
 
 #define OP(e, s) e,
 #define TK(e, s) e,
