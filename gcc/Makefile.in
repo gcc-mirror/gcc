@@ -2744,7 +2744,7 @@ stage4: force stage4-start lang.stage4
 # and delete the object files.  Use this if you're just verifying a version
 # that is pretty sure to work, and you are short of disk space.
 risky-stage1: stage1
-	- make clean
+	-make clean
 
 risky-stage2: stage2
 	-make clean
