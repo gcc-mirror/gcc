@@ -512,8 +512,7 @@ h8300_expand_prologue (void)
     {
       /* Push fp.  */
       push (HARD_FRAME_POINTER_REGNUM);
-      emit_insn (gen_rtx_SET (Pmode, hard_frame_pointer_rtx,
-			      stack_pointer_rtx));
+      emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
     }
 
   /* Push the rest of the registers in ascending order.  */
