@@ -4564,13 +4564,9 @@ mips_asm_file_start (stream)
     fprintf (stream, "\t.section\t.text\n");
 
   /* This code exists so that we can put all externs before all symbol
-     references.  This is necessary for the assembler's global pointer
+     references.  This is necessary for the MIPS assembler's global pointer
      optimizations to work.  */
-  /* ??? Current versions of gas do not require that externs occur before
-     symbol references.  This means that this code is unnecessary when
-     gas is being used.  This gas feature hasn't been well tested as yet
-     though.  */
-  if (TARGET_GP_OPT)
+  if (TARGET_FILE_SWITCHING)
     {
       asm_out_data_file = stream;
       asm_out_text_file = make_temp_file ();
@@ -4629,7 +4625,7 @@ mips_asm_file_end (file)
 	}
     }
       
-  if (TARGET_GP_OPT)
+  if (TARGET_FILE_SWITCHING)
     {
       fprintf (file, "\n\t.text\n");
       rewind (asm_out_text_file);
