@@ -229,6 +229,8 @@ extern void _cpp_do__Pragma	PARAMS ((cpp_reader *));
 extern void _cpp_init_stacks	PARAMS ((cpp_reader *));
 extern void _cpp_cleanup_stacks	PARAMS ((cpp_reader *));
 extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));
+extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum cpp_fc_reason,
+					 const char *, unsigned int));
 
 /* Utility routines and macros.  */
 #define DSC(str) (const U_CHAR *)str, sizeof str - 1

@@ -1,3 +1,20 @@
+2000-12-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * c-lex.c: s/change_file/file_change.
+        * cpplib.h: Similarly.
+        * cppmain.c: Similarly.
+        * fix-header.c: Similarly.
+        * cppfiles.c (stack_include_file): Pass the buffer location and
+        size to cpp_push_buffer.  Generate the file_change callback,
+        so that sysp is already set.
+        * cpphash.h: Add _cpp_do_file_change.
+        * cpplib.c (do_line): Set buffer->sysp directly. Generate the
+        file_change callback after setting sysp.
+        (_cpp_do_file_change): Handle FC_ENTER and the FC_RENAME exception
+        here.
+        (cpp_push_buffer): Don't generate a callback.  Clear sysp.
+        (cpp_pop_buffer): Clean up logic.
+
 2000-12-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in (gcc_gxx_include_dir): Simplify.

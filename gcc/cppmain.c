@@ -57,7 +57,7 @@ static void cb_undef	PARAMS ((cpp_reader *, cpp_hashnode *));
 static void cb_include	PARAMS ((cpp_reader *, const unsigned char *,
 				 const cpp_token *));
 static void cb_ident	  PARAMS ((cpp_reader *, const cpp_string *));
-static void cb_change_file PARAMS ((cpp_reader *, const cpp_file_change *));
+static void cb_file_change PARAMS ((cpp_reader *, const cpp_file_change *));
 static void cb_def_pragma PARAMS ((cpp_reader *));
 static void do_pragma_implementation PARAMS ((cpp_reader *));
 
@@ -154,7 +154,7 @@ setup_callbacks ()
       pfile->cb.ident      = cb_ident;
       pfile->cb.def_pragma = cb_def_pragma;
       if (! CPP_OPTION (pfile, no_line_commands))
-	pfile->cb.change_file = cb_change_file;
+	pfile->cb.file_change = cb_file_change;
     }
 
   if (CPP_OPTION (pfile, dump_includes))
@@ -374,7 +374,7 @@ cb_include (pfile, dir, header)
 }
 
 static void
-cb_change_file (pfile, fc)
+cb_file_change (pfile, fc)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      const cpp_file_change *fc;
 {
