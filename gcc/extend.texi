@@ -2678,6 +2678,10 @@ instructions would alter the condition code before there was time to
 test it.  This problem doesn't arise for ordinary ``test'' and
 ``compare'' instructions because they don't have any output operands.
 
+For reasons similar to those described above, it is not possible to give
+an assembler instruction access to the condition code left by previous
+instructions.
+
 If you are writing a header file that should be includable in ANSI C
 programs, write @code{__asm__} instead of @code{asm}.  @xref{Alternate
 Keywords}.
