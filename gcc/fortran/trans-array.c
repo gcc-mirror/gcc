@@ -3999,8 +3999,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
       && !INTEGER_CST_P (sym->ts.cl->backend_decl))
     gfc_trans_init_string_length (sym->ts.cl, &fnblock);
 
-  /* Parameter variables don't need anything special.  */
-  if (sym->attr.dummy)
+  /* Parameter and use associated variables don't need anything special.  */
+  if (sym->attr.dummy || sym->attr.use_assoc)
     {
       gfc_add_expr_to_block (&fnblock, body);
 
