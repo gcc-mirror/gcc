@@ -24,15 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    instruction to avoid the move instruction.  */
 
 #include "config.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
-/* This must precede rtl.h for FFS.  */
 #include <stdio.h>
-
 #include "rtl.h"
 #include "insn-config.h"
 #include "recog.h"
