@@ -2,6 +2,8 @@
 
 	* gcc.dg/20020304-1.c: New test.
 
+	* gcc.c-torture/compile/20020304-2.c: New test.
+
 2002-03-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c-torture/compile/20020304-1.c: New test case

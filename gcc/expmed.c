@@ -4278,7 +4278,8 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
      the comparison into one involving a single word.  */
   if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD * 2
       && GET_MODE_CLASS (mode) == MODE_INT
-      && op1 == const0_rtx)
+      && op1 == const0_rtx
+      && (GET_CODE (op0) != MEM || ! MEM_VOLATILE_P (op0)))
     {
       if (code == EQ || code == NE)
 	{
