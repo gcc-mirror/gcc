@@ -1,3 +1,9 @@
+Sun May  3 01:32:14 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_over_call): Do evaluate arg even if it has empty 
+	class type.
+	* decl.c (start_function): Don't push a member function.
+
 Thu Apr 30 18:59:23 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (g++FAQ.info): Put -o option before input file.
