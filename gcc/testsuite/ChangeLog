@@ -1,3 +1,12 @@
+2005-01-29  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/18565
+	* check.c (real_or_complex_check): New function.
+	(gfc_check_fn_c, gfc_check_fn_r, gfc_check_fn_rc): New functions.
+	* intrinsic.c (add_functions): Use new check functions.
+	* intrinsic.h (gfc_check_fn_c, gfc_check_fn_r, gfc_check_fn_rc):
+	Add prototypes.
+
 2005-01-29  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/Wwrite-strings-1.c, gcc.dg/array-quals-2.c,
