@@ -390,7 +390,11 @@ xcoffout_begin_block (file, line, n)
 {
   tree decl = current_function_decl;
 
-  ASM_OUTPUT_LBB (file, line, n);
+  
+  /* The IBM AIX compiler does not emit a .bb for the function level scope,
+     so we avoid it here also.  */
+  if (n != 1)
+    ASM_OUTPUT_LBB (file, line, n);
 
   do_block = n;
   next_block_number = 0;
@@ -405,7 +409,8 @@ xcoffout_end_block (file, line, n)
      int line;
      int n;
 {
-  ASM_OUTPUT_LBE (file, line, n);
+  if (n != 1)
+    ASM_OUTPUT_LBE (file, line, n);
 }
 
 /* Called at beginning of function (before prologue).
