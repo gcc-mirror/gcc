@@ -2,7 +2,7 @@
    This extracts a member from a .zip file, but does not handle
    uncompression (since that is not needed for classes.zip).
 
-   Copyright (C) 1996, 97-99, 2000  Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
