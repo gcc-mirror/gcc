@@ -181,14 +181,12 @@ make_ssa_name (tree var, tree stmt)
 {
   tree t;
 
-#if defined ENABLE_CHECKING
-  if ((!DECL_P (var)
-       && TREE_CODE (var) != INDIRECT_REF)
-      || (stmt
-	  && !IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (stmt)))
-	  && TREE_CODE (stmt) != PHI_NODE))
-    abort ();
-#endif
+  gcc_assert (DECL_P (var)
+	      || TREE_CODE (var) == INDIRECT_REF);
+
+  gcc_assert (!stmt
+	      || IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (stmt)))
+	      || TREE_CODE (stmt) == PHI_NODE);
 
   /* If our free list has an element, then use it.  Also reuse the
      SSA version number of the element on the free list which helps

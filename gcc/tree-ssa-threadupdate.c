@@ -145,11 +145,8 @@ remove_last_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 
   bsi = bsi_last (bb);
 
-#ifdef ENABLE_CHECKING
-  if (TREE_CODE (bsi_stmt (bsi)) != COND_EXPR
-      && TREE_CODE (bsi_stmt (bsi)) != SWITCH_EXPR)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE (bsi_stmt (bsi)) == COND_EXPR
+	      || TREE_CODE (bsi_stmt (bsi)) == SWITCH_EXPR);
 
   bsi_remove (&bsi);
 

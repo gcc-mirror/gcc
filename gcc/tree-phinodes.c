@@ -235,12 +235,9 @@ resize_phi_node (tree *phi, int len)
   int size, old_size;
   tree new_phi;
   int i, old_len, bucket = NUM_BUCKETS - 2;
-                                                                                
-#ifdef ENABLE_CHECKING
-  if (len < PHI_ARG_CAPACITY (*phi))
-    abort ();
-#endif
-                                                                                
+
+  gcc_assert (len >= PHI_ARG_CAPACITY (*phi));
+
   /* Note that OLD_SIZE is guaranteed to be smaller than SIZE.  */
   old_size = (sizeof (struct tree_phi_node)
 	     + (PHI_ARG_CAPACITY (*phi) - 1) * sizeof (struct phi_arg_d));
@@ -357,9 +354,7 @@ add_phi_arg (tree *phi, tree def, edge e)
 		   p = PHI_CHAIN (p))
 		;
 
-	      if (!p)
-		abort ();
-
+	      gcc_assert (p);
 	      PHI_CHAIN (p) = *phi;
 	    }
 	}
@@ -524,8 +519,7 @@ remove_all_phi_nodes_for (bitmap vars)
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  tree var = SSA_NAME_VAR (PHI_RESULT (phi));
-	  if (bitmap_bit_p (vars, var_ann (var)->uid))
-	    abort ();
+	  gcc_assert (!bitmap_bit_p (vars, var_ann (var)->uid));
 	}
 #endif
     }

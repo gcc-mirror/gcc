@@ -59,8 +59,7 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
   if (header->aux)
     return false;
 
-  if (!header->succ)
-    abort ();
+  gcc_assert (header->succ);
   if (!header->succ->succ_next)
     return false;
   if (header->succ->succ_next->succ_next)
@@ -118,8 +117,7 @@ duplicate_blocks (varray_type bbs_to_duplicate)
       preheader_edge = VARRAY_GENERIC_PTR_NOGC (bbs_to_duplicate, i);
       header = preheader_edge->dest;
 
-      if (!header->aux)
-	abort ();
+      gcc_assert (header->aux);
       header->aux = NULL;
 
       new_header = duplicate_block (header, preheader_edge);

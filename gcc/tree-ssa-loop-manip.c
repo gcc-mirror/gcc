@@ -310,8 +310,7 @@ rewrite_into_loop_closed_ssa (void)
   unsigned i;
   bitmap names_to_rename;
 
-  if (any_marked_for_rewrite_p ())
-    abort ();
+  gcc_assert (!any_marked_for_rewrite_p ());
 
   use_blocks = xcalloc (num_ssa_names, sizeof (bitmap));
 
@@ -346,9 +345,8 @@ check_loop_closed_ssa_use (basic_block bb, tree use)
 
   def = SSA_NAME_DEF_STMT (use);
   def_bb = bb_for_stmt (def);
-  if (def_bb
-      && !flow_bb_inside_loop_p (def_bb->loop_father, bb))
-    abort ();
+  gcc_assert (!def_bb
+	      || flow_bb_inside_loop_p (def_bb->loop_father, bb));
 }
 
 /* Checks invariants of loop closed ssa form in statement STMT in BB.  */

@@ -120,10 +120,8 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
   var_ann_t ann1, ann2, ann3;
   bool ign1, ign2;
 
-#ifdef ENABLE_CHECKING
-  if (TREE_CODE (var1) != SSA_NAME || TREE_CODE (var2) != SSA_NAME)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE (var1) == SSA_NAME);
+  gcc_assert (TREE_CODE (var2) == SSA_NAME);
 
   register_ssa_partition (map, var1, false);
   register_ssa_partition (map, var2, true);
@@ -140,10 +138,8 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
       fprintf (debug, "(P%d)", p2);
     }
 
-#ifdef ENABLE_CHECKING
-  if (p1 == NO_PARTITION || p2 == NO_PARTITION)
-    abort ();
-#endif
+  gcc_assert (p1 != NO_PARTITION);
+  gcc_assert (p2 != NO_PARTITION);
 
   root1 = SSA_NAME_VAR (partition_to_var (map, p1));
   root2 = SSA_NAME_VAR (partition_to_var (map, p2));

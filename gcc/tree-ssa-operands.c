@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "function.h"
 #include "diagnostic.h"
+#include "errors.h"
 #include "tree-flow.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
@@ -322,11 +323,8 @@ finalize_ssa_defs (def_optype *old_ops_p, tree stmt ATTRIBUTE_UNUSED)
   if (num == 0)
     return NULL;
 
-#ifdef ENABLE_CHECKING
   /* There should only be a single real definition per assignment.  */
-  if (TREE_CODE (stmt) == MODIFY_EXPR && num > 1)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE (stmt) != MODIFY_EXPR || num <= 1);
 
   old_ops = *old_ops_p;
 
@@ -382,8 +380,7 @@ finalize_ssa_uses (use_optype *old_ops_p, tree stmt ATTRIBUTE_UNUSED)
        initial call to get_stmt_operands does not pass a pointer to a 
        statement).  */
     for (x = 0; x < num; x++)
-      if (*(VARRAY_TREE_PTR (build_uses, x)) == stmt)
-	abort ();
+      gcc_assert (*(VARRAY_TREE_PTR (build_uses, x)) != stmt);
   }
 #endif
   old_ops = *old_ops_p;
@@ -639,11 +636,8 @@ finalize_ssa_v_must_defs (v_must_def_optype *old_ops_p,
   if (num == 0)
     return NULL;
 
-#ifdef ENABLE_CHECKING
   /* There should only be a single V_MUST_DEF per assignment.  */
-  if (TREE_CODE (stmt) == MODIFY_EXPR && num > 1)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE (stmt) != MODIFY_EXPR || num <= 1);
 
   old_ops = *old_ops_p;
 
@@ -721,14 +715,11 @@ finalize_ssa_stmt_operands (tree stmt, stmt_operands_p old_ops,
 static inline void
 start_ssa_stmt_operands (void)
 {
-#ifdef ENABLE_CHECKING
-  if (VARRAY_ACTIVE_SIZE (build_defs) > 0 
-      || VARRAY_ACTIVE_SIZE (build_uses) > 0
-      || VARRAY_ACTIVE_SIZE (build_vuses) > 0
-      || VARRAY_ACTIVE_SIZE (build_v_may_defs) > 0
-      || VARRAY_ACTIVE_SIZE (build_v_must_defs) > 0)
-    abort ();
-#endif
+  gcc_assert (VARRAY_ACTIVE_SIZE (build_defs) == 0);
+  gcc_assert (VARRAY_ACTIVE_SIZE (build_uses) == 0);
+  gcc_assert (VARRAY_ACTIVE_SIZE (build_vuses) == 0);
+  gcc_assert (VARRAY_ACTIVE_SIZE (build_v_may_defs) == 0);
+  gcc_assert (VARRAY_ACTIVE_SIZE (build_v_must_defs) == 0);
 }
 
 
@@ -935,12 +926,9 @@ get_stmt_operands (tree stmt)
   stmt_ann_t ann;
   stmt_operands_t old_operands;
 
-#if defined ENABLE_CHECKING
   /* The optimizers cannot handle statements that are nothing but a
      _DECL.  This indicates a bug in the gimplifier.  */
-  if (SSA_VAR_P (stmt))
-    abort ();
-#endif
+  gcc_assert (!SSA_VAR_P (stmt));
 
   /* Ignore error statements.  */
   if (TREE_CODE (stmt) == ERROR_MARK)
@@ -1189,10 +1177,13 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     }
 
   /* If we get here, something has gone wrong.  */
+#ifdef ENABLE_CHECKING
   fprintf (stderr, "unhandled expression in get_expr_operands():\n");
   debug_tree (expr);
   fputs ("\n", stderr);
-  abort ();
+  internal_error ("internal error");
+#endif
+  gcc_unreachable ();
 }
 
 
@@ -1217,11 +1208,8 @@ get_asm_expr_operands (tree stmt)
       parse_output_constraint (&constraint, i, 0, 0,
 	  &allows_mem, &allows_reg, &is_inout);
 
-#if defined ENABLE_CHECKING
       /* This should have been split in gimplify_asm_expr.  */
-      if (allows_reg && is_inout)
-	abort ();
-#endif
+      gcc_assert (!allows_reg || !is_inout);
 
       /* Memory operands are addressable.  Note that STMT needs the
 	 address of this operand.  */
@@ -1379,7 +1367,7 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags)
 
   /* Ok, this isn't even is_gimple_min_invariant.  Something's broke.  */
   else
-    abort ();
+    gcc_unreachable ();
 
   /* Add a USE operand for the base pointer.  */
   get_expr_operands (stmt, pptr, opf_none);
@@ -1489,12 +1477,9 @@ add_stmt_operand (tree *var_p, tree stmt, int flags)
 	    {
 	      if (flags & opf_kill_def)
 		{
-#if defined ENABLE_CHECKING
 		  /* Only regular variables may get a V_MUST_DEF
 		     operand.  */
-		  if (v_ann->mem_tag_kind != NOT_A_TAG)
-		    abort ();
-#endif
+		  gcc_assert (v_ann->mem_tag_kind == NOT_A_TAG);
 		  /* V_MUST_DEF for non-aliased, non-GIMPLE register 
 		    variable definitions.  */
 		  append_v_must_def (var);
@@ -1519,10 +1504,7 @@ add_stmt_operand (tree *var_p, tree stmt, int flags)
 
 	  /* The variable is aliased.  Add its aliases to the virtual
 	     operands.  */
-#if defined ENABLE_CHECKING
-	  if (VARRAY_ACTIVE_SIZE (aliases) == 0)
-	    abort ();
-#endif
+	  gcc_assert (VARRAY_ACTIVE_SIZE (aliases) != 0);
 
 	  if (flags & opf_is_def)
 	    {

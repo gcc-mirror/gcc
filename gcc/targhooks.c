@@ -213,7 +213,7 @@ default_unwind_emit (FILE * stream ATTRIBUTE_UNUSED,
 		     rtx insn ATTRIBUTE_UNUSED)
 {
   /* Should never happen.  */
-  abort ();
+  gcc_unreachable ();
 }
 
 /* True if MODE is valid for the target.  By "valid", we mean able to
@@ -258,7 +258,7 @@ default_scalar_mode_supported_p (enum machine_mode mode)
       return false;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 

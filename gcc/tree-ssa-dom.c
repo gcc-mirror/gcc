@@ -715,7 +715,6 @@ dom_opt_initialize_block_local_data (struct dom_walk_data *walk_data ATTRIBUTE_U
 				     basic_block bb ATTRIBUTE_UNUSED,
 				     bool recycled ATTRIBUTE_UNUSED)
 {
-#ifdef ENABLE_CHECKING
   struct dom_walk_block_data *bd
     = (struct dom_walk_block_data *)VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
 
@@ -725,20 +724,19 @@ dom_opt_initialize_block_local_data (struct dom_walk_data *walk_data ATTRIBUTE_U
      make sure we clear them before using them!  */
   if (recycled)
     {
-      if (bd->avail_exprs && VARRAY_ACTIVE_SIZE (bd->avail_exprs) > 0)
-	abort ();
-      if (bd->const_and_copies && VARRAY_ACTIVE_SIZE (bd->const_and_copies) > 0)
-	abort ();
-      if (bd->nonzero_vars && VARRAY_ACTIVE_SIZE (bd->nonzero_vars) > 0)
-	abort ();
-      if (bd->stmts_to_rescan && VARRAY_ACTIVE_SIZE (bd->stmts_to_rescan) > 0)
-	abort ();
-      if (bd->vrp_variables && VARRAY_ACTIVE_SIZE (bd->vrp_variables) > 0)
-	abort ();
-      if (bd->block_defs && VARRAY_ACTIVE_SIZE (bd->block_defs) > 0)
-	abort ();
+      gcc_assert (!bd->avail_exprs
+		  || VARRAY_ACTIVE_SIZE (bd->avail_exprs) == 0);
+      gcc_assert (!bd->const_and_copies
+		  || VARRAY_ACTIVE_SIZE (bd->const_and_copies) == 0);
+      gcc_assert (!bd->nonzero_vars
+		  || VARRAY_ACTIVE_SIZE (bd->nonzero_vars) == 0);
+      gcc_assert (!bd->stmts_to_rescan
+		  || VARRAY_ACTIVE_SIZE (bd->stmts_to_rescan) == 0);
+      gcc_assert (!bd->vrp_variables
+		  || VARRAY_ACTIVE_SIZE (bd->vrp_variables) == 0);
+      gcc_assert (!bd->block_defs
+		  || VARRAY_ACTIVE_SIZE (bd->block_defs) == 0);
     }
-#endif
 }
 
 /* Initialize local stacks for this optimizer and record equivalences
@@ -2216,8 +2214,7 @@ simplify_switch_and_lookup_avail_expr (tree stmt,
 
 #ifdef ENABLE_CHECKING
 	      /* ??? Why was Jeff testing this?  We are gimple...  */
-	      if (!is_gimple_val (def))
-		abort ();
+	      gcc_assert (is_gimple_val (def));
 #endif
 
 	      to = TREE_TYPE (cond);
@@ -2316,12 +2313,9 @@ cprop_into_successor_phis (basic_block bb,
 	      hint = i;
 	    }
 
-#ifdef ENABLE_CHECKING
 	  /* If we did not find the proper alternative, then something is
 	     horribly wrong.  */
-	  if (hint == phi_num_args)
-	    abort ();
-#endif
+	  gcc_assert (hint != phi_num_args);
 
 	  /* The alternative may be associated with a constant, so verify
 	     it is an SSA_NAME before doing anything with it.  */
@@ -2447,9 +2441,8 @@ eliminate_redundant_computations (struct dom_walk_data *walk_data,
       opt_stats.num_re++;
 
 #if defined ENABLE_CHECKING
-      if (TREE_CODE (cached_lhs) != SSA_NAME
-	  && !is_gimple_min_invariant (cached_lhs))
-	abort ();
+      gcc_assert (TREE_CODE (cached_lhs) == SSA_NAME
+		  || is_gimple_min_invariant (cached_lhs));
 #endif
 
       if (TREE_CODE (cached_lhs) == ADDR_EXPR
@@ -3333,11 +3326,8 @@ avail_expr_eq (const void *p1, const void *p2)
 	if (VUSE_OP (ops1, i) != VUSE_OP (ops2, i))
 	  return false;
 
-#ifdef ENABLE_CHECKING
-      if (((struct expr_hash_elt *)p1)->hash
-	  != ((struct expr_hash_elt *)p2)->hash)
-	abort ();
-#endif
+      gcc_assert (((struct expr_hash_elt *)p1)->hash
+		  == ((struct expr_hash_elt *)p2)->hash);
       return true;
     }
 

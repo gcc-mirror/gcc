@@ -169,13 +169,9 @@ fix_stmt_v_may_defs (tree stmt1, tree stmt2)
 	    }
 	}
 
-#ifdef ENABLE_CHECKING
       /* If we did not find a corresponding V_MAY_DEF_RESULT, then something
 	 has gone terribly wrong.  */
-      if (j == NUM_V_MAY_DEFS (v_may_defs2))
-	abort ();
-#endif
-
+      gcc_assert (j != NUM_V_MAY_DEFS (v_may_defs2));
     }
 }
 

@@ -355,7 +355,7 @@ dump_use (FILE *file, struct iv_use *use)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
    fprintf (file, "  in statement ");
@@ -513,8 +513,7 @@ divide (unsigned bits, unsigned HOST_WIDE_INT a, unsigned HOST_WIDE_INT b,
 
   val = (a * inv) & mask;
 
-  if (((val * b) & mask) != a)
-    abort ();
+  gcc_assert (((val * b) & mask) == a);
 
   if ((val >> (bits - 1)) & 1)
     val |= ~mask;
@@ -532,8 +531,7 @@ stmt_after_ip_normal_pos (struct loop *loop, tree stmt)
 {
   basic_block bb = ip_normal_pos (loop), sbb = bb_for_stmt (stmt);
 
-  if (!bb)
-    abort ();
+  gcc_assert (bb);
 
   if (sbb == loop->latch)
     return true;
@@ -589,7 +587,7 @@ stmt_after_increment (struct loop *loop, struct iv_cand *cand, tree stmt)
       return stmt_after_ip_original_pos (cand, stmt);
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -644,8 +642,7 @@ set_iv (struct ivopts_data *data, tree iv, tree base, tree step)
 {
   struct version_info *info = name_info (data, iv);
 
-  if (info->iv)
-    abort ();
+  gcc_assert (!info->iv);
 
   bitmap_set_bit (data->relevant, SSA_NAME_VERSION (iv));
   info->iv = alloc_iv (base, step);
@@ -741,7 +738,7 @@ contains_abnormal_ssa_name_p (tree expr)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return false;
@@ -1030,9 +1027,8 @@ find_interesting_uses_outer_or_nonlin (struct ivopts_data *data, tree op,
     {
       use = iv_use (data, iv->use_id);
 
-      if (use->type != USE_NONLINEAR_EXPR
-	  && use->type != USE_OUTER)
-	abort ();
+      gcc_assert (use->type == USE_NONLINEAR_EXPR
+		  || use->type == USE_OUTER);
 
       if (type == USE_NONLINEAR_EXPR)
 	use->type = USE_NONLINEAR_EXPR;
@@ -1050,9 +1046,8 @@ find_interesting_uses_outer_or_nonlin (struct ivopts_data *data, tree op,
   *civ = *iv;
 
   stmt = SSA_NAME_DEF_STMT (op);
-  if (TREE_CODE (stmt) != PHI_NODE
-      && TREE_CODE (stmt) != MODIFY_EXPR)
-    abort ();
+  gcc_assert (TREE_CODE (stmt) == PHI_NODE
+	      || TREE_CODE (stmt) == MODIFY_EXPR);
 
   use = record_use (data, NULL, civ, stmt, type);
   iv->use_id = use->id;
@@ -1742,7 +1737,7 @@ add_derived_ivs_candidates (struct ivopts_data *data)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 }
@@ -2531,8 +2526,7 @@ peel_address (tree addr, unsigned HOST_WIDE_INT *diff)
       off = DECL_FIELD_BIT_OFFSET (TREE_OPERAND (addr, 1));
       bit_offset = TREE_INT_CST_LOW (off);
 
-      if (bit_offset % BITS_PER_UNIT)
-	abort ();
+      gcc_assert ((bit_offset % BITS_PER_UNIT) == 0);
       
       if (diff)
 	*diff += bit_offset / BITS_PER_UNIT;
@@ -2557,7 +2551,7 @@ peel_address (tree addr, unsigned HOST_WIDE_INT *diff)
       return TREE_OPERAND (addr, 0);
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -2647,8 +2641,7 @@ ptr_difference_cost (struct ivopts_data *data,
   unsigned HOST_WIDE_INT diff = 0;
   unsigned cost;
 
-  if (TREE_CODE (e1) != ADDR_EXPR)
-    abort ();
+  gcc_assert (TREE_CODE (e1) == ADDR_EXPR);
 
   if (TREE_CODE (e2) == ADDR_EXPR
       && ptr_difference_const (TREE_OPERAND (e1, 0),
@@ -3041,9 +3034,8 @@ may_replace_final_value (struct loop *loop, struct iv_use *use, tree *value)
   if (!exit)
     return false;
 
-  if (!dominated_by_p (CDI_DOMINATORS, exit->src,
-		       bb_for_stmt (use->stmt)))
-    abort ();
+  gcc_assert (dominated_by_p (CDI_DOMINATORS, exit->src,
+			      bb_for_stmt (use->stmt)));
 
   niter = &loop_data (loop)->niter;
   if (!niter->niter
@@ -3129,7 +3121,7 @@ determine_use_iv_cost (struct ivopts_data *data,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -3790,8 +3782,9 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
   tree op, stmts, tgt, ass;
   block_stmt_iterator bsi, pbsi;
  
-  if (TREE_CODE (use->stmt) == PHI_NODE)
+  switch (TREE_CODE (use->stmt))
     {
+    case PHI_NODE:
       tgt = PHI_RESULT (use->stmt);
 
       /* If we should keep the biv, do not replace it.  */
@@ -3805,14 +3798,16 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 	  bsi = pbsi;
 	  bsi_next (&pbsi);
 	}
-    }
-  else if (TREE_CODE (use->stmt) == MODIFY_EXPR)
-    {
+      break;
+
+    case MODIFY_EXPR:
       tgt = TREE_OPERAND (use->stmt, 0);
       bsi = stmt_for_bsi (use->stmt);
+      break;
+
+    default:
+      gcc_unreachable ();
     }
-  else
-    abort ();
 
   op = force_gimple_operand (comp, &stmts, false, SSA_NAME_VAR (tgt));
 
@@ -4102,20 +4097,26 @@ rewrite_use_outer (struct ivopts_data *data,
   tree value, op, stmts, tgt;
   tree phi;
 
-  if (TREE_CODE (use->stmt) == PHI_NODE)
-    tgt = PHI_RESULT (use->stmt);
-  else if (TREE_CODE (use->stmt) == MODIFY_EXPR)
-    tgt = TREE_OPERAND (use->stmt, 0);
-  else
-    abort ();
+  switch (TREE_CODE (use->stmt))
+    {
+    case PHI_NODE:
+      tgt = PHI_RESULT (use->stmt);
+      break;
+    case MODIFY_EXPR:
+      tgt = TREE_OPERAND (use->stmt, 0);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
   exit = single_dom_exit (data->current_loop);
 
   if (exit)
     {
       if (!cand->iv)
 	{
-	  if (!may_replace_final_value (data->current_loop, use, &value))
-	    abort ();
+	  bool ok = may_replace_final_value (data->current_loop, use, &value);
+	  gcc_assert (ok);
 	}
       else
 	value = get_computation_at (data->current_loop,
@@ -4180,7 +4181,7 @@ rewrite_use (struct ivopts_data *data,
 	break;
 
       default:
-	abort ();
+	gcc_unreachable ();
     }
   modify_stmt (use->stmt);
 }
@@ -4198,8 +4199,7 @@ rewrite_uses (struct ivopts_data *data)
     {
       use = iv_use (data, i);
       cand = use->selected;
-      if (!cand)
-	abort ();
+      gcc_assert (cand);
 
       rewrite_use (data, use, cand);
     }

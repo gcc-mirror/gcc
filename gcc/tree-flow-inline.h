@@ -30,13 +30,9 @@ Boston, MA 02111-1307, USA.  */
 static inline var_ann_t
 var_ann (tree t)
 {
-#if defined ENABLE_CHECKING
-  if (t == NULL_TREE
-      || !DECL_P (t)
-      || (t->common.ann
-	  && t->common.ann->common.type != VAR_ANN))
-    abort ();
-#endif
+  gcc_assert (t);
+  gcc_assert (DECL_P (t));
+  gcc_assert (!t->common.ann || t->common.ann->common.type == VAR_ANN);
 
   return (var_ann_t) t->common.ann;
 }
@@ -55,11 +51,9 @@ get_var_ann (tree var)
 static inline stmt_ann_t
 stmt_ann (tree t)
 {
-#if defined ENABLE_CHECKING
-  if (!is_gimple_stmt (t))
-    abort ();
+#ifdef ENABLE_CHECKING
+  gcc_assert (is_gimple_stmt (t));
 #endif
-
   return (stmt_ann_t) t->common.ann;
 }
 
@@ -223,10 +217,7 @@ get_def_from_ptr (def_operand_p def)
 static inline use_operand_p
 get_use_op_ptr (use_optype uses, unsigned int index)
 {
-#ifdef ENABLE_CHECKING
-  if (index >= uses->num_uses)
-    abort();
-#endif
+  gcc_assert (index < uses->num_uses);
   return uses->uses[index];
 }
 
@@ -234,10 +225,7 @@ get_use_op_ptr (use_optype uses, unsigned int index)
 static inline def_operand_p
 get_def_op_ptr (def_optype defs, unsigned int index)
 {
-#ifdef ENABLE_CHECKING
-  if (index >= defs->num_defs)
-    abort();
-#endif
+  gcc_assert (index < defs->num_defs);
   return defs->defs[index];
 }
 
@@ -248,10 +236,7 @@ static inline def_operand_p
 get_v_may_def_result_ptr(v_may_def_optype v_may_defs, unsigned int index)
 {
   def_operand_p op;
-#ifdef ENABLE_CHECKING
-  if (index >= v_may_defs->num_v_may_defs)
-    abort();
-#endif
+  gcc_assert (index < v_may_defs->num_v_may_defs);
   op.def = &(v_may_defs->v_may_defs[index].def);
   return op;
 }
@@ -262,10 +247,7 @@ static inline use_operand_p
 get_v_may_def_op_ptr(v_may_def_optype v_may_defs, unsigned int index)
 {
   use_operand_p op;
-#ifdef ENABLE_CHECKING
-  if (index >= v_may_defs->num_v_may_defs)
-    abort();
-#endif
+  gcc_assert (index < v_may_defs->num_v_may_defs);
   op.use = &(v_may_defs->v_may_defs[index].use);
   return op;
 }
@@ -275,10 +257,7 @@ static inline use_operand_p
 get_vuse_op_ptr(vuse_optype vuses, unsigned int index)
 {
   use_operand_p op;
-#ifdef ENABLE_CHECKING
-  if (index >= vuses->num_vuses)
-    abort();
-#endif
+  gcc_assert (index < vuses->num_vuses);
   op.use = &(vuses->vuses[index]);
   return op;
 }
@@ -289,10 +268,7 @@ static inline def_operand_p
 get_v_must_def_op_ptr (v_must_def_optype v_must_defs, unsigned int index)
 {
   def_operand_p op;
-#ifdef ENABLE_CHECKING
-  if (index >= v_must_defs->num_v_must_defs)
-    abort();
-#endif
+  gcc_assert (index < v_must_defs->num_v_must_defs);
   op.def = &(v_must_defs->v_must_defs[index]);
   return op;
 }
@@ -358,8 +334,7 @@ immediate_use (dataflow_t df, int num)
     return NULL_TREE;
 
 #ifdef ENABLE_CHECKING
-  if (num >= num_immediate_uses (df))
-    abort ();
+  gcc_assert (num < num_immediate_uses (df));
 #endif
   if (num < 2)
     return df->uses[num];
@@ -400,10 +375,8 @@ static inline int
 phi_arg_from_edge (tree phi, edge e)
 {
   int i;
-#if defined ENABLE_CHECKING
-  if (!phi || TREE_CODE (phi) != PHI_NODE)
-    abort();
-#endif
+  gcc_assert (phi);
+  gcc_assert (TREE_CODE (phi) == PHI_NODE);
 
   for (i = 0; i < PHI_NUM_ARGS (phi); i++)
     if (PHI_ARG_EDGE (phi, i) == e)
@@ -477,8 +450,7 @@ phi_ssa_name_p (tree t)
   if (TREE_CODE (t) == SSA_NAME)
     return true;
 #ifdef ENABLE_CHECKING
-  if (!is_gimple_min_invariant (t))
-    abort ();
+  gcc_assert (is_gimple_min_invariant (t));
 #endif
   return false;
 }
@@ -495,10 +467,7 @@ bsi_start (basic_block bb)
     bsi.tsi = tsi_start (bb->stmt_list);
   else
     {
-#ifdef ENABLE_CHECKING
-      if (bb->index >= 0)
-	abort ();
-#endif
+      gcc_assert (bb->index < 0);
       bsi.tsi.ptr = NULL;
       bsi.tsi.container = NULL;
     }
@@ -519,10 +488,7 @@ bsi_after_labels (basic_block bb)
 
   if (!bb->stmt_list)
     {
-#ifdef ENABLE_CHECKING
-      if (bb->index >= 0)
-	abort ();
-#endif
+      gcc_assert (bb->index < 0);
       bsi.tsi.ptr = NULL;
       bsi.tsi.container = NULL;
       return bsi;
@@ -537,8 +503,7 @@ bsi_after_labels (basic_block bb)
      be placed at the start of the basic block.  This would not work if the
      first statement was not label; rather fail here than enable the user
      proceed in wrong way.  */
-  if (TREE_CODE (tsi_stmt (bsi.tsi)) != LABEL_EXPR)
-    abort ();
+  gcc_assert (TREE_CODE (tsi_stmt (bsi.tsi)) == LABEL_EXPR);
 
   next = bsi.tsi;
   tsi_next (&next);
@@ -563,10 +528,7 @@ bsi_last (basic_block bb)
     bsi.tsi = tsi_last (bb->stmt_list);
   else
     {
-#ifdef ENABLE_CHECKING
-      if (bb->index >= 0)
-	abort ();
-#endif
+      gcc_assert (bb->index < 0);
       bsi.tsi.ptr = NULL;
       bsi.tsi.container = NULL;
     }

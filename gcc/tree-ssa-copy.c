@@ -131,8 +131,7 @@ may_propagate_copy (tree dest, tree orig)
 #ifdef ENABLE_CHECKING
 	  /* If we have one real and one virtual operand, then something has
 	     gone terribly wrong.  */
-	  if (is_gimple_reg (orig))
-	    abort ();
+	  gcc_assert (!is_gimple_reg (orig));
 #endif
 	}
 
@@ -170,18 +169,17 @@ merge_alias_info (tree orig, tree new)
   var_ann_t new_ann = var_ann (new_sym);
   var_ann_t orig_ann = var_ann (orig_sym);
 
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (orig)));
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (new)));
 #if defined ENABLE_CHECKING
-  if (!POINTER_TYPE_P (TREE_TYPE (orig))
-      || !POINTER_TYPE_P (TREE_TYPE (new))
-      || !lang_hooks.types_compatible_p (TREE_TYPE (orig), TREE_TYPE (new)))
-    abort ();
+  gcc_assert (lang_hooks.types_compatible_p (TREE_TYPE (orig),
+					     TREE_TYPE (new)));
 
   /* If the pointed-to alias sets are different, these two pointers
      would never have the same memory tag.  In this case, NEW should
      not have been propagated into ORIG.  */
-  if (get_alias_set (TREE_TYPE (TREE_TYPE (new_sym)))
-      != get_alias_set (TREE_TYPE (TREE_TYPE (orig_sym))))
-    abort ();
+  gcc_assert (get_alias_set (TREE_TYPE (TREE_TYPE (new_sym)))
+	      == get_alias_set (TREE_TYPE (TREE_TYPE (orig_sym))));
 #endif
 
   /* Merge type-based alias info.  */
@@ -189,8 +187,8 @@ merge_alias_info (tree orig, tree new)
     new_ann->type_mem_tag = orig_ann->type_mem_tag;
   else if (orig_ann->type_mem_tag == NULL_TREE)
     orig_ann->type_mem_tag = new_ann->type_mem_tag;
-  else if (new_ann->type_mem_tag != orig_ann->type_mem_tag)
-    abort ();
+  else
+    gcc_assert (new_ann->type_mem_tag == orig_ann->type_mem_tag);
 }
 
 
@@ -206,11 +204,10 @@ replace_exp_1 (use_operand_p op_p, tree val,
   tree op = USE_FROM_PTR (op_p);
 
 #if defined ENABLE_CHECKING
-  if (for_propagation
-      && TREE_CODE (op) == SSA_NAME
-      && TREE_CODE (val) == SSA_NAME
-      && !may_propagate_copy (op, val))
-    abort ();
+  gcc_assert (!(for_propagation
+		&& TREE_CODE (op) == SSA_NAME
+		&& TREE_CODE (val) == SSA_NAME
+		&& !may_propagate_copy (op, val)));
 #endif
 
   if (TREE_CODE (val) == SSA_NAME)
@@ -249,10 +246,9 @@ void
 propagate_tree_value (tree *op_p, tree val)
 {
 #if defined ENABLE_CHECKING
-  if (TREE_CODE (val) == SSA_NAME
-      && TREE_CODE (*op_p) == SSA_NAME
-      && !may_propagate_copy (*op_p, val))
-    abort ();
+  gcc_assert (!(TREE_CODE (val) == SSA_NAME
+		&& TREE_CODE (*op_p) == SSA_NAME
+		&& !may_propagate_copy (*op_p, val)));
 #endif
 
   if (TREE_CODE (val) == SSA_NAME)

@@ -146,10 +146,8 @@ create_temp (tree t)
 
   if (TREE_CODE (t) == SSA_NAME)
     t = SSA_NAME_VAR (t);
- 
-  if (TREE_CODE (t) != VAR_DECL 
-      && TREE_CODE (t) != PARM_DECL)
-    abort ();
+
+  gcc_assert (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == PARM_DECL);
 
   type = TREE_TYPE (t);
   tmp = DECL_NAME (t);
@@ -368,8 +366,7 @@ eliminate_build (elim_graph g, basic_block B, int i)
 	     in the same order as all of the other PHI nodes. If they don't 
 	     match, find the appropriate index here.  */
 	  pi = phi_arg_from_edge (phi, g->e);
-	  if (pi == -1)
-	    abort();
+	  gcc_assert (pi != -1);
 	  Ti = PHI_ARG_DEF (phi, pi);
 	}
 
@@ -496,12 +493,8 @@ eliminate_phi (edge e, int i, elim_graph g)
   int x;
   basic_block B = e->dest;
 
-#if defined ENABLE_CHECKING
-  if (i == -1)
-    abort ();
-  if (VARRAY_ACTIVE_SIZE (g->const_copies) != 0)
-    abort ();
-#endif
+  gcc_assert (i != -1);
+  gcc_assert (VARRAY_ACTIVE_SIZE (g->const_copies) == 0);
 
   /* Abnormal edges already have everything coalesced, or the coalescer
      would have aborted.  */
@@ -609,59 +602,71 @@ coalesce_abnormal_edges (var_map map, conflict_graph graph, root_var_p rv)
 	      continue;
 
 	    y = phi_arg_from_edge (phi, e);
-	    if (y == -1)
-	      abort ();
+	    gcc_assert (y != -1);
 
 	    tmp = PHI_ARG_DEF (phi, y);
+#ifdef ENABLE_CHECKING
 	    if (!phi_ssa_name_p (tmp))
 	      {
 	        print_exprs_edge (stderr, e,
 				  "\nConstant argument in PHI. Can't insert :",
 				  var, " = ", tmp);
-		abort ();
+		internal_error ("SSA corruption");
 	      }
+#else
+	    gcc_assert (phi_ssa_name (tmp));
+#endif
 	    y = var_to_partition (map, tmp);
-	    if (x == NO_PARTITION || y == NO_PARTITION)
-	      abort ();
+	    gcc_assert (x != NO_PARTITION);
+	    gcc_assert (y != NO_PARTITION);
+#ifdef ENABLE_CHECKING
 	    if (root_var_find (rv, x) != root_var_find (rv, y))
 	      {
 		print_exprs_edge (stderr, e, "\nDifferent root vars: ",
 				  root_var (rv, root_var_find (rv, x)), 
 				  " and ", 
 				  root_var (rv, root_var_find (rv, y)));
-		abort ();
+		internal_error ("SSA corruption");
 	      }
+#else
+	    gcc_assert (root_var_find (rv, x) == root_var_find (rv, y));
+#endif
 
 	    if (x != y)
 	      {
-		if (!conflict_graph_conflict_p (graph, x, y))
-		  {
-		    /* Now map the partitions back to their real variables.  */
-		    var = partition_to_var (map, x);
-		    tmp = partition_to_var (map, y);
-		    if (dump_file 
-			&& (dump_flags & TDF_DETAILS))
-		      {
-			print_exprs_edge (dump_file, e, 
-					  "ABNORMAL: Coalescing ",
-					  var, " and ", tmp);
-		      }
-		    if (var_union (map, var, tmp) == NO_PARTITION)
-		      {
-			print_exprs_edge (stderr, e, "\nUnable to coalesce", 
-					  partition_to_var (map, x), " and ", 
-					  partition_to_var (map, y));
-			abort ();
-		      }
-		    conflict_graph_merge_regs (graph, x, y);
-		  }
-		else
+#ifdef ENABLE_CHECKING
+		if (conflict_graph_conflict_p (graph, x, y))
 		  {
 		    print_exprs_edge (stderr, e, "\n Conflict ", 
 				      partition_to_var (map, x),
 				      " and ", partition_to_var (map, y));
-		    abort ();
+		    internal_error ("SSA corruption");
 		  }
+#else
+		gcc_assert (!conflict_graph_conflict_p (graph, x, y));
+#endif
+		
+		/* Now map the partitions back to their real variables.  */
+		var = partition_to_var (map, x);
+		tmp = partition_to_var (map, y);
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  {
+		    print_exprs_edge (dump_file, e, 
+				      "ABNORMAL: Coalescing ",
+				      var, " and ", tmp);
+		  }
+#ifdef ENABLE_CHECKING
+		if (var_union (map, var, tmp) == NO_PARTITION)
+		  {
+		    print_exprs_edge (stderr, e, "\nUnable to coalesce", 
+				      partition_to_var (map, x), " and ", 
+				      partition_to_var (map, y));
+		    internal_error ("SSA corruption");
+		  }
+#else
+		gcc_assert (var_union (map, var, tmp) != NO_PARTITION);
+#endif
+		conflict_graph_merge_regs (graph, x, y);
 	      }
 	  }
 }
@@ -801,12 +806,9 @@ coalesce_ssa_name (var_map map, int flags)
       /* If these aren't already coalesced...  */
       if (partition_to_var (map, x) != var)
 	{
-	  if (ann->out_of_ssa_tag)
-	    {
-	      /* This root variable has already been assigned to another
-		 partition which is not coalesced with this one.  */
-	      abort ();
-	    }
+	  /* This root variable should have not already been assigned
+	     to another partition which is not coalesced with this one.  */
+	  gcc_assert (!ann->out_of_ssa_tag);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -1032,7 +1034,7 @@ eliminate_virtual_phis (void)
 		      print_generic_expr (stderr, arg, TDF_SLIM);
 		      fprintf (stderr, "), but the result is :");
 		      print_generic_stmt (stderr, phi, TDF_SLIM);
-		      abort();
+		      internal_error ("SSA corruption");
 		    }
 		}
 #endif
@@ -1279,7 +1281,7 @@ free_temp_expr_table (temp_expr_table_p t)
   int x;
   for (x = 0; x <= num_var_partitions (t->map); x++)
     if (t->partition_dep_list[x] != NULL)
-      abort();
+      gcc_unreachable ();
 #endif
 
   while ((p = t->free_list))
@@ -1438,10 +1440,7 @@ add_dependance (temp_expr_table_p tab, int version, tree var)
   else
     {
       i = var_to_partition (tab->map, var);
-#ifdef ENABLE_CHECKING
-      if (i== NO_PARTITION)
-	abort ();
-#endif
+      gcc_assert (i != NO_PARTITION);
       add_value_to_list (tab, &(tab->partition_dep_list[i]), version);
       add_value_to_list (tab, 
 			 (value_expr_p *)&(tab->version_info[version]), i);
@@ -1548,16 +1547,10 @@ finish_expr (temp_expr_table_p tab, int version, bool replace)
   for (info = (value_expr_p) tab->version_info[version]; info; info = tmp)
     {
       partition = info->value;
-#ifdef ENABLE_CHECKING
-      if (tab->partition_dep_list[partition] == NULL)
-        abort ();
-#endif
+      gcc_assert (tab->partition_dep_list[partition]);
       tmp = remove_value_from_list (&(tab->partition_dep_list[partition]), 
 				    version);
-#ifdef ENABLE_CHECKING
-      if (!tmp)
-        abort ();
-#endif
+      gcc_assert (tmp);
       free_value_expr (tab, tmp);
       /* Only clear the bit when the dependency list is emptied via 
          a replacement. Otherwise kill_expr will take care of it.  */
@@ -1575,10 +1568,7 @@ finish_expr (temp_expr_table_p tab, int version, bool replace)
     }
   else
     {
-#ifdef ENABLE_CHECKING
-      if (bitmap_bit_p (tab->replaceable, version))
-	abort ();
-#endif
+      gcc_assert (!bitmap_bit_p (tab->replaceable, version));
       tab->version_info[version] = NULL;
     }
 }
@@ -1858,7 +1848,7 @@ rewrite_trees (var_map map, tree *values)
 		      print_generic_expr (stderr, arg, TDF_SLIM);
 		      fprintf (stderr, "), but the result is not :");
 		      print_generic_stmt (stderr, phi, TDF_SLIM);
-		      abort();
+		      internal_error ("SSA corruption");
 		    }
 		}
 	    }

@@ -132,15 +132,12 @@ create_tmp_var_for (struct nesting_info *info, tree type, const char *prefix)
 {
   tree tmp_var;
 
-#if defined ENABLE_CHECKING
   /* If the type is of variable size or a type which must be created by the
      frontend, something is wrong.  Note that we explicitly allow
      incomplete types here, since we create them ourselves here.  */
-  if (TREE_ADDRESSABLE (type)
-      || (TYPE_SIZE_UNIT (type)
-	  && TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST))
-    abort ();
-#endif
+  gcc_assert (TREE_ADDRESSABLE (type));
+  gcc_assert (!TYPE_SIZE_UNIT (type)
+	      || TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST);
 
   tmp_var = create_tmp_var_raw (type, prefix);
   DECL_CONTEXT (tmp_var) = info->context;
@@ -249,8 +246,7 @@ lookup_field_for_decl (struct nesting_info *info, tree decl,
   slot = htab_find_slot (info->var_map, &dummy, insert);
   if (!slot)
     {
-      if (insert == INSERT)
-	abort ();
+      gcc_assert (insert != INSERT);
       return NULL;
     }
   elt = *slot;
@@ -434,8 +430,7 @@ lookup_tramp_for_decl (struct nesting_info *info, tree decl,
   slot = htab_find_slot (info->var_map, &dummy, insert);
   if (!slot)
     {
-      if (insert == INSERT)
-	abort ();
+      gcc_assert (insert != INSERT);
       return NULL;
     }
   elt = *slot;
@@ -1194,12 +1189,7 @@ convert_all_function_calls (struct nesting_info *root)
       if (root->outer && !root->chain_decl && !root->chain_field)
 	DECL_NO_STATIC_CHAIN (root->context) = 1;
       else
-	{
-#ifdef ENABLE_CHECKING
-	  if (DECL_NO_STATIC_CHAIN (root->context))
-	    abort ();
-#endif
-	}
+	gcc_assert (!DECL_NO_STATIC_CHAIN (root->context));
 
       root = root->next;
     }

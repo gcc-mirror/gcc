@@ -1,3 +1,148 @@
+2004-09-09  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	* targhooks.c (default_unwind_emit, default_scalar_mode_supported_p):
+	Use gcc_assert, gcc_unreachable & internal_error instead of abort.
+	* timevar.c (timevar_push, timevar_pop, timevar_start,
+	timevar_stop): Likewise.
+	* toplev.c (default_pch_valid_p): Likewise.
+	* tracer.c (tail_duplicate): Likewise.
+	* tree-alias-common.c (get_alias_var_decl,
+	get_values_from_constructor, create_alias_var, delete_alias_vars,
+	empty_points_to_set, same_points_to_set, ptr_may_alias_var):
+	Likewise.
+	* tree.c (tree_size, make_node_stat, copy_node_stat,
+	build_int_cst_wide, integer_all_onesp, list_length, chainon,
+	tree_node_structure, type_contains_placeholder_p, substitute_in_expr,
+	substitute_placeholder_in_expr, tabilize_reference_1, build0_stat,
+	build1_stat, build2_stat, build3_stat, build4_stat, is_attribute_p,
+	lookup_attribute, type_hash_canon, host_integerp, iterative_hash_expr,
+	build_method_type_directly, decl_type_context, get_callee_fndecl,
+	get_set_constructor_bits, build_vector_type_for_mode, int_cst_value,
+	tree_fold_gcd): Likewise.
+	* tree-cfg.c (create_bb, make_ctrl_stmt_edges, make_exit_edges,
+	make_cond_expr_edges, group_case_labels, tree_merge_blocks,
+	cleanup_control_expr_graph, find_taken_edge,
+	find_taken_edge_switch_expr, phi_alternatives_equal,
+	is_ctrl_altering_stmt, disband_implicit_edges, set_bb_for_stmt,
+	stmt_for_bsi, tree_find_edge_insert_loc, bsi_insert_on_edge_immediate,
+	tree_split_edge, tree_verify_flow_info, thread_jumps,
+	tree_redirect_edge_and_branch, tree_flow_call_edges_add): Likewise.
+	* tree-chrec.c (chrec_fold_poly_cst, chrec_fold_plus_poly_poly,
+	chrec_fold_multiply_poly_poly): Likewise.
+	* tree-complex.c (extract_component, expand_complex_division,
+	expand_complex_comparison, expand_complex_operations_1,
+	build_replicated_const, expand_vector_operations_1): Likewise.
+	* tree-data-ref.c (tree_fold_bezout, build_classic_dist_vector,
+	build_classic_dir_vector): Likewise.
+	* tree-dfa.c (compute_immediate_uses_for_phi,
+	compute_immediate_uses_for_stmt, create_var_ann, create_stmt_ann,
+	create_tree_ann, collect_dfa_stats, get_virtual_var): Likewise.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+	* tree-eh.c (record_stmt_eh_region, add_stmt_to_eh_region,
+	record_in_finally_tree, replace_goto_queue_1,
+	maybe_record_in_goto_queue, verify_norecord_switch_expr,
+	do_return_redirection): Likewise.
+	* tree-if-conv.c (tree_if_convert_stmt, tree_if_convert_cond_expr,
+	add_to_dst_predicate_list, find_phi_replacement_condition,
+	replace_phi_with_cond_modify_expr, get_loop_body_in_if_conv_order):
+	Likewise.
+	* tree-inline.c (remap_decl, remap_type, remap_decls, copy_body_r,
+	initialize_inlined_parameters, declare_return_variable,
+	estimate_num_insns_1, expand_call_inline, expand_calls_inline,
+	optimize_inline_calls, copy_tree_r): Likewise.
+	* tree-into-ssa.c (rewrite_initialize_block_local_data, rewrite_stmt,
+	ssa_rewrite_stmt, rewrite_into_ssa): Likewise.
+	* tree-iterator.c (alloc_stmt_list, tsi_link_before, tsi_link_after,
+	tsi_split_statement_list_after, tsi_split_statement_list_before):
+	Likewise.
+	* tree-mudflap.c (mf_varname_tree): Likewise.
+	* tree-nested.c (create_tmp_var_for, lookup_field_for_decl,
+	lookup_tramp_for_decl, convert_all_function_calls): Likewise.
+	* tree-optimize.c (tree_rest_of_compilation): Likewise.
+	* tree-outof-ssa.c (create_temp, eliminate_build, eliminate_phi,
+	coalesce_abnormal_edges, coalesce_ssa_name, eliminate_virtual_phis,
+	free_temp_expr_table, add_dependance, finish_expr, rewrite_trees):
+	Likewise.
+	* tree-phinodes.c (resize_phi_node, add_phi_arg,
+	remove_all_phi_nodes_for): Likewise.
+	* tree-pretty-print.c (op_prio, print_call_name): Likewise.
+	* tree-profile.c (tree_gen_interval_profiler, tree_gen_pow2_profiler,
+	tree_gen_one_value_profiler, tree_gen_const_delta_profiler): Likewise.
+	* tree-sra.c (type_can_instantiate_all_elements, sra_hash_tree,
+	sra_elt_eq, sra_walk_expr, instantiate_missing_elements,
+	generate_one_element_ref, generate_element_copy,
+	generate_element_zero, scalarize_copy, scalarize_init,
+	scalarize_ldst): Likewise.
+	* tree-ssa-alias.c (delete_alias_info, group_aliases, may_alias_p,
+	add_may_alias, add_pointed_to_expr, add_pointed_to_var,
+	collect_points_to_info_r, get_tmt_for, get_ptr_info): Likewise.
+	* tree-ssa.c (walk_use_def_chains, check_phi_redundancy): Likewise.
+	* tree-ssa-ccp.c (dump_lattice_value, get_default_value, get_value,
+	set_lattice_value, likely_value, ccp_visit_phi_node, visit_assignment,
+	widen_bitfield, ccp_fold_builtin): Likewise.
+	* tree-ssa-copy.c (may_propagate_copy, merge_alias_info,
+	replace_exp_1, propagate_tree_value): Likewise.
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Likewise.
+	* tree-ssa-dce.c (set_control_dependence_map_bit,
+	find_control_dependence, find_pdom, mark_operand_necessary,
+	mark_stmt_if_obviously_necessary,
+	mark_control_dependent_edges_necessary, remove_dead_stmt): Likewise.
+	* tree-ssa-dom.c (dom_opt_initialize_block_local_data,
+	simplify_switch_and_lookup_avail_expr, cprop_into_successor_phis,
+	eliminate_redundant_computations, avail_expr_eq): Likewise.
+	* tree-ssa-dse.c (fix_stmt_v_may_defs): Likewise.
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p,
+	duplicate_blocks): Likewise.
+	* tree-ssa-loop-im.c (for_each_index, set_level,
+	is_call_clobbered_ref): Likewise.
+	* tree-ssa-loop-ivopts.c (dump_use, divide, stmt_after_ip_normal_pos,
+	stmt_after_increment, set_iv, contains_abnormal_ssa_name_p,
+	find_interesting_uses_outer_or_nonlin, add_derived_ivs_candidates,
+	peel_address, ptr_difference_cost, may_replace_final_value,
+	determine_use_iv_cost, rewrite_use_nonlinear_expr, rewrite_use_outer,
+	rewrite_use, rewrite_uses): Likewise.
+	* tree-ssa-loop-manip.c (rewrite_into_loop_closed_ssa,
+	check_loop_closed_ssa_use): Likewise.
+	* tree-ssanames.c (make_ssa_name): Likewise.
+	* tree-ssa-operands.c (finalize_ssa_defs, finalize_ssa_uses,
+	finalize_ssa_v_must_defs, finalize_ssa_stmt_operands,
+	get_stmt_operands, get_expr_operands, get_asm_expr_operands,
+	get_indirect_ref_operands, add_stmt_operand): Likewise.
+	* tree-ssa-pre.c (value_exists_in_set_bitmap,
+	value_remove_from_set_bitmap, bitmap_insert_into_set, insert_into_set,
+	phi_translate, valid_in_set, compute_antic,
+	find_or_generate_expression, create_expression_by_pieces, insert_aux,
+	create_value_expr_from, eliminate): Likewise.
+	* tree-ssa-propagate.c (cfg_blocks_get): Likewise.
+	* tree-ssa-threadupdate.c (remove_last_stmt_and_useless_edges):
+	Likewise.
+	* tree-tailcall.c (independent_of_stmt_p, adjust_return_value,
+	eliminate_tail_call): Likewise.
+	* tree-vectorizer.c (vect_create_index_for_array_ref,
+	vect_align_data_ref, vect_create_data_ref,
+	vect_create_destination_var, vect_get_vec_def_for_operand,
+	vect_finish_stmt_generation, vect_transform_stmt,
+	vect_transform_loop_bound, vect_transform_loop,
+	vect_analyze_operations): Likewise.
+	* tree-vn.c (vn_compute, set_value_handle, get_value_handle):
+	Likewise.
+	* tree-flow-inline.h (var_ann, get_var_ann, get_def_from_ptr,
+	get_use_op_ptr, immediate_use, phi_ssa_name_p, bsi_start,
+	bsi_after_labels, bsi_last): Likewise.
+	* tree-ssa-live.c (var_union, change_partition_var,
+	create_ssa_var_map, calculate_live_on_entry, root_var_init,
+	type_var_init, add_coalesce, sort_coalesce_list, pop_best_coalesce):
+	Likewise.
+	* tree-ssa-live.h (partition_is_global, live_entry_blocks,
+	tpa_find_tree): Likewise.
+	(register_ssa_partition_check): Declare.
+	(register_ssa_partition): use it.
+	* tree-ssa-live.c: Include errors.h.
+	(register_ssa_partition_check): New.
+	* tree-ssa-operands.c: Include errors.h.
+	* Makefile.in (tree-ssa-operands.o): Depend on errors.h.
+
 2004-09-09  Richard Sandiford  <rsandifo@redhat.com>
 	    Catherine Moore  <clm@redhat.com>
 

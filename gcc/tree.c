@@ -205,7 +205,7 @@ tree_size (tree node)
 	}
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -228,8 +228,8 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 
   /* We can't allocate a TREE_VEC, PHI_NODE, or STRING_CST
      without knowing how many elements it will have.  */
-  if (code == TREE_VEC || code == PHI_NODE)
-    abort ();
+  gcc_assert (code != TREE_VEC);
+  gcc_assert (code != PHI_NODE);
 
   TREE_SET_CODE ((tree)&ttmp, code);
   length = tree_size ((tree)&ttmp);
@@ -282,7 +282,7 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   tree_node_counts[(int) kind]++;
@@ -366,10 +366,7 @@ copy_node_stat (tree node MEM_STAT_DECL)
   enum tree_code code = TREE_CODE (node);
   size_t length;
 
-#ifdef ENABLE_CHECKING
-  if (code == STATEMENT_LIST)
-    abort ();
-#endif
+  gcc_assert (code != STATEMENT_LIST);
 
   length = tree_size (node);
   t = ggc_alloc_zone_stat (length, tree_zone PASS_MEM_STAT);
@@ -547,10 +544,9 @@ build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
       if (t)
 	{
 	  /* Make sure no one is clobbering the shared constant.  */
-	  if (TREE_TYPE (t) != type)
-	    abort ();
-	  if (TREE_INT_CST_LOW (t) != low || TREE_INT_CST_HIGH (t) != hi)
-	    abort ();
+	  gcc_assert (TREE_TYPE (t) == type);
+	  gcc_assert (TREE_INT_CST_LOW (t) == low);
+	  gcc_assert (TREE_INT_CST_HIGH (t) == hi);
 	  return t;
 	}
     }
@@ -840,10 +836,9 @@ integer_all_onesp (tree expr)
 
       shift_amount = prec - HOST_BITS_PER_WIDE_INT;
 
-      if (shift_amount > HOST_BITS_PER_WIDE_INT)
-	/* Can not handle precisions greater than twice the host int size.  */
-	abort ();
-      else if (shift_amount == HOST_BITS_PER_WIDE_INT)
+      /* Can not handle precisions greater than twice the host int size.  */
+      gcc_assert (shift_amount <= HOST_BITS_PER_WIDE_INT);
+      if (shift_amount == HOST_BITS_PER_WIDE_INT)
 	/* Shifting by the host word size is undefined according to the ANSI
 	   standard, so we must handle this as a special case.  */
 	high_value = -1;
@@ -1133,8 +1128,7 @@ list_length (tree t)
 #ifdef ENABLE_TREE_CHECKING
       if (len % 2)
 	q = TREE_CHAIN (q);
-      if (p == q)
-	abort ();
+      gcc_assert (p != q);
 #endif
       len++;
     }
@@ -1179,8 +1173,7 @@ chainon (tree op1, tree op2)
   {
     tree t2;
     for (t2 = op2; t2; t2 = TREE_CHAIN (t2))
-      if (t2 == t1)
-	abort ();  /* Circularity created.  */
+      gcc_assert (t2 != t1);
   }
 #endif
 
@@ -1632,7 +1625,7 @@ tree_node_structure (tree t)
     case VALUE_HANDLE:		return TS_VALUE_HANDLE;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1799,7 +1792,7 @@ type_contains_placeholder_p (tree type)
       }
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1960,12 +1953,12 @@ substitute_in_expr (tree exp, tree f, tree r)
 	    break;
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 	break;
 
       default:
-	abort ();
+	gcc_unreachable ();
       }
 
   TREE_READONLY (new) = TREE_READONLY (exp);
@@ -2090,12 +2083,12 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 	      return fold (build4 (code, TREE_TYPE (exp), op0, op1, op2, op3));
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 	break;
 
       default:
-	abort ();
+	gcc_unreachable ();
       }
 }
 
@@ -2255,7 +2248,7 @@ stabilize_reference_1 (tree e)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   TREE_TYPE (result) = TREE_TYPE (e);
@@ -2369,10 +2362,7 @@ build0_stat (enum tree_code code, tree tt MEM_STAT_DECL)
 {
   tree t;
 
-#ifdef ENABLE_CHECKING
-  if (TREE_CODE_LENGTH (code) != 0)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE_LENGTH (code) == 0);
 
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
@@ -2407,10 +2397,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
   tree_node_sizes[(int) kind] += length;
 #endif
 
-#ifdef ENABLE_CHECKING
-  if (TREE_CODE_LENGTH (code) != 1)
-    abort ();
-#endif /* ENABLE_CHECKING */
+  gcc_assert (TREE_CODE_LENGTH (code) == 1);
 
   t = ggc_alloc_zone_stat (length, tree_zone PASS_MEM_STAT);
 
@@ -2498,10 +2485,7 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
   tree t;
   int fro;
 
-#ifdef ENABLE_CHECKING
-  if (TREE_CODE_LENGTH (code) != 2)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE_LENGTH (code) == 2);
 
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
@@ -2541,10 +2525,7 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   tree t;
   int fro;
 
-#ifdef ENABLE_CHECKING
-  if (TREE_CODE_LENGTH (code) != 3)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE_LENGTH (code) == 3);
 
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
@@ -2592,10 +2573,7 @@ build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   tree t;
   int fro;
 
-#ifdef ENABLE_CHECKING
-  if (TREE_CODE_LENGTH (code) != 4)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE_LENGTH (code) == 4);
 
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
@@ -2654,7 +2632,7 @@ tree
       t = build4 (code, tt, arg0, arg1, arg2, arg3);
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   va_end (p);
 
@@ -2973,10 +2951,10 @@ is_attribute_p (const char *attr, tree ident)
   /* If ATTR is `__text__', IDENT must be `text'; and vice versa.  */
   if (attr[0] == '_')
     {
-      if (attr[1] != '_'
-	  || attr[attr_len - 2] != '_'
-	  || attr[attr_len - 1] != '_')
-	abort ();
+      gcc_assert (attr[1] == '_');
+      gcc_assert (attr[attr_len - 2] == '_');
+      gcc_assert (attr[attr_len - 1] == '_');
+      gcc_assert (attr[1] == '_');
       if (ident_len == attr_len - 4
 	  && strncmp (attr + 2, p, attr_len - 4) == 0)
 	return 1;
@@ -3006,8 +2984,7 @@ lookup_attribute (const char *attr_name, tree list)
 
   for (l = list; l; l = TREE_CHAIN (l))
     {
-      if (TREE_CODE (TREE_PURPOSE (l)) != IDENTIFIER_NODE)
-	abort ();
+      gcc_assert (TREE_CODE (TREE_PURPOSE (l)) == IDENTIFIER_NODE);
       if (is_attribute_p (attr_name, TREE_PURPOSE (l)))
 	return l;
     }
@@ -3491,8 +3468,7 @@ type_hash_canon (unsigned int hashcode, tree type)
 
   /* The hash table only contains main variants, so ensure that's what we're
      being passed.  */
-  if (TYPE_MAIN_VARIANT (type) != type)
-    abort ();
+  gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
   if (!lang_hooks.types.hash_types)
     return type;
@@ -3743,10 +3719,8 @@ host_integerp (tree t, int pos)
 HOST_WIDE_INT
 tree_low_cst (tree t, int pos)
 {
-  if (host_integerp (t, pos))
-    return TREE_INT_CST_LOW (t);
-  else
-    abort ();
+  gcc_assert (host_integerp (t, pos));
+  return TREE_INT_CST_LOW (t);
 }
 
 /* Return the most significant bit of the integer constant T.  */
@@ -4107,7 +4081,7 @@ iterative_hash_expr (tree t, hashval_t val)
 	      val = iterative_hash_expr (TREE_OPERAND (t, i), val);
 	}
       else
-	abort ();
+	gcc_unreachable ();
       return val;
       break;
     }
@@ -4487,8 +4461,7 @@ build_method_type_directly (tree basetype,
 tree
 build_method_type (tree basetype, tree type)
 {
-  if (TREE_CODE (type) != FUNCTION_TYPE)
-    abort ();
+  gcc_assert (TREE_CODE (type) == FUNCTION_TYPE);
 
   return build_method_type_directly (basetype,
 				     TREE_TYPE (type),
@@ -5047,7 +5020,7 @@ decl_type_context (tree decl)
 	break;
 
       default:
-	abort ();
+	gcc_unreachable ();
       }
 
   return NULL_TREE;
@@ -5064,8 +5037,7 @@ get_callee_fndecl (tree call)
 
   /* It's invalid to call this function with anything but a
      CALL_EXPR.  */
-  if (TREE_CODE (call) != CALL_EXPR)
-    abort ();
+  gcc_assert (TREE_CODE (call) == CALL_EXPR);
 
   /* The first operand to the CALL is the address of the function
      called.  */
@@ -5265,9 +5237,10 @@ get_set_constructor_bits (tree init, char *buffer, int bit_size)
 	  HOST_WIDE_INT hi_index
 	    = tree_low_cst (TREE_VALUE (vals), 0) - domain_min;
 
-	  if (lo_index < 0 || lo_index >= bit_size
-	      || hi_index < 0 || hi_index >= bit_size)
-	    abort ();
+	  gcc_assert (lo_index >= 0);
+	  gcc_assert (lo_index < bit_size);
+	  gcc_assert (hi_index >= 0);
+	  gcc_assert (hi_index < bit_size);
 	  for (; lo_index <= hi_index; lo_index++)
 	    buffer[lo_index] = 1;
 	}
@@ -5703,21 +5676,25 @@ build_vector_type_for_mode (tree innertype, enum machine_mode mode)
 {
   int nunits;
 
-  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-      || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-    nunits = GET_MODE_NUNITS (mode);
-
-  else if (GET_MODE_CLASS (mode) == MODE_INT)
+  switch (GET_MODE_CLASS (mode))
     {
+    case MODE_VECTOR_INT:
+    case MODE_VECTOR_FLOAT:
+      nunits = GET_MODE_NUNITS (mode);
+      break;
+
+    case MODE_INT:
       /* Check that there are no leftover bits.  */
-      if (GET_MODE_BITSIZE (mode) % TREE_INT_CST_LOW (TYPE_SIZE (innertype)))
-	abort ();
+      gcc_assert (GET_MODE_BITSIZE (mode)
+		  % TREE_INT_CST_LOW (TYPE_SIZE (innertype)) == 0);
 
       nunits = GET_MODE_BITSIZE (mode)
 	       / TREE_INT_CST_LOW (TYPE_SIZE (innertype));
+      break;
+
+    default:
+      gcc_unreachable ();
     }
-  else
-    abort ();
 
   return make_vector_type (innertype, nunits, mode);
 }
@@ -5903,8 +5880,7 @@ int_cst_value (tree x)
   unsigned HOST_WIDE_INT val = TREE_INT_CST_LOW (x);
   bool negative = ((val >> (bits - 1)) & 1) != 0;
 
-  if (bits > HOST_BITS_PER_WIDE_INT)
-    abort ();
+  gcc_assert (bits <= HOST_BITS_PER_WIDE_INT);
 
   if (negative)
     val |= (~(unsigned HOST_WIDE_INT) 0) << (bits - 1) << 1;
@@ -5923,11 +5899,8 @@ tree_fold_gcd (tree a, tree b)
   tree a_mod_b;
   tree type = TREE_TYPE (a);
 
-#if defined ENABLE_CHECKING
-  if (TREE_CODE (a) != INTEGER_CST
-      || TREE_CODE (b) != INTEGER_CST)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE (a) == INTEGER_CST);
+  gcc_assert (TREE_CODE (b) == INTEGER_CST);
 
   if (integer_zerop (a))
     return b;

@@ -127,8 +127,7 @@ set_control_dependence_map_bit (basic_block bb, int edge_index)
 {
   if (bb == ENTRY_BLOCK_PTR)
     return;
-  if (bb == EXIT_BLOCK_PTR)
-    abort ();
+  gcc_assert (bb != EXIT_BLOCK_PTR);
   bitmap_set_bit (control_dependence_map[bb->index], edge_index);
 }
 
@@ -160,10 +159,7 @@ find_control_dependence (struct edge_list *el, int edge_index)
   basic_block current_block;
   basic_block ending_block;
 
-#ifdef ENABLE_CHECKING
-  if (INDEX_EDGE_PRED_BB (el, edge_index) == EXIT_BLOCK_PTR)
-    abort ();
-#endif
+  gcc_assert (INDEX_EDGE_PRED_BB (el, edge_index) != EXIT_BLOCK_PTR);
 
   if (INDEX_EDGE_PRED_BB (el, edge_index) == ENTRY_BLOCK_PTR)
     ending_block = ENTRY_BLOCK_PTR->next_bb;
@@ -192,9 +188,9 @@ find_control_dependence (struct edge_list *el, int edge_index)
 static inline basic_block
 find_pdom (basic_block block)
 {
-  if (block == ENTRY_BLOCK_PTR)
-    abort ();
-  else if (block == EXIT_BLOCK_PTR)
+  gcc_assert (block != ENTRY_BLOCK_PTR);
+
+  if (block == EXIT_BLOCK_PTR)
     return EXIT_BLOCK_PTR;
   else
     {
@@ -212,12 +208,9 @@ find_pdom (basic_block block)
 static inline void
 mark_stmt_necessary (tree stmt, bool add_to_worklist)
 {
-#ifdef ENABLE_CHECKING
-  if (stmt == NULL
-      || stmt == error_mark_node
-      || (stmt && DECL_P (stmt)))
-    abort ();
-#endif
+  gcc_assert (stmt);
+  gcc_assert (stmt != error_mark_node);
+  gcc_assert (!DECL_P (stmt));
 
   if (NECESSARY (stmt))
     return;
@@ -242,10 +235,7 @@ mark_operand_necessary (tree op)
   tree stmt;
   int ver;
 
-#ifdef ENABLE_CHECKING
-  if (op == NULL)
-    abort ();
-#endif
+  gcc_assert (op);
 
   ver = SSA_NAME_VERSION (op);
   if (TEST_BIT (processed, ver))
@@ -253,10 +243,7 @@ mark_operand_necessary (tree op)
   SET_BIT (processed, ver);
 
   stmt = SSA_NAME_DEF_STMT (op);
-#ifdef ENABLE_CHECKING
-  if (stmt == NULL)
-    abort ();
-#endif
+  gcc_assert (stmt);
 
   if (NECESSARY (stmt)
       || IS_EMPTY_STMT (stmt))
@@ -387,10 +374,7 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
     {
       tree lhs;
 
-#if defined ENABLE_CHECKING
-      if (TREE_CODE (stmt) != MODIFY_EXPR)
-	abort ();
-#endif
+      gcc_assert (TREE_CODE (stmt) == MODIFY_EXPR);
 
       /* Note that we must not check the individual virtual operands
 	 here.  In particular, if this is an aliased store, we could
@@ -451,7 +435,7 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
 	    }
 	}
       else
-	abort ();
+	gcc_unreachable ();
     }
 
   return;
@@ -526,10 +510,7 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el)
 {
   int edge_number;
 
-#ifdef ENABLE_CHECKING
-  if (bb == EXIT_BLOCK_PTR)
-    abort ();
-#endif
+  gcc_assert (bb != EXIT_BLOCK_PTR);
 
   if (bb == ENTRY_BLOCK_PTR)
     return;
@@ -742,11 +723,8 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
     {
       basic_block post_dom_bb;
       edge e;
-#ifdef ENABLE_CHECKING
       /* The post dominance info has to be up-to-date.  */
-      if (dom_computed[CDI_POST_DOMINATORS] != DOM_OK)
-	abort ();
-#endif
+      gcc_assert (dom_computed[CDI_POST_DOMINATORS] == DOM_OK);
       /* Get the immediate post dominator of bb.  */
       post_dom_bb = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
       /* Some blocks don't have an immediate post dominator.  This can happen

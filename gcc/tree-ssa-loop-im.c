@@ -150,7 +150,7 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 	  return true;
 
 	default:
-    	  abort ();
+    	  gcc_unreachable ();
 	}
     }
 }
@@ -438,12 +438,9 @@ set_level (tree stmt, struct loop *orig_loop, struct loop *level)
   if (flow_loop_nested_p (stmt_loop, level))
     return;
 
-  if (!LIM_DATA (stmt))
-    abort ();
-
-  if (level != LIM_DATA (stmt)->max_loop
-      && !flow_loop_nested_p (LIM_DATA (stmt)->max_loop, level))
-    abort ();
+  gcc_assert (LIM_DATA (stmt));
+  gcc_assert (level == LIM_DATA (stmt)->max_loop
+	      || flow_loop_nested_p (LIM_DATA (stmt)->max_loop, level));
 
   LIM_DATA (stmt)->tgt_loop = level;
   for (dep = LIM_DATA (stmt)->depends; dep; dep = dep->next)
@@ -1106,7 +1103,7 @@ is_call_clobbered_ref (tree ref)
       return false;
     }
 
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Determine whether all memory references inside LOOP corresponding to the

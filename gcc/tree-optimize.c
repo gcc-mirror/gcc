@@ -555,8 +555,7 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 
   timevar_push (TV_EXPAND);
 
-  if (flag_unit_at_a_time && !cgraph_global_info_ready)
-    abort ();
+  gcc_assert (!flag_unit_at_a_time || cgraph_global_info_ready);
 
   /* Initialize the RTL code for the function.  */
   current_function_decl = fndecl;
