@@ -37,7 +37,7 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   wistringstream iss;
-  iss.imbue(locale(iss.getloc(), static_cast<numpunct<wchar_t>*>(new Punct)));
+  iss.imbue(locale(iss.getloc(), new Punct));
   const num_get<wchar_t>& ng = use_facet<num_get<wchar_t> >(iss.getloc()); 
 
   ios_base::iostate err = ios_base::goodbit;

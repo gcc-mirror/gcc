@@ -45,8 +45,8 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   istringstream iss1, iss2;
-  iss1.imbue(locale(iss1.getloc(), static_cast<numpunct<char>*>(new Punct1)));
-  iss2.imbue(locale(iss2.getloc(), static_cast<numpunct<char>*>(new Punct2)));
+  iss1.imbue(locale(iss1.getloc(), new Punct1));
+  iss2.imbue(locale(iss2.getloc(), new Punct2));
   const num_get<char>& ng1 = use_facet<num_get<char> >(iss1.getloc()); 
   const num_get<char>& ng2 = use_facet<num_get<char> >(iss2.getloc()); 
 

@@ -1,4 +1,18 @@
 2004-03-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/22_locale/num_get/get/char/11.cc: Remove redundant
+	static_cast-s.
+	* testsuite/22_locale/num_get/get/char/12.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/13.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/14.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/15.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/11.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/12.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/13.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/14.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/15.cc: Likewise.
+
+2004-03-19  Paolo Carlini  <pcarlini@suse.de>
 	    Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/12077
