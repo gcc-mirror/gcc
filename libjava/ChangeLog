@@ -9,6 +9,16 @@
 	* java/util/SortedSet.java: Sync with classpath.
 	* java/util/HashMap.java (hash): Use if statement instead of ternary,
 	for clarity.
+	
+	* java/lang/natClass.cc (getSignature): Don't try to dereference 
+	param_types if it is null. Instead, take this to mean "no parameters".
+	* java/lang/TreeMap.java (TreeIterator.next): Throw 
+	NoSuchElementException in preference to ConcurrentModificationException.
+	(TreeIterator.remove): Throw IllegalStateException in preference to 
+	ConcurrentModificationException.
+	(SubMap.firstKey): Do a better check for empty SubMap, and if it is,
+	throw a NoSuchElementException.
+	(SubMap.lastKey): Likewise.
 
 2001-02-13  Tom Tromey  <tromey@redhat.com>
 
