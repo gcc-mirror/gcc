@@ -15,7 +15,7 @@ deprecated in new programs in favor of @code{strchr}.
 extern char * strchr(const char *, int);
 
 char *
-index (char *s, int c)
+index (const char *s, int c)
 {
   return strchr (s, c);
 }

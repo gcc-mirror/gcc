@@ -2930,7 +2930,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_c_preproc_warn_flag=yes
 
 if test x$GCC = xyes; then
-  ac_libiberty_warn_cflags='-W -Wall -pedantic'
+  ac_libiberty_warn_cflags='-W -Wall -pedantic -Wwrite-strings -Wstrict-prototypes'
 fi
 
 
@@ -4823,6 +4823,8 @@ checkfuncs="$checkfuncs getsysinfo table sysctl wait3 wait4"
 # These are neither executed nor required, but they help keep
 # autoheader happy without adding a bunch of text to acconfig.h.
 if test "x" = "y"; then
+
+
 
 
 
