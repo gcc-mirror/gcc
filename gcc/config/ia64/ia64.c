@@ -2421,16 +2421,7 @@ rtx_needs_barrier (x, flags, pred)
 	    need_barrier |= rws_access_reg (i, flags, pred);
 	  break;
 
-	case 6: /* mov pr= */
-	  /* This writes all predicate registers.  */
-	  new_flags.is_write = 1;
-	  /* We need to skip by two, because rws_access_reg always writes
-	     to two predicate registers at a time.  */
-	  /* ??? Strictly speaking, we shouldn't be counting writes to pr0.  */
-	  for (i = PR_REG (0); i < PR_REG (64); i += 2)
-	    need_barrier |= rws_access_reg (i, new_flags, pred);
-	  break;
-
+	case 6:
 	case 7:
 	  abort ();
 
@@ -2484,6 +2475,16 @@ rtx_needs_barrier (x, flags, pred)
 	case 4: /* mov ar.pfs= */
 	  new_flags.is_write = 1;
 	  need_barrier = rws_access_reg (REG_AR_PFS, new_flags, pred);
+	  break;
+
+	case 6: /* mov pr= */
+	  /* This writes all predicate registers.  */
+	  new_flags.is_write = 1;
+	  /* We need to skip by two, because rws_access_reg always writes
+	     to two predicate registers at a time.  */
+	  /* ??? Strictly speaking, we shouldn't be counting writes to pr0.  */
+	  for (i = PR_REG (0); i < PR_REG (64); i += 2)
+	    need_barrier |= rws_access_reg (i, new_flags, pred);
 	  break;
 
 	default:

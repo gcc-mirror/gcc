@@ -1,3 +1,9 @@
+Thu Mar 23 11:34:39 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.c (rtx_needs_barrier, case UNSPEC): Move case 6...
+	(rtx_needs_barrier, case UNSPEC_VOLATILE): to here.
+	* config/ia64/ia64.md (pr_restore): Change UNSPEC to UNSPEC_VOLATILE.
+
 Thu Mar 23 16:04:40 2000  Andrew Haley  <aph@cygnus.com>
 
         * config/mips/mips.md (movdf_internal1a): Delete (set 'f', 'F')
