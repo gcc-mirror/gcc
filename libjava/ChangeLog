@@ -1,5 +1,10 @@
 2000-04-20  Tom Tromey  <tromey@cygnus.com>
 
+	Fix for PR libgcj/212:
+	* gcj/javaprims.h (_Jv_word, _Jv_word2): Removed definitions.
+	* include/jvm.h (_Jv_word, _Jv_word2): Define.
+	* java/lang/Class.h (_Jv_word): Declare.
+
 	* jni.cc (_Jv_JNI_PopSystemFrame): Clear `env->ex'.
 
 2000-04-19  Tom Tromey  <tromey@cygnus.com>

@@ -50,6 +50,7 @@ enum
 
 struct _Jv_Field;
 struct _Jv_VTable;
+union _Jv_word;
 
 struct _Jv_Constants
 {
