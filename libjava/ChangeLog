@@ -160,25 +160,6 @@
 	.libs in -L option.
 	(libjava_arguments): Add new libraries to argument list.
 
-2004-03-04  Tom Tromey  <tromey@redhat.com>
-
-	* Makefile.in: Rebuilt.
-	* Makefile.am (toolexeclib_LTLIBRARIES): Added lib-java-awt.la,
-	lib-javax-swing.la, lib-java-applet.la, lib-java-beans.la.
-	(misc_java_source_files): New macro.
-	(swing_java_source_files): Likewise.
-	(awt_java_source_files): Pruned.
-	(applet_java_source_files): New macro.
-	(beans_java_source_files): Likewise.
-	(lib_java_applet_la_SOURCES): Likewise.
-	(lib_java_awt_la_SOURCES): Likewise.
-	(lib_javax_swing_la_SOURCES): Likewise.
-	(lib_java_beans_la_SOURCES): Likewise.
-	(all_java_object_files): Likewise.
-	(%.lo: %.java): Use all_java_object_files.
-	(all_java_source_files): Added new _SOURCES.
-	(ordinary_java_source_files): Removed awt_java_source_files.
-
 2004-03-02  Olga Rodimina  <rodimina@redhat.com>
 
 	* Makefile.am: Added java/awt/image/AffineTransformOp.java
