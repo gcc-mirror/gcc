@@ -1,3 +1,8 @@
+2001-12-03  Jason Merrill  <jason@redhat.com>
+
+	* class.c (finish_vtbls): Fill in BINFO_VPTR_FIELD in the
+	immediate binfos for our virtual bases.
+
 2001-11-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/3048

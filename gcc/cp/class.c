@@ -7114,6 +7114,7 @@ finish_vtbls (t)
     {
       tree list;
       tree vbase;
+      int i;
 
       /* Under the new ABI, we lay out the primary and secondary
 	 vtables in one contiguous vtable.  The primary vtable is
@@ -7137,6 +7138,18 @@ finish_vtbls (t)
           
 	  accumulate_vtbl_inits (real_base, real_base,
 	                         TYPE_BINFO (t), t, list);
+	}
+
+      /* Fill in BINFO_VPTR_FIELD in the immediate binfos for our virtual
+	 base classes, for the benefit of the debugging backends.  */
+      for (i = 0; i < BINFO_N_BASETYPES (TYPE_BINFO (t)); ++i)
+	{
+	  tree base = BINFO_BASETYPE (TYPE_BINFO (t), i);
+	  if (TREE_VIA_VIRTUAL (base))
+	    {
+	      tree vbase = binfo_for_vbase (BINFO_TYPE (base), t);
+	      BINFO_VPTR_FIELD (base) = BINFO_VPTR_FIELD (vbase);
+	    }
 	}
 
       if (TYPE_BINFO_VTABLE (t))

@@ -1442,9 +1442,17 @@ dbxout_type (type, full, show_arg_types)
 		have_used_extensions = 1;
 		putc (TREE_VIA_VIRTUAL (child) ? '1' : '0', asmfile);
 		putc (TREE_VIA_PUBLIC (child) ? '2' : '0', asmfile);
-		fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
-			 (tree_low_cst (BINFO_OFFSET (child), 0)
-			  * BITS_PER_UNIT));
+		if (TREE_VIA_VIRTUAL (child) && strcmp (language_string, "GNU C++") == 0)
+		  /* For a virtual base, print the (negative) offset within
+		     the vtable where we must look to find the necessary
+		     adjustment.  */
+		  fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
+			   (tree_low_cst (BINFO_VPTR_FIELD (child), 0)
+			    * BITS_PER_UNIT));
+		else
+		  fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
+			   (tree_low_cst (BINFO_OFFSET (child), 0)
+			    * BITS_PER_UNIT));
 		fputc (',', asmfile);
 		CHARS (15);
 		dbxout_type (BINFO_TYPE (child), 0, 0);
