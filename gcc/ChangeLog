@@ -1,3 +1,8 @@
+2000-06-05  Richard Henderson  <rth@cygnus.com>
+
+	* reload1.c (choose_reload_regs): Mind CLASS_CANNOT_CHANGE_SIZE
+	while looking for a register to inherit from.
+
 2000-06-05  Jason Merrill  <jason@casey.soma.redhat.com>
 
 	* Makefile.in (libgcc.ready): Lose.
