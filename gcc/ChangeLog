@@ -1,3 +1,7 @@
+2000-04-26  Alex Samuel  <samuel@codesourcery.com>
+
+	* invoke.texi: Document -fssa flag.
+
 2000-04-26  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (count_reg_sets_1): Remove.
