@@ -373,7 +373,8 @@ namespace std
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
-    basic_string<_CharT, _Traits, _Alloc>::_M_leak_hard()
+    basic_string<_CharT, _Traits, _Alloc>::
+    _M_leak_hard()
     {
 #ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
       if (_M_rep() == &_S_empty_rep())
@@ -393,16 +394,11 @@ namespace std
       const size_type __new_size = __old_size + __len2 - __len1;
       const size_type __how_much = __old_size - __pos - __len1;
 
-#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
-      if (_M_rep() == &_S_empty_rep()
-	  || _M_rep()->_M_is_shared() || __new_size > capacity())
-#else
-      if (_M_rep()->_M_is_shared() || __new_size > capacity())
-#endif
+      if (__new_size > this->capacity() || _M_rep()->_M_is_shared())
 	{
 	  // Must reallocate.
 	  const allocator_type __a = get_allocator();
-	  _Rep* __r = _Rep::_S_create(__new_size, capacity(), __a);
+	  _Rep* __r = _Rep::_S_create(__new_size, this->capacity(), __a);
 
 	  if (__pos)
 	    traits_type::copy(__r->_M_refdata(), _M_data(), __pos);
@@ -427,7 +423,8 @@ namespace std
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
-    basic_string<_CharT, _Traits, _Alloc>::reserve(size_type __res)
+    basic_string<_CharT, _Traits, _Alloc>::
+    reserve(size_type __res)
     {
       if (__res != this->capacity() || _M_rep()->_M_is_shared())
         {
@@ -444,7 +441,9 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    void basic_string<_CharT, _Traits, _Alloc>::swap(basic_string& __s)
+    void
+    basic_string<_CharT, _Traits, _Alloc>::
+    swap(basic_string& __s)
     {
       if (_M_rep()->_M_is_leaked())
 	_M_rep()->_M_set_sharable();
@@ -561,7 +560,8 @@ namespace std
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     void
-    basic_string<_CharT, _Traits, _Alloc>::resize(size_type __n, _CharT __c)
+    basic_string<_CharT, _Traits, _Alloc>::
+    resize(size_type __n, _CharT __c)
     {
       if (__n > max_size())
 	__throw_length_error(__N("basic_string::resize"));
