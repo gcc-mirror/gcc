@@ -1,3 +1,8 @@
+2001-03-20  Richard Henderson  <rth@redhat.com>
+
+	* src/gen-num-limits.cc: Instantiate for wchar_t.
+	* config/os/aix/bits/ctype_base.h (mask): Use unsigned int.
+
 2001-03-20  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/vec.cc (__cxa_vec_cleanup): New fn.

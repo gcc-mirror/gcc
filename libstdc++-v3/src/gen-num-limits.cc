@@ -830,4 +830,6 @@ INSTANTIATIONS (unsigned long);
 INSTANTIATIONS (float);
 INSTANTIATIONS (double);
 INSTANTIATIONS (long double);
-
+#ifdef _GLIBCPP_USE_WCHAR_T
+INSTANTIATIONS (wchar_t);
+#endif
