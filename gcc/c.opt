@@ -655,7 +655,7 @@ C++ ObjC++
 Use __cxa_atexit to register destructors
 
 fvisibility-inlines-hidden
-C++
+C++ ObjC++
 Marks all inlined methods as having hidden visibility
 
 fvtable-gc
