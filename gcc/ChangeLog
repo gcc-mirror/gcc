@@ -1,3 +1,14 @@
+2002-04-09  Richard Henderson  <rth@redhat.com>
+
+	* sbitmap.c (sbitmap_union_of_diff, sbitmap_a_and_b, sbitmap_a_xor_b,
+	sbitmap_a_or_b, sbitmap_a_or_b_and_c, sbitmap_a_and_b_or_c):
+	Do not return changed status.
+	(sbitmap_union_of_diff_cg, sbitmap_a_and_b_cg, sbitmap_a_xor_b_cg,
+	sbitmap_a_or_b_cg, sbitmap_a_or_b_and_c_cg, sbitmap_a_and_b_or_c_cg):
+	New functions that do return changed status.
+	* sbitmap.h: Update decls.
+	* gcse.c, lcm.c: Use _cg functions as needed.
+
 Tue Apr  9 19:15:57 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config.gcc (sh-*-elf*): Use sh/embed-elf.h instead of sh/elf.h.

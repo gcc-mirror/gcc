@@ -103,18 +103,27 @@ extern void sbitmap_ones		PARAMS ((sbitmap));
 extern void sbitmap_vector_zero		PARAMS ((sbitmap *, unsigned int));
 extern void sbitmap_vector_ones		PARAMS ((sbitmap *, unsigned int));
 
-extern int sbitmap_union_of_diff	PARAMS ((sbitmap, sbitmap, sbitmap,
+extern void sbitmap_union_of_diff	PARAMS ((sbitmap, sbitmap, sbitmap,
+						 sbitmap));
+extern bool sbitmap_union_of_diff_cg	PARAMS ((sbitmap, sbitmap, sbitmap,
 						 sbitmap));
 extern void sbitmap_difference		PARAMS ((sbitmap, sbitmap, sbitmap));
 extern void sbitmap_not			PARAMS ((sbitmap, sbitmap));
-extern int sbitmap_a_or_b_and_c		PARAMS ((sbitmap, sbitmap, sbitmap,
+extern void sbitmap_a_or_b_and_c	PARAMS ((sbitmap, sbitmap, sbitmap,
 						 sbitmap));
-extern int sbitmap_a_and_b_or_c		PARAMS ((sbitmap, sbitmap, sbitmap,
+extern bool sbitmap_a_or_b_and_c_cg	PARAMS ((sbitmap, sbitmap, sbitmap,
 						 sbitmap));
-extern int sbitmap_a_and_b		PARAMS ((sbitmap, sbitmap, sbitmap));
-extern int sbitmap_a_or_b		PARAMS ((sbitmap, sbitmap, sbitmap));
-extern int sbitmap_a_xor_b              PARAMS ((sbitmap, sbitmap, sbitmap));
-extern int sbitmap_a_subset_b_p		PARAMS ((sbitmap, sbitmap));
+extern void sbitmap_a_and_b_or_c	PARAMS ((sbitmap, sbitmap, sbitmap,
+						 sbitmap));
+extern bool sbitmap_a_and_b_or_c_cg	PARAMS ((sbitmap, sbitmap, sbitmap,
+						 sbitmap));
+extern void sbitmap_a_and_b		PARAMS ((sbitmap, sbitmap, sbitmap));
+extern bool sbitmap_a_and_b_cg		PARAMS ((sbitmap, sbitmap, sbitmap));
+extern void sbitmap_a_or_b		PARAMS ((sbitmap, sbitmap, sbitmap));
+extern bool sbitmap_a_or_b_cg		PARAMS ((sbitmap, sbitmap, sbitmap));
+extern void sbitmap_a_xor_b		PARAMS ((sbitmap, sbitmap, sbitmap));
+extern bool sbitmap_a_xor_b_cg		PARAMS ((sbitmap, sbitmap, sbitmap));
+extern bool sbitmap_a_subset_b_p	PARAMS ((sbitmap, sbitmap));
 
 extern int sbitmap_first_set_bit	PARAMS ((sbitmap));
 extern int sbitmap_last_set_bit		PARAMS ((sbitmap));

@@ -106,6 +106,7 @@ sbitmap_equal (a, b)
 {
   return !memcmp (a->elms, b->elms, sizeof (SBITMAP_ELT_TYPE) * a->size);
 }
+
 /* Zero all elements in a bitmap.  */
 
 void
@@ -159,29 +160,41 @@ sbitmap_vector_ones (bmap, n_vecs)
 
 /* Set DST to be A union (B - C).
    DST = A | (B & ~C).
-   Return non-zero if any change is made.  */
+   Returns true if any change is made.  */
 
-int
+bool
+sbitmap_union_of_diff_cg (dst, a, b, c)
+     sbitmap dst, a, b, c;
+{
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
+  sbitmap_ptr cp = c->elms;
+  SBITMAP_ELT_TYPE changed = 0;
+
+  for (i = 0; i < n; i++)
+    {
+      SBITMAP_ELT_TYPE tmp = *ap++ | (*bp++ & ~*cp++);
+      changed |= *dstp ^ tmp;
+      *dstp++ = tmp;
+    }
+
+  return changed != 0;
+}
+
+void
 sbitmap_union_of_diff (dst, a, b, c)
      sbitmap dst, a, b, c;
 {
-  unsigned int i;
-  sbitmap_ptr dstp, ap, bp, cp;
-  int changed = 0;
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
+  sbitmap_ptr cp = c->elms;
 
-  for (dstp = dst->elms, ap = a->elms, bp = b->elms, cp = c->elms, i = 0;
-       i < dst->size; i++, dstp++)
-    {
-      SBITMAP_ELT_TYPE tmp = *ap++ | (*bp++ & ~*cp++);
-
-      if (*dstp != tmp)
-	{
-	  changed = 1;
-	  *dstp = tmp;
-	}
-    }
-
-  return changed;
+  for (i = 0; i < n; i++)
+    *dstp++ = *ap++ | (*bp++ & ~*cp++);
 }
 
 /* Set bitmap DST to the bitwise negation of the bitmap SRC.  */
@@ -190,11 +203,12 @@ void
 sbitmap_not (dst, src)
      sbitmap dst, src;
 {
-  unsigned int i;
-  sbitmap_ptr dstp, srcp;
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr srcp = src->elms;
 
-  for (dstp = dst->elms, srcp = src->elms, i = 0; i < dst->size; i++)
-    *dstp++ = ~(*srcp++);
+  for (i = 0; i < n; i++)
+    *dstp++ = ~*srcp++;
 }
 
 /* Set the bits in DST to be the difference between the bits
@@ -204,156 +218,213 @@ void
 sbitmap_difference (dst, a, b)
      sbitmap dst, a, b;
 {
-  unsigned int i;
-  sbitmap_ptr dstp, ap, bp;
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
   
-  for (dstp = dst->elms, ap = a->elms, bp = b->elms, i = 0; i < dst->size; i++)
-    *dstp++ = *ap++ & (~*bp++);
+  for (i = 0; i < n; i++)
+    *dstp++ = *ap++ & ~*bp++;
 }
 
 /* Set DST to be (A and B).
    Return non-zero if any change is made.  */
 
-int
+bool
+sbitmap_a_and_b_cg (dst, a, b)
+     sbitmap dst, a, b;
+{
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
+  SBITMAP_ELT_TYPE changed = 0;
+
+  for (i = 0; i < n; i++)
+    {
+      SBITMAP_ELT_TYPE tmp = *ap++ & *bp++;
+      changed = *dstp ^ tmp;
+      *dstp++ = tmp;
+    }
+
+  return changed != 0;
+}
+
+void
 sbitmap_a_and_b (dst, a, b)
      sbitmap dst, a, b;
 {
-  unsigned int i;
-  sbitmap_ptr dstp, ap, bp;
-  int changed = 0;
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
 
-  for (dstp = dst->elms, ap = a->elms, bp = b->elms, i = 0; i < dst->size;
-       i++, dstp++)
-    {
-      SBITMAP_ELT_TYPE tmp = *ap++ & *bp++;
-
-      if (*dstp != tmp)
-	{
-	  changed = 1;
-	  *dstp = tmp;
-	}
-    }
-
-  return changed;
+  for (i = 0; i < n; i++)
+    *dstp++ = *ap++ & *bp++;
 }
 
 /* Set DST to be (A xor B)).
    Return non-zero if any change is made.  */
 
-int
+bool
+sbitmap_a_xor_b_cg (dst, a, b)
+     sbitmap dst, a, b;
+{
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
+  SBITMAP_ELT_TYPE changed = 0;
+
+  for (i = 0; i < n; i++)
+    {
+      SBITMAP_ELT_TYPE tmp = *ap++ ^ *bp++;
+      changed = *dstp ^ tmp;
+      *dstp++ = tmp;
+    }
+
+  return changed != 0;
+}
+
+void
 sbitmap_a_xor_b (dst, a, b)
      sbitmap dst, a, b;
 {
-  unsigned int i;
-  sbitmap_ptr dstp, ap, bp;
-  int changed = 0;
-  
-  for (dstp = dst->elms, ap = a->elms, bp = b->elms, i = 0; i < dst->size;
-       i++, dstp++)
-    {
-      SBITMAP_ELT_TYPE tmp = *ap++ ^ *bp++;
-      
-      if (*dstp != tmp)
-	{
-	  changed = 1;
-	  *dstp = tmp;
-	}
-    }
-  return changed;
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
+
+  for (i = 0; i < n; i++)
+    *dstp++ = *ap++ ^ *bp++;
 }
 
 /* Set DST to be (A or B)).
    Return non-zero if any change is made.  */
 
-int
+bool
+sbitmap_a_or_b_cg (dst, a, b)
+     sbitmap dst, a, b;
+{
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
+  SBITMAP_ELT_TYPE changed = 0;
+
+  for (i = 0; i < n; i++)
+    {
+      SBITMAP_ELT_TYPE tmp = *ap++ | *bp++;
+      changed = *dstp ^ tmp;
+      *dstp++ = tmp;
+    }
+
+  return changed != 0;
+}
+
+void
 sbitmap_a_or_b (dst, a, b)
      sbitmap dst, a, b;
 {
-  unsigned int i;
-  sbitmap_ptr dstp, ap, bp;
-  int changed = 0;
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
 
-  for (dstp = dst->elms, ap = a->elms, bp = b->elms, i = 0; i < dst->size;
-       i++, dstp++)
-    {
-      SBITMAP_ELT_TYPE tmp = *ap++ | *bp++;
-
-      if (*dstp != tmp)
-	{
-	  changed = 1;
-	  *dstp = tmp;
-	}
-    }
-
-  return changed;
+  for (i = 0; i < n; i++)
+    *dstp++ = *ap++ | *bp++;
 }
 
 /* Return non-zero if A is a subset of B.  */
 
-int
+bool
 sbitmap_a_subset_b_p (a, b)
      sbitmap a, b;
 {
-  unsigned int i;
+  unsigned int i, n = a->size;
   sbitmap_ptr ap, bp;
 
-  for (ap = a->elms, bp = b->elms, i = 0; i < a->size; i++, ap++, bp++)
+  for (ap = a->elms, bp = b->elms, i = 0; i < n; i++, ap++, bp++)
     if ((*ap | *bp) != *bp)
-      return 0;
+      return false;
 
-  return 1;
+  return true;
 }
 
 /* Set DST to be (A or (B and C)).
    Return non-zero if any change is made.  */
 
-int
+bool
+sbitmap_a_or_b_and_c_cg (dst, a, b, c)
+     sbitmap dst, a, b, c;
+{
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
+  sbitmap_ptr cp = c->elms;
+  SBITMAP_ELT_TYPE changed = 0;
+
+  for (i = 0; i < n; i++)
+    {
+      SBITMAP_ELT_TYPE tmp = *ap++ | (*bp++ & *cp++);
+      changed |= *dstp ^ tmp;
+      *dstp++ = tmp;
+    }
+
+  return changed != 0;
+}
+
+void
 sbitmap_a_or_b_and_c (dst, a, b, c)
      sbitmap dst, a, b, c;
 {
-  unsigned int i;
-  sbitmap_ptr dstp, ap, bp, cp;
-  int changed = 0;
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
+  sbitmap_ptr cp = c->elms;
 
-  for (dstp = dst->elms, ap = a->elms, bp = b->elms, cp = c->elms, i = 0;
-       i < dst->size; i++, dstp++)
-    {
-      SBITMAP_ELT_TYPE tmp = *ap++ | (*bp++ & *cp++);
-
-      if (*dstp != tmp)
-	{
-	  changed = 1;
-	  *dstp = tmp;
-	}
-    }
-
-  return changed;
+  for (i = 0; i < n; i++)
+    *dstp++ = *ap++ | (*bp++ & *cp++);
 }
 
 /* Set DST to be (A and (B or C)).
    Return non-zero if any change is made.  */
 
-int
+bool
+sbitmap_a_and_b_or_c_cg (dst, a, b, c)
+     sbitmap dst, a, b, c;
+{
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
+  sbitmap_ptr cp = c->elms;
+  SBITMAP_ELT_TYPE changed = 0;
+
+  for (i = 0; i < n; i++)
+    {
+      SBITMAP_ELT_TYPE tmp = *ap++ & (*bp++ | *cp++);
+      changed |= *dstp ^ tmp;
+      *dstp++ = tmp;
+    }
+
+  return changed != 0;
+}
+
+void
 sbitmap_a_and_b_or_c (dst, a, b, c)
      sbitmap dst, a, b, c;
 {
-  unsigned int i;
-  sbitmap_ptr dstp, ap, bp, cp;
-  int changed = 0;
+  unsigned int i, n = dst->size;
+  sbitmap_ptr dstp = dst->elms;
+  sbitmap_ptr ap = a->elms;
+  sbitmap_ptr bp = b->elms;
+  sbitmap_ptr cp = c->elms;
 
-  for (dstp = dst->elms, ap = a->elms, bp = b->elms, cp = c->elms, i = 0;
-       i < dst->size; i++, dstp++)
-    {
-      SBITMAP_ELT_TYPE tmp = *ap++ & (*bp++ | *cp++);
-
-      if (*dstp != tmp)
-	{
-	  changed = 1;
-	  *dstp = tmp;
-	}
-    }
-
-  return changed;
+  for (i = 0; i < n; i++)
+    *dstp++ = *ap++ & (*bp++ | *cp++);
 }
 
 #ifdef IN_GCC
