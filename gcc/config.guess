@@ -136,7 +136,7 @@ EOF
 	${CC-cc} dummy.c -o dummy && ./dummy "${UNAME_RELEASE}" \
 	  && rm dummy.c dummy && exit 0
 	rm -f dummy.c dummy
-	echo mips-mips-riscos{UNAME_RELEASE}
+	echo mips-mips-riscos${UNAME_RELEASE}
 	exit 0 ;;
     Night_Hawk:Power_UNIX:*:*)
 	echo powerpc-harris-powerunix
