@@ -281,7 +281,6 @@
       result __ret = codecvt_base::error;
       if (__state._M_good())
 	{
-	  typedef state_type::__desc_type	__desc_type;
 	  const __desc_type* __desc = __state._M_get_out_descriptor();
 	  const size_t __fmultiple = sizeof(intern_type);
 	  size_t __fbytes = __fmultiple * (__from_end - __from);
@@ -303,7 +302,8 @@
 	  if (__int_bom)
 	    {	  
 	      size_t __size = __from_end - __from;
-	      intern_type* __cfixed = static_cast<intern_type*>(__builtin_alloca(sizeof(intern_type) * (__size + 1)));
+	      intern_type* __cfixed = static_cast<intern_type*>
+		(__builtin_alloca(sizeof(intern_type) * (__size + 1)));
 	      __cfixed[0] = static_cast<intern_type>(__int_bom);
 	      char_traits<intern_type>::copy(__cfixed + 1, __from, __size);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
@@ -348,7 +348,6 @@
       result __ret = codecvt_base::error;
       if (__state._M_good())
 	{
-	  typedef state_type::__desc_type	__desc_type;
 	  const __desc_type* __desc = __state._M_get_in_descriptor();
 	  const size_t __tmultiple = sizeof(intern_type);
 	  size_t __tlen = __tmultiple * (__to_end - __to); 
@@ -386,7 +385,6 @@
       result __ret = codecvt_base::error;
       if (__state._M_good())
 	{
-	  typedef state_type::__desc_type	__desc_type;
 	  const __desc_type* __desc = __state._M_get_in_descriptor();
 	  const size_t __fmultiple = sizeof(extern_type);
 	  size_t __flen = __fmultiple * (__from_end - __from);
@@ -408,7 +406,8 @@
 	  if (__ext_bom)
 	    {	  
 	      size_t __size = __from_end - __from;
-	      extern_type* __cfixed =  static_cast<extern_type*>(__builtin_alloca(sizeof(extern_type) * (__size + 1)));
+	      extern_type* __cfixed =  static_cast<extern_type*>
+		(__builtin_alloca(sizeof(extern_type) * (__size + 1)));
 	      __cfixed[0] = static_cast<extern_type>(__ext_bom);
 	      char_traits<extern_type>::copy(__cfixed + 1, __from, __size);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
