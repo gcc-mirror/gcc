@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "expr.h"
 #include "optabs.h"
-#include "obstack.h"
 #include "except.h"
 #include "function.h"
 #include "ggc.h"
@@ -6861,8 +6860,6 @@ ia64_eh_uses (regno)
 /* ??? See select_section.  We must put short own readonly variables in
    sdata/sbss instead of the more natural rodata, because we can't perform
    the DECL_READONLY_SECTION test here.  */
-
-extern struct obstack * saveable_obstack;
 
 void
 ia64_encode_section_info (decl, first)
