@@ -109,6 +109,11 @@ static location_t current_function_prototype_locus;
 
 static GTY(()) tree current_function_arg_info;
 
+/* The obstack on which parser and related data structures, which are
+   not live beyond their top-level declaration or definition, are
+   allocated.  */
+struct obstack parser_obstack;
+
 /* The current statement tree.  */
 
 static GTY(()) struct stmt_tree_s c_stmt_tree;
@@ -2525,6 +2530,8 @@ c_init_decl_processing (void)
   c_parse_init ();
 
   current_function_decl = 0;
+
+  gcc_obstack_init (&parser_obstack);
 
   /* Make the externals scope.  */
   push_scope ();
@@ -6936,7 +6943,21 @@ c_write_global_declarations_1 (tree globals)
 
   /* Process the decls in the order they were written.  */
   for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
-    vec[i] = decl;
+    {
+      vec[i] = decl;
+      /* Check for used but undefined static functions using the C
+	 standard's definition of "used", and set TREE_NO_WARNING so
+	 that check_global_declarations doesn't repeat the check.  */
+      if (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_INITIAL (decl) == 0
+	  && DECL_EXTERNAL (decl)
+	  && !TREE_PUBLIC (decl)
+	  && C_DECL_USED (decl))
+	{
+	  pedwarn ("%J%<%F%> used but never defined", decl, decl);
+	  TREE_NO_WARNING (decl) = 1;
+	}
+    }
 
   wrapup_global_declarations (vec, len);
   check_global_declarations (vec, len);
