@@ -39,7 +39,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "obstack.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
-#include "xcoff.h"
+#include "xcoffout.h"
 #endif
 
 #ifndef ASM_STABS_OP
@@ -81,6 +81,7 @@ void assemble_name ();
 int output_addressed_constants ();
 void output_constant ();
 void output_constructor ();
+void data_section ();
 
 #ifdef EXTRA_SECTIONS
 static enum in_section {no_section, in_text, in_data, EXTRA_SECTIONS} in_section
@@ -1341,7 +1342,8 @@ immed_real_const_1 (d, mode)
 
   /* Detect special cases.  */
 
-  if (REAL_VALUES_EQUAL (dconst0, d))
+  /* Avoid REAL_VALUES_EQUAL here in order to distinguish minus zero.  */
+  if (!bcmp (&dconst0, &d, sizeof d))
     return CONST0_RTX (mode);
   else if (REAL_VALUES_EQUAL (dconst1, d))
     return CONST1_RTX (mode);

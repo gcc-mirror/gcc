@@ -144,7 +144,7 @@ expmed,explow,optabs,emit-rtl,insn-emit,jump,cse,loop,flow,stupid,combine
 regclass,local-alloc,global-alloc,reload,reload1,insn-peep,final,recog
 insn-recog,insn-extract,insn-output,obstack,integrate,caller-save,calls
 dwarfout,xcoffout,function,insn-attrtab,reorg,sched,sdbout,dbxout,unroll
-reg-stack,aux-output,print-rtl,version
+reg-stack,aux-output,print-rtl,getpwd,version
 $!
 $pur/nolog independent.opt
 $!
@@ -261,6 +261,7 @@ $	assign/user insn-attrtab.c sys$output:
 $	mcr sys$disk:[]genattrtab md
 $	'CC 'CFLAGS insn-attrtab.c
 $	'CC 'CFLAGS aux-output.c
+$	'CC 'CFLAGS getpwd.c
 $!
 $compile_cc1:
 $!

@@ -52,6 +52,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "rtl.h"
 #include "flags.h"
 #include "insn-attr.h"
+
+#ifdef XCOFF_DEBUGGING_INFO
+#include "xcoffout.h"
+#endif
 
 #ifdef VMS
 /* The extra parameters substantially improve the I/O performance.  */
@@ -183,9 +187,9 @@ enum debug_info_type write_symbols = NO_DEBUG;
    for the definitions of the different possible levels.  */
 enum debug_info_level debug_info_level = DINFO_LEVEL_NONE;
 
-#ifdef DBX_DEBUGGING_INFO
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
 /* Nonzero means can use our own extensions to DBX format.
-   Relevant only when write_symbols == DBX_DEBUG.  */
+   Relevant only when write_symbols == DBX_DEBUG or XCOFF_DEBUG.  */
 int use_gdb_dbx_extensions = 0;
 #endif
 
@@ -370,6 +374,10 @@ int flag_no_inline;
 
 int flag_gen_aux_info = 0;
 
+/* Specified name of aux-info file.  */
+
+static char *aux_info_file_name;
+
 /* Nonzero means make the text shared if supported.  */
 
 int flag_shared_data;
@@ -445,7 +453,6 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"keep-inline-functions", &flag_keep_inline_functions, 1},
   {"inline", &flag_no_inline, 0},
   {"syntax-only", &flag_syntax_only, 1},
-  {"gen-aux-info", &flag_gen_aux_info, 1},
   {"shared-data", &flag_shared_data, 1},
   {"caller-saves", &flag_caller_saves, 1},
   {"pcc-struct-return", &flag_pcc_struct_return, 1},
@@ -528,7 +535,8 @@ struct { char *string; int *variable; int on_value;} W_options[] =
   {"return-type", &warn_return_type, 1},
   {"aggregate-return", &warn_aggregate_return, 1},
   {"cast-align", &warn_cast_align, 1},
-  {"uninitialized", &warn_uninitialized, 1}
+  {"uninitialized", &warn_uninitialized, 1},
+  {"inline", &warn_inline, 1}
 };
 
 /* Output files for assembler code (real compiler output)
@@ -1287,7 +1295,6 @@ compile_file (name)
   tree globals;
   int start_time;
   int dump_base_name_length;
-  char *aux_info_file_name;
 
   int name_specified = name != 0;
 
@@ -1345,12 +1352,11 @@ compile_file (name)
   if (flag_caller_saves)
     init_caller_save ();
 
-  /* If auxilliary info generation is desired, open the output file.  */
+  /* If auxiliary info generation is desired, open the output file.
+     This goes in the same directory as the source file--unlike
+     all the other output files.  */
   if (flag_gen_aux_info)
     {
-      aux_info_file_name = (char *) xmalloc (dump_base_name_length + 6);
-      strcpy (aux_info_file_name, dump_base_name);
-      strcat (aux_info_file_name, ".X");
       aux_info_file = fopen (aux_info_file_name, "w");
       if (aux_info_file == 0)
 	pfatal_with_name (aux_info_file_name);
@@ -1538,6 +1544,10 @@ compile_file (name)
 	pfatal_with_name (asm_file_name);
     }
 
+#ifdef IO_BUFFER_SIZE
+  setvbuf (asm_out_file, xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
+#endif
+
   input_filename = name;
 
   /* Perform language-specific initialization.
@@ -1570,8 +1580,8 @@ compile_file (name)
 
   /* If dbx symbol table desired, initialize writing it
      and output the predefined types.  */
-#ifdef DBX_DEBUGGING_INFO
-  if (write_symbols == DBX_DEBUG)
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+  if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
     TIMEVAR (symout_time, dbxout_init (asm_out_file, main_input_filename,
 				       getdecls ()));
 #endif
@@ -1718,8 +1728,8 @@ compile_file (name)
   }
 
   /* Do dbx symbols */
-#ifdef DBX_DEBUGGING_INFO
-  if (write_symbols == DBX_DEBUG)
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+  if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
     TIMEVAR (symout_time,
 	     {
 	       dbxout_finish (asm_out_file, main_input_filename);
@@ -1884,8 +1894,9 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
       else
 	error ("invalid register name `%s' for register variable", asmspec);
     }
-#ifdef DBX_DEBUGGING_INFO
-  else if (write_symbols == DBX_DEBUG && TREE_CODE (decl) == TYPE_DECL)
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+  else if ((write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
+	   && TREE_CODE (decl) == TYPE_DECL)
     TIMEVAR (symout_time, dbxout_symbol (decl, 0));
 #endif
 #ifdef SDB_DEBUGGING_INFO
@@ -1902,8 +1913,8 @@ rest_of_type_compilation (type, toplev)
      tree type;
      int toplev;
 {
-#ifdef DBX_DEBUGGING_INFO
-  if (write_symbols == DBX_DEBUG)
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+  if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
     TIMEVAR (symout_time, dbxout_symbol (TYPE_STUB_DECL (type), !toplev));
 #endif
 #ifdef SDB_DEBUGGING_INFO
@@ -2447,6 +2458,14 @@ rest_of_compilation (decl)
 
  exit_rest_of_compilation:
 
+  /* In case the function was not output,
+     don't leave any temporary anonymous types
+     queued up for sdb output.  */
+#ifdef SDB_DEBUGGING_INFO
+  if (write_symbols == SDB_DEBUG)
+    sdbout_types (0);
+#endif
+
   /* Put back the tree of subblocks from before we copied it.
      Code generation and the output of debugging info may have modified
      the copy, but the original is unchanged.  */
@@ -2544,9 +2563,11 @@ main (argc, argv, envp)
     }
 
   obey_regdecls = (optimize == 0);
-  flag_no_inline = (optimize == 0);
-  if (flag_no_inline)
-    warn_inline = 0;
+  if (optimize == 0)
+    {
+      flag_no_inline = 1;
+      warn_inline = 0;
+    }
 
   if (optimize >= 1)
     {
@@ -2826,7 +2847,7 @@ main (argc, argv, envp)
 		 you must define PREFERRED_DEBUGGING_TYPE
 		 to choose a format in a system-dependent way.  */
 #if 1 < (defined (DBX_DEBUGGING_INFO) + defined (SDB_DEBUGGING_INFO) \
-	 + defined (DWARF_DEBUGGING_INFO))
+	 + defined (DWARF_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO))
 #ifdef PREFERRED_DEBUGGING_TYPE
 	      if (!strncmp (str, "ggdb", len))
 		write_symbols = PREFERRED_DEBUGGING_TYPE;
@@ -2873,6 +2894,26 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 	      else if (!strncmp (str, "gcoff", len))
 		write_symbols = SDB_DEBUG;
 #endif /* SDB_DEBUGGING_INFO */
+#ifdef XCOFF_DEBUGGING_INFO
+	      if (write_symbols != NO_DEBUG)
+		;
+	      else if (!strncmp (str, "ggdb", len))
+		write_symbols = XCOFF_DEBUG;
+	      else if (!strncmp (str, "gxcoff", len))
+		write_symbols = XCOFF_DEBUG;
+
+	      /* Always enable extensions for -ggdb,
+		 always disable for -gxcoff.
+		 For plain -g, use system-specific default.  */
+	      if (write_symbols == XCOFF_DEBUG && !strncmp (str, "ggdb", len)
+		  && len >= 2)
+		use_gdb_dbx_extensions = 1;
+	      else if (write_symbols == DBX_DEBUG
+		       && !strncmp (str, "gxcoff", len) && len >= 2)
+		use_gdb_dbx_extensions = 0;
+	      else
+		use_gdb_dbx_extensions = DEFAULT_GDB_EXTENSIONS;
+#endif	      
 	      if (write_symbols == NO_DEBUG)
 		warning ("`-%s' option not supported on this version of GCC", str);
 	      else if (level == 0)
@@ -2889,6 +2930,11 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 	      g_switch_set = TRUE;
 	      g_switch_value = atoi ((str[1] != '\0') ? str+1 : argv[++i]);
 	    }
+	  else if (!strncmp (str, "aux-info", 8))
+	    {
+	      flag_gen_aux_info = 1;
+	      aux_info_file_name = (str[8] != '\0' ? str+8 : argv[++i]);
+	    }
 	  else
 	    error ("Invalid option `%s'", argv[i]);
 	}
@@ -2901,6 +2947,14 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 	}
       else
 	filename = argv[i];
+    }
+
+  /* Inlining does not work if not optimizing,
+     so force it not to be done.  */
+  if (optimize == 0)
+    {
+      flag_no_inline = 1;
+      warn_inline = 0;
     }
 
 #ifdef OVERRIDE_OPTIONS

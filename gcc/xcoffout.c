@@ -36,7 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This defines the C_* storage classes.  */
 #include <dbxstclass.h>
 
-#include "xcoff.h"
+#include "xcoffout.h"
 
 #if defined (USG) || defined (NO_STAB_H)
 #include "gstab.h"
