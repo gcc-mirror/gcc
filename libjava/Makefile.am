@@ -65,7 +65,7 @@ GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
 ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
 endif # CANADIAN
 
-GCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -fclasspath=$(here) -L$(here) $(JC1FLAGS) -c
+GCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -fclasspath=$(here) -L$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
 GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 LIBLINK = $(LIBTOOL) --mode=link $(CC) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 
@@ -117,12 +117,13 @@ javao_files = $(java_source_files:.java=.lo) \
 libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
 
 libgcj_la_SOURCES = prims.cc posix.cc jni.cc exception.cc \
-	resolve.cc defineclass.cc interpret.cc name-finder.cc
+	resolve.cc defineclass.cc interpret.cc name-finder.cc \
+	$(nat_source_files)
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
-libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
+libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS) $(LIBLTDL)
-libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
+libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
 	$(THREADOBJS) $(libffi_files) $(LIBLTDL)
 libgcj_la_LDFLAGS = -lsupc++ -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
@@ -192,10 +193,14 @@ SUFFIXES = .class .java .h
 ## is a bug in automake), and it also won't put the .o files into
 ## subdirs.  FIXME.
 $(nat_files): %.lo: %.cc
-	$(LTCXXCOMPILE) -c -o $@ $<
-
-$(nat_files) $(GCOBJS) $(THREADOBJS) $(libgcj_la_OBJECTS) $(gij_OBJECTS): \
-		include/config.h include/java-signal.h $(nat_headers)
+	@echo '$(LTCXXCOMPILE) -c -o $@ $<'; \
+	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
 
 ## FIXME: GNU make.
 $(c_files): %.lo: %.c
@@ -206,8 +211,6 @@ $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 ## FIXME: GNU make.
 $(javao_files): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
-
-$(javao_files): libgcj.zip
 
 ## ################################################################
 
@@ -224,8 +227,6 @@ nat_headers = $(ordinary_java_source_files:.java=.h) \
 	$(built_java_source_files:.java=.h) \
 	java/io/ObjectOutputStream$$PutField.h \
 	java/io/ObjectInputStream$$GetField.h
-
-$(nat_headers): libgcj.zip
 
 java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
@@ -1166,6 +1167,22 @@ java/text/natCollator.cc \
 java/util/natGregorianCalendar.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
+
+## ################################################################
+
+##
+## Dependency tracking madness.
+##
+
+## FIXME: depends on GNU make.
+-include deps.mk
+
+## This is an evil hack to work around an automake limitation.  We
+## need to ensure that the built headers are built before we try to
+## compile the C++ sources, but we can't make the .o files depend on
+## the headers, because in that case we'll force a complete rebuild of
+## the C++ code whenever any .java file is touched.
+all-recursive: $(nat_headers)
 
 ## ################################################################
 

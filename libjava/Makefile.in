@@ -154,7 +154,7 @@ bin_SCRIPTS = addr2name.awk
 @CANADIAN_FALSE@GCJH = \
 @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
 
-GCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -fclasspath=$(here) -L$(here) $(JC1FLAGS) -c
+GCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -fclasspath=$(here) -L$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
 GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 LIBLINK = $(LIBTOOL) --mode=link $(CC) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 
@@ -191,15 +191,16 @@ javao_files = $(java_source_files:.java=.lo) \
 libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
 
 libgcj_la_SOURCES = prims.cc posix.cc jni.cc exception.cc \
-	resolve.cc defineclass.cc interpret.cc name-finder.cc
+	resolve.cc defineclass.cc interpret.cc name-finder.cc \
+	$(nat_source_files)
 
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
 
-libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
+libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS) $(LIBLTDL)
 
-libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
+libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
 	$(THREADOBJS) $(libffi_files) $(LIBLTDL)
 
 libgcj_la_LDFLAGS = -lsupc++ -rpath $(toolexeclibdir) \
@@ -1018,7 +1019,27 @@ libgcjdata_a_LIBADD =
 LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
 
 libgcj_la_OBJECTS =  prims.lo posix.lo jni.lo exception.lo resolve.lo \
-defineclass.lo interpret.lo name-finder.lo
+defineclass.lo interpret.lo name-finder.lo \
+gnu/gcj/convert/JIS0208_to_Unicode.lo \
+gnu/gcj/convert/JIS0212_to_Unicode.lo gnu/gcj/convert/Unicode_to_JIS.lo \
+gnu/gcj/convert/natIconv.lo gnu/gcj/convert/natInput_EUCJIS.lo \
+gnu/gcj/convert/natInput_SJIS.lo gnu/gcj/convert/natOutput_EUCJIS.lo \
+gnu/gcj/convert/natOutput_SJIS.lo gnu/gcj/io/natSimpleSHSStream.lo \
+gnu/gcj/io/shs.lo gnu/gcj/jni/natNativeThread.lo \
+gnu/gcj/runtime/natFirstThread.lo java/io/natFile.lo \
+java/io/natFileDescriptor.lo java/io/natObjectInputStream.lo \
+java/io/natObjectOutputStream.lo java/lang/natCharacter.lo \
+java/lang/natClass.lo java/lang/natClassLoader.lo \
+java/lang/natConcreteProcess.lo java/lang/natDouble.lo \
+java/lang/natFloat.lo java/lang/natMath.lo java/lang/natObject.lo \
+java/lang/natRuntime.lo java/lang/natString.lo java/lang/natSystem.lo \
+java/lang/natThread.lo java/lang/natThrowable.lo \
+java/lang/reflect/natArray.lo java/lang/reflect/natConstructor.lo \
+java/lang/reflect/natField.lo java/lang/reflect/natMethod.lo \
+java/net/natInetAddress.lo java/net/natPlainDatagramSocketImpl.lo \
+java/net/natPlainSocketImpl.lo java/text/natCollator.lo \
+java/util/natGregorianCalendar.lo java/util/zip/natDeflater.lo \
+java/util/zip/natInflater.lo
 @NATIVE_TRUE@bin_PROGRAMS =  jv-convert$(EXEEXT) gij$(EXEEXT)
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS =  \
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS$(EXEEXT)
@@ -1065,14 +1086,23 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/convert/Input_JavaSrc.P \
 .deps/gnu/gcj/convert/Input_SJIS.P .deps/gnu/gcj/convert/Input_UTF8.P \
 .deps/gnu/gcj/convert/Input_iconv.P \
+.deps/gnu/gcj/convert/JIS0208_to_Unicode.P \
+.deps/gnu/gcj/convert/JIS0212_to_Unicode.P \
 .deps/gnu/gcj/convert/Output_8859_1.P \
 .deps/gnu/gcj/convert/Output_EUCJIS.P \
 .deps/gnu/gcj/convert/Output_JavaSrc.P \
 .deps/gnu/gcj/convert/Output_SJIS.P .deps/gnu/gcj/convert/Output_UTF8.P \
 .deps/gnu/gcj/convert/Output_iconv.P \
 .deps/gnu/gcj/convert/UnicodeToBytes.P \
+.deps/gnu/gcj/convert/Unicode_to_JIS.P .deps/gnu/gcj/convert/natIconv.P \
+.deps/gnu/gcj/convert/natInput_EUCJIS.P \
+.deps/gnu/gcj/convert/natInput_SJIS.P \
+.deps/gnu/gcj/convert/natOutput_EUCJIS.P \
+.deps/gnu/gcj/convert/natOutput_SJIS.P \
 .deps/gnu/gcj/io/DefaultMimeTypes.P .deps/gnu/gcj/io/MimeTypes.P \
-.deps/gnu/gcj/io/SimpleSHSStream.P .deps/gnu/gcj/jni/NativeThread.P \
+.deps/gnu/gcj/io/SimpleSHSStream.P \
+.deps/gnu/gcj/io/natSimpleSHSStream.P .deps/gnu/gcj/io/shs.P \
+.deps/gnu/gcj/jni/NativeThread.P .deps/gnu/gcj/jni/natNativeThread.P \
 .deps/gnu/gcj/math/MPN.P .deps/gnu/gcj/protocol/file/Connection.P \
 .deps/gnu/gcj/protocol/file/Handler.P \
 .deps/gnu/gcj/protocol/http/Connection.P \
@@ -1081,6 +1111,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/protocol/jar/Handler.P \
 .deps/gnu/gcj/runtime/FileDeleter.P .deps/gnu/gcj/runtime/FirstThread.P \
 .deps/gnu/gcj/runtime/VMClassLoader.P \
+.deps/gnu/gcj/runtime/natFirstThread.P \
 .deps/gnu/gcj/text/BaseBreakIterator.P \
 .deps/gnu/gcj/text/CharacterBreakIterator.P \
 .deps/gnu/gcj/text/LineBreakIterator.P \
@@ -1290,6 +1321,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/io/UTFDataFormatException.P \
 .deps/java/io/UnsupportedEncodingException.P \
 .deps/java/io/WriteAbortedException.P .deps/java/io/Writer.P \
+.deps/java/io/natFile.P .deps/java/io/natFileDescriptor.P \
+.deps/java/io/natObjectInputStream.P \
+.deps/java/io/natObjectOutputStream.P \
 .deps/java/lang/AbstractMethodError.P \
 .deps/java/lang/ArithmeticException.P \
 .deps/java/lang/ArrayIndexOutOfBoundsException.P \
@@ -1346,29 +1380,38 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/e_scalb.P .deps/java/lang/e_sqrt.P \
 .deps/java/lang/k_cos.P .deps/java/lang/k_rem_pio2.P \
 .deps/java/lang/k_sin.P .deps/java/lang/k_tan.P .deps/java/lang/mprec.P \
+.deps/java/lang/natCharacter.P .deps/java/lang/natClass.P \
+.deps/java/lang/natClassLoader.P .deps/java/lang/natConcreteProcess.P \
+.deps/java/lang/natDouble.P .deps/java/lang/natFloat.P \
+.deps/java/lang/natMath.P .deps/java/lang/natObject.P \
+.deps/java/lang/natRuntime.P .deps/java/lang/natString.P \
+.deps/java/lang/natSystem.P .deps/java/lang/natThread.P \
+.deps/java/lang/natThrowable.P \
 .deps/java/lang/reflect/AccessibleObject.P \
 .deps/java/lang/reflect/Array.P .deps/java/lang/reflect/Constructor.P \
 .deps/java/lang/reflect/Field.P \
 .deps/java/lang/reflect/InvocationTargetException.P \
 .deps/java/lang/reflect/Member.P .deps/java/lang/reflect/Method.P \
-.deps/java/lang/reflect/Modifier.P .deps/java/lang/s_atan.P \
-.deps/java/lang/s_ceil.P .deps/java/lang/s_copysign.P \
-.deps/java/lang/s_cos.P .deps/java/lang/s_fabs.P \
-.deps/java/lang/s_floor.P .deps/java/lang/s_rint.P \
-.deps/java/lang/s_scalbn.P .deps/java/lang/s_sin.P \
-.deps/java/lang/s_tan.P .deps/java/lang/sf_rint.P \
-.deps/java/lang/strtod.P .deps/java/lang/w_acos.P \
-.deps/java/lang/w_asin.P .deps/java/lang/w_atan2.P \
-.deps/java/lang/w_exp.P .deps/java/lang/w_fmod.P \
-.deps/java/lang/w_log.P .deps/java/lang/w_pow.P \
-.deps/java/lang/w_remainder.P .deps/java/lang/w_sqrt.P \
-.deps/java/math/BigDecimal.P .deps/java/math/BigInteger.P \
-.deps/java/net/BindException.P .deps/java/net/ConnectException.P \
-.deps/java/net/ContentHandler.P .deps/java/net/ContentHandlerFactory.P \
-.deps/java/net/DatagramPacket.P .deps/java/net/DatagramSocket.P \
-.deps/java/net/DatagramSocketImpl.P .deps/java/net/FileNameMap.P \
-.deps/java/net/HttpURLConnection.P .deps/java/net/InetAddress.P \
-.deps/java/net/JarURLConnection.P \
+.deps/java/lang/reflect/Modifier.P .deps/java/lang/reflect/natArray.P \
+.deps/java/lang/reflect/natConstructor.P \
+.deps/java/lang/reflect/natField.P .deps/java/lang/reflect/natMethod.P \
+.deps/java/lang/s_atan.P .deps/java/lang/s_ceil.P \
+.deps/java/lang/s_copysign.P .deps/java/lang/s_cos.P \
+.deps/java/lang/s_fabs.P .deps/java/lang/s_floor.P \
+.deps/java/lang/s_rint.P .deps/java/lang/s_scalbn.P \
+.deps/java/lang/s_sin.P .deps/java/lang/s_tan.P \
+.deps/java/lang/sf_rint.P .deps/java/lang/strtod.P \
+.deps/java/lang/w_acos.P .deps/java/lang/w_asin.P \
+.deps/java/lang/w_atan2.P .deps/java/lang/w_exp.P \
+.deps/java/lang/w_fmod.P .deps/java/lang/w_log.P \
+.deps/java/lang/w_pow.P .deps/java/lang/w_remainder.P \
+.deps/java/lang/w_sqrt.P .deps/java/math/BigDecimal.P \
+.deps/java/math/BigInteger.P .deps/java/net/BindException.P \
+.deps/java/net/ConnectException.P .deps/java/net/ContentHandler.P \
+.deps/java/net/ContentHandlerFactory.P .deps/java/net/DatagramPacket.P \
+.deps/java/net/DatagramSocket.P .deps/java/net/DatagramSocketImpl.P \
+.deps/java/net/FileNameMap.P .deps/java/net/HttpURLConnection.P \
+.deps/java/net/InetAddress.P .deps/java/net/JarURLConnection.P \
 .deps/java/net/MalformedURLException.P .deps/java/net/MulticastSocket.P \
 .deps/java/net/NoRouteToHostException.P \
 .deps/java/net/PlainDatagramSocketImpl.P \
@@ -1382,6 +1425,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/net/URLStreamHandlerFactory.P \
 .deps/java/net/UnknownHostException.P \
 .deps/java/net/UnknownServiceException.P \
+.deps/java/net/natInetAddress.P \
+.deps/java/net/natPlainDatagramSocketImpl.P \
+.deps/java/net/natPlainSocketImpl.P \
 .deps/java/security/AlgorithmParameterGeneratorSpi.P \
 .deps/java/security/BasicPermission.P \
 .deps/java/security/DigestException.P \
@@ -1450,7 +1496,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/text/MessageFormat.P .deps/java/text/NumberFormat.P \
 .deps/java/text/ParseException.P .deps/java/text/ParsePosition.P \
 .deps/java/text/RuleBasedCollator.P .deps/java/text/SimpleDateFormat.P \
-.deps/java/text/StringCharacterIterator.P \
+.deps/java/text/StringCharacterIterator.P .deps/java/text/natCollator.P \
 .deps/java/util/AbstractCollection.P .deps/java/util/AbstractList.P \
 .deps/java/util/AbstractMap.P .deps/java/util/AbstractSequentialList.P \
 .deps/java/util/AbstractSet.P .deps/java/util/ArrayList.P \
@@ -1481,8 +1527,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/jar/JarException.P .deps/java/util/jar/JarFile.P \
 .deps/java/util/jar/JarInputStream.P \
 .deps/java/util/jar/JarOutputStream.P .deps/java/util/jar/Manifest.P \
-.deps/java/util/zip/Adler32.P .deps/java/util/zip/CRC32.P \
-.deps/java/util/zip/CheckedInputStream.P \
+.deps/java/util/natGregorianCalendar.P .deps/java/util/zip/Adler32.P \
+.deps/java/util/zip/CRC32.P .deps/java/util/zip/CheckedInputStream.P \
 .deps/java/util/zip/CheckedOutputStream.P \
 .deps/java/util/zip/Checksum.P \
 .deps/java/util/zip/DataFormatException.P \
@@ -1494,7 +1540,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/zip/ZipConstants.P .deps/java/util/zip/ZipEntry.P \
 .deps/java/util/zip/ZipException.P .deps/java/util/zip/ZipFile.P \
 .deps/java/util/zip/ZipInputStream.P \
-.deps/java/util/zip/ZipOutputStream.P .deps/jni.P .deps/libgcjdata.P \
+.deps/java/util/zip/ZipOutputStream.P .deps/java/util/zip/natDeflater.P \
+.deps/java/util/zip/natInflater.P .deps/jni.P .deps/libgcjdata.P \
 .deps/name-finder.P .deps/no-threads.P .deps/nogc.P \
 .deps/posix-threads.P .deps/posix.P .deps/prims.P .deps/resolve.P
 SOURCES = $(libgcjdata_a_SOURCES) $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
@@ -2086,10 +2133,14 @@ clean-local:
 	$(GCJCOMPILE) -o $@ $<
 
 $(nat_files): %.lo: %.cc
-	$(LTCXXCOMPILE) -c -o $@ $<
-
-$(nat_files) $(GCOBJS) $(THREADOBJS) $(libgcj_la_OBJECTS) $(gij_OBJECTS): \
-		include/config.h include/java-signal.h $(nat_headers)
+	@echo '$(LTCXXCOMPILE) -c -o $@ $<'; \
+	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c -o $@ $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
 
 $(c_files): %.lo: %.c
 	$(LTCOMPILE) -c -o $@ $<
@@ -2099,12 +2150,8 @@ $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 $(javao_files): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
 
-$(javao_files): libgcj.zip
-
 .class.h:
 	$(GCJH) -classpath $(top_builddir) $(basename $<)
-
-$(nat_headers): libgcj.zip
 
 java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
@@ -2245,6 +2292,10 @@ $(CONVERT_DIR)/make-trie.o: $(srcdir)/$(CONVERT_DIR)/make-trie.c
 
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@$(srcdir)/$(CONVERT_DIR)/Unicode_to_JIS.cc: ./gen-from-JIS$(EXEEXT)
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@	 ./gen-from-JIS toJIS>$(srcdir)/$(CONVERT_DIR)/Unicode_to_JIS.cc
+
+-include deps.mk
+
+all-recursive: $(nat_headers)
 
 # Multilib support.
 .PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \

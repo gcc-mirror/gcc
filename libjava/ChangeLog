@@ -1,3 +1,15 @@
+2000-10-20  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am: Include deps.mk.
+	(GCJCOMPILE): Added -MD, -MT, and -MF.
+	($(javao_files)): Don't depend on libgcj.zip.
+	(all-recursive): New target.
+	(%.lo:%.cc): Do dependency tracking.
+	($(nat_headers)): Don't depend on libgcj.zip.
+	* configure: Rebuilt.
+	* configure.in: Make .d files and deps.mk.
+
 2000-10-13  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* exception.cc: Don't #include "exception".

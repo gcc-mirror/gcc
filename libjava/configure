@@ -5848,6 +5848,7 @@ fi
 here=`pwd`
 
 
+
 trap '' 1 2 15
 cat > confcache <<\EOF
 # This file is a shell script that caches the results of configure
@@ -6347,6 +6348,26 @@ test -z "$CONFIG_HEADERS" || echo timestamp > include/stamp-h
 if test -n "$CONFIG_FILES"; then
   ac_file=Makefile . ${libgcj_basedir}/../config-ml.in
 fi
+
+# Make subdirectories and `.d' files.  Look in both srcdir and
+# builddir for the .java files.
+h=`pwd`
+: > deps.mk
+( (cd $srcdir && find . -name '*.java' -print) ;
+  find . -name '*.java' -print) | \
+   fgrep -v testsuite | \
+   sed -e 's/\.java/.d/' | \
+   while read f; do
+      echo "include $f" >> deps.mk
+      test -f $f || {
+
+	 d=`echo $f | sed -e 's,/[^/]*$,,'`
+
+	 $srcdir/../mkinstalldirs $d
+	 : > $f
+      }
+   done
+
 exit 0
 EOF
 chmod +x $CONFIG_STATUS
