@@ -396,9 +396,7 @@ extern int hard_regno_nregs[];
 extern int hard_regno_mode_ok[FIRST_PSEUDO_REGISTER];
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On SPARC, the cpu registers can hold any mode but the float registers
-   can only hold SFmode or DFmode.  See sparc.c for how we
-   initialize this.  */
+   See sparc.c for how we initialize this.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((hard_regno_mode_ok[REGNO] & (1<<(int)(MODE))) != 0)
 
