@@ -1,3 +1,13 @@
+2004-08-03  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 13596
+	* dbxout.c (dbx_output_lbrac, dbx_output_rbrac): New
+	functions, broken out of dbxout_block.
+	(dbxout_block): The block at depth 0 should get LBRAC/RBRAC
+	stabs too, if it contains symbols.  Use the begin_label and
+	the Lscope label (emitted by dbxout_function_end) for the
+	range of this block.
+
 2004-08-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* doc/install.texi: Update autoconf version requirements.
