@@ -1,3 +1,8 @@
+2004-11-24  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-alias.c (merge_pointed_to_info): Fix comment
+	regarding PT_MALLOC.
+
 2004-11-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/i386.c (optimization_options): Use
