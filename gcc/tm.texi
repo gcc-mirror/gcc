@@ -3311,7 +3311,7 @@ compiler knows this regardless of @code{EXIT_IGNORE_STACK}.
 
 @findex EPILOGUE_USES
 @item EPILOGUE_USES (@var{regno})
-Define this macro as a C expression that is nonzero for registers are
+Define this macro as a C expression that is nonzero for registers that are
 used by the epilogue or the @samp{return} pattern.  The stack and frame
 pointer registers are already be assumed to be used as needed.
 
@@ -3600,7 +3600,7 @@ A C statement or compound statement to save all registers, which may
 be clobbered by a function call, including condition codes.  The
 @code{asm} statement will be mostly likely needed to handle this
 task.  Local labels in the assembler code can be concatenated with the
-string @var{id}, to obtain a unique lable name.
+string @var{id}, to obtain a unique label name.
 
 Registers or condition codes clobbered by @code{FUNCTION_PROLOGUE} or
 @code{FUNCTION_EPILOGUE} must be saved in the macros
@@ -3742,7 +3742,7 @@ done, you can use the standard implementation of varargs that works for
 machines that pass all their arguments on the stack.
 
 The argument @var{args_so_far} is the @code{CUMULATIVE_ARGS} data
-structure, containing the values that obtain after processing of the
+structure, containing the values that are obtained after processing the
 named arguments.  The arguments @var{mode} and @var{type} describe the
 last named argument---its machine mode and its data type as a tree node.
 
@@ -4525,7 +4525,7 @@ You need not define this macro if @code{EXTRA_CC_MODES} is not defined.
 
 @findex CANONICALIZE_COMPARISON
 @item CANONICALIZE_COMPARISON (@var{code}, @var{op0}, @var{op1})
-One some machines not all possible comparisons are defined, but you can
+On some machines not all possible comparisons are defined, but you can
 convert an invalid comparison into a valid one.  For example, the Alpha
 does not have a @code{GT} comparison, but you can use an @code{LT}
 comparison instead and swap the order of the operands.
@@ -5190,7 +5190,7 @@ This macro need not be defined if the standard form of output
 for the file format in use is appropriate.
 
 @findex OUTPUT_QUOTED_STRING
-@item OUTPUT_QUOTED_STRING (@var{stream}, @var{name})
+@item OUTPUT_QUOTED_STRING (@var{stream}, @var{string})
 A C statement to output the string @var{string} to the stdio stream
 @var{stream}.  If you do not call the function @code{output_quoted_string}
 in your config files, GCC will only call it to output filenames to
@@ -5311,7 +5311,7 @@ not define this macro, the usual case, GCC will output the constant
 pool before the function.
 
 @findex ASM_OUTPUT_POOL_PROLOGUE
-@item ASM_OUTPUT_POOL_PROLOGUE (@var{file} @var{funname} @var{fundecl} @var{size})
+@item ASM_OUTPUT_POOL_PROLOGUE (@var{file}, @var{funname}, @var{fundecl}, @var{size})
 A C statement to output assembler commands to define the start of the
 constant pool for a function.  @var{funname} is a string giving
 the name of the function.  Should the return type of the function
@@ -5457,7 +5457,7 @@ as the number of bits.
 @item ASM_OUTPUT_ALIGNED_DECL_COMMON (@var{stream}, @var{decl}, @var{name}, @var{size}, @var{alignment})
 Like @code{ASM_OUTPUT_ALIGNED_COMMON} except that @var{decl} of the
 variable to be output, if there is one, or @code{NULL_TREE} if there
-is not corresponding variable.  If you define this macro, GCC wil use it
+is no corresponding variable.  If you define this macro, GCC will use it
 in place of both @code{ASM_OUTPUT_COMMON} and
 @code{ASM_OUTPUT_ALIGNED_COMMON}.  Define this macro when you need to see
 the variable's decl in order to chose what to output.
@@ -5532,7 +5532,7 @@ as the number of bits.
 @item ASM_OUTPUT_ALIGNED_DECL_LOCAL (@var{stream}, @var{decl}, @var{name}, @var{size}, @var{alignment})
 Like @code{ASM_OUTPUT_ALIGNED_DECL} except that @var{decl} of the
 variable to be output, if there is one, or @code{NULL_TREE} if there
-is not corresponding variable.  If you define this macro, GCC wil use it
+is no corresponding variable.  If you define this macro, GCC will use it
 in place of both @code{ASM_OUTPUT_DECL} and
 @code{ASM_OUTPUT_ALIGNED_DECL}.  Define this macro when you need to see
 the variable's decl in order to chose what to output.
@@ -5781,7 +5781,7 @@ If SET_ASM_OP is defined, a default definition is provided which is
 correct for most systems.
 
 @findex ASM_OUTPUT_DEF_FROM_DECLS
-@item ASM_OUTPUT_DEF (@var{stream}, @var{decl_of_name}, @var{decl_of_value})
+@item ASM_OUTPUT_DEF_FROM_DECLS (@var{stream}, @var{decl_of_name}, @var{decl_of_value})
 A C statement to output to the stdio stream @var{stream} assembler code
 which defines (equates) the symbol whoes tree node is @var{decl_of_name}
 to have the value of the tree node @var{decl_of_value}.  This macro will
@@ -7763,8 +7763,7 @@ debug output to.  @var{verbose} is the verbose level provided by
 @samp{-fsched-verbose-}@var{n}.
 
 @findex MD_SCHED_REORDER
-@item MD_SCHED_REORDER (@var{file}, @var{verbose}, @var{ready}, @var{n_ready},
-			@var{clock}, @var{can_issue_more})
+@item MD_SCHED_REORDER (@var{file}, @var{verbose}, @var{ready}, @var{n_ready}, @var{clock}, @var{can_issue_more})
 A C statement which is executed by the @samp{Haifa} scheduler after it
 has scheduled the ready list to allow the machine description to reorder
 it (for example to combine two small instructions together on

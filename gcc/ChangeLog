@@ -1,3 +1,7 @@
+Fri Feb  4 10:51:30 2000  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* tm.texi: Fix various typos.
+
 Thu Feb  3 17:17:32 2000  Steve Ellcey <sje@cup.hp.com>
 
 	* config/pa/pa-hpux11.h (LIB_SPEC): Correct typo in !p case.
