@@ -105,7 +105,7 @@ GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -I./include
 
 # Special flags for compiling enquire.
 # We disable optimization to make floating point more reliable.
-ENQUIRE_CFLAGS = -DNO_MEM -DNO_STDDEF -DNO_LONG_DOUBLE_IO -O0
+ENQUIRE_CFLAGS = -DNO_MEM -DNO_LONG_DOUBLE_IO -O0
 ENQUIRE_LDFLAGS = $(LDFLAGS)
 
 # Tools to use when building a cross-compiler.
@@ -347,7 +347,7 @@ ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
 # Even if ALLOCA is set, don't use it if compiling with GCC.
-USE_ALLOCA= ` case "${CC}" in "${OLDCC}") echo ${ALLOCA} ;; esac `
+USE_ALLOCA= ` case "${CC}" in "${OLDCC}") echo "" ${ALLOCA} ;; esac `
 USE_HOST_ALLOCA= ` case "${HOST_CC}"@"${HOST_ALLOCA}" in "${OLDCC}"@?*) echo ${HOST_PREFIX}${HOST_ALLOCA} ;; esac `
 USE_HOST_MALLOC= ` case "${HOST_MALLOC}" in ?*) echo ${HOST_PREFIX}${HOST_MALLOC} ;; esac `
 USE_HOST_OBSTACK= ` case "${HOST_OBSTACK}" in ?*) echo ${HOST_PREFIX}${HOST_OBSTACK} ;; esac `
@@ -512,9 +512,8 @@ native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_C
 # to do the right thing within all.cross.
 C c: cc1
 C++ c++: cc1plus
-# The next two ought to depend on objc-runtime, but that doesn't work yet.
-OBJC objc: cc1obj
-OBJECTIVE-C objective-c: cc1obj
+OBJC objc: cc1obj objc-runtime
+OBJECTIVE-C objective-c: cc1obj objc-runtime
 PROTO: proto
 
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
@@ -1560,6 +1559,7 @@ stmp-fixinc: $(srcdir)/$(FIXINCLUDES) gsyslimits.h fixinc.ready
 
 # copy objc header files into build directory
 objc-headers: stmp-fixinc
+	if [ -d include ]; then true; else mkdir include; fi
 	if [ -d objc ]; then true; else mkdir objc; fi
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
