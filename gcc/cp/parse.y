@@ -2897,7 +2897,7 @@ nested_name_specifier_1:
 			  && ! IDENTIFIER_CLASS_VALUE ($1))
 			pushdecl_class_level ($$);
 		    }
-		  got_scope = $$ = TREE_TYPE ($$);
+		  got_scope = $$ = TYPE_MAIN_VARIANT (TREE_TYPE ($$));
 		}
 	| SELFNAME SCOPE
 		{

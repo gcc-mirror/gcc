@@ -1,5 +1,7 @@
 1998-07-24  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* parse.y (nested_name_specifier_1): Pull out the TYPE_MAIN_VARIANT.
+
 	* pt.c (coerce_template_parms): Also complain about local enums.
 
 	* cp-tree.h: Add prototype for set_identifier_local_value.
