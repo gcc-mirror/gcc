@@ -126,9 +126,33 @@ static void delete_from_jump_chain	PROTO((rtx));
 static int delete_labelref_insn		PROTO((rtx, rtx, int));
 static void mark_modified_reg		PROTO((rtx, rtx));
 static void redirect_tablejump		PROTO((rtx, rtx));
+static void jump_optimize_1		PROTO ((rtx, int, int, int, int));
 #ifndef HAVE_cc0
 static rtx find_insert_position         PROTO((rtx, rtx));
 #endif
+
+/* Main external entry point into the jump optimizer.  See comments before
+   jump_optimize_1 for descriptions of the arguments.  */
+void
+jump_optimize (f, cross_jump, noop_moves, after_regscan)
+     rtx f;
+     int cross_jump;
+     int noop_moves;
+     int after_regscan;
+{
+  jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, 0);
+}
+
+/* Alternate entry into the jump optimizer.  This entry point only rebuilds
+   the JUMP_LABEL field in jumping insns and REG_LABEL notes in non-jumping
+   instructions.  */
+void
+rebuild_jump_labels (f)
+     rtx f;
+{
+  jump_optimize_1 (f, 0, 0, 0, 1);
+}
+
 
 /* Delete no-op jumps and optimize jumps to jumps
    and jumps around jumps.
@@ -143,6 +167,9 @@ static rtx find_insert_position         PROTO((rtx, rtx));
    If AFTER_REGSCAN is nonzero, then this jump pass is being run immediately
    after regscan, and it is safe to use regno_first_uid and regno_last_uid.
 
+   If MARK_LABELS_ONLY is nonzero, then we only rebuild the jump chain
+   and JUMP_LABEL field for jumping insns.
+
    If `optimize' is zero, don't change any code,
    just determine whether control drops off the end of the function.
    This case occurs when we have -W and not -O.
@@ -150,11 +177,12 @@ static rtx find_insert_position         PROTO((rtx, rtx));
    and refrains from actually deleting when that is 0.  */
 
 void
-jump_optimize (f, cross_jump, noop_moves, after_regscan)
+jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
      rtx f;
      int cross_jump;
      int noop_moves;
      int after_regscan;
+     int mark_labels_only;
 {
   register rtx insn, next;
   int changed;
@@ -181,6 +209,11 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
   bzero ((char *) jump_chain, max_jump_chain * sizeof (rtx));
 
   mark_all_labels (f, cross_jump);
+
+  /* Quit now if we just wanted to rebuild the JUMP_LABEL and REG_LABEL
+     notes.  */
+  if (mark_labels_only)
+    return;
 
   /* Keep track of labels used from static data;
      they cannot ever be deleted.  */

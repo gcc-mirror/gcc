@@ -1354,6 +1354,7 @@ extern int rtx_renumbered_equal_p	PROTO ((rtx, rtx));
 extern int true_regnum			PROTO ((rtx));
 extern int redirect_jump		PROTO ((rtx, rtx));
 extern void jump_optimize		PROTO ((rtx, int, int, int));
+extern void rebuild_jump_labels		PROTO ((rtx));
 extern void thread_jumps		PROTO ((rtx, int, int));
 extern int redirect_exp			PROTO ((rtx *, rtx, rtx, rtx));
 extern int rtx_equal_for_thread_p	PROTO ((rtx, rtx, rtx));
