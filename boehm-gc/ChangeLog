@@ -1,3 +1,17 @@
+2004-08-16  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* aclocal.m4: Remove obsolete construct for old automake.
+	* acinclude.m4: Regenerate with aclocal 1.9.1.
+	* configure.ac:  Remove duplicate AC_WITH calls.  Replace
+	AC_CANONICAL_SYSTEM with AC_CANONICAL_HOST, AC_CANONICAL_TARGET.
+	Replace _GCC_TOPLEV_NONCANONICAL calls with ACX_NONCANONICAL_TARGET.
+	Remove now-redundant subst of target_noncanonical.  Remove
+	now-gratuitous m4 quoting around $.  Replace AM_PROG_LIBTOOL with
+	AC_PROG_LIBTOOL and remove second, redundant AC_PROG_LIBTOOL.
+	Use slightly more modern form of AC_INIT.
+	* configure: Rebuild with autoconf 2.59.
+	* Makefile.in, include/Makefile.in: Rebuild with automake 1.9.1.
+
 2004-08-16  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* solaris_threads.c: Remove ifdef around #include "private/gc_priv.h"
