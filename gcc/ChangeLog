@@ -1,3 +1,10 @@
+Sat Oct  9 23:26:55 1999  Jeffrey A Law  (law@cygnus.com)
+
+        * gcse.c (gcse_main): Avoid global optimizations if we have a
+        large number of basic blocks and the ratio of edges to blocks
+        is high.
+        (delete_null_pointer_checks): Likewise.
+
 Sat Oct  9 23:16:01 1999  Ken Raeburn  <raeburn@mit.edu>
 
 	* c-common.c (check_format_info): Warn if format string isn't a
