@@ -277,8 +277,13 @@
 
 
 ; VMX
-(define_insn_reservation "power4-vec" 2
-  (and (eq_attr "type" "vecsimple,veccomplex")
+(define_insn_reservation "power4-vecsimple" 2
+  (and (eq_attr "type" "vecsimple")
+       (eq_attr "cpu" "power4"))
+  "vq_power4")
+
+(define_insn_reservation "power4-veccomplex" 2
+  (and (eq_attr "type" "veccomplex")
        (eq_attr "cpu" "power4"))
   "vq_power4")
 
@@ -299,7 +304,15 @@
   "vpq_power4")
 
 (define_bypass 4 "power4-vecload" "power4-vecperm")
-(define_bypass 5 "power4-vec"
+
+(define_bypass 3 "power4-vecsimple,power4-veccomplex" "power4-vecperm")
+(define_bypass 3 "power4-vecperm"
+		 "power4-vecsimple,power4-veccomplex,power4-vecfloat")
+(define_bypass 9 "power4-vecfloat" "power4-vecperm")
+
+(define_bypass 5 "power4-vecsimple,power4-veccomplex"
 		 "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr")
-(define_bypass 3 "power4-vec,power4-vecfloat" "power4-vecperm")
-(define_bypass 3 "power4-vecperm" "power4-vec,power4-vecfloat")
+
+(define_bypass 4 "power4-vecsimple,power4-vecperm" "power4-vecstore")
+(define_bypass 7 "power4-veccomplex" "power4-vecstore")
+(define_bypass 10 "power4-vecfloat" "power4-vecstore")
