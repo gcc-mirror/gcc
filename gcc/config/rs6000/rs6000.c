@@ -381,6 +381,7 @@ static void rs6000_init_libfuncs (void);
 static void enable_mask_for_builtins (struct builtin_description *, int,
 				      enum rs6000_builtins,
 				      enum rs6000_builtins);
+static tree build_opaque_vector_type (tree, int);
 static void spe_init_builtins (void);
 static rtx spe_expand_builtin (tree, rtx, bool *);
 static rtx spe_expand_predicate_builtin (enum insn_code, tree, rtx);
@@ -6659,6 +6660,14 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   return NULL_RTX;
 }
 
+static tree
+build_opaque_vector_type (tree node, int nunits)
+{
+  node = copy_node (node);
+  TYPE_MAIN_VARIANT (node) = node;
+  return build_vector_type (node, nunits);
+}
+
 static void
 rs6000_init_builtins (void)
 {
@@ -6674,8 +6683,8 @@ rs6000_init_builtins (void)
   unsigned_V8HI_type_node = build_vector_type (unsigned_intHI_type_node, 8);
   unsigned_V4SI_type_node = build_vector_type (unsigned_intSI_type_node, 4);
 
-  opaque_V2SI_type_node = copy_node (V2SI_type_node);
-  opaque_V2SF_type_node = copy_node (V2SF_type_node);
+  opaque_V2SF_type_node = build_opaque_vector_type (float_type_node, 2);
+  opaque_V2SI_type_node = build_opaque_vector_type (intSI_type_node, 2);
   opaque_p_V2SI_type_node = build_pointer_type (opaque_V2SI_type_node);
 
   /* The 'vector bool ...' types must be kept distinct from 'vector unsigned ...'
