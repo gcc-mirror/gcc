@@ -52,15 +52,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Perhaps there's a danger that it will make name conflicts
    if method names contain underscores. -- rms.  */
 #ifndef OBJC_GEN_METHOD_LABEL
-#define OBJC_GEN_METHOD_LABEL(BUF, IS_INST, CLASS_NAME, CAT_NAME, SEL_NAME, NUM)	\
-  do {					\
-    char *temp;				\
-    sprintf ((BUF), "_%s_%s_%s",	\
-	     ((IS_INST) ? "i" : "c"),	\
-	     (CLASS_NAME),		\
-	     (SEL_NAME));		\
-    for (temp = (BUF); *temp; temp++)	\
-      if (*temp == ':') *temp = '_';	\
+#define OBJC_GEN_METHOD_LABEL(BUF, IS_INST, CLASS_NAME, CAT_NAME, SEL_NAME, NUM) \
+  do {					    \
+    char *temp;				    \
+    sprintf ((BUF), "_%s_%s_%s_%s",	    \
+	     ((IS_INST) ? "i" : "c"),	    \
+	     (CLASS_NAME),		    \
+	     ((CAT_NAME)? (CAT_NAME) : ""), \
+	     (SEL_NAME));		    \
+    for (temp = (BUF); *temp; temp++)	    \
+      if (*temp == ':') *temp = '_';	    \
   } while (0)
 #endif
 
