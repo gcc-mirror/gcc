@@ -1,3 +1,11 @@
+2000-12-03  Manfred Hollstein  <manfredh@redhat.com>
+
+	* arm/t-linux (MULTILIB_OPTIONS): Comment.
+	(MULTILIB_DIRNAMES): Likewise.
+	(EXTRA_MULTILIB_PARTS): Likewise.
+	(LIBGCC): Likewise.
+	(INSTALL_LIBGCC): Likewise.
+
 2000-12-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_strcat, expand_builtin_strncat,
