@@ -53,6 +53,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import gnu.gcj.runtime.BootClassLoader;
 
 /**
  * java.lang.VMClassLoader is a package-private helper for VMs to implement
@@ -81,6 +82,10 @@ final class VMClassLoader
   }
 
   static final HashMap definedPackages = new HashMap();
+
+  // This is a helper for handling java.endorsed.dirs.  It is null
+  // until we've initialized the system, at which point it is created.
+  static BootClassLoader bootLoader;
 
   /**
    * Helper to define a class using a string of bytes. This assumes that
@@ -153,6 +158,8 @@ final class VMClassLoader
    */
   static URL getResource(String name)
   {
+    if (bootLoader != null)
+      return bootLoader.bootGetResource(name);
     return null;
   }
 
@@ -168,6 +175,8 @@ final class VMClassLoader
    */
   static Enumeration getResources(String name) throws IOException
   {
+    if (bootLoader != null)
+      return bootLoader.bootGetResources(name);
     return EmptyEnumeration.getInstance();
   }
 
@@ -287,6 +296,8 @@ final class VMClassLoader
 
   static native ClassLoader getSystemClassLoaderInternal();
 
+  static native void initBootLoader(String libdir);
+
   static ClassLoader getSystemClassLoader()
   {
     // This method is called as the initialization of systemClassLoader,
@@ -310,6 +321,7 @@ final class VMClassLoader
 			       + loader, ex);
 	  }
       }
+
     return default_sys;
   }
 }

@@ -70,246 +70,305 @@ import gnu.xml.pipeline.ValidationConsumer;
  *
  * @author David Brownell
  */
-public final class XmlReader implements XMLReader
+public final class XmlReader
+  implements XMLReader
 {
-    private SAXDriver		aelfred2 = new SAXDriver ();
-    private EventFilter		filter = new EventFilter ();
-    private boolean		isValidating;
-    private boolean		active;
 
-
-    /** Constructs a SAX Parser.  */
-    public XmlReader ()
-	{ }
-
-    /**
-     * Constructs a SAX Parser, optionally treating validity errors
-     * as if they were fatal errors.
-     */
-    public XmlReader (boolean invalidIsFatal)
+  static class FatalErrorHandler
+    extends DefaultHandler2
+  {
+    
+    public void error(SAXParseException e)
+      throws SAXException
     {
-	if (invalidIsFatal)
-	    setErrorHandler (new DefaultHandler2 () {
-		public void error (SAXParseException e)
-		throws SAXException
-		    { throw e; }
-		});
+      throw e;
     }
+    
+  }
+  
+  private SAXDriver aelfred2 = new SAXDriver();
+  private EventFilter filter = new EventFilter();
+  private boolean isValidating;
+  private boolean active;
 
-    /**
-     * <b>SAX2</b>: Returns the object used to report the logical
-     * content of an XML document.
-     */
-    public ContentHandler getContentHandler ()
-	{ return filter.getContentHandler (); }
+  /**
+   * Constructs a SAX Parser.
+   */
+  public XmlReader()
+  {
+  }
 
-    /**
-     * <b>SAX2</b>: Assigns the object used to report the logical
-     * content of an XML document.
-     * @exception IllegalStateException if called mid-parse
-     */
-    public void setContentHandler (ContentHandler handler)
-    {
-	if (active)
-	    throw new IllegalStateException ("already parsing");
-	filter.setContentHandler (handler);
-    }
+  /**
+   * Constructs a SAX Parser, optionally treating validity errors
+   * as if they were fatal errors.
+   */
+  public XmlReader(boolean invalidIsFatal)
+  {
+    if (invalidIsFatal)
+      {
+        setErrorHandler(new FatalErrorHandler());
+      }
+  }
+  
+  /**
+   * <b>SAX2</b>: Returns the object used to report the logical
+   * content of an XML document.
+   */
+  public ContentHandler getContentHandler()
+  {
+    return filter.getContentHandler();
+  }
 
-    /**
-     * <b>SAX2</b>: Returns the object used to process declarations related
-     * to notations and unparsed entities.
-     */
-    public DTDHandler getDTDHandler ()
-	{ return filter.getDTDHandler (); }
+  /**
+   * <b>SAX2</b>: Assigns the object used to report the logical
+   * content of an XML document.
+   * @exception IllegalStateException if called mid-parse
+   */
+  public void setContentHandler(ContentHandler handler)
+  {
+    if (active)
+      {
+        throw new IllegalStateException("already parsing");
+      }
+    filter.setContentHandler(handler);
+  }
 
-    /**
-     * <b>SAX1</b> Assigns DTD handler
-     * @exception IllegalStateException if called mid-parse
-     */
-    public void setDTDHandler (DTDHandler handler)
-    {
-	if (active)
-	    throw new IllegalStateException ("already parsing");
-	filter.setDTDHandler (handler);
-    }
+  /**
+   * <b>SAX2</b>: Returns the object used to process declarations related
+   * to notations and unparsed entities.
+   */
+  public DTDHandler getDTDHandler()
+  {
+    return filter.getDTDHandler();
+  }
 
-    /**
-     * <b>SAX2</b>: Returns the object used when resolving external
-     * entities during parsing (both general and parameter entities).
-     */
-    public EntityResolver getEntityResolver ()
-	{ return aelfred2.getEntityResolver (); }
+  /**
+   * <b>SAX1</b> Assigns DTD handler
+   * @exception IllegalStateException if called mid-parse
+   */
+  public void setDTDHandler(DTDHandler handler)
+  {
+    if (active)
+      {
+        throw new IllegalStateException("already parsing");
+      }
+    filter.setDTDHandler(handler);
+  }
+  
+  /**
+   * <b>SAX2</b>: Returns the object used when resolving external
+   * entities during parsing (both general and parameter entities).
+   */
+  public EntityResolver getEntityResolver()
+  {
+    return aelfred2.getEntityResolver();
+  }
 
-    /** <b>SAX1</b> Assigns parser's entity resolver */
-    public void setEntityResolver (EntityResolver handler)
-	{ aelfred2.setEntityResolver (handler); }
+  /**
+   * <b>SAX1</b> Assigns parser's entity resolver
+   */
+  public void setEntityResolver(EntityResolver handler)
+  {
+    aelfred2.setEntityResolver(handler);
+  }
 
-    /**
-     * <b>SAX2</b>: Returns the object used to receive callbacks for XML
-     * errors of all levels (fatal, nonfatal, warning); this is never null;
-     */
-    public ErrorHandler getErrorHandler ()
-	{ return aelfred2.getErrorHandler (); }
+  /**
+   * <b>SAX2</b>: Returns the object used to receive callbacks for XML
+   * errors of all levels (fatal, nonfatal, warning); this is never null;
+   */
+  public ErrorHandler getErrorHandler()
+  {
+    return aelfred2.getErrorHandler();
+  }
 
-    /**
-     * <b>SAX1</b> Assigns error handler
-     * @exception IllegalStateException if called mid-parse
-     */
-    public void setErrorHandler (ErrorHandler handler)
-    {
-	if (active)
-	    throw new IllegalStateException ("already parsing");
-	aelfred2.setErrorHandler (handler);
-    }
+  /**
+   * <b>SAX1</b> Assigns error handler
+   * @exception IllegalStateException if called mid-parse
+   */
+  public void setErrorHandler(ErrorHandler handler)
+  {
+    if (active)
+      {
+        throw new IllegalStateException("already parsing");
+      }
+    aelfred2.setErrorHandler(handler);
+  }
 
-    /**
-     * <b>SAX2</b>:  Assigns the specified property.
-     * @exception IllegalStateException if called mid-parse
-     */
-    public void setProperty (String propertyId, Object value)
+  /**
+   * <b>SAX2</b>:  Assigns the specified property.
+   * @exception IllegalStateException if called mid-parse
+   */
+  public void setProperty(String propertyId, Object value)
     throws SAXNotRecognizedException, SAXNotSupportedException
-    {
-	if (active)
-	    throw new IllegalStateException ("already parsing");
-	if (getProperty (propertyId) != value)
-	    filter.setProperty (propertyId, value);
-    }
+  {
+    if (active)
+      {
+        throw new IllegalStateException("already parsing");
+      }
+    if (getProperty(propertyId) != value)
+      {
+        filter.setProperty(propertyId, value);
+      }
+  }
 
-    /**
-     * <b>SAX2</b>:  Returns the specified property.
-     */
-    public Object getProperty (String propertyId)
+  /**
+   * <b>SAX2</b>:  Returns the specified property.
+   */
+  public Object getProperty(String propertyId)
     throws SAXNotRecognizedException
-    {
-	if ((SAXDriver.PROPERTY + "declaration-handler")
-			.equals (propertyId)
-		|| (SAXDriver.PROPERTY + "lexical-handler")
-			.equals (propertyId))
-	    return filter.getProperty (propertyId);
-	throw new SAXNotRecognizedException (propertyId);
-    }
-
-    private void forceValidating ()
+  {
+    if ((SAXDriver.PROPERTY + "declaration-handler").equals(propertyId)
+        || (SAXDriver.PROPERTY + "lexical-handler").equals(propertyId))
+      {
+        return filter.getProperty(propertyId);
+      }
+    throw new SAXNotRecognizedException(propertyId);
+  }
+  
+  private void forceValidating()
     throws SAXNotRecognizedException, SAXNotSupportedException
-    {
-	aelfred2.setFeature (
-	    SAXDriver.FEATURE + "namespace-prefixes",
-	    true);
-	aelfred2.setFeature (
-	    SAXDriver.FEATURE + "external-general-entities",
-	    true);
-	aelfred2.setFeature (
-	    SAXDriver.FEATURE + "external-parameter-entities",
-	    true);
-    }
+  {
+    aelfred2.setFeature(SAXDriver.FEATURE + "namespace-prefixes",
+                        true);
+    aelfred2.setFeature(SAXDriver.FEATURE + "external-general-entities",
+                        true);
+    aelfred2.setFeature(SAXDriver.FEATURE + "external-parameter-entities",
+                        true);
+  }
 
-    /**
-     * <b>SAX2</b>:  Sets the state of features supported in this parser.
-     * Note that this parser requires reporting of namespace prefixes when
-     * validating.
-     */
-    public void setFeature (String featureId, boolean state)
+  /**
+   * <b>SAX2</b>:  Sets the state of features supported in this parser.
+   * Note that this parser requires reporting of namespace prefixes when
+   * validating.
+   */
+  public void setFeature(String featureId, boolean state)
     throws SAXNotRecognizedException, SAXNotSupportedException
-    {
-	boolean value = getFeature (featureId);
+  {
+    boolean value = getFeature(featureId);
 
-	if (state == value)
-	    return;
+    if (state == value)
+      {
+        return;
+      }
 
-	if ((SAXDriver.FEATURE + "validation").equals (featureId)) {
-	    if (active)
-		throw new SAXNotSupportedException ("already parsing");
-	    if (state)
-		forceValidating ();
-	    isValidating = state;
-	} else
-	    aelfred2.setFeature (featureId, state);
-    }
+    if ((SAXDriver.FEATURE + "validation").equals(featureId))
+      {
+        if (active)
+          {
+            throw new SAXNotSupportedException("already parsing");
+          }
+        if (state)
+          {
+            forceValidating();
+          }
+        isValidating = state;
+      }
+    else
+      {
+        aelfred2.setFeature(featureId, state);
+      }
+  }
 
-    /**
-     * <b>SAX2</b>: Tells whether this parser supports the specified feature.
-     * At this time, this directly parallels the underlying SAXDriver,
-     * except that validation is optionally supported.
-     *
-     * @see SAXDriver
-     */
-    public boolean getFeature (String featureId)
+  /**
+   * <b>SAX2</b>: Tells whether this parser supports the specified feature.
+   * At this time, this directly parallels the underlying SAXDriver,
+   * except that validation is optionally supported.
+   *
+   * @see SAXDriver
+   */
+  public boolean getFeature(String featureId)
     throws SAXNotRecognizedException, SAXNotSupportedException
-    {
-	if ((SAXDriver.FEATURE + "validation").equals (featureId))
-	    return isValidating;
+  {
+    if ((SAXDriver.FEATURE + "validation").equals(featureId))
+      {
+        return isValidating;
+      }
 
-	return aelfred2.getFeature (featureId);
-    }
+    return aelfred2.getFeature(featureId);
+  }
 
-    /**
-     * <b>SAX1</b>: Sets the locale used for diagnostics; currently,
-     * only locales using the English language are supported.
-     * @param locale The locale for which diagnostics will be generated
-     */
-    public void setLocale (Locale locale)
+  /**
+   * <b>SAX1</b>: Sets the locale used for diagnostics; currently,
+   * only locales using the English language are supported.
+   * @param locale The locale for which diagnostics will be generated
+   */
+  public void setLocale(Locale locale)
     throws SAXException
-	{ aelfred2.setLocale (locale); }
+  {
+    aelfred2.setLocale(locale);
+  }
 
-    /**
-     * <b>SAX1</b>: Preferred API to parse an XML document, using a
-     * system identifier (URI).
+  /**
+   * <b>SAX1</b>: Preferred API to parse an XML document, using a
+   * system identifier (URI).
      */
-    public void parse (String systemId)
+  public void parse(String systemId)
     throws SAXException, IOException
-    {
-	parse (new InputSource (systemId));
-    }
+  {
+    parse(new InputSource(systemId));
+  }
 
-    /**
-     * <b>SAX1</b>: Underlying API to parse an XML document, used
-     * directly when no URI is available.  When this is invoked,
-     * and the parser is set to validate, some features will be
-     * automatically reset to appropriate values:  for reporting
-     * namespace prefixes, and incorporating external entities.
-     *
-     * @param source The XML input source.
-     *
-     * @exception IllegalStateException if called mid-parse
-     * @exception SAXException The handlers may throw any SAXException,
-     *	and the parser normally throws SAXParseException objects.
-     * @exception IOException IOExceptions are normally through through
-     *	the parser if there are problems reading the source document.
-     */
-    public void parse (InputSource source)
+  /**
+   * <b>SAX1</b>: Underlying API to parse an XML document, used
+   * directly when no URI is available.  When this is invoked,
+   * and the parser is set to validate, some features will be
+   * automatically reset to appropriate values:  for reporting
+   * namespace prefixes, and incorporating external entities.
+   *
+   * @param source The XML input source.
+   *
+   * @exception IllegalStateException if called mid-parse
+   * @exception SAXException The handlers may throw any SAXException,
+   *  and the parser normally throws SAXParseException objects.
+   * @exception IOException IOExceptions are normally through through
+   *  the parser if there are problems reading the source document.
+   */
+  public void parse(InputSource source)
     throws SAXException, IOException
-    {
-	EventFilter	next;
-	boolean		nsdecls;
+  {
+    EventFilter next;
+    boolean nsdecls;
 
-	synchronized (aelfred2) {
-	    if (active)
-		throw new IllegalStateException ("already parsing");
-	    active = true;
-	}
+    synchronized (aelfred2)
+      {
+        if (active)
+          {
+            throw new IllegalStateException("already parsing");
+          }
+        active = true;
+      }
 
-	// set up the output pipeline
-	if (isValidating) {
-	    forceValidating ();
-	    next = new ValidationConsumer (filter);
-	} else
-	    next = filter;
+    // set up the output pipeline
+    if (isValidating)
+      {
+        forceValidating();
+        next = new ValidationConsumer(filter);
+      }
+    else
+      {
+        next = filter;
+      }
 
-	// connect pipeline and error handler
-	// don't let _this_ call to bind() affect xmlns* attributes
-	nsdecls = aelfred2.getFeature (
-	    SAXDriver.FEATURE + "namespace-prefixes");
-	EventFilter.bind (aelfred2, next);
-	if (!nsdecls)
-	    aelfred2.setFeature (
-		SAXDriver.FEATURE + "namespace-prefixes",
-		false);
+    // connect pipeline and error handler
+    // don't let _this_ call to bind() affect xmlns* attributes
+    nsdecls = aelfred2.getFeature(SAXDriver.FEATURE + "namespace-prefixes");
+    EventFilter.bind(aelfred2, next);
+    if (!nsdecls)
+      {
+        aelfred2.setFeature(SAXDriver.FEATURE + "namespace-prefixes",
+                            false);
+      }
 
-	// parse, clean up
-	try {
-	    aelfred2.parse (source);
-	} finally {
-	    active = false;
-	}
-    }
+    // parse, clean up
+    try
+      {
+        aelfred2.parse(source);
+      }
+    finally
+      {
+        active = false;
+      }
+  }
+
 }
+

@@ -126,16 +126,16 @@ java::lang::Class::getClassLoader (void)
 	s->checkPermission (new RuntimePermission (JvNewStringLatin1 ("getClassLoader")));
     }
 
-  // The spec requires us to return `null' for primitive classes.  In
-  // other cases we have the option of returning `null' for classes
-  // loaded with the bootstrap loader.  All gcj-compiled classes which
-  // are linked into the application used to return `null' here, but
-  // that confuses some poorly-written applications.  It is a useful
-  // and apparently harmless compatibility hack to simply never return
-  // `null' instead.
-  if (isPrimitive ())
-    return NULL;
-  return loader ? loader : ClassLoader::systemClassLoader;
+  // This particular 'return' has been changed a couple of times over
+  // libgcj's history.  This particular approach is a little weird,
+  // because it means that all classes linked into the application
+  // will see NULL for their class loader.  This may confuse some
+  // applications that aren't expecting this; the solution is to use a
+  // different linking model for these applications.  In the past we
+  // returned the system class loader in this case, but that is
+  // incorrect.  Also, back then we didn't have other linkage models
+  // to fall back on.
+  return loader;
 }
 
 java::lang::reflect::Constructor *

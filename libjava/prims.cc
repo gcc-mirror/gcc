@@ -55,6 +55,7 @@ details.  */
 #include <java/lang/OutOfMemoryError.h>
 #include <java/lang/System.h>
 #include <java/lang/VMThrowable.h>
+#include <java/lang/VMClassLoader.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/io/PrintStream.h>
 #include <java/lang/UnsatisfiedLinkError.h>
@@ -1130,8 +1131,9 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
   // of VMClassLoader.
   _Jv_InitClass (&java::lang::ClassLoader::class$);
 
-  // Set up the system class loader.
+  // Set up the system class loader and the bootstrap class loader.
   gnu::gcj::runtime::VMClassLoader::initialize();
+  java::lang::VMClassLoader::initBootLoader(JvNewStringLatin1(TOOLEXECLIBDIR));
 
   _Jv_RegisterBootstrapPackages();
 
@@ -1209,7 +1211,10 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
       java::lang::System::err->println (JvNewStringLatin1 
         ("Exception during runtime initialization"));
       t->printStackTrace();
-      runtime->exit (1);
+      if (runtime)
+	runtime->exit (1);
+      // In case the runtime creation failed.
+      ::exit (1);
     }
 
   _Jv_AttachCurrentThread (main_thread);
