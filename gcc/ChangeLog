@@ -1,3 +1,10 @@
+2005-05-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/15720
+	* config/darwin.c (machopic_indirect_call_target): Copy
+	the SYMBOL_REF_DECL from the original RTX for the new
+	stub RTX.
+
 2004-05-28  DJ Delorie  <dj@redhat.com>
 
 	* stor-layout.c (place_field): Revert erroneous commit.
