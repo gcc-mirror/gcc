@@ -2726,6 +2726,7 @@ subst_stack_regs (insn, regstack)
 {
   register rtx *note_link, note;
   register int i;
+  rtx head, jump, pat, cipat;
   int n_operands;
 
   if (GET_CODE (insn) == CALL_INSN)
@@ -2796,6 +2797,39 @@ subst_stack_regs (insn, regstack)
 
   if (GET_CODE (insn) == NOTE)
     return;
+
+  /* If we are reached by a computed goto which sets this same stack register,
+     then pop this stack register, but maintain regstack. */
+
+  pat = single_set (insn);
+  if (pat != 0
+      && INSN_UID (insn) <= max_uid
+      && GET_CODE (block_begin[BLOCK_NUM(insn)]) == CODE_LABEL
+      && GET_CODE (pat) == SET && STACK_REG_P (SET_DEST (pat)))
+    for (head = block_begin[BLOCK_NUM(insn)], jump = LABEL_REFS (head);
+	 jump != head;
+	 jump = LABEL_NEXTREF (jump))
+      {
+	cipat = single_set (CONTAINING_INSN (jump));
+	if (cipat != 0
+	    && GET_CODE (cipat) == SET
+	    && SET_DEST (cipat) == pc_rtx
+	    && uses_reg_or_mem (SET_SRC (cipat))
+	    && INSN_UID (CONTAINING_INSN (jump)) <= max_uid)
+	  {
+	    int from_block = BLOCK_NUM (CONTAINING_INSN (jump));
+	    if (TEST_HARD_REG_BIT (block_out_reg_set[from_block],
+				   REGNO (SET_DEST (pat))))
+	      {
+		struct stack_def old;
+		bcopy (regstack->reg, old.reg, sizeof (old.reg));
+		emit_pop_insn (insn, regstack, SET_DEST (pat), emit_insn_before);
+		regstack->top += 1;
+		bcopy (old.reg, regstack->reg, sizeof (old.reg));
+		SET_HARD_REG_BIT (regstack->reg_set, REGNO (SET_DEST (pat)));
+	      }
+	  }
+      }
 
   /* If there is a REG_UNUSED note on a stack register on this insn,
      the indicated reg must be popped.  The REG_UNUSED note is removed,
