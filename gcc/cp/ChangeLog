@@ -1,3 +1,53 @@
+Sat Apr  8 17:45:41 1995  Mike Stump  <mrs@cygnus.com>
+
+	* gc.c (build_headof): Use ptrdiff_type_node instead of
+	integer_type_node on pointer arithmetic.
+
+Sat Apr  8 11:57:04 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (build_modify_expr): Undo previous change.
+
+Thu Apr  6 01:23:50 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* Makefile.in (compiler): Remove ../cc1plus before rebuilding it.
+
+	* repo.c (get_base_filename): Put the .rpo file in the directory
+	with the object file, not the source.
+
+	* typeck.c (build_conditional_expr): Handle pmf's better.
+
+	* repo.c (finish_repo): Also use ASM_OUTPUT_LABELREF to print out
+	the name of the symbol.
+
+Wed Apr  5 15:24:12 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* repo.c (open_repo_file): Make repo filename DOS-compliant.
+	(*): Also write a new repo file if some previously-used
+	templates are no longer used.  Only remember the identifier.
+
+	* lex.c (cons_up_default_function): If this function belongs to a
+	template class, call repo_template_used for it.
+
+	* repo.c (repo_template_used): Using a class means using its vtable,
+	if any.
+	(finish_repo): Ditto.
+
+	* typeck.c (build_modify_expr): Only wrap TARGET_EXPRs in RTL_EXPRs
+	if the type has a complex copy constructor.
+
+	* decl2.c (lang_decode_option): -frepo implies
+	-fno-implicit-templates.
+
+	* decl.c (start_function): Clear current_{base,member}_init_list.
+
+	* lex.c (init_lex): Also unset *_eq if ! flag_operator_names.
+
+Tue Apr  4 16:11:08 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (struct cp_function): Add {base,member}_init_list.
+	(push_cp_function_context): Save current_{base,member}_init_list.
+	(pop_cp_function_context): Restore them.
+
 Mon Apr  3 16:55:08 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* repo.c (get_base_filename): Take filename parm, fix logic bug.

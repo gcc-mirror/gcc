@@ -494,6 +494,13 @@ lang_decode_option (p)
       else if (!strcmp (p, "ansi-overloading"))
 	{
 	  warning ("-fansi-overloading is no longer meaningful");
+	  found = 1;
+	}
+      else if (!strcmp (p, "repo"))
+	{
+	  flag_use_repository = 1;
+	  flag_implicit_templates = 0;
+	  found = 1;
 	}
       else for (j = 0;
 		!found && j < sizeof (lang_f_options) / sizeof (lang_f_options[0]);

@@ -10653,6 +10653,8 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
   current_function_obstack_usage = 0;
   base_init_insns = NULL_RTX;
   protect_list = NULL_TREE;
+  current_base_init_list = NULL_TREE;
+  current_member_init_list = NULL_TREE;
 
   clear_temp_name ();
 
@@ -12137,6 +12139,8 @@ struct cp_function
   tree ctor_label;
   tree dtor_label;
   tree protect_list;
+  tree base_init_list;
+  tree member_init_list;
   rtx result_rtx;
   rtx base_init_insns;
   struct cp_function *next;
@@ -12177,6 +12181,8 @@ push_cp_function_context (context)
   p->base_init_insns = base_init_insns;
   p->protect_list = protect_list;
   p->temp_name_counter = temp_name_counter;
+  p->base_init_list = current_base_init_list;
+  p->member_init_list = current_member_init_list;
 }
 
 /* Restore the variables used during compilation of a C++ function.  */
@@ -12224,6 +12230,8 @@ pop_cp_function_context (context)
   original_result_rtx = p->result_rtx;
   base_init_insns = p->base_init_insns;
   temp_name_counter = p->temp_name_counter;
+  current_base_init_list = p->base_init_list;
+  current_member_init_list = p->member_init_list;
 
   free (p);
 }

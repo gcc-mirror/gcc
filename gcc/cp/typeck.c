@@ -4769,6 +4769,10 @@ build_conditional_expr (ifexp, op1, op2)
 	}
     }
 
+  if (TREE_CODE (result_type) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (result_type)) == METHOD_TYPE)
+    result_type = build_ptrmemfunc_type (result_type);
+
   if (result_type != TREE_TYPE (op1))
     op1 = convert_and_check (result_type, op1);
   if (result_type != TREE_TYPE (op2))

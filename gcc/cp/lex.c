@@ -809,12 +809,16 @@ init_lex ()
     {
       /* These are new ANSI keywords that may break code.  */
       UNSET_RESERVED_WORD ("and");
+      UNSET_RESERVED_WORD ("and_eq");
       UNSET_RESERVED_WORD ("bitand");
       UNSET_RESERVED_WORD ("bitor");
       UNSET_RESERVED_WORD ("compl");
       UNSET_RESERVED_WORD ("not");
+      UNSET_RESERVED_WORD ("not_eq");
       UNSET_RESERVED_WORD ("or");
+      UNSET_RESERVED_WORD ("or_eq");
       UNSET_RESERVED_WORD ("xor");
+      UNSET_RESERVED_WORD ("xor_eq");
     }
   if (! flag_traditional)
     UNSET_RESERVED_WORD ("overload");
@@ -1784,7 +1788,10 @@ cons_up_default_function (type, full_name, kind)
     return fn;
 
   if (processing_template_defn)
-    SET_DECL_IMPLICIT_INSTANTIATION (fn);
+    {
+      SET_DECL_IMPLICIT_INSTANTIATION (fn);
+      repo_template_used (fn);
+    }
 
   if (CLASSTYPE_INTERFACE_KNOWN (type))
     {
