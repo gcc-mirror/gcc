@@ -39,6 +39,7 @@ SHLINK  = libstdc++.so
 MSHLINK = libstdc++.so.`echo $(VERSION) | sed 's/\([0-9]*[.][0-9]*\).*/\1/'`
 SHFLAGS =
 SHDEPS  =
+SHOPT	= -shared
 
 STAMP   = bigstmp
 
@@ -102,7 +103,7 @@ marlink:
 	@$(MAKE) $(MARLINK) "ARLINK=$(MARLINK)"
 
 $(SHLIB): piclist
-	$(CC) $(LIBCXXFLAGS) $(SHFLAGS) -shared -o $(SHLIB) `cat piclist` $(SHDEPS)
+	$(CC) $(LIBCXXFLAGS) $(SHFLAGS) $(SHOPT) -o $(SHLIB) `cat piclist` $(SHDEPS)
 
 $(SHARLIB): $(SHLIB)
 	-rm -f t$(SHARLIB)

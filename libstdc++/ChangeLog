@@ -1,3 +1,13 @@
+2000-01-12  Fred Fish  <fnf@be.com>
+
+	* Makefile.in (SHOPT): New macro, flag to ld to create
+	shared library.  Defaults to "-shared".
+	(SHLIB): Use new SHOPT rather than hardcoded "-shared".
+	* configure.in: While configuring for *-*-beos*, if
+	--enable-shared is given, add beos.ml to list of makefile
+	frags.
+	* config/beos.ml: New file.
+
 1999-12-15  Jason Merrill  <jason@casey.cygnus.com>
 
 	* Makefile.in (MYCXXFLAGS): Include $(CXXFLAGS).
