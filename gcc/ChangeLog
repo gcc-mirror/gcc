@@ -1,3 +1,22 @@
+2000-10-31  Bernd Schmidt  <bernds@redhat.co.uk>
+
+        * config/i386/i386.c (ix86_init_builtins): Correct return type
+	building v4hi_ftype_v4hi_int_int tree node.
+	(ix86_expand_builtin): Use correct operand numbers 0 and 1.
+	Copy operand 0 into a Pmode register, don't generate a MEM rtx.
+
+	* config/i386/i386.md (sse_movntdi): Use mmx register constraint
+	for operand 1.
+	(mmx__uavgv8qi3): Correct insn mnemonic.
+	(mmx_psadbw): Correct insn mnemonic.  Use V8QI mode for operands 1 and 2.
+	(mmx_punpckhwd): Correct insn mnemonic.
+	(mmx_punpckhdq): Likewise.
+	(mmx_punpcklwd): Likewise.
+	(mmx_punpckldq): Likewise.
+	(prefetch): Use immediare_operand and 'n' constraint for operand 1.
+	Renumber case labels to match the _mm_prefetch constants defined in
+	xmmintrin.h.
+
 2000-10-30  Neil Booth  <neilb@earthling.net>
 
 	* cppfiles.c (stack_include_file): Check for stacked contexts
