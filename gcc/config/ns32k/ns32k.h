@@ -601,8 +601,16 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
   if (flag_pic && current_function_uses_pic_offset_table)	\
     {								\
       fprintf (FILE, "\tsprd sb,tos\n");			\
-      fprintf (FILE, "\taddr _GLOBAL_OFFSET_TABLE_(pc),tos\n");	\
-      fprintf (FILE, "\tlprd sb,tos\n");			\
+      if (TARGET_REGPARM)					\
+	{							\
+	  fprintf (FILE, "\taddr _GLOBAL_OFFSET_TABLE_(pc),tos\n"); \
+	  fprintf (FILE, "\tlprd sb,tos\n");			\
+	}							\
+      else							\
+	{							\
+	  fprintf (FILE, "\taddr _GLOBAL_OFFSET_TABLE_(pc),r0\n"); \
+	  fprintf (FILE, "\tlprd sb,r0\n");			\
+	}							\
     }								\
 }
 
