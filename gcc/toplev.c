@@ -3166,7 +3166,8 @@ rest_of_compilation (decl)
 	     global_live_at_end.  We then run sched1, which updates things
 	     properly, discovers the wierdness and aborts.  */
 	  update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
-			    PROP_DEATH_NOTES);
+			    PROP_DEATH_NOTES | PROP_KILL_DEAD_CODE
+			    | PROP_SCAN_DEAD_CODE);
 
 	  timevar_pop (TV_FLOW);
 	}
