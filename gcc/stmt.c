@@ -2149,15 +2149,23 @@ resolve_operand_name_1 (p, outputs, inputs)
   /* Resolve the name to a number.  */
   for (op = 0, t = outputs; t ; t = TREE_CHAIN (t), op++)
     {
-      const char *c = IDENTIFIER_POINTER (TREE_PURPOSE (TREE_PURPOSE (t)));
-      if (strncmp (c, p + 1, len) == 0 && c[len] == '\0')
-	goto found;
+      tree id = TREE_PURPOSE (TREE_PURPOSE (t));
+      if (id)
+	{
+	  const char *c = IDENTIFIER_POINTER (id);
+	  if (strncmp (c, p + 1, len) == 0 && c[len] == '\0')
+	    goto found;
+	}
     }
   for (t = inputs; t ; t = TREE_CHAIN (t), op++)
     {
-      const char *c = IDENTIFIER_POINTER (TREE_PURPOSE (TREE_PURPOSE (t)));
-      if (strncmp (c, p + 1, len) == 0 && c[len] == '\0')
-	goto found;
+      tree id = TREE_PURPOSE (TREE_PURPOSE (t));
+      if (id)
+	{
+	  const char *c = IDENTIFIER_POINTER (id);
+	  if (strncmp (c, p + 1, len) == 0 && c[len] == '\0')
+	    goto found;
+	}
     }
 
   *q = '\0';
