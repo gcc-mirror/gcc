@@ -1,3 +1,7 @@
+2003-06-16  Andreas Jaeger  <aj@suse.de>
+
+	* tree.h: Remove duplicate prototype of strip_float_extensions.
+
 2003-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/c4x/c4x.c: Don't include "c-tree.h".
