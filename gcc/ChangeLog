@@ -1,3 +1,10 @@
+Wed Oct 25 01:02:44 EDT 2000  John Wehle  (john@feith.com)
+
+	* alias.c: Include basic-block.h.
+	(loop_p): New function.
+	(mark_constant_function): Use it.
+	* Makefile.in (alias.o): Update dependencies.
+
 2000-10-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/mn10300/mn10300.c (secondary_reload_class): Treat pseudos
