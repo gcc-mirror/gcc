@@ -592,8 +592,8 @@ optimize_sibling_and_tail_recursive_calls ()
 
 	  /* See if there are any reasons we can't perform either sibling or
 	     tail call optimizations.  We must be careful with stack slots
-	     which are live at potential optimization sites.  ?!? This test
-	     is overly conservative and will be replaced.  */
+	     which are live at potential optimization sites.  ?!? The first
+	     test is overly conservative and should be replaced.  */
 	  if (frame_offset
 	      /* Can't take address of local var if used by recursive call.  */
 	      || current_function_uses_addressof
