@@ -3152,7 +3152,7 @@ Dump after global register allocation, to @file{@var{file}.26.greg}.
 Dump after finalization of EH handling code, to @file{@var{file}.02.eh}.
 @item k
 @opindex dk
-Dump after reg-to-stack conversion, to @file{@var{file}.34.stack}.
+Dump after reg-to-stack conversion, to @file{@var{file}.35.stack}.
 @item o
 @opindex do
 Dump after post-reload optimizations, to @file{@var{file}.27.postreload}.
@@ -3167,7 +3167,7 @@ Dump after sibling call optimizations, to @file{@var{file}.01.sibling}.
 Dump after the first jump optimization, to @file{@var{file}.03.jump}.
 @item k
 @opindex dk
-Dump after conversion from registers to stack, to @file{@var{file}.34.stack}.
+Dump after conversion from registers to stack, to @file{@var{file}.35.stack}.
 @item l
 @opindex dl
 Dump after local register allocation, to @file{@var{file}.25.lreg}.
@@ -3178,7 +3178,7 @@ Dump after loop optimization passes, to @file{@var{file}.12.loop} and
 @item M
 @opindex dM
 Dump after performing the machine dependent reorganization pass, to
-@file{@var{file}.35.mach}.
+@file{@var{file}.36.mach}.
 @item n
 @opindex dn
 Dump after register renumbering, to @file{@var{file}.30.rnreg}.
@@ -3190,7 +3190,7 @@ Dump after the register move pass, to @file{@var{file}.23.regmove}.
 Dump after RTL generation, to @file{@var{file}.00.rtl}.
 @item R
 @opindex dR
-Dump after the second scheduling pass, to @file{@var{file}.33.sched2}.
+Dump after the second scheduling pass, to @file{@var{file}.34.sched2}.
 @item s
 @opindex ds
 Dump after CSE (including the jump optimization that sometimes follows

@@ -1,3 +1,7 @@
+2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/invoke.texi: Update dump file names.
+
 2003-06-22  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/i370/i370.c, config/i370/i370.h: Use HOST_CHARSET_ASCII
