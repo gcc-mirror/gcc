@@ -1,3 +1,11 @@
+1999-12-27  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* execute/991227-1.c: New test.
+
+1999-12-21  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* execute/991221-1.c: New test.
+
 1999-12-16  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* execute/991216-4.c: New test.
