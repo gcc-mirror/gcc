@@ -1,3 +1,14 @@
+2004-11-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* target.h (late_rtl_prologue_epilogue): Remove.
+	* target-def.h (TARGET_LATE_RTL_PROLOGUE_EPILOGUE): Remove.
+	* system.h: Poison TARGET_LATE_RTL_PROLOGUE_EPILOGUE.
+	* passes.c (rest_of_handle_prologue_epilogue): Remove and move
+	remaining bits to...
+	(rest_of_handle_flow2): ...here.
+	(rest_of_compilation): Remove call to rest_of_handle_prologue_epilogue.
+	* doc/tm.texi (TARGET_LATE_RTL_PROLOGUE_EPILOGUE): Remove.
+
 2004-11-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* hwint.h (HOST_LONG_LONG_FORMAT): New macro.  Use it throughout.

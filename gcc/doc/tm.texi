@@ -4263,16 +4263,6 @@ arguments that a function should pop.  @xref{Scalar Return}.
 @c tell?  --mew 5feb93
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_LATE_RTL_PROLOGUE_EPILOGUE
-If set to @code{true}, it instructs the compiler to emit the RTL prologue
-and epilogue later in the game than usual, namely after all passes that
-modify the instructions (and not merely reorder them) have been run.  In
-particular, the C variable @code{current_function_uses_only_leaf_regs} is
-valid at that point.  This can be used on machines that have "register
-windows" to optimize away the regular "push" on the register stack.
-@xref{Leaf Functions}.
-@end deftypefn
-
 @itemize @bullet
 @item
 @findex current_function_pretend_args_size
