@@ -267,35 +267,7 @@ public final class Integer extends Number implements Comparable
 
   public static String toString(int num)
   {
-    // Use an arrary large enough for "-2147483648"; i.e. 11 chars.
-    char[] buffer = new char[11];
-    int i = 11;
-    boolean isNeg;
-    if (num < 0)
-      {
-        isNeg = true;
-        num = -(num);
-        if (num < 0)
-          {
-            // Must be MIN_VALUE, so handle this special case.
-            buffer[--i] = '8';
-            num = 214748364;
-          }
-      }
-    else
-      isNeg = false;
-
-    do
-      {
-        buffer[--i] = (char) ((int) '0' + (num % 10));
-        num /= 10;
-      }
-    while (num > 0);
-
-    if (isNeg)
-      buffer[--i] = '-';
-
-    return String.valueOf(buffer, i, 11-i);
+    return String.valueOf (num);
   }
 
   public static String toString(int num, int radix)

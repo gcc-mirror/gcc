@@ -1068,6 +1068,7 @@ java/lang/natMath.cc \
 java/lang/natObject.cc \
 java/lang/natRuntime.cc	\
 java/lang/natString.cc \
+java/lang/natStringBuffer.cc \
 java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/natThrowable.cc \
@@ -1224,7 +1225,7 @@ java/io/natObjectOutputStream.lo java/lang/natCharacter.lo \
 java/lang/natClass.lo java/lang/natClassLoader.lo \
 java/lang/natConcreteProcess.lo java/lang/natDouble.lo \
 java/lang/natFloat.lo java/lang/natMath.lo java/lang/natObject.lo \
-java/lang/natRuntime.lo java/lang/natString.lo java/lang/natSystem.lo \
+java/lang/natRuntime.lo java/lang/natString.lo java/lang/natStringBuffer.lo java/lang/natSystem.lo \
 java/lang/natThread.lo java/lang/natThrowable.lo \
 java/lang/reflect/natArray.lo java/lang/reflect/natConstructor.lo \
 java/lang/reflect/natField.lo java/lang/reflect/natMethod.lo \
@@ -1632,7 +1633,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/natClassLoader.P .deps/java/lang/natConcreteProcess.P \
 .deps/java/lang/natDouble.P .deps/java/lang/natFloat.P \
 .deps/java/lang/natMath.P .deps/java/lang/natObject.P \
-.deps/java/lang/natRuntime.P .deps/java/lang/natString.P \
+.deps/java/lang/natRuntime.P .deps/java/lang/natString.P .deps/java/lang/natStringBuffer.P \
 .deps/java/lang/natSystem.P .deps/java/lang/natThread.P \
 .deps/java/lang/natThrowable.P .deps/java/lang/ref/PhantomReference.P \
 .deps/java/lang/ref/Reference.P .deps/java/lang/ref/ReferenceQueue.P \

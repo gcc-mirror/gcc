@@ -319,10 +319,7 @@ public final class String implements Serializable, Comparable
 
   public static native String valueOf (char c);
 
-  public static String valueOf (int i)
-  {
-    return Integer.toString(i);
-  }
+  public static native String valueOf (int i);
 
   public static String valueOf (long l)
   {

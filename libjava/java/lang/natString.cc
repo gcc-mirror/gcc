@@ -341,6 +341,52 @@ _Jv_GetStringUTFRegion (jstring str, jsize start, jsize len, char *buf)
   return dptr - buf;
 }
 
+/* Put printed (decimal) representation of NUM in a buffer.
+   BUFEND marks the end of the buffer, which must be at least 11 jchars long.
+   Returns the COUNT of jchars written.  The result is in
+   (BUFEND - COUNT) (inclusive) upto (BUFEND) (exclusive). */
+
+jint
+_Jv_FormatInt (jchar* bufend, jint num)
+{
+  register jchar* ptr = bufend;
+  jboolean isNeg;
+  if (num < 0)
+    {
+      isNeg = true;
+      num = -(num);
+      if (num < 0)
+	{
+	  // Must be MIN_VALUE, so handle this special case.
+	  // FIXME use 'unsigned jint' for num.
+	  *--ptr = '8';
+	  num = 214748364;
+	}
+      }
+    else
+      isNeg = false;
+
+    do
+      {
+        *--ptr = (jchar) ((int) '0' + (num % 10));
+        num /= 10;
+      }
+    while (num > 0);
+
+    if (isNeg)
+      *--ptr = '-';
+    return bufend - ptr;
+}
+
+jstring
+java::lang::String::valueOf (jint num)
+{
+  // Use an array large enough for "-2147483648"; i.e. 11 chars.
+  jchar buffer[11];
+  int i = _Jv_FormatInt (buffer+11, num);
+  return _Jv_NewString (buffer+11-i, i);
+}
+
 jstring
 _Jv_AllocString(jsize len)
 {
