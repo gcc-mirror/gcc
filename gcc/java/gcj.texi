@@ -760,6 +760,10 @@ or file name.
 @item -c
 Disassemble method bodies.  By default method bodies are not printed.
 
+@item --print-constants
+Print the constant pool.  When printing a reference to a constant
+also print its index in the constant pool.
+
 @item --javap
 Generate output in @code{javap} format.  The implementation of this
 feature is very incomplete.
@@ -778,6 +782,7 @@ Print version number, then exit.
 
 @item -v, --verbose
 Print extra information while running.
+Implies @code{--print-constants}.
 @end table
 
 @c man end
