@@ -42,8 +42,8 @@ Boston, MA 02111-1307, USA.  */
 #undef NO_DOLLAR_IN_LABEL
 #define NO_DOT_IN_LABEL
 
-/* enable #pragma pack(n) */
-#define HANDLE_SYSV_PRAGMA
+/* We want #pragma pack(n) enabled and expect to inherit the proper
+   definition of HANDLE_SYSV_PRAGMA from elfos.h for that purpose.  */
 
 /* No underscore is prepended to any C symbol name.  */
 #undef USER_LABEL_PREFIX

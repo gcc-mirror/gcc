@@ -1,3 +1,7 @@
+2004-08-07  Olivier Hainque  <hainque@act-europe.fr>
+
+	* config/vxworks.h (HANDLE_SYSV_PRAGMA): Remove definition.
+
 2004-08-07  Jason Merrill  <jason@redhat.com>
 
 	* gimplify.c (gimplify_call_expr): Make return in memory explicit.
