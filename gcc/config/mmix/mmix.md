@@ -995,6 +995,12 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
      error too.  */
   if (operands[2] == NULL_RTX)
     operands[2] = const0_rtx;
+
+  /* FIXME: Documentation bug: operands[3] (operands[2] for 'call') is the
+     *next* argument register, not the number of arguments in registers.  */
+  cfun->machine->has_call_without_parameters
+    |= REG_P (operands[2]) && REGNO (operands[2]) == MMIX_FIRST_ARG_REGNUM;
+
   operands[4] = gen_rtx_REG (DImode, MMIX_INCOMING_RETURN_ADDRESS_REGNUM);
 }")
 
@@ -1020,7 +1026,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 
   /* FIXME: Documentation bug: operands[3] (operands[2] for 'call') is the
      *next* argument register, not the number of arguments in registers.  */
-  cfun->machine->has_call_value_without_parameters
+  cfun->machine->has_call_without_parameters
     |= REG_P (operands[3]) && REGNO (operands[3]) == MMIX_FIRST_ARG_REGNUM;
 
   operands[5] = gen_rtx_REG (DImode, MMIX_INCOMING_RETURN_ADDRESS_REGNUM);

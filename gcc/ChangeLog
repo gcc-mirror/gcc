@@ -1,3 +1,22 @@
+2002-01-05  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* doc/invoke.texi (Option Summary) <MMIX Options>: Document
+	-mbranch-predict, -mreg-stack-fill-bug-workaround and their
+	negatives.
+	(MMIX Options): Ditto.  Fix item/itemx typo for -mno-zero-extend.
+	* config/mmix/mmix.c (mmix_target_asm_function_prologue): Rework
+	kludge for pre-october-14th mmix versions to handle new-found bug
+	with PUSHJ/PUSHGO and the register stack.
+	* config/mmix/mmix.h (struct machine_function): Rename member
+	has_call_value_without_parameters to has_call_without_parameters.
+	All referers changed.
+	(TARGET_MASK_REG_STACK_FILL_BUG, TARGET_DEFAULT
+	TARGET_MASK_BRANCH_PREDICT): New macros.
+	(TARGET_SWITCHES): New options -mreg-stack-fill-bug-workaround,
+	-mno-reg-stack-fill-bug-workaround.
+	* config/mmix/mmix.md ("call"): Set struct machine member
+	has_call_without_parameters.
+
 Sat Jan  5 02:20:22 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (thread_jump): Fix handling of reversed branches.
