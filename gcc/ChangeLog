@@ -1,3 +1,13 @@
+2001-12-14  Richard Henderson  <rth@redhat.com>
+
+	* regrename.c (struct value_data): Add max_value_regs.
+	(init_value_data): Initialize it.
+	(kill_value): Kill values that overlap the dying register.
+	(set_value_regno): New.
+	(kill_set_value, kill_autoinc_value, copy_value): Use it.
+	(copyprop_hardreg_forward_1): Kill earlyclobber operands
+	before looking at inputs.
+
 2001-12-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (ASM_OUTPUT_DEF_FROM_DECLS): Handle
@@ -180,8 +190,8 @@ Fri Dec 14 12:05:14 CET 2001  Jan Hubicka  <jh@suse.cz>
 2001-12-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md (eh_set_lr_di): Change scratch
-        constraint to base register.
-        (eh_set_lr_si): Same.
+	constraint to base register.
+	(eh_set_lr_si): Same.
 
 2001-12-13  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -284,7 +294,7 @@ Thu Dec 13 12:31:07 CET 2001  Jan Hubicka  <jh@suse.cz>
 	(flag_prefetch_loop_arrays): New global variable.
 	(lang_independent_option): Add -fprefetch-loop-arrays.
 	(rest_of_compilation) Pass LOOP_PREFETCH when flag_prefetch_loop_arrays
-        is set.
+	is set.
 	* Makefile.in (toplev.c): Depend on insn-flags.h.
 	* invoke.texi (-fprefetch-loop-arrays): Document.
 
