@@ -3400,8 +3400,6 @@ init_decl_processing ()
   tree ptr_ftype_luns_ptr_int;
   tree double_ftype_double;
 
-  extern int set_alignment;
-
   /* allow 0-255 enums to occupy only a byte */
   flag_short_enums = 1;
 

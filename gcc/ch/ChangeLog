@@ -1,3 +1,8 @@
+2000-02-11  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (init_decl_processing): Remove duplicate decl of
+	set_alignment.
+
 2000-02-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* expr.c (compare_records): Delete maximum_field_alignment declaration.
