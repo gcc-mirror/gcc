@@ -1,5 +1,25 @@
 Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
 
+	* acinclude.m4 (GLIBCPP_CHECK_CTYPE_SUPPORT): Add support for IRIX.
+	* aclocal.m4: Regenerated.
+	* Makefile.in: Regenerated.
+	* libio/Makefile.in: Likewise.
+	* libmath/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* configure: Likewise.
+	* config/os/irix/bits/ctype_base.h: Revise.
+	* config/os/irix/bits/ctype_inline.h: Likewise.
+	* config/os/irix/bits/ctype_noninline.h: Likewise.
+
+	* testsuite/22_locale/codecvt_unicode_char.cc: Don't run it
+	if not _GLIBCPP_USE_WCHAR_T.
+	* testsuite/22_locale/codecvt_unicode_wchar_t.cc: Likewise.
+	* testsuite/22_locale/ctor_copy_dtor.cc: Likewise.
+	* testsuite/22_locale/ctype_wchar_t_members.cc: Likewise.
+	
+	* mkcheck.in: Fix echoing of -rpath option.
+	
 	* config/os/irix/bits/atomicity.h (_Atomic_word): Make it a
 	signed type.
 	(__exchange_aand_add): Adjust accordingly.

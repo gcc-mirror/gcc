@@ -965,6 +965,22 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
     fi
     fi
 
+    dnl Test for <ctype> functionality -- IRIX
+    if test $ctype_defualt ="yes"; then 
+    AC_MSG_CHECKING([<ctype> for IRIX])
+    AC_TRY_COMPILE([#include <ctype.h>],
+    [int
+    foo (int a)
+    { return _U + _L + _N + _S + _P + _C + _B + _X + \
+             _A + _PR + _G + _BL;}], \
+    ctype_irix=yes, ctype_irix=no)
+    AC_MSG_RESULT($ctype_irix)
+    if test $ctype_irix = "yes"; then
+      ctype_include_dir="config/os/irix"
+      ctype_default=no
+    fi
+    fi
+
     dnl Test for <ctype> functionality -- newlib
     if test $ctype_default = "yes"; then
     AC_MSG_CHECKING([<ctype> for newlib])
@@ -1337,14 +1353,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
              need_wlibio=no
          fi
       fi
-      ;;
-
-    xwince)
-      CSTDIO_H=config/c_io_wince.h
-      CSTDIO_CC=config/c_io_wince.cc
-      AC_MSG_RESULT(wince)
-
-      need_libio=no
       ;;
     xstdio)
       CSTDIO_H=config/c_io_stdio.h

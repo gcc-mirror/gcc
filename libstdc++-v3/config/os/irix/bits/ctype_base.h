@@ -35,7 +35,7 @@
   
   struct ctype_base
   {
-    typedef unsigned char 	mask;
+    typedef unsigned int 	mask;
     // Non-standard typedefs.
     typedef int* 		__to_type;
 
