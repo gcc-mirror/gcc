@@ -1417,9 +1417,11 @@ extern void m32r_select_section ();
 
 #define SDATA_NAME_P(NAME) (*(NAME) == SDATA_FLAG_CHAR)
 /*#define SMALL_NAME_P(NAME) (*(NAME) == SMALL_FLAG_CHAR)*/
-#define SMALL_NAME_P(NAME) (! ENCODED_NAME_P (NAME))
+#define SMALL_NAME_P(NAME) (! ENCODED_NAME_P (NAME) && ! LIT_NAME_P (NAME))
 #define MEDIUM_NAME_P(NAME) (*(NAME) == MEDIUM_FLAG_CHAR)
 #define LARGE_NAME_P(NAME) (*(NAME) == LARGE_FLAG_CHAR)
+/* For string literals, etc.  */
+#define LIT_NAME_P(NAME) ((NAME)[0] == '*' && (NAME)[1] == '.')
 
 #define ENCODED_NAME_P(SYMBOL_NAME) \
 (SDATA_NAME_P (SYMBOL_NAME) \
@@ -1433,7 +1435,7 @@ extern void m32r_encode_section_info ();
 /* Decode SYM_NAME and store the real name part in VAR, sans
    the characters that encode section info.  Define this macro if
    ENCODE_SECTION_INFO alters the symbol's name string.  */
-/* Note that we have to handle symbols like "#*start".  */
+/* Note that we have to handle symbols like "%*start".  */
 #define STRIP_NAME_ENCODING(VAR, SYMBOL_NAME) \
 do {							\
   (VAR) = (SYMBOL_NAME) + ENCODED_NAME_P (SYMBOL_NAME);	\
@@ -1696,7 +1698,8 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.balign %d\n", 1 << (LOG)); } while (0)
 #undef ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN) \
 do {									\
-  if ((SIZE) > 0 && (SIZE) <= g_switch_value)				\
+  if (! TARGET_SDATA_NONE						\
+      && (SIZE) > 0 && (SIZE) <= g_switch_value)			\
     fprintf ((FILE), "\t%s\t", SCOMMON_ASM_OP);				\
   else									\
     fprintf ((FILE), "\t%s\t", COMMON_ASM_OP);				\
