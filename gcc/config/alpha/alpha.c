@@ -134,49 +134,6 @@ static int alpha_does_function_need_gp
 void
 override_options ()
 {
-  alpha_cpu
-    = TARGET_CPU_DEFAULT & MASK_CPU_EV6 ? PROCESSOR_EV6
-      : (TARGET_CPU_DEFAULT & MASK_CPU_EV5 ? PROCESSOR_EV5 : PROCESSOR_EV4);
-
-  if (alpha_cpu_string)
-    {
-      if (! strcmp (alpha_cpu_string, "ev4")
-	  || ! strcmp (alpha_cpu_string, "21064"))
-	{
-	  alpha_cpu = PROCESSOR_EV4;
-	  target_flags &= ~ (MASK_BWX | MASK_CIX | MASK_MAX);
-	}
-      else if (! strcmp (alpha_cpu_string, "ev5")
-	       || ! strcmp (alpha_cpu_string, "21164"))
-	{
-	  alpha_cpu = PROCESSOR_EV5;
-	  target_flags &= ~ (MASK_BWX | MASK_CIX | MASK_MAX);
-	}
-      else if (! strcmp (alpha_cpu_string, "ev56")
-	       || ! strcmp (alpha_cpu_string, "21164a"))
-	{
-	  alpha_cpu = PROCESSOR_EV5;
-	  target_flags |= MASK_BWX;
-	  target_flags &= ~ (MASK_CIX | MASK_MAX);
-	}
-      else if (! strcmp (alpha_cpu_string, "pca56")
-	       || ! strcmp (alpha_cpu_string, "21164PC")
-	       || ! strcmp (alpha_cpu_string, "21164pc"))
-	{
-	  alpha_cpu = PROCESSOR_EV5;
-	  target_flags |= MASK_BWX | MASK_MAX;
-	  target_flags &= ~ MASK_CIX;
-	}
-      else if (! strcmp (alpha_cpu_string, "ev6")
-	       || ! strcmp (alpha_cpu_string, "21264"))
-	{
-	  alpha_cpu = PROCESSOR_EV6;
-	  target_flags |= MASK_BWX | MASK_CIX | MASK_MAX;
-	}
-      else
-	error ("bad value `%s' for -mcpu switch", alpha_cpu_string);
-    }
-
   alpha_tp = ALPHA_TP_PROG;
   alpha_fprm = ALPHA_FPRM_NORM;
   alpha_fptm = ALPHA_FPTM_N;
@@ -234,10 +191,59 @@ override_options ()
 	error ("bad value `%s' for -mfp-trap-mode switch", alpha_fptm_string);
     }
 
-  /* Do some sanity checks on the above option. */
+  alpha_cpu
+    = TARGET_CPU_DEFAULT & MASK_CPU_EV6 ? PROCESSOR_EV6
+      : (TARGET_CPU_DEFAULT & MASK_CPU_EV5 ? PROCESSOR_EV5 : PROCESSOR_EV4);
+
+  if (alpha_cpu_string)
+    {
+      if (! strcmp (alpha_cpu_string, "ev4")
+	  || ! strcmp (alpha_cpu_string, "21064"))
+	{
+	  alpha_cpu = PROCESSOR_EV4;
+	  target_flags &= ~ (MASK_BWX | MASK_MAX | MASK_FIX | MASK_CIX);
+	}
+      else if (! strcmp (alpha_cpu_string, "ev5")
+	       || ! strcmp (alpha_cpu_string, "21164"))
+	{
+	  alpha_cpu = PROCESSOR_EV5;
+	  target_flags &= ~ (MASK_BWX | MASK_MAX | MASK_FIX | MASK_CIX);
+	}
+      else if (! strcmp (alpha_cpu_string, "ev56")
+	       || ! strcmp (alpha_cpu_string, "21164a"))
+	{
+	  alpha_cpu = PROCESSOR_EV5;
+	  target_flags |= MASK_BWX;
+	  target_flags &= ~ (MASK_MAX | MASK_FIX | MASK_CIX);
+	}
+      else if (! strcmp (alpha_cpu_string, "pca56")
+	       || ! strcmp (alpha_cpu_string, "21164PC")
+	       || ! strcmp (alpha_cpu_string, "21164pc"))
+	{
+	  alpha_cpu = PROCESSOR_EV5;
+	  target_flags |= MASK_BWX | MASK_MAX;
+	  target_flags &= ~ (MASK_FIX | MASK_CIX);
+	}
+      else if (! strcmp (alpha_cpu_string, "ev6")
+	       || ! strcmp (alpha_cpu_string, "21264"))
+	{
+	  alpha_cpu = PROCESSOR_EV6;
+	  target_flags |= MASK_BWX | MASK_MAX | MASK_FIX;
+	  target_flags &= ~ (MASK_CIX);
+
+	  /* Except for EV6 pass 1 (not released), we always have 
+	     precise arithmetic traps.  Which means we can do 
+	     software completion without minding trap shadows.  */
+	  alpha_tp = ALPHA_TP_PROG;
+	}
+      else
+	error ("bad value `%s' for -mcpu switch", alpha_cpu_string);
+    }
+
+  /* Do some sanity checks on the above options. */
 
   if ((alpha_fptm == ALPHA_FPTM_SU || alpha_fptm == ALPHA_FPTM_SUI)
-      && alpha_tp != ALPHA_TP_INSN)
+      && (alpha_tp != ALPHA_TP_INSN || alpha_cpu == PROCESSOR_EV6))
     {
       warning ("fp software completion requires -mtrap-precision=i");
       alpha_tp = ALPHA_TP_INSN;

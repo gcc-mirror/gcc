@@ -1,3 +1,19 @@
+Wed May 26 14:18:05 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (MASK_FIX, TARGET_FIX): New.
+	(MASK_*): Reorganize constants.
+	(CPP_AM_FIX_SPEC): New.
+	(TARGET_SWITCHES): Add FIX.
+	(EXTRA_SPECS): Likewise.
+	(CPP_CPU_EV6_SPEC): Use FIX, not CIX.
+	(SECONDARY_MEMORY_NEEDED): Likewise.
+	(REGISTER_MOVE_COST): Likewise.
+	* alpha.c (override_options): Add FIX support.  Always use 
+	ALPHA_TP_PROG for ev6.
+	* alpha.md (sqrt and mov[sd]i patterns): Use FIX, not CIX.
+	* alpha/elf.h (ASM_FILE_START): Look at FIX too.
+	* configure.in (target_cpu_default2) [ev6]: Use FIX, not CIX.
+
 Wed May 26 09:53:05 1999  Mark Mitchell  <mark@codesourcery.com>
 
         * fold-const.c (fold): STRIP_NOPS when deciding whether or not

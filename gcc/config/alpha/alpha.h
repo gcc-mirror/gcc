@@ -95,73 +95,76 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 
 /* This means that floating-point support exists in the target implementation
    of the Alpha architecture.  This is usually the default.  */
-
-#define MASK_FP		1
+#define MASK_FP		(1 << 0)
 #define TARGET_FP	(target_flags & MASK_FP)
 
 /* This means that floating-point registers are allowed to be used.  Note
    that Alpha implementations without FP operations are required to
    provide the FP registers.  */
 
-#define MASK_FPREGS	2
+#define MASK_FPREGS	(1 << 1)
 #define TARGET_FPREGS	(target_flags & MASK_FPREGS)
 
 /* This means that gas is used to process the assembler file.  */
 
-#define MASK_GAS 4
+#define MASK_GAS	(1 << 2)
 #define TARGET_GAS	(target_flags & MASK_GAS)
 
 /* This means that we should mark procedures as IEEE conformant. */
 
-#define MASK_IEEE_CONFORMANT 8
+#define MASK_IEEE_CONFORMANT (1 << 3)
 #define TARGET_IEEE_CONFORMANT	(target_flags & MASK_IEEE_CONFORMANT)
 
 /* This means we should be IEEE-compliant except for inexact.  */
 
-#define MASK_IEEE	16
+#define MASK_IEEE	(1 << 4)
 #define TARGET_IEEE	(target_flags & MASK_IEEE)
 
 /* This means we should be fully IEEE-compliant.  */
 
-#define MASK_IEEE_WITH_INEXACT 32
+#define MASK_IEEE_WITH_INEXACT (1 << 5)
 #define TARGET_IEEE_WITH_INEXACT (target_flags & MASK_IEEE_WITH_INEXACT)
 
 /* This means we must construct all constants rather than emitting
    them as literal data.  */
 
-#define MASK_BUILD_CONSTANTS 128
+#define MASK_BUILD_CONSTANTS (1 << 6)
 #define TARGET_BUILD_CONSTANTS (target_flags & MASK_BUILD_CONSTANTS)
 
 /* This means we handle floating points in VAX F- (float)
    or G- (double) Format.  */
 
-#define MASK_FLOAT_VAX 512
+#define MASK_FLOAT_VAX	(1 << 7)
 #define TARGET_FLOAT_VAX (target_flags & MASK_FLOAT_VAX)
 
 /* This means that the processor has byte and half word loads and stores
    (the BWX extension).  */
 
-#define MASK_BWX 1024
+#define MASK_BWX	(1 << 8)
 #define TARGET_BWX	(target_flags & MASK_BWX)
 
-/* This means that the processor has the CIX extension.  */
-#define MASK_CIX 2048
-#define TARGET_CIX	(target_flags & MASK_CIX)
-
 /* This means that the processor has the MAX extension.  */
-#define MASK_MAX 4096
+#define MASK_MAX	(1 << 9)
 #define TARGET_MAX	(target_flags & MASK_MAX)
+
+/* This means that the processor has the FIX extension.  */
+#define MASK_FIX	(1 << 10)
+#define TARGET_FIX	(target_flags & MASK_FIX)
+
+/* This means that the processor has the CIX extension.  */
+#define MASK_CIX	(1 << 11)
+#define TARGET_CIX	(target_flags & MASK_CIX)
 
 /* This means that the processor is an EV5, EV56, or PCA56.  This is defined
    only in TARGET_CPU_DEFAULT.  */
-#define MASK_CPU_EV5 8192
+#define MASK_CPU_EV5	(1 << 29)
 
 /* Likewise for EV6.  */
-#define MASK_CPU_EV6 16384
+#define MASK_CPU_EV6	(1 << 30)
 
 /* This means we support the .arch directive in the assembler.  Only
    defined in TARGET_CPU_DEFAULT.  */
-#define MASK_SUPPORT_ARCH 32768
+#define MASK_SUPPORT_ARCH (1 << 31)
 #define TARGET_SUPPORT_ARCH	(target_flags & MASK_SUPPORT_ARCH)
 
 /* These are for target os support and cannot be changed at runtime.  */
@@ -204,10 +207,12 @@ extern enum alpha_fp_trap_mode alpha_fptm;
     {"float-ieee", -MASK_FLOAT_VAX, "Do not use VAX fp"},		\
     {"bwx", MASK_BWX, "Emit code for the byte/word ISA extension"},	\
     {"no-bwx", -MASK_BWX, ""},						\
-    {"cix", MASK_CIX, "Emit code for the counting ISA extension"},	\
-    {"no-cix", -MASK_CIX, ""},						\
     {"max", MASK_MAX, "Emit code for the motion video ISA extension"},	\
     {"no-max", -MASK_MAX, ""},						\
+    {"fix", MASK_FIX, "Emit code for the fp move and sqrt ISA extension"}, \
+    {"no-fix", -MASK_FIX, ""},						\
+    {"cix", MASK_CIX, "Emit code for the counting ISA extension"},	\
+    {"no-cix", -MASK_CIX, ""},						\
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT, ""} }
 
 #define TARGET_DEFAULT MASK_FP|MASK_FPREGS
@@ -258,6 +263,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 /* Corresponding to amask... */
 #define CPP_AM_BWX_SPEC	"-D__alpha_bwx__ -Acpu(bwx)"
 #define CPP_AM_MAX_SPEC	"-D__alpha_max__ -Acpu(max)"
+#define CPP_AM_FIX_SPEC	"-D__alpha_fix__ -Acpu(fix)"
 #define CPP_AM_CIX_SPEC	"-D__alpha_cix__ -Acpu(cix)"
 
 /* Corresponding to implver... */
@@ -270,7 +276,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 #define CPP_CPU_EV5_SPEC	"%(cpp_im_ev5)"
 #define CPP_CPU_EV56_SPEC	"%(cpp_im_ev5) %(cpp_am_bwx)"
 #define CPP_CPU_PCA56_SPEC	"%(cpp_im_ev5) %(cpp_am_bwx) %(cpp_am_max)"
-#define CPP_CPU_EV6_SPEC	"%(cpp_im_ev6) %(cpp_am_bwx) %(cpp_am_max) %(cpp_am_cix)"
+#define CPP_CPU_EV6_SPEC	"%(cpp_im_ev6) %(cpp_am_bwx) %(cpp_am_max) %(cpp_am_fix)"
 
 #ifndef CPP_CPU_DEFAULT_SPEC
 # if TARGET_CPU_DEFAULT & MASK_CPU_EV6
@@ -320,6 +326,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 #define EXTRA_SPECS				\
   { "cpp_am_bwx", CPP_AM_BWX_SPEC },		\
   { "cpp_am_max", CPP_AM_MAX_SPEC },		\
+  { "cpp_am_fix", CPP_AM_FIX_SPEC },		\
   { "cpp_am_cix", CPP_AM_CIX_SPEC },		\
   { "cpp_im_ev4", CPP_IM_EV4_SPEC },		\
   { "cpp_im_ev5", CPP_IM_EV5_SPEC },		\
@@ -848,10 +855,10 @@ extern int normal_memory_operand ();
  : NO_REGS)
 
 /* If we are copying between general and FP registers, we need a memory
-   location unless the CIX extension is available.  */
+   location unless the FIX extension is available.  */
 
 #define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) \
- (! TARGET_CIX && (CLASS1) != (CLASS2))
+ (! TARGET_FIX && (CLASS1) != (CLASS2))
 
 /* Specify the mode to be used for memory when a secondary memory
    location is needed.  If MODE is floating-point, use it.  Otherwise,
@@ -884,7 +891,7 @@ extern int normal_memory_operand ();
 #define REGISTER_MOVE_COST(CLASS1, CLASS2)		\
   (((CLASS1) == FLOAT_REGS) == ((CLASS2) == FLOAT_REGS)	\
    ? 2							\
-   : TARGET_CIX ? 3 : 4+2*alpha_memory_latency)
+   : TARGET_FIX ? 3 : 4+2*alpha_memory_latency)
 
 /* A C expressions returning the cost of moving data of MODE from a register to
    or from memory.
