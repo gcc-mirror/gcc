@@ -2823,7 +2823,6 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
 static basic_block
 cfg_layout_split_edge (edge e)
 {
-  edge new_e;
   basic_block new_bb =
     create_basic_block (e->src != ENTRY_BLOCK_PTR
 			? NEXT_INSN (BB_END (e->src)) : get_insns (),
@@ -2841,7 +2840,7 @@ cfg_layout_split_edge (edge e)
 		    e->dest->global_live_at_start);
     }
 
-  new_e = make_edge (new_bb, e->dest, EDGE_FALLTHRU);
+  make_edge (new_bb, e->dest, EDGE_FALLTHRU);
   redirect_edge_and_branch_force (e, new_bb);
 
   return new_bb;
