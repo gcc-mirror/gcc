@@ -1,3 +1,9 @@
+2003-06-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (ANSI_PROTOTYPES, PTR_CONST, LONG_DOUBLE, VPARAMS,
+	VA_OPEN, VA_FIXEDARG, VA_CLOSE, VA_START): undef and poison these
+	libiberty macros.
+
 2003-06-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/10929
