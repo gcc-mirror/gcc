@@ -1,3 +1,10 @@
+2004-07-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/doxygen/mainpage.html: Clarify links.
+	* docs/doxygen/stdheader.cc: Add files.
+	* docs/doxygen/style.css: Remove bolds, add h2, h3 styles.
+	* docs/doxygen/user.cfg.in: New options, wrap.
+
 2004-07-20  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* include/c_std/std_cwchar.h (wcsstr): Correct signature.
