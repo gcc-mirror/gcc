@@ -1,3 +1,9 @@
+2004-03-19 Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (debug_no_type_hash): Remove.
+	(gnat_to_gnu_entity, case E_Array_Type): Don't set and clear it.
+	* misc.c (LANG_HOOK_HASH_TYPE): Redefine.
+
 2004-03-19  Laurent GUERBY <laurent@guerby.net>
 
 	* sem_prag.adb (Suppress_Unsuppress_Echeck): use loop instead of 

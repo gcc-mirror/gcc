@@ -101,7 +101,7 @@ static rtx gnat_expand_expr		(tree, rtx, enum machine_mode, int,
 static void internal_error_function	(const char *, va_list *);
 static void gnat_adjust_rli		(record_layout_info);
 
-/* Structure giving our language-specific hooks.  */
+/* Definitions for our language-specific hooks.  */
 
 #undef  LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME			"GNU Ada"
@@ -118,7 +118,9 @@ static void gnat_adjust_rli		(record_layout_info);
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE		gnat_parse_file
 #undef LANG_HOOKS_HONOR_READONLY
-#define LANG_HOOKS_HONOR_READONLY	1
+#define LANG_HOOKS_HONOR_READONLY	true
+#undef LANG_HOOKS_HASH_TYPES
+#define LANG_HOOKS_HASH_TYPES		false
 #undef LANG_HOOKS_FINISH_INCOMPLETE_DECL
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL gnat_finish_incomplete_decl
 #undef LANG_HOOKS_GET_ALIAS_SET
