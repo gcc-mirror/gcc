@@ -1,3 +1,9 @@
+2004-09-14  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/15262
+	* gcc.c-torture/execute/pr15262-1.c: New test.
+	* gcc.c-torture/execute/pr15262-2.c: New test.
+
 2004-09-14  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/declspec-12.c: New test.
