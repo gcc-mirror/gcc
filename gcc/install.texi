@@ -849,9 +849,10 @@ particular configuration.
 AMD Am29050 used in a system running a variant of BSD Unix.
 
 @item decstation-*
-DECstations can support three different personalities: Ultrix,
-DEC OSF/1, and OSF/rose.  To configure GCC for these platforms
-use the following configurations:
+MIPS-based DECstations can support three different personalities:
+Ultrix, DEC OSF/1, and OSF/rose.  (Alpha-based DECstation products have
+a configuration name beginning with @samp{alpha-dec}.)  To configure GCC
+for these platforms use the following configurations:
 
 @table @samp
 @item decstation-ultrix
