@@ -6842,6 +6842,8 @@ schedule_block (bb, rgn, rgn_n_insns)
 	      /* an interblock motion? */
 	      if (INSN_BB (insn) != target_bb)
 		{
+		  rtx temp;
+
 		  if (IS_SPECULATIVE_INSN (insn))
 		    {
 
@@ -6862,20 +6864,34 @@ schedule_block (bb, rgn, rgn_n_insns)
 		    }
 		  nr_inter++;
 
-		  /* update source block boundaries */
-		  b1 = INSN_BLOCK (insn);
-		  if (insn == basic_block_head[b1]
+		  temp = insn;
+		  while (SCHED_GROUP_P (temp))
+		    temp = PREV_INSN (temp);
+
+		  /* Update source block boundaries.   */
+		  b1 = INSN_BLOCK (temp);
+		  if (temp == basic_block_head[b1]
 		      && insn == basic_block_end[b1])
 		    {
-		      emit_note_after (NOTE_INSN_DELETED, basic_block_head[b1]);
-		      basic_block_end[b1] = basic_block_head[b1] = NEXT_INSN (insn);
+		      /* We moved all the insns in the basic block.
+			 Emit a note after the last insn and update the
+			 begin/end boundaries to point to the note.  */
+		      emit_note_after (NOTE_INSN_DELETED, insn);
+		      basic_block_end[b1] = NEXT_INSN (insn);
+		      basic_block_head[b1] = NEXT_INSN (insn);
 		    }
 		  else if (insn == basic_block_end[b1])
 		    {
-		      basic_block_end[b1] = PREV_INSN (insn);
+		      /* We took insns from the end of the basic block,
+			 so update the end of block boundary so that it
+			 points to the first insn we did not move.  */
+		      basic_block_end[b1] = PREV_INSN (temp);
 		    }
-		  else if (insn == basic_block_head[b1])
+		  else if (temp == basic_block_head[b1])
 		    {
+		      /* We took insns from the start of the basic block,
+			 so update the start of block boundary so that
+			 it points to the first insn we did not move.  */
 		      basic_block_head[b1] = NEXT_INSN (insn);
 		    }
 		}
@@ -7385,7 +7401,7 @@ debug_dependencies ()
 				 NOTE_SOURCE_FILE (insn));
 		    }
 		  else
-		    fprintf (dump, " {%s}\n", GET_RTX_NAME (insn));
+		    fprintf (dump, " {%s}\n", GET_RTX_NAME (GET_CODE (insn)));
 		  continue;
 		}
 
