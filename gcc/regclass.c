@@ -1171,12 +1171,14 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		break;
 
 	      case 'E':
+#ifndef REAL_ARITHMETIC
 		/* Match any floating double constant, but only if
 		   we can examine the bits of it reliably.  */
 		if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
 		     || HOST_BITS_PER_WIDE_INT != BITS_PER_WORD)
 		    && GET_MODE (op) != VOIDmode && ! flag_pretend_float)
 		  break;
+#endif
 		if (GET_CODE (op) == CONST_DOUBLE)
 		  win = 1;
 		break;
