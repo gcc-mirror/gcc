@@ -1,5 +1,14 @@
 2003-11-26  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/protocol/file/Handler.java
+	(Handler): New explicit constructor.
+	(openConnection): Added documentation.
+	* gnu/java/net/protocol/jar/Handler.java
+	(Handler): New explicit constructor.
+	(openConnection): Added documentation.
+
+2003-11-26  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramPacket.java
 	(DatagramPacket): Fixed documentation to become legal HTML.
 
