@@ -1837,9 +1837,9 @@ emit_move_insn_1 (x, y)
       else
 	{
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (gen_highpart (submode, x), gen_highpart (submode, y)));
+		     (gen_realpart (submode, x), gen_realpart (submode, y)));
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
-		     (gen_lowpart (submode, x), gen_lowpart (submode, y)));
+		     (gen_imagpart (submode, x), gen_imagpart (submode, y)));
 	}
 
       if (GET_CODE (x) != CONCAT)
