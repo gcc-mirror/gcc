@@ -6009,7 +6009,12 @@ start_decl (declarator, declspecs, initialized)
 	  else
 	    {
 	      if (DECL_CONTEXT (field) != context)
-		cp_pedwarn ("ANSI C++ does not permit `%T::%D' to be defined as `%T::%D'", DECL_CONTEXT (field), DECL_NAME (decl), context, DECL_NAME (decl));
+		{
+		  cp_pedwarn ("ANSI C++ does not permit `%T::%D' to be defined as `%T::%D'",
+			      DECL_CONTEXT (field), DECL_NAME (decl),
+			      context, DECL_NAME (decl));
+		  DECL_CONTEXT (decl) = DECL_CONTEXT (field);
+		}
 	      if (duplicate_decls (decl, field))
 		decl = field;
 	    }

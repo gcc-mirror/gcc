@@ -1,5 +1,8 @@
 Wed Nov 19 18:24:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (start_decl): Don't just complain about a mismatched 
+	scope, fix it.
+
 	* decl.c (make_implicit_typename): Handle case where t is not
  	actually from context.
 	* tree.c (get_type_decl): Lose identifier case.
