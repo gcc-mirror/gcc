@@ -1,3 +1,9 @@
+2003-05-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-format.c (format_length_info, format_char_info,
+	format_flag_spec, format_flag_pair, format_kind_info):
+	De-const-ify structure members.
+
 2003-05-31  Roger Sayle  <roger@eyesopen.com>
 
 	* flags.h (flag_wrapv): New flag controlling overflow semantics.
