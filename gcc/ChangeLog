@@ -5,6 +5,10 @@
 	quad long doubles.
 	(hard_64bit_mode_classes): Likewise.
 
+	* config/sparc/sparc.md (sethi_di_medlow_embmedany_pic): Fix pattern
+	so that it is actually matched.
+	(sethi_di_medlow): Likewise.
+
 Tue Dec  7 19:22:06 1999  Richard Henderson  <rth@cygnus.com>
 
 	* loop.h (struct induction): Add multi_insn_incr.
