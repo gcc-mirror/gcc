@@ -5,6 +5,8 @@ Tue Sep 14 01:42:27 1999  Marc Espie <espie@cvs.openbsd.org>
 	move-if-change.
 	* winnt/config-nt.sed:  Likewise.  Kill bogus substitution.
 
+	* objc/Make-lang.in: Prepend $(SHELL) to move-if-change calls.
+
 Tue Sep 14 01:38:52 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* regmove.c (fixup_match_1): Don't change an unchanging register.
