@@ -24,7 +24,7 @@
 ;; Processor type -- this attribute must exactly match the processor_type
 ;; enumeration in alpha.h.
 
-(define_attr "cpu" "ev4,ev5,ev6"
+(define_attr "cpu" "ev4,ev5"
   (const (symbol_ref "alpha_cpu")))
 
 ;; Define an insn type attribute.  This is used in function unit delay
@@ -33,7 +33,7 @@
 ;; separately.
 
 (define_attr "type"
-  "ld,st,ibr,fbr,jsr,iadd,ilog,shift,cmov,icmp,imull,imulq,imulh,fadd,fmul,fcpys,fdivs,fdivt,ldsym,misc"
+  "ld,st,ibr,fbr,jsr,iadd,ilog,shift,cmov,icmp,imull,imulq,imulh,fadd,fmul,fcpys,fdivs,fdivt,ldsym,misc,mvi"
   (const_string "iadd"))
 
 ;; The TRAP_TYPE attribute marks instructions that may generate traps
@@ -122,60 +122,66 @@
 ;; those as well.
 
 (define_function_unit "ev5_ebox" 2 0
-  (and (eq_attr "cpu" "ev5,ev6")
-       (eq_attr "type" "iadd,ilog,icmp,st,shift,imull,imulq,imulh"))
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "iadd,ilog,icmp,st,shift,imull,imulq,imulh,mvi"))
   1 1)
 
 ;; Memory takes at least 2 clocks, and load cannot dual issue with stores.
 (define_function_unit "ev5_ebox" 2 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "ld,ldsym"))
   2 1)
 
 (define_function_unit "ev5_e0" 1 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "ld,ldsym"))
   0 1
   [(eq_attr "type" "st")])
 
 ;; Conditional moves always take 2 ticks.
 (define_function_unit "ev5_ebox" 2 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "cmov"))
   2 1)
 
-;; Stores, shifts, and multiplies can only issue to E0
+;; Stores, shifts, multiplies can only issue to E0
 (define_function_unit "ev5_e0" 1 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "st"))
   1 1)
 
+;; Motion video insns also issue only to E0, and take two ticks.
+(define_function_unit "ev5_e0" 1 0
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "mvi"))
+  2 1)
+
 ;; But shifts and multiplies don't conflict with loads.
 (define_function_unit "ev5_e0" 1 0
-  (and (eq_attr "cpu" "ev5,ev6")
-       (eq_attr "type" "shift,imull,imulq,imulh"))
+  (and (eq_attr "cpu" "ev5")
+       (eq_attr "type" "shift,imull,imulq,imulh,mvi"))
   1 1
-  [(eq_attr "type" "st,shift,imull,imulq,imulh")])
+  [(eq_attr "type" "st,shift,imull,imulq,imulh,mvi")])
 
 ;; Branches can only issue to E1
 (define_function_unit "ev5_e1" 1 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "ibr,jsr"))
   1 1)
 
 ;; Multiplies also use the integer multiplier.
 (define_function_unit "ev5_imult" 1 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "imull"))
   8 4)
 
 (define_function_unit "ev5_imult" 1 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "imulq"))
   12 8)
 
 (define_function_unit "ev5_imult" 1 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "imulh"))
   14 8)
 
@@ -183,33 +189,33 @@
 ;; on either so we have to play the game again.
 
 (define_function_unit "ev5_fpu" 2 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "fadd,fmul,fcpys,fbr,fdivs,fdivt"))
   4 1)
   
 ;; Multiplies (resp. adds) also use the fmul (resp. fadd) units.
 (define_function_unit "ev5_fm" 1 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "fmul"))
   4 1)
 
 (define_function_unit "ev5_fa" 1 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "fadd"))
   4 1)
 
 (define_function_unit "ev5_fa" 1 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "fbr"))
   1 1)
 
 (define_function_unit "ev5_fa" 1 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "fdivs"))
   15 1)
 
 (define_function_unit "ev5_fa" 1 0
-  (and (eq_attr "cpu" "ev5,ev6")
+  (and (eq_attr "cpu" "ev5")
        (eq_attr "type" "fdivt"))
   22 1)
 
@@ -2069,7 +2075,7 @@
 		 (match_operand:QI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "minsb8 %r1,%2,%0"
-  [(set_attr "type" "shift")])
+  [(set_attr "type" "mvi")])
 
 (define_insn "uminqi3"
   [(set (match_operand:QI 0 "register_operand" "=r")
@@ -2077,7 +2083,7 @@
 		 (match_operand:QI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "minub8 %r1,%2,%0"
-  [(set_attr "type" "shift")])
+  [(set_attr "type" "mvi")])
 
 (define_insn "smaxqi3"
   [(set (match_operand:QI 0 "register_operand" "=r")
@@ -2085,7 +2091,7 @@
 		 (match_operand:QI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "maxsb8 %r1,%2,%0"
-  [(set_attr "type" "shift")])
+  [(set_attr "type" "mvi")])
 
 (define_insn "umaxqi3"
   [(set (match_operand:QI 0 "register_operand" "=r")
@@ -2093,7 +2099,7 @@
 		 (match_operand:QI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "maxub8 %r1,%2,%0"
-  [(set_attr "type" "shift")])
+  [(set_attr "type" "mvi")])
 
 (define_insn "sminhi3"
   [(set (match_operand:HI 0 "register_operand" "=r")
@@ -2101,7 +2107,7 @@
 		 (match_operand:HI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "minsw4 %r1,%2,%0"
-  [(set_attr "type" "shift")])
+  [(set_attr "type" "mvi")])
 
 (define_insn "uminhi3"
   [(set (match_operand:HI 0 "register_operand" "=r")
@@ -2109,7 +2115,7 @@
 		 (match_operand:HI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "minuw4 %r1,%2,%0"
-  [(set_attr "type" "shift")])
+  [(set_attr "type" "mvi")])
 
 (define_insn "smaxhi3"
   [(set (match_operand:HI 0 "register_operand" "=r")
@@ -2117,7 +2123,7 @@
 		 (match_operand:HI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "maxsw4 %r1,%2,%0"
-  [(set_attr "type" "shift")])
+  [(set_attr "type" "mvi")])
 
 (define_insn "umaxhi3"
   [(set (match_operand:HI 0 "register_operand" "=r")

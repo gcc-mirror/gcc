@@ -1,3 +1,16 @@
+Mon Dec  8 21:03:28 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (REG_RA, alpha_return_addr, output_epilog):
+	Fix merge problems.
+
+	* alpha.c (override_options): Don't know about scheduling for EV6.
+	* alpha.md (ev5 function units): Don't overload as ev6.
+
+	* alpha.c (alpha_adjust_cost): Simplify.  Fix typo in ev5 mult case.
+	* alpha.md (define_attr type): Add mvi.
+	(ev5_e0): Define sceduling parameters for it.
+	(TARGET_MAX insns): Type is mvi not shift.
+
 Mon Dec  8 18:15:00 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha/win-nt.h (TRAMPOLINE_TEMPLATE): Fix backported gcc-2.8 bug.
