@@ -2261,7 +2261,7 @@ emit_move_insn_1 (x, y)
 	{
 	  /* Show the output dies here.  */
 	  if (x != y)
-	    emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
+	    emit_insn (gen_rtx (CLOBBER, VOIDmode, x));
 
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
 		     (gen_realpart (submode, x), gen_realpart (submode, y)));
