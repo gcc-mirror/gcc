@@ -2374,17 +2374,15 @@ install-driver: xgcc$(exeext)
 
 # Install the info files.
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
-# to do the install.  The sed rule was copied from stmp-int-hdrs.
+# to do the install.
 install-info: doc installdirs lang.install-info
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
 	for f in cpp.info* gcc.info*; do \
-	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	    $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
+	    $(INSTALL_DATA) $$f $(infodir)/$$f; \
 	done
-	if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
+	-if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
 	    for f in cpp.info gcc.info; do \
-		realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-		install-info --dir-file=$(infodir)/dir $(infodir)/$$realfile; \
+		install-info --dir-file=$(infodir)/dir $(infodir)/$$f; \
 	    done; \
 	else true; fi;
 	-chmod a-x $(infodir)/cpp.info* $(infodir)/gcc.info*
