@@ -1060,7 +1060,8 @@ extern union tree_node *current_function_decl;
 #define CONSTANT_ADDRESS_P(X) \
   ((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
    || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
-   || GET_CODE (X) == HIGH) && ! symbolic_expression_p (X))
+   || GET_CODE (X) == HIGH) 						\
+   && (reload_in_progress || reload_completed || ! symbolic_expression_p (X)))
 
 /* Include all constant integers and constant doubles, but not
    floating-point, except for floating-point zero.  */
