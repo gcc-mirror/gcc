@@ -17,7 +17,7 @@ class X {
 
 class Y {
   public:
-  typedef ::X W;
+  typedef ::X W;   // { dg-error "" } previous declaration
   class Z;
 };
 

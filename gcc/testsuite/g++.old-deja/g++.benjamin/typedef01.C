@@ -37,7 +37,7 @@ struct S {
   ~S();
 };
 
-typedef struct S T;
+typedef struct S T;		// { dg-error "previous declaration" }
 
 S a = T();                      // OK 
 struct T * p;                   // { dg-error "" } using typedef after struct

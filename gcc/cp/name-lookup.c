@@ -43,7 +43,7 @@ struct scope_binding {
 static cxx_scope *innermost_nonclass_level (void);
 static tree select_decl (const struct scope_binding *, int);
 static cxx_binding *binding_for_name (cxx_scope *, tree);
-static tree lookup_name_current_level (tree);
+static tree lookup_name_innermost_nonclass_level (tree);
 static tree push_overloaded_decl (tree, int);
 static bool lookup_using_namespace (tree, struct scope_binding *, tree,
                                     tree, int);
@@ -678,7 +678,7 @@ pushdecl (tree x)
       if (DECL_NAMESPACE_SCOPE_P (x) && namespace_bindings_p ())
 	t = namespace_binding (name, DECL_CONTEXT (x));
       else
-	t = lookup_name_current_level (name);
+	t = lookup_name_innermost_nonclass_level (name);
 
       /* [basic.link] If there is a visible declaration of an entity
 	 with linkage having the same name and type, ignoring entities
@@ -1111,7 +1111,7 @@ push_local_binding (tree id, tree decl, int flags)
      push_local_binding with a friend decl of a local class.  */
   b = innermost_nonclass_level ();
 
-  if (lookup_name_current_level (id))
+  if (lookup_name_innermost_nonclass_level (id))
     {
       /* Supplement the existing binding.  */
       if (!supplement_binding (IDENTIFIER_BINDING (id), decl))
@@ -1998,7 +1998,7 @@ push_overloaded_decl (tree decl, int flags)
   if (doing_global)
     old = namespace_binding (name, DECL_CONTEXT (decl));
   else
-    old = lookup_name_current_level (name);
+    old = lookup_name_innermost_nonclass_level (name);
 
   if (old)
     {
@@ -2286,7 +2286,7 @@ do_local_using_decl (tree decl, tree scope, tree name)
       && at_function_scope_p ())
     add_decl_expr (decl);
 
-  oldval = lookup_name_current_level (name);
+  oldval = lookup_name_innermost_nonclass_level (name);
   oldtype = lookup_type_current_level (name);
 
   do_nonmember_using_decl (scope, name, oldval, oldtype, &newval, &newtype);
@@ -4122,11 +4122,90 @@ lookup_name (tree name, int prefer_type)
 			   0, LOOKUP_COMPLAIN);
 }
 
+/* Look up NAME for type used in elaborated name specifier in
+   the current scope (possibly more if cleanup or template parameter
+   scope is encounter).  Unlike lookup_name_real, we make sure that
+   NAME is actually declared in the desired scope, not from inheritance,
+   using declaration, nor using directive.  A TYPE_DECL best matching
+   the NAME is returned.  Catching error and issuing diagnostics are
+   caller's responsibility.  */
+
+tree
+lookup_type_scope (tree name)
+{
+  cxx_binding *iter = NULL;
+  tree val = NULL_TREE;
+
+  timevar_push (TV_NAME_LOOKUP);
+
+  /* Look in non-namespace scope first.  */
+  if (current_binding_level->kind != sk_namespace)
+    iter = outer_binding (name, NULL, /*class_p=*/ true);
+  for (; iter; iter = outer_binding (name, iter, /*class_p=*/ true))
+    {
+      /* Check if this is the kind of thing we're looking for.
+	 Make sure it doesn't come from base class.  For ITER->VALUE,
+	 we can simply use INHERITED_VALUE_BINDING_P.  For ITER->TYPE,
+	 we have to use our own check.
+
+	 We check ITER->TYPE before ITER->VALUE in order to handle
+	   typedef struct C {} C;
+	 correctly.  */
+
+      if (qualify_lookup (iter->type, LOOKUP_PREFER_TYPES)
+	  && (LOCAL_BINDING_P (iter)
+	      || DECL_CONTEXT (iter->type) == iter->scope->this_entity))
+	val = iter->type;
+      else if (!INHERITED_VALUE_BINDING_P (iter)
+	       && qualify_lookup (iter->value, LOOKUP_PREFER_TYPES))
+	val = iter->value;
+
+      if (val)
+	break;
+    }
+
+  /* Look in namespace scope.  */
+  if (!val)
+    {
+      iter = cxx_scope_find_binding_for_name
+	       (NAMESPACE_LEVEL (current_decl_namespace ()), name);
+
+      if (iter)
+	{
+	  /* If this is the kind of thing we're looking for, we're done.  */
+	  if (qualify_lookup (iter->type, LOOKUP_PREFER_TYPES))
+	    val = iter->type;
+	  else if (qualify_lookup (iter->value, LOOKUP_PREFER_TYPES))
+	    val = iter->value;
+	}
+	
+    }
+
+  /* Type found, check if it is in the current scope, ignoring cleanup
+     and template parameter scopes.  */
+  if (val)
+    {
+      struct cp_binding_level *b = current_binding_level;
+      while (b)
+	{
+	  if (iter->scope == b)
+	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, val);
+
+	  if (b->kind == sk_cleanup || b->kind == sk_template_parms)
+	    b = b->level_chain;
+	  else
+	    break;
+	}
+    }
+
+  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
+}
+
 /* Similar to `lookup_name' but look only in the innermost non-class
    binding level.  */
 
 static tree
-lookup_name_current_level (tree name)
+lookup_name_innermost_nonclass_level (tree name)
 {
   struct cp_binding_level *b;
   tree t = NULL_TREE;
@@ -4164,7 +4243,7 @@ lookup_name_current_level (tree name)
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
 }
 
-/* Like lookup_name_current_level, but for types.  */
+/* Like lookup_name_innermost_nonclass_level, but for types.  */
 
 static tree
 lookup_type_current_level (tree name)

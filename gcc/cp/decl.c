@@ -81,7 +81,8 @@ static hashval_t typename_hash (const void *);
 static int typename_compare (const void *, const void *);
 static tree local_variable_p_walkfn (tree *, int *, void *);
 static tree record_builtin_java_type (const char *, int);
-static const char *tag_name (enum tag_types code);
+static const char *tag_name (enum tag_types);
+static tree lookup_and_check_tag (enum tag_types, tree, bool globalize, bool);
 static int walk_namespaces_r (tree, walk_namespaces_fn, void *);
 static int walk_globals_r (tree, void*);
 static int walk_vtables_r (tree, void*);
@@ -9056,6 +9057,14 @@ check_elaborated_type_specifier (enum tag_types tag_code,
 
   type = TREE_TYPE (decl);
 
+  /* Check TEMPLATE_TYPE_PARM first because DECL_IMPLICIT_TYPEDEF_P
+     is false for this case as well.  */
+  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
+    {
+      error ("using template type parameter %qT after %qs",
+	     type, tag_name (tag_code));
+      return error_mark_node;
+    }
   /*   [dcl.type.elab]
 
        If the identifier resolves to a typedef-name or a template
@@ -9064,16 +9073,10 @@ check_elaborated_type_specifier (enum tag_types tag_code,
      In other words, the only legitimate declaration to use in the
      elaborated type specifier is the implicit typedef created when
      the type is declared.  */
-  if (!DECL_IMPLICIT_TYPEDEF_P (decl))
+  else if (!DECL_IMPLICIT_TYPEDEF_P (decl))
     {
       error ("using typedef-name %qD after %qs", decl, tag_name (tag_code));
-      return IS_AGGR_TYPE (type) ? type : error_mark_node;
-    }
-
-  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
-    {
-      error ("using template type parameter %qT after %qs",
-	     type, tag_name (tag_code));
+      cp_error_at ("%qD has a previous declaration here", decl);
       return error_mark_node;
     }
   else if (TREE_CODE (type) != RECORD_TYPE
@@ -9081,12 +9084,14 @@ check_elaborated_type_specifier (enum tag_types tag_code,
 	   && tag_code != enum_type)
     {
       error ("%qT referred to as %qs", type, tag_name (tag_code));
+      cp_error_at ("%qT has a previous declaration here", type);
       return error_mark_node;
     }
   else if (TREE_CODE (type) != ENUMERAL_TYPE
 	   && tag_code == enum_type)
     {
       error ("%qT referred to as enum", type);
+      cp_error_at ("%qT has a previous declaration here", type);
       return error_mark_node;
     }
   else if (!allow_template_p
@@ -9110,6 +9115,53 @@ check_elaborated_type_specifier (enum tag_types tag_code,
   return type;
 }
 
+/* Lookup NAME in elaborate type specifier in scope according to
+   GLOBALIZE and issue diagnostics if necessary.
+   Return *_TYPE node upon success, NULL_TREE when the NAME is not
+   found, and ERROR_MARK_NODE for type error.  */
+
+static tree
+lookup_and_check_tag (enum tag_types tag_code, tree name,
+		      bool globalize, bool template_header_p)
+{
+  tree t;
+  tree decl;
+  if (globalize)
+    decl = lookup_name (name, 2);
+  else
+    decl = lookup_type_scope (name);
+
+  if (decl && DECL_CLASS_TEMPLATE_P (decl))
+    decl = DECL_TEMPLATE_RESULT (decl);
+
+  if (decl && TREE_CODE (decl) == TYPE_DECL)
+    {
+      /* Two cases we need to consider when deciding if a class
+	 template is allowed as an elaborated type specifier:
+	 1. It is a self reference to its own class.
+	 2. It comes with a template header.
+
+	 For example:
+
+	   template <class T> class C {
+	     class C *c1;		// DECL_SELF_REFERENCE_P is true
+	     class D;
+	   };
+	   template <class U> class C; // template_header_p is true
+	   template <class T> class C<T>::D {
+	     class C *c2;		// DECL_SELF_REFERENCE_P is true
+	   };  */
+
+      t = check_elaborated_type_specifier (tag_code,
+					   decl,
+					   template_header_p
+					   | DECL_SELF_REFERENCE_P (decl));
+      return t;
+    }
+  else
+    return NULL_TREE;
+}
+
 /* Get the struct, enum or union (TAG_CODE says which) with tag NAME.
    Define the tag as a forward-reference if it is not defined.
 
@@ -9129,7 +9181,6 @@ xref_tag (enum tag_types tag_code, tree name,
 {
   enum tree_code code;
   tree t;
-  struct cp_binding_level *b = current_binding_level;
   tree context = NULL_TREE;
 
   timevar_push (TV_NAME_LOOKUP);
@@ -9152,90 +9203,59 @@ xref_tag (enum tag_types tag_code, tree name,
       gcc_unreachable ();
     }
 
-  if (! globalize)
-    {
-      /* If we know we are defining this tag, only look it up in
-	 this scope and don't try to find it as a type.  */
-      t = lookup_tag (code, name, b, 1);
-    }
+  /* In case of anonymous name, xref_tag is only called to
+     make type node and push name.  Name lookup is not required.  */
+  if (ANON_AGGRNAME_P (name))
+    t = NULL_TREE;
   else
+    t = lookup_and_check_tag  (tag_code, name,
+			       globalize, template_header_p);
+
+  if (t == error_mark_node)
+    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
+
+  if (globalize && t && current_class_type
+      && template_class_depth (current_class_type)
+      && template_header_p)
     {
-      tree decl = lookup_name (name, 2);
+      /* Since GLOBALIZE is nonzero, we are not looking at a
+	 definition of this tag.  Since, in addition, we are currently
+	 processing a (member) template declaration of a template
+	 class, we must be very careful; consider:
 
-      if (decl && DECL_CLASS_TEMPLATE_P (decl))
-	decl = DECL_TEMPLATE_RESULT (decl);
+	   template <class X>
+	   struct S1
 
-      if (decl && TREE_CODE (decl) == TYPE_DECL)
-	{
-	  /* Two cases we need to consider when deciding if a class
-	     template is allowed as an elaborated type specifier:
-	     1. It is a self reference to its own class.
-	     2. It comes with a template header.
+	   template <class U>
+	   struct S2
+	   { template <class V>
+	   friend struct S1; };
 
-	     For example:
+	 Here, the S2::S1 declaration should not be confused with the
+	 outer declaration.  In particular, the inner version should
+	 have a template parameter of level 2, not level 1.  This
+	 would be particularly important if the member declaration
+	 were instead:
 
-	       template <class T> class C {
-		 class C *c1;		// DECL_SELF_REFERENCE_P is true
-	 	 class D;
-	       };
-	       template <class U> class C; // template_header_p is true
-	       template <class T> class C<T>::D {
-		 class C *c2;		// DECL_SELF_REFERENCE_P is true
-	       };  */
+	   template <class V = U> friend struct S1;
 
-	  t = check_elaborated_type_specifier (tag_code,
-					       decl,
-					       template_header_p
-					       | DECL_SELF_REFERENCE_P (decl));
-	  if (t == error_mark_node)
-	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
-	}
-      else
-	t = NULL_TREE;
+	 say, when we should tsubst into `U' when instantiating
+	 S2.  On the other hand, when presented with:
 
-      if (t && current_class_type
-	  && template_class_depth (current_class_type)
-	  && template_header_p)
-	{
-	  /* Since GLOBALIZE is nonzero, we are not looking at a
-	     definition of this tag.  Since, in addition, we are currently
-	     processing a (member) template declaration of a template
-	     class, we must be very careful; consider:
+	   template <class T>
+	   struct S1 {
+	     template <class U>
+	     struct S2 {};
+	     template <class U>
+	     friend struct S2;
+	   };
 
-	       template <class X>
-	       struct S1
-
-	       template <class U>
-	       struct S2
-	       { template <class V>
-	       friend struct S1; };
-
-	     Here, the S2::S1 declaration should not be confused with the
-	     outer declaration.  In particular, the inner version should
-	     have a template parameter of level 2, not level 1.  This
-	     would be particularly important if the member declaration
-	     were instead:
-
-	       template <class V = U> friend struct S1;
-
-	     say, when we should tsubst into `U' when instantiating
-	     S2.  On the other hand, when presented with:
-
-	         template <class T>
-	         struct S1 {
-		   template <class U>
-	           struct S2 {};
-		   template <class U>
-		   friend struct S2;
-		 };
-
-              we must find the inner binding eventually.  We
-	      accomplish this by making sure that the new type we
-	      create to represent this declaration has the right
-	      TYPE_CONTEXT.  */
-	  context = TYPE_CONTEXT (t);
-	  t = NULL_TREE;
-	}
+	 we must find the inner binding eventually.  We
+	 accomplish this by making sure that the new type we
+	 create to represent this declaration has the right
+	 TYPE_CONTEXT.  */
+      context = TYPE_CONTEXT (t);
+      t = NULL_TREE;
     }
 
   if (! t)
@@ -9482,14 +9502,13 @@ tree
 start_enum (tree name)
 {
   tree enumtype = NULL_TREE;
-  struct cp_binding_level *b = current_binding_level;
 
   /* If this is the real definition for a previous forward reference,
      fill in the contents in the same object that used to be the
      forward reference.  */
 
   if (name != NULL_TREE)
-    enumtype = lookup_tag (ENUMERAL_TYPE, name, b, 1);
+    enumtype = lookup_and_check_tag (enum_type, name, 0, 0);
 
   if (enumtype != NULL_TREE && TREE_CODE (enumtype) == ENUMERAL_TYPE)
     {

@@ -303,6 +303,7 @@ extern tree lookup_tag (enum tree_code, tree, cxx_scope *, int);
 extern tree lookup_tag_reverse (tree, tree);
 extern tree lookup_name	(tree, int);
 extern tree lookup_name_real (tree, int, int, bool, int, int);
+extern tree lookup_type_scope (tree);
 extern tree namespace_binding (tree, tree);
 extern void set_namespace_binding (tree, tree, tree);
 extern tree lookup_namespace_name (tree, tree);
