@@ -1,3 +1,44 @@
+2004-06-03  Jerry Quinn  <jlquinn@optonline.net>
+
+	* Makefile.in (RA_H, RESOURCE_H, SCHED_INT_H, CFGLAYOUT_H,
+	CFGLOOP_H, DF_H, DDG_H, TREE_SSA_LIVE_H): New.
+	(TARGET_H): Add insn-modes.h.
+	(tree-ssa.o, tree-cfg.o, tree-ssa-loop.o, toplev.o, passes.o,
+	loop.o, loop-doloop.o, unroll.o, cfgloop.o, cfgloopanal.o,
+	loop-iv.o, cfgloopmanip.o, loop-init.o, loop-unswitch.o,
+	loop-unroll.o, ddg.o, modulo-sched.o, predict.o,
+	cfglayout.o, ifcvt.o): Replace cfgloop.h with CFGLOOP_H.
+	(toplev.o, passes.o, cfghooks.o, cfgloopmanip.o, loop-init.o,
+	loop-unswitch.o, loop-unroll.o, ddg.o, modulo-sched.o,
+	bb-reorder.o, tracer.o, cfglayout.o): Replace cfglayout.h with
+	CFGLAYOUT_H.
+	(ra.o, ra-build.o, ra-colorize.o, ra-debug.o, ra-rewrite.o):
+	Replace ra.h with RA_H.
+	(resource.o, regrename.o, insn-conditions.o, insn-emit.o,
+	insn-recog.o): Replace resource.h with RESOURCE_H.
+	(ddg.o, modulo-sched.o, haifa-sched.o, sched-deps.o, sched-rgn.o,
+	sched-ebb.o, sched-vis.o, out_object_file):  Replace sched-int.h
+	with SCHED_INT_H.
+	(web.o, lcm.o, df.o, ra.o, ra-build.o, ra-colorize.o, ra-debug.o,
+	ra-rewrite.o): Replace df.h with DF_H.
+	(ddg.o, modulo-sched.o): Replace ddf.h with DDG_H.
+	(tree-outof-ssa.o, tree-ssa-live.o, tree-ssa-copyrename.o):
+	Replace tree-ssa-live.h with TREE_SSA_LIVE_H.
+	(insn-conditions.o): Remove unused reload.h.
+	* cfglayout.h: Add include guard.  Include basic-block.h.
+	* cfgloop.h: Add include guard.  Include basic-block.h, rtl.h.
+	* ddg.h: Include sbitmap.h, basic-block.h, df.h.
+	* df.h: Add include guard.  Include bitmap.h, sbitmap.h,
+	basic-block.h.
+	* genconditions.c:  Remove reload.h.
+	* ra.h: Add include guard.  Include bitmap.h, sbitmap.h,
+	hard-reg-set.h, insn-modes.h.
+	* resource.h: Add include guard.  Include hard-reg-set.h.
+	* sched-int.h:  Add include guard.  Include insn-attr.h,
+	basic-block.h, rtl.h.
+	* target.h: Add include guard.  Include insn-modes.h.
+	* tree-ssa-live.h: Include partition.h.
+
 2004-06-03  Daniel Berlin  <dberlin@dberlin.org>
 		Kenneth Zadeck <zadeck@naturalbridge.com>
 

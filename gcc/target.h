@@ -44,7 +44,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    to gradually reduce the amount of conditional compilation that is
    scattered throughout GCC.  */
 
+#ifndef GCC_TARGET_H
+#define GCC_TARGET_H
+
 #include "tm.h"
+#include "insn-modes.h"
 
 struct gcc_target
 {
@@ -498,3 +502,5 @@ struct gcc_target
 };
 
 extern struct gcc_target targetm;
+
+#endif /* GCC_TARGET_H */
