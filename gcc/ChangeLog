@@ -1,3 +1,8 @@
+2001-07-22  Richard Henderson  <rth@redhat.com>
+
+	* flow.c (split_block): Make sure bb_note is included in the
+	new block when splitting before a label.
+
 Sun Jul 22 23:28:56 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (redirect_edge_and_branch_force,
