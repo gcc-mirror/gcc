@@ -66,17 +66,6 @@ Boston, MA 02111-1307, USA.  */
  */
 #define CTOR_LISTS_DEFINED_EXTERNALLY
 
-/* similar to default, but allows for the table defined by ld with svr3.ifile. 
-   nptrs is always 0.  So we need to instead check that __DTOR_LIST__[1] != 0.
-   The old check is left in so that the same macro can be used if and when  
-   a future version of gas does support section directives. */
-
-#define DO_GLOBAL_DTORS_BODY {int nptrs = *(int *)__DTOR_LIST__; int i; \
-  if (nptrs == -1 || (__DTOR_LIST__[0] == 0 && __DTOR_LIST__[1] != 0))  \
-    for (nptrs = 0; __DTOR_LIST__[nptrs + 1] != 0; nptrs++); 		\
-  for (i = nptrs; i >= 1; i--)						\
-    __DTOR_LIST__[i] (); }
-
 /* Use crt1.o as a startup file and crtn.o as a closing file.  */
 /*
  * The loader directive file svr3.ifile defines how to merge the constructor 
