@@ -1,3 +1,8 @@
+Fri Oct  2 01:29:30 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README: Remove installation instructions and refer to the
+	INSTALL directory instead.
+
 Fri Oct  2 01:13:31 1998  John Hughes  <john@Calva.COM>
 
 	* configure.in: Do not assume x86-svr4 or x86-unixware can handle
