@@ -1,3 +1,7 @@
+Thu Aug 13 12:53:13 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i386/winnt.c (i386_pe_asm_file_end): Check TREE_SYMBOL_REFERENCED.
+
 Wed Aug 12 17:25:18 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10300.c (REG_SAVE_BYTES): Only reserve space for registers
