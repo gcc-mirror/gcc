@@ -1,5 +1,13 @@
 2000-01-10  Mark Mitchell  <mitchell@dumbledore.codesourcery.com>
 
+	* class.c (build_base_field): New function, split out from ...
+	(build_base_fields): ... here.  Use it.  Allocate primary bases
+	first, under the new ABI.
+	(get_vtable_entry): Remove.
+	(remove_base_field): New function, split out from ...
+	(remove_base_fields): ... here.  Adjust since primary bases come
+	first under the new ABI.
+	
 	* cp-tree.h (expand_direct_vtbls_init): Remove declaration.
 	(initialize_vtbl_ptrs): New function.
 	(expand_indirect_vtbls_init): Change prototype.

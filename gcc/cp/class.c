@@ -125,6 +125,7 @@ static void check_field_decl PROTO((tree, tree, int *, int *, int *, int *));
 static void check_field_decls PROTO((tree, tree *, int *, int *, int *, 
 				     int *));
 static int avoid_overlap PROTO((tree, tree, int *));
+static tree build_base_field PROTO((tree, tree, int *, int *, unsigned int *));
 static tree build_base_fields PROTO((tree, int *));
 static tree build_vbase_pointer_fields PROTO((tree, int *));
 static tree build_vtbl_or_vbase_field PROTO((tree, tree, tree, tree, int *));
@@ -141,6 +142,7 @@ static void propagate_binfo_offsets PROTO((tree, tree));
 static void layout_basetypes PROTO((tree));
 static tree dfs_set_offset_for_vbases PROTO((tree, void *));
 static void layout_virtual_bases PROTO((tree));
+static void remove_base_field PROTO((tree, tree, tree *));
 static void remove_base_fields PROTO((tree));
 
 /* Variables shared between class.c and call.c.  */
@@ -929,34 +931,6 @@ prepare_fresh_vtable (binfo, for_type)
 			170);
   SET_BINFO_NEW_VTABLE_MARKED (binfo);
 }
-
-#if 0
-/* Access the virtual function table entry that logically
-   contains BASE_FNDECL.  VIRTUALS is the virtual function table's
-   initializer.  We can run off the end, when dealing with virtual
-   destructors in MI situations, return NULL_TREE in that case.  */
-
-static tree
-get_vtable_entry (virtuals, base_fndecl)
-     tree virtuals, base_fndecl;
-{
-  unsigned HOST_WIDE_INT n = (HOST_BITS_PER_WIDE_INT >= BITS_PER_WORD
-	   ? (TREE_INT_CST_LOW (DECL_VINDEX (base_fndecl))
-	      & (((unsigned HOST_WIDE_INT)1<<(BITS_PER_WORD-1))-1))
-	   : TREE_INT_CST_LOW (DECL_VINDEX (base_fndecl)));
-
-#ifdef GATHER_STATISTICS
-  n_vtable_searches += n;
-#endif
-
-  while (n > 0 && virtuals)
-    {
-      --n;
-      virtuals = TREE_CHAIN (virtuals);
-    }
-  return virtuals;
-}
-#endif
 
 /* Change the offset for the FNDECL entry to NEW_OFFSET.  Also update
    DECL_VINDEX (FNDECL).  */
@@ -3745,6 +3719,59 @@ avoid_overlap (decl, newdecl, empty_p)
   return 1;
 }
 
+/* Build a FIELD_DECL for the base given by BINFO in T.  If the new
+   object is non-empty, clear *EMPTY_P.  Otherwise, set *SAW_EMPTY_P.
+   *BASE_ALIGN is a running maximum of the alignments of any base
+   class.  */
+
+static tree
+build_base_field (t, binfo, empty_p, saw_empty_p, base_align)
+     tree t;
+     tree binfo;
+     int *empty_p;
+     int *saw_empty_p;
+     unsigned int *base_align;
+{
+  tree basetype = BINFO_TYPE (binfo);
+  tree decl;
+
+  if (TYPE_SIZE (basetype) == 0)
+    /* This error is now reported in xref_tag, thus giving better
+       location information.  */
+    return NULL_TREE;
+  
+  decl = build_lang_decl (FIELD_DECL, NULL_TREE, basetype);
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_FIELD_CONTEXT (decl) = DECL_CLASS_CONTEXT (decl) = t;
+  DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
+  DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
+  
+  if (flag_new_abi && DECL_SIZE (decl) == integer_zero_node)
+    {
+      *saw_empty_p = 1;
+      return decl;
+    }
+
+  /* The containing class is non-empty because it has a non-empty base
+     class.  */
+  *empty_p = 0;
+      
+  if (! flag_new_abi)
+    {
+      /* Brain damage for backwards compatibility.  For no good
+	 reason, the old layout_basetypes made every base at least
+	 as large as the alignment for the bases up to that point,
+	 gratuitously wasting space.  So we do the same thing
+	 here.  */
+      *base_align = MAX (*base_align, DECL_ALIGN (decl));
+      DECL_SIZE (decl)
+	= size_int (MAX (TREE_INT_CST_LOW (DECL_SIZE (decl)),
+			 (int) (*base_align)));
+    }
+
+  return decl;
+}
+
 /* Returns a list of fields to stand in for the base class subobjects
    of REC.  These fields are later removed by layout_basetypes.  */
 
@@ -3756,58 +3783,50 @@ build_base_fields (rec, empty_p)
   /* Chain to hold all the new FIELD_DECLs which stand in for base class
      subobjects.  */
   tree base_decls = NULL_TREE;
-  tree binfos = TYPE_BINFO_BASETYPES (rec);
   int n_baseclasses = CLASSTYPE_N_BASECLASSES (rec);
   tree decl, nextdecl;
   int i, saw_empty = 0;
   unsigned int base_align = 0;
 
+  /* Under the new ABI, the primary base class is always allocated
+     first.  */
+  if (flag_new_abi && CLASSTYPE_HAS_PRIMARY_BASE_P (rec))
+    {
+      tree primary_base;
+
+      primary_base = CLASSTYPE_PRIMARY_BINFO (rec);
+      base_decls = chainon (build_base_field (rec, 
+					      primary_base,
+					      empty_p,
+					      &saw_empty,
+					      &base_align),
+			    base_decls);
+    }
+
+  /* Now allocate the rest of the bases.  */
   for (i = 0; i < n_baseclasses; ++i)
     {
-      register tree base_binfo = TREE_VEC_ELT (binfos, i);
-      register tree basetype = BINFO_TYPE (base_binfo);
+      tree base_binfo;
 
-      if (TYPE_SIZE (basetype) == 0)
-	/* This error is now reported in xref_tag, thus giving better
-	   location information.  */
+      /* Under the new ABI, the primary base was already allocated
+	 above, so we don't need to allocate it again here.  */
+      if (flag_new_abi && i == CLASSTYPE_VFIELD_PARENT (rec))
 	continue;
+
+      base_binfo = BINFO_BASETYPE (TYPE_BINFO (rec), i);
 
       /* A primary virtual base class is allocated just like any other
 	 base class, but a non-primary virtual base is allocated
 	 later, in layout_basetypes.  */
       if (TREE_VIA_VIRTUAL (base_binfo) 
-	  && i != CLASSTYPE_VFIELD_PARENT (rec))
+	  && !BINFO_PRIMARY_MARKED_P (base_binfo))
 	continue;
 
-      decl = build_lang_decl (FIELD_DECL, NULL_TREE, basetype);
-      DECL_ARTIFICIAL (decl) = 1;
-      DECL_FIELD_CONTEXT (decl) = DECL_CLASS_CONTEXT (decl) = rec;
-      DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
-      DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
-      TREE_CHAIN (decl) = base_decls;
-      base_decls = decl;
-
-      if (flag_new_abi && DECL_SIZE (decl) == integer_zero_node)
-	saw_empty = 1;
-      else
-	{
-	  /* The containing class is non-empty because it has a
-	     non-empty base class.  */
-	  *empty_p = 0;
-
-	  if (! flag_new_abi)
-	    {
-	      /* Brain damage for backwards compatibility.  For no
-		 good reason, the old layout_basetypes made every base
-		 at least as large as the alignment for the bases up
-		 to that point, gratuitously wasting space.  So we do
-		 the same thing here.  */
-	      base_align = MAX (base_align, DECL_ALIGN (decl));
-	      DECL_SIZE (decl)
-		= size_int (MAX (TREE_INT_CST_LOW (DECL_SIZE (decl)),
-				 (int) base_align));
-	    }
-	}
+      base_decls = chainon (build_base_field (rec, base_binfo,
+					      empty_p,
+					      &saw_empty,
+					      &base_align),
+			    base_decls);
     }
 
   /* Reverse the list of fields so we allocate the bases in the proper
@@ -4218,6 +4237,34 @@ propagate_binfo_offsets (binfo, offset)
     }
 }
 
+/* Remove *FIELD (which corresponds to the base given by BINFO) from
+   the field list for T.  */
+
+static void
+remove_base_field (t, binfo, field)
+     tree t;
+     tree binfo;
+     tree *field;
+{
+  tree basetype = BINFO_TYPE (binfo);
+  tree offset;
+
+  my_friendly_assert (TREE_TYPE (*field) == basetype, 23897);
+
+  if (get_base_distance (basetype, t, 0, (tree*)0) == -2)
+    cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
+		basetype, t);
+
+  offset
+    = size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (*field)),
+		      BITS_PER_UNIT));
+  BINFO_OFFSET (binfo) = offset;
+  propagate_binfo_offsets (binfo, offset);
+
+  /* Remove this field.  */
+  *field = TREE_CHAIN (*field);
+}
+
 /* Remove the FIELD_DECLs created for T's base classes in
    build_base_fields.  Simultaneously, update BINFO_OFFSET for all the
    bases, except for non-primary virtual baseclasses.  */
@@ -4244,31 +4291,29 @@ remove_base_fields (t)
 			  19991218);
       field = &TREE_CHAIN (*field);
     }
-    
+
+  /* Under the new ABI, the primary base is always allocated first.  */
+  if (flag_new_abi && CLASSTYPE_HAS_PRIMARY_BASE_P (t))
+    remove_base_field (t, CLASSTYPE_PRIMARY_BINFO (t), field);
+
+  /* Now remove the rest of the bases.  */
   for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); i++)
     {
-      register tree base_binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
-      register tree basetype = BINFO_TYPE (base_binfo);
+      tree binfo;
 
-      /* We treat a primary virtual base class just like an ordinary
-	 base class.  But, non-primary virtual bases are laid out
-	 later.  */
-      if (TREE_VIA_VIRTUAL (base_binfo) && i != CLASSTYPE_VFIELD_PARENT (t))
+      /* Under the new ABI, we've already removed the primary base
+	 above.  */
+      if (flag_new_abi && i == CLASSTYPE_VFIELD_PARENT (t))
 	continue;
 
-      my_friendly_assert (TREE_TYPE (*field) == basetype, 23897);
+      binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
 
-      if (get_base_distance (basetype, t, 0, (tree*)0) == -2)
-	cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
-		    basetype, t);
+      /* We treat a primary virtual base class just like an ordinary base
+	 class.  But, non-primary virtual bases are laid out later.  */
+      if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_MARKED_P (binfo))
+	continue;
 
-      BINFO_OFFSET (base_binfo)
-	= size_int (CEIL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (*field)),
-			  BITS_PER_UNIT));
-      propagate_binfo_offsets (base_binfo, BINFO_OFFSET (base_binfo));
-
-      /* Remove this field.  */
-      *field = TREE_CHAIN (*field);
+      remove_base_field (t, binfo, field);
     }
 }
 
