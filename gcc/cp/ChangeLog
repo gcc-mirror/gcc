@@ -1,5 +1,10 @@
 2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* error.c (dump_template_parameter): Use parm to determine how
+	to print default value.
+
+2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* class.c (duplicate_tag_error): Clear more flags.
 
 2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>

@@ -336,7 +336,7 @@ dump_template_parameter (parm, flags)
   if ((flags & TFF_FUNCTION_DEFAULT_ARGUMENTS) && a != NULL_TREE)
     {
       output_add_string (scratch_buffer, " = ");
-      if (TREE_CODE (a) == TYPE_DECL || TREE_CODE (a) == TEMPLATE_DECL)
+      if (TREE_CODE (p) == TYPE_DECL || TREE_CODE (p) == TEMPLATE_DECL)
         dump_type (a, flags & ~TFF_CHASE_TYPEDEF);
       else
         dump_expr (a, flags | TFF_EXPR_IN_PARENS);
