@@ -484,7 +484,23 @@
     {
       ops[1] = XEXP (XEXP (operands[1], 0), 0);
       ops[2] = XEXP (XEXP (operands[1], 0), 1);
-      output_asm_insn (\"ldrsb\\t%0, [%1, %2]\", ops);
+      
+      if (GET_CODE (ops[1]) == REG && GET_CODE (ops[2]) == REG)
+        output_asm_insn (\"ldrsb\\t%0, [%1, %2]\", ops);
+      else if (GET_CODE (ops[1]) == REG)
+        {
+          if (REGNO (ops[1]) == REGNO (operands[0]))
+            output_asm_insn (\"ldrb\\t%0, [%1, %2]\;lsl\\t%0, %0, #24\;asr\\t%0, %0, #24\", ops);
+	  else
+            output_asm_insn (\"mov\\t%0, %2\;ldrsb\\t%0, [%1, %0]\", ops);
+	}
+      else
+        {
+          if (REGNO (ops[2]) == REGNO (operands[0]))
+            output_asm_insn (\"ldrb\\t%0, [%2, %1]\;lsl\\t%0, %0, #24\;asr\\t%0, %0, #24\", ops);
+	  else
+            output_asm_insn (\"mov\\t%0, %2\;ldrsb\\t%0, [%1, %0]\", ops);
+        }
     }
   else if (REGNO (operands[0]) == REGNO (XEXP (operands[1], 0)))
     {
