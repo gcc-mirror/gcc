@@ -1,3 +1,8 @@
+2001-10-30  Geert Bosch <bosch@gnat.com>
+
+	* 86numaux.adb, a-tigeau.ads, a-wtgeau.ads, fname-sf.ads, g-traceb.ads,
+	s-tasdeb.ads, sem_maps.ads: Add 2001 to copyright notice.
+
 2001-10-30  Robert Dewar <dewar@gnat.com>
 	
 	* bindusg.adb: Undocument -f switch.
