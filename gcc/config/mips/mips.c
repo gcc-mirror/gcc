@@ -108,7 +108,7 @@ static void dump_constants			PROTO ((struct constant *,
 static rtx mips_find_symbol			PROTO ((rtx));
 static void abort_with_insn			PROTO ((rtx, const char *))
   ATTRIBUTE_NORETURN;
-
+static int symbolic_expression_p                PROTO ((rtx));
 
 /* Global variables for machine-dependent things.  */
 
@@ -6894,6 +6894,29 @@ mips_can_use_return_insn ()
   return compute_frame_size (get_frame_size ()) == 0;
 }
 
+/* Returns non-zero if X contains a SYMBOL_REF.  */
+
+static int
+symbolic_expression_p (x)
+     rtx x;
+{
+  if (GET_CODE (x) == SYMBOL_REF)
+    return 1;
+
+  if (GET_CODE (x) == CONST)
+    return symbolic_expression_p (XEXP (x, 0));
+  
+  if (GET_RTX_CLASS (GET_CODE (x)) == '1')
+    return symbolic_expression_p (XEXP (x, 0));
+
+  if (GET_RTX_CLASS (GET_CODE (x)) == 'c'
+      || GET_RTX_CLASS (GET_CODE (x)) == '2')
+    return (symbolic_expression_p (XEXP (x, 0))
+	    || symbolic_expression_p (XEXP (x, 1)));
+
+  return 0;
+}
+
 /* Choose the section to use for the constant rtx expression X that has
    mode MODE.  */
 
@@ -6923,6 +6946,14 @@ mips_select_rtx_section (mode, x)
       if (GET_MODE_SIZE (mode) <= mips_section_threshold
 	  && mips_section_threshold > 0)
 	SMALL_DATA_SECTION ();
+      else if (flag_pic && symbolic_expression_p (x))
+	/* Any expression involving a SYMBOL_REF might need a run-time
+	   relocation.  (The symbol might be defined in a shared
+	   library loaded at an unexpected base address.)  So, we must
+	   put such expressions in the data segment (which is
+	   writable), rather than the text segment (which is
+	   read-only).  */
+	data_section ();
       else
 	READONLY_DATA_SECTION ();
     }
