@@ -2004,9 +2004,12 @@ stmp-fixinc: $(FIXINCLUDES) gsyslimits.h
 	      $(SHELL) $(srcdir)/$(FIXINCLUDES) include $$dir; \
 	    else true; fi; \
 	  done; \
-	  rm -f include/assert.h; \
-	  cp $(srcdir)/assert.h include/assert.h; \
-	  chmod a+r include/assert.h; \
+	  if [ x$(INSTALL_ASSERT_H) != x ] ; \
+	  then \
+	    rm -f include/assert.h; \
+	    cp $(srcdir)/assert.h include/assert.h; \
+	    chmod a+r include/assert.h; \
+	  fi \
 	else true; \
 	fi
 	rm -f include/syslimits.h
