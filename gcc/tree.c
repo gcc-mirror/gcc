@@ -1155,7 +1155,10 @@ real_value_from_int_cst (i)
 {
   REAL_VALUE_TYPE d;
 #ifdef REAL_ARITHMETIC
-  REAL_VALUE_FROM_INT (d, TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i));
+  if (! TREE_UNSIGNED (TREE_TYPE (i)))
+    REAL_VALUE_FROM_INT (d, TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i));
+  else
+    REAL_VALUE_FROM_UNSIGNED_INT (d, TREE_INT_CST_LOW (i), TREE_INT_CST_HIGH (i));
 #else /* not REAL_ARITHMETIC */
   if (TREE_INT_CST_HIGH (i) < 0 && ! TREE_UNSIGNED (TREE_TYPE (i)))
     {
@@ -2269,6 +2272,34 @@ build_type_variant (type, constp, volatilep)
   return t;
 }
 
+/* Give TYPE a new main variant: NEW_MAIN.
+   This is the right thing to do only when something else
+   about TYPE is modified in place.  */
+
+tree
+change_main_variant (type, new_main)
+     tree type, new_main;
+{
+  tree t;
+  tree omain = TYPE_MAIN_VARIANT (type);
+
+  /* Remove TYPE from the TYPE_NEXT_VARIANT chain of its main variant.  */
+  if (TYPE_NEXT_VARIANT (omain) == type)
+    TYPE_NEXT_VARIANT (omain) = TYPE_NEXT_VARIANT (type);
+  else
+    for (t = TYPE_NEXT_VARIANT (omain); t && TYPE_NEXT_VARIANT (t);
+	 t = TYPE_NEXT_VARIANT (t))
+      if (TYPE_NEXT_VARIANT (t) == type)
+	{
+	  TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (type);
+	  break;
+	}
+
+  TYPE_MAIN_VARIANT (type) = new_main;
+  TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (new_main);
+  TYPE_NEXT_VARIANT (new_main) = type;
+}
+
 /* Create a new variant of TYPE, equivalent but distinct.
    This is so the caller can modify it.  */
 
@@ -2792,17 +2823,25 @@ build_array_type (elt_type, index_type)
   TREE_TYPE (t) = elt_type;
   TYPE_DOMAIN (t) = index_type;
 
-  /* The main variant of an array type should always
-     be an array whose element type is the main variant.  */
-  if (elt_type != TYPE_MAIN_VARIANT (elt_type))
-    TYPE_MAIN_VARIANT (t) = build_array_type (TYPE_MAIN_VARIANT (elt_type),
-					      index_type);
-
   if (index_type == 0)
-    return t;
+    {
+      /* The main variant of an array type should always
+	 be an array whose element type is the main variant.  */
+      if (elt_type != TYPE_MAIN_VARIANT (elt_type))
+	change_main_variant (t, build_array_type (TYPE_MAIN_VARIANT (elt_type),
+						  index_type));
+
+      return t;
+    }
 
   hashcode = TYPE_HASH (elt_type) + TYPE_HASH (index_type);
   t = type_hash_canon (hashcode, t);
+
+  /* The main variant of an array type should always
+     be an array whose element type is the main variant.  */
+  if (elt_type != TYPE_MAIN_VARIANT (elt_type))
+    change_main_variant (t, build_array_type (TYPE_MAIN_VARIANT (elt_type),
+					      index_type));
 
   if (TYPE_SIZE (t) == 0)
     layout_type (t);
