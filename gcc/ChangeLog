@@ -1,3 +1,7 @@
+2004-10-16  Dale Johannesen  <dalej@apple.com>
+
+	* c-common.c (c_common_get_alias_set):  Use GGC for type_hash_table.
+
 2004-10-16  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/17766
