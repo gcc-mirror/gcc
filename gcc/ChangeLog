@@ -1,3 +1,11 @@
+2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (load_pic_register): Emit the appropriate
+	variant of the load_pcrel_sym pattern.
+	* config/sparc/sparc.md (P macro): Move to the top.
+	(load_pcrel_sym): Macroize using P.
+	(save_register_window): Likewise.
+
 2005-01-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md ("sunordered"): Disable for e500.
