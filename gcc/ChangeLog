@@ -1,3 +1,8 @@
+2002-05-09	Joel Sherrill <joel@OARcorp.com>
+
+	* config/rs6000/rs6000.h CPP_CPU_SPEC): Correct 
+	403 and 405 arguments for binutils 2.12.
+
 Thu May  9 12:21:48 2002  Jeffrey A Law  (law@redhat.com)
 
  	* pa.c (hppa_profile_hook): Use force_reg to get the address
