@@ -1,5 +1,11 @@
 2003-10-30  Mohan Embar  <gnustuff@thisiscool.com>
 
+	PR libgcj/11521:
+	* gnu/java/net/natPlainSocketImplWin32.cc
+	(bind): Don't use SO_REUSEADDR
+
+2003-10-30  Mohan Embar  <gnustuff@thisiscool.com>
+
 	PR libgcj/6652:
 	* java/io/natFileWin32.cc (getCanonicalPath): Treat "" like ".".
 
