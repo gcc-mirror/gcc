@@ -1,5 +1,13 @@
 2002-06-12  Eric Christopher  <echristo@redhat.com>
 
+	From Chris Demetriou  <cgd@broadcom.com>
+	* config/mips/mips.h (ISA_HAS_FP4): Add ISA_MIPS64 and fix
+	comment.
+	(ISA_HAS_MADD_MSUB): Ditto.
+	(ISA_HAS_NMADD_NMSUB): Ditto.
+
+2002-06-12  Eric Christopher  <echristo@redhat.com>
+
 	* config.gcc: Consolidate little endian handling and
 	little/big endian targets.
 	* config/mips/elfl.h: Remove file.

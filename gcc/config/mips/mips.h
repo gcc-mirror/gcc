@@ -751,22 +751,24 @@ extern void		sbss_section PARAMS ((void));
 				 || ISA_MIPS64)
 
 /* This is a catch all for the other new mips4 instructions: indexed load and
-   indexed prefetch instructions, the FP madd,msub,nmadd, and nmsub instructions,
-   and the FP recip and recip sqrt instructions */
-#define ISA_HAS_FP4             (ISA_MIPS4				\
+   indexed prefetch instructions, the FP madd,msub,nmadd, and nmsub
+   instructions, and the FP recip and recip sqrt instructions */
+#define ISA_HAS_FP4             ((ISA_MIPS4				\
+				  || ISA_MIPS64)       			\
  				 && !TARGET_MIPS16)
 
 /* ISA has conditional trap instructions.  */
 #define ISA_HAS_COND_TRAP	(!ISA_MIPS1				\
 				 && !TARGET_MIPS16)
 
-/* ISA has multiply-accumulate instructions, madd and msub.  */
+/* ISA has integer multiply-accumulate instructions, madd and msub.  */
 #define ISA_HAS_MADD_MSUB       ((ISA_MIPS32				\
 				  || ISA_MIPS64				\
 				  ) && !TARGET_MIPS16)
 
-/* ISA has nmadd and nmsub instructions.  */
-#define ISA_HAS_NMADD_NMSUB	(ISA_MIPS4				\
+/* ISA has floating-point nmadd and nmsub instructions.  */
+#define ISA_HAS_NMADD_NMSUB	((ISA_MIPS4				\
+				  || ISA_MIPS64)       			\
 				 && ! TARGET_MIPS16)
 
 /* ISA has count leading zeroes/ones instruction (not implemented).  */
