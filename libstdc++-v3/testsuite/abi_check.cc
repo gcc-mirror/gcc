@@ -321,7 +321,6 @@ main(int argc, char** argv)
       exit(2);
     }
 
-#ifndef _ARCH_PWR
   // Sort out names.
   // Assuming baseline_names, test_names are both unique w/ no duplicates.
   //
@@ -405,7 +404,6 @@ main(int argc, char** argv)
       // Second, report reason or reasons incompatible.
       check_compatible(base, test, true);
     }
-#endif
 
   return 0;
 }
