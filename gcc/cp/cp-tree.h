@@ -1337,6 +1337,10 @@ struct lang_decl
    && !CLASSTYPE_USE_TEMPLATE (NODE) \
    && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE)))
 
+/* The name used by the user to name the typename type.  Typically,
+   this is an IDENTIFIER_NODE, and the same as the DECL_NAME on the
+   corresponding TYPE_DECL.  However, this may also be a
+   TEMPLATE_ID_EXPR if we had something like `typename X::Y<T>'.  */
 #define TYPENAME_TYPE_FULLNAME(NODE)	CLASSTYPE_SIZE (NODE)
 
 /* Nonzero in INTEGER_CST means that this int is negative by dint of
@@ -2543,6 +2547,7 @@ extern tree binding_for_name                    PROTO((tree, tree));
 extern tree namespace_binding                   PROTO((tree, tree));
 extern void set_namespace_binding               PROTO((tree, tree, tree));
 extern tree lookup_namespace_name		PROTO((tree, tree));
+extern tree build_typename_type                 PROTO((tree, tree, tree, tree));
 extern tree make_typename_type			PROTO((tree, tree));
 extern tree lookup_name_nonclass		PROTO((tree));
 extern tree lookup_function_nonclass            PROTO((tree, tree));
