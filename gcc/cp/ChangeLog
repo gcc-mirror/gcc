@@ -1,3 +1,16 @@
+1998-06-12  Mark Mitchell  <mark@markmitchell.com>
+
+	* class.c (instantiate_type): Don't treat template-ids that don't
+	specify any template arguments as equivalent to ordinary
+	identifiers.  Use OFFSET_REF instead of SCOPE_REF to refer to
+	pointer-to-members for member templates.  Tidy slightly.
+	* cp-tree.def (TEMPLATE_ID_EXPR): Revise documentation.
+	* init.c (build_offset_ref): Handle template-ids like ordinary
+	identifiers, for the most part, but store a TEMPLATE_ID_EXPR in the
+	offset part of the OFFSET_REF.
+	* typeck.c (build_unary_op): Change check for unknown types to
+	look for OFFSET_REFs, not SCOPE_REFs.
+
 1998-06-11  Mark Mitchell  <mark@markmitchell.com>
 
 	* pt.c (is_member_template_class): New function.

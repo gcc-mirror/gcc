@@ -4961,6 +4961,7 @@ instantiate_type (lhstype, rhs, complain)
      int complain;
 {
   tree explicit_targs = NULL_TREE;
+  int template_only = 0;
 
   if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
     {
@@ -5090,38 +5091,28 @@ instantiate_type (lhstype, rhs, complain)
 	return rhs;
       }
 
-    case SCOPE_REF:
-      {
-	/* This can happen if we are forming a pointer-to-member for a
-	   member template.  */
-	tree template_id_expr = TREE_OPERAND (rhs, 1);
-	tree name;
-	my_friendly_assert (TREE_CODE (template_id_expr) == TEMPLATE_ID_EXPR,
-			    0);
-	explicit_targs = TREE_OPERAND (template_id_expr, 1);
-	name = TREE_OPERAND (template_id_expr, 0);
-	my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 0);
-	rhs = lookup_fnfields (TYPE_BINFO (TREE_OPERAND (rhs, 0)), name, 1);
-	goto overload;
-      }
+    case OFFSET_REF:
+      /* This can happen if we are forming a pointer-to-member for a
+	 member template.  */
+      rhs = TREE_OPERAND (rhs, 1);
+      my_friendly_assert (TREE_CODE (rhs) == TEMPLATE_ID_EXPR, 0);
+	
+      /* Fall through.  */
 
     case TEMPLATE_ID_EXPR:
       {
 	explicit_targs = TREE_OPERAND (rhs, 1);
+	template_only = 1;
 	rhs = TREE_OPERAND (rhs, 0);
       }
       /* fall through */
       my_friendly_assert (TREE_CODE (rhs) == OVERLOAD, 980401);
 
     case OVERLOAD:
-    overload:
       {
 	tree elem, elems;
 
-	/* First look for an exact match.  Search overloaded
-	   functions.  May have to undo what `default_conversion'
-	   might do to lhstype.  */
-
+	/* Check that the LHSTYPE and the RHS are reasonable.  */
 	lhstype = validate_lhs (lhstype, complain);
 	if (lhstype == error_mark_node)
 	  return lhstype;
@@ -5129,30 +5120,32 @@ instantiate_type (lhstype, rhs, complain)
 	if (TREE_CODE (lhstype) != FUNCTION_TYPE
 	    && TREE_CODE (lhstype) != METHOD_TYPE)
 	  {
-	    rhs = DECL_NAME (OVL_FUNCTION (rhs));
 	    if (complain)
 	      cp_error("cannot resolve overloaded function `%D' " 
-		       "based on non-function type", rhs);
+		       "based on non-function type", 
+		       DECL_NAME (OVL_FUNCTION (rhs)));
 	    return error_mark_node;
 	  }
 	
-	elems = rhs;
-	/* If there are explicit_targs, only a template function
-	   can match.  */
-	if (explicit_targs == NULL_TREE)
-	  while (elems)
-	    {
-	      elem = OVL_FUNCTION (elems);
-	      if (! comptypes (lhstype, TREE_TYPE (elem), 1))
-		elems = OVL_CHAIN (elems);
-	      else
-		{
-		  mark_used (elem);
-		  return elem;
-		}
-	    }
+	/* Look for an exact match, by searching through the
+	   overloaded functions.  */
+	if (template_only)
+	  /* If we're processing a template-id, only a template
+	     function can match, so we don't look through the
+	     overloaded functions.  */
+	  ;
+	else for (elems = rhs; elems; elems = OVL_CHAIN (elems))
+	  {
+	    elem = OVL_FUNCTION (elems);
+	    if (comptypes (lhstype, TREE_TYPE (elem), 1))
+	      {
+		mark_used (elem);
+		return elem;
+	      }
+	  }
 
-	/* No exact match found, look for a compatible template.  */
+	/* No overloaded function was an exact match.  See if we can
+	   instantiate some template to match.  */
 	{
 	  tree save_elem = 0;
 	  elems = rhs;
@@ -5189,14 +5182,14 @@ instantiate_type (lhstype, rhs, complain)
 	    }
 	}
 
-	/* If there are explicit_targs, only a template function
-	   can match.  */
-	if (explicit_targs == NULL_TREE) 
+	/* There's no exact match, and no templates can be
+	   instantiated to match.  The last thing we try is to see if
+	   some ordinary overloaded function is close enough.  If
+	   we're only looking for template functions, we don't do
+	   this.  */
+	if (!template_only)
 	  {
-	    /* No match found, look for a compatible function.  */
-	    tree elems = rhs;
-	    elems = rhs;
-	    for (; elems; elems = OVL_NEXT (elems))
+	    for (elems = rhs; elems; elems = OVL_NEXT (elems))
 	      {
 		elem = OVL_CURRENT (elems);
 		if (comp_target_types (lhstype, TREE_TYPE (elem), 1) > 0)
@@ -5228,6 +5221,8 @@ instantiate_type (lhstype, rhs, complain)
 		return save_elem;
 	      }
 	  }
+
+	/* We failed to find a match.  */
 	if (complain)
 	  {
 	    cp_error ("cannot resolve overload to target type `%#T'", lhstype);
