@@ -293,6 +293,7 @@ HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
 
 HOST_RTL = $(HOST_PREFIX)rtl.o
 HOST_RTLANAL = $(HOST_PREFIX)rtlanal.o
+HOST_PRINT = $(HOST_PREFIX)print-rtl.o
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
@@ -996,9 +997,9 @@ genattr : genattr.o $(HOST_RTL) $(HOST_LIBDEPS)
 genattr.o : genattr.c $(RTL_H) config.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattr.c
 
-genattrtab : genattrtab.o $(HOST_RTL) $(HOST_RTLANAL) $(HOST_LIBDEPS)
+genattrtab : genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_RTLANAL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genattrtab \
-	 genattrtab.o $(HOST_RTL) $(HOST_RTLANAL) $(HOST_LIBS)
+	 genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_RTLANAL) $(HOST_LIBS)
 
 genattrtab.o : genattrtab.c $(RTL_H) config.h insn-config.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattrtab.c
@@ -1018,6 +1019,11 @@ $(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(CONFIG_H) $(RTL_H)
 	rm -f $(HOST_PREFIX)rtl.c
 	cp $(srcdir)/rtl.c $(HOST_PREFIX)rtl.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtl.c
+
+$(HOST_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(CONFIG_H) $(RTL_H)
+	rm -f $(HOST_PREFIX)print-rtl.c
+	cp $(srcdir)/print-rtl.c $(HOST_PREFIX)print-rtl.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)print-rtl.c
 
 $(HOST_PREFIX_1)rtlanal.o: $(srcdir)/rtlanal.c $(CONFIG_H) $(RTL_H)
 	rm -f $(HOST_PREFIX)rtlanal.c
@@ -1120,26 +1126,26 @@ SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES)
 	-rm -f SYSCALLS.c
 
 test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
-	-rm -f tmp-protoize.*
-	cp $(srcdir)/protoize.c tmp-protoize.c
-	chmod u+w tmp-protoize.c
+	-rm -f tmp-proto.*
+	cp $(srcdir)/protoize.c tmp-proto.c
+	chmod u+w tmp-proto.c
 	./protoize -N -B ./ -c "-B./ -Wall -Wwrite-strings $(CFLAGS) \
 	  $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=0 \
 	  -DGPLUSPLUS_INCLUDE_DIR=0 \
 	  -DCROSS_INCLUDE_DIR=0 \
-	  -DSTD_PROTO_DIR=0" tmp-protoize.c
+	  -DSTD_PROTO_DIR=0" tmp-proto.c
 	@echo Expect 324 lines of differences.
-	diff $(srcdir)/protoize.c tmp-protoize.c | wc -l
+	diff $(srcdir)/protoize.c tmp-proto.c | wc -l
 	./unprotoize -N -c "-B./ -Wall -Wwrite-strings $(CFLAGS) \
 	  $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=0 \
 	  -DGPLUSPLUS_INCLUDE_DIR=0 \
 	  -DCROSS_INCLUDE_DIR=0 \
-	  -DSTD_PROTO_DIR=0" tmp-protoize.c
+	  -DSTD_PROTO_DIR=0" tmp-proto.c
 	@echo Expect zero differences.
-	diff $(srcdir)/protoize.c tmp-protoize.c | cat
-	-rm -f tmp-protoize.*
+	diff $(srcdir)/protoize.c tmp-proto.c | cat
+	-rm -f tmp-proto.*
 
 # Remake the info files.
 
@@ -1176,7 +1182,7 @@ mostlyclean:
 	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
 # Delete other temporary files.
 	-rm -f tmp-float.h tmp-*proto.1 tmp-gcc.xtar.Z tmp-limits.h gccnew
-	-rm -f tmp-foo1 tmp-foo2
+	-rm -f tmp-foo1 tmp-foo2 tmp-proto.c
 # Delete the stamp files.
 	-rm -f stamp-* tmp-*
 # Delete debugging dump files.
