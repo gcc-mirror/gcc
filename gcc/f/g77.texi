@@ -14,7 +14,7 @@
 @c %**start of header 
 @setfilename g77.info
 
-@set last-up-date 1998-05-19
+@set last-up-date 1998-05-22
 @set version-g77 0.5.23
 
 @c @setfilename useg77.info
@@ -8119,23 +8119,148 @@ avoid clashes with C++ reserved words in addition to those in C@.
 @cindex startup code
 @cindex runtime initialization
 @cindex initialization, runtime
-Unlike with some runtime systems, it shouldn't be necessary (unless there are
-bugs) to use a Fortran main program to ensure the
-runtime---specifically the i/o system---is initialized.
-However, to use
-the @code{g77} intrinsics @code{GETARG()} and @code{IARGC()} the
-@code{main()} routine from the @file{libf2c} library must be used, either
-explicitly or implicitly by using a Fortran main program.
-This
-@code{main()} program calls @code{MAIN__()} (where the names are C-type
-@code{extern} names, i.e.@ not mangled).
-You need to provide this
-nullary procedure as the entry point for your C code if using
-@file{libf2c}'s @code{main}.
-In some cases it might be necessary to
-provide a dummy version of this to avoid linkers complaining about
-failure to resolve @code{MAIN__()} if linking against @file{libf2c} and
-not using @code{main()} from it.
+Unlike with some runtime systems,
+it shouldn't be necessary
+(unless there are bugs)
+to use a Fortran main program unit to ensure the
+runtime---specifically the I/O system---is initialized.
+
+However, to use the @code{g77} intrinsics @code{GETARG} and @code{IARGC},
+either the @code{main} routine from the @file{libg2c} library must be used,
+or the @code{f_setarg} routine
+(new as of @code{egcs} version 1.1 and @code{g77} version 0.5.23)
+must be called with the appropriate @code{argc} and @code{argv} arguments
+prior to the program calling @code{GETARG} or @code{IARGC}.
+
+To provide more flexibility for mixed-language programming
+involving @code{g77} while allowing for shared libraries,
+as of @code{egcs} version 1.1 and @code{g77} version 0.5.23,
+@code{g77}'s @code{main} routine in @code{libg2c}
+does the following, in order:
+
+@enumerate
+@item
+Calls @code{f_setarg}
+with the incoming @code{argc} and @code{argv} arguments,
+in the same order as for @code{main} itself.
+
+This sets up the command-line environment
+for @code{GETARG} and @code{IARGC}.
+
+@item
+Calls @code{f_setsig} (with no arguments).
+
+This sets up the signaling and exception environment.
+
+@item
+Calls @code{f_init} (with no arguments).
+
+This initializes the I/O environment,
+though that should not be necessary,
+as all I/O functions in @code{libf2c}
+are believed to call @code{f_init} automatically,
+if necessary.
+
+(A future version of @code{g77} might skip this explicit step,
+to speed up normal exit of a program.)
+
+@item
+Arranges for @code{f_exit} to be called (with no arguments)
+when the program exits.
+
+This ensures that the I/O environment is properly shut down
+before the program exits normally.
+Otherwise, output buffers might not be fully flushed,
+scratch files might not be deleted, and so on.
+
+The simple way @code{main} does this is
+to call @code{f_exit} itself after calling
+@code{MAIN__} (in the next step).
+
+However, this does not catch the cases where the program
+might call @code{exit} directly,
+instead of using the @code{EXIT} intrinsic
+(implemented as @code{exit_} in @code{libf2c}).
+
+So, @code{main} attempts to use
+the operating environment's @code{onexit} or @code{atexit}
+facility, if available,
+to cause @code{f_exit} to be called automatically
+upon any invocation of @code{exit}.
+
+@item
+Calls @code{MAIN__} (with no arguments).
+
+This starts executing the Fortran main program unit for
+the application.
+(Both @code{g77} and @code{f2c} currently compile a main
+program unit so that its global name is @code{MAIN__}.)
+
+@item
+If no @code{onexit} or @code{atexit} is provided by the system,
+calls @code{f_exit}.
+
+@item
+Calls @code{exit} with a zero argument,
+to signal a successful program termination.
+
+@item
+Returns a zero value to the caller,
+to signal a successful program termination,
+in case @code{exit} doesn't exit on the system.
+@end enumerate
+
+All of the above names are C @code{extern} names,
+i.e.@: not mangled.
+
+When using the @code{main} procedure provided by @code{g77}
+without a Fortran main program unit,
+you need to provide @code{MAIN__}
+as the entry point for your C code.
+(Make sure you link the object file that defines that
+entry point with the rest of your program.)
+
+To provide your own @code{main} procedure
+in place of @code{g77}'s,
+make sure you specify the object file defining that procedure
+@emph{before} @samp{-lg2c} on the @code{g77} command line.
+Since the @samp{-lg2c} option is implicitly provided,
+this is usually straightforward.
+(Use the @samp{--verbose} option to see how and where
+@code{g77} implicitly adds @samp{-lg2c} in a command line
+that will link the program.
+Feel free to specify @samp{-lg2c} explicitly,
+as appropriate.)
+
+However, when providing your own @code{main},
+make sure you perform the appropriate tasks in the
+appropriate order.
+For example, if your @code{main} does not call @code{f_setarg},
+make sure the rest of your application does not call
+@code{GETARG} or @code{IARGC}.
+
+And, if your @code{main} fails to ensure that @code{f_exit}
+is called upon program exit,
+some files might end up incompletely written,
+some scratch files might be left lying around,
+and some existing files being written might be left
+with old data not properly truncated at the end.
+
+Note that, generally, the @code{g77} operating environment
+does not depend on a procedure named @code{MAIN__} actually
+being called prior to any other @code{g77}-compiled code.
+That is, @code{MAIN__} does not, itself,
+set up any important operating-environment characteristics
+upon which other code might depend.
+This might change in future versions of @code{g77},
+with appropriate notification in the release notes.
+
+For more information, consult the source code for the above routines.
+These are in @file{egcs/libf2c/libF77/}, named @file{main.c},
+@file{setarg.c}, @file{setsig.c}, @file{getarg_.c}, and @file{iargc_.c}.
+
+Also, the file @file{egcs/gcc/f/com.c} contains the code @code{g77}
+uses to open-code (inline) references to @code{IARGC}.
 
 @include g77install.texi
 
