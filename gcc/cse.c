@@ -202,7 +202,7 @@ static int max_qty;
 
 static int next_qty;
 
-/* Indexed by quantity number, gives the first (or last) (pseudo) register 
+/* Indexed by quantity number, gives the first (or last) register 
    in the chain of registers that currently contain this quantity.  */
 
 static int *qty_first_reg;
@@ -267,13 +267,13 @@ static rtx prev_insn;
 
 static rtx this_insn;
 
-/* Index by (pseudo) register number, gives the quantity number
+/* Index by register number, gives the quantity number
    of the register's current contents.  */
 
 static int *reg_qty;
 
-/* Index by (pseudo) register number, gives the number of the next (or
-   previous) (pseudo) register in the chain of registers sharing the same
+/* Index by register number, gives the number of the next (or
+   previous) register in the chain of registers sharing the same
    value.
 
    Or -1 if this register is at the end of the chain.
@@ -283,12 +283,12 @@ static int *reg_qty;
 static int *reg_next_eqv;
 static int *reg_prev_eqv;
 
-/* Index by (pseudo) register number, gives the number of times
+/* Index by register number, gives the number of times
    that register has been altered in the current basic block.  */
 
 static int *reg_tick;
 
-/* Index by (pseudo) register number, gives the reg_tick value at which
+/* Index by register number, gives the reg_tick value at which
    rtx's containing this register are valid in the hash table.
    If this does not equal the current reg_tick value, such expressions
    existing in the hash table are invalid.
