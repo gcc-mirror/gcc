@@ -1,3 +1,11 @@
+2003-01-30  Richard Henderson  <rth@redhat.com>
+
+	* flow.c (update_life_info): Zap life info after cleanup_cfg.
+	(regno_uninitialized): Use correct live at function entry set.
+	(regno_clobbered_at_setjmp): Likewise.
+
+	* expr.c (store_expr): Promote all MEM intermediates to regs.
+
 2003-01-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/arm/arm.c: Fix comment typos.
