@@ -4289,7 +4289,7 @@ int reload_spill_index[MAX_RELOADS];
 /* Index of last register assigned as a spill register.  We allocate in
    a round-robin fashio.  */
 
-static last_spill_reg = 0;
+static int last_spill_reg = 0;
 
 /* Find a spill register to use as a reload register for reload R.
    LAST_RELOAD is non-zero if this is the last reload for the insn being
