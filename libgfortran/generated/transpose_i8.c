@@ -40,9 +40,8 @@ __transpose_8 (gfc_array_i8 * ret, gfc_array_i8 * source)
 
   if (ret->data == NULL)
     {
-      ret->data = internal_malloc (sizeof (GFC_INTEGER_8) * size0 (source));
-      ret->base = 0;
-      ret->dtype = source->dtype;
+      assert (GFC_DESCRIPTOR_RANK (ret) == 2);
+      assert (ret->dtype == source->dtype);
 
       ret->dim[0].lbound = 0;
       ret->dim[0].ubound = source->dim[1].ubound - source->dim[1].lbound;
@@ -51,6 +50,9 @@ __transpose_8 (gfc_array_i8 * ret, gfc_array_i8 * source)
       ret->dim[1].lbound = 0;
       ret->dim[1].ubound = source->dim[0].ubound - source->dim[0].lbound;
       ret->dim[1].stride = ret->dim[0].ubound+1;
+
+      ret->data = internal_malloc (sizeof (GFC_INTEGER_8) * size0 (ret));
+      ret->base = 0;
     }
 
   if (ret->dim[0].stride == 0)
