@@ -1,6 +1,6 @@
 // 1999-06-04 bkoz
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -79,8 +79,9 @@ int test01(void)
 
   // NB: As strlen(str_lit01) != csz01, this test is undefined. It
   // should not crash, but what gets constructed is a bit arbitrary.
+  // The "maverick's" of all string objects.
   try {
-    std::string str04(str_lit01, npos); // the "maverick's" of all string objects.
+    std::string str04(str_lit01, npos); 
     test &= true;
   }		 
   catch(std::length_error& fail) {
@@ -90,9 +91,10 @@ int test01(void)
     test &= false;
   }
 
+  // Build a maxsize-1 lengthed string consisting of all A's
   try {
-    std::string str03(str_lit01, csz01 - 1);
-    test &= str03.size() != 0;
+    std::string str03(csz01 - 1, 'A');
+    test &= str03.size() == csz01 - 1;
     test &= str03.size() <= str03.capacity();
   }		 
   // NB: bad_alloc is regrettable but entirely kosher for

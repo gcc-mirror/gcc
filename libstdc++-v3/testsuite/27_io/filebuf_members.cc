@@ -47,7 +47,7 @@ test_01()
   int close_num;
 
   // read (ext)
-  int fd = open(name01, O_RDONLY);
+  int fd = open(name_01, O_RDONLY);
   test &= fd >= 0;
 
   {
@@ -59,11 +59,11 @@ test_01()
 
 
   // read (standard)
-  FILE* f = fopen(name01, "r");
+  FILE* f = fopen(name_01, "r");
   test &= !f;
 
   {
-    std::ifstream ifstream1(name02);
+    std::ifstream ifstream1(name_01);
     test &= ifstream1.is_open();
     std::ios_base::iostate st01 = ifstream1.rdstate();
     test &= st01 == std::ios_base::goodbit;
