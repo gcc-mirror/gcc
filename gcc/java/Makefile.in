@@ -182,9 +182,11 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)
 #
 JAVA_OBJS = parse.o class.o decl.o expr.o constants.o lang.o typeck.o \
   except.o verify.o zextract.o jcf-io.o jcf-parse.o mangle.o jcf-write.o \
-  buffer.o memmove.o jcf-depend.o
+  buffer.o jcf-depend.o
 
 JAVA_OBJS_LITE = parse-scan.o jv-scan.o
+
+LIBS = ../../libiberty/libiberty.a
 
 # Language-independent object files.
 OBJS = `cat ../stamp-objlist`
@@ -200,23 +202,18 @@ compiler: ../jc1$(exeext) ../jv-scan$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	      $(JAVA_OBJS_LITE) $(LIBS)
 
-../jcf-dump$(exeext): jcf-dump.o jcf-io.o jcf-depend.o zextract.o memmove.o
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jcf-dump.o jcf-io.o jcf-depend.o zextract.o memmove.o
+../jcf-dump$(exeext): jcf-dump.o jcf-io.o jcf-depend.o zextract.o
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jcf-dump.o jcf-io.o jcf-depend.o zextract.o $(LIBS)
 
 # Dependencies here must be kept in sync with dependencies in Make-lang.in.
 ../jvgenmain$(exeext):  jvgenmain.o mangle.o
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jvgenmain.o mangle.o ../obstack.o
 
-../gcjh$(exeext): gjavah.o jcf-io.o jcf-depend.o zextract.o memmove.o
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gjavah.o jcf-io.o jcf-depend.o zextract.o memmove.o 
+../gcjh$(exeext): gjavah.o jcf-io.o jcf-depend.o zextract.o
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gjavah.o jcf-io.o jcf-depend.o zextract.o $(LIBS)
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
-
-memmove.o: $(srcdir)/../../libiberty/memmove.c
-	rm -f memmove.c
-	$(LN_S) $(srcdir)/../../libiberty/memmove.c memmove.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) memmove.c
 
 native: config.status ../jc1$(exeext)
 
