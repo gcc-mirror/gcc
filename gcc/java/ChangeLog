@@ -1,3 +1,7 @@
+2003-08-13  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (Invoking gij): Document -X and -?.
+
 2003-08-13  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* Make-lang.in: Added missing win32-host.o to JAVA_OBJS,
