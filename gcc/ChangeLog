@@ -1,5 +1,12 @@
 Mon Nov 29 16:56:42 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* fold-const.c (extract_muldiv, case {MIN,MAX}_EXPR): Reverse
+	operation if C is negative.
+	(extract_muldiv, case SAVE_EXPR): Supresss if arg has side effects.
+	(extract_muldiv, case {PLUS,MINUS}_EXPR): Don't apply distributive
+	law for some divisions if constant is negative and change other
+	divisions to the opposite rounding.
+
 	* expr.c (store_constructor_field): If bit position is not multiple
 	of alignment of TARGET's mode, use BLKmode.
 
