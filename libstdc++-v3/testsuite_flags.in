@@ -1,0 +1,62 @@
+#!/bin/sh
+
+#
+# This script computes the various flags needed to run GNU C++ testsuites
+# (compiler specific as well as library specific). 
+#
+# Written by Benjamin Kosnik <bkoz@redhat.com>
+#            Gabriel Dos Reis <gdr@codesourcery.com>
+#
+
+# Print a message saying how this script is intended to be invoked
+print_usage() {
+    cat <<EOF
+Usage: 
+    tests_flags --install-includes
+		--build-includes
+		--build-cxx
+		--install-cxx
+		--cxxflags
+EOF
+}
+
+# Establish configure-generated directory structure.
+BUILD_DIR=@glibcpp_builddir@
+SRC_DIR=@glibcpp_srcdir@
+PREFIX_DIR=@glibcpp_prefixdir@
+query=$1
+
+case ${query} in
+    --install-includes)
+      INCLUDES="-I${SRC_DIR}/testsuite"
+      echo ${INCLUDES}
+      ;;
+    --build-includes)
+      C_DIR="`basename  @C_INCLUDE_DIR@`"
+      INCLUDES="-nostdinc++ -I${BUILD_DIR}/include -I${SRC_DIR}/include
+                -I${SRC_DIR}/include/std  -I${SRC_DIR}/include/$C_DIR
+	        -I${SRC_DIR}/libsupc++ -I${SRC_DIR}/libio 
+		-I${SRC_DIR}/testsuite"
+      echo ${INCLUDES}
+      ;;
+    --install-cxx)
+      CXX=${PREFIX_DIR}/bin/g++
+      echo ${CXX}
+      ;;
+    --build-cxx)
+      CC_build="@glibcpp_CXX@ -static "
+      CXX=`echo $CC_build | sed 's/xgcc/g++/g'`
+      echo ${CXX}
+      ;;
+    --cxxflags)
+      CXXFLAGS=" -ggdb3 -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
+      echo ${CXXFLAGS}
+      ;;
+    *)
+      print_usage
+      ;;
+esac
+
+exit 0
+
+
