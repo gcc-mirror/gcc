@@ -1,5 +1,10 @@
 2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Move PACKAGE and VERSION settings up top.  Remove
+	unused call to AC_PROG_LN_S.  Default RANLIB to ':'.  Remove
+	redundant checks for values of RANLIB, AR, INSTALL.
+	* configure: Regenerate.
+
 	* configure.in: Clean up handling of
 	--enable-version-specific-runtime-libs and related variables;
 	replace 'if test' with 'case' where reasonable.  Fix comments.
