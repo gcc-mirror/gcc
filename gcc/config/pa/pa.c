@@ -3941,7 +3941,8 @@ output_call (insn, call_dest, return_pointer)
 
       /* Now emit the inline long-call.  */
       xoperands[0] = call_dest;
-      output_asm_insn ("ldil L%%%0,%%r22\n\tldo R%%%0(%%r22),%%r22", xoperands);
+      output_asm_insn ("ldil LP%%%0,%%r22\n\tldo RP%%%0(%%r22),%%r22",
+			xoperands);
 
       /* If TARGET_MILLICODE_LONG_CALLS, then we must use a long-call sequence
 	 to call dyncall!  */
