@@ -3783,7 +3783,8 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 		use_gnu_debug_info_extensions = DEFAULT_GDB_EXTENSIONS;
 #endif	      
 	      if (write_symbols == NO_DEBUG)
-		warning ("`-%s' option not supported on this version of GCC", str);
+		warning ("`-%s' not supported by this configuration of GCC",
+			 str);
 	      else if (level == 0)
 		write_symbols = NO_DEBUG;
 	      else
