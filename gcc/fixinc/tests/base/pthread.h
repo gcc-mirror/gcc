@@ -39,4 +39,5 @@ extern int __page_size;
 #if defined( THREAD_KEYWORD_CHECK )
 extern int pthread_create (pthread_t *__restrict __thr,
 extern int pthread_kill (pthread_t __thr, int __signo);
+extern int pthread_cancel (pthread_t __thr);
 #endif  /* THREAD_KEYWORD_CHECK */
