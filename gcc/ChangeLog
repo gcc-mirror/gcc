@@ -1,3 +1,13 @@
+2000-06-27  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.c (emit_insn_group_barriers): Special case
+	epilogue_deallocate_stack.
+
+	* config/ia64/ia64.c (ia64_print_operand) [case D]: Emit
+	completers for UNORDERED and ORDERED as well.
+	* config/ia64/ia64.md (bunordered, bordered): New.
+	(sunordered, sordered): New.
+
 Tue Jun 27 12:14:12 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* genattrtab.c (write_attr_value): Do not abort for CONST_INT operands.
