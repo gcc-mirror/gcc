@@ -1,3 +1,16 @@
+2004-06-10  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_abs_const): Make extern.
+	* tree.h (fold_abs_const): Prototype here.
+	* builtins.c (fold_builtin_fabs): New function to transform
+	fabs, fabsf and fabsl builtins into ABS_EXPR tree nodes.
+	(fold_builtin_abs): New function to transform abs, labs, llabs
+	and imaxabs builtins into ABS_EXPR tree nodes.
+	(expand_builtin): Fall back to a function call for abs, labs,
+	llabs and imaxabs builtins that survive constant folding.
+	(fold_builtin_1): Call fold_builtin_fabs for FABS, FABSF and
+	FABSL, and fold_builtin_abs for ABS, LABS, LLABS and IMAXABS.
+
 2004-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/unwind-ia64.c (uw_frame_state_for): Don't assume a

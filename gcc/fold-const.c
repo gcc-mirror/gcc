@@ -135,7 +135,6 @@ static bool reorder_operands_p (tree, tree);
 static bool tree_swap_operands_p (tree, tree, bool);
 
 static tree fold_negate_const (tree, tree);
-static tree fold_abs_const (tree, tree);
 static tree fold_not_const (tree, tree);
 static tree fold_relational_const (enum tree_code, tree, tree, tree);
 static tree fold_relational_hi_lo (enum tree_code *, const tree,
@@ -9846,7 +9845,7 @@ fold_negate_const (tree arg0, tree type)
 
    TYPE is the type of the result.  */
 
-static tree
+tree
 fold_abs_const (tree arg0, tree type)
 {
   tree t = NULL_TREE;
