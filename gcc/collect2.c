@@ -202,7 +202,6 @@ static const char *c_file;		/* <xxx>.c for constructor/destructor list.  */
 static const char *o_file;		/* <xxx>.o for constructor/destructor list.  */
 #ifdef COLLECT_EXPORT_LIST
 static const char *export_file;	        /* <xxx>.x for AIX export list.  */
-static const char *import_file;	        /* <xxx>.p for AIX import list.  */
 #endif
 const char *ldout;			/* File for ld errors.  */
 static const char *output_file;		/* Output file for ld.  */
@@ -218,8 +217,6 @@ static struct head constructors;	/* list of constructors found */
 static struct head destructors;		/* list of destructors found */
 #ifdef COLLECT_EXPORT_LIST
 static struct head exports;		/* list of exported symbols */
-static struct head imports;		/* list of imported symbols */
-static struct head undefined;		/* list of undefined symbols */
 #endif
 static struct head frame_tables;	/* list of frame unwind info tables */
 
@@ -296,7 +293,6 @@ static void scan_libraries	PARAMS ((const char *));
 static int is_in_list		PARAMS ((const char *, struct id *));
 static void write_aix_file	PARAMS ((FILE *, struct id *));
 static char *resolve_lib_name	PARAMS ((const char *));
-static int use_import_list	PARAMS ((const char *));
 static int ignore_library	PARAMS ((const char *));
 #endif
 static char *extract_string	PARAMS ((const char **));
@@ -338,9 +334,6 @@ collect_exit (status)
 #ifdef COLLECT_EXPORT_LIST
   if (export_file != 0 && export_file[0])
     maybe_unlink (export_file);
-
-  if (import_file != 0 && import_file[0])
-    maybe_unlink (import_file);
 #endif
 
   if (ldout != 0 && ldout[0])
@@ -471,9 +464,6 @@ handler (signo)
 #ifdef COLLECT_EXPORT_LIST
   if (export_file != 0 && export_file[0])
     maybe_unlink (export_file);
-
-  if (import_file != 0 && import_file[0])
-    maybe_unlink (import_file);
 #endif
 
   signal (signo, SIG_DFL);
@@ -1073,7 +1063,6 @@ main (argc, argv)
   o_file = make_temp_file (".o");
 #ifdef COLLECT_EXPORT_LIST
   export_file = make_temp_file (".x");
-  import_file = make_temp_file (".p");
 #endif
   ldout = make_temp_file (".ld");
   *c_ptr++ = c_file_name;
@@ -1165,14 +1154,6 @@ main (argc, argv)
 	        /* Resolving full library name.  */
 		const char *s = resolve_lib_name (arg+2);
 
-		/* If we will use an import list for this library,
-		   we should exclude it from ld args.  */
-		if (use_import_list (s))
-		  {
-		    ld1--;
-		    ld2--;
-		  }
-
 		/* Saving a full library name.  */
 		add_to_list (&libs, s);
 	      }
@@ -1243,14 +1224,6 @@ main (argc, argv)
 	  /* libraries can be specified directly, i.e. without -l flag.  */
        	  else
        	    { 
-	      /* If we will use an import list for this library,
-		 we should exclude it from ld args.  */
-	      if (use_import_list (arg))
-	        {
-		  ld1--;
-		  ld2--;
-		}
-
 	      /* Saving a full library name.  */
               add_to_list (&libs, arg);
             }
@@ -1281,14 +1254,6 @@ main (argc, argv)
       scan_prog_file (list->name, PASS_FIRST);
   }
 
-  if (frame_tables.number > 0 && shared_obj)
-    {
-      /* If there are any frames, then we will need
-         the frame table handling functions.  */
-      add_to_list (&imports, "__register_frame_info_table");
-      add_to_list (&imports, "__deregister_frame_info");
-    }
-
   if (exports.first)
     {
       char *buf = xmalloc (strlen (export_file) + 5);
@@ -1303,23 +1268,6 @@ main (argc, argv)
       write_aix_file (exportf, exports.first);
       if (fclose (exportf))
 	fatal_perror ("fclose %s", export_file);
-    }
-
-  if (imports.first)
-    {
-      char *buf = xmalloc (strlen (import_file) + 5);
-
-      sprintf (buf, "-bI:%s", import_file);
-      *ld1++ = buf;
-      *ld2++ = buf;
-
-      importf = fopen (import_file, "w");
-      if (importf == (FILE *) 0)
-	fatal_perror ("%s", import_file);
-      fputs ("#! .\n", importf);
-      write_aix_file (importf, imports.first);
-      if (fclose (importf))
-	fatal_perror ("fclose %s", import_file);
     }
 #endif
 
@@ -1397,8 +1345,6 @@ main (argc, argv)
       /* But make sure we delete the export file we may have created.  */
       if (export_file != 0 && export_file[0])
 	maybe_unlink (export_file);
-      if (import_file != 0 && import_file[0])
-	maybe_unlink (import_file);
 #endif
       maybe_unlink (c_file);
       maybe_unlink (o_file);
@@ -1453,7 +1399,6 @@ main (argc, argv)
 
 #ifdef COLLECT_EXPORT_LIST
       maybe_unlink (export_file);
-      maybe_unlink (import_file);
 #endif
       maybe_unlink (c_file);
       maybe_unlink (o_file);
@@ -1555,7 +1500,6 @@ main (argc, argv)
 
 #ifdef COLLECT_EXPORT_LIST
   maybe_unlink (export_file);
-  maybe_unlink (import_file);
 #endif
 
   return 0;
@@ -2747,10 +2691,6 @@ scan_prog_file (prog_name, which_pass)
   LDFILE *ldptr = NULL;
   int sym_index, sym_count;
   int is_shared = 0;
-#ifdef COLLECT_EXPORT_LIST
-  /* Should we generate an import list for given prog_name?  */
-  int import_flag = (which_pass == PASS_OBJ ? 0 : use_import_list (prog_name));
-#endif
 
   if (which_pass != PASS_FIRST && which_pass != PASS_OBJ)
     return;
@@ -2815,13 +2755,6 @@ scan_prog_file (prog_name, which_pass)
 #ifdef COLLECT_EXPORT_LIST
 			  if (which_pass == PASS_OBJ)
 			    add_to_list (&exports, name);
-			  /* If this symbol was undefined and we are building
-			     an import list, we should add a symbol to this
-			     list.  */
-			  else
-			    if (import_flag
-				&& is_in_list (name, undefined.first))
-			      add_to_list (&imports, name);
 #endif
 			  break;
 
@@ -2831,13 +2764,6 @@ scan_prog_file (prog_name, which_pass)
 #ifdef COLLECT_EXPORT_LIST
 			  if (which_pass == PASS_OBJ)
 			    add_to_list (&exports, name);
-			  /* If this symbol was undefined and we are building
-			     an import list, we should add a symbol to this
-			     list.  */
-			  else
-			    if (import_flag
-				&& is_in_list (name, undefined.first))
-			      add_to_list (&imports, name);
 #endif
 			  break;
 
@@ -2863,33 +2789,17 @@ scan_prog_file (prog_name, which_pass)
 #ifdef COLLECT_EXPORT_LIST
 			  if (which_pass == PASS_OBJ)
 			    add_to_list (&exports, name);
-			  /* If we are building an import list, we
-			     should add the symbol to the list.  
-			     We'd like to do it only if the symbol
-			     is not defined, but we can't tell
-			     that here (it is only known whether a symbol
-			     is referenced and not defined, but who
-			     would reference an EH table entry?).  */
-			  else
-			    if (import_flag)
-			      add_to_list (&imports, name);
 #endif
 			  break;
 
 			default:	/* not a constructor or destructor */
 #ifdef COLLECT_EXPORT_LIST
 			  /* If we are building a shared object on AIX we need
-			     to explicitly export all global symbols or add
-			     them to import list.  */
+			     to explicitly export all global symbols.  */
 			  if (shared_obj) 
 			    {
 			      if (which_pass == PASS_OBJ && (! export_flag))
 				add_to_list (&exports, name);
-			      else if (! is_shared
-				       && which_pass == PASS_FIRST
-				       && import_flag
-				       && is_in_list(name, undefined.first))
-				add_to_list (&imports, name);
 			    }
 #endif
 			  continue;
@@ -2907,24 +2817,6 @@ scan_prog_file (prog_name, which_pass)
 				 symbol.iss, (long) symbol.value, symbol.index, name);
 #endif
 		    }
-#ifdef COLLECT_EXPORT_LIST
-		  /* If we are building a shared object we should collect
-		     information about undefined symbols for later
-		     import list generation.  */
-		  else if (shared_obj && GCC_UNDEF_SYMBOL (symbol))
-		    {
-		      char *name;
-
-		      if ((name = ldgetname (ldptr, &symbol)) == NULL)
-			continue;		/* should never happen */
-
-		      /* All AIX function names have a duplicate entry
-			 beginning with a dot.  */
-		      if (*name == '.')
-			++name;
-		      add_to_list (&undefined, name);
-		    }
-#endif
 		}
 	    }
 #ifdef COLLECT_EXPORT_LIST
@@ -2954,25 +2846,6 @@ scan_prog_file (prog_name, which_pass)
 
 
 #ifdef COLLECT_EXPORT_LIST
-
-/* This new function is used to decide whether we should
-   generate import list for an object or to use it directly.  */
-static int
-use_import_list (prog_name)
-     const char *prog_name;
-{
-  char *p;
-
-  /* If we do not build a shared object then import list should not be used.  */
-  if (! shared_obj) return 0;
-
-  /* Currently we check only for libgcc, but this can be changed in future.  */
-  p = strstr (prog_name, "libgcc.a");
-  if (p != 0 && (strlen (p) == sizeof ("libgcc.a") - 1))
-    return 1;
-  return 0;
-}
-
 /* Given a library name without "lib" prefix, this function
    returns a full library name including a path.  */
 static char *
@@ -3044,7 +2917,6 @@ ignore_library (name)
     if (! strcmp (name, *p)) return 1;
   return 0;
 }
-
 #endif
 
 #endif /* OBJECT_FORMAT_COFF */

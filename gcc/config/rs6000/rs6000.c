@@ -3757,8 +3757,8 @@ print_operand (file, x, code)
       /* X is a CR register.  Print the number of the third bit of the CR */
       if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
 	output_operand_lossage ("invalid %%E value");
-
-      fprintf(file, "%d", 4 * (REGNO (x) - CR0_REGNO) + 3);
+      else
+	fprintf (file, "%d", 4 * (REGNO (x) - CR0_REGNO) + 3);
       return;
 
     case 'f':
