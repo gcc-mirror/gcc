@@ -2598,6 +2598,18 @@ value @code{STARTING_FRAME_OFFSET}.
 @c i'm not sure if the above is still correct.. had to change it to get
 @c rid of an overfull.  --mew 2feb93
 
+@findex STARTING_FRAME_PHASE
+@item STARTING_FRAME_PHASE
+This option species how many bytes the frame is out of phase from the
+stack alignment.
+
+For example, some ports assume a stack alignment of 128 bits, but the
+start of the frame is 64 bits displaced from this alignment.  In this
+case, you would define @code{STARTING_FRAME_PHASE} to be 8.
+
+This macro defaults to 0, so there is no need to define it if the start
+of the frame maintains the stack alignment.
+
 @findex STACK_POINTER_OFFSET
 @item STACK_POINTER_OFFSET
 Offset from the stack pointer register to the first location at which

@@ -1,3 +1,15 @@
+2002-01-18  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/tm.texi (STARTING_FRAME_PHASE): Document.
+
+        * function.c (assign_stack_local_1): Adjust x_frame_offset with
+        STARTING_FRAME_PHASE.
+        (STARTING_FRAME_PHASE): New.
+        (instantiate_virtual_regs): Check saneness of
+        STARTING_FRAME_PHASE.
+
+        * config/rs6000/rs6000.h (STARTING_FRAME_PHASE): New.
+
 2002-01-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.md (movdf_i4 split): Fix alter_subreg calls.
