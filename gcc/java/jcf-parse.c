@@ -34,6 +34,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "toplev.h"
 #include "parse.h"
+#include "ggc.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -68,15 +69,6 @@ extern struct obstack permanent_obstack;
 /* Set to non-zero value in order to emit class initilization code
    before static field references.  */
 extern int always_initialize_class_p;
-
-/* The class we are currently processing. */
-tree current_class = NULL_TREE;
-
-/* The class we started with. */
-tree main_class = NULL_TREE;
-
-/* List of all class DECL seen so far.  */
-tree all_class_list = NULL_TREE;
 
 /* The FIELD_DECL for the current field.  */
 static tree current_field = NULL_TREE;
@@ -808,7 +800,7 @@ predefined_filename_p (node)
      tree node;
 {
   int i;
-  for (i = 0; i < predef_filenames_size; i++)
+  for (i = 0; i < PREDEF_FILENAMES_SIZE; i++)
     if (predef_filenames [i] == node)
       return 1;
   return 0;
@@ -1095,3 +1087,12 @@ DEFUN(jcf_figure_file_type, (jcf),
   return JCF_SOURCE;
 }
 
+/* Initialization.  */
+
+void
+init_jcf_parse ()
+{
+  /* Register roots with the garbage collector.  */
+  ggc_add_tree_root (&current_field, 1);
+  ggc_add_tree_root (&current_method, 1);
+}

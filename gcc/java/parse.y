@@ -65,6 +65,7 @@ definitions and other extensions.  */
 #include "function.h"
 #include "except.h"
 #include "defaults.h"
+#include "ggc.h"
 
 #ifndef DIR_SEPARATOR
 #define DIR_SEPARATOR '/'
@@ -361,10 +362,6 @@ static enum tree_code binop_lookup[19] =
    in compound assignements. */
 #define BINOP_COMPOUND_CANDIDATES 11
 
-/* Fake WFL used to report error message. It is initialized once if
-   needed and reused with it's location information is overriden.  */
-tree wfl_operator = NULL_TREE;
-
 /* The "$L" identifier we use to create labels.  */
 static tree label_id = NULL_TREE;
 
@@ -399,6 +396,13 @@ static tree wpv_id;
 /* The list of all packages we've seen so far */
 static tree package_list = NULL_TREE;
  
+/* Hold THIS for the scope of the current public method decl.  */
+static tree current_this;
+
+/* Hold a list of catch clauses list. The first element of this list is
+   the list of the catch clauses of the currently analysed try block. */
+static tree currently_caught_type_list;
+
 /* Check modifiers. If one doesn't fit, retrieve it in its declaration
    line and point it out.  */
 /* Should point out the one that don't fit. ASCII/unicode, going
@@ -577,6 +581,23 @@ static tree package_list = NULL_TREE;
 %%
 /* 19.2 Production from 2.3: The Syntactic Grammar  */
 goal:
+                {
+		  /* Register static variables with the garbage
+		     collector.  */
+		  ggc_add_tree_root (&label_id, 1);
+		  ggc_add_tree_root (&wfl_string_buffer, 1);
+		  ggc_add_tree_root (&wfl_append, 1);
+		  ggc_add_tree_root (&wfl_to_string, 1);
+		  ggc_add_tree_root (&java_lang_id, 1);
+		  ggc_add_tree_root (&inst_id, 1);
+		  ggc_add_tree_root (&java_lang_cloneable, 1);
+		  ggc_add_tree_root (&java_io_serializable, 1);
+		  ggc_add_tree_root (&current_static_block, 1);
+		  ggc_add_tree_root (&wpv_id, 1);
+		  ggc_add_tree_root (&package_list, 1);
+		  ggc_add_tree_root (&current_this, 1);
+		  ggc_add_tree_root (&currently_caught_type_list, 1);
+		}
 	compilation_unit
 		{}
 ;
@@ -2618,7 +2639,7 @@ java_pop_parser_context (generate)
       next->incomplete_class = ctxp->incomplete_class;
       next->gclass_list = ctxp->gclass_list;
       lineno = ctxp->lineno;
-      current_class = ctxp->current_class;
+      current_class = ctxp->class_type;
     }
 
   /* If the old and new lexers differ, then free the old one.  */
@@ -2665,9 +2686,9 @@ java_parser_context_save_global ()
     create_new_parser_context (1);
 
   ctxp->lineno = lineno;
-  ctxp->current_class = current_class;
+  ctxp->class_type = current_class;
   ctxp->filename = input_filename;
-  ctxp->current_function_decl = current_function_decl;
+  ctxp->function_decl = current_function_decl;
   ctxp->saved_data = 1;
 }
 
@@ -2678,9 +2699,9 @@ void
 java_parser_context_restore_global ()
 {
   lineno = ctxp->lineno;
-  current_class = ctxp->current_class;
+  current_class = ctxp->class_type;
   input_filename = ctxp->filename;
-  current_function_decl = ctxp->current_function_decl;
+  current_function_decl = ctxp->function_decl;
   ctxp->saved_data = 0;
   if (ctxp->saved_data_ctx)
     java_pop_parser_context (0);
@@ -2699,8 +2720,8 @@ java_parser_context_suspend ()
   /* Duplicate the previous context, use it to save the globals we're
      interested in */
   create_new_parser_context (1);
-  ctxp->current_function_decl = current_function_decl;
-  ctxp->current_class = current_class;
+  ctxp->function_decl = current_function_decl;
+  ctxp->class_type = current_class;
 
   /* Then create a new context which inherits all data from the
      previous one. This will be the new current context  */
@@ -2730,8 +2751,8 @@ java_parser_context_resume ()
   restored->class_list = old->class_list;
 
   /* Restore the current class and function from the saver */
-  current_class = saver->current_class;
-  current_function_decl = saver->current_function_decl;
+  current_class = saver->class_type;
+  current_function_decl = saver->function_decl;
 
   /* Retrive the restored context */
   ctxp = restored;
@@ -4570,7 +4591,17 @@ verify_constructor_circularity (meth, current)
      tree meth, current;
 {
   static tree list = NULL_TREE;
+  static int initialized_p;
   tree c;
+
+  /* If we haven't already registered LIST with the garbage collector,
+     do so now.  */
+  if (!initialized_p)
+    {
+      ggc_add_tree_root (&list, 1);
+      initialized_p = 1;
+    }
+
   for (c = DECL_CONSTRUCTOR_CALLS (current); c; c = TREE_CHAIN (c))
     {
       if (TREE_VALUE (c) == meth)
@@ -6409,7 +6440,10 @@ lookup_cl (decl)
     return NULL_TREE;
 
   if (cl == NULL_TREE)
-    cl = build_expr_wfl (NULL_TREE, NULL, 0, 0);
+    {
+      cl = build_expr_wfl (NULL_TREE, NULL, 0, 0);
+      ggc_add_tree_root (&cl, 1);
+    }
 
   EXPR_WFL_FILENAME_NODE (cl) = get_identifier (DECL_SOURCE_FILE (decl));
   EXPR_WFL_SET_LINECOL (cl, DECL_SOURCE_LINE_FIRST (decl), -1);
@@ -7249,9 +7283,6 @@ add_stmt_to_compound (existing, type, stmt)
     return stmt;
 }
 
-/* Hold THIS for the scope of the current public method decl.  */
-static tree current_this;
-
 void java_layout_seen_class_methods ()
 {
   tree previous_list = all_class_list;
@@ -7278,8 +7309,16 @@ void
 java_reorder_fields ()
 {
   static tree stop_reordering = NULL_TREE;
-
+  static int initialized_p;
   tree current;
+
+  /* Register STOP_REORDERING with the garbage collector.  */
+  if (!initialized_p)
+    {
+      ggc_add_tree_root (&stop_reordering, 1);
+      initialized_p = 1;
+    }
+
   for (current = ctxp->gclass_list; current; current = TREE_CHAIN (current))
     {
       current_class = TREE_TYPE (TREE_VALUE (current));
@@ -7489,10 +7528,6 @@ java_complete_expand_methods (class_decl)
   /* Save the constant pool. We'll need to restore it later. */
   TYPE_CPOOL (current_class) = outgoing_cpool;
 }
-
-/* Hold a list of catch clauses list. The first element of this list is
-   the list of the catch clauses of the currently analysed try block. */
-static tree currently_caught_type_list;
 
 /* Attempt to create <clinit>. Pre-expand static fields so they can be
    safely used in some other methods/constructors.  */
@@ -8175,16 +8210,23 @@ build_current_thisn (type)
 {
   static int saved_i = -1;
   static tree saved_thisn = NULL_TREE;
-
+  static tree saved_type = NULL_TREE;
+  static int saved_type_i = 0;
+  static int initialized_p;
   tree decl;
   char buffer [80];
   int i = 0;
 
+  /* Register SAVED_THISN and SAVED_TYPE with the garbage collector.  */
+  if (!initialized_p)
+    {
+      ggc_add_tree_root (&saved_thisn, 1);
+      ggc_add_tree_root (&saved_type, 1);
+      initialized_p = 1;
+    }
+
   if (type)
     {
-      static tree saved_type = NULL_TREE;
-      static int saved_type_i = 0;
-
       if (type == saved_type)
 	i = saved_type_i;
       else
@@ -8256,6 +8298,8 @@ build_dot_class_method (class)
     {
       get_message_wfl = build_wfl_node (get_identifier ("getMessage"));
       type_parm_wfl = build_wfl_node (get_identifier ("type$"));
+      ggc_add_tree_root (&get_message_wfl, 1);
+      ggc_add_tree_root (&type_parm_wfl, 1);
     }
 
   /* Build the arguments */
@@ -9547,6 +9591,14 @@ class_in_current_package (class)
   breakdown_qualified (&left, NULL, DECL_NAME (TYPE_NAME (class)));
   if (ctxp->package == left)
     {
+      static int initialized_p;
+      /* Register CACHE with the garbage collector.  */
+      if (!initialized_p)
+	{
+	  ggc_add_tree_root (&cache, 1);
+	  initialized_p = 1;
+	}
+
       cache = class;
       return 1;
     }
@@ -10504,8 +10556,18 @@ argument_types_convertible (m1, m2_or_arglist)
 {
   static tree m2_arg_value = NULL_TREE;
   static tree m2_arg_cache = NULL_TREE;
+  static int initialized_p;
 
   register tree m1_arg, m2_arg;
+
+  /* Register M2_ARG_VALUE and M2_ARG_CACHE with the garbage
+     collector.  */
+  if (!initialized_p)
+    {
+      ggc_add_tree_root (&m2_arg_value, 1);
+      ggc_add_tree_root (&m2_arg_cache, 1);
+      initialized_p = 1;
+    }
 
   SKIP_THIS_AND_ARTIFICIAL_PARMS (m1_arg, m1)
 
@@ -13459,9 +13521,9 @@ resolve_type_during_patch (type)
    found. Otherwise NODE or something meant to replace it is returned.  */
 
 static tree
-patch_cast (node, wfl_operator)
+patch_cast (node, wfl_op)
      tree node;
-     tree wfl_operator;
+     tree wfl_op;
 {
   tree op = TREE_OPERAND (node, 0);
   tree op_type = TREE_TYPE (op);
@@ -13530,7 +13592,7 @@ patch_cast (node, wfl_operator)
 
   /* Any other casts are proven incorrect at compile time */
   t1 = xstrdup (lang_printable_name (op_type, 0));
-  parse_error_context (wfl_operator, "Invalid cast from `%s' to `%s'",
+  parse_error_context (wfl_op, "Invalid cast from `%s' to `%s'",
 		       t1, lang_printable_name (cast_type, 0));
   free (t1);
   return error_mark_node;

@@ -121,13 +121,16 @@ struct JCF;
 extern int compiling_from_source;
 
 /* The class defined by the actual (main) file we are compiling. */
-extern tree main_class;
+#define main_class \
+  java_global_trees[JTI_MAIN_CLASS]
 
 /* The class we are currently processing. */
-extern tree current_class;
+#define current_class \
+  java_global_trees[JTI_CURRENT_CLASS]
 
 /* List of all class DECLs seen so far.  */
-extern tree all_class_list;
+#define all_class_list \
+  java_global_trees[JTI_ALL_CLASS_LIST]
 
 /* Nonzero if we should make is_compiled_class always return 1 for
    appropriate classes that we're referencing.  */
@@ -205,139 +208,397 @@ typedef struct CPool constant_pool;
 #define COMPONENT_REF_SIGNATURE(CPOOL, IDX) \
   NAME_AND_TYPE_SIGNATURE (CPOOL, COMPONENT_REF_NAME_AND_TYPE(CPOOL, IDX))
 
+enum java_tree_index
+{
+  JTI_PROMOTED_BYTE_TYPE_NODE,
+  JTI_PROMOTED_SHORT_TYPE_NODE,
+  JTI_PROMOTED_CHAR_TYPE_NODE,
+  JTI_PROMOTED_BOOLEAN_TYPE_NODE,
+
+  JTI_BYTE_TYPE_NODE,
+  JTI_SHORT_TYPE_NODE,
+  JTI_INT_TYPE_NODE,
+  JTI_LONG_TYPE_NODE,
+  
+  JTI_UNSIGNED_BYTE_TYPE_NODE,
+  JTI_UNSIGNED_SHORT_TYPE_NODE,
+  JTI_UNSIGNED_INT_TYPE_NODE,
+  JTI_UNSIGNED_LONG_TYPE_NODE,
+  
+  JTI_BOOLEAN_TYPE_NODE,
+
+  JTI_OBJECT_TYPE_NODE,
+  JTI_UNQUALIFIED_OBJECT_ID_NODE,
+  JTI_OBJECT_PTR_TYPE_NODE,
+  JTI_STRING_TYPE_NODE,
+  JTI_STRING_PTR_TYPE_NODE,
+  JTI_THROWABLE_TYPE_NODE,
+  JTI_RUNTIME_EXCEPTION_TYPE_NODE,
+  JTI_ERROR_EXCEPTION_TYPE_NODE,
+  JTI_RAWDATA_PTR_TYPE_NODE,
+
+  JTI_BYTE_ARRAY_TYPE_NODE,
+  JTI_SHORT_ARRAY_TYPE_NODE,
+  JTI_INT_ARRAY_TYPE_NODE,
+  JTI_LONG_ARRAY_TYPE_NODE,
+  JTI_BOOLEAN_ARRAY_TYPE_NODE,
+  JTI_CHAR_ARRAY_TYPE_NODE,
+  JTI_DOUBLE_ARRAY_TYPE_NODE,
+  JTI_FLOAT_ARRAY_TYPE_NODE,
+  JTI_ARRAY_ARRAY_TYPE_NODE,
+  JTI_OBJECT_ARRAY_TYPE_NODE,
+  JTI_STRING_ARRAY_TYPE_NODE,
+  JTI_BOOLEAN_ARRAY_VTABLE,
+  JTI_BYTE_ARRAY_VTABLE,
+  JTI_CHAR_ARRAY_VTABLE,
+  JTI_SHORT_ARRAY_VTABLE,
+  JTI_INT_ARRAY_VTABLE,
+  JTI_LONG_ARRAY_VTABLE,
+  JTI_FLOAT_ARRAY_VTABLE,
+  JTI_DOUBLE_ARRAY_VTABLE,
+  JTI_TYPE_IDENTIFIER_NODE,      
+  JTI_INIT_IDENTIFIER_NODE,      
+  JTI_CLINIT_IDENTIFIER_NODE,      
+  JTI_FINIT_IDENTIFIER_NODE,      
+  JTI_FINIT_LEG_IDENTIFIER_NODE,  
+  JTI_VOID_SIGNATURE_NODE,       
+  JTI_LENGTH_IDENTIFIER_NODE,  
+  JTI_THIS_IDENTIFIER_NODE,  
+  JTI_SUPER_IDENTIFIER_NODE,  
+  JTI_CONTINUE_IDENTIFIER_NODE,  
+  JTI_ACCESS0_IDENTIFIER_NODE, 
+  JTI_ONE_ELT_ARRAY_DOMAIN_TYPE,
+
+  JTI_RETURN_ADDRESS_TYPE_NODE,
+
+  JTI_BOOLEAN_TRUE_NODE, 
+  JTI_BOOLEAN_FALSE_NODE,
+
+  JTI_LONG_ZERO_NODE,
+  JTI_FLOAT_ZERO_NODE,
+  JTI_DOUBLE_ZERO_NODE,
+  JTI_INTEGER_NEGATIVE_ONE_NODE,
+  JTI_INTEGER_TWO_NODE,
+  JTI_INTEGER_FOUR_NODE,
+  JTI_EMPTY_STMT_NODE,
+
+  JTI_METHODTABLE_TYPE,
+  JTI_METHODTABLE_PTR_TYPE,
+
+  JTI_UTF8CONST_TYPE,
+  JTI_UTF8CONST_PTR_TYPE,
+
+  JTI_CLASS_TYPE_NODE,
+  JTI_CLASS_PTR_TYPE,
+  JTI_FIELD_TYPE_NODE,
+  JTI_CONSTANTS_TYPE_NODE,
+  JTI_DTABLE_TYPE, 
+  JTI_DTABLE_PTR_TYPE,
+  JTI_FIELD_PTR_TYPE_NODE,
+  JTI_FIELD_INFO_UNION_NODE,
+  JTI_EXCEPTION_TYPE,
+  JTI_EXCEPTION_PTR_TYPE,
+  JTI_LINENUMBERENTRY_TYPE,
+  JTI_LINENUMBERS_TYPE,
+  JTI_METHOD_TYPE_NODE,
+  JTI_METHOD_PTR_TYPE_NODE,
+
+  JTI_END_PARAMS_NODE,
+
+  JTI_ALLOC_OBJECT_NODE,
+  JTI_SOFT_INSTANCEOF_NODE,
+  JTI_SOFT_CHECKCAST_NODE,
+  JTI_SOFT_INITCLASS_NODE,
+  JTI_SOFT_NEWARRAY_NODE,
+  JTI_SOFT_ANEWARRAY_NODE,
+  JTI_SOFT_MULTIANEWARRAY_NODE,
+  JTI_SOFT_BADARRAYINDEX_NODE,
+  JTI_SOFT_NULLPOINTER_NODE,
+  JTI_SOFT_CHECKARRAYSTORE_NODE,
+  JTI_SOFT_MONITORENTER_NODE,
+  JTI_SOFT_MONITOREXIT_NODE,
+  JTI_SOFT_LOOKUPINTERFACEMETHOD_NODE,
+  JTI_SOFT_LOOKUPJNIMETHOD_NODE,
+  JTI_SOFT_GETJNIENVNEWFRAME_NODE,
+  JTI_SOFT_JNIPOPSYSTEMFRAME_NODE,
+  JTI_SOFT_FMOD_NODE,
+  JTI_SOFT_EXCEPTIONINFO_CALL_NODE,
+  JTI_SOFT_IDIV_NODE,
+  JTI_SOFT_IREM_NODE,
+  JTI_SOFT_LDIV_NODE,
+  JTI_SOFT_LREM_NODE,
+
+  JTI_ACCESS_FLAGS_TYPE_NODE,
+
+  JTI_CLASS_DTABLE_DECL,
+
+  JTI_NATIVECODE_PTR_ARRAY_TYPE_NODE,
+
+  JTI_WFL_OPERATOR,
+  JTI_CURRENT_CONSTANT_POOL_DATA_REF,
+
+  JTI_MAIN_CLASS,
+  JTI_CURRENT_CLASS,
+  JTI_ALL_CLASS_LIST,
+
+  JTI_MAX
+};
+
+extern tree java_global_trees[JTI_MAX];
+
 /* "Promoted types" that are used for primitive types smaller
    than int.  We could use int_type_node, but then we would lose
    type information (such as needed for debugging). */
-extern tree promoted_byte_type_node;
-extern tree promoted_short_type_node;
-extern tree promoted_char_type_node;
-extern tree promoted_boolean_type_node;
+#define promoted_byte_type_node \
+  java_global_trees[JTI_PROMOTED_BYTE_TYPE_NODE]
+#define promoted_short_type_node \
+  java_global_trees[JTI_PROMOTED_SHORT_TYPE_NODE]
+#define promoted_char_type_node \
+  java_global_trees[JTI_PROMOTED_CHAR_TYPE_NODE]
+#define promoted_boolean_type_node \
+  java_global_trees[JTI_PROMOTED_BOOLEAN_TYPE_NODE]
 
-extern tree byte_type_node;
-extern tree short_type_node;
-extern tree int_type_node;
-extern tree long_type_node;
+#define byte_type_node \
+  java_global_trees[JTI_BYTE_TYPE_NODE]
+#define short_type_node \
+  java_global_trees[JTI_SHORT_TYPE_NODE]
+#define int_type_node \
+  java_global_trees[JTI_INT_TYPE_NODE]
+#define long_type_node \
+  java_global_trees[JTI_LONG_TYPE_NODE]
 
-extern tree unsigned_byte_type_node;
-extern tree unsigned_short_type_node;
-extern tree unsigned_int_type_node;
-extern tree unsigned_long_type_node;
+#define unsigned_byte_type_node \
+  java_global_trees[JTI_UNSIGNED_BYTE_TYPE_NODE]
+#define unsigned_short_type_node \
+  java_global_trees[JTI_UNSIGNED_SHORT_TYPE_NODE]
+#define unsigned_int_type_node \
+  java_global_trees[JTI_UNSIGNED_INT_TYPE_NODE]
+#define unsigned_long_type_node \
+  java_global_trees[JTI_UNSIGNED_LONG_TYPE_NODE]
 
-extern tree boolean_type_node;
+#define boolean_type_node \
+  java_global_trees[JTI_BOOLEAN_TYPE_NODE]
 
-extern tree object_type_node;
-extern tree unqualified_object_id_node;
-extern tree object_ptr_type_node;
-extern tree string_type_node;
-extern tree string_ptr_type_node;
-extern tree throwable_type_node;
-extern tree runtime_exception_type_node;
-extern tree error_exception_type_node;
-extern tree rawdata_ptr_type_node;
+#define object_type_node \
+  java_global_trees[JTI_OBJECT_TYPE_NODE]
+#define unqualified_object_id_node \
+  java_global_trees[JTI_UNQUALIFIED_OBJECT_ID_NODE]
+#define object_ptr_type_node \
+  java_global_trees[JTI_OBJECT_PTR_TYPE_NODE]
+#define string_type_node \
+  java_global_trees[JTI_STRING_TYPE_NODE]
+#define string_ptr_type_node \
+  java_global_trees[JTI_STRING_PTR_TYPE_NODE]
+#define throwable_type_node \
+  java_global_trees[JTI_THROWABLE_TYPE_NODE]
+#define runtime_exception_type_node \
+  java_global_trees[JTI_RUNTIME_EXCEPTION_TYPE_NODE]
+#define error_exception_type_node \
+  java_global_trees[JTI_ERROR_EXCEPTION_TYPE_NODE]
+#define rawdata_ptr_type_node \
+  java_global_trees[JTI_RAWDATA_PTR_TYPE_NODE]
 
-extern tree *predef_filenames;
-extern int predef_filenames_size;
-
-extern tree byte_array_type_node;
-extern tree short_array_type_node;
-extern tree int_array_type_node;
-extern tree long_array_type_node;
-extern tree boolean_array_type_node;
-extern tree char_array_type_node;
-extern tree double_array_type_node;
-extern tree float_array_type_node;
-extern tree array_array_type_node;
-extern tree object_array_type_node;
-extern tree string_array_type_node;
-extern tree boolean_array_vtable;
-extern tree byte_array_vtable;
-extern tree char_array_vtable;
-extern tree short_array_vtable;
-extern tree int_array_vtable;
-extern tree long_array_vtable;
-extern tree float_array_vtable;
-extern tree double_array_vtable;
-extern tree TYPE_identifier_node;      /* "TYPE" */
-extern tree init_identifier_node;      /* "<init>" */
-extern tree clinit_identifier_node;      /* "<clinit>" */
-extern tree finit_identifier_node;      /* "finit$" */
-extern tree finit_leg_identifier_node;  /* "$finit$" */
-extern tree void_signature_node;       /* "()V" */
-extern tree length_identifier_node;  /* "length" */
-extern tree this_identifier_node;  /* "this" */
-extern tree super_identifier_node;  /* "super" */
-extern tree continue_identifier_node;  /* "continue" */
-extern tree access0_identifier_node; /* "access$0" */
-extern tree one_elt_array_domain_type;
+#define byte_array_type_node \
+  java_global_trees[JTI_BYTE_ARRAY_TYPE_NODE]
+#define short_array_type_node \
+  java_global_trees[JTI_SHORT_ARRAY_TYPE_NODE]
+#define int_array_type_node \
+  java_global_trees[JTI_INT_ARRAY_TYPE_NODE]
+#define long_array_type_node \
+  java_global_trees[JTI_LONG_ARRAY_TYPE_NODE]
+#define boolean_array_type_node \
+  java_global_trees[JTI_BOOLEAN_ARRAY_TYPE_NODE]
+#define char_array_type_node \
+  java_global_trees[JTI_CHAR_ARRAY_TYPE_NODE]
+#define double_array_type_node \
+  java_global_trees[JTI_DOUBLE_ARRAY_TYPE_NODE]
+#define float_array_type_node \
+  java_global_trees[JTI_FLOAT_ARRAY_TYPE_NODE]
+#define array_array_type_node \
+  java_global_trees[JTI_ARRAY_ARRAY_TYPE_NODE]
+#define object_array_type_node \
+  java_global_trees[JTI_OBJECT_ARRAY_TYPE_NODE]
+#define string_array_type_node \
+  java_global_trees[JTI_STRING_ARRAY_TYPE_NODE]
+#define boolean_array_vtable \
+  java_global_trees[JTI_BOOLEAN_ARRAY_VTABLE]
+#define byte_array_vtable \
+  java_global_trees[JTI_BYTE_ARRAY_VTABLE]
+#define char_array_vtable \
+  java_global_trees[JTI_CHAR_ARRAY_VTABLE]
+#define short_array_vtable \
+  java_global_trees[JTI_SHORT_ARRAY_VTABLE]
+#define int_array_vtable \
+  java_global_trees[JTI_INT_ARRAY_VTABLE]
+#define long_array_vtable \
+  java_global_trees[JTI_LONG_ARRAY_VTABLE]
+#define float_array_vtable \
+  java_global_trees[JTI_FLOAT_ARRAY_VTABLE]
+#define double_array_vtable \
+  java_global_trees[JTI_DOUBLE_ARRAY_VTABLE]
+#define TYPE_identifier_node \
+  java_global_trees[JTI_TYPE_IDENTIFIER_NODE]      /* "TYPE" */
+#define init_identifier_node \
+  java_global_trees[JTI_INIT_IDENTIFIER_NODE]      /* "<init>" */
+#define clinit_identifier_node \
+  java_global_trees[JTI_CLINIT_IDENTIFIER_NODE]      /* "<clinit>" */
+#define finit_identifier_node \
+  java_global_trees[JTI_FINIT_IDENTIFIER_NODE]      /* "finit$" */
+#define finit_leg_identifier_node \
+  java_global_trees[JTI_FINIT_LEG_IDENTIFIER_NODE]  /* "$finit$" */
+#define void_signature_node \
+  java_global_trees[JTI_VOID_SIGNATURE_NODE]       /* "()V" */
+#define length_identifier_node \
+  java_global_trees[JTI_LENGTH_IDENTIFIER_NODE]  /* "length" */
+#define this_identifier_node \
+  java_global_trees[JTI_THIS_IDENTIFIER_NODE]  /* "this" */
+#define super_identifier_node \
+  java_global_trees[JTI_SUPER_IDENTIFIER_NODE]  /* "super" */
+#define continue_identifier_node \
+  java_global_trees[JTI_CONTINUE_IDENTIFIER_NODE]  /* "continue" */
+#define access0_identifier_node \
+  java_global_trees[JTI_ACCESS0_IDENTIFIER_NODE] /* "access$0" */
+#define one_elt_array_domain_type \
+  java_global_trees[JTI_ONE_ELT_ARRAY_DOMAIN_TYPE]
 /* The type of the return address of a subroutine. */
-extern tree return_address_type_node;
+#define return_address_type_node \
+  java_global_trees[JTI_RETURN_ADDRESS_TYPE_NODE]
 
 /* Nodes for boolean constants TRUE and FALSE. */
-extern tree boolean_true_node, boolean_false_node;
+#define boolean_true_node \
+  java_global_trees[JTI_BOOLEAN_TRUE_NODE]
+#define boolean_false_node \
+  java_global_trees[JTI_BOOLEAN_FALSE_NODE]
 
 /* Integer constants not declared in tree.h. */
-extern tree long_zero_node;
-extern tree float_zero_node;
-extern tree double_zero_node;
-extern tree integer_negative_one_node;
-extern tree integer_two_node;
-extern tree integer_four_node;
-extern tree empty_stmt_node;
+#define long_zero_node \
+  java_global_trees[JTI_LONG_ZERO_NODE]
+#define float_zero_node \
+  java_global_trees[JTI_FLOAT_ZERO_NODE]
+#define double_zero_node \
+  java_global_trees[JTI_DOUBLE_ZERO_NODE]
+#define integer_negative_one_node \
+  java_global_trees[JTI_INTEGER_NEGATIVE_ONE_NODE]
+#define integer_two_node \
+  java_global_trees[JTI_INTEGER_TWO_NODE]
+#define integer_four_node \
+  java_global_trees[JTI_INTEGER_FOUR_NODE]
+#define empty_stmt_node \
+  java_global_trees[JTI_EMPTY_STMT_NODE]
 
 /* The type for struct methodtable. */
-extern tree methodtable_type;
-extern tree methodtable_ptr_type;
+#define methodtable_type \
+  java_global_trees[JTI_METHODTABLE_TYPE]
+#define methodtable_ptr_type \
+  java_global_trees[JTI_METHODTABLE_PTR_TYPE]
 
-extern tree utf8const_type;
-extern tree utf8const_ptr_type;
+#define utf8const_type \
+  java_global_trees[JTI_UTF8CONST_TYPE]
+#define utf8const_ptr_type \
+  java_global_trees[JTI_UTF8CONST_PTR_TYPE]
 
-extern tree class_type_node;
-extern tree class_ptr_type;
-extern tree field_type_node;
-extern tree constants_type_node;
-extern tree dtable_type, dtable_ptr_type;
-extern tree field_ptr_type_node;
-extern tree field_info_union_node;
-extern tree method_type_node;
-extern tree method_ptr_type_node;
-#define nativecode_ptr_type_node ptr_type_node
+#define class_type_node \
+  java_global_trees[JTI_CLASS_TYPE_NODE]
+#define class_ptr_type \
+  java_global_trees[JTI_CLASS_PTR_TYPE]
+#define field_type_node \
+  java_global_trees[JTI_FIELD_TYPE_NODE]
+#define constants_type_node \
+  java_global_trees[JTI_CONSTANTS_TYPE_NODE]
+#define dtable_type \
+  java_global_trees[JTI_DTABLE_TYPE]
+#define dtable_ptr_type \
+  java_global_trees[JTI_DTABLE_PTR_TYPE]
+#define field_ptr_type_node \
+  java_global_trees[JTI_FIELD_PTR_TYPE_NODE]
+#define field_info_union_node \
+  java_global_trees[JTI_FIELD_INFO_UNION_NODE]
+#define jexception_type \
+  java_global_trees[JTI_EXCEPTION_TYPE]
+#define jexception_ptr_type \
+  java_global_trees[JTI_EXCEPTION_PTR_TYPE]
+#define lineNumberEntry_type \
+  java_global_trees[JTI_LINENUMBERENTRY_TYPE]
+#define lineNumbers_type \
+  java_global_trees[JTI_LINENUMBERS_TYPE]
+#define method_type_node \
+  java_global_trees[JTI_METHOD_TYPE_NODE]
+#define method_ptr_type_node \
+  java_global_trees[JTI_METHOD_PTR_TYPE_NODE]
 
-extern tree end_params_node;
+#define end_params_node \
+  java_global_trees[JTI_END_PARAMS_NODE]
 
 /* References to internal libjava functions we use. */
-extern tree alloc_object_node;
-extern tree soft_instanceof_node;
-extern tree soft_checkcast_node;
-extern tree soft_initclass_node;
-extern tree soft_newarray_node;
-extern tree soft_anewarray_node;
-extern tree soft_multianewarray_node;
-extern tree soft_badarrayindex_node;
-extern tree soft_nullpointer_node;
+#define alloc_object_node \
+  java_global_trees[JTI_ALLOC_OBJECT_NODE]
+#define soft_instanceof_node \
+  java_global_trees[JTI_SOFT_INSTANCEOF_NODE]
+#define soft_checkcast_node \
+  java_global_trees[JTI_SOFT_CHECKCAST_NODE]
+#define soft_initclass_node \
+  java_global_trees[JTI_SOFT_INITCLASS_NODE]
+#define soft_newarray_node \
+  java_global_trees[JTI_SOFT_NEWARRAY_NODE]
+#define soft_anewarray_node \
+  java_global_trees[JTI_SOFT_ANEWARRAY_NODE]
+#define soft_multianewarray_node \
+  java_global_trees[JTI_SOFT_MULTIANEWARRAY_NODE]
+#define soft_badarrayindex_node \
+  java_global_trees[JTI_SOFT_BADARRAYINDEX_NODE]
+#define soft_nullpointer_node \
+  java_global_trees[JTI_SOFT_NULLPOINTER_NODE]
 extern tree throw_node[];
-extern tree soft_checkarraystore_node;
-extern tree soft_monitorenter_node;
-extern tree soft_monitorexit_node;
-extern tree soft_lookupinterfacemethod_node;
-extern tree soft_lookupjnimethod_node;
-extern tree soft_getjnienvnewframe_node;
-extern tree soft_jnipopsystemframe_node;
-extern tree soft_fmod_node;
-extern tree soft_exceptioninfo_call_node;
-extern tree soft_idiv_node;
-extern tree soft_irem_node;
-extern tree soft_ldiv_node;
-extern tree soft_lrem_node;
+#define soft_checkarraystore_node \
+  java_global_trees[JTI_SOFT_CHECKARRAYSTORE_NODE]
+#define soft_monitorenter_node \
+  java_global_trees[JTI_SOFT_MONITORENTER_NODE]
+#define soft_monitorexit_node \
+  java_global_trees[JTI_SOFT_MONITOREXIT_NODE]
+#define soft_lookupinterfacemethod_node \
+  java_global_trees[JTI_SOFT_LOOKUPINTERFACEMETHOD_NODE]
+#define soft_lookupjnimethod_node \
+  java_global_trees[JTI_SOFT_LOOKUPJNIMETHOD_NODE]
+#define soft_getjnienvnewframe_node \
+  java_global_trees[JTI_SOFT_GETJNIENVNEWFRAME_NODE]
+#define soft_jnipopsystemframe_node \
+  java_global_trees[JTI_SOFT_JNIPOPSYSTEMFRAME_NODE]
+#define soft_fmod_node \
+  java_global_trees[JTI_SOFT_FMOD_NODE]
+#define soft_exceptioninfo_call_node \
+  java_global_trees[JTI_SOFT_EXCEPTIONINFO_CALL_NODE]
+#define soft_idiv_node \
+  java_global_trees[JTI_SOFT_IDIV_NODE]
+#define soft_irem_node \
+  java_global_trees[JTI_SOFT_IREM_NODE]
+#define soft_ldiv_node \
+  java_global_trees[JTI_SOFT_LDIV_NODE]
+#define soft_lrem_node \
+  java_global_trees[JTI_SOFT_LREM_NODE]
 
-extern tree access_flags_type_node;
+#define access_flags_type_node \
+  java_global_trees[JTI_ACCESS_FLAGS_TYPE_NODE]
 
-extern tree class_dtable_decl;
+#define class_dtable_decl \
+  java_global_trees[JTI_CLASS_DTABLE_DECL]
+
+#define nativecode_ptr_array_type_node \
+  java_global_trees[JTI_NATIVECODE_PTR_ARRAY_TYPE_NODE]
+
+#define PREDEF_FILENAMES_SIZE 7
+extern tree predef_filenames[PREDEF_FILENAMES_SIZE];
+
+#define nativecode_ptr_type_node ptr_type_node
 
 /* They need to be reset before processing each class */
 extern struct CPool *outgoing_cpool; 
-extern tree current_constant_pool_data_ref;
+/* If non-NULL, an ADDR_EXPR referencing a VAR_DECL containing
+   the constant data array for the current class. */
+#define current_constant_pool_data_ref \
+  java_global_trees[JTI_CURRENT_CONSTANT_POOL_DATA_REF]
 
-extern tree wfl_operator;
+#define wfl_operator \
+  java_global_trees[JTI_WFL_OPERATOR]
 
 extern char *cyclic_inheritance_report;
 
@@ -798,6 +1059,7 @@ extern unsigned long java_hash_hash_tree_node PARAMS ((hash_table_key));
 extern boolean java_hash_compare_tree_node PARAMS ((hash_table_key, 
 						    hash_table_key));
 extern void java_check_methods PARAMS ((tree));
+extern void init_jcf_parse PARAMS((void));
 
 /* We use ARGS_SIZE_RTX to indicate that gcc/expr.h has been included
    to declare `enum expand_modifier'. */

@@ -37,6 +37,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "except.h"
 #include "defaults.h"
 #include "java-except.h"
+#include "ggc.h"
 
 #if defined (DEBUG_JAVA_BINDING_LEVELS)
 extern void indent PROTO((void));
@@ -68,6 +69,8 @@ tree decl_map;
    debug information, but we have not reached their starting (byte) PC yet. */
 
 tree pending_local_decls = NULL_TREE;
+
+tree throw_node [2];
 
 /* Push a local variable or stack slot into the decl_map,
    and assign it an rtl. */
@@ -283,122 +286,10 @@ static int keep_next_level_flag;
    if it has subblocks.  */
 
 static int keep_next_if_subblocks;
+
+tree java_global_trees[JTI_MAX];
   
-tree object_type_node;
-tree unqualified_object_id_node;
-tree object_ptr_type_node;
-tree string_type_node;
-tree string_ptr_type_node;
-tree throwable_type_node;
-tree runtime_exception_type_node;
-tree error_exception_type_node;
-tree rawdata_ptr_type_node;
-tree *predef_filenames;
-int  predef_filenames_size;
-
-tree boolean_type_node;
-
-tree return_address_type_node;
-
-tree byte_type_node;
-tree short_type_node;
-tree int_type_node;
-tree long_type_node;
-
-tree promoted_byte_type_node;
-tree promoted_short_type_node;
-tree promoted_char_type_node;
-tree promoted_boolean_type_node;
-
-tree unsigned_byte_type_node;
-tree unsigned_short_type_node;
-tree unsigned_int_type_node;
-tree unsigned_long_type_node;
-
-/* The type for struct methodtable. */
-tree methodtable_type;
-tree methodtable_ptr_type;
-
-tree utf8const_type;
-tree utf8const_ptr_type;
-tree class_type_node;
-tree class_ptr_type;
-tree field_type_node;
-tree field_ptr_type_node;
-tree field_info_union_node;
-tree jexception_type;
-tree jexception_ptr_type;
-tree lineNumberEntry_type;
-tree lineNumbers_type;
-tree constants_type_node;
-tree dtable_type;
-tree dtable_ptr_type;
-tree method_type_node;
-tree method_ptr_type_node;
-tree nativecode_ptr_array_type_node;
-tree one_elt_array_domain_type;
-tree access_flags_type_node;
-tree class_dtable_decl;
-
-/* Expressions that are constants with value zero, of types
-   `long', `float' and `double'.  */
-tree long_zero_node;
-tree float_zero_node;
-tree double_zero_node;
-
-tree empty_stmt_node;
-
-/* Nodes for boolean constants TRUE and FALSE. */
-tree boolean_true_node;
-tree boolean_false_node;
-
-tree TYPE_identifier_node;
-tree init_identifier_node;
-tree clinit_identifier_node;
-tree finit_identifier_node;
-tree finit_leg_identifier_node;
-tree void_signature_node;
-tree length_identifier_node;
-tree this_identifier_node;
-tree super_identifier_node;
-tree continue_identifier_node;
-tree access0_identifier_node;	/* 1.1 */
-tree end_params_node;
-
-/* References to internal libjava functions we use. */
-tree alloc_object_node;
-tree soft_instanceof_node;
-tree soft_checkcast_node;
-tree soft_initclass_node;
-tree soft_newarray_node;
-tree soft_anewarray_node;
-tree soft_multianewarray_node;
-tree soft_badarrayindex_node;
-tree soft_nullpointer_node;
-tree throw_node [2];
-tree soft_checkarraystore_node;
-tree soft_monitorenter_node;
-tree soft_monitorexit_node;
-tree soft_lookupinterfacemethod_node;
-tree soft_lookupjnimethod_node;
-tree soft_getjnienvnewframe_node;
-tree soft_jnipopsystemframe_node;
-tree soft_fmod_node;
-tree soft_exceptioninfo_call_node;
-tree soft_idiv_node;
-tree soft_irem_node;
-tree soft_ldiv_node;
-tree soft_lrem_node;
-
-/* Declarations for vtables for primitive arrays.  */
-tree boolean_array_vtable;
-tree byte_array_vtable;
-tree char_array_vtable;
-tree short_array_vtable;
-tree int_array_vtable;
-tree long_array_vtable;
-tree float_array_vtable;
-tree double_array_vtable;
+tree predef_filenames[PREDEF_FILENAMES_SIZE];
 
 /* Build (and pushdecl) a "promoted type" for all standard
    types shorter than int.  */
@@ -425,11 +316,6 @@ push_promoted_type (name, actual_type)
   pushdecl (build_decl (TYPE_DECL, get_identifier (name), type));
   return type;
 }
-
-/* Nodes for integer constants.  */
-tree integer_two_node;
-tree integer_four_node;
-tree integer_negative_one_node;
 
 /* Return a definition for a builtin function named NAME and whose data type
    is TYPE.  TYPE should be a function type with argument types.
@@ -623,10 +509,8 @@ init_decl_processing ()
   rawdata_ptr_type_node
     = promote_type (lookup_class (get_identifier ("gnu.gcj.RawData")));
 
-  /* This section has to be updated as items are added to the previous
-     section. */
-  predef_filenames_size = 7;
-  predef_filenames = (tree *)xmalloc (predef_filenames_size * sizeof (tree));
+  /* If you add to this section, don't forget to increase
+     PREDEF_FILENAMES_SIZE.  */
   predef_filenames [0] = get_identifier ("java/lang/Class.java");
   predef_filenames [1] = get_identifier ("java/lang/Error.java");
   predef_filenames [2] = get_identifier ("java/lang/Object.java");
@@ -958,6 +842,15 @@ init_decl_processing ()
 			0, NOT_BUILT_IN, NULL_PTR);
 
   init_class_processing ();
+  init_jcf_parse ();
+
+  /* Register nodes with the garbage collector.  */
+  ggc_add_tree_root (java_global_trees, 
+		     sizeof (java_global_trees) / sizeof (tree));
+  ggc_add_tree_root (throw_node,
+		     sizeof (throw_node) / sizeof (tree));
+  ggc_add_tree_root (predef_filenames,
+		     sizeof (predef_filenames) / sizeof (tree));
 }
 
 
