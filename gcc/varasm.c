@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -144,6 +144,7 @@ static struct constant_descriptor *record_constant_rtx PROTO((enum machine_mode,
 							      rtx));
 static struct pool_constant *find_pool_constant PROTO((rtx));
 static int output_addressed_constants	PROTO((tree));
+static void output_after_function_constants PROTO((void));
 static void bc_assemble_integer		PROTO((tree, int));
 static void output_constructor		PROTO((tree, int));
 
@@ -1025,6 +1026,9 @@ assemble_end_function (decl, fnname)
 #endif
   if (! CONSTANT_POOL_BEFORE_FUNCTION)
     output_constant_pool (fnname, decl);
+
+  /* Output any constants which should appear after the function.  */
+  output_after_function_constants ();
 }
 
 /* Assemble code to leave SIZE bytes of zeros.  */
@@ -2737,6 +2741,10 @@ struct deferred_constant
 
 static struct deferred_constant *deferred_constants;
 
+/* Another list of constants which should be output after the
+   function.  */
+static struct deferred_constant *after_function_constants;
+
 /* Nonzero means defer output of addressed subconstants
    (i.e., those for which output_constant_def is called.)  */
 static int defer_addressed_constants_flag;
@@ -2770,6 +2778,23 @@ output_deferred_addressed_constants ()
     }
 
   deferred_constants = 0;
+}
+
+/* Output any constants which should appear after a function.  */
+
+static void
+output_after_function_constants ()
+{
+  struct deferred_constant *p, *next;
+
+  for (p = after_function_constants; p; p = next)
+    {
+      output_constant_def_contents (p->exp, p->reloc, p->labelno);
+      next = p->next;
+      free (p);
+    }
+
+  after_function_constants = 0;
 }
 
 /* Make a copy of the whole tree structure for a constant.
@@ -2925,7 +2950,15 @@ output_constant_def (exp)
      output it (or defer its output for later).  */
   if (found == 0)
     {
-      if (defer_addressed_constants_flag)
+      int after_function = 0;
+
+#ifdef CONSTANT_AFTER_FUNCTION_P
+      if (current_function_decl != 0
+	  && CONSTANT_AFTER_FUNCTION_P (exp))
+	after_function = 1;
+#endif
+
+      if (defer_addressed_constants_flag || after_function)
 	{
 	  struct deferred_constant *p;
 	  p = (struct deferred_constant *) xmalloc (sizeof (struct deferred_constant));
@@ -2936,8 +2969,16 @@ output_constant_def (exp)
 	  pop_obstacks ();
 	  p->reloc = reloc;
 	  p->labelno = const_labelno++;
-	  p->next = deferred_constants;
-	  deferred_constants = p;
+	  if (after_function)
+	    {
+	      p->next = after_function_constants;
+	      after_function_constants = p;
+	    }
+	  else
+	    {
+	      p->next = deferred_constants;
+	      deferred_constants = p;
+	    }
 	}
       else
 	output_constant_def_contents (exp, reloc, const_labelno++);
