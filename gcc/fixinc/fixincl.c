@@ -1292,8 +1292,9 @@ test_for_changes (read_fd)
           altered_ct++;
 #endif
           /*  IF there are matched data, write the matched part now. */
-          if (pz_cmp != pz_curr_data)
-            fwrite (pz_curr_data, (size_t)(pz_cmp - pz_curr_data), 1, out_fp);
+          if ((char*)pz_cmp != pz_curr_data)
+            fwrite (pz_curr_data, (size_t)((char*)pz_cmp - pz_curr_data),
+					1, out_fp);
 
           /*  Emit the current unmatching character */
           putc (ch, out_fp);
