@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Intel 80960
-   Copyright (C) 1992, 1993, 1995, 1996, 1998, 1999
+   Copyright (C) 1992, 1993, 1995, 1996, 1998, 1999, 2000
    Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
@@ -132,7 +132,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Handle pragmas for compatibility with Intel's compilers.  */
 #define HANDLE_PRAGMA(GET, UNGET, NAME) process_pragma (GET, UNGET, NAME)
-extern int process_pragma ();
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -338,17 +337,17 @@ extern int target_flags;
 {								\
   if (TARGET_K_SERIES && TARGET_C_SERIES)			\
     {								\
-      warning ("conflicting architectures defined - using C series", 0); \
+      warning ("conflicting architectures defined - using C series"); \
       target_flags &= ~TARGET_FLAG_K_SERIES;			\
     }								\
   if (TARGET_K_SERIES && TARGET_MC)				\
     {								\
-      warning ("conflicting architectures defined - using K series", 0); \
+      warning ("conflicting architectures defined - using K series"); \
       target_flags &= ~TARGET_FLAG_MC;				\
     }								\
   if (TARGET_C_SERIES && TARGET_MC)				\
     {								\
-      warning ("conflicting architectures defined - using C series", 0);\
+      warning ("conflicting architectures defined - using C series");\
       target_flags &= ~TARGET_FLAG_MC;				\
     }								\
   if (TARGET_IC_COMPAT3_0)					\
@@ -358,7 +357,7 @@ extern int target_flags;
       target_flags |= TARGET_FLAG_CLEAN_LINKAGE;		\
       if (TARGET_IC_COMPAT2_0)					\
 	{							\
-	  warning ("iC2.0 and iC3.0 are incompatible - using iC3.0", 0); \
+	  warning ("iC2.0 and iC3.0 are incompatible - using iC3.0"); \
 	  target_flags &= ~TARGET_FLAG_IC_COMPAT2_0;		\
 	}							\
     }								\
@@ -369,7 +368,7 @@ extern int target_flags;
     }								\
   /* ??? See the LONG_DOUBLE_TYPE_SIZE definition below.  */	\
   if (TARGET_LONG_DOUBLE_64)					\
-    warning ("The -mlong-double-64 option does not work yet.", 0);\
+    warning ("The -mlong-double-64 option does not work yet.");\
   i960_initialize ();						\
 }
 
@@ -578,7 +577,6 @@ extern int target_flags;
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On 80960, the cpu registers can hold any mode but the float registers
    can only hold SFmode, DFmode, or XFmode.  */
-extern int hard_regno_mode_ok ();
 #define HARD_REGNO_MODE_OK(REGNO, MODE) hard_regno_mode_ok ((REGNO), (MODE))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
@@ -950,7 +948,6 @@ struct cum_args { int ca_nregparms; int ca_nstackparms; };
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-extern struct rtx_def *i960_function_arg ();
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
   i960_function_arg(&CUM, MODE, TYPE, NAMED)
 
@@ -1156,7 +1153,6 @@ extern struct rtx_def *i960_function_arg ();
 
 /* On 80960, convert non-canonical addresses to canonical form.  */
 
-extern struct rtx_def *legitimize_address ();
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)	\
 { rtx orig_x = (X);				\
   (X) = legitimize_address (X, OLDX, MODE);	\
@@ -1241,10 +1237,6 @@ extern struct rtx_def *legitimize_address ();
    cc setter and cc user at insn emit time.  */
 
 extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
-
-/* Define the function that build the compare insn for scc and bcc.  */
-
-extern struct rtx_def *gen_compare_reg ();
 
 /* Add any extra modes needed to represent the condition code.
 
@@ -1651,16 +1643,6 @@ extern enum insn_types i960_last_insn_type;
 		       CONST_DOUBLE, CONST}},				\
   {"power2_operand", {CONST_INT}},					\
   {"cmplpower2_operand", {CONST_INT}},
-
-/* Define functions in i960.c and used in insn-output.c.  */
-
-extern char *i960_output_ldconst ();
-extern char *i960_output_call_insn ();
-extern char *i960_output_ret_insn ();
-extern char *i960_output_move_double ();
-extern char *i960_output_move_double_zero ();
-extern char *i960_output_move_quad ();
-extern char *i960_output_move_quad_zero ();
 
 /* Defined in reload.c, and used in insn-recog.c.  */
 
