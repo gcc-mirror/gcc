@@ -194,8 +194,8 @@ namespace std {
       to_char_type(const int_type& __c)
       { return static_cast<char>(__c); }
 
-      //  To keep both the byte 0xff and the eof symbol 0xffffffff
-      //  from ending up as 0xffffffff.
+      // To keep both the byte 0xff and the eof symbol 0xffffffff
+      // from ending up as 0xffffffff.
       static int_type 
       to_int_type(const char_type& __c)
       { return static_cast<int_type>(static_cast<unsigned char>(__c)); }
@@ -247,7 +247,7 @@ namespace std {
 
       static size_t
       length(const char_type* __s)
-      { return wcslen (__s); }
+      { return wcslen(__s); }
 
       static const char_type* 
       find(const char_type* __s, size_t __n, const char_type& __a)

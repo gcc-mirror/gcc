@@ -9,11 +9,6 @@
 // around.
 #undef _GLIBCPP_NEED_MBSTATE_T
 
-// Define if WCHAR_MIN and WCHAR_MAX are in the <cwchar_t>
-// header. Presently, this is needed so that solaris won't
-// instantitate numeric_limits<wchar_t>
-#undef _GLIBCPP_HAS_WCHAR_MIN_MAX
-
 // Define if code specialized for wchar_t should be used.
 #undef _GLIBCPP_USE_WCHAR_T
 

@@ -726,7 +726,7 @@ int main()
     type_trait<char>();
     type_trait<signed char>();
     type_trait<unsigned char>();
-#if defined( _GLIBCPP_USE_WCHAR_T) && defined(_GLIBCPP_HAS_WCHAR_MIN_MAX)
+#if defined( _GLIBCPP_USE_WCHAR_T) 
     type_trait<wchar_t>();
 #endif
     

@@ -1,3 +1,20 @@
+2000-06-01  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* bits/std_cwctype.h: Clean.
+	* bits/std_cwchar.h: Clean, remove cruft.
+
+	* acinclude.m4 (GLIBCPP_CHECK_WCHAR_T_SUPPORT): Re-work, add bits
+	for beginning iconv support.
+	Remove _GLIBCPP_HAS_WCHAR_MIN_MAX, roll into _GLIBCPP_USE_WCHAR_T
+	macro.
+	* acconfig.h: Remove _GLIBCPP_HAS_WCHAR_MIN_MAX.
+	* bits/limits_generic.h: Remove.
+	* src/gen-num-limits.cc: Same.
+	
+	* src/locale.cc: Tweaks.
+
+	* bits/char_traits.h: Tweaks.
+
 2000-05-31  Russell Davidson  <russell@ehess.cnrs-mrs.fr> 
 
 	* bits/locale_facets.tcc (num_get<char>::_M_extract): Fix signage,
