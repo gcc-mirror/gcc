@@ -2757,7 +2757,7 @@
 )
 
 (define_insn "negsf2"
-  [(set (match_operand:SF 0 "s_register_operand" "=f")
+  [(set (match_operand:SF         0 "s_register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "s_register_operand" "f")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "mnf%?s\\t%0, %1"
@@ -2766,7 +2766,7 @@
 )
 
 (define_insn "negdf2"
-  [(set (match_operand:DF 0 "s_register_operand" "=f")
+  [(set (match_operand:DF         0 "s_register_operand" "=f")
 	(neg:DF (match_operand:DF 1 "s_register_operand" "f")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "mnf%?d\\t%0, %1"
@@ -2799,7 +2799,7 @@
 ;; (neg (abs...))
 
 (define_insn "abssi2"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
+  [(set (match_operand:SI         0 "s_register_operand" "=r,&r")
 	(abs:SI (match_operand:SI 1 "s_register_operand" "0,r")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
@@ -2827,7 +2827,7 @@
 )
 
 (define_insn "abssf2"
-  [(set (match_operand:SF 0 "s_register_operand" "=f")
+  [(set (match_operand:SF          0 "s_register_operand" "=f")
 	 (abs:SF (match_operand:SF 1 "s_register_operand" "f")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "abs%?s\\t%0, %1"
@@ -2836,7 +2836,7 @@
 )
 
 (define_insn "absdf2"
-  [(set (match_operand:DF 0 "s_register_operand" "=f")
+  [(set (match_operand:DF         0 "s_register_operand" "=f")
 	(abs:DF (match_operand:DF 1 "s_register_operand" "f")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "abs%?d\\t%0, %1"
@@ -3034,7 +3034,7 @@
 ;; Fixed <--> Floating conversion insns
 
 (define_insn "floatsisf2"
-  [(set (match_operand:SF 0 "s_register_operand" "=f")
+  [(set (match_operand:SF           0 "s_register_operand" "=f")
 	(float:SF (match_operand:SI 1 "s_register_operand" "r")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "flt%?s\\t%0, %1"
@@ -3043,7 +3043,7 @@
 )
 
 (define_insn "floatsidf2"
-  [(set (match_operand:DF 0 "s_register_operand" "=f")
+  [(set (match_operand:DF           0 "s_register_operand" "=f")
 	(float:DF (match_operand:SI 1 "s_register_operand" "r")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "flt%?d\\t%0, %1"
@@ -3061,7 +3061,7 @@
 )
 
 (define_insn "fix_truncsfsi2"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI         0 "s_register_operand" "=r")
 	(fix:SI (match_operand:SF 1 "s_register_operand" "f")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "fix%?z\\t%0, %1"
@@ -3070,7 +3070,7 @@
 )
 
 (define_insn "fix_truncdfsi2"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI         0 "s_register_operand" "=r")
 	(fix:SI (match_operand:DF 1 "s_register_operand" "f")))]
   "TARGET_ARM && TARGET_HARD_FLOAT"
   "fix%?z\\t%0, %1"
@@ -3949,8 +3949,7 @@
 (define_insn "*arm_movdi"
   [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, o<>")
 	(match_operand:DI 1 "di_operand"              "rIK,mi,r"))]
-  "TARGET_ARM
-  "
+  "TARGET_ARM"
   "*
   return (output_move_double (operands));
   "
@@ -5240,7 +5239,7 @@
 
 (define_insn "*ldmsi_postinc4"
   [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
+    [(set (match_operand:SI 1 "s_register_operand" "+r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
 		   (const_int 16)))
      (set (match_operand:SI 3 "arm_hard_register_operand" "")
@@ -5259,7 +5258,7 @@
 
 (define_insn "*ldmsi_postinc3"
   [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
+    [(set (match_operand:SI 1 "s_register_operand" "+r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
 		   (const_int 12)))
      (set (match_operand:SI 3 "arm_hard_register_operand" "")
@@ -5276,7 +5275,7 @@
 
 (define_insn "*ldmsi_postinc2"
   [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
+    [(set (match_operand:SI 1 "s_register_operand" "+r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
 		   (const_int 8)))
      (set (match_operand:SI 3 "arm_hard_register_operand" "")
@@ -5362,7 +5361,7 @@
 
 (define_insn "*stmsi_postinc4"
   [(match_parallel 0 "store_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
+    [(set (match_operand:SI 1 "s_register_operand" "+r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
 		   (const_int 16)))
      (set (mem:SI (match_dup 2))
@@ -5381,7 +5380,7 @@
 
 (define_insn "*stmsi_postinc3"
   [(match_parallel 0 "store_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
+    [(set (match_operand:SI 1 "s_register_operand" "+r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
 		   (const_int 12)))
      (set (mem:SI (match_dup 2))
@@ -5398,7 +5397,7 @@
 
 (define_insn "*stmsi_postinc2"
   [(match_parallel 0 "store_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
+    [(set (match_operand:SI 1 "s_register_operand" "+r")
 	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
 		   (const_int 8)))
      (set (mem:SI (match_dup 2))
@@ -8615,7 +8614,8 @@
 	(match_operand:SI 1 "s_register_operand" ""))
    (set (reg:CC CC_REGNUM)
 	(compare:CC (match_dup 1) (const_int 0)))]
-  "TARGET_ARM"
+  "TARGET_ARM
+  "
   [(parallel [(set (reg:CC CC_REGNUM) (compare:CC (match_dup 1) (const_int 0)))
 	      (set (match_dup 0) (match_dup 1))])]
   ""
