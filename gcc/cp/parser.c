@@ -10732,7 +10732,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 			   TYPE_IDENTIFIER (scope));
 		  /* Build a new DECLARATOR.  */
 		  declarator = build_nt (SCOPE_REF,
-					 scope,
+					 type,
 					 TREE_OPERAND (declarator, 1));
 		}
 	    }
