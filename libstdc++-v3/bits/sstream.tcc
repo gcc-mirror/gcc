@@ -85,11 +85,7 @@ namespace std {
 	{
 	  if (!__testeof)
 	    {
-	      // NB: Start ostringstream buffers at 1024 bytes. This
-	      // is an experimental value (pronounced "arbitrary" in
-	      // some of the hipper english-speaking countries), and
-	      // can be changed to suite particular needs.
-	      __size_type __len = max(_M_buf_size, static_cast<int_type>(512));
+	      __size_type __len = max(_M_buf_size, _M_buf_size_opt);
 	      __len *= 2;
 
 	      if (__testwrite)

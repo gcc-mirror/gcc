@@ -141,7 +141,10 @@ namespace std {
       setbuf(char_type* __s, streamsize __n)
       {
 	if (!this->is_open() && __s == 0 && __n == 0)
-	  _M_buf_size = 0;
+	  {
+	    _M_buf_size = 0;
+	    _M_buf_size_opt = 0;
+	  }
 	_M_last_overflowed = false;	
 	return this; 
       }

@@ -1,5 +1,13 @@
-2000-06-29    <bkoz@purist.soma.redhat.com>
+2000-06-29  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
+	* testsuite/27_io/ostream_manip.cc (test02): Add tests.
+	* bits/ostream.tcc: Tweak.
+	* bits/std_fstream.h (basic_filebuf::setbuf): Reset
+	_M_buf_size_opt too.
+	* bits/std_streambuf.h (basic_streambuf::~basic_streambuf): Zero
+	out _M_buf_size_opt.
+	* bits/std_sstream.h (basic_stringbuf::_M_init_stringbuf): Zero
+	_M_buf_size_opt out here.
 	* bits/char_traits.h (char_traits::eos): Non standard member
 	function, uglify to __eos. Return char_type().
 	* bits/std_ostream.h: Change.
