@@ -1,3 +1,24 @@
+2005-03-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000-protos.h: Rename output_e500_flip_eq_bit to
+	output_e500_flip_gt_bit.
+
+	* config/rs6000/rs6000.c (print_operand): case D: Print out bit 31
+	as bit 31.
+	(rs6000_generate_compare): Fix logic to look at the correct bits.
+	(output_e500_flip_eq_bit): Rename to output_e500_flip_gt_bit.
+	Look at GT bit.
+	(rs6000_emit_sCOND): Rename gen_e500_flip_eq_bit to
+	gen_e500_flip_gt_bit.  Rename gen_move_from_CR_eq_bit to
+	gen_move_from_CR_gt_bit.
+
+	* config/rs6000/rs6000.md ("move_from_CR_eq_bit"): Change bit
+	("move_from_CR_eq_bit"): Rename to move_from_CR_gt_bit.
+	(UNSPEC_MV_CR_EQ): Rename to UNSPEC_MV_CR_GT.
+
+	* config/rs6000/spe.md ("e500_cr_ior_compare"): New.
+	(E500_CR_IOR_COMPARE): New constant.
+
 2005-03-08  Earl Chew <earl_chew@agilent.com>
 	    David Billinghurst <David.Billinghurst@riotinto.com>
 
