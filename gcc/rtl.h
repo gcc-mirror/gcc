@@ -92,7 +92,7 @@ typedef struct
 typedef struct
 {
   HOST_WIDE_INT alias;		/* Memory alias set.  */
-  tree decl;			/* decl corresponding to MEM.  */
+  tree expr;			/* expr corresponding to MEM.  */
   rtx offset;			/* Offset from start of DECL, as CONST_INT.  */
   rtx size;			/* Size in bytes, as a CONST_INT.  */
   unsigned int align;		/* Alignment of MEM in bits.  */
@@ -904,10 +904,10 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
 #define MEM_ALIAS_SET(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->alias)
 
 /* For a MEM rtx, the decl it is known to refer to, if it is known to
-   refer to part of a DECL.  */
-#define MEM_DECL(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->decl)
+   refer to part of a DECL.  It may also be a COMPONENT_REF.  */
+#define MEM_EXPR(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->expr)
 
-/* For a MEM rtx, the offset from the start of MEM_DECL, if known, as a
+/* For a MEM rtx, the offset from the start of MEM_EXPR, if known, as a
    RTX that is always a CONST_INT.  */
 #define MEM_OFFSET(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->offset)
 
@@ -1865,6 +1865,7 @@ extern void debug_rtx_list		PARAMS ((rtx, int));
 extern void debug_rtx_range		PARAMS ((rtx, rtx));
 extern rtx debug_rtx_find		PARAMS ((rtx, int));
 #ifdef BUFSIZ
+extern void print_mem_expr		PARAMS ((FILE *, tree));
 extern void print_rtl			PARAMS ((FILE *, rtx));
 extern void print_simple_rtl		PARAMS ((FILE *, rtx));
 extern int print_rtl_single		PARAMS ((FILE *, rtx));

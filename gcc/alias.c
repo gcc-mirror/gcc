@@ -103,6 +103,9 @@ static alias_set_entry get_alias_set_entry PARAMS ((HOST_WIDE_INT));
 static rtx fixed_scalar_and_varying_struct_p PARAMS ((rtx, rtx, rtx, rtx,
 						      int (*) (rtx, int)));
 static int aliases_everything_p         PARAMS ((rtx));
+static bool nonoverlapping_component_refs_p PARAMS ((tree, tree));
+static tree decl_for_component_ref	PARAMS ((tree));
+static rtx adjust_offset_for_component_ref PARAMS ((tree, rtx));
 static int nonoverlapping_memrefs_p	PARAMS ((rtx, rtx));
 static int write_dependence_p           PARAMS ((rtx, rtx, int));
 static int nonlocal_mentioned_p         PARAMS ((rtx));
@@ -1736,23 +1739,158 @@ aliases_everything_p (mem)
   return 0;
 }
 
-/* Return nonzero if we can deterimine the decls corresponding to memrefs
+/* Return true if we can determine that the fields referenced cannot
+   overlap for any pair of objects.  */
+
+static bool
+nonoverlapping_component_refs_p (x, y)
+     tree x, y;
+{
+  tree fieldx, fieldy, typex, typey, orig_y;
+
+  do
+    {
+      /* The comparison has to be done at a common type, since we don't
+	 know how the inheritance heirarchy works.  */
+      orig_y = y;
+      do
+	{
+	  fieldx = TREE_OPERAND (x, 1);
+	  typex = DECL_FIELD_CONTEXT (fieldx);
+
+	  y = orig_y;
+	  do
+	    {
+	      fieldy = TREE_OPERAND (y, 1);
+	      typey = DECL_FIELD_CONTEXT (fieldy);
+
+	      if (typex == typey)
+		goto found;
+
+	      y = TREE_OPERAND (y, 0);
+	    }
+	  while (y && TREE_CODE (y) == COMPONENT_REF);
+
+	  x = TREE_OPERAND (x, 0);
+	}
+      while (x && TREE_CODE (x) == COMPONENT_REF);
+
+      /* Never found a common type.  */
+      return false;
+
+    found:
+      /* If we're left with accessing different fields of a structure,
+	 then no overlap.  */
+      if (TREE_CODE (typex) == RECORD_TYPE
+	  && fieldx != fieldy)
+	return true;
+
+      /* The comparison on the current field failed.  If we're accessing
+	 a very nested structure, look at the next outer level.  */
+      x = TREE_OPERAND (x, 0);
+      y = TREE_OPERAND (y, 0);
+    }
+  while (x && y
+	 && TREE_CODE (x) == COMPONENT_REF
+	 && TREE_CODE (y) == COMPONENT_REF);
+  
+  return false;
+}
+
+/* Look at the bottom of the COMPONENT_REF list for a DECL, and return it.  */
+
+static tree
+decl_for_component_ref (x)
+     tree x;
+{
+  do
+    {
+      x = TREE_OPERAND (x, 0);
+    }
+  while (x && TREE_CODE (x) == COMPONENT_REF);
+
+  return x && DECL_P (x) ? x : NULL_TREE;
+}
+
+/* Walk up the COMPONENT_REF list and adjust OFFSET to compensate for the
+   offset of the field reference.  */
+
+static rtx
+adjust_offset_for_component_ref (x, offset)
+     tree x;
+     rtx offset;
+{
+  HOST_WIDE_INT ioffset;
+
+  if (! offset)
+    return NULL_RTX;
+
+  ioffset = INTVAL (offset);
+  do 
+    {
+      tree field = TREE_OPERAND (x, 1);
+
+      if (! host_integerp (DECL_FIELD_OFFSET (field), 1))
+	return NULL_RTX;
+      ioffset += (tree_low_cst (DECL_FIELD_OFFSET (field), 1)
+		  + (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
+		     / BITS_PER_UNIT));
+
+      x = TREE_OPERAND (x, 0);
+    }
+  while (x && TREE_CODE (x) == COMPONENT_REF);
+
+  return GEN_INT (ioffset);
+}
+
+/* Return nonzero if we can deterimine the exprs corresponding to memrefs
    X and Y and they do not overlap.  */
 
 static int
 nonoverlapping_memrefs_p (x, y)
      rtx x, y;
 {
+  tree exprx = MEM_EXPR (x), expry = MEM_EXPR (y);
   rtx rtlx, rtly;
   rtx basex, basey;
+  rtx moffsetx, moffsety;
   HOST_WIDE_INT offsetx = 0, offsety = 0, sizex, sizey, tem;
 
-  /* Unless both have decls, we can't tell anything.  */
-  if (MEM_DECL (x) == 0 || MEM_DECL (y) == 0)
+  /* Unless both have exprs, we can't tell anything.  */
+  if (exprx == 0 || expry == 0)
     return 0;
 
-  rtlx = DECL_RTL (MEM_DECL (x));
-  rtly = DECL_RTL (MEM_DECL (y));
+  /* If both are field references, we may be able to determine something.  */
+  if (TREE_CODE (exprx) == COMPONENT_REF
+      && TREE_CODE (expry) == COMPONENT_REF
+      && nonoverlapping_component_refs_p (exprx, expry))
+    return 1;
+
+  /* If the field reference test failed, look at the DECLs involved.  */
+  moffsetx = MEM_OFFSET (x);
+  if (TREE_CODE (exprx) == COMPONENT_REF)
+    {
+      tree t = decl_for_component_ref (exprx);
+      if (! t)
+	return 0;
+      moffsetx = adjust_offset_for_component_ref (exprx, moffsetx);
+      exprx = t;
+    }
+  moffsety = MEM_OFFSET (y);
+  if (TREE_CODE (expry) == COMPONENT_REF)
+    {
+      tree t = decl_for_component_ref (expry);
+      if (! t)
+	return 0;
+      moffsety = adjust_offset_for_component_ref (expry, moffsety);
+      expry = t;
+    }
+
+  if (! DECL_P (exprx) || ! DECL_P (expry))
+    return 0;
+
+  rtlx = DECL_RTL (exprx);
+  rtly = DECL_RTL (expry);
 
   /* If either RTL is not a MEM, it must be a REG or CONCAT, meaning they
      can't overlap unless they are the same because we never reuse that part
@@ -1784,26 +1922,26 @@ nonoverlapping_memrefs_p (x, y)
 	      || (CONSTANT_P (basey) && REG_P (basex)
 		  && REGNO_PTR_FRAME_P (REGNO (basex))));
 
-  sizex = (GET_CODE (rtlx) != MEM ? GET_MODE_SIZE (GET_MODE (rtlx))
+  sizex = (GET_CODE (rtlx) != MEM ? (int) GET_MODE_SIZE (GET_MODE (rtlx))
 	   : MEM_SIZE (rtlx) ? INTVAL (MEM_SIZE (rtlx))
 	   : -1);
-  sizey = (GET_CODE (rtly) != MEM ? GET_MODE_SIZE (GET_MODE (rtly))
+  sizey = (GET_CODE (rtly) != MEM ? (int) GET_MODE_SIZE (GET_MODE (rtly))
 	   : MEM_SIZE (rtly) ? INTVAL (MEM_SIZE (rtly)) :
 	   -1);
 
   /* If we have an offset for either memref, it can update the values computed
      above.  */
-  if (MEM_OFFSET (x))
-    offsetx += INTVAL (MEM_OFFSET (x)), sizex -= INTVAL (MEM_OFFSET (x));
-  if (MEM_OFFSET (y))
-    offsety += INTVAL (MEM_OFFSET (y)), sizey -= INTVAL (MEM_OFFSET (y));
+  if (moffsetx)
+    offsetx += INTVAL (moffsetx), sizex -= INTVAL (moffsetx);
+  if (moffsety)
+    offsety += INTVAL (moffsety), sizey -= INTVAL (moffsety);
 
   /* If a memref has both a size and an offset, we can use the smaller size.
      We can't do this if the offset isn't known because we must view this
      memref as being anywhere inside the DECL's MEM.  */
-  if (MEM_SIZE (x) && MEM_OFFSET (x))
+  if (MEM_SIZE (x) && moffsetx)
     sizex = INTVAL (MEM_SIZE (x));
-  if (MEM_SIZE (y) && MEM_OFFSET (y))
+  if (MEM_SIZE (y) && moffsety)
     sizey = INTVAL (MEM_SIZE (y));
 
   /* Put the values of the memref with the lower offset in X's values.  */

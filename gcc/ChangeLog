@@ -1,3 +1,21 @@
+2001-12-02  Richard Henderson  <rth@redhat.com>
+
+	* rtl.h (mem_attrs): Rename decl to expr; adjust all users.
+	(MEM_EXPR): Rename from MEM_DECL; adjust all users.
+	* emit-rtl.c (set_mem_expr): Rename from set_mem_decl.
+	* expr.h, final.c, reload1.c: Adjust users.
+
+	* alias.c (nonoverlapping_component_refs_p): New.
+	(decl_for_component_ref, adjust_offset_for_component_ref): New.
+	(nonoverlapping_memrefs_p): Use them.
+	* emit-rtl.c (component_ref_for_mem_expr): New.
+	(set_mem_attributes): Use it.
+	(set_mem_offset): New.
+	* expr.c (expand_assignment): Call set_mem_attributes for 
+	inner references; adjust the memory offset as needed.
+	* print-rtl.c (print_mem_expr): New.
+	(print_rtx): Use it.
+
 Sun Dec  2 09:22:25 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* config/x-interix3 (SYSTEM_HEADER_DIR): Put back default.

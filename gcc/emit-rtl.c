@@ -195,6 +195,7 @@ static void mem_attrs_mark		PARAMS ((const void *));
 static mem_attrs *get_mem_attrs		PARAMS ((HOST_WIDE_INT, tree, rtx,
 						 rtx, unsigned int,
 						 enum machine_mode));
+static tree component_ref_for_mem_expr	PARAMS ((tree));
 
 /* Probability of the conditional branch currently proceeded by try_split.
    Set to -1 otherwise.  */
@@ -232,7 +233,7 @@ mem_attrs_htab_hash (x)
   return (p->alias ^ (p->align * 1000)
 	  ^ ((p->offset ? INTVAL (p->offset) : 0) * 50000)
 	  ^ ((p->size ? INTVAL (p->size) : 0) * 2500000)
-	  ^ (long) p->decl);
+	  ^ (size_t) p->expr);
 }
 
 /* Returns non-zero if the value represented by X (which is really a
@@ -247,7 +248,7 @@ mem_attrs_htab_eq (x, y)
   mem_attrs *p = (mem_attrs *) x;
   mem_attrs *q = (mem_attrs *) y;
 
-  return (p->alias == q->alias && p->decl == q->decl && p->offset == q->offset
+  return (p->alias == q->alias && p->expr == q->expr && p->offset == q->offset
 	  && p->size == q->size && p->align == q->align);
 }
 
@@ -260,8 +261,8 @@ mem_attrs_mark (x)
 {
   mem_attrs *p = (mem_attrs *) x;
 
-  if (p->decl)
-    ggc_mark_tree (p->decl);
+  if (p->expr)
+    ggc_mark_tree (p->expr);
 
   if (p->offset)
     ggc_mark_rtx (p->offset);
@@ -275,9 +276,9 @@ mem_attrs_mark (x)
    MEM of mode MODE.  */
 
 static mem_attrs *
-get_mem_attrs (alias, decl, offset, size, align, mode)
+get_mem_attrs (alias, expr, offset, size, align, mode)
      HOST_WIDE_INT alias;
-     tree decl;
+     tree expr;
      rtx offset;
      rtx size;
      unsigned int align;
@@ -287,7 +288,7 @@ get_mem_attrs (alias, decl, offset, size, align, mode)
   void **slot;
 
   /* If everything is the default, we can just return zero.  */
-  if (alias == 0 && decl == 0 && offset == 0
+  if (alias == 0 && expr == 0 && offset == 0
       && (size == 0
 	  || (mode != BLKmode && GET_MODE_SIZE (mode) == INTVAL (size)))
       && (align == BITS_PER_UNIT
@@ -295,7 +296,7 @@ get_mem_attrs (alias, decl, offset, size, align, mode)
     return 0;
 
   attrs.alias = alias;
-  attrs.decl = decl;
+  attrs.expr = expr;
   attrs.offset = offset;
   attrs.size = size;
   attrs.align = align;
@@ -1636,6 +1637,26 @@ reverse_comparison (insn)
     }
 }
 
+/* Within a MEM_EXPR, we care about either (1) a component ref of a decl,
+   or (2) a component ref of something variable.  Represent the later with
+   a NULL expression.  */
+
+static tree
+component_ref_for_mem_expr (ref)
+     tree ref;
+{
+  tree inner = TREE_OPERAND (ref, 0);
+
+  if (TREE_CODE (inner) == COMPONENT_REF)
+    inner = component_ref_for_mem_expr (inner);
+  else if (! DECL_P (inner))
+    inner = NULL_TREE;
+
+  if (inner == TREE_OPERAND (ref, 0))
+    return ref;
+  else
+    return build (COMPONENT_REF, TREE_TYPE (ref), inner, TREE_OPERAND (ref, 1));
+}
 
 /* Given REF, a MEM, and T, either the type of X or the expression
    corresponding to REF, set the memory attributes.  OBJECTP is nonzero
@@ -1648,7 +1669,7 @@ set_mem_attributes (ref, t, objectp)
      int objectp;
 {
   HOST_WIDE_INT alias = MEM_ALIAS_SET (ref);
-  tree decl = MEM_DECL (ref);
+  tree expr = MEM_EXPR (ref);
   rtx offset = MEM_OFFSET (ref);
   rtx size = MEM_SIZE (ref);
   unsigned int align = MEM_ALIGN (ref);
@@ -1716,8 +1737,8 @@ set_mem_attributes (ref, t, objectp)
       /* If this is a decl, set the attributes of the MEM from it.  */
       if (DECL_P (t))
 	{
-	  decl = t;
-	  offset = GEN_INT (0);
+	  expr = t;
+	  offset = const0_rtx;
 	  size = (DECL_SIZE_UNIT (t)
 		  && host_integerp (DECL_SIZE_UNIT (t), 1)
 		  ? GEN_INT (tree_low_cst (DECL_SIZE_UNIT (t), 1)) : 0);
@@ -1732,11 +1753,51 @@ set_mem_attributes (ref, t, objectp)
 	  align = CONSTANT_ALIGNMENT (t, align);
 #endif
 	}
+
+      /* If this is a field reference and not a bit-field, record it.  */
+      /* ??? There is some information that can be gleened from bit-fields,
+	 such as the word offset in the structure that might be modified.
+	 But skip it for now.  */
+      else if (TREE_CODE (t) == COMPONENT_REF
+	       && ! DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
+	{
+	  expr = component_ref_for_mem_expr (t);
+	  offset = const0_rtx;
+	  /* ??? Any reason the field size would be different than
+	     the size we got from the type?  */
+	}
+
+      /* If this is an array reference, look for an outer field reference.  */
+      else if (TREE_CODE (t) == ARRAY_REF)
+	{
+	  tree off_tree = size_zero_node;
+
+	  do
+	    {
+	      off_tree
+		= fold (build (PLUS_EXPR, sizetype,
+			       fold (build (MULT_EXPR, sizetype,
+					    TREE_OPERAND (t, 1),
+					    TYPE_SIZE_UNIT (TREE_TYPE (t)))),
+			       off_tree));
+	      t = TREE_OPERAND (t, 0);
+	    }
+	  while (TREE_CODE (t) == ARRAY_REF);
+
+	  if (TREE_CODE (t) == COMPONENT_REF)
+	    {
+	      expr = component_ref_for_mem_expr (t);
+	      if (host_integerp (off_tree, 1))
+		offset = GEN_INT (tree_low_cst (off_tree, 1));
+	      /* ??? Any reason the field size would be different than
+		 the size we got from the type?  */
+	    }
+	}
     }
 
   /* Now set the attributes we computed above.  */
   MEM_ATTRS (ref)
-    = get_mem_attrs (alias, decl, offset, size, align, GET_MODE (ref));
+    = get_mem_attrs (alias, expr, offset, size, align, GET_MODE (ref));
 
   /* If this is already known to be a scalar or aggregate, we are done.  */
   if (MEM_IN_STRUCT_P (ref) || MEM_SCALAR_P (ref))
@@ -1763,7 +1824,7 @@ set_mem_alias_set (mem, set)
     abort ();
 #endif
 
-  MEM_ATTRS (mem) = get_mem_attrs (set, MEM_DECL (mem), MEM_OFFSET (mem),
+  MEM_ATTRS (mem) = get_mem_attrs (set, MEM_EXPR (mem), MEM_OFFSET (mem),
 				   MEM_SIZE (mem), MEM_ALIGN (mem),
 				   GET_MODE (mem));
 }
@@ -1775,21 +1836,32 @@ set_mem_align (mem, align)
      rtx mem;
      unsigned int align;
 {
-  MEM_ATTRS (mem) = get_mem_attrs (MEM_ALIAS_SET (mem), MEM_DECL (mem),
+  MEM_ATTRS (mem) = get_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
 				   MEM_OFFSET (mem), MEM_SIZE (mem), align,
 				   GET_MODE (mem));
 }
 
-/* Set the decl for MEM to DECL.  */
+/* Set the expr for MEM to EXPR.  */
 
 void
-set_mem_decl (mem, decl)
+set_mem_expr (mem, expr)
      rtx mem;
-     tree decl;
+     tree expr;
 {
   MEM_ATTRS (mem)
-    = get_mem_attrs (MEM_ALIAS_SET (mem), decl, MEM_OFFSET (mem),
+    = get_mem_attrs (MEM_ALIAS_SET (mem), expr, MEM_OFFSET (mem),
 		     MEM_SIZE (mem), MEM_ALIGN (mem), GET_MODE (mem));
+}
+
+/* Set the offset of MEM to OFFSET.  */
+
+void
+set_mem_offset (mem, offset)
+     rtx mem, offset;
+{
+  MEM_ATTRS (mem) = get_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
+				   offset, MEM_SIZE (mem), MEM_ALIGN (mem),
+				   GET_MODE (mem));
 }
 
 /* Return a memory reference like MEMREF, but with its mode changed to MODE
@@ -1907,7 +1979,7 @@ adjust_address_1 (memref, mode, offset, validate, adjust)
   else if (MEM_SIZE (memref))
     size = plus_constant (MEM_SIZE (memref), -offset);
 
-  MEM_ATTRS (new) = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_DECL (memref),
+  MEM_ATTRS (new) = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_EXPR (memref),
 				   memoffset, size, memalign, GET_MODE (new));
 
   /* At some point, we should validate that this offset is within the object,
@@ -1948,7 +2020,7 @@ offset_address (memref, offset, pow2)
 
   /* Update the alignment to reflect the offset.  Reset the offset, which
      we don't know.  */
-  MEM_ATTRS (new) = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_DECL (memref),
+  MEM_ATTRS (new) = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_EXPR (memref),
 				   0, 0, MIN (MEM_ALIGN (memref),
 					      pow2 * BITS_PER_UNIT),
 				   GET_MODE (new));

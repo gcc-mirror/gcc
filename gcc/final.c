@@ -245,7 +245,7 @@ static int add_bb_string	PARAMS ((const char *, int));
 static void notice_source_line	PARAMS ((rtx));
 static rtx walk_alter_subreg	PARAMS ((rtx *));
 static void output_asm_name	PARAMS ((void));
-static tree get_decl_from_op	PARAMS ((rtx, int *));
+static tree get_mem_expr_from_op	PARAMS ((rtx, int *));
 static void output_asm_operand_names PARAMS ((rtx *, int *, int));
 static void output_operand	PARAMS ((rtx, int));
 #ifdef LEAF_REGISTERS
@@ -3302,16 +3302,16 @@ output_asm_name ()
     }
 }
 
-/* If OP is a REG or MEM and we can find a decl corresponding to it or
-   its address, return that decl.  Set *PADDRESSP to 1 if the decl
+/* If OP is a REG or MEM and we can find a MEM_EXPR corresponding to it
+   or its address, return that expr .  Set *PADDRESSP to 1 if the expr
    corresponds to the address of the object and 0 if to the object.  */
 
 static tree
-get_decl_from_op (op, paddressp)
+get_mem_expr_from_op (op, paddressp)
      rtx op;
      int *paddressp;
 {
-  tree decl;
+  tree expr;
   int inner_addressp;
 
   *paddressp = 0;
@@ -3321,8 +3321,8 @@ get_decl_from_op (op, paddressp)
   else if (GET_CODE (op) != MEM)
     return 0;
 
-  if (MEM_DECL (op) != 0)
-    return MEM_DECL (op);
+  if (MEM_EXPR (op) != 0)
+    return MEM_EXPR (op);
 
   /* Otherwise we have an address, so indicate it and look at the address.  */
   *paddressp = 1;
@@ -3331,18 +3331,18 @@ get_decl_from_op (op, paddressp)
   /* First check if we have a decl for the address, then look at the right side
      if it is a PLUS.  Otherwise, strip off arithmetic and keep looking.
      But don't allow the address to itself be indirect.  */
-  if ((decl = get_decl_from_op (op, &inner_addressp)) && ! inner_addressp)
-    return decl;
+  if ((expr = get_mem_expr_from_op (op, &inner_addressp)) && ! inner_addressp)
+    return expr;
   else if (GET_CODE (op) == PLUS
-	   && (decl = get_decl_from_op (XEXP (op, 1), &inner_addressp)))
-    return decl;
+	   && (expr = get_mem_expr_from_op (XEXP (op, 1), &inner_addressp)))
+    return expr;
 
   while (GET_RTX_CLASS (GET_CODE (op)) == '1'
 	 || GET_RTX_CLASS (GET_CODE (op)) == '2')
     op = XEXP (op, 0);
 
-  decl = get_decl_from_op (op, &inner_addressp);
-  return inner_addressp ? 0 : decl;
+  expr = get_mem_expr_from_op (op, &inner_addressp);
+  return inner_addressp ? 0 : expr;
 }
   
 /* Output operand names for assembler instructions.  OPERANDS is the
@@ -3361,13 +3361,14 @@ output_asm_operand_names (operands, oporder, nops)
   for (i = 0; i < nops; i++)
     {
       int addressp;
-      tree decl = get_decl_from_op (operands[oporder[i]], &addressp);
+      tree expr = get_mem_expr_from_op (operands[oporder[i]], &addressp);
 
-      if (decl && DECL_NAME (decl))
+      if (expr)
 	{
-	  fprintf (asm_out_file, "%c%s %s%s",
+	  fprintf (asm_out_file, "%c%s %s",
 		   wrote ? ',' : '\t', wrote ? "" : ASM_COMMENT_START,
-		   addressp ? "*" : "", IDENTIFIER_POINTER (DECL_NAME (decl)));
+		   addressp ? "*" : "");
+	  print_mem_expr (asm_out_file, expr);
 	  wrote = 1;
 	}
     }

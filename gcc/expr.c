@@ -3603,7 +3603,6 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	    }
 
 	  emit_move_insn (dest, x);
-
 	}
 
       if (current_function_check_memory_usage && ! in_check_memory_usage)
@@ -3768,6 +3767,26 @@ expand_assignment (to, from, want_value, suggest_reg)
 				   highest_pow2_factor (offset));
 	}
 
+      if (GET_CODE (to_rtx) == MEM)
+	{
+	  tree old_expr = MEM_EXPR (to_rtx);
+
+	  /* If the field is at offset zero, we could have been given the
+	     DECL_RTX of the parent struct.  Don't munge it.  */
+	  to_rtx = shallow_copy_rtx (to_rtx);
+
+	  set_mem_attributes (to_rtx, to, 0);
+
+	  /* If we changed MEM_EXPR, that means we're now referencing
+	     the COMPONENT_REF, which means that MEM_OFFSET must be
+	     relative to that field.  But we've not yet reflected BITPOS
+	     in TO_RTX.  This will be done in store_field.  Adjust for
+	     that by biasing MEM_OFFSET by -bitpos.  */
+	  if (MEM_EXPR (to_rtx) != old_expr && MEM_OFFSET (to_rtx)
+	      && (bitpos / BITS_PER_UNIT) != 0)
+	    set_mem_offset (to_rtx, GEN_INT (INTVAL (MEM_OFFSET (to_rtx))
+					     - (bitpos / BITS_PER_UNIT)));
+	}
 
       /* Deal with volatile and readonly fields.  The former is only done
 	 for MEM.  Also set MEM_KEEP_ALIAS_SET_P if needed.  */

@@ -2059,7 +2059,7 @@ alter_reg (i, from_reg)
 	  if (from_reg != -1 && spill_stack_slot[from_reg] == x)
 	    x = copy_rtx (x);
 
-	  set_mem_decl (x, REGNO_DECL (i));
+	  set_mem_expr (x, REGNO_DECL (i));
 	}
 
       /* Save the stack slot for later.  */

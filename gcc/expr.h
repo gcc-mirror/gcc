@@ -614,8 +614,11 @@ extern void set_mem_alias_set PARAMS ((rtx, HOST_WIDE_INT));
 /* Set the alignment of MEM to ALIGN bits.  */
 extern void set_mem_align PARAMS ((rtx, unsigned int));
 
-/* Set the DECL for MEM to DECL.  */
-extern void set_mem_decl PARAMS ((rtx, tree));
+/* Set the expr for MEM to EXPR.  */
+extern void set_mem_expr PARAMS ((rtx, tree));
+
+/* Set the offset for MEM to OFFSET.  */
+extern void set_mem_offset PARAMS ((rtx, rtx));
 
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address changed to ADDR.
