@@ -115,7 +115,7 @@ if $LINKS; then
 	  y=`echo $x | sed -n "s&${INPUT}/&&p"`
 	  # DOTS is the relative path from ${LIB}/$file's dir back to ${LIB}.
 	  dots=`echo "$file" |
-		sed -e 's@^./@@' -e 's@[^/][^/]*@..@g' -e 's@..$@@'`
+	    sed -e 's@^./@@' -e 's@/./@/@g' -e 's@[^/][^/]*@..@g' -e 's@..$@@'`
 	  echo $file '->' $dots$y ': Making link'
 	  rm -fr ${LIB}/$file > /dev/null 2>&1
 	  ln -s $dots$y ${LIB}/$file > /dev/null 2>&1
