@@ -52,6 +52,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define inline
 #endif
 
+/* How to start an assembler comment.  */
+#ifndef ASM_COMMENT_START
+#define ASM_COMMENT_START ";#"
+#endif
+
 typedef struct dw_cfi_struct *dw_cfi_ref;
 typedef struct dw_fde_struct *dw_fde_ref;
 typedef union  dw_cfi_oprnd_struct *dw_cfi_oprnd_ref;
