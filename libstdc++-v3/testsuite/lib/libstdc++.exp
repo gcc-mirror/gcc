@@ -50,6 +50,7 @@ load_lib libgloss.exp
 load_gcc_lib target-supports.exp
 load_lib prune.exp
 load_lib dg-options.exp
+load_gcc_lib wrapper.exp
 
 # Useful for debugging.  Pass the name of a variable and the verbosity
 # threshold (number of -v's on the command line).
@@ -208,17 +209,7 @@ proc libstdc++_init { testfile } {
         }
     }
 
-    if { [target_info needs_status_wrapper]!=""} {
-      file delete ${objdir}/testglue.o;
-      set gluefile ${objdir}/testglue.o;
-      set result [build_wrapper $gluefile];
-      if { $result != "" } {
-          set gluefile [lindex $result 0];
-          set wrap_flags [lindex $result 1];
-      } else {
-          unset gluefile
-      }
-    }
+    libstdc++_maybe_build_wrapper "${objdir}/testglue.o"
 }
 
 # Callback from system dg-test.
