@@ -1,3 +1,8 @@
+1999-12-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.c (print_operand): Cast fprintf arguments
+	to match the format.
+
 1999-12-16  David S. Miller  <davem@redhat.com>
 
 	* expr.c (emit_move_insn_1): Only emit clobbers if one of
