@@ -3690,17 +3690,6 @@ rest_of_compilation (decl)
 	      set_decl_abstract_flags (decl, 0);
 	    }
 #endif
-#ifdef DWARF2_DEBUGGING_INFO
-	  /* Generate the DWARF2 info for the "abstract" instance
-	     of a function which we may later generate inlined and/or
-	     out-of-line instances of.  */
-	  if (write_symbols == DWARF2_DEBUG)
-	    {
-	      set_decl_abstract_flags (decl, 1);
-	      TIMEVAR (symout_time, dwarf2out_decl (decl));
-	      set_decl_abstract_flags (decl, 0);
-	    }
-#endif
 	  TIMEVAR (integration_time, save_for_inline_nocopy (decl));
 	  DECL_SAVED_INSNS (decl)->inlinable = inlinable;
 	  goto exit_rest_of_compilation;
