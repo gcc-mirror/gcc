@@ -1300,12 +1300,12 @@ float_to_usi (FLO_type arg_a)
     return 0;
   if (isnan (&a))
     return 0;
-  /* get reasonable MAX_USI_INT... */
-  if (isinf (&a))
-    return a.sign ? MAX_USI_INT : 0;
   /* it is a negative number */
   if (a.sign)
     return 0;
+  /* get reasonable MAX_USI_INT... */
+  if (isinf (&a))
+    return MAX_USI_INT;
   /* it is a number, but a small one */
   if (a.normal_exp < 0)
     return 0;
