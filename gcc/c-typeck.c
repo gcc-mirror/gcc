@@ -5734,6 +5734,18 @@ output_init_element (value, type, field, pending)
 {
   int duplicate = 0;
 
+  if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
+      || (TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
+	  && comptypes (TREE_TYPE (value), type)))
+    value = default_conversion (value);
+
+  if (value == error_mark_node)
+    constructor_erroneous = 1;
+  else if (!TREE_CONSTANT (value))
+    constructor_constant = 0;
+  else if (initializer_constant_valid_p (value, TREE_TYPE (value)) == 0)
+    constructor_simple = 0;
+
   if (require_constant_value && ! TREE_CONSTANT (value))
     {
       error_init ("initializer element%s is not constant",
@@ -6025,18 +6037,6 @@ process_init_element (value)
       constructor_stack->replacement_value = value;
       return;
     }
-
-  if (value != 0)
-    value = default_conversion (value);
-
-  if (value == 0)
-    ;
-  else if (value == error_mark_node)
-    constructor_erroneous = 1;
-  else if (!TREE_CONSTANT (value))
-    constructor_constant = 0;
-  else if (initializer_constant_valid_p (value, TREE_TYPE (value)) == 0)
-    constructor_simple = 0;
 
   if (constructor_stack->replacement_value != 0)
     {
