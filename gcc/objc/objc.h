@@ -316,33 +316,33 @@ typedef struct objc_super {
 } Super, *Super_t;
 
 /*
- * _alloc points to the function, called through class_createInstance, used
- * to allocate memory for new instances. 
+ * _objc_alloc points to the function, called through class_createInstance,
+ * used to allocate memory for new instances. 
  */
-extern id (*_alloc)(Class_t);
+extern id (*_objc_alloc)(Class_t);
 /*
- * _dealloc points to the function, called through object_dispose, used to
+ * _objc_dealloc points to the function, called through object_dispose, used to
  * free instances. 
  */
-extern id (*_dealloc)(id);
+extern id (*_objc_dealloc)(id);
 /*
- * _realloc points to the function, called through object_realloc, used to
+ * _objc_realloc points to the function, called through object_realloc, used to
  * reallocate memory for an object 
  */
-extern id (*_realloc)(id, unsigned int);
+extern id (*_objc_realloc)(id, unsigned int);
 
 /*
- * _copy points to the function, called through object_copy, used to create
- * an exact copy of an object. 
+ * _objc_copy points to the function, called through object_copy,
+ * used to create an exact copy of an object. 
  */
-extern  id (*_copy)(id);
+extern  id (*_objc_copy)(id);
 
 /*
- * _error points to the function that the run-time system calls in response
- * to an error.  By default, it prints formatted error messages to the
+ * _objc_error points to the function that the run-time system calls
+ * to handle an error.  By default, it prints formatted error messages to the
  * standard error stream and calls abort to produce a core file. 
  */
-extern void (*_error)(id object, const char *fmt, va_list ap);
+extern void (*_objc_error)(id object, const char *fmt, va_list ap);
 
 
 #ifdef __cplusplus
