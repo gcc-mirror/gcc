@@ -1362,7 +1362,7 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
      int unsignedp;
      int align;
 {
-  int total_bits = BITS_PER_WORD;
+  int total_bits;
   enum machine_mode mode;
 
   if (GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
@@ -1371,6 +1371,9 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
       if (bitsize + bitpos > BITS_PER_WORD)
 	return extract_split_bit_field (op0, bitsize, bitpos,
 					unsignedp, align);
+
+      mode = GET_MODE (op0);
+      total_bits = GET_MODE_BITSIZE (mode);
     }
   else
     {
@@ -1410,8 +1413,6 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
       op0 = change_address (op0, mode,
 			    plus_constant (XEXP (op0, 0), offset));
     }
-
-  mode = GET_MODE (op0);
 
   if (BYTES_BIG_ENDIAN)
     {
