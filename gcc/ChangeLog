@@ -1,3 +1,14 @@
+2003-12-23  Jan Hubicka  <jh@suse.cz>
+
+	* common.opt (fprofile-generate,fprofile-use): Add.
+	* gcc.c (LINK_COMMAND_SPEC): Arrange -fprofile-generate to imply -lgcov
+	* opts.c (profile_arc_flag_set, flag_profile_values_set,
+	flag_unroll_loops_set, flag_tracer_set,
+	flag_value_profile_transformations_set,
+	flag_peel_loops_set): New static variables.
+	(common_handle_option): Deal with -fprofile-generate/-fprofile-use
+	* invoke.texi (-fprofile-generate, -fprofile-use): Describe.
+
 2003-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.c (flag_abi_version): Default to 2.

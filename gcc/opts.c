@@ -148,6 +148,13 @@ static unsigned int columns = 80;
 /* What to print when a switch has no documentation.  */
 static const char undocumented_msg[] = N_("This switch lacks documentation");
 
+/* Used for bookkeeping on whether user set these flags so
+   -fprofile-use/-fprofile-generate does not use them.  */
+static bool profile_arc_flag_set, flag_profile_values_set;
+static bool flag_unroll_loops_set, flag_tracer_set;
+static bool flag_value_profile_transformations_set;
+static bool flag_peel_loops_set, flag_branch_probabilities_set;
+
 /* Input file names.  */
 const char **in_fnames;
 unsigned num_in_fnames;
@@ -882,6 +889,7 @@ common_handle_option (size_t scode, const char *arg,
       break;
 
     case OPT_fbranch_probabilities:
+      flag_branch_probabilities_set = true;
       flag_branch_probabilities = value;
       break;
 
@@ -1135,6 +1143,7 @@ common_handle_option (size_t scode, const char *arg,
       break;
 
     case OPT_fpeel_loops:
+      flag_peel_loops_set = true;
       flag_peel_loops = value;
       break;
 
@@ -1167,14 +1176,41 @@ common_handle_option (size_t scode, const char *arg,
       break;
 
     case OPT_fprofile_arcs:
+      profile_arc_flag_set = true;
       profile_arc_flag = value;
       break;
 
+    case OPT_fprofile_use:
+      if (!flag_branch_probabilities_set)
+        flag_branch_probabilities = value;
+      if (!flag_profile_values_set)
+        flag_profile_values = value;
+      if (!flag_unroll_loops_set)
+        flag_unroll_loops = value;
+      if (!flag_peel_loops_set)
+        flag_peel_loops = value;
+      if (!flag_tracer_set)
+        flag_tracer = value;
+      if (!flag_value_profile_transformations_set)
+        flag_value_profile_transformations = value;
+      break;
+
+    case OPT_fprofile_generate:
+      if (!profile_arc_flag_set)
+        profile_arc_flag = value;
+      if (!flag_profile_values_set)
+        flag_profile_values = value;
+      if (!flag_value_profile_transformations_set)
+        flag_value_profile_transformations = value;
+      break;
+
     case OPT_fprofile_values:
+      flag_profile_values_set = true;
       flag_profile_values = value;
       break;
 
     case OPT_fvpt:
+      flag_value_profile_transformations_set = value;
       flag_value_profile_transformations = value;
       break;
 
@@ -1358,6 +1394,7 @@ common_handle_option (size_t scode, const char *arg,
       break;
 
     case OPT_ftracer:
+      flag_tracer_set = true;
       flag_tracer = value;
       break;
 
@@ -1378,6 +1415,7 @@ common_handle_option (size_t scode, const char *arg,
       break;
 
     case OPT_funroll_loops:
+      flag_unroll_loops_set = true;
       flag_unroll_loops = value;
       break;
 

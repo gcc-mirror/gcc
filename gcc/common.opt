@@ -513,6 +513,14 @@ fprofile-arcs
 Common
 Insert arc-based program profiling code
 
+fprofile-generate
+Common
+Enable common options for generating profile info for profile feedback directed optimizations
+
+fprofile-use
+Common
+Enable common options for performing profile feedback directed optimizations
+
 fprofile-values
 Common
 Insert code to profile values of expressions
