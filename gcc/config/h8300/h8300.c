@@ -1851,6 +1851,28 @@ const_le_6_operand (x, mode)
 	  && abs (INTVAL (x)) <= 6);
 }
 
+/* Return nonzero if X is a constant expressible in QImode.  */
+
+int
+const_int_qi_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (x) == CONST_INT
+	  && (INTVAL (x) & 0xff) == INTVAL (x));
+}
+
+/* Return nonzero if X is a constant expressible in HImode.  */
+
+int
+const_int_hi_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (x) == CONST_INT
+	  && (INTVAL (x) & 0xffff) == INTVAL (x));
+}
+
 /* Return nonzero if X is a constant suitable for inc/dec.  */
 
 int
