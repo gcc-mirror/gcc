@@ -1,5 +1,8 @@
 Wed Mar 25 02:01:02 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* expr.c (cplus_expand_expr): Only do PCC_STATIC_STRUCT_RETURN thing
+	if (aggregate_value_p (type)).
+
 	* decl2.c (constructor_name_full): Handle TYPENAME_TYPE.
 
 Tue Mar 24 16:12:01 1998  Mark Mitchell  <mmitchell@usa.net>

@@ -114,11 +114,13 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	  }
 	else
 	  {
-#ifdef PCC_STATIC_STRUCT_RETURN
-	    pcc_struct_return = 1;
-	    call_target = 0;
-#else
 	    call_target = target;
+#ifdef PCC_STATIC_STRUCT_RETURN
+	    if (aggregate_value_p (type))
+	      {
+		pcc_struct_return = 1;
+		call_target = 0;
+	      }
 #endif
 	  }
 
