@@ -1,3 +1,14 @@
+2003-11-03  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (cpp.dvi): New target split from cpp.info.
+	(gcc.dvi):  New target split from gcc.info.
+	(gccint.dvi): New target split from gccint.info.
+	(cppinternals.dvi): New target split from cppinternals.info
+	(gccinstall.info): New specific rule.
+	(gccinstall.dvi): Likewise.
+	(dvi): Move targets to $(docobjdir).
+	($(docobjdir)/%.dvi): New implicit rule.
+
 2003-11-03  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* doc/gty.texi (tag, desc): Say more about role of desc values in

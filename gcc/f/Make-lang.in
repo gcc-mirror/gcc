@@ -149,7 +149,7 @@ f77.tags: force
 	cd $(srcdir)/f; etags *.c *.h
 
 info:: $(docobjdir)/g77.info
-dvi:: f/g77.dvi
+dvi:: $(docobjdir)/g77.dvi
 generated-manpages:: $(docobjdir)/g77.1
 
 # g77 documentation.
@@ -163,25 +163,22 @@ $(docobjdir)/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		stmp-docobjdir
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(@)*; \
-	  cd $(srcdir)/f && $(MAKEINFO) -I../doc/include -o $@ g77.texi; \
+	  $(MAKEINFO) -I$(docdir)/include -I$(srcdir)/f -o $@ $<; \
 	else true; fi
 
-f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
+$(docobjdir)/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		$(srcdir)/f/ffe.texi $(srcdir)/f/invoke.texi \
 		$(srcdir)/f/news.texi  $(srcdir)/f/intdoc.texi \
 		$(srcdir)/f/root.texi $(docdir)/include/fdl.texi \
 		$(docdir)/include/gpl.texi \
 		$(docdir)/include/funding.texi \
-		$(docdir)/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	cd f && $(TEXI2DVI) -I $$s/doc/include $$s/f/g77.texi
+		$(docdir)/include/gcc-common.texi \
+		stmp-docobjdir
+	$(TEXI2DVI) -I $(srcdir)/f -I $(docdir)/include -o $@ $<
 
-$(docobjdir)/g77.1: $(srcdir)/f/invoke.texi
-	-$(TEXI2POD) < $(srcdir)/f/invoke.texi > f/g77.pod; \
-	($(POD2MAN) --section=1 f/g77.pod > f/g77.1.T$$$$ && \
-	    mv -f f/g77.1.T$$$$ $(docobjdir)/g77.1) || \
-	    (rm -f f/g77.1.T$$$$ && exit 1); \
-	rm -f f/g77.pod; \
+.INTERMEDIATE: g77.pod
+g77.pod: f/invoke.texi
+	-$(TEXI2POD) < $< > $@
 
 # This dance is all about producing accurate documentation for g77's
 # intrinsics with minimum fuss.  f/ansify appends "\n\" to C strings
