@@ -162,7 +162,7 @@ proc libffi_target_compile { source dest type options } {
     }
 
     # search for ffi_mips.h in srcdir, too
-    lappend options "additional_flags=-I${libffi_include} -I${srcdir}/../include"
+    lappend options "additional_flags=-I${libffi_include} -I${srcdir}/../include  -I${libffi_include}/.."
     lappend options "additional_flags=${libffi_link_flags}"
 
     if { [string match "powerpc-*-darwin*" $target_triplet] } {

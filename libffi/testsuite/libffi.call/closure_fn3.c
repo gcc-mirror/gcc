@@ -42,11 +42,18 @@ typedef int (*closure_test_type3)(float, float, float, float, float, float,
 int main (void)
 {
   ffi_cif cif;
+#ifndef USING_MMAP
   static ffi_closure cl;
-  ffi_closure *pcl = &cl;
+#endif
+  ffi_closure *pcl;
   ffi_type * cl_arg_types[17];
   int res;
 
+#ifdef USING_MMAP
+  pcl = allocate_mmap (sizeof(ffi_closure));
+#else
+  pcl = &cl;
+#endif
 
   cl_arg_types[0] = &ffi_type_float;
   cl_arg_types[1] = &ffi_type_float;

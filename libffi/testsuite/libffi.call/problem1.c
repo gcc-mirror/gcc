@@ -29,61 +29,69 @@ my_ffi_struct callee(struct my_ffi_struct a1, struct my_ffi_struct a2)
 
 void stub(ffi_cif* cif, void* resp, void** args, void* userdata)
 {
-    struct my_ffi_struct a1;
-    struct my_ffi_struct a2;
+  struct my_ffi_struct a1;
+  struct my_ffi_struct a2;
 
-    a1 = *(struct my_ffi_struct*)(args[0]);
-    a2 = *(struct my_ffi_struct*)(args[1]);
+  a1 = *(struct my_ffi_struct*)(args[0]);
+  a2 = *(struct my_ffi_struct*)(args[1]);
 
-    *(my_ffi_struct *)resp = callee(a1, a2);
+  *(my_ffi_struct *)resp = callee(a1, a2);
 }
 
 
 int main(void)
 {
-    ffi_type* my_ffi_struct_fields[4];
-    ffi_type my_ffi_struct_type;
-    ffi_cif cif;
-    static ffi_closure cl;
-    ffi_closure *pcl = &cl;
-    void* args[4];
-    ffi_type* arg_types[3];
+  ffi_type* my_ffi_struct_fields[4];
+  ffi_type my_ffi_struct_type;
+  ffi_cif cif;
+#ifndef USING_MMAP
+  static ffi_closure cl;
+#endif
+  ffi_closure *pcl;
+  void* args[4];
+  ffi_type* arg_types[3];
 
-    struct my_ffi_struct g = { 1.0, 2.0, 3.0 };
-    struct my_ffi_struct f = { 1.0, 2.0, 3.0 };
-    struct my_ffi_struct res;
+#ifdef USING_MMAP
+  pcl = allocate_mmap (sizeof(ffi_closure));
+#else
+  pcl = &cl;
+#endif
 
-    my_ffi_struct_type.size = 0;
-    my_ffi_struct_type.alignment = 0;
-    my_ffi_struct_type.type = FFI_TYPE_STRUCT;
-    my_ffi_struct_type.elements = my_ffi_struct_fields;
+  struct my_ffi_struct g = { 1.0, 2.0, 3.0 };
+  struct my_ffi_struct f = { 1.0, 2.0, 3.0 };
+  struct my_ffi_struct res;
 
-    my_ffi_struct_fields[0] = &ffi_type_double;
-    my_ffi_struct_fields[1] = &ffi_type_double;
-    my_ffi_struct_fields[2] = &ffi_type_double;
-    my_ffi_struct_fields[3] = NULL;
+  my_ffi_struct_type.size = 0;
+  my_ffi_struct_type.alignment = 0;
+  my_ffi_struct_type.type = FFI_TYPE_STRUCT;
+  my_ffi_struct_type.elements = my_ffi_struct_fields;
 
-    arg_types[0] = &my_ffi_struct_type;
-    arg_types[1] = &my_ffi_struct_type;
-    arg_types[2] = NULL;
+  my_ffi_struct_fields[0] = &ffi_type_double;
+  my_ffi_struct_fields[1] = &ffi_type_double;
+  my_ffi_struct_fields[2] = &ffi_type_double;
+  my_ffi_struct_fields[3] = NULL;
 
-    CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 2, &my_ffi_struct_type,
-		       arg_types) == FFI_OK);
+  arg_types[0] = &my_ffi_struct_type;
+  arg_types[1] = &my_ffi_struct_type;
+  arg_types[2] = NULL;
 
-    args[0] = &g;
-    args[1] = &f;
-    args[2] = NULL;
-    ffi_call(&cif, FFI_FN(callee), &res, args);
-    /* { dg-output "1 2 3 1 2 3: 2 4 6" } */
-    printf("res: %g %g %g\n", res.a, res.b, res.c);
-    /* { dg-output "\nres: 2 4 6" } */
+  CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 2, &my_ffi_struct_type,
+		     arg_types) == FFI_OK);
 
-    CHECK(ffi_prep_closure(pcl, &cif, stub, NULL) == FFI_OK);
+  args[0] = &g;
+  args[1] = &f;
+  args[2] = NULL;
+  ffi_call(&cif, FFI_FN(callee), &res, args);
+  /* { dg-output "1 2 3 1 2 3: 2 4 6" } */
+  printf("res: %g %g %g\n", res.a, res.b, res.c);
+  /* { dg-output "\nres: 2 4 6" } */
 
-    res = ((my_ffi_struct(*)(struct my_ffi_struct, struct my_ffi_struct))(pcl))(g, f);
-    /* { dg-output "\n1 2 3 1 2 3: 2 4 6" } */
-    printf("res: %g %g %g\n", res.a, res.b, res.c);
-    /* { dg-output "\nres: 2 4 6" } */
+  CHECK(ffi_prep_closure(pcl, &cif, stub, NULL) == FFI_OK);
 
-    exit(0);;
+  res = ((my_ffi_struct(*)(struct my_ffi_struct, struct my_ffi_struct))(pcl))(g, f);
+  /* { dg-output "\n1 2 3 1 2 3: 2 4 6" } */
+  printf("res: %g %g %g\n", res.a, res.b, res.c);
+  /* { dg-output "\nres: 2 4 6" } */
+
+  exit(0);;
 }
