@@ -25,7 +25,7 @@ public class Output_UTF8 extends UnicodeToBytes
 
   // Saves the previous char if it was a high-surrogate.
   char hi_part;
-  // Value of imcomplete character.
+  // Value of incomplete character.
   int value;
   // Number of continuation bytes still to emit.
   int bytes_todo;
@@ -36,9 +36,9 @@ public class Output_UTF8 extends UnicodeToBytes
     int avail = buf.length - count;
     for (;;)
       {
-	if (inlength == 0 || avail == 0)
+	if (avail == 0 || (inlength == 0 && bytes_todo == 0))
 	  break;
-	// The algororith is made more complicated because we want to write
+	// The algorithm is made more complicated because we want to write
 	// at least one byte in the output buffer, if there is room for
 	// that byte, and at least one input character is available.
 	// This makes the code more robust, since client code will
@@ -70,17 +70,9 @@ public class Output_UTF8 extends UnicodeToBytes
 	else if (ch <= 0x07FF)
 	  {
 	    buf[count++] = (byte) (0xC0 | (ch >> 6));
-	    if (--avail > 0)
-	      {
-		buf[count++] = (byte) ((ch & 0x3F) | 0x80);
-		avail--;
-	      }
-	    else
-	    {
-	      value = ch;
-	      bytes_todo = 1;
-	      break;
-	    }
+	    avail--;
+	    value = ch;
+	    bytes_todo = 1;
 	  }
 	else if (ch >= 0xD800 && ch <= 0xDFFF && standardUTF8)
 	  {
