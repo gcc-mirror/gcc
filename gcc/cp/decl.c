@@ -9235,6 +9235,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   friendp = RIDBIT_SETP (RID_FRIEND, specbits);
   RIDBIT_RESET (RID_FRIEND, specbits);
 
+  /* $7.1.2, Function specifiers */
+  if (friendp && explicitp)
+    error ("only declarations of constructors can be `explicit'");
+
   if (RIDBIT_SETP (RID_MUTABLE, specbits))
     {
       if (decl_context == PARM)
