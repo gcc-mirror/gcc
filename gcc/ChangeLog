@@ -1,3 +1,8 @@
+Sat Feb 21 07:02:39 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* mips/iris5.h (DWARF2_UNWIND_INFO): Define to 0.
+	* mips/iris5gas.h (DWARF2_UNWIND_INFO): Define to 1.
+
 Fri Feb 20 08:27:46 1998  Paul Eggert  <eggert@twinsun.com>
 
 	* sparc/sol2-sld.h: New file.
