@@ -1,3 +1,9 @@
+2001-12-17  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	libstdc++/5136
+	* testsuite/lib/prune.exp: New file
+	* testsuite/lib/libstdc++-v3-dg.exp: Use it
+
 2001-12-17  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/basic_file.h (__basic_file::fd):  New function.
