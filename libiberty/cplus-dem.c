@@ -28,6 +28,10 @@ Boston, MA 02111-1307, USA.  */
 /* This file lives in both GCC and libiberty.  When making changes, please
    try not to break either.  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <ctype.h>
 #include <sys/types.h>
 #include <string.h>
@@ -35,6 +39,9 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#else
+char * malloc ();
+char * realloc ();
 #endif
 
 #include <demangle.h>
@@ -3825,9 +3832,6 @@ fatal (str)
   fprintf (stderr, "%s: %s\n", program_name, str);
   exit (1);
 }
-
-char * malloc ();
-char * realloc ();
 
 char *
 xmalloc (size)
