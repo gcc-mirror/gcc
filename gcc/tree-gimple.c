@@ -322,13 +322,8 @@ is_gimple_condexpr (tree t)
 bool
 is_gimple_addr_expr_arg (tree t)
 {
-  return (is_gimple_id (t)
-	  || TREE_CODE (t) == ARRAY_REF
-	  || TREE_CODE (t) == ARRAY_RANGE_REF
-	  || TREE_CODE (t) == COMPONENT_REF
-	  || TREE_CODE (t) == REALPART_EXPR
-	  || TREE_CODE (t) == IMAGPART_EXPR
-	  || TREE_CODE (t) == INDIRECT_REF);
+  return (is_gimple_id (t) || handled_component_p (t)
+	  || TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR);
 }
 
 /* Return true if T is function invariant.  Or rather a restricted
