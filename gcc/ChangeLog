@@ -1,3 +1,12 @@
+2004-02-09  James E Wilson  <wilson@specifixinc.com>
+
+	PR libstdc++/5625
+	* builtin-types.def (BT_WORD, BT_FN_WORD_PTR): New.
+	* builtins.c (expand_builtin): Handle BUILT_IN_EXTEND_POINTER.
+	* builtins.def (BUILT_IN_EXTEND_POINTER): New.
+	* except.c (expand_builtin_extend_pointer): New.
+	* except.h (expand_builtin_extend_pointer): Declare.
+
 2004-02-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/iris5.h (BSS_SECTION_ASM_OP): Define.
