@@ -1851,11 +1851,17 @@ build_insn_chain (first)
 	 no real insns are after the end of the last basic block.
 
 	 We may want to reorganize the loop somewhat since this test should
-	 always be the right exit test.  */
+	 always be the right exit test.  Allow an ADDR_VEC or ADDR_DIF_VEC if
+	 the previous real insn is a JUMP_INSN.  */
       if (b == n_basic_blocks)
 	{
 	  for (first = NEXT_INSN (first) ; first; first = NEXT_INSN (first))
-	    if (INSN_P (first) && GET_CODE (PATTERN (first)) != USE)
+	    if (INSN_P (first)
+		&& GET_CODE (PATTERN (first)) != USE
+		&& ! ((GET_CODE (PATTERN (first)) == ADDR_VEC
+		       || GET_CODE (PATTERN (first)) == ADDR_DIFF_VEC)
+		      && prev_real_insn (first) != 0
+		      && GET_CODE (prev_real_insn (first)) == JUMP_INSN))
 	      abort ();
 	  break;
 	}
