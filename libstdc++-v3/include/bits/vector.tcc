@@ -268,51 +268,7 @@ namespace __gnu_norm
         this->_M_end_of_storage = __new_start.base() + __len;
       }
     }
-  
-  #ifdef _GLIBCXX_DEPRECATED
-  template<typename _Tp, typename _Alloc>
-    void
-    vector<_Tp,_Alloc>::
-    _M_insert_aux(iterator __position)
-    {
-      if (_M_finish != _M_end_of_storage)
-      {
-        std::_Construct(_M_finish, *(_M_finish - 1));
-        ++_M_finish;
-        std::copy_backward(__position, iterator(_M_finish - 2),
-			   iterator(_M_finish - 1));
-        *__position = value_type();
-      }
-      else
-      {
-        const size_type __old_size = size();
-        const size_type __len = __old_size != 0 ? 2 * __old_size : 1;
-        pointer __new_start = _M_allocate(__len);
-        pointer __new_finish = __new_start;
-        try
-          {
-            __new_finish = std::uninitialized_copy(iterator(_M_start), __position,
-						   __new_start);
-            std::_Construct(__new_finish);
-            ++__new_finish;
-            __new_finish = std::uninitialized_copy(__position, iterator(_M_finish),
-						   __new_finish);
-          }
-        catch(...)
-          {
-            std::_Destroy(__new_start,__new_finish);
-            _M_deallocate(__new_start,__len);
-            __throw_exception_again;
-          }
-        std::_Destroy(begin(), end());
-        _M_deallocate(_M_start, _M_end_of_storage - _M_start);
-        _M_start = __new_start;
-        _M_finish = __new_finish;
-        _M_end_of_storage = __new_start + __len;
-      }
-    }
-  #endif
-  
+
   template<typename _Tp, typename _Alloc>
     void
     vector<_Tp,_Alloc>::
