@@ -8682,6 +8682,13 @@ alpha_reorg (void)
 static void
 alpha_file_start (void)
 {
+#ifdef OBJECT_FORMAT_ELF
+  /* If emitting dwarf2 debug information, we cannot generate a .file
+     directive to start the file, as it will conflict with dwarf2out
+     file numbers.  So it's only useful when emitting mdebug output.  */
+  targetm.file_start_file_directive = (write_symbols == DBX_DEBUG);
+#endif
+
   default_file_start ();
 #ifdef MS_STAMP
   fprintf (asm_out_file, "\t.verstamp %d %d\n", MS_STAMP, LS_STAMP);

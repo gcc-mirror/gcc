@@ -1,3 +1,8 @@
+2003-06-20  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_file_start): Disable
+	file_start_file_directive for ELF and not MDEBUG.
+
 2003-06-20  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (ROUND_TYPE_ALIGN): Remove.
