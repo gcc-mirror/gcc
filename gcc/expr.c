@@ -5247,51 +5247,59 @@ expand_expr (exp, target, tmode, modifier)
       }
 
     case PLACEHOLDER_EXPR:
-      /* If there is an object on the head of the placeholder list,
-	 see if some object in it's references is of type TYPE.  For
-	 further information, see tree.def.  */
-      if (placeholder_list)
-	{
-	  tree need_type = TYPE_MAIN_VARIANT (type);
-	  tree object = 0;
-	  tree old_list = placeholder_list;
-	  tree elt;
+      {
+	tree placeholder_expr;
 
-	  /* See if the object is the type that we want.  */
-	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_PURPOSE (placeholder_list)))
-	       == need_type))
-	    object = TREE_PURPOSE (placeholder_list);
+	/* If there is an object on the head of the placeholder list,
+	   see if some object in it's references is of type TYPE.  For
+	   further information, see tree.def.  */
+	for (placeholder_expr = placeholder_list;
+	     placeholder_expr != 0;
+	     placeholder_expr = TREE_CHAIN (placeholder_expr))
+	  {
+	    tree need_type = TYPE_MAIN_VARIANT (type);
+	    tree object = 0;
+	    tree old_list = placeholder_list;
+	    tree elt;
 
-	  /* Find the innermost reference that is of the type we want.  */
-	  for (elt = TREE_PURPOSE (placeholder_list);
-	       elt != 0
-	       && (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
-		   || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
-		   || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
-		   || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e');
-	       elt = ((TREE_CODE (elt) == COMPOUND_EXPR
-		       || TREE_CODE (elt) == COND_EXPR)
-		      ? TREE_OPERAND (elt, 1) : TREE_OPERAND (elt, 0)))
-	    if (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
-		&& (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (elt, 0)))
-		    == need_type))
+	    /* See if the object is the type that we want.  */
+	    if ((TYPE_MAIN_VARIANT (TREE_TYPE
+				    (TREE_PURPOSE (placeholder_expr)))
+		 == need_type))
+	      object = TREE_PURPOSE (placeholder_expr);
+
+	    /* Find the innermost reference that is of the type we want.  */
+	    for (elt = TREE_PURPOSE (placeholder_expr);
+		 elt != 0
+		 && (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
+		     || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e');
+		 elt = ((TREE_CODE (elt) == COMPOUND_EXPR
+			 || TREE_CODE (elt) == COND_EXPR)
+			? TREE_OPERAND (elt, 1) : TREE_OPERAND (elt, 0)))
+	      if (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
+		  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (elt, 0)))
+		      == need_type))
+		{
+		  object = TREE_OPERAND (elt, 0);
+		  break;
+		}
+
+	    if (object != 0)
 	      {
-		object = TREE_OPERAND (elt, 0);
-		break;
+		/* Expand this object skipping the list entries before
+		   it was found in case it is also a PLACEHOLDER_EXPR.
+		   In that case, we want to translate it using subsequent
+		   entries.  */
+		placeholder_list = TREE_CHAIN (placeholder_expr);
+		temp = expand_expr (object, original_target, tmode,
+				    ro_modifier);
+		placeholder_list = old_list;
+		return temp;
 	      }
-
-	  if (object != 0)
-	    {
-	      /* Expand this object skipping the list entries before
-		 it was found in case it is also a PLACEHOLDER_EXPR.
-		 In that case, we want to translate it using subsequent
-		 entries.  */
-	      placeholder_list = TREE_CHAIN (placeholder_list);
-	      temp = expand_expr (object, original_target, tmode, ro_modifier);
-	      placeholder_list = old_list;
-	      return temp;
-	    }
-	}
+	  }
+      }
 
       /* We can't find the object or there was a missing WITH_RECORD_EXPR.  */
       abort ();
