@@ -1180,70 +1180,66 @@ alpha_emit_set_const_1 (target, mode, c, n)
   return 0;
 }
 
-#if HOST_BITS_PER_WIDE_INT == 64
 /* Having failed to find a 3 insn sequence in alpha_emit_set_const,
    fall back to a straight forward decomposition.  We do this to avoid
    exponential run times encountered when looking for longer sequences
    with alpha_emit_set_const.  */
 
 rtx
-alpha_emit_set_long_const (target, c)
+alpha_emit_set_long_const (target, c1, c2)
      rtx target;
-     HOST_WIDE_INT c;
+     HOST_WIDE_INT c1, c2;
 {
-  /* Use a pseudo if highly optimizing and still generating RTL.  */
-  rtx subtarget
-    = (flag_expensive_optimizations && rtx_equal_function_value_matters
-       ? 0 : target);
   HOST_WIDE_INT d1, d2, d3, d4;
-  rtx r1, r2;
 
   /* Decompose the entire word */
-  d1 = ((c & 0xffff) ^ 0x8000) - 0x8000;
-  c -= d1;
-  d2 = ((c & 0xffffffff) ^ 0x80000000) - 0x80000000;
-  c = (c - d2) >> 32;
-  d3 = ((c & 0xffff) ^ 0x8000) - 0x8000;
-  c -= d3;
-  d4 = ((c & 0xffffffff) ^ 0x80000000) - 0x80000000;
-
-  if (c - d4 != 0)
-    abort();
+#if HOST_BITS_PER_WIDE_INT >= 64
+  if (c2 != -(c1 < 0))
+    abort ();
+  d1 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
+  c1 -= d1;
+  d2 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
+  c1 = (c1 - d2) >> 32;
+  d3 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
+  c1 -= d3;
+  d4 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
+  if (c1 != d4)
+    abort ();
+#else
+  d1 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
+  c1 -= d1;
+  d2 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
+  if (c1 != d2)
+    abort ();
+  c2 += (d2 < 0);
+  d3 = ((c2 & 0xffff) ^ 0x8000) - 0x8000;
+  c2 -= d3;
+  d4 = ((c2 & 0xffffffff) ^ 0x80000000) - 0x80000000;
+  if (c2 != d4)
+    abort ();
+#endif
 
   /* Construct the high word */
-  if (d3 == 0)
-    r1 = copy_to_suggested_reg (GEN_INT (d4), subtarget, DImode);
-  else if (d4 == 0)
-    r1 = copy_to_suggested_reg (GEN_INT (d3), subtarget, DImode);
+  if (d4)
+    {
+      emit_move_insn (target, GEN_INT (d4));
+      if (d3)
+	emit_move_insn (target, gen_rtx_PLUS (DImode, target, GEN_INT (d3)));
+    }
   else
-    r1 = expand_binop (DImode, add_optab, GEN_INT (d3), GEN_INT (d4),
-		       subtarget, 0, OPTAB_WIDEN);
+    emit_move_insn (target, GEN_INT (d3));
 
   /* Shift it into place */
-  r2 = expand_binop (DImode, ashl_optab, r1, GEN_INT (32), 
-		     subtarget, 0, OPTAB_WIDEN);
+  emit_move_insn (target, gen_rtx_ASHIFT (DImode, target, GEN_INT (32)));
 
-  if (subtarget == 0 && d1 == d3 && d2 == d4)
-    r1 = expand_binop (DImode, add_optab, r1, r2, subtarget, 0, OPTAB_WIDEN);
-  else
-    {
-      r1 = r2;
+  /* Add in the low bits.  */
+  if (d2)
+    emit_move_insn (target, gen_rtx_PLUS (DImode, target, GEN_INT (d2)));
+  if (d1)
+    emit_move_insn (target, gen_rtx_PLUS (DImode, target, GEN_INT (d1)));
 
-      /* Add in the low word */
-      if (d2 != 0)
-	r1 = expand_binop (DImode, add_optab, r1, GEN_INT (d2),
-		           subtarget, 0, OPTAB_WIDEN);
-      if (d1 != 0)
-	r1 = expand_binop (DImode, add_optab, r1, GEN_INT (d1),
-		           subtarget, 0, OPTAB_WIDEN);
-    }
-
-  if (subtarget == 0)
-    r1 = copy_to_suggested_reg(r1, target, DImode);
-
-  return r1;
+  return target;
 }
-#endif /* HOST_BITS_PER_WIDE_INT == 64 */
 
 /* Generate the comparison for a conditional branch.  */
 
@@ -2459,7 +2455,7 @@ alpha_return_addr (count, frame)
 
   /* No rtx yet.  Invent one, and initialize it from $26 in the prologue.  */
   alpha_return_addr_rtx = gen_reg_rtx (Pmode);
-  init = gen_rtx_SET (Pmode, alpha_return_addr_rtx,
+  init = gen_rtx_SET (VOIDmode, alpha_return_addr_rtx,
 		      gen_rtx_REG (Pmode, REG_RA));
 
   /* Emit the insn to the prologue with the other argument copies.  */
@@ -3811,13 +3807,10 @@ alpha_expand_epilogue ()
 	    {
 	      /* We can't drop new things to memory this late, afaik,
 		 so build it up by pieces.  */
-#if HOST_BITS_PER_WIDE_INT == 64
-	      FRP (sp_adj2 = alpha_emit_set_long_const (tmp, frame_size));
+	      FRP (sp_adj2 = alpha_emit_set_long_const (tmp, frame_size,
+							-(frame_size < 0)));
 	      if (!sp_adj2)
 		abort ();
-#else
-	      abort ();
-#endif
 	    }
 	}
 

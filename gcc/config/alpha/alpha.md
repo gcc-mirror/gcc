@@ -4342,24 +4342,31 @@
     {
       if (TARGET_BUILD_CONSTANTS)
 	{
-#if HOST_BITS_PER_WIDE_INT == 64
-	  HOST_WIDE_INT i;
+	  HOST_WIDE_INT i0, i1;
 
 	  if (GET_CODE (operands[1]) == CONST_INT)
-	    i = INTVAL (operands[1]);
+	    {
+	      i0 = INTVAL (operands[1]);
+	      i1 = -(i0 < 0);
+	    }
 	  else if (GET_CODE (operands[1]) == CONST_DOUBLE)
-	    i = CONST_DOUBLE_LOW (operands[1]);
+	    {
+#if HOST_BITS_PER_WIDE_INT >= 64
+	      i0 = CONST_DOUBLE_LOW (operands[1]);
+	      i1 = -(i0 < 0);
+#else
+	      i0 = CONST_DOUBLE_LOW (operands[1]);
+	      i1 = CONST_DOUBLE_HIGH (operands[1]);
+#endif
+	    }
 	  else
 	    abort();
 	  
-          tem = alpha_emit_set_long_const (operands[0], i);
+          tem = alpha_emit_set_long_const (operands[0], i0, i1);
           if (rtx_equal_p (tem, operands[0]))
 	    DONE;
           else
 	    operands[1] = tem;
-#else
-          abort();
-#endif
 	}
       else
 	{
