@@ -1,3 +1,10 @@
+2002-08-21  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_asm_globalize_label): New
+	function.
+	(rs6000_xcoff_asm_named_section): Rename.
+	* config/rs6000/xcoff.h (TARGET_ASM_GLOBALIZE_LABEL): Define.
+
 2002-08-21  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/6005 and PR java/7611:
