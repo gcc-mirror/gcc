@@ -449,7 +449,8 @@ struct gcc_target
     void (*setup_incoming_varargs) (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 				    tree type, int *pretend_arg_size, int second_time);
     bool (*strict_argument_naming) (CUMULATIVE_ARGS *ca);
-    /* Returns true if we should use SETUP_INCOMING_VARARGS and/or
+    /* Returns true if we should use
+       targetm.calls.setup_incoming_varargs() and/or
        targetm.calls.strict_argument_naming().  */
     bool (*pretend_outgoing_varargs_named) (CUMULATIVE_ARGS *ca);
   } calls;

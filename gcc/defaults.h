@@ -305,11 +305,6 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #define DWARF2_GENERATE_TEXT_SECTION_LABEL 1
 #endif
 
-/* Supply a default definition for PROMOTE_PROTOTYPES.  */
-#ifndef PROMOTE_PROTOTYPES
-#define PROMOTE_PROTOTYPES	0
-#endif
-
 /* Number of hardware registers that go into the DWARF-2 unwind info.
    If not defined, equals FIRST_PSEUDO_REGISTER  */
 

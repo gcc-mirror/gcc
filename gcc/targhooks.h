@@ -23,9 +23,6 @@ extern void default_external_libcall (rtx);
 extern enum machine_mode default_cc_modes_compatible (enum machine_mode,
 						      enum machine_mode);
 
-extern bool default_promote_function_return (tree);
-extern bool default_promote_prototypes (tree);
-
 extern rtx default_struct_value_rtx (tree, int);
 extern bool default_return_in_memory (tree, tree);
 

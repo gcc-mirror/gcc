@@ -78,38 +78,11 @@ default_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
   return VOIDmode;
 }
 
-bool
-default_promote_function_return (tree fntype ATTRIBUTE_UNUSED)
-{
-#ifdef PROMOTE_FUNCTION_RETURN
-  return true;
-#else
-  return false;
-#endif
-}
-
-bool
-default_promote_prototypes (tree fntype ATTRIBUTE_UNUSED)
-{
-  if (PROMOTE_PROTOTYPES)
-    return true;
-  else
-    return false;
-}
-
 rtx
 default_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 			  int incoming ATTRIBUTE_UNUSED)
 {
-#ifdef STRUCT_VALUE
-  return STRUCT_VALUE;
-#else
-#ifdef STRUCT_VALUE_REGNUM
-  return gen_rtx_REG (Pmode, STRUCT_VALUE_REGNUM);
-#else
   abort ();
-#endif
-#endif
 }
 
 bool
@@ -126,12 +99,8 @@ default_return_in_memory (tree type,
 rtx
 default_expand_builtin_saveregs (void)
 {
-#ifdef EXPAND_BUILTIN_SAVEREGS
-  return EXPAND_BUILTIN_SAVEREGS ();
-#else
   error ("__builtin_saveregs not supported by this target");
   return const0_rtx;
-#endif
 }
 
 void
@@ -141,9 +110,6 @@ default_setup_incoming_varargs (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 				int *pretend_arg_size ATTRIBUTE_UNUSED,
 				int second_time ATTRIBUTE_UNUSED)
 {
-#ifdef SETUP_INCOMING_VARARGS
-  SETUP_INCOMING_VARARGS ((*ca), mode, type, (*pretend_arg_size), second_time);
-#endif
 }
 
 /* Generic hook that takes a CUMULATIVE_ARGS pointer and returns true.  */
@@ -157,11 +123,7 @@ hook_bool_CUMULATIVE_ARGS_false (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 bool
 default_pretend_outgoing_varargs_named(CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 {
-#ifdef SETUP_INCOMING_VARARGS
-  return 1;
-#else
   return (targetm.calls.setup_incoming_varargs != default_setup_incoming_varargs);
-#endif
 }
 
 /* Generic hook that takes a CUMULATIVE_ARGS pointer and returns true.  */
