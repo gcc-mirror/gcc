@@ -1,5 +1,5 @@
 /* Various declarations for language-independent diagnostics subroutines.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -132,7 +132,7 @@ struct output_buffer
 
 /* Current state of the diagnostic_context' output_buffer.  This macro
    accepts both `diagnostic_context *' and `output_buffer *'.  */
-#define output_buffer_state(BUFFER) ((output_buffer *)BUFFER)->state
+#define output_buffer_state(BUFFER) ((output_buffer *)(BUFFER))->state
 
 /* The stream attached to the output_buffer, where the formatted
    diagnostics will ultimately go.  Works only on `output_buffer *'.  */
@@ -145,7 +145,7 @@ struct output_buffer
 /* The rest of the `variable argument list' not yet processed.
    This macro works on both `output_state *' and `output_buffer *'.  */
 #define output_buffer_format_args(BUFFER) \
-   *(((output_state *)BUFFER)->format_args)
+   *(((output_state *)(BUFFER))->format_args)
 
 /* In line-wrapping mode, whether we should start a new line.  */
 #define output_needs_newline(BUFFER) (BUFFER)->state.need_newline_p
