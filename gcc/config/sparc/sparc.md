@@ -7601,7 +7601,8 @@
 (define_insn "blockage"
   [(unspec_volatile [(const_int 0)] 0)]
   ""
-  "")
+  ""
+  [(set_attr "length" "0")])
 
 ;; Prepare to return any type including a structure value.
 
@@ -8187,7 +8188,8 @@
 (define_insn "nonlocal_goto_receiver"
   [(unspec_volatile [(const_int 0)] 5)]
   "flag_pic"
-  "")
+  ""
+  [(set_attr "length" "0")])
 
 (define_insn "trap"
   [(trap_if (const_int 1) (const_int 5))]
@@ -8220,4 +8222,3 @@
   "t%C0\\t%%xcc, %1"
   [(set_attr "type" "misc")
    (set_attr "length" "1")])
-
