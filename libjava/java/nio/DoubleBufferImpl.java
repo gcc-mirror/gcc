@@ -41,7 +41,7 @@ package java.nio;
 /**
  * This is a Heap memory implementation
  */
-public final class DoubleBufferImpl extends DoubleBuffer
+final class DoubleBufferImpl extends DoubleBuffer
 {
   private boolean readOnly;
 

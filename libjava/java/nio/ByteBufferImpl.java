@@ -41,7 +41,7 @@ package java.nio;
 /**
  * This is a Heap memory implementation
  */
-public final class ByteBufferImpl extends ByteBuffer
+final class ByteBufferImpl extends ByteBuffer
 {
   private boolean readOnly;
 

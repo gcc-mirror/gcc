@@ -40,7 +40,7 @@ package java.nio;
 
 import gnu.gcj.RawData;
 
-public class DirectByteBufferImpl extends ByteBuffer
+class DirectByteBufferImpl extends ByteBuffer
 {
   RawData address;
   private int offset;

@@ -41,7 +41,7 @@ package java.nio;
 /**
  * This is a Heap memory implementation
  */
-public final class CharBufferImpl extends CharBuffer
+final class CharBufferImpl extends CharBuffer
 {
   private boolean readOnly;
 
