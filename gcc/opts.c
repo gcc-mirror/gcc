@@ -497,7 +497,6 @@ decode_options (unsigned int argc, const char **argv)
       flag_tree_dce = 1;
       flag_tree_dom = 1;
       flag_tree_dse = 1;
-      flag_tree_pre = 1;
       flag_tree_ter = 1;
       flag_tree_live_range_split = 1;
       flag_tree_sra = 1;
@@ -511,6 +510,9 @@ decode_options (unsigned int argc, const char **argv)
 	     the condition is satisfied in the first iteration and therefore
 	     to eliminate it.  Jump threading handles these cases now.  */
 	  flag_tree_ch = 1;
+ 
+          /* PRE tends to generate bigger code.  */
+          flag_tree_pre = 1;
 	}
     }
 
