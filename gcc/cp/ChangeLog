@@ -1,3 +1,16 @@
+2000-10-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DECL_EXTERNAL_LINKAGE_P): New macro.
+	(linkage_kind): New enumeration.
+	(decl_linkage): New function.
+	* decl2.c (comdat_linkage): Extend comment.
+	* error.c (dump_function_decl): Print the arguments used to
+	instantiate a template, even when not printing the type of the
+	function.
+	* pt.c (convert_nontype_argument): Use DECL_EXTERNAL_LINKAGE_P,
+	not TREE_PUBLIC, to test for external linkage.
+	* tree.c (decl_linkage): New function.
+
 2000-10-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (instantiate_decl): Always instantiate static data members

@@ -2808,7 +2808,7 @@ convert_nontype_argument (type, expr)
 	;
       else if (TREE_CODE (referent) != VAR_DECL)
 	goto bad_argument;
-      else if (!TREE_PUBLIC (referent))
+      else if (!DECL_EXTERNAL_LINKAGE_P (referent))
 	{
 	  cp_error ("address of non-extern `%E' cannot be used as template argument", referent); 
 	  return error_mark_node;
@@ -2915,7 +2915,7 @@ convert_nontype_argument (type, expr)
 	    if (fn == error_mark_node)
 	      return error_mark_node;
 
-	    if (!TREE_PUBLIC (fn))
+	    if (!DECL_EXTERNAL_LINKAGE_P (fn))
 	      {
 		if (really_overloaded_fn (fns))
 		  return error_mark_node;
@@ -2980,7 +2980,7 @@ convert_nontype_argument (type, expr)
 	    if (fn == error_mark_node)
 	      return error_mark_node;
 
-	    if (!TREE_PUBLIC (fn))
+	    if (!DECL_EXTERNAL_LINKAGE_P (fn))
 	      {
 		if (really_overloaded_fn (expr))
 		  /* Don't issue an error here; we might get a different
