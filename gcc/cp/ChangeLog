@@ -1,3 +1,10 @@
+1998-11-25  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (expand_throw): Use TYPE_PTR_P to check for pointers.
+
+	* decl.c (check_tag_decl): Do complain about null friend decl at
+	file scope.
+
 1998-11-25  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* lex.c (make_lang_type): Clear the whole struct lang_type, not

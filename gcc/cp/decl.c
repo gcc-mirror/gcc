@@ -6483,10 +6483,11 @@ check_tag_decl (declspecs)
 	}
       else if (value == ridpointers[(int) RID_FRIEND])
 	{
-	  friendp = 1;
 	  if (current_class_type == NULL_TREE
 	      || current_scope () != current_class_type)
 	    ob_modifier = value;
+	  else
+	    friendp = 1;
 	}
       else if (value == ridpointers[(int) RID_STATIC]
 	       || value == ridpointers[(int) RID_EXTERN]
