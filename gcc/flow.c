@@ -6387,7 +6387,8 @@ flow_loops_dump (loops, file, verbose)
   if (! num_loops || ! file)
     return;
 
-  fprintf (file, ";; %d loops found\n", num_loops);
+  fprintf (file, ";; %d loops found, %d levels\n", 
+	   num_loops, loops->levels);
 
   for (i = 0; i < num_loops; i++)
     {
@@ -6783,7 +6784,7 @@ flow_loop_level_compute (loop, depth)
      int depth;
 {
   struct loop *inner;
-  int level = 0;
+  int level = 1;
 
   if (! loop)
     return 0;
@@ -6791,7 +6792,8 @@ flow_loop_level_compute (loop, depth)
   /* Traverse loop tree assigning depth and computing level as the
      maximum level of all the inner loops of this loop.  The loop
      level is equivalent to the height of the loop in the loop tree
-     and corresponds to the number of enclosed loop levels.  */
+     and corresponds to the number of enclosed loop levels (including
+     itself).  */
   for (inner = loop->inner; inner; inner = inner->next)
     {
       int ilevel;
@@ -6811,11 +6813,22 @@ flow_loop_level_compute (loop, depth)
    hierarchy tree specfied by LOOPS.  Return the maximum enclosed loop
    level.  */
 
-static int 
+static int
 flow_loops_level_compute (loops)
      struct loops *loops;
 {
-  return flow_loop_level_compute (loops->tree, 1);
+  struct loop *loop;
+  int level;
+  int levels = 0;
+
+  /* Traverse all the outer level loops.  */
+  for (loop = loops->tree; loop; loop = loop->next)
+    {
+      level = flow_loop_level_compute (loop, 1);
+      if (level > levels)
+	levels = level;
+    }
+  return levels;
 }
 
 
@@ -6970,7 +6983,7 @@ flow_loops_find (loops)
 
   /* Assign the loop nesting depth and enclosed loop level for each
      loop.  */
-  flow_loops_level_compute (loops);
+  loops->levels = flow_loops_level_compute (loops);
 
   return num_loops;
 }
