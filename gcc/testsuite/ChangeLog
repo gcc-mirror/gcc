@@ -1,3 +1,18 @@
+2004-06-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.c-torture/execute/ieee/fp-cmp-4.c (FLOAT): New. Default
+	to double. Replace double with FLOAT.
+	* gcc.c-torture/execute/ieee/fp-cmp-8.c: Likewise.
+
+	* gcc.c-torture/execute/ieee/fp-cmp-4e.c: New file.
+	* gcc.c-torture/execute/ieee/fp-cmp-4f.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-4l.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-4q.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-8e.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-8f.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-8l.c: Likewise.
+	* gcc.c-torture/execute/ieee/fp-cmp-8q.c: Likewise.
+
 2004-06-06  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/13519
