@@ -36,7 +36,7 @@
 // The internal file stl_iterator.h contains predefined iterators, 
 // such as front_insert_iterator and istream_iterator.
 
-#pragma GCC system header
+#pragma GCC system_header
 
 namespace std
 {
