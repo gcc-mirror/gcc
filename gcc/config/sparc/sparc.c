@@ -1059,6 +1059,7 @@ output_move_double (operands)
   rtx addreg0 = 0;
   rtx addreg1 = 0;
   int highest_first = 0;
+  int no_addreg1_decrement = 0;
 
   /* First classify both operands.  */
 
@@ -1154,12 +1155,12 @@ output_move_double (operands)
   else if (optype0 == REGOP && optype1 != REGOP
 	   && reg_overlap_mentioned_p (op0, op1))
     {
+      /* If both halves of dest are used in the src memory address,
+	 add the two regs and put them in the low reg (op0).
+	 Then it works to load latehalf first.  */
       if (reg_mentioned_p (op0, XEXP (op1, 0))
 	  && reg_mentioned_p (latehalf[0], XEXP (op1, 0)))
 	{
-	  /* If both halves of dest are used in the src memory address,
-	     add the two regs and put them in the low reg (op0).
-	     Then it works to load latehalf first.  */
 	  rtx xops[2];
 	  xops[0] = latehalf[0];
 	  xops[1] = op0;
@@ -1167,9 +1168,20 @@ output_move_double (operands)
 	  operands[1] = gen_rtx (MEM, DImode, op0);
 	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
 	  addreg1 = 0;
+	  highest_first = 1;
 	}
-      /* Do the late half first.  */
-      highest_first = 1;
+      /* Only one register in the dest is used in the src memory address,
+	 and this is the first register of the dest, so we want to do
+	 the late half first here also.  */
+      else if (! reg_mentioned_p (latehalf[0], XEXP (op1, 0)))
+	highest_first = 1;
+      /* Only one register in the dest is used in the src memory address,
+	 and this is the second register of the dest, so we want to do
+	 the late half last.  If addreg1 is set, and addreg1 is the same
+	 register as latehalf, then we must suppress the trailing decrement,
+	 because it would clobber the value just loaded.  */
+      else if (addreg1 && reg_mentioned_p (addreg1, latehalf[0]))
+	no_addreg1_decrement = 1;
     }
 
   /* Normal case: do the two words, low-numbered first.
@@ -1190,7 +1202,7 @@ output_move_double (operands)
   /* Undo the adds we just did.  */
   if (addreg0)
     output_asm_insn ("add %0,-0x4,%0", &addreg0);
-  if (addreg1)
+  if (addreg1 && ! no_addreg1_decrement)
     output_asm_insn ("add %0,-0x4,%0", &addreg1);
 
   if (highest_first)
