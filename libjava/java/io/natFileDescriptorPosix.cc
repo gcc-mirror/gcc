@@ -371,7 +371,7 @@ java::io::FileDescriptor::available (void)
       off_t where = 0;
       if (fstat (fd, &sb) != -1
 	  && S_ISREG (sb.st_mode)
-	  && (where = lseek (fd, SEEK_CUR, 0)) != (off_t) -1)
+	  && (where = lseek (fd, 0, SEEK_CUR)) != (off_t) -1)
 	{
 	  num = (long) (sb.st_size - where);
 	  num_set = true;
@@ -397,6 +397,6 @@ java::io::FileDescriptor::available (void)
 
   return (jint) num;
 #else
-  throw new IOException (JvNewStringLatin1 ("unimplemented"));
+  return 0;
 #endif
 }
