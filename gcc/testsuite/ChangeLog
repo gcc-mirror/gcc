@@ -1,3 +1,29 @@
+2003-07-11  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	Backport from mainline.
+
+	2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c++/9738
+	* g++.dg/ext/dllimport2.C: New file.
+	* g++.dg/ext/dllimport3.C: New file.
+
+	2003-07-04  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c++/5287, PR c++/7910,  PR c++/11021
+	* testsuite/g++.dg/ext/dllimport1.C: Add mingw32 as target. Add
+	tests for warnings.
+	* g++.dg/ext/dllimport2.C: Add tests for warnings.
+	* g++.dg/ext/dllimport3.C: Likewise.
+	* g++.dg/ext/dllimport4.C: New file.
+	* g++.dg/ext/dllimport5.C: New file.
+	* g++.dg/ext/dllimport6.C: New file.
+	* g++.dg/ext/dllimport7.C: New file.
+	* g++.dg/ext/dllimport8.C: New file.
+	* g++.dg/ext/dllimport9.C: New file.
+	* g++.dg/ext/dllimport10.C: New file.
+	* g++.dg/ext/dllexport1.C: New file.
+
 2003-07-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8164
