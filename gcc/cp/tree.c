@@ -1973,8 +1973,8 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
   /* Set input_location here so we get the right instantiation context
      if we call instantiate_decl from inlinable_function_p.  */
   save_locus = input_location;
-  if (EXPR_LOCUS (*tp))
-    input_location = *EXPR_LOCUS (*tp);
+  if (EXPR_HAS_LOCATION (*tp))
+    input_location = EXPR_LOCATION (*tp);
 
   /* Not one of the easy cases.  We must explicitly go through the
      children.  */

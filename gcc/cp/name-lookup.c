@@ -781,7 +781,7 @@ pushdecl (tree x)
       if (TREE_CODE (x) == TYPE_DECL)
 	{
 	  tree type = TREE_TYPE (x);
-	  if (DECL_SOURCE_LINE (x) == 0)
+	  if (DECL_IS_BUILTIN (x))
             {
 	      if (TYPE_NAME (type) == 0)
 	        TYPE_NAME (type) = x;
@@ -1328,7 +1328,7 @@ begin_scope (scope_kind kind, tree entity)
     {
       scope->binding_depth = binding_depth;
       indent (binding_depth);
-      cxx_scope_debug (scope, input_location.line, "push");
+      cxx_scope_debug (scope, input_line, "push");
       is_class_level = 0;
       binding_depth++;
     }
@@ -1354,7 +1354,7 @@ leave_scope (void)
   if (ENABLE_SCOPE_CHECKING)
     {
       indent (--binding_depth);
-      cxx_scope_debug (scope, input_location.line, "leave");
+      cxx_scope_debug (scope, input_line, "leave");
       if (is_class_level != (scope == class_binding_level))
         {
           indent (binding_depth);
@@ -1407,7 +1407,7 @@ resume_scope (struct cp_binding_level* b)
     {
       b->binding_depth = binding_depth;
       indent (binding_depth);
-      cxx_scope_debug (b, input_location.line, "resume");
+      cxx_scope_debug (b, input_line, "resume");
       is_class_level = 0;
       binding_depth++;
     }
@@ -1600,7 +1600,7 @@ print_binding_level (struct cp_binding_level* lvl)
 	    continue;
 	  if (no_print_builtins
 	      && (TREE_CODE (t) == TYPE_DECL)
-	      && (!strcmp (DECL_SOURCE_FILE (t),"<built-in>")))
+	      && DECL_IS_BUILTIN (t))
 	    continue;
 
 	  /* Function decls tend to have longer names.  */
