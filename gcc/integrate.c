@@ -2120,6 +2120,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
     case PC:
     case CC0:
     case CONST_INT:
+    case CONST_VECTOR:
       return orig;
 
     case SYMBOL_REF:
@@ -2479,6 +2480,7 @@ subst_constants (loc, insn, map, memonly)
     case PC:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case CONST:
     case LABEL_REF:

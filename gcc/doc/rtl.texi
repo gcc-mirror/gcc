@@ -1156,6 +1156,20 @@ bits but small enough to fit within twice that number of bits (GCC
 does not provide a mechanism to represent even larger constants).  In
 the latter case, @var{m} will be @code{VOIDmode}.
 
+@findex const_vector
+@item (const_vector:@var{m} [@var{x0} @var{x1} @dots{}])
+Represents a vector constant.  The square brackets stand for the vector
+containing the constant elements.  @var{x0}, @var{x1} and so on are
+the @code{const_int} or @code{const_double} elements.
+
+The number of units in a @code{const_vector} is obtained with the macro
+@code{CONST_VECTOR_NUNITS} as in @code{CONST_VECTOR_NUNITS (@var{v})}.
+
+Individual elements in a vector constant are accessed with the macro
+@code{CONST_VECTOR_ELT} as in @code{CONST_VECTOR_ELT (@var{v}, @var{n})
+where @var{v} is the vector constant and @var{n} is the element
+desired.
+
 @findex CONST_DOUBLE_MEM
 @findex CONST_DOUBLE_CHAIN
 @var{addr} is used to contain the @code{mem} expression that corresponds
@@ -1185,10 +1199,14 @@ the precise bit pattern used by the target machine, use the macro
 @findex CONST2_RTX
 The macro @code{CONST0_RTX (@var{mode})} refers to an expression with
 value 0 in mode @var{mode}.  If mode @var{mode} is of mode class
-@code{MODE_INT}, it returns @code{const0_rtx}.  Otherwise, it returns a
-@code{CONST_DOUBLE} expression in mode @var{mode}.  Similarly, the macro
+@code{MODE_INT}, it returns @code{const0_rtx}.  If mode @var{mode} is of
+mode class @code{MODE_FLOAT}, it returns a @code{CONST_DOUBLE}
+expression in mode @var{mode}.  Otherwise, it returns a
+@code{CONST_VECTOR} expression in mode @var{mode}.  Similarly, the macro
 @code{CONST1_RTX (@var{mode})} refers to an expression with value 1 in
-mode @var{mode} and similarly for @code{CONST2_RTX}.
+mode @var{mode} and similarly for @code{CONST2_RTX}.  The
+@code{CONST1_RTX} and @code{CONST2_RTX} macros are undefined
+for vector modes.
 
 @findex const_string
 @item (const_string @var{str})
@@ -3330,6 +3348,11 @@ There is only one @code{cc0} expression.
 @item
 There is only one @code{const_double} expression with value 0 for
 each floating point mode.  Likewise for values 1 and 2.
+
+@cindex @code{const_vector}, RTL sharing
+@item
+There is only one @code{const_vector} expression with value 0 for
+each vector mode, be it an integer or a double constant vector.
 
 @cindex @code{label_ref}, RTL sharing
 @cindex @code{scratch}, RTL sharing

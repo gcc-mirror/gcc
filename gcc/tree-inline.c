@@ -1223,6 +1223,7 @@ walk_tree (tp, func, data, htab_)
     case IDENTIFIER_NODE:
     case INTEGER_CST:
     case REAL_CST:
+    case VECTOR_CST:
     case STRING_CST:
     case REAL_TYPE:
     case COMPLEX_TYPE:

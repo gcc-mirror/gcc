@@ -2323,6 +2323,22 @@ canon_hash (x, mode)
 		 + (unsigned) CONST_DOUBLE_HIGH (x));
       return hash;
 
+    case CONST_VECTOR:
+      {
+	int units;
+	rtx elt;
+
+	units = CONST_VECTOR_NUNITS (x);
+
+	for (i = 0; i < units; ++i)
+	  {
+	    elt = CONST_VECTOR_ELT (x, i);
+	    hash += canon_hash (elt, GET_MODE (elt));
+	  }
+
+	return hash;
+      }
+
       /* Assume there is only one rtx object for any given label.  */
     case LABEL_REF:
       hash += ((unsigned) LABEL_REF << 7) + (unsigned long) XEXP (x, 0);
@@ -2776,6 +2792,7 @@ canon_reg (x, insn)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
     case ADDR_VEC:
@@ -3317,6 +3334,7 @@ fold_rtx (x, insn)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
     case REG:
@@ -3727,6 +3745,7 @@ fold_rtx (x, insn)
 	  case SYMBOL_REF:
 	  case LABEL_REF:
 	  case CONST_DOUBLE:
+	  case CONST_VECTOR:
 	    const_arg = arg;
 	    break;
 
@@ -6425,6 +6444,7 @@ cse_process_notes (x, object)
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case PC:
     case CC0:
     case LO_SUM:
@@ -7416,6 +7436,7 @@ count_reg_usage (x, counts, dest, incr)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
       return;

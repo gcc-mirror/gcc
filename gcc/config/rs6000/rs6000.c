@@ -174,6 +174,7 @@ static void is_altivec_return_reg PARAMS ((rtx, void *));
 int vrsave_operation PARAMS ((rtx, enum machine_mode));
 static rtx generate_set_vrsave PARAMS ((rtx, rs6000_stack_t *, int));
 static void altivec_frame_fixup PARAMS ((rtx, rtx, HOST_WIDE_INT));
+static int easy_vector_constant PARAMS ((rtx));
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -1194,6 +1195,54 @@ easy_fp_constant (op, mode)
     abort ();
 }
 
+/* Return 1 if the operand is a CONST_INT and can be put into a
+   register with one instruction.  */
+
+static int
+easy_vector_constant (op)
+     rtx op;
+{
+  rtx elt;
+  int units, i;
+
+  if (GET_CODE (op) != CONST_VECTOR)
+    return 0;
+
+  units = CONST_VECTOR_NUNITS (op);
+
+  /* We can generate 0 easily.  Look for that.  */
+  for (i = 0; i < units; ++i)
+    {
+      elt = CONST_VECTOR_ELT (op, i);
+
+      /* We could probably simplify this by just checking for equality
+	 with CONST0_RTX for the current mode, but let's be safe
+	 instead.  */
+
+      if (GET_CODE (elt) == CONST_INT && INTVAL (elt) != 0)
+	return 0;
+
+      if (GET_CODE (elt) == CONST_DOUBLE
+	       && (CONST_DOUBLE_LOW (elt) != 0
+		   || CONST_DOUBLE_HIGH (elt) != 0))
+	return 0;
+    }
+
+  /* We could probably generate a few other constants trivially, but
+     gcc doesn't generate them yet.  FIXME later.  */
+  return 0;
+}
+
+/* Return 1 if the operand is the constant 0.  This works for scalars
+   as well as vectors.  */
+int
+zero_constant (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return op == CONST0_RTX (mode);
+}
+
 /* Return 1 if the operand is 0.0.  */
 int
 zero_fp_constant (op, mode)
@@ -1892,6 +1941,7 @@ rs6000_legitimize_reload_address (x, mode, opnum, type, ind_levels, win)
 #if TARGET_MACHO
   if (GET_CODE (x) == SYMBOL_REF
       && DEFAULT_ABI == ABI_DARWIN
+      && !ALTIVEC_VECTOR_MODE (mode)
       && flag_pic)
     {
       /* Darwin load of floating point constant.  */
@@ -2186,9 +2236,10 @@ rs6000_emit_move (dest, source, mode)
 
   /* Handle the case where reload calls us with an invalid address;
      and the case of CONSTANT_P_RTX.  */
-  if (! general_operand (operands[1], mode)
-      || ! nonimmediate_operand (operands[0], mode)
-      || GET_CODE (operands[1]) == CONSTANT_P_RTX)
+  if (!VECTOR_MODE_P (mode)
+      && (! general_operand (operands[1], mode)
+	  || ! nonimmediate_operand (operands[0], mode)
+	  || GET_CODE (operands[1]) == CONSTANT_P_RTX))
     {
       emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
       return;
@@ -2218,8 +2269,8 @@ rs6000_emit_move (dest, source, mode)
     case V8HImode:
     case V4SFmode:
     case V4SImode:
-      /* fixme: aldyh -- allow vector constants when they are implemented.  */
-      if (CONSTANT_P (operands[1]))
+      if (CONSTANT_P (operands[1])
+	  && !easy_vector_constant (operands[1]))
 	operands[1] = force_const_mem (mode, operands[1]);
       break;
       

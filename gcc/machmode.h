@@ -24,7 +24,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Make an enum class that gives all the machine modes.  */
 
-#define DEF_MACHMODE(SYM, NAME, TYPE, BITSIZE, SIZE, UNIT, WIDER)  SYM,
+#define DEF_MACHMODE(SYM, NAME, TYPE, BITSIZE, SIZE, UNIT, WIDER, INNER)  SYM,
 
 enum machine_mode {
 #include "machmode.def"
@@ -106,6 +106,12 @@ extern const unsigned short mode_bitsize[NUM_MACHINE_MODES];
 extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
 
 #define GET_MODE_MASK(MODE) mode_mask_array[(int) (MODE)]
+
+extern const enum machine_mode inner_mode_array[NUM_MACHINE_MODES];
+
+/* Return the mode of the inner elements in a vector.  */
+
+#define GET_MODE_INNER(MODE) inner_mode_array[(int) (MODE)]
 
 #endif /* defined (HOST_WIDE_INT) && ! defined GET_MODE_MASK */
 

@@ -269,6 +269,9 @@ DEFTREECODE (REAL_CST, "real_cst", 'c', 3)
    Also there is TREE_CST_RTL.  */
 DEFTREECODE (COMPLEX_CST, "complex_cst", 'c', 3)
 
+/* Contents are in TREE_VECTOR_CST_ELTS field.  */
+DEFTREECODE (VECTOR_CST, "vector_cst", 'c', 3)     
+
 /* Contents are TREE_STRING_LENGTH and TREE_STRING_POINTER fields.
    Also there is TREE_CST_RTL.  */
 DEFTREECODE (STRING_CST, "string_cst", 'c', 3)

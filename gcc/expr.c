@@ -2562,8 +2562,7 @@ clear_storage (object, size)
 
   /* If OBJECT is not BLKmode and SIZE is the same size as its mode,
      just move a zero.  Otherwise, do this a piece at a time.  */
-  if ((GET_MODE (object) != BLKmode
-       && !VECTOR_MODE_P (GET_MODE (object)))
+  if (GET_MODE (object) != BLKmode
       && GET_CODE (size) == CONST_INT
       && GET_MODE_SIZE (GET_MODE (object)) == (unsigned int) INTVAL (size))
     emit_move_insn (object, CONST0_RTX (GET_MODE (object)));
@@ -4244,6 +4243,14 @@ is_zeros_p (exp)
 
     case REAL_CST:
       return REAL_VALUES_IDENTICAL (TREE_REAL_CST (exp), dconst0);
+
+    case VECTOR_CST:
+      for (elt = TREE_VECTOR_CST_ELTS (exp); elt;
+	   elt = TREE_CHAIN (elt))
+	if (!is_zeros_p (TREE_VALUE (elt)))
+	  return 0;
+
+      return 1;
 
     case CONSTRUCTOR:
       if (TREE_TYPE (exp) && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)

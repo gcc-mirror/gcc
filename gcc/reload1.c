@@ -2282,6 +2282,7 @@ eliminate_regs (x, mem_mode, insn)
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case CONST:
     case SYMBOL_REF:
     case CODE_LABEL:
@@ -2660,6 +2661,7 @@ elimination_effects (x, mem_mode)
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case CONST:
     case SYMBOL_REF:
     case CODE_LABEL:
@@ -3749,6 +3751,7 @@ scan_paradoxical_subregs (x)
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST_DOUBLE:
+    case CONST_VECTOR: /* shouldn't happen, but just in case.  */
     case CC0:
     case PC:
     case USE:
