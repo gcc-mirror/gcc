@@ -3709,7 +3709,9 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
     {
       /* If this is the `true' thread, we will want to follow the jump,
 	 so we can only do this if we have taken everything up to here.  */
-      if (thread_if_true && trial == new_thread)
+      if (thread_if_true && trial == new_thread
+	  && ! insn_references_resource_p (XVECEXP (PATTERN (trial), 0, 0),
+					   &opposite_needed, 0))
 	delay_list
 	  = steal_delay_list_from_target (insn, condition, PATTERN (trial),
 					  delay_list, &set, &needed,
