@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for openVMS/Alpha.
-   Copyright (C) 1996, 1997, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2001, 2004 Free Software Foundation, Inc.
    Contributed by Klaus Kaempf (kkaempf@progis.de).
 
 This file is part of GCC.
@@ -43,3 +43,15 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_OBJECT_SUFFIX ".obj"
 
 #define DUMPFILE_FORMAT "_%02d_"
+
+#define DELETE_IF_ORDINARY(NAME,ST,VERBOSE_FLAG)           \
+do                                                         \
+  {                                                        \
+    while (stat (NAME, &ST) >= 0 && S_ISREG (ST.st_mode))  \
+      if (unlink (NAME) < 0)                               \
+	{                                                  \
+	  if (VERBOSE_FLAG)                                \
+	    perror_with_name (NAME);                       \
+	  break;                                           \
+	}                                                  \
+  } while (0)

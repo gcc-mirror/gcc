@@ -1,3 +1,8 @@
+2004-04-29  Douglas B Rupp  <rupp@gnat.com>
+
+	* mkstemps.c (mkstemps) [VMS]: Remove special open option. Update
+	copyright.
+
 2004-04-26  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
 
 	* configure.ac (UNSIGNED_64BIT_TYPE): Unquote the definition.

@@ -1,4 +1,4 @@
-/* Copyright (C) 1991, 1992, 1996, 1998 Free Software Foundation, Inc.
+/* Copyright (C) 1991, 1992, 1996, 1998, 2004 Free Software Foundation, Inc.
    This file is derived from mkstemp.c from the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -121,11 +121,7 @@ mkstemps (template, suffix_len)
       v /= 62;
       XXXXXX[5] = letters[v % 62];
 
-#ifdef VMS
-      fd = open (template, O_RDWR|O_CREAT|O_EXCL, 0600, "fop=tmd");
-#else
       fd = open (template, O_RDWR|O_CREAT|O_EXCL, 0600);
-#endif
       if (fd >= 0)
 	/* The file does not exist.  */
 	return fd;
