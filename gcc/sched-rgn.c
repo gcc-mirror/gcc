@@ -2036,7 +2036,7 @@ add_branch_dependences (rtx head, rtx tail)
      end since moving them results in worse register allocation.  Uses remain
      at the end to ensure proper register allocation.
 
-     cc0 setters remaim at the end because they can't be moved away from
+     cc0 setters remain at the end because they can't be moved away from
      their cc0 user.
 
      Insns setting CLASS_LIKELY_SPILLED_P registers (usually return values)

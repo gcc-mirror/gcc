@@ -132,7 +132,7 @@ insn_divmod_values_to_profile (rtx insn, unsigned *n_values,
 	  (*n_values)++;
 	}
 
-      /* For mod, check whether it is not often a noop (or replacable by
+      /* For mod, check whether it is not often a noop (or replaceable by
 	 a few subtractions).  */
       if (GET_CODE (set_src) == UMOD && !side_effects_p (op1))
 	{
@@ -446,9 +446,9 @@ divmod_fixed_value_transform (rtx insn)
   histogram = XEXP (histogram, 1);
   all = INTVAL (XEXP (histogram, 0));
 
-  /* We requiere that count is at least half of all; this means
+  /* We require that count is at least half of all; this means
      that for the transformation to fire the value must be constant
-     at least 50% of time (and 75% gives the garantee of usage).  */
+     at least 50% of time (and 75% gives the guarantee of usage).  */
   if (!rtx_equal_p (op2, value) || 2 * count < all)
     return false;
 

@@ -1652,7 +1652,7 @@ noce_try_abs (struct noce_if_info *if_info)
 
   target = expand_abs_nojump (GET_MODE (if_info->x), b, if_info->x, 1);
 
-  /* ??? It's a quandry whether cmove would be better here, especially
+  /* ??? It's a quandary whether cmove would be better here, especially
      for integers.  Perhaps combine will clean things up.  */
   if (target && negate)
     target = expand_simple_unop (GET_MODE (target), NEG, target, if_info->x, 0);

@@ -6223,7 +6223,7 @@ basic_induction_var (const struct loop *loop, rtx x, enum machine_mode mode,
       /* convert_modes can emit new instructions, e.g. when arg is a loop
 	 invariant MEM and dest_reg has a different mode.
 	 These instructions would be emitted after the end of the function
-	 and then *inc_val would be an unitialized pseudo.
+	 and then *inc_val would be an uninitialized pseudo.
 	 Detect this and bail in this case.
 	 Other alternatives to solve this can be introducing a convert_modes
 	 variant which is allowed to fail but not allowed to emit new

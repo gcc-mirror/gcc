@@ -1820,7 +1820,7 @@ pp_c_expression (c_pretty_printer *pp, tree e)
 
 /* statement:
       labeled-statement
-      coumpound-statement
+      compound-statement
       expression-statement
       selection-statement
       iteration-statement
@@ -1870,7 +1870,7 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
       pp_needs_newline (pp) = true;
       break;
 
-      /* coumpound-statement:
+      /* compound-statement:
             {  block-item-list(opt) }
 
          block-item-list:

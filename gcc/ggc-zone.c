@@ -1001,7 +1001,7 @@ ggc_alloc_zone_1 (size_t size, struct alloc_zone *zone, short type)
   return result;
 }
 
-/* Allocate a SIZE of chunk memory of GTE type, into an approriate zone
+/* Allocate a SIZE of chunk memory of GTE type, into an appropriate zone
    for that type.  */
 
 void *
@@ -1288,7 +1288,7 @@ sweep_pages (struct alloc_zone *zone)
 	}
 
       /* Large pages are all or none affairs. Either they are
-	 completely empty, or they are completeley full.
+	 completely empty, or they are completely full.
 	 Thus, if the above didn't catch it, we need not do anything
 	 except remove the mark and reset the bytes_free.
 

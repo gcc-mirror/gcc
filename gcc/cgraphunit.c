@@ -931,7 +931,7 @@ cgraph_default_inline_p (struct cgraph_node *n)
    All inline candidates are put into prioritized heap based on estimated
    growth of the overall number of instructions and then update the estimates.
 
-   INLINED and INLINED_CALEES are just pointers to arrays large enought
+   INLINED and INLINED_CALEES are just pointers to arrays large enough
    to be passed to cgraph_inlined_into and cgraph_inlined_callees.  */
 
 static void

@@ -259,7 +259,7 @@ process_include (rtx desc, int lineno)
   fclose (input_file);
 }
 
-/* Process a top level rtx in some way, queueing as appropriate.  */
+/* Process a top level rtx in some way, queuing as appropriate.  */
 
 static void
 process_rtx (rtx desc, int lineno)
