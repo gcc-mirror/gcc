@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 C++ ABI.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
    Written by Alex Samuel <sameul@codesourcery.com>
 
    This file is part of GNU CC.
@@ -65,10 +65,10 @@
 /* Macros for tracing the write_* functions.  */
 #if DEBUG_MANGLE
 # define MANGLE_TRACE(FN, INPUT) \
-  fprintf (stderr, "  %-24s: %-24s\n", FN, INPUT)
+  fprintf (stderr, "  %-24s: %-24s\n", (FN), (INPUT))
 # define MANGLE_TRACE_TREE(FN, NODE) \
   fprintf (stderr, "  %-24s: %-24s (%p)\n", \
-           FN, tree_code_name[TREE_CODE (NODE)], (void *) NODE)
+           (FN), tree_code_name[TREE_CODE (NODE)], (void *) (NODE))
 #else
 # define MANGLE_TRACE(FN, INPUT)
 # define MANGLE_TRACE_TREE(FN, NODE)
@@ -227,11 +227,11 @@ static void write_java_integer_type_codes PARAMS ((tree));
 
 /* Write out a signed quantity in base 10.  */
 #define write_signed_number(NUMBER) \
-  write_number (NUMBER, /*unsigned_p=*/0, 10)
+  write_number ((NUMBER), /*unsigned_p=*/0, 10)
 
 /* Write out an unsigned quantity in base 10.  */
 #define write_unsigned_number(NUMBER) \
-  write_number (NUMBER, /*unsigned_p=*/1, 10)
+  write_number ((NUMBER), /*unsigned_p=*/1, 10)
 
 /* If DECL is a template instance, return non-zero and, if
    TEMPLATE_INFO is non-NULL, set *TEMPLATE_INFO to its template info.
