@@ -2771,6 +2771,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"mask64_operand", {CONST_INT, CONST_DOUBLE}},			   \
   {"count_register_operand", {REG}},					   \
   {"xer_operand", {REG}},						   \
+  {"symbol_ref_operand", {SYMBOL_REF}},					   \
   {"call_operand", {SYMBOL_REF, REG}},					   \
   {"current_file_function_operand", {SYMBOL_REF}},			   \
   {"input_operand", {SUBREG, MEM, REG, CONST_INT,			   \

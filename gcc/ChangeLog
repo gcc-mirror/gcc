@@ -1,3 +1,12 @@
+2002-04-12  Jan Hubicka  <jh@suse.cz>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (call_operand): Allow LINK and COUNT
+	registers.
+	(symbol_ref_operand): New.
+	* config/rs6000/rs6000.h (PREDICATE_CODES): Add symbol_ref_operand.
+	* config/rs6000/rs6000.md (call_nonlocal_aix): Use symbol_ref_operand.
+
 2002-04-12  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.h (ASM_SPEC): Moved from here ...
