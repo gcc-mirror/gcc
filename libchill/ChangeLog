@@ -1,3 +1,8 @@
+Mon Jan 18 04:47:34 1999  Jeffrey A Law  (law@cygnus.com)
+			  Hans-Peter Nilsson  <hp@axis.se>
+
+	* Makefile.in: Add many missing dependencies.
+
 Sun Jan  3 21:04:53 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* readrecord.c: Include <sys/types.h> for off_t.
