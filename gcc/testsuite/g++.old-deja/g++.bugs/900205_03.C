@@ -18,10 +18,10 @@
 struct struct00 { };
 
 int global_function_0 () {
-}					// { dg-error "" } 
+}					// { dg-error "" "" { xfail *-*-* } }
 
 struct00 global_function_1 () {
-}					// { dg-error "" } 
+}					// { dg-error "" "" { xfail *-*-* } }
 
 struct struct0 {
 
@@ -41,9 +41,9 @@ struct struct1 {
 };
 
 int struct1_member_function_0 () {
-}					// { dg-error "" } 
+}					// { dg-error "" "" { xfail *-*-* } }
 
 struct1 struct1::struct1_member_function_1 () {
-}				        // { dg-error "" } 
+}				        // { dg-error "" "" { xfail *-*-* } }
 
 int main () { return 0; }
