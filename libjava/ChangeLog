@@ -1,3 +1,8 @@
+2001-08-15  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/convert/natIconv.cc (read): Handle EINVAL and E2BIG
+	correctly.
+
 2001-08-09  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/image/SampleModel.java (getPixel): Set correct array
