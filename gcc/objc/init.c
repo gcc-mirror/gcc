@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime initialization 
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -31,13 +31,19 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define PROTOCOL_VERSION 2
 
 /* This list contains all modules currently loaded into the runtime */
-static struct objc_list* __objc_module_list = 0;
+static struct objc_list* __objc_module_list = 0; 	/* !T:MUTEX */
 
 /* This list contains all proto_list's not yet assigned class links */
-static struct objc_list* unclaimed_proto_list = 0;
+static struct objc_list* unclaimed_proto_list = 0; 	/* !T:MUTEX */
 
 /* List of unresolved static instances.  */
-static struct objc_list *uninitialized_statics;
+static struct objc_list *uninitialized_statics = 0; 	/* !T:MUTEX */
+
+/* Global runtime "write" mutex. */
+_objc_mutex_t __objc_runtime_mutex;
+
+/* Number of threads that are alive. */
+int __objc_runtime_threads_alive = 1;			/* !T:MUTEX */
 
 /* Check compiler vs runtime version */
 static void init_check_module_version (Module_t);
@@ -52,10 +58,10 @@ static void __objc_class_add_protocols (Class, struct objc_protocol_list*);
    or a category is loaded into the runtime.  This may e.g. help a
    dynamic loader determine the classes that have been loaded when
    an object file is dynamically linked in */
-void (*_objc_load_callback)(Class class, Category* category) = 0;
+void (*_objc_load_callback)(Class class, Category* category) = 0; /* !T:SAFE */
 
 /* Is all categories/classes resolved? */
-BOOL __objc_dangling_categories = NO;
+BOOL __objc_dangling_categories = NO;           /* !T:UNUSED */
 
 extern SEL
 __sel_register_typed_name (const char *name, const char *types, 
@@ -68,6 +74,8 @@ objc_init_statics ()
 {
   struct objc_list **cell = &uninitialized_statics;
   struct objc_static_instances **statics_in_module;
+
+  objc_mutex_lock(__objc_runtime_mutex);
 
   while (*cell)
     {
@@ -114,6 +122,8 @@ objc_init_statics ()
       else
 	cell = &(*cell)->tail;
     }
+
+  objc_mutex_unlock(__objc_runtime_mutex);
 } /* objc_init_statics */
 
 /* This function is called by constructor functions generated for each
@@ -150,6 +160,11 @@ __objc_exec_class (Module_t module)
   /* On the first call of this routine, initialize some data structures.  */
   if (!previous_constructors)
     {
+	/* Initialize thread-safe system */
+      __objc_init_thread_system();
+      __objc_runtime_threads_alive = 1;
+      __objc_runtime_mutex = objc_mutex_allocate();
+
       __objc_init_selector_tables();
       __objc_init_class_tables();
       __objc_init_dispatch_tables();
@@ -157,6 +172,7 @@ __objc_exec_class (Module_t module)
     }
 
   /* Save the module pointer for later processing. (not currently used) */
+  objc_mutex_lock(__objc_runtime_mutex);
   __objc_module_list = list_cons(module, __objc_module_list);
 
   /* Replace referenced selectors from names to SEL's.  */
@@ -287,6 +303,7 @@ __objc_exec_class (Module_t module)
       unclaimed_proto_list = 0;
     }
 
+  objc_mutex_unlock(__objc_runtime_mutex);
 }
 
 /* Sanity check the version of gcc used to compile `module'*/
@@ -314,6 +331,8 @@ __objc_init_protocols (struct objc_protocol_list* protos)
 
   if (! protos)
     return;
+
+  objc_mutex_lock(__objc_runtime_mutex);
 
   if (!proto_class)
     proto_class = objc_lookup_class("Protocol");
@@ -348,6 +367,8 @@ __objc_init_protocols (struct objc_protocol_list* protos)
 	  abort ();
 	}
     }
+
+  objc_mutex_unlock(__objc_runtime_mutex);
 }
 
 static void __objc_class_add_protocols (Class class,
