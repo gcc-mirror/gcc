@@ -69,7 +69,6 @@ This manual contains no Invariant Sections.  The Front-Cover Texts are
 @contents
 @page
 
-@ifinfo
 @node Top
 @top
 The C preprocessor implements the macro language used to transform C,
@@ -171,9 +170,10 @@ Obsolete Features
 @end detailmenu
 @end menu
 
+@ifnottex
 @copyrightnotice{}
 @covertexts{}
-@end ifinfo
+@end ifnottex
 
 @node Overview
 @chapter Overview

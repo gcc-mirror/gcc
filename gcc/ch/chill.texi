@@ -17,7 +17,6 @@ END-INFO-DIR-ENTRY
 @end titlepage
 @contents
 
-@ifinfo
 @node Top
 @top
 
@@ -31,8 +30,6 @@ END-INFO-DIR-ENTRY
 * Directives::            Implemented Compiler Directives
 * References::            Language definition references
 @end menu
-
-@end ifinfo
 
 @node Options
 @chapter Compiler options

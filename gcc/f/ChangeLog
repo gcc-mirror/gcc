@@ -1,3 +1,7 @@
+2001-12-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77.texi: Don't condition menus on @ifinfo.
+
 Wed Dec  5 06:49:21 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* com.c (ffecom_1): Properly handle TREE_READONLY for INDIRECT_REF.
