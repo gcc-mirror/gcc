@@ -1,5 +1,5 @@
 /* Handle parameterized types (templates) for GNU C++.
-   Copyright (C) 1992, 93-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-97, 1998, 1999, 2000 Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -197,6 +197,8 @@ finish_member_template_decl (decl)
 	}
       return NULL_TREE;
     }
+  else if (TREE_CODE (decl) == FIELD_DECL)
+    cp_error ("data member `%D' cannot be a member template", decl);
   else if (DECL_TEMPLATE_INFO (decl))
     {
       if (!DECL_TEMPLATE_SPECIALIZATION (decl))
@@ -6214,7 +6216,9 @@ tsubst (t, args, complain, in_decl)
 	    if (pedantic)
 	      pedwarn ("creating array with size zero");
 	  }
-	else if (integer_zerop (max) || INT_CST_LT (max, integer_zero_node))
+	else if (integer_zerop (max) 
+		 || (TREE_CODE (max) == INTEGER_CST 
+		     && INT_CST_LT (max, integer_zero_node)))
 	  {
 	    /* [temp.deduct]
 

@@ -1705,6 +1705,9 @@ decay_conversion (exp)
       code = TREE_CODE (type);
     }
 
+  if (type == error_mark_node)
+    return error_mark_node;
+
   /* Constants can be used directly unless they're not loadable.  */
   if (TREE_CODE (exp) == CONST_DECL)
     exp = DECL_INITIAL (exp);

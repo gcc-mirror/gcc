@@ -1,5 +1,22 @@
 2000-01-12  Mark Mitchell  <mark@codesourcery.com>
 
+	* call.c (convert_class_to_reference): Fix typos.
+	(build_conditional_expr): Handle errors gracefully.
+	* class.c (push_nested_class): Likewise.
+	* cp-tree.h (VAR_FUNCTION_OR_PARM_DECL_CHECK): New macro.
+	(DECL_THIS_EXTERN): Use it.
+	(DECL_THIS_STATIC): Likewise.
+	* cvt.c (convert_to_void): Handle errors gracefully.
+	(build_expr_type_conversion): Likewise.
+	* decl.c (maybe_push_decl): Likewise.
+	(start_decl_1): Likewise.
+	(require_complete_types_for_parms): Likewise.
+	* parse.y (structsp): Likewise.
+	(base_class): Likewise.
+	* parse.c: Regenerated.
+	* pt.c (finish_member_template_decl): Likewise.
+	* typeck.c (decay_conversion): Likewise.
+	
 	* cp-tree.h (dfs_skip_vbases): New function.
 	(find_vbase_instance): Likewise.
 	* class.c (determine_primary_base): Allow a nearly empty base to

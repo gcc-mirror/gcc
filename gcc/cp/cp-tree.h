@@ -140,6 +140,16 @@ Boston, MA 02111-1307, USA.  */
 			 __LINE__, __PRETTY_FUNCTION__);	\
     __t; })
 
+#define VAR_FUNCTION_OR_PARM_DECL_CHECK(NODE)			\
+({  const tree __t = NODE;					\
+    enum tree_code __c = TREE_CODE(__t);			\
+    if (__c != VAR_DECL 					\
+	&& __c != FUNCTION_DECL 				\
+        && __c != PARM_DECL)					\
+      tree_check_failed (__t, VAR_DECL, __FILE__,		\
+			 __LINE__, __PRETTY_FUNCTION__);	\
+    __t; })
+
 #define VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK(NODE)		\
 ({  const tree __t = NODE;					\
     enum tree_code __c = TREE_CODE(__t);			\
@@ -162,6 +172,7 @@ Boston, MA 02111-1307, USA.  */
 #else /* not ENABLE_TREE_CHECKING, or not gcc */
 
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE)	NODE
+#define VAR_FUNCTION_OR_PARM_DECL_CHECK(NODE)   NODE
 #define VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK(NODE)	NODE
 #define RECORD_OR_UNION_TYPE_CHECK(NODE)	NODE
 
@@ -2380,14 +2391,16 @@ extern int flag_new_for_scope;
 #define PTRMEM_CST_MEMBER(NODE) (((ptrmem_cst_t)PTRMEM_CST_CHECK (NODE))->member)
 
 /* Nonzero for VAR_DECL and FUNCTION_DECL node means that `extern' was
-   specified in its declaration.  */
+   specified in its declaration.  This can also be set for an
+   erroneously declared PARM_DECL.  */
 #define DECL_THIS_EXTERN(NODE) \
-  DECL_LANG_FLAG_2 (VAR_OR_FUNCTION_DECL_CHECK (NODE))
+  DECL_LANG_FLAG_2 (VAR_FUNCTION_OR_PARM_DECL_CHECK (NODE))
 
 /* Nonzero for VAR_DECL and FUNCTION_DECL node means that `static' was
-   specified in its declaration.  */
+   specified in its declaration.  This can also be set for an
+   erroneously declared PARM_DECL.  */
 #define DECL_THIS_STATIC(NODE) \
-  DECL_LANG_FLAG_6 (VAR_OR_FUNCTION_DECL_CHECK (NODE))
+  DECL_LANG_FLAG_6 (VAR_FUNCTION_OR_PARM_DECL_CHECK (NODE))
 
 /* Nonzero in FUNCTION_DECL means it is really an operator.
    Just used to communicate formatting information to dbxout.c.  */

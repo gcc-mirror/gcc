@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-98, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -4169,11 +4169,12 @@ maybe_push_decl (decl)
   /* Add this decl to the current binding level, but not if it comes
      from another scope, e.g. a static member variable.  TEM may equal
      DECL or it may be a previous decl of the same name.  */
-  if ((TREE_CODE (decl) != PARM_DECL
-       && DECL_CONTEXT (decl) != NULL_TREE
-       /* Definitions of namespace members outside their namespace are
-	  possible. */
-       && TREE_CODE (DECL_CONTEXT (decl)) != NAMESPACE_DECL)
+  if (decl == error_mark_node
+      || (TREE_CODE (decl) != PARM_DECL
+	  && DECL_CONTEXT (decl) != NULL_TREE
+	  /* Definitions of namespace members outside their namespace are
+	     possible. */
+	  && TREE_CODE (DECL_CONTEXT (decl)) != NAMESPACE_DECL)
       || (TREE_CODE (decl) == TEMPLATE_DECL && !namespace_bindings_p ())
       || TREE_CODE (type) == UNKNOWN_TYPE
       /* The declaration of a template specialization does not affect
@@ -6871,7 +6872,9 @@ start_decl_1 (decl)
   if (!initialized
       && TREE_CODE (decl) != TYPE_DECL
       && TREE_CODE (decl) != TEMPLATE_DECL
-      && IS_AGGR_TYPE (type) && ! DECL_EXTERNAL (decl))
+      && type != error_mark_node
+      && IS_AGGR_TYPE (type) 
+      && ! DECL_EXTERNAL (decl))
     {
       if ((! processing_template_decl || ! uses_template_parms (type))
 	  && TYPE_SIZE (complete_type (type)) == NULL_TREE)
@@ -11309,10 +11312,17 @@ static void
 require_complete_types_for_parms (parms)
      tree parms;
 {
-  while (parms)
+  for (; parms; parms = TREE_CHAIN (parms))
     {
       tree type = TREE_TYPE (parms);
-      if (TYPE_SIZE (complete_type (type)) == NULL_TREE)
+
+      /* Try to complete the TYPE.  */
+      type = complete_type (type);
+
+      if (type == error_mark_node)
+	continue;
+
+      if (TYPE_SIZE (type) == NULL_TREE)
 	{
 	  if (DECL_NAME (parms))
 	    error ("parameter `%s' has incomplete type",
@@ -11323,8 +11333,6 @@ require_complete_types_for_parms (parms)
 	}
       else
 	layout_decl (parms, 0);
-
-      parms = TREE_CHAIN (parms);
     }
 }
 

@@ -928,10 +928,10 @@ convert_class_to_reference (t, s, expr)
   if (!cand)
     return NULL_TREE;
 
-  conv = build_conv (IDENTITY_CONV, s, expr);
+  conv = build1 (IDENTITY_CONV, s, expr);
   conv = build_conv (USER_CONV,
 		     non_reference (TREE_TYPE (TREE_TYPE (cand->fn))),
-		     expr);
+		     conv);
   TREE_OPERAND (conv, 1) = build_expr_ptr_wrapper (cand);
   ICS_USER_FLAG (conv) = 1;
   if (cand->viable == -1)
@@ -2770,6 +2770,12 @@ build_conditional_expr (arg1, arg2, arg3)
       arg1 = arg2 = save_expr (arg1);
     }
 
+  /* [expr.cond]
+  
+     The first expr ession is implicitly converted to bool (clause
+     _conv_).  */
+  arg1 = cp_convert (boolean_type_node, arg1);
+
   /* If something has already gone wrong, just pass that fact up the
      tree.  */
   if (arg1 == error_mark_node 
@@ -2779,12 +2785,6 @@ build_conditional_expr (arg1, arg2, arg3)
       || TREE_TYPE (arg2) == error_mark_node
       || TREE_TYPE (arg3) == error_mark_node)
     return error_mark_node;
-
-  /* [expr.cond]
-  
-     The first expr ession is implicitly converted to bool (clause
-     _conv_).  */
-  arg1 = cp_convert (boolean_type_node, arg1);
 
   /* Convert from reference types to ordinary types; no expressions
      really have reference type in C++.  */

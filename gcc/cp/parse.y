@@ -1,5 +1,5 @@
 /* YACC parser for C++ syntax.
-   Copyright (C) 1988, 89, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 89, 93-98, 1999, 2000 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -2124,7 +2124,9 @@ structsp:
 		    {
 		      $$.t = $1.t;
 		      /* struct B: public A; is not accepted by the WP grammar.  */
-		      if (TYPE_BINFO_BASETYPES ($$.t) && !TYPE_SIZE ($$.t)
+		      if (CLASS_TYPE_P ($$.t)
+			  && TYPE_BINFO_BASETYPES ($$.t) 
+			  && !TYPE_SIZE ($$.t)
 			  && ! TYPE_BEING_DEFINED ($$.t))
 			cp_error ("base clause without member specification for `%#T'",
 				  $$.t);
@@ -2298,7 +2300,12 @@ base_class:
 
 base_class.1:
 	  typename_sub
-		{ if ($$ != error_mark_node) $$ = TYPE_MAIN_DECL ($1); }
+		{ if ($$ == error_mark_node)
+		    ;
+                  else if (!TYPE_P ($$))
+		    $$ = error_mark_node;
+		  else 
+		    $$ = TYPE_MAIN_DECL ($1); }
 	| nonnested_type
 	;
 
