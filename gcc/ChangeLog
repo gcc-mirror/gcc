@@ -1,3 +1,7 @@
+2004-10-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c: Fix a comment typo.
+
 2004-10-08  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_register_info): Don't save fprs for 

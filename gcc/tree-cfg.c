@@ -790,7 +790,7 @@ main_block_label (tree label)
   return label_for_bb[bb->index];
 }
 
-/* Cleanup redundant labels.  This is a three-steo process:
+/* Cleanup redundant labels.  This is a three-step process:
      1) Find the leading label for each block.
      2) Redirect all references to labels to the leading labels.
      3) Cleanup all useless labels.  */
