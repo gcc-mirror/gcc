@@ -1,3 +1,13 @@
+Tue Aug 13 17:40:25 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (sh_init_builtins): Add PARAMS to declaration.
+	(sh_media_init_builtins, sh_expand_builtin): Likewise.
+	(sh_expand_unop_v2sf): Use PARAMS for variable declaration.
+	(sh_expand_binop_v2sf): Likewise.
+	* sh-protos.h (sh_expand_unop_v2sf): Add PARAMS to declaration.
+	(sh_expand_binop_v2sf, sh_cfun_interrupt_handler_p): Likewise.
+	(sh_initialize_trampoline): Likewise.
+
 2002-08-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* s390-modes.def [CCL1, CCL2, CCT1, CCT2, CCT3, CCUR, CCSR]: Declare

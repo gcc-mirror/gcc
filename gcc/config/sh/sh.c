@@ -205,9 +205,9 @@ static bool sh_ms_bitfield_layout_p PARAMS ((tree));
 
 static void sh_encode_section_info PARAMS ((tree, int));
 static const char *sh_strip_name_encoding PARAMS ((const char *));
-static void sh_init_builtins (void);
-static void sh_media_init_builtins (void);
-static rtx sh_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+static void sh_init_builtins PARAMS ((void));
+static void sh_media_init_builtins PARAMS ((void));
+static rtx sh_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 
 
 /* Initialize the GCC target structure.  */
@@ -7615,7 +7615,7 @@ sh_expand_unop_v2sf (code, op0, op1)
 {
   rtx sel0 = const0_rtx;
   rtx sel1 = const1_rtx;
-  rtx (*fn) (rtx, rtx, rtx, rtx, rtx) = gen_unary_sf_op;
+  rtx (*fn) PARAMS ((rtx, rtx, rtx, rtx, rtx)) = gen_unary_sf_op;
   rtx op = gen_rtx_fmt_e (code, SFmode, op1);
 
   emit_insn ((*fn) (op0, op1, op, sel0, sel0));
@@ -7629,7 +7629,7 @@ sh_expand_binop_v2sf (code, op0, op1, op2)
 {
   rtx sel0 = const0_rtx;
   rtx sel1 = const1_rtx;
-  rtx (*fn) (rtx, rtx, rtx, rtx, rtx, rtx, rtx) = gen_binary_sf_op;
+  rtx (*fn) PARAMS ((rtx, rtx, rtx, rtx, rtx, rtx, rtx)) = gen_binary_sf_op;
   rtx op = gen_rtx_fmt_ee (code, SFmode, op1, op2);
 
   emit_insn ((*fn) (op0, op1, op2, op, sel0, sel0, sel0));
