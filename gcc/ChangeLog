@@ -1,3 +1,7 @@
+2000-07-17  Mark Klein <mklein@dis.com>
+
+         * pa.c (emit_hpdiv_const): Update to match new pattern for udivsi3.
+
 2000-07-17  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* Makefile.in (TARGET_GETGROUPS_T): New configuration variable.
