@@ -1,3 +1,8 @@
+2003-04-29  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure.in:  More general test for cmp --ignore-initial.
+	* configure:  Regenerate.
+
 2003-04-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.c (save_expr): Don't fold a COMPONENT_REF.
