@@ -3581,17 +3581,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		   it does not.  Therefore, we have to manually obtain
 		   the underlying type here.  */
 		scope = non_reference (scope);
-		/* If the SCOPE is an OFFSET_TYPE, then we grab the
-		   type of the field.  We get an OFFSET_TYPE for
-		   something like:
-
-		     S::T.a ...
-
-		   Probably, we should not get an OFFSET_TYPE here;
-		   that transformation should be made only if `&S::T'
-		   is written.  */
-		if (TREE_CODE (scope) == OFFSET_TYPE)
-		  scope = TREE_TYPE (scope);
 		/* The type of the POSTFIX_EXPRESSION must be
 		   complete.  */
 		scope = complete_type_or_else (scope, NULL_TREE);

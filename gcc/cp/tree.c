@@ -1775,10 +1775,8 @@ pod_type_p (tree t)
     return 1;
   if (TYPE_PTR_P (t))
     return 1; /* pointer to non-member */
-  if (TYPE_PTRMEM_P (t))
-    return 1; /* pointer to member object */
-  if (TYPE_PTRMEMFUNC_P (t))
-    return 1; /* pointer to member function */
+  if (TYPE_PTR_TO_MEMBER_P (t))
+    return 1; /* pointer to member */
   
   if (! CLASS_TYPE_P (t))
     return 0; /* other non-class type (reference or function) */

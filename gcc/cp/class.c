@@ -3078,7 +3078,7 @@ check_field_decls (tree t, tree *access_decls,
 
       type = strip_array_types (type);
       
-      if (TREE_CODE (type) == POINTER_TYPE)
+      if (TYPE_PTR_P (type))
 	has_pointers = 1;
 
       if (DECL_MUTABLE_P (x) || TYPE_HAS_MUTABLE_P (type))

@@ -642,11 +642,9 @@ standard_conversion (tree to, tree from, tree expr)
   if (same_type_p (from, to))
     return conv;
 
-  if ((tcode == POINTER_TYPE || TYPE_PTRMEMFUNC_P (to))
+  if ((tcode == POINTER_TYPE || TYPE_PTR_TO_MEMBER_P (to))
       && expr && null_ptr_cst_p (expr))
-    {
-      conv = build_conv (STD_CONV, to, conv);
-    }
+    conv = build_conv (STD_CONV, to, conv);
   else if ((tcode == INTEGER_TYPE && fcode == POINTER_TYPE)
 	   || (tcode == POINTER_TYPE && fcode == INTEGER_TYPE))
     {
@@ -663,33 +661,37 @@ standard_conversion (tree to, tree from, tree expr)
       conv = build_conv (STD_CONV, to, conv);
       ICS_BAD_FLAG (conv) = 1;
     }
-  else if (tcode == POINTER_TYPE && fcode == POINTER_TYPE)
+  else if ((tcode == POINTER_TYPE && fcode == POINTER_TYPE)
+	   || (TYPE_PTRMEM_P (to) && TYPE_PTRMEM_P (from)))
     {
-      enum tree_code ufcode = TREE_CODE (TREE_TYPE (from));
-      enum tree_code utcode = TREE_CODE (TREE_TYPE (to));
+      tree to_pointee;
+      tree from_pointee;
 
-      if (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (from),
-						     TREE_TYPE (to)))
+      if (tcode == POINTER_TYPE
+	  && same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (from),
+							TREE_TYPE (to)))
 	;
-      else if (utcode == VOID_TYPE && ufcode != OFFSET_TYPE
-	       && ufcode != FUNCTION_TYPE)
+      else if (VOID_TYPE_P (TREE_TYPE (to))
+	       && !TYPE_PTRMEM_P (from)
+	       && TREE_CODE (TREE_TYPE (from)) != FUNCTION_TYPE)
 	{
 	  from = build_pointer_type
 	    (cp_build_qualified_type (void_type_node, 
 				      cp_type_quals (TREE_TYPE (from))));
 	  conv = build_conv (PTR_CONV, from, conv);
 	}
-      else if (ufcode == OFFSET_TYPE && utcode == OFFSET_TYPE)
+      else if (TYPE_PTRMEM_P (from))
 	{
-	  tree fbase = TYPE_OFFSET_BASETYPE (TREE_TYPE (from));
-	  tree tbase = TYPE_OFFSET_BASETYPE (TREE_TYPE (to));
+	  tree fbase = TYPE_PTRMEM_CLASS_TYPE (from);
+	  tree tbase = TYPE_PTRMEM_CLASS_TYPE (to);
 
 	  if (DERIVED_FROM_P (fbase, tbase)
 	      && (same_type_ignoring_top_level_qualifiers_p
-		  (TREE_TYPE (TREE_TYPE (from)),
-		   TREE_TYPE (TREE_TYPE (to)))))
+		  (TYPE_PTRMEM_POINTED_TO_TYPE (from),
+		   TYPE_PTRMEM_POINTED_TO_TYPE (to))))
 	    {
-	      from = build_ptrmem_type (tbase, TREE_TYPE (TREE_TYPE (from)));
+	      from = build_ptrmem_type (tbase, 
+					TYPE_PTRMEM_POINTED_TO_TYPE (from));
 	      conv = build_conv (PMEM_CONV, from, conv);
 	    }
 	}
@@ -706,14 +708,25 @@ standard_conversion (tree to, tree from, tree expr)
 	    }
 	}
 
+      if (tcode == POINTER_TYPE)
+	{
+	  to_pointee = TREE_TYPE (to);
+	  from_pointee = TREE_TYPE (from);
+	}
+      else
+	{
+	  to_pointee = to;
+	  from_pointee = from;
+	}
+
       if (same_type_p (from, to))
 	/* OK */;
-      else if (comp_ptr_ttypes (TREE_TYPE (to), TREE_TYPE (from)))
+      else if (comp_ptr_ttypes (to_pointee, from_pointee))
 	conv = build_conv (QUAL_CONV, to, conv);
       else if (expr && string_conv_p (to, expr, 0))
 	/* converting from string constant to char *.  */
 	conv = build_conv (QUAL_CONV, to, conv);
-      else if (ptr_reasonably_similar (TREE_TYPE (to), TREE_TYPE (from)))
+      else if (ptr_reasonably_similar (to_pointee, from_pointee))
 	{
 	  conv = build_conv (PTR_CONV, to, conv);
 	  ICS_BAD_FLAG (conv) = 1;
@@ -745,14 +758,25 @@ standard_conversion (tree to, tree from, tree expr)
     }
   else if (tcode == BOOLEAN_TYPE)
     {
-      if (! (INTEGRAL_CODE_P (fcode) || fcode == REAL_TYPE
-	     || fcode == POINTER_TYPE || TYPE_PTRMEMFUNC_P (from)))
-	return 0;
+      /* [conv.bool]
 
-      conv = build_conv (STD_CONV, to, conv);
-      if (fcode == POINTER_TYPE
-	  || (TYPE_PTRMEMFUNC_P (from) && ICS_STD_RANK (conv) < PBOOL_RANK))
-	ICS_STD_RANK (conv) = PBOOL_RANK;
+          An rvalue of arithmetic, enumeration, pointer, or pointer to
+	  member type can be converted to an rvalue of type bool.  */
+      if (ARITHMETIC_TYPE_P (from)
+	  || fcode == ENUMERAL_TYPE
+	  || fcode == POINTER_TYPE
+	  || TYPE_PTR_TO_MEMBER_P (from))
+	{
+	  conv = build_conv (STD_CONV, to, conv);
+	  if (fcode == POINTER_TYPE
+	      || TYPE_PTRMEM_P (from)
+	      || (TYPE_PTRMEMFUNC_P (from) 
+		  && ICS_STD_RANK (conv) < PBOOL_RANK))
+	    ICS_STD_RANK (conv) = PBOOL_RANK;
+	  return conv;
+	}
+      
+      return NULL_TREE;
     }
   /* We don't check for ENUMERAL_TYPE here because there are no standard
      conversions to enum type.  */
@@ -1592,8 +1616,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	     T       operator-(T);  */
 
     case CONVERT_EXPR: /* unary + */
-      if (TREE_CODE (type1) == POINTER_TYPE
-	  && TREE_CODE (TREE_TYPE (type1)) != OFFSET_TYPE)
+      if (TREE_CODE (type1) == POINTER_TYPE)
 	break;
     case NEGATE_EXPR:
       if (ARITHMETIC_TYPE_P (type1))
@@ -1618,12 +1641,10 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 
     case MEMBER_REF:
       if (TREE_CODE (type1) == POINTER_TYPE
-	  && (TYPE_PTRMEMFUNC_P (type2) || TYPE_PTRMEM_P (type2)))
+	  && TYPE_PTR_TO_MEMBER_P (type2))
 	{
 	  tree c1 = TREE_TYPE (type1);
-	  tree c2 = (TYPE_PTRMEMFUNC_P (type2)
-		     ? TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (type2)))
-		     : TYPE_OFFSET_BASETYPE (TREE_TYPE (type2)));
+	  tree c2 = TYPE_PTRMEM_CLASS_TYPE (type2);
 
 	  if (IS_AGGR_TYPE (c1) && DERIVED_FROM_P (c2, c1)
 	      && (TYPE_PTRMEMFUNC_P (type2)
@@ -1693,14 +1714,12 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
       if ((TYPE_PTRMEMFUNC_P (type1) && TYPE_PTRMEMFUNC_P (type2))
 	  || (TYPE_PTRMEM_P (type1) && TYPE_PTRMEM_P (type2)))
 	break;
-      if ((TYPE_PTRMEMFUNC_P (type1) || TYPE_PTRMEM_P (type1))
-	  && null_ptr_cst_p (args[1]))
+      if (TYPE_PTR_TO_MEMBER_P (type1) && null_ptr_cst_p (args[1]))
 	{
 	  type2 = type1;
 	  break;
 	}
-      if ((TYPE_PTRMEMFUNC_P (type2) || TYPE_PTRMEM_P (type2))
-	  && null_ptr_cst_p (args[0]))
+      if (TYPE_PTR_TO_MEMBER_P (type2) && null_ptr_cst_p (args[0]))
 	{
 	  type1 = type2;
 	  break;
@@ -1871,12 +1890,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	break;
 
       /* Otherwise, the types should be pointers.  */
-      if (!(TREE_CODE (type1) == POINTER_TYPE
-	    || TYPE_PTRMEM_P (type1)
-	    || TYPE_PTRMEMFUNC_P (type1))
-	  || !(TREE_CODE (type2) == POINTER_TYPE
-	       || TYPE_PTRMEM_P (type2)
-	       || TYPE_PTRMEMFUNC_P (type2)))
+      if (!(TYPE_PTR_P (type1) || TYPE_PTR_TO_MEMBER_P (type1))
+	  || !(TYPE_PTR_P (type2) || TYPE_PTR_TO_MEMBER_P (type2)))
 	return;
       
       /* We don't check that the two types are the same; the logic
@@ -1894,8 +1909,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
   if (type2 && !same_type_p (type1, type2)
       && TREE_CODE (type1) == TREE_CODE (type2)
       && (TREE_CODE (type1) == REFERENCE_TYPE
-	  || (TREE_CODE (type1) == POINTER_TYPE
-	      && TYPE_PTRMEM_P (type1) == TYPE_PTRMEM_P (type2))
+	  || (TYPE_PTR_P (type1) && TYPE_PTR_P (type2))
+	  || (TYPE_PTRMEM_P (type1) && TYPE_PTRMEM_P (type2))
 	  || TYPE_PTRMEMFUNC_P (type1)
 	  || IS_AGGR_TYPE (type1)
 	  || TREE_CODE (type1) == ENUMERAL_TYPE))
@@ -2605,76 +2620,6 @@ build_user_type_conversion (tree totype, tree expr, int flags)
   return NULL_TREE;
 }
 
-/* Find the possibly overloaded set of functions corresponding to a
-   call of the form SCOPE::NAME (...). NAME might be a
-   TEMPLATE_ID_EXPR, OVERLOAD, _DECL, or IDENTIFIER_NODE.  */
-
-tree
-resolve_scoped_fn_name (tree scope, tree name)
-{
-  tree fn = NULL_TREE;
-  tree template_args = NULL_TREE;
-  bool is_template_id = TREE_CODE (name) == TEMPLATE_ID_EXPR;
-  
-  if (is_template_id)
-    {
-      template_args = TREE_OPERAND (name, 1);
-      name = TREE_OPERAND (name, 0);
-    }
-  if (TREE_CODE (name) == OVERLOAD)
-    name = DECL_NAME (get_first_fn (name));
-  
-  if (TREE_CODE (scope) == NAMESPACE_DECL)
-    fn = lookup_namespace_name (scope, name);
-  else if (!CLASS_TYPE_P (scope))
-    {
-      error ("`%T' is not a class type", scope);
-      return error_mark_node;
-    }
-  else
-    {
-      if (!TYPE_BEING_DEFINED (scope)
-	  && !COMPLETE_TYPE_P (complete_type (scope)))
-	{
-	  error ("incomplete type '%T' cannot be used to name a scope",
-		 scope);
-	  return error_mark_node;
-	}
-      
-      if (BASELINK_P (name))
-	fn = name;
-      else
-	fn = lookup_member (scope, name, /*protect=*/1, /*want_type=*/false);
-      if (fn && current_class_type)
-	fn = (adjust_result_of_qualified_name_lookup 
-	      (fn, scope, current_class_type));
-
-      /* It might be the name of a function pointer member.  */
-      if (fn && TREE_CODE (fn) == FIELD_DECL)
-	fn = finish_non_static_data_member (fn, current_class_ref, scope);
-    }
-  
-  if (!fn)
-    {
-      error ("'%D' has no member named '%E'", scope, name);
-      return error_mark_node;
-    }
-  if (is_template_id)
-    {
-      tree fns = fn;
-
-      if (BASELINK_P (fn))
-	fns = BASELINK_FUNCTIONS (fns);
-      fns = build_nt (TEMPLATE_ID_EXPR, fns, template_args);
-      if (BASELINK_P (fn))
-	BASELINK_FUNCTIONS (fn) = fns;
-      else
-	fn = fns;
-    }
-  
-  return fn;
-}
-
 /* Do any initial processing on the arguments to a function call.  */
 
 static tree
@@ -3379,15 +3324,12 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
        cv-qualification of either the second or the third operand.
        The result is of the common type.  */
   else if ((null_ptr_cst_p (arg2) 
-	    && (TYPE_PTR_P (arg3_type) || TYPE_PTRMEM_P (arg3_type)
-		|| TYPE_PTRMEMFUNC_P (arg3_type)))
+	    && (TYPE_PTR_P (arg3_type) || TYPE_PTR_TO_MEMBER_P (arg3_type)))
 	   || (null_ptr_cst_p (arg3) 
-	       && (TYPE_PTR_P (arg2_type) || TYPE_PTRMEM_P (arg2_type)
-		|| TYPE_PTRMEMFUNC_P (arg2_type)))
+	       && (TYPE_PTR_P (arg2_type) || TYPE_PTR_TO_MEMBER_P (arg2_type)))
 	   || (TYPE_PTR_P (arg2_type) && TYPE_PTR_P (arg3_type))
 	   || (TYPE_PTRMEM_P (arg2_type) && TYPE_PTRMEM_P (arg3_type))
-	   || (TYPE_PTRMEMFUNC_P (arg2_type) 
-	       && TYPE_PTRMEMFUNC_P (arg3_type)))
+	   || (TYPE_PTRMEMFUNC_P (arg2_type) && TYPE_PTRMEMFUNC_P (arg3_type)))
     {
       result_type = composite_pointer_type (arg2_type, arg3_type, arg2,
 					    arg3, "conditional expression");
@@ -5401,25 +5343,17 @@ compare_ics (tree ics1, tree ics2)
      for pointers A*, except opposite: if B is derived from A then
      A::* converts to B::*, not vice versa.  For that reason, we
      switch the from_ and to_ variables here.  */
-  else if (TYPE_PTRMEM_P (from_type1)
-	   && TYPE_PTRMEM_P (from_type2)
-	   && TYPE_PTRMEM_P (to_type1)
-	   && TYPE_PTRMEM_P (to_type2))
+  else if ((TYPE_PTRMEM_P (from_type1) && TYPE_PTRMEM_P (from_type2)
+	    && TYPE_PTRMEM_P (to_type1) && TYPE_PTRMEM_P (to_type2))
+	   || (TYPE_PTRMEMFUNC_P (from_type1)
+	       && TYPE_PTRMEMFUNC_P (from_type2)
+	       && TYPE_PTRMEMFUNC_P (to_type1)
+	       && TYPE_PTRMEMFUNC_P (to_type2)))
     {
-      deref_to_type1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (from_type1));
-      deref_to_type2 = TYPE_OFFSET_BASETYPE (TREE_TYPE (from_type2));
-      deref_from_type1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (to_type1));
-      deref_from_type2 = TYPE_OFFSET_BASETYPE (TREE_TYPE (to_type2));
-    }
-  else if (TYPE_PTRMEMFUNC_P (from_type1)
-	   && TYPE_PTRMEMFUNC_P (from_type2)
-	   && TYPE_PTRMEMFUNC_P (to_type1)
-	   && TYPE_PTRMEMFUNC_P (to_type2))
-    {
-      deref_to_type1 = TYPE_PTRMEMFUNC_OBJECT_TYPE (from_type1);
-      deref_to_type2 = TYPE_PTRMEMFUNC_OBJECT_TYPE (from_type2);
-      deref_from_type1 = TYPE_PTRMEMFUNC_OBJECT_TYPE (to_type1);
-      deref_from_type2 = TYPE_PTRMEMFUNC_OBJECT_TYPE (to_type2);
+      deref_to_type1 = TYPE_PTRMEM_CLASS_TYPE (from_type1);
+      deref_to_type2 = TYPE_PTRMEM_CLASS_TYPE (from_type2);
+      deref_from_type1 = TYPE_PTRMEM_CLASS_TYPE (to_type1);
+      deref_from_type2 = TYPE_PTRMEM_CLASS_TYPE (to_type2);
     }
 
   if (deref_from_type1 != NULL_TREE

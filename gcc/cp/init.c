@@ -1337,10 +1337,11 @@ get_type_value (tree name)
     return NULL_TREE;
 }
 
-/* Build a reference to a member of an aggregate.  This is not a
-   C++ `&', but really something which can have its address taken,
-   and then act as a pointer to member, for example TYPE :: FIELD
-   can have its address taken by saying & TYPE :: FIELD.
+/* Build a reference to a member of an aggregate.  This is not a C++
+   `&', but really something which can have its address taken, and
+   then act as a pointer to member, for example TYPE :: FIELD can have
+   its address taken by saying & TYPE :: FIELD.  ADDRESS_P is true if
+   this expression is the operand of "&".
 
    @@ Prints out lousy diagnostics for operator <typename>
    @@ fields.
@@ -1348,7 +1349,7 @@ get_type_value (tree name)
    @@ This function should be rewritten and placed in search.c.  */
 
 tree
-build_offset_ref (tree type, tree name)
+build_offset_ref (tree type, tree name, bool address_p)
 {
   tree decl;
   tree member;
@@ -1435,8 +1436,33 @@ build_offset_ref (tree type, tree name)
 	return error_mark_node;
     }
 
+  if (!member)
+    {
+      error ("`%D' is not a member of type `%T'", name, type);
+      return error_mark_node;
+    }
+
+  if (TREE_CODE (member) == TYPE_DECL)
+    {
+      TREE_USED (member) = 1;
+      return member;
+    }
+  /* static class members and class-specific enum
+     values can be returned without further ado.  */
+  if (TREE_CODE (member) == VAR_DECL || TREE_CODE (member) == CONST_DECL)
+    {
+      mark_used (member);
+      return convert_from_reference (member);
+    }
+
+  if (TREE_CODE (member) == FIELD_DECL && DECL_C_BIT_FIELD (member))
+    {
+      error ("invalid pointer to bit-field `%D'", member);
+      return error_mark_node;
+    }
+
   /* A lot of this logic is now handled in lookup_member.  */
-  if (member && BASELINK_P (member))
+  if (BASELINK_P (member))
     {
       /* Go from the TREE_BASELINK to the member function info.  */
       tree fnfields = member;
@@ -1475,101 +1501,60 @@ build_offset_ref (tree type, tree name)
 	  mark_used (t);
 	  if (DECL_STATIC_FUNCTION_P (t))
 	    return t;
-	  t = build (OFFSET_REF, TREE_TYPE (t), decl, t);
-	  PTRMEM_OK_P (t) = 1;
-	  return t;
+	  member = t;
 	}
-
-      TREE_TYPE (fnfields) = unknown_type_node;
-      
-      t = build (OFFSET_REF, unknown_type_node, decl, fnfields);
-      PTRMEM_OK_P (t) = 1;
-      return t;
+      else
+	{
+	  TREE_TYPE (fnfields) = unknown_type_node;
+	  member = fnfields;
+	}
     }
 
-  if (member == NULL_TREE)
+  if (!address_p)
     {
-      error ("`%D' is not a member of type `%T'", name, type);
-      return error_mark_node;
-    }
+      /* If MEMBER is non-static, then the program has fallen afoul of
+	 [expr.prim]:
 
-  if (TREE_CODE (member) == TYPE_DECL)
-    {
-      TREE_USED (member) = 1;
+	   An id-expression that denotes a nonstatic data member or
+	   nonstatic member function of a class can only be used:
+
+	   -- as part of a class member access (_expr.ref_) in which the
+	   object-expression refers to the member's class or a class
+	   derived from that class, or
+
+	   -- to form a pointer to member (_expr.unary.op_), or
+
+	   -- in the body of a nonstatic member function of that class or
+	   of a class derived from that class (_class.mfct.nonstatic_), or
+
+	   -- in a mem-initializer for a constructor for that class or for
+	   a class derived from that class (_class.base.init_).  */
+      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (member))
+	{
+	  /* In Microsoft mode, treat a non-static member function as if
+	     it were a pointer-to-member.  */
+	  if (flag_ms_extensions)
+	    {
+	      member = build (OFFSET_REF, TREE_TYPE (member), decl, member);
+	      PTRMEM_OK_P (member) = 1;
+	      return build_unary_op (ADDR_EXPR, member, 0);
+	    }
+	  error ("invalid use of non-static member function `%D'", member);
+	  return error_mark_node;
+	}
+      else if (TREE_CODE (member) == FIELD_DECL)
+	{
+	  error ("invalid use of non-static data member `%D'", member);
+	  return error_mark_node;
+	}
       return member;
     }
-  /* static class members and class-specific enum
-     values can be returned without further ado.  */
-  if (TREE_CODE (member) == VAR_DECL || TREE_CODE (member) == CONST_DECL)
-    {
-      mark_used (member);
-      return convert_from_reference (member);
-    }
-
-  if (TREE_CODE (member) == FIELD_DECL && DECL_C_BIT_FIELD (member))
-    {
-      error ("invalid pointer to bit-field `%D'", member);
-      return error_mark_node;
-    }
-
-  /* static class functions too.  */
-  if (TREE_CODE (member) == FUNCTION_DECL
-      && TREE_CODE (TREE_TYPE (member)) == FUNCTION_TYPE)
-    abort ();
 
   /* In member functions, the form `type::name' is no longer
      equivalent to `this->type::name', at least not until
      resolve_offset_ref.  */
-  member = build (OFFSET_REF, build_offset_type (type, TREE_TYPE (member)), 
-		  decl, member);
+  member = build (OFFSET_REF, TREE_TYPE (member), decl, member);
   PTRMEM_OK_P (member) = 1;
-  return member;
-}
-
-/* If a OFFSET_REF made it through to here, then it did
-   not have its address taken.  */
-
-tree
-resolve_offset_ref (tree exp)
-{
-  tree member;
-
-  my_friendly_assert (TREE_CODE (exp) == OFFSET_REF, 20030703);
-
-  member = TREE_OPERAND (exp, 1);
-
-  /* If MEMBER is non-static, then the program has fallen afoul of
-     [expr.prim]:
-
-       An id-expression that denotes a nonstatic data member or
-       nonstatic member function of a class can only be used:
-
-       -- as part of a class member access (_expr.ref_) in which the
-       object-expression refers to the member's class or a class
-       derived from that class, or
-
-       -- to form a pointer to member (_expr.unary.op_), or
-
-       -- in the body of a nonstatic member function of that class or
-       of a class derived from that class (_class.mfct.nonstatic_), or
-
-       -- in a mem-initializer for a constructor for that class or for
-       a class derived from that class (_class.base.init_).  */
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (member))
-    {
-      /* In Microsoft mode, treat a non-static member function as if
-	 it were a pointer-to-member.  */
-      if (flag_ms_extensions)
-	return build_unary_op (ADDR_EXPR, exp, 0);
-      error ("invalid use of non-static member function `%D'", member);
-      return error_mark_node;
-    }
-  else if (TREE_CODE (member) == FIELD_DECL)
-    {
-      error ("invalid use of non-static data member `%D'", member);
-      return error_mark_node;
-    }
-
   return member;
 }
 

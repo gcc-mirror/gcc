@@ -364,7 +364,7 @@ cp_var_mod_type_p (tree type)
 {
   /* If TYPE is a pointer-to-member, it is variably modified if either
      the class or the member are variably modified.  */
-  if (TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
+  if (TYPE_PTR_TO_MEMBER_P (type))
     return (variably_modified_type_p (TYPE_PTRMEM_CLASS_TYPE (type))
 	    || variably_modified_type_p (TYPE_PTRMEM_POINTED_TO_TYPE (type)));
 

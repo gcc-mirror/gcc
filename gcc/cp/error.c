@@ -587,19 +587,14 @@ dump_type_prefix (tree t, int flags)
 	tree sub = TREE_TYPE (t);
 
 	padding = dump_type_prefix (sub, flags);
-	/* A tree for a member pointer looks like pointer to offset,
-	   so let the OFFSET_TYPE case handle it.  */
-	if (!TYPE_PTRMEM_P (t))
+	if (TREE_CODE (sub) == ARRAY_TYPE)
 	  {
-	    if (TREE_CODE (sub) == ARRAY_TYPE)
-              {
-                output_add_space (scratch_buffer);
-                print_left_paren (scratch_buffer);
-              }
-            output_add_character
-              (scratch_buffer, "&*"[TREE_CODE (t) == POINTER_TYPE]);
-	    padding = dump_qualifiers (t, before);
+	    output_add_space (scratch_buffer);
+	    print_left_paren (scratch_buffer);
 	  }
+	output_add_character
+	  (scratch_buffer, "&*"[TREE_CODE (t) == POINTER_TYPE]);
+	padding = dump_qualifiers (t, before);
       }
       break;
 
