@@ -3015,7 +3015,7 @@ output_constant_def (exp, defer)
   rtx rtl;
 
   /* We can't just use the saved RTL if this is a defererred string constant
-     and we are not to defer anymode.  */
+     and we are not to defer anymore.  */
   if (TREE_CODE (exp) != INTEGER_CST && TREE_CST_RTL (exp)
       && (defer || !STRING_POOL_ADDRESS_P (XEXP (TREE_CST_RTL (exp), 0))))
     return TREE_CST_RTL (exp);
