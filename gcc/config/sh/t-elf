@@ -6,4 +6,5 @@ CRTSTUFF_T_CFLAGS_S = -fPIC
 
 # Don't compile libgcc with -fpic for now.  It's unlikely that we'll
 # build shared libraries for embedded SH.
+# Linux / Netbsd will already have set TARGET_LIBGCC2_CFLAGS.
 # TARGET_LIBGCC2_CFLAGS = -fpic

@@ -7,7 +7,7 @@ LIB1ASMFUNCS = \
   _push_pop_shmedia_regs \
   _udivdi3 _divdi3 _umoddi3 _moddi3
 
-MULTILIB_OPTIONS = $(MULTILIB_ENDIAN) m5-32media-nofpu/m5-compact/m5-compact-nofpu/m5-64media/m5-64media-nofpu
-MULTILIB_DIRNAMES= $(MULTILIB_ENDIAN) nofpu compact nofpu/compact media64 nofpu/media64
-MULTILIB_MATCHES=
-MULTILIB_EXCEPTIONS=
+MULTILIB_CPU_DIRS= $(ML_sh1) $(ML_sh2e) $(ML_sh2) $(ML_sh3e) $(ML_sh3) $(ML_sh4_nofpu) $(ML_sh4_single_only) $(ML_sh4_single) $(ML_sh4) $(ML_m5_32media:m5_32media=media32) $(ML_m5_32media_nofpu:m5_32media_nofpu=nofpu/media32) $(ML_m5_compact:m5_compact=compact) $(ML_m5_compact_nofpu:m5_compact_nofpu=nofpu/compact) $(ML_m5_64media:m5_64media=media64) $(ML_m5_64media_nofpu:m5_64media_nofpu=nofpu/media64)
+
+MULTILIB_RAW_DIRNAMES= $(MULTILIB_ENDIAN:/mb= mb) $(MULTILIB_CPU_DIRS:/=)
+MULTILIB_DIRNAMES= $(MULTILIB_RAW_DIRNAMES:/media32=)
