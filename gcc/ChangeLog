@@ -1,5 +1,10 @@
 2002-01-14  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.md (prefetch): Tidy.
+	(prefetch_3dnow): Fix locality operand.
+
+2002-01-14  Richard Henderson  <rth@redhat.com>
+
 	* config/mips/mips.h (HI_AND_FP_REGS): New register class.
 	(CLASS_CANNOT_CHANGE_MODE): Disallow HI in little-endian mode.
 
