@@ -1461,7 +1461,7 @@ alias.o : alias.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h regs.h \
    insn-codes.h
 regmove.o : regmove.c $(CONFIG_H) system.h $(RTL_H) insn-config.h \
    insn-codes.h recog.h output.h reload.h regs.h hard-reg-set.h flags.h \
-   expr.h insn-flags.h
+   expr.h insn-flags.h $(BASIC_BLOCK_H)
 $(SCHED_PREFIX)sched.o : $(SCHED_PREFIX)sched.c $(CONFIG_H) system.h $(RTL_H) \
    $(BASIC_BLOCK_H) regs.h hard-reg-set.h flags.h insn-config.h insn-attr.h \
    toplev.h
