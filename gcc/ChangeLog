@@ -1,3 +1,12 @@
+2004-06-01  Nicola Pero  <nicola@brainstorm.co.uk>
+
+ 	PR objc/7993
+	* objc-act.c (is_private): Do not emit the 'instance variable %s
+	is declared private' error.
+	(is_public): Emit the error after calling is_private.
+	(lookup_objc_ivar): If the instance variable is private, return 0
+	- the instance variable is invisible here.
+
 2004-06-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/invoke.texi (-static-libgcc): Explicitly mention
@@ -114,9 +123,9 @@
 	move to shift amount register in DF mode.
 
 2004-05-18  Ulrich Weigand  <uweigand@de.ibm.com>
-	
+
 	PR middle-end/15054
-	* expr.c (expand_expr_real): Do not call preserve_temp_slots 
+	* expr.c (expand_expr_real): Do not call preserve_temp_slots
 	on a TARGET_EXPR temp.
 	* function.c (assign_stack_temp_for_type): Set 'keep' flag for
 	TARGET_EXPR temp slots.
@@ -329,37 +338,37 @@
 2004-04-29  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR/12028
-        * config/rs6000/rs6000.c (rs6000_emit_cmove): Disable comparisons
+	* config/rs6000/rs6000.c (rs6000_emit_cmove): Disable comparisons
 	of floats on the E500.
-        (branch_positive_comparison_operator): Do not allow NE even on the
+	(branch_positive_comparison_operator): Do not allow NE even on the
 	E500.
 	(ccr_bit): Remove E500 specific code.
 	Remove miscompilation warning for e500.
-        (print_operand): Add 'c' and 'D'.
-        (rs6000_generate_compare): Rewrite to generate correct rtl.
-        (rs6000_emit_sCOND): Handle E500.
-        (output_cbranch): Adjust for changes in rs6000_generate_compare.
-        (output_e500_flip_gt_bit): New.
+	(print_operand): Add 'c' and 'D'.
+	(rs6000_generate_compare): Rewrite to generate correct rtl.
+	(rs6000_emit_sCOND): Handle E500.
+	(output_cbranch): Adjust for changes in rs6000_generate_compare.
+	(output_e500_flip_gt_bit): New.
 	(rs6000_override_options): Error when user wants altivec and e500
 	instructions.
 
-        * config/rs6000/rs6000.md (UNSPEC_MV_CR_GT): New constant.
-        (move_from_CR_gt_bit): New.
-        (cceq_ior_compare): Name previously unnamed pattern.  Disable for
+	* config/rs6000/rs6000.md (UNSPEC_MV_CR_GT): New constant.
+	(move_from_CR_gt_bit): New.
+	(cceq_ior_compare): Name previously unnamed pattern.  Disable for
 	E500.
-        (cceq_rev_compare): Name previously unnamed pattern.  Allow for
+	(cceq_rev_compare): Name previously unnamed pattern.  Allow for
 	E500.
 
-        * config/rs6000/spe.md (cmpsfeq_gpr): Rewrite as unspec.
-        (tstsfeq_gpr): Same.
-        (cmpsfgt_gpr): Same.
-        (tstsfgt_gpr): Same.
-        (cmpsflt_gpr): Same.
-        (tstsflt_gpr): Same.
-        (e500_cceq_ior_compare): New.
-        (e500_flip_gt_bit): New.
+	* config/rs6000/spe.md (cmpsfeq_gpr): Rewrite as unspec.
+	(tstsfeq_gpr): Same.
+	(cmpsfgt_gpr): Same.
+	(tstsfgt_gpr): Same.
+	(cmpsflt_gpr): Same.
+	(tstsflt_gpr): Same.
+	(e500_cceq_ior_compare): New.
+	(e500_flip_gt_bit): New.
 
-        * config/rs6000/rs6000-protos.h (output_e500_flip_gt_bit):
+	* config/rs6000/rs6000-protos.h (output_e500_flip_gt_bit):
 	Protoize.
 
 2004-04-28  Ben Elliston  <bje@au.ibm.com>
@@ -389,7 +398,7 @@
 	callers.
 	(multiple_reg_loc_descriptor, reg_loc_descriptor): Use gcc register
 	number for indexing hard_regno_nregs array.
-	
+
 2004-04-27  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (call_insn_operand): Check

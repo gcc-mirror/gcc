@@ -6484,15 +6484,9 @@ is_ivar (tree decl_chain, tree ident)
 int
 is_private (tree decl)
 {
-  if (TREE_PRIVATE (decl)
-      && ! is_ivar (CLASS_IVARS (implementation_template), DECL_NAME (decl)))
-    {
-      error ("instance variable `%s' is declared private",
-	     IDENTIFIER_POINTER (DECL_NAME (decl)));
-      return 1;
-    }
-  else
-    return 0;
+  return (TREE_PRIVATE (decl)
+	  && ! is_ivar (CLASS_IVARS (implementation_template),
+			DECL_NAME (decl)));
 }
 
 /* We have an instance variable reference;, check to see if it is public.  */
@@ -6530,7 +6524,14 @@ is_public (tree expr, tree identifier)
 			   == CATEGORY_IMPLEMENTATION_TYPE))
 		      && (CLASS_NAME (objc_implementation_context)
 			  == OBJC_TYPE_NAME (basetype))))
-		return ! is_private (decl);
+		{
+		  int private = is_private (decl);
+
+		  if (private)
+		    error ("instance variable `%s' is declared private",
+			   IDENTIFIER_POINTER (DECL_NAME (decl)));
+		  return !private;
+		}
 
 	      /* The 2.95.2 compiler sometimes allowed C functions to access
 		 non-@public ivars.  We will let this slide for now...  */
@@ -9081,7 +9082,7 @@ lookup_objc_ivar (tree id)
   else if (objc_method_context && (decl = is_ivar (objc_ivar_chain, id)))
     {
       if (is_private (decl))
-	return error_mark_node;
+	return 0;
       else
         return build_ivar_reference (id);
     }

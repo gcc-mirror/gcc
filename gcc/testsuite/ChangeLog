@@ -1,3 +1,8 @@
+2004-06-01  Nicola Pero  <nicola@brainstorm.co.uk>
+
+ 	PR objc/7993
+	* objc.dg/private-1.m, objc-dg/private-2.m: New testcases.
+
 2004-05-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/15666
@@ -53,7 +58,7 @@
 
 	PR c++/15640
 	* g++.dg/template/operator3.C: New test.
-	
+
 	PR c++/14668
 	* g++.dg/lookup/redecl1.C: New test.
 	* g++.old-deja/g++.benjamin/tem04.C: Add error marker.
