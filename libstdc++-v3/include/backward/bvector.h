@@ -1,6 +1,6 @@
 // Backward-compat support -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,7 +59,7 @@
 #include "backward_warning.h"
 #include <vector>
 
-using std::bit_vector;
+typedef std::vector<bool, std::allocator<bool> > bit_vector;
 
 #endif /* _BACKWARD_BVECTOR_H */
 

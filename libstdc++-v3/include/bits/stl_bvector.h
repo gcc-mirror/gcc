@@ -695,9 +695,6 @@ template <typename _Alloc>
   
     void clear() { erase(begin(), end()); }
   };
-
-  // This typedef is non-standard.  It is provided for backward compatibility.
-  typedef vector<bool, __alloc> bit_vector;
 } // namespace __gnu_norm
 
 #endif /* _BVECTOR_H */

@@ -1,3 +1,10 @@
+2004-02-23  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/14248
+	* include/bits/stl_bvector.h (bit_vector): Move non-standard
+	typedef from here...
+	* include/backward/bvector.h: ... to here.
+
 2004-02-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* libsupc++/vterminate.cc
