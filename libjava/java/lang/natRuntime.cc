@@ -18,6 +18,8 @@ details.  */
 #include <java/lang/UnknownError.h>
 #include <java/lang/UnsatisfiedLinkError.h>
 
+#include <jni.h>
+
 #ifdef USE_LTDL
 #include <ltdl.h>
 
@@ -99,7 +101,7 @@ java::lang::Runtime::gc (void)
 }
 
 void
-java::lang::Runtime::load (jstring path)
+java::lang::Runtime::_load (jstring path, jboolean do_search)
 {
   JvSynchronize sync (this);
   checkLink (path);
@@ -110,39 +112,29 @@ java::lang::Runtime::load (jstring path)
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
   buf[total] = '\0';
   // FIXME: make sure path is absolute.
-  lt_dlhandle h = lt_dlopen (buf);
+  lt_dlhandle h = do_search ? lt_dlopenext (buf) : lt_dlopen (buf);
   if (h == NULL)
     {
       const char *msg = lt_dlerror ();
       _Jv_Throw (new UnsatisfiedLinkError (JvNewStringLatin1 (msg)));
     }
-#else
-  _Jv_Throw (new UnknownError
-	     (JvNewStringLatin1 ("Runtime.load not implemented")));
-#endif /* USE_LTDL */
-}
 
-void
-java::lang::Runtime::loadLibrary (jstring lib)
-{
-  JvSynchronize sync (this);
-  checkLink (lib);
-  using namespace java::lang;
-#ifdef USE_LTDL
-  jint len = _Jv_GetStringUTFLength (lib);
-  char buf[len + 1];
-  jsize total = JvGetStringUTFRegion (lib, 0, lib->length(), buf);
-  buf[total] = '\0';
-  // FIXME: make sure path is absolute.
-  lt_dlhandle h = lt_dlopenext (buf);
-  if (h == NULL)
+  void *onload = lt_dlsym (h, "JNI_OnLoad");
+  if (onload != NULL)
     {
-      const char *msg = lt_dlerror ();
-      _Jv_Throw (new UnsatisfiedLinkError (JvNewStringLatin1 (msg)));
+      // FIXME: need invocation API to get JavaVM.
+      jint vers = ((jint (*) (...)) onload) (NULL, NULL);
+      if (vers != JNI_VERSION_1_1 && vers != JNI_VERSION_1_2)
+	{
+	  // FIXME: unload the library.
+	  _Jv_Throw (new UnsatisfiedLinkError (JvNewStringLatin1 ("unrecognized version from JNI_OnLoad")));
+	}
     }
 #else
   _Jv_Throw (new UnknownError
-	     (JvNewStringLatin1 ("Runtime.loadLibrary not implemented")));
+	     (JvNewStringLatin1 (do_search
+				 ? "Runtime.loadLibrary not implemented"
+				 : "Runtime.load not implemented")));
 #endif /* USE_LTDL */
 }
 

@@ -1,5 +1,14 @@
 2000-02-07  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/Runtime.java (_load): Declare.
+	(load, loadLibrary): Wrote in terms of _load.
+	* java/lang/natRuntime.cc (load): Call JNI_OnLoad if it appears in
+	library.
+	(loadLibrary): Likewise.
+	Include <jni.h>.
+	(_load): New method.
+	(loadLibrary, load): Removed.
+
 	* jni.cc (ThrowableClass): New define.
 	(_Jv_JNI_Throw): Check argument.
 	(_Jv_JNI_ThrowNew): Likewise.
