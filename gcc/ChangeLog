@@ -1,3 +1,12 @@
+2000-07-01  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.c (symbolic_operand): Reject CONST expressions
+	with the low 13 bits set.
+	(move_operand): Check for CONST|SYMBOL_REF|LABEL_REF directly.
+	* config/ia64/ia64.md (movdi): Likewise.  Expand a CONST with one
+	of the low 13 bits into a CONST plus an adddi3.
+	(load_symptr): Set RTX_UNCHANGING_P.
+
 2000-06-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (c-common.o): Don't depend on c-tree.h or c-lex.h.
