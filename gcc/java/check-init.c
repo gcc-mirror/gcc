@@ -510,7 +510,7 @@ check_init (exp, before)
 	struct alternatives *alt = alternatives;
 	while (TREE_CODE (alt->block) != SWITCH_EXPR)
 	  alt = alt->outer;
-	COPYN (before, alt->saved, alt->num_locals);
+	COPYN (before, alt->saved, WORDS_NEEDED (alt->num_locals));
 	for (i = alt->num_locals;  i < num_current_locals;  i++)
 	  CLEAR_BIT (before, i);
 	break;
