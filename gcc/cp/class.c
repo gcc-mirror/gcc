@@ -26,6 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <stdio.h>
 #include "cp-tree.h"
 #include "flags.h"
+#include "rtl.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc
@@ -2963,6 +2964,11 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 
 	      DECL_CLASS_CONTEXT (x) = t;
 
+	      /* Do both of these, even though they're in the same union;
+		 if the insn `r' member and the size `i' member are
+		 different sizes, as on the alpha, the larger of the two
+		 will end up with garbage in it.  */
+	      DECL_SAVED_INSNS (x) = NULL_RTX;
 	      DECL_FIELD_SIZE (x) = 0;
 
 	      /* The name of the field is the original field name
@@ -3027,6 +3033,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	    fields = x;
 	  last_x = x;
 
+	  DECL_SAVED_INSNS (x) = NULL_RTX;
 	  DECL_FIELD_SIZE (x) = 0;
 
 	  /* When this goes into scope, it will be a non-local reference.  */
@@ -3505,6 +3512,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       DECL_FIELD_CONTEXT (vfield) = t;
       DECL_CLASS_CONTEXT (vfield) = t;
       DECL_FCONTEXT (vfield) = t;
+      DECL_SAVED_INSNS (vfield) = NULL_RTX;
       DECL_FIELD_SIZE (vfield) = 0;
       DECL_ALIGN (vfield) = TYPE_ALIGN (ptr_type_node);
       if (CLASSTYPE_RTTI (t))
@@ -3576,47 +3584,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   TYPE_ALIGN (t) = round_up_size;
 
   /* Pass layout information about base classes to layout_type, if any.  */
-
-  {
-    tree field;
-    for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
-      {
-	if (TREE_STATIC (field))
-	  continue;
-	if (TREE_CODE (field) != FIELD_DECL)
-	  continue;
-
-	/* If this field is an anonymous union,
-	   give each union-member the same position as the union has.
-
-	   ??? This is a real kludge because it makes the structure
-	   of the types look strange.  This feature is only used by
-	   C++, which should have build_component_ref build two
-	   COMPONENT_REF operations, one for the union and one for
-	   the inner field.  We set the offset of this field to zero
-	   so that either the old or the correct method will work.
-	   Setting DECL_FIELD_CONTEXT is wrong unless the inner fields are
-	   moved into the type of this field, but nothing seems to break
-	   by doing this.  */
-
-	if (DECL_NAME (field) == NULL_TREE
-	    && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
-	  {
-	    tree uelt = TYPE_FIELDS (TREE_TYPE (field));
-	    for (; uelt; uelt = TREE_CHAIN (uelt))
-	      {
-		if (TREE_CODE (uelt) != FIELD_DECL)
-		  continue;
-
-		DECL_FIELD_CONTEXT (uelt) = DECL_FIELD_CONTEXT (field);
-		DECL_FIELD_BITPOS (uelt) = DECL_FIELD_BITPOS (field);
-	      }
-
-	    DECL_FIELD_BITPOS (field) = integer_zero_node;
-	  }
-      }
-  }
-
   if (n_baseclasses)
     {
       tree pseudo_basetype = TREE_TYPE (base_layout_decl);
@@ -3911,6 +3878,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       if (TREE_TYPE (TYPE_BINFO_VTABLE (t)) != atype)
 	{
 	  TREE_TYPE (TYPE_BINFO_VTABLE (t)) = atype;
+	  DECL_SIZE (TYPE_BINFO_VTABLE (t)) = 0;
 	  layout_decl (TYPE_BINFO_VTABLE (t), 0);
 	  /* At one time the vtable info was grabbed 2 words at a time.  This
 	     fails on sparc unless you have 8-byte alignment.  (tiemann) */
@@ -4726,6 +4694,9 @@ instantiate_type (lhstype, rhs, complain)
 	   functions or member functions.  May have to undo what
 	   `default_conversion' might do to lhstype.  */
 
+	if (TYPE_PTRMEMFUNC_P (lhstype))
+	  lhstype = TYPE_PTRMEMFUNC_FN_TYPE (lhstype);
+
 	if (TREE_CODE (lhstype) == POINTER_TYPE)
 	  if (TREE_CODE (TREE_TYPE (lhstype)) == FUNCTION_TYPE
 	      || TREE_CODE (TREE_TYPE (lhstype)) == METHOD_TYPE)
@@ -4884,8 +4855,7 @@ instantiate_type (lhstype, rhs, complain)
 #endif
 	  }
 	if (complain)
-	  error ("no compatible member functions named `%s'",
-		 IDENTIFIER_POINTER (name));
+	  cp_error ("no compatible member functions named `%D'", name);
 	return error_mark_node;
       }
 

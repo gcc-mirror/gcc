@@ -1712,6 +1712,8 @@ instantiate_template (tmpl, targ_ptr)
   if (fndecl == error_mark_node)
     goto exit;
 
+  assemble_external (fndecl);
+
   /* If it's a static member fn in the template, we need to change it
      into a FUNCTION_TYPE and chop off its this pointer.  */
   if (TREE_CODE (TREE_TYPE (DECL_RESULT (tmpl))) == METHOD_TYPE
@@ -2059,6 +2061,23 @@ type_unification (tparms, targs, parms, args, nsubsts, subr)
       if (TREE_CODE_CLASS (TREE_CODE (arg)) != 't')
 	{
 	  my_friendly_assert (TREE_TYPE (arg) != NULL_TREE, 293);
+	  if (TREE_CODE (arg) == TREE_LIST
+	      && TREE_TYPE (arg) == unknown_type_node
+	      && TREE_CODE (TREE_VALUE (arg)) == TEMPLATE_DECL)
+	    {
+	      int nsubsts, ntparms;
+	      tree *targs;
+
+	      /* Have to back unify here */
+	      arg = TREE_VALUE (arg);
+	      nsubsts = 0;
+	      ntparms = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (arg));
+	      targs = (tree *) alloca (sizeof (tree) * ntparms);
+	      parm = tree_cons (NULL_TREE, parm, NULL_TREE);
+	      return type_unification (DECL_TEMPLATE_PARMS (arg), targs,
+				       TYPE_ARG_TYPES (TREE_TYPE (arg)),
+				       parm, &nsubsts, 0);
+	    }
 	  arg = TREE_TYPE (arg);
 	}
 #endif
@@ -2200,6 +2219,8 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
 		    nsubsts);
 
     case REFERENCE_TYPE:
+      if (TREE_CODE (arg) == REFERENCE_TYPE)
+	arg = TREE_TYPE (arg);
       return unify (tparms, targs, ntparms, TREE_TYPE (parm), arg, nsubsts);
 
     case ARRAY_TYPE:
@@ -2242,8 +2263,6 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
 	tree t1, t2;
 	t1 = TREE_OPERAND (parm, 0);
 	t2 = TREE_OPERAND (parm, 1);
-	if (TREE_CODE (t1) != TEMPLATE_CONST_PARM)
-	  return 1;
 	return unify (tparms, targs, ntparms, t1,
 		      fold (build (PLUS_EXPR, integer_type_node, arg, t2)),
 		      nsubsts);
@@ -2299,6 +2318,9 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
       if (TREE_CODE (arg) != FUNCTION_TYPE)
 	return 1;
      check_args:
+      if (unify (tparms, targs, ntparms, TREE_TYPE (parm),
+		 TREE_TYPE (arg), nsubsts))
+	return 1;
       return type_unification (tparms, targs, TYPE_ARG_TYPES (parm),
 			       TYPE_ARG_TYPES (arg), nsubsts, 1);
 

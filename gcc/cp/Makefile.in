@@ -167,6 +167,7 @@ OBJDEPS = ../stamp-objlist ../c-common.o ../c-pragma.o
 
 compiler: ../cc1plus
 ../cc1plus: $(P) $(CXX_OBJS) $(OBJDEPS) $(LIBDEPS)
+	rm -f $@
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o ../cc1plus \
 	      $(CXX_OBJS) $(OBJS) $(LIBS)
 

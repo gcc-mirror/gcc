@@ -1932,7 +1932,8 @@ build_push_scope (cname, name)
   return rval;
 }
 
-void cplus_decl_attributes (decl, attributes, prefix_attributes)
+void
+cplus_decl_attributes (decl, attributes, prefix_attributes)
      tree decl, attributes, prefix_attributes;
 {
   if (decl && decl != void_type_node)
@@ -2463,7 +2464,14 @@ mark_vtable_entries (decl)
 	  extern tree abort_fndecl;
 	  if (flag_vtable_thunks)
 	    fnaddr = TREE_VALUE (entries);
-	  TREE_OPERAND (fnaddr, 0) = abort_fndecl;
+	  TREE_OPERAND (fnaddr, 0) = fn = abort_fndecl;
+	}
+      if (TREE_PUBLIC (fn) && ! TREE_ASM_WRITTEN (fn))
+	{
+	  int save_extern = DECL_EXTERNAL (fn);
+	  DECL_EXTERNAL (fn) = 1;
+	  assemble_external (fn);
+	  DECL_EXTERNAL (fn) = save_extern;
 	}
     }
 }
@@ -2561,7 +2569,8 @@ finish_prevtable_vardecl (prev, vars)
       for (method = CLASSTYPE_METHODS (ctype); method != NULL_TREE;
 	   method = DECL_NEXT_METHOD (method))
 	{
-	  if (DECL_VINDEX (method) != NULL_TREE && !DECL_SAVED_INSNS (method)
+	  if (DECL_VINDEX (method) != NULL_TREE
+	      && !DECL_DECLARED_STATIC (method)
 	      && !DECL_ABSTRACT_VIRTUAL_P (method))
 	    {
 	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
@@ -2574,10 +2583,17 @@ finish_prevtable_vardecl (prev, vars)
 
   import_export_vtable (vars, ctype, 1);
 
+  /* We cannot use TREE_USED here, as it may be set by the expanding of a
+     ctor that is used to build a global object.  The long term plan is to
+     make the TD entries statically initialized and move this to
+     finish_vtable_vardecl time.  */
   if (flag_rtti && write_virtuals >= 0
-      && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || TREE_USED (vars)))
+      && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || 1 || TREE_USED (vars)))
     {
-      /* Kick out the type descriptor before writing out the vtable.  */
+      /* Kick out the type descriptor before we dump out global
+	 initializers, as they are initialized at run time and
+	 we have to find them when we scan for things that need initialized
+	 at the top level.  */
       build_t_desc (ctype, 1);
     }
 }
@@ -2589,6 +2605,15 @@ finish_vtable_vardecl (prev, vars)
   if (write_virtuals >= 0
       && ! DECL_EXTERNAL (vars) && (TREE_PUBLIC (vars) || TREE_USED (vars)))
     {
+#if 0
+      /* The long term plan it to make the TD entries statically initialized,
+	 have the entries built and emitted here.  When that happens, this
+	 can be enabled, and the other call to build_t_desc removed.  */
+      /* Kick out the type descriptor before writing out the vtable.  */
+      if (flag_rtti)
+	build_t_desc (DECL_CONTEXT (vars), 1);
+#endif
+
       /* Write it out.  */
       mark_vtable_entries (vars);
       if (TREE_TYPE (DECL_INITIAL (vars)) == 0)
@@ -2651,19 +2676,22 @@ walk_vtables (typedecl_fn, vardecl_fn)
     {
       register tree type = TREE_TYPE (vars);
 
-      if (TREE_CODE (vars) == TYPE_DECL
-	  && type != error_mark_node
-	  && TYPE_LANG_SPECIFIC (type)
-	  && CLASSTYPE_VSIZE (type))
+      if (TREE_CODE (vars) == VAR_DECL && DECL_VIRTUAL_P (vars))
+	{
+	  if (vardecl_fn) (*vardecl_fn) (prev, vars);
+
+	  if (prev && TREE_CHAIN (prev) != vars)
+	    continue;
+	}
+      else if (TREE_CODE (vars) == TYPE_DECL
+	       && type != error_mark_node
+	       && TYPE_LANG_SPECIFIC (type)
+	       && CLASSTYPE_VSIZE (type))
 	{
 	  if (typedecl_fn) (*typedecl_fn) (prev, vars);
 	}
-      else if (TREE_CODE (vars) == VAR_DECL && DECL_VIRTUAL_P (vars))
-	{
-	  if (vardecl_fn) (*vardecl_fn) (prev, vars);
-	}
-      else
-	prev = vars;
+
+      prev = vars;
     }
 }
 
@@ -2804,6 +2832,31 @@ finish_file ()
 
   interface_unknown = 1;
   interface_only = 0;
+
+#if 1
+  /* The reason for pushing garbage onto the global_binding_level is to
+     ensure that we can slice out _DECLs which pertain to virtual function
+     tables.  If the last thing pushed onto the global_binding_level was a
+     virtual function table, then slicing it out would slice away all the
+     decls (i.e., we lose the head of the chain).
+
+     There are several ways of getting the same effect, from changing the
+     way that iterators over the chain treat the elements that pertain to
+     virtual function tables, moving the implementation of this code to
+     decl.c (where we can manipulate global_binding_level directly),
+     popping the garbage after pushing it and slicing away the vtable
+     stuff, or just leaving it alone. */
+
+  /* Make last thing in global scope not be a virtual function table.  */
+#if 0 /* not yet, should get fixed properly later */
+  vars = make_type_decl (get_identifier (" @%$#@!"), integer_type_node);
+#else
+  vars = build_decl (TYPE_DECL, get_identifier (" @%$#@!"), integer_type_node);
+#endif
+  DECL_IGNORED_P (vars) = 1;
+  SET_DECL_ARTIFICIAL (vars);
+  pushdecl (vars);
+#endif
 
   /* Walk to mark the inline functions we need, then output them so
      that we can pick up any other tdecls that those routines need. */
@@ -3023,36 +3076,11 @@ finish_file ()
 
   start_time = get_run_time ();
 
-  /* Now delete from the chain of variables all virtual function tables.
-     We output them all ourselves, because each will be treated specially.  */
-
-#if 1
-  /* The reason for pushing garbage onto the global_binding_level is to
-     ensure that we can slice out _DECLs which pertain to virtual function
-     tables.  If the last thing pushed onto the global_binding_level was a
-     virtual function table, then slicing it out would slice away all the
-     decls (i.e., we lose the head of the chain).
-
-     There are several ways of getting the same effect, from changing the
-     way that iterators over the chain treat the elements that pertain to
-     virtual function tables, moving the implementation of this code to
-     decl.c (where we can manipulate global_binding_level directly),
-     popping the garbage after pushing it and slicing away the vtable
-     stuff, or just leaving it alone. */
-
-  /* Make last thing in global scope not be a virtual function table.  */
-#if 0 /* not yet, should get fixed properly later */
-  vars = make_type_decl (get_identifier (" @%$#@!"), integer_type_node);
-#else
-  vars = build_decl (TYPE_DECL, get_identifier (" @%$#@!"), integer_type_node);
-#endif
-  DECL_IGNORED_P (vars) = 1;
-  SET_DECL_ARTIFICIAL (vars);
-  pushdecl (vars);
-#endif
-
   if (flag_handle_signatures)
     walk_sigtables ((void (*)())0, finish_sigtable_vardecl);
+
+  for (fnname = saved_inlines; fnname; fnname = TREE_CHAIN (fnname))
+    import_export_inline (TREE_VALUE (fnname));
 
   /* Now write out inline functions which had their addresses taken and
      which were not declared virtual and which were not declared `extern
@@ -3089,7 +3117,7 @@ finish_file ()
 		TREE_CHAIN (last) = TREE_CHAIN (place);
 		continue;
 	      }
-	    import_export_inline (decl);
+
 	    if (TREE_PUBLIC (decl)
 		|| TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 		|| flag_keep_inline_functions)
@@ -3111,6 +3139,9 @@ finish_file ()
 	  }
       }
   }
+
+  /* Now delete from the chain of variables all virtual function tables.
+     We output them all ourselves, because each will be treated specially.  */
 
   walk_vtables ((void (*)())0, prune_vtable_vardecl);
 

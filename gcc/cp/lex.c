@@ -1796,8 +1796,10 @@ cons_up_default_function (type, full_name, kind)
   /* When on-the-fly synthesis works properly, remove the second and third
      conditions here.  */
   if (flag_keep_inline_functions
+#if 0
       || ! flag_no_inline
       || complex
+#endif
       || ! DECL_EXTERNAL (fn))
     {
       struct pending_inline *t;
@@ -2812,7 +2814,13 @@ linenum:
       extract_interface_info ();
 
       c = get_last_nonwhite_on_line ();
-      if (c != EOF)
+      if (c == EOF)
+	{
+	  /* Update the name in the top element of input_file_stack.  */
+	  if (input_file_stack)
+	    input_file_stack->name = input_filename;
+	}
+      else
 	{
 	  put_back (c);
 

@@ -402,8 +402,12 @@ any_id:
 	;
 
 extern_lang_string:
-	  EXTERN_LANG_STRING
+	EXTERN_LANG_STRING
 		{ push_lang_context ($1); }
+	| extern_lang_string EXTERN_LANG_STRING
+		{ if (current_lang_name != $2)
+		    cp_error ("use of linkage spec `%D' is different from previous spec `%D'", $2, current_lang_name);
+		  pop_lang_context (); push_lang_context ($2); }
 	;
 
 template_header:
@@ -1725,7 +1729,7 @@ object:	  primary '.'
 	;
 
 setattrs: /* empty */
-		{ prefix_attributes = $<ttype>0; }
+		{ prefix_attributes = chainon (prefix_attributes, $<ttype>0); }
 	;
 
 decl:

@@ -2209,12 +2209,12 @@ synthesize_method (fndecl)
      tree fndecl;
 {
   int nested = (current_function_decl != NULL_TREE);
-  int toplev = (decl_function_context (fndecl) == NULL_TREE);
+  tree context = decl_function_context (fndecl);
   char *f = input_filename;
   tree base = DECL_CLASS_CONTEXT (fndecl);
 
   if (nested)
-    push_cp_function_context (toplev);
+    push_cp_function_context (context);
 
   input_filename = DECL_SOURCE_FILE (fndecl);
   interface_unknown = CLASSTYPE_INTERFACE_UNKNOWN (base);
@@ -2238,8 +2238,19 @@ synthesize_method (fndecl)
     }
 
   finish_function (lineno, 0, nested);
+
+  /* Do we really *want* to inline this function?  */
+  if (DECL_INLINE (fndecl))
+    {
+      /* Turn off DECL_INLINE for the moment so function_cannot_inline_p
+         will check our size.  */
+      DECL_INLINE (fndecl) = 0;
+      if (function_cannot_inline_p (fndecl) == 0)
+	DECL_INLINE (fndecl) = 1;
+    }
+
   input_filename = f;
   extract_interface_info ();
   if (nested)
-    pop_cp_function_context (toplev);
+    pop_cp_function_context (context);
 }

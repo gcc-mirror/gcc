@@ -571,7 +571,7 @@ emit_base_init (t, immediately)
 
       if (init != void_list_node)
 	{
-	  member = convert_pointer_to (base_binfo, current_class_decl);
+	  member = convert_pointer_to_real (base_binfo, current_class_decl);
 	  expand_aggr_init_1 (base_binfo, 0,
 			      build_indirect_ref (member, NULL_PTR), init,
 			      BINFO_OFFSET_ZEROP (base_binfo), LOOKUP_NORMAL);
@@ -1980,6 +1980,10 @@ build_offset_ref (cname, name)
 	      && ((flag_save_memoized_contexts && global_bindings_p ())
 		  || ! allocation_temporary_p ()))
 	    fnfields = copy_list (fnfields);
+
+	  for (t = TREE_VALUE (fnfields); t; t = DECL_CHAIN (t))
+	    assemble_external (t);
+
 	  t = build_tree_list (error_mark_node, fnfields);
 	  TREE_TYPE (t) = build_offset_type (type, unknown_type_node);
 	  return t;

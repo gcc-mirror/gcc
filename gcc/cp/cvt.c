@@ -155,6 +155,18 @@ cp_convert_to_pointer (type, expr)
 	  && TREE_CODE (TREE_TYPE (intype)) == METHOD_TYPE)
 	return convert_fn_ptr (type, expr);
 
+      if (TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE
+	  && TREE_CODE (TREE_TYPE (intype)) == OFFSET_TYPE)
+	{
+	  tree b1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (type));
+	  tree b2 = TYPE_OFFSET_BASETYPE (TREE_TYPE (intype));
+	  tree binfo = get_binfo (b1, b2, 1);
+	  if (binfo == NULL_TREE)
+	    binfo = get_binfo (b2, b1, 1);
+	  if (binfo == error_mark_node)
+	    return error_mark_node;
+	}
+
       return build1 (NOP_EXPR, type, expr);
     }
 

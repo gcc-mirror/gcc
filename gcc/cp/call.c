@@ -2379,7 +2379,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
   /* Declare external function if necessary. */
   assemble_external (function);
 
-#if 0
+#if 1
   /* Is it a synthesized method that needs to be synthesized?  */
   if (DECL_ARTIFICIAL (function) && ! flag_no_inline
       && DECL_SAVED_INSNS (function) == 0
