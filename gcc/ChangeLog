@@ -1,3 +1,8 @@
+2002-04-30  Paolo Carlini  <pcarlini@unitus.it>
+
+	* doc/contrib.texi (Contributors): Update Paolo Carlini's
+	and Benjamin Kosnik's entries.
+
 2002-04-29  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.h (BRANCH_COST, PREFETCH_BLOCK,
