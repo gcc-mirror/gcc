@@ -1,3 +1,8 @@
+2003-06-20  Andreas Tobler <toa@pop.agri.ch>
+
+	* c-format.c: Change _Bool to bool reverting part of the last
+	patch.
+
 2003-06-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* som.h (ASM_OUTPUT_SOURCE_LINE): Use targetm.strip_name_encoding to
