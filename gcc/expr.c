@@ -9131,8 +9131,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
 	    return tem;
 
-	  if (GET_CODE (tem) != REG)
-	    tem = copy_to_reg (tem);
+	  if (GET_CODE (tem) != REG
+	      && ! CONSTANT_P (tem))
+	    tem = copy_to_mode_reg (Pmode, tem);
 	  return tem;
 	}
 
