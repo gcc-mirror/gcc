@@ -244,7 +244,8 @@ in the following sections.
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmove-all-movables @gol
 -fno-default-inline  -fno-defer-pop @gol
--fno-function-cse  -fno-inline  -fno-math-errno  -fno-peephole @gol
+-fno-function-cse   -fno-guess-branch-probability
+-fno-inline  -fno-math-errno  -fno-peephole @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -freduce-all-givs @gol
 -fregmove  -frename-registers @gol
@@ -3122,6 +3123,15 @@ used in one place: in @file{reorg.c}, instead of guessing which path a
 branch is mostly to take, the @samp{REG_BR_PROB} values are used to
 exactly determine which path is taken more often.
 @end ifset
+
+@item -fno-guess-branch-probability
+Sometimes gcc will opt to guess branch probabilities when none are
+available from either profile directed feedback (@samp{-fprofile-arcs})
+or @samp(__builtin_expect).  In a hard real-time system, people don't
+want different runs of the compiler to produce code that has different
+behavior; minimizing non-determinism is of paramount import.  This
+switch allows users to reduce non-determinism, possibly at the expense
+of inferior optimization.
 
 @item -fstrict-aliasing
 Allows the compiler to assume the strictest aliasing rules applicable to
