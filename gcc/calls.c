@@ -1601,11 +1601,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 {
   int i, j;
 
-#ifdef LOAD_ARGS_REVERSED
-  for (i = num_actuals - 1; i >= 0; i--)
-#else
   for (i = 0; i < num_actuals; i++)
-#endif
     {
       rtx reg = ((flags & ECF_SIBCALL)
 		 ? args[i].tail_call_reg : args[i].reg);

@@ -1,3 +1,10 @@
+2003-12-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* calls.c (load_register_parameters): Don't use
+	LOAD_ARGS_REVERSED.
+	* system.h (LOAD_ARGS_REVERSED): Poison.
+	* doc/tm.texi (LOAD_ARGS_REVERSED): Remove.
+
 2003-12-17  Per Bothner  <per@bothner.com>
 
 	* emit-rtl.c (set_new_first_and_last_label_num):  Remove function.

@@ -3811,13 +3811,6 @@ be passed in a pair of floating point registers, even though a complex
 float would fit in one 64-bit floating point register.
 @end defmac
 
-@defmac LOAD_ARGS_REVERSED
-If defined, the order in which arguments are loaded into their
-respective argument registers is reversed so that the last
-argument is loaded first.  This macro only affects arguments
-passed in registers.
-@end defmac
-
 @node Scalar Return
 @subsection How Scalar Function Values Are Returned
 @cindex return values in registers
