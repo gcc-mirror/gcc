@@ -11,8 +11,10 @@ details.  */
 package java.lang;
 
 import java.io.InputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Enumeration;
 import java.util.Stack;
 
 /**
@@ -132,7 +134,7 @@ public abstract class ClassLoader {
   protected Class findClass (String name)
     throws ClassNotFoundException
   {
-    throw new ClassNotFoundException ();
+    throw new ClassNotFoundException (name);
   }
 
   /** 
@@ -154,7 +156,7 @@ public abstract class ClassLoader {
    * @exception java.lang.LinkageError
    * @see ClassLoader#defineClass(String,byte[],int,int) */
   protected final Class defineClass(byte[] data, int off, int len) 
-    throws java.lang.ClassNotFoundException, java.lang.LinkageError
+    throws ClassFormatError
   {
     return defineClass (null, data, off, len);
   }
@@ -188,7 +190,7 @@ public abstract class ClassLoader {
 						 byte[] data,
 						 int off,
 						 int len)
-    throws java.lang.ClassNotFoundException, java.lang.LinkageError
+    throws ClassFormatError
   {
     if (data==null || data.length < off+len || off<0 || len<0)
       throw new ClassFormatError ("arguments to defineClass "
@@ -207,10 +209,7 @@ public abstract class ClassLoader {
 
       return defineClass0 (name, data, off, len);
 
-    } catch (java.lang.LinkageError x) {
-      throw x;		// rethrow
-
-    } catch (java.lang.ClassNotFoundException x) {
+    } catch (ClassFormatError x) {
       throw x;		// rethrow
 
     } catch (java.lang.VirtualMachineError x) {
@@ -223,7 +222,7 @@ public abstract class ClassLoader {
 			       + "while defining class "
 			       + name + ": " 
 			       + x.toString ());
-     }
+    }
   }
 
   /** This is the entry point of defineClass into the native code */
@@ -231,7 +230,7 @@ public abstract class ClassLoader {
 				     byte[] data,
 				     int off,
 				     int len)
-    throws java.lang.ClassNotFoundException, java.lang.LinkageError;
+    throws ClassFormatError;
 
 
   /** 
@@ -356,8 +355,8 @@ public abstract class ClassLoader {
       if (res == null) return null;
       return res.openStream ();
     } catch (java.io.IOException x) {
-       return null;
-     }
+      return null;
+    }
   }
  
   /**
@@ -369,9 +368,62 @@ public abstract class ClassLoader {
    * @see     java.lang.ClassLoader#getResourceAsStream(String)
    * @see     java.io.URL
    */
-  public URL getResource(String name) {
+  public URL getResource (String name) 
+  {
+    // The rules say search the parent class if non-null,
+    // otherwise search the built-in class loader (assumed to be
+    // the system ClassLoader).  If not found, call
+    // findResource().
+    URL result = null;
+
+    ClassLoader delegate = parent;
+
+    if (delegate == null)
+      delegate = getSystemClassLoader ();
+	
+    // Protect ourselves from looping.
+    if (this != delegate)
+      result = delegate.getResource (name);
+
+    if (result != null)
+      return result;
+    else
+      return findResource (name);
+  }
+
+  protected URL findResource (String name)
+  {
+    // Default to returning null.  Derived classes implement this.
     return null;
   }
 
+  public Enumeration getResources (String name) throws IOException
+  {
+    // The rules say search the parent class if non-null,
+    // otherwise search the built-in class loader (assumed to be
+    // the system ClassLoader).  If not found, call
+    // findResource().
+    Enumeration result = null;
+
+    ClassLoader delegate = parent;
+
+    if (delegate == null)
+      delegate = getSystemClassLoader ();
+	
+    // Protect ourselves from looping.
+    if (this != delegate)
+      result = delegate.getResources (name);
+
+    if (result != null)
+      return result;
+    else
+      return findResources (name);
+  }
+
+  protected Enumeration findResources (String name) throws IOException
+  {
+    // Default to returning null.  Derived classes implement this.
+    return null;
+  }
 }
 

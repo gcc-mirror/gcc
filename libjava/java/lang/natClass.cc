@@ -72,7 +72,7 @@ static _Jv_Utf8Const *finit_leg_name = _Jv_makeUtf8Const ("$finit$", 7);
 
 
 jclass
-java::lang::Class::forName (jstring className)
+java::lang::Class::forName (jstring className, java::lang::ClassLoader *loader)
 {
   if (! className)
     JvThrow (new java::lang::NullPointerException);
@@ -85,10 +85,10 @@ java::lang::Class::forName (jstring className)
   // IllegalArgumentException on failure.
   _Jv_Utf8Const *name = _Jv_makeUtf8Const (buffer, length);
 
-  // FIXME: should use class loader from calling method.
+  // FIXME: should use bootstrap class loader if loader is null.
   jclass klass = (buffer[0] == '[' 
-		  ? _Jv_FindClassFromSignature (name->data, NULL)
-		  : _Jv_FindClass (name, NULL));
+		  ? _Jv_FindClassFromSignature (name->data, loader)
+		  : _Jv_FindClass (name, loader));
 
   if (klass)
     _Jv_InitClass (klass);
@@ -96,6 +96,13 @@ java::lang::Class::forName (jstring className)
     JvThrow (new java::lang::ClassNotFoundException (className));
 
   return klass;
+}
+
+jclass
+java::lang::Class::forName (jstring className)
+{
+  // FIXME: should use class loader from calling method.
+  return forName (className, NULL);
 }
 
 java::lang::reflect::Constructor *
@@ -608,7 +615,7 @@ java::lang::Class::getMethods (void)
   return result;
 }
 
-jboolean
+inline jboolean
 java::lang::Class::isAssignableFrom (jclass klass)
 {
   // Arguments may not have been initialized, given ".class" syntax.
@@ -899,7 +906,7 @@ _Jv_LookupInterfaceMethodIdx (jclass klass, jclass iface, int method_idx)
   return cldt->cls.itable[idx];
 }
 
-inline jboolean
+jboolean
 _Jv_IsAssignableFrom (jclass target, jclass source)
 {
   if (target == &ObjectClass 

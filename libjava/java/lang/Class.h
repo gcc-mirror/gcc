@@ -103,6 +103,7 @@ struct _Jv_ifaces
 class java::lang::Class : public java::lang::Object
 {
 public:
+  static jclass forName (jstring className, java::lang::ClassLoader *loader);
   static jclass forName (jstring className);
   JArray<jclass> *getClasses (void);
 
