@@ -1,5 +1,9 @@
 2005-01-23  Paolo Carlini  <pcarlini@suse.de>
 
+	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 34.
+
+2005-01-23  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/27_io/basic_ostream/cons/wchar_t/9827.cc: New.
 	* testsuite/27_io/basic_ostream/endl/wchar_t/1.cc: Likewise.
 	* testsuite/27_io/basic_ostream/ends/wchar_t/1.cc: Likewise.
