@@ -853,7 +853,8 @@ grok_x_components (specs, components)
 
   if (components == NULL_TREE)
     {
-      t = groktypename (build_decl_list (specs, NULL_TREE));
+      t = groktypename (build_decl_list (strip_attrs (specs),
+					 NULL_TREE)); 
 
       if (t == NULL_TREE)
 	{
