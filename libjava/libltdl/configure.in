@@ -27,6 +27,22 @@ AC_SUBST(LIBTOOL_DEPS)
 AC_ARG_ENABLE(ltdl-install,
 [  --enable-ltdl-install   install libltdl])
 
+AC_MSG_CHECKING([for garbage collector to use])
+AC_ARG_ENABLE(java-gc,
+changequote(<<,>>)dnl
+<<  --enable-java-gc=TYPE   choose garbage collector [boehm]>>,
+changequote([,])
+  GC=$enableval,
+  GC=boehm)
+
+GCINCS=
+if test "$GC" = "boehm"; then
+   GCINCS='-I$(top_srcdir)/../../boehm-gc -I$(top_builddir)/../../boehm-gc'
+   GCINCS="$GCINCS `cat ../../boehm-gc/boehm-cflags`"
+   AC_DEFINE(HAVE_BOEHM_GC)
+fi
+AC_SUBST(GCINCS)
+
 AM_CONDITIONAL(INSTALL_LTDL, test x"${enable_ltdl_install-no}" != xno)
 AM_CONDITIONAL(CONVENIENCE_LTDL, test x"${enable_ltdl_convenience-no}" != xno)
 

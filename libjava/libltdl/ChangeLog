@@ -1,0 +1,9 @@
+2000-02-14  Tom Tromey  <tromey@cygnus.com>
+
+	* ltdl.c: If HAVE_BOEHM_GC defined, includ gc.h.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (INCLUDES): New macro.
+	* config.h.in, configure: Rebuilt.
+	* acconfig.h (HAVE_BOEHM_GC): Define.
+	* configure.in: Handle --enable-java-gc.
+

@@ -58,6 +58,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 #include <stdio.h>
 #endif
 
+#if HAVE_BOEHM_GC
+#include <gc.h>
+#endif
+
 #include "ltdl.h"
 
 /* max. filename length */
