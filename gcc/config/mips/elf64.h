@@ -80,9 +80,9 @@ do {							\
 #define ASM_OUTPUT_SECTION_NAME(F, DECL, NAME) \
 do {								\
   extern FILE *asm_out_text_file;				\
-  if (TREE_CODE (DECL) == FUNCTION_DECL)			\
+  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)		\
     fprintf (asm_out_text_file, "\t.section %s,\"ax\",@progbits\n", (NAME)); \
-  else if (TREE_READONLY (DECL))				\
+  else if ((DECL) && TREE_READONLY (DECL))			\
     fprintf (F, "\t.section %s,\"a\",@progbits\n", (NAME));	\
   else								\
     fprintf (F, "\t.section %s,\"aw\",@progbits\n", (NAME));	\

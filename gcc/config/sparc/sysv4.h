@@ -183,9 +183,9 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
 #undef	ASM_OUTPUT_SECTION_NAME	/* Override svr4.h's definition.  */
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
 do {									\
-  if (TREE_CODE (DECL) == FUNCTION_DECL)				\
+  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)			\
     fprintf (FILE, ".section\t\"%s\",#alloc,#execinstr\n", (NAME));	\
-  else if (TREE_READONLY (DECL))					\
+  else if ((DECL) && TREE_READONLY (DECL))				\
     fprintf (FILE, ".section\t\"%s\",#alloc\n", (NAME));		\
   else									\
     fprintf (FILE, ".section\t\"%s\",#alloc,#write\n", (NAME));		\
