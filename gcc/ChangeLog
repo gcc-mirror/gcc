@@ -1,3 +1,8 @@
+2003-01-16  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/rs6000/rs6000.h: Mention Altivec registers in
+	commentary.  Fix typo.
+
 2003-01-16  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (movti_string): Remove clobber.
@@ -49,7 +54,7 @@
 
 2003-01-16  Herman A.J. ten Brugge <hermantenbrugge@home.nl>
 
-        * config/c4x/c4x.md (epilogue): Correct last patch.
+	* config/c4x/c4x.md (epilogue): Correct last patch.
 
 2003-01-15  Richard Henderson  <rth@redhat.com>
 
@@ -84,7 +89,7 @@
 
 2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>
 
-	* config/m68hc11/m68hc11.c (expand_prologue): Use push/pop to 
+	* config/m68hc11/m68hc11.c (expand_prologue): Use push/pop to
 	allocate 4-bytes of locals on 68HC11.
 	(expand_epilogue): Likewise.
 	(m68hc11_memory_move_cost): Increase cost of HI/QI soft registers.
@@ -163,7 +168,7 @@
 Wed Jan 15 12:23:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR f/9258
-	* global.c (struct allocno): Add no_stack_reg. 
+	* global.c (struct allocno): Add no_stack_reg.
 	(global_conflicts): Set no_stack_reg.
 	(find_reg): Use it.
 
@@ -198,7 +203,7 @@ Wed Jan 15 12:23:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 	determined by 'op_type'.
 	(type attribute): Added more type attributes.
 	* config/s390/2064.md: New DFA description for z900 pipeline.
-	
+
 2003-01-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_vector_move): Validize constant
@@ -228,7 +233,7 @@ Wed Jan 15 12:23:21 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
 
 	* config/ip2k/ip2k.c (ip2k_attribute_table): New table of
-        attributes.
+	attributes.
 	(TARGET_ATTRIBUTE_TABLE): New macro.
 	(valid_machine_type_attribute): Remove.
 	(valid_machine_decl_attribute): Remove.
@@ -328,11 +333,11 @@ Sat Jan 11 11:02:58 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (parsedir): New variable.
 	(docobjdir): New variable.
-	(c-parse.o, c-parse.c, c-parse.y, gengtype-lex.o, gengtype-yacc.o, 
+	(c-parse.o, c-parse.c, c-parse.y, gengtype-lex.o, gengtype-yacc.o,
 	gengtype-lex.c, gengtype-yacc.c): Use parsedir.
 	(info, cpp.info, gcc.info, gccint.info, gccinstall.info,
 	cppinternals.info, generated-manpages, gcov.1, cpp.1, gcc.1, gfdl.7,
-	gpl.7, fsf-funding.7, maintainer-clean, install-info, install-man): 
+	gpl.7, fsf-funding.7, maintainer-clean, install-info, install-man):
 	Use docobjdir.
 	* objc/Make-lang.in (objc/objc-parse.c, objc/objc-parse.y,
 	objc.maintainer-clean): Use parsedir.
@@ -387,7 +392,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-10  Hartmut Penner  <hpenner@de.ibm.com>
 
-       	* doc/invoke.texi: Document -mtune, delete -mcpu 
+       	* doc/invoke.texi: Document -mtune, delete -mcpu
 	option for S/390 and zSeries.
 	* config/s390/s390.c (s390_tune_string) New variable.
 	(s390_cpu_string) Delete variable.
@@ -434,7 +439,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cpppch.c (cpp_read_state): Restore the hashtable references
 	in the cpp_reader.
-	
+
 	* tree.h (built_in_decls): Mark for PCH.
 
 	* dbxout.c (lastfile): Don't mark for PCH.
@@ -510,7 +515,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* Makefile.in (dbxout.o): Depend on gt-dbxout.h, $(GGC_H).
 	(GTFILES): Add dbxout.c.
 	(gt-dbxout.h): New rule.
-	
+
 	* Makefile.in (c-pch.o): Add debug.h as dependency.
 	* c-pch.c: Include debug.h.
 	(pch_init): Call start_source_file to keep nesting right.
@@ -715,7 +720,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(gt_pch_save_stringpool): New.
 	(gt_pch_restore_stringpool): New.
 	* tree.c (init_ttree): Make type_hash_table allocated using GC.
-	
+
 	2002-10-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* gengtype.c (adjust_field_rtx_def): Don't pass size_t to printf.
@@ -744,8 +749,8 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	2002-10-01  Mike Stump  <mrs@apple.com>
 
-        * ggc-common.c (ggc_splay_alloc): Actually return the allocated area.
-        * gengtype.c (write_gc_structure_fields): Handle param[digit]_is.
+	* ggc-common.c (ggc_splay_alloc): Actually return the allocated area.
+	* gengtype.c (write_gc_structure_fields): Handle param[digit]_is.
 
 	2002-09-01  Geoffrey Keating  <geoffk@redhat.com>
 	    Catherine Moore  <clm@redhat.com>
@@ -766,7 +771,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(c_common_valid_pch): Warn only when -Winvalid-pch.  Call
 	cpp_valid_state.
 	(c_common_read_pch): Add NAME parameter.  Call cpp_read_state.
-	* cppfiles.c (stack_include_file): Update for change to 
+	* cppfiles.c (stack_include_file): Update for change to
 	parameters of cb.read_pch.
 	* cpphash.h (struct cpp_reader): Add `savedstate' field.
 	* cpplib.h (struct cpp_options): Add `warn_invalid_pch' and
@@ -975,7 +980,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(make_automaton): Call the function and use the mask.
 	(estimate_one_automaton_bound): Take `min_occ_cycle_num' into
 	account.
-	
+
 	2002-12-17  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/ia64/itanium2.md (lfetch): Change the insn reservation.
@@ -1014,7 +1019,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/ia64/ia64.c (issue_nops_and_insn): Combine insn issue
 	with and without filling the bundle.
 	(bundling): Combine calls of issue_nops_and_insn.
-	
+
 	2002-10-17  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/ia64/itanium1.md: New file.
@@ -1023,10 +1028,10 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config/ia64/ia64.md: Move DFA descriptions into the new files.
 	Remove the old pipeline description.
-	
+
 	* config/ia64/ia64.c (ia64_override_options): Add aliases of
 	itanium processor names.
-	
+
 	2002-10-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/ia64/ia64.c (bundling): Print states for Itanium2 too.
@@ -1051,7 +1056,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config/ia64/ia64.md (cpu): New attribute.
 	(DFA description): Enable it only for Itanium.
-	
+
 	2002-10-08  Vladimir Makarov  <vmakarov@redhat.com>
 		    Richard Henderson  <rth@redhat.com>
 
@@ -1060,22 +1065,22 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(TARGET_TUNE_STOP_BITS): Rename it to TARGET_EARLY_STOP_BITS.
 	(TARGET_SWITCHES): Rename option `tune-stop-bits' to
 	`early-stop-bits'.
-	
+
 	* config/ia64/ia64.c (ia64_dfa_new_cycle,
 	final_emit_insn_group_barriers): Use TARGET_EARLY_STOP_BITS
 	instead of TARGET_TUNE_STOP_BITS.
-	
+
 	* doc/invoke.texi: Rename option `-mtune-stop-bits' to
 	`-mearly-stop-bits'.
 
 	* config/ia64/ia64.c (automata_option "v"): Comment it.
-	
+
 	2002-10-07  Vladimir Makarov  <vmakarov@redhat.com>
 
-        * config/ia64/ia64.h (MASK_TUNE_STOP_BITS, TARGET_TUNE_STOP_BITS):
+	* config/ia64/ia64.h (MASK_TUNE_STOP_BITS, TARGET_TUNE_STOP_BITS):
 	New macros.
 	(TARGET_SWITCHES): Add entries for the new option.
-	
+
 	* config/ia64/ia64.c (dfa_stop_insn, last_scheduled_insn, rtx
 	dfa_pre_cycle_insn, ia64_nop): Don't make them as roots for GC.
 	(stops_p, stop_before_p, clocks_length, clocks, add_cycles): New
@@ -1090,7 +1095,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(ia64_reorg): Initiate the new varibales.
 
 	* doc/invoke.texi: Add description of option `-mtune-stop-bits'.
-	
+
 	2002-10-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* haifa-sched.c (schedule_block): Modify INSN_TICK of depended
@@ -1116,9 +1121,9 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/ia64/ia64.c (ia64_sched_init): Check that schedule group
 	flag is clear after reload.
 	(adjust_cost): Change cost only for output dependencies.
-	
+
 	* config/ia64/ia64.md: Add more insns into bypass for MM-insns.
-	
+
 	2002-09-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* Makefile.in (sched-ebb.o): Add `$(TARGET_H)' to the entry.
@@ -1142,7 +1147,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* doc/tm.texi (TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK):
 	Describe the new hook.
-	
+
 	2002-09-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* target.h (gcc_target): Add members
@@ -1159,7 +1164,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	initialize `ready_try'.
 	(schedule_block): Use `dfa_new_cycle'.  Sort `ready' only unless
 	`dfa_new_cycle' says not to do it.
-	
+
 	* config/ia64/ia64.md: Add DFA Itanium 1 description for insn
 	bundling.
 
@@ -1215,7 +1220,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* doc/tm.texi
 	(TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD,
 	TARGET_SCHED_DFA_NEW_CYCLE): Describe the new hooks.
-	
+
 	2002-09-23  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* config/ia64/ia64.md: Add Itanium1 DFA description.
@@ -1240,7 +1245,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(ia64_sched_init, ia64_sched_reorder, ia64_sched_reorder2,
 	ia64_variable_issue, ia64_sched_finish): Do nothing before reload.
 	(dfa_pre_cycle_insn): New variable.
-	
+
 	2002-09-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* rtl.def (FINAL_PRESENCE_SET, FINAL_ABSENCE_SET): New
@@ -1273,7 +1278,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* doc/md.texi (final_presence_set, final_absence_set): Describe
 	them.
-	
+
 	2002-09-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c (transform_3): Process a missing case (nothing on
@@ -1283,9 +1288,9 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* rtl.def (DEFINE_QUERY_CPU_UNIT, AUTOMATA_OPTION): Change
 	comments about queried units and the minimization.
-	
+
 	* doc/md.texi: Ditto.
-	
+
 	* genautomata.c (create_composed_state): Return nonzero if the new
 	state has been created.
 	(first_cycle_unit_presence): New function.
@@ -1302,15 +1307,15 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	minimization is switched on.
 	(write_automata): Output code for querying units even if the
 	minimization is switched on.
-	
+
 	2002-09-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* rtl.def (PRESENCE_SET, ABSENCE_SET): Add comments about extended
 	syntax of the constructions.
-	
+
 	* doc/md.texi (PRESENCE_SET, ABSENCE_SET): Add description of
 	extended syntax of the constructions.
-	
+
 	* genautomata.c (unit_rel_decl): Rename it to
 	`unit_pattern_rel_decl'.
 	(pattern_set_el, pattern_reserv): New structures.
@@ -1350,7 +1355,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(output_description): Use new function
 	`output_pattern_set_el_list'.
 	(generate): Use `initiate_presence_absence_pattern_sets'.
-	
+
 	2002-09-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genattr.c (main): Add output of prototype of new interface
@@ -1361,7 +1366,7 @@ Fri Jan 10 22:05:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(output_dfa_start_func): Use function `dfa_clean_insn_cache' in
 	the generated code.
 	(write_automata): Call the new function.
-	
+
 Thu Jan  9 22:47:38 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (unit, prefix_0f, memory attributes): Hanlde sseicvt
@@ -1517,14 +1522,14 @@ Thu Jan  9 12:00:36 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-08  Danny Smith  <dannysmith@users.sourceforge.net>
 
-        PR optimization/8750
-        * config/i386/i386.c (ix86_expand_prologue): Don't allow
-        scheduling pass to move insns across __alloca call.
+	PR optimization/8750
+	* config/i386/i386.c (ix86_expand_prologue): Don't allow
+	scheduling pass to move insns across __alloca call.
 
 2003-01-08  Dale Johannesen  <dalej@apple.com>
 
-        * config/rs6000/rs6000.md:  Replace *store_multiple_string
-        with *stmsi[3-8].
+	* config/rs6000/rs6000.md:  Replace *store_multiple_string
+	with *stmsi[3-8].
 
 2003-01-08  Jeff Sturm  <jsturm@one-point.com>
 
@@ -1533,10 +1538,10 @@ Thu Jan  9 12:00:36 CET 2003  Jan Hubicka  <jh@suse.cz>
 	Set SYMBOL_REF_FLAG on local data sym_ref.
 
 2003-01-08  Dale Johannesen  <dalej@apple.com>
- 
-        * function.c (assign_parms):  Don't set pretend_args_size if 
+
+	* function.c (assign_parms):  Don't set pretend_args_size if
 	  REG_PARM_STACK_SPACE.
-          config/rs6000/rs6000.c (setup_incoming_varargs):  Don't set 
+	  config/rs6000/rs6000.c (setup_incoming_varargs):  Don't set
 	  pretend_args_size.
 
 2003-01-08  Nathanael Nerode  <neroden@gcc.gnu.org>
@@ -1627,7 +1632,7 @@ Thu Jan  9 00:57:15 CET 2003  Jan Hubicka  <jh@suse.cz>
 	HIGH on all variants.
 
 Wed Jan  8 14:06:34 CET 2003  Josef Zlomek <zlomj9am@artax.karlin.mff.cuni.cz>
-	
+
 	* Makefile.in (PARTITION_H): New.
 	(BASIC_BLOCK_H): Added hard-reg-set.h and $(PARTITION_H).
 	* basic-block.h: Include hard-reg-set.h.
@@ -1718,7 +1723,7 @@ Tue Jan  7 21:46:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 	if the register is set once.
 
 2003-01-07  Sylvain Pion <Sylvain.Pion@mpi-sb.mpg.de>
-  
+
 	* config/i386/i386.c (ix86_init_mmx_sse_builtins):
 	__builtin_ia32_ldmxcsr and __builtin_ia32_stmxcsr are SSE, not MXX.
 	* config/i386/i386.md (ldmxcsr, stmxcsr): SSE, not MMX.
@@ -1726,7 +1731,7 @@ Tue Jan  7 21:46:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-01-07  Benjamin Kosnik  <bkoz@redhat.com>
 	    Sunil Davasam  <sunil.k.davasam@intel.com>
 
-	PR libstdc++/9076 
+	PR libstdc++/9076
 	* unwind-dw2.c (execute_cfa_program): DW_CFA_undefined,
 	DW_CFA_same_value, read next and ignore.
 
@@ -1803,7 +1808,7 @@ Tue Jan  7 21:46:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config/rs6000/altivec.md: Remove spaces from assembler
 	instruction argument lists.
-	
+
 2003-01-07  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_naked_function_p): Rename from
