@@ -253,8 +253,9 @@ static int iv_add_mult_cost PARAMS ((rtx, rtx, rtx, rtx));
 
 static rtx loop_insn_emit_after PARAMS((const struct loop *, basic_block, 
 					rtx, rtx));
-static rtx loop_insn_emit_before PARAMS((const struct loop *, basic_block, 
-					 rtx, rtx));
+static rtx loop_call_insn_emit_before PARAMS((const struct loop *,
+					      basic_block, rtx, rtx));
+static rtx loop_call_insn_hoist PARAMS((const struct loop *, rtx));
 static rtx loop_insn_sink_or_swim PARAMS((const struct loop *, rtx));
 
 static void loop_dump_aux PARAMS ((const struct loop *, FILE *, int));
@@ -1885,13 +1886,13 @@ move_movables (loop, movables, threshold, insn_count)
 			      if (GET_CODE (temp) == CALL_INSN
 				  && fn_address != 0
 				  && reg_referenced_p (fn_reg, body))
-				emit_insn_after (gen_move_insn (fn_reg,
-								fn_address),
-						 fn_address_insn);
+				loop_insn_emit_after (loop, 0, fn_address_insn,
+						      gen_move_insn
+						      (fn_reg, fn_address));
 
 			      if (GET_CODE (temp) == CALL_INSN)
 				{
-				  i1 = emit_call_insn_before (body, loop_start);
+				  i1 = loop_call_insn_hoist (loop, body);
 				  /* Because the USAGE information potentially
 				     contains objects other than hard registers
 				     we need to copy it.  */
@@ -1937,7 +1938,7 @@ move_movables (loop, movables, threshold, insn_count)
 			}
 		      else if (GET_CODE (p) == CALL_INSN)
 			{
-			  i1 = emit_call_insn_before (PATTERN (p), loop_start);
+			  i1 = loop_call_insn_hoist (loop, PATTERN (p));
 			  /* Because the USAGE information potentially
 			     contains objects other than hard registers
 			     we need to copy it.  */
@@ -4052,8 +4053,8 @@ loop_givs_rescan (loop, bl, reg_map)
 	{
 	  /* Not replaceable; emit an insn to set the original giv reg from
 	     the reduced giv, same as above.  */
-	  emit_insn_after (gen_move_insn (v->dest_reg, v->new_reg),
-			   v->insn);
+	  loop_insn_emit_after (loop, 0, v->insn, 
+				gen_move_insn (v->dest_reg, v->new_reg));
 	}
       
       /* When a loop is reversed, givs which depend on the reversed
@@ -7563,7 +7564,7 @@ check_dbra_loop (loop, insn_count)
 	      tem = gen_sequence ();
 	      end_sequence ();
 
-	      p = emit_insn_before (tem, bl->biv->insn);
+	      p = loop_insn_emit_before (loop, 0, bl->biv->insn, tem);
 	      delete_insn (bl->biv->insn);
 
 	      /* Update biv info to reflect its new status.  */
@@ -7941,8 +7942,9 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where_bb, where_insn)
 		   into a register (it will be a loop invariant.)  */
 		tem = gen_reg_rtx (GET_MODE (v->new_reg));
 
-		emit_insn_before (gen_move_insn (tem, copy_rtx (v->add_val)),
-				  where_insn);
+		loop_insn_emit_before (loop, 0, where_insn,
+				       gen_move_insn (tem,
+						      copy_rtx (v->add_val)));
 
 		/* Substitute the new register for its invariant value in
 		   the compare expression.  */
@@ -9075,7 +9077,7 @@ load_mems (loop)
 	      /* Store the memory immediately after END, which is
 		 the NOTE_LOOP_END.  */
 	      set = gen_move_insn (copy_rtx (mem), reg);
-	      emit_insn_after (set, label);
+	      loop_insn_emit_after (loop, 0, label, set);
 	    }
 
 	  if (loop_dump_stream)
@@ -9459,7 +9461,7 @@ loop_insn_emit_after (loop, where_bb, where_insn, pattern)
    in basic block WHERE_BB (ignored in the interim) within the loop
    otherwise hoist PATTERN into the loop pre-header.  */
 
-static rtx
+rtx
 loop_insn_emit_before (loop, where_bb, where_insn, pattern)
      const struct loop *loop;
      basic_block where_bb ATTRIBUTE_UNUSED;
@@ -9472,6 +9474,20 @@ loop_insn_emit_before (loop, where_bb, where_insn, pattern)
 }
 
 
+/* Emit call insn for PATTERN before WHERE_INSN in basic block
+   WHERE_BB (ignored in the interim) within the loop.  */
+
+static rtx
+loop_call_insn_emit_before (loop, where_bb, where_insn, pattern)
+     const struct loop *loop ATTRIBUTE_UNUSED;
+     basic_block where_bb ATTRIBUTE_UNUSED;
+     rtx where_insn;
+     rtx pattern;
+{
+  return emit_call_insn_before (pattern, where_insn);
+}
+
+
 /* Hoist insn for PATTERN into the loop pre-header.  */
 
 rtx
@@ -9480,6 +9496,17 @@ loop_insn_hoist (loop, pattern)
      rtx pattern;
 {
   return loop_insn_emit_before (loop, 0, loop->start, pattern);
+}
+
+
+/* Hoist call insn for PATTERN into the loop pre-header.  */
+
+static rtx
+loop_call_insn_hoist (loop, pattern)
+     const struct loop *loop;
+     rtx pattern;
+{
+  return loop_call_insn_emit_before (loop, 0, loop->start, pattern);
 }
 
 

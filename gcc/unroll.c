@@ -2257,7 +2257,7 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 
   tem = gen_sequence ();
   end_sequence ();
-  emit_insn_before (tem, insert_before);
+  loop_insn_emit_before (loop, 0, insert_before, tem);
 }
 
 /* Emit an insn, using the expand_binop to ensure that a valid insn is
