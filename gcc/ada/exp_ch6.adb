@@ -955,8 +955,13 @@ package body Exp_Ch6 is
             then
                Add_Call_By_Copy_Code;
 
+            --  If the actual is not a scalar and is marked for volatile
+            --  treatment, whereas the formal is not volatile, then pass
+            --  by copy unless it is a by-reference type.
+
             elsif Is_Entity_Name (Actual)
               and then Treat_As_Volatile (Entity (Actual))
+              and then not Is_By_Reference_Type (Etype (Actual))
               and then not Is_Scalar_Type (Etype (Entity (Actual)))
               and then not Treat_As_Volatile (E_Formal)
             then
@@ -2896,6 +2901,11 @@ package body Exp_Ch6 is
       --  by reference, we don't want to create a temp to force stack checking.
       --  Shouldn't this function be moved to exp_util???
 
+      function Rhs_Of_Assign_Or_Decl (N : Node_Id) return Boolean;
+      --  If the call is the right side of an assignment or the expression in
+      --  an object declaration, we don't need to create a temp as the left
+      --  side will already trigger stack checking if necessary.
+
       ---------------------------
       -- Returned_By_Reference --
       ---------------------------
@@ -2925,6 +2935,33 @@ package body Exp_Ch6 is
          end if;
       end Returned_By_Reference;
 
+      ---------------------------
+      -- Rhs_Of_Assign_Or_Decl --
+      ---------------------------
+
+      function Rhs_Of_Assign_Or_Decl (N : Node_Id) return Boolean is
+      begin
+         if (Nkind (Parent (N)) = N_Assignment_Statement
+               and then Expression (Parent (N)) = N)
+           or else
+             (Nkind (Parent (N)) = N_Qualified_Expression
+                and then Nkind (Parent (Parent (N))) = N_Assignment_Statement
+                  and then Expression (Parent (Parent (N))) = Parent (N))
+           or else
+             (Nkind (Parent (N)) = N_Object_Declaration
+                and then Expression (Parent (N)) = N)
+           or else
+             (Nkind (Parent (N)) = N_Component_Association
+                and then Expression (Parent (N)) = N
+                  and then Nkind (Parent (Parent (N))) = N_Aggregate
+                    and then Rhs_Of_Assign_Or_Decl (Parent (Parent (N))))
+         then
+            return True;
+         else
+            return False;
+         end if;
+      end Rhs_Of_Assign_Or_Decl;
+
    --  Start of processing for Expand_N_Function_Call
 
    begin
@@ -2941,13 +2978,7 @@ package body Exp_Ch6 is
       --  the instance itself is installed.
 
       if May_Generate_Large_Temp (Typ)
-        and then Nkind (Parent (N)) /= N_Assignment_Statement
-        and then
-          (Nkind (Parent (N)) /= N_Qualified_Expression
-             or else Nkind (Parent (Parent (N))) /= N_Assignment_Statement)
-        and then
-          (Nkind (Parent (N)) /= N_Object_Declaration
-             or else Expression (Parent (N)) /= N)
+        and then not Rhs_Of_Assign_Or_Decl (N)
         and then not Returned_By_Reference
         and then Current_Scope /= Standard_Standard
       then
