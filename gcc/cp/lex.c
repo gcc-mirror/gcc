@@ -4198,12 +4198,12 @@ real_yylex ()
 		     || ((result >> (num_bits - 1)) & 1) == 0)
 	      yylval.ttype
 		= build_int_2 (result & ((unsigned HOST_WIDE_INT) ~0
-					 >> (HOST_BITS_PER_INT - num_bits)),
+					 >> (HOST_BITS_PER_WIDE_INT - num_bits)),
 			       0);
 	    else
 	      yylval.ttype
 		= build_int_2 (result | ~((unsigned HOST_WIDE_INT) ~0
-					  >> (HOST_BITS_PER_INT - num_bits)),
+					  >> (HOST_BITS_PER_WIDE_INT - num_bits)),
 			       -1);
 	    if (num_chars<=1)
 	      TREE_TYPE (yylval.ttype) = char_type_node;
