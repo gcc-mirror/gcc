@@ -1,3 +1,47 @@
+2004-10-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config.gcc: Add support for --enable-e500_double.
+
+	* config/rs6000/e500-double.h: New file.
+
+	* config/rs6000/rs6000.h: Define TARGET_E500_SINGLE and
+	TARGET_E500_DOUBLE.
+
+	* config/rs6000/eabi.h: Define TARGET_E500_SINGLE and
+	TARGET_E500_DOUBLE.
+
+	* config/rs6000/linuxspe.h: Same.
+
+	* doc/invoke.texi (Option Summary): Document new options for
+	mfloat-gprs.
+	(RS/6000 and PowerPC Options): Same.
+
+	* config/rs6000/rs6000.c (rs6000_parse_float_gprs_option): New
+	function.
+	(rs6000_override_options): Use it.  Use
+	SUB3TARGET_OVERRIDE_OPTIONS.
+	Add 8548 to processor_target_table.
+	(rs6000_legitimate_address): Handle e500 doubles.
+	(rs6000_legitimize_address): Same.
+	(rs6000_legitimize_reload_address): Same.
+	(rs6000_hard_regno_nregs): Same.
+	(spe_func_has_64bit_regs_p): Same.
+	(emit_frame_save): Same.
+	(gen_frame_mem_offset): Same.
+	(rs6000_dwarf_register_span): Same.
+	(rs6000_generate_compare): Same.
+	(easy_fp_constant): Same.
+	(legitimate_offset_address_p): Same.
+
+	* config/rs6000/spe.md: (cmdfeq_gpr): New.
+	(tstdfeq_gpr): New.
+	(cmpdfgt_gpr): New.
+	(tstdfgt_gpr): New.
+	(tstdfgt_gpr): New.
+	(cmpdflt_gpr): New.
+	(tstdflt_gpr): New.
+	Add new constants.
+
 2004-10-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* config/arc/lib1funcs.asm (___umulsidi3): Fix typo.

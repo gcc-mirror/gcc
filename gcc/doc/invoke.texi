@@ -616,7 +616,7 @@ See RS/6000 and PowerPC Options.
 -mabi=spe  -mabi=no-spe @gol
 -misel=yes  -misel=no @gol
 -mspe=yes  -mspe=no @gol
--mfloat-gprs=yes  -mfloat-gprs=no @gol
+-mfloat-gprs=yes  -mfloat-gprs=no -mfloat-gprs=single -mfloat-gprs=double @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb  -msdata @gol
 -msdata=@var{opt}  -mvxworks  -mwindiss  -G @var{num}  -pthread}
@@ -10279,12 +10279,23 @@ This switch enables or disables the generation of ISEL instructions.
 This switch enables or disables the generation of SPE simd
 instructions.
 
-@item -mfloat-gprs=@var{yes/no}
+@item -mfloat-gprs=@var{yes/single/double/no}
 @itemx -mfloat-gprs
 @opindex mfloat-gprs
 This switch enables or disables the generation of floating point
 operations on the general purpose registers for architectures that
-support it.  This option is currently only available on the MPC8540.
+support it.
+
+The argument @var{yes} or @var{single} enables the use of
+single-precision floating point operations.
+
+The argument @var{double} enables the use of single and
+double-precision floating point operations.
+
+The argument @var{no} disables floating point operations on the
+general purpose registers.
+
+This option is currently only available on the MPC854x.
 
 @item -m32
 @itemx -m64
