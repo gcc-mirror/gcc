@@ -1,5 +1,12 @@
 2002-12-27  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure: Fix stupid bug where RANLIB was mistakenly included.
+
+	* configure.in: Rename (buildargs, hostargs, targargs) to 
+	(build_configargs, host_configargs, target_configargs).
+
+	* configure.in: Move logic out of sed statement.
+
 	* configure: Remove unneeded 'export's.  Make CC_FOR_TARGET, 
 	CXX_FOR_TARGET, GCJ_FOR_TARGET substituted in configure.in only.
 

@@ -87,7 +87,7 @@ srctrigger=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.51 $"
+version="$Revision: 1.52 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -872,7 +872,7 @@ done
 tools="AR AR_FOR_TARGET AS AS_FOR_TARGET BISON CC_FOR_BUILD"
 tools="${tools} DLLTOOL DLLTOOL_FOR_TARGET GCC_FOR_TARGET BUILD_PREFIX"
 tools="${tools} BUILD_PREFIX_1 LD LD_FOR_TARGET LEX MAKEINFO NM"
-tools="${tools} NM_FOR_TARGET RANLIB RANLIB_FOR_TARGET"
+tools="${tools} NM_FOR_TARGET RANLIB_FOR_TARGET"
 tools="${tools} WINDRES WINDRES_FOR_TARGET YACC"
 tools="${tools} OBJCOPY OBJDUMP"
 if [ "${build}" != "${host}" ]; then
