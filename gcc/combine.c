@@ -101,7 +101,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define LOAD_EXTEND ZERO_EXTEND
 #endif
 
-#ifdef BYTE_LOAD_SIGN_EXTEND
+#ifdef BYTE_LOADS_SIGN_EXTEND
 #define BYTE_LOADS_EXTEND
 #define LOAD_EXTEND SIGN_EXTEND
 #endif
@@ -616,8 +616,8 @@ setup_incoming_promotions ()
 	&& (reg = promoted_input_arg (regno, &mode, &unsignedp)) != 0)
       record_value_for_reg (reg, first,
 			    gen_rtx (unsignedp ? ZERO_EXTEND : SIGN_EXTEND,
-				     mode,
-				     gen_rtx (CLOBBER, VOIDmode, const0_rtx)));
+				     GET_MODE (reg),
+				     gen_rtx (CLOBBER, mode, const0_rtx)));
 #endif
 }
 
@@ -3099,6 +3099,16 @@ subst (x, from, to, in_dest, unique_copy)
 	return gen_rtx_combine (reverse_condition (GET_CODE (XEXP (x, 0))),
 				mode, XEXP (XEXP (x, 0), 0),
 				XEXP (XEXP (x, 0), 1));
+
+      /* (ashiftrt foo C) where C is the number of bits in FOO minus 1
+	 is (lt foo (const_int 0)), so we can perform the above
+	 simplification.  */
+
+      if (XEXP (x, 1) == const1_rtx
+	  && GET_CODE (XEXP (x, 0)) == ASHIFTRT
+	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+	  && INTVAL (XEXP (XEXP (x, 0), 1)) == GET_MODE_BITSIZE (mode) - 1)
+	return gen_rtx_combine (GE, mode, XEXP (XEXP (x, 0), 0), const0_rtx);
 #endif
 
       /* Apply De Morgan's laws to reduce number of patterns for machines
@@ -4285,6 +4295,16 @@ subst (x, from, to, in_dest, unique_copy)
 	return gen_rtx_combine (reverse_condition (GET_CODE (XEXP (x, 0))),
 				mode, XEXP (XEXP (x, 0), 0),
 				XEXP (XEXP (x, 0), 1));
+
+      /* (lshiftrt foo C) where C is the number of bits in FOO minus 1
+	 is (lt foo (const_int 0)), so we can perform the above
+	 simplification.  */
+
+      if (XEXP (x, 1) == const1_rtx
+	  && GET_CODE (XEXP (x, 0)) == LSHIFTRT
+	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+	  && INTVAL (XEXP (XEXP (x, 0), 1)) == GET_MODE_BITSIZE (mode) - 1)
+	return gen_rtx_combine (GE, mode, XEXP (XEXP (x, 0), 0), const0_rtx);
 #endif
 
       /* (xor (comparison foo bar) (const_int sign-bit))
@@ -5897,6 +5917,23 @@ simplify_and_const_int (x, mode, varop, constop)
 				     XEXP (varop, 0), XEXP (varop, 1));
 	  break;
 
+	case LSHIFTRT:
+	  /* If we have (and (lshiftrt FOO C1) C2) where the combination of the
+	     shift and AND produces only copies of the sign bit (C2 is one less
+	     than a power of two), we can do this with just a shift.  */+
+
+	  if (GET_CODE (XEXP (varop, 1)) == CONST_INT
+	      && ((INTVAL (XEXP (varop, 1))
+		   + num_sign_bit_copies (XEXP (varop, 0),
+					  GET_MODE (XEXP (varop, 0))))
+		  >= GET_MODE_BITSIZE (GET_MODE (varop)))
+	      && exact_log2 (constop + 1) >= 0)
+	    varop
+	      = gen_rtx_combine (LSHIFTRT, GET_MODE (varop), XEXP (varop, 0),
+				 GEN_INT (GET_MODE_BITSIZE (GET_MODE (varop))
+					  - exact_log2 (constop + 1)));
+	  break;
+
 	case NE:
 	  /* (and (ne FOO 0) CONST) can be (and FOO CONST) if CONST is
 	     included in STORE_FLAG_VALUE and FOO has no bits that might be
@@ -6828,6 +6865,16 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	  count = 0;
 	  break;
 	}
+
+      /* If we are doing an arithmetic right shift and discarding all but
+	 the sign bit copies, this is equivalent to doing a shift by the
+	 bitsize minus one.  Convert it into that shift because it will often
+	 allow other simplifications.  */
+
+      if (code == ASHIFTRT
+	  && (count + num_sign_bit_copies (varop, shift_mode)
+	      >= GET_MODE_BITSIZE (shift_mode)))
+	count = GET_MODE_BITSIZE (shift_mode) - 1;
 
       /* We simplify the tests below and elsewhere by converting
 	 ASHIFTRT to LSHIFTRT if we know the sign bit is clear.
