@@ -43,10 +43,11 @@ global GXX_UNDER_TEST
 # main test loop
 #
 
-
+set dirlen [expr [string length "$srcdir/$subdir"] + 1];
 foreach file [lsort [find $srcdir/$subdir *.C]] {
     # If we're only testing specific files and this isn't one of them, skip it.
-    if ![runtest_file_p $runtests $file] then {
+    set tfile [string range $file $dirlen end];
+    if ![runtest_file_p $runtests $tfile] then {
 	continue
     }
     verbose "Testing $file"
