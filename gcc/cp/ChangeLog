@@ -1,3 +1,8 @@
+2003-05-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* semantics.c (perform_deferred_access_checks): Don't discard
+	checked access.
+
 2003-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* error.c (cp_error_at, cp_warning_at, cp_pedwarn_at): Eliminate

@@ -234,7 +234,21 @@ void pop_to_parent_deferring_access_checks (void)
   pop_deferring_access_checks ();
 }
 
-/* Perform the deferred access checks.  */
+/* Perform the deferred access checks.
+
+   After performing the checks, we still have to keep the list
+   `deferred_access_stack->deferred_access_checks' since we may want
+   to check access for them again later in a different context.
+   For example:
+
+     class A {
+       typedef int X;
+       static X a;
+     };
+     A::X A::a, x;	// No error for `A::a', error for `x'
+
+   We have to perform deferred access of `A::X', first with `A::a',
+   next with `x'.  */
 
 void perform_deferred_access_checks (void)
 {
@@ -245,9 +259,6 @@ void perform_deferred_access_checks (void)
     /* Check access.  */
     enforce_access (TREE_PURPOSE (deferred_check), 
 		    TREE_VALUE (deferred_check));
-
-  /* No more deferred checks.  */
-  deferred_access_stack->deferred_access_checks = NULL_TREE;
 }
 
 /* Defer checking the accessibility of DECL, when looked up in

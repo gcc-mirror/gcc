@@ -1,3 +1,7 @@
+2003-05-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.dg/parse/access2.C: New test.
+
 2003-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/gcc-dg.exp (gcc-dg-debug-runtest): New method.
