@@ -1,3 +1,7 @@
+2004-06-24  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/cfg.texi (Edges): Fix typo.
+
 2004-06-24  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_output_epilogue): Remove excess checks.
@@ -19,7 +23,7 @@
 
 	* c-gimplify.c (gimplify_decl_stmt): Push gimplify_one_sizepos inside
 	non-constant size check.  Gimplify the type too.  Tidy building
-	BUILT_IN_STACK_ALLOC call
+	BUILT_IN_STACK_ALLOC call.
 
 2004-06-23  Roger Sayle  <roger@eyesopen.com>
 
