@@ -1,3 +1,9 @@
+2004-09-17  Uros Bizjak  <uros@kss-loka.si>
+
+	PR rtl-optimization/15187
+	* ifcvt.c (noce_try_cmove_arith): Exit early if total
+	insn_rtx_cost of both branches > BRANCH_COST
+
 2004-09-16  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/17528

@@ -1214,6 +1214,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
   rtx insn_a, insn_b;
   rtx tmp, target;
   int is_mem = 0;
+  int insn_cost;
   enum rtx_code code;
 
   /* A conditional move from two memory sources is equivalent to a
@@ -1246,6 +1247,25 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
   code = GET_CODE (if_info->cond);
   insn_a = if_info->insn_a;
   insn_b = if_info->insn_b;
+
+  /* Total insn_rtx_cost should be smaller than branch cost.  Exit
+     if insn_rtx_cost can't be estimated.  */
+  if (insn_a)
+    {
+      insn_cost = insn_rtx_cost (PATTERN (insn_a));
+      if (insn_cost == 0 || insn_cost > COSTS_N_INSNS (BRANCH_COST))
+	return FALSE;
+    }
+  else
+    {
+      insn_cost = 0;
+    }
+
+  if (insn_b) {
+    insn_cost += insn_rtx_cost (PATTERN (insn_b));
+    if (insn_cost == 0 || insn_cost > COSTS_N_INSNS (BRANCH_COST))
+      return FALSE;
+  }
 
   /* Possibly rearrange operands to make things come out more natural.  */
   if (reversed_comparison_code (if_info->cond, if_info->jump) != UNKNOWN)
