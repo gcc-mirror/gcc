@@ -1,3 +1,7 @@
+2004-03-16  Manfred Hollstein  <mh@suse.com>
+
+	* Makefile.in, configure.in, configure: Update copyright years.
+
 2004-03-15  Manfred Hollstein  <mh@suse.com>
 
 	* Makefile.in (LIBOBJC_VERSION, LIBOBJC_GC_VERSION): Use
