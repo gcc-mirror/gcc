@@ -1,3 +1,8 @@
+2000-11-18  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/zerolen-1.c: Rename from 20001115-1.c.
+	* gcc.c-torture/execute/zerolen-2.c: New.
+
 2000-11-18  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/20001115-1.c: Don't access nonexistant
