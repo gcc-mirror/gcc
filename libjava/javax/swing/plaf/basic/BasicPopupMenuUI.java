@@ -89,9 +89,6 @@ import javax.swing.plaf.PopupMenuUI;
 
 /**
  * DOCUMENT ME!
- *
- * @author $author$
- * @version $Revision: 1.1.2.1 $
  */
 public class BasicPopupMenuUI extends PopupMenuUI
 {
@@ -254,9 +251,6 @@ public class BasicPopupMenuUI extends PopupMenuUI
 
   /**
    * DOCUMENT ME!
-   *
-   * @author $author$
-   * @version $Revision: 1.1.2.1 $
    */
   protected class PopupMenuHandler implements PopupMenuListener
   {
@@ -290,9 +284,6 @@ public class BasicPopupMenuUI extends PopupMenuUI
 
   /**
    * DOCUMENT ME!
-   *
-   * @author $author$
-   * @version $Revision: 1.1.2.1 $
    */
   protected class MouseInputHandler implements MouseInputListener
   {

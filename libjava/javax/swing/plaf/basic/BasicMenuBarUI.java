@@ -76,9 +76,6 @@ import java.awt.GridLayout;
 
 /**
  * DOCUMENT ME!
- *
- * @author $author$
- * @version $Revision: 1.1.2.1 $
  */
 public class BasicMenuBarUI extends MenuBarUI
 {

@@ -62,9 +62,6 @@ import javax.swing.plaf.MenuItemUI;
 
 /**
  * DOCUMENT ME!
- *
- * @author $author$
- * @version $Revision: 1.2.18.4 $
  */
 public class JMenuItem extends AbstractButton implements Accessible,
                                                          MenuElement
@@ -586,9 +583,6 @@ public class JMenuItem extends AbstractButton implements Accessible,
 
   /**
    * DOCUMENT ME!
-   *
-   * @author $author$
-   * @version $Revision: 1.2.18.4 $
    */
   protected class AccessibleJMenuItem extends AccessibleAbstractButton
     implements ChangeListener
