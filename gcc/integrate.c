@@ -331,6 +331,30 @@ finish_inline (fndecl, head)
   DECL_INLINE (fndecl) = 1;
 }
 
+/* Adjust the BLOCK_END_NOTE pointers in a given copied DECL tree so that
+   they all point to the new (copied) rtxs.  */
+
+static void
+adjust_copied_decl_tree (block)
+     register tree block;
+{
+  register tree subblock;
+  register rtx original_end;
+
+  original_end = BLOCK_END_NOTE (block);
+  if (original_end)
+    {
+      BLOCK_END_NOTE (block) = (rtx) NOTE_SOURCE_FILE (original_end);
+      NOTE_SOURCE_FILE (original_end) = 0;
+    }
+
+  /* Process all subblocks.  */
+  for (subblock = BLOCK_SUBBLOCKS (block);
+       subblock;
+       subblock = TREE_CHAIN (subblock))
+    adjust_copied_decl_tree (subblock);
+}
+
 /* Make the insns and PARM_DECLs of the current function permanent
    and record other information in DECL_SAVED_INSNS to allow inlining
    of this function in subsequent calls.
@@ -509,8 +533,14 @@ save_for_inline_copying (fndecl)
 	    continue;
 
 	  copy = rtx_alloc (NOTE);
-	  NOTE_SOURCE_FILE (copy) = NOTE_SOURCE_FILE (insn);
 	  NOTE_LINE_NUMBER (copy) = NOTE_LINE_NUMBER (insn);
+	  if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_BLOCK_END)
+	    NOTE_SOURCE_FILE (copy) = NOTE_SOURCE_FILE (insn);
+	  else
+	    {
+	      NOTE_SOURCE_FILE (insn) = (char *) copy;
+	      NOTE_SOURCE_FILE (copy) = 0;
+	    }
 	  break;
 
 	case INSN:
@@ -541,6 +571,8 @@ save_for_inline_copying (fndecl)
       PREV_INSN (copy) = last_insn;
       last_insn = copy;
     }
+
+  adjust_copied_decl_tree (DECL_INITIAL (fndecl));
 
   /* Now copy the REG_NOTES.  */
   for (insn = NEXT_INSN (get_insns ()); insn; insn = NEXT_INSN (insn))
