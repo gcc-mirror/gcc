@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <ffi.h>
 #include "fficonfig.h"
 

@@ -1,3 +1,8 @@
+2003-11-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* testsuite/libffi.call/ffitest.h: Include <fcntl.h>.
+	* testsuite/libffi.special/ffitestcxx.h: Likewise.
+
 2003-11-22  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* Makefile.in: Rebuilt.
