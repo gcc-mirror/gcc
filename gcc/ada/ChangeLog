@@ -1,3 +1,27 @@
+2001-12-11  Ed Schonberg <schonber@gnat.com>
+
+	* freeze.adb: Make Freeze_Fixed_Point_Type visible, for use in
+	sem_attr.
+	
+	* sem_attr.adb: Simplify previous fix for Address.
+	(Set_Bounds): If prefix is a non-frozen fixed-point type, freeze now, 
+	to avoid anomalies where the bound of the type appears to raise 
+	constraint error.
+
+2001-12-11  Robert Dewar <dewar@gnat.com>
+
+	* lib-xref.adb (Output_Refs): Make sure pointers are always properly 
+	handled.
+	
+2001-12-11  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Check for a 
+	renamed unit before checking for recursive instantiations.
+	
+2001-12-11  Emmanuel Briot <briot@gnat.com>
+
+	* prj.ads: Add comments for some of the fields.
+
 2001-12-11  Robert Dewar <dewar@gnat.com>
 
 	* lib-xref.adb (Output_Refs): Don't output type references outside 
@@ -23,7 +47,7 @@
 	
 	* Makefile.in: Added g-diopit.o to GNATRTL_NONTASKING_OBJS
 	
-2001-12-11  Richard Kenner <dewar@gnat.com>
+2001-12-11  Robert Dewar <dewar@gnat.com>
 
 	* sem_attr.adb: Minor reformatting
 

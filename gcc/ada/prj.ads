@@ -86,7 +86,8 @@ package Prj is
             Value : String_Id := No_String;
       end case;
    end record;
-   --  Values for variables and array elements
+   --  Values for variables and array elements.
+   --  Default is True if the current value is the default one for the variable
 
    Nil_Variable_Value : constant Variable_Value :=
      (Kind     => Undefined,
@@ -383,10 +384,14 @@ package Prj is
       Include_Path : String_Access := null;
       --  The cached value of ADA_INCLUDE_PATH for this project file.
       --  Set by gnatmake (prj.Env.Set_Ada_Paths).
+      --  Do not use this field directly outside of the compiler, use
+      --  Prj.Env.Ada_Source_Path instead.
 
       Objects_Path : String_Access := null;
       --  The cached value of ADA_OBJECTS_PATH for this project file.
       --  Set by gnatmake (prj.Env.Set_Ada_Paths).
+      --  Do not use this field directly outside of the compiler, use
+      --  Prj.Env.Ada_Source_Path instead.
 
       Config_File_Name : Name_Id := No_Name;
       --  The name of the configuration pragmas file, if any.
