@@ -1199,7 +1199,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_ftabstop:
-      /* Don't recognise -fno-tabstop=.  */
+      /* Don't recognize -fno-tabstop=.  */
       if (!on)
 	return 0;
 
@@ -1640,7 +1640,7 @@ set_Wimplicit (on)
 }
 
 /* Args to -d specify what to dump.  Silently ignore
-   unrecognised options; they may be aimed at toplev.c.  */
+   unrecognized options; they may be aimed at toplev.c.  */
 static void
 handle_OPT_d (arg)
      const char *arg;

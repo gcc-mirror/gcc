@@ -29,7 +29,7 @@
 ;        for QImode and Pmode, whether Pmode was QImode or PQImode.
 ;        For addresses we wouldn't have to have a clobber of the CC
 ;        associated with each insn and we could use MPYI in address
-;        calculations without having to synthesise a proper 32 bit multiply.
+;        calculations without having to synthesize a proper 32 bit multiply.
 
 ; Additional C30/C40 instructions not coded:
 ; CALLcond, IACK, IDLE, LDE, LDFI, LDII, LDM, NORM, RETIcond
@@ -1360,7 +1360,7 @@
 ;  If one of the operands is not a register, then we should
 ;  emit two insns, using a scratch register.  This will produce
 ;  better code in loops if the source operand is invariant, since
-;  the source reload can be optimised out.  During reload we cannot
+;  the source reload can be optimized out.  During reload we cannot
 ;  use change_address or force_reg which will allocate new pseudo regs.
 
 ;  Unlike most other insns, the move insns can't be split with
@@ -2076,7 +2076,7 @@
      {        
        if (GET_CODE (operands[2]) == CONST_INT)
          {
-          /* Let GCC try to synthesise the multiplication using shifts
+          /* Let GCC try to synthesize the multiplication using shifts
              and adds.  In most cases this will be more profitable than
              using the C3x MPYI.  */
             FAIL;
@@ -3410,7 +3410,7 @@
 ;  If one of the operands is not a register, then we should
 ;  emit two insns, using a scratch register.  This will produce
 ;  better code in loops if the source operand is invariant, since
-;  the source reload can be optimised out.  During reload we cannot
+;  the source reload can be optimized out.  During reload we cannot
 ;  use change_address or force_reg.
 (define_expand "movqf"
   [(set (match_operand:QF 0 "src_operand" "")
@@ -5317,7 +5317,7 @@
 ; Note we have to emit a dbu instruction if there are no delay slots
 ; to fill.
 ; Also note that GCC will try to reverse a loop to see if it can
-; utilise this instruction.  However, if there are more than one
+; utilize this instruction.  However, if there are more than one
 ; memory reference in the loop, it cannot guarantee that reversing
 ; the loop will work :(  (see check_dbra_loop() in loop.c)
 ; Note that the C3x only decrements the 24 LSBs of the address register
@@ -5629,7 +5629,7 @@
 
 ; The current low overhead looping code is naff and is not failsafe
 ; If you want RTPB instructions to be generated, apply the patches
-; from www.elec.canterbury.ac.nz/c4x.  This will utilise the
+; from www.elec.canterbury.ac.nz/c4x.  This will utilize the
 ; doloop_begin and doloop_end patterns in this MD.
 (define_expand "decrement_and_branch_on_count"
   [(parallel [(set (pc)
@@ -7315,7 +7315,7 @@
 
 ; The following two peepholes remove an unecessary load
 ; often found at the end of a function.  These peepholes
-; could be generalised to other binary operators.  They shouldn't
+; could be generalized to other binary operators.  They shouldn't
 ; be required if we run a post reload mop-up pass.
 (define_peephole
  [(parallel [(set (match_operand:QF 0 "ext_reg_operand" "")

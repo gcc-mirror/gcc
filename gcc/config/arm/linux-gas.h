@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
-/* Emit code to set up a trampoline and synchronise the caches.  */
+/* Emit code to set up a trampoline and synchronize the caches.  */
 #undef  INITIALIZE_TRAMPOLINE
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\

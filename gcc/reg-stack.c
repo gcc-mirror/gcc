@@ -353,7 +353,7 @@ next_flags_user (insn)
   return NULL_RTX;
 }
 
-/* Reorganise the stack into ascending numbers,
+/* Reorganize the stack into ascending numbers,
    after this insn.  */
 
 static void

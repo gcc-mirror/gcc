@@ -8552,7 +8552,7 @@ Tue Apr 25 18:52:43 1995  Stephen R. van den Berg  (berg@pool.informatik.rwth-aa
 	Delete the no_live_regs shortcut to save space.
 	Use stackentry state to determine filled registers.
 	(replace_reg): Accept COMPLEX_FLOAT as well.
-	(move_for_stack_reg): Optimise away some pointer dereferencing.
+	(move_for_stack_reg): Optimize away some pointer dereferencing.
 	(subst_stack_regs): Make sure the stack is in the right order
 	and of the right size for register passing.
 	(goto_block_pat): Make sure the stack is in the right order

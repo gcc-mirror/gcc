@@ -123,7 +123,7 @@ enum block_move_type {
   BLOCK_MOVE_LAST			/* generate just the last store */
 };
 
-/* Information about one recognised processor.  Defined here for the
+/* Information about one recognized processor.  Defined here for the
    benefit of TARGET_CPU_CPP_BUILTINS.  */
 struct mips_cpu_info {
   /* The 'canonical' name of the processor as far as GCC is concerned.

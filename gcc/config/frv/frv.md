@@ -1607,7 +1607,7 @@
 ;; Floating Point Moves
 ;;
 ;; Note - Patterns for SF mode moves are compulsory, but
-;; patterns for DF are optional, as GCC can synthesise them.
+;; patterns for DF are optional, as GCC can synthesize them.
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_operand" "")
@@ -2258,7 +2258,7 @@
 ;; Signed conversions from a smaller integer to a larger integer
 ;;
 ;; These operations are optional.  If they are not
-;; present GCC will synthesise them for itself
+;; present GCC will synthesize them for itself
 ;; Even though frv does not provide these instructions, we define them
 ;; to allow load + sign extend to be collapsed together
 (define_insn "extendqihi2"

@@ -7415,7 +7415,7 @@ Floating and complex non-type template parameters have been deprecated,
 and are now removed from g++.
 
 The implicit typename extension has been deprecated and will be removed
-from g++ at some point.  In some cases g++ determines that a dependant
+from g++ at some point.  In some cases g++ determines that a dependent
 type such as @code{TPL<T>::X} is a type without needing a
 @code{typename} keyword, contrary to the standard.
 

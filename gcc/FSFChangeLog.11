@@ -2636,7 +2636,7 @@ Wed Sep 10 11:49:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
  	EXCEPTION_SECTION, mark the start of the frame info with a
  	collectable tag.
 	* collect2.c (frame_tables): New list.
-	(is_ctor_dtor): Recognise frame entries.
+	(is_ctor_dtor): Recognize frame entries.
 	(scan_prog_file): Likewise.
 	(main): Pass -fno-exceptions to sub-compile.  Also do collection
 	if there are any frame entries.
@@ -3948,7 +3948,7 @@ Sun Aug  3 21:57:31 1997  Jim Meyering  <meyering@eng.ascend.com>
 
 Sun Aug  3 21:54:51 1997  Nick Burrett  <n.a.burrett@btinternet.com>
 
-	* cpplib.c (cpp_start_read): Recognise suffixes 'cp' and 'c++'.
+	* cpplib.c (cpp_start_read): Recognize suffixes 'cp' and 'c++'.
 
 Sun Aug  3 19:18:27 1997  Ralf Baechle  <ralf@uni-koblenz.de>
 

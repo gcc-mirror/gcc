@@ -3533,7 +3533,7 @@ for comparisons whose argument is a @code{plus}.
 @cindex looping instruction patterns
 @cindex defining looping instruction patterns
 
-Some machines have special jump instructions that can be utilised to
+Some machines have special jump instructions that can be utilized to
 make loops more efficient.  A common example is the 68000 @samp{dbra}
 instruction which performs a decrement of a register and a branch if the
 result was greater than zero.  Other machines, in particular digital

@@ -476,7 +476,7 @@ xstormy16_secondary_reload_class (class, mode, x)
   return NO_REGS;
 }
 
-/* Recognise a PLUS that needs the carry register.  */
+/* Recognize a PLUS that needs the carry register.  */
 int
 xstormy16_carry_plus_operand (x, mode)
      rtx x;
