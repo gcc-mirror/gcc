@@ -35,7 +35,7 @@ enum real_value_class {
 };
 
 #define SIGNIFICAND_BITS	(128 + HOST_BITS_PER_LONG)
-#define EXP_BITS		(32 - 4)
+#define EXP_BITS		(32 - 5)
 #define MAX_EXP			((1 << (EXP_BITS - 1)) - 1)
 #define SIGSZ			(SIGNIFICAND_BITS / HOST_BITS_PER_LONG)
 #define SIG_MSB			((unsigned long)1 << (HOST_BITS_PER_LONG - 1))
@@ -45,6 +45,7 @@ struct real_value GTY(())
   ENUM_BITFIELD (real_value_class) class : 2;
   unsigned int sign : 1;
   unsigned int signalling : 1;
+  unsigned int canonical : 1;
   signed int exp : EXP_BITS;
   unsigned long sig[SIGSZ];
 };
@@ -118,6 +119,9 @@ struct real_format
 
   /* Size of the significand in digits of radix B.  */
   int p;
+
+  /* Size of the significant of a NaN, in digits of radix B.  */
+  int pnan;
 
   /* The minimum negative integer, x, such that b**(x-1) is normalized.  */
   int emin;
@@ -222,12 +226,16 @@ extern unsigned int real_hash	PARAMS ((const REAL_VALUE_TYPE *));
 
 /* Target formats defined in real.c.  */
 extern const struct real_format ieee_single_format;
+extern const struct real_format mips_single_format;
 extern const struct real_format ieee_double_format;
+extern const struct real_format mips_double_format;
 extern const struct real_format ieee_extended_motorola_format;
 extern const struct real_format ieee_extended_intel_96_format;
 extern const struct real_format ieee_extended_intel_128_format;
 extern const struct real_format ibm_extended_format;
+extern const struct real_format mips_extended_format;
 extern const struct real_format ieee_quad_format;
+extern const struct real_format mips_quad_format;
 extern const struct real_format vax_f_format;
 extern const struct real_format vax_d_format;
 extern const struct real_format vax_g_format;

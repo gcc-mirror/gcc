@@ -210,7 +210,11 @@ pack_d ( fp_number_type *  src)
       exp = EXPMAX;
       if (src->class == CLASS_QNAN || 1)
 	{
+#ifdef QUIET_NAN_NEGATED
+	  fraction |= QUIET_NAN - 1;
+#else
 	  fraction |= QUIET_NAN;
+#endif
 	}
     }
   else if (isinf (src))
@@ -521,7 +525,11 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
       else
 	{
 	  /* Nonzero fraction, means nan */
+#ifdef QUIET_NAN_NEGATED
+	  if ((fraction & QUIET_NAN) == 0)
+#else
 	  if (fraction & QUIET_NAN)
+#endif
 	    {
 	      dst->class = CLASS_QNAN;
 	    }

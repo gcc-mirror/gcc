@@ -98,4 +98,4 @@ Boston, MA 02111-1307, USA.  */
    for long double.  There's no need to override this here, since
    ieee_quad_format is the default, but let's put this here to make
    sure nobody thinks we just forgot to set it to something else.  */
-#define MIPS_TFMODE_FORMAT ieee_quad_format
+#define MIPS_TFMODE_FORMAT mips_quad_format

@@ -525,4 +525,4 @@ do {									 \
 -_SYSTYPE_SVR4 -woff 131 \
 %{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64}%{!mabi*: -n32}"
 
-#define MIPS_TFMODE_FORMAT ibm_extended_format
+#define MIPS_TFMODE_FORMAT mips_extended_format

@@ -158,6 +158,7 @@ get_canonical_qnan (r, sign)
   memset (r, 0, sizeof (*r));
   r->class = rvc_nan;
   r->sign = sign;
+  r->canonical = 1;
 }
 
 static inline void
@@ -169,6 +170,7 @@ get_canonical_snan (r, sign)
   r->class = rvc_nan;
   r->sign = sign;
   r->signalling = 1;
+  r->canonical = 1;
 }
 
 static inline void
@@ -1212,7 +1214,7 @@ real_isnegzero (r)
 
 /* Compare two floating-point objects for bitwise identity.  */
 
-extern bool
+bool
 real_identical (a, b)
      const REAL_VALUE_TYPE *a, *b;
 {
@@ -1237,6 +1239,9 @@ real_identical (a, b)
     case rvc_nan:
       if (a->signalling != b->signalling)
 	return false;
+      /* The significand is ignored for canonical NaNs.  */
+      if (a->canonical || b->canonical)
+	return a->canonical == b->canonical;
       break;
 
     default:
@@ -2246,7 +2251,7 @@ real_nan (r, str, quiet, mode)
 
       /* Shift the significand into place such that the bits
 	 are in the most significant bits for the format.  */
-      lshift_significand (r, r, SIGNIFICAND_BITS - fmt->p);
+      lshift_significand (r, r, SIGNIFICAND_BITS - fmt->pnan);
 
       /* Our MSB is always unset for NaNs.  */
       r->sig[SIGSZ-1] &= ~SIG_MSB;
@@ -2562,27 +2567,32 @@ real_hash (r)
     {
     case rvc_zero:
     case rvc_inf:
-      break;
+      return h;
 
     case rvc_normal:
       h |= r->exp << 3;
-      /* FALLTHRU */
+      break;
 
     case rvc_nan:
-      if (sizeof(unsigned long) > sizeof(unsigned int))
-	for (i = 0; i < SIGSZ; ++i)
-	  {
-	    unsigned long s = r->sig[i];
-	    h ^= s ^ (s >> (HOST_BITS_PER_LONG / 2));
-	  }
-      else
-	for (i = 0; i < SIGSZ; ++i)
-	  h ^= r->sig[i];
+      if (r->signalling)
+	h ^= (unsigned int)-1;
+      if (r->canonical)
+	return h;
       break;
 
     default:
       abort ();
     }
+
+  if (sizeof(unsigned long) > sizeof(unsigned int))
+    for (i = 0; i < SIGSZ; ++i)
+      {
+	unsigned long s = r->sig[i];
+	h ^= s ^ (s >> (HOST_BITS_PER_LONG / 2));
+      }
+  else
+    for (i = 0; i < SIGSZ; ++i)
+      h ^= r->sig[i];
 
   return h;
 }
@@ -2621,11 +2631,19 @@ encode_ieee_single (fmt, buf, r)
     case rvc_nan:
       if (fmt->has_nans)
 	{
+	  if (r->canonical)
+	    sig = 0;
 	  if (r->signalling == fmt->qnan_msb_set)
 	    sig &= ~(1 << 22);
 	  else
 	    sig |= 1 << 22;
-	  if (sig == 0)
+	  /* We overload qnan_msb_set here: it's only clear for
+	     mips_ieee_single, which wants all mantissa bits but the
+	     quiet/signalling one set in canonical NaNs (at least
+	     Quiet ones).  */
+	  if (r->canonical && !fmt->qnan_msb_set)
+	    sig |= (1 << 22) - 1;
+	  else if (sig == 0)
 	    sig = 1 << 21;
 
 	  image |= 255 << 23;
@@ -2712,6 +2730,7 @@ const struct real_format ieee_single_format =
     2,
     1,
     24,
+    24,
     -125,
     128,
     31,
@@ -2720,6 +2739,24 @@ const struct real_format ieee_single_format =
     true,
     true,
     true
+  };
+
+const struct real_format mips_single_format = 
+  {
+    encode_ieee_single,
+    decode_ieee_single,
+    2,
+    1,
+    24,
+    24,
+    -125,
+    128,
+    31,
+    true,
+    true,
+    true,
+    true,
+    false
   };
 
 
@@ -2774,11 +2811,22 @@ encode_ieee_double (fmt, buf, r)
     case rvc_nan:
       if (fmt->has_nans)
 	{
+	  if (r->canonical)
+	    sig_hi = sig_lo = 0;
 	  if (r->signalling == fmt->qnan_msb_set)
 	    sig_hi &= ~(1 << 19);
 	  else
 	    sig_hi |= 1 << 19;
-	  if (sig_hi == 0 && sig_lo == 0)
+	  /* We overload qnan_msb_set here: it's only clear for
+	     mips_ieee_single, which wants all mantissa bits but the
+	     quiet/signalling one set in canonical NaNs (at least
+	     Quiet ones).  */
+	  if (r->canonical && !fmt->qnan_msb_set)
+	    {
+	      sig_hi |= (1 << 19) - 1;
+	      sig_lo = 0xffffffff;
+	    }
+	  else if (sig_hi == 0 && sig_lo == 0)
 	    sig_hi = 1 << 18;
 
 	  image_hi |= 2047 << 20;
@@ -2909,6 +2957,7 @@ const struct real_format ieee_double_format =
     2,
     1,
     53,
+    53,
     -1021,
     1024,
     63,
@@ -2917,6 +2966,24 @@ const struct real_format ieee_double_format =
     true,
     true,
     true
+  };
+
+const struct real_format mips_double_format = 
+  {
+    encode_ieee_double,
+    decode_ieee_double,
+    2,
+    1,
+    53,
+    53,
+    -1021,
+    1024,
+    63,
+    true,
+    true,
+    true,
+    true,
+    false
   };
 
 
@@ -3167,6 +3234,7 @@ const struct real_format ieee_extended_motorola_format =
     2,
     1,
     64,
+    64,
     -16382,
     16384,
     95,
@@ -3184,6 +3252,7 @@ const struct real_format ieee_extended_intel_96_format =
     2,
     1,
     64,
+    64,
     -16381,
     16384,
     79,
@@ -3200,6 +3269,7 @@ const struct real_format ieee_extended_intel_128_format =
     decode_ieee_extended_128,
     2,
     1,
+    64,
     64,
     -16381,
     16384,
@@ -3228,11 +3298,14 @@ static void decode_ibm_extended PARAMS ((const struct real_format *,
 
 static void
 encode_ibm_extended (fmt, buf, r)
-     const struct real_format *fmt ATTRIBUTE_UNUSED;
+     const struct real_format *fmt;
      long *buf;
      const REAL_VALUE_TYPE *r;
 {
   REAL_VALUE_TYPE u, v;
+  const struct real_format *base_fmt;
+
+  base_fmt = fmt->qnan_msb_set ? &ieee_double_format : &mips_double_format;
 
   switch (r->class)
     {
@@ -3247,7 +3320,7 @@ encode_ibm_extended (fmt, buf, r)
     case rvc_inf:
     case rvc_nan:
       /* Both doubles set to Inf / NaN.  */
-      encode_ieee_double (&ieee_double_format, &buf[0], r);
+      encode_ieee_double (base_fmt, &buf[0], r);
       buf[2] = buf[0];
       buf[3] = buf[1];
       return;
@@ -3270,13 +3343,13 @@ encode_ibm_extended (fmt, buf, r)
 	{
 	  /* v = remainder containing additional 53 bits of significand.  */
 	  do_add (&v, r, &u, 1);
-	  round_for_format (&ieee_double_format, &v);
+	  round_for_format (base_fmt, &v);
 	}
 
-      round_for_format (&ieee_double_format, &u);
+      round_for_format (base_fmt, &u);
 
-      encode_ieee_double (&ieee_double_format, &buf[0], &u);
-      encode_ieee_double (&ieee_double_format, &buf[2], &v);
+      encode_ieee_double (base_fmt, &buf[0], &u);
+      encode_ieee_double (base_fmt, &buf[2], &v);
       break;
 
     default:
@@ -3291,12 +3364,14 @@ decode_ibm_extended (fmt, r, buf)
      const long *buf;
 {
   REAL_VALUE_TYPE u, v;
+  const struct real_format *base_fmt;
 
-  decode_ieee_double (&ieee_double_format, &u, &buf[0]);
+  base_fmt = fmt->qnan_msb_set ? &ieee_double_format : &mips_double_format;
+  decode_ieee_double (base_fmt, &u, &buf[0]);
 
   if (u.class != rvc_zero && u.class != rvc_inf && u.class != rvc_nan)
     {
-      decode_ieee_double (&ieee_double_format, &v, &buf[2]);
+      decode_ieee_double (base_fmt, &v, &buf[2]);
       do_add (r, &u, &v, 0);
     }
   else
@@ -3310,6 +3385,7 @@ const struct real_format ibm_extended_format =
     2,
     1,
     53 + 53,
+    53,
     -1021 + 53,
     1024,
     -1,
@@ -3318,6 +3394,24 @@ const struct real_format ibm_extended_format =
     true,
     true,
     true
+  };
+
+const struct real_format mips_extended_format = 
+  {
+    encode_ibm_extended,
+    decode_ibm_extended,
+    2,
+    1,
+    53 + 53,
+    53,
+    -1021 + 53,
+    1024,
+    -1,
+    true,
+    true,
+    true,
+    true,
+    false
   };
 
 
@@ -3367,7 +3461,12 @@ encode_ieee_quad (fmt, buf, r)
 	{
 	  image3 |= 32767 << 16;
 
-	  if (HOST_BITS_PER_LONG == 32)
+	  if (r->canonical)
+	    {
+	      /* Don't use bits from the significand.  The
+		 initialization above is right.  */
+	    }
+	  else if (HOST_BITS_PER_LONG == 32)
 	    {
 	      image0 = u.sig[0];
 	      image1 = u.sig[1];
@@ -3387,7 +3486,16 @@ encode_ieee_quad (fmt, buf, r)
 	    image3 &= ~0x8000;
 	  else
 	    image3 |= 0x8000;
-	  if (((image3 & 0xffff) | image2 | image1 | image0) == 0)
+	  /* We overload qnan_msb_set here: it's only clear for
+	     mips_ieee_single, which wants all mantissa bits but the
+	     quiet/signalling one set in canonical NaNs (at least
+	     Quiet ones).  */
+	  if (r->canonical && !fmt->qnan_msb_set)
+	    {
+	      image3 |= 0x7fff;
+	      image2 = image1 = image0 = 0xffffffff;
+	    }
+	  else if (((image3 & 0xffff) | image2 | image1 | image0) == 0)
 	    image3 |= 0x4000;
 	}
       else
@@ -3565,6 +3673,7 @@ const struct real_format ieee_quad_format =
     2,
     1,
     113,
+    113,
     -16381,
     16384,
     127,
@@ -3573,6 +3682,24 @@ const struct real_format ieee_quad_format =
     true,
     true,
     true
+  };
+
+const struct real_format mips_quad_format = 
+  {
+    encode_ieee_quad,
+    decode_ieee_quad,
+    2,
+    1,
+    113,
+    113,
+    -16381,
+    16384,
+    127,
+    true,
+    true,
+    true,
+    true,
+    false
   };
 
 /* Descriptions of VAX floating point formats can be found beginning at
@@ -3873,6 +4000,7 @@ const struct real_format vax_f_format =
     2,
     1,
     24,
+    24,
     -127,
     127,
     15,
@@ -3890,6 +4018,7 @@ const struct real_format vax_d_format =
     2,
     1,
     56,
+    56,
     -127,
     127,
     15,
@@ -3906,6 +4035,7 @@ const struct real_format vax_g_format =
     decode_vax_g,
     2,
     1,
+    53,
     53,
     -1023,
     1023,
@@ -4089,6 +4219,7 @@ const struct real_format i370_single_format =
     16,
     4,
     6,
+    6,
     -64,
     63,
     31,
@@ -4105,6 +4236,7 @@ const struct real_format i370_double_format =
     decode_i370_double,
     16,
     4,
+    14,
     14,
     -64,
     63,
@@ -4321,6 +4453,7 @@ const struct real_format c4x_single_format =
     2,
     1,
     24,
+    24,
     -126,
     128,
     -1,
@@ -4337,6 +4470,7 @@ const struct real_format c4x_extended_format =
     decode_c4x_extended,
     2,
     1,
+    32,
     32,
     -126,
     128,
@@ -4383,6 +4517,7 @@ const struct real_format real_internal_format =
     decode_internal,
     2,
     1,
+    SIGNIFICAND_BITS - 2,
     SIGNIFICAND_BITS - 2,
     -MAX_EXP,
     MAX_EXP,
