@@ -4532,6 +4532,7 @@ extern tree build_m_component_ref		PARAMS ((tree, tree));
 extern tree build_functional_cast		PARAMS ((tree, tree));
 extern void check_for_new_type			PARAMS ((const char *, flagged_type_tree));
 extern tree add_exception_specifier             PARAMS ((tree, tree, int));
+extern tree merge_exception_specifiers          PARAMS ((tree, tree));
 
 /* in xref.c */
 extern void GNU_xref_begin			PARAMS ((const char *));

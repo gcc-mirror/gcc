@@ -1964,10 +1964,7 @@ check_final_overrider (overrider, basefn)
     }
   
   /* Check throw specifier is subset.  */
-  /* XXX At the moment, punt with artificial functions. We
-     don't generate their exception specifiers, so can't check properly.  */
-  if (! DECL_ARTIFICIAL (overrider)
-      && !comp_except_specs (base_throw, over_throw, 0))
+  if (!comp_except_specs (base_throw, over_throw, 0))
     {
       cp_error_at ("looser throw specifier for `%#F'", overrider);
       cp_error_at ("  overriding `%#F'", basefn);

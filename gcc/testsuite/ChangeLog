@@ -1,3 +1,7 @@
+2001-01-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.eh/spec6.C: Remove remaining XFAIL.
+
 2001-01-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/compile/20010102-1.c: New test.
