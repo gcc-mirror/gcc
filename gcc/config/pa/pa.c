@@ -2023,8 +2023,18 @@ output_function_prologue (file, size)
     fprintf (file, ",SAVE_SP");
 
   /* Pass on information about the number of callee register saves
-     performed in the prologue.  */
-  fprintf (file, ",ENTRY_GR=%d,ENTRY_FR=%d", gr_saved, fr_saved);
+     performed in the prologue.
+
+     The compiler is supposed to pass the highest register number
+     saved, the assembler then has to adjust that number before 
+     entering it into the unwind descriptor (to account for any
+     caller saved registers with lower register numbers than the 
+     first callee saved register).  */
+  if (gr_saved)
+    fprintf (file, ",ENTRY_GR=%d", gr_saved + 2);
+
+  if (fr_saved)
+    fprintf (file, ",ENTRY_FR=%d", fr_saved + 11);
 
   fprintf (file, "\n\t.ENTRY\n");
 
@@ -2179,6 +2189,8 @@ hppa_expand_prologue()
 	    offset += 4;
 	    gr_saved++;
 	  }
+      /* Account for %r4 which is saved in a special place.  */
+      gr_saved++;
     }
   /* No frame pointer needed.  */
   else
