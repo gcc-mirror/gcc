@@ -118,10 +118,12 @@ struct move_by_pieces
   rtx to_addr;
   int autinc_to;
   int explicit_inc_to;
+  int to_struct;
   rtx from;
   rtx from_addr;
   int autinc_from;
   int explicit_inc_from;
+  int from_struct;
   int len;
   int offset;
   int reverse;
@@ -1412,6 +1414,9 @@ move_by_pieces (to, from, len, align)
   if (data.reverse) data.offset = len;
   data.len = len;
 
+  data.to_struct = MEM_IN_STRUCT_P (to);
+  data.from_struct = MEM_IN_STRUCT_P (from);
+
   /* If copying requires more than two move insns,
      copy addresses to registers (to make displacements shorter)
      and use post-increment if available.  */
@@ -1551,11 +1556,13 @@ move_by_pieces_1 (genfun, mode, data)
 	     ? gen_rtx (MEM, mode, data->to_addr)
 	     : change_address (data->to, mode,
 			       plus_constant (data->to_addr, data->offset)));
+      MEM_IN_STRUCT_P (to1) = data->to_struct;
       from1 =
 	(data->autinc_from
 	 ? gen_rtx (MEM, mode, data->from_addr)
 	 : change_address (data->from, mode,
 			   plus_constant (data->from_addr, data->offset)));
+      MEM_IN_STRUCT_P (from1) = data->from_struct;
 
 #ifdef HAVE_PRE_DECREMENT
       if (data->explicit_inc_to < 0)
@@ -7728,6 +7735,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  tree dest = TREE_VALUE (arglist);
 	  tree src = TREE_VALUE (TREE_CHAIN (arglist));
 	  tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+	  tree type;
 
 	  int src_align
 	    = get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
@@ -7747,11 +7755,23 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  dest_rtx = expand_expr (dest, NULL_RTX, ptr_mode, EXPAND_SUM);
 	  dest_mem = gen_rtx (MEM, BLKmode,
 			      memory_address (BLKmode, dest_rtx));
+	  /* There could be a void* cast on top of the object.  */
+	  if (TREE_CODE (dest) == NOP_EXPR)
+	    type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (dest, 0)));
+	  else
+	    type = TREE_TYPE (TREE_TYPE (dest));
+	  MEM_IN_STRUCT_P (dest_mem) = AGGREGATE_TYPE_P (type);
 	  src_mem = gen_rtx (MEM, BLKmode,
 			     memory_address (BLKmode,
 					     expand_expr (src, NULL_RTX,
 							  ptr_mode,
 							  EXPAND_SUM)));
+	  /* There could be a void* cast on top of the object.  */
+	  if (TREE_CODE (src) == NOP_EXPR)
+	    type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (src, 0)));
+	  else
+	    type = TREE_TYPE (TREE_TYPE (src));
+	  MEM_IN_STRUCT_P (src_mem) = AGGREGATE_TYPE_P (type);
 
 	  /* Copy word part most expediently.  */
 	  emit_block_move (dest_mem, src_mem,
