@@ -4338,7 +4338,8 @@ main (argc, argv)
 	{
 	  if (gcc_exec_prefix)
 	    add_prefix (&startfile_prefixes,
-			concat (gcc_exec_prefix, standard_startfile_prefix),
+			concat3 (gcc_exec_prefix, machine_suffix,
+				 standard_startfile_prefix),
 			0, 0, NULL_PTR);
 	  add_prefix (&startfile_prefixes,
 		      concat3 (standard_exec_prefix,
@@ -4359,7 +4360,8 @@ main (argc, argv)
     {
       if (*standard_startfile_prefix != DIR_SEPARATOR && gcc_exec_prefix)
 	add_prefix (&startfile_prefixes,
-		    concat (gcc_exec_prefix, standard_startfile_prefix),
+		    concat3 (gcc_exec_prefix, machine_suffix,
+			     standard_startfile_prefix),
 		    0, 0, NULL_PTR);
     }
 
