@@ -549,6 +549,11 @@ EOF
 		echo ${UNAME_MACHINE}-pc-sysv32
 	fi
 	exit 0 ;;
+    pc:*:*:*)
+        # uname -m prints for DJGPP always 'pc', but it prints nothing about
+        # the processor, so we play safe by assuming i386.
+	echo i386-pc-msdosdjgpp
+        exit 0 ;;
     Intel:Mach:3*:*)
 	echo i386-pc-mach3
 	exit 0 ;;
