@@ -40,9 +40,7 @@ extern enum reg_class secondary_reload_class (enum reg_class,
 extern const char *output_tst (rtx, rtx);
 extern int store_multiple_operation (rtx, enum machine_mode);
 extern int symbolic_operand (rtx, enum machine_mode);
-extern int call_address_operand (rtx, enum machine_mode);
 extern int impossible_plus_operand (rtx, enum machine_mode);
-extern int const_8bit_operand (rtx, enum machine_mode);
 
 extern bool mn10300_wide_const_load_uses_clr (rtx operands[2]);
 #endif /* RTX_CODE */
