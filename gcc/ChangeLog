@@ -1,3 +1,12 @@
+2002-04-13  Richard Sandiford  <rsandifo@redhat.com>
+
+	* stmt.c (check_unique_operand_names): Expect operand names to
+	be strings rather than identifiers.  Use simple_cst_equal to
+	compare them.
+	(resolve_operand_name_1): Make same identifier to string change here.
+	* c-parse.in (asm_operand): Convert a named operand into a string.
+	* cp/parse.y (asm_operand): Likewise.
+
 2002-04-13  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.h (CPP_SPEC): Include %(cpp_cpu).
