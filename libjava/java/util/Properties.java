@@ -56,7 +56,7 @@ import java.io.OutputStreamWriter;
  * here.  This extends the example given in ListResourceBundle.
  * Create a file MyResource_de.properties with the following contents
  * and put it in the CLASSPATH.  (The character
- * <code>\</code><code>u00e4</code> is the german &auml;)
+ * <code>\</code><code>u00e4</code> is the german umlaut)
  *
  * 
 <pre>s1=3

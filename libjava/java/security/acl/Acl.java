@@ -52,7 +52,7 @@ import java.util.Enumeration;
  * <code>Principal</code> belongs have an ACL entry, the permissions for
  * the individual <code>Principal</code> take precedence over the 
  * permissions of the <code>Group</code> if there is a conflict.
- * <p
+ * <p>
  * Additionally, the ACL interface extends the <code>Owner</code> interface
  * and so an ACL has owners.  Actions which modify the ACL are restricted
  * to owners.

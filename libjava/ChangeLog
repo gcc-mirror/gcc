@@ -1,3 +1,15 @@
+2003-08-26  Mark Wielaard  <mark@klomp.org>
+
+	* java/security/acl/Acl.java: Fix broken p tag.
+	* java/text/DateFormatSymbols.java: Correctly open and close li tags.
+	* javax/swing/border/LineBorder.java: Close img tag alt attributes.
+	* javax/swing/plaf/TreeUI.java: Likewise.
+	* javax/swing/plaf/basic/BasicTreeUI.java: Likewise.
+	* java/util/Properties.java: Use the word umlaut, not &auml; in api
+	documentation.
+	* java/util/PropertyResourceBundle.java: Likewise and add closing code
+	tag.
+
 2003-08-26  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
