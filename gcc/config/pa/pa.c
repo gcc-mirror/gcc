@@ -905,10 +905,10 @@ output_move_double (operands)
       /* XXX THIS PROBABLY DOESN'T WORK.  */
       /* Do the late half first.  */
       if (addreg1)
-	output_asm_insn ("addi 4,%0", &addreg1);
+	output_asm_insn ("ldo 4(%0),%0", &addreg1);
       output_asm_insn (singlemove_string (latehalf), latehalf);
       if (addreg1)
-	output_asm_insn ("addi -4,%0", &addreg1);
+	output_asm_insn ("ldo -4(%0),%0", &addreg1);
       /* Then clobber.  */
       return singlemove_string (operands);
     }
@@ -926,18 +926,18 @@ output_move_double (operands)
 
   /* Make any unoffsettable addresses point at high-numbered word.  */
   if (addreg0)
-    output_asm_insn ("addi 4,%0", &addreg0);
+    output_asm_insn ("ldo 4(%0),%0", &addreg0);
   if (addreg1)
-    output_asm_insn ("addi 4,%0", &addreg1);
+    output_asm_insn ("ldo 4(%0),%0", &addreg1);
 
   /* Do that word.  */
   output_asm_insn (singlemove_string (latehalf), latehalf);
 
   /* Undo the adds we just did.  */
   if (addreg0)
-    output_asm_insn ("addi -4,%0", &addreg0);
+    output_asm_insn ("ldo -4(%0),%0", &addreg0);
   if (addreg1)
-    output_asm_insn ("addi -4,%0", &addreg1);
+    output_asm_insn ("ldo -4(%0),%0", &addreg1);
 
   return "";
 }
@@ -1078,7 +1078,7 @@ output_load_address (operands)
       if (offset == const0_rtx)
 	output_asm_insn ("add %6,%7,%0", operands);
       else if (INT_14_BITS (offset))
-	output_asm_insn ("add %6,%7,%0\n\taddi %8,%0", operands);
+	output_asm_insn ("add %6,%7,%0\n\tldo %8(%0),%0", operands);
       else
 	output_asm_insn ("addil L'%8,%6\n\tldo R'%8(1),%0\n\tadd %0,%7,%0", operands);
     }
