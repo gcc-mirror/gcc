@@ -618,7 +618,8 @@ expand_call (exp, target, ignore)
 
 		 Use abstraction instead of setting TREE_ADDRESSABLE
 		 directly.  */
-	      if (DECL_INLINE (fndecl) && warn_inline && !flag_no_inline)
+	      if (DECL_INLINE (fndecl) && warn_inline && !flag_no_inline
+		  && optimize > 0)
 		{
 		  warning_with_decl (fndecl, "can't inline call to `%s'");
 		  warning ("called from here");
@@ -798,7 +799,7 @@ expand_call (exp, target, ignore)
 	 separately after all.  If function was declared inline,
 	 give a warning.  */
       if (DECL_INLINE (fndecl) && warn_inline && !flag_no_inline
-	  && ! TREE_ADDRESSABLE (fndecl))
+	  && optimize > 0 && ! TREE_ADDRESSABLE (fndecl))
 	{
 	  warning_with_decl (fndecl, "inlining failed in call to `%s'");
 	  warning ("called from here");
