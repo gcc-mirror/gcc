@@ -1,3 +1,8 @@
+2001-02-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* method.c (build_mangled_name) [old abi]: Protect flush_repeats()
+	from error_mark_node.
+
 2001-02-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Fix specification and implementation bugs in V3 ABI
