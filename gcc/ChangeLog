@@ -104,7 +104,6 @@
 	PR target/12467
 	* config/rs6000/altivec.md (altivec_vmsummbm): Fix typo.
 
->>>>>>> 2.1930
 2003-12-04  Stuart Hastings  <stuart@apple.com>
 
         * rs6000.c (output_call, macho_branch_islands,
