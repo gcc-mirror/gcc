@@ -82,9 +82,7 @@ package body Freeze is
 
    procedure Check_Address_Clause (E : Entity_Id);
    --  Apply legality checks to address clauses for object declarations,
-   --  at the point the object is frozen. Also deals with cancelling effect
-   --  of Import pragma which has no effect (other than to eliminate any
-   --  implicit initialization) if an address clause is present.
+   --  at the point the object is frozen.
 
    procedure Check_Strict_Alignment (E : Entity_Id);
    --  E is a base type. If E is tagged or has a component that is aliased
@@ -499,11 +497,6 @@ package body Freeze is
          then
             Warn_Overlay (Expr, Typ, Name (Addr));
          end if;
-
-         --  Cancel effect of any Import pragma
-
-         Set_Is_Imported (E, False);
-         Set_Is_Public (E, False);
       end if;
    end Check_Address_Clause;
 
@@ -2198,14 +2191,35 @@ package body Freeze is
                Freeze_And_Append (Etype (E), Loc, Result);
             end if;
 
-            --  For object created by object declaration, perform required
-            --  categorization (preelaborate and pure) checks. Defer these
-            --  checks to freeze time since pragma Import inhibits default
-            --  initialization and thus pragma Import affects these checks.
+            --  Special processing for objects created by object declaration
 
             if Nkind (Declaration_Node (E)) = N_Object_Declaration then
+
+               --  For object created by object declaration, perform required
+               --  categorization (preelaborate and pure) checks. Defer these
+               --  checks to freeze time since pragma Import inhibits default
+               --  initialization and thus pragma Import affects these checks.
+
                Validate_Object_Declaration (Declaration_Node (E));
+
+               --  If there is an address clause, check it is valid
+
                Check_Address_Clause (E);
+
+               --  For imported objects, set Is_Public unless there is also
+               --  an address clause, which means that there is no external
+               --  symbol needed for the Import (Is_Public may still be set
+               --  for other unrelated reasons). Note that we delayed this
+               --  processing till freeze time so that we can be sure not
+               --  to set the flag if there is an address clause. If there
+               --  is such a clause, then the only purpose of the import
+               --  pragma is to suppress implicit initialization.
+
+               if Is_Imported (E)
+                 and then not Present (Address_Clause (E))
+               then
+                  Set_Is_Public (E);
+               end if;
             end if;
 
             --  Check that a constant which has a pragma Volatile[_Components]

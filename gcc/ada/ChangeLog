@@ -1,3 +1,19 @@
+2004-09-23  Robert Dewar  <dewar@gnat.com>
+
+	PR ada/17540
+
+	* sem_prag.adb (Process_Import_Or_Interface): Don't set Is_Public here,
+	instead do this at freeze time (we won't do it if there is an address
+	clause).
+	Change "pragma inline" to "pragma Inline" in information and error
+	messages.
+	Minor reformatting.
+
+	* freeze.adb (Check_Address_Clause): Remove previous change, not the
+	right way of doing things after all.
+	(Freeze_Entity): For object, set Is_Public for imported entities
+	unless there is an address clause present.
+
 2004-09-21  Olivier Hainque  <hainque@act-europe.fr>
 
 	* decl.c (gnat_to_gnu_entity) <E_General_Access_Type>: Check for a
