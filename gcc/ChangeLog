@@ -1,3 +1,9 @@
+2004-09-28  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* config/sparc/sparc.md (call_address_struct_value_sp32):
+	Properly mask the immediate field of the 'unimp' instruction.
+	(call_symbolic_struct_value_sp32): Likewise.
+
 2004-09-24  Ben Elliston  <bje@au.ibm.com>
 	    Steven Bosscher  <stevenb@suse.de>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
