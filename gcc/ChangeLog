@@ -1,3 +1,8 @@
+2001-01-30  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* jump.c (comparison_dominates_p): Don't try to handle UNKNOWN
+	comparison codes.
+
 2001-01-30  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * c-decl.c (c_expand_body): Check TYPE_SIZE_UNIT (ret_type)
