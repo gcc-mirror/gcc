@@ -38,13 +38,30 @@ proc find_jvscan {} {
 
 proc bytecompile_file { file objdir {classpath {}} } {
     global env
+    global SUN_JAVAC
     set dirname  [file dirname $file];
+
+    # If JDK doesn't run on your platform but some other
+    # JDK-compatible javac does, you may set SUN_JAVAC to point to it.
+    # One of the most important properties of a SUN_JAVAC is that it
+    # must create class-files even for classes that have not been
+    # specified in the command line, but that were needed to compile
+    # those that have.  For example, Pizza won't do it, but you can
+    # use `kaffe sun.tools.javac.Main', if you have Sun's classes.zip
+    # in the kaffe's default search path.
+    if ![info exists SUN_JAVAC] {
+	if [info exists env(SUN_JAVAC)] {
+	    set SUN_JAVAC $env(SUN_JAVAC)
+	} else {
+	    set SUN_JAVAC "javac"
+	}
+    }
 
     catch {unset env(CLASSPATH)}
     if {$classpath != ""} then {
         set env(CLASSPATH) $classpath
     }
-    if {[catch {system "cd $dirname; javac $file -d $objdir"} msg]} then {
+    if {[catch {system "cd $dirname; $SUN_JAVAC $file -d $objdir"} msg]} then {
 	verbose "couldn't compile $file: $msg"
 	set r 0
     } else {
@@ -64,6 +81,8 @@ proc libjava_init { args } {
     global libjava_initialized
     global GCJ_UNDER_TEST
     global TOOL_EXECUTABLE
+    global original_ld_library_path
+    global env
 
     if { $libjava_initialized == 1 } { return; }
 
@@ -71,7 +90,21 @@ proc libjava_init { args } {
 	if [info exists TOOL_EXECUTABLE] {
 	    set GCJ_UNDER_TEST $TOOL_EXECUTABLE;
 	} else {
-	    set GCJ_UNDER_TEST "[find_gcj]"
+	    if [info exists env(GCJ)] {
+		set GCJ_UNDER_TEST $env(GCJ)
+	    } else {
+		set GCJ_UNDER_TEST "[find_gcj]"
+	    }
+	}
+    }
+
+    if [info exists env(LD_LIBRARY_PATH)] {
+	set original_ld_library_path $env(LD_LIBRARY_PATH)
+    } else {
+	if [info exists env(SHLIB_PATH)] {
+	    set original_ld_library_path $env(SHLIB_PATH)
+	} else {
+	    set original_ld_library_path ""
 	}
     }
 
@@ -129,6 +162,7 @@ proc libjava_arguments {{mode compile}} {
     global GCJ_UNDER_TEST
     global tmpdir
     global runtests
+    global env
 
     if [info exists LIBJAVA] {
 	set libjava $LIBJAVA;
@@ -184,13 +218,14 @@ proc libjava_arguments {{mode compile}} {
     # then we'd have to do a lot more work.
 
     # Set variables the dynamic linker looks at.
-    setenv LD_LIBRARY_PATH $ld_library_path
-    setenv SHLIB_PATH $ld_library_path
+    global original_ld_library_path
+    setenv LD_LIBRARY_PATH "$ld_library_path:$original_ld_library_path"
+    setenv SHLIB_PATH "$ld_library_path:$original_ld_library_path"
 
     # Set the CLASSPATH environment variable
-    verbose "CLASSPATH is $objdir/.."
+    verbose "CLASSPATH is .:$srcdir/$subdir:$objdir/..:$objdir/../libgcj.zip"
     global env
-    set env(CLASSPATH) "$objdir/.."
+    set env(CLASSPATH) ".:$srcdir/$subdir:$objdir/..:$objdir/../libgcj.zip"
 
     global wrapper_file wrap_compile_flags;
     lappend args "additional_flags=$wrap_compile_flags";
@@ -217,13 +252,15 @@ proc libjava_arguments {{mode compile}} {
 	if {[file exists $d/$x/libtool]} then {
 	    # We have to run silently to avoid DejaGNU lossage.
 	    lappend args \
-	      "compiler=$d/$x/libtool --silent --mode=$mode $GCJ_UNDER_TEST"
+	      "compiler=$d/$x/libtool --silent --mode=$mode $GCJ_UNDER_TEST -B$objdir/../"
 	    set found_compiler 1
 	    break
 	}
     }
     if {! $found_compiler} {
-	lappend args "compiler=$GCJ_UNDER_TEST"
+	# Append -B$objdir/../ so that we find libgcj.spec before it
+	# is installed.
+	lappend args "compiler=$GCJ_UNDER_TEST -B$objdir/../"
     }
 
     return $args
