@@ -1528,7 +1528,8 @@ avr-*-*)
 powerpc64-*-linux*)
 	tm_file="rs6000/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
 	case x$with_cpu in
-	x|xpowerpc64|xdefault64) tm_file="${tm_file} rs6000/default64.h";;
+	x|xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[345]|xrs64a)
+		tm_file="${tm_file} rs6000/default64.h";;
 	esac
 	tm_file="${tm_file} rs6000/linux64.h"
 	tmake_file="rs6000/t-fprules ${tmake_file} rs6000/t-ppccomm rs6000/t-linux64"
