@@ -1,5 +1,19 @@
 2004-10-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/15786
+	* parser.c (cp_parser_declarator): Add member_p parameter. 
+	(cp_parser_condition): Adjust calls to cp_parser_declarator.
+	(cp_parser_explicit_instantiation): Likewise.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_direct_declarator): Add member_p parameter.  Do not
+	parse tentatively when parsing the parameters to a member.
+	(cp_parser_type_id): Adjust calls to cp_parser_declarator.
+	(cp_parser_parameter_declaration): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_exception_declaration): Likewise.
+
+2004-10-11  Mark Mitchell  <mark@codesourcery.com>
+
 	* decl2.c (finish_anon_union): Robustify.
 
 2004-10-10  Mark Mitchell  <mark@codesourcery.com>

@@ -1483,9 +1483,9 @@ static void cp_parser_linkage_specification
 static tree cp_parser_init_declarator
   (cp_parser *, tree, tree, bool, bool, int, bool *);
 static tree cp_parser_declarator
-  (cp_parser *, cp_parser_declarator_kind, int *, bool *);
+  (cp_parser *, cp_parser_declarator_kind, int *, bool *, bool);
 static tree cp_parser_direct_declarator
-  (cp_parser *, cp_parser_declarator_kind, int *);
+  (cp_parser *, cp_parser_declarator_kind, int *, bool);
 static enum tree_code cp_parser_ptr_operator
   (cp_parser *, tree *, tree *);
 static tree cp_parser_cv_qualifier_seq_opt
@@ -5848,7 +5848,8 @@ cp_parser_condition (cp_parser* parser)
       /* Parse the declarator.  */
       declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 					 /*ctor_dtor_or_conv_p=*/NULL,
-					 /*parenthesized_p=*/NULL);
+					 /*parenthesized_p=*/NULL,
+					 /*member_p=*/false);
       /* Parse the attributes.  */
       attributes = cp_parser_attributes_opt (parser);
       /* Parse the asm-specification.  */
@@ -8586,7 +8587,8 @@ cp_parser_explicit_instantiation (cp_parser* parser)
       declarator 
 	= cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 				/*ctor_dtor_or_conv_p=*/NULL,
-				/*parenthesized_p=*/NULL);
+				/*parenthesized_p=*/NULL,
+				/*member_p=*/false);
       cp_parser_check_for_definition_in_return_type (declarator, 
 						     declares_class_or_enum);
       if (declarator != error_mark_node)
@@ -9929,7 +9931,8 @@ cp_parser_init_declarator (cp_parser* parser,
   declarator 
     = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 			    &ctor_dtor_or_conv_p,
-			    /*parenthesized_p=*/NULL);
+			    /*parenthesized_p=*/NULL,
+			    /*member_p=*/false);
   /* Gather up the deferred checks.  */
   stop_deferring_access_checks ();
 
@@ -10212,13 +10215,16 @@ cp_parser_init_declarator (cp_parser* parser,
    expression, not a declaration.)  
  
    If PARENTHESIZED_P is non-NULL, *PARENTHESIZED_P is set to true iff
-   the declarator is a direct-declarator of the form "(...)".  */
+   the declarator is a direct-declarator of the form "(...)".
+
+   MEMBER_P is true iff this declarator is a member-declarator.  */
 
 static tree
 cp_parser_declarator (cp_parser* parser, 
                       cp_parser_declarator_kind dcl_kind, 
                       int* ctor_dtor_or_conv_p,
-		      bool* parenthesized_p)
+		      bool* parenthesized_p,
+		      bool member_p)
 {
   cp_token *token;
   tree declarator;
@@ -10259,7 +10265,8 @@ cp_parser_declarator (cp_parser* parser,
       /* Parse the dependent declarator.  */
       declarator = cp_parser_declarator (parser, dcl_kind,
 					 /*ctor_dtor_or_conv_p=*/NULL,
-					 /*parenthesized_p=*/NULL);
+					 /*parenthesized_p=*/NULL,
+					 /*member_p=*/false);
 
       /* If we are parsing an abstract-declarator, we must handle the
 	 case where the dependent declarator is absent.  */
@@ -10285,7 +10292,8 @@ cp_parser_declarator (cp_parser* parser,
 	*parenthesized_p = cp_lexer_next_token_is (parser->lexer,
 						   CPP_OPEN_PAREN);
       declarator = cp_parser_direct_declarator (parser, dcl_kind,
-						ctor_dtor_or_conv_p);
+						ctor_dtor_or_conv_p,
+						member_p);
     }
 
   if (attributes && declarator != error_mark_node)
@@ -10333,7 +10341,8 @@ cp_parser_declarator (cp_parser* parser,
 static tree
 cp_parser_direct_declarator (cp_parser* parser,
                              cp_parser_declarator_kind dcl_kind,
-                             int* ctor_dtor_or_conv_p)
+                             int* ctor_dtor_or_conv_p,
+			     bool member_p)
 {
   cp_token *token;
   tree declarator = NULL_TREE;
@@ -10392,7 +10401,14 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      tree params;
 	      unsigned saved_num_template_parameter_lists;
 	      
-	      cp_parser_parse_tentatively (parser);
+	      /* In a member-declarator, the only valid interpretation
+		 of a parenthesis is the start of a
+		 parameter-declaration-clause.  (It is invalid to
+		 initialize a static data member with a parenthesized
+		 initializer; only the "=" form of initialization is
+		 permitted.)  */
+	      if (!member_p)
+		cp_parser_parse_tentatively (parser);
 
 	      /* Consume the `('.  */
 	      cp_lexer_consume_token (parser->lexer);
@@ -10418,7 +10434,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 	      /* If all went well, parse the cv-qualifier-seq and the
 	     	 exception-specification.  */
-	      if (cp_parser_parse_definitely (parser))
+	      if (member_p || cp_parser_parse_definitely (parser))
 		{
 		  tree cv_qualifiers;
 		  tree exception_specification;
@@ -10466,7 +10482,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      parser->in_type_id_in_expr_p = true;
 	      declarator 
 		= cp_parser_declarator (parser, dcl_kind, ctor_dtor_or_conv_p,
-					/*parenthesized_p=*/NULL);
+					/*parenthesized_p=*/NULL,
+					member_p);
 	      parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	      first = false;
 	      /* Expect a `)'.  */
@@ -10884,7 +10901,8 @@ cp_parser_type_id (cp_parser* parser)
   /* Look for the declarator.  */
   abstract_declarator 
     = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_ABSTRACT, NULL,
-			    /*parenthesized_p=*/NULL);
+			    /*parenthesized_p=*/NULL,
+			    /*member_p=*/false);
   /* Check to see if there really was a declarator.  */
   if (!cp_parser_parse_definitely (parser))
     abstract_declarator = NULL_TREE;
@@ -11242,7 +11260,8 @@ cp_parser_parameter_declaration (cp_parser *parser,
       declarator = cp_parser_declarator (parser,
 					 CP_PARSER_DECLARATOR_EITHER,
 					 /*ctor_dtor_or_conv_p=*/NULL,
-					 parenthesized_p);
+					 parenthesized_p,
+					 /*member_p=*/false);
       parser->default_arg_ok_p = saved_default_arg_ok_p;
       /* After the declarator, allow more attributes.  */
       attributes = chainon (attributes, cp_parser_attributes_opt (parser));
@@ -12593,7 +12612,8 @@ cp_parser_member_declaration (cp_parser* parser)
 	      declarator 
 		= cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
 					&ctor_dtor_or_conv_p,
-					/*parenthesized_p=*/NULL);
+					/*parenthesized_p=*/NULL,
+					/*member_p=*/true);
 
 	      /* If something went wrong parsing the declarator, make sure
 		 that we at least consume some tokens.  */
@@ -13209,7 +13229,8 @@ cp_parser_exception_declaration (cp_parser* parser)
   else
     declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_EITHER,
 				       /*ctor_dtor_or_conv_p=*/NULL,
-				       /*parenthesized_p=*/NULL);
+				       /*parenthesized_p=*/NULL,
+				       /*member_p=*/false);
 
   /* Restore the saved message.  */
   parser->type_definition_forbidden_message = saved_message;
