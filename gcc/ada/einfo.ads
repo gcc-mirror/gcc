@@ -1347,6 +1347,11 @@ package Einfo is
 --       was given for the type. Note that this flag is not inherited by a
 --       derived type. See also the Is_Packed flag.
 
+--    Has_Pragma_Pure_Function (Flag179)
+--       Present in subprogram entities. It indicates that a valid pragma
+--       Pure_Function was given for the entity. In some cases, we need to
+--       know that Is_Pure was explicitly set using this pragma.
+
 --    Has_Primitive_Operations (Flag120) [base type only]
 --       Present in all type entities. Set if at least one primitive operation
 --       is defined on the type. This flag is not yet properly set ???
@@ -4048,6 +4053,7 @@ package Einfo is
    --    Has_Master_Entity             (Flag21)
    --    Has_Missing_Return            (Flag142)
    --    Has_Nested_Block_With_Handler (Flag101)
+   --    Has_Pragma_Pure_Function      (Flag179)  (non-generic case only)
    --    Has_Recursive_Call            (Flag143)
    --    Has_Subprogram_Descriptor     (Flag93)
    --    Is_Abstract                   (Flag19)
@@ -4170,6 +4176,7 @@ package Einfo is
    --    Is_Pure                       (Flag44)
    --    Is_Intrinsic_Subprogram       (Flag64)
    --    Default_Expressions_Processed (Flag108)
+   --    Has_Pragma_Pure_Function      (Flag179)
 
    --  E_Ordinary_Fixed_Point_Type
    --  E_Ordinary_Fixed_Point_Subtype
@@ -4277,6 +4284,7 @@ package Einfo is
    --    Has_Completion                (Flag26)
    --    Has_Master_Entity             (Flag21)
    --    Has_Nested_Block_With_Handler (Flag101)
+   --    Has_Pragma_Pure_Function      (Flag179)  (non-generic case only)
    --    Has_Subprogram_Descriptor     (Flag93)
    --    Is_Visible_Child_Unit         (Flag116)
    --    Is_Abstract                   (Flag19)
@@ -4828,6 +4836,7 @@ package Einfo is
    function Has_Pragma_Elaborate_Body          (Id : E) return B;
    function Has_Pragma_Inline                  (Id : E) return B;
    function Has_Pragma_Pack                    (Id : E) return B;
+   function Has_Pragma_Pure_Function           (Id : E) return B;
    function Has_Primitive_Operations           (Id : E) return B;
    function Has_Qualified_Name                 (Id : E) return B;
    function Has_Record_Rep_Clause              (Id : E) return B;
@@ -5283,6 +5292,7 @@ package Einfo is
    procedure Set_Has_Pragma_Elaborate_Body     (Id : E; V : B := True);
    procedure Set_Has_Pragma_Inline             (Id : E; V : B := True);
    procedure Set_Has_Pragma_Pack               (Id : E; V : B := True);
+   procedure Set_Has_Pragma_Pure_Function      (Id : E; V : B := True);
    procedure Set_Has_Primitive_Operations      (Id : E; V : B := True);
    procedure Set_Has_Private_Declaration       (Id : E; V : B := True);
    procedure Set_Has_Qualified_Name            (Id : E; V : B := True);
@@ -5750,6 +5760,7 @@ package Einfo is
    pragma Inline (Has_Pragma_Elaborate_Body);
    pragma Inline (Has_Pragma_Inline);
    pragma Inline (Has_Pragma_Pack);
+   pragma Inline (Has_Pragma_Pure_Function);
    pragma Inline (Has_Primitive_Operations);
    pragma Inline (Has_Private_Declaration);
    pragma Inline (Has_Qualified_Name);
@@ -6095,6 +6106,7 @@ package Einfo is
    pragma Inline (Set_Has_Pragma_Elaborate_Body);
    pragma Inline (Set_Has_Pragma_Inline);
    pragma Inline (Set_Has_Pragma_Pack);
+   pragma Inline (Set_Has_Pragma_Pure_Function);
    pragma Inline (Set_Has_Primitive_Operations);
    pragma Inline (Set_Has_Private_Declaration);
    pragma Inline (Set_Has_Qualified_Name);

@@ -58,23 +58,20 @@ package body Einfo is
    --  Four of these fields are defined in Sinfo, since they in are the
    --  base part of the node. The access routines for these fields and
    --  the corresponding set procedures are defined in Sinfo. These fields
-   --  are present in all entities.
+   --  are present in all entities. Note that Homonym is also in the base
+   --  part of the node, but has access routines that are more properly
+   --  part of Einfo, which is why they are defined here.
 
    --    Chars                           Name1
    --    Next_Entity                     Node2
    --    Scope                           Node3
    --    Etype                           Node5
 
-   --    The fifth field is also in the base part of the node, but it
-   --    carries some additional semantic checks and its subprograms are
-   --    more properly defined in Einfo.
-
-   --    Homonym                         Node4
-
    --   Remaining fields are present only in extended nodes (i.e. entities)
 
    --  The following fields are present in all entities
 
+   --    Homonym                         Node4
    --    First_Rep_Item                  Node6
    --    Freeze_Node                     Node7
 
@@ -397,8 +394,8 @@ package body Einfo is
    --    Is_Discrim_SO_Function         Flag176
    --    Size_Depends_On_Discriminant   Flag177
    --    Is_Null_Init_Proc              Flag178
+   --    Has_Pragma_Pure_Function       Flag179
 
-   --    (unused)                       Flag179
    --    (unused)                       Flag180
    --    (unused)                       Flag181
    --    (unused)                       Flag182
@@ -1086,6 +1083,12 @@ package body Einfo is
       pragma Assert (Is_Record_Type (Id) or else Is_Array_Type (Id));
       return Flag121 (Implementation_Base_Type (Id));
    end Has_Pragma_Pack;
+
+   function Has_Pragma_Pure_Function (Id : E) return B is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      return Flag179 (Id);
+   end Has_Pragma_Pure_Function;
 
    function Has_Primitive_Operations (Id : E) return B is
    begin
@@ -2923,6 +2926,12 @@ package body Einfo is
       pragma Assert (Is_Array_Type (Id) or else Is_Record_Type (Id));
       Set_Flag121 (Implementation_Base_Type (Id), V);
    end Set_Has_Pragma_Pack;
+
+   procedure Set_Has_Pragma_Pure_Function (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      Set_Flag179 (Id, V);
+   end Set_Has_Pragma_Pure_Function;
 
    procedure Set_Has_Primitive_Operations (Id : E; V : B := True) is
    begin
@@ -5835,6 +5844,7 @@ package body Einfo is
       W ("Has_Pragma_Elaborate_Body",     Flag150 (Id));
       W ("Has_Pragma_Inline",             Flag157 (Id));
       W ("Has_Pragma_Pack",               Flag121 (Id));
+      W ("Has_Pragma_Pure_Function",      Flag179 (Id));
       W ("Has_Primitive_Operations",      Flag120 (Id));
       W ("Has_Private_Declaration",       Flag155 (Id));
       W ("Has_Qualified_Name",            Flag161 (Id));
