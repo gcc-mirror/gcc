@@ -78,7 +78,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_SPEC "\
 %{V} %{v:%{!V:-V}} %{pipe: - %{msvr4:%{mversion-03.00:-KV3}}}\
 %{!mlegend:%{mstandard:-Wc,off}}\
-%{mlegend:-Wc,-fix-bb,-h\"gcc-1.96.3\",-s\"%i\"\
+%{mlegend:-Wc,-fix-bb,-h\"gcc-1.96.5\",-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
 %{mstandard:,-keep-std}\
 %{mkeep-coff:,-keep-coff}\
@@ -150,20 +150,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef WCHAR_TYPE
 #undef WCHAR_TYPE_SIZE
 
-/* Override svr4.h and m88k.h except when compling crtstuff.c.  */
+/* Override svr4.h and m88k.h except when compiling crtstuff.c.  */
 #if !defined (CRT_BEGIN) && !defined (CRT_END)
 #if 0 /* The SVR4 init method doesn't yet work.  */
 #undef	INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP (VERSION_0300_SYNTAX		\
-			     ? "\tsection\t .init,\"xa\"\n"	\
-			     : "\tsection\t .init,\"x\"\n")
+			     ? "section\t .init,\"xa\""	\
+			     : "section\t .init,\"x\"")
 #endif
 #undef	CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP (VERSION_0300_SYNTAX		\
-			      ? "\tsection\t .ctors,\"aw\"\n"	\
-			      : "\tsection\t .ctors,\"d\"\n")
+			      ? "section\t .ctors,\"aw\""	\
+			      : "section\t .ctors,\"d\"")
 #undef	DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP (VERSION_0300_SYNTAX		\
-			      ? "\tsection\t .dtors,\"aw\"\n"	\
-			      : "\tsection\t .dtors,\"d\"\n")
+			      ? "section\t .dtors,\"aw\""	\
+			      : "section\t .dtors,\"d\"")
 #endif /* crtstuff.c */

@@ -30,8 +30,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION ;
 
-/* Tell the assembler to assume that all undefined names are external.  Don't
-   do this until the fixed IBM assembler is more generally available.  */
+/* Tell the assembler to assume that all undefined names are external.
+
+   Don't do this until the fixed IBM assembler is more generally available.
+   When this becomes permanently defined, the ASM_OUTPUT_EXTERNAL,
+   ASM_OUTPUT_EXTERNAL_LIBCALL, and RS6000_OUTPUT_BASENAME macros will no
+   longer be needed.  */
 
 /* #define ASM_SPEC "-u" */
 
@@ -116,7 +120,7 @@ extern int target_flags;
    instructions for them.  Might as well be consistent with bits and bytes. */
 #define WORDS_BIG_ENDIAN 1
 
-/* number of bits in an addressible storage unit */
+/* number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -170,9 +174,9 @@ extern int target_flags;
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-/* Define this if move instructions will actually fail to work
+/* Non-zero if move instructions will actually fail to work
    when given unaligned data.  */
-/* #define STRICT_ALIGNMENT */
+#define STRICT_ALIGNMENT 0
 
 /* Standard register usage.  */
 
@@ -1143,24 +1147,15 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 /* Define if normal loads of shorter-than-word items from memory clears
    the rest of the bigs in the register.  */
 #define BYTE_LOADS_ZERO_EXTEND
+
+/* The RS/6000 uses the XCOFF format.  */
 
-/* We can't support any debugging info on the RS/6000 since it has its
-   own format.  */
-/* #define DBX_DEBUGGING_INFO  */
-/* #define SDB_DEBUGGING_INFO  */
+#define XCOFF_DEBUGGING_INFO
 
 /* We don't have GAS for the RS/6000 yet, so don't write out special
    .stabs in cc1plus.  */
    
 #define FASCIST_ASSEMBLER
-
-/* Do not break .stabs pseudos into continuations.  */
-#define DBX_CONTIN_LENGTH 0
-
-/* Don't try to use the `x' type-cross-reference character in DBX data.
-   Also has the consequence of putting each struct, union or enum
-   into a separate .stabs, containing only cross-refs to the others.  */
-#define DBX_NO_XREFS
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
@@ -1286,19 +1281,24 @@ extern int rs6000_trunc_used;
    On the RS/6000, we want to go into the TOC section so at least one
    .toc will be emitted.
 
-   Also initialize the section names for the RS/6000 at this point.  */
+   Also initialize the section names for the RS/6000 at this point.
+
+   Also, in order to output proper .bs/.es pairs, we need at least one static
+   [RW] section emitted.  */
 
 #define ASM_FILE_START(FILE)					\
 {								\
-  rs6000_gen_section_name (&rs6000_bss_section_name,		\
+  rs6000_gen_section_name (&xcoff_bss_section_name,		\
 			   main_input_filename, ".bss_");	\
-  rs6000_gen_section_name (&rs6000_private_data_section_name,	\
+  rs6000_gen_section_name (&xcoff_private_data_section_name,	\
 			   main_input_filename, ".rw_");	\
-  rs6000_gen_section_name (&rs6000_read_only_section_name,	\
+  rs6000_gen_section_name (&xcoff_read_only_section_name,	\
 			   main_input_filename, ".ro_");	\
 								\
   toc_section ();						\
   bss_section ();						\
+  if (write_symbols != NO_DEBUG)				\
+    private_data_section ();					\
 }
 
 /* Output at end of assembler file.
@@ -1313,13 +1313,6 @@ extern int rs6000_trunc_used;
   fprintf (FILE, "\t.long _section_.text\n");			\
 }
 
-/* Names of bss and data sections.  These should be unique names for each
-   compilation unit.  */
-
-extern char *rs6000_bss_section_name;
-extern char *rs6000_private_data_section_name;
-extern char *rs6000_read_only_section_name;
-
 /* We define this to prevent the name mangler from putting dollar signs into
    function names.  */
 
@@ -1330,6 +1323,10 @@ extern char *rs6000_read_only_section_name;
    dollar signs.  */
 
 #define DOLLARS_IN_IDENTIFIERS 0
+
+/* Implicit library calls should use memcpy, not bcopy, etc.  */
+
+#define TARGET_MEM_FUNCTIONS
 
 /* Define the extra sections we need.  We define three: one is the read-only
    data section which is used for constants.  This is a csect whose name is
@@ -1357,8 +1354,8 @@ read_only_data_section ()				\
 {							\
   if (in_section != read_only_data)			\
     {							\
-      fprintf (asm_out_file, "\t.csect\t%s[RO]\n",	\
-	       rs6000_read_only_section_name);		\
+      fprintf (asm_out_file, "\t.csect %s[RO]\n",	\
+	       xcoff_read_only_section_name);		\
       in_section = read_only_data;			\
     }							\
 }							\
@@ -1369,7 +1366,7 @@ private_data_section ()					\
   if (in_section != private_data)			\
     {							\
       fprintf (asm_out_file, "\t.csect %s[RW]\n",	\
-	       rs6000_private_data_section_name);	\
+	       xcoff_private_data_section_name);	\
 							\
       in_section = private_data;			\
     }							\
@@ -1380,8 +1377,8 @@ read_only_private_data_section ()			\
 {							\
   if (in_section != read_only_private_data)		\
     {							\
-      fprintf (asm_out_file, "\t.csect\t%s[RO]\n",	\
-	       rs6000_private_data_section_name);	\
+      fprintf (asm_out_file, "\t.csect %s[RO]\n",	\
+	       xcoff_private_data_section_name);	\
       in_section = read_only_private_data;		\
     }							\
 }							\
@@ -1400,8 +1397,8 @@ bss_section ()						\
 {							\
   if (in_section != bss)				\
     {							\
-      fprintf (asm_out_file, "\t.csect\t%s[BS]\n",	\
-	       rs6000_bss_section_name);		\
+      fprintf (asm_out_file, "\t.csect %s[BS]\n",	\
+	       xcoff_bss_section_name);		\
       in_section = bss;					\
     }							\
 }							\
@@ -1414,12 +1411,20 @@ bss_section ()						\
    `text_section' call previously done.  We do have to go back to that
    csect, however.  */
 
+/* ??? What do the 16 and 044 in the .function line really mean?  */
+
 #define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)		\
 { if (TREE_PUBLIC (DECL))					\
     {								\
       fprintf (FILE, "\t.globl .");				\
       RS6000_OUTPUT_BASENAME (FILE, NAME);			\
-      fprintf (FILE,"\n");					\
+      fprintf (FILE, "\n");					\
+    }								\
+  else if (write_symbols == XCOFF_DEBUG)			\
+    {								\
+      fprintf (FILE, "\t.lglobl .");				\
+      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
+      fprintf (FILE, "\n");					\
     }								\
   fprintf (FILE, "\t.csect ");					\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
@@ -1428,10 +1433,23 @@ bss_section ()						\
   fprintf (FILE, ":\n");					\
   fprintf (FILE, "\t.long .");					\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
-  fprintf (FILE, ", TOC[tc0], 0\n");			\
+  fprintf (FILE, ", TOC[tc0], 0\n");				\
   fprintf (FILE, "\t.csect [PR]\n.");				\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fprintf (FILE, ":\n");					\
+  if (write_symbols == XCOFF_DEBUG)				\
+    {								\
+      dbxout_symbol (DECL, 0);					\
+      fprintf (FILE, "\t.function .");				\
+      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
+      fprintf (FILE, ",.");					\
+      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
+      fprintf (FILE, ",16,044,L..end_");			\
+      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
+      fprintf (FILE, "-.");					\
+      RS6000_OUTPUT_BASENAME (FILE, NAME);			\
+      fprintf (FILE, "\n");					\
+    }								\
 }
 
 /* Return non-zero if this entry is to be written into the constant pool
@@ -1566,11 +1584,11 @@ bss_section ()						\
 
 /* Output before instructions.  */
 
-#define TEXT_SECTION_ASM_OP "\t.csect [PR]"
+#define TEXT_SECTION_ASM_OP ".csect [PR]"
 
 /* Output before writable data.  */
 
-#define DATA_SECTION_ASM_OP "\t.csect .data[RW]"
+#define DATA_SECTION_ASM_OP ".csect .data[RW]"
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
@@ -1732,7 +1750,8 @@ bss_section ()						\
    to define a global common symbol.  */
 
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
-  do { fputs (".comm ", (FILE));			\
+  do { bss_section ();					\
+       fputs (".comm ", (FILE));			\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
        fprintf ((FILE), ",%d\n", (SIZE)); } while (0)
 
@@ -1740,9 +1759,10 @@ bss_section ()						\
    to define a local common symbol.  */
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE,ROUNDED)	\
-  do { fputs (".lcomm ", (FILE));			\
+  do { bss_section ();					\
+       fputs (".lcomm ", (FILE));			\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       fprintf ((FILE), ",%d,%s\n", (SIZE), rs6000_bss_section_name); \
+       fprintf ((FILE), ",%d,%s\n", (SIZE), xcoff_bss_section_name); \
      } while (0)
 
 /* Store in OUTPUT a string (made with alloca) containing

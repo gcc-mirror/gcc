@@ -283,10 +283,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   output_file_directive ((FILE), main_input_filename))
 
 #undef TEXT_SECTION_ASM_OP
-#define TEXT_SECTION_ASM_OP "\ttext"
+#define TEXT_SECTION_ASM_OP "text"
 
 #undef DATA_SECTION_ASM_OP
-#define DATA_SECTION_ASM_OP "\tdata"
+#define DATA_SECTION_ASM_OP "data"
 
 /* This says how to output an assembler line to define a global common symbol.
    We use SIZE rather than ROUNDED, as this is what the native cc does.  */
