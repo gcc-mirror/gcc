@@ -1,5 +1,14 @@
 2003-12-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/DatagramSocket.java
+	(close): Close associated DatagramChannel object.
+	* java/net/ServerSocket.java
+	* java/net/Socket.java
+	(close): Reset impl and bound before calling getChannel().close() to
+	prevent from loops.
+
+2003-12-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/channels/spi/AbstractInterruptibleChannel.java
 	(opened): Removed.
 	(closed): New field.
