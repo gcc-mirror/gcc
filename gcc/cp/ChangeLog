@@ -1,3 +1,8 @@
+1999-09-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (lang_decode_option): Adjust, in the wake of recent
+	changes to option processing.
+
 1999-09-21  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* typeck.c (get_member_function_from_ptrfunc): Allow extraction of

@@ -559,7 +559,6 @@ lang_decode_option (argc, argv)
       /* Some kind of -f option.
 	 P's value is the option sans `-f'.
 	 Search for it in the table of options.  */
-      int found = 0;
       size_t j;
 
       p += 2;
@@ -577,51 +576,36 @@ lang_decode_option (argc, argv)
 	  || !strcmp (p, "no-enum-int-equiv")
 	  || !strcmp (p, "nonnull-objects")
           || !strcmp (p, "ansi-overloading"))
-	{
-	  /* ignore */
-	  found = 1;
-	}
+	/* ignore */
+	;
       else if (!strcmp (p, "all-virtual")
 	       || !strcmp (p, "enum-int-equiv")
 	       || !strcmp (p, "no-nonnull-objects")
 	       || !strcmp (p, "no-ansi-overloading"))
-	{
-	  warning ("-f%s is no longer supported", p);
-	  found = 1;
-	}
+	warning ("-f%s is no longer supported", p);
       else if (! strcmp (p, "alt-external-templates"))
 	{
 	  flag_external_templates = 1;
 	  flag_alt_external_templates = 1;
-	  found = 1;
           cp_deprecated ("-falt-external-templates");
 	}
       else if (! strcmp (p, "no-alt-external-templates"))
-	{
-	  flag_alt_external_templates = 0;
-	  found = 1;
-	}
+	flag_alt_external_templates = 0;
       else if (!strcmp (p, "repo"))
 	{
 	  flag_use_repository = 1;
 	  flag_implicit_templates = 0;
-	  found = 1;
 	}
       else if (!strcmp (p, "guiding-decls"))
 	{
 	  flag_guiding_decls = 1;
 	  name_mangling_version = 0;
-	  found = 1;
 	}
       else if (!strcmp (p, "no-guiding-decls"))
-	{
-	  flag_guiding_decls = 0;
-	  found = 1;
-	}
+	flag_guiding_decls = 0;
       else if (!strcmp (p, "external-templates"))
         {
           flag_external_templates = 1;
-          found = 1;
           cp_deprecated ("-fexternal-templates");
         }
       else if (!strcmp (p, "new-abi"))
@@ -638,15 +622,11 @@ lang_decode_option (argc, argv)
 	  flag_honor_std = 0;
 	}
       else if (!strncmp (p, "template-depth-", 15))
-	{
-	  max_tinst_depth =
-	  	read_integral_parameter (p + 15, p - 2, max_tinst_depth);
-	}
+	max_tinst_depth
+	  = read_integral_parameter (p + 15, p - 2, max_tinst_depth);
       else if (!strncmp (p, "name-mangling-version-", 22))
-	{
-	  name_mangling_version =
-	  	read_integral_parameter (p + 22, p - 2, name_mangling_version);
-	}
+	name_mangling_version 
+	  = read_integral_parameter (p + 22, p - 2, name_mangling_version);
       else if (!strncmp (p, "dump-translation-unit-", 22))
 	{
 	  if (p[22] == '\0')
@@ -654,25 +634,32 @@ lang_decode_option (argc, argv)
 	  else
 	    flag_dump_translation_unit = p + 22;
 	}
-      else for (j = 0;
-		!found && j < sizeof (lang_f_options) / sizeof (lang_f_options[0]);
-		j++)
+      else 
 	{
-	  if (!strcmp (p, lang_f_options[j].string))
+	  int found = 0;
+
+	  for (j = 0;
+	       !found && j < (sizeof (lang_f_options) 
+			      / sizeof (lang_f_options[0]));
+	       j++)
 	    {
-	      *lang_f_options[j].variable = lang_f_options[j].on_value;
-	      /* A goto here would be cleaner,
-		 but breaks the vax pcc.  */
-	      found = 1;
+	      if (!strcmp (p, lang_f_options[j].string))
+		{
+		  *lang_f_options[j].variable = lang_f_options[j].on_value;
+		  /* A goto here would be cleaner,
+		     but breaks the vax pcc.  */
+		  found = 1;
+		}
+	      if (p[0] == 'n' && p[1] == 'o' && p[2] == '-'
+		  && ! strcmp (p+3, lang_f_options[j].string))
+		{
+		  *lang_f_options[j].variable = ! lang_f_options[j].on_value;
+		  found = 1;
+		}
 	    }
-	  if (p[0] == 'n' && p[1] == 'o' && p[2] == '-'
-	      && ! strcmp (p+3, lang_f_options[j].string))
-	    {
-	      *lang_f_options[j].variable = ! lang_f_options[j].on_value;
-	      found = 1;
-	    }
+	      
+	  return found;
 	}
-      return found;
     }
   else if (p[0] == '-' && p[1] == 'W')
     {
