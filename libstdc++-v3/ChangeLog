@@ -1,3 +1,7 @@
+2000-04-29  Phil Edwards  <pme@sourceware.cygnus.com>
+
+	* docs/download.html:  Add link to list of mirror sites.
+
 2000-04-26  Nathan C. Myers  <ncm@cantrip.org>
 
 	* bits/basic_string.h: include <bits/atomicity.h> instead
