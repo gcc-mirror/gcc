@@ -1,5 +1,5 @@
 /* GZIPInputStream.java - Input filter for reading gzip file
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -141,28 +141,34 @@ public class GZIPInputStream extends InflaterInputStream
     if (r == -1)
       {
 	eos = true;
-	int header_crc = read4 ();
+
+	byte[] tmp = new byte[8];
+	// First copy remaining bytes from inflater input buffer.
+	int avail = inf.getRemaining ();
+	System.arraycopy (this.buf, this.len - avail, tmp, 0, avail);
+
+	// Now read remaining bytes from wrapped input stream.
+	for (int i = avail; i < 8; ++i)
+	  {
+	    tmp[i] = (byte) eof_read ();
+	  }
+
+	int header_crc = read4 (tmp, 0);
 	if (crc.getValue() != header_crc)
-	  throw new ZipException ("corrupted gzip file");
-	// Read final `ISIZE' field.
-	// FIXME: should we check this length?
-	read4 ();
+	  throw new ZipException ("corrupted gzip file - crc mismatch");
+	int isize = read4 (tmp, 4);
+	if (inf.getTotalOut() != isize)
+	  throw new ZipException ("corrupted gzip file - size mismatch");
 	return -1;
       }
     crc.update(buf, off, r);
     return r;
   }
 
-  private final int read4 () throws IOException
+  private final int read4 (byte[] buf, int offset) throws IOException
   {
-    int byte0 = in.read();
-    int byte1 = in.read();
-    int byte2 = in.read();
-    int byte3 = in.read();
-    if (byte3 < 0)
-      throw new ZipException (".zip archive ended prematurely");
-    return ((byte3 & 0xFF) << 24) + ((byte2 & 0xFF) << 16)
-      + ((byte1 & 0xFF) << 8) + (byte0 & 0xFF);
+    return (((buf[offset + 3] & 0xFF) << 24) + ((buf[offset + 2] & 0xFF) << 16)
+	    + ((buf[offset + 1] & 0xFF) << 8) + (buf[offset] & 0xFF));
   }
 
   // Checksum used by this input stream.
