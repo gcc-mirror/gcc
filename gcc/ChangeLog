@@ -19,6 +19,7 @@ Mon Dec 10 15:54:27 2001  Jeffrey A Law  (law@cygnus.com)
 	(RTX_COSTS): Add PPC405.  Correct rs64 and ppc630 multiply costs.
 	* rs6000.md: Add PPC405 information.  Utilize imul2 and imul3 for
 	rios1, rs64, and ppc630 processors.
+	* rs6000.c (processor_target_table): Add PPC405.
 
 2001-12-10  Richard Henderson  <rth@redhat.com>
 
