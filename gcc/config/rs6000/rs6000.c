@@ -11664,8 +11664,17 @@ output_toc (file, x, labelno, mode)
 	abort ();/* It would be easy to make this work, but it doesn't now.  */
 
       if (POINTER_SIZE > GET_MODE_BITSIZE (mode))
-	lshift_double (low, high, POINTER_SIZE - GET_MODE_BITSIZE (mode),
-		       POINTER_SIZE, &low, &high, 0);
+	{
+#if HOST_BITS_PER_WIDE_INT == 32
+	  lshift_double (low, high, POINTER_SIZE - GET_MODE_BITSIZE (mode),
+			 POINTER_SIZE, &low, &high, 0);
+#else
+	  low |= high << 32;
+	  low <<= POINTER_SIZE - GET_MODE_BITSIZE (mode);
+	  high = (HOST_WIDE_INT) low >> 32;
+	  low &= 0xffffffff;
+#endif
+	}
 
       if (TARGET_64BIT)
 	{
