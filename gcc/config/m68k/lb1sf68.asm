@@ -387,7 +387,7 @@ L1:	addl	d0,d0		| shift reg pair (p,a) one bit left
 	movl	d3,d2
 L2:	subql	IMM (1),d4
 	jcc	L1
-	moveml	sp@+,d2-d4	| restore data registers
+	moveml	sp@,d2-d4	| restore data registers
 	unlk	a6		| and return
 	rts
 #endif /* __mcf5200__ */
