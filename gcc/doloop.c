@@ -875,11 +875,13 @@ doloop_optimize (loop)
      jump instruction.  Also, a raw define_insn may yield a plain
      pattern.  */
   doloop_pat = doloop_seq;
-  if (INSN_P (doloop_pat) && NEXT_INSN (doloop_pat) != NULL_RTX)
+  if (INSN_P (doloop_pat))
     {
       while (NEXT_INSN (doloop_pat) != NULL_RTX)
 	doloop_pat = NEXT_INSN (doloop_pat);
-      if (GET_CODE (doloop_pat) != JUMP_INSN)
+      if (GET_CODE (doloop_pat) == JUMP_INSN)
+	doloop_pat = PATTERN (doloop_pat);
+      else
 	doloop_pat = NULL_RTX;
     }
 
