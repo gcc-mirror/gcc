@@ -1,3 +1,10 @@
+2003-05-29  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* diagnostic.h (output_verbatim): Remove printf attribute.
+	(verbatim): Likewise.
+	* diagnostic.c (output_pointer): New function.
+	(output_format): Use it.  Handle %p format specifier.
+
 2003-05-27  Denis Chertykov  <denisc@overta.ru>
 
 	* cselib.c (cselib_invalidate_regno): Abort if hardreg have a

@@ -322,9 +322,8 @@ extern void output_clear_message_text	PARAMS ((output_buffer *));
 extern void output_printf		PARAMS ((output_buffer *, const char *,
 						 ...)) ATTRIBUTE_PRINTF_2;
 extern void output_verbatim		PARAMS ((output_buffer *, const char *,
-						 ...)) ATTRIBUTE_PRINTF_2;
-extern void verbatim			PARAMS ((const char *, ...))
-     ATTRIBUTE_PRINTF_1;
+						 ...));
+extern void verbatim			PARAMS ((const char *, ...));
 extern char *file_name_as_prefix	PARAMS ((const char *));
 extern void inform                      PARAMS ((const char *, ...));
 

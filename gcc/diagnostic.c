@@ -66,6 +66,7 @@ static void output_long_octal PARAMS ((output_buffer *, unsigned long int));
 static void output_hexadecimal PARAMS ((output_buffer *, unsigned int));
 static void output_long_hexadecimal PARAMS ((output_buffer *,
 					     unsigned long int));
+static void output_pointer PARAMS ((output_buffer *, void *));
 static void output_append_r PARAMS ((output_buffer *, const char *, int));
 static void wrap_text PARAMS ((output_buffer *, const char *, const char *));
 static void maybe_wrap_text PARAMS ((output_buffer *, const char *,
@@ -360,6 +361,14 @@ output_long_hexadecimal (buffer, i)
   output_formatted_scalar (buffer, "%lx", i);
 }
 
+static void
+output_pointer (buffer, p)
+     output_buffer *buffer;
+     void *p;
+{
+  output_formatted_scalar (buffer, HOST_PTR_PRINTF, p);
+}
+
 /* Append to BUFFER a string specified by its STARTING character
    and LENGTH.  */
 static void
@@ -494,6 +503,7 @@ output_buffer_to_stream (buffer)
    %ld, %li, %lo, %lu, %lx: long versions of the above.
    %c: character.
    %s: string.
+   %p: pointer.
    %%: `%'.
    %*.s: a substring the length of which is specified by an integer.
    %H: location_t.  */
@@ -554,6 +564,10 @@ output_format (buffer, text)
 	case 's':
 	  output_add_string (buffer, va_arg (*text->args_ptr, const char *));
 	  break;
+
+        case 'p':
+          output_pointer (buffer, va_arg (*text->args_ptr, void *));
+          break;
 
 	case 'u':
 	  if (long_integer)
