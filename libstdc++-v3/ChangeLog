@@ -1,3 +1,8 @@
+2000-05-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/cpu/powerpc/bits/atomicity.h (__exchange_and_add): More
+	fixes.
+
 2000-05-01  Vadim Egorov  <egorovv@@mailandnews.com>
 
         * bits/char_traits.h: Fix parameter types.

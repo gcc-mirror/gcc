@@ -32,14 +32,14 @@ static __ATOMICITY_INLINE _Atomic_word
 __attribute__ ((unused))
 __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 {
-  _Atomic_word __tmp, __result;
+  _Atomic_word __tmp, __res;
   __asm__ ("\
 0:	lwarx	%0,0,%2
 	add%I3	%1,%0,%3
 	stwcx.	%1,0,%2
 	bne-	0b
-" : "=&b"(__result), "=&r"(__tmp) : "r" (__mem), "Ir"(__val) : "cr0", "memory");
-  return __result;
+" : "=&b"(__res), "=&r"(__tmp) : "r" (__mem), "Ir"(__val) : "cr0", "memory");
+  return __res;
 }
 
 static __ATOMICITY_INLINE void
@@ -59,7 +59,7 @@ static __ATOMICITY_INLINE int
 __attribute__ ((unused))
 __compare_and_swap (volatile long *__p, long int __oldval, long int __newval)
 {
-  int __result;
+  int __res;
   __asm__ ("\
 0:	lwarx	%0,0,%1
 	sub%I2c.	%0,%0,%2
@@ -68,30 +68,28 @@ __compare_and_swap (volatile long *__p, long int __oldval, long int __newval)
 	stwcx.	%3,0,%1
 	bne-	0b
 1:
-" : "=&b"(__result) 
-  : "r"(__p), "Ir"(__oldval), "r"(__newval) 
-  : "cr0", "memory");
-  return __result >> 5;
+" : "=&b"(__res) : "r"(__p), "Ir"(__oldval), "r"(__newval) : "cr0", "memory");
+  return __res >> 5;
 }
 
 static __ATOMICITY_INLINE long
 __attribute__ ((unused))
 __always_swap (volatile long *__p, long int __newval)
 {
-  long __result;
+  long __res;
   __asm__ ("\
 0:	lwarx	%0,0,%1
 	stwcx.	%2,0,%1
 	bne-	0b
-" : "=&r"(__result) : "r"(__p), "r"(__newval) : "cr0", "memory");
-  return __result;
+" : "=&r"(__res) : "r"(__p), "r"(__newval) : "cr0", "memory");
+  return __res;
 }
 
 static __ATOMICITY_INLINE int
 __attribute__ ((unused))
 __test_and_set (volatile long *__p, long int __newval)
 {
-  int __result;
+  int __res;
   __asm__ ("\
 0:	lwarx	%0,0,%1
 	cmpwi	%0,0
@@ -99,8 +97,8 @@ __test_and_set (volatile long *__p, long int __newval)
 	stwcx.	%2,0,%1
 	bne-	0b
 1:
-" : "=&r"(__result) : "r"(__p), "r"(__newval) : "cr0", "memory");
-  return __result;
+" : "=&r"(__res) : "r"(__p), "r"(__newval) : "cr0", "memory");
+  return __res;
 }
 
 #endif /* atomicity.h */
