@@ -1,3 +1,20 @@
+2002-08-20  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (TARGET_MEM_FUNCTIONS): Transform to boolean.
+	(emit_block_move): Split out subroutines.
+	(emit_block_move_via_movstr): New.
+	(emit_block_move_via_libcall): New.  Emit bcopy via normal call also.
+	(emit_block_move_libcall_fn): New.  Construct function prototype for
+	bcopy as well.
+	(clear_storage): Split out subroutines.
+	(clear_storage_via_clrstr): New.
+	(clear_storage_via_libcall): New. Emit bzero as a normal call also.
+	(clear_storage_libcall_fn): New.  Construct function prototype for
+	bzero as well.
+	(emit_push_insn): Use emit_block_move.
+	(expand_assignment): Booleanize TARGET_MEM_FUNCTIONS.
+	(store_constructor): Likewise.
+
 2002-08-19  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc/objc-act.c (building_objc_message_expr): Rename to
