@@ -2181,6 +2181,11 @@ do {                                                                    \
    in one reasonably fast instruction.  */
 #define MOVE_MAX 8
 
+/* If a memory-to-memory move would take MOVE_RATIO or more simple
+   move-instruction pairs, we will do a movstr or libcall instead.  */
+
+#define MOVE_RATIO (optimize_size ? 3 : 8)
+
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
 #define WORD_REGISTER_OPERATIONS
