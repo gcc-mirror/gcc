@@ -577,11 +577,15 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    : (C) == 'P' ? and_mask_p (VALUE)				\
    : 0)
 
-/* Similar, but for floating constants, and defining letters G and H.
-   Here VALUE is the CONST_DOUBLE rtx itself.  */
+/* Similar, but for floating or large integer constants, and defining letters
+   G and H.   Here VALUE is the CONST_DOUBLE rtx itself.
 
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'G' && XINT (VALUE, 0) == 0 && XINT (VALUE, 1) == 0)
+   For PA, `G' is the floating-point constant zero.  `H' is undefined.  */
+
+#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  			\
+  ((C) == 'G' ? (GET_MODE_CLASS (GET_MODE (VALUE)) == MODE_FLOAT	\
+		 && (VALUE) == CONST0_RTX (GET_MODE (VALUE)))		\
+   : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -1015,11 +1019,13 @@ extern union tree_node *current_function_decl;
 
 #define CONSTANT_ADDRESS_P(X)  CONSTANT_P (X)
 
-/* Nonzero if the constant value X is a legitimate general operand.
-   It is given that X satisfies CONSTANT_P.  */
 
-#define LEGITIMATE_CONSTANT_P(X)		\
- (GET_CODE (X) != CONST_DOUBLE)
+/* Include all constant integers and constant doubles, but not
+   floating-point, except for floating-point zero.  */
+
+#define LEGITIMATE_CONSTANT_P(X)  		\
+  (GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
+   || (X) == CONST0_RTX (GET_MODE (X)))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -1415,7 +1421,11 @@ while (0)
   case SYMBOL_REF:						\
     return 4;							\
   case CONST_DOUBLE:						\
-    return 8;
+    if (RTX == CONST0_RTX (DFmode) || RTX == CONST0_RTX (SFmode)\
+	&& OUTER_CODE != SET)					\
+      return 0;							\
+    else							\
+      return 8;
 
 #define ADDRESS_COST(RTX) \
   (GET_CODE (RTX) == REG ? 1 : hppa_address_cost (RTX))
