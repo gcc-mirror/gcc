@@ -100,7 +100,7 @@ template <class _Tp> inline _Tp identity_element(std::multiplies<_Tp>) {
  *  Calling @c operator() with a single argument @c x returns @c f(g(x)).
  *  The function @c compose1 takes the two functions and constructs a
  *  @c unary_compose variable for you.
- *  
+ *
  *  @c binary_compose is constructed from three functors, @c f, @c g1,
  *  and @c g2.  Its @c operator() returns @c f(g1(x),g2(x)).  The function
  *  @compose2 takes f, g1, and g2, and constructs the @c binary_compose
@@ -124,13 +124,13 @@ template <class _Tp> inline _Tp identity_element(std::multiplies<_Tp>) {
 template <class _Operation1, class _Operation2>
 class unary_compose
   : public unary_function<typename _Operation2::argument_type,
-		       typename _Operation1::result_type> 
+		       typename _Operation1::result_type>
 {
 protected:
   _Operation1 _M_fn1;
   _Operation2 _M_fn2;
 public:
-  unary_compose(const _Operation1& __x, const _Operation2& __y) 
+  unary_compose(const _Operation1& __x, const _Operation2& __y)
     : _M_fn1(__x), _M_fn2(__y) {}
   typename _Operation1::result_type
   operator()(const typename _Operation2::argument_type& __x) const {
@@ -140,7 +140,7 @@ public:
 
 /// An \link SGIextensions SGI extension \endlink.
 template <class _Operation1, class _Operation2>
-inline unary_compose<_Operation1,_Operation2> 
+inline unary_compose<_Operation1,_Operation2>
 compose1(const _Operation1& __fn1, const _Operation2& __fn2)
 {
   return unary_compose<_Operation1,_Operation2>(__fn1, __fn2);
@@ -156,8 +156,8 @@ protected:
   _Operation2 _M_fn2;
   _Operation3 _M_fn3;
 public:
-  binary_compose(const _Operation1& __x, const _Operation2& __y, 
-                 const _Operation3& __z) 
+  binary_compose(const _Operation1& __x, const _Operation2& __y,
+                 const _Operation3& __z)
     : _M_fn1(__x), _M_fn2(__y), _M_fn3(__z) { }
   typename _Operation1::result_type
   operator()(const typename _Operation2::argument_type& __x) const {
@@ -167,8 +167,8 @@ public:
 
 /// An \link SGIextensions SGI extension \endlink.
 template <class _Operation1, class _Operation2, class _Operation3>
-inline binary_compose<_Operation1, _Operation2, _Operation3> 
-compose2(const _Operation1& __fn1, const _Operation2& __fn2, 
+inline binary_compose<_Operation1, _Operation2, _Operation3>
+compose2(const _Operation1& __fn1, const _Operation2& __fn2,
          const _Operation3& __fn3)
 {
   return binary_compose<_Operation1,_Operation2,_Operation3>
@@ -220,7 +220,7 @@ struct _Project2nd : public binary_function<_Arg1, _Arg2, _Arg2> {
 */
 
 /// An \link SGIextensions SGI extension \endlink.
-template <class _Arg1, class _Arg2> 
+template <class _Arg1, class _Arg2>
 struct project1st : public _Project1st<_Arg1, _Arg2> {};
 
 /// An \link SGIextensions SGI extension \endlink.
@@ -236,7 +236,7 @@ struct _Constant_void_fun {
 
   _Constant_void_fun(const result_type& __v) : _M_val(__v) {}
   const result_type& operator()() const { return _M_val; }
-};  
+};
 
 template <class _Result, class _Argument>
 struct _Constant_unary_fun {
@@ -279,7 +279,7 @@ struct _Constant_binary_fun {
 template <class _Result>
 struct constant_void_fun : public _Constant_void_fun<_Result> {
   constant_void_fun(const _Result& __v) : _Constant_void_fun<_Result>(__v) {}
-};  
+};
 
 /// An \link SGIextensions SGI extension \endlink.
 template <class _Result,
@@ -317,7 +317,7 @@ inline constant_unary_fun<_Result,_Result> constant1(const _Result& __val)
 
 /// An \link SGIextensions SGI extension \endlink.
 template <class _Result>
-inline constant_binary_fun<_Result,_Result,_Result> 
+inline constant_binary_fun<_Result,_Result,_Result>
 constant2(const _Result& __val)
 {
   return constant_binary_fun<_Result,_Result,_Result>(__val);
@@ -369,7 +369,7 @@ public:
   subtractive_rng() { _M_initialize(161803398u); }
 };
 
-// Mem_fun adaptor helper functions mem_fun1 and mem_fun1_ref, 
+// Mem_fun adaptor helper functions mem_fun1 and mem_fun1_ref,
 // provided for backward compatibility, they are no longer part of
 // the C++ standard.
 
@@ -391,5 +391,5 @@ mem_fun1_ref(_Ret (_Tp::*__f)(_Arg) const)
   { return const_mem_fun1_ref_t<_Ret,_Tp,_Arg>(__f); }
 } // namespace __gnu_cxx
 
-#endif 
+#endif
 

@@ -72,7 +72,7 @@ namespace __gnu_cxx
   // There are two signatures for distance.  In addition to the one
   // taking two iterators and returning a result, there is another
   // taking two iterators and a reference-to-result variable, and
-  // returning nothing.  The latter seems to be an SGI extension.  
+  // returning nothing.  The latter seems to be an SGI extension.
   // -- pedwards
   template<typename _InputIterator, typename _Distance>
     inline void
@@ -86,7 +86,7 @@ namespace __gnu_cxx
 
   template<typename _RandomAccessIterator, typename _Distance>
     inline void
-    __distance(_RandomAccessIterator __first, _RandomAccessIterator __last, 
+    __distance(_RandomAccessIterator __first, _RandomAccessIterator __last,
 	       _Distance& __n, std::random_access_iterator_tag)
     {
       // concept requirements
@@ -109,5 +109,5 @@ namespace __gnu_cxx
     }
 } // namespace __gnu_cxx
 
-#endif 
+#endif
 

@@ -59,7 +59,7 @@
  *  include this header if you are using GCC 3 or later.
  */
 
-#ifndef _HASH_MAP 
+#ifndef _HASH_MAP
 #define _HASH_MAP 1
 
 #include <ext/hashtable.h>
@@ -102,7 +102,7 @@ public:
   typedef typename _Ht::value_type value_type;
   typedef typename _Ht::hasher hasher;
   typedef typename _Ht::key_equal key_equal;
-  
+
   typedef typename _Ht::size_type size_type;
   typedef typename _Ht::difference_type difference_type;
   typedef typename _Ht::pointer pointer;
@@ -171,10 +171,10 @@ public:
   void insert(_InputIterator __f, _InputIterator __l)
     { _M_ht.insert_unique(__f,__l); }
   pair<iterator,bool> insert_noresize(const value_type& __obj)
-    { return _M_ht.insert_unique_noresize(__obj); }    
+    { return _M_ht.insert_unique_noresize(__obj); }
 
   iterator find(const key_type& __key) { return _M_ht.find(__key); }
-  const_iterator find(const key_type& __key) const 
+  const_iterator find(const key_type& __key) const
     { return _M_ht.find(__key); }
 
   _Tp& operator[](const key_type& __key) {
@@ -182,7 +182,7 @@ public:
   }
 
   size_type count(const key_type& __key) const { return _M_ht.count(__key); }
-  
+
   pair<iterator, iterator> equal_range(const key_type& __key)
     { return _M_ht.equal_range(__key); }
   pair<const_iterator, const_iterator>
@@ -202,7 +202,7 @@ public:
 };
 
 template <class _Key, class _Tp, class _HashFcn, class _EqlKey, class _Alloc>
-inline bool 
+inline bool
 operator==(const hash_map<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm1,
            const hash_map<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm2)
 {
@@ -210,14 +210,14 @@ operator==(const hash_map<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm1,
 }
 
 template <class _Key, class _Tp, class _HashFcn, class _EqlKey, class _Alloc>
-inline bool 
+inline bool
 operator!=(const hash_map<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm1,
            const hash_map<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm2) {
   return !(__hm1 == __hm2);
 }
 
 template <class _Key, class _Tp, class _HashFcn, class _EqlKey, class _Alloc>
-inline void 
+inline void
 swap(hash_map<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm1,
      hash_map<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm2)
 {
@@ -233,7 +233,7 @@ template <class _Key, class _Tp,
 class hash_multimap;
 
 template <class _Key, class _Tp, class _HF, class _EqKey, class _Alloc>
-inline bool 
+inline bool
 operator==(const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm1,
            const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm2);
 
@@ -253,7 +253,7 @@ class hash_multimap
 
 private:
   typedef hashtable<pair<const _Key, _Tp>, _Key, _HashFcn,
-                    _Select1st<pair<const _Key, _Tp> >, _EqualKey, _Alloc> 
+                    _Select1st<pair<const _Key, _Tp> >, _EqualKey, _Alloc>
           _Ht;
   _Ht _M_ht;
 
@@ -327,20 +327,20 @@ public:
   const_iterator end() const { return _M_ht.end(); }
 
 public:
-  iterator insert(const value_type& __obj) 
+  iterator insert(const value_type& __obj)
     { return _M_ht.insert_equal(__obj); }
   template <class _InputIterator>
-  void insert(_InputIterator __f, _InputIterator __l) 
+  void insert(_InputIterator __f, _InputIterator __l)
     { _M_ht.insert_equal(__f,__l); }
   iterator insert_noresize(const value_type& __obj)
-    { return _M_ht.insert_equal_noresize(__obj); }    
+    { return _M_ht.insert_equal_noresize(__obj); }
 
   iterator find(const key_type& __key) { return _M_ht.find(__key); }
-  const_iterator find(const key_type& __key) const 
+  const_iterator find(const key_type& __key) const
     { return _M_ht.find(__key); }
 
   size_type count(const key_type& __key) const { return _M_ht.count(__key); }
-  
+
   pair<iterator, iterator> equal_range(const key_type& __key)
     { return _M_ht.equal_range(__key); }
   pair<const_iterator, const_iterator>
@@ -361,7 +361,7 @@ public:
 };
 
 template <class _Key, class _Tp, class _HF, class _EqKey, class _Alloc>
-inline bool 
+inline bool
 operator==(const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm1,
            const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm2)
 {
@@ -369,14 +369,14 @@ operator==(const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm1,
 }
 
 template <class _Key, class _Tp, class _HF, class _EqKey, class _Alloc>
-inline bool 
+inline bool
 operator!=(const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm1,
            const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm2) {
   return !(__hm1 == __hm2);
 }
 
 template <class _Key, class _Tp, class _HashFcn, class _EqlKey, class _Alloc>
-inline void 
+inline void
 swap(hash_multimap<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm1,
      hash_multimap<_Key,_Tp,_HashFcn,_EqlKey,_Alloc>& __hm2)
 {
@@ -407,7 +407,7 @@ public:
   insert_iterator(_Container& __x, typename _Container::iterator)
     : container(&__x) {}
   insert_iterator<_Container>&
-  operator=(const typename _Container::value_type& __value) { 
+  operator=(const typename _Container::value_type& __value) {
     container->insert(__value);
     return *this;
   }
@@ -434,7 +434,7 @@ public:
   insert_iterator(_Container& __x, typename _Container::iterator)
     : container(&__x) {}
   insert_iterator<_Container>&
-  operator=(const typename _Container::value_type& __value) { 
+  operator=(const typename _Container::value_type& __value) {
     container->insert(__value);
     return *this;
   }

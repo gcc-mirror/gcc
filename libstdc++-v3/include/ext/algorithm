@@ -160,11 +160,11 @@ namespace __gnu_cxx
     const ptrdiff_t __len1 = __last1 - __first1;
     const ptrdiff_t __len2 = __last2 - __first2;
     const int __result = std::memcmp(__first1, __first2, min(__len1, __len2));
-    return __result != 0 ? __result 
+    return __result != 0 ? __result
 			 : (__len1 == __len2 ? 0 : (__len1 < __len2 ? -1 : 1));
   }
 
-  inline int 
+  inline int
   __lexicographical_compare_3way(const char* __first1, const char* __last1,
 				 const char* __first2, const char* __last2)
   {
@@ -295,7 +295,7 @@ namespace __gnu_cxx
 	   typename _RandomNumberGenerator>
     _OutputIterator
     random_sample_n(_ForwardIterator __first, _ForwardIterator __last,
-                   _OutputIterator __out, const _Distance __n, 
+                   _OutputIterator __out, const _Distance __n,
 		   _RandomNumberGenerator& __rand)
     {
       // concept requirements
@@ -330,7 +330,7 @@ namespace __gnu_cxx
     {
       _Distance __m = 0;
       _Distance __t = __n;
-      for ( ; __first != __last && __m < __n; ++__m, ++__first) 
+      for ( ; __first != __last && __m < __n; ++__m, ++__first)
 	__out[__m] = *__first;
 
       while (__first != __last) {
@@ -380,7 +380,7 @@ namespace __gnu_cxx
   template<typename _InputIterator, typename _RandomAccessIterator>
     inline _RandomAccessIterator
     random_sample(_InputIterator __first, _InputIterator __last,
-		  _RandomAccessIterator __out_first, _RandomAccessIterator __out_last) 
+		  _RandomAccessIterator __out_first, _RandomAccessIterator __out_last)
     {
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
@@ -398,12 +398,12 @@ namespace __gnu_cxx
    *  @ingroup SGIextensions
    *  @doctodo
   */
-  template<typename _InputIterator, typename _RandomAccessIterator, 
+  template<typename _InputIterator, typename _RandomAccessIterator,
 	   typename _RandomNumberGenerator>
     inline _RandomAccessIterator
     random_sample(_InputIterator __first, _InputIterator __last,
 		  _RandomAccessIterator __out_first, _RandomAccessIterator __out_last,
-		  _RandomNumberGenerator& __rand) 
+		  _RandomNumberGenerator& __rand)
     {
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
@@ -416,7 +416,7 @@ namespace __gnu_cxx
 			     __out_first, __rand,
 			     __out_last - __out_first);
     }
-  
+
   /**
    *  This is an SGI extension.
    *  @ingroup SGIextensions
@@ -448,7 +448,7 @@ namespace __gnu_cxx
       // concept requirements
       __glibcxx_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_StrictWeakOrdering,
-	    typename iterator_traits<_RandomAccessIterator>::value_type, 
+	    typename iterator_traits<_RandomAccessIterator>::value_type,
 	    typename iterator_traits<_RandomAccessIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
@@ -498,7 +498,7 @@ namespace __gnu_cxx
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_StrictWeakOrdering,
-	    typename iterator_traits<_ForwardIterator>::value_type, 
+	    typename iterator_traits<_ForwardIterator>::value_type,
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 

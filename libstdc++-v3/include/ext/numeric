@@ -72,7 +72,7 @@
 namespace __gnu_cxx
 {
   // Returns __x ** __n, where __n >= 0.  _Note that "multiplication"
-  // is required to be associative, but not necessarily commutative.   
+  // is required to be associative, but not necessarily commutative.
   template<typename _Tp, typename _Integer, typename _MonoidOperation>
     _Tp
     __power(_Tp __x, _Integer __n, _MonoidOperation __monoid_op)
@@ -131,7 +131,7 @@ namespace __gnu_cxx
   */
   // iota is not part of the C++ standard.  It is an extension.
   template<typename _ForwardIter, typename _Tp>
-    void 
+    void
     iota(_ForwardIter __first, _ForwardIter __last, _Tp __value)
     {
       // concept requirements

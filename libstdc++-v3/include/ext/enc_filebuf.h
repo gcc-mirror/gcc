@@ -39,7 +39,7 @@ namespace __gnu_cxx
     struct enc_char_traits: public std::char_traits<_CharT>
     {
       typedef std::__enc_traits			state_type;
-      typedef typename std::fpos<state_type> 	pos_type;
+      typedef typename std::fpos<state_type>	pos_type;
     };
 
   template<typename _CharT>
@@ -47,13 +47,13 @@ namespace __gnu_cxx
     : public std::basic_filebuf<_CharT, enc_char_traits<_CharT> >
     {
     public:
-      typedef enc_char_traits<_CharT> 		traits_type;
-      typedef typename traits_type::state_type 	state_type;
-      typedef typename traits_type::pos_type 	pos_type;
-      
+      typedef enc_char_traits<_CharT>		traits_type;
+      typedef typename traits_type::state_type	state_type;
+      typedef typename traits_type::pos_type	pos_type;
+
       enc_filebuf(state_type& __state)
       : std::basic_filebuf<_CharT, enc_char_traits<_CharT> >()
-      { 
+      {
 	// Set state type to something useful.
 	// Something more than copyconstructible is needed here, so
 	// require default and copy constructible + assignment operator.

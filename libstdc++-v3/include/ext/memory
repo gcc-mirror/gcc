@@ -73,30 +73,30 @@ namespace __gnu_cxx
   using std::pair;
   using std::__iterator_category;
   using std::_Temporary_buffer;
-  
+
   template<typename _InputIter, typename _Size, typename _ForwardIter>
     pair<_InputIter, _ForwardIter>
     __uninitialized_copy_n(_InputIter __first, _Size __count,
 			   _ForwardIter __result, std::input_iterator_tag)
     {
       _ForwardIter __cur = __result;
-      try 
+      try
 	{
-	  for ( ; __count > 0 ; --__count, ++__first, ++__cur) 
+	  for ( ; __count > 0 ; --__count, ++__first, ++__cur)
 	    std::_Construct(&*__cur, *__first);
 	  return pair<_InputIter, _ForwardIter>(__first, __cur);
 	}
       catch(...)
 	{
 	  std::_Destroy(__result, __cur);
-	  __throw_exception_again; 
+	  __throw_exception_again;
 	}
     }
-  
+
   template<typename _RandomAccessIter, typename _Size, typename _ForwardIter>
     inline pair<_RandomAccessIter, _ForwardIter>
     __uninitialized_copy_n(_RandomAccessIter __first, _Size __count,
-			   _ForwardIter __result, 
+			   _ForwardIter __result,
 			   std::random_access_iterator_tag)
     {
       _RandomAccessIter __last = __first + __count;
@@ -108,7 +108,7 @@ namespace __gnu_cxx
   template<typename _InputIter, typename _Size, typename _ForwardIter>
     inline pair<_InputIter, _ForwardIter>
     __uninitialized_copy_n(_InputIter __first, _Size __count,
-			 _ForwardIter __result) 
+			 _ForwardIter __result)
     {
       return __uninitialized_copy_n(__first, __count, __result,
 				    __iterator_category(__first));
@@ -127,7 +127,7 @@ namespace __gnu_cxx
   template<typename _InputIter, typename _Size, typename _ForwardIter>
     inline pair<_InputIter, _ForwardIter>
     uninitialized_copy_n(_InputIter __first, _Size __count,
-			 _ForwardIter __result) 
+			 _ForwardIter __result)
     {
       return __uninitialized_copy_n(__first, __count, __result,
 				    __iterator_category(__first));
@@ -154,7 +154,7 @@ namespace __gnu_cxx
    *
    *  @ingroup SGIextensions
   */
-  template <class _ForwardIterator, class _Tp 
+  template <class _ForwardIterator, class _Tp
 	      = typename std::iterator_traits<_ForwardIterator>::value_type >
   struct temporary_buffer : public _Temporary_buffer<_ForwardIterator, _Tp>
   {

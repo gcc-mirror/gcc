@@ -70,7 +70,7 @@ namespace __gnu_cxx
 {
   using std::_Rb_tree;
   using std::allocator;
-  
+
   // Class rb_tree is not part of the C++ standard.  It is provided for
   // compatibility with the HP STL.
 
@@ -85,13 +85,13 @@ namespace __gnu_cxx
   {
     typedef _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc> _Base;
     typedef typename _Base::allocator_type allocator_type;
-    
+
     rb_tree(const _Compare& __comp = _Compare(),
 	    const allocator_type& __a = allocator_type())
       : _Base(__comp, __a) { }
-    
+
     ~rb_tree() { }
   };
 } // namespace __gnu_cxx
 
-#endif 
+#endif

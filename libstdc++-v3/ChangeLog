@@ -1,5 +1,18 @@
 2003-12-09  Bernardo Innocenti  <bernie@develer.com>
 
+	* include/ext/algorithm, include/ext/debug_allocator.h,
+	include/ext/enc_filebuf.h, include/ext/functional,
+	include/ext/hash_fun.h, include/ext/hash_map, include/ext/hash_set,
+	include/ext/hashtable.h, include/ext/iterator,
+	include/ext/malloc_allocator.h, include/ext/memory,
+	include/ext/mt_allocator.h, include/ext/numeric,
+	include/ext/pod_char_traits.h, include/ext/pool_allocator.h,
+	include/ext/rb_tree, include/ext/rope, include/ext/ropeimpl.h,
+	include/ext/slist, include/ext/stdio_filebuf.h,
+	include/ext/stdio_sync_filebuf.h: Remove trailing whitespace.
+
+2003-12-09  Bernardo Innocenti  <bernie@develer.com>
+
 	* include/debug/bitset, include/debug/debug.h, include/debug/deque,
 	include/debug/formatter.h, include/debug/hash_map.h,
 	include/debug/hash_multimap.h, include/debug/hash_multiset.h,

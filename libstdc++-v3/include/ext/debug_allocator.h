@@ -41,7 +41,7 @@
  */
 
 /** @file ext/debug_allocator.h
- *  This file is a GNU extension to the Standard C++ Library. 
+ *  This file is a GNU extension to the Standard C++ Library.
  *  You should only include this header if you are using GCC 3 or later.
  */
 
@@ -125,7 +125,7 @@ namespace std
   /// Versions for the __allocator adaptor used with the predefined
   /// "SGI" style allocators.
   template<typename _Tp, typename _Tp1, typename _Alloc>
-    struct _Alloc_traits<_Tp, __allocator<_Tp1, 
+    struct _Alloc_traits<_Tp, __allocator<_Tp1,
 					  __gnu_cxx::__debug_alloc<_Alloc> > >
     {
       static const bool _S_instanceless = true;
