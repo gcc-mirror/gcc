@@ -1305,10 +1305,15 @@ duplicate_decls (newdecl, olddecl)
 	  tree newreturntype = TREE_TYPE (TREE_TYPE (newdecl));
           if (TYPE_MODE (oldreturntype) == TYPE_MODE (newreturntype))
             {
-              TREE_TYPE (TREE_TYPE (olddecl)) = newreturntype;
-              types_match = comptypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
-	      if (!types_match)
-		TREE_TYPE (TREE_TYPE (olddecl)) = oldreturntype;
+	      /* Function types may be shared, so we can't just modify
+		 the return type of olddecl's function type.  */
+	      tree newtype
+		= build_function_type (newreturntype,
+				       TYPE_ARG_TYPES (TREE_TYPE (olddecl)));
+	      
+              types_match = comptypes (TREE_TYPE (newdecl), newtype);
+	      if (types_match)
+		TREE_TYPE (olddecl) = newtype;
 	    }
 	}
       if (!types_match)
