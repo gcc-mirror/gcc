@@ -1369,6 +1369,15 @@ mmix_asm_output_label (FILE *stream, const char *name)
   fprintf (stream, "\tIS @\n");
 }
 
+/* ASM_OUTPUT_INTERNAL_LABEL.  */
+
+void
+mmix_asm_output_internal_label (FILE *stream, const char *name)
+{
+  assemble_name_raw (stream, name);
+  fprintf (stream, "\tIS @\n");
+}
+
 /* ASM_DECLARE_REGISTER_GLOBAL.  */
 
 void

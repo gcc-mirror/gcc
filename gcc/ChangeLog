@@ -1,3 +1,11 @@
+2004-12-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.h (ASM_OUTPUT_INTERNAL_LABEL): Define.
+	* config/mmix/mmix.c (mmix_asm_output_internal_label): New
+	function.
+	* config/mmix/mmix-protos.h (mmix_asm_output_internal_label):
+	Prototype.
+
 2003-12-29  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sparc.c (TARGET_RELAXED_ORDERING): True.
