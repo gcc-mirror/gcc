@@ -337,7 +337,7 @@ USE_COLLECT2 = @will_use_collect2@
 MAYBE_USE_COLLECT2 = @maybe_use_collect2@
 # It is convenient for configure to add the assignment at the beginning,
 # so don't override it here.
-USE_COLLECT2 = ld
+USE_COLLECT2 = ld$(exeext)
 
 # List of extra C and assembler files to add to libgcc1.a.
 # Assembler files should have names ending in `.asm'.
@@ -378,7 +378,7 @@ COMPILERS = cc1$(exeext) @all_compilers@
 
 # List of things which should already be built whenever we try to use xgcc
 # to compile anything (without linking).
-GCC_PASSES=xgcc cc1 cpp $(EXTRA_PASSES)
+GCC_PASSES=xgcc$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES)
 
 # List of things which should already be built whenever we try to use xgcc
 # to link anything.
@@ -748,18 +748,18 @@ all.internal: start.encap rest.encap
 all.cross: native gcc-cross specs stmp-headers $(LIBGCC) $(STMP_FIXPROTO) \
 	$(LIBGCC1_TEST) $(EXTRA_PARTS) lang.all.cross
 # This is what to compile if making gcc with a cross-compiler.
-all.build: native xgcc $(EXTRA_PARTS) lang.all.build
+all.build: native xgcc$(exeext) $(EXTRA_PARTS) lang.all.build
 # This is what must be made before installing GCC and converting libraries.
-start.encap: native xgcc specs $(LIBGCC1) xlimits.h lang.start.encap
+start.encap: native xgcc$(exeext) specs $(LIBGCC1) xlimits.h lang.start.encap
 # These can't be made until after GCC can run.
 rest.encap: stmp-headers $(LIBGCC) $(STMP_FIXPROTO) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
-native: config.status auto-config.h cpp $(LANGUAGES) \
+native: config.status auto-config.h cpp$(exeext) $(LANGUAGES) \
 	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
-C c: cc1
+C c: cc1$(exeext)
 PROTO: proto
 
 # Tell GNU make these are phony targets.
@@ -775,7 +775,7 @@ libgcc1-test: libgcc1-test.o native $(GCC_PARTS)
 	@echo "Testing libgcc1.  Ignore linker warning messages."
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) libgcc1-test.o -o libgcc1-test \
 	  -nostartfiles -nostdlib `$(GCC_FOR_TARGET) --print-libgcc-file-name`
-libgcc1-test.o: libgcc1-test.c native xgcc
+libgcc1-test.o: libgcc1-test.c native xgcc$(exeext)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -c $(srcdir)/libgcc1-test.c
 
 # Recompile all the language-independent object files.
@@ -790,23 +790,23 @@ stamp-objlist: $(OBJS)
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
-xgcc: gcc.o version.o choose-temp.o pexecute.o prefix.o version.o \
+xgcc$(exeext): gcc.o version.o choose-temp.o pexecute.o prefix.o version.o \
    $(LIBDEPS) $(EXTRA_GCC_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o prefix.o version.o \
 	  choose-temp.o pexecute.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
-specs: xgcc
+specs: xgcc$(exeext)
 	$(GCC_FOR_TARGET) -dumpspecs > tmp-specs
 	mv tmp-specs specs
 
 # We do want to create an executable named `xgcc', so we can use it to
 # compile libgcc2.a.
 # Also create gcc-cross, so that install-common will install properly.
-gcc-cross: xgcc
+gcc-cross: xgcc$(exeext)
 	cp xgcc$(exeext) gcc-cross$(exeext)
 
-cc1: $(P) $(C_OBJS) $(OBJS) $(LIBDEPS)
+cc1$(exeext): $(P) $(C_OBJS) $(OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) $(OBJS) $(LIBS)
 
 # Copy float.h from its source.
@@ -1253,12 +1253,12 @@ c-iterate.o: c-iterate.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-tree.h \
     flags.h
 
 # To make a configuration always use collect2, set USE_COLLECT2 to ld.
-ld: collect2
+ld$(exeext): collect2$(exeext)
 	rm -f ld$(exeext)
 	$(LN) collect2$(exeext) ld$(exeext)
 
-collect2: collect2.o tlink.o hash.o cplus-dem.o underscore.o version.o \
-	choose-temp.o $(LIBDEPS)
+collect2$(exeext): collect2.o tlink.o hash.o cplus-dem.o underscore.o \
+	version.o choose-temp.o $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
 	-rm -f collect2$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ collect2.o tlink.o hash.o \
@@ -1741,10 +1741,10 @@ $(HOST_PREFIX_1):
 # Remake cpp and protoize.
 
 # Making the preprocessor
-cpp: $(CCCP)
+cpp$(exeext): $(CCCP)$(exeext)
 	-rm -f cpp$(exeext)
 	$(LN) $(CCCP)$(exeext) cpp$(exeext)
-cccp: cccp.o cexp.o version.o prefix.o $(LIBDEPS)
+cccp$(exeext): cccp.o cexp.o version.o prefix.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cccp.o cexp.o prefix.o \
 	  version.o $(LIBS)
 cexp.o: $(srcdir)/cexp.c $(CONFIG_H)
@@ -1764,7 +1764,7 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
-cppmain: cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
+cppmain$(exeext): cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
   prefix.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cppmain.o cpplib.o cpphash.o \
 	  cppalloc.o cpperror.o cppexp.o prefix.o version.o $(LIBS)
@@ -1792,15 +1792,15 @@ cppalloc.o: cppalloc.c $(CONFIG_H)
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
 
-proto: config.status protoize unprotoize SYSCALLS.c.X
+proto: config.status protoize$(exeext) unprotoize$(exeext) SYSCALLS.c.X
 
-protoize: protoize.o getopt.o getopt1.o getpwd.o version.o \
+protoize$(exeext): protoize.o getopt.o getopt1.o getpwd.o version.o \
     pexecute.o choose-temp.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	  protoize.o getopt.o getopt1.o getpwd.o version.o \
 	  pexecute.o choose-temp.o $(LIBS)
 
-unprotoize: unprotoize.o getopt.o getopt1.o getpwd.o version.o \
+unprotoize$(exeext): unprotoize.o getopt.o getopt1.o getpwd.o version.o \
     pexecute.o choose-temp.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	  unprotoize.o getopt.o getopt1.o getpwd.o version.o \
@@ -2263,7 +2263,7 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 
 # Install the driver program as $(target_alias)-gcc
 # and also as either gcc (if native) or $(tooldir)/bin/gcc.
-install-driver: xgcc
+install-driver: xgcc$(exeext)
 	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
 	  $(INSTALL_PROGRAM) gcc-cross$(exeext) $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
@@ -2610,21 +2610,21 @@ bootstrap bootstrap-lean: force
 # To prevent `make install' from compiling alloca.o and then relinking cc1
 # because alloca.o is newer, we permit these recursive makes to compile
 # alloca.o.  Then cc1 is newer, so it won't have to be relinked.
-	$(MAKE) CC="stage1/xgcc -Bstage1/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
 	-if test $@ = bootstrap-lean; then rm -rf stage1; else true; fi
-	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
 bootstrap2: force
-	$(MAKE) CC="stage1/xgcc -Bstage1/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
-	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
 bootstrap3: force
-	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
 bootstrap4: force
-	$(MAKE) CC="stage3/xgcc -Bstage3/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage3/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage3/xgcc$(exeext) -Bstage3/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage3/ LANGUAGES="$(LANGUAGES)"
 
 # Compare the object files in the current directory with those in the
 # stage2 directory.
