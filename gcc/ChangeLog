@@ -1,3 +1,8 @@
+2001-10-11  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.md (setcc splitters): Add four splitters to
+	simplify compound compares that simplify_comparison can't handle.
+
 2001-10-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* cpplex.c (digraph_spellings, token_spellings): Make static.
