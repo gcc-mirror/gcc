@@ -1,3 +1,9 @@
+2000-01-29 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* t-c4x: Change qi,qf,di,df into si,sf,hi,hf to generate same
+		object names as libgcc2.c.
+	* libgcc.S: Use newly defined names.
+
 Fri Jan  7 19:48:04 CET 2000  Jan Hubicka  <jh@suse.cz>
 	* sbitmap.c (sbitmap_first_set_bit, sbitmap_last_set_bit): New
 	function.

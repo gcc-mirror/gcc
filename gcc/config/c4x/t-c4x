@@ -1,10 +1,10 @@
 CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = c4x/libgcc.S
-LIB1ASMFUNCS = _divqf3 _divqi3 _udivqi3 _umodqi3 _modqi3 _mulqi3 \
-	_mulhf3 _divhf3 _unsfltconst _unsfltcompare \
-	_mulhi3 _umulhi3_high _smulhi3_high _divhi3 _modhi3 _umodhi3 _udivhi3 \
-	_fix_truncqfhi2 _ufix_truncqfhi2 _floathiqf2 _ufloathiqf2 \
-	_floathihf2 _ufloathihf2 _fix_trunchfhi2 _ufix_trunchfhi2 _ffs
+LIB1ASMFUNCS = _divsf3 _divsi3 _udivsi3 _umodsi3 _modsi3 _mulsi3 \
+	_muldf3 _divdf3 _unsfltconst _unsfltcompare \
+	_muldi3 _umuldi3_high _smuldi3_high _divdi3 _moddi3 _umoddi3 _udivdi3 \
+	_fix_truncsfdi2 _ufix_truncsfdi2 _floatdisf2 _ufloatdisf2 \
+	_floatdidf2 _ufloatdidf2 _fix_truncdfdi2 _ufix_truncdfdi2 _ffs
 
 TARGET_LIBGCC2_CFLAGS = -Dexit=unused_exit
 
