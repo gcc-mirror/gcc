@@ -1917,7 +1917,7 @@ never_reached_warning (avoided_insn, finish)
 	}
       else if (INSN_P (insn))
 	{
-	  if (reached_end)
+	  if (reached_end || a_line_note == NULL)
 	    break;
 	  contains_insn = 1;
 	}
