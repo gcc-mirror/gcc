@@ -1,4 +1,5 @@
-2004-10-27  James E Wilson  <wilson@specifixinc.com>
+2004-10-27  David Mosberger  <davidm@hpl.hp.com>
+	    James E Wilson  <wilson@specifixinc.com>
 
 	PR target/13158
 	* config/ia64/ia64.c (ia64_expand_epilogue): Set RTX_FRAME_RELATED_P on
