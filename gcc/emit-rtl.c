@@ -3425,10 +3425,14 @@ init_emit_once (line_numbers)
   PUT_MODE (stack_pointer_rtx, Pmode);
   REGNO (frame_pointer_rtx) = FRAME_POINTER_REGNUM;
   PUT_MODE (frame_pointer_rtx, Pmode);
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
   REGNO (hard_frame_pointer_rtx) = HARD_FRAME_POINTER_REGNUM;
   PUT_MODE (hard_frame_pointer_rtx, Pmode);
+#endif
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM && HARD_FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
   REGNO (arg_pointer_rtx) = ARG_POINTER_REGNUM;
   PUT_MODE (arg_pointer_rtx, Pmode);
+#endif
 
   REGNO (virtual_incoming_args_rtx) = VIRTUAL_INCOMING_ARGS_REGNUM;
   PUT_MODE (virtual_incoming_args_rtx, Pmode);
@@ -3440,8 +3444,8 @@ init_emit_once (line_numbers)
   PUT_MODE (virtual_outgoing_args_rtx, Pmode);
 
 #ifdef RETURN_ADDRESS_POINTER_REGNUM
-  return_address_pointer_rtx = gen_rtx_REG (Pmode,
-					    RETURN_ADDRESS_POINTER_REGNUM);
+  return_address_pointer_rtx
+    = gen_rtx_raw_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM);
 #endif
 
 #ifdef STRUCT_VALUE

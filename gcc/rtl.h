@@ -970,7 +970,7 @@ extern rtx gen_rtx_REG PROTO((enum machine_mode, int));
 #if FRAME_POINTER_REGNUM == ARG_POINTER_REGNUM
 #define arg_pointer_rtx		(&global_rtl.frame_pointer_val)
 #else
-#if HARD_POINTER_REGNUM == ARG_POINTER_REGNUM
+#if HARD_FRAME_POINTER_REGNUM == ARG_POINTER_REGNUM
 #define arg_pointer_rtx		(&global_rtl.hard_frame_pointer_val)
 #else
 #define arg_pointer_rtx		(&global_rtl.arg_pointer_val)

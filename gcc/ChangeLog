@@ -48,6 +48,12 @@ Sat Jan 17 22:35:39 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
 1998-01-17  Lee Iverson  <leei@Canada.AI.SRI.COM>
 
+	* emit_rtl.c (init_emit_once): Ensure that potential aliasing
+	between frame_pointer_rtx, hard_frame_pointer_rtx, and
+	arg_pointer_rtx is respected in initialization.
+	(init_emit_once): Use gen_rtx_raw_REG() to create
+	return_address_pointer_rtx.
+
 	* reorg.c: #include "expr.h" for rtx prototypes.
 	* Makefile.in (reorg.o): Depend on expr.h
 
@@ -61,6 +67,8 @@ Sat Jan 17 21:24:16 1998  David T. McWherter <dtm@waterw.com>
 	* objc-parse.c: Recognize protocol qualifiers in class definitions.
 
 Sat Jan 17 21:16:19 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* rtl.h: Fix typos.
 
 	* acconfig.h (NEED_DECLARATION_ATOL): New declaration to check for.
 	* rtl.c (atol): Only provide the declaration if NEED_DECLARATION_ATOL.
