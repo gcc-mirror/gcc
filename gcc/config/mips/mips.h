@@ -393,18 +393,24 @@ extern const struct mips_cpu_info *mips_tune_info;
       if (!flag_iso)						\
 	builtin_define ("mips");				\
 								\
-      /* Treat _R3000 and _R4000 like register-size defines,	\
-	 which is how they've historically been used.  */	\
       if (TARGET_64BIT)						\
+	builtin_define ("__mips64");				\
+								\
+      if (!TARGET_IRIX)						\
 	{							\
-	  builtin_define ("__mips64");     			\
-	  builtin_define_std ("R4000");				\
-	  builtin_define ("_R4000");				\
-	}							\
-      else							\
-	{							\
-	  builtin_define_std ("R3000");				\
-	  builtin_define ("_R3000");				\
+	  /* Treat _R3000 and _R4000 like register-size		\
+	     defines, which is how they've historically		\
+	     been used.  */					\
+	  if (TARGET_64BIT)					\
+	    {							\
+	      builtin_define_std ("R4000");			\
+	      builtin_define ("_R4000");			\
+	    }							\
+	  else							\
+	    {							\
+	      builtin_define_std ("R3000");			\
+	      builtin_define ("_R3000");			\
+	    }							\
 	}							\
       if (TARGET_FLOAT64)					\
 	builtin_define ("__mips_fpr=64");			\
