@@ -1,3 +1,9 @@
+2000-11-19  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (simple_type_size_in_bits): Handle a type with
+	no computed size as size zero.
+	(field_byte_offset): Likewise.
+
 2000-11-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* config.gcc: Fix another typo.

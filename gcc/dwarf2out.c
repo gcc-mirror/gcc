@@ -7790,17 +7790,17 @@ static inline unsigned HOST_WIDE_INT
 simple_type_size_in_bits (type)
      register tree type;
 {
+  tree type_size_tree;
+
   if (TREE_CODE (type) == ERROR_MARK)
     return BITS_PER_WORD;
-  else
-    {
-      register tree type_size_tree = TYPE_SIZE (type);
+  type_size_tree = TYPE_SIZE (type);
 
-      if (! host_integerp (type_size_tree, 1))
-	return TYPE_ALIGN (type);
-
-      return tree_low_cst (type_size_tree, 1);
-    }
+  if (type_size_tree == NULL_TREE)
+    return 0;
+  if (! host_integerp (type_size_tree, 1))
+    return TYPE_ALIGN (type);
+  return tree_low_cst (type_size_tree, 1);
 }
 
 /* Given a pointer to what is assumed to be a FIELD_DECL node, compute and
@@ -7835,14 +7835,10 @@ field_byte_offset (decl)
   type = field_type (decl);
   field_size_tree = DECL_SIZE (decl);
 
-  /* If there was an error, the size could be zero.  */
+  /* The size could be unspecified if there was an error, or for
+     a flexible array member.  */
   if (! field_size_tree)
-    {
-      if (errorcount)
-	return 0;
-
-      abort ();
-    }
+    field_size_tree = bitsize_zero_node;
 
   /* We cannot yet cope with fields whose positions are variable, so
      for now, when we see such things, we simply return 0.  Someday, we may
@@ -7852,7 +7848,7 @@ field_byte_offset (decl)
 
   bitpos_int = int_bit_position (decl);
 
-    /* If we don't know the size of the field, pretend it's a full word.  */
+  /* If we don't know the size of the field, pretend it's a full word.  */
   if (host_integerp (field_size_tree, 1))
     field_size_in_bits = tree_low_cst (field_size_tree, 1);
   else
