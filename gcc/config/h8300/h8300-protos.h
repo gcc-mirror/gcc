@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #ifdef RTX_CODE
 extern const char *emit_a_shift PARAMS ((rtx, rtx *));
 extern const char *output_adds_subs PARAMS ((rtx *));
-extern const char * output_simode_bld PARAMS ((int, int, rtx[]));
+extern const char *output_simode_bld PARAMS ((int, int, rtx[]));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern const char *byte_reg PARAMS ((rtx, int));
 extern int const_costs PARAMS ((rtx, enum rtx_code));

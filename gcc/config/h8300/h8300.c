@@ -67,13 +67,13 @@ int monitor;
 int pragma_saveall;
 
 static const char *const names_big[] =
-{"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
+{ "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7" };
 
 static const char *const names_extended[] =
-{"er0", "er1", "er2", "er3", "er4", "er5", "er6", "er7"};
+{ "er0", "er1", "er2", "er3", "er4", "er5", "er6", "er7" };
 
 static const char *const names_upper_extended[] =
-{"e0", "e1", "e2", "e3", "e4", "e5", "e6", "e7"};
+{ "e0", "e1", "e2", "e3", "e4", "e5", "e6", "e7" };
 
 /* Points to one of the above.  */
 /* ??? The above could be put in an array indexed by CPU_TYPE.  */
@@ -81,9 +81,9 @@ const char * const *h8_reg_names;
 
 /* Various operations needed by the following, indexed by CPU_TYPE.  */
 
-static const char *const h8_push_ops[2] = {"push", "push.l"};
-static const char *const h8_pop_ops[2] = {"pop", "pop.l"};
-static const char *const h8_mov_ops[2] = {"mov.w", "mov.l"};
+static const char *const h8_push_ops[2] = { "push", "push.l" };
+static const char *const h8_pop_ops[2] = { "pop", "pop.l" };
+static const char *const h8_mov_ops[2] = { "mov.w", "mov.l" };
 
 const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 
@@ -124,7 +124,7 @@ byte_reg (x, b)
 
 #define WORD_REG_USED(regno)					\
   (regno < 7							\
-   /* No need to save registers if this function will not return.*/\
+   /* No need to save registers if this function will not return.  */\
    && ! TREE_THIS_VOLATILE (current_function_decl)		\
    && (pragma_saveall						\
        /* Save any call saved register that was used.  */	\
@@ -153,7 +153,7 @@ dosize (file, op, size)
      with an immediate value.   */
   if (size > 4 && size <= 8 && (TARGET_H8300H || TARGET_H8300S))
     {
-      /* Crank the size down to <= 4 */
+      /* Crank the size down to <= 4.  */
       fprintf (file, "\t%ss\t#%d,sp\n", op, 4);
       size -= 4;
     }
@@ -210,9 +210,9 @@ dosize (file, op, size)
 
 /* Output assembly language code for the function prologue.  */
 static int push_order[FIRST_PSEUDO_REGISTER] =
-{0, 1, 2, 3, 4, 5, 6, -1, -1, -1};
+{ 0, 1, 2, 3, 4, 5, 6, -1, -1, -1 };
 static int pop_order[FIRST_PSEUDO_REGISTER] =
-{6, 5, 4, 3, 2, 1, 0, -1, -1, -1};
+{ 6, 5, 4, 3, 2, 1, 0, -1, -1, -1 };
 
 /* This is what the stack looks like after the prolog of 
    a function with a frame has been set up:
@@ -281,7 +281,7 @@ function_prologue (file, size)
 
   if (frame_pointer_needed)
     {
-      /* Push fp */
+      /* Push fp.  */
       fprintf (file, "\t%s\t%s\n", h8_push_op,
 	       h8_reg_names[FRAME_POINTER_REGNUM]);
       fprintf (file, "\t%s\t%s,%s\n", h8_mov_op,
@@ -289,10 +289,10 @@ function_prologue (file, size)
 	       h8_reg_names[FRAME_POINTER_REGNUM]);
     }
 
-  /* leave room for locals */
+  /* Leave room for locals.  */
   dosize (file, "sub", fsize);
 
-  /* Push the rest of the registers */
+  /* Push the rest of the registers.  */
   for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
     {
       int regno = push_order[idx];
@@ -323,7 +323,7 @@ function_prologue (file, size)
 		      && (!frame_pointer_needed
 			  || second_regno != FRAME_POINTER_REGNUM))
 		    {
-		      fprintf (file, "\tstm.l %s-%s,@-sp\n", 
+		      fprintf (file, "\tstm.l %s-%s,@-sp\n",
 			       h8_reg_names[regno],
 			       h8_reg_names[fourth_regno]);
 		      idx += 3;
@@ -344,7 +344,7 @@ function_prologue (file, size)
 		      && (!frame_pointer_needed
 			  || second_regno != FRAME_POINTER_REGNUM))
 		    {
-		      fprintf (file, "\tstm.l %s-%s,@-sp\n", 
+		      fprintf (file, "\tstm.l %s-%s,@-sp\n",
 			       h8_reg_names[regno],
 			       h8_reg_names[third_regno]);
 		      idx += 2;
@@ -360,7 +360,7 @@ function_prologue (file, size)
 		      && (!frame_pointer_needed
 			  || second_regno != FRAME_POINTER_REGNUM))
 		    {
-		      fprintf (file, "\tstm.l %s-%s,@-sp\n", 
+		      fprintf (file, "\tstm.l %s-%s,@-sp\n",
 			       h8_reg_names[regno],
 			       h8_reg_names[second_regno]);
 		      idx += 1;
@@ -393,10 +393,10 @@ function_epilogue (file, size)
       goto out;
     }
 
-  /* monitor epilogues are the same as interrupt function epilogues.
+  /* Monitor epilogues are the same as interrupt function epilogues.
      Just make a note that we're in an monitor epilogue.  */
   if (monitor)
-    fprintf(file, ";monitor epilogue\n");
+    fprintf (file, ";monitor epilogue\n");
 
   /* If the last insn was a BARRIER, we don't have to write any code.  */
   if (GET_CODE (insn) == NOTE)
@@ -404,7 +404,7 @@ function_epilogue (file, size)
   if (insn && GET_CODE (insn) == BARRIER)
     goto out;
 
-  /* Pop the saved registers. */
+  /* Pop the saved registers.  */
   for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
     {
       int regno = pop_order[idx];
@@ -435,7 +435,7 @@ function_epilogue (file, size)
 		      && (!frame_pointer_needed
 			  || second_regno != FRAME_POINTER_REGNUM))
 		    {
-		      fprintf (file, "\tldm.l @sp+,%s-%s\n", 
+		      fprintf (file, "\tldm.l @sp+,%s-%s\n",
 			       h8_reg_names[fourth_regno],
 			       h8_reg_names[regno]);
 		      idx += 3;
@@ -456,7 +456,7 @@ function_epilogue (file, size)
 		      && (!frame_pointer_needed
 			  || second_regno != FRAME_POINTER_REGNUM))
 		    {
-		      fprintf (file, "\tldm.l @sp+,%s-%s\n", 
+		      fprintf (file, "\tldm.l @sp+,%s-%s\n",
 			       h8_reg_names[third_regno],
 			       h8_reg_names[regno]);
 		      idx += 2;
@@ -472,7 +472,7 @@ function_epilogue (file, size)
 		      && (!frame_pointer_needed
 			  || second_regno != FRAME_POINTER_REGNUM))
 		    {
-		      fprintf (file, "\tldm.l @sp+,%s-%s\n", 
+		      fprintf (file, "\tldm.l @sp+,%s-%s\n",
 			       h8_reg_names[second_regno],
 			       h8_reg_names[regno]);
 		      idx += 1;
@@ -484,12 +484,13 @@ function_epilogue (file, size)
 	}
     }
 
-  /* deallocate locals */
+  /* Deallocate locals.  */
   dosize (file, "add", fsize);
 
-  /* pop frame pointer if we had one. */
+  /* Pop frame pointer if we had one.  */
   if (frame_pointer_needed)
-    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[FRAME_POINTER_REGNUM]);
+    fprintf (file, "\t%s\t%s\n",
+	     h8_pop_op, h8_reg_names[FRAME_POINTER_REGNUM]);
 
   /* If this is a monitor function, there is one register still left on
      the stack.  */
@@ -501,7 +502,7 @@ function_epilogue (file, size)
   else
     fprintf (file, "\trts\n");
 
-out:
+ out:
   interrupt_handler = 0;
   os_task = 0;
   monitor = 0;
@@ -789,15 +790,11 @@ bit_operand (op, mode)
   if (GET_CODE (op) == SUBREG)
     return 1;
   if (!rtx_equal_function_value_matters)
-    {
-      /* We're building rtl */
-      return GET_CODE (op) == MEM;
-    }
+    /* We're building rtl.  */
+    return GET_CODE (op) == MEM;
   else
-    {
-      return (GET_CODE (op) == MEM
-	      && EXTRA_CONSTRAINT (op, 'U'));
-    }
+    return (GET_CODE (op) == MEM
+	    && EXTRA_CONSTRAINT (op, 'U'));
 }
 
 int
@@ -1395,11 +1392,11 @@ print_operand (file, x, code)
 	     area), then specify a symbolic address as "foo:8",
 	     otherwise if operand is still in eight bit section, use
 	     "foo:16".  */
- 	  if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+	  if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
 	      && SYMBOL_REF_FLAG (XEXP (x, 0)))
 	    fprintf (file, (code == 'R' ? ":8" : ":16"));
 	  else if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
-	      && TINY_DATA_NAME_P (XSTR (XEXP (x, 0), 0)))
+		   && TINY_DATA_NAME_P (XSTR (XEXP (x, 0), 0)))
 	    fprintf (file, ":16");
 	  break;
 
@@ -1476,7 +1473,7 @@ print_operand_address (file, addr)
 	if (TARGET_H8300)
 	  n = (int) (short) n;
 	if (n < 0)
-	  /* ??? Why the special case for -ve values? */
+	  /* ??? Why the special case for -ve values?  */
 	  fprintf (file, "-%d", -n);
 	else
 	  fprintf (file, "%d", n);
@@ -1540,8 +1537,8 @@ do_movsi (operands)
 }
 
 /* Function for INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET).
-   Define the offset between two registers, one to be eliminated, and the other
-   its replacement, at the start of a routine.  */
+   Define the offset between two registers, one to be eliminated, and
+   the other its replacement, at the start of a routine.  */
 
 int
 initial_offset (from, to)
@@ -1622,7 +1619,7 @@ notice_update_cc (body, insn)
     }
 }
 
-/* Recognize valid operators for bit instructions */
+/* Recognize valid operators for bit instructions.  */
 
 int
 bit_operator (x, mode)
@@ -1667,7 +1664,6 @@ bit_operator (x, mode)
      SHIFT_SPECIAL
 
      * There other oddballs.  Not worth explaining.  SHIFT_SPECIAL
-
 
    Here are some thoughts on what the absolutely positively best code is.
    "Best" here means some rational trade-off between code size and speed,
@@ -1724,7 +1720,6 @@ bit_operator (x, mode)
             ASHIFTRT: loop
    7      - ASHIFT | LSHIFTRT: rotate, mask off other bits
             ASHIFTRT: shll, subx (propagate carry bit to all bits)
-
 
    H8/300H HImode shifts
    1-4    - do them inline
@@ -1834,8 +1829,8 @@ expand_a_shift (mode, code, operands)
 {
   emit_move_insn (operands[0], operands[1]);
 
-  /* need a loop to get all the bits we want  - we generate the
-     code at emit time, but need to allocate a scratch reg now  */
+  /* Need a loop to get all the bits we want  - we generate the
+     code at emit time, but need to allocate a scratch reg now.  */
 
   emit_insn (gen_rtx_PARALLEL
 	     (VOIDmode,
@@ -1895,8 +1890,7 @@ struct shift_insn
 /* Assembler instruction shift table.
 
    These tables are used to look up the basic shifts.
-   They are indexed by cpu, shift_type, and mode.
-*/
+   They are indexed by cpu, shift_type, and mode.  */
 
 static const struct shift_insn shift_one[2][3][3] =
 {
@@ -2509,7 +2503,7 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	    {
 	      *assembler_p = rotate_one[cpu][shift_type][shift_mode];
 	      if (TARGET_H8300S)
-	        *assembler2_p = rotate_two[shift_type][shift_mode];
+		*assembler2_p = rotate_two[shift_type][shift_mode];
 	      else
 		*assembler2_p = NULL;
 	      *cc_valid_p = 0;
@@ -2541,10 +2535,10 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	      else
 		{
 		  *assembler_p = rotate_one[cpu][shift_type][shift_mode];
-	      if (TARGET_H8300S)
-	        *assembler2_p = rotate_two[shift_type][shift_mode];
-	      else
-		*assembler2_p = NULL;
+		  if (TARGET_H8300S)
+		    *assembler2_p = rotate_two[shift_type][shift_mode];
+		  else
+		    *assembler2_p = NULL;
 		  *cc_valid_p = 0;
 		  return SHIFT_ROT_AND;
 		}
@@ -2610,7 +2604,7 @@ emit_a_shift (insn, operands)
 
   if (GET_CODE (operands[2]) != CONST_INT)
     {
-      /* Indexing by reg, so have to loop and test at top */
+      /* Indexing by reg, so have to loop and test at top.  */
       output_asm_insn ("mov.b	%X2,%X4", operands);
       fprintf (asm_out_file, "\tble	.Lle%d\n", loopend_lab);
 
@@ -2961,7 +2955,7 @@ h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
       DECL_SECTION_NAME (decl) = build_string (6, ".tiny");
       return 1;
     }
-      
+
   return 0;
 }
 
@@ -3105,8 +3099,8 @@ h8300_adjust_insn_length (insn, length)
   if (GET_CODE (pat) == PARALLEL
       && GET_CODE (XVECEXP (pat, 0, 0)) == SET
       && (GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == ASHIFTRT
-          || GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == LSHIFTRT
-          || GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == ASHIFT))
+	  || GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == LSHIFTRT
+	  || GET_CODE (SET_SRC (XVECEXP (pat, 0, 0))) == ASHIFT))
     {
       rtx src = SET_SRC (XVECEXP (pat, 0, 0));
       enum machine_mode mode = GET_MODE (src);
@@ -3118,7 +3112,7 @@ h8300_adjust_insn_length (insn, length)
       shift = INTVAL (XEXP (src, 1));
       /* According to ANSI, negative shift is undefined.  It is
          considered to be zero in this case (see function
-         emit_a_shift above). */
+         emit_a_shift above).  */
       if (shift < 0)
 	shift = 0;
 
@@ -3144,6 +3138,6 @@ h8300_adjust_insn_length (insn, length)
 
       /* XXX ??? Could check for more shift/rotate cases here.  */
     }
-    
+
   return 0;
 }

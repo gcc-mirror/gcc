@@ -31,7 +31,7 @@ extern int cpu_type;
 
 /* Various globals defined in h8300.c.  */
 
-extern const char *h8_push_op,*h8_pop_op,*h8_mov_op;
+extern const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 extern const char * const *h8_reg_names;
 
 /* Names to predefine in the preprocessor for this target machine.  */
@@ -157,7 +157,7 @@ do {				\
    Calls through a register are cheaper than calls to named
    functions; however, the register pressure this causes makes
    CSEing of function addresses generally a lose.  */
-#define NO_FUNCTION_CSE 
+#define NO_FUNCTION_CSE
 
 /* Target machine storage layout */
 
@@ -177,7 +177,7 @@ do {				\
 /* Define this if most significant word of a multiword number is lowest
    numbered.  
    This is true on an H8/300 (actually we can make it up, but we choose to
-   be consistent).  */ 
+   be consistent).  */
 #define WORDS_BIG_ENDIAN 1
 
 /* Number of bits in an addressable storage unit */
@@ -354,7 +354,7 @@ do {				\
 
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
-   
+
 enum reg_class {
   NO_REGS, GENERAL_REGS, MAC_REGS, ALL_REGS, LIM_REG_CLASSES
 };
@@ -604,7 +604,11 @@ enum reg_class {
    function if any.  */
 
 #define CUMULATIVE_ARGS struct cum_arg
-struct cum_arg { int nbytes; struct rtx_def * libcall; };
+struct cum_arg
+{
+  int nbytes;
+  struct rtx_def *libcall;
+};
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
@@ -761,7 +765,7 @@ struct cum_arg { int nbytes; struct rtx_def * libcall; };
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
    has been allocated, which happens in local-alloc.c.  */
- 
+
 #define REGNO_OK_FOR_INDEX_P(regno) 0
 
 #define REGNO_OK_FOR_BASE_P(regno) \
@@ -840,7 +844,7 @@ struct cum_arg { int nbytes; struct rtx_def * libcall; };
         && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == SYMBOL_REF \
         && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT) \
         && (TARGET_H8300S || SYMBOL_REF_FLAG (XEXP (XEXP (OP, 0), 0)))))
- 
+
 #define EXTRA_CONSTRAINT(OP, C) \
  ((C) == 'U' ? OK_FOR_U (OP) : 0)
 
@@ -857,7 +861,7 @@ struct cum_arg { int nbytes; struct rtx_def * libcall; };
    REG, REG+CONSTANT_ADDRESS or CONSTANT_ADDRESS.  */
 
 /* Accept either REG or SUBREG where a register is valid.  */
-  
+
 #define RTX_OK_FOR_BASE_P(X)					\
   ((REG_P (X) && REG_OK_FOR_BASE_P (X))				\
    || (GET_CODE (X) == SUBREG && REG_P (SUBREG_REG (X))		\
@@ -1002,7 +1006,7 @@ h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
   case ROTATE:		\
   case ROTATERT:	\
     if (GET_MODE (RTX) == HImode) return 2; \
-    return 8; 
+    return 8;
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 
@@ -1073,7 +1077,7 @@ h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 #define EXTRA_SECTION_FUNCTIONS					\
 								\
 void								\
-ctors_section() 						\
+ctors_section () 						\
 {								\
   if (in_section != in_ctors)					\
     {								\
@@ -1083,7 +1087,7 @@ ctors_section() 						\
 }								\
 								\
 void								\
-dtors_section() 						\
+dtors_section () 						\
 {								\
   if (in_section != in_dtors)					\
     {								\
@@ -1093,7 +1097,7 @@ dtors_section() 						\
 }								\
 								\
 void								\
-readonly_data() 						\
+readonly_data () 						\
 {								\
   if (in_section != in_readonly_data)				\
     {								\
@@ -1101,8 +1105,6 @@ readonly_data() 						\
       in_section = in_readonly_data;				\
     }								\
 }
-
-
 
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
   do { ctors_section();				\
@@ -1112,7 +1114,7 @@ readonly_data() 						\
   do { dtors_section();				\
        fprintf(FILE, "\t%s\t_%s\n", ASM_WORD_OP, NAME); } while (0)
 
-#undef DO_GLOBAL_CTORS_BODY                     
+#undef DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY			\
 {						\
   typedef (*pfunc)();				\
@@ -1123,9 +1125,9 @@ readonly_data() 						\
     {						\
       (*--p)();					\
     }						\
-}						
+}
 
-#undef DO_GLOBAL_DTORS_BODY			 
+#undef DO_GLOBAL_DTORS_BODY
 #define DO_GLOBAL_DTORS_BODY                    \
 {						\
   typedef (*pfunc)();				\
@@ -1136,7 +1138,7 @@ readonly_data() 						\
     {						\
       (*p)();					\
     }						\
-}						 
+}
 
 #define TINY_DATA_NAME_P(NAME) (*(NAME) == '&')
 
@@ -1210,7 +1212,7 @@ readonly_data() 						\
 #define ASM_OUTPUT_LABELREF(FILE,NAME)  \
   asm_fprintf ((FILE), "%U%s", (NAME) + (TINY_DATA_NAME_P (NAME) ? 1 : 0))
 
-#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) 
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)
 
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
@@ -1250,7 +1252,6 @@ do { char dstr[30];					\
      REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
      fprintf (FILE, "\t.double %s\n", dstr);		\
    } while (0)
-
 
 /* This is how to output an assembler line defining a `float' constant.  */
 #define ASM_OUTPUT_FLOAT(FILE, VALUE)			\
@@ -1424,4 +1425,3 @@ do { char dstr[30];					\
   } while (0)
 
 #define MOVE_RATIO 3
-
