@@ -791,18 +791,20 @@ c4x_naked_function_p (void)
 int
 c4x_interrupt_function_p (void)
 {
+  const char *cfun_name;
   if (lookup_attribute ("interrupt",
 			TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
     return 1;
 
   /* Look for TI style c_intnn.  */
-  return current_function_name[0] == 'c'
-    && current_function_name[1] == '_'
-    && current_function_name[2] == 'i'
-    && current_function_name[3] == 'n' 
-    && current_function_name[4] == 't'
-    && ISDIGIT (current_function_name[5])
-    && ISDIGIT (current_function_name[6]);
+  cfun_name = current_function_name ();
+  return cfun_name[0] == 'c'
+    && cfun_name[1] == '_'
+    && cfun_name[2] == 'i'
+    && cfun_name[3] == 'n' 
+    && cfun_name[4] == 't'
+    && ISDIGIT (cfun_name[5])
+    && ISDIGIT (cfun_name[6]);
 }
 
 void
@@ -846,7 +848,7 @@ c4x_expand_prologue (void)
 	     storage!  */
 	  if (size > 32767)
 	    error ("ISR %s requires %d words of local vars, max is 32767",
-		   current_function_name, size);
+		   current_function_name (), size);
 
 	  insn = emit_insn (gen_addqi3 (gen_rtx_REG (QImode, SP_REGNO),
 				        gen_rtx_REG (QImode, SP_REGNO),

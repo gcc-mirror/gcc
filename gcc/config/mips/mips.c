@@ -7659,7 +7659,7 @@ build_mips16_function_stub (FILE *file)
 			 build_function_type (void_type_node, NULL_TREE));
   DECL_SECTION_NAME (stubdecl) = build_string (strlen (secname), secname);
 
-  fprintf (file, "\t# Stub function for %s (", current_function_name);
+  fprintf (file, "\t# Stub function for %s (", current_function_name ());
   need_comma = 0;
   for (f = (unsigned int) current_function_args_info.fp_code; f != 0; f >>= 2)
     {

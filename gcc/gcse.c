@@ -855,7 +855,7 @@ gcse_main (rtx f, FILE *file)
   if (file)
     {
       fprintf (file, "GCSE of %s: %d basic blocks, ",
-	       current_function_name, n_basic_blocks);
+	       current_function_name (), n_basic_blocks);
       fprintf (file, "%d pass%s, %d bytes\n\n",
 	       pass, pass > 1 ? "es" : "", max_pass_bytes);
     }
@@ -3614,7 +3614,7 @@ one_classic_gcse_pass (int pass)
     {
       fprintf (gcse_file, "\n");
       fprintf (gcse_file, "GCSE of %s, pass %d: %d bytes needed, %d substs,",
-	       current_function_name, pass, bytes_used, gcse_subst_count);
+	       current_function_name (), pass, bytes_used, gcse_subst_count);
       fprintf (gcse_file, "%d insns created\n", gcse_create_count);
     }
 
@@ -4686,7 +4686,7 @@ one_cprop_pass (int pass, int cprop_jumps, int bypass_jumps)
   if (gcse_file)
     {
       fprintf (gcse_file, "CPROP of %s, pass %d: %d bytes needed, ",
-	       current_function_name, pass, bytes_used);
+	       current_function_name (), pass, bytes_used);
       fprintf (gcse_file, "%d const props, %d copy props\n\n",
 	       const_prop_count, copy_prop_count);
     }
@@ -5788,7 +5788,7 @@ one_pre_gcse_pass (int pass)
   if (gcse_file)
     {
       fprintf (gcse_file, "\nPRE GCSE of %s, pass %d: %d bytes needed, ",
-	       current_function_name, pass, bytes_used);
+	       current_function_name (), pass, bytes_used);
       fprintf (gcse_file, "%d substs, %d insns created\n",
 	       gcse_subst_count, gcse_create_count);
     }
@@ -8017,7 +8017,7 @@ bypass_jumps (FILE *file)
   if (file)
     {
       fprintf (file, "BYPASS of %s: %d basic blocks, ",
-	       current_function_name, n_basic_blocks);
+	       current_function_name (), n_basic_blocks);
       fprintf (file, "%d bytes\n\n", bytes_used);
     }
 
