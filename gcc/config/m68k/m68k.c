@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003
+   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1677,12 +1677,15 @@ output_move_const_into_data_reg (rtx *operands)
     case MOVQ :
       return "moveq %1,%0";
     case NOTB :
+      CC_STATUS_INIT;
       operands[1] = GEN_INT (i ^ 0xff);
       return "moveq %1,%0\n\tnot%.b %0";
     case NOTW :
+      CC_STATUS_INIT;
       operands[1] = GEN_INT (i ^ 0xffff);
       return "moveq %1,%0\n\tnot%.w %0";
     case NEGW :
+      CC_STATUS_INIT;
       return "moveq %#-128,%0\n\tneg%.w %0";
     case SWAP :
       {
