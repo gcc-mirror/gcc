@@ -1,3 +1,7 @@
+2002-01-14  Tom Rix  <trix@redhat.com>
+
+	* config/rs6000/rs6000.md: Fix typo with sradi.
+
 2002-01-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md (movstrdix_64, movstrsix_31, movstrdi_64,
