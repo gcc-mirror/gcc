@@ -1,5 +1,9 @@
 2004-11-15  Dale Johannesen  <dalej@apple.com>
 
+	* tree-flow.h (add_referenced_temp_var):  Remove name from prototype.
+
+2004-11-15  Dale Johannesen  <dalej@apple.com>
+
 	* profile.c (compute_branch_probabilities):  Prevent
 	crash with EH in RTL-based profiling.
 
