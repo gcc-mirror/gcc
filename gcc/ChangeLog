@@ -1,5 +1,9 @@
 Fri Sep  1 10:59:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (clear_storage): Don't use emit_move_insn unless
+	either BLKmode or proper size.
+	(store_constructor): Don't call clear_storage if REG of wrong size.
+
 	* flow.c (init_propagate_block_info): Don't mark frame dead at end
 	of function if returns wiht stack pointer depressed.
 
