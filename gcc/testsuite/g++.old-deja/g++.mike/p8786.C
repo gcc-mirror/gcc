@@ -4,7 +4,7 @@
 
 class B {
 public:
-  inline ~B();
+  ~B();
 };
 
 class D : public B {

@@ -7,14 +7,14 @@ class A;
 class AH
 {
   public:
-    inline  AH (   A * p = 0 );
+    AH (   A * p = 0 );
     AH ( const  AH & from )
     : pointer( from.pointer )   { inc(); }
     ~ AH ()  { dec(); }
   private:
     A * pointer;
-    inline void inc() const;
-    inline void dec() const;
+    void inc() const;
+    void dec() const;
 };
 
 class A 

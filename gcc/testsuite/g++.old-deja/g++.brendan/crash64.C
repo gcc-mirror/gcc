@@ -4,8 +4,8 @@ typedef long unsigned int size_t;
 typedef void (*RF_Ptr)(void *);
 
 struct _im_pers_mem_spec {
-  inline _im_pers_mem_spec(void );
-  inline _im_pers_mem_spec(auto int of, auto int n);
+  _im_pers_mem_spec(void );
+  _im_pers_mem_spec(auto int of, auto int n);
 };
 
 struct _type_desc {
