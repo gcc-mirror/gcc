@@ -346,6 +346,16 @@ static void dwarf2out_stack_adjust	PROTO((rtx));
   } while (0)
 #endif
 
+/* ??? This macro takes an RTX in dwarfout.c and a string in dwarf2out.c.
+   We resolve the conflict by creating a new macro ASM_OUTPUT_DWARF2_ADDR_CONST
+   for ports that want to support both DWARF1 and DWARF2.  This needs a better
+   solution.  See also the comments in sparc/sp64-elf.h.  */
+#ifdef ASM_OUTPUT_DWARF2_ADDR_CONST
+#undef ASM_OUTPUT_DWARF_ADDR_CONST
+#define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,ADDR) \
+  ASM_OUTPUT_DWARF2_ADDR_CONST (FILE, ADDR)
+#endif
+
 #ifndef ASM_OUTPUT_DWARF_ADDR_CONST
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,ADDR)				\
   fprintf ((FILE), "\t%s\t%s", UNALIGNED_WORD_ASM_OP, (ADDR))
