@@ -28,23 +28,23 @@
 void test01()
 {
   bool test = true;
-  const char* strlit = "lack of sunlight, no water error";
+  std::string s("lack of sunlight, no water error");
   // XXX work around long-standing, pathalogical, hostility-inducing parser bug
   // std::logic_error obj(std::string(strlit));
 
   // 1
-  std::logic_error obj = std::logic_error(std::string(strlit));
+  std::logic_error obj = std::logic_error(s);
 
   // 2
   // std::logic_error obj((std::string)strlit);
 
-  VERIFY( strcmp(obj.what(), strlit) );
+  VERIFY( strcmp(obj.what(), s.data()) );
 }
 
 void test02()
 {
   bool test = true;
-  std::string s = "lack of sunlight error";
+  std::string s("lack of sunlight error");
   std::domain_error x(s);
   
   VERIFY( strcmp(x.what(), s.data())  );
