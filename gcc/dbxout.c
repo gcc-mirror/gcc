@@ -449,6 +449,8 @@ dbxout_function_end (void)
 {
   char lscope_label_name[100];
 
+  /* The Lscope label must be emitted even if we aren't doing anything
+     else; dbxout_block needs it.  */
   function_section (current_function_decl);
   
   /* Convert Ltext into the appropriate format for local labels in case
@@ -457,6 +459,16 @@ dbxout_function_end (void)
   ASM_GENERATE_INTERNAL_LABEL (lscope_label_name, "Lscope", scope_labelno);
   targetm.asm_out.internal_label (asmfile, "Lscope", scope_labelno);
   scope_labelno++;
+
+  /* The N_FUN tag at the end of the function is a GNU extension,
+     which may be undesirable, and is unnecessary if we do not have
+     named sections.  */
+  if (!use_gnu_debug_info_extensions
+#if defined(NO_DBX_FUNCTION_END)
+      || NO_DBX_FUNCTION_END
+#endif
+      || !targetm.have_named_sections)
+    return;
 
   /* By convention, GCC will mark the end of a function with an N_FUN
      symbol and an empty string.  */
@@ -792,12 +804,7 @@ dbxout_function_decl (tree decl)
 #ifdef DBX_OUTPUT_FUNCTION_END
   DBX_OUTPUT_FUNCTION_END (asmfile, decl);
 #endif
-  if (use_gnu_debug_info_extensions
-#if defined(NO_DBX_FUNCTION_END)
-      && ! NO_DBX_FUNCTION_END
-#endif
-      && targetm.have_named_sections)
-    dbxout_function_end ();
+  dbxout_function_end ();
 }
 
 #endif /* DBX_DEBUGGING_INFO  */
