@@ -5153,9 +5153,13 @@ itanium_split_issue (p, begin)
       enum attr_type t = (t0 == TYPE_L ? TYPE_F
 			  : t0 == TYPE_X ? TYPE_I
 			  : t0);
-      int max = (t == TYPE_B ? 3 : t == TYPE_F ? 1 : 2);
+
+      /* Itanium can execute up to 3 branches, 2 floating point, 2 memory, and
+	 2 integer per cycle.  */
+      int max = (t == TYPE_B ? 3 : 2);
       if (type_count[t] == max)
 	return i;
+
       type_count[t]++;
     }
   return split;
@@ -5347,7 +5351,9 @@ insn_matches_slot (p, itype, slot, insn)
 	{
 	  int i;
 	  for (i = sched_data.first_slot; i < slot; i++)
-	    if (p->t[i] == stype)
+	    if (p->t[i] == stype
+		|| (stype == TYPE_F && p->t[i] == TYPE_L)
+		|| (stype == TYPE_I && p->t[i] == TYPE_X))
 	      return 0;
 	}
       if (GET_CODE (insn) == CALL_INSN)
@@ -5487,6 +5493,12 @@ cycle_end_fill_slots (dump)
 	  sched_data.types[slot] = packet->t[slot];
 	  sched_data.insns[slot] = 0;
 	  sched_data.stopbit[slot] = 0;
+
+	  /* ??? TYPE_L instructions always fill up two slots, but we don't
+	     support TYPE_L nops.  */
+	  if (packet->t[slot] == TYPE_L)
+	    abort ();
+
 	  slot++;
 	}
       /* Do _not_ use T here.  If T == TYPE_A, then we'd risk changing the
@@ -5495,6 +5507,9 @@ cycle_end_fill_slots (dump)
       sched_data.insns[slot] = tmp_insns[i];
       sched_data.stopbit[slot] = 0;
       slot++;
+      /* TYPE_L instructions always fill up two slots.  */
+      if (t == TYPE_L)
+	slot++;
     }
 
   /* This isn't right - there's no need to pad out until the forced split;
