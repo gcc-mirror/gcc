@@ -1,5 +1,8 @@
 2000-06-20  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* configure.in: Use 'test a = b' not 'test a == b'.
+	* configure: Regen.
+
 	* Makefile.in (fix-header): Link with $(LIBS) not $(HOST_LIBS).
 
 	* Makefile.in: Remove all references to HOST_INTLLIBS.
