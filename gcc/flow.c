@@ -168,6 +168,10 @@ Boston, MA 02111-1307, USA.  */
 #define EPILOGUE_USES(REGNO)  0
 #endif
 
+/* Not in basic-block.h, since it is private to this file.  When set, it
+   causes us to keep REG_N_SETS uptodate for original pseudo registers.  */
+#define PROP_POSTRELOAD 64
+
 /* The obstack on which the flow graph components are allocated.  */
 
 struct obstack flow_obstack;
@@ -2975,6 +2979,9 @@ update_life_info (blocks, extent, prop_flags)
 
   tmp = INITIALIZE_REG_SET (tmp_head);
 
+  if (reload_completed)
+    prop_flags |= PROP_POSTRELOAD;
+
   /* For a global update, we go through the relaxation process again.  */
   if (extent != UPDATE_LIFE_LOCAL)
     {
@@ -4549,6 +4556,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
      rtx reg, cond, insn;
      int flags;
 {
+  int orig_regno = -1;
   int regno_first = -1, regno_last = -1;
   int not_dead = 0;
   int i;
@@ -4586,6 +4594,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
       /* Fall through.  */
 
     case REG:
+      orig_regno = ORIGINAL_REGNO (reg);
       regno_last = regno_first = REGNO (reg);
       if (regno_first < FIRST_PSEUDO_REGISTER)
 	regno_last += HARD_REGNO_NREGS (regno_first, GET_MODE (reg)) - 1;
@@ -4730,7 +4739,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 
       /* Additional data to record if this is the final pass.  */
       if (flags & (PROP_LOG_LINKS | PROP_REG_INFO
-		   | PROP_DEATH_NOTES | PROP_AUTOINC))
+		   | PROP_DEATH_NOTES | PROP_AUTOINC | PROP_POSTRELOAD))
 	{
 	  register rtx y;
 	  register int blocknum = pbi->bb->index;
@@ -4744,6 +4753,11 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	      for (i = regno_first; i <= regno_last; ++i)
 		pbi->reg_next_use[i] = 0;
 	    }
+
+	  /* After reload has completed, try to keep REG_N_SETS uptodate for
+	     the original pseudos.  */
+	  if ((flags & PROP_POSTRELOAD) && orig_regno >= FIRST_PSEUDO_REGISTER)
+	    REG_N_SETS (orig_regno) += 1;
 
 	  if (flags & PROP_REG_INFO)
 	    {
