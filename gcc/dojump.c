@@ -126,10 +126,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
   tree type;
   enum machine_mode mode;
 
-#ifdef MAX_INTEGER_COMPUTATION_MODE
-  check_max_integer_computation_mode (exp);
-#endif
-
   emit_queue ();
 
   switch (code)

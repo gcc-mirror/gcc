@@ -1,3 +1,11 @@
+2003-12-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.c (check_max_integer_computation_mode): Remove.
+	* dojump.c (do_jump): Don't use MAX_INTEGER_COMPUTATION_MODE.
+	* fold-const.c (fold): Likewise.
+	* system.h (MAX_INTEGER_COMPUTATION_MODE): Poison.
+	* doc/tm.texi (MAX_INTEGER_COMPUTATION_MODE): Remove.
+
 2003-12-19  James E Wilson  <wilson@specifixinc.com>
 
 	* configure.in: Delete libunwind_has_eh_support test.

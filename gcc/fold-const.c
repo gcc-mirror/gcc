@@ -5205,9 +5205,6 @@ fold (tree expr)
   if (kind == 'c')
     return t;
 
-#ifdef MAX_INTEGER_COMPUTATION_MODE
-  check_max_integer_computation_mode (expr);
-#endif
   orig_t = t;
 
   if (code == NOP_EXPR || code == FLOAT_EXPR || code == CONVERT_EXPR)
