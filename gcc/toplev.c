@@ -5459,7 +5459,7 @@ main (argc, argv)
 		break;
 	    }
 
-	  if (option)
+	  if (j != NUM_ELEM (documented_lang_options))
 	    {
 	      if (extra_warnings)
 		{
