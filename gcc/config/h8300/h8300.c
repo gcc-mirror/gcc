@@ -2192,7 +2192,7 @@ h8300_funcvec_function_p (func)
    data area.  */
 
 int
-h8300_tiny_data_p (decl)
+h8300_eightbit_data_p (decl)
      tree decl;
 {
   tree a;
@@ -2200,7 +2200,7 @@ h8300_tiny_data_p (decl)
   if (TREE_CODE (decl) != VAR_DECL)
     return 0;
 
-  a = lookup_attribute ("tiny_data", DECL_MACHINE_ATTRIBUTES (decl));
+  a = lookup_attribute ("eightbit_data", DECL_MACHINE_ATTRIBUTES (decl));
   return a != NULL_TREE;
 }
 
@@ -2230,7 +2230,7 @@ h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
       || is_attribute_p ("function_vector", attr))
     return TREE_CODE (decl) == FUNCTION_DECL;
 
-  if (is_attribute_p ("tiny_data", attr)
+  if (is_attribute_p ("eightbit_data", attr)
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     {
       if (DECL_INITIAL (decl) == NULL_TREE)
