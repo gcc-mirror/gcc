@@ -44,12 +44,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    object itself.  This means you cannot have variables or fields of
    vector type -- always use a pointer to a vector.  The one exception
    is the final field of a structure, which could be a vector type.
-   You will have to use the embedded_alloc call to create such
-   objects, and they will probably not be resizeable (so don't use the
-   'safe' allocation variants).  The trailing array idiom is used
-   (rather than a pointer to an array of data), because, if we allow
-   NULL to also represent an empty vector, empty vectors occupy
-   minimal space in the structure containing them.
+   You will have to use the embedded_size & embedded_init calls to
+   create such objects, and they will probably not be resizeable (so
+   don't use the 'safe' allocation variants).  The trailing array
+   idiom is used (rather than a pointer to an array of data), because,
+   if we allow NULL to also represent an empty vector, empty vectors
+   occupy minimal space in the structure containing them.
 
    Each operation that increases the number of active elements is
    available in 'quick' and 'safe' variants.  The former presumes that
@@ -61,7 +61,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    elements with the 'quick' operation.
 
    You should prefer the push and pop operations, as they append and
-   remove from the end of the vector.  The insert and remove
+   remove from the end of the vector. If you need to remove several
+   items in one go, use the truncate operation.  The insert and remove
    operations allow you to change elements in the middle of the
    vector.  There are two remove operations, one which preserves the
    element ordering 'ordered_remove', and one which does not
@@ -134,23 +135,24 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    VEC(T) *VEC_T_alloc(size_t reserve);
 
    Allocate a new vector with space for RESERVE objects.  */
-#define VEC_alloc(TDEF,A)		(VEC_OP(TDEF,alloc)(A))
+#define VEC_alloc(TDEF,A)		(VEC_OP(TDEF,alloc)(A MEM_STAT_INFO))
 
-/* Allocate new vector offset within a structure
-   void *VEC_T_embedded_alloc(size_t offset, size_t reserve);
-
-   Allocate a new vector which is at offset OFFSET within a structure,
-   and with space for RESERVE objects.  Return a pointer to the start
-   of the structure containing the vector.  Naturally, the vector must
-   be the last member of the structure.  */
-#define VEC_embedded_alloc(TDEF,O,A)	(VEC_OP(TDEF,embedded_alloc)(O,A))
+/* Use these to determine the required size and initialization of a
+   vector embedded within another structure (as the final member).
+   
+   size_t VEC_T_embedded_size(size_t reserve);
+   void VEC_T_embedded_init(VEC(T) *v, size_t reserve);
+   
+   These allow the caller to perform the memory allocation.  */
+#define VEC_embedded_size(TDEF,A) (VEC_OP(TDEF,embedded_size)(A))
+#define VEC_embedded_init(TDEF,O,A) (VEC_OP(TDEF,embedded_init)(O,A))
 
 /* Reserve space.
    void VEC_T_reserve(VEC(T) *&v, size_t reserve);
 
    Ensure that V has at least RESERVE slots available.  Note this can
    cause V to be reallocated.  */
-#define VEC_reserve(TDEF,V,R)		(VEC_OP(TDEF,reserve)(&(V),R))
+#define VEC_reserve(TDEF,V,R)		(VEC_OP(TDEF,reserve)(&(V),R MEM_STAT_INFO))
 
 /* Push object with no reallocation
    T *VEC_T_quick_push (VEC(T) *v, T obj); // Pointer
@@ -169,7 +171,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Push a new element onto the end, returns a pointer to the slot
    filled in. For object vectors, the new value can be NULL, in which
    case NO initialization is performed.  Reallocates V, if needed.  */
-#define VEC_safe_push(TDEF,V,O)		(VEC_OP(TDEF,safe_push)(&(V),O))
+#define VEC_safe_push(TDEF,V,O)		(VEC_OP(TDEF,safe_push)(&(V),O MEM_STAT_INFO))
 
 /* Pop element off end
    T VEC_T_pop (VEC(T) *v);		// Pointer
@@ -178,6 +180,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Pop the last element off the end. Returns the element popped, for
    pointer vectors.  */
 #define VEC_pop(TDEF,V)			(VEC_OP(TDEF,pop)(V))
+
+/* Truncate to specific length
+   void VEC_T_truncate (VEC(T) *v, size_t len);
+   
+   Set the length as specified.  This is an O(1) operation.  */
+#define VEC_truncate(TDEF,V,I)		(VEC_OP(TDEF,truncate)(V,I))
 
 /* Replace element
    T VEC_T_replace (VEC(T) *v, size_t ix, T val); // Pointer
@@ -208,7 +216,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    to the slot created.  For vectors of object, the new value can be
    NULL, in which case no initialization of the inserted slot takes
    place. Reallocate V, if necessary.  */
-#define VEC_safe_insert(TDEF,V,I,O)	(VEC_OP(TDEF,safe_insert)(&(V),I,O))
+#define VEC_safe_insert(TDEF,V,I,O)	(VEC_OP(TDEF,safe_insert)(&(V),I,O MEM_STAT_INFO))
      
 /* Remove element retaining order
    T VEC_T_ordered_remove (VEC(T) *v, size_t ix); // Pointer
@@ -229,12 +237,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define VEC_unordered_remove(TDEF,V,I)	(VEC_OP(TDEF,unordered_remove)(V,I))
 
 #if !IN_GENGTYPE
-#include "auto-host.h"
-
 /* Reallocate an array of elements with prefix.  */
-extern void *vec_p_reserve (void *, size_t);
-extern void *vec_o_reserve (void *, size_t, size_t, size_t);
-extern void *vec_embedded_alloc (size_t, size_t, size_t, size_t);
+extern void *vec_p_reserve (void *, size_t MEM_STAT_DECL);
+extern void *vec_o_reserve (void *, size_t, size_t, size_t MEM_STAT_DECL);
 
 #if ENABLE_CHECKING
 extern void vec_assert_fail (const char *, const char *,
@@ -304,23 +309,29 @@ static inline TDEF VEC_OP (TDEF,iterate)		  	     	  \
   return vec_ && ix_ < vec_->num ? vec_->vec[ix_] : NULL;		  \
 }									  \
 									  \
-static inline VEC (TDEF) *VEC_OP (TDEF,alloc)		       		  \
+static inline VEC (TDEF) *VEC_OP (TDEF,alloc MEM_STAT_DECL)		  \
      (size_t alloc_)							  \
 {									  \
-  return vec_p_reserve (NULL, alloc_ - !alloc_);			  \
+  return vec_p_reserve (NULL, alloc_ - !alloc_ PASS_MEM_STAT);		  \
 }									  \
 									  \
-static inline void *VEC_OP (TDEF,embedded_alloc)			  \
-     (size_t offset_, size_t alloc_)					  \
+static inline size_t VEC_OP (TDEF,embedded_size)			  \
+     (size_t alloc_)							  \
 {									  \
-  return vec_embedded_alloc (offset_, offsetof (VEC(TDEF),vec),		  \
-			     sizeof (TDEF), alloc_);			  \
+  return offsetof (VEC(TDEF),vec) + alloc_ * sizeof(TDEF);		  \
+}									  \
+									  \
+static inline void VEC_OP (TDEF,embedded_init)				  \
+     (VEC (TDEF) *vec_, size_t alloc_)					  \
+{									  \
+  vec_->num = 0;							  \
+  vec_->alloc = alloc_;							  \
 }									  \
 									  \
 static inline void VEC_OP (TDEF,reserve)	       			  \
-     (VEC (TDEF) **vec_, size_t alloc_)					  \
+     (VEC (TDEF) **vec_, size_t alloc_ MEM_STAT_DECL)			  \
 {									  \
-  *vec_ = vec_p_reserve (*vec_, alloc_);				  \
+  *vec_ = vec_p_reserve (*vec_, alloc_ PASS_MEM_STAT);			  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,quick_push)				  \
@@ -336,10 +347,10 @@ static inline TDEF *VEC_OP (TDEF,quick_push)				  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,safe_push)				  \
-     (VEC (TDEF) **vec_, TDEF obj_)					  \
+     (VEC (TDEF) **vec_, TDEF obj_ MEM_STAT_DECL)			  \
 {									  \
   if (!*vec_ || (*vec_)->num == (*vec_)->alloc)				  \
-    VEC_OP (TDEF,reserve) (vec_, ~(size_t)0);				  \
+    VEC_OP (TDEF,reserve) (vec_, ~(size_t)0 PASS_MEM_STAT);		  \
 									  \
   return VEC_OP (TDEF,quick_push) (*vec_, obj_);			  \
 }									  \
@@ -353,6 +364,13 @@ static inline TDEF VEC_OP (TDEF,pop)					  \
   obj_ = vec_->vec[--vec_->num];					  \
 									  \
   return obj_;								  \
+}									  \
+									  \
+static inline void VEC_OP (TDEF,truncate)				  \
+     (VEC (TDEF) *vec_, size_t size_)					  \
+{									  \
+  VEC_ASSERT (vec_->num >= size_, "truncate", TDEF);			  \
+  vec_->num = size_;							  \
 }									  \
 									  \
 static inline TDEF VEC_OP (TDEF,replace)		  	     	  \
@@ -382,10 +400,10 @@ static inline TDEF *VEC_OP (TDEF,quick_insert)		     	  	  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,safe_insert)		     	  	  \
-     (VEC (TDEF) **vec_, size_t ix_, TDEF obj_)       			  \
+     (VEC (TDEF) **vec_, size_t ix_, TDEF obj_ MEM_STAT_DECL)		  \
 {									  \
   if (!*vec_ || (*vec_)->num == (*vec_)->alloc)				  \
-    VEC_OP (TDEF,reserve) (vec_, ~(size_t)0);				  \
+    VEC_OP (TDEF,reserve) (vec_, ~(size_t)0 PASS_MEM_STAT);		  \
 									  \
   return VEC_OP (TDEF,quick_insert) (*vec_, ix_, obj_);			  \
 }									  \
@@ -458,24 +476,32 @@ static inline TDEF *VEC_OP (TDEF,iterate)				  \
 }									  \
 									  \
 static inline VEC (TDEF) *VEC_OP (TDEF,alloc)      			  \
-     (size_t alloc_)							  \
+     (size_t alloc_ MEM_STAT_DECL)					  \
 {									  \
   return vec_o_reserve (NULL, alloc_ - !alloc_,				  \
-			offsetof (VEC(TDEF),vec), sizeof (TDEF));	  \
+			offsetof (VEC(TDEF),vec), sizeof (TDEF)		  \
+			PASS_MEM_STAT);					  \
 }									  \
 									  \
-static inline void *VEC_OP (TDEF,embedded_alloc)			  \
-     (size_t offset_, size_t alloc_)					  \
+static inline size_t VEC_OP (TDEF,embedded_size)			  \
+     (size_t alloc_)							  \
 {									  \
-  return vec_embedded_alloc (offset_, offsetof (VEC(TDEF),vec),		  \
-			     sizeof (TDEF), alloc_);			  \
+  return offsetof (VEC(TDEF),vec) + alloc_ * sizeof(TDEF);		  \
+}									  \
+									  \
+static inline void VEC_OP (TDEF,embedded_init)				  \
+     (VEC (TDEF) *vec_, size_t alloc_)					  \
+{									  \
+  vec_->num = 0;							  \
+  vec_->alloc = alloc_;							  \
 }									  \
 									  \
 static inline void VEC_OP (TDEF,reserve)	       			  \
-     (VEC (TDEF) **vec_, size_t alloc_)					  \
+     (VEC (TDEF) **vec_, size_t alloc_ MEM_STAT_DECL)			  \
 {									  \
   *vec_ = vec_o_reserve (*vec_, alloc_,					  \
-			 offsetof (VEC(TDEF),vec), sizeof (TDEF));	  \
+			 offsetof (VEC(TDEF),vec), sizeof (TDEF)	  \
+			 PASS_MEM_STAT);				  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,quick_push)				  \
@@ -492,10 +518,10 @@ static inline TDEF *VEC_OP (TDEF,quick_push)				  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,safe_push)				  \
-     (VEC (TDEF) **vec_, const TDEF *obj_)				  \
+     (VEC (TDEF) **vec_, const TDEF *obj_ MEM_STAT_DECL)		  \
 {									  \
   if (!*vec_ || (*vec_)->num == (*vec_)->alloc)				  \
-    VEC_OP (TDEF,reserve) (vec_, ~(size_t)0);				  \
+    VEC_OP (TDEF,reserve) (vec_, ~(size_t)0 PASS_MEM_STAT);		  \
 									  \
   return VEC_OP (TDEF,quick_push) (*vec_, obj_);			  \
 }									  \
@@ -504,7 +530,14 @@ static inline void VEC_OP (TDEF,pop)					  \
      (VEC (TDEF) *vec_)							  \
 {									  \
   VEC_ASSERT (vec_->num, "pop", TDEF);					  \
-  vec_->vec[--vec_->num];						  \
+  --vec_->num;								  \
+}									  \
+									  \
+static inline void VEC_OP (TDEF,truncate)				  \
+     (VEC (TDEF) *vec_, size_t size_)					  \
+{									  \
+  VEC_ASSERT (vec_->num >= size_, "truncate", TDEF);			  \
+  vec_->num = size_;							  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,replace)				  \
@@ -536,10 +569,10 @@ static inline TDEF *VEC_OP (TDEF,quick_insert)				  \
 }									  \
 									  \
 static inline TDEF *VEC_OP (TDEF,safe_insert)		     	  	  \
-     (VEC (TDEF) **vec_, size_t ix_, const TDEF *obj_)			  \
+     (VEC (TDEF) **vec_, size_t ix_, const TDEF *obj_ MEM_STAT_DECL)	  \
 {									  \
   if (!*vec_ || (*vec_)->num == (*vec_)->alloc)				  \
-    VEC_OP (TDEF,reserve) (vec_, ~(size_t)0);				  \
+    VEC_OP (TDEF,reserve) (vec_, ~(size_t)0 PASS_MEM_STAT);		  \
 									  \
   return VEC_OP (TDEF,quick_insert) (*vec_, ix_, obj_);			  \
 }									  \
