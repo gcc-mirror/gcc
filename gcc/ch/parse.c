@@ -1,5 +1,5 @@
 /* Parser for GNU CHILL (CCITT High-Level Language)  -*- C -*-
-   Copyright (C) 1992, 1993, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -73,6 +73,11 @@ char *language_string = "GNU CHILL";
 extern struct rtx_def* gen_label_rtx	      PROTO((void));
 extern void emit_jump                         PROTO((struct rtx_def *));
 extern struct rtx_def* emit_label             PROTO((struct rtx_def *));
+
+/* This is a hell of a lot easier than getting expr.h included in
+   by parse.c.  */
+extern struct rtx_def *expand_expr  	PROTO((tree, struct rtx_def *,
+					       enum machine_mode, int));
 
 static int parse_action				PROTO((void));
 
@@ -1671,7 +1676,7 @@ static void
 parse_multi_dimension_case_action (selector)
      tree selector;
 {
-  struct rtx_def *begin_test_label = 0, *end_case_label, *new_label;
+  struct rtx_def *begin_test_label = 0, *end_case_label = 0, *new_label;
   tree action_labels = NULL_TREE;
   tree tests = NULL_TREE;
   int  save_lineno = lineno;

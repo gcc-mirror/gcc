@@ -1,5 +1,5 @@
 /* Process declarations and variables for GNU CHILL compiler.
-   Copyright (C) 1992, 93, 1994, 1998 Free Software Foundation, Inc. 
+   Copyright (C) 1992, 93, 1994, 1998, 1999 Free Software Foundation, Inc. 
    
    This file is part of GNU CC.
    
@@ -2940,7 +2940,7 @@ poplevel (keep, reverse, functionbody)
   tree subblocks;
   tree block = 0;
   tree decl;
-  int block_previously_created;
+  int block_previously_created = 0;
 
   if (current_scope == NULL)
     return error_mark_node;

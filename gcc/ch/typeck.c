@@ -1,5 +1,5 @@
 /* Build expressions with type checking for CHILL compiler.
-   Copyright (C) 1992, 93, 1994, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 1994, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3050,7 +3050,7 @@ apply_chill_field_layout (decl, next_struct_offset)
      int* next_struct_offset;
 {
   tree layout, type, temp, what;
-  int word, wordsize, start_bit, offset, length, natural_length;
+  int word = 0, wordsize, start_bit, offset, length, natural_length;
   int pos_error = 0;
   int is_discrete;
 
@@ -3860,51 +3860,51 @@ type_for_mode (mode, unsignedp)
      enum machine_mode mode;
      int unsignedp;
 {
-  if (mode == TYPE_MODE (integer_type_node))
+  if ((int)mode == (int)TYPE_MODE (integer_type_node))
     return unsignedp ? unsigned_type_node : integer_type_node;
 
-  if (mode == TYPE_MODE (signed_char_type_node))
+  if ((int)mode == (int)TYPE_MODE (signed_char_type_node))
     return unsignedp ? unsigned_char_type_node : signed_char_type_node;
 
-  if (mode == TYPE_MODE (short_integer_type_node))
+  if ((int)mode == (int)TYPE_MODE (short_integer_type_node))
     return unsignedp ? short_unsigned_type_node : short_integer_type_node;
 
-  if (mode == TYPE_MODE (long_integer_type_node))
+  if ((int)mode == (int)TYPE_MODE (long_integer_type_node))
     return unsignedp ? long_unsigned_type_node : long_integer_type_node;
 
-  if (mode == TYPE_MODE (long_long_integer_type_node))
+  if ((int)mode == (int)TYPE_MODE (long_long_integer_type_node))
     return unsignedp ? long_long_unsigned_type_node : long_long_integer_type_node;
 
-  if (mode == TYPE_MODE (intQI_type_node))
+  if ((int)mode == (int)TYPE_MODE (intQI_type_node))
     return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
 
-  if (mode == TYPE_MODE (intHI_type_node))
+  if ((int)mode == (int)TYPE_MODE (intHI_type_node))
     return unsignedp ? unsigned_intHI_type_node : intHI_type_node;
 
-  if (mode == TYPE_MODE (intSI_type_node))
+  if ((int)mode == (int)TYPE_MODE (intSI_type_node))
     return unsignedp ? unsigned_intSI_type_node : intSI_type_node;
 
-  if (mode == TYPE_MODE (intDI_type_node))
+  if ((int)mode == (int)TYPE_MODE (intDI_type_node))
     return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
 
 #if HOST_BITS_PER_WIDE_INT >= 64
-  if (mode == TYPE_MODE (intTI_type_node))
+  if ((int)mode == (int)TYPE_MODE (intTI_type_node))
     return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
 #endif
 
-  if (mode == TYPE_MODE (float_type_node))
+  if ((int)mode == (int)TYPE_MODE (float_type_node))
     return float_type_node;
 
-  if (mode == TYPE_MODE (double_type_node))
+  if ((int)mode == (int)TYPE_MODE (double_type_node))
     return double_type_node;
 
-  if (mode == TYPE_MODE (long_double_type_node))
+  if ((int)mode == (int)TYPE_MODE (long_double_type_node))
     return long_double_type_node;
 
-  if (mode == TYPE_MODE (build_pointer_type (char_type_node)))
+  if ((int)mode == (int)TYPE_MODE (build_pointer_type (char_type_node)))
     return build_pointer_type (char_type_node);
 
-  if (mode == TYPE_MODE (build_pointer_type (integer_type_node)))
+  if ((int)mode == (int)TYPE_MODE (build_pointer_type (integer_type_node)))
     return build_pointer_type (integer_type_node);
 
   return 0;

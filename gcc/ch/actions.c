@@ -1,5 +1,5 @@
 /* Implement actions for CHILL.
-   Copyright (C) 1992, 93, 1994, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 1994, 1998, 1999 Free Software Foundation, Inc.
    Authors: Per Bothner, Bill Cox, Michael Tiemann, Michael North
 
 This file is part of GNU CC.
@@ -1227,7 +1227,7 @@ static tree
 chill_handle_multi_case_label (selector, label)
   tree selector, label;
 {
-  tree expr;
+  tree expr = NULL_TREE;
 
   if (label == NULL_TREE || TREE_CODE (label) == ERROR_MARK)
     return NULL_TREE;

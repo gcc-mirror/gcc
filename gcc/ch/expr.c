@@ -1,6 +1,6 @@
 /* Convert language-specific tree expression to rtl instructions,
    for GNU CHILL compiler.
-   Copyright (C) 1992, 93, 1994, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 1994, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -317,7 +317,7 @@ chill_expand_expr (exp, target, tmode, modifier)
       {
 	tree exp0 = TREE_OPERAND (exp, 0);
 	tree exp1 = TREE_OPERAND (exp, 1);
-	rtx size0, size1;
+	rtx size0 = NULL_RTX, size1 = NULL_RTX;
 	rtx targetx;
 
 	if (TREE_CODE (exp1) == UNDEFINED_EXPR)
@@ -3030,7 +3030,7 @@ fold_set_expr (code, op0, op1)
      tree op0, op1;
 {
   tree temp;
-  char *buffer0, *buffer1, *bufferr;
+  char *buffer0, *buffer1 = NULL, *bufferr;
   int i, size0, size1, first_unused_bit;
 
   if (! TREE_CONSTANT (op0) || TREE_CODE (op0) != CONSTRUCTOR)
