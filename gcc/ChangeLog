@@ -1,3 +1,12 @@
+2002-09-12  Alan Modra  <amodra@bigpond.net.au>
+
+	* emit-rtl.c (set_mem_size): New function.
+	* expr.h (set_mem_size): Declare.
+	* config/rs6000/rs6000.c (expand_block_move_mem): Exterminate.
+	(expand_block_move): Instead, use adjust_address and
+	replace_equiv_address to generate proper aliasing info.
+	Move common code out of conditionals.  Localize vars.
+
 2002-09-09  Eric Botcazou  ebotcazou@libertysurf.fr
   
 	* optabs.c (expand_binop): Minor cleanup.
