@@ -1,3 +1,10 @@
+Mon Dec  7 17:56:06 1998  Mike Stump  <mrs@wrs.com>
+
+	* lex.c (check_newline): Add support for \ as `natural'
+	characters in file names in #line to be consistent with #include
+	handling.  We support escape prcessing in the # 1 "..." version of
+	the command.  See also support in cp/lex.c.
+	
 1998-12-07  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* cp/decl2.c: s/data/opts/ when initializing cpp_reader 
