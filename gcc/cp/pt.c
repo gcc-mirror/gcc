@@ -4181,7 +4181,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
       arglist2 = coerce_template_parms (parmlist, arglist, template,
                                         complain, /*require_all_args=*/1);
       if (arglist2 == error_mark_node
-	  || (!processing_template_decl
+	  || (!uses_template_parms (arglist2)
 	      && check_instantiated_args (template, arglist2, complain)))
         POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 
@@ -4272,7 +4272,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
 	                           complain, /*require_all_args=*/1);
 
       if (arglist == error_mark_node
-	  || (!processing_template_decl
+	  || (!uses_template_parms (INNERMOST_TEMPLATE_ARGS (arglist))
 	      && check_instantiated_args (template,
 					  INNERMOST_TEMPLATE_ARGS (arglist),
 					  complain)))
