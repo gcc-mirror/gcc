@@ -197,37 +197,61 @@ simplify_gen_relational (enum rtx_code code, enum machine_mode mode,
 {
   rtx tem;
 
-  if ((tem = simplify_relational_operation (code, cmp_mode, op0, op1)) != 0)
-    return tem;
+  if (cmp_mode == VOIDmode)
+    cmp_mode = GET_MODE (op0);
+  if (cmp_mode == VOIDmode)
+    cmp_mode = GET_MODE (op1);
+
+  if (cmp_mode != VOIDmode)
+    {
+      tem = simplify_relational_operation (code, cmp_mode, op0, op1);
+
+      if (tem)
+	{
+#ifdef FLOAT_STORE_FLAG_VALUE
+	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	    {
+	      REAL_VALUE_TYPE val;
+	      if (tem == const0_rtx)
+		return CONST0_RTX (mode);
+	      if (tem != const_true_rtx)
+		abort ();
+	      val = FLOAT_STORE_FLAG_VALUE (mode);
+	      return CONST_DOUBLE_FROM_REAL_VALUE (val, mode);
+	    }
+#endif
+	  return tem;
+	}
+    }
 
   /* For the following tests, ensure const0_rtx is op1.  */
-  if (op0 == const0_rtx && swap_commutative_operands_p (op0, op1))
+  if (swap_commutative_operands_p (op0, op1)
+      || (op0 == const0_rtx && op1 != const0_rtx))
     tem = op0, op0 = op1, op1 = tem, code = swap_condition (code);
 
   /* If op0 is a compare, extract the comparison arguments from it.  */
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
-    op1 = XEXP (op0, 1), op0 = XEXP (op0, 0);
+    return simplify_gen_relational (code, mode, VOIDmode,
+				    XEXP (op0, 0), XEXP (op0, 1));
 
   /* If op0 is a comparison, extract the comparison arguments form it.  */
-  if (code == NE && op1 == const0_rtx
-      && GET_RTX_CLASS (GET_CODE (op0)) == '<')
-    return op0;
-  else if (code == EQ && op1 == const0_rtx)
+  if (GET_RTX_CLASS (GET_CODE (op0)) == '<' && op1 == const0_rtx)
     {
-      /* The following tests GET_RTX_CLASS (GET_CODE (op0)) == '<'.  */
-      enum rtx_code new = reversed_comparison_code (op0, NULL_RTX);
-      if (new != UNKNOWN)
-        {
-	  code = new;
-	  mode = cmp_mode;
-	  op1 = XEXP (op0, 1);
-	  op0 = XEXP (op0, 0);
+      if (code == NE)
+	{
+	  if (GET_MODE (op0) == mode)
+	    return op0;
+	  return simplify_gen_relational (GET_CODE (op0), mode, VOIDmode,
+					  XEXP (op0, 0), XEXP (op0, 1));
+	}
+      else if (code == EQ)
+	{
+	  enum rtx_code new = reversed_comparison_code (op0, NULL_RTX);
+	  if (new != UNKNOWN)
+	    return simplify_gen_relational (new, mode, VOIDmode,
+					    XEXP (op0, 0), XEXP (op0, 1));
         }
     }
-
-  /* Put complex operands first and constants second.  */
-  if (swap_commutative_operands_p (op0, op1))
-    tem = op0, op0 = op1, op1 = tem, code = swap_condition (code);
 
   return gen_rtx_fmt_ee (code, mode, op0, op1);
 }
@@ -272,24 +296,7 @@ simplify_replace_rtx (rtx x, rtx old, rtx new)
 				     : GET_MODE (XEXP (x, 1)));
 	rtx op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
 	rtx op1 = simplify_replace_rtx (XEXP (x, 1), old, new);
-	rtx temp = simplify_gen_relational (code, mode,
-					    (op_mode != VOIDmode
-					     ? op_mode
-					     : GET_MODE (op0) != VOIDmode
-					       ? GET_MODE (op0)
-					       : GET_MODE (op1)),
-					    op0, op1);
-#ifdef FLOAT_STORE_FLAG_VALUE
-	if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-	{
-	  if (temp == const0_rtx)
-	    temp = CONST0_RTX (mode);
-	  else if (temp == const_true_rtx)
-	    temp = CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE (mode),
-						 mode);
-	}
-#endif
-	return temp;
+	return simplify_gen_relational (code, mode, op_mode, op0, op1);
       }
 
     case '3':
@@ -800,10 +807,10 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	    return XEXP (op, 0);
 
 	  /* (not (eq X Y)) == (ne X Y), etc.  */
-	  if (mode == BImode && GET_RTX_CLASS (GET_CODE (op)) == '<'
+	  if (GET_RTX_CLASS (GET_CODE (op)) == '<'
 	      && ((reversed = reversed_comparison_code (op, NULL_RTX))
 		  != UNKNOWN))
-	    return simplify_gen_relational (reversed, op_mode, op_mode,
+	    return simplify_gen_relational (reversed, mode, VOIDmode,
 					    XEXP (op, 0), XEXP (op, 1));
 
           /* (not (plus X -1)) can become (neg X).  */
@@ -842,7 +849,7 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	      && GET_RTX_CLASS (GET_CODE (op)) == '<'
 	      && (reversed = reversed_comparison_code (op, NULL_RTX))
 		 != UNKNOWN)
-	    return simplify_gen_relational (reversed, op_mode, op_mode,
+	    return simplify_gen_relational (reversed, mode, VOIDmode,
 					    XEXP (op, 0), XEXP (op, 1));
 
 	  /* (not (ashiftrt foo C)) where C is the number of bits in FOO
@@ -853,8 +860,8 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	      && GET_CODE (op) == ASHIFTRT
 	      && GET_CODE (XEXP (op, 1)) == CONST_INT
 	      && INTVAL (XEXP (op, 1)) == GET_MODE_BITSIZE (mode) - 1)
-	    return simplify_gen_relational (GE, mode, mode, XEXP (op, 0),
-					    const0_rtx);
+	    return simplify_gen_relational (GE, mode, VOIDmode,
+					    XEXP (op, 0), const0_rtx);
 
 	  break;
 
@@ -2725,10 +2732,10 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
 	  /* See if any simplifications were possible.  */
 	  if (temp == const0_rtx)
 	    return op2;
-	  else if (temp == const1_rtx)
+	  else if (temp == const_true_rtx)
 	    return op1;
 	  else if (temp)
-	    op0 = temp;
+	    abort ();
 
 	  /* Look for happy constants in op1 and op2.  */
 	  if (GET_CODE (op1) == CONST_INT && GET_CODE (op2) == CONST_INT)
