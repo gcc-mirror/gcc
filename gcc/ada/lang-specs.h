@@ -39,5 +39,5 @@
     %{O*} %{W*} %{w} %{p} %{pg:-p} %{a} %{f*} %{d*} %{g*&m*} %1\
     %{!S:%{o*:%w%*-gnatO}} \
     %i %{S:%W{o*}%{!o*:-o %b.s}} \
-    %{gnatc*|gnats*: -o %j} \
+    %{gnatc*|gnats*: -o %j} %{-param*} \
     %{!gnatc*:%{!gnats*:%(invoke_as)}}", 0, 0, 0},
