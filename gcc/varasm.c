@@ -423,8 +423,9 @@ named_section_real (const char *name, unsigned int flags, tree decl)
 {
   if (in_section != in_named || strcmp (name, in_named_name) != 0)
     {
-      if (! set_named_section_flags (name, flags))
-	abort ();
+      bool unchanged = set_named_section_flags (name, flags);
+
+      gcc_assert (unchanged);
 
       targetm.asm_out.named_section (name, flags, decl);
 
@@ -448,8 +449,7 @@ named_section (tree decl, const char *name, int reloc)
 {
   unsigned int flags;
 
-  if (decl != NULL_TREE && !DECL_P (decl))
-    abort ();
+  gcc_assert (!decl || DECL_P (decl));
   if (name == NULL)
     name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
 
@@ -852,19 +852,19 @@ make_decl_rtl (tree decl)
   rtx x;
 
   /* Check that we are not being given an automatic variable.  */
+  gcc_assert (TREE_CODE (decl) != PARM_DECL
+	      && TREE_CODE (decl) != RESULT_DECL);
+
   /* A weak alias has TREE_PUBLIC set but not the other bits.  */
-  if (TREE_CODE (decl) == PARM_DECL
-      || TREE_CODE (decl) == RESULT_DECL
-      || (TREE_CODE (decl) == VAR_DECL
-	  && !TREE_STATIC (decl)
-	  && !TREE_PUBLIC (decl)
-	  && !DECL_EXTERNAL (decl)
-	  && !DECL_REGISTER (decl)))
-    abort ();
+  gcc_assert (TREE_CODE (decl) != VAR_DECL
+	      || TREE_STATIC (decl)
+	      || TREE_PUBLIC (decl)
+	      || DECL_EXTERNAL (decl)
+	      || DECL_REGISTER (decl));
+  
   /* And that we were not given a type or a label.  */
-  else if (TREE_CODE (decl) == TYPE_DECL
-	   || TREE_CODE (decl) == LABEL_DECL)
-    abort ();
+  gcc_assert (TREE_CODE (decl) != TYPE_DECL
+	      && TREE_CODE (decl) != LABEL_DECL);
 
   /* For a duplicate declaration, we can be called twice on the
      same DECL node.  Don't discard the RTL already made.  */
@@ -1003,8 +1003,7 @@ make_decl_rtl (tree decl)
 void
 make_var_volatile (tree var)
 {
-  if (!MEM_P (DECL_RTL (var)))
-    abort ();
+  gcc_assert (MEM_P (DECL_RTL (var)));
 
   MEM_VOLATILE_P (DECL_RTL (var)) = 1;
 }
@@ -1487,7 +1486,7 @@ asm_emit_uninitialised (tree decl, const char *name,
       ASM_EMIT_LOCAL (decl, name, size, rounded);
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return true;
@@ -2122,13 +2121,11 @@ assemble_integer (rtx x, unsigned int size, unsigned int align, int force)
 
       /* If we've printed some of it, but not all of it, there's no going
 	 back now.  */
-      if (i > 0)
-	abort ();
+      gcc_assert (!i);
     }
 
-  if (force)
-    abort ();
-
+  gcc_assert (!force);
+  
   return false;
 }
 
@@ -2231,11 +2228,10 @@ decode_addr_const (tree exp, struct addr_const *value)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
-  if (!MEM_P (x))
-    abort ();
+  gcc_assert (MEM_P (x));
   x = XEXP (x, 0);
 
   value->base = x;
@@ -2318,19 +2314,24 @@ const_hash_1 (const tree exp)
 	struct addr_const value;
 
 	decode_addr_const (exp, &value);
-	if (GET_CODE (value.base) == SYMBOL_REF)
+	switch (GET_CODE (value.base))
 	  {
+	  case SYMBOL_REF:
 	    /* Don't hash the address of the SYMBOL_REF;
 	       only use the offset and the symbol name.  */
 	    hi = value.offset;
 	    p = XSTR (value.base, 0);
 	    for (i = 0; p[i] != 0; i++)
 	      hi = ((hi * 613) + (unsigned) (p[i]));
+	    break;
+
+	  case LABEL_REF:
+	    hi = value.offset + CODE_LABEL_NUMBER (XEXP (value.base, 0)) * 13;
+	    break;
+
+	  default:
+	    gcc_unreachable ();
 	  }
-	else if (GET_CODE (value.base) == LABEL_REF)
-	  hi = value.offset + CODE_LABEL_NUMBER (XEXP (value.base, 0)) * 13;
-	else
-	  abort ();
       }
       return hi;
 
@@ -2492,8 +2493,7 @@ compare_constant (const tree t1, const tree t2)
       }
     }
 
-  /* Should not get here.  */
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Make a copy of the whole tree structure for a constant.  This
@@ -2551,12 +2551,10 @@ copy_constant (tree exp)
 
     default:
       {
-	tree t;
-	t = lang_hooks.expand_constant (exp);
-	if (t != exp)
-	  return copy_constant (t);
-	else
-	  abort ();
+	tree t = lang_hooks.expand_constant (exp);
+	
+	gcc_assert (t == exp);
+	return copy_constant (t);
       }
     }
 }
@@ -3018,8 +3016,7 @@ force_const_mem (enum machine_mode mode, rtx x)
 
   /* Insert the descriptor into the symbol cross-reference table too.  */
   slot = htab_find_slot (pool->const_rtx_sym_htab, desc, INSERT);
-  if (*slot)
-    abort ();
+  gcc_assert (!*slot);
   *slot = desc;
 
   /* Construct the MEM.  */
@@ -3100,16 +3097,15 @@ output_constant_pool_2 (enum machine_mode mode, rtx x, unsigned int align)
   switch (GET_MODE_CLASS (mode))
     {
     case MODE_FLOAT:
-      if (GET_CODE (x) != CONST_DOUBLE)
-	abort ();
-      else
-	{
-	  REAL_VALUE_TYPE r;
-	  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-	  assemble_real (r, mode, align);
-	}
-      break;
-
+      {
+	REAL_VALUE_TYPE r;
+	
+	gcc_assert (GET_CODE (x) == CONST_DOUBLE);
+	REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+	assemble_real (r, mode, align);
+	break;
+      }
+      
     case MODE_INT:
     case MODE_PARTIAL_INT:
       assemble_integer (x, GET_MODE_SIZE (mode), align, 1);
@@ -3122,8 +3118,7 @@ output_constant_pool_2 (enum machine_mode mode, rtx x, unsigned int align)
         enum machine_mode submode = GET_MODE_INNER (mode);
 	unsigned int subalign = MIN (align, GET_MODE_BITSIZE (submode));
 
-	if (GET_CODE (x) != CONST_VECTOR)
-	  abort ();
+	gcc_assert (GET_CODE (x) == CONST_VECTOR);
 	units = CONST_VECTOR_NUNITS (x);
 
 	for (i = 0; i < units; i++)
@@ -3135,7 +3130,7 @@ output_constant_pool_2 (enum machine_mode mode, rtx x, unsigned int align)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -3171,13 +3166,9 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc)
 
     case LABEL_REF:
       tmp = XEXP (x, 0);
-      if (INSN_DELETED_P (tmp)
-	  || (NOTE_P (tmp)
-	      && NOTE_LINE_NUMBER (tmp) == NOTE_INSN_DELETED))
-	{
-	  abort ();
-	  x = const0_rtx;
-	}
+      gcc_assert (!INSN_DELETED_P (tmp));
+      gcc_assert (!NOTE_P (tmp)
+		  || NOTE_LINE_NUMBER (tmp) != NOTE_INSN_DELETED);
       break;
 
     default:
@@ -3743,7 +3734,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
       tree decl = TREE_OPERAND (exp, 0);
       ASM_OUTPUT_FDESC (asm_out_file, decl, part);
 #else
-      abort ();
+      gcc_unreachable ();
 #endif
       return;
     }
@@ -3780,51 +3771,51 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 
     case ARRAY_TYPE:
     case VECTOR_TYPE:
-      if (TREE_CODE (exp) == CONSTRUCTOR)
+      switch (TREE_CODE (exp))
 	{
+	case CONSTRUCTOR:
 	  output_constructor (exp, size, align);
 	  return;
-	}
-      else if (TREE_CODE (exp) == STRING_CST)
-	{
+	case STRING_CST:
 	  thissize = MIN ((unsigned HOST_WIDE_INT)TREE_STRING_LENGTH (exp),
 			  size);
 	  assemble_string (TREE_STRING_POINTER (exp), thissize);
+	  break;
+
+	case VECTOR_CST:
+	  {
+	    int elt_size;
+	    tree link;
+	    unsigned int nalign;
+	    enum machine_mode inner;
+	    
+	    inner = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
+	    nalign = MIN (align, GET_MODE_ALIGNMENT (inner));
+	    
+	    elt_size = GET_MODE_SIZE (inner);
+	    
+	    link = TREE_VECTOR_CST_ELTS (exp);
+	    output_constant (TREE_VALUE (link), elt_size, align);
+	    while ((link = TREE_CHAIN (link)) != NULL)
+	      output_constant (TREE_VALUE (link), elt_size, nalign);
+	    break;
+	  }
+	default:
+	  gcc_unreachable ();
 	}
-      else if (TREE_CODE (exp) == VECTOR_CST)
-	{
-	  int elt_size;
-	  tree link;
-	  unsigned int nalign;
-	  enum machine_mode inner;
-
-	  inner = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
-	  nalign = MIN (align, GET_MODE_ALIGNMENT (inner));
-
-	  elt_size = GET_MODE_SIZE (inner);
-
-	  link = TREE_VECTOR_CST_ELTS (exp);
-	  output_constant (TREE_VALUE (link), elt_size, align);
-	  while ((link = TREE_CHAIN (link)) != NULL)
-	    output_constant (TREE_VALUE (link), elt_size, nalign);
-	}
-      else
-	abort ();
       break;
 
     case RECORD_TYPE:
     case UNION_TYPE:
-      if (TREE_CODE (exp) == CONSTRUCTOR)
-	output_constructor (exp, size, align);
-      else
-	abort ();
+      gcc_assert (TREE_CODE (exp) == CONSTRUCTOR);
+      output_constructor (exp, size, align);
       return;
 
     case ERROR_MARK:
       return;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (size > thissize)
@@ -3890,8 +3881,7 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
   int byte_buffer_in_use = 0;
   int byte = 0;
 
-  if (HOST_BITS_PER_WIDE_INT < BITS_PER_UNIT)
-    abort ();
+  gcc_assert (HOST_BITS_PER_WIDE_INT >= BITS_PER_UNIT);
 
   if (TREE_CODE (type) == RECORD_TYPE)
     field = TYPE_FIELDS (type);
@@ -4012,8 +4002,7 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 		  fieldsize = array_size_for_constructor (val);
 		  /* Given a non-empty initialization, this field had
 		     better be last.  */
-		  if (fieldsize != 0 && TREE_CHAIN (field) != NULL_TREE)
-		    abort ();
+		  gcc_assert (!fieldsize || !TREE_CHAIN (field));
 		}
 	      else if (DECL_SIZE_UNIT (field))
 		{
@@ -4122,13 +4111,12 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 		  /* Now get the bits from the appropriate constant word.  */
 		  if (shift < HOST_BITS_PER_WIDE_INT)
 		    value = TREE_INT_CST_LOW (val);
-		  else if (shift < 2 * HOST_BITS_PER_WIDE_INT)
+		  else
 		    {
+		      gcc_assert (shift < 2 * HOST_BITS_PER_WIDE_INT);
 		      value = TREE_INT_CST_HIGH (val);
 		      shift -= HOST_BITS_PER_WIDE_INT;
 		    }
-		  else
-		    abort ();
 
 		  /* Get the result. This works only when:
 		     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
@@ -4155,13 +4143,12 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 		  /* Now get the bits from the appropriate constant word.  */
 		  if (shift < HOST_BITS_PER_WIDE_INT)
 		    value = TREE_INT_CST_LOW (val);
-		  else if (shift < 2 * HOST_BITS_PER_WIDE_INT)
+		  else
 		    {
+		      gcc_assert (shift < 2 * HOST_BITS_PER_WIDE_INT);
 		      value = TREE_INT_CST_HIGH (val);
 		      shift -= HOST_BITS_PER_WIDE_INT;
 		    }
-		  else
-		    abort ();
 
 		  /* Get the result. This works only when:
 		     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
@@ -4556,8 +4543,8 @@ supports_one_only (void)
 void
 make_decl_one_only (tree decl)
 {
-  if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
-    abort ();
+  gcc_assert (TREE_CODE (decl) == VAR_DECL
+	      || TREE_CODE (decl) == FUNCTION_DECL);
 
   TREE_PUBLIC (decl) = 1;
 
@@ -4571,10 +4558,11 @@ make_decl_one_only (tree decl)
   else if (TREE_CODE (decl) == VAR_DECL
       && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
     DECL_COMMON (decl) = 1;
-  else if (SUPPORTS_WEAK)
-    DECL_WEAK (decl) = 1;
   else
-    abort ();
+    {
+      gcc_assert (SUPPORTS_WEAK);
+      DECL_WEAK (decl) = 1;
+    }
 }
 
 void
@@ -4598,8 +4586,8 @@ decl_tls_model (tree decl)
   if (attr)
     {
       attr = TREE_VALUE (TREE_VALUE (attr));
-      if (TREE_CODE (attr) != STRING_CST)
-	abort ();
+      gcc_assert (TREE_CODE (attr) == STRING_CST);
+      
       if (!strcmp (TREE_STRING_POINTER (attr), "local-exec"))
 	kind = TLS_MODEL_LOCAL_EXEC;
       else if (!strcmp (TREE_STRING_POINTER (attr), "initial-exec"))
@@ -4609,7 +4597,7 @@ decl_tls_model (tree decl)
       else if (!strcmp (TREE_STRING_POINTER (attr), "global-dynamic"))
 	kind = TLS_MODEL_GLOBAL_DYNAMIC;
       else
-	abort ();
+	gcc_unreachable ();
       return kind;
     }
 
@@ -4710,7 +4698,7 @@ default_no_named_section (const char *name ATTRIBUTE_UNUSED,
 {
   /* Some object formats don't support named sections at all.  The
      front-end should already have flagged this as an error.  */
-  abort ();
+  gcc_unreachable ();
 }
 
 void
@@ -5011,7 +4999,7 @@ default_elf_select_section_1 (tree decl, int reloc,
     {
     case SECCAT_TEXT:
       /* We're not supposed to be called on FUNCTION_DECLs.  */
-      abort ();
+      gcc_unreachable ();
     case SECCAT_RODATA:
       readonly_data_section ();
       return;
@@ -5063,7 +5051,7 @@ default_elf_select_section_1 (tree decl, int reloc,
       sname = ".tbss";
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (!DECL_P (decl))
@@ -5125,7 +5113,7 @@ default_unique_section_1 (tree decl, int reloc, int shlib)
       prefix = one_only ? ".gnu.linkonce.tb." : ".tbss.";
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   plen = strlen (prefix);
 

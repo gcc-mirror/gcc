@@ -360,7 +360,7 @@ rtl_find_values_to_profile (histogram_values *values)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   allocate_reg_info (max_reg_num (), FALSE, FALSE);
@@ -1032,21 +1032,20 @@ void
 rtl_register_value_prof_hooks (void)
 {
   value_prof_hooks = &rtl_value_prof_hooks;
-  if (ir_type ())
-    abort ();
+  gcc_assert (!ir_type ());
 }
 
 /* Tree-based versions are stubs for now.  */
 static void
 tree_find_values_to_profile (histogram_values *values ATTRIBUTE_UNUSED)
 {
-  abort ();
+  gcc_unreachable ();
 }
 
 static bool
 tree_value_profile_transformations (void)
 {
-  abort ();
+  gcc_unreachable ();
 }
 
 static struct value_prof_hooks tree_value_prof_hooks = {
@@ -1058,8 +1057,7 @@ void
 tree_register_value_prof_hooks (void)
 {
   value_prof_hooks = &tree_value_prof_hooks;
-  if (!ir_type ())
-    abort ();
+  gcc_assert (ir_type ());
 }
 
 /* IR-independent entry points.  */

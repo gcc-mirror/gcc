@@ -66,8 +66,7 @@ vec_gc_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
   else
     alloc = 4;
 
-  if (pfx && pfx->alloc >= alloc)
-    abort ();
+  gcc_assert (!pfx || pfx->alloc < alloc);
   
   vec = ggc_realloc_stat (vec, vec_offset + alloc * elt_size PASS_MEM_STAT);
   ((struct vec_prefix *)vec)->alloc = alloc;
@@ -117,8 +116,7 @@ vec_heap_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
   else
     alloc = 4;
 
-  if (pfx && pfx->alloc >= alloc)
-    abort ();
+  gcc_assert (!pfx || pfx->alloc < alloc);
   
   vec = xrealloc (vec, vec_offset + alloc * elt_size);
   ((struct vec_prefix *)vec)->alloc = alloc;

@@ -427,7 +427,7 @@ addr_const_to_string (char *str, rtx x)
   char buf1[256];
   char buf2[256];
 
-restart:
+ restart:
   str[0] = '\0';
   switch (GET_CODE (x))
     {
