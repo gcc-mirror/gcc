@@ -36,12 +36,18 @@ std::locale
     functions and and LANG environment variable dependencies.
 
   - use localedata to implement generic named (non-MT-safe) locales?
-    Figure out a way to use ICU data, like libjava? Need a generic locale
-    model that does something besides the "C" locale.
+    Figure out a way to use ICU data, like libjava? Re-package and use
+    the glibc localedata, even if we aren't on linux? Need a generic
+    locale model that does something besides the "C" locale.
 
   - make locale::classic() separate from named locale code. This will
     improve the static linkage situation, but will require new
-    initialization code.
+    initialization code. In particular, we need lazy-initialization of
+    locale::classic(), and maybe the has_facet/use_facet functions for all
+    the required facets. The end goal is a self-contained
+    locale_init.cc, or one with transitive closure without the locale
+    instantiations (locale-inst.cc) or the named locale bits
+    (localename.cc).
 
   - Jerry(?)/Paolo(?) work on __float_to_char.
 
@@ -52,9 +58,9 @@ std::locale
 std::basic_filebuf, 27_io
 
   - wfilebuf, get variable-encoding working and tested, including
-    positioning and seeking.
+    positioning and seeking. (I think this may be done now)
 
-  - wfilebuf testsuite
+  - wfilebuf testsuite (getting there...)
 
   - look ahead for unbuffered io, so know when multiple putc's can be
     coalesced.
@@ -90,9 +96,13 @@ testsuite
 
 g++/binutils
 
-  - compression for wide versions of basic types
+  - compression for wide versions of basic types, not just narrow
 
-- get Apple's debug mode, or something with equivalent functionality, in.
+threads
+
+  - create MT abstraction layer for atomicity to pthreads.
+
+  - solution for threads + C++.
 
 - audit for places where __builtin_expect can be used.
 
@@ -156,8 +166,6 @@ sources, with macro-guards. Also, same with the TR.
   - replace typedef'd non-deprecated types with more type-safe equivalents.
 
 - add feature-test macros for non-standard extensions
-
-- create MT abstraction layer for atomicity to pthreads.
 
 - add MT support for locale, string, istream, ostream
 

@@ -5,8 +5,8 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-   <meta name="AUTHOR" content="dgregor@apple.com (Doug Gregor)" />
-   <meta name="KEYWORDS" content="libstdc++, libstdc++-v3, GCC, g++, debug" />
+   <meta name="AUTHOR" content="gregod@cs.rpi.edu (Doug Gregor)" />
+   <meta name="KEYWORDS" content="C++, GCC, libstdc++, g++, debug" />
    <meta name="DESCRIPTION" content="Design of the libstdc++ debug mode." />
    <meta name="GENERATOR" content="vi and eight fingers" />
    <title>Design of the libstdc++ debug mode</title>
@@ -249,7 +249,7 @@
   following basic structure:</p>
 
 <pre>
-template&lt;typename _Tp, typename _Allocator = std::allocator&lt;_Tp&gt;
+template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   class debug-list :
     public release-list&lt;_Tp, _Allocator&gt;,
     public __gnu_debug::_Safe_sequence&lt;debug-list&lt;_Tp, _Allocator&gt; &gt;
@@ -309,12 +309,14 @@ template&lt;typename _Tp, typename _Allocator = std::allocator&lt;_Tp&gt;
 
 <p>Achieving link- and run-time coexistence is not a trivial
   implementation task. To achieve this goal we required a small
-  extension to the GNU C++ compiler (described in the section on
-  <a href="#mixing">link- and run-time coexistence</a>) and complex
-  organization of debug- and release-modes. The end result is that we
-  have achieved per-use recompilation but have had to give up some
-  checking of the <code>std::basic_string</code> class template
-  (namely, safe iterators).
+  extension to the GNU C++ compiler (described in the GCC Manual for
+  C++ Extensions, see <a href =
+  http://gcc.gnu.org/onlinedocs/gcc/Strong-Using.html>strong
+  using</a>), and a complex organization of debug- and
+  release-modes. The end result is that we have achieved per-use
+  recompilation but have had to give up some checking of the
+  <code>std::basic_string</code> class template (namely, safe
+  iterators).
 
 <h4><a name="compile_coexistence">Compile-time coexistence of release- and
     debug-mode components</a></h4>
@@ -322,95 +324,129 @@ template&lt;typename _Tp, typename _Allocator = std::allocator&lt;_Tp&gt;
   components need to exist within a single translation unit so that
   the debug versions can wrap the release versions. However, only one
   of these components should be user-visible at any particular
-  time with the standard name, e.g., <code>std::list</code>. In
-  release mode, we define only the release-mode version of the
-  component with its standard name and do not include the debugging
-  component at all (except, perhaps, in <code>__gnu_debug</code>, if
-  requested via the separate debugging headers). This method leaves the
-  behavior of release mode completely unchanged from its behavior
-  prior to the introduction of the libstdc++ debug mode.</p>
+  time with the standard name, e.g., <code>std::list</code>. </p>
 
-<p>In debug mode we include the release-mode container into its
-  natural namespace but perform renaming to an implementation-defined
-  name using preprocessor macros. Thus the
-  release-mode <code>std::list</code> will be renamed
-  to <code>std::_Release_list</code> during debug mode, and we will
-  automatically include the debugging version with the
-  name <code>std::list</code> for users to reference. This method
-  allows the debug- and release-mode versions of the same component to
-  coexist at compile-time without causing an unreasonable maintenance
-  burden.</p>
+<p>In release mode, we define only the release-mode version of the
+  component with its standard name and do not include the debugging
+  component at all. The release mode version is defined within the
+  namespace <code>__gnu_nom</code>, and then associated with namespace
+  <code>std</code> via a "strong using" directive. Minus the
+  namespace associations, this method leaves the behavior of release
+  mode completely unchanged from its behavior prior to the
+  introduction of the libstdc++ debug mode. Here's an example of what
+  this ends up looking like, in C++.</p>
+
+<pre>
+namespace __gnu_norm
+{
+  using namespace std; 
+  
+  template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
+    class list
+    {
+      // ...
+    };
+} // namespace __gnu_norm
+
+namespace std
+{
+  using namespace __gnu_norm __attribute__ ((strong));
+}
+</pre>
+  
+<p>In debug mode we include the release-mode container and also the
+debug-mode container. The release mode version is defined exactly as
+before, and the debug-mode container is defined within the namespace
+<code>__gnu_debug</code>, which is associated with namespace
+<code>std</code> via a "strong using" directive.  This method allows
+the debug- and release-mode versions of the same component to coexist
+at compile-time without causing an unreasonable maintenance burden,
+while minimizing confusion. Again, this boils down to C++ code as
+follows:</p>
+
+<pre>
+namespace __gnu_norm
+{
+  using namespace std; 
+  
+  template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
+    class list
+    {
+      // ...
+    };
+} // namespace __gnu_norm
+
+namespace __gnu_debug
+{
+  using namespace std; 
+  
+  template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
+    class list
+    : public __gnu_norm::list&lt;_Tp, _Alloc&gt;,
+      public __gnu_debug::_Safe_sequence&lt;list&lt;_Tp, _Alloc&gt; &gt;
+    {
+      // ...
+    };
+} // namespace __gnu_norm
+
+namespace std
+{
+  using namespace __gnu_debug __attribute__ ((strong));
+}
+</pre>
 
 <h4><a name="mixing">Link- and run-time coexistence of release- and
     debug-mode components</a></h4>
-<p>There is a problem with the simple compile-time coexistence
-  mechanism: if a user compiles some modules with release mode and
-  some modules with debug mode, the debuggable components will differ
-  in different translation units, violating the C++ One Definition
-  Rule (ODR). This violation will likely be detected at link time,
-  because the sizes of debug-mode containers will differ from the
-  sizes of release-mode containers, although in some cases (such as
-  dynamic linking) the error may be detected much later (or not at
-  all!).</p>
 
-<p>Unfortunately, it is not possible to avoid violating the ODR with
-  most debug mode designs (see the section on <a
-  href="#coexistence_alt">alternatives for coexistence</a>), so the
-  philosophy of the libstdc++ debug mode is to acknowledge that there
-  is an unavoidable ODR violation in this case but to ensure that the
-  ODR violation does not affect execution. To accomplish this, the
-  libstdc++ debug mode uses the aforementioned preprocessor renaming
-  scheme but includes an additional renaming scheme that happens at
-  compile-time that essentially reverses the preprocessor
-  renaming <em>from the linker's point of view</em>. Thus, in debug
-  mode, the release-mode <code>list</code> container is
-  named <code>std::_Release_list</code> but will be mangled with the
-  name <code>std::list</code> (as it was in release mode). Similarly,
-  the debug-mode <code>list</code> is named <code>std::list</code>
-  (in debug mode) but will be mangled
-  as <code>std::_Debug_list</code>. Thus the
-  release-mode <code>list</code> always compiles down to code that
-  uses the name <code>std::list</code>, and the
-  debug-mode <code>list</code> always compiles down to code that uses
-  the name <code>std::_Debug_list</code>, independent of the use of
-  debug mode. This has several positive effects:</p>
+<p>Because each component has a distinct and separate release and
+debug implementation, there are are no issues with link-time
+coexistence: the separate namespaces result in different mangled
+names, and thus unique linkage.</p>
 
-<ul>
-  <li>No linking conflicts between debug/release objects: because the
-  names of the debug- and release-mode containers are different in the
-  compiled object files, there are no link-time conflicts between the
-  two.</li>
+<p>However, components that are defined and used within the C++
+standard library itself face additional constraints. For instance,
+some of the member functions of <code> std::moneypunct</code> return
+<code>std::basic_string</code>. Normally, this is not a problem, but
+with a mixed mode standard library that could be using either
+debug-mode or release-mode <code> basic_string</code> objects, things
+get more complicated.  As the return value of a function is not
+encoded into the mangled name, there is no way to specify a
+release-mode or a debug-mode string. In practice, this results in
+runtime errors. A simplified example of this problem is as follows.
+</p>
 
-  <li>Release-mode code is shared: the release-mode code can be shared
-  within a program, even with it is compiled partly in release-mode
-  and partly in debug-mode, because the release-mode code is unchanged
-  in name and function. This can decrease the size of mixed
-  debug/release binaries.</li>
+<p> Take this translation unit, compiled in debug-mode: <p>
+<pre>
+// -D_GLIBCXX_DEBUG
+#include <string>
 
-  <li>Able to catch <em>most</em> invalid debug/release combinations:
-  because the names of debug- and release-mode containers are
-  different in the compiled object files, if a debug/release
-  interaction cannot occur (e.g., because a container a translation
-  unit compiled in debug mode is passed to a routine in a translation
-  unit compiled in release mode) the result will be an undefined
-  symbol at link time. The undefined symbol occurs because the mangled
-  name of the definition will contain the release-mode container type
-  and the mangled name of the reference will contain the debug-mode
-  container type. However, we cannot detect these collisions if the
-  only use of the container is in the return type, because the return
-  type is not part of the mangled name of a function.</li>
-</ul>
+std::string test02();
+ 
+std::string test01()
+{
+  return test02();
+}
+ 
+int main()
+{
+  test01();
+  return 0;
+}
+</pre>
 
-<p>The new <code>link_name</code> class attribute facilities
-  renaming. It may be attached to any class type (or any class
-  template) to override the name of the class used for name
-  mangling. For instance, a class named <code>bar</code> would
-  generally mangle as <code>3bar</code>; if the class has
-  a <code>link_name</code> attribute that specifies the string
-  "wibble", then it would mangle as <code>6wibble</code>.</p>
+<p> ... and linked to this translation unit, compiled in release mode:</p>
 
-<p>Note that although we have hidden the ODR violation, it still
-  exists. For this reason we cannot easily provide safe iterators for
+<pre>
+#include <string>
+ 
+std::string
+test02()
+{
+  return std::string("toast");
+}
+</pre>
+
+<p> For this reason we cannot easily provide safe iterators for
   the <code>std::basic_string</code> class template, as it is present
   throughout the C++ standard library. For instance, locale facets
   define typedefs that include <code>basic_string</code>: in a mixed
@@ -445,7 +481,7 @@ template&lt;typename _Tp, typename _Allocator = std::allocator&lt;_Tp&gt;
   release-compiled translation units is enormous.</p>
 
 <h4><a name="coexistence_alt">Alternatives for Coexistence</a></h4>
-<p>The coexistence scheme was chosen over many alternatives,
+<p>The coexistence scheme above was chosen over many alternatives,
   including language-only solutions and solutions that also required
   extensions to the C++ front end. The following is a partial list of
   solutions, with justifications for our rejection of each.</p>
@@ -491,19 +527,12 @@ template&lt;typename _Tp, typename _Allocator = std::allocator&lt;_Tp&gt;
       declarations disallow specialization. This method fails
       the <b>correctness</b> criteria.</li>
 
-  <li><em>Extension: allow template aliasing/renaming</em>: This is
-    the runner-up to the <code>link_name</code> solution, eliminated
-    only because it requires more extensive compiler changes
-    than <code>link_name</code>. In this model, we would define the
-    debug containers in a different namespace
-    (e.g., <code>__gnu_debug</code>) and then import them (e.g., with
-    an extended <code>using</code> declaration that aliases templates,
-    such as that of <a
-    href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/papers/2003/n1449.pdf">template
-    aliases</a> proposal). This solution is workable, and in fact
-    would be desirable in the long run, but requires a sizeable change
-    to the C++ compiler front-end that is not within the scope of
-    this project.</li>
+  <li><em> Use implementation-specific properties of anonymous
+    namespaces. </em>
+    See <a
+    href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00004.html"> this post
+    </a> </li>
+    This method fails the <b>correctness</b> criteria.</li>
 
   <li><em>Extension: allow reopening on namespaces</em>: This would
     allow the debug mode to effectively alias the
@@ -517,6 +546,21 @@ template&lt;typename _Tp, typename _Allocator = std::allocator&lt;_Tp&gt;
     objects! This solution would fails the <b>minimize
     recompilation</b> requirement, because we would only be able to
     support option (1) or (2).</li>
+  </li>
+
+  <li><em>Extension: use link name</em>: This option involves
+    complicated re-naming between debug-mode and release-mode
+    components at compile time, and then a g++ extension called <em>
+    link name </em> to recover the original names at link time. There
+    are two drawbacks to this approach. One, it's very verbose,
+    relying on macro renaming at compile time and several levels of
+    include ordering. Two, ODR issues remained with container member
+    functions taking no arguments in mixed-mode settings resulting in
+    equivalent link names, <code> vector::push_back() </code> being
+    one example. 
+    See <a
+    href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00177.html">link
+    name</a> </li>
   </li>
 </ul>
 
