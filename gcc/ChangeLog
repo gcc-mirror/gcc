@@ -1,3 +1,9 @@
+2002-05-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	PR preprocessor/6844
+	* cppmacro.c (cpp_macro_definition): Reserve space for terminating
+	NUL.
+
 2002-05-29  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/linux.h (SUBTARGET_CPP_SPEC): Add support for
