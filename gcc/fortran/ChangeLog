@@ -1,3 +1,8 @@
+2004-05-13  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/15314
+	* trans-expr.c (gfc_conv_structure): Use field type, not expr type.
+
 2004-05-13  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gfortran.texi: Use @table @emph instead of @itemize @emph.
