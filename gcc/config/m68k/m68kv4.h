@@ -23,7 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define SGS_SWITCH_TABLES	/* Different switch table handling */
 
-#include "m68ksgs.h"		/* The m68k/SVR4 assembler is SGS based */
+#include "m68k/sgs.h"		/* The m68k/SVR4 assembler is SGS based */
 #include "svr4.h"		/* Pick up the generic SVR4 macros */
 
 /* See m68k.h.  7 means 68020 with 68881.  */
@@ -105,10 +105,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
 /* The ASM_OUTPUT_SKIP macro is first defined in m68k.h, using ".skip".
-   It is then overridden by m68ksgs.h to use ".space", and again by svr4.h
+   It is then overridden by m68k/sgs.h to use ".space", and again by svr4.h
    to use ".zero".  The m68k/SVR4 assembler uses ".space", so repeat the
-   definition from m68ksgs.h here.  Note that ASM_NO_SKIP_IN_TEXT is
-   defined in m68ksgs.h, so we don't have to repeat it here. */
+   definition from m68k/sgs.h here.  Note that ASM_NO_SKIP_IN_TEXT is
+   defined in m68k/sgs.h, so we don't have to repeat it here. */
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \

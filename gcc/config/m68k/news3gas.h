@@ -1,4 +1,4 @@
-#include "newsgas.h"
+#include "m68k/newsgas.h"
 
 /* This is to be compatible with types.h.
    It was found to be necessary with Newsos 3.  */
