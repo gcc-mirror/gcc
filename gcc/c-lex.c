@@ -197,8 +197,11 @@ cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED,
    lexed token on the line.  Used for diagnostic line numbers.  */
 static void
 cb_line_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const cpp_token *token,
-		int parsing_args ATTRIBUTE_UNUSED)
+		int parsing_args)
 {
+  if (token->type == CPP_EOF || parsing_args)
+    return;
+
   src_lineno = SOURCE_LINE (map, token->line);
 }
 
