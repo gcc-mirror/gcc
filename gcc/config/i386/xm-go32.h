@@ -31,3 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #define DIR_SEPARATOR '\\'
 
 #define NO_SYS_SIGLIST 1
+
+#define LIBSTDCXX "-lstdcxx"
+
