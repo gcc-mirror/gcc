@@ -59,6 +59,7 @@ typedef struct minipool_fixup   Mfix;
 const struct attribute_spec arm_attribute_table[];
 
 /* Forward function declarations.  */
+static arm_stack_offsets *arm_get_frame_offsets (void);
 static void arm_add_gc_roots (void);
 static int arm_gen_constant (enum rtx_code, enum machine_mode, HOST_WIDE_INT,
 			     rtx, rtx, int, int);
@@ -67,6 +68,7 @@ static int arm_address_register_rtx_p (rtx, int);
 static int arm_legitimate_index_p (enum machine_mode, rtx, RTX_CODE, int);
 static int thumb_base_register_rtx_p (rtx, enum machine_mode, int);
 inline static int thumb_index_register_rtx_p (rtx, int);
+static int thumb_far_jump_used_p (void);
 static int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 static rtx emit_multi_reg_push (int);
 static rtx emit_sfm (int, int);
@@ -284,6 +286,9 @@ enum fputype arm_fpu_tune;
 /* Whether to use floating point hardware.  */
 enum float_abi_type arm_float_abi;
 
+/* Which ABI to use.  */
+enum arm_abi_type arm_abi;
+
 /* What program mode is the cpu running in? 26-bit mode or 32-bit mode.  */
 enum prog_mode_type arm_prgmode;
 
@@ -295,6 +300,9 @@ const char * target_fpe_name = NULL;
 
 /* Set by the -mfloat-abi=... option.  */
 const char * target_float_abi_name = NULL;
+
+/* Set by the -mabi=... option.  */
+const char * target_abi_name = NULL;
 
 /* Used to parse -mstructure_size_boundary command line option.  */
 const char * structure_size_string = NULL;
@@ -509,6 +517,23 @@ static const struct float_abi all_float_abis[] =
   {"hard",	ARM_FLOAT_ABI_HARD}
 };
 
+
+struct abi_name
+{
+  const char *name;
+  enum arm_abi_type abi_type;
+};
+
+
+/* Available values for -mabi=.  */
+
+static const struct abi_name arm_all_abis[] =
+{
+  {"apcs-gnu",    ARM_ABI_APCS},
+  {"atpcs",   ARM_ABI_ATPCS},
+  {"aapcs",   ARM_ABI_AAPCS},
+  {"iwmmxt",  ARM_ABI_IWMMXT}
+};
 
 /* Return the number of bits set in VALUE.  */
 static unsigned
@@ -814,8 +839,27 @@ arm_override_options (void)
   arm_tune_xscale = (tune_flags & FL_XSCALE) != 0;
   arm_arch_iwmmxt = (insn_flags & FL_IWMMXT) != 0;
 
-  if (TARGET_IWMMXT && (! TARGET_ATPCS))
-    target_flags |= ARM_FLAG_ATPCS;    
+  if (target_abi_name)
+    {
+      for (i = 0; i < ARRAY_SIZE (arm_all_abis); i++)
+	{
+	  if (streq (arm_all_abis[i].name, target_abi_name))
+	    {
+	      arm_abi = arm_all_abis[i].abi_type;
+	      break;
+	    }
+	}
+      if (i == ARRAY_SIZE (arm_all_abis))
+	error ("invalid ABI option: -mabi=%s", target_abi_name);
+    }
+  else
+    arm_abi = ARM_DEFAULT_ABI;
+
+  if (TARGET_IWMMXT && !ARM_DOUBLEWORD_ALIGN)
+    error ("iwmmxt requires an AAPCS compatible ABI for proper operation");
+
+  if (TARGET_IWMMXT_ABI && !TARGET_IWMMXT)
+    error ("iwmmxt abi requires an iwmmxt capable cpu");
 
   arm_fp_model = ARM_FP_MODEL_UNKNOWN;
   if (target_fpu_name == NULL && target_fpe_name != NULL)
@@ -908,14 +952,20 @@ arm_override_options (void)
   
   arm_prgmode = TARGET_APCS_32 ? PROG_MODE_PROG32 : PROG_MODE_PROG26;
   
+  /* Override the default structure alignment for AAPCS ABI.  */
+  if (arm_abi == ARM_ABI_AAPCS)
+    arm_structure_size_boundary = 8;
+
   if (structure_size_string != NULL)
     {
       int size = strtol (structure_size_string, NULL, 0);
-      
-      if (size == 8 || size == 32)
+
+      if (size == 8 || size == 32
+	  || (ARM_DOUBLEWORD_ALIGN && size == 64))
 	arm_structure_size_boundary = size;
       else
-	warning ("structure size boundary can only be set to 8 or 32");
+	warning ("structure size boundary can only be set to %s",
+		 ARM_DOUBLEWORD_ALIGN ? "8, 32 or 64": "8 or 32");
     }
 
   if (arm_pic_register_string != NULL)
@@ -1109,6 +1159,7 @@ use_return_insn (int iscond, rtx sibling)
   unsigned int func_type;
   unsigned long saved_int_regs;
   unsigned HOST_WIDE_INT stack_adjust;
+  arm_stack_offsets *offsets;
 
   /* Never use a return instruction before reload has run.  */
   if (!reload_completed)
@@ -1125,7 +1176,8 @@ use_return_insn (int iscond, rtx sibling)
   if (IS_INTERRUPT (func_type) && frame_pointer_needed)
     return 0;
 
-  stack_adjust = arm_get_frame_size () + current_function_outgoing_args_size;
+  offsets = arm_get_frame_offsets ();
+  stack_adjust = offsets->outgoing_args - offsets->saved_regs;
 
   /* As do variadic functions.  */
   if (current_function_pretend_args_size
@@ -2018,9 +2070,9 @@ arm_return_in_memory (tree type)
 
   size = int_size_in_bytes (type);
 
-  if (TARGET_ATPCS)
+  if (arm_abi != ARM_ABI_APCS)
     {
-      /* ATPCS returns aggregate types in memory only if they are
+      /* ATPCS and later return aggregate types in memory only if they are
 	 larger than a word (or are variable size).  */
       return (size < 0 || size > UNITS_PER_WORD);
     }
@@ -2143,6 +2195,7 @@ arm_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
   /* On the ARM, the offset starts at 0.  */
   pcum->nregs = ((fntype && aggregate_value_p (TREE_TYPE (fntype), fntype)) ? 1 : 0);
   pcum->iwmmxt_nregs = 0;
+  pcum->can_split = true;
   
   pcum->call_cookie = CALL_NORMAL;
 
@@ -2178,6 +2231,19 @@ arm_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
     }
 }
 
+
+/* Return true if mode/type need doubleword alignment.  */
+bool
+arm_needs_doubleword_align (enum machine_mode mode, tree type)
+{
+  return (mode == DImode
+	  || mode == DFmode
+	  || VECTOR_MODE_SUPPORTED_P (mode)
+	  || (mode == BLKmode
+	      && TYPE_ALIGN (type) > PARM_BOUNDARY));
+}
+
+
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
@@ -2193,37 +2259,44 @@ arm_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
 
 rtx
 arm_function_arg (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
-		  tree type ATTRIBUTE_UNUSED, int named)
+		  tree type, int named)
 {
-  if (TARGET_REALLY_IWMMXT)
+  int nregs;
+
+  /* Varargs vectors are treated the same as long long.
+     named_count avoids having to change the way arm handles 'named' */
+  if (TARGET_IWMMXT_ABI
+      && VECTOR_MODE_SUPPORTED_P (mode)
+      && pcum->named_count > pcum->nargs + 1)
     {
-      if (VECTOR_MODE_SUPPORTED_P (mode))
+      if (pcum->iwmmxt_nregs <= 9)
+	return gen_rtx_REG (mode, pcum->iwmmxt_nregs + FIRST_IWMMXT_REGNUM);
+      else
 	{
-	  /* varargs vectors are treated the same as long long.
-	     named_count avoids having to change the way arm handles 'named' */
-	  if (pcum->named_count <= pcum->nargs + 1)
-	    {
-	      if (pcum->nregs == 1)
-		pcum->nregs += 1;
-	      if (pcum->nregs <= 2)
-		return gen_rtx_REG (mode, pcum->nregs);
-	      else
-		return NULL_RTX;
-	    }
-	  else if (pcum->iwmmxt_nregs <= 9)
-	    return gen_rtx_REG (mode, pcum->iwmmxt_nregs + FIRST_IWMMXT_REGNUM);
-	  else
-	    return NULL_RTX;
+	  pcum->can_split = false;
+	  return NULL_RTX;
 	}
-      else if ((mode == DImode || mode == DFmode) && pcum->nregs & 1)
-	pcum->nregs += 1;
     }
+
+  /* Put doubleword aligned quantities in even register pairs.  */
+  if (pcum->nregs & 1
+      && ARM_DOUBLEWORD_ALIGN
+      && arm_needs_doubleword_align (mode, type))
+    pcum->nregs++;
 
   if (mode == VOIDmode)
     /* Compute operand 2 of the call insn.  */
     return GEN_INT (pcum->call_cookie);
-  
-  if (!named || pcum->nregs >= NUM_ARG_REGS)
+
+  /* Only allow splitting an arg between regs and memory if all preceeding
+     args were allocated to regs.  For args passed by reference we only count
+     the reference pointer.  */
+  if (pcum->can_split)
+    nregs = 1;
+  else
+    nregs = ARM_NUM_REGS2 (mode, type);
+
+  if (!named || pcum->nregs + nregs > NUM_ARG_REGS)
     return NULL_RTX;
   
   return gen_rtx_REG (mode, pcum->nregs);
@@ -2245,6 +2318,8 @@ arm_function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 rtx
 arm_va_arg (tree valist, tree type)
 {
+  int align;
+
   /* Variable sized types are passed by reference.  */
   if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     {
@@ -2252,17 +2327,18 @@ arm_va_arg (tree valist, tree type)
       return gen_rtx_MEM (ptr_mode, force_reg (Pmode, addr));
     }
 
-  if (FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), NULL) == IWMMXT_ALIGNMENT)
+  align = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
+  if (align > PARM_BOUNDARY)
     {
-      tree minus_eight;
+      tree mask;
       tree t;
 
       /* Maintain 64-bit alignment of the valist pointer by
 	 constructing:   valist = ((valist + (8 - 1)) & -8).  */
-      minus_eight = build_int_2 (- (IWMMXT_ALIGNMENT / BITS_PER_UNIT), -1);
-      t = build_int_2 ((IWMMXT_ALIGNMENT / BITS_PER_UNIT) - 1, 0);
+      mask = build_int_2 (- (align / BITS_PER_UNIT), -1);
+      t = build_int_2 ((align / BITS_PER_UNIT) - 1, 0);
       t = build (PLUS_EXPR,    TREE_TYPE (valist), valist, t);
-      t = build (BIT_AND_EXPR, TREE_TYPE (t), t, minus_eight);
+      t = build (BIT_AND_EXPR, TREE_TYPE (t), t, mask);
       t = build (MODIFY_EXPR,  TREE_TYPE (valist), valist, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -6846,7 +6922,7 @@ add_minipool_forward_ref (Mfix *fix)
 	 we have not already found an insertion point, then
 	 make sure that all such 8-byte aligned quantities are
 	 placed at the start of the pool.  */
-      if (TARGET_REALLY_IWMMXT
+      if (ARM_DOUBLEWORD_ALIGN
 	  && max_mp == NULL
 	  && fix->fix_size == 8
 	  && mp->fix_size != 8)
@@ -7030,7 +7106,8 @@ add_minipool_backward_ref (Mfix *fix)
 	    {
 	      /* For now, we do not allow the insertion of 8-byte alignment
 		 requiring nodes anywhere but at the start of the pool.  */
-	      if (TARGET_REALLY_IWMMXT && fix->fix_size == 8 && mp->fix_size != 8)
+	      if (ARM_DOUBLEWORD_ALIGN
+		  && fix->fix_size == 8 && mp->fix_size != 8)
 		return NULL;
 	      else
 		min_mp = mp;
@@ -7049,7 +7126,7 @@ add_minipool_backward_ref (Mfix *fix)
 	     we have not already found an insertion point, then
 	     make sure that all such 8-byte aligned quantities are
 	     placed at the start of the pool.  */
-	  else if (TARGET_REALLY_IWMMXT
+	  else if (ARM_DOUBLEWORD_ALIGN
 		   && min_mp == NULL
 		   && fix->fix_size == 8
 		   && mp->fix_size < 8)
@@ -7147,7 +7224,7 @@ dump_minipool (rtx scan)
   Mnode * nmp;
   int align64 = 0;
 
-  if (TARGET_REALLY_IWMMXT)
+  if (ARM_DOUBLEWORD_ALIGN)
     for (mp = minipool_vector_head; mp != NULL; mp = mp->next)
       if (mp->refcount > 0 && mp->fix_size == 8)
 	{
@@ -7389,11 +7466,11 @@ push_minipool_fix (rtx insn, HOST_WIDE_INT address, rtx *loc,
   if (fix->forwards == 0 && fix->backwards == 0)
     abort ();
 
-  /* With iWMMXt enabled, the pool is aligned to an 8-byte boundary.
+  /* With AAPCS/iWMMXt enabled, the pool is aligned to an 8-byte boundary.
      So there might be an empty word before the start of the pool.
      Hence we reduce the forward range by 4 to allow for this
      possibility.  */
-  if (TARGET_REALLY_IWMMXT && fix->fix_size == 8)
+  if (ARM_DOUBLEWORD_ALIGN && fix->fix_size == 8)
     fix->forwards -= 4;
 
   if (dump_file)
@@ -8651,8 +8728,7 @@ output_ascii_pseudo_op (FILE *stream, const unsigned char *p, int len)
 }
 
 /* Compute the register sabe mask for registers 0 through 12
-   inclusive.  This code is used by both arm_compute_save_reg_mask
-   and arm_compute_initial_elimination_offset.  */
+   inclusive.  This code is used by arm_compute_save_reg_mask.  */
 static unsigned long
 arm_compute_save_reg0_reg12_mask (void)
 {
@@ -8798,6 +8874,7 @@ output_return_instruction (rtx operand, int really_return, int reverse)
   int reg;
   unsigned long live_regs_mask;
   unsigned long func_type;
+  arm_stack_offsets *offsets;
 
   func_type = arm_current_func_type ();
 
@@ -8896,9 +8973,10 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 	     points to the base of the saved core registers.  */
 	  if (live_regs_mask & (1 << SP_REGNUM))
 	    {
-	      unsigned HOST_WIDE_INT stack_adjust =
-		arm_get_frame_size () + current_function_outgoing_args_size;
-	      
+	      unsigned HOST_WIDE_INT stack_adjust;
+
+	      offsets = arm_get_frame_offsets ();
+	      stack_adjust = offsets->outgoing_args - offsets->saved_regs;
 	      if (stack_adjust != 0 && stack_adjust != 4)
 		abort ();
 
@@ -9128,12 +9206,12 @@ arm_output_epilogue (rtx sibling)
      frame that is $fp + 4 for a non-variadic function.  */
   int floats_offset = 0;
   rtx operands[3];
-  int frame_size = arm_get_frame_size ();
   FILE * f = asm_out_file;
   rtx eh_ofs = cfun->machine->eh_epilogue_sp_ofs;
   unsigned int lrm_count = 0;
   int really_return = (sibling == NULL);
   int start_reg;
+  arm_stack_offsets *offsets;
 
   /* If we have already generated the return instruction
      then it is futile to generate anything else.  */
@@ -9164,14 +9242,13 @@ arm_output_epilogue (rtx sibling)
        be doing a return,  so we can't tail-call.  */
     abort ();
   
+  offsets = arm_get_frame_offsets ();
   saved_regs_mask = arm_compute_save_reg_mask ();
 
   if (TARGET_IWMMXT)
     lrm_count = bit_count (saved_regs_mask);
 
-  /* XXX We should adjust floats_offset for any anonymous args, and then
-     re-adjust vfp_offset below to compensate.  */
-
+  floats_offset = offsets->saved_args;
   /* Compute how far away the floats will be.  */
   for (reg = 0; reg <= LAST_ARM_REGNUM; reg++)
     if (saved_regs_mask & (1 << reg))
@@ -9180,7 +9257,7 @@ arm_output_epilogue (rtx sibling)
   if (frame_pointer_needed)
     {
       /* This variable is for the Virtual Frame Pointer, not VFP regs.  */
-      int vfp_offset = 4;
+      int vfp_offset = offsets->frame;
 
       if (arm_fpu_arch == FPUTYPE_FPA_EMU2)
 	{
@@ -9332,8 +9409,7 @@ arm_output_epilogue (rtx sibling)
          be reset correctly to the original value, should an interrupt
          occur.  If the stack pointer already points at the right
          place, then omit the subtraction.  */
-      if (((frame_size + current_function_outgoing_args_size + floats_offset)
-	   != 4 * (1 + (int) bit_count (saved_regs_mask)))
+      if (offsets->outgoing_args != (1 + (int) bit_count (saved_regs_mask))
 	  || current_function_calls_alloca)
 	asm_fprintf (f, "\tsub\t%r, %r, #%d\n", SP_REGNUM, FP_REGNUM,
 		     4 * bit_count (saved_regs_mask));
@@ -9347,11 +9423,10 @@ arm_output_epilogue (rtx sibling)
   else
     {
       /* Restore stack pointer if necessary.  */
-      if (frame_size + current_function_outgoing_args_size != 0)
+      if (offsets->outgoing_args != offsets->saved_regs)
 	{
 	  operands[0] = operands[1] = stack_pointer_rtx;
-	  operands[2] = GEN_INT (frame_size
-				 + current_function_outgoing_args_size);
+	  operands[2] = GEN_INT (offsets->outgoing_args - offsets->saved_regs);
 	  output_add_immediate (operands);
 	}
 
@@ -9517,8 +9592,10 @@ arm_output_epilogue (rtx sibling)
 
 static void
 arm_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
-			      HOST_WIDE_INT frame_size)
+			      HOST_WIDE_INT frame_size ATTRIBUTE_UNUSED)
 {
+  arm_stack_offsets *offsets;
+
   if (TARGET_THUMB)
     {
       /* ??? Probably not safe to set this here, since it assumes that a
@@ -9529,11 +9606,11 @@ arm_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
   else
     {
       /* We need to take into account any stack-frame rounding.  */
-      frame_size = arm_get_frame_size ();
+      offsets = arm_get_frame_offsets ();
 
       if (use_return_insn (FALSE, NULL)
 	  && return_used_this_function
-	  && (frame_size + current_function_outgoing_args_size) != 0
+	  && offsets->saved_regs != offsets->outgoing_args
 	  && !frame_pointer_needed)
 	abort ();
 
@@ -9763,82 +9840,173 @@ emit_sfm (int base_reg, int count)
 
   The sign of the number returned reflects the direction of stack
   growth, so the values are positive for all eliminations except
-  from the soft frame pointer to the hard frame pointer.  */
+  from the soft frame pointer to the hard frame pointer.
+
+  SFP may point just inside the local variables block to ensure correct
+  alignment.  */
+
+
+/* Calculate stack offsets.  These are used to calculate register elimination
+   offsets and in prologue/epilogue code.  */
+
+static arm_stack_offsets *
+arm_get_frame_offsets (void)
+{
+  struct arm_stack_offsets *offsets;
+  unsigned long func_type;
+  int leaf;
+  bool new_block;
+  int saved;
+  HOST_WIDE_INT frame_size;
+
+  offsets = &cfun->machine->stack_offsets;
+  
+  /* We need to know if we are a leaf function.  Unfortunately, it
+     is possible to be called after start_sequence has been called,
+     which causes get_insns to return the insns for the sequence,
+     not the function, which will cause leaf_function_p to return
+     the incorrect result.
+
+     to know about leaf functions once reload has completed, and the
+     frame size cannot be changed after that time, so we can safely
+     use the cached value.  */
+
+  if (reload_completed)
+    return offsets;
+
+  /* Initialy this is the size of the local variables.  It will translated
+     into an offset once we have determined the size of preceeding data.  */
+  frame_size = ROUND_UP_WORD (get_frame_size ());
+
+  leaf = leaf_function_p ();
+
+  /* Space for variadic functions.  */
+  offsets->saved_args = current_function_pretend_args_size;
+
+  offsets->frame = offsets->saved_args + (frame_pointer_needed ? 4 : 0);
+
+  if (TARGET_ARM)
+    {
+      unsigned int regno;
+
+      saved = bit_count (arm_compute_save_reg_mask ()) * 4;
+
+      /* We know that SP will be doubleword aligned on entry, and we must
+	 preserve that condition at any subroutine call.  We also require the
+	 soft frame pointer to be doubleword aligned.  */
+
+      if (TARGET_REALLY_IWMMXT)
+	{
+	  /* Check for the call-saved iWMMXt registers.  */
+	  for (regno = FIRST_IWMMXT_REGNUM;
+	       regno <= LAST_IWMMXT_REGNUM;
+	       regno++)
+	    if (regs_ever_live [regno] && ! call_used_regs [regno])
+	      saved += 8;
+	}
+
+      func_type = arm_current_func_type ();
+      if (! IS_VOLATILE (func_type))
+	{
+	  /* Space for saved FPA registers.  */
+	  for (regno = FIRST_FPA_REGNUM; regno <= LAST_FPA_REGNUM; regno++)
+	  if (regs_ever_live[regno] && ! call_used_regs[regno])
+	    saved += 12;
+
+	  /* Space for saved VFP registers.  */
+	  if (TARGET_HARD_FLOAT && TARGET_VFP)
+	    {
+	      new_block = TRUE;
+	      for (regno = FIRST_VFP_REGNUM;
+		   regno < LAST_VFP_REGNUM;
+		   regno += 2)
+		{
+		  if ((regs_ever_live[regno] && !call_used_regs[regno])
+		      || (regs_ever_live[regno + 1]
+			  && !call_used_regs[regno + 1]))
+		    {
+		      if (new_block)
+			{
+			  saved += 4;
+			  new_block = FALSE;
+			}
+		      saved += 8;
+		    }
+		  else
+		    new_block = TRUE;
+		}
+	    }
+	}
+    }
+  else /* TARGET_THUMB */
+    {
+      int reg;
+      int count_regs;
+
+      saved = 0;
+      count_regs = 0;
+      for (reg = 8; reg < 13; reg ++)
+	if (THUMB_REG_PUSHED_P (reg))
+	  count_regs ++;
+      if (count_regs)
+	saved += 4 * count_regs;
+      count_regs = 0;
+      for (reg = 0; reg <= LAST_LO_REGNUM; reg ++)
+	if (THUMB_REG_PUSHED_P (reg))
+	  count_regs ++;
+      if (count_regs || ! leaf_function_p ()
+	  || thumb_far_jump_used_p ())
+	saved += 4 * (count_regs + 1);
+      if (TARGET_BACKTRACE)
+	{
+	  if ((count_regs & 0xFF) == 0 && (regs_ever_live[3] != 0))
+	    saved += 20;
+	  else
+	    saved += 16;
+	}
+    }
+
+  /* Saved registers include the stack frame.  */
+  offsets->saved_regs = offsets->saved_args + saved;
+  offsets->soft_frame = offsets->saved_regs;
+  /* A leaf function does not need any stack alignment if it has nothing
+     on the stack.  */
+  if (leaf && frame_size == 0)
+    {
+      offsets->outgoing_args = offsets->soft_frame;
+      return offsets;
+    }
+
+  /* Ensure SFP has the correct alignment.  */
+  if (ARM_DOUBLEWORD_ALIGN
+      && (offsets->soft_frame & 7))
+    offsets->soft_frame += 4;
+
+  offsets->outgoing_args = offsets->soft_frame + frame_size
+			   + current_function_outgoing_args_size;
+
+  if (ARM_DOUBLEWORD_ALIGN)
+    {
+      /* Ensure SP remains doubleword aligned.  */
+      if (offsets->outgoing_args & 7)
+	offsets->outgoing_args += 4;
+      if (offsets->outgoing_args & 7)
+	abort ();
+    }
+
+  return offsets;
+}
+
+
+/* Calculate the realative offsets for the different stack pointers.  Positive
+   offsets are in the direction of stack growth.  */
+
 unsigned int
 arm_compute_initial_elimination_offset (unsigned int from, unsigned int to)
 {
-  unsigned int local_vars    = arm_get_frame_size ();
-  unsigned int outgoing_args = current_function_outgoing_args_size;
-  unsigned int stack_frame;
-  unsigned int call_saved_registers;
-  unsigned long func_type;
-  
-  func_type = arm_current_func_type ();
+  arm_stack_offsets *offsets;
 
-  /* Volatile functions never return, so there is
-     no need to save call saved registers.  */
-  call_saved_registers = 0;
-  if (! IS_VOLATILE (func_type))
-    {
-      unsigned int reg_mask;
-      unsigned int reg;
-      bool new_block;
-
-      /* Make sure that we compute which registers will be saved
-	 on the stack using the same algorithm that is used by
-	 the prologue creation code.  */
-      reg_mask = arm_compute_save_reg_mask ();
-
-      /* Now count the number of bits set in save_reg_mask.
-	 If we have already counted the registers in the stack
-	 frame, do not count them again.  Non call-saved registers
-	 might be saved in the call-save area of the stack, if
-	 doing so will preserve the stack's alignment.  Hence we
-	 must count them here.  For each set bit we need 4 bytes
-	 of stack space.  */
-      if (frame_pointer_needed)
-	reg_mask &= 0x07ff;
-      call_saved_registers += 4 * bit_count (reg_mask);
-
-      /* If the hard floating point registers are going to be
-	 used then they must be saved on the stack as well.
-         Each register occupies 12 bytes of stack space.  */
-      for (reg = FIRST_FPA_REGNUM; reg <= LAST_FPA_REGNUM; reg++)
-	if (regs_ever_live[reg] && ! call_used_regs[reg])
-	  call_saved_registers += 12;
-
-      /* Likewise VFP regs.  */
-      if (TARGET_HARD_FLOAT && TARGET_VFP)
-	{
-	  new_block = TRUE;
-	  for (reg = FIRST_VFP_REGNUM; reg < LAST_VFP_REGNUM; reg += 2)
-	    {
-	      if ((regs_ever_live[reg] && !call_used_regs[reg])
-		  || (regs_ever_live[reg + 1] && !call_used_regs[reg + 1]))
-		{
-		  if (new_block)
-		    {
-		      call_saved_registers += 4;
-		      new_block = FALSE;
-		    }
-		  call_saved_registers += 8;
-		}
-	      else
-		new_block = TRUE;
-	    }
-	}
-
-      if (TARGET_REALLY_IWMMXT)
-	/* Check for the call-saved iWMMXt registers.  */
-	for (reg = FIRST_IWMMXT_REGNUM; reg <= LAST_IWMMXT_REGNUM; reg++)
-	  if (regs_ever_live[reg] && ! call_used_regs [reg])
-	    call_saved_registers += 8;
-    }
-
-  /* The stack frame contains 4 registers - the old frame pointer,
-     the old stack pointer, the return address and PC of the start
-     of the function.  */
-  stack_frame = frame_pointer_needed ? 16 : 0;
+  offsets = arm_get_frame_offsets ();
 
   /* OK, now we have enough information to compute the distances.
      There must be an entry in these switch tables for each pair
@@ -9855,24 +10023,22 @@ arm_compute_initial_elimination_offset (unsigned int from, unsigned int to)
 	case FRAME_POINTER_REGNUM:
 	  /* This is the reverse of the soft frame pointer
 	     to hard frame pointer elimination below.  */
-	  if (call_saved_registers == 0 && stack_frame == 0)
-	    return 0;
-	  return (call_saved_registers + stack_frame - 4);
+	  return offsets->soft_frame - offsets->saved_args;
 
 	case ARM_HARD_FRAME_POINTER_REGNUM:
 	  /* If there is no stack frame then the hard
 	     frame pointer and the arg pointer coincide.  */
-	  if (stack_frame == 0 && call_saved_registers != 0)
+	  if (offsets->frame == offsets->saved_regs)
 	    return 0;
-	  /* FIXME:  Not sure about this.  Maybe we should always return 0 ?  */
-	  return (frame_pointer_needed
-		  && current_function_needs_context
-		  && ! cfun->machine->uses_anonymous_args) ? 4 : 0;
+          /* FIXME:  Not sure about this.  Maybe we should always return 0 ?  */
+          return (frame_pointer_needed
+                  && current_function_needs_context
+                  && ! cfun->machine->uses_anonymous_args) ? 4 : 0;
 
 	case STACK_POINTER_REGNUM:
 	  /* If nothing has been pushed on the stack at all
 	     then this will return -4.  This *is* correct!  */
-	  return call_saved_registers + stack_frame + local_vars + outgoing_args - 4;
+	  return offsets->outgoing_args - (offsets->saved_args + 4);
 
 	default:
 	  abort ();
@@ -9890,12 +10056,11 @@ arm_compute_initial_elimination_offset (unsigned int from, unsigned int to)
 	     stack frame.  The soft frame pointer to the bottom entry
 	     in the stack frame.  If there is no stack frame at all,
 	     then they are identical.  */
-	  if (call_saved_registers == 0 && stack_frame == 0)
-	    return 0;
-	  return - (call_saved_registers + stack_frame - 4);
+
+	  return offsets->frame - offsets->soft_frame;
 
 	case STACK_POINTER_REGNUM:
-	  return local_vars + outgoing_args;
+	  return offsets->outgoing_args - offsets->soft_frame;
 
 	default:
 	  abort ();
@@ -9912,107 +10077,6 @@ arm_compute_initial_elimination_offset (unsigned int from, unsigned int to)
     }
 }
 
-/* Calculate the size of the stack frame, taking into account any
-   padding that is required to ensure stack-alignment.  */
-HOST_WIDE_INT
-arm_get_frame_size (void)
-{
-  int regno;
-
-  int base_size = ROUND_UP_WORD (get_frame_size ());
-  int entry_size = 0;
-  unsigned long func_type = arm_current_func_type ();
-  int leaf;
-  bool new_block;
-
-  if (! TARGET_ARM)
-    abort();
-
-  if (! TARGET_ATPCS)
-    return base_size;
-
-  /* We need to know if we are a leaf function.  Unfortunately, it
-     is possible to be called after start_sequence has been called,
-     which causes get_insns to return the insns for the sequence,
-     not the function, which will cause leaf_function_p to return
-     the incorrect result.
-
-     To work around this, we cache the computed frame size.  This
-     works because we will only be calling RTL expanders that need
-     to know about leaf functions once reload has completed, and the
-     frame size cannot be changed after that time, so we can safely
-     use the cached value.  */
-
-  if (reload_completed)
-    return cfun->machine->frame_size;
-
-  leaf = leaf_function_p ();
-
-  /* A leaf function does not need any stack alignment if it has nothing
-     on the stack.  */
-  if (leaf && base_size == 0)
-    {
-      cfun->machine->frame_size = 0;
-      return 0;
-    }
-
-  /* We know that SP will be word aligned on entry, and we must
-     preserve that condition at any subroutine call.  But those are
-     the only constraints.  */
-
-  /* Space for variadic functions.  */
-  if (current_function_pretend_args_size)
-    entry_size += current_function_pretend_args_size;
-
-  /* Space for saved registers.  */
-  entry_size += bit_count (arm_compute_save_reg_mask ()) * 4;
-
-  if (! IS_VOLATILE (func_type))
-    {
-      /* Space for saved FPA registers.  */
-      for (regno = FIRST_FPA_REGNUM; regno <= LAST_FPA_REGNUM; regno++)
-      if (regs_ever_live[regno] && ! call_used_regs[regno])
-	entry_size += 12;
-
-      /* Space for saved VFP registers.  */
-      if (TARGET_HARD_FLOAT && TARGET_VFP)
-	{
-	  new_block = TRUE;
-	  for (regno = FIRST_VFP_REGNUM; regno < LAST_VFP_REGNUM; regno += 2)
-	    {
-	      if ((regs_ever_live[regno] && !call_used_regs[regno])
-		  || (regs_ever_live[regno + 1] && !call_used_regs[regno + 1]))
-		{
-		  if (new_block)
-		    {
-		      entry_size += 4;
-		      new_block = FALSE;
-		    }
-		  entry_size += 8;
-		}
-	      else
-		new_block = TRUE;
-	    }
-	}
-    }
-
-  if (TARGET_REALLY_IWMMXT)
-    {
-      /* Check for the call-saved iWMMXt registers.  */
-      for (regno = FIRST_IWMMXT_REGNUM; regno <= LAST_IWMMXT_REGNUM; regno++)
-	if (regs_ever_live [regno] && ! call_used_regs [regno])
-	  entry_size += 8;
-    }
-
-  if ((entry_size + base_size + current_function_outgoing_args_size) & 7)
-    base_size += 4;
-  if ((entry_size + base_size + current_function_outgoing_args_size) & 7)
-    abort ();
-
-  cfun->machine->frame_size = base_size;
-
-  return base_size;
-}
 
 /* Generate the prologue instructions for entry into an ARM function.  */
 void
@@ -10026,7 +10090,9 @@ arm_expand_prologue (void)
   unsigned long func_type;
   int fp_offset = 0;
   int saved_pretend_args = 0;
+  int saved_regs = 0;
   unsigned int args_to_push;
+  arm_stack_offsets *offsets;
 
   func_type = arm_current_func_type ();
 
@@ -10172,6 +10238,7 @@ arm_expand_prologue (void)
   if (live_regs_mask)
     {
       insn = emit_multi_reg_push (live_regs_mask);
+      saved_regs += bit_count (live_regs_mask) * 4;
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -10184,6 +10251,7 @@ arm_expand_prologue (void)
 	  insn = emit_insn (gen_rtx_SET (VOIDmode, insn,
 					 gen_rtx_REG (V2SImode, reg)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
+	  saved_regs += 8;
 	}
 
   if (! IS_VOLATILE (func_type))
@@ -10202,6 +10270,7 @@ arm_expand_prologue (void)
 		insn = emit_insn (gen_rtx_SET (VOIDmode, insn,
 					       gen_rtx_REG (XFmode, reg)));
 		RTX_FRAME_RELATED_P (insn) = 1;
+		saved_regs += 12;
 	      }
 	}
       else
@@ -10225,6 +10294,7 @@ arm_expand_prologue (void)
 		    {
 		      insn = emit_sfm (reg + 1, start_reg - reg);
 		      RTX_FRAME_RELATED_P (insn) = 1;
+		      saved_regs += (reg - start_reg) * 12;
 		    }
 		  start_reg = reg - 1;
 		}
@@ -10233,6 +10303,7 @@ arm_expand_prologue (void)
 	  if (start_reg != reg)
 	    {
 	      insn = emit_sfm (reg + 1, start_reg - reg);
+	      saved_regs += (reg - start_reg) * 12;
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	}
@@ -10250,6 +10321,7 @@ arm_expand_prologue (void)
 		      insn = vfp_emit_fstmx (start_reg,
 					    (reg - start_reg) / 2);
 		      RTX_FRAME_RELATED_P (insn) = 1;
+		      saved_regs += (start_reg - reg) * 4 + 4;
 		    }
 		  start_reg = reg + 2;
 		}
@@ -10259,6 +10331,7 @@ arm_expand_prologue (void)
 	      insn = vfp_emit_fstmx (start_reg,
 				    (reg - start_reg) / 2);
 	      RTX_FRAME_RELATED_P (insn) = 1;
+	      saved_regs += (start_reg - reg) * 4 + 4;
 	    }
 	}
     }
@@ -10289,14 +10362,16 @@ arm_expand_prologue (void)
 	}
     }
 
-  amount = GEN_INT (-(arm_get_frame_size ()
-		      + current_function_outgoing_args_size));
-
-  if (amount != const0_rtx)
+  offsets = arm_get_frame_offsets ();
+  if (offsets->outgoing_args != offsets->saved_args + saved_regs)
     {
       /* This add can produce multiple insns for a large constant, so we
 	 need to get tricky.  */
       rtx last = get_last_insn ();
+
+      amount = GEN_INT (offsets->saved_args + saved_regs
+			- offsets->outgoing_args);
+
       insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 				    amount));
       do
@@ -12618,8 +12693,8 @@ thumb_shiftable_const (unsigned HOST_WIDE_INT val)
 
 /* Returns nonzero if the current function contains,
    or might contain a far jump.  */
-int
-thumb_far_jump_used_p (int in_prologue)
+static int
+thumb_far_jump_used_p (void)
 {
   rtx insn;
 
@@ -12637,7 +12712,7 @@ thumb_far_jump_used_p (int in_prologue)
   /* If this function is not being called from the prologue/epilogue
      generation code then it must be being called from the
      INITIAL_ELIMINATION_OFFSET macro.  */
-  if (!in_prologue)
+  if (!(ARM_DOUBLEWORD_ALIGN || reload_completed))
     {
       /* In this case we know that we are being asked about the elimination
 	 of the arg pointer register.  If that register is not being used,
@@ -12656,7 +12731,10 @@ thumb_far_jump_used_p (int in_prologue)
 
 	 A false negative will not result in bad code being generated, but it
 	 will result in a needless push and pop of the link register.  We
-	 hope that this does not occur too often.  */
+	 hope that this does not occur too often.
+
+	 If we need doubleword stack alignment this could affect the other
+	 elimination offsets so we can't risk getting it wrong.  */
       if (regs_ever_live [ARG_POINTER_REGNUM])
 	cfun->machine->arg_pointer_live = 1;
       else if (!cfun->machine->arg_pointer_live)
@@ -12807,7 +12885,7 @@ thumb_unexpanded_epilogue (void)
     }
 
   had_to_push_lr = (live_regs_mask || !leaf_function
-		    || thumb_far_jump_used_p (1));
+		    || thumb_far_jump_used_p ());
   
   if (TARGET_BACKTRACE
       && ((live_regs_mask & 0xFF) == 0)
@@ -12913,91 +12991,57 @@ arm_init_expanders (void)
   init_machine_status = arm_init_machine_status;
 }
 
+
+/* Like arm_compute_initial_elimination offset.  Simpler because
+   THUMB_HARD_FRAME_POINTER isn't actually the ABI specified frame pointer.  */
+
 HOST_WIDE_INT
-thumb_get_frame_size (void)
+thumb_compute_initial_elimination_offset (unsigned int from, unsigned int to)
 {
-  int regno;
+  arm_stack_offsets *offsets;
 
-  int base_size = ROUND_UP_WORD (get_frame_size ());
-  int count_regs = 0;
-  int entry_size = 0;
-  int leaf;
+  offsets = arm_get_frame_offsets ();
 
-  if (! TARGET_THUMB)
-    abort ();
-
-  if (! TARGET_ATPCS)
-    return base_size;
-
-  /* We need to know if we are a leaf function.  Unfortunately, it
-     is possible to be called after start_sequence has been called,
-     which causes get_insns to return the insns for the sequence,
-     not the function, which will cause leaf_function_p to return
-     the incorrect result.
-
-     To work around this, we cache the computed frame size.  This
-     works because we will only be calling RTL expanders that need
-     to know about leaf functions once reload has completed, and the
-     frame size cannot be changed after that time, so we can safely
-     use the cached value.  */
-
-  if (reload_completed)
-    return cfun->machine->frame_size;
-
-  leaf = leaf_function_p ();
-
-  /* A leaf function does not need any stack alignment if it has nothing
-     on the stack.  */
-  if (leaf && base_size == 0)
+  switch (from)
     {
-      cfun->machine->frame_size = 0;
-      return 0;
+    case ARG_POINTER_REGNUM:
+      switch (to)
+	{
+	case STACK_POINTER_REGNUM:
+	  return offsets->outgoing_args - offsets->saved_args;
+
+	case FRAME_POINTER_REGNUM:
+	  return offsets->soft_frame - offsets->saved_args;
+
+	case THUMB_HARD_FRAME_POINTER_REGNUM:
+	case ARM_HARD_FRAME_POINTER_REGNUM:
+	  return offsets->saved_regs - offsets->saved_args;
+
+	default:
+	  abort();
+	}
+      break;
+
+    case FRAME_POINTER_REGNUM:
+      switch (to)
+	{
+	case STACK_POINTER_REGNUM:
+	  return offsets->outgoing_args - offsets->soft_frame;
+
+	case THUMB_HARD_FRAME_POINTER_REGNUM:
+	case ARM_HARD_FRAME_POINTER_REGNUM:
+	  return offsets->saved_regs - offsets->soft_frame;
+
+	default:
+	  abort();
+	}
+      break;
+
+    default:
+      abort ();
     }
-
-  /* We know that SP will be word aligned on entry, and we must
-     preserve that condition at any subroutine call.  But those are
-     the only constraints.  */
-
-  /* Space for variadic functions.  */
-  if (current_function_pretend_args_size)
-    entry_size += current_function_pretend_args_size;
-
-  /* Space for pushed lo registers.  */
-  for (regno = 0; regno <= LAST_LO_REGNUM; regno++)
-    if (THUMB_REG_PUSHED_P (regno))
-      count_regs++;
-
-  /* Space for backtrace structure.  */
-  if (TARGET_BACKTRACE)
-    {
-      if (count_regs == 0 && regs_ever_live[LAST_ARG_REGNUM] != 0)
-	entry_size += 20;
-      else
-	entry_size += 16;
-    }
-
-  if (count_regs || !leaf || thumb_far_jump_used_p (1))
-    count_regs++;	/* LR */
-
-  entry_size += count_regs * 4;
-  count_regs = 0;
-
-  /* Space for pushed hi regs.  */
-  for (regno = 8; regno < 13; regno++)
-    if (THUMB_REG_PUSHED_P (regno))
-      count_regs++;
-
-  entry_size += count_regs * 4;
-
-  if ((entry_size + base_size + current_function_outgoing_args_size) & 7)
-    base_size += 4;
-  if ((entry_size + base_size + current_function_outgoing_args_size) & 7)
-    abort ();
-
-  cfun->machine->frame_size = base_size;
-
-  return base_size;
 }
+
 
 /* Generate the rest of a function's prologue.  */
 void
@@ -13005,8 +13049,8 @@ thumb_expand_prologue (void)
 {
   rtx insn, dwarf;
 
-  HOST_WIDE_INT amount = (thumb_get_frame_size ()
-			  + current_function_outgoing_args_size);
+  HOST_WIDE_INT amount;
+  arm_stack_offsets *offsets;
   unsigned long func_type;
 
   func_type = arm_current_func_type ();
@@ -13021,16 +13065,18 @@ thumb_expand_prologue (void)
       return;
     }
 
+  offsets = arm_get_frame_offsets ();
+
   if (frame_pointer_needed)
     {
-      insn = emit_insn (gen_movsi (hard_frame_pointer_rtx, stack_pointer_rtx));
+      insn = emit_insn (gen_movsi (hard_frame_pointer_rtx,
+				   stack_pointer_rtx));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
+  amount = offsets->outgoing_args - offsets->saved_regs;
   if (amount)
     {
-      amount = ROUND_UP_WORD (amount);
-      
       if (amount < 512)
 	{
 	  insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
@@ -13129,20 +13175,21 @@ thumb_expand_prologue (void)
 void
 thumb_expand_epilogue (void)
 {
-  HOST_WIDE_INT amount = (thumb_get_frame_size ()
-			  + current_function_outgoing_args_size);
+  HOST_WIDE_INT amount;
+  arm_stack_offsets *offsets;
   int regno;
 
   /* Naked functions don't have prologues.  */
   if (IS_NAKED (arm_current_func_type ()))
     return;
 
+  offsets = arm_get_frame_offsets ();
+  amount = offsets->outgoing_args - offsets->saved_regs;
+
   if (frame_pointer_needed)
     emit_insn (gen_movsi (stack_pointer_rtx, hard_frame_pointer_rtx));
   else if (amount)
     {
-      amount = ROUND_UP_WORD (amount);
-      
       if (amount < 512)
 	emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 			       GEN_INT (amount)));
@@ -13257,7 +13304,7 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
     if (THUMB_REG_PUSHED_P (regno))
       live_regs_mask |= 1 << regno;
 
-  if (live_regs_mask || !leaf_function_p () || thumb_far_jump_used_p (1))
+  if (live_regs_mask || !leaf_function_p () || thumb_far_jump_used_p ())
     live_regs_mask |= 1 << LR_REGNUM;
 
   if (TARGET_BACKTRACE)

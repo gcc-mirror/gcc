@@ -2226,7 +2226,7 @@ fi
 		;;
 
 	arm*-*-*)
-		supported_defaults="arch cpu float tune fpu"
+		supported_defaults="arch cpu float tune fpu abi"
 		for which in cpu tune; do
 			eval "val=\$with_$which"
 			case "$val" in
@@ -2280,13 +2280,24 @@ fi
 			# OK
 			;;
 		*)
-			echo "Unknown fpu used in --with-fpu=$fpu" 2>&1
+			echo "Unknown fpu used in --with-fpu=$with_fpu" 2>&1
+			exit 1
+			;;
+		esac
+
+		case "$with_abi" in
+		"" \
+		| apcs-gnu | atpcs | aapcs | iwmmxt )
+			#OK
+			;;
+		*)
+			echo "Unknown ABI used in --with-abi=$with_abi"
 			exit 1
 			;;
 		esac
 
 		if test "x$with_arch" != x && test "x$with_cpu" != x; then
-			echo "Warning: --with-arch overrides --with-cpu" 1>&2
+			echo "Warning: --with-arch overrides --with-cpu=$with_cpu" 1>&2
 		fi
 		;;
 

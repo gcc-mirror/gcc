@@ -31,12 +31,13 @@ extern void arm_finalize_pic (int);
 extern int arm_volatile_func (void);
 extern const char *arm_output_epilogue (rtx);
 extern void arm_expand_prologue (void);
-extern HOST_WIDE_INT arm_get_frame_size	(void);
 extern const char *arm_strip_name_encoding (const char *);
 extern void arm_asm_output_labelref (FILE *, const char *);
 extern unsigned long arm_current_func_type (void);
 extern unsigned int arm_compute_initial_elimination_offset (unsigned int,
 							    unsigned int);
+extern HOST_WIDE_INT thumb_compute_initial_elimination_offset (unsigned int,
+							       unsigned int);
 
 #ifdef TREE_CODE
 extern int arm_return_in_memory (tree);
@@ -157,6 +158,7 @@ extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern rtx arm_va_arg (tree, tree);
 extern int arm_function_arg_pass_by_reference (CUMULATIVE_ARGS *,
 					       enum machine_mode, tree, int);
+extern bool arm_needs_doubleword_align (enum machine_mode, tree);
 #endif
 
 #if defined AOF_ASSEMBLER 
@@ -175,9 +177,7 @@ extern int arm_float_words_big_endian (void);
 
 /* Thumb functions.  */
 extern void arm_init_expanders (void);
-extern int thumb_far_jump_used_p (int);
 extern const char *thumb_unexpanded_epilogue (void);
-extern HOST_WIDE_INT thumb_get_frame_size (void);
 extern void thumb_expand_prologue (void);
 extern void thumb_expand_epilogue (void);
 #ifdef TREE_CODE
