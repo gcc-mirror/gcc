@@ -1,3 +1,12 @@
+1999-08-07  Andreas Schwab  <schwab@suse.de>
+
+	* iostream.cc: Add missing calls to isfx and setup a cleanup
+	region for the locked stream.
+	* iostream.h: Likewise.
+	* isgetline.cc: Likewise.
+	* isgetsb.cc: Likewise.
+	* isscan.cc: Likewise.
+
 Mon Jun 28 09:25:23 1999  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* configure.in (post-target): Use "$(topsrcdir)", not "$(srcdir)/..".

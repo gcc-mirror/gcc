@@ -71,6 +71,8 @@ int skip_ws(streambuf* sb)
 istream& istream::get(char& c)
 {
     if (ipfx1()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	int ch = _strbuf->sbumpc();
 	if (ch == EOF) {
 	  set(ios::eofbit|ios::failbit);
@@ -80,6 +82,8 @@ istream& istream::get(char& c)
 	  c = (char)ch;
 	  _gcount = 1;
 	}
+	isfx();
+	_IO_cleanup_region_end (0);
     }
     else
       _gcount = 0;
@@ -102,10 +106,12 @@ istream& istream::ignore(int n /* = 1 */, int delim /* = EOF */)
 {
     _gcount = 0;
     if (ipfx1()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	register streambuf* sb = _strbuf;
 	if (delim == EOF) {
 	    _gcount = sb->ignore(n);
-	    return *this;
+	    goto unlock;
 	}
 	for (;;) {
 #if 0
@@ -122,6 +128,9 @@ istream& istream::ignore(int n /* = 1 */, int delim /* = EOF */)
 	    if (ch == delim)
 		break;
 	}
+    unlock:
+	isfx();
+	_IO_cleanup_region_end (0);
     }
     return *this;
 }
@@ -129,9 +138,13 @@ istream& istream::ignore(int n /* = 1 */, int delim /* = EOF */)
 istream& istream::read(char *s, streamsize n)
 {
     if (ipfx1()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	_gcount = _strbuf->sgetn(s, n);
 	if (_gcount != n)
 	    set(ios::failbit|ios::eofbit);
+	isfx();
+	_IO_cleanup_region_end (0);
     }
     else
       _gcount = 0;
@@ -184,11 +197,15 @@ streampos istream::tellg()
 istream& istream::operator>>(char& c)
 {
     if (ipfx0()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	int ch = _strbuf->sbumpc();
 	if (ch == EOF)
 	    set(ios::eofbit|ios::failbit);
 	else
 	    c = (char)ch;
+	isfx();
+	_IO_cleanup_region_end (0);
     }
     return *this;
 }
@@ -200,6 +217,8 @@ istream::operator>> (char* ptr)
   int w = width(0);
   if (ipfx0())
     {
+      _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				_strbuf);
       register streambuf* sb = _strbuf;
       for (;;)
 	{
@@ -219,6 +238,8 @@ istream::operator>> (char* ptr)
 	}
       if (p == ptr)
 	set(ios::failbit);
+      isfx();
+      _IO_cleanup_region_end (0);
     }
   *p = '\0';
   return *this;
@@ -234,6 +255,9 @@ static int read_int(istream& stream, unsigned LONGEST& val, int& neg)
 {
     if (!stream.ipfx0())
       return 0;
+    int retval;
+    _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+			      stream._strbuf);
     register streambuf* sb = stream.rdbuf();
     int base = 10;
     int ndigits = 0;
@@ -254,7 +278,7 @@ static int read_int(istream& stream, unsigned LONGEST& val, int& neg)
 	    ch = sb->sbumpc();
 	    if (ch == EOF) {
 		val = 0;
-		return 1;
+		goto unlock;
 	    }
 	    if (ch == 'x' || ch == 'X') {
 		base = 16;
@@ -290,19 +314,26 @@ static int read_int(istream& stream, unsigned LONGEST& val, int& neg)
 	    if (ndigits == 0)
 		goto fail;
 	    else
-		return 1;
+		goto unlock;
 	}
 	ndigits++;
 	val = base * val + digit;
 	ch = sb->sbumpc();
     }
-    return 1;
+  unlock:
+    retval = 1;
+    goto out;
   fail:
     stream.set(ios::failbit);
-    return 0;
+    retval = 0;
+    goto out;
   eof_fail:
     stream.set(ios::failbit|ios::eofbit);
-    return 0;
+    retval = 0;
+  out:
+    stream.isfx();
+    _IO_cleanup_region_end (0);
+    return retval;
 }
 
 #define READ_INT(TYPE) \
@@ -334,6 +365,8 @@ istream& istream::operator>>(long double& x)
 {
     if (ipfx0())
       {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 #if _G_HAVE_LONG_DOUBLE_IO
 	scan("%Lg", &x);
 #else
@@ -341,6 +374,8 @@ istream& istream::operator>>(long double& x)
 	scan("%lg", &y);
 	x = y;
 #endif
+	isfx();
+	_IO_cleanup_region_end (0);
       }
     return *this;
 }
@@ -348,20 +383,34 @@ istream& istream::operator>>(long double& x)
 istream& istream::operator>>(double& x)
 {
     if (ipfx0())
+      {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	scan("%lg", &x);
+	isfx();
+	_IO_cleanup_region_end (0);
+      }
     return *this;
 }
 
 istream& istream::operator>>(float& x)
 {
     if (ipfx0())
+      {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	scan("%g", &x);
+	isfx();
+	_IO_cleanup_region_end (0);
+      }
     return *this;
 }
 
 istream& istream::operator>>(register streambuf* sbuf)
 {
     if (ipfx0()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	register streambuf* inbuf = rdbuf();
 	// FIXME: Should optimize!
 	for (;;) {
@@ -375,6 +424,8 @@ istream& istream::operator>>(register streambuf* sbuf)
 		break;
 	    }
 	}
+	isfx();
+	_IO_cleanup_region_end (0);
     }
     return *this;
 }
@@ -789,8 +840,8 @@ ostream& ostream::operator<<(const char *s)
       if (flags() & ios::left && padding > 0) // Left adjustment.
 	if (_IO_padn(sbuf, fill_char, padding) != padding)
 	  set(ios::badbit);
-      osfx();
      failed:
+      osfx();
       _IO_cleanup_region_end (0);
     }
   return *this;

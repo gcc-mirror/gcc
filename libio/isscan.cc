@@ -29,10 +29,14 @@ the executable file might be covered by the GNU General Public License. */
 istream& istream::scan(const char *format ...)
 {
     if (ipfx0()) {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	va_list ap;
 	va_start(ap, format);
 	_strbuf->vscan(format, ap, this);
 	va_end(ap);
+	isfx();
+	_IO_cleanup_region_end (0);
     }
     return *this;
 }
@@ -40,6 +44,12 @@ istream& istream::scan(const char *format ...)
 istream& istream::vscan(const char *format, _IO_va_list args)
 {
     if (ipfx0())
+      {
+	_IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile,
+				  _strbuf);
 	_strbuf->vscan(format, args, this);
+	isfx();
+	_IO_cleanup_region_end (0);
+      }
     return *this;
 }

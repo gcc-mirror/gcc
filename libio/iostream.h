@@ -173,6 +173,7 @@ protected:
     int get() { if (!ipfx1()) return EOF;
 		else { int ch = _strbuf->sbumpc();
 		       if (ch == EOF) set(ios::eofbit);
+		       isfx();
 		       return ch;
 		     } }
     int peek();
