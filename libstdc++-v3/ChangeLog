@@ -1,3 +1,37 @@
+2001-06-12  Loren J. Rittle  <ljrittle@acm.org>
+
+	libstdc++/2071
+	* porting.texi: Add documentation about libstdc++-v3-specific
+	macros that are currently included in os_defines.h files.
+
+	* config/basic_file_stdio.h (sys_getc): New method.
+	(sys_ungetc): New method.
+	* include/bits/basic_file.h: (sys_getc): New method signature.
+	(sys_ungetc): New method signature.
+
+	* include/bits/fstream.tcc (underflow): Add conditional code
+	paths which avoid using short seeks on streams (especially
+	useful when the stream might be interactive or a pipe).  At
+	the moment, this alternate path only avoids seeking when the
+	``buffer size'' of underflow() is 1 since the C standard only
+	guarantees buffer space for one ungetc (this technique could
+	be extended since *-*-solaris* supports buffering for 4 calls
+	to ungetc and *-*-*bsd* supports buffering limited only by
+	memory resources).  Also, _GLIBCPP_AVOID_FSEEK must be defined
+	in a port's os_defines.h file for this alternate path to even
+	be considered.  As a bonus, the idiom of using getc/ungetc
+	requires no system calls whereas fseek maps to one or two
+	system call(s) on many platforms.
+
+	* config/os/bsd/freebsd/bits/os_defines.h (_GLIBCPP_AVOID_FSEEK):
+	Define it.
+	* config/os/solaris/solaris2.5/bits/os_defines.h
+	(_GLIBCPP_AVOID_FSEEK): Likewise.
+	* config/os/solaris/solaris2.6/bits/os_defines.h
+	(_GLIBCPP_AVOID_FSEEK): Likewise.
+	* config/os/solaris/solaris2.7/bits/os_defines.h
+	(_GLIBCPP_AVOID_FSEEK): Likewise.
+
 2001-06-12   Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_COMPILER_VERSION): Change to
