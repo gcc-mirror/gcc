@@ -109,6 +109,11 @@ unsigned long loop_n_iterations;
 
 static int loop_has_call;
 
+/* Nonzero if there is a volatile memory reference in the current
+   loop.  */
+
+static int loop_has_volatile;
+
 /* Added loop_continue which is the NOTE_INSN_LOOP_CONT of the
    current loop.  A continue statement will generate a branch to
    NEXT_INSN (loop_continue).  */
@@ -155,7 +160,7 @@ static rtx loop_store_mems[NUM_STORES];
 static int loop_store_mems_idx;
 
 /* Nonzero if we don't know what MEMs were changed in the current loop.
-   This happens if the loop contains a call (in which call `loop_has_call'
+   This happens if the loop contains a call (in which case `loop_has_call'
    will also be set) or if we store into more than NUM_STORES MEMs.  */
 
 static int unknown_address_altered;
@@ -2089,7 +2094,8 @@ constant_high_bytes (p, loop_start)
 #endif
 
 /* Scan a loop setting the variables `unknown_address_altered',
-   `num_mem_sets', `loop_continue', loops_enclosed' and `loop_has_call'.
+   `num_mem_sets', `loop_continue', loops_enclosed', `loop_has_call',
+   and `loop_has_volatile'.
    Also, fill in the array `loop_store_mems'.  */
 
 static void
@@ -2101,6 +2107,7 @@ prescan_loop (start, end)
 
   unknown_address_altered = 0;
   loop_has_call = 0;
+  loop_has_volatile = 0;
   loop_store_mems_idx = 0;
 
   num_mem_sets = 0;
@@ -2141,7 +2148,12 @@ prescan_loop (start, end)
       else
 	{
 	  if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
-	    note_stores (PATTERN (insn), note_addr_stored);
+	    {
+	      if (volatile_refs_p (PATTERN (insn)))
+		loop_has_volatile = 1;
+
+	      note_stores (PATTERN (insn), note_addr_stored);
+	    }
 	}
     }
 }
@@ -5578,6 +5590,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 
       if (num_nonfixed_reads <= 1
 	  && !loop_has_call
+	  && !loop_has_volatile
 	  && (no_use_except_counting
 	      || (bl->giv_count + bl->biv_count + num_mem_sets
 		  + num_movables + 2 == insn_count)))
