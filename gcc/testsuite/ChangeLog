@@ -1,4 +1,9 @@
 2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	
+	PR fortran/14077
+	* gfortran.fortran-torture/execute/module_init_1.f90: New test.
+
+2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/13201
 	* gfortran.dg/shape_1.f90: New test.
