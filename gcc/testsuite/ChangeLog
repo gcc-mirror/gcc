@@ -1,3 +1,12 @@
+2000-10-06  Richard Henderson  <rth@cygnus.com>
+
+	* g++.old-deja/g++.brendan/crash13.C: Pass -Wreturn-type.
+	* g++.old-deja/g++.brendan/crash52.C: Likewise.
+	* g++.old-deja/g++.jason/report.C: Likewise.
+	* g++.old-deja/g++.law/friend5.C: Likewise.
+	* g++.old-deja/g++.mike/p646.C: Likewise.  Adjust the spelling
+	of the expected warnings.
+
 2000-10-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/enum14.C: New test.

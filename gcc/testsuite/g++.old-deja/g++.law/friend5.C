@@ -1,5 +1,7 @@
 // Build don't link: 
 // GROUPS passed friends
+// Special g++ Options: -Wreturn-type
+
         extern "C" int good_friend(int);
         extern "C" int bad_friend();
 

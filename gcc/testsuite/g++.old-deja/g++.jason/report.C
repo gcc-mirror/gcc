@@ -1,5 +1,7 @@
 // Build don't link: 
 // GROUPS passed error-reporting
+// Special g++ Options: -Wreturn-type
+
 template <char C>
 class badoo
 {
