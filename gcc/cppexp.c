@@ -501,6 +501,8 @@ parse_defined (pfile)
 	cpp_error (pfile, DL_WARNING,
 		   "this use of \"defined\" may not be portable");
 
+      _cpp_mark_macro_used (node);
+
       /* A possible controlling macro of the form #if !defined ().
 	 _cpp_parse_expr checks there was no other junk on the line.  */
       pfile->mi_ind_cmacro = node;

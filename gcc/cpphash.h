@@ -98,7 +98,14 @@ struct cpp_macro
 
   /* If macro defined in system header.  */
   unsigned int syshdr   : 1;
+
+  /* Non-zero if it has been expanded or had its existence tested.  */
+  unsigned int used     : 1;
 };
+
+#define _cpp_mark_macro_used(NODE) do {					\
+  if ((NODE)->type == NT_MACRO && !((NODE)->flags & NODE_BUILTIN))	\
+    (NODE)->value.macro->used = 1; } while (0)
 
 /* A generic memory buffer, and operations on it.  */
 typedef struct _cpp_buff _cpp_buff;
@@ -370,6 +377,9 @@ struct cpp_reader
      for include files.  (Altered as we get more of them.)  */
   unsigned int max_include_len;
 
+  /* Macros on or after this line are warned about if unused.  */
+  unsigned int first_unused_line;
+
   /* Date and time text.  Calculated together if either is requested.  */
   const uchar *date;
   const uchar *time;
@@ -477,6 +487,8 @@ extern bool _cpp_arguments_ok		PARAMS ((cpp_reader *, cpp_macro *,
 						 unsigned int));
 extern const uchar *_cpp_builtin_macro_text PARAMS ((cpp_reader *,
 						     cpp_hashnode *));
+int _cpp_warn_if_unused_macro		PARAMS ((cpp_reader *, cpp_hashnode *,
+						 void *));
 /* In cpphash.c */
 extern void _cpp_init_hashtable		PARAMS ((cpp_reader *, hash_table *));
 extern void _cpp_destroy_hashtable	PARAMS ((cpp_reader *));

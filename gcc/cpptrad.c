@@ -655,6 +655,7 @@ scan_out_logical_line (pfile, macro)
 		{
 		  cpp_macro *m = fmacro.node->value.macro;
 
+		  m->used = 1;
 		  lex_state = ls_none;
 		  save_argument (&fmacro, out - pfile->out.base);
 
@@ -789,6 +790,7 @@ push_replacement_text (pfile, node)
   else
     {
       cpp_macro *macro = node->value.macro;
+      macro->used = 1;
       text = macro->exp.text;
       len = macro->count;
     }

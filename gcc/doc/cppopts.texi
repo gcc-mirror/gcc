@@ -110,6 +110,16 @@ Warn whenever an identifier which is not a macro is encountered in an
 @samp{#if} directive, outside of @samp{defined}.  Such identifiers are
 replaced with zero.
 
+@item -Wunused-macros
+@opindex Wunused-macros
+Warn about macros defined in the main file that are unused.  A macro
+is @dfn{used} if it is expanded or tested for existence at least once.
+The preprocessor will also warn if the macro has not been used at the
+time it is redefined or undefined.
+
+Built-in macros, macros defined on the command line, and macros
+defined in include files are not warned about.
+
 @item -Wendif-labels
 @opindex Wendif-labels
 Warn whenever an @samp{#else} or an @samp{#endif} are followed by text.
