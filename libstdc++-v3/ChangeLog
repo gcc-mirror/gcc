@@ -1,3 +1,8 @@
+2002-12-03  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/streambuf.tcc (basic_streambuf::sputbackc):  Prefix
+	"this->" to call to pbackfail.
+
 2002-12-02  Benjamin Kosnik  <bkoz@redhat.com>
             Jonathan Lennox  <lennox@cs.columbia.edu>
 
@@ -73,14 +78,6 @@
 
 	* GCC 3.2.1 Released.
 
-2002-11-19  Release Manager
-
-	* GCC 3.2.1 Released.
-
-2002-11-18  Release Manager
-
-	* GCC 3.2.1 Released.
-
 2002-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/linker-map.gnu: Export _S_construct even if size_t is
@@ -93,7 +90,7 @@
 	
 2002-11-06  David Edelsohn  <edelsohn@gnu.org>
 
-	PR 8362
+	PR libstdc++/8362
 	* testsuite/abi_check.cc: Add guards to prevent -mpower ICE.
 
 2002-11-05  Jonathan Wakely  <cow@compsoc.man.ac.uk>
