@@ -400,7 +400,7 @@ maybe_start_try (start_pc, end_pc)
     range = range->outer;
 	 
   current_range = range;
-  check_start_handlers (range, start_pc, end_pc);
+  check_start_handlers (range, start_pc);
 }
 
 /* Emit any end-of-try-range ending at end_pc and starting before

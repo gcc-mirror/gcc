@@ -2,6 +2,7 @@
 
 	* except.c (check_start_handlers): Re-add prototype lost in last
 	patch.
+	(maybe_start_try): Remove excess argument to `check_start_handlers'.
 
 2000-02-09  Andrew Haley  <aph@cygnus.com>
 
