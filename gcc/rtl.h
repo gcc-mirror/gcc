@@ -944,7 +944,10 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
 
 /* Don't continue this line--convex cc version 4.1 would lose.  */
 #if (defined (HAVE_PRE_INCREMENT) || defined (HAVE_PRE_DECREMENT) || defined (HAVE_POST_INCREMENT) || defined (HAVE_POST_DECREMENT))
-#define FIND_REG_INC_NOTE(insn, reg) (find_reg_note ((insn), REG_INC, (reg)))
+#define FIND_REG_INC_NOTE(insn, reg)				\
+  (reg != NULL_RTX && REG_P ((rtx) (reg))			\
+   ? find_regno_note ((insn), REG_INC, REGNO ((rtx) (reg)))	\
+   : find_reg_note ((insn), REG_INC, (reg)))
 #else
 #define FIND_REG_INC_NOTE(insn, reg) 0
 #endif
