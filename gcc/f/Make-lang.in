@@ -1,5 +1,5 @@
 # Top level makefile fragment for GNU Fortran.           -*-makefile-*-
-#   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001, 2002 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 #This file is part of GNU Fortran.
 
@@ -226,11 +226,11 @@ f/ansify$(build_exeext): f/ansify.c hconfig.h $(SYSTEM_H)
 
 $(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi f/root.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D BUGSONLY --no-header --no-split \
-	  --no-validate -o BUGS bugs0.texi
+	  --no-validate -I../doc/include -o BUGS bugs0.texi
 
 $(srcdir)/f/NEWS: f/news0.texi f/news.texi f/root.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D NEWSONLY --no-header --no-split \
-	  --no-validate -o NEWS news0.texi
+	  --no-validate -I../doc/include -o NEWS news0.texi
 
 f77.rebuilt: f/g77.info $(srcdir)/f/BUGS \
   $(srcdir)/f/NEWS 
