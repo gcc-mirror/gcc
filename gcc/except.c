@@ -3145,6 +3145,11 @@ can_throw_internal (rtx insn)
       return false;
     }
 
+  if (GET_CODE (insn) == JUMP_INSN
+      && GET_CODE (PATTERN (insn)) == RESX
+      && XINT (PATTERN (insn), 0) > 0)
+    return can_throw_internal_1 (XINT (PATTERN (insn), 0));
+
   /* Every insn that might throw has an EH_REGION note.  */
   note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
   if (!note || INTVAL (XEXP (note, 0)) <= 0)

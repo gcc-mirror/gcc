@@ -1,3 +1,7 @@
+2004-05-26  Jan Hubicka  <jh@suse.cz>
+
+	* except.c (can_throw_internal):  Notice RESX instructions.
+
 2004-05-26  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* varasm.c (output_constant) <INTEGER_TYPE>: Pass the minimum
