@@ -1071,6 +1071,8 @@ machopic_output_possible_stub_label (file, name)
 	  && ! strcmp (name+2, sym_name+2))
 	{
 	  ASM_OUTPUT_LABEL (file, IDENTIFIER_POINTER (TREE_PURPOSE (temp)));
+	  /* Avoid generating a stub for this.  */
+	  TREE_USED (temp) = 0;
 	  break;
 	}
     }
