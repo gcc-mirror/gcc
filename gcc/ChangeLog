@@ -1,3 +1,8 @@
+Mon Jul 27 00:54:41 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (simple_cst_equal, case CONSTRUCTOR): OK if the elts are
+	identical.
+
 Mon Jul 27 22:18:36 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (move_operand): Accept CONSTANT_P_RTX.
