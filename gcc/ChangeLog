@@ -1,3 +1,11 @@
+Fri Sep  4 11:57:50 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* gcc.c (do_spec_1): [case 'o'] Account for
+	lang_specific_extra_outfiles.
+	(main): Correctly clear all slots in outfiles for
+	lang_specific_extra_outfiles.  Set input_file_number before
+	calling lang_specific_pre_link.
+
 Fri Sep  4 10:37:07 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* loop.c (load_mems): Fix JUMP_LABEL field after for_each_rtx call.

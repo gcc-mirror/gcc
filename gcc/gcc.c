@@ -3732,9 +3732,16 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	  case 'o':
-	    for (i = 0; i < n_infiles; i++)
-	      store_arg (outfiles[i], 0, 0);
-	    break;
+	    {
+	      int max = n_infiles;
+#ifdef LANG_SPECIFIC_DRIVER
+	      max += lang_specific_extra_outfiles;
+#endif
+	      for (i = 0; i < max; i++)
+		if (outfiles[i])
+		  store_arg (outfiles[i], 0, 0);
+	      break;
+	    }
 
 	  case 'O':
 	    obstack_grow (&obstack, OBJECT_SUFFIX, strlen (OBJECT_SUFFIX));
@@ -4984,7 +4991,7 @@ main (argc, argv)
   i += lang_specific_extra_outfiles;
 #endif
   outfiles = (char **) xmalloc (i * sizeof (char *));
-  bzero ((char *) outfiles, n_infiles * sizeof (char *));
+  bzero ((char *) outfiles, i * sizeof (char *));
 
   /* Record which files were specified explicitly as link input.  */
 
@@ -5080,9 +5087,14 @@ main (argc, argv)
     }
 
 #ifdef LANG_SPECIFIC_DRIVER
-  if (error_count == 0
-      && lang_specific_pre_link ())
-    error_count++;
+  if (error_count == 0)
+    {
+      /* Make sure INPUT_FILE_NUMBER points to first available open
+	 slot.  */
+      input_file_number = n_infiles;
+      if (lang_specific_pre_link ())
+	error_count++;
+    }
 #endif
 
   /* Run ld to link all the compiler output files.  */
