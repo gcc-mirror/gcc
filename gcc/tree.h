@@ -2255,7 +2255,11 @@ extern void (*lang_unsave_expr_now)     PARAMS ((tree));
 /* Return 0 if it is safe to evaluate EXPR multiple times,
    return 1 if it is safe if EXPR is unsaved afterward, or
    return 2 if it is completely unsafe.  */
-extern int unsafe_for_reeval PARAMS ((tree));
+extern int unsafe_for_reeval		PARAMS ((tree));
+
+/* If non-null, these are language-specific helper functions for
+   unsafe_for_reeval.  Return negative to not handle some tree.  */
+extern int (*lang_unsafe_for_reeval)	PARAMS ((tree));
 
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
    or offset that depends on a field within a record.

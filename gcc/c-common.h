@@ -757,8 +757,9 @@ extern struct rtx_def *c_expand_expr            PARAMS ((tree, rtx,
 							 enum expand_modifier));
 
 extern int c_safe_from_p                        PARAMS ((rtx, tree));
-
 #endif
+
+extern int c_unsafe_for_reeval			PARAMS ((tree));
 
 /* In dump.c */
 
