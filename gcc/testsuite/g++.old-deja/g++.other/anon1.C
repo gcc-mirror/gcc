@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
 
 static union {
   union {
   };
-}; // WARNING - anonymous union with no members
+}; // { dg-warning "" } anonymous union with no members

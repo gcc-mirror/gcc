@@ -1,4 +1,5 @@
-// Special g++ Options: -O1
+// { dg-do run  }
+// { dg-options "-O1" }
 
 int count = 0;
 

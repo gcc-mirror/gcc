@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed constructors
 // ctor file
 // Message-Id: <9302081631.AA14744@tera.com>
@@ -10,12 +10,12 @@ public:
   inline A(int x){printf("constructing A with %d\n", x);}
 };
 
-class B:public A{ // ERROR - non-default constructor
+class B:public A{ // { dg-error "" } non-default constructor
 private:
 public:
 };
 
 int main()
 {
-  B(10);// ERROR - B doesn't have a constructor taking int
+  B(10);// { dg-error "" } B doesn't have a constructor taking int
 }

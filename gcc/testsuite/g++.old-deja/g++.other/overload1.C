@@ -1,3 +1,4 @@
+// { dg-do run  }
 struct A {
   A operator+ (int) const { return *this; }
 };

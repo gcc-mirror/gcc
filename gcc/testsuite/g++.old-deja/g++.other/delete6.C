@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Origin: Alexander Schiemann (aschiem@count.math.uni-sb.de)
 
 typedef __SIZE_TYPE__ size_t;

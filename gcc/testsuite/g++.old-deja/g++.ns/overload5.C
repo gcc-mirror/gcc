@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 namespace A{
   void f(){}        
 }
@@ -6,7 +6,7 @@ namespace A{
 using A::f;
 
 void f(int);
-void f(){}            // ERROR - conflict
+void f(){}            // { dg-error "" } conflict
 
 void g()
 {

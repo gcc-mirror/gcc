@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS Id: 3665
-// Build don't link:
 
 //-------------------------------------------------------------
 //  Referential declaration within class

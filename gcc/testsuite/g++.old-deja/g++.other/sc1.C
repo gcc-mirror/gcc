@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 void f() {
@@ -6,5 +6,5 @@ void f() {
   const int *c = 0;
 
   static_cast <const int *>(i);
-  static_cast <int *>(c);  // ERROR - casts away constness
+  static_cast <int *>(c);  // { dg-error "" } casts away constness
 }

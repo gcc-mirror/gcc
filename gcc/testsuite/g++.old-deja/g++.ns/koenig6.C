@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 namespace A{
   struct X{};
 
@@ -8,5 +9,5 @@ namespace A{
 int main()
 {
   A::X x;
-  bar(&foo(x));  // WARNING - address of temporary
+  bar(&foo(x));  // { dg-warning "" } address of temporary
 }

@@ -1,10 +1,10 @@
+// { dg-do assemble  }
 // Make sure definitions of static members have the right access.
-// Build don't link:
 
 struct A {
 protected:
-  int i;                        // ERROR - private
-  int f ();			// ERROR - 
+  int i;                        // { dg-error "" } private
+  int f ();			// { dg-error "" } 
 };
 
 struct B: public A {
@@ -12,7 +12,7 @@ struct B: public A {
   static int (A::*fp)();
 };
 
-int A::* B::p = &A::i;         // ERROR - 
+int A::* B::p = &A::i;         // { dg-error "" } 
 int (A::* B::fp)() = &A::f;    // ERROR -
 
 struct C {
@@ -20,5 +20,5 @@ struct C {
   static int (A::*fp)();
 };
 
-int A::* C::p = &A::i;		// ERROR - 
-int (A::* C::fp)() = &A::f;	// ERROR - 
+int A::* C::p = &A::i;		// { dg-error "" } 
+int (A::* C::fp)() = &A::f;	// { dg-error "" } 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed arg-matching
 extern double pow(double,int*);
 

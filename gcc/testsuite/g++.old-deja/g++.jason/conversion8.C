@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS id: 8279
 
 int main ()

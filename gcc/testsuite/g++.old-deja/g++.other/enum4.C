@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-fshort-enums" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
-// Special g++ Options: -fshort-enums
 
 enum E { 
   a = -312

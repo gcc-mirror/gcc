@@ -1,9 +1,9 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed infinite_loop
 class A
 {
 	public:
-      A(A &); // ERROR - candidates are
+      A(A &); // { dg-error "" } candidates are
 };
 
 class B
@@ -18,6 +18,6 @@ class C
 	C()
 	{
 		B	b;
-		A a = b;// ERROR - 
+		A a = b;// { dg-error "" } 
 	}
 };

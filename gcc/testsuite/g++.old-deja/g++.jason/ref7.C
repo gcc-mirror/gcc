@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testcase for the lifetime of a temporary object which is used to
 // initialize a reference.
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed ARM-compliance
 #include        <iostream>
 enum f1 {
@@ -19,11 +19,11 @@ class B : public A {
 public:
     void set (f2 f);
 };
-void B::set (f2 f) { std::cout << "called B\n";} // ERROR - candidate
+void B::set (f2 f) { std::cout << "called B\n";} // { dg-error "" } candidate
 
 int main() {
     B b;
-    b.set(F1); // ARM page 309: should call A.set(f1) and that what g++ does,// ERROR - .*
+    b.set(F1); // ARM page 309: should call A.set(f1) and that what g++ does,// { dg-error "" } .*
                // but 13.1 of ARM clearly states that it should call B::set()
                // or generate an error because overloading works only for
                // functions within the same scope (first page of chapter 13)

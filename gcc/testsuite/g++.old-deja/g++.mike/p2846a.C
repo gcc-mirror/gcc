@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Shows that problem of initializing one object's vtable pointer from
 // another object's vtable pointer when doing a default copy of it
 // and the vtable pointer involved is the main one.

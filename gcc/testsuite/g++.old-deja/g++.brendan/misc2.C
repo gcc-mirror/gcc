@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed miscellaneous-bugs
 // Should be fixed by:
 // Sun Jun 13 12:55:22 1993  Brendan Kehoe  (brendan@lisa.cygnus.com)

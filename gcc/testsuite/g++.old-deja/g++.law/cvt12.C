@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed conversions
 // cvt file
 // Message-Id: <9301071708.AA03432@muresh.et.tudelft.nl>

@@ -1,7 +1,7 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed enums
 enum color { red, green, blue, orange, brown };
 
 struct s {
-      enum color      field:2; // ERROR - too small
+      enum color      field:2; // { dg-error "" } too small
 };

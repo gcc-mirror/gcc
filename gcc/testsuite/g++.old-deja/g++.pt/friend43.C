@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Matt Austern <austern@isolde.engr.sgi.com>
 
 class A {

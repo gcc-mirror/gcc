@@ -1,8 +1,9 @@
+// { dg-do assemble  }
 // Test that failed lvalue-to-rvalue conversion of vf doesn't crash the
 // compiler.
 
 class f_class
-{ };				// ERROR - candidates
+{ };				// { dg-error "" } candidates
 
 volatile f_class
 ret_v_f_class()
@@ -14,6 +15,6 @@ ret_v_f_class()
 int main(void)
 {
   volatile f_class vf;
-  0 ? ret_v_f_class() : vf;	// ERROR - can't copy volatile lvalue
+  0 ? ret_v_f_class() : vf;	// { dg-error "" } can't copy volatile lvalue
   return 0;
 }

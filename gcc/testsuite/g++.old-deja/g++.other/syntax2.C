@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -fsyntax-only
+// { dg-do assemble  }
+// { dg-options "-fsyntax-only" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 struct B 

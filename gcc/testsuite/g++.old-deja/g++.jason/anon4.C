@@ -1,7 +1,7 @@
+// { dg-do assemble  }
+// { dg-options "-O" }
 // PRMS Id: 5371
 // Bug: g++ screws up the alignment of buff and dies.
-// Build don't link:
-// Special g++ Options: -O
 
 main()
 {

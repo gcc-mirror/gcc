@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T> struct A {
   static void f();
@@ -7,7 +7,7 @@ template <class T> struct A {
 template <class T> class B
 {
   friend class A<T>;
-  static int i; // ERROR - private
+  static int i; // { dg-error "" } private
 };
 
 template <class T> class C
@@ -24,7 +24,7 @@ void A<T>::f()
   B<T>::i = 3;
   C<T>::i = 3;
   C<double>::i = 3;
-  B<double>::i = 3; // ERROR - member `i' is private
+  B<double>::i = 3; // { dg-error "" } member `i' is private
 }
 
 template void A<int>::f();

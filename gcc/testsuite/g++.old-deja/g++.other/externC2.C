@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Boris Zentner <boris@m2b.de>
 
 extern "C"

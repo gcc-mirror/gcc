@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: generated B::operator= tries to call A::operator=
 
 #pragma implementation

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900205_02
 
 // g++ allows constructors to be defined which do not include
@@ -12,7 +13,7 @@ int i;
 class c0 {
   int &int_ref;
 public:
-  c0 () /* : int_ref(i) */ {	// ERROR - reference needs initializer
+  c0 () /* : int_ref(i) */ {	// { dg-error "" } reference needs initializer
   }
 };
 
@@ -22,7 +23,7 @@ public:
   c1 ();
 };
 
-c1::c1() /* : int_ref(i) */ {	// ERROR - reference needs initializer
+c1::c1() /* : int_ref(i) */ {	// { dg-error "" } reference needs initializer
 }
 
 int main () { return 0; }

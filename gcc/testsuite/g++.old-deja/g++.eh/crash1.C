@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -O1 -fno-inline-functions
+// { dg-do assemble  }
+// { dg-options "-O1 -fno-inline-functions" }
 
 struct A
 {

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testcase for tricky synthesized op= in complex inheritance situation.
 // This used to test whether the virtual base was copy-assigned only once.
 // That feature is not required by ISO C++, so the test now only checks

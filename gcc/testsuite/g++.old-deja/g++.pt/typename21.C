@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
-// Special g++ Options:
 
 template <class T>
 struct S1 {

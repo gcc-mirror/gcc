@@ -1,5 +1,5 @@
-// Special g++ Options: -W 
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-W " }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 6 Febs 2001 <nathan@codesourcery.com>
@@ -16,4 +16,4 @@ X *foo ()
   return new X ();  // gets bogus warning
 }
 
-X x = {};           // WARNING - missing initializer
+X x = {};           // { dg-warning "" } missing initializer

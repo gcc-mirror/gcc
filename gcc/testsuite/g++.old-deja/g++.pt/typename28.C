@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 //
 // Origin: Jens.Maurer@gmx.net
 // Copyright (C) 2001 Free Software Foundation, Inc.

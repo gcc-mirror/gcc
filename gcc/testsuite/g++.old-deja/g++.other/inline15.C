@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-O1" }
 // Origin: Jakub Jelinek <jakub@redhat.com>
-// Special g++ Options: -O1
 
 class Type;
 template<class E>

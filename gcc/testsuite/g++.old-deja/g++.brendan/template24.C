@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed templates
 extern "C" int printf (const char *, ...);
 

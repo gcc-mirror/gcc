@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options:
+// { dg-do assemble  }
+// { dg-options "" }
 
 template <class ARRY>
 inline unsigned int asize(ARRY &a)
@@ -10,5 +10,5 @@ inline unsigned int asize(ARRY &a)
 void f(unsigned int n) {
   int x[n];
 
-  asize(x); // ERROR - no matching function
+  asize(x); // { dg-error "" } no matching function
 }

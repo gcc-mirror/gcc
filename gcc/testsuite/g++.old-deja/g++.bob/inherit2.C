@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 #include <stdlib.h>
 
 class A {
@@ -6,7 +6,7 @@ public:
   void z();
   A(void) {}
 private:
-  A(const A &) { abort(); } // ERROR - 
+  A(const A &) { abort(); } // { dg-error "" } 
   const A& operator =(const A &) { abort(); }
 };
 
@@ -20,5 +20,5 @@ void f(B b) {
 
 void g() {
   B h;
-  f(h); // ERROR - 
+  f(h); // { dg-error "" } 
 }

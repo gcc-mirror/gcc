@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900214_01
 
 // g++ allows function members of incomplete types to be declared to be
@@ -7,13 +8,13 @@
 
 // keywords: friends, incomplete types, function members
 
-struct A;                       // ERROR - forward declaration
+struct A;                       // { dg-error "" } forward declaration
 
 struct B {
-  friend void A::foo();		// ERROR - type A is incomplete
+  friend void A::foo();		// { dg-error "" } type A is incomplete
 };
 
-void A::foo();			/* ERROR - also illegal */
+void A::foo();			/* { dg-error "" } also illegal */
 
 struct A {
   void foo() {}

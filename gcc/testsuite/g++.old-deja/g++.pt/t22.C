@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 
 class AA { public: static int xx; };
 template <class X> class A {
@@ -7,4 +7,4 @@ template <class X> class A {
 };
 
 int AA::xx;
-template <class Y> int A<Y>::x;	// gets bogus error
+template <class Y> int A<Y>::x;	// { dg-bogus "" } 

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 7 Jan 2001 <nathan@codesourcery.com>
@@ -8,7 +8,7 @@
 
 class A {};
 class B {
-  template<class T> friend class A;   // ERROR - not a template
+  template<class T> friend class A;   // { dg-error "" } not a template
 };
 
 

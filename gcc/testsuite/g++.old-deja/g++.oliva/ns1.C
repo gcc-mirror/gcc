@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999, 2000 Free Software Foundation
 
@@ -8,6 +8,6 @@
 void foo();
 namespace bar {
   class baz {
-    friend void ::foo(); // gets bogus error - parse error
+    friend void ::foo(); // { dg-bogus "" } parse error
   };
 }

@@ -1,6 +1,6 @@
-//Build don't link:
+// { dg-do assemble  }
 struct X{
   void i();
-  void i(int);  // ERROR - 
-  int i;        // ERROR - conflict
+  void i(int);  // { dg-error "" } 
+  int i;        // { dg-error "" } conflict
 };

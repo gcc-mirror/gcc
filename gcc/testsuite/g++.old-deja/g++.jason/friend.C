@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ doesn't keep track of the lexical context of friends properly.
 
 extern "C" void exit(int);

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: the synthesized copy constructor for A is not found.
-// Build don't link:
 
 struct A {
   // A (const A& a): i(a.i) {}
@@ -8,6 +8,6 @@ struct A {
 
 struct B {
   A a;
-  B (const B& b): a(b.a), j(b.j) { } // gets bogus error - 
+  B (const B& b): a(b.a), j(b.j) { } // { dg-bogus "" } 
   int j;
 };

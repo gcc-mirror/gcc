@@ -1,3 +1,4 @@
+// { dg-do run  }
 // try throwing 0 cast to a class object
 extern "C" void abort ();
 extern "C" void exit (int);

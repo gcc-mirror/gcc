@@ -1,7 +1,6 @@
-// Build don't link:
-// Skip if not target: sparc-*-*
+// { dg-do assemble { target sparc-*-* } }
+// { dg-options "-ansi -pedantic-errors -Wcast-align" }
 
-// Special g++ Options: -ansi -pedantic-errors -Wcast-align
 
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 7 Dec 1999 <nathan@acm.org>
@@ -24,5 +23,5 @@ void f3 (X *xp, Z *zp)
 
 void f4 (char *ptr)
 {
-  (Z *)ptr;           // WARNING - alignment
+  (Z *)ptr;           // { dg-warning "" } alignment
 }

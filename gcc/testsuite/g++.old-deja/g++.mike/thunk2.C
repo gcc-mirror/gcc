@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <typeinfo>
 
 int state;

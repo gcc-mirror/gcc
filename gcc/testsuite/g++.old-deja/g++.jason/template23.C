@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Testcase for instantiation with cv-qualified type
-// Build don't link:
 
 template<class T>
 struct A

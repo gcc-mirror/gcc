@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.37.1 bug 900519_05
 
 // g++ fails to allow the use of function-reference types.

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T, int i>
 struct K {
@@ -7,6 +7,6 @@ struct K {
 
 template <class T>
 void
-K<T, i>::f() // ERROR - i has not been declared
+K<T, i>::f() // { dg-error "" } i has not been declared
 { 
 }

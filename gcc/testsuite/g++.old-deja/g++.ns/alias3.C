@@ -1,3 +1,4 @@
+// { dg-do run  }
 namespace A{
   struct X{};
   void f(X&);

@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // bool test case
 
-// Build don't link:
 
 void foo(int i) {
   foo (true);

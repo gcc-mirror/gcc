@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed conversions
 // cvt file
 // From: solomon@cs.wisc.edu (Marvin Solomon)
@@ -24,12 +24,12 @@ B::operator const A&() const {
         return a;
 }
 
-void f(A &a) { // ERROR - in passing argument
+void f(A &a) { // { dg-error "" } in passing argument
         printf("A at %x is %d\n", &a, a.i);
 }
 
 int main() {
         B b;
         b.i = 99;
-        f(b);// ERROR - .*
+        f(b);// { dg-error "" } .*
 }

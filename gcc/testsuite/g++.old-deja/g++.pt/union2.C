@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: David Mazieres <dm@amsterdam.lcs.mit.edu>
 
 template<class T> struct vector_base {

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Based on a testcase by Ruslan Shevchenko <Ruslan@Shevchenko.Kiev.UA>
 
@@ -11,7 +11,7 @@ struct D : public B {
 
 void foo() {
   B x;
-  dynamic_cast<D*>(&x); // WARNING - will never succeed
+  dynamic_cast<D*>(&x); // { dg-warning "" } will never succeed
   B* p = &x;
   dynamic_cast<D*>(p);
 }

@@ -1,4 +1,5 @@
-// Special g++ Options: -Wno-pmf-conversions
+// { dg-do run  }
+// { dg-options "-Wno-pmf-conversions" }
 // Test conversion of pointers to virtual member functions to
 // pointers to non-member functions.
 

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 //980610 bkoz
 // example 2: ok
 

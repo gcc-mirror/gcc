@@ -1,5 +1,5 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed initialization
 struct CharList { int i; };
 
-const CharList& terminals = { 1 };// ERROR - .*
+const CharList& terminals = { 1 };// { dg-error "" } .*

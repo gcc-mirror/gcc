@@ -1,10 +1,10 @@
+// { dg-do assemble  }
 // PRMS Id: 5204
 // Bug: g++ bashes the type of add_sym with the type of add, so calling it
 // with one parameter generates an error.
-// Build don't link:
 
 int add(int const &symbol,
-	const unsigned char flags=(void*)0); // ERROR - invalid default arg
+	const unsigned char flags=(void*)0); // { dg-error "" } invalid default arg
 
 int add_sym(int const &symbol,
 	    const unsigned char flags=0);

@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Origin: Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 // Test for resolution of core issue 125.
-// Build don't link:
 
 struct A{
   struct B{};
@@ -15,5 +15,5 @@ namespace B{
 class Test{
   friend A (::B::C)();  // Ok
   friend A::B (::C)();  // Ok
-  friend A::B::C();     // ERROR - no A::B::C
+  friend A::B::C();     // { dg-error "" } no A::B::C
 };

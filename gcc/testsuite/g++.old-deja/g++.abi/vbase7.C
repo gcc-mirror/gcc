@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Build don't run
 // 
 // Copyright (C) 2001 Free Software Foundation, Inc.

@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -Wall
+// { dg-do assemble  }
+// { dg-options "-Wall" }
 // Origin: Jeroen@MMR.be
 
 template <typename T>

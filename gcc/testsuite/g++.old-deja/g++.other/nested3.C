@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Chip Salzenberg <chip@perlsupport.com>
 
 class Foo {

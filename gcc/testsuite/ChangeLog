@@ -1,3 +1,15 @@
+2003-04-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/g++-dg.exp (g++-dg-test): Add "repo" option.
+	(dg-gpp-additional-sources): New function.
+	(dg-gpp-additional-files): Likewise.
+	* lib/g++.exp (additional_sources): New variable.
+	(additional_files): Likewise.
+	(g++_target_compile): Deal with them.
+	* lib/old-dejagnu.exp: Remove.
+	* g++.old-deja/old-deja.exp: Use dg.exp, not old-dejagnu.exp.
+	* g++.old-deja: Revise all tests to use dg commands.
+	
 2003-04-30  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9432, c++/9528

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: g++ crashes on this input.
-// Build don't link:
 
 struct A {
   const char *p;

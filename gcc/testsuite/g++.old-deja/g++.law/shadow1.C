@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -Wshadow
+// { dg-do assemble  }
+// { dg-options "-Wshadow" }
 // GROUPS passed shadow-warnings
 // shadow file
 // Message-Id: <9211061827.AA03517@harvey>

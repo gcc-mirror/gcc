@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Make sure that bool bitfields promote to int properly.
 
 struct F {

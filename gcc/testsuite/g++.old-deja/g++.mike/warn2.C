@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -Wall
+// { dg-do assemble  }
+// { dg-options "-Wall" }
 
 enum Boolean {
   Ok = 0,
@@ -20,7 +20,7 @@ extern void foo();
 
 int
 main () {
-  if (fn1() == Ok) {	// WARNING - 
+  if (fn1() == Ok) {	// { dg-warning "" } 
     foo();
   }
 }

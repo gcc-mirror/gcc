@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed ARM-compliance
 // arm file
 // Message-Id: <9212072127.AA24243@us-es.sel.de>

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: Sandeep Shroff <ss@caere.com>
@@ -32,23 +32,23 @@ private:
 };
 
 Base::Base()
-{ // ERROR - private
+{ // { dg-error "" } private
   name_ = std::strcpy(new char[std::strlen(" ") + 1], " ");
 }
 
 Base::Base(char* str)
-{ // ERROR - private
+{ // { dg-error "" } private
   if(str != NULL)
     name_ = std::strcpy(new char[std::strlen(str) + 1], str);
 }
 
 Derived::Derived(int n, char* str) : Base(str)
-{// ERROR - .*
+{// { dg-error "" } .*
   num_ = n;
 }
 
 Derived::Derived(int n) : Base()
-{// ERROR - .*
+{// { dg-error "" } .*
   num_ = n;
 }
 

@@ -1,4 +1,5 @@
-// Special g++ Options: -ansi -pedantic-errors -w
+// { dg-do run  }
+// { dg-options "-ansi -pedantic-errors -w" }
 struct S 
 {
   template <class U>

@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 2793
 
-void f(char&) {			// ERROR - referenced by error below
-  f('c');			// ERROR - 
+void f(char&) {			// { dg-error "" } referenced by error below
+  f('c');			// { dg-error "" } 
 }

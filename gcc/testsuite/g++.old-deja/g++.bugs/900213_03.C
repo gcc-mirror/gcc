@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900213_03
 
 // g++ fails to detect an error when the address of a "bound" function is
@@ -6,7 +7,6 @@
 // It does however correctly detect a similar errors for data-members.
 
 // keywords: bound function, operator&, member pointers
-// Build don't link: 
 
 struct struct0 {
   int data_member;
@@ -21,7 +21,7 @@ struct0 *ptr;
 
 void global_function_0 ()
 {
-  fmp = &ptr->function_member;	// ERROR - 
+  fmp = &ptr->function_member;	// { dg-error "" } 
   //dmp = &ptr->data_member;	//  caught by g++, missed by cfront
 }
 

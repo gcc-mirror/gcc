@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Make sure we make the right unqualified class a friend
 // See PR c++/4403
@@ -24,8 +24,8 @@ template <class T> class B
   static T value_AC;
 };
 template <typename T> T B<T>::valueA_AA;
-template <typename T> T B<T>::valueA_AC;// ERROR - private - XFAIL *-*-*
-template <typename T> T B<T>::value_AC;	// gets bogus error - XFAIL *-*-*
+template <typename T> T B<T>::valueA_AC;// { dg-error "" "" { xfail *-*-* } } private - 
+template <typename T> T B<T>::value_AC;	// { dg-bogus "" "" { xfail *-*-* } }  - 
 
 // this one is a friend
 template <class T> struct A<T>::AA
@@ -41,7 +41,7 @@ template <class T> struct A<T>::AC
 {
   T M ()
   {
-    return B<T>::valueA_AC;	// ERROR - within this context - XFAIL *-*-*
+    return B<T>::valueA_AC;	// { dg-error "" "" { xfail *-*-* } } within this context - 
   }
 };
 
@@ -50,7 +50,7 @@ struct AC
 {
   int M ()
   {
-    return B<int>::value_AC;	// gets bogus error - XFAIL *-*-*
+    return B<int>::value_AC;	// { dg-bogus "" "" { xfail *-*-* } }  - 
   }
 };
 

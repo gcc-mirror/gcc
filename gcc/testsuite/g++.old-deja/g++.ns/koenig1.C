@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 class ostream;
 extern ostream cout;
 namespace foo

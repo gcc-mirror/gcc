@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ initializes both B::i and B::j before destroying any temps.
 
 extern "C" int printf (const char *, ...);

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 const double M_PI=3.14159265358979323846;
 

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Bug: g++ does overloading on a function-by-function basis.
 
 void
@@ -7,5 +8,5 @@ f ()
   {
     extern void g ();
   }
-  fp = g;	/* ERROR - no 'g' in scope */
+  fp = g;	/* { dg-error "" } no 'g' in scope */
 }

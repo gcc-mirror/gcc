@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed parsing
 // parsing folder
 // From: szahn%Robinie@goesser.sie.siemens.co.at (Hr. Zahn)

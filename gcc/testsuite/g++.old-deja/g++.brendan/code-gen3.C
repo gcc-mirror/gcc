@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed code-generation
 // Check that passing things which are not a multiple of
 // 4 bytes in size doesn't mess up other subsequent parameters.

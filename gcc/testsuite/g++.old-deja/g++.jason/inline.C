@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 4341
 // Bug: Instantiating a template in the middle of processing the functions
 // from another template screws up lineno/input_filename.

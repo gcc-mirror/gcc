@@ -1,10 +1,10 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed overloading
 class CLogger
 {
 public:
-      void operator() (int,const char *) {}; // ERROR - candidates
-      void operator() (int,const char *, ...) {}; // ERROR - candidates
+      void operator() (int,const char *) {}; // { dg-error "" } candidates
+      void operator() (int,const char *, ...) {}; // { dg-error "" } candidates
 } Log;
 
 class CGLogger : public CLogger
@@ -13,8 +13,8 @@ class CGLogger : public CLogger
 
 int main()
 {
-        Log(1,"Test");// ERROR -  call of.*
+        Log(1,"Test");// { dg-error "" }  call of.*
         Log(1,"Test %d",3);
-        GLog(1,"Test");// ERROR -  call of.*
+        GLog(1,"Test");// { dg-error "" }  call of.*
         GLog(1,"Test %d",3);
 }

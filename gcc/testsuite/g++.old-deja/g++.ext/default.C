@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // PRMS Id: 5353
 // This may be an extension, but it's a very common one...
 
@@ -6,7 +7,7 @@ extern "C" int printf (const char *, ...);
 class A {
 public:
   static A*func (int = 3); 
-  static A*(*ptr)(int = 4); // ERROR - .*
+  static A*(*ptr)(int = 4); // { dg-error "" } .*
 };
 
 A*(*A::ptr)(int) = &A::func;
@@ -15,7 +16,7 @@ int main()
 {
   A foo;
 
-  A::ptr(); // ERROR - .*
+  A::ptr(); // { dg-error "" } .*
   A::ptr(47);
 }
 

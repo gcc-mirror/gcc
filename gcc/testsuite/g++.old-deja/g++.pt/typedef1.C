@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Testcase for handling of typedef wierdness.
-// Build don't link:
 
 template <class T>
 struct A

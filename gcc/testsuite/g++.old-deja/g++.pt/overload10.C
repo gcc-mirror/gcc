@@ -1,3 +1,4 @@
+// { dg-do run  }
 struct B {
   int f(int) { return 1; }
 };

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <int Dim, class T, class EngineTag>
 class Engine {};

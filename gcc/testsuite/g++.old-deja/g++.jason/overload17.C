@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: g++ fails to prefer UDC's alone to UDC's plus standard conversions.
-// Build don't link:
 
 struct B { };
 struct D: public B { };

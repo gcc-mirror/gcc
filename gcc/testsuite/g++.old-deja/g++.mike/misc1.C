@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed construct-destruct
 /* g++ constructs j 13 times, and destructs it once. */
 

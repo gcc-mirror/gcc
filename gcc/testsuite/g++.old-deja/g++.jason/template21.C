@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Gosh, this works!
-// Build don't link:
 
 template<class T>
 struct A

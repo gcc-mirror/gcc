@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -pedantic-errors
+// { dg-do assemble  }
+// { dg-options "-pedantic-errors" }
 
 struct Foo {
   char *p;
@@ -7,10 +7,10 @@ struct Foo {
   void m() const;
 };
 
-void other(char &x);	// ERROR - reference below
+void other(char &x);	// { dg-error "" } reference below
 
 void
 Foo::m() const
 {
-    other(*q);		// ERROR - this is bad
+    other(*q);		// { dg-error "" } this is bad
 }

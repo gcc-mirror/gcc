@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 int cond;
 int i;
 int *ip;
@@ -5,5 +6,5 @@ int *ip;
 void
 test ()
 {
-  cond ? i : ip;	/* ERROR - pointer/integer mismatch */
+  cond ? i : ip;	/* { dg-error "" } pointer/integer mismatch */
 }

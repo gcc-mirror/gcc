@@ -1,12 +1,13 @@
+// { dg-do assemble  }
 namespace A{
-  void f();   // ERROR - .*
+  void f();   // { dg-error "" } .*
 }
 
 using namespace A;
 
-void f();     // ERROR - .*
+void f();     // { dg-error "" } .*
 
 void g()
 {
-  f();        // ERROR - ambiguous, ::f or A::f ?
+  f();        // { dg-error "" } ambiguous, ::f or A::f ?
 }

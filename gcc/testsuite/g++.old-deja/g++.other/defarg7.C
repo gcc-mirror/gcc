@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 7 Jan 2001 <nathan@codesourcery.com>
@@ -11,7 +11,7 @@
 
 struct A
 {
-  static int Foo (int = Baz ()); // ERROR - 
+  static int Foo (int = Baz ()); // { dg-error "" } 
   static int Baz (int = Foo ());
 };
 
@@ -24,7 +24,7 @@ struct Test
 struct B
 {
   static int Bar (int = Foo (1));
-  static int Foo (int = Baz ()); // ERROR - 
+  static int Foo (int = Baz ()); // { dg-error "" } 
   static int Baz (int = Foo (1));
 };
 

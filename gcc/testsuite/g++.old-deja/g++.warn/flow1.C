@@ -1,6 +1,6 @@
+// { dg-do assemble  }
+// { dg-options "-Wreturn-type" }
 // Test that we don't get a warning about flowing off the end.
-// Build don't link:
-// Special g++ Options: -Wreturn-type
 
 struct A {
   ~A ();

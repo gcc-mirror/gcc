@@ -1,3 +1,4 @@
+// { dg-do run  }
 int i = 0;
 
 template <class T>

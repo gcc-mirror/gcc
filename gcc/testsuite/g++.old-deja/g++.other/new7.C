@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Origin: philip_martin@ntlworld.com
 
 #include <new>

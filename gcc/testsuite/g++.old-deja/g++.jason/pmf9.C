@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS id: g++/13340
-// Build don't link:
 
 class rectangle {
     

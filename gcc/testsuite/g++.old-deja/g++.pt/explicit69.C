@@ -1,2 +1,2 @@
-//Build don't link:
-template class x {}; // ERROR - not a template instantiation
+// { dg-do assemble  }
+template class x {}; // { dg-error "" } not a template instantiation

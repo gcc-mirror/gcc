@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed overloading
 // Check that calls to the correct overloaded virtual
 // functions are generated even where the type of the formal

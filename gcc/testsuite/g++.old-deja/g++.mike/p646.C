@@ -1,3 +1,5 @@
+// { dg-do assemble  }
+// { dg-options "-Wno-deprecated -Wreturn-type" }
 // GROUPS passed i960
 /*
   Bug Id: bnr
@@ -6,7 +8,6 @@
 */
 
 
-// Special g++ Options: -Wno-deprecated -Wreturn-type
 
 extern "C"
 {
@@ -100,7 +101,7 @@ warn_return_1 ()
 {
   foo f;
   printf ("returning 1\n");
-}                              // WARNING - control reaches end
+}                              // { dg-warning "" } control reaches end
 
 int
 warn_return_arg (int arg)
@@ -108,7 +109,7 @@ warn_return_arg (int arg)
   foo f;
   printf ("returning %d\n", arg);
   arg;
-}                              // WARNING - control reaches end
+}                              // { dg-warning "" } control reaches end
 
 int
 warn_return_sum (int x, int y)
@@ -116,23 +117,23 @@ warn_return_sum (int x, int y)
   foo f;
   printf ("returning %d+%d\n", x, y);
   x + y;
-}                              // WARNING - control reaches end
+}                              // { dg-warning "" } control reaches end
 
 foo
 warn_return_foo ()
 {
   foo f;
   printf ("returning foo\n");
-}                              // WARNING - control reaches end
+}                              // { dg-warning "" } control reaches end
 
 foo
 warn_foo_parm_returns_foo (foo f)
 {
   f;
-}                              // WARNING - control reaches end
+}                              // { dg-warning "" } control reaches end
 
 main ()
-{				// WARNING - no type
+{				// { dg-warning "" } no type
   int ii = return_1 ();
   if (ii != 1)
     abort_because ("wrong value returned");

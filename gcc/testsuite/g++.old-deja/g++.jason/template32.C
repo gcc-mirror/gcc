@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: Instantiating A<int> screws with class bindings for B
-// Build don't link:
 
 template <class T> struct A { };
 struct B {

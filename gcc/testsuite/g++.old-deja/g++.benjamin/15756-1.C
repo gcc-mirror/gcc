@@ -1,7 +1,7 @@
+// { dg-do assemble  }
+// { dg-options "-Wsign-promo" }
 // 981203 bkoz
 // g++/15756  test1
-// Build don't link: 
-// Special g++ Options: -Wsign-promo
 
 enum e_value { first = 0, next = 30 };
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 typedef __SIZE_TYPE__ size_t;
 
 class   A {
@@ -15,7 +15,7 @@ friend class   D;
   unsigned      counter;
 };
 
-class   D {		//WARNING - only private members
+class   D {		//{ dg-warning "" } only private members
 
   int                   ins( B*&);
 };

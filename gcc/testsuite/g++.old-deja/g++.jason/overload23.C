@@ -1,8 +1,8 @@
+// { dg-do assemble  }
 // From: panisset@cae.ca (Jean-Francois Panisset)
 // Date: Mon, 6 Jun 94 13:39:25 EDT
 // Subject: Problem with operator overloading
 
-// Build don't link:
 
 class ostream {
 public:
@@ -23,5 +23,5 @@ int main()
 {
   X x;
   ostream os;
-  os << x; // gets bogus error - converting to float
+  os << x; // { dg-bogus "" } converting to float
 }

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: g++ doesn't figure out what to do.
-// Build don't link:
 
 struct A {
   operator char *();
@@ -7,6 +7,6 @@ struct A {
  
 char foo(A a)
 {
-  char c = a[0];			// gets bogus error
+  char c = a[0];			// { dg-bogus "" } 
   return c;
 }

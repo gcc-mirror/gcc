@@ -1,11 +1,10 @@
-// Build don't link:
+// { dg-do assemble { xfail *-*-* } }
 // Simplified from bug report by Paris Smaragdis <paris@media.mit.edu>
 
-// crash test - XFAIL *-*-*
 
 template <class T> class vector {};
 class foo {};
 int main() {
         foo f;
-        f.vector(); // ERROR - not a method
+        f.vector(); // { dg-error "" } not a method
 }

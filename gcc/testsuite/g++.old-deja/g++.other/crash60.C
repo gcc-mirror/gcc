@@ -1,7 +1,7 @@
-// Build don't link:
+// { dg-do assemble  }
 
 void foo ()
 {
   int e;
-  e := e;	// ERROR - parse error
+  e := e;	// { dg-error "" } parse error
 }

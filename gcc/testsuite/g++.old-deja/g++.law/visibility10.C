@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 
 #include <iostream>
@@ -10,7 +10,7 @@ public:
 };
 
 class deriv : public base {
-  void base :: f1();// ERROR - .*
+  void base :: f1();// { dg-error "" } .*
 };
 
 int main ()

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 7 May 2001 <nathan@codesourcery.com>
@@ -18,7 +18,7 @@ namespace N1
   struct D : B<T>
   {
     D (T r)
-      : B (r)  // ERROR - no field named B
+      : B (r)  // { dg-error "" } no field named B
     {}
   };
 }
@@ -35,6 +35,6 @@ template<typename T>
 struct D2 : N1::B<T>
 {
   D2 (T r)
-    : N1::B (r) // ERROR - no field named N1::B
+    : N1::B (r) // { dg-error "" } no field named N1::B
   {}
 };

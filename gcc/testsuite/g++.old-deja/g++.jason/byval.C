@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: a is destroyed in both foo() and main()
 
 int count;

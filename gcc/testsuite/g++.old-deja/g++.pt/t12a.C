@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 
 int a (void * x) { return 1; }
 typedef void *T;

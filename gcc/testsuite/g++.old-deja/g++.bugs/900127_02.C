@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900127_02
 
 // g++ (mostly) keeps separate name spaces for the declarations of data
@@ -15,32 +16,32 @@
 
 // keywords: name spaces, overloading
 
-int global0;			// ERROR - 
-int global0 ();			// ERROR - 
+int global0;			// { dg-error "" } 
+int global0 ();			// { dg-error "" } 
 
-int global1 ();			// ERROR - xref for below
-int global1;			// ERROR - caught
+int global1 ();			// { dg-error "" } xref for below
+int global1;			// { dg-error "" } caught
 
 struct struct_0 {
-  int class_local ();		// ERROR - 
-  int class_local;		// ERROR - 
+  int class_local ();		// { dg-error "" } 
+  int class_local;		// { dg-error "" } 
 };
 
 struct struct_1 {
-  int class_local;		// ERROR - 
-  int class_local ();		// ERROR - 
+  int class_local;		// { dg-error "" } 
+  int class_local ();		// { dg-error "" } 
 };
 
 void function_0 ()
 {
-	int function_0_local;	// ERROR - 
-	extern int function_0_local ();	// ERROR - 
+	int function_0_local;	// { dg-error "" } 
+	extern int function_0_local ();	// { dg-error "" } 
 }
 
 void function_1 ()
 {
-	int function_1_local ();        // ERROR - 
-	extern int function_1_local;	// ERROR - 
+	int function_1_local ();        // { dg-error "" } 
+	extern int function_1_local;	// { dg-error "" } 
 }
 
 int main () { return 0; }

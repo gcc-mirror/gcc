@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test to see that primary bases are selected correctly.
 // Origin: Mark Mitchell <mark@codesourcery.com>
 

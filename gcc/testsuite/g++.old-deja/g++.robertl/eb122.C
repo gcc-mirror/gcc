@@ -1,6 +1,6 @@
-// Build don't link: 
+// { dg-do assemble  }
+// { dg-options "" }
 // Disable -ansi -pedantic-errors because of GNU extension
-// Special g++ Options:                                             
 template<class foo>
 class bar {
 public:

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed initialization
 // init file
 // From: Richard Speed <speed@cs.montana.edu>

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed copy-ctors
 // Using Cfront 3.0.1 the programm below prints
 // 

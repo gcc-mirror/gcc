@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Testcase for uses of bool.
-// Build don't link:
 
 int i,j,k;
 
@@ -22,7 +22,7 @@ void g ()
 {
   a || true;
   b || true;
-  c || true;			// gets bogus error
+  c || true;			// { dg-bogus "" } 
   d || true;
   e || true;
 }

@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 // Origin: Andrey Slepuhin <pooh@msu.ru>
 
 namespace A

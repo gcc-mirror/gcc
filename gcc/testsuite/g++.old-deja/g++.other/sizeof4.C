@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 5 Sep 1999 <nathan@acm.org>
@@ -17,21 +17,21 @@ void fn () {}
 
 int main (int argc, char **argv)
 {
-  sizeof (s);           // ERROR - incomplete
-  sizeof (0, s);        // ERROR - incomplete
-  sizeof (argc ? s : s); // ERROR - incomplete
+  sizeof (s);           // { dg-error "" } incomplete
+  sizeof (0, s);        // { dg-error "" } incomplete
+  sizeof (argc ? s : s); // { dg-error "" } incomplete
 
-  sizeof (arys);        // ERROR - incomplete
-  sizeof (0, arys);     // ERROR - incomplete
-  sizeof (argc ? arys : arys); // ERROR - incomplete
+  sizeof (arys);        // { dg-error "" } incomplete
+  sizeof (0, arys);     // { dg-error "" } incomplete
+  sizeof (argc ? arys : arys); // { dg-error "" } incomplete
 
-  sizeof (aryt);        // ERROR - incomplete
-  sizeof (0, aryt);     // ERROR - incomplete
-  sizeof (argc ? aryt : aryt); // ERROR - incomplete
+  sizeof (aryt);        // { dg-error "" } incomplete
+  sizeof (0, aryt);     // { dg-error "" } incomplete
+  sizeof (argc ? aryt : aryt); // { dg-error "" } incomplete
   
-  sizeof (fn);            // ERROR - cannot take size of function
-  sizeof (0, fn);         // ERROR - cannot take size of function
-  sizeof (argc ? fn : fn); // ERROR - cannot take size of function
+  sizeof (fn);            // { dg-error "" } cannot take size of function
+  sizeof (0, fn);         // { dg-error "" } cannot take size of function
+  sizeof (argc ? fn : fn); // { dg-error "" } cannot take size of function
   
   sizeof (&fn);       // ok
   sizeof (0, &fn);    // ok

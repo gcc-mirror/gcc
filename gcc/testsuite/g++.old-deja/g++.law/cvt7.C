@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed conversions
 // cvt file
 // From: krste@icsi.berkeley.edu (Krste Asanovic)

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct X {
   X();
@@ -11,5 +11,5 @@ struct Y {
 void f()
 {
   Y *y1, *y2 ;
-  *y1 = *y2;		 // gets bogus error - failed to synthesize op=
+  *y1 = *y2;		 // { dg-bogus "" } failed to synthesize op=
 }

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed scoping
 // local-class file
 // From: schlaege@methusalix.ert.rwth-aachen.de (Chris Schlaeger H Zivojnovic)

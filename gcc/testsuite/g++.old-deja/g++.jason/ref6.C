@@ -1,2 +1,3 @@
+// { dg-do assemble  }
 const int &f();
-int &a = f();			// ERROR - 
+int &a = f();			// { dg-error "" } 

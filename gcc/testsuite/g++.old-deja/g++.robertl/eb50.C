@@ -1,3 +1,4 @@
+// { dg-do run  }
 struct foo { };
 int f(int a, int b)
 {

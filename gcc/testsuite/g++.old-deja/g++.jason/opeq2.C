@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Bug: default operator= is not being generated properly.
 // PRMS Id: 3525
-// Build don't link:
 
 struct ccUnwind 
 {
@@ -22,5 +22,5 @@ struct ccEllipse : ccUnwind
 void foo ()
 {
     ccEllipse e;
-    e = ccEllipseUnit();	// gets bogus error - assignment not defined
+    e = ccEllipseUnit();	// { dg-bogus "" } assignment not defined
 }

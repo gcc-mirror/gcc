@@ -1,7 +1,7 @@
-// Build don't link:
-// Special g++ options: -pedantic-errors -ansi -w
+// { dg-do assemble  }
+// { dg-options "-pedantic-errors -ansi -w" }
 
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 7 Jan 2001 <nathan@codesourcery.com>
 
 // As of G++ 3.4, we no longer attempt to detect dependencies; the
@@ -12,7 +12,7 @@
 
 struct AA
 {
-  static int Foo (int = Baz ()); // ERROR - not yet been parsed
+  static int Foo (int = Baz ()); // { dg-error "" } not yet been parsed
   static int Baz (int = Foo ());
 };
 

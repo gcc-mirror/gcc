@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 891229_02
 
 // g++ limits the scope of names which are declared as typedef names within
@@ -17,7 +18,7 @@ struct foo {
 	typedef void (*function_p) (void);
 };
 
-function_p fp;		// ERROR - no such type in scope
+function_p fp;		// { dg-error "" } no such type in scope
 
 foo::foo () {}
 

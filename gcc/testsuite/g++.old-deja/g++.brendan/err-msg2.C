@@ -1,8 +1,8 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed error-messages
 
 typedef void (*pfv)(double, double);
 extern "C" {
-  typedef void (*pfv)(double, double); // ERROR - conflicting linkage - XFAIL
+  typedef void (*pfv)(double, double); // { dg-error "" "" { xfail *-*-* } } conflicting linkage
 }
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed niklas nested-types
 struct X {
 struct A { A (int); };

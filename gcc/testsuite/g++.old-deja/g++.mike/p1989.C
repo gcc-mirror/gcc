@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 1989
 
 #define TRUE true
@@ -196,7 +196,7 @@ Pix
 List_DLS<T>::search(const T& item) const
 {
     for (Pix x=first(); 0 != x; next(x)) {
-	if (item == operator()(x)) // ERROR - const subversion
+	if (item == operator()(x)) // { dg-error "" } const subversion
 	    return x;
     }
     return 0;
@@ -334,9 +334,9 @@ struct vertex {
     T item;
     List_DL<vertex<T> *> fanout;
 
-    vertex(): item(), fanout()	// gets bogus error
+    vertex(): item(), fanout()	// { dg-bogus "" } 
       { };
-    vertex(const T& i): item(), fanout() // gets bogus error
+    vertex(const T& i): item(), fanout() // { dg-bogus "" } 
       { };
 };
 
@@ -485,8 +485,8 @@ class STRLIdentifier {
     char buf[10];
 };
 
-extern int operator==(vertex<STRLIdentifier*>&, vertex<STRLIdentifier*>&); // ERROR - const subversion
-extern int operator==(STRLIdentifier&, STRLIdentifier&); // ERROR - fn ref in err msg
+extern int operator==(vertex<STRLIdentifier*>&, vertex<STRLIdentifier*>&); // { dg-error "" } const subversion
+extern int operator==(STRLIdentifier&, STRLIdentifier&); // { dg-error "" } fn ref in err msg
 
 extern int x(List_DLSp<STRLIdentifier *>);
 

@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-fsyntax-only" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
-// Special g++ Options: -fsyntax-only
 
 class AAA{
 public:

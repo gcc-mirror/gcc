@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // by Alexandre Oliva <oliva@dcc.unicamp.br>
 // Based on a testcase by Reid M. Pinchback <reidmp@MIT.EDU>
 // According to the C++ Standard [temp.expl.spec]/17-18, explicit
@@ -11,5 +11,5 @@ class bug {
   class a {}; 
 };
 template <class X> 
-template <>			// ERROR - invalid specialization
+template <>			// { dg-error "" } invalid specialization
 class bug<X>::a<char> {};	

@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 // Origin: James McKelvey <mckelvey@fafnir.com>
 
 class A

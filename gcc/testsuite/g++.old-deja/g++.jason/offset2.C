@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 5070 (testcase 2)
 
 int status = 1;

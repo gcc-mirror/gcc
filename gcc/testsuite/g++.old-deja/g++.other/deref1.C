@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 1 Sep 1999 <nathan@acm.org>
 
@@ -6,8 +7,8 @@
 
 void fn (void *vp, volatile void *vvp)
 {
-  *vp;      // ERROR - not a pointer to object
-  *vvp;     // ERROR - not a pointer to object
-  &*vp;     // ERROR - not a pointer to object
-  &*vvp;    // ERROR - not a pointer to object
+  *vp;      // { dg-error "" } not a pointer to object
+  *vvp;     // { dg-error "" } not a pointer to object
+  &*vp;     // { dg-error "" } not a pointer to object
+  &*vvp;    // { dg-error "" } not a pointer to object
 }

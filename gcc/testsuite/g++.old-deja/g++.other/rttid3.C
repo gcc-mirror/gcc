@@ -1,7 +1,8 @@
+// { dg-do run  }
+// { dg-options "-frtti" }
 // test of rtti of single inheritance and multiple inheritance with 
 // virtual functions
 // dynamic casting
-// Special g++ Options: -frtti
 
 #include <typeinfo>
 

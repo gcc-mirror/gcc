@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <unsigned rank>
 class Tensor
@@ -6,6 +6,6 @@ class Tensor
 };
 
 template <unsigned rank>
-class Tensor<2> : Tensor<rank> { // ERROR - template parameters not used
+class Tensor<2> : Tensor<rank> { // { dg-error "" } template parameters not used
 };
 

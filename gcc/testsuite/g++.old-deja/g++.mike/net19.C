@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Test to make sure &<incomplete record type> works in c++
-// Build don't link:
 
 struct FILE {
     int _flags;          

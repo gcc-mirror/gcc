@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 20 May 1999 <nathan@acm.org>
@@ -10,7 +10,7 @@
 struct A
 {
   union
-  {  // ERROR - anon union cannot have member fns
+  {  // { dg-error "" } anon union cannot have member fns
     void bad();
   };
 };

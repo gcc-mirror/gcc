@@ -1,4 +1,4 @@
-# Copyright (C) 1988, 90, 91, 92, 1994, 1997, 2000 Free Software Foundation, Inc.
+# Copyright (C) 1988, 90, 91, 92, 1994, 1997, 2000, 2003 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,49 +14,35 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
-# This file was written by Rob Savoye. (rob@cygnus.com)
+# Load support procs.
+load_lib g++-dg.exp
 
-#
-# these tests come from the original DejaGnu test suite 
-# developed at Cygnus Support. If this isn't deja gnu, I
-# don't know what is...
-#
-
-# load support procs
-load_lib old-dejagnu.exp
-load_lib g++.exp
-
-
-# When a testcase doesn't have any special options, use these.
-if ![info exists DEFAULT_CXXFLAGS] {
-    set DEFAULT_CXXFLAGS "-ansi -pedantic-errors -Wno-long-long"
-
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CXXFLAGS
+if ![info exists DEFAULT_CXXFLAGS] then {
+    set DEFAULT_CXXFLAGS " -ansi -pedantic-errors -Wno-long-long"
 }
 
-old-dejagnu-init
-global GXX_UNDER_TEST
+# Initialize `dg'.
+dg-init
 
-#
-# main test loop
-#
+# Gather a list of all tests, with the exception of those in directories
+# that are handled specially.
+set tests [lsort [find $srcdir/$subdir *.C]]
 
-set dirlen [expr [string length "$srcdir/$subdir"] + 1];
-foreach file [lsort [find $srcdir/$subdir *.C]] {
-    # If we're only testing specific files and this isn't one of them, skip it.
-    set tfile [string range $file $dirlen end];
-    if ![runtest_file_p $runtests $tfile] then {
-	continue
-    }
-    verbose "Testing $file"
-
-    # We don't want old-dejagnu.exp to have to know about all the global
-    # variables we use.  For now we tell it about CXXFLAGS and LIBS and
-    # leave LDFLAGS alone.
-    old-dejagnu $GXX_UNDER_TEST "$file" "$tfile" "" "$DEFAULT_CXXFLAGS" "-lstdc++"
+proc g++-dg-prune { system text } {
+    regsub -all "(^|\n)\[^\n\]*: In (\[^\n\]*function|method|\[^\n\]*structor) \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*: In instantiation of \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*:   instantiated from \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*: At (top level|global scope):\[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*file path prefix \[^\n\]* never used" $text "" text
+    regsub -all "(^|\n)\[^\n\]*linker input file unused since linking not done" $text "" text
+    regsub -all "(^|\n)collect: re(compiling|linking)\[^\n\]*" $text "" text
+    return $text
 }
 
-# The framework doesn't like to see any error remnants,
-# so remove them.
-if [info exists errorInfo] then {
-      unset errorInfo
-}
+# Main loop.
+dg-runtest $tests "" $DEFAULT_CXXFLAGS
+
+# All done.
+dg-finish

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 1502
 // Bug: g++ fails to resolve 'gnc' in the call to 'grid'.
 

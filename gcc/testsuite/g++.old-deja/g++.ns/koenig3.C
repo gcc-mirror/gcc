@@ -1,3 +1,4 @@
+// { dg-do run  }
 //Check association of member pointer in overload resolution.
 struct A {
 	int m_val;

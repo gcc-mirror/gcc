@@ -1,8 +1,8 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct A { };
 struct B: public A {
   struct C {
-friend struct B;		// gets bogus error - base clause w/o members
+friend struct B;		// { dg-bogus "" } base clause w/o members
   };
 };

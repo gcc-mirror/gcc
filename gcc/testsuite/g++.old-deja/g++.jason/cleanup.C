@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: continue over object decl calls destructor but not constructor.
 
 int c = 0;

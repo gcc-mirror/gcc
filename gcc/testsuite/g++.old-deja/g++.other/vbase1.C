@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-w" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
-// Special g++ Options: -w
 
 int result;
 

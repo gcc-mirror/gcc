@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 #include<map>
 #include<iostream>
 #include<vector>
@@ -19,7 +20,7 @@ inline istream& operator>>(istream& is, Empty& ) { return is;}
 
 template<class VertexType, class EdgeType>
 class Graph
-{  // ERROR - candidates
+{  // { dg-error "" } candidates
   public:
     // public type interface
     typedef std::map<int, EdgeType > Successor;
@@ -41,18 +42,18 @@ template<class VertexType, class EdgeType>
 ostream& operator<<(ostream& os, Graph<VertexType,EdgeType>& G)
 {
     // display of vertices with successors
-  for(int i = 0; i < G.size(); ++i)  // ERROR - no size function
+  for(int i = 0; i < G.size(); ++i)  // { dg-error "" } no size function
     {
-      os << G[i].first << " <";      // ERROR - no index operator
+      os << G[i].first << " <";      // { dg-error "" } no index operator
 
         // The compiler does not like this line!!!!!!
         typename Graph<VertexType, EdgeType>::Successor::iterator
-	  startN = G[i].second.begin(), // ERROR - no index operator
-	  endN   = G[i].second.end();  // ERROR - no index operator
+	  startN = G[i].second.begin(), // { dg-error "" } no index operator
+	  endN   = G[i].second.end();  // { dg-error "" } no index operator
 
         while(startN != endN)
         {
-            os << G[(*startN).first].first << ' ' // ERROR - no index operator
+            os << G[(*startN).first].first << ' ' // { dg-error "" } no index operator
                << (*startN).second << ' ';
             ++startN;
         }
@@ -64,7 +65,7 @@ ostream& operator<<(ostream& os, Graph<VertexType,EdgeType>& G)
 int main()
 {
     // no edge weighting, therefore type Empty:
-    Graph<std::string, Empty> V(true);        // ERROR - no bool constructor
+    Graph<std::string, Empty> V(true);        // { dg-error "" } no bool constructor
     // ReadGraph(V, "gra1.dat");
 
     // display of vertices with successors

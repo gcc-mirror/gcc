@@ -1,13 +1,13 @@
-// Build don't link: 
+// { dg-do assemble  }
 
-class A { // ERROR - synthesized copy ctor
+class A { // { dg-error "" } synthesized copy ctor
 public:
-  A(int);			// ERROR - referenced below
-  A(float);			// ERROR - referenced below
+  A(int);			// { dg-error "" } referenced below
+  A(float);			// { dg-error "" } referenced below
   ~A();
 };
 
-A::A() {		// ERROR - 
+A::A() {		// { dg-error "" } 
 }
   
 A::A(int) {

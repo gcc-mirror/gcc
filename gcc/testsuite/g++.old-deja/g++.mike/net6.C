@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options:
+// { dg-do assemble  }
+// { dg-options "" }
 
 struct X {};
-X x = X();		// gets bogus error
+X x = X();		// { dg-bogus "" } 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 789
 
 extern "C" int printf (const char *, ...);

@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-fno-strict-aliasing" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
-// Special g++ Options: -fno-strict-aliasing
 
 #if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
 

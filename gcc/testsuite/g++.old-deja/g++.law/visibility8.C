@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: roland@jts.com (Roland Knight )
@@ -7,7 +7,7 @@
 // Message-ID: <m0nof3E-0021ifC@jts.com
 class t1 {
 protected:
-    int a; // ERROR - protected
+    int a; // { dg-error "" } protected
 };
 
 
@@ -23,4 +23,4 @@ public:
 };
 
 
-int t3::ttt() { return a; }// ERROR - .*
+int t3::ttt() { return a; }// { dg-error "" } .*

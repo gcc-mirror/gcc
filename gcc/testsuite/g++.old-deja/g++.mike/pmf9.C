@@ -1,3 +1,4 @@
+// { dg-do run  }
 class K {
 public:
   int f(int i) { return i; }

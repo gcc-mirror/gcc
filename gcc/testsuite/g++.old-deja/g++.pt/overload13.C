@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 struct A {
   template <class T> int f (T) { return 0; }
   int f (int) { return 1; }
@@ -6,5 +7,5 @@ struct A {
 int main ()
 {
   A a;
-  return a.template f (0); // ERROR - 
+  return a.template f (0); // { dg-error "" } 
 }

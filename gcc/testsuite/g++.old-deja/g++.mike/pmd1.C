@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class A;
 struct XX { int A::*py; };

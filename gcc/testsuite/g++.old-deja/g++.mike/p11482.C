@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 11482
 
 void *vp;
@@ -6,5 +6,5 @@ void *vp;
 enum E { bad, ok } e;
 
 void foo() {
-  e = (E)vp;		// ERROR - 
+  e = (E)vp;		// { dg-error "" } 
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 10849
 
 struct A

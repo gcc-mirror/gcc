@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 6486
 // Make sure that no confused handling of COND_EXPRs and SAVE_EXPRs messes
 // with the number of calls to foo.

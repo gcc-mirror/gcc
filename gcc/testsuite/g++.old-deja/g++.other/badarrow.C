@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct S { 
   int i;
@@ -6,5 +6,5 @@ struct S {
 
 void f()
 {
-  s->i = 3; // ERROR - base operand
+  s->i = 3; // { dg-error "" } base operand
 }

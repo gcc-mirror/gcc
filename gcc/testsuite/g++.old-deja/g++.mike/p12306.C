@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 12306
 
 void *ptr1, *ptr2;

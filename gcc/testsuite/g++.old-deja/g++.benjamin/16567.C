@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // 981203 bkoz
 // g++/16567
-// Build don't link:
 
 typedef bool Bool;
 typedef unsigned char		Uint8;
@@ -35,7 +35,7 @@ void foo(void) {
   control *fp = &obj;
   e_ms result;
   
-  result = (e_ms) fp->foo_1; // ERROR - // ERROR -
+  result = (e_ms) fp->foo_1; // { dg-error "" } // ERROR -
 }
   
 

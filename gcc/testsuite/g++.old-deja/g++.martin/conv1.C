@@ -1,3 +1,4 @@
+// { dg-do run  }
 struct S{
   operator bool()
   {

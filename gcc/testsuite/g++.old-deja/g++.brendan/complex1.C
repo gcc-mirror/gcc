@@ -1,4 +1,5 @@
-// Special g++ Options:
+// { dg-do run  }
+// { dg-options "" }
 
 // This test makes sure that the stuff in lex.c (real_yylex) is
 // set up to handle real and imag numbers correctly.  This test is against

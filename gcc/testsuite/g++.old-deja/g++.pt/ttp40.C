@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <vector>
 
 template<class E,template<class> class DD = std::vector> class C

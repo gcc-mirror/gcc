@@ -1,3 +1,4 @@
+// { dg-do run  }
 __SIZE_TYPE__ newsize = 0;
 __SIZE_TYPE__ delsize = 0;
 

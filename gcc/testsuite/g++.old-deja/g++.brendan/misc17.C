@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed miscellaneous-bugs
 typedef int va_list;
 class ostream;
@@ -32,5 +32,5 @@ FwtStdProgram::usage_if_not_complete()
 {
 	FwtStdProgram& thisp = *this;
 	thisp.form("%s: error, there were unrecognized options",
-		   (char *) FwtErrorManager::_program);// ERROR - .*
+		   (char *) FwtErrorManager::_program);// { dg-error "" } .*
 }

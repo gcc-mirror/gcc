@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Origin: Jeff Donner <jdonner@schedsys.com>
 #include <bitset>
 

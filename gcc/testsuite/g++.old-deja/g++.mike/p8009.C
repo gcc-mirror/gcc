@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // prms-id: 8009
 
 class A {
@@ -9,4 +10,4 @@ class B : public A {
   B();
 };
 
-B::B() : i (-1) {}		// ERROR - 
+B::B() : i (-1) {}		// { dg-error "" } 

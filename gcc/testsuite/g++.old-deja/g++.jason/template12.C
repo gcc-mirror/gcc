@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Testcase for 'this is a type' syntax.
-// Build don't link:
 
 struct B {
   typedef int A;

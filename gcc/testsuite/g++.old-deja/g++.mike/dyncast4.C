@@ -1,4 +1,5 @@
+// { dg-do assemble  }
 int main() {
   int* d;
-  dynamic_cast<void*>(d);	// ERROR - 
+  dynamic_cast<void*>(d);	// { dg-error "" } 
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for proper handling of references to overloaded member functions.
 
 struct A {

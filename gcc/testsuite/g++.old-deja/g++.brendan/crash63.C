@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 class String
    {
@@ -12,4 +12,4 @@ class UnitList
    UnitList (...);
    };
 
-UnitList unit_list (String("keV")); // WARNING - cannot pass non-pod
+UnitList unit_list (String("keV")); // { dg-warning "" } cannot pass non-pod

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // by Paul Burchard <burchard@pobox.com>, Level Set Systems, Inc.
 // Copyright (C) 1999 Free Software Foundation
@@ -10,7 +10,7 @@ template<class Y>
 class B {
 };
 
-template<template<class XX> class AA> // gets bogus error - `template <class XX> template <class X> class A<X>' previously declared here
+template<template<class XX> class AA> // { dg-bogus "" } `template <class XX> template <class X> class A<X>' previously declared here
 class C {
 	class D {
 	};
@@ -21,6 +21,6 @@ class C {
 };
 
 int main() {
-	C<A> c; // gets bogus error - redefinition of `template <class XX> template <class X> class A<X>'
+	C<A> c; // { dg-bogus "" } redefinition of `template <class XX> template <class X> class A<X>'
 }
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
 struct bar {

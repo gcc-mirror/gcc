@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 3988
 // Bug: DECL_CONTEXT of A::B gets clobbered in pushdecl when defining A::foo().
-// Build don't link:
 
 #pragma implementation "context.h"
 #line 1 "context.h"

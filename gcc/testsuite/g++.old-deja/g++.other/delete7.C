@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that we call a class-specific vector op delete.
 
 #include <new>

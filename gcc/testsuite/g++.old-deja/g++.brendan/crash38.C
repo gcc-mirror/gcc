@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 /*
    I received the following message when using g++ (version 2.3.3):

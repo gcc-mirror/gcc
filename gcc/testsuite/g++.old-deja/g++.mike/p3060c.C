@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // A new problem with my pointer to member function work.
-// Build don't link:
 // prms-id: 3060
 
 class Foo
@@ -11,7 +11,7 @@ class Foo
   operator int ();
 };
 
-int Foo::operator int() { return x; } // WARNING - can't specify return type
+int Foo::operator int() { return x; } // { dg-warning "" } can't specify return type
 
 Foo foo(10, 11);
 

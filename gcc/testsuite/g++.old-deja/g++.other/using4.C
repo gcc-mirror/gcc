@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Based on a testcase by Martin Bachtold <martinb@coyotesystems.com>
 

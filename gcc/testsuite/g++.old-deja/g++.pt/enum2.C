@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct U {
   static int STATIC;

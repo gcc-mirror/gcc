@@ -1,11 +1,10 @@
-// Build don't link:
+// { dg-do assemble { xfail i*86-*-* } }
 
 // Copyright (C) 2000 Free Software Foundation
 
 // by Alexandre Oliva <aoliva@cygnus.com>
 // distilled from libg++'s Fix.cc
 
-// crash test - XFAIL i*86-*-*
 
 struct Integer {
   ~Integer () {}

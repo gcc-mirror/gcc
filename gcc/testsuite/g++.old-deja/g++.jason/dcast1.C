@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS Id: 7162
-// Build don't link:
 
 struct B {
    int i;

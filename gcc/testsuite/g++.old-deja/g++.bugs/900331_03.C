@@ -1,3 +1,5 @@
+// { dg-do run  }
+// { dg-options "" }
 // g++ 1.37.1 bug 900331_03
 
 // Special Options: -ansi

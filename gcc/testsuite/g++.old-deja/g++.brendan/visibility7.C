@@ -1,9 +1,9 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 class X
 {
 public:
-  void fn ();// ERROR - .*
+  void fn ();// { dg-error "" } .*
 };
 class Y : private X
 {};
@@ -11,5 +11,5 @@ class Y : private X
 class Unrelated
 {
 public:
-  void foo () { Y y; y.fn (); }// ERROR - .*
+  void foo () { Y y; y.fn (); }// { dg-error "" } .*
 };

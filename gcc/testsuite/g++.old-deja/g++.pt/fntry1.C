@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ silently ignores function-try-blocks in templates.
 // Submitted by Jason Merrill <jason@cygnus.com>
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 template <template<class,class> class TT, class T> void f(T)
 {
 }

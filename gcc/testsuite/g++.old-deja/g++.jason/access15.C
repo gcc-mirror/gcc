@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Bug: g++ complains about Z being a private base when trying to
 // initialize B::foo.
-// Build don't link:
 
 struct Z {
   Z();
@@ -15,4 +15,4 @@ struct B : public A
     B(const B&);
 };
 
-B::B() : foo(1) { }		// gets bogus error
+B::B() : foo(1) { }		// { dg-bogus "" } 

@@ -1,5 +1,5 @@
-// Build don't run:
-// Special g++ Options: -Wno-deprecated
+// { dg-do link  }
+// { dg-options "-Wno-deprecated" }
 
 struct B {
   typedef int I;
@@ -11,7 +11,7 @@ struct D1 : public B {
 
 template <class T>
 struct D2 : public D1<T> {
-  I i;  // ERROR - not a type
+  I i;  // { dg-error "" } not a type
 };
 
 template <>
@@ -27,5 +27,5 @@ void f(double) {}
 int main()
 {
   D2<int> d2i;
-  f(d2i.i); // ERROR - no member i
+  f(d2i.i); // { dg-error "" } no member i
 }

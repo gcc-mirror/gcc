@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options:
+// { dg-do assemble  }
+// { dg-options "" }
 extern "C" int printf (const char *, ...);
 
 template<class X> struct A {

@@ -1,6 +1,7 @@
+// { dg-do link }
+// { dg-options "-frepo -Werror" }
 // Build then link:
 
-// Special g++ Options: -frepo -Werror
 
 // Submitted by Melissa O'Neill <oneill@cs.sfu.ca>
 // the vtable of Foo<int> wouldn't be generated

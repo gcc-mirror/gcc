@@ -1,7 +1,7 @@
+// { dg-do assemble  }
 // 980924 bkoz
 // just a quick test for export, to make sure we are warning for it.
 // CHANGE ME when it's supported
-// Build don't link: 
 
 
 // 14 Templates
@@ -18,7 +18,7 @@
 
 // 1
 // template definition
-export template <class T>  // WARNING - 
+export template <class T>  // { dg-warning "" } 
 bool templ_one(T a) {
    if (a > 0)
      return true;
@@ -41,17 +41,17 @@ public:
   template <class T2> bool compare_ge(T2 test);
 };
 
-export template <class T> // WARNING - 
+export template <class T> // { dg-warning "" } 
 const bool X_one<T>::is_specialized = false;
 
-export template <class T> // WARNING - 
+export template <class T> // { dg-warning "" } 
 unsigned short X_one<T>::ret_id() {
   return id;
 }
 
-export template <class T2> // WARNING - 
+export template <class T2> // { dg-warning "" } 
 bool compare_ge(T2 test) {
-  if (test > type) // ERROR - .*
+  if (test > type) // { dg-error "" } .*
     return true;
   return false;
 }

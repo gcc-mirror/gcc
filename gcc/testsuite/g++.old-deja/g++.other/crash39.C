@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 10 Jan 2001 <nathan@codesourcery.com>
@@ -10,8 +10,8 @@ struct X
 {
   ~X ();
 };
-struct S { X a; };  // ERROR - previous defn
-struct S { X a; };  // ERROR - redefinition
+struct S { X a; };  // { dg-error "" } previous defn
+struct S { X a; };  // { dg-error "" } redefinition
 
 void c1(S s)
 {

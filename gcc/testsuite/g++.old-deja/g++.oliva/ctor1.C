@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -6,7 +6,7 @@
 // based on bug report by Harri Porten <porten@tu-harburg.de>
 
 struct A {
-  A() : x; // ERROR - missing body
+  A() : x; // { dg-error "" } missing body
 };
 
 struct B {

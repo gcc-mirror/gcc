@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 11420
 // Bug: Can't handle indirect virtual template base init.
 

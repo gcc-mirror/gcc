@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
 class foo {
@@ -9,5 +9,5 @@ public:
 void bar(bool x)
 {
   if(x)
-    foo *a = new foo(foo::not);		// ERROR - 
+    foo *a = new foo(foo::not);		// { dg-error "" } 
 }

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900519_13
 
 // If multiple inheritance creates a situation in which a given name is
@@ -11,25 +12,25 @@
 // keywords: inheritance, ambiguity resolution, members
 
 struct base_0 {
-  enum { base_member }; // ERROR - candidate (26, 30)
+  enum { base_member }; // { dg-error "" } candidate (26, 30)
 };
 
 struct base_1 {
-  int base_member;      // ERROR - candidate (26, 34)
+  int base_member;      // { dg-error "" } candidate (26, 34)
 };
 
 struct base_2 {
-  int base_member ();   // ERROR - candidate (30, 34)
+  int base_member ();   // { dg-error "" } candidate (30, 34)
 };
 
 struct derived_0 : public base_0, public base_1 {
-  void member () { base_member; }			// ERROR - 
+  void member () { base_member; }			// { dg-error "" } 
 };
 
 struct derived_1 : public base_0, public base_2 {
-  void member () { base_member; }			// ERROR - missed
+  void member () { base_member; }			// { dg-error "" } missed
 };
 
 struct derived_2 : public base_1, public base_2 {
-  void member () { base_member; }			// ERROR - missed
+  void member () { base_member; }			// { dg-error "" } missed
 };

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 12475
 
 #include <limits.h>
@@ -11,4 +11,4 @@
 #error "Unsupported test -- add new constants."
 #endif
 
-enum huh { start =-TEST, next };	// WARNING - 
+enum huh { start =-TEST, next };	// { dg-warning "" } 

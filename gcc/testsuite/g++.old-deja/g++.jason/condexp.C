@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS id: 5629
-// Build don't link:
 
 struct String { const char *x; };
 class Pathname: public String { };

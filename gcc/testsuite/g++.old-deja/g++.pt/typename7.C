@@ -1,6 +1,6 @@
+// { dg-do assemble  }
+// { dg-options "" }
 // Test for implicit typename
-// Build don't link:
-// Special g++ Options:
 
 template <class T>
 struct A {
@@ -15,6 +15,6 @@ template <class T>
 struct D : public A <C <T> > {
   void f ()
     {
-      B* new_entries = (B *) 0;  // WARNING - implicit typename
+      B* new_entries = (B *) 0;  // { dg-warning "" } implicit typename
     }
 };

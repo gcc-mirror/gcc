@@ -1,11 +1,11 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed overloading
   typedef void *		(*NewObject) (void);
   
   class B
   {
   public:
-	static void WantsNew (NewObject creator); // ERROR - candidates are
+	static void WantsNew (NewObject creator); // { dg-error "" } candidates are
   };
   
   class A
@@ -18,6 +18,6 @@
 	  B::WantsNew ( (NewObject) A::NewOne );
 	  // This used to die in convert_harshness_{ansi,old} cuz it
 	  // didn't know what to do about a void type.
-	  B::WantsNew ( A::NewOne );// ERROR - 
+	  B::WantsNew ( A::NewOne );// { dg-error "" } 
       }
   };

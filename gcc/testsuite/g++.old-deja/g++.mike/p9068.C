@@ -1,7 +1,8 @@
+// { dg-do assemble  }
 // prms-id: 9068
 
 struct ostream {
-  void operator<< (int);	// ERROR - fn ref in err msg
+  void operator<< (int);	// { dg-error "" } fn ref in err msg
 };
 
 class C {
@@ -12,7 +13,7 @@ public:
 
 void foo (ostream& lhs, const C& rhs)
 {
-  lhs << rhs.i;		// ERROR - no such i for any opr << ()
+  lhs << rhs.i;		// { dg-error "" } no such i for any opr << ()
 }
 
 int& C::i () {

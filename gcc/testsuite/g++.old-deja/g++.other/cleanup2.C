@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-O -fno-exceptions -w" }
 // Origin: Bryan Scattergood <bryan@fsel.com>
-// Special g++ Options: -O -fno-exceptions -w
 
 extern "C" void abort();
 

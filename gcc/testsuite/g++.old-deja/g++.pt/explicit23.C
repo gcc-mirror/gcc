@@ -1,6 +1,6 @@
-// Build don't run:
+// { dg-do link  }
+// { dg-options "-ansi -pedantic-errors -w" }
 // GROUPS passed templates
-// Special g++ Options: -ansi -pedantic-errors -w
 template <class T>
 int foo(T t) { return 1; }
 

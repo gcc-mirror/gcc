@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Bug: new doesn't make sure that the count is an integral value.
 
 #include <new>
@@ -19,7 +20,7 @@ int main()
 
   float f = 3;
   int* b1 = new int[(int)f];
-  int* b2 = new int[f];		// ERROR - new requires integral size
+  int* b2 = new int[f];		// { dg-error "" } new requires integral size
 
   return s;
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // This is a test case to make sure the explicit cast on a pointer to
 // a member function works ok.
 // prms-id: 3060

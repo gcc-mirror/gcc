@@ -1,6 +1,6 @@
-// Build don't run:
+// { dg-do link  }
+// { dg-options "-g -O2" }
 // Origin: Loren James Rittle <rittle@latour.rsch.comm.mot.com>
-// Special g++ Options: -g -O2
 
 namespace std {
   const int __stl_chunk_size = 7;

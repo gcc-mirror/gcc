@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed inlining
 // inline file
 // Message-Id: <9306020823.AA14027@joker>

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 25 Jul 2001 <nathan@codesourcery.com>
@@ -15,5 +15,5 @@ namespace tmp {
 
 class A {
   public:
-  int kaka(tmp::B = b);		// ERROR - no b in scope
+  int kaka(tmp::B = b);		// { dg-error "" } no b in scope
 };

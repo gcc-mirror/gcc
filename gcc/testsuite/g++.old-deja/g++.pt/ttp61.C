@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Origin: grg at ai dot mit dot edu
-// Build don't link:
 
 class A;
 template<template<class Ignored> class base> class C : 

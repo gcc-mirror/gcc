@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -Wall
+// { dg-do assemble  }
+// { dg-options "-Wall" }
 
 class B {
 public:
@@ -7,6 +7,6 @@ public:
 };
 
 class D : public B {
-  int member;		                // WARNING - reordered
-  D() : member(0), B(member) { }	// WARNING - reordered
+  int member;		                // { dg-warning "" } reordered
+  D() : member(0), B(member) { }	// { dg-warning "" } reordered
 };

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Example of static member constants
 
 extern "C" int printf (const char *, ...);

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900519_09
 
 // g++ allows the allocation of const objects via operator new even when
@@ -20,10 +21,10 @@ typedef const struct struct_0 const_struct_0;
 
 void test ()
 {
-  new const int;		// ERROR - 
-  new const_int;		// ERROR - 
-  new const struct_0;		// ERROR - 
-  new const_struct_0;		// ERROR - 
+  new const int;		// { dg-error "" } 
+  new const_int;		// { dg-error "" } 
+  new const struct_0;		// { dg-error "" } 
+  new const_struct_0;		// { dg-error "" } 
 }
 
 int main () { return 0; }

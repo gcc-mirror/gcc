@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class C {
 public:
@@ -10,6 +10,6 @@ extern volatile C& cr;
 
 void f ()
 {
-  dynamic_cast<void*>(cp); // ERROR - cannot dynamic_cast
-  dynamic_cast<C&>(cr); // ERROR - cannot dynamic_cast
+  dynamic_cast<void*>(cp); // { dg-error "" } cannot dynamic_cast
+  dynamic_cast<C&>(cr); // { dg-error "" } cannot dynamic_cast
 }

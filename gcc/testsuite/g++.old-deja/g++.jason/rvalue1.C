@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 6000
 // Bug: g++ gets confused trying to build up a reference to a cast.
 

@@ -1,3 +1,5 @@
+// { dg-do assemble  }
+// { dg-options "-Wreturn-type -pedantic-errors" }
 // g++ 1.36.1 bug 900205_03
 
 // Section 6.6.3 of the cfront 2.0 Reference Manual says "A return statement
@@ -12,23 +14,22 @@
 
 // keywords: return statements, return type, void return, implicit return
 
-// Special g++ Options: -Wreturn-type -pedantic-errors
 
 struct struct00 { };
 
 int global_function_0 () {
-}					// ERROR - 
+}					// { dg-error "" } 
 
 struct00 global_function_1 () {
-}					// ERROR - 
+}					// { dg-error "" } 
 
 struct struct0 {
 
   int struct0_member_function_0 () {
-  }					// ERROR - 
+  }					// { dg-error "" } 
 
   struct0 struct0_member_function_1 () {
-  }					// ERROR - 
+  }					// { dg-error "" } 
 };
 
 struct struct1 {
@@ -40,9 +41,9 @@ struct struct1 {
 };
 
 int struct1_member_function_0 () {
-}					// ERROR - 
+}					// { dg-error "" } 
 
 struct1 struct1::struct1_member_function_1 () {
-}				        // ERROR - 
+}				        // { dg-error "" } 
 
 int main () { return 0; }

@@ -1,5 +1,5 @@
-// Skip if not target: i?86-*-*
-// Special g++ Options: -mtune=i686 -O2
+// { dg-do run { target i?86-*-* } }
+// { dg-options "-mtune=i686 -O2" }
 class G {};
 
 struct N {

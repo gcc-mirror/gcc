@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 6837
 // Bug: anonymous union confuses g++.
-// Build don't link:
 
 struct my_key {
    my_key(const my_key&);

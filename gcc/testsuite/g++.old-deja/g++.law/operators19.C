@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed operators
 // opr-ampr file
 // From: Jarkko Sonninen <Jarkko.Sonninen@lut.fi>

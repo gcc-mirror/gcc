@@ -1,8 +1,9 @@
+// { dg-do assemble  }
 // Make sure we don't dump core
 
-enum request { q, w, e};		// ERROR - 
+enum request { q, w, e};		// { dg-error "" } 
 
-class request {				// ERROR - 
+class request {				// { dg-error "" } 
 public:
   int a;
   request( int b) {

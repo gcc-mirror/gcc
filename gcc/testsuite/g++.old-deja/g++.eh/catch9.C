@@ -1,3 +1,5 @@
+// { dg-do run  }
+// { dg-options "-w" }
 // Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 29 Aug 1999 <nathan@acm.org>
 
@@ -7,7 +9,6 @@
 // D==B--A
 // +==C--A
 
-// Special g++ Options: -w
 
 struct A { int m; };
 struct B : A { int m; };

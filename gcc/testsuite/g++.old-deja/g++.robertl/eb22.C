@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Ambiguous conversion, three candidates:
 // builtin == (int, int), and the two user-defined operators
 // Each one requires a user-defined ICS where another uses builtin conversions,
@@ -11,16 +12,16 @@ public:
 };
 
 bool operator==(const MyInt& a, const int& b)
-{                                               // ERROR - candidate
+{                                               // { dg-error "" } candidate
         return (int)a == b;
 }
 
 bool operator==(const MyInt& a, const MyInt& b)
-{                                               // ERROR - candidate
+{                                               // { dg-error "" } candidate
         return (int)a == (int)b;
 }
 
 bool f()
 {
-  return 3 == MyInt();                          // ERROR - ambiguous
+  return 3 == MyInt();                          // { dg-error "" } ambiguous
 }

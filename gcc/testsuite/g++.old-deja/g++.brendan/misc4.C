@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed miscellaneous
 // This should not emit an error about A::~A() being redefined; we
 // should check that it is a pure virtual.

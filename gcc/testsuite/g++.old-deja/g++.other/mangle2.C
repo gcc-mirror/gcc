@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Test for overloaded operators in "C" linkage
-// Build don't link:
 
 extern "C" {
 typedef struct b

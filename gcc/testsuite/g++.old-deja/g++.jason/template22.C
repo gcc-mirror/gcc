@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Testcase for proper unification of code involving references.
-// Build don't link:
 
 template<class T>
 struct A

@@ -1,6 +1,6 @@
+// { dg-do run { xfail *-*-* } }
 // Objects must be destructed in decreasing cnt order
 // Original test attributed to James Kanze <jkanze@otelo.ibmmail.com>
-// execution test - XFAIL *-*-*
 
 extern "C" void abort ();
 

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 9 Aug 2000 <nathan@codesourcery.com>
@@ -8,12 +8,12 @@
 
 template<class LB> struct C
 {
-  typename LB::DataType;      // ERROR - does not declare anything
+  typename LB::DataType;      // { dg-error "" } does not declare anything
   typename LB::DataType m;
 };
 
 struct B {};
 struct A {
-  B;                          // ERROR - does not declare anything
+  B;                          // { dg-error "" } does not declare anything
   B m;
 };

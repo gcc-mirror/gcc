@@ -1,8 +1,8 @@
+// { dg-do run { xfail mips*-*-* rs6000-*-* powerpc-*-eabi m68k-*-coff m68k-motorola-sysv m88k-motorola-sysv3 mn10300-*-* mn10200-*-* v850-*-* sh-*-* sh64-*-* h8*-*-* xtensa-*-* } }
 // Test that variadic function calls using thunks work right.
 // Note that this will break on any target that uses the generic thunk
 //  support, because it doesn't support variadic functions.
 
-// excess errors test - XFAIL mips*-*-* rs6000-*-* powerpc-*-eabi m68k-*-coff m68k-motorola-sysv m88k-motorola-sysv3  mn10300-*-* mn10200-*-* v850-*-* sh-*-* sh64-*-* h8*-*-* xtensa-*-*
 
 #include <stdarg.h>
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 void
 action0(float& arg1)
 {

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // regression test - 
 
 // by Paul Burchard <burchard@pobox.com>, Level Set Systems, Inc.
@@ -11,7 +11,7 @@ struct A {
 	};
 	template<class T>
 	struct C {
-		B<T> b; // gets bogus error - B is not a template
+		B<T> b; // { dg-bogus "" } B is not a template
 			// but removing wrapper A gets rid of complaint
 			// also, replacing B<T> with A::B<T> also gets rid of complaint
 	};

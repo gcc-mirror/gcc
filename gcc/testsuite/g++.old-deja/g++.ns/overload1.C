@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Unqualified lookup should find all functions.
 // Duplicates are ignored as long as they lose during overload resolution.
 namespace A{

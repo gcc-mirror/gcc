@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 4511
 
 int bad;

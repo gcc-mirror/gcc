@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -Wno-pmf-conversions
+// { dg-do assemble  }
+// { dg-options "-Wno-pmf-conversions" }
 // prms-id: 11012
 
 class Foo {

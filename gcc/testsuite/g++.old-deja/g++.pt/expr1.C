@@ -1,3 +1,4 @@
+// { dg-do run  }
 template <int n> class vec {
     double x[n];
 

@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-w" }
 // Another magic NULL problem.
-// Special g++ Options: -w
 
 #include <stddef.h>
 

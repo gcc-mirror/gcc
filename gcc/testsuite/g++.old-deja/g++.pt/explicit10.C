@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-ansi -pedantic-errors -w" }
 // GROUPS passed templates
-// Special g++ Options: -ansi -pedantic-errors -w
 template <class T>
 void foo(T t);
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed constructors
 // ctor file
 // Message-Id: <199306151813.gD28471@mail.Germany.EU.net>
@@ -9,13 +9,13 @@
 
 #include <fstream>
 
-class X : public std::ifstream { // ERROR - candidate
+class X : public std::ifstream { // { dg-error "" } candidate
     public:
-      X(int a, char *b) {} // ERROR - candidate
+      X(int a, char *b) {} // { dg-error "" } candidate
 };
 int main()
 {
     X *y = new X(10, "123");
     // the compiler must reject this constructor call:
-    X *x = new X("abc");// ERROR - .*
+    X *x = new X("abc");// { dg-error "" } .*
 }

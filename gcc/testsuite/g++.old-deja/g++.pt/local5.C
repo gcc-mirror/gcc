@@ -1,3 +1,4 @@
+// { dg-do run  }
 template <class INT>
 class b
 {

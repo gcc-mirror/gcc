@@ -1,3 +1,4 @@
+// { dg-do run  }
 void foo(){}
 
 namespace Bar{

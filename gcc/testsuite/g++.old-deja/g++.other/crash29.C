@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
 class bar
@@ -9,5 +9,5 @@ public:
 };
 void bar::foo ()
 {
-  baz x();			// ERROR - 
+  baz x();			// { dg-error "" } 
 }

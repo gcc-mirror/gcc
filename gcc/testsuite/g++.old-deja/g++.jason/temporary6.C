@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: the temporary from the default parameter to f2 is reused.
-// Build don't link:
 
 struct A {};
 int f2 (int i, const A& ar = A());

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed access
 // unsorted.2 file
 // Date: Sat, 6 Jun 1992 18:23:03 -0400
@@ -7,10 +7,10 @@
 // Subject: bug with access control to member functions
 
        class X {
-	     void g (int); // ERROR - is private
+	     void g (int); // { dg-error "" } is private
         public:
           void g (double);
         };
 
-        class Y : public X { void f() { g (1); } };// ERROR - 
+        class Y : public X { void f() { g (1); } };// { dg-error "" } 
 

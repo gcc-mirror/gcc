@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999, 2001 Free Software Foundation
 
@@ -13,19 +13,19 @@
 struct foo {
   foo() {}
 private:
-  void operator delete(void *) {} // ERROR - private
+  void operator delete(void *) {} // { dg-error "" } private
 } foo_;
 
 struct bar : foo {
   ~bar() {
-    delete this; // ERROR - delete is private
+    delete this; // { dg-error "" } delete is private
     // An implicit invocation of delete is emitted in destructors, but
     // it should only be checked in virtual destructors
-  } // gets bogus error - not virtual
+  } // { dg-bogus "" } not virtual
 } bar_;
 
 struct baz : foo {
-  virtual ~baz() {} // ERROR - delete is private in vdtor
+  virtual ~baz() {} // { dg-error "" } delete is private in vdtor
 } baz_;
 
-struct bad : baz {} bad_; // ERROR - delete is private in vdtor
+struct bad : baz {} bad_; // { dg-error "" } delete is private in vdtor

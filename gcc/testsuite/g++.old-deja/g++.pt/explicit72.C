@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Contributed by Reid M. Pinchback <reidmp@MIT.EDU>
 // Adapted by Alexandre Oliva <oliva@dcc.unicamp.br>
 // plain char, signed char and unsigned char are distinct types

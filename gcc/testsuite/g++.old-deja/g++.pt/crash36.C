@@ -1,9 +1,9 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Andreas Kloeckner <ak@ixion.net>
 
 template<class Iterator> struct iterator_traits {
   typedef typename Iterator::iterator_category 
-  iterator_category; // ERROR - no type iterator_category
+  iterator_category; // { dg-error "" } no type iterator_category
 };
 
 template<class Category>
@@ -28,8 +28,8 @@ struct list {
   };
   
   reverse_iterator<list_iterator<T> > rbegin()
-    { return reverse_iterator<list_iterator<T> > // ERROR - no type|instantiated here
-	(list_iterator<T>(Head->next())); } // ERROR - not declared
+    { return reverse_iterator<list_iterator<T> > // { dg-error "" } no type|instantiated here
+	(list_iterator<T>(Head->next())); } // { dg-error "" } not declared
 };
 
 template class list<int>;

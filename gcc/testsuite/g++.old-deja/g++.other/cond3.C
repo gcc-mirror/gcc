@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Loring Holden <lsh@cs.brown.edu>
 
 class Wtransf {};

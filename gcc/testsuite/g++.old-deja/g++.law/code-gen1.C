@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed code-generation
 // code-gen file
 // From: Jeffrey C. Gealow <jgealow@mtl.mit.edu>

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 21 May 1999 <nathan@acm.org>
@@ -23,8 +23,8 @@ template<class T> void foo(T const *){}
 
 void f()
 {
-  foo<int &>(); // ERROR - attempt to build int & const *
-  foo<void ()>(); // ERROR - attempt to build void (const *)()
+  foo<int &>(); // { dg-error "" } attempt to build int & const *
+  foo<void ()>(); // { dg-error "" } attempt to build void (const *)()
 }
 
 typedef void (*Fptr)();

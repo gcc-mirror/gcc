@@ -1,8 +1,9 @@
+// { dg-do assemble  }
+// { dg-options "-Wno-deprecated" }
 /* bug.cc */
 /* simple program to demonstrate the bug with named return values in gcc
 */
 /* (w) 4.9.97 by Kurt Garloff <K.Garloff@ping.de> */
-// Special g++ Options: -Wno-deprecated
 // 8/28/1998 - This dies in add_conversions from dfs_walk, null CLASSTYPE_METHOD_VEC
 // for the test<T> record_type.  This is marked as an expected failure for now,
 // until we actually fix it.
@@ -28,8 +29,8 @@ class test
 
 // named return value version
 template <class T>
-test<T> operator + (const test<T>& a, const test<T>& b) return c(a);// ERROR - named return value
-{ c += b; } // ERROR - c undeclared
+test<T> operator + (const test<T>& a, const test<T>& b) return c(a);// { dg-error "" } named return value
+{ c += b; } // { dg-error "" } c undeclared
 
 int main()
 {

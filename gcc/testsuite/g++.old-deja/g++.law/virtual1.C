@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -Woverloaded-virtual
+// { dg-do assemble  }
+// { dg-options "-Woverloaded-virtual" }
 // GROUPS passed virtual-warnings
 // copy file
 // From: gfm@mencon.mencon.oz.au (Graham Menhennitt)

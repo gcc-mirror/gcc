@@ -1,3 +1,4 @@
+// { dg-do assemble  }
  
  
  
@@ -130,5 +131,5 @@ class Bar;
 
 int main() {
   ref_ptr<Baz> foo;
-  static_cast<Bar *> (foo)->DoSomething;  //ERROR - invalid cast
+  static_cast<Bar *> (foo)->DoSomething;  //{ dg-error "" } invalid cast
 }

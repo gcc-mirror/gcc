@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed typeck
 // typeck file
 // From: Jutta Degener <jutta@cs.tu-berlin.de>
@@ -11,6 +11,6 @@ int main()
   {
         int * p = new int[10];
         int * q = new arr;              /* g++ complains, but shouldn't     */
-        int (* r)[10] = new arr;        /* g++ doesn't complain, but should */// ERROR - 
+        int (* r)[10] = new arr;        /* g++ doesn't complain, but should */// { dg-error "" } 
   }
 

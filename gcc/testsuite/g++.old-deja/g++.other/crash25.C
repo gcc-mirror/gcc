@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
 class X {
@@ -8,9 +8,9 @@ public:
 }
 
 X::x()
-{				// ERROR - 
+{				// { dg-error "" } 
 }
 
-X::~x()                         // ERROR - 
+X::~x()                         // { dg-error "" } 
 {				
 }

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed rtti
 // Negative testcase for decls in conditions.
 
@@ -6,39 +6,39 @@ int main()
 {
   float i;
   
-  if (int i = 1)		// ERROR - , XFAIL *-*-*
+  if (int i = 1)		// { dg-error "" "" { xfail *-*-* } } , 
     {
-      char i;			// ERROR - , XFAIL *-*-*
+      char i;			// { dg-error "" "" { xfail *-*-* } } , 
       char j;
     }
   else
     {
-      short i;			// ERROR - , XFAIL *-*-*
+      short i;			// { dg-error "" "" { xfail *-*-* } } , 
       char j;
     }
 
-  while (int i = 0)		// ERROR - XFAIL *-*-*
+  while (int i = 0)		// { dg-error "" "" { xfail *-*-* } } 
     {
-      int i;			// ERROR - XFAIL *-*-*
+      int i;			// { dg-error "" "" { xfail *-*-* } } 
     }
 
-  for (; int i = 0; )		// ERROR - XFAIL *-*-*
+  for (; int i = 0; )		// { dg-error "" "" { xfail *-*-* } } 
     {
-      int i;			// ERROR - XFAIL *-*-*
+      int i;			// { dg-error "" "" { xfail *-*-* } } 
     }
 
-  switch (int i = 0)		// ERROR - XFAIL *-*-*
+  switch (int i = 0)		// { dg-error "" "" { xfail *-*-* } } 
     {
     default:
-      int i;			// ERROR - XFAIL *-*-*
+      int i;			// { dg-error "" "" { xfail *-*-* } } 
     }
 
-  if (struct A { operator int () { return 1; } } *foo = new A) // ERROR - 
+  if (struct A { operator int () { return 1; } } *foo = new A) // { dg-error "" } 
     ;
 
-  A bar;			// ERROR - 
+  A bar;			// { dg-error "" } 
   
-  if (enum A { one, two, three } foo = one) // ERROR - 
+  if (enum A { one, two, three } foo = one) // { dg-error "" } 
     ;
 
   struct B { operator int () { return 2; } };
@@ -46,10 +46,10 @@ int main()
   if (struct B * foo = new B)
     ;
 
-  if (int f () = 1)		// ERROR - 
+  if (int f () = 1)		// { dg-error "" } 
     ;
   
-  if (int a[2] = {1, 2})	// ERROR - 
+  if (int a[2] = {1, 2})	// { dg-error "" } 
     ;
 
 }

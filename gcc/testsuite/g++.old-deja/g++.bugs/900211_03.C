@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900211_03
 
 // The following erroneous code causes g++ to segfault.
@@ -8,7 +9,7 @@
 
 void function ()
 {
-  char* new_base = new char[x];		// ERROR - 
+  char* new_base = new char[x];		// { dg-error "" } 
 }
 
 int main () { return 0; }

@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 template <class T>

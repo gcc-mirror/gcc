@@ -1,7 +1,7 @@
+// { dg-do assemble  }
+// { dg-options "-Wnon-virtual-dtor -Weffc++" }
 // 981203 bkoz
 // g++/15309
-// Build don't link: 
-// Special g++ Options: -Wnon-virtual-dtor -Weffc++
 
 class bahamian {
 public:
@@ -10,7 +10,7 @@ public:
 };
 
 class miami : public bahamian
-{ // WARNING - // WARNING -
+{ // { dg-warning "" } // WARNING -
 public:
    miami ();
    ~miami ();

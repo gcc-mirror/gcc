@@ -1,6 +1,6 @@
+// { dg-do assemble  }
+// { dg-options "-W -Wall" }
 // Don't warn about these comparisons.
-// Build don't link:
-// Special g++ Options: -W -Wall
 
 struct A {
   unsigned int b : 14;

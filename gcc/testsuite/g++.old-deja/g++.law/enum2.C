@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -fshort-enums
+// { dg-do assemble  }
+// { dg-options "-fshort-enums" }
 // GROUPS passed enums
 // enum file
 // From: Jeff Gehlhaar <jbg@qualcomm.com>

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -9,4 +9,4 @@
 // invalid operands `foo' and `int' to binary `operator !='
 
 class foo {} bar;
-int i = void(bar) ? 1 : 0; // gets bogus error - operator!= - XFAIL *-*-*
+int i = void(bar) ? 1 : 0; // { dg-bogus "" "" { xfail *-*-* } }  - operator!= - 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 5286
 // Bug: g++ forgets side-effects of object in call to nonexistent destructor.
 

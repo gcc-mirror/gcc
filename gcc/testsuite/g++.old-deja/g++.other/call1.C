@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that various calls to non-functions work.
 
 void f () { }

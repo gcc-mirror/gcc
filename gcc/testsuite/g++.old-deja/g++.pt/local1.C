@@ -1,3 +1,4 @@
+// { dg-do run  }
 template <class STRUCT, class MEMBER> inline STRUCT *
 setback(MEMBER *bp, MEMBER STRUCT::*offset)
 {

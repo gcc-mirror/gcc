@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 struct S
@@ -10,12 +10,12 @@ struct S
 void f ()
 {
   {
-    S s1; // ERROR - skips initialization
+    S s1; // { dg-error "" } skips initialization
   
-  t:	  // ERROR - jump to label
+  t:	  // { dg-error "" } jump to label
     S s2;
     ;
   }
 
-  goto t; // ERROR - from here
+  goto t; // { dg-error "" } from here
 }

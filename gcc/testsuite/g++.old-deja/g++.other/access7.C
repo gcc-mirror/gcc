@@ -1,11 +1,11 @@
+// { dg-do assemble  }
 // Test that access control for types and statics works properly
 // with nested types.
 
-// Build don't link:
 
 class A {
-  static int I1;		// ERROR - private
-  struct B1 { };		// ERROR - private
+  static int I1;		// { dg-error "" } private
+  struct B1 { };		// { dg-error "" } private
 public:
   static int I2;
   struct B2 { };
@@ -19,15 +19,15 @@ class D: public A {
 
 void D::E::f ()
 {
-  int i = I1;			// ERROR - within this context
-  B1 b1;			// ERROR - within this context
+  int i = I1;			// { dg-error "" } within this context
+  B1 b1;			// { dg-error "" } within this context
   i = I2;
   B2 b2;
 }
 
 void f ()
 {
-  A::B1 b1;			// ERROR - within this context
-  new A::B1;			// ERROR - within this context
-  (A::B1) b1;			// ERROR - within this context
+  A::B1 b1;			// { dg-error "" } within this context
+  new A::B1;			// { dg-error "" } within this context
+  (A::B1) b1;			// { dg-error "" } within this context
 }

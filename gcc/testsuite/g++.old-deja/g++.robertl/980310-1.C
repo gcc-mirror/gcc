@@ -1,4 +1,5 @@
-// Special g++ Options: -g
+// { dg-do run  }
+// { dg-options "-g" }
 // Internal compiler error on egcs 1.0.1 i586-pc-linux-gnulibc1. 
 // From: Max Lawson <mlawson@drfmc.ceng.cea.fr>
 // Message-Id: <9803091022.AA07520@drfmc.ceng.cea.fr>

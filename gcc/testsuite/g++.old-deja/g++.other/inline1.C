@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-O2 -Winline" }
 // Origin: Martin Reinecke <martin@MPA-Garching.MPG.DE>
-// Special g++ Options: -O2 -Winline
 
 class foo
 {

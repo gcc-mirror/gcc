@@ -1,5 +1,5 @@
-// Special g++ Options: -fexceptions -O9
-// excess errors test - XFAIL sparc64-*-elf arm-*-pe
+// { dg-do run { xfail sparc64-*-elf arm-*-pe } }
+// { dg-options "-fexceptions -O9" }
 
 void main1() {
   throw 1;

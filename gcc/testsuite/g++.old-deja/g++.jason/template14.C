@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 4745
 // Bug: g++ gets the constructor and destructor confused because the default
 // parm prevents the two constructor types from satisfying ==.

@@ -1,7 +1,7 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class c {
   void (c::*x)();
 public:
-  void f() { this->x(); } // ERROR - pointer-to-member
+  void f() { this->x(); } // { dg-error "" } pointer-to-member
 };

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed vtable
 extern "C" int printf (const char *, ...);
 enum { vf_request, vf_event } want;

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that we don't complain about calling a destructor on a const object.
 
 #include <new>
@@ -11,5 +12,5 @@ const A a = {};
 int main()
 {
   a.~A();
-  a.A::~A();			// gets bogus error - const violation
+  a.A::~A();			// { dg-bogus "" } const violation
 }

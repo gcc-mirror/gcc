@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-O3" }
 // Origin: Jakub Jelinek <jakub@redhat.com>
-// Special g++ Options: -O3
 
 struct foo
 {

@@ -1,5 +1,4 @@
-// Build don't link:
-// Skip if not target: arm-*pe
+// { dg-do assemble { target arm-*-*pe } }
 // set not_compiler_result "__imp_"
 // dll.h
 class aClass 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed initialization
 class foo {
 public:
@@ -8,12 +8,12 @@ public:
 
 class bar {
 public:
-  foo f[3] = { 1, 2, 3 };   // works: f[0] = 1, f[1] = 2, f[2] = 3 // ERROR - ANSI C++ forbids initialization of member f;
+  foo f[3] = { 1, 2, 3 };   // works: f[0] = 1, f[1] = 2, f[2] = 3 // { dg-error "" } ANSI C++ forbids initialization of member f;
 };
 
 class bar2 {
 public:
-      foo f[3] = { foo(1), foo(2), foo(3) }; // ERROR - ANSI C++ forbids initialization of member f;
+      foo f[3] = { foo(1), foo(2), foo(3) }; // { dg-error "" } ANSI C++ forbids initialization of member f;
   // does not compile -- error: field initializer is not constant
 };
 

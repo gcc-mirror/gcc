@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Miniussi <miniussi@ilog.fr>
 
 template <class O>

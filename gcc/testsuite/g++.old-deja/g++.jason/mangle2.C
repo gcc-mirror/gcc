@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // I guess this was broken once.
-// Build don't link:
 
 template <class C, int D> class X { };
 typedef X<int, 0> T;

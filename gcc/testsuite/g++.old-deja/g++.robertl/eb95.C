@@ -1,3 +1,4 @@
+// { dg-do run  }
 struct A {};
 
 template <class T>

@@ -1,7 +1,7 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed anonymous-unions
 static union {
         char*   uC;
 private:
-        int     uI;// ERROR - .*private member.*
+        int     uI;// { dg-error "" } .*private member.*
 };

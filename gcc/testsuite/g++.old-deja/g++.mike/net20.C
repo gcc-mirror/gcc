@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // A pointer to member function test case.
 
 struct X

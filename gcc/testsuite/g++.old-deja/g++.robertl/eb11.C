@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template<int N1, int N2>
 struct meta_max {

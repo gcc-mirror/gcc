@@ -1,6 +1,6 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed error-messages
 class foo {
 public:
-  volatile int () {}// ERROR - 
+  volatile int () {}// { dg-error "" } 
 };

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: instantiation of D() corrupts declaration of basis[].
-// Build don't link:
 
 struct B { };
 template <int t>

@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -O2 -foptimize-sibling-calls -fno-exceptions
+// { dg-do assemble  }
+// { dg-options "-O2 -foptimize-sibling-calls -fno-exceptions" }
 
 struct X
 {

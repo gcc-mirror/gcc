@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options:
+// { dg-do assemble  }
+// { dg-options "" }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -23,6 +23,6 @@ template <class T> struct bar {
 };
 
 template <class T> struct baz {
-  typedef bar<T>::foo foo; // ERROR - implicit typename
+  typedef bar<T>::foo foo; // { dg-error "" } implicit typename
   void m(foo); 
 };

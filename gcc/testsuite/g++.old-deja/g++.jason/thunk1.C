@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that non-variadic function calls using thunks work right.
 
 struct A {

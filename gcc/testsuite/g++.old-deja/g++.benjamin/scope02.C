@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 //980529 bkoz
 //3.4.5 Class member access via pointer and non-pointer
 // non-nested dtor calls

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed ARM-compliance
 // arm file
 // From: Johan Bengtsson <jbn@lulea.trab.se>

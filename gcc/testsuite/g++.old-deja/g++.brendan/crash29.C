@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 
 union Value
@@ -7,13 +7,13 @@ union Value
 };
 
 struct GlobalAddress
-{// ERROR -  candidates .*
-	GlobalAddress(Value *nvar){}// ERROR - .*
+{// { dg-error "" }  candidates .*
+	GlobalAddress(Value *nvar){}// { dg-error "" } .*
 };
 
 int
 main()
 {
-	new GlobalAddress(Value());		// internal error occured here// ERROR -  no matching function .*
+	new GlobalAddress(Value());		// internal error occured here// { dg-error "" }  no matching function .*
 	//new GlobalAddress(new Value());	// This line is correct code
 }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Chris Heath <cheath@math.lsa.umich.edu>
 
 struct A {
@@ -7,4 +7,4 @@ struct A {
 
 void f(A a) {}
 
-int main() {f(1);} // ERROR - no conversion from int to A.
+int main() {f(1);} // { dg-error "" } no conversion from int to A.

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900210_08
 
 // g++ allows pointer-to-const values to be implicitly converted to
@@ -12,7 +13,7 @@ void *vp;
 
 void function ()
 {
-  vp = ccp;		/* ERROR - */
+  vp = ccp;		/* { dg-error "" } */
 }
 
 int main () { return 0; }

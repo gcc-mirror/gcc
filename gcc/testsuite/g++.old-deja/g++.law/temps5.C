@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed temps
 // temps file
 // Message-Id: <9311171029.AA00592@mencon>

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900324_05
 
 // The following erroneous code causes g++ to segfault.
@@ -15,7 +16,7 @@ int_array &right = int_array_object;
 
 void function ()
 {
-  left = right;		// ERROR - causes segfault
+  left = right;		// { dg-error "" } causes segfault
 }
 
 int main () { return 0; }

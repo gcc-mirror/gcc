@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -w -O3
+// { dg-do assemble  }
+// { dg-options "-w -O3" }
 // GROUPS passed incdec
 typedef void* Pix;
 class ndbArtPtrVec 

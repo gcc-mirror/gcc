@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Used to use -fsjlj-exceptions, but that isn't an option anymore.
 // Origin: Donn Terry <donn@interix.com>
 

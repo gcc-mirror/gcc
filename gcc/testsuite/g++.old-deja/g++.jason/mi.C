@@ -1,3 +1,4 @@
+// { dg-do run  }
 int status;
 
 struct A { virtual void foo () { status = 1; } };

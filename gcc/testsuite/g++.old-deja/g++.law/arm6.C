@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed ARM-compliance
 // arm file
 // Message-Id: <9211231051.AA11287@us-es.sel.de>
@@ -12,8 +12,8 @@ int main() {
 
         switch (a) {
         case 1:
-                int v2 = 3;// ERROR -    crosses.*
-        case 2:// ERROR -  jump.*
+                int v2 = 3;// { dg-error "" }    crosses.*
+        case 2:// { dg-error "" }  jump.*
                 if (v2 == 7)    // error not flagged by 2.3.1
                         ;
         }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // A test case found by InterViews testing...
 
 extern "C" int printf(const char *, ...);

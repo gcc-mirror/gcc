@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed overloading
 extern "C" int printf (const char *, ...);
 

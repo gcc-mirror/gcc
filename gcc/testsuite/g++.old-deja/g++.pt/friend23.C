@@ -1,8 +1,8 @@
-// Build don't link:
+// { dg-do assemble  }
 
-template <class T = int> // ERROR - original definition
+template <class T = int> // { dg-error "" } original definition
 struct S
-{ // ERROR - redefinition of default arg
+{ // { dg-error "" } redefinition of default arg
   template <class U = int>
   friend class S;
 };

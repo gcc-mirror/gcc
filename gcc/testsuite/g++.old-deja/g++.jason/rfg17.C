@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // The default assignment operator for B uses array assignment, so we can't
 // just disallow it...
 
@@ -11,5 +12,5 @@ void
 test ()
 {
   b1 = b2;	      /* OK */
-  a1 = a2;	      /* ERROR - array assignment */
+  a1 = a2;	      /* { dg-error "" } array assignment */
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ re-evaluates the initializer for r before calling f(); since i has
 // changed to an invalid index, this breaks.
 

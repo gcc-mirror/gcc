@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct S0 { };
 struct S1 : virtual public S0 { };

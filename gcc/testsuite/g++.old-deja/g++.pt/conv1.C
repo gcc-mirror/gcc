@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T>
 struct S1 {};
@@ -15,5 +15,5 @@ struct D: public S1<int> {
 void f()
 {
   S2 s;
-  (D*) s; // ERROR - cannot convert
+  (D*) s; // { dg-error "" } cannot convert
 }

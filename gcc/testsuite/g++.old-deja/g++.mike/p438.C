@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 438
 
 class D;
@@ -12,12 +12,12 @@ class C
 class D
 {
    public:
-   void a(C& b); // ERROR - referenced below
+   void a(C& b); // { dg-error "" } referenced below
 };
 
 void C::test() const
 {
    D d;
 
-   d.a(*this);	// ERROR - *this is const, so should get error
+   d.a(*this);	// { dg-error "" } *this is const, so should get error
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ generates an error trying to generate the first foo<int>, when
 // it should silently fail and go on to the next one.
 

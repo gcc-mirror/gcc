@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // prms-id: 2573
 
 class X {
@@ -8,7 +9,7 @@ public:
 };
 
 char *X::add() {
-  char *f1 = (char *) &key;	// ERROR - 
-  char *f2 = (char *) &vkey;	// ERROR - 
+  char *f1 = (char *) &key;	// { dg-error "" } 
+  char *f2 = (char *) &vkey;	// { dg-error "" } 
   return f1;
 }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 19 Jan 2001 <nathan@codesourcery.com>
@@ -12,8 +12,8 @@ template <int dim> struct Outer
 
   void f()
   {
-    Inner<dim> i;         // ERROR - non-template
-    Inner<> j;            // ERROR - non-template
+    Inner<dim> i;         // { dg-error "" } non-template
+    Inner<> j;            // { dg-error "" } non-template
   }
 };
 struct O {};
@@ -21,15 +21,15 @@ void foo ()
 {
   Outer<1> x;
   x.f ();
-  Outer<1>::Inner<2> z;   // ERROR - non-template
-  O<1> w;                 // ERROR - non-template
+  Outer<1>::Inner<2> z;   // { dg-error "" } non-template
+  O<1> w;                 // { dg-error "" } non-template
 }
 
 template <typename T, template <typename C> class TPL>
 struct X
 {
   TPL<T> t;
-  T<int> s;     // ERROR - non-template
+  T<int> s;     // { dg-error "" } non-template
 };
 
 template <typename T> struct Y
@@ -39,5 +39,5 @@ template <typename T> struct Y
 void bar ()
 {
   X<int, Y> a;
-  X<int, O> b;  // ERROR - non-template
+  X<int, O> b;  // { dg-error "" } non-template
 }

@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -Wcast-qual
+// { dg-do assemble  }
+// { dg-options "-Wcast-qual" }
 // prms-id: 2855
 
 class Ctest {
@@ -16,6 +16,6 @@ Ctest::operator const char *() const
 int main()
 {
   Ctest obj;
-  char* temp = (char *)obj;		// WARNING - 
+  char* temp = (char *)obj;		// { dg-warning "" } 
   temp[0] = '\0';
 }

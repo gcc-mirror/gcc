@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 class X
 {
@@ -7,4 +7,4 @@ public:
         X(int j);
 }
 
-X *x = new X[10]();// ERROR - .*
+X *x = new X[10]();// { dg-error "" } .*

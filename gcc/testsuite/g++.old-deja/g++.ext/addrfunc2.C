@@ -1,6 +1,7 @@
+// { dg-do run  }
+// { dg-options "-fms-extensions" }
 // Test for implicit & on methods.
 // Contributed by Jason Merrill <jason@cygnus.com>.
-// Special g++ Options: -fms-extensions
 
 struct A {
   void f (int = 0) { }

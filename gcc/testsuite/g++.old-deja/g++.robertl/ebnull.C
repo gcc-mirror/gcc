@@ -1,3 +1,4 @@
+// { dg-do run  }
 class null {
     null (null const&);
     void operator& ();

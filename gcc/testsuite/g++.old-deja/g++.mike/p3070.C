@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Caused an Internal Compiler Error.  Works now.
 // prms-id: 3070
 

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS Id: 5070 (bug 2)
-// Build don't link:
 
 struct A {
   void f ();
@@ -18,5 +18,5 @@ struct C: public B {
 };
 
 void C::g() {
-  B::p->f();			// gets bogus error
+  B::p->f();			// { dg-bogus "" } 
 }

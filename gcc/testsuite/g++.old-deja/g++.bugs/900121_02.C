@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900121_02
 
 // Assignment of structs is defined as memberwise assignment,
@@ -34,8 +35,8 @@ struct s1 {
 };
 
 union u0 {
-  s0 u0_member_0;		// ERROR - 
-  s1 u0_member_1;		// ERROR - 
+  s0 u0_member_0;		// { dg-error "" } 
+  s1 u0_member_1;		// { dg-error "" } 
 };
 
 void function ()

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 template <class Key>
 class d0om_Hashmap
 {

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed conversions
 // cvt file
 // Message-Id: <9305210124.AA02409@kato.cs.brown.edu>
@@ -15,6 +15,6 @@ class Node { public: Point Location(){ Point p; return p; } };
 int main()
 {
    Node** node1;
-   Line_Segment(node1->Location()); // intended (*node1)// ERROR - .*
+   Line_Segment(node1->Location()); // intended (*node1)// { dg-error "" } .*
 }
 

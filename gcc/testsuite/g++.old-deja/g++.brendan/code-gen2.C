@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed code-generation
 // Check that declarations with initializations are executed
 // correctly.

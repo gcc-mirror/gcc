@@ -1,20 +1,21 @@
+// { dg-do assemble  }
 // General testcase for local classes.
 
 int x;
 void f ()
 {
   static int s;
-  int x;			// ERROR - referenced below
+  int x;			// { dg-error "" } referenced below
   extern int q();
 
   struct local {
-    int g() { return x; }	// ERROR - automatic variable
-    int h() { return s; }	// gets bogus error - local class
+    int g() { return x; }	// { dg-error "" } automatic variable
+    int h() { return s; }	// { dg-bogus "" } local class
     int k() { return ::x; }	// OK
     int l() { return q(); }	// OK
     int m();			// OK - not defined
-    static int foo;		// ERROR - static data member of local class
+    static int foo;		// { dg-error "" } static data member of local class
   };
 }
 
-local* p = 0;			// ERROR - no such type in scope
+local* p = 0;			// { dg-error "" } no such type in scope

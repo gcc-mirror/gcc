@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 4342
 // Bug: g++ fails to massage ambiguity in calling virtual destructor.
-// Build don't link:
 
 class A { public: virtual ~A();};
 class B: public A { };

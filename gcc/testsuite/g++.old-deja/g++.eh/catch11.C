@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 24 May 2000 <nathan@codesourcery.com>
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed parsing
 // From: Jason Merrill <jason@cygnus.com>
 // Date:     Fri, 13 Aug 93 12:49:11 PDT

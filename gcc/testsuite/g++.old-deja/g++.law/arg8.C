@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed arg-matching
 // arg-matching file
 // Message-Id: <9307081747.AA14030@tnt>

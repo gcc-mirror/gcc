@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "" }
 // Testcase for constructor expressions (GNU extension)
-// Special g++ Options:
 
 struct Any {
     int *type;

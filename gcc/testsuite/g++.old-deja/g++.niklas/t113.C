@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed niklas explicit-construct virtual-base
 struct A {};
 struct B : virtual A { B(); };

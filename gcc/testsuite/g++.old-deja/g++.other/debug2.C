@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -funroll-loops -O2 -g
+// { dg-do assemble  }
+// { dg-options "-funroll-loops -O2 -g" }
 
 inline void f()
 {

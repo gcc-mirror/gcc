@@ -1,3 +1,4 @@
+// { dg-do run  }
 namespace A{
  void foo(int){}
 }

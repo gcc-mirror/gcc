@@ -1,23 +1,22 @@
-// Build don't link: 
+// { dg-do assemble }
 // GROUPS niklas pt friend
-// excess errors test - XFAIL *-*-*
 template <class T> class C1
-{
+{ // { dg-error "" }
 public:
 	void diddle_C2 ();
 };
 
 class C2
 {
-	int data_member;
-        friend class C1;
+	int data_member; // { dg-error "" }
+  friend class C1; // { dg-error "" }
 };
 
 class C2 C2_object;
 
 template <class T> void C1<T>::diddle_C2 ()
 {
-  C2_object.data_member = 99;
+  C2_object.data_member = 99; // { dg-error "" }
 }
 
 C1<int> C1_int_object;

@@ -1,7 +1,7 @@
-// Build don't link:
+// { dg-do assemble  }
 int i = 4;
 struct S{
-  char c[i];      // ERROR - size not constant
+  char c[i];      // { dg-error "" } size not constant
   int h;
   int foo(){
     return h;

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: g++ fails to compare integer constants properly.
-// Build don't link:
 
 template <int X, int Y>
 struct Matrix {

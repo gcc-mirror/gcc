@@ -1,14 +1,14 @@
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// { dg-do run }
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 // Contributed by Ben Elliston <bje@redhat.com>
 
 // PR 80: Packed enums use minimum required storage.
-// excess errors test - XFAIL *-*-*
 
 extern "C" void abort();
 
-enum numbers { one, two, three } __attribute__ ((packed)) nums;
-enum colours { red = 1000, green, blue } __attribute__ ((packed)) cols;
-enum __attribute__ ((packed)) conditions { fine, rain, cloudy } forecast;
+enum numbers { one, two, three } __attribute__ ((packed)) nums; // { dg-bogus "" "" { xfail *-*-* } } 
+enum colours { red = 1000, green, blue } __attribute__ ((packed)) cols; // { dg-bogus "" "" { xfail *-*-* } } 
+enum __attribute__ ((packed)) conditions { fine, rain, cloudy } forecast; // { dg-bogus "" "" { xfail *-*-* } } 
 
 int
 main()
@@ -19,7 +19,7 @@ main()
   if (sizeof (cols) != 2)
     abort ();
 
-  if (sizeof (forecast) != 1)
+  if (sizeof (forecast) != 1) // { dg-bogus "" "" { xfail *-*-* } }
     abort ();
 
   return 0;

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testcase for not evaluating template default args if they are
 // never used.
 

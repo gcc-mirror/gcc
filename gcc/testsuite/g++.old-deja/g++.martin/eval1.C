@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Postfix expression must be evaluated even if accessing a static member.
 
 struct S

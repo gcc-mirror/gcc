@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble }
 
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 5 Sep 1999 <nathan@acm.org>
@@ -20,10 +20,9 @@
 // (rather inconsistently), but subsequent changes broke the warning. Make
 // sure that doesn't happen again.
 
-// excess errors test - XFAIL
 
-void ovl (int);          // ERROR - candidate
-void ovl (float);        // ERROR - candidate
+void ovl (int);          // { dg-error "" } candidate
+void ovl (float);        // { dg-error "" } candidate
 void fn (int);
 void fna (int);
 
@@ -33,16 +32,16 @@ int main (int argc, char **argv)
   void (*vptr) ();
   
   (ovl) (1);                // ok
-  (&ovl) (1);               // ERROR - not suitable for overload resolution
-  (ovl) ();                 // ERROR - no matching candidates
-  (&ovl) ();                // ERROR - not suitable for overload resolution
+  (&ovl) (1);               // { dg-error "" } not suitable for overload resolution
+  (ovl) ();                 // { dg-error "" } no matching candidates
+  (&ovl) ();                // { dg-error "" } not suitable for overload resolution
   
   // 13.3.1.1 indicates that the following are errors -- the primary expression
   // is not the name of a function.
-  (0, ovl) (1);             // ERROR - not suitable for overload resolution
-  (0, &ovl) (1);            // ERROR - not suitable for overload resolution
-  (argc ? ovl : ovl) (1);   // ERROR - not suitable for overload resolution
-  (argc ? &ovl : &ovl) (1); // ERROR - not suitable for overload resolution
+  (0, ovl) (1);             // { dg-error "" } not suitable for overload resolution
+  (0, &ovl) (1);            // { dg-error "" } not suitable for overload resolution
+  (argc ? ovl : ovl) (1);   // { dg-error "" } not suitable for overload resolution
+  (argc ? &ovl : &ovl) (1); // { dg-error "" } not suitable for overload resolution
   
   (fn) (1);                 // ok
   (&fn) (1);                // ok (no overload resolution)
@@ -54,17 +53,17 @@ int main (int argc, char **argv)
   ptr = (ovl);              // ok
   ptr = (&ovl);             // ok
   // 13.4 indicates these are ok.
-  ptr = (0, ovl);           // ok
-  ptr = (0, &ovl);          // ok
-  ptr = (argc ? ovl : ovl); // ok
-  ptr = (argc ? &ovl : &ovl);// ok
+  ptr = (0, ovl);           // ok { dg-bogus "" "" { xfail *-*-* } }
+  ptr = (0, &ovl);          // ok { dg-bogus "" "" { xfail *-*-* } }
+  ptr = (argc ? ovl : ovl); // ok { dg-bogus "" "" { xfail *-*-* } }
+  ptr = (argc ? &ovl : &ovl);// ok { dg-bogus "" "" { xfail *-*-* } }
   
-  vptr = (ovl);              // ERROR - no matching candidates
-  vptr = (&ovl);             // ERROR - no matching candidates
-  vptr = (0, ovl);           // ERROR - no matching candidates
-  vptr = (0, &ovl);          // ERROR - no matching candidates
-  vptr = (argc ? ovl : ovl); // ERROR - no matching candidates
-  vptr = (argc ? &ovl : &ovl);// ERROR - no matching candidates
+  vptr = (ovl);              // { dg-error "" } no matching candidates
+  vptr = (&ovl);             // { dg-error "" } no matching candidates
+  vptr = (0, ovl);           // { dg-error "" } no matching candidates
+  vptr = (0, &ovl);          // { dg-error "" } no matching candidates
+  vptr = (argc ? ovl : ovl); // { dg-error "" } no matching candidates
+  vptr = (argc ? &ovl : &ovl);// { dg-error "" } no matching candidates
   
   ptr = (fn);
   ptr = (&fn);
@@ -73,21 +72,21 @@ int main (int argc, char **argv)
   ptr = (argc ? fna : fn);
   ptr = (argc ? &fna : &fn);
   
-  f;                // WARNING - not a call
-  ovl;              // ERROR - not suitable for overload
-  &ovl;             // ERROR - not suitable for overload
+  f;                // { dg-warning "" } not a call
+  ovl;              // { dg-error "" } not suitable for overload
+  &ovl;             // { dg-error "" } not suitable for overload
   (void)f;          // ok
-  (void)ovl;        // ERROR - not suitable for overload
-  (void)&ovl;       // ERROR - not suitable for overload
+  (void)ovl;        // { dg-error "" } not suitable for overload
+  (void)&ovl;       // { dg-error "" } not suitable for overload
   static_cast<void>(f);          // ok
-  static_cast<void>(ovl);        // ERROR - not suitable for overload
-  static_cast<void>(&ovl);       // ERROR - not suitable for overload
-  ((void)1, f);             // WARNING - not a call XFAIL
-  ((void)1, ovl);           // ERROR - not suitable for overload
-  ((void)1, &ovl);          // ERROR - not suitable for overload
+  static_cast<void>(ovl);        // { dg-error "" } not suitable for overload
+  static_cast<void>(&ovl);       // { dg-error "" } not suitable for overload
+  ((void)1, f);             // { dg-warning "" "" { xfail *-*-* } } not a call
+  ((void)1, ovl);           // { dg-error "" } not suitable for overload
+  ((void)1, &ovl);          // { dg-error "" } not suitable for overload
   (void)((void)1, f);           // ok
-  (void)((void)1, ovl);         // ERROR - not suitable for overload
-  (void)((void)1, &ovl);        // ERROR - not suitable for overload
+  (void)((void)1, ovl);         // { dg-error "" } not suitable for overload
+  (void)((void)1, &ovl);        // { dg-error "" } not suitable for overload
 
   return 0;
 }

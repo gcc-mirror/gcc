@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 4 Oct 2000 <nathan@codesourcery.com>
 // Origin: bug 511 malte.starostik@t-online.de
@@ -24,13 +24,13 @@ template <class>
 struct B
 {
   private:
-  enum foo {bar}; // ERROR - private
-  typedef int baz;  // ERROR - private
+  enum foo {bar}; // { dg-error "" } private
+  typedef int baz;  // { dg-error "" } private
 };
 
 struct D: public B<int>
 {
-  void choke (foo);   // ERROR - within this context
-  void choke (baz);   // ERROR - within this context
+  void choke (foo);   // { dg-error "" } within this context
+  void choke (baz);   // { dg-error "" } within this context
 };
 

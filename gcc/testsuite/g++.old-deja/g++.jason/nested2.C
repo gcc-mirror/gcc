@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 3764 (c/h)
 // Bug: g++ gets into an infinite loop trying to find the top-level context
-// Build don't link:
 
 class Menu;
 class MenuItem;

@@ -1,3 +1,4 @@
+// { dg-do run  }
 enum { a = 1 };
 
 int main(void)

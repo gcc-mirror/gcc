@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Based on a test case by Koos Vriezen <koos@polder.ubc.kun.nl>
 
 struct foo {

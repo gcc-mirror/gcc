@@ -1,8 +1,7 @@
-// Build don't link:
-// crash test -
+// { dg-do assemble  }
 
 // by Paul Burchard <burchard@pobox.com>, Level Set Systems, Inc.
 // Copyright (C) 1999 Free Software Foundation
 
-typedef std::vector<int>::iterator iter; // ERROR - syntax error before `::'
+typedef std::vector<int>::iterator iter; // { dg-error "" } syntax error before `::'
 

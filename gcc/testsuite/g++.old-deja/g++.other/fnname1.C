@@ -1,6 +1,6 @@
-// Build don't run:
+// { dg-do link  }
+// { dg-options "-g" }
 // Origin: Loren James Rittle <rittle@latour.rsch.comm.mot.com>
-// Special g++ Options: -g
 
 int main ()
 {

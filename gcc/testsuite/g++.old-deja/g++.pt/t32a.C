@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 
 struct A {
   int x;
@@ -7,4 +7,4 @@ struct A {
   int foo (int j);
 };
 
-int A::foo (int q) { return q + (this->*(x ? &A::y : &A::z)) (); }	// gets bogus error
+int A::foo (int q) { return q + (this->*(x ? &A::y : &A::z)) (); }	// { dg-bogus "" } 

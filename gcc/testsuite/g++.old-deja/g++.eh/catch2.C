@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Mike Danylchuk <miked@mpath.com>
 
 typedef char TCHAR;

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // simplified from testcase in Windows Developer Journal,
 // submitted by eyal.ben-david@aks.com
 

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900519_12
 
 // The following erroneous code causes g++ to segfault.
@@ -6,6 +7,6 @@
 
 // keywords: segfault, typedef, pointer type, function type
 
-typedef eek void (*)();		// ERROR - 
+typedef eek void (*)();		// { dg-error "" } 
 
 int main () { return 0; }

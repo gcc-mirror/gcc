@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // 981203 bkoz
 // g++/15800 + test
-// Build don't link:
 
 struct panama {
   panama();

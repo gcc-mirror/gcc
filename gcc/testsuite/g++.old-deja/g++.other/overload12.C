@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Neil Booth <neilb@earthling.net> from bug #27.
 
 struct A{};

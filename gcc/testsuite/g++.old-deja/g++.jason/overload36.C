@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for subsequence checking in overload resolution.
 
 class foo {

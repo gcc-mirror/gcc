@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -Wall
+// { dg-do assemble  }
+// { dg-options "-Wall" }
 
 struct a
 {
@@ -9,6 +9,6 @@ struct a
 int main()
 {
   a A;
-  A.x("%d"); // WARNING - too few arguments for format
+  A.x("%d"); // { dg-warning "" } too few arguments for format
   return 0;
 }

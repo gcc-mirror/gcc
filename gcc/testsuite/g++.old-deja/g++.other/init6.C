@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for default-initialization of POD-structs in functional cast notation.
 
 struct foo { int a[10]; };

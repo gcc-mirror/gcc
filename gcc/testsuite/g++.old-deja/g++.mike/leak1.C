@@ -1,3 +1,4 @@
+// { dg-do run  }
 int count = 0;
 
 class T {

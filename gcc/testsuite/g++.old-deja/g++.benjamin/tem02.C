@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 //980519 bad error from nathan
 //$ egcs -fhonor-std -nostdinc -c redef.C
 //redef.C:56: redefinition of default argument for `class _Traits'

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that an unhandled exception causes us to call terminate.
 
 #include <exception>

@@ -1,6 +1,6 @@
+// { dg-do link  }
+// { dg-options "-g" }
 // Bug: g++ fails to instantiate operator<<.
-// Build don't run:
-// Special g++ Options: -g
 
 struct ostream {
   ostream& operator<< (const char *) { return *this; };

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 #include <exception>
 //using namespace std;
 class A {

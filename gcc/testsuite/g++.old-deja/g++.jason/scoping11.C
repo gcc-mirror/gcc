@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 void f ();
 void g ()
@@ -6,6 +6,6 @@ void g ()
   int f;
   {
     void f ();
-    f ();			// gets bogus error - trying to call integer
+    f ();			// { dg-bogus "" } trying to call integer
   }
 }

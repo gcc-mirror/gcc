@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that a throw in B's constructor destroys the A and frees the memory.
 
 #include <cstddef>

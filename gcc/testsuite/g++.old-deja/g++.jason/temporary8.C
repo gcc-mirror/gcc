@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for proper handling of temporaries in ?: exprs.
 
 extern "C" int printf (const char *, ...);

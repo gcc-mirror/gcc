@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 9206
 
 class X {

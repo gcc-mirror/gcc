@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <string.h>
 
 class SomeClass_t {

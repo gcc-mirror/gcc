@@ -1,7 +1,6 @@
-// Build don't link:
-// Special g++ Options: -ansi
+// { dg-do assemble  }
+// { dg-options "" }
 // Origin: Theo Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
-// Special g++ Options:
 
 inline const unsigned& f(unsigned const& a) {
         return a;

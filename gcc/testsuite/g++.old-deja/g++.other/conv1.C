@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class X {
 public:
-  const operator int (); // ERROR - invalid declaration.
+  const operator int (); // { dg-error "" } invalid declaration.
 };

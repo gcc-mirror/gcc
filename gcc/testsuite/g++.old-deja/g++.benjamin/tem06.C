@@ -1,3 +1,4 @@
+// { dg-do run  }
 // 980945 bkoz
 // test for correct operators at link time
 

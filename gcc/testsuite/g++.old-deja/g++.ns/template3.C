@@ -1,3 +1,4 @@
+// { dg-do run  }
 //Check instantiation of templates outside their namespace
 namespace A{
 template <class T>void g(){}

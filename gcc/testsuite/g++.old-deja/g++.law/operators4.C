@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // GROUPS passed operators
 // opr-del file
 // From: rollins@bart.ee.queensu.ca (Mark Rollins)
@@ -14,7 +15,7 @@ class Vector {
   Complex       *v;
  public:
   Vector(int s=1) { size = s; v = new Complex[size];};
-  ~Vector() { delete [size] v;}// ERROR -  warning
+  ~Vector() { delete [size] v;}// { dg-error "" }  warning
 };
 
 void foo(int s)

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 //
 // This one creates
@@ -30,6 +30,6 @@ class GnWidget : public GnObject {
     virtual ~GnWidget();
 };
 
-class GnOptionGroup : public GnObject, public GnWidget {// ERROR -  warning
+class GnOptionGroup : public GnObject, public GnWidget {// { dg-error "" }  warning
 };
 

@@ -1,8 +1,8 @@
-// Build don't link:
-// Special g++ Options: -Woverloaded-virtual
+// { dg-do assemble  }
+// { dg-options "-Woverloaded-virtual" }
 
 struct B4 {
-  virtual void bothfardiff(float);	// WARNING - was hidden
+  virtual void bothfardiff(float);	// { dg-warning "" } was hidden
 };
 
 struct B3 : public B4 {
@@ -16,13 +16,13 @@ struct B {
 
   virtual void bothsame(int);
 
-  virtual void bothdiff(float);		// WARNING - was hidden
+  virtual void bothdiff(float);		// { dg-warning "" } was hidden
 
   virtual void both2same(int);
   virtual void both2same(float);
 
   virtual void both12diff(int);
-  virtual void both12diff(float);	// WARNING - was hidden
+  virtual void both12diff(float);	// { dg-warning "" } was hidden
 };
 
 struct D : public B, public B2, public B3 {
@@ -30,13 +30,13 @@ struct D : public B, public B2, public B3 {
 
   virtual void bothsame(int);
 
-  virtual void bothdiff(int);		// WARNING - 
+  virtual void bothdiff(int);		// { dg-warning "" } 
 
   virtual void both2same(int);
   virtual void both2same(float);
 
-  virtual void both12diff(int);		// WARNING - 
+  virtual void both12diff(int);		// { dg-warning "" } 
 
-  virtual void bothfardiff(int);	// WARNING - 
+  virtual void bothfardiff(int);	// { dg-warning "" } 
 };
 

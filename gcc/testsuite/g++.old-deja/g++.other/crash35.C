@@ -1,7 +1,7 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
 void foo()
 {
-  if [		// ERROR - parse error
+  if [		// { dg-error "" } parse error
 }

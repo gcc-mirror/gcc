@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options:  -Wall -Weffc++
+// { dg-do assemble  }
+// { dg-options "-Wall -Weffc++" }
 
 //1 g++/12952 un-named variables in a catch block
 //Wall or Wunused should not give warnings here
@@ -88,7 +88,7 @@ public:
   virtual long retcntr() {return counter;};
   Mutex2(int i = 0): counter(i) {};
   virtual ~Mutex2() {};
-} __attribute__ ((warn));  // WARNING - 
+} __attribute__ ((warn));  // { dg-warning "" } 
 
 
 

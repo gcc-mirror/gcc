@@ -1,3 +1,4 @@
+// { dg-do run  }
 class a {
 public:
   int f()        { return 0; }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Based on a bug report by Stephen Vavasis <vavasis@CS.Cornell.EDU>
 
 // declares template operator!=

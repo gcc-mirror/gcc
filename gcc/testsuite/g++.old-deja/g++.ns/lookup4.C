@@ -1,4 +1,4 @@
-//Build don't link:
+// { dg-do assemble  }
 namespace X{
   typedef int foo;
   const int bar=2;

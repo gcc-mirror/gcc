@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 2139
 // Bug: g++ tries to instantiate the template with types on the function
 // obstack and fails.

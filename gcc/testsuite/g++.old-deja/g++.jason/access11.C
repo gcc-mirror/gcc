@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 4900
 // Bug: g++ doesn't apply access control uniformly to type conversion operators
-// Build don't link:
 
 struct A {
 protected:

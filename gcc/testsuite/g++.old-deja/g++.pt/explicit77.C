@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <int I, int J, int K>
 struct S {};
@@ -14,5 +14,5 @@ void g() {
   S<0, 1, 2> s2;
   
   f<0>(s0, s2);
-  f(s0, s2); // ERROR - no matching function
+  f(s0, s2); // { dg-error "" } no matching function
 }

@@ -1,7 +1,7 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
-X(Y(long, Type, CLink)); break; default: break; } } }	// ERROR - 
+X(Y(long, Type, CLink)); break; default: break; } } }	// { dg-error "" } 
 
 struct A {
   inline A ();

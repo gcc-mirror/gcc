@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 4066
 // Bug: g++ doesn't notice the const on reference returns.
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.37.1 bug 900511_01
 
 // g++ fails to properly apply user-defined type conversion operators
@@ -36,7 +37,7 @@ double d;
 void test ()
 {
   d = struct_2_object + struct_1_object;	// OK
-  d = struct_1_object + struct_2_object;	// gets bogus error
+  d = struct_1_object + struct_2_object;	// { dg-bogus "" } 
 }
 
 int main () { return 0; }

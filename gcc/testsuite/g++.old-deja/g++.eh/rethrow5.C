@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testcase for proper handling of rethrow.
 
 #include <stdio.h>

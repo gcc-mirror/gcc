@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 extern "C" int printf(const char *, ...);
 
 struct VB {
@@ -20,7 +21,7 @@ class lM : public M {
 class rM : public M {
 };
 
-class D : public lM, rM { // ERROR - ambiguous function
+class D : public lM, rM { // { dg-error "" } ambiguous function
 } d;
 
 int main() {

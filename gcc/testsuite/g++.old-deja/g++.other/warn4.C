@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 21 Nov 1999 <nathan@acm.org>
@@ -35,13 +35,13 @@ void fU ()
 
 void fs ()
 {
-  unsigned s1 = -1;         // WARNING - initialization
-  unsigned s2(-1);          // WARNING - initialization
-  unsigned volatile s3 = -1;// WARNING - initialization
-  unsigned const s4 = -1;   // WARNING - initialization
-  unsigned const &s5(-1);   // WARNING - initialization
-  s1 = -1;                  // WARNING - assignment
-  fn (-1);                  // WARNING - passing
+  unsigned s1 = -1;         // { dg-warning "" } initialization
+  unsigned s2(-1);          // { dg-warning "" } initialization
+  unsigned volatile s3 = -1;// { dg-warning "" } initialization
+  unsigned const s4 = -1;   // { dg-warning "" } initialization
+  unsigned const &s5(-1);   // { dg-warning "" } initialization
+  s1 = -1;                  // { dg-warning "" } assignment
+  fn (-1);                  // { dg-warning "" } passing
 }
 
 void fss ()

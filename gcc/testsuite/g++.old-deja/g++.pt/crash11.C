@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class A
 {
@@ -9,5 +9,5 @@ class A
 
 
 template <class j> class A::A_impl 
-{ // ERROR - does not declare a template
+{ // { dg-error "" } does not declare a template
 };

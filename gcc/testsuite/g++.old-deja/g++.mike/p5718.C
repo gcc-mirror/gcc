@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 5718
 
 class Base {
@@ -25,7 +26,7 @@ void
 testFunct(Derived * arg) {
   Mixin temp;
 
-  (Mixin &)(*arg) = temp;		// gets bogus error 
+  (Mixin &)(*arg) = temp;		// { dg-bogus "" }  
 }
 
 

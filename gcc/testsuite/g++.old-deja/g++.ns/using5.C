@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
 namespace a {
     class b {
-	using std::c;  //ERROR - namespace using on class level
+	using std::c;  //{ dg-error "" } namespace using on class level
     };
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 namespace foo{
  struct X{
    int i;

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 #include <fstream>
 
 class bifstream : public std::ifstream {

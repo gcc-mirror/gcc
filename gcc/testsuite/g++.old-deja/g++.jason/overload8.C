@@ -1,7 +1,7 @@
+// { dg-do assemble  }
 // Bug: g++ fails to catch the ambiguity below.
-// Build don't link:
 
 struct A {
   operator int () { return 1; };
-  operator int &() { return 1; }; // ERROR - 
+  operator int &() { return 1; }; // { dg-error "" } 
 };

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 6821
 
 struct A {
@@ -6,7 +7,7 @@ struct A {
 
 struct B {
   A* p;
-  int f () { return (*p)(42); }	// gets bogus error
+  int f () { return (*p)(42); }	// { dg-bogus "" } 
 };
 
 int main ()

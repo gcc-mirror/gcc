@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class B {
 public:
@@ -10,7 +10,7 @@ class D : private B {
   int Di;
 };
 
-class E : public virtual D, public B {	// WARNING - direct base inaccessible due to ambiguity
+class E : public virtual D, public B {	// { dg-warning "" } direct base inaccessible due to ambiguity
   int Ei;
 };
 

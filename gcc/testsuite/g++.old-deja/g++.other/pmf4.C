@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ doesn't compensate for finding a virtual function in a
 // non-primary vtable when generating PMFs.
 // Submitted by Jason Merrill <jason@cygnus.com>

@@ -1,6 +1,7 @@
-void f (int);			// ERROR - 
-void f (long);			// ERROR - 
+// { dg-do assemble  }
+void f (int);			// { dg-error "" } 
+void f (long);			// { dg-error "" } 
 int main()
 {
-  f (1 & 0xffffff00UL);		// ERROR - ambiguous
+  f (1 & 0xffffff00UL);		// { dg-error "" } ambiguous
 }

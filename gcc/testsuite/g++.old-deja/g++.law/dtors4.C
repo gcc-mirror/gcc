@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed destructors
 #include <stdio.h>
 

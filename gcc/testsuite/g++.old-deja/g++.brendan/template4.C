@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed templates
 // This used to be a circularity in chainon.
 template <class ARG> struct TMPL {

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900324_04
 
 // g++ implements an extension which supports the copying of array objects.
@@ -19,7 +20,7 @@ int_array ia2;
 
 void function_0 ()
 {
-  ia1 = ia2;		// ERROR - gnu extension
+  ia1 = ia2;		// { dg-error "" } gnu extension
 }
 
 int main () { return 0; }

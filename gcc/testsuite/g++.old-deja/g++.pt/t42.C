@@ -1,3 +1,4 @@
+// { dg-do run  }
 extern "C" void abort ();
 
 struct A {
@@ -5,10 +6,10 @@ struct A {
     int x;
     stat (int j) { abort (); }
   };
-  static int stat (double d) { return 0; }	// gets bogus error - cfront takes it
+  static int stat (double d) { return 0; }	// { dg-bogus "" } cfront takes it
   static int zap () {
     stat (0);
-    return stat (1);	// gets bogus error - this should work
+    return stat (1);	// { dg-bogus "" } this should work
   }
 };
 

@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -w
+// { dg-do assemble  }
+// { dg-options "-w" }
 // GROUPS passed visibility
 // visibility file
 // From: Alan Shepherd <a.shepherd@nexor.co.uk>

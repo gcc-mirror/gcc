@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 4689
 // Bug: g++ doesn't notice operators overloaded on enumeral types.
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.37.1 bug 900321_02
 
 // The following program exits with a nonzero status because the constructor

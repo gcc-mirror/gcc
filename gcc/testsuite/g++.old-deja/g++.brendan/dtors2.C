@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed destructors
 // Check that virtual destructors work correctly.  Specifically,
 // check that when you destruct an object of a derived class for

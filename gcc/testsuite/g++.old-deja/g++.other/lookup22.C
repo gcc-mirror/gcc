@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Origin: GerhardTonn@gmx.de 
-// Build don't link:
 
 struct super {
   union {

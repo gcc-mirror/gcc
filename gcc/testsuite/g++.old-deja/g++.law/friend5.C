@@ -1,6 +1,6 @@
-// Build don't link: 
+// { dg-do assemble  }
+// { dg-options "-Wreturn-type" }
 // GROUPS passed friends
-// Special g++ Options: -Wreturn-type
 
         extern "C" int good_friend(int);
         extern "C" int bad_friend();
@@ -16,10 +16,10 @@
         int good_friend(int)
         {
             obj.parts = 0;
-        } // ERROR - non-void
+        } // { dg-error "" } non-void
 
         int bad_friend()
         {
             obj.parts = 0;
-        } // ERROR - non-void
+        } // { dg-error "" } non-void
 

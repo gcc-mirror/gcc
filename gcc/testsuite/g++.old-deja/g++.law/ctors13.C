@@ -1,13 +1,13 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed constructors
 #include <iostream>
 
 class A {
-   A() {}    // private constructor// ERROR - .*
+   A() {}    // private constructor// { dg-error "" } .*
 };
 
 int main() {
-  A* a = new A();// ERROR - .*
+  A* a = new A();// { dg-error "" } .*
   if (a) {
      std::cout << "a != NULL\n";
   } else {

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ fails to treat function-try-blocks in ctors specially.
 // Submitted by Jason Merrill <jason@cygnus.com>
 

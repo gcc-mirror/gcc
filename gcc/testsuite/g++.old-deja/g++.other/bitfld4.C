@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: "Chen, Wen-Ke" <chwk@cs.arizona.edu>
 
 template <class T>

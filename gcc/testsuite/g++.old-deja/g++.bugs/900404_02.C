@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900404_02
 
 // g++ fails to treat multicharacter literals as type "int" as required by
@@ -21,4 +22,4 @@ void function0 (char c)		// function that is actually called
   exit_status++;
 }
 
-int main () { function0 ('abcd'); return exit_status; }		// WARNING - 
+int main () { function0 ('abcd'); return exit_status; }		// { dg-warning "" } 

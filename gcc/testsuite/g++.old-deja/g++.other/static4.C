@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-O" }
 // Origin: Andrew Pollard <andrew@odie.demon.co.uk>
-// Special g++ Options: -O
 
 struct A {
         A(int, int);

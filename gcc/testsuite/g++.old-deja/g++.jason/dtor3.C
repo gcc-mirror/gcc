@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 5341
 // Bug: g++ complains about the explicit destructor notation.
-// Build don't link:
 
 #include <stddef.h>
 

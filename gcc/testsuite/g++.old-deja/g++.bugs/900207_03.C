@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.36.1 bug 900207_03
 
 // g++ fails to allow objects of class or struct types to be initialized
@@ -21,11 +22,11 @@ struct struct0 {
 };
 
 struct0 struct0_gbl_object0;
-struct0 struct0_gbl_object1 (struct0_gbl_object0);	// gets bogus error
+struct0 struct0_gbl_object1 (struct0_gbl_object0);	// { dg-bogus "" } 
 
 void struct0_test ()
 {
-  struct0 struct0_lcl_object1 (struct0_gbl_object0);	// gets bogus error
+  struct0 struct0_lcl_object1 (struct0_gbl_object0);	// { dg-bogus "" } 
 }
 
 // Check construction for a type with virtual function members.
@@ -39,11 +40,11 @@ struct struct1 {
 void struct1::function_member () { }
 
 struct1 struct1_gbl_object0;
-struct1 struct1_gbl_object1 (struct1_gbl_object0);	// gets bogus error
+struct1 struct1_gbl_object1 (struct1_gbl_object0);	// { dg-bogus "" } 
 
 void struct1_test ()
 {
-  struct1 struct1_lcl_object1 (struct1_gbl_object0);	// gets bogus error
+  struct1 struct1_lcl_object1 (struct1_gbl_object0);	// { dg-bogus "" } 
 }
 
 int main () { return 0; }

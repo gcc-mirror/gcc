@@ -1,6 +1,5 @@
-// Build don't link:
-// Special g++ Options:
-// excess errors test
+// { dg-do assemble  }
+// { dg-options "" }
 
 template <class T>
 struct B 

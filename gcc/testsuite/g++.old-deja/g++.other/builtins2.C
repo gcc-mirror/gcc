@@ -1,8 +1,9 @@
+// { dg-do run  }
+// { dg-options "-O2" }
 // Test whether this builtin minimally works in G++.
 // Origin: Kaveh Ghazi Jan 16, 2001
 // Copyright (C) 2001 Free Software Foundation.
 //
-// Special g++ Options: -O2
 
 namespace std 
 {

@@ -1,6 +1,5 @@
-// Build don't link:
-// Special g++ Options: -mno-nop-fun-dllimport
-// Skip if not target: arm-*pe
+// { dg-do assemble { target arm-*-*pe } }
+// { dg-options "-mno-nop-fun-dllimport" }
 // declspec test #1
 // set compiler_result "__imp_imp.*\.section${spaces}.drectve\n\[^\n\]*-export:exp"
 // set not_compiler_result "__imp_exp"

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 
 struct bs_1 {
   typedef int (*pfi) (void);

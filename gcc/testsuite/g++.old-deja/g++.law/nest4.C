@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed nest
 // nest file
 // From: Neal Young <ney@princeton.edu>

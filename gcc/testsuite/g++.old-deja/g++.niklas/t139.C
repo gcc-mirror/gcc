@@ -1,6 +1,6 @@
+// { dg-do assemble  }
+// { dg-options "-w" }
 // GROUPS passed niklas hiding ARM
-// Build don't link:
-// Special g++ Options: -w
 struct stat {};
 stat gstat;
 int stat (struct stat*);

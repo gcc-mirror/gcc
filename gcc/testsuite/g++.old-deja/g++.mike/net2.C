@@ -1,13 +1,13 @@
-// Build don't link:
+// { dg-do assemble  }
 // Here is another program from the net.
 
 class B;
 
-class A {			// ERROR - copy ctor candidate
+class A {			// { dg-error "" } copy ctor candidate
   private:
-    A(B *);			// ERROR - 
+    A(B *);			// { dg-error "" } 
   public:
-    A(long);			// ERROR - 
+    A(long);			// { dg-error "" } 
 };
 
-A a(0); // ERROR - should be ambigious
+A a(0); // { dg-error "" } should be ambigious

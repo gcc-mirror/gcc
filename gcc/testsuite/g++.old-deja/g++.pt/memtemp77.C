@@ -1,3 +1,4 @@
+// { dg-do run  }
 extern "C" int strcmp(const char*, const char*);
 
 template <class T>

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS Id: 9647
-// Build don't link:
 
 class castBug
 {
@@ -20,6 +20,6 @@ void test()
 {
    castBug b;
    castBug2 b2;
-   voidfn(b);			// gets bogus error
-   voidfn(b2);			// ERROR - discarding const
+   voidfn(b);			// { dg-bogus "" } 
+   voidfn(b2);			// { dg-error "" } discarding const
 }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // From: Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de> 
 // Reported against EGCS snaps 98/06/18.
 
@@ -10,11 +10,11 @@ struct a {
 	void bar( double );
 	void bar( float );
 
-  void foo( void (a::*member)(float) );   // ERROR - candidate
+  void foo( void (a::*member)(float) );   // { dg-error "" } candidate
 };
 
 a::a()
 {
-	foo( &junk ); // ERROR - junk is an unqualified-id.
-	foo( &bar );  // ERROR - bar is an unqualified-id.
+	foo( &junk ); // { dg-error "" } junk is an unqualified-id.
+	foo( &bar );  // { dg-error "" } bar is an unqualified-id.
 }

@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -w
+// { dg-do assemble  }
+// { dg-options "-w" }
 // GROUPS passed vtable
 // vtable file
 // From: mrs@cygnus.com (Mike Stump)

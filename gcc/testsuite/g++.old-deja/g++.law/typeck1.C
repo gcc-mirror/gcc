@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed typeck
 // typeck file
 // From: vern@daffy.ee.lbl.gov (Vern Paxson)
@@ -13,6 +13,6 @@
 
         int test( const foo* f, const bar* b )
                 {
-                return f == b;// ERROR - 
+                return f == b;// { dg-error "" } 
                 }
 

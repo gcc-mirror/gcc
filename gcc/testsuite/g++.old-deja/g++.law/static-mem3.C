@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed static-mem
 // static-mem file
 // Message-Id: <9406021639.AA00789@oz.NeXT.COM>

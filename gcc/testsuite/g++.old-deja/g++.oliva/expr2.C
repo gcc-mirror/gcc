@@ -1,8 +1,8 @@
+// { dg-do run { xfail *-*-* } }
+
 // Copyright (C) 2000 Free Software Foundation
 
 // by Alexandre Oliva <aoliva@cygnus.com>
-
-// execution test - XFAIL *-*-*
 
 int i, j;
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: t->B is resolved to the type instead of the field.
 
 struct A {

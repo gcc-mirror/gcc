@@ -1,3 +1,4 @@
+// { dg-do run  }
 template<class E, int i, class F, class G=int, int j=i, class H=E> class D
 {
 };

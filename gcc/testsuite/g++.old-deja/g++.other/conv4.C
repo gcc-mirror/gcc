@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testcase for proper hiding of base conversion ops.
 
 struct A

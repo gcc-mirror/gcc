@@ -1,10 +1,10 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class A {
 };
 
 
-class B { // WARNING - only private constructors
+class B { // { dg-warning "" } only private constructors
 public:
   void f();
 
@@ -14,7 +14,7 @@ private:
 };
 
 
-class C {  // WARNING - only private destructors
+class C {  // { dg-warning "" } only private destructors
 public: 
   void f();
 
@@ -23,14 +23,14 @@ private:
 };
 
 
-class D { // WARNING - all member functions are private
+class D { // { dg-warning "" } all member functions are private
 private:
   void f(); 
 };
 
 
 template <class T>
-class X { // WARNING - only private destructors
+class X { // { dg-warning "" } only private destructors
 private:
   ~X (); 
 };
@@ -40,7 +40,7 @@ template class X<double>;
 
 
 template <class T>
-class Y { // WARNING - only private constructors
+class Y { // { dg-warning "" } only private constructors
 private:
   Y (); 
   Y (const Y&);
@@ -48,7 +48,7 @@ private:
 
 
 template <class T>
-class Z { // WARNING - all member functions are private
+class Z { // { dg-warning "" } all member functions are private
 private:
   void f(); 
 };

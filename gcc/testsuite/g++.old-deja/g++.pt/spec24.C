@@ -1,5 +1,5 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T> class A;
 // template <>
-class A<int>; // ERROR - missing template header - XFAIL *-*-*
+class A<int>; // { dg-error "" "" { xfail *-*-* } } missing template header - 

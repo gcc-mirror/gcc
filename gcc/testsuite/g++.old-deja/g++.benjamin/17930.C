@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // 981204 bkoz
 // g++/17930
-// Build don't link:
 
 char const one[] = "test";
-char const two[] = one; // ERROR - // ERROR -
+char const two[] = one; // { dg-error "" } // ERROR -

@@ -1,7 +1,7 @@
-// Build don't link:
+// { dg-do assemble }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
-// excess errors test - XFAIL *-*-*
+// { dg-bogus "" "" { xfail *-*-* } 13 }
 
 namespace bar
 {
@@ -9,4 +9,4 @@ struct foo
 {
   foo();
 };
-			// ERROR - parse error XFAIL *-*-*
+			// { dg-error "" "" { xfail *-*-* } }

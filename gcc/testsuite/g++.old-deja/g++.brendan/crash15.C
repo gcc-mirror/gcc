@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 #include <iostream>
 
@@ -16,7 +16,7 @@ int
 main() {
   std::cout << "starting\n";
   B b;
-  b.~A();// ERROR -  destructor
+  b.~A();// { dg-error "" }  destructor
   std::cout << "done\n";
 }
 

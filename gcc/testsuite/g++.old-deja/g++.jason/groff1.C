@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 3744
 // Bug: unswitching a COND_EXPR initializer fails to set SIDE_EFFECTS on the
 // result, so expand_expr ignores it.

@@ -1,7 +1,6 @@
-// Build don't link: 
-// Special g++ Options: -pedantic-errors -g -Wall
+// { dg-do assemble { xfail sparc64-*-elf } }
+// { dg-options "-pedantic-errors -g -Wall" }
 // GROUPS passed synthetics
-// excess errors test - XFAIL sparc64-*-elf
 // Check to make sure that g++ doesn't get freaked out about the use
 // of generated methods that it supposedly "can't see".
 

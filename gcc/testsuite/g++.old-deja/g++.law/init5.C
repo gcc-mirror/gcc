@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -pedantic-errors
+// { dg-do assemble  }
+// { dg-options "-pedantic-errors" }
 // GROUPS passed initialization
 // init file
 // From: dcb@us-es.sel.de
@@ -11,8 +11,8 @@ extern int fred( int);
 
 class X {
       public :
-      void f( int = fred( 0) ) ; // ERROR - previous spec
+      void f( int = fred( 0) ) ; // { dg-error "" } previous spec
 } ;
 
-void X::f( int x = fred( 0) ) {// ERROR - .*
+void X::f( int x = fred( 0) ) {// { dg-error "" } .*
 }

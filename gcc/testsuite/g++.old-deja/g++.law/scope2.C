@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed scoping
 // scoping file
 // From: svkakkad@cs.utexas.edu (Sheetal V. Kakkad)

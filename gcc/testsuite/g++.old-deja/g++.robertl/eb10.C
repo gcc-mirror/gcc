@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 template <int object_size>
 class _fixed_size_allocator
 {

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed initialization
 // init file
 // Message-Id: <9306280834.AA20921@slsvitt.us-es.sel.de>

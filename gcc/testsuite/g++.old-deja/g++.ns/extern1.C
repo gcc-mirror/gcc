@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 
 // Based on a testcase by eyal.ben-david@aks.com
 

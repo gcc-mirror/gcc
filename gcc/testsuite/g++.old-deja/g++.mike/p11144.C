@@ -1,4 +1,5 @@
-// Special g++ Options: -O
+// { dg-do run  }
+// { dg-options "-O" }
 // prms-id: 11144
 
 class Id {

@@ -1,3 +1,4 @@
+// { dg-do run  }
 namespace A{
   int i;
   int f();

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900519_06
 
 // g++ allows the type given in an invocation of operator new to be a
@@ -11,12 +12,12 @@ typedef int& int_ref;
 
 void test (int n)
 {
-  new int&;		// ERROR - missed
-  new int_ref;		// ERROR - missed
-  new int&[n];		// ERROR - missed
-  new int_ref[n];	// ERROR - missed
-  new int&[3];		// ERROR - missed
-  new int_ref[3];	// ERROR - missed
+  new int&;		// { dg-error "" } missed
+  new int_ref;		// { dg-error "" } missed
+  new int&[n];		// { dg-error "" } missed
+  new int_ref[n];	// { dg-error "" } missed
+  new int&[3];		// { dg-error "" } missed
+  new int_ref[3];	// { dg-error "" } missed
 }
 
 int main () { return 0; }

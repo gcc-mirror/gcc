@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS Id: 10283
-// Build don't link:
 
 template <class T> struct B {
   static void (*p)();

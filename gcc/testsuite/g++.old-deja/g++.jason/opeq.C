@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 4297 (related to 3525)
 // Bug: Generating default op= didn't set TYPE_HAS_ASSIGNMENT, so it wasn't
 // found.

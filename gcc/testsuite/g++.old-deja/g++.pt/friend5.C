@@ -1,3 +1,4 @@
+// { dg-do run  }
 class C
 {
   template <class T>

@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -pedantic-errors
+// { dg-do assemble  }
+// { dg-options "-pedantic-errors" }
 // GROUPS passed conversions
 // cvt file
 // Message-Id: <m0mVSRj-0000cEC@mobius.veritas.com>
@@ -14,4 +14,4 @@ public:
   int Isopen ();
 };
 
-widget fp = (widget) &window::Isopen;	// ERROR - // ERROR - 
+widget fp = (widget) &window::Isopen;	// { dg-error "" } // ERROR - 

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 //Purpose:
 //  Test nested template as template template arg.
 //Result:

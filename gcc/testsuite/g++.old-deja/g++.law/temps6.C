@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed temps
 // Date: Tue, 22 Mar 94 12:46:28 +0100
 // From: dak@pool.informatik.rwth-aachen.de

@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <stdlib.h>
 #include <string.h>
 

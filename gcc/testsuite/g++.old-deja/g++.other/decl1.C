@@ -1,7 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
 // Based on a test case by Phil Blecker <tmwg@inxservices.com>
 
-// excess errors test
 
 int foo(int);
 int bar() {

@@ -1,3 +1,4 @@
+// { dg-do run  }
 template <class X> class TC {
 public:
   X aaa;

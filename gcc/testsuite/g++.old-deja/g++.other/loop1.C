@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-O2" }
 // Test for bad loop optimization of goto fixups.
-// Special g++ Options: -O2
 
 typedef bool (*ftype) ();
 

@@ -1,5 +1,5 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct S {
-  static const char* cp = "abc"; // ERROR - initialization of non-const
+  static const char* cp = "abc"; // { dg-error "" } initialization of non-const
 };

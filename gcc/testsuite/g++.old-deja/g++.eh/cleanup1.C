@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: obj gets destroyed twice because the fixups for the return are
 // inside its cleanup region.
 

@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Bug: the synthesized constructor for A tries to use the mem-initializer
 // list for the B constructor.
-// Build don't link:
 
 struct A
 {

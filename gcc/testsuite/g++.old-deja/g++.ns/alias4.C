@@ -1,13 +1,14 @@
-namespace A = B;  // ERROR - unknown namespace
+// { dg-do assemble  }
+namespace A = B;  // { dg-error "" } unknown namespace
 
 namespace C{}
 namespace D = C;  
-namespace D {     // ERROR - reopening namespace with alias
+namespace D {     // { dg-error "" } reopening namespace with alias
   void f();
 }
 
-void C::f(){}     // ERROR - previous definition
+void C::f(){}     // { dg-error "" } previous definition
 
-void D::f(){}     // ERROR - redefinition
+void D::f(){}     // { dg-error "" } redefinition
 
-namespace E = C::F; // ERROR - unknown namespace
+namespace E = C::F; // { dg-error "" } unknown namespace

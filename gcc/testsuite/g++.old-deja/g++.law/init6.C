@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed initialization
 class Vector {
         double  *v;
@@ -9,5 +9,5 @@ public:
         ~Vector();
 };
 
-exmpl() { Vector x(8)[16]; }// ERROR - .*
+exmpl() { Vector x(8)[16]; }// { dg-error "" } .*
 

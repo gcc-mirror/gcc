@@ -1,10 +1,10 @@
-// Build don't link:
+// { dg-do assemble  }
 
 int f();
 
 void g()
 {
   const int& i = f(); // OK
-  int& j = f(); // ERROR - initialization of non-const reference 
-  const volatile int& k = f(); // ERROR - initialization of volatile ref
+  int& j = f(); // { dg-error "" } initialization of non-const reference 
+  const volatile int& k = f(); // { dg-error "" } initialization of volatile ref
 }

@@ -1,3 +1,4 @@
-// Special g++ Options: -fexceptions
+// { dg-do assemble  }
+// { dg-options "-fexceptions" }
 
-int main() { try { 1; } }	// ERROR - 
+int main() { try { 1; } }	// { dg-error "" } 

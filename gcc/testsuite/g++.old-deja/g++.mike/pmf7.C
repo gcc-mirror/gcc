@@ -1,3 +1,4 @@
+// { dg-do run  }
 class A;
 typedef int (A::*f_ptr) (void);
 

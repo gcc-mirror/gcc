@@ -1,6 +1,7 @@
+// { dg-do run  }
+// { dg-options "-O" }
 // Test that inlining a destructor with a catch block doesn't confuse the
 // enclosing try block.
-// Special g++ Options: -O
 
 struct A {
   ~A()

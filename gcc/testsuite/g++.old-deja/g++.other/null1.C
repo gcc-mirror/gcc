@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 
 #include <cstddef>
 
@@ -22,23 +22,23 @@ void l(long) {}
 
 int main()
 {
-  int i = NULL; // WARNING - converting NULL to non-pointer type
-  float z = NULL; // WARNING - converting NULL to non-pointer type
+  int i = NULL; // { dg-warning "" } converting NULL to non-pointer type
+  float z = NULL; // { dg-warning "" } converting NULL to non-pointer type
   int a[2];
 
-  i != NULL; // WARNING - NULL used in arithmetic
-  NULL != z; // WARNING - NULL used in arithmetic
+  i != NULL; // { dg-warning "" } NULL used in arithmetic
+  NULL != z; // { dg-warning "" } NULL used in arithmetic
   k != NULL; // No warning: decay conversion
   NULL != a; // Likewise.
-  -NULL;     // WARNING - converting NULL to non-pointer type
-  +NULL;     // WARNING - converting NULL to non-pointer type
-  ~NULL;     // WARNING - converting NULL to non-pointer type
-  a[NULL] = 3; // WARNING - converting NULL to non-pointer-type
-  i = NULL;  // WARNING - converting NULL to non-pointer type
-  z = NULL;  // WARNING - converting NULL to non-pointer type
-  k(NULL);   // WARNING - converting NULL to int
-  g(NULL);   // WARNING - converting NULL to int
-  h<NULL>(); // WARNING - NULL bound to integer template parameter
-  l(NULL);   // WARNING - converting NULL to int
+  -NULL;     // { dg-warning "" } converting NULL to non-pointer type
+  +NULL;     // { dg-warning "" } converting NULL to non-pointer type
+  ~NULL;     // { dg-warning "" } converting NULL to non-pointer type
+  a[NULL] = 3; // { dg-warning "" } converting NULL to non-pointer-type
+  i = NULL;  // { dg-warning "" } converting NULL to non-pointer type
+  z = NULL;  // { dg-warning "" } converting NULL to non-pointer type
+  k(NULL);   // { dg-warning "" } converting NULL to int
+  g(NULL);   // { dg-warning "" } converting NULL to int
+  h<NULL>(); // { dg-warning "" } NULL bound to integer template parameter
+  l(NULL);   // { dg-warning "" } converting NULL to int
   NULL && NULL; // No warning: converting NULL to bool is OK
 }

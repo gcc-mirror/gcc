@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 8460
 
 class A {
@@ -13,5 +13,5 @@ int main()
 {
   A a;
   
-  a.A(1);	// ERROR - cannot find name this way
+  a.A(1);	// { dg-error "" } cannot find name this way
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that we can add cv-quals in a static cast to a pointer-to-base type.
 
 struct A { int i; };

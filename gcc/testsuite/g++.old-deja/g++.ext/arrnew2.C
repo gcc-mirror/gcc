@@ -1,4 +1,4 @@
-// Build don't link:
-// Special g++ Options:
+// { dg-do assemble  }
+// { dg-options "" }
 
-int *foo = new int[1](0); // gets bogus error - 
+int *foo = new int[1](0); // { dg-bogus "" } 

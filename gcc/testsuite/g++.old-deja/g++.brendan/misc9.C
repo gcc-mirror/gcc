@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed miscellaneous
 //The program listed below produces the following error during compilation:
 //   % g++ bug17.cc

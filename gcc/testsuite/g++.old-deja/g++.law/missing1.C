@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed missing
 // missing file
 // Message-Id: <9207100259.AA11702@quaestor>

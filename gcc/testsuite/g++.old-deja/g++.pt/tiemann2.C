@@ -1,3 +1,4 @@
+// { dg-do run  }
 extern "C" int printf (const char *, ...);
 template <class T> T max (const T&x, const T&y)
 {

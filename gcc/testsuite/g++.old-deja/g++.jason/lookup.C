@@ -1,7 +1,7 @@
+// { dg-do assemble  }
 // PRMS Id: 4357
 // Bug: g++ forgets to clear out push/popclass cache stuff when instantiating
 // templates.
-// Build don't link:
 
 template <class T> class ccHandle { };
 

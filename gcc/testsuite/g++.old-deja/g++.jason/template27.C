@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 6826
 // Check that unnecessary templates are not instantiated.
 

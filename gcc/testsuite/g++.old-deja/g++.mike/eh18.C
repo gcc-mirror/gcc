@@ -1,5 +1,5 @@
-// Special g++ Options: -fexceptions
-// excess errors test - XFAIL sparc64-*-elf arm-*-pe
+// { dg-do run { xfail sparc64-*-elf arm-*-pe } }
+// { dg-options "-fexceptions" }
 
 class VB {
 public:

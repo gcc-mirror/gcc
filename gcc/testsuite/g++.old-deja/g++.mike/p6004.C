@@ -1,4 +1,5 @@
-// Special g++ Options: 
+// { dg-do run  }
+// { dg-options "" }
 // prms-id: 6004
 
 class A {

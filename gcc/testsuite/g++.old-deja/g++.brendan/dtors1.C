@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed destructors
 // Check that when an object of a derived class is (implicitly)
 // destructed (on exit from the block in which it is declared)

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Chip Salzenberg <chip@valinux.com>
 
 namespace N {

@@ -1,6 +1,7 @@
+// { dg-do assemble  }
 class foo {
 public:
   void apply(foo *(foo::*memptr)()) {
-    this->*memptr();		// ERROR - wrong
+    this->*memptr();		// { dg-error "" } wrong
   }
 };

@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <stddef.h>
 
 void *p;

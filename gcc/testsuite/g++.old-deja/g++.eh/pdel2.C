@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for not calling mismatched placement delete.
 
 #include <new>

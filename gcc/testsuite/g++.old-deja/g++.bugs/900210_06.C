@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900210_06
 
 // g++ allows values of pointer-to-const types to be assigned to variables
@@ -18,8 +19,8 @@ char *cp;
 
 void function ()
 {
-  cp = ccp;		/* ERROR - */
-  cp = vcp;		/* ERROR - */
+  cp = ccp;		/* { dg-error "" } */
+  cp = vcp;		/* { dg-error "" } */
 }
 
 int main () { return 0; }

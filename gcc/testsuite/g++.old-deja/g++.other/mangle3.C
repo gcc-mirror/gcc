@@ -1,3 +1,4 @@
+// { dg-do run  }
 struct foo {
   static int bar ()
   {

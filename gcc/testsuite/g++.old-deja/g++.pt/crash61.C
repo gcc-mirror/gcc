@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Source: Neil Booth, from PR # 106. 4 Dec 2000.
 
 template <bool b> class bar

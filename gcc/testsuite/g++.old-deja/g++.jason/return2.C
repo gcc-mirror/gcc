@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 5368
 // Bug: the X temporary in foo() is not destroyed.
 

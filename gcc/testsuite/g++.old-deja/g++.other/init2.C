@@ -1,4 +1,5 @@
-// Special g++ Options: -O3
+// { dg-do run  }
+// { dg-options "-O3" }
 
 typedef int (*fp)();
 

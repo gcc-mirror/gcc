@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed operator-new
 // Check that if there is a user defined class-specific operator
 // new for a given class, that operator is invoked when a new

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 //980526 bkoz
 // reduced testcase for 980511 brendan qt bug
 

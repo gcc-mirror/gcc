@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 
 #define DEF_A   struct A { A() { a = 2; } int a; }
 

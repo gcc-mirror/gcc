@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed scoping
 // scoping file
 // From: kol@world.std.com (Nikolay Yatsenko)

@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "" }
 // Origin: philippeb@videotron.ca
-// Special g++ Options:
 
 #include <iostream>
 

@@ -1,7 +1,7 @@
+// { dg-do assemble  }
 // PRMS Id: 6568
 // Bug: g++ complains about the ambiguous conversion to bool even though
 // we wouldn't end up using it anyway.
-// Build don't link:
 
 class AString
 {

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <int I>
 struct S {};
@@ -8,5 +8,5 @@ void foo(S<J + 2>);
 
 void bar()
 {
-  foo(S<3>()); // ERROR - no way to deduce J from this.
+  foo(S<3>()); // { dg-error "" } no way to deduce J from this.
 }

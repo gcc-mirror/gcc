@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for overloading with g++ NULL.
 
 void f (int *) { }

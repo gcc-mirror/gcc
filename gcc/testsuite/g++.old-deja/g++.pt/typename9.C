@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-w" }
 // Test to make sure that implicit typename doesn't break name binding rules.
-// Special g++ Options: -w
 
 typedef double A;
 template<class T> class B {

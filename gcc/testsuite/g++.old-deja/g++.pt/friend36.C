@@ -1,12 +1,12 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T>
-void f(T) {} // ERROR - previously defined here
+void f(T) {} // { dg-error "" } previously defined here
 
 template <class U>
 struct S {
   template <class T>
-  friend void f(T) {} // ERROR - redeclaration
+  friend void f(T) {} // { dg-error "" } redeclaration
 };
 
 S<int> si;

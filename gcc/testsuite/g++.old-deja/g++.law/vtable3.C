@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed vtable
 // vtable file
 // From: Pete Bevin <pete@deng.icl.co.uk>

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // This is a test case for the recent libg++ make check problem.
-// Build don't link:
 
 class SubString {
 public:

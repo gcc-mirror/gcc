@@ -1,3 +1,4 @@
+// { dg-do run  }
 int main ()
 {
   bool b = false;

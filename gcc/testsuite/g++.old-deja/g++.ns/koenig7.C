@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for Koenig lookup involving overloaded functions.
 
 namespace N1 {

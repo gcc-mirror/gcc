@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 class A {
 char str[10];
 public:
@@ -11,7 +11,7 @@ public:
 
 class B : public A {
 public:
-    char* m1 () { C::m1(); return ""; } // ERROR - 
+    char* m1 () { C::m1(); return ""; } // { dg-error "" } 
 };
 
 int main () {

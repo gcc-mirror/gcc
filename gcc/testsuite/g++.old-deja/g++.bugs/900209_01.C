@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900209_01
 
 // g++ implicitly casts values whose types are "void*" to other pointer
@@ -14,7 +15,7 @@ char * char_pointer_object;
 
 void global_function_0 ()
 {
-  char_pointer_object = void_pointer_object;	// ERROR - 
+  char_pointer_object = void_pointer_object;	// { dg-error "" } 
 }
 
 int main () { return 0; }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // extern "C" printf(const char *, ...);
 
 class X

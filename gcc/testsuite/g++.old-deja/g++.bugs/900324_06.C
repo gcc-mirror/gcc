@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.37.1 bug 900324_06
 
 // g++ is unable to use context information (i.e. the required type of the
@@ -20,9 +21,9 @@ void function_0 ()
 
 void function_1 ()
 {
-  p = i ? function_0 : 0;		// gets bogus error
-  p = i ? 0 : function_0;		// gets bogus error
-  p = i ? function_1 : function_0;	// gets bogus error
+  p = i ? function_0 : 0;		// { dg-bogus "" } 
+  p = i ? 0 : function_0;		// { dg-bogus "" } 
+  p = i ? function_1 : function_0;	// { dg-bogus "" } 
 }
 
 int main () { return 0; }

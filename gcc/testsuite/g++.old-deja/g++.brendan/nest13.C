@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed nested-classes
 // The bug here is that wer'e getting a message about inner not
 // being a basetype itself.  I think it's because it's being

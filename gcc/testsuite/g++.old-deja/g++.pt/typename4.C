@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -Wno-deprecated
+// { dg-do assemble  }
+// { dg-options "-Wno-deprecated" }
 
 template <class T>
 struct A
@@ -17,10 +17,10 @@ struct B : public A<U>
 template <class U>
 struct C : public B<U>
 {
-  A_Type Func(); // WARNING - implicit typename
+  A_Type Func(); // { dg-warning "" } implicit typename
 };
 
 
 template <class U>
-C<U>::A_Type C<U>::Func() { // WARNING - implicit typename
+C<U>::A_Type C<U>::Func() { // { dg-warning "" } implicit typename
 }

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 int*& foo (int const *& x)
 {
   return const_cast<int*&> (x);

@@ -1,3 +1,4 @@
+// { dg-do run  }
 class base {
 public:
   virtual ~base() {}

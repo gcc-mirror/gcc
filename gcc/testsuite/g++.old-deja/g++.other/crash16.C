@@ -1,8 +1,7 @@
-// Build don't link:
-// Special g++ Options: -O2
+// { dg-do assemble { xfail *-*-* } }
+// { dg-options "-O2" }
 // Origin: scott snyder <snyder@fnal.gov>
 
-// crash test - XFAIL *-*-*
 
 void _S_initialize();
 

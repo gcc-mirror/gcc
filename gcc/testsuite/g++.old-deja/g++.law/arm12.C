@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed ARM-compliance
 // arm file
 // From: belley@cae.ca (Benoit Belley 3218)
@@ -23,7 +23,7 @@ public:
 };
 
 X::X()
-{// ERROR - .*
+{// { dg-error "" } .*
   std::cout << "X::X()" << std::endl;
 }
 
@@ -33,7 +33,7 @@ void X::f()
 }
 
 Y::Y()
-{// ERROR -  within this
+{// { dg-error "" }  within this
   std::cout << "Y::Y()" << std::endl;
 }
 

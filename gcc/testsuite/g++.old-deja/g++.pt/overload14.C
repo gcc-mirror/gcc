@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 18 Jan 2001 <nathan@codesourcery.com>
@@ -16,5 +16,5 @@ bool Foo (E e)
 }
 bool Baz (E e)
 {
-  return e != e1; // ERROR - void not ignored.
+  return e != e1; // { dg-error "" } void not ignored.
 }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 980827 bkoz
 // template parameter redeclaration bugs, part two:
 // template template params and expanded template non-type parms
@@ -18,27 +18,27 @@
 
 // 14 
 // declared friend template (v3, template type parameters)
-template <class T4>// ERROR - .*
+template <class T4>// { dg-error "" } .*
 class Xfourteen {
 protected:
   T4 value;
 public:
   Xfourteen(T4 init): value(init) {}
-  template <template <typename T4> class T5> // ERROR - .*
+  template <template <typename T4> class T5> // { dg-error "" } .*
   friend bool isequal (Xfourteen<int>& lhs, Xfourteen<int>& rhs);
 };
 
 
 // 15
 // nested template class (v3, template type parameters)
-template <class T6>// ERROR - .*
+template <class T6>// { dg-error "" } .*
 class Xfifteen {
 protected:
   T6 value;
 public:
   Xfifteen(T6 init): value(init) {}
 
-  template <template <typename T6> class T7> class nested {// ERROR - .*
+  template <template <typename T6> class T7> class nested {// { dg-error "" } .*
     int value;
   public:
     nested(): value( int(0)) {}
@@ -48,14 +48,14 @@ public:
 
 // 16
 // member templates (v3, template type parameters)
-template <class T8>// ERROR - .*
+template <class T8>// { dg-error "" } .*
 class Xsixteen {
 protected:
   T8 value;
 public:
   Xsixteen(T8 init): value(init) {}
 
-  template <template <typename T8> class T9> int comp_ge(int test) {// ERROR - .*
+  template <template <typename T8> class T9> int comp_ge(int test) {// { dg-error "" } .*
     int local_value;
     if (local_value > value) 
       return local_value;
@@ -88,21 +88,21 @@ public:
 
 // 18
 // more template template redecl tests
-template <typename T14, template <typename T15> class C12>// ERROR - .*
+template <typename T14, template <typename T15> class C12>// { dg-error "" } .*
 class Xeighteen {
 protected:
   C12<T14> value;
-  int C12; // ERROR - .*
+  int C12; // { dg-error "" } .*
 };
 
 
 // 19
 // more template template redecl tests
-template <typename T16, template <typename T17> class C14>// ERROR - .*
+template <typename T16, template <typename T17> class C14>// { dg-error "" } .*
 class Xnineteen{
 protected:
   C14<T16> value;
-  template <class C14> class nested {// ERROR - .*
+  template <class C14> class nested {// { dg-error "" } .*
     T16 value;
   public:
     nested(): value( T16(0)) {}
@@ -137,8 +137,8 @@ template <class T17, int i> struct Xtwenty {
 // non-type template parameters v1: enum
 enum my_enum {my_A = 45, my_B, my_C};
 
-template <my_enum T18> class Xtwentyone {// ERROR - .*
-  float T18; // ERROR - .*
+template <my_enum T18> class Xtwentyone {// { dg-error "" } .*
+  float T18; // { dg-error "" } .*
 };
 
 
@@ -149,30 +149,30 @@ struct base {
   int ret_gcount() {return gcount;}
 };
 
-template <class T20, base* b> class Xtwentytwo {// ERROR - .*
-  float b; // ERROR - .*
+template <class T20, base* b> class Xtwentytwo {// { dg-error "" } .*
+  float b; // { dg-error "" } .*
 };
 
 
 // 23
 // non-type template parameters v2: reference to object
-template <class T20, base& b2> class Xtwentythree {// ERROR - .*
-  float b2; // ERROR - .*
+template <class T20, base& b2> class Xtwentythree {// { dg-error "" } .*
+  float b2; // { dg-error "" } .*
 };
 
 
 // 24
 // non-type template parameters v3: pointer to member
-template <class T20, int base::* b3> class Xtwentyfour {// ERROR - .*
-  float b3; // ERROR - .*
+template <class T20, int base::* b3> class Xtwentyfour {// { dg-error "" } .*
+  float b3; // { dg-error "" } .*
 };
 
 
 // 25
 // non-type template parms that use push_class_level
-template <class T22> void f1() {// ERROR - .*
+template <class T22> void f1() {// { dg-error "" } .*
   struct foo { 
-    enum T22 { un, du, toi }; // ERROR - .*
+    enum T22 { un, du, toi }; // { dg-error "" } .*
   };
 }
 

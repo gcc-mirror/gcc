@@ -1,3 +1,4 @@
+// { dg-do run  }
 extern "C" void abort(void);
 
 template <int I>

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 23 June 2000 <nathan@codesourcery.com>
@@ -14,13 +14,13 @@ void f()
 {
 C<1> c1;
 C<1 & 2> c2;
-C<1>2> c3; // ERROR - parse error
+C<1>2> c3; // { dg-error "" } parse error
 C<(1>2)> c4;
-C<1 & 2>2> c5; // ERROR - parse error
+C<1 & 2>2> c5; // { dg-error "" } parse error
 C<1 & (2>2)> c6;
 }
 
-template <int i = 3>4 > class X1 {}; // ERROR - parse error
-template <int i = 3&&4>0 > class X2 {}; // ERROR - parse error
+template <int i = 3>4 > class X1 {}; // { dg-error "" } parse error
+template <int i = 3&&4>0 > class X2 {}; // { dg-error "" } parse error
 template <int i = 3&&4 > class X3 {};
 template <int i = (3>4) > class X4 {};

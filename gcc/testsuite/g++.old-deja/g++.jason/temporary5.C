@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 6604
 // Bug: Scoped constructor call is not properly recognized as a functional cast
 

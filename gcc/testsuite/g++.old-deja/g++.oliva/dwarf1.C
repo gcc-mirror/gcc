@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -6,7 +6,6 @@
 // based on bug report by Chris McKay <chris.mckay@solipsys.com>
 
 // Used to fail with dwarf debugging.
-// crash test
 
 template <class T = void>
 struct foo {

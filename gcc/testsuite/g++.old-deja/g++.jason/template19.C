@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Make sure type deduction isn't confused by top-level cv-quals.
 template <class T> T max (const T a, const T b)  { return a>b?a:b; }
 

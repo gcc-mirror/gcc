@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -O
+// { dg-do assemble  }
+// { dg-options "-O" }
 // Origin: Thomas Kunert <kunert@physik.tu-dresden.de>
 
 #include <ctype.h>

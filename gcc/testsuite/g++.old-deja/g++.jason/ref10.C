@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that conversion from D* to B*& works properly.
 
 extern "C" int printf (const char *, ...);

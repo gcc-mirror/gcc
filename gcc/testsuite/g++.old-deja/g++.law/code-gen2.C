@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed code-generation
 // code-gen file
 // From: Gunther Seitz <Gunther.Seitz@regent.e-technik.tu-muenchen.dbp.de>

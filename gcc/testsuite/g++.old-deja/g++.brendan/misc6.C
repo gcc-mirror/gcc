@@ -1,9 +1,9 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed miscellaneous
 // test that use of `inline' is forbidden when it should be
-inline int i;// ERROR - .*
-struct c { inline int i; };// ERROR - .*
-int foo (inline int i);// ERROR - .*
-inline class c; // ERROR - inline
-inline typedef int t; // ERROR - inline
-class d { inline friend class c; }; // ERROR - inline
+inline int i;// { dg-error "" } .*
+struct c { inline int i; };// { dg-error "" } .*
+int foo (inline int i);// { dg-error "" } .*
+inline class c; // { dg-error "" } inline
+inline typedef int t; // { dg-error "" } inline
+class d { inline friend class c; }; // { dg-error "" } inline

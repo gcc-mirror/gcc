@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that partial ordering works between conversion ops from different
 // classes.
 // From Jason Merrill <jason@cygnus.com>

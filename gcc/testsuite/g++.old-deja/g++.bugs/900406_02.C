@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ bug 900406_02
 
 // g++ fails to correctly parse some type specifications within casts.
@@ -17,7 +18,7 @@ int (**ippp)[];
 int function ()
 {
   ipp = (int (*)[]) 0;			// OK
-  ippp = (int (**)[]) 0;		// gets bogus error (syntax)
+  ippp = (int (**)[]) 0;		// { dg-bogus "" }  (syntax)
   return 0;
 }
 

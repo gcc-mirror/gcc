@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Here is another program from the net.
 
 class BOOL {

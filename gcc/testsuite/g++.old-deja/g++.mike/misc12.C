@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed
 struct A { virtual void f(); }; 
 struct B { virtual void f() ; };

@@ -1,4 +1,5 @@
-int i;		// ERROR - 
+// { dg-do assemble  }
+int i;		// { dg-error "" } 
 
-namespace i {	// ERROR - 
+namespace i {	// { dg-error "" } 
 }

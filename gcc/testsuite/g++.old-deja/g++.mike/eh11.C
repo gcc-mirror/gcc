@@ -1,5 +1,5 @@
-// Special g++ Options: -fexceptions
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-fexceptions" }
 
 struct A {
   ~A();

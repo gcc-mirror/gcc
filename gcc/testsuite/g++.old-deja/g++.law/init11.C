@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed initialization
 // init file
 // From: hansen@srd.ull.rdc.toshiba.co.jp

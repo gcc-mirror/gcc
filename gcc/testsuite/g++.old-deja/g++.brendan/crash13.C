@@ -1,6 +1,6 @@
-// Build don't link: 
+// { dg-do assemble  }
+// { dg-options "-Wreturn-type" }
 // GROUPS passed old-abort
-// Special g++ Options: -Wreturn-type
 class gen_op
 {
 public:
@@ -31,7 +31,7 @@ gen_op Spul_U_axis()
 {
   gen_op U1;
   U1 = Fe();
-} // ERROR - reaches end of non-void function
+} // { dg-error "" } reaches end of non-void function
 
 int
 main () {}

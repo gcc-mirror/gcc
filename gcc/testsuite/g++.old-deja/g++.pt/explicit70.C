@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T>
 void f(T) {}
@@ -12,14 +12,14 @@ template <class T>
 T S<T>::t;
 
 template void f(int);
-template void f(int); // ERROR - duplicate explicit instantiation 
+template void f(int); // { dg-error "" } duplicate explicit instantiation 
 template int S<int>::t;
-template int S<int>::t; // ERROR - duplicate explicit instantiation 
+template int S<int>::t; // { dg-error "" } duplicate explicit instantiation 
 template class S<double>;
-template class S<double>; // ERROR - duplicate explicit instantiation 
+template class S<double>; // { dg-error "" } duplicate explicit instantiation 
 
-extern template void f(double); // WARNING - extern not allowed
-inline template class S<float>; // WARNING - inline not allowed
+extern template void f(double); // { dg-warning "" } extern not allowed
+inline template class S<float>; // { dg-warning "" } inline not allowed
 
 template <class T>
 struct S<T*> {};
@@ -40,4 +40,4 @@ template void f(long double); // OK - explicit instantiation after
 template <class T>
 void g(T);
 
-template void g(int); // ERROR - no definition of g.
+template void g(int); // { dg-error "" } no definition of g.

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 7180
 
 class String {

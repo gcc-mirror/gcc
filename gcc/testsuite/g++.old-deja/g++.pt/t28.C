@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 
 template <class X> class B;
 template <class X> int f (B<X> b) { return 37; }

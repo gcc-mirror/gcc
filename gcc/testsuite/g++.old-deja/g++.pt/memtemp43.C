@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 // GROUPS passed templates membertemplates
 template<class T, int N>
 class A

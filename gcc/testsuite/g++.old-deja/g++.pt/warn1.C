@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -Wunused
+// { dg-do assemble  }
+// { dg-options "-Wunused" }
 
 template <class T>
 struct S
@@ -13,7 +13,7 @@ struct S
   void foo()
   {
     R r;			// no warning
-    int i;			// WARNING - unused
+    int i;			// { dg-warning "" } unused
   }
 
   S();

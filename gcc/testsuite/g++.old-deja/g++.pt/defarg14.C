@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Origin: Larry Evans <jcampbell3@prodigy.net>
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 int fail;
 
 class A *ptr_a;

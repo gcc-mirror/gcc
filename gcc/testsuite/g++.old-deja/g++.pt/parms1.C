@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testcase for use of template parms as types for other template parms.
 
 template <class T, T t>

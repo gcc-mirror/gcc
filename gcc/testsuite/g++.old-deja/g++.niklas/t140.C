@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed niklas hiding local-types
 extern "C" int printf (const char*, ...);
 int val = 1;

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed operators
 // copy file
 // From: gfm@mencon.mencon.oz.au (Graham Menhennitt)

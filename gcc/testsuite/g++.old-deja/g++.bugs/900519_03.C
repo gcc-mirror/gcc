@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900519_03
 
 // The C++ Reference Manual says (in section 8.4.3) "A reference to a 
@@ -13,35 +14,35 @@
 extern const int cint_obj;
 extern volatile int vint_obj;
 
-void take_cint_ref (const int& arg) { }	// ERROR - 
-void take_vint_ref (volatile int& arg) { } // ERROR - 
+void take_cint_ref (const int& arg) { }	// { dg-error "" } 
+void take_vint_ref (volatile int& arg) { } // { dg-error "" } 
 
-const int& global_cint_ref2 = vint_obj;		// ERROR - 
+const int& global_cint_ref2 = vint_obj;		// { dg-error "" } 
 
-volatile int& global_vint_ref1 = cint_obj;	// ERROR - 
+volatile int& global_vint_ref1 = cint_obj;	// { dg-error "" } 
 
 extern const int& extern_cint_ref;
 extern volatile int& extern_vint_ref;
 
 void test_0 ()
 {
-  const int& local_cint_ref2 = vint_obj;	// ERROR - 
+  const int& local_cint_ref2 = vint_obj;	// { dg-error "" } 
 
-  volatile int& local_vint_ref1 = cint_obj;	// ERROR - 
+  volatile int& local_vint_ref1 = cint_obj;	// { dg-error "" } 
 } 
 
 void test_1 ()
 {
-  take_cint_ref (vint_obj);			// ERROR - 
+  take_cint_ref (vint_obj);			// { dg-error "" } 
 
-  take_vint_ref (cint_obj);			// ERROR - caught
+  take_vint_ref (cint_obj);			// { dg-error "" } caught
 }
 
 void test_2 ()
 {
-  take_cint_ref (extern_vint_ref);		// ERROR - 
+  take_cint_ref (extern_vint_ref);		// { dg-error "" } 
 
-  take_vint_ref (extern_cint_ref);		// ERROR - 
+  take_vint_ref (extern_cint_ref);		// { dg-error "" } 
 }
 
 int main () { return 0; }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <>
-enum E {e}; // ERROR - template declaration of enum
+enum E {e}; // { dg-error "" } template declaration of enum

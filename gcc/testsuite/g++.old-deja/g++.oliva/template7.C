@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999, 2000 Free Software Foundation
 
@@ -8,7 +8,7 @@
 template<class> struct A {};
 template<template<class> class T> struct B {
   B() {
-    T<B>(); // gets bogus error - conversion from int to non-scalar
+    T<B>(); // { dg-bogus "" } conversion from int to non-scalar
   }
 };
 B<A> foo;

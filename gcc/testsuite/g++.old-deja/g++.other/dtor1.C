@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for use of typedef in explicit destructor call.
 
 #include <new>

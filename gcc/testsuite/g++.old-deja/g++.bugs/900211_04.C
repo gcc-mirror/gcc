@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900211_04
 
 // g++ fails to flag as errors attempts to compare pointer values against
@@ -16,12 +17,12 @@ char *p;
 
 void function ()
 {
-  result = i == p;	/* ERROR - caught by g++ */
-  result = i != p;	/* ERROR - caught by g++ */
-  result = i >  p;	/* ERROR - missed */
-  result = i <  p;	/* ERROR - missed */
-  result = i >= p;	/* ERROR - missed */
-  result = i <= p;	/* ERROR - missed */
+  result = i == p;	/* { dg-error "" } caught by g++ */
+  result = i != p;	/* { dg-error "" } caught by g++ */
+  result = i >  p;	/* { dg-error "" } missed */
+  result = i <  p;	/* { dg-error "" } missed */
+  result = i >= p;	/* { dg-error "" } missed */
+  result = i <= p;	/* { dg-error "" } missed */
 }
 
 int main () { return 0; }

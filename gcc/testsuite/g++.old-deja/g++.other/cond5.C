@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -W -pedantic -ansi
+// { dg-do assemble  }
+// { dg-options "-W -pedantic -ansi" }
 
 // Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 1 Sep 1999 <nathan@acm.org>
@@ -22,9 +22,9 @@ void fn(int i)
   double d;
   int j;
 
-  j = (i ? e1 : e2);    // WARNING - mismatch
-  d = (i ? e1 : 1.0);   // WARNING - mismatch
-  d = (i ? 1.0 : e2);   // WARNING - mismatch
+  j = (i ? e1 : e2);    // { dg-warning "" } mismatch
+  d = (i ? e1 : 1.0);   // { dg-warning "" } mismatch
+  d = (i ? 1.0 : e2);   // { dg-warning "" } mismatch
   E1 e = (i ? e1 : e1); // ok
   j = (i ? 1 : e2);     // ok
   j = (i ? e1 : 1);     // ok
@@ -35,11 +35,11 @@ void fn(int i)
   (i ? throw X() : throw X());  // ok, void
   
   (i ? i : j) = 1; // ok, int &
-  (i ? throw X() : j) = 1;    // ERROR - non lvalue
-  (i ? j : throw X()) = 1;    // ERROR - non lvalue
-  (i ? throw X() : throw X()) = 1;  // ERROR - invalid use of void
+  (i ? throw X() : j) = 1;    // { dg-error "" } non lvalue
+  (i ? j : throw X()) = 1;    // { dg-error "" } non lvalue
+  (i ? throw X() : throw X()) = 1;  // { dg-error "" } invalid use of void
   
-  (i ? (void)1 : i++);        // WARNING - not a throw
-  (i ? i++ : (void)1);        // WARNING - not a throw
+  (i ? (void)1 : i++);        // { dg-warning "" } not a throw
+  (i ? i++ : (void)1);        // { dg-warning "" } not a throw
   
 }

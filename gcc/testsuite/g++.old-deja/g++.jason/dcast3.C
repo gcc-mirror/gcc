@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testcase for tricky dynamic cast situations.
 
 struct A {

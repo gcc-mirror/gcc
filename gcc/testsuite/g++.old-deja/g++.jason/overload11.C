@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 4697
 // Bug: g++ calls the non-const method for a const object.
 

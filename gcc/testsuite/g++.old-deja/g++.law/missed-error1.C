@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed missed-error
 // missed-error file
 // From: John Carr <jfc@Athena.MIT.EDU>
@@ -16,6 +16,6 @@ extern "C"
 }
 
 pfv p = f;
-pfv p2 = cf;			// ERROR - mismatch XFAIL *-*-*
-pcfv p3 = f;			// ERROR - mismatch XFAIL *-*-*
+pfv p2 = cf;			// { dg-error "" "" { xfail *-*-* } } mismatch 
+pcfv p3 = f;			// { dg-error "" "" { xfail *-*-* } } mismatch 
 pcfv p4 = cf;

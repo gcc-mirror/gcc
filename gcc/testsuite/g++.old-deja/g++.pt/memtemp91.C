@@ -1,5 +1,4 @@
-// Build don't link:
-// crash test - XFAIL *-*-*
+// { dg-do assemble { xfail *-*-* } }
 // regression test -
 
 // simplified from bug report by Leon Bottou <leonb@research.att.com>

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed constructors
 // ctors file
 // Message-Id: <3JUL199214462623@envmsa.eas.asu.edu>
@@ -21,7 +21,7 @@ public:
    //   The const keyword on this constructor is an error,  but  it shouldn't
    // cause the compiler to crash.
 
-   d1_t () const;// ERROR - .*const.*
+   d1_t () const;// { dg-error "" } .*const.*
    virtual ~d1_t ();
 };
 

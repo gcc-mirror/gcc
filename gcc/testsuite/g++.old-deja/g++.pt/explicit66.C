@@ -1,3 +1,4 @@
+// { dg-do run  }
 void f(int) {}
 void f(double);
 

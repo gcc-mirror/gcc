@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed conversions
 // cvt file
 // Date: Tue, 10 Nov 92 11:08:08 PST
@@ -10,7 +10,7 @@
 
 class Thing{
 private: int x;
-   public: const int N = -1; // ERROR - bad initialization
+   public: const int N = -1; // { dg-error "" } bad initialization
   Thing(int y);
 };
 

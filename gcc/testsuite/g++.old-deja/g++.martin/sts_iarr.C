@@ -1,3 +1,4 @@
+// { dg-do run  }
 // egcs-bugs 999-02-22 14:26 Stefan Schwarzer
 // sts@ica1.uni-stuttgart.de
 // should compile and return 0  

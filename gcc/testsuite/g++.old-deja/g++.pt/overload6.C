@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Check that foo<int> isn't resolved too early.
 
 template <class T> void foo(T*);

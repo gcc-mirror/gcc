@@ -1,5 +1,4 @@
-// Build don't link: 
-// crash test
+// { dg-do assemble  }
 
 // these are marked as expected errors because they evidence an
 // ambiguity in the grammar between expressions and declarations.

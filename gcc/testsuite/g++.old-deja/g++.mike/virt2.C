@@ -1,3 +1,4 @@
+// { dg-do run  }
 struct S0 {
   virtual int is_kind_of_S1 () const { return 0; }
   virtual void dummy () { }

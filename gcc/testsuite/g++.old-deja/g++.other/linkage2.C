@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // From: Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>    
 extern "C" 
 {
@@ -7,7 +7,7 @@ extern GDBM_FILE gdbm_open();
 }
 
 typedef struct { int dummy[10]; } *FAIL_FILE;
-extern FAIL_FILE fail_open(); // ERROR - non-local function
+extern FAIL_FILE fail_open(); // { dg-error "" } non-local function
 
 typedef struct { int dummy[10]; } *SUCCESS_FILE, S;
 extern SUCCESS_FILE success_open();

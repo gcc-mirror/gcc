@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -Wall
+// { dg-do assemble  }
+// { dg-options "-Wall" }
 
 typedef char * charptr;
 typedef __SIZE_TYPE__ size_t;
@@ -9,6 +9,6 @@ int *pp=&i;
 void foo() { }
 int main()
 {
- charptr(*pp)++;	// WARNING - 
+ charptr(*pp)++;	// { dg-warning "" } 
  return 0;
 }

@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Submitted by Jason Merrill <jason@cygnus.com>.
 // Bug: g++ fails to see through the T typedef in the C ctor.
-// Build don't link:
 
 struct A {
   A (int) { }

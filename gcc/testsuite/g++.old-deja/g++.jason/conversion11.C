@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // PRMS Id: 8805
 // Bug: The two-level conversion is not found when calling a global fn.
 
@@ -13,14 +14,14 @@ public:
 
 class Something {
 public:
-  void DoSomething(Ding A);	// ERROR - referred to
+  void DoSomething(Ding A);	// { dg-error "" } referred to
 };
 
 void DoSomething(Ding A);
 
 void foo(Something* pX)
 {
-  DoSomething(1);		// ERROR - 
-  pX->DoSomething(1);		// ERROR - 
-  (*pX).DoSomething(1);		// ERROR - 
+  DoSomething(1);		// { dg-error "" } 
+  pX->DoSomething(1);		// { dg-error "" } 
+  (*pX).DoSomething(1);		// { dg-error "" } 
 }

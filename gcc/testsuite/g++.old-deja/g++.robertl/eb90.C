@@ -1,5 +1,5 @@
-// Special g++ Options: -O2
-// Build don't link: 
+// { dg-do assemble  }
+// { dg-options "-O2" }
 
 #ifdef HIDE_BUG
 #define realloc Realloc

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template<unsigned int n> struct PartialDotProduct {
     template<class T>

@@ -1,3 +1,4 @@
+// { dg-do run  }
 struct foo {};
 typedef long unsigned int & (foo::*pmf)(void);
 void fn (...) {}

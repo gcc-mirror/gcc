@@ -1,4 +1,5 @@
-// Special g++ Options: -Wno-pmf-conversions
+// { dg-do run  }
+// { dg-options "-Wno-pmf-conversions" }
 // prms-id: 10769
 
 #define PMF2PF(PMF) ((void (*)())(PMF))
@@ -31,7 +32,7 @@ void A::main() {
   void (A::*mPtr)() = &A::f1a;
 
   (*(void (*)(A*))PMF2PF(mPtr))(&a);
-  (*(void (*)(A*))PMF2PF(f2a))(&a); // gets bogus error XFAIL *-*-*
+  (*(void (*)(A*))PMF2PF(f2a))(&a); // { dg-bogus "" "" { xfail *-*-* } }  
 }
 
 int main() {
@@ -40,6 +41,6 @@ int main() {
   void (A::*mPtr)() = &A::f1b;
 
   (*(void (*)(A*))PMF2PF(a.*mPtr))(&a);
-  (*(void (*)(A*))PMF2PF(a.f2a))(&a); // gets bogus error XFAIL *-*-*
+  (*(void (*)(A*))PMF2PF(a.f2a))(&a); // { dg-bogus "" "" { xfail *-*-* } }  
   return ok != 3+3+5+5+7+7;
 }

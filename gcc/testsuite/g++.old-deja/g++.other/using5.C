@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Based on bug report by Klaus-Georg Adams
 // <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>

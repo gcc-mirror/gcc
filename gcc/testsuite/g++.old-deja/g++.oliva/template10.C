@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -19,4 +19,4 @@ template<> struct A<int> {
 };
 
 bool A<int>::a = true; // ok
-template<> bool A<int>::b = false; // ERROR - XFAIL *-*-*
+template<> bool A<int>::b = false; // { dg-error "" "" { xfail *-*-* } } 

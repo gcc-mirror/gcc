@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Copyright (C) 1999 Free Software Foundation
 
 // by Alexandre Oliva <oliva@lsd.ic.unicamp.br>

@@ -1,7 +1,7 @@
+// { dg-do assemble  }
+// { dg-options "-Wsign-promo" }
 // 981203 bkoz
 // g++/15756  test2
-// Build don't link: 
-// Special g++ Options: -Wsign-promo
 // this test may only be valid for 32bit targets at present
 
 #include <limits.h>
@@ -31,8 +31,8 @@ struct caracas {
  
 int main ()
 {
-  caracas obj_ei  ( enum_int  ); // WARNING - 
-  caracas obj_eui ( enum_uint ); // WARNING - 
+  caracas obj_ei  ( enum_int  ); // { dg-warning "" } 
+  caracas obj_eui ( enum_uint ); // { dg-warning "" } 
   caracas obj_i  ( i  );
   caracas obj_ui ( ui );
   

@@ -1,3 +1,4 @@
+// { dg-do run  }
   struct V { virtual ~V() {} };
   template <class T> struct A : virtual V { };
   template <class T> struct B {

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Here is a net bug
 
 class ivAllocation {

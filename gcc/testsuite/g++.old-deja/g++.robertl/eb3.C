@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 #include <complex>
 template<class T>
 class Vec {

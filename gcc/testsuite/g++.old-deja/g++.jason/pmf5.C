@@ -1,6 +1,6 @@
+// { dg-do assemble  }
+// { dg-options "" }
 // PRMS Id: 4985
-// Build don't link:
-// Special g++ Options:
 
 struct Thing {
         int OverloadFn() const;
@@ -15,4 +15,4 @@ struct ThingEntry {
 static ThingEntry KeyWordTable[] = {
         &Thing::FunctionA,
         Thing::OverloadFn,
-};				// WARNING - implicit &
+};				// { dg-warning "" } implicit &

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed overloading
 typedef struct{double re,im;} complex;
 class Complex{public:double re,im;
@@ -6,4 +6,4 @@ class Complex{public:double re,im;
 void zxcvbnm(int n,...){n=1;}
 int main(){complex c; Complex C;
 zxcvbnm(1,c);
-zxcvbnm(1,C);} // WARNING - cannot pass non pod
+zxcvbnm(1,C);} // { dg-warning "" } cannot pass non pod

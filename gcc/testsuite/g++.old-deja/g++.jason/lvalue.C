@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Bug: Scoped method calls don't propagate the constness of `this'.
 // PRMS Id: 4181 (second testcase)
-// Build don't link:
 
 class D;
 

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // make sure extern "C" friends work.
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS uncaught
-int a;// ERROR - .*
-int a;// ERROR - .*
+int a;// { dg-error "" } .*
+int a;// { dg-error "" } .*

@@ -1,4 +1,5 @@
-// Special g++ Options: -fno-strict-aliasing
+// { dg-do run  }
+// { dg-options "-fno-strict-aliasing" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 /* Generally, the lowest bit of the ptr is used to indicate whether a

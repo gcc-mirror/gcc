@@ -1,6 +1,6 @@
-// Special g++ Options:
+// { dg-do run  }
+// { dg-options "" }
 // execution test
-// excess errors test
 
 int i = 0;
 

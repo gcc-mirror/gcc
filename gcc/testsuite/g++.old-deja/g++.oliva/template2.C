@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -11,4 +11,4 @@ template <template <typename> class C, typename T> class foo {
 };
 
 template <template <typename> class C, typename T> foo<C,T>::foo(bar)
-{} // gets bogus error - C<T> not a class
+{} // { dg-bogus "" } C<T> not a class

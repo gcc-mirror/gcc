@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // prms-id: 8039
 
 class C {
@@ -10,5 +11,5 @@ extern void bar(int*);
 int main()
 {
   int (C::*mfp)() = &C::func;
-  bar((int*)mfp);		// ERROR - no clear semantics
+  bar((int*)mfp);		// { dg-error "" } no clear semantics
 }

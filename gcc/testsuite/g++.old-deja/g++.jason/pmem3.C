@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that comparison of pointers to members does not complain about
 // contravariance violation.
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: dinh@cs.ucla.edu (Dinh Le)
@@ -16,7 +16,7 @@ using namespace std;
 const int ArraySize = 12;
 
 template <class Type>
-class Array { // ERROR - .struct Array_RC redecl.*
+class Array { // { dg-error "" } .struct Array_RC redecl.*
 friend class Array_RC;
 public:
     Array(const Type *ar, int sz) { init(ar,sz); }
@@ -65,7 +65,7 @@ void Array<Type>::init(const Type *array, int sz)
 //     ---------------   Array_RC.h  &&  Array_RC.cc   ----------------
 
 template <class Type>
-class Array_RC : public Array<Type> {// ERROR - previous declaration.*
+class Array_RC : public Array<Type> {// { dg-error "" } previous declaration.*
 public:
     Array_RC(const Type *ar, int sz);
     Type& operator[](int ix);
@@ -76,8 +76,8 @@ Array_RC<Type>::Array_RC(const Type *ar, int sz) : Array<Type>(ar, sz) {}
 
 template <class Type>
 Type &Array_RC<Type>::operator[](int ix) {
-    assert(ix >= 0 && ix < size);// ERROR - member .size.*
-    return ia[ix];// ERROR - member .ia.*
+    assert(ix >= 0 && ix < size);// { dg-error "" } member .size.*
+    return ia[ix];// { dg-error "" } member .ia.*
 }
 
 //    -------------------   Test routine   ----------------------

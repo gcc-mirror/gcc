@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Origin: Alfred Minarik <a8601248@unet.univie.ac.at>
-// Build don't link:
 
 template <typename T>
 struct allocator

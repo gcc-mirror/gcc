@@ -1,6 +1,5 @@
-// Build don't link:
-// Skip if not native
-// Special g++ Options: -fpic -pedantic-errors -S
+// { dg-do assemble { target native } }
+// { dg-options "-fpic -pedantic-errors -S" }
 // prms-id: 4750
 
 extern const int FRAME_VEC_MAX;

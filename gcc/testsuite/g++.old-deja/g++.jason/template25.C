@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 6393
 // Bug: g++ is too lax in considering UPTs to be the same.
 

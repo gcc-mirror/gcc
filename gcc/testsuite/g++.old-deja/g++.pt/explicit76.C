@@ -1,11 +1,10 @@
-// Build don't link:
+// { dg-do assemble { xfail *-*-* } }
 
 // Based on bug report by Simon A. Crase <s.crase@ieee.org>
 
-// crash test - XFAIL *-*-*
 
 struct foo {
   template <class T> void bar();
 };
 
-template void foo::bar<void>(); // gets bogus error - ICE - XFAIL *-*-*
+template void foo::bar<void>(); // { dg-bogus "" "" { xfail *-*-* } }  - ICE - 

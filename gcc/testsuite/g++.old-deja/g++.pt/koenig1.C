@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 18 Aug 2000 <nathan@codesourcery.com>
@@ -12,11 +12,11 @@ struct A {
 template <int s>
 static void g();
 template <int s>
-void f();         // ERROR - candiate
+void f();         // { dg-error "" } candiate
 
 static void f_plus ()
   {
-    foo (f<0>);   // ERROR - no match
+    foo (f<0>);   // { dg-error "" } no match
     foo (g<0>);
   }
 };

@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -fpermissive -w
+// { dg-do assemble  }
+// { dg-options "-fpermissive -w" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 char foo[26];

@@ -1,7 +1,6 @@
-// Build don't link: 
-// Special g++ Options: -g
+// { dg-do assemble { xfail sparc64-*-elf } }
+// { dg-options "-g" }
 // GROUPS passed old-abort
-// excess errors test - XFAIL sparc64-*-elf
 extern "C" { typedef int jmp_buf[12]; }
 
 enum Error { NO_ERROR };

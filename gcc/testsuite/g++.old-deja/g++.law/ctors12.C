@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed constructors
 #include <cstdio>
 #include <cstdlib>

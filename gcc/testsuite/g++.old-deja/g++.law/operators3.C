@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed operators
 // opr-pl file
 // Message-Id: <9212010409.AA24967@zeus.research.otc.com.au>

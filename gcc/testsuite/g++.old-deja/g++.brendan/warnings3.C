@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -O2 -Wall
+// { dg-do assemble  }
+// { dg-options "-O2 -Wall" }
 // GROUPS passed warnings
 class A {
 int i;

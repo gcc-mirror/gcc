@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Test for proper merging of functions from multiple using directives.
 
-// Build don't link:
 
 namespace standard 
 { void print(int) {}

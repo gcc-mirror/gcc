@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "" }
 // Check association of {error} for Koenig lookup
-// Special g++ Options:
 
 struct QString { operator void * (); };
 int foo()

@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // 981203 bkoz
 // g++/15799  test1
-// Build don't link:
 
 /* 
 15799.cpp: In function `void foo()':
@@ -15,15 +15,15 @@ typedef unsigned long uint_32;
 class sanjose {
 public:
    sanjose();
-   sanjose(const sanjose&);  // ERROR - candidate
-   sanjose(int_8 value);  // ERROR -  // ERROR -
-   sanjose(uint_32 value);  // ERROR -  // ERROR -
+   sanjose(const sanjose&);  // { dg-error "" } candidate
+   sanjose(int_8 value);  // { dg-error "" }  // ERROR -
+   sanjose(uint_32 value);  // { dg-error "" }  // ERROR -
 };
 
 enum { first, last};
 
 void foo(void) {
-  sanjose obj(first); // ERROR -  // ERROR -
+  sanjose obj(first); // { dg-error "" }  // ERROR -
 }
 
 

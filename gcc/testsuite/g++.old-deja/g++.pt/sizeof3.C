@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Adapted from testcase by Oskar Enoksson <osken393@student.liu.se>
 
 extern "C" void abort();

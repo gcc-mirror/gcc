@@ -1,3 +1,4 @@
+// { dg-do run  }
 class dummy                             { public: void operator++(void) {}
                      };
 class dummy_000 : private virtual dummy { public: void operator++(void) {

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: g++ dies.
-// Build don't link:
 
 class cl {
 public:
@@ -8,7 +8,7 @@ public:
 private:
   union {
     float vf;
-    struct ff { // ERROR - nested class in anonymous union
+    struct ff { // { dg-error "" } nested class in anonymous union
       void *ptr;
       char *name;
       int sz;

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // All the pointer_to_binary_function cases used to fail because g++
 // couldn't handle converting an overloaded function to a class type.
 // The first one should still fail because it requires an implicit conversion
@@ -27,7 +28,7 @@ int main()
   sort( a.begin(), a.end(), compare<int> );
   sort<vector<int>::iterator,
        pointer_to_binary_function<const Expr<int>, const Expr<int>, bool> >
-    ( a.begin(), a.end(), compare ); // ERROR - constructor is explicit
+    ( a.begin(), a.end(), compare ); // { dg-error "" } constructor is explicit
   sort( a.begin(), a.end(),
 	ptr_fun<const Expr<int>, const Expr<int>, bool> (compare) );
   sort( a.begin(), a.end(),

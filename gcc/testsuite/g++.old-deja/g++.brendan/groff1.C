@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed groff
 /* This should compile properly with the new overloading scheme.  */
 

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Test resolution of templatized overloaded constructors.
 // The more specialized constructor, i.e., A (const B<Dim1,Dim2> &b)
 // should be chosen per \S 14.5.5.2/2 [temp.func.order/2].

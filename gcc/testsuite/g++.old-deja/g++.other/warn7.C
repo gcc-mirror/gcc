@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -W -Wall
+// { dg-do assemble  }
+// { dg-options "-W -Wall" }
 // 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 26 April 2001 <nathan@codesourcery.com>
@@ -35,11 +35,11 @@ struct Y
 void bar (int);
 
 Y::Y(int i)
-{ // WARNING - unused parameter
+{ // { dg-warning "" } unused parameter
 }
 void Y::bar (int i) 
-{ // WARNING - unused parameter
+{ // { dg-warning "" } unused parameter
 }
 void bar (int i)
-{ // WARNING - unused parameter
+{ // { dg-warning "" } unused parameter
 }

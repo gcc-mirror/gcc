@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <sys/types.h>
 #include <algorithm>
 typedef short _eb91_int16_t;

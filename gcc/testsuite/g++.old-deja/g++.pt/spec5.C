@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T>
 void f(T t1, T t2);
@@ -13,8 +13,8 @@ template void g(int i, int j);
 
 void h()
 {
-  f(3, 'c'); // ERROR - no matching function
-  g(3, 'c'); // ERROR - no matching function
+  f(3, 'c'); // { dg-error "" } no matching function
+  g(3, 'c'); // { dg-error "" } no matching function
 }
 
 

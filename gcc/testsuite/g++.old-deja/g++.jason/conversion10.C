@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 9019
 // Bug: g++ doesn't find conversion to const char *.
-// Build don't link:
 
 struct String {
   String ();

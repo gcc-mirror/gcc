@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed ARM-compliance
 // arm file
 // Message-Id: <199301272139.AA25489@world.std.com>

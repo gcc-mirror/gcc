@@ -1,8 +1,9 @@
+// { dg-do link  }
+// { dg-options "-frepo" }
 // Test that collect2 isn't confused by GNU ld's "In function `foo':" message.
 // Contributed by Jason Merrill <jason@cygnus.com>
 
 // Build then link:
-// Special g++ Options: -frepo
 
 template <class T>
 T f (T t)

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
 class bar
@@ -27,5 +27,5 @@ void foo::a()
 {
     typedef void(foo::*t)();
     t c = & foo::b;
-    d = (T) c;			// WARNING - pointer to member cast
+    d = (T) c;			// { dg-warning "" } pointer to member cast
 }

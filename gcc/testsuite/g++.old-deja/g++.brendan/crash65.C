@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 class X {
 public:  
@@ -8,7 +8,7 @@ public:
 
 class Y : public X {
 public:
-  using X::xy;// ERROR -  no memb.*
+  using X::xy;// { dg-error "" }  no memb.*
 
-  using X::z;// ERROR -  no memb.*
+  using X::z;// { dg-error "" }  no memb.*
 };

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Simple testcase for access control.
-// Build don't link:
 
 class A {
 protected:

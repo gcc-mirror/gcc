@@ -1,3 +1,4 @@
+// { dg-do run  }
 #define INC_FUNCTIONAL  1
 #define USE_STATIC_CAST 1
 

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Submitted by Sebastian Ritterbusch <uabp@rz.uni-karlsruhe.de>
 
@@ -6,7 +6,7 @@
 
 void athrow(const ANY & e) throw(ANY)
 {
-   throw e; // gets bogus error - discarding const
+   throw e; // { dg-bogus "" } discarding const
 }
 
 int main(void)

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 24 Nov 2000 <nathan@codesourcery.com>
@@ -7,5 +7,5 @@
 
 struct X
 {
-  bool operator (const X &) const;  // ERROR - parse error
+  bool operator (const X &) const;  // { dg-error "" } parse error
 };

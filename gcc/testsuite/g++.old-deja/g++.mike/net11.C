@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -pedantic-errors
+// { dg-do assemble  }
+// { dg-options "-pedantic-errors" }
 
 struct Foo {
   char *p;

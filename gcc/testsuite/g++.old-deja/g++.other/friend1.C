@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // f() should be able to access B::j, as of FDIS [class.protected]/1
 
 // Subject: Re: [bug] Inheritance and friend access control broken
@@ -22,7 +22,7 @@ struct R;
 
 class B {
 protected:
-  int i; // ERROR - in this context
+  int i; // { dg-error "" } in this context
   static int j;
 };
 
@@ -51,7 +51,7 @@ D d;
 
 void f()
 {
-    b.i = 3; // ERROR - protected
+    b.i = 3; // { dg-error "" } protected
     d.i = 4;
     B::j = 5;
     D::j = 6;
@@ -60,7 +60,7 @@ void f()
 template <typename T>
 void g()
 {
-    b.i = 3; // ERROR - protected
+    b.i = 3; // { dg-error "" } protected
     d.i = 4;
     B::j = 5;
     D::j = 6;
@@ -70,7 +70,7 @@ template void g<int>();
 
 void S::h()
 {
-  b.i = 3; // ERROR - protected
+  b.i = 3; // { dg-error "" } protected
   d.i = 4;
   B::j = 5;
   D::j = 6;
@@ -79,7 +79,7 @@ void S::h()
 template <typename T>
 void R<T>::h() 
 {
-  b.i = 3; // ERROR - protected
+  b.i = 3; // { dg-error "" } protected
   d.i = 4;
   B::j = 5;
   D::j = 6;

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 6275
 // Bug: unification fails for call to find_parameter_in_stack.
 

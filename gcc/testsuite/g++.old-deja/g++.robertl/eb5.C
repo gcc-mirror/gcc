@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 enum { a, b };
 
 class Bug {

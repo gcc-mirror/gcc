@@ -1,5 +1,4 @@
-// Build don't link:
-// crash test - XFAIL *-*-*
+// { dg-do assemble { xfail *-*-* } }
 // regression test -
 
 // by Paul Burchard <burchard@pobox.com>, Level Set Systems, Inc.
@@ -12,7 +11,7 @@ struct X {
 };
 template<class A>
 struct Y {
-	static X<A> x(A(1)); // ERROR - ANSI C++ forbids in-class initialization of non-const static member `x'
+	static X<A> x(A(1)); // { dg-error "" } ANSI C++ forbids in-class initialization of non-const static member `x'
 };
 Y<int> y;
 

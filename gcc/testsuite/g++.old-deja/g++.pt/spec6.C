@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct S1
 {
@@ -24,8 +24,8 @@ void S2<char>::f(int i1, int i2);
 void h()
 {
   S1 s1;
-  s1.f(3, 'c'); // ERROR - no matching function
+  s1.f(3, 'c'); // { dg-error "" } no matching function
 
   S2<char> s2;
-  s2.f(3, 'c'); // ERROR - no matching function
+  s2.f(3, 'c'); // { dg-error "" } no matching function
 }

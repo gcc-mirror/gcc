@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 
 template <class T>
 int f(int (*fn)(T))

@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -Wall
+// { dg-do assemble  }
+// { dg-options "-Wall" }
 // GROUPS passed warnings
 bool foo(unsigned char c)
 {

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Check that object call works when there are multiple conversion ops
 // returning the same type.
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: kol@world.std.com (Nikolay Yatsenko)
@@ -11,11 +11,11 @@ int x;
 int main(void)
 {
   static int s;
-  int x; // ERROR - declared
+  int x; // { dg-error "" } declared
   extern int g();
 
   struct local {
-    int g() { return x; }   // illegal (non-static x); g++ does not give error// ERROR - 
+    int g() { return x; }   // illegal (non-static x); g++ does not give error// { dg-error "" } 
     int h() { return s; }   // ok, but g++ give error
   };
   return 0;

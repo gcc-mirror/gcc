@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 4257
 // Bug: g++ ignores non-member possibilities (ideal_candidate_ansi bug)
-// Build don't link:
 
 class ostream 
 {

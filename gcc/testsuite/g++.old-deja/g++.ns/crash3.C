@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 namespace N {
   template <class T> struct S;
@@ -6,5 +6,5 @@ namespace N {
 
 void f()
 {
-  N::S(); // ERROR - invalid use of template
+  N::S(); // { dg-error "" } invalid use of template
 }

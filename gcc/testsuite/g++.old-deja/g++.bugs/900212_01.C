@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900212_01
 
 // g++ fails to flag as errors all attempts to add or subtract integer values
@@ -20,19 +21,19 @@ int (struct0::*fp1) ();
 
 void global_function_0 ()
 {
-  p0 = p1 + 3;			// ERROR - 
-  p0 = p1 - 3;			// ERROR - 
-  p1++;				/* ERROR - caught by g++ */
-  ++p1;				/* ERROR - caught by g++ */
-  p1--;				/* ERROR - caught by g++ */
-  --p1;				/* ERROR - caught by g++ */
+  p0 = p1 + 3;			// { dg-error "" } 
+  p0 = p1 - 3;			// { dg-error "" } 
+  p1++;				/* { dg-error "" } caught by g++ */
+  ++p1;				/* { dg-error "" } caught by g++ */
+  p1--;				/* { dg-error "" } caught by g++ */
+  --p1;				/* { dg-error "" } caught by g++ */
 
-  fp0 = fp1 + 3;		// ERROR - 
-  fp0 = fp1 - 3;		// ERROR - 
-  fp1++;			/* ERROR - */
-  ++fp1;			/* ERROR - */
-  fp1--;			/* ERROR - */
-  --fp1;			/* ERROR - */
+  fp0 = fp1 + 3;		// { dg-error "" } 
+  fp0 = fp1 - 3;		// { dg-error "" } 
+  fp1++;			/* { dg-error "" } */
+  ++fp1;			/* { dg-error "" } */
+  fp1--;			/* { dg-error "" } */
+  --fp1;			/* { dg-error "" } */
 }
 
 int main () { return 0; }

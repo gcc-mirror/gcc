@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Bug: g++ fails to catch incompatibilities in the parameter lists when
 // assigning.
-// Build don't link:
 
 typedef struct S *type_p;
 typedef struct S const *ctype_p;
@@ -11,9 +11,9 @@ type_p callee (type_p arg) { return 0; }
 
 void foobar ()
 {
-  static PF p = callee;		// ERROR - 
+  static PF p = callee;		// { dg-error "" } 
 
-  p = callee;			// ERROR - 
+  p = callee;			// { dg-error "" } 
 }
 
-PF pp = callee;			// ERROR - 
+PF pp = callee;			// { dg-error "" } 

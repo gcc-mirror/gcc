@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 namespace A{
   enum foo{a,b,c};
 }

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed arg-matching
 // arg-matching file
 // Message-Id: <199405132049.QAA06835@elan.cs.UMD.EDU>

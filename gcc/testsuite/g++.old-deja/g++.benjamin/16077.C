@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // 981203 bkoz
 // g++/16077
-// Build don't link: 
 
 class nicaragua;
 struct colombia {
@@ -20,7 +20,7 @@ public:
 void peace(const colombia&);
 
 void foo(nicaragua& b) {
-  peace(b); // WARNING - // WARNING -
+  peace(b); // { dg-warning "" } // WARNING -
 }
 
 

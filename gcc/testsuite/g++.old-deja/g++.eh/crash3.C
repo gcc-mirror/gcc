@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Marc Espie <Marc.Espie@liafa.jussieu.fr>
 // Used to use -fsjlj-exceptions, but that isn't an option anymore.
 

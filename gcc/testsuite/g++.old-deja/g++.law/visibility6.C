@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: Rob Hasker <hasker@sparc0a.cs.uiuc.edu>
@@ -8,7 +8,7 @@
 class Top {
 public:
     Top() {}
-      void val() {} // ERROR - private base class
+      void val() {} // { dg-error "" } private base class
 };
 
 class Derived : private Top {
@@ -19,5 +19,5 @@ public:
 class Unrelated {
     Derived derived;
 public:
-    void oops() { derived.val(); }// ERROR - .*
+    void oops() { derived.val(); }// { dg-error "" } .*
 };

@@ -1,6 +1,7 @@
+// { dg-do assemble  }
 struct A {
   A();
-  A(A);				// ERROR - copy ctor must take reference
+  A(A);				// { dg-error "" } copy ctor must take reference
 };
 int main()
 {

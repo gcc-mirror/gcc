@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // 981204 bkoz
 // g++/17922
-// Build don't link:
 
 class base { };
 

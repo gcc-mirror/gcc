@@ -1,8 +1,8 @@
-// Build don't link:
+// { dg-do assemble  }
 
 static inline void strlen (const char *) { }
 
 void f ()
 {
-  strlen("Hi");			// gets bogus error - wrongful overload
+  strlen("Hi");			// { dg-bogus "" } wrongful overload
 }

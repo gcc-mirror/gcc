@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 
 int f1 () {
   struct A {

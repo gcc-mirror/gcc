@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed miscellaneous
 // used to say invalid lvalue in `&\'
 class foo {

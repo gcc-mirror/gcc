@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Testcase for explicit instantiation of templates.
-// Build don't link:
 
 template <class T>
 class A {

@@ -1,4 +1,4 @@
-//Build don't link:
+// { dg-do assemble  }
 struct cl_heap_ring{
     void operator delete (void* ptr) { }
     cl_heap_ring ()

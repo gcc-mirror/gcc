@@ -1,5 +1,5 @@
-// Build don't run:
-// Special g++ Options: -O2
+// { dg-do link  }
+// { dg-options "-O2" }
 
 class foo
 {

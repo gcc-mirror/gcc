@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Produces ICE 980519.
 // Test case from Dirk Engelmann <Dirk.Engelmann@IWR.Uni-Heidelberg.De>
 

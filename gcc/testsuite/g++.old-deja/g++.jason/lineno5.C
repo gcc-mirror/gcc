@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed error-reporting
 // Bug: incomplete instantiation messes with lineno
 template <class T> class A;
@@ -6,5 +6,5 @@ template <class T> class A;
 int main()
 {
   A<int> *p;
-  undef1();// ERROR - 
+  undef1();// { dg-error "" } 
 }

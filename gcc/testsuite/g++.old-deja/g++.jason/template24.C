@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ doesn't find the conversion from ostream_withassign to ostream.
 
 #include <iostream>

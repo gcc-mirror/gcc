@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Loring Holden <lsh@lsh.cs.brown.edu>
 
 template <class T>

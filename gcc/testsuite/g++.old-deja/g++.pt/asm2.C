@@ -1,6 +1,5 @@
-// Build don't link:
+// { dg-do assemble { target i?86-*-linux* } }
 // Origin: "Weidmann, Nicholas" <nicholas.weidmann@swx.ch>
-// Skip if not target: i?86-*-linux*
 
 typedef void (function_ptr)(int);
 

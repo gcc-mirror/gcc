@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Origin: David Margery <David.Margery@irisa.fr>
 

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Reported by Bruce Eckel <Bruce@EckelObjects.com>
 

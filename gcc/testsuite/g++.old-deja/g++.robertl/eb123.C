@@ -1,5 +1,5 @@
-// Special g++ Options: -O2 -W   
-// Build don't link: 
+// { dg-do assemble  }
+// { dg-options "-O2 -W   " }
 #include "stdio.h"
 
 void writeNote() throw( int )

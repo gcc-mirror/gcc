@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Kriang Lerdsuwanakij <lerdsuwa@users.sourceforge.net>
 
 template <template <class> class TT> class X {};

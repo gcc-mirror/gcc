@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Bug: g++ ignores the :: qualification and dies trying to treat an integer
 // variable as a list of functions.
-// Build don't link:
 
 class DComplex {
 public:

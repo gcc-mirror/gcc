@@ -1,6 +1,5 @@
-// Build don't link:
-// Special g++ flags: -O
-// crash test - XFAIL i*86-*-linux*
+// { dg-do assemble { xfail i*86-*-linux* } }
+// { dg-options "-O" }
 
 // Posted by H. J. Lu <hjl@lucon.org>
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that we properly evaluate the object parameter when accessing static
 // members.
 

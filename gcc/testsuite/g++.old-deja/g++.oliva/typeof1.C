@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble { xfail *-*-* } }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -14,7 +14,6 @@ template <class T> void foo(T b) {
   typedef T t1;
   b.t1::i; // ok
   typedef __typeof__(b) t2;
-  b.t2::i; // crash test - XFAIL *-*-*
 }
 
 template void foo(B); // not needed for the crash

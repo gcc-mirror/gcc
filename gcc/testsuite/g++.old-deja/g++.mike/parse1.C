@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 enum { name1 };
 struct name0 { };

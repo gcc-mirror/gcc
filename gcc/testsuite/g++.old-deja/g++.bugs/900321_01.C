@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900321_01
 
 // cfront flags ERRORs on each of the lines indicated below. g++ does not
@@ -19,11 +20,11 @@ void function_0 ()
 {
   // we miss the first two because typeck.c (comp_array_types) deems
   // it okay if one of the sizes is null
-  ptr_to_array_of_ints = ptr_to_array_of_3_ints;	// ERROR - 
-  ptr_to_array_of_3_ints = ptr_to_array_of_ints;	// ERROR - 
+  ptr_to_array_of_ints = ptr_to_array_of_3_ints;	// { dg-error "" } 
+  ptr_to_array_of_3_ints = ptr_to_array_of_ints;	// { dg-error "" } 
 
-  ptr_to_array_of_3_ints = ptr_to_array_of_5_ints;	// ERROR - 
-  ptr_to_array_of_5_ints = ptr_to_array_of_3_ints;	// ERROR - 
+  ptr_to_array_of_3_ints = ptr_to_array_of_5_ints;	// { dg-error "" } 
+  ptr_to_array_of_5_ints = ptr_to_array_of_3_ints;	// { dg-error "" } 
 }
 
 int main () { return 0; }

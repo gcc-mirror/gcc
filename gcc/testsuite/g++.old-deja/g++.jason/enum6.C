@@ -1,4 +1,5 @@
-// Special g++ Options: -fshort-enums
+// { dg-do run  }
+// { dg-options "-fshort-enums" }
 
 #include <limits.h>
 

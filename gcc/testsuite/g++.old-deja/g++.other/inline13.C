@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Alexandre Oliva <aoliva@cygnus.com>
 
 struct foo {

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed gb scope
 template<class T, int N> class fixed_array {
 public:

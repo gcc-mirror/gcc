@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed code-generation
 // Check that sub-word sized structs/classes are passed correctly
 // if the struct/class has a constructor (i.e. ANY constructor).

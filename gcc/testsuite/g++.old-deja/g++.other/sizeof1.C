@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jason Merrill <jason@cygnus.com>
 
 struct X {
@@ -8,5 +8,5 @@ struct X {
 
 void f(int i)
 {
-  i = sizeof(X::f); // ERROR - cannot take sizeof a member function
+  i = sizeof(X::f); // { dg-error "" } cannot take sizeof a member function
 }

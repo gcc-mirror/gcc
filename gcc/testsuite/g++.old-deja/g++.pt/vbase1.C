@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Check that template classes handle inherited virtual bases
 // properly, initializing them before direct non-virtual bases.
 

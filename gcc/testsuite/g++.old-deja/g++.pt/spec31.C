@@ -1,2 +1,3 @@
-template <> struct A {};	// ERROR - not a specialization
-template <> void f ();		// ERROR - not a specialization
+// { dg-do assemble  }
+template <> struct A {};	// { dg-error "" } not a specialization
+template <> void f ();		// { dg-error "" } not a specialization

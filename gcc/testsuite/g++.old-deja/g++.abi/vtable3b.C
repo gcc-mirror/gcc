@@ -1,8 +1,10 @@
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// { dg-do run  }
+// { dg-gpp-additional-files "vtable3.h" }
+
+// Copyright (C) 2000, 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 4 February 2001 <nathan@codesourcery.com>
 
 // Check constructor vtables work.
-// Additional files: vtable3.h
 
 #define B1_EMPTY
 #define B2_EMPTY

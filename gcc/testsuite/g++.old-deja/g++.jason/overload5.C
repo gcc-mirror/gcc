@@ -1,4 +1,5 @@
+// { dg-do assemble  }
 // Testcase for simple overloading resolution.
 
-int foo ();			// ERROR - 
-void foo ();			// ERROR - disallowed overload
+int foo ();			// { dg-error "" } 
+void foo ();			// { dg-error "" } disallowed overload

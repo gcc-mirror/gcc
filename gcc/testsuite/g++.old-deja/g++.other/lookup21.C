@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Check that we don't complain about ambiguity between the same static
 // member function in different subobjects.
 

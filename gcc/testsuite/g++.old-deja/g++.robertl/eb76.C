@@ -1,4 +1,4 @@
-//Build don't link:
+// { dg-do assemble  }
 // the template operator!= interferes.  It should be in a namespace.
 
 #include <utility>

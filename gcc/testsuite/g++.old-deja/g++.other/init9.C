@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Based on a testcase submitted by Tudor Hulubei <tudor@cs.unh.edu>
 
@@ -13,9 +13,9 @@ struct A {
 };
 
 void a() {
-  goto bar; // ERROR - jump from here
-  A x; // ERROR - jump crosses initialization
- bar: // ERROR - jump to here
+  goto bar; // { dg-error "" } jump from here
+  A x; // { dg-error "" } jump crosses initialization
+ bar: // { dg-error "" } jump to here
   ;
 }
 
@@ -24,17 +24,17 @@ struct X {
 };
 
 void b() {
-  goto bar; // ERROR - jump from here
-  X x; // ERROR - jump crosses initialization
- bar: // ERROR - jump to here
+  goto bar; // { dg-error "" } jump from here
+  X x; // { dg-error "" } jump crosses initialization
+ bar: // { dg-error "" } jump to here
   ;
 }
 
 #include <vector>
 
 void c() {
-  goto bar; // ERROR - jump from here
-  std::vector<int> x; // ERROR - jump crosses initialization
- bar: // ERROR - jump to here
+  goto bar; // { dg-error "" } jump from here
+  std::vector<int> x; // { dg-error "" } jump crosses initialization
+ bar: // { dg-error "" } jump to here
   ;
 }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Based on testcase by adriang@campbellsoft.com
 
@@ -14,4 +14,4 @@ struct Null {
 int *pd = NULL;
 int (*pf)() = NULL;
 int Null::*pmd = NULL;
-int (Null::*pmf)() = NULL; // gets bogus error - cannot convert - XFAIL *-*-*
+int (Null::*pmf)() = NULL; // { dg-bogus "" "" { xfail *-*-* } }  - cannot convert - 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed enums
 // enum file
 // From: frode@auticon.no
@@ -12,8 +12,8 @@ class field {
 private:
   TOGGLE toggle;
 public:
-  virtual void on(void) { toggle = 3; };// ERROR - .*
-  virtual void off(void) { toggle = on; };// ERROR - .*
+  virtual void on(void) { toggle = 3; };// { dg-error "" } .*
+  virtual void off(void) { toggle = on; };// { dg-error "" } .*
 };
 
 int main()

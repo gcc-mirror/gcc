@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for handling of type shadowing in function scope.
 
 int main()

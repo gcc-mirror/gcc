@@ -1,9 +1,9 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 class bottom
 {
 public:
-  int b; // ERROR - private
+  int b; // { dg-error "" } private
 };
 class middle : private bottom
 {
@@ -13,5 +13,5 @@ public:
 class top : public middle
 {
 public:
-  void bar () { b; }// ERROR - .*
+  void bar () { b; }// { dg-error "" } .*
 };

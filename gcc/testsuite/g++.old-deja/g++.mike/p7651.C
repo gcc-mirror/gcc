@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 7651
 
 int fail = 0;

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed enums
 // enum file
 // From: dougm@cs.rice.edu (Doug Moore)
@@ -11,7 +11,7 @@ enum Enum {enumerator1, enumerator2};
 struct Struct
 {
   int i;
-      int getI(Enum) {return i;} // ERROR - candidates
+      int getI(Enum) {return i;} // { dg-error "" } candidates
 };
 
 int funct (Enum)
@@ -23,7 +23,7 @@ int main()
 {
   Enum e = enumerator1;
   Struct s;
-  int x = funct(e+1);// ERROR - .*
-  int y = s.getI(e+1);// ERROR - .*
+  int x = funct(e+1);// { dg-error "" } .*
+  int y = s.getI(e+1);// { dg-error "" } .*
   return x+y;
 }

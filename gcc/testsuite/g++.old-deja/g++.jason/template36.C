@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testcase for implicit 'typename' and resolution of 'typename's in the
 // current scope.
 

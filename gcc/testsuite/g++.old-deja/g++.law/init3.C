@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed initialization
 // init file
 // From: thayer@moose.cs.columbia.edu (Charles Thayer)
@@ -8,5 +8,5 @@
 
 int main() {
 int offset;
-char buf[offset]=""; // ERROR - ansi forbids variable arrays
+char buf[offset]=""; // { dg-error "" } ansi forbids variable arrays
 }

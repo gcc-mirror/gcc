@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Check to make sure we align virtual base classes properly
 
 class eel_base {

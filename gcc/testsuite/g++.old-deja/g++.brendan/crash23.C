@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 // This used to die in chainon; it shouldn't any more.
 
@@ -10,6 +10,6 @@ public:
     void f ();
     void g (int);
   };
-  void B::f () {}// ERROR - .*
-  void B::g (int val) {}// ERROR - .*
+  void B::f () {}// { dg-error "" } .*
+  void B::g (int val) {}// { dg-error "" } .*
 };

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class A {
 public:
@@ -21,14 +21,14 @@ void h() {}
 int main() {
   g<&A::f>();
   h<&A::i>();
-  g<&B::f>(); // ERROR - 
-  h<&B::j>(); // ERROR - 
-  g<(void (A::*)()) &A::f>(); // ERROR - 
-  h<(int A::*) &A::i>(); // ERROR - 
-  g<(void (A::*)()) &B::f>(); // ERROR - 
-  h<(int A::*) &B::j>(); // ERROR - 
-  g<(void (A::*)()) 0>(); // ERROR - 
-  h<(int A::*) 0>(); // ERROR - 
+  g<&B::f>(); // { dg-error "" } 
+  h<&B::j>(); // { dg-error "" } 
+  g<(void (A::*)()) &A::f>(); // { dg-error "" } 
+  h<(int A::*) &A::i>(); // { dg-error "" } 
+  g<(void (A::*)()) &B::f>(); // { dg-error "" } 
+  h<(int A::*) &B::j>(); // { dg-error "" } 
+  g<(void (A::*)()) 0>(); // { dg-error "" } 
+  h<(int A::*) 0>(); // { dg-error "" } 
 
   return 0;
 }

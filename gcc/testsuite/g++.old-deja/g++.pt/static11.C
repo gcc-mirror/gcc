@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ was failing to destroy C<int>::a because it was using two
 // different sentry variables for construction and destruction.
 //

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // GROUPS passed templates membertemplates
 template<class P_numtype, int N_length>
 class TinyVector {};

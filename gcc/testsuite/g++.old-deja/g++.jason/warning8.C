@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct A {
   A();
@@ -13,5 +13,5 @@ struct B {
 const B& f ()
 {
   A a;
-  return a;			// WARNING - returning reference to temporary
+  return a;			// { dg-warning "" } returning reference to temporary
 }

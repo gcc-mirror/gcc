@@ -1,9 +1,9 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct S
 {
   void f()
     {
-      const int i; // ERROR - uninitialized const
+      const int i; // { dg-error "" } uninitialized const
     }
 };

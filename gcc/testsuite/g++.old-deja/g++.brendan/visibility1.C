@@ -1,8 +1,8 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 class foo {
 protected:
-  int i; // ERROR - protected
+  int i; // { dg-error "" } protected
 };
 
 class bar : public foo {
@@ -12,5 +12,5 @@ public:
 
 void baz (foo *f)
 {
-  f->i = 1;	// error: i is protected// ERROR - .*
+  f->i = 1;	// error: i is protected// { dg-error "" } .*
 }

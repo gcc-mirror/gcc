@@ -1,7 +1,7 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed error-messages
 class foo {
 public:
-  ~bar () {}// ERROR -  destructor `bar' must match class name `foo'.*
+  ~bar () {}// { dg-error "" }  destructor `bar' must match class name `foo'.*
 };
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed bad-errors
 // bad-error file
 // Message-Id: <9301081103.AA29469@jclark.com>

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // check EH with templates
 extern "C" void abort ();
 extern "C" void exit (int);

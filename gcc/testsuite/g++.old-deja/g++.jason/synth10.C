@@ -1,5 +1,5 @@
-// Special g++ Options: -O
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-O" }
 // Bug: Synthesizing methods for the nested class screwed up current_class_decl
 // for the outer class.
 

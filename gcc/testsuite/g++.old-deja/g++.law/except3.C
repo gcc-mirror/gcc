@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -fexceptions
+// { dg-do assemble  }
+// { dg-options "-fexceptions" }
 // GROUPS passed exceptions
 // except file
 // Message-Id: <9211301118.AA09810@ss670mp.geco.slb.com>

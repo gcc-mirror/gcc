@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 // Origin: scott snyder <snyder@fnal.gov>
 
 struct Cleaner

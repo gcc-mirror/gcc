@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: scott snyder <snyder@fnal.gov>
 
 class complex

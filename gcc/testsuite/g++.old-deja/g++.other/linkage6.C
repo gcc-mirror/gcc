@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -fno-weak
+// { dg-do assemble  }
+// { dg-options "-fno-weak" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 template <typename T>
