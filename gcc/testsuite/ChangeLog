@@ -1,5 +1,10 @@
 2004-07-30  Aldy Hernandez  <aldyh@redhat.com>
 
+	* gcc.dg/vmx/vmx.exp: Explain why we skip tests for
+	powerpc-eabispe.
+
+2004-07-30  Aldy Hernandez  <aldyh@redhat.com>
+
 	* gcc.dg/vmx/vmx.exp: Disable tests for eabispe.
 
 2004-07-30  Richard Sandiford  <rsandifo@redhat.com>
