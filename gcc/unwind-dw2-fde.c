@@ -170,7 +170,7 @@ __deregister_frame_info_bases (void *begin)
 
   /* If .eh_frame is empty, we haven't registered.  */
   if (*(uword *)begin == 0)
-    return;
+    return ob;
 
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
