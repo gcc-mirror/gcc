@@ -16,4 +16,4 @@ void S<T>::f ()
   U& u; // ERROR - uninitialized reference
 }
 
-template void S<int>::f<double>(); // ERROR - instantiated from here
+template void S<int>::f<double>();

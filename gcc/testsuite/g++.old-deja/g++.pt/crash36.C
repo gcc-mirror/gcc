@@ -32,4 +32,4 @@ struct list {
 	(list_iterator<T>(Head->next())); }
 };
 
-template class list<int>; // ERROR - instantiated from here
+template class list<int>;

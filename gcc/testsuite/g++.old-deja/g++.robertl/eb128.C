@@ -7,5 +7,5 @@ public:
 
 void f()
 {
-  A<int&> a; // ERROR - instantiated from here
+  A<int&> a;
 }

@@ -6,8 +6,8 @@ void f (int i)
 {
   struct S { void g (int j = i) {} }; // ERROR - default argument uses local
 
-  S s; // ERROR - instantiated here
+  S s;
 }
 
-template void f<double>(int); // ERROR - instantiated here
+template void f<double>(int);
 

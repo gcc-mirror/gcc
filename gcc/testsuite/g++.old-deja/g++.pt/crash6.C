@@ -19,5 +19,5 @@ struct List
 
 void test(List<int>& vals)
 {
-  vals.length();  // ERROR - instantiated from here
+  vals.length();
 }
