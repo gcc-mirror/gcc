@@ -185,14 +185,10 @@ default_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 bool
 default_pretend_outgoing_varargs_named(CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 {
-#ifdef PRETEND_OUTGOING_VARARGS_NAMED
-  return PRETEND_OUTGOING_VARARGS_NAMED;
-#else
 #ifdef SETUP_INCOMING_VARARGS
   return 1;
 #else
   return (targetm.calls.setup_incoming_varargs != default_setup_incoming_varargs);
-#endif
 #endif
 }
 
