@@ -1,5 +1,10 @@
 2003-09-08  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11786
+	* decl2.c (add_function): Do not complain about seeing the same
+	non-function twice.
+	* semantics.c (perform_koenig_lookup): Improve documentation.
+
 	PR c++/5296
 	* pt.c (try_one_overload): Add addr_p parameter.
 	(resolve_overloaded_unification): Pass it.

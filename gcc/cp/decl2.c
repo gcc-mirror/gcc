@@ -3505,6 +3505,8 @@ add_function (struct arg_lookup *k, tree fn)
   /* We must find only functions, or exactly one non-function.  */
   if (!k->functions) 
     k->functions = fn;
+  else if (fn == k->functions)
+    ;
   else if (is_overloaded_fn (k->functions) && is_overloaded_fn (fn))
     k->functions = build_overload (fn, k->functions);
   else
