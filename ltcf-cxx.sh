@@ -2,7 +2,7 @@
 
 # ltcf-cxx.sh - Create a C++ compiler specific configuration
 #
-# Copyright (C) 1996-1999,2000 Free Software Foundation, Inc.
+# Copyright (C) 1996-1999, 2000, 2001 Free Software Foundation, Inc.
 # Originally by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
 #
 # Original C++ support by:Gary V. Vaughan <gvv@techie.com>
@@ -141,6 +141,12 @@ case "$host_os" in
     # Exported symbols can be pulled into shared objects from archives
     whole_archive_flag_spec=' '
     build_libtool_need_lc=yes
+
+    # We don't want to build shared libraries on unknown CPU types.
+    case $host_cpu in
+    powerpc | rs6000) ;;
+    *) ld_shlibs=no ;;
+    esac
     ;;
   chorus*)
     case "$cc_basename" in
