@@ -150,14 +150,14 @@ Boston, MA 02111-1307, USA.  */
 #undef	LINK_SPEC
 #ifdef USE_GNULIBC_1
 #ifndef LINUX_DEFAULT_ELF
-#define LINK_SPEC "-m m68kelf %{shared:-shared} %{symbolic:-shared -Bsymbolic} \
+#define LINK_SPEC "-m m68kelf %{shared} %{symbolic:-shared -Bsymbolic} \
   %{!shared:%{!symbolic: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
       %{!dynamic-linker*:-dynamic-linker /lib/elf/ld-linux.so.1} \
       %{!rpath*:-rpath /lib/elf/}} %{static}}}"
 #else
-#define LINK_SPEC "-m m68kelf %{shared:-shared} %{symbolic:-shared -Bsymbolic} \
+#define LINK_SPEC "-m m68kelf %{shared} %{symbolic:-shared -Bsymbolic} \
   %{!shared:%{!symbolic: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
@@ -165,11 +165,12 @@ Boston, MA 02111-1307, USA.  */
     %{static}}}"
 #endif
 #else
-#define LINK_SPEC "-m m68kelf %{shared:-shared} %{symbolic:-shared -Bsymbolic} \
-  %{!shared:%{!symbolic: \
+#define LINK_SPEC "-m m68kelf %{shared} \
+  %{!shared: \
     %{!static: \
-      %{rdynamic:-export-dynamic}} \
-    %{static}}}"
+      %{rdynamic:-export-dynamic} \
+      %{!dynamic-linker*:-dynamic-linker /lib/ld.so.1}} \
+    %{static}}"
 #endif
 
 /* For compatibility with linux/a.out */
