@@ -1,3 +1,11 @@
+1999-01-13  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* config/i960/i960.c (i960_function_prologue): New code (optimal
+	solution) for saving global registers in local registers.
+	(form_reg_groups, reg_group_compare, split_reg_group): New
+	functions used by the code.
+	(reg_group): New structure definition for the new code.
+	
 Wed Jan 13 20:12:37 1999  Richard Henderson  <rth@cygnus.com>
 
 	* integrate.c (expand_inline_function): Recognize (mem (addressof))
