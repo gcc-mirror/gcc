@@ -6239,12 +6239,19 @@ reposition_prologue_and_epilogue_notes (f)
 			    && NOTE_LINE_NUMBER (note) == NOTE_INSN_PROLOGUE_END)
 			  break;
 		    }
+
 		  next = NEXT_INSN (note);
 		  prev = PREV_INSN (note);
 		  if (prev)
 		    NEXT_INSN (prev) = next;
 		  if (next)
 		    PREV_INSN (next) = prev;
+
+		  /* Whether or not we can depend on basic_block_head, 
+		     attempt to keep it up-to-date.  */
+		  if (basic_block_head[0] == note)
+		    basic_block_head[0] = next;
+
 		  add_insn_after (note, insn);
 		}
 	    }
@@ -6283,7 +6290,14 @@ reposition_prologue_and_epilogue_notes (f)
 		    NEXT_INSN (prev) = next;
 		  if (next)
 		    PREV_INSN (next) = prev;
-		  add_insn_after (note, PREV_INSN (insn));
+
+		  /* Whether or not we can depend on basic_block_head, 
+		     attempt to keep it up-to-date.  */
+		  if (n_basic_blocks
+		      && basic_block_head[n_basic_blocks-1] == insn)
+		    basic_block_head[n_basic_blocks-1] = note;
+
+		  add_insn_before (note, insn);
 		}
 	    }
 	}
