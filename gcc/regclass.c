@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "toplev.h"
 #include "output.h"
+#include "ggc.h"
 
 #ifndef REGISTER_MOVE_COST
 #define REGISTER_MOVE_COST(x, y) 2
