@@ -1,3 +1,8 @@
+2001-11-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* config/locale/moneypunct_members_gnu.cc,
+	include/bits/locale_facets.h: Fix spelling errors.
+
 2001-11-22  Stephen M. Webb  <stephen@bregmasoft.com>
 
         * testsuite/23_containers/list_capacity.cc: New file.

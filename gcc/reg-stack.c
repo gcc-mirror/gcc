@@ -197,7 +197,7 @@ typedef struct block_info_def
   struct stack_def stack_out;	/* Output stack configuration.  */
   HARD_REG_SET out_reg_set;	/* Stack regs live on output.  */
   int done;			/* True if block already converted.  */
-  int predecesors;		/* Number of predecessors that needs
+  int predecessors;		/* Number of predecessors that needs
 				   to be visited.  */
 } *block_info;
 
@@ -458,7 +458,7 @@ reg_to_stack (first, file)
       for (e = bb->pred; e; e=e->pred_next)
 	if (!(e->flags & EDGE_DFS_BACK)
 	    && e->src != ENTRY_BLOCK_PTR)
-	  BLOCK_INFO (bb)->predecesors++;
+	  BLOCK_INFO (bb)->predecessors++;
     }
 
   /* Create the replacement registers up front.  */
@@ -2797,8 +2797,8 @@ convert_regs_2 (file, block)
       for (e = block->succ; e ; e = e->succ_next)
 	if (! (e->flags & EDGE_DFS_BACK))
 	  {
-	    BLOCK_INFO (e->dest)->predecesors--;
-	    if (!BLOCK_INFO (e->dest)->predecesors)
+	    BLOCK_INFO (e->dest)->predecessors--;
+	    if (!BLOCK_INFO (e->dest)->predecessors)
 	       *sp++ = e->dest;
 	  }
     }
