@@ -1,4 +1,4 @@
-2003-10-25  Eric Christopher  <echristo@redhat.com>
+2003-10-30  Eric Christopher  <echristo@redhat.com>
 
 	* function.c (purge_addressof_1): Add case for REG_RETVAL
         notes when modes are unequal.
