@@ -464,7 +464,7 @@ java_init_decl_processing ()
   decimal_int_max = build_int_2 (0x80000000, 0);
   TREE_TYPE (decimal_int_max) = unsigned_int_type_node;
 #if HOST_BITS_PER_WIDE_INT == 64
-  decimal_long_max = build_int_2 (0x8000000000000000, 0);
+  decimal_long_max = build_int_2 (0x8000000000000000LL, 0);
 #else
 #if HOST_BITS_PER_WIDE_INT == 32
   decimal_long_max = build_int_2 (0, 0x80000000);
