@@ -1,5 +1,5 @@
 /* Procedure integration for GNU CC.
-   Copyright (C) 1988, 1991, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -2275,9 +2275,9 @@ copy_rtx_and_substitute (orig, map)
       /* Legitimizing the address here is incorrect.
 
 	 The only ADDRESS rtx's that can reach here are ones created by
-	 save_constants.  Hence the operand of the ADDRESS is always legal
+	 save_constants.  Hence the operand of the ADDRESS is always valid
 	 in this position of the instruction, since the original rtx without
-	 the ADDRESS was legal.
+	 the ADDRESS was valid.
 
 	 The reason we don't legitimize the address here is that on the
 	 Sparc, the caller may have a (high ...) surrounding this ADDRESS.
