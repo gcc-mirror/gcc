@@ -1,3 +1,8 @@
+Mon Aug 31 10:18:52 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc.c (TMASK, UMASK): Use `(unsigned)1' not `1U'.
+	(ultrasparc_sched_init): Remove unneeded &.
+
 Mon Aug 31 10:47:16 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* config/m68k/m68k.h (TARGET_SWITCHES): Don't remove MASK_68040
