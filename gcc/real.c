@@ -89,7 +89,7 @@ netlib.att.com: netlib/cephes.   */
    both mean DFmode.  In this case, the software floating-point
    support available here is activated by writing
       #define REAL_ARITHMETIC
-   in tm.h. 
+   in tm.h.
 
    The case LONG_DOUBLE_TYPE_SIZE = 128 activates TFmode support
    and may deactivate XFmode since `long double' is used to refer
@@ -461,7 +461,7 @@ static void esqrt	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
    swapping ends if required, into output array of longs.  The
    result is normally passed to fprintf by the ASM_OUTPUT_ macros.   */
 
-static void 
+static void
 endian (e, x, mode)
      unsigned EMUSHORT e[];
      long x[];
@@ -558,7 +558,7 @@ endian (e, x, mode)
 
 /* This is the implementation of the REAL_ARITHMETIC macro.  */
 
-void 
+void
 earith (value, icode, r1, r2)
      REAL_VALUE_TYPE *value;
      int icode;
@@ -637,7 +637,7 @@ PUT_REAL (v, value);
 /* Truncate REAL_VALUE_TYPE toward zero to signed HOST_WIDE_INT.
    implements REAL_VALUE_RNDZINT (x) (etrunci (x)).  */
 
-REAL_VALUE_TYPE 
+REAL_VALUE_TYPE
 etrunci (x)
      REAL_VALUE_TYPE x;
 {
@@ -660,7 +660,7 @@ etrunci (x)
 /* Truncate REAL_VALUE_TYPE toward zero to unsigned HOST_WIDE_INT;
    implements REAL_VALUE_UNSIGNED_RNDZINT (x) (etruncui (x)).  */
 
-REAL_VALUE_TYPE 
+REAL_VALUE_TYPE
 etruncui (x)
      REAL_VALUE_TYPE x;
 {
@@ -684,7 +684,7 @@ etruncui (x)
    string to binary, rounding off as indicated by the machine_mode argument.
    Then it promotes the rounded value to REAL_VALUE_TYPE.  */
 
-REAL_VALUE_TYPE 
+REAL_VALUE_TYPE
 ereal_atof (s, t)
      char *s;
      enum machine_mode t;
@@ -734,7 +734,7 @@ ereal_atof (s, t)
 
 /* Expansion of REAL_NEGATE.  */
 
-REAL_VALUE_TYPE 
+REAL_VALUE_TYPE
 ereal_negate (x)
      REAL_VALUE_TYPE x;
 {
@@ -796,7 +796,7 @@ efixui (x)
 
 /* REAL_VALUE_FROM_INT macro.  */
 
-void 
+void
 ereal_from_int (d, i, j, mode)
      REAL_VALUE_TYPE *d;
      HOST_WIDE_INT i, j;
@@ -863,7 +863,7 @@ ereal_from_int (d, i, j, mode)
 
 /* REAL_VALUE_FROM_UNSIGNED_INT macro.   */
 
-void 
+void
 ereal_from_uint (d, i, j, mode)
      REAL_VALUE_TYPE *d;
      unsigned HOST_WIDE_INT i, j;
@@ -917,7 +917,7 @@ ereal_from_uint (d, i, j, mode)
 
 /* REAL_VALUE_TO_INT macro.  */
 
-void 
+void
 ereal_to_int (low, high, rr)
      HOST_WIDE_INT *low, *high;
      REAL_VALUE_TYPE rr;
@@ -1167,15 +1167,15 @@ debug_real (r)
 
   REAL_VALUE_TO_DECIMAL (r, "%.20g", dstr);
   fprintf (stderr, "%s", dstr);
-}  
+}
 
 
 /* The following routines convert REAL_VALUE_TYPE to the various floating
    point formats that are meaningful to supported computers.
 
-   The results are returned in 32-bit pieces, each piece stored in a `long'.  
+   The results are returned in 32-bit pieces, each piece stored in a `long'.
    This is so they can be printed by statements like
- 
+
       fprintf (file, "%lx, %lx", L[0],  L[1]);
 
    that will work on both narrow- and wide-word host computers.  */
@@ -1184,7 +1184,7 @@ debug_real (r)
    contains four 32-bit pieces of the result, in the order they would appear
    in memory.  */
 
-void 
+void
 etartdouble (r, l)
      REAL_VALUE_TYPE r;
      long l[];
@@ -1200,7 +1200,7 @@ etartdouble (r, l)
    contains three 32-bit pieces of the result, in the order they would
    appear in memory.  */
 
-void 
+void
 etarldouble (r, l)
      REAL_VALUE_TYPE r;
      long l[];
@@ -1215,7 +1215,7 @@ etarldouble (r, l)
 /* Convert R to a double precision value.  The output array L contains two
    32-bit pieces of the result, in the order they would appear in memory.  */
 
-void 
+void
 etardouble (r, l)
      REAL_VALUE_TYPE r;
      long l[];
@@ -1313,11 +1313,11 @@ ereal_isneg (x)
  				 most significant word first,
  				 most significant bit is set)
   ei[NI-1]	low guard word	(0x8000 bit is rounding place)
- 
- 
- 
+
+
+
  		Routines for external format e-type numbers
- 
+
  	asctoe (string, e)	ASCII string to extended double e type
  	asctoe64 (string, &d)	ASCII string to long double
  	asctoe53 (string, &d)	ASCII string to double
@@ -1364,10 +1364,10 @@ ereal_isneg (x)
 	eisinf (e)              1 if e has maximum exponent (non-IEEE)
  				or is infinite (IEEE)
         eisnan (e)              1 if e is a NaN
- 
+
 
  		Routines for internal format exploded e-type numbers
- 
+
  	eaddm (ai, bi)		add significands, bi = bi + ai
  	ecleaz (ei)		ei = 0
  	ecleazs (ei)		set ei = 0 but leave its sign alone
@@ -1399,13 +1399,13 @@ ereal_isneg (x)
   after each arithmetic operation.
 
   Exception flags are NOT fully supported.
- 
+
   Signaling NaN's are NOT supported; they are treated the same
   as quiet NaN's.
- 
+
   Define INFINITY for support of infinity; otherwise a
   saturation arithmetic is implemented.
- 
+
   Define NANS for support of Not-a-Number items; otherwise the
   arithmetic will never produce a NaN output, and might be confused
   by a NaN input.
@@ -1413,7 +1413,7 @@ ereal_isneg (x)
   either a or b is a NaN. This means asking `if (ecmp (a,b) < 0)'
   may not be legitimate. Use `if (ecmp (a,b) == -1)' for `less than'
   if in doubt.
- 
+
   Denormals are always supported here where appropriate (e.g., not
   for conversion to DEC numbers).  */
 
@@ -1426,7 +1426,7 @@ ereal_isneg (x)
   mode, most floating point constants are given as arrays
   of octal integers to eliminate decimal to binary conversion
   errors that might be introduced by the compiler.
- 
+
   For computers, such as IBM PC, that follow the IEEE
   Standard for Binary Floating Point Arithmetic (ANSI/IEEE
   Std 754-1985), the symbol IEEE should be defined.
@@ -1434,20 +1434,20 @@ ereal_isneg (x)
   are provided as arrays of hexadecimal 16 bit integers.
   The endian-ness of generated values is controlled by
   REAL_WORDS_BIG_ENDIAN.
- 
+
   To accommodate other types of computer arithmetic, all
   constants are also provided in a normal decimal radix
   which one can hope are correctly converted to a suitable
   format by the available C language compiler.  To invoke
   this mode, the symbol UNK is defined.
- 
+
   An important difference among these modes is a predefined
   set of machine arithmetic constants for each.  The numbers
   MACHEP (the machine roundoff error), MAXNUM (largest number
   represented), and several other parameters are preset by
   the configuration symbol.  Check the file const.c to
   ensure that these values are correct for your computer.
- 
+
   For ANSI C compatibility, define ANSIC equal to 1.  Currently
   this affects only the atan2 function and others that use it.  */
 
@@ -1540,7 +1540,7 @@ extern int rndprc;
 
 /*  Clear out entire e-type number X.  */
 
-static void 
+static void
 eclear (x)
      register unsigned EMUSHORT *x;
 {
@@ -1552,7 +1552,7 @@ eclear (x)
 
 /* Move e-type number from A to B.  */
 
-static void 
+static void
 emov (a, b)
      register unsigned EMUSHORT *a, *b;
 {
@@ -1566,18 +1566,18 @@ emov (a, b)
 #if 0
 /* Absolute value of e-type X.  */
 
-static void 
+static void
 eabs (x)
      unsigned EMUSHORT x[];
 {
   /* sign is top bit of last word of external format */
-  x[NE - 1] &= 0x7fff;		
+  x[NE - 1] &= 0x7fff;
 }
 #endif /* 0 */
 
 /* Negate the e-type number X.  */
 
-static void 
+static void
 eneg (x)
      unsigned EMUSHORT x[];
 {
@@ -1587,7 +1587,7 @@ eneg (x)
 
 /* Return 1 if sign bit of e-type number X is nonzero, else zero.  */
 
-static int 
+static int
 eisneg (x)
      unsigned EMUSHORT x[];
 {
@@ -1600,7 +1600,7 @@ eisneg (x)
 
 /* Return 1 if e-type number X is infinity, else return zero.  */
 
-static int 
+static int
 eisinf (x)
      unsigned EMUSHORT x[];
 {
@@ -1618,7 +1618,7 @@ eisinf (x)
 /* Check if e-type number is not a number.  The bit pattern is one that we
    defined, so we know for sure how to detect it.  */
 
-static int 
+static int
 eisnan (x)
      unsigned EMUSHORT x[];
 {
@@ -1642,7 +1642,7 @@ eisnan (x)
 /*  Fill e-type number X with infinity pattern (IEEE)
     or largest possible number (non-IEEE).  */
 
-static void 
+static void
 einfin (x)
      register unsigned EMUSHORT *x;
 {
@@ -1685,7 +1685,7 @@ einfin (x)
    This generates Intel's quiet NaN pattern for extended real.
    The exponent is 7fff, the leading mantissa word is c000.  */
 
-static void 
+static void
 enan (x, sign)
      register unsigned EMUSHORT *x;
      int sign;
@@ -1700,7 +1700,7 @@ enan (x, sign)
 
 /* Move in an e-type number A, converting it to exploded e-type B.  */
 
-static void 
+static void
 emovi (a, b)
      unsigned EMUSHORT *a, *b;
 {
@@ -1747,7 +1747,7 @@ emovi (a, b)
 
 /* Move out exploded e-type number A, converting it to e type B.  */
 
-static void 
+static void
 emovo (a, b)
      unsigned EMUSHORT *a, *b;
 {
@@ -1786,7 +1786,7 @@ emovo (a, b)
 
 /* Clear out exploded e-type number XI.  */
 
-static void 
+static void
 ecleaz (xi)
      register unsigned EMUSHORT *xi;
 {
@@ -1798,7 +1798,7 @@ ecleaz (xi)
 
 /* Clear out exploded e-type XI, but don't touch the sign.  */
 
-static void 
+static void
 ecleazs (xi)
      register unsigned EMUSHORT *xi;
 {
@@ -1811,7 +1811,7 @@ ecleazs (xi)
 
 /* Move exploded e-type number from A to B.  */
 
-static void 
+static void
 emovz (a, b)
      register unsigned EMUSHORT *a, *b;
 {
@@ -1839,7 +1839,7 @@ einan (x)
 
 /* Return nonzero if exploded e-type X is a NaN.  */
 
-static int 
+static int
 eiisnan (x)
      unsigned EMUSHORT x[];
 {
@@ -1858,7 +1858,7 @@ eiisnan (x)
 
 /* Return nonzero if sign of exploded e-type X is nonzero.  */
 
-static int 
+static int
 eiisneg (x)
      unsigned EMUSHORT x[];
 {
@@ -1882,7 +1882,7 @@ eiinfin (x)
 
 /* Return nonzero if exploded e-type X is infinite.  */
 
-static int 
+static int
 eiisinf (x)
      unsigned EMUSHORT x[];
 {
@@ -1928,7 +1928,7 @@ ecmpm (a, b)
 
 /* Shift significand of exploded e-type X down by 1 bit.  */
 
-static void 
+static void
 eshdn1 (x)
      register unsigned EMUSHORT *x;
 {
@@ -1952,7 +1952,7 @@ eshdn1 (x)
 
 /* Shift significand of exploded e-type X up by 1 bit.  */
 
-static void 
+static void
 eshup1 (x)
      register unsigned EMUSHORT *x;
 {
@@ -1977,7 +1977,7 @@ eshup1 (x)
 
 /* Shift significand of exploded e-type X down by 8 bits.  */
 
-static void 
+static void
 eshdn8 (x)
      register unsigned EMUSHORT *x;
 {
@@ -1998,7 +1998,7 @@ eshdn8 (x)
 
 /* Shift significand of exploded e-type X up by 8 bits.  */
 
-static void 
+static void
 eshup8 (x)
      register unsigned EMUSHORT *x;
 {
@@ -2020,7 +2020,7 @@ eshup8 (x)
 
 /* Shift significand of exploded e-type X up by 16 bits.  */
 
-static void 
+static void
 eshup6 (x)
      register unsigned EMUSHORT *x;
 {
@@ -2038,7 +2038,7 @@ eshup6 (x)
 
 /* Shift significand of exploded e-type X down by 16 bits.  */
 
-static void 
+static void
 eshdn6 (x)
      register unsigned EMUSHORT *x;
 {
@@ -2056,7 +2056,7 @@ eshdn6 (x)
 
 /* Add significands of exploded e-type X and Y.  X + Y replaces Y.  */
 
-static void 
+static void
 eaddm (x, y)
      unsigned EMUSHORT *x, *y;
 {
@@ -2082,7 +2082,7 @@ eaddm (x, y)
 
 /* Subtract significands of exploded e-type X and Y.  Y - X replaces Y.  */
 
-static void 
+static void
 esubm (x, y)
      unsigned EMUSHORT *x, *y;
 {
@@ -2116,7 +2116,7 @@ static unsigned EMUSHORT equot[NI];
 
 /* Divide significands */
 
-int 
+int
 edivm (den, num)
      unsigned EMUSHORT den[], num[];
 {
@@ -2214,7 +2214,7 @@ edivm (den, num)
 
 /* Multiply significands */
 
-int 
+int
 emulm (a, b)
      unsigned EMUSHORT a[], b[];
 {
@@ -2420,15 +2420,15 @@ emulm (a, b)
 
   The internal format number to be rounded is S.
   Input LOST is 0 if the value is exact.  This is the so-called sticky bit.
- 
+
   Input SUBFLG indicates whether the number was obtained
   by a subtraction operation.  In that case if LOST is nonzero
   then the number is slightly smaller than indicated.
- 
+
   Input EXP is the biased exponent, which may be negative.
   the exponent field of S is ignored but is replaced by
   EXP as adjusted by normalization and rounding.
- 
+
   Input RCNTRL is the rounding control.  If it is nonzero, the
   returned value will be rounded to RNDPRC bits.
 
@@ -2437,7 +2437,7 @@ emulm (a, b)
    adjusted to be the actual value it would have after conversion to
    the final floating point type.  This adjustment has been
    implemented for all type conversions (etoe53, etc.) and decimal
-   conversions, but not for the arithmetic functions (eadd, etc.). 
+   conversions, but not for the arithmetic functions (eadd, etc.).
    Data types having standard 15-bit exponents are not affected by
    this, but SFmode and DFmode are affected. For example, ediv with
    rndprc = 24 will not round correctly to 24-bit precision if the
@@ -2451,7 +2451,7 @@ static unsigned EMUSHORT rebit = 0;
 static int re = 0;
 static unsigned EMUSHORT rbit[NI];
 
-static void 
+static void
 emdnorm (s, lost, subflg, exp, rcntrl)
      unsigned EMUSHORT s[];
      int lost;
@@ -2667,7 +2667,7 @@ emdnorm (s, lost, subflg, exp, rcntrl)
 
 static int subflg = 0;
 
-static void 
+static void
 esub (a, b, c)
      unsigned EMUSHORT *a, *b, *c;
 {
@@ -2699,7 +2699,7 @@ esub (a, b, c)
 
 /* Add.  C = A + B, all e type.  */
 
-static void 
+static void
 eadd (a, b, c)
      unsigned EMUSHORT *a, *b, *c;
 {
@@ -2732,7 +2732,7 @@ eadd (a, b, c)
 
 /* Arithmetic common to both addition and subtraction.  */
 
-static void 
+static void
 eadd1 (a, b, c)
      unsigned EMUSHORT *a, *b, *c;
 {
@@ -2843,7 +2843,7 @@ eadd1 (a, b, c)
 
 /* Divide: C = B/A, all e type.  */
 
-static void 
+static void
 ediv (a, b, c)
      unsigned EMUSHORT *a, *b, *c;
 {
@@ -2947,7 +2947,7 @@ ediv (a, b, c)
 
 /* Multiply e-types A and B, return e-type product C.   */
 
-static void 
+static void
 emul (a, b, c)
      unsigned EMUSHORT *a, *b, *c;
 {
@@ -3137,7 +3137,7 @@ e53toe (pe, y)
 #endif
   eshift (yy, -5);
   if (denorm)
-    {			
+    {
 	/* If zero exponent, then normalize the significand.  */
       if ((k = enormlz (yy)) > NBITS)
 	ecleazs (yy);
@@ -3152,7 +3152,7 @@ e53toe (pe, y)
 
 /* Convert double extended precision float PE to e type Y.  */
 
-static void 
+static void
 e64toe (pe, y)
      unsigned EMUSHORT *pe, *y;
 {
@@ -3274,7 +3274,7 @@ bigend_nan:
 
 /* Convert 128-bit long double precision float PE to e type Y.  */
 
-static void 
+static void
 e113toe (pe, y)
      unsigned EMUSHORT *pe, *y;
 {
@@ -3359,7 +3359,7 @@ e113toe (pe, y)
 
 /* Convert single precision float PE to e type Y.  */
 
-static void 
+static void
 e24toe (pe, y)
      unsigned EMUSHORT *pe, *y;
 {
@@ -3462,7 +3462,7 @@ e24toe (pe, y)
 
 /* Convert e-type X to IEEE 128-bit long double format E.  */
 
-static void 
+static void
 etoe113 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -3495,7 +3495,7 @@ etoe113 (x, e)
 /* Convert exploded e-type X, that has already been rounded to
    113-bit precision, to IEEE 128-bit long double format Y.  */
 
-static void 
+static void
 toe113 (a, b)
      unsigned EMUSHORT *a, *b;
 {
@@ -3553,7 +3553,7 @@ toe113 (a, b)
 
 /* Convert e-type X to IEEE double extended format E.  */
 
-static void 
+static void
 etoe64 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -3587,7 +3587,7 @@ etoe64 (x, e)
 /* Convert exploded e-type X, that has already been rounded to
    64-bit precision, to IEEE double extended format Y.  */
 
-static void 
+static void
 toe64 (a, b)
      unsigned EMUSHORT *a, *b;
 {
@@ -3703,7 +3703,7 @@ toe64 (a, b)
 #ifdef DEC
 /* Convert e-type X to DEC-format double E.  */
 
-static void 
+static void
 etoe53 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -3713,7 +3713,7 @@ etoe53 (x, e)
 /* Convert exploded e-type X, that has already been rounded to
    56-bit double precision, to DEC double Y.  */
 
-static void 
+static void
 toe53 (x, y)
      unsigned EMUSHORT *x, *y;
 {
@@ -3724,7 +3724,7 @@ toe53 (x, y)
 #ifdef IBM
 /* Convert e-type X to IBM 370-format double E.  */
 
-static void 
+static void
 etoe53 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -3734,7 +3734,7 @@ etoe53 (x, e)
 /* Convert exploded e-type X, that has already been rounded to
    56-bit precision, to IBM 370 double Y.  */
 
-static void 
+static void
 toe53 (x, y)
      unsigned EMUSHORT *x, *y;
 {
@@ -3745,7 +3745,7 @@ toe53 (x, y)
 #ifdef C4X
 /* Convert e-type X to C4X-format long double E.  */
 
-static void 
+static void
 etoe53 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -3755,7 +3755,7 @@ etoe53 (x, e)
 /* Convert exploded e-type X, that has already been rounded to
    56-bit precision, to IBM 370 double Y.  */
 
-static void 
+static void
 toe53 (x, y)
      unsigned EMUSHORT *x, *y;
 {
@@ -3766,7 +3766,7 @@ toe53 (x, y)
 
 /* Convert e-type X to IEEE double E.  */
 
-static void 
+static void
 etoe53 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -3800,7 +3800,7 @@ etoe53 (x, e)
 /* Convert exploded e-type X, that has already been rounded to
    53-bit precision, to IEEE double Y.  */
 
-static void 
+static void
 toe53 (x, y)
      unsigned EMUSHORT *x, *y;
 {
@@ -3897,7 +3897,7 @@ toe53 (x, y)
 #ifdef IBM
 /* Convert e-type X to IBM 370 float E.  */
 
-static void 
+static void
 etoe24 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -3907,7 +3907,7 @@ etoe24 (x, e)
 /* Convert exploded e-type X, that has already been rounded to
    float precision, to IBM 370 float Y.  */
 
-static void 
+static void
 toe24 (x, y)
      unsigned EMUSHORT *x, *y;
 {
@@ -3919,7 +3919,7 @@ toe24 (x, y)
 #ifdef C4X
 /* Convert e-type X to C4X float E.  */
 
-static void 
+static void
 etoe24 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -3929,7 +3929,7 @@ etoe24 (x, e)
 /* Convert exploded e-type X, that has already been rounded to
    float precision, to IBM 370 float Y.  */
 
-static void 
+static void
 toe24 (x, y)
      unsigned EMUSHORT *x, *y;
 {
@@ -3940,7 +3940,7 @@ toe24 (x, y)
 
 /* Convert e-type X to IEEE float E.  DEC float is the same as IEEE float.  */
 
-static void 
+static void
 etoe24 (x, e)
      unsigned EMUSHORT *x, *e;
 {
@@ -3974,7 +3974,7 @@ etoe24 (x, e)
 /* Convert exploded e-type X, that has already been rounded to
    float precision, to IEEE float Y.  */
 
-static void 
+static void
 toe24 (x, y)
      unsigned EMUSHORT *x, *y;
 {
@@ -4066,13 +4066,13 @@ toe24 (x, y)
 #endif  /* not C4X */
 #endif  /* not IBM */
 
-/* Compare two e type numbers. 
+/* Compare two e type numbers.
    Return +1 if a > b
            0 if a == b
           -1 if a < b
           -2 if either a or b is a NaN.  */
 
-static int 
+static int
 ecmp (a, b)
      unsigned EMUSHORT *a, *b;
 {
@@ -4135,7 +4135,7 @@ ecmp (a, b)
 #if 0
 /* Find e-type nearest integer to X, as floor (X + 0.5).  */
 
-static void 
+static void
 eround (x, y)
      unsigned EMUSHORT *x, *y;
 {
@@ -4146,7 +4146,7 @@ eround (x, y)
 
 /* Convert HOST_WIDE_INT LP to e type Y.  */
 
-static void 
+static void
 ltoe (lp, y)
      HOST_WIDE_INT *lp;
      unsigned EMUSHORT *y;
@@ -4188,7 +4188,7 @@ ltoe (lp, y)
 
 /* Convert unsigned HOST_WIDE_INT LP to e type Y.  */
 
-static void 
+static void
 ultoe (lp, y)
      unsigned HOST_WIDE_INT *lp;
      unsigned EMUSHORT *y;
@@ -4228,7 +4228,7 @@ ultoe (lp, y)
    The output e-type fraction FRAC is the positive fractional
    part of abs (X).  */
 
-static void 
+static void
 eifrac (x, i, frac)
      unsigned EMUSHORT *x;
      HOST_WIDE_INT *i;
@@ -4311,7 +4311,7 @@ eifrac (x, i, frac)
    FRAC of e-type X.  A negative input yields integer output = 0 but
    correct fraction.  */
 
-static void 
+static void
 euifrac (x, i, frac)
      unsigned EMUSHORT *x;
      unsigned HOST_WIDE_INT *i;
@@ -4380,7 +4380,7 @@ euifrac (x, i, frac)
 
 /* Shift the significand of exploded e-type X up or down by SC bits.  */
 
-static int 
+static int
 eshift (x, sc)
      unsigned EMUSHORT *x;
      int sc;
@@ -4446,7 +4446,7 @@ eshift (x, sc)
 /* Shift normalize the significand area of exploded e-type X.
    Return the shift count (up = positive).  */
 
-static int 
+static int
 enormlz (x)
      unsigned EMUSHORT x[];
 {
@@ -4618,7 +4618,7 @@ static unsigned EMUSHORT emtens[NTEN + 1][NE] =
 /* Convert float value X to ASCII string STRING with NDIG digits after
    the decimal point.  */
 
-static void 
+static void
 e24toasc (x, string, ndigs)
      unsigned EMUSHORT x[];
      char *string;
@@ -4633,7 +4633,7 @@ e24toasc (x, string, ndigs)
 /* Convert double value X to ASCII string STRING with NDIG digits after
    the decimal point.  */
 
-static void 
+static void
 e53toasc (x, string, ndigs)
      unsigned EMUSHORT x[];
      char *string;
@@ -4648,7 +4648,7 @@ e53toasc (x, string, ndigs)
 /* Convert double extended value X to ASCII string STRING with NDIG digits
    after the decimal point.  */
 
-static void 
+static void
 e64toasc (x, string, ndigs)
      unsigned EMUSHORT x[];
      char *string;
@@ -4663,7 +4663,7 @@ e64toasc (x, string, ndigs)
 /* Convert 128-bit long double value X to ASCII string STRING with NDIG digits
    after the decimal point.  */
 
-static void 
+static void
 e113toasc (x, string, ndigs)
      unsigned EMUSHORT x[];
      char *string;
@@ -4681,7 +4681,7 @@ e113toasc (x, string, ndigs)
 
 static char wstring[80];	/* working storage for ASCII output */
 
-static void 
+static void
 etoasc (x, string, ndigs)
      unsigned EMUSHORT x[];
      char *string;
@@ -4999,7 +4999,7 @@ etoasc (x, string, ndigs)
 
 /* Convert ASCII string S to single precision float value Y.  */
 
-static void 
+static void
 asctoe24 (s, y)
      char *s;
      unsigned EMUSHORT *y;
@@ -5010,7 +5010,7 @@ asctoe24 (s, y)
 
 /* Convert ASCII string S to double precision value Y.  */
 
-static void 
+static void
 asctoe53 (s, y)
      char *s;
      unsigned EMUSHORT *y;
@@ -5029,7 +5029,7 @@ asctoe53 (s, y)
 
 /* Convert ASCII string S to double extended value Y.  */
 
-static void 
+static void
 asctoe64 (s, y)
      char *s;
      unsigned EMUSHORT *y;
@@ -5039,7 +5039,7 @@ asctoe64 (s, y)
 
 /* Convert ASCII string S to 128-bit long double Y.  */
 
-static void 
+static void
 asctoe113 (s, y)
      char *s;
      unsigned EMUSHORT *y;
@@ -5049,7 +5049,7 @@ asctoe113 (s, y)
 
 /* Convert ASCII string S to e type Y.  */
 
-static void 
+static void
 asctoe (s, y)
      char *s;
      unsigned EMUSHORT *y;
@@ -5060,7 +5060,7 @@ asctoe (s, y)
 /* Convert ASCII string SS to e type Y, with a specified rounding precision
    of OPREC bits.  BASE is 16 for C9X hexadecimal floating constants.  */
 
-static void 
+static void
 asctoeg (ss, y, oprec)
      char *ss;
      unsigned EMUSHORT *y;
@@ -5106,7 +5106,7 @@ asctoeg (ss, y, oprec)
 
  nxtcom:
   if (*s >= '0' && *s <= '9')
-  k = *s - '0';
+    k = *s - '0';
   else if (*s >= 'a')
     k = 10 + *s - 'a';
   else
@@ -5149,7 +5149,7 @@ asctoeg (ss, y, oprec)
 	{
 	  if (base == 16)
 	    {
-	  if (decflg)
+	      if (decflg)
 		nexp += 4;	/* count digits after decimal point */
 
 	      eshup1 (yy);	/* multiply current number by 16 */
@@ -5160,13 +5160,13 @@ asctoeg (ss, y, oprec)
 	  else
 	    {
 	      if (decflg)
-	    nexp += 1;		/* count digits after decimal point */
+		nexp += 1;	/* count digits after decimal point */
 
-	  eshup1 (yy);		/* multiply current number by 10 */
-	  emovz (yy, xt);
-	  eshup1 (xt);
-	  eshup1 (xt);
-	  eaddm (xt, yy);
+	      eshup1 (yy);	/* multiply current number by 10 */
+	      emovz (yy, xt);
+	      eshup1 (xt);
+	      eshup1 (xt);
+	      eaddm (xt, yy);
 	    }
 	  /* Insert the current digit.  */
 	  ecleaz (xt);
@@ -5181,10 +5181,10 @@ asctoeg (ss, y, oprec)
 	  if (decflg == 0)
 	    {
 	      if (base == 10)
-	    nexp -= 1;
+		nexp -= 1;
 	      else
 		nexp -= 4;
-	}
+	    }
 	}
       prec += 1;
       goto donchr;
@@ -5472,7 +5472,7 @@ static unsigned EMUSHORT bmask[] =
   0x0000,
 };
 
-static void 
+static void
 efloor (x, y)
      unsigned EMUSHORT x[], y[];
 {
@@ -5523,7 +5523,7 @@ efloor (x, y)
 /* Return S and EXP such that  S * 2^EXP = X and .5 <= S < 1.
    For example, 1.1 = 0.55 * 2^1.  */
 
-static void 
+static void
 efrexp (x, exp, s)
      unsigned EMUSHORT x[];
      int *exp;
@@ -5548,7 +5548,7 @@ efrexp (x, exp, s)
 
 /* Return e type Y = X * 2^PWR2.  */
 
-static void 
+static void
 eldexp (x, pwr2, y)
      unsigned EMUSHORT x[];
      int pwr2;
@@ -5571,7 +5571,7 @@ eldexp (x, pwr2, y)
 /* C = remainder after dividing B by A, all e type values.
    Least significant integer quotient bits left in EQUOT.  */
 
-static void 
+static void
 eremain (a, b, c)
      unsigned EMUSHORT a[], b[], c[];
 {
@@ -5608,7 +5608,7 @@ eremain (a, b, c)
 /*  Return quotient of exploded e-types NUM / DEN in EQUOT,
     remainder in NUM.  */
 
-static void 
+static void
 eiremain (den, num)
      unsigned EMUSHORT den[], num[];
 {
@@ -5641,7 +5641,7 @@ eiremain (den, num)
    CODE is one of the following:
 
     Mnemonic        Value          Significance
- 
+
      DOMAIN            1       argument domain error
      SING              2       function singularity
      OVERFLOW          3       overflow range error
@@ -5651,7 +5651,7 @@ eiremain (den, num)
      INVALID           7       NaN - producing operation
      EDOM             33       Unix domain error code
      ERANGE           34       Unix range error code
- 
+
    The order of appearance of the following messages is bound to the
    error codes defined above.  */
 
@@ -5671,7 +5671,7 @@ static char *ermsg[NMSGS] =
 int merror = 0;
 extern int merror;
 
-static void 
+static void
 mtherr (name, code)
      char *name;
      int code;
@@ -5694,7 +5694,7 @@ mtherr (name, code)
 #ifdef DEC
 /* Convert DEC double precision D to e type E.  */
 
-static void 
+static void
 dectoe (d, e)
      unsigned EMUSHORT *d;
      unsigned EMUSHORT *e;
@@ -5734,7 +5734,7 @@ dectoe (d, e)
 
 /* Convert e type X to DEC double precision D.  */
 
-static void 
+static void
 etodec (x, d)
      unsigned EMUSHORT *x, *d;
 {
@@ -5756,7 +5756,7 @@ etodec (x, d)
 /* Convert exploded e-type X, that has already been rounded to
    56-bit precision, to DEC format double Y.  */
 
-static void 
+static void
 todec (x, y)
      unsigned EMUSHORT *x, *y;
 {
@@ -5802,7 +5802,7 @@ todec (x, y)
 #ifdef IBM
 /* Convert IBM single/double precision to e type.  */
 
-static void 
+static void
 ibmtoe (d, e, mode)
      unsigned EMUSHORT *d;
      unsigned EMUSHORT *e;
@@ -5846,7 +5846,7 @@ ibmtoe (d, e, mode)
 
 /* Convert e type to IBM single/double precision.  */
 
-static void 
+static void
 etoibm (x, d, mode)
      unsigned EMUSHORT *x, *d;
      enum machine_mode mode;
@@ -5865,7 +5865,7 @@ etoibm (x, d, mode)
   toibm (xi, d, mode);
 }
 
-static void 
+static void
 toibm (x, y, mode)
      unsigned EMUSHORT *x, *y;
      enum machine_mode mode;
@@ -5923,7 +5923,7 @@ toibm (x, y, mode)
 #ifdef C4X
 /* Convert C4X single/double precision to e type.  */
 
-static void 
+static void
 c4xtoe (d, e, mode)
      unsigned EMUSHORT *d;
      unsigned EMUSHORT *e;
@@ -5961,7 +5961,7 @@ c4xtoe (d, e, mode)
   {
      isnegative = FALSE;
   }
-     
+
   r >>= 8;			/* Shift exponent word down 8 bits.  */
   if (r & 0x80)			/* Make the exponent negative if it is. */
   {
@@ -5973,7 +5973,7 @@ c4xtoe (d, e, mode)
      /* Now do the high order mantissa.  We don't "or" on the high bit
 	because it is 2 (not 1) and is handled a little differently
 	below.  */
-     y[M] = d[0] & 0x7f;	
+     y[M] = d[0] & 0x7f;
 
      y[M+1] = d[1];
      if (mode != QFmode)	/* There are only 2 words in QFmode.  */
@@ -6018,11 +6018,11 @@ c4xtoe (d, e, mode)
   {
     /* Add our e type exponent offset to form our exponent.  */
      r += EXONE;
-     y[1] = r;			
+     y[1] = r;
 
      /* Now do the high order mantissa strip off the exponent and sign
 	bits and add the high 1 bit.  */
-     y[M] = (d[0] & 0x7f) | 0x80;	
+     y[M] = (d[0] & 0x7f) | 0x80;
 
      y[M+1] = d[1];
      if (mode != QFmode)	/* There are only 2 words in QFmode.  */
@@ -6039,7 +6039,7 @@ c4xtoe (d, e, mode)
 
 /* Convert e type to C4X single/double precision.  */
 
-static void 
+static void
 etoc4x (x, d, mode)
      unsigned EMUSHORT *x, *d;
      enum machine_mode mode;
@@ -6061,7 +6061,7 @@ etoc4x (x, d, mode)
   toc4x (xi, d, mode);
 }
 
-static void 
+static void
 toc4x (x, y, mode)
      unsigned EMUSHORT *x, *y;
      enum machine_mode mode;
@@ -6069,7 +6069,7 @@ toc4x (x, y, mode)
   int i;
   int v;
   int carry;
-  
+
   /* Short-circuit the zero case */
   if ((x[0] == 0)	/* Zero exponent and sign */
       && (x[1] == 0)
@@ -6088,17 +6088,17 @@ toc4x (x, y, mode)
         }
       return;
     }
-  
+
   *y = 0;
-  
+
   /* Negative number require a two's complement conversion of the
      mantissa. */
   if (x[0])
     {
       *y = 0x0080;
-      
+
       i = ((int) x[1]) - 0x7f;
-      
+
       /* Now add 1 to the inverted data to do the two's complement. */
       if (mode != QFmode)
 	v = 4 + M;
@@ -6118,7 +6118,7 @@ toc4x (x, y, mode)
 	    }
 	  v--;
 	}
-      
+
       /* The following is a special case.  The C4X negative float requires
 	 a zero in the high bit (because the format is (2 - x) x 2^m), so
 	 if a one is in that bit, we have to shift left one to get rid
@@ -6150,11 +6150,11 @@ toc4x (x, y, mode)
 #endif
       return;
     }
-  
+
   y[0] |= ((i & 0xff) << 8);
-  
+
   eshift (x, 8);
-  
+
   y[0] |= x[M] & 0x7f;
   y[1] = x[M + 1];
   if (mode != QFmode)
@@ -6503,7 +6503,7 @@ ditoe (di, e)
 
 /* Convert e-type to unsigned 64-bit int.  */
 
-static void 
+static void
 etoudi (x, i)
      unsigned EMUSHORT *x;
      unsigned EMUSHORT *i;
@@ -6586,7 +6586,7 @@ noshift:
 
 /* Convert e-type to signed 64-bit int.  */
 
-static void 
+static void
 etodi (x, i)
      unsigned EMUSHORT *x;
      unsigned EMUSHORT *i;
@@ -6688,7 +6688,7 @@ etodi (x, i)
 static int esqinited = 0;
 static unsigned short sqrndbit[NI];
 
-static void 
+static void
 esqrt (x, y)
      unsigned EMUSHORT *x, *y;
 {
@@ -6809,7 +6809,7 @@ significand_size (mode)
 switch (GET_MODE_BITSIZE (mode))
   {
   case 32:
- 
+
 #if TARGET_FLOAT_FORMAT == C4X_FLOAT_FORMAT
     return 56;
 #endif
