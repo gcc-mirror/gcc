@@ -4875,6 +4875,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       /* Test the argument to make sure it is in the proper domain for
 	 the sqrt function.  If it is not in the domain, branch to a 
 	 library call.  */
+      emit_queue ();
       start_sequence ();
       lab1 = gen_label_rtx ();
       lab2 = gen_label_rtx ();
