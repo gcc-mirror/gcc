@@ -11835,7 +11835,7 @@ store_return_init (return_id, init)
 	add_tree (build_min_nt (RETURN_INIT, return_id,
 				copy_to_permanent (init)));
       else
-	cp_finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+	cp_finish_decl (decl, init, NULL_TREE, 0, 0);
     }
 }
 
