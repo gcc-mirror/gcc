@@ -1,5 +1,8 @@
 2000-09-30  Alexandre Oliva  <aoliva@redhat.com>
 
+	* Makefile.in (DEVO_SUPPORT): Added gettext.m4, libtool.m4,
+	ltcf-c.sh, ltcf-cxx.sh and ltcf-gcj.sh.
+
 	* ltconfig, ltmain.sh, libtool.m4, ltcf-cxx.sh: Updated from libtool
 	multi-language branch, to work around Solaris' /bin/sh bug.  Rebuilt
 	all affected `configure' scripts.
