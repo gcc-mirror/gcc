@@ -1,3 +1,9 @@
+2000-11-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.in: Move check for V3 above check for C++ header-file
+	directory.
+	* configure: Regenerated.
+	
 2000-11-14  DJ Delorie  <dj@redhat.com>
 
 	* config/v850/v850.c: Remove obstacks.
