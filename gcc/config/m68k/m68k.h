@@ -1409,7 +1409,7 @@ __transfer_from_trampoline ()					\
    || (GET_CODE (X) == PLUS						\
        && LEGITIMATE_BASE_REG_P (XEXP (X, 0))				\
        && GET_CODE (XEXP (X, 1)) == CONST_INT				\
-       && ((unsigned) INTVAL (XEXP (X, 1)) + 0x8000) < 0x10000)		\
+       && (TARGET_68020 || (unsigned) INTVAL (XEXP (X, 1)) + 0x8000) < 0x10000)		\
    || (GET_CODE (X) == PLUS && XEXP (X, 0) == pic_offset_table_rtx 	\
        && flag_pic && GET_CODE (XEXP (X, 1)) == SYMBOL_REF)		\
    || (GET_CODE (X) == PLUS && XEXP (X, 0) == pic_offset_table_rtx 	\
@@ -1448,10 +1448,10 @@ __transfer_from_trampoline ()					\
 { GO_IF_INDEXING (X, ADDR);						\
   if (GET_CODE (X) == PLUS)						\
     { if (GET_CODE (XEXP (X, 1)) == CONST_INT				\
-	  && (unsigned) INTVAL (XEXP (X, 1)) + 0x80 < 0x100)		\
+	  && (TARGET_68020 || (unsigned) INTVAL (XEXP (X, 1)) + 0x80 < 0x100))		\
 	{ rtx go_temp = XEXP (X, 0); GO_IF_INDEXING (go_temp, ADDR); }	\
       if (GET_CODE (XEXP (X, 0)) == CONST_INT				\
-	  && (unsigned) INTVAL (XEXP (X, 0)) + 0x80 < 0x100)		\
+	  && (TARGET_68020 || (unsigned) INTVAL (XEXP (X, 0)) + 0x80 < 0x100))		\
 	{ rtx go_temp = XEXP (X, 1); GO_IF_INDEXING (go_temp, ADDR); } } }
 
 #define LEGITIMATE_INDEX_REG_P(X)   \

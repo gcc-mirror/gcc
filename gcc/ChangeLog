@@ -1,3 +1,10 @@
+Thu Dec 11 23:25:23 1997  Jeffrey A Law  (law@cygnus.com)
+			  Toon Moene  (toon@moene.indiv.nluug.nl)
+
+	* m68k.h (GO_IF_LEGITIMATE_ADDRESS): No longer cater to horribly
+	old and broken Sun3 assemblers.  Newer versions handle large
+	offsets correctly as does the GNU assembler.
+
 Thu Dec 11 23:06:48 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* objc/objc-act.c (lang_report_error_function): Disable.
