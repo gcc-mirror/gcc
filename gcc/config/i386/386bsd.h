@@ -47,8 +47,7 @@
 }
 
 /* There are conflicting reports about whether this system uses
-   a different assembler syntax.  */
-#if 0
+   a different assembler syntax.  wilson@cygnus.com says # is right.  */
 #undef COMMENT_BEGIN
 #define COMMENT_BEGIN "#"
 
@@ -57,7 +56,6 @@
 
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
-#endif
 
 /* Defines to be able to build libgcc.a with GCC.
    These are the same as in i386mach.h.  */
