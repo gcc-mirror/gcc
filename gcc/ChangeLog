@@ -1,3 +1,8 @@
+2005-03-30  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-scalar-evolution.c (instantiate_parameters_1): Return 
+	as soon as a chrec_dont_know is detected.
+
 2005-03-31  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	Merge from csl-arm-branch.
