@@ -1,5 +1,23 @@
 Wed Feb 24 23:17:41 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Thu Feb 18 19:59:37 1999  Marc Espie <espie@cvs.openbsd.org>
+	* configure.in :Handle OpenBSD platforms.
+	* configure: Rebuilt.
+	* config/openbsd.h: New file.
+	* config/xm-openbsd.h: New file.
+	* config/t-openbsd: New file.
+	* config/t-openbsd-thread: New file.
+
+	Thu Feb 18 13:15:56 1999  Marc Espie <espie@cvs.openbsd.org>
+	* alpha/openbsd.h: New file.
+	* alpha/xm-openbsd.h: New file.
+	* sparc/openbsd.h: New file.
+	* sparc/xm-openbsd.h: New file.
+	* m68k/openbsd.h: New file.
+	* m68k/xm-openbsd.h: New file.
+	* i386/openbsd.h: New file, originally from netbsd.
+	* i386/xm-openbsd.h: New file.
+
 	Wed Nov 19 12:56:54 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 	* configure.in: Fix check for <inttypes.h>.
 	* configure: Rebuilt.
