@@ -2240,7 +2240,7 @@
      which prevents rounding error in the final conversion to SFmode.  */
 
   emit_insn (gen_rtx_SET (VOIDmode, sticky, 
-			  gen_rtx_LTU (DImode, const0_rtx, lo)));
+			  gen_rtx_NE (DImode, lo, const0_rtx)));
   emit_insn (gen_iordi3 (hi, hi, sticky));
   emit_insn (gen_trunctfdf2 (tmpf, arg));
   emit_insn (gen_truncdfsf2 (operands[0], tmpf));
@@ -2494,6 +2494,14 @@
 
 ;; Next are all the integer comparisons, and conditional moves and branches
 ;; and some of the related define_expand's and define_split's.
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ne:DI (match_operand:DI 1 "reg_or_8bit_operand" "rI")
+	       (const_int 0)))]
+  ""
+  "cmpult $31,%1,%0"
+  [(set_attr "type" "icmp")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3314,7 +3322,9 @@
 
   if (alpha_compare.op1 == const0_rtx)
     {
-      emit_insn (gen_sgtu (operands[0]));
+      operands[1] = gen_rtx_NE (DImode, alpha_compare.op0, alpha_compare.op1);
+      alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
       DONE;
     }
 

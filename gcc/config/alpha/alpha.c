@@ -1769,10 +1769,13 @@ alpha_emit_conditional_move (cmp, mode)
       && (op0 == CONST0_RTX (cmp_mode) || op1 == CONST0_RTX (cmp_mode)))
     return gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
 
-  /* We can't put the comparison insides a conditional move;
+  /* We can't put the comparison inside the conditional move;
      emit a compare instruction and put that inside the
      conditional move.  Make sure we emit only comparisons we have;
      swap or reverse as necessary.  */
+
+  if (no_new_pseudos)
+    return NULL_RTX;
 
   switch (code)
     {

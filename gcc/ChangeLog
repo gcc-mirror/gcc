@@ -1,5 +1,12 @@
 2000-04-07  Richard Henderson  <rth@cygnus.com>
 
+	* config/alpha/alpha.c (alpha_emit_conditional_move): Fail
+	if we discover we need a pseudo and no_new_pseudos is true.
+	* config/alpha/alpha.md (ne:DI insn): New.
+	(trunctfsf2, sne): Emit NE instead of non-canonical LTU.
+
+2000-04-07  Richard Henderson  <rth@cygnus.com>
+
 	* rtl.def (COND_EXEC): New.
 	* rtl.h (COND_EXEC_TEST, COND_EXEC_CODE): New.
 	* tm.texi (MAX_CONDITIONAL_EXECUTE): Document.
