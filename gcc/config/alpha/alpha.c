@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
+#include "tree.h"
 #include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
@@ -36,7 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "expr.h"
 #include "obstack.h"
-#include "tree.h"
 
 /* Specify which cpu to schedule for. */
 enum processor_type alpha_cpu;
@@ -1568,6 +1568,51 @@ print_operand (file, x, code)
     default:
       output_operand_lossage ("invalid %%xn code");
     }
+}
+
+/* Emit RTL insns to initialize the variable parts of a trampoline at
+   TRAMP. FNADDR is an RTX for the address of the function's pure
+   code.  CXT is an RTX for the static chain value for the function.
+   We assume here that a function will be called many more times than
+   its address is taken (e.g., it might be passed to qsort), so we
+   take the trouble to initialize the "hint" field in the JMP insn.
+   Note that the hint field is PC (new) + 4 * bits 13:0.  */
+
+void
+alpha_initialize_trampoline (tramp, fnaddr, cxt)
+     rtx tramp;
+     rtx fnaddr;
+     rtx cxt;
+{
+  rtx temp, temp1, addr;
+
+  /* Store function address and CXT.  */
+  addr = memory_address (Pmode, plus_constant (tramp, 16));
+  emit_move_insn (gen_rtx (MEM, Pmode, addr), fnaddr);
+  addr = memory_address (Pmode, plus_constant (tramp, 24));
+  emit_move_insn (gen_rtx (MEM, Pmode, addr), cxt);
+
+  /* Compute hint value.  */
+  temp = force_operand (plus_constant (tramp, 12), NULL_RTX);
+  temp = expand_binop (DImode, sub_optab, fnaddr, temp, temp, 1, OPTAB_WIDEN);
+  temp = expand_shift (RSHIFT_EXPR, Pmode, temp,
+		       build_int_2 (2, 0), NULL_RTX, 1);
+  temp = expand_and (gen_lowpart (SImode, temp), GEN_INT (0x3fff), 0);
+
+  /* Merge in the hint.  */
+  addr = memory_address (SImode, plus_constant (tramp, 8));
+  temp1 = force_reg (SImode, gen_rtx (MEM, SImode, addr));
+  temp1 = expand_and (temp1, GEN_INT (0xffffc000), NULL_RTX);
+  temp1 = expand_binop (SImode, ior_optab, temp1, temp, temp1, 1, OPTAB_WIDEN);
+  emit_move_insn (gen_rtx (MEM, SImode, addr), temp1);
+
+#ifdef TRANSFER_FROM_TRAMPOLINE
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
+		     0, VOIDmode, 1, addr, Pmode);
+#endif
+
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
+		      gen_rtvec (1, const0_rtx), 0));
 }
 
 /* Do what is necessary for `va_start'.  The argument is ignored;
