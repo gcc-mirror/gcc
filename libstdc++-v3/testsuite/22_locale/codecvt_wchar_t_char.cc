@@ -34,6 +34,7 @@
 // or, can use this explicit "C" initialization:
 //   w_codecvt::state_type state01 = {0, 0};
 // .. except Ulrich says: Use memset. Always use memset. Feel the force...
+#ifdef _GLIBCPP_USE_WCHAR_T
 void
 zero_state(std::mbstate_t& state)
 { std::memset(&state, 0, sizeof(std::mbstate_t)); }
@@ -109,10 +110,14 @@ void test01()
   delete [] e_arr;
   delete [] i_arr;
 }
+#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
+
 
 int main ()
 {
+#if _GLIBCPP_USE_WCHAR_T
   test01();
+#endif 
 
   return 0;
 }

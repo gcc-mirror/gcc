@@ -247,11 +247,11 @@ CXX="${CXX}"
 
 # Generate bits/c++config.h
 # NB: This must be the first generated file as others include it. . .
-AC_OUTPUT_COMMANDS([$srcdir/mkc++config $blddir $srcdir])
+$srcdir/mkc++config $blddir $srcdir
 
 # Generate bits/std_limits.h and src/limitsMEMBERS.cc
 if test ! -f stamp-limits; then
-  AC_OUTPUT_COMMANDS([$srcdir/mknumeric_limits $blddir $srcdir $xcompiling])
+  $srcdir/mknumeric_limits $blddir $srcdir $xcompiling
   touch stamp-limits
 fi
 
@@ -278,5 +278,9 @@ if test ! -f stamp-sanity-warned; then
   echo "before proceeding with ${_cv_gnu_make_command}."
   echo ""
 fi
+
+
+
+
 
 
