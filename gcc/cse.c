@@ -502,7 +502,8 @@ struct table_elt
    || ((N) < FIRST_PSEUDO_REGISTER					\
        && FIXED_REGNO_P (N) && REGNO_REG_CLASS (N) != NO_REGS))
 
-#define COST(X) (GET_CODE (X) == REG ? 0 : notreg_cost (X))
+#define COST(X) (GET_CODE (X) == REG ? 0 : notreg_cost (X, SET))
+#define COST_IN(X,OUTER) (GET_CODE (X) == REG ? 0 : notreg_cost (X, OUTER))
 
 /* Get the info associated with register N.  */
 
@@ -636,7 +637,7 @@ struct cse_basic_block_data
 	   || XEXP (X, 0) == virtual_outgoing_args_rtx))	\
    || GET_CODE (X) == ADDRESSOF)
 
-static int notreg_cost		PARAMS ((rtx));
+static int notreg_cost		PARAMS ((rtx, enum rtx_code));
 static int approx_reg_cost_1	PARAMS ((rtx *, void *));
 static int approx_reg_cost	PARAMS ((rtx));
 static int preferrable		PARAMS ((int, int, int, int));
@@ -800,8 +801,9 @@ preferrable (cost_a, regcost_a, cost_b, regcost_b)
    from COST macro to keep it simple.  */
 
 static int
-notreg_cost (x)
+notreg_cost (x, outer)
      rtx x;
+     enum rtx_code outer;
 {
   return ((GET_CODE (x) == SUBREG
 	   && GET_CODE (SUBREG_REG (x)) == REG
@@ -813,7 +815,7 @@ notreg_cost (x)
 	   && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (x)),
 				     GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x)))))
 	  ? 0
-	  : rtx_cost (x, SET) * 2);
+	  : rtx_cost (x, outer) * 2);
 }
 
 /* Return an estimate of the cost of computing rtx X.
@@ -3752,7 +3754,7 @@ fold_rtx (x, insn)
 	/* Pick the least expensive of the folded argument and an
 	   equivalent constant argument.  */
 	if (const_arg == 0 || const_arg == folded_arg
-	    || COST (const_arg) > COST (folded_arg))
+	    || COST_IN (const_arg, code) > COST_IN (folded_arg, code))
 	  cheap_arg = folded_arg, expensive_arg = const_arg;
 	else
 	  cheap_arg = const_arg, expensive_arg = folded_arg;
@@ -3772,12 +3774,21 @@ fold_rtx (x, insn)
 	    copied = 1;
 	  }
 
-	replacements[0] = cheap_arg, replacements[1] = expensive_arg;
-	for (j = 0;
-	     j < 2 && replacements[j]
-	     && COST (replacements[j]) < COST (XEXP (x, i));
-	     j++)
+	/* Order the replacements from cheapest to most expensive.  */
+	replacements[0] = cheap_arg;
+	replacements[1] = expensive_arg;
+
+	for (j = 0; j < 2 && replacements[j];  j++)
 	  {
+	    int old_cost = COST_IN (XEXP (x, i), code);
+	    int new_cost = COST_IN (replacements[j], code);
+
+	    /* Stop if what existed before was cheaper.  Prefer constants
+	       in the case of a tie.  */
+	    if (new_cost > old_cost
+		|| (new_cost == old_cost && CONSTANT_P (XEXP (x, i))))
+	      break;
+
 	    if (validate_change (insn, &XEXP (x, i), replacements[j], 0))
 	      break;
 
