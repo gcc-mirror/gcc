@@ -1,3 +1,13 @@
+2004-04-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/14813
+	* config/ia64/crtend.asm: Move pointer to __do_global_ctors_aux
+	in .init_array section to ...
+	* config/ia64/crtbegin.asm: Here.
+
+	* config/ia64/crtend.asm: Mark __do_global_ctors_aux global
+	and hidden if HAVE_INITFINI_ARRAY is defined.
+
 2004-04-21  James E Wilson  <wilson@specifixinc.com>
 
 	* Makefile.in (fixinc.sh): Don't set or export WARN_CFLAGS.  Fix
