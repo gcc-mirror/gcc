@@ -6928,8 +6928,17 @@ finish_function (nested)
   /* So we can tell if jump_optimize sets it to 1.  */
   can_reach_end = 0;
 
+  /* If this is a nested function, protect the local variables in the stack
+     above us from being collected while we're compiling this function.  */
+  if (ggc_p && nested)
+    ggc_push_context ();
+
   /* Run the optimizers and output the assembler code for this function.  */
   rest_of_compilation (fndecl);
+
+  /* Undo the GC context switch.  */
+  if (ggc_p && nested)
+    ggc_pop_context ();
 
   current_function_returns_null |= can_reach_end;
 
