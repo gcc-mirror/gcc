@@ -1,3 +1,7 @@
+2002-07-18  H.J. Lu <hjl@gnu.org>
+
+	* mach_dep.c (GC_push_regs): Remove the unused Linux/mips code.
+
 2002-07-18  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in (machdep): Don't add mips_sgi_mach_dep.lo for
