@@ -1,6 +1,6 @@
 #
 # Makefile
-#   Copyright (C) 1990, 91 - 99, 2000
+#   Copyright (C) 1990, 91, 91 - 99, 2000
 #   Free Software Foundation
 #
 # This file is part of the libiberty library.
@@ -129,7 +129,7 @@ CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c	      \
 	getruntime.c floatformat.c hashtab.c hex.c index.c insque.c memchr.c  \
 	memcmp.c memcpy.c memmove.c memset.c mkstemps.c objalloc.c obstack.c  \
 	partition.c pexecute.c putenv.c random.c rename.c rindex.c	      \
-	setenv.c sigsetmask.c spaces.c splay-tree.c strcasecmp.c	      \
+	setenv.c sigsetmask.c sort.c spaces.c splay-tree.c strcasecmp.c	      \
 	strncasecmp.c strchr.c strdup.c strerror.c strrchr.c		      \
 	strsignal.c strstr.c strtod.c strtol.c strtoul.c tmpnam.c	      \
 	vasprintf.c vfork.c vfprintf.c vprintf.c vsprintf.c waitpid.c	      \
@@ -138,8 +138,8 @@ CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c	      \
 # These are always included in the library.
 REQUIRED_OFILES = argv.o choose-temp.o concat.o cplus-dem.o \
   fdmatch.o fnmatch.o getopt.o getopt1.o getpwd.o getruntime.o hashtab.o \
-  hex.o floatformat.o objalloc.o obstack.o partition.o pexecute.o spaces.o \
-  splay-tree.o strerror.o strsignal.o xatexit.o xexit.o xmalloc.o \
+  hex.o floatformat.o objalloc.o obstack.o partition.o pexecute.o sort.o \
+  spaces.o splay-tree.o strerror.o strsignal.o xatexit.o xexit.o xmalloc.o \
   xmemdup.o xstrdup.o xstrerror.o
 
 $(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA)
@@ -276,6 +276,7 @@ obstack.o: config.h $(INCDIR)/obstack.h
 partition.o: config.h $(INCDIR)/partition.h
 pexecute.o: config.h $(INCDIR)/libiberty.h
 setenv.o: config.h
+sort.o: config.h $(INCDIR)/sort.h $(INCDIR)/ansidecl.h
 spaces.o: $(INCDIR)/libiberty.h
 splay-tree.o: config.h $(INCDIR)/libiberty.h $(INCDIR)/splay-tree.h $(INCDIR)/ansidecl.h
 strerror.o: config.h $(INCDIR)/libiberty.h

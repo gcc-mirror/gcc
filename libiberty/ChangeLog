@@ -1,3 +1,10 @@
+2000-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* sort.c: New file.
+	* Makefile.in (CFILES): Add sort.c
+	(REQUIRED_OFILES): Add sort.o.
+	(sort.o): New target.
+
 2000-04-21  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* Makefile.in (*-subdir): Revamp slightly to avoid losing on
