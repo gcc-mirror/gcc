@@ -5460,13 +5460,6 @@ move\\t%0,%z4\\n\\
     {
       rtx reg = gen_reg_rtx (SImode);
 
-      /* The constraints should handle this, but they don't.  */
-      operands[0] = force_reg (SImode, operands[0]);
-      if (! arith_operand (operands[1]))
-	operands[1] = force_reg (SImode, operands[1]);
-      if (! arith_operand (operands[2]))
-	operands[2] = force_reg (SImode, operands[2]);
-
       /* If the index is too large, go to the default label.  */
       emit_insn (gen_subsi3 (reg, operands[0], operands[1]));
       emit_insn (gen_cmpsi (reg, operands[2]));
