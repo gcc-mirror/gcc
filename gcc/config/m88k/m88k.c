@@ -861,14 +861,20 @@ output_call (operands, addr)
 	  NOTE_LINE_NUMBER (jump) = NOTE_INSN_DELETED;
 	  NOTE_SOURCE_FILE (jump) = 0;
 
-	  /* If we loose, we must use the non-delay form.  This is unlikely
+	  /* We only do this optimization if -O2, modifying the value of
+	     r1 in the delay slot confuses debuggers and profilers on some
+	     systems.
+
+	     If we loose, we must use the non-delay form.  This is unlikely
 	     to ever happen.  If it becomes a problem, claim that a call
 	     has two delay slots and only the second can be filled with
 	     a jump.  */
 #ifdef AS_BUG_IMMEDIATE_LABEL /* The assembler restricts immediate values.  */
-	  if (! ADD_INTVAL (delta * 2))
+	  if (optimize < 2
+	      || ! ADD_INTVAL (delta * 2))
 #else
-	  if (! ADD_INTVAL (delta))
+	  if (optimize < 2
+	      || ! ADD_INTVAL (delta))
 #endif
 	    {
 	      operands[1] = dest;
