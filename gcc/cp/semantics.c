@@ -417,12 +417,12 @@ begin_for_stmt ()
   r = build_stmt (FOR_STMT, NULL_TREE, NULL_TREE, 
 		  NULL_TREE, NULL_TREE);
   NEW_FOR_SCOPE_P (r) = flag_new_for_scope > 0;
-  add_stmt (r);
   if (NEW_FOR_SCOPE_P (r))
     {
       do_pushlevel ();
       note_level_for_for ();
     }
+  add_stmt (r);
 
   return r;
 }
