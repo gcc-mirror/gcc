@@ -1,4 +1,4 @@
-2004-11-18  H.J. Lu  <hongjiu.lu@intel.com>
+2004-10-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/17684
 	* Makefile.in (clean): Remove libgcc_s$(SHLIB_EXT).1.stage?.
