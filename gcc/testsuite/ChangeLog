@@ -1,3 +1,7 @@
+2002-10-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* g++.dg/template/typename3.C: New test.
+
 2002-10-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/vthunk2.C: New test.
@@ -27,7 +31,7 @@
 
 	PR c++/7679
 	* g++.dg/parse/inline1.C: New test.
-	
+
 2002-10-23  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/inherit/thunk1.C: Enable for x86_64.
