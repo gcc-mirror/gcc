@@ -882,8 +882,7 @@ build_vbase_pointer_fields (rec)
       if (TREE_VIA_VIRTUAL (base_binfo))
 	{
 	  int j;
-	  char *name = (char *)alloca (TYPE_NAME_LENGTH (basetype)
-				       + sizeof (VBASE_NAME) + 1);
+	  char *name;
 
 	  /* The offset for a virtual base class is only used in computing
 	     virtual function tables and for initializing virtual base
@@ -903,7 +902,7 @@ build_vbase_pointer_fields (rec)
 				   ))
 		goto got_it;
 	    }
-	  sprintf (name, VBASE_NAME_FORMAT, TYPE_NAME_STRING (basetype));
+	  FORMAT_VBASE_NAME (name, basetype);
 	  decl = build_lang_field_decl (FIELD_DECL, get_identifier (name),
 					build_pointer_type (basetype));
 	  /* If you change any of the below, take a look at all the

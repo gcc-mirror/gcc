@@ -2140,6 +2140,13 @@ extern int current_function_parms_stored;
   && IDENTIFIER_POINTER (ID_NODE)[2] == 'b' \
   && IDENTIFIER_POINTER (ID_NODE)[3] == JOINER)
 
+/* Store the vbase pointer field name for type TYPE into pointer BUF.  */
+#define FORMAT_VBASE_NAME(BUF,TYPE) do {				\
+  BUF = (char *) alloca (TYPE_ASSEMBLER_NAME_LENGTH (TYPE)		\
+			 + sizeof (VBASE_NAME) + 1);			\
+  sprintf (BUF, VBASE_NAME_FORMAT, TYPE_ASSEMBLER_NAME_STRING (TYPE));	\
+} while (0)
+
 #define TEMP_NAME_P(ID_NODE) (!strncmp (IDENTIFIER_POINTER (ID_NODE), AUTO_TEMP_NAME, sizeof (AUTO_TEMP_NAME)-1))
 #define VFIELD_NAME_P(ID_NODE) (!strncmp (IDENTIFIER_POINTER (ID_NODE), VFIELD_NAME, sizeof(VFIELD_NAME)-1))
 

@@ -1,3 +1,10 @@
+1998-10-01  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (FORMAT_VBASE_NAME): New macro.
+	* class.c (build_vbase_pointer): Use it.
+	* rtti.c (expand_class_desc): Likewise.
+	* tree.c (build_vbase_pointer_fields): Likewise.
+
 Thu Oct  1 10:43:45 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* decl.c (start_decl): Add invocation of
