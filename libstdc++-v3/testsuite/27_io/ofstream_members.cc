@@ -54,7 +54,28 @@ bool test00()
   return test;
 }
 
+
+// http://sourceware.cygnus.com/ml/libstdc++/2000-07/msg00004.html
+bool test01()
+{
+  bool test = true;
+  const int more_than_max_open_files = 8200;
+  
+  for(int i = 0; ++i < more_than_max_open_files;)
+    {
+      std::ofstream ifs(name_02);
+      test &= static_cast<bool>(ifs);
+    }
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+ 
+  return test;
+}
+
 int main()
 {
   test00();
+  test01();
 }

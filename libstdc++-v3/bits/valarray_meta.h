@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- internal _Meta class.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -763,7 +763,7 @@ namespace std {
 #define _DEFINE_EXPR_UNARY_OPERATOR(_Op, _Name)                         \
 template<class _Dom, typename _Tp>                                      \
 inline _Expr<_UnClos<_Name,_Expr,_Dom>,_Tp>                             \
-_Expr<_Dom,_Tp>::operator##_Op () const                                 \
+_Expr<_Dom,_Tp>::operator _Op () const                                 \
 {                                                                       \
     typedef _UnClos<_Name,_Expr,_Dom> _Closure;                         \
     return _Expr<_Closure,_Tp> (_Closure (this->_M_closure));           \
@@ -780,7 +780,7 @@ _Expr<_Dom,_Tp>::operator##_Op () const                                 \
 template<class _Dom1, class _Dom2>					\
 inline _Expr<_BinClos<_Name,_Expr,_Expr,_Dom1,_Dom2>,                   \
              typename _Name<typename _Dom1::value_type>::result_type>   \
-operator##_Op (const _Expr<_Dom1,typename _Dom1::value_type>& __v,      \
+operator _Op (const _Expr<_Dom1,typename _Dom1::value_type>& __v,      \
               const _Expr<_Dom2,typename _Dom2::value_type>& __w)       \
 {                                                                       \
     typedef typename _Dom1::value_type _Arg;                            \
@@ -792,7 +792,7 @@ operator##_Op (const _Expr<_Dom1,typename _Dom1::value_type>& __v,      \
 template<class _Dom>                                                    \
 inline _Expr<_BinClos<_Name,_Expr,_Constant,_Dom,typename _Dom::value_type>, \
              typename _Name<typename _Dom::value_type>::result_type>    \
-operator##_Op (const _Expr<_Dom,typename _Dom::value_type>& __v,        \
+operator _Op (const _Expr<_Dom,typename _Dom::value_type>& __v,        \
               const typename _Dom::value_type& __t)                     \
 {                                                                       \
     typedef typename _Dom::value_type _Arg;                             \
@@ -804,7 +804,7 @@ operator##_Op (const _Expr<_Dom,typename _Dom::value_type>& __v,        \
 template<class _Dom>                                                    \
 inline _Expr<_BinClos<_Name,_Constant,_Expr,typename _Dom::value_type,_Dom>, \
              typename _Name<typename _Dom::value_type>::result_type>    \
-operator##_Op (const typename _Dom::value_type& __t,                    \
+operator _Op (const typename _Dom::value_type& __t,                    \
                const _Expr<_Dom,typename _Dom::value_type>& __v)        \
 {                                                                       \
     typedef typename _Dom::value_type _Arg;                             \
@@ -816,7 +816,7 @@ operator##_Op (const typename _Dom::value_type& __t,                    \
 template<class _Dom>                                                    \
 inline _Expr<_BinClos<_Name,_Expr,_ValArray,_Dom,typename _Dom::value_type>, \
              typename _Name<typename _Dom::value_type>::result_type>    \
-operator##_Op (const _Expr<_Dom,typename _Dom::value_type>& __e,        \
+operator _Op (const _Expr<_Dom,typename _Dom::value_type>& __e,        \
                const valarray<typename _Dom::value_type>& __v)          \
 {                                                                       \
     typedef typename _Dom::value_type _Arg;                             \
@@ -828,7 +828,7 @@ operator##_Op (const _Expr<_Dom,typename _Dom::value_type>& __e,        \
 template<class _Dom>                                                    \
 inline _Expr<_BinClos<_Name,_ValArray,_Expr,typename _Dom::value_type,_Dom>, \
              typename _Name<typename _Dom::value_type>::result_type>    \
-operator##_Op (const valarray<typename _Dom::value_type>& __v,          \
+operator _Op (const valarray<typename _Dom::value_type>& __v,          \
                const _Expr<_Dom,typename _Dom::value_type>& __e)        \
 {                                                                       \
     typedef typename _Dom::value_type _Tp;                              \
@@ -853,7 +853,7 @@ operator##_Op (const valarray<typename _Dom::value_type>& __v,          \
 #define _DEFINE_EXPR_RELATIONAL_OPERATOR(_Op, _Name)                    \
 template<class _Dom1, class _Dom2>					\
 inline _Expr<_BinClos<_Name,_Expr,_Expr,_Dom1,_Dom2>, bool>             \
-operator##_Op (const _Expr<_Dom1,typename _Dom1::value_type>& __v,      \
+operator _Op (const _Expr<_Dom1,typename _Dom1::value_type>& __v,      \
               const _Expr<_Dom2,typename _Dom2::value_type>& __w)       \
 {                                                                       \
     typedef typename _Dom1::value_type _Arg;                            \
@@ -864,7 +864,7 @@ operator##_Op (const _Expr<_Dom1,typename _Dom1::value_type>& __v,      \
 template<class _Dom>                                                    \
 inline _Expr<_BinClos<_Name,_Expr,_Constant,_Dom,typename _Dom::value_type>, \
              bool>                                                      \
-operator##_Op (const _Expr<_Dom,typename _Dom::value_type>& __v,        \
+operator _Op (const _Expr<_Dom,typename _Dom::value_type>& __v,        \
               const typename _Dom::value_type& __t)                     \
 {                                                                       \
     typedef typename _Dom::value_type _Arg;                             \
@@ -875,7 +875,7 @@ operator##_Op (const _Expr<_Dom,typename _Dom::value_type>& __v,        \
 template<class _Dom>                                                    \
 inline _Expr<_BinClos<_Name,_Constant,_Expr,typename _Dom::value_type,_Dom>, \
              bool>                                                      \
-operator##_Op (const typename _Dom::value_type& __t,                    \
+operator _Op (const typename _Dom::value_type& __t,                    \
                const _Expr<_Dom,typename _Dom::value_type>& __v)        \
 {                                                                       \
     typedef typename _Dom::value_type _Arg;                             \
@@ -886,7 +886,7 @@ operator##_Op (const typename _Dom::value_type& __t,                    \
 template<class _Dom>                                                    \
 inline _Expr<_BinClos<_Name,_Expr,_ValArray,_Dom,typename _Dom::value_type>, \
              bool>                                                      \
-operator##_Op (const _Expr<_Dom,typename _Dom::value_type>& __e,        \
+operator _Op (const _Expr<_Dom,typename _Dom::value_type>& __e,        \
                const valarray<typename _Dom::value_type>& __v)          \
 {                                                                       \
     typedef typename _Dom::value_type _Tp;                              \
@@ -897,7 +897,7 @@ operator##_Op (const _Expr<_Dom,typename _Dom::value_type>& __e,        \
 template<class _Dom>                                                    \
 inline _Expr<_BinClos<_Name,_ValArray,_Expr,typename _Dom::value_type,_Dom>, \
              bool>                                                      \
-operator##_Op (const valarray<typename _Dom::value_type>& __v,          \
+operator _Op (const valarray<typename _Dom::value_type>& __v,          \
                const _Expr<_Dom,typename _Dom::value_type>& __e)        \
 {                                                                       \
     typedef typename _Dom::value_type _Tp;                              \

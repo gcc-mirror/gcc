@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- slice_array class.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -126,14 +126,14 @@ namespace std {
 #define _DEFINE_VALARRAY_OPERATOR(op, name)				\
 template<typename _Tp>							\
 inline void								\
-slice_array<_Tp>::operator##op##= (const valarray<_Tp>& __v) const	\
+slice_array<_Tp>::operator op##= (const valarray<_Tp>& __v) const	\
 {									\
   _Array_augmented_##name (_M_array, _M_sz, _M_stride, _Array<_Tp> (__v));\
 }									\
 									\
 template<typename _Tp> template<class _Dom>				\
 inline void								\
-slice_array<_Tp>::operator##op##= (const _Expr<_Dom,_Tp>& __e) const	\
+slice_array<_Tp>::operator op##= (const _Expr<_Dom,_Tp>& __e) const	\
 {									\
     _Array_augmented_##name (_M_array, _M_stride, __e, _M_sz);		\
 }
