@@ -1,3 +1,8 @@
+2001-08-11  Richard Henderson  <rth@redhat.com>
+
+	* doc/extend.texi (Arrays and pointers implementation): Discourage
+	relying on sign-extension of pointers.
+
 2001-08-11  H.J. Lu <hjl@gnu.org>
 
 	* config/mips/linux.h (EXTRA_SECTIONS): Remove in_ctors and

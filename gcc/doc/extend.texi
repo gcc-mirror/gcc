@@ -202,7 +202,9 @@ IEC 60559 conformant implementation (F.9).}
 vice versa (6.3.2.3).}
 
 A cast from pointer to integer discards most-significant bits if the
-pointer representation is larger than the integer type, sign-extends
+pointer representation is larger than the integer type,
+sign-extends@footnote{Future versions of GCC may zero-extend, or use
+a target-defined @code{ptr_extend} pattern.  Do not rely on sign extension.}
 if the pointer representation is smaller than the integer type, otherwise
 the bits are unchanged.
 @c ??? We've always claimed that pointers were unsigned entities.
