@@ -12374,10 +12374,19 @@ rs6000_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
       rtx tmp = gen_rtx_REG (Pmode, 12);
 
       emit_move_insn (tmp, gen_rtx_MEM (Pmode, this));
-      emit_insn (TARGET_32BIT
-		 ? gen_addsi3 (tmp, tmp, vcall_offset_rtx)
-		 : gen_adddi3 (tmp, tmp, vcall_offset_rtx));
-      emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
+      if (((unsigned HOST_WIDE_INT) vcall_offset) + 0x8000 >= 0x10000)
+	{
+	  emit_insn (TARGET_32BIT
+		     ? gen_addsi3 (tmp, tmp, vcall_offset_rtx)
+		     : gen_adddi3 (tmp, tmp, vcall_offset_rtx));
+	  emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
+	}
+      else
+	{
+	  rtx loc = gen_rtx_PLUS (Pmode, tmp, vcall_offset_rtx);
+
+	  emit_move_insn (tmp, gen_rtx_MEM (Pmode, loc));
+	}
       emit_insn (TARGET_32BIT
 		 ? gen_addsi3 (this, this, tmp)
 		 : gen_adddi3 (this, this, tmp));
@@ -12390,7 +12399,6 @@ rs6000_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
       TREE_USED (function) = 1;
     }
   funexp = XEXP (DECL_RTL (function), 0);
-  SYMBOL_REF_FLAGS (funexp) &= ~SYMBOL_FLAG_LOCAL;
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
 
 #if TARGET_MACHO
