@@ -3808,7 +3808,7 @@ load_multiple_sequence (operands, nops, regs, base, load_offset)
 
       /* Convert a subreg of a mem into the mem itself.  */
       if (GET_CODE (operands[nops + i]) == SUBREG)
-	operands[nops + i] = alter_subreg (operands[nops + i]);
+	operands[nops + i] = alter_subreg (operands + (nops + i));
 
       if (GET_CODE (operands[nops + i]) != MEM)
 	abort ();
@@ -4043,7 +4043,7 @@ store_multiple_sequence (operands, nops, regs, base, load_offset)
 
       /* Convert a subreg of a mem into the mem itself.  */
       if (GET_CODE (operands[nops + i]) == SUBREG)
-	operands[nops + i] = alter_subreg (operands[nops + i]);
+	operands[nops + i] = alter_subreg (operands + (nops + i));
 
       if (GET_CODE (operands[nops + i]) != MEM)
 	abort ();

@@ -1,3 +1,7 @@
+2001-12-06  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.c (load_multiple_sequence): 
+
 Thu Dec  6 06:55:13 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (assing_parms): Fix typo in last change.
