@@ -56,7 +56,7 @@ CONST Sig::SigTable Sig::sigTable[] = {
   { Bad_t, BadMagic }
 };
 
-main() {
+int main() {
   if (strcmp (Sig::sigTable[0].Magic, "BYTE")
       || strcmp (Sig::sigTable[1].Magic, "WORD")
       || strcmp (Sig::sigTable[2].Magic, "LONG")

@@ -18,7 +18,7 @@ public:
   void set_var() { }
 };
 
-main() {
+int main() {
   d * test;
   test = new d;
 }

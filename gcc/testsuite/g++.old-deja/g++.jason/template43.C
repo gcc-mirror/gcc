@@ -19,7 +19,7 @@ int equals_x_y = EQUAL<&x,&y>::value; // expected value: 0
 int equals_y_x = EQUAL<&y,&x>::value; // expected value: 0
 int equals_y_y = EQUAL<&y,&y>::value; // expected value: 1
 
-main ()
+int main ()
 {
   if (equals_x_x == 1
       && equals_x_y == 0

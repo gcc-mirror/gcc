@@ -24,7 +24,7 @@ class Casted {
         operator double() const { return y; }
 };
 
-main()
+int main()
 {
         Casted c(10,12.34);
 

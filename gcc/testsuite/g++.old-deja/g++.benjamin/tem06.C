@@ -19,7 +19,7 @@ void blah (const T &) {
   x (4);
 };
 
-main () {
+int main () {
   const foo<int> v;
   blah (v);
 }

@@ -7,7 +7,7 @@
 // Message-ID: <199306091558.AA19075@mail.cs.tu-berlin.de>
 
   typedef int arr[10];
-  main()
+int main()
   {
         int * p = new int[10];
         int * q = new arr;              /* g++ complains, but shouldn't     */

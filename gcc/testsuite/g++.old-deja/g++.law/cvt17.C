@@ -12,7 +12,7 @@ class Point {};
 class Line_Segment{ public: Line_Segment(const Point&){} };
 class Node { public: Point Location(){ Point p; return p; } };
 
-main()
+int main()
 {
    Node** node1;
    Line_Segment(node1->Location()); // intended (*node1)// ERROR - .*

@@ -9,4 +9,4 @@ public:
 
 X::M2 X::g(int i) { X::M2 m2; return m2; }
 
-main() { }
+int main() { }

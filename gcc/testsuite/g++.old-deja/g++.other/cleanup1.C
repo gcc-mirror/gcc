@@ -12,7 +12,7 @@ int f (const A& a)
   return 1;
 }
 
-main ()
+int main ()
 {
   if (f (A()) && d == 0)
     return 0;

@@ -10,7 +10,7 @@ namespace foo{
     }
 }
 
-main(int,char**)
+int main(int,char**)
 {
   return foo::eine_funktion(1);
 }

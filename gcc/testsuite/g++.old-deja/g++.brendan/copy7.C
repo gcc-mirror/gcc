@@ -19,6 +19,7 @@ public:
   A(const B &) { printf ("FAIL\n"); exit (1); }
 };
 
+int
 main()
 {
     A a;

@@ -1,6 +1,6 @@
 struct A { int i; };
 
-main()
+int main()
 {
   A a1 = { 42 };
   A a2 (a1);

@@ -4,13 +4,13 @@
 class test1 {
 public:
   class fehler{public:fehler(){};};
-  func(int a) {
+  void func(int a) {
     if( a == 0 )
       throw fehler();
   }
 };
 
-main() {
+int main() {
   test1 var;
 
   try {

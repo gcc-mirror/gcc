@@ -18,7 +18,7 @@ public:
   }
 };
 
-main() {
+int main() {
   B b;
   A *ap = &b;
   ap->~A();  // This should call the destructor virtually.

@@ -22,7 +22,7 @@ struct foo
 int foo::count;
 
 
-main ()
+int main ()
 {
   {
     foo array[3][3];

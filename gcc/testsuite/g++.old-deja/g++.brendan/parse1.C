@@ -9,7 +9,7 @@ public:
   void  mf() { s='\"'; }
 };
 
-main()
+int main()
 {
   Try x;
   x.mf();

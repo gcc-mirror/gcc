@@ -30,7 +30,7 @@ int blort(Foo& f)
   return f->a;
 };
 
-main()
+int main()
 {
   var_Foo b(2);// ERROR - 
   b->a = 0;

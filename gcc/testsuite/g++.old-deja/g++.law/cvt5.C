@@ -19,7 +19,7 @@ public:
 
 void f(A&) {}
 
-main(){
+int main(){
   R r;
 
   f(r); // problem to cast to B& and then to A&

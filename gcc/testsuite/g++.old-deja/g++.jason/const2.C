@@ -11,4 +11,4 @@ struct T {
 void T::f() { printf ("%p", &letter); }
 const char T::letter;               // still need def after class
 
-main() { }
+int main() { }

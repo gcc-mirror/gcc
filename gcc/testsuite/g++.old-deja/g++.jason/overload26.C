@@ -11,7 +11,7 @@ struct A {
 } *a;
 
 void bing(const char *);
-main ()
+int main ()
 {
 	a->f(foo);		// gets bogus error because foo's size unknown.
 	a->f(baz);

@@ -46,7 +46,7 @@ B::run()
     }
 }
 
-main()
+int main()
 {
     A a(1);
 

@@ -22,7 +22,7 @@ foo (int& a)
 {				// ERROR - 
 }
 
-main ()
+int main ()
 {
   int b;
   const int*const a = &b;

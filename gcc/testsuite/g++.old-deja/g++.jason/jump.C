@@ -2,7 +2,7 @@
 
 extern int a;
 
-main() {
+int main() {
   switch (a) {
   case 1:
     int v2 = 3;			// ERROR - referenced below

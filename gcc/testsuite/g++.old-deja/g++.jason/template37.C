@@ -27,7 +27,7 @@
   {
   }
 
-  main()
+int main()
   {
     ONE<char>::func();
     ONE<int>::func();

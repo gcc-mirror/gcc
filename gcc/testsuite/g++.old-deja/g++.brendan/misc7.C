@@ -1,7 +1,7 @@
 // GROUPS passed miscellaneous
 extern "C" void printf (char *, ...);
 
-main()
+int main()
 {
   int i = 0;
   // Make sure build_unary_op correctly computes this.

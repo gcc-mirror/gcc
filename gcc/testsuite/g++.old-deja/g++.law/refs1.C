@@ -31,7 +31,7 @@ void C::count (int& total) {
 char * foo[] = {
    "one", "two", "three", NULL};
 
-main() {
+int main() {
    C c(foo);
    int i = 0;
    c.count(i);

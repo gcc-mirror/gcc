@@ -3,7 +3,7 @@
 
 struct A { int i; };
 struct B : public A { int j; int f (); };
-main ()
+int main ()
 {
   int A::*apm = &A::i;
   int B::*bpm = apm;

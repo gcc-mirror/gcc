@@ -51,7 +51,7 @@ public:
 } e;
 
 
-main() {
+int main() {
   if (++i != 6)
     exit(1);
   return 0;

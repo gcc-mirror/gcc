@@ -8,7 +8,7 @@
 
 typedef  int (*cow[3])(...);
 
-main() {
+int main() {
   cow fs;
   int (*pig[3])(...); // line 5
 

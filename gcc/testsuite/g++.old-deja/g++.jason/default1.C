@@ -9,7 +9,7 @@ int add(int const &symbol,
 int add_sym(int const &symbol,
 	    const unsigned char flags=0);
 
-main()
+int main()
 {
    int fname;
    add_sym(fname);      // Guarantee a symbol exists

@@ -21,7 +21,7 @@ int f(int,int)
 using namespace A;
 using namespace B;
 
-main()
+int main()
 {
   if(f() != 1)
     return 1;

@@ -27,7 +27,7 @@ B D::compute(void) const
   return sub;
 }
 
-main () {
+int main () {
   D titi;
   titi.compute().print();
   return 0;

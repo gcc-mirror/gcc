@@ -30,7 +30,7 @@ int (MD::* pmf0)(int) = &MD::f;
 int (MD::* pmf1)(int) = &MD::g;
 int (MD::* pmf2)(int) = &MD::hf;
 
-main()
+int main()
 {
   MD obj;
   int fail = 0;

@@ -11,7 +11,7 @@
         class foo : a { };
         class bar : a { };
 
-        test( const foo* f, const bar* b )
+        int test( const foo* f, const bar* b )
                 {
                 return f == b;// ERROR - 
                 }

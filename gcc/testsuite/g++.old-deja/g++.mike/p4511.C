@@ -24,7 +24,7 @@ public:
 
 class E : public D { };
 
-main() {
+int main() {
   E e;
   e.f();
   E * ep = &e;

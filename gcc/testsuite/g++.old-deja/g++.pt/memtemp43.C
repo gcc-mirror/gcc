@@ -8,7 +8,7 @@ public:
     void operator=(A<U, N> const & a) { return; }
 };
 
-main()
+int main()
 {
     A<float, 3> a;
     A<double, 3> b;

@@ -4,7 +4,7 @@ E foo() {
   return C;
 }
 
-main() {
+int main() {
   if (foo() != C)
     return 1;
 }

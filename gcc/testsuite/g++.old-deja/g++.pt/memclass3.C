@@ -13,7 +13,7 @@ template <class T> struct A {
   };
 };
 
-main ()
+int main ()
 {
   A<int>::B<int>::C<int>::D<int>::E<int>::F<int> b;
   b.f (42);

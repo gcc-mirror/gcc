@@ -3,7 +3,7 @@
 int f1 () {
   struct A {
     A() : b (2) { }
-    fred () { return b.hi_mom; }
+    int fred () { return b.hi_mom; }
     struct B {
       int hi_mom;
       B (int a) { hi_mom = a; }
@@ -15,7 +15,12 @@ int f1 () {
 }
 
 int f2 () {
-  struct A { ~A() { a = 3; } int a; fred () { return a + 1; } };
+  struct A {
+    ~A() { a = 3; }
+    int a;
+    int fred () { return a + 1; }
+  };
+
   A ab;
   ab.a = 12;
   return ab.fred();

@@ -1,6 +1,6 @@
 // Build don't link: 
 // GROUPS passed old-abort
-main()
+int main()
 {
     int a[100], **p;
 

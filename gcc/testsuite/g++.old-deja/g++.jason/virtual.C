@@ -35,7 +35,7 @@ public:
   virtual void b1() {};
 };
 
-main()
+int main()
 {
   D d;				// gets bogus error
 }

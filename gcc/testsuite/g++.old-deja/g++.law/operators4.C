@@ -22,7 +22,7 @@ void foo(int s)
   Vector junk(s);
 }
 
-main()
+int main()
 {
   Vector* test;
   for (int i=0;i<40;i++) // was 100000

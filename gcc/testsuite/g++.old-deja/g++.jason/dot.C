@@ -12,7 +12,7 @@ class Test
     void Print() { printf("%c", ch); }
 };
 
-main()
+int main()
 {
     Test *p = new Test('x');
 

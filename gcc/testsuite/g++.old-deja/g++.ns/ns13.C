@@ -7,7 +7,7 @@ namespace std{
 void std::g()
 {}
 
-main()
+int main()
 {
   return std::i-5;
 }

@@ -4,7 +4,7 @@ extern int i;
 const int bar = i;
 int i = 5;
 
-main()
+int main()
 {
   return bar != 5;
 }

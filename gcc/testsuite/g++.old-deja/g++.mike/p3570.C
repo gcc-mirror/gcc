@@ -16,7 +16,7 @@ struct C :  B {
    void print() {superC::print(); printf("C");};
 };
 
-main ()
+int main ()
 {
    A a;
    B b;

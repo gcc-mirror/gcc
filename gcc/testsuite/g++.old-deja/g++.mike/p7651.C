@@ -20,6 +20,6 @@ int DingDong(double A) {
 }
 
 
-main() {
+int main() {
   DingDong(1.0);
 }

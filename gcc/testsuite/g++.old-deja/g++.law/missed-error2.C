@@ -11,7 +11,7 @@
 inline int max(int a, int b) {return a > b ? a : b;}; // ERROR - candidate
 inline double max(double a, double b) {return a > b ? a : b;}; // ERROR - candidate
 
-main() {
+int main() {
    static void foo(int i, int j, double x, double y) ;// ERROR - .*
 
    foo(4, -37, 14.39, 14.38);

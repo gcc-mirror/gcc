@@ -2,7 +2,7 @@
 
 struct T { ~T(); };
 
-main()
+int main()
 {
   foo:
    T t;				// ERROR - redeclared

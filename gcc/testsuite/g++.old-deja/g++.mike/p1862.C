@@ -45,7 +45,7 @@ public:
   }
 };
 
-main()
+int main()
 {
   C1 *one = new C1;
   

@@ -34,7 +34,7 @@ private:
 };
 
 
-main()
+int main()
 {
     C c;
 }

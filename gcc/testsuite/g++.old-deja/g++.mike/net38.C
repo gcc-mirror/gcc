@@ -17,7 +17,7 @@ int (C::*vmpb) () = &C::b;
 int (C::*vmpb2) () = &C::b2;
 int (C::*vmpa) () = &C::a;
 
-main () {
+int main () {
   C c;
   if ((c.*vmpa)() != 1)
     return 1;

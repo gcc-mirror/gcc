@@ -29,7 +29,7 @@ public:
   }
 };
 
-main()
+int main()
 {
   Foo() << 1 << 3 << 5 << 7;
   printf ("PASS\n");

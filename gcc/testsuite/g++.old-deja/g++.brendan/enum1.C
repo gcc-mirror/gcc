@@ -7,7 +7,7 @@ public:
 
 class derv : public foo { };
 
-main()
+int main()
 {
   foo::bar x = foo::baz;
   derv::bar y = derv::bat;

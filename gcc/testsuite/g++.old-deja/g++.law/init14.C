@@ -15,7 +15,7 @@ struct foo {
 
 struct foo Ack = {5, X, 3};
 
-main()
+int main()
 {
     if (Ack.a != 5
 	|| Ack.b != 7

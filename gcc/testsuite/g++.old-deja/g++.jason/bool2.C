@@ -5,7 +5,7 @@ struct F {
   bool b2 : 7;
 };
 
-main()
+int main()
 {
   F f = { true, true };
 

@@ -21,7 +21,7 @@ template<class R> void f( vector<R>& v )
 #endif
 }
 
-main()
+int main()
 {
    vector<int> r;
    f( r );

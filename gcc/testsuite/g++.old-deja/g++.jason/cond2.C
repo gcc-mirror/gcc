@@ -14,7 +14,7 @@ struct T
   operator int () { return i; }
 };
 
-main ()
+int main ()
 {
   int t;
 

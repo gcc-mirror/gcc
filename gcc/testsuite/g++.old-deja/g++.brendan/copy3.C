@@ -48,6 +48,7 @@ public:
 
 void Foo(B b) { b.Bar(); }
 
+int
 main()
 {
   B b;

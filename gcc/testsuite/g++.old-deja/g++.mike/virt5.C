@@ -44,7 +44,7 @@ public:
   ~LAST () { print_STATE(); }
 };
 
-main() {
+int main() {
   MIBASE *o = new LAST;
   MID *p = o->VFN();
   p->print_STATE();

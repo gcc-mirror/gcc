@@ -12,7 +12,7 @@ public:
 
 class A { };
 
-main()
+int main()
 {
     int i;
     X<int> xi(i);

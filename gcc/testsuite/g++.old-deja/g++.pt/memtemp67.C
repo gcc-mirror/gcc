@@ -5,7 +5,7 @@ struct A
   operator A<T2>() const { return A<T2>(); }
 };
 
-main()
+int main()
 {
   A<int> a1;
   A<long> a2;    

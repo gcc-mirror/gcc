@@ -15,7 +15,7 @@ public:
   ~C() { }
 };
 #line 18 "inline.C"
-main()
+int main()
 {
   C<int> c;
 }

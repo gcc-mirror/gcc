@@ -10,7 +10,7 @@ struct S { int  a; int  c; };
 int i = 3;
 S s = {6, i};
 S * the_s  () { return &s; };
-main ()
+int main ()
 {
   S * cls = the_s ();
   if (cls->a != 6)

@@ -39,7 +39,7 @@ ivHandler *bar2() {
   return &a;
 }
 
-main() {
+int main() {
   want=vf_request;
   bar()->request();
   want=vf_event;

@@ -31,6 +31,7 @@ template< class T,  int n> class Implicit : public T {
      BASE operator=(BASE t) { return T::operator=(t); }
 };
 
+int
 main() 
 {
   Implicit<Implicit<INTEGER, 2> ,  3> y;

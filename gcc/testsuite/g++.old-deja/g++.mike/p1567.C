@@ -29,7 +29,7 @@ public:
   const char* f3() { return A::f3(); }
 };
 
-main() {
+int main() {
   C* tempC = new C;
   D* tempD = new D;
   A* a = tempC;

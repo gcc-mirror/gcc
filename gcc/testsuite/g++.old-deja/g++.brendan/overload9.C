@@ -11,7 +11,7 @@ class CGLogger : public CLogger
 {
 } GLog;
 
-main()
+int main()
 {
         Log(1,"Test");// ERROR -  call of.*
         Log(1,"Test %d",3);

@@ -35,7 +35,7 @@ A(const char* s)
 	  printf ("PASS\n");
 }
 
-main()
+int main()
 {
         A(B("aaa"));
 }

@@ -24,7 +24,7 @@ int bar(V *r) {
   return (r != gp);
 }
 
-main() {
+int main() {
   D *p = new D;
   foo(p);
   return bar(p);

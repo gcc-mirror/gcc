@@ -24,7 +24,7 @@ class Int
 		int value;
 };
  
-main()
+int main()
 {
   Int data = 2;
   Int test;

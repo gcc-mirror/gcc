@@ -4,7 +4,7 @@
 template <class T> struct A { };
 A<int> a;
 
-main()
+int main()
 {
   a.~A();			// gets bogus error
 }

@@ -10,7 +10,7 @@ template <class T> struct A {
 template <class T> A<T>::A(int) { } // causes compiler abort
 template <class T> A<T>::~A() { }
 
-main()
+int main()
 {
   A<int> a;
 }

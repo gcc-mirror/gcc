@@ -13,7 +13,7 @@ class A
         }
 };
 
-main()
+int main()
 {
         A::staticMember();
 }

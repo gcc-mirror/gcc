@@ -31,7 +31,7 @@ void bar() {
 
 int i = int(s+b);
 
-main() {
+int main() {
   bar();
   bar();
   return count != 2;

@@ -14,7 +14,7 @@ private:
 };
 
 
-main()
+int main()
 {
     Foo<int>(1);// ERROR - 
 }

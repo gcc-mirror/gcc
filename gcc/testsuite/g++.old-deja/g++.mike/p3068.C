@@ -51,7 +51,7 @@ public:
   }
 };
 
-main() {
+int main() {
     C& bb = *new C;
     R& mv = bb;
     bb.real(0);

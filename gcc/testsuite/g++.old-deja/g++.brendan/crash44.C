@@ -18,6 +18,7 @@ template <class T> void bug<T>::Foo(const int)
 {
 }
 
+int
 main()
 {
 	bug<char>	InstantiatedBug;

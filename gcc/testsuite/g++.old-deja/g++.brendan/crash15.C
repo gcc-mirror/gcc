@@ -12,6 +12,7 @@ class B : public A {
   virtual ~B() {cout << "executed ~B()\n";};
 };
 
+int
 main() {
   cout << "starting\n";
   B b;

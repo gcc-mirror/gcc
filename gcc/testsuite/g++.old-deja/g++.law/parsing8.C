@@ -17,7 +17,7 @@
 // Date:     Thu, 08 Jul 1993 10:54:59 +0900
 // Subject:  g++ cannot understand `void (**f)()'
 // Message-ID: <9307080155.AA00496@kumade.soft.flab.fujitsu.co.jp>
-main()
+int main()
 {
         void (**f)();
 }

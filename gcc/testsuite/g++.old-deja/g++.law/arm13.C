@@ -4,7 +4,7 @@
 
 inline void *operator new(size_t, void *place) { return place; }
 
-main()
+int main()
 {
   int* p = (int*) malloc(sizeof(int));
   (void) new (p) int(1);

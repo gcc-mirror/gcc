@@ -14,7 +14,7 @@ public:
 	void bar() { b::foo(); } // gets bogus error
 };
 
-main() {
+int main() {
 	c test;
 	test.bar();
 }

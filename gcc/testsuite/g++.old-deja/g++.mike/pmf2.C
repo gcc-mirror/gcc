@@ -40,7 +40,7 @@ void B_table::call_fn_fn1(int &item, void *pfn1) {
 B_table b;
 bar jar;
 
-main() {
+int main() {
   printf("ptr to B_table=%x, ptr to A_table=%x\n",&b,(A_table*)&b);
   B_table::B_ti_fn z = &B_table::func1;
   int j = 1;

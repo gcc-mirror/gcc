@@ -502,7 +502,7 @@ operator<<(ostream& o, const SLS& s)
 SLS gsls;
 const SLS gcsls;
 
-foo()
+int foo()
 {
     const unsigned SIZE = 20;
 
@@ -563,7 +563,7 @@ foo()
 }
 
 // Dummy function so it'll run
-main()
+int main()
 {
   cout << "PASS" << endl;
 }

@@ -1,5 +1,5 @@
 #include <typeinfo>
 
-main() {
+int main() {
   typeid(bool);
 }

@@ -19,7 +19,7 @@ public:
 ostream& operator<< (ostream& os, const X& x);
 
 
-main()
+int main()
 {
   X x;
   ostream os;

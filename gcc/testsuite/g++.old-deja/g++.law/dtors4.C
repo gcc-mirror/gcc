@@ -14,7 +14,7 @@ a       test(){
         return a();
 }
 
-main(){
+int main(){
         a       ai;
 
         ai = test();

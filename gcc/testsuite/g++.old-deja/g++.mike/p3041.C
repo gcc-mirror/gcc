@@ -26,7 +26,7 @@ public:
   void a() { }
 };
 
-main()
+int main()
 {
   C c;
   return 0;

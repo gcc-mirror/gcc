@@ -7,7 +7,7 @@ A<int> *a;
 
 template <class T> struct A { T t; };
 
-main()
+int main()
 {
   if (a)
     a->t = 1;			// gets bogus error

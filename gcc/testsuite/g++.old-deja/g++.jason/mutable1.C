@@ -4,7 +4,7 @@ struct X
   mutable int x;
 };
 
-main ()
+int main ()
 {
   const X x;
   x.x = 0;

@@ -3,7 +3,7 @@
 struct B { ~B() { } };
 struct A { B b; };
 
-main()
+int main()
 {
   A a, b (a), c = A();
   A& (A::*afp)(const A&) = &A::operator=;

@@ -7,7 +7,7 @@ int func(T, U)
         return 2;
 }
 
-main ()
+int main ()
 {
   func (0, 1);			// ERROR - ambiguous
 }

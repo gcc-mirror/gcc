@@ -17,7 +17,7 @@ class complex
   void print () { }
 };
 
-main ()
+int main ()
 {
   complex c1 (1, 0);
   complex c2 (2, 0);

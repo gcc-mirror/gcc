@@ -15,7 +15,7 @@ private:
 public:
 }; // ERROR - non-default constructor
 
-main()
+int main()
 {
   B(10);// ERROR - B doesn't have a constructor taking int
 }

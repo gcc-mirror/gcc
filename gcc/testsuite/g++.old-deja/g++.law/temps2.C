@@ -42,7 +42,7 @@ Foo &Foo::method()
     return *this;
 }
 
-main()
+int main()
 {
     // f1() returns a temporary object. The member function
     // method() returns a reference to the same object.

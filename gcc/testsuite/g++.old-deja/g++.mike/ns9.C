@@ -1,11 +1,11 @@
 namespace Foo {
-  bar() {
+  int bar() {
     return 0;
   }
 }
 
 using Foo::bar;
 
-main() {
+int main() {
   return bar();
 }

@@ -13,7 +13,7 @@ void * operator new (size_t siz) throw (std::bad_alloc) {
   return malloc (siz);
 }
 
-main()
+int main()
 {
   s = 0;
 

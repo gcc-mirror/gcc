@@ -14,7 +14,7 @@ struct yy : public xx {
   yy(foo& a) { xx::a = a; }
 };
 
-main()
+int main()
 {
   foo f;
   yy y (f);

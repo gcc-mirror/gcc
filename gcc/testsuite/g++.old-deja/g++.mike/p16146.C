@@ -81,7 +81,7 @@ public:
   void j () {};
 };
 
-main () {
+int main () {
   firstBase* fbp = new classImplementation;
   classImplementation* cip = dynamic_cast <classImplementation*> (fbp);
   cip->addRef();

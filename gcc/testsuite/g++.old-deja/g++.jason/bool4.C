@@ -2,7 +2,7 @@
 
 struct A { };
 
-main ()
+int main ()
 {
   bool b = (void*)0;
   b = (int A::*)0;

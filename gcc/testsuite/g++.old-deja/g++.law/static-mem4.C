@@ -7,7 +7,7 @@ struct test {
 };
 
 
-main()
+int main()
 {
   test t;
 }

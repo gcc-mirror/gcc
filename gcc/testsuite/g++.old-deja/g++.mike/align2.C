@@ -6,7 +6,7 @@ public:
   int b;
 } x;
 
-main()
+int main()
 {
   // printf("Foo offset %d\n", (int)(Foo*)&x - (int)&x);
   // printf("b offset %d\n", (int)&x.b - (int)&x);

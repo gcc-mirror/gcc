@@ -6,7 +6,7 @@
 // Subject:  small bug
 // Message-ID: <9209300638.AA22334@moose.cs.columbia.edu>
 
-main() {
+int main() {
 int offset;
 char buf[offset]=""; // ERROR - ansi forbids variable arrays
 }

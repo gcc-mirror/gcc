@@ -1,6 +1,6 @@
 // Build don't link:
 // Special g++ Options: -fexceptions
 
-foo() {
+void foo() {
   throw 1;
 }

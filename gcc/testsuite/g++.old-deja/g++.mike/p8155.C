@@ -139,7 +139,7 @@ AFX_MSGMAP_ENTRY   CMainWindow ::_messageEntries[] = {
   {0, (AFX_PMSG)0 }
 }; 
 
-main( int argc, char **argv) {
+int main( int argc, char **argv) {
   CMainWindow     myWindow;
 
   myWindow.callProc();

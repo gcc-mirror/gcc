@@ -24,7 +24,7 @@ sub(foo f) {
 };
 
 
-main() {
+int main() {
    sub(foo());
    if (things == 0)
      printf ("PASS\n");

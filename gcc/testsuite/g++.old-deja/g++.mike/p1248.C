@@ -18,7 +18,7 @@ void foo() {
   Deranged d;
 }
 
-main()
+int main()
 {
   foo();
   printf("PASS\n");

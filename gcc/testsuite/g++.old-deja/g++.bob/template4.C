@@ -14,6 +14,7 @@ class B {
     A w;
 };
 
+int
 main() {
   B<int> c;
   return c.f();

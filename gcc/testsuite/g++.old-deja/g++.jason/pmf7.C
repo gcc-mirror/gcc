@@ -16,7 +16,7 @@ A& foo ()
   return a;
 }
 
-main ()
+int main ()
 {
   void (A::*p)() = &A::f;
   (foo ().*p)();

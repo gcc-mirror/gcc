@@ -3,7 +3,7 @@
 
 bool b;
 
-main ()
+int main ()
 {
   return ((!b) != 0);
 }

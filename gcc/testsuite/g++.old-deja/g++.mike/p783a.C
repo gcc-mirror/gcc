@@ -19,7 +19,7 @@ public:
   }
 };
 
-main(int argc, char**argv) {
+int main(int argc, char**argv) {
   C c;
   c = C();
   return 0;

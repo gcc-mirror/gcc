@@ -16,7 +16,7 @@ class derived2 : public derived1, public base2 {
 
 struct test {
   derived2& fails;
-  test1() {
+  void test1() {
     fails.base1::x = 5;
   }
 };

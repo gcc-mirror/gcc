@@ -27,6 +27,7 @@ public:
 	ParseToken () { tok = 0; intval = 0;}
 };
 
+int
 main () {
 	ParseToken a;
 	a.tok = T_Float;

@@ -15,6 +15,7 @@ bug::bug(int size)
 	numbers = new internal(size * size);// ERROR -  no match.*
 }
 
+int
 main()
 {
 	bug test;// ERROR -  no match

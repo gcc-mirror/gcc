@@ -37,7 +37,7 @@ struct myStruct
   int action() {return 24;};
 };
 
-main()
+int main()
 {
   myStruct toto;
 

@@ -21,7 +21,7 @@ foo ()
         return A (10);
 }
 
-main ()
+int main ()
 {
         int x = foo ().a;
 }

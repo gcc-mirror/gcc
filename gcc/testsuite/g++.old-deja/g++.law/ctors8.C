@@ -14,7 +14,7 @@ struct foo {
 
 foo *arr = new foo[2];
 
-main()
+int main()
 {
   if (arr[0].index == -1
       && arr[1].index == -1)

@@ -28,7 +28,7 @@ C func()  {
   return g;
 }
 
-main(int argc, char**argv) {
+int main(int argc, char**argv) {
   C c,d;
 //  printf ("\n");
   c = (argc != 1) ? C() : d;

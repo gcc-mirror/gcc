@@ -1,5 +1,6 @@
 // Build don't link: 
 // GROUPS passed boolean
+int
 main()
 {
     typedef char Boolean; // Instrinsic.h

@@ -4,6 +4,6 @@ namespace N {
 
 using namespace N;
 
-main() {
+int main() {
   return i;
 }

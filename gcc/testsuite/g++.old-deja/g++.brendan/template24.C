@@ -11,7 +11,7 @@ public:
 
 int func (int h = 1, int z = 2) { return h+z; }
 
-main ()
+int main ()
 {
   Temp<int(*)(int, int)> temp (func);
 

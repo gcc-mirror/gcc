@@ -14,7 +14,7 @@ public:
         int get_a() { return a; }
 };
 
-main() {
+int main() {
         samp ob[4] [2] = {  // Generated Error
                 1, 2,
                 3, 4,

@@ -30,6 +30,6 @@ public:
   void d_print() { }
 };
 
-main() {
+int main() {
   derived d(1); d.d_print(); return 0;
 }

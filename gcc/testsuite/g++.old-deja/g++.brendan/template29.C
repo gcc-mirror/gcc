@@ -9,4 +9,4 @@
     template <class ElementType> ElementType A<ElementType>::get() const
     { return ElementType(0); }
 
-    main() { const A<short> a(3); }
+int main() { const A<short> a(3); }

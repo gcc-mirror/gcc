@@ -13,6 +13,6 @@ struct Fails {
 
 Fails d;
 
-main() {
+int main() {
   return &d.i == &d.c;
 }

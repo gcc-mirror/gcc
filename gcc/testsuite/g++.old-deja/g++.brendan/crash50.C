@@ -22,7 +22,7 @@ public:
 
 C &(C::*DD)(const C &x) = &C::operator=;
 
-main()
+int main()
 {
         &DD;
 

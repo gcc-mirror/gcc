@@ -71,7 +71,7 @@ Dump2::operator<<(double r)
   strcpy (output, tempout);
   return *this; }
 
-main()
+int main()
 {
     BDDRetrace::Dump1 d1;
     Dump2 d2;

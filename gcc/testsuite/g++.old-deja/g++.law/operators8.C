@@ -40,7 +40,7 @@ class triangle :public shape {
     int height;
 };
 
-main() {
+int main() {
     shape* s1 = new square(4,4,5);
     shape* s2 = new triangle(6,6,2,3);
     *s1 = *s2;

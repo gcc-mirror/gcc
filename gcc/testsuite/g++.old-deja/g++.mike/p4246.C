@@ -8,7 +8,7 @@ class A
  public:
   A() { }
   virtual  ~A() { }
-  virtual  id() { }
+  virtual void id() { }
 };
 
 class B
@@ -16,7 +16,7 @@ class B
  public:
   B() { }
   virtual  ~B() { }
-  virtual  id() { }
+  virtual void id() { }
 };
 
 class C : public A, public B
@@ -24,7 +24,7 @@ class C : public A, public B
  public:
   C() { }
   virtual  ~C() { }
-  id() { abort(); }
+  void id() { abort(); }
 };
 
 class D : public C
@@ -32,10 +32,10 @@ class D : public C
  public:
   D() { ++num_d; }
   virtual  ~D() { -- num_d; }
-  id() { }
+  void id() { }
 };
 
-main()
+int main()
 {
   D* dp2 = new D;
   ((B*)dp2)->id();

@@ -12,7 +12,7 @@ A f()
   return b;
 }
 
-main ()
+int main ()
 {
   A a = f ();
   return a.i != 10;

@@ -38,7 +38,7 @@ private:
 
 struct Bar : public Foo {
 public:
-  DoSomething() {
+  void DoSomething() {
     PUB_A = 0;
     Foo::A = 0;
     printf("%x\n",pX);  
@@ -57,7 +57,7 @@ public:
   }
 };
 
-main()
+int main()
 {
   Foo a;
 

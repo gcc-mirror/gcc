@@ -24,7 +24,7 @@ struct B {
   B(): i(foo()), j(foo()) { }
 };
 
-main()
+int main()
 {
   B b;
   return r;

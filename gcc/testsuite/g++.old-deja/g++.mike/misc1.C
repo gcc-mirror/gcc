@@ -22,7 +22,7 @@ class C {
     --count;
     printf("down\n");
   }
-  operator ++() {
+  int operator ++() {
     return ++val;
   }
   operator int() {
@@ -38,7 +38,7 @@ void bar() {
       foo();
 }
 
-main() {
+int main() {
   bar();
   if (C::count)
     {

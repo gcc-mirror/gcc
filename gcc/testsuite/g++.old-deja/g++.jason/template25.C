@@ -34,7 +34,7 @@ do_foo (Bar<T, T> const & bar)
 {}
 
 
-main ()
+int main ()
 { int i;
   Bar<char, int> bar1;
   Bar<int, int>  bar2;

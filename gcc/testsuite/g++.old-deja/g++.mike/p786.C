@@ -25,7 +25,7 @@ void testit(const C& a, C& b)
    func(a,b);
 }
 
-main()
+int main()
 {
    C a;
    C b;

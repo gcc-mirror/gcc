@@ -85,6 +85,7 @@ public:
     int i;
 };
 
+int
 main()
 {
     Ref<XRep> y;

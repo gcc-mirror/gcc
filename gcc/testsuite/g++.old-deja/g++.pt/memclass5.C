@@ -16,7 +16,7 @@ void f ()
 
 template <class T> struct C: public A<T>::B<T> { };
   
-main ()
+int main ()
 {
   f<int, char>();
 }

@@ -12,7 +12,7 @@ foo::foo(int a)
     foo::a=a;
 }
 
-main()
+int main()
 {
 foo     obj(4);
 }

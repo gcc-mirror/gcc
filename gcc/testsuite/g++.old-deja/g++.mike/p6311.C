@@ -6,7 +6,7 @@ struct Foo {
 
 int Foo::*pmd = &Foo::member;
 
-main() {
+int main() {
   if (pmd == 0)
     return 1;
   if (a.*pmd != 42)

@@ -14,7 +14,7 @@ public:
     char* m1 () { C::m1(); return ""; } // ERROR - 
 };
 
-main () {
+int main () {
 A a;
 B b;
 C c;

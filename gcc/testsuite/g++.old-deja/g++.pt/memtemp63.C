@@ -6,7 +6,7 @@ A<int> a;
 
 template <class T> template <class U> void A<T>::f (U u) { }
 
-main()
+int main()
 {
   a.f (24);
 }

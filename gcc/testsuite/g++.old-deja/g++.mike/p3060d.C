@@ -26,7 +26,7 @@ void vfunc(VoidObjMemberFunc of, Object *op, void *v1) {
   (op->*of)(op, v1);
 }
 
-main() {
+int main() {
   Object      o;
 
   vfunc((VoidObjMemberFunc)&Clipper::Feedback, &o, 0);

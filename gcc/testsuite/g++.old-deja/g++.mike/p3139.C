@@ -18,7 +18,7 @@ class C : public B {
   int a() { return 42; }
 };
 
-main() {
+int main() {
   B * b = new C;
   printf("%d.\n", b->a());
   return 0;

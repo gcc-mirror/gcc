@@ -1,6 +1,6 @@
 // PRMS id: 8279
 
-main ()
+int main ()
 {
   char *const *p = 0;
   char **q = 0;

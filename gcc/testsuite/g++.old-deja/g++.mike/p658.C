@@ -35,7 +35,7 @@ private:
     char _c;
 };
 
-main()
+int main()
 {
     Char r, s;
 

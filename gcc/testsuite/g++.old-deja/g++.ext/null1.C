@@ -2,7 +2,7 @@
 
 void f (int *) { }
 void f (char, char);
-main ()
+int main ()
 {
   f (__null);
 }

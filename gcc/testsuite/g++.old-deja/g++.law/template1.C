@@ -25,6 +25,6 @@ public:
         int fill;
 };
 
-main() {
+int main() {
         Assoc<String,String> table;
 }

@@ -8,7 +8,7 @@
 
 typedef int A[10];
 
-main()
+int main()
 {
    int* a1 = new A;
 };

@@ -7,7 +7,7 @@ public:
 
 extern "C" int printf(const char *, ...);
 
-main () {
+int main () {
   A a;
   a.i = 1;
   A b (a);

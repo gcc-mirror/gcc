@@ -19,7 +19,7 @@ S s = { &A::foo, &A::vfoo, &A::foo };
 
 A a;
 
-main() {
+int main() {
   (a.*s.pfn1)();
   (a.*s.pfn2)();
   printf("PASS\n");

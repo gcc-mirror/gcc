@@ -30,7 +30,7 @@ typedef unsigned short Type;
 
 typedef Container<Type> TypeContainer;
 
-main(void)
+int main(void)
 {
     TypeContainer myTypeContainer(2);
     Type t = myTypeContainer;

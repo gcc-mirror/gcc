@@ -18,7 +18,7 @@ public:
 };
 
 
-main()
+int main()
 {
   User a;
 

@@ -13,7 +13,7 @@ f () throw (char, int, std::bad_exception)
   throw 'a';
 }
 
-main ()
+int main ()
 {
   std::set_terminate (my_term);
   std::set_unexpected (my_unexp);

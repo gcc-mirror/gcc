@@ -3,7 +3,7 @@
 
 struct foo { double f(int); };
 
-main() {
+int main() {
   double f (int);
   const std::type_info &r = typeid (f);
   cout << typeid(f).name() << endl;
