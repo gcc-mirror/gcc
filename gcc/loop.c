@@ -2451,11 +2451,9 @@ prescan_loop (loop)
     }
 
   /* Now, rescan the loop, setting up the LOOP_MEMS array.  */
-  if (/* We can't tell what MEMs are aliased by what.  */
-      ! unknown_address_altered
-      /* An exception thrown by a called function might land us
+  if (/* An exception thrown by a called function might land us
 	 anywhere.  */
-      && ! loop_info->has_call
+      ! loop_info->has_call
       /* We don't want loads for MEMs moved to a location before the
 	 one at which their stack memory becomes allocated.  (Note
 	 that this is not a problem for malloc, etc., since those
@@ -2467,6 +2465,23 @@ prescan_loop (loop)
     for (insn = NEXT_INSN (start); insn != NEXT_INSN (end);
 	 insn = NEXT_INSN (insn))
       for_each_rtx (&insn, insert_loop_mem, 0);
+
+  /* BLKmode MEMs are added to LOOP_STORE_MEM as necessary so
+     that loop_invariant_p and load_mems can use true_dependence
+     to determine what is really clobbered.  */
+  if (unknown_address_altered)
+    {
+      rtx mem = gen_rtx_MEM (BLKmode, const0_rtx);
+
+      loop_store_mems = gen_rtx_EXPR_LIST (VOIDmode, mem, loop_store_mems);
+    }
+  if (unknown_constant_address_altered)
+    {
+      rtx mem = gen_rtx_MEM (BLKmode, const0_rtx);
+
+      RTX_UNCHANGING_P (mem) = 1;
+      loop_store_mems = gen_rtx_EXPR_LIST (VOIDmode, mem, loop_store_mems);
+    }
 }
 
 /* LOOP->CONT_DOMINATOR is now the last label between the loop start
@@ -3136,9 +3151,8 @@ note_set_pseudo_multiple_uses (x, y, data)
 
    The value is 2 if we refer to something only conditionally invariant.
 
-   If `unknown_address_altered' is nonzero, no memory ref is invariant.
-   Otherwise, a memory ref is invariant if it does not conflict with
-   anything stored in `loop_store_mems'.  */
+   A memory ref is invariant if it is not volatile and does not conflict
+   with anything stored in `loop_store_mems'.  */
 
 int
 loop_invariant_p (loop, x)
@@ -3205,14 +3219,6 @@ loop_invariant_p (loop, x)
 	 checking for read-only items, so that volatile read-only items
 	 will be rejected also.  */
       if (MEM_VOLATILE_P (x))
-	return 0;
-
-      /* If we had a subroutine call, any location in memory could
-	 have been clobbered.  We used to test here for volatile and
-	 readonly, but true_dependence knows how to do that better
-	 than we do.  */
-      if (RTX_UNCHANGING_P (x)
-	  ? unknown_constant_address_altered : unknown_address_altered)
 	return 0;
 
       /* See if there is any dependence between a store and this load.  */
