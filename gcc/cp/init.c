@@ -227,6 +227,7 @@ static tree
 sort_member_init (t)
      tree t;
 {
+  extern int warn_reorder;
   tree x, member, name, field, init;
   tree init_list = NULL_TREE;
   tree fields_to_unmark = NULL_TREE;
@@ -270,7 +271,7 @@ sort_member_init (t)
 		}
 	      else
 		{
-		  if (pos < last_pos && extra_warnings)
+		  if (pos < last_pos && warn_reorder)
 		    {
 		      cp_warning_at ("member initializers for `%#D'", last_field);
 		      cp_warning_at ("  and `%#D'", field);
@@ -1130,7 +1131,11 @@ expand_aggr_init (exp, init, alias_this)
       int was_const_elts = TYPE_READONLY (TREE_TYPE (type));
       tree itype = init ? TREE_TYPE (init) : NULL_TREE;
       if (was_const_elts)
-	TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
+	{
+	  TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
+	  if (init)
+	    TREE_TYPE (init) = TYPE_MAIN_VARIANT (itype);
+	}
       if (init && TREE_TYPE (init) == NULL_TREE)
 	{
 	  /* Handle bad initializers like:
@@ -1152,7 +1157,8 @@ expand_aggr_init (exp, init, alias_this)
 		       init && comptypes (TREE_TYPE (init), TREE_TYPE (exp), 1));
       TREE_READONLY (exp) = was_const;
       TREE_TYPE (exp) = type;
-      if (init) TREE_TYPE (init) = itype;
+      if (init)
+	TREE_TYPE (init) = itype;
       return;
     }
 
@@ -1200,6 +1206,7 @@ expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags)
   else if (TREE_CODE (init) == INDIRECT_REF && TREE_HAS_CONSTRUCTOR (init))
     {
       rval = convert_for_initialization (exp, type, init, 0, 0, 0, 0);
+      TREE_USED (rval) = 1;
       expand_expr_stmt (rval);
       return;
     }

@@ -177,7 +177,7 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
       }
     else
       {
-	tree sig_tbl_type = c_build_type_variant (to_type, 1, 0);
+	tree sig_tbl_type = cp_build_type_variant (to_type, 1, 0);
 	
 	sptr = build_lang_field_decl (FIELD_DECL,
 				      get_identifier (SIGNATURE_SPTR_NAME),

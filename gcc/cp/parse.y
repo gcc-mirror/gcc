@@ -3436,6 +3436,8 @@ label_colon:
 		}
 	| PTYPENAME ':'
 		{ goto do_label; }
+	| TYPENAME ':'
+		{ goto do_label; }
 	;
 
 forhead.1:

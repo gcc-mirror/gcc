@@ -333,7 +333,7 @@ grok_template_type (tvec, type)
         {
 	  /* we are here for cases like const T* etc. */
 	  grok_template_type (tvec, &TYPE_MAIN_VARIANT (*type));
-	  *type = c_build_type_variant (TYPE_MAIN_VARIANT (*type),
+	  *type = cp_build_type_variant (TYPE_MAIN_VARIANT (*type),
 					TYPE_READONLY (*type),
 					TYPE_VOLATILE (*type));
 	}
@@ -430,7 +430,8 @@ coerce_template_parms (parms, arglist, in_decl)
       if (is_type != requires_type)
 	{
 	  if (in_decl)
-	    cp_error_at ("type/value mismatch in template parameter list for `%D'", in_decl);
+	    cp_error ("type/value mismatch in template parameter list for `%D'",
+		      in_decl);
 	  lost++;
 	  TREE_VEC_ELT (vec, i) = error_mark_node;
 	  continue;
@@ -897,15 +898,18 @@ instantiate_member_templates (classname)
 				     &TREE_VEC_ELT (parmvec, 0));
 	  type = IDENTIFIER_TYPE_VALUE (id);
 	  my_friendly_assert (type != 0, 277);
-	  if (CLASSTYPE_INTERFACE_UNKNOWN (type))
+	  if (flag_external_templates)
 	    {
-	      DECL_EXTERNAL (t2) = 0;
-	      TREE_PUBLIC (t2) = 0;
-	    }
-	  else
-	    {
-	      DECL_EXTERNAL (t2) = CLASSTYPE_INTERFACE_ONLY (type);
-	      TREE_PUBLIC (t2) = 1;
+	      if (CLASSTYPE_INTERFACE_UNKNOWN (type))
+		{
+		  DECL_EXTERNAL (t2) = 0;
+		  TREE_PUBLIC (t2) = 0;
+		}
+	      else
+		{
+		  DECL_EXTERNAL (t2) = CLASSTYPE_INTERFACE_ONLY (type);
+		  TREE_PUBLIC (t2) = 1;
+		}
 	    }
 	  break;
 	case 1:
@@ -1157,7 +1161,7 @@ tsubst (t, args, nargs, in_decl)
       && type != integer_type_node
       && type != void_type_node
       && type != char_type_node)
-    type = c_build_type_variant (tsubst (type, args, nargs, in_decl),
+    type = cp_build_type_variant (tsubst (type, args, nargs, in_decl),
 				 TYPE_READONLY (type),
 				 TYPE_VOLATILE (type));
   switch (TREE_CODE (t))
@@ -1194,7 +1198,7 @@ tsubst (t, args, nargs, in_decl)
 	 tsubst (TYPE_MAX_VALUE (t), args, nargs, in_decl));
 
     case TEMPLATE_TYPE_PARM:
-      return c_build_type_variant (args[TEMPLATE_TYPE_IDX (t)],
+      return cp_build_type_variant (args[TEMPLATE_TYPE_IDX (t)],
 				   TYPE_READONLY (t),
 				   TYPE_VOLATILE (t));
 
@@ -1388,9 +1392,10 @@ tsubst (t, args, nargs, in_decl)
 
 	      if (!got_it)
 		{
-		  r = build_decl_overload (r, TYPE_VALUES (type),
-					   DECL_CONTEXT (t) != NULL_TREE);
+		  tree a = build_decl_overload (r, TYPE_VALUES (type),
+						DECL_CONTEXT (t) != NULL_TREE);
 		  r = build_lang_decl (FUNCTION_DECL, r, type);
+		  DECL_ASSEMBLER_NAME (r) = a;
 		}
 	      else if (DECL_INLINE (r) && DECL_SAVED_INSNS (r))
 		{
@@ -1424,9 +1429,11 @@ tsubst (t, args, nargs, in_decl)
 	make_decl_rtl (r, NULL_PTR, 1);
 	DECL_ARGUMENTS (r) = fnargs;
 	DECL_RESULT (r) = result;
+#if 0
 	if (DECL_CONTEXT (t) == NULL_TREE
 	    || TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (t))) != 't')
 	  push_overloaded_decl_top_level (r, 0);
+#endif
 	return r;
       }
 
@@ -1504,7 +1511,7 @@ tsubst (t, args, nargs, in_decl)
 	  r = build_pointer_type (type);
 	else
 	  r = build_reference_type (type);
-	r = c_build_type_variant (r, TYPE_READONLY (t), TYPE_VOLATILE (t));
+	r = cp_build_type_variant (r, TYPE_READONLY (t), TYPE_VOLATILE (t));
 	/* Will this ever be needed for TYPE_..._TO values?  */
 	layout_type (r);
 	return r;
@@ -2137,7 +2144,10 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts)
 
     case REAL_TYPE:
     case INTEGER_TYPE:
-      if (TREE_CODE (parm) == INTEGER_TYPE && TREE_CODE (arg) == INTEGER_TYPE)
+      if (TREE_CODE (arg) != TREE_CODE (parm))
+	return 1;
+
+      if (TREE_CODE (parm) == INTEGER_TYPE)
 	{
 	  if (TYPE_MIN_VALUE (parm) && TYPE_MIN_VALUE (arg)
 	      && unify (tparms, targs, ntparms,
@@ -2464,22 +2474,32 @@ do_type_instantiation (name, storage)
       return;
     }
 
-  SET_CLASSTYPE_EXPLICIT_INSTANTIATION (t);
-  if (! extern_p)
+  if (! CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
     {
-      SET_CLASSTYPE_INTERFACE_KNOWN (t);
-      CLASSTYPE_INTERFACE_ONLY (t) = 0;
-      CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
-      CLASSTYPE_DEBUG_REQUESTED (t) = 1;
-      TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 0;
-      rest_of_type_compilation (t, 1);
+      SET_CLASSTYPE_EXPLICIT_INSTANTIATION (t);
+      if (! extern_p)
+	{
+	  SET_CLASSTYPE_INTERFACE_KNOWN (t);
+	  CLASSTYPE_INTERFACE_ONLY (t) = 0;
+	  CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
+	  CLASSTYPE_DEBUG_REQUESTED (t) = 1;
+	  TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 0;
+	  rest_of_type_compilation (t, 1);
+	}
     }
+
+  instantiate_member_templates (TYPE_IDENTIFIER (t));
 
   /* this should really be done by instantiate_member_templates */
   {
     tree tmp = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 0);
     for (; tmp; tmp = TREE_CHAIN (tmp))
       {
+	if (DECL_TEMPLATE_SPECIALIZATION (tmp)
+	    || (DECL_USE_TEMPLATE (tmp) == 0
+		&& CLASSTYPE_TEMPLATE_SPECIALIZATION (t)))
+	  continue;
+
 	SET_DECL_EXPLICIT_INSTANTIATION (tmp);
 	if (! extern_p)
 	  {
@@ -2498,7 +2518,8 @@ do_type_instantiation (name, storage)
 #endif
 
     for (tmp = CLASSTYPE_TAGS (t); tmp; tmp = TREE_CHAIN (tmp))
-      do_type_instantiation (TREE_VALUE (tmp), storage);
+      if (IS_AGGR_TYPE (TREE_VALUE (tmp)))
+	do_type_instantiation (TYPE_MAIN_DECL (TREE_VALUE (tmp)), storage);
   }
 }
 

@@ -571,7 +571,8 @@ dump_decl (t, v)
       {
 	/* Don't say 'typedef class A' */
 	tree type = TREE_TYPE (t);
-        if (IS_AGGR_TYPE (type) && ! TYPE_PTRMEMFUNC_P (type)
+        if (((IS_AGGR_TYPE (type) && ! TYPE_PTRMEMFUNC_P (type))
+	     || TREE_CODE (type) == ENUMERAL_TYPE)
 	    && type == TYPE_MAIN_VARIANT (type))
 	  {
 	    dump_type (type, v);
@@ -668,7 +669,7 @@ dump_decl (t, v)
     case TEMPLATE_DECL:
       {
 	tree args = DECL_TEMPLATE_PARMS (t);
-	int i, len = TREE_VEC_LENGTH (args);
+	int i, len = args ? TREE_VEC_LENGTH (args) : 0;
 	OB_PUTS ("template <");
 	for (i = 0; i < len; i++)
 	  {
@@ -691,7 +692,8 @@ dump_decl (t, v)
 		
 	    OB_PUTC2 (',', ' ');
 	  }
-	OB_UNPUT (2);
+	if (len != 0)
+	  OB_UNPUT (2);
 	OB_PUTC2 ('>', ' ');
 
 	if (DECL_TEMPLATE_IS_CLASS (t))
@@ -1350,12 +1352,26 @@ int
 cp_line_of (t)
      tree t;
 {
+  int line = 0;
   if (TREE_CODE (t) == PARM_DECL)
-    return DECL_SOURCE_LINE (DECL_CONTEXT (t));
-  else if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
-    return DECL_SOURCE_LINE (TYPE_NAME (t));
+    line = DECL_SOURCE_LINE (DECL_CONTEXT (t));
+  if (TREE_CODE (t) == TYPE_DECL && DECL_ARTIFICIAL (t))
+    t = TREE_TYPE (t);
+
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
+    {
+      if (IS_AGGR_TYPE (t))
+	line = CLASSTYPE_SOURCE_LINE (t);
+      else
+	line = DECL_SOURCE_LINE (TYPE_NAME (t));
+    }
   else
-    return DECL_SOURCE_LINE (t);
+    line = DECL_SOURCE_LINE (t);
+
+  if (line == 0)
+    return lineno;
+
+  return line;
 }
 
 char *
