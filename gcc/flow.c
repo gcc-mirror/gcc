@@ -1322,24 +1322,27 @@ find_regno_partial (ptr, data)
 
   switch (GET_CODE (*ptr)) 
     {
-      case ZERO_EXTRACT:
-      case SIGN_EXTRACT:
-      case STRICT_LOW_PART:
-        if (GET_CODE (XEXP (*ptr, 0)) == REG && REGNO (XEXP (*ptr, 0)) == reg)
-	  {
-	    param->retval = XEXP (*ptr, 0);
-	    return 1;
-	  }
-	break;
+    case ZERO_EXTRACT:
+    case SIGN_EXTRACT:
+    case STRICT_LOW_PART:
+      if (GET_CODE (XEXP (*ptr, 0)) == REG && REGNO (XEXP (*ptr, 0)) == reg)
+	{
+	  param->retval = XEXP (*ptr, 0);
+	  return 1;
+	}
+      break;
 
-      case SUBREG:
-        if (GET_CODE (SUBREG_REG (*ptr)) == REG 
-	    && REGNO (SUBREG_REG (*ptr)) == reg)
-	  {
-	    param->retval = SUBREG_REG (*ptr);
-	    return 1;
-	  }
-	break;
+    case SUBREG:
+      if (GET_CODE (SUBREG_REG (*ptr)) == REG 
+	  && REGNO (SUBREG_REG (*ptr)) == reg)
+	{
+	  param->retval = SUBREG_REG (*ptr);
+	  return 1;
+	}
+      break;
+
+    default:
+      break;
     }
 
   return 0;
