@@ -448,7 +448,6 @@ config/romp/xm-romp.h
 config/rs6000/aix31.h
 config/rs6000/aix3newas.h
 config/rs6000/aix41.h
-config/rs6000/cygwin.h
 config/rs6000/eabi-ctors.c
 config/rs6000/eabi.h
 config/rs6000/eabiaix.h
