@@ -1699,9 +1699,9 @@ maybe_macroexpand (pfile, written)
 	    CPP_PUTC (pfile, ' ');
 
 	  /* K+R treated this as a hard error.  */
-	  if (CPP_OPTION (pfile, warn_traditional))
+	  if (CPP_WTRADITIONAL (pfile))
 	    cpp_warning (pfile,
-	 "traditional C rejects function macro %s in non-function context",
+	 "function macro %s must be used with arguments in traditional C",
 			 hp->name);
 	  return 0;
 	}

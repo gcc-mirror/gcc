@@ -1,3 +1,7 @@
+2000-06-01  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp-tradwarn2.c: Update egrep pattern.
+
 2000-05-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/cpp-mi.c: Add another case, cpp-mix.h, where the
