@@ -1,3 +1,8 @@
+2001-11-20  Jeff Law <law@redhat.com>
+
+	* unroll.c (copy_loop_body): Update LABEL_NUSES for the
+	exit label as necessary.
+
 2001-11-20  Brad Kaiser  <bkaiser@acelink.net>
  
 	* reload1.c (elimination_effects): Use function_invariant_p
