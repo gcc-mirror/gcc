@@ -2,8 +2,8 @@
    contain debugging information specified by the GNU compiler
    in the form of comments (the mips assembler does not support
    assembly access to debug information).
-   Copyright (C) 1991, 1993, 1994, 1995, 1997, 1998, 1999, 2000, 2001
-   Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995, 1997, 1998, 1999, 2000, 2001,
+   2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@cygnus.com).
    
 This file is part of GCC.
@@ -1099,6 +1099,8 @@ static efdr_t init_file =
     0,			/* fTrim:	whether the symbol table was trimmed */
     GLEVEL_2,		/* glevel:	level this file was compiled with */
     0,			/* reserved:	reserved for future use */
+    0,			/* cbLineOffset: byte offset from header for this file ln's */
+    0,			/* cbLine:	size of lines for this file */
 #else
     0,			/* adr:		memory address of beginning of file */
     0,			/* rss:		file name (of source, if known) */
@@ -1570,8 +1572,8 @@ static SYMR    *cur_oproc_begin	= (SYMR *) 0;	/* original proc. sym begin info *
 static SYMR    *cur_oproc_end	= (SYMR *) 0;	/* original proc. sym end info */
 static PDR     *cur_oproc_ptr	= (PDR *) 0;	/* current original procedure*/
 static thead_t *cur_tag_head	= (thead_t *) 0;/* current tag head */
-static long	file_offset	= 0;		/* current file offset */
-static long	max_file_offset	= 0;		/* maximum file offset */
+static unsigned long file_offset	= 0;	/* current file offset */
+static unsigned long max_file_offset	= 0;	/* maximum file offset */
 static FILE    *object_stream	= (FILE *) 0;	/* file desc. to output .o */
 static FILE    *obj_in_stream	= (FILE *) 0;	/* file desc. to input .o */
 static char    *progname	= (char *) 0;	/* program name for errors */
@@ -4102,7 +4104,7 @@ write_varray (vp, offset, str)
 	       (unsigned long) offset, vp->num_allocated * vp->object_size, str);
     }
   
-  if (file_offset != offset
+  if (file_offset != (unsigned long) offset
       && fseek (object_stream, (long) offset, SEEK_SET) < 0)
     pfatal_with_name (object_name);
 
@@ -4165,7 +4167,7 @@ write_object ()
     {
       long sys_write;
 
-      if (file_offset != symbolic_header.cbLineOffset
+      if (file_offset != (unsigned long) symbolic_header.cbLineOffset
 	  && fseek (object_stream, symbolic_header.cbLineOffset, SEEK_SET) != 0)
 	pfatal_with_name (object_name);
 
@@ -4200,7 +4202,7 @@ write_object ()
       long sys_write;
       long num_write = symbolic_header.ioptMax * sizeof (OPTR);
 
-      if (file_offset != symbolic_header.cbOptOffset
+      if (file_offset != (unsigned long) symbolic_header.cbOptOffset
 	  && fseek (object_stream, symbolic_header.cbOptOffset, SEEK_SET) != 0)
 	pfatal_with_name (object_name);
 
@@ -4287,7 +4289,7 @@ write_object ()
   if (symbolic_header.ifdMax > 0)		/* file tables */
     {
       offset = symbolic_header.cbFdOffset;
-      if (file_offset != offset
+      if (file_offset != (unsigned long) offset
 	  && fseek (object_stream, (long) offset, SEEK_SET) < 0)
 	pfatal_with_name (object_name);
 
@@ -4328,7 +4330,7 @@ write_object ()
       long sys_write;
       symint_t num_write = symbolic_header.crfd * sizeof (symint_t);
 
-      if (file_offset != symbolic_header.cbRfdOffset
+      if (file_offset != (unsigned long) symbolic_header.cbRfdOffset
 	  && fseek (object_stream, symbolic_header.cbRfdOffset, SEEK_SET) != 0)
 	pfatal_with_name (object_name);
 
@@ -4393,7 +4395,7 @@ read_seek (size, offset, str)
 
   /* If we need to seek, and the distance is nearby, just do some reads,
      to speed things up.  */
-  if (file_offset != offset)
+  if (file_offset != (unsigned long) offset)
     {
       symint_t difference = offset - file_offset;
 
@@ -4571,7 +4573,7 @@ copy_object ()
 
 
   /* Abort if the symbol table is not last.  */
-  if (max_file_offset != stat_buf.st_size)
+  if (max_file_offset != (unsigned long) stat_buf.st_size)
     fatal ("symbol table is not last (symbol table ends at %ld, .o ends at %ld",
 	   max_file_offset,
 	   (long) stat_buf.st_size);
@@ -4625,7 +4627,7 @@ copy_object ()
   for (es = 0; es < orig_sym_hdr.iextMax; es++)
     {
       EXTR *eptr = orig_ext_syms + es;
-      unsigned ifd = eptr->ifd;
+      int ifd = eptr->ifd;
 
       (void) add_ext_symbol (eptr, ((long) ifd < orig_sym_hdr.ifdMax)
 			     ? remap_file_number[ ifd ] : ifd );
