@@ -168,16 +168,9 @@ extern int target_flags;
 
 /* target machine storage layout */
 
-#if 0
-/* ??? This fails because REAL_VALUE_TYPE is `double' making it impossible to
-   represent and output `long double' constants.  This causes problems during
-   a bootstrap with enquire/float.h, and hence must be disabled for now.
-   To fix, we need to implement code for TFmode just like the existing XFmode
-   support in real.[ch].  */
 /* Define for support of TFmode long double and REAL_ARITHMETIC.
    Sparc ABI says that long double is 4 words.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
-#endif
 
 /* Define for cross-compilation to a sparc target with no TFmode from a host
    with a different float format (e.g. VAX).  */
