@@ -350,11 +350,11 @@ mark_referenced_resources (x, res, include_delayed_effects)
 		      rtx slot_pat = PATTERN (XVECEXP (sequence, 0, i));
 		      if (GET_CODE (slot_pat) == SET
 			  && rtx_equal_p (SET_DEST (slot_pat),
-					  SET_DEST (XEXP (link, 0))))
+					  XEXP (XEXP (link, 0), 0)))
 			break;
 		    }
 		  if (i >= seq_size)
-		    mark_referenced_resources (SET_DEST (XEXP (link, 0)),
+		    mark_referenced_resources (XEXP (XEXP (link, 0), 0),
 					       res, 0);
 		}
 	  }
