@@ -193,6 +193,14 @@ proc check_gc_sections_available { } {
     global tool
 
     if {![info exists gc_sections_available_saved]} {
+	# Some targets don't support gc-sections despite whatever's
+	# advertised by ld's options.
+	if { [istarget alpha*-*-*]
+	     || [istarget ia64-*-*] } {
+	    set gc_sections_available_saved 0
+	    return 0
+	}
+
 	# Check if the ld used by gcc supports --gc-sections.
 	set gcc_spec [${tool}_target_compile "-dumpspecs" "" "none" ""]
 	regsub ".*\n\*linker:\[ \t\]*\n(\[^ \t\n\]*).*" "$gcc_spec" {\1} linker
