@@ -716,7 +716,7 @@ do {									\
 /* Describe how to emit uninitialized external linkage items.  */
 #define	ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
 do {									\
-  ASM_GLOBALIZE_LABEL (FILE, NAME);					\
+  (*targetm.asm_out.globalize_label) (FILE, NAME);			\
   ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);			\
 } while (0)
 

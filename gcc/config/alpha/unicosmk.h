@@ -349,12 +349,6 @@ ssib_section ()			\
 
 #undef ASM_OUTPUT_SOURCE_FILENAME
 
-/* There is no directive for declaring a label as global. Instead, an 
-   additional colon must be appended when the label is defined.  */
-
-#undef ASM_GLOBALIZE_LABEL
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)
-
 /* This is how to output a label for a jump table.  Arguments are the same as
    for ASM_OUTPUT_INTERNAL_LABEL, except the insn for the jump table is
    passed.  */

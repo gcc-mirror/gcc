@@ -114,3 +114,4 @@ extern void machopic_symbol_stub_section PARAMS ((void));
 extern void machopic_picsymbol_stub_section PARAMS ((void));
 extern void darwin_exception_section PARAMS ((void));
 extern void darwin_eh_frame_section PARAMS ((void));
+extern void darwin_globalize_label PARAMS ((FILE *, const char *));

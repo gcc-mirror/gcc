@@ -154,19 +154,6 @@ do { fputs (integer_asm_op (POINTER_SIZE / UNITS_PER_WORD, TRUE), FILE); \
 #define ASM_OUTPUT_LABELREF(FILE,NAME)  asm_fprintf ((FILE), "%U%s", (NAME))
 #endif
 
-/* A C statement (sans semicolon) to output to the stdio stream FILE
-   some commands that will make the label NAME global; that is,
-   available for reference from other files.  */
-
-#if !defined(ASM_GLOBALIZE_LABEL) && defined(GLOBAL_ASM_OP)
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)		\
-  do {						\
-      fputs (GLOBAL_ASM_OP, (FILE));		\
-      assemble_name ((FILE), (NAME));		\
-      fputc ('\n', (FILE));			\
-  } while (0)
-#endif
-
 /* Allow target to print debug info labels specially.  This is useful for
    VLIW targets, since debug info labels should go into the middle of
    instruction bundles instead of breaking them.  */

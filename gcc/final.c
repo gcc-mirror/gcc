@@ -1965,7 +1965,7 @@ output_alternate_entry_point (file, insn)
       ASM_WEAKEN_LABEL (file, name);
 #endif
     case LABEL_GLOBAL_ENTRY:
-      ASM_GLOBALIZE_LABEL (file, name);
+      (*targetm.asm_out.globalize_label) (file, name);
     case LABEL_STATIC_ENTRY:
 #ifdef ASM_OUTPUT_TYPE_DIRECTIVE
       ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");

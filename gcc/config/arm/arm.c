@@ -123,6 +123,9 @@ static void	 arm_elf_asm_named_section	PARAMS ((const char *, unsigned int));
 #ifndef ARM_PE
 static void	 arm_encode_section_info	PARAMS ((tree, int));
 #endif
+#ifdef AOF_ASSEMBLER
+static void	 aof_globalize_label		PARAMS ((FILE *, const char *));
+#endif
 
 #undef Hint
 #undef Mmode
@@ -145,6 +148,8 @@ static void	 arm_encode_section_info	PARAMS ((tree, int));
 #define TARGET_ASM_ALIGNED_HI_OP "\tDCW\t"
 #undef  TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\tDCD\t"
+#undef TARGET_ASM_GLOBALIZE_LABEL
+#define TARGET_ASM_GLOBALIZE_LABEL aof_globalize_label
 #else
 #undef  TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP NULL
@@ -10949,6 +10954,16 @@ aof_dump_imports (f)
       fputc ('\n', f);
       imports_list = imports_list->next;
     }
+}
+
+static void
+aof_globalize_label (stream, name)
+     FILE *stream;
+     const char *name;
+{
+  default_globalize_label (stream, name);
+  if (! strcmp (name, "main"))
+    arm_main_function = 1;
 }
 #endif /* AOF_ASSEMBLER */
 

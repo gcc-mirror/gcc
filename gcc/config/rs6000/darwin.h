@@ -103,13 +103,10 @@ Boston, MA 02111-1307, USA.  */
 #define RS6000_OUTPUT_BASENAME(FILE, NAME)	\
     assemble_name (FILE, NAME);
 
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-
-#undef ASM_GLOBALIZE_LABEL
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
-  do { fputs ("\t.globl ", FILE);	\
-       RS6000_OUTPUT_BASENAME (FILE, NAME); putc ('\n', FILE);} while (0)
+/* Globalizing directive for a label.  */
+#undef GLOBAL_ASM_OP
+#define GLOBAL_ASM_OP "\t.globl "
+#undef TARGET_ASM_GLOBALIZE_LABEL
 
 /* This is how to output an internal label prefix.  rs6000.c uses this
    when generating traceback tables.  */

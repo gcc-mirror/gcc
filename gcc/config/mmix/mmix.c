@@ -1520,18 +1520,6 @@ mmix_asm_declare_register_global (stream, decl, regno, name)
      here.  */
 }
 
-/* ASM_GLOBALIZE_LABEL.  */
-
-void
-mmix_asm_globalize_label (stream, name)
-     FILE * stream ATTRIBUTE_UNUSED;
-     const char * name ATTRIBUTE_UNUSED;
-{
-  asm_fprintf (stream, "\t.global ");
-  assemble_name (stream, name);
-  putc ('\n', stream);
-}
-
 /* ASM_WEAKEN_LABEL.  */
 
 void

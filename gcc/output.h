@@ -306,9 +306,6 @@ extern void assemble_string		PARAMS ((const char *, int));
 extern void assemble_external_libcall	PARAMS ((rtx));
 #endif
 
-/* Declare the label NAME global.  */
-extern void assemble_global		PARAMS ((const char *));
-
 /* Assemble a label named NAME.  */
 extern void assemble_label		PARAMS ((const char *));
 extern void assemble_eh_label		PARAMS ((const char *));
@@ -540,6 +537,7 @@ extern void default_elf_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						    unsigned HOST_WIDE_INT));
 extern const char *default_strip_name_encoding PARAMS ((const char *));
 extern bool default_binds_local_p PARAMS ((tree));
+extern void default_globalize_label PARAMS ((FILE *, const char *));
 
 /* Emit data for vtable gc for GNU binutils.  */
 extern void assemble_vtable_entry PARAMS ((struct rtx_def *, HOST_WIDE_INT));

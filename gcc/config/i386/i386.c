@@ -3931,7 +3931,7 @@ ix86_asm_file_end (file)
 	  (*targetm.asm_out.unique_section) (decl, 0);
 	  named_section (decl, NULL, 0);
 
-	  ASM_GLOBALIZE_LABEL (file, name);
+	  (*targetm.asm_out.globalize_label) (file, name);
 	  fputs ("\t.hidden\t", file);
 	  assemble_name (file, name);
 	  fputc ('\n', file);

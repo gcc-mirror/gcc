@@ -69,6 +69,9 @@ struct gcc_target
        and UNALIGNED_OP are NULL.  */
     bool (* integer) PARAMS ((rtx x, unsigned int size, int aligned_p));
 
+    /* Output code that will globalize a label.  */
+    void (* globalize_label) PARAMS ((FILE *, const char *));
+
     /* Output the assembler code for entry to a function.  */
     void (* function_prologue) PARAMS ((FILE *, HOST_WIDE_INT));
 

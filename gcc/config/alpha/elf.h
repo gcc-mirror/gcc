@@ -112,7 +112,7 @@ do {								\
 
 #undef  ASM_OUTPUT_EXTERNAL_LIBCALL
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)				\
-  ASM_GLOBALIZE_LABEL (FILE, XSTR (FUN, 0))
+  (*targetm.asm_out.globalize_label) (FILE, XSTR (FUN, 0))
 
 /* This says how to output assembler code to declare an
    uninitialized external linkage data object.  Under SVR4,
@@ -156,7 +156,7 @@ do {									\
 #undef  ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
 do {									\
-  ASM_GLOBALIZE_LABEL (FILE, NAME);					\
+  (*targetm.asm_out.globalize_label) (FILE, NAME);	       		\
   ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);			\
 } while (0)
 

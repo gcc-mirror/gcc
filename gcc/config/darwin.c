@@ -1285,5 +1285,14 @@ machopic_asm_out_destructor (symbol, priority)
     fprintf (asm_out_file, ".reference .destructors_used\n");
 }
 
+void
+darwin_globalize_label (stream, name)
+     FILE *stream;
+     const char *name;
+{
+  if (!!strncmp (name, "_OBJC_", 6))
+    default_globalize_label (stream, name);
+}
+
 #include "gt-darwin.h"
 

@@ -1679,17 +1679,7 @@ do { 									\
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%c$%s%04ld", (PREFIX)[0], (PREFIX) + 1, (long)(NUM))
 
-#define ASM_GLOBALIZE_LABEL(FILE, NAME)					\
-  do {									\
-    /* We only handle DATA objects here, functions are globalized in	\
-       ASM_DECLARE_FUNCTION_NAME.  */					\
-    if (! FUNCTION_NAME_P (NAME))					\
-      {									\
-	fputs ("\t.EXPORT ", FILE);					\
-	assemble_name (FILE, NAME);					\
-	fputs (",DATA\n", FILE);					\
-      }									\
-  } while (0)
+#define TARGET_ASM_GLOBALIZE_LABEL pa_globalize_label
 
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii ((FILE), (P), (SIZE))

@@ -980,8 +980,7 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 #define ASM_DECLARE_REGISTER_GLOBAL(STREAM, DECL, REGNO, NAME) \
  mmix_asm_declare_register_global (STREAM, DECL, REGNO, NAME)
 
-#define ASM_GLOBALIZE_LABEL(STREAM, NAME) \
- mmix_asm_globalize_label (STREAM, NAME)
+#define GLOBAL_ASM_OP "\t.global "
 
 #define ASM_WEAKEN_LABEL(STREAM, NAME) \
  mmix_asm_weaken_label (STREAM, NAME)

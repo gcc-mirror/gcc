@@ -1319,12 +1319,11 @@ __transfer_from_trampoline ()		\
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 
-#ifndef COLLECT
+#ifdef COLLECT
+#define TARGET_ASM_GLOBALIZE_LABEL ns32k_globalize_label
+#else
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP ".globl "
-#else
-#define ASM_GLOBALIZE_LABEL(STREAM,NAME)				\
-  fprintf ((STREAM), "\t.globl\t%s\n", (NAME));
 #endif
 
 /* This is how to output an internal numbered label where

@@ -54,3 +54,11 @@ hook_tree_int_void (a, b)
      int b ATTRIBUTE_UNUSED;
 {
 }
+
+/* Generic hook that takes (FILE *, const char *) and does nothing.  */
+void
+hook_FILEptr_constcharptr_void (a, b)
+     FILE *a ATTRIBUTE_UNUSED;
+     const char *b ATTRIBUTE_UNUSED;
+{
+}

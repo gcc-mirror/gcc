@@ -506,7 +506,7 @@ asm_output_bss (file, decl, name, size, rounded)
      const char *name;
      int size ATTRIBUTE_UNUSED, rounded;
 {
-  ASM_GLOBALIZE_LABEL (file, name);
+  (*targetm.asm_out.globalize_label) (file, name);
   bss_section ();
 #ifdef ASM_DECLARE_OBJECT_NAME
   last_assemble_variable_decl = decl;
@@ -534,7 +534,7 @@ asm_output_aligned_bss (file, decl, name, size, align)
      const char *name;
      int size, align;
 {
-  ASM_GLOBALIZE_LABEL (file, name);
+  (*targetm.asm_out.globalize_label) (file, name);
   bss_section ();
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
 #ifdef ASM_DECLARE_OBJECT_NAME
@@ -1752,15 +1752,6 @@ assemble_external_libcall (fun)
       ASM_OUTPUT_EXTERNAL_LIBCALL (asm_out_file, fun);
     }
 #endif
-}
-
-/* Declare the label NAME global.  */
-
-void
-assemble_global (name)
-     const char *name ATTRIBUTE_UNUSED;
-{
-  ASM_GLOBALIZE_LABEL (asm_out_file, name);
 }
 
 /* Assemble a label named NAME.  */
@@ -4548,7 +4539,7 @@ globalize_decl (decl)
     }
 #endif
 
-  ASM_GLOBALIZE_LABEL (asm_out_file, name);
+  (*targetm.asm_out.globalize_label) (asm_out_file, name);
 }
 
 /* Emit an assembler directive to make the symbol for DECL an alias to
@@ -5249,4 +5240,19 @@ default_binds_local_p (exp)
   return local_p;
 }
 
+/* Default function to output code that will globalize a label.  A
+   target must define GLOBAL_ASM_OP or provide it's own function to
+   globalize a label.  */
+#ifdef GLOBAL_ASM_OP
+void
+default_globalize_label (stream, name)
+     FILE * stream;
+     const char *name;
+{
+  fputs (GLOBAL_ASM_OP, stream);
+  assemble_name (stream, name);
+  putc ('\n', stream);
+}
+#endif /* GLOBAL_ASM_OP */
+  
 #include "gt-varasm.h"

@@ -504,15 +504,13 @@ objc_section_init ()				\
 	   fprintf (FILE, "\t");					\
 	   assemble_name (FILE, NAME); 					\
 	   fprintf (FILE, "=0\n");					\
-	   assemble_global (NAME);					\
+	   (*targetm.asm_out.globalize_label) (FILE, NAME);		\
 	 }								\
        } while (0)
 
-#undef ASM_GLOBALIZE_LABEL
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
- do { const char *const _x = (NAME); if (!!strncmp (_x, "_OBJC_", 6)) { \
-  (fputs (".globl ", FILE), assemble_name (FILE, _x), fputs ("\n", FILE)); \
- }} while (0)
+/* Globalizing directive for a label.  */
+#define GLOBAL_ASM_OP ".globl "
+#define TARGET_ASM_GLOBALIZE_LABEL darwin_globalize_label
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\

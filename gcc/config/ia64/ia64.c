@@ -4060,7 +4060,7 @@ ia64_asm_output_external (file, decl, name)
   save_referenced = TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl));
   if (TREE_CODE (decl) == FUNCTION_DECL)
     ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
-  ASM_GLOBALIZE_LABEL (file, name);
+  (*targetm.asm_out.globalize_label) (file, name);
   TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)) = save_referenced;
 }
 

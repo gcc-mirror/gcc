@@ -172,7 +172,7 @@ Boston, MA 02111-1307, USA.  */
    in each assembly file where they are referenced.  */
 
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)	\
-  ASM_GLOBALIZE_LABEL (FILE, XSTR (FUN, 0))
+  (*targetm.asm_out.globalize_label) (FILE, XSTR (FUN, 0))
 
 /* This says how to output assembler code to declare an
    uninitialized external linkage data object.  Under SVR4,
