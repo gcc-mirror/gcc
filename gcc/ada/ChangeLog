@@ -1,3 +1,7 @@
+2004-05-03  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* 50system.ads, 59system.ads, s-thread.ads: Removed, no longer used.
+
 2004-05-03  Olivier Hainque  <hainque@act-europe.fr>
 
 	PR ada/15152
