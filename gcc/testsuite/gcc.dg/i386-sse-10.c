@@ -1,6 +1,6 @@
 /* PR 17930 */
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O1 -msse2 -mfpmode=sse -mno-accumulate-outgoing-args" } */
+/* { dg-options "-O1 -msse2 -mfpmath=sse -mno-accumulate-outgoing-args" } */
 
 #include "i386-cpuid.h"
 
